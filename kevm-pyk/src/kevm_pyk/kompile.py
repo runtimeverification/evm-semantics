@@ -6,8 +6,8 @@ from enum import Enum
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from pyk.cli_utils import run_process
 from pyk.ktool.kompile import HaskellKompile, KompileArgs, KompileBackend, LLVMKompile
+from pyk.utils import run_process
 
 from . import config
 

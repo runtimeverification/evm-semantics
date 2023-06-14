@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from pathos.pools import ProcessPool  # type: ignore
-from pyk.cli_utils import BugReport, file_path
+from pyk.cli.utils import file_path
 from pyk.cterm import CTerm
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
 from pyk.kcfg import KCFG, KCFGExplore, KCFGShow, KCFGViewer
@@ -16,7 +16,7 @@ from pyk.kore.prelude import int_dv
 from pyk.ktool.krun import KRunOutput, _krun
 from pyk.prelude.ml import is_bottom
 from pyk.proof import APRProof
-from pyk.utils import single
+from pyk.utils import BugReport, single
 
 from .cli import KEVMCLIArgs, node_id_like
 from .foundry import (
@@ -306,10 +306,10 @@ def exec_prove(
 
             else:
                 _LOGGER.info(f'Converting claim to KCFG: {claim.label}')
-                kcfg = KCFG.from_claim(kevm.definition, claim)
+                kcfg, init_node_id, target_node_id = KCFG.from_claim(kevm.definition, claim)
 
-                new_init = ensure_ksequence_on_k_cell(kcfg.get_unique_init().cterm)
-                new_target = ensure_ksequence_on_k_cell(kcfg.get_unique_target().cterm)
+                new_init = ensure_ksequence_on_k_cell(kcfg.node(init_node_id).cterm)
+                new_target = ensure_ksequence_on_k_cell(kcfg.node(target_node_id).cterm)
 
                 _LOGGER.info(f'Computing definedness constraint for initial node: {claim.label}')
                 new_init = kcfg_explore.cterm_assume_defined(new_init)
@@ -325,14 +325,13 @@ def exec_prove(
                     new_init = CTerm.from_kast(_new_init)
                     new_target = CTerm.from_kast(_new_target)
 
-                kcfg.replace_node(kcfg.get_unique_init().id, new_init)
-                kcfg.replace_node(kcfg.get_unique_target().id, new_target)
+                kcfg.replace_node(init_node_id, new_init)
+                kcfg.replace_node(target_node_id, new_target)
 
-                proof_problem = APRProof(claim.label, kcfg, {}, proof_dir=save_directory)
+                proof_problem = APRProof(claim.label, kcfg, init_node_id, target_node_id, {}, proof_dir=save_directory)
 
             passed = kevm_apr_prove(
                 kevm,
-                claim.label,
                 proof_problem,
                 kcfg_explore,
                 save_directory=save_directory,
@@ -353,7 +352,7 @@ def exec_prove(
             )
             failure_log = None
             if not passed:
-                failure_log = print_failure_info(proof_problem.kcfg, claim.label, kcfg_explore)
+                failure_log = print_failure_info(proof_problem, kcfg_explore)
 
             return passed, failure_log
 
@@ -457,7 +456,7 @@ def exec_show_kcfg(
 
     if failure_info:
         with KCFGExplore(kevm, id=apr_proof.id) as kcfg_explore:
-            res_lines += print_failure_info(apr_proof.kcfg, apr_proof.id, kcfg_explore)
+            res_lines += print_failure_info(apr_proof, kcfg_explore)
 
     print('\n'.join(res_lines))
 

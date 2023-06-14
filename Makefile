@@ -289,7 +289,7 @@ $(kompile_node):
 
 $(KEVM_LIB)/$(node_kompiled): $(KEVM_LIB)/$(node_kore) $(protobuf_out)
 	@mkdir -p $(dir $@)
-	cd $(dir $@) && cmake $(CURDIR)/cmake/node -DCMAKE_INSTALL_PREFIX=$(INSTALL_LIB)/$(node_dir) && $(MAKE)
+	cd $(dir $@) && cmake $(CURDIR)/cmake/node -DCMAKE_INSTALL_PREFIX=$(INSTALL_LIB)/$(node_dir) -DCMAKE_CXX_FLAGS=-std=c++17 && $(MAKE)
 
 
 # Foundry
