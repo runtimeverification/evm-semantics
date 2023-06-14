@@ -3,8 +3,8 @@ from __future__ import annotations
 import json
 import logging
 import os
-import shutil
 import re
+import shutil
 from functools import cached_property
 from pathlib import Path
 from subprocess import CalledProcessError
@@ -234,7 +234,7 @@ class Foundry:
             if any(re.search(t, test) for t in exclude_tests):
                 try:
                     matched_tests.remove(test)
-                except:
+                except KeyError:
                     pass
         if unfound_tests:
             raise ValueError(f'Test identifiers not found: {set(unfound_tests)}')
@@ -485,7 +485,7 @@ def foundry_prove(
     contracts = set(unique({test.split('.')[0] for test in tests}))
     for contract_name in contracts:
         if 'setUp' in foundry.contracts[contract_name].method_by_name:
-            setup_methods[contract_name] = f'{contract_name}.setUp'
+            setup_methods[contract_name] = f'{contract_name}.setUp()'
 
     test_methods = [
         method
@@ -1096,4 +1096,3 @@ def _final_term(empty_config: KInner, contract_name: str) -> KInner:
             KVariable('STORAGESLOTSET_FINAL'),
         ],
     )
-
