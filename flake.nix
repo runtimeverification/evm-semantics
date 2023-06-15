@@ -3,9 +3,7 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/b01f185e4866de7c5b5a82f833ca9ea3c3f72fc4";
-    k-framework.url = "github:runtimeverification/k/v5.6.125";
-    k-framework.inputs.nixpkgs.follows = "nixpkgs";
-    #nixpkgs.follows = "k-framework/nixpkgs";
+    k-framework.url = "github:runtimeverification/k/v5.6.131";
     flake-utils.follows = "k-framework/flake-utils";
     rv-utils.url = "github:runtimeverification/rv-nix-tools";
     poetry2nix.follows = "pyk/poetry2nix";
@@ -21,11 +19,10 @@
     pyk.inputs.flake-utils.follows = "k-framework/flake-utils";
     pyk.inputs.nixpkgs.follows = "k-framework/nixpkgs";
     foundry.url = "github:shazow/foundry.nix/monthly"; # Use monthly branch for permanent release
-    booster.url = "github:runtimeverification/hs-backend-booster/63bc29f0f0ef8933fd657cf94909fce72f253fc8";
   };
   outputs = { self, k-framework, haskell-backend, nixpkgs, flake-utils
     , poetry2nix, blockchain-k-plugin, ethereum-tests, ethereum-legacytests
-    , rv-utils, pyk, foundry, booster }:
+    , rv-utils, pyk, foundry }:
     let
       nixLibs = pkgs:
         with pkgs;
@@ -108,7 +105,7 @@
               mkdir -p $out
               mv .build/usr/* $out/
               wrapProgram $out/bin/kevm --prefix PATH : ${
-                prev.lib.makeBinPath [ final.solc prev.which k booster.packages.${prev.system}.booster ]
+                prev.lib.makeBinPath [ final.solc prev.which k ]
               } --set NIX_LIBS "${nixLibs prev}"
               ln -s ${k} $out/lib/kevm/kframework
 
@@ -175,7 +172,6 @@
             poetry2nix.overlay
             pyk.overlay
             foundry.overlay
-            booster.overlays.default
             overlay
           ];
         };
@@ -184,7 +180,7 @@
         packages.default = kevm;
         devShell = pkgs.mkShell {
           buildInputs = buildInputs pkgs k-framework.packages.${system}.k
-            ++ [ pkgs.poetry pkgs.foundry-bin booster.packages.${system}.booster ];
+            ++ [ pkgs.poetry pkgs.foundry-bin ];
 
           shellHook = ''
             export NIX_LIBS="${nixLibs pkgs}"
@@ -241,7 +237,6 @@
         };
       }) // {
         overlays.default = nixpkgs.lib.composeManyExtensions [
-          k-framework.overlay
           blockchain-k-plugin.overlay
           overlay
         ];

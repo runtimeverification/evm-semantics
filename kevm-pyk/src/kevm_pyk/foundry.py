@@ -426,10 +426,10 @@ def foundry_prove(
     foundry_llvm_dir = foundry.out / 'kompiled-llvm'
     if use_booster:
         try:
-            run_process(('which', 'booster'), pipe_stderr=True).stdout.strip()
+            run_process(('which', 'kore-rpc-booster'), pipe_stderr=True).stdout.strip()
         except CalledProcessError:
             raise RuntimeError(
-                "Couldn't locate the booster RPC binary. Please put 'booster' on PATH manually or using kup install/kup shell."
+                "Couldn't locate the kore-rpc-booster RPC binary. Please put 'kore-rpc-booster' on PATH manually or using kup install/kup shell."
             ) from None
 
         if not foundry_llvm_dir.exists():
@@ -438,11 +438,11 @@ def foundry_prove(
             )
         llvm_dylib = foundry_llvm_dir / 'interpreter.so'
         if llvm_dylib.exists():
-            kore_rpc_command = ('booster', '--llvm-backend-library', str(llvm_dylib))
+            kore_rpc_command = ('kore-rpc-booster', '--llvm-backend-library', str(llvm_dylib))
         else:
             llvm_dylib = foundry_llvm_dir / 'interpreter.dylib'
             if llvm_dylib.exists():
-                kore_rpc_command = ('booster', '--llvm-backend-library', str(llvm_dylib))
+                kore_rpc_command = ('kore-rpc-booster', '--llvm-backend-library', str(llvm_dylib))
             else:
                 raise ValueError(
                     f"Could not find the LLVM dynamic library in {foundry_llvm_dir}. Please re-run foundry-kompile with the '--with-llvm-library' flag"
