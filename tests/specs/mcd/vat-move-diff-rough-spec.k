@@ -64,7 +64,6 @@ module VAT-MOVE-DIFF-ROUGH-SPEC
         </evm>
         <network>
           <chainID> VChainId </chainID>
-          <activeAccounts> SetItem(ACCT_ID) _ </activeAccounts>
           <accounts>
             <account>
               <acctID> ACCT_ID </acctID>
@@ -180,7 +179,6 @@ module VAT-MOVE-DIFF-ROUGH-SPEC
         </evm>
         <network>
           <chainID> VChainId </chainID>
-          <activeAccounts> SetItem(ACCT_ID) _ </activeAccounts>
           <accounts>
             <account>
               <acctID> ACCT_ID </acctID>
@@ -278,7 +276,6 @@ module VAT-MOVE-DIFF-ROUGH-SPEC
         </evm>
         <network>
           <chainID> VChainId </chainID>
-          <activeAccounts> SetItem(ACCT_ID) _ </activeAccounts>
           <accounts>
             <account>
               <acctID> ACCT_ID </acctID>
