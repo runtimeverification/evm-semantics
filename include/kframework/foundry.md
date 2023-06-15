@@ -1059,14 +1059,16 @@ function record() external;
 The rule `function.call.record` will match when the `record` cheat code function is called.
 
 ```k
-   rule [foundry.call.record]:
-        <k> #call_foundry SELECTOR _ => #enableRecord ... </k>
-     requires SELECTOR ==Int selector ( "record()" )
+    rule [foundry.call.record]:
+         <k> #call_foundry SELECTOR _ => #enableRecord ... </k>
+      requires SELECTOR ==Int selector ( "record()" )
 ```
 
 Here, `#enableRecord` updates `<isRecordActive>` to indicate that storage operations should now be recorded.
 
 ```k
+    syntax KItem ::= "#enableRecord" [klabel(foundry_enableRecord)]
+ // ---------------------------------------------------------------
     rule <k> #enableRecord => . ... </k>
          <recordAccess>
            <isRecordActive> _ => true </isRecordActive>
@@ -1079,27 +1081,33 @@ The rules for `SLOAD` and `SSTORE` are overriden so that they additionally write
 ```k
    rule [foundry.recordSLOAD]:
         <k> SLOAD INDEX => #recordRead INDEX ~> #pauseRecord ~> SLOAD INDEX ~> #resumeRecord ... </k>
-        <recordAccess> <recordActive> true </recordActive> ... </recordAccess>
+        <recordAccess> <isRecordActive> true </isRecordActive> ... </recordAccess>
      [priority(39)]
 
    rule [foundry.recordSSTORE]:
         <k> SSTORE INDEX NEW => #recordRead INDEX ~> #recordWrite INDEX ~> #pauseRecord ~> SSTORE INDEX NEW ~> #resumeRecord ... </k>
-        <recordAccess> <recordActive> true </recordActive> ... </recordAccess>
+        <recordAccess> <isRecordActive> true </isRecordActive> ... </recordAccess>
      [priority(39)]
 ```
 
 In these rules, `#pauseRecord` and `#resumeRecord` are used to temporarily set `<isRecordActive>` to `false`, allowing the original `SLOAD` and `SSTORE` rules from `evm.md` to be executed.
 
 ```k
+    syntax KItem ::= "#pauseRecord"  [klabel(foundry_pauseRecord)]
+                   | "#resumeRecord" [klabel(foundry_resumeRecord)]
+ // ---------------------------------------------------------------
     rule <k> #pauseRecord => . ... </k>
          <recordAccess> <isRecordActive> _ => false </isRecordActive> ... </recordAccess>
-	rule <k> #resumeRecord => . ... </k>
+    rule <k> #resumeRecord => . ... </k>
          <recordAccess> <isRecordActive> _ => true </isRecordActive> ... </recordAccess>
 ```
 
 Finally, `#recordRead` and `#recordWrite` update `<records>` to take note of the storage operations.
 
 ```k
+    syntax KItem ::= "#recordRead" Int  [klabel(foundry_pauseRecord)]
+                   | "#recordWrite" Int [klabel(foundry_resumeRecord)]
+ // ------------------------------------------------------------------
     rule <k> #recordRead V => . </k>
          <id> KEY </id>
          <recordAccess>
@@ -1168,28 +1176,30 @@ The rule `function.call.accesses` will match when the `accesses` cheat code func
 ```
 Here, `#returnAccesses` updates the `output` cell to return the pair `(reads, writes)`.
 ```k
-   rule <k> #returnAccesses ADDR => . ... </k>
-        <output>
-		  _ =>
-		  #encodeArgs(#array(#bytes32(0), size(READS), #bytes32TypedArgs(READS)),
-		              #array(#bytes32(0), size(WRITES), #bytes32TypedArgs(WRITES)))
-	    </output>
-		<recordAccess>
-          <record>
-            <recordKey> ADDR </recordKey>
-			<reads> READS </reads>
-            <writes> WRITES </writes>
-            ...
-          </record>
-          ...
-		</recordAccess>
+    syntax KItem ::= "#returnAccesses" Int [klabel(foundry_returnAccesses)]
+ // ------------------------------------------------------------------
+    rule <k> #returnAccesses ADDR => . ... </k>
+         <output>
+           _ =>
+           #encodeArgs(#array(#bytes32(0), size(READS), #bytes32TypedArgs(READS)),
+                       #array(#bytes32(0), size(WRITES), #bytes32TypedArgs(WRITES)))
+         </output>
+         <recordAccess>
+           <record>
+             <recordKey> ADDR </recordKey>
+             <reads> READS </reads>
+             <writes> WRITES </writes>
+             ...
+           </record>
+           ...
+         </recordAccess>
 
-   rule <k> #returnAccesses ADDR => . ... </k>
-        <output>
-		  _ =>
-		  #encodeArgs(#array(#bytes32(0), 0, .List),
-		              #array(#bytes32(0), 0, .List)
-	    </output> [owise]
+    rule <k> #returnAccesses _ADDR => . ... </k>
+         <output>
+           _ =>
+           #encodeArgs(#array(#bytes32(0), 0, .TypedArgs),
+                       #array(#bytes32(0), 0, .TypedArgs))
+         </output> [owise]
 ```
 
 Unimplemented or nonexistent cheat codes
