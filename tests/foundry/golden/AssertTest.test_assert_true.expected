@@ -1,5 +1,5 @@
 
-┌─ 4 (init, expanded)
+┌─ 1 (init, expanded)
 │    k: #execute ~> CONTINUATION
 │    pc: 0
 │    callDepth: 0
@@ -7,7 +7,7 @@
 │    src: tests/foundry/test/Simple.t.sol:5:54
 │
 │  (331 steps)
-├─ 7 (expanded)
+├─ 3 (expanded)
 │    k: #end EVMC_SUCCESS ~> #pc [ STOP ] ~> #execute ~> CONTINUATION:K
 │    pc: 213
 │    callDepth: 0
@@ -15,7 +15,7 @@
 │    src: tests/foundry/lib/forge-std/lib/ds-test/src/test.sol:37:38
 │
 │  (1 step)
-├─ 9 (expanded)
+├─ 4 (expanded)
 │    k: #halt ~> #pc [ STOP ] ~> #execute ~> CONTINUATION:K
 │    pc: 213
 │    callDepth: 0
@@ -23,7 +23,7 @@
 │    src: tests/foundry/lib/forge-std/lib/ds-test/src/test.sol:37:38
 │
 │  (2 steps)
-├─ 11 (leaf)
+├─ 5 (leaf)
 │    k: #halt ~> CONTINUATION:K
 │    pc: 213
 │    callDepth: 0
@@ -32,7 +32,7 @@
 │
 ┊  constraint: true
 ┊  subst: OMITTED SUBST
-└─ 3 (target, leaf)
+└─ 2 (target, leaf)
      k: #halt ~> CONTINUATION
      pc: PC_CELL_5d410f2a
      callDepth: CALLDEPTH_CELL_5d410f2a
@@ -662,6 +662,6 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-TRUE
 
 endmodule
 
-0 Failure nodes. (0 frontier and 0 stuck)
+0 Failure nodes. (0 pending and 0 stuck)
 
 Access documentation for KEVM foundry integration at https://docs.runtimeverification.com/kevm-integration-for-foundry/
