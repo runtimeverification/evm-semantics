@@ -25,6 +25,8 @@ interface KEVMCheatsBase {
     function allowChangesToStorage(address,uint256) external;
     // Set the current <gas> cell
     function infiniteGas() external;
+    // Returns a symbolic 32 bytes word
+    function freshWord() external returns (bytes32);
 }
 
 abstract contract KEVMCheats {

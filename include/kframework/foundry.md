@@ -194,7 +194,7 @@ The configuration of the Foundry Cheat Codes is defined as follwing:
     - `<storageSlotSet>` - stores the storage whitelist containing pairs of addresses and storage indexes.
 
 ```k
-module FOUNDRY-CHEAT-CODES
+module FOUNDRY-CHEAT-CODES [symbolic]
     imports EVM
     imports EVM-ABI
     imports FOUNDRY-ACCOUNTS
@@ -555,7 +555,7 @@ This rule then takes the address using `#asWord(#range(ARGS, 0, 32))` and makes 
 #### `freshWord` - Returns a single 32 bytes symbolic word.
 
 ```
-function freshWord() external;
+function freshWord() external returns (bytes32);
 ```
 
 `foundry.call.freshWord` will match when the `freshWord` cheat code function is called.
@@ -563,8 +563,10 @@ This rule returns a symbolic 32 bytes word.
 
 ```k
     rule [foundry.call.freshWord]:
-         <k> #call_foundry SELECTOR _ => ... </k>
+         <k> #call_foundry SELECTOR _ => . ... </k>
+         <output> _ => #bufStrict(32, WORD) </output>
       requires SELECTOR ==Int selector ( "freshWord()" )
+       andBool 0 <=Int WORD
 ```
 
 Expecting the next call to revert
