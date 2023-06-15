@@ -12,7 +12,7 @@ from pyk.cli_utils import run_process
 from pyk.kast.inner import KApply, KAtt, KLabel, KRewrite, KSort, KVariable
 from pyk.kast.manip import abstract_term_safely
 from pyk.kast.outer import KFlatModule, KImport, KNonTerminal, KProduction, KRule, KTerminal
-from pyk.prelude.kbool import TRUE, andBool
+from pyk.prelude.kbool import andBool
 from pyk.prelude.kint import intToken
 from pyk.prelude.string import stringToken
 from pyk.utils import FrozenDict, hash_str, single
@@ -503,9 +503,12 @@ def _evm_base_sort_int(type_label: str) -> bool:
 
 def _range_predicate(term: KInner, type_label: str) -> KInner | None:
     match type_label:
-        case 'address': return KEVM.range_address(term)
-        case 'bool': return KEVM.range_bool(term)
-        case 'bytes' | 'string': return KEVM.range_uint(128, KEVM.size_bytes(term))
+        case 'address':
+            return KEVM.range_address(term)
+        case 'bool':
+            return KEVM.range_bool(term)
+        case 'bytes' | 'string':
+            return KEVM.range_uint(128, KEVM.size_bytes(term))
 
     predicate_functions = [
         _range_predicate_dyn_array,
@@ -514,7 +517,7 @@ def _range_predicate(term: KInner, type_label: str) -> KInner | None:
         _range_predicate_int,
         _range_predicate_bytes,
         _range_predicate_ufixed,
-        _range_predicate_fixed
+        _range_predicate_fixed,
     ]
 
     for f in predicate_functions:
@@ -561,6 +564,7 @@ def _range_predicate_bytes(term: KInner, type_label: str) -> tuple[bool, KInner 
     else:
         return (False, None)
 
+
 def _range_predicate_fixed(term: KInner, type_label: str) -> tuple[bool, KInner | None]:
     if type_label.startswith('fixed') or type_label.startswith('ufixed'):
         if type_label == 'fixed':
@@ -577,6 +581,7 @@ def _range_predicate_fixed(term: KInner, type_label: str) -> tuple[bool, KInner 
         return (False, None)
     else:
         return (False, None)
+
 
 def _range_predicate_ufixed(term: KInner, type_label: str) -> tuple[bool, KInner | None]:
     if type_label.startswith('ufixed'):
@@ -601,6 +606,7 @@ def _range_predicate_dyn_array(term: KInner, type_label: str) -> tuple[bool, KIn
         return (True, KEVM.range_uint(128, KEVM.size_bytes(term)))
     else:
         return (False, None)
+
 
 def _range_predicate_array(term: KInner, type_label: str) -> tuple[bool, KInner | None]:
     if type_label.endswith(']'):
