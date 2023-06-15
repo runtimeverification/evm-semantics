@@ -13,6 +13,7 @@
 /tests/foundry/cache
 /tests/foundry/foundry.k
 /tests/foundry/foundry.k.check.stripped
+/tests/foundry/contracts.k.check.stripped
 /tests/foundry/foundry-list.check.stripped
 /tests/foundry/golden/*.out
 /tests/foundry/*.out

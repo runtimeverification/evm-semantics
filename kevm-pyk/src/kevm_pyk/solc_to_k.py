@@ -8,14 +8,13 @@ from functools import cached_property
 from subprocess import CalledProcessError
 from typing import TYPE_CHECKING
 
-from pyk.cli_utils import run_process
 from pyk.kast.inner import KApply, KAtt, KLabel, KRewrite, KSort, KVariable
 from pyk.kast.manip import abstract_term_safely
 from pyk.kast.outer import KFlatModule, KImport, KNonTerminal, KProduction, KRule, KTerminal
 from pyk.prelude.kbool import andBool
 from pyk.prelude.kint import intToken
 from pyk.prelude.string import stringToken
-from pyk.utils import FrozenDict, hash_str, single
+from pyk.utils import FrozenDict, hash_str, run_process, single
 
 from .kevm import KEVM
 
