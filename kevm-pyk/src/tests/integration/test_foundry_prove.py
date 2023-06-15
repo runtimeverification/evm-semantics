@@ -20,9 +20,6 @@ if TYPE_CHECKING:
 
 FORGE_STD_REF: Final = '27e14b7'
 
-ALL_TESTS: Final = tuple((TEST_DATA_DIR / 'foundry-prove-all').read_text().splitlines())
-SKIPPED_TESTS: Final = set((TEST_DATA_DIR / 'foundry-prove-skip').read_text().splitlines())
-
 
 @pytest.fixture(scope='module')  # TODO should reduce scope
 def foundry_root(tmp_path_factory: TempPathFactory) -> Path:
@@ -38,13 +35,25 @@ def foundry_root(tmp_path_factory: TempPathFactory) -> Path:
     return foundry_root
 
 
-@pytest.mark.parametrize('test_id', ALL_TESTS)
+def assert_pass(test_id: str, proof_res: dict[str, tuple[bool, list[str] | None]]) -> None:
+    assert test_id in proof_res
+    passed, log = proof_res[test_id]
+    if not passed:
+        assert log
+        pytest.fail('\n'.join(log))
+
+
+ALL_PROVE_TESTS: Final = tuple((TEST_DATA_DIR / 'foundry-prove-all').read_text().splitlines())
+SKIPPED_PROVE_TESTS: Final = set((TEST_DATA_DIR / 'foundry-prove-skip').read_text().splitlines())
+
+
+@pytest.mark.parametrize('test_id', ALL_PROVE_TESTS)
 def test_foundry_prove(test_id: str, foundry_root: Path) -> None:
-    if test_id in SKIPPED_TESTS:
+    if test_id in SKIPPED_PROVE_TESTS:
         pytest.skip()
 
     # When
-    res = foundry_prove(
+    proof_res = foundry_prove(
         foundry_root,
         tests=[test_id],
         simplify_init=False,
@@ -53,4 +62,27 @@ def test_foundry_prove(test_id: str, foundry_root: Path) -> None:
     )
 
     # Then
-    assert res == {test_id: (True, None)}
+    assert_pass(test_id, proof_res)
+
+
+ALL_BMC_TESTS: Final = tuple((TEST_DATA_DIR / 'foundry-bmc-all').read_text().splitlines())
+SKIPPED_BMC_TESTS: Final = set((TEST_DATA_DIR / 'foundry-bmc-skip').read_text().splitlines())
+
+
+@pytest.mark.parametrize('test_id', ALL_BMC_TESTS)
+def test_foundry_bmc(test_id: str, foundry_root: Path) -> None:
+    if test_id in SKIPPED_BMC_TESTS:
+        pytest.skip()
+
+    # When
+    proof_res = foundry_prove(
+        foundry_root,
+        tests=[test_id],
+        bmc_depth=3,
+        simplify_init=False,
+        smt_timeout=125,
+        smt_retry_limit=4,
+    )
+
+    # Then
+    assert_pass(test_id, proof_res)
