@@ -82,31 +82,15 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 
     syntax EthereumCommand ::= loadTx ( Account )
  // ---------------------------------------------
-    rule <k> loadTx(ACCTFROM) => #end EVMC_OUT_OF_GAS ... </k>
+    rule <k> loadTx(_) => #end EVMC_OUT_OF_GAS ... </k>
          <schedule> SCHED </schedule>
-         <gasPrice> _ => #effectiveGasPrice(TXID) </gasPrice>
-         <callGas> _ => GLIMIT -Int G0(SCHED, CODE, true) </callGas>
-         <origin> _ => ACCTFROM </origin>
-         <callDepth> _ => -1 </callDepth>
          <txPending> ListItem(TXID:Int) ... </txPending>
-         <coinbase> MINER </coinbase>
          <message>
            <msgID>      TXID     </msgID>
-           <txGasLimit> GLIMIT   </txGasLimit>
            <to>         .Account </to>
-           <value>      VALUE    </value>
            <data>       CODE     </data>
-           <txAccess>   TA       </txAccess>
            ...
          </message>
-         <account>
-           <acctID> ACCTFROM </acctID>
-           <balance> BAL => BAL -Int (GLIMIT *Int #effectiveGasPrice(TXID)) </balance>
-           <nonce> NONCE </nonce>
-           ...
-         </account>
-         <accessedAccounts> _ => #if Ghaswarmcoinbase << SCHED >> #then SetItem(MINER) #else .Set #fi </accessedAccounts>
-         <touchedAccounts> _ => SetItem(MINER) </touchedAccounts>
        requires notBool #hasValidInitCode(lengthBytes(CODE), SCHED)
 
     rule <k> loadTx(ACCTFROM)

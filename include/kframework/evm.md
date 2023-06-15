@@ -164,8 +164,6 @@ In the comments next to each cell, we've marked which component of the YellowPap
               </message>
             </messages>
 
-            <withdrawals> .List </withdrawals>
-
           </network>
 
         </ethereum>
@@ -251,14 +249,6 @@ The `interimStates` cell stores a list of previous world states.
     rule <k> #dropWorldState => . ... </k> <interimStates> ListItem(_) REST => REST </interimStates>
 ```
 
-### The Withdrawals
-
-The `withdrawals` cell stores a list of all withdrawals that are pushed from the beacon chain to the EVM. [EIP-4895]
-
-```k
-    syntax Withdrawal ::= "{" Int "|" Int "|" Int "|" Int "}"
- // ---------------------------------------------------------
-```
 Control Flow
 ------------
 
@@ -1473,7 +1463,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
 -   `#create____` transfers the endowment to the new account and triggers the execution of the initialization code.
 -   `#codeDeposit_` checks the result of initialization code and whether the code deposit can be paid, indicating an error if not.
 -   `#isValidCode_` checks if the code returned by the execution of the initialization code begins with a reserved byte. [EIP-3541]
--   `#checkInitCode` checks the length of the transaction data in a create transaction. [EIP-3860]
+-   `#hasValidInitCode` checks the length of the transaction data in a create transaction. [EIP-3860]
 
 ```k
     syntax InternalOp ::= "#create"   Int Int Int Bytes

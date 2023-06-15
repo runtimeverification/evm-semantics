@@ -80,7 +80,6 @@ module STATE-UTILS
          <accounts>       _ => .Bag        </accounts>
          <messages>       _ => .Bag        </messages>
          <schedule>       _ => DEFAULT     </schedule>
-         <withdrawals>    _ => .List     </withdrawals>
 
 ```
 
