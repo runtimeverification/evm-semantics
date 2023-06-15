@@ -544,6 +544,21 @@ This rule then takes the address using `#asWord(#range(ARGS, 0, 32))` and makes 
       requires SELECTOR ==Int selector ( "symbolicStorage(address)" )
 ```
 
+#### `freshWord` - Returns a single 32 bytes symbolic word.
+
+```
+function freshWord() external;
+```
+
+`foundry.call.freshWord` will match when the `freshWord` cheat code function is called.
+This rule returns a symbolic 32 bytes word.
+
+```k
+    rule [foundry.call.freshWord]:
+         <k> #call_foundry SELECTOR _ => ... </k>
+      requires SELECTOR ==Int selector ( "freshWord()" )
+```
+
 Expecting the next call to revert
 ---------------------------------
 
@@ -1414,6 +1429,7 @@ If the production is matched when no prank is active, it will be ignored.
     rule ( selector ( "expectEmit(bool,bool,bool,bool,address)" )  => 2176505587 )
     rule ( selector ( "sign(uint256,bytes32)" )                    => 3812747940 )
     rule ( selector ( "symbolicStorage(address)" )                 => 769677742  )
+    rule ( selector ( "freshWord()" )                              => 3485956700 )
     rule ( selector ( "prank(address)" )                           => 3395723175 )
     rule ( selector ( "prank(address,address)" )                   => 1206193358 )
     rule ( selector ( "allowCallsToAddress(address)" )             => 1850795572 )
