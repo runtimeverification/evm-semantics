@@ -499,7 +499,7 @@ tests/foundry/out/kompiled/foundry.k.prove: tests/foundry/out/kompiled/timestamp
 tests/foundry/out/kompiled/foundry.k.bmc-prove: tests/foundry/out/kompiled/timestamp
 	$(KEVM) foundry-prove --foundry-project-root $(foundry_dir)          \
 	    -j$(FOUNDRY_PAR) --no-simplify-init --max-depth 1000             \
-            --bmc-depth 3                                                    \
+	    --bmc-depth 3                                                    \
 	    $(KEVM_OPTS) $(KPROVE_OPTS)                                      \
 	    $(addprefix --test , $(shell cat tests/foundry/bmc-tests))
 
