@@ -1324,7 +1324,7 @@ module SUMMARY-ASSERTTEST-TESTFAIL-EXPECT-REVERT
 
 endmodule
 
-1 Failure nodes. (0 pending and 1 stuck)
+1 Failure nodes. (0 frontier and 1 stuck)
 
 Stuck nodes:
 

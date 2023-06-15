@@ -716,6 +716,6 @@ module SUMMARY-SETUPDEPLOYTEST-TEST-EXTCODESIZE
 
 endmodule
 
-0 Failure nodes. (0 pending and 0 stuck)
+0 Failure nodes. (0 frontier and 0 stuck)
 
 Access documentation for KEVM foundry integration at https://docs.runtimeverification.com/kevm-integration-for-foundry/

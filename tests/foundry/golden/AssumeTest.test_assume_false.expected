@@ -2213,7 +2213,7 @@ module SUMMARY-ASSUMETEST-TEST-ASSUME-FALSE
 
 endmodule
 
-1 Failure nodes. (0 pending and 1 stuck)
+1 Failure nodes. (0 frontier and 1 stuck)
 
 Stuck nodes:
 
