@@ -31,7 +31,7 @@ from .foundry import (
     foundry_to_dot,
 )
 from .gst_to_kore import _mode_to_kore, _schedule_to_kore
-from .kevm import KEVM
+from .kevm import KEVM, KEVMNodePrinter
 from .kompile import KompileTarget, kevm_kompile
 from .solc_to_k import solc_compile, solc_to_k
 from .utils import arg_pair_of, ensure_ksequence_on_k_cell, get_apr_proof_for_spec, kevm_apr_prove, print_failure_info
@@ -418,7 +418,7 @@ def exec_show_kcfg(
     **kwargs: Any,
 ) -> None:
     kevm = KEVM(definition_dir)
-    apr_proof = get_apr_proof_for_spec(
+    proof = get_apr_proof_for_spec(
         kevm,
         spec_file,
         save_directory=save_directory,
@@ -429,21 +429,20 @@ def exec_show_kcfg(
         exclude_claim_labels=exclude_claim_labels,
     )
 
-    kcfg_show = KCFGShow(kevm)
+    kcfg_show = KCFGShow(kevm, node_printer=KEVMNodePrinter(kevm))
     res_lines = kcfg_show.show(
-        apr_proof.id,
-        apr_proof.kcfg,
+        proof.id,
+        proof.kcfg,
         nodes=nodes,
         node_deltas=node_deltas,
         to_module=to_module,
         minimize=minimize,
         sort_collections=sort_collections,
-        node_printer=kevm.short_info,
     )
 
     if failure_info:
-        with KCFGExplore(kevm, id=apr_proof.id) as kcfg_explore:
-            res_lines += print_failure_info(apr_proof, kcfg_explore)
+        with KCFGExplore(kevm, id=proof.id) as kcfg_explore:
+            res_lines += print_failure_info(proof, kcfg_explore)
 
     print('\n'.join(res_lines))
 
