@@ -1479,7 +1479,6 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
     syntax InternalOp ::= "#create"   Int Int Int Bytes
                         | "#mkCreate" Int Int Int Bytes
                         | "#incrementNonce" Int
-                        | "#checkInitCode"  Int
  // -------------------------------------------
     rule <k> #create ACCTFROM ACCTTO VALUE INITCODE
           => #incrementNonce ACCTFROM
@@ -1515,11 +1514,9 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
            ...
          </account>
 
-    rule <k> #checkInitCode INITCODELEN => . ... </k>
-         <schedule> SCHED </schedule>
-      requires notBool Ghasmaxinitcodesize << SCHED >> orBool INITCODELEN <=Int maxInitCodeSize < SCHED >
-
-    rule <k> #checkInitCode _ => #end EVMC_OUT_OF_GAS ... </k> [owise]
+    syntax Bool ::= #hasValidInitCode ( Int , Schedule ) [function]
+ // ---------------------------------------------------------------
+    rule #hasValidInitCode(INITCODELEN, SCHED) => notBool Ghasmaxinitcodesize << SCHED >> orBool INITCODELEN <=Int maxInitCodeSize < SCHED >
 
     syntax Bool ::= #isValidCode ( Bytes , Schedule ) [function]
  // ------------------------------------------------------------
@@ -1586,11 +1583,10 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
 ```k
     syntax TernStackOp ::= "CREATE"
  // -------------------------------
-    rule [create]:
+    rule [create-valid]:
          <k> CREATE VALUE MEMSTART MEMWIDTH
           => #accessAccounts #newAddr(ACCT, NONCE)
           ~> #checkCall ACCT VALUE
-          ~> #checkInitCode (MEMWIDTH /Int 2)
           ~> #create ACCT #newAddr(ACCT, NONCE) VALUE #range(LM, MEMSTART, MEMWIDTH)
           ~> #codeDeposit #newAddr(ACCT, NONCE)
          ...
@@ -1602,6 +1598,11 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
            <nonce> NONCE </nonce>
            ...
          </account>
+         <schedule> SCHED </schedule>
+      requires #hasValidInitCode(MEMWIDTH, SCHED)
+
+    rule [create-invalid]:
+         <k> CREATE _ _ _ => #end EVMC_OUT_OF_GAS ... </k> [owise]
 ```
 
 `CREATE2` will attempt to `#create` the account, but with the new scheme for choosing the account address.
@@ -1609,17 +1610,21 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
 ```k
     syntax QuadStackOp ::= "CREATE2"
  // --------------------------------
-    rule [create2]:
+    rule [create2-valid]:
          <k> CREATE2 VALUE MEMSTART MEMWIDTH SALT
           => #accessAccounts #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH))
           ~> #checkCall ACCT VALUE
-          ~> #checkInitCode(MEMWIDTH /Int 2)
           ~> #create ACCT #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH)) VALUE #range(LM, MEMSTART, MEMWIDTH)
           ~> #codeDeposit #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH))
          ...
          </k>
          <id> ACCT </id>
          <localMem> LM </localMem>
+         <schedule> SCHED </schedule>
+      requires #hasValidInitCode( MEMWIDTH /Int 2, SCHED)
+
+    rule [create2-invalid]:
+         <k> CREATE2 _ _ _ _ => #end EVMC_OUT_OF_GAS ... </k> [owise]
 ```
 
 `SELFDESTRUCT` marks the current account for deletion and transfers funds out of the current account.
@@ -2042,13 +2047,13 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
          </account>
 
     rule <k> #gasExec(SCHED, CREATE _ _ WIDTH)
-          => Gcreate < SCHED > +Int Cinitcode(SCHED, WIDTH /Int 2) ~> #deductGas
+          => Gcreate < SCHED > +Int Cinitcode(SCHED, WIDTH) ~> #deductGas
           ~> #allocateCreateGas ~> 0
          ...
          </k>
 
     rule <k> #gasExec(SCHED, CREATE2 _ _ WIDTH _)
-          => Gcreate < SCHED > +Int Gsha3word < SCHED > *Int (WIDTH up/Int 32) +Int Cinitcode(SCHED, WIDTH /Int 2) ~> #deductGas
+          => Gcreate < SCHED > +Int Gsha3word < SCHED > *Int (WIDTH up/Int 32) +Int Cinitcode(SCHED, WIDTH) ~> #deductGas
           ~> #allocateCreateGas ~> 0
          ...
          </k>
@@ -2356,8 +2361,9 @@ A `ScheduleFlag` is a boolean determined by the fee schedule; applying a `Schedu
                           | "Ghasrevert"              | "Ghasreturndata"   | "Ghasstaticcall"      | "Ghasshift"
                           | "Ghasdirtysstore"         | "Ghascreate2"      | "Ghasextcodehash"     | "Ghasselfbalance"
                           | "Ghassstorestipend"       | "Ghaschainid"      | "Ghasaccesslist"      | "Ghasbasefee"
-                          | "Ghasrejectedfirstbyte"   | "Ghasprevrandao"   | "Ghasmaxinitcodesize"
- // ----------------------------------------------------------------------------------------------
+                          | "Ghasrejectedfirstbyte"   | "Ghasprevrandao"   | "Ghasmaxinitcodesize" | "Ghaspushzero"
+                          | "Ghaswarmcoinbase"
+ // ------------------------------------------
 ```
 
 ### Schedule Constants
@@ -2471,6 +2477,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghasrejectedfirstbyte   << DEFAULT >> => false
     rule Ghasprevrandao          << DEFAULT >> => false
     rule Ghasmaxinitcodesize     << DEFAULT >> => false
+    rule Ghaspushzero            << DEFAULT >> => false
+    rule Ghaswarmcoinbase        << DEFAULT >> => false
 ```
 
 ### Frontier Schedule
@@ -2687,12 +2695,17 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ginitcodewordcost < SHANGHAI > => 2
     rule SCHEDCONST        < SHANGHAI > => SCHEDCONST < MERGE >
       requires notBool ( SCHEDCONST ==K maxInitCodeSize
-                  orBool SCHEDCONST ==K Ghasmaxinitcodesize
+                  orBool SCHEDCONST ==K Ginitcodewordcost
                        )
 
     rule Ghasmaxinitcodesize << SHANGHAI >> => true
+    rule Ghaspushzero        << SHANGHAI >> => true
+    rule Ghaswarmcoinbase    << SHANGHAI >> => true
     rule SCHEDFLAG           << SHANGHAI >> => SCHEDFLAG << MERGE >>
-      requires notBool SCHEDFLAG ==K Ghasmaxinitcodesize
+      requires notBool ( SCHEDFLAG ==K Ghasmaxinitcodesize
+                  orBool SCHEDFLAG ==K Ghaspushzero
+                  orBool SCHEDFLAG ==K Ghaswarmcoinbase
+                       )
 ```
 
 EVM Program Representations
@@ -2784,7 +2797,7 @@ After interpreting the strings representing programs as a `WordStack`, it should
     rule #dasmOpCode(  89,     _ ) => MSIZE
     rule #dasmOpCode(  90,     _ ) => GAS
     rule #dasmOpCode(  91,     _ ) => JUMPDEST
-    rule #dasmOpCode(  95,     _ ) => PUSHZERO
+    rule #dasmOpCode(  95, SCHED ) => PUSHZERO requires Ghaspushzero << SCHED >>
     rule #dasmOpCode(  96,     _ ) => PUSH(1)
     rule #dasmOpCode(  97,     _ ) => PUSH(2)
     rule #dasmOpCode(  98,     _ ) => PUSH(3)

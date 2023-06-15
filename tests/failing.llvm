@@ -1,1 +1,3 @@
 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCreate2/CREATE2_HighNonceDelegatecall.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stPreCompiledContracts/delegatecall09Undefined.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCallCodes/touchAndGo.json
