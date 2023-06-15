@@ -1177,7 +1177,7 @@ The rule `function.call.accesses` will match when the `accesses` cheat code func
 Here, `#returnAccesses` updates the `output` cell to return the pair `(reads, writes)`.
 ```k
     syntax KItem ::= "#returnAccesses" Int [klabel(foundry_returnAccesses)]
- // ------------------------------------------------------------------
+ // -----------------------------------------------------------------------
     rule <k> #returnAccesses ADDR => . ... </k>
          <output>
            _ =>
