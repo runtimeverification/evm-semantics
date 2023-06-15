@@ -5,9 +5,10 @@ from typing import TYPE_CHECKING
 
 from pyk.kast.inner import KApply, KLabel, KSequence, KSort, KVariable, build_assoc
 from pyk.kast.manip import flatten_label
-from pyk.ktool.kprint import paren
+from pyk.kast.pretty import paren
 from pyk.ktool.kprove import KProve
 from pyk.ktool.krun import KRun
+from pyk.prelude.k import K
 from pyk.prelude.kint import intToken, ltInt
 from pyk.prelude.ml import mlEqualsTrue
 from pyk.prelude.string import stringToken
@@ -17,11 +18,11 @@ if TYPE_CHECKING:
     from pathlib import Path
     from typing import Final
 
-    from pyk.cli_utils import BugReport
     from pyk.cterm import CTerm
     from pyk.kast import KInner
     from pyk.kast.outer import KFlatModule
     from pyk.ktool.kprint import SymbolTable
+    from pyk.utils import BugReport
 
 _LOGGER: Final = logging.getLogger(__name__)
 
@@ -51,6 +52,7 @@ class KEVM(KProve, KRun):
             command=kprove_command,
             extra_unparsing_modules=extra_unparsing_modules,
             bug_report=bug_report,
+            patch_symbol_table=KEVM._kevm_patch_symbol_table,
         )
         KRun.__init__(
             self,
@@ -59,10 +61,11 @@ class KEVM(KProve, KRun):
             command=krun_command,
             extra_unparsing_modules=extra_unparsing_modules,
             bug_report=bug_report,
+            patch_symbol_table=KEVM._kevm_patch_symbol_table,
         )
 
     @classmethod
-    def _patch_symbol_table(cls, symbol_table: SymbolTable) -> None:
+    def _kevm_patch_symbol_table(cls, symbol_table: SymbolTable) -> None:
         # fmt: off
         symbol_table['#Bottom']                                       = lambda: '#Bottom'
         symbol_table['_Map_']                                         = paren(lambda m1, m2: m1 + '\n' + m2)
@@ -161,11 +164,17 @@ class KEVM(KProve, KRun):
         if k_cell == KEVM.halt():
             return True
         elif type(k_cell) is KSequence:
-            # <k> #halt ~> CONTINUATION </k>
-            if k_cell.arity == 2 and k_cell[0] == KEVM.halt() and type(k_cell[1]) is KVariable:
-                # <callDepth> 0 </callDepth>
-                if cterm.cell('CALLDEPTH_CELL') == intToken(0):
-                    return True
+            # <k> . </k>
+            if k_cell.arity == 0:
+                return True
+            # <k> #halt </k>
+            elif k_cell.arity == 1 and k_cell[0] == KEVM.halt():
+                return True
+            # <k> #halt ~> X:K </k>
+            elif (
+                k_cell.arity == 2 and k_cell[0] == KEVM.halt() and type(k_cell[1]) is KVariable and k_cell[1].sort == K
+            ):
+                return True
         return False
 
     @staticmethod

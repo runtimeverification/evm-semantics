@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from pathos.pools import ProcessPool  # type: ignore
-from pyk.cli_utils import BugReport, file_path
+from pyk.cli.utils import file_path
 from pyk.cterm import CTerm
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
 from pyk.kcfg import KCFG, KCFGExplore, KCFGShow, KCFGViewer
@@ -16,6 +16,7 @@ from pyk.kore.prelude import int_dv
 from pyk.ktool.krun import KRunOutput, _krun
 from pyk.prelude.ml import is_bottom
 from pyk.proof import APRProof
+from pyk.utils import BugReport, single
 
 from .cli import KEVMCLIArgs, node_id_like
 from .foundry import (
@@ -34,7 +35,7 @@ from .gst_to_kore import _mode_to_kore, _schedule_to_kore
 from .kevm import KEVM
 from .kompile import KompileTarget, kevm_kompile
 from .solc_to_k import Contract, contract_to_main_module, solc_compile
-from .utils import arg_pair_of, ensure_ksequence_on_k_cell, get_apr_proof_for_spec, kevm_apr_prove
+from .utils import arg_pair_of, ensure_ksequence_on_k_cell, get_apr_proof_for_spec, kevm_apr_prove, print_failure_info
 
 if TYPE_CHECKING:
     from argparse import Namespace
@@ -150,13 +151,12 @@ def exec_solc_to_k(
         _main_module.name, modules, requires=[KRequire(req) for req in ['edsl.md'] + requires]
     )
     _kprint = KEVM(definition_dir, extra_unparsing_modules=modules)
-    print(_kprint.pretty_print(bin_runtime_definition) + '\n')
+    print(_kprint.pretty_print(bin_runtime_definition, unalias=False) + '\n')
 
 
 def exec_foundry_kompile(
     definition_dir: Path,
     foundry_root: Path,
-    md_selector: str | None = None,
     includes: Iterable[str] = (),
     regen: bool = False,
     rekompile: bool = False,
@@ -179,7 +179,6 @@ def exec_foundry_kompile(
         definition_dir=definition_dir,
         foundry_root=foundry_root,
         includes=includes,
-        md_selector=md_selector,
         regen=regen,
         rekompile=rekompile,
         requires=requires,
@@ -198,7 +197,7 @@ def exec_prove_legacy(
     bug_report: bool = False,
     save_directory: Path | None = None,
     spec_module: str | None = None,
-    claim_labels: Iterable[str] = (),
+    claim_labels: Iterable[str] | None = None,
     exclude_claim_labels: Iterable[str] = (),
     debug: bool = False,
     debugger: bool = False,
@@ -249,8 +248,9 @@ def exec_prove(
     bug_report: bool = False,
     save_directory: Path | None = None,
     spec_module: str | None = None,
-    claim_labels: Iterable[str] = (),
+    claim_labels: Iterable[str] | None = None,
     exclude_claim_labels: Iterable[str] = (),
+    reinit: bool = False,
     max_depth: int = 1000,
     max_iterations: int | None = None,
     workers: int = 1,
@@ -263,6 +263,7 @@ def exec_prove(
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
     trace_rewrites: bool = False,
+    failure_info: bool = True,
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'md_selector', f'--md-selector: {kwargs["md_selector"]}')
@@ -281,10 +282,13 @@ def exec_prove(
         exclude_claim_labels=exclude_claim_labels,
     )
 
+    if not claims:
+        raise ValueError(f'No claims found in file: {spec_file}')
+
     if isinstance(kore_rpc_command, str):
         kore_rpc_command = kore_rpc_command.split()
 
-    def _init_and_run_proof(claim: KClaim) -> bool:
+    def _init_and_run_proof(claim: KClaim) -> tuple[bool, list[str] | None]:
         with KCFGExplore(
             kevm,
             id=claim.label,
@@ -294,34 +298,39 @@ def exec_prove(
             smt_retry_limit=smt_retry_limit,
             trace_rewrites=trace_rewrites,
         ) as kcfg_explore:
-            _LOGGER.info(f'Converting claim to KCFG: {claim.label}')
-            kcfg = KCFG.from_claim(kevm.definition, claim)
+            proof_problem: APRProof
 
-            new_init = ensure_ksequence_on_k_cell(kcfg.get_unique_init().cterm)
-            new_target = ensure_ksequence_on_k_cell(kcfg.get_unique_target().cterm)
+            if save_directory is not None and not reinit and APRProof.proof_exists(claim.label, save_directory):
+                proof_problem = APRProof.read_proof(claim.label, save_directory)
 
-            _LOGGER.info(f'Computing definedness constraint for initial node: {claim.label}')
-            new_init = kcfg_explore.cterm_assume_defined(new_init)
+            else:
+                _LOGGER.info(f'Converting claim to KCFG: {claim.label}')
+                kcfg, init_node_id, target_node_id = KCFG.from_claim(kevm.definition, claim)
 
-            if simplify_init:
-                _LOGGER.info(f'Simplifying initial and target node: {claim.label}')
-                _new_init, _ = kcfg_explore.cterm_simplify(new_init)
-                _new_target, _ = kcfg_explore.cterm_simplify(new_target)
-                if is_bottom(_new_init):
-                    raise ValueError('Simplifying initial node led to #Bottom, are you sure your LHS is defined?')
-                if is_bottom(_new_target):
-                    raise ValueError('Simplifying target node led to #Bottom, are you sure your RHS is defined?')
-                new_init = CTerm.from_kast(_new_init)
-                new_target = CTerm.from_kast(_new_target)
+                new_init = ensure_ksequence_on_k_cell(kcfg.node(init_node_id).cterm)
+                new_target = ensure_ksequence_on_k_cell(kcfg.node(target_node_id).cterm)
 
-            kcfg.replace_node(kcfg.get_unique_init().id, new_init)
-            kcfg.replace_node(kcfg.get_unique_target().id, new_target)
+                _LOGGER.info(f'Computing definedness constraint for initial node: {claim.label}')
+                new_init = kcfg_explore.cterm_assume_defined(new_init)
 
-            proof_problem = APRProof(claim.label, kcfg, {}, proof_dir=save_directory)
+                if simplify_init:
+                    _LOGGER.info(f'Simplifying initial and target node: {claim.label}')
+                    _new_init, _ = kcfg_explore.cterm_simplify(new_init)
+                    _new_target, _ = kcfg_explore.cterm_simplify(new_target)
+                    if is_bottom(_new_init):
+                        raise ValueError('Simplifying initial node led to #Bottom, are you sure your LHS is defined?')
+                    if is_bottom(_new_target):
+                        raise ValueError('Simplifying target node led to #Bottom, are you sure your RHS is defined?')
+                    new_init = CTerm.from_kast(_new_init)
+                    new_target = CTerm.from_kast(_new_target)
 
-            return kevm_apr_prove(
+                kcfg.replace_node(init_node_id, new_init)
+                kcfg.replace_node(target_node_id, new_target)
+
+                proof_problem = APRProof(claim.label, kcfg, init_node_id, target_node_id, {}, proof_dir=save_directory)
+
+            passed = kevm_apr_prove(
                 kevm,
-                claim.label,
                 proof_problem,
                 kcfg_explore,
                 save_directory=save_directory,
@@ -340,18 +349,67 @@ def exec_prove(
                 smt_retry_limit=smt_retry_limit,
                 trace_rewrites=trace_rewrites,
             )
+            failure_log = None
+            if not passed:
+                failure_log = print_failure_info(proof_problem, kcfg_explore)
+
+            return passed, failure_log
 
     with ProcessPool(ncpus=workers) as process_pool:
         results = process_pool.map(_init_and_run_proof, claims)
 
     failed = 0
-    for claim, result in zip(claims, results, strict=True):
-        if result:
+    for claim, r in zip(claims, results, strict=True):
+        passed, failure_log = r
+        if passed:
             print(f'PROOF PASSED: {claim.label}')
         else:
             failed += 1
             print(f'PROOF FAILED: {claim.label}')
-    sys.exit(failed)
+            if failure_info and failure_log is not None:
+                for line in failure_log:
+                    print(line)
+
+    if failed:
+        sys.exit(failed)
+
+
+def exec_prune_proof(
+    definition_dir: Path,
+    spec_file: Path,
+    node: NodeIdLike,
+    includes: Iterable[str] = (),
+    save_directory: Path | None = None,
+    spec_module: str | None = None,
+    claim_labels: Iterable[str] | None = None,
+    exclude_claim_labels: Iterable[str] = (),
+    **kwargs: Any,
+) -> None:
+    _ignore_arg(kwargs, 'md_selector', f'--md-selector: {kwargs["md_selector"]}')
+    md_selector = 'k & ! node'
+
+    if save_directory is None:
+        raise ValueError('Must pass --save-directory to prune-proof!')
+
+    _LOGGER.warning(f'definition_dir: {definition_dir}')
+    kevm = KEVM(definition_dir, use_directory=save_directory)
+
+    _LOGGER.info(f'Extracting claims from file: {spec_file}')
+    claim = single(
+        kevm.get_claims(
+            spec_file,
+            spec_module_name=spec_module,
+            include_dirs=[Path(i) for i in includes],
+            md_selector=md_selector,
+            claim_labels=claim_labels,
+            exclude_claim_labels=exclude_claim_labels,
+        )
+    )
+
+    apr_proof = APRProof.read_proof(claim.label, save_directory)
+    node_ids = apr_proof.kcfg.prune(node)
+    _LOGGER.info(f'Pruned nodes: {node_ids}')
+    apr_proof.write_proof()
 
 
 def exec_show_kcfg(
@@ -359,7 +417,7 @@ def exec_show_kcfg(
     spec_file: Path,
     save_directory: Path | None = None,
     includes: Iterable[str] = (),
-    claim_labels: Iterable[str] = (),
+    claim_labels: Iterable[str] | None = None,
     exclude_claim_labels: Iterable[str] = (),
     spec_module: str | None = None,
     md_selector: str | None = None,
@@ -367,6 +425,8 @@ def exec_show_kcfg(
     node_deltas: Iterable[tuple[NodeIdLike, NodeIdLike]] = (),
     to_module: bool = False,
     minimize: bool = True,
+    failure_info: bool = False,
+    sort_collections: bool = False,
     **kwargs: Any,
 ) -> None:
     kevm = KEVM(definition_dir)
@@ -389,8 +449,14 @@ def exec_show_kcfg(
         node_deltas=node_deltas,
         to_module=to_module,
         minimize=minimize,
+        sort_collections=sort_collections,
         node_printer=kevm.short_info,
     )
+
+    if failure_info:
+        with KCFGExplore(kevm, id=apr_proof.id) as kcfg_explore:
+            res_lines += print_failure_info(apr_proof, kcfg_explore)
+
     print('\n'.join(res_lines))
 
 
@@ -399,7 +465,7 @@ def exec_view_kcfg(
     spec_file: Path,
     save_directory: Path | None = None,
     includes: Iterable[str] = (),
-    claim_labels: Iterable[str] = (),
+    claim_labels: Iterable[str] | None = None,
     exclude_claim_labels: Iterable[str] = (),
     spec_module: str | None = None,
     md_selector: str | None = None,
@@ -439,6 +505,7 @@ def exec_foundry_prove(
     kore_rpc_command: str | Iterable[str] = ('kore-rpc',),
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
+    failure_info: bool = True,
     trace_rewrites: bool = False,
     **kwargs: Any,
 ) -> None:
@@ -472,11 +539,17 @@ def exec_foundry_prove(
     )
     failed = 0
     for pid, r in results.items():
-        if r:
+        passed, failure_log = r
+        if passed:
             print(f'PROOF PASSED: {pid}')
         else:
             failed += 1
             print(f'PROOF FAILED: {pid}')
+            if failure_info and failure_log is not None:
+                failure_log += Foundry.help_info()
+                for line in failure_log:
+                    print(line)
+
     sys.exit(failed)
 
 
@@ -487,9 +560,11 @@ def exec_foundry_show(
     node_deltas: Iterable[tuple[NodeIdLike, NodeIdLike]] = (),
     to_module: bool = False,
     minimize: bool = True,
+    sort_collections: bool = False,
     omit_unstable_output: bool = False,
     frontier: bool = False,
     stuck: bool = False,
+    failure_info: bool = False,
     **kwargs: Any,
 ) -> None:
     output = foundry_show(
@@ -500,8 +575,10 @@ def exec_foundry_show(
         to_module=to_module,
         minimize=minimize,
         omit_unstable_output=omit_unstable_output,
+        sort_collections=sort_collections,
         frontier=frontier,
         stuck=stuck,
+        failure_info=failure_info,
     )
     print(output)
 
@@ -577,6 +654,7 @@ def exec_foundry_simplify_node(
     node: NodeIdLike,
     replace: bool = False,
     minimize: bool = True,
+    sort_collections: bool = False,
     bug_report: bool = False,
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
@@ -589,6 +667,7 @@ def exec_foundry_simplify_node(
         node=node,
         replace=replace,
         minimize=minimize,
+        sort_collections=sort_collections,
         bug_report=bug_report,
         smt_timeout=smt_timeout,
         smt_retry_limit=smt_retry_limit,
@@ -658,7 +737,6 @@ def _create_argument_parser() -> ArgumentParser:
         return parse
 
     kevm_cli_args = KEVMCLIArgs()
-
     parser = ArgumentParser(prog='python3 -m kevm_pyk')
 
     command_parser = parser.add_subparsers(dest='command', required=True)
@@ -676,7 +754,7 @@ def _create_argument_parser() -> ArgumentParser:
         '-o', '--output-definition', type=Path, dest='output_dir', help='Path to write kompiled definition to.'
     )
 
-    _ = command_parser.add_parser(
+    prove_args = command_parser.add_parser(
         'prove',
         help='Run KEVM proof.',
         parents=[
@@ -689,6 +767,20 @@ def _create_argument_parser() -> ArgumentParser:
             kevm_cli_args.spec_args,
         ],
     )
+    prove_args.add_argument(
+        '--reinit',
+        dest='reinit',
+        default=False,
+        action='store_true',
+        help='Reinitialize CFGs even if they already exist.',
+    )
+
+    prune_proof_args = command_parser.add_parser(
+        'prune-proof',
+        help='Remove a node and its successors from the proof state.',
+        parents=[kevm_cli_args.shared_args, kevm_cli_args.k_args, kevm_cli_args.spec_args],
+    )
+    prune_proof_args.add_argument('node', type=node_id_like, help='Node to remove CFG subgraph from.')
 
     _ = command_parser.add_parser(
         'prove-legacy',

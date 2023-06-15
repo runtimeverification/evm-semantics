@@ -153,9 +153,6 @@
       <chainID>
         1
       </chainID>
-      <activeAccounts>
-        .Set
-      </activeAccounts>
       <accounts>
         .Map
       </accounts>
