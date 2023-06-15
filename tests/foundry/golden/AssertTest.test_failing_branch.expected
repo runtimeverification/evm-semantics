@@ -1,5 +1,5 @@
 
-┌─ 4 (init, expanded)
+┌─ 1 (init, expanded)
 │    k: #execute ~> CONTINUATION
 │    pc: 0
 │    callDepth: 0
@@ -7,7 +7,7 @@
 │    src: tests/foundry/test/Simple.t.sol:5:54
 │
 │  (616 steps)
-├─ 7 (split)
+├─ 3 (split)
 │    k: JUMPI 526 bool2Word ( 100 <=Int VV0_x_114b9705:Int ) ~> #pc [ JUMPI ] ~> #execut ...
 │    pc: 518
 │    callDepth: 0
@@ -17,7 +17,7 @@
 ┃ (branch)
 ┣━━┓ constraint: { true #Equals 100 <=Int VV0_x_114b9705:Int }
 ┃  │
-┃  ├─ 9 (expanded)
+┃  ├─ 4 (expanded)
 ┃  │    k: JUMPI 526 bool2Word ( 100 <=Int VV0_x_114b9705:Int ) ~> #pc [ JUMPI ] ~> #execut ...
 ┃  │    pc: 518
 ┃  │    callDepth: 0
@@ -25,7 +25,7 @@
 ┃  │    src: tests/foundry/test/Simple.t.sol:26:27
 ┃  │
 ┃  │  (64 steps)
-┃  ├─ 12 (expanded)
+┃  ├─ 6 (expanded)
 ┃  │    k: #end EVMC_SUCCESS ~> #pc [ STOP ] ~> #execute ~> CONTINUATION:K
 ┃  │    pc: 213
 ┃  │    callDepth: 0
@@ -33,7 +33,7 @@
 ┃  │    src: tests/foundry/lib/forge-std/lib/ds-test/src/test.sol:37:38
 ┃  │
 ┃  │  (1 step)
-┃  ├─ 16 (expanded)
+┃  ├─ 8 (expanded)
 ┃  │    k: #halt ~> #pc [ STOP ] ~> #execute ~> CONTINUATION:K
 ┃  │    pc: 213
 ┃  │    callDepth: 0
@@ -41,7 +41,7 @@
 ┃  │    src: tests/foundry/lib/forge-std/lib/ds-test/src/test.sol:37:38
 ┃  │
 ┃  │  (2 steps)
-┃  ├─ 20 (leaf)
+┃  ├─ 10 (leaf)
 ┃  │    k: #halt ~> CONTINUATION:K
 ┃  │    pc: 213
 ┃  │    callDepth: 0
@@ -50,7 +50,7 @@
 ┃  │
 ┃  ┊  constraint: true
 ┃  ┊  subst: OMITTED SUBST
-┃  └─ 3 (target, leaf)
+┃  └─ 2 (target, leaf)
 ┃       k: #halt ~> CONTINUATION
 ┃       pc: PC_CELL_5d410f2a
 ┃       callDepth: CALLDEPTH_CELL_5d410f2a
@@ -58,7 +58,7 @@
 ┃
 ┗━━┓ constraint: { true #Equals ( notBool 100 <=Int VV0_x_114b9705:Int ) }
    │
-   ├─ 10 (expanded)
+   ├─ 5 (expanded)
    │    k: JUMPI 526 bool2Word ( 100 <=Int VV0_x_114b9705:Int ) ~> #pc [ JUMPI ] ~> #execut ...
    │    pc: 518
    │    callDepth: 0
@@ -66,21 +66,21 @@
    │    src: tests/foundry/test/Simple.t.sol:26:27
    │
    │  (102 steps)
-   ├─ 14 (expanded)
+   ├─ 7 (expanded)
    │    k: #end EVMC_REVERT ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
    │    pc: 992
    │    callDepth: 0
    │    statusCode: STATUSCODE:StatusCode
    │
    │  (1 step)
-   ├─ 18 (expanded)
+   ├─ 9 (expanded)
    │    k: #halt ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
    │    pc: 992
    │    callDepth: 0
    │    statusCode: EVMC_REVERT
    │
    │  (2 steps)
-   └─ 22 (expanded, stuck, leaf)
+   └─ 11 (expanded, stuck, leaf)
         k: #halt ~> CONTINUATION:K
         pc: 992
         callDepth: 0
@@ -90,14 +90,14 @@
 
 Target Nodes:
 
-3 (target, leaf)
+2 (target, leaf)
  k: #halt ~> CONTINUATION
  pc: PC_CELL_5d410f2a
  callDepth: CALLDEPTH_CELL_5d410f2a
  statusCode: STATUSCODE_FINAL
 
 
-Node 22:
+Node 11:
 
 ( <generatedTop>
   <foundry>
@@ -1750,11 +1750,11 @@ module SUMMARY-ASSERTTEST-TEST-FAILING-BRANCH
 
 endmodule
 
-1 Failure nodes. (0 frontier and 1 stuck)
+1 Failure nodes. (0 pending and 1 stuck)
 
 Stuck nodes:
 
-  Node id: 22
+  Node id: 11
   Failure reason:
     Implication check failed, the following is the remaining implication:
     ( ( { true #Equals 0 <=Int CALLER_ID:Int }

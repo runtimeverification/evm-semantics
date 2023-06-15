@@ -5,7 +5,8 @@ from functools import cached_property
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from pyk.cli_utils import dir_path, ensure_dir_path, file_path
+from pyk.cli.utils import dir_path, file_path
+from pyk.utils import ensure_dir_path
 
 from .utils import arg_pair_of
 

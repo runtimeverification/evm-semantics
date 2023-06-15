@@ -18,11 +18,11 @@ if TYPE_CHECKING:
     from pathlib import Path
     from typing import Final
 
-    from pyk.cli_utils import BugReport
     from pyk.cterm import CTerm
     from pyk.kast import KInner
     from pyk.kast.outer import KFlatModule
     from pyk.ktool.kprint import SymbolTable
+    from pyk.utils import BugReport
 
 _LOGGER: Final = logging.getLogger(__name__)
 
