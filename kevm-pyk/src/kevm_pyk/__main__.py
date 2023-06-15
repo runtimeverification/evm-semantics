@@ -450,7 +450,6 @@ def exec_show_kcfg(
         to_module=to_module,
         minimize=minimize,
         sort_collections=sort_collections,
-        node_printer=kevm.short_info,
     )
 
     if failure_info:

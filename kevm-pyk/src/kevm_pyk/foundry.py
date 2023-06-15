@@ -13,7 +13,7 @@ import tomlkit
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cterm import CTerm
 from pyk.kast.inner import KApply, KSequence, KSort, KToken, KVariable, Subst
-from pyk.kast.manip import abstract_term_safely, bottom_up, minimize_term
+from pyk.kast.manip import minimize_term
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
 from pyk.kcfg import KCFG, KCFGExplore, KCFGShow
 from pyk.ktool.kompile import LLVMKompileType
@@ -32,6 +32,7 @@ from .solc_to_k import Contract, contract_to_main_module, contract_to_verificati
 from .utils import (
     KDefinition__expand_macros,
     abstract_cell_vars,
+    abstract_gas_cell,
     byte_offset_to_lines,
     kevm_apr_prove,
     print_failure_info,
@@ -477,21 +478,6 @@ def foundry_prove(
                 )
         method.update_digest(foundry.out / 'digest')
 
-    def abstract_gas_cell(cterm: CTerm) -> CTerm:
-        def _replace(term: KInner) -> KInner:
-            if type(term) is KApply and term.label.name == '<gas>':
-                gas_term = term.args[0]
-                if type(gas_term) is KApply and gas_term.label.name == 'infGas':
-                    result = KApply('<gas>', KApply('infGas', abstract_term_safely(term)))
-                    return result
-                return term
-            elif type(term) is KApply and term.label.name == '<refund>':
-                return KApply('<refund>', KVariable('ABSTRACTED_REFUND', KSort('Int')))
-            else:
-                return term
-
-        return CTerm(config=bottom_up(_replace, cterm.config), constraints=cterm.constraints)
-
     def _init_and_run_proof(_init_problem: tuple[str, str]) -> tuple[bool, list[str] | None]:
         proof_id = f'{_init_problem[0]}.{_init_problem[1]}'
         with KCFGExplore(
@@ -617,7 +603,6 @@ def foundry_show(
         to_module=to_module,
         minimize=minimize,
         sort_collections=sort_collections,
-        node_printer=_short_info,
         omit_cells=(unstable_cells if omit_unstable_output else []),
     )
 
