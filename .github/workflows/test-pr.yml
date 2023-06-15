@@ -210,8 +210,6 @@ jobs:
         run: nix develop --extra-experimental-features 'nix-command flakes' --command make test-foundry-kompile -j2 KEVM_OPTS=--with-llvm-library
       - name: 'Foundry Prove'
         run: nix develop --extra-experimental-features 'nix-command flakes' --command make test-foundry-prove -j2 FOUNDRY_PAR=12 KPROVE_OPTS=--use-booster
-      - name: 'Cleanup'
-        run: nix develop --extra-experimental-features 'nix-command flakes' --command make clean
 
   nix:
     name: 'Nix'
