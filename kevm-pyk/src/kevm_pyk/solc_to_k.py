@@ -379,9 +379,16 @@ class Contract:
 
     @property
     def macro_bin_runtime(self) -> KRule:
+        if self.has_unlinked():
+            raise AssertionError(
+                'Some library placeholders have been found. Please link the library(ies) first. Ref: https://docs.soliditylang.org/en/v0.8.20/using-the-compiler.html#library-linking'
+            )
         return KRule(
             KRewrite(KEVM.bin_runtime(KApply(self.klabel)), KEVM.parse_bytestack(stringToken('0x' + self.bytecode)))
         )
+
+    def has_unlinked(self) -> bool:
+        return any(self.bytecode[i] == '__' for i in range(0, len(self.bytecode), 2))
 
     @property
     def method_sentences(self) -> list[KSentence]:
