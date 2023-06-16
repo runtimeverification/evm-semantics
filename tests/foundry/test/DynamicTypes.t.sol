@@ -9,12 +9,4 @@ contract DynamicTypesTest is Test {
         vm.assume(mydata < 3);
         assertTrue(mydata == 2 || mydata == 1 || mydata == 0);        
     }
-
-    function test_array_type(uint256) public {
-    }
-
-    function test_array_type(uint256[] calldata numbers) public {
-        vm.assume(numbers.length > 2);
-        assertGt(numbers.length, 2);
-    }
 }
