@@ -552,21 +552,40 @@ This rule then takes the address using `#asWord(#range(ARGS, 0, 32))` and makes 
       requires SELECTOR ==Int selector ( "symbolicStorage(address)" )
 ```
 
-#### `freshWord` - Returns a single 32 bytes symbolic word.
+#### `freshSInt` - Returns a single symbolic signed integer.
 
 ```
-function freshWord() external returns (bytes32);
+function freshSInt(uint8) external returns (uint256);
 ```
 
-`foundry.call.freshWord` will match when the `freshWord` cheat code function is called.
-This rule returns a symbolic 32 bytes word.
+`foundry.call.freshSInt` will match when the `freshSInt` cheat code function is called.
+This rule returns a symbolic integer of up to the bit width that was sent as an argument.
 
 ```k
-    rule [foundry.call.freshWord]:
-         <k> #call_foundry SELECTOR _ => . ... </k>
-         <output> _ => #bufStrict(32, WORD) </output>
-      requires SELECTOR ==Int selector ( "freshWord()" )
-       andBool 0 <=Int WORD
+    rule [foundry.call.freshSInt]:
+         <k> #call_foundry SELECTOR ARGS => . ... </k>
+         <output> _ => #bufStrict(32, ?WORD) </output>
+      requires SELECTOR ==Int selector ( "freshSInt(uint8)" )
+       andBool 0 <Int #asWord(ARGS) andBool #asWord(ARGS) <=Int 32
+       ensures 0 -Int 2 ^Int (8 *Int #asWord(ARGS) /Int 2) <Int ?WORD andBool ?WORD <Int 2 ^Int (8 *Int #asWord(ARGS) /Int 2)
+```
+
+#### `freshUInt` - Returns a single symbolic unsigned integer.
+
+```
+function freshUInt(uint8) external returns (uint256);
+```
+
+`foundry.call.freshUInt` will match when the `freshUInt` cheat code function is called.
+This rule returns a symbolic integer of up to the bit width that was sent as an argument.
+
+```k
+    rule [foundry.call.freshUInt]:
+         <k> #call_foundry SELECTOR ARGS => . ... </k>
+         <output> _ => #bufStrict(32, ?WORD) </output>
+      requires SELECTOR ==Int selector ( "freshUInt(uint8)" )
+       andBool 0 <Int #asWord(ARGS) andBool #asWord(ARGS) <=Int 32
+       ensures 0 <=Int ?WORD andBool ?WORD <Int 2 ^Int (8 *Int #asWord(ARGS))
 ```
 
 Expecting the next call to revert
@@ -1435,7 +1454,8 @@ If the production is matched when no prank is active, it will be ignored.
     rule ( selector ( "expectEmit(bool,bool,bool,bool,address)" )  => 2176505587 )
     rule ( selector ( "sign(uint256,bytes32)" )                    => 3812747940 )
     rule ( selector ( "symbolicStorage(address)" )                 => 769677742  )
-    rule ( selector ( "freshWord()" )                              => 3485956700 )
+    rule ( selector ( "freshSInt(uint8)" )                         => 625253732  )
+    rule ( selector ( "freshUInt(uint8)" )                         => 625253732  )
     rule ( selector ( "prank(address)" )                           => 3395723175 )
     rule ( selector ( "prank(address,address)" )                   => 1206193358 )
     rule ( selector ( "allowCallsToAddress(address)" )             => 1850795572 )
