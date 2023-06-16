@@ -978,6 +978,8 @@ def _init_term(
         'ISSTORAGEWHITELISTACTIVE_CELL': FALSE,
         'ADDRESSSET_CELL': KApply('.Set'),
         'STORAGESLOTSET_CELL': KApply('.Set'),
+        'ISRECORDACTIVE_CELL': FALSE,
+        'RECORDS_CELL': KApply('.RecordCellMap'),
     }
 
     if init_state:
