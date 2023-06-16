@@ -24,8 +24,8 @@ from pyk.prelude.kint import INT, intToken
 from pyk.prelude.ml import mlEqualsTrue
 from pyk.proof.proof import Proof
 from pyk.proof.reachability import APRBMCProof, APRProof
-from pyk.utils import BugReport, ensure_dir_path, hash_str, run_process, single, unique
 from pyk.proof.show import APRProofNodePrinter
+from pyk.utils import BugReport, ensure_dir_path, hash_str, run_process, single, unique
 
 from .kevm import KEVM
 from .kompile import KompileTarget, kevm_kompile
@@ -490,7 +490,6 @@ def foundry_prove(
             smt_timeout=smt_timeout,
             smt_retry_limit=smt_retry_limit,
             trace_rewrites=trace_rewrites,
-            simplify_node=(abstract_gas_cell if auto_abstract_gas else None),
         ) as kcfg_explore:
             contract_name, method_name = _init_problem
             contract = foundry.contracts[contract_name]
@@ -531,6 +530,7 @@ def foundry_prove(
                 smt_timeout=smt_timeout,
                 smt_retry_limit=smt_retry_limit,
                 trace_rewrites=trace_rewrites,
+                abstract_node=(abstract_gas_cell if auto_abstract_gas else None),
             )
             failure_log = None
             if not passed:

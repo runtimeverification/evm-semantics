@@ -16,6 +16,7 @@ from pyk.kore.prelude import int_dv
 from pyk.ktool.krun import KRunOutput, _krun
 from pyk.prelude.ml import is_bottom
 from pyk.proof import APRProof
+from pyk.proof.show import APRProofNodePrinter
 from pyk.utils import BugReport, single
 
 from .cli import KEVMCLIArgs, node_id_like
