@@ -19,15 +19,12 @@ ArithmeticTest.test_wmul_wdiv_inverse
 ArithmeticTest.test_wmul_wdiv_inverse_underflow
 ArithmeticTest.test_wmul_weakly_increasing_positive
 AssertTest.test_assert_false
-AssertTest.test_assert_true
-AssertTest.testFail_assert_false
 AssertTest.testFail_assert_true
 AssertTest.testFail_expect_revert
 AssertTest.test_failing_branch
 AssertTest.test_revert_branch
 AssumeTest.test_assume_false
 AssumeTest.testFail_assume_false
-AssumeTest.testFail_assume_true
 BroadcastTest.testDeploy
 BytesTypeTest.test_bytes32_fail
 BytesTypeTest.test_bytes4_fail

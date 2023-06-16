@@ -102,9 +102,34 @@ def test_foundry_bmc(test_id: str, foundry_root: Path) -> None:
     assert_pass(test_id, proof_res)
 
 
+FAIL_TESTS: Final = tuple((TEST_DATA_DIR / 'foundry-fail').read_text().splitlines())
+
+
+@pytest.mark.parametrize('test_id', FAIL_TESTS)
+def test_foundry_fail(test_id: str, foundry_root: Path) -> None:
+    # When
+    proof_res = foundry_prove(
+        foundry_root,
+        tests=[test_id],
+        simplify_init=False,
+        smt_timeout=125,
+        smt_retry_limit=4,
+    )
+
+    # Then
+    assert_fail(test_id, proof_res)
+
+
 def assert_pass(test_id: str, proof_res: dict[str, tuple[bool, list[str] | None]]) -> None:
     assert test_id in proof_res
     passed, log = proof_res[test_id]
     if not passed:
         assert log
         pytest.fail('\n'.join(log))
+
+
+def assert_fail(test_id: str, proof_res: dict[str, tuple[bool, list[str] | None]]) -> None:
+    assert test_id in proof_res
+    passed, log = proof_res[test_id]
+    assert not passed
+    assert log

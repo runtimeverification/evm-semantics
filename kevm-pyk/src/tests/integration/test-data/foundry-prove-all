@@ -122,6 +122,7 @@ ForkTest.testRPCUrlRevert
 GasTest.testInfiniteGas
 GetCodeTest.testGetCode
 LabelTest.testLabel
+LoopsTest.sum_N
 LoopsTest.testIsNotPrime
 LoopsTest.testIsPrime
 LoopsTest.testIsPrimeBroken
