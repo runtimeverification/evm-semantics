@@ -1108,7 +1108,7 @@ Finally, `#recordRead` and `#recordWrite` update `<records>` to take note of the
     syntax KItem ::= "#recordRead" Int  [klabel(foundry_pauseRecord)]
                    | "#recordWrite" Int [klabel(foundry_resumeRecord)]
  // ------------------------------------------------------------------
-    rule <k> #recordRead V => . </k>
+    rule <k> #recordRead V => . ... </k>
          <id> KEY </id>
          <recordAccess>
            <record>
@@ -1119,7 +1119,7 @@ Finally, `#recordRead` and `#recordWrite` update `<records>` to take note of the
            ...
          </recordAccess>
 
-    rule <k> #recordRead V => . </k>
+    rule <k> #recordRead V => . ... </k>
          <id> KEY </id>
          <recordAccess>
             <records>
@@ -1134,7 +1134,7 @@ Finally, `#recordRead` and `#recordWrite` update `<records>` to take note of the
             ...
          </recordAccess> [owise]
 
-    rule <k> #recordWrite V => . </k>
+    rule <k> #recordWrite V => . ... </k>
          <id> KEY </id>
          <recordAccess>
            <record>
@@ -1145,7 +1145,7 @@ Finally, `#recordRead` and `#recordWrite` update `<records>` to take note of the
            ...
          </recordAccess>
 
-    rule <k> #recordWrite V => . </k>
+    rule <k> #recordWrite V => . ... </k>
          <id> KEY </id>
          <recordAccess>
             <records>
