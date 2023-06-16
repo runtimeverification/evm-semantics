@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli.utils import file_path
 from pyk.cterm import CTerm
-from pyk.kast.outer import KApply, KDefinition, KFlatModule, KImport, KRequire, KRewrite
+from pyk.kast.outer import KApply, KRewrite
 from pyk.kcfg import KCFG, KCFGExplore, KCFGShow, KCFGViewer
 from pyk.kore.prelude import int_dv
 from pyk.ktool.krun import KRunOutput, _krun
@@ -35,10 +35,8 @@ from .foundry import (
 from .gst_to_kore import _mode_to_kore, _schedule_to_kore
 from .kevm import KEVM
 from .kompile import KompileTarget, kevm_kompile
-from .solc_to_k import Contract, contract_to_main_module, solc_compile
-from .utils import arg_pair_of, ensure_ksequence_on_k_cell, get_apr_proof_for_spec, kevm_prove, print_failure_info
 from .solc_to_k import solc_compile, solc_to_k
-from .utils import arg_pair_of, ensure_ksequence_on_k_cell, get_apr_proof_for_spec, kevm_apr_prove, print_failure_info
+from .utils import arg_pair_of, ensure_ksequence_on_k_cell, get_apr_proof_for_spec, kevm_prove, print_failure_info
 
 if TYPE_CHECKING:
     from argparse import Namespace
