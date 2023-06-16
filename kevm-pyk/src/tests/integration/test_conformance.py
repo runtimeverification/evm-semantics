@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import json
 import sys
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 import pytest
@@ -13,7 +12,10 @@ from pyk.kore.tools import PrintOutput, kore_print
 from kevm_pyk.interpreter import interpret
 from kevm_pyk.kompile import KompileTarget
 
+from ..utils import REPO_ROOT
+
 if TYPE_CHECKING:
+    from pathlib import Path
     from typing import Final
 
     from pyk.kore.syntax import Pattern
@@ -21,7 +23,6 @@ if TYPE_CHECKING:
 
 sys.setrecursionlimit(10**8)
 
-REPO_ROOT: Final = Path(__file__).parents[4]
 TEST_DIR: Final = REPO_ROOT / 'tests/ethereum-tests'
 GOLDEN: Final = (REPO_ROOT / 'tests/templates/output-success-llvm.json').read_text().rstrip()
 

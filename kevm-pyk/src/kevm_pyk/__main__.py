@@ -10,7 +10,6 @@ from typing import TYPE_CHECKING
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli.utils import file_path
 from pyk.cterm import CTerm
-from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
 from pyk.kcfg import KCFG, KCFGExplore, KCFGShow, KCFGViewer
 from pyk.kore.prelude import int_dv
 from pyk.ktool.krun import KRunOutput, _krun
@@ -34,7 +33,7 @@ from .foundry import (
 from .gst_to_kore import _mode_to_kore, _schedule_to_kore
 from .kevm import KEVM
 from .kompile import KompileTarget, kevm_kompile
-from .solc_to_k import Contract, contract_to_main_module, solc_compile
+from .solc_to_k import solc_compile, solc_to_k
 from .utils import arg_pair_of, ensure_ksequence_on_k_cell, get_apr_proof_for_spec, kevm_apr_prove, print_failure_info
 
 if TYPE_CHECKING:
@@ -132,26 +131,15 @@ def exec_solc_to_k(
     imports: list[str],
     **kwargs: Any,
 ) -> None:
-    kevm = KEVM(definition_dir)
-    empty_config = kevm.definition.empty_config(KEVM.Sorts.KEVM_CELL)
-    solc_json = solc_compile(contract_file)
-    contract_json = solc_json['contracts'][contract_file.name][contract_name]
-    if 'sources' in solc_json and contract_file.name in solc_json['sources']:
-        contract_source = solc_json['sources'][contract_file.name]
-        for key in ['id', 'ast']:
-            if key not in contract_json and key in contract_source:
-                contract_json[key] = contract_source[key]
-    contract = Contract(contract_name, contract_json, foundry=False)
-    contract_module = contract_to_main_module(contract, empty_config, imports=['EDSL'] + imports)
-    _main_module = KFlatModule(
-        main_module if main_module else 'MAIN', [], [KImport(mname) for mname in [contract_module.name] + imports]
+    k_text = solc_to_k(
+        definition_dir=definition_dir,
+        contract_file=contract_file,
+        contract_name=contract_name,
+        main_module=main_module,
+        requires=requires,
+        imports=imports,
     )
-    modules = (contract_module, _main_module)
-    bin_runtime_definition = KDefinition(
-        _main_module.name, modules, requires=[KRequire(req) for req in ['edsl.md'] + requires]
-    )
-    _kprint = KEVM(definition_dir, extra_unparsing_modules=modules)
-    print(_kprint.pretty_print(bin_runtime_definition, unalias=False) + '\n')
+    print(k_text)
 
 
 def exec_foundry_kompile(
