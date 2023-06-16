@@ -151,6 +151,9 @@
         <baseFee>
           0
         </baseFee>
+        <withdrawalsRoot>
+          0
+        </withdrawalsRoot>
         <ommerBlockHeaders>
           [ .JSONs ]
         </ommerBlockHeaders>
