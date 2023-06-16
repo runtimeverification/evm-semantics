@@ -25,6 +25,7 @@ from pyk.prelude.ml import mlEqualsTrue
 from pyk.proof.proof import Proof
 from pyk.proof.reachability import APRBMCProof, APRProof
 from pyk.utils import BugReport, ensure_dir_path, hash_str, run_process, single, unique
+from pyk.proof.show import APRProofNodePrinter
 
 from .kevm import KEVM
 from .kompile import KompileTarget, kevm_kompile
@@ -411,6 +412,7 @@ def foundry_prove(
     smt_retry_limit: int | None = None,
     failure_info: bool = True,
     trace_rewrites: bool = False,
+    auto_abstract_gas: bool = False,
 ) -> dict[str, tuple[bool, list[str] | None]]:
     if workers <= 0:
         raise ValueError(f'Must have at least one worker, found: --workers {workers}')
@@ -488,7 +490,7 @@ def foundry_prove(
             smt_timeout=smt_timeout,
             smt_retry_limit=smt_retry_limit,
             trace_rewrites=trace_rewrites,
-            simplify_node=abstract_gas_cell,
+            simplify_node=(abstract_gas_cell if auto_abstract_gas else None),
         ) as kcfg_explore:
             contract_name, method_name = _init_problem
             contract = foundry.contracts[contract_name]
@@ -594,7 +596,8 @@ def foundry_show(
         '<code>',
     ]
 
-    kcfg_show = KCFGShow(foundry.kevm)
+    node_printer = APRProofNodePrinter(apr_proof, foundry.kevm)
+    kcfg_show = KCFGShow(foundry.kevm, node_printer=node_printer)
     res_lines = kcfg_show.show(
         test,
         apr_proof.kcfg,

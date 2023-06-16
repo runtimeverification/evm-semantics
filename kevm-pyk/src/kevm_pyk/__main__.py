@@ -441,7 +441,8 @@ def exec_show_kcfg(
         exclude_claim_labels=exclude_claim_labels,
     )
 
-    kcfg_show = KCFGShow(kevm)
+    node_printer = APRProofNodePrinter(apr_proof, kevm)
+    kcfg_show = KCFGShow(kevm, node_printer=node_printer)
     res_lines = kcfg_show.show(
         apr_proof.id,
         apr_proof.kcfg,
@@ -506,6 +507,7 @@ def exec_foundry_prove(
     smt_retry_limit: int | None = None,
     failure_info: bool = True,
     trace_rewrites: bool = False,
+    auto_abstract_gas: bool = False,
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'main_module', f'--main-module: {kwargs["main_module"]}')
@@ -535,6 +537,7 @@ def exec_foundry_prove(
         smt_timeout=smt_timeout,
         smt_retry_limit=smt_retry_limit,
         trace_rewrites=trace_rewrites,
+        auto_abstract_gas=auto_abstract_gas,
     )
     failed = 0
     for pid, r in results.items():
