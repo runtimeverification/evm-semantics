@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from pyk.cterm import CTerm
-from pyk.kast.inner import KApply, KLabel, KRewrite, KSort, KToken, KVariable, Subst
+from pyk.kast.inner import KApply, KLabel, KRewrite, KSort, KVariable, Subst
 from pyk.kast.manip import (
     abstract_term_safely,
     bottom_up,
@@ -25,6 +25,7 @@ if TYPE_CHECKING:
     from typing import Final, TypeVar
 
     from pyk.kast import KInner
+    from pyk.kast.inner import KToken
     from pyk.kast.outer import KDefinition
     from pyk.kcfg import KCFGExplore
     from pyk.ktool.kprove import KProve
@@ -254,23 +255,11 @@ def mk_bytes_constraint(token: KToken, var: KVariable) -> KApply:
     if token.sort is None or token.sort.name != 'Bytes':
         raise ValueError(f'Expected Bytes sort, found {token.sort}')
     eq = KApply(
-        '_==Bool_', 
+        '_==Bool_',
         [
-            KApply(
-                '_==Bool_',
-                [
-                    KApply(
-                        '_==Int_', 
-                        [
-                            var,
-                            KApply('#asInteger(_)_EVM-TYPES_Int_Bytes', [token])
-                        ]
-                    ),
-                    TRUE
-                ]
-            ),
-            TRUE
-        ]
+            KApply('_==Bool_', [KApply('_==Int_', [var, KApply('#asInteger(_)_EVM-TYPES_Int_Bytes', [token])]), TRUE]),
+            TRUE,
+        ],
     )
     top = KApply(KLabel('#Equals', [KSort('Bool'), GENERATED_TOP_CELL]), [TRUE, eq])
 

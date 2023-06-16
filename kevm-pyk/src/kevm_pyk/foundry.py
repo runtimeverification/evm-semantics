@@ -624,8 +624,8 @@ def foundry_koverage(foundry_root: Path, contracts: Iterable[str], tests: Iterab
     def _test_name(name: str, test: str) -> str:
         return f'{name}.{test}'
 
-    CALL_CODE = KLabel('#callWithCode_________EVM_InternalOp_Int_Int_Int_Bytes_Int_Int_Bytes_Bool')
-    CALL_VAR = [
+    call_code = KLabel('#callWithCode_________EVM_InternalOp_Int_Int_Int_Bytes_Int_Int_Bytes_Bool')
+    call_var = [
         KVariable('_A1'),
         KVariable('_A2'),
         KVariable('_A3'),
@@ -635,22 +635,22 @@ def foundry_koverage(foundry_root: Path, contracts: Iterable[str], tests: Iterab
         KVariable('ARGS'),
         KVariable('_A7'),
     ]
-    RET_VAR = (
-        KApply(
-            '#return___EVM_KItem_Int_Int',
-            [
-                KVariable('_A8'),
-                KVariable('_A9'),
-            ],
-        ),
-    )
+    # ret_var = (
+    #     KApply(
+    #         '#return___EVM_KItem_Int_Int',
+    #         [
+    #             KVariable('_A8'),
+    #             KVariable('_A9'),
+    #         ],
+    #     ),
+    # )
 
     k_match_patterns = [
         KSequence(
             [
                 KApply(
-                    CALL_CODE,
-                    CALL_VAR,
+                    call_code,
+                    call_var,
                 ),
                 KApply(
                     '#return___EVM_KItem_Int_Int',
@@ -667,7 +667,7 @@ def foundry_koverage(foundry_root: Path, contracts: Iterable[str], tests: Iterab
         KSequence(
             [
                 KApply(
-                    CALL_CODE,
+                    call_code,
                     [
                         KVariable('_A1'),
                         KVariable('_A2'),
@@ -704,8 +704,8 @@ def foundry_koverage(foundry_root: Path, contracts: Iterable[str], tests: Iterab
         KSequence(
             [
                 KApply(
-                    CALL_CODE,
-                    CALL_VAR,
+                    call_code,
+                    call_var,
                 ),
                 KApply(
                     '#return___EVM_KItem_Int_Int',
@@ -762,34 +762,40 @@ def foundry_koverage(foundry_root: Path, contracts: Iterable[str], tests: Iterab
 
                                             # target = kcfg.target[0]
                                             # print(target)
-                                            # path_constraints = apr_proof.path_constraints(target)
+                                            # path_constraints = apr_proof.path_constraints(kcfg.target[0].id)
+                                            # path_between = kcfg.shortest_path_between(apr_proof.init, node.id)
+                                            # if path_between is not None:
+                                            #     for edge in path_between:
+                                            #         print(type(edge))
+                                            # path_constraints = apr_proof.path_constraints(node.id)
+                                            # print(path_constraints)
 
                                             new_cons = andBool([fcov_cons, notBool(finit_cons)])
                                             new = impliesBool(finit_cons, new_cons)
                                             # TODO: parse args when they are of type BYTES-HOOKED
                                             if type(args) is KToken:
                                                 args_cons = mk_bytes_constraint(args, KVariable('ARGS', 'Int'))
-                                                new = _cons_intersection([new, args_cons])
+                                                inter = _cons_intersection([new, args_cons])
+                                                if type(inter) is KApply:
+                                                    new = inter
                                             val.append((cterm.config, new))
                                             call_cells[acct_hash] = val
                                             break
 
     for bytecode_h, cons_set in call_cells.items():
         for config, constraints in cons_set:
-            negated = KApply(
-                KLabel('#Equals', [KSort('Bool'), GENERATED_TOP_CELL]), [TRUE, constraints]
-            )
+            negated = KApply(KLabel('#Equals', [KSort('Bool'), GENERATED_TOP_CELL]), [TRUE, constraints])
             new_cterm = CTerm(config, [negated])
             with KCFGExplore(foundry.kevm) as kcfg_explore:
                 simplified, _ = kcfg_explore.cterm_simplify(new_cterm)
                 if not is_bottom(simplified):
                     new_constraints = split_config_and_constraints(simplified)[1]
-                    with KCFGExplore(foundry.kevm) as kcfg_explore:
-                        kore = kcfg_explore.kprint.kast_to_kore(new_constraints)
-                        pretty = kcfg_explore.kprint.kore_to_pretty(kore)
-                        print(pretty)
+                    # with KCFGExplore(foundry.kevm) as kcfg_explore:
+                    #     kore = kcfg_explore.kprint.kast_to_kore(new_constraints)
+                    #     pretty = kcfg_explore.kprint.kore_to_pretty(kore)
+                    #     print(pretty)
                 else:
-                    _LOGGER.warn(f'found bottom node at bytecode hash {bytecode_h}')
+                    _LOGGER.warn(f'found bottom node at bytecode hash: {bytecode_h.decode()}')
 
 
 def foundry_to_dot(foundry_root: Path, test: str) -> None:
