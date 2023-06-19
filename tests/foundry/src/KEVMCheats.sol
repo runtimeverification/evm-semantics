@@ -29,16 +29,14 @@ interface KEVMCheatsBase {
     function freshUInt(uint8) external returns (uint256);
     // Returns a symbolic signed integer
     function freshSInt(uint8) external returns (int256);
+    // Returns a symbolic boolean value
+    function freshBool() external returns (bool);
 }
 
-abstract contract KEVMCheats {
-    KEVMCheatsBase public constant kevm = KEVMCheatsBase(address(uint160(uint256(keccak256("hevm cheat code")))));
+abstract contract SymbolicWords {
+    address internal constant KEVM_CHEATS = address(uint160(uint256(keccak256("hevm cheat code"))));
 
-    // Checks if an address matches one of the built-in addresses.
-    function notBuiltinAddress(address addr) internal pure returns (bool) {
-        return (addr != address(645326474426547203313410069153905908525362434349) &&
-                addr != address(728815563385977040452943777879061427756277306518));
-    }
+    KEVMCheatsBase internal constant kevm = KEVMCheatsBase(KEVM_CHEATS);
 
     function freshUInt256() external returns (uint256) {
         return kevm.freshUInt(32);
@@ -72,15 +70,127 @@ abstract contract KEVMCheats {
         return uint200(kevm.freshUInt(25));
     }
 
-    function freshAddress() external returns (address) {
-        return address(uint160(kevm.freshUInt(20)));
+    function freshUInt192() external returns (uint192) {
+        return uint192(kevm.freshUInt(24));
+    }
+
+    function freshUInt184() external returns (uint184) {
+        return uint184(kevm.freshUInt(23));
+    }
+
+    function freshUInt176() external returns (uint176) {
+        return uint176(kevm.freshUInt(22));
+    }
+
+    function freshUInt168() external returns (uint168) {
+        return uint168(kevm.freshUInt(21));
+    }
+
+    function freshUInt160() external returns (uint160) {
+        return uint160(kevm.freshUInt(20));
+    }
+
+    function freshUInt152() external returns (uint152) {
+        return uint152(kevm.freshUInt(19));
+    }
+
+    function freshUInt144() external returns (uint144) {
+        return uint144(kevm.freshUInt(18));
+    }
+
+    function freshUInt136() external returns (uint136) {
+        return uint136(kevm.freshUInt(17));
     }
 
     function freshUInt128() external returns (uint128) {
         return uint128(kevm.freshUInt(16));
     }
 
+    function freshUInt120() external returns (uint120) {
+        return uint120(kevm.freshUInt(15));
+    }
+
+    function freshUInt112() external returns (uint112) {
+        return uint112(kevm.freshUInt(14));
+    }
+
+    function freshUInt104() external returns (uint104) {
+        return uint104(kevm.freshUInt(13));
+    }
+
+    function freshUInt96() external returns (uint96) {
+        return uint96(kevm.freshUInt(12));
+    }
+
+    function freshUInt88() external returns (uint88) {
+        return uint88(kevm.freshUInt(11));
+    }
+
+    function freshUInt80() external returns (uint80) {
+        return uint80(kevm.freshUInt(10));
+    }
+
+    function freshUInt72() external returns (uint72) {
+        return uint72(kevm.freshUInt(9));
+    }
+
+    function freshUInt64() external returns (uint64) {
+        return uint64(kevm.freshUInt(8));
+    }
+
+    function freshUInt56() external returns (uint56) {
+        return uint56(kevm.freshUInt(7));
+    }
+
+    function freshUInt48() external returns (uint48) {
+        return uint48(kevm.freshUInt(6));
+    }
+
+    function freshUInt40() external returns (uint40) {
+        return uint40(kevm.freshUInt(5));
+    }
+
+    function freshUInt32() external returns (uint32) {
+        return uint32(kevm.freshUInt(4));
+    }
+
+    function freshUInt24() external returns (uint24) {
+        return uint24(kevm.freshUInt(3));
+    }
+
+    function freshUInt16() external returns (uint16) {
+        return uint16(kevm.freshUInt(2));
+    }
+
+    function freshUInt8() external returns (uint8) {
+        return uint8(kevm.freshUInt(1));
+    }
+
+    function freshAddress() external returns (address) {
+        return address(uint160(kevm.freshUInt(20)));
+    }
+
+    function freshBool() external returns (bool) {
+        return kevm.freshBool();
+    }
+
     function freshSInt256() external returns (int256) {
         return kevm.freshSInt(32);
     }
 }
+
+abstract contract KEVMUtils {
+    // @notice Checks if an address matches one of the built-in addresses.
+    function notBuiltinAddress(address addr) internal pure returns (bool) {
+        return (addr != address(645326474426547203313410069153905908525362434349) &&
+                addr != address(728815563385977040452943777879061427756277306518));
+    }
+}
+
+abstract contract KEVMBase {
+    address internal constant KEVM_CHEATS = address(uint160(uint256(keccak256("hevm cheat code"))));
+
+    KEVMCheatsBase internal constant kevm = KEVMCheatsBase(KEVM_CHEATS);
+}
+
+abstract contract KEVMCheats is KEVMBase, KEVMUtils {}

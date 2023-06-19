@@ -588,6 +588,23 @@ This rule returns a symbolic integer of up to the bit width that was sent as an 
        ensures 0 <=Int ?WORD andBool ?WORD <Int 2 ^Int (8 *Int #asWord(ARGS))
 ```
 
+#### `freshBool` - Returns a single symbolic boolean.
+
+```
+function freshBool() external returns (bool);
+```
+
+`foundry.call.freshBool` will match when the `freshBool` cheat code function is called.
+This rule returns a symbolic boolean value being either 0 (false) or 1 (true).
+
+```k
+    rule [foundry.call.freshBool]:
+         <k> #call_foundry SELECTOR _ => . ... </k>
+         <output> _ => #bufStrict(1, ?WORD) </output>
+      requires SELECTOR ==Int selector ( "freshBool()" )
+       ensures ?WORD ==Int 0 orBool ?WORD ==Int 1
+```
+
 Expecting the next call to revert
 ---------------------------------
 
@@ -1456,6 +1473,7 @@ If the production is matched when no prank is active, it will be ignored.
     rule ( selector ( "symbolicStorage(address)" )                 => 769677742  )
     rule ( selector ( "freshSInt(uint8)" )                         => 625253732  )
     rule ( selector ( "freshUInt(uint8)" )                         => 625253732  )
+    rule ( selector ( "freshBool()" )                              => 2935720297 )
     rule ( selector ( "prank(address)" )                           => 3395723175 )
     rule ( selector ( "prank(address,address)" )                   => 1206193358 )
     rule ( selector ( "allowCallsToAddress(address)" )             => 1850795572 )
