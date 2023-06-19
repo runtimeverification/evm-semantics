@@ -1,14 +1,14 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
 from typing import TYPE_CHECKING
+
+from ..utils import REPO_ROOT
 
 if TYPE_CHECKING:
     from pyk.testing import Profiler
 
 
-REPO_ROOT = Path(__file__).parents[4]
 GST_FILE = REPO_ROOT / 'tests/ethereum-tests/BlockchainTests/GeneralStateTests/stEIP1559/intrinsic.json'
 
 
