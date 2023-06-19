@@ -4024,6 +4024,102 @@ module PRANKTEST-CONTRACT
 
 endmodule
 
+module PRECONDITIONSTEST-CONTRACT
+    imports public FOUNDRY
+    
+    syntax Contract ::= PreconditionsTestContract
+    
+    syntax PreconditionsTestContract ::= "PreconditionsTest" [symbol(), klabel(contract_PreconditionsTest)]
+    
+      
+    
+    syntax Field ::= PreconditionsTestField
+    
+    syntax PreconditionsTestField ::= "IS_TEST" [symbol(), klabel(field_PreconditionsTest_IS_TEST)]
+    
+    syntax PreconditionsTestField ::= "_failed" [symbol(), klabel(field_PreconditionsTest__failed)]
+    
+    syntax PreconditionsTestField ::= "IS_SCRIPT" [symbol(), klabel(field_PreconditionsTest_IS_SCRIPT)]
+    
+    syntax PreconditionsTestField ::= "stdstore" [symbol(), klabel(field_PreconditionsTest_stdstore)]
+    
+    syntax PreconditionsTestField ::= "n" [symbol(), klabel(field_PreconditionsTest_n)]
+    
+    rule  ( #loc ( PreconditionsTest . IS_TEST ) => 0 )
+      
+    
+    rule  ( #loc ( PreconditionsTest . _failed ) => 0 )
+      
+    
+    rule  ( #loc ( PreconditionsTest . IS_SCRIPT ) => 0 )
+      
+    
+    rule  ( #loc ( PreconditionsTest . stdstore ) => 1 )
+      
+    
+    rule  ( #loc ( PreconditionsTest . n ) => 8 )
+      
+    
+    syntax Bytes ::= PreconditionsTestContract "." PreconditionsTestMethod [function(), symbol(), klabel(method_PreconditionsTest)]
+    
+    syntax PreconditionsTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_PreconditionsTest_IS_SCRIPT_)]
+    
+    syntax PreconditionsTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_PreconditionsTest_IS_TEST_)]
+    
+    syntax PreconditionsTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_PreconditionsTest_failed_)]
+    
+    syntax PreconditionsTestMethod ::= "kevm" "(" ")" [symbol(), klabel(method_PreconditionsTest_kevm_)]
+    
+    syntax PreconditionsTestMethod ::= "setUp" "(" ")" [symbol(), klabel(method_PreconditionsTest_setUp_)]
+    
+    syntax PreconditionsTestMethod ::= "testAssume" "(" ")" [symbol(), klabel(method_PreconditionsTest_testAssume_)]
+    
+    syntax PreconditionsTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_PreconditionsTest_vm_)]
+    
+    rule  ( PreconditionsTest . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
+      
+    
+    rule  ( PreconditionsTest . IS_TEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
+      
+    
+    rule  ( PreconditionsTest . failed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
+      
+    
+    rule  ( PreconditionsTest . kevm ( ) => #abiCallData ( "kevm" , .TypedArgs ) )
+      
+    
+    rule  ( PreconditionsTest . setUp ( ) => #abiCallData ( "setUp" , .TypedArgs ) )
+      
+    
+    rule  ( PreconditionsTest . testAssume ( ) => #abiCallData ( "testAssume" , .TypedArgs ) )
+      
+    
+    rule  ( PreconditionsTest . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
+      
+    
+    rule  ( selector ( "IS_SCRIPT()" ) => 4174167879 )
+      
+    
+    rule  ( selector ( "IS_TEST()" ) => 4202047188 )
+      
+    
+    rule  ( selector ( "failed()" ) => 3124842406 )
+      
+    
+    rule  ( selector ( "kevm()" ) => 3601001590 )
+      
+    
+    rule  ( selector ( "setUp()" ) => 177362148 )
+      
+    
+    rule  ( selector ( "testAssume()" ) => 3928496829 )
+      
+    
+    rule  ( selector ( "vm()" ) => 980845667 )
+      
+
+endmodule
+
 module RECORDLOGSTEST-CONTRACT
     imports public FOUNDRY
     
