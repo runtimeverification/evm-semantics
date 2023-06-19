@@ -16,7 +16,7 @@ def test_gst_to_kore() -> None:
     expected = KoreParser(expected_file.read_text()).pattern()
 
     # When
-    actual = gst_to_kore(gst_data, 'MERGE', 'NORMAL', 1)
+    actual = gst_to_kore(gst_data, 'SHANGHAI', 'NORMAL', 1)
 
     # Then
     assert actual == expected
