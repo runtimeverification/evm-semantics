@@ -28,4 +28,14 @@ contract FreshIntTest is Test, KEVMCheats {
         assertGe(fresh_int128, type(int256).min);
         assertLe(fresh_int128, type(int256).max);
     }
+
+    function test_bool() public {
+        kevm.infiniteGas();
+        bool fresh_bool = kevm.freshBool();
+        uint256 as_int;
+        assembly {
+            as_int := fresh_bool
+        }
+        assertLe(as_int, 1);
+    }
 }
