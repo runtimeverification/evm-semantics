@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING
 
 from pyk.kast.inner import KApply, KAtt, KLabel, KRewrite, KSort, KVariable
 from pyk.kast.manip import abstract_term_safely
-from pyk.kast.outer import KFlatModule, KImport, KNonTerminal, KProduction, KRule, KTerminal
+from pyk.kast.outer import KDefinition, KFlatModule, KImport, KNonTerminal, KProduction, KRequire, KRule, KTerminal
 from pyk.prelude.kbool import TRUE, andBool
 from pyk.prelude.kint import intToken
 from pyk.prelude.string import stringToken
@@ -27,6 +27,41 @@ if TYPE_CHECKING:
     from pyk.kast.outer import KProductionItem, KSentence
 
 _LOGGER: Final = logging.getLogger(__name__)
+
+
+def solc_to_k(
+    definition_dir: Path,
+    contract_file: Path,
+    contract_name: str,
+    main_module: str | None,
+    requires: Iterable[str] = (),
+    imports: Iterable[str] = (),
+) -> str:
+    kevm = KEVM(definition_dir)
+    empty_config = kevm.definition.empty_config(KEVM.Sorts.KEVM_CELL)
+
+    solc_json = solc_compile(contract_file)
+    contract_json = solc_json['contracts'][contract_file.name][contract_name]
+    if 'sources' in solc_json and contract_file.name in solc_json['sources']:
+        contract_source = solc_json['sources'][contract_file.name]
+        for key in ['id', 'ast']:
+            if key not in contract_json and key in contract_source:
+                contract_json[key] = contract_source[key]
+    contract = Contract(contract_name, contract_json, foundry=False)
+
+    imports = list(imports)
+    requires = list(requires)
+    contract_module = contract_to_main_module(contract, empty_config, imports=['EDSL'] + imports)
+    _main_module = KFlatModule(
+        main_module if main_module else 'MAIN', [], [KImport(mname) for mname in [contract_module.name] + imports]
+    )
+    modules = (contract_module, _main_module)
+    bin_runtime_definition = KDefinition(
+        _main_module.name, modules, requires=tuple(KRequire(req) for req in ['edsl.md'] + requires)
+    )
+
+    _kprint = KEVM(definition_dir, extra_unparsing_modules=modules)
+    return _kprint.pretty_print(bin_runtime_definition, unalias=False) + '\n'
 
 
 @dataclass
