@@ -602,7 +602,7 @@ This rule returns a symbolic boolean value being either 0 (false) or 1 (true).
          <k> #call_foundry SELECTOR _ => . ... </k>
          <output> _ => #bufStrict(1, ?WORD) </output>
       requires SELECTOR ==Int selector ( "freshBool()" )
-        andBool #rangeBool(?WORD)
+        ensures #rangeBool(?WORD)
 ```
 
 Expecting the next call to revert
