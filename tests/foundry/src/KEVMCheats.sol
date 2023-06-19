@@ -170,10 +170,6 @@ abstract contract SymbolicWords {
         return address(uint160(kevm.freshUInt(20)));
     }
 
-    function freshBool() external returns (bool) {
-        return kevm.freshBool();
-    }
-
     function freshSInt256() external returns (int256) {
         return kevm.freshSInt(32);
     }
