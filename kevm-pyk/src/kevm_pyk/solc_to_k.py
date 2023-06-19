@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING
 from pyk.kast.inner import KApply, KAtt, KLabel, KRewrite, KSort, KVariable
 from pyk.kast.manip import abstract_term_safely
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KNonTerminal, KProduction, KRequire, KRule, KTerminal
-from pyk.prelude.kbool import TRUE, andBool
+from pyk.prelude.kbool import andBool
 from pyk.prelude.kint import intToken
 from pyk.prelude.string import stringToken
 from pyk.utils import FrozenDict, hash_str, run_process, single
