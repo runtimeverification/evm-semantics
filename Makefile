@@ -624,16 +624,8 @@ test-failure: $(failure_tests:=.run-expected)
 
 # kevm-pyk Tests
 
-kevm_pyk_tests :=                                                                                              \
-                  tests/interactive/vmLogTest/log3.json.gst-to-kore.check                                      \
-                  tests/ethereum-tests/BlockchainTests/GeneralStateTests/VMTests/vmArithmeticTest/add.json.run \
-                  tests/specs/examples/empty-bin-runtime.k                                                     \
-                  tests/specs/examples/erc20-bin-runtime.k                                                     \
-                  tests/specs/examples/erc721-bin-runtime.k
-
-test-kevm-pyk: KEVM_OPTS += --pyk --verbose
-test-kevm-pyk: KEVM := $(POETRY_RUN) $(KEVM)
-test-kevm-pyk: $(kevm_pyk_tests) poetry
+test-kevm-pyk: poetry build-kevm build-haskell
+	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+='-k test_solc_to_k.py -n4'
 
 # Interactive Tests
 
