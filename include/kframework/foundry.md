@@ -600,7 +600,7 @@ This rule returns a symbolic boolean value being either 0 (false) or 1 (true).
 ```k
     rule [foundry.call.freshBool]:
          <k> #call_foundry SELECTOR _ => . ... </k>
-         <output> _ => #bufStrict(1, ?WORD) </output>
+         <output> _ => #bufStrict(32, ?WORD) </output>
       requires SELECTOR ==Int selector ( "freshBool()" )
         ensures #rangeBool(?WORD)
 ```

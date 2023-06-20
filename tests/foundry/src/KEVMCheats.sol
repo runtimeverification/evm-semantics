@@ -30,7 +30,7 @@ interface KEVMCheatsBase {
     // Returns a symbolic signed integer
     function freshSInt(uint8) external returns (int256);
     // Returns a symbolic boolean value
-    function freshBool() external returns (bool);
+    function freshBool() external returns (uint256);
 }
 
 abstract contract SymbolicWords {
