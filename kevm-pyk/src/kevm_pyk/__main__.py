@@ -10,17 +10,19 @@ from typing import TYPE_CHECKING
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli.utils import file_path
 from pyk.cterm import CTerm
-from pyk.kcfg import KCFG, KCFGExplore, KCFGViewer
+from pyk.kcfg import KCFG, KCFGExplore
 from pyk.kore.prelude import int_dv
 from pyk.ktool.krun import KRunOutput, _krun
 from pyk.prelude.ml import is_bottom
 from pyk.proof import APRProof
 from pyk.proof.show import APRProofShow
+from pyk.proof.tui import APRProofViewer
 from pyk.utils import BugReport, single
 
 from .cli import KEVMCLIArgs, node_id_like
 from .foundry import (
     Foundry,
+    FoundryNodePrinter,
     foundry_kompile,
     foundry_list,
     foundry_prove,
@@ -470,7 +472,7 @@ def exec_view_kcfg(
         exclude_claim_labels=exclude_claim_labels,
     )
 
-    viewer = KCFGViewer(apr_proof.kcfg, kevm, node_printer=kevm.short_info)
+    viewer = APRProofViewer(apr_proof, kevm, node_printer=KEVMNodePrinter(kevm))
     viewer.run()
 
 
@@ -627,7 +629,9 @@ def exec_foundry_view_kcfg(foundry_root: Path, test: str, **kwargs: Any) -> None
     def _custom_view(elem: KCFGElem) -> Iterable[str]:
         return foundry.custom_view(contract_name, elem)
 
-    viewer = KCFGViewer(apr_proof.kcfg, foundry.kevm, node_printer=_short_info, custom_view=_custom_view)
+    viewer = APRProofViewer(
+        apr_proof, foundry.kevm, node_printer=FoundryNodePrinter(foundry, contract_name), custom_view=_custom_view
+    )
     viewer.run()
 
 
