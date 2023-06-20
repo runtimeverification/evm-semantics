@@ -40,21 +40,34 @@ def foundry_root(tmp_path_factory: TempPathFactory) -> Path:
     return foundry_root
 
 
-def test_foundry_kompile(foundry_root: Path) -> None:
+def test_foundry_kompile(foundry_root: Path, update_expected_output: bool) -> None:
     # Then
-    assert_k_file_matches(foundry_root / 'out/kompiled/foundry.k', TEST_DATA_DIR / 'foundry.k.expected')
-    assert_k_file_matches(foundry_root / 'out/kompiled/contracts.k', TEST_DATA_DIR / 'contracts.k.expected')
+    assert_or_update_k_output(
+        foundry_root / 'out/kompiled/foundry.k',
+        TEST_DATA_DIR / 'foundry.k.expected',
+        update=update_expected_output,
+    )
+    assert_or_update_k_output(
+        foundry_root / 'out/kompiled/contracts.k',
+        TEST_DATA_DIR / 'contracts.k.expected',
+        update=update_expected_output,
+    )
 
 
-def assert_k_file_matches(k_file: Path, expected_file: Path) -> None:
+def assert_or_update_k_output(k_file: Path, expected_file: Path, *, update: bool) -> None:
     assert k_file.is_file()
     assert expected_file.is_file()
 
     k_text = k_file.read_text()
-    stripped_text = '\n'.join(line for line in k_text.splitlines() if not line.startswith('    rule  ( #binRuntime ('))
-    expected_text = expected_file.read_text().rstrip()
+    filtered_lines = (line for line in k_text.splitlines() if not line.startswith('    rule  ( #binRuntime ('))
 
-    assert stripped_text == expected_text
+    actual_text = '\n'.join(filtered_lines) + '\n'
+    expected_text = expected_file.read_text()
+
+    if update:
+        expected_file.write_text(actual_text)
+    else:
+        assert actual_text == expected_text
 
 
 ALL_PROVE_TESTS: Final = tuple((TEST_DATA_DIR / 'foundry-prove-all').read_text().splitlines())
@@ -64,7 +77,7 @@ SHOW_TESTS = set((TEST_DATA_DIR / 'foundry-show').read_text().splitlines())
 
 
 @pytest.mark.parametrize('test_id', ALL_PROVE_TESTS)
-def test_foundry_prove(test_id: str, foundry_root: Path) -> None:
+def test_foundry_prove(test_id: str, foundry_root: Path, update_expected_output: bool) -> None:
     if test_id in SKIPPED_PROVE_TESTS:
         pytest.skip()
 
@@ -96,14 +109,14 @@ def test_foundry_prove(test_id: str, foundry_root: Path) -> None:
     )
 
     # Then
-    assert_show_matches(show_res, TEST_DATA_DIR / f'show/{test_id}.expected')
+    assert_or_update_show_output(show_res, TEST_DATA_DIR / f'show/{test_id}.expected', update=update_expected_output)
 
 
 FAIL_TESTS: Final = tuple((TEST_DATA_DIR / 'foundry-fail').read_text().splitlines())
 
 
 @pytest.mark.parametrize('test_id', FAIL_TESTS)
-def test_foundry_fail(test_id: str, foundry_root: Path) -> None:
+def test_foundry_fail(test_id: str, foundry_root: Path, update_expected_output: bool) -> None:
     # When
     prove_res = foundry_prove(
         foundry_root,
@@ -132,7 +145,7 @@ def test_foundry_fail(test_id: str, foundry_root: Path) -> None:
     )
 
     # Then
-    assert_show_matches(show_res, TEST_DATA_DIR / f'show/{test_id}.expected')
+    assert_or_update_show_output(show_res, TEST_DATA_DIR / f'show/{test_id}.expected', update=update_expected_output)
 
 
 ALL_BMC_TESTS: Final = tuple((TEST_DATA_DIR / 'foundry-bmc-all').read_text().splitlines())
@@ -173,10 +186,10 @@ def assert_fail(test_id: str, prove_res: dict[str, tuple[bool, list[str] | None]
     assert log
 
 
-def assert_show_matches(show_res: str, expected_file: Path) -> None:
+def assert_or_update_show_output(show_res: str, expected_file: Path, *, update: bool) -> None:
     assert expected_file.is_file()
 
-    stripped_text = '\n'.join(
+    filtered_lines = (
         line
         for line in show_res.splitlines()
         if not line.startswith(
@@ -188,6 +201,10 @@ def assert_show_matches(show_res: str, expected_file: Path) -> None:
             )
         )
     )
-    expected_text = expected_file.read_text().rstrip()
+    actual_text = '\n'.join(filtered_lines) + '\n'
+    expected_text = expected_file.read_text()
 
-    assert stripped_text == expected_text
+    if update:
+        expected_file.write_text(actual_text)
+    else:
+        assert actual_text == expected_text
