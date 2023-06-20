@@ -244,7 +244,7 @@ module VAT-FOLD-PASS-ROUGH-SPEC
        andBool ((#rangeUInt(256, ABI_x +Int ABI_y)))))))
 
 
-    [trusted, matching(infGas)]
+    [trusted]
 
 
     // Vat_mului
@@ -346,7 +346,7 @@ module VAT-FOLD-PASS-ROUGH-SPEC
        andBool ((#rangeSInt(256, ABI_x *Int ABI_y))))))))
 
 
-    [trusted, matching(infGas)]
+    [trusted]
 
 
 endmodule

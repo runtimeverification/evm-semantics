@@ -285,7 +285,7 @@ module GEMJOIN-EXIT-PASS-ROUGH-SPEC
        andBool #lookup(ACCT_ID_ORIG_STORAGE, #Vat.wards[CALLER_ID]) ==Int Junk_0
        andBool #lookup(ACCT_ID_ORIG_STORAGE, #Vat.gem[ABI_ilk][ABI_usr]) ==Int Junk_1
        andBool #Vat.wards[CALLER_ID] =/=Int #Vat.gem[ABI_ilk][ABI_usr]
-    [trusted, matching(infGas)]
+    [trusted]
 
 
     // DSToken_transfer
@@ -403,7 +403,7 @@ module GEMJOIN-EXIT-PASS-ROUGH-SPEC
        andBool #DSToken.balances[CALLER_ID] =/=Int #DSToken.balances[ABI_usr]
        andBool #DSToken.balances[CALLER_ID] =/=Int #DSToken.owner_stopped
        andBool #DSToken.balances[ABI_usr] =/=Int #DSToken.owner_stopped
-    [trusted, matching(infGas)]
+    [trusted]
 
 
 endmodule

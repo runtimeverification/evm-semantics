@@ -262,7 +262,7 @@ module FLOPPER-DENT-GUY-SAME-PASS-ROUGH-SPEC
        andBool ((#rangeUInt(256, ABI_x *Int ABI_y)))))))
 
 
-    [trusted, matching(infGas)]
+    [trusted]
 
 
     // Flopper_addu48u48
@@ -360,7 +360,7 @@ module FLOPPER-DENT-GUY-SAME-PASS-ROUGH-SPEC
        andBool ((#rangeUInt(48, ABI_x +Int ABI_y)))))))
 
 
-    [trusted, matching(infGas)]
+    [trusted]
 
 
 endmodule

@@ -215,7 +215,7 @@ module VOW-FESS-FAIL-ROUGH-SPEC
        andBool ((#rangeUInt(256, ABI_x +Int ABI_y)))))))
 
 
-    [trusted, matching(infGas)]
+    [trusted]
 
 
 endmodule

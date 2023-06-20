@@ -286,7 +286,7 @@ module VAT-FORK-DIFF-PASS-ROUGH-SPEC
        andBool ((#rangeUInt(256, ABI_x +Int ABI_y)))))))
 
 
-    [trusted, matching(infGas)]
+    [trusted]
 
 
     // Vat_subui
@@ -390,7 +390,7 @@ module VAT-FORK-DIFF-PASS-ROUGH-SPEC
        andBool ((#rangeUInt(256, ABI_x -Int ABI_y)))))))
 
 
-    [trusted, matching(infGas)]
+    [trusted]
 
 
     // Vat_muluu
@@ -491,7 +491,7 @@ module VAT-FORK-DIFF-PASS-ROUGH-SPEC
        andBool ((#rangeUInt(256, ABI_x *Int ABI_y)))))))
 
 
-    [trusted, matching(infGas)]
+    [trusted]
 
 
 endmodule

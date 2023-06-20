@@ -215,7 +215,7 @@ module VOW-FLOG-FAIL-ROUGH-SPEC
        andBool #rangeNonce(Nonce_Vow)
 
 
-    [trusted, matching(infGas)]
+    [trusted]
 
 
     // Vow_subuu
@@ -314,7 +314,7 @@ module VOW-FLOG-FAIL-ROUGH-SPEC
        andBool ((#rangeUInt(256, ABI_x -Int ABI_y)))))))
 
 
-    [trusted, matching(infGas)]
+    [trusted]
 
 
 endmodule
