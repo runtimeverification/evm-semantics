@@ -2,9 +2,7 @@ from __future__ import annotations
 
 import logging
 import sys
-from dataclasses import dataclass
-from pathlib import Path
-from typing import TYPE_CHECKING, final
+from typing import TYPE_CHECKING, NamedTuple
 
 import pytest
 from pyk.prelude.ml import mlTop
@@ -14,8 +12,12 @@ from kevm_pyk.__main__ import exec_prove
 from kevm_pyk.kevm import KEVM
 from kevm_pyk.kompile import KompileTarget, kevm_kompile
 
+from ..utils import REPO_ROOT
+from .utils import TEST_DATA_DIR, gen_bin_runtime
+
 if TYPE_CHECKING:
     from collections.abc import Callable
+    from pathlib import Path
     from typing import Any, Final
 
     from pytest import LogCaptureFixture, TempPathFactory
@@ -23,7 +25,6 @@ if TYPE_CHECKING:
 
 sys.setrecursionlimit(10**8)
 
-REPO_ROOT: Final = Path(__file__).parents[4]
 TEST_DIR: Final = REPO_ROOT / 'tests'
 SPEC_DIR: Final = TEST_DIR / 'specs'
 
@@ -108,35 +109,71 @@ KOMPILE_MAIN_MODULE: Final = {
     'opcodes/evm-optimizations-spec.md': 'EVM-OPTIMIZATIONS-SPEC-LEMMAS',
 }
 
+KOMPILE_CONTRACT: Final = {
+    'examples/erc20-spec.md': TEST_DATA_DIR / 'examples/ERC20.sol',
+    'examples/erc721-spec.md': TEST_DATA_DIR / 'examples/ERC721.sol',
+    'examples/storage-spec.k': TEST_DATA_DIR / 'examples/Storage.sol',
+}
 
-@final
-@dataclass(frozen=True)
-class Target:
+
+class Target(NamedTuple):
     main_file: Path
     main_module_name: str
+    contract_file: Path | None
 
-    def __call__(self, output_dir: Path) -> Path:
-        return kevm_kompile(
-            output_dir=output_dir,
+    def __call__(self, output_dir: Path) -> KompiledTarget:
+        definition_dir = output_dir / 'kompiled'
+
+        include_dir: Path | None
+        if self.contract_file:
+            include_dir = output_dir / 'include'
+            include_dir.mkdir()
+            gen_bin_runtime(self.contract_file, output_dir=include_dir)
+        else:
+            include_dir = None
+
+        result = KompiledTarget(definition_dir, include_dir)
+
+        kevm_kompile(
+            output_dir=output_dir / 'kompiled',
             target=KompileTarget.HASKELL,
             main_file=self.main_file,
             main_module=self.main_module_name,
             syntax_module=self.main_module_name,
+            includes=result.includes,
             debug=True,
         )
 
+        return result
+
+
+class KompiledTarget(NamedTuple):
+    definition_dir: Path
+    include_dir: Path | None
+
+    @property
+    def include_dirs(self) -> list[Path]:
+        if self.include_dir:
+            return [self.include_dir]
+        return []
+
+    @property
+    def includes(self) -> list[str]:
+        return [str(include_dir) for include_dir in self.include_dirs]
+
 
 @pytest.fixture(scope='module')
-def definition_dir_for(tmp_path_factory: TempPathFactory) -> Callable[[Path], Path]:
-    cache_dir = tmp_path_factory.mktemp('kompiled')
-    cache: dict[Target, Path] = {}
+def kompiled_target_for(tmp_path_factory: TempPathFactory) -> Callable[[Path], KompiledTarget]:
+    cache_dir = tmp_path_factory.mktemp('target')
+    cache: dict[Target, KompiledTarget] = {}
 
-    def kompile(spec_file: Path) -> Path:
+    def kompile(spec_file: Path) -> KompiledTarget:
         target = _target_for_spec(spec_file)
 
         if target not in cache:
-            output_dir_name = f'{target.main_file.stem}-kompiled-{len(cache)}'
-            cache[target] = target(output_dir=cache_dir / output_dir_name)
+            output_dir = cache_dir / f'{target.main_file.stem}-{len(cache)}'
+            output_dir.mkdir()
+            cache[target] = target(output_dir)
 
         return cache[target]
 
@@ -149,7 +186,11 @@ def _target_for_spec(spec_file: Path) -> Target:
     spec_root = SPEC_DIR / spec_file.relative_to(SPEC_DIR).parents[-2]
     main_file = spec_root / KOMPILE_MAIN_FILE.get(spec_id, 'verification.k')
     main_module_name = KOMPILE_MAIN_MODULE.get(spec_id, 'VERIFICATION')
-    return Target(main_file, main_module_name)
+
+    main_id = str(main_file.relative_to(SPEC_DIR))
+    contract_file = KOMPILE_CONTRACT.get(main_id)
+
+    return Target(main_file, main_module_name, contract_file)
 
 
 # ---------
@@ -167,7 +208,7 @@ SKIPPED_PYK_TESTS: Final = set().union(SLOW_TESTS, FAILING_TESTS, FAILING_PYK_TE
 )
 def test_pyk_prove(
     spec_file: Path,
-    definition_dir_for: Callable[[Path], Path],
+    kompiled_target_for: Callable[[Path], KompiledTarget],
     tmp_path: Path,
 ) -> None:
     if spec_file in SKIPPED_PYK_TESTS:
@@ -178,11 +219,11 @@ def test_pyk_prove(
     use_directory.mkdir()
 
     # When
-    definition_dir = definition_dir_for(spec_file)
+    target = kompiled_target_for(spec_file)
     exec_prove(
         spec_file=spec_file,
-        definition_dir=definition_dir,
-        includes=[str(config.INCLUDE_DIR)],
+        definition_dir=target.definition_dir,
+        includes=[str(config.INCLUDE_DIR)] + target.includes,  # TODO are target.includes required?
         save_directory=use_directory,
         smt_timeout=125,
         smt_retry_limit=4,
@@ -212,7 +253,7 @@ PROVE_ARGS: Final[dict[str, Any]] = {
 )
 def test_legacy_prove(
     spec_file: Path,
-    definition_dir_for: Callable[[Path], Path],
+    kompiled_target_for: Callable[[Path], KompiledTarget],
     tmp_path: Path,
     caplog: LogCaptureFixture,
 ) -> None:
@@ -231,9 +272,9 @@ def test_legacy_prove(
 
     # When
     try:
-        definition_dir = definition_dir_for(spec_file)
-        kevm = KEVM(definition_dir, use_directory=use_directory)
-        actual = kevm.prove(spec_file=spec_file, include_dirs=[config.INCLUDE_DIR], **args)
+        target = kompiled_target_for(spec_file)
+        kevm = KEVM(target.definition_dir, use_directory=use_directory)
+        actual = kevm.prove(spec_file=spec_file, include_dirs=[config.INCLUDE_DIR] + target.include_dirs, **args)
     except BaseException:
         raise
     finally:
