@@ -174,7 +174,7 @@ jobs:
       matrix:
         include:
           - runner: normal
-          - runner: macos-12
+          - runner: macos-13
           - runner: ARM64
     needs: version-bump
     runs-on: ${{ matrix.runner }}
@@ -186,14 +186,14 @@ jobs:
           # Check out pull request HEAD instead of merge commit.
           ref: ${{ github.event.pull_request.head.sha }}
       - name: 'Install Nix'
-        if: ${{ matrix.runner == 'macos-12' }}
+        if: ${{ matrix.runner == 'macos-13' }}
         uses: cachix/install-nix-action@v19
         with:
           install_url: https://releases.nixos.org/nix/nix-2.13.3/install
           extra_nix_config: |
             access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
       - name: 'Install Cachix'
-        if: ${{ matrix.runner == 'macos-12' }}
+        if: ${{ matrix.runner == 'macos-13' }}
         uses: cachix/cachix-action@v12
         with:
           name: k-framework
