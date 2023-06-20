@@ -16,7 +16,6 @@ from pyk.kast.inner import KApply, KSequence, KSort, KToken, KVariable, Subst
 from pyk.kast.manip import minimize_term
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
 from pyk.kcfg import KCFG, KCFGExplore
-from pyk.kcfg.show import KCFGShow
 from pyk.ktool.kompile import LLVMKompileType
 from pyk.prelude.bytes import bytesToken
 from pyk.prelude.k import GENERATED_TOP_CELL
@@ -25,6 +24,7 @@ from pyk.prelude.kint import INT, intToken
 from pyk.prelude.ml import mlEqualsTrue
 from pyk.proof.proof import Proof
 from pyk.proof.reachability import APRBMCProof, APRProof
+from pyk.proof.show import APRProofShow
 from pyk.utils import BugReport, ensure_dir_path, hash_str, run_process, single, unique
 
 from .kevm import KEVM, KEVMNodePrinter
@@ -594,10 +594,9 @@ def foundry_show(
         '<code>',
     ]
 
-    kcfg_show = KCFGShow(foundry.kevm, node_printer=FoundryNodePrinter(foundry, contract_name))
-    res_lines = kcfg_show.show(
-        test,
-        proof.kcfg,
+    proof_show = APRProofShow(foundry.kevm, node_printer=FoundryNodePrinter(foundry, contract_name))
+    res_lines = proof_show.show(
+        proof,
         nodes=nodes,
         node_deltas=node_deltas,
         to_module=to_module,
@@ -621,8 +620,8 @@ def foundry_to_dot(foundry_root: Path, test: str) -> None:
     contract_name, test_name = test.split('.')
     proof_digest = foundry.proof_digest(contract_name, test_name)
     apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
-    kcfg_show = KCFGShow(foundry.kevm)
-    kcfg_show.dump(test, apr_proof.kcfg, dump_dir, dot=True)
+    proof_show = APRProofShow(foundry.kevm, node_printer=FoundryNodePrinter(foundry, contract_name))
+    proof_show.dump(apr_proof, dump_dir, dot=True)
 
 
 def foundry_list(foundry_root: Path) -> list[str]:

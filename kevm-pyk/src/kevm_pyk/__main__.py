@@ -10,11 +10,12 @@ from typing import TYPE_CHECKING
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli.utils import file_path
 from pyk.cterm import CTerm
-from pyk.kcfg import KCFG, KCFGExplore, KCFGShow, KCFGViewer
+from pyk.kcfg import KCFG, KCFGExplore, KCFGViewer
 from pyk.kore.prelude import int_dv
 from pyk.ktool.krun import KRunOutput, _krun
 from pyk.prelude.ml import is_bottom
 from pyk.proof import APRProof
+from pyk.proof.show import APRProofShow
 from pyk.utils import BugReport, single
 
 from .cli import KEVMCLIArgs, node_id_like
@@ -429,10 +430,9 @@ def exec_show_kcfg(
         exclude_claim_labels=exclude_claim_labels,
     )
 
-    kcfg_show = KCFGShow(kevm, node_printer=KEVMNodePrinter(kevm))
-    res_lines = kcfg_show.show(
-        proof.id,
-        proof.kcfg,
+    proof_show = APRProofShow(kevm, node_printer=KEVMNodePrinter(kevm))
+    res_lines = proof_show.show(
+        proof,
         nodes=nodes,
         node_deltas=node_deltas,
         to_module=to_module,
