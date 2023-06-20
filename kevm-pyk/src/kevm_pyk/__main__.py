@@ -549,8 +549,8 @@ def exec_foundry_show(
     minimize: bool = True,
     sort_collections: bool = False,
     omit_unstable_output: bool = False,
-    frontier: bool = False,
-    stuck: bool = False,
+    pending: bool = False,
+    failing: bool = False,
     failure_info: bool = False,
     **kwargs: Any,
 ) -> None:
@@ -563,8 +563,8 @@ def exec_foundry_show(
         minimize=minimize,
         omit_unstable_output=omit_unstable_output,
         sort_collections=sort_collections,
-        frontier=frontier,
-        stuck=stuck,
+        pending=pending,
+        failing=failing,
         failure_info=failure_info,
     )
     print(output)
@@ -929,10 +929,10 @@ def _create_argument_parser() -> ArgumentParser:
         help='Strip output that is likely to change without the contract logic changing',
     )
     foundry_show_args.add_argument(
-        '--frontier', dest='frontier', default=False, action='store_true', help='Also display frontier nodes'
+        '--pending', dest='pending', default=False, action='store_true', help='Also display pending nodes'
     )
     foundry_show_args.add_argument(
-        '--stuck', dest='stuck', default=False, action='store_true', help='Also display stuck nodes'
+        '--failing', dest='failing', default=False, action='store_true', help='Also display failing nodes'
     )
     foundry_to_dot = command_parser.add_parser(
         'foundry-to-dot',

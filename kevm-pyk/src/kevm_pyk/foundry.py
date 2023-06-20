@@ -564,8 +564,8 @@ def foundry_show(
     minimize: bool = True,
     sort_collections: bool = False,
     omit_unstable_output: bool = False,
-    frontier: bool = False,
-    stuck: bool = False,
+    pending: bool = False,
+    failing: bool = False,
     failure_info: bool = False,
 ) -> str:
     contract_name = test.split('.')[0]
@@ -580,10 +580,10 @@ def foundry_show(
     def _short_info(cterm: CTerm) -> Iterable[str]:
         return foundry.short_info_for_contract(contract_name, cterm)
 
-    if frontier:
-        nodes = list(nodes) + [node.id for node in proof.kcfg.frontier]
-    if stuck:
-        nodes = list(nodes) + [node.id for node in proof.kcfg.stuck]
+    if pending:
+        nodes = list(nodes) + [node.id for node in proof.pending]
+    if failing:
+        nodes = list(nodes) + [node.id for node in proof.failing]
     nodes = unique(nodes)
 
     unstable_cells = [
