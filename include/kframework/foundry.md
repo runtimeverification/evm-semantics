@@ -1471,7 +1471,7 @@ If the production is matched when no prank is active, it will be ignored.
     rule ( selector ( "expectEmit(bool,bool,bool,bool,address)" )  => 2176505587 )
     rule ( selector ( "sign(uint256,bytes32)" )                    => 3812747940 )
     rule ( selector ( "symbolicStorage(address)" )                 => 769677742  )
-    rule ( selector ( "freshSInt(uint8)" )                         => 625253732  )
+    rule ( selector ( "freshSInt(uint8)" )                         => 978336391  )
     rule ( selector ( "freshUInt(uint8)" )                         => 625253732  )
     rule ( selector ( "freshBool()" )                              => 2935720297 )
     rule ( selector ( "prank(address)" )                           => 3395723175 )

@@ -25,8 +25,8 @@ contract FreshIntTest is Test, KEVMCheats {
 
     function test_int128() public {
         int256 fresh_int128 = kevm.freshSInt(8);
-        assertGe(fresh_int128, type(int256).min);
-        assertLe(fresh_int128, type(int256).max);
+        assertGe(fresh_int128, type(int128).min);
+        assertLe(fresh_int128, type(int128).max);
     }
 
     function test_bool() public {
