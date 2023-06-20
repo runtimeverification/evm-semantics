@@ -894,9 +894,7 @@ def _method_to_cfg(
 
     cfg = KCFG()
     init_node = cfg.create_node(init_cterm)
-    cfg.add_init(init_node.id)
     target_node = cfg.create_node(final_cterm)
-    cfg.add_target(target_node.id)
 
     return cfg, init_node.id, target_node.id
 
@@ -909,7 +907,7 @@ def _init_cterm(init_term: KInner) -> CTerm:
 
 def get_final_accounts_cell(proof_digest: str, proof_dir: Path) -> KInner:
     apr_proof = APRProof.read_proof(proof_digest, proof_dir)
-    target = apr_proof.kcfg.get_unique_target()
+    target = apr_proof.kcfg.node(apr_proof.target)
     cterm = single(apr_proof.kcfg.covers(target_id=target.id)).source.cterm
     return cterm.cell('ACCOUNTS_CELL')
 
