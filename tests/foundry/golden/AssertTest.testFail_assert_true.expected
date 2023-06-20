@@ -1,5 +1,5 @@
 
-┌─ 1 (init, expanded)
+┌─ 1 (root)
 │   k: #execute ~> CONTINUATION
 │   pc: 0
 │   callDepth: 0
@@ -7,7 +7,7 @@
 │   src: tests/foundry/test/Simple.t.sol:5:54
 │
 │  (269 steps)
-├─ 3 (expanded)
+├─ 3
 │   k: #end EVMC_SUCCESS ~> #pc [ STOP ] ~> #execute ~> CONTINUATION:K
 │   pc: 213
 │   callDepth: 0
@@ -15,7 +15,7 @@
 │   src: tests/foundry/lib/forge-std/lib/ds-test/src/test.sol:37:38
 │
 │  (1 step)
-├─ 4 (expanded)
+├─ 4
 │   k: #halt ~> #pc [ STOP ] ~> #execute ~> CONTINUATION:K
 │   pc: 213
 │   callDepth: 0
@@ -23,7 +23,7 @@
 │   src: tests/foundry/lib/forge-std/lib/ds-test/src/test.sol:37:38
 │
 │  (2 steps)
-└─ 5 (expanded, stuck, leaf)
+└─ 5 (leaf)
     k: #halt ~> CONTINUATION:K
     pc: 213
     callDepth: 0
@@ -31,20 +31,11 @@
     src: tests/foundry/lib/forge-std/lib/ds-test/src/test.sol:37:38
 
 
-└─ 2 (target, leaf)
-    k: #halt ~> CONTINUATION
-    pc: PC_CELL_5d410f2a
-    callDepth: CALLDEPTH_CELL_5d410f2a
-    statusCode: STATUSCODE_FINAL
-
-
-Target Nodes:
-
-2 (target, leaf)
-k: #halt ~> CONTINUATION
-pc: PC_CELL_5d410f2a
-callDepth: CALLDEPTH_CELL_5d410f2a
-statusCode: STATUSCODE_FINAL
+┌─ 2 (root, leaf)
+│   k: #halt ~> CONTINUATION
+│   pc: PC_CELL_5d410f2a
+│   callDepth: CALLDEPTH_CELL_5d410f2a
+│   statusCode: STATUSCODE_FINAL
 
 
 Node 5:
@@ -254,7 +245,7 @@ Node 5:
 
 
 
-module SUMMARY-ASSERTTEST-TESTFAIL-ASSERT-TRUE
+module SUMMARY-ASSERTTEST.TESTFAIL-ASSERT-TRUE:197B53D8A0C19A3B62F2C833DF85695B4BB2C5C44F77961F4D4DEDD9BD8F63F2
     
     
            <kevm>
@@ -889,9 +880,9 @@ module SUMMARY-ASSERTTEST-TESTFAIL-ASSERT-TRUE
       [label(BASIC-BLOCK-4-TO-5)]
 
 endmodule
-1 Failure nodes. (0 pending and 1 stuck)
+1 Failure nodes. (0 pending and 1 failing)
 
-Stuck nodes:
+Failing nodes:
 
   Node id: 5
   Failure reason:

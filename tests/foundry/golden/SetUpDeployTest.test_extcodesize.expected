@@ -1,5 +1,5 @@
 
-┌─ 1 (init, expanded)
+┌─ 1 (root)
 │   k: #execute ~> CONTINUATION
 │   pc: 0
 │   callDepth: 0
@@ -7,7 +7,7 @@
 │   src: tests/foundry/test/SetUpDeploy.t.sol:18:35
 │
 │  (435 steps)
-├─ 3 (expanded)
+├─ 3
 │   k: #end EVMC_SUCCESS ~> #pc [ STOP ] ~> #execute ~> CONTINUATION:K
 │   pc: 112
 │   callDepth: 0
@@ -15,7 +15,7 @@
 │   src: tests/foundry/lib/forge-std/src/Script.sol:8:9
 │
 │  (1 step)
-├─ 4 (expanded)
+├─ 4
 │   k: #halt ~> #pc [ STOP ] ~> #execute ~> CONTINUATION:K
 │   pc: 112
 │   callDepth: 0
@@ -23,7 +23,7 @@
 │   src: tests/foundry/lib/forge-std/src/Script.sol:8:9
 │
 │  (2 steps)
-├─ 5 (leaf)
+├─ 5
 │   k: #halt ~> CONTINUATION:K
 │   pc: 112
 │   callDepth: 0
@@ -32,7 +32,7 @@
 │
 ┊  constraint: true
 ┊  subst: OMITTED SUBST
-└─ 2 (target, leaf)
+└─ 2 (leaf)
     k: #halt ~> CONTINUATION
     pc: PC_CELL_5d410f2a
     callDepth: CALLDEPTH_CELL_5d410f2a
@@ -41,7 +41,7 @@
 
 
 
-module SUMMARY-SETUPDEPLOYTEST-TEST-EXTCODESIZE
+module SUMMARY-SETUPDEPLOYTEST.TEST-EXTCODESIZE:54FC4ADD5DF72818F51CF0E55EF001823EBA0E0715C8B0B71E8EAF089508F226
     
     
            <kevm>
@@ -730,6 +730,6 @@ module SUMMARY-SETUPDEPLOYTEST-TEST-EXTCODESIZE
       [label(BASIC-BLOCK-4-TO-5)]
 
 endmodule
-0 Failure nodes. (0 pending and 0 stuck)
+0 Failure nodes. (0 pending and 0 failing)
 
 Access documentation for KEVM foundry integration at https://docs.runtimeverification.com/kevm-integration-for-foundry/

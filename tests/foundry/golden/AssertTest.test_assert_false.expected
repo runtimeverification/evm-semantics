@@ -1,5 +1,5 @@
 
-┌─ 1 (init, expanded)
+┌─ 1 (root)
 │   k: #execute ~> CONTINUATION
 │   pc: 0
 │   callDepth: 0
@@ -7,41 +7,32 @@
 │   src: tests/foundry/test/Simple.t.sol:5:54
 │
 │  (376 steps)
-├─ 3 (expanded)
+├─ 3
 │   k: #end EVMC_REVERT ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
 │   pc: 992
 │   callDepth: 0
 │   statusCode: STATUSCODE:StatusCode
 │
 │  (1 step)
-├─ 4 (expanded)
+├─ 4
 │   k: #halt ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
 │   pc: 992
 │   callDepth: 0
 │   statusCode: EVMC_REVERT
 │
 │  (2 steps)
-└─ 5 (expanded, stuck, leaf)
+└─ 5 (leaf)
     k: #halt ~> CONTINUATION:K
     pc: 992
     callDepth: 0
     statusCode: EVMC_REVERT
 
 
-└─ 2 (target, leaf)
-    k: #halt ~> CONTINUATION
-    pc: PC_CELL_5d410f2a
-    callDepth: CALLDEPTH_CELL_5d410f2a
-    statusCode: STATUSCODE_FINAL
-
-
-Target Nodes:
-
-2 (target, leaf)
-k: #halt ~> CONTINUATION
-pc: PC_CELL_5d410f2a
-callDepth: CALLDEPTH_CELL_5d410f2a
-statusCode: STATUSCODE_FINAL
+┌─ 2 (root, leaf)
+│   k: #halt ~> CONTINUATION
+│   pc: PC_CELL_5d410f2a
+│   callDepth: CALLDEPTH_CELL_5d410f2a
+│   statusCode: STATUSCODE_FINAL
 
 
 Node 5:
@@ -251,7 +242,7 @@ Node 5:
 
 
 
-module SUMMARY-ASSERTTEST-TEST-ASSERT-FALSE
+module SUMMARY-ASSERTTEST.TEST-ASSERT-FALSE:33EFE2E3FC9E4B6D788B00EE4020E715594396B00738FD8531B82138D4FA6E24
     
     
            <kevm>
@@ -886,9 +877,9 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-FALSE
       [label(BASIC-BLOCK-4-TO-5)]
 
 endmodule
-1 Failure nodes. (0 pending and 1 stuck)
+1 Failure nodes. (0 pending and 1 failing)
 
-Stuck nodes:
+Failing nodes:
 
   Node id: 5
   Failure reason:

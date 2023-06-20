@@ -1,5 +1,5 @@
 
-┌─ 1 (init, expanded)
+┌─ 1 (root)
 │   k: #execute ~> CONTINUATION
 │   pc: 0
 │   callDepth: 0
@@ -7,21 +7,21 @@
 │   src: tests/foundry/test/Simple.t.sol:5:54
 │
 │  (407 steps)
-├─ 3 (expanded)
+├─ 3
 │   k: #end EVMC_REVERT ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
 │   pc: 992
 │   callDepth: 0
 │   statusCode: STATUSCODE:StatusCode
 │
 │  (1 step)
-├─ 4 (expanded)
+├─ 4
 │   k: #halt ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
 │   pc: 992
 │   callDepth: 0
 │   statusCode: EVMC_REVERT
 │
 │  (2 steps)
-├─ 5 (leaf)
+├─ 5
 │   k: #halt ~> CONTINUATION:K
 │   pc: 992
 │   callDepth: 0
@@ -29,7 +29,7 @@
 │
 ┊  constraint: true
 ┊  subst: OMITTED SUBST
-└─ 2 (target, leaf)
+└─ 2 (leaf)
     k: #halt ~> CONTINUATION
     pc: PC_CELL_5d410f2a
     callDepth: CALLDEPTH_CELL_5d410f2a
@@ -38,7 +38,7 @@
 
 
 
-module SUMMARY-ASSERTTEST-TESTFAIL-ASSERT-FALSE
+module SUMMARY-ASSERTTEST.TESTFAIL-ASSERT-FALSE:24D689F16D97B94F361AD530228C63AE6BF3442CEFB0E5C52A61320C18F35F3C
     
     
            <kevm>
@@ -673,6 +673,6 @@ module SUMMARY-ASSERTTEST-TESTFAIL-ASSERT-FALSE
       [label(BASIC-BLOCK-4-TO-5)]
 
 endmodule
-0 Failure nodes. (0 pending and 0 stuck)
+0 Failure nodes. (0 pending and 0 failing)
 
 Access documentation for KEVM foundry integration at https://docs.runtimeverification.com/kevm-integration-for-foundry/

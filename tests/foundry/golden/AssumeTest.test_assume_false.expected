@@ -1,5 +1,5 @@
 
-┌─ 1 (init, expanded)
+┌─ 1 (root)
 │   k: #execute ~> CONTINUATION
 │   pc: 0
 │   callDepth: 0
@@ -7,49 +7,49 @@
 │   src: tests/foundry/test/AssumeTest.t.sol:5:44
 │
 │  (872 steps)
-├─ 3 (expanded)
+├─ 3
 │   k: CALL 9223372036854772765 645326474426547203313410069153905908525362434349 0 128  ...
 │   pc: 424
 │   callDepth: 0
 │   statusCode: STATUSCODE:StatusCode
 │
 │  (1 step)
-├─ 4 (expanded)
+├─ 4
 │   k: #checkCall 728815563385977040452943777879061427756277306518 0 ~> #call 728815563 ...
 │   pc: 424
 │   callDepth: 0
 │   statusCode: STATUSCODE:StatusCode
 │
 │  (1000 steps)
-├─ 5 (expanded)
+├─ 5
 │   k: #gas [ MSTORE , MSTORE 192 46308022326495007027972728677917914892729792999299745 ...
 │   pc: 2271
 │   callDepth: 0
 │   statusCode: STATUSCODE:StatusCode
 │
 │  (1000 steps)
-├─ 6 (expanded)
+├─ 6
 │   k: #gasExec ( LONDON , JUMP 2621 ) ~> #deductGas ~> #access [ JUMP , JUMP 2621 ] ~> ...
 │   pc: 2691
 │   callDepth: 0
 │   statusCode: STATUSCODE:StatusCode
 │
 │  (819 steps)
-├─ 7 (expanded)
+├─ 7
 │   k: CALL 9223372036854765620 645326474426547203313410069153905908525362434349 0 388  ...
 │   pc: 2389
 │   callDepth: 0
 │   statusCode: STATUSCODE:StatusCode
 │
 │  (1 step)
-├─ 8 (expanded)
+├─ 8
 │   k: #checkCall 728815563385977040452943777879061427756277306518 0 ~> #call 728815563 ...
 │   pc: 2389
 │   callDepth: 0
 │   statusCode: STATUSCODE:StatusCode
 │
 │  (387 steps)
-├─ 9 (expanded)
+├─ 9
 │   k: #end EVMC_SUCCESS ~> #pc [ STOP ] ~> #execute ~> CONTINUATION:K
 │   pc: 183
 │   callDepth: 0
@@ -57,7 +57,7 @@
 │   src: tests/foundry/lib/forge-std/src/Script.sol:8:9
 │
 │  (1 step)
-├─ 10 (expanded)
+├─ 10
 │   k: #halt ~> #pc [ STOP ] ~> #execute ~> CONTINUATION:K
 │   pc: 183
 │   callDepth: 0
@@ -65,7 +65,7 @@
 │   src: tests/foundry/lib/forge-std/src/Script.sol:8:9
 │
 │  (2 steps)
-└─ 11 (expanded, stuck, leaf)
+└─ 11 (leaf)
     k: #halt ~> CONTINUATION:K
     pc: 183
     callDepth: 0
@@ -73,20 +73,11 @@
     src: tests/foundry/lib/forge-std/src/Script.sol:8:9
 
 
-└─ 2 (target, leaf)
-    k: #halt ~> CONTINUATION
-    pc: PC_CELL_5d410f2a
-    callDepth: CALLDEPTH_CELL_5d410f2a
-    statusCode: STATUSCODE_FINAL
-
-
-Target Nodes:
-
-2 (target, leaf)
-k: #halt ~> CONTINUATION
-pc: PC_CELL_5d410f2a
-callDepth: CALLDEPTH_CELL_5d410f2a
-statusCode: STATUSCODE_FINAL
+┌─ 2 (root, leaf)
+│   k: #halt ~> CONTINUATION
+│   pc: PC_CELL_5d410f2a
+│   callDepth: CALLDEPTH_CELL_5d410f2a
+│   statusCode: STATUSCODE_FINAL
 
 
 Node 11:
@@ -305,7 +296,7 @@ Node 11:
 
 
 
-module SUMMARY-ASSUMETEST-TEST-ASSUME-FALSE
+module SUMMARY-ASSUMETEST.TEST-ASSUME-FALSE:FBA71744BDCE72BC45B9A84C3AB97CE0D7193B08F9D2C0C8DED04097536C129C
     
     
            <kevm>
@@ -391,44 +382,9 @@ module SUMMARY-ASSUMETEST-TEST-ASSUME-FALSE
                </evm>
                <network>
                  <accounts>
-                   ( ( <account>
-                     <acctID>
-                       645326474426547203313410069153905908525362434349
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     ...
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       0
-                     </nonce>
-                   </account> => <account>
-                     <acctID>
-                       645326474426547203313410069153905908525362434349
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     ...
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       0
-                     </nonce>
-                   </account> )
                    ( <account>
                      <acctID>
-                       728815563385977040452943777879061427756277306518
+                       645326474426547203313410069153905908525362434349
                      </acctID>
                      <balance>
                        0
@@ -441,9 +397,10 @@ module SUMMARY-ASSUMETEST-TEST-ASSUME-FALSE
                        .Map
                      </origStorage>
                      <nonce>
-                       1
+                       0
                      </nonce>
-                   </account> => <account>
+                   </account>
+                   <account>
                      <acctID>
                        728815563385977040452943777879061427756277306518
                      </acctID>
@@ -460,7 +417,7 @@ module SUMMARY-ASSUMETEST-TEST-ASSUME-FALSE
                      <nonce>
                        1
                      </nonce>
-                   </account> ) )
+                   </account> )
                  </accounts>
                  ...
                </network>
@@ -2281,9 +2238,9 @@ module SUMMARY-ASSUMETEST-TEST-ASSUME-FALSE
       [label(BASIC-BLOCK-10-TO-11)]
 
 endmodule
-1 Failure nodes. (0 pending and 1 stuck)
+1 Failure nodes. (0 pending and 1 failing)
 
-Stuck nodes:
+Failing nodes:
 
   Node id: 11
   Failure reason:

@@ -1,5 +1,5 @@
 
-┌─ 1 (init, expanded)
+┌─ 1 (root)
 │   k: #execute ~> CONTINUATION
 │   pc: 0
 │   callDepth: 0
@@ -7,21 +7,21 @@
 │   src: tests/foundry/test/AssumeTest.t.sol:5:44
 │
 │  (919 steps)
-├─ 3 (expanded)
+├─ 3
 │   k: CALL 9223372036854772734 645326474426547203313410069153905908525362434349 0 128  ...
 │   pc: 424
 │   callDepth: 0
 │   statusCode: STATUSCODE:StatusCode
 │
 │  (1 step)
-├─ 4 (expanded)
+├─ 4
 │   k: #checkCall 728815563385977040452943777879061427756277306518 0 ~> #call 728815563 ...
 │   pc: 424
 │   callDepth: 0
 │   statusCode: STATUSCODE:StatusCode
 │
 │  (299 steps)
-├─ 5 (expanded)
+├─ 5
 │   k: #end EVMC_SUCCESS ~> #pc [ STOP ] ~> #execute ~> CONTINUATION:K
 │   pc: 183
 │   callDepth: 0
@@ -29,7 +29,7 @@
 │   src: tests/foundry/lib/forge-std/src/Script.sol:8:9
 │
 │  (1 step)
-├─ 6 (expanded)
+├─ 6
 │   k: #halt ~> #pc [ STOP ] ~> #execute ~> CONTINUATION:K
 │   pc: 183
 │   callDepth: 0
@@ -37,7 +37,7 @@
 │   src: tests/foundry/lib/forge-std/src/Script.sol:8:9
 │
 │  (2 steps)
-└─ 7 (expanded, stuck, leaf)
+└─ 7 (leaf)
     k: #halt ~> CONTINUATION:K
     pc: 183
     callDepth: 0
@@ -45,20 +45,11 @@
     src: tests/foundry/lib/forge-std/src/Script.sol:8:9
 
 
-└─ 2 (target, leaf)
-    k: #halt ~> CONTINUATION
-    pc: PC_CELL_5d410f2a
-    callDepth: CALLDEPTH_CELL_5d410f2a
-    statusCode: STATUSCODE_FINAL
-
-
-Target Nodes:
-
-2 (target, leaf)
-k: #halt ~> CONTINUATION
-pc: PC_CELL_5d410f2a
-callDepth: CALLDEPTH_CELL_5d410f2a
-statusCode: STATUSCODE_FINAL
+┌─ 2 (root, leaf)
+│   k: #halt ~> CONTINUATION
+│   pc: PC_CELL_5d410f2a
+│   callDepth: CALLDEPTH_CELL_5d410f2a
+│   statusCode: STATUSCODE_FINAL
 
 
 Node 7:
@@ -274,7 +265,7 @@ Node 7:
 
 
 
-module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-FALSE
+module SUMMARY-ASSUMETEST.TESTFAIL-ASSUME-FALSE:E79D764ED5DB65DD3FEF9785F578B83AA722F62241FC1D544DC601C158EF695D
     
     
            <kevm>
@@ -360,44 +351,9 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-FALSE
                </evm>
                <network>
                  <accounts>
-                   ( ( <account>
-                     <acctID>
-                       645326474426547203313410069153905908525362434349
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     ...
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       0
-                     </nonce>
-                   </account> => <account>
-                     <acctID>
-                       645326474426547203313410069153905908525362434349
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     ...
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       0
-                     </nonce>
-                   </account> )
                    ( <account>
                      <acctID>
-                       728815563385977040452943777879061427756277306518
+                       645326474426547203313410069153905908525362434349
                      </acctID>
                      <balance>
                        0
@@ -410,9 +366,10 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-FALSE
                        .Map
                      </origStorage>
                      <nonce>
-                       1
+                       0
                      </nonce>
-                   </account> => <account>
+                   </account>
+                   <account>
                      <acctID>
                        728815563385977040452943777879061427756277306518
                      </acctID>
@@ -429,7 +386,7 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-FALSE
                      <nonce>
                        1
                      </nonce>
-                   </account> ) )
+                   </account> )
                  </accounts>
                  ...
                </network>
@@ -1379,9 +1336,9 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-FALSE
       [label(BASIC-BLOCK-6-TO-7)]
 
 endmodule
-1 Failure nodes. (0 pending and 1 stuck)
+1 Failure nodes. (0 pending and 1 failing)
 
-Stuck nodes:
+Failing nodes:
 
   Node id: 7
   Failure reason:

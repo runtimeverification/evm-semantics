@@ -1,5 +1,5 @@
 
-┌─ 1 (init, expanded)
+┌─ 1 (root)
 │   k: #execute ~> CONTINUATION
 │   pc: 0
 │   callDepth: 0
@@ -16,28 +16,28 @@
 ┃ (branch)
 ┣━━┓ constraint: { true #Equals VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int }
 ┃  │
-┃  ├─ 4 (expanded)
+┃  ├─ 4
 ┃  │   k: JUMPI 549 bool2Word ( VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int ) ~> #pc [ JUM ...
 ┃  │   pc: 545
 ┃  │   callDepth: 0
 ┃  │   statusCode: STATUSCODE:StatusCode
 ┃  │
 ┃  │  (116 steps)
-┃  ├─ 6 (expanded)
+┃  ├─ 6
 ┃  │   k: #end EVMC_REVERT ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
 ┃  │   pc: 992
 ┃  │   callDepth: 0
 ┃  │   statusCode: STATUSCODE:StatusCode
 ┃  │
 ┃  │  (1 step)
-┃  ├─ 8 (expanded)
+┃  ├─ 8
 ┃  │   k: #halt ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
 ┃  │   pc: 992
 ┃  │   callDepth: 0
 ┃  │   statusCode: EVMC_REVERT
 ┃  │
 ┃  │  (2 steps)
-┃  └─ 10 (expanded, stuck, leaf)
+┃  └─ 10 (leaf)
 ┃      k: #halt ~> CONTINUATION:K
 ┃      pc: 992
 ┃      callDepth: 0
@@ -45,14 +45,14 @@
 ┃
 ┗━━┓ constraint: { true #Equals ( notBool VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int ) }
    │
-   ├─ 5 (expanded)
+   ├─ 5
    │   k: JUMPI 549 bool2Word ( VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int ) ~> #pc [ JUM ...
    │   pc: 545
    │   callDepth: 0
    │   statusCode: STATUSCODE:StatusCode
    │
    │  (62 steps)
-   ├─ 7 (expanded)
+   ├─ 7
    │   k: #end EVMC_SUCCESS ~> #pc [ STOP ] ~> #execute ~> CONTINUATION:K
    │   pc: 213
    │   callDepth: 0
@@ -60,7 +60,7 @@
    │   src: tests/foundry/lib/forge-std/lib/ds-test/src/test.sol:37:38
    │
    │  (1 step)
-   ├─ 9 (expanded)
+   ├─ 9
    │   k: #halt ~> #pc [ STOP ] ~> #execute ~> CONTINUATION:K
    │   pc: 213
    │   callDepth: 0
@@ -68,7 +68,7 @@
    │   src: tests/foundry/lib/forge-std/lib/ds-test/src/test.sol:37:38
    │
    │  (2 steps)
-   ├─ 11 (leaf)
+   ├─ 11
    │   k: #halt ~> CONTINUATION:K
    │   pc: 213
    │   callDepth: 0
@@ -77,20 +77,12 @@
    │
    ┊  constraint: true
    ┊  subst: OMITTED SUBST
-   └─ 2 (target, leaf)
+   └─ 2 (leaf)
        k: #halt ~> CONTINUATION
        pc: PC_CELL_5d410f2a
        callDepth: CALLDEPTH_CELL_5d410f2a
        statusCode: STATUSCODE_FINAL
 
-
-Target Nodes:
-
-2 (target, leaf)
-k: #halt ~> CONTINUATION
-pc: PC_CELL_5d410f2a
-callDepth: CALLDEPTH_CELL_5d410f2a
-statusCode: STATUSCODE_FINAL
 
 
 Node 10:
@@ -305,7 +297,7 @@ Node 10:
 
 
 
-module SUMMARY-ASSERTTEST-TEST-REVERT-BRANCH
+module SUMMARY-ASSERTTEST.TEST-REVERT-BRANCH:3EF2F88AE21B21D91E372C879A7CAAFA75D7365732A59110C0FA2956B6824247
     
     
            <kevm>
@@ -1796,9 +1788,9 @@ module SUMMARY-ASSERTTEST-TEST-REVERT-BRANCH
       [label(BASIC-BLOCK-9-TO-11)]
 
 endmodule
-1 Failure nodes. (0 pending and 1 stuck)
+1 Failure nodes. (0 pending and 1 failing)
 
-Stuck nodes:
+Failing nodes:
 
   Node id: 10
   Failure reason:

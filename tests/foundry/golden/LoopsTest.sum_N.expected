@@ -1,5 +1,5 @@
 
-┌─ 1 (init, expanded)
+┌─ 1 (root)
 │   k: #execute ~> CONTINUATION
 │   pc: 0
 │   callDepth: 0
@@ -7,14 +7,14 @@
 │   src: tests/foundry/test/Loops.t.sol:5:278
 │
 │  (776 steps)
-├─ 3 (expanded)
+├─ 3
 │   k: CALL 9223372036854772793 645326474426547203313410069153905908525362434349 0 128  ...
 │   pc: 1509
 │   callDepth: 0
 │   statusCode: STATUSCODE:StatusCode
 │
 │  (1 step)
-├─ 4 (expanded)
+├─ 4
 │   k: #checkCall 728815563385977040452943777879061427756277306518 0 ~> #call 728815563 ...
 │   pc: 1509
 │   callDepth: 0
@@ -31,7 +31,7 @@
 ┃ (branch)
 ┣━━┓ constraint: { true #Equals VV0_n_114b9705:Int ==Int 0 }
 ┃  │
-┃  ├─ 6 (expanded)
+┃  ├─ 6
 ┃  │   k: JUMPI 1569 bool2Word ( VV0_n_114b9705:Int ==Int 0 ) ~> #pc [ JUMPI ] ~> #execute ...
 ┃  │   pc: 1539
 ┃  │   callDepth: 0
@@ -39,7 +39,7 @@
 ┃  │   src: tests/foundry/test/Loops.t.sol:164:178
 ┃  │
 ┃  │  (162 steps)
-┃  ├─ 8 (expanded)
+┃  ├─ 8
 ┃  │   k: #end EVMC_SUCCESS ~> #pc [ RETURN ] ~> #execute ~> CONTINUATION:K
 ┃  │   pc: 352
 ┃  │   callDepth: 0
@@ -47,7 +47,7 @@
 ┃  │   src: tests/foundry/lib/forge-std/src/Script.sol:8:9
 ┃  │
 ┃  │  (1 step)
-┃  ├─ 10 (expanded)
+┃  ├─ 10
 ┃  │   k: #halt ~> #pc [ RETURN ] ~> #execute ~> CONTINUATION:K
 ┃  │   pc: 352
 ┃  │   callDepth: 0
@@ -55,7 +55,7 @@
 ┃  │   src: tests/foundry/lib/forge-std/src/Script.sol:8:9
 ┃  │
 ┃  │  (2 steps)
-┃  ├─ 12 (leaf)
+┃  ├─ 12
 ┃  │   k: #halt ~> CONTINUATION:K
 ┃  │   pc: 352
 ┃  │   callDepth: 0
@@ -64,7 +64,7 @@
 ┃  │
 ┃  ┊  constraint: true
 ┃  ┊  subst: OMITTED SUBST
-┃  └─ 2 (target, leaf)
+┃  └─ 2 (leaf)
 ┃      k: #halt ~> CONTINUATION
 ┃      pc: PC_CELL_5d410f2a
 ┃      callDepth: CALLDEPTH_CELL_5d410f2a
@@ -72,7 +72,7 @@
 ┃
 ┗━━┓ constraint: { true #Equals ( notBool VV0_n_114b9705:Int ==Int 0 ) }
    │
-   ├─ 7 (expanded)
+   ├─ 7
    │   k: JUMPI 1569 bool2Word ( VV0_n_114b9705:Int ==Int 0 ) ~> #pc [ JUMPI ] ~> #execute ...
    │   pc: 1539
    │   callDepth: 0
@@ -80,7 +80,7 @@
    │   src: tests/foundry/test/Loops.t.sol:164:178
    │
    │  (162 steps)
-   ├─ 9 (expanded)
+   ├─ 9
    │   k: #end EVMC_SUCCESS ~> #pc [ RETURN ] ~> #execute ~> CONTINUATION:K
    │   pc: 352
    │   callDepth: 0
@@ -88,7 +88,7 @@
    │   src: tests/foundry/lib/forge-std/src/Script.sol:8:9
    │
    │  (1 step)
-   ├─ 11 (expanded)
+   ├─ 11
    │   k: #halt ~> #pc [ RETURN ] ~> #execute ~> CONTINUATION:K
    │   pc: 352
    │   callDepth: 0
@@ -96,7 +96,7 @@
    │   src: tests/foundry/lib/forge-std/src/Script.sol:8:9
    │
    │  (2 steps)
-   ├─ 13 (leaf)
+   ├─ 13
    │   k: #halt ~> CONTINUATION:K
    │   pc: 352
    │   callDepth: 0
@@ -105,7 +105,7 @@
    │
    ┊  constraint: true
    ┊  subst: OMITTED SUBST
-   └─ 2 (target, leaf)
+   └─ 2 (leaf)
        k: #halt ~> CONTINUATION
        pc: PC_CELL_5d410f2a
        callDepth: CALLDEPTH_CELL_5d410f2a
@@ -114,7 +114,7 @@
 
 
 
-module SUMMARY-LOOPSTEST-SUM-N
+module SUMMARY-LOOPSTEST.SUM-N:031A8A7FD8A89EA433A5C7307FD8E6EE86FED775C4188C1078F3DE94C1EE710D
     
     
            <kevm>
@@ -200,44 +200,9 @@ module SUMMARY-LOOPSTEST-SUM-N
                </evm>
                <network>
                  <accounts>
-                   ( ( <account>
-                     <acctID>
-                       645326474426547203313410069153905908525362434349
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     ...
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       0
-                     </nonce>
-                   </account> => <account>
-                     <acctID>
-                       645326474426547203313410069153905908525362434349
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     ...
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       0
-                     </nonce>
-                   </account> )
                    ( <account>
                      <acctID>
-                       728815563385977040452943777879061427756277306518
+                       645326474426547203313410069153905908525362434349
                      </acctID>
                      <balance>
                        0
@@ -250,9 +215,10 @@ module SUMMARY-LOOPSTEST-SUM-N
                        .Map
                      </origStorage>
                      <nonce>
-                       1
+                       0
                      </nonce>
-                   </account> => <account>
+                   </account>
+                   <account>
                      <acctID>
                        728815563385977040452943777879061427756277306518
                      </acctID>
@@ -269,7 +235,7 @@ module SUMMARY-LOOPSTEST-SUM-N
                      <nonce>
                        1
                      </nonce>
-                   </account> ) )
+                   </account> )
                  </accounts>
                  ...
                </network>
@@ -2135,6 +2101,6 @@ module SUMMARY-LOOPSTEST-SUM-N
       [label(BASIC-BLOCK-11-TO-13)]
 
 endmodule
-0 Failure nodes. (0 pending and 0 stuck)
+0 Failure nodes. (0 pending and 0 failing)
 
 Access documentation for KEVM foundry integration at https://docs.runtimeverification.com/kevm-integration-for-foundry/
