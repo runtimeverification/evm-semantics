@@ -409,6 +409,36 @@ test: test-conformance test-prove test-interactive test-parse test-kevm-pyk
 tests/ethereum-tests/LegacyTests/Constantinople/VMTests/%: KEVM_MODE     = VMTESTS
 tests/ethereum-tests/LegacyTests/Constantinople/VMTests/%: KEVM_SCHEDULE = DEFAULT
 
+# Fix-up for running single prover tests with make
+tests/specs/benchmarks/functional-spec%:              KPROVE_FILE   =  functional-spec
+tests/specs/benchmarks/functional-spec%:              KPROVE_MODULE =  FUNCTIONAL-SPEC-SYNTAX
+tests/specs/bihu/functional-spec%:                    KPROVE_FILE   =  functional-spec
+tests/specs/bihu/functional-spec%:                    KPROVE_MODULE =  FUNCTIONAL-SPEC-SYNTAX
+tests/specs/erc20/functional-spec%:                   KPROVE_MODULE =  FUNCTIONAL-SPEC-SYNTAX
+tests/specs/examples/solidity-code-spec%:             KPROVE_EXT    =  md
+tests/specs/examples/solidity-code-spec%:             KPROVE_FILE   =  solidity-code-spec
+tests/specs/examples/erc20-spec%:                     KPROVE_EXT    =  md
+tests/specs/examples/erc20-spec%:                     KPROVE_FILE   =  erc20-spec
+tests/specs/examples/erc721-spec%:                    KPROVE_EXT    =  md
+tests/specs/examples/erc721-spec%:                    KPROVE_FILE   =  erc721-spec
+tests/specs/examples/storage-spec%:                   KPROVE_EXT    =  md
+tests/specs/examples/storage-spec%:                   KPROVE_FILE   =  storage-spec
+tests/specs/examples/sum-to-n-spec%:                  KPROVE_FILE   =  sum-to-n-spec
+tests/specs/examples/sum-to-n-foundry-spec%:          KPROVE_FILE   =  sum-to-n-foundry-spec
+tests/specs/functional/infinite-gas-spec%:            KPROVE_FILE   =  infinite-gas-spec
+tests/specs/functional/evm-int-simplifications-spec%: KPROVE_FILE   =  evm-int-simplifications-spec
+tests/specs/functional/int-simplifications-spec%:     KPROVE_FILE   =  int-simplifications-spec
+tests/specs/functional/lemmas-no-smt-spec%:           KPROVE_FILE   =  lemmas-no-smt-spec
+tests/specs/functional/lemmas-no-smt-spec%:           KPROVE_OPTS   += --haskell-backend-arg="--smt=none"
+tests/specs/functional/lemmas-spec%:                  KPROVE_FILE   =  lemmas-spec
+tests/specs/functional/merkle-spec%:                  KPROVE_FILE   =  merkle-spec
+tests/specs/functional/storageRoot-spec%:             KPROVE_FILE   =  storageRoot-spec
+tests/specs/mcd/functional-spec%:                     KPROVE_FILE   =  functional-spec
+tests/specs/mcd/functional-spec%:                     KPROVE_MODULE =  FUNCTIONAL-SPEC-SYNTAX
+tests/specs/opcodes/evm-optimizations-spec%:          KPROVE_EXT    =  md
+tests/specs/opcodes/evm-optimizations-spec%:          KPROVE_FILE   =  evm-optimizations-spec
+tests/specs/opcodes/evm-optimizations-spec%:          KPROVE_MODULE =  EVM-OPTIMIZATIONS-SPEC-LEMMAS
+
 tests/%.run: tests/%
 	$(KEVM) interpret $< $(KEVM_OPTS) $(KRUN_OPTS) --backend $(TEST_CONCRETE_BACKEND)                                  \
 	    --mode $(KEVM_MODE) --schedule $(KEVM_SCHEDULE) --chainid $(KEVM_CHAINID)                                      \
