@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+<meta charset="utf-8" />
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0, maximum-scale=1.0"
+/>
+<meta
+  name="description"
+  content="K Semantics of the Ethereum Virtual Machine (EVM)"
+/>
+<meta
+  name="keywords"
+  content="runtime, verification, rv, k, ethereum virtual machine, evm"
+/>
+<meta name="author" content="EVM Semantics | Runtime Verification Inc" />
+<meta name="robots" content="index, follow" />
+
+<!--favicon icon-->
+<link rel="icon" type="image/png" href="../assets/img/favicon.ico" />
+
+<title>KEVM: Semantics of EVM in K | Runtime Verification, Inc. </title>
+
+<link rel="canonical" href="https://jellopaper.org/VERIFICATION/" />
+
+<!--web fonts-->
+<link
+  href="https://fonts.googleapis.com/css?family=Nunito:300,400,600,700,800"
+  rel="stylesheet"
+/>
+<link
+  href="https://fonts.googleapis.com/css?family=Lora:400i"
+  rel="stylesheet"
+/>
+
+<link
+  href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.14.0/css/all.min.css"
+  rel="stylesheet"
+/>
+
+<link href="../assets/css/index.css" rel="stylesheet" />
+
+<!--[if (gt IE 9) |!(IE)]><!-->
+<!--<link rel="stylesheet" href="/assets/vendor/custom-nav/css/effects/fade-menu.css"/>-->
+<!-- <link rel="stylesheet" href="../assets/k/vl-nav/css/effects/slide-menu.css" /> -->
+<!--<![endif]-->
+
+  </head>
+
+  <body>
+<header
+  class="navbar navbar-expand navbar-dark flex-column flex-md-row bd-navbar"
+>
+  <a class="logo-link" href="../index.html"> EVM Semantics </a>
+  <ul class="navbar-nav ml-md-auto">
+    <li class="nav-item">
+      <a
+        class="nav-link pl-2 pr-1 mx-1 py-3 my-n2"
+        href="https://github.com/runtimeverification/evm-semantics"
+        target="_blank"
+        rel="noopener"
+        aria-label="GitHub"
+      >
+        <i class="fab fa-github"></i>
+      </a>
+    </li>
+  </ul>
+  <!--
+  <a
+    class="btn btn-rv-blue d-none d-lg-inline-block mb-3 mb-md-0 ml-md-3"
+    href="../downloads"
+    >Download</a
+  >
+  -->
+</header>
+
+
+    <div class="container-fluid">
+      <div class="row flex-xl-nowrap">
+<div class="col-12 col-md-3 col-xl-2 bd-sidebar mb-3">
+  <form
+    role="search"
+    class="bd-search d-flex align-items-center justify-content-between"
+  >
+    <input
+      type="search"
+      class="form-control"
+      placeholder="Search..."
+      aria-label="Search for..."
+      autocomplete="false"
+      id="search-box"
+    />
+    <button
+      class="btn bd-search-docs-toggle d-md-none p-0 ml-3 collapsed"
+      type="button"
+      aria-label="Toggle docs navigation"
+      style="font-size: 1.4rem"
+    >
+      <i class="fas fa-bars"></i>
+    </button>
+  </form>
+  <nav class="collapse bd-links" aria-label="Main navigation">
+    <div class="bd-toc-item">
+      <a class="bd-toc-link" href="../">Homepage</a>
+      <a class="bd-toc-link" href="../INSTALL/">Install</a>
+    </div>
+  </nav>
+</div>
+
+        <main
+          class="col-12 col-md-6 col-xl-8 py-md-3 pl-md-5 bd-content"
+          role="main"
+        >
+          <div class="markdown-preview"><html><head></head><body><h1 id="verification-instructions-for-kevm">Verification Instructions for KEVM</h1>
+<p>We assume that KEVM is installed, and the <a href="https://github.com/runtimeverification/k/tree/master/k-distribution/k-tutorial" target="_blank" rel="noreferrer noopener">K tutorial</a> has been completed.
+This document provides instructions for kompiling and running claims using KEVM.</p>
+<p>In <code>tests/specs/examples</code>, you can find a few examples to get you started on proving with kevm.</p>
+<h2 id="example-1%3A-sum-to-n">Example 1: Sum to N</h2>
+<p>Have a look at the <a href="https://github.com/kframework/evm-semantics/tree/master/tests/specs/examples/sum-to-n-spec.k">sum-to-n-spec.k</a> file.
+It has two modules:</p>
+<ul>
+<li><code>VERIFICATION</code> - containing the EVM program and a few <code>simplification</code> rules.</li>
+<li><code>SUM-TO-N-SPEC</code> - containing the claims which will be executed.</li>
+</ul>
+<p>The first step is kompiling the <code>.k</code> file with the below command.</p>
+<pre><code class="language-sh">kevm kompile sum-to-n-spec.k <span class="token parameter variable">--pyk</span> <span class="token parameter variable">--backend</span> haskell --syntax-module VERIFICATION --main-module VERIFICATION <span class="token parameter variable">--definition</span> sum-to-n-spec/haskell
+</code></pre>
+<p>In this example, the arguments used are:</p>
+<ul>
+<li><code>—-pyk</code>: a flag that enables the pyk library.</li>
+<li><code>—-backend haskell</code>: used to kompile the definition with the Haskell backend, enabling the symbolic execution (<a href="https://github.com/runtimeverification/k/tree/master/k-distribution/k-tutorial/1_basic/20_backends#k-backends" target="_blank" rel="noreferrer noopener">more about it here</a>).</li>
+<li><code>--syntax-module VERIFICATION</code>: explicitly state the syntax module.</li>
+<li><code>--main-module VERIFICATION</code>: explicitly state the main module.</li>
+<li><code>--definition sum-to-n-spec/haskell</code>: the path where the kompiled definition is stored.</li>
+</ul>
+<p>Next, run the prover with:</p>
+<pre><code class="language-sh">kevm prove sum-to-n-spec.k <span class="token parameter variable">--backend</span> haskell <span class="token parameter variable">--definition</span> sum-to-n-spec/haskell
+</code></pre>
+<p>The expected output is <code>#Top</code> which represents that all the claims have been proven.</p>
+<h2 id="example-2%3A-faulty-erc20">Example 2: Faulty ERC20</h2>
+<p>This example will describe the process of running claims for an ERC20 contract.
+Have a look at <a href="../tests/specs/examples/erc20-spec/">erc20-spec.md</a>.
+It contains claims for a few basic ERC20 properties and the helper modules required to run the proofs.
+The ERC20 Solidity contract that is tested is <a href="https://github.com/kframework/evm-semantics/tree/master/tests/specs/examples/ERC20.sol">ERC20.sol</a>.</p>
+<p>In this example, we rely on a helper module, <code>ERC20-VERIFICATION</code>, which must be generated from the <a href="https://github.com/kframework/evm-semantics/tree/master/tests/specs/examples/ERC20.sol">ERC20.sol</a> Solidity contract.
+The module is generated using the following <code>solc-to-k</code> command.</p>
+<pre><code class="language-sh">kevm solc-to-k ERC20.sol ERC20 <span class="token parameter variable">--pyk</span> --main-module ERC20-VERIFICATION <span class="token operator">&gt;</span> erc20-bin-runtime.k
+</code></pre>
+<ul>
+<li><code>solc-to-k</code> will parse a Solidity contract and generate a helper K module.</li>
+<li><code>--main-module</code> is used to set the name of the module.</li>
+</ul>
+<p>The generated <code>erc20-bin-runtime.k</code> file contains K rules and productions for the contract’s bytecode, storage indexes for the state variables, and function selectors, among others.
+These rules are then used in the claims. As an example, the <code>#binRuntime(ERC20)</code> production, which is found in the <code>&lt;program&gt;</code> cell, will rewrite to <code>#parseByteStack (contractBytecode)</code>, parsing the hexadecimal string into a <code>ByteStack</code>.</p>
+<p>Following this, we can compile the Markdown file with:</p>
+<pre><code class="language-sh">kevm kompile erc20-spec.md <span class="token parameter variable">--pyk</span> <span class="token parameter variable">--backend</span> haskell --syntax-module VERIFICATION --main-module VERIFICATION <span class="token parameter variable">--definition</span> erc20-spec/haskell
+</code></pre>
+<p>Next, run the prover with:</p>
+<pre><code class="language-sh">kevm prove erc20-spec.md <span class="token parameter variable">--backend</span> haskell  <span class="token parameter variable">--definition</span> erc20-spec/haskell <span class="token parameter variable">--pyk</span> <span class="token parameter variable">--claim</span> ERC20-SPEC.decimals
+</code></pre>
+<p>Here, <code>--claim</code> tells the prover to run only the <code>decimals</code> spec from the <code>ERC20-SPEC</code> module.</p>
+<h2 id="more-to-know">More to know</h2>
+<p>To prove one of the specifications:</p>
+<pre><code class="language-sh">kevm prove tests/specs/erc20/ds/transfer-failure-1-a-spec.k <span class="token parameter variable">--definition</span> tests/specs/erc20/verification/haskell
+</code></pre>
+<p>You can also debug proofs interactively:</p>
+<pre><code class="language-sh">kevm prove tests/specs/erc20/ds/transfer-failure-1-a-spec.k <span class="token parameter variable">--definition</span> tests/specs/erc20/verification/haskell <span class="token parameter variable">--debugger</span>
+</code></pre>
+<p>In addition to this, you can use <code>kevm show-kcfg ...</code> or <code>kevm view-kcfg ...</code> to get a visualization.</p>
+<p><code>kevm view-kcfg [spec_file] [--save-directory save_directory] [--claim claim_label] ...</code> command takes the same basic arguments as <code>kevm prove --pyk ...</code> does, including:</p>
+<ul>
+<li><code>spec_file</code> is the file to look in for specifications. This file is read like with <code>kevm prove —pyk …</code>; the <code>KProve.get_claims</code> invokes the frontend.</li>
+<li><code>--save_directory</code> must be passed as where the KCFGs have been saved (by a previous call to <code>kevm prove --pyk --save-directory save_directory ...</code></li>
+<li><code>--claim claim_label</code> option is added, but unlike the <code>kevm prove --pyk ...</code>, you can only repeat it once. This option lets you select an individual claim out of the <code>spec_file</code>; if not supplied, it’s assumed that only one spec is present.</li>
+<li><code>--spec-module spec_module</code> is also an inherited option.</li>
+</ul>
+<p>The interactive KCFG (<code>view-kcfg</code>) puts your terminal in <em>application mode</em>. To select text in this mode, hold the modifier key provided by your terminal emulator (typically SHIFT or OPTION) while clicking and dragging. Refer to the <a href="https://github.com/Textualize/textual/blob/main/FAQ.md#how-can-i-select-and-copy-text-in-a-textual-app" target="_blank" rel="noreferrer noopener">Textualize documentation</a> for more information.</p>
+<p>A running example:</p>
+<pre><code class="language-sh"><span class="token function">mkdir</span> kcfgs
+kevm kompile <span class="token parameter variable">--pyk</span> <span class="token parameter variable">--backend</span> haskell tests/specs/benchmarks/verification.k <span class="token parameter variable">--definition</span> tests/specs/benchmarks/verification/haskell --main-module VERIFICATION --syntax-module VERIFICATION
+kevm prove tests/specs/benchmarks/address00-spec.k <span class="token parameter variable">--definition</span> tests/specs/benchmarks/verification/haskell <span class="token parameter variable">--pyk</span> <span class="token parameter variable">--verbose</span> --save-directory kcfgs
+kevm view-kcfg <span class="token parameter variable">--verbose</span> kcfgs tests/specs/benchmarks/address00-spec.k <span class="token parameter variable">--definition</span> tests/specs/benchmarks/verification/haskell
+</code></pre>
+</body></html></div>
+        </main>
+
+        <!-- Page ToC -->
+        <div class="col-12 col-md-3 col-xl-2 py-md-3 bd-sidebar page-toc mb-3">
+          
+<div>
+<details style="padding:0.25rem 0;;padding-left: 0px;">
+            <summary class="bd-toc-link-wrapper">
+              <a href="#verification-instructions-for-kevm" class="bd-toc-link">Verification Instructions for KEVM</a>
+              </summary>
+            <div>
+              <div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#example-1%3A-sum-to-n"
+                class="bd-toc-link"
+                style="padding-left: 8px;;"
+              >
+                Example 1: Sum to N
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#example-2%3A-faulty-erc20"
+                class="bd-toc-link"
+                style="padding-left: 8px;;"
+              >
+                Example 2: Faulty ERC20
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#more-to-know"
+                class="bd-toc-link"
+                style="padding-left: 8px;;"
+              >
+                More to know
+              </a></div>
+            </div>
+          </details>
+        
+</div>
+
+        </div>
+        <div class="btn btn-rv-blue page-toc-toggle-btn"></div>
+        <!-- End Page ToC -->
+      </div>
+    </div>
+<!-- The footer is now controlled by the k-web-theme git submodule -->
+<footer id="rvsite-footer" class="app-footer text-md-left text-center">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-md-4 mb-md-0 mb-4">
+        <a href="https://runtimeverification.com/" target="_blank">
+          <picture>
+            <source
+              srcset="
+                https://runtimeverification.com/assets/img/rv-logo-dark.png
+              "
+              media="(prefers-color-scheme: dark)"
+            />
+            <img
+              class="logo-dark"
+              src="https://runtimeverification.com/assets/img/rv-logo.png"
+              alt="Runtime Verification logo"
+              style="height: 32px"
+            /> </picture
+        ></a>
+        <p class="mt-2 text-md-left copyright">
+          <a href="https://goo.gl/maps/5iu2nhbUA48fs7fP6" target="_blank"
+            >333 North Green Street, Chicago, IL</a
+          >
+        </p>
+      </div>
+      <div class="col-md-4 text-md-center mb-md-0 mb-4"></div>
+      <div class="col-md-4 mb-md-0 mb-4 pl-0 text-md-right">
+        <p class="copyright">2023 © all rights reserved</p>
+        <span class="copyright"><a href="https://runtimeverification.com/privacy-policy">privacy policy</a> | <a
+                href="https://runtimeverification.com/terms-of-use">terms of use</a></span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Typist/1.2/typist.min.js"></script>
+    <script src="../assets/js/index.js"></script>
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script
+  async
+  src="https://www.googletagmanager.com/gtag/js?id=G-QL0D8HRYFW"
+></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag() {
+    dataLayer.push(arguments);
+  }
+  gtag("js", new Date());
+  gtag("config", "G-QL0D8HRYFW");
+</script>
+
+  </body>
+</html>
