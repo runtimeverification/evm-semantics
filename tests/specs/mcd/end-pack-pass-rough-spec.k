@@ -256,7 +256,7 @@ module END-PACK-PASS-ROUGH-SPEC
        andBool ((#rangeUInt(256, ABI_x *Int ABI_y)))))))
 
 
-    [trusted, matching(infGas)]
+    [trusted]
 
 
     // End_adduu
@@ -355,7 +355,7 @@ module END-PACK-PASS-ROUGH-SPEC
        andBool ((#rangeUInt(256, ABI_x +Int ABI_y)))))))
 
 
-    [trusted, matching(infGas)]
+    [trusted]
 
 
     // Vat_move-diff
@@ -472,7 +472,7 @@ module END-PACK-PASS-ROUGH-SPEC
        andBool #Vat.can[ABI_src][CALLER_ID] =/=Int #Vat.dai[ABI_src]
        andBool #Vat.can[ABI_src][CALLER_ID] =/=Int #Vat.dai[ABI_dst]
        andBool #Vat.dai[ABI_src] =/=Int #Vat.dai[ABI_dst]
-    [trusted, matching(infGas)]
+    [trusted]
 
 
 endmodule

@@ -150,6 +150,6 @@ module CREATE-SPEC
             </ethereum>
             ...
           </kevm>
-      requires 0 <=Int CALL_DEPTH andBool CALL_DEPTH <Int 1024  [trusted, matching(#range)]
+      requires 0 <=Int CALL_DEPTH andBool CALL_DEPTH <Int 1024  [trusted]
 
 endmodule

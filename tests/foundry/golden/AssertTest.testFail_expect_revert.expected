@@ -1,64 +1,54 @@
 
-┌─ 1 (init, expanded)
-│    k: #execute ~> CONTINUATION
-│    pc: 0
-│    callDepth: 0
-│    statusCode: STATUSCODE
-│    src: tests/foundry/test/Simple.t.sol:5:54
+┌─ 1 (root)
+│   k: #execute ~> CONTINUATION
+│   pc: 0
+│   callDepth: 0
+│   statusCode: STATUSCODE
+│   src: tests/foundry/test/Simple.t.sol:5:54
 │
 │  (554 steps)
-├─ 3 (expanded)
-│    k: CALL 9223372036854772901 645326474426547203313410069153905908525362434349 0 128  ...
-│    pc: 480
-│    callDepth: 0
-│    statusCode: STATUSCODE:StatusCode
-│    src: tests/foundry/lib/forge-std/lib/ds-test/src/test.sol:58:59
+├─ 3
+│   k: CALL 9223372036854772901 645326474426547203313410069153905908525362434349 0 128  ...
+│   pc: 480
+│   callDepth: 0
+│   statusCode: STATUSCODE:StatusCode
+│   src: tests/foundry/lib/forge-std/lib/ds-test/src/test.sol:58:59
 │
 │  (1 step)
-├─ 4 (expanded)
-│    k: #checkCall 728815563385977040452943777879061427756277306518 0 ~> #call 728815563 ...
-│    pc: 480
-│    callDepth: 0
-│    statusCode: STATUSCODE:StatusCode
-│    src: tests/foundry/lib/forge-std/lib/ds-test/src/test.sol:58:59
+├─ 4
+│   k: #checkCall 728815563385977040452943777879061427756277306518 0 ~> #call 728815563 ...
+│   pc: 480
+│   callDepth: 0
+│   statusCode: STATUSCODE:StatusCode
+│   src: tests/foundry/lib/forge-std/lib/ds-test/src/test.sol:58:59
 │
 │  (212 steps)
-├─ 5 (expanded)
-│    k: #end EVMC_REVERT ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
-│    pc: 992
-│    callDepth: 0
-│    statusCode: STATUSCODE:StatusCode
+├─ 5
+│   k: #end EVMC_REVERT ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
+│   pc: 992
+│   callDepth: 0
+│   statusCode: STATUSCODE:StatusCode
 │
 │  (1 step)
-├─ 6 (expanded)
-│    k: #halt ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
-│    pc: 992
-│    callDepth: 0
-│    statusCode: EVMC_REVERT
+├─ 6
+│   k: #halt ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
+│   pc: 992
+│   callDepth: 0
+│   statusCode: EVMC_REVERT
 │
 │  (5 steps)
-└─ 7 (expanded, stuck, leaf)
-     k: #halt ~> CONTINUATION:K
-     pc: 992
-     callDepth: 0
-     statusCode: EVMC_SUCCESS
-   (stuck)
+└─ 7 (leaf)
+    k: #halt ~> CONTINUATION:K
+    pc: 992
+    callDepth: 0
+    statusCode: EVMC_SUCCESS
 
 
-└─ 2 (target, leaf)
-     k: #halt ~> CONTINUATION
-     pc: PC_CELL_5d410f2a
-     callDepth: CALLDEPTH_CELL_5d410f2a
-     statusCode: STATUSCODE_FINAL
-
-
-Target Nodes:
-
-2 (target, leaf)
- k: #halt ~> CONTINUATION
- pc: PC_CELL_5d410f2a
- callDepth: CALLDEPTH_CELL_5d410f2a
- statusCode: STATUSCODE_FINAL
+┌─ 2 (root, leaf)
+│   k: #halt ~> CONTINUATION
+│   pc: PC_CELL_5d410f2a
+│   callDepth: CALLDEPTH_CELL_5d410f2a
+│   statusCode: STATUSCODE_FINAL
 
 
 Node 7:
@@ -276,7 +266,7 @@ Node 7:
 
 
 
-module SUMMARY-ASSERTTEST-TESTFAIL-EXPECT-REVERT
+module SUMMARY-ASSERTTEST.TESTFAIL-EXPECT-REVERT:27118A76913992C6F22579DEA712CDD72F73F4693B99474945A4E557186D6A18
     
     
            <kevm>
@@ -302,6 +292,8 @@ module SUMMARY-ASSERTTEST-TESTFAIL-EXPECT-REVERT
                    .List
                  </interimStates>
                  <callState>
+                   ...
+                   ...
                    <id>
                      728815563385977040452943777879061427756277306518
                    </id>
@@ -320,6 +312,8 @@ module SUMMARY-ASSERTTEST-TESTFAIL-EXPECT-REVERT
                    <localMem>
                      ( .Bytes => b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xf4\x84H\x14\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" )
                    </localMem>
+                   ...
+                   ...
                    <memoryUsed>
                      ( 0 => 5 )
                    </memoryUsed>
@@ -332,7 +326,6 @@ module SUMMARY-ASSERTTEST-TESTFAIL-EXPECT-REVERT
                    <callDepth>
                      0
                    </callDepth>
-                   ...
                  </callState>
                  <substate>
                    <log>
@@ -366,6 +359,7 @@ module SUMMARY-ASSERTTEST-TESTFAIL-EXPECT-REVERT
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        .Map
                      </storage>
@@ -375,7 +369,6 @@ module SUMMARY-ASSERTTEST-TESTFAIL-EXPECT-REVERT
                      <nonce>
                        0
                      </nonce>
-                     ...
                    </account>
                    <account>
                      <acctID>
@@ -384,6 +377,7 @@ module SUMMARY-ASSERTTEST-TESTFAIL-EXPECT-REVERT
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        .Map
                      </storage>
@@ -393,7 +387,6 @@ module SUMMARY-ASSERTTEST-TESTFAIL-EXPECT-REVERT
                      <nonce>
                        1
                      </nonce>
-                     ...
                    </account> )
                  </accounts>
                  ...
@@ -490,6 +483,7 @@ module SUMMARY-ASSERTTEST-TESTFAIL-EXPECT-REVERT
        andBool ( ORIGIN_ID:Int <Int pow160
        andBool ( NUMBER_CELL:Int <=Int maxSInt256
                ))))))
+      [label(BASIC-BLOCK-1-TO-3)]
     
            <kevm>
              <k>
@@ -515,6 +509,8 @@ module SUMMARY-ASSERTTEST-TESTFAIL-EXPECT-REVERT
                    .List
                  </interimStates>
                  <callState>
+                   ...
+                   ...
                    <id>
                      728815563385977040452943777879061427756277306518
                    </id>
@@ -533,6 +529,8 @@ module SUMMARY-ASSERTTEST-TESTFAIL-EXPECT-REVERT
                    <localMem>
                      b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xf4\x84H\x14\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
                    </localMem>
+                   ...
+                   ...
                    <memoryUsed>
                      5
                    </memoryUsed>
@@ -545,7 +543,6 @@ module SUMMARY-ASSERTTEST-TESTFAIL-EXPECT-REVERT
                    <callDepth>
                      0
                    </callDepth>
-                   ...
                  </callState>
                  <substate>
                    <log>
@@ -579,6 +576,7 @@ module SUMMARY-ASSERTTEST-TESTFAIL-EXPECT-REVERT
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        .Map
                      </storage>
@@ -588,7 +586,6 @@ module SUMMARY-ASSERTTEST-TESTFAIL-EXPECT-REVERT
                      <nonce>
                        0
                      </nonce>
-                     ...
                    </account>
                    <account>
                      <acctID>
@@ -597,6 +594,7 @@ module SUMMARY-ASSERTTEST-TESTFAIL-EXPECT-REVERT
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        .Map
                      </storage>
@@ -606,7 +604,6 @@ module SUMMARY-ASSERTTEST-TESTFAIL-EXPECT-REVERT
                      <nonce>
                        1
                      </nonce>
-                     ...
                    </account> )
                  </accounts>
                  ...
@@ -691,6 +688,7 @@ module SUMMARY-ASSERTTEST-TESTFAIL-EXPECT-REVERT
        andBool ( ORIGIN_ID:Int <Int pow160
        andBool ( NUMBER_CELL:Int <=Int maxSInt256
                ))))))
+      [label(BASIC-BLOCK-3-TO-4)]
     
            <kevm>
              <k>
@@ -720,6 +718,8 @@ module SUMMARY-ASSERTTEST-TESTFAIL-EXPECT-REVERT
                    .List
                  </interimStates>
                  <callState>
+                   ...
+                   ...
                    <id>
                      728815563385977040452943777879061427756277306518
                    </id>
@@ -738,6 +738,8 @@ module SUMMARY-ASSERTTEST-TESTFAIL-EXPECT-REVERT
                    <localMem>
                      ( b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xf4\x84H\x14\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" => b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xf4\x84H\x14\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" )
                    </localMem>
+                   ...
+                   ...
                    <memoryUsed>
                      5
                    </memoryUsed>
@@ -750,7 +752,6 @@ module SUMMARY-ASSERTTEST-TESTFAIL-EXPECT-REVERT
                    <callDepth>
                      0
                    </callDepth>
-                   ...
                  </callState>
                  <substate>
                    <log>
@@ -784,6 +785,7 @@ module SUMMARY-ASSERTTEST-TESTFAIL-EXPECT-REVERT
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        .Map
                      </storage>
@@ -793,7 +795,6 @@ module SUMMARY-ASSERTTEST-TESTFAIL-EXPECT-REVERT
                      <nonce>
                        0
                      </nonce>
-                     ...
                    </account>
                    <account>
                      <acctID>
@@ -802,6 +803,7 @@ module SUMMARY-ASSERTTEST-TESTFAIL-EXPECT-REVERT
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        .Map
                      </storage>
@@ -811,7 +813,6 @@ module SUMMARY-ASSERTTEST-TESTFAIL-EXPECT-REVERT
                      <nonce>
                        1
                      </nonce>
-                     ...
                    </account> )
                  </accounts>
                  ...
@@ -901,6 +902,7 @@ module SUMMARY-ASSERTTEST-TESTFAIL-EXPECT-REVERT
        andBool ( ORIGIN_ID:Int <Int pow160
        andBool ( NUMBER_CELL:Int <=Int maxSInt256
                ))))))
+      [label(BASIC-BLOCK-4-TO-5)]
     
            <kevm>
              <k>
@@ -930,6 +932,8 @@ module SUMMARY-ASSERTTEST-TESTFAIL-EXPECT-REVERT
                    .List
                  </interimStates>
                  <callState>
+                   ...
+                   ...
                    <id>
                      728815563385977040452943777879061427756277306518
                    </id>
@@ -948,6 +952,8 @@ module SUMMARY-ASSERTTEST-TESTFAIL-EXPECT-REVERT
                    <localMem>
                      b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xf4\x84H\x14\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
                    </localMem>
+                   ...
+                   ...
                    <memoryUsed>
                      5
                    </memoryUsed>
@@ -960,7 +966,6 @@ module SUMMARY-ASSERTTEST-TESTFAIL-EXPECT-REVERT
                    <callDepth>
                      0
                    </callDepth>
-                   ...
                  </callState>
                  <substate>
                    <log>
@@ -994,6 +999,7 @@ module SUMMARY-ASSERTTEST-TESTFAIL-EXPECT-REVERT
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        .Map
                      </storage>
@@ -1003,7 +1009,6 @@ module SUMMARY-ASSERTTEST-TESTFAIL-EXPECT-REVERT
                      <nonce>
                        0
                      </nonce>
-                     ...
                    </account>
                    <account>
                      <acctID>
@@ -1012,6 +1017,7 @@ module SUMMARY-ASSERTTEST-TESTFAIL-EXPECT-REVERT
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        .Map
                      </storage>
@@ -1021,7 +1027,6 @@ module SUMMARY-ASSERTTEST-TESTFAIL-EXPECT-REVERT
                      <nonce>
                        1
                      </nonce>
-                     ...
                    </account> )
                  </accounts>
                  ...
@@ -1111,6 +1116,7 @@ module SUMMARY-ASSERTTEST-TESTFAIL-EXPECT-REVERT
        andBool ( ORIGIN_ID:Int <Int pow160
        andBool ( NUMBER_CELL:Int <=Int maxSInt256
                ))))))
+      [label(BASIC-BLOCK-5-TO-6)]
     
            <kevm>
              <k>
@@ -1140,6 +1146,8 @@ module SUMMARY-ASSERTTEST-TESTFAIL-EXPECT-REVERT
                    .List
                  </interimStates>
                  <callState>
+                   ...
+                   ...
                    <id>
                      728815563385977040452943777879061427756277306518
                    </id>
@@ -1158,6 +1166,8 @@ module SUMMARY-ASSERTTEST-TESTFAIL-EXPECT-REVERT
                    <localMem>
                      b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xf4\x84H\x14\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
                    </localMem>
+                   ...
+                   ...
                    <memoryUsed>
                      5
                    </memoryUsed>
@@ -1170,7 +1180,6 @@ module SUMMARY-ASSERTTEST-TESTFAIL-EXPECT-REVERT
                    <callDepth>
                      0
                    </callDepth>
-                   ...
                  </callState>
                  <substate>
                    <log>
@@ -1204,6 +1213,7 @@ module SUMMARY-ASSERTTEST-TESTFAIL-EXPECT-REVERT
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        .Map
                      </storage>
@@ -1213,7 +1223,6 @@ module SUMMARY-ASSERTTEST-TESTFAIL-EXPECT-REVERT
                      <nonce>
                        0
                      </nonce>
-                     ...
                    </account>
                    <account>
                      <acctID>
@@ -1222,6 +1231,7 @@ module SUMMARY-ASSERTTEST-TESTFAIL-EXPECT-REVERT
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        .Map
                      </storage>
@@ -1231,7 +1241,6 @@ module SUMMARY-ASSERTTEST-TESTFAIL-EXPECT-REVERT
                      <nonce>
                        1
                      </nonce>
-                     ...
                    </account> )
                  </accounts>
                  ...
@@ -1321,12 +1330,12 @@ module SUMMARY-ASSERTTEST-TESTFAIL-EXPECT-REVERT
        andBool ( ORIGIN_ID:Int <Int pow160
        andBool ( NUMBER_CELL:Int <=Int maxSInt256
                ))))))
+      [label(BASIC-BLOCK-6-TO-7)]
 
 endmodule
+1 Failure nodes. (0 pending and 1 failing)
 
-1 Failure nodes. (0 pending and 1 stuck)
-
-Stuck nodes:
+Failing nodes:
 
   Node id: 7
   Failure reason:
