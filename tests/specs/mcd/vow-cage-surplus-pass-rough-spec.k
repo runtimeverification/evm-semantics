@@ -367,7 +367,7 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
        andBool (#rangeUInt(256, VMemoryUsed)))))
 
 
-    [trusted, matching(infGas)]
+    [trusted]
 
 
     // Vat_dai
@@ -467,7 +467,7 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
 
        andBool #lookup(ACCT_ID_STORAGE, #Vat.dai[ABI_usr]) ==Int Rad
        andBool #lookup(ACCT_ID_ORIG_STORAGE, #Vat.dai[ABI_usr]) ==Int Junk_0
-    [trusted, matching(infGas)]
+    [trusted]
 
 
     // Vat_sin
@@ -567,7 +567,7 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
 
        andBool #lookup(ACCT_ID_STORAGE, #Vat.sin[ABI_usr]) ==Int Rad
        andBool #lookup(ACCT_ID_ORIG_STORAGE, #Vat.sin[ABI_usr]) ==Int Junk_0
-    [trusted, matching(infGas)]
+    [trusted]
 
 
     // Vat_heal
@@ -689,7 +689,7 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
        andBool #Vat.dai[CALLER_ID] =/=Int #Vat.vice
        andBool #Vat.dai[CALLER_ID] =/=Int #Vat.debt
        andBool #Vat.vice =/=Int #Vat.debt
-    [trusted, matching(infGas)]
+    [trusted]
 
 
     // Flapper_cage
@@ -833,7 +833,7 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
        andBool #Vat.can[ACCT_ID][ACCT_ID] =/=Int #Vat.dai[ACCT_ID]
        andBool #Vat.can[ACCT_ID][ACCT_ID] =/=Int #Vat.dai[CALLER_ID]
        andBool #Vat.dai[ACCT_ID] =/=Int #Vat.dai[CALLER_ID]
-    [trusted, matching(infGas)]
+    [trusted]
 
 
     // Flopper_cage
@@ -945,7 +945,7 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
        andBool #Flopper.wards[CALLER_ID] =/=Int #Flopper.live
        andBool #Flopper.wards[CALLER_ID] =/=Int #Flopper.vow
        andBool #Flopper.live =/=Int #Flopper.vow
-    [trusted, matching(infGas)]
+    [trusted]
 
 
 endmodule

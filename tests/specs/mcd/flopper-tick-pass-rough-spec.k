@@ -222,7 +222,7 @@ module FLOPPER-TICK-PASS-ROUGH-SPEC
        andBool ((#rangeUInt(48, ABI_x +Int ABI_y)))))))
 
 
-    [trusted, matching(infGas)]
+    [trusted]
 
 
 endmodule

@@ -42,8 +42,8 @@ module LEMMAS-MCD-SYNTAX
  // -------------------------------------------------
     rule #string2Word(S) => #asWord(#padRightToWidth(32, #parseByteStackRaw(S)))
 
-    syntax Int ::= nthbyteof ( Int , Int , Int ) [function, smtlib(smt_nthbyteof), proj]
- // ------------------------------------------------------------------------------------
+    syntax Int ::= nthbyteof ( Int , Int , Int ) [function, smtlib(smt_nthbyteof)]
+ // ------------------------------------------------------------------------------
     rule nthbyteof(V, I, N) => nthbyteof(V /Int 256, I, N -Int 1) when N  >Int (I +Int 1) [concrete]
     rule nthbyteof(V, I, N) =>           V modInt 256             when N ==Int (I +Int 1) [concrete]
 
