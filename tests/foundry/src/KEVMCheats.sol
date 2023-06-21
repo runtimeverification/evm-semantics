@@ -173,127 +173,127 @@ abstract contract SymbolicWords {
     }
 
     function freshSInt248() external returns (int248) {
-        return int248(kevm.freshUInt(31));
+        return int248(uint248(kevm.freshUInt(31)));
     }
 
     function freshSInt240() external returns (int240) {
-        return int240(kevm.freshUInt(30));
+        return int240(uint240(kevm.freshUInt(30)));
     }
 
     function freshSInt232() external returns (int232) {
-        return int232(kevm.freshUInt(29));
+        return int232(uint232(kevm.freshUInt(29)));
     }
 
     function freshSInt224() external returns (int224) {
-        return int224(kevm.freshUInt(28));
+        return int224(uint224(kevm.freshUInt(28)));
     }
 
     function freshSInt216() external returns (int216) {
-        return int216(kevm.freshUInt(27));
+        return int216(uint216(kevm.freshUInt(27)));
     }
 
     function freshSInt208() external returns (int208) {
-        return int208(kevm.freshUInt(26));
+        return int208(uint208(kevm.freshUInt(26)));
     }
 
     function freshSInt200() external returns (int200) {
-        return int200(kevm.freshUInt(25));
+        return int200(uint200(kevm.freshUInt(25)));
     }
 
     function freshSInt192() external returns (int192) {
-        return int192(kevm.freshUInt(24));
+        return int192(uint192(kevm.freshUInt(24)));
     }
 
     function freshSInt184() external returns (int184) {
-        return int184(kevm.freshUInt(23));
+        return int184(uint184(kevm.freshUInt(23)));
     }
 
     function freshSInt176() external returns (int176) {
-        return int176(kevm.freshUInt(22));
+        return int176(uint176(kevm.freshUInt(22)));
     }
 
     function freshSInt168() external returns (int168) {
-        return int168(kevm.freshUInt(21));
+        return int168(uint168(kevm.freshUInt(21)));
     }
 
     function freshSInt160() external returns (int160) {
-        return int160(kevm.freshUInt(20));
+        return int160(uint160(kevm.freshUInt(20)));
     }
 
     function freshSInt152() external returns (int152) {
-        return int152(kevm.freshUInt(19));
+        return int152(uint152(kevm.freshUInt(19)));
     }
 
     function freshSInt144() external returns (int144) {
-        return int144(kevm.freshUInt(18));
+        return int144(uint144(kevm.freshUInt(18)));
     }
 
     function freshSInt136() external returns (int136) {
-        return int136(kevm.freshUInt(17));
+        return int136(uint136(kevm.freshUInt(17)));
     }
 
     function freshSInt128() external returns (int128) {
-        return int128(kevm.freshUInt(16));
+        return int128(uint128(kevm.freshUInt(16)));
     }
 
     function freshSInt120() external returns (int120) {
-        return int120(kevm.freshUInt(15));
+        return int120(uint120(kevm.freshUInt(15)));
     }
 
     function freshSInt112() external returns (int112) {
-        return int112(kevm.freshUInt(14));
+        return int112(uint112(kevm.freshUInt(14)));
     }
 
     function freshSInt104() external returns (int104) {
-        return int104(kevm.freshUInt(13));
+        return int104(uint104(kevm.freshUInt(13)));
     }
 
     function freshSInt96() external returns (int96) {
-        return int96(kevm.freshUInt(12));
+        return int96(uint96(kevm.freshUInt(12)));
     }
 
     function freshSInt88() external returns (int88) {
-        return int88(kevm.freshUInt(11));
+        return int88(uint88(kevm.freshUInt(11)));
     }
 
     function freshSInt80() external returns (int80) {
-        return int80(kevm.freshUInt(10));
+        return int80(uint80(kevm.freshUInt(10)));
     }
 
     function freshSInt72() external returns (int72) {
-        return int72(kevm.freshUInt(9));
+        return int72(uint72(kevm.freshUInt(9)));
     }
 
     function freshSInt64() external returns (int64) {
-        return int64(kevm.freshUInt(8));
+        return int64(uint64(kevm.freshUInt(8)));
     }
 
     function freshSInt56() external returns (int56) {
-        return int56(kevm.freshUInt(7));
+        return int56(uint56(kevm.freshUInt(7)));
     }
 
     function freshSInt48() external returns (int48) {
-        return int48(kevm.freshUInt(6));
+        return int48(uint48(kevm.freshUInt(6)));
     }
 
     function freshSInt40() external returns (int40) {
-        return int40(kevm.freshUInt(5));
+        return int40(uint40(kevm.freshUInt(5)));
     }
 
     function freshSInt32() external returns (int32) {
-        return int32(kevm.freshUInt(4));
+        return int32(uint32(kevm.freshUInt(4)));
     }
 
     function freshSInt24() external returns (int24) {
-        return int24(kevm.freshUInt(3));
+        return int24(uint24(kevm.freshUInt(3)));
     }
 
     function freshSInt16() external returns (int16) {
-        return int16(kevm.freshUInt(2));
+        return int16(uint16(kevm.freshUInt(2)));
     }
 
     function freshSInt8() external returns (int8) {
-        return int8(kevm.freshUInt(1));
+        return int8(uint8((kevm.freshUInt(1))));
     }
 }
 
