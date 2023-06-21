@@ -312,7 +312,7 @@ module FLAPPER-TEND-GUY-DIFF-PASS-ROUGH-SPEC
        andBool ((#rangeUInt(48, ABI_x +Int ABI_y)))))))
 
 
-    [trusted, matching(infGas)]
+    [trusted]
 
 
     // Flapper_muluu
@@ -414,7 +414,7 @@ module FLAPPER-TEND-GUY-DIFF-PASS-ROUGH-SPEC
        andBool ((#rangeUInt(256, ABI_x *Int ABI_y)))))))
 
 
-    [trusted, matching(infGas)]
+    [trusted]
 
 
     // DSToken_move
@@ -545,7 +545,7 @@ module FLAPPER-TEND-GUY-DIFF-PASS-ROUGH-SPEC
        andBool #DSToken.balances[ABI_src] =/=Int #DSToken.balances[ABI_dst]
        andBool #DSToken.balances[ABI_src] =/=Int #DSToken.owner_stopped
        andBool #DSToken.balances[ABI_dst] =/=Int #DSToken.owner_stopped
-    [trusted, matching(infGas)]
+    [trusted]
 
 
 endmodule

@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from pyk.cli_utils import run_process
 from pyk.kore.parser import KoreParser
+from pyk.utils import run_process
 
 from . import config
 from .gst_to_kore import gst_to_kore

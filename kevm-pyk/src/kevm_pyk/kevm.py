@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 from pyk.kast.inner import KApply, KLabel, KSequence, KSort, KVariable, build_assoc
 from pyk.kast.manip import flatten_label
 from pyk.kast.pretty import paren
+from pyk.kcfg.show import NodePrinter
 from pyk.ktool.kprove import KProve
 from pyk.ktool.krun import KRun
 from pyk.prelude.k import K
@@ -18,11 +19,12 @@ if TYPE_CHECKING:
     from pathlib import Path
     from typing import Final
 
-    from pyk.cli_utils import BugReport
     from pyk.cterm import CTerm
     from pyk.kast import KInner
     from pyk.kast.outer import KFlatModule
+    from pyk.kcfg import KCFG
     from pyk.ktool.kprint import SymbolTable
+    from pyk.utils import BugReport
 
 _LOGGER: Final = logging.getLogger(__name__)
 
@@ -369,3 +371,16 @@ class KEVM(KProve, KRun):
             else:
                 wrapped_accounts.append(acct)
         return build_assoc(KApply('.AccountCellMap'), KLabel('_AccountCellMap_'), wrapped_accounts)
+
+
+class KEVMNodePrinter(NodePrinter):
+    kevm: KEVM
+
+    def __init__(self, kevm: KEVM):
+        super().__init__(kevm)
+        self.kevm = kevm
+
+    def print_node(self, kcfg: KCFG, node: KCFG.Node) -> list[str]:
+        ret_strs = super().print_node(kcfg, node)
+        ret_strs += self.kevm.short_info(node.cterm)
+        return ret_strs

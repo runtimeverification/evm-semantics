@@ -6,8 +6,8 @@ from enum import Enum
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from pyk.cli_utils import run_process
 from pyk.ktool.kompile import HaskellKompile, KompileArgs, KompileBackend, LLVMKompile
+from pyk.utils import run_process
 
 from . import config
 
@@ -130,7 +130,7 @@ def kevm_kompile(
     main_module: str | None,
     syntax_module: str | None,
     includes: Iterable[str] = (),
-    emit_json: bool,
+    emit_json: bool = True,
     read_only: bool = False,
     ccopts: Iterable[str] = (),
     optimization: int = 0,

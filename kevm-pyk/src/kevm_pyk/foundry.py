@@ -11,12 +11,11 @@ from typing import TYPE_CHECKING
 
 import tomlkit
 from pathos.pools import ProcessPool  # type: ignore
-from pyk.cli_utils import BugReport, ensure_dir_path, run_process
 from pyk.cterm import CTerm
 from pyk.kast.inner import KApply, KSequence, KSort, KToken, KVariable, Subst
 from pyk.kast.manip import minimize_term
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
-from pyk.kcfg import KCFG, KCFGExplore, KCFGShow
+from pyk.kcfg import KCFG, KCFGExplore
 from pyk.ktool.kompile import LLVMKompileType
 from pyk.prelude.bytes import bytesToken
 from pyk.prelude.k import GENERATED_TOP_CELL
@@ -25,9 +24,10 @@ from pyk.prelude.kint import INT, intToken
 from pyk.prelude.ml import mlEqualsTrue
 from pyk.proof.proof import Proof, ProofStatus
 from pyk.proof.reachability import APRBMCProof, APRProof, APRProver
-from pyk.utils import hash_str, single, unique
+from pyk.proof.show import APRProofShow
+from pyk.utils import BugReport, ensure_dir_path, hash_str, run_process, single, unique
 
-from .kevm import KEVM
+from .kevm import KEVM, KEVMNodePrinter
 from .kompile import KompileTarget, kevm_kompile
 from .solc_to_k import Contract, contract_to_main_module, contract_to_verification_module
 from .utils import (
@@ -510,7 +510,6 @@ def foundry_prove(
 
             proof_status = kevm_apr_prove(
                 foundry.kevm,
-                proof_id,
                 proof,
                 kcfg_explore,
                 save_directory=save_directory,
@@ -533,7 +532,7 @@ def foundry_prove(
             failure_log = None
             passed = proof_status == ProofStatus.PASSED
             if not passed:
-                failure_log = print_failure_info(proof.kcfg, proof_id, kcfg_explore)
+                failure_log = print_failure_info(proof, kcfg_explore)
 
             return passed, failure_log
 
@@ -566,26 +565,26 @@ def foundry_show(
     minimize: bool = True,
     sort_collections: bool = False,
     omit_unstable_output: bool = False,
-    frontier: bool = False,
-    stuck: bool = False,
+    pending: bool = False,
+    failing: bool = False,
     failure_info: bool = False,
 ) -> str:
     contract_name = test.split('.')[0]
     foundry = Foundry(foundry_root)
-    apr_proofs_dir = foundry.out / 'apr_proofs'
+    proofs_dir = foundry.out / 'apr_proofs'
 
     contract_name, test_name = test.split('.')
     proof_digest = foundry.proof_digest(contract_name, test_name)
-    apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
-    assert type(apr_proof) is APRProof
+    proof = Proof.read_proof(proof_digest, proofs_dir)
+    assert isinstance(proof, APRProof)
 
     def _short_info(cterm: CTerm) -> Iterable[str]:
         return foundry.short_info_for_contract(contract_name, cterm)
 
-    if frontier:
-        nodes = list(nodes) + [node.id for node in apr_proof.kcfg.frontier]
-    if stuck:
-        nodes = list(nodes) + [node.id for node in apr_proof.kcfg.stuck]
+    if pending:
+        nodes = list(nodes) + [node.id for node in proof.pending]
+    if failing:
+        nodes = list(nodes) + [node.id for node in proof.failing]
     nodes = unique(nodes)
 
     unstable_cells = [
@@ -596,22 +595,20 @@ def foundry_show(
         '<code>',
     ]
 
-    kcfg_show = KCFGShow(foundry.kevm)
-    res_lines = kcfg_show.show(
-        test,
-        apr_proof.kcfg,
+    proof_show = APRProofShow(foundry.kevm, node_printer=FoundryNodePrinter(foundry, contract_name))
+    res_lines = proof_show.show(
+        proof,
         nodes=nodes,
         node_deltas=node_deltas,
         to_module=to_module,
         minimize=minimize,
         sort_collections=sort_collections,
-        node_printer=_short_info,
         omit_cells=(unstable_cells if omit_unstable_output else []),
     )
 
     if failure_info:
-        with KCFGExplore(foundry.kevm, id=apr_proof.id) as kcfg_explore:
-            res_lines += print_failure_info(apr_proof.kcfg, apr_proof.id, kcfg_explore)
+        with KCFGExplore(foundry.kevm, id=proof.id) as kcfg_explore:
+            res_lines += print_failure_info(proof, kcfg_explore)
             res_lines += Foundry.help_info()
 
     return '\n'.join(res_lines)
@@ -624,9 +621,8 @@ def foundry_to_dot(foundry_root: Path, test: str) -> None:
     contract_name, test_name = test.split('.')
     proof_digest = foundry.proof_digest(contract_name, test_name)
     apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
-    assert type(apr_proof) is APRProof
-    kcfg_show = KCFGShow(foundry.kevm)
-    kcfg_show.dump(test, apr_proof.kcfg, dump_dir, dot=True)
+    proof_show = APRProofShow(foundry.kevm, node_printer=FoundryNodePrinter(foundry, contract_name))
+    proof_show.dump(apr_proof, dump_dir, dot=True)
 
 
 def foundry_list(foundry_root: Path) -> list[str]:
@@ -878,8 +874,6 @@ def _method_to_apr_proof(
         proof_dict = json.loads(proof_path.read_text())
         match proof_dict['type']:
             case 'APRProof':
-#                  _LOGGER.info(f'proof_dict: {proof_dict}')
-                _LOGGER.info(f'proof_path: {proof_path}')
                 apr_proof = APRProof.from_dict(proof_dict, proof_dir=save_directory)
             case 'APRBMCProof':
                 apr_proof = APRBMCProof.from_dict(proof_dict, proof_dir=save_directory)
@@ -894,31 +888,33 @@ def _method_to_apr_proof(
             _LOGGER.info(f'Using setUp method for test: {test}')
 
         empty_config = foundry.kevm.definition.empty_config(GENERATED_TOP_CELL)
-        kcfg = _method_to_cfg(empty_config, contract, method, save_directory, init_state=setup_digest)
+        kcfg, init_node_id, target_node_id = _method_to_cfg(
+            empty_config, contract, method, save_directory, init_state=setup_digest
+        )
 
         _LOGGER.info(f'Expanding macros in initial state for test: {test}')
-        init_term = kcfg.get_unique_init().cterm.kast
+        init_term = kcfg.node(init_node_id).cterm.kast
         init_term = KDefinition__expand_macros(foundry.kevm.definition, init_term)
         init_cterm = CTerm.from_kast(init_term)
-
-        _LOGGER.info(f'Expanding macros in target state for test: {test}')
-        target_term = kcfg.get_unique_target().cterm.kast
-        target_term = KDefinition__expand_macros(foundry.kevm.definition, target_term)
-        target_cterm = CTerm.from_kast(target_term)
-        kcfg.replace_node(kcfg.get_unique_target().id, target_cterm)
-
-        _LOGGER.info(f'Starting KCFGExplore for test: {test}')
         _LOGGER.info(f'Computing definedness constraint for test: {test}')
         init_cterm = kcfg_explore.cterm_assume_defined(init_cterm)
-        kcfg.replace_node(kcfg.get_unique_init().id, init_cterm)
+        kcfg.replace_node(init_node_id, init_cterm)
+
+        _LOGGER.info(f'Expanding macros in target state for test: {test}')
+        target_term = kcfg.node(target_node_id).cterm.kast
+        target_term = KDefinition__expand_macros(foundry.kevm.definition, target_term)
+        target_cterm = CTerm.from_kast(target_term)
+        kcfg.replace_node(target_node_id, target_cterm)
 
         if simplify_init:
             _LOGGER.info(f'Simplifying KCFG for test: {test}')
             kcfg_explore.simplify(kcfg, {})
         if bmc_depth is not None:
-            apr_proof = APRBMCProof(proof_digest, kcfg, {}, proof_dir=save_directory, bmc_depth=bmc_depth)
+            apr_proof = APRBMCProof(
+                proof_digest, kcfg, init_node_id, target_node_id, {}, bmc_depth, proof_dir=save_directory
+            )
         else:
-            apr_proof = APRProof(proof_digest, kcfg, {}, proof_dir=save_directory)
+            apr_proof = APRProof(proof_digest, kcfg, init_node_id, target_node_id, {}, proof_dir=save_directory)
 
     apr_proof.write_proof()
     return apr_proof
@@ -930,7 +926,7 @@ def _method_to_cfg(
     method: Contract.Method,
     kcfgs_dir: Path,
     init_state: str | None = None,
-) -> KCFG:
+) -> tuple[KCFG, NodeIdLike, NodeIdLike]:
     calldata = method.calldata_cell(contract)
     callvalue = method.callvalue_cell
     init_term = _init_term(
@@ -943,11 +939,9 @@ def _method_to_cfg(
 
     cfg = KCFG()
     init_node = cfg.create_node(init_cterm)
-    cfg.add_init(init_node.id)
     target_node = cfg.create_node(final_cterm)
-    cfg.add_target(target_node.id)
 
-    return cfg
+    return cfg, init_node.id, target_node.id
 
 
 def _init_cterm(init_term: KInner) -> CTerm:
@@ -959,7 +953,7 @@ def _init_cterm(init_term: KInner) -> CTerm:
 def get_final_accounts_cell(proof_digest: str, proof_dir: Path) -> KInner:
     apr_proof = APRProof.read_proof(proof_digest, proof_dir)
     assert type(apr_proof) is APRProof
-    target = apr_proof.kcfg.get_unique_target()
+    target = apr_proof.kcfg.node(apr_proof.target)
     cterm = single(apr_proof.kcfg.covers(target_id=target.id)).source.cterm
     return cterm.cell('ACCOUNTS_CELL')
 
@@ -1108,3 +1102,23 @@ def _final_term(empty_config: KInner, contract_name: str) -> KInner:
             KVariable('STORAGESLOTSET_FINAL'),
         ],
     )
+
+
+class FoundryNodePrinter(KEVMNodePrinter):
+    foundry: Foundry
+    contract_name: str
+
+    def __init__(self, foundry: Foundry, contract_name: str):
+        super().__init__(foundry.kevm)
+        self.foundry = foundry
+        self.contract_name = contract_name
+
+    def print_node(self, kcfg: KCFG, node: KCFG.Node) -> list[str]:
+        ret_strs = super().print_node(kcfg, node)
+        _pc = node.cterm.cell('PC_CELL')
+        if type(_pc) is KToken and _pc.sort == INT:
+            srcmap_data = self.foundry.srcmap_data(self.contract_name, int(_pc.token))
+            if srcmap_data is not None:
+                path, start, end = srcmap_data
+                ret_strs.append(f'src: {str(path)}:{start}:{end}')
+        return ret_strs

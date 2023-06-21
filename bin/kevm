@@ -129,20 +129,20 @@ run_prove() {
     check_k_install
 
     if ${pyk}; then
-	run_kevm_pyk prove "${run_file}" "$@"
+        run_kevm_pyk prove "${run_file}" "$@"
     else
-	prove_args=(prove-legacy "${run_file}")
-	! ${debugger} || prove_args+=(--debugger)
-	if ${profile_haskell}; then
-	    eventlog_name="${run_file}.eventlog"
-	    prove_args+=("--haskell-backend-arg=\"+RTS -l -ol${eventlog_name} -RTS\"")
-	    cur_dir=$(pwd)
-	    run_script="cd "${cur_dir}" && run_kevm_pyk "${prove_args[@]}" "$@""
-            timeout -s INT "${profile_timeout}" bash -c "${run_script}" || true
-            execute kore-prof "${eventlog_name}" ${kore_prof_arg} > "${eventlog_name}.json"
-	else
-	    run_kevm_pyk "${prove_args[@]}" "$@"
-	fi
+        prove_args=(prove-legacy "${run_file}")
+        ! ${debugger} || prove_args+=(--debugger)
+        if ${profile_haskell}; then
+            eventlog_name="${run_file}.eventlog"
+            prove_args+=("--haskell-backend-arg=\"+RTS -l -ol${eventlog_name} -RTS\"")
+            cur_dir=$(pwd)
+            run_script="cd "${cur_dir}" && run_kevm_pyk "${prove_args[@]}" "$@""
+                timeout -s INT "${profile_timeout}" bash -c "${run_script}" || true
+                execute kore-prof "${eventlog_name}" ${kore_prof_arg} > "${eventlog_name}.json"
+        else
+            run_kevm_pyk "${prove_args[@]}" "$@"
+        fi
     fi
 }
 
