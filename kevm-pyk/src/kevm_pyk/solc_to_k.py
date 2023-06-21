@@ -195,6 +195,10 @@ class Contract:
                 conjuncts.append(rp)
             lhs = KApply(application_label, [contract, KApply(prod_klabel, arg_vars)])
             rhs = KEVM.abi_calldata(self.name, args)
+            # print("===========")
+            # print(lhs)
+            # print(rhs)
+            # print("===========")
             ensures = andBool(conjuncts)
             return KRule(KRewrite(lhs, rhs), ensures=ensures)
 
@@ -497,6 +501,9 @@ def _evm_base_sort(type_label: str) -> KSort:
     if type_label == 'string':
         return KSort('String')
 
+    if type_label.endswith('[]'):
+        return KEVM.array_sort(type_label)
+
     _LOGGER.info(f'Using generic sort K for type: {type_label}')
     return KSort('K')
 
@@ -541,8 +548,11 @@ def _range_predicate(term: KInner, type_label: str) -> KInner | None:
             return KEVM.range_address(term)
         case 'bool':
             return KEVM.range_bool(term)
-        case 'bytes' | 'string':
+        case 'bytes':
             return KEVM.range_uint(128, KEVM.size_bytes(term))
+        case 'string':
+            as_bytes = KEVM.string_2_bytes(term)
+            return KEVM.range_uint(128, KEVM.size_bytes(as_bytes))
 
     predicate_functions = [
         _range_predicate_dyn_array,
@@ -637,9 +647,10 @@ def _range_predicate_ufixed(term: KInner, type_label: str) -> tuple[bool, KInner
 
 def _range_predicate_dyn_array(term: KInner, type_label: str) -> tuple[bool, KInner | None]:
     if type_label.endswith('[]'):
-        return (True, KEVM.range_uint(128, KEVM.size_bytes(term)))
-    else:
-        return (False, None)
+        el_res = _range_predicate(term, type_label[:-2])
+        if el_res is not None:
+            return (True, KEVM.range_uint(128, el_res))
+    return (False, None)
 
 
 def _range_predicate_array(term: KInner, type_label: str) -> tuple[bool, KInner | None]:
@@ -647,7 +658,7 @@ def _range_predicate_array(term: KInner, type_label: str) -> tuple[bool, KInner 
         parts = type_label.rsplit('[', 1)
         if len(parts) > 1:
             number = int(parts[1].rstrip(']'))
-            return (True, KEVM.range_uint((number * 256), KEVM.size_bytes(term)))
+            return (True, KEVM.range_uint((number * 256), intToken(32)))
     return (False, None)
 
 
