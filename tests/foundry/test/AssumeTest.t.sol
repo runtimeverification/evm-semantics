@@ -12,7 +12,7 @@ contract AssumeTest is Test {
 
     function test_assume_false(uint256 a, uint256 b) public {
         vm.assume(a != b);
-        assertFalse(a == b);
+        assertEq(a, b);
     }
 
     function testFail_assume_true(uint256 a, uint256 b) public {
@@ -22,7 +22,7 @@ contract AssumeTest is Test {
 
     function testFail_assume_false(uint256 a, uint256 b) public {
         vm.assume(a == b);
-        assertFalse(a == b);
+        assertEq(a, b);
     }
 
     function test_assume_staticCall(bool a) public {
