@@ -136,7 +136,7 @@ def kevm_apr_prove(
         _LOGGER.error(f'Proof crashed: {proof.id}\n{e}', exc_info=True)
         return False
 
-    failure_nodes = proof.pending + proof.kcfg.stuck
+    failure_nodes = proof.pending + proof.failing
     if len(failure_nodes) == 0:
         _LOGGER.info(f'Proof passed: {proof.id}')
         return True
@@ -151,18 +151,18 @@ def print_failure_info(proof: APRProof, kcfg_explore: KCFGExplore) -> list[str]:
     res_lines: list[str] = []
 
     num_pending = len(proof.pending)
-    num_stuck = len(proof.kcfg.stuck)
-    res_lines.append(f'{num_pending + num_stuck} Failure nodes. ({num_pending} pending and {num_stuck} stuck)')
+    num_failing = len(proof.failing)
+    res_lines.append(f'{num_pending + num_failing} Failure nodes. ({num_pending} pending and {num_failing} failing)')
     if num_pending > 0:
         res_lines.append('')
         res_lines.append('Pending nodes:')
         for node in proof.pending:
             res_lines.append('')
             res_lines.append(f'ID: {node.id}:')
-    if num_stuck > 0:
+    if num_failing > 0:
         res_lines.append('')
-        res_lines.append('Stuck nodes:')
-        for node in proof.kcfg.stuck:
+        res_lines.append('Failing nodes:')
+        for node in proof.failing:
             res_lines.append('')
             res_lines.append(f'  Node id: {str(node.id)}')
 
