@@ -552,24 +552,6 @@ This rule then takes the address using `#asWord(#range(ARGS, 0, 32))` and makes 
       requires SELECTOR ==Int selector ( "symbolicStorage(address)" )
 ```
 
-#### `freshSInt` - Returns a single symbolic signed integer.
-
-```
-function freshSInt(uint8) external returns (uint256);
-```
-
-`foundry.call.freshSInt` will match when the `freshSInt` cheat code function is called.
-This rule returns a symbolic integer of up to the bit width that was sent as an argument.
-
-```{.k .symbolic}
-    rule [foundry.call.freshSInt]:
-         <k> #call_foundry SELECTOR ARGS => . ... </k>
-         <output> _ => #bufStrict(32, ?WORD) </output>
-      requires SELECTOR ==Int selector ( "freshSInt(uint8)" )
-       andBool 0 <Int #asWord(ARGS) andBool #asWord(ARGS) <=Int 32
-       ensures 0 -Int 2 ^Int (8 *Int #asWord(ARGS) /Int 2) <Int ?WORD andBool ?WORD <Int 2 ^Int (8 *Int #asWord(ARGS) /Int 2)
-```
-
 #### `freshUInt` - Returns a single symbolic unsigned integer.
 
 ```
