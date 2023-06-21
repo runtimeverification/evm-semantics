@@ -206,8 +206,6 @@ module ADDRTEST-CONTRACT
     
     syntax AddrTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_AddrTest_failed_)]
     
-    syntax AddrTestMethod ::= "kevm" "(" ")" [symbol(), klabel(method_AddrTest_kevm_)]
-    
     syntax AddrTestMethod ::= "testFail_addr_false" "(" ")" [symbol(), klabel(method_AddrTest_testFail_addr_false_)]
     
     syntax AddrTestMethod ::= "testFail_addr_true" "(" ")" [symbol(), klabel(method_AddrTest_testFail_addr_true_)]
@@ -233,9 +231,6 @@ module ADDRTEST-CONTRACT
       
     
     rule  ( AddrTest . failed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
-      
-    
-    rule  ( AddrTest . kevm ( ) => #abiCallData ( "kevm" , .TypedArgs ) )
       
     
     rule  ( AddrTest . testFail_addr_false ( ) => #abiCallData ( "testFail_addr_false" , .TypedArgs ) )
@@ -274,9 +269,6 @@ module ADDRTEST-CONTRACT
       
     
     rule  ( selector ( "failed()" ) => 3124842406 )
-      
-    
-    rule  ( selector ( "kevm()" ) => 3601001590 )
       
     
     rule  ( selector ( "testFail_addr_false()" ) => 3302866643 )
@@ -347,8 +339,6 @@ module ALLOWCHANGESTEST-CONTRACT
     
     syntax AllowChangesTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_AllowChangesTest_failed_)]
     
-    syntax AllowChangesTestMethod ::= "kevm" "(" ")" [symbol(), klabel(method_AllowChangesTest_kevm_)]
-    
     syntax AllowChangesTestMethod ::= "test" "(" ")" [symbol(), klabel(method_AllowChangesTest_test_)]
     
     syntax AllowChangesTestMethod ::= "testAllow" "(" ")" [symbol(), klabel(method_AllowChangesTest_testAllow_)]
@@ -368,9 +358,6 @@ module ALLOWCHANGESTEST-CONTRACT
       
     
     rule  ( AllowChangesTest . failed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
-      
-    
-    rule  ( AllowChangesTest . kevm ( ) => #abiCallData ( "kevm" , .TypedArgs ) )
       
     
     rule  ( AllowChangesTest . test ( ) => #abiCallData ( "test" , .TypedArgs ) )
@@ -398,9 +385,6 @@ module ALLOWCHANGESTEST-CONTRACT
       
     
     rule  ( selector ( "failed()" ) => 3124842406 )
-      
-    
-    rule  ( selector ( "kevm()" ) => 3601001590 )
       
     
     rule  ( selector ( "test()" ) => 4171824493 )
@@ -1427,8 +1411,6 @@ module COUNTERTEST-CONTRACT
     
     syntax CounterTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_CounterTest_failed_)]
     
-    syntax CounterTestMethod ::= "kevm" "(" ")" [symbol(), klabel(method_CounterTest_kevm_)]
-    
     syntax CounterTestMethod ::= "testIncrement" "(" ")" [symbol(), klabel(method_CounterTest_testIncrement_)]
     
     syntax CounterTestMethod ::= "testSetNumber" "(" Int ":" "uint256" ")" [symbol(), klabel(method_CounterTest_testSetNumber_uint256)]
@@ -1445,9 +1427,6 @@ module COUNTERTEST-CONTRACT
       
     
     rule  ( CounterTest . failed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
-      
-    
-    rule  ( CounterTest . kevm ( ) => #abiCallData ( "kevm" , .TypedArgs ) )
       
     
     rule  ( CounterTest . testIncrement ( ) => #abiCallData ( "testIncrement" , .TypedArgs ) )
@@ -1470,9 +1449,6 @@ module COUNTERTEST-CONTRACT
       
     
     rule  ( selector ( "failed()" ) => 3124842406 )
-      
-    
-    rule  ( selector ( "kevm()" ) => 3601001590 )
       
     
     rule  ( selector ( "testIncrement()" ) => 3105072586 )
@@ -1915,8 +1891,6 @@ module EXPECTCALLTEST-CONTRACT
     
     syntax ExpectCallTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_ExpectCallTest_failed_)]
     
-    syntax ExpectCallTestMethod ::= "kevm" "(" ")" [symbol(), klabel(method_ExpectCallTest_kevm_)]
-    
     syntax ExpectCallTestMethod ::= "testExpectRegularCall" "(" ")" [symbol(), klabel(method_ExpectCallTest_testExpectRegularCall_)]
     
     syntax ExpectCallTestMethod ::= "testExpectStaticCall" "(" ")" [symbol(), klabel(method_ExpectCallTest_testExpectStaticCall_)]
@@ -1930,9 +1904,6 @@ module EXPECTCALLTEST-CONTRACT
       
     
     rule  ( ExpectCallTest . failed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
-      
-    
-    rule  ( ExpectCallTest . kevm ( ) => #abiCallData ( "kevm" , .TypedArgs ) )
       
     
     rule  ( ExpectCallTest . testExpectRegularCall ( ) => #abiCallData ( "testExpectRegularCall" , .TypedArgs ) )
@@ -1951,9 +1922,6 @@ module EXPECTCALLTEST-CONTRACT
       
     
     rule  ( selector ( "failed()" ) => 3124842406 )
-      
-    
-    rule  ( selector ( "kevm()" ) => 3601001590 )
       
     
     rule  ( selector ( "testExpectRegularCall()" ) => 676731872 )
@@ -2572,6 +2540,97 @@ module FORKTEST-CONTRACT
 
 endmodule
 
+module FRESHINTTEST-CONTRACT
+    imports public FOUNDRY
+    
+    syntax Contract ::= FreshIntTestContract
+    
+    syntax FreshIntTestContract ::= "FreshIntTest" [symbol(), klabel(contract_FreshIntTest)]
+    
+      
+    
+    syntax Field ::= FreshIntTestField
+    
+    syntax FreshIntTestField ::= "IS_TEST" [symbol(), klabel(field_FreshIntTest_IS_TEST)]
+    
+    syntax FreshIntTestField ::= "_failed" [symbol(), klabel(field_FreshIntTest__failed)]
+    
+    syntax FreshIntTestField ::= "IS_SCRIPT" [symbol(), klabel(field_FreshIntTest_IS_SCRIPT)]
+    
+    syntax FreshIntTestField ::= "stdstore" [symbol(), klabel(field_FreshIntTest_stdstore)]
+    
+    rule  ( #loc ( FreshIntTest . IS_TEST ) => 0 )
+      
+    
+    rule  ( #loc ( FreshIntTest . _failed ) => 0 )
+      
+    
+    rule  ( #loc ( FreshIntTest . IS_SCRIPT ) => 0 )
+      
+    
+    rule  ( #loc ( FreshIntTest . stdstore ) => 1 )
+      
+    
+    syntax Bytes ::= FreshIntTestContract "." FreshIntTestMethod [function(), symbol(), klabel(method_FreshIntTest)]
+    
+    syntax FreshIntTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_FreshIntTest_IS_SCRIPT_)]
+    
+    syntax FreshIntTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_FreshIntTest_IS_TEST_)]
+    
+    syntax FreshIntTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_FreshIntTest_failed_)]
+    
+    syntax FreshIntTestMethod ::= "test_bool" "(" ")" [symbol(), klabel(method_FreshIntTest_test_bool_)]
+    
+    syntax FreshIntTestMethod ::= "test_int128" "(" ")" [symbol(), klabel(method_FreshIntTest_test_int128_)]
+    
+    syntax FreshIntTestMethod ::= "test_uint128" "(" ")" [symbol(), klabel(method_FreshIntTest_test_uint128_)]
+    
+    syntax FreshIntTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_FreshIntTest_vm_)]
+    
+    rule  ( FreshIntTest . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
+      
+    
+    rule  ( FreshIntTest . IS_TEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
+      
+    
+    rule  ( FreshIntTest . failed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
+      
+    
+    rule  ( FreshIntTest . test_bool ( ) => #abiCallData ( "test_bool" , .TypedArgs ) )
+      
+    
+    rule  ( FreshIntTest . test_int128 ( ) => #abiCallData ( "test_int128" , .TypedArgs ) )
+      
+    
+    rule  ( FreshIntTest . test_uint128 ( ) => #abiCallData ( "test_uint128" , .TypedArgs ) )
+      
+    
+    rule  ( FreshIntTest . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
+      
+    
+    rule  ( selector ( "IS_SCRIPT()" ) => 4174167879 )
+      
+    
+    rule  ( selector ( "IS_TEST()" ) => 4202047188 )
+      
+    
+    rule  ( selector ( "failed()" ) => 3124842406 )
+      
+    
+    rule  ( selector ( "test_bool()" ) => 1205338438 )
+      
+    
+    rule  ( selector ( "test_int128()" ) => 3014857546 )
+      
+    
+    rule  ( selector ( "test_uint128()" ) => 1941503025 )
+      
+    
+    rule  ( selector ( "vm()" ) => 980845667 )
+      
+
+endmodule
+
 module GASTEST-CONTRACT
     imports public FOUNDRY
     
@@ -2611,8 +2670,6 @@ module GASTEST-CONTRACT
     
     syntax GasTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_GasTest_failed_)]
     
-    syntax GasTestMethod ::= "kevm" "(" ")" [symbol(), klabel(method_GasTest_kevm_)]
-    
     syntax GasTestMethod ::= "testInfiniteGas" "(" ")" [symbol(), klabel(method_GasTest_testInfiniteGas_)]
     
     syntax GasTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_GasTest_vm_)]
@@ -2624,9 +2681,6 @@ module GASTEST-CONTRACT
       
     
     rule  ( GasTest . failed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
-      
-    
-    rule  ( GasTest . kevm ( ) => #abiCallData ( "kevm" , .TypedArgs ) )
       
     
     rule  ( GasTest . testInfiniteGas ( ) => #abiCallData ( "testInfiniteGas" , .TypedArgs ) )
@@ -2642,9 +2696,6 @@ module GASTEST-CONTRACT
       
     
     rule  ( selector ( "failed()" ) => 3124842406 )
-      
-    
-    rule  ( selector ( "kevm()" ) => 3601001590 )
       
     
     rule  ( selector ( "testInfiniteGas()" ) => 1677640502 )
@@ -2743,6 +2794,17 @@ module GETCODETEST-CONTRACT
 
 endmodule
 
+module KEVMBASE-CONTRACT
+    imports public FOUNDRY
+    
+    syntax Contract ::= KEVMBaseContract
+    
+    syntax KEVMBaseContract ::= "KEVMBase" [symbol(), klabel(contract_KEVMBase)]
+    
+      
+
+endmodule
+
 module KEVMCHEATS-CONTRACT
     imports public FOUNDRY
     
@@ -2750,16 +2812,6 @@ module KEVMCHEATS-CONTRACT
     
     syntax KEVMCheatsContract ::= "KEVMCheats" [symbol(), klabel(contract_KEVMCheats)]
     
-      
-    
-    syntax Bytes ::= KEVMCheatsContract "." KEVMCheatsMethod [function(), symbol(), klabel(method_KEVMCheats)]
-    
-    syntax KEVMCheatsMethod ::= "kevm" "(" ")" [symbol(), klabel(method_KEVMCheats_kevm_)]
-    
-    rule  ( KEVMCheats . kevm ( ) => #abiCallData ( "kevm" , .TypedArgs ) )
-      
-    
-    rule  ( selector ( "kevm()" ) => 3601001590 )
       
 
 endmodule
@@ -2792,6 +2844,10 @@ module KEVMCHEATSBASE-CONTRACT
     syntax KEVMCheatsBaseMethod ::= "expectRegularCall" "(" Int ":" "address" "," Int ":" "uint256" "," Bytes ":" "bytes" ")" [symbol(), klabel(method_KEVMCheatsBase_expectRegularCall_address_uint256_bytes)]
     
     syntax KEVMCheatsBaseMethod ::= "expectStaticCall" "(" Int ":" "address" "," Bytes ":" "bytes" ")" [symbol(), klabel(method_KEVMCheatsBase_expectStaticCall_address_bytes)]
+    
+    syntax KEVMCheatsBaseMethod ::= "freshBool" "(" ")" [symbol(), klabel(method_KEVMCheatsBase_freshBool_)]
+    
+    syntax KEVMCheatsBaseMethod ::= "freshUInt" "(" Int ":" "uint8" ")" [symbol(), klabel(method_KEVMCheatsBase_freshUInt_uint8)]
     
     syntax KEVMCheatsBaseMethod ::= "infiniteGas" "(" ")" [symbol(), klabel(method_KEVMCheatsBase_infiniteGas_)]
     
@@ -2849,6 +2905,13 @@ module KEVMCHEATSBASE-CONTRACT
                ))
       
     
+    rule  ( KEVMCheatsBase . freshBool ( ) => #abiCallData ( "freshBool" , .TypedArgs ) )
+      
+    
+    rule  ( KEVMCheatsBase . freshUInt ( V0_ : uint8 ) => #abiCallData ( "freshUInt" , #uint8 ( V0_ ) , .TypedArgs ) )
+       ensures #rangeUInt ( 8 , V0_ )
+      
+    
     rule  ( KEVMCheatsBase . infiniteGas ( ) => #abiCallData ( "infiniteGas" , .TypedArgs ) )
       
     
@@ -2883,10 +2946,560 @@ module KEVMCHEATSBASE-CONTRACT
     rule  ( selector ( "expectStaticCall(address,bytes)" ) => 2232945516 )
       
     
+    rule  ( selector ( "freshBool()" ) => 2935720297 )
+      
+    
+    rule  ( selector ( "freshUInt(uint8)" ) => 625253732 )
+      
+    
     rule  ( selector ( "infiniteGas()" ) => 3986649939 )
       
     
     rule  ( selector ( "symbolicStorage(address)" ) => 769677742 )
+      
+
+endmodule
+
+module KEVMUTILS-CONTRACT
+    imports public FOUNDRY
+    
+    syntax Contract ::= KEVMUtilsContract
+    
+    syntax KEVMUtilsContract ::= "KEVMUtils" [symbol(), klabel(contract_KEVMUtils)]
+    
+      
+
+endmodule
+
+module SYMBOLICWORDS-CONTRACT
+    imports public FOUNDRY
+    
+    syntax Contract ::= SymbolicWordsContract
+    
+    syntax SymbolicWordsContract ::= "SymbolicWords" [symbol(), klabel(contract_SymbolicWords)]
+    
+      
+    
+    syntax Bytes ::= SymbolicWordsContract "." SymbolicWordsMethod [function(), symbol(), klabel(method_SymbolicWords)]
+    
+    syntax SymbolicWordsMethod ::= "freshAddress" "(" ")" [symbol(), klabel(method_SymbolicWords_freshAddress_)]
+    
+    syntax SymbolicWordsMethod ::= "freshSInt104" "(" ")" [symbol(), klabel(method_SymbolicWords_freshSInt104_)]
+    
+    syntax SymbolicWordsMethod ::= "freshSInt112" "(" ")" [symbol(), klabel(method_SymbolicWords_freshSInt112_)]
+    
+    syntax SymbolicWordsMethod ::= "freshSInt120" "(" ")" [symbol(), klabel(method_SymbolicWords_freshSInt120_)]
+    
+    syntax SymbolicWordsMethod ::= "freshSInt128" "(" ")" [symbol(), klabel(method_SymbolicWords_freshSInt128_)]
+    
+    syntax SymbolicWordsMethod ::= "freshSInt136" "(" ")" [symbol(), klabel(method_SymbolicWords_freshSInt136_)]
+    
+    syntax SymbolicWordsMethod ::= "freshSInt144" "(" ")" [symbol(), klabel(method_SymbolicWords_freshSInt144_)]
+    
+    syntax SymbolicWordsMethod ::= "freshSInt152" "(" ")" [symbol(), klabel(method_SymbolicWords_freshSInt152_)]
+    
+    syntax SymbolicWordsMethod ::= "freshSInt16" "(" ")" [symbol(), klabel(method_SymbolicWords_freshSInt16_)]
+    
+    syntax SymbolicWordsMethod ::= "freshSInt160" "(" ")" [symbol(), klabel(method_SymbolicWords_freshSInt160_)]
+    
+    syntax SymbolicWordsMethod ::= "freshSInt168" "(" ")" [symbol(), klabel(method_SymbolicWords_freshSInt168_)]
+    
+    syntax SymbolicWordsMethod ::= "freshSInt176" "(" ")" [symbol(), klabel(method_SymbolicWords_freshSInt176_)]
+    
+    syntax SymbolicWordsMethod ::= "freshSInt184" "(" ")" [symbol(), klabel(method_SymbolicWords_freshSInt184_)]
+    
+    syntax SymbolicWordsMethod ::= "freshSInt192" "(" ")" [symbol(), klabel(method_SymbolicWords_freshSInt192_)]
+    
+    syntax SymbolicWordsMethod ::= "freshSInt200" "(" ")" [symbol(), klabel(method_SymbolicWords_freshSInt200_)]
+    
+    syntax SymbolicWordsMethod ::= "freshSInt208" "(" ")" [symbol(), klabel(method_SymbolicWords_freshSInt208_)]
+    
+    syntax SymbolicWordsMethod ::= "freshSInt216" "(" ")" [symbol(), klabel(method_SymbolicWords_freshSInt216_)]
+    
+    syntax SymbolicWordsMethod ::= "freshSInt224" "(" ")" [symbol(), klabel(method_SymbolicWords_freshSInt224_)]
+    
+    syntax SymbolicWordsMethod ::= "freshSInt232" "(" ")" [symbol(), klabel(method_SymbolicWords_freshSInt232_)]
+    
+    syntax SymbolicWordsMethod ::= "freshSInt24" "(" ")" [symbol(), klabel(method_SymbolicWords_freshSInt24_)]
+    
+    syntax SymbolicWordsMethod ::= "freshSInt240" "(" ")" [symbol(), klabel(method_SymbolicWords_freshSInt240_)]
+    
+    syntax SymbolicWordsMethod ::= "freshSInt248" "(" ")" [symbol(), klabel(method_SymbolicWords_freshSInt248_)]
+    
+    syntax SymbolicWordsMethod ::= "freshSInt256" "(" ")" [symbol(), klabel(method_SymbolicWords_freshSInt256_)]
+    
+    syntax SymbolicWordsMethod ::= "freshSInt32" "(" ")" [symbol(), klabel(method_SymbolicWords_freshSInt32_)]
+    
+    syntax SymbolicWordsMethod ::= "freshSInt40" "(" ")" [symbol(), klabel(method_SymbolicWords_freshSInt40_)]
+    
+    syntax SymbolicWordsMethod ::= "freshSInt48" "(" ")" [symbol(), klabel(method_SymbolicWords_freshSInt48_)]
+    
+    syntax SymbolicWordsMethod ::= "freshSInt56" "(" ")" [symbol(), klabel(method_SymbolicWords_freshSInt56_)]
+    
+    syntax SymbolicWordsMethod ::= "freshSInt64" "(" ")" [symbol(), klabel(method_SymbolicWords_freshSInt64_)]
+    
+    syntax SymbolicWordsMethod ::= "freshSInt72" "(" ")" [symbol(), klabel(method_SymbolicWords_freshSInt72_)]
+    
+    syntax SymbolicWordsMethod ::= "freshSInt8" "(" ")" [symbol(), klabel(method_SymbolicWords_freshSInt8_)]
+    
+    syntax SymbolicWordsMethod ::= "freshSInt80" "(" ")" [symbol(), klabel(method_SymbolicWords_freshSInt80_)]
+    
+    syntax SymbolicWordsMethod ::= "freshSInt88" "(" ")" [symbol(), klabel(method_SymbolicWords_freshSInt88_)]
+    
+    syntax SymbolicWordsMethod ::= "freshSInt96" "(" ")" [symbol(), klabel(method_SymbolicWords_freshSInt96_)]
+    
+    syntax SymbolicWordsMethod ::= "freshUInt104" "(" ")" [symbol(), klabel(method_SymbolicWords_freshUInt104_)]
+    
+    syntax SymbolicWordsMethod ::= "freshUInt112" "(" ")" [symbol(), klabel(method_SymbolicWords_freshUInt112_)]
+    
+    syntax SymbolicWordsMethod ::= "freshUInt120" "(" ")" [symbol(), klabel(method_SymbolicWords_freshUInt120_)]
+    
+    syntax SymbolicWordsMethod ::= "freshUInt128" "(" ")" [symbol(), klabel(method_SymbolicWords_freshUInt128_)]
+    
+    syntax SymbolicWordsMethod ::= "freshUInt136" "(" ")" [symbol(), klabel(method_SymbolicWords_freshUInt136_)]
+    
+    syntax SymbolicWordsMethod ::= "freshUInt144" "(" ")" [symbol(), klabel(method_SymbolicWords_freshUInt144_)]
+    
+    syntax SymbolicWordsMethod ::= "freshUInt152" "(" ")" [symbol(), klabel(method_SymbolicWords_freshUInt152_)]
+    
+    syntax SymbolicWordsMethod ::= "freshUInt16" "(" ")" [symbol(), klabel(method_SymbolicWords_freshUInt16_)]
+    
+    syntax SymbolicWordsMethod ::= "freshUInt160" "(" ")" [symbol(), klabel(method_SymbolicWords_freshUInt160_)]
+    
+    syntax SymbolicWordsMethod ::= "freshUInt168" "(" ")" [symbol(), klabel(method_SymbolicWords_freshUInt168_)]
+    
+    syntax SymbolicWordsMethod ::= "freshUInt176" "(" ")" [symbol(), klabel(method_SymbolicWords_freshUInt176_)]
+    
+    syntax SymbolicWordsMethod ::= "freshUInt184" "(" ")" [symbol(), klabel(method_SymbolicWords_freshUInt184_)]
+    
+    syntax SymbolicWordsMethod ::= "freshUInt192" "(" ")" [symbol(), klabel(method_SymbolicWords_freshUInt192_)]
+    
+    syntax SymbolicWordsMethod ::= "freshUInt200" "(" ")" [symbol(), klabel(method_SymbolicWords_freshUInt200_)]
+    
+    syntax SymbolicWordsMethod ::= "freshUInt208" "(" ")" [symbol(), klabel(method_SymbolicWords_freshUInt208_)]
+    
+    syntax SymbolicWordsMethod ::= "freshUInt216" "(" ")" [symbol(), klabel(method_SymbolicWords_freshUInt216_)]
+    
+    syntax SymbolicWordsMethod ::= "freshUInt224" "(" ")" [symbol(), klabel(method_SymbolicWords_freshUInt224_)]
+    
+    syntax SymbolicWordsMethod ::= "freshUInt232" "(" ")" [symbol(), klabel(method_SymbolicWords_freshUInt232_)]
+    
+    syntax SymbolicWordsMethod ::= "freshUInt24" "(" ")" [symbol(), klabel(method_SymbolicWords_freshUInt24_)]
+    
+    syntax SymbolicWordsMethod ::= "freshUInt240" "(" ")" [symbol(), klabel(method_SymbolicWords_freshUInt240_)]
+    
+    syntax SymbolicWordsMethod ::= "freshUInt248" "(" ")" [symbol(), klabel(method_SymbolicWords_freshUInt248_)]
+    
+    syntax SymbolicWordsMethod ::= "freshUInt256" "(" ")" [symbol(), klabel(method_SymbolicWords_freshUInt256_)]
+    
+    syntax SymbolicWordsMethod ::= "freshUInt32" "(" ")" [symbol(), klabel(method_SymbolicWords_freshUInt32_)]
+    
+    syntax SymbolicWordsMethod ::= "freshUInt40" "(" ")" [symbol(), klabel(method_SymbolicWords_freshUInt40_)]
+    
+    syntax SymbolicWordsMethod ::= "freshUInt48" "(" ")" [symbol(), klabel(method_SymbolicWords_freshUInt48_)]
+    
+    syntax SymbolicWordsMethod ::= "freshUInt56" "(" ")" [symbol(), klabel(method_SymbolicWords_freshUInt56_)]
+    
+    syntax SymbolicWordsMethod ::= "freshUInt64" "(" ")" [symbol(), klabel(method_SymbolicWords_freshUInt64_)]
+    
+    syntax SymbolicWordsMethod ::= "freshUInt72" "(" ")" [symbol(), klabel(method_SymbolicWords_freshUInt72_)]
+    
+    syntax SymbolicWordsMethod ::= "freshUInt8" "(" ")" [symbol(), klabel(method_SymbolicWords_freshUInt8_)]
+    
+    syntax SymbolicWordsMethod ::= "freshUInt80" "(" ")" [symbol(), klabel(method_SymbolicWords_freshUInt80_)]
+    
+    syntax SymbolicWordsMethod ::= "freshUInt88" "(" ")" [symbol(), klabel(method_SymbolicWords_freshUInt88_)]
+    
+    syntax SymbolicWordsMethod ::= "freshUInt96" "(" ")" [symbol(), klabel(method_SymbolicWords_freshUInt96_)]
+    
+    rule  ( SymbolicWords . freshAddress ( ) => #abiCallData ( "freshAddress" , .TypedArgs ) )
+      
+    
+    rule  ( SymbolicWords . freshSInt104 ( ) => #abiCallData ( "freshSInt104" , .TypedArgs ) )
+      
+    
+    rule  ( SymbolicWords . freshSInt112 ( ) => #abiCallData ( "freshSInt112" , .TypedArgs ) )
+      
+    
+    rule  ( SymbolicWords . freshSInt120 ( ) => #abiCallData ( "freshSInt120" , .TypedArgs ) )
+      
+    
+    rule  ( SymbolicWords . freshSInt128 ( ) => #abiCallData ( "freshSInt128" , .TypedArgs ) )
+      
+    
+    rule  ( SymbolicWords . freshSInt136 ( ) => #abiCallData ( "freshSInt136" , .TypedArgs ) )
+      
+    
+    rule  ( SymbolicWords . freshSInt144 ( ) => #abiCallData ( "freshSInt144" , .TypedArgs ) )
+      
+    
+    rule  ( SymbolicWords . freshSInt152 ( ) => #abiCallData ( "freshSInt152" , .TypedArgs ) )
+      
+    
+    rule  ( SymbolicWords . freshSInt16 ( ) => #abiCallData ( "freshSInt16" , .TypedArgs ) )
+      
+    
+    rule  ( SymbolicWords . freshSInt160 ( ) => #abiCallData ( "freshSInt160" , .TypedArgs ) )
+      
+    
+    rule  ( SymbolicWords . freshSInt168 ( ) => #abiCallData ( "freshSInt168" , .TypedArgs ) )
+      
+    
+    rule  ( SymbolicWords . freshSInt176 ( ) => #abiCallData ( "freshSInt176" , .TypedArgs ) )
+      
+    
+    rule  ( SymbolicWords . freshSInt184 ( ) => #abiCallData ( "freshSInt184" , .TypedArgs ) )
+      
+    
+    rule  ( SymbolicWords . freshSInt192 ( ) => #abiCallData ( "freshSInt192" , .TypedArgs ) )
+      
+    
+    rule  ( SymbolicWords . freshSInt200 ( ) => #abiCallData ( "freshSInt200" , .TypedArgs ) )
+      
+    
+    rule  ( SymbolicWords . freshSInt208 ( ) => #abiCallData ( "freshSInt208" , .TypedArgs ) )
+      
+    
+    rule  ( SymbolicWords . freshSInt216 ( ) => #abiCallData ( "freshSInt216" , .TypedArgs ) )
+      
+    
+    rule  ( SymbolicWords . freshSInt224 ( ) => #abiCallData ( "freshSInt224" , .TypedArgs ) )
+      
+    
+    rule  ( SymbolicWords . freshSInt232 ( ) => #abiCallData ( "freshSInt232" , .TypedArgs ) )
+      
+    
+    rule  ( SymbolicWords . freshSInt24 ( ) => #abiCallData ( "freshSInt24" , .TypedArgs ) )
+      
+    
+    rule  ( SymbolicWords . freshSInt240 ( ) => #abiCallData ( "freshSInt240" , .TypedArgs ) )
+      
+    
+    rule  ( SymbolicWords . freshSInt248 ( ) => #abiCallData ( "freshSInt248" , .TypedArgs ) )
+      
+    
+    rule  ( SymbolicWords . freshSInt256 ( ) => #abiCallData ( "freshSInt256" , .TypedArgs ) )
+      
+    
+    rule  ( SymbolicWords . freshSInt32 ( ) => #abiCallData ( "freshSInt32" , .TypedArgs ) )
+      
+    
+    rule  ( SymbolicWords . freshSInt40 ( ) => #abiCallData ( "freshSInt40" , .TypedArgs ) )
+      
+    
+    rule  ( SymbolicWords . freshSInt48 ( ) => #abiCallData ( "freshSInt48" , .TypedArgs ) )
+      
+    
+    rule  ( SymbolicWords . freshSInt56 ( ) => #abiCallData ( "freshSInt56" , .TypedArgs ) )
+      
+    
+    rule  ( SymbolicWords . freshSInt64 ( ) => #abiCallData ( "freshSInt64" , .TypedArgs ) )
+      
+    
+    rule  ( SymbolicWords . freshSInt72 ( ) => #abiCallData ( "freshSInt72" , .TypedArgs ) )
+      
+    
+    rule  ( SymbolicWords . freshSInt8 ( ) => #abiCallData ( "freshSInt8" , .TypedArgs ) )
+      
+    
+    rule  ( SymbolicWords . freshSInt80 ( ) => #abiCallData ( "freshSInt80" , .TypedArgs ) )
+      
+    
+    rule  ( SymbolicWords . freshSInt88 ( ) => #abiCallData ( "freshSInt88" , .TypedArgs ) )
+      
+    
+    rule  ( SymbolicWords . freshSInt96 ( ) => #abiCallData ( "freshSInt96" , .TypedArgs ) )
+      
+    
+    rule  ( SymbolicWords . freshUInt104 ( ) => #abiCallData ( "freshUInt104" , .TypedArgs ) )
+      
+    
+    rule  ( SymbolicWords . freshUInt112 ( ) => #abiCallData ( "freshUInt112" , .TypedArgs ) )
+      
+    
+    rule  ( SymbolicWords . freshUInt120 ( ) => #abiCallData ( "freshUInt120" , .TypedArgs ) )
+      
+    
+    rule  ( SymbolicWords . freshUInt128 ( ) => #abiCallData ( "freshUInt128" , .TypedArgs ) )
+      
+    
+    rule  ( SymbolicWords . freshUInt136 ( ) => #abiCallData ( "freshUInt136" , .TypedArgs ) )
+      
+    
+    rule  ( SymbolicWords . freshUInt144 ( ) => #abiCallData ( "freshUInt144" , .TypedArgs ) )
+      
+    
+    rule  ( SymbolicWords . freshUInt152 ( ) => #abiCallData ( "freshUInt152" , .TypedArgs ) )
+      
+    
+    rule  ( SymbolicWords . freshUInt16 ( ) => #abiCallData ( "freshUInt16" , .TypedArgs ) )
+      
+    
+    rule  ( SymbolicWords . freshUInt160 ( ) => #abiCallData ( "freshUInt160" , .TypedArgs ) )
+      
+    
+    rule  ( SymbolicWords . freshUInt168 ( ) => #abiCallData ( "freshUInt168" , .TypedArgs ) )
+      
+    
+    rule  ( SymbolicWords . freshUInt176 ( ) => #abiCallData ( "freshUInt176" , .TypedArgs ) )
+      
+    
+    rule  ( SymbolicWords . freshUInt184 ( ) => #abiCallData ( "freshUInt184" , .TypedArgs ) )
+      
+    
+    rule  ( SymbolicWords . freshUInt192 ( ) => #abiCallData ( "freshUInt192" , .TypedArgs ) )
+      
+    
+    rule  ( SymbolicWords . freshUInt200 ( ) => #abiCallData ( "freshUInt200" , .TypedArgs ) )
+      
+    
+    rule  ( SymbolicWords . freshUInt208 ( ) => #abiCallData ( "freshUInt208" , .TypedArgs ) )
+      
+    
+    rule  ( SymbolicWords . freshUInt216 ( ) => #abiCallData ( "freshUInt216" , .TypedArgs ) )
+      
+    
+    rule  ( SymbolicWords . freshUInt224 ( ) => #abiCallData ( "freshUInt224" , .TypedArgs ) )
+      
+    
+    rule  ( SymbolicWords . freshUInt232 ( ) => #abiCallData ( "freshUInt232" , .TypedArgs ) )
+      
+    
+    rule  ( SymbolicWords . freshUInt24 ( ) => #abiCallData ( "freshUInt24" , .TypedArgs ) )
+      
+    
+    rule  ( SymbolicWords . freshUInt240 ( ) => #abiCallData ( "freshUInt240" , .TypedArgs ) )
+      
+    
+    rule  ( SymbolicWords . freshUInt248 ( ) => #abiCallData ( "freshUInt248" , .TypedArgs ) )
+      
+    
+    rule  ( SymbolicWords . freshUInt256 ( ) => #abiCallData ( "freshUInt256" , .TypedArgs ) )
+      
+    
+    rule  ( SymbolicWords . freshUInt32 ( ) => #abiCallData ( "freshUInt32" , .TypedArgs ) )
+      
+    
+    rule  ( SymbolicWords . freshUInt40 ( ) => #abiCallData ( "freshUInt40" , .TypedArgs ) )
+      
+    
+    rule  ( SymbolicWords . freshUInt48 ( ) => #abiCallData ( "freshUInt48" , .TypedArgs ) )
+      
+    
+    rule  ( SymbolicWords . freshUInt56 ( ) => #abiCallData ( "freshUInt56" , .TypedArgs ) )
+      
+    
+    rule  ( SymbolicWords . freshUInt64 ( ) => #abiCallData ( "freshUInt64" , .TypedArgs ) )
+      
+    
+    rule  ( SymbolicWords . freshUInt72 ( ) => #abiCallData ( "freshUInt72" , .TypedArgs ) )
+      
+    
+    rule  ( SymbolicWords . freshUInt8 ( ) => #abiCallData ( "freshUInt8" , .TypedArgs ) )
+      
+    
+    rule  ( SymbolicWords . freshUInt80 ( ) => #abiCallData ( "freshUInt80" , .TypedArgs ) )
+      
+    
+    rule  ( SymbolicWords . freshUInt88 ( ) => #abiCallData ( "freshUInt88" , .TypedArgs ) )
+      
+    
+    rule  ( SymbolicWords . freshUInt96 ( ) => #abiCallData ( "freshUInt96" , .TypedArgs ) )
+      
+    
+    rule  ( selector ( "freshAddress()" ) => 2363359817 )
+      
+    
+    rule  ( selector ( "freshSInt104()" ) => 886486922 )
+      
+    
+    rule  ( selector ( "freshSInt112()" ) => 2171640358 )
+      
+    
+    rule  ( selector ( "freshSInt120()" ) => 915676832 )
+      
+    
+    rule  ( selector ( "freshSInt128()" ) => 2997142360 )
+      
+    
+    rule  ( selector ( "freshSInt136()" ) => 3585232175 )
+      
+    
+    rule  ( selector ( "freshSInt144()" ) => 3089385733 )
+      
+    
+    rule  ( selector ( "freshSInt152()" ) => 2288255467 )
+      
+    
+    rule  ( selector ( "freshSInt16()" ) => 158976711 )
+      
+    
+    rule  ( selector ( "freshSInt160()" ) => 829366706 )
+      
+    
+    rule  ( selector ( "freshSInt168()" ) => 1506714610 )
+      
+    
+    rule  ( selector ( "freshSInt176()" ) => 4104132240 )
+      
+    
+    rule  ( selector ( "freshSInt184()" ) => 2951095414 )
+      
+    
+    rule  ( selector ( "freshSInt192()" ) => 942513734 )
+      
+    
+    rule  ( selector ( "freshSInt200()" ) => 211631315 )
+      
+    
+    rule  ( selector ( "freshSInt208()" ) => 1872857486 )
+      
+    
+    rule  ( selector ( "freshSInt216()" ) => 799786895 )
+      
+    
+    rule  ( selector ( "freshSInt224()" ) => 4134218801 )
+      
+    
+    rule  ( selector ( "freshSInt232()" ) => 2390814651 )
+      
+    
+    rule  ( selector ( "freshSInt24()" ) => 1010299114 )
+      
+    
+    rule  ( selector ( "freshSInt240()" ) => 849425428 )
+      
+    
+    rule  ( selector ( "freshSInt248()" ) => 2325725535 )
+      
+    
+    rule  ( selector ( "freshSInt256()" ) => 1511272238 )
+      
+    
+    rule  ( selector ( "freshSInt32()" ) => 3741552339 )
+      
+    
+    rule  ( selector ( "freshSInt40()" ) => 3866820288 )
+      
+    
+    rule  ( selector ( "freshSInt48()" ) => 4075550448 )
+      
+    
+    rule  ( selector ( "freshSInt56()" ) => 3087551491 )
+      
+    
+    rule  ( selector ( "freshSInt64()" ) => 640065917 )
+      
+    
+    rule  ( selector ( "freshSInt72()" ) => 2301539530 )
+      
+    
+    rule  ( selector ( "freshSInt8()" ) => 2848830275 )
+      
+    
+    rule  ( selector ( "freshSInt80()" ) => 746234874 )
+      
+    
+    rule  ( selector ( "freshSInt88()" ) => 773433399 )
+      
+    
+    rule  ( selector ( "freshSInt96()" ) => 3538348094 )
+      
+    
+    rule  ( selector ( "freshUInt104()" ) => 2098243991 )
+      
+    
+    rule  ( selector ( "freshUInt112()" ) => 4219936663 )
+      
+    
+    rule  ( selector ( "freshUInt120()" ) => 1773590302 )
+      
+    
+    rule  ( selector ( "freshUInt128()" ) => 1061024159 )
+      
+    
+    rule  ( selector ( "freshUInt136()" ) => 1507511662 )
+      
+    
+    rule  ( selector ( "freshUInt144()" ) => 2380810617 )
+      
+    
+    rule  ( selector ( "freshUInt152()" ) => 3398955925 )
+      
+    
+    rule  ( selector ( "freshUInt16()" ) => 2809763550 )
+      
+    
+    rule  ( selector ( "freshUInt160()" ) => 2099464240 )
+      
+    
+    rule  ( selector ( "freshUInt168()" ) => 1298295393 )
+      
+    
+    rule  ( selector ( "freshUInt176()" ) => 4190039785 )
+      
+    
+    rule  ( selector ( "freshUInt184()" ) => 2345052448 )
+      
+    
+    rule  ( selector ( "freshUInt192()" ) => 1698969103 )
+      
+    
+    rule  ( selector ( "freshUInt200()" ) => 1601803760 )
+      
+    
+    rule  ( selector ( "freshUInt208()" ) => 2113735012 )
+      
+    
+    rule  ( selector ( "freshUInt216()" ) => 28176073 )
+      
+    
+    rule  ( selector ( "freshUInt224()" ) => 2893214950 )
+      
+    
+    rule  ( selector ( "freshUInt232()" ) => 995627482 )
+      
+    
+    rule  ( selector ( "freshUInt24()" ) => 4125745105 )
+      
+    
+    rule  ( selector ( "freshUInt240()" ) => 2251728265 )
+      
+    
+    rule  ( selector ( "freshUInt248()" ) => 4065489335 )
+      
+    
+    rule  ( selector ( "freshUInt256()" ) => 3553593438 )
+      
+    
+    rule  ( selector ( "freshUInt32()" ) => 1229481994 )
+      
+    
+    rule  ( selector ( "freshUInt40()" ) => 3887646537 )
+      
+    
+    rule  ( selector ( "freshUInt48()" ) => 521504097 )
+      
+    
+    rule  ( selector ( "freshUInt56()" ) => 1775803666 )
+      
+    
+    rule  ( selector ( "freshUInt64()" ) => 1041696776 )
+      
+    
+    rule  ( selector ( "freshUInt72()" ) => 2846976726 )
+      
+    
+    rule  ( selector ( "freshUInt8()" ) => 648772604 )
+      
+    
+    rule  ( selector ( "freshUInt80()" ) => 3072760740 )
+      
+    
+    rule  ( selector ( "freshUInt88()" ) => 4192028648 )
+      
+    
+    rule  ( selector ( "freshUInt96()" ) => 2344551150 )
       
 
 endmodule
@@ -5082,8 +5695,6 @@ module SYMBOLICSTORAGETEST-CONTRACT
     
     syntax SymbolicStorageTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_SymbolicStorageTest_failed_)]
     
-    syntax SymbolicStorageTestMethod ::= "kevm" "(" ")" [symbol(), klabel(method_SymbolicStorageTest_kevm_)]
-    
     syntax SymbolicStorageTestMethod ::= "testEmptyInitialStorage" "(" Int ":" "uint256" ")" [symbol(), klabel(method_SymbolicStorageTest_testEmptyInitialStorage_uint256)]
     
     syntax SymbolicStorageTestMethod ::= "testFail_SymbolicStorage" "(" Int ":" "uint256" ")" [symbol(), klabel(method_SymbolicStorageTest_testFail_SymbolicStorage_uint256)]
@@ -5099,9 +5710,6 @@ module SYMBOLICSTORAGETEST-CONTRACT
       
     
     rule  ( SymbolicStorageTest . failed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
-      
-    
-    rule  ( SymbolicStorageTest . kevm ( ) => #abiCallData ( "kevm" , .TypedArgs ) )
       
     
     rule  ( SymbolicStorageTest . testEmptyInitialStorage ( V0_slot : uint256 ) => #abiCallData ( "testEmptyInitialStorage" , #uint256 ( V0_slot ) , .TypedArgs ) )
@@ -5126,9 +5734,6 @@ module SYMBOLICSTORAGETEST-CONTRACT
       
     
     rule  ( selector ( "failed()" ) => 3124842406 )
-      
-    
-    rule  ( selector ( "kevm()" ) => 3601001590 )
       
     
     rule  ( selector ( "testEmptyInitialStorage(uint256)" ) => 2517793094 )
