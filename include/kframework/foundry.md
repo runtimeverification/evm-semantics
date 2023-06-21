@@ -194,7 +194,7 @@ The configuration of the Foundry Cheat Codes is defined as follwing:
     - `<storageSlotSet>` - stores the storage whitelist containing pairs of addresses and storage indexes.
 
 ```k
-module FOUNDRY-CHEAT-CODES [symbolic]
+module FOUNDRY-CHEAT-CODES
     imports EVM
     imports EVM-ABI
     imports FOUNDRY-ACCOUNTS
@@ -552,6 +552,24 @@ This rule then takes the address using `#asWord(#range(ARGS, 0, 32))` and makes 
       requires SELECTOR ==Int selector ( "symbolicStorage(address)" )
 ```
 
+#### `freshSInt` - Returns a single symbolic signed integer.
+
+```
+function freshSInt(uint8) external returns (uint256);
+```
+
+`foundry.call.freshSInt` will match when the `freshSInt` cheat code function is called.
+This rule returns a symbolic integer of up to the bit width that was sent as an argument.
+
+```{.k .symbolic}
+    rule [foundry.call.freshSInt]:
+         <k> #call_foundry SELECTOR ARGS => . ... </k>
+         <output> _ => #bufStrict(32, ?WORD) </output>
+      requires SELECTOR ==Int selector ( "freshSInt(uint8)" )
+       andBool 0 <Int #asWord(ARGS) andBool #asWord(ARGS) <=Int 32
+       ensures 0 -Int 2 ^Int (8 *Int #asWord(ARGS) /Int 2) <Int ?WORD andBool ?WORD <Int 2 ^Int (8 *Int #asWord(ARGS) /Int 2)
+```
+
 #### `freshUInt` - Returns a single symbolic unsigned integer.
 
 ```
@@ -561,7 +579,7 @@ function freshUInt(uint8) external returns (uint256);
 `foundry.call.freshUInt` will match when the `freshUInt` cheat code function is called.
 This rule returns a symbolic integer of up to the bit width that was sent as an argument.
 
-```k
+```{.k .symbolic}
     rule [foundry.call.freshUInt]:
          <k> #call_foundry SELECTOR ARGS => . ... </k>
          <output> _ => #bufStrict(32, ?WORD) </output>
@@ -579,7 +597,7 @@ function freshBool() external returns (bool);
 `foundry.call.freshBool` will match when the `freshBool` cheat code function is called.
 This rule returns a symbolic boolean value being either 0 (false) or 1 (true).
 
-```k
+```{.k .symbolic}
     rule [foundry.call.freshBool]:
          <k> #call_foundry SELECTOR _ => . ... </k>
          <output> _ => #bufStrict(32, ?WORD) </output>
