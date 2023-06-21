@@ -499,7 +499,7 @@ tests/foundry/out/kompiled/foundry.k.prove: tests/foundry/out/kompiled/timestamp
 tests/foundry/out/kompiled/foundry.k.bmc-prove: tests/foundry/out/kompiled/timestamp
 	$(KEVM) foundry-prove --foundry-project-root $(foundry_dir)          \
 	    -j$(FOUNDRY_PAR) --no-simplify-init --max-depth 1000             \
-            --bmc-depth 3                                                    \
+	    --bmc-depth 3                                                    \
 	    $(KEVM_OPTS) $(KPROVE_OPTS)                                      \
 	    $(addprefix --test , $(shell cat tests/foundry/bmc-tests))
 
@@ -515,7 +515,7 @@ foundry-fail: tests/foundry/out/kompiled/timestamp
 	$(KEVM_OPTS) $(KPROVE_OPTS)                          \
 	$(addprefix --test , $(foundry_diff_tests)) || true
 
-foundry_show_opts := --to-module --omit-unstable-output --frontier --stuck --sort-collections
+foundry_show_opts := --to-module --omit-unstable-output --pending --failing --sort-collections
 
 $(foundry_golden)/%.check: $(foundry_golden)/%.out
 	$(CHECK) $(foundry_golden)/$*.out $(foundry_golden)/$*.expected
