@@ -33,7 +33,6 @@ from .solc_to_k import Contract, contract_to_main_module, contract_to_verificati
 from .utils import (
     KDefinition__expand_macros,
     abstract_cell_vars,
-    abstract_gas_cell,
     byte_offset_to_lines,
     kevm_apr_prove,
     print_failure_info,
@@ -530,7 +529,7 @@ def foundry_prove(
                 smt_timeout=smt_timeout,
                 smt_retry_limit=smt_retry_limit,
                 trace_rewrites=trace_rewrites,
-                abstract_node=(abstract_gas_cell if auto_abstract_gas else None),
+                abstract_node=(KEVM.abstract_gas_cell if auto_abstract_gas else None),
             )
             failure_log = None
             if not passed:

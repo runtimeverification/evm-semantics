@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from pyk.cterm import CTerm
-from pyk.kast.inner import KApply, KRewrite, KSort, KVariable, Subst
+from pyk.kast.inner import KApply, KRewrite, KVariable, Subst
 from pyk.kast.manip import (
     abstract_term_safely,
     bottom_up,
@@ -183,22 +183,6 @@ def print_failure_info(proof: APRProof, kcfg_explore: KCFGExplore) -> list[str]:
             res_lines.append('Join the Runtime Verification Discord server for support: https://discord.gg/GHvFbRDD')
 
     return res_lines
-
-
-def abstract_gas_cell(cterm: CTerm) -> CTerm:
-    def _replace(term: KInner) -> KInner:
-        if type(term) is KApply and term.label.name == '<gas>':
-            gas_term = term.args[0]
-            if type(gas_term) is KApply and gas_term.label.name == 'infGas':
-                result = KApply('<gas>', KApply('infGas', abstract_term_safely(term)))
-                return result
-            return term
-        elif type(term) is KApply and term.label.name == '<refund>':
-            return KApply('<refund>', KVariable('ABSTRACTED_REFUND', KSort('Int')))
-        else:
-            return term
-
-    return CTerm(config=bottom_up(_replace, cterm.config), constraints=cterm.constraints)
 
 
 def arg_pair_of(
