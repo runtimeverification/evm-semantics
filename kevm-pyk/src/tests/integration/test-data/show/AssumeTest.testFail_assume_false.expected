@@ -1,0 +1,1361 @@
+
+┌─ 1 (root)
+│   k: #execute ~> CONTINUATION
+│   pc: 0
+│   callDepth: 0
+│   statusCode: STATUSCODE
+│
+│  (919 steps)
+├─ 3
+│   k: CALL 9223372036854772734 645326474426547203313410069153905908525362434349 0 128  ...
+│   pc: 424
+│   callDepth: 0
+│   statusCode: STATUSCODE:StatusCode
+│
+│  (1 step)
+├─ 4
+│   k: #checkCall 728815563385977040452943777879061427756277306518 0 ~> #call 728815563 ...
+│   pc: 424
+│   callDepth: 0
+│   statusCode: STATUSCODE:StatusCode
+│
+│  (299 steps)
+├─ 5
+│   k: #end EVMC_SUCCESS ~> #pc [ STOP ] ~> #execute ~> CONTINUATION:K
+│   pc: 183
+│   callDepth: 0
+│   statusCode: STATUSCODE:StatusCode
+│
+│  (1 step)
+├─ 6
+│   k: #halt ~> #pc [ STOP ] ~> #execute ~> CONTINUATION:K
+│   pc: 183
+│   callDepth: 0
+│   statusCode: EVMC_SUCCESS
+│
+│  (2 steps)
+└─ 7 (leaf)
+    k: #halt ~> CONTINUATION:K
+    pc: 183
+    callDepth: 0
+    statusCode: EVMC_SUCCESS
+
+
+┌─ 2 (root, leaf)
+│   k: #halt ~> CONTINUATION
+│   pc: PC_CELL_5d410f2a
+│   callDepth: CALLDEPTH_CELL_5d410f2a
+│   statusCode: STATUSCODE_FINAL
+
+
+Node 7:
+
+( <generatedTop>
+  <foundry>
+    <kevm>
+      <k>
+        #halt
+        ~> CONTINUATION:K
+      </k>
+      <mode>
+        NORMAL
+      </mode>
+      <schedule>
+        LONDON
+      </schedule>
+      <ethereum>
+        <evm>
+          <output>
+            b""
+          </output>
+          <statusCode>
+            EVMC_SUCCESS
+          </statusCode>
+          <callStack>
+            .List
+          </callStack>
+          <interimStates>
+            .List
+          </interimStates>
+          <callState>
+            <id>
+              728815563385977040452943777879061427756277306518
+            </id>
+            <caller>
+              CALLER_ID:Int
+            </caller>
+            <callData>
+              b"_.p\xfb" +Bytes #buf ( 32 , VV1_b_114b9705:Int ) +Bytes #buf ( 32 , VV1_b_114b9705:Int )
+            </callData>
+            <callValue>
+              0
+            </callValue>
+            <wordStack>
+              ( selector ( "testFail_assume_false(uint256,uint256)" ) : .WordStack )
+            </wordStack>
+            <localMem>
+              b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00Lc\xe5b\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01"
+            </localMem>
+            <memoryUsed>
+              6
+            </memoryUsed>
+            <callGas>
+              9079256848778916812
+            </callGas>
+            <static>
+              false
+            </static>
+            <callDepth>
+              0
+            </callDepth>
+            ...
+          </callState>
+          <substate>
+            <log>
+              .List
+            </log>
+            <accessedAccounts>
+              SetItem ( 645326474426547203313410069153905908525362434349 )
+            </accessedAccounts>
+            <accessedStorage>
+              .Map
+            </accessedStorage>
+            ...
+          </substate>
+          <origin>
+            ORIGIN_ID:Int
+          </origin>
+          <block>
+            <number>
+              NUMBER_CELL:Int
+            </number>
+            ...
+          </block>
+          ...
+        </evm>
+        <network>
+          <accounts>
+            ( <account>
+              <acctID>
+                645326474426547203313410069153905908525362434349
+              </acctID>
+              <balance>
+                0
+              </balance>
+              <storage>
+                .Map
+              </storage>
+              <origStorage>
+                .Map
+              </origStorage>
+              <nonce>
+                0
+              </nonce>
+              ...
+            </account>
+            <account>
+              <acctID>
+                728815563385977040452943777879061427756277306518
+              </acctID>
+              <balance>
+                0
+              </balance>
+              <storage>
+                .Map
+              </storage>
+              <origStorage>
+                .Map
+              </origStorage>
+              <nonce>
+                1
+              </nonce>
+              ...
+            </account> )
+          </accounts>
+          ...
+        </network>
+      </ethereum>
+      ...
+    </kevm>
+    <cheatcodes>
+      <prank>
+        <prevCaller>
+          .Account
+        </prevCaller>
+        <prevOrigin>
+          .Account
+        </prevOrigin>
+        <newCaller>
+          .Account
+        </newCaller>
+        <newOrigin>
+          .Account
+        </newOrigin>
+        <active>
+          false
+        </active>
+        <singleCall>
+          false
+        </singleCall>
+        ...
+      </prank>
+      <expectedRevert>
+        <isRevertExpected>
+          false
+        </isRevertExpected>
+        ...
+      </expectedRevert>
+      <expectedOpcode>
+        <isOpcodeExpected>
+          false
+        </isOpcodeExpected>
+        <expectedAddress>
+          .Account
+        </expectedAddress>
+        <expectedValue>
+          0
+        </expectedValue>
+        <expectedData>
+          b""
+        </expectedData>
+        <opcodeType>
+          .OpcodeType
+        </opcodeType>
+      </expectedOpcode>
+      <expectEmit>
+        <recordEvent>
+          false
+        </recordEvent>
+        <isEventExpected>
+          false
+        </isEventExpected>
+        ...
+      </expectEmit>
+      <whitelist>
+        <isCallWhitelistActive>
+          false
+        </isCallWhitelistActive>
+        <isStorageWhitelistActive>
+          false
+        </isStorageWhitelistActive>
+        <addressSet>
+          .Set
+        </addressSet>
+        <storageSlotSet>
+          .Set
+        </storageSlotSet>
+      </whitelist>
+    </cheatcodes>
+  </foundry>
+  ...
+</generatedTop>
+#And ( { VV0_a_114b9705:Int #Equals VV1_b_114b9705:Int }
+#And ( { true #Equals 0 <=Int CALLER_ID:Int }
+#And ( { true #Equals 0 <=Int ORIGIN_ID:Int }
+#And ( { true #Equals 0 <=Int NUMBER_CELL:Int }
+#And ( { true #Equals 0 <=Int VV1_b_114b9705:Int }
+#And ( { true #Equals CALLER_ID:Int <Int pow160 }
+#And ( { true #Equals ORIGIN_ID:Int <Int pow160 }
+#And ( { true #Equals NUMBER_CELL:Int <=Int maxSInt256 }
+#And { true #Equals VV1_b_114b9705:Int <Int pow256 } ) ) ) ) ) ) ) ) )
+
+
+
+module SUMMARY-ASSUMETEST.TESTFAIL-ASSUME-FALSE:8A2AF5EE3FD080237B2E4CA68C41B118C25BBF529DB684138FB7085ECACDF109
+    
+    
+    rule [BASIC-BLOCK-1-TO-3]: <foundry>
+           <kevm>
+             <k>
+               ( #execute
+               ~> CONTINUATION => CALL 9223372036854772734 645326474426547203313410069153905908525362434349 0 128 36 128 0
+               ~> #pc [ CALL ]
+               ~> #execute
+               ~> CONTINUATION:K )
+             </k>
+             <mode>
+               NORMAL
+             </mode>
+             <schedule>
+               LONDON
+             </schedule>
+             <ethereum>
+               <evm>
+                 <callStack>
+                   .List
+                 </callStack>
+                 <interimStates>
+                   .List
+                 </interimStates>
+                 <callState>
+                   ...
+                   ...
+                   <id>
+                     728815563385977040452943777879061427756277306518
+                   </id>
+                   <caller>
+                     CALLER_ID
+                   </caller>
+                   <callData>
+                     ( AssumeTest . testFail_assume_false ( VV0_a_114b9705 : uint256 , VV1_b_114b9705 : uint256 ) => b"_.p\xfb" +Bytes #buf ( 32 , VV0_a_114b9705:Int ) +Bytes #buf ( 32 , VV1_b_114b9705:Int ) )
+                   </callData>
+                   <callValue>
+                     0
+                   </callValue>
+                   <wordStack>
+                     ( .WordStack => ( 164 : ( selector ( "assume(bool)" ) : ( 645326474426547203313410069153905908525362434349 : ( VV1_b_114b9705:Int : ( VV0_a_114b9705:Int : ( 182 : ( selector ( "testFail_assume_false(uint256,uint256)" ) : .WordStack ) ) ) ) ) ) ) )
+                   </wordStack>
+                   <localMem>
+                     ( .Bytes => b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00Lc\xe5b" +Bytes #buf ( 32 , bool2Word ( VV0_a_114b9705:Int ==Int VV1_b_114b9705:Int ) ) )
+                   </localMem>
+                   ...
+                   ...
+                   <memoryUsed>
+                     ( 0 => 6 )
+                   </memoryUsed>
+                   <callGas>
+                     ( _CALLGAS_CELL => 9079256848778916812 )
+                   </callGas>
+                   <static>
+                     false
+                   </static>
+                   <callDepth>
+                     0
+                   </callDepth>
+                 </callState>
+                 <substate>
+                   <log>
+                     .List
+                   </log>
+                   <accessedAccounts>
+                     ( .Set => SetItem ( 645326474426547203313410069153905908525362434349 ) )
+                   </accessedAccounts>
+                   <accessedStorage>
+                     .Map
+                   </accessedStorage>
+                   ...
+                 </substate>
+                 <origin>
+                   ORIGIN_ID
+                 </origin>
+                 <block>
+                   <number>
+                     NUMBER_CELL
+                   </number>
+                   ...
+                 </block>
+                 ...
+               </evm>
+               <network>
+                 <accounts>
+                   ( <account>
+                     <acctID>
+                       645326474426547203313410069153905908525362434349
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     ...
+                     <storage>
+                       .Map
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       0
+                     </nonce>
+                   </account>
+                   <account>
+                     <acctID>
+                       728815563385977040452943777879061427756277306518
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     ...
+                     <storage>
+                       .Map
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       1
+                     </nonce>
+                   </account> )
+                 </accounts>
+                 ...
+               </network>
+             </ethereum>
+             ...
+           </kevm>
+           <cheatcodes>
+             <prank>
+               <prevCaller>
+                 .Account
+               </prevCaller>
+               <prevOrigin>
+                 .Account
+               </prevOrigin>
+               <newCaller>
+                 .Account
+               </newCaller>
+               <newOrigin>
+                 .Account
+               </newOrigin>
+               <active>
+                 false
+               </active>
+               <singleCall>
+                 false
+               </singleCall>
+               ...
+             </prank>
+             <expectedRevert>
+               <isRevertExpected>
+                 false
+               </isRevertExpected>
+               ...
+             </expectedRevert>
+             <expectedOpcode>
+               <isOpcodeExpected>
+                 false
+               </isOpcodeExpected>
+               <expectedAddress>
+                 .Account
+               </expectedAddress>
+               <expectedValue>
+                 0
+               </expectedValue>
+               <expectedData>
+                 ( .Bytes => b"" )
+               </expectedData>
+               <opcodeType>
+                 .OpcodeType
+               </opcodeType>
+             </expectedOpcode>
+             <expectEmit>
+               <recordEvent>
+                 false
+               </recordEvent>
+               <isEventExpected>
+                 false
+               </isEventExpected>
+               ...
+             </expectEmit>
+             <whitelist>
+               <isCallWhitelistActive>
+                 false
+               </isCallWhitelistActive>
+               <isStorageWhitelistActive>
+                 false
+               </isStorageWhitelistActive>
+               <addressSet>
+                 .Set
+               </addressSet>
+               <storageSlotSet>
+                 .Set
+               </storageSlotSet>
+             </whitelist>
+           </cheatcodes>
+         </foundry>
+      requires ( 0 <=Int VV0_a_114b9705:Int
+       andBool ( 0 <=Int VV1_b_114b9705:Int
+       andBool ( VV0_a_114b9705:Int <Int pow256
+       andBool ( VV1_b_114b9705:Int <Int pow256
+       andBool ( 0 <=Int CALLER_ID
+       andBool ( CALLER_ID <Int pow160
+       andBool ( 0 <=Int ORIGIN_ID
+       andBool ( ORIGIN_ID <Int pow160
+       andBool ( 0 <=Int NUMBER_CELL
+       andBool ( NUMBER_CELL <=Int maxSInt256
+       andBool ( 0 <=Int 9223372036854775807
+       andBool ( 9223372036854775807 <Int pow256
+       andBool ( 0 <=Int 728815563385977040452943777879061427756277306518
+       andBool ( 728815563385977040452943777879061427756277306518 <Int pow160
+       andBool ( lengthBytes ( AssumeTest . testFail_assume_false ( VV0_a_114b9705 : uint256 , VV1_b_114b9705 : uint256 ) ) <Int pow128
+               )))))))))))))))
+       ensures ( 0 <=Int CALLER_ID:Int
+       andBool ( 0 <=Int ORIGIN_ID:Int
+       andBool ( 0 <=Int NUMBER_CELL:Int
+       andBool ( CALLER_ID:Int <Int pow160
+       andBool ( ORIGIN_ID:Int <Int pow160
+       andBool ( NUMBER_CELL:Int <=Int maxSInt256
+               ))))))
+      [label(BASIC-BLOCK-1-TO-3)]
+    
+    rule [BASIC-BLOCK-3-TO-4]: <foundry>
+           <kevm>
+             <k>
+               ( CALL 9223372036854772734 645326474426547203313410069153905908525362434349 0 128 36 128 0 => #checkCall 728815563385977040452943777879061427756277306518 0
+               ~> #call 728815563385977040452943777879061427756277306518 645326474426547203313410069153905908525362434349 645326474426547203313410069153905908525362434349 0 0 b"Lc\xe5b" +Bytes #buf ( 32 , bool2Word ( VV0_a_114b9705:Int ==Int VV1_b_114b9705:Int ) ) false
+               ~> #return 128 0 )
+               ~> #pc [ CALL ]
+               ~> #execute
+               ~> _CONTINUATION
+             </k>
+             <mode>
+               NORMAL
+             </mode>
+             <schedule>
+               LONDON
+             </schedule>
+             <ethereum>
+               <evm>
+                 <callStack>
+                   .List
+                 </callStack>
+                 <interimStates>
+                   .List
+                 </interimStates>
+                 <callState>
+                   ...
+                   ...
+                   <id>
+                     728815563385977040452943777879061427756277306518
+                   </id>
+                   <caller>
+                     CALLER_ID:Int
+                   </caller>
+                   <callData>
+                     b"_.p\xfb" +Bytes #buf ( 32 , VV0_a_114b9705:Int ) +Bytes #buf ( 32 , VV1_b_114b9705:Int )
+                   </callData>
+                   <callValue>
+                     0
+                   </callValue>
+                   <wordStack>
+                     ( 164 : ( selector ( "assume(bool)" ) : ( 645326474426547203313410069153905908525362434349 : ( VV1_b_114b9705:Int : ( VV0_a_114b9705:Int : ( 182 : ( selector ( "testFail_assume_false(uint256,uint256)" ) : .WordStack ) ) ) ) ) ) )
+                   </wordStack>
+                   <localMem>
+                     b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00Lc\xe5b" +Bytes #buf ( 32 , bool2Word ( VV0_a_114b9705:Int ==Int VV1_b_114b9705:Int ) )
+                   </localMem>
+                   ...
+                   ...
+                   <memoryUsed>
+                     6
+                   </memoryUsed>
+                   <callGas>
+                     9079256848778916812
+                   </callGas>
+                   <static>
+                     false
+                   </static>
+                   <callDepth>
+                     0
+                   </callDepth>
+                 </callState>
+                 <substate>
+                   <log>
+                     .List
+                   </log>
+                   <accessedAccounts>
+                     SetItem ( 645326474426547203313410069153905908525362434349 )
+                   </accessedAccounts>
+                   <accessedStorage>
+                     .Map
+                   </accessedStorage>
+                   ...
+                 </substate>
+                 <origin>
+                   ORIGIN_ID:Int
+                 </origin>
+                 <block>
+                   <number>
+                     NUMBER_CELL:Int
+                   </number>
+                   ...
+                 </block>
+                 ...
+               </evm>
+               <network>
+                 <accounts>
+                   ( <account>
+                     <acctID>
+                       645326474426547203313410069153905908525362434349
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     ...
+                     <storage>
+                       .Map
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       0
+                     </nonce>
+                   </account>
+                   <account>
+                     <acctID>
+                       728815563385977040452943777879061427756277306518
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     ...
+                     <storage>
+                       .Map
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       1
+                     </nonce>
+                   </account> )
+                 </accounts>
+                 ...
+               </network>
+             </ethereum>
+             ...
+           </kevm>
+           <cheatcodes>
+             <prank>
+               <prevCaller>
+                 .Account
+               </prevCaller>
+               <prevOrigin>
+                 .Account
+               </prevOrigin>
+               <newCaller>
+                 .Account
+               </newCaller>
+               <newOrigin>
+                 .Account
+               </newOrigin>
+               <active>
+                 false
+               </active>
+               <singleCall>
+                 false
+               </singleCall>
+               ...
+             </prank>
+             <expectedRevert>
+               <isRevertExpected>
+                 false
+               </isRevertExpected>
+               ...
+             </expectedRevert>
+             <expectedOpcode>
+               <isOpcodeExpected>
+                 false
+               </isOpcodeExpected>
+               <expectedAddress>
+                 .Account
+               </expectedAddress>
+               <expectedValue>
+                 0
+               </expectedValue>
+               <expectedData>
+                 b""
+               </expectedData>
+               <opcodeType>
+                 .OpcodeType
+               </opcodeType>
+             </expectedOpcode>
+             <expectEmit>
+               <recordEvent>
+                 false
+               </recordEvent>
+               <isEventExpected>
+                 false
+               </isEventExpected>
+               ...
+             </expectEmit>
+             <whitelist>
+               <isCallWhitelistActive>
+                 false
+               </isCallWhitelistActive>
+               <isStorageWhitelistActive>
+                 false
+               </isStorageWhitelistActive>
+               <addressSet>
+                 .Set
+               </addressSet>
+               <storageSlotSet>
+                 .Set
+               </storageSlotSet>
+             </whitelist>
+           </cheatcodes>
+         </foundry>
+      requires ( 0 <=Int CALLER_ID:Int
+       andBool ( 0 <=Int ORIGIN_ID:Int
+       andBool ( 0 <=Int NUMBER_CELL:Int
+       andBool ( 0 <=Int VV0_a_114b9705:Int
+       andBool ( 0 <=Int VV1_b_114b9705:Int
+       andBool ( CALLER_ID:Int <Int pow160
+       andBool ( ORIGIN_ID:Int <Int pow160
+       andBool ( NUMBER_CELL:Int <=Int maxSInt256
+       andBool ( VV0_a_114b9705:Int <Int pow256
+       andBool ( VV1_b_114b9705:Int <Int pow256
+               ))))))))))
+      [label(BASIC-BLOCK-3-TO-4)]
+    
+    rule [BASIC-BLOCK-4-TO-5]: <foundry>
+           <kevm>
+             <k>
+               ( #checkCall 728815563385977040452943777879061427756277306518 0
+               ~> #call 728815563385977040452943777879061427756277306518 645326474426547203313410069153905908525362434349 645326474426547203313410069153905908525362434349 0 0 b"Lc\xe5b" +Bytes #buf ( 32 , bool2Word ( VV0_a_114b9705:Int ==Int VV1_b_114b9705:Int ) ) false
+               ~> #return 128 0
+               ~> #pc [ CALL ] => #end EVMC_SUCCESS
+               ~> #pc [ STOP ] )
+               ~> #execute
+               ~> _CONTINUATION
+             </k>
+             <mode>
+               NORMAL
+             </mode>
+             <schedule>
+               LONDON
+             </schedule>
+             <ethereum>
+               <evm>
+                 <output>
+                   ( _OUTPUT_CELL => b"" )
+                 </output>
+                 <callStack>
+                   .List
+                 </callStack>
+                 <interimStates>
+                   .List
+                 </interimStates>
+                 <callState>
+                   ...
+                   ...
+                   <id>
+                     728815563385977040452943777879061427756277306518
+                   </id>
+                   <caller>
+                     CALLER_ID:Int
+                   </caller>
+                   <callData>
+                     b"_.p\xfb" +Bytes #buf ( 32 , ( VV0_a_114b9705:Int => VV1_b_114b9705:Int ) ) +Bytes #buf ( 32 , VV1_b_114b9705:Int )
+                   </callData>
+                   <callValue>
+                     0
+                   </callValue>
+                   <wordStack>
+                     ( ( 164 => selector ( "testFail_assume_false(uint256,uint256)" ) ) : ( ( selector ( "assume(bool)" ) : ( 645326474426547203313410069153905908525362434349 : ( VV1_b_114b9705:Int : ( VV0_a_114b9705:Int : ( 182 : ( selector ( "testFail_assume_false(uint256,uint256)" ) : .WordStack ) ) ) ) ) ) => .WordStack ) )
+                   </wordStack>
+                   <localMem>
+                     ( b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00Lc\xe5b" +Bytes #buf ( 32 , bool2Word ( VV0_a_114b9705:Int ==Int VV1_b_114b9705:Int ) ) => b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00Lc\xe5b\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01" )
+                   </localMem>
+                   ...
+                   ...
+                   <memoryUsed>
+                     6
+                   </memoryUsed>
+                   <callGas>
+                     9079256848778916812
+                   </callGas>
+                   <static>
+                     false
+                   </static>
+                   <callDepth>
+                     0
+                   </callDepth>
+                 </callState>
+                 <substate>
+                   <log>
+                     .List
+                   </log>
+                   <accessedAccounts>
+                     SetItem ( 645326474426547203313410069153905908525362434349 )
+                   </accessedAccounts>
+                   <accessedStorage>
+                     .Map
+                   </accessedStorage>
+                   ...
+                 </substate>
+                 <origin>
+                   ORIGIN_ID:Int
+                 </origin>
+                 <block>
+                   <number>
+                     NUMBER_CELL:Int
+                   </number>
+                   ...
+                 </block>
+                 ...
+               </evm>
+               <network>
+                 <accounts>
+                   ( <account>
+                     <acctID>
+                       645326474426547203313410069153905908525362434349
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     ...
+                     <storage>
+                       .Map
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       0
+                     </nonce>
+                   </account>
+                   <account>
+                     <acctID>
+                       728815563385977040452943777879061427756277306518
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     ...
+                     <storage>
+                       .Map
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       1
+                     </nonce>
+                   </account> )
+                 </accounts>
+                 ...
+               </network>
+             </ethereum>
+             ...
+           </kevm>
+           <cheatcodes>
+             <prank>
+               <prevCaller>
+                 .Account
+               </prevCaller>
+               <prevOrigin>
+                 .Account
+               </prevOrigin>
+               <newCaller>
+                 .Account
+               </newCaller>
+               <newOrigin>
+                 .Account
+               </newOrigin>
+               <active>
+                 false
+               </active>
+               <singleCall>
+                 false
+               </singleCall>
+               ...
+             </prank>
+             <expectedRevert>
+               <isRevertExpected>
+                 false
+               </isRevertExpected>
+               ...
+             </expectedRevert>
+             <expectedOpcode>
+               <isOpcodeExpected>
+                 false
+               </isOpcodeExpected>
+               <expectedAddress>
+                 .Account
+               </expectedAddress>
+               <expectedValue>
+                 0
+               </expectedValue>
+               <expectedData>
+                 b""
+               </expectedData>
+               <opcodeType>
+                 .OpcodeType
+               </opcodeType>
+             </expectedOpcode>
+             <expectEmit>
+               <recordEvent>
+                 false
+               </recordEvent>
+               <isEventExpected>
+                 false
+               </isEventExpected>
+               ...
+             </expectEmit>
+             <whitelist>
+               <isCallWhitelistActive>
+                 false
+               </isCallWhitelistActive>
+               <isStorageWhitelistActive>
+                 false
+               </isStorageWhitelistActive>
+               <addressSet>
+                 .Set
+               </addressSet>
+               <storageSlotSet>
+                 .Set
+               </storageSlotSet>
+             </whitelist>
+           </cheatcodes>
+         </foundry>
+      requires ( 0 <=Int CALLER_ID:Int
+       andBool ( 0 <=Int ORIGIN_ID:Int
+       andBool ( 0 <=Int NUMBER_CELL:Int
+       andBool ( 0 <=Int VV0_a_114b9705:Int
+       andBool ( 0 <=Int VV1_b_114b9705:Int
+       andBool ( CALLER_ID:Int <Int pow160
+       andBool ( ORIGIN_ID:Int <Int pow160
+       andBool ( NUMBER_CELL:Int <=Int maxSInt256
+       andBool ( VV0_a_114b9705:Int <Int pow256
+       andBool ( VV1_b_114b9705:Int <Int pow256
+               ))))))))))
+       ensures VV0_a_114b9705:Int ==K VV1_b_114b9705:Int
+      [label(BASIC-BLOCK-4-TO-5)]
+    
+    rule [BASIC-BLOCK-5-TO-6]: <foundry>
+           <kevm>
+             <k>
+               ( #end EVMC_SUCCESS => #halt )
+               ~> #pc [ STOP ]
+               ~> #execute
+               ~> _CONTINUATION
+             </k>
+             <mode>
+               NORMAL
+             </mode>
+             <schedule>
+               LONDON
+             </schedule>
+             <ethereum>
+               <evm>
+                 <output>
+                   b""
+                 </output>
+                 <statusCode>
+                   ( _STATUSCODE => EVMC_SUCCESS )
+                 </statusCode>
+                 <callStack>
+                   .List
+                 </callStack>
+                 <interimStates>
+                   .List
+                 </interimStates>
+                 <callState>
+                   ...
+                   ...
+                   <id>
+                     728815563385977040452943777879061427756277306518
+                   </id>
+                   <caller>
+                     CALLER_ID:Int
+                   </caller>
+                   <callData>
+                     b"_.p\xfb" +Bytes #buf ( 32 , VV1_b_114b9705:Int ) +Bytes #buf ( 32 , VV1_b_114b9705:Int )
+                   </callData>
+                   <callValue>
+                     0
+                   </callValue>
+                   <wordStack>
+                     ( selector ( "testFail_assume_false(uint256,uint256)" ) : .WordStack )
+                   </wordStack>
+                   <localMem>
+                     b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00Lc\xe5b\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01"
+                   </localMem>
+                   ...
+                   ...
+                   <memoryUsed>
+                     6
+                   </memoryUsed>
+                   <callGas>
+                     9079256848778916812
+                   </callGas>
+                   <static>
+                     false
+                   </static>
+                   <callDepth>
+                     0
+                   </callDepth>
+                 </callState>
+                 <substate>
+                   <log>
+                     .List
+                   </log>
+                   <accessedAccounts>
+                     SetItem ( 645326474426547203313410069153905908525362434349 )
+                   </accessedAccounts>
+                   <accessedStorage>
+                     .Map
+                   </accessedStorage>
+                   ...
+                 </substate>
+                 <origin>
+                   ORIGIN_ID:Int
+                 </origin>
+                 <block>
+                   <number>
+                     NUMBER_CELL:Int
+                   </number>
+                   ...
+                 </block>
+                 ...
+               </evm>
+               <network>
+                 <accounts>
+                   ( <account>
+                     <acctID>
+                       645326474426547203313410069153905908525362434349
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     ...
+                     <storage>
+                       .Map
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       0
+                     </nonce>
+                   </account>
+                   <account>
+                     <acctID>
+                       728815563385977040452943777879061427756277306518
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     ...
+                     <storage>
+                       .Map
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       1
+                     </nonce>
+                   </account> )
+                 </accounts>
+                 ...
+               </network>
+             </ethereum>
+             ...
+           </kevm>
+           <cheatcodes>
+             <prank>
+               <prevCaller>
+                 .Account
+               </prevCaller>
+               <prevOrigin>
+                 .Account
+               </prevOrigin>
+               <newCaller>
+                 .Account
+               </newCaller>
+               <newOrigin>
+                 .Account
+               </newOrigin>
+               <active>
+                 false
+               </active>
+               <singleCall>
+                 false
+               </singleCall>
+               ...
+             </prank>
+             <expectedRevert>
+               <isRevertExpected>
+                 false
+               </isRevertExpected>
+               ...
+             </expectedRevert>
+             <expectedOpcode>
+               <isOpcodeExpected>
+                 false
+               </isOpcodeExpected>
+               <expectedAddress>
+                 .Account
+               </expectedAddress>
+               <expectedValue>
+                 0
+               </expectedValue>
+               <expectedData>
+                 b""
+               </expectedData>
+               <opcodeType>
+                 .OpcodeType
+               </opcodeType>
+             </expectedOpcode>
+             <expectEmit>
+               <recordEvent>
+                 false
+               </recordEvent>
+               <isEventExpected>
+                 false
+               </isEventExpected>
+               ...
+             </expectEmit>
+             <whitelist>
+               <isCallWhitelistActive>
+                 false
+               </isCallWhitelistActive>
+               <isStorageWhitelistActive>
+                 false
+               </isStorageWhitelistActive>
+               <addressSet>
+                 .Set
+               </addressSet>
+               <storageSlotSet>
+                 .Set
+               </storageSlotSet>
+             </whitelist>
+           </cheatcodes>
+         </foundry>
+      requires ( _VV0_a_114b9705 ==K VV1_b_114b9705:Int
+       andBool ( 0 <=Int CALLER_ID:Int
+       andBool ( 0 <=Int ORIGIN_ID:Int
+       andBool ( 0 <=Int NUMBER_CELL:Int
+       andBool ( 0 <=Int VV1_b_114b9705:Int
+       andBool ( CALLER_ID:Int <Int pow160
+       andBool ( ORIGIN_ID:Int <Int pow160
+       andBool ( NUMBER_CELL:Int <=Int maxSInt256
+       andBool ( VV1_b_114b9705:Int <Int pow256
+               )))))))))
+      [label(BASIC-BLOCK-5-TO-6)]
+    
+    rule [BASIC-BLOCK-6-TO-7]: <foundry>
+           <kevm>
+             <k>
+               #halt
+               ~> ( #pc [ STOP ]
+               ~> #execute => .K )
+               ~> _CONTINUATION
+             </k>
+             <mode>
+               NORMAL
+             </mode>
+             <schedule>
+               LONDON
+             </schedule>
+             <ethereum>
+               <evm>
+                 <output>
+                   b""
+                 </output>
+                 <statusCode>
+                   EVMC_SUCCESS
+                 </statusCode>
+                 <callStack>
+                   .List
+                 </callStack>
+                 <interimStates>
+                   .List
+                 </interimStates>
+                 <callState>
+                   ...
+                   ...
+                   <id>
+                     728815563385977040452943777879061427756277306518
+                   </id>
+                   <caller>
+                     CALLER_ID:Int
+                   </caller>
+                   <callData>
+                     b"_.p\xfb" +Bytes #buf ( 32 , VV1_b_114b9705:Int ) +Bytes #buf ( 32 , VV1_b_114b9705:Int )
+                   </callData>
+                   <callValue>
+                     0
+                   </callValue>
+                   <wordStack>
+                     ( selector ( "testFail_assume_false(uint256,uint256)" ) : .WordStack )
+                   </wordStack>
+                   <localMem>
+                     b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00Lc\xe5b\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01"
+                   </localMem>
+                   ...
+                   ...
+                   <memoryUsed>
+                     6
+                   </memoryUsed>
+                   <callGas>
+                     9079256848778916812
+                   </callGas>
+                   <static>
+                     false
+                   </static>
+                   <callDepth>
+                     0
+                   </callDepth>
+                 </callState>
+                 <substate>
+                   <log>
+                     .List
+                   </log>
+                   <accessedAccounts>
+                     SetItem ( 645326474426547203313410069153905908525362434349 )
+                   </accessedAccounts>
+                   <accessedStorage>
+                     .Map
+                   </accessedStorage>
+                   ...
+                 </substate>
+                 <origin>
+                   ORIGIN_ID:Int
+                 </origin>
+                 <block>
+                   <number>
+                     NUMBER_CELL:Int
+                   </number>
+                   ...
+                 </block>
+                 ...
+               </evm>
+               <network>
+                 <accounts>
+                   ( <account>
+                     <acctID>
+                       645326474426547203313410069153905908525362434349
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     ...
+                     <storage>
+                       .Map
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       0
+                     </nonce>
+                   </account>
+                   <account>
+                     <acctID>
+                       728815563385977040452943777879061427756277306518
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     ...
+                     <storage>
+                       .Map
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       1
+                     </nonce>
+                   </account> )
+                 </accounts>
+                 ...
+               </network>
+             </ethereum>
+             ...
+           </kevm>
+           <cheatcodes>
+             <prank>
+               <prevCaller>
+                 .Account
+               </prevCaller>
+               <prevOrigin>
+                 .Account
+               </prevOrigin>
+               <newCaller>
+                 .Account
+               </newCaller>
+               <newOrigin>
+                 .Account
+               </newOrigin>
+               <active>
+                 false
+               </active>
+               <singleCall>
+                 false
+               </singleCall>
+               ...
+             </prank>
+             <expectedRevert>
+               <isRevertExpected>
+                 false
+               </isRevertExpected>
+               ...
+             </expectedRevert>
+             <expectedOpcode>
+               <isOpcodeExpected>
+                 false
+               </isOpcodeExpected>
+               <expectedAddress>
+                 .Account
+               </expectedAddress>
+               <expectedValue>
+                 0
+               </expectedValue>
+               <expectedData>
+                 b""
+               </expectedData>
+               <opcodeType>
+                 .OpcodeType
+               </opcodeType>
+             </expectedOpcode>
+             <expectEmit>
+               <recordEvent>
+                 false
+               </recordEvent>
+               <isEventExpected>
+                 false
+               </isEventExpected>
+               ...
+             </expectEmit>
+             <whitelist>
+               <isCallWhitelistActive>
+                 false
+               </isCallWhitelistActive>
+               <isStorageWhitelistActive>
+                 false
+               </isStorageWhitelistActive>
+               <addressSet>
+                 .Set
+               </addressSet>
+               <storageSlotSet>
+                 .Set
+               </storageSlotSet>
+             </whitelist>
+           </cheatcodes>
+         </foundry>
+      requires ( _VV0_a_114b9705 ==K VV1_b_114b9705:Int
+       andBool ( 0 <=Int CALLER_ID:Int
+       andBool ( 0 <=Int ORIGIN_ID:Int
+       andBool ( 0 <=Int NUMBER_CELL:Int
+       andBool ( 0 <=Int VV1_b_114b9705:Int
+       andBool ( CALLER_ID:Int <Int pow160
+       andBool ( ORIGIN_ID:Int <Int pow160
+       andBool ( NUMBER_CELL:Int <=Int maxSInt256
+       andBool ( VV1_b_114b9705:Int <Int pow256
+               )))))))))
+      [label(BASIC-BLOCK-6-TO-7)]
+
+endmodule
+1 Failure nodes. (0 pending and 1 failing)
+
+Failing nodes:
+
+  Node id: 7
+  Failure reason:
+    Implication check failed, the following is the remaining implication:
+    ( ( { VV0_a_114b9705:Int #Equals VV1_b_114b9705:Int }
+    #And ( { true #Equals 0 <=Int CALLER_ID:Int }
+    #And ( { true #Equals 0 <=Int ORIGIN_ID:Int }
+    #And ( { true #Equals 0 <=Int NUMBER_CELL:Int }
+    #And ( { true #Equals 0 <=Int VV1_b_114b9705:Int }
+    #And ( { true #Equals CALLER_ID:Int <Int pow160 }
+    #And ( { true #Equals ORIGIN_ID:Int <Int pow160 }
+    #And ( { true #Equals NUMBER_CELL:Int <=Int maxSInt256 }
+    #And { true #Equals VV1_b_114b9705:Int <Int pow256 } ) ) ) ) ) ) ) ) #Implies { false #Equals foundry_success ( ... statusCode: EVMC_SUCCESS , failed: #lookup ( .Map , 46308022326495007027972728677917914892729792999299745830475596687180801507328 ) , revertExpected: false , opcodeExpected: false , recordEventExpected: false , eventExpected: false ) } )
+  Path condition:
+    #Top
+
+Join the Runtime Verification Discord server for support: https://discord.gg/GHvFbRDD
+
+Access documentation for KEVM foundry integration at https://docs.runtimeverification.com/kevm-integration-for-foundry/
