@@ -255,6 +255,7 @@ def exec_prove(
     smt_retry_limit: int | None = None,
     trace_rewrites: bool = False,
     failure_info: bool = True,
+    auto_abstract_gas: bool = False,
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'md_selector', f'--md-selector: {kwargs["md_selector"]}')
@@ -339,6 +340,7 @@ def exec_prove(
                 smt_timeout=smt_timeout,
                 smt_retry_limit=smt_retry_limit,
                 trace_rewrites=trace_rewrites,
+                abstract_node=(KEVM.abstract_gas_cell if auto_abstract_gas else None),
             )
             failure_log = None
             if not passed:
