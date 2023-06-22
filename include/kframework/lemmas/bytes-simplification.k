@@ -24,6 +24,16 @@ module BYTES-SIMPLIFICATION [symbolic]
         orBool lengthBytes(B) ==Int lengthBytes(D)
       [simplification]
 
+    rule [signextend-word-less-pow128]:
+      ( ( (signextend ( 15 , WORD:Int )) s<Word (115792089237316195423570985008687907853099843482180094807725896704197245534208) ) ==Int 0 ) => true
+      requires WORD <Int pow128
+      [simplification, symbolic(WORD)]
+
+    rule [signextend-word-greater-pow128]:
+     ( ( (maxSInt128) s<Word (signextend ( 15 , WORD:Int )) ) ==Int 0 ) => true
+     requires WORD <Int pow128
+      [simplification, symbolic(WORD)]
+
     rule [bytes-concat-empty-right]: B:Bytes +Bytes .Bytes  => B [simplification]
     rule [bytes-concat-empty-left]:   .Bytes +Bytes B:Bytes => B [simplification]
 
