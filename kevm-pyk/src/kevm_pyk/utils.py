@@ -9,6 +9,7 @@ from pyk.kast.inner import KApply, KRewrite, KVariable, Subst
 from pyk.kast.manip import (
     abstract_term_safely,
     bottom_up,
+    free_vars,
     is_anon_var,
     set_cell,
     split_config_and_constraints,
@@ -245,3 +246,16 @@ def ensure_ksequence_on_k_cell(cterm: CTerm) -> CTerm:
         _LOGGER.info('Introducing artificial KSequence on <k> cell.')
         return CTerm.from_kast(set_cell(cterm.kast, 'K_CELL', KSequence([k_cell])))
     return cterm
+
+
+def constraints_for(vars: list[str], constraints: Iterable[KInner]) -> Iterable[KInner]:
+    accounts_constraints = []
+    constraints_changed = True
+    while constraints_changed:
+        constraints_changed = False
+        for constraint in constraints:
+            if constraint not in accounts_constraints and any(v in vars for v in free_vars(constraint)):
+                accounts_constraints.append(constraint)
+                vars.extend(free_vars(constraint))
+                constraints_changed = True
+    return accounts_constraints
