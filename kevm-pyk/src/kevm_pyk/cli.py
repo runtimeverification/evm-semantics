@@ -5,6 +5,7 @@ from functools import cached_property
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from pyk.cli.args import KCLIArgs
 from pyk.cli.utils import dir_path, file_path
 from pyk.utils import ensure_dir_path
 
@@ -33,15 +34,7 @@ def node_id_like(s: str) -> NodeIdLike:
         return s
 
 
-class KEVMCLIArgs:
-    @cached_property
-    def shared_args(self) -> ArgumentParser:
-        args = ArgumentParser(add_help=False)
-        args.add_argument('--verbose', '-v', default=False, action='store_true', help='Verbose output.')
-        args.add_argument('--debug', default=False, action='store_true', help='Debug output.')
-        args.add_argument('--workers', '-j', default=1, type=int, help='Number of processes to run in parallel.')
-        return args
-
+class KEVMCLIArgs(KCLIArgs):
     @cached_property
     def k_args(self) -> ArgumentParser:
         args = ArgumentParser(add_help=False)
