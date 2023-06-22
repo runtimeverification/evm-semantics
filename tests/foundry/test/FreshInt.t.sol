@@ -24,16 +24,14 @@ contract FreshIntTest is Test, KEVMCheats {
 
     function test_int128() public {
         kevm.infiniteGas();
-        uint128 num = uint128(kevm.freshUInt(16));
-        int128 val = int128(num);
+        int128 val = int128(uint128(kevm.freshUInt(16)));
         assertGe(val, min);
         assertLe(val, max);
     }
 
     function testFail_int128() public {
         kevm.infiniteGas();
-        uint128 num = uint128(kevm.freshUInt(16));
-        int128 val = int128(num);
+        int128 val = int128(uint128(kevm.freshUInt(16)));
         assertGt(val, max);
     }
 }
