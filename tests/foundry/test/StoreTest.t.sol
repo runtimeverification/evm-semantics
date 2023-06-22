@@ -2,23 +2,26 @@
 pragma solidity =0.8.13;
 
 import "forge-std/Test.sol";
+import "../src/KEVMCheats.sol";
 
 contract Store {
-    uint256 private testNumber = 1337; // slot 0
+    uint256 public testNumber = 1337; // slot 0
 
     constructor(){
     }
 }
 
-contract StoreTest is Test {
+contract StoreTest is Test, KEVMCheats {
 
     function testAccesses() public {
+        kevm.infiniteGas();
         Store myStore = new Store();
         vm.record();
+        assert(myStore.testNumber() == 1337);
 
         (bytes32[] memory reads, bytes32[] memory writes) = vm.accesses(address(myStore));
         assert(reads.length == 1);
-        assert(writes.length == 1);
+        assert(writes.length == 0);
     }
 
     function testStoreLoad() public {
