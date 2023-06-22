@@ -430,11 +430,6 @@ tests/%.run-expected: tests/% tests/%.expected
 	    || $(CHECK) tests/$*.$(TEST_CONCRETE_BACKEND)-out tests/$*.expected
 	$(KEEP_OUTPUTS) || rm -rf tests/$*.$(TEST_CONCRETE_BACKEND)-out
 
-tests/%.parse: tests/% $(KEVM_LIB)/kore-json.py
-	$(KEVM) kast $< $(KEVM_OPTS) $(KAST_OPTS) --backend $(TEST_CONCRETE_BACKEND) > $@-out
-	$(CHECK) $@-out $@-expected
-	$(KEEP_OUTPUTS) || rm -rf $@-out
-
 tests/interactive/%.json.gst-to-kore.check: tests/ethereum-tests/GeneralStateTests/VMTests/%.json $(KEVM_BIN)/kevm
 	$(KEVM) kast $< $(KEVM_OPTS) $(KAST_OPTS) > tests/interactive/$*.gst-to-kore.out
 	$(CHECK) tests/interactive/$*.gst-to-kore.out tests/interactive/$*.gst-to-kore.expected
@@ -528,11 +523,8 @@ tests/specs/opcodes/evm-optimizations-spec.md: include/kframework/optimizations.
 
 # Parse Tests
 
-parse_tests:=$(wildcard tests/interactive/*.json) \
-             $(wildcard tests/interactive/*.evm)
-
-test-parse: $(parse_tests:=.parse)
-	echo $(parse_tests)
+test-parse: poetry build-kevm build-llvm
+	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+='-k test_parse -n0'
 
 # Failing correctly tests
 
