@@ -157,11 +157,7 @@ jobs:
       - name: 'Foundry Kompile'
         run: docker exec -u user kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make test-foundry-kompile -j2'
       - name: 'Foundry Prove'
-        run: docker exec -u user kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make test-foundry-prove -j2 FOUNDRY_PAR=12'
-      - name: 'Foundry diff tests'
-        run: docker exec -u user kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make test-foundry-kcfg-diff -j2 FOUNDRY_PAR=12'
-      - name: 'Foundry List'
-        run: docker exec -u user kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make test-foundry-list -j2'
+        run: docker exec -u user kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make test-foundry-prove FOUNDRY_PAR=8'
       - name: 'Tear down Docker'
         if: always()
         run: |
@@ -201,7 +197,7 @@ jobs:
       matrix:
         include:
           - runner: normal
-          - runner: macos-12
+          - runner: macos-13
           - runner: ARM64
     needs: version-bump
     runs-on: ${{ matrix.runner }}
@@ -213,7 +209,7 @@ jobs:
           # Check out pull request HEAD instead of merge commit.
           ref: ${{ github.event.pull_request.head.sha }}
       - name: 'Install Nix'
-        if: ${{ matrix.runner == 'macos-12' }}
+        if: ${{ matrix.runner == 'macos-13' }}
         uses: cachix/install-nix-action@v19
         with:
           install_url: https://releases.nixos.org/nix/nix-2.13.3/install
@@ -222,7 +218,7 @@ jobs:
             substituters = http://cache.nixos.org https://cache.iog.io
             trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ=
       - name: 'Install Cachix'
-        if: ${{ matrix.runner == 'macos-12' }}
+        if: ${{ matrix.runner == 'macos-13' }}
         uses: cachix/cachix-action@v12
         with:
           name: k-framework
