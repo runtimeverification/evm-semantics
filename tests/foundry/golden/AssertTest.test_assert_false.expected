@@ -1,48 +1,38 @@
 
-┌─ 1 (init, expanded)
-│    k: #execute ~> CONTINUATION
-│    pc: 0
-│    callDepth: 0
-│    statusCode: STATUSCODE
-│    src: tests/foundry/test/Simple.t.sol:5:54
+┌─ 1 (root)
+│   k: #execute ~> CONTINUATION
+│   pc: 0
+│   callDepth: 0
+│   statusCode: STATUSCODE
+│   src: tests/foundry/test/Simple.t.sol:5:54
 │
 │  (376 steps)
-├─ 3 (expanded)
-│    k: #end EVMC_REVERT ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
-│    pc: 992
-│    callDepth: 0
-│    statusCode: STATUSCODE:StatusCode
+├─ 3
+│   k: #end EVMC_REVERT ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
+│   pc: 992
+│   callDepth: 0
+│   statusCode: STATUSCODE:StatusCode
 │
 │  (1 step)
-├─ 4 (expanded)
-│    k: #halt ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
-│    pc: 992
-│    callDepth: 0
-│    statusCode: EVMC_REVERT
+├─ 4
+│   k: #halt ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
+│   pc: 992
+│   callDepth: 0
+│   statusCode: EVMC_REVERT
 │
 │  (2 steps)
-└─ 5 (expanded, stuck, leaf)
-     k: #halt ~> CONTINUATION:K
-     pc: 992
-     callDepth: 0
-     statusCode: EVMC_REVERT
-   (stuck)
+└─ 5 (leaf)
+    k: #halt ~> CONTINUATION:K
+    pc: 992
+    callDepth: 0
+    statusCode: EVMC_REVERT
 
 
-└─ 2 (target, leaf)
-     k: #halt ~> CONTINUATION
-     pc: PC_CELL_5d410f2a
-     callDepth: CALLDEPTH_CELL_5d410f2a
-     statusCode: STATUSCODE_FINAL
-
-
-Target Nodes:
-
-2 (target, leaf)
- k: #halt ~> CONTINUATION
- pc: PC_CELL_5d410f2a
- callDepth: CALLDEPTH_CELL_5d410f2a
- statusCode: STATUSCODE_FINAL
+┌─ 2 (root, leaf)
+│   k: #halt ~> CONTINUATION
+│   pc: PC_CELL_5d410f2a
+│   callDepth: CALLDEPTH_CELL_5d410f2a
+│   statusCode: STATUSCODE_FINAL
 
 
 Node 5:
@@ -252,7 +242,7 @@ Node 5:
 
 
 
-module SUMMARY-ASSERTTEST-TEST-ASSERT-FALSE
+module SUMMARY-ASSERTTEST.TEST-ASSERT-FALSE:870E8DE82ACD6F5B31D6043C526259856526B116B385F7E0299260B011F7F44A
     
     
            <kevm>
@@ -281,6 +271,8 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-FALSE
                    .List
                  </interimStates>
                  <callState>
+                   ...
+                   ...
                    <id>
                      728815563385977040452943777879061427756277306518
                    </id>
@@ -299,6 +291,8 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-FALSE
                    <localMem>
                      ( .Bytes => b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80" )
                    </localMem>
+                   ...
+                   ...
                    <memoryUsed>
                      ( 0 => 3 )
                    </memoryUsed>
@@ -342,6 +336,7 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-FALSE
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        .Map
                      </storage>
@@ -351,7 +346,6 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-FALSE
                      <nonce>
                        0
                      </nonce>
-                     ...
                    </account>
                    <account>
                      <acctID>
@@ -360,6 +354,7 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-FALSE
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        .Map
                      </storage>
@@ -369,7 +364,6 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-FALSE
                      <nonce>
                        1
                      </nonce>
-                     ...
                    </account> )
                  </accounts>
                  ...
@@ -466,6 +460,7 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-FALSE
        andBool ( ORIGIN_ID:Int <Int pow160
        andBool ( NUMBER_CELL:Int <=Int maxSInt256
                ))))))
+      [label(BASIC-BLOCK-1-TO-3)]
     
            <kevm>
              <k>
@@ -495,6 +490,8 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-FALSE
                    .List
                  </interimStates>
                  <callState>
+                   ...
+                   ...
                    <id>
                      728815563385977040452943777879061427756277306518
                    </id>
@@ -513,6 +510,8 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-FALSE
                    <localMem>
                      b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80"
                    </localMem>
+                   ...
+                   ...
                    <memoryUsed>
                      3
                    </memoryUsed>
@@ -556,6 +555,7 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-FALSE
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        .Map
                      </storage>
@@ -565,7 +565,6 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-FALSE
                      <nonce>
                        0
                      </nonce>
-                     ...
                    </account>
                    <account>
                      <acctID>
@@ -574,6 +573,7 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-FALSE
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        .Map
                      </storage>
@@ -583,7 +583,6 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-FALSE
                      <nonce>
                        1
                      </nonce>
-                     ...
                    </account> )
                  </accounts>
                  ...
@@ -668,6 +667,7 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-FALSE
        andBool ( ORIGIN_ID:Int <Int pow160
        andBool ( NUMBER_CELL:Int <=Int maxSInt256
                ))))))
+      [label(BASIC-BLOCK-3-TO-4)]
     
            <kevm>
              <k>
@@ -697,6 +697,8 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-FALSE
                    .List
                  </interimStates>
                  <callState>
+                   ...
+                   ...
                    <id>
                      728815563385977040452943777879061427756277306518
                    </id>
@@ -715,6 +717,8 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-FALSE
                    <localMem>
                      b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80"
                    </localMem>
+                   ...
+                   ...
                    <memoryUsed>
                      3
                    </memoryUsed>
@@ -758,6 +762,7 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-FALSE
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        .Map
                      </storage>
@@ -767,7 +772,6 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-FALSE
                      <nonce>
                        0
                      </nonce>
-                     ...
                    </account>
                    <account>
                      <acctID>
@@ -776,6 +780,7 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-FALSE
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        .Map
                      </storage>
@@ -785,7 +790,6 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-FALSE
                      <nonce>
                        1
                      </nonce>
-                     ...
                    </account> )
                  </accounts>
                  ...
@@ -870,12 +874,12 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-FALSE
        andBool ( ORIGIN_ID:Int <Int pow160
        andBool ( NUMBER_CELL:Int <=Int maxSInt256
                ))))))
+      [label(BASIC-BLOCK-4-TO-5)]
 
 endmodule
+1 Failure nodes. (0 pending and 1 failing)
 
-1 Failure nodes. (0 pending and 1 stuck)
-
-Stuck nodes:
+Failing nodes:
 
   Node id: 5
   Failure reason:

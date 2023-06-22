@@ -1,0 +1,12 @@
+AssertTest.test_assert_false
+AssertTest.test_assert_true
+AssertTest.testFail_assert_false
+AssertTest.testFail_assert_true
+AssertTest.testFail_expect_revert
+AssertTest.test_failing_branch
+AssertTest.test_revert_branch
+AssumeTest.test_assume_false
+AssumeTest.testFail_assume_false
+AssumeTest.testFail_assume_true
+LoopsTest.sum_N
+SetUpDeployTest.test_extcodesize
