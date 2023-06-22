@@ -772,7 +772,6 @@ def _create_argument_parser() -> ArgumentParser:
         help='Remove a node and its successors from the proof state.',
         parents=[
             kevm_cli_args.logging_args,
-            kevm_cli_args.parallel_args,
             kevm_cli_args.k_args,
             kevm_cli_args.spec_args,
         ],
@@ -784,7 +783,6 @@ def _create_argument_parser() -> ArgumentParser:
         help='Run KEVM proof using the legacy kprove binary.',
         parents=[
             kevm_cli_args.logging_args,
-            kevm_cli_args.parallel_args,
             kevm_cli_args.k_args,
             kevm_cli_args.spec_args,
             kevm_cli_args.kprove_legacy_args,
