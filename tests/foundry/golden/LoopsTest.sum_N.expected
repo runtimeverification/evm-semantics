@@ -1,120 +1,120 @@
 
-┌─ 1 (init, expanded)
-│    k: #execute ~> CONTINUATION
-│    pc: 0
-│    callDepth: 0
-│    statusCode: STATUSCODE
-│    src: tests/foundry/test/Loops.t.sol:5:278
+┌─ 1 (root)
+│   k: #execute ~> CONTINUATION
+│   pc: 0
+│   callDepth: 0
+│   statusCode: STATUSCODE
+│   src: tests/foundry/test/Loops.t.sol:5:278
 │
 │  (776 steps)
-├─ 3 (expanded)
-│    k: CALL 9223372036854772793 645326474426547203313410069153905908525362434349 0 128  ...
-│    pc: 1509
-│    callDepth: 0
-│    statusCode: STATUSCODE:StatusCode
+├─ 3
+│   k: CALL 9223372036854772793 645326474426547203313410069153905908525362434349 0 128  ...
+│   pc: 1509
+│   callDepth: 0
+│   statusCode: STATUSCODE:StatusCode
 │
 │  (1 step)
-├─ 4 (expanded)
-│    k: #checkCall 728815563385977040452943777879061427756277306518 0 ~> #call 728815563 ...
-│    pc: 1509
-│    callDepth: 0
-│    statusCode: STATUSCODE:StatusCode
+├─ 4
+│   k: #checkCall 728815563385977040452943777879061427756277306518 0 ~> #call 728815563 ...
+│   pc: 1509
+│   callDepth: 0
+│   statusCode: STATUSCODE:StatusCode
 │
 │  (153 steps)
 ├─ 5 (split)
-│    k: JUMPI 1569 bool2Word ( VV0_n_114b9705:Int ==Int 0 ) ~> #pc [ JUMPI ] ~> #execute ...
-│    pc: 1539
-│    callDepth: 0
-│    statusCode: STATUSCODE:StatusCode
-│    src: tests/foundry/test/Loops.t.sol:164:178
+│   k: JUMPI 1569 bool2Word ( VV0_n_114b9705:Int ==Int 0 ) ~> #pc [ JUMPI ] ~> #execute ...
+│   pc: 1539
+│   callDepth: 0
+│   statusCode: STATUSCODE:StatusCode
+│   src: tests/foundry/test/Loops.t.sol:164:178
 ┃
 ┃ (branch)
 ┣━━┓ constraint: { true #Equals VV0_n_114b9705:Int ==Int 0 }
 ┃  │
-┃  ├─ 6 (expanded)
-┃  │    k: JUMPI 1569 bool2Word ( VV0_n_114b9705:Int ==Int 0 ) ~> #pc [ JUMPI ] ~> #execute ...
-┃  │    pc: 1539
-┃  │    callDepth: 0
-┃  │    statusCode: STATUSCODE:StatusCode
-┃  │    src: tests/foundry/test/Loops.t.sol:164:178
+┃  ├─ 6
+┃  │   k: JUMPI 1569 bool2Word ( VV0_n_114b9705:Int ==Int 0 ) ~> #pc [ JUMPI ] ~> #execute ...
+┃  │   pc: 1539
+┃  │   callDepth: 0
+┃  │   statusCode: STATUSCODE:StatusCode
+┃  │   src: tests/foundry/test/Loops.t.sol:164:178
 ┃  │
 ┃  │  (162 steps)
-┃  ├─ 8 (expanded)
-┃  │    k: #end EVMC_SUCCESS ~> #pc [ RETURN ] ~> #execute ~> CONTINUATION:K
-┃  │    pc: 352
-┃  │    callDepth: 0
-┃  │    statusCode: STATUSCODE:StatusCode
-┃  │    src: tests/foundry/lib/forge-std/src/Script.sol:8:9
+┃  ├─ 8
+┃  │   k: #end EVMC_SUCCESS ~> #pc [ RETURN ] ~> #execute ~> CONTINUATION:K
+┃  │   pc: 352
+┃  │   callDepth: 0
+┃  │   statusCode: STATUSCODE:StatusCode
+┃  │   src: tests/foundry/lib/forge-std/src/Script.sol:8:9
 ┃  │
 ┃  │  (1 step)
-┃  ├─ 10 (expanded)
-┃  │    k: #halt ~> #pc [ RETURN ] ~> #execute ~> CONTINUATION:K
-┃  │    pc: 352
-┃  │    callDepth: 0
-┃  │    statusCode: EVMC_SUCCESS
-┃  │    src: tests/foundry/lib/forge-std/src/Script.sol:8:9
+┃  ├─ 10
+┃  │   k: #halt ~> #pc [ RETURN ] ~> #execute ~> CONTINUATION:K
+┃  │   pc: 352
+┃  │   callDepth: 0
+┃  │   statusCode: EVMC_SUCCESS
+┃  │   src: tests/foundry/lib/forge-std/src/Script.sol:8:9
 ┃  │
 ┃  │  (2 steps)
-┃  ├─ 12 (leaf)
-┃  │    k: #halt ~> CONTINUATION:K
-┃  │    pc: 352
-┃  │    callDepth: 0
-┃  │    statusCode: EVMC_SUCCESS
-┃  │    src: tests/foundry/lib/forge-std/src/Script.sol:8:9
+┃  ├─ 12
+┃  │   k: #halt ~> CONTINUATION:K
+┃  │   pc: 352
+┃  │   callDepth: 0
+┃  │   statusCode: EVMC_SUCCESS
+┃  │   src: tests/foundry/lib/forge-std/src/Script.sol:8:9
 ┃  │
 ┃  ┊  constraint: true
 ┃  ┊  subst: OMITTED SUBST
-┃  └─ 2 (target, leaf)
-┃       k: #halt ~> CONTINUATION
-┃       pc: PC_CELL_5d410f2a
-┃       callDepth: CALLDEPTH_CELL_5d410f2a
-┃       statusCode: STATUSCODE_FINAL
+┃  └─ 2 (leaf)
+┃      k: #halt ~> CONTINUATION
+┃      pc: PC_CELL_5d410f2a
+┃      callDepth: CALLDEPTH_CELL_5d410f2a
+┃      statusCode: STATUSCODE_FINAL
 ┃
 ┗━━┓ constraint: { true #Equals ( notBool VV0_n_114b9705:Int ==Int 0 ) }
    │
-   ├─ 7 (expanded)
-   │    k: JUMPI 1569 bool2Word ( VV0_n_114b9705:Int ==Int 0 ) ~> #pc [ JUMPI ] ~> #execute ...
-   │    pc: 1539
-   │    callDepth: 0
-   │    statusCode: STATUSCODE:StatusCode
-   │    src: tests/foundry/test/Loops.t.sol:164:178
+   ├─ 7
+   │   k: JUMPI 1569 bool2Word ( VV0_n_114b9705:Int ==Int 0 ) ~> #pc [ JUMPI ] ~> #execute ...
+   │   pc: 1539
+   │   callDepth: 0
+   │   statusCode: STATUSCODE:StatusCode
+   │   src: tests/foundry/test/Loops.t.sol:164:178
    │
    │  (162 steps)
-   ├─ 9 (expanded)
-   │    k: #end EVMC_SUCCESS ~> #pc [ RETURN ] ~> #execute ~> CONTINUATION:K
-   │    pc: 352
-   │    callDepth: 0
-   │    statusCode: STATUSCODE:StatusCode
-   │    src: tests/foundry/lib/forge-std/src/Script.sol:8:9
+   ├─ 9
+   │   k: #end EVMC_SUCCESS ~> #pc [ RETURN ] ~> #execute ~> CONTINUATION:K
+   │   pc: 352
+   │   callDepth: 0
+   │   statusCode: STATUSCODE:StatusCode
+   │   src: tests/foundry/lib/forge-std/src/Script.sol:8:9
    │
    │  (1 step)
-   ├─ 11 (expanded)
-   │    k: #halt ~> #pc [ RETURN ] ~> #execute ~> CONTINUATION:K
-   │    pc: 352
-   │    callDepth: 0
-   │    statusCode: EVMC_SUCCESS
-   │    src: tests/foundry/lib/forge-std/src/Script.sol:8:9
+   ├─ 11
+   │   k: #halt ~> #pc [ RETURN ] ~> #execute ~> CONTINUATION:K
+   │   pc: 352
+   │   callDepth: 0
+   │   statusCode: EVMC_SUCCESS
+   │   src: tests/foundry/lib/forge-std/src/Script.sol:8:9
    │
    │  (2 steps)
-   ├─ 13 (leaf)
-   │    k: #halt ~> CONTINUATION:K
-   │    pc: 352
-   │    callDepth: 0
-   │    statusCode: EVMC_SUCCESS
-   │    src: tests/foundry/lib/forge-std/src/Script.sol:8:9
+   ├─ 13
+   │   k: #halt ~> CONTINUATION:K
+   │   pc: 352
+   │   callDepth: 0
+   │   statusCode: EVMC_SUCCESS
+   │   src: tests/foundry/lib/forge-std/src/Script.sol:8:9
    │
    ┊  constraint: true
    ┊  subst: OMITTED SUBST
-   └─ 2 (target, leaf)
-        k: #halt ~> CONTINUATION
-        pc: PC_CELL_5d410f2a
-        callDepth: CALLDEPTH_CELL_5d410f2a
-        statusCode: STATUSCODE_FINAL
+   └─ 2 (leaf)
+       k: #halt ~> CONTINUATION
+       pc: PC_CELL_5d410f2a
+       callDepth: CALLDEPTH_CELL_5d410f2a
+       statusCode: STATUSCODE_FINAL
 
 
 
 
-module SUMMARY-LOOPSTEST-SUM-N
+module SUMMARY-LOOPSTEST.SUM-N:031A8A7FD8A89EA433A5C7307FD8E6EE86FED775C4188C1078F3DE94C1EE710D
     
     
            <kevm>
@@ -140,6 +140,8 @@ module SUMMARY-LOOPSTEST-SUM-N
                    .List
                  </interimStates>
                  <callState>
+                   ...
+                   ...
                    <id>
                      728815563385977040452943777879061427756277306518
                    </id>
@@ -158,6 +160,8 @@ module SUMMARY-LOOPSTEST-SUM-N
                    <localMem>
                      ( .Bytes => b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00Lc\xe5b" +Bytes #buf ( 32 , bool2Word ( VV0_n_114b9705:Int <=Int 51816696836262767 ) ) )
                    </localMem>
+                   ...
+                   ...
                    <memoryUsed>
                      ( 0 => 6 )
                    </memoryUsed>
@@ -170,7 +174,6 @@ module SUMMARY-LOOPSTEST-SUM-N
                    <callDepth>
                      0
                    </callDepth>
-                   ...
                  </callState>
                  <substate>
                    <log>
@@ -204,6 +207,7 @@ module SUMMARY-LOOPSTEST-SUM-N
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        .Map
                      </storage>
@@ -213,7 +217,6 @@ module SUMMARY-LOOPSTEST-SUM-N
                      <nonce>
                        0
                      </nonce>
-                     ...
                    </account>
                    <account>
                      <acctID>
@@ -222,6 +225,7 @@ module SUMMARY-LOOPSTEST-SUM-N
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        .Map
                      </storage>
@@ -231,7 +235,6 @@ module SUMMARY-LOOPSTEST-SUM-N
                      <nonce>
                        1
                      </nonce>
-                     ...
                    </account> )
                  </accounts>
                  ...
@@ -330,6 +333,7 @@ module SUMMARY-LOOPSTEST-SUM-N
        andBool ( ORIGIN_ID:Int <Int pow160
        andBool ( NUMBER_CELL:Int <=Int maxSInt256
                ))))))
+      [label(BASIC-BLOCK-1-TO-3)]
     
            <kevm>
              <k>
@@ -355,6 +359,8 @@ module SUMMARY-LOOPSTEST-SUM-N
                    .List
                  </interimStates>
                  <callState>
+                   ...
+                   ...
                    <id>
                      728815563385977040452943777879061427756277306518
                    </id>
@@ -373,6 +379,8 @@ module SUMMARY-LOOPSTEST-SUM-N
                    <localMem>
                      b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00Lc\xe5b" +Bytes #buf ( 32 , bool2Word ( VV0_n_114b9705:Int <=Int 51816696836262767 ) )
                    </localMem>
+                   ...
+                   ...
                    <memoryUsed>
                      6
                    </memoryUsed>
@@ -385,7 +393,6 @@ module SUMMARY-LOOPSTEST-SUM-N
                    <callDepth>
                      0
                    </callDepth>
-                   ...
                  </callState>
                  <substate>
                    <log>
@@ -419,6 +426,7 @@ module SUMMARY-LOOPSTEST-SUM-N
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        .Map
                      </storage>
@@ -428,7 +436,6 @@ module SUMMARY-LOOPSTEST-SUM-N
                      <nonce>
                        0
                      </nonce>
-                     ...
                    </account>
                    <account>
                      <acctID>
@@ -437,6 +444,7 @@ module SUMMARY-LOOPSTEST-SUM-N
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        .Map
                      </storage>
@@ -446,7 +454,6 @@ module SUMMARY-LOOPSTEST-SUM-N
                      <nonce>
                        1
                      </nonce>
-                     ...
                    </account> )
                  </accounts>
                  ...
@@ -533,6 +540,7 @@ module SUMMARY-LOOPSTEST-SUM-N
        andBool ( NUMBER_CELL:Int <=Int maxSInt256
        andBool ( VV0_n_114b9705:Int <Int pow256
                ))))))))
+      [label(BASIC-BLOCK-3-TO-4)]
     
            <kevm>
              <k>
@@ -562,6 +570,8 @@ module SUMMARY-LOOPSTEST-SUM-N
                    .List
                  </interimStates>
                  <callState>
+                   ...
+                   ...
                    <id>
                      728815563385977040452943777879061427756277306518
                    </id>
@@ -580,6 +590,8 @@ module SUMMARY-LOOPSTEST-SUM-N
                    <localMem>
                      b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00Lc\xe5b" +Bytes #buf ( 32 , bool2Word ( VV0_n_114b9705:Int <=Int 51816696836262767 ) )
                    </localMem>
+                   ...
+                   ...
                    <memoryUsed>
                      6
                    </memoryUsed>
@@ -592,7 +604,6 @@ module SUMMARY-LOOPSTEST-SUM-N
                    <callDepth>
                      0
                    </callDepth>
-                   ...
                  </callState>
                  <substate>
                    <log>
@@ -626,6 +637,7 @@ module SUMMARY-LOOPSTEST-SUM-N
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        .Map
                      </storage>
@@ -635,7 +647,6 @@ module SUMMARY-LOOPSTEST-SUM-N
                      <nonce>
                        0
                      </nonce>
-                     ...
                    </account>
                    <account>
                      <acctID>
@@ -644,6 +655,7 @@ module SUMMARY-LOOPSTEST-SUM-N
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        .Map
                      </storage>
@@ -653,7 +665,6 @@ module SUMMARY-LOOPSTEST-SUM-N
                      <nonce>
                        1
                      </nonce>
-                     ...
                    </account> )
                  </accounts>
                  ...
@@ -741,6 +752,7 @@ module SUMMARY-LOOPSTEST-SUM-N
        andBool ( VV0_n_114b9705:Int <Int pow256
                ))))))))
        ensures VV0_n_114b9705:Int <=Int 51816696836262767 ==Bool true
+      [label(BASIC-BLOCK-4-TO-5)]
     
            <kevm>
              <k>
@@ -768,6 +780,8 @@ module SUMMARY-LOOPSTEST-SUM-N
                    .List
                  </interimStates>
                  <callState>
+                   ...
+                   ...
                    <id>
                      728815563385977040452943777879061427756277306518
                    </id>
@@ -786,6 +800,8 @@ module SUMMARY-LOOPSTEST-SUM-N
                    <localMem>
                      ( b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00Lc\xe5b" +Bytes #buf ( 32 , bool2Word ( VV0_n_114b9705:Int <=Int 51816696836262767 ) ) => b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01" )
                    </localMem>
+                   ...
+                   ...
                    <memoryUsed>
                      6
                    </memoryUsed>
@@ -798,7 +814,6 @@ module SUMMARY-LOOPSTEST-SUM-N
                    <callDepth>
                      0
                    </callDepth>
-                   ...
                  </callState>
                  <substate>
                    <log>
@@ -832,6 +847,7 @@ module SUMMARY-LOOPSTEST-SUM-N
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        .Map
                      </storage>
@@ -841,7 +857,6 @@ module SUMMARY-LOOPSTEST-SUM-N
                      <nonce>
                        0
                      </nonce>
-                     ...
                    </account>
                    <account>
                      <acctID>
@@ -850,6 +865,7 @@ module SUMMARY-LOOPSTEST-SUM-N
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        .Map
                      </storage>
@@ -859,7 +875,6 @@ module SUMMARY-LOOPSTEST-SUM-N
                      <nonce>
                        1
                      </nonce>
-                     ...
                    </account> )
                  </accounts>
                  ...
@@ -949,6 +964,7 @@ module SUMMARY-LOOPSTEST-SUM-N
        andBool ( VV0_n_114b9705:Int <=Int 51816696836262767 ==Bool true
                ))))))))))
        ensures VV0_n_114b9705:Int ==K 0
+      [label(BASIC-BLOCK-6-TO-8)]
     
            <kevm>
              <k>
@@ -976,6 +992,8 @@ module SUMMARY-LOOPSTEST-SUM-N
                    .List
                  </interimStates>
                  <callState>
+                   ...
+                   ...
                    <id>
                      728815563385977040452943777879061427756277306518
                    </id>
@@ -994,6 +1012,8 @@ module SUMMARY-LOOPSTEST-SUM-N
                    <localMem>
                      ( b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00Lc\xe5b" => b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" ) +Bytes ( #buf ( 32 , bool2Word ( VV0_n_114b9705:Int <=Int 51816696836262767 ) ) => #buf ( 32 , ( ( VV0_n_114b9705:Int *Int ( VV0_n_114b9705:Int +Int 1 ) ) /Int 2 ) ) +Bytes #range ( #buf ( 32 , bool2Word ( VV0_n_114b9705:Int <=Int 51816696836262767 ) ) , 28 , 4 ) )
                    </localMem>
+                   ...
+                   ...
                    <memoryUsed>
                      6
                    </memoryUsed>
@@ -1006,7 +1026,6 @@ module SUMMARY-LOOPSTEST-SUM-N
                    <callDepth>
                      0
                    </callDepth>
-                   ...
                  </callState>
                  <substate>
                    <log>
@@ -1040,6 +1059,7 @@ module SUMMARY-LOOPSTEST-SUM-N
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        .Map
                      </storage>
@@ -1049,7 +1069,6 @@ module SUMMARY-LOOPSTEST-SUM-N
                      <nonce>
                        0
                      </nonce>
-                     ...
                    </account>
                    <account>
                      <acctID>
@@ -1058,6 +1077,7 @@ module SUMMARY-LOOPSTEST-SUM-N
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        .Map
                      </storage>
@@ -1067,7 +1087,6 @@ module SUMMARY-LOOPSTEST-SUM-N
                      <nonce>
                        1
                      </nonce>
-                     ...
                    </account> )
                  </accounts>
                  ...
@@ -1183,6 +1202,7 @@ module SUMMARY-LOOPSTEST-SUM-N
        andBool ( 0 <=Int ( ( VV0_n_114b9705:Int *Int ( VV0_n_114b9705:Int +Int 1 ) ) /Int 2 )
        andBool ( ( ( VV0_n_114b9705:Int *Int ( VV0_n_114b9705:Int +Int 1 ) ) /Int 2 ) <Int pow256
                ))))))))))))))))))))))))))
+      [label(BASIC-BLOCK-7-TO-9)]
     
            <kevm>
              <k>
@@ -1212,6 +1232,8 @@ module SUMMARY-LOOPSTEST-SUM-N
                    .List
                  </interimStates>
                  <callState>
+                   ...
+                   ...
                    <id>
                      728815563385977040452943777879061427756277306518
                    </id>
@@ -1230,6 +1252,8 @@ module SUMMARY-LOOPSTEST-SUM-N
                    <localMem>
                      b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01"
                    </localMem>
+                   ...
+                   ...
                    <memoryUsed>
                      6
                    </memoryUsed>
@@ -1242,7 +1266,6 @@ module SUMMARY-LOOPSTEST-SUM-N
                    <callDepth>
                      0
                    </callDepth>
-                   ...
                  </callState>
                  <substate>
                    <log>
@@ -1276,6 +1299,7 @@ module SUMMARY-LOOPSTEST-SUM-N
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        .Map
                      </storage>
@@ -1285,7 +1309,6 @@ module SUMMARY-LOOPSTEST-SUM-N
                      <nonce>
                        0
                      </nonce>
-                     ...
                    </account>
                    <account>
                      <acctID>
@@ -1294,6 +1317,7 @@ module SUMMARY-LOOPSTEST-SUM-N
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        .Map
                      </storage>
@@ -1303,7 +1327,6 @@ module SUMMARY-LOOPSTEST-SUM-N
                      <nonce>
                        1
                      </nonce>
-                     ...
                    </account> )
                  </accounts>
                  ...
@@ -1389,6 +1412,7 @@ module SUMMARY-LOOPSTEST-SUM-N
        andBool ( ORIGIN_ID:Int <Int pow160
        andBool ( NUMBER_CELL:Int <=Int maxSInt256
                )))))))
+      [label(BASIC-BLOCK-8-TO-10)]
     
            <kevm>
              <k>
@@ -1418,6 +1442,8 @@ module SUMMARY-LOOPSTEST-SUM-N
                    .List
                  </interimStates>
                  <callState>
+                   ...
+                   ...
                    <id>
                      728815563385977040452943777879061427756277306518
                    </id>
@@ -1436,6 +1462,8 @@ module SUMMARY-LOOPSTEST-SUM-N
                    <localMem>
                      b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" +Bytes #buf ( 32 , ( ( VV0_n_114b9705:Int *Int ( VV0_n_114b9705:Int +Int 1 ) ) /Int 2 ) ) +Bytes #range ( #buf ( 32 , bool2Word ( VV0_n_114b9705:Int <=Int 51816696836262767 ) ) , 28 , 4 )
                    </localMem>
+                   ...
+                   ...
                    <memoryUsed>
                      6
                    </memoryUsed>
@@ -1448,7 +1476,6 @@ module SUMMARY-LOOPSTEST-SUM-N
                    <callDepth>
                      0
                    </callDepth>
-                   ...
                  </callState>
                  <substate>
                    <log>
@@ -1482,6 +1509,7 @@ module SUMMARY-LOOPSTEST-SUM-N
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        .Map
                      </storage>
@@ -1491,7 +1519,6 @@ module SUMMARY-LOOPSTEST-SUM-N
                      <nonce>
                        0
                      </nonce>
-                     ...
                    </account>
                    <account>
                      <acctID>
@@ -1500,6 +1527,7 @@ module SUMMARY-LOOPSTEST-SUM-N
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        .Map
                      </storage>
@@ -1509,7 +1537,6 @@ module SUMMARY-LOOPSTEST-SUM-N
                      <nonce>
                        1
                      </nonce>
-                     ...
                    </account> )
                  </accounts>
                  ...
@@ -1623,6 +1650,7 @@ module SUMMARY-LOOPSTEST-SUM-N
        andBool ( 0 <=Int ( ( VV0_n_114b9705:Int *Int ( VV0_n_114b9705:Int +Int 1 ) ) /Int 2 )
        andBool ( ( ( VV0_n_114b9705:Int *Int ( VV0_n_114b9705:Int +Int 1 ) ) /Int 2 ) <Int pow256
                )))))))))))))))))))))))))))))))))))
+      [label(BASIC-BLOCK-9-TO-11)]
     
            <kevm>
              <k>
@@ -1652,6 +1680,8 @@ module SUMMARY-LOOPSTEST-SUM-N
                    .List
                  </interimStates>
                  <callState>
+                   ...
+                   ...
                    <id>
                      728815563385977040452943777879061427756277306518
                    </id>
@@ -1670,6 +1700,8 @@ module SUMMARY-LOOPSTEST-SUM-N
                    <localMem>
                      b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01"
                    </localMem>
+                   ...
+                   ...
                    <memoryUsed>
                      6
                    </memoryUsed>
@@ -1682,7 +1714,6 @@ module SUMMARY-LOOPSTEST-SUM-N
                    <callDepth>
                      0
                    </callDepth>
-                   ...
                  </callState>
                  <substate>
                    <log>
@@ -1716,6 +1747,7 @@ module SUMMARY-LOOPSTEST-SUM-N
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        .Map
                      </storage>
@@ -1725,7 +1757,6 @@ module SUMMARY-LOOPSTEST-SUM-N
                      <nonce>
                        0
                      </nonce>
-                     ...
                    </account>
                    <account>
                      <acctID>
@@ -1734,6 +1765,7 @@ module SUMMARY-LOOPSTEST-SUM-N
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        .Map
                      </storage>
@@ -1743,7 +1775,6 @@ module SUMMARY-LOOPSTEST-SUM-N
                      <nonce>
                        1
                      </nonce>
-                     ...
                    </account> )
                  </accounts>
                  ...
@@ -1829,6 +1860,7 @@ module SUMMARY-LOOPSTEST-SUM-N
        andBool ( ORIGIN_ID:Int <Int pow160
        andBool ( NUMBER_CELL:Int <=Int maxSInt256
                )))))))
+      [label(BASIC-BLOCK-10-TO-12)]
     
            <kevm>
              <k>
@@ -1858,6 +1890,8 @@ module SUMMARY-LOOPSTEST-SUM-N
                    .List
                  </interimStates>
                  <callState>
+                   ...
+                   ...
                    <id>
                      728815563385977040452943777879061427756277306518
                    </id>
@@ -1876,6 +1910,8 @@ module SUMMARY-LOOPSTEST-SUM-N
                    <localMem>
                      b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" +Bytes #buf ( 32 , ( ( VV0_n_114b9705:Int *Int ( VV0_n_114b9705:Int +Int 1 ) ) /Int 2 ) ) +Bytes #range ( #buf ( 32 , bool2Word ( VV0_n_114b9705:Int <=Int 51816696836262767 ) ) , 28 , 4 )
                    </localMem>
+                   ...
+                   ...
                    <memoryUsed>
                      6
                    </memoryUsed>
@@ -1888,7 +1924,6 @@ module SUMMARY-LOOPSTEST-SUM-N
                    <callDepth>
                      0
                    </callDepth>
-                   ...
                  </callState>
                  <substate>
                    <log>
@@ -1922,6 +1957,7 @@ module SUMMARY-LOOPSTEST-SUM-N
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        .Map
                      </storage>
@@ -1931,7 +1967,6 @@ module SUMMARY-LOOPSTEST-SUM-N
                      <nonce>
                        0
                      </nonce>
-                     ...
                    </account>
                    <account>
                      <acctID>
@@ -1940,6 +1975,7 @@ module SUMMARY-LOOPSTEST-SUM-N
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        .Map
                      </storage>
@@ -1949,7 +1985,6 @@ module SUMMARY-LOOPSTEST-SUM-N
                      <nonce>
                        1
                      </nonce>
-                     ...
                    </account> )
                  </accounts>
                  ...
@@ -2063,9 +2098,14 @@ module SUMMARY-LOOPSTEST-SUM-N
        andBool ( 0 <=Int ( ( VV0_n_114b9705:Int *Int ( VV0_n_114b9705:Int +Int 1 ) ) /Int 2 )
        andBool ( ( ( VV0_n_114b9705:Int *Int ( VV0_n_114b9705:Int +Int 1 ) ) /Int 2 ) <Int pow256
                )))))))))))))))))))))))))))))))))))
+      [label(BASIC-BLOCK-11-TO-13)]
 
 endmodule
+<<<<<<< HEAD
 
 0 Failure nodes. (0 frontier and 0 stuck)
+=======
+0 Failure nodes. (0 pending and 0 failing)
+>>>>>>> origin/master
 
 Access documentation for KEVM foundry integration at https://docs.runtimeverification.com/kevm-integration-for-foundry/

@@ -295,7 +295,7 @@ module FLAPPER-YANK-PASS-ROUGH-SPEC
        andBool #DSToken.balances[ABI_src] =/=Int #DSToken.owner_stopped
        andBool #DSToken.balances[ABI_dst] =/=Int #DSToken.owner_stopped
        andBool #rangeNonce(Nonce_DSToken)
-    [trusted, matching(infGas)]
+    [trusted]
 
 
 endmodule

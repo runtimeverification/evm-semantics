@@ -1,100 +1,91 @@
 
-┌─ 1 (init, expanded)
-│    k: #execute ~> CONTINUATION
-│    pc: 0
-│    callDepth: 0
-│    statusCode: STATUSCODE
-│    src: tests/foundry/test/Simple.t.sol:5:54
+┌─ 1 (root)
+│   k: #execute ~> CONTINUATION
+│   pc: 0
+│   callDepth: 0
+│   statusCode: STATUSCODE
+│   src: tests/foundry/test/Simple.t.sol:5:54
 │
 │  (616 steps)
 ├─ 3 (split)
-│    k: JUMPI 526 bool2Word ( 100 <=Int VV0_x_114b9705:Int ) ~> #pc [ JUMPI ] ~> #execut ...
-│    pc: 518
-│    callDepth: 0
-│    statusCode: STATUSCODE:StatusCode
-│    src: tests/foundry/test/Simple.t.sol:26:27
+│   k: JUMPI 526 bool2Word ( 100 <=Int VV0_x_114b9705:Int ) ~> #pc [ JUMPI ] ~> #execut ...
+│   pc: 518
+│   callDepth: 0
+│   statusCode: STATUSCODE:StatusCode
+│   src: tests/foundry/test/Simple.t.sol:26:27
 ┃
 ┃ (branch)
 ┣━━┓ constraint: { true #Equals 100 <=Int VV0_x_114b9705:Int }
 ┃  │
-┃  ├─ 4 (expanded)
-┃  │    k: JUMPI 526 bool2Word ( 100 <=Int VV0_x_114b9705:Int ) ~> #pc [ JUMPI ] ~> #execut ...
-┃  │    pc: 518
-┃  │    callDepth: 0
-┃  │    statusCode: STATUSCODE:StatusCode
-┃  │    src: tests/foundry/test/Simple.t.sol:26:27
+┃  ├─ 4
+┃  │   k: JUMPI 526 bool2Word ( 100 <=Int VV0_x_114b9705:Int ) ~> #pc [ JUMPI ] ~> #execut ...
+┃  │   pc: 518
+┃  │   callDepth: 0
+┃  │   statusCode: STATUSCODE:StatusCode
+┃  │   src: tests/foundry/test/Simple.t.sol:26:27
 ┃  │
 ┃  │  (64 steps)
-┃  ├─ 6 (expanded)
-┃  │    k: #end EVMC_SUCCESS ~> #pc [ STOP ] ~> #execute ~> CONTINUATION:K
-┃  │    pc: 213
-┃  │    callDepth: 0
-┃  │    statusCode: STATUSCODE:StatusCode
-┃  │    src: tests/foundry/lib/forge-std/lib/ds-test/src/test.sol:37:38
+┃  ├─ 6
+┃  │   k: #end EVMC_SUCCESS ~> #pc [ STOP ] ~> #execute ~> CONTINUATION:K
+┃  │   pc: 213
+┃  │   callDepth: 0
+┃  │   statusCode: STATUSCODE:StatusCode
+┃  │   src: tests/foundry/lib/forge-std/lib/ds-test/src/test.sol:37:38
 ┃  │
 ┃  │  (1 step)
-┃  ├─ 8 (expanded)
-┃  │    k: #halt ~> #pc [ STOP ] ~> #execute ~> CONTINUATION:K
-┃  │    pc: 213
-┃  │    callDepth: 0
-┃  │    statusCode: EVMC_SUCCESS
-┃  │    src: tests/foundry/lib/forge-std/lib/ds-test/src/test.sol:37:38
+┃  ├─ 8
+┃  │   k: #halt ~> #pc [ STOP ] ~> #execute ~> CONTINUATION:K
+┃  │   pc: 213
+┃  │   callDepth: 0
+┃  │   statusCode: EVMC_SUCCESS
+┃  │   src: tests/foundry/lib/forge-std/lib/ds-test/src/test.sol:37:38
 ┃  │
 ┃  │  (2 steps)
-┃  ├─ 10 (leaf)
-┃  │    k: #halt ~> CONTINUATION:K
-┃  │    pc: 213
-┃  │    callDepth: 0
-┃  │    statusCode: EVMC_SUCCESS
-┃  │    src: tests/foundry/lib/forge-std/lib/ds-test/src/test.sol:37:38
+┃  ├─ 10
+┃  │   k: #halt ~> CONTINUATION:K
+┃  │   pc: 213
+┃  │   callDepth: 0
+┃  │   statusCode: EVMC_SUCCESS
+┃  │   src: tests/foundry/lib/forge-std/lib/ds-test/src/test.sol:37:38
 ┃  │
 ┃  ┊  constraint: true
 ┃  ┊  subst: OMITTED SUBST
-┃  └─ 2 (target, leaf)
-┃       k: #halt ~> CONTINUATION
-┃       pc: PC_CELL_5d410f2a
-┃       callDepth: CALLDEPTH_CELL_5d410f2a
-┃       statusCode: STATUSCODE_FINAL
+┃  └─ 2 (leaf)
+┃      k: #halt ~> CONTINUATION
+┃      pc: PC_CELL_5d410f2a
+┃      callDepth: CALLDEPTH_CELL_5d410f2a
+┃      statusCode: STATUSCODE_FINAL
 ┃
 ┗━━┓ constraint: { true #Equals ( notBool 100 <=Int VV0_x_114b9705:Int ) }
    │
-   ├─ 5 (expanded)
-   │    k: JUMPI 526 bool2Word ( 100 <=Int VV0_x_114b9705:Int ) ~> #pc [ JUMPI ] ~> #execut ...
-   │    pc: 518
-   │    callDepth: 0
-   │    statusCode: STATUSCODE:StatusCode
-   │    src: tests/foundry/test/Simple.t.sol:26:27
+   ├─ 5
+   │   k: JUMPI 526 bool2Word ( 100 <=Int VV0_x_114b9705:Int ) ~> #pc [ JUMPI ] ~> #execut ...
+   │   pc: 518
+   │   callDepth: 0
+   │   statusCode: STATUSCODE:StatusCode
+   │   src: tests/foundry/test/Simple.t.sol:26:27
    │
    │  (102 steps)
-   ├─ 7 (expanded)
-   │    k: #end EVMC_REVERT ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
-   │    pc: 992
-   │    callDepth: 0
-   │    statusCode: STATUSCODE:StatusCode
+   ├─ 7
+   │   k: #end EVMC_REVERT ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
+   │   pc: 992
+   │   callDepth: 0
+   │   statusCode: STATUSCODE:StatusCode
    │
    │  (1 step)
-   ├─ 9 (expanded)
-   │    k: #halt ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
-   │    pc: 992
-   │    callDepth: 0
-   │    statusCode: EVMC_REVERT
+   ├─ 9
+   │   k: #halt ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
+   │   pc: 992
+   │   callDepth: 0
+   │   statusCode: EVMC_REVERT
    │
    │  (2 steps)
-   └─ 11 (expanded, stuck, leaf)
-        k: #halt ~> CONTINUATION:K
-        pc: 992
-        callDepth: 0
-        statusCode: EVMC_REVERT
-      (stuck)
+   └─ 11 (leaf)
+       k: #halt ~> CONTINUATION:K
+       pc: 992
+       callDepth: 0
+       statusCode: EVMC_REVERT
 
-
-Target Nodes:
-
-2 (target, leaf)
- k: #halt ~> CONTINUATION
- pc: PC_CELL_5d410f2a
- callDepth: CALLDEPTH_CELL_5d410f2a
- statusCode: STATUSCODE_FINAL
 
 
 Node 11:
@@ -307,7 +298,7 @@ Node 11:
 
 
 
-module SUMMARY-ASSERTTEST-TEST-FAILING-BRANCH
+module SUMMARY-ASSERTTEST.TEST-FAILING-BRANCH:62E246CC0325A8AB400BED7AA96455FDF5277F9A1A755FA8CFAF572ED805C686
     
     
            <kevm>
@@ -333,6 +324,8 @@ module SUMMARY-ASSERTTEST-TEST-FAILING-BRANCH
                    .List
                  </interimStates>
                  <callState>
+                   ...
+                   ...
                    <id>
                      728815563385977040452943777879061427756277306518
                    </id>
@@ -351,6 +344,8 @@ module SUMMARY-ASSERTTEST-TEST-FAILING-BRANCH
                    <localMem>
                      ( .Bytes => b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80" )
                    </localMem>
+                   ...
+                   ...
                    <memoryUsed>
                      ( 0 => 3 )
                    </memoryUsed>
@@ -394,6 +389,7 @@ module SUMMARY-ASSERTTEST-TEST-FAILING-BRANCH
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        .Map
                      </storage>
@@ -403,7 +399,6 @@ module SUMMARY-ASSERTTEST-TEST-FAILING-BRANCH
                      <nonce>
                        0
                      </nonce>
-                     ...
                    </account>
                    <account>
                      <acctID>
@@ -412,6 +407,7 @@ module SUMMARY-ASSERTTEST-TEST-FAILING-BRANCH
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        .Map
                      </storage>
@@ -421,7 +417,6 @@ module SUMMARY-ASSERTTEST-TEST-FAILING-BRANCH
                      <nonce>
                        1
                      </nonce>
-                     ...
                    </account> )
                  </accounts>
                  ...
@@ -520,6 +515,7 @@ module SUMMARY-ASSERTTEST-TEST-FAILING-BRANCH
        andBool ( ORIGIN_ID:Int <Int pow160
        andBool ( NUMBER_CELL:Int <=Int maxSInt256
                ))))))
+      [label(BASIC-BLOCK-1-TO-3)]
     
            <kevm>
              <k>
@@ -547,6 +543,8 @@ module SUMMARY-ASSERTTEST-TEST-FAILING-BRANCH
                    .List
                  </interimStates>
                  <callState>
+                   ...
+                   ...
                    <id>
                      728815563385977040452943777879061427756277306518
                    </id>
@@ -565,6 +563,8 @@ module SUMMARY-ASSERTTEST-TEST-FAILING-BRANCH
                    <localMem>
                      b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80"
                    </localMem>
+                   ...
+                   ...
                    <memoryUsed>
                      3
                    </memoryUsed>
@@ -608,6 +608,7 @@ module SUMMARY-ASSERTTEST-TEST-FAILING-BRANCH
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        .Map
                      </storage>
@@ -617,7 +618,6 @@ module SUMMARY-ASSERTTEST-TEST-FAILING-BRANCH
                      <nonce>
                        0
                      </nonce>
-                     ...
                    </account>
                    <account>
                      <acctID>
@@ -626,6 +626,7 @@ module SUMMARY-ASSERTTEST-TEST-FAILING-BRANCH
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        .Map
                      </storage>
@@ -635,7 +636,6 @@ module SUMMARY-ASSERTTEST-TEST-FAILING-BRANCH
                      <nonce>
                        1
                      </nonce>
-                     ...
                    </account> )
                  </accounts>
                  ...
@@ -723,6 +723,7 @@ module SUMMARY-ASSERTTEST-TEST-FAILING-BRANCH
        andBool ( NUMBER_CELL:Int <=Int maxSInt256
        andBool ( VV0_x_114b9705:Int <Int pow256
                )))))))))
+      [label(BASIC-BLOCK-4-TO-6)]
     
            <kevm>
              <k>
@@ -750,6 +751,8 @@ module SUMMARY-ASSERTTEST-TEST-FAILING-BRANCH
                    .List
                  </interimStates>
                  <callState>
+                   ...
+                   ...
                    <id>
                      728815563385977040452943777879061427756277306518
                    </id>
@@ -768,6 +771,8 @@ module SUMMARY-ASSERTTEST-TEST-FAILING-BRANCH
                    <localMem>
                      ( b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80" => b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80" )
                    </localMem>
+                   ...
+                   ...
                    <memoryUsed>
                      3
                    </memoryUsed>
@@ -811,6 +816,7 @@ module SUMMARY-ASSERTTEST-TEST-FAILING-BRANCH
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        .Map
                      </storage>
@@ -820,7 +826,6 @@ module SUMMARY-ASSERTTEST-TEST-FAILING-BRANCH
                      <nonce>
                        0
                      </nonce>
-                     ...
                    </account>
                    <account>
                      <acctID>
@@ -829,6 +834,7 @@ module SUMMARY-ASSERTTEST-TEST-FAILING-BRANCH
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        .Map
                      </storage>
@@ -838,7 +844,6 @@ module SUMMARY-ASSERTTEST-TEST-FAILING-BRANCH
                      <nonce>
                        1
                      </nonce>
-                     ...
                    </account> )
                  </accounts>
                  ...
@@ -927,6 +932,7 @@ module SUMMARY-ASSERTTEST-TEST-FAILING-BRANCH
        andBool ( VV0_x_114b9705:Int <Int pow256
                )))))))))
        ensures VV0_x_114b9705:Int <Int 100
+      [label(BASIC-BLOCK-5-TO-7)]
     
            <kevm>
              <k>
@@ -956,6 +962,8 @@ module SUMMARY-ASSERTTEST-TEST-FAILING-BRANCH
                    .List
                  </interimStates>
                  <callState>
+                   ...
+                   ...
                    <id>
                      728815563385977040452943777879061427756277306518
                    </id>
@@ -974,6 +982,8 @@ module SUMMARY-ASSERTTEST-TEST-FAILING-BRANCH
                    <localMem>
                      b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80"
                    </localMem>
+                   ...
+                   ...
                    <memoryUsed>
                      3
                    </memoryUsed>
@@ -1017,6 +1027,7 @@ module SUMMARY-ASSERTTEST-TEST-FAILING-BRANCH
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        .Map
                      </storage>
@@ -1026,7 +1037,6 @@ module SUMMARY-ASSERTTEST-TEST-FAILING-BRANCH
                      <nonce>
                        0
                      </nonce>
-                     ...
                    </account>
                    <account>
                      <acctID>
@@ -1035,6 +1045,7 @@ module SUMMARY-ASSERTTEST-TEST-FAILING-BRANCH
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        .Map
                      </storage>
@@ -1044,7 +1055,6 @@ module SUMMARY-ASSERTTEST-TEST-FAILING-BRANCH
                      <nonce>
                        1
                      </nonce>
-                     ...
                    </account> )
                  </accounts>
                  ...
@@ -1132,6 +1142,7 @@ module SUMMARY-ASSERTTEST-TEST-FAILING-BRANCH
        andBool ( NUMBER_CELL:Int <=Int maxSInt256
        andBool ( VV0_x_114b9705:Int <Int pow256
                )))))))))
+      [label(BASIC-BLOCK-6-TO-8)]
     
            <kevm>
              <k>
@@ -1161,6 +1172,8 @@ module SUMMARY-ASSERTTEST-TEST-FAILING-BRANCH
                    .List
                  </interimStates>
                  <callState>
+                   ...
+                   ...
                    <id>
                      728815563385977040452943777879061427756277306518
                    </id>
@@ -1179,6 +1192,8 @@ module SUMMARY-ASSERTTEST-TEST-FAILING-BRANCH
                    <localMem>
                      b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80"
                    </localMem>
+                   ...
+                   ...
                    <memoryUsed>
                      3
                    </memoryUsed>
@@ -1222,6 +1237,7 @@ module SUMMARY-ASSERTTEST-TEST-FAILING-BRANCH
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        .Map
                      </storage>
@@ -1231,7 +1247,6 @@ module SUMMARY-ASSERTTEST-TEST-FAILING-BRANCH
                      <nonce>
                        0
                      </nonce>
-                     ...
                    </account>
                    <account>
                      <acctID>
@@ -1240,6 +1255,7 @@ module SUMMARY-ASSERTTEST-TEST-FAILING-BRANCH
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        .Map
                      </storage>
@@ -1249,7 +1265,6 @@ module SUMMARY-ASSERTTEST-TEST-FAILING-BRANCH
                      <nonce>
                        1
                      </nonce>
-                     ...
                    </account> )
                  </accounts>
                  ...
@@ -1337,6 +1352,7 @@ module SUMMARY-ASSERTTEST-TEST-FAILING-BRANCH
        andBool ( NUMBER_CELL:Int <=Int maxSInt256
        andBool ( VV0_x_114b9705:Int <Int pow256
                )))))))))
+      [label(BASIC-BLOCK-7-TO-9)]
     
            <kevm>
              <k>
@@ -1366,6 +1382,8 @@ module SUMMARY-ASSERTTEST-TEST-FAILING-BRANCH
                    .List
                  </interimStates>
                  <callState>
+                   ...
+                   ...
                    <id>
                      728815563385977040452943777879061427756277306518
                    </id>
@@ -1384,6 +1402,8 @@ module SUMMARY-ASSERTTEST-TEST-FAILING-BRANCH
                    <localMem>
                      b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80"
                    </localMem>
+                   ...
+                   ...
                    <memoryUsed>
                      3
                    </memoryUsed>
@@ -1427,6 +1447,7 @@ module SUMMARY-ASSERTTEST-TEST-FAILING-BRANCH
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        .Map
                      </storage>
@@ -1436,7 +1457,6 @@ module SUMMARY-ASSERTTEST-TEST-FAILING-BRANCH
                      <nonce>
                        0
                      </nonce>
-                     ...
                    </account>
                    <account>
                      <acctID>
@@ -1445,6 +1465,7 @@ module SUMMARY-ASSERTTEST-TEST-FAILING-BRANCH
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        .Map
                      </storage>
@@ -1454,7 +1475,6 @@ module SUMMARY-ASSERTTEST-TEST-FAILING-BRANCH
                      <nonce>
                        1
                      </nonce>
-                     ...
                    </account> )
                  </accounts>
                  ...
@@ -1542,6 +1562,7 @@ module SUMMARY-ASSERTTEST-TEST-FAILING-BRANCH
        andBool ( NUMBER_CELL:Int <=Int maxSInt256
        andBool ( VV0_x_114b9705:Int <Int pow256
                )))))))))
+      [label(BASIC-BLOCK-8-TO-10)]
     
            <kevm>
              <k>
@@ -1571,6 +1592,8 @@ module SUMMARY-ASSERTTEST-TEST-FAILING-BRANCH
                    .List
                  </interimStates>
                  <callState>
+                   ...
+                   ...
                    <id>
                      728815563385977040452943777879061427756277306518
                    </id>
@@ -1589,6 +1612,8 @@ module SUMMARY-ASSERTTEST-TEST-FAILING-BRANCH
                    <localMem>
                      b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80"
                    </localMem>
+                   ...
+                   ...
                    <memoryUsed>
                      3
                    </memoryUsed>
@@ -1632,6 +1657,7 @@ module SUMMARY-ASSERTTEST-TEST-FAILING-BRANCH
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        .Map
                      </storage>
@@ -1641,7 +1667,6 @@ module SUMMARY-ASSERTTEST-TEST-FAILING-BRANCH
                      <nonce>
                        0
                      </nonce>
-                     ...
                    </account>
                    <account>
                      <acctID>
@@ -1650,6 +1675,7 @@ module SUMMARY-ASSERTTEST-TEST-FAILING-BRANCH
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        .Map
                      </storage>
@@ -1659,7 +1685,6 @@ module SUMMARY-ASSERTTEST-TEST-FAILING-BRANCH
                      <nonce>
                        1
                      </nonce>
-                     ...
                    </account> )
                  </accounts>
                  ...
@@ -1747,12 +1772,18 @@ module SUMMARY-ASSERTTEST-TEST-FAILING-BRANCH
        andBool ( NUMBER_CELL:Int <=Int maxSInt256
        andBool ( VV0_x_114b9705:Int <Int pow256
                )))))))))
+      [label(BASIC-BLOCK-9-TO-11)]
 
 endmodule
+1 Failure nodes. (0 pending and 1 failing)
 
+<<<<<<< HEAD
 1 Failure nodes. (0 frontier and 1 stuck)
 
 Stuck nodes:
+=======
+Failing nodes:
+>>>>>>> origin/master
 
   Node id: 11
   Failure reason:

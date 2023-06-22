@@ -126,7 +126,7 @@ def kevm_prove(
         raise ValueError(f'Do not know how to build prover for proof: {proof}')
     try:
         if type(prover) is APRBMCProver or type(prover) is APRProver:
-            _cfg = prover.advance_proof(
+            prover.advance_proof(
                 kcfg_explore,
                 max_iterations=max_iterations,
                 execute_depth=max_depth,
@@ -134,7 +134,8 @@ def kevm_prove(
                 cut_point_rules=cut_point_rules,
                 implication_every_block=implication_every_block,
             )
-            failure_nodes = _cfg.frontier + _cfg.stuck
+            assert isinstance(proof, APRProof)
+            failure_nodes = proof.failing
             if len(failure_nodes) == 0:
                 _LOGGER.info(f'Proof passed: {_cfgid}')
                 return True
@@ -147,7 +148,7 @@ def kevm_prove(
                 _LOGGER.info(f'Proof passed: {prover.proof.id}')
                 return True
             if prover.proof.status == ProofStatus.FAILED:
-                _LOGGER.info(f'Proof failed: {prover.proof.id}')
+                _LOGGER.error(f'Proof failed: {prover.proof.id}')
                 if type(proof) is EqualityProof:
                     _LOGGER.info(proof.pretty(kprove))
                 return False
@@ -159,32 +160,41 @@ def kevm_prove(
     except Exception as e:
         _LOGGER.error(f'Proof crashed: {proof.id}\n{e}', exc_info=True)
         return False
+    failure_nodes = proof.pending + proof.failing
+    if len(failure_nodes) == 0:
+        _LOGGER.info(f'Proof passed: {proof.id}')
+        return True
+    else:
+        _LOGGER.error(f'Proof failed: {proof.id}')
+        return False
 
 
 def print_failure_info(proof: Proof, kcfg_explore: KCFGExplore) -> list[str]:
     if type(proof) is APRProof or type(proof) is APRBMCProof:
-        unique_target = proof.kcfg.get_unique_target()
+        target = proof.kcfg.node(proof.target)
 
         res_lines: list[str] = []
 
-        num_frontier = len(proof.kcfg.frontier)
-        num_stuck = len(proof.kcfg.stuck)
-        res_lines.append(f'{num_frontier + num_stuck} Failure nodes. ({num_frontier} frontier and {num_stuck} stuck)')
-        if num_frontier > 0:
+        num_pending = len(proof.pending)
+        num_failing = len(proof.failing)
+        res_lines.append(
+            f'{num_pending + num_failing} Failure nodes. ({num_pending} pending and {num_failing} failing)'
+        )
+        if num_pending > 0:
             res_lines.append('')
-            res_lines.append('Frontier nodes:')
-            for node in proof.kcfg.frontier:
+            res_lines.append('Pending nodes:')
+            for node in proof.pending:
                 res_lines.append('')
                 res_lines.append(f'ID: {node.id}:')
-        if num_stuck > 0:
+        if num_failing > 0:
             res_lines.append('')
-            res_lines.append('Stuck nodes:')
-            for node in proof.kcfg.stuck:
+            res_lines.append('Failing nodes:')
+            for node in proof.failing:
                 res_lines.append('')
                 res_lines.append(f'  Node id: {str(node.id)}')
 
                 simplified_node, _ = kcfg_explore.cterm_simplify(node.cterm)
-                simplified_target, _ = kcfg_explore.cterm_simplify(unique_target.cterm)
+                simplified_target, _ = kcfg_explore.cterm_simplify(target.cterm)
 
                 node_cterm = CTerm.from_kast(simplified_node)
                 target_cterm = CTerm.from_kast(simplified_target)

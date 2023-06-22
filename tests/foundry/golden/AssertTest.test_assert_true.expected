@@ -1,47 +1,47 @@
 
-┌─ 1 (init, expanded)
-│    k: #execute ~> CONTINUATION
-│    pc: 0
-│    callDepth: 0
-│    statusCode: STATUSCODE
-│    src: tests/foundry/test/Simple.t.sol:5:54
+┌─ 1 (root)
+│   k: #execute ~> CONTINUATION
+│   pc: 0
+│   callDepth: 0
+│   statusCode: STATUSCODE
+│   src: tests/foundry/test/Simple.t.sol:5:54
 │
 │  (331 steps)
-├─ 3 (expanded)
-│    k: #end EVMC_SUCCESS ~> #pc [ STOP ] ~> #execute ~> CONTINUATION:K
-│    pc: 213
-│    callDepth: 0
-│    statusCode: STATUSCODE:StatusCode
-│    src: tests/foundry/lib/forge-std/lib/ds-test/src/test.sol:37:38
+├─ 3
+│   k: #end EVMC_SUCCESS ~> #pc [ STOP ] ~> #execute ~> CONTINUATION:K
+│   pc: 213
+│   callDepth: 0
+│   statusCode: STATUSCODE:StatusCode
+│   src: tests/foundry/lib/forge-std/lib/ds-test/src/test.sol:37:38
 │
 │  (1 step)
-├─ 4 (expanded)
-│    k: #halt ~> #pc [ STOP ] ~> #execute ~> CONTINUATION:K
-│    pc: 213
-│    callDepth: 0
-│    statusCode: EVMC_SUCCESS
-│    src: tests/foundry/lib/forge-std/lib/ds-test/src/test.sol:37:38
+├─ 4
+│   k: #halt ~> #pc [ STOP ] ~> #execute ~> CONTINUATION:K
+│   pc: 213
+│   callDepth: 0
+│   statusCode: EVMC_SUCCESS
+│   src: tests/foundry/lib/forge-std/lib/ds-test/src/test.sol:37:38
 │
 │  (2 steps)
-├─ 5 (leaf)
-│    k: #halt ~> CONTINUATION:K
-│    pc: 213
-│    callDepth: 0
-│    statusCode: EVMC_SUCCESS
-│    src: tests/foundry/lib/forge-std/lib/ds-test/src/test.sol:37:38
+├─ 5
+│   k: #halt ~> CONTINUATION:K
+│   pc: 213
+│   callDepth: 0
+│   statusCode: EVMC_SUCCESS
+│   src: tests/foundry/lib/forge-std/lib/ds-test/src/test.sol:37:38
 │
 ┊  constraint: true
 ┊  subst: OMITTED SUBST
-└─ 2 (target, leaf)
-     k: #halt ~> CONTINUATION
-     pc: PC_CELL_5d410f2a
-     callDepth: CALLDEPTH_CELL_5d410f2a
-     statusCode: STATUSCODE_FINAL
+└─ 2 (leaf)
+    k: #halt ~> CONTINUATION
+    pc: PC_CELL_5d410f2a
+    callDepth: CALLDEPTH_CELL_5d410f2a
+    statusCode: STATUSCODE_FINAL
 
 
 
 
-module SUMMARY-ASSERTTEST-TEST-ASSERT-TRUE
+module SUMMARY-ASSERTTEST.TEST-ASSERT-TRUE:A327E722A5BC2ED41B1FF750E1EADF3E83CB553953514763CED6208886B28E5E
     
     
            <kevm>
@@ -70,6 +70,8 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-TRUE
                    .List
                  </interimStates>
                  <callState>
+                   ...
+                   ...
                    <id>
                      728815563385977040452943777879061427756277306518
                    </id>
@@ -88,6 +90,8 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-TRUE
                    <localMem>
                      ( .Bytes => b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80" )
                    </localMem>
+                   ...
+                   ...
                    <memoryUsed>
                      ( 0 => 3 )
                    </memoryUsed>
@@ -131,6 +135,7 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-TRUE
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        .Map
                      </storage>
@@ -140,7 +145,6 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-TRUE
                      <nonce>
                        0
                      </nonce>
-                     ...
                    </account>
                    <account>
                      <acctID>
@@ -149,6 +153,7 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-TRUE
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        .Map
                      </storage>
@@ -158,7 +163,6 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-TRUE
                      <nonce>
                        1
                      </nonce>
-                     ...
                    </account> )
                  </accounts>
                  ...
@@ -255,6 +259,7 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-TRUE
        andBool ( ORIGIN_ID:Int <Int pow160
        andBool ( NUMBER_CELL:Int <=Int maxSInt256
                ))))))
+      [label(BASIC-BLOCK-1-TO-3)]
     
            <kevm>
              <k>
@@ -284,6 +289,8 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-TRUE
                    .List
                  </interimStates>
                  <callState>
+                   ...
+                   ...
                    <id>
                      728815563385977040452943777879061427756277306518
                    </id>
@@ -302,6 +309,8 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-TRUE
                    <localMem>
                      b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80"
                    </localMem>
+                   ...
+                   ...
                    <memoryUsed>
                      3
                    </memoryUsed>
@@ -345,6 +354,7 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-TRUE
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        .Map
                      </storage>
@@ -354,7 +364,6 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-TRUE
                      <nonce>
                        0
                      </nonce>
-                     ...
                    </account>
                    <account>
                      <acctID>
@@ -363,6 +372,7 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-TRUE
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        .Map
                      </storage>
@@ -372,7 +382,6 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-TRUE
                      <nonce>
                        1
                      </nonce>
-                     ...
                    </account> )
                  </accounts>
                  ...
@@ -457,6 +466,7 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-TRUE
        andBool ( ORIGIN_ID:Int <Int pow160
        andBool ( NUMBER_CELL:Int <=Int maxSInt256
                ))))))
+      [label(BASIC-BLOCK-3-TO-4)]
     
            <kevm>
              <k>
@@ -486,6 +496,8 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-TRUE
                    .List
                  </interimStates>
                  <callState>
+                   ...
+                   ...
                    <id>
                      728815563385977040452943777879061427756277306518
                    </id>
@@ -504,6 +516,8 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-TRUE
                    <localMem>
                      b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80"
                    </localMem>
+                   ...
+                   ...
                    <memoryUsed>
                      3
                    </memoryUsed>
@@ -547,6 +561,7 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-TRUE
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        .Map
                      </storage>
@@ -556,7 +571,6 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-TRUE
                      <nonce>
                        0
                      </nonce>
-                     ...
                    </account>
                    <account>
                      <acctID>
@@ -565,6 +579,7 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-TRUE
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        .Map
                      </storage>
@@ -574,7 +589,6 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-TRUE
                      <nonce>
                        1
                      </nonce>
-                     ...
                    </account> )
                  </accounts>
                  ...
@@ -659,9 +673,14 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-TRUE
        andBool ( ORIGIN_ID:Int <Int pow160
        andBool ( NUMBER_CELL:Int <=Int maxSInt256
                ))))))
+      [label(BASIC-BLOCK-4-TO-5)]
 
 endmodule
+<<<<<<< HEAD
 
 0 Failure nodes. (0 frontier and 0 stuck)
+=======
+0 Failure nodes. (0 pending and 0 failing)
+>>>>>>> origin/master
 
 Access documentation for KEVM foundry integration at https://docs.runtimeverification.com/kevm-integration-for-foundry/
