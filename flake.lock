@@ -87,11 +87,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1686751232,
-        "narHash": "sha256-ZNSYB85CLP7gspIg1qLc6ntpNOnSGhSmtnge839Dwbs=",
+        "lastModified": 1686934092,
+        "narHash": "sha256-FLoilEZU9C+POfHmx4WC0sdYRSh10CaSbDqJiinDy80=",
         "owner": "runtimeverification",
         "repo": "hs-backend-booster",
-        "rev": "f0f779e334b5140e2aa1eaf14ee2787814d9e915",
+        "rev": "bb0345ae7c4a864ec3497d44c354e06633961343",
         "type": "github"
       },
       "original": {
@@ -238,11 +238,11 @@
     "flake-compat": {
       "flake": false,
       "locked": {
-        "lastModified": 1650374568,
-        "narHash": "sha256-Z+s0J8/r907g149rllvwhb4pKi8Wam5ij0st8PwAh+E=",
+        "lastModified": 1673956053,
+        "narHash": "sha256-4gtG9iQuiKITOjNQQeQIpoIB6b16fm+504Ch3sNKLd8=",
         "owner": "edolstra",
         "repo": "flake-compat",
-        "rev": "b4a34015c698c7793d592d66adbab377907a2be8",
+        "rev": "35bb57c0c8d8b62bbfd284272c928ceb64ddbde9",
         "type": "github"
       },
       "original": {
@@ -620,20 +620,22 @@
         "haskell-backend": "haskell-backend",
         "llvm-backend": "llvm-backend",
         "mavenix": "mavenix_2",
-        "nixpkgs": "nixpkgs_6",
+        "nixpkgs": [
+          "nixpkgs"
+        ],
         "rv-utils": "rv-utils"
       },
       "locked": {
-        "lastModified": 1686825625,
-        "narHash": "sha256-ysstsclTRmQCMEeDmdt9+21iN30Yn0HWeJzLK1mb22c=",
+        "lastModified": 1686942183,
+        "narHash": "sha256-P9wEWdUjzaP7z+tIQ/2ldrqvVgzB1KGhGplSzVRk61U=",
         "owner": "runtimeverification",
         "repo": "k",
-        "rev": "a017998b1e2c8c8e6c84a4349cd2374005fe595b",
+        "rev": "ccd26567ca350cdf36c2815b8fe24044b56df4c6",
         "type": "github"
       },
       "original": {
         "owner": "runtimeverification",
-        "ref": "v5.6.131",
+        "ref": "v5.6.133",
         "repo": "k",
         "type": "github"
       }
@@ -670,11 +672,11 @@
         "utils": "utils_2"
       },
       "locked": {
-        "lastModified": 1686256833,
-        "narHash": "sha256-qUlo370NX1ZdZhna+kaBKDMAvAUDc6eBZK2kh3xpt64=",
+        "lastModified": 1686877299,
+        "narHash": "sha256-tJxHujW3BuCR/kjBwAXyYaoSlXCGVcFzyWoJgPEBr4s=",
         "owner": "runtimeverification",
         "repo": "llvm-backend",
-        "rev": "90ff252b58fe7727eed0c0afdad3b30d37766f62",
+        "rev": "b67589c6f4c572d7183382932aeaff6594402b93",
         "type": "github"
       },
       "original": {
@@ -965,21 +967,6 @@
     },
     "nixpkgs_6": {
       "locked": {
-        "lastModified": 1685573264,
-        "narHash": "sha256-Zffu01pONhs/pqH07cjlF10NnMDLok8ix5Uk4rhOnZQ=",
-        "owner": "NixOS",
-        "repo": "nixpkgs",
-        "rev": "380be19fbd2d9079f677978361792cb25e8a3635",
-        "type": "github"
-      },
-      "original": {
-        "id": "nixpkgs",
-        "ref": "nixos-22.05",
-        "type": "indirect"
-      }
-    },
-    "nixpkgs_7": {
-      "locked": {
         "lastModified": 1680577567,
         "narHash": "sha256-Y4W57i0TzczqwMTjfVSbAZT5RJx7u+mpQIW/ofrkTQs=",
         "owner": "NixOS",
@@ -1064,16 +1051,16 @@
         "poetry2nix": "poetry2nix"
       },
       "locked": {
-        "lastModified": 1686650656,
-        "narHash": "sha256-ICIkgWY2z3lUiH5JkriTOcO5JtNaQtyTMq2apvP+O1Q=",
+        "lastModified": 1687302211,
+        "narHash": "sha256-yVaSjhC+J705c+LfhnEGGzjcH2lckFCPCR+Lm0b2s0c=",
         "owner": "runtimeverification",
         "repo": "pyk",
-        "rev": "e3ef933ba128cc6ccbd9aeff1a41faf4e3a8a1cb",
+        "rev": "1d9f989007425c7ea1001dd72f2e2da4ad5f442f",
         "type": "github"
       },
       "original": {
         "owner": "runtimeverification",
-        "ref": "v0.1.330",
+        "ref": "v0.1.343",
         "repo": "pyk",
         "type": "github"
       }
@@ -1126,7 +1113,7 @@
           "haskell-backend"
         ],
         "k-framework": "k-framework",
-        "nixpkgs": "nixpkgs_7",
+        "nixpkgs": "nixpkgs_6",
         "poetry2nix": [
           "pyk",
           "poetry2nix"
