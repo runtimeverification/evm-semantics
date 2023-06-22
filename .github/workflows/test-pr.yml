@@ -154,8 +154,6 @@ jobs:
         run: docker exec -u user kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make poetry'
       - name: 'Build Foundry'
         run: docker exec -u user kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make build-foundry -j2'
-      - name: 'Foundry Kompile'
-        run: docker exec -u user kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make test-foundry-kompile -j2'
       - name: 'Foundry Prove'
         run: docker exec -u user kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make test-foundry-prove FOUNDRY_PAR=8'
       - name: 'Tear down Docker'
@@ -181,14 +179,10 @@ jobs:
         run: nix develop --extra-experimental-features 'nix-command flakes' --command make plugin-deps
       - name: 'Build kevm-pyk'
         run: nix develop --extra-experimental-features 'nix-command flakes' --command make poetry
-      - name: 'Build kevm'
-        run: nix develop --extra-experimental-features 'nix-command flakes' --command make build-llvm -j`nproc` RELEASE=true
       - name: 'Build Foundry'
         run: nix develop --extra-experimental-features 'nix-command flakes' --command make build-foundry -j2
-      - name: 'Foundry Kompile'
-        run: nix develop --extra-experimental-features 'nix-command flakes' --command make test-foundry-kompile -j2 KEVM_OPTS=--with-llvm-library
       - name: 'Foundry Prove'
-        run: nix develop --extra-experimental-features 'nix-command flakes' --command make test-foundry-prove -j2 FOUNDRY_PAR=12 KPROVE_OPTS=--use-booster
+        run: nix develop --extra-experimental-features 'nix-command flakes' --command make test-foundry-prove -j2 FOUNDRY_PAR=8 KEVM_OPTS=--with-llvm-library KPROVE_OPTS=--use-booster
 
   nix:
     name: 'Nix'
