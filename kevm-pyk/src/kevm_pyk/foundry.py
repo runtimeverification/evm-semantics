@@ -13,7 +13,7 @@ import tomlkit
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cterm import CTerm
 from pyk.kast.inner import KApply, KSequence, KSort, KToken, KVariable, Subst
-from pyk.kast.manip import minimize_term
+from pyk.kast.manip import free_vars, minimize_term
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
 from pyk.kcfg import KCFG, KCFGExplore
 from pyk.ktool.kompile import LLVMKompileType
@@ -30,7 +30,14 @@ from pyk.utils import BugReport, ensure_dir_path, hash_str, run_process, single,
 from .kevm import KEVM, KEVMNodePrinter
 from .kompile import KompileTarget, kevm_kompile
 from .solc_to_k import Contract, contract_to_main_module, contract_to_verification_module
-from .utils import KDefinition__expand_macros, abstract_cell_vars, byte_offset_to_lines, kevm_prove, print_failure_info
+from .utils import (
+    KDefinition__expand_macros,
+    abstract_cell_vars,
+    byte_offset_to_lines,
+    constraints_for,
+    kevm_prove,
+    print_failure_info,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -879,10 +886,9 @@ def _method_to_cfg(
 ) -> tuple[KCFG, NodeIdLike, NodeIdLike]:
     calldata = method.calldata_cell(contract)
     callvalue = method.callvalue_cell
-    init_term = _init_term(
+    init_cterm = _init_cterm(
         empty_config, contract.name, kcfgs_dir, calldata=calldata, callvalue=callvalue, init_state=init_state
     )
-    init_cterm = _init_cterm(init_term)
     is_test = method.name.startswith('test')
     failing = method.name.startswith('testFail')
     final_cterm = _final_cterm(empty_config, contract.name, failing=failing, is_test=is_test)
@@ -894,20 +900,17 @@ def _method_to_cfg(
     return cfg, init_node.id, target_node.id
 
 
-def _init_cterm(init_term: KInner) -> CTerm:
-    init_cterm = CTerm.from_kast(init_term)
-    init_cterm = KEVM.add_invariant(init_cterm)
-    return init_cterm
-
-
-def get_final_accounts_cell(proof_digest: str, proof_dir: Path) -> KInner:
+def get_final_accounts_cell(proof_digest: str, proof_dir: Path) -> tuple[KInner, Iterable[KInner]]:
     apr_proof = APRProof.read_proof(proof_digest, proof_dir)
     target = apr_proof.kcfg.node(apr_proof.target)
     cterm = single(apr_proof.kcfg.covers(target_id=target.id)).source.cterm
-    return cterm.cell('ACCOUNTS_CELL')
+    acct_cell = cterm.cell('ACCOUNTS_CELL')
+    fvars = free_vars(acct_cell)
+    acct_cons = constraints_for(fvars, cterm.constraints)
+    return (acct_cell, acct_cons)
 
 
-def _init_term(
+def _init_cterm(
     empty_config: KInner,
     contract_name: str,
     kcfgs_dir: Path,
@@ -915,7 +918,7 @@ def _init_term(
     calldata: KInner | None = None,
     callvalue: KInner | None = None,
     init_state: str | None = None,
-) -> KInner:
+) -> CTerm:
     program = KEVM.bin_runtime(KApply(f'contract_{contract_name}'))
     account_cell = KEVM.account_cell(
         Foundry.address_TEST_CONTRACT(),
@@ -973,8 +976,9 @@ def _init_term(
         'STORAGESLOTSET_CELL': KApply('.Set'),
     }
 
+    constraints = None
     if init_state:
-        accts = get_final_accounts_cell(init_state, kcfgs_dir)
+        accts, constraints = get_final_accounts_cell(init_state, kcfgs_dir)
         init_subst['ACCOUNTS_CELL'] = accts
 
     if calldata is not None:
@@ -983,7 +987,15 @@ def _init_term(
     if callvalue is not None:
         init_subst['CALLVALUE_CELL'] = callvalue
 
-    return Subst(init_subst)(empty_config)
+    init_term = Subst(init_subst)(empty_config)
+    init_cterm = CTerm.from_kast(init_term)
+    init_cterm = KEVM.add_invariant(init_cterm)
+    if constraints is None:
+        return init_cterm
+    else:
+        for constraint in constraints:
+            init_cterm = init_cterm.add_constraint(constraint)
+        return init_cterm
 
 
 def _final_cterm(empty_config: KInner, contract_name: str, *, failing: bool, is_test: bool = True) -> CTerm:
