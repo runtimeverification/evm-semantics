@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 
-from pyk.kast.inner import KApply, KLabel, KSequence, KSort, KVariable, build_assoc
+from pyk.kast.inner import KApply, KLabel, KSequence, KSort, KToken, KVariable, build_assoc
 from pyk.kast.manip import flatten_label
 from pyk.kast.pretty import paren
 from pyk.ktool.kprove import KProve
@@ -291,7 +291,10 @@ class KEVM(KProve, KRun):
 
     @staticmethod
     def abi_calldata(name: str, args: list[KInner]) -> KApply:
-        return KApply('#abiCallData(_,_)_EVM-ABI_Bytes_String_TypedArgs', [stringToken(name), KEVM.typed_args(args)])
+        # print(args)
+        ta = KEVM.typed_args(args)
+        # print(ta)
+        return KApply('#abiCallData(_,_)_EVM-ABI_Bytes_String_TypedArgs', [stringToken(name), ta])
 
     @staticmethod
     def abi_selector(name: str) -> KApply:
@@ -307,7 +310,10 @@ class KEVM(KProve, KRun):
 
     @staticmethod
     def abi_type(type: str, value: KInner) -> KApply:
-        return KApply('abi_type_' + type, [value])
+        if type.endswith(']'):
+            return KApply('abi_type_array', (value, KVariable('?SIZE', 'Int'), KVariable('?_ARRAY', 'TypedArgs')))
+        else:
+            return KApply('abi_type_' + type, [value])
 
     @staticmethod
     def empty_typedargs() -> KApply:

@@ -8,7 +8,7 @@ from functools import cached_property
 from subprocess import CalledProcessError
 from typing import TYPE_CHECKING
 
-from pyk.kast.inner import KApply, KAtt, KLabel, KRewrite, KSort, KVariable
+from pyk.kast.inner import KApply, KAtt, KLabel, KRewrite, KSort, KToken, KVariable
 from pyk.kast.manip import abstract_term_safely
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KNonTerminal, KProduction, KRequire, KRule, KTerminal
 from pyk.prelude.kbool import andBool
@@ -180,6 +180,7 @@ class Contract:
 
         def rule(self, contract: KInner, application_label: KLabel, contract_name: str) -> KRule | None:
             arg_vars = [KVariable(aname) for aname in self.arg_names]
+            print(arg_vars)
             prod_klabel = self.klabel
             assert prod_klabel is not None
             args: list[KInner] = []
@@ -501,9 +502,6 @@ def _evm_base_sort(type_label: str) -> KSort:
     if type_label == 'string':
         return KSort('String')
 
-    if type_label.endswith('[]'):
-        return KEVM.array_sort(type_label)
-
     _LOGGER.info(f'Using generic sort K for type: {type_label}')
     return KSort('K')
 
@@ -647,9 +645,10 @@ def _range_predicate_ufixed(term: KInner, type_label: str) -> tuple[bool, KInner
 
 def _range_predicate_dyn_array(term: KInner, type_label: str) -> tuple[bool, KInner | None]:
     if type_label.endswith('[]'):
-        el_res = _range_predicate(term, type_label[:-2])
-        if el_res is not None:
-            return (True, KEVM.range_uint(128, el_res))
+        # el_res = _range_predicate(term, type_label[:-2])
+        # if el_res is not None:
+        #     return (True, KEVM.range_uint(128, el_res))
+        return (True, KEVM.range_uint(128, KVariable('SIZE', 'Int')))
     return (False, None)
 
 
