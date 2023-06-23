@@ -89,6 +89,7 @@ def kevm_prove(
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
     trace_rewrites: bool = False,
+    abstract_node: Callable[[CTerm], CTerm] | None = None,
 ) -> bool:
     proof = proof
     terminal_rules = ['EVM.halt']
@@ -116,9 +117,17 @@ def kevm_prove(
     prover: APRBMCProver | APRProver | EqualityProver
     if type(proof) is APRBMCProof:
         assert same_loop, f'BMC proof requires same_loop heuristic, but {same_loop} was supplied'
-        prover = APRBMCProver(proof, is_terminal=is_terminal, extract_branches=extract_branches, same_loop=same_loop)
+        prover = APRBMCProver(
+            proof,
+            is_terminal=is_terminal,
+            extract_branches=extract_branches,
+            same_loop=same_loop,
+            abstract_node=abstract_node,
+        )
     elif type(proof) is APRProof:
-        prover = APRProver(proof, is_terminal=is_terminal, extract_branches=extract_branches)
+        prover = APRProver(
+            proof, is_terminal=is_terminal, extract_branches=extract_branches, abstract_node=abstract_node
+        )
     elif type(proof) is EqualityProof:
         prover = EqualityProver(proof)
     else:
