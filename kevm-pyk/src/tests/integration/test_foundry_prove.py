@@ -41,7 +41,9 @@ def foundry_root(tmp_path_factory: TempPathFactory, use_booster: bool) -> Path:
     return foundry_root
 
 
-def test_foundry_kompile(foundry_root: Path, update_expected_output: bool) -> None:
+def test_foundry_kompile(foundry_root: Path, update_expected_output: bool, use_booster: bool) -> None:
+    if use_booster: 
+        return
     # Then
     assert_or_update_k_output(
         foundry_root / 'out/kompiled/foundry.k',
@@ -156,7 +158,7 @@ SKIPPED_BMC_TESTS: Final = set((TEST_DATA_DIR / 'foundry-bmc-skip').read_text().
 
 
 @pytest.mark.parametrize('test_id', ALL_BMC_TESTS)
-def test_foundry_bmc(test_id: str, foundry_root: Path) -> None:
+def test_foundry_bmc(test_id: str, foundry_root: Path, use_booster: bool) -> None:
     if test_id in SKIPPED_BMC_TESTS:
         pytest.skip()
 
@@ -168,6 +170,7 @@ def test_foundry_bmc(test_id: str, foundry_root: Path) -> None:
         simplify_init=False,
         smt_timeout=125,
         smt_retry_limit=4,
+        use_booster=use_booster,
     )
 
     # Then
