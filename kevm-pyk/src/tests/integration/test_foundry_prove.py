@@ -126,6 +126,7 @@ def test_foundry_fail(test_id: str, foundry_root: Path, update_expected_output: 
         simplify_init=False,
         smt_timeout=125,
         smt_retry_limit=4,
+        use_booster=use_booster,
     )
 
     # Then
