@@ -10,6 +10,7 @@ from .utils import gen_bin_runtime
 if TYPE_CHECKING:
     from collections.abc import Callable
     from pathlib import Path
+
     from pytest import FixtureRequest, Parser
 
 
@@ -25,6 +26,7 @@ def pytest_addoption(parser: Parser) -> None:
         default=False,
         help='Use the kore-rpc-booster binary instead of kore-rpc',
     )
+
 
 @pytest.fixture(scope='module')
 def use_booster(request: FixtureRequest) -> bool:
