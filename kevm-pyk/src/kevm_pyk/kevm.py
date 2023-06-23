@@ -3,8 +3,9 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 
+from pyk.cterm import CTerm
 from pyk.kast.inner import KApply, KLabel, KSequence, KSort, KVariable, build_assoc
-from pyk.kast.manip import flatten_label
+from pyk.kast.manip import abstract_term_safely, bottom_up, flatten_label
 from pyk.kast.pretty import paren
 from pyk.kcfg.show import NodePrinter
 from pyk.ktool.kprove import KProve
@@ -19,7 +20,6 @@ if TYPE_CHECKING:
     from pathlib import Path
     from typing import Final
 
-    from pyk.cterm import CTerm
     from pyk.kast import KInner
     from pyk.kast.outer import KFlatModule
     from pyk.kcfg import KCFG
@@ -371,6 +371,22 @@ class KEVM(KProve, KRun):
             else:
                 wrapped_accounts.append(acct)
         return build_assoc(KApply('.AccountCellMap'), KLabel('_AccountCellMap_'), wrapped_accounts)
+
+    @staticmethod
+    def abstract_gas_cell(cterm: CTerm) -> CTerm:
+        def _replace(term: KInner) -> KInner:
+            if type(term) is KApply and term.label.name == '<gas>':
+                gas_term = term.args[0]
+                if type(gas_term) is KApply and gas_term.label.name == 'infGas':
+                    result = KApply('<gas>', KApply('infGas', abstract_term_safely(term)))
+                    return result
+                return term
+            elif type(term) is KApply and term.label.name == '<refund>':
+                return KApply('<refund>', KVariable('ABSTRACTED_REFUND', KSort('Int')))
+            else:
+                return term
+
+        return CTerm(config=bottom_up(_replace, cterm.config), constraints=cterm.constraints)
 
 
 class KEVMNodePrinter(NodePrinter):

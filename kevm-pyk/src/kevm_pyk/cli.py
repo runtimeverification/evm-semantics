@@ -277,6 +277,12 @@ class KEVMCLIArgs(KCLIArgs):
             action='store_false',
             help='Do not show failure summary for failing tests',
         )
+        args.add_argument(
+            '--auto-abstract-gas',
+            dest='auto_abstract_gas',
+            action='store_true',
+            help='Automatically extract gas cell when infinite gas is enabled',
+        )
         return args
 
     @cached_property
