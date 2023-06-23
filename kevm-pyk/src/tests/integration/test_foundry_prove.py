@@ -22,7 +22,7 @@ FORGE_STD_REF: Final = '27e14b7'
 
 
 @pytest.fixture(scope='module')  # TODO should reduce scope
-def foundry_root(tmp_path_factory: TempPathFactory) -> Path:
+def foundry_root(tmp_path_factory: TempPathFactory, use_booster: bool) -> Path:
     foundry_root = tmp_path_factory.mktemp('foundry')
     copy_tree(str(TEST_DATA_DIR / 'foundry'), str(foundry_root))
 
@@ -35,6 +35,7 @@ def foundry_root(tmp_path_factory: TempPathFactory) -> Path:
         includes=(),
         requires=[str(TEST_DATA_DIR / 'lemmas.k')],
         imports=['LoopsTest:SUM-TO-N-INVARIANT'],
+        llvm_library=use_booster,
     )
 
     return foundry_root
@@ -77,7 +78,7 @@ SHOW_TESTS = set((TEST_DATA_DIR / 'foundry-show').read_text().splitlines())
 
 
 @pytest.mark.parametrize('test_id', ALL_PROVE_TESTS)
-def test_foundry_prove(test_id: str, foundry_root: Path, update_expected_output: bool) -> None:
+def test_foundry_prove(test_id: str, foundry_root: Path, update_expected_output: bool, use_booster: bool) -> None:
     if test_id in SKIPPED_PROVE_TESTS:
         pytest.skip()
 
@@ -88,6 +89,7 @@ def test_foundry_prove(test_id: str, foundry_root: Path, update_expected_output:
         simplify_init=False,
         smt_timeout=125,
         smt_retry_limit=4,
+        use_booster=use_booster,
     )
 
     # Then
