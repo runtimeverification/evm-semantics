@@ -198,6 +198,18 @@ run_foundry() {
 # Main
 # ----
 
+backend="llvm"
+unparse=true
+debugger=false
+profile_haskell=false
+profile_timeout="0"
+kore_prof_arg=""
+bug_report=false
+mode=NORMAL
+schedule=MERGE
+chainid=1
+pyk=false
+
 if [[ $# -eq 0 ]]; then 
     run_command='help'
 else 
@@ -253,6 +265,8 @@ if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
                  <sol contract> is the name of a Solidity contract provided in the <sol>.
                  <solc arg> are arguments to pass to solc.
     "
+
+    run_kevm_pyk --help
     exit 0
 fi
 
@@ -262,21 +276,6 @@ if [[ "$run_command" == 'version' ]] || [[ "$run_command" == '--version' ]]; the
     exit 0
 fi
 
-backend="llvm"
-dump=false
-unparse=true
-debugger=false
-profile_haskell=false
-profile_timeout="0"
-kore_prof_arg=""
-bug_report=false
-mode=NORMAL
-schedule=MERGE
-chainid=1
-verif_module=VERIFICATION
-pyk=false
-kevm_port='8545'
-kevm_host='127.0.0.1'
 [[ ! "${run_command}" == prove       ]] || backend=haskell
 [[ ! "${run_command}" == solc-to-k   ]] || backend=haskell
 [[ ! "${run_command}" == view-kcfg   ]] || backend=haskell
@@ -291,7 +290,6 @@ while [[ $# -gt 0 ]]; do
         --debug)               debug=true                      ; shift   ;;
         --verbose)             verbose=true                    ; shift   ;;
         --profile)             profile=true ; args+=("$1")     ; shift   ;;
-        --dump)                dump=true                       ; shift   ;;
         --no-unparse)          unparse=false                   ; shift   ;;
         --unparse)             unparse=true                    ; shift   ;;
         --debugger)            debugger=true                   ; shift   ;;
@@ -301,14 +299,11 @@ while [[ $# -gt 0 ]]; do
         --bug-report)          bug_report=true                 ; shift   ;;
         --backend)             backend="$2"                    ; shift 2 ;;
         --definition)          backend_dir="$2"                ; shift 2 ;;
-        --verif-module)        verif_module="$2"               ; shift 2 ;;
         --pyk)                 pyk=true                        ; shift   ;;
         --no-pyk)              pyk=false                       ; shift   ;;
         --mode)                mode="$2"                       ; shift 2 ;;
         --schedule)            schedule="$2"                   ; shift 2 ;;
         --chainid)             chainid="$2"                    ; shift 2 ;;
-        -p|--port)             kevm_port="$2"                  ; shift 2 ;;
-        -h|--host|--hostname)  kevm_host="$2"                  ; shift 2 ;;
         *)                     args+=("$1")                    ; shift   ;;
     esac
 done

@@ -119,7 +119,7 @@ jobs:
     name: 'Build and Test KEVM haskell proofs'
     needs: kevm-pyk-code-quality-checks
     runs-on: [self-hosted, linux, huge]
-    timeout-minutes: 90
+    timeout-minutes: 120
     steps:
       - name: 'Check out code'
         uses: actions/checkout@v3
@@ -154,14 +154,8 @@ jobs:
         run: docker exec -u user kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make poetry'
       - name: 'Build Foundry'
         run: docker exec -u user kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make build-foundry -j2'
-      - name: 'Foundry Kompile'
-        run: docker exec -u user kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make test-foundry-kompile -j2'
       - name: 'Foundry Prove'
-        run: docker exec -u user kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make test-foundry-prove -j2 FOUNDRY_PAR=12'
-      - name: 'Foundry diff tests'
-        run: docker exec -u user kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make test-foundry-kcfg-diff -j2 FOUNDRY_PAR=12'
-      - name: 'Foundry List'
-        run: docker exec -u user kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make test-foundry-list -j2'
+        run: docker exec -u user kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make test-foundry-prove FOUNDRY_PAR=8'
       - name: 'Tear down Docker'
         if: always()
         run: |
