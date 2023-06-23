@@ -511,7 +511,6 @@ def foundry_prove(
 
             passed = kevm_prove(
                 foundry.kevm,
-                proof_id,
                 proof,
                 kcfg_explore,
                 save_directory=save_directory,

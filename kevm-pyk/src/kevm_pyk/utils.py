@@ -70,7 +70,6 @@ def get_apr_proof_for_spec(  # noqa: N802
 
 def kevm_prove(
     kprove: KProve,
-    cfgid: str,
     proof: Proof,
     kcfg_explore: KCFGExplore,
     save_directory: Path | None = None,
@@ -91,7 +90,6 @@ def kevm_prove(
     smt_retry_limit: int | None = None,
     trace_rewrites: bool = False,
 ) -> bool:
-    _cfgid = cfgid
     proof = proof
     terminal_rules = ['EVM.halt']
     cut_point_rules = []
@@ -138,10 +136,10 @@ def kevm_prove(
             assert isinstance(proof, APRProof)
             failure_nodes = proof.failing
             if len(failure_nodes) == 0:
-                _LOGGER.info(f'Proof passed: {_cfgid}')
+                _LOGGER.info(f'Proof passed: {proof.id}')
                 return True
             else:
-                _LOGGER.error(f'Proof failed: {_cfgid}')
+                _LOGGER.error(f'Proof failed: {proof.id}')
                 return False
         elif type(prover) is EqualityProver:
             prover.advance_proof(kcfg_explore)

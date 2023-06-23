@@ -346,7 +346,6 @@ def exec_prove(
 
             passed = kevm_prove(
                 kevm,
-                claim.label,
                 proof_problem,
                 kcfg_explore,
                 save_directory=save_directory,
