@@ -14,6 +14,7 @@ from pyk.prelude.k import K
 from pyk.prelude.kint import intToken, ltInt
 from pyk.prelude.ml import mlEqualsTrue
 from pyk.prelude.string import stringToken
+from pyk.proof.show import APRBMCProofNodePrinter, APRProofNodePrinter
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -24,6 +25,7 @@ if TYPE_CHECKING:
     from pyk.kast.outer import KFlatModule
     from pyk.kcfg import KCFG
     from pyk.ktool.kprint import SymbolTable
+    from pyk.proof.reachability import APRBMCProof, APRProof
     from pyk.utils import BugReport
 
 _LOGGER: Final = logging.getLogger(__name__)
@@ -393,10 +395,22 @@ class KEVMNodePrinter(NodePrinter):
     kevm: KEVM
 
     def __init__(self, kevm: KEVM):
-        super().__init__(kevm)
+        NodePrinter.__init__(self, kevm)
         self.kevm = kevm
 
     def print_node(self, kcfg: KCFG, node: KCFG.Node) -> list[str]:
         ret_strs = super().print_node(kcfg, node)
         ret_strs += self.kevm.short_info(node.cterm)
         return ret_strs
+
+
+class KEVMAPRNodePrinter(KEVMNodePrinter, APRProofNodePrinter):
+    def __init__(self, kevm: KEVM, proof: APRProof):
+        KEVMNodePrinter.__init__(self, kevm)
+        APRProofNodePrinter.__init__(self, proof, kevm)
+
+
+class KEVMAPRBMCNodePrinter(KEVMNodePrinter, APRBMCProofNodePrinter):
+    def __init__(self, kevm: KEVM, proof: APRBMCProof):
+        KEVMNodePrinter.__init__(self, kevm)
+        APRBMCProofNodePrinter.__init__(self, proof, kevm)

@@ -24,7 +24,7 @@ from pyk.prelude.kint import INT, intToken
 from pyk.prelude.ml import mlEqualsTrue
 from pyk.proof.proof import Proof
 from pyk.proof.reachability import APRBMCProof, APRProof
-from pyk.proof.show import APRProofShow
+from pyk.proof.show import APRBMCProofNodePrinter, APRProofNodePrinter, APRProofShow
 from pyk.utils import BugReport, ensure_dir_path, hash_str, run_process, single, unique
 
 from .kevm import KEVM, KEVMNodePrinter
@@ -46,6 +46,7 @@ if TYPE_CHECKING:
     from pyk.kast import KInner
     from pyk.kcfg.kcfg import NodeIdLike
     from pyk.kcfg.tui import KCFGElem
+    from pyk.proof.show import NodePrinter
 
 _LOGGER: Final = logging.getLogger(__name__)
 
@@ -597,7 +598,15 @@ def foundry_show(
         '<code>',
     ]
 
-    proof_show = APRProofShow(foundry.kevm, node_printer=FoundryNodePrinter(foundry, contract_name))
+    node_printer: NodePrinter
+    if type(proof) is APRBMCProof:
+        node_printer = FoundryAPRBMCNodePrinter(foundry, contract_name, proof)
+    elif type(proof) is APRProof:
+        node_printer = FoundryAPRNodePrinter(foundry, contract_name, proof)
+    else:
+        raise ValueError(f'Cannot build shower for proof type: {type(proof)}')
+    proof_show = APRProofShow(foundry.kevm, node_printer=node_printer)
+
     res_lines = proof_show.show(
         proof,
         nodes=nodes,
@@ -618,13 +627,22 @@ def foundry_show(
 
 def foundry_to_dot(foundry_root: Path, test: str) -> None:
     foundry = Foundry(foundry_root)
-    apr_proofs_dir = foundry.out / 'apr_proofs'
-    dump_dir = apr_proofs_dir / 'dump'
+    proofs_dir = foundry.out / 'apr_proofs'
+    dump_dir = proofs_dir / 'dump'
     contract_name, test_name = test.split('.')
     proof_digest = foundry.proof_digest(contract_name, test_name)
-    apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
-    proof_show = APRProofShow(foundry.kevm, node_printer=FoundryNodePrinter(foundry, contract_name))
-    proof_show.dump(apr_proof, dump_dir, dot=True)
+    proof = APRProof.read_proof(proof_digest, proofs_dir)
+
+    node_printer: NodePrinter
+    if type(proof) is APRBMCProof:
+        node_printer = FoundryAPRBMCNodePrinter(foundry, contract_name, proof)
+    elif type(proof) is APRProof:
+        node_printer = FoundryAPRNodePrinter(foundry, contract_name, proof)
+    else:
+        raise ValueError(f'Cannot build shower for proof type: {type(proof)}')
+    proof_show = APRProofShow(foundry.kevm, node_printer=node_printer)
+
+    proof_show.dump(proof, dump_dir, dot=True)
 
 
 def foundry_list(foundry_root: Path) -> list[str]:
@@ -1071,7 +1089,7 @@ class FoundryNodePrinter(KEVMNodePrinter):
     contract_name: str
 
     def __init__(self, foundry: Foundry, contract_name: str):
-        super().__init__(foundry.kevm)
+        KEVMNodePrinter.__init__(self, foundry.kevm)
         self.foundry = foundry
         self.contract_name = contract_name
 
@@ -1084,3 +1102,15 @@ class FoundryNodePrinter(KEVMNodePrinter):
                 path, start, end = srcmap_data
                 ret_strs.append(f'src: {str(path)}:{start}:{end}')
         return ret_strs
+
+
+class FoundryAPRNodePrinter(FoundryNodePrinter, APRProofNodePrinter):
+    def __init__(self, foundry: Foundry, contract_name: str, proof: APRProof):
+        FoundryNodePrinter.__init__(self, foundry, contract_name)
+        APRProofNodePrinter.__init__(self, proof, foundry.kevm)
+
+
+class FoundryAPRBMCNodePrinter(FoundryNodePrinter, APRBMCProofNodePrinter):
+    def __init__(self, foundry: Foundry, contract_name: str, proof: APRBMCProof):
+        FoundryNodePrinter.__init__(self, foundry, contract_name)
+        APRBMCProofNodePrinter.__init__(self, proof, foundry.kevm)
