@@ -119,7 +119,7 @@ jobs:
     name: 'Build and Test KEVM haskell proofs'
     needs: kevm-pyk-code-quality-checks
     runs-on: [self-hosted, linux, huge]
-    timeout-minutes: 90
+    timeout-minutes: 120
     steps:
       - name: 'Check out code'
         uses: actions/checkout@v3
