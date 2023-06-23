@@ -118,7 +118,7 @@ FAIL_TESTS: Final = tuple((TEST_DATA_DIR / 'foundry-fail').read_text().splitline
 
 
 @pytest.mark.parametrize('test_id', FAIL_TESTS)
-def test_foundry_fail(test_id: str, foundry_root: Path, update_expected_output: bool) -> None:
+def test_foundry_fail(test_id: str, foundry_root: Path, update_expected_output: bool, use_booster: bool) -> None:
     # When
     prove_res = foundry_prove(
         foundry_root,
@@ -131,7 +131,7 @@ def test_foundry_fail(test_id: str, foundry_root: Path, update_expected_output: 
     # Then
     assert_fail(test_id, prove_res)
 
-    if test_id not in SHOW_TESTS:
+    if test_id not in SHOW_TESTS or use_booster:
         return
 
     # And when
