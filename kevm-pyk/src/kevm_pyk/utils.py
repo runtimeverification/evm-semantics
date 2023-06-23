@@ -86,6 +86,7 @@ def kevm_apr_prove(
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
     trace_rewrites: bool = False,
+    abstract_node: Callable[[CTerm], CTerm] | None = None,
 ) -> bool:
     terminal_rules = ['EVM.halt']
     cut_point_rules = []
@@ -112,9 +113,17 @@ def kevm_apr_prove(
     prover: APRBMCProof | APRProver
     if type(proof) is APRBMCProof:
         assert same_loop, f'BMC proof requires same_loop heuristic, but {same_loop} was supplied'
-        prover = APRBMCProver(proof, is_terminal=is_terminal, extract_branches=extract_branches, same_loop=same_loop)
+        prover = APRBMCProver(
+            proof,
+            is_terminal=is_terminal,
+            extract_branches=extract_branches,
+            same_loop=same_loop,
+            abstract_node=abstract_node,
+        )
     else:
-        prover = APRProver(proof, is_terminal=is_terminal, extract_branches=extract_branches)
+        prover = APRProver(
+            proof, is_terminal=is_terminal, extract_branches=extract_branches, abstract_node=abstract_node
+        )
     try:
         prover.advance_proof(
             kcfg_explore,
