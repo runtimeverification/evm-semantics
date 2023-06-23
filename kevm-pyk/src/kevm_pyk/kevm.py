@@ -378,10 +378,14 @@ class KEVM(KProve, KRun):
             if type(term) is KApply and term.label.name == '<gas>':
                 gas_term = term.args[0]
                 if type(gas_term) is KApply and gas_term.label.name == 'infGas':
+                    if type(gas_term.args[0]) is KVariable:
+                        return term
                     result = KApply('<gas>', KApply('infGas', abstract_term_safely(term)))
                     return result
                 return term
             elif type(term) is KApply and term.label.name == '<refund>':
+                if type(term.args[0]) is KVariable:
+                    return term
                 return KApply('<refund>', KVariable('ABSTRACTED_REFUND', KSort('Int')))
             else:
                 return term
