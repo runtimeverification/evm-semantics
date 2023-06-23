@@ -602,7 +602,7 @@ def foundry_show(
 ) -> str:
     contract_name = test.split('.')[0]
     foundry = Foundry(foundry_root)
-    proofs_dir = foundry.out / 'apr_proofs'
+    apr_proofs_dir = foundry.out / 'apr_proofs'
 
     contract_name = test.split('.')[0]
     test_sig = foundry.matching_sig(test)
