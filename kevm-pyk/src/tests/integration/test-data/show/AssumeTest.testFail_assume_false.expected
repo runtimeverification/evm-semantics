@@ -34,7 +34,7 @@
 │   statusCode: EVMC_SUCCESS
 │
 │  (2 steps)
-└─ 7 (leaf)
+└─ 7 (leaf, terminal)
     k: #halt ~> CONTINUATION:K
     pc: 183
     callDepth: 0
