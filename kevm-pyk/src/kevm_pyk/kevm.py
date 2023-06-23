@@ -291,10 +291,7 @@ class KEVM(KProve, KRun):
 
     @staticmethod
     def abi_calldata(name: str, args: list[KInner]) -> KApply:
-        # print(args)
-        ta = KEVM.typed_args(args)
-        # print(ta)
-        return KApply('#abiCallData(_,_)_EVM-ABI_Bytes_String_TypedArgs', [stringToken(name), ta])
+        return KApply('#abiCallData(_,_)_EVM-ABI_Bytes_String_TypedArgs', [stringToken(name), KEVM.typed_args(args)])
 
     @staticmethod
     def abi_selector(name: str) -> KApply:
@@ -310,8 +307,8 @@ class KEVM(KProve, KRun):
 
     @staticmethod
     def abi_type(type: str, value: KInner) -> KApply:
-        if type.endswith(']'):
-            return KApply('abi_type_array', (value, KVariable('?SIZE', 'Int'), KVariable('?_ARRAY', 'TypedArgs')))
+        if type.endswith(']') and isinstance(value, KVariable):
+            return KApply('abi_type_array', [KVariable('?_'), KVariable(f'?{value.name}_size'), KVariable(f'?_{value.name}_array')])
         else:
             return KApply('abi_type_' + type, [value])
 

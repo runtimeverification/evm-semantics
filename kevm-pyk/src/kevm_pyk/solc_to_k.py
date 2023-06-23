@@ -196,10 +196,6 @@ class Contract:
                 conjuncts.append(rp)
             lhs = KApply(application_label, [contract, KApply(prod_klabel, arg_vars)])
             rhs = KEVM.abi_calldata(self.name, args)
-            # print("===========")
-            # print(lhs)
-            # print(rhs)
-            # print("===========")
             ensures = andBool(conjuncts)
             return KRule(KRewrite(lhs, rhs), ensures=ensures)
 
@@ -645,10 +641,8 @@ def _range_predicate_ufixed(term: KInner, type_label: str) -> tuple[bool, KInner
 
 def _range_predicate_dyn_array(term: KInner, type_label: str) -> tuple[bool, KInner | None]:
     if type_label.endswith('[]'):
-        # el_res = _range_predicate(term, type_label[:-2])
-        # if el_res is not None:
-        #     return (True, KEVM.range_uint(128, el_res))
-        return (True, KEVM.range_uint(128, KVariable('SIZE', 'Int')))
+        if type(term) is KVariable:
+            return (True, KEVM.range_uint(128, KVariable(f'?{term.name}_size', 'Int')))
     return (False, None)
 
 
