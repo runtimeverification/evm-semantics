@@ -95,7 +95,7 @@ def test_foundry_prove(test_id: str, foundry_root: Path, update_expected_output:
     # Then
     assert_pass(test_id, prove_res)
 
-    if test_id not in SHOW_TESTS:
+    if test_id not in SHOW_TESTS or use_booster:
         return
 
     # And when
