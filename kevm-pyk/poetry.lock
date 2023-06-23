@@ -666,13 +666,13 @@ flake8 = ">=5.0.0"
 
 [[package]]
 name = "platformdirs"
-version = "3.7.0"
+version = "3.8.0"
 description = "A small Python package for determining appropriate platform-specific dirs, e.g. a \"user data dir\"."
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "platformdirs-3.7.0-py3-none-any.whl", hash = "sha256:cfd065ba43133ff103ab3bd10aecb095c2a0035fcd1f07217c9376900d94ba07"},
-    {file = "platformdirs-3.7.0.tar.gz", hash = "sha256:87fbf6473e87c078d536980ba970a472422e94f17b752cfad17024c18876d481"},
+    {file = "platformdirs-3.8.0-py3-none-any.whl", hash = "sha256:ca9ed98ce73076ba72e092b23d3c93ea6c4e186b3f1c3dad6edd98ff6ffcca2e"},
+    {file = "platformdirs-3.8.0.tar.gz", hash = "sha256:b0cabcb11063d21a0b261d557acb0a9d2126350e63b70cdf7db6347baea456dc"},
 ]
 
 [package.extras]
@@ -797,7 +797,7 @@ plugins = ["importlib-metadata"]
 
 [[package]]
 name = "pyk"
-version = "0.1.346"
+version = "0.1.347"
 description = ""
 optional = false
 python-versions = "^3.10"
@@ -817,8 +817,8 @@ tomli = "^2.0.1"
 [package.source]
 type = "git"
 url = "https://github.com/runtimeverification/pyk.git"
-reference = "v0.1.346"
-resolved_reference = "94c3f6928d5dbdafd064de4ad63fbd940c47bb2a"
+reference = "v0.1.347"
+resolved_reference = "0c3e3c8b8651cb51cefd98314f884bdaa2aa49f7"
 
 [[package]]
 name = "pyperclip"
@@ -1057,4 +1057,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "1fb9cc6c4b50da981b52d3e86be947afeb7427e3c1408ab5a0824dad2826d40a"
+content-hash = "7e7f856b039a7596c5d08ba34a68bc6116dfa9f9762642b9e1367211974efaed"
