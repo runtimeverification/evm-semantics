@@ -42,7 +42,7 @@ def foundry_root(tmp_path_factory: TempPathFactory, use_booster: bool) -> Path:
 
 
 def test_foundry_kompile(foundry_root: Path, update_expected_output: bool, use_booster: bool) -> None:
-    if use_booster: 
+    if use_booster:
         return
     # Then
     assert_or_update_k_output(
