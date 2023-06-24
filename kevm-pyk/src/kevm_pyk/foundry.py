@@ -236,6 +236,9 @@ class Foundry:
         for test in all_tests:
             if any(re.search(t, test) for t in tests) and not any(re.search(t, test) for t in exclude_tests):
                 matched_tests.add(test)
+        for test in all_non_tests:
+            if any(re.search(t, test) for t in tests) and not any(re.search(t, test) for t in exclude_tests):
+                matched_tests.add(test)
         if unfound_tests:
             raise ValueError(f'Test identifiers not found: {set(unfound_tests)}')
         elif len(matched_tests) == 0:
