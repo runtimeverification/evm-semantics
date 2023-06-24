@@ -465,6 +465,7 @@ def foundry_prove(
     smt_retry_limit: int | None = None,
     failure_info: bool = True,
     trace_rewrites: bool = False,
+    auto_abstract_gas: bool = False,
 ) -> dict[str, tuple[bool, list[str] | None]]:
     if workers <= 0:
         raise ValueError(f'Must have at least one worker, found: --workers {workers}')
@@ -560,6 +561,7 @@ def foundry_prove(
                 smt_timeout=smt_timeout,
                 smt_retry_limit=smt_retry_limit,
                 trace_rewrites=trace_rewrites,
+                abstract_node=(KEVM.abstract_gas_cell if auto_abstract_gas else None),
             )
             failure_log = None
             if not passed:

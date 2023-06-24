@@ -255,6 +255,7 @@ def exec_prove(
     smt_retry_limit: int | None = None,
     trace_rewrites: bool = False,
     failure_info: bool = True,
+    auto_abstract_gas: bool = False,
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'md_selector', f'--md-selector: {kwargs["md_selector"]}')
@@ -339,6 +340,7 @@ def exec_prove(
                 smt_timeout=smt_timeout,
                 smt_retry_limit=smt_retry_limit,
                 trace_rewrites=trace_rewrites,
+                abstract_node=(KEVM.abstract_gas_cell if auto_abstract_gas else None),
             )
             failure_log = None
             if not passed:
@@ -496,6 +498,7 @@ def exec_foundry_prove(
     smt_retry_limit: int | None = None,
     failure_info: bool = True,
     trace_rewrites: bool = False,
+    auto_abstract_gas: bool = False,
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'main_module', f'--main-module: {kwargs["main_module"]}')
@@ -525,6 +528,7 @@ def exec_foundry_prove(
         smt_timeout=smt_timeout,
         smt_retry_limit=smt_retry_limit,
         trace_rewrites=trace_rewrites,
+        auto_abstract_gas=auto_abstract_gas,
     )
     failed = 0
     for pid, r in results.items():
