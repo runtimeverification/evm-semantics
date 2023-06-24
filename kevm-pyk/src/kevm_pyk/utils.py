@@ -9,6 +9,7 @@ from pyk.kast.inner import KApply, KRewrite, KVariable, Subst
 from pyk.kast.manip import (
     abstract_term_safely,
     bottom_up,
+    free_vars,
     is_anon_var,
     set_cell,
     split_config_and_constraints,
@@ -85,6 +86,7 @@ def kevm_apr_prove(
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
     trace_rewrites: bool = False,
+    abstract_node: Callable[[CTerm], CTerm] | None = None,
 ) -> bool:
     terminal_rules = ['EVM.halt']
     cut_point_rules = []
@@ -111,9 +113,17 @@ def kevm_apr_prove(
     prover: APRBMCProof | APRProver
     if type(proof) is APRBMCProof:
         assert same_loop, f'BMC proof requires same_loop heuristic, but {same_loop} was supplied'
-        prover = APRBMCProver(proof, is_terminal=is_terminal, extract_branches=extract_branches, same_loop=same_loop)
+        prover = APRBMCProver(
+            proof,
+            is_terminal=is_terminal,
+            extract_branches=extract_branches,
+            same_loop=same_loop,
+            abstract_node=abstract_node,
+        )
     else:
-        prover = APRProver(proof, is_terminal=is_terminal, extract_branches=extract_branches)
+        prover = APRProver(
+            proof, is_terminal=is_terminal, extract_branches=extract_branches, abstract_node=abstract_node
+        )
     try:
         prover.advance_proof(
             kcfg_explore,
@@ -127,7 +137,7 @@ def kevm_apr_prove(
         _LOGGER.error(f'Proof crashed: {proof.id}\n{e}', exc_info=True)
         return False
 
-    failure_nodes = proof.pending + proof.kcfg.stuck
+    failure_nodes = proof.pending + proof.failing
     if len(failure_nodes) == 0:
         _LOGGER.info(f'Proof passed: {proof.id}')
         return True
@@ -142,18 +152,18 @@ def print_failure_info(proof: APRProof, kcfg_explore: KCFGExplore) -> list[str]:
     res_lines: list[str] = []
 
     num_pending = len(proof.pending)
-    num_stuck = len(proof.kcfg.stuck)
-    res_lines.append(f'{num_pending + num_stuck} Failure nodes. ({num_pending} pending and {num_stuck} stuck)')
+    num_failing = len(proof.failing)
+    res_lines.append(f'{num_pending + num_failing} Failure nodes. ({num_pending} pending and {num_failing} failing)')
     if num_pending > 0:
         res_lines.append('')
         res_lines.append('Pending nodes:')
         for node in proof.pending:
             res_lines.append('')
             res_lines.append(f'ID: {node.id}:')
-    if num_stuck > 0:
+    if num_failing > 0:
         res_lines.append('')
-        res_lines.append('Stuck nodes:')
-        for node in proof.kcfg.stuck:
+        res_lines.append('Failing nodes:')
+        for node in proof.failing:
             res_lines.append('')
             res_lines.append(f'  Node id: {str(node.id)}')
 
@@ -245,3 +255,16 @@ def ensure_ksequence_on_k_cell(cterm: CTerm) -> CTerm:
         _LOGGER.info('Introducing artificial KSequence on <k> cell.')
         return CTerm.from_kast(set_cell(cterm.kast, 'K_CELL', KSequence([k_cell])))
     return cterm
+
+
+def constraints_for(vars: list[str], constraints: Iterable[KInner]) -> Iterable[KInner]:
+    accounts_constraints = []
+    constraints_changed = True
+    while constraints_changed:
+        constraints_changed = False
+        for constraint in constraints:
+            if constraint not in accounts_constraints and any(v in vars for v in free_vars(constraint)):
+                accounts_constraints.append(constraint)
+                vars.extend(free_vars(constraint))
+                constraints_changed = True
+    return accounts_constraints
