@@ -1,7 +1,7 @@
-AccountParamsTest.testDealConcrete
-AccountParamsTest.testDealSymbolic
-AccountParamsTest.testEtchConcrete
-AccountParamsTest.testEtchSymbolic
+AccountParamsTest.testDealConcrete()
+AccountParamsTest.testDealSymbolic(uint256)
+AccountParamsTest.testEtchConcrete()
+AccountParamsTest.testEtchSymbolic(bytes)
 AccountParamsTest.testFail_GetNonce_false
 AccountParamsTest.testFail_GetNonce_true
 AccountParamsTest.test_GetNonce_false
@@ -121,7 +121,7 @@ ForkTest.testRPCUrl
 ForkTest.testRPCUrlRevert
 GasTest.testInfiniteGas
 GetCodeTest.testGetCode
-LabelTest.testLabel
+LabelTest.testLabel()
 LoopsTest.sum_N
 LoopsTest.testIsNotPrime
 LoopsTest.testIsPrime
