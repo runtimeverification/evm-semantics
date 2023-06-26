@@ -26,6 +26,7 @@ from pyk.prelude.ml import is_bottom, mlEqualsTrue
 from pyk.proof.proof import Proof, ProofStatus
 from pyk.proof.reachability import APRBMCProof, APRProof
 from pyk.utils import BugReport, ensure_dir_path, hash_str, run_process, single, unique
+from pyk.kore.rpc import KoreClient
 
 from .kevm import KEVM
 from .kompile import KompileTarget, kevm_kompile
@@ -790,10 +791,16 @@ def foundry_koverage(foundry_root: Path, contracts: Iterable[str], tests: Iterab
                 simplified, _ = kcfg_explore.cterm_simplify(new_cterm)
                 if not is_bottom(simplified):
                     new_constraints = split_config_and_constraints(simplified)[1]
-                    # with KCFGExplore(foundry.kevm) as kcfg_explore:
-                    #     kore = kcfg_explore.kprint.kast_to_kore(new_constraints)
-                    #     pretty = kcfg_explore.kprint.kore_to_pretty(kore)
-                    #     print(pretty)
+                    with KCFGExplore(foundry.kevm) as kcfg_explore:
+                        kore = kcfg_explore.kprint.kast_to_kore(new_constraints)
+                        # pretty = kcfg_explore.kprint.kore_to_pretty(kore)
+                        # print(pretty)
+                        client = kcfg_explore._kore_client
+                        if client is not None:
+                            model = client.get_model(kore)
+                            print(model)
+                        else:
+                            raise RuntimeError("Issue getting the KoreClient")
                 else:
                     _LOGGER.warn(f'found bottom node at bytecode hash: {bytecode_h.decode()}')
 
