@@ -87,7 +87,7 @@ KOMPILE_MAIN_FILE: Final = {
     'examples/solidity-code-spec.md': 'solidity-code-spec.md',
     'examples/erc20-spec.md': 'erc20-spec.md',
     'examples/erc721-spec.md': 'erc721-spec.md',
-    'examples/storage-spec.k': 'storage-spec.k',
+    'examples/storage-spec.md': 'storage-spec.md',
     'examples/sum-to-n-spec.k': 'sum-to-n-spec.k',
     'examples/sum-to-n-foundry-spec.k': 'sum-to-n-foundry-spec.k',
     'functional/infinite-gas-spec.k': 'infinite-gas-spec.k',
@@ -112,7 +112,7 @@ KOMPILE_MAIN_MODULE: Final = {
 KOMPILE_CONTRACT: Final = {
     'examples/erc20-spec.md': TEST_DATA_DIR / 'examples/ERC20.sol',
     'examples/erc721-spec.md': TEST_DATA_DIR / 'examples/ERC721.sol',
-    'examples/storage-spec.k': TEST_DATA_DIR / 'examples/Storage.sol',
+    'examples/storage-spec.md': TEST_DATA_DIR / 'examples/Storage.sol',
 }
 
 
