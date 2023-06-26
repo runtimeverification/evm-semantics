@@ -93,6 +93,7 @@ The maximum and minimum values of each type are defined below.
 
 ```k
     syntax Int ::= "minSInt128"      [alias]
+                 | "minSInt128Word"  [alias]
                  | "maxSInt128"      [alias]
                  | "minSInt256"      [alias]
                  | "maxSInt256"      [alias]
@@ -166,6 +167,7 @@ The maximum and minimum values of each type are defined below.
                  | "maxUFixed128x10" [alias]
  // ----------------------------------------
     rule minSInt128      => -170141183460469231731687303715884105728                                        /*  -2^127      */
+    rule minSInt128Word  =>  115792089237316195423570985008687907853099843482180094807725896704197245534208 /*  -2^127 as evm word */
     rule maxSInt128      =>  170141183460469231731687303715884105727                                        /*   2^127 - 1  */
     rule minSFixed128x10 => -1701411834604692317316873037158841057280000000000                              /* (-2^127    ) * 10^10 */
     rule maxSFixed128x10 =>  1701411834604692317316873037158841057270000000000                              /* ( 2^127 - 1) * 10^10 */
