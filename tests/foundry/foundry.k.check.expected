@@ -30,10 +30,14 @@ module FOUNDRY-MAIN
     imports public FFITEST-VERIFICATION
     imports public FILESTEST-VERIFICATION
     imports public FORKTEST-VERIFICATION
+    imports public FRESHINTTEST-VERIFICATION
     imports public GASTEST-VERIFICATION
     imports public GETCODETEST-VERIFICATION
+    imports public KEVMBASE-VERIFICATION
     imports public KEVMCHEATS-VERIFICATION
     imports public KEVMCHEATSBASE-VERIFICATION
+    imports public KEVMUTILS-VERIFICATION
+    imports public SYMBOLICWORDS-VERIFICATION
     imports public LABELTEST-VERIFICATION
     imports public LOOPSTEST-VERIFICATION
     imports public METHODDISAMBIGUATETEST-VERIFICATION
@@ -47,6 +51,7 @@ module FOUNDRY-MAIN
     imports public PLAINPRANKTEST-VERIFICATION
     imports public PRANK-VERIFICATION
     imports public PRANKTEST-VERIFICATION
+    imports public PRECONDITIONSTEST-VERIFICATION
     imports public RECORDLOGSTEST-VERIFICATION
     imports public SAFE-VERIFICATION
     imports public SAFETEST-VERIFICATION
@@ -275,6 +280,13 @@ module FORKTEST-VERIFICATION
 
 endmodule
 
+module FRESHINTTEST-VERIFICATION
+    imports public FRESHINTTEST-CONTRACT
+    
+    
+
+endmodule
+
 module GASTEST-VERIFICATION
     imports public GASTEST-CONTRACT
     
@@ -289,6 +301,13 @@ module GETCODETEST-VERIFICATION
 
 endmodule
 
+module KEVMBASE-VERIFICATION
+    imports public KEVMBASE-CONTRACT
+    
+    
+
+endmodule
+
 module KEVMCHEATS-VERIFICATION
     imports public KEVMCHEATS-CONTRACT
     
@@ -298,6 +317,20 @@ endmodule
 
 module KEVMCHEATSBASE-VERIFICATION
     imports public KEVMCHEATSBASE-CONTRACT
+    
+    
+
+endmodule
+
+module KEVMUTILS-VERIFICATION
+    imports public KEVMUTILS-CONTRACT
+    
+    
+
+endmodule
+
+module SYMBOLICWORDS-VERIFICATION
+    imports public SYMBOLICWORDS-CONTRACT
     
     
 
@@ -390,6 +423,13 @@ endmodule
 
 module PRANKTEST-VERIFICATION
     imports public PRANKTEST-CONTRACT
+    
+    
+
+endmodule
+
+module PRECONDITIONSTEST-VERIFICATION
+    imports public PRECONDITIONSTEST-CONTRACT
     
     
 

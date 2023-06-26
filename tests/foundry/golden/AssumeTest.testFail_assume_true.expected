@@ -1,89 +1,89 @@
 
-┌─ 1 (init, expanded)
-│    k: #execute ~> CONTINUATION
-│    pc: 0
-│    callDepth: 0
-│    statusCode: STATUSCODE
-│    src: tests/foundry/test/AssumeTest.t.sol:5:44
+┌─ 1 (root)
+│   k: #execute ~> CONTINUATION
+│   pc: 0
+│   callDepth: 0
+│   statusCode: STATUSCODE
+│   src: tests/foundry/test/AssumeTest.t.sol:5:44
 │
 │  (824 steps)
-├─ 3 (expanded)
-│    k: CALL 9223372036854772808 645326474426547203313410069153905908525362434349 0 128  ...
-│    pc: 424
-│    callDepth: 0
-│    statusCode: STATUSCODE:StatusCode
+├─ 3
+│   k: CALL 9223372036854772808 645326474426547203313410069153905908525362434349 0 128  ...
+│   pc: 424
+│   callDepth: 0
+│   statusCode: STATUSCODE:StatusCode
 │
 │  (1 step)
-├─ 4 (expanded)
-│    k: #checkCall 728815563385977040452943777879061427756277306518 0 ~> #call 728815563 ...
-│    pc: 424
-│    callDepth: 0
-│    statusCode: STATUSCODE:StatusCode
+├─ 4
+│   k: #checkCall 728815563385977040452943777879061427756277306518 0 ~> #call 728815563 ...
+│   pc: 424
+│   callDepth: 0
+│   statusCode: STATUSCODE:StatusCode
 │
 │  (1000 steps)
-├─ 5 (expanded)
-│    k: #gas [ MSTORE , MSTORE 192 46308022326495007027972728677917914892729792999299745 ...
-│    pc: 2271
-│    callDepth: 0
-│    statusCode: STATUSCODE:StatusCode
+├─ 5
+│   k: #gas [ MSTORE , MSTORE 192 46308022326495007027972728677917914892729792999299745 ...
+│   pc: 2271
+│   callDepth: 0
+│   statusCode: STATUSCODE:StatusCode
 │
 │  (1000 steps)
-├─ 6 (expanded)
-│    k: #gasExec ( LONDON , JUMP 2621 ) ~> #deductGas ~> #access [ JUMP , JUMP 2621 ] ~> ...
-│    pc: 2691
-│    callDepth: 0
-│    statusCode: STATUSCODE:StatusCode
+├─ 6
+│   k: #gasExec ( LONDON , JUMP 2621 ) ~> #deductGas ~> #access [ JUMP , JUMP 2621 ] ~> ...
+│   pc: 2691
+│   callDepth: 0
+│   statusCode: STATUSCODE:StatusCode
 │
 │  (819 steps)
-├─ 7 (expanded)
-│    k: CALL 9223372036854765663 645326474426547203313410069153905908525362434349 0 388  ...
-│    pc: 2389
-│    callDepth: 0
-│    statusCode: STATUSCODE:StatusCode
+├─ 7
+│   k: CALL 9223372036854765663 645326474426547203313410069153905908525362434349 0 388  ...
+│   pc: 2389
+│   callDepth: 0
+│   statusCode: STATUSCODE:StatusCode
 │
 │  (1 step)
-├─ 8 (expanded)
-│    k: #checkCall 728815563385977040452943777879061427756277306518 0 ~> #call 728815563 ...
-│    pc: 2389
-│    callDepth: 0
-│    statusCode: STATUSCODE:StatusCode
+├─ 8
+│   k: #checkCall 728815563385977040452943777879061427756277306518 0 ~> #call 728815563 ...
+│   pc: 2389
+│   callDepth: 0
+│   statusCode: STATUSCODE:StatusCode
 │
 │  (387 steps)
-├─ 9 (expanded)
-│    k: #end EVMC_SUCCESS ~> #pc [ STOP ] ~> #execute ~> CONTINUATION:K
-│    pc: 183
-│    callDepth: 0
-│    statusCode: STATUSCODE:StatusCode
-│    src: tests/foundry/lib/forge-std/src/Script.sol:8:9
+├─ 9
+│   k: #end EVMC_SUCCESS ~> #pc [ STOP ] ~> #execute ~> CONTINUATION:K
+│   pc: 183
+│   callDepth: 0
+│   statusCode: STATUSCODE:StatusCode
+│   src: tests/foundry/lib/forge-std/src/Script.sol:8:9
 │
 │  (1 step)
-├─ 10 (expanded)
-│    k: #halt ~> #pc [ STOP ] ~> #execute ~> CONTINUATION:K
-│    pc: 183
-│    callDepth: 0
-│    statusCode: EVMC_SUCCESS
-│    src: tests/foundry/lib/forge-std/src/Script.sol:8:9
+├─ 10
+│   k: #halt ~> #pc [ STOP ] ~> #execute ~> CONTINUATION:K
+│   pc: 183
+│   callDepth: 0
+│   statusCode: EVMC_SUCCESS
+│   src: tests/foundry/lib/forge-std/src/Script.sol:8:9
 │
 │  (2 steps)
-├─ 11 (leaf)
-│    k: #halt ~> CONTINUATION:K
-│    pc: 183
-│    callDepth: 0
-│    statusCode: EVMC_SUCCESS
-│    src: tests/foundry/lib/forge-std/src/Script.sol:8:9
+├─ 11
+│   k: #halt ~> CONTINUATION:K
+│   pc: 183
+│   callDepth: 0
+│   statusCode: EVMC_SUCCESS
+│   src: tests/foundry/lib/forge-std/src/Script.sol:8:9
 │
 ┊  constraint: true
 ┊  subst: OMITTED SUBST
-└─ 2 (target, leaf)
-     k: #halt ~> CONTINUATION
-     pc: PC_CELL_5d410f2a
-     callDepth: CALLDEPTH_CELL_5d410f2a
-     statusCode: STATUSCODE_FINAL
+└─ 2 (leaf)
+    k: #halt ~> CONTINUATION
+    pc: PC_CELL_5d410f2a
+    callDepth: CALLDEPTH_CELL_5d410f2a
+    statusCode: STATUSCODE_FINAL
 
 
 
 
-module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
+module SUMMARY-ASSUMETEST.TESTFAIL-ASSUME-TRUE:EF68C1EA07B094FCF03E02D287B47204FA02108E3334C204F81DEA4C78FD1289
     
     
            <kevm>
@@ -109,6 +109,8 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                    .List
                  </interimStates>
                  <callState>
+                   ...
+                   ...
                    <id>
                      728815563385977040452943777879061427756277306518
                    </id>
@@ -127,6 +129,8 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                    <localMem>
                      ( .Bytes => b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00Lc\xe5b" +Bytes #buf ( 32 , bool2Word ( ( notBool VV0_a_114b9705:Int ==Int VV1_b_114b9705:Int ) ) ) )
                    </localMem>
+                   ...
+                   ...
                    <memoryUsed>
                      ( 0 => 6 )
                    </memoryUsed>
@@ -139,7 +143,6 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                    <callDepth>
                      0
                    </callDepth>
-                   ...
                  </callState>
                  <substate>
                    <log>
@@ -173,6 +176,7 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        .Map
                      </storage>
@@ -182,7 +186,6 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                      <nonce>
                        0
                      </nonce>
-                     ...
                    </account>
                    <account>
                      <acctID>
@@ -191,6 +194,7 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        .Map
                      </storage>
@@ -200,7 +204,6 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                      <nonce>
                        1
                      </nonce>
-                     ...
                    </account> )
                  </accounts>
                  ...
@@ -301,6 +304,7 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
        andBool ( ORIGIN_ID:Int <Int pow160
        andBool ( NUMBER_CELL:Int <=Int maxSInt256
                ))))))
+      [label(BASIC-BLOCK-1-TO-3)]
     
            <kevm>
              <k>
@@ -326,6 +330,8 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                    .List
                  </interimStates>
                  <callState>
+                   ...
+                   ...
                    <id>
                      728815563385977040452943777879061427756277306518
                    </id>
@@ -344,6 +350,8 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                    <localMem>
                      b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00Lc\xe5b" +Bytes #buf ( 32 , bool2Word ( ( notBool VV0_a_114b9705:Int ==Int VV1_b_114b9705:Int ) ) )
                    </localMem>
+                   ...
+                   ...
                    <memoryUsed>
                      6
                    </memoryUsed>
@@ -356,7 +364,6 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                    <callDepth>
                      0
                    </callDepth>
-                   ...
                  </callState>
                  <substate>
                    <log>
@@ -390,6 +397,7 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        .Map
                      </storage>
@@ -399,7 +407,6 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                      <nonce>
                        0
                      </nonce>
-                     ...
                    </account>
                    <account>
                      <acctID>
@@ -408,6 +415,7 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        .Map
                      </storage>
@@ -417,7 +425,6 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                      <nonce>
                        1
                      </nonce>
-                     ...
                    </account> )
                  </accounts>
                  ...
@@ -506,6 +513,7 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
        andBool ( VV0_a_114b9705:Int <Int pow256
        andBool ( VV1_b_114b9705:Int <Int pow256
                ))))))))))
+      [label(BASIC-BLOCK-3-TO-4)]
     
            <kevm>
              <k>
@@ -536,6 +544,8 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                    .List
                  </interimStates>
                  <callState>
+                   ...
+                   ...
                    <id>
                      728815563385977040452943777879061427756277306518
                    </id>
@@ -554,6 +564,8 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                    <localMem>
                      ( b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00Lc\xe5b" +Bytes #buf ( 32 , bool2Word ( ( notBool VV0_a_114b9705:Int ==Int VV1_b_114b9705:Int ) ) ) => b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00@\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00q\tp\x9e\xcf\xa9\x1a\x80bo\xf3\x98\x9dh\xf6\x7f[\x1d\xd1-\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\n    Actual\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" )
                    </localMem>
+                   ...
+                   ...
                    <memoryUsed>
                      ( 6 => 8 )
                    </memoryUsed>
@@ -566,7 +578,6 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                    <callDepth>
                      0
                    </callDepth>
-                   ...
                  </callState>
                  <substate>
                    <log>
@@ -600,6 +611,7 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        .Map
                      </storage>
@@ -609,7 +621,6 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                      <nonce>
                        0
                      </nonce>
-                     ...
                    </account>
                    <account>
                      <acctID>
@@ -618,6 +629,7 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        .Map
                      </storage>
@@ -627,7 +639,6 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                      <nonce>
                        1
                      </nonce>
-                     ...
                    </account> )
                  </accounts>
                  ...
@@ -719,6 +730,7 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
        ensures ( VV0_a_114b9705:Int =/=K VV1_b_114b9705:Int
        andBool ( VV0_a_114b9705:Int =/=Int VV1_b_114b9705:Int ==Bool true
                ))
+      [label(BASIC-BLOCK-4-TO-5)]
     
            <kevm>
              <k>
@@ -750,6 +762,8 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                    .List
                  </interimStates>
                  <callState>
+                   ...
+                   ...
                    <id>
                      728815563385977040452943777879061427756277306518
                    </id>
@@ -768,6 +782,8 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                    <localMem>
                      ( b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00@\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00q\tp\x9e\xcf\xa9\x1a\x80bo\xf3\x98\x9dh\xf6\x7f[\x1d\xd1-\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\n    Actual\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" => b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x84\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00`\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00q\tp\x9e\xcf\xa9\x1a\x80bo\xf3\x98\x9dh\xf6\x7f[\x1d\xd1-failed\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00dp\xca\x10\xbb\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00q\tp\x9e\xcf\xa9\x1a\x80bo\xf3\x98\x9dh\xf6\x7f[\x1d\xd1-failed\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01" )
                    </localMem>
+                   ...
+                   ...
                    <memoryUsed>
                      ( 8 => 13 )
                    </memoryUsed>
@@ -780,7 +796,6 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                    <callDepth>
                      0
                    </callDepth>
-                   ...
                  </callState>
                  <substate>
                    <log>
@@ -814,6 +829,7 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        .Map
                      </storage>
@@ -823,7 +839,6 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                      <nonce>
                        0
                      </nonce>
-                     ...
                    </account>
                    <account>
                      <acctID>
@@ -832,6 +847,7 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        .Map
                      </storage>
@@ -841,7 +857,6 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                      <nonce>
                        1
                      </nonce>
-                     ...
                    </account> )
                  </accounts>
                  ...
@@ -932,6 +947,7 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
        andBool ( VV1_b_114b9705:Int <Int pow256
        andBool ( VV0_a_114b9705:Int =/=Int VV1_b_114b9705:Int ==Bool true
                ))))))))))))
+      [label(BASIC-BLOCK-5-TO-6)]
     
            <kevm>
              <k>
@@ -962,6 +978,8 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                    .List
                  </interimStates>
                  <callState>
+                   ...
+                   ...
                    <id>
                      728815563385977040452943777879061427756277306518
                    </id>
@@ -980,6 +998,8 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                    <localMem>
                      ( b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x84\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00`\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00q\tp\x9e\xcf\xa9\x1a\x80bo\xf3\x98\x9dh\xf6\x7f[\x1d\xd1-failed\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00dp\xca\x10\xbb\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00q\tp\x9e\xcf\xa9\x1a\x80bo\xf3\x98\x9dh\xf6\x7f[\x1d\xd1-failed\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01" => b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x84\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00`\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00q\tp\x9e\xcf\xa9\x1a\x80bo\xf3\x98\x9dh\xf6\x7f[\x1d\xd1-failed\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00dp\xca\x10\xbb\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00q\tp\x9e\xcf\xa9\x1a\x80bo\xf3\x98\x9dh\xf6\x7f[\x1d\xd1-failed\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01p\xca\x10\xbb\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00q\tp\x9e\xcf\xa9\x1a\x80bo\xf3\x98\x9dh\xf6\x7f[\x1d\xd1-failed\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" )
                    </localMem>
+                   ...
+                   ...
                    <memoryUsed>
                      ( 13 => 17 )
                    </memoryUsed>
@@ -992,7 +1012,6 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                    <callDepth>
                      0
                    </callDepth>
-                   ...
                  </callState>
                  <substate>
                    <log>
@@ -1026,6 +1045,7 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        .Map
                      </storage>
@@ -1035,7 +1055,6 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                      <nonce>
                        0
                      </nonce>
-                     ...
                    </account>
                    <account>
                      <acctID>
@@ -1044,6 +1063,7 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        .Map
                      </storage>
@@ -1053,7 +1073,6 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                      <nonce>
                        1
                      </nonce>
-                     ...
                    </account> )
                  </accounts>
                  ...
@@ -1144,6 +1163,7 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
        andBool ( VV1_b_114b9705:Int <Int pow256
        andBool ( VV0_a_114b9705:Int =/=Int VV1_b_114b9705:Int ==Bool true
                ))))))))))))
+      [label(BASIC-BLOCK-6-TO-7)]
     
            <kevm>
              <k>
@@ -1172,6 +1192,8 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                    .List
                  </interimStates>
                  <callState>
+                   ...
+                   ...
                    <id>
                      728815563385977040452943777879061427756277306518
                    </id>
@@ -1190,6 +1212,8 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                    <localMem>
                      b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x84\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00`\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00q\tp\x9e\xcf\xa9\x1a\x80bo\xf3\x98\x9dh\xf6\x7f[\x1d\xd1-failed\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00dp\xca\x10\xbb\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00q\tp\x9e\xcf\xa9\x1a\x80bo\xf3\x98\x9dh\xf6\x7f[\x1d\xd1-failed\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01p\xca\x10\xbb\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00q\tp\x9e\xcf\xa9\x1a\x80bo\xf3\x98\x9dh\xf6\x7f[\x1d\xd1-failed\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
                    </localMem>
+                   ...
+                   ...
                    <memoryUsed>
                      17
                    </memoryUsed>
@@ -1202,7 +1226,6 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                    <callDepth>
                      0
                    </callDepth>
-                   ...
                  </callState>
                  <substate>
                    <log>
@@ -1236,6 +1259,7 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        .Map
                      </storage>
@@ -1245,7 +1269,6 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                      <nonce>
                        0
                      </nonce>
-                     ...
                    </account>
                    <account>
                      <acctID>
@@ -1254,6 +1277,7 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        .Map
                      </storage>
@@ -1263,7 +1287,6 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                      <nonce>
                        1
                      </nonce>
-                     ...
                    </account> )
                  </accounts>
                  ...
@@ -1354,6 +1377,7 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
        andBool ( VV1_b_114b9705:Int <Int pow256
        andBool ( VV0_a_114b9705:Int =/=Int VV1_b_114b9705:Int ==Bool true
                ))))))))))))
+      [label(BASIC-BLOCK-7-TO-8)]
     
            <kevm>
              <k>
@@ -1383,6 +1407,8 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                    .List
                  </interimStates>
                  <callState>
+                   ...
+                   ...
                    <id>
                      728815563385977040452943777879061427756277306518
                    </id>
@@ -1401,6 +1427,8 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                    <localMem>
                      b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x84\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00`\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00q\tp\x9e\xcf\xa9\x1a\x80bo\xf3\x98\x9dh\xf6\x7f[\x1d\xd1-failed\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00dp\xca\x10\xbb\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00q\tp\x9e\xcf\xa9\x1a\x80bo\xf3\x98\x9dh\xf6\x7f[\x1d\xd1-failed\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01p\xca\x10\xbb\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00q\tp\x9e\xcf\xa9\x1a\x80bo\xf3\x98\x9dh\xf6\x7f[\x1d\xd1-failed\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
                    </localMem>
+                   ...
+                   ...
                    <memoryUsed>
                      17
                    </memoryUsed>
@@ -1413,7 +1441,6 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                    <callDepth>
                      0
                    </callDepth>
-                   ...
                  </callState>
                  <substate>
                    <log>
@@ -1447,6 +1474,7 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        ( .Map => ( 46308022326495007027972728677917914892729792999299745830475596687180801507328 |-> 1 ) )
                      </storage>
@@ -1456,7 +1484,6 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                      <nonce>
                        0
                      </nonce>
-                     ...
                    </account>
                    <account>
                      <acctID>
@@ -1465,6 +1492,7 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        ( .Map => ( 0 |-> 256 ) )
                      </storage>
@@ -1474,7 +1502,6 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                      <nonce>
                        1
                      </nonce>
-                     ...
                    </account> )
                  </accounts>
                  ...
@@ -1565,6 +1592,7 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
        andBool ( VV1_b_114b9705:Int <Int pow256
        andBool ( VV0_a_114b9705:Int =/=Int VV1_b_114b9705:Int ==Bool true
                ))))))))))))
+      [label(BASIC-BLOCK-8-TO-9)]
     
            <kevm>
              <k>
@@ -1594,6 +1622,8 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                    .List
                  </interimStates>
                  <callState>
+                   ...
+                   ...
                    <id>
                      728815563385977040452943777879061427756277306518
                    </id>
@@ -1612,6 +1642,8 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                    <localMem>
                      b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x84\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00`\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00q\tp\x9e\xcf\xa9\x1a\x80bo\xf3\x98\x9dh\xf6\x7f[\x1d\xd1-failed\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00dp\xca\x10\xbb\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00q\tp\x9e\xcf\xa9\x1a\x80bo\xf3\x98\x9dh\xf6\x7f[\x1d\xd1-failed\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01p\xca\x10\xbb\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00q\tp\x9e\xcf\xa9\x1a\x80bo\xf3\x98\x9dh\xf6\x7f[\x1d\xd1-failed\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
                    </localMem>
+                   ...
+                   ...
                    <memoryUsed>
                      17
                    </memoryUsed>
@@ -1624,7 +1656,6 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                    <callDepth>
                      0
                    </callDepth>
-                   ...
                  </callState>
                  <substate>
                    <log>
@@ -1658,6 +1689,7 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        ( 46308022326495007027972728677917914892729792999299745830475596687180801507328 |-> 1 )
                      </storage>
@@ -1667,7 +1699,6 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                      <nonce>
                        0
                      </nonce>
-                     ...
                    </account>
                    <account>
                      <acctID>
@@ -1676,6 +1707,7 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        ( 0 |-> 256 )
                      </storage>
@@ -1685,7 +1717,6 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                      <nonce>
                        1
                      </nonce>
-                     ...
                    </account> )
                  </accounts>
                  ...
@@ -1776,6 +1807,7 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
        andBool ( VV1_b_114b9705:Int <Int pow256
        andBool ( VV0_a_114b9705:Int =/=Int VV1_b_114b9705:Int ==Bool true
                ))))))))))))
+      [label(BASIC-BLOCK-9-TO-10)]
     
            <kevm>
              <k>
@@ -1805,6 +1837,8 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                    .List
                  </interimStates>
                  <callState>
+                   ...
+                   ...
                    <id>
                      728815563385977040452943777879061427756277306518
                    </id>
@@ -1823,6 +1857,8 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                    <localMem>
                      b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x84\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00`\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00q\tp\x9e\xcf\xa9\x1a\x80bo\xf3\x98\x9dh\xf6\x7f[\x1d\xd1-failed\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00dp\xca\x10\xbb\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00q\tp\x9e\xcf\xa9\x1a\x80bo\xf3\x98\x9dh\xf6\x7f[\x1d\xd1-failed\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01p\xca\x10\xbb\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00q\tp\x9e\xcf\xa9\x1a\x80bo\xf3\x98\x9dh\xf6\x7f[\x1d\xd1-failed\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
                    </localMem>
+                   ...
+                   ...
                    <memoryUsed>
                      17
                    </memoryUsed>
@@ -1835,7 +1871,6 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                    <callDepth>
                      0
                    </callDepth>
-                   ...
                  </callState>
                  <substate>
                    <log>
@@ -1869,6 +1904,7 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        ( 46308022326495007027972728677917914892729792999299745830475596687180801507328 |-> 1 )
                      </storage>
@@ -1878,7 +1914,6 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                      <nonce>
                        0
                      </nonce>
-                     ...
                    </account>
                    <account>
                      <acctID>
@@ -1887,6 +1922,7 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        ( 0 |-> 256 )
                      </storage>
@@ -1896,7 +1932,6 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
                      <nonce>
                        1
                      </nonce>
-                     ...
                    </account> )
                  </accounts>
                  ...
@@ -1987,9 +2022,9 @@ module SUMMARY-ASSUMETEST-TESTFAIL-ASSUME-TRUE
        andBool ( VV1_b_114b9705:Int <Int pow256
        andBool ( VV0_a_114b9705:Int =/=Int VV1_b_114b9705:Int ==Bool true
                ))))))))))))
+      [label(BASIC-BLOCK-10-TO-11)]
 
 endmodule
-
-0 Failure nodes. (0 pending and 0 stuck)
+0 Failure nodes. (0 pending and 0 failing)
 
 Access documentation for KEVM foundry integration at https://docs.runtimeverification.com/kevm-integration-for-foundry/

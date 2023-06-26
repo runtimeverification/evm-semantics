@@ -445,106 +445,8 @@ tests/interactive/%.json.gst-to-kore.check: tests/ethereum-tests/GeneralStateTes
 
 FOUNDRY_PAR := 4
 
-foundry-clean:
-	rm -rf tests/foundry/cache
-	rm -rf tests/foundry/out
-	rm -f  tests/foundry/foundry.debug-log
-	rm -f  tests/foundry/foundry.k
-	rm -f  tests/foundry/foundry.rule-profile
-
-tests/foundry/%: KEVM := $(POETRY_RUN) kevm
-
-foundry_dir := tests/foundry
-foundry_out := $(foundry_dir)/out
-foundry_koverage := $(foundry_dir)/koverage
-koverage_tests_expected := $(shell find $(foundry_koverage) -name '*.expected' -printf "%f\n")
-koverage_tests := $(shell find $(foundry_koverage) -type f -iname '*.expected' -exec basename -s '.expected' {} +)
-
-test-foundry-%: KEVM_OPTS += --pyk --verbose
-test-foundry-%: KEVM := $(POETRY_RUN) kevm
-test-foundry-kompile: tests/foundry/foundry.k.check tests/foundry/contracts.k.check
-test-foundry-prove: tests/foundry/out/kompiled/foundry.k.prove
-test-foundry-bmc-prove: tests/foundry/out/kompiled/foundry.k.bmc-prove
-test-foundry-list: tests/foundry/foundry-list.check
-test-foundry-koverage: tests/foundry/foundry-koverage.check
-
-foundry-forge-build: $(foundry_out)
-
-foundry-forge-test: foundry-forge-build
-	cd $(foundry_dir) && forge test --ffi
-
-$(foundry_out):
-	cd $(dir $@) && forge build
-
-tests/foundry/foundry-list.out: tests/foundry/out/kompiled/foundry.k.prove foundry-fail
-	$(KEVM) foundry-list --foundry-project-root $(foundry_dir) > $@
-
-tests/foundry/foundry-list.check: tests/foundry/foundry-list.out
-	grep --invert-match 'path:' $< > $@.stripped
-	$(CHECK) $@.stripped $@.expected
-
-tests/foundry/foundry-koverage.out: tests/foundry/out/kompiled/foundry.koverage.k.prove
-	$(foreach test,$(koverage_tests), $(shell $(KEVM) foundry-koverage --foundry-project-root $(foundry_dir) --test $(test) > $(foundry_koverage)/$(test).output)) \
-
-tests/foundry/foundry-koverage.check: tests/foundry/foundry-koverage.out
-	$(foreach test,$(koverage_tests), $(shell $(CHECK) "$(foundry_koverage)/$(test).output" "$(foundry_koverage)/$(test).expected")) \
-
-tests/foundry/foundry.k.check: tests/foundry/out/kompiled/foundry.k
-	grep --invert-match '    rule  ( #binRuntime (' $< > $@.stripped
-	$(CHECK) $@.stripped $@.expected
-
-tests/foundry/contracts.k.check: tests/foundry/out/kompiled/contracts.k
-	grep --invert-match '    rule  ( #binRuntime (' $< > $@.stripped
-	$(CHECK) $@.stripped $@.expected
-
-tests/foundry/out/kompiled/foundry.k: tests/foundry/out/kompiled/timestamp
-tests/foundry/out/kompiled/contracts.k: tests/foundry/out/kompiled/timestamp
-
-tests/foundry/out/kompiled/foundry.koverage.k.prove: tests/foundry/out/kompiled/timestamp
-	$(KEVM) foundry-prove --foundry-project-root $(foundry_dir)          \
-	    -j$(FOUNDRY_PAR) --no-simplify-init --max-depth 1000             \
-	    $(KEVM_OPTS) $(KPROVE_OPTS)                                      \
-	    $(addprefix --test , $(koverage_tests))
-
-tests/foundry/out/kompiled/foundry.k.prove: tests/foundry/out/kompiled/timestamp
-	$(KEVM) foundry-prove --foundry-project-root $(foundry_dir)          \
-	    -j$(FOUNDRY_PAR) --no-simplify-init --max-depth 1000             \
-	    $(KEVM_OPTS) $(KPROVE_OPTS)                                      \
-	    $(addprefix --exclude-test , $(shell cat tests/foundry/exclude))
-
-tests/foundry/out/kompiled/foundry.k.bmc-prove: tests/foundry/out/kompiled/timestamp
-	$(KEVM) foundry-prove --foundry-project-root $(foundry_dir)          \
-	    -j$(FOUNDRY_PAR) --no-simplify-init --max-depth 1000             \
-            --bmc-depth 3                                                    \
-	    $(KEVM_OPTS) $(KPROVE_OPTS)                                      \
-	    $(addprefix --test , $(shell cat tests/foundry/bmc-tests))
-
-foundry_golden := tests/foundry/golden
-foundry_diff_tests := $(shell cat tests/foundry/checkoutput)
-
-test-foundry-kcfg-diff: $(patsubst %, $(foundry_golden)/%.check, $(foundry_diff_tests))
-
-foundry-fail: tests/foundry/out/kompiled/timestamp
-	$(KEVM) foundry-prove                                \
-	--foundry-project-root $(foundry_dir)                \
-	-j$(FOUNDRY_PAR) --no-simplify-init --max-depth 1000 \
-	$(KEVM_OPTS) $(KPROVE_OPTS)                          \
-	$(addprefix --test , $(foundry_diff_tests)) || true
-
-foundry_show_opts := --to-module --omit-unstable-output --frontier --stuck --sort-collections
-
-$(foundry_golden)/%.check: $(foundry_golden)/%.out
-	$(CHECK) $(foundry_golden)/$*.out $(foundry_golden)/$*.expected
-
-$(foundry_golden)/%.out: foundry-fail
-	$(KEVM) foundry-show $(foundry_show_opts)                   \
-	--foundry-project-root $(foundry_dir) $* --failure-info     \
-	| grep --invert-match 'rule \[BASIC-BLOCK-'                 \
-	| grep --invert-match '\[priority(.*), label(BASIC-BLOCK-'  \
-	> $@
-
-tests/foundry/out/kompiled/timestamp: $(foundry_out) $(KEVM_LIB)/$(foundry_kompiled) $(lemma_includes) poetry
-	$(KEVM) foundry-kompile --foundry-project-root $(foundry_dir) $(KEVM_OPTS) --verbose --require $(foundry_dir)/lemmas.k --module-import LoopsTest:SUM-TO-N-INVARIANT
+test-foundry-prove: poetry build-kevm build-foundry
+	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+="-k test_foundry_prove.py -n$(FOUNDRY_PAR)"
 
 tests/specs/examples/%-bin-runtime.k: KEVM_OPTS += --pyk --verbose
 tests/specs/examples/%-bin-runtime.k: KEVM := $(POETRY_RUN) kevm
@@ -640,16 +542,8 @@ test-failure: $(failure_tests:=.run-expected)
 
 # kevm-pyk Tests
 
-kevm_pyk_tests :=                                                                                              \
-                  tests/interactive/vmLogTest/log3.json.gst-to-kore.check                                      \
-                  tests/ethereum-tests/BlockchainTests/GeneralStateTests/VMTests/vmArithmeticTest/add.json.run \
-                  tests/specs/examples/empty-bin-runtime.k                                                     \
-                  tests/specs/examples/erc20-bin-runtime.k                                                     \
-                  tests/specs/examples/erc721-bin-runtime.k
-
-test-kevm-pyk: KEVM_OPTS += --pyk --verbose
-test-kevm-pyk: KEVM := $(POETRY_RUN) $(KEVM)
-test-kevm-pyk: $(kevm_pyk_tests) poetry
+test-kevm-pyk: poetry build-kevm build-haskell
+	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+='-k test_solc_to_k.py -n4'
 
 # Interactive Tests
 
