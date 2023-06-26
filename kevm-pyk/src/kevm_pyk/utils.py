@@ -115,6 +115,7 @@ def kevm_apr_prove(
         assert same_loop, f'BMC proof requires same_loop heuristic, but {same_loop} was supplied'
         prover = APRBMCProver(
             proof,
+            kcfg_explore=kcfg_explore,
             is_terminal=is_terminal,
             extract_branches=extract_branches,
             same_loop=same_loop,
@@ -122,11 +123,14 @@ def kevm_apr_prove(
         )
     else:
         prover = APRProver(
-            proof, is_terminal=is_terminal, extract_branches=extract_branches, abstract_node=abstract_node
+            proof,
+            kcfg_explore=kcfg_explore,
+            is_terminal=is_terminal,
+            extract_branches=extract_branches,
+            abstract_node=abstract_node,
         )
     try:
         prover.advance_proof(
-            kcfg_explore,
             max_iterations=max_iterations,
             execute_depth=max_depth,
             terminal_rules=terminal_rules,

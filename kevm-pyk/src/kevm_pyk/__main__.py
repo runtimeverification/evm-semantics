@@ -4,6 +4,7 @@ import json
 import logging
 import sys
 from argparse import ArgumentParser
+from itertools import chain
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -265,6 +266,7 @@ def exec_prove(
     kevm = KEVM(definition_dir, use_directory=save_directory, bug_report=br)
 
     _LOGGER.info(f'Extracting claims from file: {spec_file}')
+
     claims = kevm.get_claims(
         spec_file,
         spec_module_name=spec_module,
@@ -276,6 +278,30 @@ def exec_prove(
 
     if not claims:
         raise ValueError(f'No claims found in file: {spec_file}')
+
+    claims0: list[list[KClaim]] = [claims]
+    while True:
+        print(f'claims0: {[[c.label for c in cs] for cs in claims0]}')
+        new_deps: list[str] = list(chain.from_iterable([c.dependencies for c in claims0[-1]]))
+        print(f'new_deps: {new_deps}')
+        already_there: list[str] = list(chain.from_iterable([c.label for c in chain.from_iterable(claims0)]))
+        fresh_deps: list[str] = [d for d in new_deps if d not in already_there]
+        if len(fresh_deps) <= 0:
+            break
+        fresh_claims = kevm.get_claims(
+            spec_file,
+            spec_module_name=spec_module,
+            include_dirs=[Path(i) for i in includes],
+            md_selector=md_selector,
+            claim_labels=fresh_deps,
+            exclude_claim_labels=[],
+        )
+        if not fresh_claims:
+            raise ValueError(f'The dependencies/claims not found in file: {spec_file}')
+
+        claims0.append(fresh_claims)
+
+    print(f'final claims0: {[[c.label for c in cs] for cs in claims0]}')
 
     if isinstance(kore_rpc_command, str):
         kore_rpc_command = kore_rpc_command.split()
@@ -319,7 +345,15 @@ def exec_prove(
                 kcfg.replace_node(init_node_id, new_init)
                 kcfg.replace_node(target_node_id, new_target)
 
-                proof_problem = APRProof(claim.label, kcfg, init_node_id, target_node_id, {}, proof_dir=save_directory)
+                proof_problem = APRProof(
+                    claim.label,
+                    kcfg,
+                    init_node_id,
+                    target_node_id,
+                    {},
+                    proof_dir=save_directory,
+                    subproof_ids=claim.dependencies,
+                )
 
             passed = kevm_apr_prove(
                 kevm,
@@ -348,14 +382,17 @@ def exec_prove(
 
             return passed, failure_log
 
-    results: list[tuple[bool, list[str] | None]]
-    if workers > 1:
-        with ProcessPool(ncpus=workers) as process_pool:
-            results = process_pool.map(_init_and_run_proof, claims)
-    else:
-        results = []
-        for claim in claims:
-            results.append(_init_and_run_proof(claim))
+    rclaims0 = reversed(claims0)
+
+    for depth, curr_claim_list in enumerate(rclaims0):
+        _LOGGER.info(f'Processing claims at depth: {depth}')
+        if workers > 1:
+            with ProcessPool(ncpus=workers) as process_pool:
+                results = process_pool.map(_init_and_run_proof, curr_claim_list)
+        else:
+            results = []
+            for claim in curr_claim_list:
+                results.append(_init_and_run_proof(claim))
 
     failed = 0
     for claim, r in zip(claims, results, strict=True):

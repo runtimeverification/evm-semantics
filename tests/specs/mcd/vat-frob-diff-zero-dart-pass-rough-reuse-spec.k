@@ -1,6 +1,6 @@
 requires "verification.k"
 
-module VAT-FROB-DIFF-ZERO-DART-PASS-ROUGH-SPEC
+module VAT-FROB-DIFF-ZERO-DART-PASS-ROUGH-REUSE-SPEC
     imports VERIFICATION
 
     // Vat_frob-diff-zero-dart
