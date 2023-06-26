@@ -115,10 +115,10 @@ module STORAGE-SPEC
           <gas>        #gas(_VGAS) => ?_ </gas>
           <callValue>  0           => ?_ </callValue>
 
-          <callData>   Storage.setMyBool(NEW_VAL)       </callData>
-          <k>          #execute   => #halt ...          </k>
-          <output>     .Bytes                           </output>
-          <statusCode> _          => EVMC_SUCCESS       </statusCode>
+          <callData>   Storage.setMyBool(NEW_VAL : bool) </callData>
+          <k>          #execute   => #halt ...           </k>
+          <output>     .Bytes                            </output>
+          <statusCode> _          => EVMC_SUCCESS        </statusCode>
 
           <account>
             <acctID> ACCTID </acctID>
