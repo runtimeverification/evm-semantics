@@ -622,8 +622,9 @@ def exec_run(
 def exec_foundry_view_kcfg(foundry_root: Path, test: str, **kwargs: Any) -> None:
     foundry = Foundry(foundry_root)
     apr_proofs_dir = foundry.out / 'apr_proofs'
-    contract_name, test_name = test.split('.')
-    proof_digest = foundry.proof_digest(contract_name, test_name)
+    contract_name = test.split('.')[0]
+    test_sig = foundry.matching_sig(test).split('.')[1]
+    proof_digest = foundry.proof_digest(contract_name, test_sig)
 
     apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
 
