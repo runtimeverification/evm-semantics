@@ -170,8 +170,9 @@ def test_foundry_bmc(test_id: str, foundry_root: Path) -> None:
     # Then
     assert_pass(test_id, prove_res)
 
+
 def test_foundry_auto_abstraction(foundry_root: Path, update_expected_output: bool) -> None:
-    prove_res = foundry_prove(
+    foundry_prove(
         foundry_root,
         tests=['GasTest.testInfiniteGas'],
         auto_abstract_gas=True,
@@ -188,7 +189,7 @@ def test_foundry_auto_abstraction(foundry_root: Path, update_expected_output: bo
         failure_info=True,
     )
 
-    assert_or_update_show_output(show_res, TEST_DATA_DIR / f'gas-abstraction.expected', update=update_expected_output)
+    assert_or_update_show_output(show_res, TEST_DATA_DIR / 'gas-abstraction.expected', update=update_expected_output)
 
 
 def assert_pass(test_id: str, prove_res: dict[str, tuple[bool, list[str] | None]]) -> None:
