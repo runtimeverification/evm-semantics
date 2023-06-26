@@ -28,7 +28,7 @@ from pyk.proof.show import APRProofShow
 from pyk.utils import BugReport, ensure_dir_path, hash_str, run_process, single, unique
 
 from .kevm import KEVM, KEVMNodePrinter
-from .kompile import KompileTarget, kevm_kompile
+from .kompile import Kernel, KompileTarget, kevm_kompile
 from .solc_to_k import Contract, contract_to_main_module, contract_to_verification_module
 from .utils import (
     KDefinition__expand_macros,
@@ -114,6 +114,20 @@ class Foundry:
     def digest(self) -> str:
         contract_digests = [self.contracts[c].digest for c in sorted(self.contracts)]
         return hash_str('\n'.join(contract_digests))
+
+    @cached_property
+    def llvm_dylib(self) -> Path | None:
+        arch = Kernel.get()
+        foundry_llvm_dir = self.out / 'kompiled-llvm'
+        if arch == Kernel.LINUX:
+            dylib = foundry_llvm_dir / 'interpreter.so'
+        else:
+            dylib = foundry_llvm_dir / 'interpreter.dylib'
+
+        if dylib.exists():
+            return dylib
+        else:
+            return None
 
     def up_to_date(self) -> bool:
         digest_file = self.out / 'digest'
@@ -426,7 +440,6 @@ def foundry_prove(
     save_directory = foundry.out / 'apr_proofs'
     save_directory.mkdir(exist_ok=True)
 
-    foundry_llvm_dir = foundry.out / 'kompiled-llvm'
     if use_booster:
         try:
             run_process(('which', 'kore-rpc-booster'), pipe_stderr=True).stdout.strip()
@@ -435,21 +448,13 @@ def foundry_prove(
                 "Couldn't locate the kore-rpc-booster RPC binary. Please put 'kore-rpc-booster' on PATH manually or using kup install/kup shell."
             ) from None
 
-        if not foundry_llvm_dir.exists():
-            raise ValueError(
-                f"Could not find the LLVM kompiled folder in {foundry.out}. Please re-run foundry-kompile with the '--with-llvm-library' flag"
-            )
-        llvm_dylib = foundry_llvm_dir / 'interpreter.so'
-        if llvm_dylib.exists():
-            kore_rpc_command = ('kore-rpc-booster', '--llvm-backend-library', str(llvm_dylib))
+        if foundry.llvm_dylib:
+            kore_rpc_command = ('kore-rpc-booster', '--llvm-backend-library', str(foundry.llvm_dylib))
         else:
-            llvm_dylib = foundry_llvm_dir / 'interpreter.dylib'
-            if llvm_dylib.exists():
-                kore_rpc_command = ('kore-rpc-booster', '--llvm-backend-library', str(llvm_dylib))
-            else:
-                raise ValueError(
-                    f"Could not find the LLVM dynamic library in {foundry_llvm_dir}. Please re-run foundry-kompile with the '--with-llvm-library' flag"
-                )
+            foundry_llvm_dir = foundry.out / 'kompiled-llvm'
+            raise ValueError(
+                f"Could not find the LLVM dynamic library in {foundry_llvm_dir}. Please re-run foundry-kompile with the '--with-llvm-library' flag"
+            )
 
     all_tests = [
         f'{contract.name}.{method.name}'
