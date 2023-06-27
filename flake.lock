@@ -402,11 +402,11 @@
         "nixpkgs": "nixpkgs"
       },
       "locked": {
-        "lastModified": 1685870001,
-        "narHash": "sha256-ijUNyTvT/dT9JOcsNiVtu/u1Eicf0HqQ7SPyZ5yRU84=",
+        "lastModified": 1687526893,
+        "narHash": "sha256-cZu/Xw7oBPhSPnujUYEuJcosEkkllUerAoXcTX3XUBw=",
         "owner": "shazow",
         "repo": "foundry.nix",
-        "rev": "c80b4ea3bdce135164a7aac78aafb7c619b2dd23",
+        "rev": "7c8dbb38d8c3ada5a0336960bdfb70ce6112cdca",
         "type": "github"
       },
       "original": {
