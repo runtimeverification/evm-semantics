@@ -348,8 +348,14 @@ def exec_prove(
 
             return passed, failure_log
 
-    with ProcessPool(ncpus=workers) as process_pool:
-        results = process_pool.map(_init_and_run_proof, claims)
+    results: list[tuple[bool, list[str] | None]]
+    if workers > 1:
+        with ProcessPool(ncpus=workers) as process_pool:
+            results = process_pool.map(_init_and_run_proof, claims)
+    else:
+        results = []
+        for claim in claims:
+            results.append(_init_and_run_proof(claim))
 
     failed = 0
     for claim, r in zip(claims, results, strict=True):
