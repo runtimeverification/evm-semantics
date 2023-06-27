@@ -959,7 +959,7 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_koverage_args = command_parser.add_parser(
         'foundry-koverage',
         help='Run symbolic coverage on a foundry property',
-        parents=[kevm_cli_args.shared_args, kevm_cli_args.foundry_args],
+        parents=[kevm_cli_args.logging_args, kevm_cli_args.foundry_args],
     )
     foundry_koverage_args.add_argument(
         '--contract',
