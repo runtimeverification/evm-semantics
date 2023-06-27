@@ -97,6 +97,8 @@ module LEMMAS [symbolic]
   // Memory
   // ########################
 
+    rule #memoryUsageUpdate(MU, _, WIDTH) => MU requires MU <=Int 0 [simplification]
+
     rule 0 <=Int #memoryUsageUpdate(MU, START, WIDTH) => true requires 0 <=Int MU andBool 0 <=Int START andBool 0 <=Int WIDTH [simplification]
 
     rule #memoryUsageUpdate(#memoryUsageUpdate(MU, START1, WIDTH1), START2, WIDTH2) => #memoryUsageUpdate(MU, START1, WIDTH1)
