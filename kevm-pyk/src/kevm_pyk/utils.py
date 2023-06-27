@@ -9,6 +9,7 @@ from pyk.kast.inner import KApply, KRewrite, KVariable, Subst
 from pyk.kast.manip import (
     abstract_term_safely,
     bottom_up,
+    free_vars,
     is_anon_var,
     set_cell,
     split_config_and_constraints,
@@ -86,8 +87,8 @@ def kevm_apr_prove(
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
     trace_rewrites: bool = False,
+    abstract_node: Callable[[CTerm], CTerm] | None = None,
 ) -> ProofStatus:
-    _apr_proof = proof
     terminal_rules = ['EVM.halt']
     cut_point_rules = []
     if break_every_step:
@@ -113,12 +114,24 @@ def kevm_apr_prove(
     prover: APRBMCProof | APRProver
     if type(proof) is APRBMCProof:
         assert same_loop, f'BMC proof requires same_loop heuristic, but {same_loop} was supplied'
-        prover = APRBMCProver(proof, is_terminal=is_terminal, extract_branches=extract_branches, same_loop=same_loop)
+        prover = APRBMCProver(
+            proof=proof,
+            kcfg_explore=kcfg_explore,
+            is_terminal=is_terminal,
+            extract_branches=extract_branches,
+            same_loop=same_loop,
+            abstract_node=abstract_node,
+        )
     else:
-        prover = APRProver(proof, is_terminal=is_terminal, extract_branches=extract_branches)
+        prover = APRProver(
+            proof=proof,
+            kcfg_explore=kcfg_explore,
+            is_terminal=is_terminal,
+            extract_branches=extract_branches,
+            abstract_node=abstract_node,
+        )
     try:
         prover.advance_proof(
-            kcfg_explore,
             max_iterations=max_iterations,
             execute_depth=max_depth,
             terminal_rules=terminal_rules,
@@ -129,13 +142,13 @@ def kevm_apr_prove(
         _LOGGER.error(f'Proof crashed: {proof.id}\n{e}', exc_info=True)
         return ProofStatus.PENDING
 
-    if _apr_proof.status == ProofStatus.PASSED:
+    if proof.status == ProofStatus.PASSED:
         _LOGGER.info(f'Proof passed: {proof.id}')
-    elif _apr_proof.status == ProofStatus.FAILED:
+    elif proof.status == ProofStatus.FAILED:
         _LOGGER.error(f'Proof failed: {proof.id}')
-    elif _apr_proof.status == ProofStatus.PENDING:
+    elif proof.status == ProofStatus.PENDING:
         _LOGGER.error(f'Proof pending: {proof.id}')
-    return _apr_proof.status
+    return proof.status
 
 
 def print_failure_info(proof: APRProof, kcfg_explore: KCFGExplore) -> list[str]:
@@ -247,3 +260,16 @@ def ensure_ksequence_on_k_cell(cterm: CTerm) -> CTerm:
         _LOGGER.info('Introducing artificial KSequence on <k> cell.')
         return CTerm.from_kast(set_cell(cterm.kast, 'K_CELL', KSequence([k_cell])))
     return cterm
+
+
+def constraints_for(vars: list[str], constraints: Iterable[KInner]) -> Iterable[KInner]:
+    accounts_constraints = []
+    constraints_changed = True
+    while constraints_changed:
+        constraints_changed = False
+        for constraint in constraints:
+            if constraint not in accounts_constraints and any(v in vars for v in free_vars(constraint)):
+                accounts_constraints.append(constraint)
+                vars.extend(free_vars(constraint))
+                constraints_changed = True
+    return accounts_constraints
