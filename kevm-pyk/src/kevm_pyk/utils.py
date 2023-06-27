@@ -9,6 +9,7 @@ from pyk.kast.inner import KApply, KRewrite, KVariable, Subst
 from pyk.kast.manip import (
     abstract_term_safely,
     bottom_up,
+    free_vars,
     is_anon_var,
     set_cell,
     split_config_and_constraints,
@@ -22,11 +23,11 @@ if TYPE_CHECKING:
     from collections.abc import Callable, Collection, Iterable
     from typing import Final, TypeVar
 
-    from pyk.cli_utils import BugReport
     from pyk.kast import KInner
     from pyk.kast.outer import KDefinition
     from pyk.kcfg import KCFGExplore
     from pyk.ktool.kprove import KProve
+    from pyk.utils import BugReport
 
     T1 = TypeVar('T1')
     T2 = TypeVar('T2')
@@ -41,7 +42,7 @@ def get_apr_proof_for_spec(  # noqa: N802
     spec_module_name: str | None = None,
     include_dirs: Iterable[Path] = (),
     md_selector: str | None = None,
-    claim_labels: Iterable[str] = (),
+    claim_labels: Iterable[str] | None = None,
     exclude_claim_labels: Iterable[str] = (),
 ) -> APRProof:
     if save_directory is None:
@@ -66,7 +67,6 @@ def get_apr_proof_for_spec(  # noqa: N802
 
 def kevm_apr_prove(
     kprove: KProve,
-    cfgid: str,
     proof: APRProof | APRBMCProof,
     kcfg_explore: KCFGExplore,
     save_directory: Path | None = None,
@@ -86,9 +86,8 @@ def kevm_apr_prove(
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
     trace_rewrites: bool = False,
+    abstract_node: Callable[[CTerm], CTerm] | None = None,
 ) -> bool:
-    _cfgid = cfgid
-    _apr_proof = proof
     terminal_rules = ['EVM.halt']
     cut_point_rules = []
     if break_every_step:
@@ -112,15 +111,21 @@ def kevm_apr_prove(
             ]
         )
     prover: APRBMCProof | APRProver
-    if type(_apr_proof) is APRBMCProof:
+    if type(proof) is APRBMCProof:
         assert same_loop, f'BMC proof requires same_loop heuristic, but {same_loop} was supplied'
         prover = APRBMCProver(
-            _apr_proof, is_terminal=is_terminal, extract_branches=extract_branches, same_loop=same_loop
+            proof,
+            is_terminal=is_terminal,
+            extract_branches=extract_branches,
+            same_loop=same_loop,
+            abstract_node=abstract_node,
         )
     else:
-        prover = APRProver(_apr_proof, is_terminal=is_terminal, extract_branches=extract_branches)
+        prover = APRProver(
+            proof, is_terminal=is_terminal, extract_branches=extract_branches, abstract_node=abstract_node
+        )
     try:
-        _cfg = prover.advance_proof(
+        prover.advance_proof(
             kcfg_explore,
             max_iterations=max_iterations,
             execute_depth=max_depth,
@@ -129,16 +134,56 @@ def kevm_apr_prove(
             implication_every_block=implication_every_block,
         )
     except Exception as e:
-        _LOGGER.error(f'Proof crashed: {_cfgid}\n{e}', exc_info=True)
+        _LOGGER.error(f'Proof crashed: {proof.id}\n{e}', exc_info=True)
         return False
 
-    failure_nodes = _cfg.frontier + _cfg.stuck
+    failure_nodes = proof.pending + proof.failing
     if len(failure_nodes) == 0:
-        _LOGGER.info(f'Proof passed: {_cfgid}')
+        _LOGGER.info(f'Proof passed: {proof.id}')
         return True
     else:
-        _LOGGER.error(f'Proof failed: {_cfgid}')
+        _LOGGER.error(f'Proof failed: {proof.id}')
         return False
+
+
+def print_failure_info(proof: APRProof, kcfg_explore: KCFGExplore) -> list[str]:
+    target = proof.kcfg.node(proof.target)
+
+    res_lines: list[str] = []
+
+    num_pending = len(proof.pending)
+    num_failing = len(proof.failing)
+    res_lines.append(f'{num_pending + num_failing} Failure nodes. ({num_pending} pending and {num_failing} failing)')
+    if num_pending > 0:
+        res_lines.append('')
+        res_lines.append('Pending nodes:')
+        for node in proof.pending:
+            res_lines.append('')
+            res_lines.append(f'ID: {node.id}:')
+    if num_failing > 0:
+        res_lines.append('')
+        res_lines.append('Failing nodes:')
+        for node in proof.failing:
+            res_lines.append('')
+            res_lines.append(f'  Node id: {str(node.id)}')
+
+            simplified_node, _ = kcfg_explore.cterm_simplify(node.cterm)
+            simplified_target, _ = kcfg_explore.cterm_simplify(target.cterm)
+
+            node_cterm = CTerm.from_kast(simplified_node)
+            target_cterm = CTerm.from_kast(simplified_target)
+
+            res_lines.append('  Failure reason:')
+            _, reason = kcfg_explore.implication_failure_reason(node_cterm, target_cterm)
+            res_lines += [f'    {line}' for line in reason.split('\n')]
+
+            res_lines.append('  Path condition:')
+            res_lines += [f'    {kcfg_explore.kprint.pretty_print(proof.path_constraints(node.id))}']
+
+            res_lines.append('')
+            res_lines.append('Join the Runtime Verification Discord server for support: https://discord.gg/GHvFbRDD')
+
+    return res_lines
 
 
 def arg_pair_of(
@@ -210,3 +255,16 @@ def ensure_ksequence_on_k_cell(cterm: CTerm) -> CTerm:
         _LOGGER.info('Introducing artificial KSequence on <k> cell.')
         return CTerm.from_kast(set_cell(cterm.kast, 'K_CELL', KSequence([k_cell])))
     return cterm
+
+
+def constraints_for(vars: list[str], constraints: Iterable[KInner]) -> Iterable[KInner]:
+    accounts_constraints = []
+    constraints_changed = True
+    while constraints_changed:
+        constraints_changed = False
+        for constraint in constraints:
+            if constraint not in accounts_constraints and any(v in vars for v in free_vars(constraint)):
+                accounts_constraints.append(constraint)
+                vars.extend(free_vars(constraint))
+                constraints_changed = True
+    return accounts_constraints

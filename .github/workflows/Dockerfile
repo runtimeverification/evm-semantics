@@ -15,30 +15,25 @@ COPY --from=FOUNDRY /usr/local/bin/cast /usr/local/bin/cast
 
 COPY --from=Z3 /usr/bin/z3 /usr/bin/z3
 
-RUN    apt-get update                                   \
-    && apt-get install --yes software-properties-common \
-    && add-apt-repository ppa:ethereum/ethereum
+ARG LLVM_VERSION
 
-RUN    apt-get update         \
-    && apt-get upgrade --yes  \
-    && apt-get install --yes  \
-            cmake             \
-            curl              \
-            debhelper         \
-            libboost-test-dev \
-            libcrypto++-dev   \
-            libprocps-dev     \
-            libsecp256k1-dev  \
-            libssl-dev        \
-            llvm-14-dev       \
-            llvm-14-tools     \
-            netcat            \
-            protobuf-compiler \
-            python3           \
-            python3-pip       \
-            solc
-
-RUN curl -sSL https://install.python-poetry.org | POETRY_HOME=/usr python3 - --version 1.3.2
+RUN    apt-get update                  \
+    && apt-get upgrade --yes           \
+    && apt-get install --yes           \
+            cargo                      \
+            clang-${LLVM_VERSION}      \
+            cmake                      \
+            curl                       \
+            debhelper                  \
+            libboost-test-dev          \
+            libprocps-dev              \
+            libssl-dev                 \
+            llvm-${LLVM_VERSION}-dev   \
+            llvm-${LLVM_VERSION}-tools \
+            netcat                     \
+            protobuf-compiler          \
+            python3                    \
+            python3-pip
 
 ARG USER_ID=1000
 ARG GROUP_ID=1000
@@ -47,3 +42,12 @@ RUN groupadd -g $GROUP_ID user && useradd -m -u $USER_ID -s /bin/sh -g user user
 USER user:user
 RUN mkdir /home/user/workspace
 WORKDIR /home/user/workspace
+
+ENV PATH=/home/user/.cargo/bin:/home/user/.local/bin:${PATH}
+
+RUN    curl -sSL https://install.python-poetry.org | python3 - \
+    && poetry --version
+
+RUN    cargo install svm-rs \
+    && svm install 0.8.13   \
+    && solc --version

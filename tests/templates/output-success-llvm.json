@@ -83,7 +83,7 @@
           0
         </refund>
         <accessedAccounts>
-        .Set
+          .Set
         </accessedAccounts>
         <accessedStorage>
           .Map
@@ -144,6 +144,9 @@
         <blockNonce>
           0
         </blockNonce>
+        <baseFee>
+          0
+        </baseFee>
         <ommerBlockHeaders>
           [ .JSONs ]
         </ommerBlockHeaders>
@@ -153,9 +156,6 @@
       <chainID>
         1
       </chainID>
-      <activeAccounts>
-        .Set
-      </activeAccounts>
       <accounts>
         .AccountCellMap
       </accounts>

@@ -64,7 +64,6 @@ module END-CASH-PASS-ROUGH-SPEC
         </evm>
         <network>
           <chainID> VChainId </chainID>
-          <activeAccounts> SetItem(ACCT_ID) SetItem(Vat) _ </activeAccounts>
           <accounts>
             <account>
               <acctID> ACCT_ID </acctID>
@@ -217,7 +216,6 @@ module END-CASH-PASS-ROUGH-SPEC
         </evm>
         <network>
           <chainID> VChainId </chainID>
-          <activeAccounts> SetItem(ACCT_ID) _ </activeAccounts>
           <accounts>
             <account>
               <acctID> ACCT_ID </acctID>
@@ -253,7 +251,7 @@ module END-CASH-PASS-ROUGH-SPEC
        andBool ((#rangeUInt(256, ABI_x +Int ABI_y)))))))
 
 
-    [trusted, matching(infGas)]
+    [trusted]
 
 
     // End_rmul
@@ -320,7 +318,6 @@ module END-CASH-PASS-ROUGH-SPEC
         </evm>
         <network>
           <chainID> VChainId </chainID>
-          <activeAccounts> SetItem(ACCT_ID) _ </activeAccounts>
           <accounts>
             <account>
               <acctID> ACCT_ID </acctID>
@@ -356,7 +353,7 @@ module END-CASH-PASS-ROUGH-SPEC
        andBool ((#rangeUInt(256, ABI_x *Int ABI_y)))))))
 
 
-    [trusted, matching(infGas)]
+    [trusted]
 
 
     // Vat_flux-diff
@@ -420,7 +417,6 @@ module END-CASH-PASS-ROUGH-SPEC
         </evm>
         <network>
           <chainID> VChainId </chainID>
-          <activeAccounts> SetItem(ACCT_ID) _ </activeAccounts>
           <accounts>
             <account>
               <acctID> ACCT_ID </acctID>
@@ -475,7 +471,7 @@ module END-CASH-PASS-ROUGH-SPEC
        andBool #Vat.can[ABI_src][CALLER_ID] =/=Int #Vat.gem[ABI_ilk][ABI_src]
        andBool #Vat.can[ABI_src][CALLER_ID] =/=Int #Vat.gem[ABI_ilk][ABI_dst]
        andBool #Vat.gem[ABI_ilk][ABI_src] =/=Int #Vat.gem[ABI_ilk][ABI_dst]
-    [trusted, matching(infGas)]
+    [trusted]
 
 
 endmodule

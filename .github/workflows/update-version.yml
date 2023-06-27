@@ -2,7 +2,6 @@ name: 'Update Version'
 on:
   push:
     branches:
-      - '_update-deps/runtimeverification/k'
       - '_update-deps/runtimeverification/blockchain-k-plugin'
       - '_update-deps/runtimeverification/pyk'
   workflow_dispatch:
@@ -14,42 +13,42 @@ concurrency:
 jobs:
 
   update-versions:
-    name: 'Update dependency versions'
-    runs-on: ubuntu-22.04
+    name: 'Update Dependency Versions'
+    runs-on: ubuntu-latest
     steps:
       - name: 'Check out code'
         uses: actions/checkout@v3
         with:
           submodules: recursive
           token: ${{ secrets.JENKINS_GITHUB_PAT }}
-      - run: |
+      - name: 'Configure GitHub user'
+        run: |
           git config user.name devops
           git config user.email devops@runtimeverification.com
+      - name: 'Install Poetry'
+        uses: Gr1N/setup-poetry@v8
+      - name: 'Update pyk release tag'
+        run: |
+          PYK_VERSION="$(cat deps/pyk_release)"
+          sed -i 's!pyk = { git = "https://github.com/runtimeverification/pyk.git", tag="[v0-9\.]*" }!pyk = { git = "https://github.com/runtimeverification/pyk.git", tag="'${PYK_VERSION}'" }!' kevm-pyk/pyproject.toml
+          poetry -C kevm-pyk update
+          git add kevm-pyk/ && git commit -m "kevm-pyk/: sync poetry files pyk version ${PYK_VERSION}" || true
+      - name: 'Update K release file'
+        run: |
+          K_VERSION=$(poetry -C kevm-pyk run python3 -c 'import pyk; print(pyk.K_VERSION)')
+          echo ${K_VERSION} > deps/k_release
+          git add deps/k_release && git commit -m "deps/k_release: sync release file version ${K_VERSION}" || true
       - name: 'Update K submodule'
         run: |
-          K_VERSION="$(cat deps/k_release)"
-          cd deps/k
-          git fetch --tags
-          git checkout "v${K_VERSION}"
-          cd -
+          K_VERSION=$(cat deps/k_release)
+          git -C deps/k fetch --tags
+          git -C deps/k checkout "v${K_VERSION}"
           git add deps/k && git commit -m "deps/k: sync K submodule version v${K_VERSION}" || true
-      - name: 'Update pyk Release tag'
+      - name: 'Update plugin release file'
         run: |
-          curl -sSL https://install.python-poetry.org | python3 - --version 1.3.2
-          poetry --version
-          pyk_version="$(cat deps/pyk_release)"
-          sed -i 's!pyk = { git = "https://github.com/runtimeverification/pyk.git", tag="[v0-9\.]*" }!pyk = { git = "https://github.com/runtimeverification/pyk.git", tag="'${pyk_version}'" }!' kevm-pyk/pyproject.toml
-          cd kevm-pyk
-          poetry update
-          cd -
-          git add kevm-pyk/ && git commit -m "kevm-pyk/: sync poetry files pyk version ${pyk_version}" || true
-      - name: 'Update plugin release tag'
-        run: |
-          cd deps/plugin
-          rev=$(git rev-parse HEAD)
-          cd -
-          echo ${rev} > deps/blockchain-k-plugin_release
-          git add deps/blockchain-k-plugin_release && git commit -m "deps/blockchain-k-plugin_release: sync release file version ${rev}" || true
+          BKP_VERSION=$(git -C deps/plugin rev-parse HEAD)
+          echo ${BKP_VERSION} > deps/blockchain-k-plugin_release
+          git add deps/blockchain-k-plugin_release && git commit -m "deps/blockchain-k-plugin_release: sync release file version ${BKP_VERSION}" || true
       - name: 'Install Nix/Cachix'
         uses: cachix/install-nix-action@v19
         with:
@@ -62,12 +61,12 @@ jobs:
           authToken: ${{ secrets.CACHIX_PUBLIC_TOKEN }}
       - name: 'Update nix flake inputs'
         run: |
-          k_version=$(cat deps/k_release)
-          bkp_version=$(cat deps/blockchain-k-plugin_release)
-          pyk_version=$(cat deps/pyk_release)
-          sed -i 's!    k-framework.url = "github:runtimeverification/k/[v0-9\.]*"!    k-framework.url = "github:runtimeverification/k/v'"${k_version}"'"!' flake.nix
-          sed -i 's!    blockchain-k-plugin.url = "github:runtimeverification/blockchain-k-plugin/[0-9a-f]*"!    blockchain-k-plugin.url = "github:runtimeverification/blockchain-k-plugin/'"${bkp_version}"'"!' flake.nix
-          sed -i 's!    pyk.url = "github:runtimeverification/pyk/[v0-9\.]*"!    pyk.url = "github:runtimeverification/pyk/'"${pyk_version}"'"!' flake.nix
+          K_VERSION=$(cat deps/k_release)
+          BKP_VERSION=$(cat deps/blockchain-k-plugin_release)
+          PYK_VERSION=$(cat deps/pyk_release)
+          sed -i 's!    k-framework.url = "github:runtimeverification/k/[v0-9\.]*"!    k-framework.url = "github:runtimeverification/k/v'"${K_VERSION}"'"!' flake.nix
+          sed -i 's!    blockchain-k-plugin.url = "github:runtimeverification/blockchain-k-plugin/[0-9a-f]*"!    blockchain-k-plugin.url = "github:runtimeverification/blockchain-k-plugin/'"${BKP_VERSION}"'"!' flake.nix
+          sed -i 's!    pyk.url = "github:runtimeverification/pyk/[v0-9\.]*"!    pyk.url = "github:runtimeverification/pyk/'"${PYK_VERSION}"'"!' flake.nix
           nix run .#update-from-submodules
           nix flake update
           git add flake.nix flake.lock && git commit -m 'flake.{nix,lock}: update Nix derivations' || true

@@ -3,11 +3,14 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 
+from pyk.cterm import CTerm
 from pyk.kast.inner import KApply, KLabel, KSequence, KSort, KVariable, build_assoc
-from pyk.kast.manip import flatten_label
-from pyk.ktool.kprint import paren
+from pyk.kast.manip import abstract_term_safely, bottom_up, flatten_label
+from pyk.kast.pretty import paren
+from pyk.kcfg.show import NodePrinter
 from pyk.ktool.kprove import KProve
 from pyk.ktool.krun import KRun
+from pyk.prelude.k import K
 from pyk.prelude.kint import intToken, ltInt
 from pyk.prelude.ml import mlEqualsTrue
 from pyk.prelude.string import stringToken
@@ -17,11 +20,11 @@ if TYPE_CHECKING:
     from pathlib import Path
     from typing import Final
 
-    from pyk.cli_utils import BugReport
-    from pyk.cterm import CTerm
     from pyk.kast import KInner
     from pyk.kast.outer import KFlatModule
+    from pyk.kcfg import KCFG
     from pyk.ktool.kprint import SymbolTable
+    from pyk.utils import BugReport
 
 _LOGGER: Final = logging.getLogger(__name__)
 
@@ -51,6 +54,7 @@ class KEVM(KProve, KRun):
             command=kprove_command,
             extra_unparsing_modules=extra_unparsing_modules,
             bug_report=bug_report,
+            patch_symbol_table=KEVM._kevm_patch_symbol_table,
         )
         KRun.__init__(
             self,
@@ -59,10 +63,11 @@ class KEVM(KProve, KRun):
             command=krun_command,
             extra_unparsing_modules=extra_unparsing_modules,
             bug_report=bug_report,
+            patch_symbol_table=KEVM._kevm_patch_symbol_table,
         )
 
     @classmethod
-    def _patch_symbol_table(cls, symbol_table: SymbolTable) -> None:
+    def _kevm_patch_symbol_table(cls, symbol_table: SymbolTable) -> None:
         # fmt: off
         symbol_table['#Bottom']                                       = lambda: '#Bottom'
         symbol_table['_Map_']                                         = paren(lambda m1, m2: m1 + '\n' + m2)
@@ -161,11 +166,17 @@ class KEVM(KProve, KRun):
         if k_cell == KEVM.halt():
             return True
         elif type(k_cell) is KSequence:
-            # <k> #halt ~> CONTINUATION </k>
-            if k_cell.arity == 2 and k_cell[0] == KEVM.halt() and type(k_cell[1]) is KVariable:
-                # <callDepth> 0 </callDepth>
-                if cterm.cell('CALLDEPTH_CELL') == intToken(0):
-                    return True
+            # <k> . </k>
+            if k_cell.arity == 0:
+                return True
+            # <k> #halt </k>
+            elif k_cell.arity == 1 and k_cell[0] == KEVM.halt():
+                return True
+            # <k> #halt ~> X:K </k>
+            elif (
+                k_cell.arity == 2 and k_cell[0] == KEVM.halt() and type(k_cell[1]) is KVariable and k_cell[1].sort == K
+            ):
+                return True
         return False
 
     @staticmethod
@@ -360,3 +371,32 @@ class KEVM(KProve, KRun):
             else:
                 wrapped_accounts.append(acct)
         return build_assoc(KApply('.AccountCellMap'), KLabel('_AccountCellMap_'), wrapped_accounts)
+
+    @staticmethod
+    def abstract_gas_cell(cterm: CTerm) -> CTerm:
+        def _replace(term: KInner) -> KInner:
+            if type(term) is KApply and term.label.name == '<gas>':
+                gas_term = term.args[0]
+                if type(gas_term) is KApply and gas_term.label.name == 'infGas':
+                    result = KApply('<gas>', KApply('infGas', abstract_term_safely(term)))
+                    return result
+                return term
+            elif type(term) is KApply and term.label.name == '<refund>':
+                return KApply('<refund>', KVariable('ABSTRACTED_REFUND', KSort('Int')))
+            else:
+                return term
+
+        return CTerm(config=bottom_up(_replace, cterm.config), constraints=cterm.constraints)
+
+
+class KEVMNodePrinter(NodePrinter):
+    kevm: KEVM
+
+    def __init__(self, kevm: KEVM):
+        super().__init__(kevm)
+        self.kevm = kevm
+
+    def print_node(self, kcfg: KCFG, node: KCFG.Node) -> list[str]:
+        ret_strs = super().print_node(kcfg, node)
+        ret_strs += self.kevm.short_info(node.cterm)
+        return ret_strs

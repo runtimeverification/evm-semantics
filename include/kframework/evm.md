@@ -126,7 +126,6 @@ In the comments next to each cell, we've marked which component of the YellowPap
             // Accounts Record
             // ---------------
 
-            <activeAccounts> .Set </activeAccounts>
             <accounts>
               <account multiplicity="*" type="Map">
                 <acctID>      0                  </acctID>
@@ -226,22 +225,20 @@ The `interimStates` cell stores a list of previous world states.
 -   `#dropWorldState` removes the top element of the `interimStates`.
 
 ```k
-    syntax Accounts ::= "{" AccountsCellFragment "|" Set "|" SubstateCellFragment "}"
- // ---------------------------------------------------------------------------------
+    syntax Accounts ::= "{" AccountsCellFragment "|" SubstateCellFragment "}"
+ // -------------------------------------------------------------------------
 
     syntax InternalOp ::= "#pushWorldState"
  // ---------------------------------------
     rule <k> #pushWorldState => .K ... </k>
-         <interimStates> STATES => ListItem({ ACCTDATA | ACCTS | SUBSTATE }) STATES </interimStates>
-         <activeAccounts> ACCTS    </activeAccounts>
+         <interimStates> STATES => ListItem({ ACCTDATA | SUBSTATE }) STATES </interimStates>
          <accounts>       ACCTDATA </accounts>
          <substate>       SUBSTATE </substate>
 
     syntax InternalOp ::= "#popWorldState"
  // --------------------------------------
     rule <k> #popWorldState => .K ... </k>
-         <interimStates> ListItem({ ACCTDATA | ACCTS | SUBSTATE }) REST => REST </interimStates>
-         <activeAccounts> _ => ACCTS    </activeAccounts>
+         <interimStates> ListItem({ ACCTDATA | SUBSTATE }) REST => REST </interimStates>
          <accounts>       _ => ACCTDATA </accounts>
          <substate>       _ => SUBSTATE </substate>
 
@@ -540,19 +537,17 @@ After executing a transaction, it's necessary to have the effect of the substate
 
     rule <k> #finalizeStorage(.List) => . ... </k>
 
+    rule <k> (.K => #newAccount ACCT) ~> #finalizeStorage(ListItem(ACCT) _ACCTS) ... </k> [owise]
+
     syntax InternalOp ::= #finalizeTx ( Bool )
                         | #deleteAccounts ( List )
  // ----------------------------------------------
-    rule <k> #finalizeTx(true) => #finalizeStorage(Set2List(ACCTS)) ... </k>
+    rule <k> #finalizeTx(true) => #finalizeStorage(Set2List(SetItem(MINER) |Set ACCTS)) ... </k>
          <selfDestruct> .Set </selfDestruct>
-         <activeAccounts> ACCTS </activeAccounts>
+         <coinbase> MINER </coinbase>
+         <touchedAccounts> ACCTS </touchedAccounts>
          <accessedAccounts> _ => .Set </accessedAccounts>
          <accessedStorage> _ => .Map </accessedStorage>
-
-    rule <k> (.K => #newAccount MINER) ~> #finalizeTx(_)... </k>
-         <coinbase> MINER </coinbase>
-         <activeAccounts> ACCTS </activeAccounts>
-      requires notBool MINER in ACCTS
 
     rule <k> #finalizeTx(false) ... </k>
          <schedule> SCHED </schedule>
@@ -616,8 +611,10 @@ After executing a transaction, it's necessary to have the effect of the substate
          <selfDestruct> ACCTS => .Set </selfDestruct>
       requires size(ACCTS) >Int 0
 
+    rule <k> (. => #newAccount MINER) ~> #finalizeTx(_) ... </k>
+         <coinbase> MINER </coinbase> [owise]
+
     rule <k> #deleteAccounts(ListItem(ACCT) ACCTS) => #deleteAccounts(ACCTS) ... </k>
-         <activeAccounts> ... (SetItem(ACCT) => .Set) </activeAccounts>
          <accounts>
            ( <account>
                <acctID> ACCT </acctID>
@@ -660,9 +657,7 @@ After executing a transaction, it's necessary to have the effect of the substate
          <logsBloom> _ => #bloomFilter(LOGS) </logsBloom>
 
     rule <k> (.K => #newAccount MINER) ~> #finalizeBlock ... </k>
-         <coinbase> MINER </coinbase>
-         <activeAccounts> ACCTS </activeAccounts>
-      requires notBool MINER in ACCTS
+         <coinbase> MINER </coinbase> [owise]
 
     rule <k> #rewardOmmers(.JSONs) => . ... </k>
     rule <k> #rewardOmmers([ _ , _ , OMMER , _ , _ , _ , _ , _ , OMMNUM , _ ] , REST) => #rewardOmmers(REST) ... </k>
@@ -742,13 +737,8 @@ These are just used by the other operators for shuffling local execution state a
                         | "#newExistingAccount" Int
                         | "#newFreshAccount" Int
  // --------------------------------------------
-    rule <k> #newAccount ACCT => #newExistingAccount ACCT ... </k>
-         <activeAccounts> ACCTS:Set </activeAccounts>
-      requires ACCT in ACCTS
-
-    rule <k> #newAccount ACCT => #newFreshAccount ACCT ... </k>
-         <activeAccounts> ACCTS:Set </activeAccounts>
-      requires notBool ACCT in ACCTS
+    rule <k> #newAccount ACCT => #newExistingAccount ACCT ... </k> <account> <acctID> ACCT </acctID> ... </account>
+    rule <k> #newAccount ACCT => #newFreshAccount ACCT    ... </k> [owise]
 
     rule <k> #newExistingAccount ACCT => #end EVMC_ACCOUNT_ALREADY_EXISTS ... </k>
          <account>
@@ -771,7 +761,6 @@ These are just used by the other operators for shuffling local execution state a
       requires lengthBytes(CODE) ==Int 0
 
     rule <k> #newFreshAccount ACCT => . ... </k>
-         <activeAccounts> ... (.Set => SetItem(ACCT)) ... </activeAccounts>
          <accounts>
            ( .Bag
           => <account>
@@ -787,7 +776,8 @@ These are just used by the other operators for shuffling local execution state a
 
 ```k
     syntax InternalOp ::= "#transferFunds" Int Int Int
- // --------------------------------------------------
+                        | "#transferFundsToNonExistent" Int Int Int
+ // ---------------------------------------------------------------
     rule <k> #transferFunds ACCT ACCT VALUE => . ... </k>
          <account>
            <acctID> ACCT </acctID>
@@ -817,18 +807,16 @@ These are just used by the other operators for shuffling local execution state a
          </account>
       requires VALUE >Int ORIGFROM
 
-    rule <k> (. => #newAccount ACCTTO) ~> #transferFunds ACCTFROM ACCTTO VALUE ... </k>
-         <activeAccounts> ACCTS </activeAccounts>
+    rule <k> #transferFunds ACCTFROM ACCTTO VALUE => #transferFundsToNonExistent ACCTFROM ACCTTO VALUE ... </k> [owise]
+
+    rule <k> #transferFundsToNonExistent ACCTFROM ACCTTO VALUE => #newAccount ACCTTO ~> #transferFunds ACCTFROM ACCTTO VALUE ... </k>
          <schedule> SCHED </schedule>
       requires ACCTFROM =/=K ACCTTO
-       andBool notBool ACCTTO in ACCTS
        andBool (VALUE >Int 0 orBool notBool Gemptyisnonexistent << SCHED >>)
 
-    rule <k> #transferFunds ACCTFROM ACCTTO 0 => . ... </k>
-         <activeAccounts> ACCTS </activeAccounts>
+    rule <k> #transferFundsToNonExistent ACCTFROM ACCTTO 0 => . ... </k>
          <schedule> SCHED </schedule>
       requires ACCTFROM =/=K ACCTTO
-       andBool notBool ACCTTO in ACCTS
        andBool Gemptyisnonexistent << SCHED >>
 ```
 
@@ -1140,33 +1128,28 @@ Operators that require access to the rest of the Ethereum network world-state ca
     syntax UnStackOp ::= "BALANCE"
  // ------------------------------
     rule <k> BALANCE ACCT => BAL ~> #push ... </k>
-         <activeAccounts> ACCTS </activeAccounts>
          <account>
            <acctID> ACCT </acctID>
            <balance> BAL </balance>
            ...
          </account>
-      requires ACCT in ACCTS
 
     rule <k> BALANCE _ => 0 ~> #push ... </k> [owise]
 
     syntax UnStackOp ::= "EXTCODESIZE"
  // ----------------------------------
     rule <k> EXTCODESIZE ACCT => lengthBytes(CODE) ~> #push ... </k>
-         <activeAccounts> ACCTS </activeAccounts>
          <account>
            <acctID> ACCT </acctID>
            <code> CODE </code>
            ...
          </account>
-      requires ACCT in ACCTS
 
     rule <k> EXTCODESIZE _ => 0 ~> #push ... </k> [owise]
 
     syntax UnStackOp ::= "EXTCODEHASH"
  // ----------------------------------
     rule <k> EXTCODEHASH ACCT => keccak(CODE) ~> #push ... </k>
-         <activeAccounts> ACCTS </activeAccounts>
          <account>
            <acctID> ACCT </acctID>
            <code> CODE:Bytes </code>
@@ -1174,7 +1157,7 @@ Operators that require access to the rest of the Ethereum network world-state ca
            <balance> BAL </balance>
            ...
          </account>
-      requires ACCT in ACCTS andBool notBool #accountEmpty(CODE, NONCE, BAL)
+      requires notBool #accountEmpty(CODE, NONCE, BAL)
 
     rule <k> EXTCODEHASH _ => 0 ~> #push ... </k> [owise]
 
@@ -1182,13 +1165,11 @@ Operators that require access to the rest of the Ethereum network world-state ca
  // ------------------------------------
     rule <k> EXTCODECOPY ACCT MEMSTART PGMSTART WIDTH => . ... </k>
          <localMem> LM => LM [ MEMSTART := #range(PGM, PGMSTART, WIDTH) ] </localMem>
-         <activeAccounts> ACCTS </activeAccounts>
          <account>
            <acctID> ACCT </acctID>
            <code> PGM </code>
            ...
          </account>
-      requires ACCT in ACCTS
 
     rule <k> EXTCODECOPY _ MEMSTART _ WIDTH => . ... </k>
          <localMem> LM => LM [ MEMSTART := #padToWidth(WIDTH, .Bytes) ] </localMem> [owise]
@@ -1275,9 +1256,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     rule <k> #call ACCTFROM ACCTTO ACCTCODE VALUE APPVALUE ARGS STATIC
           => #callWithCode ACCTFROM ACCTTO ACCTCODE .Bytes VALUE APPVALUE ARGS STATIC
          ...
-         </k>
-         <activeAccounts> ACCTS </activeAccounts>
-      requires notBool ACCTCODE in ACCTS
+         </k> [owise]
 
     rule <k> #callWithCode ACCTFROM ACCTTO ACCTCODE BYTES VALUE APPVALUE ARGS STATIC
           => #pushCallStack ~> #pushWorldState
@@ -1936,9 +1915,7 @@ Access List Gas
          <schedule> SCHED </schedule>
       requires Ghasaccesslist << SCHED >> andBool #usesAccessList(OP)
 
-    rule <k> #access [ _ , _ ] => . ... </k>
-         <schedule> _ </schedule>
-      [owise]
+    rule <k> #access [ _ , _ ] => . ... </k> <schedule> _ </schedule> [owise]
 
     syntax InternalOp ::= #gasAccess ( Schedule, OpCode )
  // -----------------------------------------------------
@@ -2182,10 +2159,6 @@ There are several helpers for calculating gas (most of them also specified in th
     syntax KResult ::= Bool
     syntax BExp ::= #accountNonexistent ( Int )
  // -------------------------------------------
-    rule <k> #accountNonexistent(ACCT) => true ... </k>
-         <activeAccounts> ACCTS </activeAccounts>
-      requires notBool ACCT in ACCTS
-
     rule <k> #accountNonexistent(ACCT) => #accountEmpty(CODE, NONCE, BAL) andBool Gemptyisnonexistent << SCHED >> ... </k>
          <schedule> SCHED </schedule>
          <account>
@@ -2195,6 +2168,8 @@ There are several helpers for calculating gas (most of them also specified in th
            <code>    CODE  </code>
            ...
          </account>         
+
+   rule <k> #accountNonexistent(_) => true ... </k> [owise]
 ```
 
 EVM Program Representations

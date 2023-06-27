@@ -64,7 +64,6 @@ module FLAPPER-YANK-PASS-ROUGH-SPEC
         </evm>
         <network>
           <chainID> VChainId </chainID>
-          <activeAccounts> SetItem(ACCT_ID) SetItem(DSToken) _ </activeAccounts>
           <accounts>
             <account>
               <acctID> ACCT_ID </acctID>
@@ -232,7 +231,6 @@ module FLAPPER-YANK-PASS-ROUGH-SPEC
         </evm>
         <network>
           <chainID> VChainId </chainID>
-          <activeAccounts> SetItem(ACCT_ID) _ </activeAccounts>
           <accounts>
             <account>
               <acctID> ACCT_ID </acctID>
@@ -297,7 +295,7 @@ module FLAPPER-YANK-PASS-ROUGH-SPEC
        andBool #DSToken.balances[ABI_src] =/=Int #DSToken.owner_stopped
        andBool #DSToken.balances[ABI_dst] =/=Int #DSToken.owner_stopped
        andBool #rangeNonce(Nonce_DSToken)
-    [trusted, matching(infGas)]
+    [trusted]
 
 
 endmodule

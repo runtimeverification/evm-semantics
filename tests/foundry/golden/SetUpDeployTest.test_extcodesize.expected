@@ -1,47 +1,47 @@
 
-┌─ 4 (init, expanded)
-│    k: #execute ~> CONTINUATION
-│    pc: 0
-│    callDepth: 0
-│    statusCode: STATUSCODE
-│    src: tests/foundry/test/SetUpDeploy.t.sol:18:35
+┌─ 1 (root)
+│   k: #execute ~> CONTINUATION
+│   pc: 0
+│   callDepth: 0
+│   statusCode: STATUSCODE
+│   src: tests/foundry/test/SetUpDeploy.t.sol:18:35
 │
 │  (435 steps)
-├─ 7 (expanded)
-│    k: #end EVMC_SUCCESS ~> #pc [ STOP ] ~> #execute ~> CONTINUATION:K
-│    pc: 112
-│    callDepth: 0
-│    statusCode: STATUSCODE:StatusCode
-│    src: tests/foundry/lib/forge-std/src/Script.sol:8:9
+├─ 3
+│   k: #end EVMC_SUCCESS ~> #pc [ STOP ] ~> #execute ~> CONTINUATION:K
+│   pc: 112
+│   callDepth: 0
+│   statusCode: STATUSCODE:StatusCode
+│   src: tests/foundry/lib/forge-std/src/Script.sol:8:9
 │
 │  (1 step)
-├─ 9 (expanded)
-│    k: #halt ~> #pc [ STOP ] ~> #execute ~> CONTINUATION:K
-│    pc: 112
-│    callDepth: 0
-│    statusCode: EVMC_SUCCESS
-│    src: tests/foundry/lib/forge-std/src/Script.sol:8:9
+├─ 4
+│   k: #halt ~> #pc [ STOP ] ~> #execute ~> CONTINUATION:K
+│   pc: 112
+│   callDepth: 0
+│   statusCode: EVMC_SUCCESS
+│   src: tests/foundry/lib/forge-std/src/Script.sol:8:9
 │
 │  (2 steps)
-├─ 11 (leaf)
-│    k: #halt ~> CONTINUATION:K
-│    pc: 112
-│    callDepth: 0
-│    statusCode: EVMC_SUCCESS
-│    src: tests/foundry/lib/forge-std/src/Script.sol:8:9
+├─ 5
+│   k: #halt ~> CONTINUATION:K
+│   pc: 112
+│   callDepth: 0
+│   statusCode: EVMC_SUCCESS
+│   src: tests/foundry/lib/forge-std/src/Script.sol:8:9
 │
 ┊  constraint: true
 ┊  subst: OMITTED SUBST
-└─ 3 (target, leaf)
-     k: #halt ~> CONTINUATION
-     pc: PC_CELL_5d410f2a
-     callDepth: CALLDEPTH_CELL_5d410f2a
-     statusCode: STATUSCODE_FINAL
+└─ 2 (leaf)
+    k: #halt ~> CONTINUATION
+    pc: PC_CELL_5d410f2a
+    callDepth: CALLDEPTH_CELL_5d410f2a
+    statusCode: STATUSCODE_FINAL
 
 
 
 
-module SUMMARY-SETUPDEPLOYTEST-TEST-EXTCODESIZE
+module SUMMARY-SETUPDEPLOYTEST.TEST-EXTCODESIZE:54FC4ADD5DF72818F51CF0E55EF001823EBA0E0715C8B0B71E8EAF089508F226
     
     
            <kevm>
@@ -70,9 +70,14 @@ module SUMMARY-SETUPDEPLOYTEST-TEST-EXTCODESIZE
                    .List
                  </interimStates>
                  <callState>
+                   ...
+                   ...
                    <id>
                      728815563385977040452943777879061427756277306518
                    </id>
+                   <caller>
+                     CALLER_ID
+                   </caller>
                    <callData>
                      ( SetUpDeployTest . test_extcodesize ( ) => b"b\xc9\xea\xc5" )
                    </callData>
@@ -80,11 +85,13 @@ module SUMMARY-SETUPDEPLOYTEST-TEST-EXTCODESIZE
                      0
                    </callValue>
                    <wordStack>
-                     ( .WordStack => ( 1657400005 : .WordStack ) )
+                     ( .WordStack => ( selector ( "test_extcodesize()" ) : .WordStack ) )
                    </wordStack>
                    <localMem>
                      ( .Bytes => b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80" )
                    </localMem>
+                   ...
+                   ...
                    <memoryUsed>
                      ( 0 => 3 )
                    </memoryUsed>
@@ -108,53 +115,27 @@ module SUMMARY-SETUPDEPLOYTEST-TEST-EXTCODESIZE
                    </accessedStorage>
                    ...
                  </substate>
+                 <origin>
+                   ORIGIN_ID
+                 </origin>
+                 <block>
+                   <number>
+                     NUMBER_CELL
+                   </number>
+                   ...
+                 </block>
                  ...
                </evm>
                <network>
                  <accounts>
                    ( <account>
                      <acctID>
-                       728815563385977040452943777879061427756277306518
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       ( 8 |-> 491460923342184218035706888008750043977755113263 )
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       2
-                     </nonce>
-                     ...
-                   </account>
-                   ( <account>
-                     <acctID>
-                       645326474426547203313410069153905908525362434349
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       0
-                     </nonce>
-                     ...
-                   </account>
-                   <account>
-                     <acctID>
                        491460923342184218035706888008750043977755113263
                      </acctID>
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        ( 0 |-> 0 )
                      </storage>
@@ -164,7 +145,42 @@ module SUMMARY-SETUPDEPLOYTEST-TEST-EXTCODESIZE
                      <nonce>
                        1
                      </nonce>
+                   </account>
+                   ( <account>
+                     <acctID>
+                       645326474426547203313410069153905908525362434349
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
                      ...
+                     <storage>
+                       .Map
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       0
+                     </nonce>
+                   </account>
+                   <account>
+                     <acctID>
+                       728815563385977040452943777879061427756277306518
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     ...
+                     <storage>
+                       ( 8 |-> 491460923342184218035706888008750043977755113263 )
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       2
+                     </nonce>
                    </account> ) )
                  </accounts>
                  ...
@@ -242,6 +258,26 @@ module SUMMARY-SETUPDEPLOYTEST-TEST-EXTCODESIZE
              </whitelist>
            </cheatcodes>
          </foundry>
+      requires ( 0 <=Int CALLER_ID
+       andBool ( CALLER_ID <Int pow160
+       andBool ( 0 <=Int ORIGIN_ID
+       andBool ( ORIGIN_ID <Int pow160
+       andBool ( 0 <=Int NUMBER_CELL
+       andBool ( NUMBER_CELL <=Int maxSInt256
+       andBool ( 0 <=Int 9223372036854775807
+       andBool ( 9223372036854775807 <Int pow256
+       andBool ( lengthBytes ( SetUpDeployTest . test_extcodesize ( ) ) <Int pow128
+       andBool ( 0 <=Int 728815563385977040452943777879061427756277306518
+       andBool ( 728815563385977040452943777879061427756277306518 <Int pow160
+               )))))))))))
+       ensures ( 0 <=Int CALLER_ID:Int
+       andBool ( 0 <=Int ORIGIN_ID:Int
+       andBool ( 0 <=Int NUMBER_CELL:Int
+       andBool ( CALLER_ID:Int <Int pow160
+       andBool ( ORIGIN_ID:Int <Int pow160
+       andBool ( NUMBER_CELL:Int <=Int maxSInt256
+               ))))))
+      [label(BASIC-BLOCK-1-TO-3)]
     
            <kevm>
              <k>
@@ -271,9 +307,14 @@ module SUMMARY-SETUPDEPLOYTEST-TEST-EXTCODESIZE
                    .List
                  </interimStates>
                  <callState>
+                   ...
+                   ...
                    <id>
                      728815563385977040452943777879061427756277306518
                    </id>
+                   <caller>
+                     CALLER_ID:Int
+                   </caller>
                    <callData>
                      b"b\xc9\xea\xc5"
                    </callData>
@@ -281,11 +322,13 @@ module SUMMARY-SETUPDEPLOYTEST-TEST-EXTCODESIZE
                      0
                    </callValue>
                    <wordStack>
-                     ( 1657400005 : .WordStack )
+                     ( selector ( "test_extcodesize()" ) : .WordStack )
                    </wordStack>
                    <localMem>
                      b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80"
                    </localMem>
+                   ...
+                   ...
                    <memoryUsed>
                      3
                    </memoryUsed>
@@ -309,53 +352,27 @@ module SUMMARY-SETUPDEPLOYTEST-TEST-EXTCODESIZE
                    </accessedStorage>
                    ...
                  </substate>
+                 <origin>
+                   ORIGIN_ID:Int
+                 </origin>
+                 <block>
+                   <number>
+                     NUMBER_CELL:Int
+                   </number>
+                   ...
+                 </block>
                  ...
                </evm>
                <network>
                  <accounts>
                    ( <account>
                      <acctID>
-                       728815563385977040452943777879061427756277306518
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       ( 8 |-> 491460923342184218035706888008750043977755113263 )
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       2
-                     </nonce>
-                     ...
-                   </account>
-                   ( <account>
-                     <acctID>
-                       645326474426547203313410069153905908525362434349
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       0
-                     </nonce>
-                     ...
-                   </account>
-                   <account>
-                     <acctID>
                        491460923342184218035706888008750043977755113263
                      </acctID>
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        ( 0 |-> 0 )
                      </storage>
@@ -365,7 +382,42 @@ module SUMMARY-SETUPDEPLOYTEST-TEST-EXTCODESIZE
                      <nonce>
                        1
                      </nonce>
+                   </account>
+                   ( <account>
+                     <acctID>
+                       645326474426547203313410069153905908525362434349
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
                      ...
+                     <storage>
+                       .Map
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       0
+                     </nonce>
+                   </account>
+                   <account>
+                     <acctID>
+                       728815563385977040452943777879061427756277306518
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     ...
+                     <storage>
+                       ( 8 |-> 491460923342184218035706888008750043977755113263 )
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       2
+                     </nonce>
                    </account> ) )
                  </accounts>
                  ...
@@ -443,6 +495,14 @@ module SUMMARY-SETUPDEPLOYTEST-TEST-EXTCODESIZE
              </whitelist>
            </cheatcodes>
          </foundry>
+      requires ( 0 <=Int CALLER_ID:Int
+       andBool ( 0 <=Int ORIGIN_ID:Int
+       andBool ( 0 <=Int NUMBER_CELL:Int
+       andBool ( CALLER_ID:Int <Int pow160
+       andBool ( ORIGIN_ID:Int <Int pow160
+       andBool ( NUMBER_CELL:Int <=Int maxSInt256
+               ))))))
+      [label(BASIC-BLOCK-3-TO-4)]
     
            <kevm>
              <k>
@@ -472,9 +532,14 @@ module SUMMARY-SETUPDEPLOYTEST-TEST-EXTCODESIZE
                    .List
                  </interimStates>
                  <callState>
+                   ...
+                   ...
                    <id>
                      728815563385977040452943777879061427756277306518
                    </id>
+                   <caller>
+                     CALLER_ID:Int
+                   </caller>
                    <callData>
                      b"b\xc9\xea\xc5"
                    </callData>
@@ -482,11 +547,13 @@ module SUMMARY-SETUPDEPLOYTEST-TEST-EXTCODESIZE
                      0
                    </callValue>
                    <wordStack>
-                     ( 1657400005 : .WordStack )
+                     ( selector ( "test_extcodesize()" ) : .WordStack )
                    </wordStack>
                    <localMem>
                      b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80"
                    </localMem>
+                   ...
+                   ...
                    <memoryUsed>
                      3
                    </memoryUsed>
@@ -510,53 +577,27 @@ module SUMMARY-SETUPDEPLOYTEST-TEST-EXTCODESIZE
                    </accessedStorage>
                    ...
                  </substate>
+                 <origin>
+                   ORIGIN_ID:Int
+                 </origin>
+                 <block>
+                   <number>
+                     NUMBER_CELL:Int
+                   </number>
+                   ...
+                 </block>
                  ...
                </evm>
                <network>
                  <accounts>
                    ( <account>
                      <acctID>
-                       728815563385977040452943777879061427756277306518
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       ( 8 |-> 491460923342184218035706888008750043977755113263 )
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       2
-                     </nonce>
-                     ...
-                   </account>
-                   ( <account>
-                     <acctID>
-                       645326474426547203313410069153905908525362434349
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       0
-                     </nonce>
-                     ...
-                   </account>
-                   <account>
-                     <acctID>
                        491460923342184218035706888008750043977755113263
                      </acctID>
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        ( 0 |-> 0 )
                      </storage>
@@ -566,7 +607,42 @@ module SUMMARY-SETUPDEPLOYTEST-TEST-EXTCODESIZE
                      <nonce>
                        1
                      </nonce>
+                   </account>
+                   ( <account>
+                     <acctID>
+                       645326474426547203313410069153905908525362434349
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
                      ...
+                     <storage>
+                       .Map
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       0
+                     </nonce>
+                   </account>
+                   <account>
+                     <acctID>
+                       728815563385977040452943777879061427756277306518
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     ...
+                     <storage>
+                       ( 8 |-> 491460923342184218035706888008750043977755113263 )
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       2
+                     </nonce>
                    </account> ) )
                  </accounts>
                  ...
@@ -644,6 +720,16 @@ module SUMMARY-SETUPDEPLOYTEST-TEST-EXTCODESIZE
              </whitelist>
            </cheatcodes>
          </foundry>
+      requires ( 0 <=Int CALLER_ID:Int
+       andBool ( 0 <=Int ORIGIN_ID:Int
+       andBool ( 0 <=Int NUMBER_CELL:Int
+       andBool ( CALLER_ID:Int <Int pow160
+       andBool ( ORIGIN_ID:Int <Int pow160
+       andBool ( NUMBER_CELL:Int <=Int maxSInt256
+               ))))))
+      [label(BASIC-BLOCK-4-TO-5)]
 
 endmodule
+0 Failure nodes. (0 pending and 0 failing)
 
+Access documentation for KEVM foundry integration at https://docs.runtimeverification.com/kevm-integration-for-foundry/

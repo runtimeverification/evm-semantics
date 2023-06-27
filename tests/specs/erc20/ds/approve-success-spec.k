@@ -76,8 +76,6 @@ module APPROVE-SUCCESS-SPEC
       <network>
         <chainID> _ </chainID>
 
-        <activeAccounts> SetItem(ACCT_ID) _:Set </activeAccounts>
-
         <accounts>
           <account>
             <acctID> ACCT_ID </acctID>

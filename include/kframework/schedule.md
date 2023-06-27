@@ -1,15 +1,57 @@
 KEVM Schedules
 ==============
 
-Schedules correspond to upgrades in the Ethereum ecosystem. The cost of gas functions is dependent on the schedule.
+Fee Schedule
+------------
+
+The `Schedule` determines the constants/modes of operation for each hard fork.
+There are `ScheduleFlag`s and `ScheduleConstant`s.
+
+-   A `ScheduleFlag` is a boolean value determining whether a certain feature is turned on.
+-   A `ScheduleConst` is an `Int` parameter which is used during EVM execution.
+
+### Schedule Flags
+
+A `ScheduleFlag` is a boolean determined by the fee schedule; applying a `ScheduleFlag` to a `Schedule` yields whether the flag is set or not.
+
+```k
+    requires "data.md"
+    module SCHEDULE
+    imports EVM-DATA
+
+    syntax Bool ::= ScheduleFlag "<<" Schedule ">>" [function, total]
+ // -----------------------------------------------------------------
+
+    syntax ScheduleFlag ::= "Gselfdestructnewaccount" | "Gstaticcalldepth" | "Gemptyisnonexistent" | "Gzerovaluenewaccountgas"
+                          | "Ghasrevert"              | "Ghasreturndata"   | "Ghasstaticcall"      | "Ghasshift"
+                          | "Ghasdirtysstore"         | "Ghascreate2"      | "Ghasextcodehash"     | "Ghasselfbalance"
+                          | "Ghassstorestipend"       | "Ghaschainid"      | "Ghasaccesslist"      | "Ghasbasefee"
+                          | "Ghasrejectedfirstbyte"   | "Ghasprevrandao"
+ // --------------------------------------------------------------------
+```
+
+### Schedule Constants
+
+A `ScheduleConst` is a constant determined by the fee schedule.
+
+```k
+    syntax Int ::= ScheduleConst "<" Schedule ">" [function, total]
+ // ---------------------------------------------------------------
+
+    syntax ScheduleConst ::= "Gzero"            | "Gbase"              | "Gverylow"      | "Glow"          | "Gmid"        | "Ghigh"
+                           | "Gextcodesize"     | "Gextcodecopy"       | "Gbalance"      | "Gsload"        | "Gjumpdest"   | "Gsstoreset"
+                           | "Gsstorereset"     | "Rsstoreclear"       | "Rselfdestruct" | "Gselfdestruct" | "Gcreate"     | "Gcodedeposit"  | "Gcall"
+                           | "Gcallvalue"       | "Gcallstipend"       | "Gnewaccount"   | "Gexp"          | "Gexpbyte"    | "Gmemory"       | "Gtxcreate"
+                           | "Gtxdatazero"      | "Gtxdatanonzero"     | "Gtransaction"  | "Glog"          | "Glogdata"    | "Glogtopic"     | "Gsha3"
+                           | "Gsha3word"        | "Gcopy"              | "Gblockhash"    | "Gquadcoeff"    | "maxCodeSize" | "Rb"            | "Gquaddivisor"
+                           | "Gecadd"           | "Gecmul"             | "Gecpairconst"  | "Gecpaircoeff"  | "Gfround"     | "Gcoldsload"    | "Gcoldaccountaccess"
+                           | "Gwarmstorageread" | "Gaccesslistaddress" | "Gaccessliststoragekey"           | "Rmaxquotient"
+ // -----------------------------------------------------------------------------------------------------------------------
+```
 
 ### Default Schedule
 
 ```k
-requires "data.md"
-module SCHEDULE
-    imports EVM-DATA
-
     syntax Schedule ::= "DEFAULT" [klabel(DEFAULT_EVM), symbol, smtlib(schedule_DEFAULT)]
  // -------------------------------------------------------------------------------------
     rule Gzero    < DEFAULT > => 0
@@ -300,49 +342,6 @@ module SCHEDULE
     rule Ghasprevrandao << MERGE >> => true
     rule SCHEDFLAG      << MERGE >> => SCHEDFLAG << LONDON >>
       requires notBool SCHEDFLAG ==K Ghasprevrandao
-```
 
-Fee Schedule
-------------
-
-The `Schedule` determines the constants/modes of operation for each hard fork.
-There are `ScheduleFlag`s and `ScheduleConstant`s.
-
--   A `ScheduleFlag` is a boolean value determining whether a certain feature is turned on.
--   A `ScheduleConst` is an `Int` parameter which is used during EVM execution.
-
-### Schedule Flags
-
-A `ScheduleFlag` is a boolean determined by the fee schedule; applying a `ScheduleFlag` to a `Schedule` yields whether the flag is set or not.
-
-```k
-    syntax Bool ::= ScheduleFlag "<<" Schedule ">>" [function, total]
- // -----------------------------------------------------------------
-
-    syntax ScheduleFlag ::= "Gselfdestructnewaccount" | "Gstaticcalldepth" | "Gemptyisnonexistent" | "Gzerovaluenewaccountgas"
-                          | "Ghasrevert"              | "Ghasreturndata"   | "Ghasstaticcall"      | "Ghasshift"
-                          | "Ghasdirtysstore"         | "Ghascreate2"      | "Ghasextcodehash"     | "Ghasselfbalance"
-                          | "Ghassstorestipend"       | "Ghaschainid"      | "Ghasaccesslist"      | "Ghasbasefee"
-                          | "Ghasrejectedfirstbyte"   | "Ghasprevrandao"
- // --------------------------------------------------------------------
-```
-
-### Schedule Constants
-
-A `ScheduleConst` is a constant determined by the fee schedule.
-
-```k
-    syntax Int ::= ScheduleConst "<" Schedule ">" [function, total]
- // ---------------------------------------------------------------
-
-    syntax ScheduleConst ::= "Gzero"            | "Gbase"              | "Gverylow"      | "Glow"          | "Gmid"        | "Ghigh"
-                           | "Gextcodesize"     | "Gextcodecopy"       | "Gbalance"      | "Gsload"        | "Gjumpdest"   | "Gsstoreset"
-                           | "Gsstorereset"     | "Rsstoreclear"       | "Rselfdestruct" | "Gselfdestruct" | "Gcreate"     | "Gcodedeposit"  | "Gcall"
-                           | "Gcallvalue"       | "Gcallstipend"       | "Gnewaccount"   | "Gexp"          | "Gexpbyte"    | "Gmemory"       | "Gtxcreate"
-                           | "Gtxdatazero"      | "Gtxdatanonzero"     | "Gtransaction"  | "Glog"          | "Glogdata"    | "Glogtopic"     | "Gsha3"
-                           | "Gsha3word"        | "Gcopy"              | "Gblockhash"    | "Gquadcoeff"    | "maxCodeSize" | "Rb"            | "Gquaddivisor"
-                           | "Gecadd"           | "Gecmul"             | "Gecpairconst"  | "Gecpaircoeff"  | "Gfround"     | "Gcoldsload"    | "Gcoldaccountaccess"
-                           | "Gwarmstorageread" | "Gaccesslistaddress" | "Gaccessliststoragekey"           | "Rmaxquotient"
- // -----------------------------------------------------------------------------------------------------------------------
 endmodule
 ```
