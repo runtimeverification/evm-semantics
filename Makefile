@@ -44,24 +44,24 @@ PLUGIN_FULL_PATH := $(abspath ${PLUGIN_SUBMODULE})
 export PLUGIN_FULL_PATH
 
 
-.PHONY: all clean distclean                                                                                                      \
-        deps k-deps plugin-deps protobuf                                                                                         \
-        build build-haskell build-haskell-standalone build-foundry build-llvm build-node build-kevm                              \
-        test test-all test-conformance test-rest-conformance test-all-conformance test-slow-conformance test-failing-conformance \
-        test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain test-node                                  \
-        test-prove test-failing-prove test-foundry-kcfg-diff                                                                     \
-        test-prove-smoke test-klab-prove                                                                                         \
-        test-parse test-failure test-foundry-kompile test-foundry-prove test-foundry-bmc-prove test-foundry-list                 \
-        test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search               \
-        test-kevm-pyk foundry-forge-build foundry-forge-test foundry-clean foundry-fail                                          \
-        media media-pdf metropolis-theme                                                                                         \
-        install uninstall                                                                                                        \
-        poetry-env poetry shell kevm-pyk
+.PHONY: all clean distclean                                                                                        \
+        deps k-deps plugin-deps protobuf                                                                           \
+        poetry-env poetry shell kevm-pyk                                                                           \
+        build build-haskell build-haskell-standalone build-foundry build-llvm build-node build-kevm                \
+        test                                                                                                       \
+        test-integration test-conformance test-prove test-foundry-prove                                            \
+        test-vm test-rest-vm test-bchain test-rest-bchain                                                          \
+        test-node                                                                                                  \
+        test-prove-smoke test-klab-prove                                                                           \
+        test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search \
+        media media-pdf metropolis-theme                                                                           \
+        install uninstall
+
 .SECONDARY:
 
 all: build
 
-clean: foundry-clean
+clean:
 	rm -rf $(KEVM_BIN) $(KEVM_LIB)
 
 distclean:
@@ -401,8 +401,7 @@ KSEARCH_OPTS ?=
 
 KEEP_OUTPUTS := false
 
-test-all: test-all-conformance test-prove test-interactive test-parse test-kevm-pyk
-test: test-conformance test-prove test-interactive test-parse test-kevm-pyk
+test: test-integration test-conformance test-prove test-interactive
 
 # Generic Test Harnesses
 
