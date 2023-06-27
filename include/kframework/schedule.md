@@ -15,8 +15,9 @@ There are `ScheduleFlag`s and `ScheduleConstant`s.
 A `ScheduleFlag` is a boolean determined by the fee schedule; applying a `ScheduleFlag` to a `Schedule` yields whether the flag is set or not.
 
 ```k
-    requires "data.md"
-    module SCHEDULE
+requires "data.md"
+
+module SCHEDULE
     imports EVM-DATA
 
     syntax Bool ::= ScheduleFlag "<<" Schedule ">>" [function, total]
