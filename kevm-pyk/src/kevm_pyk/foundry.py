@@ -9,22 +9,25 @@ from functools import cached_property
 from pathlib import Path
 from subprocess import CalledProcessError
 from typing import TYPE_CHECKING
-from pyk.kore.prelude import BOOL
-from pyk.kore.syntax import Equals
 
 import tomlkit
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cterm import CTerm
 from pyk.kast.inner import KApply, KLabel, KSequence, KSort, KToken, KVariable, Subst
-from pyk.kast.manip import flatten_label, free_vars, minimize_term, split_config_and_constraints
+from pyk.kast.manip import free_vars, minimize_term
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
 from pyk.kcfg import KCFG, KCFGExplore
+from pyk.konvert import _kast_to_kore
+from pyk.kore.prelude import BOOL
+from pyk.kore.prelude import INT as INTSort
+from pyk.kore.prelude import TRUE as TRUESort
+from pyk.kore.syntax import Equals
 from pyk.ktool.kompile import LLVMKompileType
 from pyk.prelude.bytes import bytesToken
 from pyk.prelude.k import GENERATED_TOP_CELL
-from pyk.prelude.kbool import FALSE, TRUE, andBool, impliesBool, notBool
+from pyk.prelude.kbool import FALSE, TRUE, andBool, notBool
 from pyk.prelude.kint import INT, intToken
-from pyk.prelude.ml import is_bottom, mlEqualsTrue
+from pyk.prelude.ml import mlEqualsTrue
 from pyk.proof.proof import Proof, ProofStatus
 from pyk.proof.reachability import APRBMCProof, APRProof
 from pyk.proof.show import APRProofShow
@@ -773,9 +776,20 @@ def foundry_koverage(foundry_root: Path, contracts: Iterable[str], tests: Iterab
                                             if val is None:
                                                 val = []
 
-                                            cov_cons = [constraints for node in kcfg.covered for constraints in node.cterm.constraints]
+                                            cov_cons = [
+                                                constraints
+                                                for node in kcfg.covered
+                                                for constraints in node.cterm.constraints
+                                            ]
                                             init_node = _get_init_node()
-                                            diff_cons = _cons_intersection([cons for cons in cov_cons if cons not in init_node.cterm.constraints if cons is not TRUE])
+                                            diff_cons = _cons_intersection(
+                                                [
+                                                    cons
+                                                    for cons in cov_cons
+                                                    if cons not in init_node.cterm.constraints
+                                                    if cons is not TRUE
+                                                ]
+                                            )
 
                                             # TODO: parse args when they are of type BYTES-HOOKED
                                             new_cons = diff_cons
@@ -784,29 +798,24 @@ def foundry_koverage(foundry_root: Path, contracts: Iterable[str], tests: Iterab
                                                 inter = _cons_intersection([diff_cons, args_cons])
                                                 if type(inter) is KApply:
                                                     new_cons = inter
-                                            covered = andBool([_get_raw_constraint(cons) for cons in init_node.cterm.constraints])
-                                            covered = andBool([covered, notBool(new_cons)])
-                                            covered = KApply(KLabel('#Equals', ['Bool', GENERATED_TOP_CELL]), [TRUE, covered])
-                                            val.append((cterm.config, covered))
+                                            covered = andBool(
+                                                [_get_raw_constraint(cons) for cons in init_node.cterm.constraints]
+                                            )
+                                            not_covered = andBool([covered, notBool(new_cons)])
+                                            val.append((cterm.config, not_covered))
                                             call_cells[acct_hash] = val
 
-    for bytecode_h, cons_set in call_cells.items():
-        for config, constraints in cons_set:
-            new_cterm = CTerm(config, [constraints])
+    for _bytecode_h, cons_set in call_cells.items():
+        for _config, constraints in cons_set:
             with KCFGExplore(foundry.kevm) as kcfg_explore:
-                simplified, _ = kcfg_explore.cterm_simplify(new_cterm)
-                if not is_bottom(simplified):
-                    new_constraints = split_config_and_constraints(simplified)[1]
-                    kore = kcfg_explore.kprint.kast_to_kore(new_constraints)
-                    # print(kcfg_explore.kprint.kore_to_pretty(kore))
-                    client = kcfg_explore._kore_rpc[1]
-                    if client is not None:
-                        model = client.get_model(kore)
-                        print(model)
-                    else:
-                        raise RuntimeError('Issue getting the KoreClient')
+                kore = _kast_to_kore(constraints)
+                _, client = kcfg_explore._kore_rpc
+                if client is not None:
+                    equals = Equals(BOOL, INTSort, TRUESort, kore)
+                    model = client.get_model(equals)
+                    print(model)
                 else:
-                    _LOGGER.warn(f'found bottom node at bytecode hash: {bytecode_h}')
+                    raise RuntimeError('Issue getting the KoreClient')
 
 
 def foundry_to_dot(foundry_root: Path, test: str) -> None:
