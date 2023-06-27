@@ -385,8 +385,10 @@ Accounts
 
 ```k
     syntax Account ::= ".Account" | Int
-    syntax AccountCode ::= Bytes
  // -----------------------------------
+
+    syntax AccountCode ::= Bytes
+ // ----------------------------
 ```
 
 ### Addresses
