@@ -67,10 +67,10 @@ You could alternatively calculate `I1 modInt I2`, then add one to the normal int
 ```k
     syntax Int ::= Int "up/Int" Int [function, total, smtlib(upDivInt)]
  // -------------------------------------------------------------------
-    rule              _I1 up/Int 0  => 0
-    rule              _I1 up/Int I2 => 0                             requires I2 <Int 0
-    rule               I1 up/Int 1  => I1
-    rule [upDivInt] :  I1 up/Int I2 => (I1 +Int (I2 -Int 1)) /Int I2 requires I2 >Int 1
+    rule _I1 up/Int 0  => 0                                                  [concrete]
+    rule _I1 up/Int I2 => 0                             requires I2 <=Int 0  [concrete]
+    rule  I1 up/Int 1  => I1                                                 [concrete]
+    rule  I1 up/Int I2 => (I1 +Int (I2 -Int 1)) /Int I2 requires 1  <Int  I2 [concrete]
 ```
 
 -   `log256Int` returns the log base 256 (floored) of an integer.
@@ -368,10 +368,10 @@ Bytes helper functions
     syntax Bytes ::= #padToWidth      ( Int , Bytes ) [function, total]
                    | #padRightToWidth ( Int , Bytes ) [function, total]
  // -------------------------------------------------------------------
-    rule                            #padToWidth(N, BS)      =>               BS        requires notBool (N >=Int 0)
-    rule [padToWidthNonEmpty]:      #padToWidth(N, BS)      =>  padLeftBytes(BS, N, 0) requires          N >=Int 0
-    rule                            #padRightToWidth(N, BS) =>               BS        requires notBool (N >=Int 0)
-    rule [padRightToWidthNonEmpty]: #padRightToWidth(N, BS) => padRightBytes(BS, N, 0) requires          N >=Int 0
+    rule #padToWidth(N, BS)      =>               BS        requires notBool (0 <=Int N) [concrete]
+    rule #padToWidth(N, BS)      =>  padLeftBytes(BS, N, 0) requires          0 <=Int N  [concrete]
+    rule #padRightToWidth(N, BS) =>               BS        requires notBool (0 <=Int N) [concrete]
+    rule #padRightToWidth(N, BS) => padRightBytes(BS, N, 0) requires          0 <=Int N  [concrete]
 ```
 
 Accounts
