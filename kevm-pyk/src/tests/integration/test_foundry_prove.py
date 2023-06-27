@@ -22,7 +22,7 @@ FORGE_STD_REF: Final = '27e14b7'
 
 
 @pytest.fixture(scope='module')  # TODO should reduce scope
-def foundry_root(tmp_path_factory: TempPathFactory) -> Path:
+def foundry_root(tmp_path_factory: TempPathFactory, use_booster: bool) -> Path:
     foundry_root = tmp_path_factory.mktemp('foundry')
     copy_tree(str(TEST_DATA_DIR / 'foundry'), str(foundry_root))
 
@@ -35,12 +35,15 @@ def foundry_root(tmp_path_factory: TempPathFactory) -> Path:
         includes=(),
         requires=[str(TEST_DATA_DIR / 'lemmas.k')],
         imports=['LoopsTest:SUM-TO-N-INVARIANT'],
+        llvm_library=use_booster,
     )
 
     return foundry_root
 
 
-def test_foundry_kompile(foundry_root: Path, update_expected_output: bool) -> None:
+def test_foundry_kompile(foundry_root: Path, update_expected_output: bool, use_booster: bool) -> None:
+    if use_booster:
+        return
     # Then
     assert_or_update_k_output(
         foundry_root / 'out/kompiled/foundry.k',
@@ -77,7 +80,7 @@ SHOW_TESTS = set((TEST_DATA_DIR / 'foundry-show').read_text().splitlines())
 
 
 @pytest.mark.parametrize('test_id', ALL_PROVE_TESTS)
-def test_foundry_prove(test_id: str, foundry_root: Path, update_expected_output: bool) -> None:
+def test_foundry_prove(test_id: str, foundry_root: Path, update_expected_output: bool, use_booster: bool) -> None:
     if test_id in SKIPPED_PROVE_TESTS:
         pytest.skip()
 
@@ -88,12 +91,13 @@ def test_foundry_prove(test_id: str, foundry_root: Path, update_expected_output:
         simplify_init=False,
         smt_timeout=125,
         smt_retry_limit=4,
+        use_booster=use_booster,
     )
 
     # Then
     assert_pass(test_id, prove_res)
 
-    if test_id not in SHOW_TESTS:
+    if test_id not in SHOW_TESTS or use_booster:
         return
 
     # And when
@@ -116,7 +120,7 @@ FAIL_TESTS: Final = tuple((TEST_DATA_DIR / 'foundry-fail').read_text().splitline
 
 
 @pytest.mark.parametrize('test_id', FAIL_TESTS)
-def test_foundry_fail(test_id: str, foundry_root: Path, update_expected_output: bool) -> None:
+def test_foundry_fail(test_id: str, foundry_root: Path, update_expected_output: bool, use_booster: bool) -> None:
     # When
     prove_res = foundry_prove(
         foundry_root,
@@ -124,12 +128,13 @@ def test_foundry_fail(test_id: str, foundry_root: Path, update_expected_output: 
         simplify_init=False,
         smt_timeout=125,
         smt_retry_limit=4,
+        use_booster=use_booster,
     )
 
     # Then
     assert_fail(test_id, prove_res)
 
-    if test_id not in SHOW_TESTS:
+    if test_id not in SHOW_TESTS or use_booster:
         return
 
     # And when
@@ -153,7 +158,7 @@ SKIPPED_BMC_TESTS: Final = set((TEST_DATA_DIR / 'foundry-bmc-skip').read_text().
 
 
 @pytest.mark.parametrize('test_id', ALL_BMC_TESTS)
-def test_foundry_bmc(test_id: str, foundry_root: Path) -> None:
+def test_foundry_bmc(test_id: str, foundry_root: Path, use_booster: bool) -> None:
     if test_id in SKIPPED_BMC_TESTS:
         pytest.skip()
 
@@ -165,6 +170,7 @@ def test_foundry_bmc(test_id: str, foundry_root: Path) -> None:
         simplify_init=False,
         smt_timeout=125,
         smt_retry_limit=4,
+        use_booster=use_booster,
     )
 
     # Then
