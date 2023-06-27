@@ -420,6 +420,8 @@ def exec_show_kcfg(
     minimize: bool = True,
     failure_info: bool = False,
     sort_collections: bool = False,
+    pending: bool = False,
+    failing: bool = False,
     **kwargs: Any,
 ) -> None:
     kevm = KEVM(definition_dir)
@@ -433,6 +435,11 @@ def exec_show_kcfg(
         claim_labels=claim_labels,
         exclude_claim_labels=exclude_claim_labels,
     )
+
+    if pending:
+        nodes = list(nodes) + [node.id for node in proof.pending]
+    if failing:
+        nodes = list(nodes) + [node.id for node in proof.failing]
 
     proof_show = APRProofShow(kevm, node_printer=KEVMNodePrinter(kevm))
     res_lines = proof_show.show(
@@ -950,12 +957,6 @@ def _create_argument_parser() -> ArgumentParser:
         default=False,
         action='store_true',
         help='Strip output that is likely to change without the contract logic changing',
-    )
-    foundry_show_args.add_argument(
-        '--pending', dest='pending', default=False, action='store_true', help='Also display pending nodes'
-    )
-    foundry_show_args.add_argument(
-        '--failing', dest='failing', default=False, action='store_true', help='Also display failing nodes'
     )
     foundry_to_dot = command_parser.add_parser(
         'foundry-to-dot',
