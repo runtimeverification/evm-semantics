@@ -524,13 +524,14 @@ tests/specs/opcodes/evm-optimizations-spec.md: include/kframework/optimizations.
 # Parse Tests
 
 test-parse: poetry build-kevm build-llvm
-	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+='-k test_parse -n0'
+	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+='-k test_kast.py -n0'
 
 # Failing correctly tests
 
 failure_tests:=$(wildcard tests/failing/*.json)
 
-test-failure: $(failure_tests:=.run-expected)
+test-failure: poetry build-kevm build-llvm
+	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+='-k test_run.py -n0'
 
 # kevm-pyk Tests
 
