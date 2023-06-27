@@ -188,6 +188,7 @@ def test_foundry_auto_abstraction(foundry_root: Path, update_expected_output: bo
         foundry_root,
         test='GasTest.testInfiniteGas',
         to_module=True,
+        minimize=False,
         sort_collections=True,
         omit_unstable_output=True,
         pending=True,
