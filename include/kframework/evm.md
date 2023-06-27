@@ -1894,8 +1894,8 @@ In the YellowPaper, each opcode is defined to consume zero gas unless specified 
 
     syntax Int ::= #memoryUsageUpdate ( Int , Int , Int ) [function, total]
  // -----------------------------------------------------------------------
-    rule [#memoryUsageUpdate.none]: #memoryUsageUpdate(MU,     _, WIDTH) => MU                                       requires notBool 0 <Int WIDTH
-    rule [#memoryUsageUpdate.some]: #memoryUsageUpdate(MU, START, WIDTH) => maxInt(MU, (START +Int WIDTH) up/Int 32) requires         0 <Int WIDTH
+    rule #memoryUsageUpdate(MU,     _, WIDTH) => MU                                       requires notBool 0 <Int WIDTH [concrete]
+    rule #memoryUsageUpdate(MU, START, WIDTH) => maxInt(MU, (START +Int WIDTH) up/Int 32) requires         0 <Int WIDTH [concrete]
 ```
 
 Access List Gas
@@ -2177,17 +2177,21 @@ There are several helpers for calculating gas (most of them also specified in th
          Cgascap(SCHED, GCAP:Int, GAVAIL:Int, GEXTRA)
       => #if GAVAIL <Int GEXTRA orBool Gstaticcalldepth << SCHED >> #then GCAP #else minInt(#allBut64th(GAVAIL -Int GEXTRA), GCAP) #fi
       requires 0 <=Int GCAP
+      [concrete]
 
-    rule Cgascap(_, GCAP, _, _) => 0 requires GCAP <Gas 0
+    rule Cgascap(_, GCAP, _, _) => 0 requires GCAP <Gas 0 [concrete]
 
     rule [Csstore.new]:
          Csstore(SCHED, NEW, CURR, ORIG)
       => #if CURR ==Int NEW orBool ORIG =/=Int CURR #then Gsload < SCHED > #else #if ORIG ==Int 0 #then Gsstoreset < SCHED > #else Gsstorereset < SCHED > #fi #fi
       requires Ghasdirtysstore << SCHED >>
+      [concrete]
+
     rule [Csstore.old]:
          Csstore(SCHED, NEW, CURR, _ORIG)
       => #if CURR ==Int 0 andBool NEW =/=Int 0 #then Gsstoreset < SCHED > #else Gsstorereset < SCHED > #fi
       requires notBool Ghasdirtysstore << SCHED >>
+      [concrete]
 
     rule [Rsstore.new]:
          Rsstore(SCHED, NEW, CURR, ORIG)
@@ -2206,14 +2210,16 @@ There are several helpers for calculating gas (most of them also specified in th
              #fi
          #fi
       requires Ghasdirtysstore << SCHED >>
+      [concrete]
 
     rule [Rsstore.old]:
          Rsstore(SCHED, NEW, CURR, _ORIG)
       => #if CURR =/=Int 0 andBool NEW ==Int 0 #then Rsstoreclear < SCHED > #else 0 #fi
       requires notBool Ghasdirtysstore << SCHED >>
+      [concrete]
 
-    rule [Cextra.new]: Cextra(SCHED, ISEMPTY, VALUE, ISWARM)  => Caddraccess(SCHED, ISWARM) +Int Cnew(SCHED, ISEMPTY, VALUE) +Int Cxfer(SCHED, VALUE) requires         Ghasaccesslist << SCHED >>
-    rule [Cextra.old]: Cextra(SCHED, ISEMPTY, VALUE, _ISWARM) => Gcall < SCHED > +Int Cnew(SCHED, ISEMPTY, VALUE) +Int Cxfer(SCHED, VALUE)            requires notBool Ghasaccesslist << SCHED >>
+    rule [Cextra.new]: Cextra(SCHED, ISEMPTY, VALUE, ISWARM)  => Caddraccess(SCHED, ISWARM) +Int Cnew(SCHED, ISEMPTY, VALUE) +Int Cxfer(SCHED, VALUE) requires         Ghasaccesslist << SCHED >> [concrete]
+    rule [Cextra.old]: Cextra(SCHED, ISEMPTY, VALUE, _ISWARM) => Gcall < SCHED > +Int Cnew(SCHED, ISEMPTY, VALUE) +Int Cxfer(SCHED, VALUE)            requires notBool Ghasaccesslist << SCHED >> [concrete]
 
     rule [Cnew]:
          Cnew(SCHED, ISEMPTY:Bool, VALUE)
@@ -2222,30 +2228,33 @@ There are several helpers for calculating gas (most of them also specified in th
     rule [Cxfer.none]: Cxfer(_SCHED, 0) => 0
     rule [Cxfer.some]: Cxfer( SCHED, N) => Gcallvalue < SCHED > requires N =/=Int 0
 
-    rule [Cmem]: Cmem(SCHED, N) => (N *Int Gmemory < SCHED >) +Int ((N *Int N) /Int Gquadcoeff < SCHED >)
+    rule [Cmem]: Cmem(SCHED, N) => (N *Int Gmemory < SCHED >) +Int ((N *Int N) /Int Gquadcoeff < SCHED >) [concrete]
 
-    rule [Caddraccess]:    Caddraccess(SCHED, ISWARM)    => #if ISWARM #then Gwarmstorageread < SCHED > #else Gcoldaccountaccess < SCHED > #fi
-    rule [Cstorageaccess]: Cstorageaccess(SCHED, ISWARM) => #if ISWARM #then Gwarmstorageread < SCHED > #else Gcoldsload < SCHED > #fi
+    rule [Caddraccess]:    Caddraccess(SCHED, ISWARM)    => #if ISWARM #then Gwarmstorageread < SCHED > #else Gcoldaccountaccess < SCHED > #fi [concrete]
+    rule [Cstorageaccess]: Cstorageaccess(SCHED, ISWARM) => #if ISWARM #then Gwarmstorageread < SCHED > #else Gcoldsload < SCHED > #fi         [concrete]
 
-    rule [Csload.new]: Csload(SCHED, ISWARM)  => Cstorageaccess(SCHED, ISWARM) requires         Ghasaccesslist << SCHED >>
-    rule [Csload.old]: Csload(SCHED, _ISWARM) => Gsload < SCHED >              requires notBool Ghasaccesslist << SCHED >>
+    rule [Csload.new]: Csload(SCHED, ISWARM)  => Cstorageaccess(SCHED, ISWARM) requires         Ghasaccesslist << SCHED >> [concrete]
+    rule [Csload.old]: Csload(SCHED, _ISWARM) => Gsload < SCHED >              requires notBool Ghasaccesslist << SCHED >> [concrete]
 
-    rule [Cextcodesize.new]: Cextcodesize(SCHED) => 0                      requires         Ghasaccesslist << SCHED >>
-    rule [Cextcodesize.old]: Cextcodesize(SCHED) => Gextcodesize < SCHED > requires notBool Ghasaccesslist << SCHED >>
+    rule [Cextcodesize.new]: Cextcodesize(SCHED) => 0                      requires         Ghasaccesslist << SCHED >> [concrete]
+    rule [Cextcodesize.old]: Cextcodesize(SCHED) => Gextcodesize < SCHED > requires notBool Ghasaccesslist << SCHED >> [concrete]
 
-    rule [Cextcodehash.new]: Cextcodehash(SCHED) => 0                  requires         Ghasaccesslist << SCHED >>
-    rule [Cextcodehash.old]: Cextcodehash(SCHED) => Gbalance < SCHED > requires notBool Ghasaccesslist << SCHED >>
+    rule [Cextcodehash.new]: Cextcodehash(SCHED) => 0                  requires         Ghasaccesslist << SCHED >> [concrete]
+    rule [Cextcodehash.old]: Cextcodehash(SCHED) => Gbalance < SCHED > requires notBool Ghasaccesslist << SCHED >> [concrete]
 
-    rule [Cbalance.new]: Cbalance(SCHED) => 0                  requires         Ghasaccesslist << SCHED >>
-    rule [Cbalance.old]: Cbalance(SCHED) => Gbalance < SCHED > requires notBool Ghasaccesslist << SCHED >>
+    rule [Cbalance.new]: Cbalance(SCHED) => 0                  requires         Ghasaccesslist << SCHED >> [concrete]
+    rule [Cbalance.old]: Cbalance(SCHED) => Gbalance < SCHED > requires notBool Ghasaccesslist << SCHED >> [concrete]
 
-    rule [Cextcodecopy.new]: Cextcodecopy(SCHED, WIDTH) => Gcopy < SCHED > *Int (WIDTH up/Int 32)                               requires         Ghasaccesslist << SCHED >>
-    rule [Cextcodecopy.old]: Cextcodecopy(SCHED, WIDTH) => Gextcodecopy < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32)) requires notBool Ghasaccesslist << SCHED >>
+    rule [Cextcodecopy.new]: Cextcodecopy(SCHED, WIDTH) => Gcopy < SCHED > *Int (WIDTH up/Int 32)                               requires         Ghasaccesslist << SCHED >> [concrete]
+    rule [Cextcodecopy.old]: Cextcodecopy(SCHED, WIDTH) => Gextcodecopy < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32)) requires notBool Ghasaccesslist << SCHED >> [concrete]
 
     rule [Cmodexp.old]: Cmodexp(SCHED, DATA, BASELEN, EXPLEN, MODLEN) => #multComplexity(maxInt(BASELEN, MODLEN)) *Int maxInt(#adjustedExpLength(BASELEN, EXPLEN, DATA), 1) /Int Gquaddivisor < SCHED >
       requires notBool Ghasaccesslist << SCHED >>
+      [concrete]
+
     rule [Cmodexp.new]: Cmodexp(SCHED, DATA, BASELEN, EXPLEN, MODLEN) => maxInt(200, (#newMultComplexity(maxInt(BASELEN, MODLEN)) *Int maxInt(#adjustedExpLength(BASELEN, EXPLEN, DATA), 1)) /Int Gquaddivisor < SCHED > )
       requires Ghasaccesslist << SCHED >>
+      [concrete]
 
     syntax BExp    ::= Bool
     syntax KResult ::= Bool
@@ -2270,8 +2279,8 @@ There are several helpers for calculating gas (most of them also specified in th
     syntax Gas ::= #allBut64th ( Gas ) [function, total, smtlib(gas_allBut64th_Gas)]
     syntax Int ::= #allBut64th ( Int ) [function, total, smtlib(gas_allBut64th_Int)]
  // --------------------------------------------------------------------------------
-    rule [allBut64th.pos]: #allBut64th(N) => N -Int (N /Int 64) requires 0 <=Int N
-    rule [allBut64th.neg]: #allBut64th(N) => 0                  requires N  <Int 0
+    rule #allBut64th(N) => N -Int (N /Int 64) requires 0 <=Int N [concrete]
+    rule #allBut64th(N) => 0                  requires N  <Int 0 [concrete]
 
     syntax Int ::= G0 ( Schedule , Bytes , Bool )           [function]
                  | G0 ( Schedule , Bytes , Int , Int, Int ) [function, klabel(G0data)]
