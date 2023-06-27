@@ -22,18 +22,6 @@ _LOGGER: Final = logging.getLogger(__name__)
 
 
 HOOK_NAMESPACES: Final = ('JSON', 'KRYPTO', 'BLOCKCHAIN')
-CONCRETE_RULES: Final = (
-    'EVM.ecrec',
-    'EVM-TYPES.powmod.nonzero',
-    'EVM-TYPES.powmod.zero',
-    'EVM-TYPES.signextend.invalid',
-    'EVM-TYPES.signextend.negative',
-    'EVM-TYPES.signextend.positive',
-    'SERIALIZATION.addrFromPrivateKey',
-    'SERIALIZATION.keccak',
-    'SERIALIZATION.#newAddr',
-    'SERIALIZATION.#newAddrCreate2',
-)
 
 
 class Kernel(Enum):
@@ -147,7 +135,6 @@ def kevm_kompile(
         case KompileBackend.HASKELL:
             kompile = HaskellKompile(
                 base_args=base_args,
-                concrete_rules=CONCRETE_RULES,
                 haskell_binary=haskell_binary,
             )
         case _:
