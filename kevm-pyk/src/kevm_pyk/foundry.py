@@ -627,7 +627,7 @@ def foundry_koverage(foundry_root: Path, contracts: Iterable[str], tests: Iterab
     foundry = Foundry(foundry_root)
     apr_proofs_dir = foundry.out / 'apr_proofs'
     contracts = set(contracts) if len(set(contracts)) > 0 else set(foundry.contracts.keys())
-    call_cells: dict[bytes, list[tuple[KInner, KInner]]] = {}
+    call_cells: dict[bytes, list[KInner]] = {}
 
     def _test_name(name: str, test: str) -> str:
         return f'{name}.{test}'
@@ -802,20 +802,20 @@ def foundry_koverage(foundry_root: Path, contracts: Iterable[str], tests: Iterab
                                                 [_get_raw_constraint(cons) for cons in init_node.cterm.constraints]
                                             )
                                             not_covered = andBool([covered, notBool(new_cons)])
-                                            val.append((cterm.config, not_covered))
+                                            val.append(not_covered)
                                             call_cells[acct_hash] = val
 
     for _bytecode_h, cons_set in call_cells.items():
-        for _config, constraints in cons_set:
-            with KCFGExplore(foundry.kevm) as kcfg_explore:
-                kore = _kast_to_kore(constraints)
-                _, client = kcfg_explore._kore_rpc
-                if client is not None:
-                    equals = Equals(BOOL, INTSort, TRUESort, kore)
-                    model = client.get_model(equals)
-                    print(model)
-                else:
-                    raise RuntimeError('Issue getting the KoreClient')
+        b_uncovered = andBool(cons_set)
+        with KCFGExplore(foundry.kevm) as kcfg_explore:
+            kore = _kast_to_kore(b_uncovered)
+            _, client = kcfg_explore._kore_rpc
+            if client is not None:
+                equals = Equals(BOOL, INTSort, TRUESort, kore)
+                model = client.get_model(equals)
+                print(model)
+            else:
+                raise RuntimeError('Issue getting the KoreClient')
 
 
 def foundry_to_dot(foundry_root: Path, test: str) -> None:
