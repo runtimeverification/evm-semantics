@@ -521,22 +521,10 @@ test-klab-prove: $(smoke_tests_prove:=.prove)
 tests/specs/opcodes/evm-optimizations-spec.md: include/kframework/optimizations.md
 	cat $< | sed 's/^rule/claim/' | sed 's/EVM-OPTIMIZATIONS/EVM-OPTIMIZATIONS-SPEC/' | grep -v 'priority(40)' > $@
 
-# Parse Tests
+# Integration Tests
 
-test-parse: poetry build-kevm build-llvm
-	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+='-k test_kast.py -n0'
-
-# Failing correctly tests
-
-failure_tests:=$(wildcard tests/failing/*.json)
-
-test-failure: poetry build-kevm build-llvm
-	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+='-k test_run.py -n0'
-
-# kevm-pyk Tests
-
-test-kevm-pyk: poetry build-kevm build-haskell
-	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+='-k test_solc_to_k.py -n4'
+test-integration: poetry build-kevm build-haskell build-llvm
+	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+='-k "(test_kast.py or test_run.py or test_solc_to_k.py)" -n8'
 
 # Interactive Tests
 
