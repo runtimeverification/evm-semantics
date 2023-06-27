@@ -115,8 +115,8 @@ def kevm_apr_prove(
     if type(proof) is APRBMCProof:
         assert same_loop, f'BMC proof requires same_loop heuristic, but {same_loop} was supplied'
         prover = APRBMCProver(
-            proof=proof,
             kcfg_explore=kcfg_explore,
+            proof=proof,
             is_terminal=is_terminal,
             extract_branches=extract_branches,
             same_loop=same_loop,
@@ -124,8 +124,8 @@ def kevm_apr_prove(
         )
     else:
         prover = APRProver(
-            proof=proof,
             kcfg_explore=kcfg_explore,
+            proof=proof,
             is_terminal=is_terminal,
             extract_branches=extract_branches,
             abstract_node=abstract_node,

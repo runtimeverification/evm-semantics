@@ -704,7 +704,7 @@ def foundry_refute_node(foundry_root: Path, test: str, node: NodeIdLike) -> None
         foundry.kevm,
         id=apr_proof.id,
     ) as kcfg_explore:
-        prover = APRProver(proof=apr_proof, kcfg_explore=kcfg_explore)
+        prover = APRProver(kcfg_explore=kcfg_explore, proof=apr_proof)
         prover.refute_node(kcfg_explore, _node)
 
     apr_proof.write_proof()
