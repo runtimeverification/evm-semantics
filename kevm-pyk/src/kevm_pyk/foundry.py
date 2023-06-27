@@ -624,13 +624,7 @@ def foundry_show(
         '<code>',
     ]
 
-    node_printer: NodePrinter
-    if type(proof) is APRBMCProof:
-        node_printer = FoundryAPRBMCNodePrinter(foundry, contract_name, proof)
-    elif type(proof) is APRProof:
-        node_printer = FoundryAPRNodePrinter(foundry, contract_name, proof)
-    else:
-        raise ValueError(f'Cannot build shower for proof type: {type(proof)}')
+    node_printer = foundry_node_printer(foundry, contract_name, proof)
     proof_show = APRProofShow(foundry.kevm, node_printer=node_printer)
 
     res_lines = proof_show.show(
@@ -659,13 +653,7 @@ def foundry_to_dot(foundry_root: Path, test: str) -> None:
     proof_digest = foundry.proof_digest(contract_name, test_name)
     proof = APRProof.read_proof(proof_digest, proofs_dir)
 
-    node_printer: NodePrinter
-    if type(proof) is APRBMCProof:
-        node_printer = FoundryAPRBMCNodePrinter(foundry, contract_name, proof)
-    elif type(proof) is APRProof:
-        node_printer = FoundryAPRNodePrinter(foundry, contract_name, proof)
-    else:
-        raise ValueError(f'Cannot build shower for proof type: {type(proof)}')
+    node_printer = foundry_node_printer(foundry, contract_name, proof)
     proof_show = APRProofShow(foundry.kevm, node_printer=node_printer)
 
     proof_show.dump(proof, dump_dir, dot=True)
@@ -1135,3 +1123,11 @@ class FoundryAPRBMCNodePrinter(FoundryNodePrinter, APRBMCProofNodePrinter):
     def __init__(self, foundry: Foundry, contract_name: str, proof: APRBMCProof):
         FoundryNodePrinter.__init__(self, foundry, contract_name)
         APRBMCProofNodePrinter.__init__(self, proof, foundry.kevm)
+
+
+def foundry_node_printer(foundry: Foundry, contract_name: str, proof: APRProof) -> NodePrinter:
+    if type(proof) is APRBMCProof:
+        return FoundryAPRBMCNodePrinter(foundry, contract_name, proof)
+    if type(proof) is APRProof:
+        return FoundryAPRNodePrinter(foundry, contract_name, proof)
+    raise ValueError(f'Cannot build NodePrinter for proof type: {type(proof)}')

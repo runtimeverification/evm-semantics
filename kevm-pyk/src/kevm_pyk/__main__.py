@@ -14,7 +14,7 @@ from pyk.kcfg import KCFG, KCFGExplore
 from pyk.kore.prelude import int_dv
 from pyk.ktool.krun import KRunOutput, _krun
 from pyk.prelude.ml import is_bottom
-from pyk.proof import APRBMCProof, APRProof
+from pyk.proof import APRProof
 from pyk.proof.show import APRProofShow
 from pyk.proof.tui import APRProofViewer
 from pyk.utils import BugReport, single
@@ -22,10 +22,9 @@ from pyk.utils import BugReport, single
 from .cli import KEVMCLIArgs, node_id_like
 from .foundry import (
     Foundry,
-    FoundryAPRBMCNodePrinter,
-    FoundryAPRNodePrinter,
     foundry_kompile,
     foundry_list,
+    foundry_node_printer,
     foundry_prove,
     foundry_remove_node,
     foundry_section_edge,
@@ -35,7 +34,7 @@ from .foundry import (
     foundry_to_dot,
 )
 from .gst_to_kore import _mode_to_kore, _schedule_to_kore
-from .kevm import KEVM, KEVMAPRBMCNodePrinter, KEVMAPRNodePrinter
+from .kevm import KEVM, kevm_node_printer
 from .kompile import KompileTarget, kevm_kompile
 from .solc_to_k import solc_compile, solc_to_k
 from .utils import arg_pair_of, ensure_ksequence_on_k_cell, get_apr_proof_for_spec, kevm_apr_prove, print_failure_info
@@ -48,7 +47,6 @@ if TYPE_CHECKING:
     from pyk.kast.outer import KClaim
     from pyk.kcfg.kcfg import NodeIdLike
     from pyk.kcfg.tui import KCFGElem
-    from pyk.proof.show import NodePrinter
 
     T = TypeVar('T')
 
@@ -436,13 +434,7 @@ def exec_show_kcfg(
         exclude_claim_labels=exclude_claim_labels,
     )
 
-    node_printer: NodePrinter
-    if type(proof) is APRBMCProof:
-        node_printer = KEVMAPRBMCNodePrinter(kevm, proof)
-    elif type(proof) is APRProof:
-        node_printer = KEVMAPRNodePrinter(kevm, proof)
-    else:
-        raise ValueError(f'Cannot build shower for proof type: {type(proof)}')
+    node_printer = kevm_node_printer(kevm, proof)
     proof_show = APRProofShow(kevm, node_printer=node_printer)
 
     res_lines = proof_show.show(
@@ -484,13 +476,7 @@ def exec_view_kcfg(
         exclude_claim_labels=exclude_claim_labels,
     )
 
-    node_printer: NodePrinter
-    if type(proof) is APRBMCProof:
-        node_printer = KEVMAPRBMCNodePrinter(kevm, proof)
-    elif type(proof) is APRProof:
-        node_printer = KEVMAPRNodePrinter(kevm, proof)
-    else:
-        raise ValueError(f'Do not know how to build proof viewer for proof type: {type(proof)}')
+    node_printer = kevm_node_printer(kevm, proof)
     proof_view = APRProofViewer(proof, kevm, node_printer=node_printer)
 
     proof_view.run()
@@ -653,14 +639,7 @@ def exec_foundry_view_kcfg(foundry_root: Path, test: str, **kwargs: Any) -> None
     def _custom_view(elem: KCFGElem) -> Iterable[str]:
         return foundry.custom_view(contract_name, elem)
 
-    node_printer: NodePrinter
-    if type(proof) is APRBMCProof:
-        node_printer = FoundryAPRBMCNodePrinter(foundry, contract_name, proof)
-    elif type(proof) is APRProof:
-        node_printer = FoundryAPRNodePrinter(foundry, contract_name, proof)
-    else:
-        raise ValueError(f'Cannot build shower for proof type: {type(proof)}')
-
+    node_printer = foundry_node_printer(foundry, contract_name, proof)
     viewer = APRProofViewer(proof, foundry.kevm, node_printer=node_printer, custom_view=_custom_view)
     viewer.run()
 
