@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+<meta charset="utf-8" />
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0, maximum-scale=1.0"
+/>
+<meta
+  name="description"
+  content="K Semantics of the Ethereum Virtual Machine (EVM)"
+/>
+<meta
+  name="keywords"
+  content="runtime, verification, rv, k, ethereum virtual machine, evm"
+/>
+<meta name="author" content="EVM Semantics | Runtime Verification Inc" />
+<meta name="robots" content="index, follow" />
+
+<!--favicon icon-->
+<link rel="icon" type="image/png" href="../../../assets/img/favicon.ico" />
+
+<title>KEVM: Semantics of EVM in K | Runtime Verification, Inc. </title>
+
+<link rel="canonical" href="https://jellopaper.org/include/kframework/evm-node/" />
+
+<!--web fonts-->
+<link
+  href="https://fonts.googleapis.com/css?family=Nunito:300,400,600,700,800"
+  rel="stylesheet"
+/>
+<link
+  href="https://fonts.googleapis.com/css?family=Lora:400i"
+  rel="stylesheet"
+/>
+
+<link
+  href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.14.0/css/all.min.css"
+  rel="stylesheet"
+/>
+
+<link href="../../../assets/css/index.css" rel="stylesheet" />
+
+<!--[if (gt IE 9) |!(IE)]><!-->
+<!--<link rel="stylesheet" href="/assets/vendor/custom-nav/css/effects/fade-menu.css"/>-->
+<!-- <link rel="stylesheet" href="../../../assets/k/vl-nav/css/effects/slide-menu.css" /> -->
+<!--<![endif]-->
+
+  </head>
+
+  <body>
+<header
+  class="navbar navbar-expand navbar-dark flex-column flex-md-row bd-navbar"
+>
+  <a class="logo-link" href="../../../index.html"> EVM Semantics </a>
+  <ul class="navbar-nav ml-md-auto">
+    <li class="nav-item">
+      <a
+        class="nav-link pl-2 pr-1 mx-1 py-3 my-n2"
+        href="https://github.com/runtimeverification/evm-semantics"
+        target="_blank"
+        rel="noopener"
+        aria-label="GitHub"
+      >
+        <i class="fab fa-github"></i>
+      </a>
+    </li>
+  </ul>
+  <!--
+  <a
+    class="btn btn-rv-blue d-none d-lg-inline-block mb-3 mb-md-0 ml-md-3"
+    href="../../../downloads"
+    >Download</a
+  >
+  -->
+</header>
+
+
+    <div class="container-fluid">
+      <div class="row flex-xl-nowrap">
+<div class="col-12 col-md-3 col-xl-2 bd-sidebar mb-3">
+  <form
+    role="search"
+    class="bd-search d-flex align-items-center justify-content-between"
+  >
+    <input
+      type="search"
+      class="form-control"
+      placeholder="Search..."
+      aria-label="Search for..."
+      autocomplete="false"
+      id="search-box"
+    />
+    <button
+      class="btn bd-search-docs-toggle d-md-none p-0 ml-3 collapsed"
+      type="button"
+      aria-label="Toggle docs navigation"
+      style="font-size: 1.4rem"
+    >
+      <i class="fas fa-bars"></i>
+    </button>
+  </form>
+  <nav class="collapse bd-links" aria-label="Main navigation">
+    <div class="bd-toc-item">
+      <a class="bd-toc-link" href="../../../">Homepage</a>
+      <a class="bd-toc-link" href="../../../INSTALL/">Install</a>
+    </div>
+  </nav>
+</div>
+
+        <main
+          class="col-12 col-md-6 col-xl-8 py-md-3 pl-md-5 bd-content"
+          role="main"
+        >
+          <div class="markdown-preview"><html><head></head><body><h1 id="evm-integration-with-production-client">EVM Integration with Production Client</h1>
+<p>Contained in this file is glue code needed in order to enable the ability to use KEVM as a VM for an actual Ethereum node.</p>
+<pre><code class="k node"><span class="token keyword">requires</span> <span class="token string">"evm.md"</span>
+<span class="token keyword">requires</span> <span class="token string">"optimizations.md"</span>
+
+<span class="token keyword">module</span> EVM<span class="token operator">-</span>NODE
+    <span class="token keyword">imports</span> EVM
+    <span class="token keyword">imports</span> EVM<span class="token operator">-</span>OPTIMIZATIONS
+    <span class="token keyword">imports</span> K<span class="token operator">-</span>REFLECTION
+    <span class="token keyword">imports</span> COLLECTIONS
+    <span class="token keyword">imports</span> BYTES
+
+  <span class="token keyword">configuration</span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>kevm</span><span class="token punctuation">/&gt;</span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>loaded</span><span class="token punctuation">&gt;</span></span> <span class="token boolean">false</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>loaded</span><span class="token punctuation">&gt;</span></span>
+</code></pre>
+<h3 id="state-loading-operations.">State loading operations.</h3>
+<p>In order to enable scalable execution of transactions on an entire blockchain, it is necessary to avoid serializing/deserializing the entire state of all accounts when constructing the initial configuration for KEVM.
+To do this, we assume that accounts not present in the <code>&lt;accounts&gt;</code> cell might not exist and need to be loaded on each access.
+We also defer loading of storage entries and the actual code byte string until it is needed.
+Because the same account may be loaded more than once, implementations of this interface are expected to cache the actual query to the Ethereum client.</p>
+<ul>
+<li><code>#unloaded</code> represents the code of an account that has not had its code loaded yet. Unloaded code may not be empty.</li>
+<li>Empty code is detected without lazy evaluation by means of checking the code hash, and therefore will always be represented in the <code>&lt;code&gt;</code> cell as <code>.WordStack</code>.</li>
+</ul>
+<pre><code class="k node">    <span class="token keyword">syntax</span> InternalOp <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> <span class="token string">"#load"</span> <span class="token string">"["</span> OpCode <span class="token string">"]"</span>
+ <span class="token comment">// --------------------------------------------</span>
+    <span class="token keyword">rule</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span> <span class="token punctuation">(</span><span class="token punctuation">.</span> <span class="token operator">=&gt;</span> #load <span class="token punctuation">[</span> OP <span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">~&gt;</span> #next <span class="token punctuation">[</span> OP <span class="token punctuation">]</span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>loaded</span><span class="token punctuation">&gt;</span></span> <span class="token boolean">false</span> <span class="token operator">=&gt;</span> <span class="token boolean">true</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>loaded</span><span class="token punctuation">&gt;</span></span>
+      <span class="token punctuation">[</span>priority<span class="token punctuation">(</span><span class="token number">35</span><span class="token punctuation">)</span><span class="token punctuation">]</span>
+
+    <span class="token keyword">rule</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span> #execute <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>loaded</span><span class="token punctuation">&gt;</span></span> <span class="token boolean">true</span> <span class="token operator">=&gt;</span> <span class="token boolean">false</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>loaded</span><span class="token punctuation">&gt;</span></span>
+      <span class="token punctuation">[</span>priority<span class="token punctuation">(</span><span class="token number">35</span><span class="token punctuation">)</span><span class="token punctuation">]</span>
+</code></pre>
+<ul>
+<li><code>CREATE2</code> is a special case
+Note that we cannot execute #loadAccount during the #load phase earlier because gas will not yet
+have been paid, and it may be to expensive to compute the hash of the init code.</li>
+</ul>
+<pre><code class="k node">    <span class="token keyword">rule</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span> #gas <span class="token punctuation">[</span> CREATE2<span class="token punctuation">,</span> _ <span class="token punctuation">]</span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>loaded</span><span class="token punctuation">&gt;</span></span> <span class="token boolean">true</span> <span class="token operator">=&gt;</span> <span class="token boolean">false</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>loaded</span><span class="token punctuation">&gt;</span></span>
+      <span class="token punctuation">[</span>priority<span class="token punctuation">(</span><span class="token number">35</span><span class="token punctuation">)</span><span class="token punctuation">]</span>
+
+    <span class="token keyword">rule</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span> <span class="token punctuation">(</span><span class="token punctuation">.</span> <span class="token operator">=&gt;</span> #loadAccount #newAddr<span class="token punctuation">(</span>ACCT<span class="token punctuation">,</span> SALT<span class="token punctuation">,</span> #range<span class="token punctuation">(</span>LM<span class="token punctuation">,</span> MEMSTART<span class="token punctuation">,</span> MEMWIDTH<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+          <span class="token operator">~&gt;</span> CREATE2 _VALUE MEMSTART MEMWIDTH SALT
+         <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>id</span><span class="token punctuation">&gt;</span></span> ACCT <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>id</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>localMem</span><span class="token punctuation">&gt;</span></span> LM <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>localMem</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>loaded</span><span class="token punctuation">&gt;</span></span> <span class="token boolean">false</span> <span class="token operator">=&gt;</span> <span class="token boolean">true</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>loaded</span><span class="token punctuation">&gt;</span></span>
+      <span class="token punctuation">[</span>priority<span class="token punctuation">(</span><span class="token number">35</span><span class="token punctuation">)</span><span class="token punctuation">]</span>
+</code></pre>
+<pre><code class="k node">    <span class="token keyword">rule</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span> #load <span class="token punctuation">[</span> OP<span class="token punctuation">:</span>OpCode <span class="token punctuation">]</span> <span class="token operator">=&gt;</span> #loadAccount W0 <span class="token operator">~&gt;</span> #lookupCode W0 <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>wordStack</span><span class="token punctuation">&gt;</span></span> W0 <span class="token punctuation">:</span> _ <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>wordStack</span><span class="token punctuation">&gt;</span></span>
+      <span class="token keyword">requires</span> isAddr1Op<span class="token punctuation">(</span>OP<span class="token punctuation">)</span>
+
+    <span class="token keyword">rule</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span> #load <span class="token punctuation">[</span> OP<span class="token punctuation">:</span>OpCode <span class="token punctuation">]</span> <span class="token operator">=&gt;</span> #loadAccount W1 <span class="token operator">~&gt;</span> #lookupCode W1 <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>wordStack</span><span class="token punctuation">&gt;</span></span> _ <span class="token punctuation">:</span> W1 <span class="token punctuation">:</span> _ <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>wordStack</span><span class="token punctuation">&gt;</span></span>
+      <span class="token keyword">requires</span> isAddr2Op<span class="token punctuation">(</span>OP<span class="token punctuation">)</span>
+
+    <span class="token keyword">rule</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span> #load <span class="token punctuation">[</span> CREATE <span class="token punctuation">]</span> <span class="token operator">=&gt;</span> #loadAccount #newAddr<span class="token punctuation">(</span>ACCT<span class="token punctuation">,</span> NONCE<span class="token punctuation">)</span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>id</span><span class="token punctuation">&gt;</span></span> ACCT <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>id</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>account</span><span class="token punctuation">&gt;</span></span>
+           <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>acctID</span><span class="token punctuation">&gt;</span></span> ACCT <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>acctID</span><span class="token punctuation">&gt;</span></span>
+           <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>nonce</span><span class="token punctuation">&gt;</span></span> NONCE <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>nonce</span><span class="token punctuation">&gt;</span></span>
+           <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>account</span><span class="token punctuation">&gt;</span></span>
+
+    <span class="token keyword">rule</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span> #load <span class="token punctuation">[</span> OP<span class="token punctuation">:</span>OpCode <span class="token punctuation">]</span> <span class="token operator">=&gt;</span> #lookupStorage ACCT W0 <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>id</span><span class="token punctuation">&gt;</span></span> ACCT <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>id</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>wordStack</span><span class="token punctuation">&gt;</span></span> W0 <span class="token punctuation">:</span> _ <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>wordStack</span><span class="token punctuation">&gt;</span></span>
+      <span class="token keyword">requires</span> OP <span class="token operator">==</span>K SSTORE orBool OP <span class="token operator">==</span>K SLOAD
+
+    <span class="token keyword">rule</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span> #load <span class="token punctuation">[</span> _OP<span class="token punctuation">:</span>OpCode <span class="token punctuation">]</span> <span class="token operator">=&gt;</span> <span class="token punctuation">.</span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span> <span class="token punctuation">[</span>owise<span class="token punctuation">]</span>
+</code></pre>
+<pre><code class="k node">    <span class="token keyword">syntax</span> AccountCode <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> #unloaded<span class="token punctuation">(</span><span class="token keyword">Int</span><span class="token punctuation">)</span>
+</code></pre>
+<ul>
+<li><code>#getBalance</code> returns the balance of an account that exists based on its integer address.</li>
+<li><code>#getNonce</code> returns the nonce of an account that exists based on its integer address.</li>
+<li><code>#isCodeEmpty</code> returns true if the code hash of the account is equal to the hash of the empty string, and false otherwise.</li>
+<li><code>#accountExists</code> returns true if the account is present in the state trie for the current block, and false otherwise.</li>
+</ul>
+<pre><code class="k node">    <span class="token keyword">syntax</span> <span class="token keyword">Int</span>  <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> #getBalance  <span class="token punctuation">(</span> <span class="token keyword">Int</span> <span class="token punctuation">)</span> <span class="token punctuation">[</span>function<span class="token punctuation">,</span> hook<span class="token punctuation">(</span>BLOCKCHAIN<span class="token punctuation">.</span>getBalance<span class="token punctuation">)</span><span class="token punctuation">]</span>
+                  <span class="token operator">|</span> #getNonce    <span class="token punctuation">(</span> <span class="token keyword">Int</span> <span class="token punctuation">)</span> <span class="token punctuation">[</span>function<span class="token punctuation">,</span> hook<span class="token punctuation">(</span>BLOCKCHAIN<span class="token punctuation">.</span>getNonce<span class="token punctuation">)</span><span class="token punctuation">]</span>
+                  <span class="token operator">|</span> #getCodeHash <span class="token punctuation">(</span> <span class="token keyword">Int</span> <span class="token punctuation">)</span> <span class="token punctuation">[</span>function<span class="token punctuation">]</span>
+ <span class="token comment">// -----------------------------------------------------------------------------</span>
+    <span class="token keyword">rule</span> #getCodeHash<span class="token punctuation">(</span>ACCT<span class="token punctuation">)</span> <span class="token operator">=&gt;</span> keccak<span class="token punctuation">(</span>#parseByteStackRaw<span class="token punctuation">(</span>#getCode<span class="token punctuation">(</span>ACCT<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+    <span class="token keyword">syntax</span> <span class="token keyword">Bool</span> <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> #isCodeEmpty   <span class="token punctuation">(</span> <span class="token keyword">Int</span> <span class="token punctuation">)</span> <span class="token punctuation">[</span>function<span class="token punctuation">,</span> hook<span class="token punctuation">(</span>BLOCKCHAIN<span class="token punctuation">.</span>isCodeEmpty<span class="token punctuation">)</span><span class="token punctuation">]</span>
+                  <span class="token operator">|</span> #accountExists <span class="token punctuation">(</span> <span class="token keyword">Int</span> <span class="token punctuation">)</span> <span class="token punctuation">[</span>function<span class="token punctuation">,</span> hook<span class="token punctuation">(</span>BLOCKCHAIN<span class="token punctuation">.</span>accountExists<span class="token punctuation">)</span><span class="token punctuation">]</span>
+ <span class="token comment">// ---------------------------------------------------------------------------------</span>
+</code></pre>
+<p>The following operations help with loading account information from an external running client.
+This minimizes the amount of information which must be stored in the configuration.</p>
+<ul>
+<li><code>#loadAccount</code> queries for account data from the running client.</li>
+<li><code>#lookupCode</code> loads the code of an account into the <code>&lt;code&gt;</code> cell.</li>
+<li><code>#lookupStorage</code> loads the value of the specified storage key into the <code>&lt;storage&gt;</code> cell.</li>
+</ul>
+<pre><code class="language-k">    <span class="token keyword">syntax</span> InternalOp <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> <span class="token string">"#loadAccount"</span>   <span class="token keyword">Int</span>
+                        <span class="token operator">|</span> <span class="token string">"#lookupCode"</span>    <span class="token keyword">Int</span>
+                        <span class="token operator">|</span> <span class="token string">"#lookupStorage"</span> <span class="token keyword">Int</span> <span class="token keyword">Int</span>
+ <span class="token comment">// ----------------------------------------------</span>
+</code></pre>
+<ul>
+<li><code>#loadAccount</code> loads an account's balance and nonce if it exists, and leaves the code and storage unloaded, except if the code is empty, in which case the code is fully loaded.
+If the account does not exist, it does nothing.</li>
+</ul>
+<pre><code class="k node">    <span class="token keyword">rule</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span> #loadAccount ACCT <span class="token operator">=&gt;</span> <span class="token punctuation">.</span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>account</span><span class="token punctuation">&gt;</span></span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>acctID</span><span class="token punctuation">&gt;</span></span> ACCT <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>acctID</span><span class="token punctuation">&gt;</span></span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>account</span><span class="token punctuation">&gt;</span></span>
+
+    <span class="token keyword">rule</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span> #loadAccount ACCT <span class="token operator">=&gt;</span> <span class="token punctuation">.</span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span>
+      <span class="token keyword">requires</span> notBool #accountExists<span class="token punctuation">(</span>ACCT<span class="token punctuation">)</span>
+      <span class="token punctuation">[</span>priority<span class="token punctuation">(</span><span class="token number">55</span><span class="token punctuation">)</span><span class="token punctuation">]</span>
+
+    <span class="token keyword">rule</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span> #loadAccount ACCT <span class="token operator">=&gt;</span> <span class="token punctuation">.</span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>accounts</span><span class="token punctuation">&gt;</span></span>
+           <span class="token punctuation">(</span> <span class="token punctuation">.</span>Bag
+          <span class="token operator">=&gt;</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>account</span><span class="token punctuation">&gt;</span></span>
+               <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>acctID</span><span class="token punctuation">&gt;</span></span> ACCT <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>acctID</span><span class="token punctuation">&gt;</span></span>
+               <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>balance</span><span class="token punctuation">&gt;</span></span> #getBalance<span class="token punctuation">(</span>ACCT<span class="token punctuation">)</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>balance</span><span class="token punctuation">&gt;</span></span>
+               <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>code</span><span class="token punctuation">&gt;</span></span> #if #isCodeEmpty<span class="token punctuation">(</span>ACCT<span class="token punctuation">)</span> #then <span class="token punctuation">.</span>Bytes #else #unloaded<span class="token punctuation">(</span>#getCodeHash<span class="token punctuation">(</span>ACCT<span class="token punctuation">)</span><span class="token punctuation">)</span> #fi <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>code</span><span class="token punctuation">&gt;</span></span>
+               <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>storage</span><span class="token punctuation">&gt;</span></span> <span class="token punctuation">.</span>Map <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>storage</span><span class="token punctuation">&gt;</span></span>
+               <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>origStorage</span><span class="token punctuation">&gt;</span></span> <span class="token punctuation">.</span>Map <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>origStorage</span><span class="token punctuation">&gt;</span></span>
+               <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>nonce</span><span class="token punctuation">&gt;</span></span> #getNonce<span class="token punctuation">(</span>ACCT<span class="token punctuation">)</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>nonce</span><span class="token punctuation">&gt;</span></span>
+             <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>account</span><span class="token punctuation">&gt;</span></span>
+           <span class="token punctuation">)</span>
+           <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>accounts</span><span class="token punctuation">&gt;</span></span> <span class="token punctuation">[</span>owise<span class="token punctuation">]</span>
+</code></pre>
+<ul>
+<li><code>#getStorageData</code> loads the value for a single storage key of a specified account by its address and storage offset.
+If the storage key has already been loaded or the account does not exist, it does nothing.</li>
+</ul>
+<pre><code class="k node">    <span class="token keyword">syntax</span> <span class="token keyword">Int</span> <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> #getStorageData <span class="token punctuation">(</span> <span class="token keyword">Int</span> <span class="token punctuation">,</span> <span class="token keyword">Int</span> <span class="token punctuation">)</span> <span class="token punctuation">[</span>function<span class="token punctuation">,</span> hook<span class="token punctuation">(</span>BLOCKCHAIN<span class="token punctuation">.</span>getStorageData<span class="token punctuation">)</span><span class="token punctuation">]</span>
+ <span class="token comment">// ----------------------------------------------------------------------------------------</span>
+    <span class="token keyword">rule</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span> #lookupStorage ACCT INDEX <span class="token operator">=&gt;</span> <span class="token punctuation">.</span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>account</span><span class="token punctuation">&gt;</span></span>
+           <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>acctID</span><span class="token punctuation">&gt;</span></span>  ACCT                                                         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>acctID</span><span class="token punctuation">&gt;</span></span>
+           <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>storage</span><span class="token punctuation">&gt;</span></span> STORAGE <span class="token operator">=&gt;</span> STORAGE <span class="token punctuation">[</span> INDEX &lt;<span class="token operator">-</span> #getStorageData<span class="token punctuation">(</span>ACCT<span class="token punctuation">,</span> INDEX<span class="token punctuation">)</span> <span class="token punctuation">]</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>storage</span><span class="token punctuation">&gt;</span></span>
+           <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>origStorage</span><span class="token punctuation">&gt;</span></span> ORIGSTORAGE <span class="token operator">=&gt;</span> ORIGSTORAGE <span class="token punctuation">[</span> INDEX &lt;<span class="token operator">-</span> #getStorageData<span class="token punctuation">(</span>ACCT<span class="token punctuation">,</span> INDEX<span class="token punctuation">)</span> <span class="token punctuation">]</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>origStorage</span><span class="token punctuation">&gt;</span></span>
+           <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>account</span><span class="token punctuation">&gt;</span></span>
+      <span class="token keyword">requires</span> notBool INDEX in_keys<span class="token punctuation">(</span>STORAGE<span class="token punctuation">)</span>
+
+    <span class="token keyword">rule</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span> #lookupStorage ACCT INDEX <span class="token operator">=&gt;</span> <span class="token punctuation">.</span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>account</span><span class="token punctuation">&gt;</span></span>
+           <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>acctID</span><span class="token punctuation">&gt;</span></span> ACCT <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>acctID</span><span class="token punctuation">&gt;</span></span>
+           <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>storage</span><span class="token punctuation">&gt;</span></span> STORAGE<span class="token punctuation">:</span>Map <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>storage</span><span class="token punctuation">&gt;</span></span>
+           <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>account</span><span class="token punctuation">&gt;</span></span>
+      <span class="token keyword">requires</span> INDEX in_keys<span class="token punctuation">(</span>STORAGE<span class="token punctuation">)</span>
+
+    <span class="token keyword">rule</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span> #lookupStorage ACCT _ <span class="token operator">=&gt;</span> <span class="token punctuation">.</span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span>
+      <span class="token keyword">requires</span> notBool #accountExists<span class="token punctuation">(</span>ACCT<span class="token punctuation">)</span>
+</code></pre>
+<ul>
+<li><code>#getCode</code> loads the code for a specified account by its address. If the code has already been loaded, it does nothing.
+If the account does not exist, it also does nothing.</li>
+</ul>
+<pre><code class="k node">    <span class="token keyword">syntax</span> <span class="token keyword">String</span> <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> #getCode <span class="token punctuation">(</span> <span class="token keyword">Int</span> <span class="token punctuation">)</span> <span class="token punctuation">[</span>function<span class="token punctuation">,</span> hook<span class="token punctuation">(</span>BLOCKCHAIN<span class="token punctuation">.</span>getCode<span class="token punctuation">)</span><span class="token punctuation">]</span>
+ <span class="token comment">// -----------------------------------------------------------------------</span>
+    <span class="token keyword">rule</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span> #lookupCode ACCT <span class="token operator">=&gt;</span> <span class="token punctuation">.</span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>account</span><span class="token punctuation">&gt;</span></span>
+           <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>acctID</span><span class="token punctuation">&gt;</span></span> ACCT <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>acctID</span><span class="token punctuation">&gt;</span></span>
+           <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>code</span><span class="token punctuation">&gt;</span></span> #unloaded<span class="token punctuation">(</span>_<span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #parseByteStackRaw<span class="token punctuation">(</span>#getCode<span class="token punctuation">(</span>ACCT<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>code</span><span class="token punctuation">&gt;</span></span>
+           <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>account</span><span class="token punctuation">&gt;</span></span>
+
+    <span class="token keyword">rule</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span> #lookupCode ACCT <span class="token operator">=&gt;</span> <span class="token punctuation">.</span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>account</span><span class="token punctuation">&gt;</span></span>
+           <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>acctID</span><span class="token punctuation">&gt;</span></span> ACCT <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>acctID</span><span class="token punctuation">&gt;</span></span>
+           <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>code</span><span class="token punctuation">&gt;</span></span> _<span class="token punctuation">:</span>Bytes <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>code</span><span class="token punctuation">&gt;</span></span>
+           <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>account</span><span class="token punctuation">&gt;</span></span>
+
+    <span class="token keyword">rule</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span> #lookupCode ACCT <span class="token operator">=&gt;</span> <span class="token punctuation">.</span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span>
+      <span class="token keyword">requires</span> notBool #accountExists<span class="token punctuation">(</span>ACCT<span class="token punctuation">)</span>
+</code></pre>
+<ul>
+<li><code>#getBlockhash(N)</code> returns the blockhash of the Nth most recent block, up to a maximum of 256 blocks.
+It is used in the implementation of the BLOCKHASH instruction as seen below.</li>
+</ul>
+<pre><code class="k node">    <span class="token keyword">syntax</span> <span class="token keyword">Int</span> <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> #getBlockhash <span class="token punctuation">(</span> <span class="token keyword">Int</span> <span class="token punctuation">)</span> <span class="token punctuation">[</span>function<span class="token punctuation">,</span> hook<span class="token punctuation">(</span>BLOCKCHAIN<span class="token punctuation">.</span>getBlockhash<span class="token punctuation">)</span><span class="token punctuation">]</span>
+ <span class="token comment">// ------------------------------------------------------------------------------</span>
+    <span class="token keyword">rule</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span> BLOCKHASH N <span class="token operator">=&gt;</span> #getBlockhash<span class="token punctuation">(</span>N<span class="token punctuation">)</span> <span class="token operator">~&gt;</span> #push <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>mode</span><span class="token punctuation">&gt;</span></span> NORMAL <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>mode</span><span class="token punctuation">&gt;</span></span> <span class="token keyword">requires</span> N <span class="token operator">&gt;=</span><span class="token keyword">Int</span> <span class="token number">0</span> andBool N  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>Int</span> <span class="token attr-name">256</span>
+    <span class="token attr-name">rule</span> <span class="token attr-name">&lt;k</span><span class="token punctuation">&gt;</span></span> BLOCKHASH N <span class="token operator">=&gt;</span> <span class="token number">0</span>                <span class="token operator">~&gt;</span> #push <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>mode</span><span class="token punctuation">&gt;</span></span> NORMAL <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>mode</span><span class="token punctuation">&gt;</span></span> <span class="token keyword">requires</span> N  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>Int</span> <span class="token attr-name">0</span>  <span class="token attr-name">orBool</span> <span class="token attr-name">N</span> <span class="token punctuation">&gt;</span></span><span class="token operator">=</span><span class="token keyword">Int</span> <span class="token number">256</span>
+</code></pre>
+<pre><code class="k node">    <span class="token keyword">rule</span> keccak<span class="token punctuation">(</span><span class="token punctuation">{</span>#unloaded<span class="token punctuation">(</span>HASH<span class="token punctuation">)</span><span class="token punctuation">}</span><span class="token punctuation">:</span>&gt;Bytes<span class="token punctuation">)</span> <span class="token operator">=&gt;</span> HASH
+</code></pre>
+<h3 id="transaction-execution">Transaction Execution</h3>
+<ul>
+<li><code>runVM</code> takes all the input state of a transaction and the current block header and executes the transaction according to the specified state, relying on the above loading operations for access to accounts and block hashes.
+The signature of this function must match the signature expected by VM.ml in the blockchain-k-plugin.</li>
+</ul>
+<pre><code class="k node">    <span class="token keyword">syntax</span> EthereumSimulation <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> runVM <span class="token punctuation">(</span> iscreate<span class="token punctuation">:</span> <span class="token keyword">Bool</span> <span class="token punctuation">,</span> to<span class="token punctuation">:</span> <span class="token keyword">Int</span>          <span class="token punctuation">,</span> from<span class="token punctuation">:</span> <span class="token keyword">Int</span>       <span class="token punctuation">,</span> code<span class="token punctuation">:</span> <span class="token keyword">String</span>  <span class="token punctuation">,</span> args<span class="token punctuation">:</span> <span class="token keyword">String</span>  <span class="token punctuation">,</span> value<span class="token punctuation">:</span> <span class="token keyword">Int</span>     <span class="token punctuation">,</span> gasprice<span class="token punctuation">:</span> <span class="token keyword">Int</span>
+                                        <span class="token punctuation">,</span> gas<span class="token punctuation">:</span> <span class="token keyword">Int</span>       <span class="token punctuation">,</span> beneficiary<span class="token punctuation">:</span> <span class="token keyword">Int</span> <span class="token punctuation">,</span> difficulty<span class="token punctuation">:</span> <span class="token keyword">Int</span> <span class="token punctuation">,</span> number<span class="token punctuation">:</span> <span class="token keyword">Int</span>   <span class="token punctuation">,</span> gaslimit<span class="token punctuation">:</span> <span class="token keyword">Int</span> <span class="token punctuation">,</span> timestamp<span class="token punctuation">:</span> <span class="token keyword">Int</span> <span class="token punctuation">,</span> unused<span class="token punctuation">:</span> <span class="token keyword">String</span> <span class="token punctuation">)</span> <span class="token punctuation">[</span><span class="token class-name">symbol</span><span class="token punctuation">]</span>
+ <span class="token comment">// ----------------------------------------------------------------------------------------------------------------------------------------------------------------------</span>
+    <span class="token keyword">rule</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span> <span class="token punctuation">(</span><span class="token punctuation">.</span>K <span class="token operator">=&gt;</span> #loadAccount ACCTFROM<span class="token punctuation">)</span> <span class="token operator">~&gt;</span> runVM<span class="token punctuation">(</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> from<span class="token punctuation">:</span> ACCTFROM<span class="token punctuation">)</span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>accounts</span><span class="token punctuation">&gt;</span></span> <span class="token punctuation">.</span>Bag <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>accounts</span><span class="token punctuation">&gt;</span></span>
+
+    <span class="token keyword">rule</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span> runVM<span class="token punctuation">(</span><span class="token boolean">true</span><span class="token punctuation">,</span> _<span class="token punctuation">,</span> ACCTFROM<span class="token punctuation">,</span> _<span class="token punctuation">,</span> ARGS<span class="token punctuation">,</span> VALUE<span class="token punctuation">,</span> GPRICE<span class="token punctuation">,</span> GAVAIL<span class="token punctuation">,</span> CB<span class="token punctuation">,</span> DIFF<span class="token punctuation">,</span> NUMB<span class="token punctuation">,</span> GLIMIT<span class="token punctuation">,</span> TS<span class="token punctuation">,</span> _<span class="token punctuation">)</span>
+          <span class="token operator">=&gt;</span> #loadAccount #newAddr<span class="token punctuation">(</span>ACCTFROM<span class="token punctuation">,</span> NONCE <span class="token operator">-</span><span class="token keyword">Int</span> <span class="token number">1</span><span class="token punctuation">)</span>
+          <span class="token operator">~&gt;</span> #create ACCTFROM #newAddr<span class="token punctuation">(</span>ACCTFROM<span class="token punctuation">,</span> NONCE <span class="token operator">-</span><span class="token keyword">Int</span> <span class="token number">1</span><span class="token punctuation">)</span> VALUE #parseByteStackRaw<span class="token punctuation">(</span>ARGS<span class="token punctuation">)</span>
+          <span class="token operator">~&gt;</span> #codeDeposit #newAddr<span class="token punctuation">(</span>ACCTFROM<span class="token punctuation">,</span> NONCE <span class="token operator">-</span><span class="token keyword">Int</span> <span class="token number">1</span><span class="token punctuation">)</span>
+          <span class="token operator">~&gt;</span> #endCreate
+         <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>gasPrice</span><span class="token punctuation">&gt;</span></span> _ <span class="token operator">=&gt;</span> GPRICE <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>gasPrice</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>callGas</span><span class="token punctuation">&gt;</span></span> _ <span class="token operator">=&gt;</span> GAVAIL <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>callGas</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>origin</span><span class="token punctuation">&gt;</span></span> _ <span class="token operator">=&gt;</span> ACCTFROM <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>origin</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>callDepth</span><span class="token punctuation">&gt;</span></span> _ <span class="token operator">=&gt;</span> <span class="token operator">-</span><span class="token number">1</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>callDepth</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>coinbase</span><span class="token punctuation">&gt;</span></span> _ <span class="token operator">=&gt;</span> CB <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>coinbase</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>difficulty</span><span class="token punctuation">&gt;</span></span> _ <span class="token operator">=&gt;</span> DIFF <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>difficulty</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>number</span><span class="token punctuation">&gt;</span></span> _ <span class="token operator">=&gt;</span> NUMB <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>number</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>gasLimit</span><span class="token punctuation">&gt;</span></span> _ <span class="token operator">=&gt;</span> GLIMIT <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>gasLimit</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>timestamp</span><span class="token punctuation">&gt;</span></span> _ <span class="token operator">=&gt;</span> TS <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>timestamp</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>account</span><span class="token punctuation">&gt;</span></span>
+           <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>acctID</span><span class="token punctuation">&gt;</span></span> ACCTFROM <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>acctID</span><span class="token punctuation">&gt;</span></span>
+           <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>nonce</span><span class="token punctuation">&gt;</span></span> NONCE <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>nonce</span><span class="token punctuation">&gt;</span></span>
+           <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>account</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>touchedAccounts</span><span class="token punctuation">&gt;</span></span> _ <span class="token operator">=&gt;</span> SetItem<span class="token punctuation">(</span>CB<span class="token punctuation">)</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>touchedAccounts</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>accessedAccounts</span><span class="token punctuation">&gt;</span></span> ACCESSED <span class="token operator">=&gt;</span> ACCESSED <span class="token operator">|</span>Set SetItem<span class="token punctuation">(</span>ACCTFROM<span class="token punctuation">)</span> <span class="token operator">|</span>Set SetItem<span class="token punctuation">(</span>#newAddr<span class="token punctuation">(</span>ACCTFROM<span class="token punctuation">,</span> NONCE <span class="token operator">-</span><span class="token keyword">Int</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>accessedAccounts</span><span class="token punctuation">&gt;</span></span>
+
+    <span class="token keyword">rule</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span> runVM<span class="token punctuation">(</span><span class="token boolean">false</span><span class="token punctuation">,</span> ACCTTO<span class="token punctuation">,</span> ACCTFROM<span class="token punctuation">,</span> _<span class="token punctuation">,</span> ARGS<span class="token punctuation">,</span> VALUE<span class="token punctuation">,</span> GPRICE<span class="token punctuation">,</span> GAVAIL<span class="token punctuation">,</span> CB<span class="token punctuation">,</span> DIFF<span class="token punctuation">,</span> NUMB<span class="token punctuation">,</span> GLIMIT<span class="token punctuation">,</span> TS<span class="token punctuation">,</span> _<span class="token punctuation">)</span>
+          <span class="token operator">=&gt;</span> #loadAccount ACCTTO
+          <span class="token operator">~&gt;</span> #lookupCode ACCTTO
+          <span class="token operator">~&gt;</span> #call ACCTFROM ACCTTO ACCTTO VALUE VALUE #parseByteStackRaw<span class="token punctuation">(</span>ARGS<span class="token punctuation">)</span> <span class="token boolean">false</span>
+          <span class="token operator">~&gt;</span> #endVM
+         <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>gasPrice</span><span class="token punctuation">&gt;</span></span> _ <span class="token operator">=&gt;</span> GPRICE <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>gasPrice</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>callGas</span><span class="token punctuation">&gt;</span></span> _ <span class="token operator">=&gt;</span> GAVAIL <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>callGas</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>origin</span><span class="token punctuation">&gt;</span></span> _ <span class="token operator">=&gt;</span> ACCTFROM <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>origin</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>callDepth</span><span class="token punctuation">&gt;</span></span> _ <span class="token operator">=&gt;</span> <span class="token operator">-</span><span class="token number">1</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>callDepth</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>coinbase</span><span class="token punctuation">&gt;</span></span> _ <span class="token operator">=&gt;</span> CB <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>coinbase</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>difficulty</span><span class="token punctuation">&gt;</span></span> _ <span class="token operator">=&gt;</span> DIFF <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>difficulty</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>number</span><span class="token punctuation">&gt;</span></span> _ <span class="token operator">=&gt;</span> NUMB <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>number</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>gasLimit</span><span class="token punctuation">&gt;</span></span> _ <span class="token operator">=&gt;</span> GLIMIT <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>gasLimit</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>timestamp</span><span class="token punctuation">&gt;</span></span> _ <span class="token operator">=&gt;</span> TS <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>timestamp</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>touchedAccounts</span><span class="token punctuation">&gt;</span></span> _ <span class="token operator">=&gt;</span> SetItem<span class="token punctuation">(</span>CB<span class="token punctuation">)</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>touchedAccounts</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>accessedAccounts</span><span class="token punctuation">&gt;</span></span> ACCESSED <span class="token operator">=&gt;</span> ACCESSED <span class="token operator">|</span>Set SetItem<span class="token punctuation">(</span>ACCTFROM<span class="token punctuation">)</span> <span class="token operator">|</span>Set SetItem<span class="token punctuation">(</span>ACCTTO<span class="token punctuation">)</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>accessedAccounts</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>account</span><span class="token punctuation">&gt;</span></span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>acctID</span><span class="token punctuation">&gt;</span></span> ACCTFROM <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>acctID</span><span class="token punctuation">&gt;</span></span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>account</span><span class="token punctuation">&gt;</span></span>
+</code></pre>
+<ul>
+<li><code>makeAccessList</code> will initialize the <code>&lt;accessedAccounts&gt;</code> and <code>&lt;accessedStorage&gt;</code> cells for an access list transaction type and leave runVM at the top of the <code>&lt;k&gt;</code> cell.</li>
+</ul>
+<pre><code class="k node">    <span class="token keyword">syntax</span> KItem <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> storageLocation <span class="token punctuation">(</span> <span class="token keyword">Int</span><span class="token punctuation">,</span> <span class="token keyword">Int</span> <span class="token punctuation">)</span> <span class="token punctuation">[</span><span class="token class-name">symbol</span><span class="token punctuation">]</span>
+    <span class="token keyword">syntax</span> EthereumSimulation <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> makeAccessList <span class="token punctuation">(</span> accessedAddresses<span class="token punctuation">:</span> Set<span class="token punctuation">,</span> storageList<span class="token punctuation">:</span> Set <span class="token punctuation">,</span> runvm<span class="token punctuation">:</span> EthereumSimulation <span class="token punctuation">)</span> <span class="token punctuation">[</span><span class="token class-name">symbol</span><span class="token punctuation">]</span>
+ <span class="token comment">// ------------------------------------------------------------------------------------------------------------------------------</span>
+    <span class="token keyword">rule</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span> makeAccessList<span class="token punctuation">(</span> ACCESSED<span class="token punctuation">,</span> <span class="token punctuation">.</span>Set<span class="token punctuation">,</span> RUNVM <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> RUNVM <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>accessedAccounts</span><span class="token punctuation">&gt;</span></span> _ <span class="token operator">=&gt;</span> ACCESSED <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>accessedAccounts</span><span class="token punctuation">&gt;</span></span>
+
+    <span class="token keyword">rule</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span> makeAccessList<span class="token punctuation">(</span> _<span class="token punctuation">,</span> SetItem<span class="token punctuation">(</span>storageLocation<span class="token punctuation">(</span>ACCT<span class="token punctuation">,</span> LOCATION<span class="token punctuation">)</span><span class="token punctuation">)</span> STORAGELIST <span class="token operator">=&gt;</span> STORAGELIST<span class="token punctuation">,</span> _ <span class="token punctuation">)</span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>accessedStorage</span><span class="token punctuation">&gt;</span></span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> ACCT <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token punctuation">(</span>LOCATIONS <span class="token operator">=&gt;</span> LOCATIONS <span class="token operator">|</span>Set SetItem<span class="token punctuation">(</span>LOCATION<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>accessedStorage</span><span class="token punctuation">&gt;</span></span>
+
+    <span class="token keyword">rule</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span> makeAccessList<span class="token punctuation">(</span> _<span class="token punctuation">,</span> SetItem<span class="token punctuation">(</span>storageLocation<span class="token punctuation">(</span>ACCT<span class="token punctuation">,</span> LOCATION<span class="token punctuation">)</span><span class="token punctuation">)</span> STORAGELIST <span class="token operator">=&gt;</span> STORAGELIST<span class="token punctuation">,</span> _ <span class="token punctuation">)</span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>accessedStorage</span><span class="token punctuation">&gt;</span></span> STORAGEMAP <span class="token operator">=&gt;</span> STORAGEMAP<span class="token punctuation">[</span>ACCT &lt;<span class="token operator">-</span> SetItem<span class="token punctuation">(</span>LOCATION<span class="token punctuation">)</span><span class="token punctuation">]</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>accessedStorage</span><span class="token punctuation">&gt;</span></span>
+      <span class="token keyword">requires</span> notBool ACCT in_keys<span class="token punctuation">(</span>STORAGEMAP<span class="token punctuation">)</span>
+</code></pre>
+<ul>
+<li><code>#endCreate</code> and <code>#endVM</code> clean up after the transaction finishes and store the return status code of the top level call frame on the top of the <code>&lt;k&gt;</code> cell.</li>
+</ul>
+<pre><code class="k node">    <span class="token keyword">syntax</span> KItem <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> <span class="token string">"#endVM"</span> <span class="token operator">|</span> <span class="token string">"#endCreate"</span>
+ <span class="token comment">// ----------------------------------------</span>
+    <span class="token keyword">rule</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>statusCode</span><span class="token punctuation">&gt;</span></span> _<span class="token punctuation">:</span>ExceptionalStatusCode <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>statusCode</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span> #halt <span class="token operator">~&gt;</span> #endVM <span class="token operator">=&gt;</span> #popCallStack <span class="token operator">~&gt;</span> #popWorldState <span class="token operator">~&gt;</span> <span class="token number">0</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>output</span><span class="token punctuation">&gt;</span></span> _ <span class="token operator">=&gt;</span> <span class="token punctuation">.</span>Bytes <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>output</span><span class="token punctuation">&gt;</span></span>
+
+    <span class="token keyword">rule</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>statusCode</span><span class="token punctuation">&gt;</span></span> EVMC_REVERT <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>statusCode</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span> #halt <span class="token operator">~&gt;</span> #endVM <span class="token operator">=&gt;</span> #popCallStack <span class="token operator">~&gt;</span> #popWorldState <span class="token operator">~&gt;</span> #refund GAVAIL <span class="token operator">~&gt;</span> <span class="token number">0</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>gas</span><span class="token punctuation">&gt;</span></span> GAVAIL <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>gas</span><span class="token punctuation">&gt;</span></span>
+
+    <span class="token keyword">rule</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>statusCode</span><span class="token punctuation">&gt;</span></span> EVMC_SUCCESS <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>statusCode</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span> #halt <span class="token operator">~&gt;</span> #endVM <span class="token operator">=&gt;</span> #popCallStack <span class="token operator">~&gt;</span> #dropWorldState <span class="token operator">~&gt;</span> #refund GAVAIL <span class="token operator">~&gt;</span> <span class="token number">1</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>gas</span><span class="token punctuation">&gt;</span></span> GAVAIL <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>gas</span><span class="token punctuation">&gt;</span></span>
+
+    <span class="token keyword">rule</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span> #endCreate <span class="token operator">=&gt;</span> W <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>wordStack</span><span class="token punctuation">&gt;</span></span> W <span class="token punctuation">:</span> _WS <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>wordStack</span><span class="token punctuation">&gt;</span></span>
+</code></pre>
+<h3 id="primitive-operations-expected-to-exist-by-the-blockchain-k-plugin">Primitive operations expected to exist by the blockchain-k-plugin</h3>
+<ul>
+<li><code>vmResult</code> represents the extracted information about the world state after the transaction finishes.
+Its signature must match the signature expected by VM.ml in the blockchain-k-plugin.</li>
+<li><code>extractConfig</code> takes a final configuration after rewriting and extracts a <code>vmResult</code> from it in order to abstract away configuration structure from the postprocessing done by the blockchain-k-plugin.</li>
+</ul>
+<pre><code class="k node">    <span class="token keyword">syntax</span> KItem <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> vmResult <span class="token punctuation">(</span> return<span class="token punctuation">:</span> <span class="token keyword">String</span> <span class="token punctuation">,</span> gas<span class="token punctuation">:</span> <span class="token keyword">Int</span> <span class="token punctuation">,</span> refund<span class="token punctuation">:</span> <span class="token keyword">Int</span> <span class="token punctuation">,</span> status<span class="token punctuation">:</span> <span class="token keyword">Int</span> <span class="token punctuation">,</span> selfdestruct<span class="token punctuation">:</span> Set <span class="token punctuation">,</span> logs<span class="token punctuation">:</span> List <span class="token punctuation">,</span> AccountsCell <span class="token punctuation">,</span> touched<span class="token punctuation">:</span> Set <span class="token punctuation">,</span> statusCode<span class="token punctuation">:</span> <span class="token keyword">String</span> <span class="token punctuation">)</span>
+    <span class="token keyword">syntax</span> KItem <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> extractConfig<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">[</span>function<span class="token punctuation">,</span> <span class="token class-name">symbol</span><span class="token punctuation">]</span>
+ <span class="token comment">// ---------------------------------------------------</span>
+    <span class="token keyword">rule</span> <span class="token punctuation">[</span><span class="token punctuation">[</span> extractConfig<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> vmResult<span class="token punctuation">(</span>#unparseByteStack<span class="token punctuation">(</span>OUT<span class="token punctuation">)</span><span class="token punctuation">,</span> GAVAIL<span class="token punctuation">,</span> REFUND<span class="token punctuation">,</span> STATUS<span class="token punctuation">,</span> SD<span class="token punctuation">,</span> LOGS<span class="token punctuation">,</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>accounts</span><span class="token punctuation">&gt;</span></span> ACCTS <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>accounts</span><span class="token punctuation">&gt;</span></span><span class="token punctuation">,</span> TOUCHED<span class="token punctuation">,</span> StatusCode2String<span class="token punctuation">(</span>STATUSCODE<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">]</span><span class="token punctuation">]</span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>output</span><span class="token punctuation">&gt;</span></span> OUT <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>output</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>gas</span><span class="token punctuation">&gt;</span></span> GAVAIL <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>gas</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>refund</span><span class="token punctuation">&gt;</span></span> REFUND <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>refund</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span> STATUS<span class="token punctuation">:</span><span class="token keyword">Int</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>selfDestruct</span><span class="token punctuation">&gt;</span></span> SD <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>selfDestruct</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>log</span><span class="token punctuation">&gt;</span></span> LOGS <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>log</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>accounts</span><span class="token punctuation">&gt;</span></span> ACCTS <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>accounts</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>touchedAccounts</span><span class="token punctuation">&gt;</span></span> TOUCHED <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>touchedAccounts</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>statusCode</span><span class="token punctuation">&gt;</span></span> STATUSCODE <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>statusCode</span><span class="token punctuation">&gt;</span></span>
+
+    <span class="token keyword">syntax</span> KItem <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> accessListResult<span class="token punctuation">(</span> accountsSet<span class="token punctuation">:</span> Set<span class="token punctuation">,</span> storageSet<span class="token punctuation">:</span> Set <span class="token punctuation">)</span> <span class="token punctuation">[</span><span class="token class-name">symbol</span><span class="token punctuation">]</span>
+    <span class="token keyword">syntax</span> KItem <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> extractAccessList<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">[</span>function<span class="token punctuation">,</span> <span class="token class-name">symbol</span><span class="token punctuation">]</span>
+ <span class="token comment">// -------------------------------------------------------------------------------</span>
+    <span class="token keyword">rule</span> <span class="token punctuation">[</span><span class="token punctuation">[</span> extractAccessList<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> accessListResult<span class="token punctuation">(</span> ACCESSED<span class="token punctuation">,</span> warmStorage2Set<span class="token punctuation">(</span> keys_list<span class="token punctuation">(</span>STORAGE<span class="token punctuation">)</span><span class="token punctuation">,</span> STORAGE<span class="token punctuation">,</span> <span class="token punctuation">.</span>Set<span class="token punctuation">)</span> <span class="token punctuation">)</span> <span class="token punctuation">]</span><span class="token punctuation">]</span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>accessedAccounts</span><span class="token punctuation">&gt;</span></span> ACCESSED <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>accessedAccounts</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>accessedStorage</span><span class="token punctuation">&gt;</span></span>  STORAGE  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>accessedStorage</span><span class="token punctuation">&gt;</span></span>
+
+    <span class="token keyword">syntax</span> Set <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> warmStorage2Set   <span class="token punctuation">(</span> List<span class="token punctuation">,</span> Map<span class="token punctuation">,</span> Set <span class="token punctuation">)</span> <span class="token punctuation">[</span>function<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> warmStorage2SetAux<span class="token punctuation">(</span> <span class="token keyword">Int</span><span class="token punctuation">,</span> List<span class="token punctuation">,</span> Set <span class="token punctuation">)</span> <span class="token punctuation">[</span>function<span class="token punctuation">]</span>
+ <span class="token comment">// --------------------------------------------------------------</span>
+    <span class="token keyword">rule</span> warmStorage2Set<span class="token punctuation">(</span> <span class="token punctuation">.</span>List<span class="token punctuation">,</span> _<span class="token punctuation">,</span> STORAGELIST <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> STORAGELIST
+    <span class="token keyword">rule</span> warmStorage2Set<span class="token punctuation">(</span> <span class="token punctuation">(</span>ListItem<span class="token punctuation">(</span>ACCT<span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">.</span>List<span class="token punctuation">)</span> _<span class="token punctuation">,</span> STORAGE<span class="token punctuation">,</span> RESULT <span class="token operator">=&gt;</span> RESULT <span class="token operator">|</span>Set warmStorage2SetAux<span class="token punctuation">(</span>ACCT<span class="token punctuation">,</span> Set2List<span class="token punctuation">(</span><span class="token punctuation">{</span>STORAGE<span class="token punctuation">[</span>ACCT<span class="token punctuation">]</span><span class="token punctuation">}</span><span class="token punctuation">:</span>&gt;Set<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token punctuation">.</span>Set<span class="token punctuation">)</span> <span class="token punctuation">)</span>
+
+    <span class="token keyword">rule</span> warmStorage2SetAux<span class="token punctuation">(</span> _<span class="token punctuation">,</span> <span class="token punctuation">.</span>List<span class="token punctuation">,</span> RESULT <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> RESULT
+    <span class="token keyword">rule</span> warmStorage2SetAux<span class="token punctuation">(</span> ACCT<span class="token punctuation">,</span> <span class="token punctuation">(</span>ListItem<span class="token punctuation">(</span>LOCATION<span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">.</span>List<span class="token punctuation">)</span> _LOCATIONS<span class="token punctuation">,</span> RESULT <span class="token operator">=&gt;</span> RESULT <span class="token operator">|</span>Set SetItem<span class="token punctuation">(</span>storageLocation<span class="token punctuation">(</span>ACCT<span class="token punctuation">,</span> LOCATION<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">)</span>
+</code></pre>
+<ul>
+<li><code>contractBytes</code> takes the contents of the <code>&lt;code&gt;</code> cell and returns its binary representation as a String.</li>
+</ul>
+<pre><code class="k node">    <span class="token keyword">syntax</span> <span class="token keyword">String</span> <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> contractBytes<span class="token punctuation">(</span>AccountCode<span class="token punctuation">)</span> <span class="token punctuation">[</span>function<span class="token punctuation">,</span> <span class="token class-name">symbol</span><span class="token punctuation">]</span>
+ <span class="token comment">// ---------------------------------------------------------------</span>
+    <span class="token keyword">rule</span> contractBytes<span class="token punctuation">(</span>WS<span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #unparseByteStack<span class="token punctuation">(</span>WS<span class="token punctuation">)</span>
+</code></pre>
+<p>The following are expected to exist in the client, but are already defined in [data.md].</p>
+<ul>
+<li><code>accountEmpty</code> takes the contents of the <code>&lt;code&gt;</code> cell, the contents of the <code>&lt;nonce&gt;</code> cell, and the contents of the <code>&lt;balance&gt;</code> cell and returns true if the account is empty according to the semantics of EIP161 (i.e., empty code zero balance zero nonce).</li>
+<li><code>unparseByteStack</code> takes a WordStack and returns the corresponding byte String.</li>
+<li><code>initKevmCell</code> is the top cell initializer used to construct an initial configuration.
+The configuration is expected to have <code>$MODE</code>, <code>$PGM</code>, and <code>$SCHEDULE</code> parameters.</li>
+<li><code>logEntry</code> is an entry in the log data created by a transaction.
+It is expected to consist of an Int address, a List of Int topics, and a WordStack of data.</li>
+<li><code>NORMAL</code> is the value of <code>$MODE</code> used by actual transaction execution.</li>
+</ul>
+<pre><code class="k node"><span class="token keyword">endmodule</span>
+</code></pre>
+</body></html></div>
+        </main>
+
+        <!-- Page ToC -->
+        <div class="col-12 col-md-3 col-xl-2 py-md-3 bd-sidebar page-toc mb-3">
+          
+<div>
+<div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#evm-integration-with-production-client"
+                class="bd-toc-link"
+                style="padding-left: 0px;;"
+              >
+                EVM Integration with Production Client
+              </a></div>
+</div>
+
+        </div>
+        <div class="btn btn-rv-blue page-toc-toggle-btn"></div>
+        <!-- End Page ToC -->
+      </div>
+    </div>
+<!-- The footer is now controlled by the k-web-theme git submodule -->
+<footer id="rvsite-footer" class="app-footer text-md-left text-center">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-md-4 mb-md-0 mb-4">
+        <a href="https://runtimeverification.com/" target="_blank">
+          <picture>
+            <source
+              srcset="
+                https://runtimeverification.com/assets/img/rv-logo-dark.png
+              "
+              media="(prefers-color-scheme: dark)"
+            />
+            <img
+              class="logo-dark"
+              src="https://runtimeverification.com/assets/img/rv-logo.png"
+              alt="Runtime Verification logo"
+              style="height: 32px"
+            /> </picture
+        ></a>
+        <p class="mt-2 text-md-left copyright">
+          <a href="https://goo.gl/maps/5iu2nhbUA48fs7fP6" target="_blank"
+            >333 North Green Street, Chicago, IL</a
+          >
+        </p>
+      </div>
+      <div class="col-md-4 text-md-center mb-md-0 mb-4"></div>
+      <div class="col-md-4 mb-md-0 mb-4 pl-0 text-md-right">
+        <p class="copyright">2023 © all rights reserved</p>
+        <span class="copyright"><a href="https://runtimeverification.com/privacy-policy">privacy policy</a> | <a
+                href="https://runtimeverification.com/terms-of-use">terms of use</a></span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Typist/1.2/typist.min.js"></script>
+    <script src="../../../assets/js/index.js"></script>
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script
+  async
+  src="https://www.googletagmanager.com/gtag/js?id=G-QL0D8HRYFW"
+></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag() {
+    dataLayer.push(arguments);
+  }
+  gtag("js", new Date());
+  gtag("config", "G-QL0D8HRYFW");
+</script>
+
+  </body>
+</html>
