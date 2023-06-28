@@ -568,6 +568,41 @@ This rule then takes the address using `#asWord(#range(ARGS, 0, 32))` and makes 
       requires SELECTOR ==Int selector ( "symbolicStorage(address)" )
 ```
 
+#### `freshUInt` - Returns a single symbolic unsigned integer.
+
+```
+function freshUInt(uint8) external returns (uint256);
+```
+
+`foundry.call.freshUInt` will match when the `freshUInt` cheat code function is called.
+This rule returns a symbolic integer of up to the bit width that was sent as an argument.
+
+```{.k .symbolic}
+    rule [foundry.call.freshUInt]:
+         <k> #call_foundry SELECTOR ARGS => . ... </k>
+         <output> _ => #bufStrict(32, ?WORD) </output>
+      requires SELECTOR ==Int selector ( "freshUInt(uint8)" )
+       andBool 0 <Int #asWord(ARGS) andBool #asWord(ARGS) <=Int 32
+       ensures 0 <=Int ?WORD andBool ?WORD <Int 2 ^Int (8 *Int #asWord(ARGS))
+```
+
+#### `freshBool` - Returns a single symbolic boolean.
+
+```
+function freshBool() external returns (bool);
+```
+
+`foundry.call.freshBool` will match when the `freshBool` cheat code function is called.
+This rule returns a symbolic boolean value being either 0 (false) or 1 (true).
+
+```{.k .symbolic}
+    rule [foundry.call.freshBool]:
+         <k> #call_foundry SELECTOR _ => . ... </k>
+         <output> _ => #bufStrict(32, ?WORD) </output>
+      requires SELECTOR ==Int selector ( "freshBool()" )
+       ensures #rangeBool(?WORD)
+```
+
 Expecting the next call to revert
 ---------------------------------
 
@@ -1592,6 +1627,8 @@ If the production is matched when no prank is active, it will be ignored.
     rule ( selector ( "expectEmit(bool,bool,bool,bool,address)" )  => 2176505587 )
     rule ( selector ( "sign(uint256,bytes32)" )                    => 3812747940 )
     rule ( selector ( "symbolicStorage(address)" )                 => 769677742  )
+    rule ( selector ( "freshUInt(uint8)" )                         => 625253732  )
+    rule ( selector ( "freshBool()" )                              => 2935720297 )
     rule ( selector ( "prank(address)" )                           => 3395723175 )
     rule ( selector ( "prank(address,address)" )                   => 1206193358 )
     rule ( selector ( "allowCallsToAddress(address)" )             => 1850795572 )

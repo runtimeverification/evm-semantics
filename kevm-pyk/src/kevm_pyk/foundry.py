@@ -13,7 +13,7 @@ import tomlkit
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cterm import CTerm
 from pyk.kast.inner import KApply, KSequence, KSort, KToken, KVariable, Subst
-from pyk.kast.manip import minimize_term
+from pyk.kast.manip import free_vars, minimize_term
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
 from pyk.kcfg import KCFG, KCFGExplore
 from pyk.ktool.kompile import LLVMKompileType
@@ -28,12 +28,13 @@ from pyk.proof.show import APRProofShow
 from pyk.utils import BugReport, ensure_dir_path, hash_str, run_process, single, unique
 
 from .kevm import KEVM, KEVMNodePrinter
-from .kompile import KompileTarget, kevm_kompile
+from .kompile import Kernel, KompileTarget, kevm_kompile
 from .solc_to_k import Contract, contract_to_main_module, contract_to_verification_module
 from .utils import (
     KDefinition__expand_macros,
     abstract_cell_vars,
     byte_offset_to_lines,
+    constraints_for,
     kevm_apr_prove,
     print_failure_info,
 )
@@ -113,6 +114,20 @@ class Foundry:
     def digest(self) -> str:
         contract_digests = [self.contracts[c].digest for c in sorted(self.contracts)]
         return hash_str('\n'.join(contract_digests))
+
+    @cached_property
+    def llvm_dylib(self) -> Path | None:
+        arch = Kernel.get()
+        foundry_llvm_dir = self.out / 'kompiled-llvm'
+        if arch == Kernel.LINUX:
+            dylib = foundry_llvm_dir / 'interpreter.so'
+        else:
+            dylib = foundry_llvm_dir / 'interpreter.dylib'
+
+        if dylib.exists():
+            return dylib
+        else:
+            return None
 
     def up_to_date(self) -> bool:
         digest_file = self.out / 'digest'
@@ -407,10 +422,12 @@ def foundry_prove(
     bmc_depth: int | None = None,
     bug_report: bool = False,
     kore_rpc_command: str | Iterable[str] = ('kore-rpc',),
+    use_booster: bool = False,
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
     failure_info: bool = True,
     trace_rewrites: bool = False,
+    auto_abstract_gas: bool = False,
 ) -> dict[str, tuple[bool, list[str] | None]]:
     if workers <= 0:
         raise ValueError(f'Must have at least one worker, found: --workers {workers}')
@@ -422,6 +439,22 @@ def foundry_prove(
 
     save_directory = foundry.out / 'apr_proofs'
     save_directory.mkdir(exist_ok=True)
+
+    if use_booster:
+        try:
+            run_process(('which', 'kore-rpc-booster'), pipe_stderr=True).stdout.strip()
+        except CalledProcessError:
+            raise RuntimeError(
+                "Couldn't locate the kore-rpc-booster RPC binary. Please put 'kore-rpc-booster' on PATH manually or using kup install/kup shell."
+            ) from None
+
+        if foundry.llvm_dylib:
+            kore_rpc_command = ('kore-rpc-booster', '--llvm-backend-library', str(foundry.llvm_dylib))
+        else:
+            foundry_llvm_dir = foundry.out / 'kompiled-llvm'
+            raise ValueError(
+                f"Could not find the LLVM dynamic library in {foundry_llvm_dir}. Please re-run foundry-kompile with the '--with-llvm-library' flag"
+            )
 
     all_tests = [
         f'{contract.name}.{method.name}'
@@ -501,11 +534,6 @@ def foundry_prove(
                 reinit=(method.qualified_name in out_of_date_methods),
                 simplify_init=simplify_init,
                 bmc_depth=bmc_depth,
-                kore_rpc_command=kore_rpc_command,
-                smt_timeout=smt_timeout,
-                smt_retry_limit=smt_retry_limit,
-                bug_report=br,
-                trace_rewrites=trace_rewrites,
             )
 
             passed = kevm_apr_prove(
@@ -528,6 +556,7 @@ def foundry_prove(
                 smt_timeout=smt_timeout,
                 smt_retry_limit=smt_retry_limit,
                 trace_rewrites=trace_rewrites,
+                abstract_node=(KEVM.abstract_gas_cell if auto_abstract_gas else None),
             )
             failure_log = None
             if not passed:
@@ -814,11 +843,6 @@ def _method_to_apr_proof(
     reinit: bool = False,
     simplify_init: bool = True,
     bmc_depth: int | None = None,
-    kore_rpc_command: str | Iterable[str] = ('kore-rpc',),
-    smt_timeout: int | None = None,
-    smt_retry_limit: int | None = None,
-    bug_report: BugReport | None = None,
-    trace_rewrites: bool = False,
 ) -> APRProof | APRBMCProof:
     contract_name = contract.name
     method_name = method.name
@@ -884,10 +908,9 @@ def _method_to_cfg(
 ) -> tuple[KCFG, NodeIdLike, NodeIdLike]:
     calldata = method.calldata_cell(contract)
     callvalue = method.callvalue_cell
-    init_term = _init_term(
+    init_cterm = _init_cterm(
         empty_config, contract.name, kcfgs_dir, calldata=calldata, callvalue=callvalue, init_state=init_state
     )
-    init_cterm = _init_cterm(init_term)
     is_test = method.name.startswith('test')
     failing = method.name.startswith('testFail')
     final_cterm = _final_cterm(empty_config, contract.name, failing=failing, is_test=is_test)
@@ -899,20 +922,17 @@ def _method_to_cfg(
     return cfg, init_node.id, target_node.id
 
 
-def _init_cterm(init_term: KInner) -> CTerm:
-    init_cterm = CTerm.from_kast(init_term)
-    init_cterm = KEVM.add_invariant(init_cterm)
-    return init_cterm
-
-
-def get_final_accounts_cell(proof_digest: str, proof_dir: Path) -> KInner:
+def get_final_accounts_cell(proof_digest: str, proof_dir: Path) -> tuple[KInner, Iterable[KInner]]:
     apr_proof = APRProof.read_proof(proof_digest, proof_dir)
     target = apr_proof.kcfg.node(apr_proof.target)
     cterm = single(apr_proof.kcfg.covers(target_id=target.id)).source.cterm
-    return cterm.cell('ACCOUNTS_CELL')
+    acct_cell = cterm.cell('ACCOUNTS_CELL')
+    fvars = free_vars(acct_cell)
+    acct_cons = constraints_for(fvars, cterm.constraints)
+    return (acct_cell, acct_cons)
 
 
-def _init_term(
+def _init_cterm(
     empty_config: KInner,
     contract_name: str,
     kcfgs_dir: Path,
@@ -920,7 +940,7 @@ def _init_term(
     calldata: KInner | None = None,
     callvalue: KInner | None = None,
     init_state: str | None = None,
-) -> KInner:
+) -> CTerm:
     program = KEVM.bin_runtime(KApply(f'contract_{contract_name}'))
     account_cell = KEVM.account_cell(
         Foundry.address_TEST_CONTRACT(),
@@ -980,8 +1000,9 @@ def _init_term(
         'RECORDS_CELL': KApply('.RecordCellMap'),
     }
 
+    constraints = None
     if init_state:
-        accts = get_final_accounts_cell(init_state, kcfgs_dir)
+        accts, constraints = get_final_accounts_cell(init_state, kcfgs_dir)
         init_subst['ACCOUNTS_CELL'] = accts
 
     if calldata is not None:
@@ -990,7 +1011,15 @@ def _init_term(
     if callvalue is not None:
         init_subst['CALLVALUE_CELL'] = callvalue
 
-    return Subst(init_subst)(empty_config)
+    init_term = Subst(init_subst)(empty_config)
+    init_cterm = CTerm.from_kast(init_term)
+    init_cterm = KEVM.add_invariant(init_cterm)
+    if constraints is None:
+        return init_cterm
+    else:
+        for constraint in constraints:
+            init_cterm = init_cterm.add_constraint(constraint)
+        return init_cterm
 
 
 def _final_cterm(empty_config: KInner, contract_name: str, *, failing: bool, is_test: bool = True) -> CTerm:
