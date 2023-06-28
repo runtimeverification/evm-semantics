@@ -21,7 +21,7 @@ from pyk.konvert import _kast_to_kore
 from pyk.kore.prelude import BOOL
 from pyk.kore.prelude import INT as INTSort
 from pyk.kore.prelude import TRUE as TRUESort
-from pyk.kore.syntax import Equals
+from pyk.kore.syntax import Equals, Pattern
 from pyk.ktool.kompile import LLVMKompileType
 from pyk.prelude.bytes import bytesToken
 from pyk.prelude.k import GENERATED_TOP_CELL
@@ -623,7 +623,7 @@ def foundry_show(
     return '\n'.join(res_lines)
 
 
-def foundry_koverage(foundry_root: Path, contracts: Iterable[str], tests: Iterable[str]) -> None:
+def foundry_koverage(foundry_root: Path, contracts: Iterable[str] = [], tests: Iterable[str] = []) -> dict[bytes, Pattern]:
     foundry = Foundry(foundry_root)
     apr_proofs_dir = foundry.out / 'apr_proofs'
     contracts = set(contracts) if len(set(contracts)) > 0 else set(foundry.contracts.keys())
@@ -805,17 +805,22 @@ def foundry_koverage(foundry_root: Path, contracts: Iterable[str], tests: Iterab
                                             val.append(not_covered)
                                             call_cells[acct_hash] = val
 
-    for _bytecode_h, cons_set in call_cells.items():
+    b_counter: dict[bytes, Pattern] = {}
+    for bytecode_h, cons_set in call_cells.items():
         b_uncovered = andBool(cons_set)
         with KCFGExplore(foundry.kevm) as kcfg_explore:
             kore = _kast_to_kore(b_uncovered)
             _, client = kcfg_explore._kore_rpc
             if client is not None:
                 equals = Equals(BOOL, INTSort, TRUESort, kore)
+                print(kcfg_explore.kprint.kore_to_pretty(equals))
                 model = client.get_model(equals)
                 print(model)
+                b_counter[bytecode_h] = model
             else:
                 raise RuntimeError('Issue getting the KoreClient')
+
+    return b_counter
 
 
 def foundry_to_dot(foundry_root: Path, test: str) -> None:
