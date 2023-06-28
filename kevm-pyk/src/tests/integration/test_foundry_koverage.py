@@ -1,20 +1,16 @@
 from __future__ import annotations
 
 from distutils.dir_util import copy_tree
+from os import listdir
+from typing import TYPE_CHECKING
 
+import pytest
 from pyk.utils import run_process
 
 from kevm_pyk import config
-from kevm_pyk.foundry import foundry_kompile, foundry_koverage, foundry_prove, foundry_show
+from kevm_pyk.foundry import foundry_kompile, foundry_koverage, foundry_prove
 
 from .test_foundry_prove import FORGE_STD_REF, assert_pass
-
-import pytest
-from os import listdir
-from os.path import isfile
-from pathlib import Path
-from typing import TYPE_CHECKING
-
 from .utils import TEST_DATA_DIR
 
 if TYPE_CHECKING:
@@ -24,7 +20,9 @@ if TYPE_CHECKING:
     from pytest import TempPathFactory
 
 
-KOVERAGE_TESTS: Final = set([f.removesuffix('.expected') for f in listdir(TEST_DATA_DIR / 'koverage') if f.endswith('.expected')])
+KOVERAGE_TESTS: Final = {
+    f.removesuffix('.expected') for f in listdir(TEST_DATA_DIR / 'koverage') if f.endswith('.expected')
+}
 
 
 @pytest.fixture(scope='module')  # TODO should reduce scope
@@ -45,6 +43,7 @@ def foundry_root(tmp_path_factory: TempPathFactory) -> Path:
 
     return foundry_root
 
+
 @pytest.mark.parametrize('test_id', KOVERAGE_TESTS)
 def test_foundry_koverage(test_id: str, foundry_root: Path, update_expected_output: bool) -> None:
     # When
@@ -64,7 +63,10 @@ def test_foundry_koverage(test_id: str, foundry_root: Path, update_expected_outp
 
     first_out = str(next(iter(koverage_res)))
 
-    assert_or_update_koverage_output(first_out, TEST_DATA_DIR / f'koverage/{test_id}.expected', update=update_expected_output)
+    assert_or_update_koverage_output(
+        first_out, TEST_DATA_DIR / f'koverage/{test_id}.expected', update=update_expected_output
+    )
+
 
 def assert_or_update_koverage_output(koverage_res: str, expected_file: Path, *, update: bool) -> None:
     assert expected_file.is_file()

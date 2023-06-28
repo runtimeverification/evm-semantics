@@ -18,8 +18,10 @@ from pyk.kast.manip import free_vars, minimize_term
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
 from pyk.kcfg import KCFG, KCFGExplore
 from pyk.konvert import _kast_to_kore
-from pyk.kore.prelude import TRUE as TRUEApp, INT as INTApp, BOOL as BOOLApp
-from pyk.kore.syntax import Equals, Pattern
+from pyk.kore.prelude import BOOL as BOOLApp  # noqa: N811
+from pyk.kore.prelude import INT as INTApp  # noqa: N811
+from pyk.kore.prelude import TRUE as TRUEApp  # noqa: N811
+from pyk.kore.syntax import Equals
 from pyk.ktool.kompile import LLVMKompileType
 from pyk.prelude.bytes import bytesToken
 from pyk.prelude.k import GENERATED_TOP_CELL
@@ -51,6 +53,7 @@ if TYPE_CHECKING:
     from pyk.kast import KInner
     from pyk.kcfg.kcfg import NodeIdLike
     from pyk.kcfg.tui import KCFGElem
+    from pyk.kore.syntax import Pattern
 
 _LOGGER: Final = logging.getLogger(__name__)
 
@@ -647,7 +650,9 @@ def foundry_show(
     return '\n'.join(res_lines)
 
 
-def foundry_koverage(foundry_root: Path, contracts: Iterable[str] = [], tests: Iterable[str] = []) -> dict[bytes, Pattern]:
+def foundry_koverage(
+    foundry_root: Path, contracts: Iterable[str] = (), tests: Iterable[str] = ()
+) -> dict[bytes, Pattern]:
     foundry = Foundry(foundry_root)
     apr_proofs_dir = foundry.out / 'apr_proofs'
     contracts = set(contracts) if len(set(contracts)) > 0 else set(foundry.contracts.keys())
