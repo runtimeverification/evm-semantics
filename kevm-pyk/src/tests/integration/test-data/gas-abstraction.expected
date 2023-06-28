@@ -27,7 +27,49 @@
 │   statusCode: STATUSCODE:StatusCode
 │
 ┊  constraint: true
-┊  subst: OMITTED SUBST
+┊  subst: {
+    CONTINUATION <- CONTINUATION:K
+    EXITCODE_CELL <- EXITCODE_CELL:Int
+    STATUSCODE <- STATUSCODE:StatusCode
+    TOUCHEDACCOUNTS_CELL <- TOUCHEDACCOUNTS_CELL:Set
+    CALLER_ID <- CALLER_ID:Int
+    ?_VGAS <- ?_VGAS:Int
+    ?_VCALLGAS <- ?_VCALLGAS:Int
+    VGAS_1675167e <- ( ( ?_VGAS:Int +Int ?_VCALLGAS:Int ) +Int -202 )
+    SELFDESTRUCT_CELL <- SELFDESTRUCT_CELL:Set
+    REFUND_CELL <- REFUND_CELL:Int
+    GASPRICE_CELL <- GASPRICE_CELL:Int
+    ORIGIN_ID <- ORIGIN_ID:Int
+    BLOCKHASHES_CELL <- BLOCKHASHES_CELL:List
+    PREVIOUSHASH_CELL <- PREVIOUSHASH_CELL:Int
+    OMMERSHASH_CELL <- OMMERSHASH_CELL:Int
+    COINBASE_CELL <- COINBASE_CELL:Int
+    STATEROOT_CELL <- STATEROOT_CELL:Int
+    TRANSACTIONSROOT_CELL <- TRANSACTIONSROOT_CELL:Int
+    RECEIPTSROOT_CELL <- RECEIPTSROOT_CELL:Int
+    LOGSBLOOM_CELL <- LOGSBLOOM_CELL:Bytes
+    DIFFICULTY_CELL <- DIFFICULTY_CELL:Int
+    NUMBER_CELL <- NUMBER_CELL:Int
+    GASLIMIT_CELL <- GASLIMIT_CELL:Int
+    GASUSED_CELL <- GASUSED_CELL:Gas
+    TIMESTAMP_CELL <- TIMESTAMP_CELL:Int
+    EXTRADATA_CELL <- EXTRADATA_CELL:Bytes
+    MIXHASH_CELL <- MIXHASH_CELL:Int
+    BLOCKNONCE_CELL <- BLOCKNONCE_CELL:Int
+    BASEFEE_CELL <- BASEFEE_CELL:Int
+    OMMERBLOCKHEADERS_CELL <- OMMERBLOCKHEADERS_CELL:JSON
+    CHAINID_CELL <- CHAINID_CELL:Int
+    TXORDER_CELL <- TXORDER_CELL:List
+    TXPENDING_CELL <- TXPENDING_CELL:List
+    MESSAGES_CELL <- MESSAGES_CELL:MessageCellMap
+    DEPTH_CELL <- DEPTH_CELL:Int
+    EXPECTEDREASON_CELL <- EXPECTEDREASON_CELL:Bytes
+    EXPECTEDDEPTH_CELL <- EXPECTEDDEPTH_CELL:Int
+    CHECKEDTOPICS_CELL <- CHECKEDTOPICS_CELL:List
+    CHECKEDDATA_CELL <- CHECKEDDATA_CELL:Bool
+    EXPECTEDEVENTADDRESS_CELL <- EXPECTEDEVENTADDRESS_CELL:Account
+    GENERATEDCOUNTER_CELL <- GENERATEDCOUNTER_CELL:Int
+}
 ├─ 6
 │   k: #end EVMC_REVERT ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
 │   pc: 808
@@ -65,6 +107,9 @@ Node 8:
         #halt
         ~> CONTINUATION:K
       </k>
+      <exit-code>
+        EXITCODE_CELL:Int
+      </exit-code>
       <mode>
         NORMAL
       </mode>
@@ -85,7 +130,12 @@ Node 8:
           <interimStates>
             .List
           </interimStates>
+          <touchedAccounts>
+            TOUCHEDACCOUNTS_CELL:Set
+          </touchedAccounts>
           <callState>
+            ...
+            ...
             <id>
               728815563385977040452943777879061427756277306518
             </id>
@@ -104,6 +154,8 @@ Node 8:
             <localMem>
               b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xed\x9fsS\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
             </localMem>
+            ...
+            ...
             <memoryUsed>
               5
             </memoryUsed>
@@ -116,32 +168,91 @@ Node 8:
             <callDepth>
               0
             </callDepth>
-            ...
           </callState>
           <substate>
+            <selfDestruct>
+              SELFDESTRUCT_CELL:Set
+            </selfDestruct>
             <log>
               .List
             </log>
+            <refund>
+              REFUND_CELL:Int
+            </refund>
             <accessedAccounts>
               SetItem ( 645326474426547203313410069153905908525362434349 )
             </accessedAccounts>
             <accessedStorage>
               .Map
             </accessedStorage>
-            ...
           </substate>
+          <gasPrice>
+            GASPRICE_CELL:Int
+          </gasPrice>
           <origin>
             ORIGIN_ID:Int
           </origin>
+          <blockhashes>
+            BLOCKHASHES_CELL:List
+          </blockhashes>
           <block>
+            <previousHash>
+              PREVIOUSHASH_CELL:Int
+            </previousHash>
+            <ommersHash>
+              OMMERSHASH_CELL:Int
+            </ommersHash>
+            <coinbase>
+              COINBASE_CELL:Int
+            </coinbase>
+            <stateRoot>
+              STATEROOT_CELL:Int
+            </stateRoot>
+            <transactionsRoot>
+              TRANSACTIONSROOT_CELL:Int
+            </transactionsRoot>
+            <receiptsRoot>
+              RECEIPTSROOT_CELL:Int
+            </receiptsRoot>
+            <logsBloom>
+              LOGSBLOOM_CELL:Bytes
+            </logsBloom>
+            <difficulty>
+              DIFFICULTY_CELL:Int
+            </difficulty>
             <number>
               NUMBER_CELL:Int
             </number>
-            ...
+            <gasLimit>
+              GASLIMIT_CELL:Int
+            </gasLimit>
+            <gasUsed>
+              GASUSED_CELL:Gas
+            </gasUsed>
+            <timestamp>
+              TIMESTAMP_CELL:Int
+            </timestamp>
+            <extraData>
+              EXTRADATA_CELL:Bytes
+            </extraData>
+            <mixHash>
+              MIXHASH_CELL:Int
+            </mixHash>
+            <blockNonce>
+              BLOCKNONCE_CELL:Int
+            </blockNonce>
+            <baseFee>
+              BASEFEE_CELL:Int
+            </baseFee>
+            <ommerBlockHeaders>
+              OMMERBLOCKHEADERS_CELL:JSON
+            </ommerBlockHeaders>
           </block>
-          ...
         </evm>
         <network>
+          <chainID>
+            CHAINID_CELL:Int
+          </chainID>
           <accounts>
             ( <account>
               <acctID>
@@ -150,6 +261,7 @@ Node 8:
               <balance>
                 0
               </balance>
+              ...
               <storage>
                 .Map
               </storage>
@@ -159,7 +271,6 @@ Node 8:
               <nonce>
                 0
               </nonce>
-              ...
             </account>
             <account>
               <acctID>
@@ -168,6 +279,7 @@ Node 8:
               <balance>
                 0
               </balance>
+              ...
               <storage>
                 .Map
               </storage>
@@ -177,13 +289,19 @@ Node 8:
               <nonce>
                 1
               </nonce>
-              ...
             </account> )
           </accounts>
-          ...
+          <txOrder>
+            TXORDER_CELL:List
+          </txOrder>
+          <txPending>
+            TXPENDING_CELL:List
+          </txPending>
+          <messages>
+            MESSAGES_CELL:MessageCellMap
+          </messages>
         </network>
       </ethereum>
-      ...
     </kevm>
     <cheatcodes>
       <prank>
@@ -202,16 +320,23 @@ Node 8:
         <active>
           false
         </active>
+        <depth>
+          DEPTH_CELL:Int
+        </depth>
         <singleCall>
           false
         </singleCall>
-        ...
       </prank>
       <expectedRevert>
         <isRevertExpected>
           false
         </isRevertExpected>
-        ...
+        <expectedReason>
+          EXPECTEDREASON_CELL:Bytes
+        </expectedReason>
+        <expectedDepth>
+          EXPECTEDDEPTH_CELL:Int
+        </expectedDepth>
       </expectedRevert>
       <expectedOpcode>
         <isOpcodeExpected>
@@ -237,7 +362,15 @@ Node 8:
         <isEventExpected>
           false
         </isEventExpected>
-        ...
+        <checkedTopics>
+          CHECKEDTOPICS_CELL:List
+        </checkedTopics>
+        <checkedData>
+          CHECKEDDATA_CELL:Bool
+        </checkedData>
+        <expectedEventAddress>
+          EXPECTEDEVENTADDRESS_CELL:Account
+        </expectedEventAddress>
       </expectEmit>
       <whitelist>
         <isCallWhitelistActive>
@@ -255,7 +388,9 @@ Node 8:
       </whitelist>
     </cheatcodes>
   </foundry>
-  ...
+  <generatedCounter>
+    GENERATEDCOUNTER_CELL:Int
+  </generatedCounter>
 </generatedTop>
 #And ( { true #Equals 0 <=Int CALLER_ID:Int }
 #And ( { true #Equals 0 <=Int ORIGIN_ID:Int }
