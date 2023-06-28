@@ -166,10 +166,10 @@ kevm_files := abi.md                          \
               foundry.md                      \
               hashed-locations.md             \
               gas.md                          \
-              infinite-gas.md                 \
               json-rpc.md                     \
               network.md                      \
               optimizations.md                \
+              schedule.md                     \
               serialization.md                \
               state-utils.md                  \
               word.md                         \
