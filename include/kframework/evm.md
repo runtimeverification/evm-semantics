@@ -770,7 +770,7 @@ These are just used by the other operators for shuffling local execution state a
              </account>
            )
            ...
-         </accounts>
+         </accounts> [preserves-definedness]
 ```
 
 -   `#transferFunds` moves money from one account into another, creating the destination account if it doesn't exist.
@@ -799,6 +799,7 @@ These are just used by the other operators for shuffling local execution state a
            ...
          </account>
       requires ACCTFROM =/=K ACCTTO andBool VALUE <=Int ORIGFROM
+       [preserves-definedness]
 
     rule <k> #transferFunds ACCTFROM _ACCTTO VALUE => #end EVMC_BALANCE_UNDERFLOW ... </k>
          <account>
@@ -1199,7 +1200,7 @@ These rules reach into the network state and load/store from account storage:
            <acctID> ACCT </acctID>
            <storage> STORAGE => STORAGE [ INDEX <- NEW ] </storage>
            ...
-         </account>
+         </account> [preserves-definedness]
 ```
 
 ### Call Operations
@@ -1316,7 +1317,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     syntax KItem ::= "#accessStorage" Account Int
  // --------------------------------------------
     rule <k> #accessStorage ACCT INDEX => . ... </k>
-         <accessedStorage> ... ACCT |-> (TS:Set => TS |Set SetItem(INDEX)) ... </accessedStorage>
+         <accessedStorage> ... ACCT |-> (TS:Set => TS |Set SetItem(INDEX)) ... </accessedStorage> [preserves-definedness]
     rule <k> #accessStorage ACCT INDEX => . ... </k>
          <accessedStorage> TS => TS[ACCT <- SetItem(INDEX)] </accessedStorage>
       requires notBool ACCT in_keys(TS)
@@ -1490,14 +1491,14 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
            <acctID> ACCTTO </acctID>
            <nonce> NONCE => #if Gemptyisnonexistent << SCHED >> #then NONCE +Int 1 #else NONCE #fi </nonce>
            ...
-         </account>
+         </account> [preserves-definedness]
 
     rule <k> #incrementNonce ACCT => . ... </k>
          <account>
            <acctID> ACCT </acctID>
            <nonce> NONCE => NONCE +Int 1 </nonce>
            ...
-         </account>
+         </account> [preserves-definedness]
 
     syntax Bool ::= #isValidCode ( Bytes , Schedule ) [function]
  // ------------------------------------------------------------
@@ -1542,7 +1543,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
            <acctID> ACCT </acctID>
            <code> _ => OUT </code>
            ...
-         </account>
+         </account> [preserves-definedness]
 
     rule <statusCode> _:ExceptionalStatusCode </statusCode>
          <k> #halt ~> #finishCodeDeposit ACCT _

@@ -1151,7 +1151,7 @@ Utils
            <acctID> ACCTID </acctID>
            <storage> STORAGE </storage>
            ...
-         </account>
+         </account> [preserves-definedness]
 ```
 
 - `#setStorage ACCTID LOC VALUE` sets a given value to a given location of an account.
@@ -1180,7 +1180,7 @@ Utils
            <storage> _ => ?STORAGE </storage>
            <origStorage> _ => ?STORAGE </origStorage>
            ...
-         </account>
+         </account> [preserves-definedness]
 ```
 
 - `#setExpectRevert` sets the `<expectedRevert>` subconfiguration with the current call depth and the expected message from `expectRevert`.
