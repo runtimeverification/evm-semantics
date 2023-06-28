@@ -166,10 +166,10 @@ kevm_files := abi.md                          \
               foundry.md                      \
               hashed-locations.md             \
               gas.md                          \
-              infinite-gas.md                 \
               json-rpc.md                     \
               network.md                      \
               optimizations.md                \
+              schedule.md                     \
               serialization.md                \
               state-utils.md                  \
               word.md                         \
@@ -514,7 +514,7 @@ test-rest-bchain: poetry build-kevm build-llvm
 
 prove_smoke_tests := $(shell cat tests/specs/smoke)
 
-test-prove: tests/specs/opcodes/evm-optimizations-spec.md build-kevm poetry
+test-prove: tests/specs/opcodes/evm-optimizations-spec.md poetry build-kevm build-haskell
 	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+='-k test_prove -n8'
 
 test-prove-smoke: $(prove_smoke_tests:=.prove)
