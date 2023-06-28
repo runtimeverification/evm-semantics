@@ -20,10 +20,11 @@
     pyk.url = "github:runtimeverification/pyk/v0.1.343";
     pyk.inputs.flake-utils.follows = "k-framework/flake-utils";
     pyk.inputs.nixpkgs.follows = "k-framework/nixpkgs";
+    foundry.url = "github:shazow/foundry.nix/monthly"; # Use monthly branch for permanent release
   };
   outputs = { self, k-framework, haskell-backend, nixpkgs, flake-utils
     , poetry2nix, blockchain-k-plugin, ethereum-tests, ethereum-legacytests
-    , rv-utils, pyk }:
+    , rv-utils, pyk, foundry }:
     let
       nixLibs = pkgs:
         with pkgs;
@@ -172,6 +173,7 @@
             blockchain-k-plugin.overlay
             poetry2nix.overlay
             pyk.overlay
+            foundry.overlay
             overlay
           ];
         };
@@ -180,7 +182,7 @@
         packages.default = kevm;
         devShell = pkgs.mkShell {
           buildInputs = buildInputs pkgs k-framework.packages.${system}.k
-            ++ [ pkgs.poetry ];
+            ++ [ pkgs.poetry pkgs.foundry-bin ];
 
           shellHook = ''
             export NIX_LIBS="${nixLibs pkgs}"
@@ -237,7 +239,6 @@
         };
       }) // {
         overlays.default = nixpkgs.lib.composeManyExtensions [
-          k-framework.overlay
           blockchain-k-plugin.overlay
           overlay
         ];
