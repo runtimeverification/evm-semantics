@@ -18,14 +18,12 @@ from pyk.kast.manip import free_vars, minimize_term
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
 from pyk.kcfg import KCFG, KCFGExplore
 from pyk.konvert import _kast_to_kore
-from pyk.kore.prelude import BOOL
-from pyk.kore.prelude import INT as INTSort
-from pyk.kore.prelude import TRUE as TRUESort
+from pyk.kore.prelude import TRUE as TRUEApp, INT as INTApp, BOOL as BOOLApp
 from pyk.kore.syntax import Equals, Pattern
 from pyk.ktool.kompile import LLVMKompileType
 from pyk.prelude.bytes import bytesToken
 from pyk.prelude.k import GENERATED_TOP_CELL
-from pyk.prelude.kbool import FALSE, TRUE, andBool, notBool
+from pyk.prelude.kbool import BOOL, FALSE, TRUE, andBool, notBool
 from pyk.prelude.kint import INT, intToken
 from pyk.prelude.ml import mlEqualsTrue
 from pyk.proof.proof import Proof, ProofStatus
@@ -643,15 +641,6 @@ def foundry_koverage(foundry_root: Path, contracts: Iterable[str] = [], tests: I
         KVariable('ARGS'),
         KVariable('_A7'),
     ]
-    # ret_var = (
-    #     KApply(
-    #         '#return___EVM_KItem_Int_Int',
-    #         [
-    #             KVariable('_A8'),
-    #             KVariable('_A9'),
-    #         ],
-    #     ),
-    # )
 
     k_match_patterns = [
         KSequence(
@@ -735,13 +724,9 @@ def foundry_koverage(foundry_root: Path, contracts: Iterable[str] = [], tests: I
         return andBool(bool_filtered)
 
     def _get_raw_constraint(kast: KInner) -> KInner:
-        # if type(kast) is KApply:
-        #     print(kast.label.params)
-        #     if kast.label.params == (KSort(''), GENERATED_TOP_CELL) and kast.args[0] == TRUE:
-        #         return kast.args[1]
-        # return kast
         if type(kast) is KApply:
-            return kast.args[1]
+            if kast.label.params == (BOOL, GENERATED_TOP_CELL) and kast.args[0] == TRUE:
+                return kast.args[1]
         return kast
 
     for name, contract in foundry.contracts.items():
@@ -750,18 +735,13 @@ def foundry_koverage(foundry_root: Path, contracts: Iterable[str] = [], tests: I
                 if len(set(tests)) == 0 or _test_name(name, test) in tests:
                     proof_digest = foundry.proof_digest(name, test)
                     if not APRProof.proof_exists(proof_digest, apr_proofs_dir):
-                        _LOGGER.warning(f'Proof does not exists: {_test_name(name, test)}')
+                        _LOGGER.warning(f'Proof does not exist, skipping: {_test_name(name, test)}')
                     else:
-                        apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
-                        if apr_proof.status is not ProofStatus.PASSED:
+                        proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
+                        if proof.status is not ProofStatus.PASSED:
                             _LOGGER.warning(f'Koverage not running on not passed proof: {_test_name(name, test)}')
                         else:
-                            kcfg = apr_proof.kcfg
-
-                            def _get_init_node() -> KCFG.Node:
-                                return next(node for node in kcfg.nodes if len(kcfg.predecessors(node.id)) == 0)
-
-                            for node in kcfg.nodes:
+                            for node in proof.kcfg.nodes:
                                 cterm = node.cterm
                                 for pattern in k_match_patterns:
                                     k_match = pattern.match(cterm.cell('K_CELL'))
@@ -778,10 +758,10 @@ def foundry_koverage(foundry_root: Path, contracts: Iterable[str] = [], tests: I
 
                                             cov_cons = [
                                                 constraints
-                                                for node in kcfg.covered
+                                                for node in proof.kcfg.covered
                                                 for constraints in node.cterm.constraints
                                             ]
-                                            init_node = _get_init_node()
+                                            init_node = proof.kcfg.node(proof.init)
                                             diff_cons = _cons_intersection(
                                                 [
                                                     cons
@@ -811,14 +791,10 @@ def foundry_koverage(foundry_root: Path, contracts: Iterable[str] = [], tests: I
         with KCFGExplore(foundry.kevm) as kcfg_explore:
             kore = _kast_to_kore(b_uncovered)
             _, client = kcfg_explore._kore_rpc
-            if client is not None:
-                equals = Equals(BOOL, INTSort, TRUESort, kore)
-                print(kcfg_explore.kprint.kore_to_pretty(equals))
-                model = client.get_model(equals)
-                print(model)
-                b_counter[bytecode_h] = model
-            else:
-                raise RuntimeError('Issue getting the KoreClient')
+            equals = Equals(BOOLApp, INTApp, TRUEApp, kore)
+            model = client.get_model(equals)
+            print(model)
+            b_counter[bytecode_h] = model
 
     return b_counter
 
