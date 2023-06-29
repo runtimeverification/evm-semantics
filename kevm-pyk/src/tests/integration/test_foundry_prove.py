@@ -210,6 +210,9 @@ def assert_or_update_show_output(show_res: str, expected_file: Path, *, update: 
     actual_text = '\n'.join(filtered_lines) + '\n'
     expected_text = expected_file.read_text()
 
+    print(f'actual_text: {actual_text}')
+    print(f'expected_text: {expected_text}')
+
     if update:
         expected_file.write_text(actual_text)
     else:

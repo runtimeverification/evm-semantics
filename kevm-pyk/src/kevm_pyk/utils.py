@@ -25,9 +25,8 @@ if TYPE_CHECKING:
 
     from pyk.kast import KInner
     from pyk.kast.outer import KDefinition
-    from pyk.kcfg import KCFGExplore
+    from pyk.kcfg.explore import KCFGExplore
     from pyk.ktool.kprove import KProve
-    from pyk.utils import BugReport
 
     T1 = TypeVar('T1')
     T2 = TypeVar('T2')
@@ -65,28 +64,44 @@ def get_apr_proof_for_spec(  # noqa: N802
     return apr_proof
 
 
-def kevm_apr_prove(
-    kprove: KProve,
-    proof: APRProof | APRBMCProof,
+def build_apr_prover(
+    proof: APRProof,
     kcfg_explore: KCFGExplore,
-    save_directory: Path | None = None,
+    is_terminal: Callable[[CTerm], bool] | None = None,
+    extract_branches: Callable[[CTerm], Iterable[KInner]] | None = None,
+    same_loop: Callable[[CTerm, CTerm], bool] | None = None,
+    abstract_node: Callable[[CTerm], CTerm] | None = None,
+) -> APRProver:
+    prover: APRProver
+    if type(proof) is APRBMCProof:
+        assert same_loop, f'BMC proof requires same_loop heuristic, but {same_loop} was supplied'
+        prover = APRBMCProver(
+            proof=proof,
+            kcfg_explore=kcfg_explore,
+            is_terminal=is_terminal,
+            extract_branches=extract_branches,
+            same_loop=same_loop,
+            abstract_node=abstract_node,
+        )
+    else:
+        prover = APRProver(
+            proof=proof,
+            kcfg_explore=kcfg_explore,
+            is_terminal=is_terminal,
+            extract_branches=extract_branches,
+            abstract_node=abstract_node,
+        )
+    return prover
+
+
+def kevm_apr_prove(
+    prover: APRProver | APRBMCProver,
     max_depth: int = 1000,
     max_iterations: int | None = None,
-    workers: int = 1,
     break_every_step: bool = False,
     break_on_jumpi: bool = False,
     break_on_calls: bool = True,
     implication_every_block: bool = False,
-    is_terminal: Callable[[CTerm], bool] | None = None,
-    extract_branches: Callable[[CTerm], Iterable[KInner]] | None = None,
-    same_loop: Callable[[CTerm, CTerm], bool] | None = None,
-    bmc_depth: int | None = None,
-    bug_report: BugReport | None = None,
-    kore_rpc_command: str | Iterable[str] = ('kore-rpc',),
-    smt_timeout: int | None = None,
-    smt_retry_limit: int | None = None,
-    trace_rewrites: bool = False,
-    abstract_node: Callable[[CTerm], CTerm] | None = None,
 ) -> bool:
     terminal_rules = ['EVM.halt']
     cut_point_rules = []
@@ -110,23 +125,8 @@ def kevm_apr_prove(
                 'EVM.return.success',
             ]
         )
-    prover: APRBMCProof | APRProver
-    if type(proof) is APRBMCProof:
-        assert same_loop, f'BMC proof requires same_loop heuristic, but {same_loop} was supplied'
-        prover = APRBMCProver(
-            proof,
-            is_terminal=is_terminal,
-            extract_branches=extract_branches,
-            same_loop=same_loop,
-            abstract_node=abstract_node,
-        )
-    else:
-        prover = APRProver(
-            proof, is_terminal=is_terminal, extract_branches=extract_branches, abstract_node=abstract_node
-        )
     try:
         prover.advance_proof(
-            kcfg_explore,
             max_iterations=max_iterations,
             execute_depth=max_depth,
             terminal_rules=terminal_rules,
@@ -134,56 +134,16 @@ def kevm_apr_prove(
             implication_every_block=implication_every_block,
         )
     except Exception as e:
-        _LOGGER.error(f'Proof crashed: {proof.id}\n{e}', exc_info=True)
+        _LOGGER.error(f'Proof crashed: {prover.proof.id}\n{e}', exc_info=True)
         return False
 
-    failure_nodes = proof.pending + proof.failing
+    failure_nodes = prover.proof.pending + prover.proof.failing
     if len(failure_nodes) == 0:
-        _LOGGER.info(f'Proof passed: {proof.id}')
+        _LOGGER.info(f'Proof passed: {prover.proof.id}')
         return True
     else:
-        _LOGGER.error(f'Proof failed: {proof.id}')
+        _LOGGER.error(f'Proof failed: {prover.proof.id}')
         return False
-
-
-def print_failure_info(proof: APRProof, kcfg_explore: KCFGExplore) -> list[str]:
-    target = proof.kcfg.node(proof.target)
-
-    res_lines: list[str] = []
-
-    num_pending = len(proof.pending)
-    num_failing = len(proof.failing)
-    res_lines.append(f'{num_pending + num_failing} Failure nodes. ({num_pending} pending and {num_failing} failing)')
-    if num_pending > 0:
-        res_lines.append('')
-        res_lines.append('Pending nodes:')
-        for node in proof.pending:
-            res_lines.append('')
-            res_lines.append(f'ID: {node.id}:')
-    if num_failing > 0:
-        res_lines.append('')
-        res_lines.append('Failing nodes:')
-        for node in proof.failing:
-            res_lines.append('')
-            res_lines.append(f'  Node id: {str(node.id)}')
-
-            simplified_node, _ = kcfg_explore.cterm_simplify(node.cterm)
-            simplified_target, _ = kcfg_explore.cterm_simplify(target.cterm)
-
-            node_cterm = CTerm.from_kast(simplified_node)
-            target_cterm = CTerm.from_kast(simplified_target)
-
-            res_lines.append('  Failure reason:')
-            _, reason = kcfg_explore.implication_failure_reason(node_cterm, target_cterm)
-            res_lines += [f'    {line}' for line in reason.split('\n')]
-
-            res_lines.append('  Path condition:')
-            res_lines += [f'    {kcfg_explore.kprint.pretty_print(proof.path_constraints(node.id))}']
-
-            res_lines.append('')
-            res_lines.append('Join the Runtime Verification Discord server for support: https://discord.gg/GHvFbRDD')
-
-    return res_lines
 
 
 def arg_pair_of(

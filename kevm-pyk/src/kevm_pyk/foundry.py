@@ -33,10 +33,10 @@ from .solc_to_k import Contract, contract_to_main_module, contract_to_verificati
 from .utils import (
     KDefinition__expand_macros,
     abstract_cell_vars,
+    build_apr_prover,
     byte_offset_to_lines,
     constraints_for,
     kevm_apr_prove,
-    print_failure_info,
 )
 
 if TYPE_CHECKING:
@@ -536,31 +536,27 @@ def foundry_prove(
                 bmc_depth=bmc_depth,
             )
 
+            prover = build_apr_prover(
+                proof=proof,
+                kcfg_explore=kcfg_explore,
+                is_terminal=KEVM.is_terminal,
+                extract_branches=KEVM.extract_branches,
+                same_loop=KEVM.same_loop,
+                abstract_node=(KEVM.abstract_gas_cell if auto_abstract_gas else None),
+            )
+
             passed = kevm_apr_prove(
-                foundry.kevm,
-                proof,
-                kcfg_explore,
-                save_directory=save_directory,
+                prover=prover,
                 max_depth=max_depth,
                 max_iterations=max_iterations,
-                workers=workers,
                 break_every_step=break_every_step,
                 break_on_jumpi=break_on_jumpi,
                 break_on_calls=break_on_calls,
                 implication_every_block=implication_every_block,
-                is_terminal=KEVM.is_terminal,
-                same_loop=KEVM.same_loop,
-                extract_branches=KEVM.extract_branches,
-                bug_report=br,
-                kore_rpc_command=kore_rpc_command,
-                smt_timeout=smt_timeout,
-                smt_retry_limit=smt_retry_limit,
-                trace_rewrites=trace_rewrites,
-                abstract_node=(KEVM.abstract_gas_cell if auto_abstract_gas else None),
             )
             failure_log = None
             if not passed:
-                failure_log = print_failure_info(proof, kcfg_explore)
+                failure_log = prover.failure_info()
 
             return passed, failure_log
 
@@ -636,7 +632,8 @@ def foundry_show(
 
     if failure_info:
         with KCFGExplore(foundry.kevm, id=proof.id) as kcfg_explore:
-            res_lines += print_failure_info(proof, kcfg_explore)
+            prover = build_apr_prover(proof=proof, kcfg_explore=kcfg_explore)
+            res_lines += prover.failure_info()
             res_lines += Foundry.help_info()
 
     return '\n'.join(res_lines)

@@ -37,7 +37,7 @@ from .gst_to_kore import _mode_to_kore, _schedule_to_kore
 from .kevm import KEVM, KEVMNodePrinter
 from .kompile import KompileTarget, kevm_kompile
 from .solc_to_k import solc_compile, solc_to_k
-from .utils import arg_pair_of, ensure_ksequence_on_k_cell, get_apr_proof_for_spec, kevm_apr_prove, print_failure_info
+from .utils import arg_pair_of, build_apr_prover, ensure_ksequence_on_k_cell, get_apr_proof_for_spec, kevm_apr_prove
 
 if TYPE_CHECKING:
     from argparse import Namespace
@@ -321,30 +321,26 @@ def exec_prove(
 
                 proof_problem = APRProof(claim.label, kcfg, init_node_id, target_node_id, {}, proof_dir=save_directory)
 
+            prover = build_apr_prover(
+                proof=proof_problem,
+                kcfg_explore=kcfg_explore,
+                is_terminal=KEVM.is_terminal,
+                extract_branches=KEVM.extract_branches,
+                abstract_node=(KEVM.abstract_gas_cell if auto_abstract_gas else None),
+            )
+
             passed = kevm_apr_prove(
-                kevm,
-                proof_problem,
-                kcfg_explore,
-                save_directory=save_directory,
+                prover=prover,
                 max_depth=max_depth,
                 max_iterations=max_iterations,
-                workers=workers,
                 break_every_step=break_every_step,
                 break_on_jumpi=break_on_jumpi,
                 break_on_calls=break_on_calls,
                 implication_every_block=implication_every_block,
-                is_terminal=KEVM.is_terminal,
-                extract_branches=KEVM.extract_branches,
-                bug_report=br,
-                kore_rpc_command=kore_rpc_command,
-                smt_timeout=smt_timeout,
-                smt_retry_limit=smt_retry_limit,
-                trace_rewrites=trace_rewrites,
-                abstract_node=(KEVM.abstract_gas_cell if auto_abstract_gas else None),
             )
             failure_log = None
             if not passed:
-                failure_log = print_failure_info(proof_problem, kcfg_explore)
+                failure_log = prover.failure_info()
 
             return passed, failure_log
 
@@ -452,7 +448,8 @@ def exec_show_kcfg(
 
     if failure_info:
         with KCFGExplore(kevm, id=proof.id) as kcfg_explore:
-            res_lines += print_failure_info(proof, kcfg_explore)
+            prover = build_apr_prover(proof=proof, kcfg_explore=kcfg_explore)
+            res_lines += prover.failure_info()
 
     print('\n'.join(res_lines))
 
