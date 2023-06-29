@@ -524,7 +524,7 @@ tests/specs/opcodes/evm-optimizations-spec.md: include/kframework/optimizations.
 # Integration Tests
 
 test-integration: poetry build-kevm build-haskell build-llvm
-      $(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+='-k "(test_kast.py or test_run.py or test_solc_to_k.py)" -n$(PYTEST_PARALLEL) $(PYTEST_ARGS)'
+	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+='-k "(test_kast.py or test_run.py or test_solc_to_k.py)" -n$(PYTEST_PARALLEL) $(PYTEST_ARGS)'
 
 # Interactive Tests
 
