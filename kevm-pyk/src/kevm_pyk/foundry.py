@@ -21,6 +21,7 @@ from pyk.konvert import _kast_to_kore
 from pyk.kore.prelude import BOOL as BOOLApp  # noqa: N811
 from pyk.kore.prelude import INT as INTApp  # noqa: N811
 from pyk.kore.prelude import TRUE as TRUEApp  # noqa: N811
+from pyk.kore.rpc import SatResult
 from pyk.kore.syntax import Equals
 from pyk.ktool.kompile import LLVMKompileType
 from pyk.prelude.bytes import bytesToken
@@ -825,7 +826,9 @@ def foundry_koverage(
             equals = Equals(BOOLApp, INTApp, TRUEApp, kore)
             model = client.get_model(equals)
             print(model)
-            b_counter[bytecode_h] = model
+            match model:
+                case SatResult(res):
+                    b_counter[bytecode_h] = res
 
     return b_counter
 
