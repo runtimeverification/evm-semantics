@@ -14,7 +14,7 @@ import tomlkit
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cterm import CTerm
 from pyk.kast.inner import KApply, KLabel, KSequence, KSort, KToken, KVariable, Subst
-from pyk.kast.manip import free_vars, minimize_term
+from pyk.kast.manip import flatten_label, free_vars, minimize_term
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
 from pyk.kcfg import KCFG, KCFGExplore
 from pyk.konvert import _kast_to_kore
@@ -28,7 +28,7 @@ from pyk.prelude.bytes import bytesToken
 from pyk.prelude.k import GENERATED_TOP_CELL
 from pyk.prelude.kbool import BOOL, FALSE, TRUE, andBool, notBool
 from pyk.prelude.kint import INT, intToken
-from pyk.prelude.ml import mlEqualsTrue
+from pyk.prelude.ml import mlEquals, mlEqualsTrue
 from pyk.proof.proof import Proof, ProofStatus
 from pyk.proof.reachability import APRBMCProof, APRProof
 from pyk.proof.show import APRProofShow
@@ -817,7 +817,8 @@ def foundry_koverage(
                                             if type(args) is KToken or type(args) is KApply:
                                                 args_cons = mk_bytes_constraint(args, KVariable('ARGS', 'Int'))
                                                 from_cons = mk_int_constraint(from_addr, KVariable('CALLER_ID', 'Int'))
-                                                inter = _cons_intersection([diff_cons, args_cons, from_cons])
+                                                # inter = _cons_intersection([diff_cons, args_cons, from_cons])
+                                                inter = _cons_intersection([from_cons, args_cons])
                                                 new_cons = inter
                                             covered = andBool(
                                                 [_get_raw_constraint(cons) for cons in init_node.cterm.constraints]
@@ -829,16 +830,20 @@ def foundry_koverage(
     b_counter: dict[bytes, Pattern] = {}
     for bytecode_h, cons_set in call_cells.items():
         b_uncovered = andBool(cons_set)
-        with KCFGExplore(foundry.kevm) as kcfg_explore:
+        with KCFGExplore(foundry.kevm, smt_timeout=125) as kcfg_explore:
             kore = _kast_to_kore(b_uncovered)
             _, client = kcfg_explore._kore_rpc
             equals = Equals(BOOLApp, INTApp, TRUEApp, kore)
-            # print(kcfg_explore.kprint.kore_to_pretty(equals)) TODO: remove this, debug purposes
+            print(kcfg_explore.kprint.kore_to_pretty(equals)) # TODO: remove this, debug purposes
             model = client.get_model(equals)
             match model:
                 case SatResult(res):
                     print(res)
                     b_counter[bytecode_h] = res
+                    for subst_pred in flatten_label('#And', res):
+                        subst_pattern = mlEquals(KVariable('###VAR'), KVariable('###TERM'))
+                        m = subst_pattern.match(subst_pred)
+                        print(m)
                 case _:
                     print(model)
 
