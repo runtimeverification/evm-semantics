@@ -64,7 +64,6 @@ module VAT-MOVE-DIFF-ROUGH-SPEC
         </evm>
         <network>
           <chainID> VChainId </chainID>
-          <activeAccounts> SetItem(ACCT_ID) _ </activeAccounts>
           <accounts>
             <account>
               <acctID> ACCT_ID </acctID>
@@ -180,7 +179,6 @@ module VAT-MOVE-DIFF-ROUGH-SPEC
         </evm>
         <network>
           <chainID> VChainId </chainID>
-          <activeAccounts> SetItem(ACCT_ID) _ </activeAccounts>
           <accounts>
             <account>
               <acctID> ACCT_ID </acctID>
@@ -214,7 +212,7 @@ module VAT-MOVE-DIFF-ROUGH-SPEC
      andBool ((#sizeWordStack(WS) <=Int 100)
      andBool (#rangeUInt(256, VMemoryUsed)
      andBool ((#rangeUInt(256, ABI_x +Int ABI_y)))))))
-    [trusted, matching(infGas)]
+    [trusted]
 
 
     // Vat_subuu
@@ -278,7 +276,6 @@ module VAT-MOVE-DIFF-ROUGH-SPEC
         </evm>
         <network>
           <chainID> VChainId </chainID>
-          <activeAccounts> SetItem(ACCT_ID) _ </activeAccounts>
           <accounts>
             <account>
               <acctID> ACCT_ID </acctID>
@@ -312,7 +309,7 @@ module VAT-MOVE-DIFF-ROUGH-SPEC
      andBool ((#sizeWordStack(WS) <=Int 100)
      andBool (#rangeUInt(256, VMemoryUsed)
      andBool ((#rangeUInt(256, ABI_x -Int ABI_y)))))))
-    [trusted, matching(infGas)]
+    [trusted]
 
 
 endmodule

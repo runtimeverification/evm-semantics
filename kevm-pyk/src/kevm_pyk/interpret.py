@@ -111,7 +111,7 @@ def _parse_args() -> Namespace:
     parser = ArgumentParser(
         description='Inpterpret an EVM program (GeneralStateTest or custom KEVM format)',
         parents=[
-            kevm_cli_args.shared_args,
+            kevm_cli_args.logging_args,
             kevm_cli_args.k_args,
             kevm_cli_args.krun_args,
             kevm_cli_args.kevm_target_args,

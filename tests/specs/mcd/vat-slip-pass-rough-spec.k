@@ -64,7 +64,6 @@ module VAT-SLIP-PASS-ROUGH-SPEC
         </evm>
         <network>
           <chainID> VChainId </chainID>
-          <activeAccounts> SetItem(ACCT_ID) _ </activeAccounts>
           <accounts>
             <account>
               <acctID> ACCT_ID </acctID>
@@ -177,7 +176,6 @@ module VAT-SLIP-PASS-ROUGH-SPEC
         </evm>
         <network>
           <chainID> VChainId </chainID>
-          <activeAccounts> SetItem(ACCT_ID) _ </activeAccounts>
           <accounts>
             <account>
               <acctID> ACCT_ID </acctID>
@@ -212,7 +210,7 @@ module VAT-SLIP-PASS-ROUGH-SPEC
        andBool ((#rangeUInt(256, ABI_x +Int ABI_y)))))))
 
 
-    [trusted, matching(infGas)]
+    [trusted]
 
 
 endmodule

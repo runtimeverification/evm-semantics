@@ -3,55 +3,53 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/b01f185e4866de7c5b5a82f833ca9ea3c3f72fc4";
-    k-framework.url = "github:runtimeverification/k/v5.6.114";
+    k-framework.url = "github:runtimeverification/k/v5.6.133";
     k-framework.inputs.nixpkgs.follows = "nixpkgs";
     #nixpkgs.follows = "k-framework/nixpkgs";
     flake-utils.follows = "k-framework/flake-utils";
     rv-utils.url = "github:runtimeverification/rv-nix-tools";
     poetry2nix.follows = "pyk/poetry2nix";
-    blockchain-k-plugin.url = "github:runtimeverification/blockchain-k-plugin/23fb5e8fdb4a87451fd40a0e49118eaab481931b";
+    blockchain-k-plugin.url = "github:runtimeverification/blockchain-k-plugin/efba5851e4363485a8b1ec6d7d54033c68a5c1cc";
     blockchain-k-plugin.inputs.flake-utils.follows = "k-framework/flake-utils";
     blockchain-k-plugin.inputs.nixpkgs.follows = "k-framework/nixpkgs";
-    ethereum-tests.url =
-      "github:ethereum/tests/6401889dec4eee58e808fd178fb2c7f628a3e039";
+    ethereum-tests.url = "github:ethereum/tests/6401889dec4eee58e808fd178fb2c7f628a3e039";
     ethereum-tests.flake = false;
-    ethereum-legacytests.url =
-      "github:ethereum/legacytests/d7abc42a7b352a7b44b1f66b58aca54e4af6a9d7";
+    ethereum-legacytests.url = "github:ethereum/legacytests/d7abc42a7b352a7b44b1f66b58aca54e4af6a9d7";
     ethereum-legacytests.flake = false;
     haskell-backend.follows = "k-framework/haskell-backend";
-    pyk.url = "github:runtimeverification/pyk/v0.1.311";
+    pyk.url = "github:runtimeverification/pyk/v0.1.343";
     pyk.inputs.flake-utils.follows = "k-framework/flake-utils";
     pyk.inputs.nixpkgs.follows = "k-framework/nixpkgs";
-
+    foundry.url = "github:shazow/foundry.nix/monthly"; # Use monthly branch for permanent release
   };
-  outputs = { self, k-framework, haskell-backend, nixpkgs, flake-utils, poetry2nix
-    , blockchain-k-plugin, ethereum-tests, ethereum-legacytests, rv-utils, pyk
-    }:
+  outputs = { self, k-framework, haskell-backend, nixpkgs, flake-utils
+    , poetry2nix, blockchain-k-plugin, ethereum-tests, ethereum-legacytests
+    , rv-utils, pyk, foundry }:
     let
+      nixLibs = pkgs:
+        with pkgs;
+        "-I${procps}/include -L${procps}/lib -I${openssl.dev}/include -L${openssl.out}/lib";
       buildInputs = pkgs: k:
         with pkgs;
         [
           k
           llvm-backend
           autoconf
+          automake
           cmake
           clang
           llvmPackages.llvm
-          cryptopp.dev
           fmt
-          gmp
-          # graphviz
+          libtool
           mpfr
           openssl.dev
           pkg-config
           procps
           protobuf
           python310
-          secp256k1
           solc
           time
-        ] ++ lib.optional (!stdenv.isDarwin) elfutils
-        ++ lib.optionals stdenv.isDarwin [ automake libtool ];
+        ] ++ lib.optional (!stdenv.isDarwin) elfutils;
 
       overlay = final: prev: {
         kevm = k:
@@ -90,15 +88,21 @@
                 --replace 'set(K_LIB ''${K_BIN}/../lib)' 'set(K_LIB ${k}/lib)'
               substituteInPlace ./bin/kevm \
                 --replace 'execute python3 -m kevm_pyk' 'execute ${final.kevm-pyk}/bin/kevm-pyk'
+              substituteInPlace ./bin/kevm \
+                --replace 'gst-to-kore' '${final.kevm-pyk}/bin/gst-to-kore'
             '';
 
-            buildFlags = [ "KEVM_PYK=${final.kevm-pyk}/bin/kevm-pyk" "NIX_BUILD=true" ] ++
-              prev.lib.optional (prev.stdenv.isAarch64 && prev.stdenv.isDarwin)
+            buildFlagsArray = "NIX_LIBS=${nixLibs prev}";
+
+            buildFlags = [ "KEVM_PYK=${final.kevm-pyk}/bin/kevm-pyk" ]
+              ++ prev.lib.optional
+              (prev.stdenv.isAarch64 && prev.stdenv.isDarwin)
               "APPLE_SILICON=true";
             enableParallelBuilding = true;
 
             preBuild = ''
-              make plugin-deps
+              mkdir -p .build/usr/lib/kevm/
+              ln -s ${prev.blockchain-k-plugin}/lib/* .build/usr/lib/kevm/
             '';
 
             installPhase = ''
@@ -106,8 +110,9 @@
               mv .build/usr/* $out/
               wrapProgram $out/bin/kevm --prefix PATH : ${
                 prev.lib.makeBinPath [ final.solc prev.which k ]
-              }
+              } --set NIX_LIBS "${nixLibs prev}"
               ln -s ${k} $out/lib/kevm/kframework
+
             '';
           };
 
@@ -145,9 +150,9 @@
           projectDir = ./kevm-pyk;
           overrides = prev.poetry2nix.overrides.withDefaults
             (finalPython: prevPython: { pyk = prev.pyk-python310; });
-          groups = [];
+          groups = [ ];
           # We remove `"dev"` from `checkGroups`, so that poetry2nix does not try to resolve dev dependencies.
-          checkGroups = [];
+          checkGroups = [ ];
         };
 
       };
@@ -164,12 +169,13 @@
             (final: prev: { llvm-backend-release = false; })
             (final: prev: {
               # https://github.com/NixOS/nixpkgs/pull/219240
-              solc = prev.callPackage ./nix/solc/default.nix {};
+              solc = prev.callPackage ./nix/solc/default.nix { };
             })
             k-framework.overlay
             blockchain-k-plugin.overlay
             poetry2nix.overlay
             pyk.overlay
+            foundry.overlay
             overlay
           ];
         };
@@ -177,7 +183,15 @@
       in {
         packages.default = kevm;
         devShell = pkgs.mkShell {
-          buildInputs = buildInputs pkgs k-framework.packages.${system}.k ++ [ pkgs.poetry ];
+          buildInputs = buildInputs pkgs k-framework.packages.${system}.k
+            ++ [ pkgs.poetry pkgs.foundry-bin ];
+
+          shellHook = ''
+            export NIX_LIBS="${nixLibs pkgs}"
+            ${pkgs.lib.strings.optionalString
+            (pkgs.stdenv.isAarch64 && pkgs.stdenv.isDarwin)
+            "export APPLE_SILICON=true"}
+          '';
         };
 
         apps = {
@@ -227,7 +241,6 @@
         };
       }) // {
         overlays.default = nixpkgs.lib.composeManyExtensions [
-          k-framework.overlay
           blockchain-k-plugin.overlay
           overlay
         ];

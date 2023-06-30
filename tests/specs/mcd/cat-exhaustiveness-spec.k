@@ -64,7 +64,6 @@ module CAT-EXHAUSTIVENESS-SPEC
          </evm>
          <network>
            <chainID> VChainId </chainID>
-           <activeAccounts> _VActiveAccounts </activeAccounts>
            <accounts> _ </accounts>
            <txOrder> _ </txOrder>
            <txPending> _ </txPending>

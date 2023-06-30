@@ -64,7 +64,6 @@ module FLOPPER-TICK-PASS-ROUGH-SPEC
         </evm>
         <network>
           <chainID> VChainId </chainID>
-          <activeAccounts> SetItem(ACCT_ID) _ </activeAccounts>
           <accounts>
             <account>
               <acctID> ACCT_ID </acctID>
@@ -189,7 +188,6 @@ module FLOPPER-TICK-PASS-ROUGH-SPEC
         </evm>
         <network>
           <chainID> VChainId </chainID>
-          <activeAccounts> SetItem(ACCT_ID) _ </activeAccounts>
           <accounts>
             <account>
               <acctID> ACCT_ID </acctID>
@@ -224,7 +222,7 @@ module FLOPPER-TICK-PASS-ROUGH-SPEC
        andBool ((#rangeUInt(48, ABI_x +Int ABI_y)))))))
 
 
-    [trusted, matching(infGas)]
+    [trusted]
 
 
 endmodule

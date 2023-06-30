@@ -31,12 +31,10 @@ KEVM_RELEASE_TAG ?= v$(KEVM_VERSION)-$(shell git rev-parse --short HEAD)
 
 K_SUBMODULE := $(DEPS_DIR)/k
 
-LIBRARY_PATH       := $(LOCAL_LIB):$(KEVM_LIB_ABS)/libff/lib
 C_INCLUDE_PATH     += :$(BUILD_LOCAL)/include
 CPLUS_INCLUDE_PATH += :$(BUILD_LOCAL)/include
 PATH               := $(abspath $(KEVM_BIN)):$(abspath $(KEVM_K_BIN)):$(LOCAL_BIN):$(PATH)
 
-export LIBRARY_PATH
 export C_INCLUDE_PATH
 export CPLUS_INCLUDE_PATH
 export PATH
@@ -47,25 +45,24 @@ PLUGIN_FULL_PATH := $(abspath ${PLUGIN_SUBMODULE})
 export PLUGIN_FULL_PATH
 
 
-.PHONY: all clean distclean                                                                                                                  \
-        deps k-deps plugin-deps libsecp256k1 libff protobuf                                                                                  \
-        build build-haskell build-haskell-standalone build-foundry build-llvm build-prove build-prove-haskell build-node build-kevm          \
-        test test-all test-conformance test-rest-conformance test-all-conformance test-slow-conformance test-failing-conformance             \
-        test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain test-node                                              \
-        test-prove test-failing-prove test-foundry-kcfg-diff                                                                                 \
-        test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples test-prove-smoke \
-        test-prove-mcd test-klab-prove                                                                                                       \
-        test-parse test-failure test-foundry-kompile test-foundry-prove test-foundry-bmc-prove test-foundry-list                             \
-        test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search                           \
-        test-kevm-pyk foundry-forge-build foundry-forge-test foundry-clean foundry-fail                                                      \
-        media media-pdf metropolis-theme                                                                                                     \
-        install uninstall                                                                                                                    \
-        poetry-env poetry shell kevm-pyk
+.PHONY: all clean distclean                                                                                        \
+        deps k-deps plugin-deps protobuf                                                                           \
+        poetry-env poetry shell kevm-pyk                                                                           \
+        build build-haskell build-haskell-standalone build-foundry build-llvm build-node build-kevm                \
+        test                                                                                                       \
+        test-integration test-conformance test-prove test-foundry-prove                                            \
+        test-vm test-rest-vm test-bchain test-rest-bchain                                                          \
+        test-node                                                                                                  \
+        test-prove-smoke test-klab-prove                                                                           \
+        test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search \
+        media media-pdf metropolis-theme                                                                           \
+        install uninstall
+
 .SECONDARY:
 
 all: build
 
-clean: foundry-clean
+clean:
 	rm -rf $(KEVM_BIN) $(KEVM_LIB)
 
 distclean:
@@ -74,55 +71,13 @@ distclean:
 # Non-K Dependencies
 # ------------------
 
-libsecp256k1_out := $(LOCAL_LIB)/pkgconfig/libsecp256k1.pc
-libff_out        := $(KEVM_LIB)/libff/lib/libff.a
-libcryptopp_out  := $(KEVM_LIB)/cryptopp/lib/libcryptopp.a
 protobuf_out     := $(LOCAL_LIB)/proto/proto/msg.pb.cc
-
-libsecp256k1: $(libsecp256k1_out)
-libff:        $(libff_out)
-libcryptopp : $(libcryptopp_out)
 protobuf:     $(protobuf_out)
-
-$(libsecp256k1_out): $(PLUGIN_SUBMODULE)/deps/secp256k1/autogen.sh
-	cd $(PLUGIN_SUBMODULE)/deps/secp256k1                                 \
-	    && ./autogen.sh                                                   \
-	    && ./configure --enable-module-recovery --prefix="$(BUILD_LOCAL)" \
-	    && $(MAKE)                                                        \
-	    && $(MAKE) install
-
-LIBFF_CMAKE_FLAGS :=
-
-ifeq ($(UNAME_S),Linux)
-    LIBFF_CMAKE_FLAGS +=
-else ifeq ($(UNAME_S),Darwin)
-    LIBFF_CMAKE_FLAGS += -DWITH_PROCPS=OFF -DOPENSSL_ROOT_DIR=$(shell brew --prefix openssl)
-else
-    LIBFF_CMAKE_FLAGS += -DWITH_PROCPS=OFF
-endif
-
-ifneq ($(APPLE_SILICON),)
-    LIBFF_CMAKE_FLAGS += -DCURVE=ALT_BN128 -DUSE_ASM=Off
-endif
-
-ifeq ($(LIBFF_NO_FPIC),)
-    LIBFF_CMAKE_FLAGS += -DCMAKE_CXX_FLAGS=-fPIC
-endif
-
-$(libff_out): $(PLUGIN_SUBMODULE)/deps/libff/CMakeLists.txt
-	@mkdir -p $(PLUGIN_SUBMODULE)/deps/libff/build
-	cd $(PLUGIN_SUBMODULE)/deps/libff/build                                                                     \
-	    && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$(INSTALL_LIB)/libff $(LIBFF_CMAKE_FLAGS) \
-	    && make -s -j4                                                                                          \
-	    && make install DESTDIR=$(CURDIR)/$(BUILD_DIR)
 
 $(protobuf_out): $(NODE_DIR)/proto/msg.proto
 	@mkdir -p $(LOCAL_LIB)/proto
 	protoc --cpp_out=$(LOCAL_LIB)/proto -I $(NODE_DIR) $(NODE_DIR)/proto/msg.proto
 
-$(libcryptopp_out): $(PLUGIN_SUBMODULE)/deps/cryptopp/GNUmakefile
-	cd $(PLUGIN_SUBMODULE)/deps/cryptopp                            \
-            && $(MAKE) install DESTDIR=$(CURDIR)/$(BUILD_DIR) PREFIX=$(INSTALL_LIB)/cryptopp
 
 # K Dependencies
 # --------------
@@ -156,8 +111,10 @@ plugin_k_include  := $(KEVM_INCLUDE)/kframework/plugin
 plugin_include    := $(KEVM_LIB)/blockchain-k-plugin/include
 plugin_k          := krypto.md
 plugin_c          := plugin_util.cpp crypto.cpp blake2.cpp plugin_util.h blake2.h
+plugin_needed_lib := libcryptopp libff libsecp256k1
 plugin_includes   := $(patsubst %, $(plugin_k_include)/%, $(plugin_k))
 plugin_c_includes := $(patsubst %, $(plugin_include)/c/%, $(plugin_c))
+plugin_needed_libs := $(patsubst %, $(KEVM_LIB)/%, $(plugin_needed_lib))
 
 $(plugin_include)/c/%: $(PLUGIN_SUBMODULE)/plugin-c/%
 	@mkdir -p $(dir $@)
@@ -167,7 +124,15 @@ $(plugin_k_include)/%: $(PLUGIN_SUBMODULE)/plugin/%
 	@mkdir -p $(dir $@)
 	install $< $@
 
-plugin-deps: $(plugin_includes) $(plugin_c_includes)
+
+$(KEVM_LIB)/%: $(PLUGIN_SUBMODULE)/build/%
+	@mkdir -p $(dir $@)
+	cp -r $< $@
+
+$(PLUGIN_SUBMODULE)/build/lib%:
+	cd $(PLUGIN_SUBMODULE) && make lib$*
+
+plugin-deps: $(plugin_includes) $(plugin_c_includes) $(plugin_needed_libs)
 
 
 # Building
@@ -202,10 +167,10 @@ kevm_files := abi.md                          \
               foundry.md                      \
               hashed-locations.md             \
               gas.md                          \
-              infinite-gas.md                 \
               json-rpc.md                     \
               network.md                      \
               optimizations.md                \
+              schedule.md                     \
               serialization.md                \
               state-utils.md                  \
               word.md                         \
@@ -276,11 +241,9 @@ llvm_dir      := llvm
 llvm_kompiled := $(llvm_dir)/interpreter
 kompile_llvm  := $(KEVM_LIB)/$(llvm_kompiled)
 
-ifeq ($(UNAME_S),Darwin)
-$(kompile_llvm): $(libcryptopp_out)
-endif
 
-$(kompile_llvm): $(kevm_includes) $(plugin_includes) $(plugin_c_includes) $(libff_out)
+
+$(kompile_llvm): $(kevm_includes) $(plugin_includes) $(plugin_c_includes)
 
 $(kompile_llvm): KOMPILE_TARGET        := llvm
 $(kompile_llvm): KOMPILE_MAIN_FILE     := $(KEVM_INCLUDE)/kframework/driver.md
@@ -296,9 +259,6 @@ haskell_standalone_dir      := haskell-standalone
 haskell_standalone_kompiled := $(haskell_standalone_dir)/definition.kore
 kompile_haskell_standalone  := $(KEVM_LIB)/$(haskell_standalone_kompiled)
 
-ifeq ($(UNAME_S),Darwin)
-$(kompile_haskell_standalone): $(libsecp256k1_out)
-endif
 
 $(kompile_haskell_standalone): $(kevm_includes) $(plugin_includes)
 
@@ -318,7 +278,7 @@ node_kompiled := $(node_dir)/build/kevm-vm
 kompile_node  := $(KEVM_LIB)/$(node_kore)
 export node_dir
 
-$(kompile_node): $(kevm_includes) $(plugin_includes) $(plugin_c_includes) $(libff_out)
+$(kompile_node): $(kevm_includes) $(plugin_includes) $(plugin_c_includes)
 
 $(kompile_node): KOMPILE_TARGET        := node
 $(kompile_node): KOMPILE_MAIN_FILE     := $(KEVM_INCLUDE)/kframework/evm-node.md
@@ -328,9 +288,9 @@ $(kompile_node):
 	$(kompile)
 
 
-$(KEVM_LIB)/$(node_kompiled): $(KEVM_LIB)/$(node_kore) $(protobuf_out) $(libff_out)
+$(KEVM_LIB)/$(node_kompiled): $(KEVM_LIB)/$(node_kore) $(protobuf_out)
 	@mkdir -p $(dir $@)
-	cd $(dir $@) && cmake $(CURDIR)/cmake/node -DCMAKE_INSTALL_PREFIX=$(INSTALL_LIB)/$(node_dir) && $(MAKE)
+	cd $(dir $@) && cmake $(CURDIR)/cmake/node -DCMAKE_INSTALL_PREFIX=$(INSTALL_LIB)/$(node_dir) -DCMAKE_CXX_FLAGS=-std=c++17 && $(MAKE)
 
 
 # Foundry
@@ -339,9 +299,6 @@ foundry_dir      := foundry
 foundry_kompiled := $(foundry_dir)/definition.kore
 kompile_foundry  := $(KEVM_LIB)/$(foundry_kompiled)
 
-ifeq ($(UNAME_S),Darwin)
-$(kompile_foundry): $(libsecp256k1_out)
-endif
 
 $(kompile_foundry): $(kevm_includes) $(plugin_includes) $(lemma_includes)
 
@@ -445,42 +402,12 @@ KSEARCH_OPTS ?=
 
 KEEP_OUTPUTS := false
 
-test-all: test-all-conformance test-prove test-interactive test-parse test-kevm-pyk
-test: test-conformance test-prove test-interactive test-parse test-kevm-pyk
+test: test-integration test-conformance test-prove test-interactive
 
 # Generic Test Harnesses
 
 tests/ethereum-tests/LegacyTests/Constantinople/VMTests/%: KEVM_MODE     = VMTESTS
 tests/ethereum-tests/LegacyTests/Constantinople/VMTests/%: KEVM_SCHEDULE = DEFAULT
-
-tests/specs/benchmarks/functional-spec%:              KPROVE_FILE   =  functional-spec
-tests/specs/benchmarks/functional-spec%:              KPROVE_MODULE =  FUNCTIONAL-SPEC-SYNTAX
-tests/specs/bihu/functional-spec%:                    KPROVE_FILE   =  functional-spec
-tests/specs/bihu/functional-spec%:                    KPROVE_MODULE =  FUNCTIONAL-SPEC-SYNTAX
-tests/specs/erc20/functional-spec%:                   KPROVE_MODULE =  FUNCTIONAL-SPEC-SYNTAX
-tests/specs/examples/solidity-code-spec%:             KPROVE_EXT    =  md
-tests/specs/examples/solidity-code-spec%:             KPROVE_FILE   =  solidity-code-spec
-tests/specs/examples/erc20-spec%:                     KPROVE_EXT    =  md
-tests/specs/examples/erc20-spec%:                     KPROVE_FILE   =  erc20-spec
-tests/specs/examples/erc721-spec%:                    KPROVE_EXT    =  md
-tests/specs/examples/erc721-spec%:                    KPROVE_FILE   =  erc721-spec
-tests/specs/examples/storage-spec%:                   KPROVE_EXT    =  md
-tests/specs/examples/storage-spec%:                   KPROVE_FILE   =  storage-spec
-tests/specs/examples/sum-to-n-spec%:                  KPROVE_FILE   =  sum-to-n-spec
-tests/specs/examples/sum-to-n-foundry-spec%:          KPROVE_FILE   =  sum-to-n-foundry-spec
-tests/specs/functional/infinite-gas-spec%:            KPROVE_FILE   =  infinite-gas-spec
-tests/specs/functional/evm-int-simplifications-spec%: KPROVE_FILE   =  evm-int-simplifications-spec
-tests/specs/functional/int-simplifications-spec%:     KPROVE_FILE   =  int-simplifications-spec
-tests/specs/functional/lemmas-no-smt-spec%:           KPROVE_FILE   =  lemmas-no-smt-spec
-tests/specs/functional/lemmas-no-smt-spec%:           KPROVE_OPTS   += --haskell-backend-arg="--smt=none"
-tests/specs/functional/lemmas-spec%:                  KPROVE_FILE   =  lemmas-spec
-tests/specs/functional/merkle-spec%:                  KPROVE_FILE   =  merkle-spec
-tests/specs/functional/storageRoot-spec%:             KPROVE_FILE   =  storageRoot-spec
-tests/specs/mcd/functional-spec%:                     KPROVE_FILE   =  functional-spec
-tests/specs/mcd/functional-spec%:                     KPROVE_MODULE =  FUNCTIONAL-SPEC-SYNTAX
-tests/specs/opcodes/evm-optimizations-spec%:          KPROVE_EXT    =  md
-tests/specs/opcodes/evm-optimizations-spec%:          KPROVE_FILE   =  evm-optimizations-spec
-tests/specs/opcodes/evm-optimizations-spec%:          KPROVE_MODULE =  EVM-OPTIMIZATIONS-SPEC-LEMMAS
 
 tests/%.run: KRUN_OPTS += --no-unparse
 tests/%.run: tests/% poetry
@@ -504,11 +431,6 @@ tests/%.run-expected: tests/% tests/%.expected
 	    || $(CHECK) tests/$*.$(TEST_CONCRETE_BACKEND)-out tests/$*.expected
 	$(KEEP_OUTPUTS) || rm -rf tests/$*.$(TEST_CONCRETE_BACKEND)-out
 
-tests/%.parse: tests/% $(KEVM_LIB)/kore-json.py
-	$(KEVM) kast $< $(KEVM_OPTS) $(KAST_OPTS) --backend $(TEST_CONCRETE_BACKEND) > $@-out
-	$(CHECK) $@-out $@-expected
-	$(KEEP_OUTPUTS) || rm -rf $@-out
-
 tests/interactive/%.json.gst-to-kore.check: tests/ethereum-tests/GeneralStateTests/VMTests/%.json $(KEVM_BIN)/kevm
 	$(KEVM) kast $< $(KEVM_OPTS) $(KAST_OPTS) > tests/interactive/$*.gst-to-kore.out
 	$(CHECK) tests/interactive/$*.gst-to-kore.out tests/interactive/$*.gst-to-kore.expected
@@ -519,90 +441,8 @@ tests/interactive/%.json.gst-to-kore.check: tests/ethereum-tests/GeneralStateTes
 
 FOUNDRY_PAR := 4
 
-foundry-clean:
-	rm -rf tests/foundry/cache
-	rm -rf tests/foundry/out
-	rm -f  tests/foundry/foundry.debug-log
-	rm -f  tests/foundry/foundry.k
-	rm -f  tests/foundry/foundry.rule-profile
-
-tests/foundry/%: KEVM := $(POETRY_RUN) $(KEVM)
-
-foundry_dir := tests/foundry
-foundry_out := $(foundry_dir)/out
-
-test-foundry-%: KEVM_OPTS += --pyk --verbose
-test-foundry-%: KEVM := $(POETRY_RUN) $(KEVM)
-test-foundry-kompile: tests/foundry/foundry.k.check tests/foundry/contracts.k.check
-test-foundry-prove: tests/foundry/out/kompiled/foundry.k.prove
-test-foundry-bmc-prove: tests/foundry/out/kompiled/foundry.k.bmc-prove
-test-foundry-list: tests/foundry/foundry-list.check
-
-foundry-forge-build: $(foundry_out)
-
-foundry-forge-test: foundry-forge-build
-	cd $(foundry_dir) && forge test --ffi
-
-$(foundry_out):
-	cd $(dir $@) && forge build
-
-tests/foundry/foundry-list.out: tests/foundry/out/kompiled/foundry.k.prove foundry-fail
-	$(KEVM) foundry-list --foundry-project-root $(foundry_dir) > $@
-
-tests/foundry/foundry-list.check: tests/foundry/foundry-list.out
-	grep --invert-match 'path:' $< > $@.stripped
-	$(CHECK) $@.stripped $@.expected
-
-tests/foundry/foundry.k.check: tests/foundry/out/kompiled/foundry.k
-	grep --invert-match '    rule  ( #binRuntime (' $< > $@.stripped
-	$(CHECK) $@.stripped $@.expected
-
-tests/foundry/contracts.k.check: tests/foundry/out/kompiled/contracts.k
-	grep --invert-match '    rule  ( #binRuntime (' $< > $@.stripped
-	$(CHECK) $@.stripped $@.expected
-
-tests/foundry/out/kompiled/foundry.k: tests/foundry/out/kompiled/timestamp
-tests/foundry/out/kompiled/contracts.k: tests/foundry/out/kompiled/timestamp
-
-tests/foundry/out/kompiled/foundry.k.prove: tests/foundry/out/kompiled/timestamp
-	$(KEVM) foundry-prove --foundry-project-root $(foundry_dir)          \
-	    -j$(FOUNDRY_PAR) --no-simplify-init --max-depth 1000             \
-	    $(KEVM_OPTS) $(KPROVE_OPTS)                                      \
-	    $(addprefix --exclude-test , $(shell cat tests/foundry/exclude))
-
-tests/foundry/out/kompiled/foundry.k.bmc-prove: tests/foundry/out/kompiled/timestamp
-	$(KEVM) foundry-prove --foundry-project-root $(foundry_dir)          \
-	    -j$(FOUNDRY_PAR) --no-simplify-init --max-depth 1000             \
-            --bmc-depth 3                                                    \
-	    $(KEVM_OPTS) $(KPROVE_OPTS)                                      \
-	    $(addprefix --test , $(shell cat tests/foundry/bmc-tests))
-
-foundry_golden := tests/foundry/golden
-foundry_diff_tests := $(shell cat tests/foundry/checkoutput)
-
-test-foundry-kcfg-diff: $(patsubst %, $(foundry_golden)/%.check, $(foundry_diff_tests))
-
-foundry-fail: tests/foundry/out/kompiled/timestamp
-	$(KEVM) foundry-prove                                \
-	--foundry-project-root $(foundry_dir)                \
-	-j$(FOUNDRY_PAR) --no-simplify-init --max-depth 1000 \
-	$(KEVM_OPTS) $(KPROVE_OPTS)                          \
-	$(addprefix --test , $(foundry_diff_tests)) || true
-
-foundry_show_opts := --to-module --omit-unstable-output --frontier --stuck
-
-$(foundry_golden)/%.check: $(foundry_golden)/%.out
-	$(CHECK) $(foundry_golden)/$*.out $(foundry_golden)/$*.expected
-
-$(foundry_golden)/%.out: foundry-fail
-	$(KEVM) foundry-show $(foundry_show_opts)                   \
-	--foundry-project-root $(foundry_dir) $*                    \
-	| grep --invert-match 'rule \[BASIC-BLOCK-'                 \
-	| grep --invert-match '\[priority(.*), label(BASIC-BLOCK-'  \
-	> $@
-
-tests/foundry/out/kompiled/timestamp: $(foundry_out) $(KEVM_LIB)/$(foundry_kompiled) $(lemma_includes) poetry
-	$(KEVM) foundry-kompile --foundry-project-root $(foundry_dir) $(KEVM_OPTS) --verbose --require $(foundry_dir)/lemmas.k --module-import LoopsTest:SUM-TO-N-INVARIANT
+test-foundry-prove: poetry build-kevm build-foundry
+	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+="-k test_foundry_prove.py -n$(FOUNDRY_PAR)"
 
 tests/specs/examples/%-bin-runtime.k: KEVM_OPTS += --pyk --verbose
 tests/specs/examples/%-bin-runtime.k: KEVM := $(POETRY_RUN) $(KEVM)
@@ -651,128 +491,41 @@ smoke_tests_prove=tests/specs/erc20/ds/transfer-failure-1-a-spec.k
 
 # Conformance Tests
 
-tests/ethereum-tests/%.json: tests/ethereum-tests/make.timestamp
+test-conformance: poetry build-kevm build-llvm
+	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+='-k test_conformance.py -n8'
 
-slow_conformance_tests    = $(shell cat tests/slow.$(TEST_CONCRETE_BACKEND))    # timeout after 20s
-failing_conformance_tests = $(shell cat tests/failing.$(TEST_CONCRETE_BACKEND))
+test-vm: poetry build-kevm build-llvm
+	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+='-k test_vm -n8'
 
-test-all-conformance: test-all-vm test-all-bchain
-test-rest-conformance: test-rest-vm test-rest-bchain
-test-slow-conformance: $(slow_conformance_tests:=.run)
-test-failing-conformance: $(failing_conformance_tests:=.run)
-test-conformance: test-vm test-bchain
+test-rest-vm: poetry build-kevm build-llvm
+	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+='-k test_rest_vm -n8'
 
-all_vm_tests     = $(wildcard tests/ethereum-tests/LegacyTests/Constantinople/VMTests/*/*.json)
-quick_vm_tests   = $(filter-out $(slow_conformance_tests), $(all_vm_tests))
-passing_vm_tests = $(filter-out $(failing_conformance_tests), $(quick_vm_tests))
-rest_vm_tests    = $(filter-out $(passing_vm_tests), $(all_vm_tests))
+test-bchain: poetry build-kevm build-llvm
+	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+='-k test_bchain -n8'
 
-test-all-vm: $(all_vm_tests:=.run)
-test-rest-vm: $(rest_vm_tests:=.run)
-test-vm: $(passing_vm_tests:=.run)
-
-all_bchain_tests     = $(wildcard tests/ethereum-tests/BlockchainTests/GeneralStateTests/*/*.json)                            \
-                       $(wildcard tests/ethereum-tests/LegacyTests/Constantinople/BlockchainTests/GeneralStateTests/*/*.json)
-quick_bchain_tests   = $(filter-out $(slow_conformance_tests), $(all_bchain_tests))
-passing_bchain_tests = $(filter-out $(failing_conformance_tests), $(quick_bchain_tests))
-rest_bchain_tests    = $(filter-out $(passing_bchain_tests), $(all_bchain_tests))
-
-test-all-bchain: $(all_bchain_tests:=.run)
-test-rest-bchain: $(rest_bchain_tests:=.run)
-test-bchain: $(passing_bchain_tests:=.run)
+test-rest-bchain: poetry build-kevm build-llvm
+	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+='-k test_rest_bchain -n8'
 
 # Proof Tests
 
-prove_specs_dir          := tests/specs
-prove_failing_tests      := $(shell cat tests/failing-symbolic.$(TEST_SYMBOLIC_BACKEND))
-prove_pyk_failing_tests  := $(shell cat tests/failing-symbolic.pyk)
-prove_slow_tests         := $(shell cat tests/slow.$(TEST_SYMBOLIC_BACKEND))
-prove_skip_tests         := $(prove_failing_tests) $(prove_slow_tests)
-prove_benchmarks_tests   := $(filter-out $(prove_skip_tests), $(wildcard $(prove_specs_dir)/benchmarks/*-spec.k))
-prove_functional_tests   := $(filter-out $(prove_skip_tests), $(wildcard $(prove_specs_dir)/functional/*-spec.k))
-prove_opcodes_tests      := $(filter-out $(prove_skip_tests), $(wildcard $(prove_specs_dir)/opcodes/*-spec.k))
-prove_erc20_tests        := $(filter-out $(prove_skip_tests), $(wildcard $(prove_specs_dir)/erc20/*/*-spec.k))
-prove_bihu_tests         := $(filter-out $(prove_skip_tests), $(wildcard $(prove_specs_dir)/bihu/*-spec.k))
-prove_examples_tests     := $(filter-out $(prove_skip_tests), $(wildcard $(prove_specs_dir)/examples/*-spec.k) $(wildcard $(prove_specs_dir)/examples/*-spec.md))
-prove_mcd_tests          := $(filter-out $(prove_skip_tests), $(wildcard $(prove_specs_dir)/mcd/*-spec.k))
-prove_optimization_tests := $(filter-out $(prove_skip_tests), tests/specs/opcodes/evm-optimizations-spec.md)
-prove_all_tests          := $(prove_benchmarks_tests) $(prove_functional_tests) $(prove_opcodes_tests) $(prove_erc20_tests) $(prove_bihu_tests) $(prove_examples_tests) $(prove_mcd_tests) $(prove_optimization_tests)
-prove_pyk_tests          := $(filter-out $(prove_pyk_failing_tests), $(prove_all_tests))
-prove_smoke_tests        := $(shell cat tests/specs/smoke)
+prove_smoke_tests := $(shell cat tests/specs/smoke)
 
-## best-effort list of prove kompiled definitions to produce ahead of time
-prove_haskell_definitions :=                                                              \
-                             tests/specs/benchmarks/functional-spec/haskell/timestamp     \
-                             tests/specs/benchmarks/verification/haskell/timestamp        \
-                             tests/specs/bihu/functional-spec/haskell/timestamp           \
-                             tests/specs/bihu/verification/haskell/timestamp              \
-                             tests/specs/erc20/verification/haskell/timestamp             \
-                             tests/specs/examples/erc20-spec/haskell/timestamp            \
-                             tests/specs/examples/erc721-spec/haskell/timestamp           \
-                             tests/specs/examples/storage-spec/haskell/timestamp          \
-                             tests/specs/examples/solidity-code-spec/haskell/timestamp    \
-                             tests/specs/examples/sum-to-n-spec/haskell/timestamp         \
-                             tests/specs/examples/sum-to-n-foundry-spec/haskell/timestamp \
-                             tests/specs/functional/infinite-gas-spec/haskell/timestamp   \
-                             tests/specs/functional/lemmas-no-smt-spec/haskell/timestamp  \
-                             tests/specs/functional/lemmas-spec/haskell/timestamp         \
-                             tests/specs/functional/merkle-spec/haskell/timestamp         \
-                             tests/specs/functional/storageRoot-spec/haskell/timestamp    \
-                             tests/specs/mcd/functional-spec/haskell/timestamp            \
-                             tests/specs/mcd/verification/haskell/timestamp               \
-                             tests/specs/opcodes/evm-optimizations-spec/haskell/timestamp
-build-prove-haskell: $(KEVM_BIN)/kevm $(prove_haskell_definitions)
-build-prove: $(prove_haskell_definitions)
+test-prove: tests/specs/opcodes/evm-optimizations-spec.md poetry build-kevm build-haskell
+	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+='-k test_prove -n8'
 
-test-prove: test-prove-benchmarks test-prove-functional test-prove-opcodes test-prove-erc20 test-prove-bihu test-prove-examples test-prove-mcd test-prove-optimizations
-test-prove-benchmarks:    $(prove_benchmarks_tests:=.prove)
-test-prove-functional:    $(prove_functional_tests:=.prove)
-test-prove-opcodes:       $(prove_opcodes_tests:=.prove)
-test-prove-erc20:         $(prove_erc20_tests:=.prove)
-test-prove-bihu:          $(prove_bihu_tests:=.prove)
-test-prove-examples:      $(prove_examples_tests:=.prove)
-test-prove-mcd:           $(prove_mcd_tests:=.prove)
-test-prove-optimizations: $(prove_optimization_tests:=.prove)
-test-prove-smoke:         $(prove_smoke_tests:=.prove)
-
-test-failing-prove: $(prove_failing_tests:=.prove)
+test-prove-smoke: $(prove_smoke_tests:=.prove)
 
 test-klab-prove: KPROVE_OPTS += --debugger
 test-klab-prove: $(smoke_tests_prove:=.prove)
-
-$(prove_pyk_tests:=.prove): KPROVE_OPTS += --pyk --max-depth 1000 --verbose
 
 # to generate optimizations.md, run: ./optimizer/optimize.sh &> output
 tests/specs/opcodes/evm-optimizations-spec.md: include/kframework/optimizations.md
 	cat $< | sed 's/^rule/claim/' | sed 's/EVM-OPTIMIZATIONS/EVM-OPTIMIZATIONS-SPEC/' | grep -v 'priority(40)' > $@
 
-# Parse Tests
+# Integration Tests
 
-parse_tests:=$(wildcard tests/interactive/*.json) \
-             $(wildcard tests/interactive/*.evm)
-
-test-parse: $(parse_tests:=.parse)
-	echo $(parse_tests)
-
-# Failing correctly tests
-
-failure_tests:=$(wildcard tests/failing/*.json)
-
-test-failure: $(failure_tests:=.run-expected)
-
-# kevm-pyk Tests
-
-kevm_pyk_tests :=                                                                                              \
-                  tests/interactive/vmLogTest/log3.json.gst-to-kore.check                                      \
-                  tests/ethereum-tests/BlockchainTests/GeneralStateTests/VMTests/vmArithmeticTest/add.json.run \
-                  tests/specs/examples/empty-bin-runtime.k                                                     \
-                  tests/specs/examples/erc20-bin-runtime.k                                                     \
-                  tests/specs/examples/erc721-bin-runtime.k
-
-test-kevm-pyk: KEVM_OPTS += --verbose
-test-kevm-pyk: KEVM := $(POETRY_RUN) $(KEVM)
-test-kevm-pyk: KEVM_INTERPRET := $(POETRY_RUN) $(KEVM_INTERPRET)
-test-kevm-pyk: $(kevm_pyk_tests) poetry
+test-integration: poetry build-kevm build-haskell build-llvm
+	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+='-k "(test_kast.py or test_run.py or test_solc_to_k.py)" -n8'
 
 # Interactive Tests
 

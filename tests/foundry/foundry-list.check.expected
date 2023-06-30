@@ -1,497 +1,764 @@
 APRProof: AccountParamsTest.testDealConcrete:1de243d507248e2512d1d3d59b7058d5e6e118a9a322edbe2321edae09468a04
     status: ProofStatus.PASSED
     nodes: 7
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
 APRProof: AccountParamsTest.testDealSymbolic:9b29aedcb9a5b0287f80cddf13f7b8e2543ce08c4366a34b1ef444c6e3100081
     status: ProofStatus.PASSED
     nodes: 7
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
 APRProof: AccountParamsTest.testEtchConcrete:58ee949f8f57e31cfc7d9e04080eca5c9ce4cc9e2be17d6a75a2e60f7e268176
     status: ProofStatus.PASSED
     nodes: 24
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
 APRProof: AccountParamsTest.testFail_GetNonce_true:15c397683743c61a631cc1abb883c3a5f46ae17797fb27b50443726478dd42ab
     status: ProofStatus.PASSED
     nodes: 12
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
 APRProof: AccountParamsTest.testNonceSymbolic:5d26809f47ed4316f2732543b682bbeeade370685a5ed682bd56764bfb493905
     status: ProofStatus.PASSED
     nodes: 13
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
 APRProof: AccountParamsTest.test_GetNonce_true:ad558d3cedf0b61ca2fe3bdc0da6525c8f483551e987aa2d7eeb4dfec2f061af
     status: ProofStatus.PASSED
     nodes: 7
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
 APRProof: AccountParamsTest.test_Nonce_ExistentAddress:f72bb41174fc3999b4a35fd0aa96df64da3b838a7c82fbcc99657037dcdee296
     status: ProofStatus.PASSED
     nodes: 9
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
 APRProof: AccountParamsTest.test_Nonce_NonExistentAddress:ece010e038b80da71fe8f1c0c483774305e7274037e8dee42dae4f0dcdb5a0e0
     status: ProofStatus.PASSED
     nodes: 9
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
 APRProof: AccountParamsTest.test_getNonce_unknownSymbolic:eff0165465838077cd91d32e798d9b2e0a89c70699922f1b3ea111e5c1293e8f
     status: ProofStatus.PASSED
     nodes: 15
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
 APRProof: AddrTest.test_addr_true:52c26a71c1370a2f5c40c14d900f54488e4b2cb0a8e17ceaebcd2d668f299131
     status: ProofStatus.PASSED
     nodes: 7
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
 APRProof: AddrTest.test_builtInAddresses:c1d0094309a56ca2191f7485f9dee35fc109551f859592ce8a0d4bef8f21b28a
     status: ProofStatus.PASSED
     nodes: 5
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
 APRProof: AddrTest.test_notBuiltinAddress_concrete:52073d78f9145645782f8df30c10fa243616a083ad555551e5a74e2b46fa9cac
     status: ProofStatus.PASSED
     nodes: 5
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
 APRProof: AddrTest.test_notBuiltinAddress_symbolic:c7f5644afaf561f816581f89deea61c781e140642e24937062cf0cbec6974413
     status: ProofStatus.PASSED
     nodes: 10
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
 APRProof: AllowChangesTest.testAllow:a3148595f59c5aa7a5c5c3b21c5c9998d0e55587ecfea31981476fd38c4567ff
     status: ProofStatus.PASSED
     nodes: 25
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
 APRProof: AllowChangesTest.testFailAllowCallsToAddress:947222e928981f6e91a61094801ccf13d5a05e90d177234d06db4dc12197cc97
     status: ProofStatus.PASSED
     nodes: 25
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
 APRProof: AllowChangesTest.testFailAllowChangesToStorage:d776bf5126a088826d6dec4a1f8aaeba1e2e38d3157ecf84a3fdd20e39837474
     status: ProofStatus.PASSED
     nodes: 25
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
 APRProof: ArithmeticTest.test_max1:c4bacab07767a800e39884be16e13d814127a6492bdc7193c2e5aca5039e3332
     status: ProofStatus.PASSED
     nodes: 13
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
 APRProof: ArithmeticTest.test_max2:10956e47d8d9ea761a55ceb74f6d481eeda20065a6acccdc3a599f2f2eaaf15b
     status: ProofStatus.PASSED
     nodes: 11
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
-APRProof: AssertTest.testFail_assert_false:5aa43cc5d9b4297fdebd2b340f3b3dde5ef836ec5530355c9d06577027a6701e
+APRProof: AssertTest.setUp:ef63bc82ef3897c1bdba5ae3bdc1f7166e30096b76d2f67315759324d6a13f10
     status: ProofStatus.PASSED
     nodes: 5
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
-APRProof: AssertTest.testFail_assert_true:6a6829f310217bd92398a57234ebdfec1cc0fae991bf3426cd26b3a8145c8de6
+APRProof: AssertTest.testFail_assert_false:24d689f16d97b94f361ad530228c63ae6bf3442cefb0e5c52a61320c18f35f3c
+    status: ProofStatus.PASSED
+    nodes: 5
+    pending: 0
+    failing: 0
+    stuck: 0
+    terminal: 0
+Subproofs: 0
+
+APRProof: AssertTest.testFail_assert_true:197b53d8a0c19a3b62f2c833df85695b4bb2c5c44f77961f4d4dedd9bd8f63f2
     status: ProofStatus.FAILED
     nodes: 5
-    frontier: 0
-    stuck: 1
+    pending: 0
+    failing: 1
+    stuck: 0
+    terminal: 1
+Subproofs: 0
 
-APRProof: AssertTest.testFail_expect_revert:54aaa8365f4c9dff873ca2c27ad225d24f72233615519d36f6b2d44fc65316c4
+APRProof: AssertTest.testFail_expect_revert:27118a76913992c6f22579dea712cdd72f73f4693b99474945a4e557186d6a18
     status: ProofStatus.FAILED
     nodes: 7
-    frontier: 0
-    stuck: 1
+    pending: 0
+    failing: 1
+    stuck: 0
+    terminal: 1
+Subproofs: 0
 
-APRProof: AssertTest.test_assert_false:6472aa687b2c70648bb6a5268cf283172a272f92b67a38874ecb4bcfc87dca81
+APRProof: AssertTest.test_assert_false:33efe2e3fc9e4b6d788b00ee4020e715594396b00738fd8531b82138d4fa6e24
     status: ProofStatus.FAILED
     nodes: 5
-    frontier: 0
-    stuck: 1
+    pending: 0
+    failing: 1
+    stuck: 0
+    terminal: 1
+Subproofs: 0
 
-APRProof: AssertTest.test_assert_true:e08bbf9f702ff53c89afea2b516babb36a1c7a30f1cff2b3c62eb5e04c2044b8
+APRProof: AssertTest.test_assert_true:a327e722a5bc2ed41b1ff750e1eadf3e83cb553953514763ced6208886b28e5e
     status: ProofStatus.PASSED
     nodes: 5
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
-APRProof: AssertTest.test_assert_true_branch:97cb1e33d0e46e927a90bf7678bee05472683e7739a2e1e95c7e19ca94110141
+APRProof: AssertTest.test_assert_true_branch:705a36696541984d6c6b28ade9bbb7a3840cbcfdc2e150b3da4329cb7c06527a
     status: ProofStatus.PASSED
     nodes: 11
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
-APRProof: AssertTest.test_revert_branch:7d523c32aa8a5f454988f4311287897325e2240ff17d14a046fd876b4f942c00
+APRProof: AssertTest.test_failing_branch:62e246cc0325a8ab400bed7aa96455fdf5277f9a1a755fa8cfaf572ed805c686
     status: ProofStatus.FAILED
     nodes: 11
-    frontier: 0
-    stuck: 1
+    pending: 0
+    failing: 1
+    stuck: 0
+    terminal: 1
+Subproofs: 0
+
+APRProof: AssertTest.test_revert_branch:3ef2f88ae21b21d91e372c879a7caafa75d7365732a59110c0fa2956b6824247
+    status: ProofStatus.FAILED
+    nodes: 11
+    pending: 0
+    failing: 1
+    stuck: 0
+    terminal: 1
+Subproofs: 0
 
 APRProof: AssumeTest.testFail_assume_false:e79d764ed5db65dd3fef9785f578b83aa722f62241fc1d544dc601c158ef695d
     status: ProofStatus.FAILED
     nodes: 7
-    frontier: 0
-    stuck: 1
+    pending: 0
+    failing: 1
+    stuck: 0
+    terminal: 1
+Subproofs: 0
 
 APRProof: AssumeTest.testFail_assume_true:ef68c1ea07b094fcf03e02d287b47204fa02108e3334c204f81dea4c78fd1289
     status: ProofStatus.PASSED
     nodes: 11
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
 APRProof: AssumeTest.test_assume_false:fba71744bdce72bc45b9a84c3ab97ce0d7193b08f9d2c0c8ded04097536c129c
     status: ProofStatus.FAILED
     nodes: 11
-    frontier: 0
-    stuck: 1
+    pending: 0
+    failing: 1
+    stuck: 0
+    terminal: 1
+Subproofs: 0
 
 APRProof: AssumeTest.test_assume_staticCall:46e4f7d8496787dfa69b768f5e27cee757d077f76c8d5e4f8382440e94baba69
     status: ProofStatus.PASSED
     nodes: 8
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
 APRProof: AssumeTest.test_assume_true:21099f483dcfcd238c4ec031e318982e4e4cecc7be990d5c699dbc94e681ea67
     status: ProofStatus.PASSED
     nodes: 7
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
 APRProof: AssumeTest.test_multi_assume:0bcf46fa42269d36e4abdba912151d698618f9e71b65c0dd65c24a2e316283e5
     status: ProofStatus.PASSED
     nodes: 22
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
 APRProof: BMCLoopsTest.test_countdown_concrete:05a00c70eb4b09a188814790be389a5c7b3071434302fde53a56c0cd834bad5f
     status: ProofStatus.PASSED
     nodes: 6
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
 APRProof: BMCLoopsTest.test_countdown_symbolic:379ebbf3bd0c37353a5544ce5d5f32c7d38de613e72a876a45e83605b13f6708
     status: ProofStatus.PASSED
     nodes: 25
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
 APRProof: BlockParamsTest.testBlockNumber:2e2993985c220afc2279938333ddbac593243d3a38ecb2190614e5c961ce614e
     status: ProofStatus.PASSED
     nodes: 5
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
 APRProof: BlockParamsTest.testChainId:3c3d337b8d1854cceffc7ecc0afb8059c5ac52888bf0f17e19b93c2a679fc0a2
     status: ProofStatus.PASSED
     nodes: 7
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
 APRProof: BlockParamsTest.testCoinBase:dd05f7e4910a6df661c1eece3029c72cbe9057be9c320100fdf31dbd51958335
     status: ProofStatus.PASSED
     nodes: 7
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
 APRProof: BlockParamsTest.testFee:31c7a7448a119b78ecd7febaf667b96b1cfa30d7676bc7974da96d2499172c7e
     status: ProofStatus.PASSED
     nodes: 7
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
 APRProof: BlockParamsTest.testRoll:4c39673b2a2e6150eb49d991630c3cd83d185c9d3b4525b8fa1f4c28620d10af
     status: ProofStatus.PASSED
     nodes: 7
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
 APRProof: BlockParamsTest.testWarp:49d83395db7ebb166803ad3eab6e76f728488b0df95908de013492847eab70e1
     status: ProofStatus.PASSED
     nodes: 7
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
-APRProof: BytesTypeTest.test_bytes32:8ef2c0d7a60443aec9d03b2b8c2ba7b4c3f283f2c3836d77d8b4bc5f78cdfde8
+APRProof: BytesTypeTest.test_bytes32:ef04f8720410ede5bec0b17fda8340c62e9818d9a663c53bb393bddb3987a17e
     status: ProofStatus.PASSED
     nodes: 5
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
-APRProof: BytesTypeTest.test_bytes4:3473e13b1226a043a30ecbeb33a0ed9f243637882a6776952c9d95548317b088
+APRProof: BytesTypeTest.test_bytes4:46a17b849e4f2991bcdce4aa6a0629b26f2db8fd929dc4a66b2f8aae5e50dded
     status: ProofStatus.PASSED
     nodes: 5
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
 APRProof: CounterTest.testIncrement:3992e730124fa1381551e230218898550b2665bfc50a236b94ec973de817e943
     status: ProofStatus.PASSED
     nodes: 30
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
 APRProof: CounterTest.testSetNumber:aa6c11690ae68d49a8e35ee344e11f7a4bd7387a37612b29ea301c0ebfd72170
     status: ProofStatus.PASSED
     nodes: 30
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
 APRProof: EmitContractTest.testExpectEmit:f96b8227fdfb0c30ae8eef4876623a1e4dfc17a34fc71e50cee1ae54958f1404
     status: ProofStatus.PASSED
     nodes: 18
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
 APRProof: EmitContractTest.testExpectEmitCheckEmitter:a12dc8fcec7b607ce0e119eb630e1ed9c214c045fb3bb247864bf9380ee3f32a
     status: ProofStatus.PASSED
     nodes: 18
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
 APRProof: EmitContractTest.testExpectEmitDoNotCheckData:53c50ea3b808147923b19d604664fb10feb879db1da21eefb9edd73965b470f8
     status: ProofStatus.PASSED
     nodes: 18
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
 APRProof: ExpectCallTest.testExpectRegularCall:e0c1a2f7e6fa7af4c233351e44fb28b5c81baec83bbf382c9450635325bc2b57
     status: ProofStatus.PASSED
     nodes: 19
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
 APRProof: ExpectCallTest.testExpectStaticCall:438fcc544fa99d10c26f5bd1b02bbad8184c54699a712cc17b62fc5dfcef87d5
     status: ProofStatus.PASSED
     nodes: 19
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
 APRProof: ExpectRevertTest.testFail_ExpectRevert_failAndSuccess:a3ffe48687b9f408a3cd0b29f37fa3c4a6bc36a08a411f446a22642bc70173a1
     status: ProofStatus.PASSED
     nodes: 18
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
 APRProof: ExpectRevertTest.testFail_expectRevert_empty:0717e1dd0cd813b54c47c1e48622d86e05268596cabbe19daf1e44231b27040a
     status: ProofStatus.PASSED
     nodes: 7
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
 APRProof: ExpectRevertTest.testFail_expectRevert_false:1d576d88b3dcc6f5276fe707086435f1a03472a0f7bf7c0bcb8a82b8dfd27f30
     status: ProofStatus.PASSED
     nodes: 18
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
 APRProof: ExpectRevertTest.testFail_expectRevert_multipleReverts:581fb9ea8cd100a6dcf3df7158bb4f00855cee18ee1e43212ff1c557c35220c4
     status: ProofStatus.PASSED
     nodes: 24
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
 APRProof: ExpectRevertTest.test_ExpectRevert_increasedDepth:62d768e5623286d1005ecaa9610933221883959d37f4b3469066d88d0415a191
     status: ProofStatus.PASSED
     nodes: 29
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
 APRProof: ExpectRevertTest.test_expectRevert_internalCall:cbcb172e7f8d76df6b2bd877ed6a8b2a04037849d5c1b2ce109e0abc0e2a2055
     status: ProofStatus.PASSED
     nodes: 7
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
 APRProof: ExpectRevertTest.test_expectRevert_message:5594a9370b5b578b68ecc65f7acf7c75d6badb6cb9b255dbce908feb20dce045
     status: ProofStatus.PASSED
     nodes: 20
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
 APRProof: ExpectRevertTest.test_expectRevert_returnValue:aa77e10b4f62f49f84a0672f7f3b4b3b6c5181dcc247967e8dbe1711ce0a4b40
     status: ProofStatus.PASSED
     nodes: 27
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
 APRProof: ExpectRevertTest.test_expectRevert_true:de7000e92030214d433a6dd51fce1fe48b94f505788a780f63866a8bdf794b0e
     status: ProofStatus.PASSED
     nodes: 18
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
 APRProof: LabelTest.testLabel:fff0ddccfa7d6527a2055a794cb0777dcdd5b0d04c8e0a8b714faf0ca5f84eb9
     status: ProofStatus.PASSED
     nodes: 7
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
 APRProof: LoopsTest.sum_N:031a8a7fd8a89ea433a5c7307fd8e6ee86fed775c4188c1078f3de94c1ee710d
     status: ProofStatus.PASSED
     nodes: 13
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
 APRProof: LoopsTest.test_sum_10:30ed1ae0020518510e2ba4e1a1487e245df8e70bd3e1523a82419bd2864b76e1
     status: ProofStatus.PASSED
     nodes: 10
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
 APRProof: MethodDisambiguateTest.test_method_call:3786df7e8684c4703688ee31a20e7924bd12aafb41b43e4d7c6747402f456ef7
     status: ProofStatus.PASSED
     nodes: 5
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
 APRProof: PlainPrankTest.testFail_startPrank_internalCall:bbaab6548be80ef31d590a24bb3c34367cbf9b5559525bc5437136de45f0d9af
     status: ProofStatus.PASSED
     nodes: 9
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
 APRProof: PlainPrankTest.test_prank_zeroAddress_true:901bf2ce10e3745450eb66583d6120d18b131ff3c47aec309ca06b66d6589081
     status: ProofStatus.PASSED
     nodes: 31
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
 APRProof: PlainPrankTest.test_startPrankWithOrigin_true:04631949ff19a67ae9204131ad0de7a2f9d10d0feb77119fc4a30679b8100eb8
     status: ProofStatus.PASSED
     nodes: 26
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
 APRProof: PlainPrankTest.test_startPrank_true:cbb13d45d46d95755f53a25e087525927a4e5f277ba4ce1a5891cdc8c151ef92
     status: ProofStatus.PASSED
     nodes: 26
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
 APRProof: PlainPrankTest.test_startPrank_zeroAddress_true:dd7959dcf5de16ead3655ad4d1f2e09438fd0762efdf40c40e19fed0dc8bda61
     status: ProofStatus.PASSED
     nodes: 26
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
 APRProof: PlainPrankTest.test_stopPrank_notExistent:fb68e75bcad340c21f02047d7b194597f62ddaef8a9b1ec4cff1169dfca1ff92
     status: ProofStatus.PASSED
     nodes: 7
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
 APRProof: SetUpDeployTest.setUp:ea545d29e24145e8b49df4eaf3ec901b9972459926f28605587c9b1157175caf
     status: ProofStatus.PASSED
     nodes: 10
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
 APRProof: SetUpDeployTest.test_extcodesize:54fc4add5df72818f51cf0e55ef001823eba0e0715c8b0b71e8eaf089508f226
     status: ProofStatus.PASSED
     nodes: 5
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
 APRProof: Setup2Test.setUp:7dfe52b3906be5ad1783250c325ddf66f6f78de610c2515152b0d38823f750d7
     status: ProofStatus.PASSED
     nodes: 5
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
 APRProof: Setup2Test.testFail_setup:5c9415bdd3a7fee6382e9ff59eadc6effbdaafa9c907cb733861cbbca7e438ce
     status: ProofStatus.PASSED
     nodes: 10
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
 APRProof: Setup2Test.test_setup:d382cf9915e17de9bafe20dd19723db5b4c6af6d7e7b2f0f098abe97c8f3a174
     status: ProofStatus.PASSED
     nodes: 5
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
-APRProof: StoreTest.testGasLoadColdVM:08e98af6136079c0da5f181b9de44f6b66d0d93493b37ee5ac8e4794c544050a
+APRProof: StoreTest.testGasLoadColdVM:28926dbeb6462b88b02e57c7c390f5b5f18613387e1acc48ee527ddcd6f51c38
     status: ProofStatus.PASSED
     nodes: 7
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
-APRProof: StoreTest.testGasLoadWarmUp:c0f93572775ae22d328a84c24dae865180585a00b54cdc6381d0e8aa694e64bb
+APRProof: StoreTest.testGasLoadWarmUp:830c58f5c790eda97f2e3c2085c72c60ec78a6b0aba178e4266f3c7fa52e9317
     status: ProofStatus.PASSED
     nodes: 13
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
-APRProof: StoreTest.testGasStoreColdVM:2ee294be36663d1f3d30eef71cf62ab88d3de5fffb53da9f357ab24002011c15
+APRProof: StoreTest.testGasStoreColdVM:88886eb3ba563ccbd8ab31758d8811e3c2d9959d583600cd2d36d7ee45167019
     status: ProofStatus.PASSED
     nodes: 7
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
-APRProof: StoreTest.testGasStoreWarmUp:7c02965dd946b4e0c5f4f4002ae77f47c17ed0a0384600567dd68b4603576a20
+APRProof: StoreTest.testGasStoreWarmUp:5d343b20742849259c7a1f2940c919489c7a917e215bbfb13fac0c41b540f676
     status: ProofStatus.PASSED
     nodes: 13
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
-APRProof: StoreTest.testLoadNonExistent:f73ef265d41ad4a2352cc6cfe1267a67a69d2e3d484c45bbb3b91c0dfc6e1f0c
+APRProof: StoreTest.testLoadNonExistent:49e724f7b888037a8be429c3fc401aa4b914d30e58e5dc95071b39879539da4e
     status: ProofStatus.PASSED
     nodes: 7
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
-APRProof: StoreTest.testStoreLoad:705654a363514d5cc2f7a1b5ae36fa0a9cc5dfeb25c879edb9940ac9217e1630
+APRProof: StoreTest.testStoreLoad:ee201cded4b77a4da3de21730cd01fa5fc5d69d5b76781c67576cdaf0b936a78
     status: ProofStatus.PASSED
     nodes: 14
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
-APRProof: StoreTest.testStoreLoadNonExistent:9df90e67adf7c20cdb4be8deb8b3cadbd5531d574b810fff2aa24ec9fa575da9
+APRProof: StoreTest.testStoreLoadNonExistent:96db02ddef29dc3a63ddac54ea5cba1df3d68eccad923fe04402ee6b68f695f1
     status: ProofStatus.PASSED
     nodes: 9
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
-APRProof: SymbolicStorageTest.testEmptyInitialStorage:03b0fa3e48c549af66a2d341ce9c1ba2236a583013c77fddbbec2d93481fdfff
+APRProof: SymbolicStorageTest.testEmptyInitialStorage:9d98193ee0160832abaafc4239b38ec3afdaa078e23c52cb21492bd80b70bb7b
     status: ProofStatus.PASSED
     nodes: 7
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
-APRProof: SymbolicStorageTest.testFail_SymbolicStorage:edf0bb4326f8009662b4269217a8696a03541e4c51cca85df1d685979ac8de78
+APRProof: SymbolicStorageTest.testFail_SymbolicStorage:2f60adbdb429c8dafe3ac4f413c523f873b4d1653fb2a4c6145547f845bebc17
     status: ProofStatus.PASSED
     nodes: 19
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
-APRProof: SymbolicStorageTest.testFail_SymbolicStorage1:20273ac04c25c60d2c679939b7a919a62bf218c5311948a3399874372b1dc2d8
+APRProof: SymbolicStorageTest.testFail_SymbolicStorage1:6583ada3ba3da1f3ff59bf60e07ee67afc17bdea5327b49a0ad44e9ed00de134
     status: ProofStatus.PASSED
     nodes: 24
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0
 
-APRProof: UintTypeTest.test_uint256:ed287e4a5f198ce18db069e2ce33d7233319363102edf946dcdd93d0bb17aebf
+APRProof: UintTypeTest.test_uint256:fed11faa6e8138097d5d92e606e313d18cc8a752446d42345820bb5b6ff66294
     status: ProofStatus.PASSED
     nodes: 5
-    frontier: 0
+    pending: 0
+    failing: 0
     stuck: 0
+    terminal: 0
+Subproofs: 0

@@ -6,8 +6,8 @@ from enum import Enum
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from pyk.cli_utils import run_process
 from pyk.ktool.kompile import HaskellKompile, KompileArgs, KompileBackend, LLVMKompile
+from pyk.utils import run_process
 
 from . import config
 
@@ -23,30 +23,30 @@ _LOGGER: Final = logging.getLogger(__name__)
 
 HOOK_NAMESPACES: Final = ('JSON', 'KRYPTO', 'BLOCKCHAIN')
 CONCRETE_RULES: Final = (
-    'EVM.allBut64th.pos',
-    'EVM.Caddraccess',
-    'EVM.Cbalance.new',
-    'EVM.Cbalance.old',
-    'EVM.Cextcodecopy.new',
-    'EVM.Cextcodecopy.old',
-    'EVM.Cextcodehash.new',
-    'EVM.Cextcodehash.old',
-    'EVM.Cextcodesize.new',
-    'EVM.Cextcodesize.old',
-    'EVM.Cextra.new',
-    'EVM.Cextra.old',
-    'EVM.Cgascap',
-    'EVM.Cmem',
-    'EVM.Cmodexp.new',
-    'EVM.Cmodexp.old',
-    'EVM.Csload.new',
-    'EVM.Csstore.new',
-    'EVM.Csstore.old',
-    'EVM.Cstorageaccess',
+    'GAS-FEES.allBut64th.pos',
+    'GAS-FEES.Caddraccess',
+    'GAS-FEES.Cbalance.new',
+    'GAS-FEES.Cbalance.old',
+    'GAS-FEES.Cextcodecopy.new',
+    'GAS-FEES.Cextcodecopy.old',
+    'GAS-FEES.Cextcodehash.new',
+    'GAS-FEES.Cextcodehash.old',
+    'GAS-FEES.Cextcodesize.new',
+    'GAS-FEES.Cextcodesize.old',
+    'GAS-FEES.Cextra.new',
+    'GAS-FEES.Cextra.old',
+    'GAS-FEES.Cgascap',
+    'GAS-FEES.Cmem',
+    'GAS-FEES.Cmodexp.new',
+    'GAS-FEES.Cmodexp.old',
+    'GAS-FEES.Csload.new',
+    'GAS-FEES.Csstore.new',
+    'GAS-FEES.Csstore.old',
+    'GAS-FEES.Cstorageaccess',
     'EVM.ecrec',
     'EVM.#memoryUsageUpdate.some',
-    'EVM.Rsstore.new',
-    'EVM.Rsstore.old',
+    'GAS-FEES.Rsstore.new',
+    'GAS-FEES.Rsstore.old',
     'EVM-TYPES.padRightToWidthNonEmpty',
     'EVM-TYPES.padToWidthNonEmpty',
     'EVM-TYPES.powmod.nonzero',
@@ -105,6 +105,22 @@ class KompileTarget(Enum):
             case _:
                 raise AssertionError()
 
+    @property
+    def md_selector(self) -> str:
+        match self:
+            case self.LLVM:
+                return 'k & ! node & ! symbolic'
+            case self.NODE:
+                return 'k & ! symbolic & ! standalone'
+            case self.HASKELL:
+                return 'k & ! node & ! concrete'
+            case self.HASKELL_STANDALONE:
+                return 'k & ! node & ! concrete'
+            case self.FOUNDRY:
+                return 'k & ! node & ! concrete'
+            case _:
+                raise AssertionError()
+
 
 def kevm_kompile(
     target: KompileTarget,
@@ -114,7 +130,7 @@ def kevm_kompile(
     main_module: str | None,
     syntax_module: str | None,
     includes: Iterable[str] = (),
-    emit_json: bool,
+    emit_json: bool = True,
     read_only: bool = False,
     ccopts: Iterable[str] = (),
     optimization: int = 0,
@@ -123,7 +139,7 @@ def kevm_kompile(
     debug: bool = False,
 ) -> Path:
     backend = target.backend
-    md_selector = 'k & ! standalone' if target == KompileTarget.NODE else 'k & ! node'
+    md_selector = target.md_selector
 
     include_dirs = [Path(include) for include in includes]
     include_dirs += [config.INCLUDE_DIR]
@@ -174,10 +190,18 @@ def kevm_kompile(
 
 
 def _lib_ccopts(kernel: Kernel) -> list[str]:
-    ccopts = ['-g', '-std=c++14', '-lff', '-lcryptopp', '-lsecp256k1', '-lssl', '-lcrypto']
+    ccopts = ['-g', '-std=c++17']
+
+    ccopts += ['-lssl', '-lcrypto']
 
     libff_dir = config.KEVM_LIB / 'libff'
-    ccopts += [f'-L{libff_dir}/lib', f'-I{libff_dir}/include']
+    ccopts += [f'{libff_dir}/lib/libff.a', f'-I{libff_dir}/include']
+
+    libcryptopp_dir = config.KEVM_LIB / 'libcryptopp'
+    ccopts += [f'{libcryptopp_dir}/lib/libcryptopp.a', f'-I{libcryptopp_dir}/include']
+
+    libsecp256k1_dir = config.KEVM_LIB / 'libsecp256k1'
+    ccopts += [f'{libsecp256k1_dir}/lib/libsecp256k1.a', f'-I{libsecp256k1_dir}/include']
 
     plugin_include = config.KEVM_LIB / 'blockchain-k-plugin/include'
     ccopts += [
@@ -187,7 +211,7 @@ def _lib_ccopts(kernel: Kernel) -> list[str]:
     ]
 
     if kernel == Kernel.DARWIN:
-        if not config.NIX_BUILD:
+        if not config.NIX_LIBS:
             brew_root = run_process(('brew', '--prefix'), pipe_stderr=True, logger=_LOGGER).stdout.strip()
             ccopts += [
                 f'-I{brew_root}/include',
@@ -199,14 +223,12 @@ def _lib_ccopts(kernel: Kernel) -> list[str]:
                 f'-I{openssl_root}/include',
                 f'-L{openssl_root}/lib',
             ]
-
-            libcryptopp_dir = config.KEVM_LIB / 'cryptopp'
-            ccopts += [
-                f'-I{libcryptopp_dir}/include',
-                f'-L{libcryptopp_dir}/lib',
-            ]
+        else:
+            ccopts += config.NIX_LIBS.split(' ')
     elif kernel == Kernel.LINUX:
         ccopts += ['-lprocps']
+        if config.NIX_LIBS:
+            ccopts += config.NIX_LIBS.split(' ')
     else:
         raise AssertionError()
 

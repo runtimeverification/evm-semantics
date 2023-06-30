@@ -76,7 +76,6 @@ module STATE-UTILS
  // -----------------------------------------
     rule <k> clearNETWORK => . ... </k>
          <statusCode>     _ => .StatusCode </statusCode>
-         <activeAccounts> _ => .Set        </activeAccounts>
          <accounts>       _ => .Bag        </accounts>
          <messages>       _ => .Bag        </messages>
          <schedule>       _ => DEFAULT     </schedule>

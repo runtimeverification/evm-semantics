@@ -1,51 +1,41 @@
 
-┌─ 4 (init, expanded)
-│    k: #execute ~> CONTINUATION
-│    pc: 0
-│    callDepth: 0
-│    statusCode: STATUSCODE
-│    src: tests/foundry/test/Simple.t.sol:5:48
+┌─ 1 (root)
+│   k: #execute ~> CONTINUATION
+│   pc: 0
+│   callDepth: 0
+│   statusCode: STATUSCODE
+│   src: tests/foundry/test/Simple.t.sol:5:54
 │
-│  (480 steps)
-├─ 7 (expanded)
-│    k: #end EVMC_REVERT ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
-│    pc: 918
-│    callDepth: 0
-│    statusCode: STATUSCODE:StatusCode
+│  (376 steps)
+├─ 3
+│   k: #end EVMC_REVERT ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
+│   pc: 992
+│   callDepth: 0
+│   statusCode: STATUSCODE:StatusCode
 │
 │  (1 step)
-├─ 9 (expanded)
-│    k: #halt ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
-│    pc: 918
-│    callDepth: 0
-│    statusCode: EVMC_REVERT
+├─ 4
+│   k: #halt ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
+│   pc: 992
+│   callDepth: 0
+│   statusCode: EVMC_REVERT
 │
 │  (2 steps)
-└─ 11 (expanded, stuck, leaf)
-     k: #halt ~> CONTINUATION:K
-     pc: 918
-     callDepth: 0
-     statusCode: EVMC_REVERT
-   (stuck)
+└─ 5 (leaf)
+    k: #halt ~> CONTINUATION:K
+    pc: 992
+    callDepth: 0
+    statusCode: EVMC_REVERT
 
 
-└─ 3 (target, leaf)
-     k: #halt ~> CONTINUATION
-     pc: PC_CELL_5d410f2a
-     callDepth: CALLDEPTH_CELL_5d410f2a
-     statusCode: STATUSCODE_FINAL
+┌─ 2 (root, leaf)
+│   k: #halt ~> CONTINUATION
+│   pc: PC_CELL_5d410f2a
+│   callDepth: CALLDEPTH_CELL_5d410f2a
+│   statusCode: STATUSCODE_FINAL
 
 
-Target Nodes:
-
-3 (target, leaf)
- k: #halt ~> CONTINUATION
- pc: PC_CELL_5d410f2a
- callDepth: CALLDEPTH_CELL_5d410f2a
- statusCode: STATUSCODE_FINAL
-
-
-Node 11:
+Node 5:
 
 ( <generatedTop>
   <foundry>
@@ -88,7 +78,7 @@ Node 11:
               0
             </callValue>
             <wordStack>
-              ( 342 : ( 174 : ( selector ( "test_assert_false()" ) : .WordStack ) ) )
+              ( 399 : ( 212 : ( selector ( "test_assert_false()" ) : .WordStack ) ) )
             </wordStack>
             <localMem>
               b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80"
@@ -131,24 +121,6 @@ Node 11:
           <accounts>
             ( <account>
               <acctID>
-                728815563385977040452943777879061427756277306518
-              </acctID>
-              <balance>
-                0
-              </balance>
-              <storage>
-                .Map
-              </storage>
-              <origStorage>
-                .Map
-              </origStorage>
-              <nonce>
-                1
-              </nonce>
-              ...
-            </account>
-            <account>
-              <acctID>
                 645326474426547203313410069153905908525362434349
               </acctID>
               <balance>
@@ -162,6 +134,24 @@ Node 11:
               </origStorage>
               <nonce>
                 0
+              </nonce>
+              ...
+            </account>
+            <account>
+              <acctID>
+                728815563385977040452943777879061427756277306518
+              </acctID>
+              <balance>
+                0
+              </balance>
+              <storage>
+                .Map
+              </storage>
+              <origStorage>
+                .Map
+              </origStorage>
+              <nonce>
+                1
               </nonce>
               ...
             </account> )
@@ -252,7 +242,7 @@ Node 11:
 
 
 
-module SUMMARY-ASSERTTEST-TEST-ASSERT-FALSE
+module SUMMARY-ASSERTTEST.TEST-ASSERT-FALSE:870E8DE82ACD6F5B31D6043C526259856526B116B385F7E0299260B011F7F44A
     
     
            <kevm>
@@ -281,9 +271,14 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-FALSE
                    .List
                  </interimStates>
                  <callState>
+                   ...
+                   ...
                    <id>
                      728815563385977040452943777879061427756277306518
                    </id>
+                   <caller>
+                     CALLER_ID
+                   </caller>
                    <callData>
                      ( AssertTest . test_assert_false ( ) => b"]\xde\xcb\xfd" )
                    </callData>
@@ -291,11 +286,13 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-FALSE
                      0
                    </callValue>
                    <wordStack>
-                     ( .WordStack => ( 342 : ( 174 : ( 1574882301 : .WordStack ) ) ) )
+                     ( .WordStack => ( 399 : ( 212 : ( selector ( "test_assert_false()" ) : .WordStack ) ) ) )
                    </wordStack>
                    <localMem>
                      ( .Bytes => b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80" )
                    </localMem>
+                   ...
+                   ...
                    <memoryUsed>
                      ( 0 => 3 )
                    </memoryUsed>
@@ -319,45 +316,19 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-FALSE
                    </accessedStorage>
                    ...
                  </substate>
+                 <origin>
+                   ORIGIN_ID
+                 </origin>
+                 <block>
+                   <number>
+                     NUMBER_CELL
+                   </number>
+                   ...
+                 </block>
                  ...
                </evm>
                <network>
                  <accounts>
-                   ( ( <account>
-                     <acctID>
-                       728815563385977040452943777879061427756277306518
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       1
-                     </nonce>
-                     ...
-                   </account> => <account>
-                     <acctID>
-                       728815563385977040452943777879061427756277306518
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       1
-                     </nonce>
-                     ...
-                   </account> )
                    ( <account>
                      <acctID>
                        645326474426547203313410069153905908525362434349
@@ -365,6 +336,7 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-FALSE
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        .Map
                      </storage>
@@ -374,14 +346,15 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-FALSE
                      <nonce>
                        0
                      </nonce>
-                     ...
-                   </account> => <account>
+                   </account>
+                   <account>
                      <acctID>
-                       645326474426547203313410069153905908525362434349
+                       728815563385977040452943777879061427756277306518
                      </acctID>
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        .Map
                      </storage>
@@ -389,10 +362,9 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-FALSE
                        .Map
                      </origStorage>
                      <nonce>
-                       0
+                       1
                      </nonce>
-                     ...
-                   </account> ) )
+                   </account> )
                  </accounts>
                  ...
                </network>
@@ -469,6 +441,26 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-FALSE
              </whitelist>
            </cheatcodes>
          </foundry>
+      requires ( 0 <=Int CALLER_ID
+       andBool ( CALLER_ID <Int pow160
+       andBool ( 0 <=Int ORIGIN_ID
+       andBool ( ORIGIN_ID <Int pow160
+       andBool ( 0 <=Int NUMBER_CELL
+       andBool ( NUMBER_CELL <=Int maxSInt256
+       andBool ( lengthBytes ( AssertTest . test_assert_false ( ) ) <Int pow128
+       andBool ( 0 <=Int 9223372036854775807
+       andBool ( 9223372036854775807 <Int pow256
+       andBool ( 0 <=Int 728815563385977040452943777879061427756277306518
+       andBool ( 728815563385977040452943777879061427756277306518 <Int pow160
+               )))))))))))
+       ensures ( 0 <=Int CALLER_ID:Int
+       andBool ( 0 <=Int ORIGIN_ID:Int
+       andBool ( 0 <=Int NUMBER_CELL:Int
+       andBool ( CALLER_ID:Int <Int pow160
+       andBool ( ORIGIN_ID:Int <Int pow160
+       andBool ( NUMBER_CELL:Int <=Int maxSInt256
+               ))))))
+      [label(BASIC-BLOCK-1-TO-3)]
     
            <kevm>
              <k>
@@ -498,9 +490,14 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-FALSE
                    .List
                  </interimStates>
                  <callState>
+                   ...
+                   ...
                    <id>
                      728815563385977040452943777879061427756277306518
                    </id>
+                   <caller>
+                     CALLER_ID:Int
+                   </caller>
                    <callData>
                      b"]\xde\xcb\xfd"
                    </callData>
@@ -508,11 +505,13 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-FALSE
                      0
                    </callValue>
                    <wordStack>
-                     ( 342 : ( 174 : ( 1574882301 : .WordStack ) ) )
+                     ( 399 : ( 212 : ( selector ( "test_assert_false()" ) : .WordStack ) ) )
                    </wordStack>
                    <localMem>
                      b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80"
                    </localMem>
+                   ...
+                   ...
                    <memoryUsed>
                      3
                    </memoryUsed>
@@ -536,17 +535,45 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-FALSE
                    </accessedStorage>
                    ...
                  </substate>
+                 <origin>
+                   ORIGIN_ID:Int
+                 </origin>
+                 <block>
+                   <number>
+                     NUMBER_CELL:Int
+                   </number>
+                   ...
+                 </block>
                  ...
                </evm>
                <network>
                  <accounts>
                    ( <account>
                      <acctID>
+                       645326474426547203313410069153905908525362434349
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     ...
+                     <storage>
+                       .Map
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       0
+                     </nonce>
+                   </account>
+                   <account>
+                     <acctID>
                        728815563385977040452943777879061427756277306518
                      </acctID>
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        .Map
                      </storage>
@@ -556,25 +583,6 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-FALSE
                      <nonce>
                        1
                      </nonce>
-                     ...
-                   </account>
-                   <account>
-                     <acctID>
-                       645326474426547203313410069153905908525362434349
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       0
-                     </nonce>
-                     ...
                    </account> )
                  </accounts>
                  ...
@@ -652,6 +660,14 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-FALSE
              </whitelist>
            </cheatcodes>
          </foundry>
+      requires ( 0 <=Int CALLER_ID:Int
+       andBool ( 0 <=Int ORIGIN_ID:Int
+       andBool ( 0 <=Int NUMBER_CELL:Int
+       andBool ( CALLER_ID:Int <Int pow160
+       andBool ( ORIGIN_ID:Int <Int pow160
+       andBool ( NUMBER_CELL:Int <=Int maxSInt256
+               ))))))
+      [label(BASIC-BLOCK-3-TO-4)]
     
            <kevm>
              <k>
@@ -681,9 +697,14 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-FALSE
                    .List
                  </interimStates>
                  <callState>
+                   ...
+                   ...
                    <id>
                      728815563385977040452943777879061427756277306518
                    </id>
+                   <caller>
+                     CALLER_ID:Int
+                   </caller>
                    <callData>
                      b"]\xde\xcb\xfd"
                    </callData>
@@ -691,11 +712,13 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-FALSE
                      0
                    </callValue>
                    <wordStack>
-                     ( 342 : ( 174 : ( 1574882301 : .WordStack ) ) )
+                     ( 399 : ( 212 : ( selector ( "test_assert_false()" ) : .WordStack ) ) )
                    </wordStack>
                    <localMem>
                      b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80"
                    </localMem>
+                   ...
+                   ...
                    <memoryUsed>
                      3
                    </memoryUsed>
@@ -719,17 +742,45 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-FALSE
                    </accessedStorage>
                    ...
                  </substate>
+                 <origin>
+                   ORIGIN_ID:Int
+                 </origin>
+                 <block>
+                   <number>
+                     NUMBER_CELL:Int
+                   </number>
+                   ...
+                 </block>
                  ...
                </evm>
                <network>
                  <accounts>
                    ( <account>
                      <acctID>
+                       645326474426547203313410069153905908525362434349
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     ...
+                     <storage>
+                       .Map
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       0
+                     </nonce>
+                   </account>
+                   <account>
+                     <acctID>
                        728815563385977040452943777879061427756277306518
                      </acctID>
                      <balance>
                        0
                      </balance>
+                     ...
                      <storage>
                        .Map
                      </storage>
@@ -739,25 +790,6 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-FALSE
                      <nonce>
                        1
                      </nonce>
-                     ...
-                   </account>
-                   <account>
-                     <acctID>
-                       645326474426547203313410069153905908525362434349
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       0
-                     </nonce>
-                     ...
                    </account> )
                  </accounts>
                  ...
@@ -835,6 +867,32 @@ module SUMMARY-ASSERTTEST-TEST-ASSERT-FALSE
              </whitelist>
            </cheatcodes>
          </foundry>
+      requires ( 0 <=Int CALLER_ID:Int
+       andBool ( 0 <=Int ORIGIN_ID:Int
+       andBool ( 0 <=Int NUMBER_CELL:Int
+       andBool ( CALLER_ID:Int <Int pow160
+       andBool ( ORIGIN_ID:Int <Int pow160
+       andBool ( NUMBER_CELL:Int <=Int maxSInt256
+               ))))))
+      [label(BASIC-BLOCK-4-TO-5)]
 
 endmodule
+1 Failure nodes. (0 pending and 1 failing)
 
+Failing nodes:
+
+  Node id: 5
+  Failure reason:
+    Implication check failed, the following is the remaining implication:
+    ( ( { true #Equals 0 <=Int CALLER_ID:Int }
+    #And ( { true #Equals 0 <=Int ORIGIN_ID:Int }
+    #And ( { true #Equals 0 <=Int NUMBER_CELL:Int }
+    #And ( { true #Equals CALLER_ID:Int <Int pow160 }
+    #And ( { true #Equals ORIGIN_ID:Int <Int pow160 }
+    #And { true #Equals NUMBER_CELL:Int <=Int maxSInt256 } ) ) ) ) ) #Implies { true #Equals foundry_success ( ... statusCode: EVMC_REVERT , failed: #lookup ( .Map , 46308022326495007027972728677917914892729792999299745830475596687180801507328 ) , revertExpected: false , opcodeExpected: false , recordEventExpected: false , eventExpected: false ) } )
+  Path condition:
+    #Top
+
+Join the Runtime Verification Discord server for support: https://discord.gg/GHvFbRDD
+
+Access documentation for KEVM foundry integration at https://docs.runtimeverification.com/kevm-integration-for-foundry/
