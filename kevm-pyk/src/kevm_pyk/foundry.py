@@ -735,26 +735,23 @@ def foundry_merge_nodes(
 ) -> None:
     br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
     foundry = Foundry(foundry_root, bug_report=br)
-    apr_proofs_dir = foundry.out / 'apr_proofs'
+    proofs_dir = foundry.out / 'apr_proofs'
     contract_name, test_name = test.split('.')
     proof_digest = foundry.proof_digest(contract_name, test_name)
-    apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
+    proof = APRProof.read_proof(proof_digest, proofs_dir)
 
     if len(list(nodes)) < 2:
         raise ValueError(f'Must supply at least 2 nodes to merge, got: {nodes}')
 
-    _nodes = [apr_proof.kcfg.node(int(node_id)) for node_id in nodes]
-
+    _nodes = [proof.kcfg.node(int(node_id)) for node_id in nodes]
     anti_unification = _nodes[0].cterm.kast
     for node in _nodes[1:]:
         anti_unification = anti_unify_with_constraints(anti_unification, node.cterm.kast, disjunct=False)
-
-    new_node = apr_proof.kcfg.create_node(CTerm.from_kast(anti_unification))
+    new_node = proof.kcfg.create_node(CTerm.from_kast(anti_unification))
     for node in _nodes:
-        apr_proof.kcfg.create_cover(node.id, new_node.id)
+        proof.kcfg.create_cover(node.id, new_node.id)
 
-    apr_proof.write_proof()
-
+    proof.write_proof()
     print(f'Merged nodes {[int(node) for node in nodes]} into new node {new_node.id}.')
 
 
