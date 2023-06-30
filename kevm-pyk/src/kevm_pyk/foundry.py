@@ -13,7 +13,7 @@ import tomlkit
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cterm import CTerm
 from pyk.kast.inner import KApply, KSequence, KSort, KToken, KVariable, Subst
-from pyk.kast.manip import free_vars, minimize_term, anti_unify_with_constraints
+from pyk.kast.manip import anti_unify_with_constraints, free_vars, minimize_term
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
 from pyk.kcfg import KCFG, KCFGExplore
 from pyk.ktool.kompile import LLVMKompileType
@@ -21,7 +21,7 @@ from pyk.prelude.bytes import bytesToken
 from pyk.prelude.k import GENERATED_TOP_CELL
 from pyk.prelude.kbool import FALSE, notBool
 from pyk.prelude.kint import INT, intToken
-from pyk.prelude.ml import mlEqualsTrue, mlBottom
+from pyk.prelude.ml import mlEqualsTrue
 from pyk.proof.proof import Proof
 from pyk.proof.reachability import APRBMCProof, APRProof
 from pyk.proof.show import APRBMCProofNodePrinter, APRProofNodePrinter, APRProofShow
@@ -748,7 +748,7 @@ def foundry_merge_nodes(
         if i < 1:
             anti_unification = cterm.kast
             continue
-        anti_unification = anti_unify_with_constraints(anti_unification, cterm.kast, disjunct=True)
+        anti_unification = anti_unify_with_constraints(anti_unification, cterm.kast, disjunct=False)
 
     new_cterm = CTerm.from_kast(anti_unification)
     new_node = apr_proof.kcfg.create_node(new_cterm)
@@ -759,6 +759,7 @@ def foundry_merge_nodes(
     apr_proof.write_proof()
 
     print(f'Merged nodes {[int(node) for node in nodes]} into new node {new_node.id}.')
+
 
 def foundry_step_node(
     foundry_root: Path,
