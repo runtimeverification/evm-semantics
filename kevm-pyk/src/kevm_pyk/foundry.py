@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING
 import tomlkit
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cterm import CTerm
-from pyk.kast.inner import KApply, KSequence, KSort, KToken, KVariable, Subst
+from pyk.kast.inner import KApply, KInner, KSequence, KSort, KToken, KVariable, Subst
 from pyk.kast.manip import free_vars, minimize_term
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
 from pyk.kcfg import KCFG, KCFGExplore
@@ -43,7 +43,6 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
     from typing import Any, Final
 
-    from pyk.kast import KInner
     from pyk.kcfg.kcfg import NodeIdLike
     from pyk.kcfg.tui import KCFGElem
     from pyk.proof.show import NodePrinter
@@ -567,7 +566,10 @@ def foundry_prove(
                     if type(result_subst) is Subst:
                         failure_log.append('\n Counterexample: \n')
                         for var, term in result_subst.to_dict().items():
-                            failure_log.append(f'{var}: {term}')
+                            term_kast = KInner.from_dict(term)
+                            failure_log.append(f'{var}: {foundry.kevm.pretty_print(term_kast)}')
+                    else:
+                        failure_log.append('\n Failed to generate counterexample. \n')
 
             return passed, failure_log
 
