@@ -8,7 +8,7 @@ from pathlib import Path
 from tempfile import NamedTemporaryFile
 from typing import TYPE_CHECKING
 
-from pyk.cli_utils import file_path
+from pyk.cli.utils import file_path
 from pyk.kore.prelude import int_dv
 from pyk.kore.tools import kore_print
 from pyk.ktool.krun import KRunOutput, _krun
