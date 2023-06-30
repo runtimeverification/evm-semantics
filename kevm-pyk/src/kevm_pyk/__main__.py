@@ -24,6 +24,7 @@ from .foundry import (
     Foundry,
     foundry_kompile,
     foundry_list,
+    foundry_merge_nodes,
     foundry_node_printer,
     foundry_prove,
     foundry_remove_node,
@@ -682,6 +683,16 @@ def exec_foundry_simplify_node(
     print(f'Simplified:\n{pretty_term}')
 
 
+def exec_foundry_merge_nodes(
+    foundry_root: Path,
+    test: str,
+    nodes: Iterable[NodeIdLike],
+    bug_report: bool = False,
+    **kwargs: Any,
+) -> None:
+    foundry_merge_nodes(foundry_root=foundry_root, nodes=nodes, test=test)
+
+
 def exec_foundry_step_node(
     foundry_root: Path,
     test: str,
@@ -1029,6 +1040,24 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_step_node.add_argument(
         '--depth', type=int, default=1, help='How many steps to take from initial node on edge.'
     )
+
+    foundry_merge_node = command_parser.add_parser(
+        'foundry-merge-nodes',
+        help='Merge multiple nodes into one branch.',
+        parents=[
+            kevm_cli_args.logging_args,
+            kevm_cli_args.foundry_args,
+        ],
+    )
+    foundry_merge_node.add_argument(
+        '--node',
+        type=str,
+        dest='nodes',
+        default=[],
+        action='append',
+        help='One node to be merged.',
+    )
+    foundry_merge_node.add_argument('test', type=str, help='Merge nodes in this CFG.')
 
     foundry_section_edge = command_parser.add_parser(
         'foundry-section-edge',

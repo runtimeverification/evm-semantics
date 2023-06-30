@@ -39,6 +39,7 @@ ArithmeticTest.test_wmul_weakly_increasing_positive
 AssertTest.test_assert_false
 AssertTest.test_assert_true
 AssertTest.test_assert_true_branch
+AssertTest.test_branch_merge
 AssertTest.testFail_assert_false
 AssertTest.testFail_assert_true
 AssertTest.testFail_expect_revert

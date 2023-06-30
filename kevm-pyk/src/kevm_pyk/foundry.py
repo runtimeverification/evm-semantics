@@ -13,7 +13,7 @@ import tomlkit
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cterm import CTerm
 from pyk.kast.inner import KApply, KSequence, KSort, KToken, KVariable, Subst
-from pyk.kast.manip import free_vars, minimize_term
+from pyk.kast.manip import free_vars, minimize_term, anti_unify_with_constraints
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
 from pyk.kcfg import KCFG, KCFGExplore
 from pyk.ktool.kompile import LLVMKompileType
@@ -21,7 +21,7 @@ from pyk.prelude.bytes import bytesToken
 from pyk.prelude.k import GENERATED_TOP_CELL
 from pyk.prelude.kbool import FALSE, notBool
 from pyk.prelude.kint import INT, intToken
-from pyk.prelude.ml import mlEqualsTrue
+from pyk.prelude.ml import mlEqualsTrue, mlBottom
 from pyk.proof.proof import Proof
 from pyk.proof.reachability import APRBMCProof, APRProof
 from pyk.proof.show import APRBMCProofNodePrinter, APRProofNodePrinter, APRProofShow
@@ -726,6 +726,39 @@ def foundry_simplify_node(
     res_term = minimize_term(new_term) if minimize else new_term
     return foundry.kevm.pretty_print(res_term, unalias=False, sort_collections=sort_collections)
 
+
+def foundry_merge_nodes(
+    foundry_root: Path,
+    test: str,
+    nodes: Iterable[NodeIdLike],
+    bug_report: bool = False,
+) -> None:
+    br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
+    foundry = Foundry(foundry_root, bug_report=br)
+    apr_proofs_dir = foundry.out / 'apr_proofs'
+    contract_name, test_name = test.split('.')
+    proof_digest = foundry.proof_digest(contract_name, test_name)
+    apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
+
+    _nodes = [apr_proof.kcfg.node(int(node_id)) for node_id in nodes]
+
+    anti_unification: KInner
+    for i, node in enumerate(_nodes):
+        cterm = node.cterm
+        if i < 1:
+            anti_unification = cterm.kast
+            continue
+        anti_unification = anti_unify_with_constraints(anti_unification, cterm.kast, disjunct=True)
+
+    new_cterm = CTerm.from_kast(anti_unification)
+    new_node = apr_proof.kcfg.create_node(new_cterm)
+
+    for node in _nodes:
+        apr_proof.kcfg.create_cover(node.id, new_node.id)
+
+    apr_proof.write_proof()
+
+    print(f'Merged nodes {[int(node) for node in nodes]} into new node {new_node.id}.')
 
 def foundry_step_node(
     foundry_root: Path,
