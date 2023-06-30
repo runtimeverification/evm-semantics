@@ -733,6 +733,16 @@ def foundry_merge_nodes(
     nodes: Iterable[NodeIdLike],
     bug_report: bool = False,
 ) -> None:
+    def check_cells_equal(cell: str, nodes: Iterable[KCFG.Node]) -> bool:
+        _nodes: list[KCFG.Node] = list(nodes)
+        if len(_nodes) < 2:
+            return True
+        cell_value = _nodes[0].cterm.cell(cell)
+        for node in _nodes[1:]:
+            if cell_value != node.cterm.cell(cell):
+                return False
+        return True
+
     br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
     foundry = Foundry(foundry_root, bug_report=br)
     proofs_dir = foundry.out / 'apr_proofs'
@@ -744,6 +754,13 @@ def foundry_merge_nodes(
         raise ValueError(f'Must supply at least 2 nodes to merge, got: {nodes}')
 
     _nodes = [proof.kcfg.node(int(node_id)) for node_id in nodes]
+    check_cells = ['K_CELL', 'PROGRAM_CELL', 'PC_CELL', 'CALLDEPTH_CELL']
+    check_cells_ne = [check_cell for check_cell in check_cells if not check_cells_equal(check_cell, _nodes)]
+    if check_cells_ne:
+        raise ValueError(
+            f'Nodes {int(node) for node in nodes} cannot be merged because they differ in: {check_cells_ne}'
+        )
+
     anti_unification = _nodes[0].cterm.kast
     for node in _nodes[1:]:
         anti_unification = anti_unify_with_constraints(anti_unification, node.cterm.kast, disjunct=False)
