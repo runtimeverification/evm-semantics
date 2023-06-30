@@ -22,9 +22,9 @@ from pyk.utils import BugReport, single
 from .cli import KEVMCLIArgs, node_id_like
 from .foundry import (
     Foundry,
-    FoundryNodePrinter,
     foundry_kompile,
     foundry_list,
+    foundry_node_printer,
     foundry_prove,
     foundry_remove_node,
     foundry_section_edge,
@@ -34,7 +34,7 @@ from .foundry import (
     foundry_to_dot,
 )
 from .gst_to_kore import _mode_to_kore, _schedule_to_kore
-from .kevm import KEVM, KEVMNodePrinter
+from .kevm import KEVM, kevm_node_printer
 from .kompile import KompileTarget, kevm_kompile
 from .solc_to_k import solc_compile, solc_to_k
 from .utils import arg_pair_of, ensure_ksequence_on_k_cell, get_apr_proof_for_spec, kevm_apr_prove, print_failure_info
@@ -447,7 +447,9 @@ def exec_show_kcfg(
     if failing:
         nodes = list(nodes) + [node.id for node in proof.failing]
 
-    proof_show = APRProofShow(kevm, node_printer=KEVMNodePrinter(kevm))
+    node_printer = kevm_node_printer(kevm, proof)
+    proof_show = APRProofShow(kevm, node_printer=node_printer)
+
     res_lines = proof_show.show(
         proof,
         nodes=nodes,
@@ -476,7 +478,7 @@ def exec_view_kcfg(
     **kwargs: Any,
 ) -> None:
     kevm = KEVM(definition_dir)
-    apr_proof = get_apr_proof_for_spec(
+    proof = get_apr_proof_for_spec(
         kevm,
         spec_file,
         save_directory=save_directory,
@@ -487,8 +489,10 @@ def exec_view_kcfg(
         exclude_claim_labels=exclude_claim_labels,
     )
 
-    viewer = APRProofViewer(apr_proof, kevm, node_printer=KEVMNodePrinter(kevm))
-    viewer.run()
+    node_printer = kevm_node_printer(kevm, proof)
+    proof_view = APRProofViewer(proof, kevm, node_printer=node_printer)
+
+    proof_view.run()
 
 
 def exec_foundry_prove(
@@ -636,11 +640,11 @@ def exec_run(
 
 def exec_foundry_view_kcfg(foundry_root: Path, test: str, **kwargs: Any) -> None:
     foundry = Foundry(foundry_root)
-    apr_proofs_dir = foundry.out / 'apr_proofs'
+    proofs_dir = foundry.out / 'apr_proofs'
     contract_name, test_name = test.split('.')
     proof_digest = foundry.proof_digest(contract_name, test_name)
 
-    apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
+    proof = APRProof.read_proof(proof_digest, proofs_dir)
 
     def _short_info(cterm: CTerm) -> Iterable[str]:
         return foundry.short_info_for_contract(contract_name, cterm)
@@ -648,9 +652,8 @@ def exec_foundry_view_kcfg(foundry_root: Path, test: str, **kwargs: Any) -> None
     def _custom_view(elem: KCFGElem) -> Iterable[str]:
         return foundry.custom_view(contract_name, elem)
 
-    viewer = APRProofViewer(
-        apr_proof, foundry.kevm, node_printer=FoundryNodePrinter(foundry, contract_name), custom_view=_custom_view
-    )
+    node_printer = foundry_node_printer(foundry, contract_name, proof)
+    viewer = APRProofViewer(proof, foundry.kevm, node_printer=node_printer, custom_view=_custom_view)
     viewer.run()
 
 
