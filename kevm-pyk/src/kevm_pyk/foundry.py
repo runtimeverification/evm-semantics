@@ -740,15 +740,14 @@ def foundry_merge_nodes(
     proof_digest = foundry.proof_digest(contract_name, test_name)
     apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
 
+    if len(nodes) < 2:
+        raise ValueError(f'Must supply at least 2 nodes to merge, got: {nodes}')
+
     _nodes = [apr_proof.kcfg.node(int(node_id)) for node_id in nodes]
 
-    anti_unification: KInner
-    for i, node in enumerate(_nodes):
-        cterm = node.cterm
-        if i < 1:
-            anti_unification = cterm.kast
-            continue
-        anti_unification = anti_unify_with_constraints(anti_unification, cterm.kast, disjunct=False)
+    anti_unification = _nodes[0]
+    for node in _nodes[1:]:
+        anti_unification = anti_unify_with_constraints(anti_unification, node.cterm.kast, disjunct=False)
 
     new_node = apr_proof.kcfg.create_node(CTerm.from_kast(anti_unification))
     for node in _nodes:
