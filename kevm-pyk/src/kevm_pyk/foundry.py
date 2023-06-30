@@ -562,6 +562,12 @@ def foundry_prove(
             failure_log = None
             if not passed:
                 failure_log = print_failure_info(proof, kcfg_explore)
+                for node in proof.failing:
+                    result_subst = kcfg_explore.cterm_get_model(node.cterm)
+                    if type(result_subst) is Subst:
+                        failure_log.append('\n Counterexample: \n')
+                        for var, term in result_subst.to_dict().items():
+                            failure_log.append(f'{var}: {term}')
 
             return passed, failure_log
 
