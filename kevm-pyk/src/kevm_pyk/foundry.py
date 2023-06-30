@@ -730,19 +730,20 @@ def foundry_simplify_node(
 def foundry_merge_nodes(
     foundry_root: Path,
     test: str,
-    nodes: Iterable[NodeIdLike],
+    node_ids: Iterable[NodeIdLike],
     bug_report: bool = False,
 ) -> None:
     def check_cells_equal(cell: str, nodes: Iterable[KCFG.Node]) -> bool:
-        _nodes: list[KCFG.Node] = list(nodes)
-        if len(_nodes) < 2:
+        nodes = list(nodes)
+        if len(nodes) < 2:
             return True
-        cell_value = _nodes[0].cterm.cell(cell)
-        for node in _nodes[1:]:
+        cell_value = nodes[0].cterm.cell(cell)
+        for node in nodes[1:]:
             if cell_value != node.cterm.cell(cell):
                 return False
         return True
 
+    node_ids = [int(node) for node in node_ids]
     br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
     foundry = Foundry(foundry_root, bug_report=br)
     proofs_dir = foundry.out / 'apr_proofs'
@@ -750,26 +751,24 @@ def foundry_merge_nodes(
     proof_digest = foundry.proof_digest(contract_name, test_name)
     proof = APRProof.read_proof(proof_digest, proofs_dir)
 
-    if len(list(nodes)) < 2:
-        raise ValueError(f'Must supply at least 2 nodes to merge, got: {nodes}')
+    if len(list(node_ids)) < 2:
+        raise ValueError(f'Must supply at least 2 nodes to merge, got: {node_ids}')
 
-    _nodes = [proof.kcfg.node(int(node_id)) for node_id in nodes]
+    nodes = [proof.kcfg.node(int(node_id)) for node_id in node_ids]
     check_cells = ['K_CELL', 'PROGRAM_CELL', 'PC_CELL', 'CALLDEPTH_CELL']
-    check_cells_ne = [check_cell for check_cell in check_cells if not check_cells_equal(check_cell, _nodes)]
+    check_cells_ne = [check_cell for check_cell in check_cells if not check_cells_equal(check_cell, nodes)]
     if check_cells_ne:
-        raise ValueError(
-            f'Nodes {int(node) for node in nodes} cannot be merged because they differ in: {check_cells_ne}'
-        )
+        raise ValueError(f'Nodes {node_ids} cannot be merged because they differ in: {check_cells_ne}')
 
-    anti_unification = _nodes[0].cterm.kast
-    for node in _nodes[1:]:
+    anti_unification = nodes[0].cterm.kast
+    for node in nodes[1:]:
         anti_unification = anti_unify_with_constraints(anti_unification, node.cterm.kast, disjunct=False)
     new_node = proof.kcfg.create_node(CTerm.from_kast(anti_unification))
-    for node in _nodes:
+    for node in nodes:
         proof.kcfg.create_cover(node.id, new_node.id)
 
     proof.write_proof()
-    print(f'Merged nodes {[int(node) for node in nodes]} into new node {new_node.id}.')
+    print(f'Merged nodes {node_ids} into new node {new_node.id}.')
 
 
 def foundry_step_node(

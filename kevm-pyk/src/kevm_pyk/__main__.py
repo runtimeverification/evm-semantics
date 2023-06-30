@@ -690,7 +690,7 @@ def exec_foundry_merge_nodes(
     bug_report: bool = False,
     **kwargs: Any,
 ) -> None:
-    foundry_merge_nodes(foundry_root=foundry_root, nodes=nodes, test=test)
+    foundry_merge_nodes(foundry_root=foundry_root, node_ids=nodes, test=test)
 
 
 def exec_foundry_step_node(
