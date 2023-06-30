@@ -88,6 +88,8 @@
                 --replace 'set(K_LIB ''${K_BIN}/../lib)' 'set(K_LIB ${k}/lib)'
               substituteInPlace ./bin/kevm \
                 --replace 'execute python3 -m kevm_pyk' 'execute ${final.kevm-pyk}/bin/kevm-pyk'
+              substituteInPlace ./bin/kevm \
+                --replace 'gst-to-kore' '${final.kevm-pyk}/bin/gst-to-kore'
             '';
 
             buildFlagsArray = "NIX_LIBS=${nixLibs prev}";
