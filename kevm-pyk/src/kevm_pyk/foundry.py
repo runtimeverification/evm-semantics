@@ -44,6 +44,7 @@ from .utils import (
     constraints_for,
     kevm_apr_prove,
     mk_bytes_constraint,
+    mk_int_constraint,
     print_failure_info,
 )
 
@@ -664,7 +665,7 @@ def foundry_koverage(
 
     call_code = KLabel('#callWithCode_________EVM_InternalOp_Int_Int_Int_Bytes_Int_Int_Bytes_Bool')
     call_var = [
-        KVariable('_A1'),
+        KVariable('FROM'),
         KVariable('_A2'),
         KVariable('_A3'),
         KVariable('CODE'),
@@ -698,7 +699,7 @@ def foundry_koverage(
                 KApply(
                     call_code,
                     [
-                        KVariable('_A1'),
+                        KVariable('FROM'),
                         KVariable('_A2'),
                         KVariable('_A3'),
                         KVariable('CODE'),
@@ -778,8 +779,16 @@ def foundry_koverage(
                                 for pattern in k_match_patterns:
                                     k_match = pattern.match(cterm.cell('K_CELL'))
                                     if k_match is not None:
+                                        # print(k_match)
+                                        from_addr = k_match['FROM']
                                         code = k_match['CODE']
                                         args = k_match['ARGS']
+                                        # print(args)
+                                        # with KCFGExplore(foundry.kevm) as kcfg_explore:
+                                        #     kore = kcfg_explore.kprint.kast_to_kore(args)
+                                        #     _, kore_client = kcfg_explore._kore_rpc
+                                        #     kore_simplified, logs = kore_client.simplify(kore)
+                                        #     print(kcfg_explore.kprint.kore_to_pretty(kore_simplified))
                                         if type(code) is KToken:
                                             acct_code = code.token
                                             acct_hash = hashlib.sha3_256(bytes(acct_code, 'UTF-8')).digest()
@@ -805,11 +814,11 @@ def foundry_koverage(
 
                                             # TODO: parse args when they are of type BYTES-HOOKED
                                             new_cons = diff_cons
-                                            if type(args) is KToken:
+                                            if type(args) is KToken or type(args) is KApply:
                                                 args_cons = mk_bytes_constraint(args, KVariable('ARGS', 'Int'))
-                                                inter = _cons_intersection([diff_cons, args_cons])
-                                                if type(inter) is KApply:
-                                                    new_cons = inter
+                                                from_cons = mk_int_constraint(from_addr, KVariable('CALLER_ID', 'Int'))
+                                                inter = _cons_intersection([diff_cons, args_cons, from_cons])
+                                                new_cons = inter
                                             covered = andBool(
                                                 [_get_raw_constraint(cons) for cons in init_node.cterm.constraints]
                                             )
@@ -824,11 +833,14 @@ def foundry_koverage(
             kore = _kast_to_kore(b_uncovered)
             _, client = kcfg_explore._kore_rpc
             equals = Equals(BOOLApp, INTApp, TRUEApp, kore)
+            # print(kcfg_explore.kprint.kore_to_pretty(equals)) TODO: remove this, debug purposes
             model = client.get_model(equals)
-            print(model)
             match model:
                 case SatResult(res):
+                    print(res)
                     b_counter[bytecode_h] = res
+                case _:
+                    print(model)
 
     return b_counter
 

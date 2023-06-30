@@ -67,6 +67,11 @@ contract AssertTest is Test {
         address(2819807389471923).call(abi.encodeWithSignature("func()"));
     }
 
+    function test_not_null_sig(bytes4 sig) public {
+        vm.assume(sig != 0x00000000);
+        address(726378162386128763879123).call(abi.encode(sig));
+    }
+
     function test_simple(uint256 x) public {
         vm.assume(!(x > 10));
         vm.assume(x < 5);

@@ -26,7 +26,6 @@ if TYPE_CHECKING:
     from typing import Final, TypeVar
 
     from pyk.kast import KInner
-    from pyk.kast.inner import KToken
     from pyk.kast.outer import KDefinition
     from pyk.kcfg import KCFGExplore
     from pyk.ktool.kprove import KProve
@@ -119,6 +118,7 @@ def kevm_apr_prove(
         assert same_loop, f'BMC proof requires same_loop heuristic, but {same_loop} was supplied'
         prover = APRBMCProver(
             proof,
+            kcfg_explore=kcfg_explore,
             is_terminal=is_terminal,
             extract_branches=extract_branches,
             same_loop=same_loop,
@@ -126,11 +126,14 @@ def kevm_apr_prove(
         )
     else:
         prover = APRProver(
-            proof, is_terminal=is_terminal, extract_branches=extract_branches, abstract_node=abstract_node
+            proof,
+            kcfg_explore=kcfg_explore,
+            is_terminal=is_terminal,
+            extract_branches=extract_branches,
+            abstract_node=abstract_node,
         )
     try:
         prover.advance_proof(
-            kcfg_explore,
             max_iterations=max_iterations,
             execute_depth=max_depth,
             terminal_rules=terminal_rules,
@@ -261,19 +264,13 @@ def ensure_ksequence_on_k_cell(cterm: CTerm) -> CTerm:
     return cterm
 
 
-def mk_bytes_constraint(token: KToken, var: KVariable) -> KApply:
-    if token.sort is None or token.sort.name != 'Bytes':
-        raise ValueError(f'Expected Bytes sort, found {token.sort}')
-    eq = KApply(
-        '_==Bool_',
-        [
-            KApply('_==Bool_', [KApply('_==Int_', [var, KApply('#asInteger(_)_EVM-TYPES_Int_Bytes', [token])]), TRUE]),
-            TRUE,
-        ],
-    )
-    top = KApply(KLabel('#Equals', [KSort('Bool'), GENERATED_TOP_CELL]), [TRUE, eq])
+def mk_bytes_constraint(token: KInner, var: KVariable) -> KApply:
+    eq = KApply('_==Bool_', [KApply('_==Int_', [var, KApply('#asInteger(_)_EVM-TYPES_Int_Bytes', [token])]), TRUE])
+    return eq
 
-    return top
+def mk_int_constraint(token: KInner, var: KVariable) -> KApply:
+    eq = KApply('_==Bool_', [KApply('_==Int_', [var, token]), TRUE])
+    return eq
 
 
 def constraints_for(vars: list[str], constraints: Iterable[KInner]) -> Iterable[KInner]:
