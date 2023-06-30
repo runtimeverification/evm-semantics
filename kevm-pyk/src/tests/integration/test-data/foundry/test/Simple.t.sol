@@ -6,8 +6,6 @@ import "forge-std/Test.sol";
 contract AssertTest is Test {
     uint y;
 
-    function setUp() public {}
-
     function test_failing_branch(uint x) public {
       assert(x >= 100);
     }
@@ -25,6 +23,15 @@ contract AssertTest is Test {
             assert(true);
         }
         assert(y <= x);
+    }
+
+    function test_branch_merge(uint x) public {
+        if (x < 10) {
+            y = 0;
+        } else {
+            y = 3;
+        }
+        assert(y < 2);
     }
 
     function test_assert_false() public pure {

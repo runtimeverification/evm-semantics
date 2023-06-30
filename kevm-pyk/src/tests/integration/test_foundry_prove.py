@@ -7,7 +7,7 @@ import pytest
 from pyk.utils import run_process
 
 from kevm_pyk import config
-from kevm_pyk.foundry import foundry_kompile, foundry_prove, foundry_show
+from kevm_pyk.foundry import foundry_get_apr_proof, foundry_kompile, foundry_merge_nodes, foundry_prove, foundry_show
 
 from .utils import TEST_DATA_DIR
 
@@ -175,6 +175,31 @@ def test_foundry_bmc(test_id: str, foundry_root: Path, use_booster: bool) -> Non
 
     # Then
     assert_pass(test_id, prove_res)
+
+
+def test_foundry_merge_nodes(foundry_root: Path, use_booster: bool) -> None:
+    test_id = 'AssertTest.test_branch_merge'
+
+    foundry_prove(
+        foundry_root,
+        tests=[test_id],
+        max_iterations=2,
+        use_booster=use_booster,
+    )
+    check_pending(foundry_root, test_id, [3, 4])
+    foundry_merge_nodes(foundry_root=foundry_root, test=test_id, node_ids=[3, 4])
+    check_pending(foundry_root, test_id, [5])
+    prove_res = foundry_prove(
+        foundry_root,
+        tests=[test_id],
+        use_booster=use_booster,
+    )
+    assert_pass(test_id, prove_res)
+
+
+def check_pending(foundry_root: Path, test: str, pending: list[int]) -> None:
+    apr_proof = foundry_get_apr_proof(foundry_root, test=test)
+    assert [node.id for node in apr_proof.pending] == pending
 
 
 def assert_pass(test_id: str, prove_res: dict[str, tuple[bool, list[str] | None]]) -> None:

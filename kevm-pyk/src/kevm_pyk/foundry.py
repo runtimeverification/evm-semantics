@@ -470,6 +470,9 @@ def foundry_prove(
         for method in contract.methods
         if f'{contract.name}.{method.name}' not in all_tests
     ]
+
+    print([method.name for method in foundry.contracts['AssertTest'].methods])
+
     unfound_tests: list[str] = []
     tests = list(tests)
     if not tests:
@@ -805,6 +808,21 @@ def foundry_step_node(
         for _i in range(repeat):
             node = kcfg_explore.step(apr_proof.kcfg, node, apr_proof.logs, depth=depth)
             apr_proof.write_proof()
+
+
+def foundry_get_apr_proof(
+    foundry_root: Path,
+    test: str,
+    bug_report: bool = False,
+) -> APRProof:
+    br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
+    foundry = Foundry(foundry_root, bug_report=br)
+
+    apr_proofs_dir = foundry.out / 'apr_proofs'
+    contract_name, test_name = test.split('.')
+    proof_digest = foundry.proof_digest(contract_name, test_name)
+    apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
+    return apr_proof
 
 
 def foundry_section_edge(

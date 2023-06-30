@@ -29,7 +29,7 @@ contract AssertTest is Test {
         if (x < 10) {
             y = 0;
         } else {
-            y = 1;
+            y = 3;
         }
         assert(y < 2);
     }
