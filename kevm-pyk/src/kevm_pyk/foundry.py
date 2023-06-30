@@ -750,9 +750,7 @@ def foundry_merge_nodes(
             continue
         anti_unification = anti_unify_with_constraints(anti_unification, cterm.kast, disjunct=False)
 
-    new_cterm = CTerm.from_kast(anti_unification)
-    new_node = apr_proof.kcfg.create_node(new_cterm)
-
+    new_node = apr_proof.kcfg.create_node(CTerm.from_kast(anti_unification))
     for node in _nodes:
         apr_proof.kcfg.create_cover(node.id, new_node.id)
 
