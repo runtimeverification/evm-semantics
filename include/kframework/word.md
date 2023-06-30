@@ -340,7 +340,7 @@ Range of types
 -   `chop` interprets an integer modulo `2^256`.
 
 ```k
-    syntax Int ::= chop ( Int ) [function, total, smtlib(chop)]
+    syntax Int ::= chop ( Int ) [function, total, smt-hook((mod #1 115792089237316195423570985008687907853269984665640564039457584007913129639936))]
  // -----------------------------------------------------------
     rule chop ( I:Int ) => I modInt pow256 [concrete, smt-lemma]
 ```
