@@ -862,6 +862,8 @@ module BMCLOOPSTEST-CONTRACT
     
     syntax BMCLoopsTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_BMCLoopsTest_failed_)]
     
+    syntax BMCLoopsTestMethod ::= "test_bmc" "(" Int ":" "uint256" ")" [symbol(), klabel(method_BMCLoopsTest_test_bmc_uint256)]
+    
     syntax BMCLoopsTestMethod ::= "test_countdown_concrete" "(" ")" [symbol(), klabel(method_BMCLoopsTest_test_countdown_concrete_)]
     
     syntax BMCLoopsTestMethod ::= "test_countdown_symbolic" "(" Int ":" "uint256" ")" [symbol(), klabel(method_BMCLoopsTest_test_countdown_symbolic_uint256)]
@@ -875,6 +877,10 @@ module BMCLOOPSTEST-CONTRACT
       
     
     rule  ( BMCLoopsTest . failed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
+      
+    
+    rule  ( BMCLoopsTest . test_bmc ( V0_n : uint256 ) => #abiCallData ( "test_bmc" , #uint256 ( V0_n ) , .TypedArgs ) )
+       ensures #rangeUInt ( 256 , V0_n )
       
     
     rule  ( BMCLoopsTest . test_countdown_concrete ( ) => #abiCallData ( "test_countdown_concrete" , .TypedArgs ) )
@@ -894,6 +900,9 @@ module BMCLOOPSTEST-CONTRACT
       
     
     rule  ( selector ( "failed()" ) => 3124842406 )
+      
+    
+    rule  ( selector ( "test_bmc(uint256)" ) => 2531276689 )
       
     
     rule  ( selector ( "test_countdown_concrete()" ) => 1189516988 )
