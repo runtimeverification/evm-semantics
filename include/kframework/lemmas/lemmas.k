@@ -91,11 +91,13 @@ module LEMMAS [symbolic]
       [simplification]
 
  // Hardcoded #addrFromPrivateKey simplifications, see: https://github.com/runtimeverification/haskell-backend/issues/3573
-    rule #addrFromPrivateKey("0x0000000000000000000000000000000000000000000000000000000000000001") => 721457446580647751014191829380889690493307935711 [priority(40)]
+    rule #addrFromPrivateKey("0x0000000000000000000000000000000000000000000000000000000000000001") => 721457446580647751014191829380889690493307935711 [priority(40), concrete]
 
   // ########################
   // Memory
   // ########################
+
+    rule #memoryUsageUpdate(MU, _, WIDTH) => MU requires WIDTH <=Int 0 [simplification]
 
     rule 0 <=Int #memoryUsageUpdate(MU, START, WIDTH) => true requires 0 <=Int MU andBool 0 <=Int START andBool 0 <=Int WIDTH [simplification]
 
