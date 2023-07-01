@@ -208,7 +208,7 @@ This minimizes the amount of information which must be stored in the configurati
 ```
 
 ```{.k .node}
-    rule keccak({#unloaded(HASH)}:>Bytes) => HASH
+    rule keccak({#unloaded(HASH)}:>Bytes) => HASH [concrete]
 ```
 
 ### Transaction Execution
