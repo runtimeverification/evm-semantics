@@ -13,7 +13,7 @@ from pyk.cterm import CTerm
 from pyk.kcfg import KCFG, KCFGExplore
 from pyk.kore.prelude import int_dv
 from pyk.ktool.krun import KRunOutput, _krun
-from pyk.prelude.ml import is_bottom
+from pyk.prelude.ml import is_bottom, is_top
 from pyk.proof import APRProof
 from pyk.proof.show import APRProofShow
 from pyk.proof.tui import APRProofViewer
@@ -200,37 +200,24 @@ def exec_prove_legacy(
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'md_selector', f'--md-selector: {kwargs["md_selector"]}')
-    md_selector = 'k & ! node'
-
     kevm = KEVM(definition_dir, use_directory=save_directory)
-    args: list[str] = []
-    haskell_args: list[str] = []
-    if claim_labels:
-        args += ['--claims', ','.join(claim_labels)]
-    if exclude_claim_labels:
-        args += ['--exclude', ','.join(exclude_claim_labels)]
-    if debug:
-        args.append('--debug')
-    if debugger:
-        args.append('--debugger')
-    if branching_allowed:
-        args += ['--branching-allowed', f'{branching_allowed}']
-    if max_counterexamples:
-        haskell_args += ['--max-counterexamples', f'{max_counterexamples}']
-    if bug_report:
-        haskell_args += ['--bug-report', f'kevm-bug-{spec_file.name.rstrip("-spec.k")}']
-    if haskell_backend_args:
-        haskell_args += list(haskell_backend_args)
-
-    kevm.prove(
+    final_state = kevm.prove_legacy(
         spec_file=spec_file,
-        spec_module_name=spec_module,
-        args=args,
-        include_dirs=[Path(i) for i in includes],
-        md_selector=md_selector,
-        haskell_args=haskell_args,
-        depth=max_depth,
+        includes=includes,
+        bug_report=bug_report,
+        spec_module=spec_module,
+        claim_labels=claim_labels,
+        exclude_claim_labels=exclude_claim_labels,
+        debug=debug,
+        debugger=debugger,
+        max_depth=max_depth,
+        max_counterexamples=max_counterexamples,
+        branching_allowed=branching_allowed,
+        haskell_backend_args=haskell_backend_args,
     )
+    print(kevm.pretty_print(final_state))
+    if not is_top(final_state):
+        raise SystemExit(1)
 
 
 def exec_prove(
