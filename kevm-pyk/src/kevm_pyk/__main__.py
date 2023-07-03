@@ -1,11 +1,11 @@
 from __future__ import annotations
 
+import graphlib
 import json
 import logging
 import os
 import sys
 from argparse import ArgumentParser
-from itertools import chain
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -266,46 +266,10 @@ def exec_prove(
     br = BugReport(spec_file.with_suffix('.bug_report')) if bug_report else None
     kevm = KEVM(definition_dir, use_directory=save_directory, bug_report=br)
 
-    _LOGGER.info(f'Extracting claims from file: {spec_file}')
-
-    all_claims = kevm.get_claims(
-        spec_file,
-        spec_module_name=spec_module,
-        include_dirs=[Path(i) for i in includes],
-        md_selector=md_selector,
-        claim_labels=None,
-        exclude_claim_labels=exclude_claim_labels,
-    )
-
-    spec_module_name = spec_module if spec_module is not None else os.path.splitext(spec_file.name)[0].upper()
-
-    if all_claims is None:
-        raise ValueError(f'No claims found in file: {spec_file}')
-
-    all_claims_by_label: Dict[str, KClaim] = {c.label: c for c in all_claims}
-
-    claims0: list[list[KClaim]] = [[c for c in all_claims if c.label in all_claims_by_label]]
-    while True:
-        print(f'claims0: {[[c.label for c in cs] for cs in claims0]}')
-        new_deps: list[str] = list(
-            # chain.from_iterable([[f'{spec_module_name}.{d}' for d in c.dependencies] for c in claims0[-1]])
-            chain.from_iterable([[f'{d}' for d in c.dependencies] for c in claims0[-1]])
-        )
-        print(f'new_deps: {new_deps}')
-        already_there: list[str] = list(chain.from_iterable([c.label for c in chain.from_iterable(claims0)]))
-        fresh_deps: list[str] = [f'{spec_module_name}.{d}' for d in new_deps if d not in already_there]
-        if len(fresh_deps) <= 0:
-            break
-        not_found: list[str] = [fd for fd in fresh_deps if fd not in all_claims_by_label]
-        if len(not_found) >= 1:
-            raise ValueError(f'Some dependencies ({not_found}) were not found in file: {spec_file}')
-        fresh_claims = [all_claims_by_label[fd] for fd in fresh_deps]
-        claims0.append(fresh_claims)
-
-    print(f'final claims0: {[[c.label for c in cs] for cs in claims0]}')
-
     if isinstance(kore_rpc_command, str):
         kore_rpc_command = kore_rpc_command.split()
+
+    spec_module_name = spec_module if spec_module is not None else os.path.splitext(spec_file.name)[0].upper()
 
     def _init_and_run_proof(claim: KClaim) -> tuple[bool, list[str] | None]:
         with KCFGExplore(
@@ -353,7 +317,7 @@ def exec_prove(
                     target_node_id,
                     {},
                     proof_dir=save_directory,
-                    subproof_ids=claim.dependencies,
+                    subproof_ids=[f'{spec_module_name}.{d}' for d in claim.dependencies],
                 )
 
             passed = kevm_apr_prove(
@@ -383,22 +347,39 @@ def exec_prove(
 
             return passed, failure_log
 
-    rclaims0 = reversed(claims0)
+    _LOGGER.info(f'Extracting claims from file: {spec_file}')
 
-    selected_results = []
-    selected_claims = []
-    for depth, curr_claim_list in enumerate(rclaims0):
-        _LOGGER.info(f'Processing claims at depth: {depth}')
-        if workers > 1:
-            with ProcessPool(ncpus=workers) as process_pool:
-                results = process_pool.map(_init_and_run_proof, curr_claim_list)
-        else:
-            results = []
-            for claim in curr_claim_list:
-                results.append(_init_and_run_proof(claim))
-        selected_results.extend(results)
-        selected_claims.extend(curr_claim_list)
+    all_claims = kevm.get_claims(
+        spec_file,
+        spec_module_name=spec_module,
+        include_dirs=[Path(i) for i in includes],
+        md_selector=md_selector,
+        claim_labels=None,
+        exclude_claim_labels=exclude_claim_labels,
+    )
 
+    if all_claims is None:
+        raise ValueError(f'No claims found in file: {spec_file}')
+
+    all_claims_by_label: Dict[str, KClaim] = {c.label: c for c in all_claims}
+    graph = {c.label: [f'{spec_module_name}.{d}' for d in c.dependencies] for c in all_claims}
+    print(f'graph: {graph}')
+    topological_sorter = graphlib.TopologicalSorter(graph)
+    topological_sorter.prepare()
+    with ProcessPool(ncpus=workers) as process_pool:
+        selected_results = []
+        selected_claims = []
+        while topological_sorter.is_active():
+            ready = topological_sorter.get_ready()
+            print(f'ready: {ready}')
+            curr_claim_list = [all_claims_by_label[label] for label in ready]
+            results = process_pool.map(_init_and_run_proof, curr_claim_list)
+            print(f'done: {ready}')
+            for label in ready:
+                topological_sorter.done(label)
+            selected_results.extend(results)
+            selected_claims.extend(curr_claim_list)
+    print('finished.')
     failed = 0
     for claim, r in zip(selected_claims, selected_results, strict=True):
         passed, failure_log = r
