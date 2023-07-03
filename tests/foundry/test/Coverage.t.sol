@@ -28,4 +28,28 @@ contract CoverageTest is Test {
         uint256 y = cov.f(238);
         assertGt(y, 0);
     }
+
+    address test_contract = address(1234567891011121314151617181920);
+
+    function test_prank(address who) public {
+        vm.assume(who != address(uint160(uint256(bytes32(bytes(string("notWho")))))));
+        vm.prank(who);
+        test_contract.call(abi.encodeWithSignature("func()"));
+    }
+
+    function test_not_null_sig(bytes4 sig) public {
+        vm.assume(sig != 0x00000000);
+        test_contract.call(abi.encode(sig));
+    }
+
+    function test_simple(uint256 x) public {
+        vm.assume(!(x > 10));
+        vm.assume(x < 5);
+        test_contract.call(abi.encodeWithSignature("func(uint256)", x));
+    }
+
+    function test_bool(bool x) public {
+        vm.assume(!x == true);
+        test_contract.call(abi.encodeWithSignature("func(bool)", x));
+    }
 }

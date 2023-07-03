@@ -5,7 +5,7 @@ from os import listdir
 from typing import TYPE_CHECKING
 
 import pytest
-from pyk.utils import run_process
+from pyk.utils import run_process, single
 
 from kevm_pyk import config
 from kevm_pyk.foundry import foundry_kompile, foundry_koverage, foundry_prove
@@ -61,7 +61,7 @@ def test_foundry_koverage(test_id: str, foundry_root: Path, update_expected_outp
     # And when
     koverage_res = foundry_koverage(foundry_root, tests=[test_id])
 
-    first_out = str(next(iter(koverage_res)))
+    first_out = str(single(koverage_res))
 
     assert_or_update_koverage_output(
         first_out, TEST_DATA_DIR / f'koverage/{test_id}.expected', update=update_expected_output
