@@ -5,38 +5,38 @@
 │   callDepth: 0
 │   statusCode: STATUSCODE
 │
-│  (554 steps)
+│  (588 steps)
 ├─ 3
-│   k: CALL 9223372036854772901 645326474426547203313410069153905908525362434349 0 128  ...
-│   pc: 480
+│   k: CALL 9223372036854772878 645326474426547203313410069153905908525362434349 0 128  ...
+│   pc: 526
 │   callDepth: 0
 │   statusCode: STATUSCODE:StatusCode
 │
 │  (1 step)
 ├─ 4
 │   k: #checkCall 728815563385977040452943777879061427756277306518 0 ~> #call 728815563 ...
-│   pc: 480
+│   pc: 526
 │   callDepth: 0
 │   statusCode: STATUSCODE:StatusCode
 │
 │  (212 steps)
 ├─ 5
 │   k: #end EVMC_REVERT ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
-│   pc: 992
+│   pc: 1081
 │   callDepth: 0
 │   statusCode: STATUSCODE:StatusCode
 │
 │  (1 step)
 ├─ 6
 │   k: #halt ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
-│   pc: 992
+│   pc: 1081
 │   callDepth: 0
 │   statusCode: EVMC_REVERT
 │
 │  (5 steps)
 └─ 7 (leaf, terminal)
     k: #halt ~> CONTINUATION:K
-    pc: 992
+    pc: 1081
     callDepth: 0
     statusCode: EVMC_SUCCESS
 
@@ -91,7 +91,7 @@ Node 7:
               0
             </callValue>
             <wordStack>
-              ( 399 : ( 212 : ( selector ( "testFail_expect_revert()" ) : .WordStack ) ) )
+              ( 445 : ( 239 : ( selector ( "testFail_expect_revert()" ) : .WordStack ) ) )
             </wordStack>
             <localMem>
               b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xf4\x84H\x14\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
@@ -100,7 +100,7 @@ Node 7:
               5
             </memoryUsed>
             <callGas>
-              9079256848778916976
+              9079256848778916954
             </callGas>
             <static>
               false
@@ -263,14 +263,14 @@ Node 7:
 
 
 
-module SUMMARY-ASSERTTEST.TESTFAIL-EXPECT-REVERT:C06C5EA6446D70FBDD360FECAB0A1147918BDDEF043645F28130D54891127053
+module SUMMARY-ASSERTTEST.TESTFAIL-EXPECT-REVERT:C3B48E01474157D34398FFF0EE45E44AA3444B3EF64F16B938F6C6BDDC8E5B26
     
     
     rule [BASIC-BLOCK-1-TO-3]: <foundry>
            <kevm>
              <k>
                ( #execute
-               ~> CONTINUATION => CALL 9223372036854772901 645326474426547203313410069153905908525362434349 0 128 4 128 0
+               ~> CONTINUATION => CALL 9223372036854772878 645326474426547203313410069153905908525362434349 0 128 4 128 0
                ~> #pc [ CALL ]
                ~> #execute
                ~> CONTINUATION:K )
@@ -305,7 +305,7 @@ module SUMMARY-ASSERTTEST.TESTFAIL-EXPECT-REVERT:C06C5EA6446D70FBDD360FECAB0A114
                      0
                    </callValue>
                    <wordStack>
-                     ( .WordStack => ( 132 : ( selector ( "expectRevert()" ) : ( 645326474426547203313410069153905908525362434349 : ( 212 : ( selector ( "testFail_expect_revert()" ) : .WordStack ) ) ) ) ) )
+                     ( .WordStack => ( 132 : ( selector ( "expectRevert()" ) : ( 645326474426547203313410069153905908525362434349 : ( 239 : ( selector ( "testFail_expect_revert()" ) : .WordStack ) ) ) ) ) )
                    </wordStack>
                    <localMem>
                      ( .Bytes => b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xf4\x84H\x14\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" )
@@ -316,7 +316,7 @@ module SUMMARY-ASSERTTEST.TESTFAIL-EXPECT-REVERT:C06C5EA6446D70FBDD360FECAB0A114
                      ( 0 => 5 )
                    </memoryUsed>
                    <callGas>
-                     ( _CALLGAS_CELL => 9079256848778916976 )
+                     ( _CALLGAS_CELL => 9079256848778916954 )
                    </callGas>
                    <static>
                      false
@@ -486,7 +486,7 @@ module SUMMARY-ASSERTTEST.TESTFAIL-EXPECT-REVERT:C06C5EA6446D70FBDD360FECAB0A114
     rule [BASIC-BLOCK-3-TO-4]: <foundry>
            <kevm>
              <k>
-               ( CALL 9223372036854772901 645326474426547203313410069153905908525362434349 0 128 4 128 0 => #checkCall 728815563385977040452943777879061427756277306518 0
+               ( CALL 9223372036854772878 645326474426547203313410069153905908525362434349 0 128 4 128 0 => #checkCall 728815563385977040452943777879061427756277306518 0
                ~> #call 728815563385977040452943777879061427756277306518 645326474426547203313410069153905908525362434349 645326474426547203313410069153905908525362434349 0 0 b"\xf4\x84H\x14" false
                ~> #return 128 0 )
                ~> #pc [ CALL ]
@@ -523,7 +523,7 @@ module SUMMARY-ASSERTTEST.TESTFAIL-EXPECT-REVERT:C06C5EA6446D70FBDD360FECAB0A114
                      0
                    </callValue>
                    <wordStack>
-                     ( 132 : ( selector ( "expectRevert()" ) : ( 645326474426547203313410069153905908525362434349 : ( 212 : ( selector ( "testFail_expect_revert()" ) : .WordStack ) ) ) ) )
+                     ( 132 : ( selector ( "expectRevert()" ) : ( 645326474426547203313410069153905908525362434349 : ( 239 : ( selector ( "testFail_expect_revert()" ) : .WordStack ) ) ) ) )
                    </wordStack>
                    <localMem>
                      b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xf4\x84H\x14\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
@@ -534,7 +534,7 @@ module SUMMARY-ASSERTTEST.TESTFAIL-EXPECT-REVERT:C06C5EA6446D70FBDD360FECAB0A114
                      5
                    </memoryUsed>
                    <callGas>
-                     9079256848778916976
+                     9079256848778916954
                    </callGas>
                    <static>
                      false
@@ -733,7 +733,7 @@ module SUMMARY-ASSERTTEST.TESTFAIL-EXPECT-REVERT:C06C5EA6446D70FBDD360FECAB0A114
                      0
                    </callValue>
                    <wordStack>
-                     ( ( 132 => 399 ) : ( ( selector ( "expectRevert()" ) => 212 ) : ( ( 645326474426547203313410069153905908525362434349 => selector ( "testFail_expect_revert()" ) ) : ( ( 212 : ( selector ( "testFail_expect_revert()" ) : .WordStack ) ) => .WordStack ) ) ) )
+                     ( ( 132 => 445 ) : ( ( selector ( "expectRevert()" ) => 239 ) : ( ( 645326474426547203313410069153905908525362434349 => selector ( "testFail_expect_revert()" ) ) : ( ( 239 : ( selector ( "testFail_expect_revert()" ) : .WordStack ) ) => .WordStack ) ) ) )
                    </wordStack>
                    <localMem>
                      ( b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xf4\x84H\x14\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" => b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xf4\x84H\x14\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" )
@@ -744,7 +744,7 @@ module SUMMARY-ASSERTTEST.TESTFAIL-EXPECT-REVERT:C06C5EA6446D70FBDD360FECAB0A114
                      5
                    </memoryUsed>
                    <callGas>
-                     9079256848778916976
+                     9079256848778916954
                    </callGas>
                    <static>
                      false
@@ -948,7 +948,7 @@ module SUMMARY-ASSERTTEST.TESTFAIL-EXPECT-REVERT:C06C5EA6446D70FBDD360FECAB0A114
                      0
                    </callValue>
                    <wordStack>
-                     ( 399 : ( 212 : ( selector ( "testFail_expect_revert()" ) : .WordStack ) ) )
+                     ( 445 : ( 239 : ( selector ( "testFail_expect_revert()" ) : .WordStack ) ) )
                    </wordStack>
                    <localMem>
                      b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xf4\x84H\x14\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
@@ -959,7 +959,7 @@ module SUMMARY-ASSERTTEST.TESTFAIL-EXPECT-REVERT:C06C5EA6446D70FBDD360FECAB0A114
                      5
                    </memoryUsed>
                    <callGas>
-                     9079256848778916976
+                     9079256848778916954
                    </callGas>
                    <static>
                      false
@@ -1163,7 +1163,7 @@ module SUMMARY-ASSERTTEST.TESTFAIL-EXPECT-REVERT:C06C5EA6446D70FBDD360FECAB0A114
                      0
                    </callValue>
                    <wordStack>
-                     ( 399 : ( 212 : ( selector ( "testFail_expect_revert()" ) : .WordStack ) ) )
+                     ( 445 : ( 239 : ( selector ( "testFail_expect_revert()" ) : .WordStack ) ) )
                    </wordStack>
                    <localMem>
                      b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xf4\x84H\x14\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
@@ -1174,7 +1174,7 @@ module SUMMARY-ASSERTTEST.TESTFAIL-EXPECT-REVERT:C06C5EA6446D70FBDD360FECAB0A114
                      5
                    </memoryUsed>
                    <callGas>
-                     9079256848778916976
+                     9079256848778916954
                    </callGas>
                    <static>
                      false

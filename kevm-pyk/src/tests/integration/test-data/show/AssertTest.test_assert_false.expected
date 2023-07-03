@@ -8,21 +8,21 @@
 │  (376 steps)
 ├─ 3
 │   k: #end EVMC_REVERT ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
-│   pc: 992
+│   pc: 1081
 │   callDepth: 0
 │   statusCode: STATUSCODE:StatusCode
 │
 │  (1 step)
 ├─ 4
 │   k: #halt ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
-│   pc: 992
+│   pc: 1081
 │   callDepth: 0
 │   statusCode: EVMC_REVERT
 │
 │  (2 steps)
 └─ 5 (leaf, terminal)
     k: #halt ~> CONTINUATION:K
-    pc: 992
+    pc: 1081
     callDepth: 0
     statusCode: EVMC_REVERT
 
@@ -77,7 +77,7 @@ Node 5:
               0
             </callValue>
             <wordStack>
-              ( 399 : ( 212 : ( selector ( "test_assert_false()" ) : .WordStack ) ) )
+              ( 445 : ( 239 : ( selector ( "test_assert_false()" ) : .WordStack ) ) )
             </wordStack>
             <localMem>
               b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80"
@@ -241,7 +241,7 @@ Node 5:
 
 
 
-module SUMMARY-ASSERTTEST.TEST-ASSERT-FALSE:08F836935DBCC810AE1CEBB9276F3B79DE040475AFCDA8C9DC5D47AA2E65AB2C
+module SUMMARY-ASSERTTEST.TEST-ASSERT-FALSE:319A5ABF36523B91CF0DCD6CD711BF688C838A875D6F30B2D5739F5B41100C69
     
     
     rule [BASIC-BLOCK-1-TO-3]: <foundry>
@@ -286,7 +286,7 @@ module SUMMARY-ASSERTTEST.TEST-ASSERT-FALSE:08F836935DBCC810AE1CEBB9276F3B79DE04
                      0
                    </callValue>
                    <wordStack>
-                     ( .WordStack => ( 399 : ( 212 : ( selector ( "test_assert_false()" ) : .WordStack ) ) ) )
+                     ( .WordStack => ( 445 : ( 239 : ( selector ( "test_assert_false()" ) : .WordStack ) ) ) )
                    </wordStack>
                    <localMem>
                      ( .Bytes => b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80" )
@@ -506,7 +506,7 @@ module SUMMARY-ASSERTTEST.TEST-ASSERT-FALSE:08F836935DBCC810AE1CEBB9276F3B79DE04
                      0
                    </callValue>
                    <wordStack>
-                     ( 399 : ( 212 : ( selector ( "test_assert_false()" ) : .WordStack ) ) )
+                     ( 445 : ( 239 : ( selector ( "test_assert_false()" ) : .WordStack ) ) )
                    </wordStack>
                    <localMem>
                      b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80"
@@ -714,7 +714,7 @@ module SUMMARY-ASSERTTEST.TEST-ASSERT-FALSE:08F836935DBCC810AE1CEBB9276F3B79DE04
                      0
                    </callValue>
                    <wordStack>
-                     ( 399 : ( 212 : ( selector ( "test_assert_false()" ) : .WordStack ) ) )
+                     ( 445 : ( 239 : ( selector ( "test_assert_false()" ) : .WordStack ) ) )
                    </wordStack>
                    <localMem>
                      b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80"
