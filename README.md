@@ -125,7 +125,6 @@ After installing the Command Line Tools, [Homebrew](https://brew.sh/), and getti
 ```sh
 brew tap kframework/k
 brew install java automake libtool gmp mpfr pkg-config maven libffi llvm@14 openssl protobuf python bash kframework/k/cryptopp@8.6.0 poetry solidity
-make libsecp256k1
 ```
 
 **NOTE**: It is recommended to use the homebrew version of `flex` and XCode.
@@ -137,7 +136,7 @@ If the build on macOS still fails, you can also try adding the following lines t
 
 ```sh
 ifeq ($(UNAME_S), Darwin)
-SHELL := /usr/local/bin/bash
+SHELL := /bin/bash
 PATH := $(pwd)/.build/usr/bin:$(PATH)
 endif
 ```
@@ -174,12 +173,6 @@ If you don't need either the LLVM or Haskell backend, there are flags to skip th
 make k-deps SKIP_LLVM=true SKIP_HASKELL=true
 ```
 
-On an Apple Silicon machine, an additional flag to `make` is required to correctly build the Haskell backend:
-
-```sh
-make k-deps APPLE_SILICON=true
-```
-
 #### Blockchain Plugin
 
 You also need to get the blockchain plugin submodule and install it.
@@ -187,6 +180,12 @@ You also need to get the blockchain plugin submodule and install it.
 ```sh
 git submodule update --init --recursive -- deps/plugin
 make plugin-deps
+```
+
+On an Apple Silicon machine, an additional flag to `make` is required to correctly build the Haskell backend:
+
+```sh
+make plugin-deps APPLE_SILICON=true
 ```
 
 ### Building

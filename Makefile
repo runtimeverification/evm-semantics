@@ -90,11 +90,6 @@ endif
 ifneq ($(SKIP_HASKELL),)
     K_MVN_ARGS += -Dhaskell.backend.skip
 endif
-
-ifneq ($(APPLE_SILICON),)
-    K_MVN_ARGS += -Dstack.extra-opts='--compiler ghc-8.10.7 --system-ghc'
-endif
-
 ifneq ($(RELEASE),)
     K_BUILD_TYPE := FastBuild
 else
