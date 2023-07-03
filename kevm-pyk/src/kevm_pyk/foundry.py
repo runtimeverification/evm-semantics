@@ -687,7 +687,7 @@ def foundry_remove_node(foundry_root: Path, test: str, node: NodeIdLike) -> None
     contract_name, test_name = test.split('.')
     proof_digest = foundry.proof_digest(contract_name, test_name)
     apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
-    node_ids = apr_proof.kcfg.prune(node)
+    node_ids = apr_proof.kcfg.prune(node, [1, 2])
     _LOGGER.info(f'Pruned nodes: {node_ids}')
     apr_proof.write_proof()
 
