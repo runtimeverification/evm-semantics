@@ -283,6 +283,7 @@ module VAT-FROB-DIFF-ZERO-DART-PASS-ROUGH-REUSE-SPEC
        andBool #Vat.urns[ABI_i][ABI_u].art =/=Int #Vat.live
        andBool #Vat.ilks[ABI_i].Art =/=Int #Vat.live
 
+      [depends(Vat.addui.pass,Vat.mului.pass,Vat.muluu.pass,Vat.subui.pass)]
 
 
 

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import sys
 from argparse import ArgumentParser
 from itertools import chain
@@ -43,7 +44,7 @@ from .utils import arg_pair_of, ensure_ksequence_on_k_cell, get_apr_proof_for_sp
 if TYPE_CHECKING:
     from argparse import Namespace
     from collections.abc import Callable, Iterable
-    from typing import Any, Final, TypeVar
+    from typing import Any, Dict, Final, TypeVar
 
     from pyk.kast.outer import KClaim
     from pyk.kcfg.kcfg import NodeIdLike
@@ -267,38 +268,38 @@ def exec_prove(
 
     _LOGGER.info(f'Extracting claims from file: {spec_file}')
 
-    claims = kevm.get_claims(
+    all_claims = kevm.get_claims(
         spec_file,
         spec_module_name=spec_module,
         include_dirs=[Path(i) for i in includes],
         md_selector=md_selector,
-        claim_labels=claim_labels,
+        claim_labels=None,
         exclude_claim_labels=exclude_claim_labels,
     )
 
-    if not claims:
+    spec_module_name = spec_module if spec_module is not None else os.path.splitext(spec_file.name)[0].upper()
+
+    if all_claims is None:
         raise ValueError(f'No claims found in file: {spec_file}')
 
-    claims0: list[list[KClaim]] = [claims]
+    all_claims_by_label: Dict[str, KClaim] = {c.label: c for c in all_claims}
+
+    claims0: list[list[KClaim]] = [[c for c in all_claims if c.label in all_claims_by_label]]
     while True:
         print(f'claims0: {[[c.label for c in cs] for cs in claims0]}')
-        new_deps: list[str] = list(chain.from_iterable([c.dependencies for c in claims0[-1]]))
+        new_deps: list[str] = list(
+            # chain.from_iterable([[f'{spec_module_name}.{d}' for d in c.dependencies] for c in claims0[-1]])
+            chain.from_iterable([[f'{d}' for d in c.dependencies] for c in claims0[-1]])
+        )
         print(f'new_deps: {new_deps}')
         already_there: list[str] = list(chain.from_iterable([c.label for c in chain.from_iterable(claims0)]))
-        fresh_deps: list[str] = [d for d in new_deps if d not in already_there]
+        fresh_deps: list[str] = [f'{spec_module_name}.{d}' for d in new_deps if d not in already_there]
         if len(fresh_deps) <= 0:
             break
-        fresh_claims = kevm.get_claims(
-            spec_file,
-            spec_module_name=spec_module,
-            include_dirs=[Path(i) for i in includes],
-            md_selector=md_selector,
-            claim_labels=fresh_deps,
-            exclude_claim_labels=[],
-        )
-        if not fresh_claims:
-            raise ValueError(f'The dependencies/claims not found in file: {spec_file}')
-
+        not_found: list[str] = [fd for fd in fresh_deps if fd not in all_claims_by_label]
+        if len(not_found) >= 1:
+            raise ValueError(f'Some dependencies ({not_found}) were not found in file: {spec_file}')
+        fresh_claims = [all_claims_by_label[fd] for fd in fresh_deps]
         claims0.append(fresh_claims)
 
     print(f'final claims0: {[[c.label for c in cs] for cs in claims0]}')
@@ -384,6 +385,8 @@ def exec_prove(
 
     rclaims0 = reversed(claims0)
 
+    selected_results = []
+    selected_claims = []
     for depth, curr_claim_list in enumerate(rclaims0):
         _LOGGER.info(f'Processing claims at depth: {depth}')
         if workers > 1:
@@ -393,9 +396,11 @@ def exec_prove(
             results = []
             for claim in curr_claim_list:
                 results.append(_init_and_run_proof(claim))
+        selected_results.extend(results)
+        selected_claims.extend(curr_claim_list)
 
     failed = 0
-    for claim, r in zip(claims, results, strict=True):
+    for claim, r in zip(selected_claims, selected_results, strict=True):
         passed, failure_log = r
         if passed:
             print(f'PROOF PASSED: {claim.label}')
