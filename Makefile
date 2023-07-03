@@ -437,10 +437,11 @@ tests/interactive/%.json.gst-to-kore.check: tests/ethereum-tests/GeneralStateTes
 # solc-to-k
 # ---------
 
-FOUNDRY_PAR := 4
+PYTEST_PARALLEL := 8
+PYTEST_ARGS     :=
 
 test-foundry-prove: poetry build-kevm build-foundry
-	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+="-k test_foundry_prove.py -n$(FOUNDRY_PAR)"
+	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+="-k test_foundry_prove.py -n$(PYTEST_PARALLEL) $(PYTEST_ARGS)"
 
 tests/specs/examples/%-bin-runtime.k: KEVM_OPTS += --pyk --verbose
 tests/specs/examples/%-bin-runtime.k: KEVM := $(POETRY_RUN) kevm
@@ -490,26 +491,26 @@ smoke_tests_prove=tests/specs/erc20/ds/transfer-failure-1-a-spec.k
 # Conformance Tests
 
 test-conformance: poetry build-kevm build-llvm
-	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+='-k test_conformance.py -n8'
+	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+="-k test_conformance.py -n$(PYTEST_PARALLEL) $(PYTEST_ARGS)"
 
 test-vm: poetry build-kevm build-llvm
-	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+='-k test_vm -n8'
+	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+="-k test_vm -n$(PYTEST_PARALLEL) $(PYTEST_ARGS)"
 
 test-rest-vm: poetry build-kevm build-llvm
-	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+='-k test_rest_vm -n8'
+	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+="-k test_rest_vm -n$(PYTEST_PARALLEL) $(PYTEST_ARGS)"
 
 test-bchain: poetry build-kevm build-llvm
-	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+='-k test_bchain -n8'
+	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+="-k test_bchain -n$(PYTEST_PARALLEL) $(PYTEST_ARGS)"
 
 test-rest-bchain: poetry build-kevm build-llvm
-	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+='-k test_rest_bchain -n8'
+	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+="-k test_rest_bchain -n$(PYTEST_PARALLEL) $(PYTEST_ARGS)"
 
 # Proof Tests
 
 prove_smoke_tests := $(shell cat tests/specs/smoke)
 
 test-prove: tests/specs/opcodes/evm-optimizations-spec.md poetry build-kevm build-haskell
-	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+='-k test_prove -n8'
+	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+="-k test_prove -n$(PYTEST_PARALLEL) $(PYTEST_ARGS)"
 
 test-prove-smoke: $(prove_smoke_tests:=.prove)
 
@@ -523,7 +524,7 @@ tests/specs/opcodes/evm-optimizations-spec.md: include/kframework/optimizations.
 # Integration Tests
 
 test-integration: poetry build-kevm build-haskell build-llvm
-	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+='-k "(test_kast.py or test_run.py or test_solc_to_k.py)" -n8'
+	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+='-k "(test_kast.py or test_run.py or test_solc_to_k.py)" -n$(PYTEST_PARALLEL) $(PYTEST_ARGS)'
 
 # Interactive Tests
 

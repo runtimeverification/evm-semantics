@@ -1675,7 +1675,7 @@ Precompiled Contracts
     syntax Bytes ::= #ecrec ( Bytes , Bytes , Bytes , Bytes ) [function, smtlib(ecrec)]
                    | #ecrec ( Account )                       [function]
  // --------------------------------------------------------------------
-    rule [ecrec]: #ecrec(HASH, SIGV, SIGR, SIGS) => #ecrec(#sender(#unparseByteStack(HASH), #asWord(SIGV), #unparseByteStack(SIGR), #unparseByteStack(SIGS)))
+    rule [ecrec]: #ecrec(HASH, SIGV, SIGR, SIGS) => #ecrec(#sender(#unparseByteStack(HASH), #asWord(SIGV), #unparseByteStack(SIGR), #unparseByteStack(SIGS))) [concrete]
 
     rule #ecrec(.Account) => .Bytes
     rule #ecrec(N:Int)    => #padToWidth(32, #asByteStack(N))
@@ -1893,8 +1893,8 @@ In the YellowPaper, each opcode is defined to consume zero gas unless specified 
 
     syntax Int ::= #memoryUsageUpdate ( Int , Int , Int ) [function, total]
  // -----------------------------------------------------------------------
-    rule [#memoryUsageUpdate.none]: #memoryUsageUpdate(MU,     _, WIDTH) => MU                                       requires notBool 0 <Int WIDTH
-    rule [#memoryUsageUpdate.some]: #memoryUsageUpdate(MU, START, WIDTH) => maxInt(MU, (START +Int WIDTH) up/Int 32) requires         0 <Int WIDTH
+    rule #memoryUsageUpdate(MU,     _, WIDTH) => MU                                       requires notBool 0 <Int WIDTH [concrete]
+    rule #memoryUsageUpdate(MU, START, WIDTH) => maxInt(MU, (START +Int WIDTH) up/Int 32) requires         0 <Int WIDTH [concrete]
 ```
 
 Access List Gas

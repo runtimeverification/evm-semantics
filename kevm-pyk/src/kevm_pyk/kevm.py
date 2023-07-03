@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 from pyk.cterm import CTerm
@@ -14,10 +15,11 @@ from pyk.prelude.k import K
 from pyk.prelude.kint import intToken, ltInt
 from pyk.prelude.ml import mlEqualsTrue
 from pyk.prelude.string import stringToken
+from pyk.proof.reachability import APRBMCProof, APRProof
+from pyk.proof.show import APRBMCProofNodePrinter, APRProofNodePrinter
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
-    from pathlib import Path
     from typing import Final
 
     from pyk.kast import KInner
@@ -388,15 +390,81 @@ class KEVM(KProve, KRun):
 
         return CTerm(config=bottom_up(_replace, cterm.config), constraints=cterm.constraints)
 
+    def prove_legacy(
+        self,
+        spec_file: Path,
+        includes: Iterable[str] = (),
+        bug_report: bool = False,
+        spec_module: str | None = None,
+        claim_labels: Iterable[str] | None = None,
+        exclude_claim_labels: Iterable[str] = (),
+        debug: bool = False,
+        debugger: bool = False,
+        max_depth: int | None = None,
+        max_counterexamples: int | None = None,
+        branching_allowed: int | None = None,
+        haskell_backend_args: Iterable[str] = (),
+    ) -> KInner:
+        md_selector = 'k & ! node'
+        args: list[str] = []
+        haskell_args: list[str] = []
+        if claim_labels:
+            args += ['--claims', ','.join(claim_labels)]
+        if exclude_claim_labels:
+            args += ['--exclude', ','.join(exclude_claim_labels)]
+        if debug:
+            args.append('--debug')
+        if debugger:
+            args.append('--debugger')
+        if branching_allowed:
+            args += ['--branching-allowed', f'{branching_allowed}']
+        if max_counterexamples:
+            haskell_args += ['--max-counterexamples', f'{max_counterexamples}']
+        if bug_report:
+            haskell_args += ['--bug-report', f'kevm-bug-{spec_file.name.rstrip("-spec.k")}']
+        if haskell_backend_args:
+            haskell_args += list(haskell_backend_args)
+
+        final_state = self.prove(
+            spec_file=spec_file,
+            spec_module_name=spec_module,
+            args=args,
+            include_dirs=[Path(i) for i in includes],
+            md_selector=md_selector,
+            haskell_args=haskell_args,
+            depth=max_depth,
+        )
+        return final_state
+
 
 class KEVMNodePrinter(NodePrinter):
     kevm: KEVM
 
     def __init__(self, kevm: KEVM):
-        super().__init__(kevm)
+        NodePrinter.__init__(self, kevm)
         self.kevm = kevm
 
     def print_node(self, kcfg: KCFG, node: KCFG.Node) -> list[str]:
         ret_strs = super().print_node(kcfg, node)
         ret_strs += self.kevm.short_info(node.cterm)
         return ret_strs
+
+
+class KEVMAPRNodePrinter(KEVMNodePrinter, APRProofNodePrinter):
+    def __init__(self, kevm: KEVM, proof: APRProof):
+        KEVMNodePrinter.__init__(self, kevm)
+        APRProofNodePrinter.__init__(self, proof, kevm)
+
+
+class KEVMAPRBMCNodePrinter(KEVMNodePrinter, APRBMCProofNodePrinter):
+    def __init__(self, kevm: KEVM, proof: APRBMCProof):
+        KEVMNodePrinter.__init__(self, kevm)
+        APRBMCProofNodePrinter.__init__(self, proof, kevm)
+
+
+def kevm_node_printer(kevm: KEVM, proof: APRProof) -> NodePrinter:
+    if type(proof) is APRBMCProof:
+        return KEVMAPRBMCNodePrinter(kevm, proof)
+    if type(proof) is APRProof:
+        return KEVMAPRNodePrinter(kevm, proof)
+    raise ValueError(f'Cannot build NodePrinter for proof type: {type(proof)}')
