@@ -20,4 +20,12 @@ contract BMCLoopsTest is Test {
         }
         assert(n == 0);
     }
+
+    function test_bmc(uint256 n) public {
+        uint256 x = 0;
+        for (uint256 i = 0; i < n; ++i) {
+            x += 1;
+        }
+        assertEq(x, n);
+    }
 }

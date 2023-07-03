@@ -44,24 +44,24 @@ PLUGIN_FULL_PATH := $(abspath ${PLUGIN_SUBMODULE})
 export PLUGIN_FULL_PATH
 
 
-.PHONY: all clean distclean                                                                                                      \
-        deps k-deps plugin-deps protobuf                                                                                         \
-        build build-haskell build-haskell-standalone build-foundry build-llvm build-node build-kevm                              \
-        test test-all test-conformance test-rest-conformance test-all-conformance test-slow-conformance test-failing-conformance \
-        test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain test-node                                  \
-        test-prove test-failing-prove test-foundry-kcfg-diff                                                                     \
-        test-prove-smoke test-klab-prove                                                                                         \
-        test-parse test-failure test-foundry-kompile test-foundry-prove test-foundry-bmc-prove test-foundry-list                 \
-        test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search               \
-        test-kevm-pyk foundry-forge-build foundry-forge-test foundry-clean foundry-fail                                          \
-        media media-pdf metropolis-theme                                                                                         \
-        install uninstall                                                                                                        \
-        poetry-env poetry shell kevm-pyk
+.PHONY: all clean distclean                                                                                        \
+        deps k-deps plugin-deps protobuf                                                                           \
+        poetry-env poetry shell kevm-pyk                                                                           \
+        build build-haskell build-haskell-standalone build-foundry build-llvm build-node build-kevm                \
+        test                                                                                                       \
+        test-integration test-conformance test-prove test-foundry-prove                                            \
+        test-vm test-rest-vm test-bchain test-rest-bchain                                                          \
+        test-node                                                                                                  \
+        test-prove-smoke test-klab-prove                                                                           \
+        test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search \
+        media media-pdf metropolis-theme                                                                           \
+        install uninstall
+
 .SECONDARY:
 
 all: build
 
-clean: foundry-clean
+clean:
 	rm -rf $(KEVM_BIN) $(KEVM_LIB)
 
 distclean:
@@ -401,8 +401,7 @@ KSEARCH_OPTS ?=
 
 KEEP_OUTPUTS := false
 
-test-all: test-all-conformance test-prove test-interactive test-parse test-kevm-pyk
-test: test-conformance test-prove test-interactive test-parse test-kevm-pyk
+test: test-integration test-conformance test-prove test-interactive
 
 # Generic Test Harnesses
 
@@ -429,11 +428,6 @@ tests/%.run-expected: tests/% tests/%.expected
 	    > tests/$*.$(TEST_CONCRETE_BACKEND)-out                                    \
 	    || $(CHECK) tests/$*.$(TEST_CONCRETE_BACKEND)-out tests/$*.expected
 	$(KEEP_OUTPUTS) || rm -rf tests/$*.$(TEST_CONCRETE_BACKEND)-out
-
-tests/%.parse: tests/% $(KEVM_LIB)/kore-json.py
-	$(KEVM) kast $< $(KEVM_OPTS) $(KAST_OPTS) --backend $(TEST_CONCRETE_BACKEND) > $@-out
-	$(CHECK) $@-out $@-expected
-	$(KEEP_OUTPUTS) || rm -rf $@-out
 
 tests/interactive/%.json.gst-to-kore.check: tests/ethereum-tests/GeneralStateTests/VMTests/%.json $(KEVM_BIN)/kevm
 	$(KEVM) kast $< $(KEVM_OPTS) $(KAST_OPTS) > tests/interactive/$*.gst-to-kore.out
@@ -527,24 +521,10 @@ test-klab-prove: $(smoke_tests_prove:=.prove)
 tests/specs/opcodes/evm-optimizations-spec.md: include/kframework/optimizations.md
 	cat $< | sed 's/^rule/claim/' | sed 's/EVM-OPTIMIZATIONS/EVM-OPTIMIZATIONS-SPEC/' | grep -v 'priority(40)' > $@
 
-# Parse Tests
+# Integration Tests
 
-parse_tests:=$(wildcard tests/interactive/*.json) \
-             $(wildcard tests/interactive/*.evm)
-
-test-parse: $(parse_tests:=.parse)
-	echo $(parse_tests)
-
-# Failing correctly tests
-
-failure_tests:=$(wildcard tests/failing/*.json)
-
-test-failure: $(failure_tests:=.run-expected)
-
-# kevm-pyk Tests
-
-test-kevm-pyk: poetry build-kevm build-haskell
-	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+="-k test_solc_to_k.py -n$(PYTEST_PARALLEL) $(PYTEST_ARGS)"
+test-integration: poetry build-kevm build-haskell build-llvm
+	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+='-k "(test_kast.py or test_run.py or test_solc_to_k.py)" -n$(PYTEST_PARALLEL) $(PYTEST_ARGS)'
 
 # Interactive Tests
 
