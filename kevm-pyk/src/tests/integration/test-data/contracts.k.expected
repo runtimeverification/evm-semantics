@@ -4694,6 +4694,8 @@ module ASSERTTEST-CONTRACT
     
     syntax AssertTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_AssertTest_failed_)]
     
+    syntax AssertTestMethod ::= "setUp" "(" ")" [symbol(), klabel(method_AssertTest_setUp_)]
+    
     syntax AssertTestMethod ::= "testFail_assert_false" "(" ")" [symbol(), klabel(method_AssertTest_testFail_assert_false_)]
     
     syntax AssertTestMethod ::= "testFail_assert_true" "(" ")" [symbol(), klabel(method_AssertTest_testFail_assert_true_)]
@@ -4721,6 +4723,9 @@ module ASSERTTEST-CONTRACT
       
     
     rule  ( AssertTest . failed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
+      
+    
+    rule  ( AssertTest . setUp ( ) => #abiCallData ( "setUp" , .TypedArgs ) )
       
     
     rule  ( AssertTest . testFail_assert_false ( ) => #abiCallData ( "testFail_assert_false" , .TypedArgs ) )
@@ -4766,6 +4771,9 @@ module ASSERTTEST-CONTRACT
       
     
     rule  ( selector ( "failed()" ) => 3124842406 )
+      
+    
+    rule  ( selector ( "setUp()" ) => 177362148 )
       
     
     rule  ( selector ( "testFail_assert_false()" ) => 2057948334 )
