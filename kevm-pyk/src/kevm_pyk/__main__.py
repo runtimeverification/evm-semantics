@@ -13,7 +13,7 @@ from pyk.cterm import CTerm
 from pyk.kcfg import KCFG, KCFGExplore
 from pyk.kore.prelude import int_dv
 from pyk.ktool.krun import KRunOutput, _krun
-from pyk.prelude.ml import is_bottom
+from pyk.prelude.ml import is_bottom, is_top
 from pyk.proof import APRProof
 from pyk.proof.show import APRProofShow
 from pyk.proof.tui import APRProofViewer
@@ -22,9 +22,9 @@ from pyk.utils import BugReport, single
 from .cli import KEVMCLIArgs, node_id_like
 from .foundry import (
     Foundry,
-    FoundryNodePrinter,
     foundry_kompile,
     foundry_list,
+    foundry_node_printer,
     foundry_prove,
     foundry_remove_node,
     foundry_section_edge,
@@ -34,7 +34,7 @@ from .foundry import (
     foundry_to_dot,
 )
 from .gst_to_kore import _mode_to_kore, _schedule_to_kore
-from .kevm import KEVM, KEVMNodePrinter
+from .kevm import KEVM, kevm_node_printer
 from .kompile import KompileTarget, kevm_kompile
 from .solc_to_k import solc_compile, solc_to_k
 from .utils import arg_pair_of, ensure_ksequence_on_k_cell, get_apr_proof_for_spec, kevm_apr_prove, print_failure_info
@@ -199,37 +199,24 @@ def exec_prove_legacy(
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'md_selector', f'--md-selector: {kwargs["md_selector"]}')
-    md_selector = 'k & ! node'
-
     kevm = KEVM(definition_dir, use_directory=save_directory)
-    args: list[str] = []
-    haskell_args: list[str] = []
-    if claim_labels:
-        args += ['--claims', ','.join(claim_labels)]
-    if exclude_claim_labels:
-        args += ['--exclude', ','.join(exclude_claim_labels)]
-    if debug:
-        args.append('--debug')
-    if debugger:
-        args.append('--debugger')
-    if branching_allowed:
-        args += ['--branching-allowed', f'{branching_allowed}']
-    if max_counterexamples:
-        haskell_args += ['--max-counterexamples', f'{max_counterexamples}']
-    if bug_report:
-        haskell_args += ['--bug-report', f'kevm-bug-{spec_file.name.rstrip("-spec.k")}']
-    if haskell_backend_args:
-        haskell_args += list(haskell_backend_args)
-
-    kevm.prove(
+    final_state = kevm.prove_legacy(
         spec_file=spec_file,
-        spec_module_name=spec_module,
-        args=args,
-        include_dirs=[Path(i) for i in includes],
-        md_selector=md_selector,
-        haskell_args=haskell_args,
-        depth=max_depth,
+        includes=includes,
+        bug_report=bug_report,
+        spec_module=spec_module,
+        claim_labels=claim_labels,
+        exclude_claim_labels=exclude_claim_labels,
+        debug=debug,
+        debugger=debugger,
+        max_depth=max_depth,
+        max_counterexamples=max_counterexamples,
+        branching_allowed=branching_allowed,
+        haskell_backend_args=haskell_backend_args,
     )
+    print(kevm.pretty_print(final_state))
+    if not is_top(final_state):
+        raise SystemExit(1)
 
 
 def exec_prove(
@@ -348,8 +335,14 @@ def exec_prove(
 
             return passed, failure_log
 
-    with ProcessPool(ncpus=workers) as process_pool:
-        results = process_pool.map(_init_and_run_proof, claims)
+    results: list[tuple[bool, list[str] | None]]
+    if workers > 1:
+        with ProcessPool(ncpus=workers) as process_pool:
+            results = process_pool.map(_init_and_run_proof, claims)
+    else:
+        results = []
+        for claim in claims:
+            results.append(_init_and_run_proof(claim))
 
     failed = 0
     for claim, r in zip(claims, results, strict=True):
@@ -420,6 +413,8 @@ def exec_show_kcfg(
     minimize: bool = True,
     failure_info: bool = False,
     sort_collections: bool = False,
+    pending: bool = False,
+    failing: bool = False,
     **kwargs: Any,
 ) -> None:
     kevm = KEVM(definition_dir)
@@ -434,7 +429,14 @@ def exec_show_kcfg(
         exclude_claim_labels=exclude_claim_labels,
     )
 
-    proof_show = APRProofShow(kevm, node_printer=KEVMNodePrinter(kevm))
+    if pending:
+        nodes = list(nodes) + [node.id for node in proof.pending]
+    if failing:
+        nodes = list(nodes) + [node.id for node in proof.failing]
+
+    node_printer = kevm_node_printer(kevm, proof)
+    proof_show = APRProofShow(kevm, node_printer=node_printer)
+
     res_lines = proof_show.show(
         proof,
         nodes=nodes,
@@ -463,7 +465,7 @@ def exec_view_kcfg(
     **kwargs: Any,
 ) -> None:
     kevm = KEVM(definition_dir)
-    apr_proof = get_apr_proof_for_spec(
+    proof = get_apr_proof_for_spec(
         kevm,
         spec_file,
         save_directory=save_directory,
@@ -474,8 +476,10 @@ def exec_view_kcfg(
         exclude_claim_labels=exclude_claim_labels,
     )
 
-    viewer = APRProofViewer(apr_proof, kevm, node_printer=KEVMNodePrinter(kevm))
-    viewer.run()
+    node_printer = kevm_node_printer(kevm, proof)
+    proof_view = APRProofViewer(proof, kevm, node_printer=node_printer)
+
+    proof_view.run()
 
 
 def exec_foundry_prove(
@@ -494,6 +498,7 @@ def exec_foundry_prove(
     bmc_depth: int | None = None,
     bug_report: bool = False,
     kore_rpc_command: str | Iterable[str] = ('kore-rpc',),
+    use_booster: bool = False,
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
     failure_info: bool = True,
@@ -525,6 +530,7 @@ def exec_foundry_prove(
         bmc_depth=bmc_depth,
         bug_report=bug_report,
         kore_rpc_command=kore_rpc_command,
+        use_booster=use_booster,
         smt_timeout=smt_timeout,
         smt_retry_limit=smt_retry_limit,
         trace_rewrites=trace_rewrites,
@@ -621,11 +627,11 @@ def exec_run(
 
 def exec_foundry_view_kcfg(foundry_root: Path, test: str, **kwargs: Any) -> None:
     foundry = Foundry(foundry_root)
-    apr_proofs_dir = foundry.out / 'apr_proofs'
+    proofs_dir = foundry.out / 'apr_proofs'
     contract_name, test_name = test.split('.')
     proof_digest = foundry.proof_digest(contract_name, test_name)
 
-    apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
+    proof = APRProof.read_proof(proof_digest, proofs_dir)
 
     def _short_info(cterm: CTerm) -> Iterable[str]:
         return foundry.short_info_for_contract(contract_name, cterm)
@@ -633,9 +639,8 @@ def exec_foundry_view_kcfg(foundry_root: Path, test: str, **kwargs: Any) -> None
     def _custom_view(elem: KCFGElem) -> Iterable[str]:
         return foundry.custom_view(contract_name, elem)
 
-    viewer = APRProofViewer(
-        apr_proof, foundry.kevm, node_printer=FoundryNodePrinter(foundry, contract_name), custom_view=_custom_view
-    )
+    node_printer = foundry_node_printer(foundry, contract_name, proof)
+    viewer = APRProofViewer(proof, foundry.kevm, node_printer=node_printer, custom_view=_custom_view)
     viewer.run()
 
 
@@ -922,6 +927,13 @@ def _create_argument_parser() -> ArgumentParser:
         type=int,
         help='Max depth of loop unrolling during bounded model checking',
     )
+    foundry_prove_args.add_argument(
+        '--use-booster',
+        dest='use_booster',
+        default=False,
+        action='store_true',
+        help="Use the booster RPC server instead of kore-rpc. Requires calling foundry-kompile with the '--with-llvm-library' flag",
+    )
 
     foundry_show_args = command_parser.add_parser(
         'foundry-show',
@@ -941,12 +953,6 @@ def _create_argument_parser() -> ArgumentParser:
         default=False,
         action='store_true',
         help='Strip output that is likely to change without the contract logic changing',
-    )
-    foundry_show_args.add_argument(
-        '--pending', dest='pending', default=False, action='store_true', help='Also display pending nodes'
-    )
-    foundry_show_args.add_argument(
-        '--failing', dest='failing', default=False, action='store_true', help='Also display failing nodes'
     )
     foundry_to_dot = command_parser.add_parser(
         'foundry-to-dot',

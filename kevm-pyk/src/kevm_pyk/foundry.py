@@ -24,11 +24,11 @@ from pyk.prelude.kint import INT, intToken
 from pyk.prelude.ml import mlEqualsTrue
 from pyk.proof.proof import Proof
 from pyk.proof.reachability import APRBMCProof, APRProof
-from pyk.proof.show import APRProofShow
+from pyk.proof.show import APRBMCProofNodePrinter, APRProofNodePrinter, APRProofShow
 from pyk.utils import BugReport, ensure_dir_path, hash_str, run_process, single, unique
 
 from .kevm import KEVM, KEVMNodePrinter
-from .kompile import KompileTarget, kevm_kompile
+from .kompile import Kernel, KompileTarget, kevm_kompile
 from .solc_to_k import Contract, contract_to_main_module, contract_to_verification_module
 from .utils import (
     KDefinition__expand_macros,
@@ -46,6 +46,7 @@ if TYPE_CHECKING:
     from pyk.kast import KInner
     from pyk.kcfg.kcfg import NodeIdLike
     from pyk.kcfg.tui import KCFGElem
+    from pyk.proof.show import NodePrinter
 
 _LOGGER: Final = logging.getLogger(__name__)
 
@@ -114,6 +115,20 @@ class Foundry:
     def digest(self) -> str:
         contract_digests = [self.contracts[c].digest for c in sorted(self.contracts)]
         return hash_str('\n'.join(contract_digests))
+
+    @cached_property
+    def llvm_dylib(self) -> Path | None:
+        arch = Kernel.get()
+        foundry_llvm_dir = self.out / 'kompiled-llvm'
+        if arch == Kernel.LINUX:
+            dylib = foundry_llvm_dir / 'interpreter.so'
+        else:
+            dylib = foundry_llvm_dir / 'interpreter.dylib'
+
+        if dylib.exists():
+            return dylib
+        else:
+            return None
 
     def up_to_date(self) -> bool:
         digest_file = self.out / 'digest'
@@ -408,6 +423,7 @@ def foundry_prove(
     bmc_depth: int | None = None,
     bug_report: bool = False,
     kore_rpc_command: str | Iterable[str] = ('kore-rpc',),
+    use_booster: bool = False,
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
     failure_info: bool = True,
@@ -424,6 +440,22 @@ def foundry_prove(
 
     save_directory = foundry.out / 'apr_proofs'
     save_directory.mkdir(exist_ok=True)
+
+    if use_booster:
+        try:
+            run_process(('which', 'kore-rpc-booster'), pipe_stderr=True).stdout.strip()
+        except CalledProcessError:
+            raise RuntimeError(
+                "Couldn't locate the kore-rpc-booster RPC binary. Please put 'kore-rpc-booster' on PATH manually or using kup install/kup shell."
+            ) from None
+
+        if foundry.llvm_dylib:
+            kore_rpc_command = ('kore-rpc-booster', '--llvm-backend-library', str(foundry.llvm_dylib))
+        else:
+            foundry_llvm_dir = foundry.out / 'kompiled-llvm'
+            raise ValueError(
+                f"Could not find the LLVM dynamic library in {foundry_llvm_dir}. Please re-run foundry-kompile with the '--with-llvm-library' flag"
+            )
 
     all_tests = [
         f'{contract.name}.{method.name}'
@@ -503,11 +535,6 @@ def foundry_prove(
                 reinit=(method.qualified_name in out_of_date_methods),
                 simplify_init=simplify_init,
                 bmc_depth=bmc_depth,
-                kore_rpc_command=kore_rpc_command,
-                smt_timeout=smt_timeout,
-                smt_retry_limit=smt_retry_limit,
-                bug_report=br,
-                trace_rewrites=trace_rewrites,
             )
 
             passed = kevm_apr_prove(
@@ -597,7 +624,9 @@ def foundry_show(
         '<code>',
     ]
 
-    proof_show = APRProofShow(foundry.kevm, node_printer=FoundryNodePrinter(foundry, contract_name))
+    node_printer = foundry_node_printer(foundry, contract_name, proof)
+    proof_show = APRProofShow(foundry.kevm, node_printer=node_printer)
+
     res_lines = proof_show.show(
         proof,
         nodes=nodes,
@@ -618,13 +647,16 @@ def foundry_show(
 
 def foundry_to_dot(foundry_root: Path, test: str) -> None:
     foundry = Foundry(foundry_root)
-    apr_proofs_dir = foundry.out / 'apr_proofs'
-    dump_dir = apr_proofs_dir / 'dump'
+    proofs_dir = foundry.out / 'apr_proofs'
+    dump_dir = proofs_dir / 'dump'
     contract_name, test_name = test.split('.')
     proof_digest = foundry.proof_digest(contract_name, test_name)
-    apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
-    proof_show = APRProofShow(foundry.kevm, node_printer=FoundryNodePrinter(foundry, contract_name))
-    proof_show.dump(apr_proof, dump_dir, dot=True)
+    proof = APRProof.read_proof(proof_digest, proofs_dir)
+
+    node_printer = foundry_node_printer(foundry, contract_name, proof)
+    proof_show = APRProofShow(foundry.kevm, node_printer=node_printer)
+
+    proof_show.dump(proof, dump_dir, dot=True)
 
 
 def foundry_list(foundry_root: Path) -> list[str]:
@@ -817,11 +849,6 @@ def _method_to_apr_proof(
     reinit: bool = False,
     simplify_init: bool = True,
     bmc_depth: int | None = None,
-    kore_rpc_command: str | Iterable[str] = ('kore-rpc',),
-    smt_timeout: int | None = None,
-    smt_retry_limit: int | None = None,
-    bug_report: BugReport | None = None,
-    trace_rewrites: bool = False,
 ) -> APRProof | APRBMCProof:
     contract_name = contract.name
     method_name = method.name
@@ -1071,7 +1098,7 @@ class FoundryNodePrinter(KEVMNodePrinter):
     contract_name: str
 
     def __init__(self, foundry: Foundry, contract_name: str):
-        super().__init__(foundry.kevm)
+        KEVMNodePrinter.__init__(self, foundry.kevm)
         self.foundry = foundry
         self.contract_name = contract_name
 
@@ -1084,3 +1111,23 @@ class FoundryNodePrinter(KEVMNodePrinter):
                 path, start, end = srcmap_data
                 ret_strs.append(f'src: {str(path)}:{start}:{end}')
         return ret_strs
+
+
+class FoundryAPRNodePrinter(FoundryNodePrinter, APRProofNodePrinter):
+    def __init__(self, foundry: Foundry, contract_name: str, proof: APRProof):
+        FoundryNodePrinter.__init__(self, foundry, contract_name)
+        APRProofNodePrinter.__init__(self, proof, foundry.kevm)
+
+
+class FoundryAPRBMCNodePrinter(FoundryNodePrinter, APRBMCProofNodePrinter):
+    def __init__(self, foundry: Foundry, contract_name: str, proof: APRBMCProof):
+        FoundryNodePrinter.__init__(self, foundry, contract_name)
+        APRBMCProofNodePrinter.__init__(self, proof, foundry.kevm)
+
+
+def foundry_node_printer(foundry: Foundry, contract_name: str, proof: APRProof) -> NodePrinter:
+    if type(proof) is APRBMCProof:
+        return FoundryAPRBMCNodePrinter(foundry, contract_name, proof)
+    if type(proof) is APRProof:
+        return FoundryAPRNodePrinter(foundry, contract_name, proof)
+    raise ValueError(f'Cannot build NodePrinter for proof type: {type(proof)}')
