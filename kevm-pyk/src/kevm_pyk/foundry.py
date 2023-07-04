@@ -735,6 +735,7 @@ def foundry_merge_nodes(
     test: str,
     node_ids: Iterable[NodeIdLike],
     bug_report: bool = False,
+    include_disjunct: bool = False,
 ) -> None:
     def check_cells_equal(cell: str, nodes: Iterable[KCFG.Node]) -> bool:
         nodes = list(nodes)
@@ -765,13 +766,17 @@ def foundry_merge_nodes(
 
     anti_unification = nodes[0].cterm.kast
     for node in nodes[1:]:
-        anti_unification = anti_unify_with_constraints(anti_unification, node.cterm.kast, disjunct=False)
+        anti_unification = anti_unify_with_constraints(
+            anti_unification, node.cterm.kast, abstracted_disjunct=include_disjunct
+        )
     new_node = proof.kcfg.create_node(CTerm.from_kast(anti_unification))
     for node in nodes:
         proof.kcfg.create_cover(node.id, new_node.id)
 
     proof.write_proof()
+
     print(f'Merged nodes {node_ids} into new node {new_node.id}.')
+    print(foundry.kevm.pretty_print(new_node.cterm.kast))
 
 
 def foundry_step_node(

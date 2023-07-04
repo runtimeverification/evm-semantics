@@ -682,9 +682,10 @@ def exec_foundry_merge_nodes(
     test: str,
     nodes: Iterable[NodeIdLike],
     bug_report: bool = False,
+    include_disjunct: bool = False,
     **kwargs: Any,
 ) -> None:
-    foundry_merge_nodes(foundry_root=foundry_root, node_ids=nodes, test=test)
+    foundry_merge_nodes(foundry_root=foundry_root, node_ids=nodes, test=test, include_disjunct=include_disjunct)
 
 
 def exec_foundry_step_node(
@@ -1030,7 +1031,7 @@ def _create_argument_parser() -> ArgumentParser:
         '--depth', type=int, default=1, help='How many steps to take from initial node on edge.'
     )
 
-    foundry_merge_node = command_parser.add_parser(
+    foundry_merge_nodes = command_parser.add_parser(
         'foundry-merge-nodes',
         help='Merge multiple nodes into one branch.',
         parents=[
@@ -1038,7 +1039,7 @@ def _create_argument_parser() -> ArgumentParser:
             kevm_cli_args.foundry_args,
         ],
     )
-    foundry_merge_node.add_argument(
+    foundry_merge_nodes.add_argument(
         '--node',
         type=str,
         dest='nodes',
@@ -1046,7 +1047,14 @@ def _create_argument_parser() -> ArgumentParser:
         action='append',
         help='One node to be merged.',
     )
-    foundry_merge_node.add_argument('test', type=str, help='Merge nodes in this CFG.')
+    foundry_merge_nodes.add_argument('test', type=str, help='Merge nodes in this CFG.')
+    foundry_merge_nodes.add_argument(
+        '--include-disjunct',
+        dest='include_disjunct',
+        default=False,
+        action='store_true',
+        help='When a cell is abstracted by node merging, add to the constraint a disjunction of the equality of the new variable with each of the original values.',
+    )
 
     foundry_section_edge = command_parser.add_parser(
         'foundry-section-edge',
