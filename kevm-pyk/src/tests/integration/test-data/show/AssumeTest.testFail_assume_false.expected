@@ -1,5 +1,5 @@
 
-┌─ 1 (root)
+┌─ 1 (root, init)
 │   k: #execute ~> CONTINUATION
 │   pc: 0
 │   callDepth: 0
@@ -55,7 +55,7 @@
 ┃      pc: 183
 ┃      callDepth: 0
 ┃      statusCode: EVMC_SUCCESS
-┃      src: /tmp/pytest-of-noah/pytest-18/popen-gw1/foundry0/lib/forge-std/src/Script.sol:8:9
+┃      src: /tmp/pytest-of-noah/pytest-29/foundry0/lib/forge-std/src/Script.sol:8:9
 ┃
 ┗━━┓ constraint: { true #Equals ( notBool VV0_a_114b9705:Int ==Int VV1_b_114b9705:Int ) }
    │
@@ -116,7 +116,7 @@
    │
    ┊  constraint: true
    ┊  subst: OMITTED SUBST
-   └─ 2 (leaf)
+   └─ 2 (leaf, target)
        k: #halt ~> CONTINUATION
        pc: PC_CELL_5d410f2a
        callDepth: CALLDEPTH_CELL_5d410f2a

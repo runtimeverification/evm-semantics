@@ -1,5 +1,5 @@
 
-┌─ 1 (root)
+┌─ 1 (root, init)
 │   k: #execute ~> CONTINUATION
 │   pc: 0
 │   callDepth: 0
@@ -73,7 +73,7 @@
    │
    ┊  constraint: true
    ┊  subst: OMITTED SUBST
-   └─ 2 (leaf)
+   └─ 2 (leaf, target)
        k: #halt ~> CONTINUATION
        pc: PC_CELL_5d410f2a
        callDepth: CALLDEPTH_CELL_5d410f2a
