@@ -470,9 +470,6 @@ def foundry_prove(
         for method in contract.methods
         if f'{contract.name}.{method.name}' not in all_tests
     ]
-
-    print([method.name for method in foundry.contracts['AssertTest'].methods])
-
     unfound_tests: list[str] = []
     tests = list(tests)
     if not tests:
