@@ -530,11 +530,12 @@ def foundry_prove(
             contract = foundry.contracts[contract_name]
             method = contract.method_by_name[method_name]
             proof = _method_to_apr_proof(
-                foundry,
-                contract,
-                method,
-                save_directory,
-                kcfg_explore,
+                foundry=foundry,
+                foundry_root=foundry_root,
+                contract=contract,
+                method=method,
+                save_directory=save_directory,
+                kcfg_explore=kcfg_explore,
                 reinit=(method.qualified_name in out_of_date_methods),
                 simplify_init=simplify_init,
                 bmc_depth=bmc_depth,
@@ -652,9 +653,8 @@ def foundry_to_dot(foundry_root: Path, test: str) -> None:
     foundry = Foundry(foundry_root)
     proofs_dir = foundry.out / 'apr_proofs'
     dump_dir = proofs_dir / 'dump'
-    contract_name, test_name = test.split('.')
-    proof_digest = foundry.proof_digest(contract_name, test_name)
-    proof = APRProof.read_proof(proof_digest, proofs_dir)
+    contract_name, _ = test.split('.')
+    proof = foundry_get_apr_proof(foundry_root=foundry_root, test=test)
 
     node_printer = foundry_node_printer(foundry, contract_name, proof)
     proof_show = APRProofShow(foundry.kevm, node_printer=node_printer)
@@ -674,8 +674,8 @@ def foundry_list(foundry_root: Path) -> list[str]:
     for method in sorted(all_methods):
         contract_name, test_name = method.split('.')
         proof_digest = foundry.proof_digest(contract_name, test_name)
-        if APRProof.proof_exists(proof_digest, apr_proofs_dir):
-            apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
+        if Proof.proof_exists(proof_digest, apr_proofs_dir):
+            apr_proof = foundry_get_apr_proof(foundry_root=foundry_root, test=method)
             lines.extend(apr_proof.summary)
             lines.append('')
     if len(lines) > 0:
@@ -685,12 +685,8 @@ def foundry_list(foundry_root: Path) -> list[str]:
 
 
 def foundry_remove_node(foundry_root: Path, test: str, node: NodeIdLike) -> None:
-    foundry = Foundry(foundry_root)
-    apr_proofs_dir = foundry.out / 'apr_proofs'
-    contract_name, test_name = test.split('.')
-    proof_digest = foundry.proof_digest(contract_name, test_name)
-    apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
-    node_ids = apr_proof.kcfg.prune(node)
+    apr_proof = foundry_get_apr_proof(foundry_root=foundry_root, test=test)
+    node_ids = apr_proof.kcfg.prune(node, keep_nodes=[apr_proof.target])
     _LOGGER.info(f'Pruned nodes: {node_ids}')
     apr_proof.write_proof()
 
@@ -709,10 +705,7 @@ def foundry_simplify_node(
 ) -> str:
     br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
     foundry = Foundry(foundry_root, bug_report=br)
-    apr_proofs_dir = foundry.out / 'apr_proofs'
-    contract_name, test_name = test.split('.')
-    proof_digest = foundry.proof_digest(contract_name, test_name)
-    apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
+    apr_proof = foundry_get_apr_proof(foundry_root=foundry_root, test=test, bug_report=bug_report)
     cterm = apr_proof.kcfg.node(node).cterm
     with KCFGExplore(
         foundry.kevm,
@@ -750,10 +743,7 @@ def foundry_merge_nodes(
     node_ids = [int(node) for node in node_ids]
     br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
     foundry = Foundry(foundry_root, bug_report=br)
-    proofs_dir = foundry.out / 'apr_proofs'
-    contract_name, test_name = test.split('.')
-    proof_digest = foundry.proof_digest(contract_name, test_name)
-    proof = Proof.read_proof(proof_digest, proofs_dir)
+    proof = foundry_get_apr_proof(foundry_root=foundry_root, test=test, bug_report=bug_report)
 
     if not isinstance(proof, APRProof):
         raise ValueError('Specified proof is not an APRProof.')
@@ -801,10 +791,7 @@ def foundry_step_node(
     br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
     foundry = Foundry(foundry_root, bug_report=br)
 
-    apr_proofs_dir = foundry.out / 'apr_proofs'
-    contract_name, test_name = test.split('.')
-    proof_digest = foundry.proof_digest(contract_name, test_name)
-    apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
+    apr_proof = foundry_get_apr_proof(foundry_root=foundry_root, test=test, bug_report=bug_report)
     with KCFGExplore(
         foundry.kevm,
         id=apr_proof.id,
@@ -816,6 +803,17 @@ def foundry_step_node(
         for _i in range(repeat):
             node = kcfg_explore.step(apr_proof.kcfg, node, apr_proof.logs, depth=depth)
             apr_proof.write_proof()
+
+
+def foundry_get_apr_proof(
+    foundry_root: Path,
+    test: str,
+    bug_report: bool = False,
+) -> APRProof:
+    proof = foundry_get_proof(foundry_root=foundry_root, test=test, bug_report=bug_report)
+    if not isinstance(proof, APRProof):
+        raise ValueError('Specified proof is not an APRProof.')
+    return proof
 
 
 def foundry_get_proof(
@@ -846,10 +844,7 @@ def foundry_section_edge(
 ) -> None:
     br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
     foundry = Foundry(foundry_root, bug_report=br)
-    apr_proofs_dir = foundry.out / 'apr_proofs'
-    contract_name, test_name = test.split('.')
-    proof_digest = foundry.proof_digest(contract_name, test_name)
-    apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
+    apr_proof = foundry_get_apr_proof(foundry_root=foundry_root, test=test, bug_report=bug_report)
     source_id, target_id = edge
     with KCFGExplore(
         foundry.kevm,
@@ -912,6 +907,7 @@ def _foundry_to_main_def(
 
 def _method_to_apr_proof(
     foundry: Foundry,
+    foundry_root: Path,
     contract: Contract,
     method: Contract.Method,
     save_directory: Path,
@@ -937,14 +933,18 @@ def _method_to_apr_proof(
     else:
         _LOGGER.info(f'Initializing KCFG for test: {test}')
 
-        setup_digest = None
+        setup_method = None
         if method_name != 'setUp' and 'setUp' in contract.method_by_name:
-            setup_digest = foundry.proof_digest(contract_name, 'setUp')
+            setup_method = f'{contract_name}.setUp'
             _LOGGER.info(f'Using setUp method for test: {test}')
 
         empty_config = foundry.kevm.definition.empty_config(GENERATED_TOP_CELL)
         kcfg, init_node_id, target_node_id = _method_to_cfg(
-            empty_config, contract, method, save_directory, init_state=setup_digest
+            empty_config=empty_config,
+            contract=contract,
+            method=method,
+            foundry_root=foundry_root,
+            init_state=setup_method,
         )
 
         _LOGGER.info(f'Expanding macros in initial state for test: {test}')
@@ -979,13 +979,18 @@ def _method_to_cfg(
     empty_config: KInner,
     contract: Contract,
     method: Contract.Method,
-    kcfgs_dir: Path,
+    foundry_root: Path,
     init_state: str | None = None,
 ) -> tuple[KCFG, NodeIdLike, NodeIdLike]:
     calldata = method.calldata_cell(contract)
     callvalue = method.callvalue_cell
     init_cterm = _init_cterm(
-        empty_config, contract.name, kcfgs_dir, calldata=calldata, callvalue=callvalue, init_state=init_state
+        empty_config=empty_config,
+        contract_name=contract.name,
+        foundry_root=foundry_root,
+        calldata=calldata,
+        callvalue=callvalue,
+        init_state=init_state,
     )
     is_test = method.name.startswith('test')
     failing = method.name.startswith('testFail')
@@ -998,8 +1003,8 @@ def _method_to_cfg(
     return cfg, init_node.id, target_node.id
 
 
-def get_final_accounts_cell(proof_digest: str, proof_dir: Path) -> tuple[KInner, Iterable[KInner]]:
-    apr_proof = APRProof.read_proof(proof_digest, proof_dir)
+def get_final_accounts_cell(test: str, foundry_root: Path) -> tuple[KInner, Iterable[KInner]]:
+    apr_proof = foundry_get_apr_proof(foundry_root=foundry_root, test=test)
     target = apr_proof.kcfg.node(apr_proof.target)
     cterm = single(apr_proof.kcfg.covers(target_id=target.id)).source.cterm
     acct_cell = cterm.cell('ACCOUNTS_CELL')
@@ -1011,7 +1016,7 @@ def get_final_accounts_cell(proof_digest: str, proof_dir: Path) -> tuple[KInner,
 def _init_cterm(
     empty_config: KInner,
     contract_name: str,
-    kcfgs_dir: Path,
+    foundry_root: Path,
     *,
     calldata: KInner | None = None,
     callvalue: KInner | None = None,
@@ -1076,7 +1081,7 @@ def _init_cterm(
 
     constraints = None
     if init_state:
-        accts, constraints = get_final_accounts_cell(init_state, kcfgs_dir)
+        accts, constraints = get_final_accounts_cell(foundry_root=foundry_root, test=init_state)
         init_subst['ACCOUNTS_CELL'] = accts
 
     if calldata is not None:
