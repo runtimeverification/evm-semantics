@@ -119,6 +119,7 @@ def kevm_prove(
         assert same_loop, f'BMC proof requires same_loop heuristic, but {same_loop} was supplied'
         prover = APRBMCProver(
             proof,
+            kcfg_explore,
             is_terminal=is_terminal,
             extract_branches=extract_branches,
             same_loop=same_loop,
@@ -126,16 +127,15 @@ def kevm_prove(
         )
     elif type(proof) is APRProof:
         prover = APRProver(
-            proof, is_terminal=is_terminal, extract_branches=extract_branches, abstract_node=abstract_node
+            proof, kcfg_explore, is_terminal=is_terminal, extract_branches=extract_branches, abstract_node=abstract_node
         )
     elif type(proof) is EqualityProof:
-        prover = EqualityProver(proof)
+        prover = EqualityProver(kcfg_explore=kcfg_explore, proof=proof)
     else:
         raise ValueError(f'Do not know how to build prover for proof: {proof}')
     try:
         if type(prover) is APRBMCProver or type(prover) is APRProver:
             prover.advance_proof(
-                kcfg_explore,
                 max_iterations=max_iterations,
                 execute_depth=max_depth,
                 terminal_rules=terminal_rules,
@@ -151,7 +151,7 @@ def kevm_prove(
                 _LOGGER.error(f'Proof failed: {proof.id}')
                 return False
         elif type(prover) is EqualityProver:
-            prover.advance_proof(kcfg_explore)
+            prover.advance_proof()
             if prover.proof.status == ProofStatus.PASSED:
                 _LOGGER.info(f'Proof passed: {prover.proof.id}')
                 return True
