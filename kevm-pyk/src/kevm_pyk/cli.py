@@ -340,4 +340,10 @@ class KEVMCLIArgs(KCLIArgs):
         args.add_argument(
             '--to-module', dest='to_module', default=False, action='store_true', help='Output edges as a K module.'
         )
+        args.add_argument(
+            '--pending', dest='pending', default=False, action='store_true', help='Also display pending nodes'
+        )
+        args.add_argument(
+            '--failing', dest='failing', default=False, action='store_true', help='Also display failing nodes'
+        )
         return args

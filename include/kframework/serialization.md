@@ -23,7 +23,7 @@ Address/Hash Helpers
 ```k
     syntax Int ::= keccak ( Bytes ) [function, total, smtlib(smt_keccak)]
  // -------------------------------------------------------------------------
-    rule [keccak]: keccak(WS) => #parseHexWord(Keccak256(#unparseByteStack(WS)))
+    rule [keccak]: keccak(WS) => #parseHexWord(Keccak256(#unparseByteStack(WS))) [concrete]
 ```
 
 -   `#newAddr` computes the address of a new account given the address and nonce of the creating account.
@@ -34,8 +34,8 @@ Address/Hash Helpers
     syntax Int ::= #newAddr ( Int , Int )         [function]
                  | #newAddr ( Int , Int , Bytes ) [function, klabel(#newAddrCreate2)]
  // ---------------------------------------------------------------------------------
-    rule [#newAddr]:        #newAddr(ACCT, NONCE) => #addr(#parseHexWord(Keccak256(#rlpEncode([#addrBytes(ACCT), NONCE]))))
-    rule [#newAddrCreate2]: #newAddr(ACCT, SALT, INITCODE) => #addr(#parseHexWord(Keccak256("\xff" +String #unparseByteStack(#addrBytes(ACCT)) +String #unparseByteStack(#wordBytes(SALT)) +String #unparseByteStack(#parseHexBytes(Keccak256(#unparseByteStack(INITCODE)))))))
+    rule [#newAddr]:        #newAddr(ACCT, NONCE) => #addr(#parseHexWord(Keccak256(#rlpEncode([#addrBytes(ACCT), NONCE]))))                                                                                                                                                     [concrete]
+    rule [#newAddrCreate2]: #newAddr(ACCT, SALT, INITCODE) => #addr(#parseHexWord(Keccak256("\xff" +String #unparseByteStack(#addrBytes(ACCT)) +String #unparseByteStack(#wordBytes(SALT)) +String #unparseByteStack(#parseHexBytes(Keccak256(#unparseByteStack(INITCODE))))))) [concrete]
 
     syntax Account ::= #sender ( TxData , Int , Bytes , Bytes )   [function, klabel(#senderTxData)]
                      | #sender ( String , Int , String , String ) [function, klabel(#senderAux)   ]
@@ -55,7 +55,7 @@ Address/Hash Helpers
 
     syntax Int ::= #addrFromPrivateKey ( String ) [function, klabel(addrFromPrivateKey)]
  // ------------------------------------------------------------------------------------
-    rule [addrFromPrivateKey]: #addrFromPrivateKey ( KEY ) => #addr( #parseHexWord( Keccak256 ( Hex2Raw( ECDSAPubKey( Hex2Raw( KEY ) ) ) ) ) )
+    rule [addrFromPrivateKey]: #addrFromPrivateKey ( KEY ) => #addr( #parseHexWord( Keccak256 ( Hex2Raw( ECDSAPubKey( Hex2Raw( KEY ) ) ) ) ) ) [concrete]
 ```
 
 -   `#blockHeaderHash` computes the hash of a block header given all the block data.
