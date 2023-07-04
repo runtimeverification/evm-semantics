@@ -8,7 +8,7 @@ from pyk.proof.reachability import APRProof
 from pyk.utils import run_process
 
 from kevm_pyk import config
-from kevm_pyk.foundry import foundry_get_proof, foundry_kompile, foundry_merge_nodes, foundry_prove, foundry_show
+from kevm_pyk.foundry import foundry_get_proof, foundry_kompile, foundry_merge_nodes, foundry_prove, foundry_show, foundry_step_node
 
 from .utils import TEST_DATA_DIR
 
@@ -187,9 +187,17 @@ def test_foundry_merge_nodes(foundry_root: Path, use_booster: bool) -> None:
         max_iterations=2,
         use_booster=use_booster,
     )
-    check_pending(foundry_root, test_id, [3, 4])
-    foundry_merge_nodes(foundry_root=foundry_root, test=test_id, node_ids=[3, 4])
-    check_pending(foundry_root, test_id, [5])
+    check_pending(foundry_root, test_id, [4, 5])
+
+    foundry_step_node(foundry_root, test_id, node=4, depth=49)
+    foundry_step_node(foundry_root, test_id, node=5, depth=50)
+
+    check_pending(foundry_root, test_id, [6, 7])
+
+    foundry_merge_nodes(foundry_root=foundry_root, test=test_id, node_ids=[6, 7])
+
+    check_pending(foundry_root, test_id, [8])
+
     prove_res = foundry_prove(
         foundry_root,
         tests=[test_id],
