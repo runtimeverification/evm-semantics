@@ -753,7 +753,10 @@ def foundry_merge_nodes(
     proofs_dir = foundry.out / 'apr_proofs'
     contract_name, test_name = test.split('.')
     proof_digest = foundry.proof_digest(contract_name, test_name)
-    proof = APRProof.read_proof(proof_digest, proofs_dir)
+    proof = Proof.read_proof(proof_digest, proofs_dir)
+
+    if not isinstance(proof, APRProof):
+        raise ValueError('Specified proof is not an APRProof.')
 
     if len(list(node_ids)) < 2:
         raise ValueError(f'Must supply at least 2 nodes to merge, got: {node_ids}')
@@ -815,19 +818,19 @@ def foundry_step_node(
             apr_proof.write_proof()
 
 
-def foundry_get_apr_proof(
+def foundry_get_proof(
     foundry_root: Path,
     test: str,
     bug_report: bool = False,
-) -> APRProof:
+) -> Proof:
     br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
     foundry = Foundry(foundry_root, bug_report=br)
 
-    apr_proofs_dir = foundry.out / 'apr_proofs'
+    proofs_dir = foundry.out / 'apr_proofs'
     contract_name, test_name = test.split('.')
     proof_digest = foundry.proof_digest(contract_name, test_name)
-    apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
-    return apr_proof
+    proof = Proof.read_proof(proof_digest, proofs_dir)
+    return proof
 
 
 def foundry_section_edge(

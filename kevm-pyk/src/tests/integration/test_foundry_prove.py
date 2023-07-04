@@ -4,10 +4,11 @@ from distutils.dir_util import copy_tree
 from typing import TYPE_CHECKING
 
 import pytest
+from pyk.proof.reachability import APRProof
 from pyk.utils import run_process
 
 from kevm_pyk import config
-from kevm_pyk.foundry import foundry_get_apr_proof, foundry_kompile, foundry_merge_nodes, foundry_prove, foundry_show
+from kevm_pyk.foundry import foundry_get_proof, foundry_kompile, foundry_merge_nodes, foundry_prove, foundry_show
 
 from .utils import TEST_DATA_DIR
 
@@ -198,8 +199,9 @@ def test_foundry_merge_nodes(foundry_root: Path, use_booster: bool) -> None:
 
 
 def check_pending(foundry_root: Path, test: str, pending: list[int]) -> None:
-    apr_proof = foundry_get_apr_proof(foundry_root, test=test)
-    assert [node.id for node in apr_proof.pending] == pending
+    proof = foundry_get_proof(foundry_root, test=test)
+    assert isinstance(proof, APRProof)
+    assert [node.id for node in proof.pending] == pending
 
 
 def assert_pass(test_id: str, prove_res: dict[str, tuple[bool, list[str] | None]]) -> None:
