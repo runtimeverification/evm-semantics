@@ -851,8 +851,8 @@ def foundry_section_edge(
         smt_retry_limit=smt_retry_limit,
         trace_rewrites=trace_rewrites,
     ) as kcfg_explore:
-        kcfg, _ = kcfg_explore.section_edge(
-            apr_proof.kcfg, source_id=source_id, target_id=target_id, logs=apr_proof.logs, sections=sections
+        kcfg_explore.section_edge(
+            apr_proof.kcfg, source_id=int(source_id), target_id=int(target_id), logs=apr_proof.logs, sections=sections
         )
     apr_proof.write_proof()
 

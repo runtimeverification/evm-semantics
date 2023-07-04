@@ -724,6 +724,7 @@ def exec_foundry_section_edge(
     trace_rewrites: bool = False,
     **kwargs: Any,
 ) -> None:
+    print(edge)
     foundry_section_edge(
         foundry_root=foundry_root,
         test=test,
