@@ -8,7 +8,14 @@ from pyk.proof.reachability import APRProof
 from pyk.utils import run_process
 
 from kevm_pyk import config
-from kevm_pyk.foundry import foundry_get_proof, foundry_kompile, foundry_merge_nodes, foundry_prove, foundry_show, foundry_step_node
+from kevm_pyk.foundry import (
+    foundry_get_proof,
+    foundry_kompile,
+    foundry_merge_nodes,
+    foundry_prove,
+    foundry_show,
+    foundry_step_node,
+)
 
 from .utils import TEST_DATA_DIR
 
