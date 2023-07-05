@@ -1,5 +1,5 @@
 
-┌─ 1 (root)
+┌─ 1 (root, init)
 │   k: #execute ~> CONTINUATION:K
 │   pc: 0
 │   callDepth: 0
@@ -84,14 +84,14 @@
 │   statusCode: EVMC_REVERT
 │
 │  (2 steps)
-└─ 8 (leaf)
+└─ 8 (leaf, terminal)
     k: #halt ~> CONTINUATION:K
     pc: 808
     callDepth: 0
     statusCode: EVMC_REVERT
 
 
-┌─ 2 (root, leaf)
+┌─ 2 (root, leaf, target)
 │   k: #halt ~> CONTINUATION:K
 │   pc: PC_CELL_5d410f2a:Int
 │   callDepth: CALLDEPTH_CELL_5d410f2a:Int
@@ -402,7 +402,7 @@ Node 8:
 
 
 
-module SUMMARY-GASTEST.TESTINFINITEGAS:34E6B1028F6EE2EFAF35EF4A4D53D77E0E7054DFA0EBDE65D23301D55F13F7FD
+module SUMMARY-GASTEST.TESTINFINITEGAS:748F1A6981A995F0555B632334623036E5E6B6922ACE9EAED8280DB5A9F35C74
     
     
     rule [BASIC-BLOCK-1-TO-3]: <foundry>
