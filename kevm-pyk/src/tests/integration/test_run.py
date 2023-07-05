@@ -31,7 +31,7 @@ def test_run(gst_file: Path) -> None:
         gst_data = json.load(f)
 
     # When
-    pattern = interpret(gst_data, 'MERGE', 'NORMAL', 1, check=False)
+    pattern = interpret(gst_data, 'SHANGHAI', 'NORMAL', 1, check=False)
     actual = kore_print(pattern, definition_dir=config.LLVM_DIR, output=PrintOutput.PRETTY)
 
     # Then
