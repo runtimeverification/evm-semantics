@@ -266,6 +266,11 @@ class Foundry:
             raise RuntimeError(f'Found {test_sigs} matching tests, must specify one')
         return test_sigs[0]
 
+    def unique_sig(self, test: str) -> tuple[str, str]:
+        contract_name = test.split('.')[0]
+        test_sig = self.matching_sig(test).split('.')[1]
+        return (contract_name, test_sig)
+
     @staticmethod
     def success(s: KInner, dst: KInner, r: KInner, c: KInner, e1: KInner, e2: KInner) -> KApply:
         return KApply('foundry_success', [s, dst, r, c, e1, e2])
@@ -657,12 +662,9 @@ def foundry_show(
     failing: bool = False,
     failure_info: bool = False,
 ) -> str:
-    contract_name = test.split('.')[0]
     foundry = Foundry(foundry_root)
     apr_proofs_dir = foundry.out / 'apr_proofs'
-
-    contract_name = test.split('.')[0]
-    test_sig = foundry.matching_sig(test).split('.')[1]
+    (contract_name, test_sig) = foundry.unique_sig(test)
     proof_digest = foundry.proof_digest(contract_name, test_sig)
     proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
     assert isinstance(proof, APRProof)
@@ -744,8 +746,7 @@ def foundry_list(foundry_root: Path) -> list[str]:
 def foundry_remove_node(foundry_root: Path, test: str, node: NodeIdLike) -> None:
     foundry = Foundry(foundry_root)
     apr_proofs_dir = foundry.out / 'apr_proofs'
-    contract_name = test.split('.')[0]
-    test_sig = foundry.matching_sig(test).split('.')[1]
+    (contract_name, test_sig) = foundry.unique_sig(test)
     proof_digest = foundry.proof_digest(contract_name, test_sig)
     apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
     node_ids = apr_proof.kcfg.prune(node)
@@ -768,8 +769,7 @@ def foundry_simplify_node(
     br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
     foundry = Foundry(foundry_root, bug_report=br)
     apr_proofs_dir = foundry.out / 'apr_proofs'
-    contract_name = test.split('.')[0]
-    test_sig = foundry.matching_sig(test).split('.')[1]
+    (contract_name, test_sig) = foundry.unique_sig(test)
     proof_digest = foundry.proof_digest(contract_name, test_sig)
     apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
     cterm = apr_proof.kcfg.node(node).cterm
@@ -809,8 +809,7 @@ def foundry_step_node(
     foundry = Foundry(foundry_root, bug_report=br)
 
     apr_proofs_dir = foundry.out / 'apr_proofs'
-    contract_name = test.split('.')[0]
-    test_sig = foundry.matching_sig(test).split('.')[1]
+    (contract_name, test_sig) = foundry.unique_sig(test)
     proof_digest = foundry.proof_digest(contract_name, test_sig)
     apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
     with KCFGExplore(
@@ -840,8 +839,7 @@ def foundry_section_edge(
     br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
     foundry = Foundry(foundry_root, bug_report=br)
     apr_proofs_dir = foundry.out / 'apr_proofs'
-    contract_name = test.split('.')[0]
-    test_sig = foundry.matching_sig(test).split('.')[1]
+    (contract_name, test_sig) = foundry.unique_sig(test)
     proof_digest = foundry.proof_digest(contract_name, test_sig)
     apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
     source_id, target_id = edge
