@@ -228,6 +228,14 @@ Node 5:
           .Set
         </storageSlotSet>
       </whitelist>
+      <recordAccess>
+        <isRecordActive>
+          false
+        </isRecordActive>
+        <records>
+          .RecordCellMap
+        </records>
+      </recordAccess>
     </cheatcodes>
   </foundry>
   ...
@@ -439,6 +447,14 @@ module SUMMARY-ASSERTTEST.TESTFAIL-ASSERT-TRUE:B64469810687DD4D52CB523504A17EF06
                  .Set
                </storageSlotSet>
              </whitelist>
+             <recordAccess>
+               <isRecordActive>
+                 false
+               </isRecordActive>
+               <records>
+                 .RecordCellMap
+               </records>
+             </recordAccess>
            </cheatcodes>
          </foundry>
       requires ( 0 <=Int CALLER_ID
@@ -659,6 +675,14 @@ module SUMMARY-ASSERTTEST.TESTFAIL-ASSERT-TRUE:B64469810687DD4D52CB523504A17EF06
                  .Set
                </storageSlotSet>
              </whitelist>
+             <recordAccess>
+               <isRecordActive>
+                 false
+               </isRecordActive>
+               <records>
+                 .RecordCellMap
+               </records>
+             </recordAccess>
            </cheatcodes>
          </foundry>
       requires ( 0 <=Int CALLER_ID:Int
@@ -867,6 +891,14 @@ module SUMMARY-ASSERTTEST.TESTFAIL-ASSERT-TRUE:B64469810687DD4D52CB523504A17EF06
                  .Set
                </storageSlotSet>
              </whitelist>
+             <recordAccess>
+               <isRecordActive>
+                 false
+               </isRecordActive>
+               <records>
+                 .RecordCellMap
+               </records>
+             </recordAccess>
            </cheatcodes>
          </foundry>
       requires ( 0 <=Int CALLER_ID:Int

@@ -276,6 +276,14 @@ module SUMMARY-ASSUMETEST.TESTFAIL-ASSUME-TRUE:BD3B87154C1D1D98438B2FC4DD0C0BC23
                  .Set
                </storageSlotSet>
              </whitelist>
+             <recordAccess>
+               <isRecordActive>
+                 false
+               </isRecordActive>
+               <records>
+                 .RecordCellMap
+               </records>
+             </recordAccess>
            </cheatcodes>
          </foundry>
       requires ( 0 <=Int VV0_a_114b9705:Int
@@ -498,6 +506,14 @@ module SUMMARY-ASSUMETEST.TESTFAIL-ASSUME-TRUE:BD3B87154C1D1D98438B2FC4DD0C0BC23
                  .Set
                </storageSlotSet>
              </whitelist>
+             <recordAccess>
+               <isRecordActive>
+                 false
+               </isRecordActive>
+               <records>
+                 .RecordCellMap
+               </records>
+             </recordAccess>
            </cheatcodes>
          </foundry>
       requires ( 0 <=Int CALLER_ID:Int
@@ -713,6 +729,14 @@ module SUMMARY-ASSUMETEST.TESTFAIL-ASSUME-TRUE:BD3B87154C1D1D98438B2FC4DD0C0BC23
                  .Set
                </storageSlotSet>
              </whitelist>
+             <recordAccess>
+               <isRecordActive>
+                 false
+               </isRecordActive>
+               <records>
+                 .RecordCellMap
+               </records>
+             </recordAccess>
            </cheatcodes>
          </foundry>
       requires ( 0 <=Int CALLER_ID:Int
@@ -932,6 +956,14 @@ module SUMMARY-ASSUMETEST.TESTFAIL-ASSUME-TRUE:BD3B87154C1D1D98438B2FC4DD0C0BC23
                  .Set
                </storageSlotSet>
              </whitelist>
+             <recordAccess>
+               <isRecordActive>
+                 false
+               </isRecordActive>
+               <records>
+                 .RecordCellMap
+               </records>
+             </recordAccess>
            </cheatcodes>
          </foundry>
       requires ( 0 <=Int CALLER_ID:Int
@@ -1149,6 +1181,14 @@ module SUMMARY-ASSUMETEST.TESTFAIL-ASSUME-TRUE:BD3B87154C1D1D98438B2FC4DD0C0BC23
                  .Set
                </storageSlotSet>
              </whitelist>
+             <recordAccess>
+               <isRecordActive>
+                 false
+               </isRecordActive>
+               <records>
+                 .RecordCellMap
+               </records>
+             </recordAccess>
            </cheatcodes>
          </foundry>
       requires ( 0 <=Int CALLER_ID:Int
@@ -1364,6 +1404,14 @@ module SUMMARY-ASSUMETEST.TESTFAIL-ASSUME-TRUE:BD3B87154C1D1D98438B2FC4DD0C0BC23
                  .Set
                </storageSlotSet>
              </whitelist>
+             <recordAccess>
+               <isRecordActive>
+                 false
+               </isRecordActive>
+               <records>
+                 .RecordCellMap
+               </records>
+             </recordAccess>
            </cheatcodes>
          </foundry>
       requires ( 0 <=Int CALLER_ID:Int
@@ -1580,6 +1628,14 @@ module SUMMARY-ASSUMETEST.TESTFAIL-ASSUME-TRUE:BD3B87154C1D1D98438B2FC4DD0C0BC23
                  .Set
                </storageSlotSet>
              </whitelist>
+             <recordAccess>
+               <isRecordActive>
+                 false
+               </isRecordActive>
+               <records>
+                 .RecordCellMap
+               </records>
+             </recordAccess>
            </cheatcodes>
          </foundry>
       requires ( 0 <=Int CALLER_ID:Int
@@ -1796,6 +1852,14 @@ module SUMMARY-ASSUMETEST.TESTFAIL-ASSUME-TRUE:BD3B87154C1D1D98438B2FC4DD0C0BC23
                  .Set
                </storageSlotSet>
              </whitelist>
+             <recordAccess>
+               <isRecordActive>
+                 false
+               </isRecordActive>
+               <records>
+                 .RecordCellMap
+               </records>
+             </recordAccess>
            </cheatcodes>
          </foundry>
       requires ( 0 <=Int CALLER_ID:Int
@@ -2012,6 +2076,14 @@ module SUMMARY-ASSUMETEST.TESTFAIL-ASSUME-TRUE:BD3B87154C1D1D98438B2FC4DD0C0BC23
                  .Set
                </storageSlotSet>
              </whitelist>
+             <recordAccess>
+               <isRecordActive>
+                 false
+               </isRecordActive>
+               <records>
+                 .RecordCellMap
+               </records>
+             </recordAccess>
            </cheatcodes>
          </foundry>
       requires ( 0 <=Int CALLER_ID:Int

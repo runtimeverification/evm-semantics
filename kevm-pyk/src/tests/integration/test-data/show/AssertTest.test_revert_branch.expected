@@ -275,6 +275,14 @@ Node 10:
           .Set
         </storageSlotSet>
       </whitelist>
+      <recordAccess>
+        <isRecordActive>
+          false
+        </isRecordActive>
+        <records>
+          .RecordCellMap
+        </records>
+      </recordAccess>
     </cheatcodes>
   </foundry>
   ...
@@ -488,6 +496,14 @@ module SUMMARY-ASSERTTEST.TEST-REVERT-BRANCH:794968430243366DC0B838DD3DC47D2AD99
                  .Set
                </storageSlotSet>
              </whitelist>
+             <recordAccess>
+               <isRecordActive>
+                 false
+               </isRecordActive>
+               <records>
+                 .RecordCellMap
+               </records>
+             </recordAccess>
            </cheatcodes>
          </foundry>
       requires ( 0 <=Int VV0_x_114b9705:Int
@@ -710,6 +726,14 @@ module SUMMARY-ASSERTTEST.TEST-REVERT-BRANCH:794968430243366DC0B838DD3DC47D2AD99
                  .Set
                </storageSlotSet>
              </whitelist>
+             <recordAccess>
+               <isRecordActive>
+                 false
+               </isRecordActive>
+               <records>
+                 .RecordCellMap
+               </records>
+             </recordAccess>
            </cheatcodes>
          </foundry>
       requires ( 0 <=Int CALLER_ID:Int
@@ -921,6 +945,14 @@ module SUMMARY-ASSERTTEST.TEST-REVERT-BRANCH:794968430243366DC0B838DD3DC47D2AD99
                  .Set
                </storageSlotSet>
              </whitelist>
+             <recordAccess>
+               <isRecordActive>
+                 false
+               </isRecordActive>
+               <records>
+                 .RecordCellMap
+               </records>
+             </recordAccess>
            </cheatcodes>
          </foundry>
       requires ( 0 <=Int CALLER_ID:Int
@@ -1135,6 +1167,14 @@ module SUMMARY-ASSERTTEST.TEST-REVERT-BRANCH:794968430243366DC0B838DD3DC47D2AD99
                  .Set
                </storageSlotSet>
              </whitelist>
+             <recordAccess>
+               <isRecordActive>
+                 false
+               </isRecordActive>
+               <records>
+                 .RecordCellMap
+               </records>
+             </recordAccess>
            </cheatcodes>
          </foundry>
       requires ( 0 <=Int CALLER_ID:Int
@@ -1348,6 +1388,14 @@ module SUMMARY-ASSERTTEST.TEST-REVERT-BRANCH:794968430243366DC0B838DD3DC47D2AD99
                  .Set
                </storageSlotSet>
              </whitelist>
+             <recordAccess>
+               <isRecordActive>
+                 false
+               </isRecordActive>
+               <records>
+                 .RecordCellMap
+               </records>
+             </recordAccess>
            </cheatcodes>
          </foundry>
       requires ( 0 <=Int CALLER_ID:Int
@@ -1561,6 +1609,14 @@ module SUMMARY-ASSERTTEST.TEST-REVERT-BRANCH:794968430243366DC0B838DD3DC47D2AD99
                  .Set
                </storageSlotSet>
              </whitelist>
+             <recordAccess>
+               <isRecordActive>
+                 false
+               </isRecordActive>
+               <records>
+                 .RecordCellMap
+               </records>
+             </recordAccess>
            </cheatcodes>
          </foundry>
       requires ( 0 <=Int CALLER_ID:Int
@@ -1774,6 +1830,14 @@ module SUMMARY-ASSERTTEST.TEST-REVERT-BRANCH:794968430243366DC0B838DD3DC47D2AD99
                  .Set
                </storageSlotSet>
              </whitelist>
+             <recordAccess>
+               <isRecordActive>
+                 false
+               </isRecordActive>
+               <records>
+                 .RecordCellMap
+               </records>
+             </recordAccess>
            </cheatcodes>
          </foundry>
       requires ( 0 <=Int CALLER_ID:Int

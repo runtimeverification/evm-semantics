@@ -273,6 +273,14 @@ Node 11:
           .Set
         </storageSlotSet>
       </whitelist>
+      <recordAccess>
+        <isRecordActive>
+          false
+        </isRecordActive>
+        <records>
+          .RecordCellMap
+        </records>
+      </recordAccess>
     </cheatcodes>
   </foundry>
   ...
@@ -489,6 +497,14 @@ module SUMMARY-ASSUMETEST.TEST-ASSUME-FALSE:1867DED36016A4FCE6DE5C88E777C7B9A5C4
                  .Set
                </storageSlotSet>
              </whitelist>
+             <recordAccess>
+               <isRecordActive>
+                 false
+               </isRecordActive>
+               <records>
+                 .RecordCellMap
+               </records>
+             </recordAccess>
            </cheatcodes>
          </foundry>
       requires ( 0 <=Int VV0_a_114b9705:Int
@@ -711,6 +727,14 @@ module SUMMARY-ASSUMETEST.TEST-ASSUME-FALSE:1867DED36016A4FCE6DE5C88E777C7B9A5C4
                  .Set
                </storageSlotSet>
              </whitelist>
+             <recordAccess>
+               <isRecordActive>
+                 false
+               </isRecordActive>
+               <records>
+                 .RecordCellMap
+               </records>
+             </recordAccess>
            </cheatcodes>
          </foundry>
       requires ( 0 <=Int CALLER_ID:Int
@@ -926,6 +950,14 @@ module SUMMARY-ASSUMETEST.TEST-ASSUME-FALSE:1867DED36016A4FCE6DE5C88E777C7B9A5C4
                  .Set
                </storageSlotSet>
              </whitelist>
+             <recordAccess>
+               <isRecordActive>
+                 false
+               </isRecordActive>
+               <records>
+                 .RecordCellMap
+               </records>
+             </recordAccess>
            </cheatcodes>
          </foundry>
       requires ( 0 <=Int CALLER_ID:Int
@@ -1145,6 +1177,14 @@ module SUMMARY-ASSUMETEST.TEST-ASSUME-FALSE:1867DED36016A4FCE6DE5C88E777C7B9A5C4
                  .Set
                </storageSlotSet>
              </whitelist>
+             <recordAccess>
+               <isRecordActive>
+                 false
+               </isRecordActive>
+               <records>
+                 .RecordCellMap
+               </records>
+             </recordAccess>
            </cheatcodes>
          </foundry>
       requires ( 0 <=Int CALLER_ID:Int
@@ -1362,6 +1402,14 @@ module SUMMARY-ASSUMETEST.TEST-ASSUME-FALSE:1867DED36016A4FCE6DE5C88E777C7B9A5C4
                  .Set
                </storageSlotSet>
              </whitelist>
+             <recordAccess>
+               <isRecordActive>
+                 false
+               </isRecordActive>
+               <records>
+                 .RecordCellMap
+               </records>
+             </recordAccess>
            </cheatcodes>
          </foundry>
       requires ( 0 <=Int CALLER_ID:Int
@@ -1577,6 +1625,14 @@ module SUMMARY-ASSUMETEST.TEST-ASSUME-FALSE:1867DED36016A4FCE6DE5C88E777C7B9A5C4
                  .Set
                </storageSlotSet>
              </whitelist>
+             <recordAccess>
+               <isRecordActive>
+                 false
+               </isRecordActive>
+               <records>
+                 .RecordCellMap
+               </records>
+             </recordAccess>
            </cheatcodes>
          </foundry>
       requires ( 0 <=Int CALLER_ID:Int
@@ -1793,6 +1849,14 @@ module SUMMARY-ASSUMETEST.TEST-ASSUME-FALSE:1867DED36016A4FCE6DE5C88E777C7B9A5C4
                  .Set
                </storageSlotSet>
              </whitelist>
+             <recordAccess>
+               <isRecordActive>
+                 false
+               </isRecordActive>
+               <records>
+                 .RecordCellMap
+               </records>
+             </recordAccess>
            </cheatcodes>
          </foundry>
       requires ( 0 <=Int CALLER_ID:Int
@@ -2009,6 +2073,14 @@ module SUMMARY-ASSUMETEST.TEST-ASSUME-FALSE:1867DED36016A4FCE6DE5C88E777C7B9A5C4
                  .Set
                </storageSlotSet>
              </whitelist>
+             <recordAccess>
+               <isRecordActive>
+                 false
+               </isRecordActive>
+               <records>
+                 .RecordCellMap
+               </records>
+             </recordAccess>
            </cheatcodes>
          </foundry>
       requires ( 0 <=Int CALLER_ID:Int
@@ -2225,6 +2297,14 @@ module SUMMARY-ASSUMETEST.TEST-ASSUME-FALSE:1867DED36016A4FCE6DE5C88E777C7B9A5C4
                  .Set
                </storageSlotSet>
              </whitelist>
+             <recordAccess>
+               <isRecordActive>
+                 false
+               </isRecordActive>
+               <records>
+                 .RecordCellMap
+               </records>
+             </recordAccess>
            </cheatcodes>
          </foundry>
       requires ( 0 <=Int CALLER_ID:Int

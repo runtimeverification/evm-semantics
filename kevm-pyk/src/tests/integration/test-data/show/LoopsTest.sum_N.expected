@@ -301,6 +301,14 @@ module SUMMARY-LOOPSTEST.SUM-N:062CC914DAA13A8EAF189DADDC9178CE923938A59F8855C3A
                  .Set
                </storageSlotSet>
              </whitelist>
+             <recordAccess>
+               <isRecordActive>
+                 false
+               </isRecordActive>
+               <records>
+                 .RecordCellMap
+               </records>
+             </recordAccess>
            </cheatcodes>
          </foundry>
       requires ( 0 <=Int VV0_n_114b9705:Int
@@ -521,6 +529,14 @@ module SUMMARY-LOOPSTEST.SUM-N:062CC914DAA13A8EAF189DADDC9178CE923938A59F8855C3A
                  .Set
                </storageSlotSet>
              </whitelist>
+             <recordAccess>
+               <isRecordActive>
+                 false
+               </isRecordActive>
+               <records>
+                 .RecordCellMap
+               </records>
+             </recordAccess>
            </cheatcodes>
          </foundry>
       requires ( 0 <=Int CALLER_ID:Int
@@ -733,6 +749,14 @@ module SUMMARY-LOOPSTEST.SUM-N:062CC914DAA13A8EAF189DADDC9178CE923938A59F8855C3A
                  .Set
                </storageSlotSet>
              </whitelist>
+             <recordAccess>
+               <isRecordActive>
+                 false
+               </isRecordActive>
+               <records>
+                 .RecordCellMap
+               </records>
+             </recordAccess>
            </cheatcodes>
          </foundry>
       requires ( 0 <=Int CALLER_ID:Int
@@ -944,6 +968,14 @@ module SUMMARY-LOOPSTEST.SUM-N:062CC914DAA13A8EAF189DADDC9178CE923938A59F8855C3A
                  .Set
                </storageSlotSet>
              </whitelist>
+             <recordAccess>
+               <isRecordActive>
+                 false
+               </isRecordActive>
+               <records>
+                 .RecordCellMap
+               </records>
+             </recordAccess>
            </cheatcodes>
          </foundry>
       requires ( 0 <=Int CALLER_ID:Int
@@ -1157,6 +1189,14 @@ module SUMMARY-LOOPSTEST.SUM-N:062CC914DAA13A8EAF189DADDC9178CE923938A59F8855C3A
                  .Set
                </storageSlotSet>
              </whitelist>
+             <recordAccess>
+               <isRecordActive>
+                 false
+               </isRecordActive>
+               <records>
+                 .RecordCellMap
+               </records>
+             </recordAccess>
            </cheatcodes>
          </foundry>
       requires ( 0 <=Int CALLER_ID:Int
@@ -1398,6 +1438,14 @@ module SUMMARY-LOOPSTEST.SUM-N:062CC914DAA13A8EAF189DADDC9178CE923938A59F8855C3A
                  .Set
                </storageSlotSet>
              </whitelist>
+             <recordAccess>
+               <isRecordActive>
+                 false
+               </isRecordActive>
+               <records>
+                 .RecordCellMap
+               </records>
+             </recordAccess>
            </cheatcodes>
          </foundry>
       requires ( _VV0_n_114b9705 ==K 0
@@ -1609,6 +1657,14 @@ module SUMMARY-LOOPSTEST.SUM-N:062CC914DAA13A8EAF189DADDC9178CE923938A59F8855C3A
                  .Set
                </storageSlotSet>
              </whitelist>
+             <recordAccess>
+               <isRecordActive>
+                 false
+               </isRecordActive>
+               <records>
+                 .RecordCellMap
+               </records>
+             </recordAccess>
            </cheatcodes>
          </foundry>
       requires ( VV0_n_114b9705:Int =/=K 0
@@ -1848,6 +1904,14 @@ module SUMMARY-LOOPSTEST.SUM-N:062CC914DAA13A8EAF189DADDC9178CE923938A59F8855C3A
                  .Set
                </storageSlotSet>
              </whitelist>
+             <recordAccess>
+               <isRecordActive>
+                 false
+               </isRecordActive>
+               <records>
+                 .RecordCellMap
+               </records>
+             </recordAccess>
            </cheatcodes>
          </foundry>
       requires ( _VV0_n_114b9705 ==K 0
@@ -2059,6 +2123,14 @@ module SUMMARY-LOOPSTEST.SUM-N:062CC914DAA13A8EAF189DADDC9178CE923938A59F8855C3A
                  .Set
                </storageSlotSet>
              </whitelist>
+             <recordAccess>
+               <isRecordActive>
+                 false
+               </isRecordActive>
+               <records>
+                 .RecordCellMap
+               </records>
+             </recordAccess>
            </cheatcodes>
          </foundry>
       requires ( VV0_n_114b9705:Int =/=K 0
