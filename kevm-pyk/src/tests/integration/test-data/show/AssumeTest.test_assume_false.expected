@@ -1,5 +1,5 @@
 
-┌─ 1 (root)
+┌─ 1 (root, init)
 │   k: #execute ~> CONTINUATION
 │   pc: 0
 │   callDepth: 0
@@ -62,14 +62,14 @@
 │   statusCode: EVMC_SUCCESS
 │
 │  (2 steps)
-└─ 11 (leaf)
+└─ 11 (leaf, terminal)
     k: #halt ~> CONTINUATION:K
     pc: 183
     callDepth: 0
     statusCode: EVMC_SUCCESS
 
 
-┌─ 2 (root, leaf)
+┌─ 2 (root, leaf, target)
 │   k: #halt ~> CONTINUATION
 │   pc: PC_CELL_5d410f2a
 │   callDepth: CALLDEPTH_CELL_5d410f2a

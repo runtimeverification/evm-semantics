@@ -25,6 +25,9 @@ from pyk.prelude.ml import mlEqualsTrue
 from pyk.proof.proof import Proof, ProofStatus
 from pyk.proof.reachability import APRBMCProof, APRProof, APRProver
 from pyk.proof.show import APRProofShow
+from pyk.proof.proof import Proof
+from pyk.proof.reachability import APRBMCProof, APRProof
+from pyk.proof.show import APRBMCProofNodePrinter, APRProofNodePrinter, APRProofShow
 from pyk.utils import BugReport, ensure_dir_path, hash_str, run_process, single, unique
 
 from .kevm import KEVM, KEVMNodePrinter
@@ -35,7 +38,7 @@ from .utils import (
     abstract_cell_vars,
     byte_offset_to_lines,
     constraints_for,
-    kevm_apr_prove,
+    kevm_prove,
     print_failure_info,
 )
 
@@ -46,6 +49,7 @@ if TYPE_CHECKING:
     from pyk.kast import KInner
     from pyk.kcfg.kcfg import NodeIdLike
     from pyk.kcfg.tui import KCFGElem
+    from pyk.proof.show import NodePrinter
 
 _LOGGER: Final = logging.getLogger(__name__)
 
@@ -624,7 +628,9 @@ def foundry_show(
         '<code>',
     ]
 
-    proof_show = APRProofShow(foundry.kevm, node_printer=FoundryNodePrinter(foundry, contract_name))
+    node_printer = foundry_node_printer(foundry, contract_name, proof)
+    proof_show = APRProofShow(foundry.kevm, node_printer=node_printer)
+
     res_lines = proof_show.show(
         proof,
         nodes=nodes,
@@ -645,13 +651,16 @@ def foundry_show(
 
 def foundry_to_dot(foundry_root: Path, test: str) -> None:
     foundry = Foundry(foundry_root)
-    apr_proofs_dir = foundry.out / 'apr_proofs'
-    dump_dir = apr_proofs_dir / 'dump'
+    proofs_dir = foundry.out / 'apr_proofs'
+    dump_dir = proofs_dir / 'dump'
     contract_name, test_name = test.split('.')
     proof_digest = foundry.proof_digest(contract_name, test_name)
-    apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
-    proof_show = APRProofShow(foundry.kevm, node_printer=FoundryNodePrinter(foundry, contract_name))
-    proof_show.dump(apr_proof, dump_dir, dot=True)
+    proof = APRProof.read_proof(proof_digest, proofs_dir)
+
+    node_printer = foundry_node_printer(foundry, contract_name, proof)
+    proof_show = APRProofShow(foundry.kevm, node_printer=node_printer)
+
+    proof_show.dump(proof, dump_dir, dot=True)
 
 
 def foundry_list(foundry_root: Path) -> list[str]:
@@ -682,8 +691,7 @@ def foundry_remove_node(foundry_root: Path, test: str, node: NodeIdLike) -> None
     contract_name, test_name = test.split('.')
     proof_digest = foundry.proof_digest(contract_name, test_name)
     apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
-    assert type(apr_proof) is APRProof
-    node_ids = apr_proof.kcfg.prune(node)
+    node_ids = apr_proof.kcfg.prune(node, [apr_proof.init, apr_proof.target])
     _LOGGER.info(f'Pruned nodes: {node_ids}')
     apr_proof.write_proof()
 
@@ -1143,7 +1151,7 @@ class FoundryNodePrinter(KEVMNodePrinter):
     contract_name: str
 
     def __init__(self, foundry: Foundry, contract_name: str):
-        super().__init__(foundry.kevm)
+        KEVMNodePrinter.__init__(self, foundry.kevm)
         self.foundry = foundry
         self.contract_name = contract_name
 
@@ -1156,3 +1164,23 @@ class FoundryNodePrinter(KEVMNodePrinter):
                 path, start, end = srcmap_data
                 ret_strs.append(f'src: {str(path)}:{start}:{end}')
         return ret_strs
+
+
+class FoundryAPRNodePrinter(FoundryNodePrinter, APRProofNodePrinter):
+    def __init__(self, foundry: Foundry, contract_name: str, proof: APRProof):
+        FoundryNodePrinter.__init__(self, foundry, contract_name)
+        APRProofNodePrinter.__init__(self, proof, foundry.kevm)
+
+
+class FoundryAPRBMCNodePrinter(FoundryNodePrinter, APRBMCProofNodePrinter):
+    def __init__(self, foundry: Foundry, contract_name: str, proof: APRBMCProof):
+        FoundryNodePrinter.__init__(self, foundry, contract_name)
+        APRBMCProofNodePrinter.__init__(self, proof, foundry.kevm)
+
+
+def foundry_node_printer(foundry: Foundry, contract_name: str, proof: APRProof) -> NodePrinter:
+    if type(proof) is APRBMCProof:
+        return FoundryAPRBMCNodePrinter(foundry, contract_name, proof)
+    if type(proof) is APRProof:
+        return FoundryAPRNodePrinter(foundry, contract_name, proof)
+    raise ValueError(f'Cannot build NodePrinter for proof type: {type(proof)}')

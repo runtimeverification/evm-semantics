@@ -119,7 +119,7 @@ class KEVMCLIArgs(KCLIArgs):
         args.add_argument(
             '--schedule',
             choices=schedules,
-            default='LONDON',
+            default='MERGE',
             help=f"schedule to use for execution [{'|'.join(schedules)}]",
         )
         args.add_argument('--chainid', type=int, default=1, help='chain ID to use for execution')
@@ -338,5 +338,11 @@ class KEVMCLIArgs(KCLIArgs):
         )
         args.add_argument(
             '--to-module', dest='to_module', default=False, action='store_true', help='Output edges as a K module.'
+        )
+        args.add_argument(
+            '--pending', dest='pending', default=False, action='store_true', help='Also display pending nodes'
+        )
+        args.add_argument(
+            '--failing', dest='failing', default=False, action='store_true', help='Also display failing nodes'
         )
         return args
