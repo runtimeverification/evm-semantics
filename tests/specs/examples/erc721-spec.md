@@ -30,11 +30,6 @@ module VERIFICATION
     imports EVM-OPTIMIZATIONS
     imports ERC721-VERIFICATION
 
-    syntax Step ::= Bytes | Int | Bool
-    syntax KItem ::= runLemma ( Step ) | doneLemma ( Step )
- // -------------------------------------------------------
-    rule <k> runLemma(S) => doneLemma(S) ... </k>
-
  // Lemmas
  // ---------------
 
@@ -57,13 +52,13 @@ module ERC721-SPEC
 ```
 
 ```k
-claim <k> runLemma(chop(chop(chop(chop(chop(chop((#lookup(ACCT_STORAGE, 0) /Int 2 &Int 127) +Int 31) /Int 32 *Int 32) +Int 32) +Int 128) +Int 32) +Int 32))
-       => doneLemma(((#lookup(ACCT_STORAGE, 0) /Int 2 &Int 127) +Int 31) /Int 32 *Int 32 +Int 224) ... </k>
+claim (chop(chop(chop(chop(chop(chop((#lookup(ACCT_STORAGE, 0) /Int 2 &Int 127) +Int 31) /Int 32 *Int 32) +Int 32) +Int 128) +Int 32) +Int 32))
+       => (((#lookup(ACCT_STORAGE, 0) /Int 2 &Int 127) +Int 31) /Int 32 *Int 32 +Int 224)
 ```
 
 ```k
-claim <k> runLemma(#lookup(ACCT_STORAGE, 0) /Int 2 <Int 32)
-       => doneLemma(false) ... </k>
+claim (#lookup(ACCT_STORAGE, 0) /Int 2 <Int 32)
+       => (false)
  requires 32 <=Int #lookup(ACCT_STORAGE, 0) /Int 2 &Int 127
 ```
 
