@@ -206,7 +206,7 @@ profile_timeout="0"
 kore_prof_arg=""
 bug_report=false
 mode=NORMAL
-schedule=MERGE
+schedule=SHANGHAI
 chainid=1
 pyk=false
 
