@@ -35,7 +35,7 @@ from .utils import (
     abstract_cell_vars,
     byte_offset_to_lines,
     constraints_for,
-    kevm_apr_prove,
+    kevm_prove,
     print_failure_info,
 )
 
@@ -537,7 +537,7 @@ def foundry_prove(
                 bmc_depth=bmc_depth,
             )
 
-            passed = kevm_apr_prove(
+            passed = kevm_prove(
                 foundry.kevm,
                 proof,
                 kcfg_explore,
