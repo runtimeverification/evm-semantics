@@ -1,10 +1,11 @@
 pragma solidity =0.8.13;
 
 import "forge-std/Test.sol";
+import "src/KEVMCheats.sol";
 
 import "src/Coverage.sol";
 
-contract CoverageTest is Test {
+contract CoverageTest is Test, KEVMCheats {
     Coverage cov;
 
     function setUp() public {
@@ -32,8 +33,9 @@ contract CoverageTest is Test {
     address test_contract = address(1234567891011121314151617181920);
 
     function test_prank(address who) public {
-        vm.assume(who != address(uint160(uint256(bytes32(bytes(string("notWho")))))));
-        vm.prank(who);
+        kevm.infiniteGas();
+        vm.assume(who != 0xfcC345e00009B3E5dF2FCAFbe77B1Fd66e736a68); // address("notWho")
+        vm.startPrank(who);
         test_contract.call(abi.encodeWithSignature("func()"));
     }
 
