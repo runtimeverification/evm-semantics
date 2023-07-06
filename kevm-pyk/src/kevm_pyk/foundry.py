@@ -569,7 +569,7 @@ def foundry_prove(
                             term_kast = KInner.from_dict(term)
                             failure_log.append(f'{var}: {foundry.kevm.pretty_print(term_kast)}')
                     else:
-                        failure_log.append('\n Failed to generate counterexample. \n')
+                        failure_log.append('\nFailed to generate a counterexample.')
 
             return passed, failure_log
 

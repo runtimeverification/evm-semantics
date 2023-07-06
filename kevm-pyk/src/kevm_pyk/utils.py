@@ -214,10 +214,8 @@ def print_failure_info(proof: Proof, kcfg_explore: KCFGExplore) -> list[str]:
                 res_lines.append('  Path condition:')
                 res_lines += [f'    {kcfg_explore.kprint.pretty_print(proof.path_constraints(node.id))}']
 
-                res_lines.append('')
-                res_lines.append(
-                    'Join the Runtime Verification Discord server for support: https://discord.gg/GHvFbRDD'
-                )
+            res_lines.append('')
+            res_lines.append('Join the Runtime Verification Discord server for support: https://discord.com/invite/CurfmXNtbN')
 
         return res_lines
     elif type(proof) is EqualityProof:
