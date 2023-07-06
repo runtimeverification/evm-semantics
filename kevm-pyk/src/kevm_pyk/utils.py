@@ -17,9 +17,7 @@ from pyk.kast.manip import (
 )
 from pyk.kast.outer import KSequence
 from pyk.proof import APRBMCProof, APRBMCProver, APRProof, APRProver, ProofStatus
-from pyk.proof import APRBMCProof, APRBMCProver, APRProof, APRProver
-from pyk.proof.equality import EqualityProof, EqualityProver
-from pyk.proof.proof import ProofStatus
+from pyk.proof.equality import EqualityProof, EqualityProver, ImpliesProver
 from pyk.utils import single
 
 if TYPE_CHECKING:
@@ -30,7 +28,7 @@ if TYPE_CHECKING:
     from pyk.kast.outer import KDefinition
     from pyk.kcfg import KCFGExplore
     from pyk.ktool.kprove import KProve
-    from pyk.proof.proof import Proof
+    from pyk.proof.proof import Proof, Prover
     from pyk.utils import BugReport
 
     T1 = TypeVar('T1')
@@ -115,7 +113,7 @@ def kevm_prove(
                 'EVM.return.success',
             ]
         )
-    prover: APRBMCProver | APRProver | EqualityProver
+    prover: Prover
     if type(proof) is APRBMCProof:
         assert same_loop, f'BMC proof requires same_loop heuristic, but {same_loop} was supplied'
         prover = APRBMCProver(
@@ -140,6 +138,7 @@ def kevm_prove(
         raise ValueError(f'Do not know how to build prover for proof: {proof}')
     try:
         if isinstance(proof, APRProof):
+            assert isinstance(prover, APRProver)
             prover.advance_proof(
                 max_iterations=max_iterations,
                 execute_depth=max_depth,
@@ -150,28 +149,28 @@ def kevm_prove(
             failure_nodes = proof.failing
             if len(failure_nodes) == 0:
                 _LOGGER.info(f'Proof passed: {proof.id}')
-                return True
+                return ProofStatus.PASSED
             else:
                 _LOGGER.error(f'Proof failed: {proof.id}')
-                return False
+                return ProofStatus.FAILED
         elif isinstance(prover, ImpliesProver):
             prover.advance_proof()
             if prover.proof.status == ProofStatus.PASSED:
                 _LOGGER.info(f'Proof passed: {prover.proof.id}')
-                return True
+                return ProofStatus.PASSED
             if prover.proof.status == ProofStatus.FAILED:
                 _LOGGER.error(f'Proof failed: {prover.proof.id}')
                 if type(proof) is EqualityProof:
                     _LOGGER.info(proof.pretty(kprove))
-                return False
+                return ProofStatus.FAILED
             if prover.proof.status == ProofStatus.PENDING:
                 _LOGGER.info(f'Proof pending: {prover.proof.id}')
-                return False
-        return False
+                return ProofStatus.PENDING
+        return ProofStatus.PENDING
 
     except Exception as e:
         _LOGGER.error(f'Proof crashed: {proof.id}\n{e}', exc_info=True)
-        return False
+        return ProofStatus.PENDING
     failure_nodes = proof.pending + proof.failing
     if len(failure_nodes) == 0:
         _LOGGER.info(f'Proof passed: {proof.id}')

@@ -24,9 +24,6 @@ from pyk.prelude.kint import INT, intToken
 from pyk.prelude.ml import mlEqualsTrue
 from pyk.proof.proof import Proof, ProofStatus
 from pyk.proof.reachability import APRBMCProof, APRProof, APRProver
-from pyk.proof.show import APRProofShow
-from pyk.proof.proof import Proof
-from pyk.proof.reachability import APRBMCProof, APRProof
 from pyk.proof.show import APRBMCProofNodePrinter, APRProofNodePrinter, APRProofShow
 from pyk.utils import BugReport, ensure_dir_path, hash_str, run_process, single, unique
 
@@ -540,7 +537,7 @@ def foundry_prove(
                 bmc_depth=bmc_depth,
             )
 
-            proof_status = kevm_apr_prove(
+            proof_status = kevm_prove(
                 foundry.kevm,
                 proof,
                 kcfg_explore,
@@ -713,7 +710,7 @@ def foundry_refute_node(foundry_root: Path, test: str, node: NodeIdLike) -> None
         id=apr_proof.id,
     ) as kcfg_explore:
         prover = APRProver(kcfg_explore=kcfg_explore, proof=apr_proof)
-        prover.refute_node(kcfg_explore, _node)
+        prover.refute_node(_node)
 
     apr_proof.write_proof()
 

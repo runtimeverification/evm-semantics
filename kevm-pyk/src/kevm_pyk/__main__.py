@@ -14,8 +14,8 @@ from pyk.kast.outer import KApply, KRewrite
 from pyk.kcfg import KCFG, KCFGExplore
 from pyk.kore.prelude import int_dv
 from pyk.ktool.krun import KRunOutput, _krun
-from pyk.proof import APRProof, ProofStatus
 from pyk.prelude.ml import is_bottom, is_top
+from pyk.proof import APRProof, ProofStatus
 from pyk.proof.equality import EqualityProof
 from pyk.proof.show import APRProofShow
 from pyk.proof.tui import APRProofViewer
