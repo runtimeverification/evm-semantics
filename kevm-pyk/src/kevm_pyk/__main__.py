@@ -1021,7 +1021,7 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_refute_node = command_parser.add_parser(
         'foundry-refute-node',
         help='Convert node into refutation proof and mark it as expanded.',
-        parents=[kevm_cli_args.foundry_args, kevm_cli_args.foundry_args],
+        parents=[kevm_cli_args.logging_args, kevm_cli_args.foundry_args],
     )
     foundry_refute_node.add_argument('test', type=str, help='Test to refute node on.')
     foundry_refute_node.add_argument('node', type=node_id_like, help='Node to refute.')
@@ -1029,7 +1029,7 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_unrefute_node = command_parser.add_parser(
         'foundry-unrefute-node',
         help='Removes a refutation proof from a node so the prover will explore it normally.',
-        parents=[kevm_cli_args.foundry_args, kevm_cli_args.foundry_args],
+        parents=[kevm_cli_args.logging_args, kevm_cli_args.foundry_args],
     )
     foundry_unrefute_node.add_argument('test', type=str, help='Test to unrefute node on.')
     foundry_unrefute_node.add_argument('node', type=node_id_like, help='Node to unrefute.')
