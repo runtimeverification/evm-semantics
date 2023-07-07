@@ -193,6 +193,8 @@ def print_failure_info(proof: Proof, kcfg_explore: KCFGExplore) -> list[str]:
             for node in proof.pending:
                 res_lines.append('')
                 res_lines.append(f'ID: {node.id}:')
+                counterexample = print_model(node, kcfg_explore)
+                res_lines.extend(counterexample)
         if num_failing > 0:
             res_lines.append('')
             res_lines.append('Failing nodes:')
@@ -213,32 +215,14 @@ def print_failure_info(proof: Proof, kcfg_explore: KCFGExplore) -> list[str]:
                 res_lines.append('  Path condition:')
                 res_lines += [f'    {kcfg_explore.kprint.pretty_print(proof.path_constraints(node.id))}']
 
+                counterexample = print_model(node, kcfg_explore)
+                res_lines.extend(counterexample)
 
-def print_failing_node_info(proof: APRProof, node: KCFG.Node, kcfg_explore: KCFGExplore) -> list[str]:
-    target = proof.kcfg.node(proof.target)
-
-    res_lines: list[str] = []
-
-    res_lines.append('')
-    res_lines.append(f'  Node id: {str(node.id)}')
-
-    simplified_node, _ = kcfg_explore.cterm_simplify(node.cterm)
-    simplified_target, _ = kcfg_explore.cterm_simplify(target.cterm)
-
-    node_cterm = CTerm.from_kast(simplified_node)
-    target_cterm = CTerm.from_kast(simplified_target)
-
-    res_lines.append('  Failure reason:')
-    _, reason = kcfg_explore.implication_failure_reason(node_cterm, target_cterm)
-    res_lines += [f'    {line}' for line in reason.split('\n')]
-
-    res_lines.append('  Path condition:')
-    res_lines += [f'    {kcfg_explore.kprint.pretty_print(proof.path_constraints(node.id))}']
-
-    counterexample_info = print_model(node, kcfg_explore)
-    res_lines.extend(counterexample_info)
-
-    return res_lines
+        return res_lines
+    elif type(proof) is EqualityProof:
+        return ['EqualityProof failed.']
+    else:
+        raise ValueError('Unknown proof type.')
 
 
 def print_model(node: KCFG.Node, kcfg_explore: KCFGExplore) -> list[str]:
@@ -252,11 +236,7 @@ def print_model(node: KCFG.Node, kcfg_explore: KCFGExplore) -> list[str]:
     else:
         res_lines.append('  Failed to generate a model.')
 
-        return res_lines
-    elif type(proof) is EqualityProof:
-        return ['EqualityProof failed.']
-    else:
-        raise ValueError('Unknown proof type.')
+    return res_lines
 
 
 def arg_pair_of(
