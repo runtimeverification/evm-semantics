@@ -235,22 +235,22 @@ def print_failing_node_info(proof: APRProof, node: KCFG.Node, kcfg_explore: KCFG
     res_lines.append('  Path condition:')
     res_lines += [f'    {kcfg_explore.kprint.pretty_print(proof.path_constraints(node.id))}']
 
-    counterexample_info = print_counterexample(node, kcfg_explore)
+    counterexample_info = print_model(node, kcfg_explore)
     res_lines.extend(counterexample_info)
 
     return res_lines
 
 
-def print_counterexample(node: KCFG.Node, kcfg_explore: KCFGExplore) -> list[str]:
+def print_model(node: KCFG.Node, kcfg_explore: KCFGExplore) -> list[str]:
     res_lines: list[str] = []
     result_subst = kcfg_explore.cterm_get_model(node.cterm)
     if type(result_subst) is Subst:
-        res_lines.append('  Counterexample:')
+        res_lines.append('  Model:')
         for var, term in result_subst.to_dict().items():
             term_kast = KInner.from_dict(term)
             res_lines.append(f'    {var} = {kcfg_explore.kprint.pretty_print(term_kast)}')
     else:
-        res_lines.append('  Failed to generate a counterexample.')
+        res_lines.append('  Failed to generate a model.')
 
         return res_lines
     elif type(proof) is EqualityProof:

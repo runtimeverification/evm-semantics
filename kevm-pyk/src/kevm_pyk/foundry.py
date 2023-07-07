@@ -37,6 +37,7 @@ from .utils import (
     constraints_for,
     kevm_prove,
     print_failure_info,
+    print_model,
 )
 
 if TYPE_CHECKING:
@@ -797,6 +798,45 @@ def foundry_section_edge(
             apr_proof.kcfg, source_id=source_id, target_id=target_id, logs=apr_proof.logs, sections=sections
         )
     apr_proof.write_proof()
+
+
+def foundry_get_model(
+    foundry_root: Path,
+    test: str,
+    nodes: Iterable[NodeIdLike] = (),
+    pending: bool = False,
+    failing: bool = False,
+) -> str:
+    contract_name = test.split('.')[0]
+    foundry = Foundry(foundry_root)
+    proofs_dir = foundry.out / 'apr_proofs'
+
+    contract_name, test_name = test.split('.')
+    proof_digest = foundry.proof_digest(contract_name, test_name)
+    proof = Proof.read_proof(proof_digest, proofs_dir)
+    assert isinstance(proof, APRProof)
+
+    if not nodes:
+        _LOGGER.warning('Node ID is not provided. Displaying models of failing and pending nodes:')
+        failing = pending = True
+
+    if pending:
+        nodes = list(nodes) + [node.id for node in proof.pending]
+    if failing:
+        nodes = list(nodes) + [node.id for node in proof.failing]
+    nodes = unique(nodes)
+
+    res_lines = []
+
+    with KCFGExplore(foundry.kevm, id=proof.id) as kcfg_explore:
+        for node_id in nodes:
+            res_lines.append('')
+            res_lines.append(f'Node id: {node_id}')
+            node = proof.kcfg.node(node_id)
+            model_info = print_model(node, kcfg_explore)
+            res_lines.extend(model_info)
+
+    return '\n'.join(res_lines)
 
 
 def _write_cfg(cfg: KCFG, path: Path) -> None:

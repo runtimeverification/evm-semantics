@@ -24,6 +24,7 @@ from pyk.utils import BugReport, single
 from .cli import KEVMCLIArgs, node_id_like
 from .foundry import (
     Foundry,
+    foundry_get_model,
     foundry_kompile,
     foundry_list,
     foundry_node_printer,
@@ -750,6 +751,24 @@ def exec_foundry_section_edge(
     )
 
 
+def exec_foundry_get_model(
+    foundry_root: Path,
+    test: str,
+    nodes: Iterable[NodeIdLike] = (),
+    pending: bool = False,
+    failing: bool = False,
+    **kwargs: Any,
+) -> None:
+    output = foundry_get_model(
+        foundry_root=foundry_root,
+        test=test,
+        nodes=nodes,
+        pending=pending,
+        failing=failing,
+    )
+    print(output)
+
+
 # Helpers
 
 
@@ -1056,6 +1075,32 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_section_edge.add_argument('edge', type=arg_pair_of(str, str), help='Edge to section in CFG.')
     foundry_section_edge.add_argument(
         '--sections', type=int, default=2, help='Number of sections to make from edge (>= 2).'
+    )
+
+    foundry_get_model = command_parser.add_parser(
+        'foundry-get-model',
+        help='Display a model for a given node.',
+        parents=[
+            kevm_cli_args.logging_args,
+            kevm_cli_args.rpc_args,
+            kevm_cli_args.smt_args,
+            kevm_cli_args.foundry_args,
+        ],
+    )
+    foundry_get_model.add_argument('test', type=str, help='Display the models of nodes in this test.')
+    foundry_get_model.add_argument(
+        '--node',
+        type=node_id_like,
+        dest='nodes',
+        default=[],
+        action='append',
+        help='List of nodes to display the models of.',
+    )
+    foundry_get_model.add_argument(
+        '--pending', dest='pending', default=False, action='store_true', help='Also display models of pending nodes'
+    )
+    foundry_get_model.add_argument(
+        '--failing', dest='failing', default=False, action='store_true', help='Also display models of failing nodes'
     )
 
     return parser
