@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from pyk.cterm import CTerm
-from pyk.kast.inner import KApply, KRewrite, KVariable, Subst
+from pyk.kast.inner import KApply, KInner, KRewrite, KVariable, Subst
 from pyk.kast.manip import (
     abstract_term_safely,
     bottom_up,
@@ -25,9 +25,8 @@ if TYPE_CHECKING:
     from collections.abc import Callable, Collection, Iterable
     from typing import Final, TypeVar
 
-    from pyk.kast import KInner
     from pyk.kast.outer import KDefinition
-    from pyk.kcfg import KCFGExplore
+    from pyk.kcfg import KCFG, KCFGExplore
     from pyk.ktool.kprove import KProve
     from pyk.proof.proof import Proof
     from pyk.utils import BugReport
@@ -214,8 +213,44 @@ def print_failure_info(proof: Proof, kcfg_explore: KCFGExplore) -> list[str]:
                 res_lines.append('  Path condition:')
                 res_lines += [f'    {kcfg_explore.kprint.pretty_print(proof.path_constraints(node.id))}']
 
-            res_lines.append('')
-            res_lines.append('Join the Runtime Verification Discord server for support: https://discord.com/invite/CurfmXNtbN')
+
+def print_failing_node_info(proof: APRProof, node: KCFG.Node, kcfg_explore: KCFGExplore) -> list[str]:
+    target = proof.kcfg.node(proof.target)
+
+    res_lines: list[str] = []
+
+    res_lines.append('')
+    res_lines.append(f'  Node id: {str(node.id)}')
+
+    simplified_node, _ = kcfg_explore.cterm_simplify(node.cterm)
+    simplified_target, _ = kcfg_explore.cterm_simplify(target.cterm)
+
+    node_cterm = CTerm.from_kast(simplified_node)
+    target_cterm = CTerm.from_kast(simplified_target)
+
+    res_lines.append('  Failure reason:')
+    _, reason = kcfg_explore.implication_failure_reason(node_cterm, target_cterm)
+    res_lines += [f'    {line}' for line in reason.split('\n')]
+
+    res_lines.append('  Path condition:')
+    res_lines += [f'    {kcfg_explore.kprint.pretty_print(proof.path_constraints(node.id))}']
+
+    counterexample_info = print_counterexample(node, kcfg_explore)
+    res_lines.extend(counterexample_info)
+
+    return res_lines
+
+
+def print_counterexample(node: KCFG.Node, kcfg_explore: KCFGExplore) -> list[str]:
+    res_lines: list[str] = []
+    result_subst = kcfg_explore.cterm_get_model(node.cterm)
+    if type(result_subst) is Subst:
+        res_lines.append('  Counterexample:')
+        for var, term in result_subst.to_dict().items():
+            term_kast = KInner.from_dict(term)
+            res_lines.append(f'    {var} = {kcfg_explore.kprint.pretty_print(term_kast)}')
+    else:
+        res_lines.append('  Failed to generate a counterexample.')
 
         return res_lines
     elif type(proof) is EqualityProof:

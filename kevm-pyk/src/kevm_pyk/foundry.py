@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING
 import tomlkit
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cterm import CTerm
-from pyk.kast.inner import KApply, KInner, KSequence, KSort, KToken, KVariable, Subst
+from pyk.kast.inner import KApply, KSequence, KSort, KToken, KVariable, Subst
 from pyk.kast.manip import free_vars, minimize_term
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
 from pyk.kcfg import KCFG, KCFGExplore
@@ -43,6 +43,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
     from typing import Any, Final
 
+    from pyk.kast.inner import KInner
     from pyk.kcfg.kcfg import NodeIdLike
     from pyk.kcfg.tui import KCFGElem
     from pyk.proof.show import NodePrinter
@@ -266,6 +267,11 @@ class Foundry:
         res_lines.append(
             'Access documentation for KEVM foundry integration at https://docs.runtimeverification.com/kevm-integration-for-foundry/'
         )
+        res_lines.append('')
+        res_lines.append(
+            'Join the Runtime Verification Discord server for support: https://discord.com/invite/CurfmXNtbN'
+        )
+
         return res_lines
 
 
@@ -561,16 +567,6 @@ def foundry_prove(
             failure_log = None
             if not passed:
                 failure_log = print_failure_info(proof, kcfg_explore)
-                for node in proof.failing:
-                    result_subst = kcfg_explore.cterm_get_model(node.cterm)
-                    if type(result_subst) is Subst:
-                        failure_log.append('\n Counterexample: \n')
-                        for var, term in result_subst.to_dict().items():
-                            term_kast = KInner.from_dict(term)
-                            failure_log.append(f'{var}: {foundry.kevm.pretty_print(term_kast)}')
-                    else:
-                        failure_log.append('\nFailed to generate a counterexample.')
-
             return passed, failure_log
 
     def run_cfg_group(tests: list[str]) -> dict[str, tuple[bool, list[str] | None]]:
