@@ -268,10 +268,6 @@ class Foundry:
         res_lines.append(
             'Access documentation for KEVM foundry integration at https://docs.runtimeverification.com/kevm-integration-for-foundry/'
         )
-        res_lines.append('')
-        res_lines.append(
-            'Join the Runtime Verification Discord server for support: https://discord.com/invite/CurfmXNtbN'
-        )
 
         return res_lines
 

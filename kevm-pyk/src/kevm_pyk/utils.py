@@ -218,6 +218,11 @@ def print_failure_info(proof: Proof, kcfg_explore: KCFGExplore) -> list[str]:
                 counterexample = print_model(node, kcfg_explore)
                 res_lines.extend(counterexample)
 
+        res_lines.append('')
+        res_lines.append(
+            'Join the Runtime Verification Discord server for support: https://discord.com/invite/CurfmXNtbN'
+        )
+
         return res_lines
     elif type(proof) is EqualityProof:
         return ['EqualityProof failed.']
