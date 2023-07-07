@@ -268,7 +268,6 @@ class Foundry:
         res_lines.append(
             'Access documentation for KEVM foundry integration at https://docs.runtimeverification.com/kevm-integration-for-foundry/'
         )
-
         return res_lines
 
 
