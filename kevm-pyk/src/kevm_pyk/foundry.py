@@ -683,7 +683,7 @@ def foundry_list(foundry_root: Path) -> list[str]:
 
 def foundry_remove_node(foundry_root: Path, test: str, node: NodeIdLike) -> None:
     apr_proof = foundry_get_apr_proof(foundry_root=foundry_root, test=test)
-    node_ids = apr_proof.kcfg.prune(node, keep_nodes=[apr_proof.target])
+    node_ids = apr_proof.kcfg.prune(node, keep_nodes=[apr_proof.init, apr_proof.target])
     _LOGGER.info(f'Pruned nodes: {node_ids}')
     apr_proof.write_proof()
 
