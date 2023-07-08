@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from pyk.cterm import CTerm
-from pyk.kast.inner import KApply, KLabel, KSequence, KSort, KVariable, build_assoc
+from pyk.kast.inner import KApply, KLabel, KSequence, KSort, KToken, KVariable, build_assoc
 from pyk.kast.manip import abstract_term_safely, bottom_up, flatten_label
 from pyk.kast.pretty import paren
 from pyk.kcfg.show import NodePrinter
@@ -177,6 +177,16 @@ class KEVM(KProve, KRun):
             # <k> #halt ~> X:K </k>
             elif (
                 k_cell.arity == 2 and k_cell[0] == KEVM.halt() and type(k_cell[1]) is KVariable and k_cell[1].sort == K
+            ):
+                return True
+        return False
+
+    @staticmethod
+    def is_vacuous(cterm: CTerm) -> bool:
+        k_cell = cterm.cell('K_CELL')
+        if type(k_cell) is KSequence:
+            if k_cell.arity >= 1 and k_cell.items[0] == KApply(
+                'foundry_assume', [KToken(token='false', sort=KSort(name='Bool'))]
             ):
                 return True
         return False

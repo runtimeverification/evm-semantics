@@ -81,6 +81,7 @@ def kevm_prove(
     break_on_calls: bool = True,
     implication_every_block: bool = False,
     is_terminal: Callable[[CTerm], bool] | None = None,
+    is_vacuous: Callable[[CTerm], bool] | None = None,
     extract_branches: Callable[[CTerm], Iterable[KInner]] | None = None,
     same_loop: Callable[[CTerm, CTerm], bool] | None = None,
     bmc_depth: int | None = None,
@@ -121,13 +122,14 @@ def kevm_prove(
             proof,
             kcfg_explore,
             is_terminal=is_terminal,
+            is_vacuous=is_vacuous,
             extract_branches=extract_branches,
             same_loop=same_loop,
             abstract_node=abstract_node,
         )
     elif type(proof) is APRProof:
         prover = APRProver(
-            proof, kcfg_explore, is_terminal=is_terminal, extract_branches=extract_branches, abstract_node=abstract_node
+            proof, kcfg_explore, is_terminal=is_terminal, is_vacuous=is_vacuous, extract_branches=extract_branches, abstract_node=abstract_node
         )
     elif type(proof) is EqualityProof:
         prover = EqualityProver(kcfg_explore=kcfg_explore, proof=proof)
@@ -198,6 +200,7 @@ def print_failure_info(proof: Proof, kcfg_explore: KCFGExplore) -> list[str]:
             res_lines.append('')
             res_lines.append('Failing nodes:')
             for node in proof.failing:
+                print(node.id, proof.kcfg.is_vacuous(node.id))
                 res_lines.append('')
                 res_lines.append(f'  Node id: {str(node.id)}')
 

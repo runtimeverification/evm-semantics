@@ -550,6 +550,7 @@ def foundry_prove(
                 break_on_calls=break_on_calls,
                 implication_every_block=implication_every_block,
                 is_terminal=KEVM.is_terminal,
+                is_vacuous=KEVM.is_vacuous,
                 same_loop=KEVM.same_loop,
                 extract_branches=KEVM.extract_branches,
                 bug_report=br,
