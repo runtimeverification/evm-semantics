@@ -16,7 +16,7 @@ from pyk.kast.inner import KApply, KSequence, KSort, KToken, KVariable, Subst
 from pyk.kast.manip import free_vars, minimize_term
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
 from pyk.kcfg import KCFG, KCFGExplore
-from pyk.kore.rpc import SingleKoreServer, KoreServerPool
+from pyk.kore.rpc import KoreServerPool, SingleKoreServer
 from pyk.ktool.kompile import LLVMKompileType
 from pyk.prelude.bytes import bytesToken
 from pyk.prelude.k import GENERATED_TOP_CELL
@@ -531,7 +531,7 @@ def foundry_prove(
                 kore_rpc_command=kore_rpc_command,
                 smt_timeout=smt_timeout,
                 smt_retry_limit=smt_retry_limit,
-                max_clients=3,
+                max_clients=par_branch,
             )
         with KCFGExplore(
             server,

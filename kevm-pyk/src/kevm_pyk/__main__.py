@@ -566,7 +566,7 @@ def exec_foundry_prove(
         smt_retry_limit=smt_retry_limit,
         trace_rewrites=trace_rewrites,
         auto_abstract_gas=auto_abstract_gas,
-        par_branch=par_branch
+        par_branch=par_branch,
     )
     failed = 0
     for pid, r in results.items():
@@ -963,7 +963,8 @@ def _create_argument_parser() -> ArgumentParser:
         '--par-branch',
         dest='par_branch',
         default=1,
-        help="Maximum amount of kore servers running in parallel",
+        type=int,
+        help='Maximum amount of kore servers running in parallel',
     )
     foundry_prove_args.add_argument(
         '--use-booster',
