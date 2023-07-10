@@ -13,6 +13,7 @@ from pyk.cterm import CTerm
 from pyk.kast.outer import KApply, KRewrite
 from pyk.kcfg import KCFG, KCFGExplore
 from pyk.kore.prelude import int_dv
+from pyk.kore.rpc import SingleKoreServer
 from pyk.ktool.krun import KRunOutput, _krun
 from pyk.prelude.ml import is_bottom, is_top
 from pyk.proof import APRProof
@@ -277,13 +278,17 @@ def exec_prove(
         return not (type(claim_lhs) is KApply and claim_lhs.label.name == '<generatedTop>')
 
     def _init_and_run_proof(claim: KClaim) -> tuple[bool, list[str] | None]:
-        with KCFGExplore(
+        server = SingleKoreServer(
             kevm,
-            id=claim.label,
             bug_report=br,
             kore_rpc_command=kore_rpc_command,
             smt_timeout=smt_timeout,
             smt_retry_limit=smt_retry_limit,
+        )
+        with KCFGExplore(
+            server,
+            kevm,
+            id=claim.label,
             trace_rewrites=trace_rewrites,
         ) as kcfg_explore:
             proof_problem: Proof
@@ -471,7 +476,8 @@ def exec_show_kcfg(
     )
 
     if failure_info:
-        with KCFGExplore(kevm, id=proof.id) as kcfg_explore:
+        server = SingleKoreServer(kevm)
+        with KCFGExplore(server, kevm, id=proof.id) as kcfg_explore:
             res_lines += print_failure_info(proof, kcfg_explore)
 
     print('\n'.join(res_lines))
@@ -528,6 +534,7 @@ def exec_foundry_prove(
     failure_info: bool = True,
     trace_rewrites: bool = False,
     auto_abstract_gas: bool = False,
+    par_branch: int = 1,
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'main_module', f'--main-module: {kwargs["main_module"]}')
@@ -559,6 +566,7 @@ def exec_foundry_prove(
         smt_retry_limit=smt_retry_limit,
         trace_rewrites=trace_rewrites,
         auto_abstract_gas=auto_abstract_gas,
+        par_branch=par_branch
     )
     failed = 0
     for pid, r in results.items():
@@ -950,6 +958,12 @@ def _create_argument_parser() -> ArgumentParser:
         default=None,
         type=int,
         help='Max depth of loop unrolling during bounded model checking',
+    )
+    foundry_prove_args.add_argument(
+        '--par-branch',
+        dest='par_branch',
+        default=1,
+        help="Maximum amount of kore servers running in parallel",
     )
     foundry_prove_args.add_argument(
         '--use-booster',

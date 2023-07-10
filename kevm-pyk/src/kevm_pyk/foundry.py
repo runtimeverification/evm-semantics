@@ -16,6 +16,7 @@ from pyk.kast.inner import KApply, KSequence, KSort, KToken, KVariable, Subst
 from pyk.kast.manip import free_vars, minimize_term
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
 from pyk.kcfg import KCFG, KCFGExplore
+from pyk.kore.rpc import SingleKoreServer, KoreServerPool
 from pyk.ktool.kompile import LLVMKompileType
 from pyk.prelude.bytes import bytesToken
 from pyk.prelude.k import GENERATED_TOP_CELL
@@ -429,6 +430,7 @@ def foundry_prove(
     failure_info: bool = True,
     trace_rewrites: bool = False,
     auto_abstract_gas: bool = False,
+    par_branch: int = 1,
 ) -> dict[str, tuple[bool, list[str] | None]]:
     if workers <= 0:
         raise ValueError(f'Must have at least one worker, found: --workers {workers}')
@@ -514,13 +516,27 @@ def foundry_prove(
 
     def _init_and_run_proof(_init_problem: tuple[str, str]) -> tuple[bool, list[str] | None]:
         proof_id = f'{_init_problem[0]}.{_init_problem[1]}'
+        if par_branch <= 1:
+            server = SingleKoreServer(
+                foundry.kevm,
+                bug_report=br,
+                kore_rpc_command=kore_rpc_command,
+                smt_timeout=smt_timeout,
+                smt_retry_limit=smt_retry_limit,
+            )
+        else:
+            server = KoreServerPool(
+                foundry.kevm,
+                bug_report=br,
+                kore_rpc_command=kore_rpc_command,
+                smt_timeout=smt_timeout,
+                smt_retry_limit=smt_retry_limit,
+                max_clients=3,
+            )
         with KCFGExplore(
+            server,
             foundry.kevm,
             id=proof_id,
-            bug_report=br,
-            kore_rpc_command=kore_rpc_command,
-            smt_timeout=smt_timeout,
-            smt_retry_limit=smt_retry_limit,
             trace_rewrites=trace_rewrites,
         ) as kcfg_explore:
             contract_name, method_name = _init_problem
@@ -638,7 +654,8 @@ def foundry_show(
     )
 
     if failure_info:
-        with KCFGExplore(foundry.kevm, id=proof.id) as kcfg_explore:
+        server = SingleKoreServer(foundry.kevm)
+        with KCFGExplore(server, foundry.kevm, id=proof.id) as kcfg_explore:
             res_lines += print_failure_info(proof, kcfg_explore)
             res_lines += Foundry.help_info()
 
@@ -711,12 +728,16 @@ def foundry_simplify_node(
     proof_digest = foundry.proof_digest(contract_name, test_name)
     apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
     cterm = apr_proof.kcfg.node(node).cterm
-    with KCFGExplore(
+    server = SingleKoreServer(
         foundry.kevm,
-        id=apr_proof.id,
         bug_report=br,
         smt_timeout=smt_timeout,
         smt_retry_limit=smt_retry_limit,
+    )
+    with KCFGExplore(
+        server,
+        foundry.kevm,
+        id=apr_proof.id,
         trace_rewrites=trace_rewrites,
     ) as kcfg_explore:
         new_term, _ = kcfg_explore.cterm_simplify(cterm)
@@ -750,12 +771,16 @@ def foundry_step_node(
     contract_name, test_name = test.split('.')
     proof_digest = foundry.proof_digest(contract_name, test_name)
     apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
-    with KCFGExplore(
+    server = SingleKoreServer(
         foundry.kevm,
-        id=apr_proof.id,
         bug_report=br,
         smt_timeout=smt_timeout,
         smt_retry_limit=smt_retry_limit,
+    )
+    with KCFGExplore(
+        server,
+        foundry.kevm,
+        id=apr_proof.id,
         trace_rewrites=trace_rewrites,
     ) as kcfg_explore:
         for _i in range(repeat):
@@ -781,12 +806,16 @@ def foundry_section_edge(
     proof_digest = foundry.proof_digest(contract_name, test_name)
     apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
     source_id, target_id = edge
-    with KCFGExplore(
+    server = SingleKoreServer(
         foundry.kevm,
-        id=apr_proof.id,
         bug_report=br,
         smt_timeout=smt_timeout,
         smt_retry_limit=smt_retry_limit,
+    )
+    with KCFGExplore(
+        server,
+        foundry.kevm,
+        id=apr_proof.id,
         trace_rewrites=trace_rewrites,
     ) as kcfg_explore:
         kcfg, _ = kcfg_explore.section_edge(
