@@ -428,6 +428,7 @@ def foundry_prove(
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
     failure_info: bool = True,
+    counterexample_info: bool = False,
     trace_rewrites: bool = False,
     auto_abstract_gas: bool = False,
 ) -> dict[str, tuple[bool, list[str] | None]]:
@@ -562,7 +563,7 @@ def foundry_prove(
             )
             failure_log = None
             if not passed:
-                failure_log = print_failure_info(proof, kcfg_explore)
+                failure_log = print_failure_info(proof, kcfg_explore, counterexample_info)
             return passed, failure_log
 
     def run_cfg_group(tests: list[str]) -> dict[str, tuple[bool, list[str] | None]]:
@@ -597,6 +598,7 @@ def foundry_show(
     pending: bool = False,
     failing: bool = False,
     failure_info: bool = False,
+    counterexample_info: bool = False,
 ) -> str:
     contract_name = test.split('.')[0]
     foundry = Foundry(foundry_root)
@@ -639,7 +641,7 @@ def foundry_show(
 
     if failure_info:
         with KCFGExplore(foundry.kevm, id=proof.id) as kcfg_explore:
-            res_lines += print_failure_info(proof, kcfg_explore)
+            res_lines += print_failure_info(proof, kcfg_explore, counterexample_info)
             res_lines += Foundry.help_info()
 
     return '\n'.join(res_lines)

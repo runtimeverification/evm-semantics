@@ -176,7 +176,7 @@ def kevm_prove(
         return False
 
 
-def print_failure_info(proof: Proof, kcfg_explore: KCFGExplore) -> list[str]:
+def print_failure_info(proof: Proof, kcfg_explore: KCFGExplore, counterexample_info: bool = False) -> list[str]:
     if type(proof) is APRProof or type(proof) is APRBMCProof:
         target = proof.kcfg.node(proof.target)
 
@@ -212,8 +212,8 @@ def print_failure_info(proof: Proof, kcfg_explore: KCFGExplore) -> list[str]:
 
                 res_lines.append('  Path condition:')
                 res_lines += [f'    {kcfg_explore.kprint.pretty_print(proof.path_constraints(node.id))}']
-
-                res_lines.extend(print_model(node, kcfg_explore))
+                if counterexample_info:
+                    res_lines.extend(print_model(node, kcfg_explore))
 
         res_lines.append('')
         res_lines.append(

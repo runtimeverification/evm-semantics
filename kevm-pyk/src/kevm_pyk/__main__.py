@@ -527,6 +527,7 @@ def exec_foundry_prove(
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
     failure_info: bool = True,
+    counterexample_info: bool = False,
     trace_rewrites: bool = False,
     auto_abstract_gas: bool = False,
     **kwargs: Any,
@@ -556,6 +557,7 @@ def exec_foundry_prove(
         bug_report=bug_report,
         kore_rpc_command=kore_rpc_command,
         use_booster=use_booster,
+        counterexample_info=counterexample_info,
         smt_timeout=smt_timeout,
         smt_retry_limit=smt_retry_limit,
         trace_rewrites=trace_rewrites,
@@ -589,6 +591,7 @@ def exec_foundry_show(
     pending: bool = False,
     failing: bool = False,
     failure_info: bool = False,
+    counterexample_info: bool = False,
     **kwargs: Any,
 ) -> None:
     output = foundry_show(
@@ -603,6 +606,7 @@ def exec_foundry_show(
         pending=pending,
         failing=failing,
         failure_info=failure_info,
+        counterexample_info=counterexample_info,
     )
     print(output)
 
