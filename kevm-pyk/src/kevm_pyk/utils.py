@@ -193,7 +193,6 @@ def print_failure_info(proof: Proof, kcfg_explore: KCFGExplore) -> list[str]:
             for node in proof.pending:
                 res_lines.append('')
                 res_lines.append(f'ID: {node.id}:')
-                res_lines.extend(print_model(node, kcfg_explore))
         if num_failing > 0:
             res_lines.append('')
             res_lines.append('Failing nodes:')
