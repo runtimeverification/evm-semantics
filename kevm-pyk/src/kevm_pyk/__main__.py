@@ -12,11 +12,13 @@ from typing import TYPE_CHECKING
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli.utils import file_path
 from pyk.cterm import CTerm
+from pyk.kast.outer import KApply, KRewrite
 from pyk.kcfg import KCFG, KCFGExplore
 from pyk.kore.prelude import int_dv
 from pyk.ktool.krun import KRunOutput, _krun
-from pyk.prelude.ml import is_bottom
+from pyk.prelude.ml import is_bottom, is_top
 from pyk.proof import APRProof
+from pyk.proof.equality import EqualityProof
 from pyk.proof.show import APRProofShow
 from pyk.proof.tui import APRProofViewer
 from pyk.utils import BugReport, single
@@ -39,7 +41,7 @@ from .gst_to_kore import _mode_to_kore, _schedule_to_kore
 from .kevm import KEVM, kevm_node_printer
 from .kompile import KompileTarget, kevm_kompile
 from .solc_to_k import solc_compile, solc_to_k
-from .utils import arg_pair_of, ensure_ksequence_on_k_cell, get_apr_proof_for_spec, kevm_apr_prove, print_failure_info
+from .utils import arg_pair_of, ensure_ksequence_on_k_cell, get_apr_proof_for_spec, kevm_prove, print_failure_info
 
 if TYPE_CHECKING:
     from argparse import Namespace
@@ -49,6 +51,7 @@ if TYPE_CHECKING:
     from pyk.kast.outer import KClaim
     from pyk.kcfg.kcfg import NodeIdLike
     from pyk.kcfg.tui import KCFGElem
+    from pyk.proof.proof import Proof
 
     T = TypeVar('T')
 
@@ -201,37 +204,24 @@ def exec_prove_legacy(
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'md_selector', f'--md-selector: {kwargs["md_selector"]}')
-    md_selector = 'k & ! node'
-
     kevm = KEVM(definition_dir, use_directory=save_directory)
-    args: list[str] = []
-    haskell_args: list[str] = []
-    if claim_labels:
-        args += ['--claims', ','.join(claim_labels)]
-    if exclude_claim_labels:
-        args += ['--exclude', ','.join(exclude_claim_labels)]
-    if debug:
-        args.append('--debug')
-    if debugger:
-        args.append('--debugger')
-    if branching_allowed:
-        args += ['--branching-allowed', f'{branching_allowed}']
-    if max_counterexamples:
-        haskell_args += ['--max-counterexamples', f'{max_counterexamples}']
-    if bug_report:
-        haskell_args += ['--bug-report', f'kevm-bug-{spec_file.name.rstrip("-spec.k")}']
-    if haskell_backend_args:
-        haskell_args += list(haskell_backend_args)
-
-    kevm.prove(
+    final_state = kevm.prove_legacy(
         spec_file=spec_file,
-        spec_module_name=spec_module,
-        args=args,
-        include_dirs=[Path(i) for i in includes],
-        md_selector=md_selector,
-        haskell_args=haskell_args,
-        depth=max_depth,
+        includes=includes,
+        bug_report=bug_report,
+        spec_module=spec_module,
+        claim_labels=claim_labels,
+        exclude_claim_labels=exclude_claim_labels,
+        debug=debug,
+        debugger=debugger,
+        max_depth=max_depth,
+        max_counterexamples=max_counterexamples,
+        branching_allowed=branching_allowed,
+        haskell_backend_args=haskell_backend_args,
     )
+    print(kevm.pretty_print(final_state))
+    if not is_top(final_state):
+        raise SystemExit(1)
 
 
 def exec_prove(
@@ -271,6 +261,12 @@ def exec_prove(
 
     spec_module_name = spec_module if spec_module is not None else os.path.splitext(spec_file.name)[0].upper()
 
+    def is_functional(claim: KClaim) -> bool:
+        claim_lhs = claim.body
+        if type(claim_lhs) is KRewrite:
+            claim_lhs = claim_lhs.lhs
+        return not (type(claim_lhs) is KApply and claim_lhs.label.name == '<generatedTop>')
+
     def _init_and_run_proof(claim: KClaim) -> tuple[bool, list[str] | None]:
         with KCFGExplore(
             kevm,
@@ -281,46 +277,59 @@ def exec_prove(
             smt_retry_limit=smt_retry_limit,
             trace_rewrites=trace_rewrites,
         ) as kcfg_explore:
-            proof_problem: APRProof
-
-            if save_directory is not None and not reinit and APRProof.proof_exists(claim.label, save_directory):
-                proof_problem = APRProof.read_proof(claim.label, save_directory)
-
+            proof_problem: Proof
+            if is_functional(claim):
+                if (
+                    save_directory is not None
+                    and not reinit
+                    and EqualityProof.proof_exists(claim.label, save_directory)
+                ):
+                    proof_problem = EqualityProof.read_proof(claim.label, save_directory)
+                else:
+                    proof_problem = EqualityProof.from_claim(claim, kevm.definition, proof_dir=save_directory)
             else:
-                _LOGGER.info(f'Converting claim to KCFG: {claim.label}')
-                kcfg, init_node_id, target_node_id = KCFG.from_claim(kevm.definition, claim)
+                if save_directory is not None and not reinit and APRProof.proof_exists(claim.label, save_directory):
+                    proof_problem = APRProof.read_proof(claim.label, save_directory)
 
-                new_init = ensure_ksequence_on_k_cell(kcfg.node(init_node_id).cterm)
-                new_target = ensure_ksequence_on_k_cell(kcfg.node(target_node_id).cterm)
+                else:
+                    _LOGGER.info(f'Converting claim to KCFG: {claim.label}')
+                    kcfg, init_node_id, target_node_id = KCFG.from_claim(kevm.definition, claim)
 
-                _LOGGER.info(f'Computing definedness constraint for initial node: {claim.label}')
-                new_init = kcfg_explore.cterm_assume_defined(new_init)
+                    new_init = ensure_ksequence_on_k_cell(kcfg.node(init_node_id).cterm)
+                    new_target = ensure_ksequence_on_k_cell(kcfg.node(target_node_id).cterm)
 
-                if simplify_init:
-                    _LOGGER.info(f'Simplifying initial and target node: {claim.label}')
-                    _new_init, _ = kcfg_explore.cterm_simplify(new_init)
-                    _new_target, _ = kcfg_explore.cterm_simplify(new_target)
-                    if is_bottom(_new_init):
-                        raise ValueError('Simplifying initial node led to #Bottom, are you sure your LHS is defined?')
-                    if is_bottom(_new_target):
-                        raise ValueError('Simplifying target node led to #Bottom, are you sure your RHS is defined?')
-                    new_init = CTerm.from_kast(_new_init)
-                    new_target = CTerm.from_kast(_new_target)
+                    _LOGGER.info(f'Computing definedness constraint for initial node: {claim.label}')
+                    new_init = kcfg_explore.cterm_assume_defined(new_init)
 
-                kcfg.replace_node(init_node_id, new_init)
-                kcfg.replace_node(target_node_id, new_target)
+                    if simplify_init:
+                        _LOGGER.info(f'Simplifying initial and target node: {claim.label}')
+                        _new_init, _ = kcfg_explore.cterm_simplify(new_init)
+                        _new_target, _ = kcfg_explore.cterm_simplify(new_target)
+                        if is_bottom(_new_init):
+                            raise ValueError(
+                                'Simplifying initial node led to #Bottom, are you sure your LHS is defined?'
+                            )
+                        if is_bottom(_new_target):
+                            raise ValueError(
+                                'Simplifying target node led to #Bottom, are you sure your RHS is defined?'
+                            )
+                        new_init = CTerm.from_kast(_new_init)
+                        new_target = CTerm.from_kast(_new_target)
 
-                proof_problem = APRProof(
-                    claim.label,
-                    kcfg,
-                    init_node_id,
-                    target_node_id,
-                    {},
-                    proof_dir=save_directory,
-                    subproof_ids=[f'{spec_module_name}.{d}' for d in claim.dependencies],
-                )
+                    kcfg.replace_node(init_node_id, new_init)
+                    kcfg.replace_node(target_node_id, new_target)
 
-            passed = kevm_apr_prove(
+                    proof_problem = APRProof(
+                        claim.label,
+                        kcfg,
+                        init_node_id,
+                        target_node_id,
+                        {},
+                        proof_dir=save_directory,
+                        subproof_ids=[f'{spec_module_name}.{d}' for d in claim.dependencies],
+                    )
+
+            passed = kevm_prove(
                 kevm,
                 proof_problem,
                 kcfg_explore,
