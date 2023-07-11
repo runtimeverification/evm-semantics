@@ -828,8 +828,7 @@ def foundry_get_model(
             res_lines.append('')
             res_lines.append(f'Node id: {node_id}')
             node = proof.kcfg.node(node_id)
-            model_info = print_model(node, kcfg_explore)
-            res_lines.extend(model_info)
+            res_lines.extend(print_model(node, kcfg_explore))
 
     return '\n'.join(res_lines)
 

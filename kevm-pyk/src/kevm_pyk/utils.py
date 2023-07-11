@@ -193,8 +193,7 @@ def print_failure_info(proof: Proof, kcfg_explore: KCFGExplore) -> list[str]:
             for node in proof.pending:
                 res_lines.append('')
                 res_lines.append(f'ID: {node.id}:')
-                counterexample = print_model(node, kcfg_explore)
-                res_lines.extend(counterexample)
+                res_lines.extend(print_model(node, kcfg_explore))
         if num_failing > 0:
             res_lines.append('')
             res_lines.append('Failing nodes:')
@@ -215,8 +214,7 @@ def print_failure_info(proof: Proof, kcfg_explore: KCFGExplore) -> list[str]:
                 res_lines.append('  Path condition:')
                 res_lines += [f'    {kcfg_explore.kprint.pretty_print(proof.path_constraints(node.id))}']
 
-                counterexample = print_model(node, kcfg_explore)
-                res_lines.extend(counterexample)
+                res_lines.extend(print_model(node, kcfg_explore))
 
         res_lines.append('')
         res_lines.append(
