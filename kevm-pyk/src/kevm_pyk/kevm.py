@@ -201,12 +201,99 @@ class KEVM(KProve, KRun):
         return False
 
     @staticmethod
+    def call_patterns() -> list[KSequence]:
+        call_code = KLabel('#callWithCode_________EVM_InternalOp_Int_Int_Int_Bytes_Int_Int_Bytes_Bool')
+        call_var = [
+            KVariable('FROM'),
+            KEVM.empty_var(),
+            KEVM.empty_var(),
+            KVariable('CODE'),
+            KEVM.empty_var(),
+            KEVM.empty_var(),
+            KVariable('ARGS'),
+            KEVM.empty_var(),
+        ]
+        pc_call = (KApply('#pc[_]_EVM_InternalOp_OpCode', [KApply('CALL_EVM_CallOp')]),)
+        pc_staticcall = (KApply('#pc[_]_EVM_InternalOp_OpCode', [KApply('STATICCALL_EVM_CallSixOp')]),)
+
+        k_match_patterns = [
+            KSequence(
+                [
+                    KApply(
+                        call_code,
+                        call_var,
+                    ),
+                    KEVM.two_return(),
+                    *pc_call,
+                    KEVM.sharp_execute(),
+                    KEVM.empty_var(),
+                ]
+            ),
+            KSequence(
+                [
+                    KApply(
+                        call_code,
+                        [
+                            KVariable('FROM'),
+                            KEVM.empty_var(),
+                            KEVM.empty_var(),
+                            KVariable('CODE'),
+                            KEVM.empty_var(),
+                            KEVM.empty_var(),
+                            KEVM.bytes_append(
+                                KVariable('ARGS'),
+                                KApply(
+                                    '#buf(_,_)_BUF-SYNTAX_Bytes_Int_Int',
+                                    KEVM.empty_var(),
+                                    KEVM.empty_var(),
+                                ),
+                            ),
+                            KEVM.empty_var(),
+                        ],
+                    ),
+                    KEVM.two_return(),
+                    *pc_staticcall,
+                    KEVM.sharp_execute(),
+                    KEVM.empty_var(),
+                ]
+            ),
+            KSequence(
+                [
+                    KApply(
+                        call_code,
+                        call_var,
+                    ),
+                    KEVM.two_return(),
+                    *pc_staticcall,
+                    KEVM.sharp_execute(),
+                    KEVM.empty_var(),
+                ]
+            ),
+        ]
+
+        return k_match_patterns
+
+    @staticmethod
     def halt() -> KApply:
         return KApply('#halt_EVM_KItem')
 
     @staticmethod
     def sharp_execute() -> KApply:
         return KApply('#execute_EVM_KItem')
+
+    @staticmethod
+    def two_return() -> KApply:
+        return KApply(
+            '#return___EVM_KItem_Int_Int',
+            [
+                KEVM.empty_var(),
+                KEVM.empty_var(),
+            ],
+        )
+
+    @staticmethod
+    def empty_var() -> KVariable:
+        return KVariable('_')
 
     @staticmethod
     def jumpi() -> KApply:

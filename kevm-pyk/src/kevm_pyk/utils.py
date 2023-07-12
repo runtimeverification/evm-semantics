@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from pyk.cterm import CTerm
-from pyk.kast.inner import KApply, KLabel, KRewrite, KSort, KVariable, Subst
+from pyk.kast.inner import KApply, KRewrite, KVariable, Subst
 from pyk.kast.manip import (
     abstract_term_safely,
     bottom_up,
@@ -16,7 +16,6 @@ from pyk.kast.manip import (
     split_config_from,
 )
 from pyk.kast.outer import KSequence
-from pyk.prelude.k import GENERATED_TOP_CELL
 from pyk.prelude.kbool import TRUE
 from pyk.proof import APRBMCProof, APRBMCProver, APRProof, APRProver
 from pyk.utils import single
@@ -267,6 +266,7 @@ def ensure_ksequence_on_k_cell(cterm: CTerm) -> CTerm:
 def mk_bytes_constraint(token: KInner, var: KVariable) -> KApply:
     eq = KApply('_==Bool_', [KApply('_==Int_', [var, KApply('#asInteger(_)_EVM-TYPES_Int_Bytes', [token])]), TRUE])
     return eq
+
 
 def mk_int_constraint(token: KInner, var: KVariable) -> KApply:
     eq = KApply('_==Bool_', [KApply('_==Int_', [var, token]), TRUE])

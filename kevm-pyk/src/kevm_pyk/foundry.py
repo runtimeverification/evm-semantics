@@ -14,7 +14,7 @@ import tomlkit
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cterm import CTerm
 from pyk.kast.inner import KApply, KLabel, KSequence, KSort, KToken, KVariable, Subst
-from pyk.kast.manip import flatten_label, free_vars, minimize_term
+from pyk.kast.manip import free_vars, minimize_term, flatten_label
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
 from pyk.kcfg import KCFG, KCFGExplore
 from pyk.konvert import _kast_to_kore
@@ -28,7 +28,7 @@ from pyk.prelude.bytes import bytesToken
 from pyk.prelude.k import GENERATED_TOP_CELL
 from pyk.prelude.kbool import BOOL, FALSE, TRUE, andBool, notBool
 from pyk.prelude.kint import INT, intToken
-from pyk.prelude.ml import mlEquals, mlEqualsTrue
+from pyk.prelude.ml import mlEqualsTrue, mlEquals
 from pyk.proof.proof import Proof, ProofStatus
 from pyk.proof.reachability import APRBMCProof, APRProof
 from pyk.proof.show import APRBMCProofNodePrinter, APRProofNodePrinter, APRProofShow
@@ -669,13 +669,13 @@ def foundry_koverage(
     call_code = KLabel('#callWithCode_________EVM_InternalOp_Int_Int_Int_Bytes_Int_Int_Bytes_Bool')
     call_var = [
         KVariable('FROM'),
+        KVariable('_A1'),
         KVariable('_A2'),
-        KVariable('_A3'),
         KVariable('CODE'),
+        KVariable('_A3'),
         KVariable('_A4'),
-        KVariable('_A5'),
         KVariable('ARGS'),
-        KVariable('_A7'),
+        KVariable('_A5'),
     ]
 
     k_match_patterns = [
@@ -688,13 +688,13 @@ def foundry_koverage(
                 KApply(
                     '#return___EVM_KItem_Int_Int',
                     [
-                        KVariable('_A8'),
-                        KVariable('_A9'),
+                        KVariable('_A6'),
+                        KVariable('_A7'),
                     ],
                 ),
                 KApply('#pc[_]_EVM_InternalOp_OpCode', [KApply('CALL_EVM_CallOp')]),
                 KApply('#execute_EVM_KItem'),
-                KVariable('_A10'),
+                KVariable('_A8'),
             ]
         ),
         KSequence(
@@ -703,35 +703,35 @@ def foundry_koverage(
                     call_code,
                     [
                         KVariable('FROM'),
-                        KVariable('_A2'),
-                        KVariable('_A3'),
+                        KVariable('_A9'),
+                        KVariable('_A10'),
                         KVariable('CODE'),
-                        KVariable('_A4'),
-                        KVariable('_A5'),
+                        KVariable('_A11'),
+                        KVariable('_A12'),
                         KApply(
                             '_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes',
                             [
                                 KVariable('ARGS'),
                                 KApply(
                                     '#buf(_,_)_BUF-SYNTAX_Bytes_Int_Int',
-                                    KVariable('_A7'),
-                                    KVariable('_A8'),
+                                    KVariable('_A13'),
+                                    KVariable('_A14'),
                                 ),
                             ],
                         ),
-                        KVariable('_A9'),
+                        KVariable('_A15'),
                     ],
                 ),
                 KApply(
                     '#return___EVM_KItem_Int_Int',
                     [
-                        KVariable('_A8'),
-                        KVariable('_A9'),
+                        KVariable('_A16'),
+                        KVariable('_A17'),
                     ],
                 ),
                 KApply('#pc[_]_EVM_InternalOp_OpCode', [KApply('STATICCALL_EVM_CallSixOp')]),
                 KApply('#execute_EVM_KItem'),
-                KVariable('_A12'),
+                KVariable('_A18'),
             ]
         ),
         KSequence(
@@ -743,16 +743,18 @@ def foundry_koverage(
                 KApply(
                     '#return___EVM_KItem_Int_Int',
                     [
-                        KVariable('_A8'),
-                        KVariable('_A9'),
+                        KVariable('_A19'),
+                        KVariable('_A20'),
                     ],
                 ),
                 KApply('#pc[_]_EVM_InternalOp_OpCode', [KApply('STATICCALL_EVM_CallSixOp')]),
                 KApply('#execute_EVM_KItem'),
-                KVariable('_A10'),
+                KVariable('_A21'),
             ]
         ),
     ]
+
+    # assert KEVM.call_patterns() == k_match_patterns
 
     def _cons_intersection(constraints: Iterable[KInner]) -> KInner:
         args_filtered = [apply.args for apply in constraints if isinstance(apply, KApply)]
@@ -780,77 +782,75 @@ def foundry_koverage(
                             for node in proof.kcfg.nodes:
                                 cterm = node.cterm
                                 for pattern in k_match_patterns:
-                                    k_match = pattern.match(cterm.cell('K_CELL'))
-                                    if k_match is not None:
-                                        # print(k_match)
-                                        from_addr = k_match['FROM']
-                                        code = k_match['CODE']
-                                        args = k_match['ARGS']
-                                        # print(args)
-                                        # with KCFGExplore(foundry.kevm) as kcfg_explore:
-                                        #     kore = kcfg_explore.kprint.kast_to_kore(args)
-                                        #     _, kore_client = kcfg_explore._kore_rpc
-                                        #     kore_simplified, logs = kore_client.simplify(kore)
-                                        #     print(kcfg_explore.kprint.kore_to_pretty(kore_simplified))
-                                        if type(code) is KToken:
-                                            acct_code = code.token
-                                            acct_hash = hashlib.sha3_256(bytes(acct_code, 'UTF-8')).digest()
+                                # for pattern in KEVM.call_patterns():
+                                    if pattern.arity == cterm.cell('K_CELL').arity:
+                                        k_match = pattern.match(cterm.cell('K_CELL'))
+                                        if k_match is not None:
+                                            from_addr = k_match['FROM']
+                                            code = k_match['CODE']
+                                            args = k_match['ARGS']
+                                            if type(code) is KToken:
+                                                acct_code = code.token
+                                                acct_hash = hashlib.sha3_256(bytes(acct_code, 'UTF-8')).digest()
 
-                                            val = call_cells.get(acct_hash)
-                                            if val is None:
-                                                val = []
+                                                val = call_cells.get(acct_hash)
+                                                if val is None:
+                                                    val = []
 
-                                            cov_cons = [
-                                                constraints
-                                                for node in proof.kcfg.covered
-                                                for constraints in node.cterm.constraints
-                                            ]
-                                            init_node = proof.kcfg.node(proof.init)
-                                            diff_cons = _cons_intersection(
-                                                [
-                                                    cons
-                                                    for cons in cov_cons
-                                                    if cons not in init_node.cterm.constraints
-                                                    if cons is not TRUE
+                                                cov_cons = [
+                                                    constraints
+                                                    for node in proof.kcfg.covered
+                                                    for constraints in node.cterm.constraints
                                                 ]
-                                            )
+                                                init_node = proof.kcfg.node(proof.init)
+                                                diff_cons = _cons_intersection(
+                                                    [
+                                                        cons
+                                                        for cons in cov_cons
+                                                        if cons not in init_node.cterm.constraints
+                                                        if cons is not TRUE
+                                                    ]
+                                                )
 
-                                            # TODO: parse args when they are of type BYTES-HOOKED
-                                            new_cons = diff_cons
-                                            if type(args) is KToken or type(args) is KApply:
-                                                args_cons = mk_bytes_constraint(args, KVariable('ARGS', 'Int'))
-                                                from_cons = mk_int_constraint(from_addr, KVariable('CALLER_ID', 'Int'))
-                                                # inter = _cons_intersection([diff_cons, args_cons, from_cons])
-                                                inter = _cons_intersection([from_cons, args_cons])
-                                                new_cons = inter
-                                            covered = andBool(
-                                                [_get_raw_constraint(cons) for cons in init_node.cterm.constraints]
-                                            )
-                                            not_covered = andBool([covered, notBool(new_cons)])
-                                            val.append(not_covered)
-                                            call_cells[acct_hash] = val
+                                                # TODO: parse args when they are of type BYTES-HOOKED
+                                                new_cons = diff_cons
+                                                if type(args) is KToken or type(args) is KApply:
+                                                    args_cons = mk_bytes_constraint(args, KVariable('ARGS', 'Int'))
+                                                    from_cons = mk_int_constraint(from_addr, KVariable('CALLER_ID', 'Int'))
+                                                    new_cons = andBool([diff_cons, args_cons, from_cons])
+                                                covered = andBool(
+                                                    [_get_raw_constraint(cons) for cons in init_node.cterm.constraints]
+                                                )
+                                                not_covered = andBool([covered, notBool(new_cons)])
+                                                val.append(not_covered)
+                                                call_cells[acct_hash] = val
 
-    b_counter: dict[bytes, Pattern] = {}
+    counter_ex: dict[bytes, Pattern] = {}
     for bytecode_h, cons_set in call_cells.items():
         b_uncovered = andBool(cons_set)
         with KCFGExplore(foundry.kevm, smt_timeout=125) as kcfg_explore:
             kore = _kast_to_kore(b_uncovered)
             _, client = kcfg_explore._kore_rpc
             equals = Equals(BOOLApp, INTApp, TRUEApp, kore)
-            print(kcfg_explore.kprint.kore_to_pretty(equals)) # TODO: remove this, debug purposes
+            # print(kcfg_explore.kprint.kore_to_pretty(equals))  # TODO: remove this, debug purposes
             model = client.get_model(equals)
             match model:
                 case SatResult(res):
-                    print(res)
-                    b_counter[bytecode_h] = res
-                    for subst_pred in flatten_label('#And', res):
+                    model_subst = kcfg_explore.kprint.kore_to_kast(res)
+                    for subst_pred in flatten_label('#And', model_subst):
                         subst_pattern = mlEquals(KVariable('###VAR'), KVariable('###TERM'))
                         m = subst_pattern.match(subst_pred)
-                        print(m)
+                        _subst = {}
+                        if m is not None and type(m['###VAR']) is KVariable:
+                            _subst[m['###VAR'].name] = m['###TERM']
+                        else:
+                            raise AssertionError(f'Received a non-substitution from get-model endpoint:')
+                        counter_ex[bytecode_h] = _subst
+                        print(_subst)
                 case _:
                     print(model)
 
-    return b_counter
+    return counter_ex
 
 
 def foundry_to_dot(foundry_root: Path, test: str) -> None:

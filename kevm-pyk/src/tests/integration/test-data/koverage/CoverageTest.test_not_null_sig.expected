@@ -1,0 +1,5 @@
+{'ARGS': KToken(token='0', sort=KSort(name='Int'))}
+{'CALLER_ID': KToken(token='0', sort=KSort(name='Int'))}
+{'NUMBER_CELL': KToken(token='0', sort=KSort(name='Int'))}
+{'ORIGIN_ID': KToken(token='0', sort=KSort(name='Int'))}
+{'VV0_sig_114b9705': KToken(token='0', sort=KSort(name='Int'))}
