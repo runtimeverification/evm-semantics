@@ -302,7 +302,8 @@ def exec_prove(
 
                 else:
                     _LOGGER.info(f'Converting claim to KCFG: {claim.label}')
-                    kcfg, init_node_id, target_node_id = KCFG.from_claim(kevm.definition, claim)
+                    assert save_directory is not None
+                    kcfg, init_node_id, target_node_id = KCFG.from_claim(kevm.definition, claim, save_directory)
 
                     new_init = ensure_ksequence_on_k_cell(kcfg.node(init_node_id).cterm)
                     new_target = ensure_ksequence_on_k_cell(kcfg.node(target_node_id).cterm)
@@ -419,7 +420,7 @@ def exec_prune_proof(
     apr_proof = APRProof.read_proof(claim.label, save_directory)
     node_ids = apr_proof.kcfg.prune(node)
     _LOGGER.info(f'Pruned nodes: {node_ids}')
-    apr_proof.write_proof()
+    apr_proof.write_proof_data()
 
 
 def exec_show_kcfg(

@@ -604,7 +604,7 @@ def foundry_show(
 
     contract_name, test_name = test.split('.')
     proof_digest = foundry.proof_digest(contract_name, test_name)
-    proof = Proof.read_proof(proof_digest, proofs_dir)
+    proof = APRProof.read_proof_data(proofs_dir, proof_digest)
     assert isinstance(proof, APRProof)
 
     def _short_info(cterm: CTerm) -> Iterable[str]:
@@ -689,7 +689,7 @@ def foundry_remove_node(foundry_root: Path, test: str, node: NodeIdLike) -> None
     apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
     node_ids = apr_proof.kcfg.prune(node, [apr_proof.init, apr_proof.target])
     _LOGGER.info(f'Pruned nodes: {node_ids}')
-    apr_proof.write_proof()
+    apr_proof.write_proof_data()
 
 
 def foundry_simplify_node(
@@ -722,7 +722,7 @@ def foundry_simplify_node(
         new_term, _ = kcfg_explore.cterm_simplify(cterm)
     if replace:
         apr_proof.kcfg.replace_node(node, CTerm.from_kast(new_term))
-        apr_proof.write_proof()
+        apr_proof.write_proof_data()
     res_term = minimize_term(new_term) if minimize else new_term
     return foundry.kevm.pretty_print(res_term, unalias=False, sort_collections=sort_collections)
 
@@ -760,7 +760,7 @@ def foundry_step_node(
     ) as kcfg_explore:
         for _i in range(repeat):
             node = kcfg_explore.step(apr_proof.kcfg, node, apr_proof.logs, depth=depth)
-            apr_proof.write_proof()
+            apr_proof.write_proof_data()
 
 
 def foundry_section_edge(
@@ -792,7 +792,7 @@ def foundry_section_edge(
         kcfg, _ = kcfg_explore.section_edge(
             apr_proof.kcfg, source_id=source_id, target_id=target_id, logs=apr_proof.logs, sections=sections
         )
-    apr_proof.write_proof()
+    apr_proof.write_proof_data()
 
 
 def _write_cfg(cfg: KCFG, path: Path) -> None:
@@ -867,14 +867,14 @@ def _method_to_apr_proof(
     else:
         _LOGGER.info(f'Initializing KCFG for test: {test}')
 
-        setup_digest = None
+        setup_method = None
         if method_name != 'setUp' and 'setUp' in contract.method_by_name:
-            setup_digest = foundry.proof_digest(contract_name, 'setUp')
+            setup_method = foundry.proof_digest(contract.name, 'setUp')
             _LOGGER.info(f'Using setUp method for test: {test}')
 
         empty_config = foundry.kevm.definition.empty_config(GENERATED_TOP_CELL)
         kcfg, init_node_id, target_node_id = _method_to_cfg(
-            empty_config, contract, method, save_directory, init_state=setup_digest
+            empty_config, contract, method, save_directory, init_state=setup_method
         )
 
         _LOGGER.info(f'Expanding macros in initial state for test: {test}')
@@ -901,7 +901,7 @@ def _method_to_apr_proof(
         else:
             apr_proof = APRProof(proof_digest, kcfg, init_node_id, target_node_id, {}, proof_dir=save_directory)
 
-    apr_proof.write_proof()
+    apr_proof.write_proof_data()
     return apr_proof
 
 
@@ -928,8 +928,8 @@ def _method_to_cfg(
     return cfg, init_node.id, target_node.id
 
 
-def get_final_accounts_cell(proof_digest: str, proof_dir: Path) -> tuple[KInner, Iterable[KInner]]:
-    apr_proof = APRProof.read_proof(proof_digest, proof_dir)
+def get_final_accounts_cell(proof_id: str, proof_dir: Path) -> tuple[KInner, Iterable[KInner]]:
+    apr_proof = APRProof.read_proof_data(proof_dir, proof_id)
     target = apr_proof.kcfg.node(apr_proof.target)
     cterm = single(apr_proof.kcfg.covers(target_id=target.id)).source.cterm
     acct_cell = cterm.cell('ACCOUNTS_CELL')
