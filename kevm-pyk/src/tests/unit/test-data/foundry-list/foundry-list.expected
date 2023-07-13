@@ -1,0 +1,54 @@
+APRProof: AssertTest.setUp:6d4f5e4c422a48e75c8a5c15ea0f42bd45fd12b8acba39b49ae2269169e49120
+    status: ProofStatus.PASSED
+    admitted: False
+    nodes: 5
+    pending: 0
+    failing: 0
+    stuck: 0
+    terminal: 0
+    refuted: 0
+Subproofs: 0
+
+APRProof: AssertTest.testFail_assert_false:bd093dbee752e588190f34370e4ea9abc4acd8115ad2768b648766b233d51726
+    status: ProofStatus.PASSED
+    admitted: False
+    nodes: 5
+    pending: 0
+    failing: 0
+    stuck: 0
+    terminal: 0
+    refuted: 0
+Subproofs: 0
+
+APRProof: AssertTest.testFail_assert_true:10fc8a780fb1057a5d0a6eaa584903a10705a2785e84347057b6f7d580c77225
+    status: ProofStatus.FAILED
+    admitted: False
+    nodes: 5
+    pending: 0
+    failing: 1
+    stuck: 0
+    terminal: 1
+    refuted: 0
+Subproofs: 0
+
+APRProof: AssertTest.test_assert_false:1c4364cd51b72dba2c1bb77057808a76e7d8ad2f1ced793f8ae7c8b76a2482ea
+    status: ProofStatus.FAILED
+    admitted: False
+    nodes: 5
+    pending: 0
+    failing: 1
+    stuck: 0
+    terminal: 1
+    refuted: 0
+Subproofs: 0
+
+APRProof: AssertTest.test_assert_true:bda69379fb297072c92ab89e4d3872f3dccbffac0eb37e3dabb0449e5a59d724
+    status: ProofStatus.PASSED
+    admitted: False
+    nodes: 5
+    pending: 0
+    failing: 0
+    stuck: 0
+    terminal: 0
+    refuted: 0
+Subproofs: 0
