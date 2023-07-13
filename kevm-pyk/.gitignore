@@ -1,3 +1,11 @@
 /dist/
 __pycache__/
 .coverage
+src/tests/unit/test-data/foundry-list/cache/
+src/tests/unit/test-data/foundry-list/lib/
+src/tests/unit/test-data/foundry-list/out/
+!src/tests/unit/test-data/foundry-list/out/apr_proofs/
+!src/tests/unit/test-data/foundry-list/out/kompiled/
+!src/tests/unit/test-data/foundry-list/out/kompiled-llvm/
+!src/tests/unit/test-data/foundry-list/out/tmp/
+!src/tests/unit/test-data/foundry-list/out/digest

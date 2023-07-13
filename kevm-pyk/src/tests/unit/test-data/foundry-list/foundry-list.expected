@@ -1,4 +1,4 @@
-APRProof: AssertTest.setUp:6d4f5e4c422a48e75c8a5c15ea0f42bd45fd12b8acba39b49ae2269169e49120
+APRProof: AssertTest.setUp:13fffecdbf453053b28c4ec61a38a8261adb931c55ea5f57b9fdb90d5054bf13
     status: ProofStatus.PASSED
     admitted: False
     nodes: 5
@@ -9,7 +9,7 @@ APRProof: AssertTest.setUp:6d4f5e4c422a48e75c8a5c15ea0f42bd45fd12b8acba39b49ae22
     refuted: 0
 Subproofs: 0
 
-APRProof: AssertTest.testFail_assert_false:bd093dbee752e588190f34370e4ea9abc4acd8115ad2768b648766b233d51726
+APRProof: AssertTest.testFail_assert_false:930679c7c09c8951614c91c02146d460727c9abb211da2e3b23748a1511dd810
     status: ProofStatus.PASSED
     admitted: False
     nodes: 5
@@ -20,7 +20,7 @@ APRProof: AssertTest.testFail_assert_false:bd093dbee752e588190f34370e4ea9abc4acd
     refuted: 0
 Subproofs: 0
 
-APRProof: AssertTest.testFail_assert_true:10fc8a780fb1057a5d0a6eaa584903a10705a2785e84347057b6f7d580c77225
+APRProof: AssertTest.testFail_assert_true:3f61fce069ecf43ed7a05b7d01890075a5576c29dbe3aa4e7d452f6f7ed8767a
     status: ProofStatus.FAILED
     admitted: False
     nodes: 5
@@ -31,7 +31,7 @@ APRProof: AssertTest.testFail_assert_true:10fc8a780fb1057a5d0a6eaa584903a10705a2
     refuted: 0
 Subproofs: 0
 
-APRProof: AssertTest.test_assert_false:1c4364cd51b72dba2c1bb77057808a76e7d8ad2f1ced793f8ae7c8b76a2482ea
+APRProof: AssertTest.test_assert_false:775a4534c481927f46d683e13acc4cfccd92cde0cd4e6366508b8ac6040f0f80
     status: ProofStatus.FAILED
     admitted: False
     nodes: 5
@@ -42,7 +42,7 @@ APRProof: AssertTest.test_assert_false:1c4364cd51b72dba2c1bb77057808a76e7d8ad2f1
     refuted: 0
 Subproofs: 0
 
-APRProof: AssertTest.test_assert_true:bda69379fb297072c92ab89e4d3872f3dccbffac0eb37e3dabb0449e5a59d724
+APRProof: AssertTest.test_assert_true:c73f37a4e07279945326eb1d9d6d395ad5149bcbd864aadb5f4f10b5241bd26e
     status: ProofStatus.PASSED
     admitted: False
     nodes: 5

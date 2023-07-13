@@ -23,6 +23,7 @@ f99dbdb3f85422cb3f30afb81003643842f984803ec4717c449c8c1a54bc5db5 /home/ifrostizz
 5c16c518a30e69f9310171a65e1f727e85eb263915c34e4ea0e4eb19b8ba9331 /home/ifrostizz/rv/evm-semantics/.build/usr/lib/kevm/include/kframework/evm.md:1017:10
 50bc1c3e6af6b9198c275295c264ab7292e0a92c173b91215eb8aa26251d7316 /home/ifrostizz/rv/evm-semantics/.build/usr/lib/kevm/kframework/include/kframework/builtin/domains.md:449:8
 b1f48080d858feebcbd3c985d38b2818d1b4e962636b045a1cdd232e1d1e3a8c /home/ifrostizz/rv/evm-semantics/.build/usr/lib/kevm/include/kframework/schedule.md:71:10
+e4190e5fd15f2eca3eaac0403a2c46396bffed7919aa5ed36e33cdeb945eed86 /home/ifrostizz/rv/evm-semantics/kevm-pyk/src/tests/unit/test-data/foundry-list/out/kompiled/contracts.k:223:11
 650e0f909c762540c9e8c3b3a7219a90c46ba8e3c9caf98d5bdc67bc1d58677f /home/ifrostizz/rv/evm-semantics/.build/usr/lib/kevm/include/kframework/schedule.md:274:10
 f6677a2323c15e8e4b2436f26ae6456521dab592568fe01a52a92d3ec2132c98 /home/ifrostizz/rv/evm-semantics/.build/usr/lib/kevm/include/kframework/evm.md:925:10
 1a9e4ee2f2ec10d6aca3fee65f70dc3da276cdfb6ef8311b5780ee110e95f31d /home/ifrostizz/rv/evm-semantics/kevm-pyk/src/tests/unit/test-data/foundry-list/out/kompiled/contracts.k:190:11
@@ -144,7 +145,6 @@ c339db89aea56ce1366c0a3c38d01462a0c898069ba68a36fd35c7c4d630919a /home/ifrostizz
 8842ae07a7cf58850004b31b5f5af53a49e3563a90c44d9fa31e7eef2a606351 /home/ifrostizz/rv/evm-semantics/.build/usr/lib/kevm/include/kframework/lemmas/bitwise-simplification.k:31:7
 3362dca02f3d4d2e09ab19c75b23830c6a74bc4404fd6f0827f37cc5db89a243 /home/ifrostizz/rv/evm-semantics/.build/usr/lib/kevm/include/kframework/gas.md:68:15
 9664ea76164dca8f71fe9e0be82cd2004686eb22f801a51f99c7a468afb58747 /home/ifrostizz/rv/evm-semantics/.build/usr/lib/kevm/include/kframework/abi.md:228:10
-c53485a5e3cc205849bb3c970f07e7b2a0017b299675184e431140542f5ffd15 /home/ifrostizz/rv/evm-semantics/kevm-pyk/src/tests/unit/test-data/foundry-list/out/kompiled/contracts.k:223:11
 855de47e8ae2b65b968cba4dfb1168a6687c8a5bed7c7b838b38ac3d15218285 /home/ifrostizz/rv/evm-semantics/.build/usr/lib/kevm/include/kframework/evm.md:1858:10
 859377879867776c970f873775cc61adca90923ab0161884fb0e379fe1741b72 /home/ifrostizz/rv/evm-semantics/.build/usr/lib/kevm/include/kframework/foundry.md:960:10
 f4f817d77a141b1bda8c6ffa73b00d6ef638b71aab88a03af4b165ab3fc26f48 /home/ifrostizz/rv/evm-semantics/.build/usr/lib/kevm/include/kframework/evm.md:2095:10
@@ -163,7 +163,6 @@ fc2ce487173bb1fa2697044443fc24fddee41fa01c7142e727c91472dd0325e2 /home/ifrostizz
 d49285d25a3f0b8144d69975db42f2c7d4e4b4cfbc018ec5b0986ee558982398 /home/ifrostizz/rv/evm-semantics/.build/usr/lib/kevm/include/kframework/abi.md:93:10
 87df009563b00fbd60d66e285359836447799059ddac6656f7572523b2a71592 /home/ifrostizz/rv/evm-semantics/kevm-pyk/src/tests/unit/test-data/foundry-list/out/kompiled/contracts.k:1042:11
 0806c482ae85cdba69c36d4aa32b625dab0f0f1b3f8457c6aca1896dff8e368d /home/ifrostizz/rv/evm-semantics/kevm-pyk/src/tests/unit/test-data/foundry-list/out/kompiled/contracts.k:820:11
-4142ad1479615cad5f4c15d9df525448eb993b820262a1934a179a063b3d6d1c /home/ifrostizz/rv/evm-semantics/kevm-pyk/src/tests/unit/test-data/foundry-list/out/kompiled/contracts.k:317:11
 0e1f6a6d0fe0e288a65628cb0577b2996be31421c367d09c3cd2f613f6e94a49 /home/ifrostizz/rv/evm-semantics/.build/usr/lib/kevm/include/kframework/serialization.md:38:29
 3032c8b7e7a63acdeeba964f6395dca7fb84260c1b36185ca25ba88512fed357 /home/ifrostizz/rv/evm-semantics/.build/usr/lib/kevm/include/kframework/evm.md:2076:10
 fe7cc3afe9431bc4e4398b6f1e49a07fe926ccd9a0c39df33c12ec9edc5a0948 /home/ifrostizz/rv/evm-semantics/.build/usr/lib/kevm/include/kframework/evm.md:1051:10
@@ -792,7 +791,6 @@ b5811bcf76cab55a0152824671b57f44ebec2a9cd4d0203106a113580fa65762 /home/ifrostizz
 79e7bf42b6ec90beb1f9ee35813c6c5ff2bf22b4e46b4d9c9d378e656b5d733e /home/ifrostizz/rv/evm-semantics/.build/usr/lib/kevm/include/kframework/evm.md:2311:10
 455f5549914235a593be1435d75c074c5cbba62f636e5d79c1542d829502294d /home/ifrostizz/rv/evm-semantics/.build/usr/lib/kevm/include/kframework/foundry.md:1473:10
 13261f0eb84513dd0a33ffdf2d0aadf40728a6a117d3130a34e153282e14dd73 /home/ifrostizz/rv/evm-semantics/.build/usr/lib/kevm/kframework/include/kframework/builtin/domains.md:876:8
-564b1696614969d4b78254bca70c6a7c84980f9cb6f44745c945bbbf1d9a29de /home/ifrostizz/rv/evm-semantics/kevm-pyk/src/tests/unit/test-data/foundry-list/out/kompiled/contracts.k:47:11
 db598f6af56932e3cf54f78ead138a62b13e02093e1a4328f605cd8f0959f6b4 /home/ifrostizz/rv/evm-semantics/.build/usr/lib/kevm/include/kframework/word.md:73:10
 0ee7a2c1d6ff36a91ac9e9ed19a2c624ba21b97f4511af22044f6169bb8adfa1 /home/ifrostizz/rv/evm-semantics/.build/usr/lib/kevm/include/kframework/evm.md:1033:25
 34328f07490eae9a3c60959e6bc930879eadfd5c2141758b8ee518c2fb0204ad /home/ifrostizz/rv/evm-semantics/.build/usr/lib/kevm/kframework/include/kframework/builtin/domains.md:1159:8
@@ -1257,6 +1255,7 @@ bfe5ac04ce1ecf20bf6664a86e88a98b5e8e9774d748d52a22afdfd02f170d08 /home/ifrostizz
 af39fb4926aacd7e4f59eec9dfd730015b746ae401d6e77f46eda7c3aea3421e /home/ifrostizz/rv/evm-semantics/.build/usr/lib/kevm/include/kframework/evm.md:1650:10
 9b9270f4c76bba84c071982b277aaf13befb371e527d35d4e5afebdeb9b15a77 /home/ifrostizz/rv/evm-semantics/.build/usr/lib/kevm/include/kframework/serialization.md:560:10
 adfacb58b0678a49f66186954229939a953c9849d5b08edc8f887c0d7514b2c6 /home/ifrostizz/rv/evm-semantics/.build/usr/lib/kevm/kframework/include/kframework/builtin/domains.md:1423:5
+762a1aede6d1e20ba420c1b5f22f1c13503701bcdf6ea0fd3ef7e5ea3a62a7d9 /home/ifrostizz/rv/evm-semantics/kevm-pyk/src/tests/unit/test-data/foundry-list/out/kompiled/contracts.k:317:11
 f0d96b39c9f93384fe47d18222d62554ef8930a11a603de2472884ea7b08729d /home/ifrostizz/rv/evm-semantics/.build/usr/lib/kevm/kframework/include/kframework/builtin/domains.md:439:8
 5cd059b5c04883963682c6f063035ae74a91a4ebc9977203d259fba7f57f3a33 /home/ifrostizz/rv/evm-semantics/.build/usr/lib/kevm/include/kframework/gas.md:35:10
 fbcc52ae18524614be047bd019fffbd61a9bba84506f5c6ff7d7bb7fcbe15d45 /home/ifrostizz/rv/evm-semantics/.build/usr/lib/kevm/include/kframework/lemmas/bitwise-simplification.k:12:10
@@ -1319,6 +1318,7 @@ a82d2ef5191a994273c3df51e4b643d10f37aded6ec8326d4336ae694cec534b /home/ifrostizz
 eac34c73e355c248bb39c789cc728c06c1acd5663f661078d67d90e3698cf209 /home/ifrostizz/rv/evm-semantics/.build/usr/lib/kevm/include/kframework/schedule.md:106:10
 a2f780ab2116517ffb44a56ca9208b596b5c312ac2cdda7fe04abd5efce4b8b9 /home/ifrostizz/rv/evm-semantics/kevm-pyk/src/tests/unit/test-data/foundry-list/out/kompiled/contracts.k:725:11
 56f2cf9053258d30d61724d04a65f279ba8c640dbfed110ec0e7459c817adab9 /home/ifrostizz/rv/evm-semantics/.build/usr/lib/kevm/include/kframework/lemmas/evm-int-simplification.k:51:7
+cd87df87e866270a4287de9d608bbcc6eaefbb6a989979db53cc2588fe308e15 /home/ifrostizz/rv/evm-semantics/kevm-pyk/src/tests/unit/test-data/foundry-list/out/kompiled/contracts.k:1129:11
 a5709dd3dec5d89f4d7b19a816a79d8ed42ec005906a49f68dee3e0f8cf7b1ba /home/ifrostizz/rv/evm-semantics/.build/usr/lib/kevm/include/kframework/abi.md:358:10
 abef6bbf9d215197921c16b3a05c15e64d4957c43e0629046dfeff4657d41405 /home/ifrostizz/rv/evm-semantics/.build/usr/lib/kevm/include/kframework/evm-types.md:254:10
 1b1885ef40468f32f60cc15d003ceef17d537566e6efa69b30cfb25aa7d51bf0 /home/ifrostizz/rv/evm-semantics/.build/usr/lib/kevm/include/kframework/evm.md:740:10
@@ -1396,7 +1396,6 @@ e37a1c555055387987bcb8dfb8b32f37db5c4b999b6c1d89ff0902f81db20243 /home/ifrostizz
 f277dd3b6cdf772b2f60e36bb2f44176a437915071c46760129db7ddfae5183e /home/ifrostizz/rv/evm-semantics/.build/usr/lib/kevm/include/kframework/json-rpc.md:61:10
 46c45730e27cfdbb4f9f265cc29496a9126948b0a1adf746dab79aa7a41cc45b /home/ifrostizz/rv/evm-semantics/.build/usr/lib/kevm/include/kframework/evm.md:2045:10
 cb2e8ced496e1869d619ab1695d32c661924d95acdd0c593c0a33b966e6d83ee /home/ifrostizz/rv/evm-semantics/.build/usr/lib/kevm/include/kframework/evm.md:1897:10
-24cf83506fc834330e6191c639681df8d46ce0b49002707369474f59ce6337cb /home/ifrostizz/rv/evm-semantics/kevm-pyk/src/tests/unit/test-data/foundry-list/out/kompiled/contracts.k:329:11
 1c55afcd19222ebbe0de08ef416d8c75b1ae370c38aa7eb8de4df81f7aea315c /home/ifrostizz/rv/evm-semantics/.build/usr/lib/kevm/include/kframework/word.md:220:10
 0aeeb5142d8512f52fc1bca95da7fbc097fb38e2c3db8647ea12b0e7c8b90826 /home/ifrostizz/rv/evm-semantics/.build/usr/lib/kevm/include/kframework/abi.md:244:10
 7c630feaf781accc6143ac772d6393d9e1a7faea50bcccdfba76e3020198e9c8 /home/ifrostizz/rv/evm-semantics/.build/usr/lib/kevm/kframework/include/kframework/builtin/domains.md:886:8
@@ -1747,7 +1746,6 @@ ade55a49f2f8c0d5f306147b10f27b85d70de335c2ef47832d688c5bab9859c6 /home/ifrostizz
 f9c398cfcaa66628c69f66e34cc5e374c382b22d5ebbcbe7a95f6d44cfcefbf5 /home/ifrostizz/rv/evm-semantics/.build/usr/lib/kevm/include/kframework/abi.md:285:10
 c0f49a0a67cf7953fae3fbad389958e197158bc0a3ade828d0a83263e7cc8b01 /home/ifrostizz/rv/evm-semantics/.build/usr/lib/kevm/include/kframework/lemmas/int-simplification.k:90:10
 471e8a75bef377149e741963b12e4301be71dedd7c70ec98d3823a4e8aa0ca9e /home/ifrostizz/rv/evm-semantics/.build/usr/lib/kevm/include/kframework/evm.md:1891:10
-e4efca347e9c41de664e53b5f7aa7814c3ecc1c1047229f4a47f33c90f471d6c /home/ifrostizz/rv/evm-semantics/kevm-pyk/src/tests/unit/test-data/foundry-list/out/kompiled/contracts.k:1129:11
 b87686476d42cb8b71543b0942857bf74e4e1f49c62efe4f060a06e0cc2d53fb /home/ifrostizz/rv/evm-semantics/.build/usr/lib/kevm/kframework/include/kframework/builtin/domains.md:1161:8
 adf71c46bcabe729dc864ecc01f1e53a7238eea2ea5105c4089c032cb4649233 /home/ifrostizz/rv/evm-semantics/.build/usr/lib/kevm/include/kframework/abi.md:363:10
 6913abf889a72ebb1e47566e85f752f8eb4a757eab8738092f361ee993c1bd77 /home/ifrostizz/rv/evm-semantics/.build/usr/lib/kevm/include/kframework/evm.md:530:10
@@ -1865,6 +1863,7 @@ eb6f9ada2d2491ce658e55bc016e0e01c7ddc3109644bc505bd679c588c49b30 /home/ifrostizz
 212d824b2c7f965c58c8e3d2835b9689e764a750176ffb9d9fba710d2ea8e23a /home/ifrostizz/rv/evm-semantics/.build/usr/lib/kevm/include/kframework/hashed-locations.md:60:10
 bc92e8eaf5a63884e21886357c4cac2ee6b5ed4164d6936ae72ecb5c910ed069 /home/ifrostizz/rv/evm-semantics/.build/usr/lib/kevm/include/kframework/evm.md:1606:10
 bb63ccfd7b486830ab061f3d778e896d6a54da9cda7a3024a12bb2743586e479 /home/ifrostizz/rv/evm-semantics/.build/usr/lib/kevm/include/kframework/abi.md:299:10
+22df9105ac164b57ab735ec459ef5c0ae6df5c4e5c8f39568587f1513a6b704e /home/ifrostizz/rv/evm-semantics/kevm-pyk/src/tests/unit/test-data/foundry-list/out/kompiled/contracts.k:329:11
 cf46a1c55ae03d7124b8c4d35be85667c49f90ee5e2aa9e23faa9190b8e37682 /home/ifrostizz/rv/evm-semantics/.build/usr/lib/kevm/include/kframework/evm.md:727:10
 19ee8fd26c2774de47a5a4b1d01a315e3da897932c9283557efc23ff6e9ee80f /home/ifrostizz/rv/evm-semantics/.build/usr/lib/kevm/include/kframework/serialization.md:522:10
 eafd2b375834886296286e768ee9f024ce58b61f340e367903fa858451a34f44 /home/ifrostizz/rv/evm-semantics/.build/usr/lib/kevm/include/kframework/serialization.md:313:10
@@ -2071,6 +2070,7 @@ de68a36cbe2a2d67653cbe6e8657a9e3b8a42677f94ad8977168a74019c588cf /home/ifrostizz
 8e94328e653e218faed6d5e39ed74a4c368082c038dab9cb8f555381899797d4 /home/ifrostizz/rv/evm-semantics/.build/usr/lib/kevm/include/kframework/schedule.md:344:10
 d3bda3b8b585116ae3a37009d0500bc6d784f8798f67bcfa8b4110689d2fb1c9 /home/ifrostizz/rv/evm-semantics/.build/usr/lib/kevm/include/kframework/serialization.md:163:10
 6180dd95cc0bd68a0431b6a2333b83389b8d0260e7b546296c6fbb4fe1103bfd /home/ifrostizz/rv/evm-semantics/.build/usr/lib/kevm/include/kframework/gas.md:87:10
+8b50892980a5f9071ec27a599f2220ff3d254ebf4b6a98ca4f69a28127f119d1 /home/ifrostizz/rv/evm-semantics/kevm-pyk/src/tests/unit/test-data/foundry-list/out/kompiled/contracts.k:47:11
 6ca3fafb1b78737641695c56279317771de00467dfc0f5dc51c9d935d79d5811 /home/ifrostizz/rv/evm-semantics/.build/usr/lib/kevm/kframework/include/kframework/builtin/domains.md:437:8
 f9025763023fdfb6df08e956505db709f1a1e4c7d541001646c3309c2d4a95dc /home/ifrostizz/rv/evm-semantics/.build/usr/lib/kevm/include/kframework/evm.md:1908:10
 d8b4ae4926d8ec7b1d5abaa5fed68fd6c7f3f5a21c76a51231394a2b36fbf995 /home/ifrostizz/rv/evm-semantics/.build/usr/lib/kevm/kframework/include/kframework/builtin/domains.md:1349:8

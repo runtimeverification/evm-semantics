@@ -664,6 +664,7 @@ def foundry_to_dot(foundry_root: Path, test: str) -> None:
 def foundry_list(foundry_root: Path) -> list[str]:
     foundry = Foundry(foundry_root)
     apr_proofs_dir = foundry.out / 'apr_proofs'
+    print(apr_proofs_dir)
 
     all_methods = [
         f'{contract.name}.{method.name}' for contract in foundry.contracts.values() for method in contract.methods
