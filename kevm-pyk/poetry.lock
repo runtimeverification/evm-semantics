@@ -794,7 +794,7 @@ plugins = ["importlib-metadata"]
 
 [[package]]
 name = "pyk"
-version = "0.1.366"
+version = "0.1.367"
 description = ""
 optional = false
 python-versions = "^3.10"
@@ -814,8 +814,8 @@ tomli = "^2.0.1"
 [package.source]
 type = "git"
 url = "https://github.com/runtimeverification/pyk.git"
-reference = "v0.1.366"
-resolved_reference = "c186a06824d3c31bd947e0dba5193b0d3b834788"
+reference = "v0.1.367"
+resolved_reference = "2b9ec375245f34b4b8f1f59b3e8a6a76da7fcd4f"
 
 [[package]]
 name = "pyperclip"
@@ -1038,13 +1038,13 @@ files = [
 
 [[package]]
 name = "zipp"
-version = "3.16.0"
+version = "3.16.1"
 description = "Backport of pathlib-compatible object wrapper for zip files"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "zipp-3.16.0-py3-none-any.whl", hash = "sha256:5dadc3ad0a1f825fe42ce1bce0f2fc5a13af2e6b2d386af5b0ff295bc0a287d3"},
-    {file = "zipp-3.16.0.tar.gz", hash = "sha256:1876cb065531855bbe83b6c489dcf69ecc28f1068d8e95959fe8bbc77774c941"},
+    {file = "zipp-3.16.1-py3-none-any.whl", hash = "sha256:0b37c326d826d5ca35f2b9685cd750292740774ef16190008b00a0227c256fe0"},
+    {file = "zipp-3.16.1.tar.gz", hash = "sha256:857b158da2cbf427b376da1c24fd11faecbac5a4ac7523c3607f8a01f94c2ec0"},
 ]
 
 [package.extras]
@@ -1054,4 +1054,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "8097c90c8f7f65a3d3bafac7813d83340b728f84e78f18311e8ebcad2193e96e"
+content-hash = "2a8c3ba98031af8746df591abab3ca493ecf7fb40238d6ecaf12e70a615c7555"
