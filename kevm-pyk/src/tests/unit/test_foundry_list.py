@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from kevm_pyk.foundry import foundry_list
 
+from kevm_pyk.foundry import foundry_list
 from tests.unit.utils import TEST_DATA_DIR
 
 if TYPE_CHECKING:
