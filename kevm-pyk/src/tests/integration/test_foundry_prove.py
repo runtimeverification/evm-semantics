@@ -92,6 +92,7 @@ def test_foundry_prove(test_id: str, foundry_root: Path, update_expected_output:
         smt_timeout=125,
         smt_retry_limit=4,
         use_booster=use_booster,
+        counterexample_info=True,
     )
 
     # Then
@@ -110,6 +111,7 @@ def test_foundry_prove(test_id: str, foundry_root: Path, update_expected_output:
         pending=True,
         failing=True,
         failure_info=True,
+        counterexample_info=True,
     )
 
     # Then
@@ -129,6 +131,7 @@ def test_foundry_fail(test_id: str, foundry_root: Path, update_expected_output: 
         smt_timeout=125,
         smt_retry_limit=4,
         use_booster=use_booster,
+        counterexample_info=True,
     )
 
     # Then
@@ -147,6 +150,7 @@ def test_foundry_fail(test_id: str, foundry_root: Path, update_expected_output: 
         pending=True,
         failing=True,
         failure_info=True,
+        counterexample_info=True,
     )
 
     # Then
@@ -171,6 +175,7 @@ def test_foundry_bmc(test_id: str, foundry_root: Path, use_booster: bool) -> Non
         smt_timeout=125,
         smt_retry_limit=4,
         use_booster=use_booster,
+        counterexample_info=True,
     )
 
     # Then
