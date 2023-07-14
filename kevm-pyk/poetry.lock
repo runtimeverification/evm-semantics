@@ -744,17 +744,17 @@ test = ["enum34", "ipaddress", "mock", "pywin32", "wmi"]
 
 [[package]]
 name = "pybind11"
-version = "2.10.4"
+version = "2.11.0"
 description = "Seamless operability between C++11 and Python"
 optional = false
 python-versions = ">=3.6"
 files = [
-    {file = "pybind11-2.10.4-py3-none-any.whl", hash = "sha256:ec9be0c45061c829648d7e8c98a7d041768b768c934acd15196e0f1943d9a818"},
-    {file = "pybind11-2.10.4.tar.gz", hash = "sha256:0bb621d3c45a049aa5923debb87c5c0e2668227905c55ebe8af722608d8ed927"},
+    {file = "pybind11-2.11.0-py3-none-any.whl", hash = "sha256:307443ea89b73ce88f68fa48687d160c036622a54bc2a25aae9d5ea792bef268"},
+    {file = "pybind11-2.11.0.tar.gz", hash = "sha256:03006fb261379ed19cb0171a9cc6238d64da8a31b3f5e754cb276d4615449217"},
 ]
 
 [package.extras]
-global = ["pybind11-global (==2.10.4)"]
+global = ["pybind11-global (==2.11.0)"]
 
 [[package]]
 name = "pycodestyle"
@@ -1038,18 +1038,18 @@ files = [
 
 [[package]]
 name = "zipp"
-version = "3.16.1"
+version = "3.16.2"
 description = "Backport of pathlib-compatible object wrapper for zip files"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "zipp-3.16.1-py3-none-any.whl", hash = "sha256:0b37c326d826d5ca35f2b9685cd750292740774ef16190008b00a0227c256fe0"},
-    {file = "zipp-3.16.1.tar.gz", hash = "sha256:857b158da2cbf427b376da1c24fd11faecbac5a4ac7523c3607f8a01f94c2ec0"},
+    {file = "zipp-3.16.2-py3-none-any.whl", hash = "sha256:679e51dd4403591b2d6838a48de3d283f3d188412a9782faadf845f298736ba0"},
+    {file = "zipp-3.16.2.tar.gz", hash = "sha256:ebc15946aa78bd63458992fc81ec3b6f7b1e92d51c35e6de1c3804e73b799147"},
 ]
 
 [package.extras]
 docs = ["furo", "jaraco.packaging (>=9.3)", "jaraco.tidelift (>=1.4)", "rst.linker (>=1.9)", "sphinx (>=3.5)", "sphinx-lint"]
-testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "pytest (>=6)", "pytest-black (>=0.3.7)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=2.2)", "pytest-mypy (>=0.9.1)", "pytest-ruff"]
+testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "pytest (>=6)", "pytest-black (>=0.3.7)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=2.2)", "pytest-ignore-flaky", "pytest-mypy (>=0.9.1)", "pytest-ruff"]
 
 [metadata]
 lock-version = "2.0"
