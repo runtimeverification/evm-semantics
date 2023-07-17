@@ -348,13 +348,13 @@ flake8 = "*"
 
 [[package]]
 name = "flake8-type-checking"
-version = "2.4.0"
+version = "2.4.1"
 description = "A flake8 plugin for managing type-checking imports & forward references"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "flake8_type_checking-2.4.0-py3-none-any.whl", hash = "sha256:2dee127f300bb95b7f17b7c3fff4f6336f5e4ba92082c15928c6e19b666cfba4"},
-    {file = "flake8_type_checking-2.4.0.tar.gz", hash = "sha256:9ea96d01e6557a47835acf04020c48fabb9c3d4664c15f2920915e09e65c1d55"},
+    {file = "flake8_type_checking-2.4.1-py3-none-any.whl", hash = "sha256:fe75cfe668e3bf6914dd2ba36579bbe6c82f3795127774e7584ecc8c9f7379e5"},
+    {file = "flake8_type_checking-2.4.1.tar.gz", hash = "sha256:f3c7023114dee2ec2e8282a9080206ffd8fdd61205626593aa5c801bc2f8035d"},
 ]
 
 [package.dependencies]
@@ -663,13 +663,13 @@ flake8 = ">=5.0.0"
 
 [[package]]
 name = "platformdirs"
-version = "3.8.1"
+version = "3.9.1"
 description = "A small Python package for determining appropriate platform-specific dirs, e.g. a \"user data dir\"."
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "platformdirs-3.8.1-py3-none-any.whl", hash = "sha256:cec7b889196b9144d088e4c57d9ceef7374f6c39694ad1577a0aab50d27ea28c"},
-    {file = "platformdirs-3.8.1.tar.gz", hash = "sha256:f87ca4fcff7d2b0f81c6a748a77973d7af0f4d526f98f308477c3c436c74d528"},
+    {file = "platformdirs-3.9.1-py3-none-any.whl", hash = "sha256:ad8291ae0ae5072f66c16945166cb11c63394c7a3ad1b1bc9828ca3162da8c2f"},
+    {file = "platformdirs-3.9.1.tar.gz", hash = "sha256:1b42b450ad933e981d56e59f1b97495428c9bd60698baab9f3eb3d00d5822421"},
 ]
 
 [package.extras]
@@ -794,7 +794,7 @@ plugins = ["importlib-metadata"]
 
 [[package]]
 name = "pyk"
-version = "0.1.369"
+version = "0.1.370"
 description = ""
 optional = false
 python-versions = "^3.10"
@@ -814,8 +814,8 @@ tomli = "^2.0.1"
 [package.source]
 type = "git"
 url = "https://github.com/runtimeverification/pyk.git"
-reference = "v0.1.369"
-resolved_reference = "a2f49e2e8a0dd2bf993502d83120b5b19c0929d1"
+reference = "v0.1.370"
+resolved_reference = "d1492aecd4f3dc805e1582739592f55eac95ca8f"
 
 [[package]]
 name = "pyperclip"
@@ -1054,4 +1054,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "2ce905d7a80d0274f4b6986888c928ae8b2964e27527836dfc73778b2bd295c9"
+content-hash = "d4380742f893f24eaca8c97d7b09013dc1b302e6554ad1a9fa6f34678d615854"
