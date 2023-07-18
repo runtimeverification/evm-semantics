@@ -17,10 +17,10 @@ extern "C" {
 }
 
 std::string of_z_width(unsigned width, mpz_ptr i) {
-  mpz_t len;
-  mpz_init_set_ui(len, width);
-  string* token = hook_BYTES_int2bytes(len, i, tag_big_endian());
-  mpz_clear(len);
+  mpz_t int_len;
+  mpz_init_set_ui(int_len, width);
+  string* token = hook_BYTES_int2bytes(int_len, i, tag_big_endian());
+  mpz_clear(int_len);
   return std::string(token->data, len(token));
 }
 
@@ -30,10 +30,10 @@ std::string of_z(mpz_ptr i) {
   }
   size_t bits = mpz_sizeinbase(i, 2);
   size_t width = (bits + 8) / 8;
-  mpz_t len;
-  mpz_init_set_ui(len, width);
-  string* token = hook_BYTES_int2bytes(len, i, tag_big_endian());
-  mpz_clear(len);
+  mpz_t int_len;
+  mpz_init_set_ui(int_len, width);
+  string* token = hook_BYTES_int2bytes(int_len, i, tag_big_endian());
+  mpz_clear(int_len);
   return std::string(token->data, len(token));
 }
 
