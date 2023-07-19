@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from pyk.cterm import CTerm
-from pyk.kast.inner import KApply, KRewrite, KVariable, Subst
+from pyk.kast.inner import KApply, KInner, KRewrite, KVariable, Subst
 from pyk.kast.manip import (
     abstract_term_safely,
     bottom_up,
@@ -25,9 +25,8 @@ if TYPE_CHECKING:
     from collections.abc import Callable, Collection, Iterable
     from typing import Final, TypeVar
 
-    from pyk.kast import KInner
     from pyk.kast.outer import KDefinition
-    from pyk.kcfg import KCFGExplore
+    from pyk.kcfg import KCFG, KCFGExplore
     from pyk.ktool.kprove import KProve
     from pyk.proof.proof import Proof
     from pyk.utils import BugReport
@@ -181,7 +180,7 @@ def kevm_prove(
         return False
 
 
-def print_failure_info(proof: Proof, kcfg_explore: KCFGExplore) -> list[str]:
+def print_failure_info(proof: Proof, kcfg_explore: KCFGExplore, counterexample_info: bool = False) -> list[str]:
     if type(proof) is APRProof or type(proof) is APRBMCProof:
         target = proof.kcfg.node(proof.target)
 
@@ -217,17 +216,33 @@ def print_failure_info(proof: Proof, kcfg_explore: KCFGExplore) -> list[str]:
 
                 res_lines.append('  Path condition:')
                 res_lines += [f'    {kcfg_explore.kprint.pretty_print(proof.path_constraints(node.id))}']
+                if counterexample_info:
+                    res_lines.extend(print_model(node, kcfg_explore))
 
-                res_lines.append('')
-                res_lines.append(
-                    'Join the Runtime Verification Discord server for support: https://discord.gg/GHvFbRDD'
-                )
+        res_lines.append('')
+        res_lines.append(
+            'Join the Runtime Verification Discord server for support: https://discord.com/invite/CurfmXNtbN'
+        )
 
         return res_lines
     elif type(proof) is EqualityProof:
         return ['EqualityProof failed.']
     else:
         raise ValueError('Unknown proof type.')
+
+
+def print_model(node: KCFG.Node, kcfg_explore: KCFGExplore) -> list[str]:
+    res_lines: list[str] = []
+    result_subst = kcfg_explore.cterm_get_model(node.cterm)
+    if type(result_subst) is Subst:
+        res_lines.append('  Model:')
+        for var, term in result_subst.to_dict().items():
+            term_kast = KInner.from_dict(term)
+            res_lines.append(f'    {var} = {kcfg_explore.kprint.pretty_print(term_kast)}')
+    else:
+        res_lines.append('  Failed to generate a model.')
+
+    return res_lines
 
 
 def arg_pair_of(
