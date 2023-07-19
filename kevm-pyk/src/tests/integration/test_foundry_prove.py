@@ -224,6 +224,28 @@ def check_pending(foundry_root: Path, test: str, pending: list[int]) -> None:
     assert [node.id for node in proof.pending] == pending
 
 
+def test_foundry_auto_abstraction(foundry_root: Path, update_expected_output: bool) -> None:
+    foundry_prove(
+        foundry_root,
+        tests=['GasTest.testInfiniteGas'],
+        auto_abstract_gas=True,
+    )
+
+    show_res = foundry_show(
+        foundry_root,
+        test='GasTest.testInfiniteGas',
+        to_module=True,
+        minimize=False,
+        sort_collections=True,
+        omit_unstable_output=True,
+        pending=True,
+        failing=True,
+        failure_info=True,
+    )
+
+    assert_or_update_show_output(show_res, TEST_DATA_DIR / 'gas-abstraction.expected', update=update_expected_output)
+
+
 def assert_pass(test_id: str, prove_res: dict[str, tuple[bool, list[str] | None]]) -> None:
     assert test_id in prove_res
     passed, log = prove_res[test_id]
