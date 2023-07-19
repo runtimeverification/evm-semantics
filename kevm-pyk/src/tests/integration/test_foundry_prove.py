@@ -186,6 +186,8 @@ def test_foundry_auto_abstraction(foundry_root: Path, update_expected_output: bo
     foundry_prove(
         foundry_root,
         tests=['GasTest.testInfiniteGas'],
+        smt_timeout=125,
+        smt_retry_limit=4,
         auto_abstract_gas=True,
     )
 
