@@ -701,4 +701,6 @@ module SUMMARY-ASSERTTEST.TESTFAIL-ASSERT-FALSE:D9767505A49B578A77DD3E9B8A9FE01E
 endmodule
 0 Failure nodes. (0 pending and 0 failing)
 
+Join the Runtime Verification Discord server for support: https://discord.com/invite/CurfmXNtbN
+
 Access documentation for KEVM foundry integration at https://docs.runtimeverification.com/kevm-integration-for-foundry/

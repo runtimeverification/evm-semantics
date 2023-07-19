@@ -2344,7 +2344,13 @@ Failing nodes:
     #And { true #Equals ( notBool VV0_a_114b9705:Int ==Int VV1_b_114b9705:Int ) ==Bool true } ) ) ) ) ) ) ) ) ) ) ) #Implies { true #Equals foundry_success ( ... statusCode: EVMC_SUCCESS , failed: #lookup ( ( 46308022326495007027972728677917914892729792999299745830475596687180801507328 |-> 1 ) , 46308022326495007027972728677917914892729792999299745830475596687180801507328 ) , revertExpected: false , opcodeExpected: false , recordEventExpected: false , eventExpected: false ) } )
   Path condition:
     #Top
+  Model:
+    CALLER_ID = 0
+    NUMBER_CELL = 0
+    ORIGIN_ID = 0
+    VV0_a_114b9705 = 1
+    VV1_b_114b9705 = 0
 
-Join the Runtime Verification Discord server for support: https://discord.gg/GHvFbRDD
+Join the Runtime Verification Discord server for support: https://discord.com/invite/CurfmXNtbN
 
 Access documentation for KEVM foundry integration at https://docs.runtimeverification.com/kevm-integration-for-foundry/
