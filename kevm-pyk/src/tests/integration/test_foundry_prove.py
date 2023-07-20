@@ -183,7 +183,6 @@ def test_foundry_bmc(test_id: str, foundry_root: Path, use_booster: bool) -> Non
         smt_timeout=125,
         smt_retry_limit=4,
         use_booster=use_booster,
-        counterexample_info=True,
     )
 
     # Then
@@ -196,6 +195,8 @@ def test_foundry_merge_nodes(foundry_root: Path, use_booster: bool) -> None:
     foundry_prove(
         foundry_root,
         tests=[test_id],
+        smt_timeout=125,
+        smt_retry_limit=4,
         max_iterations=2,
         use_booster=use_booster,
     )
@@ -213,6 +214,8 @@ def test_foundry_merge_nodes(foundry_root: Path, use_booster: bool) -> None:
     prove_res = foundry_prove(
         foundry_root,
         tests=[test_id],
+        smt_timeout=125,
+        smt_retry_limit=4,
         use_booster=use_booster,
     )
     assert_pass(test_id, prove_res)

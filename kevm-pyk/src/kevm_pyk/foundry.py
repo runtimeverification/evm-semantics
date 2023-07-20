@@ -546,7 +546,7 @@ def foundry_prove(
                 kcfg_explore,
                 save_directory=save_directory,
                 max_depth=max_depth,
-                max_iterations=max_iterations,
+                max_iterations=max_iterations if method_name != 'setUp' else None,
                 workers=workers,
                 break_every_step=break_every_step,
                 break_on_jumpi=break_on_jumpi,
