@@ -884,13 +884,28 @@ function stopPrank() external;
 
 Gas Manipulation
 ----------------
+### `setGas` - Sets the current gas left (reported by `GAS` opcode) to a specific amount.
+
+```
+function setGas(uint256 newGas) external;
+```
+
+`setGas` is useful when writing tests that depend on the gas used, and so a specific concrete amount is needed instead of the default infinite gas.
+
+```{.k .bytes}
+    rule [foundry.call.setGas]:
+         <k> #call_foundry SELECTOR ARGS => . ... </k>
+         <gas> _ => #asWord(ARGS) </gas>
+      requires SELECTOR ==Int selector ( "setGas(uint256)" )
+```
+
+### `infiniteGas` - Sets the remaining gas to an infinite value.
 
 ```
 function infiniteGas() external;
 ```
 
-Set the remaining gas to an infinite value.
-This is useful for running tests without them running out of gas.
+`infiniteGas` is useful for running tests without them running out of gas. It is applied by default.
 
 ```{.k .bytes .symbolic}
     rule [foundry.call.infiniteGas]:
