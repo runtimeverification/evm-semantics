@@ -1,9 +1,5 @@
 name: 'Update Foundry prove'
 on: push
-inputs:
-  tag:
-    description: 'Docker image tag to use'
-    required: true
 jobs:
   update-output:
     name: 'Update Foundry expected output'
