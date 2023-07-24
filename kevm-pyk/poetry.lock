@@ -91,13 +91,13 @@ files = [
 
 [[package]]
 name = "click"
-version = "8.1.4"
+version = "8.1.6"
 description = "Composable command line interface toolkit"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "click-8.1.4-py3-none-any.whl", hash = "sha256:2739815aaa5d2c986a88f1e9230c55e17f0caad3d958a5e13ad0797c166db9e3"},
-    {file = "click-8.1.4.tar.gz", hash = "sha256:b97d0c74955da062a7d4ef92fadb583806a585b2ea81958a81bd72726cbb8e37"},
+    {file = "click-8.1.6-py3-none-any.whl", hash = "sha256:fa244bb30b3b5ee2cae3da8f55c9e5e0c0e86093306301fb418eb9dc40fbded5"},
+    {file = "click-8.1.6.tar.gz", hash = "sha256:48ee849951919527a045bfe3bf7baa8a959c423134e1a5b98c05c20ba75a1cbd"},
 ]
 
 [package.dependencies]
@@ -348,13 +348,13 @@ flake8 = "*"
 
 [[package]]
 name = "flake8-type-checking"
-version = "2.4.0"
+version = "2.4.1"
 description = "A flake8 plugin for managing type-checking imports & forward references"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "flake8_type_checking-2.4.0-py3-none-any.whl", hash = "sha256:2dee127f300bb95b7f17b7c3fff4f6336f5e4ba92082c15928c6e19b666cfba4"},
-    {file = "flake8_type_checking-2.4.0.tar.gz", hash = "sha256:9ea96d01e6557a47835acf04020c48fabb9c3d4664c15f2920915e09e65c1d55"},
+    {file = "flake8_type_checking-2.4.1-py3-none-any.whl", hash = "sha256:fe75cfe668e3bf6914dd2ba36579bbe6c82f3795127774e7584ecc8c9f7379e5"},
+    {file = "flake8_type_checking-2.4.1.tar.gz", hash = "sha256:f3c7023114dee2ec2e8282a9080206ffd8fdd61205626593aa5c801bc2f8035d"},
 ]
 
 [package.dependencies]
@@ -663,13 +663,13 @@ flake8 = ">=5.0.0"
 
 [[package]]
 name = "platformdirs"
-version = "3.8.1"
+version = "3.9.1"
 description = "A small Python package for determining appropriate platform-specific dirs, e.g. a \"user data dir\"."
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "platformdirs-3.8.1-py3-none-any.whl", hash = "sha256:cec7b889196b9144d088e4c57d9ceef7374f6c39694ad1577a0aab50d27ea28c"},
-    {file = "platformdirs-3.8.1.tar.gz", hash = "sha256:f87ca4fcff7d2b0f81c6a748a77973d7af0f4d526f98f308477c3c436c74d528"},
+    {file = "platformdirs-3.9.1-py3-none-any.whl", hash = "sha256:ad8291ae0ae5072f66c16945166cb11c63394c7a3ad1b1bc9828ca3162da8c2f"},
+    {file = "platformdirs-3.9.1.tar.gz", hash = "sha256:1b42b450ad933e981d56e59f1b97495428c9bd60698baab9f3eb3d00d5822421"},
 ]
 
 [package.extras]
@@ -744,17 +744,17 @@ test = ["enum34", "ipaddress", "mock", "pywin32", "wmi"]
 
 [[package]]
 name = "pybind11"
-version = "2.10.4"
+version = "2.11.1"
 description = "Seamless operability between C++11 and Python"
 optional = false
 python-versions = ">=3.6"
 files = [
-    {file = "pybind11-2.10.4-py3-none-any.whl", hash = "sha256:ec9be0c45061c829648d7e8c98a7d041768b768c934acd15196e0f1943d9a818"},
-    {file = "pybind11-2.10.4.tar.gz", hash = "sha256:0bb621d3c45a049aa5923debb87c5c0e2668227905c55ebe8af722608d8ed927"},
+    {file = "pybind11-2.11.1-py3-none-any.whl", hash = "sha256:33cdd02a6453380dd71cc70357ce388ad1ee8d32bd0e38fc22b273d050aa29b3"},
+    {file = "pybind11-2.11.1.tar.gz", hash = "sha256:00cd59116a6e8155aecd9174f37ba299d1d397ed4a6b86ac1dfe01b3e40f2cc4"},
 ]
 
 [package.extras]
-global = ["pybind11-global (==2.10.4)"]
+global = ["pybind11-global (==2.11.1)"]
 
 [[package]]
 name = "pycodestyle"
@@ -794,7 +794,7 @@ plugins = ["importlib-metadata"]
 
 [[package]]
 name = "pyk"
-version = "0.1.361"
+version = "0.1.376"
 description = ""
 optional = false
 python-versions = "^3.10"
@@ -814,8 +814,8 @@ tomli = "^2.0.1"
 [package.source]
 type = "git"
 url = "https://github.com/runtimeverification/pyk.git"
-reference = "v0.1.361"
-resolved_reference = "b055dbbd749c10a2b7afef97b6457d725494fc02"
+reference = "v0.1.376"
+resolved_reference = "e1be96387369dcb22f57135236f109a5132cdc34"
 
 [[package]]
 name = "pyperclip"
@@ -1038,20 +1038,20 @@ files = [
 
 [[package]]
 name = "zipp"
-version = "3.16.1"
+version = "3.16.2"
 description = "Backport of pathlib-compatible object wrapper for zip files"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "zipp-3.16.1-py3-none-any.whl", hash = "sha256:0b37c326d826d5ca35f2b9685cd750292740774ef16190008b00a0227c256fe0"},
-    {file = "zipp-3.16.1.tar.gz", hash = "sha256:857b158da2cbf427b376da1c24fd11faecbac5a4ac7523c3607f8a01f94c2ec0"},
+    {file = "zipp-3.16.2-py3-none-any.whl", hash = "sha256:679e51dd4403591b2d6838a48de3d283f3d188412a9782faadf845f298736ba0"},
+    {file = "zipp-3.16.2.tar.gz", hash = "sha256:ebc15946aa78bd63458992fc81ec3b6f7b1e92d51c35e6de1c3804e73b799147"},
 ]
 
 [package.extras]
 docs = ["furo", "jaraco.packaging (>=9.3)", "jaraco.tidelift (>=1.4)", "rst.linker (>=1.9)", "sphinx (>=3.5)", "sphinx-lint"]
-testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "pytest (>=6)", "pytest-black (>=0.3.7)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=2.2)", "pytest-mypy (>=0.9.1)", "pytest-ruff"]
+testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "pytest (>=6)", "pytest-black (>=0.3.7)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=2.2)", "pytest-ignore-flaky", "pytest-mypy (>=0.9.1)", "pytest-ruff"]
 
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "4f8e2291992c4f568b12ef9dcc332b88708d502e2a32df0fdaf927f161c2ffdd"
+content-hash = "6df9154e2b3e1464bc160599645a4661c8f0e91d4259aad7a455bacbd5b014d8"
