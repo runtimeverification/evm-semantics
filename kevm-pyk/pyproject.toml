@@ -5,9 +5,9 @@ build-backend = "poetry.core.masonry.api"
 [tool.poetry]
 name = "kevm-pyk"
 <<<<<<< HEAD
-version = "1.0.232"
+version = "1.0.237"
 =======
-version = "1.0.236"
+version = "1.0.237"
 >>>>>>> master
 description = ""
 authors = [
