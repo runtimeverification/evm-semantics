@@ -2624,6 +2624,8 @@ module GASTEST-CONTRACT
     
     syntax GasTestMethod ::= "testInfiniteGas" "(" ")" [symbol(), klabel(method_GasTest_testInfiniteGas_)]
     
+    syntax GasTestMethod ::= "testSetGas" "(" ")" [symbol(), klabel(method_GasTest_testSetGas_)]
+    
     syntax GasTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_GasTest_vm_)]
     
     rule  ( GasTest . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
@@ -2639,6 +2641,9 @@ module GASTEST-CONTRACT
       
     
     rule  ( GasTest . testInfiniteGas ( ) => #abiCallData ( "testInfiniteGas" , .TypedArgs ) )
+      
+    
+    rule  ( GasTest . testSetGas ( ) => #abiCallData ( "testSetGas" , .TypedArgs ) )
       
     
     rule  ( GasTest . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
@@ -2657,6 +2662,9 @@ module GASTEST-CONTRACT
       
     
     rule  ( selector ( "testInfiniteGas()" ) => 1677640502 )
+      
+    
+    rule  ( selector ( "testSetGas()" ) => 2307678515 )
       
     
     rule  ( selector ( "vm()" ) => 980845667 )
@@ -2804,6 +2812,8 @@ module KEVMCHEATSBASE-CONTRACT
     
     syntax KEVMCheatsBaseMethod ::= "infiniteGas" "(" ")" [symbol(), klabel(method_KEVMCheatsBase_infiniteGas_)]
     
+    syntax KEVMCheatsBaseMethod ::= "setGas" "(" Int ":" "uint256" ")" [symbol(), klabel(method_KEVMCheatsBase_setGas_uint256)]
+    
     syntax KEVMCheatsBaseMethod ::= "symbolicStorage" "(" Int ":" "address" ")" [symbol(), klabel(method_KEVMCheatsBase_symbolicStorage_address)]
     
     rule  ( KEVMCheatsBase . allowCallsToAddress ( V0_ : address ) => #abiCallData ( "allowCallsToAddress" , #address ( V0_ ) , .TypedArgs ) )
@@ -2861,6 +2871,10 @@ module KEVMCHEATSBASE-CONTRACT
     rule  ( KEVMCheatsBase . infiniteGas ( ) => #abiCallData ( "infiniteGas" , .TypedArgs ) )
       
     
+    rule  ( KEVMCheatsBase . setGas ( V0_ : uint256 ) => #abiCallData ( "setGas" , #uint256 ( V0_ ) , .TypedArgs ) )
+       ensures #rangeUInt ( 256 , V0_ )
+      
+    
     rule  ( KEVMCheatsBase . symbolicStorage ( V0_ : address ) => #abiCallData ( "symbolicStorage" , #address ( V0_ ) , .TypedArgs ) )
        ensures #rangeAddress ( V0_ )
       
@@ -2893,6 +2907,9 @@ module KEVMCHEATSBASE-CONTRACT
       
     
     rule  ( selector ( "infiniteGas()" ) => 3986649939 )
+      
+    
+    rule  ( selector ( "setGas(uint256)" ) => 3713137314 )
       
     
     rule  ( selector ( "symbolicStorage(address)" ) => 769677742 )
