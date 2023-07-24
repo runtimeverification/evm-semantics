@@ -896,6 +896,7 @@ function setGas(uint256 newGas) external;
     rule [foundry.call.setGas]:
          <k> #call_foundry SELECTOR ARGS => . ... </k>
          <gas> _ => #asWord(ARGS) </gas>
+         <callGas> _ => 0 </callGas>
       requires SELECTOR ==Int selector ( "setGas(uint256)" )
 ```
 
@@ -1475,6 +1476,7 @@ If the production is matched when no prank is active, it will be ignored.
     rule ( selector ( "allowCallsToAddress(address)" )             => 1850795572 )
     rule ( selector ( "allowChangesToStorage(address,uint256)" )   => 4207417100 )
     rule ( selector ( "infiniteGas()" )                            => 3986649939 )
+    rule ( selector ( "setGas(uint256)" )                          => 3713137314 )
 ```
 
 - selectors for unimplemented cheat code functions.
