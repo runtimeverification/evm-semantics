@@ -11,6 +11,10 @@ jobs:
           submodules: recursive
           token: ${{ secrets.JENKINS_GITHUB_PAT }}
           ref: ${{ github.events.inputs.branch }}
+      - name: Git Sumbodule Update
+        run: |
+          git pull --recurse-submodules
+          git submodule update --remote --recursive
       - name: 'Set up Docker'
         uses: ./.github/actions/with-docker
         with:
