@@ -1,0 +1,30 @@
+name: 'Update Foundry prove'
+description: 'Run tests related to foundry-prove and update the expected output'
+on: workflow_dispatch
+inputs:
+  tag:
+    description: 'Docker image tag to use'
+    required: true
+jobs:
+  update-versions:
+    name: 'Update Dependency Versions'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Check out code'
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: 'Set up Docker'
+        uses: ./.github/actions/with-docker
+        with:
+          tag: kevm-ci-foundry-${{ github.sha }}
+      - name: 'Build kevm-pyk'
+        run: docker exec -u user kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make poetry'
+      - name: 'Build Foundry'
+        run: docker exec -u user kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make build-foundry -j2'
+      - name: 'Foundry Prove Update'
+        run: docker exec -u user kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make test-integration TEST_ARGS+=\'-n0 -k "test_foundry_prove --update-expected-output"\''
+      - name: 'Tear down Docker'
+        if: always()
+        run: |
+          docker stop --time=0 kevm-ci-foundry-${GITHUB_SHA}
