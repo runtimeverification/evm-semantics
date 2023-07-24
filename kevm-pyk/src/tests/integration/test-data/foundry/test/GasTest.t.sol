@@ -15,4 +15,11 @@ contract GasTest is Test, KEVMCheats {
         assert(gasLeftBefore <= gasLeftAfter);
         assert(gasLeftAfter <= gasLeftBefore);
     }
+
+    function testSetGas() public {
+        kevm.setGas(33000);
+        uint256 gasLeftBefore = gasleft();
+        uint256 gasLeftAfter  = gasleft();
+        assert(gasLeftBefore > gasLeftAfter);
+    }
 }

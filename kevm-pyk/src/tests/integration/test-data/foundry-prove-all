@@ -120,6 +120,7 @@ ForkTest.testRollForkId
 ForkTest.testRPCUrl
 ForkTest.testRPCUrlRevert
 GasTest.testInfiniteGas
+GasTest.testSetGas
 GetCodeTest.testGetCode
 LabelTest.testLabel
 LoopsTest.sum_N
