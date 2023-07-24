@@ -1,6 +1,6 @@
 name: 'Update Foundry prove'
 description: 'Run tests related to foundry-prove and update the expected output'
-on: workflow_dispatch
+on: push
 inputs:
   tag:
     description: 'Docker image tag to use'
