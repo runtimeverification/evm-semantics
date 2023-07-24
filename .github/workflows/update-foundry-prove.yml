@@ -1,13 +1,12 @@
 name: 'Update Foundry prove'
-description: 'Run tests related to foundry-prove and update the expected output'
 on: push
 inputs:
   tag:
     description: 'Docker image tag to use'
     required: true
 jobs:
-  update-versions:
-    name: 'Update Dependency Versions'
+  update-output:
+    name: 'Update Foundry expected output'
     runs-on: ubuntu-latest
     steps:
       - name: 'Check out code'
