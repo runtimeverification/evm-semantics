@@ -23,3 +23,5 @@ jobs:
         if: always()
         run: |
           docker stop --time=0 kevm-ci-foundry-${GITHUB_SHA}
+      - name: 'Push updates'
+        run: git push
