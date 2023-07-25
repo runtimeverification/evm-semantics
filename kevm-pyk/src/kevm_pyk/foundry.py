@@ -653,7 +653,7 @@ def foundry_to_dot(foundry_root: Path, test: str) -> None:
     dump_dir = proofs_dir / 'dump'
     contract_name, test_name = test.split('.')
     proof_digest = foundry.proof_digest(contract_name, test_name)
-    proof = APRProof.read_proof(proof_digest, proofs_dir)
+    proof = APRProof.read_proof_data(proofs_dir, proof_digest)
 
     node_printer = foundry_node_printer(foundry, contract_name, proof)
     proof_show = APRProofShow(foundry.kevm, node_printer=node_printer)
@@ -674,7 +674,7 @@ def foundry_list(foundry_root: Path) -> list[str]:
         contract_name, test_name = method.split('.')
         proof_digest = foundry.proof_digest(contract_name, test_name)
         if APRProof.proof_exists(proof_digest, apr_proofs_dir):
-            apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
+            apr_proof = APRProof.read_proof_data(apr_proofs_dir, proof_digest)
             lines.extend(apr_proof.summary)
             lines.append('')
     if len(lines) > 0:
@@ -688,7 +688,7 @@ def foundry_remove_node(foundry_root: Path, test: str, node: NodeIdLike) -> None
     apr_proofs_dir = foundry.out / 'apr_proofs'
     contract_name, test_name = test.split('.')
     proof_digest = foundry.proof_digest(contract_name, test_name)
-    apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
+    apr_proof = APRProof.read_proof_data(apr_proofs_dir, proof_digest)
     node_ids = apr_proof.kcfg.prune(node, [apr_proof.init, apr_proof.target])
     _LOGGER.info(f'Pruned nodes: {node_ids}')
     apr_proof.write_proof_data()
@@ -711,7 +711,7 @@ def foundry_simplify_node(
     apr_proofs_dir = foundry.out / 'apr_proofs'
     contract_name, test_name = test.split('.')
     proof_digest = foundry.proof_digest(contract_name, test_name)
-    apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
+    apr_proof = APRProof.read_proof_data(apr_proofs_dir, proof_digest)
     cterm = apr_proof.kcfg.node(node).cterm
     with KCFGExplore(
         foundry.kevm,
@@ -751,7 +751,7 @@ def foundry_step_node(
     apr_proofs_dir = foundry.out / 'apr_proofs'
     contract_name, test_name = test.split('.')
     proof_digest = foundry.proof_digest(contract_name, test_name)
-    apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
+    apr_proof = APRProof.read_proof_data(apr_proofs_dir, proof_digest)
     with KCFGExplore(
         foundry.kevm,
         id=apr_proof.id,
@@ -781,7 +781,7 @@ def foundry_section_edge(
     apr_proofs_dir = foundry.out / 'apr_proofs'
     contract_name, test_name = test.split('.')
     proof_digest = foundry.proof_digest(contract_name, test_name)
-    apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
+    apr_proof = APRProof.read_proof_data(apr_proofs_dir, proof_digest)
     source_id, target_id = edge
     with KCFGExplore(
         foundry.kevm,
@@ -810,7 +810,7 @@ def foundry_get_model(
 
     contract_name, test_name = test.split('.')
     proof_digest = foundry.proof_digest(contract_name, test_name)
-    proof = Proof.read_proof(proof_digest, proofs_dir)
+    proof = Proof.read_proof_data(proofs_dir, proof_digest)
     assert isinstance(proof, APRProof)
 
     if not nodes:
