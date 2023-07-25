@@ -782,6 +782,8 @@ def foundry_section_edge(
     contract_name, test_name = test.split('.')
     proof_digest = foundry.proof_digest(contract_name, test_name)
     apr_proof = APRProof.read_proof_data(apr_proofs_dir, proof_digest)
+    source_id: NodeIdLike
+    target_id: NodeIdLike
     source_id, target_id = edge
     if not source_id.startswith('@'):
         source_id = int(source_id)

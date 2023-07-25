@@ -862,7 +862,7 @@ tomli = "^2.0.1"
 type = "git"
 url = "https://github.com/runtimeverification/pyk.git"
 reference = "noah/node-storage"
-resolved_reference = "127d16b0942446c376d4407584d57a4a56aae980"
+resolved_reference = "0d026cafc502bc4104e2eb63e1bcdce75a488dfd"
 
 [[package]]
 name = "pyperclip"
