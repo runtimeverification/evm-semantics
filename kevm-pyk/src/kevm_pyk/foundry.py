@@ -675,7 +675,7 @@ def foundry_list(foundry_root: Path) -> list[str]:
         proof_digest = foundry.proof_digest(contract_name, test_name)
         if APRProof.proof_exists(proof_digest, apr_proofs_dir):
             apr_proof = APRProof.read_proof_data(apr_proofs_dir, proof_digest)
-            lines.extend(apr_proof.summary)
+            lines.extend(apr_proof.summary.lines)
             lines.append('')
     if len(lines) > 0:
         lines = lines[0:-1]
@@ -810,7 +810,7 @@ def foundry_get_model(
 
     contract_name, test_name = test.split('.')
     proof_digest = foundry.proof_digest(contract_name, test_name)
-    proof = Proof.read_proof_data(proofs_dir, proof_digest)
+    proof = Proof.read_proof(proof_digest, proofs_dir)
     assert isinstance(proof, APRProof)
 
     if not nodes:

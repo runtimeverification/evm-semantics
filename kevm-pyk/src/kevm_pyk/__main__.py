@@ -294,7 +294,7 @@ def exec_prove(
                     and not reinit
                     and EqualityProof.proof_exists(claim.label, save_directory)
                 ):
-                    proof_problem = EqualityProof.read_proof_data(save_directory, claim.label)
+                    proof_problem = EqualityProof.read_proof(claim.label, save_directory)
                 else:
                     proof_problem = EqualityProof.from_claim(claim, kevm.definition, proof_dir=save_directory)
             else:
