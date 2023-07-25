@@ -94,7 +94,7 @@ def kevm_prove(
     terminal_rules = ['EVM.halt']
     cut_point_rules = []
     if break_every_step:
-        cut_point_rules.append('EVM.step')
+        terminal_rules.append('EVM.step')
     if break_on_jumpi:
         cut_point_rules.extend(['EVM.jumpi.true', 'EVM.jumpi.false'])
     if break_on_calls:
