@@ -906,7 +906,8 @@ function setGas(uint256 newGas) external;
 function infiniteGas() external;
 ```
 
-`infiniteGas` is useful for running tests without them running out of gas. It is applied by default.
+`infiniteGas` is useful for running tests without them running out of gas.
+It is applied by default.
 
 ```{.k .bytes .symbolic}
     rule [foundry.call.infiniteGas]:

@@ -25,7 +25,6 @@ contract CounterTest is Test, KEVMCheats {
     // }
 
     function testIncrement() public {
-        kevm.infiniteGas();
         counter = new Counter();
         counter.setNumber(0);
         counter.increment();
@@ -34,7 +33,6 @@ contract CounterTest is Test, KEVMCheats {
 
     function testSetNumber(uint256 x) public {
         //setUp();
-        kevm.infiniteGas();
         counter = new Counter();
         counter.setNumber(0);
         counter.setNumber(x);

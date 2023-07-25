@@ -6,7 +6,7 @@ import "../src/KEVMCheats.sol";
 
 contract GasTest is Test, KEVMCheats {
     function testInfiniteGas() public {
-        kevm.infiniteGas();
+        // Infinite gas is used by default
         uint256 gasLeftBefore = gasleft();
         uint256 x = 345;
         uint256 y = 928;
