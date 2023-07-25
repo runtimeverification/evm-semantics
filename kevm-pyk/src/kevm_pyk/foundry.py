@@ -783,6 +783,10 @@ def foundry_section_edge(
     proof_digest = foundry.proof_digest(contract_name, test_name)
     apr_proof = APRProof.read_proof_data(apr_proofs_dir, proof_digest)
     source_id, target_id = edge
+    if not source_id.startswith('@'):
+        source_id = int(source_id)
+    if not target_id.startswith('@'):
+        target_id = int(target_id)
     with KCFGExplore(
         foundry.kevm,
         id=apr_proof.id,
@@ -791,7 +795,7 @@ def foundry_section_edge(
         smt_retry_limit=smt_retry_limit,
         trace_rewrites=trace_rewrites,
     ) as kcfg_explore:
-        kcfg, _ = kcfg_explore.section_edge(
+        kcfg_explore.section_edge(
             apr_proof.kcfg, source_id=source_id, target_id=target_id, logs=apr_proof.logs, sections=sections
         )
     apr_proof.write_proof_data()
@@ -810,26 +814,26 @@ def foundry_get_model(
 
     contract_name, test_name = test.split('.')
     proof_digest = foundry.proof_digest(contract_name, test_name)
-    proof = Proof.read_proof(proof_digest, proofs_dir)
-    assert isinstance(proof, APRProof)
+    apr_proof = APRProof.read_proof_data(proofs_dir, proof_digest)
+    assert isinstance(apr_proof, APRProof)
 
     if not nodes:
         _LOGGER.warning('Node ID is not provided. Displaying models of failing and pending nodes:')
         failing = pending = True
 
     if pending:
-        nodes = list(nodes) + [node.id for node in proof.pending]
+        nodes = list(nodes) + [node.id for node in apr_proof.pending]
     if failing:
-        nodes = list(nodes) + [node.id for node in proof.failing]
+        nodes = list(nodes) + [node.id for node in apr_proof.failing]
     nodes = unique(nodes)
 
     res_lines = []
 
-    with KCFGExplore(foundry.kevm, id=proof.id) as kcfg_explore:
+    with KCFGExplore(foundry.kevm, id=apr_proof.id) as kcfg_explore:
         for node_id in nodes:
             res_lines.append('')
             res_lines.append(f'Node id: {node_id}')
-            node = proof.kcfg.node(node_id)
+            node = apr_proof.kcfg.node(node_id)
             res_lines.extend(print_model(node, kcfg_explore))
 
     return '\n'.join(res_lines)
@@ -895,13 +899,13 @@ def _method_to_apr_proof(
     test = f'{contract_name}.{method_name}'
     proof_digest = foundry.proof_digest(contract_name, method_name)
     if Proof.proof_exists(proof_digest, save_directory) and not reinit:
-        proof_path = save_directory / f'{hash_str(proof_digest)}.json'
+        proof_path = save_directory / proof_digest / 'proof.json'
         proof_dict = json.loads(proof_path.read_text())
         match proof_dict['type']:
             case 'APRProof':
-                apr_proof = APRProof.from_dict(proof_dict, proof_dir=save_directory)
+                apr_proof = APRProof.read_proof_data(save_directory, proof_digest)
             case 'APRBMCProof':
-                apr_proof = APRBMCProof.from_dict(proof_dict, proof_dir=save_directory)
+                apr_proof = APRBMCProof.read_proof_data(save_directory, proof_digest)
             case unsupported_type:
                 raise ValueError(f'Unsupported proof type {unsupported_type}')
     else:
