@@ -840,7 +840,7 @@ plugins = ["importlib-metadata"]
 
 [[package]]
 name = "pyk"
-version = "0.1.379"
+version = "0.1.380"
 description = ""
 category = "main"
 optional = false
@@ -862,7 +862,7 @@ tomli = "^2.0.1"
 type = "git"
 url = "https://github.com/runtimeverification/pyk.git"
 reference = "noah/node-storage"
-resolved_reference = "0d026cafc502bc4104e2eb63e1bcdce75a488dfd"
+resolved_reference = "193623fcde83b4c93575fd601556126726ba3e2a"
 
 [[package]]
 name = "pyperclip"
