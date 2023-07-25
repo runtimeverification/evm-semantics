@@ -423,7 +423,8 @@ def foundry_prove(
     break_on_jumpi: bool = False,
     break_on_calls: bool = True,
     implication_every_block: bool = True,
-    bmc_depth: int | None = None,
+    bmc_depth: int = 3,
+    unbounded_bmc_depth: bool = False,
     bug_report: bool = False,
     kore_rpc_command: str | Iterable[str] | None = None,
     use_booster: bool = False,
@@ -538,6 +539,7 @@ def foundry_prove(
                 reinit=(method.qualified_name in out_of_date_methods),
                 simplify_init=simplify_init,
                 bmc_depth=bmc_depth,
+                unbounded_bmc_depth=unbounded_bmc_depth,
             )
 
             passed = kevm_prove(
@@ -892,7 +894,8 @@ def _method_to_apr_proof(
     kcfg_explore: KCFGExplore,
     reinit: bool = False,
     simplify_init: bool = True,
-    bmc_depth: int | None = None,
+    bmc_depth: int = 3,
+    unbounded_bmc_depth: bool = False,
 ) -> APRProof | APRBMCProof:
     contract_name = contract.name
     method_name = method.name
@@ -938,12 +941,12 @@ def _method_to_apr_proof(
         if simplify_init:
             _LOGGER.info(f'Simplifying KCFG for test: {test}')
             kcfg_explore.simplify(kcfg, {})
-        if bmc_depth is not None:
+        if unbounded_bmc_depth:
+            apr_proof = APRProof(proof_digest, kcfg, init_node_id, target_node_id, {}, proof_dir=save_directory)
+        else:
             apr_proof = APRBMCProof(
                 proof_digest, kcfg, init_node_id, target_node_id, {}, bmc_depth, proof_dir=save_directory
             )
-        else:
-            apr_proof = APRProof(proof_digest, kcfg, init_node_id, target_node_id, {}, proof_dir=save_directory)
 
     apr_proof.write_proof_data()
     return apr_proof

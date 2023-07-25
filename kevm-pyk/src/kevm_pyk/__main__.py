@@ -521,7 +521,8 @@ def exec_foundry_prove(
     break_on_jumpi: bool = False,
     break_on_calls: bool = True,
     implication_every_block: bool = True,
-    bmc_depth: int | None = None,
+    bmc_depth: int = 3,
+    unbounded_bmc_depth: bool = False,
     bug_report: bool = False,
     kore_rpc_command: str | Iterable[str] | None = None,
     use_booster: bool = False,
@@ -555,6 +556,7 @@ def exec_foundry_prove(
         break_on_calls=break_on_calls,
         implication_every_block=implication_every_block,
         bmc_depth=bmc_depth,
+        unbounded_bmc_depth=unbounded_bmc_depth,
         bug_report=bug_report,
         kore_rpc_command=kore_rpc_command,
         use_booster=use_booster,
@@ -975,9 +977,16 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_prove_args.add_argument(
         '--bmc-depth',
         dest='bmc_depth',
-        default=None,
+        default=3,
         type=int,
-        help='Max depth of loop unrolling during bounded model checking',
+        help='Max depth of loop unrolling during bounded model checking (default: 3).',
+    )
+    foundry_prove_args.add_argument(
+        '--unbounded-bmc-depth',
+        dest='unbounded_bmc_depth',
+        default=False,
+        action='store_true',
+        help='Unbounded loop unrolling during verification.',
     )
     foundry_prove_args.add_argument(
         '--use-booster',
