@@ -158,6 +158,7 @@ PrankTest.testFailAddPrank
 PrankTest.testSubtractAsTxOrigin
 PrankTest.testSubtractFail
 PrankTest.testSubtractStartPrank
+PreconditionsTest.testAssume
 RecordLogsTest.testRecordLogs
 SafeTest.testWithdraw
 SafeTest.testWithdrawFuzz
