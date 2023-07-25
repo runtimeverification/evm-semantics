@@ -47,6 +47,7 @@ module FOUNDRY-MAIN
     imports public PLAINPRANKTEST-VERIFICATION
     imports public PRANK-VERIFICATION
     imports public PRANKTEST-VERIFICATION
+    imports public PRECONDITIONSTEST-VERIFICATION
     imports public RECORDLOGSTEST-VERIFICATION
     imports public SAFE-VERIFICATION
     imports public SAFETEST-VERIFICATION
@@ -390,6 +391,13 @@ endmodule
 
 module PRANKTEST-VERIFICATION
     imports public PRANKTEST-CONTRACT
+    
+    
+
+endmodule
+
+module PRECONDITIONSTEST-VERIFICATION
+    imports public PRECONDITIONSTEST-CONTRACT
     
     
 
