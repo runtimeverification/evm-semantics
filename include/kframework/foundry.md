@@ -884,6 +884,7 @@ function stopPrank() external;
 
 Gas Manipulation
 ----------------
+
 ### `setGas` - Sets the current gas left (reported by `GAS` opcode) to a specific amount.
 
 ```
