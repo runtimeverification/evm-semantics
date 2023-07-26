@@ -79,7 +79,6 @@ def kevm_prove(
     break_on_jumpi: bool = False,
     break_on_calls: bool = True,
     implication_every_block: bool = False,
-    is_terminal: Callable[[CTerm], bool] | None = None,
     extract_branches: Callable[[CTerm], Iterable[KInner]] | None = None,
     same_loop: Callable[[CTerm, CTerm], bool] | None = None,
     bmc_depth: int | None = None,
@@ -116,18 +115,9 @@ def kevm_prove(
     prover: APRBMCProver | APRProver | EqualityProver
     if type(proof) is APRBMCProof:
         assert same_loop, f'BMC proof requires same_loop heuristic, but {same_loop} was supplied'
-        prover = APRBMCProver(
-            proof,
-            kcfg_explore,
-            is_terminal=is_terminal,
-            extract_branches=extract_branches,
-            same_loop=same_loop,
-            abstract_node=abstract_node,
-        )
+        prover = APRBMCProver(proof, kcfg_explore)
     elif type(proof) is APRProof:
-        prover = APRProver(
-            proof, kcfg_explore, is_terminal=is_terminal, extract_branches=extract_branches, abstract_node=abstract_node
-        )
+        prover = APRProver(proof, kcfg_explore)
     elif type(proof) is EqualityProof:
         prover = EqualityProver(kcfg_explore=kcfg_explore, proof=proof)
     else:

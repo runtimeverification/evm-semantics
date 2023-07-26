@@ -38,7 +38,7 @@ from .foundry import (
     foundry_to_dot,
 )
 from .gst_to_kore import _mode_to_kore, _schedule_to_kore
-from .kevm import KEVM, kevm_node_printer
+from .kevm import KEVM, KEVMSemantics, kevm_node_printer
 from .kompile import KompileTarget, kevm_kompile
 from .solc_to_k import solc_compile, solc_to_k
 from .utils import arg_pair_of, ensure_ksequence_on_k_cell, get_apr_proof_for_spec, kevm_prove, print_failure_info
@@ -283,6 +283,7 @@ def exec_prove(
     def _init_and_run_proof(claim: KClaim) -> tuple[bool, list[str] | None]:
         with KCFGExplore(
             kevm,
+            kcfg_semantics=KEVMSemantics(auto_abstract_gas=auto_abstract_gas),
             id=claim.label,
             bug_report=br,
             kore_rpc_command=kore_rpc_command,
@@ -348,14 +349,11 @@ def exec_prove(
                 break_on_jumpi=break_on_jumpi,
                 break_on_calls=break_on_calls,
                 implication_every_block=implication_every_block,
-                is_terminal=KEVM.is_terminal,
-                extract_branches=KEVM.extract_branches,
                 bug_report=br,
                 kore_rpc_command=kore_rpc_command,
                 smt_timeout=smt_timeout,
                 smt_retry_limit=smt_retry_limit,
                 trace_rewrites=trace_rewrites,
-                abstract_node=(KEVM.abstract_gas_cell if auto_abstract_gas else None),
             )
             failure_log = None
             if not passed:
@@ -475,7 +473,7 @@ def exec_show_kcfg(
     )
 
     if failure_info:
-        with KCFGExplore(kevm, id=proof.id) as kcfg_explore:
+        with KCFGExplore(kevm, kcfg_semantics=KEVMSemantics(), id=proof.id) as kcfg_explore:
             res_lines += print_failure_info(proof, kcfg_explore)
 
     print('\n'.join(res_lines))

@@ -27,7 +27,7 @@ from pyk.proof.reachability import APRBMCProof, APRProof
 from pyk.proof.show import APRBMCProofNodePrinter, APRProofNodePrinter, APRProofShow
 from pyk.utils import BugReport, ensure_dir_path, hash_str, run_process, single, unique
 
-from .kevm import KEVM, KEVMNodePrinter
+from .kevm import KEVM, KEVMNodePrinter, KEVMSemantics
 from .kompile import Kernel, KompileTarget, kevm_kompile
 from .solc_to_k import Contract, contract_to_main_module, contract_to_verification_module
 from .utils import (
@@ -515,6 +515,7 @@ def foundry_prove(
 
         with KCFGExplore(
             foundry.kevm,
+            kcfg_semantics=KEVMSemantics(auto_abstract_gas=auto_abstract_gas),
             id=proof_id,
             bug_report=br,
             kore_rpc_command=kore_rpc_command,
@@ -549,15 +550,11 @@ def foundry_prove(
                 break_on_jumpi=break_on_jumpi,
                 break_on_calls=break_on_calls,
                 implication_every_block=implication_every_block,
-                is_terminal=KEVM.is_terminal,
-                same_loop=KEVM.same_loop,
-                extract_branches=KEVM.extract_branches,
                 bug_report=br,
                 kore_rpc_command=kore_rpc_command,
                 smt_timeout=smt_timeout,
                 smt_retry_limit=smt_retry_limit,
                 trace_rewrites=trace_rewrites,
-                abstract_node=(KEVM.abstract_gas_cell if auto_abstract_gas else None),
             )
             failure_log = None
             if not passed:
@@ -638,7 +635,7 @@ def foundry_show(
     )
 
     if failure_info:
-        with KCFGExplore(foundry.kevm, id=proof.id) as kcfg_explore:
+        with KCFGExplore(foundry.kevm, kcfg_semantics=KEVMSemantics(), id=proof.id) as kcfg_explore:
             res_lines += print_failure_info(proof, kcfg_explore, counterexample_info)
             res_lines += Foundry.help_info()
 
@@ -713,6 +710,7 @@ def foundry_simplify_node(
     cterm = apr_proof.kcfg.node(node).cterm
     with KCFGExplore(
         foundry.kevm,
+        kcfg_semantics=KEVMSemantics(),
         id=apr_proof.id,
         bug_report=br,
         smt_timeout=smt_timeout,
@@ -752,6 +750,7 @@ def foundry_step_node(
     apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
     with KCFGExplore(
         foundry.kevm,
+        kcfg_semantics=KEVMSemantics(),
         id=apr_proof.id,
         bug_report=br,
         smt_timeout=smt_timeout,
@@ -783,6 +782,7 @@ def foundry_section_edge(
     source_id, target_id = edge
     with KCFGExplore(
         foundry.kevm,
+        kcfg_semantics=KEVMSemantics(),
         id=apr_proof.id,
         bug_report=br,
         smt_timeout=smt_timeout,
@@ -823,7 +823,7 @@ def foundry_get_model(
 
     res_lines = []
 
-    with KCFGExplore(foundry.kevm, id=proof.id) as kcfg_explore:
+    with KCFGExplore(foundry.kevm, kcfg_semantics=KEVMSemantics(), id=proof.id) as kcfg_explore:
         for node_id in nodes:
             res_lines.append('')
             res_lines.append(f'Node id: {node_id}')
