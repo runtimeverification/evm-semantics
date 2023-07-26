@@ -30,6 +30,7 @@ RUN    apt-get update                  \
             libssl-dev                 \
             llvm-${LLVM_VERSION}-dev   \
             llvm-${LLVM_VERSION}-tools \
+            maven                      \
             netcat                     \
             protobuf-compiler          \
             python3                    \
