@@ -51,6 +51,8 @@ runs:
 
       docker build . --file .github/workflows/Dockerfile \
         --tag runtimeverification/${TAG_NAME}            \
+        --build-arg BASE_OS=${BASE_OS}                   \
+        --build-arg BASE_DISTRO=${BASE_DISTRO}           \
         --build-arg K_COMMIT=${K_COMMIT}                 \
         --build-arg Z3_VERSION=${Z3_VERSION}             \
         --build-arg LLVM_VERSION=${LLVM_VERSION}
