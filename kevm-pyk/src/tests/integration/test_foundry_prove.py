@@ -197,19 +197,19 @@ def test_foundry_merge_nodes(foundry_root: Path, use_booster: bool) -> None:
         tests=[test_id],
         smt_timeout=125,
         smt_retry_limit=4,
-        max_iterations=2,
+        max_iterations=4,
         use_booster=use_booster,
     )
-    check_pending(foundry_root, test_id, [4, 5])
-
-    foundry_step_node(foundry_root, test_id, node=4, depth=49)
-    foundry_step_node(foundry_root, test_id, node=5, depth=50)
-
     check_pending(foundry_root, test_id, [6, 7])
 
-    foundry_merge_nodes(foundry_root=foundry_root, test=test_id, node_ids=[6, 7])
+    foundry_step_node(foundry_root, test_id, node=6, depth=49)
+    foundry_step_node(foundry_root, test_id, node=7, depth=50)
 
-    check_pending(foundry_root, test_id, [8])
+    check_pending(foundry_root, test_id, [8, 9])
+
+    foundry_merge_nodes(foundry_root=foundry_root, test=test_id, node_ids=[8, 9], include_disjunct=True)
+
+    check_pending(foundry_root, test_id, [10])
 
     prove_res = foundry_prove(
         foundry_root,

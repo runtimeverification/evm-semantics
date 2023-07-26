@@ -2,8 +2,9 @@
 pragma solidity =0.8.13;
 
 import "forge-std/Test.sol";
+import "../src/KEVMCheats.sol";
 
-contract AssertTest is Test {
+contract AssertTest is Test, KEVMCheats {
     uint y;
 
     function setUp() public {}
@@ -28,6 +29,7 @@ contract AssertTest is Test {
     }
 
     function test_branch_merge(uint x) public {
+        kevm.infiniteGas();
         if (x < 10) {
             y = 0;
         } else {

@@ -7,8 +7,8 @@
 │
 │  (574 steps)
 ├─ 3 (split)
-│   k: JUMPI 598 bool2Word ( 100 <=Int VV0_x_114b9705:Int ) ~> #pc [ JUMPI ] ~> #execut ...
-│   pc: 610
+│   k: JUMPI 766 bool2Word ( 100 <=Int VV0_x_114b9705:Int ) ~> #pc [ JUMPI ] ~> #execut ...
+│   pc: 778
 │   callDepth: 0
 │   statusCode: STATUSCODE:StatusCode
 ┃
@@ -16,29 +16,29 @@
 ┣━━┓ constraint: { true #Equals 100 <=Int VV0_x_114b9705:Int }
 ┃  │
 ┃  ├─ 4
-┃  │   k: JUMPI 598 bool2Word ( 100 <=Int VV0_x_114b9705:Int ) ~> #pc [ JUMPI ] ~> #execut ...
-┃  │   pc: 610
+┃  │   k: JUMPI 766 bool2Word ( 100 <=Int VV0_x_114b9705:Int ) ~> #pc [ JUMPI ] ~> #execut ...
+┃  │   pc: 778
 ┃  │   callDepth: 0
 ┃  │   statusCode: STATUSCODE:StatusCode
 ┃  │
 ┃  │  (64 steps)
 ┃  ├─ 6
 ┃  │   k: #end EVMC_SUCCESS ~> #pc [ STOP ] ~> #execute ~> CONTINUATION:K
-┃  │   pc: 240
+┃  │   pc: 251
 ┃  │   callDepth: 0
 ┃  │   statusCode: STATUSCODE:StatusCode
 ┃  │
 ┃  │  (1 step)
 ┃  ├─ 8
 ┃  │   k: #halt ~> #pc [ STOP ] ~> #execute ~> CONTINUATION:K
-┃  │   pc: 240
+┃  │   pc: 251
 ┃  │   callDepth: 0
 ┃  │   statusCode: EVMC_SUCCESS
 ┃  │
 ┃  │  (2 steps)
 ┃  ├─ 10
 ┃  │   k: #halt ~> CONTINUATION:K
-┃  │   pc: 240
+┃  │   pc: 251
 ┃  │   callDepth: 0
 ┃  │   statusCode: EVMC_SUCCESS
 ┃  │
@@ -53,29 +53,29 @@
 ┗━━┓ constraint: { true #Equals ( notBool 100 <=Int VV0_x_114b9705:Int ) }
    │
    ├─ 5
-   │   k: JUMPI 598 bool2Word ( 100 <=Int VV0_x_114b9705:Int ) ~> #pc [ JUMPI ] ~> #execut ...
-   │   pc: 610
+   │   k: JUMPI 766 bool2Word ( 100 <=Int VV0_x_114b9705:Int ) ~> #pc [ JUMPI ] ~> #execut ...
+   │   pc: 778
    │   callDepth: 0
    │   statusCode: STATUSCODE:StatusCode
    │
    │  (102 steps)
    ├─ 7
    │   k: #end EVMC_REVERT ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
-   │   pc: 1081
+   │   pc: 1249
    │   callDepth: 0
    │   statusCode: STATUSCODE:StatusCode
    │
    │  (1 step)
    ├─ 9
    │   k: #halt ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
-   │   pc: 1081
+   │   pc: 1249
    │   callDepth: 0
    │   statusCode: EVMC_REVERT
    │
    │  (2 steps)
    └─ 11 (leaf, terminal)
        k: #halt ~> CONTINUATION:K
-       pc: 1081
+       pc: 1249
        callDepth: 0
        statusCode: EVMC_REVERT
 
@@ -124,7 +124,7 @@ Node 11:
               0
             </callValue>
             <wordStack>
-              ( 598 : ( VV0_x_114b9705:Int : ( 239 : ( selector ( "test_failing_branch(uint256)" ) : .WordStack ) ) ) )
+              ( 766 : ( VV0_x_114b9705:Int : ( 250 : ( selector ( "test_failing_branch(uint256)" ) : .WordStack ) ) ) )
             </wordStack>
             <localMem>
               b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80"
@@ -291,14 +291,14 @@ Node 11:
 
 
 
-module SUMMARY-ASSERTTEST.TEST-FAILING-BRANCH:3C5517A5A46272DB67E801BC6BFE7254B5B863ACC2A449CD44B7AA4BE418E2E2
+module SUMMARY-ASSERTTEST.TEST-FAILING-BRANCH:2E8CC0F3B3E1B34B190E12DF07CE8053F6EAF7C48FCC2318527FA71A7AB448C4
     
     
     rule [BASIC-BLOCK-1-TO-3]: <foundry>
            <kevm>
              <k>
                ( #execute
-               ~> CONTINUATION => JUMPI 598 bool2Word ( 100 <=Int VV0_x_114b9705:Int )
+               ~> CONTINUATION => JUMPI 766 bool2Word ( 100 <=Int VV0_x_114b9705:Int )
                ~> #pc [ JUMPI ]
                ~> #execute
                ~> CONTINUATION:K )
@@ -333,7 +333,7 @@ module SUMMARY-ASSERTTEST.TEST-FAILING-BRANCH:3C5517A5A46272DB67E801BC6BFE7254B5
                      0
                    </callValue>
                    <wordStack>
-                     ( .WordStack => ( VV0_x_114b9705:Int : ( 239 : ( selector ( "test_failing_branch(uint256)" ) : .WordStack ) ) ) )
+                     ( .WordStack => ( VV0_x_114b9705:Int : ( 250 : ( selector ( "test_failing_branch(uint256)" ) : .WordStack ) ) ) )
                    </wordStack>
                    <localMem>
                      ( .Bytes => b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80" )
@@ -514,7 +514,7 @@ module SUMMARY-ASSERTTEST.TEST-FAILING-BRANCH:3C5517A5A46272DB67E801BC6BFE7254B5
     rule [BASIC-BLOCK-4-TO-6]: <foundry>
            <kevm>
              <k>
-               ( JUMPI 598 bool2Word ( 100 <=Int VV0_x_114b9705:Int )
+               ( JUMPI 766 bool2Word ( 100 <=Int VV0_x_114b9705:Int )
                ~> #pc [ JUMPI ] => #end EVMC_SUCCESS
                ~> #pc [ STOP ] )
                ~> #execute
@@ -553,7 +553,7 @@ module SUMMARY-ASSERTTEST.TEST-FAILING-BRANCH:3C5517A5A46272DB67E801BC6BFE7254B5
                      0
                    </callValue>
                    <wordStack>
-                     ( ( VV0_x_114b9705:Int => selector ( "test_failing_branch(uint256)" ) ) : ( ( 239 : ( selector ( "test_failing_branch(uint256)" ) : .WordStack ) ) => .WordStack ) )
+                     ( ( VV0_x_114b9705:Int => selector ( "test_failing_branch(uint256)" ) ) : ( ( 250 : ( selector ( "test_failing_branch(uint256)" ) : .WordStack ) ) => .WordStack ) )
                    </wordStack>
                    <localMem>
                      b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80"
@@ -723,7 +723,7 @@ module SUMMARY-ASSERTTEST.TEST-FAILING-BRANCH:3C5517A5A46272DB67E801BC6BFE7254B5
     rule [BASIC-BLOCK-5-TO-7]: <foundry>
            <kevm>
              <k>
-               ( JUMPI 598 bool2Word ( 100 <=Int VV0_x_114b9705:Int )
+               ( JUMPI 766 bool2Word ( 100 <=Int VV0_x_114b9705:Int )
                ~> #pc [ JUMPI ] => #end EVMC_REVERT
                ~> #pc [ REVERT ] )
                ~> #execute
@@ -762,7 +762,7 @@ module SUMMARY-ASSERTTEST.TEST-FAILING-BRANCH:3C5517A5A46272DB67E801BC6BFE7254B5
                      0
                    </callValue>
                    <wordStack>
-                     ( ( VV0_x_114b9705:Int => 598 ) : ( ( 239 => VV0_x_114b9705:Int ) : ( ( selector ( "test_failing_branch(uint256)" ) => 239 ) : ( .WordStack => ( selector ( "test_failing_branch(uint256)" ) : .WordStack ) ) ) ) )
+                     ( ( VV0_x_114b9705:Int => 766 ) : ( ( 250 => VV0_x_114b9705:Int ) : ( ( selector ( "test_failing_branch(uint256)" ) => 250 ) : ( .WordStack => ( selector ( "test_failing_branch(uint256)" ) : .WordStack ) ) ) ) )
                    </wordStack>
                    <localMem>
                      ( b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80" => b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80" )
@@ -1185,7 +1185,7 @@ module SUMMARY-ASSERTTEST.TEST-FAILING-BRANCH:3C5517A5A46272DB67E801BC6BFE7254B5
                      0
                    </callValue>
                    <wordStack>
-                     ( 598 : ( VV0_x_114b9705:Int : ( 239 : ( selector ( "test_failing_branch(uint256)" ) : .WordStack ) ) ) )
+                     ( 766 : ( VV0_x_114b9705:Int : ( 250 : ( selector ( "test_failing_branch(uint256)" ) : .WordStack ) ) ) )
                    </wordStack>
                    <localMem>
                      b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80"
@@ -1607,7 +1607,7 @@ module SUMMARY-ASSERTTEST.TEST-FAILING-BRANCH:3C5517A5A46272DB67E801BC6BFE7254B5
                      0
                    </callValue>
                    <wordStack>
-                     ( 598 : ( VV0_x_114b9705:Int : ( 239 : ( selector ( "test_failing_branch(uint256)" ) : .WordStack ) ) ) )
+                     ( 766 : ( VV0_x_114b9705:Int : ( 250 : ( selector ( "test_failing_branch(uint256)" ) : .WordStack ) ) ) )
                    </wordStack>
                    <localMem>
                      b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80"
