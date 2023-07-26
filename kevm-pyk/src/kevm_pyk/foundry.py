@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import logging
+import multiprocessing
 import os
 import shutil
 from functools import cached_property
@@ -395,14 +396,23 @@ def foundry_kompile(
 
     if not kompilation_up_to_date() or rekompile or not kompiled_timestamp.exists():
         _LOGGER.info(f'Kompiling definition: {foundry_main_file}')
-        _kompile(foundry_definition_dir, KompileTarget.HASKELL)
+        process1 = multiprocessing.Process(target=_kompile, args=(foundry_definition_dir, KompileTarget.HASKELL))
+        process1.start()
+
         if llvm_library:
             _LOGGER.info(f'Kompiling definition to LLVM dy.lib: {foundry_main_file}')
-            _kompile(
-                foundry_llvm_dir,
-                KompileTarget.LLVM,
-                llvm_kompile_type=LLVMKompileType.C,
+            process2 = multiprocessing.Process(
+                target=_kompile,
+                args=(foundry_llvm_dir, KompileTarget.LLVM),
+                kwargs={'llvm_kompile_type': LLVMKompileType.C},
             )
+            process2.start()
+
+        # join the processes
+        process1.join()
+
+        if llvm_library:
+            process2.join()
 
     update_kompilation_digest()
     foundry.update_digest()
