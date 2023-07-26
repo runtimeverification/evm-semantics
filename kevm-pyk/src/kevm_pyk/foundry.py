@@ -673,7 +673,7 @@ def foundry_list(foundry_root: Path) -> list[str]:
         proof_digest = foundry.proof_digest(contract_name, test_name)
         if APRProof.proof_exists(proof_digest, apr_proofs_dir):
             apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
-            lines.extend(apr_proof.summary)
+            lines.extend(apr_proof.summary.lines)
             lines.append('')
     if len(lines) > 0:
         lines = lines[0:-1]
