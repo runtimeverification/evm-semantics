@@ -37,7 +37,7 @@ RUN    apt-get update                  \
             python3-pip
 
 # Install Stack
-curl -sSL https://get.haskellstack.org/ | sh
+RUN curl -sSL https://get.haskellstack.org/ | sh
 
 ARG USER_ID=1000
 ARG GROUP_ID=1000
