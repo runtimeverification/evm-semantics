@@ -13,6 +13,7 @@ from pyk.cterm import CTerm
 from pyk.kast.outer import KApply, KRewrite
 from pyk.kcfg import KCFG, KCFGExplore
 from pyk.kore.prelude import int_dv
+from pyk.ktool.kompile import LLVMKompileType
 from pyk.ktool.krun import KRunOutput, _krun
 from pyk.prelude.ml import is_bottom, is_top
 from pyk.proof import APRProof
@@ -103,6 +104,7 @@ def exec_kompile(
     o3: bool = False,
     debug: bool = False,
     enable_llvm_debug: bool = False,
+    llvm_library: bool = False,
     **kwargs: Any,
 ) -> None:
     optimization = 0
@@ -125,6 +127,7 @@ def exec_kompile(
         ccopts=ccopts,
         optimization=optimization,
         enable_llvm_debug=enable_llvm_debug,
+        llvm_kompile_type=LLVMKompileType.C if llvm_library else LLVMKompileType.MAIN,
         debug=debug,
     )
 
@@ -522,7 +525,7 @@ def exec_foundry_prove(
     implication_every_block: bool = True,
     bmc_depth: int | None = None,
     bug_report: bool = False,
-    kore_rpc_command: str | Iterable[str] = ('kore-rpc',),
+    kore_rpc_command: str | Iterable[str] | None = None,
     use_booster: bool = False,
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,

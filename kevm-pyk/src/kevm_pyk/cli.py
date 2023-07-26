@@ -262,7 +262,7 @@ class KEVMCLIArgs(KCLIArgs):
             '--kore-rpc-command',
             dest='kore_rpc_command',
             type=str,
-            default='kore-rpc',
+            default=None,
             help='Custom command to start RPC server',
         )
         args.add_argument(
