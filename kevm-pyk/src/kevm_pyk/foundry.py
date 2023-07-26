@@ -16,6 +16,7 @@ from pyk.kast.inner import KApply, KSequence, KSort, KToken, KVariable, Subst
 from pyk.kast.manip import free_vars, minimize_term
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
 from pyk.kcfg import KCFG, KCFGExplore
+from pyk.kcfg.semantics import KCFGSemantics
 from pyk.ktool.kompile import LLVMKompileType
 from pyk.prelude.bytes import bytesToken
 from pyk.prelude.k import GENERATED_TOP_CELL
@@ -408,6 +409,28 @@ def foundry_kompile(
     foundry.update_digest()
 
 
+class KEVMSemantics(KCFGSemantics):
+    _abstract_gas_cell: bool
+
+    def __init__(
+        self,
+        abstract_gas_cell: bool,
+    ) -> None:
+        self._abstract_gas_cell = abstract_gas_cell
+
+    def is_terminal(self, c: CTerm) -> bool:
+        return KEVM.is_terminal(c)
+
+    def extract_branches(self, c: CTerm) -> list[KInner]:
+        return list(KEVM.extract_branches(c))
+
+    def abstract_node(self, c: CTerm) -> CTerm:
+        return KEVM.abstract_gas_cell(c) if self._abstract_gas_cell else c
+
+    def same_loop(self, c1: CTerm, c2: CTerm) -> bool:
+        return KEVM.same_loop(c1, c2)
+
+
 def foundry_prove(
     foundry_root: Path,
     max_depth: int = 1000,
@@ -522,6 +545,7 @@ def foundry_prove(
             smt_timeout=smt_timeout,
             smt_retry_limit=smt_retry_limit,
             trace_rewrites=trace_rewrites,
+            kcfg_semantics=KEVMSemantics(abstract_gas_cell=auto_abstract_gas),
         ) as kcfg_explore:
             contract_name, method_name = _init_problem
             contract = foundry.contracts[contract_name]
@@ -638,7 +662,9 @@ def foundry_show(
     )
 
     if failure_info:
-        with KCFGExplore(foundry.kevm, id=proof.id) as kcfg_explore:
+        with KCFGExplore(
+            foundry.kevm, id=proof.id, kcfg_semantics=KEVMSemantics(abstract_gas_cell=False)
+        ) as kcfg_explore:
             res_lines += print_failure_info(proof, kcfg_explore, counterexample_info)
             res_lines += Foundry.help_info()
 
@@ -718,6 +744,7 @@ def foundry_simplify_node(
         smt_timeout=smt_timeout,
         smt_retry_limit=smt_retry_limit,
         trace_rewrites=trace_rewrites,
+        kcfg_semantics=KEVMSemantics(abstract_gas_cell=False),
     ) as kcfg_explore:
         new_term, _ = kcfg_explore.cterm_simplify(cterm)
     if replace:
@@ -757,6 +784,7 @@ def foundry_step_node(
         smt_timeout=smt_timeout,
         smt_retry_limit=smt_retry_limit,
         trace_rewrites=trace_rewrites,
+        kcfg_semantics=KEVMSemantics(abstract_gas_cell=False),
     ) as kcfg_explore:
         for _i in range(repeat):
             node = kcfg_explore.step(apr_proof.kcfg, node, apr_proof.logs, depth=depth)
@@ -794,6 +822,7 @@ def foundry_section_edge(
         smt_timeout=smt_timeout,
         smt_retry_limit=smt_retry_limit,
         trace_rewrites=trace_rewrites,
+        kcfg_semantics=KEVMSemantics(abstract_gas_cell=False),
     ) as kcfg_explore:
         kcfg_explore.section_edge(
             apr_proof.kcfg, source_id=source_id, target_id=target_id, logs=apr_proof.logs, sections=sections
@@ -829,7 +858,9 @@ def foundry_get_model(
 
     res_lines = []
 
-    with KCFGExplore(foundry.kevm, id=apr_proof.id) as kcfg_explore:
+    with KCFGExplore(
+        foundry.kevm, id=apr_proof.id, kcfg_semantics=KEVMSemantics(abstract_gas_cell=False)
+    ) as kcfg_explore:
         for node_id in nodes:
             res_lines.append('')
             res_lines.append(f'Node id: {node_id}')

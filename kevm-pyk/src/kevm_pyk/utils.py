@@ -119,15 +119,9 @@ def kevm_prove(
         prover = APRBMCProver(
             proof,
             kcfg_explore,
-            is_terminal=is_terminal,
-            extract_branches=extract_branches,
-            same_loop=same_loop,
-            abstract_node=abstract_node,
         )
     elif type(proof) is APRProof:
-        prover = APRProver(
-            proof, kcfg_explore, is_terminal=is_terminal, extract_branches=extract_branches, abstract_node=abstract_node
-        )
+        prover = APRProver(proof, kcfg_explore)
     elif type(proof) is EqualityProof:
         prover = EqualityProver(kcfg_explore=kcfg_explore, proof=proof)
     else:

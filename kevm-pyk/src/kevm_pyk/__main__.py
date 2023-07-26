@@ -25,6 +25,7 @@ from pyk.utils import BugReport, single
 from .cli import KEVMCLIArgs, node_id_like
 from .foundry import (
     Foundry,
+    KEVMSemantics,
     foundry_get_model,
     foundry_kompile,
     foundry_list,
@@ -289,6 +290,7 @@ def exec_prove(
             smt_timeout=smt_timeout,
             smt_retry_limit=smt_retry_limit,
             trace_rewrites=trace_rewrites,
+            kcfg_semantics=KEVMSemantics(abstract_gas_cell=auto_abstract_gas),
         ) as kcfg_explore:
             proof_problem: Proof
             if is_functional(claim):
@@ -476,7 +478,7 @@ def exec_show_kcfg(
     )
 
     if failure_info:
-        with KCFGExplore(kevm, id=proof.id) as kcfg_explore:
+        with KCFGExplore(kevm, id=proof.id, kcfg_semantics=KEVMSemantics(abstract_gas_cell=False)) as kcfg_explore:
             res_lines += print_failure_info(proof, kcfg_explore)
 
     print('\n'.join(res_lines))
