@@ -348,9 +348,7 @@ tests/specs/erc20/ds/transferFrom-success-1-spec.k
 tests/specs/erc20/ds/transferFrom-success-2-spec.k
 tests/specs/erc20/ds/transfer-success-1-spec.k
 tests/specs/erc20/hkg/transferFrom-success-1-spec.k
-tests/specs/examples/erc20-spec.md
 tests/specs/examples/erc721-spec.md
-tests/specs/examples/storage-spec.md
 tests/specs/mcd/dstoken-burn-self-fail-rough-spec.k
 tests/specs/mcd/dstoken-transferfrom-fail-rough-spec.k
 tests/specs/mcd/end-cash-pass-rough-spec.k

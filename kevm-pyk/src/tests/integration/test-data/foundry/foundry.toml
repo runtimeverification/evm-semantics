@@ -1,0 +1,6 @@
+[profile.default]
+src = 'src'
+out = 'out'
+extra_output = ['storageLayout', 'abi', 'evm.methodIdentifiers', 'evm.deployedBytecode.object']
+rpc_endpoints = { optimism = "https://optimism.alchemyapi.io/v2/...", mainnet = "${RPC_MAINNET}" }
+

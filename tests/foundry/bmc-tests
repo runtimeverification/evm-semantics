@@ -1,2 +1,3 @@
+BMCLoopsTest.test_bmc
 BMCLoopsTest.test_countdown_concrete
 BMCLoopsTest.test_countdown_symbolic

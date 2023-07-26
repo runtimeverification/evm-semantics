@@ -8,7 +8,7 @@ from functools import cached_property
 from subprocess import CalledProcessError
 from typing import TYPE_CHECKING
 
-from pyk.kast.inner import KApply, KAtt, KLabel, KRewrite, KSort, KToken, KVariable
+from pyk.kast.inner import KApply, KAtt, KLabel, KRewrite, KSort, KVariable
 from pyk.kast.manip import abstract_term_safely
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KNonTerminal, KProduction, KRequire, KRule, KTerminal
 from pyk.prelude.kbool import andBool
@@ -380,9 +380,16 @@ class Contract:
 
     @property
     def macro_bin_runtime(self) -> KRule:
+        if self.has_unlinked():
+            raise ValueError(
+                f'Some library placeholders have been found in contract {self.name}. Please link the library(ies) first. Ref: https://docs.soliditylang.org/en/v0.8.20/using-the-compiler.html#library-linking'
+            )
         return KRule(
             KRewrite(KEVM.bin_runtime(KApply(self.klabel)), KEVM.parse_bytestack(stringToken('0x' + self.bytecode)))
         )
+
+    def has_unlinked(self) -> bool:
+        return 0 <= self.bytecode.find('__')
 
     @property
     def method_sentences(self) -> list[KSentence]:
