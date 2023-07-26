@@ -4,6 +4,28 @@ inputs:
   tag:
     description: 'Docker image tag to use'
     required: true
+  subdir:
+    description: 'Subdirectory where code is cloned.'
+    required: false
+    default: "./"
+  os: 
+    description: 'OS to setup Docker for.'
+    required: true
+  distro:
+    description: 'Distribution to setup Docker for.'
+    required: true
+  llvm:
+    description: 'LLVM version to use.'
+    required: false
+    default: 15
+  jdk:
+    description: 'JDK version to use.'
+    required: false
+    default: 17
+  dockerfile:
+    description: 'Hardcode the path of the dockerfile to use.'
+    required: false
+    default: .github/workflows/Dockerfile
 runs:
   using: 'composite'
   steps:
@@ -11,11 +33,16 @@ runs:
     shell: bash {0}
     env:
       TAG_NAME: ${{ inputs.tag }}
+      SUBDIR: ${{ inputs.subdir }}
+      BASE_OS: ${{ inputs.os }}
+      BASE_DISTRO: ${{ inputs.distro }}
+      LLVM_VERSION: ${{ inputs.llvm }}
+      JDK_VERSION: ${{ inputs.jdk }}
+      DOCKERFILE: ${{ inputs.dockerfile }}
     run: |
       set -euxo pipefail
 
       Z3_VERSION=4.12.1
-      LLVM_VERSION=14
       K_COMMIT=$(cat deps/k_release)
 
       docker build .                           \
