@@ -840,7 +840,7 @@ plugins = ["importlib-metadata"]
 
 [[package]]
 name = "pyk"
-version = "0.1.380"
+version = "0.1.382"
 description = ""
 category = "main"
 optional = false
@@ -861,8 +861,8 @@ tomli = "^2.0.1"
 [package.source]
 type = "git"
 url = "https://github.com/runtimeverification/pyk.git"
-reference = "noah/node-storage"
-resolved_reference = "193623fcde83b4c93575fd601556126726ba3e2a"
+reference = "v0.1.382"
+resolved_reference = "1d76cf579daa3dc8f05a337dfce6cb925212d37d"
 
 [[package]]
 name = "pyperclip"
@@ -1117,4 +1117,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "f74c63e7046e4462233120bc0be03e806b35889523681aea182572c2dc2c5403"
+content-hash = "bfb6ada667f3b770e74b734ee95a864e878658214e1f3a93dc1bcc17846b3ae3"

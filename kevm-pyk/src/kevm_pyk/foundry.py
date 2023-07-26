@@ -423,7 +423,7 @@ def foundry_prove(
     implication_every_block: bool = True,
     bmc_depth: int | None = None,
     bug_report: bool = False,
-    kore_rpc_command: str | Iterable[str] = ('kore-rpc',),
+    kore_rpc_command: str | Iterable[str] | None = None,
     use_booster: bool = False,
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
@@ -451,13 +451,8 @@ def foundry_prove(
                 "Couldn't locate the kore-rpc-booster RPC binary. Please put 'kore-rpc-booster' on PATH manually or using kup install/kup shell."
             ) from None
 
-        if foundry.llvm_dylib:
-            kore_rpc_command = ('kore-rpc-booster', '--llvm-backend-library', str(foundry.llvm_dylib))
-        else:
-            foundry_llvm_dir = foundry.out / 'kompiled-llvm'
-            raise ValueError(
-                f"Could not find the LLVM dynamic library in {foundry_llvm_dir}. Please re-run foundry-kompile with the '--with-llvm-library' flag"
-            )
+    if kore_rpc_command is None:
+        kore_rpc_command = ('kore-rpc-booster',) if use_booster else ('kore-rpc',)
 
     all_tests = [
         f'{contract.name}.{method.name}'
@@ -516,11 +511,14 @@ def foundry_prove(
 
     def _init_and_run_proof(_init_problem: tuple[str, str]) -> tuple[bool, list[str] | None]:
         proof_id = f'{_init_problem[0]}.{_init_problem[1]}'
+        llvm_definition_dir = foundry.out / 'kompiled-llvm' if use_booster else None
+
         with KCFGExplore(
             foundry.kevm,
             id=proof_id,
             bug_report=br,
             kore_rpc_command=kore_rpc_command,
+            llvm_definition_dir=llvm_definition_dir,
             smt_timeout=smt_timeout,
             smt_retry_limit=smt_retry_limit,
             trace_rewrites=trace_rewrites,
