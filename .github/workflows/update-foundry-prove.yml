@@ -11,15 +11,17 @@ jobs:
           submodules: recursive
           token: ${{ secrets.JENKINS_GITHUB_PAT }}
           ref: ${{ github.events.inputs.branch }}
-      - name: Git Submodule Update
-        run: |
-          git submodule update --init --recursive
-          git submodule update --init --recursive -- deps/k
-          git submodule update --init --recursive -- deps/plugin
+
       - name: 'Set up Docker'
         uses: ./.github/actions/with-docker
         with:
           tag: kevm-update-output-${{ github.sha }}
+          os: ubuntu
+          distro: jammy
+          llvm: 14
+          # User subdir: <path> if you need to be in a lower folder to build something. Otherwise leave as default (.)
+          # subdir: <path to sub folder to mount into container instead of top level repository checkout>
+      
       - name: 'Build devShell'
         env: 
           CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_PUBLIC_TOKEN }}
