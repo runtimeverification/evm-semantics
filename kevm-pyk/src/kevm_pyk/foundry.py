@@ -408,9 +408,7 @@ def foundry_kompile(
             )
             process2.start()
 
-        # join the processes
         process1.join()
-
         if llvm_library:
             process2.join()
 
