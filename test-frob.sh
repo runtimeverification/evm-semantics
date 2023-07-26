@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
+KEVM_PREFIX=/nix/store/z30l75z7l3m2nynf52n13cwqz2586rb1-kevm-8ed6754edb8e7e8cadbcaa1fa08f255241dd34b6/
 echo 'Kompiling'
-kevm-pyk kompile --read-only-kompiled-directory --target haskell --definition /nix/store/92vnpsq4aq2p9idmrw0gb2rvlbycjpnj-kevm-71ab7861f509061bbf72b9c6f8baeca6f2b9ecda/lib/kevm/haskell --syntax-module VERIFICATION-SYNTAX --main-module VERIFICATION ./tests/specs/mcd/vat-frob-diff-zero-dart-pass-rough-reuse-spec.k -o frob-out.d
+kevm-pyk kompile --read-only-kompiled-directory --target haskell --definition "$KEVM_PREFIX/lib/kevm/haskell" --syntax-module VERIFICATION-SYNTAX --main-module VERIFICATION ./tests/specs/mcd/vat-frob-diff-zero-dart-pass-rough-reuse-spec.k -o frob-out.d
 
 
 echo 'Proving'
-kevm-pyk prove --verbose --workers 4 --definition frob-out.d/ -I include/kframework/ -I /nix/store/92vnpsq4aq2p9idmrw0gb2rvlbycjpnj-kevm-71ab7861f509061bbf72b9c6f8baeca6f2b9ecda/lib/kevm/include/kframework/ ./tests/specs/mcd/vat-frob-diff-zero-dart-pass-rough-reuse-spec.k --save-directory ./frob-save.d
+kevm-pyk prove --verbose --workers 4 --definition frob-out.d/ -I include/kframework/ -I "$KEVM_PREFIX/lib/kevm/include/kframework/" ./tests/specs/mcd/vat-frob-diff-zero-dart-pass-rough-reuse-spec.k --save-directory ./frob-save.d
