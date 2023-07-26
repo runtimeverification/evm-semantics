@@ -261,7 +261,7 @@ Node 7:
 
 
 
-module SUMMARY-ASSUMETEST.TESTFAIL-ASSUME-FALSE:8A2AF5EE3FD080237B2E4CA68C41B118C25BBF529DB684138FB7085ECACDF109
+module SUMMARY-ASSUMETEST.TESTFAIL-ASSUME-FALSE:FB031F786D909D69013B966019380F002F94DE195642EB3F4596C7AA12728D84
     
     
     rule [BASIC-BLOCK-1-TO-3]: <foundry>
@@ -1355,7 +1355,13 @@ Failing nodes:
     #And { true #Equals VV1_b_114b9705:Int <Int pow256 } ) ) ) ) ) ) ) ) #Implies { false #Equals foundry_success ( ... statusCode: EVMC_SUCCESS , failed: #lookup ( .Map , 46308022326495007027972728677917914892729792999299745830475596687180801507328 ) , revertExpected: false , opcodeExpected: false , recordEventExpected: false , eventExpected: false ) } )
   Path condition:
     #Top
+  Model:
+    CALLER_ID = 0
+    NUMBER_CELL = 0
+    ORIGIN_ID = 0
+    VV0_a_114b9705 = 0
+    VV1_b_114b9705 = 0
 
-Join the Runtime Verification Discord server for support: https://discord.gg/GHvFbRDD
+Join the Runtime Verification Discord server for support: https://discord.com/invite/CurfmXNtbN
 
 Access documentation for KEVM foundry integration at https://docs.runtimeverification.com/kevm-integration-for-foundry/
