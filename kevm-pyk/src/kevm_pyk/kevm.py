@@ -311,13 +311,7 @@ class KEVM(KProve, KRun):
 
     @staticmethod
     def abi_type(type: str, value: KInner) -> KApply:
-        if type.endswith(']') and isinstance(value, KVariable):
-            return KApply(
-                'abi_type_array',
-                [KVariable('?_'), KVariable(f'?{value.name}_size'), KVariable(f'?_{value.name}_array')],
-            )
-        else:
-            return KApply('abi_type_' + type, [value])
+        return KApply('abi_type_' + type, [value])
 
     @staticmethod
     def empty_typedargs() -> KApply:
@@ -326,6 +320,10 @@ class KEVM(KProve, KRun):
     @staticmethod
     def bytes_append(b1: KInner, b2: KInner) -> KApply:
         return KApply('_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes', [b1, b2])
+
+    @staticmethod
+    def string_2_bytes(string: KInner) -> KApply:
+        return KApply('_+Bytes__String_2_Bytes()', [string])
 
     @staticmethod
     def account_cell(

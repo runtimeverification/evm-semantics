@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING
 from pyk.kast.inner import KApply, KAtt, KLabel, KRewrite, KSort, KVariable
 from pyk.kast.manip import abstract_term_safely
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KNonTerminal, KProduction, KRequire, KRule, KTerminal
-from pyk.prelude.kbool import andBool
+from pyk.prelude.kbool import TRUE, andBool
 from pyk.prelude.kint import intToken
 from pyk.prelude.string import stringToken
 from pyk.utils import FrozenDict, hash_str, run_process, single
@@ -180,7 +180,6 @@ class Contract:
 
         def rule(self, contract: KInner, application_label: KLabel, contract_name: str) -> KRule | None:
             arg_vars = [KVariable(aname) for aname in self.arg_names]
-            print(arg_vars)
             prod_klabel = self.klabel
             assert prod_klabel is not None
             args: list[KInner] = []
@@ -552,17 +551,13 @@ def _range_predicate(term: KInner, type_label: str) -> KInner | None:
         case 'bytes':
             return KEVM.range_uint(128, KEVM.size_bytes(term))
         case 'string':
-            as_bytes = KEVM.string_2_bytes(term)
-            return KEVM.range_uint(128, KEVM.size_bytes(as_bytes))
+            return TRUE
 
     predicate_functions = [
-        _range_predicate_dyn_array,
-        _range_predicate_array,
+        _range_predicate_static_array,
         _range_predicate_uint,
         _range_predicate_int,
         _range_predicate_bytes,
-        _range_predicate_ufixed,
-        _range_predicate_fixed,
     ]
 
     for f in predicate_functions:
@@ -602,63 +597,21 @@ def _range_predicate_int(term: KInner, type_label: str) -> tuple[bool, KInner | 
 
 def _range_predicate_bytes(term: KInner, type_label: str) -> tuple[bool, KInner | None]:
     if type_label.startswith('bytes'):
-        width = int(type_label[5:])
-        if not (0 < width and width <= 32):
-            raise ValueError(f'Unsupported range predicate bytes<M> type: {type_label}')
-        return (True, KEVM.range_bytes(intToken(width), term))
-    else:
-        return (False, None)
-
-
-def _range_predicate_fixed(term: KInner, type_label: str) -> tuple[bool, KInner | None]:
-    if type_label.startswith('fixed') or type_label.startswith('ufixed'):
-        if type_label == 'fixed':
-            width = 128
-            dec = 18
-        else:
-            num = re.findall(r'\d{1,3}', type_label)
-            nums = [int(n) for n in num]
-            if not len(nums) == 2:
-                raise ValueError(f'fixed point type error: {type_label}')
-            (width, dec) = (nums[0], nums[1])
-        if not (0 < width and width <= 128 or width % 8 != 0) or not (0 < dec and dec <= 18):
-            raise ValueError(f'Unsupported range predicate fixed<M>x<N> type: {type_label}')
-        return (False, None)
-    else:
-        return (False, None)
-
-
-def _range_predicate_ufixed(term: KInner, type_label: str) -> tuple[bool, KInner | None]:
-    if type_label.startswith('ufixed'):
-        if type_label == 'ufixed':
-            width = 128
-            dec = 18
-        else:
-            num = re.findall(r'\d{1,3}', type_label)
-            nums = [int(n) for n in num]
-            if not len(nums) == 2:
-                raise ValueError(f'fixed point type error: {type_label}')
-            (width, dec) = (nums[0], nums[1])
-        if not (0 < width and width <= 128 or width % 8 != 0) or not (0 < dec and dec <= 18):
-            raise ValueError(f'Unsupported range predicate ufixed<M>x<N> type: {type_label}')
-        return (False, None)
-    else:
-        return (False, None)
-
-
-def _range_predicate_dyn_array(term: KInner, type_label: str) -> tuple[bool, KInner | None]:
-    if type_label.endswith('[]'):
-        if type(term) is KVariable:
-            return (True, KEVM.range_uint(128, KVariable(f'?{term.name}_size', 'Int')))
+        str_width = type_label[5:]
+        if str_width != '':
+            width = int(str_width)
+            if not (0 < width and width <= 32):
+                raise ValueError(f'Unsupported range predicate bytes<M> type: {type_label}')
+            return (True, KEVM.range_bytes(intToken(width), term))
     return (False, None)
 
 
-def _range_predicate_array(term: KInner, type_label: str) -> tuple[bool, KInner | None]:
+def _range_predicate_static_array(term: KInner, type_label: str) -> tuple[bool, KInner | None]:
     if type_label.endswith(']'):
         parts = type_label.rsplit('[', 1)
         if len(parts) > 1:
             number = int(parts[1].rstrip(']'))
-            return (True, KEVM.range_uint((number * 256), intToken(32)))
+            return (True, KEVM.range_uint(((number + 1) * 256), intToken(32)))
     return (False, None)
 
 
