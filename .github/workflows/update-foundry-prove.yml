@@ -11,7 +11,9 @@ jobs:
           submodules: recursive
           token: ${{ secrets.JENKINS_GITHUB_PAT }}
           ref: ${{ github.events.inputs.branch }}
-
+          runs:
+            git submodule update --init --recursive
+            git submodule update --init --recursive k/deps
       - name: 'Set up Docker'
         uses: ./.github/actions/with-docker
         with:
