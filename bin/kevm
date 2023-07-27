@@ -79,20 +79,16 @@ run_krun() {
     parser='cat'
 
     krun_args=(--definition "${backend_dir}" "${run_file}")
-    if ! ${pyk}; then
-        ! ${debugger} || krun_args+=(--debugger)
+    if ${debugger}; then
+        krun_args+=(--debugger)
         krun_args+=(-cSCHEDULE="${cschedule}" -pSCHEDULE="${parser}")
         krun_args+=(-cMODE="${cmode}" -pMODE="${parser}")
         krun_args+=(-cCHAINID="${cchainid}" -pCHAINID="${parser}")
+        execute krun "${krun_args[@]}" "$@"
     else
         krun_args+=(--schedule ${schedule})
         krun_args+=(--mode ${mode})
         krun_args+=(--chainid ${chainid})
-    fi
-
-    if ! ${pyk}; then
-        execute krun "${krun_args[@]}" "$@"
-    else
         run_kevm_pyk run "${krun_args[@]}" "$@"
     fi
 }
@@ -147,11 +143,9 @@ if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
     echo "
         usage: ${KEVM} run          [--backend (llvm|haskell)]  [--profile|--debug] <KEVM_arg>* <pgm>  <K arg>*
                ${KEVM} kast         [--backend (llvm|haskell)]  [--profile|--debug] <KEVM_arg>* <pgm>  <output format> <K arg>*
-               ${KEVM} prove        [--backend (haskell)]       [--profile|--debug]             <spec> <KEVM_arg>* <K arg>*
                ${KEVM} search       [--backend (haskell)]       [--profile|--debug]             <pgm>  <pattern> <K arg>*
                ${KEVM} kompile      [--backend (llvm|haskell)]  [--profile|--debug]             <main> <K arg>*
-               ${KEVM} solc-to-k                                [--profile|--debug]             <sol-file> <contract-name> <solc-arg>*
-               ${KEVM} foundry-[kompile|prove|show|view-kcfg]         # see dedicated help menu
+               ${KEVM} [prune-proof|view-kcfg|show-kcfg|solc-to-k|prove|prove-legacy]       See more specific help menu.
 
                ${KEVM} [help|--help|version|--version]
 
@@ -159,6 +153,7 @@ if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
            ${KEVM} kast            : Parse an EVM program and output it in a supported format
            ${KEVM} search          : Search for a K pattern in an EVM program execution
            ${KEVM} kompile         : Run kompile with arguments setup to include KEVM parameters as defaults
+           ${KEVM} [prune-proof|view-kcfg|show-kcfg|solc-to-k|prove|prove-legacy] :         See more specific help menu.
 
            ${KEVM} help    : Display this help message.
            ${KEVM} version : Display the versions of KEVM, K, Kore, and Z3 in use.
@@ -169,23 +164,9 @@ if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
                  <KEVM arg> is one of [--mode (NORMAL|VMTESTS)]
                                       [--schedule (MERGE|LONDON|BERLIN|ISTANBUL|PETERSBURG|CONSTANTINOPLE|BYZANTIUM|SPURIOUS_DRAGON|TANGERINE_WHISTLE|HOMESTEAD|FRONTIER|DEFAULT)]
                                       [--chainid NNN]
-                                      [--bug-report]
-                                      [--profile-haskell]
-                                      [--profile-timeout <duration>]
-                                      [--verif-module <verification_module>]
-                                      [--pyk-minimize]
-                                      [--pyk-omit-labels <comma_separated_labels>]
-                                      [--max-counterexamples <number_counterexamples>]
-                                      [--branching-allowed <max_branches>]
-                                      [--haskell-backend-arg <haskell_backend_arg>]
                  <K arg> is an argument you want to pass to K.
                  <output format> is the format for Kast to output the term in.
                  <pattern> is the configuration pattern to search for.
-                 <def_module> is the module to take as axioms when doing verification.
-                 <duration> is a timeout specifier as for GNU timeout.
-                 <sol> is a Solidity source code file.
-                 <sol contract> is the name of a Solidity contract provided in the <sol>.
-                 <solc arg> are arguments to pass to solc.
     "
 
     run_kevm_pyk --help
