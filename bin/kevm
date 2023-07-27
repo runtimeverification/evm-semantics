@@ -73,13 +73,12 @@ run_krun() {
 
     check_k_install
 
-    cschedule=$cSCHEDULE_kore
-    cmode=$cMODE_kore
-    cchainid=$cCHAINID_kore
-    parser='cat'
-
     krun_args=(--definition "${backend_dir}" "${run_file}")
     if ${debugger}; then
+        cmode="Lbl${mode}{}()"
+        cschedule="Lbl${schedule}'Unds'EVM{}()"
+        cchainid="\dv{SortInt{}}(\"${chainid}\")"
+        parser='cat'
         krun_args+=(--debugger)
         krun_args+=(-cSCHEDULE="${cschedule}" -pSCHEDULE="${parser}")
         krun_args+=(-cMODE="${cmode}" -pMODE="${parser}")
@@ -216,10 +215,6 @@ if [[ "${run_command}" == kompile ]] || [[ "${run_command}" == kast ]] || [[ "${
         fatal "Please provide a file!"
     fi
 fi
-
-cMODE_kore="Lbl${mode}{}()"
-cSCHEDULE_kore="Lbl${schedule}'Unds'EVM{}()"
-cCHAINID_kore="\dv{SortInt{}}(\"${chainid}\")"
 
 ! ${debug} || set -x
 
