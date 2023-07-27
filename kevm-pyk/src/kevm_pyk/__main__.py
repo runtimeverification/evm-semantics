@@ -10,9 +10,12 @@ from typing import TYPE_CHECKING
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli.utils import file_path
 from pyk.cterm import CTerm
+from pyk.kast.outer import KApply, KRewrite
 from pyk.kcfg import KCFG, KCFGExplore
-from pyk.prelude.ml import is_bottom
+from pyk.ktool.kompile import LLVMKompileType
+from pyk.prelude.ml import is_bottom, is_top
 from pyk.proof import APRProof
+from pyk.proof.equality import EqualityProof
 from pyk.proof.show import APRProofShow
 from pyk.proof.tui import APRProofViewer
 from pyk.utils import BugReport, single
@@ -20,6 +23,7 @@ from pyk.utils import BugReport, single
 from .cli import KEVMCLIArgs, node_id_like
 from .foundry import (
     Foundry,
+    foundry_get_model,
     foundry_kompile,
     foundry_list,
     foundry_node_printer,
@@ -35,7 +39,7 @@ from .interpret import _exec_interpret
 from .kevm import KEVM, kevm_node_printer
 from .kompile import kevm_kompile
 from .solc_to_k import solc_compile, solc_to_k
-from .utils import arg_pair_of, ensure_ksequence_on_k_cell, get_apr_proof_for_spec, kevm_apr_prove, print_failure_info
+from .utils import arg_pair_of, ensure_ksequence_on_k_cell, get_apr_proof_for_spec, kevm_prove, print_failure_info
 
 if TYPE_CHECKING:
     from argparse import Namespace
@@ -46,6 +50,7 @@ if TYPE_CHECKING:
     from pyk.kcfg.kcfg import NodeIdLike
     from pyk.kcfg.tui import KCFGElem
     from pyk.ktool.krun import KRunOutput
+    from pyk.proof.proof import Proof
 
     from .kompile import KompileTarget
 
@@ -100,6 +105,7 @@ def exec_kompile(
     o3: bool = False,
     debug: bool = False,
     enable_llvm_debug: bool = False,
+    llvm_library: bool = False,
     **kwargs: Any,
 ) -> None:
     optimization = 0
@@ -122,6 +128,7 @@ def exec_kompile(
         ccopts=ccopts,
         optimization=optimization,
         enable_llvm_debug=enable_llvm_debug,
+        llvm_kompile_type=LLVMKompileType.C if llvm_library else LLVMKompileType.MAIN,
         debug=debug,
     )
 
@@ -200,37 +207,24 @@ def exec_prove_legacy(
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'md_selector', f'--md-selector: {kwargs["md_selector"]}')
-    md_selector = 'k & ! node'
-
     kevm = KEVM(definition_dir, use_directory=save_directory)
-    args: list[str] = []
-    haskell_args: list[str] = []
-    if claim_labels:
-        args += ['--claims', ','.join(claim_labels)]
-    if exclude_claim_labels:
-        args += ['--exclude', ','.join(exclude_claim_labels)]
-    if debug:
-        args.append('--debug')
-    if debugger:
-        args.append('--debugger')
-    if branching_allowed:
-        args += ['--branching-allowed', f'{branching_allowed}']
-    if max_counterexamples:
-        haskell_args += ['--max-counterexamples', f'{max_counterexamples}']
-    if bug_report:
-        haskell_args += ['--bug-report', f'kevm-bug-{spec_file.name.rstrip("-spec.k")}']
-    if haskell_backend_args:
-        haskell_args += list(haskell_backend_args)
-
-    kevm.prove(
+    final_state = kevm.prove_legacy(
         spec_file=spec_file,
-        spec_module_name=spec_module,
-        args=args,
-        include_dirs=[Path(i) for i in includes],
-        md_selector=md_selector,
-        haskell_args=haskell_args,
-        depth=max_depth,
+        includes=includes,
+        bug_report=bug_report,
+        spec_module=spec_module,
+        claim_labels=claim_labels,
+        exclude_claim_labels=exclude_claim_labels,
+        debug=debug,
+        debugger=debugger,
+        max_depth=max_depth,
+        max_counterexamples=max_counterexamples,
+        branching_allowed=branching_allowed,
+        haskell_backend_args=haskell_backend_args,
     )
+    print(kevm.pretty_print(final_state))
+    if not is_top(final_state):
+        raise SystemExit(1)
 
 
 def exec_prove(
@@ -281,6 +275,12 @@ def exec_prove(
     if isinstance(kore_rpc_command, str):
         kore_rpc_command = kore_rpc_command.split()
 
+    def is_functional(claim: KClaim) -> bool:
+        claim_lhs = claim.body
+        if type(claim_lhs) is KRewrite:
+            claim_lhs = claim_lhs.lhs
+        return not (type(claim_lhs) is KApply and claim_lhs.label.name == '<generatedTop>')
+
     def _init_and_run_proof(claim: KClaim) -> tuple[bool, list[str] | None]:
         with KCFGExplore(
             kevm,
@@ -291,38 +291,53 @@ def exec_prove(
             smt_retry_limit=smt_retry_limit,
             trace_rewrites=trace_rewrites,
         ) as kcfg_explore:
-            proof_problem: APRProof
-
-            if save_directory is not None and not reinit and APRProof.proof_exists(claim.label, save_directory):
-                proof_problem = APRProof.read_proof(claim.label, save_directory)
-
+            proof_problem: Proof
+            if is_functional(claim):
+                if (
+                    save_directory is not None
+                    and not reinit
+                    and EqualityProof.proof_exists(claim.label, save_directory)
+                ):
+                    proof_problem = EqualityProof.read_proof(claim.label, save_directory)
+                else:
+                    proof_problem = EqualityProof.from_claim(claim, kevm.definition, proof_dir=save_directory)
             else:
-                _LOGGER.info(f'Converting claim to KCFG: {claim.label}')
-                kcfg, init_node_id, target_node_id = KCFG.from_claim(kevm.definition, claim)
+                if save_directory is not None and not reinit and APRProof.proof_exists(claim.label, save_directory):
+                    proof_problem = APRProof.read_proof(claim.label, save_directory)
 
-                new_init = ensure_ksequence_on_k_cell(kcfg.node(init_node_id).cterm)
-                new_target = ensure_ksequence_on_k_cell(kcfg.node(target_node_id).cterm)
+                else:
+                    _LOGGER.info(f'Converting claim to KCFG: {claim.label}')
+                    kcfg, init_node_id, target_node_id = KCFG.from_claim(kevm.definition, claim)
 
-                _LOGGER.info(f'Computing definedness constraint for initial node: {claim.label}')
-                new_init = kcfg_explore.cterm_assume_defined(new_init)
+                    new_init = ensure_ksequence_on_k_cell(kcfg.node(init_node_id).cterm)
+                    new_target = ensure_ksequence_on_k_cell(kcfg.node(target_node_id).cterm)
 
-                if simplify_init:
-                    _LOGGER.info(f'Simplifying initial and target node: {claim.label}')
-                    _new_init, _ = kcfg_explore.cterm_simplify(new_init)
-                    _new_target, _ = kcfg_explore.cterm_simplify(new_target)
-                    if is_bottom(_new_init):
-                        raise ValueError('Simplifying initial node led to #Bottom, are you sure your LHS is defined?')
-                    if is_bottom(_new_target):
-                        raise ValueError('Simplifying target node led to #Bottom, are you sure your RHS is defined?')
-                    new_init = CTerm.from_kast(_new_init)
-                    new_target = CTerm.from_kast(_new_target)
+                    _LOGGER.info(f'Computing definedness constraint for initial node: {claim.label}')
+                    new_init = kcfg_explore.cterm_assume_defined(new_init)
 
-                kcfg.replace_node(init_node_id, new_init)
-                kcfg.replace_node(target_node_id, new_target)
+                    if simplify_init:
+                        _LOGGER.info(f'Simplifying initial and target node: {claim.label}')
+                        _new_init, _ = kcfg_explore.cterm_simplify(new_init)
+                        _new_target, _ = kcfg_explore.cterm_simplify(new_target)
+                        if is_bottom(_new_init):
+                            raise ValueError(
+                                'Simplifying initial node led to #Bottom, are you sure your LHS is defined?'
+                            )
+                        if is_bottom(_new_target):
+                            raise ValueError(
+                                'Simplifying target node led to #Bottom, are you sure your RHS is defined?'
+                            )
+                        new_init = CTerm.from_kast(_new_init)
+                        new_target = CTerm.from_kast(_new_target)
 
-                proof_problem = APRProof(claim.label, kcfg, init_node_id, target_node_id, {}, proof_dir=save_directory)
+                    kcfg.replace_node(init_node_id, new_init)
+                    kcfg.replace_node(target_node_id, new_target)
 
-            passed = kevm_apr_prove(
+                    proof_problem = APRProof(
+                        claim.label, kcfg, init_node_id, target_node_id, {}, proof_dir=save_directory
+                    )
+
+            passed = kevm_prove(
                 kevm,
                 proof_problem,
                 kcfg_explore,
@@ -427,6 +442,8 @@ def exec_show_kcfg(
     minimize: bool = True,
     failure_info: bool = False,
     sort_collections: bool = False,
+    pending: bool = False,
+    failing: bool = False,
     **kwargs: Any,
 ) -> None:
     kevm = KEVM(definition_dir)
@@ -440,6 +457,11 @@ def exec_show_kcfg(
         claim_labels=claim_labels,
         exclude_claim_labels=exclude_claim_labels,
     )
+
+    if pending:
+        nodes = list(nodes) + [node.id for node in proof.pending]
+    if failing:
+        nodes = list(nodes) + [node.id for node in proof.failing]
 
     node_printer = kevm_node_printer(kevm, proof)
     proof_show = APRProofShow(kevm, node_printer=node_printer)
@@ -504,11 +526,12 @@ def exec_foundry_prove(
     implication_every_block: bool = True,
     bmc_depth: int | None = None,
     bug_report: bool = False,
-    kore_rpc_command: str | Iterable[str] = ('kore-rpc',),
+    kore_rpc_command: str | Iterable[str] | None = None,
     use_booster: bool = False,
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
     failure_info: bool = True,
+    counterexample_info: bool = False,
     trace_rewrites: bool = False,
     auto_abstract_gas: bool = False,
     **kwargs: Any,
@@ -538,6 +561,7 @@ def exec_foundry_prove(
         bug_report=bug_report,
         kore_rpc_command=kore_rpc_command,
         use_booster=use_booster,
+        counterexample_info=counterexample_info,
         smt_timeout=smt_timeout,
         smt_retry_limit=smt_retry_limit,
         trace_rewrites=trace_rewrites,
@@ -571,6 +595,7 @@ def exec_foundry_show(
     pending: bool = False,
     failing: bool = False,
     failure_info: bool = False,
+    counterexample_info: bool = False,
     **kwargs: Any,
 ) -> None:
     output = foundry_show(
@@ -585,6 +610,7 @@ def exec_foundry_show(
         pending=pending,
         failing=failing,
         failure_info=failure_info,
+        counterexample_info=counterexample_info,
     )
     print(output)
 
@@ -724,6 +750,24 @@ def exec_foundry_section_edge(
         smt_retry_limit=smt_retry_limit,
         trace_rewrites=trace_rewrites,
     )
+
+
+def exec_foundry_get_model(
+    foundry_root: Path,
+    test: str,
+    nodes: Iterable[NodeIdLike] = (),
+    pending: bool = False,
+    failing: bool = False,
+    **kwargs: Any,
+) -> None:
+    output = foundry_get_model(
+        foundry_root=foundry_root,
+        test=test,
+        nodes=nodes,
+        pending=pending,
+        failing=failing,
+    )
+    print(output)
 
 
 # Helpers
@@ -938,12 +982,6 @@ def _create_argument_parser() -> ArgumentParser:
         action='store_true',
         help='Strip output that is likely to change without the contract logic changing',
     )
-    foundry_show_args.add_argument(
-        '--pending', dest='pending', default=False, action='store_true', help='Also display pending nodes'
-    )
-    foundry_show_args.add_argument(
-        '--failing', dest='failing', default=False, action='store_true', help='Also display failing nodes'
-    )
     foundry_to_dot = command_parser.add_parser(
         'foundry-to-dot',
         help='Dump the given CFG for the test as DOT for visualization.',
@@ -1022,6 +1060,32 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_section_edge.add_argument('edge', type=arg_pair_of(str, str), help='Edge to section in CFG.')
     foundry_section_edge.add_argument(
         '--sections', type=int, default=2, help='Number of sections to make from edge (>= 2).'
+    )
+
+    foundry_get_model = command_parser.add_parser(
+        'foundry-get-model',
+        help='Display a model for a given node.',
+        parents=[
+            kevm_cli_args.logging_args,
+            kevm_cli_args.rpc_args,
+            kevm_cli_args.smt_args,
+            kevm_cli_args.foundry_args,
+        ],
+    )
+    foundry_get_model.add_argument('test', type=str, help='Display the models of nodes in this test.')
+    foundry_get_model.add_argument(
+        '--node',
+        type=node_id_like,
+        dest='nodes',
+        default=[],
+        action='append',
+        help='List of nodes to display the models of.',
+    )
+    foundry_get_model.add_argument(
+        '--pending', dest='pending', default=False, action='store_true', help='Also display models of pending nodes'
+    )
+    foundry_get_model.add_argument(
+        '--failing', dest='failing', default=False, action='store_true', help='Also display models of failing nodes'
     )
 
     return parser

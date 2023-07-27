@@ -1,5 +1,5 @@
 
-┌─ 1 (root)
+┌─ 1 (root, init)
 │   k: #execute ~> CONTINUATION
 │   pc: 0
 │   callDepth: 0
@@ -73,7 +73,7 @@
    │
    ┊  constraint: true
    ┊  subst: OMITTED SUBST
-   └─ 2 (leaf)
+   └─ 2 (leaf, target)
        k: #halt ~> CONTINUATION
        pc: PC_CELL_5d410f2a
        callDepth: CALLDEPTH_CELL_5d410f2a
@@ -293,7 +293,7 @@ Node 10:
 
 
 
-module SUMMARY-ASSERTTEST.TEST-REVERT-BRANCH:794968430243366DC0B838DD3DC47D2AD99E08CBBD3C2B29529697015104F332
+module SUMMARY-ASSERTTEST.TEST-REVERT-BRANCH:80E29FA31FAB13240B669D08C849A6E04E2C01D8BDDF0AAC97F22E3430852790
     
     
     rule [BASIC-BLOCK-1-TO-3]: <foundry>
@@ -1811,7 +1811,13 @@ Failing nodes:
     #And { true #Equals VV1_y_114b9705:Int <Int pow256 } ) ) ) ) ) ) ) ) ) ) #Implies { true #Equals foundry_success ( ... statusCode: EVMC_REVERT , failed: #lookup ( .Map , 46308022326495007027972728677917914892729792999299745830475596687180801507328 ) , revertExpected: false , opcodeExpected: false , recordEventExpected: false , eventExpected: false ) } )
   Path condition:
     { true #Equals VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int }
+  Model:
+    CALLER_ID = 0
+    NUMBER_CELL = 0
+    ORIGIN_ID = 0
+    VV0_x_114b9705 = 0
+    VV1_y_114b9705 = 0
 
-Join the Runtime Verification Discord server for support: https://discord.gg/GHvFbRDD
+Join the Runtime Verification Discord server for support: https://discord.com/invite/CurfmXNtbN
 
 Access documentation for KEVM foundry integration at https://docs.runtimeverification.com/kevm-integration-for-foundry/

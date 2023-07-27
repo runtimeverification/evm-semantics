@@ -22,44 +22,6 @@ _LOGGER: Final = logging.getLogger(__name__)
 
 
 HOOK_NAMESPACES: Final = ('JSON', 'KRYPTO', 'BLOCKCHAIN')
-CONCRETE_RULES: Final = (
-    'GAS-FEES.allBut64th.pos',
-    'GAS-FEES.Caddraccess',
-    'GAS-FEES.Cbalance.new',
-    'GAS-FEES.Cbalance.old',
-    'GAS-FEES.Cextcodecopy.new',
-    'GAS-FEES.Cextcodecopy.old',
-    'GAS-FEES.Cextcodehash.new',
-    'GAS-FEES.Cextcodehash.old',
-    'GAS-FEES.Cextcodesize.new',
-    'GAS-FEES.Cextcodesize.old',
-    'GAS-FEES.Cextra.new',
-    'GAS-FEES.Cextra.old',
-    'GAS-FEES.Cgascap',
-    'GAS-FEES.Cmem',
-    'GAS-FEES.Cmodexp.new',
-    'GAS-FEES.Cmodexp.old',
-    'GAS-FEES.Csload.new',
-    'GAS-FEES.Csstore.new',
-    'GAS-FEES.Csstore.old',
-    'GAS-FEES.Cstorageaccess',
-    'EVM.ecrec',
-    'EVM.#memoryUsageUpdate.some',
-    'GAS-FEES.Rsstore.new',
-    'GAS-FEES.Rsstore.old',
-    'EVM-TYPES.padRightToWidthNonEmpty',
-    'EVM-TYPES.padToWidthNonEmpty',
-    'EVM-TYPES.powmod.nonzero',
-    'EVM-TYPES.powmod.zero',
-    'EVM-TYPES.signextend.invalid',
-    'EVM-TYPES.signextend.negative',
-    'EVM-TYPES.signextend.positive',
-    'EVM-TYPES.upDivInt',
-    'SERIALIZATION.addrFromPrivateKey',
-    'SERIALIZATION.keccak',
-    'SERIALIZATION.#newAddr',
-    'SERIALIZATION.#newAddrCreate2',
-)
 
 
 class Kernel(Enum):
@@ -173,7 +135,6 @@ def kevm_kompile(
         case KompileBackend.HASKELL:
             kompile = HaskellKompile(
                 base_args=base_args,
-                concrete_rules=CONCRETE_RULES,
                 haskell_binary=haskell_binary,
             )
         case _:

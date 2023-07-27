@@ -1,5 +1,5 @@
 
-┌─ 1 (root)
+┌─ 1 (root, init)
 │   k: #execute ~> CONTINUATION
 │   pc: 0
 │   callDepth: 0
@@ -27,7 +27,7 @@
     statusCode: EVMC_REVERT
 
 
-┌─ 2 (root, leaf)
+┌─ 2 (root, leaf, target)
 │   k: #halt ~> CONTINUATION
 │   pc: PC_CELL_5d410f2a
 │   callDepth: CALLDEPTH_CELL_5d410f2a
@@ -241,7 +241,7 @@ Node 5:
 
 
 
-module SUMMARY-ASSERTTEST.TEST-ASSERT-FALSE:08F836935DBCC810AE1CEBB9276F3B79DE040475AFCDA8C9DC5D47AA2E65AB2C
+module SUMMARY-ASSERTTEST.TEST-ASSERT-FALSE:9320042DEDB2B6F5F55E3AE7C62249F5576BF06F63688301AF12A2C82E7F8D73
     
     
     rule [BASIC-BLOCK-1-TO-3]: <foundry>
@@ -894,7 +894,11 @@ Failing nodes:
     #And { true #Equals NUMBER_CELL:Int <=Int maxSInt256 } ) ) ) ) ) #Implies { true #Equals foundry_success ( ... statusCode: EVMC_REVERT , failed: #lookup ( .Map , 46308022326495007027972728677917914892729792999299745830475596687180801507328 ) , revertExpected: false , opcodeExpected: false , recordEventExpected: false , eventExpected: false ) } )
   Path condition:
     #Top
+  Model:
+    CALLER_ID = 0
+    NUMBER_CELL = 0
+    ORIGIN_ID = 0
 
-Join the Runtime Verification Discord server for support: https://discord.gg/GHvFbRDD
+Join the Runtime Verification Discord server for support: https://discord.com/invite/CurfmXNtbN
 
 Access documentation for KEVM foundry integration at https://docs.runtimeverification.com/kevm-integration-for-foundry/

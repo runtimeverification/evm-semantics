@@ -1,5 +1,5 @@
 
-┌─ 1 (root)
+┌─ 1 (root, init)
 │   k: #execute ~> CONTINUATION
 │   pc: 0
 │   callDepth: 0
@@ -28,7 +28,7 @@
 │
 ┊  constraint: true
 ┊  subst: OMITTED SUBST
-└─ 2 (leaf)
+└─ 2 (leaf, target)
     k: #halt ~> CONTINUATION
     pc: PC_CELL_5d410f2a
     callDepth: CALLDEPTH_CELL_5d410f2a
@@ -37,7 +37,7 @@
 
 
 
-module SUMMARY-ASSERTTEST.TEST-ASSERT-TRUE:E200EADD2408C03C6CCDB315095224AC1D58DF84031A945BF166ABAB4AE2A531
+module SUMMARY-ASSERTTEST.TEST-ASSERT-TRUE:16A7699D12C81EFD9EE27BBBBC8ACBD80FB4134DFC1D9F1CA60A78A852760CD4
     
     
     rule [BASIC-BLOCK-1-TO-3]: <foundry>
@@ -676,5 +676,7 @@ module SUMMARY-ASSERTTEST.TEST-ASSERT-TRUE:E200EADD2408C03C6CCDB315095224AC1D58D
 
 endmodule
 0 Failure nodes. (0 pending and 0 failing)
+
+Join the Runtime Verification Discord server for support: https://discord.com/invite/CurfmXNtbN
 
 Access documentation for KEVM foundry integration at https://docs.runtimeverification.com/kevm-integration-for-foundry/

@@ -1,5 +1,5 @@
 
-┌─ 1 (root)
+┌─ 1 (root, init)
 │   k: #execute ~> CONTINUATION
 │   pc: 0
 │   callDepth: 0
@@ -58,7 +58,7 @@
 ┃  │
 ┃  ┊  constraint: true
 ┃  ┊  subst: OMITTED SUBST
-┃  └─ 2 (leaf)
+┃  └─ 2 (leaf, target)
 ┃      k: #halt ~> CONTINUATION
 ┃      pc: PC_CELL_5d410f2a
 ┃      callDepth: CALLDEPTH_CELL_5d410f2a
@@ -95,7 +95,7 @@
    │
    ┊  constraint: true
    ┊  subst: OMITTED SUBST
-   └─ 2 (leaf)
+   └─ 2 (leaf, target)
        k: #halt ~> CONTINUATION
        pc: PC_CELL_5d410f2a
        callDepth: CALLDEPTH_CELL_5d410f2a
@@ -104,7 +104,7 @@
 
 
 
-module SUMMARY-LOOPSTEST.SUM-N:062CC914DAA13A8EAF189DADDC9178CE923938A59F8855C3A0DE5EB7260670A7
+module SUMMARY-LOOPSTEST.SUM-N:5B83D29E7FBE9C5BFC4443B393810AAC763F8AF1E512E97BAF71B27147246E70
     
     
     rule [BASIC-BLOCK-1-TO-3]: <foundry>
@@ -2101,5 +2101,7 @@ module SUMMARY-LOOPSTEST.SUM-N:062CC914DAA13A8EAF189DADDC9178CE923938A59F8855C3A
 
 endmodule
 0 Failure nodes. (0 pending and 0 failing)
+
+Join the Runtime Verification Discord server for support: https://discord.com/invite/CurfmXNtbN
 
 Access documentation for KEVM foundry integration at https://docs.runtimeverification.com/kevm-integration-for-foundry/
