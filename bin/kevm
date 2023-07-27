@@ -296,15 +296,11 @@ cCHAINID_kore="\dv{SortInt{}}(\"${chainid}\")"
 ! ${debug} || set -x
 
 case "$run_command-$backend" in
-    kompile-@(llvm|haskell|node|foundry)   ) run_kompile                 "$@" ;;
-    run-@(llvm|haskell|haskell-standalone) ) run_krun                    "$@" ;;
-    kast-@(llvm|haskell)                   ) run_kast                    "$@" ;;
-    prove-@(haskell)                       ) run_prove                   "$@" ;;
-    search-@(haskell)                      ) run_search                  "$@" ;;
-    prune-proof-@(haskell)                 ) run_kevm_pyk prune-proof    "$@" ;;
-    view-kcfg-*                            ) run_kevm_pyk view-kcfg      "$@" ;;
-    show-kcfg-*                            ) run_kevm_pyk show-kcfg      "$@" ;;
-    solc-to-k-*                            ) run_kevm_pyk solc-to-k      "$@" ;;
-    foundry-*                              ) run_kevm_pyk ${run_command} "$@" ;;
-    *) ${KEVM} help ; fatal "Unknown command on backend: $run_command $backend" ;;
+    kompile-@(llvm|haskell|node|foundry)           ) run_kompile                 "$@" ;;
+    run-@(llvm|haskell|haskell-standalone)         ) run_krun                    "$@" ;;
+    kast-@(llvm|haskell)                           ) run_kast                    "$@" ;;
+    prove-@(haskell)                               ) run_prove                   "$@" ;;
+    search-@(haskell)                              ) run_search                  "$@" ;;
+    @(prune-proof|view-kcfg|show-kcfg|solc-to-k)-* ) run_kevm_pyk ${run_command} "$@" ;;
+    *) ${KEVM} help ; fatal "Unknown command on backend: $run_command $backend"       ;;
 esac
