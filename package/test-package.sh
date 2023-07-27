@@ -13,10 +13,10 @@ kevm run tests/ethereum-tests/LegacyTests/Constantinople/VMTests/vmArithmeticTes
 rm -rf tests/ethereum-tests/LegacyTests/Constantinople/VMTests/vmArithmeticTest/add0.json.llvm-out
 
 kevm run tests/ethereum-tests/LegacyTests/Constantinople/VMTests/vmSystemOperations/TestNameRegistrator.json \
-    --backend llvm --mode VMTESTS --schedule DEFAULT --chainid 1 --pyk
+    --backend llvm --mode VMTESTS --schedule DEFAULT --chainid 1
 
 kevm run tests/ethereum-tests/LegacyTests/Constantinople/VMTests/vmSystemOperations/TestNameRegistrator.json \
-    --backend haskell-standalone --mode VMTESTS --schedule DEFAULT --chainid 1 --pyk
+    --backend haskell-standalone --mode VMTESTS --schedule DEFAULT --chainid 1
 
 kevm kast tests/interactive/log3_MaxTopic_d0g0v0.json --backend llvm > tests/interactive/log3_MaxTopic_d0g0v0.json.parse-out
 git --no-pager diff --no-index --ignore-all-space -R tests/interactive/log3_MaxTopic_d0g0v0.json.parse-out tests/interactive/log3_MaxTopic_d0g0v0.json.parse-expected
