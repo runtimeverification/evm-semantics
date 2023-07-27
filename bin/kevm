@@ -173,7 +173,7 @@ done
 backend_dir="${backend_dir:-$INSTALL_LIB/$backend}"
 
 # get the run file
-if [[ "${run_command}" == kompile ]] || [[ "${run_command}" == kast ]] || [[ "${run_command}" == run ]]; then
+if [[ "${run_command}" == kast ]] || [[ "${run_command}" == run ]]; then
     if [[ $# -gt 0 ]]; then
         run_file="$1" ; shift
         if [[ "${run_file}" == '-' ]]; then
@@ -191,8 +191,8 @@ fi
 ! ${debug} || set -x
 
 case "$run_command-$backend" in
-    run-@(llvm|haskell|haskell-standalone)                            ) run_krun                    "$@" ;;
-    kast-@(llvm|haskell)                                              ) run_kast                    "$@" ;;
-    @(prune-proof|view-kcfg|show-kcfg|solc-to-k|prove|prove-legacy)-* ) run_kevm_pyk ${run_command} "$@" ;;
-    *) ${KEVM} help ; fatal "Unknown command on backend: $run_command $backend"                          ;;
+    run-@(llvm|haskell|haskell-standalone) ) run_krun "$@" ;;
+    kast-@(llvm|haskell)                   ) run_kast "$@" ;;
+    @(kompile|prune-proof|view-kcfg|show-kcfg|solc-to-k|prove|prove-legacy)-* ) run_kevm_pyk ${run_command} "$@" ;;
+    *) ${KEVM} help ; fatal "Unknown command on backend: $run_command $backend" ;;
 esac
