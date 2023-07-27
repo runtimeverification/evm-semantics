@@ -152,33 +152,6 @@ run_search() {
     run_krun --search --pattern "$search_pattern" "$@"
 }
 
-run_interpret() {
-    local kast output exit_status krun_args bug_report_name
-
-    kast="$(mktemp)"
-    output="$(mktemp)"
-    trap "rm -rf ${kast} ${output}" INT TERM EXIT
-    exit_status=0
-    run_kast kore > ${kast}
-    run_file="${kast}"
-    krun_args=(--term --parser cat --no-expand-macros --output kore)
-    if [[ ${backend} == haskell ]]; then
-        KORE_EXEC_OPTS="${KORE_EXEC_OPTS:-} --smt none"
-        bug_report_name="kevm-bug-$(basename "${run_file%.json}")"
-        ! ${bug_report} || KORE_EXEC_OPTS="${KORE_EXEC_OPTS} --bug-report ${bug_report_name}"
-        export KORE_EXEC_OPTS
-    fi
-    if ${debugger}; then
-        run_krun "${krun_args[@]}" "$@" || exit_status="$?"
-    else
-        run_krun "${krun_args[@]}" "$@" > "${output}" || exit_status="$?"
-    fi
-    if ${unparse} || [[ "${exit_status}" != '0' ]]; then
-        cat "${output}" | "${KEVM}" kast --backend "${backend}" - pretty --input kore --sort GeneratedTopCell
-    fi
-    exit "${exit_status}"
-}
-
 # Main
 # ----
 
@@ -203,7 +176,6 @@ fi
 if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
     echo "
         usage: ${KEVM} run          [--backend (llvm|haskell)]  [--profile|--debug] <KEVM_arg>* <pgm>  <K arg>*
-               ${KEVM} interpret    [--backend (llvm|haskell)]  [--no-unparse] [--profile|--debug] <KEVM_arg>* <pgm>  <K arg>*
                ${KEVM} kast         [--backend (llvm|haskell)]  [--profile|--debug] <KEVM_arg>* <pgm>  <output format> <K arg>*
                ${KEVM} prove        [--backend (haskell)]       [--profile|--debug]             <spec> <KEVM_arg>* <K arg>*
                ${KEVM} search       [--backend (haskell)]       [--profile|--debug]             <pgm>  <pattern> <K arg>*
@@ -214,7 +186,6 @@ if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
                ${KEVM} [help|--help|version|--version]
 
            ${KEVM} run             : Run a single EVM program
-           ${KEVM} interpret       : Run JSON EVM programs without K Frontend (external parser)
            ${KEVM} kast            : Parse an EVM program and output it in a supported format
            ${KEVM} prove           : Run an EVM K proof
            ${KEVM} search          : Search for a K pattern in an EVM program execution
@@ -266,7 +237,6 @@ fi
 [[ ! "${run_command}" == show-kcfg   ]] || backend=haskell
 [[ ! "${run_command}" == prune-proof ]] || backend=haskell
 [[ ! "${run_command}" == foundry-*   ]] || backend=foundry
-[[ ! "${run_command}" == interpret   ]] || unparse=false
 [[ ! "${run_command}" == kompile     ]] || pyk=true
 args=()
 while [[ $# -gt 0 ]]; do
@@ -329,7 +299,6 @@ case "$run_command-$backend" in
     kompile-@(llvm|haskell|node|foundry)   ) run_kompile                 "$@" ;;
     run-@(llvm|haskell|haskell-standalone) ) run_krun                    "$@" ;;
     kast-@(llvm|haskell)                   ) run_kast                    "$@" ;;
-    interpret-@(llvm|haskell)              ) run_interpret               "$@" ;;
     prove-@(haskell)                       ) run_prove                   "$@" ;;
     search-@(haskell)                      ) run_search                  "$@" ;;
     prune-proof-@(haskell)                 ) run_kevm_pyk prune-proof    "$@" ;;
