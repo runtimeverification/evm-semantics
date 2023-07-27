@@ -315,7 +315,6 @@ install_libs := $(haskell_kompiled)                                        \
                 $(foundry_kompiled)                                        \
                 $(haskell_standalone_kompiled)                             \
                 $(patsubst %, include/kframework/lemmas/%, $(kevm_lemmas)) \
-                kore-json.py                                               \
                 release.md                                                 \
                 version
 
@@ -343,12 +342,12 @@ $(KEVM_LIB)/release.md: INSTALL.md
 
 build: $(patsubst %, $(KEVM_BIN)/%, $(install_bins)) $(patsubst %, $(KEVM_LIB)/%, $(install_libs))
 
-build-llvm:               $(KEVM_LIB)/$(llvm_kompiled)    $(KEVM_LIB)/kore-json.py
-build-haskell:            $(KEVM_LIB)/$(haskell_kompiled) $(KEVM_LIB)/kore-json.py
-build-haskell-standalone: $(KEVM_LIB)/$(haskell_standalone_kompiled) $(KEVM_LIB)/kore-json.py
+build-llvm:               $(KEVM_LIB)/$(llvm_kompiled)
+build-haskell:            $(KEVM_LIB)/$(haskell_kompiled)
+build-haskell-standalone: $(KEVM_LIB)/$(haskell_standalone_kompiled)
 build-node:               $(KEVM_LIB)/$(node_kompiled)
 build-kevm:               $(KEVM_BIN)/kevm $(KEVM_LIB)/version $(kevm_includes) $(plugin_includes)
-build-foundry:            $(KEVM_BIN)/kevm $(KEVM_LIB)/$(foundry_kompiled) $(KEVM_LIB)/kore-json.py
+build-foundry:            $(KEVM_BIN)/kevm $(KEVM_LIB)/$(foundry_kompiled)
 
 all_bin_sources := $(shell find $(KEVM_BIN) -type f | sed 's|^$(KEVM_BIN)/||')
 all_lib_sources := $(shell find $(KEVM_LIB) -type f                                            \
