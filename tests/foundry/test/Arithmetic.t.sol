@@ -143,4 +143,16 @@ contract ArithmeticTest is Test {
         assertTrue(c2 <= c1);
     }
 
+    function add_uint_int(uint x, int y) public pure returns (uint z) {
+        if (x < 10) {
+            z = uint(y) + x;
+        } else {
+            z = x + uint(y);
+        }
+    }
+
+    function test_double_add(uint x, int y) external {
+        uint z = add_uint_int(x, y);
+        z = add_uint_int(z, y);
+    }
 }
