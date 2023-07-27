@@ -425,7 +425,7 @@ PYTEST_ARGS     :=
 test-foundry-prove: poetry build-kevm build-foundry
 	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+="-k test_foundry_prove.py -n$(PYTEST_PARALLEL) $(PYTEST_ARGS)"
 
-tests/specs/examples/%-bin-runtime.k: KEVM_OPTS += --pyk --verbose
+tests/specs/examples/%-bin-runtime.k: KEVM_OPTS += --verbose
 tests/specs/examples/%-bin-runtime.k: KEVM := $(POETRY_RUN) kevm
 
 tests/specs/examples/erc20-spec/haskell/timestamp: tests/specs/examples/erc20-bin-runtime.k
