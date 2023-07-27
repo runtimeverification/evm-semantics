@@ -39,8 +39,7 @@ kevm kompile tests/specs/examples/erc20-spec.md                 \
     --main-module VERIFICATION                                  \
     --syntax-module VERIFICATION                                \
     --verbose
-# This test is probably too long for public Github runner and currently seems broken
-if ! ${NIX:-false}; then
-kevm prove tests/specs/examples/erc20-spec.md --backend haskell --format-failures  \
-    --definition tests/specs/examples/erc20-spec/haskell
-fi
+kevm prove tests/specs/examples/erc20-spec.md --backend haskell --definition tests/specs/examples/erc20-spec/haskell
+
+kevm foundry-kompile --foundry-project-root tests/foundry --verbose
+kevm foundry-prove --foundry-project-root tests/foundry --verbose --test AssertTest.test_assert_true_branch
