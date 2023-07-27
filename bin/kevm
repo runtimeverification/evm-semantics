@@ -54,9 +54,8 @@ run_kevm_pyk() {
             pyk_args+=(-I "${INSTALL_INCLUDE}/kframework")
             ;;
     esac
-    ! ${verbose}    || pyk_args+=(--verbose)
-    ! ${debug}      || pyk_args+=(--debug)
-    ! ${bug_report} || pyk_args+=(--bug-report)
+    ! ${verbose} || pyk_args+=(--verbose)
+    ! ${debug}   || pyk_args+=(--debug)
     execute python3 -m kevm_pyk "${pyk_command}" "$@" "${pyk_args[@]}"
 }
 
@@ -64,9 +63,8 @@ run_kevm_pyk() {
 
 run_kompile() {
     local kompile_opts
-    ! ${verbose}    || kompile_opts+=(--verbose)
-    ! ${debug}      || kompile_opts+=(--debug)
-    ! ${bug_report} || kompile_opts+=(--bug-report)
+    ! ${verbose} || kompile_opts+=(--verbose)
+    ! ${debug}   || kompile_opts+=(--debug)
     execute python3 -m kevm_pyk kompile "${run_file}" "$@" "${kompile_opts[@]}"
 }
 
@@ -126,19 +124,14 @@ run_kast() {
 run_search() {
     local search_pattern
     search_pattern="$1" ; shift
-    run_krun --search --pattern "$search_pattern" "$@"
+    run_krun --search --pattern "${search_pattern}" "$@"
 }
 
 # Main
 # ----
 
 backend="llvm"
-unparse=true
 debugger=false
-profile_haskell=false
-profile_timeout="0"
-kore_prof_arg=""
-bug_report=false
 mode=NORMAL
 schedule=MERGE
 chainid=1
@@ -164,10 +157,8 @@ if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
 
            ${KEVM} run             : Run a single EVM program
            ${KEVM} kast            : Parse an EVM program and output it in a supported format
-           ${KEVM} prove           : Run an EVM K proof
            ${KEVM} search          : Search for a K pattern in an EVM program execution
            ${KEVM} kompile         : Run kompile with arguments setup to include KEVM parameters as defaults
-           ${KEVM} solc-to-k       : Generate helper K modules for verifying a given contract
 
            ${KEVM} help    : Display this help message.
            ${KEVM} version : Display the versions of KEVM, K, Kore, and Z3 in use.
@@ -181,7 +172,6 @@ if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
                                       [--bug-report]
                                       [--profile-haskell]
                                       [--profile-timeout <duration>]
-                                      [--kore-prof-arg <kore_prof_arg>]
                                       [--verif-module <verification_module>]
                                       [--pyk-minimize]
                                       [--pyk-omit-labels <comma_separated_labels>]
@@ -221,13 +211,7 @@ while [[ $# -gt 0 ]]; do
         --debug)               debug=true                      ; shift   ;;
         --verbose)             verbose=true                    ; shift   ;;
         --profile)             profile=true ; args+=("$1")     ; shift   ;;
-        --no-unparse)          unparse=false                   ; shift   ;;
-        --unparse)             unparse=true                    ; shift   ;;
         --debugger)            debugger=true                   ; shift   ;;
-        --profile-haskell)     profile_haskell=true            ; shift   ;;
-        --profile-timeout)     profile_timeout="$2"            ; shift 2 ;;
-        --kore-prof-arg)       kore_prof_arg="$2"              ; shift 2 ;;
-        --bug-report)          bug_report=true                 ; shift   ;;
         --backend)             backend="$2"                    ; shift 2 ;;
         --definition)          backend_dir="$2"                ; shift 2 ;;
         --pyk)                 pyk=true                        ; shift   ;;
@@ -242,16 +226,12 @@ done
 [[ "${#args[@]}" -le 0 ]] || set -- "${args[@]}"
 backend_dir="${backend_dir:-$INSTALL_LIB/$backend}"
 
-! $profile_haskell || [[ "$backend" == haskell ]] || fatal "Option --profile-haskell only usable with --backend haskell!"
-[[ $profile_timeout = "0" ]] || $profile_haskell  || fatal "Option --profile-timeout only usable with --profile-haskell!"
-[[ $kore_prof_arg = "" ]]    || $profile_haskell  || fatal "Option --kore-prof-arg only usable with --profile-haskell!"
 if ${pyk}; then
-    ! ${debugger}        || fatal "Option --pyk not usable with --debugger!"
-    ! ${profile_haskell} || fatal "Option --pyk not usable with --profile-haskell!"
+  ! ${debugger} || fatal "Option --pyk not usable with --debugger!"
 fi
 
 # get the run file
-if [[ "${run_command}" != foundry-* ]] && [[ "${run_command}" != *-kcfg ]] && [[ "${run_command}" != *-proof ]] && [[ "${run_command}" != 'solc-to-k' ]] && [[ "${run_command}" != prove* ]]; then
+if [[ "${run_command}" == kompile ]] || [[ "${run_command}" == kast ]] || [[ "${run_command}" == run ]] || [[ "${run_command}" == search ]]; then
     if [[ $# -gt 0 ]]; then
         run_file="$1" ; shift
         if [[ "${run_file}" == '-' ]]; then
