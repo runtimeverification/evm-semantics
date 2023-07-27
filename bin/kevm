@@ -99,12 +99,6 @@ run_kast() {
     esac
 }
 
-run_search() {
-    local search_pattern
-    search_pattern="$1" ; shift
-    run_krun --search --pattern "${search_pattern}" "$@"
-}
-
 # Main
 # ----
 
@@ -113,7 +107,6 @@ debugger=false
 mode=NORMAL
 schedule=MERGE
 chainid=1
-pyk=false
 
 if [[ $# -eq 0 ]]; then 
     run_command='help'
@@ -125,14 +118,12 @@ if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
     echo "
         usage: ${KEVM} run          [--backend (llvm|haskell)]  [--profile|--debug] <KEVM_arg>* <pgm>  <K arg>*
                ${KEVM} kast         [--backend (llvm|haskell)]  [--profile|--debug] <KEVM_arg>* <pgm>  <output format> <K arg>*
-               ${KEVM} search       [--backend (haskell)]       [--profile|--debug]             <pgm>  <pattern> <K arg>*
                ${KEVM} [kompile|prune-proof|view-kcfg|show-kcfg|solc-to-k|prove|prove-legacy]       See more specific help menu.
 
                ${KEVM} [help|--help|version|--version]
 
            ${KEVM} run             : Run a single EVM program
            ${KEVM} kast            : Parse an EVM program and output it in a supported format
-           ${KEVM} search          : Search for a K pattern in an EVM program execution
            ${KEVM} [kompile|prune-proof|view-kcfg|show-kcfg|solc-to-k|prove|prove-legacy] :         See more specific help menu.
 
            ${KEVM} help    : Display this help message.
@@ -144,7 +135,6 @@ if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
                                       [--chainid NNN]
                  <K arg> is an argument you want to pass to K.
                  <output format> is the format for Kast to output the term in.
-                 <pattern> is the configuration pattern to search for.
     "
 
     run_kevm_pyk --help
@@ -163,7 +153,6 @@ fi
 [[ ! "${run_command}" == show-kcfg   ]] || backend=haskell
 [[ ! "${run_command}" == prune-proof ]] || backend=haskell
 [[ ! "${run_command}" == foundry-*   ]] || backend=foundry
-[[ ! "${run_command}" == kompile     ]] || pyk=true
 args=()
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -173,8 +162,6 @@ while [[ $# -gt 0 ]]; do
         --debugger)            debugger=true                   ; shift   ;;
         --backend)             backend="$2"                    ; shift 2 ;;
         --definition)          backend_dir="$2"                ; shift 2 ;;
-        --pyk)                 pyk=true                        ; shift   ;;
-        --no-pyk)              pyk=false                       ; shift   ;;
         --mode)                mode="$2"                       ; shift 2 ;;
         --schedule)            schedule="$2"                   ; shift 2 ;;
         --chainid)             chainid="$2"                    ; shift 2 ;;
@@ -185,12 +172,8 @@ done
 [[ "${#args[@]}" -le 0 ]] || set -- "${args[@]}"
 backend_dir="${backend_dir:-$INSTALL_LIB/$backend}"
 
-if ${pyk}; then
-  ! ${debugger} || fatal "Option --pyk not usable with --debugger!"
-fi
-
 # get the run file
-if [[ "${run_command}" == kompile ]] || [[ "${run_command}" == kast ]] || [[ "${run_command}" == run ]] || [[ "${run_command}" == search ]]; then
+if [[ "${run_command}" == kompile ]] || [[ "${run_command}" == kast ]] || [[ "${run_command}" == run ]]; then
     if [[ $# -gt 0 ]]; then
         run_file="$1" ; shift
         if [[ "${run_file}" == '-' ]]; then
@@ -210,7 +193,6 @@ fi
 case "$run_command-$backend" in
     run-@(llvm|haskell|haskell-standalone)                            ) run_krun                    "$@" ;;
     kast-@(llvm|haskell)                                              ) run_kast                    "$@" ;;
-    search-@(haskell)                                                 ) run_search                  "$@" ;;
     @(prune-proof|view-kcfg|show-kcfg|solc-to-k|prove|prove-legacy)-* ) run_kevm_pyk ${run_command} "$@" ;;
     *) ${KEVM} help ; fatal "Unknown command on backend: $run_command $backend"                          ;;
 esac
