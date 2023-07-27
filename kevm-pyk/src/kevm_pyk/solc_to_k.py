@@ -554,7 +554,6 @@ def _range_predicate(term: KInner, type_label: str) -> KInner | None:
             return TRUE
 
     predicate_functions = [
-        _range_predicate_static_array,
         _range_predicate_uint,
         _range_predicate_int,
         _range_predicate_bytes,
@@ -570,7 +569,7 @@ def _range_predicate(term: KInner, type_label: str) -> KInner | None:
 
 
 def _range_predicate_uint(term: KInner, type_label: str) -> tuple[bool, KInner | None]:
-    if type_label.startswith('uint'):
+    if type_label.startswith('uint') and not type_label.endswith(']'):
         if type_label == 'uint':
             width = 256
         else:
@@ -583,7 +582,7 @@ def _range_predicate_uint(term: KInner, type_label: str) -> tuple[bool, KInner |
 
 
 def _range_predicate_int(term: KInner, type_label: str) -> tuple[bool, KInner | None]:
-    if type_label.startswith('int'):
+    if type_label.startswith('int') and not type_label.endswith(']'):
         if type_label == 'int':
             width = 256
         else:
@@ -596,7 +595,7 @@ def _range_predicate_int(term: KInner, type_label: str) -> tuple[bool, KInner | 
 
 
 def _range_predicate_bytes(term: KInner, type_label: str) -> tuple[bool, KInner | None]:
-    if type_label.startswith('bytes'):
+    if type_label.startswith('bytes') and not type_label.endswith(']'):
         str_width = type_label[5:]
         if str_width != '':
             width = int(str_width)
