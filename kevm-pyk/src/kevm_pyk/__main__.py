@@ -28,6 +28,7 @@ from .foundry import (
     foundry_get_model,
     foundry_kompile,
     foundry_list,
+    foundry_merge_target,
     foundry_node_printer,
     foundry_prove,
     foundry_remove_node,
@@ -680,6 +681,10 @@ def exec_foundry_remove_node(foundry_root: Path, test: str, node: NodeIdLike, **
     foundry_remove_node(foundry_root=foundry_root, test=test, node=node)
 
 
+def exec_foundry_merge_target(foundry_root: Path, test: str, **kwargs: Any) -> None:
+    foundry_merge_target(foundry_root=foundry_root, test=test)
+
+
 def exec_foundry_simplify_node(
     foundry_root: Path,
     test: str,
@@ -1031,6 +1036,13 @@ def _create_argument_parser() -> ArgumentParser:
     )
     foundry_remove_node.add_argument('test', type=str, help='View the CFG for this test.')
     foundry_remove_node.add_argument('node', type=node_id_like, help='Node to remove CFG subgraph from.')
+
+    foundry_merge_target = command_parser.add_parser(
+        'foundry-merge-target',
+        help='Merge the target subsumed node of a proof.',
+        parents=[kevm_cli_args.logging_args, kevm_cli_args.foundry_args],
+    )
+    foundry_merge_target.add_argument('test', type=str, help='Test to apply to.')
 
     foundry_simplify_node = command_parser.add_parser(
         'foundry-simplify-node',

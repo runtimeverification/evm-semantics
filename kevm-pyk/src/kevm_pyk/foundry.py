@@ -692,6 +692,27 @@ def foundry_remove_node(foundry_root: Path, test: str, node: NodeIdLike) -> None
     apr_proof.write_proof()
 
 
+def foundry_merge_target(foundry_root: Path, test: str) -> None:
+    foundry = Foundry(foundry_root)
+    proofs_dir = foundry.out / 'apr_proofs'
+    contract_name, test_name = test.split('.')
+    proof_digest = foundry.proof_digest(contract_name, test_name)
+    proof = Proof.read_proof(proof_digest, proofs_dir)
+    assert isinstance(proof, APRProof)
+    target_subsumptions = proof.kcfg.covers(target_id=proof.target)
+    ts_by_statuscode: dict[KInner, list[KCFG.Cover]] = {}
+    for ts in target_subsumptions:
+        status_code = ts.source.cterm.cell('STATUSCODE_CELL')
+        if type(status_code) is KToken:
+            if status_code not in ts_by_statuscode:
+                ts_by_statuscode[status_code] = []
+            ts_by_statuscode[status_code].append(ts)
+    for ts_covers in ts_by_statuscode.values():
+        if len(ts_covers) > 1:
+            proof.kcfg.minimize_covers([cover.source.id for cover in ts_covers], proof.target)
+    # proof.write_proof()
+
+
 def foundry_simplify_node(
     foundry_root: Path,
     test: str,
