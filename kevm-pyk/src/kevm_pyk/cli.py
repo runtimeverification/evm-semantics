@@ -214,15 +214,9 @@ class KEVMCLIArgs(KCLIArgs):
         args.add_argument(
             '--implication-every-block',
             dest='implication_every_block',
-            default=True,
+            default=False,
             action='store_true',
             help='Check subsumption into target state every basic block, not just at terminal nodes.',
-        )
-        args.add_argument(
-            '--no-implication-every-block',
-            dest='implication_every_block',
-            action='store_false',
-            help='Do not check subsumption into target state every basic block, not just at terminal nodes.',
         )
         args.add_argument(
             '--simplify-init',
@@ -240,7 +234,7 @@ class KEVMCLIArgs(KCLIArgs):
         args.add_argument(
             '--max-depth',
             dest='max_depth',
-            default=None,
+            default=25000,
             type=int,
             help='Store every Nth state in the CFG for inspection.',
         )
