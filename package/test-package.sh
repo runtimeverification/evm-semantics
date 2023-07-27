@@ -41,5 +41,7 @@ kevm kompile tests/specs/examples/erc20-spec.md                 \
     --verbose
 kevm prove tests/specs/examples/erc20-spec.md --backend haskell --definition tests/specs/examples/erc20-spec/haskell
 
+kevm search tests/interactive/search/branching-invalid.evm "<statusCode> EVMC_INVALID_INSTRUCTION </statusCode>" --backend haskell
+
 kevm foundry-kompile --foundry-project-root tests/foundry --verbose
 kevm foundry-prove --foundry-project-root tests/foundry --verbose --test AssertTest.test_assert_true_branch
