@@ -44,18 +44,13 @@ PLUGIN_FULL_PATH := $(abspath ${PLUGIN_SUBMODULE})
 export PLUGIN_FULL_PATH
 
 
-.PHONY: all clean distclean                                                                                        \
-        deps k-deps plugin-deps protobuf                                                                           \
-        poetry-env poetry shell kevm-pyk                                                                           \
-        build build-haskell build-haskell-standalone build-foundry build-llvm build-node build-kevm                \
-        test                                                                                                       \
-        test-integration test-conformance test-prove test-foundry-prove                                            \
-        test-vm test-rest-vm test-bchain test-rest-bchain                                                          \
-        test-node                                                                                                  \
-        test-prove-smoke test-klab-prove                                                                           \
-        test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search \
-        media media-pdf metropolis-theme                                                                           \
-        install uninstall
+.PHONY: all clean distclean install uninstall                                                            	\
+        deps k-deps plugin-deps protobuf                                                                 	\
+        poetry-env poetry shell kevm-pyk                                                                 	\
+        build build-haskell build-haskell-standalone build-foundry build-llvm build-node build-kevm      	\
+        test test-integration test-conformance test-prove test-foundry-prove test-prove-smoke            	\
+        test-vm test-rest-vm test-bchain test-rest-bchain test-node test-interactive test-interactive-run	\
+        media media-pdf metropolis-theme
 
 .SECONDARY:
 
@@ -422,11 +417,6 @@ tests/%.run-expected: tests/% tests/%.expected
 	    || $(CHECK) tests/$*.$(TEST_CONCRETE_BACKEND)-out tests/$*.expected
 	$(KEEP_OUTPUTS) || rm -rf tests/$*.$(TEST_CONCRETE_BACKEND)-out
 
-tests/interactive/%.json.gst-to-kore.check: tests/ethereum-tests/GeneralStateTests/VMTests/%.json $(KEVM_BIN)/kevm
-	$(KEVM) kast $< $(KEVM_OPTS) $(KAST_OPTS) > tests/interactive/$*.gst-to-kore.out
-	$(CHECK) tests/interactive/$*.gst-to-kore.out tests/interactive/$*.gst-to-kore.expected
-	$(KEEP_OUTPUTS) || rm -rf tests/interactive/$*.gst-to-kore.out
-
 # solc-to-k
 # ---------
 
@@ -468,11 +458,6 @@ tests/specs/%/timestamp: tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_F
 	    --syntax-module $(KPROVE_MODULE)                                                                        \
 	    $(KOMPILE_OPTS)
 
-tests/%.search: tests/%
-	$(KEVM) search $< "<statusCode> EVMC_INVALID_INSTRUCTION </statusCode>" $(KEVM_OPTS) $(KSEARCH_OPTS) --backend $(TEST_SYMBOLIC_BACKEND) > $@-out
-	$(CHECK) $@-out $@-expected
-	$(KEEP_OUTPUTS) || rm -rf $@-out
-
 # Smoke Tests
 
 smoke_tests_run = tests/ethereum-tests/LegacyTests/Constantinople/VMTests/vmArithmeticTest/add0.json      \
@@ -507,9 +492,6 @@ test-prove: tests/specs/opcodes/evm-optimizations-spec.md poetry build-kevm buil
 
 test-prove-smoke: $(prove_smoke_tests:=.prove)
 
-test-klab-prove: KPROVE_OPTS += --debugger
-test-klab-prove: $(smoke_tests_prove:=.prove)
-
 # to generate optimizations.md, run: ./optimizer/optimize.sh &> output
 tests/specs/opcodes/evm-optimizations-spec.md: include/kframework/optimizations.md
 	cat $< | sed 's/^rule/claim/' | sed 's/EVM-OPTIMIZATIONS/EVM-OPTIMIZATIONS-SPEC/' | grep -v 'priority(40)' > $@
@@ -521,22 +503,9 @@ test-integration: poetry build-kevm build-haskell build-llvm
 
 # Interactive Tests
 
-test-interactive: test-interactive-run test-interactive-prove test-interactive-search test-interactive-help
+test-interactive: test-interactive-run
 
 test-interactive-run: $(smoke_tests_run:=.run-interactive)
-test-interactive-prove: $(smoke_tests_prove:=.prove)
-
-search_tests:=$(wildcard tests/interactive/search/*.evm)
-test-interactive-search: $(search_tests:=.search)
-
-test-interactive-help:
-	$(KEVM) help
-
-proto_tester := $(LOCAL_BIN)/proto_tester
-proto-tester: $(proto_tester)
-$(proto_tester): tests/vm/proto_tester.cpp
-	@mkdir -p $(LOCAL_BIN)
-	$(CXX) -I $(LOCAL_LIB)/proto $(protobuf_out) $< -o $@ -lprotobuf -lpthread
 
 node_tests:=$(wildcard tests/vm/*.bin)
 test-node: $(node_tests:=.run-node)
