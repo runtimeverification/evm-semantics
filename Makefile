@@ -44,24 +44,24 @@ PLUGIN_FULL_PATH := $(abspath ${PLUGIN_SUBMODULE})
 export PLUGIN_FULL_PATH
 
 
-.PHONY: all clean distclean                                                                                                      \
-        deps k-deps plugin-deps protobuf                                                                                         \
-        build build-haskell build-haskell-standalone build-foundry build-llvm build-node build-kevm                              \
-        test test-all test-conformance test-rest-conformance test-all-conformance test-slow-conformance test-failing-conformance \
-        test-vm test-rest-vm test-all-vm test-bchain test-rest-bchain test-all-bchain test-node                                  \
-        test-prove test-failing-prove test-foundry-kcfg-diff                                                                     \
-        test-prove-smoke test-klab-prove                                                                                         \
-        test-parse test-failure test-foundry-kompile test-foundry-prove test-foundry-bmc-prove test-foundry-list                 \
-        test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search               \
-        test-kevm-pyk foundry-forge-build foundry-forge-test foundry-clean foundry-fail                                          \
-        media media-pdf metropolis-theme                                                                                         \
-        install uninstall                                                                                                        \
-        poetry-env poetry shell kevm-pyk
+.PHONY: all clean distclean                                                                                        \
+        deps k-deps plugin-deps protobuf                                                                           \
+        poetry-env poetry shell kevm-pyk                                                                           \
+        build build-haskell build-haskell-standalone build-foundry build-llvm build-node build-kevm                \
+        test                                                                                                       \
+        test-integration test-conformance test-prove test-foundry-prove                                            \
+        test-vm test-rest-vm test-bchain test-rest-bchain                                                          \
+        test-node                                                                                                  \
+        test-prove-smoke test-klab-prove                                                                           \
+        test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search \
+        media media-pdf metropolis-theme                                                                           \
+        install uninstall
+
 .SECONDARY:
 
 all: build
 
-clean: foundry-clean
+clean:
 	rm -rf $(KEVM_BIN) $(KEVM_LIB)
 
 distclean:
@@ -166,10 +166,10 @@ kevm_files := abi.md                          \
               foundry.md                      \
               hashed-locations.md             \
               gas.md                          \
-              infinite-gas.md                 \
               json-rpc.md                     \
               network.md                      \
               optimizations.md                \
+              schedule.md                     \
               serialization.md                \
               state-utils.md                  \
               word.md                         \
@@ -401,8 +401,7 @@ KSEARCH_OPTS ?=
 
 KEEP_OUTPUTS := false
 
-test-all: test-all-conformance test-prove test-interactive test-parse test-kevm-pyk
-test: test-conformance test-prove test-interactive test-parse test-kevm-pyk
+test: test-integration test-conformance test-prove test-interactive
 
 # Generic Test Harnesses
 
@@ -430,11 +429,6 @@ tests/%.run-expected: tests/% tests/%.expected
 	    || $(CHECK) tests/$*.$(TEST_CONCRETE_BACKEND)-out tests/$*.expected
 	$(KEEP_OUTPUTS) || rm -rf tests/$*.$(TEST_CONCRETE_BACKEND)-out
 
-tests/%.parse: tests/% $(KEVM_LIB)/kore-json.py
-	$(KEVM) kast $< $(KEVM_OPTS) $(KAST_OPTS) --backend $(TEST_CONCRETE_BACKEND) > $@-out
-	$(CHECK) $@-out $@-expected
-	$(KEEP_OUTPUTS) || rm -rf $@-out
-
 tests/interactive/%.json.gst-to-kore.check: tests/ethereum-tests/GeneralStateTests/VMTests/%.json $(KEVM_BIN)/kevm
 	$(KEVM) kast $< $(KEVM_OPTS) $(KAST_OPTS) > tests/interactive/$*.gst-to-kore.out
 	$(CHECK) tests/interactive/$*.gst-to-kore.out tests/interactive/$*.gst-to-kore.expected
@@ -443,92 +437,11 @@ tests/interactive/%.json.gst-to-kore.check: tests/ethereum-tests/GeneralStateTes
 # solc-to-k
 # ---------
 
-FOUNDRY_PAR := 4
+PYTEST_PARALLEL := 8
+PYTEST_ARGS     :=
 
-foundry-clean:
-	rm -rf tests/foundry/cache
-	rm -rf tests/foundry/out
-	rm -f  tests/foundry/foundry.debug-log
-	rm -f  tests/foundry/foundry.k
-	rm -f  tests/foundry/foundry.rule-profile
-
-tests/foundry/%: KEVM := $(POETRY_RUN) kevm
-
-foundry_dir := tests/foundry
-foundry_out := $(foundry_dir)/out
-
-test-foundry-%: KEVM_OPTS += --pyk --verbose
-test-foundry-%: KEVM := $(POETRY_RUN) kevm
-test-foundry-kompile: tests/foundry/foundry.k.check tests/foundry/contracts.k.check
-test-foundry-prove: tests/foundry/out/kompiled/foundry.k.prove
-test-foundry-bmc-prove: tests/foundry/out/kompiled/foundry.k.bmc-prove
-test-foundry-list: tests/foundry/foundry-list.check
-
-foundry-forge-build: $(foundry_out)
-
-foundry-forge-test: foundry-forge-build
-	cd $(foundry_dir) && forge test --ffi
-
-$(foundry_out):
-	cd $(dir $@) && forge build
-
-tests/foundry/foundry-list.out: tests/foundry/out/kompiled/foundry.k.prove foundry-fail
-	$(KEVM) foundry-list --foundry-project-root $(foundry_dir) > $@
-
-tests/foundry/foundry-list.check: tests/foundry/foundry-list.out
-	grep --invert-match 'path:' $< > $@.stripped
-	$(CHECK) $@.stripped $@.expected
-
-tests/foundry/foundry.k.check: tests/foundry/out/kompiled/foundry.k
-	grep --invert-match '    rule  ( #binRuntime (' $< > $@.stripped
-	$(CHECK) $@.stripped $@.expected
-
-tests/foundry/contracts.k.check: tests/foundry/out/kompiled/contracts.k
-	grep --invert-match '    rule  ( #binRuntime (' $< > $@.stripped
-	$(CHECK) $@.stripped $@.expected
-
-tests/foundry/out/kompiled/foundry.k: tests/foundry/out/kompiled/timestamp
-tests/foundry/out/kompiled/contracts.k: tests/foundry/out/kompiled/timestamp
-
-tests/foundry/out/kompiled/foundry.k.prove: tests/foundry/out/kompiled/timestamp
-	$(KEVM) foundry-prove --foundry-project-root $(foundry_dir)          \
-	    -j$(FOUNDRY_PAR) --no-simplify-init --max-depth 1000             \
-	    $(KEVM_OPTS) $(KPROVE_OPTS)                                      \
-	    $(addprefix --exclude-test , $(shell cat tests/foundry/exclude))
-
-tests/foundry/out/kompiled/foundry.k.bmc-prove: tests/foundry/out/kompiled/timestamp
-	$(KEVM) foundry-prove --foundry-project-root $(foundry_dir)          \
-	    -j$(FOUNDRY_PAR) --no-simplify-init --max-depth 1000             \
-            --bmc-depth 3                                                    \
-	    $(KEVM_OPTS) $(KPROVE_OPTS)                                      \
-	    $(addprefix --test , $(shell cat tests/foundry/bmc-tests))
-
-foundry_golden := tests/foundry/golden
-foundry_diff_tests := $(shell cat tests/foundry/checkoutput)
-
-test-foundry-kcfg-diff: $(patsubst %, $(foundry_golden)/%.check, $(foundry_diff_tests))
-
-foundry-fail: tests/foundry/out/kompiled/timestamp
-	$(KEVM) foundry-prove                                \
-	--foundry-project-root $(foundry_dir)                \
-	-j$(FOUNDRY_PAR) --no-simplify-init --max-depth 1000 \
-	$(KEVM_OPTS) $(KPROVE_OPTS)                          \
-	$(addprefix --test , $(foundry_diff_tests)) || true
-
-foundry_show_opts := --to-module --omit-unstable-output --frontier --stuck --sort-collections
-
-$(foundry_golden)/%.check: $(foundry_golden)/%.out
-	$(CHECK) $(foundry_golden)/$*.out $(foundry_golden)/$*.expected
-
-$(foundry_golden)/%.out: foundry-fail
-	$(KEVM) foundry-show $(foundry_show_opts)                   \
-	--foundry-project-root $(foundry_dir) $* --failure-info     \
-	| grep --invert-match 'rule \[BASIC-BLOCK-'                 \
-	| grep --invert-match '\[priority(.*), label(BASIC-BLOCK-'  \
-	> $@
-
-tests/foundry/out/kompiled/timestamp: $(foundry_out) $(KEVM_LIB)/$(foundry_kompiled) $(lemma_includes) poetry
-	$(KEVM) foundry-kompile --foundry-project-root $(foundry_dir) $(KEVM_OPTS) --verbose --require $(foundry_dir)/lemmas.k --module-import LoopsTest:SUM-TO-N-INVARIANT
+test-foundry-prove: poetry build-kevm build-foundry
+	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+="-k test_foundry_prove.py -n$(PYTEST_PARALLEL) $(PYTEST_ARGS)"
 
 tests/specs/examples/%-bin-runtime.k: KEVM_OPTS += --pyk --verbose
 tests/specs/examples/%-bin-runtime.k: KEVM := $(POETRY_RUN) kevm
@@ -578,26 +491,26 @@ smoke_tests_prove=tests/specs/erc20/ds/transfer-failure-1-a-spec.k
 # Conformance Tests
 
 test-conformance: poetry build-kevm build-llvm
-	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+='-k test_conformance.py -n8'
+	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+="-k test_conformance.py -n$(PYTEST_PARALLEL) $(PYTEST_ARGS)"
 
 test-vm: poetry build-kevm build-llvm
-	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+='-k test_vm -n8'
+	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+="-k test_vm -n$(PYTEST_PARALLEL) $(PYTEST_ARGS)"
 
 test-rest-vm: poetry build-kevm build-llvm
-	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+='-k test_rest_vm -n8'
+	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+="-k test_rest_vm -n$(PYTEST_PARALLEL) $(PYTEST_ARGS)"
 
 test-bchain: poetry build-kevm build-llvm
-	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+='-k test_bchain -n8'
+	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+="-k test_bchain -n$(PYTEST_PARALLEL) $(PYTEST_ARGS)"
 
 test-rest-bchain: poetry build-kevm build-llvm
-	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+='-k test_rest_bchain -n8'
+	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+="-k test_rest_bchain -n$(PYTEST_PARALLEL) $(PYTEST_ARGS)"
 
 # Proof Tests
 
 prove_smoke_tests := $(shell cat tests/specs/smoke)
 
-test-prove: tests/specs/opcodes/evm-optimizations-spec.md build-kevm poetry
-	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+='-k test_prove -n8'
+test-prove: tests/specs/opcodes/evm-optimizations-spec.md poetry build-kevm build-haskell
+	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+="-k test_prove -n$(PYTEST_PARALLEL) $(PYTEST_ARGS)"
 
 test-prove-smoke: $(prove_smoke_tests:=.prove)
 
@@ -608,24 +521,10 @@ test-klab-prove: $(smoke_tests_prove:=.prove)
 tests/specs/opcodes/evm-optimizations-spec.md: include/kframework/optimizations.md
 	cat $< | sed 's/^rule/claim/' | sed 's/EVM-OPTIMIZATIONS/EVM-OPTIMIZATIONS-SPEC/' | grep -v 'priority(40)' > $@
 
-# Parse Tests
+# Integration Tests
 
-parse_tests:=$(wildcard tests/interactive/*.json) \
-             $(wildcard tests/interactive/*.evm)
-
-test-parse: $(parse_tests:=.parse)
-	echo $(parse_tests)
-
-# Failing correctly tests
-
-failure_tests:=$(wildcard tests/failing/*.json)
-
-test-failure: $(failure_tests:=.run-expected)
-
-# kevm-pyk Tests
-
-test-kevm-pyk: poetry build-kevm build-haskell
-	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+='-k test_solc_to_k.py -n4'
+test-integration: poetry build-kevm build-haskell build-llvm
+	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+='-k "(test_kast.py or test_run.py or test_solc_to_k.py)" -n$(PYTEST_PARALLEL) $(PYTEST_ARGS)'
 
 # Interactive Tests
 

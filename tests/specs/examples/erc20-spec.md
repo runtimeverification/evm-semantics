@@ -30,11 +30,6 @@ module VERIFICATION
     imports EVM-OPTIMIZATIONS
     imports ERC20-VERIFICATION
 
-    syntax Step ::= Bytes | Int
-    syntax KItem ::= runLemma ( Step ) | doneLemma ( Step )
- // -------------------------------------------------------
-    rule <k> runLemma(S) => doneLemma(S) ... </k>
-
  // decimals lemmas
  // ---------------
 
@@ -57,7 +52,7 @@ module ERC20-SPEC
 ### Functional Claims
 
 ```k
-    claim <k> runLemma(#bufStrict(32, #loc(ERC20._allowances[OWNER]))) => doneLemma(#buf(32, keccak(#buf(32, OWNER) +Bytes #buf(32, 1)))) ... </k>
+    claim (#bufStrict(32, #loc(ERC20._allowances[OWNER]))) => (#buf(32, keccak(#buf(32, OWNER) +Bytes #buf(32, 1))))
       requires #rangeAddress(OWNER)
 ```
 
@@ -143,7 +138,7 @@ module ERC20-SPEC
 ### Calling Approve works
 
 -   Everything from `<mode>` to `<substate>` is boilerplate.
--   We are setting `<callData>` to `approve(SPENDER, AMOUNT)`.
+-   We are setting `<callData>` to `approve(SPENDER : address, AMOUNT : uint256)`.
 -   We ask the prover to show that in all cases, we will end in `EVMC_SUCCESS` when `SENDER` or `OWNER` is not `address(0)`, and that we will end in `EVMC_REVERT` (rollback) when either one of them is.
 -   We take the OWNER from the `<caller>` cell, which is the `msg.sender`.
 -   The `<output>` should be `#buf(32, bool2Word(True))` if the function does not revert.
@@ -169,7 +164,7 @@ module ERC20-SPEC
           <callValue>  0           => ?_ </callValue>
           <substate> _             => ?_ </substate>
 
-          <callData>   ERC20.approve(SPENDER, AMOUNT) </callData>
+          <callData>   ERC20.approve(SPENDER : address, AMOUNT : uint256) </callData>
           <k>          #execute => #halt ...        </k>
           <output>     .Bytes   => #buf(32, 1)      </output>
           <statusCode> _        => EVMC_SUCCESS     </statusCode>
@@ -208,7 +203,7 @@ module ERC20-SPEC
           <callValue>  0           => ?_ </callValue>
           <substate> _             => ?_ </substate>
 
-          <callData>   ERC20.approve(SPENDER, AMOUNT) </callData>
+          <callData>   ERC20.approve(SPENDER : address, AMOUNT : uint256) </callData>
           <k>          #execute   => #halt ...        </k>
           <output>     _          => ?_               </output>
           <statusCode> _          => EVMC_REVERT      </statusCode>

@@ -22,44 +22,6 @@ _LOGGER: Final = logging.getLogger(__name__)
 
 
 HOOK_NAMESPACES: Final = ('JSON', 'KRYPTO', 'BLOCKCHAIN')
-CONCRETE_RULES: Final = (
-    'EVM.allBut64th.pos',
-    'EVM.Caddraccess',
-    'EVM.Cbalance.new',
-    'EVM.Cbalance.old',
-    'EVM.Cextcodecopy.new',
-    'EVM.Cextcodecopy.old',
-    'EVM.Cextcodehash.new',
-    'EVM.Cextcodehash.old',
-    'EVM.Cextcodesize.new',
-    'EVM.Cextcodesize.old',
-    'EVM.Cextra.new',
-    'EVM.Cextra.old',
-    'EVM.Cgascap',
-    'EVM.Cmem',
-    'EVM.Cmodexp.new',
-    'EVM.Cmodexp.old',
-    'EVM.Csload.new',
-    'EVM.Csstore.new',
-    'EVM.Csstore.old',
-    'EVM.Cstorageaccess',
-    'EVM.ecrec',
-    'EVM.#memoryUsageUpdate.some',
-    'EVM.Rsstore.new',
-    'EVM.Rsstore.old',
-    'EVM-TYPES.padRightToWidthNonEmpty',
-    'EVM-TYPES.padToWidthNonEmpty',
-    'EVM-TYPES.powmod.nonzero',
-    'EVM-TYPES.powmod.zero',
-    'EVM-TYPES.signextend.invalid',
-    'EVM-TYPES.signextend.negative',
-    'EVM-TYPES.signextend.positive',
-    'EVM-TYPES.upDivInt',
-    'SERIALIZATION.addrFromPrivateKey',
-    'SERIALIZATION.keccak',
-    'SERIALIZATION.#newAddr',
-    'SERIALIZATION.#newAddrCreate2',
-)
 
 
 class Kernel(Enum):
@@ -173,7 +135,6 @@ def kevm_kompile(
         case KompileBackend.HASKELL:
             kompile = HaskellKompile(
                 base_args=base_args,
-                concrete_rules=CONCRETE_RULES,
                 haskell_binary=haskell_binary,
             )
         case _:

@@ -3,13 +3,13 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/b01f185e4866de7c5b5a82f833ca9ea3c3f72fc4";
-    k-framework.url = "github:runtimeverification/k/v5.6.125";
+    k-framework.url = "github:runtimeverification/k/v6.0.27";
     k-framework.inputs.nixpkgs.follows = "nixpkgs";
     #nixpkgs.follows = "k-framework/nixpkgs";
     flake-utils.follows = "k-framework/flake-utils";
     rv-utils.url = "github:runtimeverification/rv-nix-tools";
     poetry2nix.follows = "pyk/poetry2nix";
-    blockchain-k-plugin.url = "github:runtimeverification/blockchain-k-plugin/efba5851e4363485a8b1ec6d7d54033c68a5c1cc";
+    blockchain-k-plugin.url = "github:runtimeverification/blockchain-k-plugin/da834be67f6c0aff11140ddfc0b04561494c14b8";
     blockchain-k-plugin.inputs.flake-utils.follows = "k-framework/flake-utils";
     blockchain-k-plugin.inputs.nixpkgs.follows = "k-framework/nixpkgs";
     ethereum-tests.url = "github:ethereum/tests/6401889dec4eee58e808fd178fb2c7f628a3e039";
@@ -17,13 +17,14 @@
     ethereum-legacytests.url = "github:ethereum/legacytests/d7abc42a7b352a7b44b1f66b58aca54e4af6a9d7";
     ethereum-legacytests.flake = false;
     haskell-backend.follows = "k-framework/haskell-backend";
-    pyk.url = "github:runtimeverification/pyk/v0.1.330";
+    pyk.url = "github:runtimeverification/pyk/v0.1.378";
     pyk.inputs.flake-utils.follows = "k-framework/flake-utils";
     pyk.inputs.nixpkgs.follows = "k-framework/nixpkgs";
+    foundry.url = "github:shazow/foundry.nix/monthly"; # Use monthly branch for permanent release
   };
   outputs = { self, k-framework, haskell-backend, nixpkgs, flake-utils
     , poetry2nix, blockchain-k-plugin, ethereum-tests, ethereum-legacytests
-    , rv-utils, pyk }:
+    , rv-utils, pyk, foundry }:
     let
       nixLibs = pkgs:
         with pkgs;
@@ -87,6 +88,8 @@
                 --replace 'set(K_LIB ''${K_BIN}/../lib)' 'set(K_LIB ${k}/lib)'
               substituteInPlace ./bin/kevm \
                 --replace 'execute python3 -m kevm_pyk' 'execute ${final.kevm-pyk}/bin/kevm-pyk'
+              substituteInPlace ./bin/kevm \
+                --replace 'gst-to-kore' '${final.kevm-pyk}/bin/gst-to-kore'
             '';
 
             buildFlagsArray = "NIX_LIBS=${nixLibs prev}";
@@ -172,6 +175,7 @@
             blockchain-k-plugin.overlay
             poetry2nix.overlay
             pyk.overlay
+            foundry.overlay
             overlay
           ];
         };
@@ -180,7 +184,7 @@
         packages.default = kevm;
         devShell = pkgs.mkShell {
           buildInputs = buildInputs pkgs k-framework.packages.${system}.k
-            ++ [ pkgs.poetry ];
+            ++ [ pkgs.poetry pkgs.foundry-bin ];
 
           shellHook = ''
             export NIX_LIBS="${nixLibs pkgs}"
@@ -237,7 +241,6 @@
         };
       }) // {
         overlays.default = nixpkgs.lib.composeManyExtensions [
-          k-framework.overlay
           blockchain-k-plugin.overlay
           overlay
         ];

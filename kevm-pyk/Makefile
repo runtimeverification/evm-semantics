@@ -17,7 +17,7 @@ build:
 
 .PHONY: poetry-install
 poetry-install:
-	$(POETRY) install -vvv
+	$(POETRY) install
 
 
 # Tests

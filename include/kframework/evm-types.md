@@ -67,10 +67,10 @@ You could alternatively calculate `I1 modInt I2`, then add one to the normal int
 ```k
     syntax Int ::= Int "up/Int" Int [function, total, smtlib(upDivInt)]
  // -------------------------------------------------------------------
-    rule              _I1 up/Int 0  => 0
-    rule              _I1 up/Int I2 => 0                             requires I2 <Int 0
-    rule               I1 up/Int 1  => I1
-    rule [upDivInt] :  I1 up/Int I2 => (I1 +Int (I2 -Int 1)) /Int I2 requires I2 >Int 1
+    rule _I1 up/Int 0  => 0                                                  [concrete]
+    rule _I1 up/Int I2 => 0                             requires I2 <=Int 0  [concrete]
+    rule  I1 up/Int 1  => I1                                                 [concrete]
+    rule  I1 up/Int I2 => (I1 +Int (I2 -Int 1)) /Int I2 requires 1  <Int  I2 [concrete]
 ```
 
 -   `log256Int` returns the log base 256 (floored) of an integer.
@@ -110,8 +110,8 @@ The helper `powmod` is a totalization of the operator `_^%Int__` (which comes wi
  // ------------------------------------------------------
     rule W0 ^Word W1 => powmod(W0, W1, pow256)
 
-    rule [powmod.nonzero]: powmod(W0, W1, W2) => W0 ^%Int W1 W2  requires W2 =/=Int 0
-    rule [powmod.zero]:    powmod( _,  _, W2) => 0               requires W2  ==Int 0
+    rule [powmod.nonzero]: powmod(W0, W1, W2) => W0 ^%Int W1 W2  requires W2 =/=Int 0 [concrete]
+    rule [powmod.zero]:    powmod( _,  _, W2) => 0               requires W2  ==Int 0 [concrete]
 ```
 
 `/sWord` and `%sWord` give the signed interperetations of `/Word` and `%Word`.
@@ -210,9 +210,9 @@ Bitwise logical operators are lifted from the integer versions.
 ```k
     syntax Int ::= signextend( Int , Int ) [function, total]
  // --------------------------------------------------------
-    rule [signextend.invalid]:  signextend(N, W) => W requires N >=Int 32 orBool N <Int 0
-    rule [signextend.negative]: signextend(N, W) => chop( (#nBytes(31 -Int N) <<Byte (N +Int 1)) |Int W ) requires N <Int 32 andBool N >=Int 0 andBool         word2Bool(bit(256 -Int (8 *Int (N +Int 1)), W))
-    rule [signextend.positive]: signextend(N, W) => chop( #nBytes(N +Int 1)                      &Int W ) requires N <Int 32 andBool N >=Int 0 andBool notBool word2Bool(bit(256 -Int (8 *Int (N +Int 1)), W))
+    rule [signextend.invalid]:  signextend(N, W) => W requires N >=Int 32 orBool N <Int 0                                                                                                                      [concrete]
+    rule [signextend.negative]: signextend(N, W) => chop( (#nBytes(31 -Int N) <<Byte (N +Int 1)) |Int W ) requires N <Int 32 andBool N >=Int 0 andBool         word2Bool(bit(256 -Int (8 *Int (N +Int 1)), W)) [concrete]
+    rule [signextend.positive]: signextend(N, W) => chop( #nBytes(N +Int 1)                      &Int W ) requires N <Int 32 andBool N >=Int 0 andBool notBool word2Bool(bit(256 -Int (8 *Int (N +Int 1)), W)) [concrete]
 ```
 
 
@@ -368,10 +368,10 @@ Bytes helper functions
     syntax Bytes ::= #padToWidth      ( Int , Bytes ) [function, total]
                    | #padRightToWidth ( Int , Bytes ) [function, total]
  // -------------------------------------------------------------------
-    rule                            #padToWidth(N, BS)      =>               BS        requires notBool (N >=Int 0)
-    rule [padToWidthNonEmpty]:      #padToWidth(N, BS)      =>  padLeftBytes(BS, N, 0) requires          N >=Int 0
-    rule                            #padRightToWidth(N, BS) =>               BS        requires notBool (N >=Int 0)
-    rule [padRightToWidthNonEmpty]: #padRightToWidth(N, BS) => padRightBytes(BS, N, 0) requires          N >=Int 0
+    rule #padToWidth(N, BS)      =>               BS        requires notBool (0 <=Int N) [concrete]
+    rule #padToWidth(N, BS)      =>  padLeftBytes(BS, N, 0) requires          0 <=Int N  [concrete]
+    rule #padRightToWidth(N, BS) =>               BS        requires notBool (0 <=Int N) [concrete]
+    rule #padRightToWidth(N, BS) => padRightBytes(BS, N, 0) requires          0 <=Int N  [concrete]
 ```
 
 Accounts
@@ -386,6 +386,9 @@ Accounts
 ```k
     syntax Account ::= ".Account" | Int
  // -----------------------------------
+
+    syntax AccountCode ::= Bytes
+ // ----------------------------
 ```
 
 ### Addresses

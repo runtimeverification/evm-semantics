@@ -38,6 +38,8 @@ The following files constitute the KEVM semantics:
 -   [evm-types.md](include/kframework/evm-types.md) provides the (functional) data of EVM (256-bit words, wordstacks, etc...).
 -   [serialization.md](include/kframework/serialization.md) provides helpers for parsing and unparsing data (hex strings, recursive-length prefix, Merkle trees, etc.).
 -   [evm.md](include/kframework/evm.md) is the main KEVM semantics, containing EVM’s configuration and transition rules.
+-   [gas.md](include/kframework/gas.md) contains all information relevant to gas.
+-   [schedule.md](include/kframework/schedule.md) contains all information relevant to EVM schedules.
 
 These additional files extend the semantics to make the repository more useful:
 

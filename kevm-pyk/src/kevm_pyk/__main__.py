@@ -10,18 +10,25 @@ from typing import TYPE_CHECKING
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli.utils import file_path
 from pyk.cterm import CTerm
-from pyk.kcfg import KCFG, KCFGExplore, KCFGShow, KCFGViewer
+from pyk.kast.outer import KApply, KRewrite
+from pyk.kcfg import KCFG, KCFGExplore
 from pyk.kore.prelude import int_dv
+from pyk.ktool.kompile import LLVMKompileType
 from pyk.ktool.krun import KRunOutput, _krun
-from pyk.prelude.ml import is_bottom
+from pyk.prelude.ml import is_bottom, is_top
 from pyk.proof import APRProof
+from pyk.proof.equality import EqualityProof
+from pyk.proof.show import APRProofShow
+from pyk.proof.tui import APRProofViewer
 from pyk.utils import BugReport, single
 
 from .cli import KEVMCLIArgs, node_id_like
 from .foundry import (
     Foundry,
+    foundry_get_model,
     foundry_kompile,
     foundry_list,
+    foundry_node_printer,
     foundry_prove,
     foundry_remove_node,
     foundry_section_edge,
@@ -31,10 +38,10 @@ from .foundry import (
     foundry_to_dot,
 )
 from .gst_to_kore import _mode_to_kore, _schedule_to_kore
-from .kevm import KEVM
+from .kevm import KEVM, kevm_node_printer
 from .kompile import KompileTarget, kevm_kompile
 from .solc_to_k import solc_compile, solc_to_k
-from .utils import arg_pair_of, ensure_ksequence_on_k_cell, get_apr_proof_for_spec, kevm_apr_prove, print_failure_info
+from .utils import arg_pair_of, ensure_ksequence_on_k_cell, get_apr_proof_for_spec, kevm_prove, print_failure_info
 
 if TYPE_CHECKING:
     from argparse import Namespace
@@ -44,6 +51,7 @@ if TYPE_CHECKING:
     from pyk.kast.outer import KClaim
     from pyk.kcfg.kcfg import NodeIdLike
     from pyk.kcfg.tui import KCFGElem
+    from pyk.proof.proof import Proof
 
     T = TypeVar('T')
 
@@ -96,6 +104,7 @@ def exec_kompile(
     o3: bool = False,
     debug: bool = False,
     enable_llvm_debug: bool = False,
+    llvm_library: bool = False,
     **kwargs: Any,
 ) -> None:
     optimization = 0
@@ -118,6 +127,7 @@ def exec_kompile(
         ccopts=ccopts,
         optimization=optimization,
         enable_llvm_debug=enable_llvm_debug,
+        llvm_kompile_type=LLVMKompileType.C if llvm_library else LLVMKompileType.MAIN,
         debug=debug,
     )
 
@@ -196,37 +206,24 @@ def exec_prove_legacy(
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'md_selector', f'--md-selector: {kwargs["md_selector"]}')
-    md_selector = 'k & ! node'
-
     kevm = KEVM(definition_dir, use_directory=save_directory)
-    args: list[str] = []
-    haskell_args: list[str] = []
-    if claim_labels:
-        args += ['--claims', ','.join(claim_labels)]
-    if exclude_claim_labels:
-        args += ['--exclude', ','.join(exclude_claim_labels)]
-    if debug:
-        args.append('--debug')
-    if debugger:
-        args.append('--debugger')
-    if branching_allowed:
-        args += ['--branching-allowed', f'{branching_allowed}']
-    if max_counterexamples:
-        haskell_args += ['--max-counterexamples', f'{max_counterexamples}']
-    if bug_report:
-        haskell_args += ['--bug-report', f'kevm-bug-{spec_file.name.rstrip("-spec.k")}']
-    if haskell_backend_args:
-        haskell_args += list(haskell_backend_args)
-
-    kevm.prove(
+    final_state = kevm.prove_legacy(
         spec_file=spec_file,
-        spec_module_name=spec_module,
-        args=args,
-        include_dirs=[Path(i) for i in includes],
-        md_selector=md_selector,
-        haskell_args=haskell_args,
-        depth=max_depth,
+        includes=includes,
+        bug_report=bug_report,
+        spec_module=spec_module,
+        claim_labels=claim_labels,
+        exclude_claim_labels=exclude_claim_labels,
+        debug=debug,
+        debugger=debugger,
+        max_depth=max_depth,
+        max_counterexamples=max_counterexamples,
+        branching_allowed=branching_allowed,
+        haskell_backend_args=haskell_backend_args,
     )
+    print(kevm.pretty_print(final_state))
+    if not is_top(final_state):
+        raise SystemExit(1)
 
 
 def exec_prove(
@@ -252,6 +249,7 @@ def exec_prove(
     smt_retry_limit: int | None = None,
     trace_rewrites: bool = False,
     failure_info: bool = True,
+    auto_abstract_gas: bool = False,
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'md_selector', f'--md-selector: {kwargs["md_selector"]}')
@@ -276,6 +274,12 @@ def exec_prove(
     if isinstance(kore_rpc_command, str):
         kore_rpc_command = kore_rpc_command.split()
 
+    def is_functional(claim: KClaim) -> bool:
+        claim_lhs = claim.body
+        if type(claim_lhs) is KRewrite:
+            claim_lhs = claim_lhs.lhs
+        return not (type(claim_lhs) is KApply and claim_lhs.label.name == '<generatedTop>')
+
     def _init_and_run_proof(claim: KClaim) -> tuple[bool, list[str] | None]:
         with KCFGExplore(
             kevm,
@@ -286,38 +290,53 @@ def exec_prove(
             smt_retry_limit=smt_retry_limit,
             trace_rewrites=trace_rewrites,
         ) as kcfg_explore:
-            proof_problem: APRProof
-
-            if save_directory is not None and not reinit and APRProof.proof_exists(claim.label, save_directory):
-                proof_problem = APRProof.read_proof(claim.label, save_directory)
-
+            proof_problem: Proof
+            if is_functional(claim):
+                if (
+                    save_directory is not None
+                    and not reinit
+                    and EqualityProof.proof_exists(claim.label, save_directory)
+                ):
+                    proof_problem = EqualityProof.read_proof(claim.label, save_directory)
+                else:
+                    proof_problem = EqualityProof.from_claim(claim, kevm.definition, proof_dir=save_directory)
             else:
-                _LOGGER.info(f'Converting claim to KCFG: {claim.label}')
-                kcfg, init_node_id, target_node_id = KCFG.from_claim(kevm.definition, claim)
+                if save_directory is not None and not reinit and APRProof.proof_exists(claim.label, save_directory):
+                    proof_problem = APRProof.read_proof(claim.label, save_directory)
 
-                new_init = ensure_ksequence_on_k_cell(kcfg.node(init_node_id).cterm)
-                new_target = ensure_ksequence_on_k_cell(kcfg.node(target_node_id).cterm)
+                else:
+                    _LOGGER.info(f'Converting claim to KCFG: {claim.label}')
+                    kcfg, init_node_id, target_node_id = KCFG.from_claim(kevm.definition, claim)
 
-                _LOGGER.info(f'Computing definedness constraint for initial node: {claim.label}')
-                new_init = kcfg_explore.cterm_assume_defined(new_init)
+                    new_init = ensure_ksequence_on_k_cell(kcfg.node(init_node_id).cterm)
+                    new_target = ensure_ksequence_on_k_cell(kcfg.node(target_node_id).cterm)
 
-                if simplify_init:
-                    _LOGGER.info(f'Simplifying initial and target node: {claim.label}')
-                    _new_init, _ = kcfg_explore.cterm_simplify(new_init)
-                    _new_target, _ = kcfg_explore.cterm_simplify(new_target)
-                    if is_bottom(_new_init):
-                        raise ValueError('Simplifying initial node led to #Bottom, are you sure your LHS is defined?')
-                    if is_bottom(_new_target):
-                        raise ValueError('Simplifying target node led to #Bottom, are you sure your RHS is defined?')
-                    new_init = CTerm.from_kast(_new_init)
-                    new_target = CTerm.from_kast(_new_target)
+                    _LOGGER.info(f'Computing definedness constraint for initial node: {claim.label}')
+                    new_init = kcfg_explore.cterm_assume_defined(new_init)
 
-                kcfg.replace_node(init_node_id, new_init)
-                kcfg.replace_node(target_node_id, new_target)
+                    if simplify_init:
+                        _LOGGER.info(f'Simplifying initial and target node: {claim.label}')
+                        _new_init, _ = kcfg_explore.cterm_simplify(new_init)
+                        _new_target, _ = kcfg_explore.cterm_simplify(new_target)
+                        if is_bottom(_new_init):
+                            raise ValueError(
+                                'Simplifying initial node led to #Bottom, are you sure your LHS is defined?'
+                            )
+                        if is_bottom(_new_target):
+                            raise ValueError(
+                                'Simplifying target node led to #Bottom, are you sure your RHS is defined?'
+                            )
+                        new_init = CTerm.from_kast(_new_init)
+                        new_target = CTerm.from_kast(_new_target)
 
-                proof_problem = APRProof(claim.label, kcfg, init_node_id, target_node_id, {}, proof_dir=save_directory)
+                    kcfg.replace_node(init_node_id, new_init)
+                    kcfg.replace_node(target_node_id, new_target)
 
-            passed = kevm_apr_prove(
+                    proof_problem = APRProof(
+                        claim.label, kcfg, init_node_id, target_node_id, {}, proof_dir=save_directory
+                    )
+
+            passed = kevm_prove(
                 kevm,
                 proof_problem,
                 kcfg_explore,
@@ -336,6 +355,7 @@ def exec_prove(
                 smt_timeout=smt_timeout,
                 smt_retry_limit=smt_retry_limit,
                 trace_rewrites=trace_rewrites,
+                abstract_node=(KEVM.abstract_gas_cell if auto_abstract_gas else None),
             )
             failure_log = None
             if not passed:
@@ -343,8 +363,14 @@ def exec_prove(
 
             return passed, failure_log
 
-    with ProcessPool(ncpus=workers) as process_pool:
-        results = process_pool.map(_init_and_run_proof, claims)
+    results: list[tuple[bool, list[str] | None]]
+    if workers > 1:
+        with ProcessPool(ncpus=workers) as process_pool:
+            results = process_pool.map(_init_and_run_proof, claims)
+    else:
+        results = []
+        for claim in claims:
+            results.append(_init_and_run_proof(claim))
 
     failed = 0
     for claim, r in zip(claims, results, strict=True):
@@ -415,10 +441,12 @@ def exec_show_kcfg(
     minimize: bool = True,
     failure_info: bool = False,
     sort_collections: bool = False,
+    pending: bool = False,
+    failing: bool = False,
     **kwargs: Any,
 ) -> None:
     kevm = KEVM(definition_dir)
-    apr_proof = get_apr_proof_for_spec(
+    proof = get_apr_proof_for_spec(
         kevm,
         spec_file,
         save_directory=save_directory,
@@ -429,21 +457,26 @@ def exec_show_kcfg(
         exclude_claim_labels=exclude_claim_labels,
     )
 
-    kcfg_show = KCFGShow(kevm)
-    res_lines = kcfg_show.show(
-        apr_proof.id,
-        apr_proof.kcfg,
+    if pending:
+        nodes = list(nodes) + [node.id for node in proof.pending]
+    if failing:
+        nodes = list(nodes) + [node.id for node in proof.failing]
+
+    node_printer = kevm_node_printer(kevm, proof)
+    proof_show = APRProofShow(kevm, node_printer=node_printer)
+
+    res_lines = proof_show.show(
+        proof,
         nodes=nodes,
         node_deltas=node_deltas,
         to_module=to_module,
         minimize=minimize,
         sort_collections=sort_collections,
-        node_printer=kevm.short_info,
     )
 
     if failure_info:
-        with KCFGExplore(kevm, id=apr_proof.id) as kcfg_explore:
-            res_lines += print_failure_info(apr_proof, kcfg_explore)
+        with KCFGExplore(kevm, id=proof.id) as kcfg_explore:
+            res_lines += print_failure_info(proof, kcfg_explore)
 
     print('\n'.join(res_lines))
 
@@ -460,7 +493,7 @@ def exec_view_kcfg(
     **kwargs: Any,
 ) -> None:
     kevm = KEVM(definition_dir)
-    apr_proof = get_apr_proof_for_spec(
+    proof = get_apr_proof_for_spec(
         kevm,
         spec_file,
         save_directory=save_directory,
@@ -471,8 +504,10 @@ def exec_view_kcfg(
         exclude_claim_labels=exclude_claim_labels,
     )
 
-    viewer = KCFGViewer(apr_proof.kcfg, kevm, node_printer=kevm.short_info)
-    viewer.run()
+    node_printer = kevm_node_printer(kevm, proof)
+    proof_view = APRProofViewer(proof, kevm, node_printer=node_printer)
+
+    proof_view.run()
 
 
 def exec_foundry_prove(
@@ -490,11 +525,14 @@ def exec_foundry_prove(
     implication_every_block: bool = True,
     bmc_depth: int | None = None,
     bug_report: bool = False,
-    kore_rpc_command: str | Iterable[str] = ('kore-rpc',),
+    kore_rpc_command: str | Iterable[str] | None = None,
+    use_booster: bool = False,
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
     failure_info: bool = True,
+    counterexample_info: bool = False,
     trace_rewrites: bool = False,
+    auto_abstract_gas: bool = False,
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'main_module', f'--main-module: {kwargs["main_module"]}')
@@ -521,9 +559,12 @@ def exec_foundry_prove(
         bmc_depth=bmc_depth,
         bug_report=bug_report,
         kore_rpc_command=kore_rpc_command,
+        use_booster=use_booster,
+        counterexample_info=counterexample_info,
         smt_timeout=smt_timeout,
         smt_retry_limit=smt_retry_limit,
         trace_rewrites=trace_rewrites,
+        auto_abstract_gas=auto_abstract_gas,
     )
     failed = 0
     for pid, r in results.items():
@@ -550,9 +591,10 @@ def exec_foundry_show(
     minimize: bool = True,
     sort_collections: bool = False,
     omit_unstable_output: bool = False,
-    frontier: bool = False,
-    stuck: bool = False,
+    pending: bool = False,
+    failing: bool = False,
     failure_info: bool = False,
+    counterexample_info: bool = False,
     **kwargs: Any,
 ) -> None:
     output = foundry_show(
@@ -564,9 +606,10 @@ def exec_foundry_show(
         minimize=minimize,
         omit_unstable_output=omit_unstable_output,
         sort_collections=sort_collections,
-        frontier=frontier,
-        stuck=stuck,
+        pending=pending,
+        failing=failing,
         failure_info=failure_info,
+        counterexample_info=counterexample_info,
     )
     print(output)
 
@@ -616,11 +659,11 @@ def exec_run(
 
 def exec_foundry_view_kcfg(foundry_root: Path, test: str, **kwargs: Any) -> None:
     foundry = Foundry(foundry_root)
-    apr_proofs_dir = foundry.out / 'apr_proofs'
+    proofs_dir = foundry.out / 'apr_proofs'
     contract_name, test_name = test.split('.')
     proof_digest = foundry.proof_digest(contract_name, test_name)
 
-    apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
+    proof = APRProof.read_proof(proof_digest, proofs_dir)
 
     def _short_info(cterm: CTerm) -> Iterable[str]:
         return foundry.short_info_for_contract(contract_name, cterm)
@@ -628,7 +671,8 @@ def exec_foundry_view_kcfg(foundry_root: Path, test: str, **kwargs: Any) -> None
     def _custom_view(elem: KCFGElem) -> Iterable[str]:
         return foundry.custom_view(contract_name, elem)
 
-    viewer = KCFGViewer(apr_proof.kcfg, foundry.kevm, node_printer=_short_info, custom_view=_custom_view)
+    node_printer = foundry_node_printer(foundry, contract_name, proof)
+    viewer = APRProofViewer(proof, foundry.kevm, node_printer=node_printer, custom_view=_custom_view)
     viewer.run()
 
 
@@ -714,6 +758,24 @@ def exec_foundry_section_edge(
     )
 
 
+def exec_foundry_get_model(
+    foundry_root: Path,
+    test: str,
+    nodes: Iterable[NodeIdLike] = (),
+    pending: bool = False,
+    failing: bool = False,
+    **kwargs: Any,
+) -> None:
+    output = foundry_get_model(
+        foundry_root=foundry_root,
+        test=test,
+        nodes=nodes,
+        pending=pending,
+        failing=failing,
+    )
+    print(output)
+
+
 # Helpers
 
 
@@ -732,7 +794,7 @@ def _create_argument_parser() -> ArgumentParser:
     kevm_kompile_args = command_parser.add_parser(
         'kompile',
         help='Kompile KEVM specification.',
-        parents=[kevm_cli_args.shared_args, kevm_cli_args.k_args, kevm_cli_args.kompile_args],
+        parents=[kevm_cli_args.logging_args, kevm_cli_args.k_args, kevm_cli_args.kompile_args],
     )
     kevm_kompile_args.add_argument('main_file', type=file_path, help='Path to file with main module.')
     kevm_kompile_args.add_argument(
@@ -746,7 +808,8 @@ def _create_argument_parser() -> ArgumentParser:
         'prove',
         help='Run KEVM proof.',
         parents=[
-            kevm_cli_args.shared_args,
+            kevm_cli_args.logging_args,
+            kevm_cli_args.parallel_args,
             kevm_cli_args.k_args,
             kevm_cli_args.kprove_args,
             kevm_cli_args.rpc_args,
@@ -766,7 +829,11 @@ def _create_argument_parser() -> ArgumentParser:
     prune_proof_args = command_parser.add_parser(
         'prune-proof',
         help='Remove a node and its successors from the proof state.',
-        parents=[kevm_cli_args.shared_args, kevm_cli_args.k_args, kevm_cli_args.spec_args],
+        parents=[
+            kevm_cli_args.logging_args,
+            kevm_cli_args.k_args,
+            kevm_cli_args.spec_args,
+        ],
     )
     prune_proof_args.add_argument('node', type=node_id_like, help='Node to remove CFG subgraph from.')
 
@@ -774,7 +841,7 @@ def _create_argument_parser() -> ArgumentParser:
         'prove-legacy',
         help='Run KEVM proof using the legacy kprove binary.',
         parents=[
-            kevm_cli_args.shared_args,
+            kevm_cli_args.logging_args,
             kevm_cli_args.k_args,
             kevm_cli_args.spec_args,
             kevm_cli_args.kprove_legacy_args,
@@ -784,14 +851,14 @@ def _create_argument_parser() -> ArgumentParser:
     _ = command_parser.add_parser(
         'view-kcfg',
         help='Display tree view of CFG',
-        parents=[kevm_cli_args.shared_args, kevm_cli_args.k_args, kevm_cli_args.spec_args],
+        parents=[kevm_cli_args.logging_args, kevm_cli_args.k_args, kevm_cli_args.spec_args],
     )
 
     _ = command_parser.add_parser(
         'show-kcfg',
         help='Display tree show of CFG',
         parents=[
-            kevm_cli_args.shared_args,
+            kevm_cli_args.logging_args,
             kevm_cli_args.k_args,
             kevm_cli_args.kcfg_show_args,
             kevm_cli_args.spec_args,
@@ -802,7 +869,7 @@ def _create_argument_parser() -> ArgumentParser:
     run_args = command_parser.add_parser(
         'run',
         help='Run KEVM test/simulation.',
-        parents=[kevm_cli_args.shared_args, kevm_cli_args.evm_chain_args, kevm_cli_args.k_args],
+        parents=[kevm_cli_args.logging_args, kevm_cli_args.evm_chain_args, kevm_cli_args.k_args],
     )
     run_args.add_argument('input_file', type=file_path, help='Path to input file.')
     run_args.add_argument(
@@ -835,7 +902,7 @@ def _create_argument_parser() -> ArgumentParser:
     solc_to_k_args = command_parser.add_parser(
         'solc-to-k',
         help='Output helper K definition for given JSON output from solc compiler.',
-        parents=[kevm_cli_args.shared_args, kevm_cli_args.k_args, kevm_cli_args.k_gen_args],
+        parents=[kevm_cli_args.logging_args, kevm_cli_args.k_args, kevm_cli_args.k_gen_args],
     )
     solc_to_k_args.add_argument('contract_file', type=file_path, help='Path to contract file.')
     solc_to_k_args.add_argument('contract_name', type=str, help='Name of contract to generate K helpers for.')
@@ -844,7 +911,7 @@ def _create_argument_parser() -> ArgumentParser:
         'foundry-kompile',
         help='Kompile K definition corresponding to given output directory.',
         parents=[
-            kevm_cli_args.shared_args,
+            kevm_cli_args.logging_args,
             kevm_cli_args.k_args,
             kevm_cli_args.k_gen_args,
             kevm_cli_args.kompile_args,
@@ -870,7 +937,8 @@ def _create_argument_parser() -> ArgumentParser:
         'foundry-prove',
         help='Run Foundry Proof.',
         parents=[
-            kevm_cli_args.shared_args,
+            kevm_cli_args.logging_args,
+            kevm_cli_args.parallel_args,
             kevm_cli_args.k_args,
             kevm_cli_args.kprove_args,
             kevm_cli_args.smt_args,
@@ -909,12 +977,19 @@ def _create_argument_parser() -> ArgumentParser:
         type=int,
         help='Max depth of loop unrolling during bounded model checking',
     )
+    foundry_prove_args.add_argument(
+        '--use-booster',
+        dest='use_booster',
+        default=False,
+        action='store_true',
+        help="Use the booster RPC server instead of kore-rpc. Requires calling foundry-kompile with the '--with-llvm-library' flag",
+    )
 
     foundry_show_args = command_parser.add_parser(
         'foundry-show',
         help='Display a given Foundry CFG.',
         parents=[
-            kevm_cli_args.shared_args,
+            kevm_cli_args.logging_args,
             kevm_cli_args.k_args,
             kevm_cli_args.kcfg_show_args,
             kevm_cli_args.display_args,
@@ -929,36 +1004,30 @@ def _create_argument_parser() -> ArgumentParser:
         action='store_true',
         help='Strip output that is likely to change without the contract logic changing',
     )
-    foundry_show_args.add_argument(
-        '--frontier', dest='frontier', default=False, action='store_true', help='Also display frontier nodes'
-    )
-    foundry_show_args.add_argument(
-        '--stuck', dest='stuck', default=False, action='store_true', help='Also display stuck nodes'
-    )
     foundry_to_dot = command_parser.add_parser(
         'foundry-to-dot',
         help='Dump the given CFG for the test as DOT for visualization.',
-        parents=[kevm_cli_args.shared_args, kevm_cli_args.foundry_args],
+        parents=[kevm_cli_args.logging_args, kevm_cli_args.foundry_args],
     )
     foundry_to_dot.add_argument('test', type=str, help='Display the CFG for this test.')
 
     command_parser.add_parser(
         'foundry-list',
         help='List information about CFGs on disk',
-        parents=[kevm_cli_args.shared_args, kevm_cli_args.k_args, kevm_cli_args.foundry_args],
+        parents=[kevm_cli_args.logging_args, kevm_cli_args.k_args, kevm_cli_args.foundry_args],
     )
 
     foundry_view_kcfg_args = command_parser.add_parser(
         'foundry-view-kcfg',
         help='Display tree view of CFG',
-        parents=[kevm_cli_args.shared_args, kevm_cli_args.foundry_args],
+        parents=[kevm_cli_args.logging_args, kevm_cli_args.foundry_args],
     )
     foundry_view_kcfg_args.add_argument('test', type=str, help='View the CFG for this test.')
 
     foundry_remove_node = command_parser.add_parser(
         'foundry-remove-node',
         help='Remove a node and its successors.',
-        parents=[kevm_cli_args.shared_args, kevm_cli_args.foundry_args],
+        parents=[kevm_cli_args.logging_args, kevm_cli_args.foundry_args],
     )
     foundry_remove_node.add_argument('test', type=str, help='View the CFG for this test.')
     foundry_remove_node.add_argument('node', type=node_id_like, help='Node to remove CFG subgraph from.')
@@ -967,7 +1036,7 @@ def _create_argument_parser() -> ArgumentParser:
         'foundry-simplify-node',
         help='Simplify a given node, and potentially replace it.',
         parents=[
-            kevm_cli_args.shared_args,
+            kevm_cli_args.logging_args,
             kevm_cli_args.smt_args,
             kevm_cli_args.rpc_args,
             kevm_cli_args.display_args,
@@ -983,7 +1052,12 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_step_node = command_parser.add_parser(
         'foundry-step-node',
         help='Step from a given node, adding it to the CFG.',
-        parents=[kevm_cli_args.shared_args, kevm_cli_args.rpc_args, kevm_cli_args.smt_args, kevm_cli_args.foundry_args],
+        parents=[
+            kevm_cli_args.logging_args,
+            kevm_cli_args.rpc_args,
+            kevm_cli_args.smt_args,
+            kevm_cli_args.foundry_args,
+        ],
     )
     foundry_step_node.add_argument('test', type=str, help='Step from node in this CFG.')
     foundry_step_node.add_argument('node', type=node_id_like, help='Node to step from in CFG.')
@@ -997,12 +1071,43 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_section_edge = command_parser.add_parser(
         'foundry-section-edge',
         help='Given an edge in the graph, cut it into sections to get intermediate nodes.',
-        parents=[kevm_cli_args.shared_args, kevm_cli_args.rpc_args, kevm_cli_args.smt_args, kevm_cli_args.foundry_args],
+        parents=[
+            kevm_cli_args.logging_args,
+            kevm_cli_args.rpc_args,
+            kevm_cli_args.smt_args,
+            kevm_cli_args.foundry_args,
+        ],
     )
     foundry_section_edge.add_argument('test', type=str, help='Section edge in this CFG.')
     foundry_section_edge.add_argument('edge', type=arg_pair_of(str, str), help='Edge to section in CFG.')
     foundry_section_edge.add_argument(
         '--sections', type=int, default=2, help='Number of sections to make from edge (>= 2).'
+    )
+
+    foundry_get_model = command_parser.add_parser(
+        'foundry-get-model',
+        help='Display a model for a given node.',
+        parents=[
+            kevm_cli_args.logging_args,
+            kevm_cli_args.rpc_args,
+            kevm_cli_args.smt_args,
+            kevm_cli_args.foundry_args,
+        ],
+    )
+    foundry_get_model.add_argument('test', type=str, help='Display the models of nodes in this test.')
+    foundry_get_model.add_argument(
+        '--node',
+        type=node_id_like,
+        dest='nodes',
+        default=[],
+        action='append',
+        help='List of nodes to display the models of.',
+    )
+    foundry_get_model.add_argument(
+        '--pending', dest='pending', default=False, action='store_true', help='Also display models of pending nodes'
+    )
+    foundry_get_model.add_argument(
+        '--failing', dest='failing', default=False, action='store_true', help='Also display models of failing nodes'
     )
 
     return parser
