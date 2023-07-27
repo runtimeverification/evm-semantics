@@ -607,7 +607,7 @@ def _range_predicate_bytes(term: KInner, type_label: str) -> tuple[bool, KInner 
 
 
 def _range_predicate_static_array(term: KInner, type_label: str) -> tuple[bool, KInner | None]:
-    if type_label.endswith(']'):
+    if type_label.endswith(']') and not type_label.endswith('[]'):
         parts = type_label.rsplit('[', 1)
         if len(parts) > 1:
             number = int(parts[1].rstrip(']'))
