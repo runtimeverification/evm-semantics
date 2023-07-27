@@ -409,13 +409,6 @@ tests/%.run-interactive: tests/%
 	    || $(CHECK) tests/$*.$(TEST_CONCRETE_BACKEND)-out tests/templates/output-success-$(TEST_CONCRETE_BACKEND).json
 	$(KEEP_OUTPUTS) || rm -rf tests/$*.$(TEST_CONCRETE_BACKEND)-out
 
-tests/%.run-expected: tests/% tests/%.expected
-	$(POENTRY_RUN) $(KEVM) run $< $(KEVM_OPTS) $(KRUN_OPTS) --backend $(TEST_CONCRETE_BACKEND) \
-	    --mode $(KEVM_MODE) --schedule $(KEVM_SCHEDULE) --chainid $(KEVM_CHAINID)              \
-	    > tests/$*.$(TEST_CONCRETE_BACKEND)-out                                                \
-	    || $(CHECK) tests/$*.$(TEST_CONCRETE_BACKEND)-out tests/$*.expected
-	$(KEEP_OUTPUTS) || rm -rf tests/$*.$(TEST_CONCRETE_BACKEND)-out
-
 # solc-to-k
 # ---------
 
