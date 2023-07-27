@@ -179,22 +179,6 @@ run_interpret() {
     exit "${exit_status}"
 }
 
-run_solc() {
-    local contract_name
-
-    contract_name="$1" ; shift
-    run_kevm_pyk solc-to-k "${run_file}" "${contract_name}" --definition "${backend_dir}" "$@"
-}
-
-run_foundry() {
-    local foundry_command
-    foundry_command=("${run_command}")
-    if [[ "${run_command}" == foundry-kompile ]]; then
-        foundry_command+=(--definition "${backend_dir}")
-    fi
-    run_kevm_pyk "${foundry_command[@]}" "$@"
-}
-
 # Main
 # ----
 
@@ -320,7 +304,7 @@ if ${pyk}; then
 fi
 
 # get the run file
-if [[ "${run_command}" != foundry-* ]] && [[ "${run_command}" != *-kcfg ]] && [[ "${run_command}" != *-proof ]]; then
+if [[ "${run_command}" != foundry-* ]] && [[ "${run_command}" != *-kcfg ]] && [[ "${run_command}" != *-proof ]] && [[ "${run_command}" != 'solc-to-k' ]]; then
     if [[ $# -gt 0 ]]; then
         run_file="$1" ; shift
         if [[ "${run_file}" == '-' ]]; then
@@ -342,16 +326,16 @@ cCHAINID_kore="\dv{SortInt{}}(\"${chainid}\")"
 ! ${debug} || set -x
 
 case "$run_command-$backend" in
-    kompile-@(llvm|haskell|node|foundry)   ) run_kompile              "$@" ;;
-    run-@(llvm|haskell|haskell-standalone) ) run_krun                 "$@" ;;
-    kast-@(llvm|haskell)                   ) run_kast                 "$@" ;;
-    interpret-@(llvm|haskell)              ) run_interpret            "$@" ;;
-    prove-@(haskell)                       ) run_prove                "$@" ;;
-    prune-proof-@(haskell)                 ) run_kevm_pyk prune-proof "$@" ;;
-    search-@(haskell)                      ) run_search               "$@" ;;
-    view-kcfg-*                            ) run_kevm_pyk view-kcfg   "$@" ;;
-    show-kcfg-*                            ) run_kevm_pyk show-kcfg   "$@" ;;
-    solc-to-k-*                            ) run_solc                 "$@" ;;
-    foundry-*                              ) run_foundry              "$@" ;;
+    kompile-@(llvm|haskell|node|foundry)   ) run_kompile                 "$@" ;;
+    run-@(llvm|haskell|haskell-standalone) ) run_krun                    "$@" ;;
+    kast-@(llvm|haskell)                   ) run_kast                    "$@" ;;
+    interpret-@(llvm|haskell)              ) run_interpret               "$@" ;;
+    prove-@(haskell)                       ) run_prove                   "$@" ;;
+    search-@(haskell)                      ) run_search                  "$@" ;;
+    prune-proof-@(haskell)                 ) run_kevm_pyk prune-proof    "$@" ;;
+    view-kcfg-*                            ) run_kevm_pyk view-kcfg      "$@" ;;
+    show-kcfg-*                            ) run_kevm_pyk show-kcfg      "$@" ;;
+    solc-to-k-*                            ) run_kevm_pyk solc-to-k      "$@" ;;
+    foundry-*                              ) run_kevm_pyk ${run_command} "$@" ;;
     *) ${KEVM} help ; fatal "Unknown command on backend: $run_command $backend" ;;
 esac
