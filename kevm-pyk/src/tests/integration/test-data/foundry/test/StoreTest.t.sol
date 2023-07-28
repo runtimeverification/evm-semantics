@@ -2,6 +2,7 @@
 pragma solidity =0.8.13;
 
 import "forge-std/Test.sol";
+import "forge-std/Vm.sol";
 
 contract Store {
     uint256 private testNumber = 1337; // slot 0
@@ -42,7 +43,7 @@ contract StoreTest is Test {
 
     function testGasLoadColdVM() public {
         // Call vm.load(address(101), bytes32(uint256(23)))
-        uint256 gasUsed = measureGasForCall(address(vm), abi.encodeCall(Vm.load, (address(101), bytes32(uint256(23)))));
+        uint256 gasUsed = measureGasForCall(address(vm), abi.encodeCall(VmSafe.load, (address(101), bytes32(uint256(23)))));
         assert(gasUsed == 2625);
     }
 
@@ -58,7 +59,7 @@ contract StoreTest is Test {
         (payable(address(vm)).send(0));
 
         // Call vm.load(address(101), bytes32(uint256(23)));
-        uint256 gasUsed = measureGasForCall(address(vm), abi.encodeCall(Vm.load, (address(101), bytes32(uint256(23)))));
+        uint256 gasUsed = measureGasForCall(address(vm), abi.encodeCall(VmSafe.load, (address(101), bytes32(uint256(23)))));
         assert(gasUsed == 125);
     }
 
