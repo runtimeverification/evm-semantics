@@ -41,5 +41,7 @@ kevm kompile tests/specs/examples/erc20-spec.md                 \
     --verbose
 kevm prove tests/specs/examples/erc20-spec.md --backend haskell --definition tests/specs/examples/erc20-spec/haskell
 
-kevm foundry-kompile --foundry-project-root tests/foundry --verbose
-kevm foundry-prove --foundry-project-root tests/foundry --verbose --test AssertTest.test_assert_true_branch
+# Commented because of https://github.com/foundry-rs/foundry/issues/545, and we can't install solc 0.8.13
+# forge build --root tests/foundry --no-auto-detect
+# kevm foundry-kompile --foundry-project-root tests/foundry --verbose
+# kevm foundry-prove --foundry-project-root tests/foundry --verbose --test AssertTest.test_assert_true_branch
