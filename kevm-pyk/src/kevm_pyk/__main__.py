@@ -650,8 +650,12 @@ def exec_run(
         cmap=cmap,
         pmap=pmap,
         output=KRunOutput[output.upper()],
+        check=False,
     )
     print(krun_result.stdout)
+    if krun_result.returncode > 0:
+        sys.stderr.write(krun_result.stderr)
+        sys.stderr.flush()
     sys.exit(krun_result.returncode)
 
 
