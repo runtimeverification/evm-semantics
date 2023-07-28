@@ -493,6 +493,10 @@ tests/specs/opcodes/evm-optimizations-spec.md: include/kframework/optimizations.
 test-integration: poetry build-kevm build-haskell build-llvm
 	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+='-k "(test_kast.py or test_run.py or test_solc_to_k.py)" -n$(PYTEST_PARALLEL) $(PYTEST_ARGS)'
 
+profile: poetry build-foundry
+	$(MAKE) -C kevm-pyk/ profile PROF_ARGS+='-n$(PYTEST_PARALLEL) $(PYTEST_ARGS)'
+	find /tmp/pytest-of-$$(whoami)/pytest-current/ -type f -name '*.prof' | sort | xargs tail -n +1
+
 # Interactive Tests
 
 test-interactive: test-interactive-run
