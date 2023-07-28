@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 TEST_DATA_DIR: Final = (Path(__file__).parent / 'test-data').resolve(strict=True)
 
 
-def gen_bin_runtime(contract_file: Path, output_dir: Path) -> tuple[Path, str]:
+def gen_bin_runtime(contract_file: Path, output_dir: Path, extra_args: str = '') -> tuple[Path, str]:
     check_dir_path(output_dir)
 
     contract_name = contract_file.stem
@@ -27,6 +27,7 @@ def gen_bin_runtime(contract_file: Path, output_dir: Path) -> tuple[Path, str]:
         contract_file=contract_file,
         contract_name=contract_name,
         main_module=main_module_name,
+        extra_args=extra_args,
     )
 
     main_file.write_text(k_text)

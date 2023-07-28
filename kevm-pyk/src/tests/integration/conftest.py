@@ -14,4 +14,8 @@ if TYPE_CHECKING:
 
 @pytest.fixture
 def bin_runtime(tmp_path: Path) -> Callable[[Path], tuple[Path, str]]:
-    return partial(gen_bin_runtime, output_dir=tmp_path)
+    return partial(
+        gen_bin_runtime,
+        output_dir=tmp_path,
+        extra_args='--allow-paths=kevm-pyk/src/tests/integration/test-data',
+    )
