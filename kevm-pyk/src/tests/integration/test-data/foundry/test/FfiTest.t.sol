@@ -38,7 +38,7 @@ contract FfiTest is Test {
     function testFFIScript() public {
         string[] memory inputs = new string[](2);
         inputs[0] = "bash";
-        inputs[1] = "test/myscript.sh";
+        inputs[1] = "kevm-pyk/src/tests/integration/test-data/foundry/test/myscript.sh";
 
         bytes memory res = vm.ffi(inputs);
         string memory output = abi.decode(res, (string));
@@ -48,7 +48,7 @@ contract FfiTest is Test {
     function testFFIScript2() public {
         string[] memory inputs = new string[](2);
         inputs[0] = "bash";
-        inputs[1] = "test/script.sh";
+        inputs[1] = "kevm-pyk/src/tests/integration/test-data/foundry/test/script.sh";
 
         bytes memory res = vm.ffi(inputs);
         string memory output = abi.decode(res, (string));
