@@ -28,6 +28,7 @@ RUN    apt-get update                  \
             libboost-test-dev          \
             libprocps-dev              \
             libssl-dev                 \
+            libyaml-dev                \
             llvm-${LLVM_VERSION}-dev   \
             llvm-${LLVM_VERSION}-tools \
             maven                      \
