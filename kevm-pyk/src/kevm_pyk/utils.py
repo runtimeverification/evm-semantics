@@ -63,7 +63,7 @@ def get_apr_proof_for_spec(  # noqa: N802
         )
     )
 
-    apr_proof = APRProof.read_proof(claim.label, save_directory)
+    apr_proof = APRProof.read_proof_data(save_directory, claim.label)
     return apr_proof
 
 
