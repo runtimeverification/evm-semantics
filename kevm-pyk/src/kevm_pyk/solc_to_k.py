@@ -36,7 +36,7 @@ def solc_to_k(
     main_module: str | None,
     requires: Iterable[str] = (),
     imports: Iterable[str] = (),
-    extra_args: str = '',
+    extra_args: str | None = None,
 ) -> str:
     kevm = KEVM(definition_dir)
     empty_config = kevm.definition.empty_config(KEVM.Sorts.KEVM_CELL)
@@ -429,7 +429,7 @@ class Contract:
         return {method.name: method for method in self.methods}
 
 
-def solc_compile(contract_file: Path, extra_args: str = '') -> dict[str, Any]:
+def solc_compile(contract_file: Path, extra_args: str | None = None) -> dict[str, Any]:
     # TODO: add check to kevm:
     # solc version should be >=0.8.0 due to:
     # https://github.com/ethereum/solidity/issues/10276
@@ -460,7 +460,10 @@ def solc_compile(contract_file: Path, extra_args: str = '') -> dict[str, Any]:
     }
 
     try:
-        process_res = run_process(['solc', '--standard-json', extra_args], logger=_LOGGER, input=json.dumps(args))
+        solc_args = ['solc', '--standard-json']
+        if extra_args is not None:
+            solc_args.append(extra_args)
+        process_res = run_process(solc_args, logger=_LOGGER, input=json.dumps(args))
     except CalledProcessError as err:
         raise RuntimeError('solc error', err.stdout, err.stderr) from err
     result = json.loads(process_res.stdout)
