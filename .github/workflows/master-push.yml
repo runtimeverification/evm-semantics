@@ -101,7 +101,7 @@ jobs:
           version=$(cat package/version)
           k_version=$(cat deps/k_release)
           container_name="kevm-ci-test-${GITHUB_SHA}"
-          docker cp ./tests/foundry ${container_name}:/home/user/foundry
+          docker cp ./kevm-pyk/src/tests/integration/test-data/foundry ${container_name}:/home/user/foundry
           docker exec -u user ${container_name} /bin/bash -c "sudo chown user:user -R /home/user/foundry"
           docker exec -u user ${container_name} /bin/bash -c "forge build --root foundry"
           docker exec -u user ${container_name} /bin/bash -c "kevm foundry-kompile --foundry-project-root foundry --verbose"
