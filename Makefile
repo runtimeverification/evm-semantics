@@ -45,7 +45,7 @@ export PLUGIN_FULL_PATH
 
 
 .PHONY: all clean distclean install uninstall                                                            	\
-        deps k-deps plugin-deps protobuf                                                                 	\
+        deps k-deps plugin-deps protobuf proto-tester                                                      	\
         poetry-env poetry shell kevm-pyk                                                                 	\
         build build-haskell build-haskell-standalone build-foundry build-llvm build-node build-kevm      	\
         test test-integration test-conformance test-prove test-foundry-prove test-prove-smoke            	\
@@ -65,8 +65,8 @@ distclean:
 # Non-K Dependencies
 # ------------------
 
-protobuf_out     := $(LOCAL_LIB)/proto/proto/msg.pb.cc
-protobuf:     $(protobuf_out)
+protobuf_out := $(LOCAL_LIB)/proto/proto/msg.pb.cc
+protobuf: $(protobuf_out)
 
 $(protobuf_out): $(NODE_DIR)/proto/msg.proto
 	@mkdir -p $(LOCAL_LIB)/proto
@@ -501,6 +501,12 @@ test-interactive-run: $(smoke_tests_run:=.run-interactive)
 
 node_tests:=$(wildcard tests/vm/*.bin)
 test-node: $(node_tests:=.run-node)
+
+proto_tester := $(LOCAL_BIN)/proto_tester
+proto-tester: $(proto_tester)
+$(proto_tester): tests/vm/proto_tester.cpp
+	@mkdir -p $(LOCAL_BIN)
+	$(CXX) -I $(LOCAL_LIB)/proto $(protobuf_out) $< -o $@ -lprotobuf -lpthread
 
 tests/vm/%.run-node: tests/vm/%.expected $(KEVM_BIN)/kevm-vm $(proto_tester)
 	bash -c " \
