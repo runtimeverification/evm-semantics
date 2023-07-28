@@ -24,7 +24,7 @@ sys.setrecursionlimit(10**7)
 FORGE_STD_REF: Final = '27e14b7'
 
 
-def test_foundy_prove(profile: Profiler, tmp_path: Path) -> None:
+def test_foundy_prove(profile: Profiler, use_booster: bool, tmp_path: Path) -> None:
     foundry_root = tmp_path / 'foundry'
 
     _forge_build(foundry_root)
@@ -34,6 +34,7 @@ def test_foundy_prove(profile: Profiler, tmp_path: Path) -> None:
             definition_dir=config.FOUNDRY_DIR,
             foundry_root=foundry_root,
             includes=(),
+            llvm_library=use_booster,
         )
 
     with profile('prove.prof', sort_keys=('cumtime', 'tottime'), limit=100):
@@ -44,6 +45,7 @@ def test_foundy_prove(profile: Profiler, tmp_path: Path) -> None:
             smt_timeout=125,
             smt_retry_limit=4,
             counterexample_info=True,
+            use_booster=use_booster,
         )
 
 
