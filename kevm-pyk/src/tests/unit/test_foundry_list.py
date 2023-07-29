@@ -42,7 +42,7 @@ def foundry_list() -> list[str]:
         proof_digest = f'{contract_name}.{test_name}:{contracts()[contract_name].method_by_name[test_name].digest}'
         if APRProof.proof_exists(proof_digest, LIST_APR_PROOF):
             apr_proof = APRProof.read_proof(proof_digest, LIST_APR_PROOF)
-            lines.extend(str(apr_proof.summary))
+            lines.append(str(apr_proof.summary))
             lines.append('')
     if len(lines) > 0:
         lines = lines[0:-1]
