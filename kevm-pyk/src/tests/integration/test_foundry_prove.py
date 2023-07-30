@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from distutils.dir_util import copy_tree
+from shutil import copytree, ignore_patterns
 from typing import TYPE_CHECKING
 
 import pytest
@@ -24,7 +24,9 @@ FORGE_STD_REF: Final = '27e14b7'
 @pytest.fixture(scope='module')  # TODO should reduce scope
 def foundry_root(tmp_path_factory: TempPathFactory, use_booster: bool) -> Path:
     foundry_root = tmp_path_factory.mktemp('foundry')
-    copy_tree(str(TEST_DATA_DIR / 'foundry'), str(foundry_root))
+    copytree(
+        str(TEST_DATA_DIR / 'foundry'), str(foundry_root), ignore=ignore_patterns('lib')
+    )  # lets us pin explicitely the forge-std version
 
     run_process(['forge', 'install', '--no-git', f'foundry-rs/forge-std@{FORGE_STD_REF}'], cwd=foundry_root)
     run_process(['forge', 'build'], cwd=foundry_root)
