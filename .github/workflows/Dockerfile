@@ -26,6 +26,7 @@ RUN    apt-get update                  \
             curl                       \
             debhelper                  \
             libboost-test-dev          \
+            libcrypto++-dev            \
             libprocps-dev              \
             libssl-dev                 \
             libyaml-dev                \
