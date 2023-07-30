@@ -7,7 +7,7 @@
 │
 │  (554 steps)
 ├─ 3
-│   k: CALL 9223372036854772901 645326474426547203313410069153905908525362434349 0 128  ...
+│   k: CALL ( VGAS:Int +Int -2906 ) 645326474426547203313410069153905908525362434349 0  ...
 │   pc: 480
 │   callDepth: 0
 │   statusCode: STATUSCODE:StatusCode
@@ -100,7 +100,7 @@ Node 7:
               5
             </memoryUsed>
             <callGas>
-              9079256848778916976
+              #gas ( Cgascap ( LONDON , ( VGAS:Int +Int -2906 ) , ( VGAS:Int +Int -2906 ) , 100 ) )
             </callGas>
             <static>
               false
@@ -269,7 +269,7 @@ Node 7:
            <kevm>
              <k>
                ( #execute
-               ~> CONTINUATION => CALL 9223372036854772901 645326474426547203313410069153905908525362434349 0 128 4 128 0
+               ~> CONTINUATION => CALL ( VGAS:Int +Int -2906 ) 645326474426547203313410069153905908525362434349 0 128 4 128 0
                ~> #pc [ CALL ]
                ~> #execute
                ~> CONTINUATION:K )
@@ -315,7 +315,7 @@ Node 7:
                      ( 0 => 5 )
                    </memoryUsed>
                    <callGas>
-                     ( _CALLGAS_CELL => 9079256848778916976 )
+                     ( _CALLGAS_CELL => #gas ( Cgascap ( LONDON , ( VGAS:Int +Int -2906 ) , ( VGAS:Int +Int -2906 ) , 100 ) ) )
                    </callGas>
                    <static>
                      false
@@ -468,11 +468,9 @@ Node 7:
        andBool ( 0 <=Int NUMBER_CELL
        andBool ( NUMBER_CELL <=Int maxSInt256
        andBool ( lengthBytes ( AssertTest . testFail_expect_revert ( ) ) <Int pow128
-       andBool ( 0 <=Int 9223372036854775807
-       andBool ( 9223372036854775807 <Int pow256
        andBool ( 0 <=Int 728815563385977040452943777879061427756277306518
        andBool ( 728815563385977040452943777879061427756277306518 <Int pow160
-               )))))))))))
+               )))))))))
        ensures ( 0 <=Int CALLER_ID:Int
        andBool ( 0 <=Int ORIGIN_ID:Int
        andBool ( 0 <=Int NUMBER_CELL:Int
@@ -485,7 +483,7 @@ Node 7:
     rule [BASIC-BLOCK-3-TO-4]: <foundry>
            <kevm>
              <k>
-               ( CALL 9223372036854772901 645326474426547203313410069153905908525362434349 0 128 4 128 0 => #checkCall 728815563385977040452943777879061427756277306518 0
+               ( CALL ( VGAS:Int +Int -2906 ) 645326474426547203313410069153905908525362434349 0 128 4 128 0 => #checkCall 728815563385977040452943777879061427756277306518 0
                ~> #call 728815563385977040452943777879061427756277306518 645326474426547203313410069153905908525362434349 645326474426547203313410069153905908525362434349 0 0 b"\xf4\x84H\x14" false
                ~> #return 128 0 )
                ~> #pc [ CALL ]
@@ -533,7 +531,7 @@ Node 7:
                      5
                    </memoryUsed>
                    <callGas>
-                     9079256848778916976
+                     #gas ( Cgascap ( LONDON , ( VGAS:Int +Int -2906 ) , ( VGAS:Int +Int -2906 ) , 100 ) )
                    </callGas>
                    <static>
                      false
@@ -743,7 +741,7 @@ Node 7:
                      5
                    </memoryUsed>
                    <callGas>
-                     9079256848778916976
+                     #gas ( Cgascap ( LONDON , ( VGAS:Int +Int -2906 ) , ( VGAS:Int +Int -2906 ) , 100 ) )
                    </callGas>
                    <static>
                      false
@@ -958,7 +956,7 @@ Node 7:
                      5
                    </memoryUsed>
                    <callGas>
-                     9079256848778916976
+                     #gas ( Cgascap ( LONDON , ( VGAS:Int +Int -2906 ) , ( VGAS:Int +Int -2906 ) , 100 ) )
                    </callGas>
                    <static>
                      false
@@ -1173,7 +1171,7 @@ Node 7:
                      5
                    </memoryUsed>
                    <callGas>
-                     9079256848778916976
+                     #gas ( Cgascap ( LONDON , ( VGAS:Int +Int -2906 ) , ( VGAS:Int +Int -2906 ) , 100 ) )
                    </callGas>
                    <static>
                      false
