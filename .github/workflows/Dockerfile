@@ -35,8 +35,8 @@ RUN    apt-get update                  \
             python3                    \
             python3-pip
 
-ARG USER_ID=1000
-ARG GROUP_ID=1000
+ARG USER_ID
+ARG GROUP_ID
 RUN groupadd -g $GROUP_ID user && useradd -m -u $USER_ID -s /bin/sh -g user user
 
 USER user:user

@@ -44,6 +44,10 @@ runs:
 
       Z3_VERSION=4.12.1
       K_COMMIT=$(cat deps/k_release)
+      USER=$(id -un)
+      USER_ID=$(id -u)
+      GROUP=$(id -gn)
+      GROUP_ID=$(id -g)
 
       # docker build .                           \
       #   --file .github/workflows/Dockerfile.z3 \
@@ -51,6 +55,8 @@ runs:
 
       docker build . --file .github/workflows/Dockerfile \
         --tag runtimeverification/${TAG_NAME}            \
+        --build-arg USER_ID=${USER_ID}                   \
+        --build-arg GROUP_ID=${GROUP_ID}                 \
         --build-arg K_COMMIT=${K_COMMIT}                 \
         --build-arg Z3_VERSION=${Z3_VERSION}             \
         --build-arg LLVM_VERSION=${LLVM_VERSION}
