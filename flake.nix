@@ -89,6 +89,8 @@
               substituteInPlace ./bin/kevm \
                 --replace 'execute python3 -m kevm_pyk' 'execute ${final.kevm-pyk}/bin/kevm-pyk'
               substituteInPlace ./bin/kevm \
+                --replace 'execute python3 -m kontrol' 'execute ${final.kontrol}/bin/kontrol'
+              substituteInPlace ./bin/kevm \
                 --replace 'gst-to-kore' '${final.kevm-pyk}/bin/gst-to-kore'
             '';
 
