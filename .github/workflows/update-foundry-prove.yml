@@ -3,13 +3,13 @@ on: push
 jobs:
   update-output:
     name: 'Update Foundry expected output'
-    runs-on: [self-hosted, linux, huge]
+    runs-on: [self-hosted, linux, huge, ubuntu-latest]
     steps:
       - name: 'Check out code'
         uses: actions/checkout@v3
         with:
           submodules: recursive
-          token: ${{ secrets.JENKINS_GITHUB_PAT }}
+          token: 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
           ref: ${{ github.events.inputs.branch }}
       - name: 'Set up Docker'
         uses: ./.github/actions/with-docker

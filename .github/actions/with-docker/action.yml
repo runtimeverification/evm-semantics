@@ -45,11 +45,11 @@ runs:
       Z3_VERSION=4.12.1
       K_COMMIT=$(cat deps/k_release)
 
-      docker build .                           \
-        --file .github/workflows/Dockerfile.z3 \
-        --tag z3:${Z3_VERSION}                 \
+      # docker build .                           \
+      #   --file .github/workflows/Dockerfile.z3 \
+      #   --tag z3:${Z3_VERSION}                 \
 
-      docker build . --file .github/workflows/Dockerfile \
+      docker build --progress=plain --no-cache . --file .github/workflows/Dockerfile \
         --tag runtimeverification/${TAG_NAME}            \
         --build-arg BASE_OS=${BASE_OS}                   \
         --build-arg BASE_DISTRO=${BASE_DISTRO}           \
@@ -57,15 +57,15 @@ runs:
         --build-arg Z3_VERSION=${Z3_VERSION}             \
         --build-arg LLVM_VERSION=${LLVM_VERSION}
 
-      docker run                        \
-        --name ${TAG_NAME}              \
-        --rm                            \
-        --interactive                   \
-        --tty                           \
-        --detach                        \
-        --user root                     \
-        --workdir /home/user/workspace  \
-        runtimeverification/${TAG_NAME}
+#       docker run                        \
+#         --name ${TAG_NAME}              \
+#         --rm                            \
+#         --interactive                   \
+#         --tty                           \
+#         --detach                        \
+#         --user root                     \
+#         --workdir /home/user/workspace  \
+#         runtimeverification/${TAG_NAME}
 
-      docker cp . ${TAG_NAME}:/home/user/workspace
-      docker exec ${TAG_NAME} chown -R user:user /home/user
+#       docker cp . ${TAG_NAME}:/home/user/workspace
+#       docker exec ${TAG_NAME} chown -R user:user /home/user
