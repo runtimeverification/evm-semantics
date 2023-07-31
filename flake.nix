@@ -89,9 +89,9 @@
               substituteInPlace ./bin/kevm \
                 --replace 'execute python3 -m kevm_pyk' 'execute ${final.kevm-pyk}/bin/kevm-pyk'
               substituteInPlace ./bin/kevm \
-                --replace 'execute python3 -m kontrol' 'execute ${final.kevm-pyk}/bin/kontrol'
+                --replace 'execute kontrol' 'execute ${final.kevm-pyk}/bin/kontrol'
               substituteInPlace ./bin/kevm \
-                --replace 'gst-to-kore' '${final.kevm-pyk}/bin/gst-to-kore'
+                --replace 'execute gst-to-kore' 'execute ${final.kevm-pyk}/bin/gst-to-kore'
             '';
 
             buildFlagsArray = "NIX_LIBS=${nixLibs prev}";

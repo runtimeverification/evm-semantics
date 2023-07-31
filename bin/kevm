@@ -70,7 +70,7 @@ run_kontrol() {
     esac
     ! ${verbose} || pyk_args+=(--verbose)
     ! ${debug}   || pyk_args+=(--debug)
-    execute python3 -m kontrol "${pyk_command}" "$@" "${pyk_args[@]}"
+    execute kontrol "${pyk_command}" "$@" "${pyk_args[@]}"
 }
 
 # User Commands
@@ -108,8 +108,8 @@ run_kast() {
     fi
 
     case "${run_file}-${output_mode}" in
-        *.json-kore) check_k_install ; gst-to-kore "${run_file}" --schedule "${schedule}" --mode "${mode}" --chainid "${chainid}" "$@" ;;
-        *)           check_k_install ; kast --definition "${backend_dir}" "${run_file}" --output "${output_mode}" "$@" ;;
+        *.json-kore) check_k_install ; execute gst-to-kore "${run_file}" --schedule "${schedule}" --mode "${mode}" --chainid "${chainid}" "$@" ;;
+        *)           check_k_install ; execute kast --definition "${backend_dir}" "${run_file}" --output "${output_mode}" "$@" ;;
     esac
 }
 
