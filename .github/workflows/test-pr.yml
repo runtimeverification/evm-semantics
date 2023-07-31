@@ -83,7 +83,7 @@ jobs:
   test-concrete-execution:
     name: 'Build and Test KEVM concrete execution'
     needs: kevm-pyk-code-quality-checks
-    runs-on: [self-hosted, linux, normal]
+    runs-on: [self-hosted, linux, github-runner-3]
     timeout-minutes: 45
     steps:
       - name: 'Check out code'
@@ -189,7 +189,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - runner: normal
+          - runner: github-runner-3
           - runner: macos-13
           - runner: ARM64
     needs: version-bump
