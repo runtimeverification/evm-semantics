@@ -29,8 +29,6 @@ inputs:
 runs:
   using: 'composite'
   steps:
-  - name: 'Install Poetry'
-    uses: Gr1N/setup-poetry@v8
   - name: 'Set up Docker'
     shell: bash {0}
     env:
