@@ -29,6 +29,8 @@ inputs:
 runs:
   using: 'composite'
   steps:
+  - name: 'Install Poetry'
+    uses: Gr1N/setup-poetry@v8
   - name: 'Set up Docker'
     shell: bash {0}
     env:
@@ -48,6 +50,7 @@ runs:
       USER_ID=$(id -u)
       GROUP=$(id -gn)
       GROUP_ID=$(id -g)
+      K_VERSION=$(poetry -C kevm-pyk run python3 -c 'import pyk; print(pyk.K_VERSION)')
 
       # docker build .                           \
       #   --file .github/workflows/Dockerfile.z3 \
@@ -60,8 +63,6 @@ runs:
         --build-arg K_COMMIT=${K_COMMIT}                 \
         --build-arg Z3_VERSION=${Z3_VERSION}             \
         --build-arg LLVM_VERSION=${LLVM_VERSION}
-
-      K_VERSION=$(poetry -C kevm-pyk run python3 -c 'import pyk; print(pyk.K_VERSION)')
 
       docker build .                                                \
         --file deps/k/.github/workflows/Dockerfile.stack-deps       \
