@@ -11,7 +11,7 @@ Solidity Code
 -------------
 
 File [`ERC20.sol`](ERC20.sol) contains some code snippets we want to verify the functional correctness of.
-Call `kevm solc-to-k ERC20.sol ERC20 --pyk --main-module ERC20-VERIFICATION > erc20-bin-runtime.k `, to generate the helper K files.
+Call `kevm solc-to-k ERC20.sol ERC20 --main-module ERC20-VERIFICATION > erc20-bin-runtime.k `, to generate the helper K files.
 
 Verification Module
 -------------------

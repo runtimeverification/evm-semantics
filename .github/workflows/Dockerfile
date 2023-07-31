@@ -32,8 +32,10 @@ RUN    apt-get update                  \
             curl                       \
             debhelper                  \
             libboost-test-dev          \
+            libcrypto++-dev            \
             libprocps-dev              \
             libssl-dev                 \
+            libyaml-dev                \
             llvm-${LLVM_VERSION}-dev   \
             llvm-${LLVM_VERSION}-tools \
             maven                      \
@@ -41,6 +43,9 @@ RUN    apt-get update                  \
             protobuf-compiler          \
             python3                    \
             python3-pip
+
+# Install Stack
+RUN curl -sSL https://get.haskellstack.org/ | sh
 
 ARG USER_ID=1000
 ARG GROUP_ID=1000
