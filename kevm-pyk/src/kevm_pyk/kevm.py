@@ -322,10 +322,6 @@ class KEVM(KProve, KRun):
         return KApply('_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes', [b1, b2])
 
     @staticmethod
-    def string_2_bytes(string: KInner) -> KApply:
-        return KApply('_+Bytes__String_2_Bytes()', [string])
-
-    @staticmethod
     def account_cell(
         id: KInner, balance: KInner, code: KInner, storage: KInner, orig_storage: KInner, nonce: KInner
     ) -> KApply:
