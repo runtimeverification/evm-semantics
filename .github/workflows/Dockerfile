@@ -1,4 +1,8 @@
-RUN echo "start" $BASE_OS $BASE_DISTRO $K_VERSION "end"
+RUN echo "start" 
+RUN echo $BASE_OS 
+RUN echo $BASE_DISTRO 
+RUN echo $K_VERSION 
+RUN echo "end"
 # ARG K_COMMIT
 # ARG Z3_VERSION
 # FROM ghcr.io/foundry-rs/foundry:nightly-aeba75e4799f1e11e3daba98d967b83e286b0c4a as FOUNDRY
