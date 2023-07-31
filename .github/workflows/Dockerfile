@@ -1,3 +1,5 @@
+FROM ubuntu:jammy
+
 RUN echo "start" 
 RUN echo $BASE_OS 
 RUN echo $BASE_DISTRO 
