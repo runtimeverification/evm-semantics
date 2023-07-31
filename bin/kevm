@@ -59,6 +59,20 @@ run_kevm_pyk() {
     execute python3 -m kevm_pyk "${pyk_command}" "$@" "${pyk_args[@]}"
 }
 
+run_kontrol() {
+    local pyk_command pyk_args
+    pyk_command="$1" ; shift
+    case "${pyk_command}" in
+        solc-to-k|foundry-kompile|foundry-prove)
+            pyk_args=(--definition "${backend_dir}")
+            pyk_args+=(-I "${INSTALL_INCLUDE}/kframework")
+            ;;
+    esac
+    ! ${verbose} || pyk_args+=(--verbose)
+    ! ${debug}   || pyk_args+=(--debug)
+    execute python3 -m kontrol "${pyk_command}" "$@" "${pyk_args[@]}"
+}
+
 # User Commands
 
 run_krun() {
@@ -193,6 +207,7 @@ fi
 case "$run_command-$backend" in
     run-@(llvm|haskell|haskell-standalone) ) run_krun "$@" ;;
     kast-@(llvm|haskell)                   ) run_kast "$@" ;;
-    @(kompile|prune-proof|view-kcfg|show-kcfg|solc-to-k|prove|prove-legacy|foundry)-* ) run_kevm_pyk ${run_command} "$@" ;;
+    @(solc|compile|foundry)*)              ) run_kontrol ${run_command} "$@" ;;
+    @(kompile|prune-proof|view-kcfg|show-kcfg|prove|prove-legacy)-* ) run_kevm_pyk ${run_command} "$@" ;;
     *) ${KEVM} help ; fatal "Unknown command on backend: $run_command $backend" ;;
 esac
