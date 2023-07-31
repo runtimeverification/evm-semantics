@@ -1,6 +1,6 @@
 ARG K_COMMIT
 ARG Z3_VERSION
-FROM ghcr.io/foundry-rs/foundry:nightly-aeba75e4799f1e11e3daba98d967b83e286b0c4a as FOUNDRY
+FROM ghcr.io/foundry-rs/foundry:nightly-d93312bfe5d419d63a9836fce31f9f60a4523519 as FOUNDRY
 
 ARG K_COMMIT
 ARG Z3_VERSION
@@ -48,6 +48,6 @@ ENV PATH=/home/user/.cargo/bin:/home/user/.local/bin:${PATH}
 RUN    curl -sSL https://install.python-poetry.org | python3 - \
     && poetry --version
 
-RUN    cargo install svm-rs \
-    && svm install 0.8.13   \
+RUN    cargo install svm-rs --version 0.3.0 \
+    && svm install 0.8.13                   \
     && solc --version
