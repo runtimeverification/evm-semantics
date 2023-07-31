@@ -152,6 +152,7 @@ if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
     "
 
     run_kevm_pyk --help
+    run_kontrol --help
     exit 0
 fi
 
