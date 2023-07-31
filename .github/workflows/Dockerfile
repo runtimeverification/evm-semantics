@@ -1,5 +1,8 @@
 FROM ubuntu:jammy
 
+ARG BASE_OS
+ARG BASE_DISTRO
+ARG K_VERSION
 RUN echo "start" 
 RUN echo $BASE_OS 
 RUN echo $BASE_DISTRO 
