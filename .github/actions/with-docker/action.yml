@@ -48,9 +48,9 @@ runs:
       GROUP_ID=$(id -g)
       K_VERSION=$(cat deps/k/package/version)
 
-      # docker build .                           \
-      #   --file .github/workflows/Dockerfile.z3 \
-      #   --tag z3:${Z3_VERSION}                 \
+      docker build .                           \
+        --file .github/workflows/Dockerfile.z3 \
+        --tag z3:${Z3_VERSION}                 \
 
       docker build . --file .github/workflows/Dockerfile \
         --tag runtimeverification/${TAG_NAME}            \
@@ -76,5 +76,5 @@ runs:
         --workdir /home/user/workspace  \
         runtimeverification/${TAG_NAME}
 
-#       docker cp . ${TAG_NAME}:/home/user/workspace
-#       docker exec ${TAG_NAME} chown -R user:user /home/user
+      docker cp . ${TAG_NAME}:/home/user/workspace
+      docker exec ${TAG_NAME} chown -R user:user /home/user

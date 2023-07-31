@@ -45,8 +45,8 @@ WORKDIR /home/user/workspace
 
 ENV PATH=/home/user/.cargo/bin:/home/user/.local/bin:${PATH}
 
-# RUN    curl -sSL https://install.python-poetry.org | python3 - \
-#     && poetry --version
+RUN    curl -sSL https://install.python-poetry.org | python3 - \
+    && poetry --version
 
 RUN    cargo install svm-rs \
     && svm install 0.8.13   \
