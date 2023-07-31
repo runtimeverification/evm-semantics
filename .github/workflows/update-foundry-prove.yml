@@ -3,7 +3,7 @@ on: push
 jobs:
   update-output:
     name: 'Update Foundry expected output'
-    runs-on: [self-hosted, linux, huge, ubuntu-latest]
+    runs-on: [self-hosted, linux, huge]
     steps:
       - name: 'Check out code'
         uses: actions/checkout@v3
