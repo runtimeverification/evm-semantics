@@ -44,9 +44,7 @@ runs:
 
       Z3_VERSION=4.12.1
       K_COMMIT=$(cat deps/k_release)
-      USER=$(id -un)
       USER_ID=$(id -u)
-      GROUP=$(id -gn)
       GROUP_ID=$(id -g)
       K_VERSION=$(cat deps/k/package/version)
 
@@ -62,11 +60,9 @@ runs:
         --build-arg Z3_VERSION=${Z3_VERSION}             \
         --build-arg LLVM_VERSION=${LLVM_VERSION}
 
-      docker build .                                                \
+      docker build deps/k                                           \
         --file deps/k/.github/workflows/Dockerfile.stack-deps       \
         --tag stack:${BASE_DISTRO}-${K_VERSION}                     \
-        --build-arg USER=${USER} --build-arg USER_ID=${USER_ID}     \
-        --build-arg GROUP=${GROUP} --build-arg GROUP_ID=${GROUP_ID} \
         --build-arg BASE_OS=${BASE_OS}                              \
         --build-arg BASE_DISTRO=${BASE_DISTRO}
 
