@@ -208,7 +208,7 @@ fi
 case "$run_command-$backend" in
     run-@(llvm|haskell|haskell-standalone) ) run_krun "$@" ;;
     kast-@(llvm|haskell)                   ) run_kast "$@" ;;
-    @(solc|compile|foundry)*)              ) run_kontrol ${run_command} "$@" ;;
+    @(solc|compile|foundry)* )               run_kontrol ${run_command} "$@" ;;
     @(kompile|prune-proof|view-kcfg|show-kcfg|prove|prove-legacy)-* ) run_kevm_pyk ${run_command} "$@" ;;
     *) ${KEVM} help ; fatal "Unknown command on backend: $run_command $backend" ;;
 esac
