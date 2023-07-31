@@ -20,7 +20,6 @@ jobs:
           llvm: 14
           # User subdir: <path> if you need to be in a lower folder to build something. Otherwise leave as default (.)
           # subdir: <path to sub folder to mount into container instead of top level repository checkout>
-      
       - name: 'Build devShell'
         env: 
           CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_PUBLIC_TOKEN }}
@@ -41,5 +40,8 @@ jobs:
         if: always()
         run: |
           docker stop --time=0 kevm-update-output-${GITHUB_SHA}
+      - name: 'Commit changes'
+        run: |
+          git add kevm-pyk/src/tests/integration/test-data/show/ && git commit -m "test-data/show/: update expected show output" || true
       - name: 'Push updates'
         run: git push
