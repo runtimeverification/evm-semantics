@@ -87,7 +87,7 @@
               substituteInPlace ./cmake/node/CMakeLists.txt \
                 --replace 'set(K_LIB ''${K_BIN}/../lib)' 'set(K_LIB ${k}/lib)'
               substituteInPlace ./bin/kevm \
-                --replace 'execute python3 -m kevm_pyk' 'execute ${final.kevm-pyk}/bin/kevm-pyk'
+                --replace 'execute kevm-pyk' 'execute ${final.kevm-pyk}/bin/kevm-pyk'
               substituteInPlace ./bin/kevm \
                 --replace 'execute kontrol' 'execute ${final.kevm-pyk}/bin/kontrol'
               substituteInPlace ./bin/kevm \

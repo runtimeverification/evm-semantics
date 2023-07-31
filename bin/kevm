@@ -49,14 +49,14 @@ run_kevm_pyk() {
     local pyk_command pyk_args
     pyk_command="$1" ; shift
     case "${pyk_command}" in
-        run|prove|prove-legacy|solc-to-k|foundry-kompile|foundry-prove|view-kcfg|show-kcfg|prune-proof)
+        run|prove|prove-legacy|view-kcfg|show-kcfg|prune-proof)
             pyk_args=(--definition "${backend_dir}")
             pyk_args+=(-I "${INSTALL_INCLUDE}/kframework")
             ;;
     esac
     ! ${verbose} || pyk_args+=(--verbose)
     ! ${debug}   || pyk_args+=(--debug)
-    execute python3 -m kevm_pyk "${pyk_command}" "$@" "${pyk_args[@]}"
+    execute kevm-pyk "${pyk_command}" "$@" "${pyk_args[@]}"
 }
 
 run_kontrol() {
