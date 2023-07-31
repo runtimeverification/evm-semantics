@@ -61,13 +61,15 @@ runs:
         --build-arg Z3_VERSION=${Z3_VERSION}             \
         --build-arg LLVM_VERSION=${LLVM_VERSION}
 
+      K_VERSION=$(poetry -C kevm-pyk run python3 -c 'import pyk; print(pyk.K_VERSION)')
+
       docker build .                                                \
+        --file deps/k/.github/workflows/Dockerfile.stack-deps       \
+        --tag stack:${BASE_DISTRO}-${K_VERSION}                     \
         --build-arg USER=${USER} --build-arg USER_ID=${USER_ID}     \
         --build-arg GROUP=${GROUP} --build-arg GROUP_ID=${GROUP_ID} \
         --build-arg BASE_OS=${BASE_OS}                              \
-        --build-arg BASE_DISTRO=${BASE_DISTRO}                      \
-        --tag stack:${BASE_DISTRO}-${K_VERSION}                     \
-        --file deps/k/.github/workflows/Dockerfile.stack-deps
+        --build-arg BASE_DISTRO=${BASE_DISTRO}
 
       docker run                        \
         --name ${TAG_NAME}              \
