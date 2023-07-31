@@ -33,6 +33,7 @@ RUN    apt-get update                  \
             netcat                     \
             protobuf-compiler          \
             python3                    \
+            maven                      \
             python3-pip
 
 ARG USER_ID
