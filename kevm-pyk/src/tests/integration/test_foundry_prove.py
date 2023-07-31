@@ -18,14 +18,14 @@ if TYPE_CHECKING:
     from pytest import TempPathFactory
 
 
-FORGE_STD_REF: Final = '27e14b7'
+FORGE_STD_REF: Final = '75f1746'
 
 
 @pytest.fixture(scope='module')  # TODO should reduce scope
 def foundry_root(tmp_path_factory: TempPathFactory, use_booster: bool) -> Path:
     foundry_root = tmp_path_factory.mktemp('foundry')
     copytree(
-        str(TEST_DATA_DIR / 'foundry'), str(foundry_root), ignore=ignore_patterns('lib')
+        str(TEST_DATA_DIR / 'foundry'), str(foundry_root), ignore=ignore_patterns('lib'), dirs_exist_ok=True
     )  # lets us pin explicitely the forge-std version
 
     run_process(['forge', 'install', '--no-git', f'foundry-rs/forge-std@{FORGE_STD_REF}'], cwd=foundry_root)
