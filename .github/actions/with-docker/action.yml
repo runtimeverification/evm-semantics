@@ -49,13 +49,19 @@ runs:
       #   --file .github/workflows/Dockerfile.z3 \
       #   --tag z3:${Z3_VERSION}                 \
 
-      docker build --progress=plain --no-cache . --file .github/workflows/Dockerfile \
+      docker build . --file .github/workflows/Dockerfile \
         --tag runtimeverification/${TAG_NAME}            \
-        --build-arg BASE_OS=${BASE_OS}                   \
-        --build-arg BASE_DISTRO=${BASE_DISTRO}           \
         --build-arg K_COMMIT=${K_COMMIT}                 \
         --build-arg Z3_VERSION=${Z3_VERSION}             \
         --build-arg LLVM_VERSION=${LLVM_VERSION}
+
+      docker build .                                                \
+        --build-arg USER=${USER} --build-arg USER_ID=${USER_ID}     \
+        --build-arg GROUP=${GROUP} --build-arg GROUP_ID=${GROUP_ID} \
+        --build-arg BASE_OS=${BASE_OS}                              \
+        --build-arg BASE_DISTRO=${BASE_DISTRO}                      \
+        --tag stack:${BASE_DISTRO}-${K_VERSION}                     \
+        --file deps/k/.github/workflows/Dockerfile.stack-deps
 
       docker run                        \
         --name ${TAG_NAME}              \
