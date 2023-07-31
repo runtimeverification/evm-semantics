@@ -44,18 +44,13 @@ PLUGIN_FULL_PATH := $(abspath ${PLUGIN_SUBMODULE})
 export PLUGIN_FULL_PATH
 
 
-.PHONY: all clean distclean                                                                                        \
-        deps k-deps plugin-deps protobuf                                                                           \
-        poetry-env poetry shell kevm-pyk                                                                           \
-        build build-haskell build-haskell-standalone build-foundry build-llvm build-node build-kevm                \
-        test                                                                                                       \
-        test-integration test-conformance test-prove test-foundry-prove                                            \
-        test-vm test-rest-vm test-bchain test-rest-bchain                                                          \
-        test-node                                                                                                  \
-        test-prove-smoke test-klab-prove                                                                           \
-        test-interactive test-interactive-help test-interactive-run test-interactive-prove test-interactive-search \
-        media media-pdf metropolis-theme                                                                           \
-        install uninstall
+.PHONY: all clean distclean install uninstall                                                            	\
+        deps k-deps plugin-deps protobuf proto-tester                                                      	\
+        poetry-env poetry shell kevm-pyk                                                                 	\
+        build build-haskell build-haskell-standalone build-foundry build-llvm build-node build-kevm      	\
+        test test-integration test-conformance test-prove test-foundry-prove test-prove-smoke            	\
+        test-vm test-rest-vm test-bchain test-rest-bchain test-node test-interactive test-interactive-run	\
+        media media-pdf metropolis-theme
 
 .SECONDARY:
 
@@ -70,8 +65,8 @@ distclean:
 # Non-K Dependencies
 # ------------------
 
-protobuf_out     := $(LOCAL_LIB)/proto/proto/msg.pb.cc
-protobuf:     $(protobuf_out)
+protobuf_out := $(LOCAL_LIB)/proto/proto/msg.pb.cc
+protobuf: $(protobuf_out)
 
 $(protobuf_out): $(NODE_DIR)/proto/msg.proto
 	@mkdir -p $(LOCAL_LIB)/proto
@@ -320,7 +315,6 @@ install_libs := $(haskell_kompiled)                                        \
                 $(foundry_kompiled)                                        \
                 $(haskell_standalone_kompiled)                             \
                 $(patsubst %, include/kframework/lemmas/%, $(kevm_lemmas)) \
-                kore-json.py                                               \
                 release.md                                                 \
                 version
 
@@ -348,12 +342,12 @@ $(KEVM_LIB)/release.md: INSTALL.md
 
 build: $(patsubst %, $(KEVM_BIN)/%, $(install_bins)) $(patsubst %, $(KEVM_LIB)/%, $(install_libs))
 
-build-llvm:               $(KEVM_LIB)/$(llvm_kompiled)    $(KEVM_LIB)/kore-json.py
-build-haskell:            $(KEVM_LIB)/$(haskell_kompiled) $(KEVM_LIB)/kore-json.py
-build-haskell-standalone: $(KEVM_LIB)/$(haskell_standalone_kompiled) $(KEVM_LIB)/kore-json.py
+build-llvm:               $(KEVM_LIB)/$(llvm_kompiled)
+build-haskell:            $(KEVM_LIB)/$(haskell_kompiled)
+build-haskell-standalone: $(KEVM_LIB)/$(haskell_standalone_kompiled)
 build-node:               $(KEVM_LIB)/$(node_kompiled)
 build-kevm:               $(KEVM_BIN)/kevm $(KEVM_LIB)/version $(kevm_includes) $(plugin_includes)
-build-foundry:            $(KEVM_BIN)/kevm $(KEVM_LIB)/$(foundry_kompiled) $(KEVM_LIB)/kore-json.py
+build-foundry:            $(KEVM_BIN)/kevm $(KEVM_LIB)/$(foundry_kompiled)
 
 all_bin_sources := $(shell find $(KEVM_BIN) -type f | sed 's|^$(KEVM_BIN)/||')
 all_lib_sources := $(shell find $(KEVM_LIB) -type f                                            \
@@ -408,31 +402,12 @@ test: test-integration test-conformance test-prove test-interactive
 tests/ethereum-tests/LegacyTests/Constantinople/VMTests/%: KEVM_MODE     = VMTESTS
 tests/ethereum-tests/LegacyTests/Constantinople/VMTests/%: KEVM_SCHEDULE = DEFAULT
 
-tests/%.run: tests/%
-	$(KEVM) interpret $< $(KEVM_OPTS) $(KRUN_OPTS) --backend $(TEST_CONCRETE_BACKEND)                                  \
-	    --mode $(KEVM_MODE) --schedule $(KEVM_SCHEDULE) --chainid $(KEVM_CHAINID)                                      \
-	    > tests/$*.$(TEST_CONCRETE_BACKEND)-out                                                                        \
-	    || $(CHECK) tests/$*.$(TEST_CONCRETE_BACKEND)-out tests/templates/output-success-$(TEST_CONCRETE_BACKEND).json
-	$(KEEP_OUTPUTS) || rm -rf tests/$*.$(TEST_CONCRETE_BACKEND)-out
-
 tests/%.run-interactive: tests/%
-	$(KEVM) run $< $(KEVM_OPTS) $(KRUN_OPTS) --backend $(TEST_CONCRETE_BACKEND)                                        \
+	$(POETRY_RUN) $(KEVM) run $< $(KEVM_OPTS) $(KRUN_OPTS) --backend $(TEST_CONCRETE_BACKEND)                          \
 	    --mode $(KEVM_MODE) --schedule $(KEVM_SCHEDULE) --chainid $(KEVM_CHAINID)                                      \
 	    > tests/$*.$(TEST_CONCRETE_BACKEND)-out                                                                        \
 	    || $(CHECK) tests/$*.$(TEST_CONCRETE_BACKEND)-out tests/templates/output-success-$(TEST_CONCRETE_BACKEND).json
 	$(KEEP_OUTPUTS) || rm -rf tests/$*.$(TEST_CONCRETE_BACKEND)-out
-
-tests/%.run-expected: tests/% tests/%.expected
-	$(KEVM) run $< $(KEVM_OPTS) $(KRUN_OPTS) --backend $(TEST_CONCRETE_BACKEND)    \
-	    --mode $(KEVM_MODE) --schedule $(KEVM_SCHEDULE) --chainid $(KEVM_CHAINID)  \
-	    > tests/$*.$(TEST_CONCRETE_BACKEND)-out                                    \
-	    || $(CHECK) tests/$*.$(TEST_CONCRETE_BACKEND)-out tests/$*.expected
-	$(KEEP_OUTPUTS) || rm -rf tests/$*.$(TEST_CONCRETE_BACKEND)-out
-
-tests/interactive/%.json.gst-to-kore.check: tests/ethereum-tests/GeneralStateTests/VMTests/%.json $(KEVM_BIN)/kevm
-	$(KEVM) kast $< $(KEVM_OPTS) $(KAST_OPTS) > tests/interactive/$*.gst-to-kore.out
-	$(CHECK) tests/interactive/$*.gst-to-kore.out tests/interactive/$*.gst-to-kore.expected
-	$(KEEP_OUTPUTS) || rm -rf tests/interactive/$*.gst-to-kore.out
 
 # solc-to-k
 # ---------
@@ -443,7 +418,7 @@ PYTEST_ARGS     :=
 test-foundry-prove: poetry build-kevm build-foundry
 	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+="-k test_foundry_prove.py -n$(PYTEST_PARALLEL) $(PYTEST_ARGS)"
 
-tests/specs/examples/%-bin-runtime.k: KEVM_OPTS += --pyk --verbose
+tests/specs/examples/%-bin-runtime.k: KEVM_OPTS += --verbose
 tests/specs/examples/%-bin-runtime.k: KEVM := $(POETRY_RUN) kevm
 
 tests/specs/examples/erc20-spec/haskell/timestamp: tests/specs/examples/erc20-bin-runtime.k
@@ -474,11 +449,6 @@ tests/specs/%/timestamp: tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_F
 	    --main-module $(KPROVE_MODULE)                                                                          \
 	    --syntax-module $(KPROVE_MODULE)                                                                        \
 	    $(KOMPILE_OPTS)
-
-tests/%.search: tests/%
-	$(KEVM) search $< "<statusCode> EVMC_INVALID_INSTRUCTION </statusCode>" $(KEVM_OPTS) $(KSEARCH_OPTS) --backend $(TEST_SYMBOLIC_BACKEND) > $@-out
-	$(CHECK) $@-out $@-expected
-	$(KEEP_OUTPUTS) || rm -rf $@-out
 
 # Smoke Tests
 
@@ -514,9 +484,6 @@ test-prove: tests/specs/opcodes/evm-optimizations-spec.md poetry build-kevm buil
 
 test-prove-smoke: $(prove_smoke_tests:=.prove)
 
-test-klab-prove: KPROVE_OPTS += --debugger
-test-klab-prove: $(smoke_tests_prove:=.prove)
-
 # to generate optimizations.md, run: ./optimizer/optimize.sh &> output
 tests/specs/opcodes/evm-optimizations-spec.md: include/kframework/optimizations.md
 	cat $< | sed 's/^rule/claim/' | sed 's/EVM-OPTIMIZATIONS/EVM-OPTIMIZATIONS-SPEC/' | grep -v 'priority(40)' > $@
@@ -528,25 +495,18 @@ test-integration: poetry build-kevm build-haskell build-llvm
 
 # Interactive Tests
 
-test-interactive: test-interactive-run test-interactive-prove test-interactive-search test-interactive-help
+test-interactive: test-interactive-run
 
 test-interactive-run: $(smoke_tests_run:=.run-interactive)
-test-interactive-prove: $(smoke_tests_prove:=.prove)
 
-search_tests:=$(wildcard tests/interactive/search/*.evm)
-test-interactive-search: $(search_tests:=.search)
-
-test-interactive-help:
-	$(KEVM) help
+node_tests:=$(wildcard tests/vm/*.bin)
+test-node: $(node_tests:=.run-node)
 
 proto_tester := $(LOCAL_BIN)/proto_tester
 proto-tester: $(proto_tester)
 $(proto_tester): tests/vm/proto_tester.cpp
 	@mkdir -p $(LOCAL_BIN)
 	$(CXX) -I $(LOCAL_LIB)/proto $(protobuf_out) $< -o $@ -lprotobuf -lpthread
-
-node_tests:=$(wildcard tests/vm/*.bin)
-test-node: $(node_tests:=.run-node)
 
 tests/vm/%.run-node: tests/vm/%.expected $(KEVM_BIN)/kevm-vm $(proto_tester)
 	bash -c " \

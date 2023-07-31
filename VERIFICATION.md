@@ -18,7 +18,7 @@ It has two modules:
 The first step is kompiling the `.k` file with the below command.
 
 ```sh
-kevm kompile sum-to-n-spec.k --pyk --backend haskell --syntax-module VERIFICATION --main-module VERIFICATION --definition sum-to-n-spec/haskell
+kevm kompile sum-to-n-spec.k --backend haskell --syntax-module VERIFICATION --main-module VERIFICATION --definition sum-to-n-spec/haskell
 ```
 
 In this example, the arguments used are:
@@ -49,7 +49,7 @@ In this example, we rely on a helper module, `ERC20-VERIFICATION`, which must be
 The module is generated using the following `solc-to-k` command.
 
 ```sh
-kevm solc-to-k ERC20.sol ERC20 --pyk --main-module ERC20-VERIFICATION > erc20-bin-runtime.k
+kevm solc-to-k ERC20.sol ERC20 --main-module ERC20-VERIFICATION > erc20-bin-runtime.k
 ```
 
 - `solc-to-k` will parse a Solidity contract and generate a helper K module.
@@ -61,13 +61,13 @@ These rules are then used in the claims. As an example, the `#binRuntime(ERC20)`
 Following this, we can compile the Markdown file with:
 
 ```sh
-kevm kompile erc20-spec.md --pyk --backend haskell --syntax-module VERIFICATION --main-module VERIFICATION --definition erc20-spec/haskell
+kevm kompile erc20-spec.md --backend haskell --syntax-module VERIFICATION --main-module VERIFICATION --definition erc20-spec/haskell
 ```
 
 Next, run the prover with:
 
 ```sh
-kevm prove erc20-spec.md --backend haskell  --definition erc20-spec/haskell --pyk --claim ERC20-SPEC.decimals
+kevm prove erc20-spec.md --backend haskell  --definition erc20-spec/haskell --claim ERC20-SPEC.decimals
 ```
 
 Here, `--claim` tells the prover to run only the `decimals` spec from the `ERC20-SPEC` module.
@@ -89,10 +89,10 @@ kevm prove tests/specs/erc20/ds/transfer-failure-1-a-spec.k --definition tests/s
 
 In addition to this, you can use `kevm show-kcfg ...` or `kevm view-kcfg ...` to get a visualization.
 
-`kevm view-kcfg [spec_file] [--save-directory save_directory] [--claim claim_label] ...` command takes the same basic arguments as `kevm prove --pyk ...` does, including:
+`kevm view-kcfg [spec_file] [--save-directory save_directory] [--claim claim_label] ...` command takes the same basic arguments as `kevm prove ...` does, including:
   - `spec_file` is the file to look in for specifications. This file is read like with `kevm prove —pyk …`; the `KProve.get_claims` invokes the frontend.
-  - `--save_directory` must be passed as where the KCFGs have been saved (by a previous call to `kevm prove --pyk --save-directory save_directory ...`
-  - `--claim claim_label` option is added, but unlike the `kevm prove --pyk ...`, you can only repeat it once. This option lets you select an individual claim out of the `spec_file`; if not supplied, it’s assumed that only one spec is present.
+  - `--save_directory` must be passed as where the KCFGs have been saved (by a previous call to `kevm prove --save-directory save_directory ...`
+  - `--claim claim_label` option is added, but unlike the `kevm prove ...`, you can only repeat it once. This option lets you select an individual claim out of the `spec_file`; if not supplied, it’s assumed that only one spec is present.
   - `--spec-module spec_module` is also an inherited option.
 
 The interactive KCFG (`view-kcfg`) puts your terminal in *application mode*. To select text in this mode, hold the modifier key provided by your terminal emulator (typically SHIFT or OPTION) while clicking and dragging. Refer to the [Textualize documentation](https://github.com/Textualize/textual/blob/main/FAQ.md#how-can-i-select-and-copy-text-in-a-textual-app) for more information.
@@ -101,8 +101,8 @@ A running example:
 
 ```sh
 mkdir kcfgs
-kevm kompile --pyk --backend haskell tests/specs/benchmarks/verification.k --definition tests/specs/benchmarks/verification/haskell --main-module VERIFICATION --syntax-module VERIFICATION
-kevm prove tests/specs/benchmarks/address00-spec.k --definition tests/specs/benchmarks/verification/haskell --pyk --verbose --save-directory kcfgs
+kevm kompile --backend haskell tests/specs/benchmarks/verification.k --definition tests/specs/benchmarks/verification/haskell --main-module VERIFICATION --syntax-module VERIFICATION
+kevm prove tests/specs/benchmarks/address00-spec.k --definition tests/specs/benchmarks/verification/haskell --verbose --save-directory kcfgs
 kevm view-kcfg --verbose kcfgs tests/specs/benchmarks/address00-spec.k --definition tests/specs/benchmarks/verification/haskell
 ```
 
