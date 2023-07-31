@@ -1,12 +1,10 @@
-# FROM ubuntu:jammy
+ARG K_COMMIT
+ARG Z3_VERSION
+FROM ghcr.io/foundry-rs/foundry:nightly-aeba75e4799f1e11e3daba98d967b83e286b0c4a as FOUNDRY
 
-# ARG K_COMMIT
-# ARG Z3_VERSION
-# FROM ghcr.io/foundry-rs/foundry:nightly-aeba75e4799f1e11e3daba98d967b83e286b0c4a as FOUNDRY
-
-# ARG K_COMMIT
-# ARG Z3_VERSION
-# FROM z3:${Z3_VERSION} as Z3
+ARG K_COMMIT
+ARG Z3_VERSION
+FROM z3:${Z3_VERSION} as Z3
 
 ARG BASE_OS
 ARG BASE_DISTRO
