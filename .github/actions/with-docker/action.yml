@@ -57,15 +57,15 @@ runs:
         --build-arg Z3_VERSION=${Z3_VERSION}             \
         --build-arg LLVM_VERSION=${LLVM_VERSION}
 
-#       docker run                        \
-#         --name ${TAG_NAME}              \
-#         --rm                            \
-#         --interactive                   \
-#         --tty                           \
-#         --detach                        \
-#         --user root                     \
-#         --workdir /home/user/workspace  \
-#         runtimeverification/${TAG_NAME}
+      docker run                        \
+        --name ${TAG_NAME}              \
+        --rm                            \
+        --interactive                   \
+        --tty                           \
+        --detach                        \
+        --user root                     \
+        --workdir /home/user/workspace  \
+        runtimeverification/${TAG_NAME}
 
 #       docker cp . ${TAG_NAME}:/home/user/workspace
 #       docker exec ${TAG_NAME} chown -R user:user /home/user
