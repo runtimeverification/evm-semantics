@@ -31,10 +31,6 @@ runs:
   steps:
   - name: 'Install Poetry'
     uses: Gr1N/setup-poetry@v8
-  - name: Set up Python 3.10
-    uses: actions/setup-python@v4
-    with:
-      python-version: 3.10
   - name: 'Set up Docker'
     shell: bash {0}
     env:
@@ -54,7 +50,7 @@ runs:
       USER_ID=$(id -u)
       GROUP=$(id -gn)
       GROUP_ID=$(id -g)
-      K_VERSION=$(poetry -C kevm-pyk run python3 -c 'import pyk; print(pyk.K_VERSION)')
+      K_VERSION=$(cat deps/k/package/version)
 
       # docker build .                           \
       #   --file .github/workflows/Dockerfile.z3 \
