@@ -9,7 +9,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           submodules: recursive
-          token: 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
+          token: ${{ secrets.JENKINS_GITHUB_PAT }}
           ref: ${{ github.events.inputs.branch }}
       - name: 'Set up Docker'
         uses: ./.github/actions/with-docker
