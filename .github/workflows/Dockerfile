@@ -6,6 +6,11 @@ ARG K_COMMIT
 ARG Z3_VERSION
 FROM z3:${Z3_VERSION} as Z3
 
+ARG BASE_OS
+ARG BASE_DISTRO
+ARG K_VERSION
+FROM stack:${BASE_DISTRO}-${K_VERSION} as STACK
+
 ARG K_COMMIT
 FROM runtimeverificationinc/kframework-k:ubuntu-jammy-${K_COMMIT}
 
@@ -54,3 +59,5 @@ RUN    curl -sSL https://install.python-poetry.org | python3 - \
 RUN    cargo install svm-rs \
     && svm install 0.8.13   \
     && solc --version
+
+COPY --from=STACK --chown=$USER:$GROUP /home/$USER/.stack /home/$USER/.stack
