@@ -74,11 +74,7 @@ module BITWISE-SIMPLIFICATION [symbolic]
   // shift
   // ###########################################################################
 
-    rule (X <<Int  16) <Int pow256 => true requires #rangeUInt(240, X) [simplification]
-    rule (X <<Int 240) <Int pow256 => true requires #rangeUInt( 16, X) [simplification]
-    rule (X <<Int 248) <Int pow256 => true requires #rangeUInt(  8, X) [simplification]
-
-    rule (X <<Int 16) ==Int (X *Int pow16) => true requires 0 <=Int X [simplification, smt-lemma]
+    rule (X <<Int Y) <Int pow256 => true requires 0 <=Int X andBool 0 <=Int Y andBool Y <Int 256 andBool X <Int 2 ^Int (256 -Int Y) [simplification]
 
     rule 0 <=Int (X <<Int Y) => true requires 0 <=Int X andBool 0 <=Int Y [simplification]
 
