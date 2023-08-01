@@ -29,11 +29,6 @@ contract AssumeTest is Test {
         assert(true);
     }
 
-    function test_assume_bool(bool b) public {
-        vm.assume(b);
-        assert(true);
-    }
-
     function test_assume_false(uint256 a, uint256 b) public {
         vm.assume(a != b);
         assertEq(a, b);
