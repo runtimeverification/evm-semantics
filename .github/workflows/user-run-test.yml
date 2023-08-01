@@ -1,4 +1,4 @@
-name: 'User Run Tests'
+name: 'User Run Tests - $GITHUB_REF }}'
 on:
   workflow_dispatch:
     inputs:
@@ -17,7 +17,6 @@ on:
           - 'Nix'
           - 'DockerHub Image Dry Run'     
 
-      
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event.inputs.TestType }}
   cancel-in-progress: true
