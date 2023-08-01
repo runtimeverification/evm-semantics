@@ -40,7 +40,6 @@ jobs:
 
   kevm-pyk-unit-tests:
     if: ${{ github.event.inputs.TestType == 'Pyk Unit Tests' }}
-    needs: kevm-pyk-code-quality-checks
     name: 'Unit Tests'
     runs-on: ubuntu-latest
     steps:
@@ -55,7 +54,6 @@ jobs:
 
   kevm-pyk-profile:
     if: ${{ github.event.inputs.TestType == 'Pyk profile' }}
-    needs: kevm-pyk-code-quality-checks
     name: 'Profiling'
     runs-on: ubuntu-latest
     steps:
@@ -152,7 +150,6 @@ jobs:
   test-prove-foundry-booster:
     if: ${{ github.event.inputs.TestType == 'Prove Foundry Booster' }}
     name: 'Build and Test KEVM Foundry proofs (booster)'
-    needs: kevm-pyk-code-quality-checks
     runs-on: [self-hosted, linux, huge]
     timeout-minutes: 150
     steps:
@@ -183,7 +180,6 @@ jobs:
           - runner: normal
           - runner: macos-13
           - runner: ARM64
-    needs: version-bump
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 60
     steps:
