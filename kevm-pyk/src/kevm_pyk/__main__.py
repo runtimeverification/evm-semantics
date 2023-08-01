@@ -13,6 +13,7 @@ from pyk.cterm import CTerm
 from pyk.kast.outer import KApply, KRewrite
 from pyk.kcfg import KCFG, KCFGExplore
 from pyk.kore.prelude import int_dv
+from pyk.kore.rpc import KoreClient, KoreServer
 from pyk.ktool.kompile import LLVMKompileType
 from pyk.ktool.krun import KRunOutput, _krun
 from pyk.prelude.ml import is_bottom, is_top
@@ -281,85 +282,84 @@ def exec_prove(
         return not (type(claim_lhs) is KApply and claim_lhs.label.name == '<generatedTop>')
 
     def _init_and_run_proof(claim: KClaim) -> tuple[bool, list[str] | None]:
-        with KCFGExplore(
-            kevm,
-            kcfg_semantics=KEVMSemantics(auto_abstract_gas=auto_abstract_gas),
-            id=claim.label,
-            bug_report=br,
-            kore_rpc_command=kore_rpc_command,
-            smt_timeout=smt_timeout,
-            smt_retry_limit=smt_retry_limit,
-            trace_rewrites=trace_rewrites,
-        ) as kcfg_explore:
-            proof_problem: Proof
-            if is_functional(claim):
-                if (
-                    save_directory is not None
-                    and not reinit
-                    and EqualityProof.proof_exists(claim.label, save_directory)
-                ):
-                    proof_problem = EqualityProof.read_proof_data(save_directory, claim.label)
+        with KoreServer(kevm.definition_dir, kevm.main_module, bug_report=br) as server:
+            with KoreClient('localhost', server.port, bug_report=br) as client:
+                kcfg_explore = KCFGExplore(
+                    kprint=kevm,
+                    kore_client=client,
+                    kcfg_semantics=KEVMSemantics(auto_abstract_gas=auto_abstract_gas),
+                    id=claim.label,
+                    trace_rewrites=trace_rewrites,
+                )
+                proof_problem: Proof
+                if is_functional(claim):
+                    if (
+                        save_directory is not None
+                        and not reinit
+                        and EqualityProof.proof_exists(claim.label, save_directory)
+                    ):
+                        proof_problem = EqualityProof.read_proof_data(save_directory, claim.label)
+                    else:
+                        proof_problem = EqualityProof.from_claim(claim, kevm.definition, proof_dir=save_directory)
                 else:
-                    proof_problem = EqualityProof.from_claim(claim, kevm.definition, proof_dir=save_directory)
-            else:
-                if save_directory is not None and not reinit and APRProof.proof_exists(claim.label, save_directory):
-                    proof_problem = APRProof.read_proof_data(save_directory, claim.label)
+                    if save_directory is not None and not reinit and APRProof.proof_exists(claim.label, save_directory):
+                        proof_problem = APRProof.read_proof_data(save_directory, claim.label)
 
-                else:
-                    _LOGGER.info(f'Converting claim to KCFG: {claim.label}')
-                    kcfg, init_node_id, target_node_id = KCFG.from_claim(kevm.definition, claim)
+                    else:
+                        _LOGGER.info(f'Converting claim to KCFG: {claim.label}')
+                        kcfg, init_node_id, target_node_id = KCFG.from_claim(kevm.definition, claim)
 
-                    new_init = ensure_ksequence_on_k_cell(kcfg.node(init_node_id).cterm)
-                    new_target = ensure_ksequence_on_k_cell(kcfg.node(target_node_id).cterm)
+                        new_init = ensure_ksequence_on_k_cell(kcfg.node(init_node_id).cterm)
+                        new_target = ensure_ksequence_on_k_cell(kcfg.node(target_node_id).cterm)
 
-                    _LOGGER.info(f'Computing definedness constraint for initial node: {claim.label}')
-                    new_init = kcfg_explore.cterm_assume_defined(new_init)
+                        _LOGGER.info(f'Computing definedness constraint for initial node: {claim.label}')
+                        new_init = kcfg_explore.cterm_assume_defined(new_init)
 
-                    if simplify_init:
-                        _LOGGER.info(f'Simplifying initial and target node: {claim.label}')
-                        _new_init, _ = kcfg_explore.cterm_simplify(new_init)
-                        _new_target, _ = kcfg_explore.cterm_simplify(new_target)
-                        if is_bottom(_new_init):
-                            raise ValueError(
-                                'Simplifying initial node led to #Bottom, are you sure your LHS is defined?'
-                            )
-                        if is_bottom(_new_target):
-                            raise ValueError(
-                                'Simplifying target node led to #Bottom, are you sure your RHS is defined?'
-                            )
-                        new_init = CTerm.from_kast(_new_init)
-                        new_target = CTerm.from_kast(_new_target)
+                        if simplify_init:
+                            _LOGGER.info(f'Simplifying initial and target node: {claim.label}')
+                            _new_init, _ = kcfg_explore.cterm_simplify(new_init)
+                            _new_target, _ = kcfg_explore.cterm_simplify(new_target)
+                            if is_bottom(_new_init):
+                                raise ValueError(
+                                    'Simplifying initial node led to #Bottom, are you sure your LHS is defined?'
+                                )
+                            if is_bottom(_new_target):
+                                raise ValueError(
+                                    'Simplifying target node led to #Bottom, are you sure your RHS is defined?'
+                                )
+                            new_init = CTerm.from_kast(_new_init)
+                            new_target = CTerm.from_kast(_new_target)
 
-                    kcfg.replace_node(init_node_id, new_init)
-                    kcfg.replace_node(target_node_id, new_target)
+                        kcfg.replace_node(init_node_id, new_init)
+                        kcfg.replace_node(target_node_id, new_target)
 
-                    proof_problem = APRProof(
-                        claim.label, kcfg, init_node_id, target_node_id, {}, proof_dir=save_directory
-                    )
+                        proof_problem = APRProof(
+                            claim.label, kcfg, init_node_id, target_node_id, {}, proof_dir=save_directory
+                        )
 
-            passed = kevm_prove(
-                kevm,
-                proof_problem,
-                kcfg_explore,
-                save_directory=save_directory,
-                max_depth=max_depth,
-                max_iterations=max_iterations,
-                workers=workers,
-                break_every_step=break_every_step,
-                break_on_jumpi=break_on_jumpi,
-                break_on_calls=break_on_calls,
-                implication_every_block=implication_every_block,
-                bug_report=br,
-                kore_rpc_command=kore_rpc_command,
-                smt_timeout=smt_timeout,
-                smt_retry_limit=smt_retry_limit,
-                trace_rewrites=trace_rewrites,
-            )
-            failure_log = None
-            if not passed:
-                failure_log = print_failure_info(proof_problem, kcfg_explore)
+                passed = kevm_prove(
+                    kevm,
+                    proof_problem,
+                    kcfg_explore,
+                    save_directory=save_directory,
+                    max_depth=max_depth,
+                    max_iterations=max_iterations,
+                    workers=workers,
+                    break_every_step=break_every_step,
+                    break_on_jumpi=break_on_jumpi,
+                    break_on_calls=break_on_calls,
+                    implication_every_block=implication_every_block,
+                    bug_report=br,
+                    kore_rpc_command=kore_rpc_command,
+                    smt_timeout=smt_timeout,
+                    smt_retry_limit=smt_retry_limit,
+                    trace_rewrites=trace_rewrites,
+                )
+                failure_log = None
+                if not passed:
+                    failure_log = print_failure_info(proof_problem, kcfg_explore)
 
-            return passed, failure_log
+                return passed, failure_log
 
     results: list[tuple[bool, list[str] | None]]
     if workers > 1:
@@ -473,8 +473,10 @@ def exec_show_kcfg(
     )
 
     if failure_info:
-        with KCFGExplore(kevm, kcfg_semantics=KEVMSemantics(), id=proof.id) as kcfg_explore:
-            res_lines += print_failure_info(proof, kcfg_explore)
+        with KoreServer(kevm.definition_dir, kevm.main_module) as server:
+            with KoreClient('localhost', server.port) as client:
+                kcfg_explore = KCFGExplore(kprint=kevm, kore_client=client, kcfg_semantics=KEVMSemantics(), id=proof.id)
+                res_lines += print_failure_info(proof, kcfg_explore)
 
     print('\n'.join(res_lines))
 

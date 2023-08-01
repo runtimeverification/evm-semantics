@@ -16,6 +16,7 @@ from pyk.kast.inner import KApply, KSequence, KSort, KToken, KVariable, Subst
 from pyk.kast.manip import free_vars, minimize_term
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
 from pyk.kcfg import KCFG, KCFGExplore
+from pyk.kore.rpc import KoreClient, KoreServer
 from pyk.ktool.kompile import LLVMKompileType
 from pyk.prelude.bytes import bytesToken
 from pyk.prelude.k import GENERATED_TOP_CELL
@@ -511,55 +512,52 @@ def foundry_prove(
 
     def _init_and_run_proof(_init_problem: tuple[str, str]) -> tuple[bool, list[str] | None]:
         proof_id = f'{_init_problem[0]}.{_init_problem[1]}'
-        llvm_definition_dir = foundry.out / 'kompiled-llvm' if use_booster else None
 
-        with KCFGExplore(
-            foundry.kevm,
-            kcfg_semantics=KEVMSemantics(auto_abstract_gas=auto_abstract_gas),
-            id=proof_id,
-            bug_report=br,
-            kore_rpc_command=kore_rpc_command,
-            llvm_definition_dir=llvm_definition_dir,
-            smt_timeout=smt_timeout,
-            smt_retry_limit=smt_retry_limit,
-            trace_rewrites=trace_rewrites,
-        ) as kcfg_explore:
-            contract_name, method_name = _init_problem
-            contract = foundry.contracts[contract_name]
-            method = contract.method_by_name[method_name]
-            proof = _method_to_apr_proof(
-                foundry,
-                contract,
-                method,
-                save_directory,
-                kcfg_explore,
-                reinit=(method.qualified_name in out_of_date_methods),
-                simplify_init=simplify_init,
-                bmc_depth=bmc_depth,
-            )
+        with KoreServer(foundry.kevm.definition_dir, foundry.kevm.main_module, bug_report=br) as server:
+            with KoreClient('localhost', server.port, bug_report=br) as client:
+                kcfg_explore = KCFGExplore(
+                    kprint=foundry.kevm,
+                    kore_client=client,
+                    kcfg_semantics=KEVMSemantics(auto_abstract_gas=auto_abstract_gas),
+                    id=proof_id,
+                    trace_rewrites=trace_rewrites,
+                )
+                contract_name, method_name = _init_problem
+                contract = foundry.contracts[contract_name]
+                method = contract.method_by_name[method_name]
+                proof = _method_to_apr_proof(
+                    foundry,
+                    contract,
+                    method,
+                    save_directory,
+                    kcfg_explore,
+                    reinit=(method.qualified_name in out_of_date_methods),
+                    simplify_init=simplify_init,
+                    bmc_depth=bmc_depth,
+                )
 
-            passed = kevm_prove(
-                foundry.kevm,
-                proof,
-                kcfg_explore,
-                save_directory=save_directory,
-                max_depth=max_depth,
-                max_iterations=max_iterations,
-                workers=workers,
-                break_every_step=break_every_step,
-                break_on_jumpi=break_on_jumpi,
-                break_on_calls=break_on_calls,
-                implication_every_block=implication_every_block,
-                bug_report=br,
-                kore_rpc_command=kore_rpc_command,
-                smt_timeout=smt_timeout,
-                smt_retry_limit=smt_retry_limit,
-                trace_rewrites=trace_rewrites,
-            )
-            failure_log = None
-            if not passed:
-                failure_log = print_failure_info(proof, kcfg_explore, counterexample_info)
-            return passed, failure_log
+                passed = kevm_prove(
+                    foundry.kevm,
+                    proof,
+                    kcfg_explore,
+                    save_directory=save_directory,
+                    max_depth=max_depth,
+                    max_iterations=max_iterations,
+                    workers=workers,
+                    break_every_step=break_every_step,
+                    break_on_jumpi=break_on_jumpi,
+                    break_on_calls=break_on_calls,
+                    implication_every_block=implication_every_block,
+                    bug_report=br,
+                    kore_rpc_command=kore_rpc_command,
+                    smt_timeout=smt_timeout,
+                    smt_retry_limit=smt_retry_limit,
+                    trace_rewrites=trace_rewrites,
+                )
+                failure_log = None
+                if not passed:
+                    failure_log = print_failure_info(proof, kcfg_explore, counterexample_info)
+                return passed, failure_log
 
     def run_cfg_group(tests: list[str]) -> dict[str, tuple[bool, list[str] | None]]:
         init_problems = [tuple(test.split('.')) for test in tests]
@@ -635,9 +633,13 @@ def foundry_show(
     )
 
     if failure_info:
-        with KCFGExplore(foundry.kevm, kcfg_semantics=KEVMSemantics(), id=proof.id) as kcfg_explore:
-            res_lines += print_failure_info(proof, kcfg_explore, counterexample_info)
-            res_lines += Foundry.help_info()
+        with KoreServer(foundry.kevm.definition_dir, foundry.kevm.main_module) as server:
+            with KoreClient('localhost', server.port) as client:
+                kcfg_explore = KCFGExplore(
+                    kprint=foundry.kevm, kore_client=client, kcfg_semantics=KEVMSemantics(), id=proof.id
+                )
+                res_lines += print_failure_info(proof, kcfg_explore, counterexample_info)
+                res_lines += Foundry.help_info()
 
     return '\n'.join(res_lines)
 
@@ -708,16 +710,16 @@ def foundry_simplify_node(
     proof_digest = foundry.proof_digest(contract_name, test_name)
     apr_proof = APRProof.read_proof_data(apr_proofs_dir, proof_digest)
     cterm = apr_proof.kcfg.node(node).cterm
-    with KCFGExplore(
-        foundry.kevm,
-        kcfg_semantics=KEVMSemantics(),
-        id=apr_proof.id,
-        bug_report=br,
-        smt_timeout=smt_timeout,
-        smt_retry_limit=smt_retry_limit,
-        trace_rewrites=trace_rewrites,
-    ) as kcfg_explore:
-        new_term, _ = kcfg_explore.cterm_simplify(cterm)
+    with KoreServer(foundry.kevm.definition_dir, foundry.kevm.main_module, bug_report=br) as server:
+        with KoreClient('localhost', server.port, bug_report=br) as client:
+            kcfg_explore = KCFGExplore(
+                kprint=foundry.kevm,
+                kore_client=client,
+                kcfg_semantics=KEVMSemantics(),
+                id=apr_proof.id,
+                trace_rewrites=trace_rewrites,
+            )
+            new_term, _ = kcfg_explore.cterm_simplify(cterm)
     if replace:
         apr_proof.kcfg.replace_node(node, CTerm.from_kast(new_term))
         apr_proof.write_proof_data()
@@ -748,18 +750,18 @@ def foundry_step_node(
     contract_name, test_name = test.split('.')
     proof_digest = foundry.proof_digest(contract_name, test_name)
     apr_proof = APRProof.read_proof_data(apr_proofs_dir, proof_digest)
-    with KCFGExplore(
-        foundry.kevm,
-        kcfg_semantics=KEVMSemantics(),
-        id=apr_proof.id,
-        bug_report=br,
-        smt_timeout=smt_timeout,
-        smt_retry_limit=smt_retry_limit,
-        trace_rewrites=trace_rewrites,
-    ) as kcfg_explore:
-        for _i in range(repeat):
-            node = kcfg_explore.step(apr_proof.kcfg, node, apr_proof.logs, depth=depth)
-            apr_proof.write_proof_data()
+    with KoreServer(foundry.kevm.definition_dir, foundry.kevm.main_module, bug_report=br) as server:
+        with KoreClient('localhost', server.port, bug_report=br) as client:
+            kcfg_explore = KCFGExplore(
+                kprint=foundry.kevm,
+                kore_client=client,
+                kcfg_semantics=KEVMSemantics(),
+                id=apr_proof.id,
+                trace_rewrites=trace_rewrites,
+            )
+            for _i in range(repeat):
+                node = kcfg_explore.step(apr_proof.kcfg, node, apr_proof.logs, depth=depth)
+                apr_proof.write_proof_data()
 
 
 def foundry_section_edge(
@@ -780,18 +782,18 @@ def foundry_section_edge(
     proof_digest = foundry.proof_digest(contract_name, test_name)
     apr_proof = APRProof.read_proof_data(apr_proofs_dir, proof_digest)
     source_id, target_id = edge
-    with KCFGExplore(
-        foundry.kevm,
-        kcfg_semantics=KEVMSemantics(),
-        id=apr_proof.id,
-        bug_report=br,
-        smt_timeout=smt_timeout,
-        smt_retry_limit=smt_retry_limit,
-        trace_rewrites=trace_rewrites,
-    ) as kcfg_explore:
-        kcfg, _ = kcfg_explore.section_edge(
-            apr_proof.kcfg, source_id=source_id, target_id=target_id, logs=apr_proof.logs, sections=sections
-        )
+    with KoreServer(foundry.kevm.definition_dir, foundry.kevm.main_module, bug_report=br) as server:
+        with KoreClient('localhost', server.port, bug_report=br) as client:
+            kcfg_explore = KCFGExplore(
+                kprint=foundry.kevm,
+                kore_client=client,
+                kcfg_semantics=KEVMSemantics(),
+                id=apr_proof.id,
+                trace_rewrites=trace_rewrites,
+            )
+            kcfg, _ = kcfg_explore.section_edge(
+                apr_proof.kcfg, source_id=source_id, target_id=target_id, logs=apr_proof.logs, sections=sections
+            )
     apr_proof.write_proof_data()
 
 
@@ -823,12 +825,16 @@ def foundry_get_model(
 
     res_lines = []
 
-    with KCFGExplore(foundry.kevm, kcfg_semantics=KEVMSemantics(), id=proof.id) as kcfg_explore:
-        for node_id in nodes:
-            res_lines.append('')
-            res_lines.append(f'Node id: {node_id}')
-            node = proof.kcfg.node(node_id)
-            res_lines.extend(print_model(node, kcfg_explore))
+    with KoreServer(foundry.kevm.definition_dir, foundry.kevm.main_module) as server:
+        with KoreClient('localhost', server.port) as client:
+            kcfg_explore = KCFGExplore(
+                kprint=foundry.kevm, kore_client=client, kcfg_semantics=KEVMSemantics(), id=proof.id
+            )
+            for node_id in nodes:
+                res_lines.append('')
+                res_lines.append(f'Node id: {node_id}')
+                node = proof.kcfg.node(node_id)
+                res_lines.extend(print_model(node, kcfg_explore))
 
     return '\n'.join(res_lines)
 
