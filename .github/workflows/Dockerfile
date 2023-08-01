@@ -1,14 +1,17 @@
 ARG K_COMMIT
+ARG K_VERSION
 ARG Z3_VERSION
+ARG BASE_DISTRO
 FROM ghcr.io/foundry-rs/foundry:nightly-aeba75e4799f1e11e3daba98d967b83e286b0c4a as FOUNDRY
 
 ARG K_COMMIT
+ARG K_VERSION
 ARG Z3_VERSION
+ARG BASE_DISTRO
 FROM z3:${Z3_VERSION} as Z3
 
-ARG BASE_OS
-ARG BASE_DISTRO
 ARG K_VERSION
+ARG BASE_DISTRO
 FROM stack:${BASE_DISTRO}-${K_VERSION} as STACK
 
 ARG K_COMMIT
@@ -19,6 +22,8 @@ COPY --from=FOUNDRY /usr/local/bin/anvil /usr/local/bin/anvil
 COPY --from=FOUNDRY /usr/local/bin/cast /usr/local/bin/cast
 
 COPY --from=Z3 /usr/bin/z3 /usr/bin/z3
+
+COPY --from=STACK /usr/local/bin/stack /usr/local/bin/stack
 
 ARG LLVM_VERSION
 
