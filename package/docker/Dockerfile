@@ -46,3 +46,5 @@ RUN    sudo apt-get update        \
 
 ADD --chown=user:user ./kevm-pyk /home/user/kevm-pyk
 RUN cd /home/user/kevm-pyk && pip3 install .
+
+ENV PATH=${PATH}:${HOME}/.local/bin
