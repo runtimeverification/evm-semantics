@@ -1,14 +1,16 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from unittest.mock import patch
 
 from pyk.proof.reachability import APRProof
 
-from kevm_pyk.foundry import Foundry
 from tests.unit.utils import TEST_DATA_DIR
 
 if TYPE_CHECKING:
     from typing import Final
+
+    from kevm_pyk.foundry import Foundry
 
 LIST_DATA_DIR: Final = TEST_DATA_DIR / 'foundry-list'
 LIST_OUT: Final = LIST_DATA_DIR / 'out/'
@@ -16,8 +18,9 @@ LIST_APR_PROOF: Final = LIST_OUT / 'apr_proofs/'
 LIST_EXPECTED: Final = LIST_DATA_DIR / 'foundry-list.expected'
 
 
-def foundry_list() -> list[str]:
-    foundry = Foundry(LIST_DATA_DIR)
+@patch('kevm_pyk.foundry.Foundry')
+def foundry_list(foundry: Foundry) -> list[str]:
+    foundry._root = LIST_DATA_DIR
     all_methods = [
         f'{contract.name}.{method.name}' for contract in foundry.contracts.values() for method in contract.methods
     ]
