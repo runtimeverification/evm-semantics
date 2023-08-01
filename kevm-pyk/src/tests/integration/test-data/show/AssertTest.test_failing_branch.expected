@@ -291,7 +291,7 @@ Node 11:
 
 
 
-module SUMMARY-ASSERTTEST.TEST-FAILING-BRANCH:C60CB1C30ED782C5B61A621FCA10BE831A7CC1ECB96FE691F94F331F484FD273
+module SUMMARY-ASSERTTEST.TEST-FAILING-BRANCH:57F35EE0DF89C24EE8610C076F68AA5C1E1A0338FE9DEBD59A8D478140BAD19F
     
     
     rule [BASIC-BLOCK-1-TO-3]: <foundry>
@@ -1793,7 +1793,12 @@ Failing nodes:
     #And { true #Equals VV0_x_114b9705:Int <Int pow256 } ) ) ) ) ) ) ) ) #Implies { true #Equals foundry_success ( ... statusCode: EVMC_REVERT , failed: #lookup ( .Map , 46308022326495007027972728677917914892729792999299745830475596687180801507328 ) , revertExpected: false , opcodeExpected: false , recordEventExpected: false , eventExpected: false ) } )
   Path condition:
     { true #Equals ( notBool 100 <=Int VV0_x_114b9705:Int ) }
+  Model:
+    CALLER_ID = 0
+    NUMBER_CELL = 0
+    ORIGIN_ID = 0
+    VV0_x_114b9705 = 0
 
-Join the Runtime Verification Discord server for support: https://discord.gg/GHvFbRDD
+Join the Runtime Verification Discord server for support: https://discord.com/invite/CurfmXNtbN
 
 Access documentation for KEVM foundry integration at https://docs.runtimeverification.com/kevm-integration-for-foundry/

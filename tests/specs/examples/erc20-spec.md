@@ -11,7 +11,7 @@ Solidity Code
 -------------
 
 File [`ERC20.sol`](ERC20.sol) contains some code snippets we want to verify the functional correctness of.
-Call `kevm solc-to-k ERC20.sol ERC20 --pyk --main-module ERC20-VERIFICATION > erc20-bin-runtime.k `, to generate the helper K files.
+Call `kevm solc-to-k ERC20.sol ERC20 --main-module ERC20-VERIFICATION > erc20-bin-runtime.k `, to generate the helper K files.
 
 Verification Module
 -------------------
@@ -29,11 +29,6 @@ module VERIFICATION
     imports LEMMAS
     imports EVM-OPTIMIZATIONS
     imports ERC20-VERIFICATION
-
-    syntax Step ::= Bytes | Int
-    syntax KItem ::= runLemma ( Step ) | doneLemma ( Step )
- // -------------------------------------------------------
-    rule <k> runLemma(S) => doneLemma(S) ... </k>
 
  // decimals lemmas
  // ---------------
@@ -57,7 +52,7 @@ module ERC20-SPEC
 ### Functional Claims
 
 ```k
-    claim <k> runLemma(#bufStrict(32, #loc(ERC20._allowances[OWNER]))) => doneLemma(#buf(32, keccak(#buf(32, OWNER) +Bytes #buf(32, 1)))) ... </k>
+    claim (#bufStrict(32, #loc(ERC20._allowances[OWNER]))) => (#buf(32, keccak(#buf(32, OWNER) +Bytes #buf(32, 1))))
       requires #rangeAddress(OWNER)
 ```
 

@@ -79,7 +79,7 @@
 
 
 
-module SUMMARY-ASSUMETEST.TESTFAIL-ASSUME-TRUE:BD3B87154C1D1D98438B2FC4DD0C0BC233772FF72DFB13B9ED5D78D323C3E092
+module SUMMARY-ASSUMETEST.TESTFAIL-ASSUME-TRUE:6A4EE8E0EDE6D56D6B990B931083B060CCFB8EEE20363860FE73BC57749A7477
     
     
     rule [BASIC-BLOCK-1-TO-3]: <foundry>
@@ -2031,5 +2031,7 @@ module SUMMARY-ASSUMETEST.TESTFAIL-ASSUME-TRUE:BD3B87154C1D1D98438B2FC4DD0C0BC23
 
 endmodule
 0 Failure nodes. (0 pending and 0 failing)
+
+Join the Runtime Verification Discord server for support: https://discord.com/invite/CurfmXNtbN
 
 Access documentation for KEVM foundry integration at https://docs.runtimeverification.com/kevm-integration-for-foundry/

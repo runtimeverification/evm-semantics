@@ -35,15 +35,16 @@ from .utils import (
     abstract_cell_vars,
     byte_offset_to_lines,
     constraints_for,
-    kevm_apr_prove,
+    kevm_prove,
     print_failure_info,
+    print_model,
 )
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
     from typing import Any, Final
 
-    from pyk.kast import KInner
+    from pyk.kast.inner import KInner
     from pyk.kcfg.kcfg import NodeIdLike
     from pyk.kcfg.tui import KCFGElem
     from pyk.proof.show import NodePrinter
@@ -422,11 +423,12 @@ def foundry_prove(
     implication_every_block: bool = True,
     bmc_depth: int | None = None,
     bug_report: bool = False,
-    kore_rpc_command: str | Iterable[str] = ('kore-rpc',),
+    kore_rpc_command: str | Iterable[str] | None = None,
     use_booster: bool = False,
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
     failure_info: bool = True,
+    counterexample_info: bool = False,
     trace_rewrites: bool = False,
     auto_abstract_gas: bool = False,
 ) -> dict[str, tuple[bool, list[str] | None]]:
@@ -449,13 +451,8 @@ def foundry_prove(
                 "Couldn't locate the kore-rpc-booster RPC binary. Please put 'kore-rpc-booster' on PATH manually or using kup install/kup shell."
             ) from None
 
-        if foundry.llvm_dylib:
-            kore_rpc_command = ('kore-rpc-booster', '--llvm-backend-library', str(foundry.llvm_dylib))
-        else:
-            foundry_llvm_dir = foundry.out / 'kompiled-llvm'
-            raise ValueError(
-                f"Could not find the LLVM dynamic library in {foundry_llvm_dir}. Please re-run foundry-kompile with the '--with-llvm-library' flag"
-            )
+    if kore_rpc_command is None:
+        kore_rpc_command = ('kore-rpc-booster',) if use_booster else ('kore-rpc',)
 
     all_tests = [
         f'{contract.name}.{method.name}'
@@ -514,11 +511,14 @@ def foundry_prove(
 
     def _init_and_run_proof(_init_problem: tuple[str, str]) -> tuple[bool, list[str] | None]:
         proof_id = f'{_init_problem[0]}.{_init_problem[1]}'
+        llvm_definition_dir = foundry.out / 'kompiled-llvm' if use_booster else None
+
         with KCFGExplore(
             foundry.kevm,
             id=proof_id,
             bug_report=br,
             kore_rpc_command=kore_rpc_command,
+            llvm_definition_dir=llvm_definition_dir,
             smt_timeout=smt_timeout,
             smt_retry_limit=smt_retry_limit,
             trace_rewrites=trace_rewrites,
@@ -537,7 +537,7 @@ def foundry_prove(
                 bmc_depth=bmc_depth,
             )
 
-            passed = kevm_apr_prove(
+            passed = kevm_prove(
                 foundry.kevm,
                 proof,
                 kcfg_explore,
@@ -561,8 +561,7 @@ def foundry_prove(
             )
             failure_log = None
             if not passed:
-                failure_log = print_failure_info(proof, kcfg_explore)
-
+                failure_log = print_failure_info(proof, kcfg_explore, counterexample_info)
             return passed, failure_log
 
     def run_cfg_group(tests: list[str]) -> dict[str, tuple[bool, list[str] | None]]:
@@ -597,6 +596,7 @@ def foundry_show(
     pending: bool = False,
     failing: bool = False,
     failure_info: bool = False,
+    counterexample_info: bool = False,
 ) -> str:
     contract_name = test.split('.')[0]
     foundry = Foundry(foundry_root)
@@ -639,7 +639,7 @@ def foundry_show(
 
     if failure_info:
         with KCFGExplore(foundry.kevm, id=proof.id) as kcfg_explore:
-            res_lines += print_failure_info(proof, kcfg_explore)
+            res_lines += print_failure_info(proof, kcfg_explore, counterexample_info)
             res_lines += Foundry.help_info()
 
     return '\n'.join(res_lines)
@@ -673,7 +673,7 @@ def foundry_list(foundry_root: Path) -> list[str]:
         proof_digest = foundry.proof_digest(contract_name, test_name)
         if APRProof.proof_exists(proof_digest, apr_proofs_dir):
             apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
-            lines.extend(apr_proof.summary)
+            lines.extend(apr_proof.summary.lines)
             lines.append('')
     if len(lines) > 0:
         lines = lines[0:-1]
@@ -687,7 +687,7 @@ def foundry_remove_node(foundry_root: Path, test: str, node: NodeIdLike) -> None
     contract_name, test_name = test.split('.')
     proof_digest = foundry.proof_digest(contract_name, test_name)
     apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
-    node_ids = apr_proof.kcfg.prune(node)
+    node_ids = apr_proof.kcfg.prune(node, [apr_proof.init, apr_proof.target])
     _LOGGER.info(f'Pruned nodes: {node_ids}')
     apr_proof.write_proof()
 
@@ -793,6 +793,44 @@ def foundry_section_edge(
             apr_proof.kcfg, source_id=source_id, target_id=target_id, logs=apr_proof.logs, sections=sections
         )
     apr_proof.write_proof()
+
+
+def foundry_get_model(
+    foundry_root: Path,
+    test: str,
+    nodes: Iterable[NodeIdLike] = (),
+    pending: bool = False,
+    failing: bool = False,
+) -> str:
+    contract_name = test.split('.')[0]
+    foundry = Foundry(foundry_root)
+    proofs_dir = foundry.out / 'apr_proofs'
+
+    contract_name, test_name = test.split('.')
+    proof_digest = foundry.proof_digest(contract_name, test_name)
+    proof = Proof.read_proof(proof_digest, proofs_dir)
+    assert isinstance(proof, APRProof)
+
+    if not nodes:
+        _LOGGER.warning('Node ID is not provided. Displaying models of failing and pending nodes:')
+        failing = pending = True
+
+    if pending:
+        nodes = list(nodes) + [node.id for node in proof.pending]
+    if failing:
+        nodes = list(nodes) + [node.id for node in proof.failing]
+    nodes = unique(nodes)
+
+    res_lines = []
+
+    with KCFGExplore(foundry.kevm, id=proof.id) as kcfg_explore:
+        for node_id in nodes:
+            res_lines.append('')
+            res_lines.append(f'Node id: {node_id}')
+            node = proof.kcfg.node(node_id)
+            res_lines.extend(print_model(node, kcfg_explore))
+
+    return '\n'.join(res_lines)
 
 
 def _write_cfg(cfg: KCFG, path: Path) -> None:

@@ -261,7 +261,7 @@ class KEVMCLIArgs(KCLIArgs):
             '--kore-rpc-command',
             dest='kore_rpc_command',
             type=str,
-            default='kore-rpc',
+            default=None,
             help='Custom command to start RPC server',
         )
         args.add_argument(
@@ -282,6 +282,13 @@ class KEVMCLIArgs(KCLIArgs):
             dest='auto_abstract_gas',
             action='store_true',
             help='Automatically extract gas cell when infinite gas is enabled',
+        )
+        args.add_argument(
+            '--counterexample-information',
+            dest='counterexample_info',
+            default=False,
+            action='store_true',
+            help='Show models for failing nodes.',
         )
         return args
 
@@ -344,5 +351,12 @@ class KEVMCLIArgs(KCLIArgs):
         )
         args.add_argument(
             '--failing', dest='failing', default=False, action='store_true', help='Also display failing nodes'
+        )
+        args.add_argument(
+            '--counterexample-information',
+            dest='counterexample_info',
+            default=False,
+            action='store_true',
+            help="Show models for failing nodes. Should be called with the '--failure-information' flag",
         )
         return args
