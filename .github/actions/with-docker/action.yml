@@ -82,3 +82,5 @@ runs:
 
       docker cp . ${TAG_NAME}:/home/${USER}/workspace
       docker exec ${TAG_NAME} chown -R ${USER}:${GROUP} /home/${USER}
+
+      stack upgrade
