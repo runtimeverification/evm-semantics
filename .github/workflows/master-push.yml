@@ -69,8 +69,8 @@ jobs:
         run: |
           set -euxo pipefail
           version=$(cat package/version)
-          docker exec -u user kevm-package-jammy-${GITHUB_SHA} /bin/bash -c 'package/debian/package jammy'
-          docker exec -u user kevm-package-jammy-${GITHUB_SHA} /bin/bash -c 'ls ..'
+          docker exec -u github-user kevm-package-jammy-${GITHUB_SHA} /bin/bash -c 'package/debian/package jammy'
+          docker exec -u github-user kevm-package-jammy-${GITHUB_SHA} /bin/bash -c 'ls ..'
           docker cp kevm-package-jammy-${GITHUB_SHA}:/home/github-user/kevm_${version}_amd64.deb ./
       - name: 'Tear down Docker'
         if: always()
@@ -102,12 +102,12 @@ jobs:
           k_version=$(cat deps/k_release)
           container_name="kevm-ci-test-${GITHUB_SHA}"
           docker cp ./tests/foundry ${container_name}:/home/github-user/foundry
-          docker exec -u user ${container_name} /bin/bash -c "sudo chown user:user -R /home/github-user/foundry"
-          docker exec -u user ${container_name} /bin/bash -c "forge build --root foundry"
-          docker exec -u user ${container_name} /bin/bash -c "kevm foundry-kompile --foundry-project-root foundry --verbose"
-          docker exec -u user ${container_name} /bin/bash -c "kevm foundry-prove --foundry-project-root foundry --verbose --test AssertTest.test_assert_true_branch"
-          docker exec -u user ${container_name} /bin/bash -c "kevm foundry-show --foundry-project-root foundry --verbose AssertTest.test_assert_true_branch"
-          docker exec -u user ${container_name} /bin/bash -c "kevm foundry-list --foundry-project-root foundry --verbose"
+          docker exec -u github-user ${container_name} /bin/bash -c "sudo chown github-user:github-user -R /home/github-user/foundry"
+          docker exec -u github-user ${container_name} /bin/bash -c "forge build --root foundry"
+          docker exec -u github-user ${container_name} /bin/bash -c "kevm foundry-kompile --foundry-project-root foundry --verbose"
+          docker exec -u github-user ${container_name} /bin/bash -c "kevm foundry-prove --foundry-project-root foundry --verbose --test AssertTest.test_assert_true_branch"
+          docker exec -u github-user ${container_name} /bin/bash -c "kevm foundry-show --foundry-project-root foundry --verbose AssertTest.test_assert_true_branch"
+          docker exec -u github-user ${container_name} /bin/bash -c "kevm foundry-list --foundry-project-root foundry --verbose"
           docker stop --time=0 ${container_name}
       - name: 'Push Docker Image to DockerHub'
         env:
