@@ -1,4 +1,4 @@
-name: 'Test PR'
+name: 'User Run Tests'
 on:
   workflow_dispatch:
     inputs:
