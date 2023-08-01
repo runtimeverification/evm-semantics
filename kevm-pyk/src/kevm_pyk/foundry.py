@@ -569,7 +569,7 @@ def foundry_prove(
             if not passed:
                 failure_log = print_failure_info(proof, kcfg_explore, counterexample_info)
 
-            vacuous_nodes = {node.id for node in proof.kcfg.nodes if _check_vacuous(node.cterm)}
+            vacuous_nodes = [node.id for node in proof.kcfg.nodes if _check_vacuous(node.cterm)]
             for idx in vacuous_nodes:
                 _LOGGER.warning(
                     f' Found vacuous conditions on node {idx}: {kcfg_explore.kprint.pretty_print(proof.path_constraints(idx))} '
