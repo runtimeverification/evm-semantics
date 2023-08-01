@@ -266,10 +266,7 @@ First we have some helpers in K which can:
 ```k
     syntax KItem ::= #assume ( Bool ) [klabel(foundry_assume), symbol]
  // ------------------------------------------------------------------
-    rule <k> #assume(B) ~> _ => #halt </k>
-         <statusCode> _ => FOUNDRY_VACUOUSSUCCESS </statusCode>
-     requires notBool B
-
+    rule <k> #assume(B) ~> _ => #halt </k> <statusCode> _ => FOUNDRY_VACUOUSSUCCESS </statusCode> requires notBool B
     rule <k> #assume(B) => . ... </k> requires B
 
      syntax KItem ::= "#markAsFailed" [klabel(foundry_markAsFailed)]
