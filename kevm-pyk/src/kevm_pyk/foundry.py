@@ -509,15 +509,15 @@ def foundry_prove(
                 )
         method.update_digest(foundry.out / 'digest')
 
+    def _check_vacuous(cterm: CTerm) -> bool:
+        cell = cterm.cell('STATUSCODE_CELL')
+        if not isinstance(cell, KApply):
+            return False
+        return cell.label.name == 'FOUNDRY_VACUOUSSUCCESS_FOUNDRY-STATUS-CODES_ExceptionalStatusCode'
+
     def _init_and_run_proof(_init_problem: tuple[str, str]) -> tuple[bool, list[str] | None]:
         proof_id = f'{_init_problem[0]}.{_init_problem[1]}'
         llvm_definition_dir = foundry.out / 'kompiled-llvm' if use_booster else None
-
-        def _check_vacuous(cterm: CTerm) -> bool:
-            cell = cterm.cell('STATUSCODE_CELL')
-            if not isinstance(cell, KApply):
-                return False
-            return cell.label.name == 'FOUNDRY_VACUOUSSUCCESS_FOUNDRY-STATUS-CODES_ExceptionalStatusCode'
 
         with KCFGExplore(
             foundry.kevm,
