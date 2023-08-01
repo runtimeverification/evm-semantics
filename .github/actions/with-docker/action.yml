@@ -42,10 +42,12 @@ runs:
     run: |
       set -euxo pipefail
 
+      USER=github-user
+      GROUP=${USER}
       Z3_VERSION=4.12.1
       K_COMMIT=$(cat deps/k_release)
-      USER_ID=$(id -u)
-      GROUP_ID=$(id -g)
+      USER_ID=1000
+      GROUP_ID=${USER_ID}
       K_VERSION=$(cat deps/k/package/version)
 
       docker build .                           \
@@ -56,6 +58,8 @@ runs:
         --tag runtimeverification/${TAG_NAME}            \
         --build-arg USER_ID=${USER_ID}                   \
         --build-arg GROUP_ID=${GROUP_ID}                 \
+        --build-arg USER=${USER}                         \
+        --build-arg GROUP=${GROUP}                       \
         --build-arg K_COMMIT=${K_COMMIT}                 \
         --build-arg Z3_VERSION=${Z3_VERSION}             \
         --build-arg LLVM_VERSION=${LLVM_VERSION}
@@ -73,8 +77,8 @@ runs:
         --tty                           \
         --detach                        \
         --user root                     \
-        --workdir /home/user/workspace  \
+        --workdir /home/${USER}/workspace  \
         runtimeverification/${TAG_NAME}
 
-      docker cp . ${TAG_NAME}:/home/user/workspace
-      docker exec ${TAG_NAME} chown -R user:user /home/user
+      docker cp . ${TAG_NAME}:/home/${USER}/workspace
+      docker exec ${TAG_NAME} chown -R ${USER}:${GROUP} /home/${USER}

@@ -238,7 +238,7 @@ jobs:
           version=$(cat package/version)
           docker exec -u user kevm-package-jammy-${GITHUB_SHA} /bin/bash -c 'package/debian/package jammy'
           docker exec -u user kevm-package-jammy-${GITHUB_SHA} /bin/bash -c 'ls ..'
-          docker cp kevm-package-jammy-${GITHUB_SHA}:/home/user/kevm_${version}_amd64.deb ./
+          docker cp kevm-package-jammy-${GITHUB_SHA}:/home/github-user/kevm_${version}_amd64.deb ./
       - name: 'Tear down Docker'
         if: always()
         run: |
@@ -253,14 +253,14 @@ jobs:
           docker build . --tag ${tag_name} --file package/docker/Dockerfile \
             --build-arg K_VERSION=${k_version}                              \
             --build-arg KEVM_VERSION=${version}
-          docker run                 \
-            --name ${container_name} \
-            --rm                     \
-            --interactive            \
-            --tty                    \
-            --detach                 \
-            --user root              \
-            --workdir /home/user     \
+          docker run                    \
+            --name ${container_name}    \
+            --rm                        \
+            --interactive               \
+            --tty                       \
+            --detach                    \
+            --user root                 \
+            --workdir /home/github-user \
             ${tag_name}
       - name: 'Test Docker Image'
         run: |
@@ -268,8 +268,8 @@ jobs:
           version=$(cat package/version)
           k_version=$(cat deps/k_release)
           container_name="kevm-ci-test-${GITHUB_SHA}"
-          docker cp ./tests/foundry ${container_name}:/home/user/foundry
-          docker exec -u user ${container_name} /bin/bash -c "sudo chown user:user -R /home/user/foundry"
+          docker cp ./tests/foundry ${container_name}:/home/github-user/foundry
+          docker exec -u user ${container_name} /bin/bash -c "sudo chown user:user -R /home/github-user/foundry"
           docker exec -u user ${container_name} /bin/bash -c "forge build --root foundry"
           docker exec -u user ${container_name} /bin/bash -c "kevm foundry-kompile --foundry-project-root foundry --verbose"
           docker exec -u user ${container_name} /bin/bash -c "kevm foundry-prove --foundry-project-root foundry --verbose --test AssertTest.test_assert_true_branch"

@@ -32,19 +32,21 @@ RUN    apt-get update                  \
             llvm-${LLVM_VERSION}-tools \
             netcat                     \
             protobuf-compiler          \
-            python3                    \
             maven                      \
+            python3                    \
             python3-pip
 
+ARG USER
+ARG GROUP
 ARG USER_ID
 ARG GROUP_ID
-RUN groupadd -g $GROUP_ID user && useradd -m -u $USER_ID -s /bin/sh -g user user
+RUN groupadd -g ${GROUP_ID} ${GROUP} && useradd -m -u ${USER_ID} -s /bin/sh -g ${GROUP} ${USER}
 
-USER user:user
-RUN mkdir /home/user/workspace
-WORKDIR /home/user/workspace
+USER ${USER}:${GROUP}
+RUN mkdir /home/${USER}/workspace
+WORKDIR /home/${USER}/workspace
 
-ENV PATH=/home/user/.cargo/bin:/home/user/.local/bin:${PATH}
+ENV PATH=/home/${USER}/.cargo/bin:/home/${USER_ID}/.local/bin:${PATH}
 
 RUN    curl -sSL https://install.python-poetry.org | python3 - \
     && poetry --version
