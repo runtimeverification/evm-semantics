@@ -103,6 +103,24 @@ module FOUNDRY
 endmodule
 ```
 
+### Foundry Status Codes
+
+We define a new status codes:
+ - `FOUNDRY_UNIMPLEMENTED`, which signals that the execution ran into an unimplemented cheat code.
+ - `FOUNDRY_WHITELISTCALL`, which signals that an address outside the whitelist has been called during the execution.
+ - `FOUNDRY_VACUOUSSUCCESS`, which signals that the execution encountered a vacuous condition.
+ - `FOUNDRY_WHITELISTSTORAGE`, which signals that a storage index of an address outside the whitelist has been changed during the execution.
+
+```k
+module FOUNDRY-STATUS-CODES
+    syntax ExceptionalStatusCode ::= "FOUNDRY_UNIMPLEMENTED"
+                                   | "FOUNDRY_WHITELISTCALL"
+                                   | "FOUNDRY_VACUOUSSUCCESS"
+                                   | "FOUNDRY_WHITELISTSTORAGE"
+ // -----------------------------------------------------------
+ endmodule
+```
+
 ### Foundry Success Predicate
 
 Foundry has several baked-in convenience accounts for helping to define the "cheat-codes".
@@ -144,6 +162,7 @@ Hence, checking if a `DSTest.assert*` has failed amounts to reading as a boolean
 ```k
 module FOUNDRY-SUCCESS
     imports EVM
+    imports FOUNDRY-STATUS-CODES
 
     syntax Bool ::= 
       "foundry_success" "("
@@ -155,8 +174,8 @@ module FOUNDRY-SUCCESS
         eventExpected: Bool
       ")" [function, klabel(foundry_success), symbol]
  // -------------------------------------------------
-    rule foundry_success(EVMC_SUCCESS, 0, false, false, false, false) => true
-    rule foundry_success(_, _, _, _, _, _)                            => false [owise]
+    rule foundry_success(STATUSCODE, 0, false, false, false, false) => true requires STATUSCODE ==K EVMC_SUCCESS orBool STATUSCODE ==K FOUNDRY_VACUOUSSUCCESS
+    rule foundry_success(_, _, _, _, _, _)                          => false [owise]
 
 endmodule
 ```
@@ -197,6 +216,7 @@ The configuration of the Foundry Cheat Codes is defined as follwing:
 module FOUNDRY-CHEAT-CODES
     imports EVM
     imports EVM-ABI
+    imports FOUNDRY-STATUS-CODES
     imports FOUNDRY-ACCOUNTS
     imports INFINITE-GAS
 
@@ -246,7 +266,11 @@ First we have some helpers in K which can:
 ```k
     syntax KItem ::= #assume ( Bool ) [klabel(foundry_assume), symbol]
  // ------------------------------------------------------------------
-    rule <k> #assume(B) => . ... </k> ensures B
+    rule <k> #assume(B) ~> _ => #halt </k>
+         <statusCode> _ => FOUNDRY_VACUOUSSUCCESS </statusCode>
+     requires notBool B
+
+    rule <k> #assume(B) => . ... </k> requires B
 
      syntax KItem ::= "#markAsFailed" [klabel(foundry_markAsFailed)]
   // ---------------------------------------------------------------
@@ -295,18 +319,6 @@ The rule `foundry.return` will rewrite the `#return_foundry` production into oth
           ... </k>
          <output> OUT </output>
          <callGas> GCALL </callGas>
-```
-
-We define a new status codes:
- - `FOUNDRY_UNIMPLEMENTED`, which signals that the execution ran into an unimplemented cheat code.
- - `FOUNDRY_WHITELISTCALL`, which signals that an address outside the whitelist has been called during the execution.
- - `FOUNDRY_WHITELISTSTORAGE`, which signals that a storage index of an address outside the whitelist has been changed during the execution.
-
-```k
-    syntax ExceptionalStatusCode ::= "FOUNDRY_UNIMPLEMENTED"
-                                   | "FOUNDRY_WHITELISTCALL"
-                                   | "FOUNDRY_WHITELISTSTORAGE"
- // -----------------------------------------------------------
 ```
 
 Below, we define rules for the `#call_foundry` production, handling the cheat codes.

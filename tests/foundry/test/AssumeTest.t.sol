@@ -10,6 +10,30 @@ contract AssumeTest is Test {
         assertEq(a, b);
     }
 
+    function atLeastOneIsValidAddress(address alice, address bob)
+        internal
+        returns (bool)
+    {
+        if (alice != address(0)) {
+            return true;
+        } else if (bob != address(0)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    function test_assume_return(address alice, address bob) public {
+        vm.assume(atLeastOneIsValidAddress(alice, bob));
+
+        assert(true);
+    }
+
+    function test_assume_bool(bool b) public {
+        vm.assume(b);
+        assert(true);
+    }
+
     function test_assume_false(uint256 a, uint256 b) public {
         vm.assume(a != b);
         assertEq(a, b);
