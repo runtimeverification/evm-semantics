@@ -124,6 +124,7 @@ jobs:
           docker stop --time=0 kevm-ci-haskell-${GITHUB_SHA}
 
   test-prove-foundry:
+    if: ${{ github.event.inputs.TestType == 'Prove Foundry' }}
     name: 'Build and Test KEVM Foundry proofs'
     runs-on: [self-hosted, linux, huge]
     timeout-minutes: 150
@@ -209,7 +210,6 @@ jobs:
         run: GC_DONT_GC=1 nix build --extra-experimental-features 'nix-command flakes' --print-build-logs .#kevm-test
 
   dockerhub-image-dry-run:
-    # When TestType is 'DockerHub Image Dry Run', this job will be run.
     if: ${{ github.event.inputs.TestType == 'DockerHub Image Dry Run' }}
     name: 'Build Ubuntu Jammy DockerHub Image'
     runs-on: [self-hosted, linux, normal]
