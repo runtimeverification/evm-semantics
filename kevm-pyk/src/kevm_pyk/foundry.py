@@ -513,6 +513,12 @@ def foundry_prove(
         proof_id = f'{_init_problem[0]}.{_init_problem[1]}'
         llvm_definition_dir = foundry.out / 'kompiled-llvm' if use_booster else None
 
+        def _check_vacuous(cterm: CTerm) -> bool:
+            cell = cterm.cell('STATUSCODE_CELL')
+            if not isinstance(cell, KApply):
+                return False
+            return cell.label.name == 'FOUNDRY_VACUOUSSUCCESS_FOUNDRY-STATUS-CODES_ExceptionalStatusCode'
+
         with KCFGExplore(
             foundry.kevm,
             id=proof_id,
@@ -559,9 +565,17 @@ def foundry_prove(
                 trace_rewrites=trace_rewrites,
                 abstract_node=(KEVM.abstract_gas_cell if auto_abstract_gas else None),
             )
+
             failure_log = None
             if not passed:
                 failure_log = print_failure_info(proof, kcfg_explore, counterexample_info)
+
+            vacuous_nodes = {node.id for node in proof.kcfg.nodes if _check_vacuous(node.cterm)}
+            for idx in vacuous_nodes:
+                _LOGGER.warning(
+                    f' Found vacuous conditions on node {idx}: {kcfg_explore.kprint.pretty_print(proof.path_constraints(idx))} '
+                )
+
             return passed, failure_log
 
     def run_cfg_group(tests: list[str]) -> dict[str, tuple[bool, list[str] | None]]:
