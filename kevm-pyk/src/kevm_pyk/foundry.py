@@ -565,7 +565,6 @@ def foundry_prove(
                 trace_rewrites=trace_rewrites,
                 abstract_node=(KEVM.abstract_gas_cell if auto_abstract_gas else None),
             )
-
             failure_log = None
             if not passed:
                 failure_log = print_failure_info(proof, kcfg_explore, counterexample_info)
