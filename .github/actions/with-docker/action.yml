@@ -21,6 +21,7 @@ runs:
       USER_ID=$(id -u)
       GROUP=$(id -gn)
       GROUP_ID=$(id -g)
+      SUBDIR=./
 
       docker build .                           \
         --file .github/workflows/Dockerfile.z3 \
@@ -34,15 +35,13 @@ runs:
         --build-arg Z3_VERSION=${Z3_VERSION}                        \
         --build-arg LLVM_VERSION=${LLVM_VERSION}
 
-      docker run                        \
-        --name ${TAG_NAME}              \
-        --rm                            \
-        --interactive                   \
-        --tty                           \
-        --detach                        \
-        --user ${USER}:${GROUP}         \
-        --workdir /home/user/workspace  \
+      docker run                           \
+        --name ${TAG_NAME}                 \
+        --rm                               \
+        --interactive                      \
+        --tty                              \
+        --detach                           \
+        --user ${USER}:${GROUP}            \
+        --volume $(pwd):/opt/workspace     \
+        --workdir /opt/workspace/${SUBDIR} \
         runtimeverification/${TAG_NAME}
-
-      docker cp . ${TAG_NAME}:/home/user/workspace
-      docker exec ${TAG_NAME} chown -R ${USER}:${GROUP} /home/user

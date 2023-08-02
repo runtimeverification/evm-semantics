@@ -43,10 +43,8 @@ ARG GROUP_ID=$USER_ID
 RUN groupadd -g $GROUP_ID $GROUP && useradd -m -u $USER_ID -s /bin/sh -g $GROUP $USER
 
 USER ${USER}:${GROUP}
-RUN mkdir /home/user/workspace
-WORKDIR /home/user/workspace
 
-ENV PATH=/home/user/.cargo/bin:/home/user/.local/bin:${PATH}
+ENV PATH=/home/${USER}/.cargo/bin:/home/${USER}/.local/bin:${PATH}
 
 RUN    curl -sSL https://install.python-poetry.org | python3 - \
     && poetry --version
