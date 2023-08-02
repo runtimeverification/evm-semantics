@@ -22,7 +22,7 @@ RUN    apt-get update        \
 
 RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 
-RUN curl -sSL https://install.python-poetry.org | POETRY_HOME=/usr python3 - --version 1.3.2
+RUN curl -sSL https://install.python-poetry.org | POETRY_HOME=/usr python3 - --version 1.5.1
 
 ARG USER_ID=1000
 ARG GROUP_ID=1000
