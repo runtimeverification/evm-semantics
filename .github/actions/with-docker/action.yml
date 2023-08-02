@@ -27,25 +27,25 @@ runs:
       GROUP=$(id -gn)
       GROUP_ID=$(id -g)
 
-      docker build .                           \
-        --file .github/workflows/Dockerfile.z3 \
+      docker build ${SUBDIR}                            \
+        --file ${SUBDIR}.github/workflows/Dockerfile.z3 \
         --tag z3:${Z3_VERSION}
 
-      docker build . --file .github/workflows/Dockerfile            \
-        --build-arg USER=${USER} --build-arg USER_ID=${USER_ID}     \
-        --build-arg GROUP=${GROUP} --build-arg GROUP_ID=${GROUP_ID} \
-        --tag runtimeverification/${TAG_NAME}                       \
-        --build-arg K_COMMIT=${K_COMMIT}                            \
-        --build-arg Z3_VERSION=${Z3_VERSION}                        \
+      docker build ${SUBDIR} --file ${SUBDIR}.github/workflows/Dockerfile \
+        --build-arg USER=${USER} --build-arg USER_ID=${USER_ID}           \
+        --build-arg GROUP=${GROUP} --build-arg GROUP_ID=${GROUP_ID}       \
+        --tag runtimeverification/${TAG_NAME}                             \
+        --build-arg K_COMMIT=${K_COMMIT}                                  \
+        --build-arg Z3_VERSION=${Z3_VERSION}                              \
         --build-arg LLVM_VERSION=${LLVM_VERSION}
 
-      docker run                                 \
-        --name ${TAG_NAME}                       \
-        --rm                                     \
-        --interactive                            \
-        --tty                                    \
-        --detach                                 \
-        --user ${USER}:${GROUP}                  \
-        --volume $(pwd):/opt/workspace/${SUBDIR} \
-        --workdir /opt/workspace/${SUBDIR}       \
+      docker run                           \
+        --name ${TAG_NAME}                 \
+        --rm                               \
+        --interactive                      \
+        --tty                              \
+        --detach                           \
+        --user ${USER}:${GROUP}            \
+        --volume $(pwd):/opt/workspace     \
+        --workdir /opt/workspace/${SUBDIR} \
         runtimeverification/${TAG_NAME}
