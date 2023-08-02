@@ -41,9 +41,7 @@ ARG GROUP=$USER
 ARG USER_ID=1000
 ARG GROUP_ID=$USER_ID
 RUN groupadd -g $GROUP_ID $GROUP && useradd -m -u $USER_ID -s /bin/sh -g $GROUP $USER
-
-RUN mkdir /opt/workspace
-RUN chown -R ${USER}:${GROUP} /opt/workspace
+RUN mkdir /opt/workspace && chown -R ${USER}:${GROUP} /opt/workspace
 
 USER ${USER}:${GROUP}
 
