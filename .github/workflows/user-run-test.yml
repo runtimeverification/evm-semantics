@@ -1,4 +1,4 @@
-name: 'User Run Tests - $GITHUB_REF }}'
+name: 'User Run Tests'
 on:
   workflow_dispatch:
     inputs:
@@ -22,7 +22,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-
   kevm-pyk-code-quality-checks:
     if: ${{ github.event.inputs.TestType == 'Pyk Code Quality Checks' }}
     name: 'Code Quality Checks'
