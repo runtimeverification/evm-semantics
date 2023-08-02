@@ -39,13 +39,13 @@ runs:
         --build-arg Z3_VERSION=${Z3_VERSION}                        \
         --build-arg LLVM_VERSION=${LLVM_VERSION}
 
-      docker run                           \
-        --name ${TAG_NAME}                 \
-        --rm                               \
-        --interactive                      \
-        --tty                              \
-        --detach                           \
-        --user ${USER}:${GROUP}            \
-        --volume $(pwd):/opt/workspace     \
-        --workdir /opt/workspace/${SUBDIR} \
+      docker run                                 \
+        --name ${TAG_NAME}                       \
+        --rm                                     \
+        --interactive                            \
+        --tty                                    \
+        --detach                                 \
+        --user ${USER}:${GROUP}                  \
+        --volume $(pwd):/opt/workspace/${SUBDIR} \
+        --workdir /opt/workspace/${SUBDIR}       \
         runtimeverification/${TAG_NAME}
