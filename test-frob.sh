@@ -6,4 +6,4 @@ kevm-pyk kompile --read-only-kompiled-directory --target haskell --definition "$
 
 
 echo 'Proving'
-kevm-pyk prove --verbose --workers 4 --definition frob-out.d/ -I include/kframework/ -I "$KEVM_PREFIX/lib/kevm/include/kframework/" ./tests/specs/mcd/vat-frob-diff-zero-dart-pass-rough-reuse-spec.k --save-directory ./frob-save.d
+kevm-pyk prove --verbose --workers 4 --smt-timeout 1000 --smt-retry-limit 5 --max-depth 100 --definition frob-out.d/ -I include/kframework/ -I "$KEVM_PREFIX/lib/kevm/include/kframework/" ./tests/specs/mcd/vat-frob-diff-zero-dart-pass-rough-reuse-spec.k --save-directory ./frob-save.d
