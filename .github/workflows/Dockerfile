@@ -35,11 +35,14 @@ RUN    apt-get update                  \
             python3                    \
             python3-pip
 
+# The image is built specifically for an environment with this user/group
+ARG USER=github-user
+ARG GROUP=$USER
 ARG USER_ID=1000
-ARG GROUP_ID=1000
-RUN groupadd -g $GROUP_ID user && useradd -m -u $USER_ID -s /bin/sh -g user user
+ARG GROUP_ID=$USER_ID
+RUN groupadd -g $GROUP_ID $GROUP && useradd -m -u $USER_ID -s /bin/sh -g $GROUP $USER
 
-USER user:user
+USER ${USER}:${GROUP}
 RUN mkdir /home/user/workspace
 WORKDIR /home/user/workspace
 
