@@ -4,6 +4,10 @@ inputs:
   tag:
     description: 'Docker image tag to use'
     required: true
+  subdir:
+    description: 'Subdirectory where code is cloned.'
+    required: false
+    default: "./"
 runs:
   using: 'composite'
   steps:
@@ -11,6 +15,7 @@ runs:
     shell: bash {0}
     env:
       TAG_NAME: ${{ inputs.tag }}
+      SUBDIR: ${{ inputs.subdir }}
     run: |
       set -euxo pipefail
 
@@ -21,7 +26,6 @@ runs:
       USER_ID=$(id -u)
       GROUP=$(id -gn)
       GROUP_ID=$(id -g)
-      SUBDIR=./
 
       docker build .                           \
         --file .github/workflows/Dockerfile.z3 \

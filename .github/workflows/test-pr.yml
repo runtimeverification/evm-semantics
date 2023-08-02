@@ -232,6 +232,7 @@ jobs:
         uses: ./.github/actions/with-docker
         with:
           tag: kevm-package-jammy-${{ github.sha }}
+          subdir: build-jammy-package/
       - name: 'Build Package'
         run: |
           set -euxo pipefail
