@@ -63,7 +63,7 @@ jobs:
           ref: ${{ github.event.push.head.sha }}
           path: build-jammy-package/
       - name: 'Set up Docker'
-        uses: ./.github/actions/with-docker
+        uses: ./build-jammy-package/.github/actions/with-docker
         with:
           tag: kevm-package-jammy-${{ github.sha }}
           subdir: build-jammy-package/
@@ -71,6 +71,7 @@ jobs:
         run: |
           set -euxo pipefail
           version=$(cat package/version)
+          cd build-jammy-package/
           docker exec kevm-package-jammy-${GITHUB_SHA} /bin/bash -c 'package/debian/package jammy'
           docker cp kevm-package-jammy-${GITHUB_SHA}:/opt/workspace/kevm_${version}_amd64.deb ./
       - name: 'Tear down Docker'
