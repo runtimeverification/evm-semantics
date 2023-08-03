@@ -238,6 +238,7 @@ jobs:
         run: |
           set -euxo pipefail
           version=$(cat package/version)
+          cd build-jammy-package/
           docker exec kevm-package-jammy-${GITHUB_SHA} /bin/bash -c 'package/debian/package jammy'
           docker cp kevm-package-jammy-${GITHUB_SHA}:/opt/workspace/kevm_${version}_amd64.deb ./
       - name: 'Tear down Docker'
