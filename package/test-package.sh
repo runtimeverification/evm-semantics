@@ -13,12 +13,12 @@ kevm run tests/ethereum-tests/LegacyTests/Constantinople/VMTests/vmArithmeticTes
 rm -rf tests/ethereum-tests/LegacyTests/Constantinople/VMTests/vmArithmeticTest/add0.json.llvm-out
 
 kevm run tests/ethereum-tests/LegacyTests/Constantinople/VMTests/vmSystemOperations/TestNameRegistrator.json \
-    --backend llvm --mode VMTESTS --schedule DEFAULT --chainid 1 --pyk
+    --backend llvm --mode VMTESTS --schedule DEFAULT --chainid 1
 
 kevm run tests/ethereum-tests/LegacyTests/Constantinople/VMTests/vmSystemOperations/TestNameRegistrator.json \
-    --backend haskell-standalone --mode VMTESTS --schedule DEFAULT --chainid 1 --pyk
+    --backend haskell-standalone --mode VMTESTS --schedule DEFAULT --chainid 1
 
-kevm kast tests/interactive/log3_MaxTopic_d0g0v0.json --pyk --backend llvm > tests/interactive/log3_MaxTopic_d0g0v0.json.parse-out
+kevm kast tests/interactive/log3_MaxTopic_d0g0v0.json --backend llvm > tests/interactive/log3_MaxTopic_d0g0v0.json.parse-out
 git --no-pager diff --no-index --ignore-all-space -R tests/interactive/log3_MaxTopic_d0g0v0.json.parse-out tests/interactive/log3_MaxTopic_d0g0v0.json.parse-expected
 rm tests/interactive/log3_MaxTopic_d0g0v0.json.parse-out
 
@@ -39,8 +39,9 @@ kevm kompile tests/specs/examples/erc20-spec.md                 \
     --main-module VERIFICATION                                  \
     --syntax-module VERIFICATION                                \
     --verbose
-# This test is probably too long for public Github runner and currently seems broken
-if ! ${NIX:-false}; then
-kevm prove tests/specs/examples/erc20-spec.md --backend haskell --format-failures  \
-    --definition tests/specs/examples/erc20-spec/haskell
-fi
+kevm prove tests/specs/examples/erc20-spec.md --backend haskell --definition tests/specs/examples/erc20-spec/haskell
+
+# Commented because of https://github.com/foundry-rs/foundry/issues/545, and we can't install solc 0.8.13
+# forge build --root tests/foundry --no-auto-detect
+# kevm foundry-kompile --foundry-project-root tests/foundry --verbose
+# kevm foundry-prove --foundry-project-root tests/foundry --verbose --test AssertTest.test_assert_true_branch
