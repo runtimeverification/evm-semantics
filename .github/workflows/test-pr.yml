@@ -247,6 +247,7 @@ jobs:
       - name: 'Build Docker Image'
         run: |
           set -euxo pipefail
+          cd build-jammy-package/
           version=$(cat package/version)
           k_version=$(cat deps/k_release)
           tag_name="runtimeverificationinc/kevm:ubuntu-jammy-${version}"
@@ -266,6 +267,7 @@ jobs:
       - name: 'Test Docker Image'
         run: |
           set -euxo pipefail
+          cd build-jammy-package/
           version=$(cat package/version)
           k_version=$(cat deps/k_release)
           container_name="kevm-ci-test-${GITHUB_SHA}"
