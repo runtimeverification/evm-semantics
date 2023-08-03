@@ -94,8 +94,8 @@ run_kast() {
     fi
 
     case "${run_file}-${output_mode}" in
-        *.json-kore) check_k_install ; gst-to-kore "${run_file}" --schedule "${schedule}" --mode "${mode}" --chainid "${chainid}" "$@" ;;
-        *)           check_k_install ; kast --definition "${backend_dir}" "${run_file}" --output "${output_mode}" "$@" ;;
+        *.json-kore) check_k_install ; execute gst-to-kore "${run_file}" --schedule "${schedule}" --mode "${mode}" --chainid "${chainid}" "$@" ;;
+        *)           check_k_install ; execute kast --definition "${backend_dir}" "${run_file}" --output "${output_mode}" "$@" ;;
     esac
 }
 
