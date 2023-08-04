@@ -1,16 +1,26 @@
 from __future__ import annotations
 
+import json
+from functools import cached_property
+from os import listdir
+from pathlib import Path
 from typing import TYPE_CHECKING
-from unittest.mock import patch
 
-from pyk.proof.reachability import APRProof
-
+from kevm_pyk.foundry import foundry_list
+from kevm_pyk.solc_to_k import Contract
 from tests.unit.utils import TEST_DATA_DIR
+
+# from pyk.proof.reachability import APRProof
+
+
+# from unittest.mock import patch
+
 
 if TYPE_CHECKING:
     from typing import Final
 
-    from kevm_pyk.foundry import Foundry
+    from pytest_mock import MockerFixture
+
 
 LIST_DATA_DIR: Final = TEST_DATA_DIR / 'foundry-list'
 LIST_OUT: Final = LIST_DATA_DIR / 'out/'
@@ -18,35 +28,45 @@ LIST_APR_PROOF: Final = LIST_OUT / 'apr_proofs/'
 LIST_EXPECTED: Final = LIST_DATA_DIR / 'foundry-list.expected'
 
 
-@patch('kevm_pyk.foundry.Foundry')
-def foundry_list(foundry: Foundry) -> list[str]:
-    foundry._root = LIST_DATA_DIR
-    all_methods = [
-        f'{contract.name}.{method.name}' for contract in foundry.contracts.values() for method in contract.methods
-    ]
+class FoundryMock:
+    out = LIST_OUT
 
-    lines: list[str] = []
-    for method in sorted(all_methods):
-        contract_name, test_name = method.split('.')
-        proof_digest = (
-            f'{contract_name}.{test_name}:{foundry.contracts[contract_name].method_by_name[test_name].digest}'
-        )
-        if APRProof.proof_exists(proof_digest, LIST_APR_PROOF):
-            apr_proof = APRProof.read_proof(proof_digest, LIST_APR_PROOF)
-            lines.append(str(apr_proof.summary))
-            lines.append('')
-    if len(lines) > 0:
-        lines = lines[0:-1]
+    @cached_property
+    def contracts(self) -> dict[str, Contract]:
+        ret: dict[str, Contract] = {}
+        for proof_file in listdir(LIST_APR_PROOF):
+            proof_path = LIST_APR_PROOF / proof_file
+            proof_dict = json.loads(Path(proof_path).read_text())
+            pid = proof_dict['id']
+            contract = Contract.__new__(Contract)
+            full_method = pid.split(':')[0]
+            method = Contract.Method.__new__(Contract.Method)
+            contract.name, method.name = full_method.split('.')
+            if not hasattr(contract, 'methods'):
+                contract.methods = ()
+            contract.methods = contract.methods + (method,)
+            ret[proof_file] = contract
+        return ret
 
-    return lines
+    def proof_digest(self, contract: str, test: str) -> str:
+        for proof_file in listdir(LIST_APR_PROOF):
+            proof_path = LIST_APR_PROOF / proof_file
+            proof_dict = json.loads(Path(proof_path).read_text())
+            pid = proof_dict['id']
+            if pid.startswith(f'{contract}.{test}'):
+                return pid
+        return ''
 
 
-def test_foundry_list(update_expected_output: bool) -> None:
+def test_foundry_list(mocker: MockerFixture, update_expected_output: bool) -> None:
+    foundry_mock = mocker.patch('kevm_pyk.foundry.Foundry')
+    foundry_mock.return_value = FoundryMock()
+
     with LIST_EXPECTED.open() as f:
         foundry_list_expected = f.read().rstrip()
     assert foundry_list_expected
 
-    list_out = '\n'.join(foundry_list())
+    list_out = '\n'.join(foundry_list(LIST_DATA_DIR))
 
     if update_expected_output:
         LIST_EXPECTED.write_text(list_out)
