@@ -1012,7 +1012,7 @@ def _create_argument_parser() -> ArgumentParser:
         dest='use_booster',
         default=True,
         action='store_true',
-        help="Use the booster RPC server instead of kore-rpc. Requires calling foundry-kompile with the '--with-llvm-library' flag",
+        help='Use the booster RPC server instead of kore-rpc.',
     )
     foundry_prove_args.add_argument(
         '--no-booster',
