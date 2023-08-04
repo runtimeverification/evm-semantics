@@ -797,6 +797,7 @@ def _create_argument_parser() -> ArgumentParser:
         'kompile',
         help='Kompile KEVM specification.',
         parents=[kevm_cli_args.logging_args, kevm_cli_args.k_args, kevm_cli_args.kompile_args],
+        conflict_handler='resolve',
     )
     kevm_kompile_args.add_argument('main_file', type=file_path, help='Path to file with main module.')
     kevm_kompile_args.add_argument(
@@ -804,6 +805,19 @@ def _create_argument_parser() -> ArgumentParser:
     )
     kevm_kompile_args.add_argument(
         '-o', '--output-definition', type=Path, dest='output_dir', help='Path to write kompiled definition to.'
+    )
+    kevm_kompile_args.add_argument(
+        '--with-llvm-library',
+        dest='llvm_library',
+        default=False,
+        action='store_true',
+        help='Do not generate a dynamic llvm library during kompile.',
+    )
+    kevm_kompile_args.add_argument(
+        '--no-llvm-library',
+        dest='llvm_library',
+        action='store_false',
+        help='Make kompile generate a dynamic llvm library.',
     )
 
     prove_args = command_parser.add_parser(
@@ -919,6 +933,7 @@ def _create_argument_parser() -> ArgumentParser:
             kevm_cli_args.kompile_args,
             kevm_cli_args.foundry_args,
         ],
+        conflict_handler='resolve',
     )
     foundry_kompile.add_argument(
         '--regen',
@@ -933,6 +948,19 @@ def _create_argument_parser() -> ArgumentParser:
         default=False,
         action='store_true',
         help='Rekompile foundry.k even if kompiled definition already exists.',
+    )
+    foundry_kompile.add_argument(
+        '--with-llvm-library',
+        dest='llvm_library',
+        default=True,
+        action='store_true',
+        help='Make kompile generate a dynamic llvm library.',
+    )
+    foundry_kompile.add_argument(
+        '--no-llvm-library',
+        dest='llvm_library',
+        action='store_false',
+        help='Do not generate a dynamic llvm library during kompile.',
     )
 
     foundry_prove_args = command_parser.add_parser(
@@ -977,7 +1005,7 @@ def _create_argument_parser() -> ArgumentParser:
         dest='bmc_depth',
         default=None,
         type=int,
-        help='Max depth of loop unrolling during bounded model checking (default: 3).',
+        help='Max depth of loop unrolling during bounded model checking.',
     )
     foundry_prove_args.add_argument(
         '--use-booster',
