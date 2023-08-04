@@ -233,6 +233,7 @@ def assert_or_update_show_output(show_res: str, expected_file: Path, *, update: 
                 '│   src: ',
                 '┃  │   src: ',
                 '   │   src: ',
+                'module',
             )
         )
     )
