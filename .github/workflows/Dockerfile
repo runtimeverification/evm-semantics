@@ -1,6 +1,6 @@
 ARG K_COMMIT
 ARG Z3_VERSION
-FROM ghcr.io/foundry-rs/foundry:nightly-d93312bfe5d419d63a9836fce31f9f60a4523519 as FOUNDRY
+FROM ghcr.io/foundry-rs/foundry:nightly-ca67d15f4abd46394b324c50e21e66f306a1162d as FOUNDRY
 
 ARG K_COMMIT
 ARG Z3_VERSION

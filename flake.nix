@@ -20,7 +20,7 @@
     pyk.url = "github:runtimeverification/pyk/v0.1.378";
     pyk.inputs.flake-utils.follows = "k-framework/flake-utils";
     pyk.inputs.nixpkgs.follows = "k-framework/nixpkgs";
-    foundry.url = "github:shazow/foundry.nix/d8b3d4b92c911d7c479ce6d5c36db2473014d9c6"; # Use the same version as the CI Docker image
+    foundry.url = "github:shazow/foundry.nix/monthly"; # Use monthly branch for permanent releases
   };
   outputs = { self, k-framework, haskell-backend, nixpkgs, flake-utils
     , poetry2nix, blockchain-k-plugin, ethereum-tests, ethereum-legacytests
