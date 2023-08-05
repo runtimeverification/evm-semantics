@@ -20,7 +20,7 @@
     pyk.url = "github:runtimeverification/pyk/v0.1.378";
     pyk.inputs.flake-utils.follows = "k-framework/flake-utils";
     pyk.inputs.nixpkgs.follows = "k-framework/nixpkgs";
-    foundry.url = "github:shazow/foundry.nix/monthly"; # Use monthly branch for permanent release
+    foundry.url = "github:shazow/foundry.nix/monthly"; # Use monthly branch for permanent releases
   };
   outputs = { self, k-framework, haskell-backend, nixpkgs, flake-utils
     , poetry2nix, blockchain-k-plugin, ethereum-tests, ethereum-legacytests
@@ -125,7 +125,7 @@
 
             enableParallelBuilding = true;
 
-            buildInputs = [ (final.kevm k) prev.which prev.git ];
+            buildInputs = [ (final.kevm k) prev.which prev.git prev.foundry-bin prev.solc ];
 
             buildPhase = ''
               mkdir -p tests/ethereum-tests/LegacyTests

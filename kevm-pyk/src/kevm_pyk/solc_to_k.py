@@ -605,6 +605,7 @@ def _range_predicate_bytes(term: KInner, type_label: str) -> tuple[bool, KInner 
     return (False, None)
 
 
+# TODO write semantics that supports static arays
 def _range_predicate_static_array(term: KInner, type_label: str) -> tuple[bool, KInner | None]:
     if type_label.endswith(']') and not type_label.endswith('[]'):
         parts = type_label.rsplit('[', 1)
