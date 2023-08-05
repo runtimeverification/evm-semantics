@@ -20,7 +20,7 @@
 │   statusCode: EVMC_REVERT
 │
 │  (2 steps)
-├─ 5
+├─ 5 (terminal)
 │   k: #halt ~> CONTINUATION:K
 │   pc: 992
 │   callDepth: 0
