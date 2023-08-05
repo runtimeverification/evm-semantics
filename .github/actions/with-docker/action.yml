@@ -11,9 +11,11 @@ inputs:
   os: 
     description: 'OS to setup Docker for.'
     required: true
+    default: "ubuntu"
   distro:
     description: 'Distribution to setup Docker for.'
     required: true
+    default: "jammy"
   llvm:
     description: 'LLVM version to use.'
     required: false
