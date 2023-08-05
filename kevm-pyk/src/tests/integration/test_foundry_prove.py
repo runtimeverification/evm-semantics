@@ -128,8 +128,8 @@ def test_foundry_fail(test_id: str, foundry_root: Path, update_expected_output: 
         foundry_root,
         tests=[test_id],
         simplify_init=False,
-        smt_timeout=125,
-        smt_retry_limit=4,
+        smt_timeout=300,
+        smt_retry_limit=8,
         use_booster=use_booster,
         counterexample_info=True,
     )
