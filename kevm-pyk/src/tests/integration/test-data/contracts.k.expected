@@ -5731,7 +5731,7 @@ module BYTESTYPETEST-CONTRACT
     syntax BytesTypeTestMethod ::= "test_bytes4_fail" "(" Int ":" "bytes4" ")" [symbol(), klabel(method_BytesTypeTest_test_bytes4_fail_bytes4)]
     
     rule  ( BytesTypeTest . testFail_bytes32 ( V0_x : bytes32 ) => #abiCallData ( "testFail_bytes32" , #bytes32 ( V0_x ) , .TypedArgs ) )
-       ensures #rangeUInt ( 256 , V0_x )
+       ensures #rangeBytes ( 32 , V0_x )
       
     
     rule  ( BytesTypeTest . testFail_bytes4 ( V0_x : bytes4 ) => #abiCallData ( "testFail_bytes4" , #bytes4 ( V0_x ) , .TypedArgs ) )
@@ -5739,11 +5739,11 @@ module BYTESTYPETEST-CONTRACT
       
     
     rule  ( BytesTypeTest . test_bytes32 ( V0_x : bytes32 ) => #abiCallData ( "test_bytes32" , #bytes32 ( V0_x ) , .TypedArgs ) )
-       ensures #rangeUInt ( 256 , V0_x )
+       ensures #rangeBytes ( 32 , V0_x )
       
     
     rule  ( BytesTypeTest . test_bytes32_fail ( V0_x : bytes32 ) => #abiCallData ( "test_bytes32_fail" , #bytes32 ( V0_x ) , .TypedArgs ) )
-       ensures #rangeUInt ( 256 , V0_x )
+       ensures #rangeBytes ( 32 , V0_x )
       
     
     rule  ( BytesTypeTest . test_bytes4 ( V0_x : bytes4 ) => #abiCallData ( "test_bytes4" , #bytes4 ( V0_x ) , .TypedArgs ) )
@@ -6999,7 +6999,7 @@ module VM-CONTRACT
     
     rule  ( Vm . load ( V0_ : address , V1_ : bytes32 ) => #abiCallData ( "load" , #address ( V0_ ) , #bytes32 ( V1_ ) , .TypedArgs ) )
        ensures ( #rangeAddress ( V0_ )
-       andBool ( #rangeUInt ( 256 , V1_ )
+       andBool ( #rangeBytes ( 32 , V1_ )
                ))
       
     
@@ -7082,7 +7082,7 @@ module VM-CONTRACT
     
     rule  ( Vm . sign ( V0_ : uint256 , V1_ : bytes32 ) => #abiCallData ( "sign" , #uint256 ( V0_ ) , #bytes32 ( V1_ ) , .TypedArgs ) )
        ensures ( #rangeUInt ( 256 , V0_ )
-       andBool ( #rangeUInt ( 256 , V1_ )
+       andBool ( #rangeBytes ( 32 , V1_ )
                ))
       
     
@@ -7114,8 +7114,8 @@ module VM-CONTRACT
     
     rule  ( Vm . store ( V0_ : address , V1_ : bytes32 , V2_ : bytes32 ) => #abiCallData ( "store" , #address ( V0_ ) , #bytes32 ( V1_ ) , #bytes32 ( V2_ ) , .TypedArgs ) )
        ensures ( #rangeAddress ( V0_ )
-       andBool ( #rangeUInt ( 256 , V1_ )
-       andBool ( #rangeUInt ( 256 , V2_ )
+       andBool ( #rangeBytes ( 32 , V1_ )
+       andBool ( #rangeBytes ( 32 , V2_ )
                )))
       
     
@@ -7132,7 +7132,7 @@ module VM-CONTRACT
       
     
     rule  ( Vm . toString ( V0_ : bytes32 ) => #abiCallData ( "toString" , #bytes32 ( V0_ ) , .TypedArgs ) )
-       ensures #rangeUInt ( 256 , V0_ )
+       ensures #rangeBytes ( 32 , V0_ )
       
     
     rule  ( Vm . toString ( V0_ : int256 ) => #abiCallData ( "toString" , #int256 ( V0_ ) , .TypedArgs ) )
