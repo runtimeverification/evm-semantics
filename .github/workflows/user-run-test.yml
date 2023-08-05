@@ -1,40 +1,31 @@
-name: 'Test PR'
+name: 'User Run Tests'
 on:
-  pull_request:
-    branches:
-      - 'master'
+  workflow_dispatch:
+    inputs:
+      TestType:
+        description: 'Run A Specific Test'
+        required: true
+        type: choice
+        options:
+          - 'Pyk Code Quality Checks'
+          - 'Pyk Unit Tests'
+          - 'Pyk profile'
+          - 'Concrete Executions'
+          - 'Prove Haskell'     
+          - 'Prove Foundry'
+          - 'Prove Foundry Booster'
+          - 'Nix'
+          - 'DockerHub Image Dry Run'     
+
+      
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
 
-  version-bump:
-    name: 'Version Bump'
-    runs-on: ubuntu-latest
-    steps:
-      - name: 'Check out code'
-        uses: actions/checkout@v3
-        with:
-          token: ${{ secrets.JENKINS_GITHUB_PAT }}
-          # fetch-depth 0 means deep clone the repo
-          fetch-depth: 0
-          ref: ${{ github.event.pull_request.head.sha }}
-      - name: 'Configure GitHub user'
-        run: |
-          git config user.name devops
-          git config user.email devops@runtimeverification.com
-      - name: 'Update version'
-        run: |
-          og_version=$(git show origin/${GITHUB_BASE_REF}:package/version)
-          ./package/version.sh bump ${og_version}
-          ./package/version.sh sub
-          git add --update && git commit --message "Set Version: $(cat package/version)" || true
-      - name: 'Push updates'
-        run: git push origin HEAD:${GITHUB_HEAD_REF}
-
   kevm-pyk-code-quality-checks:
-    needs: version-bump
+    if: ${{ github.event.inputs.TestType == 'Pyk Code Quality Checks' }}
     name: 'Code Quality Checks'
     runs-on: ubuntu-latest
     steps:
@@ -48,7 +39,7 @@ jobs:
         run: make -C kevm-pyk pyupgrade
 
   kevm-pyk-unit-tests:
-    needs: kevm-pyk-code-quality-checks
+    if: ${{ github.event.inputs.TestType == 'Pyk Unit Tests' }}
     name: 'Unit Tests'
     runs-on: ubuntu-latest
     steps:
@@ -62,7 +53,7 @@ jobs:
         run: make -C kevm-pyk cov-unit
 
   kevm-pyk-profile:
-    needs: kevm-pyk-code-quality-checks
+    if: ${{ github.event.inputs.TestType == 'Pyk profile' }}
     name: 'Profiling'
     runs-on: ubuntu-latest
     steps:
@@ -78,8 +69,8 @@ jobs:
           find /tmp/pytest-of-${USER}/pytest-current/ -type f | sort | xargs tail -n +1
 
   test-concrete-execution:
+    if: ${{ github.event.inputs.TestType == 'Concrete Executions' }}
     name: 'Build and Test KEVM concrete execution'
-    needs: kevm-pyk-code-quality-checks
     runs-on: [self-hosted, linux, normal]
     timeout-minutes: 45
     steps:
@@ -112,8 +103,8 @@ jobs:
           docker stop --time=0 kevm-ci-concrete-${GITHUB_SHA}
 
   test-prove-haskell:
+    if: ${{ github.event.inputs.TestType == 'Prove Haskell' }}
     name: 'Build and Test KEVM haskell proofs'
-    needs: kevm-pyk-code-quality-checks
     runs-on: [self-hosted, linux, huge]
     timeout-minutes: 120
     steps:
@@ -134,7 +125,6 @@ jobs:
 
   test-prove-foundry:
     name: 'Build and Test KEVM Foundry proofs'
-    needs: kevm-pyk-code-quality-checks
     runs-on: [self-hosted, linux, huge]
     timeout-minutes: 150
     steps:
@@ -151,15 +141,15 @@ jobs:
       - name: 'Build Foundry'
         run: docker exec -u user kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make build-foundry -j2'
       - name: 'Foundry Prove'
-        run: docker exec -u user kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make test-foundry-prove PYTEST_ARGS=-vv'
+        run: docker exec -u user kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make test-foundry-prove FOUNDRY_PAR=8'
       - name: 'Tear down Docker'
         if: always()
         run: |
           docker stop --time=0 kevm-ci-foundry-${GITHUB_SHA}
 
   test-prove-foundry-booster:
+    if: ${{ github.event.inputs.TestType == 'Prove Foundry Booster' }}
     name: 'Build and Test KEVM Foundry proofs (booster)'
-    needs: kevm-pyk-code-quality-checks
     runs-on: [self-hosted, linux, huge]
     timeout-minutes: 150
     steps:
@@ -181,6 +171,7 @@ jobs:
         run: nix develop --extra-experimental-features 'nix-command flakes' --command make test-foundry-prove -j2 FOUNDRY_PAR=8 TEST_ARGS=--use-booster
 
   nix:
+    if: ${{ github.event.inputs.TestType == 'Nix' }}
     name: 'Nix'
     strategy:
       fail-fast: false
@@ -189,7 +180,6 @@ jobs:
           - runner: normal
           - runner: macos-13
           - runner: ARM64
-    needs: version-bump
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 60
     steps:
@@ -219,9 +209,10 @@ jobs:
         run: GC_DONT_GC=1 nix build --extra-experimental-features 'nix-command flakes' --print-build-logs .#kevm-test
 
   dockerhub-image-dry-run:
+    # When TestType is 'DockerHub Image Dry Run', this job will be run.
+    if: ${{ github.event.inputs.TestType == 'DockerHub Image Dry Run' }}
     name: 'Build Ubuntu Jammy DockerHub Image'
     runs-on: [self-hosted, linux, normal]
-    needs: kevm-pyk-code-quality-checks
     steps:
       - name: 'Check out code'
         uses: actions/checkout@v3
@@ -268,7 +259,7 @@ jobs:
           version=$(cat package/version)
           k_version=$(cat deps/k_release)
           container_name="kevm-ci-test-${GITHUB_SHA}"
-          docker cp ./kevm-pyk/src/tests/integration/test-data/foundry ${container_name}:/home/user/foundry
+          docker cp ./tests/foundry ${container_name}:/home/user/foundry
           docker exec -u user ${container_name} /bin/bash -c "sudo chown user:user -R /home/user/foundry"
           docker exec -u user ${container_name} /bin/bash -c "forge build --root foundry"
           docker exec -u user ${container_name} /bin/bash -c "kevm foundry-kompile --foundry-project-root foundry --verbose"
