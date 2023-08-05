@@ -541,10 +541,8 @@ def foundry_prove(
                 foundry.kevm,
                 proof,
                 kcfg_explore,
-                save_directory=save_directory,
                 max_depth=max_depth,
                 max_iterations=max_iterations,
-                workers=workers,
                 break_every_step=break_every_step,
                 break_on_jumpi=break_on_jumpi,
                 break_on_calls=break_on_calls,
@@ -552,11 +550,6 @@ def foundry_prove(
                 is_terminal=KEVM.is_terminal,
                 same_loop=KEVM.same_loop,
                 extract_branches=KEVM.extract_branches,
-                bug_report=br,
-                kore_rpc_command=kore_rpc_command,
-                smt_timeout=smt_timeout,
-                smt_retry_limit=smt_retry_limit,
-                trace_rewrites=trace_rewrites,
                 abstract_node=(KEVM.abstract_gas_cell if auto_abstract_gas else None),
             )
             failure_log = None
