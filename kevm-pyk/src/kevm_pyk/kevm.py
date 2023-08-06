@@ -8,6 +8,7 @@ from pyk.cterm import CTerm
 from pyk.kast.inner import KApply, KLabel, KSequence, KSort, KVariable, build_assoc
 from pyk.kast.manip import abstract_term_safely, bottom_up, flatten_label
 from pyk.kast.pretty import paren
+from pyk.kcfg.semantics import KCFGSemantics
 from pyk.kcfg.show import NodePrinter
 from pyk.ktool.kprove import KProve
 from pyk.ktool.krun import KRun
@@ -32,6 +33,87 @@ _LOGGER: Final = logging.getLogger(__name__)
 
 
 # KEVM class
+
+
+class KEVMSemantics(KCFGSemantics):
+    auto_abstract_gas: bool
+
+    def __init__(self, auto_abstract_gas: bool = False) -> None:
+        self.auto_abstract_gas = auto_abstract_gas
+
+    def is_terminal(self, cterm: CTerm) -> bool:
+        k_cell = cterm.cell('K_CELL')
+        # <k> #halt </k>
+        if k_cell == KEVM.halt():
+            return True
+        elif type(k_cell) is KSequence:
+            # <k> . </k>
+            if k_cell.arity == 0:
+                return True
+            # <k> #halt </k>
+            elif k_cell.arity == 1 and k_cell[0] == KEVM.halt():
+                return True
+            # <k> #halt ~> X:K </k>
+            elif (
+                k_cell.arity == 2 and k_cell[0] == KEVM.halt() and type(k_cell[1]) is KVariable and k_cell[1].sort == K
+            ):
+                return True
+        return False
+
+    def same_loop(self, cterm1: CTerm, cterm2: CTerm) -> bool:
+        # In the same program, at the same calldepth, at the same program counter
+        for cell in ['PC_CELL', 'CALLDEPTH_CELL', 'PROGRAM_CELL']:
+            if cterm1.cell(cell) != cterm2.cell(cell):
+                return False
+        # duplicate from KEVM.extract_branches
+        jumpi_pattern = KEVM.jumpi_applied(KVariable('###PCOUNT'), KVariable('###COND'))
+        pc_next_pattern = KApply('#pc[_]_EVM_InternalOp_OpCode', [KEVM.jumpi()])
+        branch_pattern = KSequence([jumpi_pattern, pc_next_pattern, KEVM.sharp_execute(), KVariable('###CONTINUATION')])
+        subst1 = branch_pattern.match(cterm1.cell('K_CELL'))
+        subst2 = branch_pattern.match(cterm2.cell('K_CELL'))
+        # Jumping to the same program counter
+        if subst1 is not None and subst2 is not None and subst1['###PCOUNT'] == subst2['###PCOUNT']:
+            # Same wordstack structure
+            if KEVM.wordstack_len(cterm1.cell('WORDSTACK_CELL')) == KEVM.wordstack_len(cterm2.cell('WORDSTACK_CELL')):
+                return True
+        return False
+
+    def extract_branches(self, cterm: CTerm) -> list[KInner]:
+        k_cell = cterm.cell('K_CELL')
+        jumpi_pattern = KEVM.jumpi_applied(KVariable('###PCOUNT'), KVariable('###COND'))
+        pc_next_pattern = KApply('#pc[_]_EVM_InternalOp_OpCode', [KEVM.jumpi()])
+        branch_pattern = KSequence([jumpi_pattern, pc_next_pattern, KEVM.sharp_execute(), KVariable('###CONTINUATION')])
+        if subst := branch_pattern.match(k_cell):
+            cond = subst['###COND']
+            if cond_subst := KEVM.bool_2_word(KVariable('###BOOL_2_WORD')).match(cond):
+                cond = cond_subst['###BOOL_2_WORD']
+            else:
+                cond = KApply('_==Int_', [cond, intToken(0)])
+            return [mlEqualsTrue(cond), mlEqualsTrue(KApply('notBool_', [cond]))]
+        return []
+
+    def abstract_node(self, cterm: CTerm) -> CTerm:
+        if not self.auto_abstract_gas:
+            return cterm
+
+        def _replace(term: KInner) -> KInner:
+            if type(term) is KApply and term.label.name == '<gas>':
+                gas_term = term.args[0]
+                if type(gas_term) is KApply and gas_term.label.name == 'infGas':
+                    if type(gas_term.args[0]) is KVariable:
+                        return term
+                    return KApply(
+                        '<gas>', KApply('infGas', abstract_term_safely(term, base_name='VGAS', sort=KSort('Int')))
+                    )
+                return term
+            elif type(term) is KApply and term.label.name == '<refund>':
+                if type(term.args[0]) is KVariable:
+                    return term
+                return KApply('<refund>', abstract_term_safely(term, base_name='VREFUND', sort=KSort('Int')))
+            else:
+                return term
+
+        return CTerm(config=bottom_up(_replace, cterm.config), constraints=cterm.constraints)
 
 
 class KEVM(KProve, KRun):
@@ -145,60 +227,6 @@ class KEVM(KProve, KRun):
         for c in constraints:
             cterm = cterm.add_constraint(c)
         return cterm
-
-    @staticmethod
-    def extract_branches(cterm: CTerm) -> Iterable[KInner]:
-        k_cell = cterm.cell('K_CELL')
-        jumpi_pattern = KEVM.jumpi_applied(KVariable('###PCOUNT'), KVariable('###COND'))
-        pc_next_pattern = KApply('#pc[_]_EVM_InternalOp_OpCode', [KEVM.jumpi()])
-        branch_pattern = KSequence([jumpi_pattern, pc_next_pattern, KEVM.sharp_execute(), KVariable('###CONTINUATION')])
-        if subst := branch_pattern.match(k_cell):
-            cond = subst['###COND']
-            if cond_subst := KEVM.bool_2_word(KVariable('###BOOL_2_WORD')).match(cond):
-                cond = cond_subst['###BOOL_2_WORD']
-            else:
-                cond = KApply('_==Int_', [cond, intToken(0)])
-            return [mlEqualsTrue(cond), mlEqualsTrue(KApply('notBool_', [cond]))]
-        return []
-
-    @staticmethod
-    def is_terminal(cterm: CTerm) -> bool:
-        k_cell = cterm.cell('K_CELL')
-        # <k> #halt </k>
-        if k_cell == KEVM.halt():
-            return True
-        elif type(k_cell) is KSequence:
-            # <k> . </k>
-            if k_cell.arity == 0:
-                return True
-            # <k> #halt </k>
-            elif k_cell.arity == 1 and k_cell[0] == KEVM.halt():
-                return True
-            # <k> #halt ~> X:K </k>
-            elif (
-                k_cell.arity == 2 and k_cell[0] == KEVM.halt() and type(k_cell[1]) is KVariable and k_cell[1].sort == K
-            ):
-                return True
-        return False
-
-    @staticmethod
-    def same_loop(cterm1: CTerm, cterm2: CTerm) -> bool:
-        # In the same program, at the same calldepth, at the same program counter
-        for cell in ['PC_CELL', 'CALLDEPTH_CELL', 'PROGRAM_CELL']:
-            if cterm1.cell(cell) != cterm2.cell(cell):
-                return False
-        # duplicate from KEVM.extract_branches
-        jumpi_pattern = KEVM.jumpi_applied(KVariable('###PCOUNT'), KVariable('###COND'))
-        pc_next_pattern = KApply('#pc[_]_EVM_InternalOp_OpCode', [KEVM.jumpi()])
-        branch_pattern = KSequence([jumpi_pattern, pc_next_pattern, KEVM.sharp_execute(), KVariable('###CONTINUATION')])
-        subst1 = branch_pattern.match(cterm1.cell('K_CELL'))
-        subst2 = branch_pattern.match(cterm2.cell('K_CELL'))
-        # Jumping to the same program counter
-        if subst1 is not None and subst2 is not None and subst1['###PCOUNT'] == subst2['###PCOUNT']:
-            # Same wordstack structure
-            if KEVM.wordstack_len(cterm1.cell('WORDSTACK_CELL')) == KEVM.wordstack_len(cterm2.cell('WORDSTACK_CELL')):
-                return True
-        return False
 
     @staticmethod
     def halt() -> KApply:
@@ -373,27 +401,6 @@ class KEVM(KProve, KRun):
             else:
                 wrapped_accounts.append(acct)
         return build_assoc(KApply('.AccountCellMap'), KLabel('_AccountCellMap_'), wrapped_accounts)
-
-    @staticmethod
-    def abstract_gas_cell(cterm: CTerm) -> CTerm:
-        def _replace(term: KInner) -> KInner:
-            if type(term) is KApply and term.label.name == '<gas>':
-                gas_term = term.args[0]
-                if type(gas_term) is KApply and gas_term.label.name == 'infGas':
-                    if type(gas_term.args[0]) is KVariable:
-                        return term
-                    return KApply(
-                        '<gas>', KApply('infGas', abstract_term_safely(term, base_name='VGAS', sort=KSort('Int')))
-                    )
-                return term
-            elif type(term) is KApply and term.label.name == '<refund>':
-                if type(term.args[0]) is KVariable:
-                    return term
-                return KApply('<refund>', abstract_term_safely(term, base_name='VREFUND', sort=KSort('Int')))
-            else:
-                return term
-
-        return CTerm(config=bottom_up(_replace, cterm.config), constraints=cterm.constraints)
 
     def prove_legacy(
         self,
