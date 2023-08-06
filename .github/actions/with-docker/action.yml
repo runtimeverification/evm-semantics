@@ -16,10 +16,6 @@ inputs:
     description: 'Distribution to setup Docker for.'
     required: true
     default: "jammy"
-  llvm:
-    description: 'LLVM version to use.'
-    required: false
-    default: 15
   jdk:
     description: 'JDK version to use.'
     required: false
@@ -38,7 +34,6 @@ runs:
       SUBDIR: ${{ inputs.subdir }}
       BASE_OS: ${{ inputs.os }}
       BASE_DISTRO: ${{ inputs.distro }}
-      LLVM_VERSION: ${{ inputs.llvm }}
       JDK_VERSION: ${{ inputs.jdk }}
       DOCKERFILE: ${{ inputs.dockerfile }}
     run: |
@@ -47,6 +42,7 @@ runs:
       USER=github-user
       GROUP=${USER}
       Z3_VERSION=4.12.1
+      LLVM_VERSION=14
       K_COMMIT=$(cat deps/k_release)
       USER_ID=1000
       GROUP_ID=${USER_ID}
