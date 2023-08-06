@@ -34,6 +34,10 @@ runs:
       SUBDIR: ${{ inputs.subdir }}
       BASE_OS: ${{ inputs.os }}
       BASE_DISTRO: ${{ inputs.distro }}
+<<<<<<< HEAD
+=======
+      LLVM_VERSION: ${{ inputs.llvm }}
+>>>>>>> master
       JDK_VERSION: ${{ inputs.jdk }}
       DOCKERFILE: ${{ inputs.dockerfile }}
     run: |
@@ -42,7 +46,6 @@ runs:
       USER=github-user
       GROUP=${USER}
       Z3_VERSION=4.12.1
-      LLVM_VERSION=14
       K_COMMIT=$(cat deps/k_release)
       USER_ID=1000
       GROUP_ID=${USER_ID}
@@ -60,10 +63,14 @@ runs:
 
       docker build . --file .github/workflows/Dockerfile \
         --tag runtimeverification/${TAG_NAME}            \
+<<<<<<< HEAD
         --build-arg USER_ID=${USER_ID}                   \
         --build-arg GROUP_ID=${GROUP_ID}                 \
         --build-arg USER=${USER}                         \
         --build-arg GROUP=${GROUP}                       \
+=======
+        --build-arg BASE_OS=${BASE_OS}                   \
+>>>>>>> master
         --build-arg BASE_DISTRO=${BASE_DISTRO}           \
         --build-arg K_COMMIT=${K_COMMIT}                 \
         --build-arg K_VERSION=${K_VERSION}               \

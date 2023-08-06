@@ -15,7 +15,7 @@ from pyk.cterm import CTerm
 from pyk.kast.inner import KApply, KSequence, KSort, KToken, KVariable, Subst
 from pyk.kast.manip import free_vars, minimize_term
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
-from pyk.kcfg import KCFG, KCFGExplore
+from pyk.kcfg import KCFG
 from pyk.ktool.kompile import LLVMKompileType
 from pyk.prelude.bytes import bytesToken
 from pyk.prelude.k import GENERATED_TOP_CELL
@@ -27,7 +27,7 @@ from pyk.proof.reachability import APRBMCProof, APRProof
 from pyk.proof.show import APRBMCProofNodePrinter, APRProofNodePrinter, APRProofShow
 from pyk.utils import BugReport, ensure_dir_path, hash_str, run_process, single, unique
 
-from .kevm import KEVM, KEVMNodePrinter
+from .kevm import KEVM, KEVMNodePrinter, KEVMSemantics
 from .kompile import Kernel, KompileTarget, kevm_kompile
 from .solc_to_k import Contract, contract_to_main_module, contract_to_verification_module
 from .utils import (
@@ -36,6 +36,7 @@ from .utils import (
     byte_offset_to_lines,
     constraints_for,
     kevm_prove,
+    legacy_explore,
     print_failure_info,
     print_model,
 )
@@ -45,6 +46,7 @@ if TYPE_CHECKING:
     from typing import Any, Final
 
     from pyk.kast.inner import KInner
+    from pyk.kcfg import KCFGExplore
     from pyk.kcfg.kcfg import NodeIdLike
     from pyk.kcfg.tui import KCFGElem
     from pyk.proof.show import NodePrinter
@@ -513,8 +515,9 @@ def foundry_prove(
         proof_id = f'{_init_problem[0]}.{_init_problem[1]}'
         llvm_definition_dir = foundry.out / 'kompiled-llvm' if use_booster else None
 
-        with KCFGExplore(
+        with legacy_explore(
             foundry.kevm,
+            kcfg_semantics=KEVMSemantics(auto_abstract_gas=auto_abstract_gas),
             id=proof_id,
             bug_report=br,
             kore_rpc_command=kore_rpc_command,
@@ -547,10 +550,6 @@ def foundry_prove(
                 break_on_jumpi=break_on_jumpi,
                 break_on_calls=break_on_calls,
                 implication_every_block=implication_every_block,
-                is_terminal=KEVM.is_terminal,
-                same_loop=KEVM.same_loop,
-                extract_branches=KEVM.extract_branches,
-                abstract_node=(KEVM.abstract_gas_cell if auto_abstract_gas else None),
             )
             failure_log = None
             if not passed:
@@ -597,7 +596,7 @@ def foundry_show(
 
     contract_name, test_name = test.split('.')
     proof_digest = foundry.proof_digest(contract_name, test_name)
-    proof = Proof.read_proof(proof_digest, proofs_dir)
+    proof = Proof.read_proof_data(proofs_dir, proof_digest)
     assert isinstance(proof, APRProof)
 
     def _short_info(cterm: CTerm) -> Iterable[str]:
@@ -631,7 +630,7 @@ def foundry_show(
     )
 
     if failure_info:
-        with KCFGExplore(foundry.kevm, id=proof.id) as kcfg_explore:
+        with legacy_explore(foundry.kevm, kcfg_semantics=KEVMSemantics(), id=proof.id) as kcfg_explore:
             res_lines += print_failure_info(proof, kcfg_explore, counterexample_info)
             res_lines += Foundry.help_info()
 
@@ -644,7 +643,7 @@ def foundry_to_dot(foundry_root: Path, test: str) -> None:
     dump_dir = proofs_dir / 'dump'
     contract_name, test_name = test.split('.')
     proof_digest = foundry.proof_digest(contract_name, test_name)
-    proof = APRProof.read_proof(proof_digest, proofs_dir)
+    proof = APRProof.read_proof_data(proofs_dir, proof_digest)
 
     node_printer = foundry_node_printer(foundry, contract_name, proof)
     proof_show = APRProofShow(foundry.kevm, node_printer=node_printer)
@@ -665,7 +664,7 @@ def foundry_list(foundry_root: Path) -> list[str]:
         contract_name, test_name = method.split('.')
         proof_digest = foundry.proof_digest(contract_name, test_name)
         if APRProof.proof_exists(proof_digest, apr_proofs_dir):
-            apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
+            apr_proof = APRProof.read_proof_data(apr_proofs_dir, proof_digest)
             lines.extend(apr_proof.summary.lines)
             lines.append('')
     if len(lines) > 0:
@@ -679,10 +678,10 @@ def foundry_remove_node(foundry_root: Path, test: str, node: NodeIdLike) -> None
     apr_proofs_dir = foundry.out / 'apr_proofs'
     contract_name, test_name = test.split('.')
     proof_digest = foundry.proof_digest(contract_name, test_name)
-    apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
+    apr_proof = APRProof.read_proof_data(apr_proofs_dir, proof_digest)
     node_ids = apr_proof.kcfg.prune(node, [apr_proof.init, apr_proof.target])
     _LOGGER.info(f'Pruned nodes: {node_ids}')
-    apr_proof.write_proof()
+    apr_proof.write_proof_data()
 
 
 def foundry_simplify_node(
@@ -702,10 +701,11 @@ def foundry_simplify_node(
     apr_proofs_dir = foundry.out / 'apr_proofs'
     contract_name, test_name = test.split('.')
     proof_digest = foundry.proof_digest(contract_name, test_name)
-    apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
+    apr_proof = APRProof.read_proof_data(apr_proofs_dir, proof_digest)
     cterm = apr_proof.kcfg.node(node).cterm
-    with KCFGExplore(
+    with legacy_explore(
         foundry.kevm,
+        kcfg_semantics=KEVMSemantics(),
         id=apr_proof.id,
         bug_report=br,
         smt_timeout=smt_timeout,
@@ -715,7 +715,7 @@ def foundry_simplify_node(
         new_term, _ = kcfg_explore.cterm_simplify(cterm)
     if replace:
         apr_proof.kcfg.replace_node(node, CTerm.from_kast(new_term))
-        apr_proof.write_proof()
+        apr_proof.write_proof_data()
     res_term = minimize_term(new_term) if minimize else new_term
     return foundry.kevm.pretty_print(res_term, unalias=False, sort_collections=sort_collections)
 
@@ -742,9 +742,10 @@ def foundry_step_node(
     apr_proofs_dir = foundry.out / 'apr_proofs'
     contract_name, test_name = test.split('.')
     proof_digest = foundry.proof_digest(contract_name, test_name)
-    apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
-    with KCFGExplore(
+    apr_proof = APRProof.read_proof_data(apr_proofs_dir, proof_digest)
+    with legacy_explore(
         foundry.kevm,
+        kcfg_semantics=KEVMSemantics(),
         id=apr_proof.id,
         bug_report=br,
         smt_timeout=smt_timeout,
@@ -753,7 +754,7 @@ def foundry_step_node(
     ) as kcfg_explore:
         for _i in range(repeat):
             node = kcfg_explore.step(apr_proof.kcfg, node, apr_proof.logs, depth=depth)
-            apr_proof.write_proof()
+            apr_proof.write_proof_data()
 
 
 def foundry_section_edge(
@@ -772,10 +773,11 @@ def foundry_section_edge(
     apr_proofs_dir = foundry.out / 'apr_proofs'
     contract_name, test_name = test.split('.')
     proof_digest = foundry.proof_digest(contract_name, test_name)
-    apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
+    apr_proof = APRProof.read_proof_data(apr_proofs_dir, proof_digest)
     source_id, target_id = edge
-    with KCFGExplore(
+    with legacy_explore(
         foundry.kevm,
+        kcfg_semantics=KEVMSemantics(),
         id=apr_proof.id,
         bug_report=br,
         smt_timeout=smt_timeout,
@@ -785,7 +787,7 @@ def foundry_section_edge(
         kcfg, _ = kcfg_explore.section_edge(
             apr_proof.kcfg, source_id=source_id, target_id=target_id, logs=apr_proof.logs, sections=sections
         )
-    apr_proof.write_proof()
+    apr_proof.write_proof_data()
 
 
 def foundry_get_model(
@@ -801,7 +803,7 @@ def foundry_get_model(
 
     contract_name, test_name = test.split('.')
     proof_digest = foundry.proof_digest(contract_name, test_name)
-    proof = Proof.read_proof(proof_digest, proofs_dir)
+    proof = Proof.read_proof_data(proofs_dir, proof_digest)
     assert isinstance(proof, APRProof)
 
     if not nodes:
@@ -816,7 +818,7 @@ def foundry_get_model(
 
     res_lines = []
 
-    with KCFGExplore(foundry.kevm, id=proof.id) as kcfg_explore:
+    with legacy_explore(foundry.kevm, kcfg_semantics=KEVMSemantics(), id=proof.id) as kcfg_explore:
         for node_id in nodes:
             res_lines.append('')
             res_lines.append(f'Node id: {node_id}')
@@ -932,7 +934,7 @@ def _method_to_apr_proof(
         else:
             apr_proof = APRProof(proof_digest, kcfg, init_node_id, target_node_id, {}, proof_dir=save_directory)
 
-    apr_proof.write_proof()
+    apr_proof.write_proof_data()
     return apr_proof
 
 
@@ -960,7 +962,7 @@ def _method_to_cfg(
 
 
 def get_final_accounts_cell(proof_digest: str, proof_dir: Path) -> tuple[KInner, Iterable[KInner]]:
-    apr_proof = APRProof.read_proof(proof_digest, proof_dir)
+    apr_proof = APRProof.read_proof_data(proof_dir, proof_digest)
     target = apr_proof.kcfg.node(apr_proof.target)
     cterm = single(apr_proof.kcfg.covers(target_id=target.id)).source.cterm
     acct_cell = cterm.cell('ACCOUNTS_CELL')

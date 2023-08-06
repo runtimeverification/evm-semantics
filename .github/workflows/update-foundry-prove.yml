@@ -1,10 +1,14 @@
 name: 'Update Foundry prove'
+<<<<<<< HEAD
 on:
   workflow_dispatch:
   inputs:
     branch:
       description: 'Branch to update version of'
       required: true
+=======
+on: push
+>>>>>>> master
 jobs:
   update-output:
     name: 'Update Foundry expected output'
