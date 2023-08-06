@@ -80,7 +80,6 @@ def kevm_prove(
     break_on_calls: bool = True,
     implication_every_block: bool = False,
     extract_branches: Callable[[CTerm], Iterable[KInner]] | None = None,
-    same_loop: Callable[[CTerm, CTerm], bool] | None = None,
     bmc_depth: int | None = None,
     bug_report: BugReport | None = None,
     kore_rpc_command: str | Iterable[str] = ('kore-rpc',),
@@ -114,7 +113,6 @@ def kevm_prove(
         )
     prover: APRBMCProver | APRProver | EqualityProver
     if type(proof) is APRBMCProof:
-        assert same_loop, f'BMC proof requires same_loop heuristic, but {same_loop} was supplied'
         prover = APRBMCProver(proof, kcfg_explore)
     elif type(proof) is APRProof:
         prover = APRProver(proof, kcfg_explore)
