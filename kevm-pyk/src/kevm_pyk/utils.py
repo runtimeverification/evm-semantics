@@ -76,7 +76,6 @@ def kevm_prove(
     kprove: KProve,
     proof: Proof,
     kcfg_explore: KCFGExplore,
-    save_directory: Path | None = None,
     max_depth: int | None = None,
     max_iterations: int | None = None,
     break_every_step: bool = False,
