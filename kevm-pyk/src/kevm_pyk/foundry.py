@@ -544,19 +544,12 @@ def foundry_prove(
                 foundry.kevm,
                 proof,
                 kcfg_explore,
-                save_directory=save_directory,
                 max_depth=max_depth,
                 max_iterations=max_iterations,
-                workers=workers,
                 break_every_step=break_every_step,
                 break_on_jumpi=break_on_jumpi,
                 break_on_calls=break_on_calls,
                 implication_every_block=implication_every_block,
-                bug_report=br,
-                kore_rpc_command=kore_rpc_command,
-                smt_timeout=smt_timeout,
-                smt_retry_limit=smt_retry_limit,
-                trace_rewrites=trace_rewrites,
             )
             failure_log = None
             if not passed:
