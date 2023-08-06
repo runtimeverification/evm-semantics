@@ -42,6 +42,7 @@ runs:
       USER=github-user
       GROUP=${USER}
       Z3_VERSION=4.12.1
+      LLVM_VERSION=14
       K_COMMIT=$(cat deps/k_release)
       USER_ID=1000
       GROUP_ID=${USER_ID}
