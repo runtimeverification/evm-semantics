@@ -34,6 +34,7 @@ if TYPE_CHECKING:
     from pyk.ktool.kprint import KPrint
     from pyk.ktool.kprove import KProve
     from pyk.proof.proof import Proof
+    from pyk.utils import BugReport
 
     T1 = TypeVar('T1')
     T2 = TypeVar('T2')
