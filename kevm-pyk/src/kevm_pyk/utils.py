@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+from contextlib import contextmanager
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -16,17 +17,21 @@ from pyk.kast.manip import (
     split_config_from,
 )
 from pyk.kast.outer import KSequence
+from pyk.kcfg import KCFGExplore
+from pyk.kore.rpc import KoreClient, KoreExecLogFormat, kore_server
 from pyk.proof import APRBMCProof, APRBMCProver, APRProof, APRProver
 from pyk.proof.equality import EqualityProof, EqualityProver
 from pyk.proof.proof import ProofStatus
 from pyk.utils import single
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Collection, Iterable
+    from collections.abc import Callable, Collection, Iterable, Iterator
     from typing import Final, TypeVar
 
     from pyk.kast.outer import KDefinition
-    from pyk.kcfg import KCFG, KCFGExplore
+    from pyk.kcfg import KCFG
+    from pyk.kcfg.semantics import KCFGSemantics
+    from pyk.ktool.kprint import KPrint
     from pyk.ktool.kprove import KProve
     from pyk.proof.proof import Proof
     from pyk.utils import BugReport
@@ -311,3 +316,44 @@ def constraints_for(vars: list[str], constraints: Iterable[KInner]) -> Iterable[
                 vars.extend(free_vars(constraint))
                 constraints_changed = True
     return accounts_constraints
+
+
+@contextmanager
+def legacy_explore(
+    kprint: KPrint,
+    *,
+    kcfg_semantics: KCFGSemantics | None = None,
+    id: str | None = None,
+    port: int | None = None,
+    kore_rpc_command: str | Iterable[str] | None = None,
+    llvm_definition_dir: Path | None = None,
+    smt_timeout: int | None = None,
+    smt_retry_limit: int | None = None,
+    bug_report: BugReport | None = None,
+    haskell_log_format: KoreExecLogFormat = KoreExecLogFormat.ONELINE,
+    haskell_log_entries: Iterable[str] = (),
+    log_axioms_file: Path | None = None,
+    trace_rewrites: bool = False,
+) -> Iterator[KCFGExplore]:
+    # Old way of handling KCFGExplore, to be removed
+    with kore_server(
+        definition_dir=kprint.definition_dir,
+        llvm_definition_dir=llvm_definition_dir,
+        module_name=kprint.main_module,
+        port=port,
+        command=kore_rpc_command,
+        bug_report=bug_report,
+        smt_timeout=smt_timeout,
+        smt_retry_limit=smt_retry_limit,
+        haskell_log_format=haskell_log_format,
+        haskell_log_entries=haskell_log_entries,
+        log_axioms_file=log_axioms_file,
+    ) as server:
+        with KoreClient('localhost', server.port, bug_report=bug_report) as client:
+            yield KCFGExplore(
+                kprint=kprint,
+                kore_client=client,
+                kcfg_semantics=kcfg_semantics,
+                id=id,
+                trace_rewrites=trace_rewrites,
+            )
