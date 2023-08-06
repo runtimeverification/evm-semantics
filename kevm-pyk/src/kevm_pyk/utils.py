@@ -29,7 +29,6 @@ if TYPE_CHECKING:
     from pyk.kcfg import KCFG, KCFGExplore
     from pyk.ktool.kprove import KProve
     from pyk.proof.proof import Proof
-    from pyk.utils import BugReport
 
     T1 = TypeVar('T1')
     T2 = TypeVar('T2')
@@ -71,10 +70,8 @@ def kevm_prove(
     kprove: KProve,
     proof: Proof,
     kcfg_explore: KCFGExplore,
-    save_directory: Path | None = None,
     max_depth: int = 1000,
     max_iterations: int | None = None,
-    workers: int = 1,
     break_every_step: bool = False,
     break_on_jumpi: bool = False,
     break_on_calls: bool = True,
@@ -82,12 +79,6 @@ def kevm_prove(
     is_terminal: Callable[[CTerm], bool] | None = None,
     extract_branches: Callable[[CTerm], Iterable[KInner]] | None = None,
     same_loop: Callable[[CTerm, CTerm], bool] | None = None,
-    bmc_depth: int | None = None,
-    bug_report: BugReport | None = None,
-    kore_rpc_command: str | Iterable[str] = ('kore-rpc',),
-    smt_timeout: int | None = None,
-    smt_retry_limit: int | None = None,
-    trace_rewrites: bool = False,
     abstract_node: Callable[[CTerm], CTerm] | None = None,
 ) -> bool:
     proof = proof
