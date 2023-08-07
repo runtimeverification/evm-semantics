@@ -24,9 +24,10 @@ RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 
 RUN curl -sSL https://install.python-poetry.org | POETRY_HOME=/usr python3 - --version 1.3.2
 
+ARG USER=user
 ARG USER_ID=1000
 ARG GROUP_ID=1000
-RUN    groupadd -g $GROUP_ID user                             \
+RUN    groupadd -g $GROUP_ID $USER_NAME                             \
     && useradd -m -u $USER_ID -s /bin/sh -g user user -G sudo
 
 USER $USER_ID:$GROUP_ID
