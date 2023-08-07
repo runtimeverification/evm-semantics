@@ -261,7 +261,7 @@ jobs:
       - name: 'Setup Foundry Test Docker'
         uses: ./.github/actions/with-docker
         with:
-          tag: kevm:ubuntu-jammy-${{ env.version }}
+          tag: kevm-ci-test-${{ github.sha }}
           dockerfile: package/docker/Dockerfile
 
       - name: 'KEVM Foundry Test'

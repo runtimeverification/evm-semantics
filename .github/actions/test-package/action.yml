@@ -1,0 +1,114 @@
+name: 'Build and Test Package'
+description: 'Build the package for a given distribution and test it.'
+
+inputs:
+  os: 
+    description: 'Release OS to build and test package for.'
+    required: true
+  distro:
+    description: 'Distribution to build and test package for.'
+    required: true
+  llvm:
+    description: 'LLVM version to use.'
+    required: true
+  jdk:
+    description: 'JDK version to use.'
+    required: false
+    default: 17
+  dockerfile:
+    description: 'Hardcode the path of the dockerfile to use.'
+    required: false
+    default: .github/workflows/Dockerfile
+  build-package:
+    description: 'Script which builds the given package.'
+    required: true
+  test-package:
+    description: 'Script which tests the given package.'
+    required: true
+  pkg-name:
+    description: 'Where to move the package.'
+    required: false
+    default: package.pkg
+
+runs:
+  using: 'composite'
+
+  steps:
+
+  - name: 'Check out code'
+    uses: actions/checkout@v3
+    with:
+      path: k-${{ inputs.distro }}
+      submodules: recursive
+
+  - name: 'Set up Docker'
+    uses: ./.github/actions/with-docker
+    with:
+      tag: k-package-build-${{ inputs.os }}-${{ inputs.distro }}-${{ github.sha }}
+      subdir: k-${{ inputs.distro }}/
+      os: ${{ inputs.os }}
+      distro: ${{ inputs.distro }}
+      llvm: ${{ inputs.llvm }}
+      jdk: ${{ inputs.jdk }}
+      dockerfile: ${{ inputs.dockerfile }}
+
+  - name: 'Build Package: ${{ inputs.distro }}'
+    shell: bash {0}
+    env:
+      BASE_DISTRO: ${{ inputs.distro }}
+      BASE_OS: ${{ inputs.os }}
+      BUILD_PACKAGE: ${{ inputs.build-package }}
+      PKG_NAME: ${{ inputs.pkg-name }}
+    run: |
+      set -euxo pipefail
+      docker exec -t k-package-build-${BASE_OS}-${BASE_DISTRO}-${GITHUB_SHA} /bin/bash -c "${BUILD_PACKAGE} ${PKG_NAME}"
+
+  - name: 'Tear down Docker'
+    shell: bash {0}
+    env:
+      BASE_DISTRO: ${{ inputs.distro }}
+      BASE_OS: ${{ inputs.os }}
+    if: always()
+    run: |
+      docker stop --time=0 k-package-build-${BASE_OS}-${BASE_DISTRO}-${GITHUB_SHA}
+      docker container rm --force k-package-build-${BASE_OS}-${BASE_DISTRO}-${GITHUB_SHA} || true
+
+  - name: 'Set up Docker Test Image: ${{ inputs.os }}:${{ inputs.distro }}'
+    shell: bash {0}
+    env:
+      BASE_OS: ${{ inputs.os }}
+      BASE_DISTRO: ${{ inputs.distro }}
+    run: |
+      set -euxo pipefail
+      workspace=$(pwd)
+      cd k-${BASE_DISTRO}
+      docker run                                                      \
+        --name k-package-test-${BASE_OS}-${BASE_DISTRO}-${GITHUB_SHA} \
+        --rm -it                                                      \
+        --detach                                                      \
+        --workdir /opt/workspace                                      \
+        -v "${workspace}:/opt/workspace"                              \
+        ${BASE_OS}:${BASE_DISTRO}
+
+  - name: 'Test Package: ${{ inputs.os }}:${{ inputs.distro }}'
+    shell: bash {0}
+    env:
+      BASE_OS: ${{ inputs.os }}
+      BASE_DISTRO: ${{ inputs.distro }}
+      TEST_PACKAGE: ${{ inputs.test-package }}
+      PKG_NAME: ${{ inputs.pkg-name }}
+      SUBDIR: k-${{ inputs.distro }}/
+    run: |
+      set -euxo pipefail
+      mv ${SUBDIR}${PKG_NAME} ${PKG_NAME}
+      docker exec -t k-package-test-${BASE_OS}-${BASE_DISTRO}-${GITHUB_SHA} /bin/bash -c "${TEST_PACKAGE} ${PKG_NAME}"
+
+  - name: 'Tear down Docker Test'
+    shell: bash {0}
+    env:
+      BASE_OS: ${{ inputs.os }}
+      BASE_DISTRO: ${{ inputs.distro }}
+    if: always()
+    run: |
+      docker stop --time=0 k-package-test-${BASE_OS}-${BASE_DISTRO}-${GITHUB_SHA}
+      docker container rm --force k-package-test-${BASE_OS}-${BASE_DISTRO}-${GITHUB_SHA} || true
