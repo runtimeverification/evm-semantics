@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import logging
 import os
+from enum import Enum
 from pathlib import Path
 from subprocess import CalledProcessError
 from typing import TYPE_CHECKING
@@ -10,6 +12,19 @@ from pyk.utils import run_process
 
 if TYPE_CHECKING:
     from typing import Final
+
+
+_LOGGER: Final = logging.getLogger(__name__)
+
+
+class Kernel(Enum):
+    LINUX = 'Linux'
+    DARWIN = 'Darwin'
+
+    @staticmethod
+    def get() -> Kernel:
+        uname = run_process(('uname', '-s'), pipe_stderr=True, logger=_LOGGER).stdout.strip()
+        return Kernel(uname)
 
 
 def _kevm_lib() -> Path:

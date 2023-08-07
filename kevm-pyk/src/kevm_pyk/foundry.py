@@ -27,8 +27,8 @@ from pyk.proof.reachability import APRBMCProof, APRProof
 from pyk.proof.show import APRBMCProofNodePrinter, APRProofNodePrinter, APRProofShow
 from pyk.utils import BugReport, ensure_dir_path, hash_str, run_process, single, unique
 
+from .config import Kernel
 from .kevm import KEVM, KEVMNodePrinter
-from .kompile import Kernel, KompileTarget, kevm_kompile
 from .solc_to_k import Contract, contract_to_main_module, contract_to_verification_module
 from .utils import (
     KDefinition__expand_macros,
@@ -284,6 +284,8 @@ def foundry_kompile(
     debug: bool = False,
     llvm_library: bool = False,
 ) -> None:
+    from .kompile import KompileTarget, kevm_kompile
+
     syntax_module = 'FOUNDRY-CONTRACTS'
     foundry = Foundry(foundry_root)
     foundry_definition_dir = foundry.out / 'kompiled'
