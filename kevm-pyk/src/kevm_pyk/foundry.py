@@ -27,7 +27,6 @@ from pyk.proof.reachability import APRBMCProof, APRProof
 from pyk.proof.show import APRBMCProofNodePrinter, APRProofNodePrinter, APRProofShow
 from pyk.utils import BugReport, ensure_dir_path, hash_str, run_process, single, unique
 
-from .config import Kernel
 from .kevm import KEVM, KEVMNodePrinter, KEVMSemantics
 from .solc_to_k import Contract, contract_to_main_module, contract_to_verification_module
 from .utils import (
@@ -121,6 +120,8 @@ class Foundry:
 
     @cached_property
     def llvm_dylib(self) -> Path | None:
+        from .config import Kernel
+
         arch = Kernel.get()
         foundry_llvm_dir = self.out / 'kompiled-llvm'
         if arch == Kernel.LINUX:
