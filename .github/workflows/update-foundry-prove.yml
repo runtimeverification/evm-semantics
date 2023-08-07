@@ -1,10 +1,10 @@
 name: 'Update Foundry prove'
 on:
   workflow_dispatch:
-  inputs:
-    branch:
-      description: 'Branch to update version of'
-      required: true
+    inputs:
+      branch:
+        description: 'Branch to update version of'
+        required: true
 jobs:
   update-output:
     name: 'Update Foundry expected output'
