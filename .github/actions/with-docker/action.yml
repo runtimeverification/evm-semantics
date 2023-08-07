@@ -58,7 +58,7 @@ runs:
         --build-arg BASE_OS=${BASE_OS}                              \
         --build-arg BASE_DISTRO=${BASE_DISTRO}
 
-      docker build . --file .github/workflows/Dockerfile \
+      docker build . --file ${DOCKERFILE} \
         --tag runtimeverification/${TAG_NAME}            \
         --build-arg USER_ID=${USER_ID}                   \
         --build-arg GROUP_ID=${GROUP_ID}                 \
