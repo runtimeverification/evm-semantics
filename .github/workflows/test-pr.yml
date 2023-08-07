@@ -232,7 +232,7 @@ jobs:
   build-deb-package:
     name: 'Build Ubuntu Jammy DockerHub Image'
     runs-on: [self-hosted, linux, normal]
-    needs: kevm-pyk-code-quality-checks
+    # needs: kevm-pyk-code-quality-checks
     steps:
       - name: 'Check out code'
         uses: actions/checkout@v3
@@ -259,13 +259,13 @@ jobs:
           echo "tag_name=runtimeverificationinc/kevm:ubuntu-jammy-${version}" >> $GITHUB_ENV
           echo "container_name=kevm-ci-test-${GITHUB_SHA}" >> $GITHUB_ENV
 
-      - name: 'Set Foundry Test Docker'
+      - name: 'Setup Foundry Test Docker'
         uses: ./.github/actions/with-docker
         with:
           tag: kevm:ubuntu-jammy-${{ github.env.version }}
           dockerfile: package/docker/Dockerfile
 
-      - name: 'Test Docker Image'
+      - name: 'KEVM Foundry Test'
         run: |
           set -euxo pipefail
           version=${{ github.env.veresion }}
