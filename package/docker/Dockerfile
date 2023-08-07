@@ -38,11 +38,10 @@ RUN    sudo apt-get update        \
     && sudo apt-get upgrade --yes \
     && sudo apt-get install --yes ./kframework_${K_VERSION}_amd64_ubuntu_jammy.deb
 
-ARG KEVM_VERSION
-ADD --chown=user:user ./kevm_${KEVM_VERSION}_amd64.deb ./
+ADD --chown=user:user ./kevm_*_amd64.deb ./
 RUN    sudo apt-get update        \
     && sudo apt-get upgrade --yes \
-    && sudo apt-get install --yes ./kevm_${KEVM_VERSION}_amd64.deb
+    && sudo apt-get install --yes ./kevm_*_amd64.deb
 
 ADD --chown=user:user ./kevm-pyk /home/user/kevm-pyk
 RUN cd /home/user/kevm-pyk && pip3 install .
