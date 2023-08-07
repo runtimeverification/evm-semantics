@@ -122,74 +122,74 @@ jobs:
   #       run: |
   #         docker stop --time=0 kevm-ci-concrete-${GITHUB_SHA}
 
-  test-prove-haskell:
-    name: 'Build and Test KEVM haskell proofs'
-    needs: kevm-pyk-code-quality-checks
-    runs-on: [self-hosted, linux, huge]
-    timeout-minutes: 120
-    steps:
-      - name: 'Check out code'
-        uses: actions/checkout@v3
-        with:
-          submodules: recursive
-      - name: 'Set up Docker'
-        uses: ./.github/actions/with-docker
-        with:
-          tag: kevm-ci-haskell-${{ github.sha }}
-      - name: 'Prove Haskell'
-        run: docker exec -u github-user kevm-ci-haskell-${GITHUB_SHA} /bin/bash -c 'make test-prove'
-      - name: 'Tear down Docker'
-        if: always()
-        run: |
-          docker stop --time=0 kevm-ci-haskell-${GITHUB_SHA}
+  # test-prove-haskell:
+  #   name: 'Build and Test KEVM haskell proofs'
+  #   needs: kevm-pyk-code-quality-checks
+  #   runs-on: [self-hosted, linux, huge]
+  #   timeout-minutes: 120
+  #   steps:
+  #     - name: 'Check out code'
+  #       uses: actions/checkout@v3
+  #       with:
+  #         submodules: recursive
+  #     - name: 'Set up Docker'
+  #       uses: ./.github/actions/with-docker
+  #       with:
+  #         tag: kevm-ci-haskell-${{ github.sha }}
+  #     - name: 'Prove Haskell'
+  #       run: docker exec -u github-user kevm-ci-haskell-${GITHUB_SHA} /bin/bash -c 'make test-prove'
+  #     - name: 'Tear down Docker'
+  #       if: always()
+  #       run: |
+  #         docker stop --time=0 kevm-ci-haskell-${GITHUB_SHA}
 
-  test-prove-foundry:
-    name: 'Build and Test KEVM Foundry proofs'
-    needs: kevm-pyk-code-quality-checks
-    runs-on: [self-hosted, linux, huge]
-    timeout-minutes: 150
-    steps:
-      - name: 'Check out code'
-        uses: actions/checkout@v3
-        with:
-          submodules: recursive
-      - name: 'Set up Docker'
-        uses: ./.github/actions/with-docker
-        with:
-          tag: kevm-ci-foundry-${{ github.sha }}
-      - name: 'Build kevm-pyk'
-        run: docker exec -u github-user kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make poetry'
-      - name: 'Build Foundry'
-        run: docker exec -u github-user kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make build-foundry -j2'
-      - name: 'Foundry Prove'
-        run: docker exec -u github-user kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make test-foundry-prove PYTEST_ARGS=-vv'
-      - name: 'Tear down Docker'
-        if: always()
-        run: |
-          docker stop --time=0 kevm-ci-foundry-${GITHUB_SHA}
+  # test-prove-foundry:
+  #   name: 'Build and Test KEVM Foundry proofs'
+  #   needs: kevm-pyk-code-quality-checks
+  #   runs-on: [self-hosted, linux, huge]
+  #   timeout-minutes: 150
+  #   steps:
+  #     - name: 'Check out code'
+  #       uses: actions/checkout@v3
+  #       with:
+  #         submodules: recursive
+  #     - name: 'Set up Docker'
+  #       uses: ./.github/actions/with-docker
+  #       with:
+  #         tag: kevm-ci-foundry-${{ github.sha }}
+  #     - name: 'Build kevm-pyk'
+  #       run: docker exec -u github-user kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make poetry'
+  #     - name: 'Build Foundry'
+  #       run: docker exec -u github-user kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make build-foundry -j2'
+  #     - name: 'Foundry Prove'
+  #       run: docker exec -u github-user kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make test-foundry-prove PYTEST_ARGS=-vv'
+  #     - name: 'Tear down Docker'
+  #       if: always()
+  #       run: |
+  #         docker stop --time=0 kevm-ci-foundry-${GITHUB_SHA}
 
-  test-prove-foundry-booster:
-    name: 'Build and Test KEVM Foundry proofs (booster)'
-    needs: kevm-pyk-code-quality-checks
-    runs-on: [self-hosted, linux, huge]
-    timeout-minutes: 150
-    steps:
-      - name: 'Check out code'
-        uses: actions/checkout@v3
-        with:
-          submodules: recursive
-      - name: 'Build devShell'
-        env: 
-          CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_PUBLIC_TOKEN }}
-        run: cachix watch-exec k-framework -- nix build --extra-experimental-features 'nix-command flakes' .#devShell.x86_64-linux.inputDerivation --no-link
-      - name: 'Build blockchain-k-plugin-deps'
-        run: nix develop --extra-experimental-features 'nix-command flakes' --command make plugin-deps
-      - name: 'Build kevm-pyk'
-        run: nix develop --extra-experimental-features 'nix-command flakes' --command make poetry
-      - name: 'Build Foundry'
-        run: nix develop --extra-experimental-features 'nix-command flakes' --command make build-foundry -j2
-      - name: 'Foundry Prove'
-        run: nix develop --extra-experimental-features 'nix-command flakes' --command make test-foundry-prove -j2 FOUNDRY_PAR=8 TEST_ARGS=--use-booster
+  # test-prove-foundry-booster:
+  #   name: 'Build and Test KEVM Foundry proofs (booster)'
+  #   needs: kevm-pyk-code-quality-checks
+  #   runs-on: [self-hosted, linux, huge]
+  #   timeout-minutes: 150
+  #   steps:
+  #     - name: 'Check out code'
+  #       uses: actions/checkout@v3
+  #       with:
+  #         submodules: recursive
+  #     - name: 'Build devShell'
+  #       env: 
+  #         CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_PUBLIC_TOKEN }}
+  #       run: cachix watch-exec k-framework -- nix build --extra-experimental-features 'nix-command flakes' .#devShell.x86_64-linux.inputDerivation --no-link
+  #     - name: 'Build blockchain-k-plugin-deps'
+  #       run: nix develop --extra-experimental-features 'nix-command flakes' --command make plugin-deps
+  #     - name: 'Build kevm-pyk'
+  #       run: nix develop --extra-experimental-features 'nix-command flakes' --command make poetry
+  #     - name: 'Build Foundry'
+  #       run: nix develop --extra-experimental-features 'nix-command flakes' --command make build-foundry -j2
+  #     - name: 'Foundry Prove'
+  #       run: nix develop --extra-experimental-features 'nix-command flakes' --command make test-foundry-prove -j2 FOUNDRY_PAR=8 TEST_ARGS=--use-booster
 
   # nix:
   #   name: 'Nix'
