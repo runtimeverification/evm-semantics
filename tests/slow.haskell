@@ -366,4 +366,3 @@ tests/specs/mcd/vat-flux-diff-pass-rough-spec.k
 tests/specs/mcd/vat-fold-pass-rough-spec.k
 tests/specs/mcd/vat-fork-diff-pass-rough-spec.k
 tests/specs/mcd/vat-frob-diff-zero-dart-pass-rough-reuse-spec.k
-tests/specs/mcd/vat-slip-pass-rough-spec.k

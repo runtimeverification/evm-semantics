@@ -109,9 +109,13 @@ module VAT-SLIP-PASS-ROUGH-SPEC
        andBool #lookup(ACCT_ID_ORIG_STORAGE, #Vat.gem[ABI_ilk][ABI_usr]) ==Int Junk_1
        andBool #Vat.wards[CALLER_ID] =/=Int #Vat.gem[ABI_ilk][ABI_usr]
 
+      [depends(Vat.addui.pass)]
+
+    // Vat_addui
+    
     // Vat_addui
     claim [Vat.addui.pass]:
-      <k> #execute ~> CONTINUATION => #execute ~> CONTINUATION </k>
+      <k> #execute ~> CONTINUATION => JUMP JMPTO ~> #pc [ JUMP ] ~> #execute ~> CONTINUATION </k>
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
@@ -129,14 +133,14 @@ module VAT-SLIP-PASS-ROUGH-SPEC
             <caller> CALLER_ID </caller>
             <callData> _ => ?_ </callData>
             <callValue> VCallValue </callValue>
-            <wordStack> chop(ABI_y) : ABI_x : JMPTO : WS  =>  JMPTO : ABI_x +Int ABI_y : WS </wordStack>
+            <wordStack> chop(ABI_y) : ABI_x : JMPTO : WS  => ABI_x +Int ABI_y : WS </wordStack>
             <localMem> _ </localMem>
             <pc> 13112 => 13174 </pc>
-            <gas> #gas(VGas) => #if ( ABI_y <Int 0 andBool 0 <=Int ( ABI_x +Int ABI_y ) )
-              #then   #gas ( ( VGas +Int -128 ) )
-              #else   #if chop( ABI_y ) <=Int 0
-                #then   #gas ( ( VGas +Int -114 ) )
-                #else   #gas ( ( VGas +Int -128 ) )
+            <gas> #gas(VGas) => #if ( ABI_y <Int 0 andBool ( minSInt256 <=Int ABI_y andBool ( ABI_y <=Int maxSInt256 andBool 0 <=Int ( ABI_x +Int ABI_y ) ) ) )
+              #then   #gas ( ( VGas +Int -136 ) )
+              #else   #if ABI_y <=Int 0
+                #then   #gas ( ( VGas +Int -122 ) )
+                #else   #gas ( ( VGas +Int -136 ) )
               #fi
             #fi </gas>
             <memoryUsed> VMemoryUsed </memoryUsed>
@@ -208,9 +212,6 @@ module VAT-SLIP-PASS-ROUGH-SPEC
        andBool ((#sizeWordStack(WS) <=Int 1015)
        andBool (#rangeUInt(256, VMemoryUsed)
        andBool ((#rangeUInt(256, ABI_x +Int ABI_y)))))))
-
-
-    [trusted]
 
 
 endmodule
