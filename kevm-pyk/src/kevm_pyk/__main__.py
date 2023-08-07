@@ -13,7 +13,7 @@ from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli.utils import file_path
 from pyk.cterm import CTerm
 from pyk.kast.outer import KApply, KRewrite
-from pyk.kcfg import KCFG, KCFGExplore
+from pyk.kcfg import KCFG
 from pyk.kore.prelude import int_dv
 from pyk.ktool.kompile import LLVMKompileType
 from pyk.ktool.krun import KRunOutput, _krun
@@ -40,10 +40,17 @@ from .foundry import (
     foundry_to_dot,
 )
 from .gst_to_kore import _mode_to_kore, _schedule_to_kore
-from .kevm import KEVM, kevm_node_printer
+from .kevm import KEVM, KEVMSemantics, kevm_node_printer
 from .kompile import KompileTarget, kevm_kompile
 from .solc_to_k import solc_compile, solc_to_k
-from .utils import arg_pair_of, ensure_ksequence_on_k_cell, get_apr_proof_for_spec, kevm_prove, print_failure_info
+from .utils import (
+    arg_pair_of,
+    ensure_ksequence_on_k_cell,
+    get_apr_proof_for_spec,
+    kevm_prove,
+    legacy_explore,
+    print_failure_info,
+)
 
 if TYPE_CHECKING:
     from argparse import Namespace
@@ -272,8 +279,9 @@ def exec_prove(
         return not (type(claim_lhs) is KApply and claim_lhs.label.name == '<generatedTop>')
 
     def _init_and_run_proof(claim: KClaim) -> tuple[bool, list[str] | None]:
-        with KCFGExplore(
+        with legacy_explore(
             kevm,
+            kcfg_semantics=KEVMSemantics(auto_abstract_gas=auto_abstract_gas),
             id=claim.label,
             bug_report=br,
             kore_rpc_command=kore_rpc_command,
@@ -288,12 +296,12 @@ def exec_prove(
                     and not reinit
                     and EqualityProof.proof_exists(claim.label, save_directory)
                 ):
-                    proof_problem = EqualityProof.read_proof(claim.label, save_directory)
+                    proof_problem = EqualityProof.read_proof_data(save_directory, claim.label)
                 else:
                     proof_problem = EqualityProof.from_claim(claim, kevm.definition, proof_dir=save_directory)
             else:
                 if save_directory is not None and not reinit and APRProof.proof_exists(claim.label, save_directory):
-                    proof_problem = APRProof.read_proof(claim.label, save_directory)
+                    proof_problem = APRProof.read_proof_data(save_directory, claim.label)
 
                 else:
                     _LOGGER.info(f'Converting claim to KCFG: {claim.label}')
@@ -337,22 +345,12 @@ def exec_prove(
                 kevm,
                 proof_problem,
                 kcfg_explore,
-                save_directory=save_directory,
                 max_depth=max_depth,
                 max_iterations=max_iterations,
-                workers=workers,
                 break_every_step=break_every_step,
                 break_on_jumpi=break_on_jumpi,
                 break_on_calls=break_on_calls,
                 implication_every_block=implication_every_block,
-                is_terminal=KEVM.is_terminal,
-                extract_branches=KEVM.extract_branches,
-                bug_report=br,
-                kore_rpc_command=kore_rpc_command,
-                smt_timeout=smt_timeout,
-                smt_retry_limit=smt_retry_limit,
-                trace_rewrites=trace_rewrites,
-                abstract_node=(KEVM.abstract_gas_cell if auto_abstract_gas else None),
             )
             failure_log = None
             if not passed:
@@ -441,10 +439,10 @@ def exec_prune_proof(
         )
     )
 
-    apr_proof = APRProof.read_proof(claim.label, save_directory)
+    apr_proof = APRProof.read_proof_data(save_directory, claim.label)
     node_ids = apr_proof.kcfg.prune(node)
     _LOGGER.info(f'Pruned nodes: {node_ids}')
-    apr_proof.write_proof()
+    apr_proof.write_proof_data()
 
 
 def exec_show_kcfg(
@@ -496,7 +494,7 @@ def exec_show_kcfg(
     )
 
     if failure_info:
-        with KCFGExplore(kevm, id=proof.id) as kcfg_explore:
+        with legacy_explore(kevm, kcfg_semantics=KEVMSemantics(), id=proof.id) as kcfg_explore:
             res_lines += print_failure_info(proof, kcfg_explore)
 
     print('\n'.join(res_lines))
@@ -688,7 +686,7 @@ def exec_foundry_view_kcfg(foundry_root: Path, test: str, **kwargs: Any) -> None
     contract_name, test_name = test.split('.')
     proof_digest = foundry.proof_digest(contract_name, test_name)
 
-    proof = APRProof.read_proof(proof_digest, proofs_dir)
+    proof = APRProof.read_proof_data(proofs_dir, proof_digest)
 
     def _short_info(cterm: CTerm) -> Iterable[str]:
         return foundry.short_info_for_contract(contract_name, cterm)
