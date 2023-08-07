@@ -27,11 +27,11 @@ RUN curl -sSL https://install.python-poetry.org | POETRY_HOME=/usr python3 - --v
 ARG USER=user
 ARG USER_ID=1000
 ARG GROUP_ID=1000
-RUN    groupadd -g $GROUP_ID $USER_NAME                             \
-    && useradd -m -u $USER_ID -s /bin/sh -g user user -G sudo
+RUN    groupadd -g $GROUP_ID $USER                             \
+    && useradd -m -u $USER_ID -s /bin/sh -g $USER $USER -G sudo
 
 USER $USER_ID:$GROUP_ID
-WORKDIR /home/user
+WORKDIR /home/$USER
 
 ARG K_VERSION
 RUN wget https://github.com/runtimeverification/k/releases/download/v${K_VERSION}/kframework_${K_VERSION}_amd64_ubuntu_jammy.deb
@@ -39,10 +39,10 @@ RUN    sudo apt-get update        \
     && sudo apt-get upgrade --yes \
     && sudo apt-get install --yes ./kframework_${K_VERSION}_amd64_ubuntu_jammy.deb
 
-ADD --chown=user:user ./kevm_*_amd64.deb ./
+ADD --chown=$USER:$USER ./kevm_*_amd64.deb ./
 RUN    sudo apt-get update        \
     && sudo apt-get upgrade --yes \
     && sudo apt-get install --yes ./kevm_*_amd64.deb
 
-ADD --chown=user:user ./kevm-pyk /home/user/kevm-pyk
-RUN cd /home/user/kevm-pyk && pip3 install .
+ADD --chown=$USER:$USER ./kevm-pyk /home/$USER/kevm-pyk
+RUN cd /home/$USER/kevm-pyk && pip3 install .
