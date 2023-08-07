@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-kevm (1.0.249) unstable; urgency=medium
-=======
-kevm (1.0.249) unstable; urgency=medium
->>>>>>> master
+kevm (1.0.248) unstable; urgency=medium
 
   * Initial Release.
 

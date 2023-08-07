@@ -28,7 +28,7 @@ from pyk.proof.show import APRBMCProofNodePrinter, APRProofNodePrinter, APRProof
 from pyk.utils import BugReport, ensure_dir_path, hash_str, run_process, single, unique
 
 from .config import Kernel
-from .kevm import KEVM, KEVMNodePrinter
+from .kevm import KEVM, KEVMNodePrinter, KEVMSemantics
 from .solc_to_k import Contract, contract_to_main_module, contract_to_verification_module
 from .utils import (
     KDefinition__expand_macros,
