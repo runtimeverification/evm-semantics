@@ -627,8 +627,6 @@ def exec_foundry_list(foundry_root: Path, **kwargs: Any) -> None:
 def exec_run(
     definition_dir: Path,
     input_file: Path,
-    term: bool,
-    parser: str | None,
     expand_macros: bool,
     depth: int | None,
     output: KRunOutput,
@@ -870,10 +868,6 @@ def _create_argument_parser() -> ArgumentParser:
         parents=[kevm_cli_args.logging_args, kevm_cli_args.evm_chain_args, kevm_cli_args.k_args],
     )
     run_args.add_argument('input_file', type=file_path, help='Path to input file.')
-    run_args.add_argument(
-        '--term', default=False, action='store_true', help='<input_file> is the entire term to execute.'
-    )
-    run_args.add_argument('--parser', default=None, type=str, help='Parser to use for $PGM.')
     run_args.add_argument(
         '--output',
         default=KRunOutput.PRETTY,
