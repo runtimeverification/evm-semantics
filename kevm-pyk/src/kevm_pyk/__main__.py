@@ -650,6 +650,7 @@ def exec_run(
     kevm.run_kore(
         kore_pattern,
         depth=depth,
+        term=True,
         expand_macros=expand_macros,
         output=output,
         check=True,
