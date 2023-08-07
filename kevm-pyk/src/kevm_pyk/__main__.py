@@ -813,12 +813,6 @@ def _create_argument_parser() -> ArgumentParser:
         action='store_true',
         help='Do not generate a dynamic llvm library during kompile.',
     )
-    kevm_kompile_args.add_argument(
-        '--no-llvm-library',
-        dest='llvm_library',
-        action='store_false',
-        help='Make kompile generate a dynamic llvm library.',
-    )
 
     prove_args = command_parser.add_parser(
         'prove',
