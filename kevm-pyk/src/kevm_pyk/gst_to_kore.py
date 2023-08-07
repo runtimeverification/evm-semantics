@@ -17,6 +17,8 @@ if TYPE_CHECKING:
     from pathlib import Path
     from typing import Any, Final
 
+    from pyk.kore.syntax import Pattern
+
 
 _LOGGER: Final = logging.getLogger(__name__)
 _LOG_FORMAT: Final = '%(levelname)s %(asctime)s %(name)s - %(message)s'
@@ -27,8 +29,12 @@ SORT_MODE: Final = SortApp('SortMode')
 
 
 def gst_to_kore(gst_data: Any, schedule: str, mode: str, chainid: int) -> App:
+    return kore_pgm_to_kore(json_to_kore(gst_data), schedule, mode, chainid)
+
+
+def kore_pgm_to_kore(pgm: Pattern, schedule: str, mode: str, chainid: int) -> App:
     config = {
-        '$PGM': inj(SORT_JSON, SORT_K_ITEM, json_to_kore(gst_data)),
+        '$PGM': inj(SORT_JSON, SORT_K_ITEM, pgm),
         '$SCHEDULE': inj(SORT_SCHEDULE, SORT_K_ITEM, _schedule_to_kore(schedule)),
         '$MODE': inj(SORT_MODE, SORT_K_ITEM, _mode_to_kore(mode)),
         '$CHAINID': inj(INT, SORT_K_ITEM, int_dv(chainid)),
