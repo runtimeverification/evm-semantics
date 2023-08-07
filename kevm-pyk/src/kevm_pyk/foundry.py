@@ -557,11 +557,22 @@ def foundry_prove(
             return passed, failure_log
 
     def run_cfg_group(tests: list[str]) -> dict[str, tuple[bool, list[str] | None]]:
-        init_problems = [tuple(test.split('.')) for test in tests]
-        with ProcessPool(ncpus=workers) as process_pool:
-            _apr_proofs = process_pool.map(_init_and_run_proof, init_problems)
-        apr_proofs = dict(zip(tests, _apr_proofs, strict=True))
+        def _split_test(test: str) -> tuple[str, str]:
+            contract, method = test.split('.')
+            return contract, method
 
+        init_problems = [_split_test(test) for test in tests]
+
+        _apr_proofs: list[tuple[bool, list[str] | None]]
+        if workers > 1:
+            with ProcessPool(ncpus=workers) as process_pool:
+                _apr_proofs = process_pool.map(_init_and_run_proof, init_problems)
+        else:
+            _apr_proofs = []
+            for init_problem in init_problems:
+                _apr_proofs.append(_init_and_run_proof(init_problem))
+
+        apr_proofs = dict(zip(tests, _apr_proofs, strict=True))
         return apr_proofs
 
     _LOGGER.info(f'Running setup functions in parallel: {list(setup_methods.values())}')
