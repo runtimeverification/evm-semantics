@@ -62,7 +62,7 @@
 │   statusCode: EVMC_SUCCESS
 │
 │  (2 steps)
-├─ 11
+├─ 11 (terminal)
 │   k: #halt ~> CONTINUATION:K
 │   pc: 183
 │   callDepth: 0
@@ -79,7 +79,6 @@
 
 
 
-module SUMMARY-ASSUMETEST.TESTFAIL-ASSUME-TRUE:6A4EE8E0EDE6D56D6B990B931083B060CCFB8EEE20363860FE73BC57749A7477
     
     
     rule [BASIC-BLOCK-1-TO-3]: <foundry>
