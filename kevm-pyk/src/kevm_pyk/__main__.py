@@ -10,11 +10,9 @@ from typing import TYPE_CHECKING
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli.utils import file_path
 from pyk.cterm import CTerm
-from pyk.kast.outer import KApply, KRewrite
+from pyk.kast.outer import KApply, KRewrite, KSort, KToken
 from pyk.kcfg import KCFG
-from pyk.kore.prelude import int_dv
 from pyk.ktool.kompile import LLVMKompileType
-from pyk.ktool.krun import KRunOutput, _krun
 from pyk.prelude.ml import is_bottom, is_top
 from pyk.proof import APRProof
 from pyk.proof.equality import EqualityProof
@@ -37,7 +35,7 @@ from .foundry import (
     foundry_step_node,
     foundry_to_dot,
 )
-from .gst_to_kore import _mode_to_kore, _schedule_to_kore
+from .gst_to_kore import gst_to_kore, kore_pgm_to_kore
 from .kevm import KEVM, KEVMSemantics, kevm_node_printer
 from .kompile import KompileTarget, kevm_kompile
 from .solc_to_k import solc_compile, solc_to_k
@@ -630,37 +628,36 @@ def exec_run(
     input_file: Path,
     term: bool,
     parser: str | None,
-    expand_macros: str,
+    expand_macros: bool,
     depth: int | None,
     output: str,
     schedule: str,
     mode: str,
     chainid: int,
+    save_directory: Path | None = None,
     **kwargs: Any,
 ) -> None:
-    cmap = {
-        'MODE': _mode_to_kore(mode).text,
-        'SCHEDULE': _schedule_to_kore(schedule).text,
-        'CHAINID': int_dv(chainid).text,
-    }
-    pmap = {'MODE': 'cat', 'SCHEDULE': 'cat', 'CHAINID': 'cat'}
-    krun_result = _krun(
-        definition_dir=definition_dir,
-        input_file=input_file,
+    kevm = KEVM(definition_dir, use_directory=save_directory)
+
+    try:
+        json_read = json.loads(input_file.read_text())
+        kore_pattern = gst_to_kore(json_read, schedule, mode, chainid)
+    except json.JSONDecodeError:
+        pgm_token = KToken(input_file.read_text(), KSort('EthereumSimulation'))
+        kast_pgm = kevm.parse_token(pgm_token)
+        kore_pgm = kevm.kast_to_kore(kast_pgm)
+        kore_pattern = kore_pgm_to_kore(kore_pgm, schedule, mode, chainid)
+
+    # TODO:
+    # - Always print stderr
+    # - Don't print stdout unless that is requested (proper processing of `--output ...`)
+    # - Proper handling of return code
+    kevm.run_kore_term(
+        kore_pattern,
         depth=depth,
-        term=term,
-        no_expand_macros=not expand_macros,
-        parser=parser,
-        cmap=cmap,
-        pmap=pmap,
-        output=KRunOutput[output.upper()],
-        check=False,
+        expand_macros=expand_macros,
+        expect_rc=0,
     )
-    print(krun_result.stdout)
-    if krun_result.returncode > 0:
-        sys.stderr.write(krun_result.stderr)
-        sys.stderr.flush()
-    sys.exit(krun_result.returncode)
 
 
 def exec_foundry_view_kcfg(foundry_root: Path, test: str, **kwargs: Any) -> None:
