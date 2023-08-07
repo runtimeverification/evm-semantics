@@ -13,6 +13,7 @@ from pyk.cterm import CTerm
 from pyk.kast.outer import KApply, KRewrite, KSort, KToken
 from pyk.kcfg import KCFG
 from pyk.ktool.kompile import LLVMKompileType
+from pyk.ktool.krun import KRunOutput
 from pyk.prelude.ml import is_bottom, is_top
 from pyk.proof import APRProof
 from pyk.proof.equality import EqualityProof
@@ -630,7 +631,7 @@ def exec_run(
     parser: str | None,
     expand_macros: bool,
     depth: int | None,
-    output: str,
+    output: KRunOutput,
     schedule: str,
     mode: str,
     chainid: int,
@@ -648,15 +649,12 @@ def exec_run(
         kore_pgm = kevm.kast_to_kore(kast_pgm)
         kore_pattern = kore_pgm_to_kore(kore_pgm, schedule, mode, chainid)
 
-    # TODO:
-    # - Always print stderr
-    # - Don't print stdout unless that is requested (proper processing of `--output ...`)
-    # - Proper handling of return code
-    kevm.run_kore_term(
+    kevm.run_kore(
         kore_pattern,
         depth=depth,
         expand_macros=expand_macros,
-        expect_rc=0,
+        output=output,
+        check=True,
     )
 
 
@@ -878,9 +876,9 @@ def _create_argument_parser() -> ArgumentParser:
     run_args.add_argument('--parser', default=None, type=str, help='Parser to use for $PGM.')
     run_args.add_argument(
         '--output',
-        default='pretty',
-        type=str,
-        help='Output format to use, one of [pretty|program|kast|binary|json|latex|kore|none].',
+        default=KRunOutput.PRETTY,
+        type=KRunOutput,
+        choices=list(KRunOutput),
     )
     run_args.add_argument(
         '--expand-macros',
