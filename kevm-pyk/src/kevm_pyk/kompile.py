@@ -24,6 +24,16 @@ _LOGGER: Final = logging.getLogger(__name__)
 HOOK_NAMESPACES: Final = ('JSON', 'KRYPTO', 'BLOCKCHAIN')
 
 
+class Kernel(Enum):
+    LINUX = 'Linux'
+    DARWIN = 'Darwin'
+
+    @staticmethod
+    def get() -> Kernel:
+        uname = run_process(('uname', '-s'), pipe_stderr=True, logger=_LOGGER).stdout.strip()
+        return Kernel(uname)
+
+
 class KompileTarget(Enum):
     LLVM = 'llvm'
     HASKELL = 'haskell'
@@ -108,8 +118,8 @@ def kevm_kompile(
     )
 
     kompile: Kompile
-    kernel = config.Kernel.get()
-    haskell_binary = kernel is not config.Kernel.DARWIN
+    kernel = Kernel.get()
+    haskell_binary = kernel is not Kernel.DARWIN
     match backend:
         case KompileBackend.LLVM:
             ccopts = list(ccopts) + _lib_ccopts(kernel)
@@ -140,7 +150,7 @@ def kevm_kompile(
         raise
 
 
-def _lib_ccopts(kernel: config.Kernel) -> list[str]:
+def _lib_ccopts(kernel: Kernel) -> list[str]:
     ccopts = ['-g', '-std=c++17']
 
     ccopts += ['-lssl', '-lcrypto']
@@ -161,7 +171,7 @@ def _lib_ccopts(kernel: config.Kernel) -> list[str]:
         f'{plugin_include}/c/blake2.cpp',
     ]
 
-    if kernel == config.Kernel.DARWIN:
+    if kernel == Kernel.DARWIN:
         if not config.NIX_LIBS:
             brew_root = run_process(('brew', '--prefix'), pipe_stderr=True, logger=_LOGGER).stdout.strip()
             ccopts += [
@@ -176,7 +186,7 @@ def _lib_ccopts(kernel: config.Kernel) -> list[str]:
             ]
         else:
             ccopts += config.NIX_LIBS.split(' ')
-    elif kernel == config.Kernel.LINUX:
+    elif kernel == Kernel.LINUX:
         ccopts += ['-lprocps']
         if config.NIX_LIBS:
             ccopts += config.NIX_LIBS.split(' ')

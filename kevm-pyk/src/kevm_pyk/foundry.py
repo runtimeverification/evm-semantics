@@ -120,7 +120,7 @@ class Foundry:
 
     @cached_property
     def llvm_dylib(self) -> Path | None:
-        from .config import Kernel
+        from .kompile import Kernel
 
         arch = Kernel.get()
         foundry_llvm_dir = self.out / 'kompiled-llvm'
