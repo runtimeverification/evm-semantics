@@ -261,15 +261,15 @@ jobs:
       - name: 'Setup Foundry Test Docker'
         uses: ./.github/actions/with-docker
         with:
-          tag: kevm:ubuntu-jammy-${{ github.env.version }}
+          tag: kevm:ubuntu-jammy-${{ env.version }}
           dockerfile: package/docker/Dockerfile
 
       - name: 'KEVM Foundry Test'
         run: |
           set -euxo pipefail
-          version=${{ github.env.veresion }}
-          k_version=${{ github.env.k_version }}
-          container_name=${{ github.env.container_name}}
+          version=${{ env.veresion }}
+          k_version=${{ env.k_version }}
+          container_name=${{ env.container_name}}
           docker cp ./tests/foundry ${container_name}:/home/user/foundry
           docker exec -u user ${container_name} /bin/bash -c "sudo chown user:user -R /home/user/foundry"
           docker exec -u user ${container_name} /bin/bash -c "forge build --root foundry"
