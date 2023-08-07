@@ -50,7 +50,7 @@
 ┃  │   statusCode: EVMC_SUCCESS
 ┃  │
 ┃  │  (2 steps)
-┃  ├─ 12
+┃  ├─ 12 (terminal)
 ┃  │   k: #halt ~> CONTINUATION:K
 ┃  │   pc: 352
 ┃  │   callDepth: 0
@@ -87,7 +87,7 @@
    │   statusCode: EVMC_SUCCESS
    │
    │  (2 steps)
-   ├─ 13
+   ├─ 13 (terminal)
    │   k: #halt ~> CONTINUATION:K
    │   pc: 352
    │   callDepth: 0
@@ -104,7 +104,6 @@
 
 
 
-module SUMMARY-LOOPSTEST.SUM-N:1D0337447247945D9E0BFE11A38E2F42DBCBC28921E314445717903AFBC4401C
     
     
     rule [BASIC-BLOCK-1-TO-3]: <foundry>
