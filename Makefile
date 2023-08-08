@@ -50,6 +50,7 @@ export PLUGIN_FULL_PATH
         build build-haskell build-haskell-standalone build-foundry build-llvm build-node build-kevm      	\
         test test-integration test-conformance test-prove test-foundry-prove test-prove-smoke            	\
         test-vm test-rest-vm test-bchain test-rest-bchain test-node test-interactive test-interactive-run	\
+        profile                                                                                             \
         media media-pdf metropolis-theme
 
 .SECONDARY:
@@ -492,6 +493,10 @@ tests/specs/opcodes/evm-optimizations-spec.md: include/kframework/optimizations.
 
 test-integration: poetry build-kevm build-haskell build-llvm
 	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+='-k "(test_kast.py or test_run.py or test_solc_to_k.py)" -n$(PYTEST_PARALLEL) $(PYTEST_ARGS)'
+
+profile: poetry build-foundry
+	$(MAKE) -C kevm-pyk/ profile PROF_ARGS+='-n$(PYTEST_PARALLEL) $(PYTEST_ARGS)'
+	find /tmp/pytest-of-$$(whoami)/pytest-current/ -type f -name '*.prof' | sort | xargs tail -n +1
 
 # Interactive Tests
 

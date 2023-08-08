@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+from contextlib import contextmanager
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -16,17 +17,21 @@ from pyk.kast.manip import (
     split_config_from,
 )
 from pyk.kast.outer import KSequence
+from pyk.kcfg import KCFGExplore
+from pyk.kore.rpc import KoreClient, KoreExecLogFormat, kore_server
 from pyk.proof import APRBMCProof, APRBMCProver, APRProof, APRProver
 from pyk.proof.equality import EqualityProof, EqualityProver
 from pyk.proof.proof import ProofStatus
 from pyk.utils import single
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Collection, Iterable
+    from collections.abc import Callable, Collection, Iterable, Iterator
     from typing import Final, TypeVar
 
     from pyk.kast.outer import KDefinition
-    from pyk.kcfg import KCFG, KCFGExplore
+    from pyk.kcfg import KCFG
+    from pyk.kcfg.semantics import KCFGSemantics
+    from pyk.ktool.kprint import KPrint
     from pyk.ktool.kprove import KProve
     from pyk.proof.proof import Proof
     from pyk.utils import BugReport
@@ -63,7 +68,7 @@ def get_apr_proof_for_spec(  # noqa: N802
         )
     )
 
-    apr_proof = APRProof.read_proof(claim.label, save_directory)
+    apr_proof = APRProof.read_proof_data(save_directory, claim.label)
     return apr_proof
 
 
@@ -71,23 +76,13 @@ def kevm_prove(
     kprove: KProve,
     proof: Proof,
     kcfg_explore: KCFGExplore,
-    save_directory: Path | None = None,
     max_depth: int = 1000,
     max_iterations: int | None = None,
-    workers: int = 1,
     break_every_step: bool = False,
     break_on_jumpi: bool = False,
     break_on_calls: bool = True,
     implication_every_block: bool = False,
-    is_terminal: Callable[[CTerm], bool] | None = None,
     extract_branches: Callable[[CTerm], Iterable[KInner]] | None = None,
-    same_loop: Callable[[CTerm, CTerm], bool] | None = None,
-    bmc_depth: int | None = None,
-    bug_report: BugReport | None = None,
-    kore_rpc_command: str | Iterable[str] = ('kore-rpc',),
-    smt_timeout: int | None = None,
-    smt_retry_limit: int | None = None,
-    trace_rewrites: bool = False,
     abstract_node: Callable[[CTerm], CTerm] | None = None,
 ) -> bool:
     proof = proof
@@ -115,23 +110,9 @@ def kevm_prove(
         )
     prover: APRBMCProver | APRProver | EqualityProver
     if type(proof) is APRBMCProof:
-        assert same_loop, f'BMC proof requires same_loop heuristic, but {same_loop} was supplied'
-        prover = APRBMCProver(
-            proof=proof,
-            kcfg_explore=kcfg_explore,
-            is_terminal=is_terminal,
-            extract_branches=extract_branches,
-            same_loop=same_loop,
-            abstract_node=abstract_node,
-        )
+        prover = APRBMCProver(proof, kcfg_explore)
     elif type(proof) is APRProof:
-        prover = APRProver(
-            proof=proof,
-            kcfg_explore=kcfg_explore,
-            is_terminal=is_terminal,
-            extract_branches=extract_branches,
-            abstract_node=abstract_node,
-        )
+        prover = APRProver(proof, kcfg_explore)
     elif type(proof) is EqualityProof:
         prover = EqualityProver(kcfg_explore=kcfg_explore, proof=proof)
     else:
@@ -327,3 +308,44 @@ def constraints_for(vars: list[str], constraints: Iterable[KInner]) -> Iterable[
                 vars.extend(free_vars(constraint))
                 constraints_changed = True
     return accounts_constraints
+
+
+@contextmanager
+def legacy_explore(
+    kprint: KPrint,
+    *,
+    kcfg_semantics: KCFGSemantics | None = None,
+    id: str | None = None,
+    port: int | None = None,
+    kore_rpc_command: str | Iterable[str] | None = None,
+    llvm_definition_dir: Path | None = None,
+    smt_timeout: int | None = None,
+    smt_retry_limit: int | None = None,
+    bug_report: BugReport | None = None,
+    haskell_log_format: KoreExecLogFormat = KoreExecLogFormat.ONELINE,
+    haskell_log_entries: Iterable[str] = (),
+    log_axioms_file: Path | None = None,
+    trace_rewrites: bool = False,
+) -> Iterator[KCFGExplore]:
+    # Old way of handling KCFGExplore, to be removed
+    with kore_server(
+        definition_dir=kprint.definition_dir,
+        llvm_definition_dir=llvm_definition_dir,
+        module_name=kprint.main_module,
+        port=port,
+        command=kore_rpc_command,
+        bug_report=bug_report,
+        smt_timeout=smt_timeout,
+        smt_retry_limit=smt_retry_limit,
+        haskell_log_format=haskell_log_format,
+        haskell_log_entries=haskell_log_entries,
+        log_axioms_file=log_axioms_file,
+    ) as server:
+        with KoreClient('localhost', server.port, bug_report=bug_report) as client:
+            yield KCFGExplore(
+                kprint=kprint,
+                kore_client=client,
+                kcfg_semantics=kcfg_semantics,
+                id=id,
+                trace_rewrites=trace_rewrites,
+            )
