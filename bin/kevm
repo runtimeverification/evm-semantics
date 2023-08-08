@@ -3,24 +3,13 @@
 set -euo pipefail
 shopt -s extglob
 set -o allexport
+
 debug=false
-profile=false
-verbose=false
 KEVM=kevm
 
 notif() { echo "== ${KEVM}: $*" >&2 ; }
 
 fatal() { notif "[FATAL] $*" ; exit 1 ; }
-
-execute () {
-    (   if ${profile}; then
-            TIMEFORMAT="%lR %lU %lS $*"
-            time "$@"
-        else
-            "$@"
-        fi
-    )
-}
 
 check_k_install() {
     which kast &> /dev/null \
@@ -54,9 +43,8 @@ run_kevm_pyk() {
             pyk_args+=(-I "${INSTALL_INCLUDE}/kframework")
             ;;
     esac
-    ! ${verbose} || pyk_args+=(--verbose)
-    ! ${debug}   || pyk_args+=(--debug)
-    execute kevm-pyk "${pyk_command}" "$@" "${pyk_args[@]}"
+    ! ${debug} || pyk_args+=(--debug)
+    kevm-pyk "${pyk_command}" "$@" "${pyk_args[@]}"
 }
 
 # User Commands
@@ -76,7 +64,7 @@ run_krun() {
         krun_args+=(-cSCHEDULE="${cschedule}" -pSCHEDULE="${parser}")
         krun_args+=(-cMODE="${cmode}" -pMODE="${parser}")
         krun_args+=(-cCHAINID="${cchainid}" -pCHAINID="${parser}")
-        execute krun "${krun_args[@]}" "$@"
+        krun "${krun_args[@]}" "$@"
     else
         krun_args+=(--schedule ${schedule})
         krun_args+=(--mode ${mode})
@@ -115,16 +103,14 @@ fi
 args=()
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        --debug)               debug=true                      ; shift   ;;
-        --verbose)             verbose=true                    ; shift   ;;
-        --profile)             profile=true ; args+=("$1")     ; shift   ;;
-        --debugger)            debugger=true                   ; shift   ;;
-        --backend)             backend="$2"                    ; shift 2 ;;
-        --definition)          backend_dir="$2"                ; shift 2 ;;
-        --mode)                mode="$2"                       ; shift 2 ;;
-        --schedule)            schedule="$2"                   ; shift 2 ;;
-        --chainid)             chainid="$2"                    ; shift 2 ;;
-        *)                     args+=("$1")                    ; shift   ;;
+        --debug)      debug=true       ; shift   ;;
+        --debugger)   debugger=true    ; shift   ;;
+        --backend)    backend="$2"     ; shift 2 ;;
+        --definition) backend_dir="$2" ; shift 2 ;;
+        --mode)       mode="$2"        ; shift 2 ;;
+        --schedule)   schedule="$2"    ; shift 2 ;;
+        --chainid)    chainid="$2"     ; shift 2 ;;
+        *)            args+=("$1")     ; shift   ;;
     esac
 done
 
@@ -152,5 +138,6 @@ fi
 case "$run_command-$backend" in
     run-@(llvm|haskell|haskell-standalone) ) run_krun "$@" ;;
     @(kast|kompile|prune-proof|view-kcfg|show-kcfg|solc-to-k|prove|prove-legacy|foundry)-* ) run_kevm_pyk ${run_command} "$@" ;;
-    *) ${KEVM} help ; fatal "Unknown command on backend: $run_command $backend" ;;
+    help) run_kevm_pyk --help ;;
+    *) run_kevm_pyk --help ; fatal "Unknown command on backend: $run_command $backend" ;;
 esac
