@@ -272,11 +272,11 @@ jobs:
           container_name=${{ env.container_name}}
           docker cp ./tests/foundry ${container_name}:/home/github-user/foundry
           docker exec -u github-user ${container_name} /bin/bash -c "sudo chown github-user:github-user -R /home/github-user/foundry"
-          docker exec -u github-user ${container_name} /bin/bash -c "forge build --root foundry"
-          docker exec -u github-user ${container_name} /bin/bash -c "kevm foundry-kompile --foundry-project-root home/github-user/foundry --verbose"
-          docker exec -u github-user ${container_name} /bin/bash -c "kevm foundry-prove --foundry-project-root home/github-user/foundry --verbose --test AssertTest.test_assert_true_branch"
-          docker exec -u github-user ${container_name} /bin/bash -c "kevm foundry-show --foundry-project-root home/github-user/foundry --verbose AssertTest.test_assert_true_branch"
-          docker exec -u github-user ${container_name} /bin/bash -c "kevm foundry-list --foundry-project-root home/github-user/foundry --verbose"
+          docker exec -u github-user ${container_name} /bin/bash -c "forge build --root /home/github-user/foundry"
+          docker exec -u github-user ${container_name} /bin/bash -c "kevm foundry-kompile --foundry-project-root /home/github-user/foundry --verbose"
+          docker exec -u github-user ${container_name} /bin/bash -c "kevm foundry-prove --foundry-project-root /home/github-user/foundry --verbose --test AssertTest.test_assert_true_branch"
+          docker exec -u github-user ${container_name} /bin/bash -c "kevm foundry-show --foundry-project-root /home/github-user/foundry --verbose AssertTest.test_assert_true_branch"
+          docker exec -u github-user ${container_name} /bin/bash -c "kevm foundry-list --foundry-project-root /home/github-user/foundry --verbose"
 
       - name: 'Tear down Docker'
         if: always()
