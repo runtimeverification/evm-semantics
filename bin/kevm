@@ -85,20 +85,6 @@ run_krun() {
     fi
 }
 
-run_kast() {
-    local output_mode
-
-    output_mode=kore
-    if [[ $# -gt 0 ]]; then
-        output_mode="$1"; shift
-    fi
-
-    case "${run_file}-${output_mode}" in
-        *.json-kore) check_k_install ; execute gst-to-kore "${run_file}" --schedule "${schedule}" --mode "${mode}" --chainid "${chainid}" "$@" ;;
-        *)           check_k_install ; execute kast --definition "${backend_dir}" "${run_file}" --output "${output_mode}" "$@" ;;
-    esac
-}
-
 # Main
 # ----
 
@@ -146,7 +132,7 @@ done
 backend_dir="${backend_dir:-$INSTALL_LIB/$backend}"
 
 # get the run file
-if [[ "${run_command}" == kast ]] || [[ "${run_command}" == run ]]; then
+if [[ "${run_command}" == run ]]; then
     if [[ $# -gt 0 ]]; then
         run_file="$1" ; shift
         if [[ "${run_file}" == '-' ]]; then
@@ -165,7 +151,6 @@ fi
 
 case "$run_command-$backend" in
     run-@(llvm|haskell|haskell-standalone) ) run_krun "$@" ;;
-    kast-@(llvm|haskell)                   ) run_kast "$@" ;;
-    @(kompile|prune-proof|view-kcfg|show-kcfg|solc-to-k|prove|prove-legacy|foundry)-* ) run_kevm_pyk ${run_command} "$@" ;;
+    @(kast|kompile|prune-proof|view-kcfg|show-kcfg|solc-to-k|prove|prove-legacy|foundry)-* ) run_kevm_pyk ${run_command} "$@" ;;
     *) ${KEVM} help ; fatal "Unknown command on backend: $run_command $backend" ;;
 esac
