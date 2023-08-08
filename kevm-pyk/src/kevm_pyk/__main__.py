@@ -12,6 +12,7 @@ from pyk.cli.utils import file_path
 from pyk.cterm import CTerm
 from pyk.kast.outer import KApply, KRewrite, KSort, KToken
 from pyk.kcfg import KCFG
+from pyk.kore.tools import PrintOutput, kore_print
 from pyk.ktool.kompile import LLVMKompileType
 from pyk.ktool.krun import KRunOutput
 from pyk.prelude.ml import is_bottom, is_top
@@ -657,6 +658,31 @@ def exec_run(
     )
 
 
+def exec_kast(
+    definition_dir: Path,
+    input_file: Path,
+    output: PrintOutput,
+    schedule: str,
+    mode: str,
+    chainid: int,
+    save_directory: Path | None = None,
+    **kwargs: Any,
+) -> None:
+    kevm = KEVM(definition_dir, use_directory=save_directory)
+
+    try:
+        json_read = json.loads(input_file.read_text())
+        kore_pattern = gst_to_kore(json_read, schedule, mode, chainid)
+    except json.JSONDecodeError:
+        pgm_token = KToken(input_file.read_text(), KSort('EthereumSimulation'))
+        kast_pgm = kevm.parse_token(pgm_token)
+        kore_pgm = kevm.kast_to_kore(kast_pgm)
+        kore_pattern = kore_pgm_to_kore(kore_pgm, schedule, mode, chainid)
+
+    output_text = kore_print(kore_pattern, kevm.definition_dir, output)
+    print(output_text)
+
+
 def exec_foundry_view_kcfg(foundry_root: Path, test: str, **kwargs: Any) -> None:
     foundry = Foundry(foundry_root)
     contract_name, test_name = test.split('.')
@@ -887,6 +913,19 @@ def _create_argument_parser() -> ArgumentParser:
         dest='expand_macros',
         action='store_false',
         help='Do not expand macros on the input term before execution.',
+    )
+
+    kast_args = command_parser.add_parser(
+        'kast',
+        help='Run KEVM program.',
+        parents=[kevm_cli_args.logging_args, kevm_cli_args.evm_chain_args, kevm_cli_args.k_args],
+    )
+    kast_args.add_argument('input_file', type=file_path, help='Path to input file.')
+    kast_args.add_argument(
+        '--output',
+        default=PrintOutput.PRETTY,
+        type=PrintOutput,
+        choices=list(PrintOutput),
     )
 
     solc_args = command_parser.add_parser('compile', help='Generate combined JSON with solc compilation results.')
