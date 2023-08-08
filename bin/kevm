@@ -114,33 +114,6 @@ else
     run_command="$1" ; shift
 fi
 
-if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
-    echo "
-        usage: ${KEVM} run          [--backend (llvm|haskell)]  [--profile|--debug] <KEVM_arg>* <pgm>  <K arg>*
-               ${KEVM} kast         [--backend (llvm|haskell)]  [--profile|--debug] <KEVM_arg>* <pgm>  <output format> <K arg>*
-               ${KEVM} [kompile|prune-proof|view-kcfg|show-kcfg|solc-to-k|prove|prove-legacy|foundry-*]       See more specific help menu.
-
-               ${KEVM} [help|--help|version|--version]
-
-           ${KEVM} run             : Run a single EVM program
-           ${KEVM} kast            : Parse an EVM program and output it in a supported format
-           ${KEVM} [kompile|prune-proof|view-kcfg|show-kcfg|solc-to-k|prove|prove-legacy|foundry-*] :         See more specific help menu.
-
-           ${KEVM} help    : Display this help message.
-           ${KEVM} version : Display the versions of KEVM, K, Kore, and Z3 in use.
-
-           Note: <pgm> is a path to a file containing an EVM program/test.
-                 <KEVM arg> is one of [--mode (NORMAL|VMTESTS)]
-                                      [--schedule (MERGE|LONDON|BERLIN|ISTANBUL|PETERSBURG|CONSTANTINOPLE|BYZANTIUM|SPURIOUS_DRAGON|TANGERINE_WHISTLE|HOMESTEAD|FRONTIER|DEFAULT)]
-                                      [--chainid NNN]
-                 <K arg> is an argument you want to pass to K.
-                 <output format> is the format for Kast to output the term in.
-    "
-
-    run_kevm_pyk --help
-    exit 0
-fi
-
 if [[ "$run_command" == 'version' ]] || [[ "$run_command" == '--version' ]]; then
     notif "KEVM Version"
     cat $INSTALL_LIB/version
