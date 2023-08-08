@@ -209,7 +209,7 @@ class TParams:
     leaf_number: int | None
 
 
-TEST_PARAMS: Dict[str, TParams] = {
+TEST_PARAMS: dict[str, TParams] = {
     r'mcd/vat-slip-pass-rough-spec.k': TParams(
         main_claim_id='VAT-SLIP-PASS-ROUGH-SPEC.Vat.slip.pass.rough', leaf_number=1
     )

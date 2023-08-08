@@ -372,7 +372,7 @@ def exec_prove(
     if all_claims is None:
         raise ValueError(f'No claims found in file: {spec_file}')
 
-    all_claims_by_label: Dict[str, KClaim] = {c.label: c for c in all_claims}
+    all_claims_by_label: dict[str, KClaim] = {c.label: c for c in all_claims}
     graph = {c.label: [f'{spec_module_name}.{d}' for d in c.dependencies] for c in all_claims}
     _LOGGER.info(f'graph: {graph}')
     topological_sorter = graphlib.TopologicalSorter(graph)
