@@ -259,7 +259,6 @@ def exec_prove(
     auto_abstract_gas: bool = False,
     **kwargs: Any,
 ) -> None:
-
     _ignore_arg(kwargs, 'md_selector', f'--md-selector: {kwargs["md_selector"]}')
     md_selector = 'k & ! node'
 
@@ -420,7 +419,7 @@ def exec_prune_proof(
     )
 
     apr_proof = APRProof.read_proof_data(save_directory, claim.label)
-    node_ids = apr_proof.prune_from(node, [apr_proof.init, apr_proof.target])
+    node_ids = apr_proof.prune_from(node, [])
     _LOGGER.info(f'Pruned nodes: {node_ids}')
     apr_proof.write_proof_data()
 
