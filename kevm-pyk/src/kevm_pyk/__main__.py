@@ -923,7 +923,7 @@ def _create_argument_parser() -> ArgumentParser:
     kast_args.add_argument('input_file', type=file_path, help='Path to input file.')
     kast_args.add_argument(
         '--output',
-        default=PrintOutput.PRETTY,
+        default=PrintOutput.KORE,
         type=PrintOutput,
         choices=list(PrintOutput),
     )
