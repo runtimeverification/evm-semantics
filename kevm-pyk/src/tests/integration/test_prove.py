@@ -20,7 +20,7 @@ from .utils import TEST_DATA_DIR, gen_bin_runtime
 if TYPE_CHECKING:
     from collections.abc import Callable
     from pathlib import Path
-    from typing import Any, Dict, Final
+    from typing import Any, Final
 
     from pytest import LogCaptureFixture, TempPathFactory
 
