@@ -3,7 +3,6 @@ from __future__ import annotations
 import dataclasses
 import logging
 import sys
-from pathlib import Path
 from typing import TYPE_CHECKING, NamedTuple
 
 import pytest
@@ -20,6 +19,7 @@ from .utils import TEST_DATA_DIR, gen_bin_runtime
 
 if TYPE_CHECKING:
     from collections.abc import Callable
+    from pathlib import Path
     from typing import Any, Dict, Final
 
     from pytest import LogCaptureFixture, TempPathFactory
