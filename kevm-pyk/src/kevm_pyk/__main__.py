@@ -374,7 +374,7 @@ def exec_prove(
 
     all_claims_by_label: Dict[str, KClaim] = {c.label: c for c in all_claims}
     graph = {c.label: [f'{spec_module_name}.{d}' for d in c.dependencies] for c in all_claims}
-    print(f'graph: {graph}')
+    _LOGGER.info(f'graph: {graph}')
     topological_sorter = graphlib.TopologicalSorter(graph)
     topological_sorter.prepare()
     with ProcessPool(ncpus=workers) as process_pool:
@@ -382,26 +382,26 @@ def exec_prove(
         selected_claims = []
         while topological_sorter.is_active():
             ready = topological_sorter.get_ready()
-            print(f'ready: {ready}')
+            _LOGGER.info(f'ready: {ready}')
             curr_claim_list = [all_claims_by_label[label] for label in ready]
             results = process_pool.map(_init_and_run_proof, curr_claim_list)
-            print(f'done: {ready}')
+            _LOGGER.info(f'done: {ready}')
             for label in ready:
                 topological_sorter.done(label)
             selected_results.extend(results)
             selected_claims.extend(curr_claim_list)
-    print('finished.')
+    _LOGGER.info('finished.')
     failed = 0
     for claim, r in zip(selected_claims, selected_results, strict=True):
         passed, failure_log = r
         if passed:
-            print(f'PROOF PASSED: {claim.label}')
+            _LOGGER.info(f'PROOF PASSED: {claim.label}')
         else:
             failed += 1
-            print(f'PROOF FAILED: {claim.label}')
+            _LOGGER.info(f'PROOF FAILED: {claim.label}')
             if failure_info and failure_log is not None:
                 for line in failure_log:
-                    print(line)
+                    _LOGGER.info(line)
 
     if failed:
         sys.exit(failed)

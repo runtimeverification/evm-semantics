@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+import dataclasses
 import logging
 import sys
+from pathlib import Path
 from typing import TYPE_CHECKING, NamedTuple
 
 import pytest
 from pyk.prelude.ml import mlTop
+from pyk.proof.reachability import APRProof
 
 from kevm_pyk import config
 from kevm_pyk.__main__ import exec_prove
@@ -17,8 +20,7 @@ from .utils import TEST_DATA_DIR, gen_bin_runtime
 
 if TYPE_CHECKING:
     from collections.abc import Callable
-    from pathlib import Path
-    from typing import Any, Final
+    from typing import Any, Dict, Final
 
     from pytest import LogCaptureFixture, TempPathFactory
 
@@ -201,6 +203,24 @@ def _target_for_spec(spec_file: Path) -> Target:
 SKIPPED_PYK_TESTS: Final = set().union(SLOW_TESTS, FAILING_TESTS, FAILING_PYK_TESTS)
 
 
+@dataclasses.dataclass(frozen=True)
+class TParams:
+    main_claim_id: str
+    leaf_number: int | None
+
+
+TEST_PARAMS: Dict[str, TParams] = {
+    r'mcd/vat-slip-pass-rough-spec.k': TParams(
+        main_claim_id='VAT-SLIP-PASS-ROUGH-SPEC.Vat.slip.pass.rough', leaf_number=1
+    )
+}
+
+
+def leaf_number(proof: APRProof) -> int:
+    non_target_leaves = [nd for nd in proof.kcfg.leaves if not proof.is_target(nd.id)]
+    return len(non_target_leaves) + len(proof.kcfg.predecessors(proof.target))
+
+
 @pytest.mark.parametrize(
     'spec_file',
     ALL_TESTS,
@@ -234,6 +254,16 @@ def test_pyk_prove(
             smt_retry_limit=4,
             md_selector='foo',  # TODO Ignored flag, this is to avoid KeyError
         )
+        name = str(spec_file.relative_to(SPEC_DIR))
+        if name in TEST_PARAMS:
+            params = TEST_PARAMS[name]
+            apr_proof = APRProof.read_proof_data(
+                proof_dir=use_directory,
+                id=params.main_claim_id,
+            )
+            expected_leaf_number = params.leaf_number
+            actual_leaf_number = leaf_number(apr_proof)
+            assert expected_leaf_number == actual_leaf_number
     except BaseException:
         raise
     finally:
