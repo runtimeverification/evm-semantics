@@ -53,7 +53,7 @@ RUN    apt-get update                  \
             python3                    \
             python3-pip
 
-ARG USER
+ARG USER=user
 ARG GROUP
 ARG USER_ID
 ARG GROUP_ID
