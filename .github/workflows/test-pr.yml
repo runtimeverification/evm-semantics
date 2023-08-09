@@ -202,7 +202,7 @@ jobs:
           - runner: ARM64
     needs: version-bump
     runs-on: ${{ matrix.runner }}
-    timeout-minutes: 60
+    timeout-minutes: 80
     steps:
       - name: 'Check out code'
         uses: actions/checkout@v3
