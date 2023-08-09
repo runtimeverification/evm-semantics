@@ -206,6 +206,26 @@ def test_foundry_auto_abstraction(foundry_root: Path, update_expected_output: bo
     assert_or_update_show_output(show_res, TEST_DATA_DIR / 'gas-abstraction.expected', update=update_expected_output)
 
 
+def test_foundry_parallel_prove(foundry_root: Path, use_booster: bool) -> None:
+    # Given
+    tests = ['AssertTest.test_assert_true', 'AssertTest.test_assert_false']
+
+    # When
+    prove_res = foundry_prove(
+        foundry_root,
+        tests=tests,
+        workers=2,
+        simplify_init=False,
+        smt_timeout=125,
+        smt_retry_limit=4,
+        use_booster=use_booster,
+    )
+
+    # Then
+    assert_pass('AssertTest.test_assert_true', prove_res)
+    assert_fail('AssertTest.test_assert_false', prove_res)
+
+
 def assert_pass(test_id: str, prove_res: dict[str, tuple[bool, list[str] | None]]) -> None:
     assert test_id in prove_res
     passed, log = prove_res[test_id]

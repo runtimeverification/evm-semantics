@@ -4,13 +4,13 @@ import json
 import logging
 import os
 import shutil
+from concurrent.futures import ThreadPoolExecutor
 from functools import cached_property
 from pathlib import Path
 from subprocess import CalledProcessError
 from typing import TYPE_CHECKING
 
 import tomlkit
-from pathos.pools import ProcessPool  # type: ignore
 from pyk.cterm import CTerm
 from pyk.kast.inner import KApply, KSequence, KSort, KToken, KVariable, Subst
 from pyk.kast.manip import free_vars, minimize_term
@@ -564,13 +564,8 @@ def foundry_prove(
         init_problems = [_split_test(test) for test in tests]
 
         _apr_proofs: list[tuple[bool, list[str] | None]]
-        if workers > 1:
-            with ProcessPool(ncpus=workers) as process_pool:
-                _apr_proofs = process_pool.map(init_and_run_proof, init_problems)
-        else:
-            _apr_proofs = []
-            for init_problem in init_problems:
-                _apr_proofs.append(init_and_run_proof(init_problem))
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+            _apr_proofs = list(pool.map(init_and_run_proof, init_problems))
 
         apr_proofs = dict(zip(tests, _apr_proofs, strict=True))
         return apr_proofs
