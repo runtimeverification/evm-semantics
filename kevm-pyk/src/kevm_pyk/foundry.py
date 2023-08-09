@@ -603,7 +603,7 @@ def foundry_show(
 ) -> str:
     contract_name = test.split('.')[0]
     foundry = Foundry(foundry_root)
-    proof = foundry_get_proof(foundry_root=foundry_root, test=test)
+    proof = foundry_get_proof(foundry=foundry, test=test)
     assert isinstance(proof, APRProof)
 
     def _short_info(cterm: CTerm) -> Iterable[str]:
@@ -649,7 +649,7 @@ def foundry_to_dot(foundry_root: Path, test: str) -> None:
     proofs_dir = foundry.out / 'apr_proofs'
     dump_dir = proofs_dir / 'dump'
     contract_name, test_name = test.split('.')
-    proof = foundry_get_apr_proof(foundry_root=foundry_root, test=test)
+    proof = foundry_get_apr_proof(foundry=foundry, test=test)
 
     node_printer = foundry_node_printer(foundry, contract_name, proof)
     proof_show = APRProofShow(foundry.kevm, node_printer=node_printer)
@@ -668,7 +668,7 @@ def foundry_list(foundry_root: Path) -> list[str]:
     lines: list[str] = []
     for method in sorted(all_methods):
         if Proof.proof_data_exists(method, apr_proofs_dir):
-            proof = foundry_get_proof(foundry_root=foundry_root, test=method)
+            proof = foundry_get_proof(foundry=foundry, test=method)
             lines.extend(proof.summary.lines)
             lines.append('')
     if len(lines) > 0:
@@ -678,7 +678,8 @@ def foundry_list(foundry_root: Path) -> list[str]:
 
 
 def foundry_remove_node(foundry_root: Path, test: str, node: NodeIdLike) -> None:
-    apr_proof = foundry_get_apr_proof(foundry_root=foundry_root, test=test)
+    foundry = Foundry(foundry_root)
+    apr_proof = foundry_get_apr_proof(foundry=foundry, test=test)
     node_ids = apr_proof.kcfg.prune(node, [apr_proof.init, apr_proof.target])
     _LOGGER.info(f'Pruned nodes: {node_ids}')
     apr_proof.write_proof_data()
@@ -698,7 +699,7 @@ def foundry_simplify_node(
 ) -> str:
     br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
     foundry = Foundry(foundry_root, bug_report=br)
-    apr_proof = foundry_get_apr_proof(foundry_root=foundry_root, test=test, bug_report=bug_report)
+    apr_proof = foundry_get_apr_proof(foundry=foundry, test=test, bug_report=bug_report)
     cterm = apr_proof.kcfg.node(node).cterm
     with legacy_explore(
         foundry.kevm,
@@ -736,7 +737,7 @@ def foundry_step_node(
     br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
     foundry = Foundry(foundry_root, bug_report=br)
 
-    apr_proof = foundry_get_apr_proof(foundry_root=foundry_root, test=test, bug_report=bug_report)
+    apr_proof = foundry_get_apr_proof(foundry=foundry, test=test, bug_report=bug_report)
     with legacy_explore(
         foundry.kevm,
         kcfg_semantics=KEVMSemantics(),
@@ -752,24 +753,21 @@ def foundry_step_node(
 
 
 def foundry_get_apr_proof(
-    foundry_root: Path,
+    foundry: Foundry,
     test: str,
     bug_report: bool = False,
 ) -> APRProof:
-    proof = foundry_get_proof(foundry_root=foundry_root, test=test, bug_report=bug_report)
+    proof = foundry_get_proof(foundry=foundry, test=test, bug_report=bug_report)
     if not isinstance(proof, APRProof):
         raise ValueError('Specified proof is not an APRProof.')
     return proof
 
 
 def foundry_get_proof(
-    foundry_root: Path,
+    foundry: Foundry,
     test: str,
     bug_report: bool = False,
 ) -> Proof:
-    br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
-    foundry = Foundry(foundry_root, bug_report=br)
-
     proofs_dir = foundry.out / 'apr_proofs'
     contract_name, test_name = test.split('.')
     proof_digest = foundry.proof_digest(contract_name, test_name)
@@ -790,7 +788,7 @@ def foundry_section_edge(
 ) -> None:
     br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
     foundry = Foundry(foundry_root, bug_report=br)
-    apr_proof = foundry_get_apr_proof(foundry_root=foundry_root, test=test, bug_report=bug_report)
+    apr_proof = foundry_get_apr_proof(foundry=foundry, test=test, bug_report=bug_report)
     source_id, target_id = edge
     with legacy_explore(
         foundry.kevm,
@@ -815,8 +813,7 @@ def foundry_get_model(
     failing: bool = False,
 ) -> str:
     foundry = Foundry(foundry_root)
-
-    proof = foundry_get_proof(foundry_root=foundry_root, test=test)
+    proof = foundry_get_proof(foundry=foundry, test=test)
     assert isinstance(proof, APRProof)
 
     if not nodes:
