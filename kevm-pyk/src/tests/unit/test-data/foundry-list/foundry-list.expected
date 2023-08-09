@@ -1,26 +1,26 @@
-APRProof: AssertTest.setUp:13fffecdbf453053b28c4ec61a38a8261adb931c55ea5f57b9fdb90d5054bf13
+APRProof: AssertTest.setUp
     status: ProofStatus.PASSED
     admitted: False
     nodes: 5
     pending: 0
     failing: 0
     stuck: 0
-    terminal: 0
+    terminal: 1
     refuted: 0
 Subproofs: 0
 
-APRProof: AssertTest.testFail_assert_false:930679c7c09c8951614c91c02146d460727c9abb211da2e3b23748a1511dd810
+APRProof: AssertTest.testFail_assert_false
     status: ProofStatus.PASSED
     admitted: False
     nodes: 5
     pending: 0
     failing: 0
     stuck: 0
-    terminal: 0
+    terminal: 1
     refuted: 0
 Subproofs: 0
 
-APRProof: AssertTest.testFail_assert_true:3f61fce069ecf43ed7a05b7d01890075a5576c29dbe3aa4e7d452f6f7ed8767a
+APRProof: AssertTest.testFail_assert_true
     status: ProofStatus.FAILED
     admitted: False
     nodes: 5
@@ -31,7 +31,7 @@ APRProof: AssertTest.testFail_assert_true:3f61fce069ecf43ed7a05b7d01890075a5576c
     refuted: 0
 Subproofs: 0
 
-APRProof: AssertTest.test_assert_false:775a4534c481927f46d683e13acc4cfccd92cde0cd4e6366508b8ac6040f0f80
+APRProof: AssertTest.test_assert_false
     status: ProofStatus.FAILED
     admitted: False
     nodes: 5
@@ -42,13 +42,13 @@ APRProof: AssertTest.test_assert_false:775a4534c481927f46d683e13acc4cfccd92cde0c
     refuted: 0
 Subproofs: 0
 
-APRProof: AssertTest.test_assert_true:c73f37a4e07279945326eb1d9d6d395ad5149bcbd864aadb5f4f10b5241bd26e
+APRProof: AssertTest.test_assert_true
     status: ProofStatus.PASSED
     admitted: False
     nodes: 5
     pending: 0
     failing: 0
     stuck: 0
-    terminal: 0
+    terminal: 1
     refuted: 0
 Subproofs: 0

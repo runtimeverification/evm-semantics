@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from functools import cached_property
 from os import listdir
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 from kevm_pyk.foundry import foundry_list
 from kevm_pyk.solc_to_k import Contract
@@ -16,8 +16,7 @@ if TYPE_CHECKING:
 
 
 LIST_DATA_DIR: Final = TEST_DATA_DIR / 'foundry-list'
-LIST_OUT: Final = LIST_DATA_DIR / 'out/'
-LIST_APR_PROOF: Final = LIST_OUT / 'apr_proofs/'
+LIST_APR_PROOF: Final = LIST_DATA_DIR / 'apr_proofs/'
 LIST_EXPECTED: Final = LIST_DATA_DIR / 'foundry-list.expected'
 
 
@@ -25,7 +24,7 @@ class FoundryMock:
     out: Path
 
     def __init__(self) -> None:
-        self.out = LIST_OUT
+        self.out = LIST_DATA_DIR
 
     @cached_property
     def contracts(self) -> dict[str, Contract]:
@@ -33,7 +32,7 @@ class FoundryMock:
         for full_method in listdir(LIST_APR_PROOF):
             contract = Contract.__new__(Contract)
             method = Contract.Method.__new__(Contract.Method)
-            contract.name, method.name, _ = full_method.split('.')
+            contract.name, method.name = full_method.split('.')
             if not hasattr(contract, 'methods'):
                 contract.methods = ()
             contract.methods = contract.methods + (method,)
@@ -44,15 +43,9 @@ class FoundryMock:
         return f'{contract}.{test}'
 
 
-def fake_hash(args: Any) -> str:
-    return str(args)
-
-
 def test_foundry_list(mocker: MockerFixture, update_expected_output: bool) -> None:
     foundry_mock = mocker.patch('kevm_pyk.foundry.Foundry')
     foundry_mock.return_value = FoundryMock()
-    mocker.patch('pyk.proof.proof.hash_str', fake_hash)
-    mocker.patch('pyk.proof.reachability.hash_str', fake_hash)
 
     with LIST_EXPECTED.open() as f:
         foundry_list_expected = f.read().rstrip()
