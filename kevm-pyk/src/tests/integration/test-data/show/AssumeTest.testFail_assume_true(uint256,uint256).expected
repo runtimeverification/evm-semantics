@@ -62,7 +62,7 @@
 │   statusCode: EVMC_SUCCESS
 │
 │  (2 steps)
-├─ 11
+├─ 11 (terminal)
 │   k: #halt ~> CONTINUATION:K
 │   pc: 183
 │   callDepth: 0
@@ -79,7 +79,10 @@
 
 
 
+<<<<<<< HEAD:kevm-pyk/src/tests/integration/test-data/show/AssumeTest.testFail_assume_true(uint256,uint256).expected
 module SUMMARY-ASSUMETEST.TESTFAIL-ASSUME-TRUE(UINT256,UINT256):BD3B87154C1D1D98438B2FC4DD0C0BC233772FF72DFB13B9ED5D78D323C3E092
+=======
+>>>>>>> master:kevm-pyk/src/tests/integration/test-data/show/AssumeTest.testFail_assume_true.expected
     
     
     rule [BASIC-BLOCK-1-TO-3]: <foundry>

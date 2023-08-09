@@ -20,7 +20,7 @@
 │   statusCode: EVMC_SUCCESS
 │
 │  (2 steps)
-├─ 5
+├─ 5 (terminal)
 │   k: #halt ~> CONTINUATION:K
 │   pc: 213
 │   callDepth: 0
@@ -37,7 +37,10 @@
 
 
 
+<<<<<<< HEAD:kevm-pyk/src/tests/integration/test-data/show/AssertTest.test_assert_true().expected
 module SUMMARY-ASSERTTEST.TEST-ASSERT-TRUE():E200EADD2408C03C6CCDB315095224AC1D58DF84031A945BF166ABAB4AE2A531
+=======
+>>>>>>> master:kevm-pyk/src/tests/integration/test-data/show/AssertTest.test_assert_true.expected
     
     
     rule [BASIC-BLOCK-1-TO-3]: <foundry>

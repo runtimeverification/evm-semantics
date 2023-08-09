@@ -177,7 +177,7 @@ module BYTES-SIMPLIFICATION [symbolic]
       #range (#buf(W1:Int, X:Int), S2:Int, W2:Int) => #buf(W2, 0)
       requires 0 <=Int X andBool X <Int 2 ^Int (8 *Int (W1 -Int (S2 +Int W2)))
        andBool 0 <=Int S2 andBool 0 <=Int W2 andBool S2 +Int W2 <=Int W1
-      [simplification]
+      [simplification, concrete(W1, S2, W2)]
 
     rule [range-padRightToWidth]:
       #range(#padRightToWidth(_, BUF), 0, WIDTH) => BUF

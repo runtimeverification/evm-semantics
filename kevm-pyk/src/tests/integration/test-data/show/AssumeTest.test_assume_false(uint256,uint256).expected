@@ -292,7 +292,10 @@ Node 11:
 
 
 
+<<<<<<< HEAD:kevm-pyk/src/tests/integration/test-data/show/AssumeTest.test_assume_false(uint256,uint256).expected
 module SUMMARY-ASSUMETEST.TEST-ASSUME-FALSE(UINT256,UINT256):1867DED36016A4FCE6DE5C88E777C7B9A5C4AD762156BABF514CEBACB9E46EB7
+=======
+>>>>>>> master:kevm-pyk/src/tests/integration/test-data/show/AssumeTest.test_assume_false.expected
     
     
     rule [BASIC-BLOCK-1-TO-3]: <foundry>

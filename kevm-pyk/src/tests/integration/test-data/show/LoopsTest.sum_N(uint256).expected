@@ -50,7 +50,7 @@
 ┃  │   statusCode: EVMC_SUCCESS
 ┃  │
 ┃  │  (2 steps)
-┃  ├─ 12
+┃  ├─ 12 (terminal)
 ┃  │   k: #halt ~> CONTINUATION:K
 ┃  │   pc: 352
 ┃  │   callDepth: 0
@@ -87,7 +87,7 @@
    │   statusCode: EVMC_SUCCESS
    │
    │  (2 steps)
-   ├─ 13
+   ├─ 13 (terminal)
    │   k: #halt ~> CONTINUATION:K
    │   pc: 352
    │   callDepth: 0
@@ -104,7 +104,10 @@
 
 
 
+<<<<<<< HEAD:kevm-pyk/src/tests/integration/test-data/show/LoopsTest.sum_N(uint256).expected
 module SUMMARY-LOOPSTEST.SUM-N(UINT256):062CC914DAA13A8EAF189DADDC9178CE923938A59F8855C3A0DE5EB7260670A7
+=======
+>>>>>>> master:kevm-pyk/src/tests/integration/test-data/show/LoopsTest.sum_N.expected
     
     
     rule [BASIC-BLOCK-1-TO-3]: <foundry>
