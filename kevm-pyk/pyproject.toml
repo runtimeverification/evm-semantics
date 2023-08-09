@@ -9,6 +9,10 @@ description = ""
 authors = [
     "Runtime Verification, Inc. <contact@runtimeverification.com>",
 ]
+packages = [
+    { include = "kevm_pyk", from = "src/" },
+    { include = "kontrol", from = "src/" },
+]
 
 [tool.poetry.dependencies]
 python = "^3.10"
@@ -36,6 +40,7 @@ pyupgrade = "*"
 [tool.poetry.scripts]
 kevm-pyk = "kevm_pyk.__main__:main"
 gst-to-kore = "kevm_pyk.gst_to_kore:main"
+kontrol = "kontrol.__main__:main"
 
 [tool.isort]
 profile = "black"
