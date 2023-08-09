@@ -36,7 +36,7 @@
 ┃  │   statusCode: EVMC_SUCCESS
 ┃  │
 ┃  │  (2 steps)
-┃  ├─ 10
+┃  ├─ 10 (terminal)
 ┃  │   k: #halt ~> CONTINUATION:K
 ┃  │   pc: 213
 ┃  │   callDepth: 0
@@ -291,7 +291,6 @@ Node 11:
 
 
 
-module SUMMARY-ASSERTTEST.TEST-FAILING-BRANCH(UINT256):C60CB1C30ED782C5B61A621FCA10BE831A7CC1ECB96FE691F94F331F484FD273
     
     
     rule [BASIC-BLOCK-1-TO-3]: <foundry>
