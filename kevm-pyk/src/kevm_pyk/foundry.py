@@ -675,7 +675,7 @@ def foundry_list(foundry_root: Path) -> list[str]:
     for method in sorted(all_methods):
         contract_name, test_name = method.split('.')
         proof_digest = foundry.proof_digest(contract_name, test_name)
-        if APRProof.proof_exists(proof_digest, apr_proofs_dir):
+        if APRProof.proof_data_exists(proof_digest, apr_proofs_dir):
             apr_proof = APRProof.read_proof_data(apr_proofs_dir, proof_digest)
             lines.extend(apr_proof.summary.lines)
             lines.append('')
