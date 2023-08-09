@@ -674,7 +674,7 @@ def foundry_list(foundry_root: Path) -> list[str]:
     for method in sorted(all_methods):
         contract_name, test_name = method.split('.')
         proof_digest = foundry.proof_digest(contract_name, test_name)
-        if APRProof.proof_exists(proof_digest, apr_proofs_dir):
+        if APRProof.proof_data_exists(proof_digest, apr_proofs_dir):
             apr_proof = APRProof.read_proof_data(apr_proofs_dir, proof_digest)
             lines.extend(apr_proof.summary.lines)
             lines.append('')
@@ -898,16 +898,9 @@ def _method_to_apr_proof(
     method_name = method.name
     test = f'{contract_name}.{method_name}'
     proof_digest = foundry.proof_digest(contract_name, method_name)
-    if Proof.proof_exists(proof_digest, save_directory) and not reinit:
-        proof_path = save_directory / f'{hash_str(proof_digest)}.json'
-        proof_dict = json.loads(proof_path.read_text())
-        match proof_dict['type']:
-            case 'APRProof':
-                apr_proof = APRProof.from_dict(proof_dict, proof_dir=save_directory)
-            case 'APRBMCProof':
-                apr_proof = APRBMCProof.from_dict(proof_dict, proof_dir=save_directory)
-            case unsupported_type:
-                raise ValueError(f'Unsupported proof type {unsupported_type}')
+    if Proof.proof_data_exists(proof_digest, save_directory) and not reinit:
+        apr_proof = Proof.read_proof_data(proof_dir=save_directory, id=proof_digest)
+        assert isinstance(apr_proof, APRProof)
     else:
         _LOGGER.info(f'Initializing KCFG for test: {test}')
 
