@@ -4,10 +4,10 @@ import json
 import logging
 import sys
 from argparse import ArgumentParser
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli.utils import file_path
 from pyk.cterm import CTerm
 from pyk.kast.outer import KApply, KRewrite
@@ -366,13 +366,8 @@ def exec_prove(
             return passed, failure_log
 
     results: list[tuple[bool, list[str] | None]]
-    if workers > 1:
-        with ProcessPool(ncpus=workers) as process_pool:
-            results = process_pool.map(_init_and_run_proof, claims)
-    else:
-        results = []
-        for claim in claims:
-            results.append(_init_and_run_proof(claim))
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        results = list(pool.map(_init_and_run_proof, claims))
 
     failed = 0
     for claim, r in zip(claims, results, strict=True):
