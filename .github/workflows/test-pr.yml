@@ -232,7 +232,7 @@ jobs:
   build-deb-package:
     name: 'Build Ubuntu Jammy DockerHub Image'
     runs-on: [self-hosted, linux, normal]
-    # needs: kevm-pyk-code-quality-checks
+    needs: kevm-pyk-code-quality-checks
     steps:
       - name: 'Check out code'
         uses: actions/checkout@v3
