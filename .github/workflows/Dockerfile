@@ -1,25 +1,18 @@
-ARG LLVM_VERSION
-ARG K_COMMIT
-ARG K_VERSION
-ARG Z3_VERSION
-ARG BASE_DISTRO
 FROM ghcr.io/foundry-rs/foundry:nightly-ca67d15f4abd46394b324c50e21e66f306a1162d as FOUNDRY
 
-ARG LLVM_VERSION
-ARG K_COMMIT
-ARG K_VERSION
 ARG Z3_VERSION
-ARG BASE_DISTRO
+
 FROM z3:${Z3_VERSION} as Z3
 
-ARG LLVM_VERSION
 ARG K_VERSION
 ARG BASE_DISTRO
+
 FROM stack:${BASE_DISTRO}-${K_VERSION} as STACK
 
-ARG LLVM_VERSION
 ARG K_COMMIT
+
 FROM runtimeverificationinc/kframework-k:ubuntu-jammy-${K_COMMIT}
+ARG LLVM_VERSION
 
 COPY --from=FOUNDRY /usr/local/bin/forge /usr/local/bin/forge
 COPY --from=FOUNDRY /usr/local/bin/anvil /usr/local/bin/anvil
@@ -29,7 +22,6 @@ COPY --from=Z3 /usr/bin/z3 /usr/bin/z3
 
 COPY --from=STACK /usr/local/bin/stack /usr/local/bin/stack
 
-ARG LLVM_VERSION
 
 RUN    apt-get update                  \
     && apt-get upgrade --yes           \
