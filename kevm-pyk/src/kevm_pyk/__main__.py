@@ -309,7 +309,11 @@ def exec_prove(
                 else:
                     proof_problem = EqualityProof.from_claim(claim, kevm.definition, proof_dir=save_directory)
             else:
-                if save_directory is not None and not reinit and APRProof.proof_data_exists(claim.label, save_directory):
+                if (
+                    save_directory is not None
+                    and not reinit
+                    and APRProof.proof_data_exists(claim.label, save_directory)
+                ):
                     proof_problem = APRProof.read_proof_data(save_directory, claim.label)
 
                 else:

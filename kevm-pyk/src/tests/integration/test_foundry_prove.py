@@ -245,6 +245,7 @@ def assert_or_update_show_output(show_res: str, expected_file: Path, *, update: 
     else:
         assert actual_text == expected_text
 
+
 def test_foundry_resume_proof(foundry_root: Path, update_expected_output: bool) -> None:
     test_id = 'AssumeTest.test_assume_false'
     prove_res = foundry_prove(
@@ -254,7 +255,7 @@ def test_foundry_resume_proof(foundry_root: Path, update_expected_output: bool) 
         smt_retry_limit=4,
         auto_abstract_gas=True,
         max_iterations=4,
-        reinit=True
+        reinit=True,
     )
     assert_pass(test_id, prove_res)
     prove_res = foundry_prove(
@@ -264,6 +265,6 @@ def test_foundry_resume_proof(foundry_root: Path, update_expected_output: bool) 
         smt_retry_limit=4,
         auto_abstract_gas=True,
         max_iterations=6,
-        reinit=False
+        reinit=False,
     )
     assert_fail(test_id, prove_res)
