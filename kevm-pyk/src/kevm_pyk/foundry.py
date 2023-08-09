@@ -511,8 +511,8 @@ def foundry_prove(
                 )
         method.update_digest(foundry.out / 'digest')
 
-    def _init_and_run_proof(_init_problem: tuple[str, str]) -> tuple[bool, list[str] | None]:
-        proof_id = f'{_init_problem[0]}.{_init_problem[1]}'
+    def _init_and_run_proof(init_problem: tuple[str, str]) -> tuple[bool, list[str] | None]:
+        proof_id = f'{init_problem[0]}.{init_problem[1]}'
         llvm_definition_dir = foundry.out / 'kompiled-llvm' if use_booster else None
 
         with legacy_explore(
@@ -526,7 +526,7 @@ def foundry_prove(
             smt_retry_limit=smt_retry_limit,
             trace_rewrites=trace_rewrites,
         ) as kcfg_explore:
-            contract_name, method_name = _init_problem
+            contract_name, method_name = init_problem
             contract = foundry.contracts[contract_name]
             method = contract.method_by_name[method_name]
             proof = _method_to_apr_proof(
