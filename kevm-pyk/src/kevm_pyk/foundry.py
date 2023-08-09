@@ -531,7 +531,6 @@ def foundry_prove(
             method = contract.method_by_name[method_name]
             proof = _method_to_apr_proof(
                 foundry=foundry,
-                foundry_root=foundry_root,
                 contract=contract,
                 method=method,
                 save_directory=save_directory,
@@ -939,7 +938,6 @@ def _foundry_to_main_def(
 
 def _method_to_apr_proof(
     foundry: Foundry,
-    foundry_root: Path,
     contract: Contract,
     method: Contract.Method,
     save_directory: Path,
@@ -965,11 +963,7 @@ def _method_to_apr_proof(
 
         empty_config = foundry.kevm.definition.empty_config(GENERATED_TOP_CELL)
         kcfg, init_node_id, target_node_id = _method_to_cfg(
-            empty_config=empty_config,
-            contract=contract,
-            method=method,
-            foundry_root=foundry_root,
-            init_state=setup_digest,
+            empty_config, contract, method, save_directory, init_state=setup_digest
         )
 
         _LOGGER.info(f'Expanding macros in initial state for test: {test}')
@@ -1004,15 +998,15 @@ def _method_to_cfg(
     empty_config: KInner,
     contract: Contract,
     method: Contract.Method,
-    foundry_root: Path,
+    kcfgs_dir: Path,
     init_state: str | None = None,
 ) -> tuple[KCFG, NodeIdLike, NodeIdLike]:
     calldata = method.calldata_cell(contract)
     callvalue = method.callvalue_cell
     init_cterm = _init_cterm(
-        empty_config=empty_config,
-        contract_name=contract.name,
-        foundry_root=foundry_root,
+        empty_config,
+        contract.name,
+        kcfgs_dir,
         calldata=calldata,
         callvalue=callvalue,
         init_state=init_state,
@@ -1041,7 +1035,7 @@ def get_final_accounts_cell(proof_digest: str, proof_dir: Path) -> tuple[KInner,
 def _init_cterm(
     empty_config: KInner,
     contract_name: str,
-    foundry_root: Path,
+    kcfgs_dir: Path,
     *,
     calldata: KInner | None = None,
     callvalue: KInner | None = None,
@@ -1106,7 +1100,7 @@ def _init_cterm(
 
     constraints = None
     if init_state:
-        accts, constraints = get_final_accounts_cell(init_state, foundry_root)
+        accts, constraints = get_final_accounts_cell(init_state, kcfgs_dir)
         init_subst['ACCOUNTS_CELL'] = accts
 
     if calldata is not None:
