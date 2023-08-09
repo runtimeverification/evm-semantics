@@ -25,7 +25,6 @@ from pyk.utils import BugReport, single
 from .cli import KEVMCLIArgs, node_id_like
 from .foundry import (
     Foundry,
-    foundry_get_apr_proof,
     foundry_get_model,
     foundry_kompile,
     foundry_list,
@@ -667,7 +666,7 @@ def exec_run(
 def exec_foundry_view_kcfg(foundry_root: Path, test: str, **kwargs: Any) -> None:
     foundry = Foundry(foundry_root)
     contract_name, test_name = test.split('.')
-    proof = foundry_get_apr_proof(foundry=foundry, test=test)
+    proof = foundry.get_apr_proof(test)
 
     def _short_info(cterm: CTerm) -> Iterable[str]:
         return foundry.short_info_for_contract(contract_name, cterm)
