@@ -899,15 +899,7 @@ def _method_to_apr_proof(
     test = f'{contract_name}.{method_name}'
     proof_digest = foundry.proof_digest(contract_name, method_name)
     if Proof.proof_data_exists(proof_digest, save_directory) and not reinit:
-        proof_path = save_directory / f'{hash_str(proof_digest)}/proof.json'
-        proof_dict = json.loads(proof_path.read_text())
-        match proof_dict['type']:
-            case 'APRProof':
-                apr_proof = APRProof.from_dict(proof_dict, proof_dir=save_directory)
-            case 'APRBMCProof':
-                apr_proof = APRBMCProof.from_dict(proof_dict, proof_dir=save_directory)
-            case unsupported_type:
-                raise ValueError(f'Unsupported proof type {unsupported_type}')
+        apr_proof = Proof.read_proof_data(proof_dir=save_directory, id=proof_digest)
     else:
         _LOGGER.info(f'Initializing KCFG for test: {test}')
 
