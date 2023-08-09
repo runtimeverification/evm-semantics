@@ -8,6 +8,11 @@ contract FreshIntTest is Test, KEVMCheats {
     int128 constant min = -170141183460469231731687303715884105728;
     int128 constant max = 170141183460469231731687303715884105727;
 
+    function test_uint256() public {
+        kevm.infiniteGas();
+        uint256 fresh_uint256 = kevm.freshUInt(32);
+    }
+
     function test_uint128() public {
         kevm.infiniteGas();
         uint256 fresh_uint128 = uint256(kevm.freshUInt(32));
