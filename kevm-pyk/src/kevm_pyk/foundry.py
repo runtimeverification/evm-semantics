@@ -958,9 +958,9 @@ def _method_to_apr_proof(
     else:
         _LOGGER.info(f'Initializing KCFG for test: {test}')
 
-        setup_method = None
+        setup_digest = None
         if method_name != 'setUp' and 'setUp' in contract.method_by_name:
-            setup_method = f'{contract_name}.setUp'
+            setup_digest = foundry.proof_digest(contract_name, 'setUp')
             _LOGGER.info(f'Using setUp method for test: {test}')
 
         empty_config = foundry.kevm.definition.empty_config(GENERATED_TOP_CELL)
@@ -969,7 +969,7 @@ def _method_to_apr_proof(
             contract=contract,
             method=method,
             foundry_root=foundry_root,
-            init_state=setup_method,
+            init_state=setup_digest,
         )
 
         _LOGGER.info(f'Expanding macros in initial state for test: {test}')
