@@ -811,7 +811,7 @@ def _create_argument_parser() -> ArgumentParser:
         dest='llvm_library',
         default=False,
         action='store_true',
-        help='Do not generate a dynamic llvm library during kompile.',
+        help='Generate a dynamic llvm library during kompile.',
     )
 
     prove_args = command_parser.add_parser(
