@@ -110,8 +110,6 @@ module VAT-SLIP-PASS-ROUGH-SPEC
        andBool #Vat.wards[CALLER_ID] =/=Int #Vat.gem[ABI_ilk][ABI_usr]
 
       [depends(Vat.addui.pass)]
-
-    // Vat_addui
     
     // Vat_addui
     claim [Vat.addui.pass]:

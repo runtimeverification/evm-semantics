@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import contextlib
 import graphlib
 import json
 import logging
@@ -55,7 +56,7 @@ from .utils import (
 if TYPE_CHECKING:
     from argparse import Namespace
     from collections.abc import Callable, Iterable
-    from typing import Any, Final, TypeVar
+    from typing import Any, Final, Iterator, TypeVar
 
     from pyk.kast.outer import KClaim
     from pyk.kcfg.kcfg import NodeIdLike
@@ -235,6 +236,20 @@ def exec_prove_legacy(
         raise SystemExit(1)
 
 
+class ZeroProcessPool:
+    def map(self, f: Callable[[Any], Any], xs: list[Any]) -> list[Any]:
+        return [f(x) for x in xs]
+
+
+@contextlib.contextmanager
+def wrap_process_pool(workers: int) -> Iterator[ZeroProcessPool | ProcessPool]:
+    if workers <= 1:
+        yield ZeroProcessPool()
+    else:
+        with ProcessPool(ncpus=workers) as pp:
+            yield pp
+
+
 def exec_prove(
     definition_dir: Path,
     spec_file: Path,
@@ -378,34 +393,32 @@ def exec_prove(
 
     all_claims_by_label: dict[str, KClaim] = {c.label: c for c in all_claims}
     graph = {c.label: [f'{spec_module_name}.{d}' for d in c.dependencies] for c in all_claims}
-    _LOGGER.info(f'graph: {graph}')
     topological_sorter = graphlib.TopologicalSorter(graph)
     topological_sorter.prepare()
-    with ProcessPool(ncpus=workers) as process_pool:
-        selected_results = []
+    with wrap_process_pool(workers=workers) as process_pool:
+        selected_results: list[tuple[bool, list[str] | None]] = []
         selected_claims = []
         while topological_sorter.is_active():
             ready = topological_sorter.get_ready()
-            _LOGGER.info(f'ready: {ready}')
+            _LOGGER.info(f'Discharging proof obligations: {ready}')
             curr_claim_list = [all_claims_by_label[label] for label in ready]
-            results = process_pool.map(_init_and_run_proof, curr_claim_list)
-            _LOGGER.info(f'done: {ready}')
+            results: list[tuple[bool, list[str] | None]] = process_pool.map(_init_and_run_proof, curr_claim_list)
             for label in ready:
                 topological_sorter.done(label)
             selected_results.extend(results)
             selected_claims.extend(curr_claim_list)
-    _LOGGER.info('finished.')
+
     failed = 0
     for claim, r in zip(selected_claims, selected_results, strict=True):
         passed, failure_log = r
         if passed:
-            _LOGGER.info(f'PROOF PASSED: {claim.label}')
+            print(f'PROOF PASSED: {claim.label}')
         else:
             failed += 1
-            _LOGGER.info(f'PROOF FAILED: {claim.label}')
+            print(f'PROOF FAILED: {claim.label}')
             if failure_info and failure_log is not None:
                 for line in failure_log:
-                    _LOGGER.info(line)
+                    print(line)
 
     if failed:
         sys.exit(failed)
