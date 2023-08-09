@@ -954,7 +954,7 @@ def _method_to_apr_proof(
     contract_name = contract.name
     method_sig = method.signature
     test = f'{contract_name}.{method_sig}'
-    proof_digest = foundry.proof_digest(contract_name, method_name)
+    proof_digest = foundry.proof_digest(contract_name, method_sig)
     if Proof.proof_data_exists(proof_digest, save_directory) and not reinit:
         apr_proof = Proof.read_proof_data(proof_dir=save_directory, id=proof_digest)
         assert isinstance(apr_proof, APRProof)
