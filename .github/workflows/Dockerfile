@@ -25,6 +25,8 @@ COPY --from=Z3 /usr/bin/z3 /usr/bin/z3
 
 COPY --from=STACK /usr/local/bin/stack /usr/local/bin/stack
 
+ARG LLVM_VERSION
+
 RUN    apt-get update                  \
     && apt-get upgrade --yes           \
     && apt-get install --yes           \
