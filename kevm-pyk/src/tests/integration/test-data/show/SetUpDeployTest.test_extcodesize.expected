@@ -5,24 +5,24 @@
 │   callDepth: 0
 │   statusCode: STATUSCODE
 │
-│  (331 steps)
+│  (435 steps)
 ├─ 3
 │   k: #end EVMC_SUCCESS ~> #pc [ STOP ] ~> #execute ~> CONTINUATION:K
-│   pc: 213
+│   pc: 112
 │   callDepth: 0
 │   statusCode: STATUSCODE:StatusCode
 │
 │  (1 step)
 ├─ 4
 │   k: #halt ~> #pc [ STOP ] ~> #execute ~> CONTINUATION:K
-│   pc: 213
+│   pc: 112
 │   callDepth: 0
 │   statusCode: EVMC_SUCCESS
 │
 │  (2 steps)
-├─ 5
+├─ 5 (terminal)
 │   k: #halt ~> CONTINUATION:K
-│   pc: 213
+│   pc: 112
 │   callDepth: 0
 │   statusCode: EVMC_SUCCESS
 │
@@ -37,7 +37,6 @@
 
 
 
-module SUMMARY-ASSERTTEST.TEST-ASSERT-TRUE():E200EADD2408C03C6CCDB315095224AC1D58DF84031A945BF166ABAB4AE2A531
     
     
     rule [BASIC-BLOCK-1-TO-3]: <foundry>
@@ -76,13 +75,13 @@ module SUMMARY-ASSERTTEST.TEST-ASSERT-TRUE():E200EADD2408C03C6CCDB315095224AC1D5
                      CALLER_ID
                    </caller>
                    <callData>
-                     ( AssertTest . test_assert_true ( ) => b"6\r\xa4\xd2" )
+                     ( SetUpDeployTest . test_extcodesize ( ) => b"b\xc9\xea\xc5" )
                    </callData>
                    <callValue>
                      0
                    </callValue>
                    <wordStack>
-                     ( .WordStack => ( selector ( "test_assert_true()" ) : .WordStack ) )
+                     ( .WordStack => ( selector ( "test_extcodesize()" ) : .WordStack ) )
                    </wordStack>
                    <localMem>
                      ( .Bytes => b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80" )
@@ -105,10 +104,10 @@ module SUMMARY-ASSERTTEST.TEST-ASSERT-TRUE():E200EADD2408C03C6CCDB315095224AC1D5
                      .List
                    </log>
                    <accessedAccounts>
-                     .Set
+                     ( .Set => SetItem ( 491460923342184218035706888008750043977755113263 ) )
                    </accessedAccounts>
                    <accessedStorage>
-                     .Map
+                     ( .Map => ( 728815563385977040452943777879061427756277306518 |-> SetItem ( 8 ) ) )
                    </accessedStorage>
                    ...
                  </substate>
@@ -125,6 +124,24 @@ module SUMMARY-ASSERTTEST.TEST-ASSERT-TRUE():E200EADD2408C03C6CCDB315095224AC1D5
                </evm>
                <network>
                  <accounts>
+                   ( <account>
+                     <acctID>
+                       491460923342184218035706888008750043977755113263
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     ...
+                     <storage>
+                       ( 0 |-> 0 )
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       1
+                     </nonce>
+                   </account>
                    ( <account>
                      <acctID>
                        645326474426547203313410069153905908525362434349
@@ -152,15 +169,15 @@ module SUMMARY-ASSERTTEST.TEST-ASSERT-TRUE():E200EADD2408C03C6CCDB315095224AC1D5
                      </balance>
                      ...
                      <storage>
-                       .Map
+                       ( 8 |-> 491460923342184218035706888008750043977755113263 )
                      </storage>
                      <origStorage>
                        .Map
                      </origStorage>
                      <nonce>
-                       1
+                       2
                      </nonce>
-                   </account> )
+                   </account> ) )
                  </accounts>
                  ...
                </network>
@@ -243,9 +260,9 @@ module SUMMARY-ASSERTTEST.TEST-ASSERT-TRUE():E200EADD2408C03C6CCDB315095224AC1D5
        andBool ( ORIGIN_ID <Int pow160
        andBool ( 0 <=Int NUMBER_CELL
        andBool ( NUMBER_CELL <=Int maxSInt256
-       andBool ( lengthBytes ( AssertTest . test_assert_true ( ) ) <Int pow128
        andBool ( 0 <=Int 9223372036854775807
        andBool ( 9223372036854775807 <Int pow256
+       andBool ( lengthBytes ( SetUpDeployTest . test_extcodesize ( ) ) <Int pow128
        andBool ( 0 <=Int 728815563385977040452943777879061427756277306518
        andBool ( 728815563385977040452943777879061427756277306518 <Int pow160
                )))))))))))
@@ -296,13 +313,13 @@ module SUMMARY-ASSERTTEST.TEST-ASSERT-TRUE():E200EADD2408C03C6CCDB315095224AC1D5
                      CALLER_ID:Int
                    </caller>
                    <callData>
-                     b"6\r\xa4\xd2"
+                     b"b\xc9\xea\xc5"
                    </callData>
                    <callValue>
                      0
                    </callValue>
                    <wordStack>
-                     ( selector ( "test_assert_true()" ) : .WordStack )
+                     ( selector ( "test_extcodesize()" ) : .WordStack )
                    </wordStack>
                    <localMem>
                      b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80"
@@ -325,10 +342,10 @@ module SUMMARY-ASSERTTEST.TEST-ASSERT-TRUE():E200EADD2408C03C6CCDB315095224AC1D5
                      .List
                    </log>
                    <accessedAccounts>
-                     .Set
+                     SetItem ( 491460923342184218035706888008750043977755113263 )
                    </accessedAccounts>
                    <accessedStorage>
-                     .Map
+                     ( 728815563385977040452943777879061427756277306518 |-> SetItem ( 8 ) )
                    </accessedStorage>
                    ...
                  </substate>
@@ -345,6 +362,24 @@ module SUMMARY-ASSERTTEST.TEST-ASSERT-TRUE():E200EADD2408C03C6CCDB315095224AC1D5
                </evm>
                <network>
                  <accounts>
+                   ( <account>
+                     <acctID>
+                       491460923342184218035706888008750043977755113263
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     ...
+                     <storage>
+                       ( 0 |-> 0 )
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       1
+                     </nonce>
+                   </account>
                    ( <account>
                      <acctID>
                        645326474426547203313410069153905908525362434349
@@ -372,15 +407,15 @@ module SUMMARY-ASSERTTEST.TEST-ASSERT-TRUE():E200EADD2408C03C6CCDB315095224AC1D5
                      </balance>
                      ...
                      <storage>
-                       .Map
+                       ( 8 |-> 491460923342184218035706888008750043977755113263 )
                      </storage>
                      <origStorage>
                        .Map
                      </origStorage>
                      <nonce>
-                       1
+                       2
                      </nonce>
-                   </account> )
+                   </account> ) )
                  </accounts>
                  ...
                </network>
@@ -504,13 +539,13 @@ module SUMMARY-ASSERTTEST.TEST-ASSERT-TRUE():E200EADD2408C03C6CCDB315095224AC1D5
                      CALLER_ID:Int
                    </caller>
                    <callData>
-                     b"6\r\xa4\xd2"
+                     b"b\xc9\xea\xc5"
                    </callData>
                    <callValue>
                      0
                    </callValue>
                    <wordStack>
-                     ( selector ( "test_assert_true()" ) : .WordStack )
+                     ( selector ( "test_extcodesize()" ) : .WordStack )
                    </wordStack>
                    <localMem>
                      b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80"
@@ -533,10 +568,10 @@ module SUMMARY-ASSERTTEST.TEST-ASSERT-TRUE():E200EADD2408C03C6CCDB315095224AC1D5
                      .List
                    </log>
                    <accessedAccounts>
-                     .Set
+                     SetItem ( 491460923342184218035706888008750043977755113263 )
                    </accessedAccounts>
                    <accessedStorage>
-                     .Map
+                     ( 728815563385977040452943777879061427756277306518 |-> SetItem ( 8 ) )
                    </accessedStorage>
                    ...
                  </substate>
@@ -553,6 +588,24 @@ module SUMMARY-ASSERTTEST.TEST-ASSERT-TRUE():E200EADD2408C03C6CCDB315095224AC1D5
                </evm>
                <network>
                  <accounts>
+                   ( <account>
+                     <acctID>
+                       491460923342184218035706888008750043977755113263
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     ...
+                     <storage>
+                       ( 0 |-> 0 )
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       1
+                     </nonce>
+                   </account>
                    ( <account>
                      <acctID>
                        645326474426547203313410069153905908525362434349
@@ -580,15 +633,15 @@ module SUMMARY-ASSERTTEST.TEST-ASSERT-TRUE():E200EADD2408C03C6CCDB315095224AC1D5
                      </balance>
                      ...
                      <storage>
-                       .Map
+                       ( 8 |-> 491460923342184218035706888008750043977755113263 )
                      </storage>
                      <origStorage>
                        .Map
                      </origStorage>
                      <nonce>
-                       1
+                       2
                      </nonce>
-                   </account> )
+                   </account> ) )
                  </accounts>
                  ...
                </network>

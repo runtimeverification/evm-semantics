@@ -20,7 +20,7 @@
 │   statusCode: EVMC_REVERT
 │
 │  (2 steps)
-├─ 5 (terminal)
+├─ 5
 │   k: #halt ~> CONTINUATION:K
 │   pc: 992
 │   callDepth: 0
@@ -37,10 +37,7 @@
 
 
 
-<<<<<<< HEAD:kevm-pyk/src/tests/integration/test-data/show/AssertTest.testFail_assert_false().expected
 module SUMMARY-ASSERTTEST.TESTFAIL-ASSERT-FALSE():D9767505A49B578A77DD3E9B8A9FE01EAFE474E8A6AA79E26F018CC5DA6F799A
-=======
->>>>>>> master:kevm-pyk/src/tests/integration/test-data/show/AssertTest.testFail_assert_false.expected
     
     
     rule [BASIC-BLOCK-1-TO-3]: <foundry>

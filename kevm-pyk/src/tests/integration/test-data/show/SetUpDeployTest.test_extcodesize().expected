@@ -20,7 +20,7 @@
 │   statusCode: EVMC_SUCCESS
 │
 │  (2 steps)
-├─ 5 (terminal)
+├─ 5
 │   k: #halt ~> CONTINUATION:K
 │   pc: 112
 │   callDepth: 0
@@ -37,10 +37,7 @@
 
 
 
-<<<<<<< HEAD:kevm-pyk/src/tests/integration/test-data/show/SetUpDeployTest.test_extcodesize().expected
 module SUMMARY-SETUPDEPLOYTEST.TEST-EXTCODESIZE():F212E6B5B768844563A8F6DD11A901624CB91DFB16BE406C2E472F1B39DA0237
-=======
->>>>>>> master:kevm-pyk/src/tests/integration/test-data/show/SetUpDeployTest.test_extcodesize.expected
     
     
     rule [BASIC-BLOCK-1-TO-3]: <foundry>

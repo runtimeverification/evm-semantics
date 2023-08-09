@@ -666,18 +666,10 @@ def foundry_show(
     counterexample_info: bool = False,
 ) -> str:
     foundry = Foundry(foundry_root)
-<<<<<<< HEAD
-    apr_proofs_dir = foundry.out / 'apr_proofs'
+    proofs_dir = foundry.out / 'apr_proofs'
     (contract_name, test_sig) = foundry.unique_sig(test)
     proof_digest = foundry.proof_digest(contract_name, test_sig)
-    proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
-=======
-    proofs_dir = foundry.out / 'apr_proofs'
-
-    contract_name, test_name = test.split('.')
-    proof_digest = foundry.proof_digest(contract_name, test_name)
     proof = Proof.read_proof_data(proofs_dir, proof_digest)
->>>>>>> master
     assert isinstance(proof, APRProof)
 
     def _short_info(cterm: CTerm) -> Iterable[str]:
@@ -757,14 +749,8 @@ def foundry_list(foundry_root: Path) -> list[str]:
 def foundry_remove_node(foundry_root: Path, test: str, node: NodeIdLike) -> None:
     foundry = Foundry(foundry_root)
     apr_proofs_dir = foundry.out / 'apr_proofs'
-<<<<<<< HEAD
     proof_digest = foundry.proof_digest(*foundry.unique_sig(test))
-    apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
-=======
-    contract_name, test_name = test.split('.')
-    proof_digest = foundry.proof_digest(contract_name, test_name)
     apr_proof = APRProof.read_proof_data(apr_proofs_dir, proof_digest)
->>>>>>> master
     node_ids = apr_proof.kcfg.prune(node, [apr_proof.init, apr_proof.target])
     _LOGGER.info(f'Pruned nodes: {node_ids}')
     apr_proof.write_proof_data()
@@ -785,14 +771,8 @@ def foundry_simplify_node(
     br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
     foundry = Foundry(foundry_root, bug_report=br)
     apr_proofs_dir = foundry.out / 'apr_proofs'
-<<<<<<< HEAD
     proof_digest = foundry.proof_digest(*foundry.unique_sig(test))
-    apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
-=======
-    contract_name, test_name = test.split('.')
-    proof_digest = foundry.proof_digest(contract_name, test_name)
     apr_proof = APRProof.read_proof_data(apr_proofs_dir, proof_digest)
->>>>>>> master
     cterm = apr_proof.kcfg.node(node).cterm
     with legacy_explore(
         foundry.kevm,
@@ -831,16 +811,9 @@ def foundry_step_node(
     foundry = Foundry(foundry_root, bug_report=br)
 
     apr_proofs_dir = foundry.out / 'apr_proofs'
-<<<<<<< HEAD
     proof_digest = foundry.proof_digest(*foundry.unique_sig(test))
-    apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
-    with KCFGExplore(
-=======
-    contract_name, test_name = test.split('.')
-    proof_digest = foundry.proof_digest(contract_name, test_name)
     apr_proof = APRProof.read_proof_data(apr_proofs_dir, proof_digest)
     with legacy_explore(
->>>>>>> master
         foundry.kevm,
         kcfg_semantics=KEVMSemantics(),
         id=apr_proof.id,
@@ -868,14 +841,8 @@ def foundry_section_edge(
     br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
     foundry = Foundry(foundry_root, bug_report=br)
     apr_proofs_dir = foundry.out / 'apr_proofs'
-<<<<<<< HEAD
     proof_digest = foundry.proof_digest(*foundry.unique_sig(test))
-    apr_proof = APRProof.read_proof(proof_digest, apr_proofs_dir)
-=======
-    contract_name, test_name = test.split('.')
-    proof_digest = foundry.proof_digest(contract_name, test_name)
     apr_proof = APRProof.read_proof_data(apr_proofs_dir, proof_digest)
->>>>>>> master
     source_id, target_id = edge
     with legacy_explore(
         foundry.kevm,
@@ -899,7 +866,6 @@ def foundry_get_model(
     pending: bool = False,
     failing: bool = False,
 ) -> str:
-    contract_name = test.split('.')[0]
     foundry = Foundry(foundry_root)
     proofs_dir = foundry.out / 'apr_proofs'
 
