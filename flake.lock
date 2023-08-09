@@ -1052,9 +1052,7 @@
         "haskell-backend": "haskell-backend_2",
         "llvm-backend": "llvm-backend",
         "mavenix": "mavenix_2",
-        "nixpkgs": [
-          "nixpkgs"
-        ],
+        "nixpkgs": "nixpkgs_7",
         "rv-utils": "rv-utils"
       },
       "locked": {
@@ -1593,17 +1591,32 @@
     },
     "nixpkgs_7": {
       "locked": {
-        "lastModified": 1680577567,
-        "narHash": "sha256-Y4W57i0TzczqwMTjfVSbAZT5RJx7u+mpQIW/ofrkTQs=",
+        "lastModified": 1691421349,
+        "narHash": "sha256-RRJyX0CUrs4uW4gMhd/X4rcDG8PTgaaCQM5rXEJOx6g=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "b01f185e4866de7c5b5a82f833ca9ea3c3f72fc4",
+        "rev": "011567f35433879aae5024fc6ec53f2a0568a6c4",
+        "type": "github"
+      },
+      "original": {
+        "id": "nixpkgs",
+        "ref": "nixos-23.05",
+        "type": "indirect"
+      }
+    },
+    "nixpkgs_8": {
+      "locked": {
+        "lastModified": 1691585588,
+        "narHash": "sha256-Gp3yihlfc1UlhLcnORgPYBTg0YMEwNglRVzVi1vZk+c=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "71390f9bb60a4681b92bbcd0c341e4b45acb5742",
         "type": "github"
       },
       "original": {
         "owner": "NixOS",
+        "ref": "master",
         "repo": "nixpkgs",
-        "rev": "b01f185e4866de7c5b5a82f833ca9ea3c3f72fc4",
         "type": "github"
       }
     },
@@ -1740,7 +1753,7 @@
           "haskell-backend"
         ],
         "k-framework": "k-framework",
-        "nixpkgs": "nixpkgs_7",
+        "nixpkgs": "nixpkgs_8",
         "poetry2nix": [
           "pyk",
           "poetry2nix"
