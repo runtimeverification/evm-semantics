@@ -26,6 +26,8 @@ jobs:
           tag: kevm-update-output-${{ github.sha }}
           os: ubuntu
           distro: jammy
+          llvm: 14
+          jdk: 17
           # User subdir: <path> if you need to be in a lower folder to build something. Otherwise leave as default (.)
           # subdir: <path to sub folder to mount into container instead of top level repository checkout>
       - name: 'Build devShell'
