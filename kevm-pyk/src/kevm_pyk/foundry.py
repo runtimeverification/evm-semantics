@@ -511,7 +511,7 @@ def foundry_prove(
                 )
         method.update_digest(foundry.out / 'digest')
 
-    def _init_and_run_proof(init_problem: tuple[str, str]) -> tuple[bool, list[str] | None]:
+    def init_and_run_proof(init_problem: tuple[str, str]) -> tuple[bool, list[str] | None]:
         proof_id = f'{init_problem[0]}.{init_problem[1]}'
         llvm_definition_dir = foundry.out / 'kompiled-llvm' if use_booster else None
 
@@ -566,11 +566,11 @@ def foundry_prove(
         _apr_proofs: list[tuple[bool, list[str] | None]]
         if workers > 1:
             with ProcessPool(ncpus=workers) as process_pool:
-                _apr_proofs = process_pool.map(_init_and_run_proof, init_problems)
+                _apr_proofs = process_pool.map(init_and_run_proof, init_problems)
         else:
             _apr_proofs = []
             for init_problem in init_problems:
-                _apr_proofs.append(_init_and_run_proof(init_problem))
+                _apr_proofs.append(init_and_run_proof(init_problem))
 
         apr_proofs = dict(zip(tests, _apr_proofs, strict=True))
         return apr_proofs
