@@ -309,7 +309,11 @@ def exec_prove(
                 else:
                     proof_problem = EqualityProof.from_claim(claim, kevm.definition, proof_dir=save_directory)
             else:
-                if save_directory is not None and not reinit and APRProof.proof_exists(claim.label, save_directory):
+                if (
+                    save_directory is not None
+                    and not reinit
+                    and APRProof.proof_data_exists(claim.label, save_directory)
+                ):
                     proof_problem = APRProof.read_proof_data(save_directory, claim.label)
 
                 else:
@@ -661,11 +665,8 @@ def exec_run(
 
 def exec_foundry_view_kcfg(foundry_root: Path, test: str, **kwargs: Any) -> None:
     foundry = Foundry(foundry_root)
-    proofs_dir = foundry.out / 'apr_proofs'
     contract_name, test_name = test.split('.')
-    proof_digest = foundry.proof_digest(contract_name, test_name)
-
-    proof = APRProof.read_proof_data(proofs_dir, proof_digest)
+    proof = foundry.get_apr_proof(test)
 
     def _short_info(cterm: CTerm) -> Iterable[str]:
         return foundry.short_info_for_contract(contract_name, cterm)
