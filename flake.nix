@@ -22,7 +22,7 @@
     pyk.inputs.nixpkgs.follows = "k-framework/nixpkgs";
     foundry.url = "github:shazow/foundry.nix/monthly"; # Use monthly branch for permanent releases
     solc = {
-      url = "github:goodlyrottenapple/solc.nix";
+      url = "github:hellwolf/solc.nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
