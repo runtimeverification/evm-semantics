@@ -207,29 +207,34 @@ def test_foundry_auto_abstraction(foundry_root: Path, update_expected_output: bo
 
 
 def test_foundry_remove_node(foundry_root: Path, update_expected_output: bool) -> None:
+    test = 'AssertTest.test_assert_false'
+
     prove_res = foundry_prove(
         foundry_root,
-        tests=['AssumeTest.test_assume_true'],
+        tests=[test],
     )
-    assert_pass('AssumeTest.test_assume_true', prove_res)
+    assert_fail(test, prove_res)
 
     foundry_remove_node(
         foundry_root=foundry_root,
-        test='AssumeTest.test_assume_true',
+        test=test,
         node=4,
     )
-    prove_res = foundry_prove(
-        foundry_root,
-        tests=['AssumeTest.test_assume_true'],
-        max_depth=0,
-    )
-    assert_fail('AssumeTest.test_assume_true', prove_res)
 
     prove_res = foundry_prove(
         foundry_root,
-        tests=['AssumeTest.test_assume_true'],
+        tests=[test],
+        max_iterations=1,
     )
-    assert_pass('AssumeTest.test_assume_true', prove_res)
+
+    assert_pass(test, prove_res)
+
+    prove_res = foundry_prove(
+        foundry_root,
+        tests=[test],
+    )
+
+    assert_fail(test, prove_res)
 
 
 def assert_pass(test_id: str, prove_res: dict[str, tuple[bool, list[str] | None]]) -> None:
