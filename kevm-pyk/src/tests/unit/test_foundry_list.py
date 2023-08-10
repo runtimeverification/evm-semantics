@@ -4,6 +4,8 @@ from functools import cached_property
 from os import listdir
 from typing import TYPE_CHECKING
 
+from pyk.proof.proof import Proof
+
 from kevm_pyk.foundry import foundry_list
 from kevm_pyk.solc_to_k import Contract
 from tests.unit.utils import TEST_DATA_DIR
@@ -41,6 +43,9 @@ class FoundryMock:
 
     def proof_digest(self, contract: str, test: str) -> str:
         return f'{contract}.{test}'
+
+    def get_proof(self, test: str) -> Proof:
+        return Proof.read_proof_data(LIST_APR_PROOF, test)
 
 
 def test_foundry_list(mocker: MockerFixture, update_expected_output: bool) -> None:
