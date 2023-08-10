@@ -757,10 +757,7 @@ def foundry_merge_nodes(
     node_ids = [int(node) for node in node_ids]
     br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
     foundry = Foundry(foundry_root, bug_report=br)
-    apr_proofs_dir = foundry.out / 'apr_proofs'
-    contract_name, test_name = test.split('.')
-    proof_digest = foundry.proof_digest(contract_name, test_name)
-    proof = APRProof.read_proof_data(apr_proofs_dir, proof_digest)
+    proof = foundry.get_apr_proof(test)
 
     if not isinstance(proof, APRProof):
         raise ValueError('Specified proof is not an APRProof.')
