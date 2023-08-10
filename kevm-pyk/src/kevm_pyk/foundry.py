@@ -272,6 +272,25 @@ class Foundry:
         )
         return res_lines
 
+    def get_apr_proof(
+        self,
+        test: str,
+    ) -> APRProof:
+        proof = self.get_proof(test)
+        if not isinstance(proof, APRProof):
+            raise ValueError('Specified proof is not an APRProof.')
+        return proof
+
+    def get_proof(
+        self,
+        test: str,
+    ) -> Proof:
+        proofs_dir = self.out / 'apr_proofs'
+        contract_name, test_name = test.split('.')
+        proof_digest = self.proof_digest(contract_name, test_name)
+        proof = Proof.read_proof_data(proofs_dir, proof_digest)
+        return proof
+
 
 def foundry_kompile(
     definition_dir: Path,
@@ -603,11 +622,7 @@ def foundry_show(
 ) -> str:
     contract_name = test.split('.')[0]
     foundry = Foundry(foundry_root)
-    proofs_dir = foundry.out / 'apr_proofs'
-
-    contract_name, test_name = test.split('.')
-    proof_digest = foundry.proof_digest(contract_name, test_name)
-    proof = Proof.read_proof_data(proofs_dir, proof_digest)
+    proof = foundry.get_proof(test)
     assert isinstance(proof, APRProof)
 
     def _short_info(cterm: CTerm) -> Iterable[str]:
@@ -653,8 +668,7 @@ def foundry_to_dot(foundry_root: Path, test: str) -> None:
     proofs_dir = foundry.out / 'apr_proofs'
     dump_dir = proofs_dir / 'dump'
     contract_name, test_name = test.split('.')
-    proof_digest = foundry.proof_digest(contract_name, test_name)
-    proof = APRProof.read_proof_data(proofs_dir, proof_digest)
+    proof = foundry.get_apr_proof(test)
 
     node_printer = foundry_node_printer(foundry, contract_name, proof)
     proof_show = APRProofShow(foundry.kevm, node_printer=node_printer)
@@ -672,11 +686,9 @@ def foundry_list(foundry_root: Path) -> list[str]:
 
     lines: list[str] = []
     for method in sorted(all_methods):
-        contract_name, test_name = method.split('.')
-        proof_digest = foundry.proof_digest(contract_name, test_name)
-        if APRProof.proof_data_exists(proof_digest, apr_proofs_dir):
-            apr_proof = APRProof.read_proof_data(apr_proofs_dir, proof_digest)
-            lines.extend(apr_proof.summary.lines)
+        if Proof.proof_data_exists(method, apr_proofs_dir):
+            proof = foundry.get_proof(method)
+            lines.extend(proof.summary.lines)
             lines.append('')
     if len(lines) > 0:
         lines = lines[0:-1]
@@ -686,10 +698,7 @@ def foundry_list(foundry_root: Path) -> list[str]:
 
 def foundry_remove_node(foundry_root: Path, test: str, node: NodeIdLike) -> None:
     foundry = Foundry(foundry_root)
-    apr_proofs_dir = foundry.out / 'apr_proofs'
-    contract_name, test_name = test.split('.')
-    proof_digest = foundry.proof_digest(contract_name, test_name)
-    apr_proof = APRProof.read_proof_data(apr_proofs_dir, proof_digest)
+    apr_proof = foundry.get_apr_proof(test)
     node_ids = apr_proof.kcfg.prune(node, [apr_proof.init, apr_proof.target])
     _LOGGER.info(f'Pruned nodes: {node_ids}')
     apr_proof.write_proof_data()
@@ -709,10 +718,7 @@ def foundry_simplify_node(
 ) -> str:
     br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
     foundry = Foundry(foundry_root, bug_report=br)
-    apr_proofs_dir = foundry.out / 'apr_proofs'
-    contract_name, test_name = test.split('.')
-    proof_digest = foundry.proof_digest(contract_name, test_name)
-    apr_proof = APRProof.read_proof_data(apr_proofs_dir, proof_digest)
+    apr_proof = foundry.get_apr_proof(test)
     cterm = apr_proof.kcfg.node(node).cterm
     with legacy_explore(
         foundry.kevm,
@@ -750,10 +756,7 @@ def foundry_step_node(
     br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
     foundry = Foundry(foundry_root, bug_report=br)
 
-    apr_proofs_dir = foundry.out / 'apr_proofs'
-    contract_name, test_name = test.split('.')
-    proof_digest = foundry.proof_digest(contract_name, test_name)
-    apr_proof = APRProof.read_proof_data(apr_proofs_dir, proof_digest)
+    apr_proof = foundry.get_apr_proof(test)
     with legacy_explore(
         foundry.kevm,
         kcfg_semantics=KEVMSemantics(),
@@ -781,10 +784,7 @@ def foundry_section_edge(
 ) -> None:
     br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
     foundry = Foundry(foundry_root, bug_report=br)
-    apr_proofs_dir = foundry.out / 'apr_proofs'
-    contract_name, test_name = test.split('.')
-    proof_digest = foundry.proof_digest(contract_name, test_name)
-    apr_proof = APRProof.read_proof_data(apr_proofs_dir, proof_digest)
+    apr_proof = foundry.get_apr_proof(test)
     source_id, target_id = edge
     with legacy_explore(
         foundry.kevm,
@@ -808,13 +808,8 @@ def foundry_get_model(
     pending: bool = False,
     failing: bool = False,
 ) -> str:
-    contract_name = test.split('.')[0]
     foundry = Foundry(foundry_root)
-    proofs_dir = foundry.out / 'apr_proofs'
-
-    contract_name, test_name = test.split('.')
-    proof_digest = foundry.proof_digest(contract_name, test_name)
-    proof = Proof.read_proof_data(proofs_dir, proof_digest)
+    proof = foundry.get_proof(test)
     assert isinstance(proof, APRProof)
 
     if not nodes:
@@ -899,7 +894,7 @@ def _method_to_apr_proof(
     test = f'{contract_name}.{method_name}'
     proof_digest = foundry.proof_digest(contract_name, method_name)
     if Proof.proof_data_exists(proof_digest, save_directory) and not reinit:
-        apr_proof = Proof.read_proof_data(proof_dir=save_directory, id=proof_digest)
+        apr_proof = foundry.get_apr_proof(test)
         assert isinstance(apr_proof, APRProof)
     else:
         _LOGGER.info(f'Initializing KCFG for test: {test}')
