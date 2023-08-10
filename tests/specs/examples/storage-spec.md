@@ -67,7 +67,7 @@ module STORAGE-SPEC
 ```k
     claim [myBool]:
           <mode>     NORMAL   </mode>
-          <schedule> ISTANBUL </schedule>
+          <schedule> SHANGHAI </schedule>
 
           <callStack> .List                                        </callStack>
           <program>   #binRuntime(Storage)                         </program>
@@ -100,7 +100,7 @@ module STORAGE-SPEC
 ```k
     claim [setMyBool]:
           <mode>     NORMAL   </mode>
-          <schedule> ISTANBUL </schedule>
+          <schedule> SHANGHAI </schedule>
 
           <callStack> .List                                        </callStack>
           <program>   #binRuntime(Storage)                         </program>

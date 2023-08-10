@@ -66,7 +66,7 @@ module ERC20-SPEC
 ```k
     claim [decimals]:
           <mode>     NORMAL   </mode>
-          <schedule> ISTANBUL </schedule>
+          <schedule> SHANGHAI </schedule>
 
           <callStack> .List                                      </callStack>
           <program>   #binRuntime(ERC20)                         </program>
@@ -106,7 +106,7 @@ module ERC20-SPEC
 ```k
     claim [totalSupply]:
           <mode>     NORMAL   </mode>
-          <schedule> ISTANBUL </schedule>
+          <schedule> SHANGHAI </schedule>
 
           <callStack> .List                                      </callStack>
           <program>   #binRuntime(ERC20)                         </program>
@@ -147,7 +147,7 @@ module ERC20-SPEC
 ```k
     claim [approve.success]:
           <mode>     NORMAL   </mode>
-          <schedule> ISTANBUL </schedule>
+          <schedule> SHANGHAI </schedule>
 
           <callStack> .List                                      </callStack>
           <program>   #binRuntime(ERC20)                         </program>
@@ -186,7 +186,7 @@ module ERC20-SPEC
 ```k
     claim [approve.revert]:
           <mode>     NORMAL   </mode>
-          <schedule> ISTANBUL </schedule>
+          <schedule> SHANGHAI </schedule>
 
           <callStack> .List                                      </callStack>
           <program>   #binRuntime(ERC20)                         </program>

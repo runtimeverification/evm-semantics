@@ -73,7 +73,7 @@ claim (#lookup(ACCT_STORAGE, 0) /Int 2 <Int 32)
 ```k
     claim [name.short.success]:
           <mode>     NORMAL   </mode>
-          <schedule> ISTANBUL </schedule>
+          <schedule> SHANGHAI </schedule>
 
           <callStack> .List                                       </callStack>
           <program>   #binRuntime(ERC721)                         </program>
@@ -107,7 +107,7 @@ claim (#lookup(ACCT_STORAGE, 0) /Int 2 <Int 32)
 ```k
     claim [name.short.revert]:
           <mode>     NORMAL   </mode>
-          <schedule> ISTANBUL </schedule>
+          <schedule> SHANGHAI </schedule>
 
           <callStack> .List                                       </callStack>
           <program>   #binRuntime(ERC721)                         </program>

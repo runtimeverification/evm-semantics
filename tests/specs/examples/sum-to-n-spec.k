@@ -34,7 +34,7 @@ module SUM-TO-N-SPEC
 
     claim <k> #execute ... </k>
           <mode> NORMAL </mode>
-          <schedule> ISTANBUL </schedule>
+          <schedule> SHANGHAI </schedule>
           <callStack> .List </callStack>
           <memoryUsed> 0   </memoryUsed>
           <localMem> .Bytes </localMem>
@@ -51,7 +51,7 @@ module SUM-TO-N-SPEC
 
     claim <k> #execute ... </k>
           <mode> NORMAL </mode>
-          <schedule> ISTANBUL </schedule>
+          <schedule> SHANGHAI </schedule>
           <callStack> .List </callStack>
           <memoryUsed> 0   </memoryUsed>
           <localMem> .Bytes </localMem>
