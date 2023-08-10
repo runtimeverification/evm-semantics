@@ -1837,15 +1837,15 @@
         ]
       },
       "locked": {
-        "lastModified": 1689760111,
-        "narHash": "sha256-9rLBeqrHuYsxjDplrCQybU6ZSy7n/ePyb1AEDuWoEvE=",
-        "owner": "hellwolf",
+        "lastModified": 1691662805,
+        "narHash": "sha256-t1mFoijLhdTw3bk1Yi4HlOZ231x/9C3YgX28VmSd6/A=",
+        "owner": "goodlyrottenapple",
         "repo": "solc.nix",
-        "rev": "17ef6b580717d72b272193d4f8de90c0e5b08d5f",
+        "rev": "e91d3d8ad9b575332a51e5027d9318b964cf2d00",
         "type": "github"
       },
       "original": {
-        "owner": "hellwolf",
+        "owner": "goodlyrottenapple",
         "repo": "solc.nix",
         "type": "github"
       }
