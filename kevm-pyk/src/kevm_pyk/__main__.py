@@ -666,11 +666,8 @@ def exec_run(
 
 def exec_foundry_view_kcfg(foundry_root: Path, test: str, **kwargs: Any) -> None:
     foundry = Foundry(foundry_root)
-    proofs_dir = foundry.out / 'apr_proofs'
     contract_name, test_name = test.split('.')
-    proof_digest = foundry.proof_digest(contract_name, test_name)
-
-    proof = APRProof.read_proof_data(proofs_dir, proof_digest)
+    proof = foundry.get_apr_proof(test)
 
     def _short_info(cterm: CTerm) -> Iterable[str]:
         return foundry.short_info_for_contract(contract_name, cterm)
