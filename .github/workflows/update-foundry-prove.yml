@@ -1,0 +1,57 @@
+name: 'Update Foundry prove'
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to update version of'
+        required: true
+jobs:
+  update-output:
+    name: 'Update Foundry expected output'
+    runs-on: [self-hosted, linux, huge]
+    steps:
+      - name: 'Check out code'
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+          token: ${{ secrets.JENKINS_GITHUB_PAT }}
+          ref: ${{ github.events.inputs.branch }}
+      - name: 'Configure GitHub user'
+        run: |
+          git config user.name devops
+          git config user.email devops@runtimeverification.com
+      - name: 'Set up Docker'
+        uses: ./.github/actions/with-docker
+        with:
+          tag: kevm-update-output-${{ github.sha }}
+          os: ubuntu
+          distro: jammy
+          llvm: 14
+          jdk: 17
+          # User subdir: <path> if you need to be in a lower folder to build something. Otherwise leave as default (.)
+          # subdir: <path to sub folder to mount into container instead of top level repository checkout>
+      - name: 'Build devShell'
+        env: 
+          CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_PUBLIC_TOKEN }}
+        run: cachix watch-exec k-framework -- nix build --extra-experimental-features 'nix-command flakes' .#devShell.x86_64-linux.inputDerivation --no-link
+      - name: 'Build k-deps'
+        run: docker exec -u github-user kevm-update-output-${GITHUB_SHA} /bin/bash -c 'make k-deps'
+      - name: 'Build blockchain-k-plugin-deps'
+        run: docker exec -u github-user kevm-update-output-${GITHUB_SHA} /bin/bash -c 'make plugin-deps'
+      - name: 'Build kevm-pyk'
+        run: docker exec -u github-user kevm-update-output-${GITHUB_SHA} /bin/bash -c 'make poetry'
+      - name: 'Build evm-semantics'
+        run: docker exec -u github-user kevm-update-output-${GITHUB_SHA} /bin/bash -c 'make build'
+      - name: 'Build Foundry'
+        run: docker exec -u github-user kevm-update-output-${GITHUB_SHA} /bin/bash -c 'make build-foundry -j2'
+      - name: 'Foundry Prove Update'
+        run: docker exec -u github-user kevm-update-output-${GITHUB_SHA} /bin/bash -c 'make test-foundry-prove FOUNDRY_PAR=8 PYTEST_ARGS+="--use-booster --update-expected-output"'
+      - name: 'Tear down Docker'
+        if: always()
+        run: |
+          docker stop --time=0 kevm-update-output-${GITHUB_SHA}
+      - name: 'Commit changes'
+        run: |
+          git add kevm-pyk/src/tests/integration/test-data/show/ && git commit --allow-empty -m "test-data/show/: update expected show output" || true
+      - name: 'Push updates'
+        run: git push
