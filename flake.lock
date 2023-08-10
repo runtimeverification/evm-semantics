@@ -591,6 +591,21 @@
         "type": "github"
       }
     },
+    "flake-utils_7": {
+      "locked": {
+        "lastModified": 1676283394,
+        "narHash": "sha256-XX2f9c3iySLCw54rJ/CZs+ZK6IQy7GXNY4nSOyu2QG4=",
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "rev": "3db36a8b464d0c4532ba1c7dda728f4576d6d073",
+        "type": "github"
+      },
+      "original": {
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "type": "github"
+      }
+    },
     "fmt-src": {
       "flake": false,
       "locked": {
@@ -1746,7 +1761,8 @@
           "poetry2nix"
         ],
         "pyk": "pyk",
-        "rv-utils": "rv-utils_2"
+        "rv-utils": "rv-utils_2",
+        "solc": "solc"
       }
     },
     "rv-utils": {
@@ -1810,6 +1826,27 @@
         "owner": "bitcoin-core",
         "repo": "secp256k1",
         "rev": "f532bdc9f77f7bbf7e93faabfbe9c483f0a9f75f",
+        "type": "github"
+      }
+    },
+    "solc": {
+      "inputs": {
+        "flake-utils": "flake-utils_7",
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1689760111,
+        "narHash": "sha256-9rLBeqrHuYsxjDplrCQybU6ZSy7n/ePyb1AEDuWoEvE=",
+        "owner": "hellwolf",
+        "repo": "solc.nix",
+        "rev": "17ef6b580717d72b272193d4f8de90c0e5b08d5f",
+        "type": "github"
+      },
+      "original": {
+        "owner": "hellwolf",
+        "repo": "solc.nix",
         "type": "github"
       }
     },
