@@ -7,7 +7,6 @@ from argparse import ArgumentParser
 from typing import TYPE_CHECKING
 
 from pyk.cli.utils import file_path
-from pyk.proof import APRProof
 from pyk.proof.tui import APRProofViewer
 
 from kevm_pyk.cli import KEVMCLIArgs, node_id_like
@@ -245,11 +244,8 @@ def exec_foundry_list(foundry_root: Path, **kwargs: Any) -> None:
 
 def exec_foundry_view_kcfg(foundry_root: Path, test: str, **kwargs: Any) -> None:
     foundry = Foundry(foundry_root)
-    proofs_dir = foundry.out / 'apr_proofs'
     contract_name, test_name = test.split('.')
-    proof_digest = foundry.proof_digest(contract_name, test_name)
-
-    proof = APRProof.read_proof(proof_digest, proofs_dir)
+    proof = foundry.get_apr_proof(test)
 
     def _short_info(cterm: CTerm) -> Iterable[str]:
         return foundry.short_info_for_contract(contract_name, cterm)
