@@ -129,7 +129,7 @@
 
             enableParallelBuilding = true;
 
-            buildInputs = [ (final.kevm k) prev.which prev.git prev.foundry-bin (solc.mkDefault final final.solc_0_8_13) ];
+            buildInputs = [ (final.kevm k) prev.which prev.git ];
 
             buildPhase = ''
               mkdir -p tests/ethereum-tests/LegacyTests
@@ -177,10 +177,6 @@
           inherit system;
           overlays = [
             (final: prev: { llvm-backend-release = false; })
-            # (final: prev: {
-            #   # https://github.com/NixOS/nixpkgs/pull/219240
-            #   solc = prev.callPackage ./package/nix/solc.nix { };
-            # })
             k-framework.overlay
             blockchain-k-plugin.overlay
             poetry2nix.overlay
