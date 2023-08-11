@@ -7,7 +7,7 @@ import pytest
 from pyk.utils import run_process
 
 from kevm_pyk import config
-from kevm_pyk.foundry import foundry_kompile, foundry_prove, foundry_remove_node, foundry_show, Foundry
+from kevm_pyk.foundry import Foundry, foundry_kompile, foundry_prove, foundry_remove_node, foundry_show
 
 from .utils import TEST_DATA_DIR
 
