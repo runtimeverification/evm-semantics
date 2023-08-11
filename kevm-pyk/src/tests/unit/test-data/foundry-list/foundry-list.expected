@@ -1,4 +1,4 @@
-APRProof: AssertTest.setUp
+APRProof: AssertTest.setUp()
     status: ProofStatus.PASSED
     admitted: False
     nodes: 5
@@ -9,7 +9,7 @@ APRProof: AssertTest.setUp
     refuted: 0
 Subproofs: 0
 
-APRProof: AssertTest.testFail_assert_false
+APRProof: AssertTest.testFail_assert_false()
     status: ProofStatus.PASSED
     admitted: False
     nodes: 5
@@ -20,7 +20,7 @@ APRProof: AssertTest.testFail_assert_false
     refuted: 0
 Subproofs: 0
 
-APRProof: AssertTest.testFail_assert_true
+APRProof: AssertTest.testFail_assert_true()
     status: ProofStatus.FAILED
     admitted: False
     nodes: 5
@@ -31,7 +31,7 @@ APRProof: AssertTest.testFail_assert_true
     refuted: 0
 Subproofs: 0
 
-APRProof: AssertTest.test_assert_false
+APRProof: AssertTest.test_assert_false()
     status: ProofStatus.FAILED
     admitted: False
     nodes: 5
@@ -42,7 +42,7 @@ APRProof: AssertTest.test_assert_false
     refuted: 0
 Subproofs: 0
 
-APRProof: AssertTest.test_assert_true
+APRProof: AssertTest.test_assert_true()
     status: ProofStatus.PASSED
     admitted: False
     nodes: 5
