@@ -1,0 +1,54 @@
+APRProof: AssertTest.setUp
+    status: ProofStatus.PASSED
+    admitted: False
+    nodes: 5
+    pending: 0
+    failing: 0
+    stuck: 0
+    terminal: 1
+    refuted: 0
+Subproofs: 0
+
+APRProof: AssertTest.testFail_assert_false
+    status: ProofStatus.PASSED
+    admitted: False
+    nodes: 5
+    pending: 0
+    failing: 0
+    stuck: 0
+    terminal: 1
+    refuted: 0
+Subproofs: 0
+
+APRProof: AssertTest.testFail_assert_true
+    status: ProofStatus.FAILED
+    admitted: False
+    nodes: 5
+    pending: 0
+    failing: 1
+    stuck: 0
+    terminal: 1
+    refuted: 0
+Subproofs: 0
+
+APRProof: AssertTest.test_assert_false
+    status: ProofStatus.FAILED
+    admitted: False
+    nodes: 5
+    pending: 0
+    failing: 1
+    stuck: 0
+    terminal: 1
+    refuted: 0
+Subproofs: 0
+
+APRProof: AssertTest.test_assert_true
+    status: ProofStatus.PASSED
+    admitted: False
+    nodes: 5
+    pending: 0
+    failing: 0
+    stuck: 0
+    terminal: 1
+    refuted: 0
+Subproofs: 0
