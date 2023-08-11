@@ -28,7 +28,6 @@ from pyk.proof.show import APRBMCProofNodePrinter, APRProofNodePrinter, APRProof
 from pyk.utils import BugReport, ensure_dir_path, hash_str, run_process, single, unique
 
 from .kevm import KEVM, KEVMNodePrinter, KEVMSemantics
-from .kompile import Kernel, KompileTarget, kevm_kompile
 from .solc_to_k import Contract, contract_to_main_module, contract_to_verification_module
 from .utils import (
     KDefinition__expand_macros,
@@ -121,6 +120,8 @@ class Foundry:
 
     @cached_property
     def llvm_dylib(self) -> Path | None:
+        from .kompile import Kernel
+
         arch = Kernel.get()
         foundry_llvm_dir = self.out / 'kompiled-llvm'
         if arch == Kernel.LINUX:
@@ -306,6 +307,8 @@ def foundry_kompile(
     llvm_library: bool = False,
     verbose: bool = False,
 ) -> None:
+    from .kompile import KompileTarget, kevm_kompile
+
     syntax_module = 'FOUNDRY-CONTRACTS'
     foundry = Foundry(foundry_root)
     foundry_definition_dir = foundry.out / 'kompiled'
