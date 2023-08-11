@@ -208,7 +208,7 @@ def test_foundry_auto_abstraction(foundry_root: Path, update_expected_output: bo
 
 
 def test_foundry_remove_node(foundry_root: Path, update_expected_output: bool) -> None:
-    test = 'AssertTest.test_assert_true'
+    test = 'AssertTest.test_assert_true()'
 
     foundry = Foundry(foundry_root)
 
