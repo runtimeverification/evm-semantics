@@ -183,9 +183,10 @@ def test_foundry_bmc(test_id: str, foundry_root: Path, use_booster: bool) -> Non
 
 
 def test_foundry_auto_abstraction(foundry_root: Path, update_expected_output: bool) -> None:
+    test_id = 'GasTest.testInfiniteGas()'
     foundry_prove(
         foundry_root,
-        tests=['GasTest.testInfiniteGas'],
+        tests=[test_id],
         smt_timeout=125,
         smt_retry_limit=4,
         auto_abstract_gas=True,
@@ -193,7 +194,7 @@ def test_foundry_auto_abstraction(foundry_root: Path, update_expected_output: bo
 
     show_res = foundry_show(
         foundry_root,
-        test='GasTest.testInfiniteGas',
+        test=test_id,
         to_module=True,
         minimize=False,
         sort_collections=True,
@@ -274,7 +275,7 @@ def assert_or_update_show_output(show_res: str, expected_file: Path, *, update: 
 
 
 def test_foundry_resume_proof(foundry_root: Path, update_expected_output: bool) -> None:
-    test_id = 'AssumeTest.test_assume_false'
+    test_id = 'AssumeTest.test_assume_false(uint256,uint256)'
     prove_res = foundry_prove(
         foundry_root,
         tests=[test_id],
