@@ -117,6 +117,7 @@ def kevm_kompile(
         read_only=read_only,
     )
 
+    verbose: bool = _LOGGER.getEffectiveLevel() in [logging.INFO, logging.DEBUG]
     kompile: Kompile
     kernel = Kernel.get()
     haskell_binary = kernel is not Kernel.DARWIN
@@ -141,7 +142,7 @@ def kevm_kompile(
             raise ValueError(f'Unsupported backend: {backend.value}')
 
     try:
-        return kompile(output_dir=output_dir or target.definition_dir, debug=debug)
+        return kompile(output_dir=output_dir or target.definition_dir, debug=debug, verbose=verbose)
     except RuntimeError as err:
         sys.stderr.write(f'\nkompile stdout:\n{err.args[1]}\n')
         sys.stderr.write(f'\nkompile stderr:\n{err.args[2]}\n')
