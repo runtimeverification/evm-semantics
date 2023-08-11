@@ -7,7 +7,7 @@ import pytest
 from pyk.utils import run_process
 
 from kevm_pyk import config
-from kevm_pyk.foundry import foundry_kompile, foundry_prove, foundry_remove_node, foundry_show
+from kevm_pyk.foundry import foundry_kompile, foundry_prove, foundry_remove_node, foundry_show, Foundry
 
 from .utils import TEST_DATA_DIR
 
@@ -207,13 +207,15 @@ def test_foundry_auto_abstraction(foundry_root: Path, update_expected_output: bo
 
 
 def test_foundry_remove_node(foundry_root: Path, update_expected_output: bool) -> None:
-    test = 'AssertTest.test_assert_false'
+    test = 'AssertTest.test_assert_true'
+
+    foundry = Foundry(foundry_root)
 
     prove_res = foundry_prove(
         foundry_root,
         tests=[test],
     )
-    assert_fail(test, prove_res)
+    assert_pass(test, prove_res)
 
     foundry_remove_node(
         foundry_root=foundry_root,
@@ -221,20 +223,14 @@ def test_foundry_remove_node(foundry_root: Path, update_expected_output: bool) -
         node=4,
     )
 
+    proof = foundry.get_apr_proof(test)
+    assert proof.pending
+
     prove_res = foundry_prove(
         foundry_root,
         tests=[test],
-        max_iterations=1,
     )
-
     assert_pass(test, prove_res)
-
-    prove_res = foundry_prove(
-        foundry_root,
-        tests=[test],
-    )
-
-    assert_fail(test, prove_res)
 
 
 def assert_pass(test_id: str, prove_res: dict[str, tuple[bool, list[str] | None]]) -> None:
