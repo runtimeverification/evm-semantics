@@ -44,6 +44,7 @@ from .utils import (
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
+    from concurrent.futures import Future
     from typing import Any, Final
 
     from pyk.kast.inner import KInner
@@ -429,11 +430,11 @@ def foundry_kompile(
 
     if not kompilation_up_to_date() or rekompile or not kompiled_timestamp.exists():
         with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
-            executor.submit(kompile_haskell)
+            futures: list[Future] = []
+            futures.append(executor.submit(kompile_haskell))
             if llvm_library:
-                future2 = executor.submit(kompile_llvm)
-                if future2.exception():
-                    _LOGGER.error(f'Error in kompile_llvm: {future2.exception()}')
+                futures.append(executor.submit(kompile_llvm))
+            [future.result() for future in futures]
 
     update_kompilation_digest()
     foundry.update_digest()
