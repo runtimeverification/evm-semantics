@@ -21,10 +21,14 @@
     pyk.inputs.flake-utils.follows = "k-framework/flake-utils";
     pyk.inputs.nixpkgs.follows = "k-framework/nixpkgs";
     foundry.url = "github:shazow/foundry.nix/monthly"; # Use monthly branch for permanent releases
+    solc = {
+      url = "github:hellwolf/solc.nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
   outputs = { self, k-framework, haskell-backend, nixpkgs, flake-utils
     , poetry2nix, blockchain-k-plugin, ethereum-tests, ethereum-legacytests
-    , rv-utils, pyk, foundry }:
+    , rv-utils, pyk, foundry, solc }:
     let
       nixLibs = pkgs:
         with pkgs;
@@ -47,7 +51,7 @@
           procps
           protobuf
           python310
-          solc
+          (solc.mkDefault pkgs solc_0_8_13)
           time
         ] ++ lib.optional (!stdenv.isDarwin) elfutils;
 
@@ -111,7 +115,7 @@
               mkdir -p $out
               mv .build/usr/* $out/
               wrapProgram $out/bin/kevm --prefix PATH : ${
-                prev.lib.makeBinPath [ final.solc prev.which k ]
+                prev.lib.makeBinPath [ (solc.mkDefault final final.solc_0_8_13) final.foundry-bin prev.which k ]
               } --set NIX_LIBS "${nixLibs prev}"
               ln -s ${k} $out/lib/kevm/kframework
 
@@ -127,7 +131,7 @@
 
             enableParallelBuilding = true;
 
-            buildInputs = [ (final.kevm k) prev.which prev.git prev.foundry-bin prev.solc ];
+            buildInputs = [ (final.kevm k) prev.which prev.git ];
 
             buildPhase = ''
               mkdir -p tests/ethereum-tests/LegacyTests
@@ -150,6 +154,12 @@
         kevm-pyk = prev.poetry2nix.mkPoetryApplication {
           python = prev.python310;
           projectDir = ./kevm-pyk;
+
+          postPatch = ''
+              substituteInPlace ./src/kevm_pyk/foundry.py \
+                --replace "'forge', 'build'," "'forge', 'build', '--no-auto-detect',"
+            '';
+
           overrides = prev.poetry2nix.overrides.withDefaults
             (finalPython: prevPython: { pyk = prev.pyk-python310; });
           groups = [ ];
@@ -169,15 +179,12 @@
           inherit system;
           overlays = [
             (final: prev: { llvm-backend-release = false; })
-            (final: prev: {
-              # https://github.com/NixOS/nixpkgs/pull/219240
-              solc = prev.callPackage ./nix/solc/default.nix { };
-            })
             k-framework.overlay
             blockchain-k-plugin.overlay
             poetry2nix.overlay
             pyk.overlay
             foundry.overlay
+            solc.overlay
             overlay
           ];
         };
