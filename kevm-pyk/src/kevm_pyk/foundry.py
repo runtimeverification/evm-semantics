@@ -417,7 +417,7 @@ def foundry_kompile(
         _kompile(foundry_definition_dir, KompileTarget.HASKELL)
 
     def kompile_llvm() -> None:
-        _LOGGER.info(f'Kompiling definition to LLVM dy.lib: {foundry_main_file}')
+        _LOGGER.info(f'Kompiling definition to LLVM dynamic library: {foundry_main_file}')
         _kompile(
             foundry_llvm_dir,
             KompileTarget.LLVM,
