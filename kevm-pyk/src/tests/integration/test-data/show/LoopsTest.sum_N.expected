@@ -50,7 +50,7 @@
 ┃  │   statusCode: EVMC_SUCCESS
 ┃  │
 ┃  │  (2 steps)
-┃  ├─ 12
+┃  ├─ 12 (terminal)
 ┃  │   k: #halt ~> CONTINUATION:K
 ┃  │   pc: 352
 ┃  │   callDepth: 0
@@ -87,7 +87,7 @@
    │   statusCode: EVMC_SUCCESS
    │
    │  (2 steps)
-   ├─ 13
+   ├─ 13 (terminal)
    │   k: #halt ~> CONTINUATION:K
    │   pc: 352
    │   callDepth: 0
