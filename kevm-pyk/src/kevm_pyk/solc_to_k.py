@@ -109,6 +109,15 @@ class Contract:
             args_list = '_'.join(self.arg_types)
             return KLabel(f'method_{self.contract_name}_{self.name}_{args_list}')
 
+        @property
+        def weird_klabel(self) -> KLabel:
+            args_list = '_'.join(self.arg_types)
+            return KLabel(f'method_{self.contract_name}_{self.unique_name}_{args_list}')
+
+        @property
+        def unique_name(self) -> str:
+            return f'method-{self.name}'
+
         @cached_property
         def qualified_name(self) -> str:
             return f'{self.contract_name}.{self.signature}'
@@ -162,7 +171,7 @@ class Contract:
 
         @property
         def production(self) -> KProduction:
-            items_before: list[KProductionItem] = [KTerminal(self.name), KTerminal('(')]
+            items_before: list[KProductionItem] = [KTerminal(self.unique_name), KTerminal('(')]
 
             items_args: list[KProductionItem] = []
             for i, input_type in enumerate(self.arg_types):
@@ -174,13 +183,13 @@ class Contract:
             return KProduction(
                 self.sort,
                 items_before + items_args + items_after,
-                klabel=self.klabel,
+                klabel=self.weird_klabel,
                 att=KAtt({'symbol': ''}),
             )
 
         def rule(self, contract: KInner, application_label: KLabel, contract_name: str) -> KRule | None:
             arg_vars = [KVariable(aname) for aname in self.arg_names]
-            prod_klabel = self.klabel
+            prod_klabel = self.weird_klabel
             assert prod_klabel is not None
             args: list[KInner] = []
             conjuncts: list[KInner] = []
@@ -343,11 +352,11 @@ class Contract:
 
     @property
     def sort(self) -> KSort:
-        return KSort(f'{self.name_upper}Contract')
+        return KSort(f'{self.name.replace("-", "_")}Contract')
 
     @property
     def sort_field(self) -> KSort:
-        return KSort(f'{self.name_upper}Field')
+        return KSort(f'{self.name.replace("-", "_")}Field')
 
     @property
     def sort_method(self) -> KSort:
