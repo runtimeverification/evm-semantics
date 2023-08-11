@@ -99,6 +99,7 @@ def kevm_kompile(
     llvm_kompile_type: LLVMKompileType | None = None,
     enable_llvm_debug: bool = False,
     debug: bool = False,
+    verbose: bool = False,
 ) -> Path:
     backend = target.backend
     md_selector = target.md_selector
@@ -117,7 +118,6 @@ def kevm_kompile(
         read_only=read_only,
     )
 
-    verbose: bool = _LOGGER.getEffectiveLevel() in [logging.INFO, logging.DEBUG]
     kompile: Kompile
     kernel = Kernel.get()
     haskell_binary = kernel is not Kernel.DARWIN

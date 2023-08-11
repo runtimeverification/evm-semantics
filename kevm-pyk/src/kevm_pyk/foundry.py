@@ -304,6 +304,7 @@ def foundry_kompile(
     llvm_kompile: bool = True,
     debug: bool = False,
     llvm_library: bool = False,
+    verbose: bool = False,
 ) -> None:
     syntax_module = 'FOUNDRY-CONTRACTS'
     foundry = Foundry(foundry_root)
@@ -396,6 +397,7 @@ def foundry_kompile(
             ccopts=ccopts,
             llvm_kompile_type=llvm_kompile_type,
             debug=debug,
+            verbose=verbose,
         )
 
     def kompilation_digest() -> str:
