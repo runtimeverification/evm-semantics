@@ -1029,10 +1029,10 @@ def get_final_accounts_cell(proof_digest: str, proof_dir: Path) -> tuple[KInner,
     target = apr_proof.kcfg.node(apr_proof.target)
     target_states = apr_proof.kcfg.covers(target_id=target.id)
     if len(target_states) == 0:
-        raise ValueError(f'setUp() function for {apr_proof.id} did not reach the end of execution.')
+        raise ValueError(f'setUp() function for {apr_proof.id} did not reach the end of execution. Maybe --max-iterations is too low?')
     if len(target_states) > 1:
         raise ValueError(f'setUp() function for {apr_proof.id} branched and has {len(target_states)} target states.')
-    cterm = single(apr_proof.kcfg.covers(target_id=target.id)).source.cterm
+    cterm = single(target_states).source.cterm
     acct_cell = cterm.cell('ACCOUNTS_CELL')
     fvars = free_vars(acct_cell)
     acct_cons = constraints_for(fvars, cterm.constraints)
