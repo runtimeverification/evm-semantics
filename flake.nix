@@ -156,7 +156,7 @@
           projectDir = ./kevm-pyk;
 
           postPatch = ''
-              substituteInPlace ./src/kevm_pyk/foundry.py \
+              substituteInPlace ./src/kontrol/foundry.py \
                 --replace "'forge', 'build'," "'forge', 'build', '--no-auto-detect',"
             '';
 
