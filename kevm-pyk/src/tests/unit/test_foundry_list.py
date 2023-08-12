@@ -34,7 +34,7 @@ class FoundryMock:
         for full_method in listdir(LIST_APR_PROOF):
             contract = Contract.__new__(Contract)
             method = Contract.Method.__new__(Contract.Method)
-            contract.name, method.name = full_method.split('.')
+            contract.name, method.signature = full_method.split('.')
             if not hasattr(contract, 'methods'):
                 contract.methods = ()
             contract.methods = contract.methods + (method,)
