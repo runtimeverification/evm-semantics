@@ -428,6 +428,10 @@ class Contract:
     def method_by_name(self) -> dict[str, Contract.Method]:
         return {method.name: method for method in self.methods}
 
+    @property
+    def method_by_sig(self) -> dict[str, Contract.Method]:
+        return {method.signature: method for method in self.methods}
+
 
 def solc_compile(contract_file: Path, extra_args: str | None = None) -> dict[str, Any]:
     # TODO: add check to kevm:
