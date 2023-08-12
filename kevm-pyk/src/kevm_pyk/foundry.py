@@ -366,6 +366,7 @@ def foundry_kompile(
     llvm_kompile: bool = True,
     debug: bool = False,
     llvm_library: bool = False,
+    verbose: bool = False,
 ) -> None:
     from .kompile import KompileTarget, kevm_kompile
 
@@ -460,6 +461,7 @@ def foundry_kompile(
             ccopts=ccopts,
             llvm_kompile_type=llvm_kompile_type,
             debug=debug,
+            verbose=verbose,
         )
 
     def kompilation_digest() -> str:
