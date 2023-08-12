@@ -574,7 +574,7 @@ def _range_predicate_uint(term: KInner, type_label: str) -> tuple[bool, KInner |
             width = 256
         else:
             width = int(type_label[4:])
-        if not (0 < width and width <= 256 and width % 8 == 0):
+        if not (0 < width <= 256 and width % 8 == 0):
             raise ValueError(f'Unsupported range predicate uint<M> type: {type_label}')
         return (True, KEVM.range_uint(width, term))
     else:
