@@ -4,11 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "kevm-pyk"
-<<<<<<< HEAD
 version = "1.0.256"
-=======
-version = "1.0.256"
->>>>>>> master
 description = ""
 authors = [
     "Runtime Verification, Inc. <contact@runtimeverification.com>",

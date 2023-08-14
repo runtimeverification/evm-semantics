@@ -609,16 +609,6 @@ def _range_predicate_bytes(term: KInner, type_label: str) -> tuple[bool, KInner 
     return (False, None)
 
 
-# TODO write semantics that supports static arays
-def _range_predicate_static_array(term: KInner, type_label: str) -> tuple[bool, KInner | None]:
-    if type_label.endswith(']') and not type_label.endswith('[]'):
-        parts = type_label.rsplit('[', 1)
-        if len(parts) > 1:
-            number = int(parts[1].rstrip(']'))
-            return (True, KEVM.range_uint(((number + 1) * 256), intToken(32)))
-    return (False, None)
-
-
 def method_sig_from_abi(method_json: dict) -> str:
     def unparse_input(input_json: dict) -> str:
         is_array = False
