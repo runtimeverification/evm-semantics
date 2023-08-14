@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 from pyk.cterm import CTerm
@@ -21,6 +20,7 @@ from pyk.proof.show import APRBMCProofNodePrinter, APRProofNodePrinter
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
+    from pathlib import Path
     from typing import Final
 
     from pyk.kast import KInner
@@ -405,7 +405,7 @@ class KEVM(KProve, KRun):
     def prove_legacy(
         self,
         spec_file: Path,
-        includes: Iterable[str] = (),
+        includes: Iterable[Path] = (),
         bug_report: bool = False,
         spec_module: str | None = None,
         claim_labels: Iterable[str] | None = None,
@@ -441,7 +441,7 @@ class KEVM(KProve, KRun):
             spec_file=spec_file,
             spec_module_name=spec_module,
             args=args,
-            include_dirs=[Path(i) for i in includes],
+            include_dirs=includes,
             md_selector=md_selector,
             haskell_args=haskell_args,
             depth=max_depth,

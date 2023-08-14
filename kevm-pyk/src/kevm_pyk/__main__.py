@@ -23,7 +23,7 @@ from pyk.proof.tui import APRProofViewer
 from pyk.utils import BugReport, single
 
 from .cli import KEVMCLIArgs, node_id_like
-from .config import KEVM_LIB
+from .config import INCLUDE_DIR, KEVM_LIB
 from .foundry import (
     Foundry,
     foundry_get_model,
@@ -236,9 +236,13 @@ def exec_prove_legacy(
         definition_dir = KompileTarget.HASKELL.definition_dir
 
     kevm = KEVM(definition_dir, use_directory=save_directory)
+
+    include_dirs = [Path(include) for include in includes]
+    include_dirs += [INCLUDE_DIR]
+
     final_state = kevm.prove_legacy(
         spec_file=spec_file,
-        includes=includes,
+        includes=include_dirs,
         bug_report=bug_report,
         spec_module=spec_module,
         claim_labels=claim_labels,
@@ -289,11 +293,14 @@ def exec_prove(
     br = BugReport(spec_file.with_suffix('.bug_report')) if bug_report else None
     kevm = KEVM(definition_dir, use_directory=save_directory, bug_report=br)
 
+    include_dirs = [Path(include) for include in includes]
+    include_dirs += [INCLUDE_DIR]
+
     _LOGGER.info(f'Extracting claims from file: {spec_file}')
     claims = kevm.get_claims(
         spec_file,
         spec_module_name=spec_module,
-        include_dirs=[Path(i) for i in includes],
+        include_dirs=include_dirs,
         md_selector=md_selector,
         claim_labels=claim_labels,
         exclude_claim_labels=exclude_claim_labels,
@@ -433,12 +440,15 @@ def exec_prune_proof(
     _LOGGER.warning(f'definition_dir: {definition_dir}')
     kevm = KEVM(definition_dir, use_directory=save_directory)
 
+    include_dirs = [Path(include) for include in includes]
+    include_dirs += [INCLUDE_DIR]
+
     _LOGGER.info(f'Extracting claims from file: {spec_file}')
     claim = single(
         kevm.get_claims(
             spec_file,
             spec_module_name=spec_module,
-            include_dirs=[Path(i) for i in includes],
+            include_dirs=include_dirs,
             md_selector=md_selector,
             claim_labels=claim_labels,
             exclude_claim_labels=exclude_claim_labels,
@@ -471,12 +481,14 @@ def exec_show_kcfg(
     **kwargs: Any,
 ) -> None:
     kevm = KEVM(definition_dir)
+    include_dirs = [Path(include) for include in includes]
+    include_dirs += [INCLUDE_DIR]
     proof = get_apr_proof_for_spec(
         kevm,
         spec_file,
         save_directory=save_directory,
         spec_module_name=spec_module,
-        include_dirs=[Path(i) for i in includes],
+        include_dirs=include_dirs,
         md_selector=md_selector,
         claim_labels=claim_labels,
         exclude_claim_labels=exclude_claim_labels,
@@ -518,12 +530,14 @@ def exec_view_kcfg(
     **kwargs: Any,
 ) -> None:
     kevm = KEVM(definition_dir)
+    include_dirs = [Path(include) for include in includes]
+    include_dirs += [INCLUDE_DIR]
     proof = get_apr_proof_for_spec(
         kevm,
         spec_file,
         save_directory=save_directory,
         spec_module_name=spec_module,
-        include_dirs=[Path(i) for i in includes],
+        include_dirs=include_dirs,
         md_selector=md_selector,
         claim_labels=claim_labels,
         exclude_claim_labels=exclude_claim_labels,
