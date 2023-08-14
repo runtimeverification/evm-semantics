@@ -633,7 +633,7 @@ def exec_foundry_list(foundry_root: Path, **kwargs: Any) -> None:
 
 
 def exec_run(
-    definition_dir: Path,
+    target: KompileTarget,
     input_file: Path,
     expand_macros: bool,
     depth: int | None,
@@ -645,7 +645,8 @@ def exec_run(
     debugger: bool = False,
     **kwargs: Any,
 ) -> None:
-    kevm = KEVM(definition_dir, use_directory=save_directory)
+    _ignore_arg(kwargs, 'definition_dir', f'--definition: {kwargs["definition_dir"]}')
+    kevm = KEVM(target.definition_dir, use_directory=save_directory)
 
     try:
         json_read = json.loads(input_file.read_text())
@@ -668,7 +669,7 @@ def exec_run(
 
 
 def exec_kast(
-    definition_dir: Path,
+    target: KompileTarget,
     input_file: Path,
     output: PrintOutput,
     schedule: str,
@@ -677,7 +678,8 @@ def exec_kast(
     save_directory: Path | None = None,
     **kwargs: Any,
 ) -> None:
-    kevm = KEVM(definition_dir, use_directory=save_directory)
+    _ignore_arg(kwargs, 'definition_dir', f'--definition: {kwargs["definition_dir"]}')
+    kevm = KEVM(target.definition_dir, use_directory=save_directory)
 
     try:
         json_read = json.loads(input_file.read_text())
