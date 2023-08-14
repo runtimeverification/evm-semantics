@@ -635,6 +635,7 @@ def exec_run(
     mode: str,
     chainid: int,
     save_directory: Path | None = None,
+    debugger: bool = False,
     **kwargs: Any,
 ) -> None:
     kevm = KEVM(definition_dir, use_directory=save_directory)
@@ -655,6 +656,7 @@ def exec_run(
         expand_macros=expand_macros,
         output=output,
         check=True,
+        debugger=debugger,
     )
 
 
@@ -913,6 +915,12 @@ def _create_argument_parser() -> ArgumentParser:
         dest='expand_macros',
         action='store_false',
         help='Do not expand macros on the input term before execution.',
+    )
+    run_args.add_argument(
+        '--debugger',
+        dest='debugger',
+        action='store_true',
+        help='Run GDB debugger for execution.',
     )
 
     kast_args = command_parser.add_parser(
