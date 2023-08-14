@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import concurrent.futures
 import json
 import logging
 import os
@@ -43,6 +44,7 @@ from .utils import (
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
+    from concurrent.futures import Future
     from typing import Any, Final
 
     from pyk.kast.inner import KInner
@@ -476,20 +478,29 @@ def foundry_kompile(
 
         return old_digest == kompilation_digest()
 
+    def kompile_haskell() -> None:
+        _LOGGER.info(f'Kompiling definition: {foundry_main_file}')
+        _kompile(foundry_definition_dir, KompileTarget.HASKELL)
+
+    def kompile_llvm() -> None:
+        _LOGGER.info(f'Kompiling definition to LLVM dynamic library: {foundry_main_file}')
+        _kompile(
+            foundry_llvm_dir,
+            KompileTarget.LLVM,
+            llvm_kompile_type=LLVMKompileType.C,
+        )
+
     def update_kompilation_digest() -> None:
         digest_file = foundry_definition_dir / 'digest'
         digest_file.write_text(kompilation_digest())
 
     if not kompilation_up_to_date() or rekompile or not kompiled_timestamp.exists():
-        _LOGGER.info(f'Kompiling definition: {foundry_main_file}')
-        _kompile(foundry_definition_dir, KompileTarget.HASKELL)
-        if llvm_library:
-            _LOGGER.info(f'Kompiling definition to LLVM dy.lib: {foundry_main_file}')
-            _kompile(
-                foundry_llvm_dir,
-                KompileTarget.LLVM,
-                llvm_kompile_type=LLVMKompileType.C,
-            )
+        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+            futures: list[Future] = []
+            futures.append(executor.submit(kompile_haskell))
+            if llvm_library:
+                futures.append(executor.submit(kompile_llvm))
+            [future.result() for future in futures]
 
     update_kompilation_digest()
     foundry.update_digest()
