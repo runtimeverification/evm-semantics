@@ -349,3 +349,60 @@ def legacy_explore(
                 id=id,
                 trace_rewrites=trace_rewrites,
             )
+
+
+
+def escaped_chars() -> list[str]:
+    return ['_']
+
+
+def escaped_ascii() -> list[str]:
+    return [hex(ord(char)) for char in escaped_chars()]
+
+
+def escape_char(char: str) -> str:
+    return f'{hex(ord(char))}z'
+
+
+def unescape_seq(seq: str) -> str:
+    return chr(int(seq, base=16))
+
+
+def name_escaped(name: str, prefix: str = '') -> str:
+    escaped = prefix
+    if len(name) > 0 and not name[0].isupper():
+        escaped += escape_char(name[0])
+    for char in name:
+        if char in escaped_chars():
+            escaped += escape_char(char)
+        else:
+            escaped += char
+    return escaped
+
+
+def name_unescaped(name: str, prefix: str = '') -> str:
+    if not name.startswith(prefix):
+        raise RuntimeError(f'name {name} should start with {prefix}')
+    unescaped = name.removeprefix(prefix)
+    res = ''
+    unes_iter = iter(unescaped[:-1])
+    skipped = 0
+    for i, char in enumerate(unes_iter):
+        next_char = unescaped[i + 1]
+        if char == '0' and next_char == 'x':
+            if unescaped[i + 3] == 'z':
+                up = i + 3
+            elif unescaped[i + 4] == 'z':
+                up = i + 4
+            else:
+                raise RuntimeError('"0x" should end with "z"')
+            res += unescape_seq(unescaped[i:up])
+            for _ in range(up - i):
+                next(unes_iter)
+                skipped += 1
+        else:
+            res += char
+        # write last char
+        if skipped + i + 2 == len(unescaped):
+            res += next_char
+    return res

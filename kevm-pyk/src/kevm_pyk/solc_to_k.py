@@ -110,7 +110,7 @@ class Contract:
             return KLabel(f'method_{self.contract_name}_{self.name}_{args_list}')
 
         @property
-        def weird_klabel(self) -> KLabel:
+        def unique_klabel(self) -> KLabel:
             args_list = '_'.join(self.arg_types)
             return KLabel(f'method_{self.contract_name}_{self.unique_name}_{args_list}')
 
@@ -183,13 +183,13 @@ class Contract:
             return KProduction(
                 self.sort,
                 items_before + items_args + items_after,
-                klabel=self.weird_klabel,
+                klabel=self.unique_klabel,
                 att=KAtt({'symbol': ''}),
             )
 
         def rule(self, contract: KInner, application_label: KLabel, contract_name: str) -> KRule | None:
             arg_vars = [KVariable(aname) for aname in self.arg_names]
-            prod_klabel = self.weird_klabel
+            prod_klabel = self.unique_klabel
             assert prod_klabel is not None
             args: list[KInner] = []
             conjuncts: list[KInner] = []
