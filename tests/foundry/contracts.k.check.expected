@@ -466,6 +466,59 @@ module VALUESTORE-CONTRACT
 
 endmodule
 
+module AMBIGUOUSTEST-CONTRACT
+    imports public FOUNDRY
+    
+    syntax Contract ::= AmbiguousTestContract
+    
+    syntax AmbiguousTestContract ::= "AmbiguousTest" [symbol(), klabel(contract_AmbiguousTest)]
+    
+      
+    
+    syntax Bytes ::= AmbiguousTestContract "." AmbiguousTestMethod [function(), symbol(), klabel(method_AmbiguousTest)]
+    
+    syntax AmbiguousTestMethod ::= "test_array_type" "(" Int ":" "uint256" ")" [symbol(), klabel(method_AmbiguousTest_test_array_type_uint256)]
+    
+    syntax AmbiguousTestMethod ::= "test_array_type" "(" K ":" "uint256[]" ")" [symbol(), klabel(method_AmbiguousTest_test_array_type_uint256[])]
+    
+    syntax AmbiguousTestMethod ::= "test_assert_true" "(" ")" [symbol(), klabel(method_AmbiguousTest_test_assert_true_)]
+    
+    syntax AmbiguousTestMethod ::= "test_assert_true" "(" Int ":" "uint256" ")" [symbol(), klabel(method_AmbiguousTest_test_assert_true_uint256)]
+    
+    syntax AmbiguousTestMethod ::= "test_assert_true" "(" Int ":" "uint8" ")" [symbol(), klabel(method_AmbiguousTest_test_assert_true_uint8)]
+    
+    rule  ( AmbiguousTest . test_array_type ( V0_ : uint256 ) => #abiCallData ( "test_array_type" , #uint256 ( V0_ ) , .TypedArgs ) )
+       ensures #rangeUInt ( 256 , V0_ )
+      
+    
+    rule  ( AmbiguousTest . test_assert_true ( ) => #abiCallData ( "test_assert_true" , .TypedArgs ) )
+      
+    
+    rule  ( AmbiguousTest . test_assert_true ( V0_ : uint256 ) => #abiCallData ( "test_assert_true" , #uint256 ( V0_ ) , .TypedArgs ) )
+       ensures #rangeUInt ( 256 , V0_ )
+      
+    
+    rule  ( AmbiguousTest . test_assert_true ( V0_ : uint8 ) => #abiCallData ( "test_assert_true" , #uint8 ( V0_ ) , .TypedArgs ) )
+       ensures #rangeUInt ( 8 , V0_ )
+      
+    
+    rule  ( selector ( "test_array_type(uint256)" ) => 3024847385 )
+      
+    
+    rule  ( selector ( "test_array_type(uint256[])" ) => 43701028 )
+      
+    
+    rule  ( selector ( "test_assert_true()" ) => 906863826 )
+      
+    
+    rule  ( selector ( "test_assert_true(uint256)" ) => 466154213 )
+      
+    
+    rule  ( selector ( "test_assert_true(uint8)" ) => 703666980 )
+      
+
+endmodule
+
 module ARITHMETICTEST-CONTRACT
     imports public FOUNDRY
     
@@ -1462,65 +1515,65 @@ module COUNTERTEST-CONTRACT
 
 endmodule
 
-module DYNAMICTYPES-CONTRACT
+module DYNAMICTYPESTEST-CONTRACT
     imports public FOUNDRY
     
-    syntax Contract ::= DynamicTypesContract
+    syntax Contract ::= DynamicTypesTestContract
     
-    syntax DynamicTypesContract ::= "DynamicTypes" [symbol(), klabel(contract_DynamicTypes)]
+    syntax DynamicTypesTestContract ::= "DynamicTypesTest" [symbol(), klabel(contract_DynamicTypesTest)]
     
       
     
-    syntax Field ::= DynamicTypesField
+    syntax Field ::= DynamicTypesTestField
     
-    syntax DynamicTypesField ::= "IS_TEST" [symbol(), klabel(field_DynamicTypes_IS_TEST)]
+    syntax DynamicTypesTestField ::= "IS_TEST" [symbol(), klabel(field_DynamicTypesTest_IS_TEST)]
     
-    syntax DynamicTypesField ::= "_failed" [symbol(), klabel(field_DynamicTypes__failed)]
+    syntax DynamicTypesTestField ::= "_failed" [symbol(), klabel(field_DynamicTypesTest__failed)]
     
-    syntax DynamicTypesField ::= "IS_SCRIPT" [symbol(), klabel(field_DynamicTypes_IS_SCRIPT)]
+    syntax DynamicTypesTestField ::= "IS_SCRIPT" [symbol(), klabel(field_DynamicTypesTest_IS_SCRIPT)]
     
-    syntax DynamicTypesField ::= "stdstore" [symbol(), klabel(field_DynamicTypes_stdstore)]
+    syntax DynamicTypesTestField ::= "stdstore" [symbol(), klabel(field_DynamicTypesTest_stdstore)]
     
-    rule  ( #loc ( DynamicTypes . IS_TEST ) => 0 )
+    rule  ( #loc ( DynamicTypesTest . IS_TEST ) => 0 )
       
     
-    rule  ( #loc ( DynamicTypes . _failed ) => 0 )
+    rule  ( #loc ( DynamicTypesTest . _failed ) => 0 )
       
     
-    rule  ( #loc ( DynamicTypes . IS_SCRIPT ) => 0 )
+    rule  ( #loc ( DynamicTypesTest . IS_SCRIPT ) => 0 )
       
     
-    rule  ( #loc ( DynamicTypes . stdstore ) => 1 )
+    rule  ( #loc ( DynamicTypesTest . stdstore ) => 1 )
       
     
-    syntax Bytes ::= DynamicTypesContract "." DynamicTypesMethod [function(), symbol(), klabel(method_DynamicTypes)]
+    syntax Bytes ::= DynamicTypesTestContract "." DynamicTypesTestMethod [function(), symbol(), klabel(method_DynamicTypesTest)]
     
-    syntax DynamicTypesMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_DynamicTypes_IS_SCRIPT_)]
+    syntax DynamicTypesTestMethod ::= "IS_SCRIPT" "(" ")" [symbol(), klabel(method_DynamicTypesTest_IS_SCRIPT_)]
     
-    syntax DynamicTypesMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_DynamicTypes_IS_TEST_)]
+    syntax DynamicTypesTestMethod ::= "IS_TEST" "(" ")" [symbol(), klabel(method_DynamicTypesTest_IS_TEST_)]
     
-    syntax DynamicTypesMethod ::= "failed" "(" ")" [symbol(), klabel(method_DynamicTypes_failed_)]
+    syntax DynamicTypesTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_DynamicTypesTest_failed_)]
     
-    syntax DynamicTypesMethod ::= "test_dynamic_byte_read" "(" Bytes ":" "bytes" "," Int ":" "uint256" ")" [symbol(), klabel(method_DynamicTypes_test_dynamic_byte_read_bytes_uint256)]
+    syntax DynamicTypesTestMethod ::= "test_dynamic_byte_read" "(" Bytes ":" "bytes" "," Int ":" "uint256" ")" [symbol(), klabel(method_DynamicTypesTest_test_dynamic_byte_read_bytes_uint256)]
     
-    syntax DynamicTypesMethod ::= "vm" "(" ")" [symbol(), klabel(method_DynamicTypes_vm_)]
+    syntax DynamicTypesTestMethod ::= "vm" "(" ")" [symbol(), klabel(method_DynamicTypesTest_vm_)]
     
-    rule  ( DynamicTypes . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
+    rule  ( DynamicTypesTest . IS_SCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
     
-    rule  ( DynamicTypes . IS_TEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
+    rule  ( DynamicTypesTest . IS_TEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
       
     
-    rule  ( DynamicTypes . failed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
+    rule  ( DynamicTypesTest . failed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
       
     
-    rule  ( DynamicTypes . test_dynamic_byte_read ( V0_data : bytes , V1_offset : uint256 ) => #abiCallData ( "test_dynamic_byte_read" , #bytes ( V0_data ) , #uint256 ( V1_offset ) , .TypedArgs ) )
+    rule  ( DynamicTypesTest . test_dynamic_byte_read ( V0_data : bytes , V1_offset : uint256 ) => #abiCallData ( "test_dynamic_byte_read" , #bytes ( V0_data ) , #uint256 ( V1_offset ) , .TypedArgs ) )
        ensures ( #rangeUInt ( 128 , lengthBytes ( V0_data ) )
        andBool ( #rangeUInt ( 256 , V1_offset )
                ))
       
     
-    rule  ( DynamicTypes . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
+    rule  ( DynamicTypesTest . vm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
       
     
     rule  ( selector ( "IS_SCRIPT()" ) => 4174167879 )
