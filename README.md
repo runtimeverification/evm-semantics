@@ -245,7 +245,7 @@ export PATH=$(pwd)/.build/usr/bin:$PATH
 Alternatively, if you work on multiple checkouts of `evm-semantics` or other semantics, you could add the relative path `.build/usr/bin` to your `PATH`.
 Do note, however, that this is a security concern.
 
-You can call `kevm help` to get a quick summary of how to use the script.
+You can call `kevm --help` to get a quick summary of how to use the script.
 
 Run the file `tests/ethereum-tests/LegacyTests/Constantinople/VMTests/vmArithmeticTest/add0.json`:
 
