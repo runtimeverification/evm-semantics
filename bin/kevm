@@ -47,40 +47,11 @@ run_kevm_pyk() {
     kevm-pyk "${pyk_command}" "$@" "${pyk_args[@]}"
 }
 
-# User Commands
-
-run_krun() {
-    local cschedule cmode cchainid parser krun_args
-
-    check_k_install
-
-    krun_args=(--definition "${backend_dir}" "${run_file}")
-    if ${debugger}; then
-        cmode="Lbl${mode}{}()"
-        cschedule="Lbl${schedule}'Unds'EVM{}()"
-        cchainid="\dv{SortInt{}}(\"${chainid}\")"
-        parser='cat'
-        krun_args+=(--debugger)
-        krun_args+=(-cSCHEDULE="${cschedule}" -pSCHEDULE="${parser}")
-        krun_args+=(-cMODE="${cmode}" -pMODE="${parser}")
-        krun_args+=(-cCHAINID="${cchainid}" -pCHAINID="${parser}")
-        krun "${krun_args[@]}" "$@"
-    else
-        krun_args+=(--schedule ${schedule})
-        krun_args+=(--mode ${mode})
-        krun_args+=(--chainid ${chainid})
-        run_kevm_pyk run "${krun_args[@]}" "$@"
-    fi
-}
-
 # Main
 # ----
 
 backend="llvm"
 debugger=false
-mode=NORMAL
-schedule=MERGE
-chainid=1
 
 if [[ $# -eq 0 ]]; then 
     run_command='help'
@@ -104,12 +75,8 @@ args=()
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --debug)      debug=true         ; shift   ;;
-        --debugger)   debugger=true      ; shift   ;;
         --backend)    backend="$2"       ; shift 2 ;;
         --definition) backend_dir="$2"   ; shift 2 ;;
-        --mode)       mode="$2"          ; shift 2 ;;
-        --schedule)   schedule="$2"      ; shift 2 ;;
-        --chainid)    chainid="$2"       ; shift 2 ;;
         --help)       run_command='help' ; shift   ;;
         *)            args+=("$1")       ; shift   ;;
     esac
@@ -118,27 +85,10 @@ done
 [[ "${#args[@]}" -le 0 ]] || set -- "${args[@]}"
 backend_dir="${backend_dir:-$INSTALL_LIB/$backend}"
 
-# get the run file
-if [[ "${run_command}" == run ]]; then
-    if [[ $# -gt 0 ]]; then
-        run_file="$1" ; shift
-        if [[ "${run_file}" == '-' ]]; then
-            tmp_input="$(mktemp)"
-            trap "rm -rf ${tmp_input}" INT TERM EXIT
-            cat - > "${tmp_input}"
-            run_file="${tmp_input}"
-        fi
-        [[ -f "${run_file}" ]] || fatal "File does not exist: ${run_file}"
-    else
-        fatal "Please provide a file!"
-    fi
-fi
-
 ! ${debug} || set -x
 
 case "$run_command-$backend" in
-    run-@(llvm|haskell|haskell-standalone) ) run_krun "$@" ;;
-    @(kast|kompile|prune-proof|view-kcfg|show-kcfg|solc-to-k|prove|prove-legacy|foundry)-* ) run_kevm_pyk ${run_command} "$@" ;;
+    @(run|kast|kompile|prune-proof|view-kcfg|show-kcfg|solc-to-k|prove|prove-legacy|foundry)-* ) run_kevm_pyk ${run_command} "$@" ;;
     @(help|--help)-* ) run_kevm_pyk --help ;;
     * ) run_kevm_pyk --help ; fatal "Unknown command on backend: $run_command $backend" ;;
 esac
