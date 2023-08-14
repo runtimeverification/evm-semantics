@@ -4,91 +4,26 @@ set -euo pipefail
 shopt -s extglob
 set -o allexport
 
-debug=false
-KEVM=kevm
-
-notif() { echo "== ${KEVM}: $*" >&2 ; }
-
-fatal() { notif "[FATAL] $*" ; exit 1 ; }
-
-check_k_install() {
-    which kast &> /dev/null \
-        || fatal "Must have K installed! See https://github.com/kframework/k/releases."
-    which krun &> /dev/null \
-        || fatal "Must have K installed! See https://github.com/kframework/k/releases."
-}
-
 INSTALL_BIN="$(cd $(dirname $0) && pwd)"
 INSTALL_LIB="$(dirname ${INSTALL_BIN})/lib/kevm"
-INSTALL_INCLUDE=${INSTALL_LIB}/include
 
 install_k_bin=${INSTALL_LIB}/kframework/bin
-install_k_lib=${INSTALL_LIB}/kframework/lib
 
 export PATH="${INSTALL_BIN}:${INSTALL_LIB}:${install_k_bin}:${PATH}"
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH:-}:/usr/local/lib
 
 export K_OPTS="${K_OPTS:--Xmx16G -Xss512m}"
 
-
-# Runners
-# -------
-
-run_kevm_pyk() {
-    local pyk_command pyk_args
-    pyk_command="$1" ; shift
-    case "${pyk_command}" in
-        kast|run|prove|prove-legacy|solc-to-k|foundry-kompile|foundry-prove|view-kcfg|show-kcfg|prune-proof)
-            pyk_args=(--definition "${backend_dir}")
-            pyk_args+=(-I "${INSTALL_INCLUDE}/kframework")
-            ;;
-    esac
-    ! ${debug} || pyk_args+=(--debug)
-    kevm-pyk "${pyk_command}" "$@" "${pyk_args[@]}"
-}
-
-# Main
-# ----
-
-backend="llvm"
-debugger=false
-
-if [[ $# -eq 0 ]]; then 
-    run_command='help'
-else 
-    run_command="$1" ; shift
-fi
-
-if [[ "$run_command" == 'version' ]] || [[ "$run_command" == '--version' ]]; then
-    notif "KEVM Version"
-    cat $INSTALL_LIB/version
+if [[ $# -eq 0 ]]; then
+    run_kevm_pyk --help
+    exit 2
+elif [[ $1 -eq 'help' ]] || [[ $1 -eq '--help' ]]; then
+    run_kevm_pyk --help
+    exit 0
+elif [[ $1 -eq 'version' ]] || [[ $1 == '--version' ]]; then
+    echo "KEVM Version"
+    cat ${INSTALL_LIB}/version
     exit 0
 fi
 
-[[ ! "${run_command}" == prove       ]] || backend=haskell
-[[ ! "${run_command}" == solc-to-k   ]] || backend=haskell
-[[ ! "${run_command}" == view-kcfg   ]] || backend=haskell
-[[ ! "${run_command}" == show-kcfg   ]] || backend=haskell
-[[ ! "${run_command}" == prune-proof ]] || backend=haskell
-[[ ! "${run_command}" == foundry-*   ]] || backend=foundry
-args=()
-while [[ $# -gt 0 ]]; do
-    case "$1" in
-        --debug)      debug=true         ; shift   ;;
-        --backend)    backend="$2"       ; shift 2 ;;
-        --definition) backend_dir="$2"   ; shift 2 ;;
-        --help)       run_command='help' ; shift   ;;
-        *)            args+=("$1")       ; shift   ;;
-    esac
-done
-
-[[ "${#args[@]}" -le 0 ]] || set -- "${args[@]}"
-backend_dir="${backend_dir:-$INSTALL_LIB/$backend}"
-
-! ${debug} || set -x
-
-case "$run_command-$backend" in
-    @(run|kast|kompile|prune-proof|view-kcfg|show-kcfg|solc-to-k|prove|prove-legacy|foundry)-* ) run_kevm_pyk ${run_command} "$@" ;;
-    @(help|--help)-* ) run_kevm_pyk --help ;;
-    * ) run_kevm_pyk --help ; fatal "Unknown command on backend: $run_command $backend" ;;
-esac
+kevm-pyk "${pyk_command}" "$@" "${pyk_args[@]}"
