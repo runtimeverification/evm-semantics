@@ -3,7 +3,7 @@
 set -xueo pipefail
 
 which kevm
-kevm help
+kevm --help
 kevm version
 
 kevm run tests/ethereum-tests/LegacyTests/Constantinople/VMTests/vmArithmeticTest/add0.json --backend llvm \
