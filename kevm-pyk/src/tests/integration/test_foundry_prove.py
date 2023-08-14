@@ -265,7 +265,7 @@ def test_foundry_resume_proof(foundry_root: Path, update_expected_output: bool) 
         smt_timeout=125,
         smt_retry_limit=4,
         auto_abstract_gas=True,
-        max_iterations=6,
+        max_iterations=8,
         reinit=False,
     )
     assert_fail(test_id, prove_res)
