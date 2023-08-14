@@ -112,6 +112,7 @@ def exec_kompile(
     debug: bool = False,
     enable_llvm_debug: bool = False,
     llvm_library: bool = False,
+    verbose: bool = False,
     **kwargs: Any,
 ) -> None:
     optimization = 0
@@ -136,6 +137,7 @@ def exec_kompile(
         enable_llvm_debug=enable_llvm_debug,
         llvm_kompile_type=LLVMKompileType.C if llvm_library else LLVMKompileType.MAIN,
         debug=debug,
+        verbose=verbose,
     )
 
 
@@ -171,6 +173,7 @@ def exec_foundry_kompile(
     llvm_kompile: bool = True,
     debug: bool = False,
     llvm_library: bool = False,
+    verbose: bool = False,
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'main_module', f'--main-module {kwargs["main_module"]}')
@@ -192,6 +195,7 @@ def exec_foundry_kompile(
         llvm_kompile=llvm_kompile,
         debug=debug,
         llvm_library=llvm_library,
+        verbose=verbose,
     )
 
 
