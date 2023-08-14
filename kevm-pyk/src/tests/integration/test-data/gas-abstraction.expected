@@ -115,7 +115,7 @@ Node 8:
         NORMAL
       </mode>
       <schedule>
-        LONDON
+        SHANGHAI
       </schedule>
       <ethereum>
         <evm>
@@ -420,7 +420,7 @@ Node 8:
                NORMAL
              </mode>
              <schedule>
-               LONDON
+               SHANGHAI
              </schedule>
              <ethereum>
                <evm>
@@ -626,7 +626,7 @@ Node 8:
                NORMAL
              </mode>
              <schedule>
-               LONDON
+               SHANGHAI
              </schedule>
              <ethereum>
                <evm>
@@ -833,7 +833,7 @@ Node 8:
                NORMAL
              </mode>
              <schedule>
-               LONDON
+               SHANGHAI
              </schedule>
              <ethereum>
                <evm>
@@ -1041,7 +1041,7 @@ Node 8:
                NORMAL
              </mode>
              <schedule>
-               LONDON
+               SHANGHAI
              </schedule>
              <ethereum>
                <evm>
@@ -1252,7 +1252,7 @@ Node 8:
                NORMAL
              </mode>
              <schedule>
-               LONDON
+               SHANGHAI
              </schedule>
              <ethereum>
                <evm>
