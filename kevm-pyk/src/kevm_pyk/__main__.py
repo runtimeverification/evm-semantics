@@ -149,7 +149,7 @@ def exec_kompile(
 
 
 def exec_solc_to_k(
-    definition_dir: Path,
+    target: KompileTarget,
     contract_file: Path,
     contract_name: str,
     main_module: str | None,
@@ -157,8 +157,9 @@ def exec_solc_to_k(
     imports: list[str],
     **kwargs: Any,
 ) -> None:
+    _ignore_arg(kwargs, 'definition_dir', f'--definition: {kwargs["definition_dir"]}')
     k_text = solc_to_k(
-        definition_dir=definition_dir,
+        definition_dir=target.definition_dir,
         contract_file=contract_file,
         contract_name=contract_name,
         main_module=main_module,
@@ -905,7 +906,12 @@ def _create_argument_parser() -> ArgumentParser:
     run_args = command_parser.add_parser(
         'run',
         help='Run KEVM test/simulation.',
-        parents=[kevm_cli_args.logging_args, kevm_cli_args.evm_chain_args, kevm_cli_args.k_args],
+        parents=[
+            kevm_cli_args.logging_args,
+            kevm_cli_args.target_args,
+            kevm_cli_args.evm_chain_args,
+            kevm_cli_args.k_args,
+        ],
     )
     run_args.add_argument('input_file', type=file_path, help='Path to input file.')
     run_args.add_argument(
@@ -937,7 +943,12 @@ def _create_argument_parser() -> ArgumentParser:
     kast_args = command_parser.add_parser(
         'kast',
         help='Run KEVM program.',
-        parents=[kevm_cli_args.logging_args, kevm_cli_args.evm_chain_args, kevm_cli_args.k_args],
+        parents=[
+            kevm_cli_args.logging_args,
+            kevm_cli_args.target_args,
+            kevm_cli_args.evm_chain_args,
+            kevm_cli_args.k_args,
+        ],
     )
     kast_args.add_argument('input_file', type=file_path, help='Path to input file.')
     kast_args.add_argument(
@@ -953,7 +964,7 @@ def _create_argument_parser() -> ArgumentParser:
     solc_to_k_args = command_parser.add_parser(
         'solc-to-k',
         help='Output helper K definition for given JSON output from solc compiler.',
-        parents=[kevm_cli_args.logging_args, kevm_cli_args.k_args, kevm_cli_args.k_gen_args],
+        parents=[kevm_cli_args.logging_args, kevm_cli_args.target_args, kevm_cli_args.k_args, kevm_cli_args.k_gen_args],
     )
     solc_to_k_args.add_argument('contract_file', type=file_path, help='Path to contract file.')
     solc_to_k_args.add_argument('contract_name', type=str, help='Name of contract to generate K helpers for.')
