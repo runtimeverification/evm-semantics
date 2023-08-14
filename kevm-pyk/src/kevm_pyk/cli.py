@@ -38,7 +38,7 @@ class KEVMCLIArgs(KCLIArgs):
     @cached_property
     def target_args(self) -> ArgumentParser:
         args = ArgumentParser(add_help=False)
-        args.add_argument('--target', type=KompileTarget, choices=list(KompileTarget), default=KompileTarget.LLVM)
+        args.add_argument('--target', type=KompileTarget, choices=list(KompileTarget))
         return args
 
     @cached_property

@@ -103,13 +103,13 @@ def exec_compile(contract_file: Path, **kwargs: Any) -> None:
 
 
 def exec_kompile(
-    target: KompileTarget,
     output_dir: Path | None,
     main_file: Path,
     emit_json: bool,
     includes: list[str],
     main_module: str | None,
     syntax_module: str | None,
+    target: KompileTarget | None = None,
     read_only: bool = False,
     ccopts: Iterable[str] = (),
     o0: bool = False,
@@ -122,6 +122,9 @@ def exec_kompile(
     verbose: bool = False,
     **kwargs: Any,
 ) -> None:
+    if target is None:
+        target = KompileTarget.LLVM
+
     optimization = 0
     if o1:
         optimization = 1
@@ -149,14 +152,17 @@ def exec_kompile(
 
 
 def exec_solc_to_k(
-    target: KompileTarget,
     contract_file: Path,
     contract_name: str,
     main_module: str | None,
     requires: list[str],
     imports: list[str],
+    target: KompileTarget | None = None,
     **kwargs: Any,
 ) -> None:
+    if target is None:
+        target = KompileTarget.HASKELL
+
     _ignore_arg(kwargs, 'definition_dir', f'--definition: {kwargs["definition_dir"]}')
     k_text = solc_to_k(
         definition_dir=target.definition_dir,
@@ -208,8 +214,8 @@ def exec_foundry_kompile(
 
 
 def exec_prove_legacy(
-    definition_dir: Path,
     spec_file: Path,
+    definition_dir: Path | None = None,
     includes: Iterable[str] = (),
     bug_report: bool = False,
     save_directory: Path | None = None,
@@ -225,6 +231,10 @@ def exec_prove_legacy(
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'md_selector', f'--md-selector: {kwargs["md_selector"]}')
+
+    if definition_dir is None:
+        definition_dir = KompileTarget.HASKELL.definition_dir
+
     kevm = KEVM(definition_dir, use_directory=save_directory)
     final_state = kevm.prove_legacy(
         spec_file=spec_file,
@@ -246,9 +256,9 @@ def exec_prove_legacy(
 
 
 def exec_prove(
-    definition_dir: Path,
     spec_file: Path,
     includes: Iterable[str],
+    definition_dir: Path | None = None,
     bug_report: bool = False,
     save_directory: Path | None = None,
     spec_module: str | None = None,
@@ -272,6 +282,9 @@ def exec_prove(
 ) -> None:
     _ignore_arg(kwargs, 'md_selector', f'--md-selector: {kwargs["md_selector"]}')
     md_selector = 'k & ! node'
+
+    if definition_dir is None:
+        definition_dir = KompileTarget.HASKELL.definition_dir
 
     br = BugReport(spec_file.with_suffix('.bug_report')) if bug_report else None
     kevm = KEVM(definition_dir, use_directory=save_directory, bug_report=br)
@@ -634,7 +647,6 @@ def exec_foundry_list(foundry_root: Path, **kwargs: Any) -> None:
 
 
 def exec_run(
-    target: KompileTarget,
     input_file: Path,
     expand_macros: bool,
     depth: int | None,
@@ -642,10 +654,14 @@ def exec_run(
     schedule: str,
     mode: str,
     chainid: int,
+    target: KompileTarget | None = None,
     save_directory: Path | None = None,
     debugger: bool = False,
     **kwargs: Any,
 ) -> None:
+    if target is None:
+        target = KompileTarget.LLVM
+
     _ignore_arg(kwargs, 'definition_dir', f'--definition: {kwargs["definition_dir"]}')
     kevm = KEVM(target.definition_dir, use_directory=save_directory)
 
@@ -670,15 +686,18 @@ def exec_run(
 
 
 def exec_kast(
-    target: KompileTarget,
     input_file: Path,
     output: PrintOutput,
     schedule: str,
     mode: str,
     chainid: int,
+    target: KompileTarget | None = None,
     save_directory: Path | None = None,
     **kwargs: Any,
 ) -> None:
+    if target is None:
+        target = KompileTarget.LLVM
+
     _ignore_arg(kwargs, 'definition_dir', f'--definition: {kwargs["definition_dir"]}')
     kevm = KEVM(target.definition_dir, use_directory=save_directory)
 

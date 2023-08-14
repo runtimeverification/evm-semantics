@@ -32,14 +32,14 @@ if ! ${APPLE_SILICON:-false}; then
 fi
 
 
-kevm solc-to-k tests/specs/examples/ERC20.sol ERC20 --main-module ERC20-VERIFICATION > tests/specs/examples/erc20-bin-runtime.k
+kevm solc-to-k tests/specs/examples/ERC20.sol ERC20 --target haskell --main-module ERC20-VERIFICATION > tests/specs/examples/erc20-bin-runtime.k
 kevm kompile tests/specs/examples/erc20-spec.md                 \
     --target haskell                                            \
     --output-definition tests/specs/examples/erc20-spec/haskell \
     --main-module VERIFICATION                                  \
     --syntax-module VERIFICATION                                \
     --verbose
-kevm prove tests/specs/examples/erc20-spec.md --target haskell --definition tests/specs/examples/erc20-spec/haskell
+kevm prove tests/specs/examples/erc20-spec.md --definition tests/specs/examples/erc20-spec/haskell
 
 # Commented because of https://github.com/foundry-rs/foundry/issues/545, and we can't install solc 0.8.13
 # forge build --root tests/foundry --no-auto-detect
