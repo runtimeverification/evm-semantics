@@ -15,15 +15,15 @@ export LD_LIBRARY_PATH=${LD_LIBRARY_PATH:-}:/usr/local/lib
 export K_OPTS="${K_OPTS:--Xmx16G -Xss512m}"
 
 if [[ $# -eq 0 ]]; then
-    run_kevm_pyk --help
+    kevm-pyk --help
     exit 2
-elif [[ $1 -eq 'help' ]] || [[ $1 -eq '--help' ]]; then
-    run_kevm_pyk --help
+elif [[ $1 == 'help' ]] || [[ $1 == '--help' ]]; then
+    kevm-pyk --help
     exit 0
-elif [[ $1 -eq 'version' ]] || [[ $1 == '--version' ]]; then
+elif [[ $1 == 'version' ]] || [[ $1 == '--version' ]]; then
     echo "KEVM Version"
     cat ${INSTALL_LIB}/version
     exit 0
 fi
 
-kevm-pyk "${pyk_command}" "$@" "${pyk_args[@]}"
+kevm-pyk "$@"
