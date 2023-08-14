@@ -1,29 +1,3 @@
 #!/usr/bin/env bash
-
 set -euo pipefail
-shopt -s extglob
-set -o allexport
-
-INSTALL_BIN="$(cd $(dirname $0) && pwd)"
-INSTALL_LIB="$(dirname ${INSTALL_BIN})/lib/kevm"
-
-install_k_bin=${INSTALL_LIB}/kframework/bin
-
-export PATH="${INSTALL_BIN}:${INSTALL_LIB}:${install_k_bin}:${PATH}"
-export LD_LIBRARY_PATH=${LD_LIBRARY_PATH:-}:/usr/local/lib
-
-export K_OPTS="${K_OPTS:--Xmx16G -Xss512m}"
-
-if [[ $# -eq 0 ]]; then
-    kevm-pyk --help
-    exit 2
-elif [[ $1 == 'help' ]] || [[ $1 == '--help' ]]; then
-    kevm-pyk --help
-    exit 0
-elif [[ $1 == 'version' ]] || [[ $1 == '--version' ]]; then
-    echo "KEVM Version"
-    cat ${INSTALL_LIB}/version
-    exit 0
-fi
-
 kevm-pyk "$@"
