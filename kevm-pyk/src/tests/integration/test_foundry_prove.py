@@ -7,7 +7,6 @@ import pytest
 from filelock import FileLock
 from pyk.utils import run_process
 
-from kevm_pyk import config
 from kevm_pyk.foundry import foundry_kompile, foundry_prove, foundry_show
 
 from .utils import TEST_DATA_DIR
@@ -38,7 +37,6 @@ def foundry_root(tmp_path_factory: TempPathFactory, worker_id: str, use_booster:
             run_process(['forge', 'build'], cwd=foundry_root)
 
             foundry_kompile(
-                definition_dir=config.FOUNDRY_DIR,
                 foundry_root=foundry_root,
                 includes=(),
                 requires=[str(TEST_DATA_DIR / 'lemmas.k')],

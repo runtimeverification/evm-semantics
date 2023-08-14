@@ -184,6 +184,7 @@ def exec_foundry_kompile(
     verbose: bool = False,
     **kwargs: Any,
 ) -> None:
+    _ignore_arg(kwargs, 'definition_dir', f'--main-module {kwargs["definition_dir"]}')
     _ignore_arg(kwargs, 'main_module', f'--main-module {kwargs["main_module"]}')
     _ignore_arg(kwargs, 'syntax_module', f'--syntax-module {kwargs["syntax_module"]}')
     _ignore_arg(kwargs, 'spec_module', f'--spec-module {kwargs["spec_module"]}')
@@ -192,7 +193,6 @@ def exec_foundry_kompile(
     _ignore_arg(kwargs, 'o2', '-O2')
     _ignore_arg(kwargs, 'o3', '-O3')
     foundry_kompile(
-        definition_dir=definition_dir,
         foundry_root=foundry_root,
         includes=includes,
         regen=regen,
@@ -969,7 +969,7 @@ def _create_argument_parser() -> ArgumentParser:
     solc_to_k_args.add_argument('contract_file', type=file_path, help='Path to contract file.')
     solc_to_k_args.add_argument('contract_name', type=str, help='Name of contract to generate K helpers for.')
 
-    foundry_kompile = command_parser.add_parser(
+    foundry_kompile_args = command_parser.add_parser(
         'foundry-kompile',
         help='Kompile K definition corresponding to given output directory.',
         parents=[
@@ -980,14 +980,14 @@ def _create_argument_parser() -> ArgumentParser:
             kevm_cli_args.foundry_args,
         ],
     )
-    foundry_kompile.add_argument(
+    foundry_kompile_args.add_argument(
         '--regen',
         dest='regen',
         default=False,
         action='store_true',
         help='Regenerate foundry.k even if it already exists.',
     )
-    foundry_kompile.add_argument(
+    foundry_kompile_args.add_argument(
         '--rekompile',
         dest='rekompile',
         default=False,
