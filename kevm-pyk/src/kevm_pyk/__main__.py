@@ -23,6 +23,7 @@ from pyk.proof.tui import APRProofViewer
 from pyk.utils import BugReport, single
 
 from .cli import KEVMCLIArgs, node_id_like
+from .config import KEVM_LIB
 from .foundry import (
     Foundry,
     foundry_get_model,
@@ -88,6 +89,12 @@ def main() -> None:
 
 
 # Command implementation
+
+
+def exec_version(**kwargs: Any) -> None:
+    version_file = KEVM_LIB / 'version'
+    version = version_file.read_text().strip()
+    print(f'KEVM Version: {version}')
 
 
 def exec_compile(contract_file: Path, **kwargs: Any) -> None:
@@ -815,6 +822,8 @@ def _create_argument_parser() -> ArgumentParser:
     parser = ArgumentParser(prog='python3 -m kevm_pyk')
 
     command_parser = parser.add_subparsers(dest='command', required=True)
+
+    _ = command_parser.add_parser('version', help='Print KEVM version and exit.', parents=[kevm_cli_args.logging_args])
 
     kevm_kompile_args = command_parser.add_parser(
         'kompile',
