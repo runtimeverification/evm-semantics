@@ -176,7 +176,7 @@
         pkgs = import nixpkgs {
           inherit system;
           overlays = [
-            (final: prev: { llvm-backend-release = false; })
+            (final: prev: { llvm-backend-release = false; poetry-nixpkgs = prev.poetry; })
             k-framework.overlay
             blockchain-k-plugin.overlay
             poetry2nix.overlay
@@ -191,7 +191,7 @@
         packages.default = kevm;
         devShell = pkgs.mkShell {
           buildInputs = buildInputs pkgs k-framework.packages.${system}.k
-            ++ [ pkgs.poetry pkgs.foundry-bin ];
+            ++ [ pkgs.poetry-nixpkgs pkgs.foundry-bin ];
 
           shellHook = ''
             export NIX_LIBS="${nixLibs pkgs}"
