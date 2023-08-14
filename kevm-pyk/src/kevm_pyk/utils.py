@@ -370,9 +370,11 @@ def unescape_seq(seq: str) -> str:
 
 def name_escaped(name: str, prefix: str = '') -> str:
     escaped = prefix
+    iter_name = iter(name)
     if len(name) > 0 and not name[0].isupper():
         escaped += escape_char(name[0])
-    for char in name:
+        next(iter_name)
+    for char in iter_name:
         if char in escaped_chars():
             escaped += escape_char(char)
         else:

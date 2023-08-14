@@ -6,6 +6,7 @@ from kevm_pyk.utils import name_escaped, name_unescaped
 
 TEST_DATA: list[tuple[str, str, str]] = [
     ('has_underscore', 'My_contract', 'KEVMMy0x5fzcontract'),
+    ('starts_lower', 'mycontract', 'KEVM0x6dzycontract'),
 ]
 
 
