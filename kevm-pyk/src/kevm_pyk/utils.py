@@ -81,7 +81,6 @@ def kevm_prove(
     break_every_step: bool = False,
     break_on_jumpi: bool = False,
     break_on_calls: bool = True,
-    implication_every_block: bool = False,
     extract_branches: Callable[[CTerm], Iterable[KInner]] | None = None,
     abstract_node: Callable[[CTerm], CTerm] | None = None,
 ) -> bool:
@@ -124,7 +123,6 @@ def kevm_prove(
                 execute_depth=max_depth,
                 terminal_rules=terminal_rules,
                 cut_point_rules=cut_point_rules,
-                implication_every_block=implication_every_block,
             )
             assert isinstance(proof, APRProof)
             failure_nodes = proof.failing

@@ -20,6 +20,12 @@ module VERIFICATION-COMMON
     rule 0 <=Int #asWord(#ecrec(_   , _   , _   , _   ))                  => true                                                      [simplification]
     rule         #asWord(#ecrec(_   , _   , _   , _   )) <=Int maxUInt160 => true                                                      [simplification]
 
+    rule #Ceil( #ecrec(HASH, SIGV, SIGR, SIGS) ) => #Top
+     requires #ecrecEmpty(HASH, SIGV, SIGR, SIGS) [simplification]
+
+    rule #Ceil( #ecrec(HASH, SIGV, SIGR, SIGS) ) => #Top
+     requires notBool #ecrecEmpty(HASH, SIGV, SIGR, SIGS) [simplification]
+
 endmodule
 
 module VERIFICATION
