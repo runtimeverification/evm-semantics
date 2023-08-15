@@ -351,7 +351,6 @@ def legacy_explore(
             )
 
 
-
 def escaped_chars() -> list[str]:
     return ['_', 'z']
 
@@ -386,7 +385,7 @@ def name_unescaped(name: str, prefix: str = '') -> str:
         j = i + skipped
         next_char = unescaped[j + 1]
         if char == 'z':
-            res += unescape_seq(unescaped[(j + 1):(j + 3)])
+            res += unescape_seq(unescaped[(j + 1) : (j + 3)])
             for _ in range(2):
                 try:
                     next(unes_iter)

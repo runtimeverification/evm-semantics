@@ -17,6 +17,7 @@ from pyk.prelude.string import stringToken
 from pyk.utils import FrozenDict, hash_str, run_process, single
 
 from .kevm import KEVM
+from .utils import name_escaped
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -336,11 +337,11 @@ class Contract:
 
     @staticmethod
     def contract_to_module_name(c: str) -> str:
-        return c.upper() + '-CONTRACT'
+        return c + '-CONTRACT'
 
     @staticmethod
     def contract_to_verification_module_name(c: str) -> str:
-        return c.upper() + '-VERIFICATION'
+        return c + '-VERIFICATION'
 
     @staticmethod
     def test_to_claim_name(t: str) -> str:
@@ -351,16 +352,20 @@ class Contract:
         return self.name[0:1].upper() + self.name[1:]
 
     @property
+    def name_escaped(self) -> str:
+        return name_escaped(self.name, 'KEVM')
+
+    @property
     def sort(self) -> KSort:
-        return KSort(f'{self.name.replace("-", "_")}Contract')
+        return KSort(f'{self.name_escaped}Contract')
 
     @property
     def sort_field(self) -> KSort:
-        return KSort(f'{self.name.replace("-", "_")}Field')
+        return KSort(f'{self.name}Field')
 
     @property
     def sort_method(self) -> KSort:
-        return KSort(f'{self.name_upper}Method')
+        return KSort(f'{self.name_escaped}Method')
 
     @property
     def klabel(self) -> KLabel:
@@ -384,7 +389,7 @@ class Contract:
 
     @property
     def production(self) -> KProduction:
-        return KProduction(self.sort, [KTerminal(self.name)], klabel=self.klabel, att=KAtt({'symbol': ''}))
+        return KProduction(self.sort, [KTerminal(self.name_escaped)], klabel=self.klabel, att=KAtt({'symbol': ''}))
 
     @property
     def macro_bin_runtime(self) -> KRule:
