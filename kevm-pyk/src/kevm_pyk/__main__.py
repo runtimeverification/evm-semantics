@@ -254,7 +254,6 @@ def exec_prove(
     break_every_step: bool = False,
     break_on_jumpi: bool = False,
     break_on_calls: bool = True,
-    implication_every_block: bool = True,
     kore_rpc_command: str | Iterable[str] = ('kore-rpc',),
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
@@ -361,7 +360,6 @@ def exec_prove(
                 break_every_step=break_every_step,
                 break_on_jumpi=break_on_jumpi,
                 break_on_calls=break_on_calls,
-                implication_every_block=implication_every_block,
             )
             failure_log = None
             if not passed:
@@ -528,7 +526,6 @@ def exec_foundry_prove(
     break_every_step: bool = False,
     break_on_jumpi: bool = False,
     break_on_calls: bool = True,
-    implication_every_block: bool = True,
     bmc_depth: int | None = None,
     bug_report: bool = False,
     kore_rpc_command: str | Iterable[str] | None = None,
@@ -561,7 +558,6 @@ def exec_foundry_prove(
         break_every_step=break_every_step,
         break_on_jumpi=break_on_jumpi,
         break_on_calls=break_on_calls,
-        implication_every_block=implication_every_block,
         bmc_depth=bmc_depth,
         bug_report=bug_report,
         kore_rpc_command=kore_rpc_command,
@@ -982,7 +978,7 @@ def _create_argument_parser() -> ArgumentParser:
         dest='bmc_depth',
         default=None,
         type=int,
-        help='Max depth of loop unrolling during bounded model checking',
+        help='Enables bounded model checking. Specifies the maximum depth to unroll all loops to.',
     )
     foundry_prove_args.add_argument(
         '--use-booster',
