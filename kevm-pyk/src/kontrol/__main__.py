@@ -105,6 +105,7 @@ def exec_foundry_kompile(
     llvm_kompile: bool = True,
     debug: bool = False,
     llvm_library: bool = False,
+    verbose: bool = False,
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'main_module', f'--main-module {kwargs["main_module"]}')
@@ -126,6 +127,7 @@ def exec_foundry_kompile(
         llvm_kompile=llvm_kompile,
         debug=debug,
         llvm_library=llvm_library,
+        verbose=verbose,
     )
 
 
@@ -141,7 +143,6 @@ def exec_foundry_prove(
     break_every_step: bool = False,
     break_on_jumpi: bool = False,
     break_on_calls: bool = True,
-    implication_every_block: bool = True,
     bmc_depth: int | None = None,
     bug_report: bool = False,
     kore_rpc_command: str | Iterable[str] | None = None,
@@ -174,7 +175,6 @@ def exec_foundry_prove(
         break_every_step=break_every_step,
         break_on_jumpi=break_on_jumpi,
         break_on_calls=break_on_calls,
-        implication_every_block=implication_every_block,
         bmc_depth=bmc_depth,
         bug_report=bug_report,
         kore_rpc_command=kore_rpc_command,
