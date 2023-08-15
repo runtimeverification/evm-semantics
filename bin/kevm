@@ -7,6 +7,6 @@ if [[ "$#" -eq 0 ]]; then
     exit 2
 fi
 case "$1" in
-    foundry*) kontrol "$@" ;;
+    @(compile|solc-to-k|foundry)*) kontrol "$@" ;;
     *) kevm-pyk "$@" ;;
 esac
