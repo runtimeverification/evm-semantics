@@ -5774,6 +5774,100 @@ module BYTESTYPETEST-CONTRACT
 
 endmodule
 
+module INTTYPETEST-CONTRACT
+    imports public FOUNDRY
+    
+    syntax Contract ::= IntTypeTestContract
+    
+    syntax IntTypeTestContract ::= "IntTypeTest" [symbol(), klabel(contract_IntTypeTest)]
+    
+      
+    
+    syntax Bytes ::= IntTypeTestContract "." IntTypeTestMethod [function(), symbol(), klabel(method_IntTypeTest)]
+    
+    syntax IntTypeTestMethod ::= "testFail_int128" "(" Int ":" "int128" ")" [symbol(), klabel(method_IntTypeTest_testFail_int128_int128)]
+    
+    syntax IntTypeTestMethod ::= "testFail_int256" "(" Int ":" "int256" ")" [symbol(), klabel(method_IntTypeTest_testFail_int256_int256)]
+    
+    syntax IntTypeTestMethod ::= "testFail_int64" "(" Int ":" "int64" ")" [symbol(), klabel(method_IntTypeTest_testFail_int64_int64)]
+    
+    syntax IntTypeTestMethod ::= "test_int128" "(" Int ":" "int128" ")" [symbol(), klabel(method_IntTypeTest_test_int128_int128)]
+    
+    syntax IntTypeTestMethod ::= "test_int128_fail" "(" Int ":" "int128" ")" [symbol(), klabel(method_IntTypeTest_test_int128_fail_int128)]
+    
+    syntax IntTypeTestMethod ::= "test_int256" "(" Int ":" "int256" ")" [symbol(), klabel(method_IntTypeTest_test_int256_int256)]
+    
+    syntax IntTypeTestMethod ::= "test_int256_fail" "(" Int ":" "int256" ")" [symbol(), klabel(method_IntTypeTest_test_int256_fail_int256)]
+    
+    syntax IntTypeTestMethod ::= "test_int64" "(" Int ":" "int64" ")" [symbol(), klabel(method_IntTypeTest_test_int64_int64)]
+    
+    syntax IntTypeTestMethod ::= "test_int64_fail" "(" Int ":" "int64" ")" [symbol(), klabel(method_IntTypeTest_test_int64_fail_int64)]
+    
+    rule  ( IntTypeTest . testFail_int128 ( V0_x : int128 ) => #abiCallData ( "testFail_int128" , #int128 ( V0_x ) , .TypedArgs ) )
+       ensures #rangeSInt ( 128 , V0_x )
+      
+    
+    rule  ( IntTypeTest . testFail_int256 ( V0_x : int256 ) => #abiCallData ( "testFail_int256" , #int256 ( V0_x ) , .TypedArgs ) )
+       ensures #rangeSInt ( 256 , V0_x )
+      
+    
+    rule  ( IntTypeTest . testFail_int64 ( V0_x : int64 ) => #abiCallData ( "testFail_int64" , #int64 ( V0_x ) , .TypedArgs ) )
+       ensures #rangeSInt ( 64 , V0_x )
+      
+    
+    rule  ( IntTypeTest . test_int128 ( V0_x : int128 ) => #abiCallData ( "test_int128" , #int128 ( V0_x ) , .TypedArgs ) )
+       ensures #rangeSInt ( 128 , V0_x )
+      
+    
+    rule  ( IntTypeTest . test_int128_fail ( V0_x : int128 ) => #abiCallData ( "test_int128_fail" , #int128 ( V0_x ) , .TypedArgs ) )
+       ensures #rangeSInt ( 128 , V0_x )
+      
+    
+    rule  ( IntTypeTest . test_int256 ( V0_x : int256 ) => #abiCallData ( "test_int256" , #int256 ( V0_x ) , .TypedArgs ) )
+       ensures #rangeSInt ( 256 , V0_x )
+      
+    
+    rule  ( IntTypeTest . test_int256_fail ( V0_x : int256 ) => #abiCallData ( "test_int256_fail" , #int256 ( V0_x ) , .TypedArgs ) )
+       ensures #rangeSInt ( 256 , V0_x )
+      
+    
+    rule  ( IntTypeTest . test_int64 ( V0_x : int64 ) => #abiCallData ( "test_int64" , #int64 ( V0_x ) , .TypedArgs ) )
+       ensures #rangeSInt ( 64 , V0_x )
+      
+    
+    rule  ( IntTypeTest . test_int64_fail ( V0_x : int64 ) => #abiCallData ( "test_int64_fail" , #int64 ( V0_x ) , .TypedArgs ) )
+       ensures #rangeSInt ( 64 , V0_x )
+      
+    
+    rule  ( selector ( "testFail_int128(int128)" ) => 1988540889 )
+      
+    
+    rule  ( selector ( "testFail_int256(int256)" ) => 1185096419 )
+      
+    
+    rule  ( selector ( "testFail_int64(int64)" ) => 1750678769 )
+      
+    
+    rule  ( selector ( "test_int128(int128)" ) => 995880333 )
+      
+    
+    rule  ( selector ( "test_int128_fail(int128)" ) => 1240751129 )
+      
+    
+    rule  ( selector ( "test_int256(int256)" ) => 3818914766 )
+      
+    
+    rule  ( selector ( "test_int256_fail(int256)" ) => 1877071906 )
+      
+    
+    rule  ( selector ( "test_int64(int64)" ) => 1792301870 )
+      
+    
+    rule  ( selector ( "test_int64_fail(int64)" ) => 2744099616 )
+      
+
+endmodule
+
 module UINTTYPETEST-CONTRACT
     imports public FOUNDRY
     
