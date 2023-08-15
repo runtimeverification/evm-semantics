@@ -39,7 +39,7 @@ def server(foundry_root: Path, use_booster: bool) -> Iterator[KoreServer]:
     llvm_definition_dir = foundry.out / 'kompiled' / 'llvm-library' if use_booster else None
     kore_rpc_command = ('kore-rpc-booster',) if use_booster else ('kore-rpc',)
 
-    yield kore_server(
+    server = kore_server(
         definition_dir=foundry.kevm.definition_dir,
         llvm_definition_dir=llvm_definition_dir,
         module_name=foundry.kevm.main_module,
@@ -47,6 +47,8 @@ def server(foundry_root: Path, use_booster: bool) -> Iterator[KoreServer]:
         smt_timeout=300,
         smt_retry_limit=10,
     )
+    yield server
+    server.close()
 
 
 @pytest.fixture(scope='session')
