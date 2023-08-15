@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 from pyk.utils import check_dir_path
 
 from kevm_pyk import config
-from kevm_pyk.solc_to_k import solc_to_k
+from kontrol.solc_to_k import solc_to_k
 
 if TYPE_CHECKING:
     from typing import Final
