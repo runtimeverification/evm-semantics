@@ -518,7 +518,6 @@ def foundry_prove(
     break_every_step: bool = False,
     break_on_jumpi: bool = False,
     break_on_calls: bool = True,
-    implication_every_block: bool = True,
     bmc_depth: int | None = None,
     bug_report: bool = False,
     kore_rpc_command: str | Iterable[str] | None = None,
@@ -648,7 +647,6 @@ def foundry_prove(
                 break_every_step=break_every_step,
                 break_on_jumpi=break_on_jumpi,
                 break_on_calls=break_on_calls,
-                implication_every_block=implication_every_block,
             )
             failure_log = None
             if not passed:
