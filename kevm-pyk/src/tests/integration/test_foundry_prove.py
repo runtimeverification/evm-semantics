@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 from filelock import FileLock
+from pyk.kore.rpc import kore_server
 from pyk.utils import run_process
 
 from kontrol.foundry import (
@@ -20,13 +21,31 @@ from kontrol.foundry import (
 from .utils import TEST_DATA_DIR
 
 if TYPE_CHECKING:
+    from collections.abc import Iterator
     from pathlib import Path
     from typing import Final
 
+    from pyk.kore.rpc import KoreServer
     from pytest import TempPathFactory
 
 
 FORGE_STD_REF: Final = '27e14b7'
+
+
+@pytest.fixture(scope='module')
+def server(foundry_root: Path, use_booster: bool) -> Iterator[KoreServer]:
+    foundry = Foundry(foundry_root)
+    llvm_definition_dir = foundry.out / 'kompiled-llvm' if use_booster else None
+    kore_rpc_command = ('kore-rpc-booster',) if use_booster else ('kore-rpc',)
+
+    yield kore_server(
+        definition_dir=foundry.kevm.definition_dir,
+        llvm_definition_dir=llvm_definition_dir,
+        module_name=foundry.kevm.main_module,
+        command=kore_rpc_command,
+        smt_timeout=300,
+        smt_retry_limit=8,
+    )
 
 
 @pytest.fixture(scope='session')
