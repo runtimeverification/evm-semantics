@@ -630,6 +630,7 @@ def foundry_prove(
     trace_rewrites: bool = False,
     auto_abstract_gas: bool = False,
     port: int | None = None,
+    maude_port: int | None = None,
 ) -> dict[tuple[str, str | None], tuple[bool, list[str] | None]]:
     if workers <= 0:
         raise ValueError(f'Must have at least one worker, found: --workers {workers}')
@@ -736,6 +737,7 @@ def foundry_prove(
             trace_rewrites=trace_rewrites,
             start_server=start_server,
             port=port,
+            maude_port=maude_port,
         ) as kcfg_explore:
             proof = _method_to_apr_proof(
                 foundry,
@@ -814,6 +816,7 @@ def foundry_show(
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
     port: int | None = None,
+    maude_port: int | None = None,
 ) -> str:
     contract_name, _ = test.split('.')
     foundry = Foundry(foundry_root)
@@ -858,6 +861,7 @@ def foundry_show(
             smt_retry_limit=smt_retry_limit,
             start_server=start_server,
             port=port,
+            maude_port=maude_port,
         ) as kcfg_explore:
             res_lines += print_failure_info(proof, kcfg_explore, counterexample_info)
             res_lines += Foundry.help_info()
