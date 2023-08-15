@@ -7,7 +7,7 @@ import pytest
 from filelock import FileLock
 from pyk.utils import run_process
 
-from kevm_pyk.foundry import foundry_kompile, foundry_prove, foundry_show
+from kontrol.foundry import foundry_kompile, foundry_prove, foundry_show
 
 from .utils import TEST_DATA_DIR
 

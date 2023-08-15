@@ -93,7 +93,7 @@
               substituteInPlace ./bin/kevm \
                 --replace 'kevm-pyk' '${final.kevm-pyk}/bin/kevm-pyk'
               substituteInPlace ./bin/kevm \
-                --replace 'gst-to-kore' '${final.kevm-pyk}/bin/gst-to-kore'
+                --replace 'kontrol' '${final.kevm-pyk}/bin/kontrol'
             '';
 
             buildFlagsArray = "NIX_LIBS=${nixLibs prev}";
@@ -154,7 +154,7 @@
           projectDir = ./kevm-pyk;
 
           postPatch = ''
-              substituteInPlace ./src/kevm_pyk/foundry.py \
+              substituteInPlace ./src/kontrol/foundry.py \
                 --replace "'forge', 'build'," "'forge', 'build', '--no-auto-detect',"
             '';
 
