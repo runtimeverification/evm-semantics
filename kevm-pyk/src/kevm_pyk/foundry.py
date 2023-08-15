@@ -938,9 +938,6 @@ def _foundry_to_main_def(
     requires: Iterable[str],
     imports: dict[str, list[str]],
 ) -> KDefinition:
-    contract_names = [contract.name for contract in contracts]
-    if len(contract_names) > len(set(contract_names)):
-        raise RuntimeError('Project has more than one dupliacted contact name!')
     modules = [
         contract_to_verification_module(contract, empty_config, imports=imports[contract.name])
         for contract in contracts
