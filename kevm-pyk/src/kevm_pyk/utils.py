@@ -353,15 +353,11 @@ def legacy_explore(
 
 
 def escaped_chars() -> list[str]:
-    return ['_']
-
-
-def escaped_ascii() -> list[str]:
-    return [hex(ord(char)) for char in escaped_chars()]
+    return ['_', 'z']
 
 
 def escape_char(char: str) -> str:
-    return f'{hex(ord(char))}z'
+    return f'z{hex(ord(char)).removeprefix("0x")}'
 
 
 def unescape_seq(seq: str) -> str:
@@ -371,9 +367,6 @@ def unescape_seq(seq: str) -> str:
 def name_escaped(name: str, prefix: str = '') -> str:
     escaped = prefix
     iter_name = iter(name)
-    if len(name) > 0 and not name[0].isupper():
-        escaped += escape_char(name[0])
-        next(iter_name)
     for char in iter_name:
         if char in escaped_chars():
             escaped += escape_char(char)
@@ -390,21 +383,20 @@ def name_unescaped(name: str, prefix: str = '') -> str:
     unes_iter = iter(unescaped[:-1])
     skipped = 0
     for i, char in enumerate(unes_iter):
-        next_char = unescaped[i + 1]
-        if char == '0' and next_char == 'x':
-            if unescaped[i + 3] == 'z':
-                up = i + 3
-            elif unescaped[i + 4] == 'z':
-                up = i + 4
-            else:
-                raise RuntimeError('"0x" should end with "z"')
-            res += unescape_seq(unescaped[i:up])
-            for _ in range(up - i):
-                next(unes_iter)
-                skipped += 1
+        j = i + skipped
+        next_char = unescaped[j + 1]
+        if char == 'z':
+            res += unescape_seq(unescaped[(j + 1):(j + 3)])
+            for _ in range(2):
+                try:
+                    next(unes_iter)
+                    skipped += 1
+                except StopIteration:
+                    # if we reached the end, write the last char and return
+                    break
         else:
             res += char
         # write last char
-        if skipped + i + 2 == len(unescaped):
+        if j + 2 == len(unescaped):
             res += next_char
     return res
