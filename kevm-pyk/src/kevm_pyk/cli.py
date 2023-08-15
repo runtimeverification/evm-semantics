@@ -219,19 +219,6 @@ class KEVMCLIArgs(KCLIArgs):
             help='Do not store a node for every EVM call made.',
         )
         args.add_argument(
-            '--implication-every-block',
-            dest='implication_every_block',
-            default=True,
-            action='store_true',
-            help='Check subsumption into target state every basic block, not just at terminal nodes.',
-        )
-        args.add_argument(
-            '--no-implication-every-block',
-            dest='implication_every_block',
-            action='store_false',
-            help='Do not check subsumption into target state every basic block, not just at terminal nodes.',
-        )
-        args.add_argument(
             '--simplify-init',
             dest='simplify_init',
             default=True,
