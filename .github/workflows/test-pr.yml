@@ -58,8 +58,12 @@ jobs:
           submodules: true
       - name: 'Install Poetry'
         uses: Gr1N/setup-poetry@v8
+      - name: 'Build kevm'
+        run: make build-kevm -j8
       - name: 'Run unit tests'
-        run: make -C kevm-pyk cov-unit
+        run: |
+          export PATH=$(pwd)/.build/usr/bin:${PATH}
+          make -C kevm-pyk cov-unit
 
   kevm-pyk-profile:
     needs: kevm-pyk-code-quality-checks
