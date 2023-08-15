@@ -8,7 +8,8 @@ from functools import cached_property
 from subprocess import CalledProcessError
 from typing import TYPE_CHECKING
 
-from pyk.kast.inner import KApply, KAtt, KLabel, KRewrite, KSort, KVariable
+from pyk.kast.inner import KApply, KLabel, KRewrite, KSort, KVariable
+from pyk.kast.kast import KAtt
 from pyk.kast.manip import abstract_term_safely
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KNonTerminal, KProduction, KRequire, KRule, KTerminal
 from pyk.prelude.kbool import TRUE, andBool
@@ -440,6 +441,10 @@ class Contract:
     @property
     def method_by_name(self) -> dict[str, Contract.Method]:
         return {method.name: method for method in self.methods}
+
+    @property
+    def method_by_sig(self) -> dict[str, Contract.Method]:
+        return {method.signature: method for method in self.methods}
 
 
 def solc_compile(contract_file: Path) -> dict[str, Any]:

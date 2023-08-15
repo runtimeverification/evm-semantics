@@ -112,6 +112,7 @@ def exec_kompile(
     debug: bool = False,
     enable_llvm_debug: bool = False,
     llvm_library: bool = False,
+    verbose: bool = False,
     **kwargs: Any,
 ) -> None:
     optimization = 0
@@ -136,6 +137,7 @@ def exec_kompile(
         enable_llvm_debug=enable_llvm_debug,
         llvm_kompile_type=LLVMKompileType.C if llvm_library else LLVMKompileType.MAIN,
         debug=debug,
+        verbose=verbose,
     )
 
 
@@ -171,6 +173,7 @@ def exec_foundry_kompile(
     llvm_kompile: bool = True,
     debug: bool = False,
     llvm_library: bool = False,
+    verbose: bool = False,
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'main_module', f'--main-module {kwargs["main_module"]}')
@@ -192,6 +195,7 @@ def exec_foundry_kompile(
         llvm_kompile=llvm_kompile,
         debug=debug,
         llvm_library=llvm_library,
+        verbose=verbose,
     )
 
 
@@ -250,7 +254,6 @@ def exec_prove(
     break_every_step: bool = False,
     break_on_jumpi: bool = False,
     break_on_calls: bool = True,
-    implication_every_block: bool = True,
     kore_rpc_command: str | Iterable[str] = ('kore-rpc',),
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
@@ -357,7 +360,6 @@ def exec_prove(
                 break_every_step=break_every_step,
                 break_on_jumpi=break_on_jumpi,
                 break_on_calls=break_on_calls,
-                implication_every_block=implication_every_block,
             )
             failure_log = None
             if not passed:
@@ -524,7 +526,6 @@ def exec_foundry_prove(
     break_every_step: bool = False,
     break_on_jumpi: bool = False,
     break_on_calls: bool = True,
-    implication_every_block: bool = True,
     bmc_depth: int | None = None,
     bug_report: bool = False,
     kore_rpc_command: str | Iterable[str] | None = None,
@@ -557,7 +558,6 @@ def exec_foundry_prove(
         break_every_step=break_every_step,
         break_on_jumpi=break_on_jumpi,
         break_on_calls=break_on_calls,
-        implication_every_block=implication_every_block,
         bmc_depth=bmc_depth,
         bug_report=bug_report,
         kore_rpc_command=kore_rpc_command,
