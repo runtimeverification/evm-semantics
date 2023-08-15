@@ -523,7 +523,7 @@ def _evm_base_sort_int(type_label: str) -> bool:
     # Check bytes
     if type_label.startswith('bytes') and len(type_label) > 5 and not type_label.endswith(']'):
         width = int(type_label[5:])
-        if not width in {4, 32}:
+        if not (0 < width <= 32):
             raise ValueError(f'Unsupported evm base sort type: {type_label}')
         else:
             success = True
@@ -531,7 +531,7 @@ def _evm_base_sort_int(type_label: str) -> bool:
     # Check ints
     if type_label.startswith('int') and not type_label.endswith(']'):
         width = int(type_label[3:])
-        if not width == 256:
+        if not (0 < width and width <= 256 and width % 8 == 0):
             raise ValueError(f'Unsupported evm base sort type: {type_label}')
         else:
             success = True
