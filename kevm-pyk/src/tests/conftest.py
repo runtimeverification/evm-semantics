@@ -28,6 +28,6 @@ def update_expected_output(request: FixtureRequest) -> bool:
     return request.config.getoption('--update-expected-output')
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope='session')
 def use_booster(request: FixtureRequest) -> bool:
     return request.config.getoption('--use-booster')
