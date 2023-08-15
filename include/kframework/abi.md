@@ -64,8 +64,38 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
                       | #uint24  ( Int )                        [klabel(abi_type_uint24),  symbol]
                       | #uint16  ( Int )                        [klabel(abi_type_uint16),  symbol]
                       | #uint8   ( Int )                        [klabel(abi_type_uint8),   symbol]
-                      | #int256  ( Int )                        [klabel(abi_type_int256),  symbol]
-                      | #int128  ( Int )                        [klabel(abi_type_int128),  symbol]
+                      | #int256 ( Int )                        [klabel(abi_type_int256), symbol]
+                      | #int248 ( Int )                        [klabel(abi_type_int248), symbol]
+                      | #int240 ( Int )                        [klabel(abi_type_int240), symbol]
+                      | #int232 ( Int )                        [klabel(abi_type_int232), symbol]
+                      | #int224 ( Int )                        [klabel(abi_type_int224), symbol]
+                      | #int216 ( Int )                        [klabel(abi_type_int216), symbol]
+                      | #int208 ( Int )                        [klabel(abi_type_int208), symbol]
+                      | #int200 ( Int )                        [klabel(abi_type_int200), symbol]
+                      | #int192 ( Int )                        [klabel(abi_type_int192), symbol]
+                      | #int184 ( Int )                        [klabel(abi_type_int184), symbol]
+                      | #int176 ( Int )                        [klabel(abi_type_int176), symbol]
+                      | #int168 ( Int )                        [klabel(abi_type_int168), symbol]
+                      | #int160 ( Int )                        [klabel(abi_type_int160), symbol]
+                      | #int152 ( Int )                        [klabel(abi_type_int152), symbol]
+                      | #int144 ( Int )                        [klabel(abi_type_int144), symbol]
+                      | #int136 ( Int )                        [klabel(abi_type_int136), symbol]
+                      | #int128 ( Int )                        [klabel(abi_type_int128), symbol]
+                      | #int120 ( Int )                        [klabel(abi_type_int120), symbol]
+                      | #int112 ( Int )                        [klabel(abi_type_int112), symbol]
+                      | #int104 ( Int )                        [klabel(abi_type_int104), symbol]
+                      | #int96  ( Int )                        [klabel(abi_type_int96),  symbol]
+                      | #int88  ( Int )                        [klabel(abi_type_int88),  symbol]
+                      | #int80  ( Int )                        [klabel(abi_type_int80),  symbol]
+                      | #int72  ( Int )                        [klabel(abi_type_int72),  symbol]
+                      | #int64  ( Int )                        [klabel(abi_type_int64),  symbol]
+                      | #int56  ( Int )                        [klabel(abi_type_int56),  symbol]
+                      | #int48  ( Int )                        [klabel(abi_type_int48),  symbol]
+                      | #int40  ( Int )                        [klabel(abi_type_int40),  symbol]
+                      | #int32  ( Int )                        [klabel(abi_type_int32),  symbol]
+                      | #int24  ( Int )                        [klabel(abi_type_int24),  symbol]
+                      | #int16  ( Int )                        [klabel(abi_type_int16),  symbol]
+                      | #int8   ( Int )                        [klabel(abi_type_int8),   symbol]
                       | #bytes4  ( Int )                        [klabel(abi_type_bytes4),  symbol]
                       | #bytes32 ( Int )                        [klabel(abi_type_bytes32), symbol]
                       | #bool    ( Int )                        [klabel(abi_type_bool),    symbol]
@@ -131,8 +161,38 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #typeName(    #uint16( _ )) => "uint16"
     rule #typeName(     #uint8( _ )) => "uint8"
 
-    rule #typeName(    #int256( _ )) => "int256"
-    rule #typeName(    #int128( _ )) => "int128"
+    rule #typeName(   #int256( _ )) => "int256"
+    rule #typeName(   #int248( _ )) => "int248"
+    rule #typeName(   #int240( _ )) => "int240"
+    rule #typeName(   #int232( _ )) => "int232"
+    rule #typeName(   #int224( _ )) => "int224"
+    rule #typeName(   #int216( _ )) => "int216"
+    rule #typeName(   #int208( _ )) => "int208"
+    rule #typeName(   #int200( _ )) => "int200"
+    rule #typeName(   #int192( _ )) => "int192"
+    rule #typeName(   #int184( _ )) => "int184"
+    rule #typeName(   #int176( _ )) => "int176"
+    rule #typeName(   #int168( _ )) => "int168"
+    rule #typeName(   #int160( _ )) => "int160"
+    rule #typeName(   #int152( _ )) => "int152"
+    rule #typeName(   #int144( _ )) => "int144"
+    rule #typeName(   #int136( _ )) => "int136"
+    rule #typeName(   #int128( _ )) => "int128"
+    rule #typeName(   #int120( _ )) => "int120"
+    rule #typeName(   #int112( _ )) => "int112"
+    rule #typeName(   #int104( _ )) => "int104"
+    rule #typeName(    #int96( _ )) => "int96"
+    rule #typeName(    #int88( _ )) => "int88"
+    rule #typeName(    #int80( _ )) => "int80"
+    rule #typeName(    #int72( _ )) => "int72"
+    rule #typeName(    #int64( _ )) => "int64"
+    rule #typeName(    #int56( _ )) => "int56"
+    rule #typeName(    #int48( _ )) => "int48"
+    rule #typeName(    #int40( _ )) => "int40"
+    rule #typeName(    #int32( _ )) => "int32"
+    rule #typeName(    #int24( _ )) => "int24"
+    rule #typeName(    #int16( _ )) => "int16"
+    rule #typeName(     #int8( _ )) => "int8"
 
     rule #typeName(    #bytes4( _ )) => "bytes4"
     rule #typeName(   #bytes32( _ )) => "bytes32"
@@ -202,8 +262,38 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #lenOfHead(   #uint16( _ )) => 32
     rule #lenOfHead(    #uint8( _ )) => 32
 
-    rule #lenOfHead(   #int256( _ )) => 32
-    rule #lenOfHead(   #int128( _ )) => 32
+    rule #lenOfHead(  #int256( _ )) => 32
+    rule #lenOfHead(  #int248( _ )) => 32
+    rule #lenOfHead(  #int240( _ )) => 32
+    rule #lenOfHead(  #int232( _ )) => 32
+    rule #lenOfHead(  #int224( _ )) => 32
+    rule #lenOfHead(  #int216( _ )) => 32
+    rule #lenOfHead(  #int208( _ )) => 32
+    rule #lenOfHead(  #int200( _ )) => 32
+    rule #lenOfHead(  #int192( _ )) => 32
+    rule #lenOfHead(  #int184( _ )) => 32
+    rule #lenOfHead(  #int176( _ )) => 32
+    rule #lenOfHead(  #int168( _ )) => 32
+    rule #lenOfHead(  #int160( _ )) => 32
+    rule #lenOfHead(  #int152( _ )) => 32
+    rule #lenOfHead(  #int144( _ )) => 32
+    rule #lenOfHead(  #int136( _ )) => 32
+    rule #lenOfHead(  #int128( _ )) => 32
+    rule #lenOfHead(  #int120( _ )) => 32
+    rule #lenOfHead(  #int112( _ )) => 32
+    rule #lenOfHead(  #int104( _ )) => 32
+    rule #lenOfHead(   #int96( _ )) => 32
+    rule #lenOfHead(   #int88( _ )) => 32
+    rule #lenOfHead(   #int80( _ )) => 32
+    rule #lenOfHead(   #int72( _ )) => 32
+    rule #lenOfHead(   #int64( _ )) => 32
+    rule #lenOfHead(   #int56( _ )) => 32
+    rule #lenOfHead(   #int48( _ )) => 32
+    rule #lenOfHead(   #int40( _ )) => 32
+    rule #lenOfHead(   #int32( _ )) => 32
+    rule #lenOfHead(   #int24( _ )) => 32
+    rule #lenOfHead(   #int16( _ )) => 32
+    rule #lenOfHead(    #int8( _ )) => 32
 
     rule #lenOfHead(   #bytes4( _ )) => 32
     rule #lenOfHead(  #bytes32( _ )) => 32
@@ -253,8 +343,38 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #isStaticType(   #uint16( _ )) => true
     rule #isStaticType(    #uint8( _ )) => true
 
-    rule #isStaticType(   #int256( _ )) => true
-    rule #isStaticType(   #int128( _ )) => true
+    rule #isStaticType(  #uint256( _ )) => true
+    rule #isStaticType(  #uint248( _ )) => true
+    rule #isStaticType(  #uint240( _ )) => true
+    rule #isStaticType(  #uint232( _ )) => true
+    rule #isStaticType(  #uint224( _ )) => true
+    rule #isStaticType(  #uint216( _ )) => true
+    rule #isStaticType(  #uint208( _ )) => true
+    rule #isStaticType(  #uint200( _ )) => true
+    rule #isStaticType(  #uint192( _ )) => true
+    rule #isStaticType(  #uint184( _ )) => true
+    rule #isStaticType(  #uint176( _ )) => true
+    rule #isStaticType(  #uint168( _ )) => true
+    rule #isStaticType(  #uint160( _ )) => true
+    rule #isStaticType(  #uint152( _ )) => true
+    rule #isStaticType(  #uint144( _ )) => true
+    rule #isStaticType(  #uint136( _ )) => true
+    rule #isStaticType(  #uint128( _ )) => true
+    rule #isStaticType(  #uint120( _ )) => true
+    rule #isStaticType(  #uint112( _ )) => true
+    rule #isStaticType(  #uint104( _ )) => true
+    rule #isStaticType(   #uint96( _ )) => true
+    rule #isStaticType(   #uint88( _ )) => true
+    rule #isStaticType(   #uint80( _ )) => true
+    rule #isStaticType(   #uint72( _ )) => true
+    rule #isStaticType(   #uint64( _ )) => true
+    rule #isStaticType(   #uint56( _ )) => true
+    rule #isStaticType(   #uint48( _ )) => true
+    rule #isStaticType(   #uint40( _ )) => true
+    rule #isStaticType(   #uint32( _ )) => true
+    rule #isStaticType(   #uint24( _ )) => true
+    rule #isStaticType(   #uint16( _ )) => true
+    rule #isStaticType(    #uint8( _ )) => true
 
     rule #isStaticType(   #bytes4( _ )) => true
     rule #isStaticType(  #bytes32( _ )) => true
@@ -322,8 +442,38 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #enc( #uint16( DATA )) => #bufStrict(32, #getValue( #uint16( DATA )))
     rule #enc(  #uint8( DATA )) => #bufStrict(32, #getValue(  #uint8( DATA )))
 
-    rule #enc( #int256( DATA )) => #bufStrict(32, #getValue( #int256( DATA )))
-    rule #enc( #int128( DATA )) => #bufStrict(32, #getValue( #int128( DATA )))
+    rule #enc(#int256( DATA )) => #bufStrict(32, #getValue(#int256( DATA )))
+    rule #enc(#int248( DATA )) => #bufStrict(32, #getValue(#int248( DATA )))
+    rule #enc(#int240( DATA )) => #bufStrict(32, #getValue(#int240( DATA )))
+    rule #enc(#int232( DATA )) => #bufStrict(32, #getValue(#int232( DATA )))
+    rule #enc(#int224( DATA )) => #bufStrict(32, #getValue(#int224( DATA )))
+    rule #enc(#int216( DATA )) => #bufStrict(32, #getValue(#int216( DATA )))
+    rule #enc(#int208( DATA )) => #bufStrict(32, #getValue(#int208( DATA )))
+    rule #enc(#int200( DATA )) => #bufStrict(32, #getValue(#int200( DATA )))
+    rule #enc(#int192( DATA )) => #bufStrict(32, #getValue(#int192( DATA )))
+    rule #enc(#int184( DATA )) => #bufStrict(32, #getValue(#int184( DATA )))
+    rule #enc(#int176( DATA )) => #bufStrict(32, #getValue(#int176( DATA )))
+    rule #enc(#int168( DATA )) => #bufStrict(32, #getValue(#int168( DATA )))
+    rule #enc(#int160( DATA )) => #bufStrict(32, #getValue(#int160( DATA )))
+    rule #enc(#int152( DATA )) => #bufStrict(32, #getValue(#int152( DATA )))
+    rule #enc(#int144( DATA )) => #bufStrict(32, #getValue(#int144( DATA )))
+    rule #enc(#int136( DATA )) => #bufStrict(32, #getValue(#int136( DATA )))
+    rule #enc(#int128( DATA )) => #bufStrict(32, #getValue(#int128( DATA )))
+    rule #enc(#int120( DATA )) => #bufStrict(32, #getValue(#int120( DATA )))
+    rule #enc(#int112( DATA )) => #bufStrict(32, #getValue(#int112( DATA )))
+    rule #enc(#int104( DATA )) => #bufStrict(32, #getValue(#int104( DATA )))
+    rule #enc( #int96( DATA )) => #bufStrict(32, #getValue( #int96( DATA )))
+    rule #enc( #int88( DATA )) => #bufStrict(32, #getValue( #int88( DATA )))
+    rule #enc( #int80( DATA )) => #bufStrict(32, #getValue( #int80( DATA )))
+    rule #enc( #int72( DATA )) => #bufStrict(32, #getValue( #int72( DATA )))
+    rule #enc( #int64( DATA )) => #bufStrict(32, #getValue( #int64( DATA )))
+    rule #enc( #int56( DATA )) => #bufStrict(32, #getValue( #int56( DATA )))
+    rule #enc( #int48( DATA )) => #bufStrict(32, #getValue( #int48( DATA )))
+    rule #enc( #int40( DATA )) => #bufStrict(32, #getValue( #int40( DATA )))
+    rule #enc( #int32( DATA )) => #bufStrict(32, #getValue( #int32( DATA )))
+    rule #enc( #int24( DATA )) => #bufStrict(32, #getValue( #int24( DATA )))
+    rule #enc( #int16( DATA )) => #bufStrict(32, #getValue( #int16( DATA )))
+    rule #enc(  #int8( DATA )) => #bufStrict(32, #getValue(  #int8( DATA )))
 
     rule #enc( #bytes4( DATA )) => #padRightToWidth(32, #bufStrict(4, #getValue(#bytes4( DATA ))))
     rule #enc(#bytes32( DATA )) => #bufStrict(32, #getValue(#bytes32( DATA )))
@@ -380,8 +530,38 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #getValue(#uint248( X )) => X       requires #rangeUInt(248, X)
     rule #getValue(#uint256( X )) => X       requires #rangeUInt(256, X)
 
-    rule #getValue( #int128( X )) => chop(X) requires #rangeSInt(128, X)
-    rule #getValue( #int256( X )) => chop(X) requires #rangeSInt(256, X)
+    rule #getValue(  #int8( X )) => X       requires #rangeSInt(8,   X)
+    rule #getValue( #int16( X )) => X       requires #rangeSInt(16,  X)
+    rule #getValue( #int24( X )) => X       requires #rangeSInt(24,  X)
+    rule #getValue( #int32( X )) => X       requires #rangeSInt(32,  X)
+    rule #getValue( #int40( X )) => X       requires #rangeSInt(40,  X)
+    rule #getValue( #int48( X )) => X       requires #rangeSInt(48,  X)
+    rule #getValue( #int56( X )) => X       requires #rangeSInt(56,  X)
+    rule #getValue( #int64( X )) => X       requires #rangeSInt(64,  X)
+    rule #getValue( #int72( X )) => X       requires #rangeSInt(72,  X)
+    rule #getValue( #int80( X )) => X       requires #rangeSInt(80,  X)
+    rule #getValue( #int88( X )) => X       requires #rangeSInt(88,  X)
+    rule #getValue( #int96( X )) => X       requires #rangeSInt(96,  X)
+    rule #getValue(#int104( X )) => X       requires #rangeSInt(104, X)
+    rule #getValue(#int112( X )) => X       requires #rangeSInt(112, X)
+    rule #getValue(#int120( X )) => X       requires #rangeSInt(120, X)
+    rule #getValue(#int128( X )) => X       requires #rangeSInt(128, X)
+    rule #getValue(#int136( X )) => X       requires #rangeSInt(136, X)
+    rule #getValue(#int144( X )) => X       requires #rangeSInt(144, X)
+    rule #getValue(#int152( X )) => X       requires #rangeSInt(152, X)
+    rule #getValue(#int160( X )) => X       requires #rangeSInt(160, X)
+    rule #getValue(#int168( X )) => X       requires #rangeSInt(168, X)
+    rule #getValue(#int176( X )) => X       requires #rangeSInt(176, X)
+    rule #getValue(#int184( X )) => X       requires #rangeSInt(184, X)
+    rule #getValue(#int192( X )) => X       requires #rangeSInt(192, X)
+    rule #getValue(#int200( X )) => X       requires #rangeSInt(200, X)
+    rule #getValue(#int208( X )) => X       requires #rangeSInt(208, X)
+    rule #getValue(#int216( X )) => X       requires #rangeSInt(216, X)
+    rule #getValue(#int224( X )) => X       requires #rangeSInt(224, X)
+    rule #getValue(#int232( X )) => X       requires #rangeSInt(232, X)
+    rule #getValue(#int240( X )) => X       requires #rangeSInt(240, X)
+    rule #getValue(#int248( X )) => X       requires #rangeSInt(248, X)
+    rule #getValue(#int256( X )) => X       requires #rangeSInt(256, X)
 
     rule #getValue( #bytes4( X )) => X       requires #rangeUInt(32,  X)
     rule #getValue(#bytes32( X )) => X       requires #rangeUInt(256, X)
