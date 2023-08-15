@@ -382,7 +382,7 @@ def _create_argument_parser() -> ArgumentParser:
 
     command_parser = parser.add_subparsers(dest='command', required=True)
 
-    _ = command_parser.add_parser('version', help='Print out version of Kontrol command.')
+    command_parser.add_parser('version', help='Print out version of Kontrol command.')
 
     solc_args = command_parser.add_parser('compile', help='Generate combined JSON with solc compilation results.')
     solc_args.add_argument('contract_file', type=file_path, help='Path to contract file.')

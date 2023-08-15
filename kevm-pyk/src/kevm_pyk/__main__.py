@@ -542,7 +542,7 @@ def _create_argument_parser() -> ArgumentParser:
 
     command_parser = parser.add_subparsers(dest='command', required=True)
 
-    _ = command_parser.add_parser('version', help='Print KEVM version and exit.', parents=[kevm_cli_args.logging_args])
+    command_parser.add_parser('version', help='Print KEVM version and exit.', parents=[kevm_cli_args.logging_args])
 
     kevm_kompile_args = command_parser.add_parser(
         'kompile',
@@ -590,7 +590,7 @@ def _create_argument_parser() -> ArgumentParser:
     )
     prune_proof_args.add_argument('node', type=node_id_like, help='Node to remove CFG subgraph from.')
 
-    _ = command_parser.add_parser(
+    command_parser.add_parser(
         'prove-legacy',
         help='Run KEVM proof using the legacy kprove binary.',
         parents=[
@@ -601,13 +601,13 @@ def _create_argument_parser() -> ArgumentParser:
         ],
     )
 
-    _ = command_parser.add_parser(
+    command_parser.add_parser(
         'view-kcfg',
         help='Display tree view of CFG',
         parents=[kevm_cli_args.logging_args, kevm_cli_args.k_args, kevm_cli_args.spec_args],
     )
 
-    _ = command_parser.add_parser(
+    command_parser.add_parser(
         'show-kcfg',
         help='Display tree show of CFG',
         parents=[
