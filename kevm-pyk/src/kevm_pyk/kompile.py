@@ -7,7 +7,7 @@ from enum import Enum
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from pyk.ktool.kompile import HaskellKompile, KompileArgs, LLVMKompile, LLVMKompileType
+from pyk.ktool.kompile import HaskellKompile, KompileArgs, LLVMKompile, LLVMKompileType, MaudeKompile
 from pyk.utils import run_process
 
 from . import config
@@ -32,6 +32,7 @@ class KompileTarget(Enum):
     HASKELL_STANDALONE = 'haskell-standalone'
     NODE = 'node'
     FOUNDRY = 'foundry'
+    MAUDE = 'maude'
 
     @property
     def definition_dir(self) -> Path:
@@ -46,6 +47,8 @@ class KompileTarget(Enum):
                 return config.HASKELL_STANDALONE_DIR
             case self.FOUNDRY:
                 return config.FOUNDRY_DIR
+            case self.MAUDE:
+                return config.MAUDE_DIR
             case _:
                 raise AssertionError()
 
@@ -57,6 +60,8 @@ class KompileTarget(Enum):
             case self.NODE:
                 return 'k & ! symbolic & ! standalone'
             case self.HASKELL | self.HASKELL_STANDALONE | self.HASKELL_BOOSTER | self.FOUNDRY:
+                return 'k & ! node & ! concrete'
+            case self.MAUDE:
                 return 'k & ! node & ! concrete'
             case _:
                 raise AssertionError()
@@ -126,6 +131,11 @@ def kevm_kompile(
                 )
                 return kompile(output_dir=output_dir or target.definition_dir, debug=debug, verbose=verbose)
 
+            case KompileBackend.MAUDE:
+                kompile = MaudeKompile(
+                    base_args=base_args,
+                )
+                return kompile(output_dir=output_dir or target.definition_dir, debug=debug, verbose=verbose)
             case KompileTarget.HASKELL_BOOSTER:
                 ccopts = list(ccopts) + _lib_ccopts(kernel)
                 base_args_llvm = KompileArgs(
