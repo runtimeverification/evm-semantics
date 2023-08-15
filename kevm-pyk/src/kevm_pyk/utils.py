@@ -18,7 +18,7 @@ from pyk.kast.manip import (
 )
 from pyk.kast.outer import KSequence
 from pyk.kcfg import KCFGExplore
-from pyk.kore.rpc import KoreClient, KoreExecLogFormat, kore_server
+from pyk.kore.rpc import KoreClient, KoreExecLogFormat, TransportType, kore_server
 from pyk.proof import APRBMCProof, APRBMCProver, APRProof, APRProver
 from pyk.proof.equality import EqualityProof, EqualityProver
 from pyk.utils import single
@@ -313,6 +313,7 @@ def legacy_explore(
     log_axioms_file: Path | None = None,
     trace_rewrites: bool = False,
     start_server: bool = True,
+    maude_port: int | None = None,
 ) -> Iterator[KCFGExplore]:
     if start_server:
         # Old way of handling KCFGExplore, to be removed
@@ -340,7 +341,11 @@ def legacy_explore(
     else:
         if port is None:
             raise ValueError('Missing port with start_server=False')
-        with KoreClient('localhost', port, bug_report=bug_report) as client:
+        if maude_port is None:
+            dispatch = None
+        else:
+            dispatch = {'execute': ('localhost', maude_port, TransportType.HTTP)}
+        with KoreClient('localhost', port, bug_report=bug_report, dispatch=dispatch) as client:
             yield KCFGExplore(
                 kprint=kprint,
                 kore_client=client,
