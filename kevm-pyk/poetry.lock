@@ -236,13 +236,13 @@ graph = ["objgraph (>=1.7.2)"]
 
 [[package]]
 name = "exceptiongroup"
-version = "1.1.2"
+version = "1.1.3"
 description = "Backport of PEP 654 (exception groups)"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "exceptiongroup-1.1.2-py3-none-any.whl", hash = "sha256:e346e69d186172ca7cf029c8c1d16235aa0e04035e5750b4b95039e65204328f"},
-    {file = "exceptiongroup-1.1.2.tar.gz", hash = "sha256:12c3e887d6485d16943a309616de20ae5582633e0a2eda17f4e10fd61c1e8af5"},
+    {file = "exceptiongroup-1.1.3-py3-none-any.whl", hash = "sha256:343280667a4585d195ca1cf9cef84a4e178c4b6cf2274caef9859782b567d5e3"},
+    {file = "exceptiongroup-1.1.3.tar.gz", hash = "sha256:097acd85d473d75af5bb98e41b61ff7fe35efe6675e4f9370ec6ec5126d160e9"},
 ]
 
 [package.extras]
@@ -783,7 +783,7 @@ plugins = ["importlib-metadata"]
 
 [[package]]
 name = "pyk"
-version = "0.1.401"
+version = "0.1.413"
 description = ""
 optional = false
 python-versions = "^3.10"
@@ -803,8 +803,8 @@ tomli = "^2.0.1"
 [package.source]
 type = "git"
 url = "https://github.com/runtimeverification/pyk.git"
-reference = "v0.1.401"
-resolved_reference = "12a1f1f152d02934363793146aa8e5e905a931f1"
+reference = "v0.1.413"
+resolved_reference = "fd06d71322d85f41ecb652a3ac33d438c1bf0e4d"
 
 [[package]]
 name = "pyperclip"
@@ -1043,4 +1043,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "9e7f2b4fea98054e5b04dd27ab3dca93ac15b7d713d1f1542ac9a44847bb6283"
+content-hash = "706bd7a7f0c3092af9c8e02107eb92c6012fb2f81be0a9cc2639bd8d9d0082f3"
