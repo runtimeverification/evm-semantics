@@ -149,6 +149,11 @@ jobs:
     runs-on: [self-hosted, linux, normal]
     timeout-minutes: 150
     steps:
+      - name: Workflow Telemetry
+        uses: runforesight/workflow-telemetry-action@v1.8.0
+        with:
+          theme: 'light'
+          comment_on_pr: true
       - name: 'Check out code'
         uses: actions/checkout@v3
         with:
@@ -174,6 +179,11 @@ jobs:
     runs-on: [self-hosted, linux, huge]
     timeout-minutes: 180
     steps:
+      - name: Workflow Telemetry
+        uses: runforesight/workflow-telemetry-action@v1.8.0
+        with:
+          theme: 'light'
+          comment_on_pr: true
       - name: 'Check out code'
         uses: actions/checkout@v3
         with:
