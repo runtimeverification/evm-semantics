@@ -1000,7 +1000,7 @@ def _create_argument_parser() -> ArgumentParser:
         dest='bmc_depth',
         default=None,
         type=int,
-        help='Max depth of loop unrolling during bounded model checking.',
+        help='Enables bounded model checking. Specifies the maximum depth to unroll all loops to.',
     )
     foundry_prove_args.add_argument(
         '--use-booster',

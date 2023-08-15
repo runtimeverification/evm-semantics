@@ -1038,7 +1038,14 @@ def _method_to_cfg(
 def get_final_accounts_cell(proof_digest: str, proof_dir: Path) -> tuple[KInner, Iterable[KInner]]:
     apr_proof = APRProof.read_proof_data(proof_dir, proof_digest)
     target = apr_proof.kcfg.node(apr_proof.target)
-    cterm = single(apr_proof.kcfg.covers(target_id=target.id)).source.cterm
+    target_states = apr_proof.kcfg.covers(target_id=target.id)
+    if len(target_states) == 0:
+        raise ValueError(
+            f'setUp() function for {apr_proof.id} did not reach the end of execution. Maybe --max-iterations is too low?'
+        )
+    if len(target_states) > 1:
+        raise ValueError(f'setUp() function for {apr_proof.id} branched and has {len(target_states)} target states.')
+    cterm = single(target_states).source.cterm
     acct_cell = cterm.cell('ACCOUNTS_CELL')
     fvars = free_vars(acct_cell)
     acct_cons = constraints_for(fvars, cterm.constraints)
