@@ -684,7 +684,7 @@ def exec_run(
     except json.JSONDecodeError:
         pgm_token = KToken(input_file.read_text(), KSort('EthereumSimulation'))
         kast_pgm = kevm.parse_token(pgm_token)
-        kore_pgm = kevm.kast_to_kore(kast_pgm)
+        kore_pgm = kevm.kast_to_kore(kast_pgm, sort=KSort('EthereumSimulation'))
         kore_pattern = kore_pgm_to_kore(kore_pgm, schedule, mode, chainid)
 
     kevm.run_kore(
