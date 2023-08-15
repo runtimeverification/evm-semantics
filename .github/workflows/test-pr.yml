@@ -125,7 +125,7 @@ jobs:
   test-prove-haskell:
     name: 'Build and Test KEVM haskell proofs'
     needs: kevm-pyk-code-quality-checks
-    runs-on: [self-hosted, linux, huge]
+    runs-on: [self-hosted, linux, normal]
     timeout-minutes: 120
     steps:
       - name: 'Check out code'
