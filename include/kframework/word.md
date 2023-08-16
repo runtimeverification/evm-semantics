@@ -92,10 +92,70 @@ Maximums and minimums
 The maximum and minimum values of each type are defined below.
 
 ```k
-    syntax Int ::= "minSInt128"      [alias]
+    syntax Int ::= "minSInt8"        [macro]
+                 | "maxSInt8"        [alias]
+                 | "minSInt16"       [macro]
+                 | "maxSInt16"       [alias]
+                 | "minSInt24"       [macro]
+                 | "maxSInt24"       [alias]
+                 | "minSInt32"       [macro]
+                 | "maxSInt32"       [alias]
+                 | "minSInt40"       [macro]
+                 | "maxSInt40"       [alias]
+                 | "minSInt48"       [macro]
+                 | "maxSInt48"       [alias]
+                 | "minSInt56"       [macro]
+                 | "maxSInt56"       [alias]
+                 | "minSInt64"       [macro]
+                 | "maxSInt64"       [alias]
+                 | "minSInt72"       [macro]
+                 | "maxSInt72"       [alias]
+                 | "minSInt80"       [macro]
+                 | "maxSInt80"       [alias]
+                 | "minSInt88"       [macro]
+                 | "maxSInt88"       [alias]
+                 | "minSInt96"       [macro]
+                 | "maxSInt96"       [alias]
+                 | "minSInt104"      [macro]
+                 | "maxSInt104"      [alias]
+                 | "minSInt112"      [macro]
+                 | "maxSInt112"      [alias]
+                 | "minSInt120"      [macro]
+                 | "maxSInt120"      [alias]
+                 | "minSInt128"      [macro]
                  | "minSInt128Word"  [alias]
                  | "maxSInt128"      [alias]
-                 | "minSInt256"      [alias]
+                 | "minSInt136"      [macro]
+                 | "maxSInt136"      [alias]
+                 | "minSInt144"      [macro]
+                 | "maxSInt144"      [alias]
+                 | "minSInt152"      [macro]
+                 | "maxSInt152"      [alias]
+                 | "minSInt160"      [macro]
+                 | "maxSInt160"      [alias]
+                 | "minSInt168"      [macro]
+                 | "maxSInt168"      [alias]
+                 | "minSInt176"      [macro]
+                 | "maxSInt176"      [alias]
+                 | "minSInt184"      [macro]
+                 | "maxSInt184"      [alias]
+                 | "minSInt192"      [macro]
+                 | "maxSInt192"      [alias]
+                 | "minSInt200"      [macro]
+                 | "maxSInt200"      [alias]
+                 | "minSInt208"      [macro]
+                 | "maxSInt208"      [alias]
+                 | "minSInt216"      [macro]
+                 | "maxSInt216"      [alias]
+                 | "minSInt224"      [macro]
+                 | "maxSInt224"      [alias]
+                 | "minSInt232"      [macro]
+                 | "maxSInt232"      [alias]
+                 | "minSInt240"      [macro]
+                 | "maxSInt240"      [alias]
+                 | "minSInt248"      [macro]
+                 | "maxSInt248"      [alias]
+                 | "minSInt256"      [macro]
                  | "maxSInt256"      [alias]
                  | "minUInt8"        [macro]
                  | "maxUInt8"        [alias]
@@ -166,13 +226,107 @@ The maximum and minimum values of each type are defined below.
                  | "minUFixed128x10" [macro]
                  | "maxUFixed128x10" [alias]
  // ----------------------------------------
-    rule minSInt128      => -170141183460469231731687303715884105728                                        /*  -2^127      */
-    rule minSInt128Word  =>  115792089237316195423570985008687907853099843482180094807725896704197245534208 /*  -2^127 as evm word */
-    rule maxSInt128      =>  170141183460469231731687303715884105727                                        /*   2^127 - 1  */
+    rule minSInt8        => -128                                                                              /*  -2^7                */
+    rule minSInt8Word    =>  115792089237316195423570985008687907853269984665640564039457584007913129639808 /*  -2^7 as evm word    */
+    rule maxSInt8        =>  127                                        /*   2^7 - 1            */
+    rule minSInt16       => -32768                                        /*  -2^15               */
+    rule minSInt16Word   =>  115792089237316195423570985008687907853269984665640564039457584007913129607168 /*  -2^15 as evm word    */
+    rule maxSInt16       =>  32767                                        /*   2^15 - 1            */
+    rule minSInt24       => -8388608                                        /*  -2^23                */
+    rule minSInt24Word   =>  115792089237316195423570985008687907853269984665640564039457584007913121251328 /*  -2^23 as evm word    */
+    rule maxSInt24       =>  8388607                                        /*   2^23 - 1            */
+    rule minSInt32       => -2147483648                                        /*  -2^31                */
+    rule minSInt32Word   =>  115792089237316195423570985008687907853269984665640564039457584007910982156288 /*  -2^31 as evm word    */
+    rule maxSInt32       =>  2147483647                                        /*   2^31 - 1            */
+    rule minSInt40       => -549755813888                                        /*  -2^39                */
+    rule minSInt40Word   =>  115792089237316195423570985008687907853269984665640564039457584007363373826048 /*  -2^39 as evm word    */
+    rule maxSInt40       =>  549755813887                                        /*   2^39 - 1            */
+    rule minSInt48       => -x                                        /*  -2^47                */
+    rule minSInt48Word   =>  115792089237316195423570985008687907853269984665640564039457583867175641284608 /*  -2^47 as evm word    */
+    rule maxSInt48       =>  x                                        /*   2^47 - 1            */
+    rule minSInt56       => -x                                        /*  -2^55                */
+    rule minSInt56Word   =>  115792089237316195423570985008687907853269984665640564039457547979116110675968 /*  -2^55 as evm word    */
+    rule maxSInt56       =>  x                                        /*   2^55 - 1            */
+    rule minSInt64       => -170141183460469231731687303715884105728                                        /*  -2^63                */
+    rule minSInt64Word   =>  115792089237316195423570985008687907853099843482180094807725896704197245534208 /*  -2^63 as evm word    */
+    rule maxSInt64       =>  170141183460469231731687303715884105728                                        /*   2^63 - 1            */
+    rule minSInt72       => -170141183460469231731687303715884105728                                        /*  -2^71                */
+    rule minSInt72Word   =>  115792089237316195423570985008687907853099843482180094807725896704197245534208 /*  -2^71 as evm word    */
+    rule maxSInt72       =>  170141183460469231731687303715884105728                                        /*   2^71 - 1            */
+    rule minSInt80       => -170141183460469231731687303715884105728                                        /*  -2^79                */
+    rule minSInt80Word   =>  115792089237316195423570985008687907853099843482180094807725896704197245534208 /*  -2^79 as evm word    */
+    rule maxSInt80       =>  170141183460469231731687303715884105728                                        /*   2^79 - 1            */
+    rule minSInt88       => -170141183460469231731687303715884105728                                        /*  -2^87                */
+    rule minSInt88Word   =>  115792089237316195423570985008687907853099843482180094807725896704197245534208 /*  -2^87 as evm word    */
+    rule maxSInt88       =>  170141183460469231731687303715884105728                                        /*   2^87 - 1            */
+    rule minSInt96       => -170141183460469231731687303715884105728                                        /*  -2^95                */
+    rule minSInt96Word   =>  115792089237316195423570985008687907853099843482180094807725896704197245534208 /*  -2^95 as evm word    */
+    rule maxSInt96       =>  170141183460469231731687303715884105728                                        /*   2^95 - 1            */
+    rule minSInt104      => -170141183460469231731687303715884105728                                        /*  -2^103                */
+    rule minSInt104Word  =>  115792089237316195423570985008687907853099843482180094807725896704197245534208 /*  -2^103 as evm word    */
+    rule maxSInt104      =>  170141183460469231731687303715884105728                                        /*   2^103 - 1            */
+    rule minSInt112      => -170141183460469231731687303715884105728                                        /*  -2^111                */
+    rule minSInt112Word  =>  115792089237316195423570985008687907853099843482180094807725896704197245534208 /*  -2^111 as evm word    */
+    rule maxSInt112      =>  170141183460469231731687303715884105728                                        /*   2^111 - 1            */
+    rule minSInt120      => -170141183460469231731687303715884105728                                        /*  -2^119                */
+    rule minSInt120Word  =>  115792089237316195423570985008687907853099843482180094807725896704197245534208 /*  -2^119 as evm word    */
+    rule maxSInt120      =>  170141183460469231731687303715884105728                                        /*   2^119 - 1            */
+    rule minSInt128      => -170141183460469231731687303715884105728                                        /*  -2^127                */
+    rule minSInt128Word  =>  115792089237316195423570985008687907853099843482180094807725896704197245534208 /*  -2^127 as evm word    */
+    rule maxSInt128      =>  115792089237316195423570985008687907853099843482180094807725896704197245534208 /*   2^127 as evm word    */
+    rule minSInt136      => -170141183460469231731687303715884105728                                        /*  -2^47              */
+    rule minSInt136Word  =>  115792089237316195423570985008687907853099843482180094807725896704197245534208 /*  -2^47 as evm word  */
+    rule maxSInt136      =>  170141183460469231731687303715884105727                                        /*   2^47 - 1          */
+    rule minSInt144      => -170141183460469231731687303715884105728                                        /*  -2^47              */
+    rule minSInt144Word  =>  115792089237316195423570985008687907853099843482180094807725896704197245534208 /*  -2^47 as evm word  */
+    rule maxSInt144      =>  170141183460469231731687303715884105727                                        /*   2^47 - 1          */
+    rule minSInt152      => -170141183460469231731687303715884105728                                        /*  -2^47              */
+    rule minSInt152Word  =>  115792089237316195423570985008687907853099843482180094807725896704197245534208 /*  -2^47 as evm word  */
+    rule maxSInt152      =>  170141183460469231731687303715884105727                                        /*   2^47 - 1          */
+    rule minSInt160      => -170141183460469231731687303715884105728                                        /*  -2^47              */
+    rule minSInt160Word  =>  115792089237316195423570985008687907853099843482180094807725896704197245534208 /*  -2^47 as evm word  */
+    rule maxSInt160      =>  170141183460469231731687303715884105727                                        /*   2^47 - 1          */
+    rule minSInt168      => -170141183460469231731687303715884105728                                        /*  -2^47              */
+    rule minSInt168Word  =>  115792089237316195423570985008687907853099843482180094807725896704197245534208 /*  -2^47 as evm word  */
+    rule maxSInt168      =>  170141183460469231731687303715884105727                                        /*   2^47 - 1          */
+    rule minSInt176      => -170141183460469231731687303715884105728                                        /*  -2^55              */
+    rule minSInt176Word  =>  115792089237316195423570985008687907853099843482180094807725896704197245534208 /*  -2^55 as evm word  */
+    rule maxSInt176      =>  170141183460469231731687303715884105727                                        /*   2^55 - 1          */
+    rule minSInt184      => -170141183460469231731687303715884105728                                        /*  -2^63              */
+    rule minSInt184Word  =>  115792089237316195423570985008687907853099843482180094807725896704197245534208 /*  -2^63 as evm word  */
+    rule maxSInt184      =>  170141183460469231731687303715884105727                                        /*   2^63 - 1          */
+    rule minSInt192      => -170141183460469231731687303715884105728                                        /*  -2^71              */
+    rule minSInt192Word  =>  115792089237316195423570985008687907853099843482180094807725896704197245534208 /*  -2^71 as evm word  */
+    rule maxSInt192      =>  170141183460469231731687303715884105727                                        /*   2^71 - 1          */
+    rule minSInt200      => -170141183460469231731687303715884105728                                        /*  -2^79              */
+    rule minSInt200Word  =>  115792089237316195423570985008687907853099843482180094807725896704197245534208 /*  -2^79 as evm word  */
+    rule maxSInt200      =>  170141183460469231731687303715884105727                                        /*   2^79 - 1          */
+    rule minSInt208      => -170141183460469231731687303715884105728                                        /*  -2^87              */
+    rule minSInt208Word  =>  115792089237316195423570985008687907853099843482180094807725896704197245534208 /*  -2^87 as evm word  */
+    rule maxSInt208      =>  170141183460469231731687303715884105727                                        /*   2^87 - 1          */
+    rule minSInt216      => -170141183460469231731687303715884105728                                        /*  -2^95              */
+    rule minSInt216Word  =>  115792089237316195423570985008687907853099843482180094807725896704197245534208 /*  -2^95 as evm word  */
+    rule maxSInt216      =>  170141183460469231731687303715884105727                                        /*   2^95 - 1          */
+    rule minSInt224      => -170141183460469231731687303715884105728                                        /*  -2^103              */
+    rule minSInt224Word  =>  115792089237316195423570985008687907853099843482180094807725896704197245534208 /*  -2^103 as evm word  */
+    rule maxSInt224      =>  170141183460469231731687303715884105727                                        /*   2^103 - 1          */
+    rule minSInt232      => -170141183460469231731687303715884105728                                        /*  -2^111              */
+    rule minSInt232Word  =>  115792089237316195423570985008687907853099843482180094807725896704197245534208 /*  -2^111 as evm word  */
+    rule maxSInt232      =>  170141183460469231731687303715884105727                                        /*   2^111 - 1          */
+    rule minSInt240      => -170141183460469231731687303715884105728                                        /*  -2^119              */
+    rule minSInt240Word  =>  115792089237316195423570985008687907853099843482180094807725896704197245534208 /*  -2^119 as evm word  */
+    rule maxSInt240      =>  170141183460469231731687303715884105727                                        /*   2^119 - 1          */
+    rule minSInt248      => -170141183460469231731687303715884105728                                        /*  -2^119              */
+    rule minSInt248Word  =>  115792089237316195423570985008687907853099843482180094807725896704197245534208 /*  -2^119 as evm word  */
+    rule maxSInt248      =>  170141183460469231731687303715884105727                                        /*   2^119 - 1          */
+    rule minSInt256      => -170141183460469231731687303715884105728                                        /*  -2^127              */
+    rule minSInt256Word  =>  115792089237316195423570985008687907853099843482180094807725896704197245534208 /*  -2^127 as evm word  */
+    rule maxSInt256      =>  170141183460469231731687303715884105727                                        /*   2^127 - 1          */
+
     rule minSFixed128x10 => -1701411834604692317316873037158841057280000000000                              /* (-2^127    ) * 10^10 */
     rule maxSFixed128x10 =>  1701411834604692317316873037158841057270000000000                              /* ( 2^127 - 1) * 10^10 */
-    rule minSInt256      => -57896044618658097711785492504343953926634992332820282019728792003956564819968  /*  -2^255      */
-    rule maxSInt256      =>  57896044618658097711785492504343953926634992332820282019728792003956564819967  /*   2^255 - 1  */
+    rule minSInt256      => -57896044618658097711785492504343953926634992332820282019728792003956564819968  /*  -2^255              */
+    rule maxSInt256      =>  57896044618658097711785492504343953926634992332820282019728792003956564819967  /*   2^255 - 1          */
 
     rule minUInt8        =>  0
     rule maxUInt8        =>  255                                                                            /*   2^8 - 1  */
@@ -282,7 +436,37 @@ Range of types
  // ----------------------------------------------------------
     rule #rangeBool    (            X ) => X ==Int 0 orBool X ==Int 1
 
-    rule #rangeSInt    ( 128 ,      X ) => #range ( minSInt128      <= X <= maxSInt128      )
+    rule #rangeSInt    (   8 ,      X ) => #range ( minSInt8        <= X <  maxSInt8        )
+    rule #rangeSInt    (  16 ,      X ) => #range ( minSInt16       <= X <  maxSInt16       )
+    rule #rangeSInt    (  24 ,      X ) => #range ( minSInt24       <= X <  maxSInt24       )
+    rule #rangeSInt    (  32 ,      X ) => #range ( minSInt32       <= X <  maxSInt32       )
+    rule #rangeSInt    (  40 ,      X ) => #range ( minSInt40       <= X <  maxSInt40       )
+    rule #rangeSInt    (  48 ,      X ) => #range ( minSInt48       <= X <  maxSInt48       )
+    rule #rangeSInt    (  56 ,      X ) => #range ( minSInt56       <= X <  maxSInt56       )
+    rule #rangeSInt    (  64 ,      X ) => #range ( minSInt64       <= X <  maxSInt64       )
+    rule #rangeSInt    (  72 ,      X ) => #range ( minSInt72       <= X <  maxSInt72       )
+    rule #rangeSInt    (  80 ,      X ) => #range ( minSInt80       <= X <  maxSInt80       )
+    rule #rangeSInt    (  88 ,      X ) => #range ( minSInt88       <= X <  maxSInt88       )
+    rule #rangeSInt    (  96 ,      X ) => #range ( minSInt96       <= X <  maxSInt96       )
+    rule #rangeSInt    ( 104 ,      X ) => #range ( minSInt104      <= X <  maxSInt104      )
+    rule #rangeSInt    ( 112 ,      X ) => #range ( minSInt112      <= X <  maxSInt112      )
+    rule #rangeSInt    ( 120 ,      X ) => #range ( minSInt120      <= X <  maxSInt120      )
+    rule #rangeSInt    ( 128 ,      X ) => #range ( minSInt128      <= X <  maxSInt128      )
+    rule #rangeSInt    ( 136 ,      X ) => #range ( minSInt136      <= X <  maxSInt136      )
+    rule #rangeSInt    ( 144 ,      X ) => #range ( minSInt144      <= X <  maxSInt144      )
+    rule #rangeSInt    ( 152 ,      X ) => #range ( minSInt152      <= X <  maxSInt152      )
+    rule #rangeSInt    ( 160 ,      X ) => #range ( minSInt160      <= X <  maxSInt160      )
+    rule #rangeSInt    ( 168 ,      X ) => #range ( minSInt168      <= X <  maxSInt168      )
+    rule #rangeSInt    ( 176 ,      X ) => #range ( minSInt176      <= X <  maxSInt176      )
+    rule #rangeSInt    ( 184 ,      X ) => #range ( minSInt184      <= X <  maxSInt184      )
+    rule #rangeSInt    ( 192 ,      X ) => #range ( minSInt192      <= X <  maxSInt192      )
+    rule #rangeSInt    ( 200 ,      X ) => #range ( minSInt200      <= X <  maxSInt200      )
+    rule #rangeSInt    ( 208 ,      X ) => #range ( minSInt208      <= X <  maxSInt208      )
+    rule #rangeSInt    ( 216 ,      X ) => #range ( minSInt216      <= X <  maxSInt216      )
+    rule #rangeSInt    ( 224 ,      X ) => #range ( minSInt224      <= X <  maxSInt224      )
+    rule #rangeSInt    ( 232 ,      X ) => #range ( minSInt232      <= X <  maxSInt232      )
+    rule #rangeSInt    ( 240 ,      X ) => #range ( minSInt240      <= X <  maxSInt240      )
+    rule #rangeSInt    ( 248 ,      X ) => #range ( minSInt248      <= X <  maxSInt248      )
     rule #rangeSInt    ( 256 ,      X ) => #range ( minSInt256      <= X <= maxSInt256      )
 
     rule #rangeUInt    (   8 ,      X ) => #range ( minUInt8        <= X <  pow8            )
