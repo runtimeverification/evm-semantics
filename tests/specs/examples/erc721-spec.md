@@ -76,8 +76,8 @@ claim (#lookup(ACCT_STORAGE, 0) /Int 2 <Int 32)
           <schedule> ISTANBUL </schedule>
 
           <callStack> .List                                       </callStack>
-          <program>   #binRuntime(ERC721)                         </program>
-          <jumpDests> #computeValidJumpDests(#binRuntime(ERC721)) </jumpDests>
+          <program>   #binRuntime(KEVMERC721)                         </program>
+          <jumpDests> #computeValidJumpDests(#binRuntime(KEVMERC721)) </jumpDests>
 
           <id>         ACCTID      => ?_ </id>
           <localMem>   .Bytes     => ?_ </localMem>
@@ -87,7 +87,7 @@ claim (#lookup(ACCT_STORAGE, 0) /Int 2 <Int 32)
           <gas>        #gas(_VGAS) => ?_ </gas>
           <callValue>  0           => ?_ </callValue>
 
-          <callData>   ERC721.name()            </callData>
+          <callData>   KEVMERC721.name()            </callData>
           <k>          #execute => #halt ...    </k>
           <output>     .Bytes   => ?_           </output>
           <statusCode> _        => EVMC_SUCCESS </statusCode>
@@ -98,7 +98,7 @@ claim (#lookup(ACCT_STORAGE, 0) /Int 2 <Int 32)
             ...
           </account>
 
-       requires NAME_KEY             ==Int #loc(ERC721._name)
+       requires NAME_KEY             ==Int #loc(KEVMERC721._name)
         andBool NAME                 ==Int #lookup(ACCT_STORAGE, NAME_KEY)
         andBool NAME &Int 1          ==Int 0
         andBool NAME /Int 2 &Int 127  <Int 32
@@ -110,8 +110,8 @@ claim (#lookup(ACCT_STORAGE, 0) /Int 2 <Int 32)
           <schedule> ISTANBUL </schedule>
 
           <callStack> .List                                       </callStack>
-          <program>   #binRuntime(ERC721)                         </program>
-          <jumpDests> #computeValidJumpDests(#binRuntime(ERC721)) </jumpDests>
+          <program>   #binRuntime(KEVMERC721)                         </program>
+          <jumpDests> #computeValidJumpDests(#binRuntime(KEVMERC721)) </jumpDests>
 
           <id>         ACCTID      => ?_ </id>
           <localMem>   .Bytes     => ?_ </localMem>
@@ -121,7 +121,7 @@ claim (#lookup(ACCT_STORAGE, 0) /Int 2 <Int 32)
           <gas>        #gas(_VGAS) => ?_ </gas>
           <callValue>  0           => ?_ </callValue>
 
-          <callData>   ERC721.name()           </callData>
+          <callData>   KEVMERC721.name()           </callData>
           <k>          #execute => #halt ...   </k>
           <output>     .Bytes   => ?_          </output>
           <statusCode> _        => EVMC_REVERT </statusCode>
@@ -132,7 +132,7 @@ claim (#lookup(ACCT_STORAGE, 0) /Int 2 <Int 32)
             ...
           </account>
 
-       requires NAME_KEY    ==Int #loc(ERC721._name)
+       requires NAME_KEY    ==Int #loc(KEVMERC721._name)
         andBool NAME        ==Int #lookup(ACCT_STORAGE, NAME_KEY)
         andBool NAME &Int 1 ==Int 0
         andBool 32          <=Int NAME /Int 2 &Int 127
