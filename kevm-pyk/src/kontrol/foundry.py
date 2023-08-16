@@ -29,9 +29,8 @@ from pyk.proof.reachability import APRBMCProof, APRProof
 from pyk.proof.show import APRBMCProofNodePrinter, APRProofNodePrinter, APRProofShow
 from pyk.utils import BugReport, ensure_dir_path, hash_str, run_process, single, unique
 
-from .kevm import KEVM, KEVMNodePrinter, KEVMSemantics
-from .solc_to_k import Contract, contract_to_main_module, contract_to_verification_module
-from .utils import (
+from kevm_pyk.kevm import KEVM, KEVMNodePrinter, KEVMSemantics
+from kevm_pyk.utils import (
     KDefinition__expand_macros,
     abstract_cell_vars,
     byte_offset_to_lines,
@@ -41,6 +40,8 @@ from .utils import (
     print_failure_info,
     print_model,
 )
+
+from .solc_to_k import Contract, contract_to_main_module, contract_to_verification_module
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -123,7 +124,7 @@ class Foundry:
 
     @cached_property
     def llvm_dylib(self) -> Path | None:
-        from .kompile import Kernel
+        from kevm_pyk.kompile import Kernel
 
         arch = Kernel.get()
         foundry_llvm_dir = self.out / 'kompiled-llvm'
@@ -370,7 +371,7 @@ def foundry_kompile(
     llvm_library: bool = False,
     verbose: bool = False,
 ) -> None:
-    from .kompile import KompileTarget, kevm_kompile
+    from kevm_pyk.kompile import KompileTarget, kevm_kompile
 
     syntax_module = 'FOUNDRY-CONTRACTS'
     foundry = Foundry(foundry_root)
@@ -518,7 +519,6 @@ def foundry_prove(
     break_every_step: bool = False,
     break_on_jumpi: bool = False,
     break_on_calls: bool = True,
-    implication_every_block: bool = True,
     bmc_depth: int | None = None,
     bug_report: bool = False,
     kore_rpc_command: str | Iterable[str] | None = None,
@@ -648,7 +648,6 @@ def foundry_prove(
                 break_every_step=break_every_step,
                 break_on_jumpi=break_on_jumpi,
                 break_on_calls=break_on_calls,
-                implication_every_block=implication_every_block,
             )
             failure_log = None
             if not passed:
@@ -1040,7 +1039,14 @@ def _method_to_cfg(
 def get_final_accounts_cell(proof_digest: str, proof_dir: Path) -> tuple[KInner, Iterable[KInner]]:
     apr_proof = APRProof.read_proof_data(proof_dir, proof_digest)
     target = apr_proof.kcfg.node(apr_proof.target)
-    cterm = single(apr_proof.kcfg.covers(target_id=target.id)).source.cterm
+    target_states = apr_proof.kcfg.covers(target_id=target.id)
+    if len(target_states) == 0:
+        raise ValueError(
+            f'setUp() function for {apr_proof.id} did not reach the end of execution. Maybe --max-iterations is too low?'
+        )
+    if len(target_states) > 1:
+        raise ValueError(f'setUp() function for {apr_proof.id} branched and has {len(target_states)} target states.')
+    cterm = single(target_states).source.cterm
     acct_cell = cterm.cell('ACCOUNTS_CELL')
     fvars = free_vars(acct_cell)
     acct_cons = constraints_for(fvars, cterm.constraints)

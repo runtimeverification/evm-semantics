@@ -8,7 +8,8 @@ from functools import cached_property
 from subprocess import CalledProcessError
 from typing import TYPE_CHECKING
 
-from pyk.kast.inner import KApply, KAtt, KLabel, KRewrite, KSort, KVariable
+from pyk.kast.inner import KApply, KLabel, KRewrite, KSort, KVariable
+from pyk.kast.kast import KAtt
 from pyk.kast.manip import abstract_term_safely
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KNonTerminal, KProduction, KRequire, KRule, KTerminal
 from pyk.prelude.kbool import TRUE, andBool
@@ -16,7 +17,7 @@ from pyk.prelude.kint import intToken
 from pyk.prelude.string import stringToken
 from pyk.utils import FrozenDict, hash_str, run_process, single
 
-from .kevm import KEVM
+from kevm_pyk.kevm import KEVM
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
