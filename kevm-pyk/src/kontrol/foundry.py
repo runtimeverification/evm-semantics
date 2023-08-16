@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import concurrent.futures
 import json
 import logging
 import os
+import re
 import shutil
 from functools import cached_property
 from pathlib import Path
@@ -27,10 +29,8 @@ from pyk.proof.reachability import APRBMCProof, APRProof
 from pyk.proof.show import APRBMCProofNodePrinter, APRProofNodePrinter, APRProofShow
 from pyk.utils import BugReport, ensure_dir_path, hash_str, run_process, single, unique
 
-from .kevm import KEVM, KEVMNodePrinter, KEVMSemantics
-from .kompile import Kernel, KompileTarget, kevm_kompile
-from .solc_to_k import Contract, contract_to_main_module, contract_to_verification_module
-from .utils import (
+from kevm_pyk.kevm import KEVM, KEVMNodePrinter, KEVMSemantics
+from kevm_pyk.utils import (
     KDefinition__expand_macros,
     abstract_cell_vars,
     byte_offset_to_lines,
@@ -41,8 +41,11 @@ from .utils import (
     print_model,
 )
 
+from .solc_to_k import Contract, contract_to_main_module, contract_to_verification_module
+
 if TYPE_CHECKING:
     from collections.abc import Iterable
+    from concurrent.futures import Future
     from typing import Any, Final
 
     from pyk.kast.inner import KInner
@@ -111,8 +114,8 @@ class Foundry:
             _contracts[contract_name] = Contract(contract_name, contract_json, foundry=True)
         return _contracts
 
-    def proof_digest(self, contract: str, test: str) -> str:
-        return f'{contract}.{test}:{self.contracts[contract].method_by_name[test].digest}'
+    def proof_digest(self, contract: str, test_sig: str) -> str:
+        return f'{contract}.{test_sig}:{self.contracts[contract].method_by_sig[test_sig].digest}'
 
     @cached_property
     def digest(self) -> str:
@@ -121,6 +124,8 @@ class Foundry:
 
     @cached_property
     def llvm_dylib(self) -> Path | None:
+        from kevm_pyk.kompile import Kernel
+
         arch = Kernel.get()
         foundry_llvm_dir = self.out / 'kompiled-llvm'
         if arch == Kernel.LINUX:
@@ -213,6 +218,66 @@ class Foundry:
         except CalledProcessError as err:
             raise RuntimeError("Couldn't forge build!") from err
 
+    @cached_property
+    def all_tests(self) -> list[str]:
+        return [
+            f'{contract.name}.{method.signature}'
+            for contract in self.contracts.values()
+            if contract.name.endswith('Test')
+            for method in contract.methods
+            if method.name.startswith('test')
+        ]
+
+    @cached_property
+    def all_non_tests(self) -> list[str]:
+        return [
+            f'{contract.name}.{method.signature}'
+            for contract in self.contracts.values()
+            for method in contract.methods
+            if f'{contract.name}.{method.signature}' not in self.all_tests
+        ]
+
+    def matching_tests(self, tests: list[str], exclude_tests: list[str]) -> list[str]:
+        def _escape_brackets(regs: list[str]) -> list[str]:
+            regs = [reg.replace('[', '\\[') for reg in regs]
+            regs = [reg.replace(']', '\\]') for reg in regs]
+            regs = [reg.replace('(', '\\(') for reg in regs]
+            return [reg.replace(')', '\\)') for reg in regs]
+
+        all_tests = self.all_tests
+        all_non_tests = self.all_non_tests
+        matched_tests = set()
+        unfound_tests: list[str] = []
+        if not tests:
+            tests = all_tests
+        tests = _escape_brackets(tests)
+        exclude_tests = _escape_brackets(exclude_tests)
+        for t in tests:
+            if not any(re.search(t, test) for test in (all_tests + all_non_tests)):
+                unfound_tests.append(t)
+        for test in all_tests:
+            if any(re.search(t, test) for t in tests) and not any(re.search(t, test) for t in exclude_tests):
+                matched_tests.add(test)
+        for test in all_non_tests:
+            if any(re.search(t, test) for t in tests) and not any(re.search(t, test) for t in exclude_tests):
+                matched_tests.add(test)
+        if unfound_tests:
+            raise ValueError(f'Test identifiers not found: {set(unfound_tests)}')
+        elif len(matched_tests) == 0:
+            raise ValueError('No test matched the predicates')
+        return list(matched_tests)
+
+    def matching_sig(self, test: str) -> str:
+        test_sigs = self.matching_tests([test], [])
+        if len(test_sigs) != 1:
+            raise RuntimeError(f'Found {test_sigs} matching tests, must specify one')
+        return test_sigs[0]
+
+    def unique_sig(self, test: str) -> tuple[str, str]:
+        contract_name = test.split('.')[0]
+        test_sig = self.matching_sig(test).split('.')[1]
+        return (contract_name, test_sig)
+
     @staticmethod
     def success(s: KInner, dst: KInner, r: KInner, c: KInner, e1: KInner, e2: KInner) -> KApply:
         return KApply('foundry_success', [s, dst, r, c, e1, e2])
@@ -286,8 +351,8 @@ class Foundry:
         test: str,
     ) -> Proof:
         proofs_dir = self.out / 'apr_proofs'
-        contract_name, test_name = test.split('.')
-        proof_digest = self.proof_digest(contract_name, test_name)
+        contract_name, test_sig = self.unique_sig(test)
+        proof_digest = self.proof_digest(contract_name, test_sig)
         proof = Proof.read_proof_data(proofs_dir, proof_digest)
         return proof
 
@@ -304,7 +369,10 @@ def foundry_kompile(
     llvm_kompile: bool = True,
     debug: bool = False,
     llvm_library: bool = False,
+    verbose: bool = False,
 ) -> None:
+    from kevm_pyk.kompile import KompileTarget, kevm_kompile
+
     syntax_module = 'FOUNDRY-CONTRACTS'
     foundry = Foundry(foundry_root)
     foundry_definition_dir = foundry.out / 'kompiled'
@@ -396,6 +464,7 @@ def foundry_kompile(
             ccopts=ccopts,
             llvm_kompile_type=llvm_kompile_type,
             debug=debug,
+            verbose=verbose,
         )
 
     def kompilation_digest() -> str:
@@ -410,20 +479,29 @@ def foundry_kompile(
 
         return old_digest == kompilation_digest()
 
+    def kompile_haskell() -> None:
+        _LOGGER.info(f'Kompiling definition: {foundry_main_file}')
+        _kompile(foundry_definition_dir, KompileTarget.HASKELL)
+
+    def kompile_llvm() -> None:
+        _LOGGER.info(f'Kompiling definition to LLVM dynamic library: {foundry_main_file}')
+        _kompile(
+            foundry_llvm_dir,
+            KompileTarget.LLVM,
+            llvm_kompile_type=LLVMKompileType.C,
+        )
+
     def update_kompilation_digest() -> None:
         digest_file = foundry_definition_dir / 'digest'
         digest_file.write_text(kompilation_digest())
 
     if not kompilation_up_to_date() or rekompile or not kompiled_timestamp.exists():
-        _LOGGER.info(f'Kompiling definition: {foundry_main_file}')
-        _kompile(foundry_definition_dir, KompileTarget.HASKELL)
-        if llvm_library:
-            _LOGGER.info(f'Kompiling definition to LLVM dy.lib: {foundry_main_file}')
-            _kompile(
-                foundry_llvm_dir,
-                KompileTarget.LLVM,
-                llvm_kompile_type=LLVMKompileType.C,
-            )
+        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+            futures: list[Future] = []
+            futures.append(executor.submit(kompile_haskell))
+            if llvm_library:
+                futures.append(executor.submit(kompile_llvm))
+            [future.result() for future in futures]
 
     update_kompilation_digest()
     foundry.update_digest()
@@ -441,7 +519,6 @@ def foundry_prove(
     break_every_step: bool = False,
     break_on_jumpi: bool = False,
     break_on_calls: bool = True,
-    implication_every_block: bool = True,
     bmc_depth: int | None = None,
     bug_report: bool = False,
     kore_rpc_command: str | Iterable[str] | None = None,
@@ -500,21 +577,24 @@ def foundry_prove(
             unfound_tests.append(_t)
         if _t in tests:
             tests.remove(_t)
+
+    tests = foundry.matching_tests(list(tests), list(exclude_tests))
     _LOGGER.info(f'Running tests: {tests}')
-    if unfound_tests:
-        raise ValueError(f'Test identifiers not found: {unfound_tests}')
 
     setup_methods: dict[str, str] = {}
     contracts = set(unique({test.split('.')[0] for test in tests}))
     for contract_name in contracts:
         if 'setUp' in foundry.contracts[contract_name].method_by_name:
-            setup_methods[contract_name] = f'{contract_name}.setUp'
+            setup_methods[contract_name] = f'{contract_name}.setUp()'
 
     test_methods = [
         method
         for contract in foundry.contracts.values()
         for method in contract.methods
-        if (f'{method.contract_name}.{method.name}' in tests or (method.is_setup and method.contract_name in contracts))
+        if (
+            f'{method.contract_name}.{method.signature}' in tests
+            or (method.is_setup and method.contract_name in contracts)
+        )
     ]
 
     out_of_date_methods: set[str] = set()
@@ -545,9 +625,9 @@ def foundry_prove(
             smt_retry_limit=smt_retry_limit,
             trace_rewrites=trace_rewrites,
         ) as kcfg_explore:
-            contract_name, method_name = _init_problem
+            contract_name, method_sig = _init_problem
             contract = foundry.contracts[contract_name]
-            method = contract.method_by_name[method_name]
+            method = contract.method_by_sig[method_sig]
             proof = _method_to_apr_proof(
                 foundry=foundry,
                 contract=contract,
@@ -568,7 +648,6 @@ def foundry_prove(
                 break_every_step=break_every_step,
                 break_on_jumpi=break_on_jumpi,
                 break_on_calls=break_on_calls,
-                implication_every_block=implication_every_block,
             )
             failure_log = None
             if not passed:
@@ -625,9 +704,6 @@ def foundry_show(
     proof = foundry.get_proof(test)
     assert isinstance(proof, APRProof)
 
-    def _short_info(cterm: CTerm) -> Iterable[str]:
-        return foundry.short_info_for_contract(contract_name, cterm)
-
     if pending:
         nodes = list(nodes) + [node.id for node in proof.pending]
     if failing:
@@ -681,7 +757,7 @@ def foundry_list(foundry_root: Path) -> list[str]:
     apr_proofs_dir = foundry.out / 'apr_proofs'
 
     all_methods = [
-        f'{contract.name}.{method.name}' for contract in foundry.contracts.values() for method in contract.methods
+        f'{contract.name}.{method.signature}' for contract in foundry.contracts.values() for method in contract.methods
     ]
 
     lines: list[str] = []
@@ -939,9 +1015,9 @@ def _method_to_apr_proof(
     bmc_depth: int | None = None,
 ) -> APRProof | APRBMCProof:
     contract_name = contract.name
-    method_name = method.name
-    test = f'{contract_name}.{method_name}'
-    proof_digest = foundry.proof_digest(contract_name, method_name)
+    method_sig = method.signature
+    test = f'{contract_name}.{method_sig}'
+    proof_digest = foundry.proof_digest(contract_name, method_sig)
     if Proof.proof_data_exists(proof_digest, save_directory) and not reinit:
         apr_proof = foundry.get_apr_proof(test)
         assert isinstance(apr_proof, APRProof)
@@ -949,8 +1025,8 @@ def _method_to_apr_proof(
         _LOGGER.info(f'Initializing KCFG for test: {test}')
 
         setup_digest = None
-        if method_name != 'setUp' and 'setUp' in contract.method_by_name:
-            setup_digest = foundry.proof_digest(contract_name, 'setUp')
+        if method_sig != 'setUp()' and 'setUp' in contract.method_by_name:
+            setup_digest = foundry.proof_digest(contract_name, 'setUp()')
             _LOGGER.info(f'Using setUp method for test: {test}')
 
         empty_config = foundry.kevm.definition.empty_config(GENERATED_TOP_CELL)
@@ -1017,7 +1093,14 @@ def _method_to_cfg(
 def get_final_accounts_cell(proof_digest: str, proof_dir: Path) -> tuple[KInner, Iterable[KInner]]:
     apr_proof = APRProof.read_proof_data(proof_dir, proof_digest)
     target = apr_proof.kcfg.node(apr_proof.target)
-    cterm = single(apr_proof.kcfg.covers(target_id=target.id)).source.cterm
+    target_states = apr_proof.kcfg.covers(target_id=target.id)
+    if len(target_states) == 0:
+        raise ValueError(
+            f'setUp() function for {apr_proof.id} did not reach the end of execution. Maybe --max-iterations is too low?'
+        )
+    if len(target_states) > 1:
+        raise ValueError(f'setUp() function for {apr_proof.id} branched and has {len(target_states)} target states.')
+    cterm = single(target_states).source.cterm
     acct_cell = cterm.cell('ACCOUNTS_CELL')
     fvars = free_vars(acct_cell)
     acct_cons = constraints_for(fvars, cterm.constraints)

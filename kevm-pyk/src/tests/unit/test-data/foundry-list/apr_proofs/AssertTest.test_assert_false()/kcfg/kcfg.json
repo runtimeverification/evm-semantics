@@ -1,0 +1,1 @@
+{"next": 6, "nodes": [1, 2, 3, 4, 5], "edges": [{"source": 1, "target": 3, "depth": 376}, {"source": 3, "target": 4, "depth": 1}, {"source": 4, "target": 5, "depth": 2}], "covers": [], "splits": [], "ndbranches": [], "stuck": [], "aliases": {}}
