@@ -64,38 +64,38 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
                       | #uint24  ( Int )                        [klabel(abi_type_uint24),  symbol]
                       | #uint16  ( Int )                        [klabel(abi_type_uint16),  symbol]
                       | #uint8   ( Int )                        [klabel(abi_type_uint8),   symbol]
-                      | #int256  ( Int )                        [klabel(abi_type_int256), symbol]
-                      | #int248  ( Int )                        [klabel(abi_type_int248), symbol]
-                      | #int240  ( Int )                        [klabel(abi_type_int240), symbol]
-                      | #int232  ( Int )                        [klabel(abi_type_int232), symbol]
-                      | #int224  ( Int )                        [klabel(abi_type_int224), symbol]
-                      | #int216  ( Int )                        [klabel(abi_type_int216), symbol]
-                      | #int208  ( Int )                        [klabel(abi_type_int208), symbol]
-                      | #int200  ( Int )                        [klabel(abi_type_int200), symbol]
-                      | #int192  ( Int )                        [klabel(abi_type_int192), symbol]
-                      | #int184  ( Int )                        [klabel(abi_type_int184), symbol]
-                      | #int176  ( Int )                        [klabel(abi_type_int176), symbol]
-                      | #int168  ( Int )                        [klabel(abi_type_int168), symbol]
-                      | #int160  ( Int )                        [klabel(abi_type_int160), symbol]
-                      | #int152  ( Int )                        [klabel(abi_type_int152), symbol]
-                      | #int144  ( Int )                        [klabel(abi_type_int144), symbol]
-                      | #int136  ( Int )                        [klabel(abi_type_int136), symbol]
-                      | #int128  ( Int )                        [klabel(abi_type_int128), symbol]
-                      | #int120  ( Int )                        [klabel(abi_type_int120), symbol]
-                      | #int112  ( Int )                        [klabel(abi_type_int112), symbol]
-                      | #int104  ( Int )                        [klabel(abi_type_int104), symbol]
-                      | #int96   ( Int )                        [klabel(abi_type_int96),  symbol]
-                      | #int88   ( Int )                        [klabel(abi_type_int88),  symbol]
-                      | #int80   ( Int )                        [klabel(abi_type_int80),  symbol]
-                      | #int72   ( Int )                        [klabel(abi_type_int72),  symbol]
-                      | #int64   ( Int )                        [klabel(abi_type_int64),  symbol]
-                      | #int56   ( Int )                        [klabel(abi_type_int56),  symbol]
-                      | #int48   ( Int )                        [klabel(abi_type_int48),  symbol]
-                      | #int40   ( Int )                        [klabel(abi_type_int40),  symbol]
-                      | #int32   ( Int )                        [klabel(abi_type_int32),  symbol]
-                      | #int24   ( Int )                        [klabel(abi_type_int24),  symbol]
-                      | #int16   ( Int )                        [klabel(abi_type_int16),  symbol]
-                      | #int8    ( Int )                        [klabel(abi_type_int8),   symbol]
+                      | #int256  ( Int )                        [klabel(abi_type_int256),  symbol]
+                      | #int248  ( Int )                        [klabel(abi_type_int248),  symbol]
+                      | #int240  ( Int )                        [klabel(abi_type_int240),  symbol]
+                      | #int232  ( Int )                        [klabel(abi_type_int232),  symbol]
+                      | #int224  ( Int )                        [klabel(abi_type_int224),  symbol]
+                      | #int216  ( Int )                        [klabel(abi_type_int216),  symbol]
+                      | #int208  ( Int )                        [klabel(abi_type_int208),  symbol]
+                      | #int200  ( Int )                        [klabel(abi_type_int200),  symbol]
+                      | #int192  ( Int )                        [klabel(abi_type_int192),  symbol]
+                      | #int184  ( Int )                        [klabel(abi_type_int184),  symbol]
+                      | #int176  ( Int )                        [klabel(abi_type_int176),  symbol]
+                      | #int168  ( Int )                        [klabel(abi_type_int168),  symbol]
+                      | #int160  ( Int )                        [klabel(abi_type_int160),  symbol]
+                      | #int152  ( Int )                        [klabel(abi_type_int152),  symbol]
+                      | #int144  ( Int )                        [klabel(abi_type_int144),  symbol]
+                      | #int136  ( Int )                        [klabel(abi_type_int136),  symbol]
+                      | #int128  ( Int )                        [klabel(abi_type_int128),  symbol]
+                      | #int120  ( Int )                        [klabel(abi_type_int120),  symbol]
+                      | #int112  ( Int )                        [klabel(abi_type_int112),  symbol]
+                      | #int104  ( Int )                        [klabel(abi_type_int104),  symbol]
+                      | #int96   ( Int )                        [klabel(abi_type_int96),   symbol]
+                      | #int88   ( Int )                        [klabel(abi_type_int88),   symbol]
+                      | #int80   ( Int )                        [klabel(abi_type_int80),   symbol]
+                      | #int72   ( Int )                        [klabel(abi_type_int72),   symbol]
+                      | #int64   ( Int )                        [klabel(abi_type_int64),   symbol]
+                      | #int56   ( Int )                        [klabel(abi_type_int56),   symbol]
+                      | #int48   ( Int )                        [klabel(abi_type_int48),   symbol]
+                      | #int40   ( Int )                        [klabel(abi_type_int40),   symbol]
+                      | #int32   ( Int )                        [klabel(abi_type_int32),   symbol]
+                      | #int24   ( Int )                        [klabel(abi_type_int24),   symbol]
+                      | #int16   ( Int )                        [klabel(abi_type_int16),   symbol]
+                      | #int8    ( Int )                        [klabel(abi_type_int8),    symbol]
                       | #bytes1  ( Int )                        [klabel(abi_type_bytes1),  symbol]
                       | #bytes2  ( Int )                        [klabel(abi_type_bytes2),  symbol]
                       | #bytes3  ( Int )                        [klabel(abi_type_bytes3),  symbol]
@@ -680,38 +680,38 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #getValue(#uint248( X )) => X       requires #rangeUInt(248, X)
     rule #getValue(#uint256( X )) => X       requires #rangeUInt(256, X)
 
-    rule #getValue(  #int8( X )) => X       requires #rangeSInt(8,   X)
-    rule #getValue( #int16( X )) => X       requires #rangeSInt(16,  X)
-    rule #getValue( #int24( X )) => X       requires #rangeSInt(24,  X)
-    rule #getValue( #int32( X )) => X       requires #rangeSInt(32,  X)
-    rule #getValue( #int40( X )) => X       requires #rangeSInt(40,  X)
-    rule #getValue( #int48( X )) => X       requires #rangeSInt(48,  X)
-    rule #getValue( #int56( X )) => X       requires #rangeSInt(56,  X)
-    rule #getValue( #int64( X )) => X       requires #rangeSInt(64,  X)
-    rule #getValue( #int72( X )) => X       requires #rangeSInt(72,  X)
-    rule #getValue( #int80( X )) => X       requires #rangeSInt(80,  X)
-    rule #getValue( #int88( X )) => X       requires #rangeSInt(88,  X)
-    rule #getValue( #int96( X )) => X       requires #rangeSInt(96,  X)
-    rule #getValue(#int104( X )) => X       requires #rangeSInt(104, X)
-    rule #getValue(#int112( X )) => X       requires #rangeSInt(112, X)
-    rule #getValue(#int120( X )) => X       requires #rangeSInt(120, X)
-    rule #getValue(#int128( X )) => X       requires #rangeSInt(128, X)
-    rule #getValue(#int136( X )) => X       requires #rangeSInt(136, X)
-    rule #getValue(#int144( X )) => X       requires #rangeSInt(144, X)
-    rule #getValue(#int152( X )) => X       requires #rangeSInt(152, X)
-    rule #getValue(#int160( X )) => X       requires #rangeSInt(160, X)
-    rule #getValue(#int168( X )) => X       requires #rangeSInt(168, X)
-    rule #getValue(#int176( X )) => X       requires #rangeSInt(176, X)
-    rule #getValue(#int184( X )) => X       requires #rangeSInt(184, X)
-    rule #getValue(#int192( X )) => X       requires #rangeSInt(192, X)
-    rule #getValue(#int200( X )) => X       requires #rangeSInt(200, X)
-    rule #getValue(#int208( X )) => X       requires #rangeSInt(208, X)
-    rule #getValue(#int216( X )) => X       requires #rangeSInt(216, X)
-    rule #getValue(#int224( X )) => X       requires #rangeSInt(224, X)
-    rule #getValue(#int232( X )) => X       requires #rangeSInt(232, X)
-    rule #getValue(#int240( X )) => X       requires #rangeSInt(240, X)
-    rule #getValue(#int248( X )) => X       requires #rangeSInt(248, X)
-    rule #getValue(#int256( X )) => X       requires #rangeSInt(256, X)
+    rule #getValue(   #int8( X )) => X       requires #rangeSInt(8,   X)
+    rule #getValue(  #int16( X )) => X       requires #rangeSInt(16,  X)
+    rule #getValue(  #int24( X )) => X       requires #rangeSInt(24,  X)
+    rule #getValue(  #int32( X )) => X       requires #rangeSInt(32,  X)
+    rule #getValue(  #int40( X )) => X       requires #rangeSInt(40,  X)
+    rule #getValue(  #int48( X )) => X       requires #rangeSInt(48,  X)
+    rule #getValue(  #int56( X )) => X       requires #rangeSInt(56,  X)
+    rule #getValue(  #int64( X )) => X       requires #rangeSInt(64,  X)
+    rule #getValue(  #int72( X )) => X       requires #rangeSInt(72,  X)
+    rule #getValue(  #int80( X )) => X       requires #rangeSInt(80,  X)
+    rule #getValue(  #int88( X )) => X       requires #rangeSInt(88,  X)
+    rule #getValue(  #int96( X )) => X       requires #rangeSInt(96,  X)
+    rule #getValue( #int104( X )) => X       requires #rangeSInt(104, X)
+    rule #getValue( #int112( X )) => X       requires #rangeSInt(112, X)
+    rule #getValue( #int120( X )) => X       requires #rangeSInt(120, X)
+    rule #getValue( #int128( X )) => X       requires #rangeSInt(128, X)
+    rule #getValue( #int136( X )) => X       requires #rangeSInt(136, X)
+    rule #getValue( #int144( X )) => X       requires #rangeSInt(144, X)
+    rule #getValue( #int152( X )) => X       requires #rangeSInt(152, X)
+    rule #getValue( #int160( X )) => X       requires #rangeSInt(160, X)
+    rule #getValue( #int168( X )) => X       requires #rangeSInt(168, X)
+    rule #getValue( #int176( X )) => X       requires #rangeSInt(176, X)
+    rule #getValue( #int184( X )) => X       requires #rangeSInt(184, X)
+    rule #getValue( #int192( X )) => X       requires #rangeSInt(192, X)
+    rule #getValue( #int200( X )) => X       requires #rangeSInt(200, X)
+    rule #getValue( #int208( X )) => X       requires #rangeSInt(208, X)
+    rule #getValue( #int216( X )) => X       requires #rangeSInt(216, X)
+    rule #getValue( #int224( X )) => X       requires #rangeSInt(224, X)
+    rule #getValue( #int232( X )) => X       requires #rangeSInt(232, X)
+    rule #getValue( #int240( X )) => X       requires #rangeSInt(240, X)
+    rule #getValue( #int248( X )) => X       requires #rangeSInt(248, X)
+    rule #getValue( #int256( X )) => X       requires #rangeSInt(256, X)
 
     rule #getValue( #bytes1( X )) => X       requires #rangeUInt(8,   X)
     rule #getValue( #bytes2( X )) => X       requires #rangeUInt(16,  X)
@@ -725,25 +725,25 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #getValue( #bytes10( X )) => X      requires #rangeUInt(80,  X)
     rule #getValue( #bytes11( X )) => X      requires #rangeUInt(88,  X)
     rule #getValue( #bytes12( X )) => X      requires #rangeUInt(96,  X)
-    rule #getValue( #bytes13( X )) => X      requires #rangeUInt(104,  X)
-    rule #getValue( #bytes14( X )) => X      requires #rangeUInt(112,  X)
-    rule #getValue( #bytes15( X )) => X      requires #rangeUInt(120,  X)
-    rule #getValue( #bytes16( X )) => X      requires #rangeUInt(128,  X)
-    rule #getValue( #bytes17( X )) => X      requires #rangeUInt(136,  X)
-    rule #getValue( #bytes18( X )) => X      requires #rangeUInt(144,  X)
-    rule #getValue( #bytes19( X )) => X      requires #rangeUInt(152,  X)
-    rule #getValue( #bytes20( X )) => X      requires #rangeUInt(160,  X)
-    rule #getValue( #bytes21( X )) => X      requires #rangeUInt(168,  X)
-    rule #getValue( #bytes22( X )) => X      requires #rangeUInt(176,  X)
-    rule #getValue( #bytes23( X )) => X      requires #rangeUInt(184,  X)
-    rule #getValue( #bytes24( X )) => X      requires #rangeUInt(192,  X)
-    rule #getValue( #bytes25( X )) => X      requires #rangeUInt(200,  X)
-    rule #getValue( #bytes26( X )) => X      requires #rangeUInt(208,  X)
-    rule #getValue( #bytes27( X )) => X      requires #rangeUInt(216,  X)
-    rule #getValue( #bytes28( X )) => X      requires #rangeUInt(224,  X)
-    rule #getValue( #bytes29( X )) => X      requires #rangeUInt(232,  X)
-    rule #getValue( #bytes30( X )) => X      requires #rangeUInt(240,  X)
-    rule #getValue( #bytes31( X )) => X      requires #rangeUInt(248,  X)
+    rule #getValue( #bytes13( X )) => X      requires #rangeUInt(104, X)
+    rule #getValue( #bytes14( X )) => X      requires #rangeUInt(112, X)
+    rule #getValue( #bytes15( X )) => X      requires #rangeUInt(120, X)
+    rule #getValue( #bytes16( X )) => X      requires #rangeUInt(128, X)
+    rule #getValue( #bytes17( X )) => X      requires #rangeUInt(136, X)
+    rule #getValue( #bytes18( X )) => X      requires #rangeUInt(144, X)
+    rule #getValue( #bytes19( X )) => X      requires #rangeUInt(152, X)
+    rule #getValue( #bytes20( X )) => X      requires #rangeUInt(160, X)
+    rule #getValue( #bytes21( X )) => X      requires #rangeUInt(168, X)
+    rule #getValue( #bytes22( X )) => X      requires #rangeUInt(176, X)
+    rule #getValue( #bytes23( X )) => X      requires #rangeUInt(184, X)
+    rule #getValue( #bytes24( X )) => X      requires #rangeUInt(192, X)
+    rule #getValue( #bytes25( X )) => X      requires #rangeUInt(200, X)
+    rule #getValue( #bytes26( X )) => X      requires #rangeUInt(208, X)
+    rule #getValue( #bytes27( X )) => X      requires #rangeUInt(216, X)
+    rule #getValue( #bytes28( X )) => X      requires #rangeUInt(224, X)
+    rule #getValue( #bytes29( X )) => X      requires #rangeUInt(232, X)
+    rule #getValue( #bytes30( X )) => X      requires #rangeUInt(240, X)
+    rule #getValue( #bytes31( X )) => X      requires #rangeUInt(248, X)
     rule #getValue( #bytes32( X )) => X      requires #rangeUInt(256, X)
 ```
 
