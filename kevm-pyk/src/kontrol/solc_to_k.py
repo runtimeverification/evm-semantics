@@ -17,8 +17,8 @@ from pyk.prelude.kint import intToken
 from pyk.prelude.string import stringToken
 from pyk.utils import FrozenDict, hash_str, run_process, single
 
-from .kevm import KEVM
-from .utils import name_escaped
+from kevm_pyk.kevm import KEVM
+from kevm_pyk.utils import name_escaped
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -109,7 +109,7 @@ class Contract:
         @property
         def klabel(self) -> KLabel:
             args_list = '_'.join(self.arg_types)
-            return KLabel(f'method_{self.contract_name}_{self.name}_{args_list}')
+            return KLabel(f'method_{self.contract_name}_{self.unique_name}_{args_list}')
 
         @property
         def unique_klabel(self) -> KLabel:

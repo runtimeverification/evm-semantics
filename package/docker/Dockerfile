@@ -22,7 +22,7 @@ RUN    apt-get update        \
 
 RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 
-RUN curl -sSL https://install.python-poetry.org | POETRY_HOME=/usr python3 - --version 1.3.2
+RUN curl -sSL https://install.python-poetry.org | POETRY_HOME=/usr python3 - --version 1.5.1
 
 ARG USER=user
 ARG USER_ID=1000
@@ -46,3 +46,5 @@ RUN    sudo apt-get update        \
 
 ADD --chown=$USER:$USER ./kevm-pyk /home/$USER/kevm-pyk
 RUN cd /home/$USER/kevm-pyk && pip3 install .
+
+ENV PATH=${PATH}:/home/${USER}/.local/bin
