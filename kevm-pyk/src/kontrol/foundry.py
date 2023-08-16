@@ -29,9 +29,8 @@ from pyk.proof.reachability import APRBMCProof, APRProof
 from pyk.proof.show import APRBMCProofNodePrinter, APRProofNodePrinter, APRProofShow
 from pyk.utils import BugReport, ensure_dir_path, hash_str, run_process, single, unique
 
-from .kevm import KEVM, KEVMNodePrinter, KEVMSemantics
-from .solc_to_k import Contract, contract_to_main_module, contract_to_verification_module
-from .utils import (
+from kevm_pyk.kevm import KEVM, KEVMNodePrinter, KEVMSemantics
+from kevm_pyk.utils import (
     KDefinition__expand_macros,
     abstract_cell_vars,
     byte_offset_to_lines,
@@ -41,6 +40,8 @@ from .utils import (
     print_failure_info,
     print_model,
 )
+
+from .solc_to_k import Contract, contract_to_main_module, contract_to_verification_module
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -123,7 +124,7 @@ class Foundry:
 
     @cached_property
     def llvm_dylib(self) -> Path | None:
-        from .kompile import Kernel
+        from kevm_pyk.kompile import Kernel
 
         arch = Kernel.get()
         foundry_llvm_dir = self.out / 'kompiled-llvm'
@@ -370,7 +371,7 @@ def foundry_kompile(
     llvm_library: bool = False,
     verbose: bool = False,
 ) -> None:
-    from .kompile import KompileTarget, kevm_kompile
+    from kevm_pyk.kompile import KompileTarget, kevm_kompile
 
     syntax_module = 'FOUNDRY-CONTRACTS'
     foundry = Foundry(foundry_root)
