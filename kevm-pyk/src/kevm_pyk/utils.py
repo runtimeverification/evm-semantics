@@ -344,7 +344,13 @@ def legacy_explore(
         if maude_port is None:
             dispatch = None
         else:
-            dispatch = {'execute': ('localhost', maude_port, TransportType.HTTP)}
+            dispatch = {
+                'execute': [('localhost', maude_port, TransportType.HTTP)],
+                'add-module': [
+                    ('localhost', maude_port, TransportType.HTTP),
+                    ('localhost', port, TransportType.SINGLE_SOCKET),
+                ],
+            }
         with KoreClient('localhost', port, bug_report=bug_report, dispatch=dispatch) as client:
             yield KCFGExplore(
                 kprint=kprint,
