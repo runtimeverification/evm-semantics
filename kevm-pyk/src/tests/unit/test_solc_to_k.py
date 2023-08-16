@@ -6,7 +6,7 @@ import pytest
 from pyk.kast.inner import KToken, KVariable
 
 from kevm_pyk.kevm import KEVM
-from kevm_pyk.solc_to_k import _range_predicate
+from kontrol.solc_to_k import _range_predicate
 
 from .utils import TEST_DATA_DIR
 
