@@ -305,6 +305,10 @@ class KEVM(KProve, KRun):
         return KApply('binRuntime', [c])
 
     @staticmethod
+    def init_bytecode(c: KInner) -> KApply:
+        return KApply('initBytecode', [c])
+
+    @staticmethod
     def hashed_location(compiler: str, base: KInner, offset: KInner, member_offset: int = 0) -> KApply:
         location = KApply(
             '#hashedLocation(_,_,_)_HASHED-LOCATIONS_Int_String_Int_IntList', [stringToken(compiler), base, offset]

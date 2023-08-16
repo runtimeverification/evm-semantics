@@ -32,6 +32,7 @@ module FOUNDRY-MAIN
     imports public FORKTEST-VERIFICATION
     imports public GASTEST-VERIFICATION
     imports public GETCODETEST-VERIFICATION
+    imports public INITCODETEST-VERIFICATION
     imports public KEVMCHEATS-VERIFICATION
     imports public KEVMCHEATSBASE-VERIFICATION
     imports public LABELTEST-VERIFICATION
@@ -285,6 +286,13 @@ endmodule
 
 module GETCODETEST-VERIFICATION
     imports public GETCODETEST-CONTRACT
+    
+    
+
+endmodule
+
+module INITCODETEST-VERIFICATION
+    imports public INITCODETEST-CONTRACT
     
     
 

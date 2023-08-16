@@ -223,6 +223,7 @@ class Contract:
     contract_json: dict
     contract_id: int
     contract_path: str
+    deployed_bytecode: str
     bytecode: str
     raw_sourcemap: str | None
     methods: tuple[Method, ...]
@@ -238,8 +239,11 @@ class Contract:
         evm = self.contract_json['evm'] if not foundry else self.contract_json
 
         deployed_bytecode = evm['deployedBytecode']
-        self.bytecode = deployed_bytecode['object'].replace('0x', '')
+        self.deployed_bytecode = deployed_bytecode['object'].replace('0x', '')
         self.raw_sourcemap = deployed_bytecode['sourceMap'] if 'sourceMap' in deployed_bytecode else None
+
+        bytecode = evm['bytecode']
+        self.bytecode = bytecode['object'].replace('0x', '')
 
         contract_ast_nodes = [
             node
@@ -292,11 +296,11 @@ class Contract:
     def srcmap(self) -> dict[int, tuple[int, int, int, str, int]]:
         _srcmap = {}
 
-        if len(self.bytecode) > 0 and self.raw_sourcemap is not None:
+        if len(self.deployed_bytecode) > 0 and self.raw_sourcemap is not None:
             instr_to_pc = {}
             pc = 0
             instr = 0
-            bs = [int(self.bytecode[i : i + 2], 16) for i in range(0, len(self.bytecode), 2)]
+            bs = [int(self.deployed_bytecode[i : i + 2], 16) for i in range(0, len(self.deployed_bytecode), 2)]
             while pc < len(bs):
                 b = bs[pc]
                 instr_to_pc[instr] = pc
@@ -384,11 +388,21 @@ class Contract:
                 f'Some library placeholders have been found in contract {self.name}. Please link the library(ies) first. Ref: https://docs.soliditylang.org/en/v0.8.20/using-the-compiler.html#library-linking'
             )
         return KRule(
-            KRewrite(KEVM.bin_runtime(KApply(self.klabel)), KEVM.parse_bytestack(stringToken('0x' + self.bytecode)))
+            KRewrite(KEVM.bin_runtime(KApply(self.klabel)), KEVM.parse_bytestack(stringToken('0x' + self.deployed_bytecode)))
+        )
+
+    @property
+    def macro_init_bytecode(self) -> KRule:
+        if self.has_unlinked():
+            raise ValueError(
+                f'Some library placeholders have been found in contract {self.name}. Please link the library(ies) first. Ref: https://docs.soliditylang.org/en/v0.8.20/using-the-compiler.html#library-linking'
+            )
+        return KRule(
+            KRewrite(KEVM.init_bytecode(KApply(self.klabel)), KEVM.parse_bytestack(stringToken('0x' + self.bytecode)))
         )
 
     def has_unlinked(self) -> bool:
-        return 0 <= self.bytecode.find('__')
+        return 0 <= self.deployed_bytecode.find('__')
 
     @property
     def method_sentences(self) -> list[KSentence]:
@@ -421,7 +435,7 @@ class Contract:
 
     @property
     def sentences(self) -> list[KSentence]:
-        return [self.subsort, self.production, self.macro_bin_runtime] + self.field_sentences + self.method_sentences
+        return [self.subsort, self.production, self.macro_bin_runtime, self.macro_init_bytecode] + self.field_sentences + self.method_sentences
 
     @property
     def method_by_name(self) -> dict[str, Contract.Method]:
