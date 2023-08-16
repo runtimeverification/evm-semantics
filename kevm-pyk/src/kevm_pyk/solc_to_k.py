@@ -109,7 +109,7 @@ class Contract:
         @property
         def klabel(self) -> KLabel:
             args_list = '_'.join(self.arg_types)
-            return KLabel(f'method_{self.contract_name}_{self.name}_{args_list}')
+            return KLabel(f'method_{self.contract_name}_{self.unique_name}_{args_list}')
 
         @property
         def unique_klabel(self) -> KLabel:
