@@ -17,8 +17,8 @@ from pyk.prelude.kint import intToken
 from pyk.prelude.string import stringToken
 from pyk.utils import FrozenDict, hash_str, run_process, single
 
-from .kevm import KEVM
-from .utils import name_escaped
+from kevm_pyk.kevm import KEVM
+from kevm_pyk.utils import name_escaped
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
