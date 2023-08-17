@@ -5,11 +5,11 @@ import pytest
 from kontrol.solc_to_k import Contract
 
 TEST_DATA: list[tuple[str, str, str, str]] = [
-    ('has_underscore', 'KEVM', 'My_contract', 'KEVMMyz5fcontract'),
+    ('has_underscore', 'S2K', 'My_contract', 'S2KMyz5fcontract'),
     ('no_change', '', 'mycontract', 'mycontract'),
-    ('starts_underscore', 'KEVM', '_method', 'KEVMz5fmethod'),
+    ('starts_underscore', 'S2K', '_method', 'S2Kz5fmethod'),
     ('with_escape', '', 'z_', 'z7az5f'),
-    ('with_escape', 'KEVM', 'zKEVM_', 'KEVMz7aKEVMz5f'),
+    ('with_escape', 'S2K', 'zS2K_', 'S2Kz7aS2Kz5f'),
 ]
 
 

@@ -60,8 +60,8 @@ module SUM-TO-N-INVARIANT
    andBool #rangeUInt(256, S)
    andBool GAS_AMT >=Int N *Int 178
    andBool CONDITION ==K bool2Word ( N:Int ==Int 0 )
-   andBool PROGRAM ==K #binRuntime(KEVMLoopsTest)
-   andBool JUMPDESTS ==K #computeValidJumpDests(#binRuntime(KEVMLoopsTest))
+   andBool PROGRAM ==K #binRuntime(S2KLoopsTest)
+   andBool JUMPDESTS ==K #computeValidJumpDests(#binRuntime(S2KLoopsTest))
   [priority(40)]
 
 endmodule
