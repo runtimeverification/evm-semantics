@@ -45,7 +45,7 @@ export PLUGIN_FULL_PATH
 
 
 .PHONY: all clean distclean install uninstall                                                            	\
-        deps k-deps plugin-deps protobuf proto-tester                                                      	\
+        plugin-deps protobuf proto-tester                                                                   \
         poetry-env poetry shell kevm-pyk                                                                 	\
         build build-haskell build-haskell-standalone build-foundry build-llvm build-node build-kevm      	\
         test test-integration test-conformance test-prove test-foundry-prove test-prove-smoke            	\
@@ -76,31 +76,6 @@ $(protobuf_out): $(NODE_DIR)/proto/msg.proto
 
 # K Dependencies
 # --------------
-
-deps: k-deps
-
-K_MVN_ARGS :=
-ifneq ($(SKIP_LLVM),)
-    K_MVN_ARGS += -Dllvm.backend.skip
-endif
-ifneq ($(SKIP_HASKELL),)
-    K_MVN_ARGS += -Dhaskell.backend.skip
-endif
-
-ifneq ($(APPLE_SILICON),)
-    K_MVN_ARGS += -Dstack.extra-opts='--compiler ghc-8.10.7 --system-ghc'
-endif
-
-ifneq ($(RELEASE),)
-    K_BUILD_TYPE := FastBuild
-else
-    K_BUILD_TYPE := Debug
-endif
-
-k-deps:
-	cd $(K_SUBMODULE)                                                                                                                                                                            \
-	    && mvn --batch-mode package -DskipTests -Dllvm.backend.prefix=$(INSTALL_LIB)/kframework -Dllvm.backend.destdir=$(CURDIR)/$(BUILD_DIR) -Dproject.build.type=$(K_BUILD_TYPE) $(K_MVN_ARGS) \
-	    && DESTDIR=$(CURDIR)/$(BUILD_DIR) PREFIX=$(INSTALL_LIB)/kframework package/package
 
 plugin_k_include  := $(KEVM_INCLUDE)/kframework/plugin
 plugin_include    := $(KEVM_LIB)/blockchain-k-plugin/include
