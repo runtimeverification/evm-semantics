@@ -75,7 +75,7 @@
                      CALLER_ID
                    </caller>
                    <callData>
-                     ( SetUpDeployTest . test_extcodesize ( ) => b"b\xc9\xea\xc5" )
+                     ( S2KSetUpDeployTest . test_extcodesize ( ) => b"b\xc9\xea\xc5" )
                    </callData>
                    <callValue>
                      0
@@ -262,7 +262,7 @@
        andBool ( NUMBER_CELL <=Int maxSInt256
        andBool ( 0 <=Int 9223372036854775807
        andBool ( 9223372036854775807 <Int pow256
-       andBool ( lengthBytes ( SetUpDeployTest . test_extcodesize ( ) ) <Int pow128
+       andBool ( lengthBytes ( S2KSetUpDeployTest . test_extcodesize ( ) ) <Int pow128
        andBool ( 0 <=Int 728815563385977040452943777879061427756277306518
        andBool ( 728815563385977040452943777879061427756277306518 <Int pow160
                )))))))))))
