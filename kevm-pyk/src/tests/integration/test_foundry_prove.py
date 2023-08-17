@@ -4,10 +4,11 @@ from distutils.dir_util import copy_tree
 from typing import TYPE_CHECKING
 
 import pytest
+from filelock import FileLock
 from pyk.utils import run_process
 
 from kevm_pyk import config
-from kevm_pyk.foundry import foundry_kompile, foundry_prove, foundry_show
+from kontrol.foundry import foundry_kompile, foundry_prove, foundry_show
 
 from .utils import TEST_DATA_DIR
 
@@ -21,24 +22,33 @@ if TYPE_CHECKING:
 FORGE_STD_REF: Final = '27e14b7'
 
 
-@pytest.fixture(scope='module')  # TODO should reduce scope
-def foundry_root(tmp_path_factory: TempPathFactory, use_booster: bool) -> Path:
-    foundry_root = tmp_path_factory.mktemp('foundry')
-    copy_tree(str(TEST_DATA_DIR / 'foundry'), str(foundry_root))
+@pytest.fixture(scope='session')
+def foundry_root(tmp_path_factory: TempPathFactory, worker_id: str, use_booster: bool) -> Path:
+    if worker_id == 'master':
+        root_tmp_dir = tmp_path_factory.getbasetemp()
+    else:
+        root_tmp_dir = tmp_path_factory.getbasetemp().parent
 
-    run_process(['forge', 'install', '--no-git', f'foundry-rs/forge-std@{FORGE_STD_REF}'], cwd=foundry_root)
-    run_process(['forge', 'build'], cwd=foundry_root)
+    foundry_root = root_tmp_dir / 'foundry'
+    with FileLock(str(foundry_root) + '.lock'):
+        if not foundry_root.is_dir():
+            copy_tree(str(TEST_DATA_DIR / 'foundry'), str(foundry_root))
 
-    foundry_kompile(
-        definition_dir=config.FOUNDRY_DIR,
-        foundry_root=foundry_root,
-        includes=(),
-        requires=[str(TEST_DATA_DIR / 'lemmas.k')],
-        imports=['LoopsTest:SUM-TO-N-INVARIANT'],
-        llvm_library=use_booster,
-    )
+            run_process(['forge', 'install', '--no-git', f'foundry-rs/forge-std@{FORGE_STD_REF}'], cwd=foundry_root)
+            run_process(['forge', 'build'], cwd=foundry_root)
 
-    return foundry_root
+            foundry_kompile(
+                definition_dir=config.FOUNDRY_DIR,
+                foundry_root=foundry_root,
+                includes=(),
+                requires=[str(TEST_DATA_DIR / 'lemmas.k')],
+                imports=['LoopsTest:SUM-TO-N-INVARIANT'],
+                llvm_library=use_booster,
+            )
+
+    session_foundry_root = tmp_path_factory.mktemp('foundry')
+    copy_tree(str(foundry_root), str(session_foundry_root))
+    return session_foundry_root
 
 
 def test_foundry_kompile(foundry_root: Path, update_expected_output: bool, use_booster: bool) -> None:
