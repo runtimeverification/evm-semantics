@@ -49,14 +49,28 @@ run_kevm_pyk() {
     local pyk_command pyk_args
     pyk_command="$1" ; shift
     case "${pyk_command}" in
-        run|prove|prove-legacy|solc-to-k|foundry-kompile|foundry-prove|view-kcfg|show-kcfg|prune-proof)
+        run|prove|prove-legacy|view-kcfg|show-kcfg|prune-proof)
             pyk_args=(--definition "${backend_dir}")
             pyk_args+=(-I "${INSTALL_INCLUDE}/kframework")
             ;;
     esac
     ! ${verbose} || pyk_args+=(--verbose)
     ! ${debug}   || pyk_args+=(--debug)
-    execute python3 -m kevm_pyk "${pyk_command}" "$@" "${pyk_args[@]}"
+    execute kevm-pyk "${pyk_command}" "$@" "${pyk_args[@]}"
+}
+
+run_kontrol() {
+    local pyk_command pyk_args
+    pyk_command="$1" ; shift
+    case "${pyk_command}" in
+        solc-to-k|foundry-kompile|foundry-prove)
+            pyk_args=(--definition "${backend_dir}")
+            pyk_args+=(-I "${INSTALL_INCLUDE}/kframework")
+            ;;
+    esac
+    ! ${verbose} || pyk_args+=(--verbose)
+    ! ${debug}   || pyk_args+=(--debug)
+    execute kontrol "${pyk_command}" "$@" "${pyk_args[@]}"
 }
 
 # User Commands
@@ -94,8 +108,8 @@ run_kast() {
     fi
 
     case "${run_file}-${output_mode}" in
-        *.json-kore) check_k_install ; gst-to-kore "${run_file}" --schedule "${schedule}" --mode "${mode}" --chainid "${chainid}" "$@" ;;
-        *)           check_k_install ; kast --definition "${backend_dir}" "${run_file}" --output "${output_mode}" "$@" ;;
+        *.json-kore) check_k_install ; execute gst-to-kore "${run_file}" --schedule "${schedule}" --mode "${mode}" --chainid "${chainid}" "$@" ;;
+        *)           check_k_install ; execute kast --definition "${backend_dir}" "${run_file}" --output "${output_mode}" "$@" ;;
     esac
 }
 
@@ -138,6 +152,7 @@ if [[ "$run_command" == 'help' ]] || [[ "$run_command" == '--help' ]] ; then
     "
 
     run_kevm_pyk --help
+    run_kontrol --help
     exit 0
 fi
 
@@ -193,6 +208,7 @@ fi
 case "$run_command-$backend" in
     run-@(llvm|haskell|haskell-standalone) ) run_krun "$@" ;;
     kast-@(llvm|haskell)                   ) run_kast "$@" ;;
-    @(kompile|prune-proof|view-kcfg|show-kcfg|solc-to-k|prove|prove-legacy|foundry)-* ) run_kevm_pyk ${run_command} "$@" ;;
+    @(solc|compile|foundry)* )               run_kontrol ${run_command} "$@" ;;
+    @(kompile|prune-proof|view-kcfg|show-kcfg|prove|prove-legacy)-* ) run_kevm_pyk ${run_command} "$@" ;;
     *) ${KEVM} help ; fatal "Unknown command on backend: $run_command $backend" ;;
 esac

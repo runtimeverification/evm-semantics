@@ -99,6 +99,7 @@ def kevm_kompile(
     llvm_kompile_type: LLVMKompileType | None = None,
     enable_llvm_debug: bool = False,
     debug: bool = False,
+    verbose: bool = False,
 ) -> Path:
     backend = target.backend
     md_selector = target.md_selector
@@ -141,7 +142,7 @@ def kevm_kompile(
             raise ValueError(f'Unsupported backend: {backend.value}')
 
     try:
-        return kompile(output_dir=output_dir or target.definition_dir, debug=debug)
+        return kompile(output_dir=output_dir or target.definition_dir, debug=debug, verbose=verbose)
     except RuntimeError as err:
         sys.stderr.write(f'\nkompile stdout:\n{err.args[1]}\n')
         sys.stderr.write(f'\nkompile stderr:\n{err.args[2]}\n')

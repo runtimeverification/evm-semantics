@@ -77,12 +77,12 @@ jobs:
         with:
           tag: kevm-ci-profile-${{ github.sha }}
       - name: 'Build kevm-pyk'
-        run: docker exec -u user kevm-ci-profile-${GITHUB_SHA} /bin/bash -c 'make poetry'
+        run: docker exec -u github-user kevm-ci-profile-${GITHUB_SHA} /bin/bash -c 'make poetry'
       - name: 'Build Foundry'
-        run: docker exec -u user kevm-ci-profile-${GITHUB_SHA} /bin/bash -c 'make build-foundry'
+        run: docker exec -u github-user kevm-ci-profile-${GITHUB_SHA} /bin/bash -c 'make build-foundry'
       - name: 'Run profiling'
         run: |
-          docker exec -u user kevm-ci-profile-${GITHUB_SHA} /bin/bash -c 'make profile'
+          docker exec -u github-user kevm-ci-profile-${GITHUB_SHA} /bin/bash -c 'make profile'
       - name: 'Tear down Docker'
         if: always()
         run: |
@@ -104,19 +104,19 @@ jobs:
         with:
           tag: kevm-ci-concrete-${{ github.sha }}
       - name: 'Build kevm-pyk'
-        run: docker exec -u user kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make poetry'
+        run: docker exec -u github-user kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make poetry'
       - name: 'Build blockchain-k-plugin-deps'
-        run: docker exec -u user kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make CXX=clang++-14 plugin-deps'
+        run: docker exec -u github-user kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make CXX=clang++-14 plugin-deps'
       - name: 'Build kevm'
-        run: docker exec -u user kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make build-kevm build-haskell build-llvm build-node -j`nproc` RELEASE=true'
+        run: docker exec -u github-user kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make build-kevm build-haskell build-llvm build-node -j`nproc` RELEASE=true'
       - name: 'Test kevm-pyk'
-        run: docker exec -u user kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make test-integration'
+        run: docker exec -u github-user kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make test-integration'
       - name: 'Test conformance'
-        run: docker exec -u user kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make test-conformance'
+        run: docker exec -u github-user kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make test-conformance'
       - name: 'Test llvm krun'
-        run: docker exec -u user kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make test-interactive-run TEST_CONCRETE_BACKEND=llvm'
+        run: docker exec -u github-user kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make test-interactive-run TEST_CONCRETE_BACKEND=llvm'
       - name: 'Test node'
-        run: docker exec -u user kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make test-node -j`nproc`'
+        run: docker exec -u github-user kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make test-node -j`nproc`'
       - name: 'Tear down Docker'
         if: always()
         run: |
@@ -137,7 +137,7 @@ jobs:
         with:
           tag: kevm-ci-haskell-${{ github.sha }}
       - name: 'Prove Haskell'
-        run: docker exec -u user kevm-ci-haskell-${GITHUB_SHA} /bin/bash -c 'make test-prove'
+        run: docker exec -u github-user kevm-ci-haskell-${GITHUB_SHA} /bin/bash -c 'make test-prove'
       - name: 'Tear down Docker'
         if: always()
         run: |
@@ -146,7 +146,7 @@ jobs:
   test-prove-foundry:
     name: 'Build and Test KEVM Foundry proofs'
     needs: kevm-pyk-code-quality-checks
-    runs-on: [self-hosted, linux, huge]
+    runs-on: [self-hosted, linux, normal]
     timeout-minutes: 150
     steps:
       - name: 'Check out code'
@@ -158,11 +158,11 @@ jobs:
         with:
           tag: kevm-ci-foundry-${{ github.sha }}
       - name: 'Build kevm-pyk'
-        run: docker exec -u user kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make poetry'
+        run: docker exec -u github-user kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make poetry'
       - name: 'Build Foundry'
-        run: docker exec -u user kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make build-foundry -j2'
+        run: docker exec -u github-user kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make build-foundry -j2'
       - name: 'Foundry Prove'
-        run: docker exec -u user kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make test-foundry-prove PYTEST_ARGS=-vv'
+        run: docker exec -u github-user kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make test-foundry-prove PYTEST_ARGS=-vv'
       - name: 'Tear down Docker'
         if: always()
         run: |
@@ -171,25 +171,29 @@ jobs:
   test-prove-foundry-booster:
     name: 'Build and Test KEVM Foundry proofs (booster)'
     needs: kevm-pyk-code-quality-checks
-    runs-on: [self-hosted, linux, huge]
+    runs-on: [self-hosted, linux, normal]
     timeout-minutes: 150
     steps:
       - name: 'Check out code'
         uses: actions/checkout@v3
         with:
           submodules: recursive
-      - name: 'Build devShell'
-        env: 
-          CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_PUBLIC_TOKEN }}
-        run: cachix watch-exec k-framework -- nix build --extra-experimental-features 'nix-command flakes' .#devShell.x86_64-linux.inputDerivation --no-link
-      - name: 'Build blockchain-k-plugin-deps'
-        run: nix develop --extra-experimental-features 'nix-command flakes' --command make plugin-deps
+      - name: 'Set up Docker'
+        uses: ./.github/actions/with-docker
+        with:
+          tag: kevm-ci-booster-${{ github.sha }}
       - name: 'Build kevm-pyk'
-        run: nix develop --extra-experimental-features 'nix-command flakes' --command make poetry
+        run: docker exec -u github-user kevm-ci-booster-${GITHUB_SHA} /bin/bash -c 'make poetry'
+      - name: 'Build blockchain-k-plugin-deps'
+        run: docker exec -u github-user kevm-ci-booster-${GITHUB_SHA} /bin/bash -c 'make CXX=clang++-14 plugin-deps'
       - name: 'Build Foundry'
-        run: nix develop --extra-experimental-features 'nix-command flakes' --command make build-foundry -j2
+        run: docker exec -u github-user kevm-ci-booster-${GITHUB_SHA} /bin/bash -c 'make build-foundry -j2'
       - name: 'Foundry Prove'
-        run: nix develop --extra-experimental-features 'nix-command flakes' --command make test-foundry-prove -j2 FOUNDRY_PAR=8 TEST_ARGS=--use-booster
+        run: docker exec -u github-user kevm-ci-booster-${GITHUB_SHA} /bin/bash -c 'make test-foundry-prove PYTEST_ARGS="-vv --use-booster"'
+      - name: 'Tear down Docker'
+        if: always()
+        run: |
+          docker stop --time=0 kevm-ci-booster-${GITHUB_SHA}
 
   nix:
     name: 'Nix'
@@ -229,7 +233,7 @@ jobs:
       - name: 'Test KEVM'
         run: GC_DONT_GC=1 nix build --extra-experimental-features 'nix-command flakes' --print-build-logs .#kevm-test
 
-  dockerhub-image-dry-run:
+  build-deb-package:
     name: 'Build Ubuntu Jammy DockerHub Image'
     runs-on: [self-hosted, linux, normal]
     needs: kevm-pyk-code-quality-checks
@@ -247,43 +251,39 @@ jobs:
         run: |
           set -euxo pipefail
           version=$(cat package/version)
-          docker exec -u user kevm-package-jammy-${GITHUB_SHA} /bin/bash -c 'package/debian/package jammy'
-          docker exec -u user kevm-package-jammy-${GITHUB_SHA} /bin/bash -c 'ls ..'
-          docker cp kevm-package-jammy-${GITHUB_SHA}:/home/user/kevm_${version}_amd64.deb ./
+          docker exec -u github-user kevm-package-jammy-${GITHUB_SHA} /bin/bash -c 'package/debian/package jammy'
+          docker cp kevm-package-jammy-${GITHUB_SHA}:/home/github-user/kevm_${version}_amd64.deb ./
+
+      - name: 'Define Foundry Test Variables'
+        run: |
+          set -euxo pipefail
+          echo "version=$(cat package/version)" >> $GITHUB_ENV
+          echo "k_version=$(cat deps/k_release)" >> $GITHUB_ENV
+          echo "tag_name=runtimeverificationinc/kevm:ubuntu-jammy-$(cat package/version)" >> $GITHUB_ENV
+          echo "container_name=kevm-ci-test-${GITHUB_SHA}" >> $GITHUB_ENV
+
+      - name: 'Setup Foundry Test Docker'
+        uses: ./.github/actions/with-docker
+        with:
+          tag: kevm-ci-test-${{ github.sha }}
+          dockerfile: package/docker/Dockerfile
+
+      - name: 'KEVM Foundry Test'
+        run: |
+          set -euxo pipefail
+          version=${{ env.veresion }}
+          k_version=${{ env.k_version }}
+          container_name=${{ env.container_name}}
+          docker cp ./tests/foundry ${container_name}:/home/github-user/foundry
+          docker exec -u github-user ${container_name} /bin/bash -c "sudo chown github-user:github-user -R /home/github-user/foundry"
+          docker exec -u github-user ${container_name} /bin/bash -c "forge build --root /home/github-user/foundry"
+          docker exec -u github-user ${container_name} /bin/bash -c "kevm foundry-kompile --foundry-project-root /home/github-user/foundry --verbose"
+          docker exec -u github-user ${container_name} /bin/bash -c "kevm foundry-prove --foundry-project-root /home/github-user/foundry --verbose --test AssertTest.test_assert_true_branch"
+          docker exec -u github-user ${container_name} /bin/bash -c "kevm foundry-show --foundry-project-root /home/github-user/foundry --verbose AssertTest.test_assert_true_branch"
+          docker exec -u github-user ${container_name} /bin/bash -c "kevm foundry-list --foundry-project-root /home/github-user/foundry --verbose"
+
       - name: 'Tear down Docker'
         if: always()
         run: |
           docker stop --time=0 kevm-package-jammy-${GITHUB_SHA}
-      - name: 'Build Docker Image'
-        run: |
-          set -euxo pipefail
-          version=$(cat package/version)
-          k_version=$(cat deps/k_release)
-          tag_name="runtimeverificationinc/kevm:ubuntu-jammy-${version}"
-          container_name="kevm-ci-test-${GITHUB_SHA}"
-          docker build . --tag ${tag_name} --file package/docker/Dockerfile \
-            --build-arg K_VERSION=${k_version}                              \
-            --build-arg KEVM_VERSION=${version}
-          docker run                 \
-            --name ${container_name} \
-            --rm                     \
-            --interactive            \
-            --tty                    \
-            --detach                 \
-            --user root              \
-            --workdir /home/user     \
-            ${tag_name}
-      - name: 'Test Docker Image'
-        run: |
-          set -euxo pipefail
-          version=$(cat package/version)
-          k_version=$(cat deps/k_release)
-          container_name="kevm-ci-test-${GITHUB_SHA}"
-          docker cp ./tests/foundry ${container_name}:/home/user/foundry
-          docker exec -u user ${container_name} /bin/bash -c "sudo chown user:user -R /home/user/foundry"
-          docker exec -u user ${container_name} /bin/bash -c "forge build --root foundry"
-          docker exec -u user ${container_name} /bin/bash -c "kevm foundry-kompile --foundry-project-root foundry --verbose"
-          docker exec -u user ${container_name} /bin/bash -c "kevm foundry-prove --foundry-project-root foundry --verbose --test AssertTest.test_assert_true_branch"
-          docker exec -u user ${container_name} /bin/bash -c "kevm foundry-show --foundry-project-root foundry --verbose AssertTest.test_assert_true_branch"
-          docker exec -u user ${container_name} /bin/bash -c "kevm foundry-list --foundry-project-root foundry --verbose"
-          docker stop --time=0 ${container_name}
+          docker stop --time=0 kevm-ci-test-${GITHUB_SHA}

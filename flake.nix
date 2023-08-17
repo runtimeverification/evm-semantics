@@ -3,7 +3,7 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/b01f185e4866de7c5b5a82f833ca9ea3c3f72fc4";
-    k-framework.url = "github:runtimeverification/k/v6.0.44";
+    k-framework.url = "github:runtimeverification/k/v6.0.59";
     k-framework.inputs.nixpkgs.follows = "nixpkgs";
     #nixpkgs.follows = "k-framework/nixpkgs";
     flake-utils.follows = "k-framework/flake-utils";
@@ -17,14 +17,18 @@
     ethereum-legacytests.url = "github:ethereum/legacytests/d7abc42a7b352a7b44b1f66b58aca54e4af6a9d7";
     ethereum-legacytests.flake = false;
     haskell-backend.follows = "k-framework/haskell-backend";
-    pyk.url = "github:runtimeverification/pyk/v0.1.401";
+    pyk.url = "github:runtimeverification/pyk/v0.1.417";
     pyk.inputs.flake-utils.follows = "k-framework/flake-utils";
     pyk.inputs.nixpkgs.follows = "k-framework/nixpkgs";
     foundry.url = "github:shazow/foundry.nix/monthly"; # Use monthly branch for permanent releases
+    solc = {
+      url = "github:hellwolf/solc.nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
   outputs = { self, k-framework, haskell-backend, nixpkgs, flake-utils
     , poetry2nix, blockchain-k-plugin, ethereum-tests, ethereum-legacytests
-    , rv-utils, pyk, foundry }:
+    , rv-utils, pyk, foundry, solc }:
     let
       nixLibs = pkgs:
         with pkgs;
@@ -47,7 +51,7 @@
           procps
           protobuf
           python310
-          solc
+          (solc.mkDefault pkgs solc_0_8_13)
           time
         ] ++ lib.optional (!stdenv.isDarwin) elfutils;
 
@@ -87,9 +91,11 @@
               substituteInPlace ./cmake/node/CMakeLists.txt \
                 --replace 'set(K_LIB ''${K_BIN}/../lib)' 'set(K_LIB ${k}/lib)'
               substituteInPlace ./bin/kevm \
-                --replace 'execute python3 -m kevm_pyk' 'execute ${final.kevm-pyk}/bin/kevm-pyk'
+                --replace 'execute kevm-pyk' 'execute ${final.kevm-pyk}/bin/kevm-pyk'
               substituteInPlace ./bin/kevm \
-                --replace 'gst-to-kore' '${final.kevm-pyk}/bin/gst-to-kore'
+                --replace 'execute kontrol' 'execute ${final.kevm-pyk}/bin/kontrol'
+              substituteInPlace ./bin/kevm \
+                --replace 'execute gst-to-kore' 'execute ${final.kevm-pyk}/bin/gst-to-kore'
             '';
 
             buildFlagsArray = "NIX_LIBS=${nixLibs prev}";
@@ -109,7 +115,7 @@
               mkdir -p $out
               mv .build/usr/* $out/
               wrapProgram $out/bin/kevm --prefix PATH : ${
-                prev.lib.makeBinPath [ final.solc prev.which k ]
+                prev.lib.makeBinPath [ (solc.mkDefault final final.solc_0_8_13) final.foundry-bin prev.which k ]
               } --set NIX_LIBS "${nixLibs prev}"
               ln -s ${k} $out/lib/kevm/kframework
 
@@ -125,7 +131,7 @@
 
             enableParallelBuilding = true;
 
-            buildInputs = [ (final.kevm k) prev.which prev.git prev.foundry-bin prev.solc ];
+            buildInputs = [ (final.kevm k) prev.which prev.git ];
 
             buildPhase = ''
               mkdir -p tests/ethereum-tests/LegacyTests
@@ -148,6 +154,12 @@
         kevm-pyk = prev.poetry2nix.mkPoetryApplication {
           python = prev.python310;
           projectDir = ./kevm-pyk;
+
+          postPatch = ''
+              substituteInPlace ./src/kontrol/foundry.py \
+                --replace "'forge', 'build'," "'forge', 'build', '--no-auto-detect',"
+            '';
+
           overrides = prev.poetry2nix.overrides.withDefaults
             (finalPython: prevPython: { pyk = prev.pyk-python310; });
           groups = [ ];
@@ -166,16 +178,13 @@
         pkgs = import nixpkgs {
           inherit system;
           overlays = [
-            (final: prev: { llvm-backend-release = false; })
-            (final: prev: {
-              # https://github.com/NixOS/nixpkgs/pull/219240
-              solc = prev.callPackage ./nix/solc/default.nix { };
-            })
+            (final: prev: { llvm-backend-release = false; poetry-nixpkgs = prev.poetry; })
             k-framework.overlay
             blockchain-k-plugin.overlay
             poetry2nix.overlay
             pyk.overlay
             foundry.overlay
+            solc.overlay
             overlay
           ];
         };
@@ -184,7 +193,7 @@
         packages.default = kevm;
         devShell = pkgs.mkShell {
           buildInputs = buildInputs pkgs k-framework.packages.${system}.k
-            ++ [ pkgs.poetry pkgs.foundry-bin ];
+            ++ [ pkgs.poetry-nixpkgs pkgs.foundry-bin ];
 
           shellHook = ''
             export NIX_LIBS="${nixLibs pkgs}"
