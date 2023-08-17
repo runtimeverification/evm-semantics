@@ -389,7 +389,9 @@ class Contract:
                 f'Some library placeholders have been found in contract {self.name}. Please link the library(ies) first. Ref: https://docs.soliditylang.org/en/v0.8.20/using-the-compiler.html#library-linking'
             )
         return KRule(
-            KRewrite(KEVM.bin_runtime(KApply(self.klabel)), KEVM.parse_bytestack(stringToken('0x' + self.deployed_bytecode)))
+            KRewrite(
+                KEVM.bin_runtime(KApply(self.klabel)), KEVM.parse_bytestack(stringToken('0x' + self.deployed_bytecode))
+            )
         )
 
     @property
@@ -436,7 +438,11 @@ class Contract:
 
     @property
     def sentences(self) -> list[KSentence]:
-        return [self.subsort, self.production, self.macro_bin_runtime, self.macro_init_bytecode] + self.field_sentences + self.method_sentences
+        return (
+            [self.subsort, self.production, self.macro_bin_runtime, self.macro_init_bytecode]
+            + self.field_sentences
+            + self.method_sentences
+        )
 
     @property
     def method_by_name(self) -> dict[str, Contract.Method]:

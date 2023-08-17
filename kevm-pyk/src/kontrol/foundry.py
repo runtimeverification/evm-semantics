@@ -975,14 +975,15 @@ def _method_to_apr_proof(
     else:
         _LOGGER.info(f'Initializing KCFG for test: {test}')
 
-        setup_digest = None
         if method_sig != 'setUp()' and 'setUp' in contract.method_by_name:
-            setup_digest = foundry.proof_digest(contract_name, 'setUp()')
+            init_proof = f'{contract_name}.setUp()'
             _LOGGER.info(f'Using setUp method for test: {test}')
+        else:
+            init_proof = f'{contract_name}.init'
 
         empty_config = foundry.kevm.definition.empty_config(GENERATED_TOP_CELL)
         kcfg, init_node_id, target_node_id = _method_to_cfg(
-            empty_config, contract, method, save_directory, init_state=setup_digest
+            empty_config, contract, method, save_directory, init_proof=init_proof
         )
 
         _LOGGER.info(f'Expanding macros in initial state for test: {test}')
@@ -1017,27 +1018,43 @@ def _method_to_cfg(
     empty_config: KInner,
     contract: Contract,
     method: Contract.Method,
-    kcfgs_dir: Path,
-    init_state: str | None = None,
+    proof_dir: Path,
+    init_proof: str | None = None,
 ) -> tuple[KCFG, NodeIdLike, NodeIdLike]:
     calldata = method.calldata_cell(contract)
     callvalue = method.callvalue_cell
-    init_cterm = _init_cterm(
-        empty_config, contract.name, kcfgs_dir, calldata=calldata, callvalue=callvalue, init_state=init_state
-    )
+    init_cterm = _init_cterm(empty_config, contract.name, proof_dir, calldata=calldata, callvalue=callvalue)
+
+    if init_proof:
+        initial_proof = APRProof.read_proof_data(proof_dir, init_proof)
+        assert initial_proof.passed
+
+        cfg = initial_proof.kcfg
+        cfg.remove_node(initial_proof.target)
+        final_states = cfg.leaves
+
+        for final_node in final_states:
+            accounts_subst = {'ACCOUNTS_CELL': final_node.cterm.cell('ACCOUNTS_CELL')}
+            new_init_cterm = CTerm.from_kast(Subst(accounts_subst)(init_cterm.kast))
+            new_node = cfg.create_node(new_init_cterm)
+            cfg.create_cover(final_node.id, new_node.id)
+
+        init_node_id = initial_proof.init
+    else:
+        cfg = KCFG()
+        init_node = cfg.create_node(init_cterm)
+        init_node_id = init_node.id
+
     is_test = method.name.startswith('test')
     failing = method.name.startswith('testFail')
     final_cterm = _final_cterm(empty_config, contract.name, failing=failing, is_test=is_test)
-
-    cfg = KCFG()
-    init_node = cfg.create_node(init_cterm)
     target_node = cfg.create_node(final_cterm)
 
-    return cfg, init_node.id, target_node.id
+    return cfg, init_node_id, target_node.id
 
 
-def get_final_accounts_cell(proof_digest: str, proof_dir: Path) -> tuple[KInner, Iterable[KInner]]:
-    apr_proof = APRProof.read_proof_data(proof_dir, proof_digest)
+def get_final_accounts_cell(proof_id: str, proof_dir: Path) -> tuple[KInner, Iterable[KInner]]:
+    apr_proof = APRProof.read_proof_data(proof_dir, proof_id)
     target = apr_proof.kcfg.node(apr_proof.target)
     target_states = apr_proof.kcfg.covers(target_id=target.id)
     if len(target_states) == 0:
@@ -1060,7 +1077,6 @@ def _init_cterm(
     *,
     calldata: KInner | None = None,
     callvalue: KInner | None = None,
-    init_state: str | None = None,
 ) -> CTerm:
     program = KEVM.bin_runtime(KApply(f'contract_{contract_name}'))
     account_cell = KEVM.account_cell(
@@ -1120,9 +1136,6 @@ def _init_cterm(
     }
 
     constraints = None
-    if init_state:
-        accts, constraints = get_final_accounts_cell(init_state, kcfgs_dir)
-        init_subst['ACCOUNTS_CELL'] = accts
 
     if calldata is not None:
         init_subst['CALLDATA_CELL'] = calldata
