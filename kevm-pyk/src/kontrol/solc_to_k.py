@@ -366,6 +366,9 @@ class Contract:
 
     @staticmethod
     def escaped(name: str, prefix: str) -> str:
+        """
+        escape all the chars that would cause issues once kompiling and add a prefix to mark it as "escaped"
+        """
         escaped = prefix
         for char in iter(name):
             if char in Contract.escaped_chars():
