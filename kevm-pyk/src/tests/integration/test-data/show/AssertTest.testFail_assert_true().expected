@@ -279,7 +279,7 @@ Node 5:
                      CALLER_ID
                    </caller>
                    <callData>
-                     ( S2KAssertTest . testFail_assert_true ( ) => b"\x18g]B" )
+                     ( S2KAssertTest . S2KtestFailz5fassertz5ftrue ( ) => b"\x18g]B" )
                    </callData>
                    <callValue>
                      0
@@ -446,9 +446,9 @@ Node 5:
        andBool ( ORIGIN_ID <Int pow160
        andBool ( 0 <=Int NUMBER_CELL
        andBool ( NUMBER_CELL <=Int maxSInt256
-       andBool ( lengthBytes ( S2KAssertTest . testFail_assert_true ( ) ) <Int pow128
        andBool ( 0 <=Int 9223372036854775807
        andBool ( 9223372036854775807 <Int pow256
+       andBool ( lengthBytes ( S2KAssertTest . S2KtestFailz5fassertz5ftrue ( ) ) <Int pow128
        andBool ( 0 <=Int 728815563385977040452943777879061427756277306518
        andBool ( 728815563385977040452943777879061427756277306518 <Int pow160
                )))))))))))

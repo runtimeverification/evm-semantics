@@ -117,7 +117,7 @@ class Contract:
 
         @property
         def unique_name(self) -> str:
-            return f'method-{self.name}'
+            return f'{Contract.escaped(self.name, "S2K")}'
 
         @cached_property
         def qualified_name(self) -> str:

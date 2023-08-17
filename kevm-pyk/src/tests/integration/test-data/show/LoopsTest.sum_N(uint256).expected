@@ -139,7 +139,7 @@
                      CALLER_ID
                    </caller>
                    <callData>
-                     ( S2KLoopsTest . sum_N ( VV0_n_114b9705 : uint256 ) => b"~\x8e#\xd0" +Bytes #buf ( 32 , VV0_n_114b9705:Int ) )
+                     ( S2KLoopsTest . S2Ksumz5fN ( VV0_n_114b9705 : uint256 ) => b"~\x8e#\xd0" +Bytes #buf ( 32 , VV0_n_114b9705:Int ) )
                    </callData>
                    <callValue>
                      0
@@ -312,9 +312,9 @@
        andBool ( NUMBER_CELL <=Int maxSInt256
        andBool ( 0 <=Int 9223372036854775807
        andBool ( 9223372036854775807 <Int pow256
-       andBool ( lengthBytes ( S2KLoopsTest . sum_N ( VV0_n_114b9705 : uint256 ) ) <Int pow128
        andBool ( 0 <=Int 728815563385977040452943777879061427756277306518
        andBool ( 728815563385977040452943777879061427756277306518 <Int pow160
+       andBool ( lengthBytes ( S2KLoopsTest . S2Ksumz5fN ( VV0_n_114b9705 : uint256 ) ) <Int pow128
                )))))))))))))
        ensures ( 0 <=Int CALLER_ID:Int
        andBool ( 0 <=Int ORIGIN_ID:Int
