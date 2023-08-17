@@ -18,7 +18,6 @@ from pyk.prelude.string import stringToken
 from pyk.utils import FrozenDict, hash_str, run_process, single
 
 from kevm_pyk.kevm import KEVM
-from kevm_pyk.utils import name_escaped
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -238,6 +237,7 @@ class Contract:
     raw_sourcemap: str | None
     methods: tuple[Method, ...]
     fields: FrozenDict
+    prefix_code: str = 'z'
 
     def __init__(self, contract_name: str, contract_json: dict, foundry: bool = False) -> None:
         self.name = contract_name
@@ -352,13 +352,58 @@ class Contract:
     def name_upper(self) -> str:
         return self.name[0:1].upper() + self.name[1:]
 
-    @property
-    def name_escaped(self) -> str:
-        return name_escaped(self.name, 'KEVM')
+    @staticmethod
+    def escaped_chars() -> list[str]:
+        return [Contract.prefix_code, '_']
+
+    @staticmethod
+    def escape_char(char: str) -> str:
+        return f'z{hex(ord(char)).removeprefix("0x")}'
+
+    @staticmethod
+    def unescape_seq(seq: str) -> str:
+        return chr(int(seq, base=16))
+
+    @staticmethod
+    def escaped(name: str, prefix: str) -> str:
+        escaped = prefix
+        for char in iter(name):
+            if char in Contract.escaped_chars():
+                escaped += Contract.escape_char(char)
+            else:
+                escaped += char
+        return escaped
+
+    @staticmethod
+    def unescaped(name: str, prefix: str = '') -> str:
+        if not name.startswith(prefix):
+            raise RuntimeError(f'name {name} should start with {prefix}')
+        unescaped = name.removeprefix(prefix)
+        res = ''
+        unes_iter = iter(unescaped[:-1])
+        skipped = 0
+        for i, char in enumerate(unes_iter):
+            j = i + skipped
+            next_char = unescaped[j + 1]
+            if char == Contract.prefix_code:
+                res += Contract.unescape_seq(unescaped[(j + 1) : (j + 3)])
+                for _ in range(2):
+                    try:
+                        next(unes_iter)
+                        skipped += 1
+                    except StopIteration:
+                        # if we reached the end, write the last char and return
+                        break
+            else:
+                res += char
+            # write last char
+            if j + 2 == len(unescaped):
+                res += next_char
+        return res
 
     @property
     def sort(self) -> KSort:
-        return KSort(f'{self.name_escaped}Contract')
+        return KSort(f'{Contract.escaped(self.name, "S2K")}Contract')
 
     @property
     def sort_field(self) -> KSort:
@@ -366,7 +411,7 @@ class Contract:
 
     @property
     def sort_method(self) -> KSort:
-        return KSort(f'{self.name_escaped}Method')
+        return KSort(f'{Contract.escaped(self.name, "S2K")}Method')
 
     @property
     def klabel(self) -> KLabel:
@@ -390,7 +435,9 @@ class Contract:
 
     @property
     def production(self) -> KProduction:
-        return KProduction(self.sort, [KTerminal(self.name_escaped)], klabel=self.klabel, att=KAtt({'symbol': ''}))
+        return KProduction(
+            self.sort, [KTerminal(Contract.escaped(self.name, 'S2K'))], klabel=self.klabel, att=KAtt({'symbol': ''})
+        )
 
     @property
     def macro_bin_runtime(self) -> KRule:

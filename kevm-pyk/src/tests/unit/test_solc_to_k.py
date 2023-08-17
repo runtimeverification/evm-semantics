@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from kevm_pyk.utils import name_escaped, name_unescaped
+from kontrol.solc_to_k import Contract
 
 TEST_DATA: list[tuple[str, str, str, str]] = [
     ('has_underscore', 'KEVM', 'My_contract', 'KEVMMyz5fcontract'),
@@ -16,13 +16,13 @@ TEST_DATA: list[tuple[str, str, str, str]] = [
 @pytest.mark.parametrize('test_id,prefix,input,output', TEST_DATA, ids=[test_id for test_id, *_ in TEST_DATA])
 def test_escaping(test_id: str, prefix: str, input: str, output: str) -> None:
     # When
-    escaped = name_escaped(input, prefix)
+    escaped = Contract.escaped(input, prefix)
 
     # Then
     assert escaped == output
 
     # And When
-    unescaped = name_unescaped(output, prefix)
+    unescaped = Contract.unescaped(output, prefix)
 
     # Then
     assert unescaped == input
