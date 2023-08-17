@@ -52,8 +52,6 @@ def foundry_root(tmp_path_factory: TempPathFactory, worker_id: str, use_booster:
 
 
 def test_foundry_kompile(foundry_root: Path, update_expected_output: bool, use_booster: bool) -> None:
-    if use_booster:
-        return
     # Then
     assert_or_update_k_output(
         foundry_root / 'out/kompiled/foundry.k',
@@ -108,7 +106,7 @@ def test_foundry_prove(test_id: str, foundry_root: Path, update_expected_output:
     # Then
     assert_pass(test_id, prove_res)
 
-    if test_id not in SHOW_TESTS or use_booster:
+    if test_id not in SHOW_TESTS:
         return
 
     # And when
@@ -147,7 +145,7 @@ def test_foundry_fail(test_id: str, foundry_root: Path, update_expected_output: 
     # Then
     assert_fail(test_id, prove_res)
 
-    if test_id not in SHOW_TESTS or use_booster:
+    if test_id not in SHOW_TESTS:
         return
 
     # And when
