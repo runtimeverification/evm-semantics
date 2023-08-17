@@ -44,13 +44,13 @@ PLUGIN_FULL_PATH := $(abspath ${PLUGIN_SUBMODULE})
 export PLUGIN_FULL_PATH
 
 
-.PHONY: all clean distclean install uninstall                                                            	\
-        plugin-deps protobuf proto-tester                                                                   \
-        poetry-env poetry shell kevm-pyk                                                                 	\
-        build build-haskell build-haskell-standalone build-foundry build-llvm build-node build-kevm      	\
-        test test-integration test-conformance test-prove test-foundry-prove test-prove-smoke            	\
-        test-vm test-rest-vm test-bchain test-rest-bchain test-node test-interactive test-interactive-run	\
-        profile                                                                                             \
+.PHONY: all clean distclean install uninstall                                                             \
+        plugin-deps protobuf proto-tester                                                                 \
+        poetry-env poetry shell kevm-pyk                                                                  \
+        build build-haskell build-haskell-standalone build-foundry build-llvm build-node build-kevm       \
+        test test-integration test-conformance test-prove test-foundry-prove test-prove-smoke             \
+        test-vm test-rest-vm test-bchain test-rest-bchain test-node test-interactive test-interactive-run \
+        profile                                                                                           \
         media media-pdf metropolis-theme
 
 .SECONDARY:
