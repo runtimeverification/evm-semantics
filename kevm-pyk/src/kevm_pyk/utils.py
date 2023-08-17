@@ -125,8 +125,7 @@ def kevm_prove(
                 cut_point_rules=cut_point_rules,
             )
             assert isinstance(proof, APRProof)
-            failure_nodes = proof.failing
-            if len(failure_nodes) == 0:
+            if proof.status == ProofStatus.PASSED:
                 _LOGGER.info(f'Proof passed: {proof.id}')
                 return True
             else:
