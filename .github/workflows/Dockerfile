@@ -1,9 +1,3 @@
-ARG Z3_VERSION
-ARG LLVM_VERSION
-ARG K_VERSION
-ARG K_COMMIT
-ARG BASE_DISTRO
-
 FROM ghcr.io/foundry-rs/foundry:nightly-ca67d15f4abd46394b324c50e21e66f306a1162d as FOUNDRY
 
 ARG Z3_VERSION
@@ -13,9 +7,8 @@ ARG K_VERSION
 ARG BASE_DISTRO
 FROM stack:${BASE_DISTRO}-${K_VERSION} as STACK
 
-ARG K_COMMIT
-ARG LLVM_VERSION
-FROM runtimeverificationinc/kframework-k:ubuntu-jammy-${K_COMMIT}
+ARG K_VERSION
+FROM runtimeverificationinc/kframework-k:ubuntu-jammy-${K_VERSION}
 
 COPY --from=FOUNDRY /usr/local/bin/forge /usr/local/bin/forge
 COPY --from=FOUNDRY /usr/local/bin/anvil /usr/local/bin/anvil

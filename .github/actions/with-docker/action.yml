@@ -54,10 +54,9 @@ runs:
       USER=github-user
       GROUP=${USER}
       Z3_VERSION=4.12.1
-      K_COMMIT=$(cat deps/k_release)
+      K_VERSION=$(cat deps/k_release)
       USER_ID=1000
       GROUP_ID=${USER_ID}
-      K_VERSION=$(cat deps/k/package/version)
 
       docker build .                           \
         --file .github/workflows/Dockerfile.z3 \
@@ -76,7 +75,6 @@ runs:
         --build-arg USER=${USER}                         \
         --build-arg GROUP=${GROUP}                       \
         --build-arg BASE_DISTRO=${BASE_DISTRO}           \
-        --build-arg K_COMMIT=${K_COMMIT}                 \
         --build-arg K_VERSION=${K_VERSION}               \
         --build-arg Z3_VERSION=${Z3_VERSION}             \
         --build-arg LLVM_VERSION=${LLVM_VERSION}
