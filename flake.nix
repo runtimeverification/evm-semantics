@@ -3,7 +3,7 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/b01f185e4866de7c5b5a82f833ca9ea3c3f72fc4";
-    k-framework.url = "github:runtimeverification/k/v6.0.52";
+    k-framework.url = "github:runtimeverification/k/v6.0.59";
     k-framework.inputs.nixpkgs.follows = "nixpkgs";
     #nixpkgs.follows = "k-framework/nixpkgs";
     flake-utils.follows = "k-framework/flake-utils";
@@ -17,7 +17,7 @@
     ethereum-legacytests.url = "github:ethereum/legacytests/d7abc42a7b352a7b44b1f66b58aca54e4af6a9d7";
     ethereum-legacytests.flake = false;
     haskell-backend.follows = "k-framework/haskell-backend";
-    pyk.url = "github:runtimeverification/pyk/v0.1.413";
+    pyk.url = "github:runtimeverification/pyk/v0.1.417";
     pyk.inputs.flake-utils.follows = "k-framework/flake-utils";
     pyk.inputs.nixpkgs.follows = "k-framework/nixpkgs";
     foundry.url = "github:shazow/foundry.nix/monthly"; # Use monthly branch for permanent releases
@@ -91,9 +91,11 @@
               substituteInPlace ./cmake/node/CMakeLists.txt \
                 --replace 'set(K_LIB ''${K_BIN}/../lib)' 'set(K_LIB ${k}/lib)'
               substituteInPlace ./bin/kevm \
-                --replace 'execute python3 -m kevm_pyk' 'execute ${final.kevm-pyk}/bin/kevm-pyk'
+                --replace 'execute kevm-pyk' 'execute ${final.kevm-pyk}/bin/kevm-pyk'
               substituteInPlace ./bin/kevm \
-                --replace 'gst-to-kore' '${final.kevm-pyk}/bin/gst-to-kore'
+                --replace 'execute kontrol' 'execute ${final.kevm-pyk}/bin/kontrol'
+              substituteInPlace ./bin/kevm \
+                --replace 'execute gst-to-kore' 'execute ${final.kevm-pyk}/bin/gst-to-kore'
             '';
 
             buildFlagsArray = "NIX_LIBS=${nixLibs prev}";
@@ -154,7 +156,7 @@
           projectDir = ./kevm-pyk;
 
           postPatch = ''
-              substituteInPlace ./src/kevm_pyk/foundry.py \
+              substituteInPlace ./src/kontrol/foundry.py \
                 --replace "'forge', 'build'," "'forge', 'build', '--no-auto-detect',"
             '';
 

@@ -6,9 +6,10 @@ from typing import TYPE_CHECKING
 
 from pyk.proof.proof import Proof
 
-from kevm_pyk.foundry import foundry_list
-from kevm_pyk.solc_to_k import Contract
-from tests.unit.utils import TEST_DATA_DIR
+from kontrol.foundry import foundry_list
+from kontrol.solc_to_k import Contract
+
+from .utils import TEST_DATA_DIR
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -49,7 +50,7 @@ class FoundryMock:
 
 
 def test_foundry_list(mocker: MockerFixture, update_expected_output: bool) -> None:
-    foundry_mock = mocker.patch('kevm_pyk.foundry.Foundry')
+    foundry_mock = mocker.patch('kontrol.foundry.Foundry')
     foundry_mock.return_value = FoundryMock()
 
     with LIST_EXPECTED.open() as f:
