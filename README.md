@@ -163,13 +163,13 @@ You need to install the [K Framework] on your system, see the instructions there
 The fastest way is via the [kup package manager], with which you can do to get the correct version of K:
 
 ```sh
-kup install k --version v$(cat deps/k_release)
+kup install k.openssl.procps --version v$(cat deps/k_release)
 ```
 
 You can also drop into a single development shell with the correct version of K on path by doing:
 
 ```sh
-kup shell k --version v$(cat deps/k_release)
+kup shell k.openssl.procps --version v$(cat deps/k_release)
 ```
 
 #### Blockchain Plugin
