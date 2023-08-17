@@ -70,6 +70,7 @@ module FOUNDRY-MAIN
     imports public TOSTRINGTEST-VERIFICATION
     imports public TOKEN-VERIFICATION
     imports public BYTESTYPETEST-VERIFICATION
+    imports public INTTYPETEST-VERIFICATION
     imports public UINTTYPETEST-VERIFICATION
     imports public VM-VERIFICATION
     imports public CONSOLE-VERIFICATION
@@ -552,6 +553,13 @@ endmodule
 
 module BYTESTYPETEST-VERIFICATION
     imports public BYTESTYPETEST-CONTRACT
+    
+    
+
+endmodule
+
+module INTTYPETEST-VERIFICATION
+    imports public INTTYPETEST-CONTRACT
     
     
 

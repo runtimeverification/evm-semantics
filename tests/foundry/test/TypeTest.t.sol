@@ -484,6 +484,55 @@ contract UintTypeTest {
 
 }
 
+
+contract IntTypeTest {
+
+    /* Tests for int256 */
+    function test_int256(int256 x) public pure {
+        assert(x == x);
+        assert(type(int256).max >= x);
+    }
+
+    function test_int256_fail(int256 x) public pure {
+        assert(type(int256).max > x);
+    }
+
+    function testFail_int256(int256 x) public pure {
+        assert(type(int256).max > x);
+    }
+
+
+    /* Tests for int128 */
+    function test_int128(int128 x) public pure {
+        assert(x == x);
+        assert(type(int128).max >= x);
+    }
+
+    function test_int128_fail(int128 x) public pure {
+        assert(type(int128).max > x);
+    }
+
+    function testFail_int128(int128 x) public pure {
+        assert(type(int128).max > x);
+    }
+
+
+    /* Tests for int64 */
+    function test_int64(int64 x) public pure {
+        assert(x == x);
+        assert(type(int64).max >= x);
+    }
+
+    function test_int64_fail(int64 x) public pure {
+        assert(type(int64).max > x);
+    }
+
+    function testFail_int64(int64 x) public pure {
+        assert(type(int64).max > x);
+    }
+}
+
+
 contract BytesTypeTest {
 
     /* Tests for bytes32 */
