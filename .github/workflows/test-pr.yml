@@ -204,7 +204,7 @@ jobs:
           - runner: normal
           - runner: macos-13
           - runner: ARM64
-    needs: version-bump
+    needs: kevm-pyk-code-quality-checks
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 60
     steps:
@@ -236,6 +236,7 @@ jobs:
   build-deb-package:
     name: 'Build Ubuntu Jammy DockerHub Image'
     runs-on: [self-hosted, linux, normal]
+    needs: kevm-pyk-code-quality-checks
     steps:
       - name: 'Check out code'
         uses: actions/checkout@v3
