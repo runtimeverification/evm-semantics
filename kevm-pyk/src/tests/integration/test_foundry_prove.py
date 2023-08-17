@@ -199,7 +199,7 @@ def test_foundry_bmc(test_id: str, foundry_root: Path, use_booster: bool) -> Non
 
 
 def test_foundry_merge_nodes(foundry_root: Path, use_booster: bool) -> None:
-    test_id = 'AssertTest.test_branch_merge'
+    test_id = 'AssertTest.test_branch_merge(uint256)'
 
     foundry_prove(
         foundry_root,

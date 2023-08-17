@@ -849,7 +849,7 @@ def foundry_merge_nodes(
 
     anti_unification = nodes[0].cterm
     for node in nodes[1:]:
-        anti_unification, _, _ = anti_unification.anti_unify(node.cterm, keep_values=True)
+        anti_unification, _, _ = anti_unification.anti_unify(node.cterm, keep_values=True, kdef=foundry.kevm.definition)
     new_node = proof.kcfg.create_node(anti_unification)
     for node in nodes:
         proof.kcfg.create_cover(node.id, new_node.id)
