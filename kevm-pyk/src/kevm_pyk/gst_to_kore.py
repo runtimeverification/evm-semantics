@@ -26,15 +26,16 @@ _LOG_FORMAT: Final = '%(levelname)s %(asctime)s %(name)s - %(message)s'
 
 SORT_SCHEDULE: Final = SortApp('SortSchedule')
 SORT_MODE: Final = SortApp('SortMode')
+SORT_ETHEREUM_SIMULATION: Final = SortApp('SortEthereumSimulation')
 
 
 def gst_to_kore(gst_data: Any, schedule: str, mode: str, chainid: int) -> App:
-    return kore_pgm_to_kore(json_to_kore(gst_data), schedule, mode, chainid)
+    return kore_pgm_to_kore(json_to_kore(gst_data), SORT_JSON, schedule, mode, chainid)
 
 
-def kore_pgm_to_kore(pgm: Pattern, schedule: str, mode: str, chainid: int) -> App:
+def kore_pgm_to_kore(pgm: Pattern, pattern_sort: SortApp, schedule: str, mode: str, chainid: int) -> App:
     config = {
-        '$PGM': inj(SORT_JSON, SORT_K_ITEM, pgm),
+        '$PGM': inj(pattern_sort, SORT_K_ITEM, pgm),
         '$SCHEDULE': inj(SORT_SCHEDULE, SORT_K_ITEM, _schedule_to_kore(schedule)),
         '$MODE': inj(SORT_MODE, SORT_K_ITEM, _mode_to_kore(mode)),
         '$CHAINID': inj(INT, SORT_K_ITEM, int_dv(chainid)),

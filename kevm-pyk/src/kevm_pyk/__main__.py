@@ -24,7 +24,7 @@ from pyk.utils import BugReport, single
 
 from .cli import KEVMCLIArgs, node_id_like
 from .config import INCLUDE_DIR, KEVM_LIB
-from .gst_to_kore import gst_to_kore, kore_pgm_to_kore
+from .gst_to_kore import SORT_ETHEREUM_SIMULATION, gst_to_kore, kore_pgm_to_kore
 from .kevm import KEVM, KEVMSemantics, kevm_node_printer
 from .kompile import KompileTarget, kevm_kompile
 from .utils import ensure_ksequence_on_k_cell, get_apr_proof_for_spec, kevm_prove, legacy_explore, print_failure_info
@@ -485,7 +485,7 @@ def exec_run(
         pgm_token = KToken(input_file.read_text(), KSort('EthereumSimulation'))
         kast_pgm = kevm.parse_token(pgm_token)
         kore_pgm = kevm.kast_to_kore(kast_pgm, sort=KSort('EthereumSimulation'))
-        kore_pattern = kore_pgm_to_kore(kore_pgm, schedule, mode, chainid)
+        kore_pattern = kore_pgm_to_kore(kore_pgm, SORT_ETHEREUM_SIMULATION, schedule, mode, chainid)
 
     kevm.run_kore(
         kore_pattern,
@@ -521,7 +521,7 @@ def exec_kast(
         pgm_token = KToken(input_file.read_text(), KSort('EthereumSimulation'))
         kast_pgm = kevm.parse_token(pgm_token)
         kore_pgm = kevm.kast_to_kore(kast_pgm)
-        kore_pattern = kore_pgm_to_kore(kore_pgm, schedule, mode, chainid)
+        kore_pattern = kore_pgm_to_kore(kore_pgm, SORT_ETHEREUM_SIMULATION, schedule, mode, chainid)
 
     output_text = kore_print(kore_pattern, kevm.definition_dir, output)
     print(output_text)
