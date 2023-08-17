@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import contextlib
 import graphlib
-import json
 import logging
 import os
 import sys
