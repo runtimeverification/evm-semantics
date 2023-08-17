@@ -15,7 +15,7 @@ import tomlkit
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cterm import CTerm
 from pyk.kast.inner import KApply, KSequence, KSort, KToken, KVariable, Subst
-from pyk.kast.manip import anti_unify_with_constraints, free_vars, minimize_term
+from pyk.kast.manip import free_vars, minimize_term
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
 from pyk.kcfg import KCFG
 from pyk.ktool.kompile import LLVMKompileType
@@ -847,12 +847,10 @@ def foundry_merge_nodes(
     if check_cells_ne:
         raise ValueError(f'Nodes {node_ids} cannot be merged because they differ in: {check_cells_ne}')
 
-    anti_unification = nodes[0].cterm.kast
+    anti_unification = nodes[0].cterm
     for node in nodes[1:]:
-        anti_unification = anti_unify_with_constraints(
-            anti_unification, node.cterm.kast, abstracted_disjunct=include_disjunct
-        )
-    new_node = proof.kcfg.create_node(CTerm.from_kast(anti_unification))
+        anti_unification, _, _ = anti_unification.anti_unify(node.cterm, keep_values=True)
+    new_node = proof.kcfg.create_node(anti_unification)
     for node in nodes:
         proof.kcfg.create_cover(node.id, new_node.id)
 
