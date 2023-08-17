@@ -21,7 +21,6 @@ from pyk.kcfg import KCFGExplore
 from pyk.kore.rpc import KoreClient, KoreExecLogFormat, kore_server
 from pyk.proof import APRBMCProof, APRBMCProver, APRProof, APRProver
 from pyk.proof.equality import EqualityProof, EqualityProver
-from pyk.proof.proof import ProofStatus
 from pyk.utils import single
 
 if TYPE_CHECKING:
@@ -136,12 +135,12 @@ def kevm_prove(
             if prover.proof.passed:
                 _LOGGER.info(f'Proof passed: {prover.proof.id}')
                 return True
-            if prover.proof.failed:
+            elif prover.proof.failed:
                 _LOGGER.error(f'Proof failed: {prover.proof.id}')
                 if type(proof) is EqualityProof:
                     _LOGGER.info(proof.pretty(kprove))
                 return False
-            if prover.proof.status == ProofStatus.PENDING:
+            else:
                 _LOGGER.info(f'Proof pending: {prover.proof.id}')
                 return False
         return False
