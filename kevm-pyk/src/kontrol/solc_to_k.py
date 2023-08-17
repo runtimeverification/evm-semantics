@@ -587,7 +587,7 @@ def _evm_base_sort_int(type_label: str) -> bool:
     # Check bytes
     if type_label.startswith('bytes') and len(type_label) > 5 and not type_label.endswith(']'):
         width = int(type_label[5:])
-        if not width in {4, 32}:
+        if not (0 < width <= 32):
             raise ValueError(f'Unsupported evm base sort type: {type_label}')
         else:
             success = True
@@ -595,7 +595,7 @@ def _evm_base_sort_int(type_label: str) -> bool:
     # Check ints
     if type_label.startswith('int') and not type_label.endswith(']'):
         width = int(type_label[3:])
-        if not width == 256:
+        if not (0 < width and width <= 256 and width % 8 == 0):
             raise ValueError(f'Unsupported evm base sort type: {type_label}')
         else:
             success = True
@@ -612,23 +612,26 @@ def _evm_base_sort_int(type_label: str) -> bool:
 
 
 def _range_predicate(term: KInner, type_label: str) -> KInner | None:
-    (success, result) = _range_predicate_uint(term, type_label)
-    if success:
-        return result
-    if type_label == 'address':
-        return KEVM.range_address(term)
-    if type_label == 'bool':
-        return KEVM.range_bool(term)
-    if type_label == 'bytes4':
-        return KEVM.range_bytes(intToken(4), term)
-    if type_label in {'bytes32', 'uint256'}:
-        return KEVM.range_uint(256, term)
-    if type_label == 'int256':
-        return KEVM.range_sint(256, term)
-    if type_label == 'bytes':
-        return KEVM.range_uint(128, KEVM.size_bytes(term))
-    if type_label == 'string':
-        return TRUE
+    match type_label:
+        case 'address':
+            return KEVM.range_address(term)
+        case 'bool':
+            return KEVM.range_bool(term)
+        case 'bytes':
+            return KEVM.range_uint(128, KEVM.size_bytes(term))
+        case 'string':
+            return TRUE
+
+    predicate_functions = [
+        _range_predicate_uint,
+        _range_predicate_int,
+        _range_predicate_bytes,
+    ]
+
+    for f in predicate_functions:
+        (success, result) = f(term, type_label)
+        if success:
+            return result
 
     _LOGGER.info(f'Unknown range predicate for type: {type_label}')
     return None
@@ -636,12 +639,39 @@ def _range_predicate(term: KInner, type_label: str) -> KInner | None:
 
 def _range_predicate_uint(term: KInner, type_label: str) -> tuple[bool, KInner | None]:
     if type_label.startswith('uint') and not type_label.endswith(']'):
-        width = int(type_label[4:])
-        if not (0 < width and width <= 256 and width % 8 == 0):
-            raise ValueError(f'Unsupported range predicate type: {type_label}')
+        if type_label == 'uint':
+            width = 256
+        else:
+            width = int(type_label[4:])
+        if not (0 < width <= 256 and width % 8 == 0):
+            raise ValueError(f'Unsupported range predicate uint<M> type: {type_label}')
         return (True, KEVM.range_uint(width, term))
     else:
         return (False, None)
+
+
+def _range_predicate_int(term: KInner, type_label: str) -> tuple[bool, KInner | None]:
+    if type_label.startswith('int') and not type_label.endswith(']'):
+        if type_label == 'int':
+            width = 256
+        else:
+            width = int(type_label[3:])
+        if not (0 < width and width <= 256 and width % 8 == 0):
+            raise ValueError(f'Unsupported range predicate int<M> type: {type_label}')
+        return (True, KEVM.range_sint(width, term))
+    else:
+        return (False, None)
+
+
+def _range_predicate_bytes(term: KInner, type_label: str) -> tuple[bool, KInner | None]:
+    if type_label.startswith('bytes') and not type_label.endswith(']'):
+        str_width = type_label[5:]
+        if str_width != '':
+            width = int(str_width)
+            if not (0 < width and width <= 32):
+                raise ValueError(f'Unsupported range predicate bytes<M> type: {type_label}')
+            return (True, KEVM.range_bytes(intToken(width), term))
+    return (False, None)
 
 
 def method_sig_from_abi(method_json: dict) -> str:

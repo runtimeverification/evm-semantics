@@ -5731,7 +5731,7 @@ module BytesTypeTest-CONTRACT
     syntax S2KBytesTypeTestMethod ::= "S2Ktestz5fbytes4z5ffail" "(" Int ":" "bytes4" ")" [symbol(), klabel(method_BytesTypeTest_S2Ktestz5fbytes4z5ffail_bytes4)]
     
     rule  ( S2KBytesTypeTest . S2KtestFailz5fbytes32 ( V0_x : bytes32 ) => #abiCallData ( "testFail_bytes32" , #bytes32 ( V0_x ) , .TypedArgs ) )
-       ensures #rangeUInt ( 256 , V0_x )
+       ensures #rangeBytes ( 32 , V0_x )
       
     
     rule  ( S2KBytesTypeTest . S2KtestFailz5fbytes4 ( V0_x : bytes4 ) => #abiCallData ( "testFail_bytes4" , #bytes4 ( V0_x ) , .TypedArgs ) )
@@ -5739,11 +5739,11 @@ module BytesTypeTest-CONTRACT
       
     
     rule  ( S2KBytesTypeTest . S2Ktestz5fbytes32 ( V0_x : bytes32 ) => #abiCallData ( "test_bytes32" , #bytes32 ( V0_x ) , .TypedArgs ) )
-       ensures #rangeUInt ( 256 , V0_x )
+       ensures #rangeBytes ( 32 , V0_x )
       
     
     rule  ( S2KBytesTypeTest . S2Ktestz5fbytes32z5ffail ( V0_x : bytes32 ) => #abiCallData ( "test_bytes32_fail" , #bytes32 ( V0_x ) , .TypedArgs ) )
-       ensures #rangeUInt ( 256 , V0_x )
+       ensures #rangeBytes ( 32 , V0_x )
       
     
     rule  ( S2KBytesTypeTest . S2Ktestz5fbytes4 ( V0_x : bytes4 ) => #abiCallData ( "test_bytes4" , #bytes4 ( V0_x ) , .TypedArgs ) )
@@ -6999,7 +6999,7 @@ module Vm-CONTRACT
     
     rule  ( S2KVm . S2Kload ( V0_ : address , V1_ : bytes32 ) => #abiCallData ( "load" , #address ( V0_ ) , #bytes32 ( V1_ ) , .TypedArgs ) )
        ensures ( #rangeAddress ( V0_ )
-       andBool ( #rangeUInt ( 256 , V1_ )
+       andBool ( #rangeBytes ( 32 , V1_ )
                ))
       
     
@@ -7082,7 +7082,7 @@ module Vm-CONTRACT
     
     rule  ( S2KVm . S2Ksign ( V0_ : uint256 , V1_ : bytes32 ) => #abiCallData ( "sign" , #uint256 ( V0_ ) , #bytes32 ( V1_ ) , .TypedArgs ) )
        ensures ( #rangeUInt ( 256 , V0_ )
-       andBool ( #rangeUInt ( 256 , V1_ )
+       andBool ( #rangeBytes ( 32 , V1_ )
                ))
       
     
@@ -7114,8 +7114,8 @@ module Vm-CONTRACT
     
     rule  ( S2KVm . S2Kstore ( V0_ : address , V1_ : bytes32 , V2_ : bytes32 ) => #abiCallData ( "store" , #address ( V0_ ) , #bytes32 ( V1_ ) , #bytes32 ( V2_ ) , .TypedArgs ) )
        ensures ( #rangeAddress ( V0_ )
-       andBool ( #rangeUInt ( 256 , V1_ )
-       andBool ( #rangeUInt ( 256 , V2_ )
+       andBool ( #rangeBytes ( 32 , V1_ )
+       andBool ( #rangeBytes ( 32 , V2_ )
                )))
       
     
@@ -7132,7 +7132,7 @@ module Vm-CONTRACT
       
     
     rule  ( S2KVm . S2KtoString ( V0_ : bytes32 ) => #abiCallData ( "toString" , #bytes32 ( V0_ ) , .TypedArgs ) )
-       ensures #rangeUInt ( 256 , V0_ )
+       ensures #rangeBytes ( 32 , V0_ )
       
     
     rule  ( S2KVm . S2KtoString ( V0_ : int256 ) => #abiCallData ( "toString" , #int256 ( V0_ ) , .TypedArgs ) )
