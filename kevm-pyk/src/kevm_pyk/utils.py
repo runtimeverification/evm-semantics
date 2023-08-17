@@ -125,7 +125,7 @@ def kevm_prove(
                 cut_point_rules=cut_point_rules,
             )
             assert isinstance(proof, APRProof)
-            if proof.status == ProofStatus.PASSED:
+            if proof.passed:
                 _LOGGER.info(f'Proof passed: {proof.id}')
                 return True
             else:
@@ -133,10 +133,10 @@ def kevm_prove(
                 return False
         elif type(prover) is EqualityProver:
             prover.advance_proof()
-            if prover.proof.status == ProofStatus.PASSED:
+            if prover.proof.passed:
                 _LOGGER.info(f'Proof passed: {prover.proof.id}')
                 return True
-            if prover.proof.status == ProofStatus.FAILED:
+            if prover.proof.failed:
                 _LOGGER.error(f'Proof failed: {prover.proof.id}')
                 if type(proof) is EqualityProof:
                     _LOGGER.info(proof.pretty(kprove))
@@ -148,13 +148,6 @@ def kevm_prove(
 
     except Exception as e:
         _LOGGER.error(f'Proof crashed: {proof.id}\n{e}', exc_info=True)
-        return False
-    failure_nodes = proof.pending + proof.failing
-    if len(failure_nodes) == 0:
-        _LOGGER.info(f'Proof passed: {proof.id}')
-        return True
-    else:
-        _LOGGER.error(f'Proof failed: {proof.id}')
         return False
 
 
