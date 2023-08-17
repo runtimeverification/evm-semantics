@@ -81,7 +81,7 @@ module STORAGE-SPEC
           <gas>        #gas(_VGAS) => ?_ </gas>
           <callValue>  0           => ?_ </callValue>
 
-          <callData>   S2KStorage.myBool()               </callData>
+          <callData>   S2KStorage.S2KmyBool()               </callData>
           <k>          #execute => #halt ...          </k>
           <output>     .Bytes   => #buf(32, MYBOOL)   </output>
           <statusCode> _        => EVMC_SUCCESS       </statusCode>
@@ -115,7 +115,7 @@ module STORAGE-SPEC
           <gas>        #gas(_VGAS) => ?_ </gas>
           <callValue>  0           => ?_ </callValue>
 
-          <callData>   S2KStorage.setMyBool(NEW_VAL : bool) </callData>
+          <callData>   S2KStorage.S2KsetMyBool(NEW_VAL : bool) </callData>
           <k>          #execute   => #halt ...           </k>
           <output>     .Bytes                            </output>
           <statusCode> _          => EVMC_SUCCESS        </statusCode>
