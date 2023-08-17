@@ -70,45 +70,36 @@ jobs:
           set -euxo pipefail
           version=$(cat package/version)
           docker exec -u github-user kevm-package-jammy-${GITHUB_SHA} /bin/bash -c 'package/debian/package jammy'
-          docker exec -u github-user kevm-package-jammy-${GITHUB_SHA} /bin/bash -c 'ls ..'
           docker cp kevm-package-jammy-${GITHUB_SHA}:/home/github-user/kevm_${version}_amd64.deb ./
-      - name: 'Tear down Docker'
-        if: always()
-        run: |
-          docker stop --time=0 kevm-package-jammy-${GITHUB_SHA}
-      - name: 'Build Docker Image'
+
+      - name: 'Define Foundry Test Variables'
         run: |
           set -euxo pipefail
-          version=$(cat package/version)
-          k_version=$(cat deps/k_release)
-          tag_name="runtimeverificationinc/kevm:ubuntu-jammy-${version}"
-          container_name="kevm-ci-test-${GITHUB_SHA}"
-          docker build . --tag ${tag_name} --file package/docker/Dockerfile \
-            --build-arg K_VERSION=${k_version}                              \
-            --build-arg KEVM_VERSION=${version}
-          docker run                    \
-            --name ${container_name}    \
-            --rm                        \
-            --interactive               \
-            --tty                       \
-            --detach                    \
-            --user root                 \
-            --workdir /home/github-user \
-            ${tag_name}
-      - name: 'Test Docker Image'
+          echo "version=$(cat package/version)" >> $GITHUB_ENV
+          echo "k_version=$(cat deps/k_release)" >> $GITHUB_ENV
+          echo "tag_name=runtimeverificationinc/kevm:ubuntu-jammy-$(cat package/version)" >> $GITHUB_ENV
+          echo "container_name=kevm-ci-test-${GITHUB_SHA}" >> $GITHUB_ENV
+
+      - name: 'Setup Foundry Test Docker'
+        uses: ./.github/actions/with-docker
+        with:
+          tag: kevm-ci-test-${{ github.sha }}
+          dockerfile: package/docker/Dockerfile
+
+      - name: 'KEVM Foundry Test'
         run: |
           set -euxo pipefail
-          version=$(cat package/version)
-          k_version=$(cat deps/k_release)
-          container_name="kevm-ci-test-${GITHUB_SHA}"
+          version=${{ env.veresion }}
+          k_version=${{ env.k_version }}
+          container_name=${{ env.container_name}}
           docker cp ./tests/foundry ${container_name}:/home/github-user/foundry
           docker exec -u github-user ${container_name} /bin/bash -c "sudo chown github-user:github-user -R /home/github-user/foundry"
-          docker exec -u github-user ${container_name} /bin/bash -c "forge build --root foundry"
-          docker exec -u github-user ${container_name} /bin/bash -c "kevm foundry-kompile --foundry-project-root foundry --verbose"
-          docker exec -u github-user ${container_name} /bin/bash -c "kevm foundry-prove --foundry-project-root foundry --verbose --test AssertTest.test_assert_true_branch"
-          docker exec -u github-user ${container_name} /bin/bash -c "kevm foundry-show --foundry-project-root foundry --verbose AssertTest.test_assert_true_branch"
-          docker exec -u github-user ${container_name} /bin/bash -c "kevm foundry-list --foundry-project-root foundry --verbose"
-          docker stop --time=0 ${container_name}
+          docker exec -u github-user ${container_name} /bin/bash -c "forge build --root /home/github-user/foundry"
+          docker exec -u github-user ${container_name} /bin/bash -c "kevm foundry-kompile --foundry-project-root /home/github-user/foundry --verbose"
+          docker exec -u github-user ${container_name} /bin/bash -c "kevm foundry-prove --foundry-project-root /home/github-user/foundry --verbose --test AssertTest.test_assert_true_branch"
+          docker exec -u github-user ${container_name} /bin/bash -c "kevm foundry-show --foundry-project-root /home/github-user/foundry --verbose AssertTest.test_assert_true_branch"
+          docker exec -u github-user ${container_name} /bin/bash -c "kevm foundry-list --foundry-project-root /home/github-user/foundry --verbose"
+
       - name: 'Push Docker Image to DockerHub'
         env:
           DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
@@ -119,6 +110,12 @@ jobs:
           tag_name="runtimeverificationinc/kevm:ubuntu-jammy-${version}"
           docker login --username rvdockerhub --password ${DOCKERHUB_PASSWORD}
           docker image push ${tag_name}
+
+      - name: 'Tear down Docker'
+        if: always()
+        run: |
+          docker stop --time=0 kevm-package-jammy-${GITHUB_SHA}
+          docker stop --time=0 kevm-ci-test-${GITHUB_SHA}
 
   make-release:
     name: 'Cut Release'
