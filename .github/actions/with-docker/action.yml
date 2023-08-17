@@ -62,21 +62,15 @@ runs:
         --file .github/workflows/Dockerfile.z3 \
         --tag z3:${Z3_VERSION}                 \
 
-      docker build deps/k                                           \
-        --file deps/k/.github/workflows/Dockerfile.stack-deps       \
-        --tag stack:${BASE_DISTRO}-${K_VERSION}                     \
-        --build-arg BASE_OS=${BASE_OS}                              \
-        --build-arg BASE_DISTRO=${BASE_DISTRO}
-
-      docker build . --file ${DOCKERFILE} \
-        --tag runtimeverification/${TAG_NAME}            \
-        --build-arg USER_ID=${USER_ID}                   \
-        --build-arg GROUP_ID=${GROUP_ID}                 \
-        --build-arg USER=${USER}                         \
-        --build-arg GROUP=${GROUP}                       \
-        --build-arg BASE_DISTRO=${BASE_DISTRO}           \
-        --build-arg K_VERSION=${K_VERSION}               \
-        --build-arg Z3_VERSION=${Z3_VERSION}             \
+      docker build . --file ${DOCKERFILE}        \
+        --tag runtimeverification/${TAG_NAME}    \
+        --build-arg USER_ID=${USER_ID}           \
+        --build-arg GROUP_ID=${GROUP_ID}         \
+        --build-arg USER=${USER}                 \
+        --build-arg GROUP=${GROUP}               \
+        --build-arg BASE_DISTRO=${BASE_DISTRO}   \
+        --build-arg K_VERSION=${K_VERSION}       \
+        --build-arg Z3_VERSION=${Z3_VERSION}     \
         --build-arg LLVM_VERSION=${LLVM_VERSION}
 
       docker run                        \
