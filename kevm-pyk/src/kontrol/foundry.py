@@ -115,6 +115,8 @@ class Foundry:
         return _contracts
 
     def proof_digest(self, contract: str, test_sig: str) -> str:
+        if test_sig == 'init':
+            return f'{contract}.init:{self.contracts[contract].digest}'
         return f'{contract}.{test_sig}:{self.contracts[contract].method_by_sig[test_sig].digest}'
 
     @cached_property
@@ -230,12 +232,14 @@ class Foundry:
 
     @cached_property
     def all_non_tests(self) -> list[str]:
-        return [
+        non_tests = [
             f'{contract.name}.{method.signature}'
             for contract in self.contracts.values()
             for method in contract.methods
             if f'{contract.name}.{method.signature}' not in self.all_tests
         ]
+        non_tests += [f'{contract.name}.init' for contract in self.contracts.values()]
+        return non_tests
 
     def matching_tests(self, tests: list[str], exclude_tests: list[str]) -> list[str]:
         def _escape_brackets(regs: list[str]) -> list[str]:
@@ -581,9 +585,11 @@ def foundry_prove(
     tests = foundry.matching_tests(list(tests), list(exclude_tests))
     _LOGGER.info(f'Running tests: {tests}')
 
+    init_methods: dict[str, str] = {}
     setup_methods: dict[str, str] = {}
     contracts = set(unique({test.split('.')[0] for test in tests}))
     for contract_name in contracts:
+        init_methods[contract_name] = f'{contract_name}.init'
         if 'setUp' in foundry.contracts[contract_name].method_by_name:
             setup_methods[contract_name] = f'{contract_name}.setUp()'
 
@@ -627,17 +633,30 @@ def foundry_prove(
         ) as kcfg_explore:
             contract_name, method_sig = _init_problem
             contract = foundry.contracts[contract_name]
-            method = contract.method_by_sig[method_sig]
-            proof = _method_to_apr_proof(
-                foundry,
-                contract,
-                method,
-                save_directory,
-                kcfg_explore,
-                reinit=(method.qualified_name in out_of_date_methods),
-                simplify_init=simplify_init,
-                bmc_depth=bmc_depth,
-            )
+
+            if method_sig == 'init':
+                proof = _contract_to_apr_proof(
+                    foundry,
+                    contract,
+                    save_directory,
+                    kcfg_explore,
+                    reinit=True,
+                    simplify_init=simplify_init,
+                    bmc_depth=bmc_depth,
+                )
+
+            else:
+                method = contract.method_by_sig[method_sig]
+                proof = _method_to_apr_proof(
+                    foundry,
+                    contract,
+                    method,
+                    save_directory,
+                    kcfg_explore,
+                    reinit=(method.qualified_name in out_of_date_methods),
+                    simplify_init=simplify_init,
+                    bmc_depth=bmc_depth,
+                )
 
             passed = kevm_prove(
                 foundry.kevm,
@@ -672,6 +691,12 @@ def foundry_prove(
 
         apr_proofs = dict(zip(tests, _apr_proofs, strict=True))
         return apr_proofs
+
+    _LOGGER.info(f'Running initialization code for contracts in parallel: {list(init_methods.values())}')
+    results = run_cfg_group(list(init_methods.values()))
+    failed = [init_cfg for init_cfg, passed in results.items() if not passed]
+    if failed:
+        raise ValueError(f'Running initialization code failed for {len(failed)} contracts: {failed}')
 
     _LOGGER.info(f'Running setup functions in parallel: {list(setup_methods.values())}')
     results = run_cfg_group(list(setup_methods.values()))
@@ -955,6 +980,55 @@ def _foundry_to_main_def(
     )
 
 
+def _contract_to_apr_proof(
+    foundry: Foundry,
+    contract: Contract,
+    save_directory: Path,
+    kcfg_explore: KCFGExplore,
+    reinit: bool = False,
+    simplify_init: bool = True,
+    bmc_depth: int | None = None,
+) -> APRProof:
+    test = f'{contract.name}.init'
+
+    empty_config = foundry.kevm.definition.empty_config(GENERATED_TOP_CELL)
+    kcfg, init_node_id, target_node_id = _contract_to_cfg(
+        empty_config,
+        contract,
+        save_directory,
+        foundry=foundry,
+    )
+
+    _LOGGER.info(f'Expanding macros in initial state for test: {test}')
+    init_term = kcfg.node(init_node_id).cterm.kast
+    init_term = KDefinition__expand_macros(foundry.kevm.definition, init_term)
+    init_cterm = CTerm.from_kast(init_term)
+    _LOGGER.info(f'Computing definedness constraint for test: {test}')
+    init_cterm = kcfg_explore.cterm_assume_defined(init_cterm)
+    kcfg.replace_node(init_node_id, init_cterm)
+
+    _LOGGER.info(f'Expanding macros in target state for test: {test}')
+    target_term = kcfg.node(target_node_id).cterm.kast
+    target_term = KDefinition__expand_macros(foundry.kevm.definition, target_term)
+    target_cterm = CTerm.from_kast(target_term)
+    kcfg.replace_node(target_node_id, target_cterm)
+
+    proof_digest = foundry.proof_digest(contract.name, 'init')
+    apr_proof: APRProof
+    if simplify_init:
+        _LOGGER.info(f'Simplifying KCFG for test: {test}')
+        kcfg_explore.simplify(kcfg, {})
+    if bmc_depth is not None:
+        apr_proof = APRBMCProof(
+            proof_digest, kcfg, init_node_id, target_node_id, {}, bmc_depth, proof_dir=save_directory
+        )
+    else:
+        apr_proof = APRProof(proof_digest, kcfg, init_node_id, target_node_id, {}, proof_dir=save_directory)
+
+    apr_proof.write_proof_data()
+    return apr_proof
+
+
 def _method_to_apr_proof(
     foundry: Foundry,
     contract: Contract,
@@ -965,25 +1039,29 @@ def _method_to_apr_proof(
     simplify_init: bool = True,
     bmc_depth: int | None = None,
 ) -> APRProof | APRBMCProof:
-    contract_name = contract.name
     method_sig = method.signature
-    test = f'{contract_name}.{method_sig}'
-    proof_digest = foundry.proof_digest(contract_name, method_sig)
-    if Proof.proof_data_exists(proof_digest, save_directory) and not reinit:
+    test = f'{contract.name}.{method_sig}'
+    if Proof.proof_data_exists(test, save_directory) and not reinit:
         apr_proof = foundry.get_apr_proof(test)
         assert isinstance(apr_proof, APRProof)
     else:
         _LOGGER.info(f'Initializing KCFG for test: {test}')
 
         if method_sig != 'setUp()' and 'setUp' in contract.method_by_name:
-            init_proof = f'{contract_name}.setUp()'
+            init_proof = f'{contract.name}.setUp()'
             _LOGGER.info(f'Using setUp method for test: {test}')
         else:
-            init_proof = f'{contract_name}.init'
+            init_proof = f'{contract.name}.init'
 
         empty_config = foundry.kevm.definition.empty_config(GENERATED_TOP_CELL)
         kcfg, init_node_id, target_node_id = _method_to_cfg(
-            empty_config, contract, method, save_directory, init_proof=init_proof
+            empty_config,
+            contract,
+            method,
+            save_directory,
+            foundry=foundry,
+            init_proof=init_proof,
+            use_init_code=False,
         )
 
         _LOGGER.info(f'Expanding macros in initial state for test: {test}')
@@ -1000,6 +1078,7 @@ def _method_to_apr_proof(
         target_cterm = CTerm.from_kast(target_term)
         kcfg.replace_node(target_node_id, target_cterm)
 
+        proof_digest = foundry.proof_digest(contract.name, method_sig)
         if simplify_init:
             _LOGGER.info(f'Simplifying KCFG for test: {test}')
             kcfg_explore.simplify(kcfg, {})
@@ -1014,19 +1093,42 @@ def _method_to_apr_proof(
     return apr_proof
 
 
+def _contract_to_cfg(
+    empty_config: KInner,
+    contract: Contract,
+    proof_dir: Path,
+    foundry: Foundry,
+    init_proof: str | None = None,
+) -> tuple[KCFG, NodeIdLike, NodeIdLike]:
+    init_cterm = _init_cterm(empty_config, contract.name, proof_dir, use_init_code=True)
+
+    cfg = KCFG()
+    init_node = cfg.create_node(init_cterm)
+    init_node_id = init_node.id
+
+    final_cterm = _final_cterm(empty_config, contract.name, failing=False, use_init_code=True)
+    target_node = cfg.create_node(final_cterm)
+
+    return cfg, init_node_id, target_node.id
+
+
 def _method_to_cfg(
     empty_config: KInner,
     contract: Contract,
     method: Contract.Method,
     proof_dir: Path,
+    foundry: Foundry,
     init_proof: str | None = None,
+    use_init_code: bool = False,
 ) -> tuple[KCFG, NodeIdLike, NodeIdLike]:
     calldata = method.calldata_cell(contract)
     callvalue = method.callvalue_cell
-    init_cterm = _init_cterm(empty_config, contract.name, proof_dir, calldata=calldata, callvalue=callvalue)
+    init_cterm = _init_cterm(
+        empty_config, contract.name, proof_dir, calldata=calldata, callvalue=callvalue, use_init_code=use_init_code
+    )
 
     if init_proof:
-        initial_proof = APRProof.read_proof_data(proof_dir, init_proof)
+        initial_proof = foundry.get_apr_proof(init_proof)
         assert initial_proof.passed
 
         cfg = initial_proof.kcfg
@@ -1053,8 +1155,8 @@ def _method_to_cfg(
     return cfg, init_node_id, target_node.id
 
 
-def get_final_accounts_cell(proof_id: str, proof_dir: Path) -> tuple[KInner, Iterable[KInner]]:
-    apr_proof = APRProof.read_proof_data(proof_dir, proof_id)
+def get_final_accounts_cell(proof_id: str, proof_dir: Path, foundry: Foundry) -> tuple[KInner, Iterable[KInner]]:
+    apr_proof = foundry.get_apr_proof(proof_id)
     target = apr_proof.kcfg.node(apr_proof.target)
     target_states = apr_proof.kcfg.covers(target_id=target.id)
     if len(target_states) == 0:
@@ -1075,10 +1177,15 @@ def _init_cterm(
     contract_name: str,
     kcfgs_dir: Path,
     *,
+    use_init_code: bool = False,
     calldata: KInner | None = None,
     callvalue: KInner | None = None,
 ) -> CTerm:
-    program = KEVM.bin_runtime(KApply(f'contract_{contract_name}'))
+    program = (
+        KEVM.init_bytecode(KApply(f'contract_{contract_name}'))
+        if use_init_code
+        else KEVM.bin_runtime(KApply(f'contract_{contract_name}'))
+    )
     account_cell = KEVM.account_cell(
         Foundry.address_TEST_CONTRACT(),
         intToken(0),
@@ -1154,8 +1261,8 @@ def _init_cterm(
         return init_cterm
 
 
-def _final_cterm(empty_config: KInner, contract_name: str, *, failing: bool, is_test: bool = True) -> CTerm:
-    final_term = _final_term(empty_config, contract_name)
+def _final_cterm(empty_config: KInner, contract_name: str, *, failing: bool, is_test: bool = True, use_init_code: bool = False) -> CTerm:
+    final_term = _final_term(empty_config, contract_name, use_init_code=use_init_code)
     dst_failed_post = KEVM.lookup(KVariable('CHEATCODE_STORAGE_FINAL'), Foundry.loc_FOUNDRY_FAILED())
     foundry_success = Foundry.success(
         KVariable('STATUSCODE_FINAL'),
@@ -1174,8 +1281,12 @@ def _final_cterm(empty_config: KInner, contract_name: str, *, failing: bool, is_
     return final_cterm
 
 
-def _final_term(empty_config: KInner, contract_name: str) -> KInner:
-    program = KEVM.bin_runtime(KApply(f'contract_{contract_name}'))
+def _final_term(empty_config: KInner, contract_name: str, use_init_code: bool = False) -> KInner:
+    program = (
+        KEVM.init_bytecode(KApply(f'contract_{contract_name}'))
+        if use_init_code
+        else KEVM.bin_runtime(KApply(f'contract_{contract_name}'))
+    )
     post_account_cell = KEVM.account_cell(
         Foundry.address_TEST_CONTRACT(),
         KVariable('ACCT_BALANCE_FINAL'),
