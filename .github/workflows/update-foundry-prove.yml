@@ -8,7 +8,7 @@ on:
 jobs:
   update-output:
     name: 'Update Foundry expected output'
-    runs-on: [self-hosted, linux, huge]
+    runs-on: [self-hosted, linux, normal]
     steps:
       - name: 'Check out code'
         uses: actions/checkout@v3
