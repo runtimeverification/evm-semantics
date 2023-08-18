@@ -32,8 +32,8 @@ from .utils import ensure_ksequence_on_k_cell, get_apr_proof_for_spec, kevm_prov
 
 if TYPE_CHECKING:
     from argparse import Namespace
-    from collections.abc import Callable, Iterable
-    from typing import Any, Final, Iterator, TypeVar
+    from collections.abc import Callable, Iterable, Iterator
+    from typing import Any, Final, TypeVar
 
     from pyk.kast.outer import KClaim
     from pyk.kcfg.kcfg import NodeIdLike
