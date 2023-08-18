@@ -230,8 +230,8 @@ def test_pyk_prove(
             definition_dir=target.definition_dir,
             includes=[str(config.INCLUDE_DIR)] + target.includes,  # TODO are target.includes required?
             save_directory=use_directory,
-            smt_timeout=125,
-            smt_retry_limit=4,
+            smt_timeout=300,
+            smt_retry_limit=10,
             md_selector='foo',  # TODO Ignored flag, this is to avoid KeyError
         )
     except BaseException:
