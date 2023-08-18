@@ -830,7 +830,6 @@ def foundry_merge_nodes(
                 return False
         return True
 
-    node_ids = [int(node) for node in node_ids]
     br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
     foundry = Foundry(foundry_root, bug_report=br)
     proof = foundry.get_apr_proof(test)

@@ -33,7 +33,7 @@ contract AssertTest is Test, KEVMCheats {
         if (x < 10) {
             y = 0;
         } else {
-            y = 2;
+            y = 1;
         }
         assert(y < 2);
     }
