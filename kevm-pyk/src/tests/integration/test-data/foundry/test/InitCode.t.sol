@@ -5,14 +5,23 @@ import "forge-std/Test.sol";
 
 contract InitCodeTest is Test {
 
-    uint a = 1;
-    uint b = 2;
-    uint c = 3;
+    uint a = 4;
+    uint b = 100;
+    uint c = 100;
+
+    constructor() public payable {
+        b = 2;
+        c = 200;
+    }
+
+    function setUp() public {
+        c = 1;
+    }
 
     function test_init() public {
-        assertEq(a + b + c, 6);
+        assertEq(a + b + c, 7);
     }
     function testFail_init() public {
-        assertEq(a + b + c, 7);
+        assertEq(a + b + c, 8);
     }
 }

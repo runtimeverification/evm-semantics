@@ -15,7 +15,7 @@ import tomlkit
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cterm import CTerm
 from pyk.kast.inner import KApply, KSequence, KSort, KToken, KVariable, Subst
-from pyk.kast.manip import free_vars, minimize_term
+from pyk.kast.manip import flatten_label, minimize_term, set_cell
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
 from pyk.kcfg import KCFG
 from pyk.ktool.kompile import LLVMKompileType
@@ -27,14 +27,13 @@ from pyk.prelude.ml import mlEqualsTrue
 from pyk.proof.proof import Proof
 from pyk.proof.reachability import APRBMCProof, APRProof
 from pyk.proof.show import APRBMCProofNodePrinter, APRProofNodePrinter, APRProofShow
-from pyk.utils import BugReport, ensure_dir_path, hash_str, run_process, single, unique
+from pyk.utils import BugReport, ensure_dir_path, hash_str, run_process, unique
 
 from kevm_pyk.kevm import KEVM, KEVMNodePrinter, KEVMSemantics
 from kevm_pyk.utils import (
     KDefinition__expand_macros,
     abstract_cell_vars,
     byte_offset_to_lines,
-    constraints_for,
     kevm_prove,
     legacy_explore,
     print_failure_info,
@@ -1139,8 +1138,21 @@ def _method_to_cfg(
         final_states = cfg.leaves
 
         for final_node in final_states:
-            accounts_subst = {'ACCOUNTS_CELL': final_node.cterm.cell('ACCOUNTS_CELL')}
-            new_init_cterm = CTerm.from_kast(Subst(accounts_subst)(init_cterm.kast))
+            new_accounts_cell = final_node.cterm.cell('ACCOUNTS_CELL')
+            new_accounts = [CTerm(account, []) for account in flatten_label('_AccountCellMap_', new_accounts_cell)]
+            new_accounts_map = {account.cell('ACCTID_CELL'): account for account in new_accounts}
+            test_contract_account = new_accounts_map[Foundry.address_TEST_CONTRACT()]
+
+            new_accounts_map[Foundry.address_TEST_CONTRACT()] = CTerm(
+                set_cell(
+                    test_contract_account.config, 'CODE_CELL', KEVM.bin_runtime(KApply(f'contract_{contract.name}'))
+                ),
+                [],
+            )
+
+            new_accounts_cell = KEVM.accounts([account.config for account in new_accounts_map.values()])
+
+            new_init_cterm = CTerm(set_cell(init_cterm.config, 'ACCOUNTS_CELL', new_accounts_cell), [])
             new_node = cfg.create_node(new_init_cterm)
             cfg.create_edge(final_node.id, new_node.id, depth=1)
             init_node_ids.append(new_node.id)
@@ -1155,23 +1167,6 @@ def _method_to_cfg(
     target_node = cfg.create_node(final_cterm)
 
     return cfg, init_node_ids, target_node.id
-
-
-def get_final_accounts_cell(proof_id: str, proof_dir: Path, foundry: Foundry) -> tuple[KInner, Iterable[KInner]]:
-    apr_proof = foundry.get_apr_proof(proof_id)
-    target = apr_proof.kcfg.node(apr_proof.target)
-    target_states = apr_proof.kcfg.covers(target_id=target.id)
-    if len(target_states) == 0:
-        raise ValueError(
-            f'setUp() function for {apr_proof.id} did not reach the end of execution. Maybe --max-iterations is too low?'
-        )
-    if len(target_states) > 1:
-        raise ValueError(f'setUp() function for {apr_proof.id} branched and has {len(target_states)} target states.')
-    cterm = single(target_states).source.cterm
-    acct_cell = cterm.cell('ACCOUNTS_CELL')
-    fvars = free_vars(acct_cell)
-    acct_cons = constraints_for(fvars, cterm.constraints)
-    return (acct_cell, acct_cons)
 
 
 def _init_cterm(
