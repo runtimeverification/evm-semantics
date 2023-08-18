@@ -169,6 +169,11 @@ def exec_foundry_prove(
     _ignore_arg(kwargs, 'definition_dir', f'--definition: {kwargs["definition_dir"]}')
     _ignore_arg(kwargs, 'spec_module', f'--spec-module: {kwargs["spec_module"]}')
 
+    if smt_timeout is None:
+        smt_timeout = 300
+    if smt_retry_limit is None:
+        smt_retry_limit = 10
+
     if isinstance(kore_rpc_command, str):
         kore_rpc_command = kore_rpc_command.split()
 
@@ -284,6 +289,11 @@ def exec_foundry_simplify_node(
     trace_rewrites: bool = False,
     **kwargs: Any,
 ) -> None:
+    if smt_timeout is None:
+        smt_timeout = 300
+    if smt_retry_limit is None:
+        smt_retry_limit = 10
+
     pretty_term = foundry_simplify_node(
         foundry_root=foundry_root,
         test=test,
@@ -311,6 +321,11 @@ def exec_foundry_step_node(
     trace_rewrites: bool = False,
     **kwargs: Any,
 ) -> None:
+    if smt_timeout is None:
+        smt_timeout = 300
+    if smt_retry_limit is None:
+        smt_retry_limit = 10
+
     foundry_step_node(
         foundry_root=foundry_root,
         test=test,
@@ -336,6 +351,11 @@ def exec_foundry_section_edge(
     trace_rewrites: bool = False,
     **kwargs: Any,
 ) -> None:
+    if smt_timeout is None:
+        smt_timeout = 300
+    if smt_retry_limit is None:
+        smt_retry_limit = 10
+
     foundry_section_edge(
         foundry_root=foundry_root,
         test=test,

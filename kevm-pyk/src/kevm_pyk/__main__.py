@@ -200,6 +200,11 @@ def exec_prove(
     if definition_dir is None:
         definition_dir = KompileTarget.HASKELL.definition_dir
 
+    if smt_timeout is None:
+        smt_timeout = 300
+    if smt_retry_limit is None:
+        smt_retry_limit = 10
+
     br = BugReport(spec_file.with_suffix('.bug_report')) if bug_report else None
     kevm = KEVM(definition_dir, use_directory=save_directory, bug_report=br)
 
