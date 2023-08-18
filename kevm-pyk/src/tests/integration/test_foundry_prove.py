@@ -99,8 +99,8 @@ def test_foundry_prove(test_id: str, foundry_root: Path, update_expected_output:
         foundry_root,
         tests=[test_id],
         simplify_init=False,
-        smt_timeout=125,
-        smt_retry_limit=4,
+        smt_timeout=300,
+        smt_retry_limit=10,
         use_booster=use_booster,
         counterexample_info=True,
     )
@@ -139,7 +139,7 @@ def test_foundry_fail(test_id: str, foundry_root: Path, update_expected_output: 
         tests=[test_id],
         simplify_init=False,
         smt_timeout=300,
-        smt_retry_limit=8,
+        smt_retry_limit=10,
         use_booster=use_booster,
         counterexample_info=True,
     )
@@ -182,8 +182,8 @@ def test_foundry_bmc(test_id: str, foundry_root: Path, use_booster: bool) -> Non
         tests=[test_id],
         bmc_depth=3,
         simplify_init=False,
-        smt_timeout=125,
-        smt_retry_limit=4,
+        smt_timeout=300,
+        smt_retry_limit=10,
         use_booster=use_booster,
         counterexample_info=True,
     )
@@ -197,8 +197,8 @@ def test_foundry_auto_abstraction(foundry_root: Path, update_expected_output: bo
     foundry_prove(
         foundry_root,
         tests=[test_id],
-        smt_timeout=125,
-        smt_retry_limit=4,
+        smt_timeout=300,
+        smt_retry_limit=10,
         auto_abstract_gas=True,
     )
 
@@ -289,8 +289,8 @@ def test_foundry_resume_proof(foundry_root: Path, update_expected_output: bool) 
     prove_res = foundry_prove(
         foundry_root,
         tests=[test_id],
-        smt_timeout=125,
-        smt_retry_limit=4,
+        smt_timeout=300,
+        smt_retry_limit=10,
         auto_abstract_gas=True,
         max_iterations=4,
         reinit=True,
@@ -299,8 +299,8 @@ def test_foundry_resume_proof(foundry_root: Path, update_expected_output: bool) 
     prove_res = foundry_prove(
         foundry_root,
         tests=[test_id],
-        smt_timeout=125,
-        smt_retry_limit=4,
+        smt_timeout=300,
+        smt_retry_limit=10,
         auto_abstract_gas=True,
         max_iterations=6,
         reinit=False,
