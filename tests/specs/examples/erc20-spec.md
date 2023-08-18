@@ -80,7 +80,7 @@ module ERC20-SPEC
           <gas>        #gas(_VGAS) => ?_ </gas>
           <callValue>  0           => ?_ </callValue>
 
-          <callData>   S2KERC20.decimals()               </callData>
+          <callData>   S2KERC20.S2Kdecimals()               </callData>
           <k>          #execute => #halt ...          </k>
           <output>     .Bytes   => #buf(32, DECIMALS) </output>
           <statusCode> _        => EVMC_SUCCESS       </statusCode>
@@ -120,7 +120,7 @@ module ERC20-SPEC
           <gas>        #gas(_VGAS) => ?_ </gas>
           <callValue>  0           => ?_ </callValue>
 
-          <callData>   S2KERC20.totalSupply()               </callData>
+          <callData>   S2KERC20.S2KtotalSupply()               </callData>
           <k>          #execute => #halt ...             </k>
           <output>     .Bytes   => #buf(32, TOTALSUPPLY) </output>
           <statusCode> _        => EVMC_SUCCESS          </statusCode>
@@ -164,7 +164,7 @@ module ERC20-SPEC
           <callValue>  0           => ?_ </callValue>
           <substate> _             => ?_ </substate>
 
-          <callData>   S2KERC20.approve(SPENDER : address, AMOUNT : uint256) </callData>
+          <callData>   S2KERC20.S2Kapprove(SPENDER : address, AMOUNT : uint256) </callData>
           <k>          #execute => #halt ...        </k>
           <output>     .Bytes   => #buf(32, 1)      </output>
           <statusCode> _        => EVMC_SUCCESS     </statusCode>
@@ -203,7 +203,7 @@ module ERC20-SPEC
           <callValue>  0           => ?_ </callValue>
           <substate> _             => ?_ </substate>
 
-          <callData>   S2KERC20.approve(SPENDER : address, AMOUNT : uint256) </callData>
+          <callData>   S2KERC20.S2Kapprove(SPENDER : address, AMOUNT : uint256) </callData>
           <k>          #execute   => #halt ...        </k>
           <output>     _          => ?_               </output>
           <statusCode> _          => EVMC_REVERT      </statusCode>

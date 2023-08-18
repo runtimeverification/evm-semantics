@@ -5774,6 +5774,100 @@ module BytesTypeTest-CONTRACT
 
 endmodule
 
+module IntTypeTest-CONTRACT
+    imports public FOUNDRY
+    
+    syntax Contract ::= S2KIntTypeTestContract
+    
+    syntax S2KIntTypeTestContract ::= "S2KIntTypeTest" [symbol(), klabel(contract_IntTypeTest)]
+    
+      
+    
+    syntax Bytes ::= S2KIntTypeTestContract "." S2KIntTypeTestMethod [function(), symbol(), klabel(method_IntTypeTest)]
+    
+    syntax S2KIntTypeTestMethod ::= "S2KtestFailz5fint128" "(" Int ":" "int128" ")" [symbol(), klabel(method_IntTypeTest_S2KtestFailz5fint128_int128)]
+    
+    syntax S2KIntTypeTestMethod ::= "S2KtestFailz5fint256" "(" Int ":" "int256" ")" [symbol(), klabel(method_IntTypeTest_S2KtestFailz5fint256_int256)]
+    
+    syntax S2KIntTypeTestMethod ::= "S2KtestFailz5fint64" "(" Int ":" "int64" ")" [symbol(), klabel(method_IntTypeTest_S2KtestFailz5fint64_int64)]
+    
+    syntax S2KIntTypeTestMethod ::= "S2Ktestz5fint128" "(" Int ":" "int128" ")" [symbol(), klabel(method_IntTypeTest_S2Ktestz5fint128_int128)]
+    
+    syntax S2KIntTypeTestMethod ::= "S2Ktestz5fint128z5ffail" "(" Int ":" "int128" ")" [symbol(), klabel(method_IntTypeTest_S2Ktestz5fint128z5ffail_int128)]
+    
+    syntax S2KIntTypeTestMethod ::= "S2Ktestz5fint256" "(" Int ":" "int256" ")" [symbol(), klabel(method_IntTypeTest_S2Ktestz5fint256_int256)]
+    
+    syntax S2KIntTypeTestMethod ::= "S2Ktestz5fint256z5ffail" "(" Int ":" "int256" ")" [symbol(), klabel(method_IntTypeTest_S2Ktestz5fint256z5ffail_int256)]
+    
+    syntax S2KIntTypeTestMethod ::= "S2Ktestz5fint64" "(" Int ":" "int64" ")" [symbol(), klabel(method_IntTypeTest_S2Ktestz5fint64_int64)]
+    
+    syntax S2KIntTypeTestMethod ::= "S2Ktestz5fint64z5ffail" "(" Int ":" "int64" ")" [symbol(), klabel(method_IntTypeTest_S2Ktestz5fint64z5ffail_int64)]
+    
+    rule  ( S2KIntTypeTest . S2KtestFailz5fint128 ( V0_x : int128 ) => #abiCallData ( "testFail_int128" , #int128 ( V0_x ) , .TypedArgs ) )
+       ensures #rangeSInt ( 128 , V0_x )
+      
+    
+    rule  ( S2KIntTypeTest . S2KtestFailz5fint256 ( V0_x : int256 ) => #abiCallData ( "testFail_int256" , #int256 ( V0_x ) , .TypedArgs ) )
+       ensures #rangeSInt ( 256 , V0_x )
+      
+    
+    rule  ( S2KIntTypeTest . S2KtestFailz5fint64 ( V0_x : int64 ) => #abiCallData ( "testFail_int64" , #int64 ( V0_x ) , .TypedArgs ) )
+       ensures #rangeSInt ( 64 , V0_x )
+      
+    
+    rule  ( S2KIntTypeTest . S2Ktestz5fint128 ( V0_x : int128 ) => #abiCallData ( "test_int128" , #int128 ( V0_x ) , .TypedArgs ) )
+       ensures #rangeSInt ( 128 , V0_x )
+      
+    
+    rule  ( S2KIntTypeTest . S2Ktestz5fint128z5ffail ( V0_x : int128 ) => #abiCallData ( "test_int128_fail" , #int128 ( V0_x ) , .TypedArgs ) )
+       ensures #rangeSInt ( 128 , V0_x )
+      
+    
+    rule  ( S2KIntTypeTest . S2Ktestz5fint256 ( V0_x : int256 ) => #abiCallData ( "test_int256" , #int256 ( V0_x ) , .TypedArgs ) )
+       ensures #rangeSInt ( 256 , V0_x )
+      
+    
+    rule  ( S2KIntTypeTest . S2Ktestz5fint256z5ffail ( V0_x : int256 ) => #abiCallData ( "test_int256_fail" , #int256 ( V0_x ) , .TypedArgs ) )
+       ensures #rangeSInt ( 256 , V0_x )
+      
+    
+    rule  ( S2KIntTypeTest . S2Ktestz5fint64 ( V0_x : int64 ) => #abiCallData ( "test_int64" , #int64 ( V0_x ) , .TypedArgs ) )
+       ensures #rangeSInt ( 64 , V0_x )
+      
+    
+    rule  ( S2KIntTypeTest . S2Ktestz5fint64z5ffail ( V0_x : int64 ) => #abiCallData ( "test_int64_fail" , #int64 ( V0_x ) , .TypedArgs ) )
+       ensures #rangeSInt ( 64 , V0_x )
+      
+    
+    rule  ( selector ( "testFail_int128(int128)" ) => 1988540889 )
+      
+    
+    rule  ( selector ( "testFail_int256(int256)" ) => 1185096419 )
+      
+    
+    rule  ( selector ( "testFail_int64(int64)" ) => 1750678769 )
+      
+    
+    rule  ( selector ( "test_int128(int128)" ) => 995880333 )
+      
+    
+    rule  ( selector ( "test_int128_fail(int128)" ) => 1240751129 )
+      
+    
+    rule  ( selector ( "test_int256(int256)" ) => 3818914766 )
+      
+    
+    rule  ( selector ( "test_int256_fail(int256)" ) => 1877071906 )
+      
+    
+    rule  ( selector ( "test_int64(int64)" ) => 1792301870 )
+      
+    
+    rule  ( selector ( "test_int64_fail(int64)" ) => 2744099616 )
+      
+
+endmodule
+
 module UintTypeTest-CONTRACT
     imports public FOUNDRY
     
