@@ -9,6 +9,9 @@ contract InitCodeTest is Test {
     uint b = 2;
     uint c = 3;
 
+    constructor() public payable {
+    }
+
     function test_init() public {
         assertEq(a + b + c, 6);
     }

@@ -1054,7 +1054,7 @@ def _method_to_apr_proof(
             init_proof = f'{contract.name}.init'
 
         empty_config = foundry.kevm.definition.empty_config(GENERATED_TOP_CELL)
-        kcfg, init_node_id, target_node_id = _method_to_cfg(
+        kcfg, init_node_ids, target_node_id = _method_to_cfg(
             empty_config,
             contract,
             method,
@@ -1064,13 +1064,14 @@ def _method_to_apr_proof(
             use_init_code=False,
         )
 
-        _LOGGER.info(f'Expanding macros in initial state for test: {test}')
-        init_term = kcfg.node(init_node_id).cterm.kast
-        init_term = KDefinition__expand_macros(foundry.kevm.definition, init_term)
-        init_cterm = CTerm.from_kast(init_term)
-        _LOGGER.info(f'Computing definedness constraint for test: {test}')
-        init_cterm = kcfg_explore.cterm_assume_defined(init_cterm)
-        kcfg.replace_node(init_node_id, init_cterm)
+        for init_node_id in init_node_ids:
+            _LOGGER.info(f'Expanding macros in node {init_node_id} for test: {test}')
+            init_term = kcfg.node(init_node_id).cterm.kast
+            init_term = KDefinition__expand_macros(foundry.kevm.definition, init_term)
+            init_cterm = CTerm.from_kast(init_term)
+            _LOGGER.info(f'Computing definedness constraint for node {init_node_id} for test: {test}')
+            init_cterm = kcfg_explore.cterm_assume_defined(init_cterm)
+            kcfg.replace_node(init_node_id, init_cterm)
 
         _LOGGER.info(f'Expanding macros in target state for test: {test}')
         target_term = kcfg.node(target_node_id).cterm.kast
@@ -1120,12 +1121,14 @@ def _method_to_cfg(
     foundry: Foundry,
     init_proof: str | None = None,
     use_init_code: bool = False,
-) -> tuple[KCFG, NodeIdLike, NodeIdLike]:
+) -> tuple[KCFG, list[int], int]:
     calldata = method.calldata_cell(contract)
     callvalue = method.callvalue_cell
     init_cterm = _init_cterm(
         empty_config, contract.name, proof_dir, calldata=calldata, callvalue=callvalue, use_init_code=use_init_code
     )
+
+    init_node_ids = []
 
     if init_proof:
         initial_proof = foundry.get_apr_proof(init_proof)
@@ -1139,20 +1142,19 @@ def _method_to_cfg(
             accounts_subst = {'ACCOUNTS_CELL': final_node.cterm.cell('ACCOUNTS_CELL')}
             new_init_cterm = CTerm.from_kast(Subst(accounts_subst)(init_cterm.kast))
             new_node = cfg.create_node(new_init_cterm)
-            cfg.create_cover(final_node.id, new_node.id)
-
-        init_node_id = initial_proof.init
+            cfg.create_edge(final_node.id, new_node.id, depth=1)
+            init_node_ids.append(new_node.id)
     else:
         cfg = KCFG()
         init_node = cfg.create_node(init_cterm)
-        init_node_id = init_node.id
+        init_node_ids = [init_node.id]
 
     is_test = method.name.startswith('test')
     failing = method.name.startswith('testFail')
     final_cterm = _final_cterm(empty_config, contract.name, failing=failing, is_test=is_test)
     target_node = cfg.create_node(final_cterm)
 
-    return cfg, init_node_id, target_node.id
+    return cfg, init_node_ids, target_node.id
 
 
 def get_final_accounts_cell(proof_id: str, proof_dir: Path, foundry: Foundry) -> tuple[KInner, Iterable[KInner]]:
@@ -1261,7 +1263,9 @@ def _init_cterm(
         return init_cterm
 
 
-def _final_cterm(empty_config: KInner, contract_name: str, *, failing: bool, is_test: bool = True, use_init_code: bool = False) -> CTerm:
+def _final_cterm(
+    empty_config: KInner, contract_name: str, *, failing: bool, is_test: bool = True, use_init_code: bool = False
+) -> CTerm:
     final_term = _final_term(empty_config, contract_name, use_init_code=use_init_code)
     dst_failed_post = KEVM.lookup(KVariable('CHEATCODE_STORAGE_FINAL'), Foundry.loc_FOUNDRY_FAILED())
     foundry_success = Foundry.success(
