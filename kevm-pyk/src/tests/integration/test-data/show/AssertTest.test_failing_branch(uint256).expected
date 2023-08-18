@@ -326,7 +326,7 @@ Node 11:
                      CALLER_ID
                    </caller>
                    <callData>
-                     ( S2KAssertTest . S2Ktestz5ffailingz5fbranch ( VV0_x_114b9705 : uint256 ) => b"F\"\xb1U" +Bytes #buf ( 32 , VV0_x_114b9705:Int ) )
+                     ( S2KAssertTest . S2KtestZUndfailingZUndbranch ( VV0_x_114b9705 : uint256 ) => b"F\"\xb1U" +Bytes #buf ( 32 , VV0_x_114b9705:Int ) )
                    </callData>
                    <callValue>
                      0
@@ -499,7 +499,7 @@ Node 11:
        andBool ( maxSInt64 <Int pow256
        andBool ( 0 <=Int 728815563385977040452943777879061427756277306518
        andBool ( 728815563385977040452943777879061427756277306518 <Int pow160
-       andBool ( lengthBytes ( S2KAssertTest . S2Ktestz5ffailingz5fbranch ( VV0_x_114b9705 : uint256 ) ) <Int pow128
+       andBool ( lengthBytes ( S2KAssertTest . S2KtestZUndfailingZUndbranch ( VV0_x_114b9705 : uint256 ) ) <Int pow128
                )))))))))))))
        ensures ( 0 <=Int CALLER_ID:Int
        andBool ( 0 <=Int ORIGIN_ID:Int

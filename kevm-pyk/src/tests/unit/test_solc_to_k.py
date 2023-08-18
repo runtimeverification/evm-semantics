@@ -42,11 +42,13 @@ def test_range_predicate(test_id: str, term: KInner, type: str, expected: KInner
 from kontrol.solc_to_k import Contract
 
 ESCAPE_DATA: list[tuple[str, str, str, str]] = [
-    ('has_underscore', 'S2K', 'My_contract', 'S2KMyz5fcontract'),
+    ('has_underscore', 'S2K', 'My_contract', 'S2KMyZUndcontract'),
     ('no_change', '', 'mycontract', 'mycontract'),
-    ('starts_underscore', 'S2K', '_method', 'S2Kz5fmethod'),
-    ('with_escape', '', 'z_', 'z7az5f'),
-    ('with_escape', 'S2K', 'zS2K_', 'S2Kz7aS2Kz5f'),
+    ('starts_underscore', 'S2K', '_method', 'S2KZUndmethod'),
+    ('with_escape', '', 'Z_', 'ZZZUnd'),
+    ('lower_z', '', 'z_', 'zZUnd'),
+    ('with_escape_no_prefix', 'S2K', 'zS2K_', 'S2KzS2KZUnd'),
+    ('doll', 'S2K', '$name', 'S2KZDlrname'),
 ]
 
 

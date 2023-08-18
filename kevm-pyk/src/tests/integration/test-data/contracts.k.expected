@@ -33,9 +33,9 @@ module AccountParamsTest-CONTRACT
     
     syntax Bytes ::= S2KAccountParamsTestContract "." S2KAccountParamsTestMethod [function(), symbol(), klabel(method_AccountParamsTest)]
     
-    syntax S2KAccountParamsTestMethod ::= "S2KISz5fSCRIPT" "(" ")" [symbol(), klabel(method_AccountParamsTest_S2KISz5fSCRIPT_)]
+    syntax S2KAccountParamsTestMethod ::= "S2KISZUndSCRIPT" "(" ")" [symbol(), klabel(method_AccountParamsTest_S2KISZUndSCRIPT_)]
     
-    syntax S2KAccountParamsTestMethod ::= "S2KISz5fTEST" "(" ")" [symbol(), klabel(method_AccountParamsTest_S2KISz5fTEST_)]
+    syntax S2KAccountParamsTestMethod ::= "S2KISZUndTEST" "(" ")" [symbol(), klabel(method_AccountParamsTest_S2KISZUndTEST_)]
     
     syntax S2KAccountParamsTestMethod ::= "S2Kfailed" "(" ")" [symbol(), klabel(method_AccountParamsTest_S2Kfailed_)]
     
@@ -47,28 +47,28 @@ module AccountParamsTest-CONTRACT
     
     syntax S2KAccountParamsTestMethod ::= "S2KtestEtchSymbolic" "(" Bytes ":" "bytes" ")" [symbol(), klabel(method_AccountParamsTest_S2KtestEtchSymbolic_bytes)]
     
-    syntax S2KAccountParamsTestMethod ::= "S2KtestFailz5fGetNoncez5ffalse" "(" ")" [symbol(), klabel(method_AccountParamsTest_S2KtestFailz5fGetNoncez5ffalse_)]
+    syntax S2KAccountParamsTestMethod ::= "S2KtestFailZUndGetNonceZUndfalse" "(" ")" [symbol(), klabel(method_AccountParamsTest_S2KtestFailZUndGetNonceZUndfalse_)]
     
-    syntax S2KAccountParamsTestMethod ::= "S2KtestFailz5fGetNoncez5ftrue" "(" ")" [symbol(), klabel(method_AccountParamsTest_S2KtestFailz5fGetNoncez5ftrue_)]
+    syntax S2KAccountParamsTestMethod ::= "S2KtestFailZUndGetNonceZUndtrue" "(" ")" [symbol(), klabel(method_AccountParamsTest_S2KtestFailZUndGetNonceZUndtrue_)]
     
     syntax S2KAccountParamsTestMethod ::= "S2KtestNonceSymbolic" "(" Int ":" "uint64" ")" [symbol(), klabel(method_AccountParamsTest_S2KtestNonceSymbolic_uint64)]
     
-    syntax S2KAccountParamsTestMethod ::= "S2Ktestz5fGetNoncez5ffalse" "(" ")" [symbol(), klabel(method_AccountParamsTest_S2Ktestz5fGetNoncez5ffalse_)]
+    syntax S2KAccountParamsTestMethod ::= "S2KtestZUndGetNonceZUndfalse" "(" ")" [symbol(), klabel(method_AccountParamsTest_S2KtestZUndGetNonceZUndfalse_)]
     
-    syntax S2KAccountParamsTestMethod ::= "S2Ktestz5fGetNoncez5ftrue" "(" ")" [symbol(), klabel(method_AccountParamsTest_S2Ktestz5fGetNoncez5ftrue_)]
+    syntax S2KAccountParamsTestMethod ::= "S2KtestZUndGetNonceZUndtrue" "(" ")" [symbol(), klabel(method_AccountParamsTest_S2KtestZUndGetNonceZUndtrue_)]
     
-    syntax S2KAccountParamsTestMethod ::= "S2Ktestz5fNoncez5fExistentAddress" "(" ")" [symbol(), klabel(method_AccountParamsTest_S2Ktestz5fNoncez5fExistentAddress_)]
+    syntax S2KAccountParamsTestMethod ::= "S2KtestZUndNonceZUndExistentAddress" "(" ")" [symbol(), klabel(method_AccountParamsTest_S2KtestZUndNonceZUndExistentAddress_)]
     
-    syntax S2KAccountParamsTestMethod ::= "S2Ktestz5fNoncez5fNonExistentAddress" "(" ")" [symbol(), klabel(method_AccountParamsTest_S2Ktestz5fNoncez5fNonExistentAddress_)]
+    syntax S2KAccountParamsTestMethod ::= "S2KtestZUndNonceZUndNonExistentAddress" "(" ")" [symbol(), klabel(method_AccountParamsTest_S2KtestZUndNonceZUndNonExistentAddress_)]
     
-    syntax S2KAccountParamsTestMethod ::= "S2Ktestz5fgetNoncez5funknownSymbolic" "(" Int ":" "address" ")" [symbol(), klabel(method_AccountParamsTest_S2Ktestz5fgetNoncez5funknownSymbolic_address)]
+    syntax S2KAccountParamsTestMethod ::= "S2KtestZUndgetNonceZUndunknownSymbolic" "(" Int ":" "address" ")" [symbol(), klabel(method_AccountParamsTest_S2KtestZUndgetNonceZUndunknownSymbolic_address)]
     
     syntax S2KAccountParamsTestMethod ::= "S2Kvm" "(" ")" [symbol(), klabel(method_AccountParamsTest_S2Kvm_)]
     
-    rule  ( S2KAccountParamsTest . S2KISz5fSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
+    rule  ( S2KAccountParamsTest . S2KISZUndSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
     
-    rule  ( S2KAccountParamsTest . S2KISz5fTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
+    rule  ( S2KAccountParamsTest . S2KISZUndTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
       
     
     rule  ( S2KAccountParamsTest . S2Kfailed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
@@ -88,29 +88,29 @@ module AccountParamsTest-CONTRACT
        ensures #rangeUInt ( 128 , lengthBytes ( V0_code ) )
       
     
-    rule  ( S2KAccountParamsTest . S2KtestFailz5fGetNoncez5ffalse ( ) => #abiCallData ( "testFail_GetNonce_false" , .TypedArgs ) )
+    rule  ( S2KAccountParamsTest . S2KtestFailZUndGetNonceZUndfalse ( ) => #abiCallData ( "testFail_GetNonce_false" , .TypedArgs ) )
       
     
-    rule  ( S2KAccountParamsTest . S2KtestFailz5fGetNoncez5ftrue ( ) => #abiCallData ( "testFail_GetNonce_true" , .TypedArgs ) )
+    rule  ( S2KAccountParamsTest . S2KtestFailZUndGetNonceZUndtrue ( ) => #abiCallData ( "testFail_GetNonce_true" , .TypedArgs ) )
       
     
     rule  ( S2KAccountParamsTest . S2KtestNonceSymbolic ( V0_newNonce : uint64 ) => #abiCallData ( "testNonceSymbolic" , #uint64 ( V0_newNonce ) , .TypedArgs ) )
        ensures #rangeUInt ( 64 , V0_newNonce )
       
     
-    rule  ( S2KAccountParamsTest . S2Ktestz5fGetNoncez5ffalse ( ) => #abiCallData ( "test_GetNonce_false" , .TypedArgs ) )
+    rule  ( S2KAccountParamsTest . S2KtestZUndGetNonceZUndfalse ( ) => #abiCallData ( "test_GetNonce_false" , .TypedArgs ) )
       
     
-    rule  ( S2KAccountParamsTest . S2Ktestz5fGetNoncez5ftrue ( ) => #abiCallData ( "test_GetNonce_true" , .TypedArgs ) )
+    rule  ( S2KAccountParamsTest . S2KtestZUndGetNonceZUndtrue ( ) => #abiCallData ( "test_GetNonce_true" , .TypedArgs ) )
       
     
-    rule  ( S2KAccountParamsTest . S2Ktestz5fNoncez5fExistentAddress ( ) => #abiCallData ( "test_Nonce_ExistentAddress" , .TypedArgs ) )
+    rule  ( S2KAccountParamsTest . S2KtestZUndNonceZUndExistentAddress ( ) => #abiCallData ( "test_Nonce_ExistentAddress" , .TypedArgs ) )
       
     
-    rule  ( S2KAccountParamsTest . S2Ktestz5fNoncez5fNonExistentAddress ( ) => #abiCallData ( "test_Nonce_NonExistentAddress" , .TypedArgs ) )
+    rule  ( S2KAccountParamsTest . S2KtestZUndNonceZUndNonExistentAddress ( ) => #abiCallData ( "test_Nonce_NonExistentAddress" , .TypedArgs ) )
       
     
-    rule  ( S2KAccountParamsTest . S2Ktestz5fgetNoncez5funknownSymbolic ( V0_addr : address ) => #abiCallData ( "test_getNonce_unknownSymbolic" , #address ( V0_addr ) , .TypedArgs ) )
+    rule  ( S2KAccountParamsTest . S2KtestZUndgetNonceZUndunknownSymbolic ( V0_addr : address ) => #abiCallData ( "test_getNonce_unknownSymbolic" , #address ( V0_addr ) , .TypedArgs ) )
        ensures #rangeAddress ( V0_addr )
       
     
@@ -200,36 +200,36 @@ module AddrTest-CONTRACT
     
     syntax Bytes ::= S2KAddrTestContract "." S2KAddrTestMethod [function(), symbol(), klabel(method_AddrTest)]
     
-    syntax S2KAddrTestMethod ::= "S2KISz5fSCRIPT" "(" ")" [symbol(), klabel(method_AddrTest_S2KISz5fSCRIPT_)]
+    syntax S2KAddrTestMethod ::= "S2KISZUndSCRIPT" "(" ")" [symbol(), klabel(method_AddrTest_S2KISZUndSCRIPT_)]
     
-    syntax S2KAddrTestMethod ::= "S2KISz5fTEST" "(" ")" [symbol(), klabel(method_AddrTest_S2KISz5fTEST_)]
+    syntax S2KAddrTestMethod ::= "S2KISZUndTEST" "(" ")" [symbol(), klabel(method_AddrTest_S2KISZUndTEST_)]
     
     syntax S2KAddrTestMethod ::= "S2Kfailed" "(" ")" [symbol(), klabel(method_AddrTest_S2Kfailed_)]
     
     syntax S2KAddrTestMethod ::= "S2Kkevm" "(" ")" [symbol(), klabel(method_AddrTest_S2Kkevm_)]
     
-    syntax S2KAddrTestMethod ::= "S2KtestFailz5faddrz5ffalse" "(" ")" [symbol(), klabel(method_AddrTest_S2KtestFailz5faddrz5ffalse_)]
+    syntax S2KAddrTestMethod ::= "S2KtestFailZUndaddrZUndfalse" "(" ")" [symbol(), klabel(method_AddrTest_S2KtestFailZUndaddrZUndfalse_)]
     
-    syntax S2KAddrTestMethod ::= "S2KtestFailz5faddrz5ftrue" "(" ")" [symbol(), klabel(method_AddrTest_S2KtestFailz5faddrz5ftrue_)]
+    syntax S2KAddrTestMethod ::= "S2KtestFailZUndaddrZUndtrue" "(" ")" [symbol(), klabel(method_AddrTest_S2KtestFailZUndaddrZUndtrue_)]
     
-    syntax S2KAddrTestMethod ::= "S2Ktestz5faddrz5ffalse" "(" ")" [symbol(), klabel(method_AddrTest_S2Ktestz5faddrz5ffalse_)]
+    syntax S2KAddrTestMethod ::= "S2KtestZUndaddrZUndfalse" "(" ")" [symbol(), klabel(method_AddrTest_S2KtestZUndaddrZUndfalse_)]
     
-    syntax S2KAddrTestMethod ::= "S2Ktestz5faddrz5fsymbolic" "(" Int ":" "uint256" ")" [symbol(), klabel(method_AddrTest_S2Ktestz5faddrz5fsymbolic_uint256)]
+    syntax S2KAddrTestMethod ::= "S2KtestZUndaddrZUndsymbolic" "(" Int ":" "uint256" ")" [symbol(), klabel(method_AddrTest_S2KtestZUndaddrZUndsymbolic_uint256)]
     
-    syntax S2KAddrTestMethod ::= "S2Ktestz5faddrz5ftrue" "(" ")" [symbol(), klabel(method_AddrTest_S2Ktestz5faddrz5ftrue_)]
+    syntax S2KAddrTestMethod ::= "S2KtestZUndaddrZUndtrue" "(" ")" [symbol(), klabel(method_AddrTest_S2KtestZUndaddrZUndtrue_)]
     
-    syntax S2KAddrTestMethod ::= "S2Ktestz5fbuiltInAddresses" "(" ")" [symbol(), klabel(method_AddrTest_S2Ktestz5fbuiltInAddresses_)]
+    syntax S2KAddrTestMethod ::= "S2KtestZUndbuiltInAddresses" "(" ")" [symbol(), klabel(method_AddrTest_S2KtestZUndbuiltInAddresses_)]
     
-    syntax S2KAddrTestMethod ::= "S2Ktestz5fnotBuiltinAddressz5fconcrete" "(" ")" [symbol(), klabel(method_AddrTest_S2Ktestz5fnotBuiltinAddressz5fconcrete_)]
+    syntax S2KAddrTestMethod ::= "S2KtestZUndnotBuiltinAddressZUndconcrete" "(" ")" [symbol(), klabel(method_AddrTest_S2KtestZUndnotBuiltinAddressZUndconcrete_)]
     
-    syntax S2KAddrTestMethod ::= "S2Ktestz5fnotBuiltinAddressz5fsymbolic" "(" Int ":" "address" ")" [symbol(), klabel(method_AddrTest_S2Ktestz5fnotBuiltinAddressz5fsymbolic_address)]
+    syntax S2KAddrTestMethod ::= "S2KtestZUndnotBuiltinAddressZUndsymbolic" "(" Int ":" "address" ")" [symbol(), klabel(method_AddrTest_S2KtestZUndnotBuiltinAddressZUndsymbolic_address)]
     
     syntax S2KAddrTestMethod ::= "S2Kvm" "(" ")" [symbol(), klabel(method_AddrTest_S2Kvm_)]
     
-    rule  ( S2KAddrTest . S2KISz5fSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
+    rule  ( S2KAddrTest . S2KISZUndSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
     
-    rule  ( S2KAddrTest . S2KISz5fTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
+    rule  ( S2KAddrTest . S2KISZUndTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
       
     
     rule  ( S2KAddrTest . S2Kfailed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
@@ -238,29 +238,29 @@ module AddrTest-CONTRACT
     rule  ( S2KAddrTest . S2Kkevm ( ) => #abiCallData ( "kevm" , .TypedArgs ) )
       
     
-    rule  ( S2KAddrTest . S2KtestFailz5faddrz5ffalse ( ) => #abiCallData ( "testFail_addr_false" , .TypedArgs ) )
+    rule  ( S2KAddrTest . S2KtestFailZUndaddrZUndfalse ( ) => #abiCallData ( "testFail_addr_false" , .TypedArgs ) )
       
     
-    rule  ( S2KAddrTest . S2KtestFailz5faddrz5ftrue ( ) => #abiCallData ( "testFail_addr_true" , .TypedArgs ) )
+    rule  ( S2KAddrTest . S2KtestFailZUndaddrZUndtrue ( ) => #abiCallData ( "testFail_addr_true" , .TypedArgs ) )
       
     
-    rule  ( S2KAddrTest . S2Ktestz5faddrz5ffalse ( ) => #abiCallData ( "test_addr_false" , .TypedArgs ) )
+    rule  ( S2KAddrTest . S2KtestZUndaddrZUndfalse ( ) => #abiCallData ( "test_addr_false" , .TypedArgs ) )
       
     
-    rule  ( S2KAddrTest . S2Ktestz5faddrz5fsymbolic ( V0_pk : uint256 ) => #abiCallData ( "test_addr_symbolic" , #uint256 ( V0_pk ) , .TypedArgs ) )
+    rule  ( S2KAddrTest . S2KtestZUndaddrZUndsymbolic ( V0_pk : uint256 ) => #abiCallData ( "test_addr_symbolic" , #uint256 ( V0_pk ) , .TypedArgs ) )
        ensures #rangeUInt ( 256 , V0_pk )
       
     
-    rule  ( S2KAddrTest . S2Ktestz5faddrz5ftrue ( ) => #abiCallData ( "test_addr_true" , .TypedArgs ) )
+    rule  ( S2KAddrTest . S2KtestZUndaddrZUndtrue ( ) => #abiCallData ( "test_addr_true" , .TypedArgs ) )
       
     
-    rule  ( S2KAddrTest . S2Ktestz5fbuiltInAddresses ( ) => #abiCallData ( "test_builtInAddresses" , .TypedArgs ) )
+    rule  ( S2KAddrTest . S2KtestZUndbuiltInAddresses ( ) => #abiCallData ( "test_builtInAddresses" , .TypedArgs ) )
       
     
-    rule  ( S2KAddrTest . S2Ktestz5fnotBuiltinAddressz5fconcrete ( ) => #abiCallData ( "test_notBuiltinAddress_concrete" , .TypedArgs ) )
+    rule  ( S2KAddrTest . S2KtestZUndnotBuiltinAddressZUndconcrete ( ) => #abiCallData ( "test_notBuiltinAddress_concrete" , .TypedArgs ) )
       
     
-    rule  ( S2KAddrTest . S2Ktestz5fnotBuiltinAddressz5fsymbolic ( V0_addr : address ) => #abiCallData ( "test_notBuiltinAddress_symbolic" , #address ( V0_addr ) , .TypedArgs ) )
+    rule  ( S2KAddrTest . S2KtestZUndnotBuiltinAddressZUndsymbolic ( V0_addr : address ) => #abiCallData ( "test_notBuiltinAddress_symbolic" , #address ( V0_addr ) , .TypedArgs ) )
        ensures #rangeAddress ( V0_addr )
       
     
@@ -341,9 +341,9 @@ module AllowChangesTest-CONTRACT
     
     syntax Bytes ::= S2KAllowChangesTestContract "." S2KAllowChangesTestMethod [function(), symbol(), klabel(method_AllowChangesTest)]
     
-    syntax S2KAllowChangesTestMethod ::= "S2KISz5fSCRIPT" "(" ")" [symbol(), klabel(method_AllowChangesTest_S2KISz5fSCRIPT_)]
+    syntax S2KAllowChangesTestMethod ::= "S2KISZUndSCRIPT" "(" ")" [symbol(), klabel(method_AllowChangesTest_S2KISZUndSCRIPT_)]
     
-    syntax S2KAllowChangesTestMethod ::= "S2KISz5fTEST" "(" ")" [symbol(), klabel(method_AllowChangesTest_S2KISz5fTEST_)]
+    syntax S2KAllowChangesTestMethod ::= "S2KISZUndTEST" "(" ")" [symbol(), klabel(method_AllowChangesTest_S2KISZUndTEST_)]
     
     syntax S2KAllowChangesTestMethod ::= "S2Kfailed" "(" ")" [symbol(), klabel(method_AllowChangesTest_S2Kfailed_)]
     
@@ -353,7 +353,7 @@ module AllowChangesTest-CONTRACT
     
     syntax S2KAllowChangesTestMethod ::= "S2KtestAllow" "(" ")" [symbol(), klabel(method_AllowChangesTest_S2KtestAllow_)]
     
-    syntax S2KAllowChangesTestMethod ::= "S2KtestAllowz5ffail" "(" ")" [symbol(), klabel(method_AllowChangesTest_S2KtestAllowz5ffail_)]
+    syntax S2KAllowChangesTestMethod ::= "S2KtestAllowZUndfail" "(" ")" [symbol(), klabel(method_AllowChangesTest_S2KtestAllowZUndfail_)]
     
     syntax S2KAllowChangesTestMethod ::= "S2KtestFailAllowCallsToAddress" "(" ")" [symbol(), klabel(method_AllowChangesTest_S2KtestFailAllowCallsToAddress_)]
     
@@ -361,10 +361,10 @@ module AllowChangesTest-CONTRACT
     
     syntax S2KAllowChangesTestMethod ::= "S2Kvm" "(" ")" [symbol(), klabel(method_AllowChangesTest_S2Kvm_)]
     
-    rule  ( S2KAllowChangesTest . S2KISz5fSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
+    rule  ( S2KAllowChangesTest . S2KISZUndSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
     
-    rule  ( S2KAllowChangesTest . S2KISz5fTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
+    rule  ( S2KAllowChangesTest . S2KISZUndTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
       
     
     rule  ( S2KAllowChangesTest . S2Kfailed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
@@ -379,7 +379,7 @@ module AllowChangesTest-CONTRACT
     rule  ( S2KAllowChangesTest . S2KtestAllow ( ) => #abiCallData ( "testAllow" , .TypedArgs ) )
       
     
-    rule  ( S2KAllowChangesTest . S2KtestAllowz5ffail ( ) => #abiCallData ( "testAllow_fail" , .TypedArgs ) )
+    rule  ( S2KAllowChangesTest . S2KtestAllowZUndfail ( ) => #abiCallData ( "testAllow_fail" , .TypedArgs ) )
       
     
     rule  ( S2KAllowChangesTest . S2KtestFailAllowCallsToAddress ( ) => #abiCallData ( "testFailAllowCallsToAddress" , .TypedArgs ) )
@@ -515,122 +515,122 @@ module ArithmeticTest-CONTRACT
     
     syntax Bytes ::= S2KArithmeticTestContract "." S2KArithmeticTestMethod [function(), symbol(), klabel(method_ArithmeticTest)]
     
-    syntax S2KArithmeticTestMethod ::= "S2KISz5fSCRIPT" "(" ")" [symbol(), klabel(method_ArithmeticTest_S2KISz5fSCRIPT_)]
+    syntax S2KArithmeticTestMethod ::= "S2KISZUndSCRIPT" "(" ")" [symbol(), klabel(method_ArithmeticTest_S2KISZUndSCRIPT_)]
     
-    syntax S2KArithmeticTestMethod ::= "S2KISz5fTEST" "(" ")" [symbol(), klabel(method_ArithmeticTest_S2KISz5fTEST_)]
+    syntax S2KArithmeticTestMethod ::= "S2KISZUndTEST" "(" ")" [symbol(), klabel(method_ArithmeticTest_S2KISZUndTEST_)]
     
     syntax S2KArithmeticTestMethod ::= "S2Kfailed" "(" ")" [symbol(), klabel(method_ArithmeticTest_S2Kfailed_)]
     
-    syntax S2KArithmeticTestMethod ::= "S2Ktestz5fdecreasingz5fdiv" "(" Int ":" "uint256" "," Int ":" "uint256" ")" [symbol(), klabel(method_ArithmeticTest_S2Ktestz5fdecreasingz5fdiv_uint256_uint256)]
+    syntax S2KArithmeticTestMethod ::= "S2KtestZUnddecreasingZUnddiv" "(" Int ":" "uint256" "," Int ":" "uint256" ")" [symbol(), klabel(method_ArithmeticTest_S2KtestZUnddecreasingZUnddiv_uint256_uint256)]
     
-    syntax S2KArithmeticTestMethod ::= "S2Ktestz5fmax1" "(" Int ":" "uint256" "," Int ":" "uint256" ")" [symbol(), klabel(method_ArithmeticTest_S2Ktestz5fmax1_uint256_uint256)]
+    syntax S2KArithmeticTestMethod ::= "S2KtestZUndmax1" "(" Int ":" "uint256" "," Int ":" "uint256" ")" [symbol(), klabel(method_ArithmeticTest_S2KtestZUndmax1_uint256_uint256)]
     
-    syntax S2KArithmeticTestMethod ::= "S2Ktestz5fmax1z5fbroken" "(" Int ":" "uint256" "," Int ":" "uint256" ")" [symbol(), klabel(method_ArithmeticTest_S2Ktestz5fmax1z5fbroken_uint256_uint256)]
+    syntax S2KArithmeticTestMethod ::= "S2KtestZUndmax1ZUndbroken" "(" Int ":" "uint256" "," Int ":" "uint256" ")" [symbol(), klabel(method_ArithmeticTest_S2KtestZUndmax1ZUndbroken_uint256_uint256)]
     
-    syntax S2KArithmeticTestMethod ::= "S2Ktestz5fmax2" "(" Int ":" "uint256" "," Int ":" "uint256" ")" [symbol(), klabel(method_ArithmeticTest_S2Ktestz5fmax2_uint256_uint256)]
+    syntax S2KArithmeticTestMethod ::= "S2KtestZUndmax2" "(" Int ":" "uint256" "," Int ":" "uint256" ")" [symbol(), klabel(method_ArithmeticTest_S2KtestZUndmax2_uint256_uint256)]
     
-    syntax S2KArithmeticTestMethod ::= "S2Ktestz5fwdivz5frounding" "(" Int ":" "uint256" "," Int ":" "uint256" ")" [symbol(), klabel(method_ArithmeticTest_S2Ktestz5fwdivz5frounding_uint256_uint256)]
+    syntax S2KArithmeticTestMethod ::= "S2KtestZUndwdivZUndrounding" "(" Int ":" "uint256" "," Int ":" "uint256" ")" [symbol(), klabel(method_ArithmeticTest_S2KtestZUndwdivZUndrounding_uint256_uint256)]
     
-    syntax S2KArithmeticTestMethod ::= "S2Ktestz5fwmulz5fincreasing" "(" Int ":" "uint256" "," Int ":" "uint256" ")" [symbol(), klabel(method_ArithmeticTest_S2Ktestz5fwmulz5fincreasing_uint256_uint256)]
+    syntax S2KArithmeticTestMethod ::= "S2KtestZUndwmulZUndincreasing" "(" Int ":" "uint256" "," Int ":" "uint256" ")" [symbol(), klabel(method_ArithmeticTest_S2KtestZUndwmulZUndincreasing_uint256_uint256)]
     
-    syntax S2KArithmeticTestMethod ::= "S2Ktestz5fwmulz5fincreasingz5fgtz5fone" "(" Int ":" "uint256" "," Int ":" "uint256" ")" [symbol(), klabel(method_ArithmeticTest_S2Ktestz5fwmulz5fincreasingz5fgtz5fone_uint256_uint256)]
+    syntax S2KArithmeticTestMethod ::= "S2KtestZUndwmulZUndincreasingZUndgtZUndone" "(" Int ":" "uint256" "," Int ":" "uint256" ")" [symbol(), klabel(method_ArithmeticTest_S2KtestZUndwmulZUndincreasingZUndgtZUndone_uint256_uint256)]
     
-    syntax S2KArithmeticTestMethod ::= "S2Ktestz5fwmulz5fincreasingz5foverflow" "(" Int ":" "uint256" "," Int ":" "uint256" ")" [symbol(), klabel(method_ArithmeticTest_S2Ktestz5fwmulz5fincreasingz5foverflow_uint256_uint256)]
+    syntax S2KArithmeticTestMethod ::= "S2KtestZUndwmulZUndincreasingZUndoverflow" "(" Int ":" "uint256" "," Int ":" "uint256" ")" [symbol(), klabel(method_ArithmeticTest_S2KtestZUndwmulZUndincreasingZUndoverflow_uint256_uint256)]
     
-    syntax S2KArithmeticTestMethod ::= "S2Ktestz5fwmulz5fincreasingz5fpositive" "(" Int ":" "uint256" "," Int ":" "uint256" ")" [symbol(), klabel(method_ArithmeticTest_S2Ktestz5fwmulz5fincreasingz5fpositive_uint256_uint256)]
+    syntax S2KArithmeticTestMethod ::= "S2KtestZUndwmulZUndincreasingZUndpositive" "(" Int ":" "uint256" "," Int ":" "uint256" ")" [symbol(), klabel(method_ArithmeticTest_S2KtestZUndwmulZUndincreasingZUndpositive_uint256_uint256)]
     
-    syntax S2KArithmeticTestMethod ::= "S2Ktestz5fwmulz5frounding" "(" Int ":" "uint256" "," Int ":" "uint256" ")" [symbol(), klabel(method_ArithmeticTest_S2Ktestz5fwmulz5frounding_uint256_uint256)]
+    syntax S2KArithmeticTestMethod ::= "S2KtestZUndwmulZUndrounding" "(" Int ":" "uint256" "," Int ":" "uint256" ")" [symbol(), klabel(method_ArithmeticTest_S2KtestZUndwmulZUndrounding_uint256_uint256)]
     
-    syntax S2KArithmeticTestMethod ::= "S2Ktestz5fwmulz5fwdivz5finverse" "(" Int ":" "uint256" "," Int ":" "uint256" ")" [symbol(), klabel(method_ArithmeticTest_S2Ktestz5fwmulz5fwdivz5finverse_uint256_uint256)]
+    syntax S2KArithmeticTestMethod ::= "S2KtestZUndwmulZUndwdivZUndinverse" "(" Int ":" "uint256" "," Int ":" "uint256" ")" [symbol(), klabel(method_ArithmeticTest_S2KtestZUndwmulZUndwdivZUndinverse_uint256_uint256)]
     
-    syntax S2KArithmeticTestMethod ::= "S2Ktestz5fwmulz5fwdivz5finversez5funderflow" "(" Int ":" "uint256" "," Int ":" "uint256" ")" [symbol(), klabel(method_ArithmeticTest_S2Ktestz5fwmulz5fwdivz5finversez5funderflow_uint256_uint256)]
+    syntax S2KArithmeticTestMethod ::= "S2KtestZUndwmulZUndwdivZUndinverseZUndunderflow" "(" Int ":" "uint256" "," Int ":" "uint256" ")" [symbol(), klabel(method_ArithmeticTest_S2KtestZUndwmulZUndwdivZUndinverseZUndunderflow_uint256_uint256)]
     
-    syntax S2KArithmeticTestMethod ::= "S2Ktestz5fwmulz5fweaklyz5fincreasingz5fpositive" "(" Int ":" "uint256" "," Int ":" "uint256" ")" [symbol(), klabel(method_ArithmeticTest_S2Ktestz5fwmulz5fweaklyz5fincreasingz5fpositive_uint256_uint256)]
+    syntax S2KArithmeticTestMethod ::= "S2KtestZUndwmulZUndweaklyZUndincreasingZUndpositive" "(" Int ":" "uint256" "," Int ":" "uint256" ")" [symbol(), klabel(method_ArithmeticTest_S2KtestZUndwmulZUndweaklyZUndincreasingZUndpositive_uint256_uint256)]
     
     syntax S2KArithmeticTestMethod ::= "S2Kvm" "(" ")" [symbol(), klabel(method_ArithmeticTest_S2Kvm_)]
     
-    rule  ( S2KArithmeticTest . S2KISz5fSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
+    rule  ( S2KArithmeticTest . S2KISZUndSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
     
-    rule  ( S2KArithmeticTest . S2KISz5fTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
+    rule  ( S2KArithmeticTest . S2KISZUndTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
       
     
     rule  ( S2KArithmeticTest . S2Kfailed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
       
     
-    rule  ( S2KArithmeticTest . S2Ktestz5fdecreasingz5fdiv ( V0_a : uint256 , V1_b : uint256 ) => #abiCallData ( "test_decreasing_div" , #uint256 ( V0_a ) , #uint256 ( V1_b ) , .TypedArgs ) )
+    rule  ( S2KArithmeticTest . S2KtestZUnddecreasingZUnddiv ( V0_a : uint256 , V1_b : uint256 ) => #abiCallData ( "test_decreasing_div" , #uint256 ( V0_a ) , #uint256 ( V1_b ) , .TypedArgs ) )
        ensures ( #rangeUInt ( 256 , V0_a )
        andBool ( #rangeUInt ( 256 , V1_b )
                ))
       
     
-    rule  ( S2KArithmeticTest . S2Ktestz5fmax1 ( V0_a : uint256 , V1_b : uint256 ) => #abiCallData ( "test_max1" , #uint256 ( V0_a ) , #uint256 ( V1_b ) , .TypedArgs ) )
+    rule  ( S2KArithmeticTest . S2KtestZUndmax1 ( V0_a : uint256 , V1_b : uint256 ) => #abiCallData ( "test_max1" , #uint256 ( V0_a ) , #uint256 ( V1_b ) , .TypedArgs ) )
        ensures ( #rangeUInt ( 256 , V0_a )
        andBool ( #rangeUInt ( 256 , V1_b )
                ))
       
     
-    rule  ( S2KArithmeticTest . S2Ktestz5fmax1z5fbroken ( V0_a : uint256 , V1_b : uint256 ) => #abiCallData ( "test_max1_broken" , #uint256 ( V0_a ) , #uint256 ( V1_b ) , .TypedArgs ) )
+    rule  ( S2KArithmeticTest . S2KtestZUndmax1ZUndbroken ( V0_a : uint256 , V1_b : uint256 ) => #abiCallData ( "test_max1_broken" , #uint256 ( V0_a ) , #uint256 ( V1_b ) , .TypedArgs ) )
        ensures ( #rangeUInt ( 256 , V0_a )
        andBool ( #rangeUInt ( 256 , V1_b )
                ))
       
     
-    rule  ( S2KArithmeticTest . S2Ktestz5fmax2 ( V0_x : uint256 , V1_y : uint256 ) => #abiCallData ( "test_max2" , #uint256 ( V0_x ) , #uint256 ( V1_y ) , .TypedArgs ) )
+    rule  ( S2KArithmeticTest . S2KtestZUndmax2 ( V0_x : uint256 , V1_y : uint256 ) => #abiCallData ( "test_max2" , #uint256 ( V0_x ) , #uint256 ( V1_y ) , .TypedArgs ) )
        ensures ( #rangeUInt ( 256 , V0_x )
        andBool ( #rangeUInt ( 256 , V1_y )
                ))
       
     
-    rule  ( S2KArithmeticTest . S2Ktestz5fwdivz5frounding ( V0_a : uint256 , V1_b : uint256 ) => #abiCallData ( "test_wdiv_rounding" , #uint256 ( V0_a ) , #uint256 ( V1_b ) , .TypedArgs ) )
+    rule  ( S2KArithmeticTest . S2KtestZUndwdivZUndrounding ( V0_a : uint256 , V1_b : uint256 ) => #abiCallData ( "test_wdiv_rounding" , #uint256 ( V0_a ) , #uint256 ( V1_b ) , .TypedArgs ) )
        ensures ( #rangeUInt ( 256 , V0_a )
        andBool ( #rangeUInt ( 256 , V1_b )
                ))
       
     
-    rule  ( S2KArithmeticTest . S2Ktestz5fwmulz5fincreasing ( V0_a : uint256 , V1_b : uint256 ) => #abiCallData ( "test_wmul_increasing" , #uint256 ( V0_a ) , #uint256 ( V1_b ) , .TypedArgs ) )
+    rule  ( S2KArithmeticTest . S2KtestZUndwmulZUndincreasing ( V0_a : uint256 , V1_b : uint256 ) => #abiCallData ( "test_wmul_increasing" , #uint256 ( V0_a ) , #uint256 ( V1_b ) , .TypedArgs ) )
        ensures ( #rangeUInt ( 256 , V0_a )
        andBool ( #rangeUInt ( 256 , V1_b )
                ))
       
     
-    rule  ( S2KArithmeticTest . S2Ktestz5fwmulz5fincreasingz5fgtz5fone ( V0_a : uint256 , V1_b : uint256 ) => #abiCallData ( "test_wmul_increasing_gt_one" , #uint256 ( V0_a ) , #uint256 ( V1_b ) , .TypedArgs ) )
+    rule  ( S2KArithmeticTest . S2KtestZUndwmulZUndincreasingZUndgtZUndone ( V0_a : uint256 , V1_b : uint256 ) => #abiCallData ( "test_wmul_increasing_gt_one" , #uint256 ( V0_a ) , #uint256 ( V1_b ) , .TypedArgs ) )
        ensures ( #rangeUInt ( 256 , V0_a )
        andBool ( #rangeUInt ( 256 , V1_b )
                ))
       
     
-    rule  ( S2KArithmeticTest . S2Ktestz5fwmulz5fincreasingz5foverflow ( V0_a : uint256 , V1_b : uint256 ) => #abiCallData ( "test_wmul_increasing_overflow" , #uint256 ( V0_a ) , #uint256 ( V1_b ) , .TypedArgs ) )
+    rule  ( S2KArithmeticTest . S2KtestZUndwmulZUndincreasingZUndoverflow ( V0_a : uint256 , V1_b : uint256 ) => #abiCallData ( "test_wmul_increasing_overflow" , #uint256 ( V0_a ) , #uint256 ( V1_b ) , .TypedArgs ) )
        ensures ( #rangeUInt ( 256 , V0_a )
        andBool ( #rangeUInt ( 256 , V1_b )
                ))
       
     
-    rule  ( S2KArithmeticTest . S2Ktestz5fwmulz5fincreasingz5fpositive ( V0_a : uint256 , V1_b : uint256 ) => #abiCallData ( "test_wmul_increasing_positive" , #uint256 ( V0_a ) , #uint256 ( V1_b ) , .TypedArgs ) )
+    rule  ( S2KArithmeticTest . S2KtestZUndwmulZUndincreasingZUndpositive ( V0_a : uint256 , V1_b : uint256 ) => #abiCallData ( "test_wmul_increasing_positive" , #uint256 ( V0_a ) , #uint256 ( V1_b ) , .TypedArgs ) )
        ensures ( #rangeUInt ( 256 , V0_a )
        andBool ( #rangeUInt ( 256 , V1_b )
                ))
       
     
-    rule  ( S2KArithmeticTest . S2Ktestz5fwmulz5frounding ( V0_a : uint256 , V1_b : uint256 ) => #abiCallData ( "test_wmul_rounding" , #uint256 ( V0_a ) , #uint256 ( V1_b ) , .TypedArgs ) )
+    rule  ( S2KArithmeticTest . S2KtestZUndwmulZUndrounding ( V0_a : uint256 , V1_b : uint256 ) => #abiCallData ( "test_wmul_rounding" , #uint256 ( V0_a ) , #uint256 ( V1_b ) , .TypedArgs ) )
        ensures ( #rangeUInt ( 256 , V0_a )
        andBool ( #rangeUInt ( 256 , V1_b )
                ))
       
     
-    rule  ( S2KArithmeticTest . S2Ktestz5fwmulz5fwdivz5finverse ( V0_a : uint256 , V1_b : uint256 ) => #abiCallData ( "test_wmul_wdiv_inverse" , #uint256 ( V0_a ) , #uint256 ( V1_b ) , .TypedArgs ) )
+    rule  ( S2KArithmeticTest . S2KtestZUndwmulZUndwdivZUndinverse ( V0_a : uint256 , V1_b : uint256 ) => #abiCallData ( "test_wmul_wdiv_inverse" , #uint256 ( V0_a ) , #uint256 ( V1_b ) , .TypedArgs ) )
        ensures ( #rangeUInt ( 256 , V0_a )
        andBool ( #rangeUInt ( 256 , V1_b )
                ))
       
     
-    rule  ( S2KArithmeticTest . S2Ktestz5fwmulz5fwdivz5finversez5funderflow ( V0_a : uint256 , V1_b : uint256 ) => #abiCallData ( "test_wmul_wdiv_inverse_underflow" , #uint256 ( V0_a ) , #uint256 ( V1_b ) , .TypedArgs ) )
+    rule  ( S2KArithmeticTest . S2KtestZUndwmulZUndwdivZUndinverseZUndunderflow ( V0_a : uint256 , V1_b : uint256 ) => #abiCallData ( "test_wmul_wdiv_inverse_underflow" , #uint256 ( V0_a ) , #uint256 ( V1_b ) , .TypedArgs ) )
        ensures ( #rangeUInt ( 256 , V0_a )
        andBool ( #rangeUInt ( 256 , V1_b )
                ))
       
     
-    rule  ( S2KArithmeticTest . S2Ktestz5fwmulz5fweaklyz5fincreasingz5fpositive ( V0_a : uint256 , V1_b : uint256 ) => #abiCallData ( "test_wmul_weakly_increasing_positive" , #uint256 ( V0_a ) , #uint256 ( V1_b ) , .TypedArgs ) )
+    rule  ( S2KArithmeticTest . S2KtestZUndwmulZUndweaklyZUndincreasingZUndpositive ( V0_a : uint256 , V1_b : uint256 ) => #abiCallData ( "test_wmul_weakly_increasing_positive" , #uint256 ( V0_a ) , #uint256 ( V1_b ) , .TypedArgs ) )
        ensures ( #rangeUInt ( 256 , V0_a )
        andBool ( #rangeUInt ( 256 , V1_b )
                ))
@@ -725,64 +725,64 @@ module AssumeTest-CONTRACT
     
     syntax Bytes ::= S2KAssumeTestContract "." S2KAssumeTestMethod [function(), symbol(), klabel(method_AssumeTest)]
     
-    syntax S2KAssumeTestMethod ::= "S2KISz5fSCRIPT" "(" ")" [symbol(), klabel(method_AssumeTest_S2KISz5fSCRIPT_)]
+    syntax S2KAssumeTestMethod ::= "S2KISZUndSCRIPT" "(" ")" [symbol(), klabel(method_AssumeTest_S2KISZUndSCRIPT_)]
     
-    syntax S2KAssumeTestMethod ::= "S2KISz5fTEST" "(" ")" [symbol(), klabel(method_AssumeTest_S2KISz5fTEST_)]
+    syntax S2KAssumeTestMethod ::= "S2KISZUndTEST" "(" ")" [symbol(), klabel(method_AssumeTest_S2KISZUndTEST_)]
     
     syntax S2KAssumeTestMethod ::= "S2Kfailed" "(" ")" [symbol(), klabel(method_AssumeTest_S2Kfailed_)]
     
-    syntax S2KAssumeTestMethod ::= "S2KtestFailz5fassumez5ffalse" "(" Int ":" "uint256" "," Int ":" "uint256" ")" [symbol(), klabel(method_AssumeTest_S2KtestFailz5fassumez5ffalse_uint256_uint256)]
+    syntax S2KAssumeTestMethod ::= "S2KtestFailZUndassumeZUndfalse" "(" Int ":" "uint256" "," Int ":" "uint256" ")" [symbol(), klabel(method_AssumeTest_S2KtestFailZUndassumeZUndfalse_uint256_uint256)]
     
-    syntax S2KAssumeTestMethod ::= "S2KtestFailz5fassumez5ftrue" "(" Int ":" "uint256" "," Int ":" "uint256" ")" [symbol(), klabel(method_AssumeTest_S2KtestFailz5fassumez5ftrue_uint256_uint256)]
+    syntax S2KAssumeTestMethod ::= "S2KtestFailZUndassumeZUndtrue" "(" Int ":" "uint256" "," Int ":" "uint256" ")" [symbol(), klabel(method_AssumeTest_S2KtestFailZUndassumeZUndtrue_uint256_uint256)]
     
-    syntax S2KAssumeTestMethod ::= "S2Ktestz5fassumez5ffalse" "(" Int ":" "uint256" "," Int ":" "uint256" ")" [symbol(), klabel(method_AssumeTest_S2Ktestz5fassumez5ffalse_uint256_uint256)]
+    syntax S2KAssumeTestMethod ::= "S2KtestZUndassumeZUndfalse" "(" Int ":" "uint256" "," Int ":" "uint256" ")" [symbol(), klabel(method_AssumeTest_S2KtestZUndassumeZUndfalse_uint256_uint256)]
     
-    syntax S2KAssumeTestMethod ::= "S2Ktestz5fassumez5fstaticCall" "(" Int ":" "bool" ")" [symbol(), klabel(method_AssumeTest_S2Ktestz5fassumez5fstaticCall_bool)]
+    syntax S2KAssumeTestMethod ::= "S2KtestZUndassumeZUndstaticCall" "(" Int ":" "bool" ")" [symbol(), klabel(method_AssumeTest_S2KtestZUndassumeZUndstaticCall_bool)]
     
-    syntax S2KAssumeTestMethod ::= "S2Ktestz5fassumez5ftrue" "(" Int ":" "uint256" "," Int ":" "uint256" ")" [symbol(), klabel(method_AssumeTest_S2Ktestz5fassumez5ftrue_uint256_uint256)]
+    syntax S2KAssumeTestMethod ::= "S2KtestZUndassumeZUndtrue" "(" Int ":" "uint256" "," Int ":" "uint256" ")" [symbol(), klabel(method_AssumeTest_S2KtestZUndassumeZUndtrue_uint256_uint256)]
     
-    syntax S2KAssumeTestMethod ::= "S2Ktestz5fmultiz5fassume" "(" Int ":" "address" "," Int ":" "address" ")" [symbol(), klabel(method_AssumeTest_S2Ktestz5fmultiz5fassume_address_address)]
+    syntax S2KAssumeTestMethod ::= "S2KtestZUndmultiZUndassume" "(" Int ":" "address" "," Int ":" "address" ")" [symbol(), klabel(method_AssumeTest_S2KtestZUndmultiZUndassume_address_address)]
     
     syntax S2KAssumeTestMethod ::= "S2Kvm" "(" ")" [symbol(), klabel(method_AssumeTest_S2Kvm_)]
     
-    rule  ( S2KAssumeTest . S2KISz5fSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
+    rule  ( S2KAssumeTest . S2KISZUndSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
     
-    rule  ( S2KAssumeTest . S2KISz5fTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
+    rule  ( S2KAssumeTest . S2KISZUndTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
       
     
     rule  ( S2KAssumeTest . S2Kfailed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
       
     
-    rule  ( S2KAssumeTest . S2KtestFailz5fassumez5ffalse ( V0_a : uint256 , V1_b : uint256 ) => #abiCallData ( "testFail_assume_false" , #uint256 ( V0_a ) , #uint256 ( V1_b ) , .TypedArgs ) )
+    rule  ( S2KAssumeTest . S2KtestFailZUndassumeZUndfalse ( V0_a : uint256 , V1_b : uint256 ) => #abiCallData ( "testFail_assume_false" , #uint256 ( V0_a ) , #uint256 ( V1_b ) , .TypedArgs ) )
        ensures ( #rangeUInt ( 256 , V0_a )
        andBool ( #rangeUInt ( 256 , V1_b )
                ))
       
     
-    rule  ( S2KAssumeTest . S2KtestFailz5fassumez5ftrue ( V0_a : uint256 , V1_b : uint256 ) => #abiCallData ( "testFail_assume_true" , #uint256 ( V0_a ) , #uint256 ( V1_b ) , .TypedArgs ) )
+    rule  ( S2KAssumeTest . S2KtestFailZUndassumeZUndtrue ( V0_a : uint256 , V1_b : uint256 ) => #abiCallData ( "testFail_assume_true" , #uint256 ( V0_a ) , #uint256 ( V1_b ) , .TypedArgs ) )
        ensures ( #rangeUInt ( 256 , V0_a )
        andBool ( #rangeUInt ( 256 , V1_b )
                ))
       
     
-    rule  ( S2KAssumeTest . S2Ktestz5fassumez5ffalse ( V0_a : uint256 , V1_b : uint256 ) => #abiCallData ( "test_assume_false" , #uint256 ( V0_a ) , #uint256 ( V1_b ) , .TypedArgs ) )
+    rule  ( S2KAssumeTest . S2KtestZUndassumeZUndfalse ( V0_a : uint256 , V1_b : uint256 ) => #abiCallData ( "test_assume_false" , #uint256 ( V0_a ) , #uint256 ( V1_b ) , .TypedArgs ) )
        ensures ( #rangeUInt ( 256 , V0_a )
        andBool ( #rangeUInt ( 256 , V1_b )
                ))
       
     
-    rule  ( S2KAssumeTest . S2Ktestz5fassumez5fstaticCall ( V0_a : bool ) => #abiCallData ( "test_assume_staticCall" , #bool ( V0_a ) , .TypedArgs ) )
+    rule  ( S2KAssumeTest . S2KtestZUndassumeZUndstaticCall ( V0_a : bool ) => #abiCallData ( "test_assume_staticCall" , #bool ( V0_a ) , .TypedArgs ) )
        ensures #rangeBool ( V0_a )
       
     
-    rule  ( S2KAssumeTest . S2Ktestz5fassumez5ftrue ( V0_a : uint256 , V1_b : uint256 ) => #abiCallData ( "test_assume_true" , #uint256 ( V0_a ) , #uint256 ( V1_b ) , .TypedArgs ) )
+    rule  ( S2KAssumeTest . S2KtestZUndassumeZUndtrue ( V0_a : uint256 , V1_b : uint256 ) => #abiCallData ( "test_assume_true" , #uint256 ( V0_a ) , #uint256 ( V1_b ) , .TypedArgs ) )
        ensures ( #rangeUInt ( 256 , V0_a )
        andBool ( #rangeUInt ( 256 , V1_b )
                ))
       
     
-    rule  ( S2KAssumeTest . S2Ktestz5fmultiz5fassume ( V0_alice : address , V1_bob : address ) => #abiCallData ( "test_multi_assume" , #address ( V0_alice ) , #address ( V1_bob ) , .TypedArgs ) )
+    rule  ( S2KAssumeTest . S2KtestZUndmultiZUndassume ( V0_alice : address , V1_bob : address ) => #abiCallData ( "test_multi_assume" , #address ( V0_alice ) , #address ( V1_bob ) , .TypedArgs ) )
        ensures ( #rangeAddress ( V0_alice )
        andBool ( #rangeAddress ( V1_bob )
                ))
@@ -856,37 +856,37 @@ module BMCLoopsTest-CONTRACT
     
     syntax Bytes ::= S2KBMCLoopsTestContract "." S2KBMCLoopsTestMethod [function(), symbol(), klabel(method_BMCLoopsTest)]
     
-    syntax S2KBMCLoopsTestMethod ::= "S2KISz5fSCRIPT" "(" ")" [symbol(), klabel(method_BMCLoopsTest_S2KISz5fSCRIPT_)]
+    syntax S2KBMCLoopsTestMethod ::= "S2KISZUndSCRIPT" "(" ")" [symbol(), klabel(method_BMCLoopsTest_S2KISZUndSCRIPT_)]
     
-    syntax S2KBMCLoopsTestMethod ::= "S2KISz5fTEST" "(" ")" [symbol(), klabel(method_BMCLoopsTest_S2KISz5fTEST_)]
+    syntax S2KBMCLoopsTestMethod ::= "S2KISZUndTEST" "(" ")" [symbol(), klabel(method_BMCLoopsTest_S2KISZUndTEST_)]
     
     syntax S2KBMCLoopsTestMethod ::= "S2Kfailed" "(" ")" [symbol(), klabel(method_BMCLoopsTest_S2Kfailed_)]
     
-    syntax S2KBMCLoopsTestMethod ::= "S2Ktestz5fbmc" "(" Int ":" "uint256" ")" [symbol(), klabel(method_BMCLoopsTest_S2Ktestz5fbmc_uint256)]
+    syntax S2KBMCLoopsTestMethod ::= "S2KtestZUndbmc" "(" Int ":" "uint256" ")" [symbol(), klabel(method_BMCLoopsTest_S2KtestZUndbmc_uint256)]
     
-    syntax S2KBMCLoopsTestMethod ::= "S2Ktestz5fcountdownz5fconcrete" "(" ")" [symbol(), klabel(method_BMCLoopsTest_S2Ktestz5fcountdownz5fconcrete_)]
+    syntax S2KBMCLoopsTestMethod ::= "S2KtestZUndcountdownZUndconcrete" "(" ")" [symbol(), klabel(method_BMCLoopsTest_S2KtestZUndcountdownZUndconcrete_)]
     
-    syntax S2KBMCLoopsTestMethod ::= "S2Ktestz5fcountdownz5fsymbolic" "(" Int ":" "uint256" ")" [symbol(), klabel(method_BMCLoopsTest_S2Ktestz5fcountdownz5fsymbolic_uint256)]
+    syntax S2KBMCLoopsTestMethod ::= "S2KtestZUndcountdownZUndsymbolic" "(" Int ":" "uint256" ")" [symbol(), klabel(method_BMCLoopsTest_S2KtestZUndcountdownZUndsymbolic_uint256)]
     
     syntax S2KBMCLoopsTestMethod ::= "S2Kvm" "(" ")" [symbol(), klabel(method_BMCLoopsTest_S2Kvm_)]
     
-    rule  ( S2KBMCLoopsTest . S2KISz5fSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
+    rule  ( S2KBMCLoopsTest . S2KISZUndSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
     
-    rule  ( S2KBMCLoopsTest . S2KISz5fTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
+    rule  ( S2KBMCLoopsTest . S2KISZUndTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
       
     
     rule  ( S2KBMCLoopsTest . S2Kfailed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
       
     
-    rule  ( S2KBMCLoopsTest . S2Ktestz5fbmc ( V0_n : uint256 ) => #abiCallData ( "test_bmc" , #uint256 ( V0_n ) , .TypedArgs ) )
+    rule  ( S2KBMCLoopsTest . S2KtestZUndbmc ( V0_n : uint256 ) => #abiCallData ( "test_bmc" , #uint256 ( V0_n ) , .TypedArgs ) )
        ensures #rangeUInt ( 256 , V0_n )
       
     
-    rule  ( S2KBMCLoopsTest . S2Ktestz5fcountdownz5fconcrete ( ) => #abiCallData ( "test_countdown_concrete" , .TypedArgs ) )
+    rule  ( S2KBMCLoopsTest . S2KtestZUndcountdownZUndconcrete ( ) => #abiCallData ( "test_countdown_concrete" , .TypedArgs ) )
       
     
-    rule  ( S2KBMCLoopsTest . S2Ktestz5fcountdownz5fsymbolic ( V0_n : uint256 ) => #abiCallData ( "test_countdown_symbolic" , #uint256 ( V0_n ) , .TypedArgs ) )
+    rule  ( S2KBMCLoopsTest . S2KtestZUndcountdownZUndsymbolic ( V0_n : uint256 ) => #abiCallData ( "test_countdown_symbolic" , #uint256 ( V0_n ) , .TypedArgs ) )
        ensures #rangeUInt ( 256 , V0_n )
       
     
@@ -949,9 +949,9 @@ module BlockParamsTest-CONTRACT
     
     syntax Bytes ::= S2KBlockParamsTestContract "." S2KBlockParamsTestMethod [function(), symbol(), klabel(method_BlockParamsTest)]
     
-    syntax S2KBlockParamsTestMethod ::= "S2KISz5fSCRIPT" "(" ")" [symbol(), klabel(method_BlockParamsTest_S2KISz5fSCRIPT_)]
+    syntax S2KBlockParamsTestMethod ::= "S2KISZUndSCRIPT" "(" ")" [symbol(), klabel(method_BlockParamsTest_S2KISZUndSCRIPT_)]
     
-    syntax S2KBlockParamsTestMethod ::= "S2KISz5fTEST" "(" ")" [symbol(), klabel(method_BlockParamsTest_S2KISz5fTEST_)]
+    syntax S2KBlockParamsTestMethod ::= "S2KISZUndTEST" "(" ")" [symbol(), klabel(method_BlockParamsTest_S2KISZUndTEST_)]
     
     syntax S2KBlockParamsTestMethod ::= "S2Kfailed" "(" ")" [symbol(), klabel(method_BlockParamsTest_S2Kfailed_)]
     
@@ -969,10 +969,10 @@ module BlockParamsTest-CONTRACT
     
     syntax S2KBlockParamsTestMethod ::= "S2Kvm" "(" ")" [symbol(), klabel(method_BlockParamsTest_S2Kvm_)]
     
-    rule  ( S2KBlockParamsTest . S2KISz5fSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
+    rule  ( S2KBlockParamsTest . S2KISZUndSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
     
-    rule  ( S2KBlockParamsTest . S2KISz5fTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
+    rule  ( S2KBlockParamsTest . S2KISZUndTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
       
     
     rule  ( S2KBlockParamsTest . S2Kfailed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
@@ -1078,9 +1078,9 @@ module BroadcastTest-CONTRACT
     
     syntax Bytes ::= S2KBroadcastTestContract "." S2KBroadcastTestMethod [function(), symbol(), klabel(method_BroadcastTest)]
     
-    syntax S2KBroadcastTestMethod ::= "S2KISz5fSCRIPT" "(" ")" [symbol(), klabel(method_BroadcastTest_S2KISz5fSCRIPT_)]
+    syntax S2KBroadcastTestMethod ::= "S2KISZUndSCRIPT" "(" ")" [symbol(), klabel(method_BroadcastTest_S2KISZUndSCRIPT_)]
     
-    syntax S2KBroadcastTestMethod ::= "S2KISz5fTEST" "(" ")" [symbol(), klabel(method_BroadcastTest_S2KISz5fTEST_)]
+    syntax S2KBroadcastTestMethod ::= "S2KISZUndTEST" "(" ")" [symbol(), klabel(method_BroadcastTest_S2KISZUndTEST_)]
     
     syntax S2KBroadcastTestMethod ::= "S2KdeployNoArgs" "(" ")" [symbol(), klabel(method_BroadcastTest_S2KdeployNoArgs_)]
     
@@ -1094,10 +1094,10 @@ module BroadcastTest-CONTRACT
     
     syntax S2KBroadcastTestMethod ::= "S2Kvm" "(" ")" [symbol(), klabel(method_BroadcastTest_S2Kvm_)]
     
-    rule  ( S2KBroadcastTest . S2KISz5fSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
+    rule  ( S2KBroadcastTest . S2KISZUndSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
     
-    rule  ( S2KBroadcastTest . S2KISz5fTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
+    rule  ( S2KBroadcastTest . S2KISZUndTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
       
     
     rule  ( S2KBroadcastTest . S2KdeployNoArgs ( ) => #abiCallData ( "deployNoArgs" , .TypedArgs ) )
@@ -1199,9 +1199,9 @@ module ContractTest-CONTRACT
     
     syntax Bytes ::= S2KContractTestContract "." S2KContractTestMethod [function(), symbol(), klabel(method_ContractTest)]
     
-    syntax S2KContractTestMethod ::= "S2KISz5fSCRIPT" "(" ")" [symbol(), klabel(method_ContractTest_S2KISz5fSCRIPT_)]
+    syntax S2KContractTestMethod ::= "S2KISZUndSCRIPT" "(" ")" [symbol(), klabel(method_ContractTest_S2KISZUndSCRIPT_)]
     
-    syntax S2KContractTestMethod ::= "S2KISz5fTEST" "(" ")" [symbol(), klabel(method_ContractTest_S2KISz5fTEST_)]
+    syntax S2KContractTestMethod ::= "S2KISZUndTEST" "(" ")" [symbol(), klabel(method_ContractTest_S2KISZUndTEST_)]
     
     syntax S2KContractTestMethod ::= "S2Kfailed" "(" ")" [symbol(), klabel(method_ContractTest_S2Kfailed_)]
     
@@ -1209,10 +1209,10 @@ module ContractTest-CONTRACT
     
     syntax S2KContractTestMethod ::= "S2Kvm" "(" ")" [symbol(), klabel(method_ContractTest_S2Kvm_)]
     
-    rule  ( S2KContractTest . S2KISz5fSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
+    rule  ( S2KContractTest . S2KISZUndSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
     
-    rule  ( S2KContractTest . S2KISz5fTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
+    rule  ( S2KContractTest . S2KISZUndTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
       
     
     rule  ( S2KContractTest . S2Kfailed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
@@ -1279,9 +1279,9 @@ module ContractBTest-CONTRACT
     
     syntax Bytes ::= S2KContractBTestContract "." S2KContractBTestMethod [function(), symbol(), klabel(method_ContractBTest)]
     
-    syntax S2KContractBTestMethod ::= "S2KISz5fSCRIPT" "(" ")" [symbol(), klabel(method_ContractBTest_S2KISz5fSCRIPT_)]
+    syntax S2KContractBTestMethod ::= "S2KISZUndSCRIPT" "(" ")" [symbol(), klabel(method_ContractBTest_S2KISZUndSCRIPT_)]
     
-    syntax S2KContractBTestMethod ::= "S2KISz5fTEST" "(" ")" [symbol(), klabel(method_ContractBTest_S2KISz5fTEST_)]
+    syntax S2KContractBTestMethod ::= "S2KISZUndTEST" "(" ")" [symbol(), klabel(method_ContractBTest_S2KISZUndTEST_)]
     
     syntax S2KContractBTestMethod ::= "S2Kfailed" "(" ")" [symbol(), klabel(method_ContractBTest_S2Kfailed_)]
     
@@ -1295,10 +1295,10 @@ module ContractBTest-CONTRACT
     
     syntax S2KContractBTestMethod ::= "S2Kvm" "(" ")" [symbol(), klabel(method_ContractBTest_S2Kvm_)]
     
-    rule  ( S2KContractBTest . S2KISz5fSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
+    rule  ( S2KContractBTest . S2KISZUndSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
     
-    rule  ( S2KContractBTest . S2KISz5fTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
+    rule  ( S2KContractBTest . S2KISZUndTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
       
     
     rule  ( S2KContractBTest . S2Kfailed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
@@ -1428,9 +1428,9 @@ module CounterTest-CONTRACT
     
     syntax Bytes ::= S2KCounterTestContract "." S2KCounterTestMethod [function(), symbol(), klabel(method_CounterTest)]
     
-    syntax S2KCounterTestMethod ::= "S2KISz5fSCRIPT" "(" ")" [symbol(), klabel(method_CounterTest_S2KISz5fSCRIPT_)]
+    syntax S2KCounterTestMethod ::= "S2KISZUndSCRIPT" "(" ")" [symbol(), klabel(method_CounterTest_S2KISZUndSCRIPT_)]
     
-    syntax S2KCounterTestMethod ::= "S2KISz5fTEST" "(" ")" [symbol(), klabel(method_CounterTest_S2KISz5fTEST_)]
+    syntax S2KCounterTestMethod ::= "S2KISZUndTEST" "(" ")" [symbol(), klabel(method_CounterTest_S2KISZUndTEST_)]
     
     syntax S2KCounterTestMethod ::= "S2Kcounter" "(" ")" [symbol(), klabel(method_CounterTest_S2Kcounter_)]
     
@@ -1444,10 +1444,10 @@ module CounterTest-CONTRACT
     
     syntax S2KCounterTestMethod ::= "S2Kvm" "(" ")" [symbol(), klabel(method_CounterTest_S2Kvm_)]
     
-    rule  ( S2KCounterTest . S2KISz5fSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
+    rule  ( S2KCounterTest . S2KISZUndSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
     
-    rule  ( S2KCounterTest . S2KISz5fTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
+    rule  ( S2KCounterTest . S2KISZUndTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
       
     
     rule  ( S2KCounterTest . S2Kcounter ( ) => #abiCallData ( "counter" , .TypedArgs ) )
@@ -1528,26 +1528,26 @@ module DynamicTypes-CONTRACT
     
     syntax Bytes ::= S2KDynamicTypesContract "." S2KDynamicTypesMethod [function(), symbol(), klabel(method_DynamicTypes)]
     
-    syntax S2KDynamicTypesMethod ::= "S2KISz5fSCRIPT" "(" ")" [symbol(), klabel(method_DynamicTypes_S2KISz5fSCRIPT_)]
+    syntax S2KDynamicTypesMethod ::= "S2KISZUndSCRIPT" "(" ")" [symbol(), klabel(method_DynamicTypes_S2KISZUndSCRIPT_)]
     
-    syntax S2KDynamicTypesMethod ::= "S2KISz5fTEST" "(" ")" [symbol(), klabel(method_DynamicTypes_S2KISz5fTEST_)]
+    syntax S2KDynamicTypesMethod ::= "S2KISZUndTEST" "(" ")" [symbol(), klabel(method_DynamicTypes_S2KISZUndTEST_)]
     
     syntax S2KDynamicTypesMethod ::= "S2Kfailed" "(" ")" [symbol(), klabel(method_DynamicTypes_S2Kfailed_)]
     
-    syntax S2KDynamicTypesMethod ::= "S2Ktestz5fdynamicz5fbytez5fread" "(" Bytes ":" "bytes" "," Int ":" "uint256" ")" [symbol(), klabel(method_DynamicTypes_S2Ktestz5fdynamicz5fbytez5fread_bytes_uint256)]
+    syntax S2KDynamicTypesMethod ::= "S2KtestZUnddynamicZUndbyteZUndread" "(" Bytes ":" "bytes" "," Int ":" "uint256" ")" [symbol(), klabel(method_DynamicTypes_S2KtestZUnddynamicZUndbyteZUndread_bytes_uint256)]
     
     syntax S2KDynamicTypesMethod ::= "S2Kvm" "(" ")" [symbol(), klabel(method_DynamicTypes_S2Kvm_)]
     
-    rule  ( S2KDynamicTypes . S2KISz5fSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
+    rule  ( S2KDynamicTypes . S2KISZUndSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
     
-    rule  ( S2KDynamicTypes . S2KISz5fTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
+    rule  ( S2KDynamicTypes . S2KISZUndTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
       
     
     rule  ( S2KDynamicTypes . S2Kfailed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
       
     
-    rule  ( S2KDynamicTypes . S2Ktestz5fdynamicz5fbytez5fread ( V0_data : bytes , V1_offset : uint256 ) => #abiCallData ( "test_dynamic_byte_read" , #bytes ( V0_data ) , #uint256 ( V1_offset ) , .TypedArgs ) )
+    rule  ( S2KDynamicTypes . S2KtestZUnddynamicZUndbyteZUndread ( V0_data : bytes , V1_offset : uint256 ) => #abiCallData ( "test_dynamic_byte_read" , #bytes ( V0_data ) , #uint256 ( V1_offset ) , .TypedArgs ) )
        ensures ( #rangeUInt ( 128 , lengthBytes ( V0_data ) )
        andBool ( #rangeUInt ( 256 , V1_offset )
                ))
@@ -1627,9 +1627,9 @@ module EmitContractTest-CONTRACT
     
     syntax Bytes ::= S2KEmitContractTestContract "." S2KEmitContractTestMethod [function(), symbol(), klabel(method_EmitContractTest)]
     
-    syntax S2KEmitContractTestMethod ::= "S2KISz5fSCRIPT" "(" ")" [symbol(), klabel(method_EmitContractTest_S2KISz5fSCRIPT_)]
+    syntax S2KEmitContractTestMethod ::= "S2KISZUndSCRIPT" "(" ")" [symbol(), klabel(method_EmitContractTest_S2KISZUndSCRIPT_)]
     
-    syntax S2KEmitContractTestMethod ::= "S2KISz5fTEST" "(" ")" [symbol(), klabel(method_EmitContractTest_S2KISz5fTEST_)]
+    syntax S2KEmitContractTestMethod ::= "S2KISZUndTEST" "(" ")" [symbol(), klabel(method_EmitContractTest_S2KISZUndTEST_)]
     
     syntax S2KEmitContractTestMethod ::= "S2Kfailed" "(" ")" [symbol(), klabel(method_EmitContractTest_S2Kfailed_)]
     
@@ -1641,10 +1641,10 @@ module EmitContractTest-CONTRACT
     
     syntax S2KEmitContractTestMethod ::= "S2Kvm" "(" ")" [symbol(), klabel(method_EmitContractTest_S2Kvm_)]
     
-    rule  ( S2KEmitContractTest . S2KISz5fSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
+    rule  ( S2KEmitContractTest . S2KISZUndSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
     
-    rule  ( S2KEmitContractTest . S2KISz5fTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
+    rule  ( S2KEmitContractTest . S2KISZUndTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
       
     
     rule  ( S2KEmitContractTest . S2Kfailed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
@@ -1718,9 +1718,9 @@ module EnvTest-CONTRACT
     
     syntax Bytes ::= S2KEnvTestContract "." S2KEnvTestMethod [function(), symbol(), klabel(method_EnvTest)]
     
-    syntax S2KEnvTestMethod ::= "S2KISz5fSCRIPT" "(" ")" [symbol(), klabel(method_EnvTest_S2KISz5fSCRIPT_)]
+    syntax S2KEnvTestMethod ::= "S2KISZUndSCRIPT" "(" ")" [symbol(), klabel(method_EnvTest_S2KISZUndSCRIPT_)]
     
-    syntax S2KEnvTestMethod ::= "S2KISz5fTEST" "(" ")" [symbol(), klabel(method_EnvTest_S2KISz5fTEST_)]
+    syntax S2KEnvTestMethod ::= "S2KISZUndTEST" "(" ")" [symbol(), klabel(method_EnvTest_S2KISZUndTEST_)]
     
     syntax S2KEnvTestMethod ::= "S2Kfailed" "(" ")" [symbol(), klabel(method_EnvTest_S2Kfailed_)]
     
@@ -1754,10 +1754,10 @@ module EnvTest-CONTRACT
     
     syntax S2KEnvTestMethod ::= "S2Kvm" "(" ")" [symbol(), klabel(method_EnvTest_S2Kvm_)]
     
-    rule  ( S2KEnvTest . S2KISz5fSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
+    rule  ( S2KEnvTest . S2KISZUndSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
     
-    rule  ( S2KEnvTest . S2KISz5fTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
+    rule  ( S2KEnvTest . S2KISZUndTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
       
     
     rule  ( S2KEnvTest . S2Kfailed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
@@ -1918,9 +1918,9 @@ module ExpectCallTest-CONTRACT
     
     syntax Bytes ::= S2KExpectCallTestContract "." S2KExpectCallTestMethod [function(), symbol(), klabel(method_ExpectCallTest)]
     
-    syntax S2KExpectCallTestMethod ::= "S2KISz5fSCRIPT" "(" ")" [symbol(), klabel(method_ExpectCallTest_S2KISz5fSCRIPT_)]
+    syntax S2KExpectCallTestMethod ::= "S2KISZUndSCRIPT" "(" ")" [symbol(), klabel(method_ExpectCallTest_S2KISZUndSCRIPT_)]
     
-    syntax S2KExpectCallTestMethod ::= "S2KISz5fTEST" "(" ")" [symbol(), klabel(method_ExpectCallTest_S2KISz5fTEST_)]
+    syntax S2KExpectCallTestMethod ::= "S2KISZUndTEST" "(" ")" [symbol(), klabel(method_ExpectCallTest_S2KISZUndTEST_)]
     
     syntax S2KExpectCallTestMethod ::= "S2Kfailed" "(" ")" [symbol(), klabel(method_ExpectCallTest_S2Kfailed_)]
     
@@ -1932,10 +1932,10 @@ module ExpectCallTest-CONTRACT
     
     syntax S2KExpectCallTestMethod ::= "S2Kvm" "(" ")" [symbol(), klabel(method_ExpectCallTest_S2Kvm_)]
     
-    rule  ( S2KExpectCallTest . S2KISz5fSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
+    rule  ( S2KExpectCallTest . S2KISZUndSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
     
-    rule  ( S2KExpectCallTest . S2KISz5fTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
+    rule  ( S2KExpectCallTest . S2KISZUndTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
       
     
     rule  ( S2KExpectCallTest . S2Kfailed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
@@ -2037,82 +2037,82 @@ module ExpectRevertTest-CONTRACT
     
     syntax Bytes ::= S2KExpectRevertTestContract "." S2KExpectRevertTestMethod [function(), symbol(), klabel(method_ExpectRevertTest)]
     
-    syntax S2KExpectRevertTestMethod ::= "S2KISz5fSCRIPT" "(" ")" [symbol(), klabel(method_ExpectRevertTest_S2KISz5fSCRIPT_)]
+    syntax S2KExpectRevertTestMethod ::= "S2KISZUndSCRIPT" "(" ")" [symbol(), klabel(method_ExpectRevertTest_S2KISZUndSCRIPT_)]
     
-    syntax S2KExpectRevertTestMethod ::= "S2KISz5fTEST" "(" ")" [symbol(), klabel(method_ExpectRevertTest_S2KISz5fTEST_)]
+    syntax S2KExpectRevertTestMethod ::= "S2KISZUndTEST" "(" ")" [symbol(), klabel(method_ExpectRevertTest_S2KISZUndTEST_)]
     
     syntax S2KExpectRevertTestMethod ::= "S2Kfailed" "(" ")" [symbol(), klabel(method_ExpectRevertTest_S2Kfailed_)]
     
-    syntax S2KExpectRevertTestMethod ::= "S2KtestFailz5fExpectRevertz5ffailAndSuccess" "(" ")" [symbol(), klabel(method_ExpectRevertTest_S2KtestFailz5fExpectRevertz5ffailAndSuccess_)]
+    syntax S2KExpectRevertTestMethod ::= "S2KtestFailZUndExpectRevertZUndfailAndSuccess" "(" ")" [symbol(), klabel(method_ExpectRevertTest_S2KtestFailZUndExpectRevertZUndfailAndSuccess_)]
     
-    syntax S2KExpectRevertTestMethod ::= "S2KtestFailz5fexpectRevertz5fbytes4" "(" ")" [symbol(), klabel(method_ExpectRevertTest_S2KtestFailz5fexpectRevertz5fbytes4_)]
+    syntax S2KExpectRevertTestMethod ::= "S2KtestFailZUndexpectRevertZUndbytes4" "(" ")" [symbol(), klabel(method_ExpectRevertTest_S2KtestFailZUndexpectRevertZUndbytes4_)]
     
-    syntax S2KExpectRevertTestMethod ::= "S2KtestFailz5fexpectRevertz5fempty" "(" ")" [symbol(), klabel(method_ExpectRevertTest_S2KtestFailz5fexpectRevertz5fempty_)]
+    syntax S2KExpectRevertTestMethod ::= "S2KtestFailZUndexpectRevertZUndempty" "(" ")" [symbol(), klabel(method_ExpectRevertTest_S2KtestFailZUndexpectRevertZUndempty_)]
     
-    syntax S2KExpectRevertTestMethod ::= "S2KtestFailz5fexpectRevertz5ffalse" "(" ")" [symbol(), klabel(method_ExpectRevertTest_S2KtestFailz5fexpectRevertz5ffalse_)]
+    syntax S2KExpectRevertTestMethod ::= "S2KtestFailZUndexpectRevertZUndfalse" "(" ")" [symbol(), klabel(method_ExpectRevertTest_S2KtestFailZUndexpectRevertZUndfalse_)]
     
-    syntax S2KExpectRevertTestMethod ::= "S2KtestFailz5fexpectRevertz5fmultipleReverts" "(" ")" [symbol(), klabel(method_ExpectRevertTest_S2KtestFailz5fexpectRevertz5fmultipleReverts_)]
+    syntax S2KExpectRevertTestMethod ::= "S2KtestFailZUndexpectRevertZUndmultipleReverts" "(" ")" [symbol(), klabel(method_ExpectRevertTest_S2KtestFailZUndexpectRevertZUndmultipleReverts_)]
     
-    syntax S2KExpectRevertTestMethod ::= "S2Ktestz5fExpectRevertz5fincreasedDepth" "(" ")" [symbol(), klabel(method_ExpectRevertTest_S2Ktestz5fExpectRevertz5fincreasedDepth_)]
+    syntax S2KExpectRevertTestMethod ::= "S2KtestZUndExpectRevertZUndincreasedDepth" "(" ")" [symbol(), klabel(method_ExpectRevertTest_S2KtestZUndExpectRevertZUndincreasedDepth_)]
     
-    syntax S2KExpectRevertTestMethod ::= "S2Ktestz5fexpectRevertz5fbytes4" "(" ")" [symbol(), klabel(method_ExpectRevertTest_S2Ktestz5fexpectRevertz5fbytes4_)]
+    syntax S2KExpectRevertTestMethod ::= "S2KtestZUndexpectRevertZUndbytes4" "(" ")" [symbol(), klabel(method_ExpectRevertTest_S2KtestZUndexpectRevertZUndbytes4_)]
     
-    syntax S2KExpectRevertTestMethod ::= "S2Ktestz5fexpectRevertz5fencodedSymbolic" "(" Int ":" "address" ")" [symbol(), klabel(method_ExpectRevertTest_S2Ktestz5fexpectRevertz5fencodedSymbolic_address)]
+    syntax S2KExpectRevertTestMethod ::= "S2KtestZUndexpectRevertZUndencodedSymbolic" "(" Int ":" "address" ")" [symbol(), klabel(method_ExpectRevertTest_S2KtestZUndexpectRevertZUndencodedSymbolic_address)]
     
-    syntax S2KExpectRevertTestMethod ::= "S2Ktestz5fexpectRevertz5finternalCall" "(" ")" [symbol(), klabel(method_ExpectRevertTest_S2Ktestz5fexpectRevertz5finternalCall_)]
+    syntax S2KExpectRevertTestMethod ::= "S2KtestZUndexpectRevertZUndinternalCall" "(" ")" [symbol(), klabel(method_ExpectRevertTest_S2KtestZUndexpectRevertZUndinternalCall_)]
     
-    syntax S2KExpectRevertTestMethod ::= "S2Ktestz5fexpectRevertz5fmessage" "(" ")" [symbol(), klabel(method_ExpectRevertTest_S2Ktestz5fexpectRevertz5fmessage_)]
+    syntax S2KExpectRevertTestMethod ::= "S2KtestZUndexpectRevertZUndmessage" "(" ")" [symbol(), klabel(method_ExpectRevertTest_S2KtestZUndexpectRevertZUndmessage_)]
     
-    syntax S2KExpectRevertTestMethod ::= "S2Ktestz5fexpectRevertz5freturnValue" "(" ")" [symbol(), klabel(method_ExpectRevertTest_S2Ktestz5fexpectRevertz5freturnValue_)]
+    syntax S2KExpectRevertTestMethod ::= "S2KtestZUndexpectRevertZUndreturnValue" "(" ")" [symbol(), klabel(method_ExpectRevertTest_S2KtestZUndexpectRevertZUndreturnValue_)]
     
-    syntax S2KExpectRevertTestMethod ::= "S2Ktestz5fexpectRevertz5ftrue" "(" ")" [symbol(), klabel(method_ExpectRevertTest_S2Ktestz5fexpectRevertz5ftrue_)]
+    syntax S2KExpectRevertTestMethod ::= "S2KtestZUndexpectRevertZUndtrue" "(" ")" [symbol(), klabel(method_ExpectRevertTest_S2KtestZUndexpectRevertZUndtrue_)]
     
     syntax S2KExpectRevertTestMethod ::= "S2Kvm" "(" ")" [symbol(), klabel(method_ExpectRevertTest_S2Kvm_)]
     
-    rule  ( S2KExpectRevertTest . S2KISz5fSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
+    rule  ( S2KExpectRevertTest . S2KISZUndSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
     
-    rule  ( S2KExpectRevertTest . S2KISz5fTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
+    rule  ( S2KExpectRevertTest . S2KISZUndTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
       
     
     rule  ( S2KExpectRevertTest . S2Kfailed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
       
     
-    rule  ( S2KExpectRevertTest . S2KtestFailz5fExpectRevertz5ffailAndSuccess ( ) => #abiCallData ( "testFail_ExpectRevert_failAndSuccess" , .TypedArgs ) )
+    rule  ( S2KExpectRevertTest . S2KtestFailZUndExpectRevertZUndfailAndSuccess ( ) => #abiCallData ( "testFail_ExpectRevert_failAndSuccess" , .TypedArgs ) )
       
     
-    rule  ( S2KExpectRevertTest . S2KtestFailz5fexpectRevertz5fbytes4 ( ) => #abiCallData ( "testFail_expectRevert_bytes4" , .TypedArgs ) )
+    rule  ( S2KExpectRevertTest . S2KtestFailZUndexpectRevertZUndbytes4 ( ) => #abiCallData ( "testFail_expectRevert_bytes4" , .TypedArgs ) )
       
     
-    rule  ( S2KExpectRevertTest . S2KtestFailz5fexpectRevertz5fempty ( ) => #abiCallData ( "testFail_expectRevert_empty" , .TypedArgs ) )
+    rule  ( S2KExpectRevertTest . S2KtestFailZUndexpectRevertZUndempty ( ) => #abiCallData ( "testFail_expectRevert_empty" , .TypedArgs ) )
       
     
-    rule  ( S2KExpectRevertTest . S2KtestFailz5fexpectRevertz5ffalse ( ) => #abiCallData ( "testFail_expectRevert_false" , .TypedArgs ) )
+    rule  ( S2KExpectRevertTest . S2KtestFailZUndexpectRevertZUndfalse ( ) => #abiCallData ( "testFail_expectRevert_false" , .TypedArgs ) )
       
     
-    rule  ( S2KExpectRevertTest . S2KtestFailz5fexpectRevertz5fmultipleReverts ( ) => #abiCallData ( "testFail_expectRevert_multipleReverts" , .TypedArgs ) )
+    rule  ( S2KExpectRevertTest . S2KtestFailZUndexpectRevertZUndmultipleReverts ( ) => #abiCallData ( "testFail_expectRevert_multipleReverts" , .TypedArgs ) )
       
     
-    rule  ( S2KExpectRevertTest . S2Ktestz5fExpectRevertz5fincreasedDepth ( ) => #abiCallData ( "test_ExpectRevert_increasedDepth" , .TypedArgs ) )
+    rule  ( S2KExpectRevertTest . S2KtestZUndExpectRevertZUndincreasedDepth ( ) => #abiCallData ( "test_ExpectRevert_increasedDepth" , .TypedArgs ) )
       
     
-    rule  ( S2KExpectRevertTest . S2Ktestz5fexpectRevertz5fbytes4 ( ) => #abiCallData ( "test_expectRevert_bytes4" , .TypedArgs ) )
+    rule  ( S2KExpectRevertTest . S2KtestZUndexpectRevertZUndbytes4 ( ) => #abiCallData ( "test_expectRevert_bytes4" , .TypedArgs ) )
       
     
-    rule  ( S2KExpectRevertTest . S2Ktestz5fexpectRevertz5fencodedSymbolic ( V0_controller : address ) => #abiCallData ( "test_expectRevert_encodedSymbolic" , #address ( V0_controller ) , .TypedArgs ) )
+    rule  ( S2KExpectRevertTest . S2KtestZUndexpectRevertZUndencodedSymbolic ( V0_controller : address ) => #abiCallData ( "test_expectRevert_encodedSymbolic" , #address ( V0_controller ) , .TypedArgs ) )
        ensures #rangeAddress ( V0_controller )
       
     
-    rule  ( S2KExpectRevertTest . S2Ktestz5fexpectRevertz5finternalCall ( ) => #abiCallData ( "test_expectRevert_internalCall" , .TypedArgs ) )
+    rule  ( S2KExpectRevertTest . S2KtestZUndexpectRevertZUndinternalCall ( ) => #abiCallData ( "test_expectRevert_internalCall" , .TypedArgs ) )
       
     
-    rule  ( S2KExpectRevertTest . S2Ktestz5fexpectRevertz5fmessage ( ) => #abiCallData ( "test_expectRevert_message" , .TypedArgs ) )
+    rule  ( S2KExpectRevertTest . S2KtestZUndexpectRevertZUndmessage ( ) => #abiCallData ( "test_expectRevert_message" , .TypedArgs ) )
       
     
-    rule  ( S2KExpectRevertTest . S2Ktestz5fexpectRevertz5freturnValue ( ) => #abiCallData ( "test_expectRevert_returnValue" , .TypedArgs ) )
+    rule  ( S2KExpectRevertTest . S2KtestZUndexpectRevertZUndreturnValue ( ) => #abiCallData ( "test_expectRevert_returnValue" , .TypedArgs ) )
       
     
-    rule  ( S2KExpectRevertTest . S2Ktestz5fexpectRevertz5ftrue ( ) => #abiCallData ( "test_expectRevert_true" , .TypedArgs ) )
+    rule  ( S2KExpectRevertTest . S2KtestZUndexpectRevertZUndtrue ( ) => #abiCallData ( "test_expectRevert_true" , .TypedArgs ) )
       
     
     rule  ( S2KExpectRevertTest . S2Kvm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
@@ -2269,9 +2269,9 @@ module FfiTest-CONTRACT
     
     syntax Bytes ::= S2KFfiTestContract "." S2KFfiTestMethod [function(), symbol(), klabel(method_FfiTest)]
     
-    syntax S2KFfiTestMethod ::= "S2KISz5fSCRIPT" "(" ")" [symbol(), klabel(method_FfiTest_S2KISz5fSCRIPT_)]
+    syntax S2KFfiTestMethod ::= "S2KISZUndSCRIPT" "(" ")" [symbol(), klabel(method_FfiTest_S2KISZUndSCRIPT_)]
     
-    syntax S2KFfiTestMethod ::= "S2KISz5fTEST" "(" ")" [symbol(), klabel(method_FfiTest_S2KISz5fTEST_)]
+    syntax S2KFfiTestMethod ::= "S2KISZUndTEST" "(" ")" [symbol(), klabel(method_FfiTest_S2KISZUndTEST_)]
     
     syntax S2KFfiTestMethod ::= "S2Kfailed" "(" ")" [symbol(), klabel(method_FfiTest_S2Kfailed_)]
     
@@ -2287,10 +2287,10 @@ module FfiTest-CONTRACT
     
     syntax S2KFfiTestMethod ::= "S2Kvm" "(" ")" [symbol(), klabel(method_FfiTest_S2Kvm_)]
     
-    rule  ( S2KFfiTest . S2KISz5fSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
+    rule  ( S2KFfiTest . S2KISZUndSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
     
-    rule  ( S2KFfiTest . S2KISz5fTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
+    rule  ( S2KFfiTest . S2KISZUndTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
       
     
     rule  ( S2KFfiTest . S2Kfailed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
@@ -2376,9 +2376,9 @@ module FilesTest-CONTRACT
     
     syntax Bytes ::= S2KFilesTestContract "." S2KFilesTestMethod [function(), symbol(), klabel(method_FilesTest)]
     
-    syntax S2KFilesTestMethod ::= "S2KISz5fSCRIPT" "(" ")" [symbol(), klabel(method_FilesTest_S2KISz5fSCRIPT_)]
+    syntax S2KFilesTestMethod ::= "S2KISZUndSCRIPT" "(" ")" [symbol(), klabel(method_FilesTest_S2KISZUndSCRIPT_)]
     
-    syntax S2KFilesTestMethod ::= "S2KISz5fTEST" "(" ")" [symbol(), klabel(method_FilesTest_S2KISz5fTEST_)]
+    syntax S2KFilesTestMethod ::= "S2KISZUndTEST" "(" ")" [symbol(), klabel(method_FilesTest_S2KISZUndTEST_)]
     
     syntax S2KFilesTestMethod ::= "S2Kfailed" "(" ")" [symbol(), klabel(method_FilesTest_S2Kfailed_)]
     
@@ -2390,10 +2390,10 @@ module FilesTest-CONTRACT
     
     syntax S2KFilesTestMethod ::= "S2Kvm" "(" ")" [symbol(), klabel(method_FilesTest_S2Kvm_)]
     
-    rule  ( S2KFilesTest . S2KISz5fSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
+    rule  ( S2KFilesTest . S2KISZUndSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
     
-    rule  ( S2KFilesTest . S2KISz5fTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
+    rule  ( S2KFilesTest . S2KISZUndTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
       
     
     rule  ( S2KFilesTest . S2Kfailed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
@@ -2467,9 +2467,9 @@ module ForkTest-CONTRACT
     
     syntax Bytes ::= S2KForkTestContract "." S2KForkTestMethod [function(), symbol(), klabel(method_ForkTest)]
     
-    syntax S2KForkTestMethod ::= "S2KISz5fSCRIPT" "(" ")" [symbol(), klabel(method_ForkTest_S2KISz5fSCRIPT_)]
+    syntax S2KForkTestMethod ::= "S2KISZUndSCRIPT" "(" ")" [symbol(), klabel(method_ForkTest_S2KISZUndSCRIPT_)]
     
-    syntax S2KForkTestMethod ::= "S2KISz5fTEST" "(" ")" [symbol(), klabel(method_ForkTest_S2KISz5fTEST_)]
+    syntax S2KForkTestMethod ::= "S2KISZUndTEST" "(" ")" [symbol(), klabel(method_ForkTest_S2KISZUndTEST_)]
     
     syntax S2KForkTestMethod ::= "S2Kfailed" "(" ")" [symbol(), klabel(method_ForkTest_S2Kfailed_)]
     
@@ -2495,10 +2495,10 @@ module ForkTest-CONTRACT
     
     syntax S2KForkTestMethod ::= "S2Kvm" "(" ")" [symbol(), klabel(method_ForkTest_S2Kvm_)]
     
-    rule  ( S2KForkTest . S2KISz5fSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
+    rule  ( S2KForkTest . S2KISZUndSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
     
-    rule  ( S2KForkTest . S2KISz5fTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
+    rule  ( S2KForkTest . S2KISZUndTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
       
     
     rule  ( S2KForkTest . S2Kfailed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
@@ -2614,9 +2614,9 @@ module GasTest-CONTRACT
     
     syntax Bytes ::= S2KGasTestContract "." S2KGasTestMethod [function(), symbol(), klabel(method_GasTest)]
     
-    syntax S2KGasTestMethod ::= "S2KISz5fSCRIPT" "(" ")" [symbol(), klabel(method_GasTest_S2KISz5fSCRIPT_)]
+    syntax S2KGasTestMethod ::= "S2KISZUndSCRIPT" "(" ")" [symbol(), klabel(method_GasTest_S2KISZUndSCRIPT_)]
     
-    syntax S2KGasTestMethod ::= "S2KISz5fTEST" "(" ")" [symbol(), klabel(method_GasTest_S2KISz5fTEST_)]
+    syntax S2KGasTestMethod ::= "S2KISZUndTEST" "(" ")" [symbol(), klabel(method_GasTest_S2KISZUndTEST_)]
     
     syntax S2KGasTestMethod ::= "S2Kfailed" "(" ")" [symbol(), klabel(method_GasTest_S2Kfailed_)]
     
@@ -2626,10 +2626,10 @@ module GasTest-CONTRACT
     
     syntax S2KGasTestMethod ::= "S2Kvm" "(" ")" [symbol(), klabel(method_GasTest_S2Kvm_)]
     
-    rule  ( S2KGasTest . S2KISz5fSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
+    rule  ( S2KGasTest . S2KISZUndSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
     
-    rule  ( S2KGasTest . S2KISz5fTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
+    rule  ( S2KGasTest . S2KISZUndTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
       
     
     rule  ( S2KGasTest . S2Kfailed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
@@ -2702,9 +2702,9 @@ module GetCodeTest-CONTRACT
     
     syntax Bytes ::= S2KGetCodeTestContract "." S2KGetCodeTestMethod [function(), symbol(), klabel(method_GetCodeTest)]
     
-    syntax S2KGetCodeTestMethod ::= "S2KISz5fSCRIPT" "(" ")" [symbol(), klabel(method_GetCodeTest_S2KISz5fSCRIPT_)]
+    syntax S2KGetCodeTestMethod ::= "S2KISZUndSCRIPT" "(" ")" [symbol(), klabel(method_GetCodeTest_S2KISZUndSCRIPT_)]
     
-    syntax S2KGetCodeTestMethod ::= "S2KISz5fTEST" "(" ")" [symbol(), klabel(method_GetCodeTest_S2KISz5fTEST_)]
+    syntax S2KGetCodeTestMethod ::= "S2KISZUndTEST" "(" ")" [symbol(), klabel(method_GetCodeTest_S2KISZUndTEST_)]
     
     syntax S2KGetCodeTestMethod ::= "S2Kfailed" "(" ")" [symbol(), klabel(method_GetCodeTest_S2Kfailed_)]
     
@@ -2714,10 +2714,10 @@ module GetCodeTest-CONTRACT
     
     syntax S2KGetCodeTestMethod ::= "S2Kvm" "(" ")" [symbol(), klabel(method_GetCodeTest_S2Kvm_)]
     
-    rule  ( S2KGetCodeTest . S2KISz5fSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
+    rule  ( S2KGetCodeTest . S2KISZUndSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
     
-    rule  ( S2KGetCodeTest . S2KISz5fTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
+    rule  ( S2KGetCodeTest . S2KISZUndTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
       
     
     rule  ( S2KGetCodeTest . S2Kfailed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
@@ -2933,9 +2933,9 @@ module LabelTest-CONTRACT
     
     syntax Bytes ::= S2KLabelTestContract "." S2KLabelTestMethod [function(), symbol(), klabel(method_LabelTest)]
     
-    syntax S2KLabelTestMethod ::= "S2KISz5fSCRIPT" "(" ")" [symbol(), klabel(method_LabelTest_S2KISz5fSCRIPT_)]
+    syntax S2KLabelTestMethod ::= "S2KISZUndSCRIPT" "(" ")" [symbol(), klabel(method_LabelTest_S2KISZUndSCRIPT_)]
     
-    syntax S2KLabelTestMethod ::= "S2KISz5fTEST" "(" ")" [symbol(), klabel(method_LabelTest_S2KISz5fTEST_)]
+    syntax S2KLabelTestMethod ::= "S2KISZUndTEST" "(" ")" [symbol(), klabel(method_LabelTest_S2KISZUndTEST_)]
     
     syntax S2KLabelTestMethod ::= "S2Kfailed" "(" ")" [symbol(), klabel(method_LabelTest_S2Kfailed_)]
     
@@ -2943,10 +2943,10 @@ module LabelTest-CONTRACT
     
     syntax S2KLabelTestMethod ::= "S2Kvm" "(" ")" [symbol(), klabel(method_LabelTest_S2Kvm_)]
     
-    rule  ( S2KLabelTest . S2KISz5fSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
+    rule  ( S2KLabelTest . S2KISZUndSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
     
-    rule  ( S2KLabelTest . S2KISz5fTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
+    rule  ( S2KLabelTest . S2KISZUndTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
       
     
     rule  ( S2KLabelTest . S2Kfailed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
@@ -3008,13 +3008,13 @@ module LoopsTest-CONTRACT
     
     syntax Bytes ::= S2KLoopsTestContract "." S2KLoopsTestMethod [function(), symbol(), klabel(method_LoopsTest)]
     
-    syntax S2KLoopsTestMethod ::= "S2KISz5fSCRIPT" "(" ")" [symbol(), klabel(method_LoopsTest_S2KISz5fSCRIPT_)]
+    syntax S2KLoopsTestMethod ::= "S2KISZUndSCRIPT" "(" ")" [symbol(), klabel(method_LoopsTest_S2KISZUndSCRIPT_)]
     
-    syntax S2KLoopsTestMethod ::= "S2KISz5fTEST" "(" ")" [symbol(), klabel(method_LoopsTest_S2KISz5fTEST_)]
+    syntax S2KLoopsTestMethod ::= "S2KISZUndTEST" "(" ")" [symbol(), klabel(method_LoopsTest_S2KISZUndTEST_)]
     
     syntax S2KLoopsTestMethod ::= "S2Kfailed" "(" ")" [symbol(), klabel(method_LoopsTest_S2Kfailed_)]
     
-    syntax S2KLoopsTestMethod ::= "S2Ksumz5fN" "(" Int ":" "uint256" ")" [symbol(), klabel(method_LoopsTest_S2Ksumz5fN_uint256)]
+    syntax S2KLoopsTestMethod ::= "S2KsumZUndN" "(" Int ":" "uint256" ")" [symbol(), klabel(method_LoopsTest_S2KsumZUndN_uint256)]
     
     syntax S2KLoopsTestMethod ::= "S2KtestIsNotPrime" "(" Int ":" "uint256" ")" [symbol(), klabel(method_LoopsTest_S2KtestIsNotPrime_uint256)]
     
@@ -3040,24 +3040,24 @@ module LoopsTest-CONTRACT
     
     syntax S2KLoopsTestMethod ::= "S2KtestSumToNBroken" "(" Int ":" "uint256" ")" [symbol(), klabel(method_LoopsTest_S2KtestSumToNBroken_uint256)]
     
-    syntax S2KLoopsTestMethod ::= "S2Ktestz5fsumz5f10" "(" ")" [symbol(), klabel(method_LoopsTest_S2Ktestz5fsumz5f10_)]
+    syntax S2KLoopsTestMethod ::= "S2KtestZUndsumZUnd10" "(" ")" [symbol(), klabel(method_LoopsTest_S2KtestZUndsumZUnd10_)]
     
-    syntax S2KLoopsTestMethod ::= "S2Ktestz5fsumz5f100" "(" ")" [symbol(), klabel(method_LoopsTest_S2Ktestz5fsumz5f100_)]
+    syntax S2KLoopsTestMethod ::= "S2KtestZUndsumZUnd100" "(" ")" [symbol(), klabel(method_LoopsTest_S2KtestZUndsumZUnd100_)]
     
-    syntax S2KLoopsTestMethod ::= "S2Ktestz5fsumz5f1000" "(" ")" [symbol(), klabel(method_LoopsTest_S2Ktestz5fsumz5f1000_)]
+    syntax S2KLoopsTestMethod ::= "S2KtestZUndsumZUnd1000" "(" ")" [symbol(), klabel(method_LoopsTest_S2KtestZUndsumZUnd1000_)]
     
     syntax S2KLoopsTestMethod ::= "S2Kvm" "(" ")" [symbol(), klabel(method_LoopsTest_S2Kvm_)]
     
-    rule  ( S2KLoopsTest . S2KISz5fSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
+    rule  ( S2KLoopsTest . S2KISZUndSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
     
-    rule  ( S2KLoopsTest . S2KISz5fTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
+    rule  ( S2KLoopsTest . S2KISZUndTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
       
     
     rule  ( S2KLoopsTest . S2Kfailed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
       
     
-    rule  ( S2KLoopsTest . S2Ksumz5fN ( V0_n : uint256 ) => #abiCallData ( "sum_N" , #uint256 ( V0_n ) , .TypedArgs ) )
+    rule  ( S2KLoopsTest . S2KsumZUndN ( V0_n : uint256 ) => #abiCallData ( "sum_N" , #uint256 ( V0_n ) , .TypedArgs ) )
        ensures #rangeUInt ( 256 , V0_n )
       
     
@@ -3099,13 +3099,13 @@ module LoopsTest-CONTRACT
        ensures #rangeUInt ( 256 , V0_n )
       
     
-    rule  ( S2KLoopsTest . S2Ktestz5fsumz5f10 ( ) => #abiCallData ( "test_sum_10" , .TypedArgs ) )
+    rule  ( S2KLoopsTest . S2KtestZUndsumZUnd10 ( ) => #abiCallData ( "test_sum_10" , .TypedArgs ) )
       
     
-    rule  ( S2KLoopsTest . S2Ktestz5fsumz5f100 ( ) => #abiCallData ( "test_sum_100" , .TypedArgs ) )
+    rule  ( S2KLoopsTest . S2KtestZUndsumZUnd100 ( ) => #abiCallData ( "test_sum_100" , .TypedArgs ) )
       
     
-    rule  ( S2KLoopsTest . S2Ktestz5fsumz5f1000 ( ) => #abiCallData ( "test_sum_1000" , .TypedArgs ) )
+    rule  ( S2KLoopsTest . S2KtestZUndsumZUnd1000 ( ) => #abiCallData ( "test_sum_1000" , .TypedArgs ) )
       
     
     rule  ( S2KLoopsTest . S2Kvm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
@@ -3206,9 +3206,9 @@ module MethodDisambiguateTest-CONTRACT
     
     syntax Bytes ::= S2KMethodDisambiguateTestContract "." S2KMethodDisambiguateTestMethod [function(), symbol(), klabel(method_MethodDisambiguateTest)]
     
-    syntax S2KMethodDisambiguateTestMethod ::= "S2KISz5fSCRIPT" "(" ")" [symbol(), klabel(method_MethodDisambiguateTest_S2KISz5fSCRIPT_)]
+    syntax S2KMethodDisambiguateTestMethod ::= "S2KISZUndSCRIPT" "(" ")" [symbol(), klabel(method_MethodDisambiguateTest_S2KISZUndSCRIPT_)]
     
-    syntax S2KMethodDisambiguateTestMethod ::= "S2KISz5fTEST" "(" ")" [symbol(), klabel(method_MethodDisambiguateTest_S2KISz5fTEST_)]
+    syntax S2KMethodDisambiguateTestMethod ::= "S2KISZUndTEST" "(" ")" [symbol(), klabel(method_MethodDisambiguateTest_S2KISZUndTEST_)]
     
     syntax S2KMethodDisambiguateTestMethod ::= "S2Kfailed" "(" ")" [symbol(), klabel(method_MethodDisambiguateTest_S2Kfailed_)]
     
@@ -3216,14 +3216,14 @@ module MethodDisambiguateTest-CONTRACT
     
     syntax S2KMethodDisambiguateTestMethod ::= "S2KgetNumber" "(" Int ":" "uint32" ")" [symbol(), klabel(method_MethodDisambiguateTest_S2KgetNumber_uint32)]
     
-    syntax S2KMethodDisambiguateTestMethod ::= "S2Ktestz5fmethodz5fcall" "(" ")" [symbol(), klabel(method_MethodDisambiguateTest_S2Ktestz5fmethodz5fcall_)]
+    syntax S2KMethodDisambiguateTestMethod ::= "S2KtestZUndmethodZUndcall" "(" ")" [symbol(), klabel(method_MethodDisambiguateTest_S2KtestZUndmethodZUndcall_)]
     
     syntax S2KMethodDisambiguateTestMethod ::= "S2Kvm" "(" ")" [symbol(), klabel(method_MethodDisambiguateTest_S2Kvm_)]
     
-    rule  ( S2KMethodDisambiguateTest . S2KISz5fSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
+    rule  ( S2KMethodDisambiguateTest . S2KISZUndSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
     
-    rule  ( S2KMethodDisambiguateTest . S2KISz5fTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
+    rule  ( S2KMethodDisambiguateTest . S2KISZUndTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
       
     
     rule  ( S2KMethodDisambiguateTest . S2Kfailed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
@@ -3237,7 +3237,7 @@ module MethodDisambiguateTest-CONTRACT
        ensures #rangeUInt ( 32 , V0_x )
       
     
-    rule  ( S2KMethodDisambiguateTest . S2Ktestz5fmethodz5fcall ( ) => #abiCallData ( "test_method_call" , .TypedArgs ) )
+    rule  ( S2KMethodDisambiguateTest . S2KtestZUndmethodZUndcall ( ) => #abiCallData ( "test_method_call" , .TypedArgs ) )
       
     
     rule  ( S2KMethodDisambiguateTest . S2Kvm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
@@ -3299,9 +3299,9 @@ module MockCallTest-CONTRACT
     
     syntax Bytes ::= S2KMockCallTestContract "." S2KMockCallTestMethod [function(), symbol(), klabel(method_MockCallTest)]
     
-    syntax S2KMockCallTestMethod ::= "S2KISz5fSCRIPT" "(" ")" [symbol(), klabel(method_MockCallTest_S2KISz5fSCRIPT_)]
+    syntax S2KMockCallTestMethod ::= "S2KISZUndSCRIPT" "(" ")" [symbol(), klabel(method_MockCallTest_S2KISZUndSCRIPT_)]
     
-    syntax S2KMockCallTestMethod ::= "S2KISz5fTEST" "(" ")" [symbol(), klabel(method_MockCallTest_S2KISz5fTEST_)]
+    syntax S2KMockCallTestMethod ::= "S2KISZUndTEST" "(" ")" [symbol(), klabel(method_MockCallTest_S2KISZUndTEST_)]
     
     syntax S2KMockCallTestMethod ::= "S2Kfailed" "(" ")" [symbol(), klabel(method_MockCallTest_S2Kfailed_)]
     
@@ -3313,10 +3313,10 @@ module MockCallTest-CONTRACT
     
     syntax S2KMockCallTestMethod ::= "S2Kvm" "(" ")" [symbol(), klabel(method_MockCallTest_S2Kvm_)]
     
-    rule  ( S2KMockCallTest . S2KISz5fSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
+    rule  ( S2KMockCallTest . S2KISZUndSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
     
-    rule  ( S2KMockCallTest . S2KISz5fTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
+    rule  ( S2KMockCallTest . S2KISZUndTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
       
     
     rule  ( S2KMockCallTest . S2Kfailed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
@@ -3508,9 +3508,9 @@ module NoImport-CONTRACT
     
     syntax Bytes ::= S2KNoImportContract "." S2KNoImportMethod [function(), symbol(), klabel(method_NoImport)]
     
-    syntax S2KNoImportMethod ::= "S2Ktestz5fsourcez5fmap" "(" ")" [symbol(), klabel(method_NoImport_S2Ktestz5fsourcez5fmap_)]
+    syntax S2KNoImportMethod ::= "S2KtestZUndsourceZUndmap" "(" ")" [symbol(), klabel(method_NoImport_S2KtestZUndsourceZUndmap_)]
     
-    rule  ( S2KNoImport . S2Ktestz5fsourcez5fmap ( ) => #abiCallData ( "test_source_map" , .TypedArgs ) )
+    rule  ( S2KNoImport . S2KtestZUndsourceZUndmap ( ) => #abiCallData ( "test_source_map" , .TypedArgs ) )
       
     
     rule  ( selector ( "test_source_map()" ) => 3563497491 )
@@ -3600,9 +3600,9 @@ module OwnerUpOnlyTest-CONTRACT
     
     syntax Bytes ::= S2KOwnerUpOnlyTestContract "." S2KOwnerUpOnlyTestMethod [function(), symbol(), klabel(method_OwnerUpOnlyTest)]
     
-    syntax S2KOwnerUpOnlyTestMethod ::= "S2KISz5fSCRIPT" "(" ")" [symbol(), klabel(method_OwnerUpOnlyTest_S2KISz5fSCRIPT_)]
+    syntax S2KOwnerUpOnlyTestMethod ::= "S2KISZUndSCRIPT" "(" ")" [symbol(), klabel(method_OwnerUpOnlyTest_S2KISZUndSCRIPT_)]
     
-    syntax S2KOwnerUpOnlyTestMethod ::= "S2KISz5fTEST" "(" ")" [symbol(), klabel(method_OwnerUpOnlyTest_S2KISz5fTEST_)]
+    syntax S2KOwnerUpOnlyTestMethod ::= "S2KISZUndTEST" "(" ")" [symbol(), klabel(method_OwnerUpOnlyTest_S2KISZUndTEST_)]
     
     syntax S2KOwnerUpOnlyTestMethod ::= "S2Kfailed" "(" ")" [symbol(), klabel(method_OwnerUpOnlyTest_S2Kfailed_)]
     
@@ -3616,10 +3616,10 @@ module OwnerUpOnlyTest-CONTRACT
     
     syntax S2KOwnerUpOnlyTestMethod ::= "S2Kvm" "(" ")" [symbol(), klabel(method_OwnerUpOnlyTest_S2Kvm_)]
     
-    rule  ( S2KOwnerUpOnlyTest . S2KISz5fSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
+    rule  ( S2KOwnerUpOnlyTest . S2KISZUndSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
     
-    rule  ( S2KOwnerUpOnlyTest . S2KISz5fTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
+    rule  ( S2KOwnerUpOnlyTest . S2KISZUndTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
       
     
     rule  ( S2KOwnerUpOnlyTest . S2Kfailed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
@@ -3743,34 +3743,34 @@ module PlainPrankTest-CONTRACT
     
     syntax Bytes ::= S2KPlainPrankTestContract "." S2KPlainPrankTestMethod [function(), symbol(), klabel(method_PlainPrankTest)]
     
-    syntax S2KPlainPrankTestMethod ::= "S2KISz5fSCRIPT" "(" ")" [symbol(), klabel(method_PlainPrankTest_S2KISz5fSCRIPT_)]
+    syntax S2KPlainPrankTestMethod ::= "S2KISZUndSCRIPT" "(" ")" [symbol(), klabel(method_PlainPrankTest_S2KISZUndSCRIPT_)]
     
-    syntax S2KPlainPrankTestMethod ::= "S2KISz5fTEST" "(" ")" [symbol(), klabel(method_PlainPrankTest_S2KISz5fTEST_)]
+    syntax S2KPlainPrankTestMethod ::= "S2KISZUndTEST" "(" ")" [symbol(), klabel(method_PlainPrankTest_S2KISZUndTEST_)]
     
     syntax S2KPlainPrankTestMethod ::= "S2Kfailed" "(" ")" [symbol(), klabel(method_PlainPrankTest_S2Kfailed_)]
     
     syntax S2KPlainPrankTestMethod ::= "S2KinternalCounter" "(" ")" [symbol(), klabel(method_PlainPrankTest_S2KinternalCounter_)]
     
-    syntax S2KPlainPrankTestMethod ::= "S2KtestFailz5fstartPrankz5fexistingAlready" "(" ")" [symbol(), klabel(method_PlainPrankTest_S2KtestFailz5fstartPrankz5fexistingAlready_)]
+    syntax S2KPlainPrankTestMethod ::= "S2KtestFailZUndstartPrankZUndexistingAlready" "(" ")" [symbol(), klabel(method_PlainPrankTest_S2KtestFailZUndstartPrankZUndexistingAlready_)]
     
-    syntax S2KPlainPrankTestMethod ::= "S2KtestFailz5fstartPrankz5finternalCall" "(" ")" [symbol(), klabel(method_PlainPrankTest_S2KtestFailz5fstartPrankz5finternalCall_)]
+    syntax S2KPlainPrankTestMethod ::= "S2KtestFailZUndstartPrankZUndinternalCall" "(" ")" [symbol(), klabel(method_PlainPrankTest_S2KtestFailZUndstartPrankZUndinternalCall_)]
     
-    syntax S2KPlainPrankTestMethod ::= "S2Ktestz5fprankz5fz7aeroAddressz5ftrue" "(" ")" [symbol(), klabel(method_PlainPrankTest_S2Ktestz5fprankz5fz7aeroAddressz5ftrue_)]
+    syntax S2KPlainPrankTestMethod ::= "S2KtestZUndprankZUndzeroAddressZUndtrue" "(" ")" [symbol(), klabel(method_PlainPrankTest_S2KtestZUndprankZUndzeroAddressZUndtrue_)]
     
-    syntax S2KPlainPrankTestMethod ::= "S2Ktestz5fstartPrankWithOriginz5ftrue" "(" ")" [symbol(), klabel(method_PlainPrankTest_S2Ktestz5fstartPrankWithOriginz5ftrue_)]
+    syntax S2KPlainPrankTestMethod ::= "S2KtestZUndstartPrankWithOriginZUndtrue" "(" ")" [symbol(), klabel(method_PlainPrankTest_S2KtestZUndstartPrankWithOriginZUndtrue_)]
     
-    syntax S2KPlainPrankTestMethod ::= "S2Ktestz5fstartPrankz5ftrue" "(" ")" [symbol(), klabel(method_PlainPrankTest_S2Ktestz5fstartPrankz5ftrue_)]
+    syntax S2KPlainPrankTestMethod ::= "S2KtestZUndstartPrankZUndtrue" "(" ")" [symbol(), klabel(method_PlainPrankTest_S2KtestZUndstartPrankZUndtrue_)]
     
-    syntax S2KPlainPrankTestMethod ::= "S2Ktestz5fstartPrankz5fz7aeroAddressz5ftrue" "(" ")" [symbol(), klabel(method_PlainPrankTest_S2Ktestz5fstartPrankz5fz7aeroAddressz5ftrue_)]
+    syntax S2KPlainPrankTestMethod ::= "S2KtestZUndstartPrankZUndzeroAddressZUndtrue" "(" ")" [symbol(), klabel(method_PlainPrankTest_S2KtestZUndstartPrankZUndzeroAddressZUndtrue_)]
     
-    syntax S2KPlainPrankTestMethod ::= "S2Ktestz5fstopPrankz5fnotExistent" "(" ")" [symbol(), klabel(method_PlainPrankTest_S2Ktestz5fstopPrankz5fnotExistent_)]
+    syntax S2KPlainPrankTestMethod ::= "S2KtestZUndstopPrankZUndnotExistent" "(" ")" [symbol(), klabel(method_PlainPrankTest_S2KtestZUndstopPrankZUndnotExistent_)]
     
     syntax S2KPlainPrankTestMethod ::= "S2Kvm" "(" ")" [symbol(), klabel(method_PlainPrankTest_S2Kvm_)]
     
-    rule  ( S2KPlainPrankTest . S2KISz5fSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
+    rule  ( S2KPlainPrankTest . S2KISZUndSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
     
-    rule  ( S2KPlainPrankTest . S2KISz5fTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
+    rule  ( S2KPlainPrankTest . S2KISZUndTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
       
     
     rule  ( S2KPlainPrankTest . S2Kfailed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
@@ -3779,25 +3779,25 @@ module PlainPrankTest-CONTRACT
     rule  ( S2KPlainPrankTest . S2KinternalCounter ( ) => #abiCallData ( "internalCounter" , .TypedArgs ) )
       
     
-    rule  ( S2KPlainPrankTest . S2KtestFailz5fstartPrankz5fexistingAlready ( ) => #abiCallData ( "testFail_startPrank_existingAlready" , .TypedArgs ) )
+    rule  ( S2KPlainPrankTest . S2KtestFailZUndstartPrankZUndexistingAlready ( ) => #abiCallData ( "testFail_startPrank_existingAlready" , .TypedArgs ) )
       
     
-    rule  ( S2KPlainPrankTest . S2KtestFailz5fstartPrankz5finternalCall ( ) => #abiCallData ( "testFail_startPrank_internalCall" , .TypedArgs ) )
+    rule  ( S2KPlainPrankTest . S2KtestFailZUndstartPrankZUndinternalCall ( ) => #abiCallData ( "testFail_startPrank_internalCall" , .TypedArgs ) )
       
     
-    rule  ( S2KPlainPrankTest . S2Ktestz5fprankz5fz7aeroAddressz5ftrue ( ) => #abiCallData ( "test_prank_zeroAddress_true" , .TypedArgs ) )
+    rule  ( S2KPlainPrankTest . S2KtestZUndprankZUndzeroAddressZUndtrue ( ) => #abiCallData ( "test_prank_zeroAddress_true" , .TypedArgs ) )
       
     
-    rule  ( S2KPlainPrankTest . S2Ktestz5fstartPrankWithOriginz5ftrue ( ) => #abiCallData ( "test_startPrankWithOrigin_true" , .TypedArgs ) )
+    rule  ( S2KPlainPrankTest . S2KtestZUndstartPrankWithOriginZUndtrue ( ) => #abiCallData ( "test_startPrankWithOrigin_true" , .TypedArgs ) )
       
     
-    rule  ( S2KPlainPrankTest . S2Ktestz5fstartPrankz5ftrue ( ) => #abiCallData ( "test_startPrank_true" , .TypedArgs ) )
+    rule  ( S2KPlainPrankTest . S2KtestZUndstartPrankZUndtrue ( ) => #abiCallData ( "test_startPrank_true" , .TypedArgs ) )
       
     
-    rule  ( S2KPlainPrankTest . S2Ktestz5fstartPrankz5fz7aeroAddressz5ftrue ( ) => #abiCallData ( "test_startPrank_zeroAddress_true" , .TypedArgs ) )
+    rule  ( S2KPlainPrankTest . S2KtestZUndstartPrankZUndzeroAddressZUndtrue ( ) => #abiCallData ( "test_startPrank_zeroAddress_true" , .TypedArgs ) )
       
     
-    rule  ( S2KPlainPrankTest . S2Ktestz5fstopPrankz5fnotExistent ( ) => #abiCallData ( "test_stopPrank_notExistent" , .TypedArgs ) )
+    rule  ( S2KPlainPrankTest . S2KtestZUndstopPrankZUndnotExistent ( ) => #abiCallData ( "test_stopPrank_notExistent" , .TypedArgs ) )
       
     
     rule  ( S2KPlainPrankTest . S2Kvm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
@@ -3933,9 +3933,9 @@ module PrankTest-CONTRACT
     
     syntax Bytes ::= S2KPrankTestContract "." S2KPrankTestMethod [function(), symbol(), klabel(method_PrankTest)]
     
-    syntax S2KPrankTestMethod ::= "S2KISz5fSCRIPT" "(" ")" [symbol(), klabel(method_PrankTest_S2KISz5fSCRIPT_)]
+    syntax S2KPrankTestMethod ::= "S2KISZUndSCRIPT" "(" ")" [symbol(), klabel(method_PrankTest_S2KISZUndSCRIPT_)]
     
-    syntax S2KPrankTestMethod ::= "S2KISz5fTEST" "(" ")" [symbol(), klabel(method_PrankTest_S2KISz5fTEST_)]
+    syntax S2KPrankTestMethod ::= "S2KISZUndTEST" "(" ")" [symbol(), klabel(method_PrankTest_S2KISZUndTEST_)]
     
     syntax S2KPrankTestMethod ::= "S2Kfailed" "(" ")" [symbol(), klabel(method_PrankTest_S2Kfailed_)]
     
@@ -3955,10 +3955,10 @@ module PrankTest-CONTRACT
     
     syntax S2KPrankTestMethod ::= "S2Kvm" "(" ")" [symbol(), klabel(method_PrankTest_S2Kvm_)]
     
-    rule  ( S2KPrankTest . S2KISz5fSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
+    rule  ( S2KPrankTest . S2KISZUndSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
     
-    rule  ( S2KPrankTest . S2KISz5fTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
+    rule  ( S2KPrankTest . S2KISZUndTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
       
     
     rule  ( S2KPrankTest . S2Kfailed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
@@ -4071,9 +4071,9 @@ module PreconditionsTest-CONTRACT
     
     syntax Bytes ::= S2KPreconditionsTestContract "." S2KPreconditionsTestMethod [function(), symbol(), klabel(method_PreconditionsTest)]
     
-    syntax S2KPreconditionsTestMethod ::= "S2KISz5fSCRIPT" "(" ")" [symbol(), klabel(method_PreconditionsTest_S2KISz5fSCRIPT_)]
+    syntax S2KPreconditionsTestMethod ::= "S2KISZUndSCRIPT" "(" ")" [symbol(), klabel(method_PreconditionsTest_S2KISZUndSCRIPT_)]
     
-    syntax S2KPreconditionsTestMethod ::= "S2KISz5fTEST" "(" ")" [symbol(), klabel(method_PreconditionsTest_S2KISz5fTEST_)]
+    syntax S2KPreconditionsTestMethod ::= "S2KISZUndTEST" "(" ")" [symbol(), klabel(method_PreconditionsTest_S2KISZUndTEST_)]
     
     syntax S2KPreconditionsTestMethod ::= "S2Kfailed" "(" ")" [symbol(), klabel(method_PreconditionsTest_S2Kfailed_)]
     
@@ -4085,10 +4085,10 @@ module PreconditionsTest-CONTRACT
     
     syntax S2KPreconditionsTestMethod ::= "S2Kvm" "(" ")" [symbol(), klabel(method_PreconditionsTest_S2Kvm_)]
     
-    rule  ( S2KPreconditionsTest . S2KISz5fSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
+    rule  ( S2KPreconditionsTest . S2KISZUndSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
     
-    rule  ( S2KPreconditionsTest . S2KISz5fTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
+    rule  ( S2KPreconditionsTest . S2KISZUndTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
       
     
     rule  ( S2KPreconditionsTest . S2Kfailed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
@@ -4167,9 +4167,9 @@ module RecordLogsTest-CONTRACT
     
     syntax Bytes ::= S2KRecordLogsTestContract "." S2KRecordLogsTestMethod [function(), symbol(), klabel(method_RecordLogsTest)]
     
-    syntax S2KRecordLogsTestMethod ::= "S2KISz5fSCRIPT" "(" ")" [symbol(), klabel(method_RecordLogsTest_S2KISz5fSCRIPT_)]
+    syntax S2KRecordLogsTestMethod ::= "S2KISZUndSCRIPT" "(" ")" [symbol(), klabel(method_RecordLogsTest_S2KISZUndSCRIPT_)]
     
-    syntax S2KRecordLogsTestMethod ::= "S2KISz5fTEST" "(" ")" [symbol(), klabel(method_RecordLogsTest_S2KISz5fTEST_)]
+    syntax S2KRecordLogsTestMethod ::= "S2KISZUndTEST" "(" ")" [symbol(), klabel(method_RecordLogsTest_S2KISZUndTEST_)]
     
     syntax S2KRecordLogsTestMethod ::= "S2Kfailed" "(" ")" [symbol(), klabel(method_RecordLogsTest_S2Kfailed_)]
     
@@ -4179,10 +4179,10 @@ module RecordLogsTest-CONTRACT
     
     syntax S2KRecordLogsTestMethod ::= "S2Kvm" "(" ")" [symbol(), klabel(method_RecordLogsTest_S2Kvm_)]
     
-    rule  ( S2KRecordLogsTest . S2KISz5fSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
+    rule  ( S2KRecordLogsTest . S2KISZUndSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
     
-    rule  ( S2KRecordLogsTest . S2KISz5fTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
+    rule  ( S2KRecordLogsTest . S2KISZUndTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
       
     
     rule  ( S2KRecordLogsTest . S2Kfailed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
@@ -4276,9 +4276,9 @@ module SafeTest-CONTRACT
     
     syntax Bytes ::= S2KSafeTestContract "." S2KSafeTestMethod [function(), symbol(), klabel(method_SafeTest)]
     
-    syntax S2KSafeTestMethod ::= "S2KISz5fSCRIPT" "(" ")" [symbol(), klabel(method_SafeTest_S2KISz5fSCRIPT_)]
+    syntax S2KSafeTestMethod ::= "S2KISZUndSCRIPT" "(" ")" [symbol(), klabel(method_SafeTest_S2KISZUndSCRIPT_)]
     
-    syntax S2KSafeTestMethod ::= "S2KISz5fTEST" "(" ")" [symbol(), klabel(method_SafeTest_S2KISz5fTEST_)]
+    syntax S2KSafeTestMethod ::= "S2KISZUndTEST" "(" ")" [symbol(), klabel(method_SafeTest_S2KISZUndTEST_)]
     
     syntax S2KSafeTestMethod ::= "S2Kfailed" "(" ")" [symbol(), klabel(method_SafeTest_S2Kfailed_)]
     
@@ -4286,14 +4286,14 @@ module SafeTest-CONTRACT
     
     syntax S2KSafeTestMethod ::= "S2KtestWithdraw" "(" ")" [symbol(), klabel(method_SafeTest_S2KtestWithdraw_)]
     
-    syntax S2KSafeTestMethod ::= "S2KtestWithdrawFuz7az7a" "(" Int ":" "uint96" ")" [symbol(), klabel(method_SafeTest_S2KtestWithdrawFuz7az7a_uint96)]
+    syntax S2KSafeTestMethod ::= "S2KtestWithdrawFuzz" "(" Int ":" "uint96" ")" [symbol(), klabel(method_SafeTest_S2KtestWithdrawFuzz_uint96)]
     
     syntax S2KSafeTestMethod ::= "S2Kvm" "(" ")" [symbol(), klabel(method_SafeTest_S2Kvm_)]
     
-    rule  ( S2KSafeTest . S2KISz5fSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
+    rule  ( S2KSafeTest . S2KISZUndSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
     
-    rule  ( S2KSafeTest . S2KISz5fTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
+    rule  ( S2KSafeTest . S2KISZUndTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
       
     
     rule  ( S2KSafeTest . S2Kfailed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
@@ -4305,7 +4305,7 @@ module SafeTest-CONTRACT
     rule  ( S2KSafeTest . S2KtestWithdraw ( ) => #abiCallData ( "testWithdraw" , .TypedArgs ) )
       
     
-    rule  ( S2KSafeTest . S2KtestWithdrawFuz7az7a ( V0_amount : uint96 ) => #abiCallData ( "testWithdrawFuzz" , #uint96 ( V0_amount ) , .TypedArgs ) )
+    rule  ( S2KSafeTest . S2KtestWithdrawFuzz ( V0_amount : uint96 ) => #abiCallData ( "testWithdrawFuzz" , #uint96 ( V0_amount ) , .TypedArgs ) )
        ensures #rangeUInt ( 96 , V0_amount )
       
     
@@ -4353,11 +4353,11 @@ module Script-CONTRACT
     
     syntax Bytes ::= S2KScriptContract "." S2KScriptMethod [function(), symbol(), klabel(method_Script)]
     
-    syntax S2KScriptMethod ::= "S2KISz5fSCRIPT" "(" ")" [symbol(), klabel(method_Script_S2KISz5fSCRIPT_)]
+    syntax S2KScriptMethod ::= "S2KISZUndSCRIPT" "(" ")" [symbol(), klabel(method_Script_S2KISZUndSCRIPT_)]
     
     syntax S2KScriptMethod ::= "S2Kvm" "(" ")" [symbol(), klabel(method_Script_S2Kvm_)]
     
-    rule  ( S2KScript . S2KISz5fSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
+    rule  ( S2KScript . S2KISZUndSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
     
     rule  ( S2KScript . S2Kvm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
@@ -4419,24 +4419,24 @@ module Setup2Test-CONTRACT
     
     syntax Bytes ::= S2KSetup2TestContract "." S2KSetup2TestMethod [function(), symbol(), klabel(method_Setup2Test)]
     
-    syntax S2KSetup2TestMethod ::= "S2KISz5fSCRIPT" "(" ")" [symbol(), klabel(method_Setup2Test_S2KISz5fSCRIPT_)]
+    syntax S2KSetup2TestMethod ::= "S2KISZUndSCRIPT" "(" ")" [symbol(), klabel(method_Setup2Test_S2KISZUndSCRIPT_)]
     
-    syntax S2KSetup2TestMethod ::= "S2KISz5fTEST" "(" ")" [symbol(), klabel(method_Setup2Test_S2KISz5fTEST_)]
+    syntax S2KSetup2TestMethod ::= "S2KISZUndTEST" "(" ")" [symbol(), klabel(method_Setup2Test_S2KISZUndTEST_)]
     
     syntax S2KSetup2TestMethod ::= "S2Kfailed" "(" ")" [symbol(), klabel(method_Setup2Test_S2Kfailed_)]
     
     syntax S2KSetup2TestMethod ::= "S2KsetUp" "(" ")" [symbol(), klabel(method_Setup2Test_S2KsetUp_)]
     
-    syntax S2KSetup2TestMethod ::= "S2KtestFailz5fsetup" "(" ")" [symbol(), klabel(method_Setup2Test_S2KtestFailz5fsetup_)]
+    syntax S2KSetup2TestMethod ::= "S2KtestFailZUndsetup" "(" ")" [symbol(), klabel(method_Setup2Test_S2KtestFailZUndsetup_)]
     
-    syntax S2KSetup2TestMethod ::= "S2Ktestz5fsetup" "(" ")" [symbol(), klabel(method_Setup2Test_S2Ktestz5fsetup_)]
+    syntax S2KSetup2TestMethod ::= "S2KtestZUndsetup" "(" ")" [symbol(), klabel(method_Setup2Test_S2KtestZUndsetup_)]
     
     syntax S2KSetup2TestMethod ::= "S2Kvm" "(" ")" [symbol(), klabel(method_Setup2Test_S2Kvm_)]
     
-    rule  ( S2KSetup2Test . S2KISz5fSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
+    rule  ( S2KSetup2Test . S2KISZUndSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
     
-    rule  ( S2KSetup2Test . S2KISz5fTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
+    rule  ( S2KSetup2Test . S2KISZUndTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
       
     
     rule  ( S2KSetup2Test . S2Kfailed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
@@ -4445,10 +4445,10 @@ module Setup2Test-CONTRACT
     rule  ( S2KSetup2Test . S2KsetUp ( ) => #abiCallData ( "setUp" , .TypedArgs ) )
       
     
-    rule  ( S2KSetup2Test . S2KtestFailz5fsetup ( ) => #abiCallData ( "testFail_setup" , .TypedArgs ) )
+    rule  ( S2KSetup2Test . S2KtestFailZUndsetup ( ) => #abiCallData ( "testFail_setup" , .TypedArgs ) )
       
     
-    rule  ( S2KSetup2Test . S2Ktestz5fsetup ( ) => #abiCallData ( "test_setup" , .TypedArgs ) )
+    rule  ( S2KSetup2Test . S2KtestZUndsetup ( ) => #abiCallData ( "test_setup" , .TypedArgs ) )
       
     
     rule  ( S2KSetup2Test . S2Kvm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
@@ -4515,22 +4515,22 @@ module SetUpDeployTest-CONTRACT
     
     syntax Bytes ::= S2KSetUpDeployTestContract "." S2KSetUpDeployTestMethod [function(), symbol(), klabel(method_SetUpDeployTest)]
     
-    syntax S2KSetUpDeployTestMethod ::= "S2KISz5fSCRIPT" "(" ")" [symbol(), klabel(method_SetUpDeployTest_S2KISz5fSCRIPT_)]
+    syntax S2KSetUpDeployTestMethod ::= "S2KISZUndSCRIPT" "(" ")" [symbol(), klabel(method_SetUpDeployTest_S2KISZUndSCRIPT_)]
     
-    syntax S2KSetUpDeployTestMethod ::= "S2KISz5fTEST" "(" ")" [symbol(), klabel(method_SetUpDeployTest_S2KISz5fTEST_)]
+    syntax S2KSetUpDeployTestMethod ::= "S2KISZUndTEST" "(" ")" [symbol(), klabel(method_SetUpDeployTest_S2KISZUndTEST_)]
     
     syntax S2KSetUpDeployTestMethod ::= "S2Kfailed" "(" ")" [symbol(), klabel(method_SetUpDeployTest_S2Kfailed_)]
     
     syntax S2KSetUpDeployTestMethod ::= "S2KsetUp" "(" ")" [symbol(), klabel(method_SetUpDeployTest_S2KsetUp_)]
     
-    syntax S2KSetUpDeployTestMethod ::= "S2Ktestz5fextcodesiz7ae" "(" ")" [symbol(), klabel(method_SetUpDeployTest_S2Ktestz5fextcodesiz7ae_)]
+    syntax S2KSetUpDeployTestMethod ::= "S2KtestZUndextcodesize" "(" ")" [symbol(), klabel(method_SetUpDeployTest_S2KtestZUndextcodesize_)]
     
     syntax S2KSetUpDeployTestMethod ::= "S2Kvm" "(" ")" [symbol(), klabel(method_SetUpDeployTest_S2Kvm_)]
     
-    rule  ( S2KSetUpDeployTest . S2KISz5fSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
+    rule  ( S2KSetUpDeployTest . S2KISZUndSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
     
-    rule  ( S2KSetUpDeployTest . S2KISz5fTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
+    rule  ( S2KSetUpDeployTest . S2KISZUndTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
       
     
     rule  ( S2KSetUpDeployTest . S2Kfailed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
@@ -4539,7 +4539,7 @@ module SetUpDeployTest-CONTRACT
     rule  ( S2KSetUpDeployTest . S2KsetUp ( ) => #abiCallData ( "setUp" , .TypedArgs ) )
       
     
-    rule  ( S2KSetUpDeployTest . S2Ktestz5fextcodesiz7ae ( ) => #abiCallData ( "test_extcodesize" , .TypedArgs ) )
+    rule  ( S2KSetUpDeployTest . S2KtestZUndextcodesize ( ) => #abiCallData ( "test_extcodesize" , .TypedArgs ) )
       
     
     rule  ( S2KSetUpDeployTest . S2Kvm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
@@ -4603,9 +4603,9 @@ module SetUpTest-CONTRACT
     
     syntax Bytes ::= S2KSetUpTestContract "." S2KSetUpTestMethod [function(), symbol(), klabel(method_SetUpTest)]
     
-    syntax S2KSetUpTestMethod ::= "S2KISz5fSCRIPT" "(" ")" [symbol(), klabel(method_SetUpTest_S2KISz5fSCRIPT_)]
+    syntax S2KSetUpTestMethod ::= "S2KISZUndSCRIPT" "(" ")" [symbol(), klabel(method_SetUpTest_S2KISZUndSCRIPT_)]
     
-    syntax S2KSetUpTestMethod ::= "S2KISz5fTEST" "(" ")" [symbol(), klabel(method_SetUpTest_S2KISz5fTEST_)]
+    syntax S2KSetUpTestMethod ::= "S2KISZUndTEST" "(" ")" [symbol(), klabel(method_SetUpTest_S2KISZUndTEST_)]
     
     syntax S2KSetUpTestMethod ::= "S2Kfailed" "(" ")" [symbol(), klabel(method_SetUpTest_S2Kfailed_)]
     
@@ -4617,10 +4617,10 @@ module SetUpTest-CONTRACT
     
     syntax S2KSetUpTestMethod ::= "S2Kvm" "(" ")" [symbol(), klabel(method_SetUpTest_S2Kvm_)]
     
-    rule  ( S2KSetUpTest . S2KISz5fSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
+    rule  ( S2KSetUpTest . S2KISZUndSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
     
-    rule  ( S2KSetUpTest . S2KISz5fTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
+    rule  ( S2KSetUpTest . S2KISZUndTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
       
     
     rule  ( S2KSetUpTest . S2Kfailed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
@@ -4695,22 +4695,22 @@ module SignTest-CONTRACT
     
     syntax Bytes ::= S2KSignTestContract "." S2KSignTestMethod [function(), symbol(), klabel(method_SignTest)]
     
-    syntax S2KSignTestMethod ::= "S2KISz5fSCRIPT" "(" ")" [symbol(), klabel(method_SignTest_S2KISz5fSCRIPT_)]
+    syntax S2KSignTestMethod ::= "S2KISZUndSCRIPT" "(" ")" [symbol(), klabel(method_SignTest_S2KISZUndSCRIPT_)]
     
-    syntax S2KSignTestMethod ::= "S2KISz5fTEST" "(" ")" [symbol(), klabel(method_SignTest_S2KISz5fTEST_)]
+    syntax S2KSignTestMethod ::= "S2KISZUndTEST" "(" ")" [symbol(), klabel(method_SignTest_S2KISZUndTEST_)]
     
     syntax S2KSignTestMethod ::= "S2Kfailed" "(" ")" [symbol(), klabel(method_SignTest_S2Kfailed_)]
     
     syntax S2KSignTestMethod ::= "S2KtestSign" "(" ")" [symbol(), klabel(method_SignTest_S2KtestSign_)]
     
-    syntax S2KSignTestMethod ::= "S2KtestSignz5fsymbolic" "(" Int ":" "uint256" ")" [symbol(), klabel(method_SignTest_S2KtestSignz5fsymbolic_uint256)]
+    syntax S2KSignTestMethod ::= "S2KtestSignZUndsymbolic" "(" Int ":" "uint256" ")" [symbol(), klabel(method_SignTest_S2KtestSignZUndsymbolic_uint256)]
     
     syntax S2KSignTestMethod ::= "S2Kvm" "(" ")" [symbol(), klabel(method_SignTest_S2Kvm_)]
     
-    rule  ( S2KSignTest . S2KISz5fSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
+    rule  ( S2KSignTest . S2KISZUndSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
     
-    rule  ( S2KSignTest . S2KISz5fTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
+    rule  ( S2KSignTest . S2KISZUndTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
       
     
     rule  ( S2KSignTest . S2Kfailed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
@@ -4719,7 +4719,7 @@ module SignTest-CONTRACT
     rule  ( S2KSignTest . S2KtestSign ( ) => #abiCallData ( "testSign" , .TypedArgs ) )
       
     
-    rule  ( S2KSignTest . S2KtestSignz5fsymbolic ( V0_pk : uint256 ) => #abiCallData ( "testSign_symbolic" , #uint256 ( V0_pk ) , .TypedArgs ) )
+    rule  ( S2KSignTest . S2KtestSignZUndsymbolic ( V0_pk : uint256 ) => #abiCallData ( "testSign_symbolic" , #uint256 ( V0_pk ) , .TypedArgs ) )
        ensures #rangeUInt ( 256 , V0_pk )
       
     
@@ -4784,36 +4784,36 @@ module AssertTest-CONTRACT
     
     syntax Bytes ::= S2KAssertTestContract "." S2KAssertTestMethod [function(), symbol(), klabel(method_AssertTest)]
     
-    syntax S2KAssertTestMethod ::= "S2KISz5fSCRIPT" "(" ")" [symbol(), klabel(method_AssertTest_S2KISz5fSCRIPT_)]
+    syntax S2KAssertTestMethod ::= "S2KISZUndSCRIPT" "(" ")" [symbol(), klabel(method_AssertTest_S2KISZUndSCRIPT_)]
     
-    syntax S2KAssertTestMethod ::= "S2KISz5fTEST" "(" ")" [symbol(), klabel(method_AssertTest_S2KISz5fTEST_)]
+    syntax S2KAssertTestMethod ::= "S2KISZUndTEST" "(" ")" [symbol(), klabel(method_AssertTest_S2KISZUndTEST_)]
     
     syntax S2KAssertTestMethod ::= "S2Kfailed" "(" ")" [symbol(), klabel(method_AssertTest_S2Kfailed_)]
     
     syntax S2KAssertTestMethod ::= "S2KsetUp" "(" ")" [symbol(), klabel(method_AssertTest_S2KsetUp_)]
     
-    syntax S2KAssertTestMethod ::= "S2KtestFailz5fassertz5ffalse" "(" ")" [symbol(), klabel(method_AssertTest_S2KtestFailz5fassertz5ffalse_)]
+    syntax S2KAssertTestMethod ::= "S2KtestFailZUndassertZUndfalse" "(" ")" [symbol(), klabel(method_AssertTest_S2KtestFailZUndassertZUndfalse_)]
     
-    syntax S2KAssertTestMethod ::= "S2KtestFailz5fassertz5ftrue" "(" ")" [symbol(), klabel(method_AssertTest_S2KtestFailz5fassertz5ftrue_)]
+    syntax S2KAssertTestMethod ::= "S2KtestFailZUndassertZUndtrue" "(" ")" [symbol(), klabel(method_AssertTest_S2KtestFailZUndassertZUndtrue_)]
     
-    syntax S2KAssertTestMethod ::= "S2KtestFailz5fexpectz5frevert" "(" ")" [symbol(), klabel(method_AssertTest_S2KtestFailz5fexpectz5frevert_)]
+    syntax S2KAssertTestMethod ::= "S2KtestFailZUndexpectZUndrevert" "(" ")" [symbol(), klabel(method_AssertTest_S2KtestFailZUndexpectZUndrevert_)]
     
-    syntax S2KAssertTestMethod ::= "S2Ktestz5fassertz5ffalse" "(" ")" [symbol(), klabel(method_AssertTest_S2Ktestz5fassertz5ffalse_)]
+    syntax S2KAssertTestMethod ::= "S2KtestZUndassertZUndfalse" "(" ")" [symbol(), klabel(method_AssertTest_S2KtestZUndassertZUndfalse_)]
     
-    syntax S2KAssertTestMethod ::= "S2Ktestz5fassertz5ftrue" "(" ")" [symbol(), klabel(method_AssertTest_S2Ktestz5fassertz5ftrue_)]
+    syntax S2KAssertTestMethod ::= "S2KtestZUndassertZUndtrue" "(" ")" [symbol(), klabel(method_AssertTest_S2KtestZUndassertZUndtrue_)]
     
-    syntax S2KAssertTestMethod ::= "S2Ktestz5fassertz5ftruez5fbranch" "(" Int ":" "uint256" ")" [symbol(), klabel(method_AssertTest_S2Ktestz5fassertz5ftruez5fbranch_uint256)]
+    syntax S2KAssertTestMethod ::= "S2KtestZUndassertZUndtrueZUndbranch" "(" Int ":" "uint256" ")" [symbol(), klabel(method_AssertTest_S2KtestZUndassertZUndtrueZUndbranch_uint256)]
     
-    syntax S2KAssertTestMethod ::= "S2Ktestz5ffailingz5fbranch" "(" Int ":" "uint256" ")" [symbol(), klabel(method_AssertTest_S2Ktestz5ffailingz5fbranch_uint256)]
+    syntax S2KAssertTestMethod ::= "S2KtestZUndfailingZUndbranch" "(" Int ":" "uint256" ")" [symbol(), klabel(method_AssertTest_S2KtestZUndfailingZUndbranch_uint256)]
     
-    syntax S2KAssertTestMethod ::= "S2Ktestz5frevertz5fbranch" "(" Int ":" "uint256" "," Int ":" "uint256" ")" [symbol(), klabel(method_AssertTest_S2Ktestz5frevertz5fbranch_uint256_uint256)]
+    syntax S2KAssertTestMethod ::= "S2KtestZUndrevertZUndbranch" "(" Int ":" "uint256" "," Int ":" "uint256" ")" [symbol(), klabel(method_AssertTest_S2KtestZUndrevertZUndbranch_uint256_uint256)]
     
     syntax S2KAssertTestMethod ::= "S2Kvm" "(" ")" [symbol(), klabel(method_AssertTest_S2Kvm_)]
     
-    rule  ( S2KAssertTest . S2KISz5fSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
+    rule  ( S2KAssertTest . S2KISZUndSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
     
-    rule  ( S2KAssertTest . S2KISz5fTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
+    rule  ( S2KAssertTest . S2KISZUndTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
       
     
     rule  ( S2KAssertTest . S2Kfailed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
@@ -4822,30 +4822,30 @@ module AssertTest-CONTRACT
     rule  ( S2KAssertTest . S2KsetUp ( ) => #abiCallData ( "setUp" , .TypedArgs ) )
       
     
-    rule  ( S2KAssertTest . S2KtestFailz5fassertz5ffalse ( ) => #abiCallData ( "testFail_assert_false" , .TypedArgs ) )
+    rule  ( S2KAssertTest . S2KtestFailZUndassertZUndfalse ( ) => #abiCallData ( "testFail_assert_false" , .TypedArgs ) )
       
     
-    rule  ( S2KAssertTest . S2KtestFailz5fassertz5ftrue ( ) => #abiCallData ( "testFail_assert_true" , .TypedArgs ) )
+    rule  ( S2KAssertTest . S2KtestFailZUndassertZUndtrue ( ) => #abiCallData ( "testFail_assert_true" , .TypedArgs ) )
       
     
-    rule  ( S2KAssertTest . S2KtestFailz5fexpectz5frevert ( ) => #abiCallData ( "testFail_expect_revert" , .TypedArgs ) )
+    rule  ( S2KAssertTest . S2KtestFailZUndexpectZUndrevert ( ) => #abiCallData ( "testFail_expect_revert" , .TypedArgs ) )
       
     
-    rule  ( S2KAssertTest . S2Ktestz5fassertz5ffalse ( ) => #abiCallData ( "test_assert_false" , .TypedArgs ) )
+    rule  ( S2KAssertTest . S2KtestZUndassertZUndfalse ( ) => #abiCallData ( "test_assert_false" , .TypedArgs ) )
       
     
-    rule  ( S2KAssertTest . S2Ktestz5fassertz5ftrue ( ) => #abiCallData ( "test_assert_true" , .TypedArgs ) )
+    rule  ( S2KAssertTest . S2KtestZUndassertZUndtrue ( ) => #abiCallData ( "test_assert_true" , .TypedArgs ) )
       
     
-    rule  ( S2KAssertTest . S2Ktestz5fassertz5ftruez5fbranch ( V0_x : uint256 ) => #abiCallData ( "test_assert_true_branch" , #uint256 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KAssertTest . S2KtestZUndassertZUndtrueZUndbranch ( V0_x : uint256 ) => #abiCallData ( "test_assert_true_branch" , #uint256 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 256 , V0_x )
       
     
-    rule  ( S2KAssertTest . S2Ktestz5ffailingz5fbranch ( V0_x : uint256 ) => #abiCallData ( "test_failing_branch" , #uint256 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KAssertTest . S2KtestZUndfailingZUndbranch ( V0_x : uint256 ) => #abiCallData ( "test_failing_branch" , #uint256 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 256 , V0_x )
       
     
-    rule  ( S2KAssertTest . S2Ktestz5frevertz5fbranch ( V0_x : uint256 , V1_y : uint256 ) => #abiCallData ( "test_revert_branch" , #uint256 ( V0_x ) , #uint256 ( V1_y ) , .TypedArgs ) )
+    rule  ( S2KAssertTest . S2KtestZUndrevertZUndbranch ( V0_x : uint256 , V1_y : uint256 ) => #abiCallData ( "test_revert_branch" , #uint256 ( V0_x ) , #uint256 ( V1_y ) , .TypedArgs ) )
        ensures ( #rangeUInt ( 256 , V0_x )
        andBool ( #rangeUInt ( 256 , V1_y )
                ))
@@ -4933,9 +4933,9 @@ module SnapshotTest-CONTRACT
     
     syntax Bytes ::= S2KSnapshotTestContract "." S2KSnapshotTestMethod [function(), symbol(), klabel(method_SnapshotTest)]
     
-    syntax S2KSnapshotTestMethod ::= "S2KISz5fSCRIPT" "(" ")" [symbol(), klabel(method_SnapshotTest_S2KISz5fSCRIPT_)]
+    syntax S2KSnapshotTestMethod ::= "S2KISZUndSCRIPT" "(" ")" [symbol(), klabel(method_SnapshotTest_S2KISZUndSCRIPT_)]
     
-    syntax S2KSnapshotTestMethod ::= "S2KISz5fTEST" "(" ")" [symbol(), klabel(method_SnapshotTest_S2KISz5fTEST_)]
+    syntax S2KSnapshotTestMethod ::= "S2KISZUndTEST" "(" ")" [symbol(), klabel(method_SnapshotTest_S2KISZUndTEST_)]
     
     syntax S2KSnapshotTestMethod ::= "S2Kfailed" "(" ")" [symbol(), klabel(method_SnapshotTest_S2Kfailed_)]
     
@@ -4945,10 +4945,10 @@ module SnapshotTest-CONTRACT
     
     syntax S2KSnapshotTestMethod ::= "S2Kvm" "(" ")" [symbol(), klabel(method_SnapshotTest_S2Kvm_)]
     
-    rule  ( S2KSnapshotTest . S2KISz5fSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
+    rule  ( S2KSnapshotTest . S2KISZUndSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
     
-    rule  ( S2KSnapshotTest . S2KISz5fTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
+    rule  ( S2KSnapshotTest . S2KISZUndTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
       
     
     rule  ( S2KSnapshotTest . S2Kfailed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
@@ -5034,9 +5034,9 @@ module StoreTest-CONTRACT
     
     syntax Bytes ::= S2KStoreTestContract "." S2KStoreTestMethod [function(), symbol(), klabel(method_StoreTest)]
     
-    syntax S2KStoreTestMethod ::= "S2KISz5fSCRIPT" "(" ")" [symbol(), klabel(method_StoreTest_S2KISz5fSCRIPT_)]
+    syntax S2KStoreTestMethod ::= "S2KISZUndSCRIPT" "(" ")" [symbol(), klabel(method_StoreTest_S2KISZUndSCRIPT_)]
     
-    syntax S2KStoreTestMethod ::= "S2KISz5fTEST" "(" ")" [symbol(), klabel(method_StoreTest_S2KISz5fTEST_)]
+    syntax S2KStoreTestMethod ::= "S2KISZUndTEST" "(" ")" [symbol(), klabel(method_StoreTest_S2KISZUndTEST_)]
     
     syntax S2KStoreTestMethod ::= "S2Kfailed" "(" ")" [symbol(), klabel(method_StoreTest_S2Kfailed_)]
     
@@ -5062,10 +5062,10 @@ module StoreTest-CONTRACT
     
     syntax S2KStoreTestMethod ::= "S2Kvm" "(" ")" [symbol(), klabel(method_StoreTest_S2Kvm_)]
     
-    rule  ( S2KStoreTest . S2KISz5fSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
+    rule  ( S2KStoreTest . S2KISZUndSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
     
-    rule  ( S2KStoreTest . S2KISz5fTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
+    rule  ( S2KStoreTest . S2KISZUndTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
       
     
     rule  ( S2KStoreTest . S2Kfailed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
@@ -5181,9 +5181,9 @@ module SymbolicStorageTest-CONTRACT
     
     syntax Bytes ::= S2KSymbolicStorageTestContract "." S2KSymbolicStorageTestMethod [function(), symbol(), klabel(method_SymbolicStorageTest)]
     
-    syntax S2KSymbolicStorageTestMethod ::= "S2KISz5fSCRIPT" "(" ")" [symbol(), klabel(method_SymbolicStorageTest_S2KISz5fSCRIPT_)]
+    syntax S2KSymbolicStorageTestMethod ::= "S2KISZUndSCRIPT" "(" ")" [symbol(), klabel(method_SymbolicStorageTest_S2KISZUndSCRIPT_)]
     
-    syntax S2KSymbolicStorageTestMethod ::= "S2KISz5fTEST" "(" ")" [symbol(), klabel(method_SymbolicStorageTest_S2KISz5fTEST_)]
+    syntax S2KSymbolicStorageTestMethod ::= "S2KISZUndTEST" "(" ")" [symbol(), klabel(method_SymbolicStorageTest_S2KISZUndTEST_)]
     
     syntax S2KSymbolicStorageTestMethod ::= "S2Kfailed" "(" ")" [symbol(), klabel(method_SymbolicStorageTest_S2Kfailed_)]
     
@@ -5191,16 +5191,16 @@ module SymbolicStorageTest-CONTRACT
     
     syntax S2KSymbolicStorageTestMethod ::= "S2KtestEmptyInitialStorage" "(" Int ":" "uint256" ")" [symbol(), klabel(method_SymbolicStorageTest_S2KtestEmptyInitialStorage_uint256)]
     
-    syntax S2KSymbolicStorageTestMethod ::= "S2KtestFailz5fSymbolicStorage" "(" Int ":" "uint256" ")" [symbol(), klabel(method_SymbolicStorageTest_S2KtestFailz5fSymbolicStorage_uint256)]
+    syntax S2KSymbolicStorageTestMethod ::= "S2KtestFailZUndSymbolicStorage" "(" Int ":" "uint256" ")" [symbol(), klabel(method_SymbolicStorageTest_S2KtestFailZUndSymbolicStorage_uint256)]
     
-    syntax S2KSymbolicStorageTestMethod ::= "S2KtestFailz5fSymbolicStorage1" "(" Int ":" "uint256" ")" [symbol(), klabel(method_SymbolicStorageTest_S2KtestFailz5fSymbolicStorage1_uint256)]
+    syntax S2KSymbolicStorageTestMethod ::= "S2KtestFailZUndSymbolicStorage1" "(" Int ":" "uint256" ")" [symbol(), klabel(method_SymbolicStorageTest_S2KtestFailZUndSymbolicStorage1_uint256)]
     
     syntax S2KSymbolicStorageTestMethod ::= "S2Kvm" "(" ")" [symbol(), klabel(method_SymbolicStorageTest_S2Kvm_)]
     
-    rule  ( S2KSymbolicStorageTest . S2KISz5fSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
+    rule  ( S2KSymbolicStorageTest . S2KISZUndSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
     
-    rule  ( S2KSymbolicStorageTest . S2KISz5fTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
+    rule  ( S2KSymbolicStorageTest . S2KISZUndTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
       
     
     rule  ( S2KSymbolicStorageTest . S2Kfailed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
@@ -5213,11 +5213,11 @@ module SymbolicStorageTest-CONTRACT
        ensures #rangeUInt ( 256 , V0_slot )
       
     
-    rule  ( S2KSymbolicStorageTest . S2KtestFailz5fSymbolicStorage ( V0_slot : uint256 ) => #abiCallData ( "testFail_SymbolicStorage" , #uint256 ( V0_slot ) , .TypedArgs ) )
+    rule  ( S2KSymbolicStorageTest . S2KtestFailZUndSymbolicStorage ( V0_slot : uint256 ) => #abiCallData ( "testFail_SymbolicStorage" , #uint256 ( V0_slot ) , .TypedArgs ) )
        ensures #rangeUInt ( 256 , V0_slot )
       
     
-    rule  ( S2KSymbolicStorageTest . S2KtestFailz5fSymbolicStorage1 ( V0_slot : uint256 ) => #abiCallData ( "testFail_SymbolicStorage1" , #uint256 ( V0_slot ) , .TypedArgs ) )
+    rule  ( S2KSymbolicStorageTest . S2KtestFailZUndSymbolicStorage1 ( V0_slot : uint256 ) => #abiCallData ( "testFail_SymbolicStorage1" , #uint256 ( V0_slot ) , .TypedArgs ) )
        ensures #rangeUInt ( 256 , V0_slot )
       
     
@@ -5301,18 +5301,18 @@ module Test-CONTRACT
     
     syntax Bytes ::= S2KTestContract "." S2KTestMethod [function(), symbol(), klabel(method_Test)]
     
-    syntax S2KTestMethod ::= "S2KISz5fSCRIPT" "(" ")" [symbol(), klabel(method_Test_S2KISz5fSCRIPT_)]
+    syntax S2KTestMethod ::= "S2KISZUndSCRIPT" "(" ")" [symbol(), klabel(method_Test_S2KISZUndSCRIPT_)]
     
-    syntax S2KTestMethod ::= "S2KISz5fTEST" "(" ")" [symbol(), klabel(method_Test_S2KISz5fTEST_)]
+    syntax S2KTestMethod ::= "S2KISZUndTEST" "(" ")" [symbol(), klabel(method_Test_S2KISZUndTEST_)]
     
     syntax S2KTestMethod ::= "S2Kfailed" "(" ")" [symbol(), klabel(method_Test_S2Kfailed_)]
     
     syntax S2KTestMethod ::= "S2Kvm" "(" ")" [symbol(), klabel(method_Test_S2Kvm_)]
     
-    rule  ( S2KTest . S2KISz5fSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
+    rule  ( S2KTest . S2KISZUndSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
     
-    rule  ( S2KTest . S2KISz5fTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
+    rule  ( S2KTest . S2KISZUndTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
       
     
     rule  ( S2KTest . S2Kfailed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
@@ -5364,7 +5364,7 @@ module stdError-CONTRACT
     
     syntax S2KstdErrorMethod ::= "S2KpopError" "(" ")" [symbol(), klabel(method_stdError_S2KpopError_)]
     
-    syntax S2KstdErrorMethod ::= "S2Kz7aeroVarError" "(" ")" [symbol(), klabel(method_stdError_S2Kz7aeroVarError_)]
+    syntax S2KstdErrorMethod ::= "S2KzeroVarError" "(" ")" [symbol(), klabel(method_stdError_S2KzeroVarError_)]
     
     rule  ( S2KstdError . S2KarithmeticError ( ) => #abiCallData ( "arithmeticError" , .TypedArgs ) )
       
@@ -5393,7 +5393,7 @@ module stdError-CONTRACT
     rule  ( S2KstdError . S2KpopError ( ) => #abiCallData ( "popError" , .TypedArgs ) )
       
     
-    rule  ( S2KstdError . S2Kz7aeroVarError ( ) => #abiCallData ( "zeroVarError" , .TypedArgs ) )
+    rule  ( S2KstdError . S2KzeroVarError ( ) => #abiCallData ( "zeroVarError" , .TypedArgs ) )
       
     
     rule  ( selector ( "arithmeticError()" ) => 2308253967 )
@@ -5491,7 +5491,7 @@ module TestNumber-CONTRACT
     
     syntax Bytes ::= S2KTestNumberContract "." S2KTestNumberMethod [function(), symbol(), klabel(method_TestNumber)]
     
-    syntax S2KTestNumberMethod ::= "S2KISz5fTEST" "(" ")" [symbol(), klabel(method_TestNumber_S2KISz5fTEST_)]
+    syntax S2KTestNumberMethod ::= "S2KISZUndTEST" "(" ")" [symbol(), klabel(method_TestNumber_S2KISZUndTEST_)]
     
     syntax S2KTestNumberMethod ::= "S2Kfailed" "(" ")" [symbol(), klabel(method_TestNumber_S2Kfailed_)]
     
@@ -5499,7 +5499,7 @@ module TestNumber-CONTRACT
     
     syntax S2KTestNumberMethod ::= "S2KtestNumber" "(" ")" [symbol(), klabel(method_TestNumber_S2KtestNumber_)]
     
-    rule  ( S2KTestNumber . S2KISz5fTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
+    rule  ( S2KTestNumber . S2KISZUndTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
       
     
     rule  ( S2KTestNumber . S2Kfailed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
@@ -5559,9 +5559,9 @@ module ToStringTest-CONTRACT
     
     syntax Bytes ::= S2KToStringTestContract "." S2KToStringTestMethod [function(), symbol(), klabel(method_ToStringTest)]
     
-    syntax S2KToStringTestMethod ::= "S2KISz5fSCRIPT" "(" ")" [symbol(), klabel(method_ToStringTest_S2KISz5fSCRIPT_)]
+    syntax S2KToStringTestMethod ::= "S2KISZUndSCRIPT" "(" ")" [symbol(), klabel(method_ToStringTest_S2KISZUndSCRIPT_)]
     
-    syntax S2KToStringTestMethod ::= "S2KISz5fTEST" "(" ")" [symbol(), klabel(method_ToStringTest_S2KISz5fTEST_)]
+    syntax S2KToStringTestMethod ::= "S2KISZUndTEST" "(" ")" [symbol(), klabel(method_ToStringTest_S2KISZUndTEST_)]
     
     syntax S2KToStringTestMethod ::= "S2Kfailed" "(" ")" [symbol(), klabel(method_ToStringTest_S2Kfailed_)]
     
@@ -5579,10 +5579,10 @@ module ToStringTest-CONTRACT
     
     syntax S2KToStringTestMethod ::= "S2Kvm" "(" ")" [symbol(), klabel(method_ToStringTest_S2Kvm_)]
     
-    rule  ( S2KToStringTest . S2KISz5fSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
+    rule  ( S2KToStringTest . S2KISZUndSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
       
     
-    rule  ( S2KToStringTest . S2KISz5fTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
+    rule  ( S2KToStringTest . S2KISZUndTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
       
     
     rule  ( S2KToStringTest . S2Kfailed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
@@ -5718,39 +5718,39 @@ module BytesTypeTest-CONTRACT
     
     syntax Bytes ::= S2KBytesTypeTestContract "." S2KBytesTypeTestMethod [function(), symbol(), klabel(method_BytesTypeTest)]
     
-    syntax S2KBytesTypeTestMethod ::= "S2KtestFailz5fbytes32" "(" Int ":" "bytes32" ")" [symbol(), klabel(method_BytesTypeTest_S2KtestFailz5fbytes32_bytes32)]
+    syntax S2KBytesTypeTestMethod ::= "S2KtestFailZUndbytes32" "(" Int ":" "bytes32" ")" [symbol(), klabel(method_BytesTypeTest_S2KtestFailZUndbytes32_bytes32)]
     
-    syntax S2KBytesTypeTestMethod ::= "S2KtestFailz5fbytes4" "(" Int ":" "bytes4" ")" [symbol(), klabel(method_BytesTypeTest_S2KtestFailz5fbytes4_bytes4)]
+    syntax S2KBytesTypeTestMethod ::= "S2KtestFailZUndbytes4" "(" Int ":" "bytes4" ")" [symbol(), klabel(method_BytesTypeTest_S2KtestFailZUndbytes4_bytes4)]
     
-    syntax S2KBytesTypeTestMethod ::= "S2Ktestz5fbytes32" "(" Int ":" "bytes32" ")" [symbol(), klabel(method_BytesTypeTest_S2Ktestz5fbytes32_bytes32)]
+    syntax S2KBytesTypeTestMethod ::= "S2KtestZUndbytes32" "(" Int ":" "bytes32" ")" [symbol(), klabel(method_BytesTypeTest_S2KtestZUndbytes32_bytes32)]
     
-    syntax S2KBytesTypeTestMethod ::= "S2Ktestz5fbytes32z5ffail" "(" Int ":" "bytes32" ")" [symbol(), klabel(method_BytesTypeTest_S2Ktestz5fbytes32z5ffail_bytes32)]
+    syntax S2KBytesTypeTestMethod ::= "S2KtestZUndbytes32ZUndfail" "(" Int ":" "bytes32" ")" [symbol(), klabel(method_BytesTypeTest_S2KtestZUndbytes32ZUndfail_bytes32)]
     
-    syntax S2KBytesTypeTestMethod ::= "S2Ktestz5fbytes4" "(" Int ":" "bytes4" ")" [symbol(), klabel(method_BytesTypeTest_S2Ktestz5fbytes4_bytes4)]
+    syntax S2KBytesTypeTestMethod ::= "S2KtestZUndbytes4" "(" Int ":" "bytes4" ")" [symbol(), klabel(method_BytesTypeTest_S2KtestZUndbytes4_bytes4)]
     
-    syntax S2KBytesTypeTestMethod ::= "S2Ktestz5fbytes4z5ffail" "(" Int ":" "bytes4" ")" [symbol(), klabel(method_BytesTypeTest_S2Ktestz5fbytes4z5ffail_bytes4)]
+    syntax S2KBytesTypeTestMethod ::= "S2KtestZUndbytes4ZUndfail" "(" Int ":" "bytes4" ")" [symbol(), klabel(method_BytesTypeTest_S2KtestZUndbytes4ZUndfail_bytes4)]
     
-    rule  ( S2KBytesTypeTest . S2KtestFailz5fbytes32 ( V0_x : bytes32 ) => #abiCallData ( "testFail_bytes32" , #bytes32 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KBytesTypeTest . S2KtestFailZUndbytes32 ( V0_x : bytes32 ) => #abiCallData ( "testFail_bytes32" , #bytes32 ( V0_x ) , .TypedArgs ) )
        ensures #rangeBytes ( 32 , V0_x )
       
     
-    rule  ( S2KBytesTypeTest . S2KtestFailz5fbytes4 ( V0_x : bytes4 ) => #abiCallData ( "testFail_bytes4" , #bytes4 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KBytesTypeTest . S2KtestFailZUndbytes4 ( V0_x : bytes4 ) => #abiCallData ( "testFail_bytes4" , #bytes4 ( V0_x ) , .TypedArgs ) )
        ensures #rangeBytes ( 4 , V0_x )
       
     
-    rule  ( S2KBytesTypeTest . S2Ktestz5fbytes32 ( V0_x : bytes32 ) => #abiCallData ( "test_bytes32" , #bytes32 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KBytesTypeTest . S2KtestZUndbytes32 ( V0_x : bytes32 ) => #abiCallData ( "test_bytes32" , #bytes32 ( V0_x ) , .TypedArgs ) )
        ensures #rangeBytes ( 32 , V0_x )
       
     
-    rule  ( S2KBytesTypeTest . S2Ktestz5fbytes32z5ffail ( V0_x : bytes32 ) => #abiCallData ( "test_bytes32_fail" , #bytes32 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KBytesTypeTest . S2KtestZUndbytes32ZUndfail ( V0_x : bytes32 ) => #abiCallData ( "test_bytes32_fail" , #bytes32 ( V0_x ) , .TypedArgs ) )
        ensures #rangeBytes ( 32 , V0_x )
       
     
-    rule  ( S2KBytesTypeTest . S2Ktestz5fbytes4 ( V0_x : bytes4 ) => #abiCallData ( "test_bytes4" , #bytes4 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KBytesTypeTest . S2KtestZUndbytes4 ( V0_x : bytes4 ) => #abiCallData ( "test_bytes4" , #bytes4 ( V0_x ) , .TypedArgs ) )
        ensures #rangeBytes ( 4 , V0_x )
       
     
-    rule  ( S2KBytesTypeTest . S2Ktestz5fbytes4z5ffail ( V0_x : bytes4 ) => #abiCallData ( "test_bytes4_fail" , #bytes4 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KBytesTypeTest . S2KtestZUndbytes4ZUndfail ( V0_x : bytes4 ) => #abiCallData ( "test_bytes4_fail" , #bytes4 ( V0_x ) , .TypedArgs ) )
        ensures #rangeBytes ( 4 , V0_x )
       
     
@@ -5785,57 +5785,57 @@ module IntTypeTest-CONTRACT
     
     syntax Bytes ::= S2KIntTypeTestContract "." S2KIntTypeTestMethod [function(), symbol(), klabel(method_IntTypeTest)]
     
-    syntax S2KIntTypeTestMethod ::= "S2KtestFailz5fint128" "(" Int ":" "int128" ")" [symbol(), klabel(method_IntTypeTest_S2KtestFailz5fint128_int128)]
+    syntax S2KIntTypeTestMethod ::= "S2KtestFailZUndint128" "(" Int ":" "int128" ")" [symbol(), klabel(method_IntTypeTest_S2KtestFailZUndint128_int128)]
     
-    syntax S2KIntTypeTestMethod ::= "S2KtestFailz5fint256" "(" Int ":" "int256" ")" [symbol(), klabel(method_IntTypeTest_S2KtestFailz5fint256_int256)]
+    syntax S2KIntTypeTestMethod ::= "S2KtestFailZUndint256" "(" Int ":" "int256" ")" [symbol(), klabel(method_IntTypeTest_S2KtestFailZUndint256_int256)]
     
-    syntax S2KIntTypeTestMethod ::= "S2KtestFailz5fint64" "(" Int ":" "int64" ")" [symbol(), klabel(method_IntTypeTest_S2KtestFailz5fint64_int64)]
+    syntax S2KIntTypeTestMethod ::= "S2KtestFailZUndint64" "(" Int ":" "int64" ")" [symbol(), klabel(method_IntTypeTest_S2KtestFailZUndint64_int64)]
     
-    syntax S2KIntTypeTestMethod ::= "S2Ktestz5fint128" "(" Int ":" "int128" ")" [symbol(), klabel(method_IntTypeTest_S2Ktestz5fint128_int128)]
+    syntax S2KIntTypeTestMethod ::= "S2KtestZUndint128" "(" Int ":" "int128" ")" [symbol(), klabel(method_IntTypeTest_S2KtestZUndint128_int128)]
     
-    syntax S2KIntTypeTestMethod ::= "S2Ktestz5fint128z5ffail" "(" Int ":" "int128" ")" [symbol(), klabel(method_IntTypeTest_S2Ktestz5fint128z5ffail_int128)]
+    syntax S2KIntTypeTestMethod ::= "S2KtestZUndint128ZUndfail" "(" Int ":" "int128" ")" [symbol(), klabel(method_IntTypeTest_S2KtestZUndint128ZUndfail_int128)]
     
-    syntax S2KIntTypeTestMethod ::= "S2Ktestz5fint256" "(" Int ":" "int256" ")" [symbol(), klabel(method_IntTypeTest_S2Ktestz5fint256_int256)]
+    syntax S2KIntTypeTestMethod ::= "S2KtestZUndint256" "(" Int ":" "int256" ")" [symbol(), klabel(method_IntTypeTest_S2KtestZUndint256_int256)]
     
-    syntax S2KIntTypeTestMethod ::= "S2Ktestz5fint256z5ffail" "(" Int ":" "int256" ")" [symbol(), klabel(method_IntTypeTest_S2Ktestz5fint256z5ffail_int256)]
+    syntax S2KIntTypeTestMethod ::= "S2KtestZUndint256ZUndfail" "(" Int ":" "int256" ")" [symbol(), klabel(method_IntTypeTest_S2KtestZUndint256ZUndfail_int256)]
     
-    syntax S2KIntTypeTestMethod ::= "S2Ktestz5fint64" "(" Int ":" "int64" ")" [symbol(), klabel(method_IntTypeTest_S2Ktestz5fint64_int64)]
+    syntax S2KIntTypeTestMethod ::= "S2KtestZUndint64" "(" Int ":" "int64" ")" [symbol(), klabel(method_IntTypeTest_S2KtestZUndint64_int64)]
     
-    syntax S2KIntTypeTestMethod ::= "S2Ktestz5fint64z5ffail" "(" Int ":" "int64" ")" [symbol(), klabel(method_IntTypeTest_S2Ktestz5fint64z5ffail_int64)]
+    syntax S2KIntTypeTestMethod ::= "S2KtestZUndint64ZUndfail" "(" Int ":" "int64" ")" [symbol(), klabel(method_IntTypeTest_S2KtestZUndint64ZUndfail_int64)]
     
-    rule  ( S2KIntTypeTest . S2KtestFailz5fint128 ( V0_x : int128 ) => #abiCallData ( "testFail_int128" , #int128 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KIntTypeTest . S2KtestFailZUndint128 ( V0_x : int128 ) => #abiCallData ( "testFail_int128" , #int128 ( V0_x ) , .TypedArgs ) )
        ensures #rangeSInt ( 128 , V0_x )
       
     
-    rule  ( S2KIntTypeTest . S2KtestFailz5fint256 ( V0_x : int256 ) => #abiCallData ( "testFail_int256" , #int256 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KIntTypeTest . S2KtestFailZUndint256 ( V0_x : int256 ) => #abiCallData ( "testFail_int256" , #int256 ( V0_x ) , .TypedArgs ) )
        ensures #rangeSInt ( 256 , V0_x )
       
     
-    rule  ( S2KIntTypeTest . S2KtestFailz5fint64 ( V0_x : int64 ) => #abiCallData ( "testFail_int64" , #int64 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KIntTypeTest . S2KtestFailZUndint64 ( V0_x : int64 ) => #abiCallData ( "testFail_int64" , #int64 ( V0_x ) , .TypedArgs ) )
        ensures #rangeSInt ( 64 , V0_x )
       
     
-    rule  ( S2KIntTypeTest . S2Ktestz5fint128 ( V0_x : int128 ) => #abiCallData ( "test_int128" , #int128 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KIntTypeTest . S2KtestZUndint128 ( V0_x : int128 ) => #abiCallData ( "test_int128" , #int128 ( V0_x ) , .TypedArgs ) )
        ensures #rangeSInt ( 128 , V0_x )
       
     
-    rule  ( S2KIntTypeTest . S2Ktestz5fint128z5ffail ( V0_x : int128 ) => #abiCallData ( "test_int128_fail" , #int128 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KIntTypeTest . S2KtestZUndint128ZUndfail ( V0_x : int128 ) => #abiCallData ( "test_int128_fail" , #int128 ( V0_x ) , .TypedArgs ) )
        ensures #rangeSInt ( 128 , V0_x )
       
     
-    rule  ( S2KIntTypeTest . S2Ktestz5fint256 ( V0_x : int256 ) => #abiCallData ( "test_int256" , #int256 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KIntTypeTest . S2KtestZUndint256 ( V0_x : int256 ) => #abiCallData ( "test_int256" , #int256 ( V0_x ) , .TypedArgs ) )
        ensures #rangeSInt ( 256 , V0_x )
       
     
-    rule  ( S2KIntTypeTest . S2Ktestz5fint256z5ffail ( V0_x : int256 ) => #abiCallData ( "test_int256_fail" , #int256 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KIntTypeTest . S2KtestZUndint256ZUndfail ( V0_x : int256 ) => #abiCallData ( "test_int256_fail" , #int256 ( V0_x ) , .TypedArgs ) )
        ensures #rangeSInt ( 256 , V0_x )
       
     
-    rule  ( S2KIntTypeTest . S2Ktestz5fint64 ( V0_x : int64 ) => #abiCallData ( "test_int64" , #int64 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KIntTypeTest . S2KtestZUndint64 ( V0_x : int64 ) => #abiCallData ( "test_int64" , #int64 ( V0_x ) , .TypedArgs ) )
        ensures #rangeSInt ( 64 , V0_x )
       
     
-    rule  ( S2KIntTypeTest . S2Ktestz5fint64z5ffail ( V0_x : int64 ) => #abiCallData ( "test_int64_fail" , #int64 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KIntTypeTest . S2KtestZUndint64ZUndfail ( V0_x : int64 ) => #abiCallData ( "test_int64_fail" , #int64 ( V0_x ) , .TypedArgs ) )
        ensures #rangeSInt ( 64 , V0_x )
       
     
@@ -5879,579 +5879,579 @@ module UintTypeTest-CONTRACT
     
     syntax Bytes ::= S2KUintTypeTestContract "." S2KUintTypeTestMethod [function(), symbol(), klabel(method_UintTypeTest)]
     
-    syntax S2KUintTypeTestMethod ::= "S2KtestFailz5fuint104" "(" Int ":" "uint104" ")" [symbol(), klabel(method_UintTypeTest_S2KtestFailz5fuint104_uint104)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestFailZUnduint104" "(" Int ":" "uint104" ")" [symbol(), klabel(method_UintTypeTest_S2KtestFailZUnduint104_uint104)]
     
-    syntax S2KUintTypeTestMethod ::= "S2KtestFailz5fuint112" "(" Int ":" "uint112" ")" [symbol(), klabel(method_UintTypeTest_S2KtestFailz5fuint112_uint112)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestFailZUnduint112" "(" Int ":" "uint112" ")" [symbol(), klabel(method_UintTypeTest_S2KtestFailZUnduint112_uint112)]
     
-    syntax S2KUintTypeTestMethod ::= "S2KtestFailz5fuint120" "(" Int ":" "uint120" ")" [symbol(), klabel(method_UintTypeTest_S2KtestFailz5fuint120_uint120)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestFailZUnduint120" "(" Int ":" "uint120" ")" [symbol(), klabel(method_UintTypeTest_S2KtestFailZUnduint120_uint120)]
     
-    syntax S2KUintTypeTestMethod ::= "S2KtestFailz5fuint128" "(" Int ":" "uint128" ")" [symbol(), klabel(method_UintTypeTest_S2KtestFailz5fuint128_uint128)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestFailZUnduint128" "(" Int ":" "uint128" ")" [symbol(), klabel(method_UintTypeTest_S2KtestFailZUnduint128_uint128)]
     
-    syntax S2KUintTypeTestMethod ::= "S2KtestFailz5fuint136" "(" Int ":" "uint136" ")" [symbol(), klabel(method_UintTypeTest_S2KtestFailz5fuint136_uint136)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestFailZUnduint136" "(" Int ":" "uint136" ")" [symbol(), klabel(method_UintTypeTest_S2KtestFailZUnduint136_uint136)]
     
-    syntax S2KUintTypeTestMethod ::= "S2KtestFailz5fuint144" "(" Int ":" "uint144" ")" [symbol(), klabel(method_UintTypeTest_S2KtestFailz5fuint144_uint144)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestFailZUnduint144" "(" Int ":" "uint144" ")" [symbol(), klabel(method_UintTypeTest_S2KtestFailZUnduint144_uint144)]
     
-    syntax S2KUintTypeTestMethod ::= "S2KtestFailz5fuint152" "(" Int ":" "uint152" ")" [symbol(), klabel(method_UintTypeTest_S2KtestFailz5fuint152_uint152)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestFailZUnduint152" "(" Int ":" "uint152" ")" [symbol(), klabel(method_UintTypeTest_S2KtestFailZUnduint152_uint152)]
     
-    syntax S2KUintTypeTestMethod ::= "S2KtestFailz5fuint16" "(" Int ":" "uint16" ")" [symbol(), klabel(method_UintTypeTest_S2KtestFailz5fuint16_uint16)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestFailZUnduint16" "(" Int ":" "uint16" ")" [symbol(), klabel(method_UintTypeTest_S2KtestFailZUnduint16_uint16)]
     
-    syntax S2KUintTypeTestMethod ::= "S2KtestFailz5fuint160" "(" Int ":" "uint160" ")" [symbol(), klabel(method_UintTypeTest_S2KtestFailz5fuint160_uint160)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestFailZUnduint160" "(" Int ":" "uint160" ")" [symbol(), klabel(method_UintTypeTest_S2KtestFailZUnduint160_uint160)]
     
-    syntax S2KUintTypeTestMethod ::= "S2KtestFailz5fuint168" "(" Int ":" "uint168" ")" [symbol(), klabel(method_UintTypeTest_S2KtestFailz5fuint168_uint168)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestFailZUnduint168" "(" Int ":" "uint168" ")" [symbol(), klabel(method_UintTypeTest_S2KtestFailZUnduint168_uint168)]
     
-    syntax S2KUintTypeTestMethod ::= "S2KtestFailz5fuint176" "(" Int ":" "uint176" ")" [symbol(), klabel(method_UintTypeTest_S2KtestFailz5fuint176_uint176)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestFailZUnduint176" "(" Int ":" "uint176" ")" [symbol(), klabel(method_UintTypeTest_S2KtestFailZUnduint176_uint176)]
     
-    syntax S2KUintTypeTestMethod ::= "S2KtestFailz5fuint184" "(" Int ":" "uint184" ")" [symbol(), klabel(method_UintTypeTest_S2KtestFailz5fuint184_uint184)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestFailZUnduint184" "(" Int ":" "uint184" ")" [symbol(), klabel(method_UintTypeTest_S2KtestFailZUnduint184_uint184)]
     
-    syntax S2KUintTypeTestMethod ::= "S2KtestFailz5fuint192" "(" Int ":" "uint192" ")" [symbol(), klabel(method_UintTypeTest_S2KtestFailz5fuint192_uint192)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestFailZUnduint192" "(" Int ":" "uint192" ")" [symbol(), klabel(method_UintTypeTest_S2KtestFailZUnduint192_uint192)]
     
-    syntax S2KUintTypeTestMethod ::= "S2KtestFailz5fuint200" "(" Int ":" "uint200" ")" [symbol(), klabel(method_UintTypeTest_S2KtestFailz5fuint200_uint200)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestFailZUnduint200" "(" Int ":" "uint200" ")" [symbol(), klabel(method_UintTypeTest_S2KtestFailZUnduint200_uint200)]
     
-    syntax S2KUintTypeTestMethod ::= "S2KtestFailz5fuint208" "(" Int ":" "uint208" ")" [symbol(), klabel(method_UintTypeTest_S2KtestFailz5fuint208_uint208)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestFailZUnduint208" "(" Int ":" "uint208" ")" [symbol(), klabel(method_UintTypeTest_S2KtestFailZUnduint208_uint208)]
     
-    syntax S2KUintTypeTestMethod ::= "S2KtestFailz5fuint216" "(" Int ":" "uint216" ")" [symbol(), klabel(method_UintTypeTest_S2KtestFailz5fuint216_uint216)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestFailZUnduint216" "(" Int ":" "uint216" ")" [symbol(), klabel(method_UintTypeTest_S2KtestFailZUnduint216_uint216)]
     
-    syntax S2KUintTypeTestMethod ::= "S2KtestFailz5fuint224" "(" Int ":" "uint224" ")" [symbol(), klabel(method_UintTypeTest_S2KtestFailz5fuint224_uint224)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestFailZUnduint224" "(" Int ":" "uint224" ")" [symbol(), klabel(method_UintTypeTest_S2KtestFailZUnduint224_uint224)]
     
-    syntax S2KUintTypeTestMethod ::= "S2KtestFailz5fuint232" "(" Int ":" "uint232" ")" [symbol(), klabel(method_UintTypeTest_S2KtestFailz5fuint232_uint232)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestFailZUnduint232" "(" Int ":" "uint232" ")" [symbol(), klabel(method_UintTypeTest_S2KtestFailZUnduint232_uint232)]
     
-    syntax S2KUintTypeTestMethod ::= "S2KtestFailz5fuint24" "(" Int ":" "uint24" ")" [symbol(), klabel(method_UintTypeTest_S2KtestFailz5fuint24_uint24)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestFailZUnduint24" "(" Int ":" "uint24" ")" [symbol(), klabel(method_UintTypeTest_S2KtestFailZUnduint24_uint24)]
     
-    syntax S2KUintTypeTestMethod ::= "S2KtestFailz5fuint240" "(" Int ":" "uint240" ")" [symbol(), klabel(method_UintTypeTest_S2KtestFailz5fuint240_uint240)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestFailZUnduint240" "(" Int ":" "uint240" ")" [symbol(), klabel(method_UintTypeTest_S2KtestFailZUnduint240_uint240)]
     
-    syntax S2KUintTypeTestMethod ::= "S2KtestFailz5fuint248" "(" Int ":" "uint248" ")" [symbol(), klabel(method_UintTypeTest_S2KtestFailz5fuint248_uint248)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestFailZUnduint248" "(" Int ":" "uint248" ")" [symbol(), klabel(method_UintTypeTest_S2KtestFailZUnduint248_uint248)]
     
-    syntax S2KUintTypeTestMethod ::= "S2KtestFailz5fuint256" "(" Int ":" "uint256" ")" [symbol(), klabel(method_UintTypeTest_S2KtestFailz5fuint256_uint256)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestFailZUnduint256" "(" Int ":" "uint256" ")" [symbol(), klabel(method_UintTypeTest_S2KtestFailZUnduint256_uint256)]
     
-    syntax S2KUintTypeTestMethod ::= "S2KtestFailz5fuint32" "(" Int ":" "uint32" ")" [symbol(), klabel(method_UintTypeTest_S2KtestFailz5fuint32_uint32)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestFailZUnduint32" "(" Int ":" "uint32" ")" [symbol(), klabel(method_UintTypeTest_S2KtestFailZUnduint32_uint32)]
     
-    syntax S2KUintTypeTestMethod ::= "S2KtestFailz5fuint40" "(" Int ":" "uint40" ")" [symbol(), klabel(method_UintTypeTest_S2KtestFailz5fuint40_uint40)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestFailZUnduint40" "(" Int ":" "uint40" ")" [symbol(), klabel(method_UintTypeTest_S2KtestFailZUnduint40_uint40)]
     
-    syntax S2KUintTypeTestMethod ::= "S2KtestFailz5fuint48" "(" Int ":" "uint48" ")" [symbol(), klabel(method_UintTypeTest_S2KtestFailz5fuint48_uint48)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestFailZUnduint48" "(" Int ":" "uint48" ")" [symbol(), klabel(method_UintTypeTest_S2KtestFailZUnduint48_uint48)]
     
-    syntax S2KUintTypeTestMethod ::= "S2KtestFailz5fuint56" "(" Int ":" "uint56" ")" [symbol(), klabel(method_UintTypeTest_S2KtestFailz5fuint56_uint56)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestFailZUnduint56" "(" Int ":" "uint56" ")" [symbol(), klabel(method_UintTypeTest_S2KtestFailZUnduint56_uint56)]
     
-    syntax S2KUintTypeTestMethod ::= "S2KtestFailz5fuint64" "(" Int ":" "uint64" ")" [symbol(), klabel(method_UintTypeTest_S2KtestFailz5fuint64_uint64)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestFailZUnduint64" "(" Int ":" "uint64" ")" [symbol(), klabel(method_UintTypeTest_S2KtestFailZUnduint64_uint64)]
     
-    syntax S2KUintTypeTestMethod ::= "S2KtestFailz5fuint72" "(" Int ":" "uint72" ")" [symbol(), klabel(method_UintTypeTest_S2KtestFailz5fuint72_uint72)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestFailZUnduint72" "(" Int ":" "uint72" ")" [symbol(), klabel(method_UintTypeTest_S2KtestFailZUnduint72_uint72)]
     
-    syntax S2KUintTypeTestMethod ::= "S2KtestFailz5fuint8" "(" Int ":" "uint8" ")" [symbol(), klabel(method_UintTypeTest_S2KtestFailz5fuint8_uint8)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestFailZUnduint8" "(" Int ":" "uint8" ")" [symbol(), klabel(method_UintTypeTest_S2KtestFailZUnduint8_uint8)]
     
-    syntax S2KUintTypeTestMethod ::= "S2KtestFailz5fuint80" "(" Int ":" "uint80" ")" [symbol(), klabel(method_UintTypeTest_S2KtestFailz5fuint80_uint80)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestFailZUnduint80" "(" Int ":" "uint80" ")" [symbol(), klabel(method_UintTypeTest_S2KtestFailZUnduint80_uint80)]
     
-    syntax S2KUintTypeTestMethod ::= "S2KtestFailz5fuint88" "(" Int ":" "uint88" ")" [symbol(), klabel(method_UintTypeTest_S2KtestFailz5fuint88_uint88)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestFailZUnduint88" "(" Int ":" "uint88" ")" [symbol(), klabel(method_UintTypeTest_S2KtestFailZUnduint88_uint88)]
     
-    syntax S2KUintTypeTestMethod ::= "S2KtestFailz5fuint96" "(" Int ":" "uint96" ")" [symbol(), klabel(method_UintTypeTest_S2KtestFailz5fuint96_uint96)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestFailZUnduint96" "(" Int ":" "uint96" ")" [symbol(), klabel(method_UintTypeTest_S2KtestFailZUnduint96_uint96)]
     
-    syntax S2KUintTypeTestMethod ::= "S2Ktestz5fuint104" "(" Int ":" "uint104" ")" [symbol(), klabel(method_UintTypeTest_S2Ktestz5fuint104_uint104)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestZUnduint104" "(" Int ":" "uint104" ")" [symbol(), klabel(method_UintTypeTest_S2KtestZUnduint104_uint104)]
     
-    syntax S2KUintTypeTestMethod ::= "S2Ktestz5fuint104z5ffail" "(" Int ":" "uint104" ")" [symbol(), klabel(method_UintTypeTest_S2Ktestz5fuint104z5ffail_uint104)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestZUnduint104ZUndfail" "(" Int ":" "uint104" ")" [symbol(), klabel(method_UintTypeTest_S2KtestZUnduint104ZUndfail_uint104)]
     
-    syntax S2KUintTypeTestMethod ::= "S2Ktestz5fuint112" "(" Int ":" "uint112" ")" [symbol(), klabel(method_UintTypeTest_S2Ktestz5fuint112_uint112)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestZUnduint112" "(" Int ":" "uint112" ")" [symbol(), klabel(method_UintTypeTest_S2KtestZUnduint112_uint112)]
     
-    syntax S2KUintTypeTestMethod ::= "S2Ktestz5fuint112z5ffail" "(" Int ":" "uint112" ")" [symbol(), klabel(method_UintTypeTest_S2Ktestz5fuint112z5ffail_uint112)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestZUnduint112ZUndfail" "(" Int ":" "uint112" ")" [symbol(), klabel(method_UintTypeTest_S2KtestZUnduint112ZUndfail_uint112)]
     
-    syntax S2KUintTypeTestMethod ::= "S2Ktestz5fuint120" "(" Int ":" "uint120" ")" [symbol(), klabel(method_UintTypeTest_S2Ktestz5fuint120_uint120)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestZUnduint120" "(" Int ":" "uint120" ")" [symbol(), klabel(method_UintTypeTest_S2KtestZUnduint120_uint120)]
     
-    syntax S2KUintTypeTestMethod ::= "S2Ktestz5fuint120z5ffail" "(" Int ":" "uint120" ")" [symbol(), klabel(method_UintTypeTest_S2Ktestz5fuint120z5ffail_uint120)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestZUnduint120ZUndfail" "(" Int ":" "uint120" ")" [symbol(), klabel(method_UintTypeTest_S2KtestZUnduint120ZUndfail_uint120)]
     
-    syntax S2KUintTypeTestMethod ::= "S2Ktestz5fuint128" "(" Int ":" "uint128" ")" [symbol(), klabel(method_UintTypeTest_S2Ktestz5fuint128_uint128)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestZUnduint128" "(" Int ":" "uint128" ")" [symbol(), klabel(method_UintTypeTest_S2KtestZUnduint128_uint128)]
     
-    syntax S2KUintTypeTestMethod ::= "S2Ktestz5fuint128z5ffail" "(" Int ":" "uint128" ")" [symbol(), klabel(method_UintTypeTest_S2Ktestz5fuint128z5ffail_uint128)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestZUnduint128ZUndfail" "(" Int ":" "uint128" ")" [symbol(), klabel(method_UintTypeTest_S2KtestZUnduint128ZUndfail_uint128)]
     
-    syntax S2KUintTypeTestMethod ::= "S2Ktestz5fuint136" "(" Int ":" "uint136" ")" [symbol(), klabel(method_UintTypeTest_S2Ktestz5fuint136_uint136)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestZUnduint136" "(" Int ":" "uint136" ")" [symbol(), klabel(method_UintTypeTest_S2KtestZUnduint136_uint136)]
     
-    syntax S2KUintTypeTestMethod ::= "S2Ktestz5fuint136z5ffail" "(" Int ":" "uint136" ")" [symbol(), klabel(method_UintTypeTest_S2Ktestz5fuint136z5ffail_uint136)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestZUnduint136ZUndfail" "(" Int ":" "uint136" ")" [symbol(), klabel(method_UintTypeTest_S2KtestZUnduint136ZUndfail_uint136)]
     
-    syntax S2KUintTypeTestMethod ::= "S2Ktestz5fuint144" "(" Int ":" "uint144" ")" [symbol(), klabel(method_UintTypeTest_S2Ktestz5fuint144_uint144)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestZUnduint144" "(" Int ":" "uint144" ")" [symbol(), klabel(method_UintTypeTest_S2KtestZUnduint144_uint144)]
     
-    syntax S2KUintTypeTestMethod ::= "S2Ktestz5fuint144z5ffail" "(" Int ":" "uint144" ")" [symbol(), klabel(method_UintTypeTest_S2Ktestz5fuint144z5ffail_uint144)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestZUnduint144ZUndfail" "(" Int ":" "uint144" ")" [symbol(), klabel(method_UintTypeTest_S2KtestZUnduint144ZUndfail_uint144)]
     
-    syntax S2KUintTypeTestMethod ::= "S2Ktestz5fuint152" "(" Int ":" "uint152" ")" [symbol(), klabel(method_UintTypeTest_S2Ktestz5fuint152_uint152)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestZUnduint152" "(" Int ":" "uint152" ")" [symbol(), klabel(method_UintTypeTest_S2KtestZUnduint152_uint152)]
     
-    syntax S2KUintTypeTestMethod ::= "S2Ktestz5fuint152z5ffail" "(" Int ":" "uint152" ")" [symbol(), klabel(method_UintTypeTest_S2Ktestz5fuint152z5ffail_uint152)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestZUnduint152ZUndfail" "(" Int ":" "uint152" ")" [symbol(), klabel(method_UintTypeTest_S2KtestZUnduint152ZUndfail_uint152)]
     
-    syntax S2KUintTypeTestMethod ::= "S2Ktestz5fuint16" "(" Int ":" "uint16" ")" [symbol(), klabel(method_UintTypeTest_S2Ktestz5fuint16_uint16)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestZUnduint16" "(" Int ":" "uint16" ")" [symbol(), klabel(method_UintTypeTest_S2KtestZUnduint16_uint16)]
     
-    syntax S2KUintTypeTestMethod ::= "S2Ktestz5fuint160" "(" Int ":" "uint160" ")" [symbol(), klabel(method_UintTypeTest_S2Ktestz5fuint160_uint160)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestZUnduint160" "(" Int ":" "uint160" ")" [symbol(), klabel(method_UintTypeTest_S2KtestZUnduint160_uint160)]
     
-    syntax S2KUintTypeTestMethod ::= "S2Ktestz5fuint160z5ffail" "(" Int ":" "uint160" ")" [symbol(), klabel(method_UintTypeTest_S2Ktestz5fuint160z5ffail_uint160)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestZUnduint160ZUndfail" "(" Int ":" "uint160" ")" [symbol(), klabel(method_UintTypeTest_S2KtestZUnduint160ZUndfail_uint160)]
     
-    syntax S2KUintTypeTestMethod ::= "S2Ktestz5fuint168" "(" Int ":" "uint168" ")" [symbol(), klabel(method_UintTypeTest_S2Ktestz5fuint168_uint168)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestZUnduint168" "(" Int ":" "uint168" ")" [symbol(), klabel(method_UintTypeTest_S2KtestZUnduint168_uint168)]
     
-    syntax S2KUintTypeTestMethod ::= "S2Ktestz5fuint168z5ffail" "(" Int ":" "uint168" ")" [symbol(), klabel(method_UintTypeTest_S2Ktestz5fuint168z5ffail_uint168)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestZUnduint168ZUndfail" "(" Int ":" "uint168" ")" [symbol(), klabel(method_UintTypeTest_S2KtestZUnduint168ZUndfail_uint168)]
     
-    syntax S2KUintTypeTestMethod ::= "S2Ktestz5fuint16z5ffail" "(" Int ":" "uint16" ")" [symbol(), klabel(method_UintTypeTest_S2Ktestz5fuint16z5ffail_uint16)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestZUnduint16ZUndfail" "(" Int ":" "uint16" ")" [symbol(), klabel(method_UintTypeTest_S2KtestZUnduint16ZUndfail_uint16)]
     
-    syntax S2KUintTypeTestMethod ::= "S2Ktestz5fuint176" "(" Int ":" "uint176" ")" [symbol(), klabel(method_UintTypeTest_S2Ktestz5fuint176_uint176)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestZUnduint176" "(" Int ":" "uint176" ")" [symbol(), klabel(method_UintTypeTest_S2KtestZUnduint176_uint176)]
     
-    syntax S2KUintTypeTestMethod ::= "S2Ktestz5fuint176z5ffail" "(" Int ":" "uint176" ")" [symbol(), klabel(method_UintTypeTest_S2Ktestz5fuint176z5ffail_uint176)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestZUnduint176ZUndfail" "(" Int ":" "uint176" ")" [symbol(), klabel(method_UintTypeTest_S2KtestZUnduint176ZUndfail_uint176)]
     
-    syntax S2KUintTypeTestMethod ::= "S2Ktestz5fuint184" "(" Int ":" "uint184" ")" [symbol(), klabel(method_UintTypeTest_S2Ktestz5fuint184_uint184)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestZUnduint184" "(" Int ":" "uint184" ")" [symbol(), klabel(method_UintTypeTest_S2KtestZUnduint184_uint184)]
     
-    syntax S2KUintTypeTestMethod ::= "S2Ktestz5fuint184z5ffail" "(" Int ":" "uint184" ")" [symbol(), klabel(method_UintTypeTest_S2Ktestz5fuint184z5ffail_uint184)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestZUnduint184ZUndfail" "(" Int ":" "uint184" ")" [symbol(), klabel(method_UintTypeTest_S2KtestZUnduint184ZUndfail_uint184)]
     
-    syntax S2KUintTypeTestMethod ::= "S2Ktestz5fuint192" "(" Int ":" "uint192" ")" [symbol(), klabel(method_UintTypeTest_S2Ktestz5fuint192_uint192)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestZUnduint192" "(" Int ":" "uint192" ")" [symbol(), klabel(method_UintTypeTest_S2KtestZUnduint192_uint192)]
     
-    syntax S2KUintTypeTestMethod ::= "S2Ktestz5fuint192z5ffail" "(" Int ":" "uint192" ")" [symbol(), klabel(method_UintTypeTest_S2Ktestz5fuint192z5ffail_uint192)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestZUnduint192ZUndfail" "(" Int ":" "uint192" ")" [symbol(), klabel(method_UintTypeTest_S2KtestZUnduint192ZUndfail_uint192)]
     
-    syntax S2KUintTypeTestMethod ::= "S2Ktestz5fuint200" "(" Int ":" "uint200" ")" [symbol(), klabel(method_UintTypeTest_S2Ktestz5fuint200_uint200)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestZUnduint200" "(" Int ":" "uint200" ")" [symbol(), klabel(method_UintTypeTest_S2KtestZUnduint200_uint200)]
     
-    syntax S2KUintTypeTestMethod ::= "S2Ktestz5fuint200z5ffail" "(" Int ":" "uint200" ")" [symbol(), klabel(method_UintTypeTest_S2Ktestz5fuint200z5ffail_uint200)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestZUnduint200ZUndfail" "(" Int ":" "uint200" ")" [symbol(), klabel(method_UintTypeTest_S2KtestZUnduint200ZUndfail_uint200)]
     
-    syntax S2KUintTypeTestMethod ::= "S2Ktestz5fuint208" "(" Int ":" "uint208" ")" [symbol(), klabel(method_UintTypeTest_S2Ktestz5fuint208_uint208)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestZUnduint208" "(" Int ":" "uint208" ")" [symbol(), klabel(method_UintTypeTest_S2KtestZUnduint208_uint208)]
     
-    syntax S2KUintTypeTestMethod ::= "S2Ktestz5fuint208z5ffail" "(" Int ":" "uint208" ")" [symbol(), klabel(method_UintTypeTest_S2Ktestz5fuint208z5ffail_uint208)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestZUnduint208ZUndfail" "(" Int ":" "uint208" ")" [symbol(), klabel(method_UintTypeTest_S2KtestZUnduint208ZUndfail_uint208)]
     
-    syntax S2KUintTypeTestMethod ::= "S2Ktestz5fuint216" "(" Int ":" "uint216" ")" [symbol(), klabel(method_UintTypeTest_S2Ktestz5fuint216_uint216)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestZUnduint216" "(" Int ":" "uint216" ")" [symbol(), klabel(method_UintTypeTest_S2KtestZUnduint216_uint216)]
     
-    syntax S2KUintTypeTestMethod ::= "S2Ktestz5fuint216z5ffail" "(" Int ":" "uint216" ")" [symbol(), klabel(method_UintTypeTest_S2Ktestz5fuint216z5ffail_uint216)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestZUnduint216ZUndfail" "(" Int ":" "uint216" ")" [symbol(), klabel(method_UintTypeTest_S2KtestZUnduint216ZUndfail_uint216)]
     
-    syntax S2KUintTypeTestMethod ::= "S2Ktestz5fuint224" "(" Int ":" "uint224" ")" [symbol(), klabel(method_UintTypeTest_S2Ktestz5fuint224_uint224)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestZUnduint224" "(" Int ":" "uint224" ")" [symbol(), klabel(method_UintTypeTest_S2KtestZUnduint224_uint224)]
     
-    syntax S2KUintTypeTestMethod ::= "S2Ktestz5fuint224z5ffail" "(" Int ":" "uint224" ")" [symbol(), klabel(method_UintTypeTest_S2Ktestz5fuint224z5ffail_uint224)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestZUnduint224ZUndfail" "(" Int ":" "uint224" ")" [symbol(), klabel(method_UintTypeTest_S2KtestZUnduint224ZUndfail_uint224)]
     
-    syntax S2KUintTypeTestMethod ::= "S2Ktestz5fuint232" "(" Int ":" "uint232" ")" [symbol(), klabel(method_UintTypeTest_S2Ktestz5fuint232_uint232)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestZUnduint232" "(" Int ":" "uint232" ")" [symbol(), klabel(method_UintTypeTest_S2KtestZUnduint232_uint232)]
     
-    syntax S2KUintTypeTestMethod ::= "S2Ktestz5fuint232z5ffail" "(" Int ":" "uint232" ")" [symbol(), klabel(method_UintTypeTest_S2Ktestz5fuint232z5ffail_uint232)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestZUnduint232ZUndfail" "(" Int ":" "uint232" ")" [symbol(), klabel(method_UintTypeTest_S2KtestZUnduint232ZUndfail_uint232)]
     
-    syntax S2KUintTypeTestMethod ::= "S2Ktestz5fuint24" "(" Int ":" "uint24" ")" [symbol(), klabel(method_UintTypeTest_S2Ktestz5fuint24_uint24)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestZUnduint24" "(" Int ":" "uint24" ")" [symbol(), klabel(method_UintTypeTest_S2KtestZUnduint24_uint24)]
     
-    syntax S2KUintTypeTestMethod ::= "S2Ktestz5fuint240" "(" Int ":" "uint240" ")" [symbol(), klabel(method_UintTypeTest_S2Ktestz5fuint240_uint240)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestZUnduint240" "(" Int ":" "uint240" ")" [symbol(), klabel(method_UintTypeTest_S2KtestZUnduint240_uint240)]
     
-    syntax S2KUintTypeTestMethod ::= "S2Ktestz5fuint240z5ffail" "(" Int ":" "uint240" ")" [symbol(), klabel(method_UintTypeTest_S2Ktestz5fuint240z5ffail_uint240)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestZUnduint240ZUndfail" "(" Int ":" "uint240" ")" [symbol(), klabel(method_UintTypeTest_S2KtestZUnduint240ZUndfail_uint240)]
     
-    syntax S2KUintTypeTestMethod ::= "S2Ktestz5fuint248" "(" Int ":" "uint248" ")" [symbol(), klabel(method_UintTypeTest_S2Ktestz5fuint248_uint248)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestZUnduint248" "(" Int ":" "uint248" ")" [symbol(), klabel(method_UintTypeTest_S2KtestZUnduint248_uint248)]
     
-    syntax S2KUintTypeTestMethod ::= "S2Ktestz5fuint248z5ffail" "(" Int ":" "uint248" ")" [symbol(), klabel(method_UintTypeTest_S2Ktestz5fuint248z5ffail_uint248)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestZUnduint248ZUndfail" "(" Int ":" "uint248" ")" [symbol(), klabel(method_UintTypeTest_S2KtestZUnduint248ZUndfail_uint248)]
     
-    syntax S2KUintTypeTestMethod ::= "S2Ktestz5fuint24z5ffail" "(" Int ":" "uint24" ")" [symbol(), klabel(method_UintTypeTest_S2Ktestz5fuint24z5ffail_uint24)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestZUnduint24ZUndfail" "(" Int ":" "uint24" ")" [symbol(), klabel(method_UintTypeTest_S2KtestZUnduint24ZUndfail_uint24)]
     
-    syntax S2KUintTypeTestMethod ::= "S2Ktestz5fuint256" "(" Int ":" "uint256" ")" [symbol(), klabel(method_UintTypeTest_S2Ktestz5fuint256_uint256)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestZUnduint256" "(" Int ":" "uint256" ")" [symbol(), klabel(method_UintTypeTest_S2KtestZUnduint256_uint256)]
     
-    syntax S2KUintTypeTestMethod ::= "S2Ktestz5fuint256z5ffail" "(" Int ":" "uint256" ")" [symbol(), klabel(method_UintTypeTest_S2Ktestz5fuint256z5ffail_uint256)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestZUnduint256ZUndfail" "(" Int ":" "uint256" ")" [symbol(), klabel(method_UintTypeTest_S2KtestZUnduint256ZUndfail_uint256)]
     
-    syntax S2KUintTypeTestMethod ::= "S2Ktestz5fuint32" "(" Int ":" "uint32" ")" [symbol(), klabel(method_UintTypeTest_S2Ktestz5fuint32_uint32)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestZUnduint32" "(" Int ":" "uint32" ")" [symbol(), klabel(method_UintTypeTest_S2KtestZUnduint32_uint32)]
     
-    syntax S2KUintTypeTestMethod ::= "S2Ktestz5fuint32z5ffail" "(" Int ":" "uint32" ")" [symbol(), klabel(method_UintTypeTest_S2Ktestz5fuint32z5ffail_uint32)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestZUnduint32ZUndfail" "(" Int ":" "uint32" ")" [symbol(), klabel(method_UintTypeTest_S2KtestZUnduint32ZUndfail_uint32)]
     
-    syntax S2KUintTypeTestMethod ::= "S2Ktestz5fuint40" "(" Int ":" "uint40" ")" [symbol(), klabel(method_UintTypeTest_S2Ktestz5fuint40_uint40)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestZUnduint40" "(" Int ":" "uint40" ")" [symbol(), klabel(method_UintTypeTest_S2KtestZUnduint40_uint40)]
     
-    syntax S2KUintTypeTestMethod ::= "S2Ktestz5fuint40z5ffail" "(" Int ":" "uint40" ")" [symbol(), klabel(method_UintTypeTest_S2Ktestz5fuint40z5ffail_uint40)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestZUnduint40ZUndfail" "(" Int ":" "uint40" ")" [symbol(), klabel(method_UintTypeTest_S2KtestZUnduint40ZUndfail_uint40)]
     
-    syntax S2KUintTypeTestMethod ::= "S2Ktestz5fuint48" "(" Int ":" "uint48" ")" [symbol(), klabel(method_UintTypeTest_S2Ktestz5fuint48_uint48)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestZUnduint48" "(" Int ":" "uint48" ")" [symbol(), klabel(method_UintTypeTest_S2KtestZUnduint48_uint48)]
     
-    syntax S2KUintTypeTestMethod ::= "S2Ktestz5fuint48z5ffail" "(" Int ":" "uint48" ")" [symbol(), klabel(method_UintTypeTest_S2Ktestz5fuint48z5ffail_uint48)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestZUnduint48ZUndfail" "(" Int ":" "uint48" ")" [symbol(), klabel(method_UintTypeTest_S2KtestZUnduint48ZUndfail_uint48)]
     
-    syntax S2KUintTypeTestMethod ::= "S2Ktestz5fuint56" "(" Int ":" "uint56" ")" [symbol(), klabel(method_UintTypeTest_S2Ktestz5fuint56_uint56)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestZUnduint56" "(" Int ":" "uint56" ")" [symbol(), klabel(method_UintTypeTest_S2KtestZUnduint56_uint56)]
     
-    syntax S2KUintTypeTestMethod ::= "S2Ktestz5fuint56z5ffail" "(" Int ":" "uint56" ")" [symbol(), klabel(method_UintTypeTest_S2Ktestz5fuint56z5ffail_uint56)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestZUnduint56ZUndfail" "(" Int ":" "uint56" ")" [symbol(), klabel(method_UintTypeTest_S2KtestZUnduint56ZUndfail_uint56)]
     
-    syntax S2KUintTypeTestMethod ::= "S2Ktestz5fuint64" "(" Int ":" "uint64" ")" [symbol(), klabel(method_UintTypeTest_S2Ktestz5fuint64_uint64)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestZUnduint64" "(" Int ":" "uint64" ")" [symbol(), klabel(method_UintTypeTest_S2KtestZUnduint64_uint64)]
     
-    syntax S2KUintTypeTestMethod ::= "S2Ktestz5fuint64z5ffail" "(" Int ":" "uint64" ")" [symbol(), klabel(method_UintTypeTest_S2Ktestz5fuint64z5ffail_uint64)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestZUnduint64ZUndfail" "(" Int ":" "uint64" ")" [symbol(), klabel(method_UintTypeTest_S2KtestZUnduint64ZUndfail_uint64)]
     
-    syntax S2KUintTypeTestMethod ::= "S2Ktestz5fuint72" "(" Int ":" "uint72" ")" [symbol(), klabel(method_UintTypeTest_S2Ktestz5fuint72_uint72)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestZUnduint72" "(" Int ":" "uint72" ")" [symbol(), klabel(method_UintTypeTest_S2KtestZUnduint72_uint72)]
     
-    syntax S2KUintTypeTestMethod ::= "S2Ktestz5fuint72z5ffail" "(" Int ":" "uint72" ")" [symbol(), klabel(method_UintTypeTest_S2Ktestz5fuint72z5ffail_uint72)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestZUnduint72ZUndfail" "(" Int ":" "uint72" ")" [symbol(), klabel(method_UintTypeTest_S2KtestZUnduint72ZUndfail_uint72)]
     
-    syntax S2KUintTypeTestMethod ::= "S2Ktestz5fuint8" "(" Int ":" "uint8" ")" [symbol(), klabel(method_UintTypeTest_S2Ktestz5fuint8_uint8)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestZUnduint8" "(" Int ":" "uint8" ")" [symbol(), klabel(method_UintTypeTest_S2KtestZUnduint8_uint8)]
     
-    syntax S2KUintTypeTestMethod ::= "S2Ktestz5fuint80" "(" Int ":" "uint80" ")" [symbol(), klabel(method_UintTypeTest_S2Ktestz5fuint80_uint80)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestZUnduint80" "(" Int ":" "uint80" ")" [symbol(), klabel(method_UintTypeTest_S2KtestZUnduint80_uint80)]
     
-    syntax S2KUintTypeTestMethod ::= "S2Ktestz5fuint80z5ffail" "(" Int ":" "uint80" ")" [symbol(), klabel(method_UintTypeTest_S2Ktestz5fuint80z5ffail_uint80)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestZUnduint80ZUndfail" "(" Int ":" "uint80" ")" [symbol(), klabel(method_UintTypeTest_S2KtestZUnduint80ZUndfail_uint80)]
     
-    syntax S2KUintTypeTestMethod ::= "S2Ktestz5fuint88" "(" Int ":" "uint88" ")" [symbol(), klabel(method_UintTypeTest_S2Ktestz5fuint88_uint88)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestZUnduint88" "(" Int ":" "uint88" ")" [symbol(), klabel(method_UintTypeTest_S2KtestZUnduint88_uint88)]
     
-    syntax S2KUintTypeTestMethod ::= "S2Ktestz5fuint88z5ffail" "(" Int ":" "uint88" ")" [symbol(), klabel(method_UintTypeTest_S2Ktestz5fuint88z5ffail_uint88)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestZUnduint88ZUndfail" "(" Int ":" "uint88" ")" [symbol(), klabel(method_UintTypeTest_S2KtestZUnduint88ZUndfail_uint88)]
     
-    syntax S2KUintTypeTestMethod ::= "S2Ktestz5fuint8z5ffail" "(" Int ":" "uint8" ")" [symbol(), klabel(method_UintTypeTest_S2Ktestz5fuint8z5ffail_uint8)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestZUnduint8ZUndfail" "(" Int ":" "uint8" ")" [symbol(), klabel(method_UintTypeTest_S2KtestZUnduint8ZUndfail_uint8)]
     
-    syntax S2KUintTypeTestMethod ::= "S2Ktestz5fuint96" "(" Int ":" "uint96" ")" [symbol(), klabel(method_UintTypeTest_S2Ktestz5fuint96_uint96)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestZUnduint96" "(" Int ":" "uint96" ")" [symbol(), klabel(method_UintTypeTest_S2KtestZUnduint96_uint96)]
     
-    syntax S2KUintTypeTestMethod ::= "S2Ktestz5fuint96z5ffail" "(" Int ":" "uint96" ")" [symbol(), klabel(method_UintTypeTest_S2Ktestz5fuint96z5ffail_uint96)]
+    syntax S2KUintTypeTestMethod ::= "S2KtestZUnduint96ZUndfail" "(" Int ":" "uint96" ")" [symbol(), klabel(method_UintTypeTest_S2KtestZUnduint96ZUndfail_uint96)]
     
-    rule  ( S2KUintTypeTest . S2KtestFailz5fuint104 ( V0_x : uint104 ) => #abiCallData ( "testFail_uint104" , #uint104 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestFailZUnduint104 ( V0_x : uint104 ) => #abiCallData ( "testFail_uint104" , #uint104 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 104 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2KtestFailz5fuint112 ( V0_x : uint112 ) => #abiCallData ( "testFail_uint112" , #uint112 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestFailZUnduint112 ( V0_x : uint112 ) => #abiCallData ( "testFail_uint112" , #uint112 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 112 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2KtestFailz5fuint120 ( V0_x : uint120 ) => #abiCallData ( "testFail_uint120" , #uint120 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestFailZUnduint120 ( V0_x : uint120 ) => #abiCallData ( "testFail_uint120" , #uint120 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 120 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2KtestFailz5fuint128 ( V0_x : uint128 ) => #abiCallData ( "testFail_uint128" , #uint128 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestFailZUnduint128 ( V0_x : uint128 ) => #abiCallData ( "testFail_uint128" , #uint128 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 128 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2KtestFailz5fuint136 ( V0_x : uint136 ) => #abiCallData ( "testFail_uint136" , #uint136 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestFailZUnduint136 ( V0_x : uint136 ) => #abiCallData ( "testFail_uint136" , #uint136 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 136 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2KtestFailz5fuint144 ( V0_x : uint144 ) => #abiCallData ( "testFail_uint144" , #uint144 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestFailZUnduint144 ( V0_x : uint144 ) => #abiCallData ( "testFail_uint144" , #uint144 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 144 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2KtestFailz5fuint152 ( V0_x : uint152 ) => #abiCallData ( "testFail_uint152" , #uint152 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestFailZUnduint152 ( V0_x : uint152 ) => #abiCallData ( "testFail_uint152" , #uint152 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 152 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2KtestFailz5fuint16 ( V0_x : uint16 ) => #abiCallData ( "testFail_uint16" , #uint16 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestFailZUnduint16 ( V0_x : uint16 ) => #abiCallData ( "testFail_uint16" , #uint16 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 16 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2KtestFailz5fuint160 ( V0_x : uint160 ) => #abiCallData ( "testFail_uint160" , #uint160 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestFailZUnduint160 ( V0_x : uint160 ) => #abiCallData ( "testFail_uint160" , #uint160 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 160 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2KtestFailz5fuint168 ( V0_x : uint168 ) => #abiCallData ( "testFail_uint168" , #uint168 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestFailZUnduint168 ( V0_x : uint168 ) => #abiCallData ( "testFail_uint168" , #uint168 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 168 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2KtestFailz5fuint176 ( V0_x : uint176 ) => #abiCallData ( "testFail_uint176" , #uint176 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestFailZUnduint176 ( V0_x : uint176 ) => #abiCallData ( "testFail_uint176" , #uint176 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 176 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2KtestFailz5fuint184 ( V0_x : uint184 ) => #abiCallData ( "testFail_uint184" , #uint184 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestFailZUnduint184 ( V0_x : uint184 ) => #abiCallData ( "testFail_uint184" , #uint184 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 184 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2KtestFailz5fuint192 ( V0_x : uint192 ) => #abiCallData ( "testFail_uint192" , #uint192 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestFailZUnduint192 ( V0_x : uint192 ) => #abiCallData ( "testFail_uint192" , #uint192 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 192 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2KtestFailz5fuint200 ( V0_x : uint200 ) => #abiCallData ( "testFail_uint200" , #uint200 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestFailZUnduint200 ( V0_x : uint200 ) => #abiCallData ( "testFail_uint200" , #uint200 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 200 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2KtestFailz5fuint208 ( V0_x : uint208 ) => #abiCallData ( "testFail_uint208" , #uint208 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestFailZUnduint208 ( V0_x : uint208 ) => #abiCallData ( "testFail_uint208" , #uint208 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 208 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2KtestFailz5fuint216 ( V0_x : uint216 ) => #abiCallData ( "testFail_uint216" , #uint216 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestFailZUnduint216 ( V0_x : uint216 ) => #abiCallData ( "testFail_uint216" , #uint216 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 216 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2KtestFailz5fuint224 ( V0_x : uint224 ) => #abiCallData ( "testFail_uint224" , #uint224 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestFailZUnduint224 ( V0_x : uint224 ) => #abiCallData ( "testFail_uint224" , #uint224 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 224 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2KtestFailz5fuint232 ( V0_x : uint232 ) => #abiCallData ( "testFail_uint232" , #uint232 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestFailZUnduint232 ( V0_x : uint232 ) => #abiCallData ( "testFail_uint232" , #uint232 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 232 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2KtestFailz5fuint24 ( V0_x : uint24 ) => #abiCallData ( "testFail_uint24" , #uint24 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestFailZUnduint24 ( V0_x : uint24 ) => #abiCallData ( "testFail_uint24" , #uint24 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 24 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2KtestFailz5fuint240 ( V0_x : uint240 ) => #abiCallData ( "testFail_uint240" , #uint240 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestFailZUnduint240 ( V0_x : uint240 ) => #abiCallData ( "testFail_uint240" , #uint240 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 240 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2KtestFailz5fuint248 ( V0_x : uint248 ) => #abiCallData ( "testFail_uint248" , #uint248 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestFailZUnduint248 ( V0_x : uint248 ) => #abiCallData ( "testFail_uint248" , #uint248 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 248 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2KtestFailz5fuint256 ( V0_x : uint256 ) => #abiCallData ( "testFail_uint256" , #uint256 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestFailZUnduint256 ( V0_x : uint256 ) => #abiCallData ( "testFail_uint256" , #uint256 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 256 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2KtestFailz5fuint32 ( V0_x : uint32 ) => #abiCallData ( "testFail_uint32" , #uint32 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestFailZUnduint32 ( V0_x : uint32 ) => #abiCallData ( "testFail_uint32" , #uint32 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 32 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2KtestFailz5fuint40 ( V0_x : uint40 ) => #abiCallData ( "testFail_uint40" , #uint40 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestFailZUnduint40 ( V0_x : uint40 ) => #abiCallData ( "testFail_uint40" , #uint40 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 40 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2KtestFailz5fuint48 ( V0_x : uint48 ) => #abiCallData ( "testFail_uint48" , #uint48 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestFailZUnduint48 ( V0_x : uint48 ) => #abiCallData ( "testFail_uint48" , #uint48 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 48 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2KtestFailz5fuint56 ( V0_x : uint56 ) => #abiCallData ( "testFail_uint56" , #uint56 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestFailZUnduint56 ( V0_x : uint56 ) => #abiCallData ( "testFail_uint56" , #uint56 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 56 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2KtestFailz5fuint64 ( V0_x : uint64 ) => #abiCallData ( "testFail_uint64" , #uint64 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestFailZUnduint64 ( V0_x : uint64 ) => #abiCallData ( "testFail_uint64" , #uint64 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 64 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2KtestFailz5fuint72 ( V0_x : uint72 ) => #abiCallData ( "testFail_uint72" , #uint72 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestFailZUnduint72 ( V0_x : uint72 ) => #abiCallData ( "testFail_uint72" , #uint72 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 72 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2KtestFailz5fuint8 ( V0_x : uint8 ) => #abiCallData ( "testFail_uint8" , #uint8 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestFailZUnduint8 ( V0_x : uint8 ) => #abiCallData ( "testFail_uint8" , #uint8 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 8 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2KtestFailz5fuint80 ( V0_x : uint80 ) => #abiCallData ( "testFail_uint80" , #uint80 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestFailZUnduint80 ( V0_x : uint80 ) => #abiCallData ( "testFail_uint80" , #uint80 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 80 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2KtestFailz5fuint88 ( V0_x : uint88 ) => #abiCallData ( "testFail_uint88" , #uint88 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestFailZUnduint88 ( V0_x : uint88 ) => #abiCallData ( "testFail_uint88" , #uint88 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 88 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2KtestFailz5fuint96 ( V0_x : uint96 ) => #abiCallData ( "testFail_uint96" , #uint96 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestFailZUnduint96 ( V0_x : uint96 ) => #abiCallData ( "testFail_uint96" , #uint96 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 96 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2Ktestz5fuint104 ( V0_x : uint104 ) => #abiCallData ( "test_uint104" , #uint104 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestZUnduint104 ( V0_x : uint104 ) => #abiCallData ( "test_uint104" , #uint104 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 104 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2Ktestz5fuint104z5ffail ( V0_x : uint104 ) => #abiCallData ( "test_uint104_fail" , #uint104 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestZUnduint104ZUndfail ( V0_x : uint104 ) => #abiCallData ( "test_uint104_fail" , #uint104 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 104 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2Ktestz5fuint112 ( V0_x : uint112 ) => #abiCallData ( "test_uint112" , #uint112 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestZUnduint112 ( V0_x : uint112 ) => #abiCallData ( "test_uint112" , #uint112 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 112 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2Ktestz5fuint112z5ffail ( V0_x : uint112 ) => #abiCallData ( "test_uint112_fail" , #uint112 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestZUnduint112ZUndfail ( V0_x : uint112 ) => #abiCallData ( "test_uint112_fail" , #uint112 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 112 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2Ktestz5fuint120 ( V0_x : uint120 ) => #abiCallData ( "test_uint120" , #uint120 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestZUnduint120 ( V0_x : uint120 ) => #abiCallData ( "test_uint120" , #uint120 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 120 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2Ktestz5fuint120z5ffail ( V0_x : uint120 ) => #abiCallData ( "test_uint120_fail" , #uint120 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestZUnduint120ZUndfail ( V0_x : uint120 ) => #abiCallData ( "test_uint120_fail" , #uint120 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 120 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2Ktestz5fuint128 ( V0_x : uint128 ) => #abiCallData ( "test_uint128" , #uint128 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestZUnduint128 ( V0_x : uint128 ) => #abiCallData ( "test_uint128" , #uint128 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 128 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2Ktestz5fuint128z5ffail ( V0_x : uint128 ) => #abiCallData ( "test_uint128_fail" , #uint128 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestZUnduint128ZUndfail ( V0_x : uint128 ) => #abiCallData ( "test_uint128_fail" , #uint128 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 128 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2Ktestz5fuint136 ( V0_x : uint136 ) => #abiCallData ( "test_uint136" , #uint136 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestZUnduint136 ( V0_x : uint136 ) => #abiCallData ( "test_uint136" , #uint136 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 136 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2Ktestz5fuint136z5ffail ( V0_x : uint136 ) => #abiCallData ( "test_uint136_fail" , #uint136 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestZUnduint136ZUndfail ( V0_x : uint136 ) => #abiCallData ( "test_uint136_fail" , #uint136 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 136 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2Ktestz5fuint144 ( V0_x : uint144 ) => #abiCallData ( "test_uint144" , #uint144 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestZUnduint144 ( V0_x : uint144 ) => #abiCallData ( "test_uint144" , #uint144 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 144 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2Ktestz5fuint144z5ffail ( V0_x : uint144 ) => #abiCallData ( "test_uint144_fail" , #uint144 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestZUnduint144ZUndfail ( V0_x : uint144 ) => #abiCallData ( "test_uint144_fail" , #uint144 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 144 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2Ktestz5fuint152 ( V0_x : uint152 ) => #abiCallData ( "test_uint152" , #uint152 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestZUnduint152 ( V0_x : uint152 ) => #abiCallData ( "test_uint152" , #uint152 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 152 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2Ktestz5fuint152z5ffail ( V0_x : uint152 ) => #abiCallData ( "test_uint152_fail" , #uint152 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestZUnduint152ZUndfail ( V0_x : uint152 ) => #abiCallData ( "test_uint152_fail" , #uint152 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 152 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2Ktestz5fuint16 ( V0_x : uint16 ) => #abiCallData ( "test_uint16" , #uint16 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestZUnduint16 ( V0_x : uint16 ) => #abiCallData ( "test_uint16" , #uint16 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 16 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2Ktestz5fuint160 ( V0_x : uint160 ) => #abiCallData ( "test_uint160" , #uint160 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestZUnduint160 ( V0_x : uint160 ) => #abiCallData ( "test_uint160" , #uint160 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 160 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2Ktestz5fuint160z5ffail ( V0_x : uint160 ) => #abiCallData ( "test_uint160_fail" , #uint160 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestZUnduint160ZUndfail ( V0_x : uint160 ) => #abiCallData ( "test_uint160_fail" , #uint160 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 160 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2Ktestz5fuint168 ( V0_x : uint168 ) => #abiCallData ( "test_uint168" , #uint168 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestZUnduint168 ( V0_x : uint168 ) => #abiCallData ( "test_uint168" , #uint168 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 168 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2Ktestz5fuint168z5ffail ( V0_x : uint168 ) => #abiCallData ( "test_uint168_fail" , #uint168 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestZUnduint168ZUndfail ( V0_x : uint168 ) => #abiCallData ( "test_uint168_fail" , #uint168 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 168 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2Ktestz5fuint16z5ffail ( V0_x : uint16 ) => #abiCallData ( "test_uint16_fail" , #uint16 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestZUnduint16ZUndfail ( V0_x : uint16 ) => #abiCallData ( "test_uint16_fail" , #uint16 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 16 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2Ktestz5fuint176 ( V0_x : uint176 ) => #abiCallData ( "test_uint176" , #uint176 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestZUnduint176 ( V0_x : uint176 ) => #abiCallData ( "test_uint176" , #uint176 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 176 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2Ktestz5fuint176z5ffail ( V0_x : uint176 ) => #abiCallData ( "test_uint176_fail" , #uint176 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestZUnduint176ZUndfail ( V0_x : uint176 ) => #abiCallData ( "test_uint176_fail" , #uint176 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 176 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2Ktestz5fuint184 ( V0_x : uint184 ) => #abiCallData ( "test_uint184" , #uint184 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestZUnduint184 ( V0_x : uint184 ) => #abiCallData ( "test_uint184" , #uint184 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 184 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2Ktestz5fuint184z5ffail ( V0_x : uint184 ) => #abiCallData ( "test_uint184_fail" , #uint184 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestZUnduint184ZUndfail ( V0_x : uint184 ) => #abiCallData ( "test_uint184_fail" , #uint184 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 184 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2Ktestz5fuint192 ( V0_x : uint192 ) => #abiCallData ( "test_uint192" , #uint192 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestZUnduint192 ( V0_x : uint192 ) => #abiCallData ( "test_uint192" , #uint192 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 192 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2Ktestz5fuint192z5ffail ( V0_x : uint192 ) => #abiCallData ( "test_uint192_fail" , #uint192 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestZUnduint192ZUndfail ( V0_x : uint192 ) => #abiCallData ( "test_uint192_fail" , #uint192 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 192 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2Ktestz5fuint200 ( V0_x : uint200 ) => #abiCallData ( "test_uint200" , #uint200 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestZUnduint200 ( V0_x : uint200 ) => #abiCallData ( "test_uint200" , #uint200 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 200 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2Ktestz5fuint200z5ffail ( V0_x : uint200 ) => #abiCallData ( "test_uint200_fail" , #uint200 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestZUnduint200ZUndfail ( V0_x : uint200 ) => #abiCallData ( "test_uint200_fail" , #uint200 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 200 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2Ktestz5fuint208 ( V0_x : uint208 ) => #abiCallData ( "test_uint208" , #uint208 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestZUnduint208 ( V0_x : uint208 ) => #abiCallData ( "test_uint208" , #uint208 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 208 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2Ktestz5fuint208z5ffail ( V0_x : uint208 ) => #abiCallData ( "test_uint208_fail" , #uint208 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestZUnduint208ZUndfail ( V0_x : uint208 ) => #abiCallData ( "test_uint208_fail" , #uint208 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 208 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2Ktestz5fuint216 ( V0_x : uint216 ) => #abiCallData ( "test_uint216" , #uint216 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestZUnduint216 ( V0_x : uint216 ) => #abiCallData ( "test_uint216" , #uint216 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 216 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2Ktestz5fuint216z5ffail ( V0_x : uint216 ) => #abiCallData ( "test_uint216_fail" , #uint216 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestZUnduint216ZUndfail ( V0_x : uint216 ) => #abiCallData ( "test_uint216_fail" , #uint216 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 216 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2Ktestz5fuint224 ( V0_x : uint224 ) => #abiCallData ( "test_uint224" , #uint224 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestZUnduint224 ( V0_x : uint224 ) => #abiCallData ( "test_uint224" , #uint224 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 224 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2Ktestz5fuint224z5ffail ( V0_x : uint224 ) => #abiCallData ( "test_uint224_fail" , #uint224 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestZUnduint224ZUndfail ( V0_x : uint224 ) => #abiCallData ( "test_uint224_fail" , #uint224 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 224 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2Ktestz5fuint232 ( V0_x : uint232 ) => #abiCallData ( "test_uint232" , #uint232 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestZUnduint232 ( V0_x : uint232 ) => #abiCallData ( "test_uint232" , #uint232 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 232 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2Ktestz5fuint232z5ffail ( V0_x : uint232 ) => #abiCallData ( "test_uint232_fail" , #uint232 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestZUnduint232ZUndfail ( V0_x : uint232 ) => #abiCallData ( "test_uint232_fail" , #uint232 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 232 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2Ktestz5fuint24 ( V0_x : uint24 ) => #abiCallData ( "test_uint24" , #uint24 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestZUnduint24 ( V0_x : uint24 ) => #abiCallData ( "test_uint24" , #uint24 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 24 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2Ktestz5fuint240 ( V0_x : uint240 ) => #abiCallData ( "test_uint240" , #uint240 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestZUnduint240 ( V0_x : uint240 ) => #abiCallData ( "test_uint240" , #uint240 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 240 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2Ktestz5fuint240z5ffail ( V0_x : uint240 ) => #abiCallData ( "test_uint240_fail" , #uint240 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestZUnduint240ZUndfail ( V0_x : uint240 ) => #abiCallData ( "test_uint240_fail" , #uint240 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 240 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2Ktestz5fuint248 ( V0_x : uint248 ) => #abiCallData ( "test_uint248" , #uint248 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestZUnduint248 ( V0_x : uint248 ) => #abiCallData ( "test_uint248" , #uint248 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 248 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2Ktestz5fuint248z5ffail ( V0_x : uint248 ) => #abiCallData ( "test_uint248_fail" , #uint248 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestZUnduint248ZUndfail ( V0_x : uint248 ) => #abiCallData ( "test_uint248_fail" , #uint248 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 248 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2Ktestz5fuint24z5ffail ( V0_x : uint24 ) => #abiCallData ( "test_uint24_fail" , #uint24 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestZUnduint24ZUndfail ( V0_x : uint24 ) => #abiCallData ( "test_uint24_fail" , #uint24 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 24 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2Ktestz5fuint256 ( V0_x : uint256 ) => #abiCallData ( "test_uint256" , #uint256 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestZUnduint256 ( V0_x : uint256 ) => #abiCallData ( "test_uint256" , #uint256 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 256 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2Ktestz5fuint256z5ffail ( V0_x : uint256 ) => #abiCallData ( "test_uint256_fail" , #uint256 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestZUnduint256ZUndfail ( V0_x : uint256 ) => #abiCallData ( "test_uint256_fail" , #uint256 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 256 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2Ktestz5fuint32 ( V0_x : uint32 ) => #abiCallData ( "test_uint32" , #uint32 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestZUnduint32 ( V0_x : uint32 ) => #abiCallData ( "test_uint32" , #uint32 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 32 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2Ktestz5fuint32z5ffail ( V0_x : uint32 ) => #abiCallData ( "test_uint32_fail" , #uint32 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestZUnduint32ZUndfail ( V0_x : uint32 ) => #abiCallData ( "test_uint32_fail" , #uint32 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 32 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2Ktestz5fuint40 ( V0_x : uint40 ) => #abiCallData ( "test_uint40" , #uint40 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestZUnduint40 ( V0_x : uint40 ) => #abiCallData ( "test_uint40" , #uint40 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 40 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2Ktestz5fuint40z5ffail ( V0_x : uint40 ) => #abiCallData ( "test_uint40_fail" , #uint40 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestZUnduint40ZUndfail ( V0_x : uint40 ) => #abiCallData ( "test_uint40_fail" , #uint40 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 40 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2Ktestz5fuint48 ( V0_x : uint48 ) => #abiCallData ( "test_uint48" , #uint48 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestZUnduint48 ( V0_x : uint48 ) => #abiCallData ( "test_uint48" , #uint48 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 48 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2Ktestz5fuint48z5ffail ( V0_x : uint48 ) => #abiCallData ( "test_uint48_fail" , #uint48 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestZUnduint48ZUndfail ( V0_x : uint48 ) => #abiCallData ( "test_uint48_fail" , #uint48 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 48 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2Ktestz5fuint56 ( V0_x : uint56 ) => #abiCallData ( "test_uint56" , #uint56 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestZUnduint56 ( V0_x : uint56 ) => #abiCallData ( "test_uint56" , #uint56 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 56 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2Ktestz5fuint56z5ffail ( V0_x : uint56 ) => #abiCallData ( "test_uint56_fail" , #uint56 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestZUnduint56ZUndfail ( V0_x : uint56 ) => #abiCallData ( "test_uint56_fail" , #uint56 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 56 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2Ktestz5fuint64 ( V0_x : uint64 ) => #abiCallData ( "test_uint64" , #uint64 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestZUnduint64 ( V0_x : uint64 ) => #abiCallData ( "test_uint64" , #uint64 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 64 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2Ktestz5fuint64z5ffail ( V0_x : uint64 ) => #abiCallData ( "test_uint64_fail" , #uint64 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestZUnduint64ZUndfail ( V0_x : uint64 ) => #abiCallData ( "test_uint64_fail" , #uint64 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 64 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2Ktestz5fuint72 ( V0_x : uint72 ) => #abiCallData ( "test_uint72" , #uint72 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestZUnduint72 ( V0_x : uint72 ) => #abiCallData ( "test_uint72" , #uint72 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 72 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2Ktestz5fuint72z5ffail ( V0_x : uint72 ) => #abiCallData ( "test_uint72_fail" , #uint72 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestZUnduint72ZUndfail ( V0_x : uint72 ) => #abiCallData ( "test_uint72_fail" , #uint72 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 72 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2Ktestz5fuint8 ( V0_x : uint8 ) => #abiCallData ( "test_uint8" , #uint8 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestZUnduint8 ( V0_x : uint8 ) => #abiCallData ( "test_uint8" , #uint8 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 8 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2Ktestz5fuint80 ( V0_x : uint80 ) => #abiCallData ( "test_uint80" , #uint80 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestZUnduint80 ( V0_x : uint80 ) => #abiCallData ( "test_uint80" , #uint80 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 80 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2Ktestz5fuint80z5ffail ( V0_x : uint80 ) => #abiCallData ( "test_uint80_fail" , #uint80 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestZUnduint80ZUndfail ( V0_x : uint80 ) => #abiCallData ( "test_uint80_fail" , #uint80 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 80 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2Ktestz5fuint88 ( V0_x : uint88 ) => #abiCallData ( "test_uint88" , #uint88 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestZUnduint88 ( V0_x : uint88 ) => #abiCallData ( "test_uint88" , #uint88 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 88 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2Ktestz5fuint88z5ffail ( V0_x : uint88 ) => #abiCallData ( "test_uint88_fail" , #uint88 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestZUnduint88ZUndfail ( V0_x : uint88 ) => #abiCallData ( "test_uint88_fail" , #uint88 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 88 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2Ktestz5fuint8z5ffail ( V0_x : uint8 ) => #abiCallData ( "test_uint8_fail" , #uint8 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestZUnduint8ZUndfail ( V0_x : uint8 ) => #abiCallData ( "test_uint8_fail" , #uint8 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 8 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2Ktestz5fuint96 ( V0_x : uint96 ) => #abiCallData ( "test_uint96" , #uint96 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestZUnduint96 ( V0_x : uint96 ) => #abiCallData ( "test_uint96" , #uint96 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 96 , V0_x )
       
     
-    rule  ( S2KUintTypeTest . S2Ktestz5fuint96z5ffail ( V0_x : uint96 ) => #abiCallData ( "test_uint96_fail" , #uint96 ( V0_x ) , .TypedArgs ) )
+    rule  ( S2KUintTypeTest . S2KtestZUnduint96ZUndfail ( V0_x : uint96 ) => #abiCallData ( "test_uint96_fail" , #uint96 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 96 , V0_x )
       
     
@@ -7540,11 +7540,11 @@ module DSTest-CONTRACT
     
     syntax Bytes ::= S2KDSTestContract "." S2KDSTestMethod [function(), symbol(), klabel(method_DSTest)]
     
-    syntax S2KDSTestMethod ::= "S2KISz5fTEST" "(" ")" [symbol(), klabel(method_DSTest_S2KISz5fTEST_)]
+    syntax S2KDSTestMethod ::= "S2KISZUndTEST" "(" ")" [symbol(), klabel(method_DSTest_S2KISZUndTEST_)]
     
     syntax S2KDSTestMethod ::= "S2Kfailed" "(" ")" [symbol(), klabel(method_DSTest_S2Kfailed_)]
     
-    rule  ( S2KDSTest . S2KISz5fTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
+    rule  ( S2KDSTest . S2KISZUndTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
       
     
     rule  ( S2KDSTest . S2Kfailed ( ) => #abiCallData ( "failed" , .TypedArgs ) )

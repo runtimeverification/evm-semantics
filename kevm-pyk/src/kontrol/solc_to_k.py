@@ -237,7 +237,7 @@ class Contract:
     raw_sourcemap: str | None
     methods: tuple[Method, ...]
     fields: FrozenDict
-    prefix_code: str = 'z'
+    prefix_code: str = 'Z'
 
     def __init__(self, contract_name: str, contract_json: dict, foundry: bool = False) -> None:
         self.name = contract_name
@@ -354,15 +354,31 @@ class Contract:
 
     @staticmethod
     def escaped_chars() -> list[str]:
-        return [Contract.prefix_code, '_']
+        return [Contract.prefix_code, '_', '$']
 
     @staticmethod
     def escape_char(char: str) -> str:
-        return f'z{hex(ord(char)).removeprefix("0x")}'
+        match char:
+            case Contract.prefix_code:
+                as_ecaped = Contract.prefix_code
+            case '_':
+                as_ecaped = 'Und'
+            case '$':
+                as_ecaped = 'Dlr'
+            case _:
+                as_ecaped = hex(ord(char)).removeprefix('0x')
+        return f'{Contract.prefix_code}{as_ecaped}'
 
     @staticmethod
-    def unescape_seq(seq: str) -> str:
-        return chr(int(seq, base=16))
+    def unescape_seq(seq: str) -> tuple[str, int]:
+        if seq.startswith(Contract.prefix_code + Contract.prefix_code):
+            return Contract.prefix_code, 1
+        elif seq.startswith('Und'):
+            return '_', 3
+        elif seq.startswith('Dlr'):
+            return '$', 3
+        else:
+            return chr(int(seq, base=16)), 4
 
     @staticmethod
     def escaped(name: str, prefix: str) -> str:
@@ -389,8 +405,9 @@ class Contract:
             j = i + skipped
             next_char = unescaped[j + 1]
             if char == Contract.prefix_code:
-                res += Contract.unescape_seq(unescaped[(j + 1) : (j + 3)])
-                for _ in range(2):
+                unesc, to_skip = Contract.unescape_seq(unescaped[(j + 1) : (j + 4)])
+                res += unesc
+                for _ in range(to_skip):
                     try:
                         next(unes_iter)
                         skipped += 1

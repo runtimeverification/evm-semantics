@@ -91,7 +91,7 @@ SHOW_TESTS = set((TEST_DATA_DIR / 'foundry-show').read_text().splitlines())
 
 @pytest.mark.parametrize('test_id', ALL_PROVE_TESTS)
 def test_foundry_prove(test_id: str, foundry_root: Path, update_expected_output: bool, use_booster: bool) -> None:
-    if test_id in SKIPPED_PROVE_TESTS:
+    if test_id in SKIPPED_PROVE_TESTS or (update_expected_output and not test_id in SHOW_TESTS):
         pytest.skip()
 
     # When
