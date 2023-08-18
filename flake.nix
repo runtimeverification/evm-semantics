@@ -239,7 +239,6 @@
 
           update-from-submodules =
             rv-utils.lib.update-from-submodules pkgs ./flake.lock {
-              k-framework.submodule = "deps/k";
               blockchain-k-plugin.submodule = "deps/plugin";
               ethereum-tests.submodule = "tests/ethereum-tests";
               ethereum-legacytests.submodule =
