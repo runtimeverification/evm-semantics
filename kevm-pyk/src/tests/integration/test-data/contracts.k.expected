@@ -4790,6 +4790,8 @@ module ASSERTTEST-CONTRACT
     
     syntax AssertTestMethod ::= "failed" "(" ")" [symbol(), klabel(method_AssertTest_failed_)]
     
+    syntax AssertTestMethod ::= "kevm" "(" ")" [symbol(), klabel(method_AssertTest_kevm_)]
+    
     syntax AssertTestMethod ::= "setUp" "(" ")" [symbol(), klabel(method_AssertTest_setUp_)]
     
     syntax AssertTestMethod ::= "testFail_assert_false" "(" ")" [symbol(), klabel(method_AssertTest_testFail_assert_false_)]
@@ -4804,6 +4806,8 @@ module ASSERTTEST-CONTRACT
     
     syntax AssertTestMethod ::= "test_assert_true_branch" "(" Int ":" "uint256" ")" [symbol(), klabel(method_AssertTest_test_assert_true_branch_uint256)]
     
+    syntax AssertTestMethod ::= "test_branch_merge" "(" Int ":" "uint256" ")" [symbol(), klabel(method_AssertTest_test_branch_merge_uint256)]
+    
     syntax AssertTestMethod ::= "test_failing_branch" "(" Int ":" "uint256" ")" [symbol(), klabel(method_AssertTest_test_failing_branch_uint256)]
     
     syntax AssertTestMethod ::= "test_revert_branch" "(" Int ":" "uint256" "," Int ":" "uint256" ")" [symbol(), klabel(method_AssertTest_test_revert_branch_uint256_uint256)]
@@ -4817,6 +4821,9 @@ module ASSERTTEST-CONTRACT
       
     
     rule  ( AssertTest . failed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
+      
+    
+    rule  ( AssertTest . kevm ( ) => #abiCallData ( "kevm" , .TypedArgs ) )
       
     
     rule  ( AssertTest . setUp ( ) => #abiCallData ( "setUp" , .TypedArgs ) )
@@ -4838,6 +4845,10 @@ module ASSERTTEST-CONTRACT
       
     
     rule  ( AssertTest . test_assert_true_branch ( V0_x : uint256 ) => #abiCallData ( "test_assert_true_branch" , #uint256 ( V0_x ) , .TypedArgs ) )
+       ensures #rangeUInt ( 256 , V0_x )
+      
+    
+    rule  ( AssertTest . test_branch_merge ( V0_x : uint256 ) => #abiCallData ( "test_branch_merge" , #uint256 ( V0_x ) , .TypedArgs ) )
        ensures #rangeUInt ( 256 , V0_x )
       
     
@@ -4863,6 +4874,9 @@ module ASSERTTEST-CONTRACT
     rule  ( selector ( "failed()" ) => 3124842406 )
       
     
+    rule  ( selector ( "kevm()" ) => 3601001590 )
+      
+    
     rule  ( selector ( "setUp()" ) => 177362148 )
       
     
@@ -4882,6 +4896,9 @@ module ASSERTTEST-CONTRACT
       
     
     rule  ( selector ( "test_assert_true_branch(uint256)" ) => 3267411143 )
+      
+    
+    rule  ( selector ( "test_branch_merge(uint256)" ) => 1000659212 )
       
     
     rule  ( selector ( "test_failing_branch(uint256)" ) => 1176678741 )
