@@ -97,7 +97,7 @@ def test_foundry_prove(test_id: str, foundry_root: Path, update_expected_output:
     # When
     prove_res = foundry_prove(
         foundry_root,
-        tests=[test_id],
+        tests=[(test_id, None)],
         simplify_init=False,
         smt_timeout=125,
         smt_retry_limit=4,
@@ -136,7 +136,7 @@ def test_foundry_fail(test_id: str, foundry_root: Path, update_expected_output: 
     # When
     prove_res = foundry_prove(
         foundry_root,
-        tests=[test_id],
+        tests=[(test_id, None)],
         simplify_init=False,
         smt_timeout=300,
         smt_retry_limit=8,
@@ -179,7 +179,7 @@ def test_foundry_bmc(test_id: str, foundry_root: Path, use_booster: bool) -> Non
     # When
     prove_res = foundry_prove(
         foundry_root,
-        tests=[test_id],
+        tests=[(test_id, None)],
         bmc_depth=3,
         simplify_init=False,
         smt_timeout=125,
@@ -196,7 +196,7 @@ def test_foundry_auto_abstraction(foundry_root: Path, update_expected_output: bo
     test_id = 'GasTest.testInfiniteGas()'
     foundry_prove(
         foundry_root,
-        tests=[test_id],
+        tests=[(test_id, None)],
         smt_timeout=125,
         smt_retry_limit=4,
         auto_abstract_gas=True,
@@ -261,7 +261,7 @@ def test_foundry_resume_proof(foundry_root: Path, update_expected_output: bool) 
     test_id = 'AssumeTest.test_assume_false(uint256,uint256)'
     prove_res = foundry_prove(
         foundry_root,
-        tests=[test_id],
+        tests=[(test_id, None)],
         smt_timeout=125,
         smt_retry_limit=4,
         auto_abstract_gas=True,
@@ -271,7 +271,7 @@ def test_foundry_resume_proof(foundry_root: Path, update_expected_output: bool) 
     assert_pass(test_id, prove_res)
     prove_res = foundry_prove(
         foundry_root,
-        tests=[test_id],
+        tests=[(test_id, None)],
         smt_timeout=125,
         smt_retry_limit=4,
         auto_abstract_gas=True,

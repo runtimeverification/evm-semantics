@@ -136,7 +136,7 @@ def exec_foundry_prove(
     max_depth: int = 1000,
     max_iterations: int | None = None,
     reinit: bool = False,
-    tests: Iterable[str] = (),
+    tests: Iterable[tuple[str, str | None]] = (),
     exclude_tests: Iterable[str] = (),
     workers: int = 1,
     simplify_init: bool = True,
@@ -204,6 +204,7 @@ def exec_foundry_prove(
 def exec_foundry_show(
     foundry_root: Path,
     test: str,
+    id: str | None,
     nodes: Iterable[NodeIdLike] = (),
     node_deltas: Iterable[tuple[NodeIdLike, NodeIdLike]] = (),
     to_module: bool = False,
@@ -219,6 +220,7 @@ def exec_foundry_show(
     output = foundry_show(
         foundry_root=foundry_root,
         test=test,
+        id=id,
         nodes=nodes,
         node_deltas=node_deltas,
         to_module=to_module,
@@ -233,8 +235,8 @@ def exec_foundry_show(
     print(output)
 
 
-def exec_foundry_to_dot(foundry_root: Path, test: str, **kwargs: Any) -> None:
-    foundry_to_dot(foundry_root=foundry_root, test=test)
+def exec_foundry_to_dot(foundry_root: Path, test: str, id: str | None, **kwargs: Any) -> None:
+    foundry_to_dot(foundry_root=foundry_root, test=test, id=id)
 
 
 def exec_foundry_list(foundry_root: Path, **kwargs: Any) -> None:
@@ -242,9 +244,16 @@ def exec_foundry_list(foundry_root: Path, **kwargs: Any) -> None:
     print('\n'.join(stats))
 
 
-def exec_foundry_view_kcfg(foundry_root: Path, test: str, **kwargs: Any) -> None:
+def exec_foundry_view_kcfg(foundry_root: Path, test: str, id: str | None, **kwargs: Any) -> None:
     foundry = Foundry(foundry_root)
-    contract_name, test_name = test.split('.')
+    if id is None:
+        matching_proofs = foundry.matching_proofs(test)
+        if len(matching_proofs) > 1:
+            raise RuntimeError(
+                'Found {len(matching_proofs)} matching proofs for {test}. Use the --id flag to choose one.'
+            )
+
+    contract_name, _ = test.split('.')
     proof = foundry.get_apr_proof(test)
 
     def _short_info(cterm: CTerm) -> Iterable[str]:
@@ -258,13 +267,14 @@ def exec_foundry_view_kcfg(foundry_root: Path, test: str, **kwargs: Any) -> None
     viewer.run()
 
 
-def exec_foundry_remove_node(foundry_root: Path, test: str, node: NodeIdLike, **kwargs: Any) -> None:
-    foundry_remove_node(foundry_root=foundry_root, test=test, node=node)
+def exec_foundry_remove_node(foundry_root: Path, test: str, node: NodeIdLike, id: str | None, **kwargs: Any) -> None:
+    foundry_remove_node(foundry_root=foundry_root, test=test, id=id, node=node)
 
 
 def exec_foundry_simplify_node(
     foundry_root: Path,
     test: str,
+    id: str | None,
     node: NodeIdLike,
     replace: bool = False,
     minimize: bool = True,
@@ -278,6 +288,7 @@ def exec_foundry_simplify_node(
     pretty_term = foundry_simplify_node(
         foundry_root=foundry_root,
         test=test,
+        id=id,
         node=node,
         replace=replace,
         minimize=minimize,
@@ -293,6 +304,7 @@ def exec_foundry_simplify_node(
 def exec_foundry_step_node(
     foundry_root: Path,
     test: str,
+    id: str | None,
     node: NodeIdLike,
     repeat: int = 1,
     depth: int = 1,
@@ -305,6 +317,7 @@ def exec_foundry_step_node(
     foundry_step_node(
         foundry_root=foundry_root,
         test=test,
+        id=id,
         node=node,
         repeat=repeat,
         depth=depth,
@@ -318,6 +331,7 @@ def exec_foundry_step_node(
 def exec_foundry_section_edge(
     foundry_root: Path,
     test: str,
+    id: str | None,
     edge: tuple[str, str],
     sections: int = 2,
     replace: bool = False,
@@ -330,6 +344,7 @@ def exec_foundry_section_edge(
     foundry_section_edge(
         foundry_root=foundry_root,
         test=test,
+        id=id,
         edge=edge,
         sections=sections,
         replace=replace,
@@ -343,6 +358,7 @@ def exec_foundry_section_edge(
 def exec_foundry_get_model(
     foundry_root: Path,
     test: str,
+    id: str | None,
     nodes: Iterable[NodeIdLike] = (),
     pending: bool = False,
     failing: bool = False,
@@ -351,6 +367,7 @@ def exec_foundry_get_model(
     output = foundry_get_model(
         foundry_root=foundry_root,
         test=test,
+        id=id,
         nodes=nodes,
         pending=pending,
         failing=failing,

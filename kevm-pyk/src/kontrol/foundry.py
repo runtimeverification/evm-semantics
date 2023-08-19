@@ -7,9 +7,10 @@ import os
 import re
 import shutil
 from functools import cached_property
+from os import listdir
 from pathlib import Path
 from subprocess import CalledProcessError
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 import tomlkit
 from pathos.pools import ProcessPool  # type: ignore
@@ -84,6 +85,10 @@ class Foundry:
     def out(self) -> Path:
         return self._root / self.profile.get('out', '')
 
+    @property
+    def proofs_dir(self) -> Path:
+        return self.out / 'apr_proofs'
+
     @cached_property
     def kevm(self) -> KEVM:
         definition_dir = self.out / 'kompiled'
@@ -114,8 +119,11 @@ class Foundry:
             _contracts[contract_name] = Contract(contract_name, contract_json, foundry=True)
         return _contracts
 
-    def proof_digest(self, contract: str, test_sig: str) -> str:
-        return f'{contract}.{test_sig}:{self.contracts[contract].method_by_sig[test_sig].digest}'
+    def method_digest(self, contract_name: str, method_sig: str) -> str:
+        return self.contracts[contract_name].method_by_sig[method_sig].digest
+
+    def proof_id(self, contract: str, test_sig: str, id: str) -> str:
+        return f'{contract}.{test_sig}:{id}'
 
     @cached_property
     def digest(self) -> str:
@@ -145,7 +153,9 @@ class Foundry:
         digest_dict = json.loads(digest_file.read_text())
         if 'foundry' not in digest_dict:
             digest_dict['foundry'] = ''
-        digest_file.write_text(json.dumps(digest_dict))
+        digest_file.write_text(
+            json.dumps(digest_dict)
+        )  # TODO should not have such side effect, move to update_digest ?
         return digest_dict['foundry'] == self.digest
 
     def update_digest(self) -> None:
@@ -278,6 +288,14 @@ class Foundry:
         test_sig = self.matching_sig(test).split('.')[1]
         return (contract_name, test_sig)
 
+    def unique_test_id(self, test: str) -> str:
+        matching_proofs = self.matching_proofs(test)
+        if not matching_proofs:
+            raise RuntimeError('Found no matching proofs for {test}.')
+        if len(matching_proofs) > 1:
+            raise RuntimeError('Found {matching_proofs} matching proofs for {test}. Use the --id flag to choose one.')
+        return single(matching_proofs).id
+
     @staticmethod
     def success(s: KInner, dst: KInner, r: KInner, c: KInner, e1: KInner, e2: KInner) -> KApply:
         return KApply('foundry_success', [s, dst, r, c, e1, e2])
@@ -337,24 +355,61 @@ class Foundry:
         )
         return res_lines
 
-    def get_apr_proof(
-        self,
-        test: str,
-    ) -> APRProof:
-        proof = self.get_proof(test)
+    def proofs_with_test(self, test: str) -> list[Proof]:
+        proofs = [self.get_optional_proof(test) for pid in listdir(self.proofs_dir) if pid.rsplit(':')[0] == test]
+        return [proof for proof in proofs if proof is not None]
+
+    def matching_proofs(self, test: str) -> list[Proof]:
+        contract_name, method_sig = test.split('.')
+        foundry_digest = self.method_digest(contract_name, method_sig)
+        return [proof for proof in self.proofs_with_test(test) if proof.proof_digest == foundry_digest]
+
+    def get_apr_proof(self, test_id: str) -> APRProof:
+        proof = Proof.read_proof_data(self.proofs_dir, test_id)
         if not isinstance(proof, APRProof):
             raise ValueError('Specified proof is not an APRProof.')
         return proof
 
-    def get_proof(
+    def get_proof(self, test_id: str) -> Proof:
+        return Proof.read_proof_data(self.proofs_dir, test_id)
+
+    def get_optional_apr_proof(self, test_id: str) -> Optional[APRProof]:
+        proof = self.get_optional_proof(test_id)
+        if not isinstance(proof, APRProof):
+            return None
+        return proof
+
+    def get_optional_proof(self, test_id: str) -> Optional[Proof]:
+        if Proof.proof_data_exists(test_id, self.proofs_dir):
+            return Proof.read_proof_data(self.proofs_dir, test_id)
+        return None
+
+    def free_proof_id(
         self,
         test: str,
-    ) -> Proof:
-        proofs_dir = self.out / 'apr_proofs'
-        contract_name, test_sig = self.unique_sig(test)
-        proof_digest = self.proof_digest(contract_name, test_sig)
-        proof = Proof.read_proof_data(proofs_dir, proof_digest)
-        return proof
+    ) -> str:
+        """
+        find the lowest proof id that is not used yet
+        """
+        test_ids: dict[str, set[int]] = {}
+        for pid in listdir(self.proofs_dir):
+            test_name, tid = pid.rsplit(':')
+            if test_ids.get(test_name) is None:
+                ids = set()
+            else:
+                ids = test_ids[test_name]
+            ids.add(int(tid.encode('utf-8').hex()))
+            test_ids[test_name] = ids
+        if test_ids.get(test) is None:
+            return '0'
+        else:
+            ids = test_ids[test]
+            # find the first free id
+            i = 0
+            while True:
+                if i not in ids:
+                    return str(i)
+                i += 1
 
 
 def foundry_kompile(
@@ -512,7 +567,7 @@ def foundry_prove(
     max_depth: int = 1000,
     max_iterations: int | None = None,
     reinit: bool = False,
-    tests: Iterable[str] = (),
+    tests: Iterable[tuple[str, str | None]] = (),
     exclude_tests: Iterable[str] = (),
     workers: int = 1,
     simplify_init: bool = True,
@@ -552,37 +607,26 @@ def foundry_prove(
     if kore_rpc_command is None:
         kore_rpc_command = ('kore-rpc-booster',) if use_booster else ('kore-rpc',)
 
-    all_tests = [
-        f'{contract.name}.{method.name}'
-        for contract in foundry.contracts.values()
-        if contract.name.endswith('Test')
-        for method in contract.methods
-        if method.name.startswith('test')
-    ]
-    all_non_tests = [
-        f'{contract.name}.{method.name}'
-        for contract in foundry.contracts.values()
-        for method in contract.methods
-        if f'{contract.name}.{method.name}' not in all_tests
-    ]
-    unfound_tests: list[str] = []
-    tests = list(tests)
-    if not tests:
-        tests = all_tests
-    for _t in tests:
-        if _t not in (all_tests + all_non_tests):
-            unfound_tests.append(_t)
-    for _t in exclude_tests:
-        if _t not in all_tests:
-            unfound_tests.append(_t)
-        if _t in tests:
-            tests.remove(_t)
+    test_names = [test[0] for test in tests]
+    exclude_test_names = [test[0] for test in exclude_tests]
+    test_names = foundry.matching_tests(list(test_names), list(exclude_test_names))
+    fil_tests: list[tuple[str, str | None]] = []
+    for test, id in tests:
+        if test in test_names:
+            fil_tests.append((test, id))
+        else:
+            continue
+        if id is None:
+            matching_proofs = foundry.matching_proofs(test)
+            if len(matching_proofs) > 1:
+                raise RuntimeError(
+                    'Found {len(matching_proofs)} matching proofs for {test}. Use the --id flag to choose one.'
+                )
 
-    tests = foundry.matching_tests(list(tests), list(exclude_tests))
     _LOGGER.info(f'Running tests: {tests}')
 
     setup_methods: dict[str, str] = {}
-    contracts = set(unique({test.split('.')[0] for test in tests}))
+    contracts = set(unique({test.split('.')[0] for test in test_names}))
     for contract_name in contracts:
         if 'setUp' in foundry.contracts[contract_name].method_by_name:
             setup_methods[contract_name] = f'{contract_name}.setUp()'
@@ -592,7 +636,7 @@ def foundry_prove(
         for contract in foundry.contracts.values()
         for method in contract.methods
         if (
-            f'{method.contract_name}.{method.signature}' in tests
+            f'{method.contract_name}.{method.signature}' in test_names
             or (method.is_setup and method.contract_name in contracts)
         )
     ]
@@ -610,14 +654,26 @@ def foundry_prove(
                 )
         method.update_digest(foundry.out / 'digest')
 
-    def _init_and_run_proof(_init_problem: tuple[str, str]) -> tuple[bool, list[str] | None]:
-        proof_id = f'{_init_problem[0]}.{_init_problem[1]}'
+    def _init_and_run_proof(_init_problem: tuple[str, str, str | None]) -> tuple[bool, list[str] | None]:
+        contract_name, method_sig, id = _init_problem
+        method_digest = foundry.method_digest(contract_name, method_sig)
+        test = f'{contract_name}.{method_sig}'
+        if id is not None:
+            test_id = f'{test}:{id}'
+        else:
+            test_id = None
+            for proof in foundry.proofs_with_test(test):
+                if proof.proof_digest == method_digest:
+                    test_id = proof.id
+        if test_id is None:
+            test_id = foundry.free_proof_id(test)
+
         llvm_definition_dir = foundry.out / 'kompiled-llvm' if use_booster else None
 
         with legacy_explore(
             foundry.kevm,
             kcfg_semantics=KEVMSemantics(auto_abstract_gas=auto_abstract_gas),
-            id=proof_id,
+            id=test_id,
             bug_report=br,
             kore_rpc_command=kore_rpc_command,
             llvm_definition_dir=llvm_definition_dir,
@@ -625,7 +681,6 @@ def foundry_prove(
             smt_retry_limit=smt_retry_limit,
             trace_rewrites=trace_rewrites,
         ) as kcfg_explore:
-            contract_name, method_sig = _init_problem
             contract = foundry.contracts[contract_name]
             method = contract.method_by_sig[method_sig]
             proof = _method_to_apr_proof(
@@ -634,6 +689,7 @@ def foundry_prove(
                 method,
                 save_directory,
                 kcfg_explore,
+                test_id,
                 reinit=(method.qualified_name in out_of_date_methods),
                 simplify_init=simplify_init,
                 bmc_depth=bmc_depth,
@@ -654,10 +710,11 @@ def foundry_prove(
                 failure_log = print_failure_info(proof, kcfg_explore, counterexample_info)
             return passed, failure_log
 
-    def run_cfg_group(tests: list[str]) -> dict[str, tuple[bool, list[str] | None]]:
-        def _split_test(test: str) -> tuple[str, str]:
-            contract, method = test.split('.')
-            return contract, method
+    def run_cfg_group(tests: list[tuple[str, str | None]]) -> dict[str, tuple[bool, list[str] | None]]:
+        def _split_test(test: tuple[str, str | None]) -> tuple[str, str, str | None]:
+            test_name, id = test
+            contract, method = test_name.split('.')
+            return contract, method, id
 
         init_problems = [_split_test(test) for test in tests]
 
@@ -670,17 +727,17 @@ def foundry_prove(
             for init_problem in init_problems:
                 _apr_proofs.append(_init_and_run_proof(init_problem))
 
-        apr_proofs = dict(zip(tests, _apr_proofs, strict=True))
+        apr_proofs = dict(zip([test[0] for test in tests], _apr_proofs, strict=True))
         return apr_proofs
 
     _LOGGER.info(f'Running setup functions in parallel: {list(setup_methods.values())}')
-    results = run_cfg_group(list(setup_methods.values()))
+    results = run_cfg_group([(method, None) for method in setup_methods.values()])
     failed = [setup_cfg for setup_cfg, passed in results.items() if not passed]
     if failed:
         raise ValueError(f'Running setUp method failed for {len(failed)} contracts: {failed}')
 
     _LOGGER.info(f'Running test functions in parallel: {tests}')
-    results = run_cfg_group(tests)
+    results = run_cfg_group(list(tests))
 
     return results
 
@@ -688,6 +745,7 @@ def foundry_prove(
 def foundry_show(
     foundry_root: Path,
     test: str,
+    id: str | None = None,
     nodes: Iterable[NodeIdLike] = (),
     node_deltas: Iterable[tuple[NodeIdLike, NodeIdLike]] = (),
     to_module: bool = False,
@@ -699,10 +757,13 @@ def foundry_show(
     failure_info: bool = False,
     counterexample_info: bool = False,
 ) -> str:
-    contract_name = test.split('.')[0]
+    contract_name, _ = test.split('.')
     foundry = Foundry(foundry_root)
-    proof = foundry.get_proof(test)
-    assert isinstance(proof, APRProof)
+    if id is None:
+        test_id = foundry.unique_test_id(test)
+    else:
+        test_id = f'{test}:{id}'
+    proof = foundry.get_apr_proof(test_id)
 
     if pending:
         nodes = list(nodes) + [node.id for node in proof.pending]
@@ -732,19 +793,22 @@ def foundry_show(
     )
 
     if failure_info:
-        with legacy_explore(foundry.kevm, kcfg_semantics=KEVMSemantics(), id=proof.id) as kcfg_explore:
+        with legacy_explore(foundry.kevm, kcfg_semantics=KEVMSemantics(), id=test_id) as kcfg_explore:
             res_lines += print_failure_info(proof, kcfg_explore, counterexample_info)
             res_lines += Foundry.help_info()
 
     return '\n'.join(res_lines)
 
 
-def foundry_to_dot(foundry_root: Path, test: str) -> None:
+def foundry_to_dot(foundry_root: Path, test: str, id: str | None) -> None:
     foundry = Foundry(foundry_root)
-    proofs_dir = foundry.out / 'apr_proofs'
-    dump_dir = proofs_dir / 'dump'
-    contract_name, test_name = test.split('.')
-    proof = foundry.get_apr_proof(test)
+    dump_dir = foundry.proofs_dir / 'dump'
+    if id is None:
+        test_id = foundry.unique_test_id(test)
+    else:
+        test_id = f'{test}:{id}'
+    contract_name, _ = test.split('.')
+    proof = foundry.get_apr_proof(test_id)
 
     node_printer = foundry_node_printer(foundry, contract_name, proof)
     proof_show = APRProofShow(foundry.kevm, node_printer=node_printer)
@@ -754,7 +818,6 @@ def foundry_to_dot(foundry_root: Path, test: str) -> None:
 
 def foundry_list(foundry_root: Path) -> list[str]:
     foundry = Foundry(foundry_root)
-    apr_proofs_dir = foundry.out / 'apr_proofs'
 
     all_methods = [
         f'{contract.name}.{method.signature}' for contract in foundry.contracts.values() for method in contract.methods
@@ -762,19 +825,26 @@ def foundry_list(foundry_root: Path) -> list[str]:
 
     lines: list[str] = []
     for method in sorted(all_methods):
-        if Proof.proof_data_exists(method, apr_proofs_dir):
-            proof = foundry.get_proof(method)
-            lines.extend(proof.summary.lines)
-            lines.append('')
+        for test_id in listdir(foundry.proofs_dir):
+            test, _ = test_id.split(':')
+            if test == method:
+                proof = foundry.get_optional_proof(test_id)
+                if proof is not None:
+                    lines.extend(proof.summary.lines)
+                    lines.append('')
     if len(lines) > 0:
         lines = lines[0:-1]
 
     return lines
 
 
-def foundry_remove_node(foundry_root: Path, test: str, node: NodeIdLike) -> None:
+def foundry_remove_node(foundry_root: Path, test: str, id: str | None, node: NodeIdLike) -> None:
     foundry = Foundry(foundry_root)
-    apr_proof = foundry.get_apr_proof(test)
+    if id is None:
+        test_id = foundry.unique_test_id(test)
+    else:
+        test_id = f'{test}:{id}'
+    apr_proof = foundry.get_apr_proof(test_id)
     node_ids = apr_proof.kcfg.prune(node, [apr_proof.init, apr_proof.target])
     _LOGGER.info(f'Pruned nodes: {node_ids}')
     apr_proof.write_proof_data()
@@ -783,6 +853,7 @@ def foundry_remove_node(foundry_root: Path, test: str, node: NodeIdLike) -> None
 def foundry_simplify_node(
     foundry_root: Path,
     test: str,
+    id: str | None,
     node: NodeIdLike,
     replace: bool = False,
     minimize: bool = True,
@@ -794,7 +865,11 @@ def foundry_simplify_node(
 ) -> str:
     br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
     foundry = Foundry(foundry_root, bug_report=br)
-    apr_proof = foundry.get_apr_proof(test)
+    if id is None:
+        test_id = foundry.unique_test_id(test)
+    else:
+        test_id = f'{test}:{id}'
+    apr_proof = foundry.get_apr_proof(test_id)
     cterm = apr_proof.kcfg.node(node).cterm
     with legacy_explore(
         foundry.kevm,
@@ -816,6 +891,7 @@ def foundry_simplify_node(
 def foundry_step_node(
     foundry_root: Path,
     test: str,
+    id: str | None,
     node: NodeIdLike,
     repeat: int = 1,
     depth: int = 1,
@@ -831,8 +907,11 @@ def foundry_step_node(
 
     br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
     foundry = Foundry(foundry_root, bug_report=br)
-
-    apr_proof = foundry.get_apr_proof(test)
+    if id is None:
+        test_id = foundry.unique_test_id(test)
+    else:
+        test_id = f'{test}:{id}'
+    apr_proof = foundry.get_apr_proof(test_id)
     with legacy_explore(
         foundry.kevm,
         kcfg_semantics=KEVMSemantics(),
@@ -850,6 +929,7 @@ def foundry_step_node(
 def foundry_section_edge(
     foundry_root: Path,
     test: str,
+    id: str | None,
     edge: tuple[str, str],
     sections: int = 2,
     replace: bool = False,
@@ -860,7 +940,11 @@ def foundry_section_edge(
 ) -> None:
     br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
     foundry = Foundry(foundry_root, bug_report=br)
-    apr_proof = foundry.get_apr_proof(test)
+    if id is None:
+        test_id = foundry.unique_test_id(test)
+    else:
+        test_id = f'{test}:{id}'
+    apr_proof = foundry.get_apr_proof(test_id)
     source_id, target_id = edge
     with legacy_explore(
         foundry.kevm,
@@ -880,13 +964,17 @@ def foundry_section_edge(
 def foundry_get_model(
     foundry_root: Path,
     test: str,
+    id: str | None,
     nodes: Iterable[NodeIdLike] = (),
     pending: bool = False,
     failing: bool = False,
 ) -> str:
     foundry = Foundry(foundry_root)
-    proof = foundry.get_proof(test)
-    assert isinstance(proof, APRProof)
+    if id is None:
+        test_id = foundry.unique_test_id(test)
+    else:
+        test_id = f'{test}:{id}'
+    proof = foundry.get_apr_proof(test_id)
 
     if not nodes:
         _LOGGER.warning('Node ID is not provided. Displaying models of failing and pending nodes:')
@@ -961,6 +1049,7 @@ def _method_to_apr_proof(
     method: Contract.Method,
     save_directory: Path,
     kcfg_explore: KCFGExplore,
+    test_id: str,
     reinit: bool = False,
     simplify_init: bool = True,
     bmc_depth: int | None = None,
@@ -968,16 +1057,14 @@ def _method_to_apr_proof(
     contract_name = contract.name
     method_sig = method.signature
     test = f'{contract_name}.{method_sig}'
-    proof_digest = foundry.proof_digest(contract_name, method_sig)
-    if Proof.proof_data_exists(proof_digest, save_directory) and not reinit:
-        apr_proof = foundry.get_apr_proof(test)
-        assert isinstance(apr_proof, APRProof)
+    if Proof.proof_data_exists(test_id, save_directory) and not reinit:
+        apr_proof = foundry.get_apr_proof(test_id)
     else:
         _LOGGER.info(f'Initializing KCFG for test: {test}')
 
         setup_digest = None
         if method_sig != 'setUp()' and 'setUp' in contract.method_by_name:
-            setup_digest = foundry.proof_digest(contract_name, 'setUp()')
+            setup_digest = foundry.method_digest(contract_name, 'setUp()')
             _LOGGER.info(f'Using setUp method for test: {test}')
 
         empty_config = foundry.kevm.definition.empty_config(GENERATED_TOP_CELL)
@@ -1004,10 +1091,10 @@ def _method_to_apr_proof(
             kcfg_explore.simplify(kcfg, {})
         if bmc_depth is not None:
             apr_proof = APRBMCProof(
-                proof_digest, kcfg, init_node_id, target_node_id, {}, bmc_depth, proof_dir=save_directory
+                test_id, kcfg, init_node_id, target_node_id, {}, bmc_depth, proof_dir=save_directory
             )
         else:
-            apr_proof = APRProof(proof_digest, kcfg, init_node_id, target_node_id, {}, proof_dir=save_directory)
+            apr_proof = APRProof(test_id, kcfg, init_node_id, target_node_id, {}, proof_dir=save_directory)
 
     apr_proof.write_proof_data()
     return apr_proof
