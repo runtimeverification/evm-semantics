@@ -237,7 +237,7 @@ class Contract:
     raw_sourcemap: str | None
     methods: tuple[Method, ...]
     fields: FrozenDict
-    prefix_code: str = 'Z'
+    PREFIX_CODE: Final = 'Z'
 
     def __init__(self, contract_name: str, contract_json: dict, foundry: bool = False) -> None:
         self.name = contract_name
@@ -354,25 +354,25 @@ class Contract:
 
     @staticmethod
     def escaped_chars() -> list[str]:
-        return [Contract.prefix_code, '_', '$']
+        return [Contract.PREFIX_CODE, '_', '$']
 
     @staticmethod
     def escape_char(char: str) -> str:
         match char:
-            case Contract.prefix_code:
-                as_ecaped = Contract.prefix_code
+            case Contract.PREFIX_CODE:
+                as_ecaped = Contract.PREFIX_CODE
             case '_':
                 as_ecaped = 'Und'
             case '$':
                 as_ecaped = 'Dlr'
             case _:
                 as_ecaped = hex(ord(char)).removeprefix('0x')
-        return f'{Contract.prefix_code}{as_ecaped}'
+        return f'{Contract.PREFIX_CODE}{as_ecaped}'
 
     @staticmethod
     def unescape_seq(seq: str) -> tuple[str, int]:
-        if seq.startswith(Contract.prefix_code + Contract.prefix_code):
-            return Contract.prefix_code, 1
+        if seq.startswith(Contract.PREFIX_CODE + Contract.PREFIX_CODE):
+            return Contract.PREFIX_CODE, 1
         elif seq.startswith('Und'):
             return '_', 3
         elif seq.startswith('Dlr'):
@@ -385,13 +385,8 @@ class Contract:
         """
         escape all the chars that would cause issues once kompiling and add a prefix to mark it as "escaped"
         """
-        escaped = prefix
-        for char in iter(name):
-            if char in Contract.escaped_chars():
-                escaped += Contract.escape_char(char)
-            else:
-                escaped += char
-        return escaped
+        escaped = [Contract.escape_char(char) if char in Contract.escaped_chars() else char for char in iter(name)]
+        return prefix + ''.join(escaped)
 
     @staticmethod
     def unescaped(name: str, prefix: str = '') -> str:
@@ -404,7 +399,7 @@ class Contract:
         for i, char in enumerate(unes_iter):
             j = i + skipped
             next_char = unescaped[j + 1]
-            if char == Contract.prefix_code:
+            if char == Contract.PREFIX_CODE:
                 unesc, to_skip = Contract.unescape_seq(unescaped[(j + 1) : (j + 4)])
                 res += unesc
                 for _ in range(to_skip):
