@@ -134,7 +134,7 @@ def exec_foundry_kompile(
 
 def exec_foundry_prove(
     foundry_root: Path,
-    max_depth: int = 25000,
+    max_depth: int = 1000,
     max_iterations: int | None = None,
     reinit: bool = False,
     tests: Iterable[str] = (),

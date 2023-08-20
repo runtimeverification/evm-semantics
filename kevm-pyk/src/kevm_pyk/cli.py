@@ -189,10 +189,11 @@ class KEVMCLIArgs(KCLIArgs):
             action='store_true',
             help='Store a node for every EVM jump opcode.',
         )
+        # TODO(palina): revert to `default=False`
         args.add_argument(
             '--break-on-calls',
             dest='break_on_calls',
-            default=False,
+            default=True,
             action='store_true',
             help='Store a node for every EVM call made.',
         )
@@ -209,10 +210,11 @@ class KEVMCLIArgs(KCLIArgs):
             action='store_false',
             help='Do not simplify the initial and target states at startup.',
         )
+        # TODO(palina): revert to `default=1000`
         args.add_argument(
             '--max-depth',
             dest='max_depth',
-            default=25000,
+            default=1000,
             type=int,
             help='Maximum number of K steps before the state is saved in a new node in the CFG. Branching will cause this to happen earlier.',
         )

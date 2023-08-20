@@ -160,7 +160,7 @@ def exec_prove(
     claim_labels: Iterable[str] | None = None,
     exclude_claim_labels: Iterable[str] = (),
     reinit: bool = False,
-    max_depth: int = 25000,
+    max_depth: int = 1000,
     max_iterations: int | None = None,
     workers: int = 1,
     simplify_init: bool = True,
