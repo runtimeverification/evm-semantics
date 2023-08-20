@@ -5,9 +5,9 @@ import "forge-std/Test.sol";
 import "../src/KEVMCheats.sol";
 
 contract Counter {
-    uint256 public number;
+    int120 public number;
 
-    function setNumber(uint256 newNumber) public {
+    function setNumber(int120 newNumber) public {
         number = newNumber;
     }
 
@@ -31,7 +31,7 @@ contract CounterTest is Test, KEVMCheats {
         assertEq(counter.number(), 1);
     }
 
-    function testSetNumber(uint256 x) public {
+    function testSetNumber(int120 x) public {
         //setUp();
         counter = new Counter();
         counter.setNumber(0);

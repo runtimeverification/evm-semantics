@@ -7,8 +7,8 @@
 │
 │  (580 steps)
 ├─ 3 (split)
-│   k: JUMPI 549 bool2Word ( VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int ) ~> #pc [ JUM ...
-│   pc: 545
+│   k: JUMPI 806 bool2Word ( VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int ) ~> #pc [ JUM ...
+│   pc: 802
 │   callDepth: 0
 │   statusCode: STATUSCODE:StatusCode
 ┃
@@ -16,58 +16,58 @@
 ┣━━┓ constraint: { true #Equals VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int }
 ┃  │
 ┃  ├─ 4
-┃  │   k: JUMPI 549 bool2Word ( VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int ) ~> #pc [ JUM ...
-┃  │   pc: 545
+┃  │   k: JUMPI 806 bool2Word ( VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int ) ~> #pc [ JUM ...
+┃  │   pc: 802
 ┃  │   callDepth: 0
 ┃  │   statusCode: STATUSCODE:StatusCode
 ┃  │
 ┃  │  (116 steps)
 ┃  ├─ 6
 ┃  │   k: #end EVMC_REVERT ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
-┃  │   pc: 992
+┃  │   pc: 1249
 ┃  │   callDepth: 0
 ┃  │   statusCode: STATUSCODE:StatusCode
 ┃  │
 ┃  │  (1 step)
 ┃  ├─ 8
 ┃  │   k: #halt ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
-┃  │   pc: 992
+┃  │   pc: 1249
 ┃  │   callDepth: 0
 ┃  │   statusCode: EVMC_REVERT
 ┃  │
 ┃  │  (2 steps)
 ┃  └─ 10 (leaf, terminal)
 ┃      k: #halt ~> CONTINUATION:K
-┃      pc: 992
+┃      pc: 1249
 ┃      callDepth: 0
 ┃      statusCode: EVMC_REVERT
 ┃
 ┗━━┓ constraint: { true #Equals ( notBool VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int ) }
    │
    ├─ 5
-   │   k: JUMPI 549 bool2Word ( VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int ) ~> #pc [ JUM ...
-   │   pc: 545
+   │   k: JUMPI 806 bool2Word ( VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int ) ~> #pc [ JUM ...
+   │   pc: 802
    │   callDepth: 0
    │   statusCode: STATUSCODE:StatusCode
    │
    │  (62 steps)
    ├─ 7
    │   k: #end EVMC_SUCCESS ~> #pc [ STOP ] ~> #execute ~> CONTINUATION:K
-   │   pc: 213
+   │   pc: 251
    │   callDepth: 0
    │   statusCode: STATUSCODE:StatusCode
    │
    │  (1 step)
    ├─ 9
    │   k: #halt ~> #pc [ STOP ] ~> #execute ~> CONTINUATION:K
-   │   pc: 213
+   │   pc: 251
    │   callDepth: 0
    │   statusCode: EVMC_SUCCESS
    │
    │  (2 steps)
    ├─ 11 (terminal)
    │   k: #halt ~> CONTINUATION:K
-   │   pc: 213
+   │   pc: 251
    │   callDepth: 0
    │   statusCode: EVMC_SUCCESS
    │
@@ -124,7 +124,7 @@ Node 10:
               0
             </callValue>
             <wordStack>
-              ( 557 : ( VV1_y_114b9705:Int : ( VV0_x_114b9705:Int : ( 212 : ( selector ( "test_revert_branch(uint256,uint256)" ) : .WordStack ) ) ) ) )
+              ( 814 : ( VV1_y_114b9705:Int : ( VV0_x_114b9705:Int : ( 250 : ( selector ( "test_revert_branch(uint256,uint256)" ) : .WordStack ) ) ) ) )
             </wordStack>
             <localMem>
               b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80"
@@ -299,7 +299,7 @@ Node 10:
            <kevm>
              <k>
                ( #execute
-               ~> CONTINUATION => JUMPI 549 bool2Word ( VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int )
+               ~> CONTINUATION => JUMPI 806 bool2Word ( VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int )
                ~> #pc [ JUMPI ]
                ~> #execute
                ~> CONTINUATION:K )
@@ -334,7 +334,7 @@ Node 10:
                      0
                    </callValue>
                    <wordStack>
-                     ( .WordStack => ( VV1_y_114b9705:Int : ( VV0_x_114b9705:Int : ( 212 : ( selector ( "test_revert_branch(uint256,uint256)" ) : .WordStack ) ) ) ) )
+                     ( .WordStack => ( VV1_y_114b9705:Int : ( VV0_x_114b9705:Int : ( 250 : ( selector ( "test_revert_branch(uint256,uint256)" ) : .WordStack ) ) ) ) )
                    </wordStack>
                    <localMem>
                      ( .Bytes => b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80" )
@@ -499,6 +499,8 @@ Node 10:
        andBool ( ORIGIN_ID <Int pow160
        andBool ( 0 <=Int NUMBER_CELL
        andBool ( NUMBER_CELL <=Int maxSInt256
+       andBool ( 0 <=Int maxSInt64
+       andBool ( maxSInt64 <Int pow256
        andBool ( 0 <=Int 728815563385977040452943777879061427756277306518
        andBool ( 728815563385977040452943777879061427756277306518 <Int pow160
        andBool ( lengthBytes ( AssertTest . test_revert_branch ( VV0_x_114b9705 : uint256 , VV1_y_114b9705 : uint256 ) ) <Int pow128
@@ -515,7 +517,7 @@ Node 10:
     rule [BASIC-BLOCK-4-TO-6]: <foundry>
            <kevm>
              <k>
-               ( JUMPI 549 bool2Word ( VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int )
+               ( JUMPI 806 bool2Word ( VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int )
                ~> #pc [ JUMPI ] => #end EVMC_REVERT
                ~> #pc [ REVERT ] )
                ~> #execute
@@ -554,7 +556,7 @@ Node 10:
                      0
                    </callValue>
                    <wordStack>
-                     ( ( VV1_y_114b9705:Int => 557 ) : ( ( VV0_x_114b9705:Int => VV1_y_114b9705:Int ) : ( ( 212 => VV0_x_114b9705:Int ) : ( ( selector ( "test_revert_branch(uint256,uint256)" ) => 212 ) : ( .WordStack => ( selector ( "test_revert_branch(uint256,uint256)" ) : .WordStack ) ) ) ) ) )
+                     ( ( VV1_y_114b9705:Int => 814 ) : ( ( VV0_x_114b9705:Int => VV1_y_114b9705:Int ) : ( ( 250 => VV0_x_114b9705:Int ) : ( ( selector ( "test_revert_branch(uint256,uint256)" ) => 250 ) : ( .WordStack => ( selector ( "test_revert_branch(uint256,uint256)" ) : .WordStack ) ) ) ) ) )
                    </wordStack>
                    <localMem>
                      ( b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80" => b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80" )
@@ -726,7 +728,7 @@ Node 10:
     rule [BASIC-BLOCK-5-TO-7]: <foundry>
            <kevm>
              <k>
-               ( JUMPI 549 bool2Word ( VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int )
+               ( JUMPI 806 bool2Word ( VV1_y_114b9705:Int <=Int VV0_x_114b9705:Int )
                ~> #pc [ JUMPI ] => #end EVMC_SUCCESS
                ~> #pc [ STOP ] )
                ~> #execute
@@ -765,7 +767,7 @@ Node 10:
                      0
                    </callValue>
                    <wordStack>
-                     ( ( VV1_y_114b9705:Int => selector ( "test_revert_branch(uint256,uint256)" ) ) : ( ( VV0_x_114b9705:Int : ( 212 : ( selector ( "test_revert_branch(uint256,uint256)" ) : .WordStack ) ) ) => .WordStack ) )
+                     ( ( VV1_y_114b9705:Int => selector ( "test_revert_branch(uint256,uint256)" ) ) : ( ( VV0_x_114b9705:Int : ( 250 : ( selector ( "test_revert_branch(uint256,uint256)" ) : .WordStack ) ) ) => .WordStack ) )
                    </wordStack>
                    <localMem>
                      b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80"
@@ -979,7 +981,7 @@ Node 10:
                      0
                    </callValue>
                    <wordStack>
-                     ( 557 : ( VV1_y_114b9705:Int : ( VV0_x_114b9705:Int : ( 212 : ( selector ( "test_revert_branch(uint256,uint256)" ) : .WordStack ) ) ) ) )
+                     ( 814 : ( VV1_y_114b9705:Int : ( VV0_x_114b9705:Int : ( 250 : ( selector ( "test_revert_branch(uint256,uint256)" ) : .WordStack ) ) ) ) )
                    </wordStack>
                    <localMem>
                      b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80"
@@ -1405,7 +1407,7 @@ Node 10:
                      0
                    </callValue>
                    <wordStack>
-                     ( 557 : ( VV1_y_114b9705:Int : ( VV0_x_114b9705:Int : ( 212 : ( selector ( "test_revert_branch(uint256,uint256)" ) : .WordStack ) ) ) ) )
+                     ( 814 : ( VV1_y_114b9705:Int : ( VV0_x_114b9705:Int : ( 250 : ( selector ( "test_revert_branch(uint256,uint256)" ) : .WordStack ) ) ) ) )
                    </wordStack>
                    <localMem>
                      b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80"

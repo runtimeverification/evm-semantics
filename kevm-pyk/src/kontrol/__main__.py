@@ -17,6 +17,7 @@ from .foundry import (
     foundry_get_model,
     foundry_kompile,
     foundry_list,
+    foundry_merge_nodes,
     foundry_node_printer,
     foundry_prove,
     foundry_remove_node,
@@ -160,6 +161,11 @@ def exec_foundry_prove(
     _ignore_arg(kwargs, 'definition_dir', f'--definition: {kwargs["definition_dir"]}')
     _ignore_arg(kwargs, 'spec_module', f'--spec-module: {kwargs["spec_module"]}')
 
+    if smt_timeout is None:
+        smt_timeout = 300
+    if smt_retry_limit is None:
+        smt_retry_limit = 10
+
     if isinstance(kore_rpc_command, str):
         kore_rpc_command = kore_rpc_command.split()
 
@@ -275,6 +281,11 @@ def exec_foundry_simplify_node(
     trace_rewrites: bool = False,
     **kwargs: Any,
 ) -> None:
+    if smt_timeout is None:
+        smt_timeout = 300
+    if smt_retry_limit is None:
+        smt_retry_limit = 10
+
     pretty_term = foundry_simplify_node(
         foundry_root=foundry_root,
         test=test,
@@ -302,6 +313,11 @@ def exec_foundry_step_node(
     trace_rewrites: bool = False,
     **kwargs: Any,
 ) -> None:
+    if smt_timeout is None:
+        smt_timeout = 300
+    if smt_retry_limit is None:
+        smt_retry_limit = 10
+
     foundry_step_node(
         foundry_root=foundry_root,
         test=test,
@@ -313,6 +329,16 @@ def exec_foundry_step_node(
         smt_retry_limit=smt_retry_limit,
         trace_rewrites=trace_rewrites,
     )
+
+
+def exec_foundry_merge_nodes(
+    foundry_root: Path,
+    test: str,
+    nodes: Iterable[NodeIdLike],
+    bug_report: bool = False,
+    **kwargs: Any,
+) -> None:
+    foundry_merge_nodes(foundry_root=foundry_root, node_ids=nodes, test=test)
 
 
 def exec_foundry_section_edge(
@@ -327,6 +353,11 @@ def exec_foundry_section_edge(
     trace_rewrites: bool = False,
     **kwargs: Any,
 ) -> None:
+    if smt_timeout is None:
+        smt_timeout = 300
+    if smt_retry_limit is None:
+        smt_retry_limit = 10
+
     foundry_section_edge(
         foundry_root=foundry_root,
         test=test,
@@ -544,6 +575,23 @@ def _create_argument_parser() -> ArgumentParser:
     foundry_step_node.add_argument(
         '--depth', type=int, default=1, help='How many steps to take from initial node on edge.'
     )
+    foundry_merge_node = command_parser.add_parser(
+        'foundry-merge-nodes',
+        help='Merge multiple nodes into one branch.',
+        parents=[
+            kevm_cli_args.logging_args,
+            kevm_cli_args.foundry_args,
+        ],
+    )
+    foundry_merge_node.add_argument(
+        '--node',
+        type=node_id_like,
+        dest='nodes',
+        default=[],
+        action='append',
+        help='One node to be merged.',
+    )
+    foundry_merge_node.add_argument('test', type=str, help='Merge nodes in this CFG.')
 
     foundry_section_edge = command_parser.add_parser(
         'foundry-section-edge',
