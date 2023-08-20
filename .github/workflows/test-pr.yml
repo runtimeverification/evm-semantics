@@ -147,13 +147,8 @@ jobs:
     name: 'Build and Test KEVM Foundry proofs'
     needs: kevm-pyk-code-quality-checks
     runs-on: [self-hosted, linux, normal]
-    timeout-minutes: 150
+    timeout-minutes: 120
     steps:
-      - name: Workflow Telemetry
-        uses: runforesight/workflow-telemetry-action@v1.8.0
-        with:
-          theme: 'light'
-          comment_on_pr: true
       - name: 'Check out code'
         uses: actions/checkout@v3
         with:
@@ -177,13 +172,8 @@ jobs:
     name: 'Build and Test KEVM Foundry proofs (booster)'
     needs: kevm-pyk-code-quality-checks
     runs-on: [self-hosted, linux, normal]
-    timeout-minutes: 150
+    timeout-minutes: 120
     steps:
-      - name: Workflow Telemetry
-        uses: runforesight/workflow-telemetry-action@v1.8.0
-        with:
-          theme: 'light'
-          comment_on_pr: true
       - name: 'Check out code'
         uses: actions/checkout@v3
         with:
