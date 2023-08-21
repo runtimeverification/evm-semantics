@@ -371,7 +371,7 @@ def exec_prune_proof(
     )
 
     apr_proof = APRProof.read_proof_data(save_directory, claim.label)
-    node_ids = apr_proof.kcfg.prune(node)
+    node_ids = apr_proof.prune_from(node)
     _LOGGER.info(f'Pruned nodes: {node_ids}')
     apr_proof.write_proof_data()
 
