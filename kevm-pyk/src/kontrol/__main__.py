@@ -248,16 +248,9 @@ def exec_foundry_list(foundry_root: Path, **kwargs: Any) -> None:
 
 def exec_foundry_view_kcfg(foundry_root: Path, test: str, id: str | None, **kwargs: Any) -> None:
     foundry = Foundry(foundry_root)
-    # TODO use wrapper function instead
-    if id is None:
-        matching_proofs = foundry.matching_proofs(test)
-        if len(matching_proofs) > 1:
-            raise RuntimeError(
-                'Found {len(matching_proofs)} matching proofs for {test}. Use the --id flag to choose one.'
-            )
-
-    contract_name, _ = test.split('.')
-    proof = foundry.get_apr_proof(test)
+    test_id = foundry.get_test_id(test, id)
+    contract_name, _ = test_id.split('.')
+    proof = foundry.get_apr_proof(test_id)
 
     def _short_info(cterm: CTerm) -> Iterable[str]:
         return foundry.short_info_for_contract(contract_name, cterm)
@@ -521,6 +514,7 @@ def _create_argument_parser() -> ArgumentParser:
         parents=[kevm_cli_args.logging_args, kevm_cli_args.foundry_args],
     )
     foundry_to_dot.add_argument('test', type=str, help='Display the CFG for this test.')
+    foundry_to_dot.add_argument('--id', type=str, default=None, required=False, help='ID of the test')
 
     command_parser.add_parser(
         'foundry-list',
@@ -534,6 +528,7 @@ def _create_argument_parser() -> ArgumentParser:
         parents=[kevm_cli_args.logging_args, kevm_cli_args.foundry_args],
     )
     foundry_view_kcfg_args.add_argument('test', type=str, help='View the CFG for this test.')
+    foundry_view_kcfg_args.add_argument('--id', type=str, default=None, required=False, help='ID of the test')
 
     foundry_remove_node = command_parser.add_parser(
         'foundry-remove-node',
@@ -542,6 +537,7 @@ def _create_argument_parser() -> ArgumentParser:
     )
     foundry_remove_node.add_argument('test', type=str, help='View the CFG for this test.')
     foundry_remove_node.add_argument('node', type=node_id_like, help='Node to remove CFG subgraph from.')
+    foundry_remove_node.add_argument('--id', type=str, default=None, required=False, help='ID of the test')
 
     foundry_simplify_node = command_parser.add_parser(
         'foundry-simplify-node',
@@ -556,6 +552,7 @@ def _create_argument_parser() -> ArgumentParser:
     )
     foundry_simplify_node.add_argument('test', type=str, help='Simplify node in this CFG.')
     foundry_simplify_node.add_argument('node', type=node_id_like, help='Node to simplify in CFG.')
+    foundry_simplify_node.add_argument('--id', type=str, default=None, required=False, help='ID of the test')
     foundry_simplify_node.add_argument(
         '--replace', default=False, help='Replace the original node with the simplified variant in the graph.'
     )
@@ -572,6 +569,7 @@ def _create_argument_parser() -> ArgumentParser:
     )
     foundry_step_node.add_argument('test', type=str, help='Step from node in this CFG.')
     foundry_step_node.add_argument('node', type=node_id_like, help='Node to step from in CFG.')
+    foundry_step_node.add_argument('--id', type=str, default=None, required=False, help='ID of the test')
     foundry_step_node.add_argument(
         '--repeat', type=int, default=1, help='How many node expansions to do from the given start node (>= 1).'
     )
@@ -591,6 +589,7 @@ def _create_argument_parser() -> ArgumentParser:
     )
     foundry_section_edge.add_argument('test', type=str, help='Section edge in this CFG.')
     foundry_section_edge.add_argument('edge', type=arg_pair_of(str, str), help='Edge to section in CFG.')
+    foundry_section_edge.add_argument('--id', type=str, default=None, required=False, help='ID of the test')
     foundry_section_edge.add_argument(
         '--sections', type=int, default=2, help='Number of sections to make from edge (>= 2).'
     )
@@ -606,6 +605,7 @@ def _create_argument_parser() -> ArgumentParser:
         ],
     )
     foundry_get_model.add_argument('test', type=str, help='Display the models of nodes in this test.')
+    foundry_get_model.add_argument('--id', type=str, default=None, required=False, help='ID of the test')
     foundry_get_model.add_argument(
         '--node',
         type=node_id_like,
