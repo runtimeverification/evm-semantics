@@ -837,6 +837,52 @@ def foundry_simplify_node(
     return foundry.kevm.pretty_print(res_term, unalias=False, sort_collections=sort_collections)
 
 
+def foundry_merge_nodes(
+    foundry_root: Path,
+    test: str,
+    node_ids: Iterable[NodeIdLike],
+    bug_report: bool = False,
+    include_disjunct: bool = False,
+) -> None:
+    def check_cells_equal(cell: str, nodes: Iterable[KCFG.Node]) -> bool:
+        nodes = list(nodes)
+        if len(nodes) < 2:
+            return True
+        cell_value = nodes[0].cterm.cell(cell)
+        for node in nodes[1:]:
+            if cell_value != node.cterm.cell(cell):
+                return False
+        return True
+
+    br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
+    foundry = Foundry(foundry_root, bug_report=br)
+    proof = foundry.get_apr_proof(test)
+
+    if not isinstance(proof, APRProof):
+        raise ValueError('Specified proof is not an APRProof.')
+
+    if len(list(node_ids)) < 2:
+        raise ValueError(f'Must supply at least 2 nodes to merge, got: {node_ids}')
+
+    nodes = [proof.kcfg.node(int(node_id)) for node_id in node_ids]
+    check_cells = ['K_CELL', 'PROGRAM_CELL', 'PC_CELL', 'CALLDEPTH_CELL']
+    check_cells_ne = [check_cell for check_cell in check_cells if not check_cells_equal(check_cell, nodes)]
+    if check_cells_ne:
+        raise ValueError(f'Nodes {node_ids} cannot be merged because they differ in: {check_cells_ne}')
+
+    anti_unification = nodes[0].cterm
+    for node in nodes[1:]:
+        anti_unification, _, _ = anti_unification.anti_unify(node.cterm, keep_values=True, kdef=foundry.kevm.definition)
+    new_node = proof.kcfg.create_node(anti_unification)
+    for node in nodes:
+        proof.kcfg.create_cover(node.id, new_node.id)
+
+    proof.write_proof_data()
+
+    print(f'Merged nodes {node_ids} into new node {new_node.id}.')
+    print(foundry.kevm.pretty_print(new_node.cterm.kast))
+
+
 def foundry_step_node(
     foundry_root: Path,
     test: str,
@@ -895,8 +941,8 @@ def foundry_section_edge(
         smt_retry_limit=smt_retry_limit,
         trace_rewrites=trace_rewrites,
     ) as kcfg_explore:
-        kcfg, _ = kcfg_explore.section_edge(
-            apr_proof.kcfg, source_id=source_id, target_id=target_id, logs=apr_proof.logs, sections=sections
+        kcfg_explore.section_edge(
+            apr_proof.kcfg, source_id=int(source_id), target_id=int(target_id), logs=apr_proof.logs, sections=sections
         )
     apr_proof.write_proof_data()
 

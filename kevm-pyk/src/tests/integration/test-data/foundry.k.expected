@@ -2,607 +2,607 @@ requires "contracts.k"
 requires "requires/lemmas.k"
 
 module FOUNDRY-MAIN
-    imports public ACCOUNTPARAMSTEST-VERIFICATION
-    imports public ADDRTEST-VERIFICATION
-    imports public ALLOWCHANGESTEST-VERIFICATION
-    imports public VALUESTORE-VERIFICATION
-    imports public ARITHMETICTEST-VERIFICATION
-    imports public ASSUMETEST-VERIFICATION
-    imports public BMCLOOPSTEST-VERIFICATION
-    imports public BLOCKPARAMSTEST-VERIFICATION
-    imports public BROADCASTTEST-VERIFICATION
-    imports public CONSTANTS-VERIFICATION
-    imports public CONTRACT-VERIFICATION
-    imports public CONTRACTTEST-VERIFICATION
-    imports public CONTRACTBTEST-VERIFICATION
-    imports public COUNTER-VERIFICATION
-    imports public COUNTERTEST-VERIFICATION
-    imports public DYNAMICTYPES-VERIFICATION
-    imports public EXPECTEMIT-VERIFICATION
-    imports public EMITCONTRACTTEST-VERIFICATION
-    imports public ENVTEST-VERIFICATION
-    imports public DUMMY-VERIFICATION
-    imports public EXPECTCALLTEST-VERIFICATION
-    imports public DEPTHREVERTER-VERIFICATION
-    imports public EXPECTREVERTTEST-VERIFICATION
-    imports public REVERTER-VERIFICATION
-    imports public REVERTERWITHRETURN-VERIFICATION
-    imports public FFITEST-VERIFICATION
-    imports public FILESTEST-VERIFICATION
-    imports public FORKTEST-VERIFICATION
-    imports public GASTEST-VERIFICATION
-    imports public GETCODETEST-VERIFICATION
-    imports public INITCODETEST-VERIFICATION
-    imports public KEVMCHEATS-VERIFICATION
-    imports public KEVMCHEATSBASE-VERIFICATION
-    imports public LABELTEST-VERIFICATION
-    imports public LOOPSTEST-VERIFICATION
-    imports public METHODDISAMBIGUATETEST-VERIFICATION
-    imports public MOCKCALLTEST-VERIFICATION
-    imports public MYIERC20-VERIFICATION
-    imports public MYTOKEN-VERIFICATION
-    imports public NOIMPORT-VERIFICATION
-    imports public OWNERUPONLY-VERIFICATION
-    imports public OWNERUPONLYTEST-VERIFICATION
-    imports public ADDITIONALTOKEN-VERIFICATION
-    imports public PLAINPRANKTEST-VERIFICATION
-    imports public PRANK-VERIFICATION
-    imports public PRANKTEST-VERIFICATION
-    imports public PRECONDITIONSTEST-VERIFICATION
-    imports public RECORDLOGSTEST-VERIFICATION
-    imports public SAFE-VERIFICATION
-    imports public SAFETEST-VERIFICATION
-    imports public SCRIPT-VERIFICATION
-    imports public SETUP2TEST-VERIFICATION
-    imports public SETUPDEPLOYTEST-VERIFICATION
-    imports public SETUPTEST-VERIFICATION
-    imports public SIGNTEST-VERIFICATION
-    imports public ASSERTTEST-VERIFICATION
-    imports public SNAPSHOTTEST-VERIFICATION
-    imports public STORE-VERIFICATION
-    imports public STORETEST-VERIFICATION
-    imports public SYMBOLICSTORAGETEST-VERIFICATION
-    imports public SYMBOLICSTORE-VERIFICATION
-    imports public TEST-VERIFICATION
-    imports public STDERROR-VERIFICATION
-    imports public STDMATH-VERIFICATION
-    imports public STDSTORAGE-VERIFICATION
-    imports public TESTNUMBER-VERIFICATION
-    imports public TOSTRINGTEST-VERIFICATION
-    imports public TOKEN-VERIFICATION
-    imports public BYTESTYPETEST-VERIFICATION
-    imports public INTTYPETEST-VERIFICATION
-    imports public UINTTYPETEST-VERIFICATION
-    imports public VM-VERIFICATION
-    imports public CONSOLE-VERIFICATION
-    imports public CONSOLE2-VERIFICATION
-    imports public DSTEST-VERIFICATION
+    imports public AccountParamsTest-VERIFICATION
+    imports public AddrTest-VERIFICATION
+    imports public AllowChangesTest-VERIFICATION
+    imports public ValueStore-VERIFICATION
+    imports public ArithmeticTest-VERIFICATION
+    imports public AssumeTest-VERIFICATION
+    imports public BMCLoopsTest-VERIFICATION
+    imports public BlockParamsTest-VERIFICATION
+    imports public BroadcastTest-VERIFICATION
+    imports public Constants-VERIFICATION
+    imports public Contract-VERIFICATION
+    imports public ContractTest-VERIFICATION
+    imports public ContractBTest-VERIFICATION
+    imports public Counter-VERIFICATION
+    imports public CounterTest-VERIFICATION
+    imports public DynamicTypes-VERIFICATION
+    imports public ExpectEmit-VERIFICATION
+    imports public EmitContractTest-VERIFICATION
+    imports public EnvTest-VERIFICATION
+    imports public Dummy-VERIFICATION
+    imports public ExpectCallTest-VERIFICATION
+    imports public DepthReverter-VERIFICATION
+    imports public ExpectRevertTest-VERIFICATION
+    imports public Reverter-VERIFICATION
+    imports public ReverterWithReturn-VERIFICATION
+    imports public FfiTest-VERIFICATION
+    imports public FilesTest-VERIFICATION
+    imports public ForkTest-VERIFICATION
+    imports public GasTest-VERIFICATION
+    imports public GetCodeTest-VERIFICATION
+    imports public InitCodeTest-VERIFICATION
+    imports public KEVMCheats-VERIFICATION
+    imports public KEVMCheatsBase-VERIFICATION
+    imports public LabelTest-VERIFICATION
+    imports public LoopsTest-VERIFICATION
+    imports public MethodDisambiguateTest-VERIFICATION
+    imports public MockCallTest-VERIFICATION
+    imports public MyIERC20-VERIFICATION
+    imports public MyToken-VERIFICATION
+    imports public NoImport-VERIFICATION
+    imports public OwnerUpOnly-VERIFICATION
+    imports public OwnerUpOnlyTest-VERIFICATION
+    imports public AdditionalToken-VERIFICATION
+    imports public PlainPrankTest-VERIFICATION
+    imports public Prank-VERIFICATION
+    imports public PrankTest-VERIFICATION
+    imports public PreconditionsTest-VERIFICATION
+    imports public RecordLogsTest-VERIFICATION
+    imports public Safe-VERIFICATION
+    imports public SafeTest-VERIFICATION
+    imports public Script-VERIFICATION
+    imports public Setup2Test-VERIFICATION
+    imports public SetUpDeployTest-VERIFICATION
+    imports public SetUpTest-VERIFICATION
+    imports public SignTest-VERIFICATION
+    imports public AssertTest-VERIFICATION
+    imports public SnapshotTest-VERIFICATION
+    imports public Store-VERIFICATION
+    imports public StoreTest-VERIFICATION
+    imports public SymbolicStorageTest-VERIFICATION
+    imports public SymbolicStore-VERIFICATION
+    imports public Test-VERIFICATION
+    imports public stdError-VERIFICATION
+    imports public stdMath-VERIFICATION
+    imports public stdStorage-VERIFICATION
+    imports public TestNumber-VERIFICATION
+    imports public ToStringTest-VERIFICATION
+    imports public Token-VERIFICATION
+    imports public BytesTypeTest-VERIFICATION
+    imports public IntTypeTest-VERIFICATION
+    imports public UintTypeTest-VERIFICATION
+    imports public Vm-VERIFICATION
+    imports public console-VERIFICATION
+    imports public console2-VERIFICATION
+    imports public DSTest-VERIFICATION
     
     
 
 endmodule
 
-module ACCOUNTPARAMSTEST-VERIFICATION
-    imports public ACCOUNTPARAMSTEST-CONTRACT
+module AccountParamsTest-VERIFICATION
+    imports public AccountParamsTest-CONTRACT
     
     
 
 endmodule
 
-module ADDRTEST-VERIFICATION
-    imports public ADDRTEST-CONTRACT
+module AddrTest-VERIFICATION
+    imports public AddrTest-CONTRACT
     
     
 
 endmodule
 
-module ALLOWCHANGESTEST-VERIFICATION
-    imports public ALLOWCHANGESTEST-CONTRACT
+module AllowChangesTest-VERIFICATION
+    imports public AllowChangesTest-CONTRACT
     
     
 
 endmodule
 
-module VALUESTORE-VERIFICATION
-    imports public VALUESTORE-CONTRACT
+module ValueStore-VERIFICATION
+    imports public ValueStore-CONTRACT
     
     
 
 endmodule
 
-module ARITHMETICTEST-VERIFICATION
-    imports public ARITHMETICTEST-CONTRACT
+module ArithmeticTest-VERIFICATION
+    imports public ArithmeticTest-CONTRACT
     
     
 
 endmodule
 
-module ASSUMETEST-VERIFICATION
-    imports public ASSUMETEST-CONTRACT
+module AssumeTest-VERIFICATION
+    imports public AssumeTest-CONTRACT
     
     
 
 endmodule
 
-module BMCLOOPSTEST-VERIFICATION
-    imports public BMCLOOPSTEST-CONTRACT
+module BMCLoopsTest-VERIFICATION
+    imports public BMCLoopsTest-CONTRACT
     
     
 
 endmodule
 
-module BLOCKPARAMSTEST-VERIFICATION
-    imports public BLOCKPARAMSTEST-CONTRACT
+module BlockParamsTest-VERIFICATION
+    imports public BlockParamsTest-CONTRACT
     
     
 
 endmodule
 
-module BROADCASTTEST-VERIFICATION
-    imports public BROADCASTTEST-CONTRACT
+module BroadcastTest-VERIFICATION
+    imports public BroadcastTest-CONTRACT
     
     
 
 endmodule
 
-module CONSTANTS-VERIFICATION
-    imports public CONSTANTS-CONTRACT
+module Constants-VERIFICATION
+    imports public Constants-CONTRACT
     
     
 
 endmodule
 
-module CONTRACT-VERIFICATION
-    imports public CONTRACT-CONTRACT
+module Contract-VERIFICATION
+    imports public Contract-CONTRACT
     
     
 
 endmodule
 
-module CONTRACTTEST-VERIFICATION
-    imports public CONTRACTTEST-CONTRACT
+module ContractTest-VERIFICATION
+    imports public ContractTest-CONTRACT
     
     
 
 endmodule
 
-module CONTRACTBTEST-VERIFICATION
-    imports public CONTRACTBTEST-CONTRACT
+module ContractBTest-VERIFICATION
+    imports public ContractBTest-CONTRACT
     
     
 
 endmodule
 
-module COUNTER-VERIFICATION
-    imports public COUNTER-CONTRACT
+module Counter-VERIFICATION
+    imports public Counter-CONTRACT
     
     
 
 endmodule
 
-module COUNTERTEST-VERIFICATION
-    imports public COUNTERTEST-CONTRACT
+module CounterTest-VERIFICATION
+    imports public CounterTest-CONTRACT
     
     
 
 endmodule
 
-module DYNAMICTYPES-VERIFICATION
-    imports public DYNAMICTYPES-CONTRACT
+module DynamicTypes-VERIFICATION
+    imports public DynamicTypes-CONTRACT
     
     
 
 endmodule
 
-module EXPECTEMIT-VERIFICATION
-    imports public EXPECTEMIT-CONTRACT
+module ExpectEmit-VERIFICATION
+    imports public ExpectEmit-CONTRACT
     
     
 
 endmodule
 
-module EMITCONTRACTTEST-VERIFICATION
-    imports public EMITCONTRACTTEST-CONTRACT
+module EmitContractTest-VERIFICATION
+    imports public EmitContractTest-CONTRACT
     
     
 
 endmodule
 
-module ENVTEST-VERIFICATION
-    imports public ENVTEST-CONTRACT
+module EnvTest-VERIFICATION
+    imports public EnvTest-CONTRACT
     
     
 
 endmodule
 
-module DUMMY-VERIFICATION
-    imports public DUMMY-CONTRACT
+module Dummy-VERIFICATION
+    imports public Dummy-CONTRACT
     
     
 
 endmodule
 
-module EXPECTCALLTEST-VERIFICATION
-    imports public EXPECTCALLTEST-CONTRACT
+module ExpectCallTest-VERIFICATION
+    imports public ExpectCallTest-CONTRACT
     
     
 
 endmodule
 
-module DEPTHREVERTER-VERIFICATION
-    imports public DEPTHREVERTER-CONTRACT
+module DepthReverter-VERIFICATION
+    imports public DepthReverter-CONTRACT
     
     
 
 endmodule
 
-module EXPECTREVERTTEST-VERIFICATION
-    imports public EXPECTREVERTTEST-CONTRACT
+module ExpectRevertTest-VERIFICATION
+    imports public ExpectRevertTest-CONTRACT
     
     
 
 endmodule
 
-module REVERTER-VERIFICATION
-    imports public REVERTER-CONTRACT
+module Reverter-VERIFICATION
+    imports public Reverter-CONTRACT
     
     
 
 endmodule
 
-module REVERTERWITHRETURN-VERIFICATION
-    imports public REVERTERWITHRETURN-CONTRACT
+module ReverterWithReturn-VERIFICATION
+    imports public ReverterWithReturn-CONTRACT
     
     
 
 endmodule
 
-module FFITEST-VERIFICATION
-    imports public FFITEST-CONTRACT
+module FfiTest-VERIFICATION
+    imports public FfiTest-CONTRACT
     
     
 
 endmodule
 
-module FILESTEST-VERIFICATION
-    imports public FILESTEST-CONTRACT
+module FilesTest-VERIFICATION
+    imports public FilesTest-CONTRACT
     
     
 
 endmodule
 
-module FORKTEST-VERIFICATION
-    imports public FORKTEST-CONTRACT
+module ForkTest-VERIFICATION
+    imports public ForkTest-CONTRACT
     
     
 
 endmodule
 
-module GASTEST-VERIFICATION
-    imports public GASTEST-CONTRACT
+module GasTest-VERIFICATION
+    imports public GasTest-CONTRACT
     
     
 
 endmodule
 
-module GETCODETEST-VERIFICATION
-    imports public GETCODETEST-CONTRACT
+module GetCodeTest-VERIFICATION
+    imports public GetCodeTest-CONTRACT
     
     
 
 endmodule
 
-module INITCODETEST-VERIFICATION
-    imports public INITCODETEST-CONTRACT
+module InitCodeTest-VERIFICATION
+    imports public InitCodeTest-CONTRACT
     
     
 
 endmodule
 
-module KEVMCHEATS-VERIFICATION
-    imports public KEVMCHEATS-CONTRACT
+module KEVMCheats-VERIFICATION
+    imports public KEVMCheats-CONTRACT
     
     
 
 endmodule
 
-module KEVMCHEATSBASE-VERIFICATION
-    imports public KEVMCHEATSBASE-CONTRACT
+module KEVMCheatsBase-VERIFICATION
+    imports public KEVMCheatsBase-CONTRACT
     
     
 
 endmodule
 
-module LABELTEST-VERIFICATION
-    imports public LABELTEST-CONTRACT
+module LabelTest-VERIFICATION
+    imports public LabelTest-CONTRACT
     
     
 
 endmodule
 
-module LOOPSTEST-VERIFICATION
-    imports public LOOPSTEST-CONTRACT
+module LoopsTest-VERIFICATION
+    imports public LoopsTest-CONTRACT
     imports public SUM-TO-N-INVARIANT
     
     
 
 endmodule
 
-module METHODDISAMBIGUATETEST-VERIFICATION
-    imports public METHODDISAMBIGUATETEST-CONTRACT
+module MethodDisambiguateTest-VERIFICATION
+    imports public MethodDisambiguateTest-CONTRACT
     
     
 
 endmodule
 
-module MOCKCALLTEST-VERIFICATION
-    imports public MOCKCALLTEST-CONTRACT
+module MockCallTest-VERIFICATION
+    imports public MockCallTest-CONTRACT
     
     
 
 endmodule
 
-module MYIERC20-VERIFICATION
-    imports public MYIERC20-CONTRACT
+module MyIERC20-VERIFICATION
+    imports public MyIERC20-CONTRACT
     
     
 
 endmodule
 
-module MYTOKEN-VERIFICATION
-    imports public MYTOKEN-CONTRACT
+module MyToken-VERIFICATION
+    imports public MyToken-CONTRACT
     
     
 
 endmodule
 
-module NOIMPORT-VERIFICATION
-    imports public NOIMPORT-CONTRACT
+module NoImport-VERIFICATION
+    imports public NoImport-CONTRACT
     
     
 
 endmodule
 
-module OWNERUPONLY-VERIFICATION
-    imports public OWNERUPONLY-CONTRACT
+module OwnerUpOnly-VERIFICATION
+    imports public OwnerUpOnly-CONTRACT
     
     
 
 endmodule
 
-module OWNERUPONLYTEST-VERIFICATION
-    imports public OWNERUPONLYTEST-CONTRACT
+module OwnerUpOnlyTest-VERIFICATION
+    imports public OwnerUpOnlyTest-CONTRACT
     
     
 
 endmodule
 
-module ADDITIONALTOKEN-VERIFICATION
-    imports public ADDITIONALTOKEN-CONTRACT
+module AdditionalToken-VERIFICATION
+    imports public AdditionalToken-CONTRACT
     
     
 
 endmodule
 
-module PLAINPRANKTEST-VERIFICATION
-    imports public PLAINPRANKTEST-CONTRACT
+module PlainPrankTest-VERIFICATION
+    imports public PlainPrankTest-CONTRACT
     
     
 
 endmodule
 
-module PRANK-VERIFICATION
-    imports public PRANK-CONTRACT
+module Prank-VERIFICATION
+    imports public Prank-CONTRACT
     
     
 
 endmodule
 
-module PRANKTEST-VERIFICATION
-    imports public PRANKTEST-CONTRACT
+module PrankTest-VERIFICATION
+    imports public PrankTest-CONTRACT
     
     
 
 endmodule
 
-module PRECONDITIONSTEST-VERIFICATION
-    imports public PRECONDITIONSTEST-CONTRACT
+module PreconditionsTest-VERIFICATION
+    imports public PreconditionsTest-CONTRACT
     
     
 
 endmodule
 
-module RECORDLOGSTEST-VERIFICATION
-    imports public RECORDLOGSTEST-CONTRACT
+module RecordLogsTest-VERIFICATION
+    imports public RecordLogsTest-CONTRACT
     
     
 
 endmodule
 
-module SAFE-VERIFICATION
-    imports public SAFE-CONTRACT
+module Safe-VERIFICATION
+    imports public Safe-CONTRACT
     
     
 
 endmodule
 
-module SAFETEST-VERIFICATION
-    imports public SAFETEST-CONTRACT
+module SafeTest-VERIFICATION
+    imports public SafeTest-CONTRACT
     
     
 
 endmodule
 
-module SCRIPT-VERIFICATION
-    imports public SCRIPT-CONTRACT
+module Script-VERIFICATION
+    imports public Script-CONTRACT
     
     
 
 endmodule
 
-module SETUP2TEST-VERIFICATION
-    imports public SETUP2TEST-CONTRACT
+module Setup2Test-VERIFICATION
+    imports public Setup2Test-CONTRACT
     
     
 
 endmodule
 
-module SETUPDEPLOYTEST-VERIFICATION
-    imports public SETUPDEPLOYTEST-CONTRACT
+module SetUpDeployTest-VERIFICATION
+    imports public SetUpDeployTest-CONTRACT
     
     
 
 endmodule
 
-module SETUPTEST-VERIFICATION
-    imports public SETUPTEST-CONTRACT
+module SetUpTest-VERIFICATION
+    imports public SetUpTest-CONTRACT
     
     
 
 endmodule
 
-module SIGNTEST-VERIFICATION
-    imports public SIGNTEST-CONTRACT
+module SignTest-VERIFICATION
+    imports public SignTest-CONTRACT
     
     
 
 endmodule
 
-module ASSERTTEST-VERIFICATION
-    imports public ASSERTTEST-CONTRACT
+module AssertTest-VERIFICATION
+    imports public AssertTest-CONTRACT
     
     
 
 endmodule
 
-module SNAPSHOTTEST-VERIFICATION
-    imports public SNAPSHOTTEST-CONTRACT
+module SnapshotTest-VERIFICATION
+    imports public SnapshotTest-CONTRACT
     
     
 
 endmodule
 
-module STORE-VERIFICATION
-    imports public STORE-CONTRACT
+module Store-VERIFICATION
+    imports public Store-CONTRACT
     
     
 
 endmodule
 
-module STORETEST-VERIFICATION
-    imports public STORETEST-CONTRACT
+module StoreTest-VERIFICATION
+    imports public StoreTest-CONTRACT
     
     
 
 endmodule
 
-module SYMBOLICSTORAGETEST-VERIFICATION
-    imports public SYMBOLICSTORAGETEST-CONTRACT
+module SymbolicStorageTest-VERIFICATION
+    imports public SymbolicStorageTest-CONTRACT
     
     
 
 endmodule
 
-module SYMBOLICSTORE-VERIFICATION
-    imports public SYMBOLICSTORE-CONTRACT
+module SymbolicStore-VERIFICATION
+    imports public SymbolicStore-CONTRACT
     
     
 
 endmodule
 
-module TEST-VERIFICATION
-    imports public TEST-CONTRACT
+module Test-VERIFICATION
+    imports public Test-CONTRACT
     
     
 
 endmodule
 
-module STDERROR-VERIFICATION
-    imports public STDERROR-CONTRACT
+module stdError-VERIFICATION
+    imports public stdError-CONTRACT
     
     
 
 endmodule
 
-module STDMATH-VERIFICATION
-    imports public STDMATH-CONTRACT
+module stdMath-VERIFICATION
+    imports public stdMath-CONTRACT
     
     
 
 endmodule
 
-module STDSTORAGE-VERIFICATION
-    imports public STDSTORAGE-CONTRACT
+module stdStorage-VERIFICATION
+    imports public stdStorage-CONTRACT
     
     
 
 endmodule
 
-module TESTNUMBER-VERIFICATION
-    imports public TESTNUMBER-CONTRACT
+module TestNumber-VERIFICATION
+    imports public TestNumber-CONTRACT
     
     
 
 endmodule
 
-module TOSTRINGTEST-VERIFICATION
-    imports public TOSTRINGTEST-CONTRACT
+module ToStringTest-VERIFICATION
+    imports public ToStringTest-CONTRACT
     
     
 
 endmodule
 
-module TOKEN-VERIFICATION
-    imports public TOKEN-CONTRACT
+module Token-VERIFICATION
+    imports public Token-CONTRACT
     
     
 
 endmodule
 
-module BYTESTYPETEST-VERIFICATION
-    imports public BYTESTYPETEST-CONTRACT
+module BytesTypeTest-VERIFICATION
+    imports public BytesTypeTest-CONTRACT
     
     
 
 endmodule
 
-module INTTYPETEST-VERIFICATION
-    imports public INTTYPETEST-CONTRACT
+module IntTypeTest-VERIFICATION
+    imports public IntTypeTest-CONTRACT
     
     
 
 endmodule
 
-module UINTTYPETEST-VERIFICATION
-    imports public UINTTYPETEST-CONTRACT
+module UintTypeTest-VERIFICATION
+    imports public UintTypeTest-CONTRACT
     
     
 
 endmodule
 
-module VM-VERIFICATION
-    imports public VM-CONTRACT
+module Vm-VERIFICATION
+    imports public Vm-CONTRACT
     
     
 
 endmodule
 
-module CONSOLE-VERIFICATION
-    imports public CONSOLE-CONTRACT
+module console-VERIFICATION
+    imports public console-CONTRACT
     
     
 
 endmodule
 
-module CONSOLE2-VERIFICATION
-    imports public CONSOLE2-CONTRACT
+module console2-VERIFICATION
+    imports public console2-CONTRACT
     
     
 
 endmodule
 
-module DSTEST-VERIFICATION
-    imports public DSTEST-CONTRACT
+module DSTest-VERIFICATION
+    imports public DSTest-CONTRACT
     
     
 
