@@ -173,21 +173,6 @@ class KEVMCLIArgs(KCLIArgs):
         return args
 
     @cached_property
-    def smt_args(self) -> ArgumentParser:
-        args = ArgumentParser(add_help=False)
-        args.add_argument(
-            '--smt-timeout', dest='smt_timeout', type=int, default=125, help='Timeout in ms to use for SMT queries.'
-        )
-        args.add_argument(
-            '--smt-retry-limit',
-            dest='smt_retry_limit',
-            type=int,
-            default=4,
-            help='Number of times to retry SMT queries with scaling timeouts.',
-        )
-        return args
-
-    @cached_property
     def explore_args(self) -> ArgumentParser:
         args = ArgumentParser(add_help=False)
         args.add_argument(
@@ -218,19 +203,6 @@ class KEVMCLIArgs(KCLIArgs):
             help='Do not store a node for every EVM call made.',
         )
         args.add_argument(
-            '--implication-every-block',
-            dest='implication_every_block',
-            default=True,
-            action='store_true',
-            help='Check subsumption into target state every basic block, not just at terminal nodes.',
-        )
-        args.add_argument(
-            '--no-implication-every-block',
-            dest='implication_every_block',
-            action='store_false',
-            help='Do not check subsumption into target state every basic block, not just at terminal nodes.',
-        )
-        args.add_argument(
             '--simplify-init',
             dest='simplify_init',
             default=True,
@@ -248,20 +220,20 @@ class KEVMCLIArgs(KCLIArgs):
             dest='max_depth',
             default=1000,
             type=int,
-            help='Store every Nth state in the CFG for inspection.',
+            help='Maximum number of K steps before the state is saved in a new node in the CFG. Branching will cause this to happen earlier.',
         )
         args.add_argument(
             '--max-iterations',
             dest='max_iterations',
             default=None,
             type=int,
-            help='Store every Nth state in the CFG for inspection.',
+            help='Number of times to expand the next pending node in the CFG.',
         )
         args.add_argument(
             '--kore-rpc-command',
             dest='kore_rpc_command',
             type=str,
-            default='kore-rpc',
+            default=None,
             help='Custom command to start RPC server',
         )
         args.add_argument(
