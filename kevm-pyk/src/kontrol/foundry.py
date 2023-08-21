@@ -617,27 +617,10 @@ def foundry_prove(
 
     if not tests:
         tests = [(test, None) for test in foundry.all_tests]
-    test_names = [test[0] for test in tests]
     tests = list({(foundry.matching_sig(test), id) for test, id in tests})
-    for i, (test, id) in enumerate(tests):
-        contract_name, method_sig = test.split('.')
-        foundry_digest = foundry.method_digest(contract_name, method_sig)
-        if id is None:
-            matching_proofs = foundry.proofs_with_test(test)
-            up_to_date_proofs = [proof for proof in matching_proofs if proof.proof_digest == foundry_digest]
-            if len(up_to_date_proofs) > 1:
-                raise ValueError(
-                    f'Found {len(up_to_date_proofs)} up to date proofs for {test}. Specify an id with "--test {test},`id`" flag to choose one.'
-                )
-            elif len(up_to_date_proofs) == 1:
-                id = single(up_to_date_proofs).id.split(':')[1]
-        else:
-            test_id = f'{test}:{id}'
-            if foundry.get_apr_proof(test_id).proof_digest != foundry_digest:
-                raise ValueError(f'Proof with id `{test_id}` is not up to date.')
-        tests[i] = (test, id)
+    test_names = [test[0] for test in tests]
 
-    _LOGGER.info(f'Running tests: {tests}')
+    _LOGGER.info(f'Running tests: {test_names}')
 
     setup_methods: dict[str, str] = {}
     contracts = set(unique({test.split('.')[0] for test in test_names}))
@@ -658,24 +641,46 @@ def foundry_prove(
     out_of_date_methods: set[str] = set()
     for method in test_methods:
         if not method.up_to_date(foundry.out / 'digest') or reinit:
-            out_of_date_methods.add(method.qualified_name)
-            _LOGGER.info(f'Method {method.qualified_name} is out of date, so it was reinitialized')
+            out_of_date_methods.add(method.signature)
+            _LOGGER.info(f'Method {method.signature} is out of date, so it was reinitialized')
         else:
-            _LOGGER.info(f'Method {method.qualified_name} not reinitialized because it is up to date')
+            _LOGGER.info(f'Method {method.signature} not reinitialized because it is up to date')
             if not method.contract_up_to_date(foundry.out / 'digest'):
                 _LOGGER.warning(
-                    f'Method {method.qualified_name} not reinitialized because digest was up to date, but the contract it is a part of has changed.'
+                    f'Method {method.signature} not reinitialized because digest was up to date, but the contract it is a part of has changed.'
                 )
         method.update_digest(foundry.out / 'digest')
 
+    for i, (test, id) in enumerate(tests):
+        contract_name, method_sig = test.split('.')
+        foundry_digest = foundry.method_digest(contract_name, method_sig)
+        # TODO define reinit
+        if id is None and not reinit:
+            matching_proofs = foundry.proofs_with_test(test)
+            up_to_date_proofs = [proof for proof in matching_proofs if proof.proof_digest == foundry_digest]
+            if len(up_to_date_proofs) > 1:
+                raise ValueError(
+                    f'Found {len(up_to_date_proofs)} up to date proofs for {test}. Specify an id with "--test {test},`id`" flag to choose one.'
+                )
+            elif len(up_to_date_proofs) == 1:
+                id = single(up_to_date_proofs).id.split(':')[1]
+        elif reinit or test in out_of_date_methods:
+            if id is not None:
+                _LOGGER.warn('--reinit was used so a new id will be attributed.')
+            id = foundry.free_proof_id(test)
+        else:
+            test_id = f'{test}:{id}'
+            if foundry.get_apr_proof(test_id).proof_digest != foundry_digest:
+                raise ValueError(f'Proof with id `{test_id}` is not up to date.')
+        assert id is not None
+        tests[i] = (test, id)
+
     def _init_and_run_proof(_init_problem: tuple[str, str, str | None]) -> tuple[bool, list[str] | None]:
         contract_name, method_sig, id = _init_problem
-        test = f'{contract_name}.{method_sig}'
-        if id is not None:
-            test_id = f'{test}:{id}'
-        else:
-            test_id = f'{test}:{foundry.free_proof_id(test)}'
-
+        contract = foundry.contracts[contract_name]
+        method = contract.method_by_sig[method_sig]
+        id = ':' + id if id is not None else ''
+        test_id = f'{contract_name}.{method_sig}{id}'
         llvm_definition_dir = foundry.out / 'kompiled-llvm' if use_booster else None
 
         with legacy_explore(
@@ -689,8 +694,6 @@ def foundry_prove(
             smt_retry_limit=smt_retry_limit,
             trace_rewrites=trace_rewrites,
         ) as kcfg_explore:
-            contract = foundry.contracts[contract_name]
-            method = contract.method_by_sig[method_sig]
             proof = _method_to_apr_proof(
                 foundry,
                 contract,
@@ -698,7 +701,6 @@ def foundry_prove(
                 save_directory,
                 kcfg_explore,
                 test_id,
-                reinit=(method.qualified_name in out_of_date_methods),
                 simplify_init=simplify_init,
                 bmc_depth=bmc_depth,
             )
@@ -744,7 +746,7 @@ def foundry_prove(
     if failed:
         raise ValueError(f'Running setUp method failed for {len(failed)} contracts: {failed}')
 
-    _LOGGER.info(f'Running test functions in parallel: {tests}')
+    _LOGGER.info(f'Running test functions in parallel: {test_names}')
     results = run_cfg_group(tests)
 
     return results
@@ -1037,13 +1039,12 @@ def _method_to_apr_proof(
     save_directory: Path,
     kcfg_explore: KCFGExplore,
     test_id: str,
-    reinit: bool = False,
     simplify_init: bool = True,
     bmc_depth: int | None = None,
 ) -> APRProof | APRBMCProof:
     contract_name = contract.name
     method_sig = method.signature
-    if Proof.proof_data_exists(test_id, save_directory) and not reinit:
+    if Proof.proof_data_exists(test_id, save_directory):
         apr_proof = foundry.get_apr_proof(test_id)
     else:
         _LOGGER.info(f'Initializing KCFG for test: {test_id}')
