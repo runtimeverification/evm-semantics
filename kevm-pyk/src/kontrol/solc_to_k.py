@@ -393,28 +393,25 @@ class Contract:
         if not name.startswith(prefix):
             raise RuntimeError(f'name {name} should start with {prefix}')
         unescaped = name.removeprefix(prefix)
-        res = ''
-        unes_iter = iter(unescaped[:-1])
+        res = []
         skipped = 0
-        for i, char in enumerate(unes_iter):
+        i = 0
+        while i + skipped < len(unescaped[:-1]):
             j = i + skipped
+            char = unescaped[j]
             next_char = unescaped[j + 1]
             if char == Contract.PREFIX_CODE:
                 unesc, to_skip = Contract.unescape_seq(unescaped[(j + 1) : (j + 4)])
-                res += unesc
+                res.append(unesc)
                 for _ in range(to_skip):
-                    try:
-                        next(unes_iter)
-                        skipped += 1
-                    except StopIteration:
-                        # if we reached the end, write the last char and return
-                        break
+                    skipped += 1
             else:
-                res += char
+                res.append(char)
             # write last char
             if j + 2 == len(unescaped):
-                res += next_char
-        return res
+                res.append(next_char)
+            i += 1
+        return ''.join(res)
 
     @property
     def sort(self) -> KSort:
