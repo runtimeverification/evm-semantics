@@ -255,7 +255,6 @@ class Foundry:
         return [reg.replace(')', '\\)') for reg in regs]
 
     def matching_tests(self, tests: list[str], exclude_tests: list[str]) -> list[str]:
-
         all_tests = self.all_tests
         all_non_tests = self.all_non_tests
         matched_tests = set()
@@ -366,7 +365,9 @@ class Foundry:
 
     def proofs_with_test(self, test: str) -> list[Proof]:
         proofs = [
-            self.get_optional_proof(pid) for pid in listdir(self.proofs_dir) if re.search(single(self._escape_brackets([test])), pid.split(':')[0])
+            self.get_optional_proof(pid)
+            for pid in listdir(self.proofs_dir)
+            if re.search(single(self._escape_brackets([test])), pid.split(':')[0])
         ]
         return [proof for proof in proofs if proof is not None]
 
@@ -1077,10 +1078,19 @@ def _method_to_apr_proof(
             kcfg_explore.simplify(kcfg, {})
         if bmc_depth is not None:
             apr_proof = APRBMCProof(
-                test_id, kcfg, init_node_id, target_node_id, {}, bmc_depth, proof_digest=foundry_digest, proof_dir=save_directory
+                test_id,
+                kcfg,
+                init_node_id,
+                target_node_id,
+                {},
+                bmc_depth,
+                proof_digest=foundry_digest,
+                proof_dir=save_directory,
             )
         else:
-            apr_proof = APRProof(test_id, kcfg, init_node_id, target_node_id, {}, proof_digest=foundry_digest, proof_dir=save_directory)
+            apr_proof = APRProof(
+                test_id, kcfg, init_node_id, target_node_id, {}, proof_digest=foundry_digest, proof_dir=save_directory
+            )
 
     apr_proof.write_proof_data()
     return apr_proof
