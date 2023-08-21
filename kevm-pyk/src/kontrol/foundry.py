@@ -258,8 +258,6 @@ class Foundry:
         all_non_tests = self.all_non_tests
         matched_tests = set()
         unfound_tests: list[str] = []
-        if not tests:
-            tests = all_tests
         tests = _escape_brackets(tests)
         exclude_tests = _escape_brackets(exclude_tests)
         for t in tests:
@@ -292,9 +290,17 @@ class Foundry:
         matching_proofs = self.matching_proofs(test)
         if not matching_proofs:
             raise RuntimeError('Found no matching proofs for {test}.')
-        if len(matching_proofs) > 1:
-            raise RuntimeError('Found {matching_proofs} matching proofs for {test}. Use the --id flag to choose one.')
+        elif len(matching_proofs) > 1:
+            raise RuntimeError(
+                f'Found {len(matching_proofs)} matching proofs for {test}. Use the --id flag to choose one.'
+            )
         return single(matching_proofs).id
+
+    def get_test_id(self, test: str, id: str | None) -> str:
+        if id is None:
+            return self.unique_test_id(test)
+        else:
+            return f'{test}:{id}'
 
     @staticmethod
     def success(s: KInner, dst: KInner, r: KInner, c: KInner, e1: KInner, e2: KInner) -> KApply:
@@ -356,13 +362,11 @@ class Foundry:
         return res_lines
 
     def proofs_with_test(self, test: str) -> list[Proof]:
-        proofs = [self.get_optional_proof(test) for pid in listdir(self.proofs_dir) if pid.rsplit(':')[0] == test]
+        proofs = [self.get_optional_proof(pid) for pid in listdir(self.proofs_dir) if pid.split(':')[0].startswith(test)]
         return [proof for proof in proofs if proof is not None]
 
     def matching_proofs(self, test: str) -> list[Proof]:
-        contract_name, method_sig = test.split('.')
-        foundry_digest = self.method_digest(contract_name, method_sig)
-        return [proof for proof in self.proofs_with_test(test) if proof.proof_digest == foundry_digest]
+        return [proof for proof in self.proofs_with_test(test)]
 
     def get_apr_proof(self, test_id: str) -> APRProof:
         proof = Proof.read_proof_data(self.proofs_dir, test_id)
@@ -393,13 +397,14 @@ class Foundry:
         """
         test_ids: dict[str, set[int]] = {}
         for pid in listdir(self.proofs_dir):
-            test_name, tid = pid.rsplit(':')
-            if test_ids.get(test_name) is None:
-                ids = set()
-            else:
-                ids = test_ids[test_name]
-            ids.add(int(tid.encode('utf-8').hex()))
-            test_ids[test_name] = ids
+            if pid.find(':') >= 0:
+                test_name, tid = pid.split(':')
+                if test_ids.get(test_name) is None:
+                    ids = set()
+                else:
+                    ids = test_ids[test_name]
+                ids.add(int(tid))
+                test_ids[test_name] = ids
         if test_ids.get(test) is None:
             return '0'
         else:
@@ -607,6 +612,8 @@ def foundry_prove(
     if kore_rpc_command is None:
         kore_rpc_command = ('kore-rpc-booster',) if use_booster else ('kore-rpc',)
 
+    if not tests:
+        tests = [(test, None) for test in foundry.all_tests]
     test_names = [test[0] for test in tests]
     exclude_test_names = [test[0] for test in exclude_tests]
     test_names = foundry.matching_tests(list(test_names), list(exclude_test_names))
@@ -617,10 +624,13 @@ def foundry_prove(
         else:
             continue
         if id is None:
+            contract_name, method_sig = test.split('.')
             matching_proofs = foundry.matching_proofs(test)
-            if len(matching_proofs) > 1:
+            foundry_digest = foundry.method_digest(contract_name, method_sig)
+            up_to_date_proofs = [proof for proof in matching_proofs if proof.proof_digest == foundry_digest]
+            if len(up_to_date_proofs) > 1:
                 raise RuntimeError(
-                    'Found {len(matching_proofs)} matching proofs for {test}. Use the --id flag to choose one.'
+                    'Found {len(up_to_date_proofs)} up to date proofs for {test}. Use the --id flag to choose one.'
                 )
 
     _LOGGER.info(f'Running tests: {tests}')
@@ -666,7 +676,7 @@ def foundry_prove(
                 if proof.proof_digest == method_digest:
                     test_id = proof.id
         if test_id is None:
-            test_id = foundry.free_proof_id(test)
+            test_id = f'{test}:{foundry.free_proof_id(test)}'
 
         llvm_definition_dir = foundry.out / 'kompiled-llvm' if use_booster else None
 
@@ -711,6 +721,8 @@ def foundry_prove(
             return passed, failure_log
 
     def run_cfg_group(tests: list[tuple[str, str | None]]) -> dict[str, tuple[bool, list[str] | None]]:
+        print(tests)
+
         def _split_test(test: tuple[str, str | None]) -> tuple[str, str, str | None]:
             test_name, id = test
             contract, method = test_name.split('.')
@@ -737,7 +749,7 @@ def foundry_prove(
         raise ValueError(f'Running setUp method failed for {len(failed)} contracts: {failed}')
 
     _LOGGER.info(f'Running test functions in parallel: {tests}')
-    results = run_cfg_group(list(tests))
+    results = run_cfg_group(fil_tests)
 
     return results
 
@@ -759,10 +771,7 @@ def foundry_show(
 ) -> str:
     contract_name, _ = test.split('.')
     foundry = Foundry(foundry_root)
-    if id is None:
-        test_id = foundry.unique_test_id(test)
-    else:
-        test_id = f'{test}:{id}'
+    test_id = foundry.get_test_id(test, id)
     proof = foundry.get_apr_proof(test_id)
 
     if pending:
@@ -803,10 +812,7 @@ def foundry_show(
 def foundry_to_dot(foundry_root: Path, test: str, id: str | None) -> None:
     foundry = Foundry(foundry_root)
     dump_dir = foundry.proofs_dir / 'dump'
-    if id is None:
-        test_id = foundry.unique_test_id(test)
-    else:
-        test_id = f'{test}:{id}'
+    test_id = foundry.get_test_id(test, id)
     contract_name, _ = test.split('.')
     proof = foundry.get_apr_proof(test_id)
 
@@ -840,10 +846,7 @@ def foundry_list(foundry_root: Path) -> list[str]:
 
 def foundry_remove_node(foundry_root: Path, test: str, id: str | None, node: NodeIdLike) -> None:
     foundry = Foundry(foundry_root)
-    if id is None:
-        test_id = foundry.unique_test_id(test)
-    else:
-        test_id = f'{test}:{id}'
+    test_id = foundry.get_test_id(test, id)
     apr_proof = foundry.get_apr_proof(test_id)
     node_ids = apr_proof.kcfg.prune(node, [apr_proof.init, apr_proof.target])
     _LOGGER.info(f'Pruned nodes: {node_ids}')
@@ -865,10 +868,7 @@ def foundry_simplify_node(
 ) -> str:
     br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
     foundry = Foundry(foundry_root, bug_report=br)
-    if id is None:
-        test_id = foundry.unique_test_id(test)
-    else:
-        test_id = f'{test}:{id}'
+    test_id = foundry.get_test_id(test, id)
     apr_proof = foundry.get_apr_proof(test_id)
     cterm = apr_proof.kcfg.node(node).cterm
     with legacy_explore(
@@ -907,10 +907,7 @@ def foundry_step_node(
 
     br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
     foundry = Foundry(foundry_root, bug_report=br)
-    if id is None:
-        test_id = foundry.unique_test_id(test)
-    else:
-        test_id = f'{test}:{id}'
+    test_id = foundry.get_test_id(test, id)
     apr_proof = foundry.get_apr_proof(test_id)
     with legacy_explore(
         foundry.kevm,
@@ -940,10 +937,7 @@ def foundry_section_edge(
 ) -> None:
     br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
     foundry = Foundry(foundry_root, bug_report=br)
-    if id is None:
-        test_id = foundry.unique_test_id(test)
-    else:
-        test_id = f'{test}:{id}'
+    test_id = foundry.get_test_id(test, id)
     apr_proof = foundry.get_apr_proof(test_id)
     source_id, target_id = edge
     with legacy_explore(
@@ -970,10 +964,7 @@ def foundry_get_model(
     failing: bool = False,
 ) -> str:
     foundry = Foundry(foundry_root)
-    if id is None:
-        test_id = foundry.unique_test_id(test)
-    else:
-        test_id = f'{test}:{id}'
+    test_id = foundry.get_test_id(test, id)
     proof = foundry.get_apr_proof(test_id)
 
     if not nodes:

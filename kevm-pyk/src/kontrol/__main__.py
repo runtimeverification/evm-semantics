@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import argparse
 import json
 import logging
+import re
 import sys
 from argparse import ArgumentParser
 from typing import TYPE_CHECKING
@@ -246,6 +248,7 @@ def exec_foundry_list(foundry_root: Path, **kwargs: Any) -> None:
 
 def exec_foundry_view_kcfg(foundry_root: Path, test: str, id: str | None, **kwargs: Any) -> None:
     foundry = Foundry(foundry_root)
+    # TODO use wrapper function instead
     if id is None:
         matching_proofs = foundry.matching_proofs(test)
         if len(matching_proofs) > 1:
@@ -401,6 +404,19 @@ def _create_argument_parser() -> ArgumentParser:
     solc_to_k_args.add_argument('contract_file', type=file_path, help='Path to contract file.')
     solc_to_k_args.add_argument('contract_name', type=str, help='Name of contract to generate K helpers for.')
 
+    def _test_type(value: str) -> tuple[str, str | None]:
+        # Make sure that it matches the regex if the input is incomplete
+        if value.find(',') == -1:
+            value += ','
+        pattern = r'^([^,]+),\s*(\S+)?$'
+        match = re.match(pattern, value)
+
+        if match:
+            groups = match.groups()
+            return groups[0], groups[1] if groups[1] is not None else None
+        else:
+            raise argparse.ArgumentTypeError("Invalid tuple format. Expected 'string, string' or 'string'")
+
     foundry_kompile = command_parser.add_parser(
         'foundry-kompile',
         help='Kompile K definition corresponding to given output directory.',
@@ -443,7 +459,7 @@ def _create_argument_parser() -> ArgumentParser:
     )
     foundry_prove_args.add_argument(
         '--test',
-        type=str,
+        type=_test_type,
         dest='tests',
         default=[],
         action='append',
@@ -451,7 +467,7 @@ def _create_argument_parser() -> ArgumentParser:
     )
     foundry_prove_args.add_argument(
         '--exclude-test',
-        type=str,
+        type=_test_type,
         dest='exclude_tests',
         default=[],
         action='append',
@@ -491,6 +507,7 @@ def _create_argument_parser() -> ArgumentParser:
         ],
     )
     foundry_show_args.add_argument('test', type=str, help='Display the CFG for this test.')
+    foundry_show_args.add_argument('--id', type=str, default=None, required=False, help='ID of the test')
     foundry_show_args.add_argument(
         '--omit-unstable-output',
         dest='omit_unstable_output',
