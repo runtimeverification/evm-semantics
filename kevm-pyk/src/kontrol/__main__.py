@@ -408,7 +408,7 @@ def _create_argument_parser() -> ArgumentParser:
             groups = match.groups()
             return groups[0], groups[1] if groups[1] is not None else None
         else:
-            raise argparse.ArgumentTypeError("Invalid tuple format. Expected 'string, string' or 'string'")
+            raise argparse.ArgumentTypeError("Invalid tuple format. Expected 'test, id' or 'test'")
 
     foundry_kompile = command_parser.add_parser(
         'foundry-kompile',

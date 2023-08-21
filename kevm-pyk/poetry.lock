@@ -809,7 +809,7 @@ tomli = "^2.0.1"
 type = "git"
 url = "https://github.com/runtimeverification/pyk.git"
 reference = "proof_digest"
-resolved_reference = "a2a4e0c3f1bfc4f0d8506802559b77ce0617f5a2"
+resolved_reference = "b20b4fcdb17435ac7ff4671d79169de07dde28f9"
 
 [[package]]
 name = "pyperclip"
