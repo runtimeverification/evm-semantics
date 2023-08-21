@@ -108,7 +108,16 @@ class Contract:
         @property
         def klabel(self) -> KLabel:
             args_list = '_'.join(self.arg_types)
-            return KLabel(f'method_{self.contract_name}_{self.name}_{args_list}')
+            return KLabel(f'method_{self.contract_name}_{self.unique_name}_{args_list}')
+
+        @property
+        def unique_klabel(self) -> KLabel:
+            args_list = '_'.join(self.arg_types)
+            return KLabel(f'method_{self.contract_name}_{self.unique_name}_{args_list}')
+
+        @property
+        def unique_name(self) -> str:
+            return f'{Contract.escaped(self.name, "S2K")}'
 
         @cached_property
         def qualified_name(self) -> str:
@@ -163,7 +172,7 @@ class Contract:
 
         @property
         def production(self) -> KProduction:
-            items_before: list[KProductionItem] = [KTerminal(self.name), KTerminal('(')]
+            items_before: list[KProductionItem] = [KTerminal(self.unique_name), KTerminal('(')]
 
             items_args: list[KProductionItem] = []
             for i, input_type in enumerate(self.arg_types):
@@ -175,13 +184,13 @@ class Contract:
             return KProduction(
                 self.sort,
                 items_before + items_args + items_after,
-                klabel=self.klabel,
+                klabel=self.unique_klabel,
                 att=KAtt({'symbol': ''}),
             )
 
         def rule(self, contract: KInner, application_label: KLabel, contract_name: str) -> KRule | None:
             arg_vars = [KVariable(aname) for aname in self.arg_names]
-            prod_klabel = self.klabel
+            prod_klabel = self.unique_klabel
             assert prod_klabel is not None
             args: list[KInner] = []
             conjuncts: list[KInner] = []
@@ -228,6 +237,7 @@ class Contract:
     raw_sourcemap: str | None
     methods: tuple[Method, ...]
     fields: FrozenDict
+    PREFIX_CODE: Final = 'Z'
 
     def __init__(self, contract_name: str, contract_json: dict, foundry: bool = False) -> None:
         self.name = contract_name
@@ -328,11 +338,11 @@ class Contract:
 
     @staticmethod
     def contract_to_module_name(c: str) -> str:
-        return c.upper() + '-CONTRACT'
+        return c + '-CONTRACT'
 
     @staticmethod
     def contract_to_verification_module_name(c: str) -> str:
-        return c.upper() + '-VERIFICATION'
+        return c + '-VERIFICATION'
 
     @staticmethod
     def test_to_claim_name(t: str) -> str:
@@ -342,17 +352,78 @@ class Contract:
     def name_upper(self) -> str:
         return self.name[0:1].upper() + self.name[1:]
 
+    @staticmethod
+    def escaped_chars() -> list[str]:
+        return [Contract.PREFIX_CODE, '_', '$']
+
+    @staticmethod
+    def escape_char(char: str) -> str:
+        match char:
+            case Contract.PREFIX_CODE:
+                as_ecaped = Contract.PREFIX_CODE
+            case '_':
+                as_ecaped = 'Und'
+            case '$':
+                as_ecaped = 'Dlr'
+            case _:
+                as_ecaped = hex(ord(char)).removeprefix('0x')
+        return f'{Contract.PREFIX_CODE}{as_ecaped}'
+
+    @staticmethod
+    def unescape_seq(seq: str) -> tuple[str, int]:
+        if seq.startswith(Contract.PREFIX_CODE + Contract.PREFIX_CODE):
+            return Contract.PREFIX_CODE, 1
+        elif seq.startswith('Und'):
+            return '_', 3
+        elif seq.startswith('Dlr'):
+            return '$', 3
+        else:
+            return chr(int(seq, base=16)), 4
+
+    @staticmethod
+    def escaped(name: str, prefix: str) -> str:
+        """
+        escape all the chars that would cause issues once kompiling and add a prefix to mark it as "escaped"
+        """
+        escaped = [Contract.escape_char(char) if char in Contract.escaped_chars() else char for char in iter(name)]
+        return prefix + ''.join(escaped)
+
+    @staticmethod
+    def unescaped(name: str, prefix: str = '') -> str:
+        if not name.startswith(prefix):
+            raise RuntimeError(f'name {name} should start with {prefix}')
+        unescaped = name.removeprefix(prefix)
+        res = []
+        skipped = 0
+        i = 0
+        while i + skipped < len(unescaped[:-1]):
+            j = i + skipped
+            char = unescaped[j]
+            next_char = unescaped[j + 1]
+            if char == Contract.PREFIX_CODE:
+                unesc, to_skip = Contract.unescape_seq(unescaped[(j + 1) : (j + 4)])
+                res.append(unesc)
+                for _ in range(to_skip):
+                    skipped += 1
+            else:
+                res.append(char)
+            # write last char
+            if j + 2 == len(unescaped):
+                res.append(next_char)
+            i += 1
+        return ''.join(res)
+
     @property
     def sort(self) -> KSort:
-        return KSort(f'{self.name_upper}Contract')
+        return KSort(f'{Contract.escaped(self.name, "S2K")}Contract')
 
     @property
     def sort_field(self) -> KSort:
-        return KSort(f'{self.name_upper}Field')
+        return KSort(f'{self.name}Field')
 
     @property
     def sort_method(self) -> KSort:
-        return KSort(f'{self.name_upper}Method')
+        return KSort(f'{Contract.escaped(self.name, "S2K")}Method')
 
     @property
     def klabel(self) -> KLabel:
@@ -376,7 +447,9 @@ class Contract:
 
     @property
     def production(self) -> KProduction:
-        return KProduction(self.sort, [KTerminal(self.name)], klabel=self.klabel, att=KAtt({'symbol': ''}))
+        return KProduction(
+            self.sort, [KTerminal(Contract.escaped(self.name, 'S2K'))], klabel=self.klabel, att=KAtt({'symbol': ''})
+        )
 
     @property
     def macro_bin_runtime(self) -> KRule:
