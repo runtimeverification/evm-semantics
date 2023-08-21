@@ -7,7 +7,14 @@ import pytest
 from filelock import FileLock
 from pyk.utils import run_process
 
-from kontrol.foundry import foundry_kompile, foundry_prove, foundry_show
+from kontrol.foundry import (
+    Foundry,
+    foundry_kompile,
+    foundry_merge_nodes,
+    foundry_prove,
+    foundry_show,
+    foundry_step_node,
+)
 
 from .utils import TEST_DATA_DIR
 
@@ -89,7 +96,7 @@ SHOW_TESTS = set((TEST_DATA_DIR / 'foundry-show').read_text().splitlines())
 
 @pytest.mark.parametrize('test_id', ALL_PROVE_TESTS)
 def test_foundry_prove(test_id: str, foundry_root: Path, update_expected_output: bool, use_booster: bool) -> None:
-    if test_id in SKIPPED_PROVE_TESTS:
+    if test_id in SKIPPED_PROVE_TESTS or (update_expected_output and not test_id in SHOW_TESTS):
         pytest.skip()
 
     # When
@@ -183,11 +190,48 @@ def test_foundry_bmc(test_id: str, foundry_root: Path, use_booster: bool) -> Non
         smt_timeout=300,
         smt_retry_limit=10,
         use_booster=use_booster,
-        counterexample_info=True,
     )
 
     # Then
     assert_pass(test_id, prove_res)
+
+
+def test_foundry_merge_nodes(foundry_root: Path, use_booster: bool) -> None:
+    test_id = 'AssertTest.test_branch_merge(uint256)'
+
+    foundry_prove(
+        foundry_root,
+        tests=[test_id],
+        smt_timeout=125,
+        smt_retry_limit=4,
+        max_iterations=4,
+        use_booster=use_booster,
+    )
+    check_pending(foundry_root, test_id, [6, 7])
+
+    foundry_step_node(foundry_root, test_id, node=6, depth=49)
+    foundry_step_node(foundry_root, test_id, node=7, depth=50)
+
+    check_pending(foundry_root, test_id, [8, 9])
+
+    foundry_merge_nodes(foundry_root=foundry_root, test=test_id, node_ids=[8, 9], include_disjunct=True)
+
+    check_pending(foundry_root, test_id, [10])
+
+    prove_res = foundry_prove(
+        foundry_root,
+        tests=[test_id],
+        smt_timeout=125,
+        smt_retry_limit=4,
+        use_booster=use_booster,
+    )
+    assert_pass(test_id, prove_res)
+
+
+def check_pending(foundry_root: Path, test: str, pending: list[int]) -> None:
+    foundry = Foundry(foundry_root)
+    proof = foundry.get_apr_proof(test)
+    assert [node.id for node in proof.pending] == pending
 
 
 def test_foundry_auto_abstraction(foundry_root: Path, update_expected_output: bool) -> None:
