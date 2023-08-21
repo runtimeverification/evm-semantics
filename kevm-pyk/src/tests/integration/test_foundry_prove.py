@@ -205,7 +205,6 @@ def test_foundry_bmc(test_id: str, foundry_root: Path, use_booster: bool, server
         tests=[test_id],
         bmc_depth=3,
         simplify_init=False,
-        use_booster=use_booster,
         port=server.port,
     )
 
