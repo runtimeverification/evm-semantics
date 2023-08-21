@@ -154,6 +154,7 @@ def exec_foundry_prove(
     counterexample_info: bool = False,
     trace_rewrites: bool = False,
     auto_abstract_gas: bool = False,
+    run_constructor: bool = False,
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'main_module', f'--main-module: {kwargs["main_module"]}')
@@ -190,6 +191,7 @@ def exec_foundry_prove(
         smt_retry_limit=smt_retry_limit,
         trace_rewrites=trace_rewrites,
         auto_abstract_gas=auto_abstract_gas,
+        run_constructor=run_constructor,
     )
     failed = 0
     for pid, r in results.items():
@@ -477,6 +479,13 @@ def _create_argument_parser() -> ArgumentParser:
         default=False,
         action='store_true',
         help='Reinitialize CFGs even if they already exist.',
+    )
+    foundry_prove_args.add_argument(
+        '--run-constructor',
+        dest='run_constructor',
+        default=False,
+        action='store_true',
+        help='Include the contract constructor in the test execution.',
     )
     foundry_prove_args.add_argument(
         '--bmc-depth',

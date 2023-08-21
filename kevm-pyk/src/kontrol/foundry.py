@@ -532,6 +532,7 @@ def foundry_prove(
     counterexample_info: bool = False,
     trace_rewrites: bool = False,
     auto_abstract_gas: bool = False,
+    run_constructor: bool = False,
 ) -> dict[str, tuple[bool, list[str] | None]]:
     if workers <= 0:
         raise ValueError(f'Must have at least one worker, found: --workers {workers}')
@@ -655,6 +656,7 @@ def foundry_prove(
                     reinit=(method.qualified_name in out_of_date_methods),
                     simplify_init=simplify_init,
                     bmc_depth=bmc_depth,
+                    run_constructor=run_constructor,
                 )
 
             passed = kevm_prove(
@@ -691,11 +693,12 @@ def foundry_prove(
         apr_proofs = dict(zip(tests, _apr_proofs, strict=True))
         return apr_proofs
 
-    _LOGGER.info(f'Running initialization code for contracts in parallel: {list(init_methods.values())}')
-    results = run_cfg_group(list(init_methods.values()))
-    failed = [init_cfg for init_cfg, passed in results.items() if not passed]
-    if failed:
-        raise ValueError(f'Running initialization code failed for {len(failed)} contracts: {failed}')
+    if run_constructor:
+        _LOGGER.info(f'Running initialization code for contracts in parallel: {list(init_methods.values())}')
+        results = run_cfg_group(list(init_methods.values()))
+        failed = [init_cfg for init_cfg, passed in results.items() if not passed]
+        if failed:
+            raise ValueError(f'Running initialization code failed for {len(failed)} contracts: {failed}')
 
     _LOGGER.info(f'Running setup functions in parallel: {list(setup_methods.values())}')
     results = run_cfg_group(list(setup_methods.values()))
@@ -1083,6 +1086,7 @@ def _method_to_apr_proof(
     reinit: bool = False,
     simplify_init: bool = True,
     bmc_depth: int | None = None,
+    run_constructor: bool = False,
 ) -> APRProof | APRBMCProof:
     method_sig = method.signature
     test = f'{contract.name}.{method_sig}'
@@ -1095,8 +1099,10 @@ def _method_to_apr_proof(
         if method_sig != 'setUp()' and 'setUp' in contract.method_by_name:
             init_proof = f'{contract.name}.setUp()'
             _LOGGER.info(f'Using setUp method for test: {test}')
-        else:
+        elif run_constructor:
             init_proof = f'{contract.name}.init'
+        else:
+            init_proof = None
 
         empty_config = foundry.kevm.definition.empty_config(GENERATED_TOP_CELL)
         kcfg, new_node_ids, init_node_id, target_node_id = _method_to_cfg(
