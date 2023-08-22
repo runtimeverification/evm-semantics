@@ -152,3 +152,19 @@ jobs:
           git commit -m 'gh-pages: Updated the website'
           git merge --strategy ours origin/gh-pages --allow-unrelated-histories
           git push origin gh-pages
+      - name: 'Post failure to channel'
+        if: failure()
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          channel-id: "#kevm-notifications"
+          slack-message: "Failed to create KEVM release: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+        env:
+            SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+      - name: 'Post success to channel'
+        if: success()
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          channel-id: "#kevm-notifications"
+          slack-message: "Created KEVM release: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+        env:
+            SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
