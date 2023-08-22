@@ -209,16 +209,16 @@ def test_foundry_merge_nodes(foundry_root: Path, use_booster: bool) -> None:
         max_iterations=4,
         use_booster=use_booster,
     )
-    check_pending(foundry_root, test_id, [6, 7])
+    check_pending(foundry_root, test_id, [11, 12])
 
-    foundry_step_node(foundry_root, test_id, node=6, depth=49)
-    foundry_step_node(foundry_root, test_id, node=7, depth=50)
+    foundry_step_node(foundry_root, test_id, node=11, depth=49)
+    foundry_step_node(foundry_root, test_id, node=12, depth=50)
 
-    check_pending(foundry_root, test_id, [8, 9])
+    check_pending(foundry_root, test_id, [13, 14])
 
-    foundry_merge_nodes(foundry_root=foundry_root, test=test_id, node_ids=[8, 9], include_disjunct=True)
+    foundry_merge_nodes(foundry_root=foundry_root, test=test_id, node_ids=[13, 14], include_disjunct=True)
 
-    check_pending(foundry_root, test_id, [10])
+    check_pending(foundry_root, test_id, [15])
 
     prove_res = foundry_prove(
         foundry_root,
@@ -323,3 +323,23 @@ def test_foundry_resume_proof(foundry_root: Path, update_expected_output: bool) 
         reinit=False,
     )
     assert_fail(test_id, prove_res)
+
+
+ALL_INIT_CODE_TESTS: Final = ('InitCodeTest.test_init()', 'InitCodeTest.testFail_init()')
+
+
+@pytest.mark.parametrize('test_id', ALL_INIT_CODE_TESTS)
+def test_foundry_init_code(test_id: str, foundry_root: Path, use_booster: bool) -> None:
+    # When
+    prove_res = foundry_prove(
+        foundry_root,
+        tests=[test_id],
+        simplify_init=False,
+        smt_timeout=300,
+        smt_retry_limit=10,
+        use_booster=use_booster,
+        run_constructor=True,
+    )
+
+    # Then
+    assert_pass(test_id, prove_res)

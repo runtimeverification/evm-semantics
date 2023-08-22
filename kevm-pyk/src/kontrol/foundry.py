@@ -1090,7 +1090,8 @@ def _method_to_apr_proof(
 ) -> APRProof | APRBMCProof:
     method_sig = method.signature
     test = f'{contract.name}.{method_sig}'
-    if Proof.proof_data_exists(test, save_directory) and not reinit:
+    proof_digest = foundry.proof_digest(contract.name, method_sig)
+    if Proof.proof_data_exists(proof_digest, save_directory) and not reinit:
         apr_proof = foundry.get_apr_proof(test)
         assert isinstance(apr_proof, APRProof)
     else:
@@ -1130,7 +1131,6 @@ def _method_to_apr_proof(
         target_cterm = CTerm.from_kast(target_term)
         kcfg.replace_node(target_node_id, target_cterm)
 
-        proof_digest = foundry.proof_digest(contract.name, method_sig)
         if simplify_init:
             _LOGGER.info(f'Simplifying KCFG for test: {test}')
             kcfg_explore.simplify(kcfg, {})
