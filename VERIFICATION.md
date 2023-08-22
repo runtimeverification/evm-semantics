@@ -18,7 +18,7 @@ It has two modules:
 The first step is kompiling the `.k` file with the below command.
 
 ```sh
-kevm kompile sum-to-n-spec.k --backend haskell --syntax-module VERIFICATION --main-module VERIFICATION --definition sum-to-n-spec/haskell
+kevm kompile sum-to-n-spec.k --target haskell --syntax-module VERIFICATION --main-module VERIFICATION --definition sum-to-n-spec/haskell
 ```
 
 In this example, the arguments used are:
@@ -32,7 +32,7 @@ In this example, the arguments used are:
 Next, run the prover with:
 
 ```sh
-kevm prove sum-to-n-spec.k --backend haskell --definition sum-to-n-spec/haskell
+kevm prove sum-to-n-spec.k --definition sum-to-n-spec/haskell
 ```
 
 The expected output is `#Top` which represents that all the claims have been proven.
@@ -61,13 +61,13 @@ These rules are then used in the claims. As an example, the `#binRuntime(ERC20)`
 Following this, we can compile the Markdown file with:
 
 ```sh
-kevm kompile erc20-spec.md --backend haskell --syntax-module VERIFICATION --main-module VERIFICATION --definition erc20-spec/haskell
+kevm kompile erc20-spec.md --target haskell --syntax-module VERIFICATION --main-module VERIFICATION --definition erc20-spec/haskell
 ```
 
 Next, run the prover with:
 
 ```sh
-kevm prove erc20-spec.md --backend haskell  --definition erc20-spec/haskell --claim ERC20-SPEC.decimals
+kevm prove erc20-spec.md   --definition erc20-spec/haskell --claim ERC20-SPEC.decimals
 ```
 
 Here, `--claim` tells the prover to run only the `decimals` spec from the `ERC20-SPEC` module.
@@ -101,7 +101,7 @@ A running example:
 
 ```sh
 mkdir kcfgs
-kevm kompile --backend haskell tests/specs/benchmarks/verification.k --definition tests/specs/benchmarks/verification/haskell --main-module VERIFICATION --syntax-module VERIFICATION
+kevm kompile --target haskell tests/specs/benchmarks/verification.k --definition tests/specs/benchmarks/verification/haskell --main-module VERIFICATION --syntax-module VERIFICATION
 kevm prove tests/specs/benchmarks/address00-spec.k --definition tests/specs/benchmarks/verification/haskell --verbose --save-directory kcfgs
 kevm view-kcfg --verbose kcfgs tests/specs/benchmarks/address00-spec.k --definition tests/specs/benchmarks/verification/haskell
 ```

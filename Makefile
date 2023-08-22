@@ -379,7 +379,7 @@ tests/ethereum-tests/LegacyTests/Constantinople/VMTests/%: KEVM_MODE     = VMTES
 tests/ethereum-tests/LegacyTests/Constantinople/VMTests/%: KEVM_SCHEDULE = DEFAULT
 
 tests/%.run-interactive: tests/%
-	$(POETRY_RUN) $(KEVM) run $< $(KEVM_OPTS) $(KRUN_OPTS) --backend $(TEST_CONCRETE_BACKEND)                          \
+	$(POETRY_RUN) $(KEVM) run $< $(KEVM_OPTS) $(KRUN_OPTS) --target $(TEST_CONCRETE_BACKEND)                           \
 	    --mode $(KEVM_MODE) --schedule $(KEVM_SCHEDULE) --chainid $(KEVM_CHAINID)                                      \
 	    > tests/$*.$(TEST_CONCRETE_BACKEND)-out                                                                        \
 	    || $(CHECK) tests/$*.$(TEST_CONCRETE_BACKEND)-out tests/templates/output-success-$(TEST_CONCRETE_BACKEND).json
@@ -414,7 +414,7 @@ tests/specs/examples/empty-bin-runtime.k: tests/specs/examples/Empty.sol $(KEVM_
 
 .SECONDEXPANSION:
 tests/specs/%.prove: tests/specs/% tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)/timestamp
-	$(POETRY_RUN) $(KEVM) prove $< $(KEVM_OPTS) --backend $(TEST_SYMBOLIC_BACKEND) $(KPROVE_OPTS) \
+	$(POETRY_RUN) $(KEVM) prove $< $(KEVM_OPTS) --target $(TEST_SYMBOLIC_BACKEND) $(KPROVE_OPTS) \
 	    --definition tests/specs/$(firstword $(subst /, ,$*))/$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)
 
 tests/specs/%/timestamp: tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE).$$(KPROVE_EXT) $(kevm_includes) $(plugin_includes)
