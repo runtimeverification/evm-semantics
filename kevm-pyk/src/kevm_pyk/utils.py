@@ -326,7 +326,6 @@ def legacy_explore(
     trace_rewrites: bool = False,
 ) -> Iterator[KCFGExplore]:
     # Old way of handling KCFGExplore, to be removed
-
     with kore_server(
         definition_dir=kprint.definition_dir,
         llvm_definition_dir=llvm_definition_dir,
