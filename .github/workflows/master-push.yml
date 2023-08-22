@@ -64,7 +64,8 @@ jobs:
       - name: 'Set up Docker'
         uses: ./.github/actions/with-docker
         with:
-          tag: kevm-package-jammy-${{ github.sha }}
+          container-name: kevm-package-jammy-${{ github.sha }}
+
       - name: 'Build Package'
         run: |
           set -euxo pipefail
@@ -75,7 +76,7 @@ jobs:
       - name: 'Setup Foundry Test Docker'
         uses: ./.github/actions/with-docker
         with:
-          tag: kevm-ci-test-${{ github.sha }}
+          container-name: kevm-ci-test-${{ github.sha }}
           dockerfile: package/docker/Dockerfile
 
       - name: 'KEVM Foundry Test'

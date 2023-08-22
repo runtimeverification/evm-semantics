@@ -23,7 +23,7 @@ jobs:
       - name: 'Set up Docker'
         uses: ./.github/actions/with-docker
         with:
-          tag: kevm-update-output-${{ github.sha }}
+          container-name: kevm-update-output-${{ github.sha }}
           os: ubuntu
           distro: jammy
           llvm: 14
