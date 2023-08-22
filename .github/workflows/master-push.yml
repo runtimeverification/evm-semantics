@@ -73,10 +73,14 @@ jobs:
           docker exec -u github-user kevm-package-jammy-${GITHUB_SHA} /bin/bash -c 'package/debian/package jammy'
           docker cp kevm-package-jammy-${GITHUB_SHA}:/home/github-user/kevm_${version}_amd64.deb ./
 
+      - name: 'Set Version ID'
+        run: echo "KEVM_VERSION=$(cat package/version)" >> "${GITHUB_ENV}"
+
       - name: 'Setup Foundry Test Docker'
         uses: ./.github/actions/with-docker
         with:
           container-name: kevm-ci-test-${{ github.sha }}
+          tag-name: runtimeverificationinc/kevm:ubuntu-jammy-${{ env.KEVM_VERSION }}
           dockerfile: package/docker/Dockerfile
 
       - name: 'KEVM Foundry Test'
@@ -95,10 +99,10 @@ jobs:
           DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
         run: |
           set -euxo pipefail
-          version=$(cat package/version)
-          tag_name="runtimeverificationinc/kevm:ubuntu-jammy-${version}"
+          dockerhub_repo=runtimeverificationinc/kevm
+          tag_name=ubuntu-jammy-${KEVM_VERSION}
           docker login --username rvdockerhub --password ${DOCKERHUB_PASSWORD}
-          docker image push ${tag_name}
+          docker image push "${dockerhub_repo}:${tag_name}"
 
       - name: 'Tear down Docker'
         if: always()
