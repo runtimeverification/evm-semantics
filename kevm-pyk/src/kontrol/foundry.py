@@ -358,7 +358,6 @@ class Foundry:
 
 
 def foundry_kompile(
-    definition_dir: Path,
     foundry_root: Path,
     includes: Iterable[str],
     regen: bool = False,
@@ -423,7 +422,7 @@ def foundry_kompile(
         copied_requires = []
         copied_requires += [f'requires/{name}' for name in list(requires_paths.keys())]
         imports = ['FOUNDRY']
-        kevm = KEVM(definition_dir)
+        kevm = KEVM(KompileTarget.FOUNDRY.definition_dir)
         empty_config = kevm.definition.empty_config(Foundry.Sorts.FOUNDRY_CELL)
         bin_runtime_definition = _foundry_to_contract_def(
             empty_config=empty_config,
@@ -440,7 +439,7 @@ def foundry_kompile(
         )
 
         kevm = KEVM(
-            definition_dir,
+            KompileTarget.FOUNDRY.definition_dir,
             extra_unparsing_modules=(bin_runtime_definition.all_modules + contract_main_definition.all_modules),
         )
         foundry_contracts_file.write_text(kevm.pretty_print(bin_runtime_definition, unalias=False) + '\n')
@@ -629,11 +628,11 @@ def foundry_prove(
             contract = foundry.contracts[contract_name]
             method = contract.method_by_sig[method_sig]
             proof = _method_to_apr_proof(
-                foundry,
-                contract,
-                method,
-                save_directory,
-                kcfg_explore,
+                foundry=foundry,
+                contract=contract,
+                method=method,
+                save_directory=save_directory,
+                kcfg_explore=kcfg_explore,
                 reinit=(method.qualified_name in out_of_date_methods),
                 simplify_init=simplify_init,
                 bmc_depth=bmc_depth,
@@ -775,7 +774,7 @@ def foundry_list(foundry_root: Path) -> list[str]:
 def foundry_remove_node(foundry_root: Path, test: str, node: NodeIdLike) -> None:
     foundry = Foundry(foundry_root)
     apr_proof = foundry.get_apr_proof(test)
-    node_ids = apr_proof.kcfg.prune(node, [apr_proof.init, apr_proof.target])
+    node_ids = apr_proof.prune_from(node)
     _LOGGER.info(f'Pruned nodes: {node_ids}')
     apr_proof.write_proof_data()
 
@@ -811,6 +810,52 @@ def foundry_simplify_node(
         apr_proof.write_proof_data()
     res_term = minimize_term(new_term) if minimize else new_term
     return foundry.kevm.pretty_print(res_term, unalias=False, sort_collections=sort_collections)
+
+
+def foundry_merge_nodes(
+    foundry_root: Path,
+    test: str,
+    node_ids: Iterable[NodeIdLike],
+    bug_report: bool = False,
+    include_disjunct: bool = False,
+) -> None:
+    def check_cells_equal(cell: str, nodes: Iterable[KCFG.Node]) -> bool:
+        nodes = list(nodes)
+        if len(nodes) < 2:
+            return True
+        cell_value = nodes[0].cterm.cell(cell)
+        for node in nodes[1:]:
+            if cell_value != node.cterm.cell(cell):
+                return False
+        return True
+
+    br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
+    foundry = Foundry(foundry_root, bug_report=br)
+    proof = foundry.get_apr_proof(test)
+
+    if not isinstance(proof, APRProof):
+        raise ValueError('Specified proof is not an APRProof.')
+
+    if len(list(node_ids)) < 2:
+        raise ValueError(f'Must supply at least 2 nodes to merge, got: {node_ids}')
+
+    nodes = [proof.kcfg.node(int(node_id)) for node_id in node_ids]
+    check_cells = ['K_CELL', 'PROGRAM_CELL', 'PC_CELL', 'CALLDEPTH_CELL']
+    check_cells_ne = [check_cell for check_cell in check_cells if not check_cells_equal(check_cell, nodes)]
+    if check_cells_ne:
+        raise ValueError(f'Nodes {node_ids} cannot be merged because they differ in: {check_cells_ne}')
+
+    anti_unification = nodes[0].cterm
+    for node in nodes[1:]:
+        anti_unification, _, _ = anti_unification.anti_unify(node.cterm, keep_values=True, kdef=foundry.kevm.definition)
+    new_node = proof.kcfg.create_node(anti_unification)
+    for node in nodes:
+        proof.kcfg.create_cover(node.id, new_node.id)
+
+    proof.write_proof_data()
+
+    print(f'Merged nodes {node_ids} into new node {new_node.id}.')
+    print(foundry.kevm.pretty_print(new_node.cterm.kast))
 
 
 def foundry_step_node(
@@ -871,8 +916,8 @@ def foundry_section_edge(
         smt_retry_limit=smt_retry_limit,
         trace_rewrites=trace_rewrites,
     ) as kcfg_explore:
-        kcfg, _ = kcfg_explore.section_edge(
-            apr_proof.kcfg, source_id=source_id, target_id=target_id, logs=apr_proof.logs, sections=sections
+        kcfg_explore.section_edge(
+            apr_proof.kcfg, source_id=int(source_id), target_id=int(target_id), logs=apr_proof.logs, sections=sections
         )
     apr_proof.write_proof_data()
 
@@ -1023,7 +1068,12 @@ def _method_to_cfg(
     calldata = method.calldata_cell(contract)
     callvalue = method.callvalue_cell
     init_cterm = _init_cterm(
-        empty_config, contract.name, kcfgs_dir, calldata=calldata, callvalue=callvalue, init_state=init_state
+        empty_config,
+        contract.name,
+        kcfgs_dir,
+        calldata=calldata,
+        callvalue=callvalue,
+        init_state=init_state,
     )
     is_test = method.name.startswith('test')
     failing = method.name.startswith('testFail')
