@@ -358,7 +358,6 @@ class Foundry:
 
 
 def foundry_kompile(
-    definition_dir: Path,
     foundry_root: Path,
     includes: Iterable[str],
     regen: bool = False,
@@ -423,7 +422,7 @@ def foundry_kompile(
         copied_requires = []
         copied_requires += [f'requires/{name}' for name in list(requires_paths.keys())]
         imports = ['FOUNDRY']
-        kevm = KEVM(definition_dir)
+        kevm = KEVM(KompileTarget.FOUNDRY.definition_dir)
         empty_config = kevm.definition.empty_config(Foundry.Sorts.FOUNDRY_CELL)
         bin_runtime_definition = _foundry_to_contract_def(
             empty_config=empty_config,
@@ -440,7 +439,7 @@ def foundry_kompile(
         )
 
         kevm = KEVM(
-            definition_dir,
+            KompileTarget.FOUNDRY.definition_dir,
             extra_unparsing_modules=(bin_runtime_definition.all_modules + contract_main_definition.all_modules),
         )
         foundry_contracts_file.write_text(kevm.pretty_print(bin_runtime_definition, unalias=False) + '\n')
