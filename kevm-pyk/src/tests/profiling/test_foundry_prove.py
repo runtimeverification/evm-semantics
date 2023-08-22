@@ -6,7 +6,6 @@ from typing import TYPE_CHECKING
 
 from pyk.utils import run_process
 
-from kevm_pyk import config
 from kontrol.foundry import foundry_kompile, foundry_prove
 
 from .utils import TEST_DATA_DIR
@@ -31,7 +30,6 @@ def test_foundy_prove(profile: Profiler, use_booster: bool, tmp_path: Path) -> N
 
     with profile('kompile.prof', sort_keys=('cumtime', 'tottime'), limit=15):
         foundry_kompile(
-            definition_dir=config.FOUNDRY_DIR,
             foundry_root=foundry_root,
             includes=(),
             llvm_library=use_booster,

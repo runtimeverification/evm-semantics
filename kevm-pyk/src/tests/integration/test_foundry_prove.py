@@ -7,12 +7,12 @@ import pytest
 from filelock import FileLock
 from pyk.utils import run_process
 
-from kevm_pyk import config
 from kontrol.foundry import (
     Foundry,
     foundry_kompile,
     foundry_merge_nodes,
     foundry_prove,
+    foundry_remove_node,
     foundry_show,
     foundry_step_node,
 )
@@ -45,7 +45,6 @@ def foundry_root(tmp_path_factory: TempPathFactory, worker_id: str, use_booster:
             run_process(['forge', 'build'], cwd=foundry_root)
 
             foundry_kompile(
-                definition_dir=config.FOUNDRY_DIR,
                 foundry_root=foundry_root,
                 includes=(),
                 requires=[str(TEST_DATA_DIR / 'lemmas.k')],
@@ -259,6 +258,33 @@ def test_foundry_auto_abstraction(foundry_root: Path, update_expected_output: bo
     )
 
     assert_or_update_show_output(show_res, TEST_DATA_DIR / 'gas-abstraction.expected', update=update_expected_output)
+
+
+def test_foundry_remove_node(foundry_root: Path, update_expected_output: bool) -> None:
+    test = 'AssertTest.test_assert_true()'
+
+    foundry = Foundry(foundry_root)
+
+    prove_res = foundry_prove(
+        foundry_root,
+        tests=[test],
+    )
+    assert_pass(test, prove_res)
+
+    foundry_remove_node(
+        foundry_root=foundry_root,
+        test=test,
+        node=4,
+    )
+
+    proof = foundry.get_apr_proof(test)
+    assert proof.pending
+
+    prove_res = foundry_prove(
+        foundry_root,
+        tests=[test],
+    )
+    assert_pass(test, prove_res)
 
 
 def assert_pass(test_id: str, prove_res: dict[str, tuple[bool, list[str] | None]]) -> None:

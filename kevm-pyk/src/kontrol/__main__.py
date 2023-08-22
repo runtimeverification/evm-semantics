@@ -10,6 +10,8 @@ from pyk.cli.utils import file_path
 from pyk.proof.tui import APRProofViewer
 
 from kevm_pyk.cli import KEVMCLIArgs, node_id_like
+from kevm_pyk.config import KEVM_LIB
+from kevm_pyk.kompile import KompileTarget
 from kevm_pyk.utils import arg_pair_of
 
 from .foundry import (
@@ -69,22 +71,31 @@ def main() -> None:
 # Command implementation
 
 
+def exec_version(**kwargs: Any) -> None:
+    version_file = KEVM_LIB / 'version'
+    version = version_file.read_text().strip()
+    print(f'Kontrol Version: {version}')
+
+
 def exec_compile(contract_file: Path, **kwargs: Any) -> None:
     res = solc_compile(contract_file)
     print(json.dumps(res))
 
 
 def exec_solc_to_k(
-    definition_dir: Path,
     contract_file: Path,
     contract_name: str,
     main_module: str | None,
     requires: list[str],
     imports: list[str],
+    target: KompileTarget | None = None,
     **kwargs: Any,
 ) -> None:
+    if target is None:
+        target = KompileTarget.HASKELL
+
     k_text = solc_to_k(
-        definition_dir=definition_dir,
+        definition_dir=target.definition_dir,
         contract_file=contract_file,
         contract_name=contract_name,
         main_module=main_module,
@@ -95,7 +106,6 @@ def exec_solc_to_k(
 
 
 def exec_foundry_kompile(
-    definition_dir: Path,
     foundry_root: Path,
     includes: Iterable[str] = (),
     regen: bool = False,
@@ -117,7 +127,6 @@ def exec_foundry_kompile(
     _ignore_arg(kwargs, 'o2', '-O2')
     _ignore_arg(kwargs, 'o3', '-O3')
     foundry_kompile(
-        definition_dir=definition_dir,
         foundry_root=foundry_root,
         includes=includes,
         regen=regen,
@@ -406,13 +415,15 @@ def _create_argument_parser() -> ArgumentParser:
 
     command_parser = parser.add_subparsers(dest='command', required=True)
 
+    command_parser.add_parser('version', help='Print out version of Kontrol command.')
+
     solc_args = command_parser.add_parser('compile', help='Generate combined JSON with solc compilation results.')
     solc_args.add_argument('contract_file', type=file_path, help='Path to contract file.')
 
     solc_to_k_args = command_parser.add_parser(
         'solc-to-k',
         help='Output helper K definition for given JSON output from solc compiler.',
-        parents=[kevm_cli_args.logging_args, kevm_cli_args.k_args, kevm_cli_args.k_gen_args],
+        parents=[kevm_cli_args.logging_args, kevm_cli_args.target_args, kevm_cli_args.k_args, kevm_cli_args.k_gen_args],
     )
     solc_to_k_args.add_argument('contract_file', type=file_path, help='Path to contract file.')
     solc_to_k_args.add_argument('contract_name', type=str, help='Name of contract to generate K helpers for.')
