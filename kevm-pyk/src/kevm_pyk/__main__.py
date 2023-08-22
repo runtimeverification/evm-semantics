@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import logging
 import sys
 from argparse import ArgumentParser
@@ -9,11 +10,11 @@ from typing import TYPE_CHECKING
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli.utils import file_path
 from pyk.cterm import CTerm
-from pyk.kast.outer import KApply, KRewrite
+from pyk.kast.outer import KApply, KRewrite, KSort, KToken
 from pyk.kcfg import KCFG
-from pyk.kore.prelude import int_dv
+from pyk.kore.tools import PrintOutput, kore_print
 from pyk.ktool.kompile import LLVMKompileType
-from pyk.ktool.krun import KRunOutput, _krun
+from pyk.ktool.krun import KRunOutput
 from pyk.prelude.ml import is_bottom, is_top
 from pyk.proof import APRProof
 from pyk.proof.equality import EqualityProof
@@ -22,7 +23,8 @@ from pyk.proof.tui import APRProofViewer
 from pyk.utils import BugReport, single
 
 from .cli import KEVMCLIArgs, node_id_like
-from .gst_to_kore import _mode_to_kore, _schedule_to_kore
+from .config import INCLUDE_DIR, KEVM_LIB
+from .gst_to_kore import SORT_ETHEREUM_SIMULATION, gst_to_kore, kore_pgm_to_kore
 from .kevm import KEVM, KEVMSemantics, kevm_node_printer
 from .kompile import KompileTarget, kevm_kompile
 from .utils import ensure_ksequence_on_k_cell, get_apr_proof_for_spec, kevm_prove, legacy_explore, print_failure_info
@@ -66,14 +68,20 @@ def main() -> None:
 # Command implementation
 
 
+def exec_version(**kwargs: Any) -> None:
+    version_file = KEVM_LIB / 'version'
+    version = version_file.read_text().strip()
+    print(f'KEVM Version: {version}')
+
+
 def exec_kompile(
-    target: KompileTarget,
     output_dir: Path | None,
     main_file: Path,
     emit_json: bool,
     includes: list[str],
     main_module: str | None,
     syntax_module: str | None,
+    target: KompileTarget | None = None,
     read_only: bool = False,
     ccopts: Iterable[str] = (),
     o0: bool = False,
@@ -86,6 +94,9 @@ def exec_kompile(
     verbose: bool = False,
     **kwargs: Any,
 ) -> None:
+    if target is None:
+        target = KompileTarget.LLVM
+
     optimization = 0
     if o1:
         optimization = 1
@@ -113,8 +124,8 @@ def exec_kompile(
 
 
 def exec_prove_legacy(
-    definition_dir: Path,
     spec_file: Path,
+    definition_dir: Path | None = None,
     includes: Iterable[str] = (),
     bug_report: bool = False,
     save_directory: Path | None = None,
@@ -130,10 +141,18 @@ def exec_prove_legacy(
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'md_selector', f'--md-selector: {kwargs["md_selector"]}')
+
+    if definition_dir is None:
+        definition_dir = KompileTarget.HASKELL.definition_dir
+
     kevm = KEVM(definition_dir, use_directory=save_directory)
+
+    include_dirs = [Path(include) for include in includes]
+    include_dirs += [INCLUDE_DIR]
+
     final_state = kevm.prove_legacy(
         spec_file=spec_file,
-        includes=includes,
+        includes=include_dirs,
         bug_report=bug_report,
         spec_module=spec_module,
         claim_labels=claim_labels,
@@ -151,9 +170,9 @@ def exec_prove_legacy(
 
 
 def exec_prove(
-    definition_dir: Path,
     spec_file: Path,
     includes: Iterable[str],
+    definition_dir: Path | None = None,
     bug_report: bool = False,
     save_directory: Path | None = None,
     spec_module: str | None = None,
@@ -178,6 +197,9 @@ def exec_prove(
     _ignore_arg(kwargs, 'md_selector', f'--md-selector: {kwargs["md_selector"]}')
     md_selector = 'k & ! node'
 
+    if definition_dir is None:
+        definition_dir = KompileTarget.HASKELL.definition_dir
+
     if smt_timeout is None:
         smt_timeout = 300
     if smt_retry_limit is None:
@@ -186,11 +208,14 @@ def exec_prove(
     br = BugReport(spec_file.with_suffix('.bug_report')) if bug_report else None
     kevm = KEVM(definition_dir, use_directory=save_directory, bug_report=br)
 
+    include_dirs = [Path(include) for include in includes]
+    include_dirs += [INCLUDE_DIR]
+
     _LOGGER.info(f'Extracting claims from file: {spec_file}')
     claims = kevm.get_claims(
         spec_file,
         spec_module_name=spec_module,
-        include_dirs=[Path(i) for i in includes],
+        include_dirs=include_dirs,
         md_selector=md_selector,
         claim_labels=claim_labels,
         exclude_claim_labels=exclude_claim_labels,
@@ -330,12 +355,15 @@ def exec_prune_proof(
     _LOGGER.warning(f'definition_dir: {definition_dir}')
     kevm = KEVM(definition_dir, use_directory=save_directory)
 
+    include_dirs = [Path(include) for include in includes]
+    include_dirs += [INCLUDE_DIR]
+
     _LOGGER.info(f'Extracting claims from file: {spec_file}')
     claim = single(
         kevm.get_claims(
             spec_file,
             spec_module_name=spec_module,
-            include_dirs=[Path(i) for i in includes],
+            include_dirs=include_dirs,
             md_selector=md_selector,
             claim_labels=claim_labels,
             exclude_claim_labels=exclude_claim_labels,
@@ -368,12 +396,14 @@ def exec_show_kcfg(
     **kwargs: Any,
 ) -> None:
     kevm = KEVM(definition_dir)
+    include_dirs = [Path(include) for include in includes]
+    include_dirs += [INCLUDE_DIR]
     proof = get_apr_proof_for_spec(
         kevm,
         spec_file,
         save_directory=save_directory,
         spec_module_name=spec_module,
-        include_dirs=[Path(i) for i in includes],
+        include_dirs=include_dirs,
         md_selector=md_selector,
         claim_labels=claim_labels,
         exclude_claim_labels=exclude_claim_labels,
@@ -415,12 +445,14 @@ def exec_view_kcfg(
     **kwargs: Any,
 ) -> None:
     kevm = KEVM(definition_dir)
+    include_dirs = [Path(include) for include in includes]
+    include_dirs += [INCLUDE_DIR]
     proof = get_apr_proof_for_spec(
         kevm,
         spec_file,
         save_directory=save_directory,
         spec_module_name=spec_module,
-        include_dirs=[Path(i) for i in includes],
+        include_dirs=include_dirs,
         md_selector=md_selector,
         claim_labels=claim_labels,
         exclude_claim_labels=exclude_claim_labels,
@@ -433,41 +465,71 @@ def exec_view_kcfg(
 
 
 def exec_run(
-    definition_dir: Path,
     input_file: Path,
-    term: bool,
-    parser: str | None,
-    expand_macros: str,
+    expand_macros: bool,
     depth: int | None,
-    output: str,
+    output: KRunOutput,
     schedule: str,
     mode: str,
     chainid: int,
+    target: KompileTarget | None = None,
+    save_directory: Path | None = None,
+    debugger: bool = False,
     **kwargs: Any,
 ) -> None:
-    cmap = {
-        'MODE': _mode_to_kore(mode).text,
-        'SCHEDULE': _schedule_to_kore(schedule).text,
-        'CHAINID': int_dv(chainid).text,
-    }
-    pmap = {'MODE': 'cat', 'SCHEDULE': 'cat', 'CHAINID': 'cat'}
-    krun_result = _krun(
-        definition_dir=definition_dir,
-        input_file=input_file,
+    if target is None:
+        target = KompileTarget.LLVM
+
+    _ignore_arg(kwargs, 'definition_dir', f'--definition: {kwargs["definition_dir"]}')
+    kevm = KEVM(target.definition_dir, use_directory=save_directory)
+
+    try:
+        json_read = json.loads(input_file.read_text())
+        kore_pattern = gst_to_kore(json_read, schedule, mode, chainid)
+    except json.JSONDecodeError:
+        pgm_token = KToken(input_file.read_text(), KSort('EthereumSimulation'))
+        kast_pgm = kevm.parse_token(pgm_token)
+        kore_pgm = kevm.kast_to_kore(kast_pgm, sort=KSort('EthereumSimulation'))
+        kore_pattern = kore_pgm_to_kore(kore_pgm, SORT_ETHEREUM_SIMULATION, schedule, mode, chainid)
+
+    kevm.run_kore(
+        kore_pattern,
         depth=depth,
-        term=term,
-        no_expand_macros=not expand_macros,
-        parser=parser,
-        cmap=cmap,
-        pmap=pmap,
-        output=KRunOutput[output.upper()],
-        check=False,
+        term=True,
+        expand_macros=expand_macros,
+        output=output,
+        check=True,
+        debugger=debugger,
     )
-    print(krun_result.stdout)
-    if krun_result.returncode > 0:
-        sys.stderr.write(krun_result.stderr)
-        sys.stderr.flush()
-    sys.exit(krun_result.returncode)
+
+
+def exec_kast(
+    input_file: Path,
+    output: PrintOutput,
+    schedule: str,
+    mode: str,
+    chainid: int,
+    target: KompileTarget | None = None,
+    save_directory: Path | None = None,
+    **kwargs: Any,
+) -> None:
+    if target is None:
+        target = KompileTarget.LLVM
+
+    _ignore_arg(kwargs, 'definition_dir', f'--definition: {kwargs["definition_dir"]}')
+    kevm = KEVM(target.definition_dir, use_directory=save_directory)
+
+    try:
+        json_read = json.loads(input_file.read_text())
+        kore_pattern = gst_to_kore(json_read, schedule, mode, chainid)
+    except json.JSONDecodeError:
+        pgm_token = KToken(input_file.read_text(), KSort('EthereumSimulation'))
+        kast_pgm = kevm.parse_token(pgm_token)
+        kore_pgm = kevm.kast_to_kore(kast_pgm)
+        kore_pattern = kore_pgm_to_kore(kore_pgm, SORT_ETHEREUM_SIMULATION, schedule, mode, chainid)
+
+    output_text = kore_print(kore_pattern, kevm.definition_dir, output)
+    print(output_text)
 
 
 # Helpers
@@ -484,6 +546,8 @@ def _create_argument_parser() -> ArgumentParser:
     parser = ArgumentParser(prog='kevm-pyk')
 
     command_parser = parser.add_subparsers(dest='command', required=True)
+
+    command_parser.add_parser('version', help='Print KEVM version and exit.', parents=[kevm_cli_args.logging_args])
 
     kevm_kompile_args = command_parser.add_parser(
         'kompile',
@@ -531,7 +595,7 @@ def _create_argument_parser() -> ArgumentParser:
     )
     prune_proof_args.add_argument('node', type=node_id_like, help='Node to remove CFG subgraph from.')
 
-    _ = command_parser.add_parser(
+    command_parser.add_parser(
         'prove-legacy',
         help='Run KEVM proof using the legacy kprove binary.',
         parents=[
@@ -542,13 +606,13 @@ def _create_argument_parser() -> ArgumentParser:
         ],
     )
 
-    _ = command_parser.add_parser(
+    command_parser.add_parser(
         'view-kcfg',
         help='Display tree view of CFG',
         parents=[kevm_cli_args.logging_args, kevm_cli_args.k_args, kevm_cli_args.spec_args],
     )
 
-    _ = command_parser.add_parser(
+    command_parser.add_parser(
         'show-kcfg',
         help='Display tree show of CFG',
         parents=[
@@ -563,18 +627,19 @@ def _create_argument_parser() -> ArgumentParser:
     run_args = command_parser.add_parser(
         'run',
         help='Run KEVM test/simulation.',
-        parents=[kevm_cli_args.logging_args, kevm_cli_args.evm_chain_args, kevm_cli_args.k_args],
+        parents=[
+            kevm_cli_args.logging_args,
+            kevm_cli_args.target_args,
+            kevm_cli_args.evm_chain_args,
+            kevm_cli_args.k_args,
+        ],
     )
     run_args.add_argument('input_file', type=file_path, help='Path to input file.')
     run_args.add_argument(
-        '--term', default=False, action='store_true', help='<input_file> is the entire term to execute.'
-    )
-    run_args.add_argument('--parser', default=None, type=str, help='Parser to use for $PGM.')
-    run_args.add_argument(
         '--output',
-        default='pretty',
-        type=str,
-        help='Output format to use, one of [pretty|program|kast|binary|json|latex|kore|none].',
+        default=KRunOutput.PRETTY,
+        type=KRunOutput,
+        choices=list(KRunOutput),
     )
     run_args.add_argument(
         '--expand-macros',
@@ -588,6 +653,30 @@ def _create_argument_parser() -> ArgumentParser:
         dest='expand_macros',
         action='store_false',
         help='Do not expand macros on the input term before execution.',
+    )
+    run_args.add_argument(
+        '--debugger',
+        dest='debugger',
+        action='store_true',
+        help='Run GDB debugger for execution.',
+    )
+
+    kast_args = command_parser.add_parser(
+        'kast',
+        help='Run KEVM program.',
+        parents=[
+            kevm_cli_args.logging_args,
+            kevm_cli_args.target_args,
+            kevm_cli_args.evm_chain_args,
+            kevm_cli_args.k_args,
+        ],
+    )
+    kast_args.add_argument('input_file', type=file_path, help='Path to input file.')
+    kast_args.add_argument(
+        '--output',
+        default=PrintOutput.KORE,
+        type=PrintOutput,
+        choices=list(PrintOutput),
     )
 
     return parser
