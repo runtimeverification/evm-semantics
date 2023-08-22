@@ -44,7 +44,7 @@ def server(foundry_root: Path, use_booster: bool) -> Iterator[KoreServer]:
         module_name=foundry.kevm.main_module,
         command=kore_rpc_command,
         smt_timeout=300,
-        smt_retry_limit=8,
+        smt_retry_limit=10,
     )
 
 
@@ -115,19 +115,15 @@ SHOW_TESTS = set((TEST_DATA_DIR / 'foundry-show').read_text().splitlines())
 
 
 @pytest.mark.parametrize('test_id', ALL_PROVE_TESTS)
-def test_foundry_prove(test_id: str, foundry_root: Path, update_expected_output: bool, use_booster: bool) -> None:
+def test_foundry_prove(
+    test_id: str, foundry_root: Path, update_expected_output: bool, use_booster: bool, server: KoreServer
+) -> None:
     if test_id in SKIPPED_PROVE_TESTS or (update_expected_output and not test_id in SHOW_TESTS):
         pytest.skip()
 
     # When
     prove_res = foundry_prove(
-        foundry_root,
-        tests=[test_id],
-        simplify_init=False,
-        smt_timeout=300,
-        smt_retry_limit=10,
-        use_booster=use_booster,
-        counterexample_info=True,
+        foundry_root, tests=[test_id], simplify_init=False, counterexample_info=True, port=server.port
     )
 
     # Then
@@ -147,8 +143,7 @@ def test_foundry_prove(test_id: str, foundry_root: Path, update_expected_output:
         failing=True,
         failure_info=True,
         counterexample_info=True,
-        smt_timeout=300,
-        smt_retry_limit=10,
+        port=server.port,
     )
 
     # Then
@@ -159,16 +154,16 @@ FAIL_TESTS: Final = tuple((TEST_DATA_DIR / 'foundry-fail').read_text().splitline
 
 
 @pytest.mark.parametrize('test_id', FAIL_TESTS)
-def test_foundry_fail(test_id: str, foundry_root: Path, update_expected_output: bool, use_booster: bool) -> None:
+def test_foundry_fail(
+    test_id: str, foundry_root: Path, update_expected_output: bool, use_booster: bool, server: KoreServer
+) -> None:
     # When
     prove_res = foundry_prove(
         foundry_root,
         tests=[test_id],
         simplify_init=False,
-        smt_timeout=300,
-        smt_retry_limit=10,
-        use_booster=use_booster,
         counterexample_info=True,
+        port=server.port,
     )
 
     # Then
@@ -188,8 +183,7 @@ def test_foundry_fail(test_id: str, foundry_root: Path, update_expected_output: 
         failing=True,
         failure_info=True,
         counterexample_info=True,
-        smt_timeout=300,
-        smt_retry_limit=10,
+        port=server.port,
     )
 
     # Then
@@ -201,7 +195,7 @@ SKIPPED_BMC_TESTS: Final = set((TEST_DATA_DIR / 'foundry-bmc-skip').read_text().
 
 
 @pytest.mark.parametrize('test_id', ALL_BMC_TESTS)
-def test_foundry_bmc(test_id: str, foundry_root: Path, use_booster: bool) -> None:
+def test_foundry_bmc(test_id: str, foundry_root: Path, use_booster: bool, server: KoreServer) -> None:
     if test_id in SKIPPED_BMC_TESTS:
         pytest.skip()
 
@@ -211,9 +205,8 @@ def test_foundry_bmc(test_id: str, foundry_root: Path, use_booster: bool) -> Non
         tests=[test_id],
         bmc_depth=3,
         simplify_init=False,
-        smt_timeout=300,
-        smt_retry_limit=10,
         use_booster=use_booster,
+        port=server.port,
     )
 
     # Then
@@ -258,14 +251,13 @@ def check_pending(foundry_root: Path, test: str, pending: list[int]) -> None:
     assert [node.id for node in proof.pending] == pending
 
 
-def test_foundry_auto_abstraction(foundry_root: Path, update_expected_output: bool) -> None:
+def test_foundry_auto_abstraction(foundry_root: Path, update_expected_output: bool, server: KoreServer) -> None:
     test_id = 'GasTest.testInfiniteGas()'
     foundry_prove(
         foundry_root,
         tests=[test_id],
-        smt_timeout=300,
-        smt_retry_limit=10,
         auto_abstract_gas=True,
+        port=server.port,
     )
 
     show_res = foundry_show(
@@ -278,8 +270,7 @@ def test_foundry_auto_abstraction(foundry_root: Path, update_expected_output: bo
         pending=True,
         failing=True,
         failure_info=True,
-        smt_timeout=300,
-        smt_retry_limit=10,
+        port=server.port,
     )
 
     assert_or_update_show_output(show_res, TEST_DATA_DIR / 'gas-abstraction.expected', update=update_expected_output)
@@ -356,18 +347,17 @@ def assert_or_update_show_output(show_res: str, expected_file: Path, *, update: 
         assert actual_text == expected_text
 
 
-def test_foundry_resume_proof(foundry_root: Path, update_expected_output: bool) -> None:
+def test_foundry_resume_proof(foundry_root: Path, update_expected_output: bool, server: KoreServer) -> None:
     foundry = Foundry(foundry_root)
     test_id = 'AssumeTest.test_assume_false(uint256,uint256)'
 
     prove_res = foundry_prove(
         foundry_root,
         tests=[test_id],
-        smt_timeout=300,
-        smt_retry_limit=10,
         auto_abstract_gas=True,
         max_iterations=4,
         reinit=True,
+        port=server.port,
     )
 
     proof = foundry.get_apr_proof(test_id)
@@ -376,10 +366,9 @@ def test_foundry_resume_proof(foundry_root: Path, update_expected_output: bool) 
     prove_res = foundry_prove(
         foundry_root,
         tests=[test_id],
-        smt_timeout=300,
-        smt_retry_limit=10,
         auto_abstract_gas=True,
         max_iterations=6,
         reinit=False,
+        port=server.port,
     )
     assert_fail(test_id, prove_res)
