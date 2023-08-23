@@ -76,11 +76,7 @@ class KompileTarget(Enum):
                 return 'k & ! node & ! symbolic'
             case self.NODE:
                 return 'k & ! symbolic & ! standalone'
-            case self.HASKELL:
-                return 'k & ! node & ! concrete'
-            case self.HASKELL_STANDALONE:
-                return 'k & ! node & ! concrete'
-            case self.FOUNDRY:
+            case self.HASKELL | self.HASKELL_STANDALONE | self.HASKELL_BOOSTER | self.FOUNDRY:
                 return 'k & ! node & ! concrete'
             case _:
                 raise AssertionError()
@@ -151,8 +147,18 @@ def kevm_kompile(
                 return kompile(output_dir=output_dir or target.definition_dir, debug=debug, verbose=verbose)
 
             case KompileTarget.HASKELL_BOOSTER:
+                base_args_llvm = KompileArgs(
+                    main_file=main_file,
+                    main_module=main_module,
+                    syntax_module=syntax_module,
+                    include_dirs=include_dirs,
+                    md_selector=KompileTarget.LLVM.md_selector,
+                    hook_namespaces=HOOK_NAMESPACES,
+                    emit_json=emit_json,
+                    read_only=read_only,
+                )
                 kompile_llvm = LLVMKompile(
-                    base_args=base_args, ccopts=ccopts, opt_level=optimization, llvm_kompile_type=LLVMKompileType.C
+                    base_args=base_args_llvm, ccopts=ccopts, opt_level=optimization, llvm_kompile_type=LLVMKompileType.C
                 )
                 kompile_haskell = HaskellKompile(base_args=base_args)
 
