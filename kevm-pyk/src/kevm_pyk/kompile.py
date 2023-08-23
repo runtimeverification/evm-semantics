@@ -7,7 +7,7 @@ from enum import Enum
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from pyk.ktool.kompile import HaskellKompile, KompileArgs, KompileBackend, LLVMKompile, LLVMKompileType
+from pyk.ktool.kompile import HaskellKompile, KompileArgs, LLVMKompile, LLVMKompileType
 from pyk.utils import run_process
 
 from . import config
@@ -42,16 +42,6 @@ class KompileTarget(Enum):
     HASKELL_STANDALONE = 'haskell-standalone'
     NODE = 'node'
     FOUNDRY = 'foundry'
-
-    @property
-    def backend(self) -> KompileBackend:
-        match self:
-            case self.LLVM | self.NODE:
-                return KompileBackend.LLVM
-            case self.HASKELL | self.FOUNDRY | self.HASKELL_STANDALONE:
-                return KompileBackend.HASKELL
-            case _:
-                raise AssertionError()
 
     @property
     def definition_dir(self) -> Path:
