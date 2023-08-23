@@ -186,7 +186,7 @@ def exec_prove(
     break_every_step: bool = False,
     break_on_jumpi: bool = False,
     break_on_calls: bool = True,
-    kore_rpc_command: str | Iterable[str] = ('kore-rpc',),
+    kore_rpc_command: str | Iterable[str] | None = None,
     use_booster: bool = False,
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
