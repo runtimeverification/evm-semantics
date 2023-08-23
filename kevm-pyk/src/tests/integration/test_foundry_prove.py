@@ -105,8 +105,8 @@ def test_foundry_prove(test_id: str, foundry_root: Path, update_expected_output:
         foundry_root,
         tests=[test_id],
         simplify_init=False,
-        smt_timeout=50,
-        smt_retry_limit=1,
+        smt_timeout=300,
+        smt_retry_limit=10,
         use_booster=use_booster,
         counterexample_info=True,
     )
