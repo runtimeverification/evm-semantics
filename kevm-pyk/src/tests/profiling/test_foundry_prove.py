@@ -29,11 +29,7 @@ def test_foundy_prove(profile: Profiler, use_booster: bool, tmp_path: Path) -> N
     _forge_build(foundry_root)
 
     with profile('kompile.prof', sort_keys=('cumtime', 'tottime'), limit=15):
-        foundry_kompile(
-            foundry_root=foundry_root,
-            includes=(),
-            llvm_library=use_booster,
-        )
+        foundry_kompile(foundry_root=foundry_root, includes=())
 
     with profile('prove.prof', sort_keys=('cumtime', 'tottime'), limit=100):
         foundry_prove(

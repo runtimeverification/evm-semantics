@@ -375,7 +375,6 @@ def foundry_kompile(
     ccopts: Iterable[str] = (),
     llvm_kompile: bool = True,
     debug: bool = False,
-    llvm_library: bool = False,
     verbose: bool = False,
 ) -> None:
     from kevm_pyk.kompile import KompileTarget, kevm_kompile
@@ -388,7 +387,6 @@ def foundry_kompile(
     main_module = 'FOUNDRY-MAIN'
     ensure_dir_path(foundry.kompiled)
     ensure_dir_path(foundry_requires_dir)
-    ensure_dir_path(foundry.llvm_library)
 
     requires_paths: dict[str, str] = {}
 

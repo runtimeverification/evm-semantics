@@ -49,7 +49,6 @@ def foundry_root(tmp_path_factory: TempPathFactory, worker_id: str, use_booster:
                 includes=(),
                 requires=[str(TEST_DATA_DIR / 'lemmas.k')],
                 imports=['LoopsTest:SUM-TO-N-INVARIANT'],
-                llvm_library=use_booster,
             )
 
     session_foundry_root = tmp_path_factory.mktemp('foundry')
