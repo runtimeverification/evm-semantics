@@ -100,11 +100,15 @@ def kevm_kompile(
     optimization: int = 0,
     llvm_kompile_type: LLVMKompileType | None = None,
     enable_llvm_debug: bool = False,
+    llvm_library: Path | None = None,
     debug: bool = False,
     verbose: bool = False,
 ) -> Path:
     if output_dir is None:
         output_dir = target.definition_dir
+
+    if llvm_library is None:
+        llvm_library = output_dir / 'llvm-library'
 
     include_dirs = [Path(include) for include in includes]
     include_dirs += [config.INCLUDE_DIR]
@@ -153,7 +157,7 @@ def kevm_kompile(
                 kompile_haskell = HaskellKompile(base_args=base_args)
 
                 def _kompile_llvm() -> None:
-                    kompile_llvm(output_dir=output_dir, debug=debug, verbose=verbose)
+                    kompile_llvm(output_dir=llvm_library, debug=debug, verbose=verbose)
 
                 def _kompile_haskell() -> None:
                     kompile_haskell(output_dir=output_dir, debug=debug, verbose=verbose)

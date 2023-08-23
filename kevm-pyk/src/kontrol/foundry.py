@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import concurrent.futures
 import json
 import logging
 import os
@@ -18,7 +17,6 @@ from pyk.kast.inner import KApply, KSequence, KSort, KToken, KVariable, Subst
 from pyk.kast.manip import free_vars, minimize_term
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
 from pyk.kcfg import KCFG
-from pyk.ktool.kompile import LLVMKompileType
 from pyk.prelude.bytes import bytesToken
 from pyk.prelude.k import GENERATED_TOP_CELL
 from pyk.prelude.kbool import FALSE, notBool
@@ -45,7 +43,6 @@ from .solc_to_k import Contract, contract_to_main_module, contract_to_verificati
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
-    from concurrent.futures import Future
     from typing import Any, Final
 
     from pyk.kast.inner import KInner
@@ -455,25 +452,6 @@ def foundry_kompile(
         foundry.main_file.write_text(kevm.pretty_print(contract_main_definition) + '\n')
         _LOGGER.info(f'Wrote file: {foundry.main_file}')
 
-    def _kompile(
-        out_dir: Path,
-        backend: KompileTarget,
-        llvm_kompile_type: LLVMKompileType | None = None,
-    ) -> None:
-        kevm_kompile(
-            target=backend,
-            output_dir=out_dir,
-            main_file=foundry.main_file,
-            main_module=main_module,
-            syntax_module=syntax_module,
-            includes=[include for include in includes if Path(include).exists()],
-            emit_json=True,
-            ccopts=ccopts,
-            llvm_kompile_type=llvm_kompile_type,
-            debug=debug,
-            verbose=verbose,
-        )
-
     def kompilation_digest() -> str:
         k_files = list(requires) + [foundry_contracts_file, foundry.main_file]
         return hash_str(''.join([hash_str(Path(k_file).read_text()) for k_file in k_files]))
@@ -485,28 +463,23 @@ def foundry_kompile(
 
         return old_digest == kompilation_digest()
 
-    def kompile_haskell() -> None:
-        _LOGGER.info(f'Kompiling definition: {foundry.main_file}')
-        _kompile(foundry.kompiled, KompileTarget.HASKELL)
-
-    def kompile_llvm() -> None:
-        _LOGGER.info(f'Kompiling definition to LLVM dynamic library: {foundry.main_file}')
-        _kompile(
-            foundry.llvm_library,
-            KompileTarget.LLVM,
-            llvm_kompile_type=LLVMKompileType.C,
-        )
-
     def update_kompilation_digest() -> None:
         foundry.digest_file.write_text(kompilation_digest())
 
     if not kompilation_up_to_date() or rekompile or not kompiled_timestamp.exists():
-        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
-            futures: list[Future] = []
-            futures.append(executor.submit(kompile_haskell))
-            if llvm_library:
-                futures.append(executor.submit(kompile_llvm))
-            [future.result() for future in futures]
+        kevm_kompile(
+            target=KompileTarget.HASKELL_BOOSTER,
+            output_dir=foundry.kompiled,
+            main_file=foundry.main_file,
+            main_module=main_module,
+            syntax_module=syntax_module,
+            includes=[include for include in includes if Path(include).exists()],
+            emit_json=True,
+            ccopts=ccopts,
+            llvm_library=foundry.llvm_library,
+            debug=debug,
+            verbose=verbose,
+        )
 
     update_kompilation_digest()
     foundry.update_digest()
