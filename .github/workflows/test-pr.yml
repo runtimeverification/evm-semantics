@@ -80,7 +80,7 @@ jobs:
       - name: 'Set up Docker'
         uses: ./.github/actions/with-docker
         with:
-          tag: kevm-ci-profile-${{ github.sha }}
+          container-name: kevm-ci-profile-${{ github.sha }}
       - name: 'Build kevm-pyk'
         run: docker exec -u github-user kevm-ci-profile-${GITHUB_SHA} /bin/bash -c 'make poetry'
       - name: 'Build Foundry'
@@ -107,7 +107,7 @@ jobs:
       - name: 'Set up Docker'
         uses: ./.github/actions/with-docker
         with:
-          tag: kevm-ci-concrete-${{ github.sha }}
+          container-name: kevm-ci-concrete-${{ github.sha }}
       - name: 'Build kevm-pyk'
         run: docker exec -u github-user kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make poetry'
       - name: 'Build blockchain-k-plugin-deps'
@@ -141,7 +141,7 @@ jobs:
       - name: 'Set up Docker'
         uses: ./.github/actions/with-docker
         with:
-          tag: kevm-ci-haskell-${{ github.sha }}
+          container-name: kevm-ci-haskell-${{ github.sha }}
       - name: 'Prove Haskell'
         run: docker exec -u github-user kevm-ci-haskell-${GITHUB_SHA} /bin/bash -c 'make test-prove'
       - name: 'Tear down Docker'
@@ -163,7 +163,7 @@ jobs:
       - name: 'Set up Docker'
         uses: ./.github/actions/with-docker
         with:
-          tag: kevm-ci-foundry-${{ github.sha }}
+          container-name: kevm-ci-foundry-${{ github.sha }}
       - name: 'Build kevm-pyk'
         run: docker exec -u github-user kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make poetry'
       - name: 'Build Foundry'
@@ -189,7 +189,7 @@ jobs:
       - name: 'Set up Docker'
         uses: ./.github/actions/with-docker
         with:
-          tag: kevm-ci-booster-${{ github.sha }}
+          container-name: kevm-ci-booster-${{ github.sha }}
       - name: 'Build kevm-pyk'
         run: docker exec -u github-user kevm-ci-booster-${GITHUB_SHA} /bin/bash -c 'make poetry'
       - name: 'Build blockchain-k-plugin-deps'
@@ -254,7 +254,7 @@ jobs:
       - name: 'Set up Docker'
         uses: ./.github/actions/with-docker
         with:
-          tag: kevm-package-jammy-${{ github.sha }}
+          container-name: kevm-package-jammy-${{ github.sha }}
       - name: 'Build Package'
         run: |
           set -euxo pipefail
@@ -265,7 +265,7 @@ jobs:
       - name: 'Setup Foundry Test Docker'
         uses: ./.github/actions/with-docker
         with:
-          tag: kevm-ci-test-${{ github.sha }}
+          container-name: kevm-ci-test-${{ github.sha }}
           dockerfile: package/docker/Dockerfile
 
       - name: 'KEVM Foundry Test'
