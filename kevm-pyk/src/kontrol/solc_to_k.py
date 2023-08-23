@@ -549,6 +549,8 @@ def solc_compile(contract_file: Path) -> dict[str, Any]:
                         'evm.methodIdentifiers',
                         'evm.deployedBytecode.object',
                         'evm.deployedBytecode.sourceMap',
+                        'evm.bytecode.object',
+                        'evm.bytecode.sourceMap',
                     ],
                     '': ['ast'],
                 },
