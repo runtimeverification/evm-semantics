@@ -154,17 +154,18 @@ class Foundry:
             method_sig = test
         else:
             method_sig, _ = test.split(':')
-        with open(self.proofs_index, 'r+') as f:
-            content = f.read()
-            if content != '':
-                obj = json.loads(content)
-            else:
-                obj = {}
-            if test_id not in content:
-                obj[test_id] = {}
-            foundry_digest = self.method_digest(contract_name, method_sig)
-            obj[test_id]['digest'] = foundry_digest
-            f.write(json.dumps(obj))
+        if not self.proofs_index.exists():
+            self.proofs_index.open('r+')
+        content = self.proofs_index.read_text()
+        if content != '':
+            obj = json.loads(content)
+        else:
+            obj = {}
+        if test_id not in content:
+            obj[test_id] = {}
+        foundry_digest = self.method_digest(contract_name, method_sig)
+        obj[test_id]['digest'] = foundry_digest
+        self.proofs_index.write_text(json.dumps(obj))
 
     @cached_property
     def llvm_dylib(self) -> Path | None:
