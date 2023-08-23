@@ -666,7 +666,7 @@ def foundry_prove(
     contracts = set(unique({test.split('.')[0] for test in test_names}))
     for contract_name in contracts:
         if 'setUp' in foundry.contracts[contract_name].method_by_name:
-            setup_methods[contract_name] = f'{contract_name}.setUp()'
+            setup_methods[contract_name] = f'{contract_name}.setUp():'
 
     test_methods = [
         method
@@ -870,10 +870,7 @@ def foundry_list(foundry_root: Path) -> list[str]:
     lines: list[str] = []
     for method in sorted(all_methods):
         for test_id in listdir(foundry.proofs_dir):
-            if test_id.find(':') >= 0:
-                test, _ = test_id.split(':')
-            else:
-                test = test_id
+            test, _ = test_id.split(':')
             if test == method:
                 proof = foundry.get_optional_proof(test_id)
                 if proof is not None:
@@ -1140,7 +1137,7 @@ def _method_to_apr_proof(
 
         setup_digest = None
         if method_sig != 'setUp()' and 'setUp' in contract.method_by_name:
-            setup_digest = f'{contract_name}.setUp()'
+            setup_digest = f'{contract_name}.setUp():'
             _LOGGER.info(f'Using setUp method for test: {test_id}')
 
         empty_config = foundry.kevm.definition.empty_config(GENERATED_TOP_CELL)
