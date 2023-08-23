@@ -87,7 +87,7 @@ class Foundry:
 
     @property
     def proofs_dir(self) -> Path:
-        return self.out / 'apr_proofs'
+        return self.out / 'proofs'
 
     @property
     def proofs_index(self) -> Path:

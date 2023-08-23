@@ -534,6 +534,7 @@ def _create_argument_parser() -> ArgumentParser:
         'foundry-show',
         help='Display a given Foundry CFG.',
         parents=[
+            kevm_cli_args.foundry_test_args,
             kevm_cli_args.logging_args,
             kevm_cli_args.k_args,
             kevm_cli_args.kcfg_show_args,
@@ -541,8 +542,6 @@ def _create_argument_parser() -> ArgumentParser:
             kevm_cli_args.foundry_args,
         ],
     )
-    foundry_show_args.add_argument('test', type=str, help='Display the CFG for this test.')
-    foundry_show_args.add_argument('--id', type=str, default=None, required=False, help='ID of the test')
     foundry_show_args.add_argument(
         '--omit-unstable-output',
         dest='omit_unstable_output',
@@ -550,13 +549,11 @@ def _create_argument_parser() -> ArgumentParser:
         action='store_true',
         help='Strip output that is likely to change without the contract logic changing',
     )
-    foundry_to_dot = command_parser.add_parser(
+    command_parser.add_parser(
         'foundry-to-dot',
         help='Dump the given CFG for the test as DOT for visualization.',
-        parents=[kevm_cli_args.logging_args, kevm_cli_args.foundry_args],
+        parents=[kevm_cli_args.foundry_test_args, kevm_cli_args.logging_args, kevm_cli_args.foundry_args],
     )
-    foundry_to_dot.add_argument('test', type=str, help='Display the CFG for this test.')
-    foundry_to_dot.add_argument('--id', type=str, default=None, required=False, help='ID of the test')
 
     command_parser.add_parser(
         'foundry-list',
@@ -564,27 +561,24 @@ def _create_argument_parser() -> ArgumentParser:
         parents=[kevm_cli_args.logging_args, kevm_cli_args.k_args, kevm_cli_args.foundry_args],
     )
 
-    foundry_view_kcfg_args = command_parser.add_parser(
+    command_parser.add_parser(
         'foundry-view-kcfg',
         help='Display tree view of CFG',
-        parents=[kevm_cli_args.logging_args, kevm_cli_args.foundry_args],
+        parents=[kevm_cli_args.foundry_test_args, kevm_cli_args.logging_args, kevm_cli_args.foundry_args],
     )
-    foundry_view_kcfg_args.add_argument('test', type=str, help='View the CFG for this test.')
-    foundry_view_kcfg_args.add_argument('--id', type=str, default=None, required=False, help='ID of the test')
 
     foundry_remove_node = command_parser.add_parser(
         'foundry-remove-node',
         help='Remove a node and its successors.',
-        parents=[kevm_cli_args.logging_args, kevm_cli_args.foundry_args],
+        parents=[kevm_cli_args.foundry_test_args, kevm_cli_args.logging_args, kevm_cli_args.foundry_args],
     )
-    foundry_remove_node.add_argument('test', type=str, help='View the CFG for this test.')
     foundry_remove_node.add_argument('node', type=node_id_like, help='Node to remove CFG subgraph from.')
-    foundry_remove_node.add_argument('--id', type=str, default=None, required=False, help='ID of the test')
 
     foundry_simplify_node = command_parser.add_parser(
         'foundry-simplify-node',
         help='Simplify a given node, and potentially replace it.',
         parents=[
+            kevm_cli_args.foundry_test_args,
             kevm_cli_args.logging_args,
             kevm_cli_args.smt_args,
             kevm_cli_args.rpc_args,
@@ -592,9 +586,7 @@ def _create_argument_parser() -> ArgumentParser:
             kevm_cli_args.foundry_args,
         ],
     )
-    foundry_simplify_node.add_argument('test', type=str, help='Simplify node in this CFG.')
     foundry_simplify_node.add_argument('node', type=node_id_like, help='Node to simplify in CFG.')
-    foundry_simplify_node.add_argument('--id', type=str, default=None, required=False, help='ID of the test')
     foundry_simplify_node.add_argument(
         '--replace', default=False, help='Replace the original node with the simplified variant in the graph.'
     )
@@ -603,15 +595,14 @@ def _create_argument_parser() -> ArgumentParser:
         'foundry-step-node',
         help='Step from a given node, adding it to the CFG.',
         parents=[
+            kevm_cli_args.foundry_test_args,
             kevm_cli_args.logging_args,
             kevm_cli_args.rpc_args,
             kevm_cli_args.smt_args,
             kevm_cli_args.foundry_args,
         ],
     )
-    foundry_step_node.add_argument('test', type=str, help='Step from node in this CFG.')
     foundry_step_node.add_argument('node', type=node_id_like, help='Node to step from in CFG.')
-    foundry_step_node.add_argument('--id', type=str, default=None, required=False, help='ID of the test')
     foundry_step_node.add_argument(
         '--repeat', type=int, default=1, help='How many node expansions to do from the given start node (>= 1).'
     )
@@ -640,15 +631,14 @@ def _create_argument_parser() -> ArgumentParser:
         'foundry-section-edge',
         help='Given an edge in the graph, cut it into sections to get intermediate nodes.',
         parents=[
+            kevm_cli_args.foundry_test_args,
             kevm_cli_args.logging_args,
             kevm_cli_args.rpc_args,
             kevm_cli_args.smt_args,
             kevm_cli_args.foundry_args,
         ],
     )
-    foundry_section_edge.add_argument('test', type=str, help='Section edge in this CFG.')
     foundry_section_edge.add_argument('edge', type=arg_pair_of(str, str), help='Edge to section in CFG.')
-    foundry_section_edge.add_argument('--id', type=str, default=None, required=False, help='ID of the test')
     foundry_section_edge.add_argument(
         '--sections', type=int, default=2, help='Number of sections to make from edge (>= 2).'
     )
@@ -657,14 +647,13 @@ def _create_argument_parser() -> ArgumentParser:
         'foundry-get-model',
         help='Display a model for a given node.',
         parents=[
+            kevm_cli_args.foundry_test_args,
             kevm_cli_args.logging_args,
             kevm_cli_args.rpc_args,
             kevm_cli_args.smt_args,
             kevm_cli_args.foundry_args,
         ],
     )
-    foundry_get_model.add_argument('test', type=str, help='Display the models of nodes in this test.')
-    foundry_get_model.add_argument('--id', type=str, default=None, required=False, help='ID of the test')
     foundry_get_model.add_argument(
         '--node',
         type=node_id_like,
