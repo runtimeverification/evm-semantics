@@ -116,7 +116,7 @@ def kevm_kompile(
 
     try:
         match target:
-            case KompileTarget.LLVM:
+            case KompileTarget.LLVM | KompileTarget.NODE:
                 ccopts = list(ccopts) + _lib_ccopts(kernel)
                 no_llvm_kompile = target == KompileTarget.NODE
                 kompile = LLVMKompile(
@@ -129,7 +129,7 @@ def kevm_kompile(
                 )
                 return kompile(output_dir=output_dir or target.definition_dir, debug=debug, verbose=verbose)
 
-            case KompileTarget.HASKELL:
+            case KompileTarget.HASKELL | KompileTarget.FOUNDRY | KompileTarget.HASKELL_STANDALONE:
                 kompile = HaskellKompile(
                     base_args=base_args,
                     haskell_binary=haskell_binary,
