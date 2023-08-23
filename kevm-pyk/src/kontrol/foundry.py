@@ -89,6 +89,10 @@ class Foundry:
     def proofs_dir(self) -> Path:
         return self.out / 'apr_proofs'
 
+    @property
+    def proofs_index(self) -> Path:
+        return self.proofs_dir / 'index.json'
+
     @cached_property
     def kevm(self) -> KEVM:
         definition_dir = self.out / 'kompiled'
@@ -119,16 +123,45 @@ class Foundry:
             _contracts[contract_name] = Contract(contract_name, contract_json, foundry=True)
         return _contracts
 
+    def mk_proofs_dir(self) -> None:
+        self.proofs_dir.mkdir(exist_ok=True)
+        try:
+            self.proofs_index.open('x')
+        except FileExistsError:
+            pass
+
     def method_digest(self, contract_name: str, method_sig: str) -> str:
         return self.contracts[contract_name].method_by_sig[method_sig].digest
-
-    def proof_id(self, contract: str, test_sig: str, id: str) -> str:
-        return f'{contract}.{test_sig}:{id}'
 
     @cached_property
     def digest(self) -> str:
         contract_digests = [self.contracts[c].digest for c in sorted(self.contracts)]
         return hash_str('\n'.join(contract_digests))
+
+    def proof_digest(self, test_id: str) -> str:
+        with open(self.proofs_index, 'r') as f:
+            content = f.read()
+            if content != '':
+                try:
+                    return json.loads(content)[test_id]['digest']
+                except KeyError:
+                    pass
+            return ''
+
+    def write_proof_digest(self, test_id: str) -> None:
+        contract_name, test = test_id.split('.')
+        method_sig, _ = test.split(':')
+        with open(self.proofs_index, 'r+') as f:
+            content = f.read()
+            if content != '':
+                obj = json.loads(content)
+            else:
+                obj = {}
+            if test_id not in content:
+                obj[test_id] = {}
+            foundry_digest = self.method_digest(contract_name, method_sig)
+            obj[test_id]['digest'] = foundry_digest
+            f.write(str(obj))
 
     @cached_property
     def llvm_dylib(self) -> Path | None:
@@ -371,6 +404,10 @@ class Foundry:
         ]
         return [proof for proof in proofs if proof is not None]
 
+    def up_to_date_proofs(self, test: str) -> list[Proof]:
+        matching_proofs = self.proofs_with_test(test)
+        return [proof for proof in matching_proofs if self.proof_digest(proof.id) == self]
+
     def get_apr_proof(self, test_id: str) -> APRProof:
         proof = Proof.read_proof_data(self.proofs_dir, test_id)
         if not isinstance(proof, APRProof):
@@ -406,7 +443,12 @@ class Foundry:
                     ids = set()
                 else:
                     ids = test_ids[test_name]
-                ids.add(int(tid))
+                try:
+                    id_num = int(tid)
+                except ValueError:
+                    # falls back to hex string if it fails
+                    id_num = int(tid.encode('utf-8').hex())
+                ids.add(id_num)
                 test_ids[test_name] = ids
         if test_ids.get(test) is None:
             return '0'
@@ -601,8 +643,7 @@ def foundry_prove(
     br = BugReport(foundry_root / 'bug_report') if bug_report else None
     foundry = Foundry(foundry_root, bug_report=br)
 
-    save_directory = foundry.out / 'apr_proofs'
-    save_directory.mkdir(exist_ok=True)
+    foundry.mk_proofs_dir()
 
     if use_booster:
         try:
@@ -654,23 +695,23 @@ def foundry_prove(
     for i, (test, id) in enumerate(tests):
         contract_name, method_sig = test.split('.')
         foundry_digest = foundry.method_digest(contract_name, method_sig)
-        # TODO define reinit
-        if id is None and not reinit:
+        up_to_date_proofs = foundry.up_to_date_proofs(test)
+        if id is None and not reinit and len(up_to_date_proofs) > 0:
             matching_proofs = foundry.proofs_with_test(test)
-            up_to_date_proofs = [proof for proof in matching_proofs if proof.proof_digest == foundry_digest]
+            up_to_date_proofs = [proof for proof in matching_proofs if foundry.proof_digest(proof.id) == foundry_digest]
             if len(up_to_date_proofs) > 1:
                 raise ValueError(
                     f'Found {len(up_to_date_proofs)} up to date proofs for {test}. Specify an id with "--test {test},`id`" flag to choose one.'
                 )
             elif len(up_to_date_proofs) == 1:
                 id = single(up_to_date_proofs).id.split(':')[1]
-        elif reinit or test in out_of_date_methods:
+        elif reinit or test in out_of_date_methods or len(up_to_date_proofs) == 0:
             if id is not None:
                 _LOGGER.warn('--reinit was used so a new id will be attributed.')
             id = foundry.free_proof_id(test)
         else:
             test_id = f'{test}:{id}'
-            if foundry.get_apr_proof(test_id).proof_digest != foundry_digest:
+            if foundry.proof_digest(test_id) != foundry_digest:
                 raise ValueError(f'Proof with id `{test_id}` is not up to date.')
         assert id is not None
         tests[i] = (test, id)
@@ -698,7 +739,7 @@ def foundry_prove(
                 foundry,
                 contract,
                 method,
-                save_directory,
+                foundry.proofs_dir,
                 kcfg_explore,
                 test_id,
                 simplify_init=simplify_init,
@@ -1051,7 +1092,7 @@ def _method_to_apr_proof(
 
         setup_digest = None
         if method_sig != 'setUp()' and 'setUp' in contract.method_by_name:
-            setup_digest = foundry.method_digest(contract_name, 'setUp()')
+            setup_digest = f'{contract_name}.setUp()'
             _LOGGER.info(f'Using setUp method for test: {test_id}')
 
         empty_config = foundry.kevm.definition.empty_config(GENERATED_TOP_CELL)
@@ -1073,7 +1114,8 @@ def _method_to_apr_proof(
         target_cterm = CTerm.from_kast(target_term)
         kcfg.replace_node(target_node_id, target_cterm)
 
-        foundry_digest = foundry.method_digest(contract_name, method_sig)
+        foundry.write_proof_digest(test_id)
+
         if simplify_init:
             _LOGGER.info(f'Simplifying KCFG for test: {test_id}')
             kcfg_explore.simplify(kcfg, {})
@@ -1085,13 +1127,10 @@ def _method_to_apr_proof(
                 target_node_id,
                 {},
                 bmc_depth,
-                proof_digest=foundry_digest,
                 proof_dir=save_directory,
             )
         else:
-            apr_proof = APRProof(
-                test_id, kcfg, init_node_id, target_node_id, {}, proof_digest=foundry_digest, proof_dir=save_directory
-            )
+            apr_proof = APRProof(test_id, kcfg, init_node_id, target_node_id, {}, proof_dir=save_directory)
 
     apr_proof.write_proof_data()
     return apr_proof
@@ -1120,8 +1159,9 @@ def _method_to_cfg(
     return cfg, init_node.id, target_node.id
 
 
-def get_final_accounts_cell(proof_digest: str, proof_dir: Path) -> tuple[KInner, Iterable[KInner]]:
-    apr_proof = APRProof.read_proof_data(proof_dir, proof_digest)
+def get_final_accounts_cell(proof_id: str, proof_dir: Path) -> tuple[KInner, Iterable[KInner]]:
+    print(proof_id, proof_dir)
+    apr_proof = APRProof.read_proof_data(proof_dir, proof_id)
     target = apr_proof.kcfg.node(apr_proof.target)
     target_states = apr_proof.kcfg.covers(target_id=target.id)
     if len(target_states) == 0:
