@@ -10,7 +10,7 @@ from functools import cached_property
 from os import listdir
 from pathlib import Path
 from subprocess import CalledProcessError
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 import tomlkit
 from pathos.pools import ProcessPool  # type: ignore
