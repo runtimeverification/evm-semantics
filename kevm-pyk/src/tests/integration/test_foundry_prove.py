@@ -328,7 +328,6 @@ def assert_or_update_show_output(show_res: str, expected_file: Path, *, update: 
 
 
 def test_foundry_resume_proof(foundry_root: Path, update_expected_output: bool) -> None:
-
     foundry = Foundry(foundry_root)
     test_id = 'AssumeTest.test_assume_false(uint256,uint256)'
 
