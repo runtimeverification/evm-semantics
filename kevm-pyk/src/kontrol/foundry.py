@@ -464,7 +464,7 @@ def foundry_kompile(
         return old_digest == kompilation_digest()
 
     def update_kompilation_digest() -> None:
-        foundry.digest_file.write_text(kompilation_digest())
+        foundry.digest_file.write_text(json.dumps({'digest': kompilation_digest()}))
 
     if not kompilation_up_to_date() or rekompile or not kompiled_timestamp.exists():
         kevm_kompile(
