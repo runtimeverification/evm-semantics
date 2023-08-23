@@ -8,21 +8,21 @@
 │  (376 steps)
 ├─ 3
 │   k: #end EVMC_REVERT ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
-│   pc: 992
+│   pc: 1249
 │   callDepth: 0
 │   statusCode: STATUSCODE:StatusCode
 │
 │  (1 step)
 ├─ 4
 │   k: #halt ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
-│   pc: 992
+│   pc: 1249
 │   callDepth: 0
 │   statusCode: EVMC_REVERT
 │
 │  (2 steps)
 └─ 5 (leaf, terminal)
     k: #halt ~> CONTINUATION:K
-    pc: 992
+    pc: 1249
     callDepth: 0
     statusCode: EVMC_REVERT
 
@@ -77,7 +77,7 @@ Node 5:
               0
             </callValue>
             <wordStack>
-              ( 399 : ( 212 : ( selector ( "test_assert_false()" ) : .WordStack ) ) )
+              ( 495 : ( 250 : ( selector ( "test_assert_false()" ) : .WordStack ) ) )
             </wordStack>
             <localMem>
               b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80"
@@ -279,13 +279,13 @@ Node 5:
                      CALLER_ID
                    </caller>
                    <callData>
-                     ( AssertTest . test_assert_false ( ) => b"]\xde\xcb\xfd" )
+                     ( S2KAssertTest . S2KtestZUndassertZUndfalse ( ) => b"]\xde\xcb\xfd" )
                    </callData>
                    <callValue>
                      0
                    </callValue>
                    <wordStack>
-                     ( .WordStack => ( 399 : ( 212 : ( selector ( "test_assert_false()" ) : .WordStack ) ) ) )
+                     ( .WordStack => ( 495 : ( 250 : ( selector ( "test_assert_false()" ) : .WordStack ) ) ) )
                    </wordStack>
                    <localMem>
                      ( .Bytes => b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80" )
@@ -446,9 +446,9 @@ Node 5:
        andBool ( ORIGIN_ID <Int pow160
        andBool ( 0 <=Int NUMBER_CELL
        andBool ( NUMBER_CELL <=Int maxSInt256
-       andBool ( lengthBytes ( AssertTest . test_assert_false ( ) ) <Int pow128
        andBool ( 0 <=Int maxSInt64
        andBool ( maxSInt64 <Int pow256
+       andBool ( lengthBytes ( S2KAssertTest . S2KtestZUndassertZUndfalse ( ) ) <Int pow128
        andBool ( 0 <=Int 728815563385977040452943777879061427756277306518
        andBool ( 728815563385977040452943777879061427756277306518 <Int pow160
                )))))))))))
@@ -505,7 +505,7 @@ Node 5:
                      0
                    </callValue>
                    <wordStack>
-                     ( 399 : ( 212 : ( selector ( "test_assert_false()" ) : .WordStack ) ) )
+                     ( 495 : ( 250 : ( selector ( "test_assert_false()" ) : .WordStack ) ) )
                    </wordStack>
                    <localMem>
                      b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80"
@@ -713,7 +713,7 @@ Node 5:
                      0
                    </callValue>
                    <wordStack>
-                     ( 399 : ( 212 : ( selector ( "test_assert_false()" ) : .WordStack ) ) )
+                     ( 495 : ( 250 : ( selector ( "test_assert_false()" ) : .WordStack ) ) )
                    </wordStack>
                    <localMem>
                      b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80"

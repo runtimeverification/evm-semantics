@@ -8,7 +8,7 @@ on:
 jobs:
   update-output:
     name: 'Update Foundry expected output'
-    runs-on: [self-hosted, linux, huge]
+    runs-on: [self-hosted, linux, normal]
     steps:
       - name: 'Check out code'
         uses: actions/checkout@v3
@@ -23,7 +23,7 @@ jobs:
       - name: 'Set up Docker'
         uses: ./.github/actions/with-docker
         with:
-          tag: kevm-update-output-${{ github.sha }}
+          container-name: kevm-update-output-${{ github.sha }}
           os: ubuntu
           distro: jammy
           llvm: 14
