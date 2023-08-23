@@ -198,35 +198,35 @@ def test_foundry_bmc(test_id: str, foundry_root: Path, use_booster: bool) -> Non
 
 
 def test_foundry_merge_nodes(foundry_root: Path, use_booster: bool) -> None:
-    test_id = 'AssertTest.test_branch_merge(uint256)'
+    test = 'AssertTest.test_branch_merge(uint256)'
 
     foundry_prove(
         foundry_root,
-        tests=[test_id],
-        smt_timeout=125,
-        smt_retry_limit=4,
+        tests=[(test, None)],
+        smt_timeout=300,
+        smt_retry_limit=10,
         max_iterations=4,
         use_booster=use_booster,
     )
-    check_pending(foundry_root, test_id, [6, 7])
+    check_pending(foundry_root, test, [6, 7])
 
-    foundry_step_node(foundry_root, test_id, node=6, depth=49)
-    foundry_step_node(foundry_root, test_id, node=7, depth=50)
+    foundry_step_node(foundry_root, test, node=6, depth=49)
+    foundry_step_node(foundry_root, test, node=7, depth=50)
 
-    check_pending(foundry_root, test_id, [8, 9])
+    check_pending(foundry_root, test, [8, 9])
 
-    foundry_merge_nodes(foundry_root=foundry_root, test=test_id, node_ids=[8, 9], include_disjunct=True)
+    foundry_merge_nodes(foundry_root=foundry_root, test=test, node_ids=[8, 9], include_disjunct=True)
 
-    check_pending(foundry_root, test_id, [10])
+    check_pending(foundry_root, test, [10])
 
     prove_res = foundry_prove(
         foundry_root,
-        tests=[test_id],
+        tests=[(test, None)],
         smt_timeout=125,
         smt_retry_limit=4,
         use_booster=use_booster,
     )
-    assert_pass(test_id, prove_res)
+    assert_pass(test, prove_res)
 
 
 def check_pending(foundry_root: Path, test: str, pending: list[int]) -> None:
@@ -267,7 +267,7 @@ def test_foundry_remove_node(foundry_root: Path, update_expected_output: bool) -
 
     prove_res = foundry_prove(
         foundry_root,
-        tests=[test],
+        tests=[(test, None)],
     )
     assert_pass(test, prove_res)
 
@@ -282,7 +282,7 @@ def test_foundry_remove_node(foundry_root: Path, update_expected_output: bool) -
 
     prove_res = foundry_prove(
         foundry_root,
-        tests=[test],
+        tests=[(test, None)],
     )
     assert_pass(test, prove_res)
 

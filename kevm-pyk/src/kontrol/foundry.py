@@ -161,7 +161,7 @@ class Foundry:
                 obj[test_id] = {}
             foundry_digest = self.method_digest(contract_name, method_sig)
             obj[test_id]['digest'] = foundry_digest
-            f.write(str(obj))
+            f.write(json.dumps(obj))
 
     @cached_property
     def llvm_dylib(self) -> Path | None:
@@ -847,7 +847,7 @@ def foundry_show(
     return '\n'.join(res_lines)
 
 
-def foundry_to_dot(foundry_root: Path, test: str, id: str | None) -> None:
+def foundry_to_dot(foundry_root: Path, test: str, id: str | None = None) -> None:
     foundry = Foundry(foundry_root)
     dump_dir = foundry.proofs_dir / 'dump'
     test_id = foundry.get_test_id(test, id)
@@ -870,7 +870,10 @@ def foundry_list(foundry_root: Path) -> list[str]:
     lines: list[str] = []
     for method in sorted(all_methods):
         for test_id in listdir(foundry.proofs_dir):
-            test, _ = test_id.split(':')
+            if test_id.find(':') >= 0:
+                test, _ = test_id.split(':')
+            else:
+                test = test_id
             if test == method:
                 proof = foundry.get_optional_proof(test_id)
                 if proof is not None:
@@ -882,7 +885,7 @@ def foundry_list(foundry_root: Path) -> list[str]:
     return lines
 
 
-def foundry_remove_node(foundry_root: Path, test: str, id: str | None, node: NodeIdLike) -> None:
+def foundry_remove_node(foundry_root: Path, test: str, node: NodeIdLike, id: str | None = None) -> None:
     foundry = Foundry(foundry_root)
     test_id = foundry.get_test_id(test, id)
     apr_proof = foundry.get_apr_proof(test_id)
@@ -894,8 +897,8 @@ def foundry_remove_node(foundry_root: Path, test: str, id: str | None, node: Nod
 def foundry_simplify_node(
     foundry_root: Path,
     test: str,
-    id: str | None,
     node: NodeIdLike,
+    id: str | None = None,
     replace: bool = False,
     minimize: bool = True,
     sort_collections: bool = False,
@@ -975,8 +978,8 @@ def foundry_merge_nodes(
 def foundry_step_node(
     foundry_root: Path,
     test: str,
-    id: str | None,
     node: NodeIdLike,
+    id: str | None = None,
     repeat: int = 1,
     depth: int = 1,
     bug_report: bool = False,
@@ -1010,8 +1013,8 @@ def foundry_step_node(
 def foundry_section_edge(
     foundry_root: Path,
     test: str,
-    id: str | None,
     edge: tuple[str, str],
+    id: str | None = None,
     sections: int = 2,
     replace: bool = False,
     bug_report: bool = False,
@@ -1042,7 +1045,7 @@ def foundry_section_edge(
 def foundry_get_model(
     foundry_root: Path,
     test: str,
-    id: str | None,
+    id: str | None = None,
     nodes: Iterable[NodeIdLike] = (),
     pending: bool = False,
     failing: bool = False,
