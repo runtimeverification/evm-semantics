@@ -166,11 +166,11 @@ class KompiledTarget(NamedTuple):
 
 
 @pytest.fixture(scope='module')
-def kompiled_target_for(tmp_path_factory: TempPathFactory, use_booster: bool) -> Callable[[Path], KompiledTarget]:
+def kompiled_target_for(tmp_path_factory: TempPathFactory) -> Callable[[Path, bool], KompiledTarget]:
     cache_dir = tmp_path_factory.mktemp('target')
     cache: dict[Target, KompiledTarget] = {}
 
-    def kompile(spec_file: Path) -> KompiledTarget:
+    def kompile(spec_file: Path, use_booster: bool) -> KompiledTarget:
         target = _target_for_spec(spec_file, use_booster=use_booster)
 
         if target not in cache:
@@ -211,9 +211,10 @@ SKIPPED_PYK_TESTS: Final = set().union(SLOW_TESTS, FAILING_TESTS, FAILING_PYK_TE
 )
 def test_pyk_prove(
     spec_file: Path,
-    kompiled_target_for: Callable[[Path], KompiledTarget],
+    kompiled_target_for: Callable[[Path, bool], KompiledTarget],
     tmp_path: Path,
     caplog: LogCaptureFixture,
+    use_booster: bool,
 ) -> None:
     caplog.set_level(logging.INFO)
 
@@ -227,7 +228,7 @@ def test_pyk_prove(
 
     # When
     try:
-        target = kompiled_target_for(spec_file)
+        target = kompiled_target_for(spec_file, use_booster)
         exec_prove(
             spec_file=spec_file,
             definition_dir=target.definition_dir,
@@ -236,6 +237,7 @@ def test_pyk_prove(
             smt_timeout=300,
             smt_retry_limit=10,
             md_selector='foo',  # TODO Ignored flag, this is to avoid KeyError
+            use_booster=use_booster,
         )
     except BaseException:
         raise
@@ -265,7 +267,7 @@ PROVE_ARGS: Final[dict[str, Any]] = {
 )
 def test_legacy_prove(
     spec_file: Path,
-    kompiled_target_for: Callable[[Path], KompiledTarget],
+    kompiled_target_for: Callable[[Path, bool], KompiledTarget],
     tmp_path: Path,
     caplog: LogCaptureFixture,
 ) -> None:
@@ -284,7 +286,7 @@ def test_legacy_prove(
 
     # When
     try:
-        target = kompiled_target_for(spec_file)
+        target = kompiled_target_for(spec_file, False)
         kevm = KEVM(target.definition_dir, use_directory=use_directory)
         actual = kevm.prove(spec_file=spec_file, include_dirs=[config.INCLUDE_DIR] + target.include_dirs, **args)
     except BaseException:
