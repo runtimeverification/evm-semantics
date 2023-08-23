@@ -150,7 +150,10 @@ class Foundry:
 
     def write_proof_digest(self, test_id: str) -> None:
         contract_name, test = test_id.split('.')
-        method_sig, _ = test.split(':')
+        if test == 'setUp()':
+            method_sig = test
+        else:
+            method_sig, _ = test.split(':')
         with open(self.proofs_index, 'r+') as f:
             content = f.read()
             if content != '':
@@ -666,7 +669,7 @@ def foundry_prove(
     contracts = set(unique({test.split('.')[0] for test in test_names}))
     for contract_name in contracts:
         if 'setUp' in foundry.contracts[contract_name].method_by_name:
-            setup_methods[contract_name] = f'{contract_name}.setUp():'
+            setup_methods[contract_name] = f'{contract_name}.setUp()'
 
     test_methods = [
         method
@@ -706,7 +709,9 @@ def foundry_prove(
                 id = single(up_to_date_proofs).id.split(':')[1]
         elif reinit or test in out_of_date_methods or len(up_to_date_proofs) == 0:
             if id is not None:
-                _LOGGER.warn('--reinit was used so a new id will be attributed.')
+                _LOGGER.warn(
+                    'an id was specified but the proof has to be reinitialized so a new id will be attributed.'
+                )
             id = foundry.free_proof_id(test)
         else:
             test_id = f'{test}:{id}'
