@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 from filelock import FileLock
-from pyk.utils import run_process
+from pyk.utils import run_process, single
 
 from kontrol.foundry import (
     Foundry,
@@ -231,7 +231,7 @@ def test_foundry_merge_nodes(foundry_root: Path, use_booster: bool) -> None:
 
 def check_pending(foundry_root: Path, test: str, pending: list[int]) -> None:
     foundry = Foundry(foundry_root)
-    proof = foundry.get_apr_proof(test)
+    proof = single(foundry.up_to_date_proofs(test))
     assert [node.id for node in proof.pending] == pending
 
 
