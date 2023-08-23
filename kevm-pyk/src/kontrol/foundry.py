@@ -139,7 +139,7 @@ class Foundry:
         return hash_str('\n'.join(contract_digests))
 
     def proof_digest(self, test_id: str) -> str:
-        with open(self.proofs_index, 'r') as f:
+        with open(self.proofs_index) as f:
             content = f.read()
             if content != '':
                 try:
@@ -417,13 +417,13 @@ class Foundry:
     def get_proof(self, test_id: str) -> Proof:
         return Proof.read_proof_data(self.proofs_dir, test_id)
 
-    def get_optional_apr_proof(self, test_id: str) -> Optional[APRProof]:
+    def get_optional_apr_proof(self, test_id: str) -> APRProof | None:
         proof = self.get_optional_proof(test_id)
         if not isinstance(proof, APRProof):
             return None
         return proof
 
-    def get_optional_proof(self, test_id: str) -> Optional[Proof]:
+    def get_optional_proof(self, test_id: str) -> Proof | None:
         if Proof.proof_data_exists(test_id, self.proofs_dir):
             return Proof.read_proof_data(self.proofs_dir, test_id)
         return None
