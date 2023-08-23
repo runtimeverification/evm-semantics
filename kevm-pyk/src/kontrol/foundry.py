@@ -1142,7 +1142,7 @@ def _method_to_apr_proof(
 
         setup_digest = None
         if method_sig != 'setUp()' and 'setUp' in contract.method_by_name:
-            setup_digest = f'{contract_name}.setUp():'
+            setup_digest = f'{contract_name}.setUp()'
             _LOGGER.info(f'Using setUp method for test: {test_id}')
 
         empty_config = foundry.kevm.definition.empty_config(GENERATED_TOP_CELL)
