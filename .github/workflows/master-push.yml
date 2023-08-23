@@ -64,7 +64,8 @@ jobs:
       - name: 'Set up Docker'
         uses: ./.github/actions/with-docker
         with:
-          tag: kevm-package-jammy-${{ github.sha }}
+          container-name: kevm-package-jammy-${{ github.sha }}
+
       - name: 'Build Package'
         run: |
           set -euxo pipefail
@@ -72,10 +73,14 @@ jobs:
           docker exec -u github-user kevm-package-jammy-${GITHUB_SHA} /bin/bash -c 'package/debian/package jammy'
           docker cp kevm-package-jammy-${GITHUB_SHA}:/home/github-user/kevm_${version}_amd64.deb ./
 
+      - name: 'Set Version ID'
+        run: echo "KEVM_VERSION=$(cat package/version)" >> "${GITHUB_ENV}"
+
       - name: 'Setup Foundry Test Docker'
         uses: ./.github/actions/with-docker
         with:
-          tag: kevm-ci-test-${{ github.sha }}
+          container-name: kevm-ci-test-${{ github.sha }}
+          tag-name: runtimeverificationinc/kevm:ubuntu-jammy-${{ env.KEVM_VERSION }}
           dockerfile: package/docker/Dockerfile
 
       - name: 'KEVM Foundry Test'
@@ -94,10 +99,10 @@ jobs:
           DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
         run: |
           set -euxo pipefail
-          version=$(cat package/version)
-          tag_name="runtimeverificationinc/kevm:ubuntu-jammy-${version}"
+          dockerhub_repo=runtimeverificationinc/kevm
+          tag_name=ubuntu-jammy-${KEVM_VERSION}
           docker login --username rvdockerhub --password ${DOCKERHUB_PASSWORD}
-          docker image push ${tag_name}
+          docker image push "${dockerhub_repo}:${tag_name}"
 
       - name: 'Tear down Docker'
         if: always()
@@ -152,3 +157,19 @@ jobs:
           git commit -m 'gh-pages: Updated the website'
           git merge --strategy ours origin/gh-pages --allow-unrelated-histories
           git push origin gh-pages
+      - name: 'Post failure to channel'
+        if: failure()
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          channel-id: "#kevm-notifications"
+          slack-message: "Failed to create KEVM release: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+        env:
+            SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+      - name: 'Post success to channel'
+        if: success()
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          channel-id: "#kevm-notifications"
+          slack-message: "Created KEVM release: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+        env:
+            SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
