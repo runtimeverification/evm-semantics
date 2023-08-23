@@ -120,9 +120,11 @@ class Target(NamedTuple):
     main_file: Path
     main_module_name: str
     contract_file: Path | None
+    use_booster: bool
 
     def __call__(self, output_dir: Path) -> KompiledTarget:
-        definition_dir = output_dir / 'kompiled'
+        definition_subdir = 'kompiled' if not self.use_booster else 'kompiled-booster'
+        definition_dir = output_dir / definition_subdir
 
         include_dir: Path | None
         if self.contract_file:
@@ -133,10 +135,11 @@ class Target(NamedTuple):
             include_dir = None
 
         result = KompiledTarget(definition_dir, include_dir)
+        target = KompileTarget.HASKELL if not self.use_booster else KompileTarget.HASKELL_BOOSTER
 
         kevm_kompile(
-            output_dir=output_dir / 'kompiled',
-            target=KompileTarget.HASKELL,
+            output_dir=definition_dir,
+            target=target,
             main_file=self.main_file,
             main_module=self.main_module_name,
             syntax_module=self.main_module_name,
@@ -163,12 +166,12 @@ class KompiledTarget(NamedTuple):
 
 
 @pytest.fixture(scope='module')
-def kompiled_target_for(tmp_path_factory: TempPathFactory) -> Callable[[Path], KompiledTarget]:
+def kompiled_target_for(tmp_path_factory: TempPathFactory, use_booster: bool) -> Callable[[Path], KompiledTarget]:
     cache_dir = tmp_path_factory.mktemp('target')
     cache: dict[Target, KompiledTarget] = {}
 
     def kompile(spec_file: Path) -> KompiledTarget:
-        target = _target_for_spec(spec_file)
+        target = _target_for_spec(spec_file, use_booster=use_booster)
 
         if target not in cache:
             output_dir = cache_dir / f'{target.main_file.stem}-{len(cache)}'
@@ -180,7 +183,7 @@ def kompiled_target_for(tmp_path_factory: TempPathFactory) -> Callable[[Path], K
     return kompile
 
 
-def _target_for_spec(spec_file: Path) -> Target:
+def _target_for_spec(spec_file: Path, use_booster: bool) -> Target:
     spec_file = spec_file.resolve()
     spec_id = str(spec_file.relative_to(SPEC_DIR))
     spec_root = SPEC_DIR / spec_file.relative_to(SPEC_DIR).parents[-2]
@@ -190,7 +193,7 @@ def _target_for_spec(spec_file: Path) -> Target:
     main_id = str(main_file.relative_to(SPEC_DIR))
     contract_file = KOMPILE_CONTRACT.get(main_id)
 
-    return Target(main_file, main_module_name, contract_file)
+    return Target(main_file, main_module_name, contract_file, use_booster)
 
 
 # ---------
