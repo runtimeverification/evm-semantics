@@ -21,7 +21,6 @@ from pyk.kcfg import KCFGExplore
 from pyk.kore.rpc import KoreClient, KoreExecLogFormat, kore_server
 from pyk.proof import APRBMCProof, APRBMCProver, APRProof, APRProver
 from pyk.proof.equality import EqualityProof, EqualityProver
-from pyk.proof.proof import ProofStatus
 from pyk.utils import single
 
 if TYPE_CHECKING:
@@ -125,8 +124,7 @@ def kevm_prove(
                 cut_point_rules=cut_point_rules,
             )
             assert isinstance(proof, APRProof)
-            failure_nodes = proof.failing
-            if len(failure_nodes) == 0:
+            if proof.passed:
                 _LOGGER.info(f'Proof passed: {proof.id}')
                 return True
             else:
@@ -134,28 +132,21 @@ def kevm_prove(
                 return False
         elif type(prover) is EqualityProver:
             prover.advance_proof()
-            if prover.proof.status == ProofStatus.PASSED:
+            if prover.proof.passed:
                 _LOGGER.info(f'Proof passed: {prover.proof.id}')
                 return True
-            if prover.proof.status == ProofStatus.FAILED:
+            elif prover.proof.failed:
                 _LOGGER.error(f'Proof failed: {prover.proof.id}')
                 if type(proof) is EqualityProof:
                     _LOGGER.info(proof.pretty(kprove))
                 return False
-            if prover.proof.status == ProofStatus.PENDING:
+            else:
                 _LOGGER.info(f'Proof pending: {prover.proof.id}')
                 return False
         return False
 
     except Exception as e:
         _LOGGER.error(f'Proof crashed: {proof.id}\n{e}', exc_info=True)
-        return False
-    failure_nodes = proof.pending + proof.failing
-    if len(failure_nodes) == 0:
-        _LOGGER.info(f'Proof passed: {proof.id}')
-        return True
-    else:
-        _LOGGER.error(f'Proof failed: {proof.id}')
         return False
 
 
