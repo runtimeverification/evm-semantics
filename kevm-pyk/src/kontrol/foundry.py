@@ -25,7 +25,7 @@ from pyk.prelude.ml import mlEqualsTrue
 from pyk.proof.proof import Proof
 from pyk.proof.reachability import APRBMCProof, APRProof
 from pyk.proof.show import APRBMCProofNodePrinter, APRProofNodePrinter, APRProofShow
-from pyk.utils import BugReport, ensure_dir_path, hash_str, run_process, single, unique
+from pyk.utils import ensure_dir_path, hash_str, run_process, single, unique
 
 from kevm_pyk.kevm import KEVM, KEVMNodePrinter, KEVMSemantics
 from kevm_pyk.utils import (
@@ -50,6 +50,7 @@ if TYPE_CHECKING:
     from pyk.kcfg.kcfg import NodeIdLike
     from pyk.kcfg.tui import KCFGElem
     from pyk.proof.show import NodePrinter
+    from pyk.utils import BugReport
 
 _LOGGER: Final = logging.getLogger(__name__)
 
@@ -496,7 +497,7 @@ def foundry_prove(
     break_on_jumpi: bool = False,
     break_on_calls: bool = True,
     bmc_depth: int | None = None,
-    bug_report: bool = False,
+    bug_report: BugReport | None = None,
     kore_rpc_command: str | Iterable[str] | None = None,
     use_booster: bool = False,
     smt_timeout: int | None = None,
@@ -511,8 +512,7 @@ def foundry_prove(
     if max_iterations is not None and max_iterations < 0:
         raise ValueError(f'Must have a non-negative number of iterations, found: --max-iterations {max_iterations}')
 
-    br = BugReport(foundry_root / 'bug_report') if bug_report else None
-    foundry = Foundry(foundry_root, bug_report=br)
+    foundry = Foundry(foundry_root, bug_report=bug_report)
 
     save_directory = foundry.out / 'apr_proofs'
     save_directory.mkdir(exist_ok=True)
@@ -594,7 +594,7 @@ def foundry_prove(
             foundry.kevm,
             kcfg_semantics=KEVMSemantics(auto_abstract_gas=auto_abstract_gas),
             id=proof_id,
-            bug_report=br,
+            bug_report=bug_report,
             kore_rpc_command=kore_rpc_command,
             llvm_definition_dir=llvm_definition_dir,
             smt_timeout=smt_timeout,
@@ -771,20 +771,19 @@ def foundry_simplify_node(
     replace: bool = False,
     minimize: bool = True,
     sort_collections: bool = False,
-    bug_report: bool = False,
+    bug_report: BugReport | None = None,
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
     trace_rewrites: bool = False,
 ) -> str:
-    br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
-    foundry = Foundry(foundry_root, bug_report=br)
+    foundry = Foundry(foundry_root, bug_report=bug_report)
     apr_proof = foundry.get_apr_proof(test)
     cterm = apr_proof.kcfg.node(node).cterm
     with legacy_explore(
         foundry.kevm,
         kcfg_semantics=KEVMSemantics(),
         id=apr_proof.id,
-        bug_report=br,
+        bug_report=bug_report,
         smt_timeout=smt_timeout,
         smt_retry_limit=smt_retry_limit,
         trace_rewrites=trace_rewrites,
@@ -801,7 +800,7 @@ def foundry_merge_nodes(
     foundry_root: Path,
     test: str,
     node_ids: Iterable[NodeIdLike],
-    bug_report: bool = False,
+    bug_report: BugReport | None = None,
     include_disjunct: bool = False,
 ) -> None:
     def check_cells_equal(cell: str, nodes: Iterable[KCFG.Node]) -> bool:
@@ -814,8 +813,7 @@ def foundry_merge_nodes(
                 return False
         return True
 
-    br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
-    foundry = Foundry(foundry_root, bug_report=br)
+    foundry = Foundry(foundry_root, bug_report=bug_report)
     proof = foundry.get_apr_proof(test)
 
     if not isinstance(proof, APRProof):
@@ -849,7 +847,7 @@ def foundry_step_node(
     node: NodeIdLike,
     repeat: int = 1,
     depth: int = 1,
-    bug_report: bool = False,
+    bug_report: BugReport | None = None,
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
     trace_rewrites: bool = False,
@@ -859,15 +857,14 @@ def foundry_step_node(
     if depth < 1:
         raise ValueError(f'Expected positive value for --depth, got: {depth}')
 
-    br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
-    foundry = Foundry(foundry_root, bug_report=br)
+    foundry = Foundry(foundry_root, bug_report=bug_report)
 
     apr_proof = foundry.get_apr_proof(test)
     with legacy_explore(
         foundry.kevm,
         kcfg_semantics=KEVMSemantics(),
         id=apr_proof.id,
-        bug_report=br,
+        bug_report=bug_report,
         smt_timeout=smt_timeout,
         smt_retry_limit=smt_retry_limit,
         trace_rewrites=trace_rewrites,
@@ -883,20 +880,19 @@ def foundry_section_edge(
     edge: tuple[str, str],
     sections: int = 2,
     replace: bool = False,
-    bug_report: bool = False,
+    bug_report: BugReport | None = None,
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
     trace_rewrites: bool = False,
 ) -> None:
-    br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
-    foundry = Foundry(foundry_root, bug_report=br)
+    foundry = Foundry(foundry_root, bug_report=bug_report)
     apr_proof = foundry.get_apr_proof(test)
     source_id, target_id = edge
     with legacy_explore(
         foundry.kevm,
         kcfg_semantics=KEVMSemantics(),
         id=apr_proof.id,
-        bug_report=br,
+        bug_report=bug_report,
         smt_timeout=smt_timeout,
         smt_retry_limit=smt_retry_limit,
         trace_rewrites=trace_rewrites,
