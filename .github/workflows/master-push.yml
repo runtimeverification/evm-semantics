@@ -153,7 +153,7 @@ jobs:
           npm run build-sitemap
           cd -
           mv web/public_content ./
-          rm -rf $(find . -maxdepth 1 -not -name public_content -a -not -name .git -a -not -path . -a -not -path .. -a -not -name CNAME)
+          rm -rf $(find . -maxdepth 1 -not -name public_content -a -not -name .git -a -not -name .gitmodules -a -not -path . -a -not -path .. -a -not -name CNAME)
           mv public_content/* ./
           rm -rf public_content
           git add ./
