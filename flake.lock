@@ -1863,11 +1863,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1692785198,
-        "narHash": "sha256-6BDv66FQZ1ZzaFjaKfhvgt96kqp+U7ahjn/wnmlsWa8=",
+        "lastModified": 1692863432,
+        "narHash": "sha256-IKDrCwbSY7+9wQkRlH31UygyXSpSeo44DqraBh2UeLo=",
         "owner": "hellwolf",
         "repo": "solc.nix",
-        "rev": "501527e36a4a3e3c866df3da85bfdcd2912acf49",
+        "rev": "d87ead250023a730633f30620dec95d97b9b3e7f",
         "type": "github"
       },
       "original": {
