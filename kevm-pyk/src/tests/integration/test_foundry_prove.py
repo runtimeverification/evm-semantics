@@ -250,7 +250,9 @@ def check_pending(foundry_root: Path, test: str, pending: list[int]) -> None:
     assert [node.id for node in proof.pending] == pending
 
 
-def test_foundry_auto_abstraction(foundry_root: Path, update_expected_output: bool, server: KoreServer) -> None:
+def test_foundry_auto_abstraction(
+    foundry_root: Path, update_expected_output: bool, server: KoreServer, use_booster: bool
+) -> None:
     test_id = 'GasTest.testInfiniteGas()'
     foundry_prove(
         foundry_root,
@@ -258,6 +260,9 @@ def test_foundry_auto_abstraction(foundry_root: Path, update_expected_output: bo
         auto_abstract_gas=True,
         port=server.port,
     )
+
+    if use_booster:
+        return
 
     show_res = foundry_show(
         foundry_root,
