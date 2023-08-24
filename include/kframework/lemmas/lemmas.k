@@ -15,23 +15,6 @@ module LEMMAS [symbolic]
     imports LEMMAS-HASKELL
 
   // ########################
-  // Boolean
-  // ########################
-
-    rule B ==Bool true  => B         [simplification, comm]
-    rule B ==Bool false => notBool B [simplification, comm]
-
-    rule notBool notBool X => X [simplification]
-
-    rule { true  #Equals X     ==K   Y     } => { X #Equals Y } [simplification]
-    rule { true  #Equals X:Int ==Int Y:Int } => { X #Equals Y } [simplification]
-    rule { false #Equals X     ==K   Y     } => #Not ( { X #Equals Y } ) [simplification]
-    rule { false #Equals X:Int ==Int Y:Int } => #Not ( { X #Equals Y } ) [simplification]
-
-    rule { true  #Equals notBool X:Bool } => { false #Equals X } [simplification]
-    rule { false #Equals notBool X:Bool } => { true  #Equals X } [simplification]
-
-  // ########################
   // Arithmetic
   // ########################
 
@@ -51,11 +34,12 @@ module LEMMAS [symbolic]
   // Set Reasoning
   // ########################
 
-    rule _ in .Set => false [simplification]
+    rule X in SetItem ( Y ) S:Set => ( X ==K Y andBool notBool ( X in S ) ) orBool ( X =/=K Y andBool X in S ) [simplification]
+    rule X in S:Set SetItem ( Y ) => ( X ==K Y andBool notBool ( X in S ) ) orBool ( X =/=K Y andBool X in S ) [simplification]
 
-    rule X in SetItem ( Y ) S:Set => ( X ==Int Y ) orBool ( X in S )                  [simplification]
-    rule X in S1:Set |Set S2:Set  => ( X in S1 )   orBool ( X in S2 )                 [simplification]
-    rule S:Set |Set SetItem( X )  => S                                requires X in S [simplification]
+    rule X in S1:Set |Set S2:Set => ( X in S1 ) orBool ( X in S2 ) [simplification]
+
+    rule S:Set |Set SetItem( X ) => S requires X in S [simplification]
 
   // ########################
   // Word Reasoning
@@ -75,8 +59,6 @@ module LEMMAS [symbolic]
 
     rule bool2Word(_B) |Int 1 => 1            [simplification]
     rule bool2Word( B) &Int 1 => bool2Word(B) [simplification]
-
-    rule notBool notBool B => B [simplification]
 
     // #newAddr range
     rule 0 <=Int #newAddr(_,_)             => true   [simplification]
@@ -244,6 +226,10 @@ module LEMMAS-HASKELL [symbolic, kore]
   // Boolean Logic
   // ########################
 
-    rule B ==Bool false => notBool B [simplification]
+    rule B ==Bool true  => B         [simplification, comm]
+    rule B ==Bool false => notBool B [simplification, comm]
+
+    rule notBool notBool B => B [simplification]
+
     rule (notBool (A andBool B)) andBool A => (notBool B) andBool A [simplification]
 endmodule
