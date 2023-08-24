@@ -361,7 +361,7 @@ def test_foundry_resume_proof(foundry_root: Path, update_expected_output: bool) 
 
     prove_res = foundry_prove(
         foundry_root,
-        tests=[(test, None)],
+        tests=[(test, '0')],
         smt_timeout=300,
         smt_retry_limit=10,
         auto_abstract_gas=True,
