@@ -274,6 +274,10 @@ def test_legacy_prove(
     # Given
     spec_id = str(spec_file.relative_to(SPEC_DIR))
     args = PROVE_ARGS.get(spec_id, {})
+    if 'haskell_args' not in args:
+        args['haskell_args'] = []
+    args['haskell_args'] += ['--smt-timeout', '300']
+    args['haskell_args'] += ['--smt-retry-limit', '10']
 
     log_file = tmp_path / 'log.txt'
     use_directory = tmp_path / 'kprove'

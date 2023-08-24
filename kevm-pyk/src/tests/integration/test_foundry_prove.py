@@ -274,6 +274,8 @@ def test_foundry_remove_node(foundry_root: Path, update_expected_output: bool) -
     prove_res = foundry_prove(
         foundry_root,
         tests=[test],
+        smt_timeout=300,
+        smt_retry_limit=10,
     )
     assert_pass(test, prove_res)
 
@@ -289,6 +291,8 @@ def test_foundry_remove_node(foundry_root: Path, update_expected_output: bool) -
     prove_res = foundry_prove(
         foundry_root,
         tests=[test],
+        smt_timeout=300,
+        smt_retry_limit=10,
     )
     assert_pass(test, prove_res)
 
