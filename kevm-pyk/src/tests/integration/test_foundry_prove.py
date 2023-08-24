@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 from distutils.dir_util import copy_tree
-from os import listdir
 from typing import TYPE_CHECKING
 
 import pytest
 from filelock import FileLock
+from pyk.proof import APRProof
 from pyk.utils import run_process, single
 
 from kontrol.foundry import (
@@ -24,7 +24,6 @@ if TYPE_CHECKING:
     from pathlib import Path
     from typing import Final
 
-    from pyk.proof import APRProof
     from pytest import TempPathFactory
 
 
