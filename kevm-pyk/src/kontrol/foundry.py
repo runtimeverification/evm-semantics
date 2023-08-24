@@ -876,7 +876,7 @@ def foundry_list(foundry_root: Path) -> list[str]:
     lines: list[str] = []
     for method in sorted(all_methods):
         for test_id in listdir(foundry.proofs_dir):
-            test, _ = test_id.split(':')
+            test, *_ = test_id.split(':')
             if test == method:
                 proof = foundry.get_optional_proof(test_id)
                 if proof is not None:
