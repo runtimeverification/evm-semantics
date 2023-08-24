@@ -148,6 +148,7 @@ jobs:
         run: |
           git checkout -B gh-pages
           cd web
+          git submodule init k-web-theme && git submodule update --recursive
           npm install
           npm run build
           npm run build-sitemap
