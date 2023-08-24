@@ -817,6 +817,8 @@ def foundry_show(
     failing: bool = False,
     failure_info: bool = False,
     counterexample_info: bool = False,
+    smt_timeout: int | None = None,
+    smt_retry_limit: int | None = None,
 ) -> str:
     contract_name, _ = test.split('.')
     foundry = Foundry(foundry_root)
@@ -851,7 +853,13 @@ def foundry_show(
     )
 
     if failure_info:
-        with legacy_explore(foundry.kevm, kcfg_semantics=KEVMSemantics(), id=test_id) as kcfg_explore:
+        with legacy_explore(
+            foundry.kevm,
+            kcfg_semantics=KEVMSemantics(),
+            id=test_id,
+            smt_timeout=smt_timeout,
+            smt_retry_limit=smt_retry_limit,
+        ) as kcfg_explore:
             res_lines += print_failure_info(proof, kcfg_explore, counterexample_info)
             res_lines += Foundry.help_info()
 
