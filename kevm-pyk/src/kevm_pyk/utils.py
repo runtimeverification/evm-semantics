@@ -183,11 +183,8 @@ def print_failure_info(proof: Proof, kcfg_explore: KCFGExplore, counterexample_i
                 res_lines.append('')
                 res_lines.append(f'  Node id: {str(node.id)}')
 
-                simplified_node, _ = kcfg_explore.cterm_simplify(node.cterm)
-                simplified_target, _ = kcfg_explore.cterm_simplify(target.cterm)
-
-                node_cterm = CTerm.from_kast(simplified_node)
-                target_cterm = CTerm.from_kast(simplified_target)
+                node_cterm, _ = kcfg_explore.cterm_simplify(node.cterm)
+                target_cterm, _ = kcfg_explore.cterm_simplify(target.cterm)
 
                 res_lines.append('  Failure reason:')
                 _, reason = kcfg_explore.implication_failure_reason(node_cterm, target_cterm)
