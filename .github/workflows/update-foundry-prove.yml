@@ -16,6 +16,7 @@ jobs:
           submodules: recursive
           token: ${{ secrets.JENKINS_GITHUB_PAT }}
           ref: ${{ github.events.inputs.branch }}
+          fetch-depth: 0
       - name: 'Configure GitHub user'
         run: |
           git config user.name devops
