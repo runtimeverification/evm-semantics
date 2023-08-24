@@ -15,6 +15,23 @@ module LEMMAS [symbolic]
     imports LEMMAS-HASKELL
 
   // ########################
+  // Boolean
+  // ########################
+
+    rule B ==Bool true  => B         [simplification, comm]
+    rule B ==Bool false => notBool B [simplification, comm]
+
+    rule notBool notBool X => X [simplification]
+
+    rule { true  #Equals X     ==K   Y     } => { X #Equals Y } [simplification]
+    rule { true  #Equals X:Int ==Int Y:Int } => { X #Equals Y } [simplification]
+    rule { false #Equals X     ==K   Y     } => #Not ( { X #Equals Y } ) [simplification]
+    rule { false #Equals X:Int ==Int Y:Int } => #Not ( { X #Equals Y } ) [simplification]
+
+    rule { true  #Equals notBool X:Bool } => { false #Equals X } [simplification]
+    rule { false #Equals notBool X:Bool } => { true  #Equals X } [simplification]
+
+  // ########################
   // Arithmetic
   // ########################
 
@@ -28,14 +45,17 @@ module LEMMAS [symbolic]
     rule         chop(_V) <Int pow256 => true        [simplification]
 
     rule X *Int Y <Int pow256 => true requires Y <=Int maxUInt256 /Int X [simplification]
-    rule #if B #then C +Int C1 #else C +Int C2 #fi => C +Int #if B #then C1 #else C2 #fi [simplification] 
+    rule #if B #then C +Int C1 #else C +Int C2 #fi => C +Int #if B #then C1 #else C2 #fi [simplification]
 
   // ########################
   // Set Reasoning
   // ########################
 
-    rule X in (SetItem(Y) _   ) => true      requires X  ==Int Y [simplification]
-    rule X in (SetItem(Y) REST) => X in REST requires X =/=Int Y [simplification]
+    rule _ in .Set => false [simplification]
+
+    rule X in SetItem ( Y ) S:Set => ( X ==Int Y ) orBool ( X in S )                  [simplification]
+    rule X in S1:Set |Set S2:Set  => ( X in S1 )   orBool ( X in S2 )                 [simplification]
+    rule S:Set |Set SetItem( X )  => S                                requires X in S [simplification]
 
   // ########################
   // Word Reasoning
@@ -76,15 +96,46 @@ module LEMMAS [symbolic]
     rule 0 <=Int keccak( _ )             => true [simplification]
     rule         keccak( _ ) <Int pow256 => true [simplification]
 
+    // Further keccak assumptions: these assumptions are not sound in principle, but are
+    // required for verification - they should be collected at the end of execution
+
+    // keccak does not equal a concrete value
+    rule [keccak-eq-conc-false]: keccak(_A)  ==Int _B => false [symbolic(_A), concrete(_B), simplification]
+    rule [keccak-neq-conc-true]: keccak(_A) =/=Int _B => true  [symbolic(_A), concrete(_B), simplification]
+
+    // corollary of `keccak-eq-conc-false`
+    rule [keccak-eq-conc-false-extended]:
+      ( ( keccak ( _X ) +Int _A ) modInt pow256 ) ==Int _Y => false
+      [simplification, symbolic(_X), concrete(_A, _Y)]
+
+    // keccak is injective
+    rule [keccak-inj]: keccak(A) ==Int keccak(B) => A ==K B [simplification]
+
+    // keccak has no "fixpoint"
+    rule [keccak-no-fix-eq-false]: #buf(32, keccak(X))  ==K X => false [simplification]
+    rule [keccak-no-fix-neq-true]: #buf(32, keccak(X)) =/=K X => true  [simplification]
+
+    // disequality of keccak under shifting
+    rule ( ( keccak ( _X ) +Int A ) modInt pow256 ) ==Int keccak ( _Y ) => false
+      requires 0 <Int A andBool A <Int pow256
+      [simplification, symbolic(_X, _Y), concrete(A)]
+
   // ########################
   // Map Reasoning
   // ########################
 
-    rule #lookup ( _M:Map [ K1 <- V1 ] , K2 ) => #lookup ( K1 |-> V1 , K1 )  requires K1 ==Int  K2 [simplification]
-    rule #lookup (  M:Map [ K1 <- _  ] , K2 ) => #lookup ( M         , K2 )  requires K1 =/=Int K2 [simplification]
+    rule keys(.Map)             => .Set                    [simplification]
+    rule keys(M [ K <- _V ])    => keys(M) |Set SetItem(K) [simplification]
+    rule keys(M [ K <- undef ]) => keys(M) -Set SetItem(K) [simplification]
 
     rule 0 <=Int #lookup( _M:Map , _ )             => true [simplification, smt-lemma]
     rule         #lookup( _M:Map , _ ) <Int pow256 => true [simplification, smt-lemma]
+
+    rule #lookup(M:Map, X:Int) => 0 requires notBool (X:Int in keys(M):Set) [simplification]
+
+    rule #lookup ( _M:Map [ K1 <- V1 ] , K2 )    => #lookup ( K1 |-> V1 , K1 ) requires K1 ==Int  K2 [simplification]
+    rule #lookup (  M:Map [ K1 <- _  ] , K2 )    => #lookup ( M         , K2 ) requires K1 =/=Int K2 [simplification]
+    rule #lookup ( (K1:Int |-> _) M:Map, K2:Int) => #lookup ( M,          K2 ) requires K1 =/=Int K2 [simplification]
 
     rule M:Map [ I1:Int <- V1:Int ] [ I2:Int <- V2:Int ] ==K M:Map [ I2 <- V2 ] [ I1 <- V1 ] => true
       requires I1 =/=Int I2
