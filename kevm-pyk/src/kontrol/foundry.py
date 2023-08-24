@@ -748,7 +748,7 @@ def foundry_show(
             smt_timeout=smt_timeout,
             smt_retry_limit=smt_retry_limit,
             start_server=start_server,
-            port=port
+            port=port,
         ) as kcfg_explore:
             res_lines += print_failure_info(proof, kcfg_explore, counterexample_info)
             res_lines += Foundry.help_info()
