@@ -28,7 +28,7 @@ module LEMMAS [symbolic]
     rule         chop(_V) <Int pow256 => true        [simplification]
 
     rule X *Int Y <Int pow256 => true requires Y <=Int maxUInt256 /Int X [simplification]
-    rule #if B #then C +Int C1 #else C +Int C2 #fi => C +Int #if B #then C1 #else C2 #fi [simplification]jj
+    rule #if B #then C +Int C1 #else C +Int C2 #fi => C +Int #if B #then C1 #else C2 #fi [simplification]
 
   // ########################
   // Set Reasoning
