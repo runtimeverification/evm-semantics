@@ -6,7 +6,6 @@ from typing import TYPE_CHECKING
 
 import pytest
 from filelock import FileLock
-from pyk.proof import APRProof
 from pyk.utils import run_process, single
 
 from kontrol.foundry import (
@@ -25,6 +24,7 @@ if TYPE_CHECKING:
     from pathlib import Path
     from typing import Final
 
+    from pyk.proof import APRProof
     from pytest import TempPathFactory
 
 
@@ -233,10 +233,9 @@ def test_foundry_merge_nodes(foundry_root: Path, use_booster: bool) -> None:
 
 def check_pending(foundry_root: Path, test: str, pending: list[int]) -> None:
     foundry = Foundry(foundry_root)
-    proofs = [foundry.get_optional_apr_proof(pid) for pid in listdir(foundry.proofs_dir)]
-    proofs = [proof for proof in proofs if proof is not None]
-    proof = single(proofs)
-    assert type(proof) is APRProof
+    proofs = foundry.proofs_with_test(test)
+    apr_proofs: list[APRProof] = [proof for proof in proofs if type(proof) is APRProof]
+    proof = single(apr_proofs)
     assert [node.id for node in proof.pending] == pending
 
 

@@ -409,8 +409,13 @@ class Foundry:
         return [proof for proof in proofs if proof is not None]
 
     def up_to_date_proofs(self, test: str) -> list[Proof]:
+        contract_name, method_sig = test.split('.')
         matching_proofs = self.proofs_with_test(test)
-        return [proof for proof in matching_proofs if self.proof_digest(proof.id) == self]
+        return [
+            proof
+            for proof in matching_proofs
+            if self.proof_digest(proof.id) == self.method_digest(contract_name, method_sig)
+        ]
 
     def get_apr_proof(self, test_id: str) -> APRProof:
         proof = Proof.read_proof_data(self.proofs_dir, test_id)
