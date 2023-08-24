@@ -1735,16 +1735,16 @@
         "poetry2nix": "poetry2nix"
       },
       "locked": {
-        "lastModified": 1692801807,
-        "narHash": "sha256-4UwTosCoYspT9Jww3L+gQW4GChv4spJSkGtP7BP2hp0=",
+        "lastModified": 1692914670,
+        "narHash": "sha256-FFLdeMwj/pSTuRK9Rve0Fw6hbIxqqRY0dulxO3FyZ0I=",
         "owner": "runtimeverification",
         "repo": "pyk",
-        "rev": "c292c4610183acec2ae44d8f68973ebf3cb4cd1e",
+        "rev": "2262611c2759adcf7bd59a7f8d020facf48a099f",
         "type": "github"
       },
       "original": {
         "owner": "runtimeverification",
-        "ref": "v0.1.425",
+        "ref": "v0.1.426",
         "repo": "pyk",
         "type": "github"
       }
@@ -1863,11 +1863,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1692863432,
-        "narHash": "sha256-IKDrCwbSY7+9wQkRlH31UygyXSpSeo44DqraBh2UeLo=",
+        "lastModified": 1692871473,
+        "narHash": "sha256-2eLQOPBzQomQfcC8wQdYekccvl1KtYCqkDdw7oPeOiU=",
         "owner": "hellwolf",
         "repo": "solc.nix",
-        "rev": "d87ead250023a730633f30620dec95d97b9b3e7f",
+        "rev": "fbbe5553a7fc52f2d423afac81316023a183e72c",
         "type": "github"
       },
       "original": {
