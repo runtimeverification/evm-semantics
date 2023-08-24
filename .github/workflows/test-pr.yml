@@ -149,7 +149,7 @@ jobs:
         run: |
           docker stop --time=0 kevm-ci-haskell-${GITHUB_SHA}
 
-  test-prove-haskell:
+  test-prove-haskell-booster:
     name: 'Build and Test KEVM haskell proofs (booster)'
     needs: kevm-pyk-code-quality-checks
     runs-on: [self-hosted, linux, normal]
