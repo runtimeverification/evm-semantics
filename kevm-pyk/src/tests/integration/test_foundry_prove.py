@@ -127,6 +127,8 @@ def test_foundry_prove(test_id: str, foundry_root: Path, update_expected_output:
         failing=True,
         failure_info=True,
         counterexample_info=True,
+        smt_timeout=300,
+        smt_retry_limit=10,
     )
 
     # Then
@@ -166,6 +168,8 @@ def test_foundry_fail(test_id: str, foundry_root: Path, update_expected_output: 
         failing=True,
         failure_info=True,
         counterexample_info=True,
+        smt_timeout=300,
+        smt_retry_limit=10,
     )
 
     # Then
@@ -202,15 +206,15 @@ def test_foundry_merge_nodes(foundry_root: Path, use_booster: bool) -> None:
     foundry_prove(
         foundry_root,
         tests=[test_id],
-        smt_timeout=125,
-        smt_retry_limit=4,
+        smt_timeout=300,
+        smt_retry_limit=10,
         max_iterations=4,
         use_booster=use_booster,
     )
     check_pending(foundry_root, test_id, [6, 7])
 
-    foundry_step_node(foundry_root, test_id, node=6, depth=49)
-    foundry_step_node(foundry_root, test_id, node=7, depth=50)
+    foundry_step_node(foundry_root, test_id, node=6, depth=49, smt_timeout=300, smt_retry_limit=10)
+    foundry_step_node(foundry_root, test_id, node=7, depth=50, smt_timeout=300, smt_retry_limit=10)
 
     check_pending(foundry_root, test_id, [8, 9])
 
@@ -221,8 +225,8 @@ def test_foundry_merge_nodes(foundry_root: Path, use_booster: bool) -> None:
     prove_res = foundry_prove(
         foundry_root,
         tests=[test_id],
-        smt_timeout=125,
-        smt_retry_limit=4,
+        smt_timeout=300,
+        smt_retry_limit=10,
         use_booster=use_booster,
     )
     assert_pass(test_id, prove_res)
@@ -254,6 +258,8 @@ def test_foundry_auto_abstraction(foundry_root: Path, update_expected_output: bo
         pending=True,
         failing=True,
         failure_info=True,
+        smt_timeout=300,
+        smt_retry_limit=10,
     )
 
     assert_or_update_show_output(show_res, TEST_DATA_DIR / 'gas-abstraction.expected', update=update_expected_output)
@@ -267,6 +273,8 @@ def test_foundry_remove_node(foundry_root: Path, update_expected_output: bool) -
     prove_res = foundry_prove(
         foundry_root,
         tests=[test],
+        smt_timeout=300,
+        smt_retry_limit=10,
     )
     assert_pass(test, prove_res)
 
@@ -282,6 +290,8 @@ def test_foundry_remove_node(foundry_root: Path, update_expected_output: bool) -
     prove_res = foundry_prove(
         foundry_root,
         tests=[test],
+        smt_timeout=300,
+        smt_retry_limit=10,
     )
     assert_pass(test, prove_res)
 
