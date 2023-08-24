@@ -280,7 +280,8 @@ def test_foundry_remove_node(foundry_root: Path, update_expected_output: bool) -
         node=4,
     )
 
-    proof = foundry.get_apr_proof(test)
+    proof = single(foundry.proofs_with_test(test))
+    assert type(proof) is APRProof
     assert proof.pending
 
     prove_res = foundry_prove(
@@ -332,11 +333,11 @@ def assert_or_update_show_output(show_res: str, expected_file: Path, *, update: 
 
 def test_foundry_resume_proof(foundry_root: Path, update_expected_output: bool) -> None:
     foundry = Foundry(foundry_root)
-    test_id = 'AssumeTest.test_assume_false(uint256,uint256)'
+    test = 'AssumeTest.test_assume_false(uint256,uint256)'
 
     prove_res = foundry_prove(
         foundry_root,
-        tests=[(test_id, None)],
+        tests=[(test, None)],
         smt_timeout=300,
         smt_retry_limit=10,
         auto_abstract_gas=True,
@@ -344,16 +345,17 @@ def test_foundry_resume_proof(foundry_root: Path, update_expected_output: bool) 
         reinit=True,
     )
 
-    proof = foundry.get_apr_proof(test_id)
+    proof = single(foundry.proofs_with_test(test))
+    assert type(proof) is APRProof
     assert proof.pending
 
     prove_res = foundry_prove(
         foundry_root,
-        tests=[(test_id, None)],
+        tests=[(test, None)],
         smt_timeout=300,
         smt_retry_limit=10,
         auto_abstract_gas=True,
         max_iterations=6,
         reinit=False,
     )
-    assert_fail(test_id, prove_res)
+    assert_fail(test, prove_res)
