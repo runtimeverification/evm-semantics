@@ -941,6 +941,7 @@ def foundry_merge_nodes(
     foundry_root: Path,
     test: str,
     node_ids: Iterable[NodeIdLike],
+    id: str | None = None,
     bug_report: bool = False,
     include_disjunct: bool = False,
 ) -> None:
@@ -956,15 +957,13 @@ def foundry_merge_nodes(
 
     br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
     foundry = Foundry(foundry_root, bug_report=br)
-    proof = foundry.get_apr_proof(test)
-
-    if not isinstance(proof, APRProof):
-        raise ValueError('Specified proof is not an APRProof.')
+    test_id = foundry.get_test_id(test, id)
+    apr_proof = foundry.get_apr_proof(test_id)
 
     if len(list(node_ids)) < 2:
         raise ValueError(f'Must supply at least 2 nodes to merge, got: {node_ids}')
 
-    nodes = [proof.kcfg.node(int(node_id)) for node_id in node_ids]
+    nodes = [apr_proof.kcfg.node(int(node_id)) for node_id in node_ids]
     check_cells = ['K_CELL', 'PROGRAM_CELL', 'PC_CELL', 'CALLDEPTH_CELL']
     check_cells_ne = [check_cell for check_cell in check_cells if not check_cells_equal(check_cell, nodes)]
     if check_cells_ne:
@@ -973,11 +972,11 @@ def foundry_merge_nodes(
     anti_unification = nodes[0].cterm
     for node in nodes[1:]:
         anti_unification, _, _ = anti_unification.anti_unify(node.cterm, keep_values=True, kdef=foundry.kevm.definition)
-    new_node = proof.kcfg.create_node(anti_unification)
+    new_node = apr_proof.kcfg.create_node(anti_unification)
     for node in nodes:
-        proof.kcfg.create_cover(node.id, new_node.id)
+        apr_proof.kcfg.create_cover(node.id, new_node.id)
 
-    proof.write_proof_data()
+    apr_proof.write_proof_data()
 
     print(f'Merged nodes {node_ids} into new node {new_node.id}.')
     print(foundry.kevm.pretty_print(new_node.cterm.kast))

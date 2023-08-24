@@ -613,6 +613,7 @@ def _create_argument_parser() -> ArgumentParser:
         'foundry-merge-nodes',
         help='Merge multiple nodes into one branch.',
         parents=[
+            kevm_cli_args.foundry_test_args,
             kevm_cli_args.logging_args,
             kevm_cli_args.foundry_args,
         ],
@@ -625,7 +626,6 @@ def _create_argument_parser() -> ArgumentParser:
         action='append',
         help='One node to be merged.',
     )
-    foundry_merge_node.add_argument('test', type=str, help='Merge nodes in this CFG.')
 
     foundry_section_edge = command_parser.add_parser(
         'foundry-section-edge',
