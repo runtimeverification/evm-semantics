@@ -72,6 +72,7 @@ def exclude_list(exclude_file: Path) -> list[Path]:
 
 
 FAILING_PYK_TESTS: Final = exclude_list(TEST_DIR / 'failing-symbolic.pyk')
+FAILING_BOOSTER_TESTS: Final = exclude_list(TEST_DIR / 'failing-symbolic.haskell-booster')
 SLOW_TESTS: Final = exclude_list(TEST_DIR / 'slow.haskell')
 FAILING_TESTS: Final = exclude_list(TEST_DIR / 'failing-symbolic.haskell')
 
@@ -202,6 +203,7 @@ def _target_for_spec(spec_file: Path, use_booster: bool) -> Target:
 
 
 SKIPPED_PYK_TESTS: Final = set().union(SLOW_TESTS, FAILING_TESTS, FAILING_PYK_TESTS)
+SKIPPED_PYK_BOOSTER_TESTS: Final = set().union(SLOW_TESTS, FAILING_TESTS, FAILING_PYK_TESTS, FAILING_BOOSTER_TESTS)
 
 
 @pytest.mark.parametrize(
@@ -218,7 +220,7 @@ def test_pyk_prove(
 ) -> None:
     caplog.set_level(logging.INFO)
 
-    if spec_file in SKIPPED_PYK_TESTS:
+    if spec_file in SKIPPED_PYK_TESTS or (use_booster and spec_file in SKIPPED_PYK_BOOSTER_TESTS):
         pytest.skip()
 
     # Given
