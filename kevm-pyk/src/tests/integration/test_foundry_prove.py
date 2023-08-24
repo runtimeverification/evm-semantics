@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from distutils.dir_util import copy_tree
+from os import listdir
 from typing import TYPE_CHECKING
 
 import pytest
@@ -232,7 +233,9 @@ def test_foundry_merge_nodes(foundry_root: Path, use_booster: bool) -> None:
 
 def check_pending(foundry_root: Path, test: str, pending: list[int]) -> None:
     foundry = Foundry(foundry_root)
-    proof = single(foundry.up_to_date_proofs(test))
+    proofs = [foundry.get_optional_apr_proof(pid) for pid in listdir(foundry.proofs_dir)]
+    proofs = [proof for proof in proofs if proof is not None]
+    proof = single(proofs)
     assert type(proof) is APRProof
     assert [node.id for node in proof.pending] == pending
 
