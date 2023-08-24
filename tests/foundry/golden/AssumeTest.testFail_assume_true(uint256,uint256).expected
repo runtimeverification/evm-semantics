@@ -84,8 +84,8 @@
 
 
 module SUMMARY-ASSUMETEST.TESTFAIL-ASSUME-TRUE:EF68C1EA07B094FCF03E02D287B47204FA02108E3334C204F81DEA4C78FD1289
-    
-    
+
+
            <kevm>
              <k>
                ( #execute
@@ -305,7 +305,7 @@ module SUMMARY-ASSUMETEST.TESTFAIL-ASSUME-TRUE:EF68C1EA07B094FCF03E02D287B47204F
        andBool ( NUMBER_CELL:Int <=Int maxSInt256
                ))))))
       [label(BASIC-BLOCK-1-TO-3)]
-    
+
            <kevm>
              <k>
                ( CALL 9223372036854772808 645326474426547203313410069153905908525362434349 0 128 36 128 0 => #checkCall 728815563385977040452943777879061427756277306518 0
@@ -514,7 +514,7 @@ module SUMMARY-ASSUMETEST.TESTFAIL-ASSUME-TRUE:EF68C1EA07B094FCF03E02D287B47204F
        andBool ( VV1_b_114b9705:Int <Int pow256
                ))))))))))
       [label(BASIC-BLOCK-3-TO-4)]
-    
+
            <kevm>
              <k>
                ( #checkCall 728815563385977040452943777879061427756277306518 0
@@ -728,10 +728,10 @@ module SUMMARY-ASSUMETEST.TESTFAIL-ASSUME-TRUE:EF68C1EA07B094FCF03E02D287B47204F
        andBool ( VV1_b_114b9705:Int <Int pow256
                ))))))))))
        ensures ( VV0_a_114b9705:Int =/=K VV1_b_114b9705:Int
-       andBool ( VV0_a_114b9705:Int =/=Int VV1_b_114b9705:Int ==Bool true
+       andBool ( VV0_a_114b9705:Int =/=Int VV1_b_114b9705:Int
                ))
       [label(BASIC-BLOCK-4-TO-5)]
-    
+
            <kevm>
              <k>
                ( #gas [ MSTORE , MSTORE 192 46308022326495007027972728677917914892729792999299745830475596687180801507328 ]
@@ -945,10 +945,10 @@ module SUMMARY-ASSUMETEST.TESTFAIL-ASSUME-TRUE:EF68C1EA07B094FCF03E02D287B47204F
        andBool ( NUMBER_CELL:Int <=Int maxSInt256
        andBool ( VV0_a_114b9705:Int <Int pow256
        andBool ( VV1_b_114b9705:Int <Int pow256
-       andBool ( VV0_a_114b9705:Int =/=Int VV1_b_114b9705:Int ==Bool true
+       andBool ( VV0_a_114b9705:Int =/=Int VV1_b_114b9705:Int
                ))))))))))))
       [label(BASIC-BLOCK-5-TO-6)]
-    
+
            <kevm>
              <k>
                ( #gasExec ( LONDON , JUMP 2621 )
@@ -1161,10 +1161,10 @@ module SUMMARY-ASSUMETEST.TESTFAIL-ASSUME-TRUE:EF68C1EA07B094FCF03E02D287B47204F
        andBool ( NUMBER_CELL:Int <=Int maxSInt256
        andBool ( VV0_a_114b9705:Int <Int pow256
        andBool ( VV1_b_114b9705:Int <Int pow256
-       andBool ( VV0_a_114b9705:Int =/=Int VV1_b_114b9705:Int ==Bool true
+       andBool ( VV0_a_114b9705:Int =/=Int VV1_b_114b9705:Int
                ))))))))))))
       [label(BASIC-BLOCK-6-TO-7)]
-    
+
            <kevm>
              <k>
                ( CALL 9223372036854765663 645326474426547203313410069153905908525362434349 0 388 100 388 0 => #checkCall 728815563385977040452943777879061427756277306518 0
@@ -1375,10 +1375,10 @@ module SUMMARY-ASSUMETEST.TESTFAIL-ASSUME-TRUE:EF68C1EA07B094FCF03E02D287B47204F
        andBool ( NUMBER_CELL:Int <=Int maxSInt256
        andBool ( VV0_a_114b9705:Int <Int pow256
        andBool ( VV1_b_114b9705:Int <Int pow256
-       andBool ( VV0_a_114b9705:Int =/=Int VV1_b_114b9705:Int ==Bool true
+       andBool ( VV0_a_114b9705:Int =/=Int VV1_b_114b9705:Int
                ))))))))))))
       [label(BASIC-BLOCK-7-TO-8)]
-    
+
            <kevm>
              <k>
                ( #checkCall 728815563385977040452943777879061427756277306518 0
@@ -1590,10 +1590,10 @@ module SUMMARY-ASSUMETEST.TESTFAIL-ASSUME-TRUE:EF68C1EA07B094FCF03E02D287B47204F
        andBool ( NUMBER_CELL:Int <=Int maxSInt256
        andBool ( VV0_a_114b9705:Int <Int pow256
        andBool ( VV1_b_114b9705:Int <Int pow256
-       andBool ( VV0_a_114b9705:Int =/=Int VV1_b_114b9705:Int ==Bool true
+       andBool ( VV0_a_114b9705:Int =/=Int VV1_b_114b9705:Int
                ))))))))))))
       [label(BASIC-BLOCK-8-TO-9)]
-    
+
            <kevm>
              <k>
                ( #end EVMC_SUCCESS => #halt )
@@ -1805,10 +1805,10 @@ module SUMMARY-ASSUMETEST.TESTFAIL-ASSUME-TRUE:EF68C1EA07B094FCF03E02D287B47204F
        andBool ( NUMBER_CELL:Int <=Int maxSInt256
        andBool ( VV0_a_114b9705:Int <Int pow256
        andBool ( VV1_b_114b9705:Int <Int pow256
-       andBool ( VV0_a_114b9705:Int =/=Int VV1_b_114b9705:Int ==Bool true
+       andBool ( VV0_a_114b9705:Int =/=Int VV1_b_114b9705:Int
                ))))))))))))
       [label(BASIC-BLOCK-9-TO-10)]
-    
+
            <kevm>
              <k>
                #halt
@@ -2020,7 +2020,7 @@ module SUMMARY-ASSUMETEST.TESTFAIL-ASSUME-TRUE:EF68C1EA07B094FCF03E02D287B47204F
        andBool ( NUMBER_CELL:Int <=Int maxSInt256
        andBool ( VV0_a_114b9705:Int <Int pow256
        andBool ( VV1_b_114b9705:Int <Int pow256
-       andBool ( VV0_a_114b9705:Int =/=Int VV1_b_114b9705:Int ==Bool true
+       andBool ( VV0_a_114b9705:Int =/=Int VV1_b_114b9705:Int
                ))))))))))))
       [label(BASIC-BLOCK-10-TO-11)]
 

@@ -292,13 +292,13 @@ Node 11:
 #And ( { true #Equals NUMBER_CELL:Int <=Int maxSInt256 }
 #And ( { true #Equals VV0_a_114b9705:Int <Int pow256 }
 #And ( { true #Equals VV1_b_114b9705:Int <Int pow256 }
-#And { true #Equals ( notBool VV0_a_114b9705:Int ==Int VV1_b_114b9705:Int ) ==Bool true } ) ) ) ) ) ) ) ) ) ) ) )
+#And { true #Equals ( notBool VV0_a_114b9705:Int ==Int VV1_b_114b9705:Int ) } ) ) ) ) ) ) ) ) ) ) ) )
 
 
 
 module SUMMARY-ASSUMETEST.TEST-ASSUME-FALSE:FBA71744BDCE72BC45B9A84C3AB97CE0D7193B08F9D2C0C8DED04097536C129C
-    
-    
+
+
            <kevm>
              <k>
                ( #execute
@@ -518,7 +518,7 @@ module SUMMARY-ASSUMETEST.TEST-ASSUME-FALSE:FBA71744BDCE72BC45B9A84C3AB97CE0D719
        andBool ( NUMBER_CELL:Int <=Int maxSInt256
                ))))))
       [label(BASIC-BLOCK-1-TO-3)]
-    
+
            <kevm>
              <k>
                ( CALL 9223372036854772765 645326474426547203313410069153905908525362434349 0 128 36 128 0 => #checkCall 728815563385977040452943777879061427756277306518 0
@@ -727,7 +727,7 @@ module SUMMARY-ASSUMETEST.TEST-ASSUME-FALSE:FBA71744BDCE72BC45B9A84C3AB97CE0D719
        andBool ( VV1_b_114b9705:Int <Int pow256
                ))))))))))
       [label(BASIC-BLOCK-3-TO-4)]
-    
+
            <kevm>
              <k>
                ( #checkCall 728815563385977040452943777879061427756277306518 0
@@ -941,10 +941,10 @@ module SUMMARY-ASSUMETEST.TEST-ASSUME-FALSE:FBA71744BDCE72BC45B9A84C3AB97CE0D719
        andBool ( VV1_b_114b9705:Int <Int pow256
                ))))))))))
        ensures ( VV0_a_114b9705:Int =/=K VV1_b_114b9705:Int
-       andBool ( VV0_a_114b9705:Int =/=Int VV1_b_114b9705:Int ==Bool true
+       andBool ( VV0_a_114b9705:Int =/=Int VV1_b_114b9705:Int
                ))
       [label(BASIC-BLOCK-4-TO-5)]
-    
+
            <kevm>
              <k>
                ( #gas [ MSTORE , MSTORE 192 46308022326495007027972728677917914892729792999299745830475596687180801507328 ]
@@ -1158,10 +1158,10 @@ module SUMMARY-ASSUMETEST.TEST-ASSUME-FALSE:FBA71744BDCE72BC45B9A84C3AB97CE0D719
        andBool ( NUMBER_CELL:Int <=Int maxSInt256
        andBool ( VV0_a_114b9705:Int <Int pow256
        andBool ( VV1_b_114b9705:Int <Int pow256
-       andBool ( VV0_a_114b9705:Int =/=Int VV1_b_114b9705:Int ==Bool true
+       andBool ( VV0_a_114b9705:Int =/=Int VV1_b_114b9705:Int
                ))))))))))))
       [label(BASIC-BLOCK-5-TO-6)]
-    
+
            <kevm>
              <k>
                ( #gasExec ( LONDON , JUMP 2621 )
@@ -1374,10 +1374,10 @@ module SUMMARY-ASSUMETEST.TEST-ASSUME-FALSE:FBA71744BDCE72BC45B9A84C3AB97CE0D719
        andBool ( NUMBER_CELL:Int <=Int maxSInt256
        andBool ( VV0_a_114b9705:Int <Int pow256
        andBool ( VV1_b_114b9705:Int <Int pow256
-       andBool ( VV0_a_114b9705:Int =/=Int VV1_b_114b9705:Int ==Bool true
+       andBool ( VV0_a_114b9705:Int =/=Int VV1_b_114b9705:Int
                ))))))))))))
       [label(BASIC-BLOCK-6-TO-7)]
-    
+
            <kevm>
              <k>
                ( CALL 9223372036854765620 645326474426547203313410069153905908525362434349 0 388 100 388 0 => #checkCall 728815563385977040452943777879061427756277306518 0
@@ -1588,10 +1588,10 @@ module SUMMARY-ASSUMETEST.TEST-ASSUME-FALSE:FBA71744BDCE72BC45B9A84C3AB97CE0D719
        andBool ( NUMBER_CELL:Int <=Int maxSInt256
        andBool ( VV0_a_114b9705:Int <Int pow256
        andBool ( VV1_b_114b9705:Int <Int pow256
-       andBool ( VV0_a_114b9705:Int =/=Int VV1_b_114b9705:Int ==Bool true
+       andBool ( VV0_a_114b9705:Int =/=Int VV1_b_114b9705:Int
                ))))))))))))
       [label(BASIC-BLOCK-7-TO-8)]
-    
+
            <kevm>
              <k>
                ( #checkCall 728815563385977040452943777879061427756277306518 0
@@ -1803,10 +1803,10 @@ module SUMMARY-ASSUMETEST.TEST-ASSUME-FALSE:FBA71744BDCE72BC45B9A84C3AB97CE0D719
        andBool ( NUMBER_CELL:Int <=Int maxSInt256
        andBool ( VV0_a_114b9705:Int <Int pow256
        andBool ( VV1_b_114b9705:Int <Int pow256
-       andBool ( VV0_a_114b9705:Int =/=Int VV1_b_114b9705:Int ==Bool true
+       andBool ( VV0_a_114b9705:Int =/=Int VV1_b_114b9705:Int
                ))))))))))))
       [label(BASIC-BLOCK-8-TO-9)]
-    
+
            <kevm>
              <k>
                ( #end EVMC_SUCCESS => #halt )
@@ -2018,10 +2018,10 @@ module SUMMARY-ASSUMETEST.TEST-ASSUME-FALSE:FBA71744BDCE72BC45B9A84C3AB97CE0D719
        andBool ( NUMBER_CELL:Int <=Int maxSInt256
        andBool ( VV0_a_114b9705:Int <Int pow256
        andBool ( VV1_b_114b9705:Int <Int pow256
-       andBool ( VV0_a_114b9705:Int =/=Int VV1_b_114b9705:Int ==Bool true
+       andBool ( VV0_a_114b9705:Int =/=Int VV1_b_114b9705:Int
                ))))))))))))
       [label(BASIC-BLOCK-9-TO-10)]
-    
+
            <kevm>
              <k>
                #halt
@@ -2233,7 +2233,7 @@ module SUMMARY-ASSUMETEST.TEST-ASSUME-FALSE:FBA71744BDCE72BC45B9A84C3AB97CE0D719
        andBool ( NUMBER_CELL:Int <=Int maxSInt256
        andBool ( VV0_a_114b9705:Int <Int pow256
        andBool ( VV1_b_114b9705:Int <Int pow256
-       andBool ( VV0_a_114b9705:Int =/=Int VV1_b_114b9705:Int ==Bool true
+       andBool ( VV0_a_114b9705:Int =/=Int VV1_b_114b9705:Int
                ))))))))))))
       [label(BASIC-BLOCK-10-TO-11)]
 
@@ -2256,7 +2256,7 @@ Failing nodes:
     #And ( { true #Equals NUMBER_CELL:Int <=Int maxSInt256 }
     #And ( { true #Equals VV0_a_114b9705:Int <Int pow256 }
     #And ( { true #Equals VV1_b_114b9705:Int <Int pow256 }
-    #And { true #Equals ( notBool VV0_a_114b9705:Int ==Int VV1_b_114b9705:Int ) ==Bool true } ) ) ) ) ) ) ) ) ) ) ) #Implies { true #Equals foundry_success ( ... statusCode: EVMC_SUCCESS , failed: #lookup ( ( 46308022326495007027972728677917914892729792999299745830475596687180801507328 |-> 1 ) , 46308022326495007027972728677917914892729792999299745830475596687180801507328 ) , revertExpected: false , opcodeExpected: false , recordEventExpected: false , eventExpected: false ) } )
+    #And { true #Equals ( notBool VV0_a_114b9705:Int ==Int VV1_b_114b9705:Int ) } ) ) ) ) ) ) ) ) ) ) ) #Implies { true #Equals foundry_success ( ... statusCode: EVMC_SUCCESS , failed: #lookup ( ( 46308022326495007027972728677917914892729792999299745830475596687180801507328 |-> 1 ) , 46308022326495007027972728677917914892729792999299745830475596687180801507328 ) , revertExpected: false , opcodeExpected: false , recordEventExpected: false , eventExpected: false ) } )
   Path condition:
     #Top
 

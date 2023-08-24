@@ -115,8 +115,8 @@
 
 
 module SUMMARY-LOOPSTEST.SUM-N:031A8A7FD8A89EA433A5C7307FD8E6EE86FED775C4188C1078F3DE94C1EE710D
-    
-    
+
+
            <kevm>
              <k>
                ( #execute
@@ -334,7 +334,7 @@ module SUMMARY-LOOPSTEST.SUM-N:031A8A7FD8A89EA433A5C7307FD8E6EE86FED775C4188C107
        andBool ( NUMBER_CELL:Int <=Int maxSInt256
                ))))))
       [label(BASIC-BLOCK-1-TO-3)]
-    
+
            <kevm>
              <k>
                ( CALL 9223372036854772793 645326474426547203313410069153905908525362434349 0 128 36 128 0 => #checkCall 728815563385977040452943777879061427756277306518 0
@@ -541,7 +541,7 @@ module SUMMARY-LOOPSTEST.SUM-N:031A8A7FD8A89EA433A5C7307FD8E6EE86FED775C4188C107
        andBool ( VV0_n_114b9705:Int <Int pow256
                ))))))))
       [label(BASIC-BLOCK-3-TO-4)]
-    
+
            <kevm>
              <k>
                ( #checkCall 728815563385977040452943777879061427756277306518 0
@@ -751,9 +751,9 @@ module SUMMARY-LOOPSTEST.SUM-N:031A8A7FD8A89EA433A5C7307FD8E6EE86FED775C4188C107
        andBool ( NUMBER_CELL:Int <=Int maxSInt256
        andBool ( VV0_n_114b9705:Int <Int pow256
                ))))))))
-       ensures VV0_n_114b9705:Int <=Int 51816696836262767 ==Bool true
+       ensures VV0_n_114b9705:Int <=Int 51816696836262767
       [label(BASIC-BLOCK-4-TO-5)]
-    
+
            <kevm>
              <k>
                ( JUMPI 1569 bool2Word ( VV0_n_114b9705:Int ==Int 0 )
@@ -961,11 +961,11 @@ module SUMMARY-LOOPSTEST.SUM-N:031A8A7FD8A89EA433A5C7307FD8E6EE86FED775C4188C107
        andBool ( ORIGIN_ID:Int <Int pow160
        andBool ( NUMBER_CELL:Int <=Int maxSInt256
        andBool ( VV0_n_114b9705:Int <Int pow256
-       andBool ( VV0_n_114b9705:Int <=Int 51816696836262767 ==Bool true
+       andBool ( VV0_n_114b9705:Int <=Int 51816696836262767
                ))))))))))
        ensures VV0_n_114b9705:Int ==K 0
       [label(BASIC-BLOCK-6-TO-8)]
-    
+
            <kevm>
              <k>
                ( JUMPI 1569 bool2Word ( VV0_n_114b9705:Int ==Int 0 )
@@ -1173,7 +1173,7 @@ module SUMMARY-LOOPSTEST.SUM-N:031A8A7FD8A89EA433A5C7307FD8E6EE86FED775C4188C107
        andBool ( VV0_n_114b9705:Int =/=Int 0
        andBool ( NUMBER_CELL:Int <=Int maxSInt256
        andBool ( VV0_n_114b9705:Int <Int pow256
-       andBool ( VV0_n_114b9705:Int <=Int 51816696836262767 ==Bool true
+       andBool ( VV0_n_114b9705:Int <=Int 51816696836262767
                ))))))))))
        ensures ( VV0_n_114b9705:Int =/=K 0
        andBool ( 0 <Int VV0_n_114b9705:Int
@@ -1203,7 +1203,7 @@ module SUMMARY-LOOPSTEST.SUM-N:031A8A7FD8A89EA433A5C7307FD8E6EE86FED775C4188C107
        andBool ( ( ( VV0_n_114b9705:Int *Int ( VV0_n_114b9705:Int +Int 1 ) ) /Int 2 ) <Int pow256
                ))))))))))))))))))))))))))
       [label(BASIC-BLOCK-7-TO-9)]
-    
+
            <kevm>
              <k>
                ( #end EVMC_SUCCESS => #halt )
@@ -1413,7 +1413,7 @@ module SUMMARY-LOOPSTEST.SUM-N:031A8A7FD8A89EA433A5C7307FD8E6EE86FED775C4188C107
        andBool ( NUMBER_CELL:Int <=Int maxSInt256
                )))))))
       [label(BASIC-BLOCK-8-TO-10)]
-    
+
            <kevm>
              <k>
                ( #end EVMC_SUCCESS => #halt )
@@ -1646,12 +1646,12 @@ module SUMMARY-LOOPSTEST.SUM-N:031A8A7FD8A89EA433A5C7307FD8E6EE86FED775C4188C107
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772635
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772638
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772639
-       andBool ( VV0_n_114b9705:Int <=Int 51816696836262767 ==Bool true
+       andBool ( VV0_n_114b9705:Int <=Int 51816696836262767
        andBool ( 0 <=Int ( ( VV0_n_114b9705:Int *Int ( VV0_n_114b9705:Int +Int 1 ) ) /Int 2 )
        andBool ( ( ( VV0_n_114b9705:Int *Int ( VV0_n_114b9705:Int +Int 1 ) ) /Int 2 ) <Int pow256
                )))))))))))))))))))))))))))))))))))
       [label(BASIC-BLOCK-9-TO-11)]
-    
+
            <kevm>
              <k>
                #halt
@@ -1861,7 +1861,7 @@ module SUMMARY-LOOPSTEST.SUM-N:031A8A7FD8A89EA433A5C7307FD8E6EE86FED775C4188C107
        andBool ( NUMBER_CELL:Int <=Int maxSInt256
                )))))))
       [label(BASIC-BLOCK-10-TO-12)]
-    
+
            <kevm>
              <k>
                #halt
@@ -2094,7 +2094,7 @@ module SUMMARY-LOOPSTEST.SUM-N:031A8A7FD8A89EA433A5C7307FD8E6EE86FED775C4188C107
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772635
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772638
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772639
-       andBool ( VV0_n_114b9705:Int <=Int 51816696836262767 ==Bool true
+       andBool ( VV0_n_114b9705:Int <=Int 51816696836262767
        andBool ( 0 <=Int ( ( VV0_n_114b9705:Int *Int ( VV0_n_114b9705:Int +Int 1 ) ) /Int 2 )
        andBool ( ( ( VV0_n_114b9705:Int *Int ( VV0_n_114b9705:Int +Int 1 ) ) /Int 2 ) <Int pow256
                )))))))))))))))))))))))))))))))))))
