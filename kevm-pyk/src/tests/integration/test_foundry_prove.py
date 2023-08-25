@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from shutil import copytree
+from shutil import copytree, rmtree
 from typing import TYPE_CHECKING
 
 import pytest
@@ -38,10 +38,9 @@ def foundry_root(tmp_path_factory: TempPathFactory, worker_id: str, use_booster:
         root_tmp_dir = tmp_path_factory.getbasetemp().parent
 
     foundry_root = root_tmp_dir / 'foundry'
-    ignore_pat = lambda dir, _: ['apr_proofs'] if dir.endswith('foundry') else []
     with FileLock(str(foundry_root) + '.lock'):
         if not foundry_root.is_dir():
-            copytree(str(TEST_DATA_DIR / 'foundry'), str(foundry_root), ignore=ignore_pat, dirs_exist_ok=True)
+            prepare_foundry_tree(TEST_DATA_DIR / 'foundry', foundry_root)
 
             run_process(['forge', 'install', '--no-git', f'foundry-rs/forge-std@{FORGE_STD_REF}'], cwd=foundry_root)
             run_process(['forge', 'build'], cwd=foundry_root)
@@ -55,8 +54,15 @@ def foundry_root(tmp_path_factory: TempPathFactory, worker_id: str, use_booster:
             )
 
     session_foundry_root = tmp_path_factory.mktemp('foundry')
-    copytree(str(foundry_root), str(session_foundry_root), ignore=ignore_pat, dirs_exist_ok=True)
+    prepare_foundry_tree(foundry_root, session_foundry_root)
     return session_foundry_root
+
+
+def prepare_foundry_tree(_from: Path, to: Path) -> None:
+    ignore_pat = lambda dir, _: ['apr_proofs'] if dir.endswith('foundry') else []
+    copytree(str(_from), str(to), ignore=ignore_pat, dirs_exist_ok=True)
+    # remove any testing leftovers
+    rmtree(to / 'out/apr_proofs', ignore_errors=True)
 
 
 def test_foundry_kompile(foundry_root: Path, update_expected_output: bool, use_booster: bool) -> None:
