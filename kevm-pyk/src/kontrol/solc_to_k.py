@@ -68,6 +68,157 @@ def solc_to_k(
 @dataclass
 class Contract:
     @dataclass
+    class Constructor:
+        sort: KSort
+        arg_names: tuple[str, ...]
+        arg_types: tuple[str, ...]
+        contract_name: str
+        contract_digest: str
+        contract_storage_digest: str
+        payable: bool
+        signature: str
+        name: str
+
+        def __init__(
+            self,
+            abi: dict,
+            contract_name: str,
+            contract_digest: str,
+            contract_storage_digest: str,
+            sort: KSort,
+        ) -> None:
+            self.name = 'init'
+            self.signature = f'{contract_name}_init'
+            self.arg_names = tuple([f'V{i}_{input["name"].replace("-", "_")}' for i, input in enumerate(abi['inputs'])])
+            self.arg_types = tuple([input['type'] for input in abi['inputs']])
+            self.contract_name = contract_name
+            self.contract_digest = contract_digest
+            self.contract_storage_digest = contract_storage_digest
+            self.sort = sort
+            # TODO: Check that we're handling all state mutability cases
+            self.payable = abi['stateMutability'] == 'payable'
+
+
+        @property
+        def unique_name(self) -> str:
+            return f'{Contract.escaped(self.name, "S2K")}'
+
+        @property
+        def klabel(self) -> KLabel:
+            args_list = '_'.join(self.arg_types)
+            return KLabel(f'method_{self.contract_name}_{self.unique_name}_{args_list}')
+
+        @property
+        def unique_klabel(self) -> KLabel:
+            args_list = '_'.join(self.arg_types)
+            return KLabel(f'method_{self.contract_name}_{self.unique_name}_{args_list}')
+
+        @cached_property
+        def is_setup(self) -> bool:
+            return False
+
+        @cached_property
+        def qualified_name(self) -> str:
+            return f'{self.contract_name}.init'
+
+        def up_to_date(self, digest_file: Path) -> bool:
+            if not digest_file.exists():
+                return False
+            digest_dict = json.loads(digest_file.read_text())
+            if 'methods' not in digest_dict:
+                digest_dict['methods'] = {}
+                digest_file.write_text(json.dumps(digest_dict))
+            if self.qualified_name not in digest_dict['methods']:
+                return False
+            return digest_dict['methods'][self.qualified_name]['method'] == self.digest
+
+        def contract_up_to_date(self, digest_file: Path) -> bool:
+            if not digest_file.exists():
+                return False
+            digest_dict = json.loads(digest_file.read_text())
+            if 'methods' not in digest_dict:
+                digest_dict['methods'] = {}
+                digest_file.write_text(json.dumps(digest_dict))
+            if self.qualified_name not in digest_dict['methods']:
+                return False
+            return digest_dict['methods'][self.qualified_name]['contract'] == self.contract_digest
+
+        def update_digest(self, digest_file: Path) -> None:
+            digest_dict = {}
+            if digest_file.exists():
+                digest_dict = json.loads(digest_file.read_text())
+            if 'methods' not in digest_dict:
+                digest_dict['methods'] = {}
+            digest_dict['methods'][self.qualified_name] = {'method': self.digest, 'contract': self.contract_digest}
+            digest_file.write_text(json.dumps(digest_dict))
+
+            _LOGGER.info(f'Updated method {self.qualified_name} in digest file: {digest_file}')
+
+        @cached_property
+        def digest(self) -> str:
+            contract_digest = self.contract_digest
+            return hash_str(f'{self.contract_storage_digest}{contract_digest}')
+
+        @property
+        def production(self) -> KProduction:
+            items_before: list[KProductionItem] = [KTerminal(self.unique_name), KTerminal('(')]
+
+            items_args: list[KProductionItem] = []
+            for i, input_type in enumerate(self.arg_types):
+                if i > 0:
+                    items_args += [KTerminal(',')]
+                items_args += [KNonTerminal(_evm_base_sort(input_type)), KTerminal(':'), KTerminal(input_type)]
+
+            items_after: list[KProductionItem] = [KTerminal(')')]
+            return KProduction(
+                self.sort,
+                items_before + items_args + items_after,
+                klabel=self.unique_klabel,
+                att=KAtt({'symbol': ''}),
+            )
+
+        def rule(self, contract: KInner, application_label: KLabel, contract_name: str) -> KRule | None:
+            arg_vars = [KVariable(aname) for aname in self.arg_names]
+            prod_klabel = self.unique_klabel
+            assert prod_klabel is not None
+            args: list[KInner] = []
+            conjuncts: list[KInner] = []
+            for input_name, input_type in zip(self.arg_names, self.arg_types, strict=True):
+                args.append(KEVM.abi_type(input_type, KVariable(input_name)))
+                rp = _range_predicate(KVariable(input_name), input_type)
+                if rp is None:
+                    _LOGGER.info(
+                        f'Unsupported ABI type for method {contract_name}.{prod_klabel.name}, will not generate calldata sugar: {input_type}'
+                    )
+                    return None
+                conjuncts.append(rp)
+            lhs = KApply(application_label, [contract, KApply(prod_klabel, arg_vars)])
+            rhs = KEVM.abi_calldata(self.name, args)
+            ensures = andBool(conjuncts)
+            return KRule(KRewrite(lhs, rhs), ensures=ensures)
+
+        @cached_property
+        def callvalue_cell(self) -> KInner:
+            return (
+                intToken(0)
+                if not self.payable
+                else abstract_term_safely(KVariable('_###CALLVALUE###_'), base_name='CALLVALUE')
+            )
+
+        def calldata_cell(self, contract: Contract) -> KInner:
+            return KApply(contract.klabel_method, [KApply(contract.klabel), self.application])
+
+        @cached_property
+        def application(self) -> KInner:
+            klabel = self.klabel
+            assert klabel is not None
+            args = [
+                abstract_term_safely(KVariable('_###SOLIDITY_ARG_VAR###_'), base_name=f'V{name}')
+                for name in self.arg_names
+            ]
+            return klabel(args)
+
+    @dataclass
     class Method:
         name: str
         id: int
@@ -237,6 +388,7 @@ class Contract:
     bytecode: str
     raw_sourcemap: str | None
     methods: tuple[Method, ...]
+    constructor: Constructor
     fields: FrozenDict
     PREFIX_CODE: Final = 'Z'
 
@@ -270,16 +422,21 @@ class Contract:
 
         _methods = []
         for method in contract_json['abi']:
-            if method['type'] != 'function':
-                continue
-            msig = method_sig_from_abi(method)
-            method_selector: str = str(evm['methodIdentifiers'][msig])
-            mid = int(method_selector, 16)
-            method_ast = function_asts[method_selector] if method_selector in function_asts else None
-            _m = Contract.Method(
-                msig, mid, method, method_ast, self.name, self.digest, self.storage_digest, self.sort_method
-            )
-            _methods.append(_m)
+            if method['type'] == 'function':
+                msig = method_sig_from_abi(method)
+                method_selector: str = str(evm['methodIdentifiers'][msig])
+                mid = int(method_selector, 16)
+                method_ast = function_asts[method_selector] if method_selector in function_asts else None
+                _m = Contract.Method(
+                    msig, mid, method, method_ast, self.name, self.digest, self.storage_digest, self.sort_method
+                )
+                _methods.append(_m)
+            if method['type'] == 'constructor':
+                _m = Contract.Constructor(
+                    method, self.name, self.digest, self.storage_digest, self.sort_method
+                )
+                _methods.append(_m)
+                self.constructor = _m
 
         self.methods = tuple(sorted(_methods, key=(lambda method: method.signature)))
 
@@ -492,7 +649,7 @@ class Contract:
         res.extend(method.production for method in self.methods)
         method_rules = (method.rule(KApply(self.klabel), self.klabel_method, self.name) for method in self.methods)
         res.extend(rule for rule in method_rules if rule)
-        res.extend(method.selector_alias_rule for method in self.methods)
+        res.extend(method.selector_alias_rule for method in self.methods if type(method) is not Contract.Constructor)
         return res if len(res) > 1 else []
 
     @property

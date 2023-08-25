@@ -354,7 +354,8 @@ class Foundry:
         test: str,
     ) -> Proof:
         proofs_dir = self.out / 'apr_proofs'
-        contract_name, test_sig = self.unique_sig(test)
+#          contract_name, test_sig = self.unique_sig(test)
+        contract_name, test_sig = test.split('.')
         proof_digest = self.proof_digest(contract_name, test_sig)
         proof = Proof.read_proof_data(proofs_dir, proof_digest)
         return proof
@@ -1052,6 +1053,7 @@ def _contract_to_apr_proof(
     init_cterm = CTerm.from_kast(init_term)
     _LOGGER.info(f'Computing definedness constraint for test: {test}')
     init_cterm = kcfg_explore.cterm_assume_defined(init_cterm)
+    _LOGGER.info(f'Computing definedness constraint for test: {test} done')
     kcfg.replace_node(init_node_id, init_cterm)
 
     _LOGGER.info(f'Expanding macros in target state for test: {test}')
@@ -1151,7 +1153,38 @@ def _contract_to_cfg(
     foundry: Foundry,
     init_proof: str | None = None,
 ) -> tuple[KCFG, NodeIdLike, NodeIdLike]:
-    init_cterm = _init_cterm(empty_config, contract.name, proof_dir, use_init_code=True)
+    program = KEVM.init_bytecode(KApply(f'contract_{contract.name}'))
+
+    def rule(self, contract: KInner, application_label: KLabel, contract_name: str) -> KRule | None:
+        arg_vars = [KVariable(aname) for aname in self.arg_names]
+        prod_klabel = self.unique_klabel
+        assert prod_klabel is not None
+        args: list[KInner] = []
+        conjuncts: list[KInner] = []
+        for input_name, input_type in zip(self.arg_names, self.arg_types, strict=True):
+            args.append(KEVM.abi_type(input_type, KVariable(input_name)))
+            rp = _range_predicate(KVariable(input_name), input_type)
+            if rp is None:
+                _LOGGER.info(
+                    f'Unsupported ABI type for method {contract_name}.{prod_klabel.name}, will not generate calldata sugar: {input_type}'
+                )
+                return None
+            conjuncts.append(rp)
+        lhs = KApply(application_label, [contract, KApply(prod_klabel, arg_vars)])
+        rhs = KEVM.abi_calldata(self.name, args)
+        ensures = andBool(conjuncts)
+        return KRule(KRewrite(lhs, rhs), ensures=ensures)
+
+    args: list[KInner] = []
+    for input_name, input_type in zip(contract.constructor.arg_names, contract.constructor.arg_types, strict=True):
+        args.append(KEVM.abi_type(input_type, KVariable(input_name)))
+    print(args)
+    print(KEVM.typed_args(args))
+    constructor_args = KApply('#encodeArgs(_)_EVM-ABI_Bytes_TypedArgs', [KEVM.typed_args(args)])
+
+#      constructor_args = contract.constructor.calldata_cell(contract)
+
+    init_cterm = _init_cterm(empty_config, contract.name, proof_dir, program, constructor_args=constructor_args, use_init_code=True)
 
     cfg = KCFG()
     init_node = cfg.create_node(init_cterm)
@@ -1174,8 +1207,15 @@ def _method_to_cfg(
 ) -> tuple[KCFG, list[int], int, int]:
     calldata = method.calldata_cell(contract)
     callvalue = method.callvalue_cell
+    program = KEVM.bin_runtime(KApply(f'contract_{contract.name}'))
     init_cterm = _init_cterm(
-        empty_config, contract.name, proof_dir, calldata=calldata, callvalue=callvalue, use_init_code=use_init_code
+        empty_config,
+        contract.name,
+        proof_dir,
+        program,
+        calldata=calldata,
+        callvalue=callvalue,
+        use_init_code=use_init_code,
     )
 
     new_node_ids = []
@@ -1235,20 +1275,17 @@ def _init_cterm(
     empty_config: KInner,
     contract_name: str,
     kcfgs_dir: Path,
+    program: KInner,
     *,
+    constructor_args: KInner | None = None,
     use_init_code: bool = False,
     calldata: KInner | None = None,
     callvalue: KInner | None = None,
 ) -> CTerm:
-    program = (
-        KEVM.init_bytecode(KApply(f'contract_{contract_name}'))
-        if use_init_code
-        else KEVM.bin_runtime(KApply(f'contract_{contract_name}'))
-    )
     account_cell = KEVM.account_cell(
         Foundry.address_TEST_CONTRACT(),
         intToken(0),
-        program,
+        KEVM.bytes_append(program, constructor_args) if constructor_args else program,
         KApply('.Map'),
         KApply('.Map'),
         intToken(1),
@@ -1259,7 +1296,7 @@ def _init_cterm(
         'STATUSCODE_CELL': KVariable('STATUSCODE'),
         'CALLSTACK_CELL': KApply('.List'),
         'CALLDEPTH_CELL': intToken(0),
-        'PROGRAM_CELL': program,
+        'PROGRAM_CELL': KEVM.bytes_append(program, constructor_args) if constructor_args else program,
         'JUMPDESTS_CELL': KEVM.compute_valid_jumpdests(program),
         'ORIGIN_CELL': KVariable('ORIGIN_ID'),
         'LOG_CELL': KApply('.List'),

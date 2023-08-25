@@ -238,4 +238,8 @@ module BYTES-SIMPLIFICATION [symbolic]
     rule #asWord ( #ecrec ( _ , _ , _ , _ ) ) <Int pow160 => true
         [simplification, smt-lemma]
 
+//     rule (A:Bytes +Bytes B:Bytes) [ I:Int ] => b"\xa5" [simplification, concrete(A, I)]
+
+    rule #lookupOpCode(A:Bytes +Bytes B:Bytes, I:Int, SCHED:Schedule) => #lookupOpCode(A, I, SCHED) requires I <Int lengthBytes(A) [simplification]
+
 endmodule
