@@ -20,6 +20,7 @@ if TYPE_CHECKING:
     from pathlib import Path
     from typing import Any, Final
 
+    from pyk.utils import BugReport
     from pytest import LogCaptureFixture, TempPathFactory
 
 
@@ -217,6 +218,7 @@ def test_pyk_prove(
     tmp_path: Path,
     caplog: LogCaptureFixture,
     use_booster: bool,
+    bug_report: BugReport | None,
 ) -> None:
     caplog.set_level(logging.INFO)
 
@@ -240,6 +242,7 @@ def test_pyk_prove(
             smt_retry_limit=10,
             md_selector='foo',  # TODO Ignored flag, this is to avoid KeyError
             use_booster=use_booster,
+            bug_report=bug_report,
         )
     except BaseException:
         raise
@@ -272,6 +275,7 @@ def test_legacy_prove(
     kompiled_target_for: Callable[[Path, bool], KompiledTarget],
     tmp_path: Path,
     caplog: LogCaptureFixture,
+    bug_report: BugReport | None,
 ) -> None:
     caplog.set_level(logging.INFO)
 
