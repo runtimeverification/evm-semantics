@@ -2,7 +2,7 @@ name: 'Master Push'
 on:
   push:
     branches:
-      - 'feature/gh-pages'
+      - 'hotfix/gh-pages-docs'
 concurrency:
   group: ${{ github.workflow }}-gh-pages
   cancel-in-progress: true
