@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from shutil import copytree, rmtree
+from distutils.dir_util import copy_tree
 from typing import TYPE_CHECKING
 
 import pytest
@@ -40,7 +40,7 @@ def foundry_root(tmp_path_factory: TempPathFactory, worker_id: str, use_booster:
     foundry_root = root_tmp_dir / 'foundry'
     with FileLock(str(foundry_root) + '.lock'):
         if not foundry_root.is_dir():
-            prepare_foundry_tree(TEST_DATA_DIR / 'foundry', foundry_root)
+            copy_tree(str(TEST_DATA_DIR / 'foundry'), str(foundry_root))
 
             run_process(['forge', 'install', '--no-git', f'foundry-rs/forge-std@{FORGE_STD_REF}'], cwd=foundry_root)
             run_process(['forge', 'build'], cwd=foundry_root)
@@ -54,15 +54,8 @@ def foundry_root(tmp_path_factory: TempPathFactory, worker_id: str, use_booster:
             )
 
     session_foundry_root = tmp_path_factory.mktemp('foundry')
-    prepare_foundry_tree(foundry_root, session_foundry_root)
+    copy_tree(str(foundry_root), str(session_foundry_root))
     return session_foundry_root
-
-
-def prepare_foundry_tree(_from: Path, to: Path) -> None:
-    ignore_pat = lambda dir, _: ['apr_proofs'] if dir.endswith('foundry') else []
-    copytree(str(_from), str(to), ignore=ignore_pat, dirs_exist_ok=True)
-    # remove any testing leftovers
-    rmtree(to / 'out/apr_proofs', ignore_errors=True)
 
 
 def test_foundry_kompile(foundry_root: Path, update_expected_output: bool, use_booster: bool) -> None:
@@ -324,7 +317,8 @@ def assert_fail(test: str, prove_res: dict[tuple[str, str | None], tuple[bool, l
 
 
 def id_for_test(test: str, prove_res: dict[tuple[str, str | None], tuple[bool, list[str] | None]]) -> str:
-    return single([_id for _test, _id in prove_res.keys() if _test == test])
+    return single(_id for _test, _id in prove_res.keys() if _test == test and _id is not None)
+
 
 def assert_or_update_show_output(show_res: str, expected_file: Path, *, update: bool) -> None:
     assert expected_file.is_file()
