@@ -113,11 +113,11 @@ def kevm_kompile(
     kompile: Kompile
     kernel = Kernel.get()
     haskell_binary = kernel is not Kernel.DARWIN
-    ccopts = list(ccopts) + _lib_ccopts(kernel)
 
     try:
         match target:
             case KompileTarget.LLVM | KompileTarget.NODE:
+                ccopts = list(ccopts) + _lib_ccopts(kernel)
                 no_llvm_kompile = target == KompileTarget.NODE
                 kompile = LLVMKompile(
                     base_args=base_args,
@@ -137,6 +137,7 @@ def kevm_kompile(
                 return kompile(output_dir=output_dir or target.definition_dir, debug=debug, verbose=verbose)
 
             case KompileTarget.HASKELL_BOOSTER:
+                ccopts = list(ccopts) + _lib_ccopts(kernel)
                 base_args_llvm = KompileArgs(
                     main_file=main_file,
                     main_module=main_module,
