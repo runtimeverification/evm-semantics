@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from distutils.dir_util import copy_tree
+from shutil import copytree
 from typing import TYPE_CHECKING
 
 import pytest
@@ -38,9 +38,10 @@ def foundry_root(tmp_path_factory: TempPathFactory, worker_id: str, use_booster:
         root_tmp_dir = tmp_path_factory.getbasetemp().parent
 
     foundry_root = root_tmp_dir / 'foundry'
+    ignore_pat = lambda dir, _: ['apr_proofs'] if dir.endswith('foundry') else []
     with FileLock(str(foundry_root) + '.lock'):
         if not foundry_root.is_dir():
-            copy_tree(str(TEST_DATA_DIR / 'foundry'), str(foundry_root))
+            copytree(str(TEST_DATA_DIR / 'foundry'), str(foundry_root), ignore=ignore_pat)
 
             run_process(['forge', 'install', '--no-git', f'foundry-rs/forge-std@{FORGE_STD_REF}'], cwd=foundry_root)
             run_process(['forge', 'build'], cwd=foundry_root)
@@ -54,7 +55,7 @@ def foundry_root(tmp_path_factory: TempPathFactory, worker_id: str, use_booster:
             )
 
     session_foundry_root = tmp_path_factory.mktemp('foundry')
-    copy_tree(str(foundry_root), str(session_foundry_root))
+    copytree(str(foundry_root), str(session_foundry_root), ignore=ignore_pat)
     return session_foundry_root
 
 
