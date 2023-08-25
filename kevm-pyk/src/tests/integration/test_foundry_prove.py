@@ -41,7 +41,7 @@ def foundry_root(tmp_path_factory: TempPathFactory, worker_id: str, use_booster:
     ignore_pat = lambda dir, _: ['apr_proofs'] if dir.endswith('foundry') else []
     with FileLock(str(foundry_root) + '.lock'):
         if not foundry_root.is_dir():
-            copytree(str(TEST_DATA_DIR / 'foundry'), str(foundry_root), ignore=ignore_pat)
+            copytree(str(TEST_DATA_DIR / 'foundry'), str(foundry_root), ignore=ignore_pat, dirs_exist_ok=True)
 
             run_process(['forge', 'install', '--no-git', f'foundry-rs/forge-std@{FORGE_STD_REF}'], cwd=foundry_root)
             run_process(['forge', 'build'], cwd=foundry_root)
@@ -55,7 +55,7 @@ def foundry_root(tmp_path_factory: TempPathFactory, worker_id: str, use_booster:
             )
 
     session_foundry_root = tmp_path_factory.mktemp('foundry')
-    copytree(str(foundry_root), str(session_foundry_root), ignore=ignore_pat)
+    copytree(str(foundry_root), str(session_foundry_root), ignore=ignore_pat, dirs_exist_ok=True)
     return session_foundry_root
 
 
