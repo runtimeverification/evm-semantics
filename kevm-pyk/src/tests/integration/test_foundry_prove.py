@@ -308,20 +308,23 @@ def test_foundry_remove_node(foundry_root: Path, update_expected_output: bool) -
     assert_pass(test, prove_res)
 
 
-def assert_pass(test_id: str, prove_res: dict[str, tuple[bool, list[str] | None]]) -> None:
-    assert test_id in prove_res
-    passed, log = prove_res[test_id]
+def assert_pass(test: str, prove_res: dict[tuple[str, str | None], tuple[bool, list[str] | None]]) -> None:
+    id = id_for_test(test, prove_res)
+    passed, log = prove_res[(test, id)]
     if not passed:
         assert log
         pytest.fail('\n'.join(log))
 
 
-def assert_fail(test_id: str, prove_res: dict[str, tuple[bool, list[str] | None]]) -> None:
-    assert test_id in prove_res
-    passed, log = prove_res[test_id]
+def assert_fail(test: str, prove_res: dict[tuple[str, str | None], tuple[bool, list[str] | None]]) -> None:
+    id = id_for_test(test, prove_res)
+    passed, log = prove_res[test, id]
     assert not passed
     assert log
 
+
+def id_for_test(test: str, prove_res: dict[tuple[str, str | None], tuple[bool, list[str] | None]]) -> str:
+    return single([_id for _test, _id in prove_res.keys() if _test == test])
 
 def assert_or_update_show_output(show_res: str, expected_file: Path, *, update: bool) -> None:
     assert expected_file.is_file()
@@ -361,15 +364,14 @@ def test_foundry_resume_proof(foundry_root: Path, update_expected_output: bool) 
         max_iterations=4,
         reinit=True,
     )
+    id = id_for_test(test, prove_res)
 
-    # TODO if more than one proof matches this "test" predicate in the future,
-    # we should consider to not hardcode the '0' ID.
-    proof = foundry.get_apr_proof(f'{test}:0')
+    proof = foundry.get_apr_proof(f'{test}:{id}')
     assert proof.pending
 
     prove_res = foundry_prove(
         foundry_root,
-        tests=[(test, '0')],
+        tests=[(test, id)],
         smt_timeout=300,
         smt_retry_limit=10,
         auto_abstract_gas=True,

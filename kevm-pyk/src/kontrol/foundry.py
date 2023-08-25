@@ -642,7 +642,7 @@ def foundry_prove(
     counterexample_info: bool = False,
     trace_rewrites: bool = False,
     auto_abstract_gas: bool = False,
-) -> dict[str, tuple[bool, list[str] | None]]:
+) -> dict[tuple[str, str | None], tuple[bool, list[str] | None]]:
     if workers <= 0:
         raise ValueError(f'Must have at least one worker, found: --workers {workers}')
     if max_iterations is not None and max_iterations < 0:
@@ -771,7 +771,9 @@ def foundry_prove(
                 failure_log = print_failure_info(proof, kcfg_explore, counterexample_info)
             return passed, failure_log
 
-    def run_cfg_group(tests: list[tuple[str, str | None]]) -> dict[str, tuple[bool, list[str] | None]]:
+    def run_cfg_group(
+        tests: list[tuple[str, str | None]]
+    ) -> dict[tuple[str, str | None], tuple[bool, list[str] | None]]:
         def _split_test(test: tuple[str, str | None]) -> tuple[str, str, str | None]:
             test_name, id = test
             contract, method = test_name.split('.')
@@ -788,7 +790,7 @@ def foundry_prove(
             for init_problem in init_problems:
                 _apr_proofs.append(_init_and_run_proof(init_problem))
 
-        apr_proofs = dict(zip([test[0] for test in tests], _apr_proofs, strict=True))
+        apr_proofs = dict(zip(tests, _apr_proofs, strict=True))
         return apr_proofs
 
     _LOGGER.info(f'Running setup functions in parallel: {list(setup_methods.values())}')
