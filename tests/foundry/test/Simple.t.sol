@@ -29,7 +29,6 @@ contract AssertTest is Test, KEVMCheats {
     }
 
     function test_branch_merge(uint x) public {
-        kevm.infiniteGas();
         if (x < 10) {
             y = 0;
         } else {
