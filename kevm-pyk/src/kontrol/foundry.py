@@ -6,6 +6,7 @@ import logging
 import os
 import re
 import shutil
+import sys
 from functools import cached_property
 from pathlib import Path
 from subprocess import CalledProcessError
@@ -124,14 +125,14 @@ class Foundry:
 
     @cached_property
     def llvm_dylib(self) -> Path | None:
-        from kevm_pyk.kompile import Kernel
-
-        arch = Kernel.get()
         foundry_llvm_dir = self.out / 'kompiled-llvm'
-        if arch == Kernel.LINUX:
-            dylib = foundry_llvm_dir / 'interpreter.so'
-        else:
-            dylib = foundry_llvm_dir / 'interpreter.dylib'
+        match sys.platform:
+            case 'linux':
+                dylib = foundry_llvm_dir / 'interpreter.so'
+            case 'darwin':
+                dylib = foundry_llvm_dir / 'interpreter.dylib'
+            case _:
+                raise ValueError('Unsupported platform: {sys.platform}')
 
         if dylib.exists():
             return dylib
