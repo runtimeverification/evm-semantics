@@ -763,16 +763,15 @@ def foundry_list(foundry_root: Path) -> list[str]:
     foundry = Foundry(foundry_root)
     apr_proofs_dir = foundry.out / 'apr_proofs'
 
-    all_methods = [
-        f'{contract.name}.{method.signature}' for contract in foundry.contracts.values() for method in contract.methods
-    ]
-
     lines: list[str] = []
-    for method in sorted(all_methods):
-        if Proof.proof_data_exists(method, apr_proofs_dir):
-            proof = foundry.get_proof(method)
-            lines.extend(proof.summary.lines)
-            lines.append('')
+    for contract in foundry.contracts.values():
+        for method in contract.methods:
+            proof_digest = foundry.proof_digest(contract=contract.name, test_sig=method.signature)
+            if Proof.proof_data_exists(proof_digest, apr_proofs_dir):
+                proof = foundry.get_proof(f'{contract.name}.{method.signature}')
+                lines.extend(proof.summary.lines)
+                lines.append('')
+
     if len(lines) > 0:
         lines = lines[0:-1]
 
