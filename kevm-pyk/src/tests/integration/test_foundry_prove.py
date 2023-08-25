@@ -355,8 +355,9 @@ def test_foundry_resume_proof(foundry_root: Path, update_expected_output: bool) 
         reinit=True,
     )
 
-    proof = single(foundry.proofs_with_test(test))
-    assert type(proof) is APRProof
+    # TODO if more than one proof matches this "test" predicate in the future,
+    # we should consider to not hardcode the '0' ID.
+    proof = foundry.get_apr_proof(f'{test}:0')
     assert proof.pending
 
     prove_res = foundry_prove(
