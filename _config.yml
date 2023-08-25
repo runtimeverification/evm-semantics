@@ -1,7 +1,0 @@
-theme: jekyll-theme-slate
-exclude: ["deps/plugin/deps/cpp-httplib/README.md"]
-liquid:
-  error_mode: warn
-  strict_filters: false
-  strict_variables: false
-
