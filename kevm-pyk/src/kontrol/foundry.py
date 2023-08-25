@@ -968,11 +968,18 @@ def _write_cfg(cfg: KCFG, path: Path) -> None:
     _LOGGER.info(f'Updated CFG file: {path}')
 
 
+def _check_same_contracts(contracts: Iterable[Contract]) -> None:
+    contract_names = [contract.name for contract in contracts]
+    if len(contract_names) > len(set(contract_names)):
+        raise RuntimeError('Project has some duplicated contract names that may clash with K definitions.')
+
+
 def _foundry_to_contract_def(
     empty_config: KInner,
     contracts: Iterable[Contract],
     requires: Iterable[str],
 ) -> KDefinition:
+    _check_same_contracts(contracts)
     modules = [contract_to_main_module(contract, empty_config, imports=['FOUNDRY']) for contract in contracts]
     # First module is chosen as main module arbitrarily, since the contract definition is just a set of
     # contract modules.
@@ -992,6 +999,7 @@ def _foundry_to_main_def(
     requires: Iterable[str],
     imports: dict[str, list[str]],
 ) -> KDefinition:
+    _check_same_contracts(contracts)
     modules = [
         contract_to_verification_module(contract, empty_config, imports=imports[contract.name])
         for contract in contracts
