@@ -144,6 +144,8 @@ jobs:
         uses: ./.github/actions/with-docker
         with:
           container-name: kevm-ci-haskell-${{ github.sha }}
+      - name: 'Build blockchain-k-plugin-deps'
+        run: docker exec -u github-user kevm-ci-haskell-${GITHUB_SHA} /bin/bash -c 'make CXX=clang++-14 plugin-deps'
       - name: 'Prove Haskell'
         run: docker exec -u github-user kevm-ci-haskell-${GITHUB_SHA} /bin/bash -c 'make test-prove PYTEST_ARGS=-vv'
       - name: 'Tear down Docker'
@@ -165,6 +167,8 @@ jobs:
         uses: ./.github/actions/with-docker
         with:
           container-name: kevm-ci-haskell-booster-${{ github.sha }}
+      - name: 'Build blockchain-k-plugin-deps'
+        run: docker exec -u github-user kevm-ci-haskell-booster-${GITHUB_SHA} /bin/bash -c 'make CXX=clang++-14 plugin-deps'
       - name: 'Prove Haskell'
         run: docker exec -u github-user kevm-ci-haskell-booster-${GITHUB_SHA} /bin/bash -c 'make test-prove PYTEST_ARGS="-vv --use-booster"'
       - name: 'Tear down Docker'
