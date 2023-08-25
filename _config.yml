@@ -1,1 +1,5 @@
 theme: jekyll-theme-slate
+liquid:
+  error_mode: warn
+  strict_filters: false
+  strict_variables: false

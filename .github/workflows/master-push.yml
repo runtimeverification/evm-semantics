@@ -2,133 +2,133 @@ name: 'Master Push'
 on:
   push:
     branches:
-      - 'master'
+      - 'feature/gh-pages'
 concurrency:
-  group: ${{ github.workflow }}
+  group: ${{ github.workflow }}-gh-pages
   cancel-in-progress: true
 
 jobs:
 
-  nix-cache:
-    name: 'Populate Nix Cache'
-    strategy:
-      matrix:
-        include:
-          - runner: normal
-          - runner: macos-13
-          - runner: ARM64
-    runs-on: ${{ matrix.runner }}
-    steps:
-      - name: 'Check out code'
-        uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.push.head.sha }}
-          fetch-depth: 0
-      - name: 'Upgrade bash'
-        if: ${{ contains(matrix.os, 'macos') }}
-        run: brew install bash
-      - name: 'Install Nix'
-        if: ${{ matrix.runner == 'macos-13' }}
-        uses: cachix/install-nix-action@v19
-        with:
-          install_url: https://releases.nixos.org/nix/nix-2.13.3/install
-          extra_nix_config: |
-            access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
-      - name: 'Install Cachix'
-        if: ${{ matrix.runner == 'macos-13' }}
-        uses: cachix/cachix-action@v12
-        with:
-          name: k-framework
-          signingKey: ${{ secrets.CACHIX_SIGNING_KEY }}
-          skipPush: true
-      - name: 'Build and cache KEVM'
-        uses: workflow/nix-shell-action@v3.0.3
-        env:
-          GC_DONT_GC: 1
-          CACHIX_AUTH_TOKEN: '${{ secrets.CACHIX_PUBLIC_TOKEN }}'
-        with:
-          packages: jq
-          script: |
-            kevm=$(nix build --extra-experimental-features 'nix-command flakes' .#kevm --json | jq -r '.[].outputs | to_entries[].value')
-            drv=$(nix-store --query --deriver ${kevm})
-            nix-store --query --requisites --include-outputs ${drv} | cachix push k-framework
+  # nix-cache:
+  #   name: 'Populate Nix Cache'
+  #   strategy:
+  #     matrix:
+  #       include:
+  #         - runner: normal
+  #         - runner: macos-13
+  #         - runner: ARM64
+  #   runs-on: ${{ matrix.runner }}
+  #   steps:
+  #     - name: 'Check out code'
+  #       uses: actions/checkout@v3
+  #       with:
+  #         ref: ${{ github.event.push.head.sha }}
+  #         fetch-depth: 0
+  #     - name: 'Upgrade bash'
+  #       if: ${{ contains(matrix.os, 'macos') }}
+  #       run: brew install bash
+  #     - name: 'Install Nix'
+  #       if: ${{ matrix.runner == 'macos-13' }}
+  #       uses: cachix/install-nix-action@v19
+  #       with:
+  #         install_url: https://releases.nixos.org/nix/nix-2.13.3/install
+  #         extra_nix_config: |
+  #           access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
+  #     - name: 'Install Cachix'
+  #       if: ${{ matrix.runner == 'macos-13' }}
+  #       uses: cachix/cachix-action@v12
+  #       with:
+  #         name: k-framework
+  #         signingKey: ${{ secrets.CACHIX_SIGNING_KEY }}
+  #         skipPush: true
+  #     - name: 'Build and cache KEVM'
+  #       uses: workflow/nix-shell-action@v3.0.3
+  #       env:
+  #         GC_DONT_GC: 1
+  #         CACHIX_AUTH_TOKEN: '${{ secrets.CACHIX_PUBLIC_TOKEN }}'
+  #       with:
+  #         packages: jq
+  #         script: |
+  #           kevm=$(nix build --extra-experimental-features 'nix-command flakes' .#kevm --json | jq -r '.[].outputs | to_entries[].value')
+  #           drv=$(nix-store --query --deriver ${kevm})
+  #           nix-store --query --requisites --include-outputs ${drv} | cachix push k-framework
 
-  dockerhub-image:
-    name: 'Build Ubuntu Jammy DockerHub Image'
-    runs-on: [self-hosted, linux, normal]
-    steps:
-      - name: 'Check out code'
-        uses: actions/checkout@v3
-        with:
-          submodules: recursive
-          ref: ${{ github.event.push.head.sha }}
-          fetch-depth: 0
-      - name: 'Set up Docker'
-        uses: ./.github/actions/with-docker
-        with:
-          container-name: kevm-package-jammy-${{ github.sha }}
+  # dockerhub-image:
+  #   name: 'Build Ubuntu Jammy DockerHub Image'
+  #   runs-on: [self-hosted, linux, normal]
+  #   steps:
+  #     - name: 'Check out code'
+  #       uses: actions/checkout@v3
+  #       with:
+  #         submodules: recursive
+  #         ref: ${{ github.event.push.head.sha }}
+  #         fetch-depth: 0
+  #     - name: 'Set up Docker'
+  #       uses: ./.github/actions/with-docker
+  #       with:
+  #         container-name: kevm-package-jammy-${{ github.sha }}
 
-      - name: 'Build Package'
-        run: |
-          set -euxo pipefail
-          version=$(cat package/version)
-          docker exec -u github-user kevm-package-jammy-${GITHUB_SHA} /bin/bash -c 'package/debian/package jammy'
-          docker cp kevm-package-jammy-${GITHUB_SHA}:/home/github-user/kevm_${version}_amd64.deb ./
+  #     - name: 'Build Package'
+  #       run: |
+  #         set -euxo pipefail
+  #         version=$(cat package/version)
+  #         docker exec -u github-user kevm-package-jammy-${GITHUB_SHA} /bin/bash -c 'package/debian/package jammy'
+  #         docker cp kevm-package-jammy-${GITHUB_SHA}:/home/github-user/kevm_${version}_amd64.deb ./
 
-      - name: 'Set Version ID'
-        run: echo "KEVM_VERSION=$(cat package/version)" >> "${GITHUB_ENV}"
+  #     - name: 'Set Version ID'
+  #       run: echo "KEVM_VERSION=$(cat package/version)" >> "${GITHUB_ENV}"
 
-      - name: 'Setup Foundry Test Docker'
-        uses: ./.github/actions/with-docker
-        with:
-          container-name: kevm-ci-test-${{ github.sha }}
-          tag-name: runtimeverificationinc/kevm:ubuntu-jammy-${{ env.KEVM_VERSION }}
-          dockerfile: package/docker/Dockerfile
+  #     - name: 'Setup Foundry Test Docker'
+  #       uses: ./.github/actions/with-docker
+  #       with:
+  #         container-name: kevm-ci-test-${{ github.sha }}
+  #         tag-name: runtimeverificationinc/kevm:ubuntu-jammy-${{ env.KEVM_VERSION }}
+  #         dockerfile: package/docker/Dockerfile
 
-      - name: 'KEVM Foundry Test'
-        run: |
-          set -euxo pipefail
-          docker cp ./tests/foundry kevm-ci-test-${GITHUB_SHA}:/home/github-user/foundry
-          docker exec -u github-user kevm-ci-test-${GITHUB_SHA} /bin/bash -c "sudo chown github-user:github-user -R /home/github-user/foundry"
-          docker exec -u github-user kevm-ci-test-${GITHUB_SHA} /bin/bash -c "forge build --root /home/github-user/foundry"
-          docker exec -u github-user kevm-ci-test-${GITHUB_SHA} /bin/bash -c "kevm foundry-kompile --foundry-project-root /home/github-user/foundry --verbose"
-          docker exec -u github-user kevm-ci-test-${GITHUB_SHA} /bin/bash -c "kevm foundry-prove --foundry-project-root /home/github-user/foundry --verbose --test AssertTest.test_assert_true_branch"
-          docker exec -u github-user kevm-ci-test-${GITHUB_SHA} /bin/bash -c "kevm foundry-show --foundry-project-root /home/github-user/foundry --verbose AssertTest.test_assert_true_branch"
-          docker exec -u github-user kevm-ci-test-${GITHUB_SHA} /bin/bash -c "kevm foundry-list --foundry-project-root /home/github-user/foundry --verbose"
+  #     - name: 'KEVM Foundry Test'
+  #       run: |
+  #         set -euxo pipefail
+  #         docker cp ./tests/foundry kevm-ci-test-${GITHUB_SHA}:/home/github-user/foundry
+  #         docker exec -u github-user kevm-ci-test-${GITHUB_SHA} /bin/bash -c "sudo chown github-user:github-user -R /home/github-user/foundry"
+  #         docker exec -u github-user kevm-ci-test-${GITHUB_SHA} /bin/bash -c "forge build --root /home/github-user/foundry"
+  #         docker exec -u github-user kevm-ci-test-${GITHUB_SHA} /bin/bash -c "kevm foundry-kompile --foundry-project-root /home/github-user/foundry --verbose"
+  #         docker exec -u github-user kevm-ci-test-${GITHUB_SHA} /bin/bash -c "kevm foundry-prove --foundry-project-root /home/github-user/foundry --verbose --test AssertTest.test_assert_true_branch"
+  #         docker exec -u github-user kevm-ci-test-${GITHUB_SHA} /bin/bash -c "kevm foundry-show --foundry-project-root /home/github-user/foundry --verbose AssertTest.test_assert_true_branch"
+  #         docker exec -u github-user kevm-ci-test-${GITHUB_SHA} /bin/bash -c "kevm foundry-list --foundry-project-root /home/github-user/foundry --verbose"
 
-      - name: 'Push Docker Image to DockerHub'
-        env:
-          DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
-        run: |
-          set -euxo pipefail
-          dockerhub_repo=runtimeverificationinc/kevm
-          tag_name=ubuntu-jammy-${KEVM_VERSION}
-          docker login --username rvdockerhub --password ${DOCKERHUB_PASSWORD}
-          docker image push "${dockerhub_repo}:${tag_name}"
+  #     - name: 'Push Docker Image to DockerHub'
+  #       env:
+  #         DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
+  #       run: |
+  #         set -euxo pipefail
+  #         dockerhub_repo=runtimeverificationinc/kevm
+  #         tag_name=ubuntu-jammy-${KEVM_VERSION}
+  #         docker login --username rvdockerhub --password ${DOCKERHUB_PASSWORD}
+  #         docker image push "${dockerhub_repo}:${tag_name}"
 
-      - name: 'Tear down Docker'
-        if: always()
-        run: |
-          docker stop --time=0 kevm-package-jammy-${GITHUB_SHA}
-          docker stop --time=0 kevm-ci-test-${GITHUB_SHA}
+  #     - name: 'Tear down Docker'
+  #       if: always()
+  #       run: |
+  #         docker stop --time=0 kevm-package-jammy-${GITHUB_SHA}
+  #         docker stop --time=0 kevm-ci-test-${GITHUB_SHA}
 
-  make-release:
-    name: 'Cut Release'
-    runs-on: ubuntu-latest
-    needs: [nix-cache, dockerhub-image]
-    steps:
-      - name: 'Check out code'
-        uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.push.head.sha }}
-          fetch-depth: 0
-      - name: 'Make Release'
-        env:
-         GITHUB_TOKEN: ${{ secrets.JENKINS_GITHUB_PAT }}
-        run: |
-          set -x
-          kevm_version=v$(cat package/version)
-          gh release create "${kevm_version}" --target "${GITHUB_SHA}"
+  # make-release:
+  #   name: 'Cut Release'
+  #   runs-on: ubuntu-latest
+  #   needs: [nix-cache, dockerhub-image]
+  #   steps:
+  #     - name: 'Check out code'
+  #       uses: actions/checkout@v3
+  #       with:
+  #         ref: ${{ github.event.push.head.sha }}
+  #         fetch-depth: 0
+  #     - name: 'Make Release'
+  #       env:
+  #        GITHUB_TOKEN: ${{ secrets.JENKINS_GITHUB_PAT }}
+  #       run: |
+  #         set -x
+  #         kevm_version=v$(cat package/version)
+  #         gh release create "${kevm_version}" --target "${GITHUB_SHA}"
 
   gh-pages:
     name: 'Publish GH Pages'
