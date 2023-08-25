@@ -164,6 +164,8 @@ def exec_foundry_prove(
     counterexample_info: bool = False,
     trace_rewrites: bool = False,
     auto_abstract_gas: bool = False,
+    maude_port: int | None = None,
+    haskell_port: int | None = None,
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'main_module', f'--main-module: {kwargs["main_module"]}')
@@ -200,6 +202,8 @@ def exec_foundry_prove(
         smt_retry_limit=smt_retry_limit,
         trace_rewrites=trace_rewrites,
         auto_abstract_gas=auto_abstract_gas,
+        maude_port=maude_port,
+        port=haskell_port,
     )
     failed = 0
     for pid, r in results.items():

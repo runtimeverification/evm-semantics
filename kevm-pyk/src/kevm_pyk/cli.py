@@ -184,6 +184,18 @@ class KEVMCLIArgs(KCLIArgs):
             action='store_true',
             help='Log traces of all simplification and rewrite rule applications.',
         )
+        args.add_argument(
+            '--haskell-port',
+            default=None,
+            type=int,
+            help='Port to connect to the Haskell backend server.',
+        )
+        args.add_argument(
+            '--maude-port',
+            default=None,
+            type=int,
+            help='Port to connect to the Maude backend server.',
+        )
         return args
 
     @cached_property
