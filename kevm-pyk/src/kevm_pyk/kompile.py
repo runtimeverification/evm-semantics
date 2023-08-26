@@ -1,12 +1,13 @@
 from __future__ import annotations
 
+import concurrent.futures
 import logging
 import sys
 from enum import Enum
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from pyk.ktool.kompile import HaskellKompile, KompileArgs, KompileBackend, LLVMKompile
+from pyk.ktool.kompile import HaskellKompile, KompileArgs, LLVMKompile, LLVMKompileType
 from pyk.utils import run_process
 
 from . import config
@@ -15,7 +16,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
     from typing import Final
 
-    from pyk.ktool.kompile import Kompile, LLVMKompileType
+    from pyk.ktool.kompile import Kompile
 
 
 _LOGGER: Final = logging.getLogger(__name__)
@@ -37,19 +38,10 @@ class Kernel(Enum):
 class KompileTarget(Enum):
     LLVM = 'llvm'
     HASKELL = 'haskell'
+    HASKELL_BOOSTER = 'haskell-booster'
     HASKELL_STANDALONE = 'haskell-standalone'
     NODE = 'node'
     FOUNDRY = 'foundry'
-
-    @property
-    def backend(self) -> KompileBackend:
-        match self:
-            case self.LLVM | self.NODE:
-                return KompileBackend.LLVM
-            case self.HASKELL | self.FOUNDRY | self.HASKELL_STANDALONE:
-                return KompileBackend.HASKELL
-            case _:
-                raise AssertionError()
 
     @property
     def definition_dir(self) -> Path:
@@ -74,11 +66,7 @@ class KompileTarget(Enum):
                 return 'k & ! node & ! symbolic'
             case self.NODE:
                 return 'k & ! symbolic & ! standalone'
-            case self.HASKELL:
-                return 'k & ! node & ! concrete'
-            case self.HASKELL_STANDALONE:
-                return 'k & ! node & ! concrete'
-            case self.FOUNDRY:
+            case self.HASKELL | self.HASKELL_STANDALONE | self.HASKELL_BOOSTER | self.FOUNDRY:
                 return 'k & ! node & ! concrete'
             case _:
                 raise AssertionError()
@@ -98,11 +86,15 @@ def kevm_kompile(
     optimization: int = 0,
     llvm_kompile_type: LLVMKompileType | None = None,
     enable_llvm_debug: bool = False,
+    llvm_library: Path | None = None,
     debug: bool = False,
     verbose: bool = False,
 ) -> Path:
-    backend = target.backend
-    md_selector = target.md_selector
+    if output_dir is None:
+        output_dir = target.definition_dir
+
+    if llvm_library is None:
+        llvm_library = output_dir / 'llvm-library'
 
     include_dirs = [Path(include) for include in includes]
     include_dirs += [config.INCLUDE_DIR]
@@ -112,7 +104,7 @@ def kevm_kompile(
         main_module=main_module,
         syntax_module=syntax_module,
         include_dirs=include_dirs,
-        md_selector=md_selector,
+        md_selector=target.md_selector,
         hook_namespaces=HOOK_NAMESPACES,
         emit_json=emit_json,
         read_only=read_only,
@@ -121,28 +113,64 @@ def kevm_kompile(
     kompile: Kompile
     kernel = Kernel.get()
     haskell_binary = kernel is not Kernel.DARWIN
-    match backend:
-        case KompileBackend.LLVM:
-            ccopts = list(ccopts) + _lib_ccopts(kernel)
-            no_llvm_kompile = target == KompileTarget.NODE
-            kompile = LLVMKompile(
-                base_args=base_args,
-                ccopts=ccopts,
-                no_llvm_kompile=no_llvm_kompile,
-                opt_level=optimization,
-                llvm_kompile_type=llvm_kompile_type,
-                enable_llvm_debug=enable_llvm_debug,
-            )
-        case KompileBackend.HASKELL:
-            kompile = HaskellKompile(
-                base_args=base_args,
-                haskell_binary=haskell_binary,
-            )
-        case _:
-            raise ValueError(f'Unsupported backend: {backend.value}')
 
     try:
-        return kompile(output_dir=output_dir or target.definition_dir, debug=debug, verbose=verbose)
+        match target:
+            case KompileTarget.LLVM | KompileTarget.NODE:
+                ccopts = list(ccopts) + _lib_ccopts(kernel)
+                no_llvm_kompile = target == KompileTarget.NODE
+                kompile = LLVMKompile(
+                    base_args=base_args,
+                    ccopts=ccopts,
+                    no_llvm_kompile=no_llvm_kompile,
+                    opt_level=optimization,
+                    llvm_kompile_type=llvm_kompile_type,
+                    enable_llvm_debug=enable_llvm_debug,
+                )
+                return kompile(output_dir=output_dir or target.definition_dir, debug=debug, verbose=verbose)
+
+            case KompileTarget.HASKELL | KompileTarget.FOUNDRY | KompileTarget.HASKELL_STANDALONE:
+                kompile = HaskellKompile(
+                    base_args=base_args,
+                    haskell_binary=haskell_binary,
+                )
+                return kompile(output_dir=output_dir or target.definition_dir, debug=debug, verbose=verbose)
+
+            case KompileTarget.HASKELL_BOOSTER:
+                ccopts = list(ccopts) + _lib_ccopts(kernel)
+                base_args_llvm = KompileArgs(
+                    main_file=main_file,
+                    main_module=main_module,
+                    syntax_module=syntax_module,
+                    include_dirs=include_dirs,
+                    md_selector=KompileTarget.LLVM.md_selector,
+                    hook_namespaces=HOOK_NAMESPACES,
+                    emit_json=emit_json,
+                    read_only=read_only,
+                )
+                kompile_llvm = LLVMKompile(
+                    base_args=base_args_llvm, ccopts=ccopts, opt_level=optimization, llvm_kompile_type=LLVMKompileType.C
+                )
+                kompile_haskell = HaskellKompile(base_args=base_args)
+
+                def _kompile_llvm() -> None:
+                    kompile_llvm(output_dir=llvm_library, debug=debug, verbose=verbose)
+
+                def _kompile_haskell() -> None:
+                    kompile_haskell(output_dir=output_dir, debug=debug, verbose=verbose)
+
+                with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+                    futures = [
+                        executor.submit(_kompile_llvm),
+                        executor.submit(_kompile_haskell),
+                    ]
+                    [future.result() for future in futures]
+
+                return output_dir
+
+            case _:
+                raise ValueError(f'Unsupported target: {target.value}')
+
     except RuntimeError as err:
         sys.stderr.write(f'\nkompile stdout:\n{err.args[1]}\n')
         sys.stderr.write(f'\nkompile stderr:\n{err.args[2]}\n')
