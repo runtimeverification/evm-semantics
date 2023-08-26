@@ -40,7 +40,7 @@ from kevm_pyk.utils import (
     print_model,
 )
 
-from .solc_to_k import Contract, contract_to_main_module, contract_to_verification_module
+from .solc_to_k import Contract, contract_to_main_module, contract_to_verification_module, _range_predicate
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -1066,6 +1066,8 @@ def _contract_to_apr_proof(
     apr_proof: APRProof
     if simplify_init:
         _LOGGER.info(f'Simplifying KCFG for test: {test}')
+        for node in kcfg.nodes:
+            print(foundry.kevm.pretty_print(node.cterm.kast))
         kcfg_explore.simplify(kcfg, {})
     if bmc_depth is not None:
         apr_proof = APRBMCProof(
@@ -1176,8 +1178,10 @@ def _contract_to_cfg(
         return KRule(KRewrite(lhs, rhs), ensures=ensures)
 
     args: list[KInner] = []
+    conjuncts: list[KInner] = []
     for input_name, input_type in zip(contract.constructor.arg_names, contract.constructor.arg_types, strict=True):
         args.append(KEVM.abi_type(input_type, KVariable(input_name)))
+        conjuncts.append(_range_predicate(KVariable(input_name), input_type))
     print(args)
     print(KEVM.typed_args(args))
     constructor_args = KApply('#encodeArgs(_)_EVM-ABI_Bytes_TypedArgs', [KEVM.typed_args(args)])
@@ -1185,6 +1189,11 @@ def _contract_to_cfg(
 #      constructor_args = contract.constructor.calldata_cell(contract)
 
     init_cterm = _init_cterm(empty_config, contract.name, proof_dir, program, constructor_args=constructor_args, use_init_code=True)
+    for conjunct in conjuncts:
+        init_cterm = init_cterm.add_constraint(mlEqualsTrue(conjunct))
+
+    print(foundry.kevm.pretty_print(init_cterm.kast))
+#      exit(1)
 
     cfg = KCFG()
     init_node = cfg.create_node(init_cterm)
