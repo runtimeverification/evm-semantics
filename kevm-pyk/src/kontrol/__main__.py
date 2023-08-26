@@ -136,7 +136,6 @@ def exec_foundry_kompile(
         ccopts=ccopts,
         llvm_kompile=llvm_kompile,
         debug=debug,
-        llvm_library=llvm_library,
         verbose=verbose,
     )
 
@@ -501,7 +500,7 @@ def _create_argument_parser() -> ArgumentParser:
         dest='use_booster',
         default=False,
         action='store_true',
-        help="Use the booster RPC server instead of kore-rpc. Requires calling foundry-kompile with the '--with-llvm-library' flag",
+        help='Use the booster RPC server instead of kore-rpc.',
     )
 
     foundry_show_args = command_parser.add_parser(
