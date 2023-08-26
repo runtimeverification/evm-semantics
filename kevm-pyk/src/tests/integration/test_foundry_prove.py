@@ -92,10 +92,19 @@ def assert_or_update_k_output(k_file: Path, expected_file: Path, *, update: bool
 ALL_PROVE_TESTS: Final = tuple((TEST_DATA_DIR / 'foundry-prove-all').read_text().splitlines())
 SKIPPED_PROVE_TESTS: Final = set((TEST_DATA_DIR / 'foundry-prove-skip').read_text().splitlines())
 
+def skipped_first(_all: list[str], skipped: list[str]) -> list[str]:
+    res = []
+    for test in _all:
+        if test in skipped:
+            res.insert(0, test)
+        else:
+            res.append(test)
+    return res
+
 SHOW_TESTS = set((TEST_DATA_DIR / 'foundry-show').read_text().splitlines())
 
 
-@pytest.mark.parametrize('test_id', ALL_PROVE_TESTS)
+@pytest.mark.parametrize('test_id', skipped_first(list(ALL_PROVE_TESTS), list(SKIPPED_PROVE_TESTS)))
 def test_foundry_prove(test_id: str, foundry_root: Path, update_expected_output: bool, use_booster: bool) -> None:
     if test_id in SKIPPED_PROVE_TESTS or (update_expected_output and not test_id in SHOW_TESTS):
         pytest.skip()
