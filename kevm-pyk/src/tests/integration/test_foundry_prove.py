@@ -91,14 +91,16 @@ def assert_or_update_k_output(k_file: Path, expected_file: Path, *, update: bool
 ALL_PROVE_TESTS: Final = tuple((TEST_DATA_DIR / 'foundry-prove-all').read_text().splitlines())
 SKIPPED_PROVE_TESTS: Final = set((TEST_DATA_DIR / 'foundry-prove-skip').read_text().splitlines())
 
+
 def skipped_first(_all: list[str], skipped: list[str]) -> list[str]:
-    res = []
+    res: list[str] = []
     for test in _all:
         if test in skipped:
             res.insert(0, test)
         else:
             res.append(test)
     return res
+
 
 SHOW_TESTS = set((TEST_DATA_DIR / 'foundry-show').read_text().splitlines())
 
