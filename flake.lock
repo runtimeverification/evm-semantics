@@ -1735,16 +1735,16 @@
         "poetry2nix": "poetry2nix"
       },
       "locked": {
-        "lastModified": 1692948181,
-        "narHash": "sha256-FzQ54MIexQcC+sNGxtm7t9MQbp5l7UWpUfdPfy/bYs0=",
+        "lastModified": 1693177411,
+        "narHash": "sha256-d6AOxbJVbzkMaA0ySvsq3I2I54cMaerTCwtmRhKnshQ=",
         "owner": "runtimeverification",
         "repo": "pyk",
-        "rev": "525c629460c24579ebc4d78a1cecaef44a0d89cb",
+        "rev": "8a27ac0637840bbee4d81e5df37cec5a2d8248d0",
         "type": "github"
       },
       "original": {
         "owner": "runtimeverification",
-        "ref": "v0.1.428",
+        "ref": "v0.1.429",
         "repo": "pyk",
         "type": "github"
       }
