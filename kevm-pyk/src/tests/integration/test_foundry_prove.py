@@ -123,11 +123,7 @@ def test_foundry_prove(
 
     # When
     prove_res = foundry_prove(
-        foundry_root,
-        tests=[(test_id, None)],
-        simplify_init=False,
-        counterexample_info=True,
-        port=server.port
+        foundry_root, tests=[(test_id, None)], simplify_init=False, counterexample_info=True, port=server.port
     )
 
     # Then
