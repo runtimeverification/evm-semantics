@@ -64,6 +64,29 @@ def solc_to_k(
     _kprint = KEVM(definition_dir, extra_unparsing_modules=modules)
     return _kprint.pretty_print(bin_runtime_definition, unalias=False) + '\n'
 
+@dataclass(frozen=True)
+class Input:
+    name: str
+    type: str
+
+    @staticmethod
+    def from_dict(_input: dict) -> list[Input]:
+        name = _input['name']
+        type = _input['type']
+        if _input.get('components') is not None and _input['type'] != 'tuple()':
+            return Input.flatten_comp(_input['components'])
+        else:
+            return [Input(name, type)]
+
+    @staticmethod
+    def flatten_comp(components: dict) -> list[Input]:
+        inputs = []
+        for comp in components:
+            if comp.get('components') is not None and comp['type'] != 'tuple()':
+                inputs += Input.flatten_comp(comp['components'])
+            else:
+                inputs.append(Input(comp['name'], comp['type']))
+        return inputs
 
 @dataclass
 class Contract:
@@ -95,8 +118,10 @@ class Contract:
             self.signature = msig
             self.name = abi['name']
             self.id = id
-            self.arg_names = tuple([f'V{i}_{input["name"].replace("-", "_")}' for i, input in enumerate(abi['inputs'])])
-            self.arg_types = tuple([input['type'] for input in abi['inputs']])
+            nest_inputs = [Input.from_dict(input) for input in abi['inputs']]
+            inputs = [input for inputs in nest_inputs for input in inputs]
+            self.arg_names = tuple([f'V{i}_{input.name.replace("-", "_")}' for i, input in enumerate(inputs)])
+            self.arg_types = tuple([input.type for input in inputs])
             self.contract_name = contract_name
             self.contract_digest = contract_digest
             self.contract_storage_digest = contract_storage_digest
