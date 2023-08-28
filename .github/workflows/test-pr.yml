@@ -198,7 +198,7 @@ jobs:
       - name: 'Build Foundry'
         run: docker exec -u github-user kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make build-foundry -j2'
       - name: 'Foundry Prove'
-        run: docker exec -u github-user kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make test-foundry-prove PYTEST_ARGS=-vv'
+        run: docker exec -u github-user kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make test-foundry-prove PYTEST_ARGS=-vv --no-use-booster'
       - name: 'Tear down Docker'
         if: always()
         run: |
@@ -226,7 +226,7 @@ jobs:
       - name: 'Build Foundry'
         run: docker exec -u github-user kevm-ci-booster-${GITHUB_SHA} /bin/bash -c 'make build-foundry -j2'
       - name: 'Foundry Prove'
-        run: docker exec -u github-user kevm-ci-booster-${GITHUB_SHA} /bin/bash -c 'make test-foundry-prove PYTEST_ARGS="-vv --use-booster"'
+        run: docker exec -u github-user kevm-ci-booster-${GITHUB_SHA} /bin/bash -c 'make test-foundry-prove PYTEST_ARGS="-vv"'
       - name: 'Tear down Docker'
         if: always()
         run: |

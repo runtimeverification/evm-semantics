@@ -459,7 +459,6 @@ def _create_argument_parser() -> ArgumentParser:
             kevm_cli_args.kompile_args,
             kevm_cli_args.foundry_args,
         ],
-        conflict_handler='resolve',
     )
     foundry_kompile.add_argument(
         '--regen',
@@ -474,19 +473,6 @@ def _create_argument_parser() -> ArgumentParser:
         default=False,
         action='store_true',
         help='Rekompile foundry.k even if kompiled definition already exists.',
-    )
-    foundry_kompile.add_argument(
-        '--with-llvm-library',
-        dest='llvm_library',
-        default=True,
-        action='store_true',
-        help='Make kompile generate a dynamic llvm library.',
-    )
-    foundry_kompile.add_argument(
-        '--no-llvm-library',
-        dest='llvm_library',
-        action='store_false',
-        help='Do not generate a dynamic llvm library during kompile.',
     )
 
     foundry_prove_args = command_parser.add_parser(
@@ -539,6 +525,12 @@ def _create_argument_parser() -> ArgumentParser:
         default=True,
         action='store_true',
         help='Use the booster RPC server instead of kore-rpc.',
+    )
+    foundry_prove_args.add_argument(
+        '--no-use-booster',
+        dest='use_booster',
+        action='store_false',
+        help='Do not use the booster RPC server instead of kore-rpc.',
     )
 
     foundry_show_args = command_parser.add_parser(
