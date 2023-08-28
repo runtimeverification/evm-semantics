@@ -277,11 +277,11 @@ def exec_prove(
                         _LOGGER.info(f'Simplifying initial and target node: {claim.label}')
                         new_init, _ = kcfg_explore.cterm_simplify(new_init)
                         new_target, _ = kcfg_explore.cterm_simplify(new_target)
-                        if type(new_init) is CTerm.cterm_bottom():
+                        if type(new_init) is CTerm.bottom():
                             raise ValueError(
                                 'Simplifying initial node led to #Bottom, are you sure your LHS is defined?'
                             )
-                        if type(new_target) is CTerm.cterm_top():
+                        if type(new_target) is CTerm.top():
                             raise ValueError(
                                 'Simplifying target node led to #Bottom, are you sure your RHS is defined?'
                             )
