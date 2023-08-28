@@ -142,14 +142,6 @@ class Contract:
             contract_digest = self.contract_digest
             return hash_str(f'{self.contract_storage_digest}{contract_digest}')
 
-        @cached_property
-        def callvalue_cell(self) -> KInner:
-            return (
-                intToken(0)
-                if not self.payable
-                else abstract_term_safely(KVariable('_###CALLVALUE###_'), base_name='CALLVALUE')
-            )
-
     @dataclass
     class Method:
         name: str

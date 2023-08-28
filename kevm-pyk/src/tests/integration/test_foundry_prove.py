@@ -5,7 +5,8 @@ from typing import TYPE_CHECKING
 
 import pytest
 from filelock import FileLock
-from pyk.utils import run_process
+from pyk.proof import APRProof
+from pyk.utils import run_process, single
 
 from kontrol.foundry import (
     Foundry,
@@ -49,7 +50,6 @@ def foundry_root(tmp_path_factory: TempPathFactory, worker_id: str, use_booster:
                 includes=(),
                 requires=[str(TEST_DATA_DIR / 'lemmas.k')],
                 imports=['LoopsTest:SUM-TO-N-INVARIANT'],
-                llvm_library=use_booster,
             )
 
     session_foundry_root = tmp_path_factory.mktemp('foundry')
@@ -103,7 +103,7 @@ def test_foundry_prove(test_id: str, foundry_root: Path, update_expected_output:
     # When
     prove_res = foundry_prove(
         foundry_root,
-        tests=[test_id],
+        tests=[(test_id, None)],
         simplify_init=False,
         smt_timeout=300,
         smt_retry_limit=10,
@@ -128,6 +128,8 @@ def test_foundry_prove(test_id: str, foundry_root: Path, update_expected_output:
         failing=True,
         failure_info=True,
         counterexample_info=True,
+        smt_timeout=300,
+        smt_retry_limit=10,
     )
 
     # Then
@@ -142,7 +144,7 @@ def test_foundry_fail(test_id: str, foundry_root: Path, update_expected_output: 
     # When
     prove_res = foundry_prove(
         foundry_root,
-        tests=[test_id],
+        tests=[(test_id, None)],
         simplify_init=False,
         smt_timeout=300,
         smt_retry_limit=10,
@@ -167,6 +169,8 @@ def test_foundry_fail(test_id: str, foundry_root: Path, update_expected_output: 
         failing=True,
         failure_info=True,
         counterexample_info=True,
+        smt_timeout=300,
+        smt_retry_limit=10,
     )
 
     # Then
@@ -185,7 +189,7 @@ def test_foundry_bmc(test_id: str, foundry_root: Path, use_booster: bool) -> Non
     # When
     prove_res = foundry_prove(
         foundry_root,
-        tests=[test_id],
+        tests=[(test_id, None)],
         bmc_depth=3,
         simplify_init=False,
         smt_timeout=300,
@@ -198,40 +202,42 @@ def test_foundry_bmc(test_id: str, foundry_root: Path, use_booster: bool) -> Non
 
 
 def test_foundry_merge_nodes(foundry_root: Path, use_booster: bool) -> None:
-    test_id = 'AssertTest.test_branch_merge(uint256)'
+    test = 'AssertTest.test_branch_merge(uint256)'
 
     foundry_prove(
         foundry_root,
-        tests=[test_id],
-        smt_timeout=125,
-        smt_retry_limit=4,
+        tests=[(test, None)],
+        smt_timeout=300,
+        smt_retry_limit=10,
         max_iterations=4,
         use_booster=use_booster,
     )
-    check_pending(foundry_root, test_id, [11, 12])
+    check_pending(foundry_root, test, [11, 12])
 
-    foundry_step_node(foundry_root, test_id, node=11, depth=49)
-    foundry_step_node(foundry_root, test_id, node=12, depth=50)
+    foundry_step_node(foundry_root, test, node=11, depth=49, smt_timeout=300, smt_retry_limit=10)
+    foundry_step_node(foundry_root, test, node=12, depth=50, smt_timeout=300, smt_retry_limit=10)
 
-    check_pending(foundry_root, test_id, [13, 14])
+    check_pending(foundry_root, test, [13, 14])
 
-    foundry_merge_nodes(foundry_root=foundry_root, test=test_id, node_ids=[13, 14], include_disjunct=True)
+    foundry_merge_nodes(foundry_root=foundry_root, test=test, node_ids=[13, 14], include_disjunct=True)
 
-    check_pending(foundry_root, test_id, [15])
+    check_pending(foundry_root, test, [15])
 
     prove_res = foundry_prove(
         foundry_root,
-        tests=[test_id],
-        smt_timeout=125,
-        smt_retry_limit=4,
+        tests=[(test, None)],
+        smt_timeout=300,
+        smt_retry_limit=10,
         use_booster=use_booster,
     )
-    assert_pass(test_id, prove_res)
+    assert_pass(test, prove_res)
 
 
 def check_pending(foundry_root: Path, test: str, pending: list[int]) -> None:
     foundry = Foundry(foundry_root)
-    proof = foundry.get_apr_proof(test)
+    proofs = foundry.proofs_with_test(test)
+    apr_proofs: list[APRProof] = [proof for proof in proofs if type(proof) is APRProof]
+    proof = single(apr_proofs)
     assert [node.id for node in proof.pending] == pending
 
 
@@ -239,7 +245,7 @@ def test_foundry_auto_abstraction(foundry_root: Path, update_expected_output: bo
     test_id = 'GasTest.testInfiniteGas()'
     foundry_prove(
         foundry_root,
-        tests=[test_id],
+        tests=[(test_id, None)],
         smt_timeout=300,
         smt_retry_limit=10,
         auto_abstract_gas=True,
@@ -255,6 +261,8 @@ def test_foundry_auto_abstraction(foundry_root: Path, update_expected_output: bo
         pending=True,
         failing=True,
         failure_info=True,
+        smt_timeout=300,
+        smt_retry_limit=10,
     )
 
     assert_or_update_show_output(show_res, TEST_DATA_DIR / 'gas-abstraction.expected', update=update_expected_output)
@@ -267,7 +275,9 @@ def test_foundry_remove_node(foundry_root: Path, update_expected_output: bool) -
 
     prove_res = foundry_prove(
         foundry_root,
-        tests=[test],
+        tests=[(test, None)],
+        smt_timeout=300,
+        smt_retry_limit=10,
     )
     assert_pass(test, prove_res)
 
@@ -277,29 +287,36 @@ def test_foundry_remove_node(foundry_root: Path, update_expected_output: bool) -
         node=4,
     )
 
-    proof = foundry.get_apr_proof(test)
+    proof = single(foundry.proofs_with_test(test))
+    assert type(proof) is APRProof
     assert proof.pending
 
     prove_res = foundry_prove(
         foundry_root,
-        tests=[test],
+        tests=[(test, None)],
+        smt_timeout=300,
+        smt_retry_limit=10,
     )
     assert_pass(test, prove_res)
 
 
-def assert_pass(test_id: str, prove_res: dict[str, tuple[bool, list[str] | None]]) -> None:
-    assert test_id in prove_res
-    passed, log = prove_res[test_id]
+def assert_pass(test: str, prove_res: dict[tuple[str, str | None], tuple[bool, list[str] | None]]) -> None:
+    id = id_for_test(test, prove_res)
+    passed, log = prove_res[(test, id)]
     if not passed:
         assert log
         pytest.fail('\n'.join(log))
 
 
-def assert_fail(test_id: str, prove_res: dict[str, tuple[bool, list[str] | None]]) -> None:
-    assert test_id in prove_res
-    passed, log = prove_res[test_id]
+def assert_fail(test: str, prove_res: dict[tuple[str, str | None], tuple[bool, list[str] | None]]) -> None:
+    id = id_for_test(test, prove_res)
+    passed, log = prove_res[test, id]
     assert not passed
     assert log
+
+
+def id_for_test(test: str, prove_res: dict[tuple[str, str | None], tuple[bool, list[str] | None]]) -> str:
+    return single(_id for _test, _id in prove_res.keys() if _test == test and _id is not None)
 
 
 def assert_or_update_show_output(show_res: str, expected_file: Path, *, update: bool) -> None:
@@ -328,38 +345,44 @@ def assert_or_update_show_output(show_res: str, expected_file: Path, *, update: 
 
 
 def test_foundry_resume_proof(foundry_root: Path, update_expected_output: bool) -> None:
-    test_id = 'AssumeTest.test_assume_false(uint256,uint256)'
+    foundry = Foundry(foundry_root)
+    test = 'AssumeTest.test_assume_false(uint256,uint256)'
+
     prove_res = foundry_prove(
         foundry_root,
-        tests=[test_id],
+        tests=[(test, None)],
         smt_timeout=300,
         smt_retry_limit=10,
         auto_abstract_gas=True,
         max_iterations=4,
         reinit=True,
     )
-    assert_pass(test_id, prove_res)
+    id = id_for_test(test, prove_res)
+
+    proof = foundry.get_apr_proof(f'{test}:{id}')
+    assert proof.pending
+
     prove_res = foundry_prove(
         foundry_root,
-        tests=[test_id],
+        tests=[(test, id)],
         smt_timeout=300,
         smt_retry_limit=10,
         auto_abstract_gas=True,
         max_iterations=6,
         reinit=False,
     )
-    assert_fail(test_id, prove_res)
+    assert_fail(test, prove_res)
 
 
 ALL_INIT_CODE_TESTS: Final = ('InitCodeTest.test_init()', 'InitCodeTest.testFail_init()')
 
 
-@pytest.mark.parametrize('test_id', ALL_INIT_CODE_TESTS)
-def test_foundry_init_code(test_id: str, foundry_root: Path, use_booster: bool) -> None:
+@pytest.mark.parametrize('test', ALL_INIT_CODE_TESTS)
+def test_foundry_init_code(test: str, foundry_root: Path, use_booster: bool) -> None:
     # When
     prove_res = foundry_prove(
         foundry_root,
-        tests=[test_id],
+        tests=[(test, None)],
         simplify_init=False,
         smt_timeout=300,
         smt_retry_limit=10,
@@ -368,4 +391,4 @@ def test_foundry_init_code(test_id: str, foundry_root: Path, use_booster: bool) 
     )
 
     # Then
-    assert_pass(test_id, prove_res)
+    assert_pass(test, prove_res)

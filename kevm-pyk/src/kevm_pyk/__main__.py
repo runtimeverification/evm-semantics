@@ -186,7 +186,8 @@ def exec_prove(
     break_every_step: bool = False,
     break_on_jumpi: bool = False,
     break_on_calls: bool = True,
-    kore_rpc_command: str | Iterable[str] = ('kore-rpc',),
+    kore_rpc_command: str | Iterable[str] | None = None,
+    use_booster: bool = False,
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
     trace_rewrites: bool = False,
@@ -224,7 +225,9 @@ def exec_prove(
     if not claims:
         raise ValueError(f'No claims found in file: {spec_file}')
 
-    if isinstance(kore_rpc_command, str):
+    if kore_rpc_command is None:
+        kore_rpc_command = ('kore-rpc-booster',) if use_booster else ('kore-rpc',)
+    elif isinstance(kore_rpc_command, str):
         kore_rpc_command = kore_rpc_command.split()
 
     def is_functional(claim: KClaim) -> bool:
@@ -582,6 +585,13 @@ def _create_argument_parser() -> ArgumentParser:
         default=False,
         action='store_true',
         help='Reinitialize CFGs even if they already exist.',
+    )
+    prove_args.add_argument(
+        '--use-booster',
+        dest='use_booster',
+        default=False,
+        action='store_true',
+        help="Use the booster RPC server instead of kore-rpc. Requires calling kompile with '--target haskell-booster' flag",
     )
 
     prune_proof_args = command_parser.add_parser(
