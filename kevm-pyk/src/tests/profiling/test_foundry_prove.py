@@ -34,7 +34,7 @@ def test_foundy_prove(profile: Profiler, use_booster: bool, tmp_path: Path) -> N
     with profile('prove.prof', sort_keys=('cumtime', 'tottime'), limit=100):
         foundry_prove(
             foundry_root,
-            tests=['AssertTest.test_revert_branch'],
+            tests=[('AssertTest.test_revert_branch', None)],
             simplify_init=False,
             smt_timeout=300,
             smt_retry_limit=10,
