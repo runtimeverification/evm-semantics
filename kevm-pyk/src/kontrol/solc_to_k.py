@@ -91,7 +91,7 @@ class Contract:
         name: str
         id: int
         sort: KSort
-        inputs: List[Input]
+        inputs: list[Input]
         contract_name: str
         contract_digest: str
         contract_storage_digest: str
@@ -113,7 +113,8 @@ class Contract:
             self.signature = msig
             self.name = abi['name']
             self.id = id
-            self.inputs = [Input(input) for input in abi['inputs']]
+            flat_inputs = [Input(input).flattened for input in abi['inputs']]
+            self.inputs = [input for sublist in flat_inputs for input in sublist]
             self.contract_name = contract_name
             self.contract_digest = contract_digest
             self.contract_storage_digest = contract_storage_digest
@@ -220,9 +221,9 @@ class Contract:
             assert prod_klabel is not None
             args: list[KInner] = []
             conjuncts: list[KInner] = []
-            #TODO
-            for input in self.inputs:
-                ...
+            ##TODO
+            #for input in self.inputs:
+            #    ...
             for input_name, input_type in zip(self.arg_names, self.arg_types, strict=True):
                 args.append(KEVM.abi_type(input_type, KVariable(input_name)))
                 rp = _range_predicate(KVariable(input_name), input_type)
