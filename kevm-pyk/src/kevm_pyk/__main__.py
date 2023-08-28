@@ -15,7 +15,7 @@ from pyk.kcfg import KCFG
 from pyk.kore.tools import PrintOutput, kore_print
 from pyk.ktool.kompile import LLVMKompileType
 from pyk.ktool.krun import KRunOutput
-from pyk.prelude.ml import is_bottom, is_top
+from pyk.prelude.ml import is_top, mlAnd
 from pyk.proof import APRProof
 from pyk.proof.equality import EqualityProof
 from pyk.proof.show import APRProofShow
@@ -164,8 +164,9 @@ def exec_prove_legacy(
         branching_allowed=branching_allowed,
         haskell_backend_args=haskell_backend_args,
     )
-    print(kevm.pretty_print(final_state))
-    if not is_top(final_state):
+    final_kast = mlAnd([state.kast for state in final_state])
+    print(kevm.pretty_print(final_kast))
+    if not is_top(final_kast):
         raise SystemExit(1)
 
 
@@ -277,18 +278,16 @@ def exec_prove(
 
                     if simplify_init:
                         _LOGGER.info(f'Simplifying initial and target node: {claim.label}')
-                        _new_init, _ = kcfg_explore.cterm_simplify(new_init)
-                        _new_target, _ = kcfg_explore.cterm_simplify(new_target)
-                        if is_bottom(_new_init):
+                        new_init, _ = kcfg_explore.cterm_simplify(new_init)
+                        new_target, _ = kcfg_explore.cterm_simplify(new_target)
+                        if type(new_init) is CTerm.cterm_bottom():
                             raise ValueError(
                                 'Simplifying initial node led to #Bottom, are you sure your LHS is defined?'
                             )
-                        if is_bottom(_new_target):
+                        if type(new_target) is CTerm.cterm_top():
                             raise ValueError(
                                 'Simplifying target node led to #Bottom, are you sure your RHS is defined?'
                             )
-                        new_init = CTerm.from_kast(_new_init)
-                        new_target = CTerm.from_kast(_new_target)
 
                     kcfg.replace_node(init_node_id, new_init)
                     kcfg.replace_node(target_node_id, new_target)

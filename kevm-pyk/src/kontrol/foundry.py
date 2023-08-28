@@ -791,9 +791,9 @@ def foundry_simplify_node(
     ) as kcfg_explore:
         new_term, _ = kcfg_explore.cterm_simplify(cterm)
     if replace:
-        apr_proof.kcfg.replace_node(node, CTerm.from_kast(new_term))
+        apr_proof.kcfg.replace_node(node, new_term)
         apr_proof.write_proof_data()
-    res_term = minimize_term(new_term) if minimize else new_term
+    res_term = minimize_term(new_term.kast) if minimize else new_term.kast
     return foundry.kevm.pretty_print(res_term, unalias=False, sort_collections=sort_collections)
 
 
@@ -808,9 +808,11 @@ def foundry_merge_nodes(
         nodes = list(nodes)
         if len(nodes) < 2:
             return True
-        cell_value = nodes[0].cterm.cell(cell)
+        cell_value = nodes[0].cterm.try_cell(cell)
+        if cell_value is None:
+            return False
         for node in nodes[1:]:
-            if cell_value != node.cterm.cell(cell):
+            if node.cterm.try_cell(cell) is None or cell_value != node.cterm.cell(cell):
                 return False
         return True
 
@@ -1254,7 +1256,7 @@ class FoundryNodePrinter(KEVMNodePrinter):
 
     def print_node(self, kcfg: KCFG, node: KCFG.Node) -> list[str]:
         ret_strs = super().print_node(kcfg, node)
-        _pc = node.cterm.cell('PC_CELL')
+        _pc = node.cterm.try_cell('PC_CELL')
         if type(_pc) is KToken and _pc.sort == INT:
             srcmap_data = self.foundry.srcmap_data(self.contract_name, int(_pc.token))
             if srcmap_data is not None:
