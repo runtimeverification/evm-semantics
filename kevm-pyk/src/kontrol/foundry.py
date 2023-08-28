@@ -215,7 +215,7 @@ class Foundry:
 
     def custom_view(self, contract_name: str, element: KCFGElem) -> Iterable[str]:
         if type(element) is KCFG.Node:
-            pc_cell = element.cterm.cell('PC_CELL')
+            pc_cell = element.cterm.try_cell('PC_CELL')
             if type(pc_cell) is KToken and pc_cell.sort == INT:
                 return self.solidity_src(contract_name, int(pc_cell.token))
         return ['NO DATA']
