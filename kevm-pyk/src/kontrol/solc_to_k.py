@@ -6,7 +6,7 @@ import re
 from dataclasses import dataclass
 from functools import cached_property
 from subprocess import CalledProcessError
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Dict, List, Tuple, Union
 
 from pyk.kast.inner import KApply, KLabel, KRewrite, KSort, KVariable
 from pyk.kast.kast import KAtt
@@ -65,6 +65,25 @@ def solc_to_k(
     return _kprint.pretty_print(bin_runtime_definition, unalias=False) + '\n'
 
 
+# https://docs.soliditylang.org/en/latest/abi-spec.html#handling-tuple-types
+@dataclass
+class Input:
+    name: str
+    type: str
+    components: list[Input]
+
+    def __init__(self, _input: dict) -> None:
+        self.name = _input['name']
+        self.type = _input['type']
+        self.components = [Input(comp) for comp in _input['components']] if _input.get('components') is not None else []
+
+    @property
+    def flattened(self) -> list[Input]:
+        def flat(components: list[Input]) -> list[Input]:
+            nested = [flat(comp.components) for comp in components]
+            return [item for sublist in nested for item in sublist]
+        return flat(self.components)
+
 @dataclass
 class Contract:
     @dataclass
@@ -73,7 +92,7 @@ class Contract:
         id: int
         sort: KSort
         arg_names: tuple[str, ...]
-        arg_types: tuple[str, ...]
+        inputs: List[Input]
         contract_name: str
         contract_digest: str
         contract_storage_digest: str
@@ -96,7 +115,7 @@ class Contract:
             self.name = abi['name']
             self.id = id
             self.arg_names = tuple([f'V{i}_{input["name"].replace("-", "_")}' for i, input in enumerate(abi['inputs'])])
-            self.arg_types = tuple([input['type'] for input in abi['inputs']])
+            self.inputs = [Input(input) for input in abi['inputs']]
             self.contract_name = contract_name
             self.contract_digest = contract_digest
             self.contract_storage_digest = contract_storage_digest
@@ -104,6 +123,11 @@ class Contract:
             # TODO: Check that we're handling all state mutability cases
             self.payable = abi['stateMutability'] == 'payable'
             self.ast = ast
+
+
+        @property
+        def arg_types(self) -> tuple[str, ...]:
+            return tuple([input.type for input in self.inputs])
 
         @property
         def klabel(self) -> KLabel:
@@ -194,6 +218,9 @@ class Contract:
             assert prod_klabel is not None
             args: list[KInner] = []
             conjuncts: list[KInner] = []
+            #TODO
+            for input in self.inputs:
+                ...
             for input_name, input_type in zip(self.arg_names, self.arg_types, strict=True):
                 args.append(KEVM.abi_type(input_type, KVariable(input_name)))
                 rp = _range_predicate(KVariable(input_name), input_type)
@@ -289,6 +316,24 @@ class Contract:
                     continue
                 _fields[_l] = _s
             self.fields = FrozenDict(_fields)
+
+
+    @staticmethod
+    def parse_tuples(tuples: list[TupleComponent]) -> list[tuple[str, str]]:
+        ret_tuples = []
+        for _tuple in tuples:
+            if _tuple.get('components') is not None:
+                ret_tuples += Contract.parse_tuples(_tuple.get('components'))
+        return ret_tuples
+
+    @staticmethod
+    def parse_inputs(inputs: List[FunctionInput]) -> list[tuple[str, str]]:
+        ret_inputs = []
+        for input in inputs:
+            if input.get(2) is not None:
+                ret_inputs += Contract.parse_inputs(input[2])
+        return ret_inputs
+
 
     @cached_property
     def digest(self) -> str:
