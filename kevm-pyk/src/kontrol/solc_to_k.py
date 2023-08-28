@@ -91,7 +91,6 @@ class Contract:
         name: str
         id: int
         sort: KSort
-        arg_names: tuple[str, ...]
         inputs: List[Input]
         contract_name: str
         contract_digest: str
@@ -114,7 +113,6 @@ class Contract:
             self.signature = msig
             self.name = abi['name']
             self.id = id
-            self.arg_names = tuple([f'V{i}_{input["name"].replace("-", "_")}' for i, input in enumerate(abi['inputs'])])
             self.inputs = [Input(input) for input in abi['inputs']]
             self.contract_name = contract_name
             self.contract_digest = contract_digest
@@ -124,6 +122,10 @@ class Contract:
             self.payable = abi['stateMutability'] == 'payable'
             self.ast = ast
 
+
+        @property
+        def arg_names(self) -> tuple[str, ...]:
+            return tuple([f'V{i}_{input.name.replace("-", "_")}' for i, input in enumerate(self.inputs)])
 
         @property
         def arg_types(self) -> tuple[str, ...]:
