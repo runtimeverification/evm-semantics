@@ -759,7 +759,7 @@ def foundry_list(foundry_root: Path) -> list[str]:
 def foundry_remove_node(foundry_root: Path, test: str, node: NodeIdLike) -> None:
     foundry = Foundry(foundry_root)
     apr_proof = foundry.get_apr_proof(test)
-    node_ids = apr_proof.prune_from(node)
+    node_ids = apr_proof.prune(node)
     _LOGGER.info(f'Pruned nodes: {node_ids}')
     apr_proof.write_proof_data()
 
@@ -1034,10 +1034,10 @@ def _method_to_apr_proof(
             kcfg_explore.simplify(kcfg, {})
         if bmc_depth is not None:
             apr_proof = APRBMCProof(
-                proof_digest, kcfg, init_node_id, target_node_id, {}, bmc_depth, proof_dir=save_directory
+                proof_digest, kcfg, [], init_node_id, target_node_id, {}, bmc_depth, proof_dir=save_directory
             )
         else:
-            apr_proof = APRProof(proof_digest, kcfg, init_node_id, target_node_id, {}, proof_dir=save_directory)
+            apr_proof = APRProof(proof_digest, kcfg, [], init_node_id, target_node_id, {}, proof_dir=save_directory)
 
     apr_proof.write_proof_data()
     return apr_proof

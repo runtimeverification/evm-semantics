@@ -294,7 +294,7 @@ def exec_prove(
                     kcfg.replace_node(target_node_id, new_target)
 
                     proof_problem = APRProof(
-                        claim.label, kcfg, init_node_id, target_node_id, {}, proof_dir=save_directory
+                        claim.label, kcfg, [], init_node_id, target_node_id, {}, proof_dir=save_directory
                     )
 
             passed = kevm_prove(
@@ -374,7 +374,7 @@ def exec_prune_proof(
     )
 
     apr_proof = APRProof.read_proof_data(save_directory, claim.label)
-    node_ids = apr_proof.prune_from(node)
+    node_ids = apr_proof.prune(node)
     _LOGGER.info(f'Pruned nodes: {node_ids}')
     apr_proof.write_proof_data()
 
