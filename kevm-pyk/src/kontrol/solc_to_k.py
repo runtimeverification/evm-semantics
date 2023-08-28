@@ -119,6 +119,7 @@ class Contract:
             self.signature = msig
             self.name = abi['name']
             self.id = id
+            # TODO: say that we don't handle struct arrays
             nest_inputs = [Input.from_dict(input) for input in abi['inputs']]
             inputs = [input for inputs in nest_inputs for input in inputs]
             self.arg_names = tuple([f'V{i}_{input.name.replace("-", "_")}' for i, input in enumerate(inputs)])
