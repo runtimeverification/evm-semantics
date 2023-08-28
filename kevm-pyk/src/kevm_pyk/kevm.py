@@ -206,6 +206,8 @@ class KEVM(KProve, KRun):
             for cell, name in [('PC_CELL', 'pc'), ('CALLDEPTH_CELL', 'callDepth'), ('STATUSCODE_CELL', 'statusCode')]:
                 if cell in cterm.cells:
                     ret_strs.append(f'{name}: {self.pretty_print(cterm.cell(cell))}')
+        else:
+            ret_strs = ['(empty configuration)']
         return ret_strs
 
     @staticmethod

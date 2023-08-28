@@ -9,7 +9,6 @@ from typing import TYPE_CHECKING
 
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli.utils import file_path
-from pyk.cterm import CTerm
 from pyk.kast.outer import KApply, KRewrite, KSort, KToken
 from pyk.kcfg import KCFG
 from pyk.kore.tools import PrintOutput, kore_print
@@ -280,11 +279,11 @@ def exec_prove(
                         _LOGGER.info(f'Simplifying initial and target node: {claim.label}')
                         new_init, _ = kcfg_explore.cterm_simplify(new_init)
                         new_target, _ = kcfg_explore.cterm_simplify(new_target)
-                        if type(new_init) is CTerm.bottom():
+                        if new_init.bottom():
                             raise ValueError(
                                 'Simplifying initial node led to #Bottom, are you sure your LHS is defined?'
                             )
-                        if type(new_target) is CTerm.top():
+                        if new_target.top():
                             raise ValueError(
                                 'Simplifying target node led to #Bottom, are you sure your RHS is defined?'
                             )
@@ -373,7 +372,7 @@ def exec_prune_proof(
     )
 
     apr_proof = APRProof.read_proof_data(save_directory, claim.label)
-    node_ids = apr_proof.prune(node, keep_nodes=[apr_proof.init, apr_proof.target])
+    node_ids = apr_proof.prune(node)
     _LOGGER.info(f'Pruned nodes: {node_ids}')
     apr_proof.write_proof_data()
 
