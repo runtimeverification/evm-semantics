@@ -6,9 +6,11 @@ import "../src/KEVMCheats.sol";
 
 contract InitCodeBranchTest is Test, KEVMCheats {
 
+    uint a;
     uint b;
 
-    constructor(uint a) public payable {
+    constructor() public payable {
+        kevm.symbolicStorage(address(this));
         if(a <= 10) {
             b = 1;
         }
