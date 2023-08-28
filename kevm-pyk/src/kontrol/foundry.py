@@ -5,6 +5,7 @@ import logging
 import os
 import re
 import shutil
+import sys
 from functools import cached_property
 from os import listdir
 from pathlib import Path
@@ -183,13 +184,13 @@ class Foundry:
 
     @cached_property
     def llvm_dylib(self) -> Path | None:
-        from kevm_pyk.kompile import Kernel
-
-        arch = Kernel.get()
-        if arch == Kernel.LINUX:
-            dylib = self.llvm_library / 'interpreter.so'
-        else:
-            dylib = self.llvm_library / 'interpreter.dylib'
+        match sys.platform:
+            case 'linux':
+                dylib = self.llvm_library / 'interpreter.so'
+            case 'darwin':
+                dylib = self.llvm_library / 'interpreter.dylib'
+            case _:
+                raise ValueError('Unsupported platform: {sys.platform}')
 
         if dylib.exists():
             return dylib
