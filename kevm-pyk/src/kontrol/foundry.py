@@ -125,7 +125,7 @@ class Foundry:
         json_paths = [json_path for json_path in json_paths if not json_path.endswith('.metadata.json')]
         json_paths = sorted(json_paths)  # Must sort to get consistent output order on different platforms
         _LOGGER.info(f'Processing contract files: {json_paths}')
-        _contracts = {}
+        _contracts: dict[str, Contract] = {}
         for json_path in json_paths:
             _LOGGER.debug(f'Processing contract file: {json_path}')
             contract_name = json_path.split('/')[-1]
