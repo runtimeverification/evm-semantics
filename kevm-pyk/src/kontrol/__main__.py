@@ -439,11 +439,8 @@ def _create_argument_parser() -> ArgumentParser:
     solc_to_k_args.add_argument('contract_file', type=file_path, help='Path to contract file.')
     solc_to_k_args.add_argument('contract_name', type=str, help='Name of contract to generate K helpers for.')
 
-    def _test_type(value: str) -> tuple[str, str | None]:
-        # Make sure that it matches the regex if the input is incomplete
-        if value.find(',') == -1:
-            value += ','
-        pattern = r'^([^,]+),\s*(\S+)?$'
+    def _parse_test_id_tuple(value: str) -> tuple[str, str | None]:
+        pattern = r'^([^,]+)(?:,\s*(\S+))?$'
         match = re.match(pattern, value)
 
         if match:
@@ -494,7 +491,7 @@ def _create_argument_parser() -> ArgumentParser:
     )
     foundry_prove_args.add_argument(
         '--test',
-        type=_test_type,
+        type=_parse_test_id_tuple,
         dest='tests',
         default=[],
         action='append',
@@ -502,7 +499,7 @@ def _create_argument_parser() -> ArgumentParser:
     )
     foundry_prove_args.add_argument(
         '--exclude-test',
-        type=_test_type,
+        type=_parse_test_id_tuple,
         dest='exclude_tests',
         default=[],
         action='append',
