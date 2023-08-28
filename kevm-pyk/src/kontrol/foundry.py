@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import concurrent.futures
 import json
 import logging
 import os
@@ -19,7 +18,6 @@ from pyk.kast.inner import KApply, KSequence, KSort, KToken, KVariable, Subst
 from pyk.kast.manip import free_vars, minimize_term
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
 from pyk.kcfg import KCFG
-from pyk.ktool.kompile import LLVMKompileType
 from pyk.prelude.bytes import bytesToken
 from pyk.prelude.k import GENERATED_TOP_CELL
 from pyk.prelude.kbool import FALSE, notBool
@@ -46,7 +44,6 @@ from .solc_to_k import Contract, contract_to_main_module, contract_to_verificati
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
-    from concurrent.futures import Future
     from typing import Any, Final
 
     from pyk.kast.inner import KInner
@@ -93,15 +90,29 @@ class Foundry:
     def proofs_index(self) -> Path:
         return self.proofs_dir / 'index.json'
 
+    @property
+    def digest_file(self) -> Path:
+        return self.out / 'digest'
+
+    @property
+    def kompiled(self) -> Path:
+        return self.out / 'kompiled'
+
+    @property
+    def llvm_library(self) -> Path:
+        return self.kompiled / 'llvm-library'
+
+    @property
+    def main_file(self) -> Path:
+        return self.kompiled / 'foundry.k'
+
     @cached_property
     def kevm(self) -> KEVM:
-        definition_dir = self.out / 'kompiled'
         use_directory = self.out / 'tmp'
-        main_file = definition_dir / 'foundry.k'
         ensure_dir_path(use_directory)
         return KEVM(
-            definition_dir=definition_dir,
-            main_file=main_file,
+            definition_dir=self.kompiled,
+            main_file=self.main_file,
             use_directory=use_directory,
             bug_report=self._bug_report,
         )
@@ -172,11 +183,10 @@ class Foundry:
         from kevm_pyk.kompile import Kernel
 
         arch = Kernel.get()
-        foundry_llvm_dir = self.out / 'kompiled-llvm'
         if arch == Kernel.LINUX:
-            dylib = foundry_llvm_dir / 'interpreter.so'
+            dylib = self.llvm_library / 'interpreter.so'
         else:
-            dylib = foundry_llvm_dir / 'interpreter.dylib'
+            dylib = self.llvm_library / 'interpreter.dylib'
 
         if dylib.exists():
             return dylib
@@ -184,26 +194,22 @@ class Foundry:
             return None
 
     def up_to_date(self) -> bool:
-        digest_file = self.out / 'digest'
-        if not digest_file.exists():
+        if not self.digest_file.exists():
             return False
-        digest_dict = json.loads(digest_file.read_text())
+        digest_dict = json.loads(self.digest_file.read_text())
         if 'foundry' not in digest_dict:
             digest_dict['foundry'] = ''
-        digest_file.write_text(
-            json.dumps(digest_dict)
-        )  # TODO should not have such side effect, move to update_digest ?
+        self.digest_file.write_text(json.dumps(digest_dict))
         return digest_dict['foundry'] == self.digest
 
     def update_digest(self) -> None:
-        digest_file = self.out / 'digest'
         digest_dict = {}
-        if digest_file.exists():
-            digest_dict = json.loads(digest_file.read_text())
+        if self.digest_file.exists():
+            digest_dict = json.loads(self.digest_file.read_text())
         digest_dict['foundry'] = self.digest
-        digest_file.write_text(json.dumps(digest_dict))
+        self.digest_file.write_text(json.dumps(digest_dict))
 
-        _LOGGER.info(f'Updated Foundry digest file: {digest_file}')
+        _LOGGER.info(f'Updated Foundry digest file: {self.digest_file}')
 
     @cached_property
     def contract_ids(self) -> dict[int, str]:
@@ -481,23 +487,18 @@ def foundry_kompile(
     ccopts: Iterable[str] = (),
     llvm_kompile: bool = True,
     debug: bool = False,
-    llvm_library: bool = False,
     verbose: bool = False,
 ) -> None:
     from kevm_pyk.kompile import KompileTarget, kevm_kompile
 
     syntax_module = 'FOUNDRY-CONTRACTS'
     foundry = Foundry(foundry_root)
-    foundry_definition_dir = foundry.out / 'kompiled'
-    foundry_requires_dir = foundry_definition_dir / 'requires'
-    foundry_llvm_dir = foundry.out / 'kompiled-llvm'
-    foundry_contracts_file = foundry_definition_dir / 'contracts.k'
-    foundry_main_file = foundry_definition_dir / 'foundry.k'
-    kompiled_timestamp = foundry_definition_dir / 'timestamp'
+    foundry_requires_dir = foundry.kompiled / 'requires'
+    foundry_contracts_file = foundry.kompiled / 'contracts.k'
+    kompiled_timestamp = foundry.kompiled / 'timestamp'
     main_module = 'FOUNDRY-MAIN'
-    ensure_dir_path(foundry_definition_dir)
+    ensure_dir_path(foundry.kompiled)
     ensure_dir_path(foundry_requires_dir)
-    ensure_dir_path(foundry_llvm_dir)
 
     requires_paths: dict[str, str] = {}
 
@@ -532,7 +533,7 @@ def foundry_kompile(
         else:
             raise ValueError(f'Could not find contract: {imp[0]}')
 
-    if regen or not foundry_contracts_file.exists() or not foundry_main_file.exists():
+    if regen or not foundry_contracts_file.exists() or not foundry.main_file.exists():
         copied_requires = []
         copied_requires += [f'requires/{name}' for name in list(requires_paths.keys())]
         imports = ['FOUNDRY']
@@ -558,63 +559,37 @@ def foundry_kompile(
         )
         foundry_contracts_file.write_text(kevm.pretty_print(bin_runtime_definition, unalias=False) + '\n')
         _LOGGER.info(f'Wrote file: {foundry_contracts_file}')
-        foundry_main_file.write_text(kevm.pretty_print(contract_main_definition) + '\n')
-        _LOGGER.info(f'Wrote file: {foundry_main_file}')
+        foundry.main_file.write_text(kevm.pretty_print(contract_main_definition) + '\n')
+        _LOGGER.info(f'Wrote file: {foundry.main_file}')
 
-    def _kompile(
-        out_dir: Path,
-        backend: KompileTarget,
-        llvm_kompile_type: LLVMKompileType | None = None,
-    ) -> None:
+    def kompilation_digest() -> str:
+        k_files = list(requires) + [foundry_contracts_file, foundry.main_file]
+        return hash_str(''.join([hash_str(Path(k_file).read_text()) for k_file in k_files]))
+
+    def kompilation_up_to_date() -> bool:
+        if not foundry.digest_file.exists():
+            return False
+        old_digest = foundry.digest_file.read_text()
+
+        return old_digest == kompilation_digest()
+
+    def update_kompilation_digest() -> None:
+        foundry.digest_file.write_text(json.dumps({'digest': kompilation_digest()}))
+
+    if not kompilation_up_to_date() or rekompile or not kompiled_timestamp.exists():
         kevm_kompile(
-            target=backend,
-            output_dir=out_dir,
-            main_file=foundry_main_file,
+            target=KompileTarget.HASKELL_BOOSTER,
+            output_dir=foundry.kompiled,
+            main_file=foundry.main_file,
             main_module=main_module,
             syntax_module=syntax_module,
             includes=[include for include in includes if Path(include).exists()],
             emit_json=True,
             ccopts=ccopts,
-            llvm_kompile_type=llvm_kompile_type,
+            llvm_library=foundry.llvm_library,
             debug=debug,
             verbose=verbose,
         )
-
-    def kompilation_digest() -> str:
-        k_files = list(requires) + [foundry_contracts_file, foundry_main_file]
-        return hash_str(''.join([hash_str(Path(k_file).read_text()) for k_file in k_files]))
-
-    def kompilation_up_to_date() -> bool:
-        digest_file = foundry_definition_dir / 'digest'
-        if not digest_file.exists():
-            return False
-        old_digest = digest_file.read_text()
-
-        return old_digest == kompilation_digest()
-
-    def kompile_haskell() -> None:
-        _LOGGER.info(f'Kompiling definition: {foundry_main_file}')
-        _kompile(foundry_definition_dir, KompileTarget.HASKELL)
-
-    def kompile_llvm() -> None:
-        _LOGGER.info(f'Kompiling definition to LLVM dynamic library: {foundry_main_file}')
-        _kompile(
-            foundry_llvm_dir,
-            KompileTarget.LLVM,
-            llvm_kompile_type=LLVMKompileType.C,
-        )
-
-    def update_kompilation_digest() -> None:
-        digest_file = foundry_definition_dir / 'digest'
-        digest_file.write_text(kompilation_digest())
-
-    if not kompilation_up_to_date() or rekompile or not kompiled_timestamp.exists():
-        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
-            futures: list[Future] = []
-            futures.append(executor.submit(kompile_haskell))
-            if llvm_library:
-                futures.append(executor.submit(kompile_llvm))
-            [future.result() for future in futures]
 
     update_kompilation_digest()
     foundry.update_digest()
@@ -732,7 +707,7 @@ def foundry_prove(
         method = contract.method_by_sig[method_sig]
         id = ':' + id if id is not None else ''
         test_id = f'{contract_name}.{method_sig}{id}'
-        llvm_definition_dir = foundry.out / 'kompiled-llvm' if use_booster else None
+        llvm_definition_dir = foundry.llvm_library if use_booster else None
 
         with legacy_explore(
             foundry.kevm,
