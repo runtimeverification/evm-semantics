@@ -195,7 +195,6 @@ class KEVM(KProve, KRun):
         KEVM_CELL: Final = KSort('KevmCell')
 
     def short_info(self, cterm: CTerm) -> list[str]:
-        ret_strs = []
         k_cell = cterm.try_cell('K_CELL')
         if k_cell is not None:
             pretty_cell = self.pretty_print(k_cell).replace('\n', ' ')
