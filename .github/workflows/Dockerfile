@@ -56,6 +56,6 @@ ENV PATH=/home/${USER}/.cargo/bin:/home/${USER}/.local/bin:/usr/local/bin/:${PAT
 RUN    curl -sSL https://install.python-poetry.org | python3 - \
     && poetry --version
 
-RUN    cargo install svm-rs --version 0.3.0 \
-    && svm install 0.8.13                   \
+RUN    cargo install svm-rs --version 0.3.0 --locked \
+    && svm install 0.8.13                            \
     && solc --version
