@@ -125,12 +125,15 @@ class Foundry:
         json_paths = [json_path for json_path in json_paths if not json_path.endswith('.metadata.json')]
         json_paths = sorted(json_paths)  # Must sort to get consistent output order on different platforms
         _LOGGER.info(f'Processing contract files: {json_paths}')
-        _contracts = {}
+        _contracts: dict[str, Contract] = {}
         for json_path in json_paths:
             _LOGGER.debug(f'Processing contract file: {json_path}')
             contract_name = json_path.split('/')[-1]
             contract_json = json.loads(Path(json_path).read_text())
             contract_name = contract_name[0:-5] if contract_name.endswith('.json') else contract_name
+            if _contracts.get(contract_name) is not None:
+                raise RuntimeError('Project contains duplicated contract names that may clash in K definitions.')
+
             _contracts[contract_name] = Contract(contract_name, contract_json, foundry=True)
         return _contracts
 
