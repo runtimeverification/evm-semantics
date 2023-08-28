@@ -75,13 +75,16 @@ class Input:
     def from_dict(_input: dict) -> list[Input]:
         name = _input['name']
         type = _input['type']
-        return Input.flatten_comp(_input['components']) if _input.get('components') is not None else [Input(name, type)]
+        if _input.get('components') is not None and _input['type'] != 'tuple()':
+            return Input.flatten_comp(_input['components'])
+        else:
+            return [Input(name, type)]
 
     @staticmethod
     def flatten_comp(components: dict) -> list[Input]:
         inputs = []
         for comp in components:
-            if comp.get('components') is not None:
+            if comp.get('components') is not None and comp['type'] != 'tuple()':
                 inputs += Input.flatten_comp(comp['components'])
             else:
                 inputs.append(Input(comp['name'], comp['type']))
@@ -119,7 +122,6 @@ class Contract:
             self.signature = msig
             self.name = abi['name']
             self.id = id
-            # TODO: say that we don't handle struct arrays
             nest_inputs = [Input.from_dict(input) for input in abi['inputs']]
             inputs = [input for inputs in nest_inputs for input in inputs]
             self.arg_names = tuple([f'V{i}_{input.name.replace("-", "_")}' for i, input in enumerate(inputs)])
