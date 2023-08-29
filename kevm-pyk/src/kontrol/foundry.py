@@ -712,7 +712,6 @@ def foundry_prove(
     def _init_and_run_proof(_init_problem: tuple[str, str, str | None]) -> tuple[bool, list[str] | None]:
         contract_name, method_sig, id = _init_problem
         contract = foundry.contracts[contract_name]
-        method = contract.method_by_sig[method_sig]
         id = ':' + id if id is not None else ''
         test_id = f'{contract_name}.{method_sig}{id}'
         llvm_definition_dir = foundry.llvm_library if use_booster else None
@@ -740,6 +739,7 @@ def foundry_prove(
                 )
 
             else:
+                method = contract.method_by_sig[method_sig]
                 proof = _method_to_apr_proof(
                     foundry,
                     contract,
