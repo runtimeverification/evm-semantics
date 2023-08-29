@@ -36,7 +36,7 @@ FORGE_STD_REF: Final = '27e14b7'
 @pytest.fixture(scope='module')
 def server(foundry_root: Path, use_booster: bool) -> Iterator[KoreServer]:
     foundry = Foundry(foundry_root)
-    llvm_definition_dir = foundry.out / 'kompiled-llvm' if use_booster else None
+    llvm_definition_dir = foundry.out / 'llvm-library' if use_booster else None
     kore_rpc_command = ('kore-rpc-booster',) if use_booster else ('kore-rpc',)
 
     yield kore_server(
