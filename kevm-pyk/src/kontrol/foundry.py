@@ -88,10 +88,6 @@ class Foundry:
         return self.out / 'proofs'
 
     @property
-    def proofs_index(self) -> Path:
-        return self.proofs_dir / 'index.json'
-
-    @property
     def digest_file(self) -> Path:
         return self.out / 'digest'
 
@@ -140,10 +136,6 @@ class Foundry:
 
     def mk_proofs_dir(self) -> None:
         self.proofs_dir.mkdir(exist_ok=True)
-        try:
-            self.proofs_index.open('x')
-        except FileExistsError:
-            pass
 
     def method_digest(self, contract_name: str, method_sig: str) -> str:
         return self.contracts[contract_name].method_by_sig[method_sig].digest
@@ -153,34 +145,6 @@ class Foundry:
         contract_digests = [self.contracts[c].digest for c in sorted(self.contracts)]
         return hash_str('\n'.join(contract_digests))
 
-    def proof_digest(self, test_id: str) -> str:
-        with open(self.proofs_index) as f:
-            content = f.read()
-            if content != '':
-                try:
-                    return json.loads(content)[test_id]['digest']
-                except KeyError:
-                    pass
-            return ''
-
-    def write_proof_digest(self, test_id: str) -> None:
-        contract_name, test = test_id.split('.')
-        if test == 'setUp()':
-            method_sig = test
-        else:
-            method_sig, _ = test.split(':')
-        if not self.proofs_index.exists():
-            self.proofs_index.open('r+')
-        content = self.proofs_index.read_text()
-        if content != '':
-            obj = json.loads(content)
-        else:
-            obj = {}
-        if test_id not in content:
-            obj[test_id] = {}
-        foundry_digest = self.method_digest(contract_name, method_sig)
-        obj[test_id]['digest'] = foundry_digest
-        self.proofs_index.write_text(json.dumps(obj))
 
     @cached_property
     def llvm_dylib(self) -> Path | None:
@@ -213,7 +177,7 @@ class Foundry:
         digest_dict['foundry'] = self.digest
         self.digest_file.write_text(json.dumps(digest_dict))
 
-        _LOGGER.info(f'Updated Foundry digest file: {self.digest_file}')
+        _LOGGER.info('Updated Foundry digest.')
 
     @cached_property
     def contract_ids(self) -> dict[int, str]:
@@ -424,7 +388,7 @@ class Foundry:
         return [
             proof
             for proof in matching_proofs
-            if self.proof_digest(proof.id) == self.method_digest(contract_name, method_sig)
+            if proof.up_to_date
         ]
 
     def get_apr_proof(self, test_id: str) -> APRProof:
@@ -570,15 +534,26 @@ def foundry_kompile(
         k_files = list(requires) + [foundry_contracts_file, foundry.main_file]
         return hash_str(''.join([hash_str(Path(k_file).read_text()) for k_file in k_files]))
 
+
+
     def kompilation_up_to_date() -> bool:
         if not foundry.digest_file.exists():
             return False
-        old_digest = foundry.digest_file.read_text()
+        digest_dict = json.loads(foundry.digest_file.read_text())
+        if 'kompilation' not in digest_dict:
+            digest_dict['kompilation'] = ''
+        foundry.digest_file.write_text(json.dumps(digest_dict))
+        return digest_dict['kompilation'] == kompilation_digest()
 
-        return old_digest == kompilation_digest()
 
     def update_kompilation_digest() -> None:
-        foundry.digest_file.write_text(json.dumps({'digest': kompilation_digest()}))
+        digest_dict = {}
+        if foundry.digest_file.exists():
+            digest_dict = json.loads(foundry.digest_file.read_text())
+        digest_dict['kompilation'] = kompilation_digest()
+        foundry.digest_file.write_text(json.dumps(digest_dict))
+
+        _LOGGER.info('Updated Kompilation digest')
 
     if not kompilation_up_to_date() or rekompile or not kompiled_timestamp.exists():
         kevm_kompile(
@@ -645,7 +620,7 @@ def foundry_prove(
 
     if not tests:
         tests = [(test, None) for test in foundry.all_tests]
-    tests = list({(foundry.matching_sig(test), id) for test, id in tests})
+    tests = list({(foundry.matching_sig(test), version) for test, version in tests})
     test_names = [test[0] for test in tests]
 
     _LOGGER.info(f'Running tests: {test_names}')
@@ -668,45 +643,77 @@ def foundry_prove(
 
     out_of_date_methods: set[str] = set()
     for method in test_methods:
-        if not method.up_to_date(foundry.out / 'digest') or reinit:
+        if not method.up_to_date(foundry.digest_file) or reinit:
             out_of_date_methods.add(method.signature)
-            _LOGGER.info(f'Method {method.signature} is out of date, so it was reinitialized')
+            _LOGGER.info(f'Method {method.signature} is out of date, so it will be reinitialized')
         else:
-            _LOGGER.info(f'Method {method.signature} not reinitialized because it is up to date')
-            if not method.contract_up_to_date(foundry.out / 'digest'):
+            _LOGGER.info(f'Method {method.signature} will not be reinitialized because it is up to date')
+            if not method.contract_up_to_date(foundry.digest_file):
                 _LOGGER.warning(
-                    f'Method {method.signature} not reinitialized because digest was up to date, but the contract it is a part of has changed.'
+                    f'Method {method.signature} will not be reinitialized because digest is up to date, but the contract it is a part of has changed.'
                 )
-        method.update_digest(foundry.out / 'digest')
+        method.update_digest(foundry.digest_file)
 
-    for i, (test, id) in enumerate(tests):
-        contract_name, method_sig = test.split('.')
-        foundry_digest = foundry.method_digest(contract_name, method_sig)
-        up_to_date_proofs = foundry.up_to_date_proofs(test)
-        if id is None and not reinit and len(up_to_date_proofs) > 0:
-            matching_proofs = foundry.proofs_with_test(test)
-            up_to_date_proofs = [proof for proof in matching_proofs if foundry.proof_digest(proof.id) == foundry_digest]
-            if len(up_to_date_proofs) > 1:
-                raise ValueError(
-                    f'Found {len(up_to_date_proofs)} up to date proofs for {test}. Specify an id with "--test {test},`id`" flag to choose one.'
+    for i, (test, version) in enumerate(tests):
+
+
+        #    if reinit or method out of date:
+        if reinit or test in out_of_date_methods:
+        #        version = fresh version
+            if version is not None:
+                _LOGGER.warning(
+                    'A version was specified but the proof has to be reinitialized so a new version will be attributed.'
                 )
-            elif len(up_to_date_proofs) == 1:
-                id = single(up_to_date_proofs).id.split(':')[1]
-        elif reinit or test in out_of_date_methods or len(up_to_date_proofs) == 0:
-            if id is not None:
-                _LOGGER.warn(
-                    'an id was specified but the proof has to be reinitialized so a new id will be attributed.'
-                )
-            id = foundry.free_proof_id(test)
+            version = version = foundry.free_proof_version(test)
+        #    else:
         else:
-            test_id = f'{test}:{id}'
-            if foundry.proof_digest(test_id) != foundry_digest:
-                raise ValueError(f'Proof with id `{test_id}` is not up to date.')
+        #        if specified version:
+            if version is not None:
+        #            if version does not exist:
+                if 
+        #                except
+        #            if version does exist:
+        #                version = specified version
+        #        if no specified version:
+        #            version = latest version
+
+
+        contract_name, method_sig = test.split('.')
+        up_to_date_proofs = foundry.up_to_date_proofs(test)
+
+        if len(up_to_date_proofs) > 1:
+            raise ValueError(
+                f'Found {len(up_to_date_proofs)} up to date proofs for {test}. Specify a version with "--test {test},`version`" flag to choose one.'
+            )
+
+        if len(up_to_date_proofs == 0):
+
+
+        if reinit or test in out_of_date_methods or :
+            if version is not None:
+                _LOGGER.warning(
+                    'an version was specified but the proof has to be reinitialized so a new version will be attributed.'
+                )
+            version = foundry.free_proof_version(test)
+
+        else:
+            version = single(up_to_date_proofs).id.split(':')[1]
+
+
+#          if id is None and not reinit and len(up_to_date_proofs) > 0:
+#              elif len(up_to_date_proofs) == 1:
+#                  id = single(up_to_date_proofs).id.split(':')[1]
+#          elif reinit or test in out_of_date_methods or len(up_to_date_proofs) == 0:
+#              if id is not None:
+#                  _LOGGER.warn(
+#                      'an id was specified but the proof has to be reinitialized so a new id will be attributed.'
+#                  )
+#              id = foundry.free_proof_id(test)
         assert id is not None
-        tests[i] = (test, id)
+        tests[i] = (test, version)
 
     def _init_and_run_proof(_init_problem: tuple[str, str, str | None]) -> tuple[bool, list[str] | None]:
-        contract_name, method_sig, id = _init_problem
+        contract_name, method_sig, verssion = _init_problem
         contract = foundry.contracts[contract_name]
         method = contract.method_by_sig[method_sig]
         id = ':' + id if id is not None else ''
