@@ -91,6 +91,8 @@ def kevm_kompile(
     if llvm_library is None:
         llvm_library = output_dir / 'llvm-library'
 
+    maude_dir = output_dir / 'kompiled-maude'
+
     include_dirs = [Path(include) for include in includes]
     include_dirs += [config.INCLUDE_DIR]
 
@@ -131,7 +133,7 @@ def kevm_kompile(
                 )
                 return kompile(output_dir=output_dir or target.definition_dir, debug=debug, verbose=verbose)
 
-            case KompileBackend.MAUDE:
+            case KompileTarget.MAUDE:
                 kompile = MaudeKompile(
                     base_args=base_args,
                 )
@@ -159,9 +161,13 @@ def kevm_kompile(
                 def _kompile_haskell() -> None:
                     kompile_haskell(output_dir=output_dir, debug=debug, verbose=verbose)
 
+                def _kompile_maude() -> None:
+                    kompile_maude(output_dir=maude_dir, debug=debug, verbose=verbose)
+
                 with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
                     futures = [
                         executor.submit(_kompile_llvm),
+                        executor.submit(_kompile_maude),
                         executor.submit(_kompile_haskell),
                     ]
                     [future.result() for future in futures]
