@@ -24,7 +24,6 @@ RUN    apt-get update                  \
     && apt-get install --yes           \
             cargo                      \
             clang-${LLVM_VERSION}      \
-            cmake                      \
             curl                       \
             debhelper                  \
             libboost-test-dev          \
@@ -34,9 +33,6 @@ RUN    apt-get update                  \
             libyaml-dev                \
             llvm-${LLVM_VERSION}-dev   \
             llvm-${LLVM_VERSION}-tools \
-            maven                      \
-            netcat                     \
-            protobuf-compiler          \
             maven                      \
             python3                    \
             python3-pip
