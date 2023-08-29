@@ -212,21 +212,19 @@ def test_foundry_bmc(test_id: str, foundry_root: Path, use_booster: bool, server
     assert_pass(test_id, prove_res)
 
 
-def test_foundry_merge_nodes(foundry_root: Path, use_booster: bool) -> None:
+def test_foundry_merge_nodes(foundry_root: Path, use_booster: bool, server: KoreServer) -> None:
     test = 'AssertTest.test_branch_merge(uint256)'
 
     foundry_prove(
         foundry_root,
         tests=[(test, None)],
-        smt_timeout=300,
-        smt_retry_limit=10,
         max_iterations=4,
-        use_booster=use_booster,
+        port=server.port,
     )
     check_pending(foundry_root, test, [6, 7])
 
-    foundry_step_node(foundry_root, test, node=6, depth=49, smt_timeout=300, smt_retry_limit=10)
-    foundry_step_node(foundry_root, test, node=7, depth=50, smt_timeout=300, smt_retry_limit=10)
+    foundry_step_node(foundry_root, test, node=6, depth=49, port=server.port)
+    foundry_step_node(foundry_root, test, node=7, depth=50, port=server.port)
 
     check_pending(foundry_root, test, [8, 9])
 
@@ -237,9 +235,7 @@ def test_foundry_merge_nodes(foundry_root: Path, use_booster: bool) -> None:
     prove_res = foundry_prove(
         foundry_root,
         tests=[(test, None)],
-        smt_timeout=300,
-        smt_retry_limit=10,
-        use_booster=use_booster,
+        port=server.port,
     )
     assert_pass(test, prove_res)
 
