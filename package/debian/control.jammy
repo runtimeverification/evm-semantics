@@ -2,7 +2,7 @@ Source: kevm
 Section: devel
 Priority: optional
 Maintainer: Everett Hildenbrandt <everett.hildenbrandt@runtimeverification.com>
-Build-Depends: cmake , debhelper , kframework , libboost-test-dev , llvm-14 , llvm-14-dev , llvm-14-tools , pkg-config , python3-pip , zlib1g-dev
+Build-Depends: debhelper , kframework , libboost-test-dev , llvm-14 , llvm-14-dev , llvm-14-tools , pkg-config , python3-pip , zlib1g-dev
 Standards-Version: 3.9.6
 Homepage: https://github.com/runtimeverification/evm-semantics
 
