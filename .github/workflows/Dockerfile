@@ -24,6 +24,7 @@ RUN    apt-get update                  \
     && apt-get install --yes           \
             cargo                      \
             clang-${LLVM_VERSION}      \
+            cmake                      \
             curl                       \
             debhelper                  \
             libboost-test-dev          \

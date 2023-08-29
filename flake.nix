@@ -40,6 +40,7 @@
           llvm-backend
           autoconf
           automake
+          cmake
           clang
           llvmPackages.llvm
           fmt

@@ -93,7 +93,7 @@ On Ubuntu >= 22.04 (for example):
 
 ```sh
 sudo apt-get install --yes                                                         \
-            autoconf bison clang-12 curl flex gcc jq libboost-test-dev             \
+            autoconf bison clang-12 cmake curl flex gcc jq libboost-test-dev       \
             libcrypto++-dev libffi-dev libgflags-dev libjemalloc-dev libmpfr-dev   \
             libprocps-dev libsecp256k1-dev libssl-dev libtool libyaml-dev lld-12   \
             llvm-12-tools make maven openjdk-11-jdk pkg-config python3 python3-dev \
@@ -111,9 +111,9 @@ make libsecp256k1
 On ArchLinux:
 
 ```sh
-sudo pacman -S                                              \
-    base base-devel boost clang crypto++ curl git gmp       \
-    gflags jdk-openjdk jemalloc libsecp256k1 lld llvm maven \
+sudo pacman -S                                               \
+    base base-devel boost clang cmake crypto++ curl git gmp  \
+    gflags jdk-openjdk jemalloc libsecp256k1 lld llvm maven  \
     mpfr poetry python stack yaml-cpp zlib
 ```
 
