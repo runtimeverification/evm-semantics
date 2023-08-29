@@ -64,29 +64,64 @@ def solc_to_k(
     _kprint = KEVM(definition_dir, extra_unparsing_modules=modules)
     return _kprint.pretty_print(bin_runtime_definition, unalias=False) + '\n'
 
+
+# @dataclass(frozen=True)
+# class TupleInput:
+#     name: str
+#     components: list[Input]
+#     type: str = 'tuple'
+
+
+# @dataclass(frozen=True)
+# class SingleInput:
+#     name: str
+#     type: str
+
+#     @staticmethod
+#     def from_dict(_input: dict) -> list[Input]:
+#         name = _input['name']
+#         type = _input['type']
+#         if _input.get('components') is not None and _input['type'] != 'tuple[]':
+#             return Input.flatten_comp(_input['components'])
+#         else:
+#             return [Input(name, type)]
+
+#     @staticmethod
+#     def flatten_comp(components: dict) -> list[Input]:
+#         inputs = []
+#         for comp in components:
+#             if comp.get('components') is not None and comp['type'] != 'tuple[]':
+#                 inputs += Input.flatten_comp(comp['components'])
+#             else:
+#                 inputs.append(Input(comp['name'], comp['type']))
+#         return inputs
+
+
 @dataclass(frozen=True)
 class Input:
     name: str
     type: str
+    components: list[Input]
 
     @staticmethod
     def from_dict(_input: dict) -> list[Input]:
         name = _input['name']
         type = _input['type']
-        if _input.get('components') is not None and _input['type'] != 'tuple()':
+        if _input.get('components') is not None and _input['type'] != 'tuple[]':
             return Input.flatten_comp(_input['components'])
         else:
-            return [Input(name, type)]
+            return [Input(name, type, [])]
 
     @staticmethod
     def flatten_comp(components: dict) -> list[Input]:
         inputs = []
         for comp in components:
-            if comp.get('components') is not None and comp['type'] != 'tuple()':
+            if comp.get('components') is not None and comp['type'] != 'tuple[]':
                 inputs += Input.flatten_comp(comp['components'])
             else:
-                inputs.append(Input(comp['name'], comp['type']))
+                inputs.append(Input(comp['name'], comp['type'], []))
         return inputs
+
 
 @dataclass
 class Contract:
@@ -95,8 +130,9 @@ class Contract:
         name: str
         id: int
         sort: KSort
-        arg_names: tuple[str, ...]
-        arg_types: tuple[str, ...]
+        # arg_names: tuple[str, ...]
+        # arg_types: tuple[str, ...]
+        inputs: list[Input]
         contract_name: str
         contract_digest: str
         contract_storage_digest: str
@@ -122,6 +158,7 @@ class Contract:
             inputs = [input for inputs in nest_inputs for input in inputs]
             self.arg_names = tuple([f'V{i}_{input.name.replace("-", "_")}' for i, input in enumerate(inputs)])
             self.arg_types = tuple([input.type for input in inputs])
+            self.inputs = inputs
             self.contract_name = contract_name
             self.contract_digest = contract_digest
             self.contract_storage_digest = contract_storage_digest
@@ -219,7 +256,10 @@ class Contract:
             assert prod_klabel is not None
             args: list[KInner] = []
             conjuncts: list[KInner] = []
-            for input_name, input_type in zip(self.arg_names, self.arg_types, strict=True):
+            # for input_name, input_type in zip(self.arg_names, self.arg_types, strict=True):
+            for i, input in enumerate(self.inputs):
+                input_name = f'V{i}_{input.name.replace("-", "_")}'
+                input_type = input.type
                 args.append(KEVM.abi_type(input_type, KVariable(input_name)))
                 rp = _range_predicate(KVariable(input_name), input_type)
                 if rp is None:

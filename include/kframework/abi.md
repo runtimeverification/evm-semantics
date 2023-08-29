@@ -137,6 +137,10 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     syntax TypedArgs ::= List{TypedArg, ","} [klabel(typedArgs)]
  // ------------------------------------------------------------
 
+    rule #tuple(.TypedArgs)                                 => "()"
+    rule #tuple(TARGA:TypedArg, .TypedArgs)                 => "(" +String #typeName(TARGA) +String ")"
+    rule #tuple(TARGA:TypedArg, TARGS)                      => "(" +String #generateSignatureArgs(TARGA, TARGS) +String ")"
+
     syntax Bytes ::= #abiCallData ( String , TypedArgs ) [function]
  // ---------------------------------------------------------------
     rule #abiCallData( FNAME , ARGS ) => #signatureCallData(FNAME, ARGS) +Bytes #encodeArgs(ARGS)
@@ -154,7 +158,8 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #generateSignatureArgs(TARGA:TypedArg, .TypedArgs)            => #typeName(TARGA)
     rule #generateSignatureArgs(TARGA:TypedArg, TARGB:TypedArg, TARGS) => #typeName(TARGA) +String "," +String #generateSignatureArgs(TARGB, TARGS)
 
-    syntax String ::= #typeName ( TypedArg ) [function, total]
+    syntax String ::= #typeName ( TypedArg )                             [function, total]
+                    | #typeName ( TARGA:TypedArg, TARGB:TypedArg, TARGS) [function, total]
  // ----------------------------------------------------------
     rule #typeName(   #address( _ )) => "address"
 
