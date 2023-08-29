@@ -196,7 +196,7 @@ def exec_prove(
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'md_selector', f'--md-selector: {kwargs["md_selector"]}')
-    md_selector = 'k & ! node'
+    md_selector = 'k'
 
     if definition_dir is None:
         definition_dir = KompileTarget.HASKELL.definition_dir
@@ -350,7 +350,7 @@ def exec_prune_proof(
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'md_selector', f'--md-selector: {kwargs["md_selector"]}')
-    md_selector = 'k & ! node'
+    md_selector = 'k'
 
     if save_directory is None:
         raise ValueError('Must pass --save-directory to prune-proof!')
@@ -559,7 +559,7 @@ def _create_argument_parser() -> ArgumentParser:
     )
     kevm_kompile_args.add_argument('main_file', type=file_path, help='Path to file with main module.')
     kevm_kompile_args.add_argument(
-        '--target', type=KompileTarget, help='[llvm|haskell|haskell-standalone|node|foundry]'
+        '--target', type=KompileTarget, help='[llvm|haskell|haskell-standalone|foundry]'
     )
     kevm_kompile_args.add_argument(
         '-o', '--output-definition', type=Path, dest='output_dir', help='Path to write kompiled definition to.'

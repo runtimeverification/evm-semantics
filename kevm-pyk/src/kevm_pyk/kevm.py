@@ -417,7 +417,7 @@ class KEVM(KProve, KRun):
         branching_allowed: int | None = None,
         haskell_backend_args: Iterable[str] = (),
     ) -> KInner:
-        md_selector = 'k & ! node'
+        md_selector = 'k'
         args: list[str] = []
         haskell_args: list[str] = []
         if claim_labels:
