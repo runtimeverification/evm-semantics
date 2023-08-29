@@ -32,7 +32,6 @@ class KompileTarget(Enum):
     HASKELL_STANDALONE = 'haskell-standalone'
     NODE = 'node'
     FOUNDRY = 'foundry'
-    MAUDE = 'maude'
 
     @property
     def definition_dir(self) -> Path:
@@ -47,8 +46,6 @@ class KompileTarget(Enum):
                 return config.HASKELL_STANDALONE_DIR
             case self.FOUNDRY:
                 return config.FOUNDRY_DIR
-            case self.MAUDE:
-                return config.MAUDE_DIR
             case _:
                 raise AssertionError()
 
@@ -60,8 +57,6 @@ class KompileTarget(Enum):
             case self.NODE:
                 return 'k & ! symbolic & ! standalone'
             case self.HASKELL | self.HASKELL_STANDALONE | self.HASKELL_BOOSTER | self.FOUNDRY:
-                return 'k & ! node & ! concrete'
-            case self.MAUDE:
                 return 'k & ! node & ! concrete'
             case _:
                 raise AssertionError()
@@ -133,11 +128,6 @@ def kevm_kompile(
                 )
                 return kompile(output_dir=output_dir or target.definition_dir, debug=debug, verbose=verbose)
 
-            case KompileTarget.MAUDE:
-                kompile = MaudeKompile(
-                    base_args=base_args,
-                )
-                return kompile(output_dir=output_dir or target.definition_dir, debug=debug, verbose=verbose)
             case KompileTarget.HASKELL_BOOSTER:
                 ccopts = list(ccopts) + _lib_ccopts(kernel)
                 base_args_llvm = KompileArgs(
@@ -153,6 +143,9 @@ def kevm_kompile(
                 kompile_llvm = LLVMKompile(
                     base_args=base_args_llvm, ccopts=ccopts, opt_level=optimization, llvm_kompile_type=LLVMKompileType.C
                 )
+                kompile_maude = MaudeKompile(
+                    base_args=base_args,
+                )
                 kompile_haskell = HaskellKompile(base_args=base_args)
 
                 def _kompile_llvm() -> None:
@@ -164,7 +157,7 @@ def kevm_kompile(
                 def _kompile_maude() -> None:
                     kompile_maude(output_dir=maude_dir, debug=debug, verbose=verbose)
 
-                with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+                with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
                     futures = [
                         executor.submit(_kompile_llvm),
                         executor.submit(_kompile_maude),
