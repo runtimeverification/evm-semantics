@@ -12,7 +12,7 @@ from pyk.kast.inner import KApply, KLabel, KRewrite, KSort, KVariable
 from pyk.kast.kast import KAtt
 from pyk.kast.manip import abstract_term_safely
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KNonTerminal, KProduction, KRequire, KRule, KTerminal
-from pyk.prelude.kbool import TRUE, andBool
+from pyk.prelude.kbool import andBool
 from pyk.prelude.kint import intToken
 from pyk.prelude.string import stringToken
 from pyk.utils import FrozenDict, hash_str, run_process, single
@@ -72,26 +72,26 @@ class Input:
     components: list[Input]
 
     @staticmethod
-    def from_dict(_input: dict) -> list[Input]:
+    def from_dict(_input: dict) -> Input:
         name = _input['name']
         type = _input['type']
         if _input.get('components') is not None and _input['type'] != 'tuple[]':
-            return Input.recurse_comp(_input['components'])
+            return Input(name, type, Input.recurse_comp(_input['components']))
         else:
-            return [Input(name, type, [])]
+            return Input(name, type, [])
 
     @staticmethod
     def recurse_comp(components: dict) -> list[Input]:
-        inputs = []
+        comps = []
         for comp in components:
-            name = comp['name']
-            type = comp['type']
+            _name = comp['name']
+            _type = comp['type']
             if comp.get('components') is not None and type != 'tuple[]':
                 new_comps = Input.recurse_comp(comp['components'])
             else:
                 new_comps = []
-            inputs.append(Input(name, type, new_comps))
-        return inputs
+            comps.append(Input(_name, _type, new_comps))
+        return comps
 
     def to_abi(self) -> KApply:
         if self.type == 'tuple':
@@ -130,11 +130,11 @@ class Contract:
             self.signature = msig
             self.name = abi['name']
             self.id = id
-            nest_inputs = [Input.from_dict(input) for input in abi['inputs']]
-            inputs = [input for inputs in nest_inputs for input in inputs]
-            self.arg_names = tuple([f'V{i}_{input.name.replace("-", "_")}' for i, input in enumerate(inputs)])
-            self.arg_types = tuple([input.type for input in inputs])
-            self.inputs = inputs
+            # nest_inputs = [Input.from_dict(input) for input in abi['inputs']]
+            # inputs = [input for inputs in nest_inputs for input in inputs]
+            self.inputs = [Input.from_dict(input) for input in abi['inputs']]
+            self.arg_names = tuple([f'V{i}_{input.name.replace("-", "_")}' for i, input in enumerate(self.inputs)])
+            self.arg_types = tuple([input.type for input in self.inputs])
             self.contract_name = contract_name
             self.contract_digest = contract_digest
             self.contract_storage_digest = contract_storage_digest
@@ -230,7 +230,7 @@ class Contract:
             arg_vars = [KVariable(aname) for aname in self.arg_names]
             prod_klabel = self.unique_klabel
             assert prod_klabel is not None
-            args: list[KInner] = []
+            args: list[KApply] = []
             conjuncts: list[KInner] = []
             for input in self.inputs:
                 abi_type = input.to_abi()
@@ -246,6 +246,11 @@ class Contract:
                     conjuncts.append(rp)
             lhs = KApply(application_label, [contract, KApply(prod_klabel, arg_vars)])
             rhs = KEVM.abi_calldata(self.name, args)
+            if contract_name == 'CounterTest':
+                print(self.inputs)
+                print(args)
+                print(lhs)
+                print(rhs)
             ensures = andBool(conjuncts)
             return KRule(KRewrite(lhs, rhs), ensures=ensures)
 
@@ -685,22 +690,24 @@ def _evm_base_sort_int(type_label: str) -> bool:
     return success
 
 
-def _range_predicates(abi: KApply) -> list[KInner | None]:
-    rp = []
+def _range_predicates(abi: KApply) -> list[KApply | None]:
+    rp: list[KApply | None] = []
     if abi.label.name == 'abi_type_tuple':
         for arg in abi.args:
-            rp.append(_range_predicates(arg))
+            if type(arg) is KApply:
+                rp += _range_predicates(arg)
     else:
         if abi.label.name == 'abi_type_tuple':
             for arg in abi.args:
-                rp.append(_range_predicates(arg))
+                if type(arg) is KApply:
+                    rp += _range_predicates(arg)
         else:
             type_label = abi.label.name.removeprefix('abi_type_')
             rp.append(_range_predicate(single(abi.args), type_label))
     return rp
 
 
-def _range_predicate(term: KInner, type_label: str) -> KInner | None:
+def _range_predicate(term: KInner, type_label: str) -> KApply | None:
     match type_label:
         case 'address':
             return KEVM.range_address(term)
@@ -709,7 +716,7 @@ def _range_predicate(term: KInner, type_label: str) -> KInner | None:
         case 'bytes':
             return KEVM.range_uint(128, KEVM.size_bytes(term))
         case 'string':
-            return TRUE
+            return KEVM.range_uint(128, KEVM.size_bytes(term))
 
     predicate_functions = [
         _range_predicate_uint,
@@ -726,7 +733,7 @@ def _range_predicate(term: KInner, type_label: str) -> KInner | None:
     return None
 
 
-def _range_predicate_uint(term: KInner, type_label: str) -> tuple[bool, KInner | None]:
+def _range_predicate_uint(term: KInner, type_label: str) -> tuple[bool, KApply | None]:
     if type_label.startswith('uint') and not type_label.endswith(']'):
         if type_label == 'uint':
             width = 256
@@ -739,7 +746,7 @@ def _range_predicate_uint(term: KInner, type_label: str) -> tuple[bool, KInner |
         return (False, None)
 
 
-def _range_predicate_int(term: KInner, type_label: str) -> tuple[bool, KInner | None]:
+def _range_predicate_int(term: KInner, type_label: str) -> tuple[bool, KApply | None]:
     if type_label.startswith('int') and not type_label.endswith(']'):
         if type_label == 'int':
             width = 256
@@ -752,7 +759,7 @@ def _range_predicate_int(term: KInner, type_label: str) -> tuple[bool, KInner | 
         return (False, None)
 
 
-def _range_predicate_bytes(term: KInner, type_label: str) -> tuple[bool, KInner | None]:
+def _range_predicate_bytes(term: KInner, type_label: str) -> tuple[bool, KApply | None]:
     if type_label.startswith('bytes') and not type_label.endswith(']'):
         str_width = type_label[5:]
         if str_width != '':

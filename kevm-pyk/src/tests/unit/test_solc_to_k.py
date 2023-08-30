@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 
 EXAMPLES_DIR: Final = TEST_DATA_DIR / 'examples'
 
-PREDICATE_DATA: list[tuple[str, KInner, KInner | None]] = [
+PREDICATE_DATA: list[tuple[str, KApply, list[KApply]]] = [
     ('bytes4', KApply('bytes4', KVariable('V0_x')), [KEVM.range_bytes(KToken('4', 'Int'), KVariable('V0_x'))]),
     ('int128', KApply('int128', KVariable('V0_x')), [KEVM.range_sint(128, KVariable('V0_x'))]),
     ('int24', KApply('int24', KVariable('V0_x')), [KEVM.range_sint(24, KVariable('V0_x'))]),
@@ -32,7 +32,7 @@ PREDICATE_DATA: list[tuple[str, KInner, KInner | None]] = [
                 KApply('abi_type_uint256', [KVariable('V0_y')]),
             ],
         ),
-        [[KEVM.range_uint(256, KVariable('V0_x'))], [KEVM.range_uint(256, KVariable('V0_y'))]],
+        [KEVM.range_uint(256, KVariable('V0_x')), KEVM.range_uint(256, KVariable('V0_y'))],
     ),
     (
         'nested_tuple',
@@ -43,7 +43,7 @@ PREDICATE_DATA: list[tuple[str, KInner, KInner | None]] = [
                 KApply('abi_type_tuple', [KApply('abi_type_uint256', [KVariable('V1_y')])]),
             ],
         ),
-        [[KEVM.range_uint(256, KVariable('V0_x'))], [[KEVM.range_uint(256, KVariable('V1_y'))]]]
+        [KEVM.range_uint(256, KVariable('V0_x')), KEVM.range_uint(256, KVariable('V1_y'))],
     ),
 ]
 
@@ -53,7 +53,7 @@ PREDICATE_DATA: list[tuple[str, KInner, KInner | None]] = [
     PREDICATE_DATA,
     ids=[test_id for test_id, *_ in PREDICATE_DATA],
 )
-def test_range_predicate(test_id: str, term: KInner, expected: list[KInner | None]) -> None:
+def test_range_predicate(test_id: str, term: KInner, expected: list[KApply]) -> None:
     # When
     # ret = _range_predicate(term, type)
     ret = _range_predicates(term)
