@@ -573,12 +573,20 @@ def foundry_kompile(
     def kompilation_up_to_date() -> bool:
         if not foundry.digest_file.exists():
             return False
-        old_digest = foundry.digest_file.read_text()
-
-        return old_digest == kompilation_digest()
+        digest_dict = json.loads(foundry.digest_file.read_text())
+        if 'kompilation' not in digest_dict:
+            digest_dict['kompilation'] = ''
+        foundry.digest_file.write_text(json.dumps(digest_dict))
+        return digest_dict['kompilation'] == kompilation_digest()
 
     def update_kompilation_digest() -> None:
-        foundry.digest_file.write_text(json.dumps({'digest': kompilation_digest()}))
+        digest_dict = {}
+        if foundry.digest_file.exists():
+            digest_dict = json.loads(foundry.digest_file.read_text())
+        digest_dict['kompilation'] = kompilation_digest()
+        foundry.digest_file.write_text(json.dumps(digest_dict))
+
+        _LOGGER.info('Updated Kompilation digest')
 
     if not kompilation_up_to_date() or rekompile or not kompiled_timestamp.exists():
         kevm_kompile(
