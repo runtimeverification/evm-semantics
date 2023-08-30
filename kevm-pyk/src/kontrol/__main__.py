@@ -351,11 +351,12 @@ def exec_foundry_step_node(
 def exec_foundry_merge_nodes(
     foundry_root: Path,
     test: str,
+    id: str | None,
     nodes: Iterable[NodeIdLike],
     bug_report: bool = False,
     **kwargs: Any,
 ) -> None:
-    foundry_merge_nodes(foundry_root=foundry_root, node_ids=nodes, test=test)
+    foundry_merge_nodes(foundry_root=foundry_root, node_ids=nodes, test=test, id=id)
 
 
 def exec_foundry_section_edge(
