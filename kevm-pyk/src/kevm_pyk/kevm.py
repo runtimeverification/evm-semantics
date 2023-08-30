@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Sequence
 
 from pyk.cterm import CTerm
 from pyk.kast.inner import KApply, KLabel, KSequence, KSort, KVariable, build_assoc
@@ -340,6 +340,10 @@ class KEVM(KProve, KRun):
     @staticmethod
     def abi_type(type: str, value: KInner) -> KApply:
         return KApply('abi_type_' + type, [value])
+
+    @staticmethod
+    def abi_tuple(values: Sequence[KInner]) -> KApply:
+        return KApply('abi_type_tuple', values)
 
     @staticmethod
     def empty_typedargs() -> KApply:

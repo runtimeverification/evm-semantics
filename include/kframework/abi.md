@@ -134,12 +134,13 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
                       | #array   ( TypedArg , Int , TypedArgs ) [klabel(abi_type_array),   symbol]
  // ----------------------------------------------------------------------------------------------
 
-    syntax TypedArgs ::= List{TypedArg, ","} [klabel(typedArgs)]
+    syntax TypedArgs ::= List{TypedArg, ","} [klabel(typedArgs)             ]
+                       | #tuple(TypedArgs)   [klabel(abi_type_tuple, symbol)]
  // ------------------------------------------------------------
 
-    rule #tuple(.TypedArgs)                                 => "()"
-    rule #tuple(TARGA:TypedArg, .TypedArgs)                 => "(" +String #typeName(TARGA) +String ")"
-    rule #tuple(TARGA:TypedArg, TARGS)                      => "(" +String #generateSignatureArgs(TARGA, TARGS) +String ")"
+    rule #typeName(#tuple(.TypedArgs))                 => "()"
+    rule #typeName(#tuple(TARGA:TypedArg, .TypedArgs)) => "(" +String #typeName(TARGA) +String ")"
+    rule #typeName(#tuple(TARGA:TypedArg, TARGS))      => "(" +String #generateSignatureArgs(TARGA, TARGS) +String ")"
 
     syntax Bytes ::= #abiCallData ( String , TypedArgs ) [function]
  // ---------------------------------------------------------------
@@ -158,8 +159,8 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #generateSignatureArgs(TARGA:TypedArg, .TypedArgs)            => #typeName(TARGA)
     rule #generateSignatureArgs(TARGA:TypedArg, TARGB:TypedArg, TARGS) => #typeName(TARGA) +String "," +String #generateSignatureArgs(TARGB, TARGS)
 
-    syntax String ::= #typeName ( TypedArg )                             [function, total]
-                    | #typeName ( TARGA:TypedArg, TARGB:TypedArg, TARGS) [function, total]
+    syntax String ::= #typeName ( TypedArg  )                            [function, total]
+                    | #typeName ( TypedArgs )                            [function, total]
  // ----------------------------------------------------------
     rule #typeName(   #address( _ )) => "address"
 

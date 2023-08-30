@@ -65,38 +65,6 @@ def solc_to_k(
     return _kprint.pretty_print(bin_runtime_definition, unalias=False) + '\n'
 
 
-# @dataclass(frozen=True)
-# class TupleInput:
-#     name: str
-#     components: list[Input]
-#     type: str = 'tuple'
-
-
-# @dataclass(frozen=True)
-# class SingleInput:
-#     name: str
-#     type: str
-
-#     @staticmethod
-#     def from_dict(_input: dict) -> list[Input]:
-#         name = _input['name']
-#         type = _input['type']
-#         if _input.get('components') is not None and _input['type'] != 'tuple[]':
-#             return Input.flatten_comp(_input['components'])
-#         else:
-#             return [Input(name, type)]
-
-#     @staticmethod
-#     def flatten_comp(components: dict) -> list[Input]:
-#         inputs = []
-#         for comp in components:
-#             if comp.get('components') is not None and comp['type'] != 'tuple[]':
-#                 inputs += Input.flatten_comp(comp['components'])
-#             else:
-#                 inputs.append(Input(comp['name'], comp['type']))
-#         return inputs
-
-
 @dataclass(frozen=True)
 class Input:
     name: str
@@ -122,6 +90,13 @@ class Input:
                 inputs.append(Input(comp['name'], comp['type'], []))
         return inputs
 
+    def to_abi(self) -> KApply:
+        if self.type == 'tuple':
+            tup, _ = Contract.recurse_components(self.components, 0)
+            return tup
+        else:
+            return Contract.make_single_type(self, 0)
+
 
 @dataclass
 class Contract:
@@ -130,8 +105,6 @@ class Contract:
         name: str
         id: int
         sort: KSort
-        # arg_names: tuple[str, ...]
-        # arg_types: tuple[str, ...]
         inputs: list[Input]
         contract_name: str
         contract_digest: str
@@ -257,10 +230,16 @@ class Contract:
             args: list[KInner] = []
             conjuncts: list[KInner] = []
             # for input_name, input_type in zip(self.arg_names, self.arg_types, strict=True):
+            j = 0
             for i, input in enumerate(self.inputs):
                 input_name = f'V{i}_{input.name.replace("-", "_")}'
                 input_type = input.type
-                args.append(KEVM.abi_type(input_type, KVariable(input_name)))
+                if len(input.components) > 0:
+                    abi_type, k = Contract.recurse_components(input.components, i + j)
+                    j = k
+                else:
+                    abi_type = Contract.make_single_type(input, i + j)
+                args.append(abi_type)
                 rp = _range_predicate(KVariable(input_name), input_type)
                 if rp is None:
                     _LOGGER.info(
@@ -543,6 +522,32 @@ class Contract:
         res.extend(rule for rule in method_rules if rule)
         res.extend(method.selector_alias_rule for method in self.methods)
         return res if len(res) > 1 else []
+
+    @staticmethod
+    def make_single_type(input: Input, i: int) -> KApply:
+        input_name = f'V{i}_{input.name.replace("-", "_")}'
+        input_type = input.type
+        return KEVM.abi_type(input_type, KVariable(input_name))
+
+    @staticmethod
+    def recurse_components(components: list[Input], i: int) -> tuple[KApply, int]:
+        """
+        do a recursive build of types if this is a tuple
+        """
+        abi_types = []
+        for comp in components:
+            if len(comp.components) > 0:
+                tuples = []
+                for comp in components:
+                    tup, j = Contract.recurse_components([comp], i)
+                    i = j
+                    tuples.append(tup)
+                abi_type = KEVM.abi_tuple(tuples)
+            else:
+                abi_type = Contract.make_single_type(comp, i)
+                i += 1
+            abi_types.append(abi_type)
+        return (KEVM.abi_tuple(abi_types), i)
 
     @property
     def field_sentences(self) -> list[KSentence]:

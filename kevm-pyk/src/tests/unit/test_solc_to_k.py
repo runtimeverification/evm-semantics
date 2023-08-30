@@ -3,10 +3,10 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import pytest
-from pyk.kast.inner import KToken, KVariable
+from pyk.kast.inner import KApply, KToken, KVariable
 
 from kevm_pyk.kevm import KEVM
-from kontrol.solc_to_k import _range_predicate
+from kontrol.solc_to_k import Input, _range_predicate
 
 from .utils import TEST_DATA_DIR
 
@@ -65,3 +65,26 @@ def test_escaping(test_id: str, prefix: str, input: str, output: str) -> None:
 
     # Then
     assert unescaped == input
+
+
+INPUT_DATA: list[tuple[str, Input, KApply]] = [
+    ('single_type', Input('RV', 'uint256', []), KApply('abi_type_uint256', [KVariable('V0_RV')])),
+    ('empty_tuple', Input('EmptyStruct', 'tuple', []), KApply('abi_type_tuple', [])),
+    (
+        'single_tuple',
+        Input('SomeStruct', 'tuple', [Input('RV1', 'uint256', []), Input('RV2', 'uint256', [])]),
+        KApply(
+            'abi_type_tuple',
+            [KApply('abi_type_uint256', [KVariable('V0_RV1')]), KApply('abi_type_uint256', [KVariable('V1_RV2')])],
+        ),
+    ),
+]
+
+
+@pytest.mark.parametrize('test_id,input,expected', INPUT_DATA, ids=[test_id for test_id, *_ in INPUT_DATA])
+def test_input_to_abi(test_id: str, input: Input, expected: KApply) -> None:
+    # When
+    abi = input.to_abi()
+
+    # Then
+    assert abi == expected
