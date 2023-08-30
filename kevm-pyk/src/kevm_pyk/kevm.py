@@ -395,14 +395,10 @@ class KEVM(KProve, KRun):
             res = KEVM.to_typed_arg(arg, res)
         return res
 
-    # @staticmethod
-    # def tuple_typed_args(args: list[KInner]) -> KApply:
-    #     for i in reversed(args):
-    #         res, j = KEVM.to_typed_arg(i, res)
-
     @staticmethod
     def to_typed_arg(arg: KApply, res: KApply) -> KApply:
         if arg.label == 'abi_type_tuple':
+            # TODO add tuple TypedArgs
             return KEVM.typed_args([arg for arg in arg.args if type(arg) is KApply])
         else:
             return KApply('_,__EVM-ABI_TypedArgs_TypedArg_TypedArgs', [arg, res])
