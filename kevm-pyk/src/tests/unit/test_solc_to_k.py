@@ -6,7 +6,7 @@ import pytest
 from pyk.kast.inner import KApply, KToken, KVariable
 
 from kevm_pyk.kevm import KEVM
-from kontrol.solc_to_k import Input, _range_predicate
+from kontrol.solc_to_k import Contract, Input, _range_predicates
 
 from .utils import TEST_DATA_DIR
 
@@ -18,28 +18,49 @@ if TYPE_CHECKING:
 
 EXAMPLES_DIR: Final = TEST_DATA_DIR / 'examples'
 
-PREDICATE_DATA: list[tuple[str, KInner, str, KInner | None]] = [
-    ('bytes4', KVariable('V0_x'), 'bytes4', KEVM.range_bytes(KToken('4', 'Int'), KVariable('V0_x'))),
-    ('int128', KVariable('V0_x'), 'int128', KEVM.range_sint(128, KVariable('V0_x'))),
-    ('int24', KVariable('V0_x'), 'int24', KEVM.range_sint(24, KVariable('V0_x'))),
-    ('uint24', KVariable('V0_x'), 'uint24', KEVM.range_uint(24, KVariable('V0_x'))),
+PREDICATE_DATA: list[tuple[str, KInner, KInner | None]] = [
+    ('bytes4', KApply('bytes4', KVariable('V0_x')), [KEVM.range_bytes(KToken('4', 'Int'), KVariable('V0_x'))]),
+    ('int128', KApply('int128', KVariable('V0_x')), [KEVM.range_sint(128, KVariable('V0_x'))]),
+    ('int24', KApply('int24', KVariable('V0_x')), [KEVM.range_sint(24, KVariable('V0_x'))]),
+    ('uint24', KApply('uint24', KVariable('V0_x')), [KEVM.range_uint(24, KVariable('V0_x'))]),
+    (
+        'tuple',
+        KApply(
+            'abi_type_tuple',
+            [
+                KApply('abi_type_uint256', [KVariable('V0_x')]),
+                KApply('abi_type_uint256', [KVariable('V0_y')]),
+            ],
+        ),
+        [[KEVM.range_uint(256, KVariable('V0_x'))], [KEVM.range_uint(256, KVariable('V0_y'))]],
+    ),
+    (
+        'nested_tuple',
+        KApply(
+            'abi_type_tuple',
+            [
+                KApply('abi_type_uint256', [KVariable('V0_x')]),
+                KApply('abi_type_tuple', [KApply('abi_type_uint256', [KVariable('V1_y')])]),
+            ],
+        ),
+        [[KEVM.range_uint(256, KVariable('V0_x'))], [[KEVM.range_uint(256, KVariable('V1_y'))]]]
+    ),
 ]
 
 
 @pytest.mark.parametrize(
-    'test_id,term,type,expected',
+    'test_id,term,expected',
     PREDICATE_DATA,
     ids=[test_id for test_id, *_ in PREDICATE_DATA],
 )
-def test_range_predicate(test_id: str, term: KInner, type: str, expected: KInner | None) -> None:
+def test_range_predicate(test_id: str, term: KInner, expected: list[KInner | None]) -> None:
     # When
-    ret = _range_predicate(term, type)
+    # ret = _range_predicate(term, type)
+    ret = _range_predicates(term)
 
     # Then
     assert ret == expected
 
-
-from kontrol.solc_to_k import Contract
 
 ESCAPE_DATA: list[tuple[str, str, str, str]] = [
     ('has_underscore', 'S2K', 'My_contract', 'S2KMyZUndcontract'),
@@ -76,6 +97,21 @@ INPUT_DATA: list[tuple[str, Input, KApply]] = [
         KApply(
             'abi_type_tuple',
             [KApply('abi_type_uint256', [KVariable('V0_RV1')]), KApply('abi_type_uint256', [KVariable('V1_RV2')])],
+        ),
+    ),
+    (
+        'nested_tuple',
+        Input(
+            'SomeStruct',
+            'tuple',
+            [Input('RV', 'uint256', []), Input('SomeStruct', 'tuple', [Input('RV', 'uint256', [])])],
+        ),
+        KApply(
+            'abi_type_tuple',
+            [
+                KApply('abi_type_uint256', [KVariable('V0_RV')]),
+                KApply('abi_type_tuple', [KApply('abi_type_uint256', [KVariable('V1_RV')])]),
+            ],
         ),
     ),
 ]

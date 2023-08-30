@@ -76,18 +76,21 @@ class Input:
         name = _input['name']
         type = _input['type']
         if _input.get('components') is not None and _input['type'] != 'tuple[]':
-            return Input.flatten_comp(_input['components'])
+            return Input.recurse_comp(_input['components'])
         else:
             return [Input(name, type, [])]
 
     @staticmethod
-    def flatten_comp(components: dict) -> list[Input]:
+    def recurse_comp(components: dict) -> list[Input]:
         inputs = []
         for comp in components:
-            if comp.get('components') is not None and comp['type'] != 'tuple[]':
-                inputs += Input.flatten_comp(comp['components'])
+            name = comp['name']
+            type = comp['type']
+            if comp.get('components') is not None and type != 'tuple[]':
+                new_comps = Input.recurse_comp(comp['components'])
             else:
-                inputs.append(Input(comp['name'], comp['type'], []))
+                new_comps = []
+            inputs.append(Input(name, type, new_comps))
         return inputs
 
     def to_abi(self) -> KApply:
@@ -229,24 +232,18 @@ class Contract:
             assert prod_klabel is not None
             args: list[KInner] = []
             conjuncts: list[KInner] = []
-            # for input_name, input_type in zip(self.arg_names, self.arg_types, strict=True):
-            j = 0
-            for i, input in enumerate(self.inputs):
-                input_name = f'V{i}_{input.name.replace("-", "_")}'
-                input_type = input.type
-                if len(input.components) > 0:
-                    abi_type, k = Contract.recurse_components(input.components, i + j)
-                    j = k
-                else:
-                    abi_type = Contract.make_single_type(input, i + j)
+            for input in self.inputs:
+                abi_type = input.to_abi()
                 args.append(abi_type)
-                rp = _range_predicate(KVariable(input_name), input_type)
-                if rp is None:
-                    _LOGGER.info(
-                        f'Unsupported ABI type for method {contract_name}.{prod_klabel.name}, will not generate calldata sugar: {input_type}'
-                    )
-                    return None
-                conjuncts.append(rp)
+                rps = _range_predicates(abi_type)
+                for rp in rps:
+                    if rp is None:
+                        # TODO infer a type
+                        _LOGGER.info(
+                            f'Unsupported ABI type for method {contract_name}.{prod_klabel.name}, will not generate calldata sugar:'
+                        )
+                        return None
+                    conjuncts.append(rp)
             lhs = KApply(application_label, [contract, KApply(prod_klabel, arg_vars)])
             rhs = KEVM.abi_calldata(self.name, args)
             ensures = andBool(conjuncts)
@@ -536,13 +533,11 @@ class Contract:
         """
         abi_types = []
         for comp in components:
-            if len(comp.components) > 0:
-                tuples = []
-                for comp in components:
-                    tup, j = Contract.recurse_components([comp], i)
-                    i = j
-                    tuples.append(tup)
-                abi_type = KEVM.abi_tuple(tuples)
+            # nested tuple
+            if comp.type == 'tuple':
+                tup, j = Contract.recurse_components(comp.components, i)
+                i = j
+                abi_type = tup
             else:
                 abi_type = Contract.make_single_type(comp, i)
                 i += 1
@@ -688,6 +683,21 @@ def _evm_base_sort_int(type_label: str) -> bool:
             success = True
 
     return success
+
+
+def _range_predicates(abi: KApply) -> list[KInner | None]:
+    rp = []
+    if abi.label.name == 'abi_type_tuple':
+        for arg in abi.args:
+            rp.append(_range_predicates(arg))
+    else:
+        if abi.label.name == 'abi_type_tuple':
+            for arg in abi.args:
+                rp.append(_range_predicates(arg))
+        else:
+            type_label = abi.label.name.removeprefix('abi_type_')
+            rp.append(_range_predicate(single(abi.args), type_label))
+    return rp
 
 
 def _range_predicate(term: KInner, type_label: str) -> KInner | None:
