@@ -130,8 +130,6 @@ class Contract:
             self.signature = msig
             self.name = abi['name']
             self.id = id
-            # nest_inputs = [Input.from_dict(input) for input in abi['inputs']]
-            # inputs = [input for inputs in nest_inputs for input in inputs]
             self.inputs = [Input.from_dict(input) for input in abi['inputs']]
             self.arg_names = tuple([f'V{i}_{input.name.replace("-", "_")}' for i, input in enumerate(self.inputs)])
             self.arg_types = tuple([input.type for input in self.inputs])
