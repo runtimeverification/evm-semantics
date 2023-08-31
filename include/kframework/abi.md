@@ -132,15 +132,11 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
                       | #bytes   ( Bytes )                      [klabel(abi_type_bytes),   symbol]
                       | #string  ( String )                     [klabel(abi_type_string),  symbol]
                       | #array   ( TypedArg , Int , TypedArgs ) [klabel(abi_type_array),   symbol]
+                      | #tuple   ( TypedArgs )                  [klabel(abi_type_tuple,    symbol)]
  // ----------------------------------------------------------------------------------------------
 
     syntax TypedArgs ::= List{TypedArg, ","} [klabel(typedArgs)             ]
-                       | #tuple(TypedArgs)   [klabel(abi_type_tuple, symbol)]
  // ------------------------------------------------------------
-
-    rule #typeName(#tuple(.TypedArgs))                 => "()"
-    rule #typeName(#tuple(TARGA:TypedArg, .TypedArgs)) => "(" +String #typeName(TARGA) +String ")"
-    rule #typeName(#tuple(TARGA:TypedArg, TARGS))      => "(" +String #generateSignatureArgs(TARGA, TARGS) +String ")"
 
     syntax Bytes ::= #abiCallData ( String , TypedArgs ) [function]
  // ---------------------------------------------------------------
@@ -270,6 +266,10 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #typeName(    #string( _ )) => "string"
 
     rule #typeName( #array(T, _, _)) => #typeName(T) +String "[]"
+
+    rule #typeName(#tuple(.TypedArgs))                 => "()"
+    rule #typeName(#tuple(TARGA:TypedArg, .TypedArgs)) => "(" +String #typeName(TARGA) +String ")"
+    rule #typeName(#tuple(TARGA:TypedArg, TARGS))      => "(" +String #generateSignatureArgs(TARGA, TARGS) +String ")"
 
     syntax Bytes ::= #encodeArgs    ( TypedArgs )                       [function]
     syntax Bytes ::= #encodeArgsAux ( TypedArgs , Int , Bytes , Bytes ) [function]

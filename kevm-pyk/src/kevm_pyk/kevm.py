@@ -354,6 +354,10 @@ class KEVM(KProve, KRun):
         return KApply('_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes', [b1, b2])
 
     @staticmethod
+    def tuple_type(args: list[KInner]) -> KApply:
+        return KApply('#tuple(_)_EVM-ABI_TypedArg_TypedArgs', args)
+
+    @staticmethod
     def account_cell(
         id: KInner, balance: KInner, code: KInner, storage: KInner, orig_storage: KInner, nonce: KInner
     ) -> KApply:
@@ -399,7 +403,10 @@ class KEVM(KProve, KRun):
     def to_typed_arg(arg: KApply, res: KApply) -> KApply:
         if arg.label == 'abi_type_tuple':
             # TODO add tuple TypedArgs
-            return KEVM.typed_args([arg for arg in arg.args if type(arg) is KApply])
+            # return KEVM.typed_args([arg for arg in arg.args if type(arg) is KApply])
+            #typeName(_)_EVM-ABI_String_TypedArgs`(`#tuple(_)_EVM-ABI_TypedArgs_TypedArgs`(`.List{"_,__EVM-ABI_TypedArgs_TypedArg_TypedArgs"}_TypedArgs
+            args = [arg for arg in arg.args if type(arg) is KApply]
+            return KEVM.tuple_type(args)
         else:
             return KApply('_,__EVM-ABI_TypedArgs_TypedArg_TypedArgs', [arg, res])
 
