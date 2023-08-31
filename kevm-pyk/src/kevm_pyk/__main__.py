@@ -164,7 +164,7 @@ def exec_prove_legacy(
         branching_allowed=branching_allowed,
         haskell_backend_args=haskell_backend_args,
     )
-    final_kast = mlAnd([state.kast for state in final_state])
+    final_kast = mlOr([state.kast for state in final_state])
     print(kevm.pretty_print(final_kast))
     if not is_top(final_kast):
         raise SystemExit(1)
