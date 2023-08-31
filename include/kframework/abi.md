@@ -156,7 +156,6 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #generateSignatureArgs(TARGA:TypedArg, TARGB:TypedArg, TARGS) => #typeName(TARGA) +String "," +String #generateSignatureArgs(TARGB, TARGS)
 
     syntax String ::= #typeName ( TypedArg  )                            [function, total]
-                    | #typeName ( TypedArgs )                            [function, total]
  // ----------------------------------------------------------
     rule #typeName(   #address( _ )) => "address"
 
