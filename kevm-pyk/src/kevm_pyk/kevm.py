@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import logging
 from typing import TYPE_CHECKING
-from collections.abc import Sequence
 
 from pyk.cterm import CTerm
 from pyk.kast.inner import KApply, KLabel, KSequence, KSort, KVariable, build_assoc
@@ -20,7 +19,7 @@ from pyk.proof.reachability import APRBMCProof, APRProof
 from pyk.proof.show import APRBMCProofNodePrinter, APRProofNodePrinter
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
+    from collections.abc import Iterable, Sequence
     from pathlib import Path
     from typing import Final
 
