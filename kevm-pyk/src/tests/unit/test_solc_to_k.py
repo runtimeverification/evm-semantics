@@ -27,10 +27,10 @@ PREDICATE_DATA: list[tuple[str, KApply, list[KApply]]] = [
             'abi_type_tuple',
             [
                 KApply('abi_type_uint256', [KVariable('V0_x')]),
-                KApply('abi_type_uint256', [KVariable('V0_y')]),
+                KApply('abi_type_uint256', [KVariable('V1_y')]),
             ],
         ),
-        [KEVM.range_uint(256, KVariable('V0_x')), KEVM.range_uint(256, KVariable('V0_y'))],
+        [KEVM.range_uint(256, KVariable('V0_x')), KEVM.range_uint(256, KVariable('V1_y'))],
     ),
     (
         'nested_tuple',
@@ -117,7 +117,7 @@ INPUT_DATA: list[tuple[str, Input, KApply]] = [
 @pytest.mark.parametrize('test_id,input,expected', INPUT_DATA, ids=[test_id for test_id, *_ in INPUT_DATA])
 def test_input_to_abi(test_id: str, input: Input, expected: KApply) -> None:
     # When
-    abi = input.to_abi()
+    abi, _ = input.to_abi()
 
     # Then
     assert abi == expected

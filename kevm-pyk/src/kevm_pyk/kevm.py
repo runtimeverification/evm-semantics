@@ -355,7 +355,12 @@ class KEVM(KProve, KRun):
 
     @staticmethod
     def tuple_type(args: list[KApply]) -> KApply:
-        return KApply('#tuple(_)_EVM-ABI_TypedArg_TypedArgs', args)
+        if len(args) == 0:
+            return KApply('.List{"_,__EVM-ABI_TypedArgs_TypedArg_TypedArgs"}_TypedArgs(.KList)')
+        elif len(args) == 1:
+            return KApply('_,__EVM-ABI_TypedArgs_TypedArg_TypedArgs(TARGA,.List{"_,__EVM-ABI_TypedArgs_TypedArg_TypedArgs"}_TypedArgs(.KList))')
+        else:
+            return KApply('_,__EVM-ABI_TypedArgs_TypedArg_TypedArgs(TARGA,TARGS)', args)
 
     @staticmethod
     def account_cell(

@@ -135,7 +135,7 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
                       | #tuple   ( TypedArgs )                  [klabel(abi_type_tuple),   symbol]
  // ----------------------------------------------------------------------------------------------
 
-    syntax TypedArgs ::= List{TypedArg, ","} [klabel(typedArgs)             ]
+    syntax TypedArgs ::= List{TypedArg, ","} [klabel(typedArgs)]
  // ------------------------------------------------------------
 
     syntax Bytes ::= #abiCallData ( String , TypedArgs ) [function]

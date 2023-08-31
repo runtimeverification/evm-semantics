@@ -70,35 +70,53 @@ class Input:
     name: str
     type: str
     components: list[Input]
+    idx: int = 0
 
     @staticmethod
-    def from_dict(_input: dict) -> Input:
+    def from_dict(_input: dict, i: int = 0) -> Input:
         name = _input['name']
         type = _input['type']
         if _input.get('components') is not None and _input['type'] != 'tuple[]':
-            return Input(name, type, Input.recurse_comp(_input['components']))
+            return Input(name, type, Input.recurse_comp(_input['components'], i), i)
         else:
-            return Input(name, type, [])
+            return Input(name, type, [], i)
 
     @staticmethod
-    def recurse_comp(components: dict) -> list[Input]:
+    def recurse_comp(components: dict, i: int = 0) -> list[Input]:
         comps = []
         for comp in components:
             _name = comp['name']
             _type = comp['type']
             if comp.get('components') is not None and type != 'tuple[]':
-                new_comps = Input.recurse_comp(comp['components'])
+                new_comps = Input.recurse_comp(comp['components'], i)
             else:
                 new_comps = []
-            comps.append(Input(_name, _type, new_comps))
+            comps.append(Input(_name, _type, new_comps, i))
+            i += 1
         return comps
 
-    def to_abi(self, i: int = 0) -> KApply:
+    def to_abi(self) -> KApply:
         if self.type == 'tuple':
-            tup, _ = Contract.recurse_components(self.components, i)
-            return tup
+            return Contract.recurse_components(self.components)
         else:
-            return Contract.make_single_type(self, i)
+            return Contract.make_single_type(self)
+
+    def flattened(self) -> list[Input]:
+        if len(self.components) > 0:
+            nest = [comp.flattened() for comp in self.components]
+            return [fcomp for fncomp in nest for fcomp in fncomp]
+        else:
+            return [self]
+
+
+def inputs_from_abi(abi_inputs: list[dict]) -> list[Input]:
+    inputs = []
+    i = 0
+    for input in abi_inputs:
+        cur_input = Input.from_dict(input, i)
+        inputs.append(cur_input)
+        i += len(cur_input.flattened())
+    return inputs
 
 
 @dataclass
@@ -130,9 +148,10 @@ class Contract:
             self.signature = msig
             self.name = abi['name']
             self.id = id
-            self.inputs = [Input.from_dict(input) for input in abi['inputs']]
-            self.arg_names = tuple([f'V{i}_{input.name.replace("-", "_")}' for i, input in enumerate(self.inputs)])
-            self.arg_types = tuple([input.type for input in self.inputs])
+            self.inputs = inputs_from_abi(abi['inputs'])
+            flat_inputs = [input for sub_inputs in self.inputs for input in sub_inputs.flattened()]
+            self.arg_names = tuple([Contract.arg_name(input) for input in flat_inputs])
+            self.arg_types = tuple([input.type for input in flat_inputs])
             self.contract_name = contract_name
             self.contract_digest = contract_digest
             self.contract_storage_digest = contract_storage_digest
@@ -225,13 +244,12 @@ class Contract:
             )
 
         def rule(self, contract: KInner, application_label: KLabel, contract_name: str) -> KRule | None:
-            arg_vars = [KVariable(aname) for aname in self.arg_names]
             prod_klabel = self.unique_klabel
-            assert prod_klabel is not None
+            arg_vars = [KVariable(aname) for aname in self.arg_names]
             args: list[KApply] = []
             conjuncts: list[KInner] = []
-            for i, input in enumerate(self.inputs):
-                abi_type = input.to_abi(i)
+            for input in self.inputs:
+                abi_type = input.to_abi()
                 args.append(abi_type)
                 rps = _range_predicates(abi_type)
                 for rp in rps:
@@ -518,28 +536,30 @@ class Contract:
         return res if len(res) > 1 else []
 
     @staticmethod
-    def make_single_type(input: Input, i: int) -> KApply:
-        input_name = f'V{i}_{input.name.replace("-", "_")}'
+    def arg_name(input: Input) -> str:
+        return f'V{input.idx}_{input.name.replace("-", "_")}'
+
+    @staticmethod
+    def make_single_type(input: Input) -> KApply:
+        input_name = Contract.arg_name(input)
         input_type = input.type
         return KEVM.abi_type(input_type, KVariable(input_name))
 
     @staticmethod
-    def recurse_components(components: list[Input], i: int) -> tuple[KApply, int]:
+    def recurse_components(components: list[Input]) -> KApply:
         """
         do a recursive build of types if this is a tuple
         """
         abi_types = []
         for comp in components:
-            # nested tuple
+            # nested tuple, go deeper
             if comp.type == 'tuple':
-                tup, j = Contract.recurse_components(comp.components, i)
-                i = j
+                tup = Contract.recurse_components(comp.components)
                 abi_type = tup
             else:
-                abi_type = Contract.make_single_type(comp, i)
-                i += 1
+                abi_type = Contract.make_single_type(comp)
             abi_types.append(abi_type)
-        return (KEVM.abi_tuple(abi_types), i)
+        return KEVM.abi_tuple(abi_types)
 
     @property
     def field_sentences(self) -> list[KSentence]:
