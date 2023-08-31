@@ -354,7 +354,7 @@ class KEVM(KProve, KRun):
         return KApply('_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes', [b1, b2])
 
     @staticmethod
-    def tuple_type(args: list[KInner]) -> KApply:
+    def tuple_type(args: list[KApply]) -> KApply:
         return KApply('#tuple(_)_EVM-ABI_TypedArg_TypedArgs', args)
 
     @staticmethod

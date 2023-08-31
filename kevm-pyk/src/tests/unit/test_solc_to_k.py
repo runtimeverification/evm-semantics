@@ -13,8 +13,6 @@ from .utils import TEST_DATA_DIR
 if TYPE_CHECKING:
     from typing import Final
 
-    from pyk.kast.inner import KInner
-
 
 EXAMPLES_DIR: Final = TEST_DATA_DIR / 'examples'
 
@@ -53,9 +51,8 @@ PREDICATE_DATA: list[tuple[str, KApply, list[KApply]]] = [
     PREDICATE_DATA,
     ids=[test_id for test_id, *_ in PREDICATE_DATA],
 )
-def test_range_predicate(test_id: str, term: KInner, expected: list[KApply]) -> None:
+def test_range_predicate(test_id: str, term: KApply, expected: list[KApply]) -> None:
     # When
-    # ret = _range_predicate(term, type)
     ret = _range_predicates(term)
 
     # Then
