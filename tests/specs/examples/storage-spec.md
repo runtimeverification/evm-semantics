@@ -54,7 +54,7 @@ module STORAGE-SPEC
 ### Functional Claims
 
 ```k
-    claim (#bufStrict(32, #loc(Storage . myBool))) => (#buf(32,0))
+    claim (#bufStrict(32, #loc(S2KStorage . myBool))) => (#buf(32,0))
 ```
 
 ### Calling myBool() works
@@ -70,8 +70,8 @@ module STORAGE-SPEC
           <schedule> SHANGHAI </schedule>
 
           <callStack> .List                                        </callStack>
-          <program>   #binRuntime(Storage)                         </program>
-          <jumpDests> #computeValidJumpDests(#binRuntime(Storage)) </jumpDests>
+          <program>   #binRuntime(S2KStorage)                         </program>
+          <jumpDests> #computeValidJumpDests(#binRuntime(S2KStorage)) </jumpDests>
 
           <id>         ACCTID      => ?_ </id>
           <localMem>   .Bytes     => ?_ </localMem>
@@ -81,7 +81,7 @@ module STORAGE-SPEC
           <gas>        #gas(_VGAS) => ?_ </gas>
           <callValue>  0           => ?_ </callValue>
 
-          <callData>   Storage.myBool()               </callData>
+          <callData>   S2KStorage.S2KmyBool()               </callData>
           <k>          #execute => #halt ...          </k>
           <output>     .Bytes   => #buf(32, MYBOOL)   </output>
           <statusCode> _        => EVMC_SUCCESS       </statusCode>
@@ -92,7 +92,7 @@ module STORAGE-SPEC
             ...
           </account>
 
-       requires MYBOOL_KEY ==Int #loc(Storage . myBool)
+       requires MYBOOL_KEY ==Int #loc(S2KStorage . myBool)
         andBool MYBOOL     ==Int 255 &Int #lookup(ACCT_STORAGE, MYBOOL_KEY)
 ```
 
@@ -103,8 +103,8 @@ module STORAGE-SPEC
           <schedule> SHANGHAI </schedule>
 
           <callStack> .List                                        </callStack>
-          <program>   #binRuntime(Storage)                         </program>
-          <jumpDests> #computeValidJumpDests(#binRuntime(Storage)) </jumpDests>
+          <program>   #binRuntime(S2KStorage)                         </program>
+          <jumpDests> #computeValidJumpDests(#binRuntime(S2KStorage)) </jumpDests>
           <static>    false                                        </static>
 
           <id>         ACCTID      => ?_ </id>
@@ -115,7 +115,7 @@ module STORAGE-SPEC
           <gas>        #gas(_VGAS) => ?_ </gas>
           <callValue>  0           => ?_ </callValue>
 
-          <callData>   Storage.setMyBool(NEW_VAL : bool) </callData>
+          <callData>   S2KStorage.S2KsetMyBool(NEW_VAL : bool) </callData>
           <k>          #execute   => #halt ...           </k>
           <output>     .Bytes                            </output>
           <statusCode> _          => EVMC_SUCCESS        </statusCode>
@@ -129,7 +129,7 @@ module STORAGE-SPEC
           <refund> _ => ?_ </refund>
 
        requires #rangeBool(NEW_VAL)
-        andBool MYBOOL_KEY          ==Int #loc(Storage . myBool)
+        andBool MYBOOL_KEY          ==Int #loc(S2KStorage . myBool)
         andBool OLD_STORAGE_CONTENT ==Int #lookup ( ACCT_STORAGE , MYBOOL_KEY )
         andBool NEW_STORAGE_CONTENT ==Int NEW_VAL |Int ((~Word 255) &Int OLD_STORAGE_CONTENT) 
 

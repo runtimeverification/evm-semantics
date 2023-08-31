@@ -72,6 +72,7 @@ def exclude_list(exclude_file: Path) -> list[Path]:
 
 
 FAILING_PYK_TESTS: Final = exclude_list(TEST_DIR / 'failing-symbolic.pyk')
+FAILING_BOOSTER_TESTS: Final = exclude_list(TEST_DIR / 'failing-symbolic.haskell-booster')
 SLOW_TESTS: Final = exclude_list(TEST_DIR / 'slow.haskell')
 FAILING_TESTS: Final = exclude_list(TEST_DIR / 'failing-symbolic.haskell')
 
@@ -120,9 +121,11 @@ class Target(NamedTuple):
     main_file: Path
     main_module_name: str
     contract_file: Path | None
+    use_booster: bool
 
     def __call__(self, output_dir: Path) -> KompiledTarget:
-        definition_dir = output_dir / 'kompiled'
+        definition_subdir = 'kompiled' if not self.use_booster else 'kompiled-booster'
+        definition_dir = output_dir / definition_subdir
 
         include_dir: Path | None
         if self.contract_file:
@@ -133,10 +136,11 @@ class Target(NamedTuple):
             include_dir = None
 
         result = KompiledTarget(definition_dir, include_dir)
+        target = KompileTarget.HASKELL if not self.use_booster else KompileTarget.HASKELL_BOOSTER
 
         kevm_kompile(
-            output_dir=output_dir / 'kompiled',
-            target=KompileTarget.HASKELL,
+            output_dir=definition_dir,
+            target=target,
             main_file=self.main_file,
             main_module=self.main_module_name,
             syntax_module=self.main_module_name,
@@ -163,12 +167,12 @@ class KompiledTarget(NamedTuple):
 
 
 @pytest.fixture(scope='module')
-def kompiled_target_for(tmp_path_factory: TempPathFactory) -> Callable[[Path], KompiledTarget]:
+def kompiled_target_for(tmp_path_factory: TempPathFactory) -> Callable[[Path, bool], KompiledTarget]:
     cache_dir = tmp_path_factory.mktemp('target')
     cache: dict[Target, KompiledTarget] = {}
 
-    def kompile(spec_file: Path) -> KompiledTarget:
-        target = _target_for_spec(spec_file)
+    def kompile(spec_file: Path, use_booster: bool) -> KompiledTarget:
+        target = _target_for_spec(spec_file, use_booster=use_booster)
 
         if target not in cache:
             output_dir = cache_dir / f'{target.main_file.stem}-{len(cache)}'
@@ -180,7 +184,7 @@ def kompiled_target_for(tmp_path_factory: TempPathFactory) -> Callable[[Path], K
     return kompile
 
 
-def _target_for_spec(spec_file: Path) -> Target:
+def _target_for_spec(spec_file: Path, use_booster: bool) -> Target:
     spec_file = spec_file.resolve()
     spec_id = str(spec_file.relative_to(SPEC_DIR))
     spec_root = SPEC_DIR / spec_file.relative_to(SPEC_DIR).parents[-2]
@@ -190,7 +194,7 @@ def _target_for_spec(spec_file: Path) -> Target:
     main_id = str(main_file.relative_to(SPEC_DIR))
     contract_file = KOMPILE_CONTRACT.get(main_id)
 
-    return Target(main_file, main_module_name, contract_file)
+    return Target(main_file, main_module_name, contract_file, use_booster)
 
 
 # ---------
@@ -199,6 +203,7 @@ def _target_for_spec(spec_file: Path) -> Target:
 
 
 SKIPPED_PYK_TESTS: Final = set().union(SLOW_TESTS, FAILING_TESTS, FAILING_PYK_TESTS)
+SKIPPED_PYK_BOOSTER_TESTS: Final = set().union(SLOW_TESTS, FAILING_TESTS, FAILING_PYK_TESTS, FAILING_BOOSTER_TESTS)
 
 
 @pytest.mark.parametrize(
@@ -208,13 +213,14 @@ SKIPPED_PYK_TESTS: Final = set().union(SLOW_TESTS, FAILING_TESTS, FAILING_PYK_TE
 )
 def test_pyk_prove(
     spec_file: Path,
-    kompiled_target_for: Callable[[Path], KompiledTarget],
+    kompiled_target_for: Callable[[Path, bool], KompiledTarget],
     tmp_path: Path,
     caplog: LogCaptureFixture,
+    use_booster: bool,
 ) -> None:
     caplog.set_level(logging.INFO)
 
-    if spec_file in SKIPPED_PYK_TESTS:
+    if spec_file in SKIPPED_PYK_TESTS or (use_booster and spec_file in SKIPPED_PYK_BOOSTER_TESTS):
         pytest.skip()
 
     # Given
@@ -224,15 +230,16 @@ def test_pyk_prove(
 
     # When
     try:
-        target = kompiled_target_for(spec_file)
+        target = kompiled_target_for(spec_file, use_booster)
         exec_prove(
             spec_file=spec_file,
             definition_dir=target.definition_dir,
             includes=[str(config.INCLUDE_DIR)] + target.includes,  # TODO are target.includes required?
             save_directory=use_directory,
-            smt_timeout=125,
-            smt_retry_limit=4,
+            smt_timeout=300,
+            smt_retry_limit=10,
             md_selector='foo',  # TODO Ignored flag, this is to avoid KeyError
+            use_booster=use_booster,
         )
     except BaseException:
         raise
@@ -262,7 +269,7 @@ PROVE_ARGS: Final[dict[str, Any]] = {
 )
 def test_legacy_prove(
     spec_file: Path,
-    kompiled_target_for: Callable[[Path], KompiledTarget],
+    kompiled_target_for: Callable[[Path, bool], KompiledTarget],
     tmp_path: Path,
     caplog: LogCaptureFixture,
 ) -> None:
@@ -274,6 +281,10 @@ def test_legacy_prove(
     # Given
     spec_id = str(spec_file.relative_to(SPEC_DIR))
     args = PROVE_ARGS.get(spec_id, {})
+    if 'haskell_args' not in args:
+        args['haskell_args'] = []
+    args['haskell_args'] += ['--smt-timeout', '300']
+    args['haskell_args'] += ['--smt-retry-limit', '10']
 
     log_file = tmp_path / 'log.txt'
     use_directory = tmp_path / 'kprove'
@@ -281,7 +292,7 @@ def test_legacy_prove(
 
     # When
     try:
-        target = kompiled_target_for(spec_file)
+        target = kompiled_target_for(spec_file, False)
         kevm = KEVM(target.definition_dir, use_directory=use_directory)
         actual = kevm.prove(spec_file=spec_file, include_dirs=[config.INCLUDE_DIR] + target.include_dirs, **args)
     except BaseException:

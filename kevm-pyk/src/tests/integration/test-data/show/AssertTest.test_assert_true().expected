@@ -5,24 +5,24 @@
 │   callDepth: 0
 │   statusCode: STATUSCODE
 │
-│  (331 steps)
+│  (258 steps)
 ├─ 3
 │   k: #end EVMC_SUCCESS ~> #pc [ STOP ] ~> #execute ~> CONTINUATION:K
-│   pc: 213
+│   pc: 251
 │   callDepth: 0
 │   statusCode: STATUSCODE:StatusCode
 │
 │  (1 step)
 ├─ 4
 │   k: #halt ~> #pc [ STOP ] ~> #execute ~> CONTINUATION:K
-│   pc: 213
+│   pc: 251
 │   callDepth: 0
 │   statusCode: EVMC_SUCCESS
 │
 │  (2 steps)
 ├─ 5 (terminal)
 │   k: #halt ~> CONTINUATION:K
-│   pc: 213
+│   pc: 251
 │   callDepth: 0
 │   statusCode: EVMC_SUCCESS
 │
@@ -75,7 +75,7 @@
                      CALLER_ID
                    </caller>
                    <callData>
-                     ( AssertTest . test_assert_true ( ) => b"6\r\xa4\xd2" )
+                     ( S2KAssertTest . S2KtestZUndassertZUndtrue ( ) => b"6\r\xa4\xd2" )
                    </callData>
                    <callValue>
                      0
@@ -242,9 +242,9 @@
        andBool ( ORIGIN_ID <Int pow160
        andBool ( 0 <=Int NUMBER_CELL
        andBool ( NUMBER_CELL <=Int maxSInt256
-       andBool ( lengthBytes ( AssertTest . test_assert_true ( ) ) <Int pow128
-       andBool ( 0 <=Int 9223372036854775807
-       andBool ( 9223372036854775807 <Int pow256
+       andBool ( lengthBytes ( S2KAssertTest . S2KtestZUndassertZUndtrue ( ) ) <Int pow128
+       andBool ( 0 <=Int maxSInt64
+       andBool ( maxSInt64 <Int pow256
        andBool ( 0 <=Int 728815563385977040452943777879061427756277306518
        andBool ( 728815563385977040452943777879061427756277306518 <Int pow160
                )))))))))))

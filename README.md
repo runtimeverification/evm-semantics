@@ -159,25 +159,17 @@ export PATH=$HOME/.local/bin:$PATH
 
 #### K Framework
 
-The `Makefile` and `kevm` will work with either a (i) globally installed K or a (ii) K submodule included in this repository.
-For contributing to `kevm`, it is highly recommended to go with (ii) because some of the build scripts might not work otherwise.
-Follow these instructions to get and build the K submodule:
+You need to install the [K Framework] on your system, see the instructions there.
+The fastest way is via the [kup package manager], with which you can do to get the correct version of K:
 
 ```sh
-git submodule update --init --recursive -- deps/k
-make k-deps
+kup install k.openssl.procps --version v$(cat deps/k_release)
 ```
 
-If you don't need either the LLVM or Haskell backend, there are flags to skip them:
+You can also drop into a single development shell with the correct version of K on path by doing:
 
 ```sh
-make k-deps SKIP_LLVM=true SKIP_HASKELL=true
-```
-
-On an Apple Silicon machine, an additional flag to `make` is required to correctly build the Haskell backend:
-
-```sh
-make k-deps APPLE_SILICON=true
+kup shell k.openssl.procps --version v$(cat deps/k_release)
 ```
 
 #### Blockchain Plugin
@@ -245,7 +237,7 @@ export PATH=$(pwd)/.build/usr/bin:$PATH
 Alternatively, if you work on multiple checkouts of `evm-semantics` or other semantics, you could add the relative path `.build/usr/bin` to your `PATH`.
 Do note, however, that this is a security concern.
 
-You can call `kevm help` to get a quick summary of how to use the script.
+You can call `kevm --help` to get a quick summary of how to use the script.
 
 Run the file `tests/ethereum-tests/LegacyTests/Constantinople/VMTests/vmArithmeticTest/add0.json`:
 
@@ -262,7 +254,7 @@ make build-llvm KEVM_OPTS=--enable-llvm-debug
 To debug a conformance test, add the `--debugger` flag to the command:
 
 ```sh
-kevm run tests/ethereum-tests/BlockchainTests/GeneralStateTests/stExample/add11.json --backend llvm --mode NORMAL --schedule SHANGHAI --chainid 1 --debugger
+kevm run tests/ethereum-tests/BlockchainTests/GeneralStateTests/stExample/add11.json --target llvm --mode NORMAL --schedule SHANGHAI --chainid 1 --debugger
 ```
 
 ### Keeping in mind while developing
@@ -370,7 +362,7 @@ Resources
 -   [EVM Opcode Interactive Reference](https://www.evm.codes/?fork=merge)
 -   [Solidity ABI Encoding](https://docs.soliditylang.org/en/v0.8.19/abi-spec.html)
 
-For more information about [The K Framework](https://kframework.org), refer to these sources:
+For more information about the [K Framework], refer to these sources:
 
 -   [The K Tutorial](https://github.com/runtimeverification/k/tree/master/k-distribution/k-tutorial)
 -   [Semantics-Based Program Verifiers for All Languages](https://fsl.cs.illinois.edu/publications/stefanescu-park-yuwen-li-rosu-2016-oopsla)
@@ -378,6 +370,7 @@ For more information about [The K Framework](https://kframework.org), refer to t
 -   [Matching Logic Resources](http://www.matching-logic.org/)
 -   [Logical Frameworks](https://dl.acm.org/doi/10.5555/208683.208700): Discussion of logical frameworks.
 
+[K Framework]: <https://kframework.org>
 [Jello Paper]: <https://jellopaper.org>
 [2017 Devcon3]: <https://archive.devcon.org/archive/watch?edition=3&order=desc&sort=edition>
 [K Reachability Logic Prover]: <http://fsl.cs.illinois.edu/FSL/papers/2016/stefanescu-park-yuwen-li-rosu-2016-oopsla/stefanescu-park-yuwen-li-rosu-2016-oopsla-public.pdf>

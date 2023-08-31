@@ -52,7 +52,7 @@ module ERC20-SPEC
 ### Functional Claims
 
 ```k
-    claim (#bufStrict(32, #loc(ERC20._allowances[OWNER]))) => (#buf(32, keccak(#buf(32, OWNER) +Bytes #buf(32, 1))))
+    claim (#bufStrict(32, #loc(S2KERC20._allowances[OWNER]))) => (#buf(32, keccak(#buf(32, OWNER) +Bytes #buf(32, 1))))
       requires #rangeAddress(OWNER)
 ```
 
@@ -69,8 +69,8 @@ module ERC20-SPEC
           <schedule> SHANGHAI </schedule>
 
           <callStack> .List                                      </callStack>
-          <program>   #binRuntime(ERC20)                         </program>
-          <jumpDests> #computeValidJumpDests(#binRuntime(ERC20)) </jumpDests>
+          <program>   #binRuntime(S2KERC20)                         </program>
+          <jumpDests> #computeValidJumpDests(#binRuntime(S2KERC20)) </jumpDests>
 
           <id>         ACCTID      => ?_ </id>
           <localMem>   .Bytes     => ?_ </localMem>
@@ -80,7 +80,7 @@ module ERC20-SPEC
           <gas>        #gas(_VGAS) => ?_ </gas>
           <callValue>  0           => ?_ </callValue>
 
-          <callData>   ERC20.decimals()               </callData>
+          <callData>   S2KERC20.S2Kdecimals()               </callData>
           <k>          #execute => #halt ...          </k>
           <output>     .Bytes   => #buf(32, DECIMALS) </output>
           <statusCode> _        => EVMC_SUCCESS       </statusCode>
@@ -91,7 +91,7 @@ module ERC20-SPEC
             ...
           </account>
 
-       requires DECIMALS_KEY ==Int #loc(ERC20._decimals)
+       requires DECIMALS_KEY ==Int #loc(S2KERC20._decimals)
         andBool DECIMALS     ==Int 255 &Int #lookup(ACCT_STORAGE, DECIMALS_KEY)
 ```
 
@@ -109,8 +109,8 @@ module ERC20-SPEC
           <schedule> SHANGHAI </schedule>
 
           <callStack> .List                                      </callStack>
-          <program>   #binRuntime(ERC20)                         </program>
-          <jumpDests> #computeValidJumpDests(#binRuntime(ERC20)) </jumpDests>
+          <program>   #binRuntime(S2KERC20)                         </program>
+          <jumpDests> #computeValidJumpDests(#binRuntime(S2KERC20)) </jumpDests>
 
           <id>         ACCTID      => ?_ </id>
           <localMem>   .Bytes     => ?_ </localMem>
@@ -120,7 +120,7 @@ module ERC20-SPEC
           <gas>        #gas(_VGAS) => ?_ </gas>
           <callValue>  0           => ?_ </callValue>
 
-          <callData>   ERC20.totalSupply()               </callData>
+          <callData>   S2KERC20.S2KtotalSupply()               </callData>
           <k>          #execute => #halt ...             </k>
           <output>     .Bytes   => #buf(32, TOTALSUPPLY) </output>
           <statusCode> _        => EVMC_SUCCESS          </statusCode>
@@ -131,7 +131,7 @@ module ERC20-SPEC
             ...
           </account>
 
-       requires TOTALSUPPLY_KEY ==Int #loc(ERC20._totalSupply)
+       requires TOTALSUPPLY_KEY ==Int #loc(S2KERC20._totalSupply)
         andBool TOTALSUPPLY     ==Int #lookup(ACCT_STORAGE,  TOTALSUPPLY_KEY)
 ```
 
@@ -150,8 +150,8 @@ module ERC20-SPEC
           <schedule> SHANGHAI </schedule>
 
           <callStack> .List                                      </callStack>
-          <program>   #binRuntime(ERC20)                         </program>
-          <jumpDests> #computeValidJumpDests(#binRuntime(ERC20)) </jumpDests>
+          <program>   #binRuntime(S2KERC20)                         </program>
+          <jumpDests> #computeValidJumpDests(#binRuntime(S2KERC20)) </jumpDests>
           <static>    false                                      </static>
 
           <id>         ACCTID      => ?_ </id>
@@ -164,7 +164,7 @@ module ERC20-SPEC
           <callValue>  0           => ?_ </callValue>
           <substate> _             => ?_ </substate>
 
-          <callData>   ERC20.approve(SPENDER : address, AMOUNT : uint256) </callData>
+          <callData>   S2KERC20.S2Kapprove(SPENDER : address, AMOUNT : uint256) </callData>
           <k>          #execute => #halt ...        </k>
           <output>     .Bytes   => #buf(32, 1)      </output>
           <statusCode> _        => EVMC_SUCCESS     </statusCode>
@@ -175,7 +175,7 @@ module ERC20-SPEC
             ...
           </account>
 
-       requires ALLOWANCE_KEY ==Int #loc(ERC20._allowances[OWNER][SPENDER])
+       requires ALLOWANCE_KEY ==Int #loc(S2KERC20._allowances[OWNER][SPENDER])
         andBool #rangeAddress(OWNER)
         andBool #rangeAddress(SPENDER)
         andBool #rangeUInt(256, AMOUNT)
@@ -189,8 +189,8 @@ module ERC20-SPEC
           <schedule> SHANGHAI </schedule>
 
           <callStack> .List                                      </callStack>
-          <program>   #binRuntime(ERC20)                         </program>
-          <jumpDests> #computeValidJumpDests(#binRuntime(ERC20)) </jumpDests>
+          <program>   #binRuntime(S2KERC20)                         </program>
+          <jumpDests> #computeValidJumpDests(#binRuntime(S2KERC20)) </jumpDests>
           <static>    false                                      </static>
 
           <id>         ACCTID      => ?_ </id>
@@ -203,7 +203,7 @@ module ERC20-SPEC
           <callValue>  0           => ?_ </callValue>
           <substate> _             => ?_ </substate>
 
-          <callData>   ERC20.approve(SPENDER : address, AMOUNT : uint256) </callData>
+          <callData>   S2KERC20.S2Kapprove(SPENDER : address, AMOUNT : uint256) </callData>
           <k>          #execute   => #halt ...        </k>
           <output>     _          => ?_               </output>
           <statusCode> _          => EVMC_REVERT      </statusCode>
