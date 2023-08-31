@@ -17,3 +17,6 @@
 [submodule "tests/foundry/lib/forge-std"]
 	path = tests/foundry/lib/forge-std
 	url = https://github.com/foundry-rs/forge-std
+[submodule "kevm-pyk/src/tests/integration/test-data/foundry/lib/forge-std"]
+	path = kevm-pyk/src/tests/integration/test-data/foundry/lib/forge-std
+	url = https://github.com/foundry-rs/forge-std
