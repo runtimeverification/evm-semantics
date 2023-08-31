@@ -8,21 +8,21 @@
 │  (376 steps)
 ├─ 3
 │   k: #end EVMC_REVERT ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
-│   pc: 1249
+│   pc: 1131
 │   callDepth: 0
 │   statusCode: STATUSCODE:StatusCode
 │
 │  (1 step)
 ├─ 4
 │   k: #halt ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
-│   pc: 1249
+│   pc: 1131
 │   callDepth: 0
 │   statusCode: EVMC_REVERT
 │
 │  (2 steps)
 └─ 5 (leaf, terminal)
     k: #halt ~> CONTINUATION:K
-    pc: 1249
+    pc: 1131
     callDepth: 0
     statusCode: EVMC_REVERT
 
