@@ -5,7 +5,6 @@ import sys
 from typing import TYPE_CHECKING, NamedTuple
 
 import pytest
-from pyk.prelude.ml import mlTop
 from pyk.cterm import CTerm
 
 from kevm_pyk import config
