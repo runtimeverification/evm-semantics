@@ -93,12 +93,12 @@ class Input:
             comps.append(Input(_name, _type, new_comps))
         return comps
 
-    def to_abi(self) -> KApply:
+    def to_abi(self, i: int = 0) -> KApply:
         if self.type == 'tuple':
-            tup, _ = Contract.recurse_components(self.components, 0)
+            tup, _ = Contract.recurse_components(self.components, i)
             return tup
         else:
-            return Contract.make_single_type(self, 0)
+            return Contract.make_single_type(self, i)
 
 
 @dataclass
@@ -232,8 +232,8 @@ class Contract:
             assert prod_klabel is not None
             args: list[KApply] = []
             conjuncts: list[KInner] = []
-            for input in self.inputs:
-                abi_type = input.to_abi()
+            for i, input in enumerate(self.inputs):
+                abi_type = input.to_abi(i)
                 args.append(abi_type)
                 rps = _range_predicates(abi_type)
                 for rp in rps:
@@ -246,11 +246,6 @@ class Contract:
                     conjuncts.append(rp)
             lhs = KApply(application_label, [contract, KApply(prod_klabel, arg_vars)])
             rhs = KEVM.abi_calldata(self.name, args)
-            if contract_name == 'CounterTest':
-                print(self.inputs)
-                print(args)
-                print(lhs)
-                print(rhs)
             ensures = andBool(conjuncts)
             return KRule(KRewrite(lhs, rhs), ensures=ensures)
 
