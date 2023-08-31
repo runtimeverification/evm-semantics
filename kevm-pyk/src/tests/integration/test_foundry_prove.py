@@ -257,6 +257,7 @@ def test_foundry_auto_abstraction(
         tests=[(test_id, None)],
         auto_abstract_gas=True,
         port=server.port,
+        simplify_init=False,
     )
 
     if use_booster:
@@ -278,7 +279,7 @@ def test_foundry_auto_abstraction(
     assert_or_update_show_output(show_res, TEST_DATA_DIR / 'gas-abstraction.expected', update=update_expected_output)
 
 
-def test_foundry_remove_node(foundry_root: Path, update_expected_output: bool) -> None:
+def test_foundry_remove_node(foundry_root: Path, update_expected_output: bool, server: KoreServer) -> None:
     test = 'AssertTest.test_assert_true()'
 
     foundry = Foundry(foundry_root)
@@ -286,8 +287,7 @@ def test_foundry_remove_node(foundry_root: Path, update_expected_output: bool) -
     prove_res = foundry_prove(
         foundry_root,
         tests=[(test, None)],
-        smt_timeout=300,
-        smt_retry_limit=10,
+        port=server.port,
     )
     assert_pass(test, prove_res)
 
@@ -304,8 +304,7 @@ def test_foundry_remove_node(foundry_root: Path, update_expected_output: bool) -
     prove_res = foundry_prove(
         foundry_root,
         tests=[(test, None)],
-        smt_timeout=300,
-        smt_retry_limit=10,
+        port=server.port,
     )
     assert_pass(test, prove_res)
 
