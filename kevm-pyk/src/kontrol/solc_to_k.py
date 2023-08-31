@@ -12,7 +12,7 @@ from pyk.kast.inner import KApply, KLabel, KRewrite, KSort, KVariable
 from pyk.kast.kast import KAtt
 from pyk.kast.manip import abstract_term_safely
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KNonTerminal, KProduction, KRequire, KRule, KTerminal
-from pyk.prelude.kbool import andBool
+from pyk.prelude.kbool import TRUE, andBool
 from pyk.prelude.kint import intToken
 from pyk.prelude.string import stringToken
 from pyk.utils import FrozenDict, hash_str, run_process, single
@@ -238,7 +238,6 @@ class Contract:
                 rps = _range_predicates(abi_type)
                 for rp in rps:
                     if rp is None:
-                        # TODO infer a type
                         _LOGGER.info(
                             f'Unsupported ABI type for method {contract_name}.{prod_klabel.name}, will not generate calldata sugar:'
                         )
@@ -685,8 +684,8 @@ def _evm_base_sort_int(type_label: str) -> bool:
     return success
 
 
-def _range_predicates(abi: KApply) -> list[KApply | None]:
-    rp: list[KApply | None] = []
+def _range_predicates(abi: KApply) -> list[KInner | None]:
+    rp: list[KInner | None] = []
     if abi.label.name == 'abi_type_tuple':
         for arg in abi.args:
             if type(arg) is KApply:
@@ -702,7 +701,7 @@ def _range_predicates(abi: KApply) -> list[KApply | None]:
     return rp
 
 
-def _range_predicate(term: KInner, type_label: str) -> KApply | None:
+def _range_predicate(term: KInner, type_label: str) -> KInner | None:
     match type_label:
         case 'address':
             return KEVM.range_address(term)
@@ -711,7 +710,7 @@ def _range_predicate(term: KInner, type_label: str) -> KApply | None:
         case 'bytes':
             return KEVM.range_uint(128, KEVM.size_bytes(term))
         case 'string':
-            return KEVM.range_uint(128, KEVM.size_bytes(term))
+            return TRUE
 
     predicate_functions = [
         _range_predicate_uint,

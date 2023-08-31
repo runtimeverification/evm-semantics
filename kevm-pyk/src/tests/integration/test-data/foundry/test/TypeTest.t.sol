@@ -575,7 +575,7 @@ contract StructTypeTest {
 
     function test_vars(Vars calldata vars) public pure {
         assert(type(uint8).max >= vars.a);
-        assert(type(bytes32).max >= vars.slot);
+        assert(type(uint256).max >= uint256(vars.slot));
         assert(type(uint32).max >= vars.timestamp);
     }
 }
