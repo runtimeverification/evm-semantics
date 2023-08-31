@@ -15,7 +15,7 @@ from pyk.kcfg import KCFG
 from pyk.kore.tools import PrintOutput, kore_print
 from pyk.ktool.kompile import LLVMKompileType
 from pyk.ktool.krun import KRunOutput
-from pyk.prelude.ml import is_top, mlAnd, mlOr
+from pyk.prelude.ml import is_top, mlOr
 from pyk.proof import APRProof
 from pyk.proof.equality import EqualityProof
 from pyk.proof.show import APRProofShow
