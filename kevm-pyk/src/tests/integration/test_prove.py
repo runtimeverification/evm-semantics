@@ -300,7 +300,6 @@ def test_legacy_prove(
     finally:
         log_file.write_text(caplog.text)
 
-    assert len(actual) == 1
-
     # Then
+    assert len(actual) == 1
     assert CTerm._is_top(actual[0].kast)
