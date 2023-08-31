@@ -248,6 +248,7 @@ def test_foundry_auto_abstraction(foundry_root: Path, update_expected_output: bo
         tests=[(test_id, None)],
         smt_timeout=300,
         smt_retry_limit=10,
+        simplify_init=False,
         auto_abstract_gas=True,
     )
 
