@@ -87,10 +87,6 @@ class Foundry:
         return self.out / 'proofs'
 
     @property
-    def proofs_index(self) -> Path:
-        return self.proofs_dir / 'index.json'
-
-    @property
     def digest_file(self) -> Path:
         return self.out / 'digest'
 
@@ -139,10 +135,6 @@ class Foundry:
 
     def mk_proofs_dir(self) -> None:
         self.proofs_dir.mkdir(exist_ok=True)
-        try:
-            self.proofs_index.open('x')
-        except FileExistsError:
-            pass
 
     def method_digest(self, contract_name: str, method_sig: str) -> str:
         return self.contracts[contract_name].method_by_sig[method_sig].digest
@@ -151,35 +143,6 @@ class Foundry:
     def digest(self) -> str:
         contract_digests = [self.contracts[c].digest for c in sorted(self.contracts)]
         return hash_str('\n'.join(contract_digests))
-
-    def proof_digest(self, test_id: str) -> str:
-        with open(self.proofs_index) as f:
-            content = f.read()
-            if content != '':
-                try:
-                    return json.loads(content)[test_id]['digest']
-                except KeyError:
-                    pass
-            return ''
-
-    def write_proof_digest(self, test_id: str) -> None:
-        contract_name, test = test_id.split('.')
-        if test == 'setUp()':
-            method_sig = test
-        else:
-            method_sig, _ = test.split(':')
-        if not self.proofs_index.exists():
-            self.proofs_index.open('r+')
-        content = self.proofs_index.read_text()
-        if content != '':
-            obj = json.loads(content)
-        else:
-            obj = {}
-        if test_id not in content:
-            obj[test_id] = {}
-        foundry_digest = self.method_digest(contract_name, method_sig)
-        obj[test_id]['digest'] = foundry_digest
-        self.proofs_index.write_text(json.dumps(obj))
 
     @cached_property
     def llvm_dylib(self) -> Path | None:
@@ -419,15 +382,6 @@ class Foundry:
         ]
         return [proof for proof in proofs if proof is not None]
 
-    def up_to_date_proofs(self, test: str) -> list[Proof]:
-        contract_name, method_sig = test.split('.')
-        matching_proofs = self.proofs_with_test(test)
-        return [
-            proof
-            for proof in matching_proofs
-            if self.proof_digest(proof.id) == self.method_digest(contract_name, method_sig)
-        ]
-
     def get_apr_proof(self, test_id: str) -> APRProof:
         proof = Proof.read_proof_data(self.proofs_dir, test_id)
         if not isinstance(proof, APRProof):
@@ -457,6 +411,21 @@ class Foundry:
         reinit: bool,
         user_specified_id: str | None,
     ) -> str:
+        def _proof_up_to_date() -> bool:
+            contract_name, method_name = test.split('.')
+            contract = self.contracts[contract_name]
+            if method_name == 'init':
+                assert contract.constructor is not None
+                if not contract.constructor.up_to_date(self.digest_file):
+                    contract.constructor.update_digest(self.digest_file)
+                    return False
+            else:
+                method = contract.method_by_sig[method_name]
+                if not method.up_to_date(self.digest_file):
+                    method.update_digest(self.digest_file)
+                    return False
+            return True
+
         if reinit and user_specified_id is not None:
             raise ValueError('--reinit is not compatible with specifying proof IDs.')
 
@@ -466,24 +435,15 @@ class Foundry:
 
         if user_specified_id:
             _LOGGER.info(f'Using user-specified ID {user_specified_id} for test {test}')
-            # TODO check to make sure the proof exists on disk
-            # TODO warn if the proof method is out of date
+            if not Proof.proof_data_exists(f'{test}:{user_specified_id}', self.proofs_dir):
+                raise ValueError(f'The specified version {user_specified_id} of proof {test} does not exist.')
+            if not _proof_up_to_date():
+                _LOGGER.warn(f'Using specified version {user_specified_id} of proof {test}, but it is out of date.')
             return user_specified_id
 
-        contract_name, method_name = test.split('.')
-        contract = self.contracts[contract_name]
-        if method_name == 'init':
-            assert contract.constructor is not None
-            if not contract.constructor.up_to_date(self.digest_file):
-                _LOGGER.info(f'Creating a new version of test {test} because it is out of date.')
-                contract.constructor.update_digest(self.digest_file)
-                return self.free_proof_id(test)
-        else:
-            method = contract.method_by_sig[method_name]
-            if not method.up_to_date(self.digest_file):
-                _LOGGER.info(f'Creating a new version of test {test} because it is out of date.')
-                method.update_digest(self.digest_file)
-                return self.free_proof_id(test)
+        if not _proof_up_to_date():
+            _LOGGER.info(f'Creating a new version of test {test} because it is out of date.')
+            return self.free_proof_id(test)
 
         latest_id = self.latest_proof_id(test)
         if latest_id is not None:
@@ -761,56 +721,6 @@ def foundry_prove(
             if foundry.contracts[contract_name].constructor is not None
         )
     )
-
-    #      test_methods = [
-    #          method
-    #          for contract in foundry.contracts.values()
-    #          for method in contract.methods
-    #          if (
-    #              f'{method.contract_name}.{method.signature}' in test_names
-    #              or (method.is_setup and method.contract_name in contracts)
-    #          )
-    #      ]
-
-    #      out_of_date_methods: set[str] = set()
-    #      for method in test_methods:
-    #          if not method.up_to_date(foundry.out / 'digest') or reinit:
-    #              out_of_date_methods.add(method.signature)
-    #              _LOGGER.info(f'Method {method.signature} is out of date, so it was reinitialized')
-    #          else:
-    #              _LOGGER.info(f'Method {method.signature} not reinitialized because it is up to date')
-    #              if not method.contract_up_to_date(foundry.out / 'digest'):
-    #                  _LOGGER.warning(
-    #                      f'Method {method.signature} not reinitialized because digest was up to date, but the contract it is a part of has changed.'
-    #                  )
-    #          method.update_digest(foundry.out / 'digest')
-    #
-    #
-    #      for i, (test, id) in enumerate(tests):
-    #          contract_name, method_sig = test.split('.')
-    #          foundry_digest = foundry.method_digest(contract_name, method_sig)
-    #          up_to_date_proofs = foundry.up_to_date_proofs(test)
-    #          if id is None and not reinit and len(up_to_date_proofs) > 0:
-    #              matching_proofs = foundry.proofs_with_test(test)
-    #              up_to_date_proofs = [proof for proof in matching_proofs if foundry.proof_digest(proof.id) == foundry_digest]
-    #              if len(up_to_date_proofs) > 1:
-    #                  raise ValueError(
-    #                      f'Found {len(up_to_date_proofs)} up to date proofs for {test}. Specify an id with "--test {test},`id`" flag to choose one.'
-    #                  )
-    #              elif len(up_to_date_proofs) == 1:
-    #                  id = single(up_to_date_proofs).id.split(':')[1]
-    #          elif reinit or test in out_of_date_methods or len(up_to_date_proofs) == 0:
-    #              if id is not None:
-    #                  _LOGGER.warn(
-    #                      'an id was specified but the proof has to be reinitialized so a new id will be attributed.'
-    #                  )
-    #              id = foundry.free_proof_id(test)
-    #          else:
-    #              test_id = f'{test}:{id}'
-    #              if foundry.proof_digest(test_id) != foundry_digest:
-    #                  raise ValueError(f'Proof with id `{test_id}` is not up to date.')
-    #          assert id is not None
-    #          tests[i] = (test, id)
 
     def _init_and_run_proof(_init_problem: tuple[str, str, str | None]) -> tuple[bool, list[str] | None]:
         contract_name, method_sig, id = _init_problem
@@ -1411,8 +1321,6 @@ def _method_to_apr_proof(
         target_term = KDefinition__expand_macros(foundry.kevm.definition, target_term)
         target_cterm = CTerm.from_kast(target_term)
         kcfg.replace_node(target_node_id, target_cterm)
-
-        foundry.write_proof_digest(test_id)
 
         if simplify_init:
             _LOGGER.info(f'Simplifying KCFG for test: {test_id}')
