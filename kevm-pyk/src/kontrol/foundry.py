@@ -492,7 +492,9 @@ class Foundry:
             )
             return latest_id
 
-        _LOGGER.info(f'Test {test} is up to date in {self.digest_file}, but does not exist on disk. Assigning version 0')
+        _LOGGER.info(
+            f'Test {test} is up to date in {self.digest_file}, but does not exist on disk. Assigning version 0'
+        )
         return '0'
 
     def latest_proof_id(
@@ -1310,41 +1312,47 @@ def _contract_to_apr_proof(
             f'Proof cannot be generated for contract: {contract.name}. Constructors with arguments are not supported.'
         )
 
-    empty_config = foundry.kevm.definition.empty_config(GENERATED_TOP_CELL)
-    kcfg, init_node_id, target_node_id = _contract_to_cfg(
-        empty_config,
-        contract,
-        save_directory,
-        foundry=foundry,
-    )
-
-    _LOGGER.info(f'Expanding macros in initial state for test: {test_id}')
-    init_term = kcfg.node(init_node_id).cterm.kast
-    init_term = KDefinition__expand_macros(foundry.kevm.definition, init_term)
-    init_cterm = CTerm.from_kast(init_term)
-    _LOGGER.info(f'Computing definedness constraint for test: {test_id}')
-    init_cterm = kcfg_explore.cterm_assume_defined(init_cterm)
-    _LOGGER.info(f'Computing definedness constraint for test: {test_id} done')
-    kcfg.replace_node(init_node_id, init_cterm)
-
-    _LOGGER.info(f'Expanding macros in target state for test: {test_id}')
-    target_term = kcfg.node(target_node_id).cterm.kast
-    target_term = KDefinition__expand_macros(foundry.kevm.definition, target_term)
-    target_cterm = CTerm.from_kast(target_term)
-    kcfg.replace_node(target_node_id, target_cterm)
-
     apr_proof: APRProof
-    if simplify_init:
-        _LOGGER.info(f'Simplifying KCFG for test: {test_id}')
-        for node in kcfg.nodes:
-            print(foundry.kevm.pretty_print(node.cterm.kast))
-        kcfg_explore.simplify(kcfg, {})
-    if bmc_depth is not None:
-        apr_proof = APRBMCProof(
-            test_id, kcfg, [], init_node_id, target_node_id, {}, bmc_depth, proof_dir=save_directory
-        )
+
+    if Proof.proof_data_exists(test_id, save_directory):
+        apr_proof = foundry.get_apr_proof(test_id)
     else:
-        apr_proof = APRProof(test_id, kcfg, [], init_node_id, target_node_id, {}, proof_dir=save_directory)
+        _LOGGER.info(f'Initializing KCFG for test: {test_id}')
+
+        empty_config = foundry.kevm.definition.empty_config(GENERATED_TOP_CELL)
+        kcfg, init_node_id, target_node_id = _contract_to_cfg(
+            empty_config,
+            contract,
+            save_directory,
+            foundry=foundry,
+        )
+
+        _LOGGER.info(f'Expanding macros in initial state for test: {test_id}')
+        init_term = kcfg.node(init_node_id).cterm.kast
+        init_term = KDefinition__expand_macros(foundry.kevm.definition, init_term)
+        init_cterm = CTerm.from_kast(init_term)
+        _LOGGER.info(f'Computing definedness constraint for test: {test_id}')
+        init_cterm = kcfg_explore.cterm_assume_defined(init_cterm)
+        _LOGGER.info(f'Computing definedness constraint for test: {test_id} done')
+        kcfg.replace_node(init_node_id, init_cterm)
+
+        _LOGGER.info(f'Expanding macros in target state for test: {test_id}')
+        target_term = kcfg.node(target_node_id).cterm.kast
+        target_term = KDefinition__expand_macros(foundry.kevm.definition, target_term)
+        target_cterm = CTerm.from_kast(target_term)
+        kcfg.replace_node(target_node_id, target_cterm)
+
+        if simplify_init:
+            _LOGGER.info(f'Simplifying KCFG for test: {test_id}')
+            for node in kcfg.nodes:
+                print(foundry.kevm.pretty_print(node.cterm.kast))
+            kcfg_explore.simplify(kcfg, {})
+        if bmc_depth is not None:
+            apr_proof = APRBMCProof(
+                test_id, kcfg, [], init_node_id, target_node_id, {}, bmc_depth, proof_dir=save_directory
+            )
+        else:
+            apr_proof = APRProof(test_id, kcfg, [], init_node_id, target_node_id, {}, proof_dir=save_directory)
 
     apr_proof.write_proof_data()
     return apr_proof
