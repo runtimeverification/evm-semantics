@@ -815,10 +815,6 @@ def foundry_prove(
         for setup_method_name in setup_methods
     ]
 
-    print(constructors_with_versions)
-    print(setup_methods_with_versions)
-    print(tests_with_versions)
-
     if run_constructor:
         _LOGGER.info(f'Running initialization code for contracts in parallel: {constructors}')
         results = run_cfg_group(constructors_with_versions)
