@@ -1254,8 +1254,6 @@ def _contract_to_apr_proof(
 
         if simplify_init:
             _LOGGER.info(f'Simplifying KCFG for test: {test_id}')
-            for node in kcfg.nodes:
-                print(foundry.kevm.pretty_print(node.cterm.kast))
             kcfg_explore.simplify(kcfg, {})
         if bmc_depth is not None:
             apr_proof = APRBMCProof(
