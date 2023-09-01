@@ -312,7 +312,7 @@ class Contract:
     bytecode: str
     raw_sourcemap: str | None
     methods: tuple[Method, ...]
-    constructor: Constructor
+    constructor: Constructor | None
     fields: FrozenDict
     PREFIX_CODE: Final = 'Z'
 
@@ -331,6 +331,7 @@ class Contract:
 
         bytecode = evm['bytecode']
         self.bytecode = bytecode['object'].replace('0x', '')
+        self.constructor = None
 
         contract_ast_nodes = [
             node
