@@ -2951,6 +2951,102 @@ module InitCodeTest-CONTRACT
 
 endmodule
 
+module InitCodeBranchTest-CONTRACT
+    imports public FOUNDRY
+    
+    syntax Contract ::= S2KInitCodeBranchTestContract
+    
+    syntax S2KInitCodeBranchTestContract ::= "S2KInitCodeBranchTest" [symbol(), klabel(contract_InitCodeBranchTest)]
+    
+      
+    
+    rule  ( #initBytecode ( S2KInitCodeBranchTest ) => #parseByteStack ( "0x608060408190526000805462ff00ff1916620100011790556316f02cd760e11b905230608452737109709ecfa91a80626ff3989d68f67f5b1dd12d632de059ae60a4600060405180830381600087803b15801561005b57600080fd5b505af115801561006f573d6000803e3d6000fd5b50505050600a6008541161008757600160095561008d565b60026009555b6105438061009c6000396000f3fe608060405234801561001057600080fd5b50600436106100625760003560e01c80631197d48c146100675780633a76846314610071578063ba414fa6146100a9578063d6a2ec76146100c1578063f8ccbf47146100e8578063fa7626d4146100fb575b600080fd5b61006f610108565b005b61008c737109709ecfa91a80626ff3989d68f67f5b1dd12d81565b6040516001600160a01b0390911681526020015b60405180910390f35b6100b1610117565b60405190151581526020016100a0565b61008c7f885cb69240a935d632d79c317109709ecfa91a80626ff3989d68f67f5b1dd12d81565b6000546100b19062010000900460ff1681565b6000546100b19060ff1681565b6101156009546001610242565b565b60008054610100900460ff16156101375750600054610100900460ff1690565b6000737109709ecfa91a80626ff3989d68f67f5b1dd12d3b1561023d5760408051737109709ecfa91a80626ff3989d68f67f5b1dd12d602082018190526519985a5b195960d21b828401528251808303840181526060830190935260009290916101c5917f667f9d70ca411d70ead50d8d5c22070dafc36ad75f3dcf5e7237b22ade9aecc4916080016104b4565b60408051601f19818403018152908290526101df916104d8565b6000604051808303816000865af19150503d806000811461021c576040519150601f19603f3d011682016040523d82523d6000602084013e610221565b606091505b509150508080602001905181019061023991906104eb565b9150505b919050565b808214610369577f41304facd9323d75b11bcdd609cb38effffdb05710f7caf0e9b16c6d9d709f506040516102b39060208082526022908201527f4572726f723a2061203d3d2062206e6f7420736174697366696564205b75696e604082015261745d60f01b606082015260800190565b60405180910390a160408051818152600a81830152690808080808081319599d60b21b60608201526020810184905290517fb2de2fbe801a0df6c0cbddfd448ba3c41d48a040ca35c56c8196ef0fcae721a89181900360800190a160408051818152600a81830152690808080808149a59da1d60b21b60608201526020810183905290517fb2de2fbe801a0df6c0cbddfd448ba3c41d48a040ca35c56c8196ef0fcae721a89181900360800190a161036961036d565b5050565b737109709ecfa91a80626ff3989d68f67f5b1dd12d3b156104685760408051737109709ecfa91a80626ff3989d68f67f5b1dd12d602082018190526519985a5b195960d21b9282019290925260016060820152600091907f70ca10bbd0dbfd9020a9f4b13402c16cb120705e0d1c0aeab10fa353ae586fc49060800160408051601f198184030181529082905261040792916020016104b4565b60408051601f1981840301815290829052610421916104d8565b6000604051808303816000865af19150503d806000811461045e576040519150601f19603f3d011682016040523d82523d6000602084013e610463565b606091505b505050505b6000805461ff001916610100179055565b6000815160005b8181101561049a5760208185018101518683015201610480565b818111156104a9576000828601525b509290920192915050565b6001600160e01b03198316815260006104d06004830184610479565b949350505050565b60006104e48284610479565b9392505050565b6000602082840312156104fd57600080fd5b815180151581146104e457600080fdfea2646970667358221220fddbffbe36ef8eb42235df4e709f959709f711b8b3e9a897f55701c2a2dffafa64736f6c634300080d0033" ) )
+      
+    
+    syntax Field ::= InitCodeBranchTestField
+    
+    syntax InitCodeBranchTestField ::= "IS_TEST" [symbol(), klabel(field_InitCodeBranchTest_IS_TEST)]
+    
+    syntax InitCodeBranchTestField ::= "_failed" [symbol(), klabel(field_InitCodeBranchTest__failed)]
+    
+    syntax InitCodeBranchTestField ::= "IS_SCRIPT" [symbol(), klabel(field_InitCodeBranchTest_IS_SCRIPT)]
+    
+    syntax InitCodeBranchTestField ::= "stdstore" [symbol(), klabel(field_InitCodeBranchTest_stdstore)]
+    
+    syntax InitCodeBranchTestField ::= "a" [symbol(), klabel(field_InitCodeBranchTest_a)]
+    
+    syntax InitCodeBranchTestField ::= "b" [symbol(), klabel(field_InitCodeBranchTest_b)]
+    
+    rule  ( #loc ( S2KInitCodeBranchTest . IS_TEST ) => 0 )
+      
+    
+    rule  ( #loc ( S2KInitCodeBranchTest . _failed ) => 0 )
+      
+    
+    rule  ( #loc ( S2KInitCodeBranchTest . IS_SCRIPT ) => 0 )
+      
+    
+    rule  ( #loc ( S2KInitCodeBranchTest . stdstore ) => 1 )
+      
+    
+    rule  ( #loc ( S2KInitCodeBranchTest . a ) => 8 )
+      
+    
+    rule  ( #loc ( S2KInitCodeBranchTest . b ) => 9 )
+      
+    
+    syntax Bytes ::= S2KInitCodeBranchTestContract "." S2KInitCodeBranchTestMethod [function(), symbol(), klabel(method_InitCodeBranchTest)]
+    
+    syntax S2KInitCodeBranchTestMethod ::= "S2KISZUndSCRIPT" "(" ")" [symbol(), klabel(method_InitCodeBranchTest_S2KISZUndSCRIPT_)]
+    
+    syntax S2KInitCodeBranchTestMethod ::= "S2KISZUndTEST" "(" ")" [symbol(), klabel(method_InitCodeBranchTest_S2KISZUndTEST_)]
+    
+    syntax S2KInitCodeBranchTestMethod ::= "S2Kfailed" "(" ")" [symbol(), klabel(method_InitCodeBranchTest_S2Kfailed_)]
+    
+    syntax S2KInitCodeBranchTestMethod ::= "S2Kkevm" "(" ")" [symbol(), klabel(method_InitCodeBranchTest_S2Kkevm_)]
+    
+    syntax S2KInitCodeBranchTestMethod ::= "S2KtestZUndbranch" "(" ")" [symbol(), klabel(method_InitCodeBranchTest_S2KtestZUndbranch_)]
+    
+    syntax S2KInitCodeBranchTestMethod ::= "S2Kvm" "(" ")" [symbol(), klabel(method_InitCodeBranchTest_S2Kvm_)]
+    
+    rule  ( S2KInitCodeBranchTest . S2KISZUndSCRIPT ( ) => #abiCallData ( "IS_SCRIPT" , .TypedArgs ) )
+      
+    
+    rule  ( S2KInitCodeBranchTest . S2KISZUndTEST ( ) => #abiCallData ( "IS_TEST" , .TypedArgs ) )
+      
+    
+    rule  ( S2KInitCodeBranchTest . S2Kfailed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
+      
+    
+    rule  ( S2KInitCodeBranchTest . S2Kkevm ( ) => #abiCallData ( "kevm" , .TypedArgs ) )
+      
+    
+    rule  ( S2KInitCodeBranchTest . S2KtestZUndbranch ( ) => #abiCallData ( "test_branch" , .TypedArgs ) )
+      
+    
+    rule  ( S2KInitCodeBranchTest . S2Kvm ( ) => #abiCallData ( "vm" , .TypedArgs ) )
+      
+    
+    rule  ( selector ( "IS_SCRIPT()" ) => 4174167879 )
+      
+    
+    rule  ( selector ( "IS_TEST()" ) => 4202047188 )
+      
+    
+    rule  ( selector ( "failed()" ) => 3124842406 )
+      
+    
+    rule  ( selector ( "kevm()" ) => 3601001590 )
+      
+    
+    rule  ( selector ( "test_branch()" ) => 295163020 )
+      
+    
+    rule  ( selector ( "vm()" ) => 980845667 )
+      
+
+endmodule
+
 module KEVMCheats-CONTRACT
     imports public FOUNDRY
     

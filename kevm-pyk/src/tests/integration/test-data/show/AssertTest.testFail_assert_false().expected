@@ -20,7 +20,7 @@
 │   statusCode: EVMC_SUCCESS
 │
 │  (2 steps)
-├─ 5
+├─ 5 (terminal)
 │   k: #halt ~> CONTINUATION:K
 │   pc: 251
 │   callDepth: 0

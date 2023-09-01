@@ -33,6 +33,7 @@ module FOUNDRY-MAIN
     imports public GasTest-VERIFICATION
     imports public GetCodeTest-VERIFICATION
     imports public InitCodeTest-VERIFICATION
+    imports public InitCodeBranchTest-VERIFICATION
     imports public KEVMCheats-VERIFICATION
     imports public KEVMCheatsBase-VERIFICATION
     imports public LabelTest-VERIFICATION
@@ -294,6 +295,13 @@ endmodule
 
 module InitCodeTest-VERIFICATION
     imports public InitCodeTest-CONTRACT
+    
+    
+
+endmodule
+
+module InitCodeBranchTest-VERIFICATION
+    imports public InitCodeBranchTest-CONTRACT
     
     
 
