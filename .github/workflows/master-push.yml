@@ -23,6 +23,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           ref: ${{ github.event.push.head.sha }}
+          fetch-depth: 0
       - name: 'Upgrade bash'
         if: ${{ contains(matrix.os, 'macos') }}
         run: brew install bash
@@ -61,6 +62,7 @@ jobs:
         with:
           submodules: recursive
           ref: ${{ github.event.push.head.sha }}
+          fetch-depth: 0
       - name: 'Set up Docker'
         uses: ./.github/actions/with-docker
         with:
@@ -119,6 +121,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           ref: ${{ github.event.push.head.sha }}
+          fetch-depth: 0
       - name: 'Make Release'
         env:
          GITHUB_TOKEN: ${{ secrets.JENKINS_GITHUB_PAT }}
@@ -150,7 +153,7 @@ jobs:
           npm run build-sitemap
           cd -
           mv web/public_content ./
-          rm -rf $(find . -maxdepth 1 -not -name public_content -a -not -name .git -a -not -path . -a -not -path .. -a -not -name CNAME)
+          rm -rf $(find . -maxdepth 1 -not -name public_content -a -not -name .git -a -not -name .gitmodules -a -not -path . -a -not -path .. -a -not -name CNAME)
           mv public_content/* ./
           rm -rf public_content
           git add ./
