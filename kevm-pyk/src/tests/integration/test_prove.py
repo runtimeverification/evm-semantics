@@ -6,8 +6,8 @@ import sys
 from typing import TYPE_CHECKING, NamedTuple
 
 import pytest
-from pyk.proof.reachability import APRProof
 from pyk.cterm import CTerm
+from pyk.proof.reachability import APRProof
 
 from kevm_pyk import config
 from kevm_pyk.__main__ import exec_prove
