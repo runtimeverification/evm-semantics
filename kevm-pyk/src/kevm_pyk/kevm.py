@@ -354,15 +354,6 @@ class KEVM(KProve, KRun):
         return KApply('_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes', [b1, b2])
 
     @staticmethod
-    def tuple_type(args: list[KApply]) -> KApply:
-        if len(args) == 0:
-            return KApply('.List{"_,__EVM-ABI_TypedArgs_TypedArg_TypedArgs"}_TypedArgs(.KList)')
-        elif len(args) == 1:
-            return KApply('_,__EVM-ABI_TypedArgs_TypedArg_TypedArgs(TARGA,.List{"_,__EVM-ABI_TypedArgs_TypedArg_TypedArgs"}_TypedArgs(.KList))')
-        else:
-            return KApply('_,__EVM-ABI_TypedArgs_TypedArg_TypedArgs(TARGA,TARGS)', args)
-
-    @staticmethod
     def account_cell(
         id: KInner, balance: KInner, code: KInner, storage: KInner, orig_storage: KInner, nonce: KInner
     ) -> KApply:
@@ -398,19 +389,21 @@ class KEVM(KProve, KRun):
         return res
 
     @staticmethod
-    def typed_args(args: list[KApply]) -> KApply:
-        res = KApply('.List{"_,__EVM-ABI_TypedArgs_TypedArg_TypedArgs"}_TypedArgs')
+    def typed_args(args: list[KApply], res: KApply | None = None) -> KApply:
+        res = KEVM.empty_typedargs() if res is None else res
         for arg in reversed(args):
             res = KEVM.to_typed_arg(arg, res)
         return res
 
     @staticmethod
     def to_typed_arg(arg: KApply, res: KApply) -> KApply:
-        if arg.label == 'abi_type_tuple':
+        if arg.label.name == 'abi_type_tuple':
             args = [arg for arg in arg.args if type(arg) is KApply]
-            return KEVM.tuple_type(args)
+            tuple_apply = KApply('abi_type_tuple', KEVM.typed_args(args))
+            ret_arg = KApply('_,__EVM-ABI_TypedArgs_TypedArg_TypedArgs', [tuple_apply])
         else:
-            return KApply('_,__EVM-ABI_TypedArgs_TypedArg_TypedArgs', [arg, res])
+            ret_arg = arg
+        return KApply('_,__EVM-ABI_TypedArgs_TypedArg_TypedArgs', [ret_arg, res])
 
     @staticmethod
     def accounts(accts: list[KInner]) -> KInner:

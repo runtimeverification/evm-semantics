@@ -266,9 +266,7 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
 
     rule #typeName( #array(T, _, _)) => #typeName(T) +String "[]"
 
-    rule #typeName(#tuple(.TypedArgs))                 => "()"
-    rule #typeName(#tuple(TARGA:TypedArg, .TypedArgs)) => "(" +String #typeName(TARGA) +String ")"
-    rule #typeName(#tuple(TARGA:TypedArg, TARGS))      => "(" +String #generateSignatureArgs(TARGA, TARGS) +String ")"
+    rule #typeName(#tuple(TARGS))      => "(" +String #generateSignatureArgs(TARGS) +String ")"
 
     syntax Bytes ::= #encodeArgs    ( TypedArgs )                       [function]
     syntax Bytes ::= #encodeArgsAux ( TypedArgs , Int , Bytes , Bytes ) [function]

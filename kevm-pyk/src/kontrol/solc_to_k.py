@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import logging
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from functools import cached_property
 from subprocess import CalledProcessError
 from typing import TYPE_CHECKING
@@ -69,7 +69,7 @@ def solc_to_k(
 class Input:
     name: str
     type: str
-    components: list[Input]
+    components: list[Input] = field(default_factory=list)
     idx: int = 0
 
     @staticmethod
@@ -79,7 +79,7 @@ class Input:
         if _input.get('components') is not None and _input['type'] != 'tuple[]':
             return Input(name, type, Input.recurse_comp(_input['components'], i), i)
         else:
-            return Input(name, type, [], i)
+            return Input(name, type, idx=i)
 
     @staticmethod
     def recurse_comp(components: dict, i: int = 0) -> list[Input]:
@@ -548,7 +548,7 @@ class Contract:
     @staticmethod
     def recurse_components(components: list[Input]) -> KApply:
         """
-        do a recursive build of types if this is a tuple
+        do a recursive build of inner types
         """
         abi_types = []
         for comp in components:
@@ -565,9 +565,9 @@ class Contract:
     def field_sentences(self) -> list[KSentence]:
         prods: list[KSentence] = [self.subsort_field]
         rules: list[KSentence] = []
-        for field, slot in self.fields.items():
-            klabel = KLabel(self.klabel_field.name + f'_{field}')
-            prods.append(KProduction(self.sort_field, [KTerminal(field)], klabel=klabel, att=KAtt({'symbol': ''})))
+        for _field, slot in self.fields.items():
+            klabel = KLabel(self.klabel_field.name + f'_{_field}')
+            prods.append(KProduction(self.sort_field, [KTerminal(_field)], klabel=klabel, att=KAtt({'symbol': ''})))
             rule_lhs = KEVM.loc(KApply(KLabel('contract_access_field'), [KApply(self.klabel), KApply(klabel)]))
             rule_rhs = intToken(slot)
             rules.append(KRule(KRewrite(rule_lhs, rule_rhs)))
