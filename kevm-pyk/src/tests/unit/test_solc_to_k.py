@@ -87,10 +87,10 @@ def test_escaping(test_id: str, prefix: str, input: str, output: str) -> None:
 
 INPUT_DATA: list[tuple[str, Input, KApply]] = [
     ('single_type', Input('RV', 'uint256'), KApply('abi_type_uint256', [KVariable('V0_RV')])),
-    ('empty_tuple', Input('EmptyStruct', 'tuple', []), KApply('abi_type_tuple', [])),
+    ('empty_tuple', Input('EmptyStruct', 'tuple'), KApply('abi_type_tuple')),
     (
         'single_tuple',
-        Input('SomeStruct', 'tuple', [Input('RV1', 'uint256'), Input('RV2', 'uint256')]),
+        Input('SomeStruct', 'tuple', [Input('RV1', 'uint256'), Input('RV2', 'uint256', idx=1)]),
         KApply(
             'abi_type_tuple',
             [KApply('abi_type_uint256', [KVariable('V0_RV1')]), KApply('abi_type_uint256', [KVariable('V1_RV2')])],
@@ -101,7 +101,7 @@ INPUT_DATA: list[tuple[str, Input, KApply]] = [
         Input(
             'SomeStruct',
             'tuple',
-            [Input('RV', 'uint256'), Input('SomeStruct', 'tuple', [Input('RV', 'uint256')])],
+            [Input('RV', 'uint256'), Input('SomeStruct', 'tuple', [Input('RV', 'uint256', idx=1)])],
         ),
         KApply(
             'abi_type_tuple',
