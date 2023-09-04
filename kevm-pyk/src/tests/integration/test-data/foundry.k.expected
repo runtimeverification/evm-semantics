@@ -71,6 +71,7 @@ module FOUNDRY-MAIN
     imports public Token-VERIFICATION
     imports public BytesTypeTest-VERIFICATION
     imports public IntTypeTest-VERIFICATION
+    imports public StructTypeTest-VERIFICATION
     imports public UintTypeTest-VERIFICATION
     imports public Vm-VERIFICATION
     imports public console-VERIFICATION
@@ -560,6 +561,13 @@ endmodule
 
 module IntTypeTest-VERIFICATION
     imports public IntTypeTest-CONTRACT
+    
+    
+
+endmodule
+
+module StructTypeTest-VERIFICATION
+    imports public StructTypeTest-CONTRACT
     
     
 

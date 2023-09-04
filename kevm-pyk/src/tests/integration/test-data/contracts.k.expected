@@ -5885,6 +5885,30 @@ module IntTypeTest-CONTRACT
 
 endmodule
 
+module StructTypeTest-CONTRACT
+    imports public FOUNDRY
+    
+    syntax Contract ::= S2KStructTypeTestContract
+    
+    syntax S2KStructTypeTestContract ::= "S2KStructTypeTest" [symbol(), klabel(contract_StructTypeTest)]
+    
+      
+    
+    syntax Bytes ::= S2KStructTypeTestContract "." S2KStructTypeTestMethod [function(), symbol(), klabel(method_StructTypeTest)]
+    
+    syntax S2KStructTypeTestMethod ::= "S2KtestZUndvars" "(" Int ":" "uint8" "," Int ":" "uint32" ")" [symbol(), klabel(method_StructTypeTest_S2KtestZUndvars_uint8_uint32)]
+    
+    rule  ( S2KStructTypeTest . S2KtestZUndvars ( V0_a : uint8 , V1_timestamp : uint32 ) => #abiCallData ( "test_vars" , #tuple ( #uint8 ( V0_a ) , #uint32 ( V1_timestamp ) , .TypedArgs ) , .TypedArgs ) )
+       ensures ( #rangeUInt ( 8 , V0_a )
+       andBool ( #rangeUInt ( 32 , V1_timestamp )
+               ))
+      
+    
+    rule  ( selector ( "test_vars((uint8,uint32))" ) => 1202804621 )
+      
+
+endmodule
+
 module UintTypeTest-CONTRACT
     imports public FOUNDRY
     
