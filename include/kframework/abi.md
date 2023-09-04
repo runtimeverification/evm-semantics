@@ -271,7 +271,8 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     syntax Bytes ::= #encodeArgs    ( TypedArgs )                       [function]
     syntax Bytes ::= #encodeArgsAux ( TypedArgs , Int , Bytes , Bytes ) [function]
  // ------------------------------------------------------------------------------
-    rule #encodeArgs(ARGS) => #encodeArgsAux(ARGS, #lenOfHeads(ARGS), .Bytes, .Bytes)
+    rule #encodeArgs(#tuple(ARGS)) => #encodeArgs(ARGS)
+    rule #encodeArgs(ARGS)         => #encodeArgsAux(ARGS, #lenOfHeads(ARGS), .Bytes, .Bytes)
 
     rule #encodeArgsAux(.TypedArgs, _:Int, HEADS, TAILS) => HEADS +Bytes TAILS
 
@@ -285,8 +286,8 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
 
     syntax Int ::= #lenOfHeads ( TypedArgs ) [function, total]
  // ----------------------------------------------------------
-    rule #lenOfHeads(.TypedArgs) => 0
-    rule #lenOfHeads(ARG, ARGS)  => #lenOfHead(ARG) +Int #lenOfHeads(ARGS)
+    rule #lenOfHeads(.TypedArgs)   => 0
+    rule #lenOfHeads(ARG, ARGS)    => #lenOfHead(ARG) +Int #lenOfHeads(ARGS)
 
     syntax Int ::= #lenOfHead ( TypedArg ) [function, total]
  // --------------------------------------------------------

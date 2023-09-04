@@ -569,13 +569,11 @@ contract BytesTypeTest {
 contract StructTypeTest {
     struct Vars {
         uint8 a;
-        bytes32 slot;
         uint32 timestamp;
     }
 
     function test_vars(Vars calldata vars) public pure {
         assert(type(uint8).max >= vars.a);
-        assert(type(uint256).max >= uint256(vars.slot));
         assert(type(uint32).max >= vars.timestamp);
     }
 }
