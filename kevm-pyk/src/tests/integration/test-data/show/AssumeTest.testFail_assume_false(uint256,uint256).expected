@@ -296,7 +296,7 @@ Node 7:
                      CALLER_ID
                    </caller>
                    <callData>
-                     ( AssumeTest . testFail_assume_false ( VV0_a_114b9705 : uint256 , VV1_b_114b9705 : uint256 ) => b"_.p\xfb" +Bytes #buf ( 32 , VV0_a_114b9705:Int ) +Bytes #buf ( 32 , VV1_b_114b9705:Int ) )
+                     ( S2KAssumeTest . S2KtestFailZUndassumeZUndfalse ( VV0_a_114b9705 : uint256 , VV1_b_114b9705 : uint256 ) => b"_.p\xfb" +Bytes #buf ( 32 , VV0_a_114b9705:Int ) +Bytes #buf ( 32 , VV1_b_114b9705:Int ) )
                    </callData>
                    <callValue>
                      0
@@ -469,11 +469,11 @@ Node 7:
        andBool ( ORIGIN_ID <Int pow160
        andBool ( 0 <=Int NUMBER_CELL
        andBool ( NUMBER_CELL <=Int maxSInt256
-       andBool ( 0 <=Int 9223372036854775807
-       andBool ( 9223372036854775807 <Int pow256
+       andBool ( 0 <=Int maxSInt64
+       andBool ( maxSInt64 <Int pow256
        andBool ( 0 <=Int 728815563385977040452943777879061427756277306518
        andBool ( 728815563385977040452943777879061427756277306518 <Int pow160
-       andBool ( lengthBytes ( AssumeTest . testFail_assume_false ( VV0_a_114b9705 : uint256 , VV1_b_114b9705 : uint256 ) ) <Int pow128
+       andBool ( lengthBytes ( S2KAssumeTest . S2KtestFailZUndassumeZUndfalse ( VV0_a_114b9705 : uint256 , VV1_b_114b9705 : uint256 ) ) <Int pow128
                )))))))))))))))
        ensures ( 0 <=Int CALLER_ID:Int
        andBool ( 0 <=Int ORIGIN_ID:Int

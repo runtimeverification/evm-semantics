@@ -29,24 +29,27 @@ class FoundryMock:
     def __init__(self) -> None:
         self.out = LIST_DATA_DIR
 
+    @property
+    def proofs_dir(self) -> Path:
+        return self.out / 'apr_proofs'
+
     @cached_property
     def contracts(self) -> dict[str, Contract]:
         ret: dict[str, Contract] = {}
         for full_method in listdir(LIST_APR_PROOF):
             contract = Contract.__new__(Contract)
             method = Contract.Method.__new__(Contract.Method)
-            contract.name, method.signature = full_method.split('.')
+            contract_method, *_ = full_method.split(':')
+            contract.name, method.signature = contract_method.split('.')
             if not hasattr(contract, 'methods'):
                 contract.methods = ()
             contract.methods = contract.methods + (method,)
             ret[full_method] = contract
         return ret
 
-    def proof_digest(self, contract: str, test: str) -> str:
-        return f'{contract}.{test}'
-
-    def get_proof(self, test: str) -> Proof:
-        return Proof.read_proof_data(LIST_APR_PROOF, test)
+    def get_optional_proof(self, test_id: str) -> Proof | None:
+        print(test_id)
+        return Proof.read_proof_data(LIST_APR_PROOF, test_id)
 
 
 def test_foundry_list(mocker: MockerFixture, update_expected_output: bool) -> None:

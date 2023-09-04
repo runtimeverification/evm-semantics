@@ -109,7 +109,16 @@ class Contract:
         @property
         def klabel(self) -> KLabel:
             args_list = '_'.join(self.arg_types)
-            return KLabel(f'method_{self.contract_name}_{self.name}_{args_list}')
+            return KLabel(f'method_{self.contract_name}_{self.unique_name}_{args_list}')
+
+        @property
+        def unique_klabel(self) -> KLabel:
+            args_list = '_'.join(self.arg_types)
+            return KLabel(f'method_{self.contract_name}_{self.unique_name}_{args_list}')
+
+        @property
+        def unique_name(self) -> str:
+            return f'{Contract.escaped(self.name, "S2K")}'
 
         @cached_property
         def qualified_name(self) -> str:
@@ -164,7 +173,7 @@ class Contract:
 
         @property
         def production(self) -> KProduction:
-            items_before: list[KProductionItem] = [KTerminal(self.name), KTerminal('(')]
+            items_before: list[KProductionItem] = [KTerminal(self.unique_name), KTerminal('(')]
 
             items_args: list[KProductionItem] = []
             for i, input_type in enumerate(self.arg_types):
@@ -176,13 +185,13 @@ class Contract:
             return KProduction(
                 self.sort,
                 items_before + items_args + items_after,
-                klabel=self.klabel,
+                klabel=self.unique_klabel,
                 att=KAtt({'symbol': ''}),
             )
 
         def rule(self, contract: KInner, application_label: KLabel, contract_name: str) -> KRule | None:
             arg_vars = [KVariable(aname) for aname in self.arg_names]
-            prod_klabel = self.klabel
+            prod_klabel = self.unique_klabel
             assert prod_klabel is not None
             args: list[KInner] = []
             conjuncts: list[KInner] = []
@@ -229,6 +238,7 @@ class Contract:
     raw_sourcemap: str | None
     methods: tuple[Method, ...]
     fields: FrozenDict
+    PREFIX_CODE: Final = 'Z'
 
     def __init__(self, contract_name: str, contract_json: dict, foundry: bool = False) -> None:
         self.name = contract_name
@@ -329,11 +339,11 @@ class Contract:
 
     @staticmethod
     def contract_to_module_name(c: str) -> str:
-        return c.upper() + '-CONTRACT'
+        return c + '-CONTRACT'
 
     @staticmethod
     def contract_to_verification_module_name(c: str) -> str:
-        return c.upper() + '-VERIFICATION'
+        return c + '-VERIFICATION'
 
     @staticmethod
     def test_to_claim_name(t: str) -> str:
@@ -343,17 +353,78 @@ class Contract:
     def name_upper(self) -> str:
         return self.name[0:1].upper() + self.name[1:]
 
+    @staticmethod
+    def escaped_chars() -> list[str]:
+        return [Contract.PREFIX_CODE, '_', '$']
+
+    @staticmethod
+    def escape_char(char: str) -> str:
+        match char:
+            case Contract.PREFIX_CODE:
+                as_ecaped = Contract.PREFIX_CODE
+            case '_':
+                as_ecaped = 'Und'
+            case '$':
+                as_ecaped = 'Dlr'
+            case _:
+                as_ecaped = hex(ord(char)).removeprefix('0x')
+        return f'{Contract.PREFIX_CODE}{as_ecaped}'
+
+    @staticmethod
+    def unescape_seq(seq: str) -> tuple[str, int]:
+        if seq.startswith(Contract.PREFIX_CODE + Contract.PREFIX_CODE):
+            return Contract.PREFIX_CODE, 1
+        elif seq.startswith('Und'):
+            return '_', 3
+        elif seq.startswith('Dlr'):
+            return '$', 3
+        else:
+            return chr(int(seq, base=16)), 4
+
+    @staticmethod
+    def escaped(name: str, prefix: str) -> str:
+        """
+        escape all the chars that would cause issues once kompiling and add a prefix to mark it as "escaped"
+        """
+        escaped = [Contract.escape_char(char) if char in Contract.escaped_chars() else char for char in iter(name)]
+        return prefix + ''.join(escaped)
+
+    @staticmethod
+    def unescaped(name: str, prefix: str = '') -> str:
+        if not name.startswith(prefix):
+            raise RuntimeError(f'name {name} should start with {prefix}')
+        unescaped = name.removeprefix(prefix)
+        res = []
+        skipped = 0
+        i = 0
+        while i + skipped < len(unescaped[:-1]):
+            j = i + skipped
+            char = unescaped[j]
+            next_char = unescaped[j + 1]
+            if char == Contract.PREFIX_CODE:
+                unesc, to_skip = Contract.unescape_seq(unescaped[(j + 1) : (j + 4)])
+                res.append(unesc)
+                for _ in range(to_skip):
+                    skipped += 1
+            else:
+                res.append(char)
+            # write last char
+            if j + 2 == len(unescaped):
+                res.append(next_char)
+            i += 1
+        return ''.join(res)
+
     @property
     def sort(self) -> KSort:
-        return KSort(f'{self.name_upper}Contract')
+        return KSort(f'{Contract.escaped(self.name, "S2K")}Contract')
 
     @property
     def sort_field(self) -> KSort:
-        return KSort(f'{self.name_upper}Field')
+        return KSort(f'{self.name}Field')
 
     @property
     def sort_method(self) -> KSort:
-        return KSort(f'{self.name_upper}Method')
+        return KSort(f'{Contract.escaped(self.name, "S2K")}Method')
 
     @property
     def klabel(self) -> KLabel:
@@ -377,7 +448,9 @@ class Contract:
 
     @property
     def production(self) -> KProduction:
-        return KProduction(self.sort, [KTerminal(self.name)], klabel=self.klabel, att=KAtt({'symbol': ''}))
+        return KProduction(
+            self.sort, [KTerminal(Contract.escaped(self.name, 'S2K'))], klabel=self.klabel, att=KAtt({'symbol': ''})
+        )
 
     @property
     def macro_bin_runtime(self) -> KRule:
@@ -527,7 +600,7 @@ def _evm_base_sort_int(type_label: str) -> bool:
     # Check bytes
     if type_label.startswith('bytes') and len(type_label) > 5 and not type_label.endswith(']'):
         width = int(type_label[5:])
-        if not width in {4, 32}:
+        if not (0 < width <= 32):
             raise ValueError(f'Unsupported evm base sort type: {type_label}')
         else:
             success = True
@@ -535,7 +608,7 @@ def _evm_base_sort_int(type_label: str) -> bool:
     # Check ints
     if type_label.startswith('int') and not type_label.endswith(']'):
         width = int(type_label[3:])
-        if not width == 256:
+        if not (0 < width and width <= 256 and width % 8 == 0):
             raise ValueError(f'Unsupported evm base sort type: {type_label}')
         else:
             success = True
@@ -552,23 +625,26 @@ def _evm_base_sort_int(type_label: str) -> bool:
 
 
 def _range_predicate(term: KInner, type_label: str) -> KInner | None:
-    (success, result) = _range_predicate_uint(term, type_label)
-    if success:
-        return result
-    if type_label == 'address':
-        return KEVM.range_address(term)
-    if type_label == 'bool':
-        return KEVM.range_bool(term)
-    if type_label == 'bytes4':
-        return KEVM.range_bytes(intToken(4), term)
-    if type_label in {'bytes32', 'uint256'}:
-        return KEVM.range_uint(256, term)
-    if type_label == 'int256':
-        return KEVM.range_sint(256, term)
-    if type_label == 'bytes':
-        return KEVM.range_uint(128, KEVM.size_bytes(term))
-    if type_label == 'string':
-        return TRUE
+    match type_label:
+        case 'address':
+            return KEVM.range_address(term)
+        case 'bool':
+            return KEVM.range_bool(term)
+        case 'bytes':
+            return KEVM.range_uint(128, KEVM.size_bytes(term))
+        case 'string':
+            return TRUE
+
+    predicate_functions = [
+        _range_predicate_uint,
+        _range_predicate_int,
+        _range_predicate_bytes,
+    ]
+
+    for f in predicate_functions:
+        (success, result) = f(term, type_label)
+        if success:
+            return result
 
     _LOGGER.info(f'Unknown range predicate for type: {type_label}')
     return None
@@ -576,12 +652,39 @@ def _range_predicate(term: KInner, type_label: str) -> KInner | None:
 
 def _range_predicate_uint(term: KInner, type_label: str) -> tuple[bool, KInner | None]:
     if type_label.startswith('uint') and not type_label.endswith(']'):
-        width = int(type_label[4:])
-        if not (0 < width and width <= 256 and width % 8 == 0):
-            raise ValueError(f'Unsupported range predicate type: {type_label}')
+        if type_label == 'uint':
+            width = 256
+        else:
+            width = int(type_label[4:])
+        if not (0 < width <= 256 and width % 8 == 0):
+            raise ValueError(f'Unsupported range predicate uint<M> type: {type_label}')
         return (True, KEVM.range_uint(width, term))
     else:
         return (False, None)
+
+
+def _range_predicate_int(term: KInner, type_label: str) -> tuple[bool, KInner | None]:
+    if type_label.startswith('int') and not type_label.endswith(']'):
+        if type_label == 'int':
+            width = 256
+        else:
+            width = int(type_label[3:])
+        if not (0 < width and width <= 256 and width % 8 == 0):
+            raise ValueError(f'Unsupported range predicate int<M> type: {type_label}')
+        return (True, KEVM.range_sint(width, term))
+    else:
+        return (False, None)
+
+
+def _range_predicate_bytes(term: KInner, type_label: str) -> tuple[bool, KInner | None]:
+    if type_label.startswith('bytes') and not type_label.endswith(']'):
+        str_width = type_label[5:]
+        if str_width != '':
+            width = int(str_width)
+            if not (0 < width and width <= 32):
+                raise ValueError(f'Unsupported range predicate bytes<M> type: {type_label}')
+            return (True, KEVM.range_bytes(intToken(width), term))
+    return (False, None)
 
 
 def method_sig_from_abi(method_json: dict) -> str:

@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "kevm-pyk"
-version = "1.0.262"
+version = "1.0.286"
 description = ""
 authors = [
     "Runtime Verification, Inc. <contact@runtimeverification.com>",
@@ -17,7 +17,7 @@ packages = [
 [tool.poetry.dependencies]
 python = "^3.10"
 pathos = "*"
-pyk = { git = "https://github.com/runtimeverification/pyk.git", tag="v0.1.413" }
+pyk = { git = "https://github.com/runtimeverification/pyk.git", tag="v0.1.431" }
 tomlkit = "^0.11.6"
 
 [tool.poetry.group.dev.dependencies]

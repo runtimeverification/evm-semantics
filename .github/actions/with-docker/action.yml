@@ -1,10 +1,15 @@
 name: 'With Docker'
 description: 'Run a given stage with Docker Image'
 inputs:
-  tag:
-    description: 'Docker image tag to use'
+  container-name:
+    description: 'Docker container name to use'
     type: string
     required: true
+  tag-name:
+    description: 'Docker image tag to use'
+    type: string
+    required: false
+    default: runtimeverificationinc/kevm
   subdir:
     description: 'Subdirectory where code is cloned.'
     required: false
@@ -25,11 +30,6 @@ inputs:
     required: false
     type: number
     default: 14
-  jdk:
-    description: 'JDK version to use.'
-    required: false
-    type: number
-    default: 17
   dockerfile:
     description: 'Hardcode the path of the dockerfile to use.'
     required: false
@@ -43,53 +43,45 @@ runs:
     run: |
       set -euxo pipefail
 
-      TAG_NAME=${{ inputs.tag }}
+      CONTAINER_NAME=${{ inputs.container-name }}
       SUBDIR=${{ inputs.subdir }}
       BASE_OS=${{ inputs.os }}
       BASE_DISTRO=${{ inputs.distro }}
-      JDK_VERSION=${{ inputs.jdk }}
       DOCKERFILE=${{ inputs.dockerfile }}
       LLVM_VERSION=${{ inputs.llvm }}
+      TAG_NAME=${{ inputs.tag-name }}
 
       USER=github-user
       GROUP=${USER}
       Z3_VERSION=4.12.1
-      K_COMMIT=$(cat deps/k_release)
+      K_VERSION=$(cat deps/k_release)
       USER_ID=1000
       GROUP_ID=${USER_ID}
-      K_VERSION=$(cat deps/k/package/version)
 
       docker build .                           \
         --file .github/workflows/Dockerfile.z3 \
         --tag z3:${Z3_VERSION}                 \
 
-      docker build deps/k                                           \
-        --file deps/k/.github/workflows/Dockerfile.stack-deps       \
-        --tag stack:${BASE_DISTRO}-${K_VERSION}                     \
-        --build-arg BASE_OS=${BASE_OS}                              \
-        --build-arg BASE_DISTRO=${BASE_DISTRO}
-
-      docker build . --file ${DOCKERFILE} \
-        --tag runtimeverification/${TAG_NAME}            \
-        --build-arg USER_ID=${USER_ID}                   \
-        --build-arg GROUP_ID=${GROUP_ID}                 \
-        --build-arg USER=${USER}                         \
-        --build-arg GROUP=${GROUP}                       \
-        --build-arg BASE_DISTRO=${BASE_DISTRO}           \
-        --build-arg K_COMMIT=${K_COMMIT}                 \
-        --build-arg K_VERSION=${K_VERSION}               \
-        --build-arg Z3_VERSION=${Z3_VERSION}             \
+      docker build . --file ${DOCKERFILE}        \
+        --tag ${TAG_NAME}                        \
+        --build-arg USER_ID=${USER_ID}           \
+        --build-arg GROUP_ID=${GROUP_ID}         \
+        --build-arg USER=${USER}                 \
+        --build-arg GROUP=${GROUP}               \
+        --build-arg BASE_DISTRO=${BASE_DISTRO}   \
+        --build-arg K_VERSION=${K_VERSION}       \
+        --build-arg Z3_VERSION=${Z3_VERSION}     \
         --build-arg LLVM_VERSION=${LLVM_VERSION}
 
-      docker run                        \
-        --name ${TAG_NAME}              \
-        --rm                            \
-        --interactive                   \
-        --tty                           \
-        --detach                        \
-        --user root                     \
-        --workdir /home/${USER}/workspace  \
-        runtimeverification/${TAG_NAME}
+      docker run                          \
+        --name ${CONTAINER_NAME}          \
+        --rm                              \
+        --interactive                     \
+        --tty                             \
+        --detach                          \
+        --user root                       \
+        --workdir /home/${USER}/workspace \
+        ${TAG_NAME}
 
-      docker cp . ${TAG_NAME}:/home/${USER}/workspace
-      docker exec ${TAG_NAME} chown -R ${USER}:${GROUP} /home/${USER}
+      docker cp . ${CONTAINER_NAME}:/home/${USER}/workspace
+      docker exec ${CONTAINER_NAME} chown -R ${USER}:${GROUP} /home/${USER}

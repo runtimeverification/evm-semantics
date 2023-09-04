@@ -1,9 +1,9 @@
 
 ┌─ 1 (root, init)
-│   k: #execute ~> CONTINUATION:K
+│   k: #execute ~> CONTINUATION
 │   pc: 0
 │   callDepth: 0
-│   statusCode: STATUSCODE:StatusCode
+│   statusCode: STATUSCODE
 │
 │  (511 steps)
 ├─ 3
@@ -92,10 +92,10 @@
 
 
 ┌─ 2 (root, leaf, target)
-│   k: #halt ~> CONTINUATION:K
-│   pc: PC_CELL_5d410f2a:Int
-│   callDepth: CALLDEPTH_CELL_5d410f2a:Int
-│   statusCode: STATUSCODE_FINAL:StatusCode
+│   k: #halt ~> CONTINUATION
+│   pc: PC_CELL_5d410f2a
+│   callDepth: CALLDEPTH_CELL_5d410f2a
+│   statusCode: STATUSCODE_FINAL
 
 
 Node 8:
@@ -407,10 +407,11 @@ Node 8:
     rule [BASIC-BLOCK-1-TO-3]: <foundry>
            <kevm>
              <k>
-               ( .K => CALL 9223372036854772946 645326474426547203313410069153905908525362434349 0 128 4 128 0
-               ~> #pc [ CALL ] )
+               ( #execute
+               ~> CONTINUATION => CALL 9223372036854772946 645326474426547203313410069153905908525362434349 0 128 4 128 0
+               ~> #pc [ CALL ]
                ~> #execute
-               ~> _CONTINUATION
+               ~> CONTINUATION:K )
              </k>
              <mode>
                NORMAL
@@ -433,10 +434,10 @@ Node 8:
                      728815563385977040452943777879061427756277306518
                    </id>
                    <caller>
-                     CALLER_ID:Int
+                     CALLER_ID
                    </caller>
                    <callData>
-                     b"c\xfe\xc36"
+                     ( S2KGasTest . S2KtestInfiniteGas ( ) => b"c\xfe\xc36" )
                    </callData>
                    <callValue>
                      0
@@ -445,7 +446,7 @@ Node 8:
                      ( .WordStack => ( 132 : ( selector ( "infiniteGas()" ) : ( 645326474426547203313410069153905908525362434349 : ( 167 : ( selector ( "testInfiniteGas()" ) : .WordStack ) ) ) ) ) )
                    </wordStack>
                    <localMem>
-                     ( b"" => b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xed\x9fsS\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" )
+                     ( .Bytes => b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xed\x9fsS\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" )
                    </localMem>
                    ...
                    ...
@@ -475,11 +476,11 @@ Node 8:
                    ...
                  </substate>
                  <origin>
-                   ORIGIN_ID:Int
+                   ORIGIN_ID
                  </origin>
                  <block>
                    <number>
-                     NUMBER_CELL:Int
+                     NUMBER_CELL
                    </number>
                    ...
                  </block>
@@ -568,7 +569,7 @@ Node 8:
                  0
                </expectedValue>
                <expectedData>
-                 b""
+                 ( .Bytes => b"" )
                </expectedData>
                <opcodeType>
                  .OpcodeType
@@ -599,7 +600,19 @@ Node 8:
              </whitelist>
            </cheatcodes>
          </foundry>
-      requires ( 0 <=Int CALLER_ID:Int
+      requires ( 0 <=Int CALLER_ID
+       andBool ( CALLER_ID <Int pow160
+       andBool ( 0 <=Int ORIGIN_ID
+       andBool ( ORIGIN_ID <Int pow160
+       andBool ( 0 <=Int NUMBER_CELL
+       andBool ( NUMBER_CELL <=Int maxSInt256
+       andBool ( lengthBytes ( S2KGasTest . S2KtestInfiniteGas ( ) ) <Int pow128
+       andBool ( 0 <=Int maxSInt64
+       andBool ( maxSInt64 <Int pow256
+       andBool ( 0 <=Int 728815563385977040452943777879061427756277306518
+       andBool ( 728815563385977040452943777879061427756277306518 <Int pow160
+               )))))))))))
+       ensures ( 0 <=Int CALLER_ID:Int
        andBool ( 0 <=Int ORIGIN_ID:Int
        andBool ( 0 <=Int NUMBER_CELL:Int
        andBool ( CALLER_ID:Int <Int pow160

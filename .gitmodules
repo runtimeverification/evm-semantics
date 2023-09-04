@@ -3,10 +3,6 @@
 	url = https://github.com/ethereum/tests.git
 	branch = develop
 	ignore = untracked
-[submodule "deps/k"]
-	path = deps/k
-	url = https://github.com/runtimeverification/k
-	ignore = untracked
 [submodule "deps/plugin"]
 	path = deps/plugin
 	url = https://github.com/runtimeverification/blockchain-k-plugin

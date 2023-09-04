@@ -15,7 +15,7 @@ module LEMMAS-MCD
 
 endmodule
 
-module LEMMAS-MCD-SYNTAX
+module LEMMAS-MCD-SYNTAX [symbolic]
     imports LEMMAS
 
   // ########################
@@ -160,7 +160,7 @@ module LEMMAS-MCD-HASKELL [symbolic, kore]
 endmodule
 
 
-module LEMMAS-MCD-COMMON
+module LEMMAS-MCD-COMMON [symbolic]
     imports LEMMAS-MCD-SYNTAX
     imports WORD-PACK
 
