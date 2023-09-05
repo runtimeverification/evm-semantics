@@ -21,7 +21,6 @@ from pyk.kcfg import KCFGExplore
 from pyk.kore.rpc import KoreClient, KoreExecLogFormat, kore_server
 from pyk.proof import APRBMCProof, APRBMCProver, APRProof, APRProver
 from pyk.proof.equality import EqualityProof, EqualityProver
-from pyk.proof.proof import ProofStatus
 from pyk.utils import single
 
 if TYPE_CHECKING:
@@ -81,7 +80,6 @@ def kevm_prove(
     break_every_step: bool = False,
     break_on_jumpi: bool = False,
     break_on_calls: bool = True,
-    implication_every_block: bool = False,
     extract_branches: Callable[[CTerm], Iterable[KInner]] | None = None,
     abstract_node: Callable[[CTerm], CTerm] | None = None,
 ) -> bool:
@@ -124,11 +122,9 @@ def kevm_prove(
                 execute_depth=max_depth,
                 terminal_rules=terminal_rules,
                 cut_point_rules=cut_point_rules,
-                implication_every_block=implication_every_block,
             )
             assert isinstance(proof, APRProof)
-            failure_nodes = proof.failing
-            if len(failure_nodes) == 0:
+            if proof.passed:
                 _LOGGER.info(f'Proof passed: {proof.id}')
                 return True
             else:
@@ -136,28 +132,21 @@ def kevm_prove(
                 return False
         elif type(prover) is EqualityProver:
             prover.advance_proof()
-            if prover.proof.status == ProofStatus.PASSED:
+            if prover.proof.passed:
                 _LOGGER.info(f'Proof passed: {prover.proof.id}')
                 return True
-            if prover.proof.status == ProofStatus.FAILED:
+            elif prover.proof.failed:
                 _LOGGER.error(f'Proof failed: {prover.proof.id}')
                 if type(proof) is EqualityProof:
                     _LOGGER.info(proof.pretty(kprove))
                 return False
-            if prover.proof.status == ProofStatus.PENDING:
+            else:
                 _LOGGER.info(f'Proof pending: {prover.proof.id}')
                 return False
         return False
 
     except Exception as e:
         _LOGGER.error(f'Proof crashed: {proof.id}\n{e}', exc_info=True)
-        return False
-    failure_nodes = proof.pending + proof.failing
-    if len(failure_nodes) == 0:
-        _LOGGER.info(f'Proof passed: {proof.id}')
-        return True
-    else:
-        _LOGGER.error(f'Proof failed: {proof.id}')
         return False
 
 
@@ -185,11 +174,8 @@ def print_failure_info(proof: Proof, kcfg_explore: KCFGExplore, counterexample_i
                 res_lines.append('')
                 res_lines.append(f'  Node id: {str(node.id)}')
 
-                simplified_node, _ = kcfg_explore.cterm_simplify(node.cterm)
-                simplified_target, _ = kcfg_explore.cterm_simplify(target.cterm)
-
-                node_cterm = CTerm.from_kast(simplified_node)
-                target_cterm = CTerm.from_kast(simplified_target)
+                node_cterm, _ = kcfg_explore.cterm_simplify(node.cterm)
+                target_cterm, _ = kcfg_explore.cterm_simplify(target.cterm)
 
                 res_lines.append('  Failure reason:')
                 _, reason = kcfg_explore.implication_failure_reason(node_cterm, target_cterm)
@@ -326,22 +312,35 @@ def legacy_explore(
     haskell_log_entries: Iterable[str] = (),
     log_axioms_file: Path | None = None,
     trace_rewrites: bool = False,
+    start_server: bool = True,
 ) -> Iterator[KCFGExplore]:
-    # Old way of handling KCFGExplore, to be removed
-    with kore_server(
-        definition_dir=kprint.definition_dir,
-        llvm_definition_dir=llvm_definition_dir,
-        module_name=kprint.main_module,
-        port=port,
-        command=kore_rpc_command,
-        bug_report=bug_report,
-        smt_timeout=smt_timeout,
-        smt_retry_limit=smt_retry_limit,
-        haskell_log_format=haskell_log_format,
-        haskell_log_entries=haskell_log_entries,
-        log_axioms_file=log_axioms_file,
-    ) as server:
-        with KoreClient('localhost', server.port, bug_report=bug_report) as client:
+    if start_server:
+        # Old way of handling KCFGExplore, to be removed
+        with kore_server(
+            definition_dir=kprint.definition_dir,
+            llvm_definition_dir=llvm_definition_dir,
+            module_name=kprint.main_module,
+            port=port,
+            command=kore_rpc_command,
+            bug_report=bug_report,
+            smt_timeout=smt_timeout,
+            smt_retry_limit=smt_retry_limit,
+            haskell_log_format=haskell_log_format,
+            haskell_log_entries=haskell_log_entries,
+            log_axioms_file=log_axioms_file,
+        ) as server:
+            with KoreClient('localhost', server.port, bug_report=bug_report) as client:
+                yield KCFGExplore(
+                    kprint=kprint,
+                    kore_client=client,
+                    kcfg_semantics=kcfg_semantics,
+                    id=id,
+                    trace_rewrites=trace_rewrites,
+                )
+    else:
+        if port is None:
+            raise ValueError('Missing port with start_server=False')
+        with KoreClient('localhost', port, bug_report=bug_report) as client:
             yield KCFGExplore(
                 kprint=kprint,
                 kore_client=client,

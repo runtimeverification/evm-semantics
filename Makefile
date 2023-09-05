@@ -44,13 +44,13 @@ PLUGIN_FULL_PATH := $(abspath ${PLUGIN_SUBMODULE})
 export PLUGIN_FULL_PATH
 
 
-.PHONY: all clean distclean install uninstall                                                            	\
-        deps k-deps plugin-deps protobuf proto-tester                                                      	\
-        poetry-env poetry shell kevm-pyk                                                                 	\
-        build build-haskell build-haskell-standalone build-foundry build-llvm build-node build-kevm      	\
-        test test-integration test-conformance test-prove test-foundry-prove test-prove-smoke            	\
-        test-vm test-rest-vm test-bchain test-rest-bchain test-node test-interactive test-interactive-run	\
-        profile                                                                                             \
+.PHONY: all clean distclean install uninstall                                                             \
+        plugin-deps protobuf proto-tester                                                                 \
+        poetry-env poetry shell kevm-pyk                                                                  \
+        build build-haskell build-haskell-standalone build-foundry build-llvm build-node build-kevm       \
+        test test-integration test-conformance test-prove test-foundry-prove test-prove-smoke             \
+        test-vm test-rest-vm test-bchain test-rest-bchain test-node test-interactive test-interactive-run \
+        profile                                                                                           \
         media media-pdf metropolis-theme
 
 .SECONDARY:
@@ -76,31 +76,6 @@ $(protobuf_out): $(NODE_DIR)/proto/msg.proto
 
 # K Dependencies
 # --------------
-
-deps: k-deps
-
-K_MVN_ARGS :=
-ifneq ($(SKIP_LLVM),)
-    K_MVN_ARGS += -Dllvm.backend.skip
-endif
-ifneq ($(SKIP_HASKELL),)
-    K_MVN_ARGS += -Dhaskell.backend.skip
-endif
-
-ifneq ($(APPLE_SILICON),)
-    K_MVN_ARGS += -Dstack.extra-opts='--compiler ghc-8.10.7 --system-ghc'
-endif
-
-ifneq ($(RELEASE),)
-    K_BUILD_TYPE := FastBuild
-else
-    K_BUILD_TYPE := Debug
-endif
-
-k-deps:
-	cd $(K_SUBMODULE)                                                                                                                                                                            \
-	    && mvn --batch-mode package -DskipTests -Dllvm.backend.prefix=$(INSTALL_LIB)/kframework -Dllvm.backend.destdir=$(CURDIR)/$(BUILD_DIR) -Dproject.build.type=$(K_BUILD_TYPE) $(K_MVN_ARGS) \
-	    && DESTDIR=$(CURDIR)/$(BUILD_DIR) PREFIX=$(INSTALL_LIB)/kframework package/package
 
 plugin_k_include  := $(KEVM_INCLUDE)/kframework/plugin
 plugin_include    := $(KEVM_LIB)/blockchain-k-plugin/include
@@ -404,7 +379,7 @@ tests/ethereum-tests/LegacyTests/Constantinople/VMTests/%: KEVM_MODE     = VMTES
 tests/ethereum-tests/LegacyTests/Constantinople/VMTests/%: KEVM_SCHEDULE = DEFAULT
 
 tests/%.run-interactive: tests/%
-	$(POETRY_RUN) $(KEVM) run $< $(KEVM_OPTS) $(KRUN_OPTS) --backend $(TEST_CONCRETE_BACKEND)                          \
+	$(POETRY_RUN) $(KEVM) run $< $(KEVM_OPTS) $(KRUN_OPTS) --target $(TEST_CONCRETE_BACKEND)                           \
 	    --mode $(KEVM_MODE) --schedule $(KEVM_SCHEDULE) --chainid $(KEVM_CHAINID)                                      \
 	    > tests/$*.$(TEST_CONCRETE_BACKEND)-out                                                                        \
 	    || $(CHECK) tests/$*.$(TEST_CONCRETE_BACKEND)-out tests/templates/output-success-$(TEST_CONCRETE_BACKEND).json
@@ -439,7 +414,7 @@ tests/specs/examples/empty-bin-runtime.k: tests/specs/examples/Empty.sol $(KEVM_
 
 .SECONDEXPANSION:
 tests/specs/%.prove: tests/specs/% tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)/timestamp
-	$(POETRY_RUN) $(KEVM) prove $< $(KEVM_OPTS) --backend $(TEST_SYMBOLIC_BACKEND) $(KPROVE_OPTS) \
+	$(POETRY_RUN) $(KEVM) prove $< $(KEVM_OPTS) --target $(TEST_SYMBOLIC_BACKEND) $(KPROVE_OPTS) \
 	    --definition tests/specs/$(firstword $(subst /, ,$*))/$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)
 
 tests/specs/%/timestamp: tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE).$$(KPROVE_EXT) $(kevm_includes) $(plugin_includes)
