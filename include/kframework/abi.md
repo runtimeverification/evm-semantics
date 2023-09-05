@@ -155,7 +155,7 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #generateSignatureArgs(TARGA:TypedArg, .TypedArgs)            => #typeName(TARGA)
     rule #generateSignatureArgs(TARGA:TypedArg, TARGB:TypedArg, TARGS) => #typeName(TARGA) +String "," +String #generateSignatureArgs(TARGB, TARGS)
 
-    syntax String ::= #typeName ( TypedArg  )                            [function, total]
+    syntax String ::= #typeName ( TypedArg ) [function, total]
  // ----------------------------------------------------------
     rule #typeName(   #address( _ )) => "address"
 
@@ -266,7 +266,7 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
 
     rule #typeName( #array(T, _, _)) => #typeName(T) +String "[]"
 
-    rule #typeName(#tuple(TARGS))      => "(" +String #generateSignatureArgs(TARGS) +String ")"
+    rule #typeName(#tuple(TARGS))    => "(" +String #generateSignatureArgs(TARGS) +String ")"
 
     syntax Bytes ::= #encodeArgs    ( TypedArgs )                       [function]
     syntax Bytes ::= #encodeArgsAux ( TypedArgs , Int , Bytes , Bytes ) [function]
@@ -286,8 +286,8 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
 
     syntax Int ::= #lenOfHeads ( TypedArgs ) [function, total]
  // ----------------------------------------------------------
-    rule #lenOfHeads(.TypedArgs)   => 0
-    rule #lenOfHeads(ARG, ARGS)    => #lenOfHead(ARG) +Int #lenOfHeads(ARGS)
+    rule #lenOfHeads(.TypedArgs) => 0
+    rule #lenOfHeads(ARG, ARGS)  => #lenOfHead(ARG) +Int #lenOfHeads(ARGS)
 
     syntax Int ::= #lenOfHead ( TypedArg ) [function, total]
  // --------------------------------------------------------
