@@ -651,7 +651,6 @@ def _create_argument_parser() -> ArgumentParser:
             kevm_cli_args.foundry_test_args,
             kevm_cli_args.logging_args,
             kevm_cli_args.rpc_args,
-            kevm_cli_args.bug_report_args,
             kevm_cli_args.smt_args,
             kevm_cli_args.foundry_args,
         ],
