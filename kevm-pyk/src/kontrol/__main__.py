@@ -484,6 +484,7 @@ def _create_argument_parser() -> ArgumentParser:
             kevm_cli_args.k_args,
             kevm_cli_args.kprove_args,
             kevm_cli_args.smt_args,
+            kevm_cli_args.rpc_args,
             kevm_cli_args.bug_report_args,
             kevm_cli_args.explore_args,
             kevm_cli_args.foundry_args,
@@ -578,6 +579,7 @@ def _create_argument_parser() -> ArgumentParser:
             kevm_cli_args.foundry_test_args,
             kevm_cli_args.logging_args,
             kevm_cli_args.smt_args,
+            kevm_cli_args.rpc_args,
             kevm_cli_args.bug_report_args,
             kevm_cli_args.display_args,
             kevm_cli_args.foundry_args,
@@ -594,6 +596,7 @@ def _create_argument_parser() -> ArgumentParser:
         parents=[
             kevm_cli_args.foundry_test_args,
             kevm_cli_args.logging_args,
+            kevm_cli_args.rpc_args,
             kevm_cli_args.bug_report_args,
             kevm_cli_args.smt_args,
             kevm_cli_args.foundry_args,
@@ -630,6 +633,7 @@ def _create_argument_parser() -> ArgumentParser:
         parents=[
             kevm_cli_args.foundry_test_args,
             kevm_cli_args.logging_args,
+            kevm_cli_args.rpc_args,
             kevm_cli_args.bug_report_args,
             kevm_cli_args.smt_args,
             kevm_cli_args.foundry_args,
@@ -646,6 +650,7 @@ def _create_argument_parser() -> ArgumentParser:
         parents=[
             kevm_cli_args.foundry_test_args,
             kevm_cli_args.logging_args,
+            kevm_cli_args.rpc_args,
             kevm_cli_args.bug_report_args,
             kevm_cli_args.smt_args,
             kevm_cli_args.foundry_args,
