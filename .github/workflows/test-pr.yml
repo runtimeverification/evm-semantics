@@ -70,7 +70,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: 'Check out code'
-        uses: ./.github/actions/checkout
+        uses: ./.github/actions/checkout@4c833fdcabb05bc3b49d511a019ec197eade16b4
       - name: 'Set up Docker'
         uses: ./.github/actions/with-docker
         with:
@@ -96,7 +96,7 @@ jobs:
     timeout-minutes: 45
     steps:
       - name: 'Check out code'
-        uses: ./.github/actions/checkout
+        uses: ./.github/actions/checkout@4c833fdcabb05bc3b49d511a019ec197eade16b4
       - name: 'Set up Docker'
         uses: ./.github/actions/with-docker
         with:
@@ -127,7 +127,7 @@ jobs:
     timeout-minutes: 120
     steps:
       - name: 'Check out code'
-        uses: ./.github/actions/checkout
+        uses: ./.github/actions/checkout@4c833fdcabb05bc3b49d511a019ec197eade16b4
       - name: 'Set up Docker'
         uses: ./.github/actions/with-docker
         with:
@@ -148,7 +148,7 @@ jobs:
     timeout-minutes: 120
     steps:
       - name: 'Check out code'
-        uses: ./.github/actions/checkout
+        uses: ./.github/actions/checkout@4c833fdcabb05bc3b49d511a019ec197eade16b4
       - name: 'Set up Docker'
         uses: ./.github/actions/with-docker
         with:
@@ -169,7 +169,7 @@ jobs:
     timeout-minutes: 150
     steps:
       - name: 'Check out code'
-        uses: ./.github/actions/checkout
+        uses: ./.github/actions/checkout@4c833fdcabb05bc3b49d511a019ec197eade16b4
       - name: 'Set up Docker'
         uses: ./.github/actions/with-docker
         with:
@@ -194,7 +194,7 @@ jobs:
     timeout-minutes: 150
     steps:
       - name: 'Check out code'
-        uses: ./.github/actions/checkout
+        uses: ./.github/actions/checkout@4c833fdcabb05bc3b49d511a019ec197eade16b4
       - name: 'Set up Docker'
         uses: ./.github/actions/with-docker
         with:
@@ -256,7 +256,7 @@ jobs:
     needs: kevm-pyk-code-quality-checks
     steps:
       - name: 'Check out code'
-        uses: ./.github/actions/checkout
+        uses: ./.github/actions/checkout@4c833fdcabb05bc3b49d511a019ec197eade16b4
       - name: 'Set up Docker'
         uses: ./.github/actions/with-docker
         with:
