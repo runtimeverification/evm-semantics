@@ -5,7 +5,7 @@ import sys
 from typing import TYPE_CHECKING, NamedTuple
 
 import pytest
-from pyk.prelude.ml import mlTop
+from pyk.cterm import CTerm
 
 from kevm_pyk import config
 from kevm_pyk.__main__ import exec_prove
@@ -305,4 +305,5 @@ def test_legacy_prove(
         log_file.write_text(caplog.text)
 
     # Then
-    assert actual == mlTop('K')
+    assert len(actual) == 1
+    assert CTerm._is_top(actual[0].kast)

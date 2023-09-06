@@ -163,6 +163,24 @@ class KEVMCLIArgs(KCLIArgs):
         return args
 
     @cached_property
+    def foundry_test_args(self) -> ArgumentParser:
+        args = ArgumentParser(add_help=False)
+        args.add_argument('test', type=str, help='Test to run')
+        args.add_argument('--id', type=str, default=None, required=False, help='ID of the test')
+        return args
+
+    @cached_property
+    def rpc_args(self) -> ArgumentParser:
+        args = ArgumentParser(add_help=False)
+        args.add_argument(
+            '--trace-rewrites',
+            default=False,
+            action='store_true',
+            help='Log traces of all simplification and rewrite rule applications.',
+        )
+        return args
+
+    @cached_property
     def explore_args(self) -> ArgumentParser:
         args = ArgumentParser(add_help=False)
         args.add_argument(

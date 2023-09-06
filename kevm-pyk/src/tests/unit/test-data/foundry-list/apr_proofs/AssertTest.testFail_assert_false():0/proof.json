@@ -1,0 +1,1 @@
+{"id": "AssertTest.testFail_assert_false:b5202d1b3fe2344c79708f9a3a2c67d446fb9d70c920a623ad408a2e224215b1", "subproof_ids": [], "admitted": false, "type": "APRProof", "init": 1, "target": 2, "terminal": [5], "node_refutations": {}, "circularity": false, "logs": {"3": [], "4": [], "5": []}}
