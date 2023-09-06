@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import time
 import json
 import logging
 import os
@@ -13,12 +14,13 @@ from subprocess import CalledProcessError
 from typing import TYPE_CHECKING
 
 import tomlkit
-from pathos.pools import ProcessPool  # type: ignore
 from pyk.cterm import CTerm
 from pyk.kast.inner import KApply, KSequence, KSort, KToken, KVariable, Subst
 from pyk.kast.manip import free_vars, minimize_term
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
 from pyk.kcfg import KCFG
+from pyk.kore.pool import KoreServerPool
+from pyk.kore.rpc import kore_server
 from pyk.prelude.bytes import bytesToken
 from pyk.prelude.k import GENERATED_TOP_CELL
 from pyk.prelude.kbool import FALSE, notBool
@@ -51,6 +53,8 @@ if TYPE_CHECKING:
     from pyk.kcfg import KCFGExplore
     from pyk.kcfg.kcfg import NodeIdLike
     from pyk.kcfg.tui import KCFGElem
+    from pyk.kore.pool import Future
+    from pyk.kore.rpc import KoreServer
     from pyk.proof.show import NodePrinter
 
 _LOGGER: Final = logging.getLogger(__name__)
@@ -714,7 +718,7 @@ def foundry_prove(
         assert id is not None
         tests[i] = (test, id)
 
-    def _init_and_run_proof(_init_problem: tuple[str, str, str | None]) -> tuple[bool, list[str] | None]:
+    def _init_and_run_proof(dummy: int, _init_problem: tuple[str, str, str | None]) -> tuple[bool, APRProof, list[str] | None]:
         contract_name, method_sig, id = _init_problem
         contract = foundry.contracts[contract_name]
         method = contract.method_by_sig[method_sig]
@@ -761,7 +765,7 @@ def foundry_prove(
             failure_log = None
             if not passed:
                 failure_log = print_failure_info(proof, kcfg_explore, counterexample_info)
-            return passed, failure_log
+            return passed, proof, failure_log, 
 
     def run_cfg_group(
         tests: list[tuple[str, str | None]]
@@ -771,18 +775,71 @@ def foundry_prove(
             contract, method = test_name.split('.')
             return contract, method, id
 
-        init_problems = [_split_test(test) for test in tests]
+        llvm_definition_dir = foundry.llvm_library if use_booster else None
 
-        _apr_proofs: list[tuple[bool, list[str] | None]]
-        if workers > 1:
-            with ProcessPool(ncpus=workers) as process_pool:
-                _apr_proofs = process_pool.map(_init_and_run_proof, init_problems)
-        else:
-            _apr_proofs = []
-            for init_problem in init_problems:
-                _apr_proofs.append(_init_and_run_proof(init_problem))
 
-        apr_proofs = dict(zip(tests, _apr_proofs, strict=True))
+        def create_server() -> KoreServer:
+            return kore_server(
+                definition_dir=foundry.kevm.definition_dir,
+                llvm_definition_dir=llvm_definition_dir,
+                module_name=foundry.kevm.main_module,
+                port=port,
+                command=kore_rpc_command,
+                bug_report=br,
+                smt_timeout=smt_timeout,
+                smt_retry_limit=smt_retry_limit,
+            )
+
+        results = {}
+        futures: dict[str, Future] = {}
+        with KoreServerPool(create_server=create_server, max_workers=workers) as pool:
+
+            proofs = tests.copy()
+
+            while len(proofs) > 0 or len(futures) > 0:
+
+                if len(proofs) > 0:
+                    proof = proofs.pop()
+                    futures[proof[0]] = pool.submit(_init_and_run_proof, _split_test(proof))
+
+                if len(futures) > 0:
+                    done_futures = [(_proof, future) for (_proof, future) in futures.items() if future.done()]
+                    futures = {_proof: future for (_proof, future) in futures.items() if not future.done()}
+                    for _proof, future in done_futures:
+                        results[_proof] = future.result()
+                        subproofs = results[_proof][1].subproofs
+                        for subproof in subproofs:
+                            proofs.append((subproof.id, None))
+
+
+                print(f'proofs: {proofs}')
+                print(f'futures: {futures}')
+                print(f'results: {results}')
+                print('')
+
+                time.sleep(1)
+
+#          done_futures = [(_proof, future) for (_proof, future) in futures.items() if future.done()]
+#          for _proof, future in done_futures:
+#              results[_proof] = future.result()
+#              subproofs = results[_proof][1].subproofs
+#              for subproof in subproofs:
+#                  proofs.append((subproof.id, None))
+            
+        print(tests)
+        print(results.values())
+
+
+#          _apr_proofs: list[tuple[bool, list[str] | None]]
+#          if workers > 1:
+#              with ProcessPool(ncpus=workers) as process_pool:
+#                  _apr_proofs = process_pool.map(_init_and_run_proof, init_problems)
+#          else:
+#              _apr_proofs = []
+#              for init_problem in init_problems:
+#                  _apr_proofs.append(_init_and_run_proof(init_problem))
+#  
+        apr_proofs = dict(zip(tests, [(result, logs) for result, _, logs in results.values()], strict=True))
         return apr_proofs
 
     _LOGGER.info(f'Running setup functions in parallel: {list(setup_methods.values())}')

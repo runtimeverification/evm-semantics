@@ -82,6 +82,7 @@ def kevm_prove(
     break_on_calls: bool = True,
     extract_branches: Callable[[CTerm], Iterable[KInner]] | None = None,
     abstract_node: Callable[[CTerm], CTerm] | None = None,
+    max_branches: int | None = 1,
 ) -> bool:
     proof = proof
     terminal_rules = ['EVM.halt']
@@ -122,6 +123,7 @@ def kevm_prove(
                 execute_depth=max_depth,
                 terminal_rules=terminal_rules,
                 cut_point_rules=cut_point_rules,
+                max_branches=max_branches,
             )
             assert isinstance(proof, APRProof)
             if proof.passed:
