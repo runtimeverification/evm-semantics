@@ -23,8 +23,10 @@ interface KEVMCheatsBase {
     function allowCallsToAddress(address) external;
     // Adds an address and a storage slot to the whitelist.
     function allowChangesToStorage(address,uint256) external;
-    // Set the current <gas> cell
+    // Sets the remaining gas to an infinite value.
     function infiniteGas() external;
+    // Sets the current <gas> cell to the supplied amount.
+    function setGas(uint256) external;
     // Returns a symbolic unsigned integer
     function freshUInt(uint8) external returns (uint256);
     // Returns a symbolic boolean value

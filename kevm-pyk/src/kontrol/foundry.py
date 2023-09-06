@@ -1314,7 +1314,7 @@ def _init_cterm(
         'MEMORYUSED_CELL': intToken(0),
         'WORDSTACK_CELL': KApply('.WordStack_EVM-TYPES_WordStack'),
         'PC_CELL': intToken(0),
-        'GAS_CELL': intToken(9223372036854775807),
+        'GAS_CELL': KEVM.inf_gas(KVariable('VGAS')),
         'K_CELL': KSequence([KEVM.sharp_execute(), KVariable('CONTINUATION')]),
         'ACCOUNTS_CELL': KEVM.accounts(
             [
