@@ -51,7 +51,7 @@ def server(foundry_root: Path, use_booster: bool) -> Iterator[KoreServer]:
 
 
 @pytest.fixture(scope='session')
-def foundry_root(tmp_path_factory: TempPathFactory, worker_id: str, use_booster: bool) -> Path:
+def foundry_root(tmp_path_factory: TempPathFactory, worker_id: str) -> Path:
     if worker_id == 'master':
         root_tmp_dir = tmp_path_factory.getbasetemp()
     else:
@@ -206,9 +206,7 @@ SKIPPED_BMC_TESTS: Final = set((TEST_DATA_DIR / 'foundry-bmc-skip').read_text().
 
 
 @pytest.mark.parametrize('test_id', ALL_BMC_TESTS)
-def test_foundry_bmc(
-    test_id: str, foundry_root: Path, use_booster: bool, bug_report: BugReport | None, server: KoreServer
-) -> None:
+def test_foundry_bmc(test_id: str, foundry_root: Path, bug_report: BugReport | None, server: KoreServer) -> None:
     if test_id in SKIPPED_BMC_TESTS:
         pytest.skip()
 
@@ -226,9 +224,7 @@ def test_foundry_bmc(
     assert_pass(test_id, prove_res)
 
 
-def test_foundry_merge_nodes(
-    foundry_root: Path, use_booster: bool, bug_report: BugReport | None, server: KoreServer
-) -> None:
+def test_foundry_merge_nodes(foundry_root: Path, bug_report: BugReport | None, server: KoreServer) -> None:
     test = 'AssertTest.test_branch_merge(uint256)'
 
     foundry_prove(
