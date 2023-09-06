@@ -7,5 +7,5 @@ runs:
     shell: bash {0}
     run: |
       set -euxo pipefail
-      git pull --recurse-submodules
+      git submodule update --remote
       git submodule update --init --recursive
