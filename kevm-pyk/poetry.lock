@@ -201,6 +201,17 @@ files = [
     {file = "coverage-7.3.1-cp38-cp38-win32.whl", hash = "sha256:defbbb51121189722420a208957e26e49809feafca6afeef325df66c39c4fdb3"},
     {file = "coverage-7.3.1-cp38-cp38-win_amd64.whl", hash = "sha256:f4f456590eefb6e1b3c9ea6328c1e9fa0f1006e7481179d749b3376fc793478e"},
     {file = "coverage-7.3.1-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:f12d8b11a54f32688b165fd1a788c408f927b0960984b899be7e4c190ae758f1"},
+    {file = "coverage-7.3.1-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:f09195dda68d94a53123883de75bb97b0e35f5f6f9f3aa5bf6e496da718f0cb6"},
+    {file = "coverage-7.3.1-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:c6601a60318f9c3945be6ea0f2a80571f4299b6801716f8a6e4846892737ebe4"},
+    {file = "coverage-7.3.1-cp39-cp39-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:07d156269718670d00a3b06db2288b48527fc5f36859425ff7cec07c6b367745"},
+    {file = "coverage-7.3.1-cp39-cp39-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:636a8ac0b044cfeccae76a36f3b18264edcc810a76a49884b96dd744613ec0b7"},
+    {file = "coverage-7.3.1-cp39-cp39-musllinux_1_1_aarch64.whl", hash = "sha256:5d991e13ad2ed3aced177f524e4d670f304c8233edad3210e02c465351f785a0"},
+    {file = "coverage-7.3.1-cp39-cp39-musllinux_1_1_i686.whl", hash = "sha256:586649ada7cf139445da386ab6f8ef00e6172f11a939fc3b2b7e7c9082052fa0"},
+    {file = "coverage-7.3.1-cp39-cp39-musllinux_1_1_x86_64.whl", hash = "sha256:4aba512a15a3e1e4fdbfed2f5392ec221434a614cc68100ca99dcad7af29f3f8"},
+    {file = "coverage-7.3.1-cp39-cp39-win32.whl", hash = "sha256:6bc6f3f4692d806831c136c5acad5ccedd0262aa44c087c46b7101c77e139140"},
+    {file = "coverage-7.3.1-cp39-cp39-win_amd64.whl", hash = "sha256:553d7094cb27db58ea91332e8b5681bac107e7242c23f7629ab1316ee73c4981"},
+    {file = "coverage-7.3.1-pp38.pp39.pp310-none-any.whl", hash = "sha256:220eb51f5fb38dfdb7e5d54284ca4d0cd70ddac047d750111a68ab1798945194"},
+    {file = "coverage-7.3.1.tar.gz", hash = "sha256:6cb7fe1581deb67b782c153136541e20901aa312ceedaf1467dcb35255787952"},
 ]
 
 [package.dependencies]
