@@ -15,11 +15,6 @@ jobs:
     steps:
       - name: 'Check out code'
         uses: actions/checkout@v3
-        with:
-          token: ${{ secrets.JENKINS_GITHUB_PAT }}
-          # fetch-depth 0 means deep clone the repo
-          fetch-depth: 0
-          ref: ${{ github.event.pull_request.head.sha }}
       - name: 'Configure GitHub user'
         run: |
           git config user.name devops
@@ -54,9 +49,6 @@ jobs:
     steps:
       - name: 'Check out code'
         uses: actions/checkout@v3
-        with:
-          submodules: true
-          fetch-depth: 0
       - name: 'Install Poetry'
         uses: Gr1N/setup-poetry@v8
       - name: 'Build kevm'
@@ -73,11 +65,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: 'Check out code'
-        uses: actions/checkout@v3
-        with:
-          token: ${{ secrets.JENKINS_GITHUB_PAT }}
-          submodules: recursive
-          fetch-depth: 0
+        uses: ./.github/actions/checkout
       - name: 'Set up Docker'
         uses: ./.github/actions/with-docker
         with:
@@ -99,15 +87,11 @@ jobs:
   test-concrete-execution:
     name: 'Build and Test KEVM concrete execution'
     needs: kevm-pyk-code-quality-checks
-    runs-on: [self-hosted, linux, normal, github-runner-26]
+    runs-on: [self-hosted, linux, normal]
     timeout-minutes: 45
     steps:
       - name: 'Check out code'
-        uses: actions/checkout@v3
-        with:
-          token: ${{ secrets.JENKINS_GITHUB_PAT }}
-          submodules: recursive
-          fetch-depth: 0
+        uses: ./.github/actions/checkout
       - name: 'Set up Docker'
         uses: ./.github/actions/with-docker
         with:
@@ -138,11 +122,7 @@ jobs:
     timeout-minutes: 120
     steps:
       - name: 'Check out code'
-        uses: actions/checkout@v3
-        with:
-          token: ${{ secrets.JENKINS_GITHUB_PAT }}
-          submodules: recursive
-          fetch-depth: 0
+        uses: ./.github/actions/checkout
       - name: 'Set up Docker'
         uses: ./.github/actions/with-docker
         with:
@@ -163,11 +143,7 @@ jobs:
     timeout-minutes: 120
     steps:
       - name: 'Check out code'
-        uses: actions/checkout@v3
-        with:
-          token: ${{ secrets.JENKINS_GITHUB_PAT }}
-          submodules: recursive
-          fetch-depth: 0
+        uses: ./.github/actions/checkout
       - name: 'Set up Docker'
         uses: ./.github/actions/with-docker
         with:
@@ -188,11 +164,7 @@ jobs:
     timeout-minutes: 150
     steps:
       - name: 'Check out code'
-        uses: actions/checkout@v3
-        with:
-          token: ${{ secrets.JENKINS_GITHUB_PAT }}
-          submodules: recursive
-          fetch-depth: 0
+        uses: ./.github/actions/checkout
       - name: 'Set up Docker'
         uses: ./.github/actions/with-docker
         with:
@@ -217,11 +189,7 @@ jobs:
     timeout-minutes: 150
     steps:
       - name: 'Check out code'
-        uses: actions/checkout@v3
-        with:
-          token: ${{ secrets.JENKINS_GITHUB_PAT }}
-          submodules: recursive
-          fetch-depth: 0
+        uses: ./.github/actions/checkout
       - name: 'Set up Docker'
         uses: ./.github/actions/with-docker
         with:
@@ -283,11 +251,7 @@ jobs:
     needs: kevm-pyk-code-quality-checks
     steps:
       - name: 'Check out code'
-        uses: actions/checkout@v3
-        with:
-          token: ${{ secrets.JENKINS_GITHUB_PAT }}
-          submodules: recursive
-          ref: ${{ github.event.push.head.sha }}
+        uses: ./.github/actions/checkout
       - name: 'Set up Docker'
         uses: ./.github/actions/with-docker
         with:

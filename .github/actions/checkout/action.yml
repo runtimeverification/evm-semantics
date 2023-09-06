@@ -1,0 +1,18 @@
+name: 'Checkout '
+description: 'Checkout and Checkout Submodules (Supplements actions/checkout withsubmodules: true)' 
+runs:
+  using: 'composite'
+  steps:
+  - name: 'Checkout'
+    uses: actions/checkout@v3
+    with:
+      token: ${{ secrets.JENKINS_GITHUB_PAT }}
+      submodules: false
+      fetch-depth: 0
+      persist-credentials: true
+  - name: 'Checkout Submodules'
+    shell: bash {0}
+    run: |
+      set -euxo pipefail
+
+      git submodule update --init --recursive
