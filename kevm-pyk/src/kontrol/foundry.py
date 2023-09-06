@@ -264,7 +264,7 @@ class Foundry:
 
     def custom_view(self, contract_name: str, element: KCFGElem) -> Iterable[str]:
         if type(element) is KCFG.Node:
-            pc_cell = element.cterm.cell('PC_CELL')
+            pc_cell = element.cterm.try_cell('PC_CELL')
             if type(pc_cell) is KToken and pc_cell.sort == INT:
                 return self.solidity_src(contract_name, int(pc_cell.token))
         return ['NO DATA']
@@ -573,12 +573,20 @@ def foundry_kompile(
     def kompilation_up_to_date() -> bool:
         if not foundry.digest_file.exists():
             return False
-        old_digest = foundry.digest_file.read_text()
-
-        return old_digest == kompilation_digest()
+        digest_dict = json.loads(foundry.digest_file.read_text())
+        if 'kompilation' not in digest_dict:
+            digest_dict['kompilation'] = ''
+        foundry.digest_file.write_text(json.dumps(digest_dict))
+        return digest_dict['kompilation'] == kompilation_digest()
 
     def update_kompilation_digest() -> None:
-        foundry.digest_file.write_text(json.dumps({'digest': kompilation_digest()}))
+        digest_dict = {}
+        if foundry.digest_file.exists():
+            digest_dict = json.loads(foundry.digest_file.read_text())
+        digest_dict['kompilation'] = kompilation_digest()
+        foundry.digest_file.write_text(json.dumps(digest_dict))
+
+        _LOGGER.info('Updated Kompilation digest')
 
     if not kompilation_up_to_date() or rekompile or not kompiled_timestamp.exists():
         kevm_kompile(
@@ -621,6 +629,7 @@ def foundry_prove(
     counterexample_info: bool = False,
     trace_rewrites: bool = False,
     auto_abstract_gas: bool = False,
+    port: int | None = None,
 ) -> dict[tuple[str, str | None], tuple[bool, list[str] | None]]:
     if workers <= 0:
         raise ValueError(f'Must have at least one worker, found: --workers {workers}')
@@ -713,6 +722,8 @@ def foundry_prove(
         test_id = f'{contract_name}.{method_sig}{id}'
         llvm_definition_dir = foundry.llvm_library if use_booster else None
 
+        start_server = port is None
+
         with legacy_explore(
             foundry.kevm,
             kcfg_semantics=KEVMSemantics(auto_abstract_gas=auto_abstract_gas),
@@ -723,6 +734,8 @@ def foundry_prove(
             smt_timeout=smt_timeout,
             smt_retry_limit=smt_retry_limit,
             trace_rewrites=trace_rewrites,
+            start_server=start_server,
+            port=port,
         ) as kcfg_explore:
             proof = _method_to_apr_proof(
                 foundry,
@@ -800,6 +813,7 @@ def foundry_show(
     counterexample_info: bool = False,
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
+    port: int | None = None,
 ) -> str:
     contract_name, _ = test.split('.')
     foundry = Foundry(foundry_root)
@@ -833,6 +847,8 @@ def foundry_show(
         omit_cells=(unstable_cells if omit_unstable_output else []),
     )
 
+    start_server = port is None
+
     if failure_info:
         with legacy_explore(
             foundry.kevm,
@@ -840,6 +856,8 @@ def foundry_show(
             id=test_id,
             smt_timeout=smt_timeout,
             smt_retry_limit=smt_retry_limit,
+            start_server=start_server,
+            port=port,
         ) as kcfg_explore:
             res_lines += print_failure_info(proof, kcfg_explore, counterexample_info)
             res_lines += Foundry.help_info()
@@ -886,7 +904,7 @@ def foundry_remove_node(foundry_root: Path, test: str, node: NodeIdLike, id: str
     foundry = Foundry(foundry_root)
     test_id = foundry.get_test_id(test, id)
     apr_proof = foundry.get_apr_proof(test_id)
-    node_ids = apr_proof.prune_from(node)
+    node_ids = apr_proof.prune(node)
     _LOGGER.info(f'Pruned nodes: {node_ids}')
     apr_proof.write_proof_data()
 
@@ -903,12 +921,15 @@ def foundry_simplify_node(
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
     trace_rewrites: bool = False,
+    port: int | None = None,
 ) -> str:
     br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
     foundry = Foundry(foundry_root, bug_report=br)
     test_id = foundry.get_test_id(test, id)
     apr_proof = foundry.get_apr_proof(test_id)
     cterm = apr_proof.kcfg.node(node).cterm
+    start_server = port is None
+
     with legacy_explore(
         foundry.kevm,
         kcfg_semantics=KEVMSemantics(),
@@ -917,12 +938,14 @@ def foundry_simplify_node(
         smt_timeout=smt_timeout,
         smt_retry_limit=smt_retry_limit,
         trace_rewrites=trace_rewrites,
+        start_server=start_server,
+        port=port,
     ) as kcfg_explore:
         new_term, _ = kcfg_explore.cterm_simplify(cterm)
     if replace:
-        apr_proof.kcfg.replace_node(node, CTerm.from_kast(new_term))
+        apr_proof.kcfg.replace_node(node, new_term)
         apr_proof.write_proof_data()
-    res_term = minimize_term(new_term) if minimize else new_term
+    res_term = minimize_term(new_term.kast) if minimize else new_term.kast
     return foundry.kevm.pretty_print(res_term, unalias=False, sort_collections=sort_collections)
 
 
@@ -938,9 +961,11 @@ def foundry_merge_nodes(
         nodes = list(nodes)
         if len(nodes) < 2:
             return True
-        cell_value = nodes[0].cterm.cell(cell)
+        cell_value = nodes[0].cterm.try_cell(cell)
+        if cell_value is None:
+            return False
         for node in nodes[1:]:
-            if cell_value != node.cterm.cell(cell):
+            if node.cterm.try_cell(cell) is None or cell_value != node.cterm.cell(cell):
                 return False
         return True
 
@@ -982,6 +1007,7 @@ def foundry_step_node(
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
     trace_rewrites: bool = False,
+    port: int | None = None,
 ) -> None:
     if repeat < 1:
         raise ValueError(f'Expected positive value for --repeat, got: {repeat}')
@@ -992,6 +1018,8 @@ def foundry_step_node(
     foundry = Foundry(foundry_root, bug_report=br)
     test_id = foundry.get_test_id(test, id)
     apr_proof = foundry.get_apr_proof(test_id)
+    start_server = port is None
+
     with legacy_explore(
         foundry.kevm,
         kcfg_semantics=KEVMSemantics(),
@@ -1000,6 +1028,8 @@ def foundry_step_node(
         smt_timeout=smt_timeout,
         smt_retry_limit=smt_retry_limit,
         trace_rewrites=trace_rewrites,
+        start_server=start_server,
+        port=port,
     ) as kcfg_explore:
         for _i in range(repeat):
             node = kcfg_explore.step(apr_proof.kcfg, node, apr_proof.logs, depth=depth)
@@ -1017,12 +1047,15 @@ def foundry_section_edge(
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
     trace_rewrites: bool = False,
+    port: int | None = None,
 ) -> None:
     br = BugReport(Path(f'{test}.bug_report')) if bug_report else None
     foundry = Foundry(foundry_root, bug_report=br)
     test_id = foundry.get_test_id(test, id)
     apr_proof = foundry.get_apr_proof(test_id)
     source_id, target_id = edge
+    start_server = port is None
+
     with legacy_explore(
         foundry.kevm,
         kcfg_semantics=KEVMSemantics(),
@@ -1031,6 +1064,8 @@ def foundry_section_edge(
         smt_timeout=smt_timeout,
         smt_retry_limit=smt_retry_limit,
         trace_rewrites=trace_rewrites,
+        start_server=start_server,
+        port=port,
     ) as kcfg_explore:
         kcfg_explore.section_edge(
             apr_proof.kcfg, source_id=int(source_id), target_id=int(target_id), logs=apr_proof.logs, sections=sections
@@ -1045,6 +1080,7 @@ def foundry_get_model(
     nodes: Iterable[NodeIdLike] = (),
     pending: bool = False,
     failing: bool = False,
+    port: int | None = None,
 ) -> str:
     foundry = Foundry(foundry_root)
     test_id = foundry.get_test_id(test, id)
@@ -1062,7 +1098,15 @@ def foundry_get_model(
 
     res_lines = []
 
-    with legacy_explore(foundry.kevm, kcfg_semantics=KEVMSemantics(), id=proof.id) as kcfg_explore:
+    start_server = port is None
+
+    with legacy_explore(
+        foundry.kevm,
+        kcfg_semantics=KEVMSemantics(),
+        id=proof.id,
+        start_server=start_server,
+        port=port,
+    ) as kcfg_explore:
         for node_id in nodes:
             res_lines.append('')
             res_lines.append(f'Node id: {node_id}')
@@ -1167,6 +1211,7 @@ def _method_to_apr_proof(
             apr_proof = APRBMCProof(
                 test_id,
                 kcfg,
+                [],
                 init_node_id,
                 target_node_id,
                 {},
@@ -1174,7 +1219,7 @@ def _method_to_apr_proof(
                 proof_dir=save_directory,
             )
         else:
-            apr_proof = APRProof(test_id, kcfg, init_node_id, target_node_id, {}, proof_dir=save_directory)
+            apr_proof = APRProof(test_id, kcfg, [], init_node_id, target_node_id, {}, proof_dir=save_directory)
 
     apr_proof.write_proof_data()
     return apr_proof
@@ -1392,7 +1437,7 @@ class FoundryNodePrinter(KEVMNodePrinter):
 
     def print_node(self, kcfg: KCFG, node: KCFG.Node) -> list[str]:
         ret_strs = super().print_node(kcfg, node)
-        _pc = node.cterm.cell('PC_CELL')
+        _pc = node.cterm.try_cell('PC_CELL')
         if type(_pc) is KToken and _pc.sort == INT:
             srcmap_data = self.foundry.srcmap_data(self.contract_name, int(_pc.token))
             if srcmap_data is not None:

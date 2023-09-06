@@ -195,14 +195,18 @@ class KEVM(KProve, KRun):
         KEVM_CELL: Final = KSort('KevmCell')
 
     def short_info(self, cterm: CTerm) -> list[str]:
-        k_cell = self.pretty_print(cterm.cell('K_CELL')).replace('\n', ' ')
-        if len(k_cell) > 80:
-            k_cell = k_cell[0:80] + ' ...'
-        k_str = f'k: {k_cell}'
-        ret_strs = [k_str]
-        for cell, name in [('PC_CELL', 'pc'), ('CALLDEPTH_CELL', 'callDepth'), ('STATUSCODE_CELL', 'statusCode')]:
-            if cell in cterm.cells:
-                ret_strs.append(f'{name}: {self.pretty_print(cterm.cell(cell))}')
+        k_cell = cterm.try_cell('K_CELL')
+        if k_cell is not None:
+            pretty_cell = self.pretty_print(k_cell).replace('\n', ' ')
+            if len(pretty_cell) > 80:
+                pretty_cell = pretty_cell[0:80] + ' ...'
+            k_str = f'k: {pretty_cell}'
+            ret_strs = [k_str]
+            for cell, name in [('PC_CELL', 'pc'), ('CALLDEPTH_CELL', 'callDepth'), ('STATUSCODE_CELL', 'statusCode')]:
+                if cell in cterm.cells:
+                    ret_strs.append(f'{name}: {self.pretty_print(cterm.cell(cell))}')
+        else:
+            ret_strs = ['(empty configuration)']
         return ret_strs
 
     @staticmethod
@@ -416,7 +420,7 @@ class KEVM(KProve, KRun):
         max_counterexamples: int | None = None,
         branching_allowed: int | None = None,
         haskell_backend_args: Iterable[str] = (),
-    ) -> KInner:
+    ) -> list[CTerm]:
         md_selector = 'k'
         args: list[str] = []
         haskell_args: list[str] = []
