@@ -69,8 +69,13 @@ jobs:
     runs-on: [self-hosted, linux, normal]
     timeout-minutes: 15
     steps:
+      - name: "Checkout"
+        uses: actions/checkout@v3
+        with:
+            fetch-depth: 0
+            submodules: false
       - name: 'Check out code'
-        uses: ./.github/actions/checkout@4c833fdcabb05bc3b49d511a019ec197eade16b4
+        uses: ./.github/actions/checkout-submodule
       - name: 'Set up Docker'
         uses: ./.github/actions/with-docker
         with:
@@ -95,8 +100,13 @@ jobs:
     runs-on: [self-hosted, linux, normal]
     timeout-minutes: 45
     steps:
+      - name: "Checkout"
+        uses: actions/checkout@v3
+        with:
+            fetch-depth: 0
+            submodules: false
       - name: 'Check out code'
-        uses: ./.github/actions/checkout@4c833fdcabb05bc3b49d511a019ec197eade16b4
+        uses: ./.github/actions/checkout-submodule
       - name: 'Set up Docker'
         uses: ./.github/actions/with-docker
         with:
@@ -126,8 +136,13 @@ jobs:
     runs-on: [self-hosted, linux, normal]
     timeout-minutes: 120
     steps:
+      - name: "Checkout"
+        uses: actions/checkout@v3
+        with:
+            fetch-depth: 0
+            submodules: false
       - name: 'Check out code'
-        uses: ./.github/actions/checkout@4c833fdcabb05bc3b49d511a019ec197eade16b4
+        uses: ./.github/actions/checkout-submodule
       - name: 'Set up Docker'
         uses: ./.github/actions/with-docker
         with:
@@ -147,8 +162,13 @@ jobs:
     runs-on: [self-hosted, linux, normal]
     timeout-minutes: 120
     steps:
+      - name: "Checkout"
+        uses: actions/checkout@v3
+        with:
+            fetch-depth: 0
+            submodules: false
       - name: 'Check out code'
-        uses: ./.github/actions/checkout@4c833fdcabb05bc3b49d511a019ec197eade16b4
+        uses: ./.github/actions/checkout-submodule
       - name: 'Set up Docker'
         uses: ./.github/actions/with-docker
         with:
@@ -168,8 +188,13 @@ jobs:
     runs-on: [self-hosted, linux, normal]
     timeout-minutes: 150
     steps:
+      - name: "Checkout"
+        uses: actions/checkout@v3
+        with:
+            fetch-depth: 0
+            submodules: false
       - name: 'Check out code'
-        uses: ./.github/actions/checkout@4c833fdcabb05bc3b49d511a019ec197eade16b4
+        uses: ./.github/actions/checkout-submodule
       - name: 'Set up Docker'
         uses: ./.github/actions/with-docker
         with:
@@ -193,8 +218,13 @@ jobs:
     runs-on: [self-hosted, linux, normal]
     timeout-minutes: 150
     steps:
+      - name: "Checkout"
+        uses: actions/checkout@v3
+        with:
+            fetch-depth: 0
+            submodules: false
       - name: 'Check out code'
-        uses: ./.github/actions/checkout@4c833fdcabb05bc3b49d511a019ec197eade16b4
+        uses: ./.github/actions/checkout-submodule
       - name: 'Set up Docker'
         uses: ./.github/actions/with-docker
         with:
@@ -255,8 +285,13 @@ jobs:
     runs-on: [self-hosted, linux, normal]
     needs: kevm-pyk-code-quality-checks
     steps:
+      - name: "Checkout"
+        uses: actions/checkout@v3
+        with:
+            fetch-depth: 0
+            submodules: false
       - name: 'Check out code'
-        uses: ./.github/actions/checkout@4c833fdcabb05bc3b49d511a019ec197eade16b4
+        uses: ./.github/actions/checkout-submodule
       - name: 'Set up Docker'
         uses: ./.github/actions/with-docker
         with:
