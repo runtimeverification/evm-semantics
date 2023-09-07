@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING
 from pyk.cli.args import KCLIArgs
 from pyk.cli.utils import dir_path
 
+from .kompile import KompileTarget
 from .utils import arg_pair_of
 
 if TYPE_CHECKING:
@@ -34,6 +35,12 @@ def node_id_like(s: str) -> NodeIdLike:
 
 
 class KEVMCLIArgs(KCLIArgs):
+    @cached_property
+    def target_args(self) -> ArgumentParser:
+        args = ArgumentParser(add_help=False)
+        args.add_argument('--target', type=KompileTarget, choices=list(KompileTarget))
+        return args
+
     @cached_property
     def k_args(self) -> ArgumentParser:
         args = super().definition_args
@@ -153,6 +160,13 @@ class KEVMCLIArgs(KCLIArgs):
             default=Path('.'),
             help='Path to Foundry project root directory.',
         )
+        return args
+
+    @cached_property
+    def foundry_test_args(self) -> ArgumentParser:
+        args = ArgumentParser(add_help=False)
+        args.add_argument('test', type=str, help='Test to run')
+        args.add_argument('--id', type=str, default=None, required=False, help='ID of the test')
         return args
 
     @cached_property
