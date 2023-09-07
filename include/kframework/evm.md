@@ -987,10 +987,9 @@ These operators make queries about the current execution state.
  // --------------------------------
 ```
 
-When running as a `node`, the blockhash will be retrieved from the running client.
-Otherwise, it is calculated here using the "shortcut" formula used for running tests.
+The blockhash is calculated here using the "shortcut" formula used for running tests.
 
-```{.k .standalone}
+```k
     rule <k> BLOCKHASH N => #blockhash(HASHES, N, HI -Int 1, 0) ~> #push ... </k>
          <number>      HI     </number>
          <blockhashes> HASHES </blockhashes>

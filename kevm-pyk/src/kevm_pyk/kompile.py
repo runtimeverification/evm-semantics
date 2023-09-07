@@ -22,7 +22,7 @@ if TYPE_CHECKING:
 _LOGGER: Final = logging.getLogger(__name__)
 
 
-HOOK_NAMESPACES: Final = ('JSON', 'KRYPTO', 'BLOCKCHAIN')
+HOOK_NAMESPACES: Final = ('JSON', 'KRYPTO')
 
 
 class KompileTarget(Enum):
@@ -30,7 +30,6 @@ class KompileTarget(Enum):
     HASKELL = 'haskell'
     HASKELL_BOOSTER = 'haskell-booster'
     HASKELL_STANDALONE = 'haskell-standalone'
-    NODE = 'node'
     FOUNDRY = 'foundry'
 
     @property
@@ -38,8 +37,6 @@ class KompileTarget(Enum):
         match self:
             case self.LLVM:
                 return config.LLVM_DIR
-            case self.NODE:
-                return config.NODE_DIR
             case self.HASKELL:
                 return config.HASKELL_DIR
             case self.HASKELL_STANDALONE:
@@ -53,11 +50,9 @@ class KompileTarget(Enum):
     def md_selector(self) -> str:
         match self:
             case self.LLVM:
-                return 'k & ! node & ! symbolic'
-            case self.NODE:
-                return 'k & ! symbolic & ! standalone'
+                return 'k & ! symbolic'
             case self.HASKELL | self.HASKELL_STANDALONE | self.HASKELL_BOOSTER | self.FOUNDRY:
-                return 'k & ! node & ! concrete'
+                return 'k & ! concrete'
             case _:
                 raise AssertionError()
 
@@ -106,13 +101,11 @@ def kevm_kompile(
 
     try:
         match target:
-            case KompileTarget.LLVM | KompileTarget.NODE:
+            case KompileTarget.LLVM:
                 ccopts = list(ccopts) + _lib_ccopts(kernel)
-                no_llvm_kompile = target == KompileTarget.NODE
                 kompile = LLVMKompile(
                     base_args=base_args,
                     ccopts=ccopts,
-                    no_llvm_kompile=no_llvm_kompile,
                     opt_level=optimization,
                     llvm_kompile_type=llvm_kompile_type,
                     enable_llvm_debug=enable_llvm_debug,

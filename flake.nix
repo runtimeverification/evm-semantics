@@ -17,7 +17,7 @@
     ethereum-legacytests.url = "github:ethereum/legacytests/d7abc42a7b352a7b44b1f66b58aca54e4af6a9d7";
     ethereum-legacytests.flake = false;
     haskell-backend.follows = "k-framework/haskell-backend";
-    pyk.url = "github:runtimeverification/pyk/v0.1.431";
+    pyk.url = "github:runtimeverification/pyk/v0.1.434";
     pyk.inputs.flake-utils.follows = "k-framework/flake-utils";
     pyk.inputs.nixpkgs.follows = "k-framework/nixpkgs";
     foundry.url = "github:shazow/foundry.nix/monthly"; # Use monthly branch for permanent releases
@@ -49,7 +49,6 @@
           openssl.dev
           pkg-config
           procps
-          protobuf
           python310
           (solc.mkDefault pkgs solc_0_8_13)
           time
@@ -88,8 +87,6 @@
             dontUseCmakeConfigure = true;
 
             postPatch = ''
-              substituteInPlace ./cmake/node/CMakeLists.txt \
-                --replace 'set(K_LIB ''${K_BIN}/../lib)' 'set(K_LIB ${k}/lib)'
               substituteInPlace ./bin/kevm \
                 --replace 'kevm-pyk' '${final.kevm-pyk}/bin/kevm-pyk'
               substituteInPlace ./bin/kevm \
