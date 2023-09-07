@@ -79,17 +79,17 @@ class KEVMSemantics(KCFGSemantics):
         return False
 
     def extract_branches(self, cterm: CTerm) -> list[KInner]:
-        k_cell = cterm.cell('K_CELL')
-        jumpi_pattern = KEVM.jumpi_applied(KVariable('###PCOUNT'), KVariable('###COND'))
-        pc_next_pattern = KApply('#pc[_]_EVM_InternalOp_OpCode', [KEVM.jumpi()])
-        branch_pattern = KSequence([jumpi_pattern, pc_next_pattern, KEVM.sharp_execute(), KVariable('###CONTINUATION')])
-        if subst := branch_pattern.match(k_cell):
-            cond = subst['###COND']
-            if cond_subst := KEVM.bool_2_word(KVariable('###BOOL_2_WORD')).match(cond):
-                cond = cond_subst['###BOOL_2_WORD']
-            else:
-                cond = KApply('_==Int_', [cond, intToken(0)])
-            return [mlEqualsTrue(cond), mlEqualsTrue(KApply('notBool_', [cond]))]
+        # k_cell = cterm.cell('K_CELL')
+        # jumpi_pattern = KEVM.jumpi_applied(KVariable('###PCOUNT'), KVariable('###COND'))
+        # pc_next_pattern = KApply('#pc[_]_EVM_InternalOp_OpCode', [KEVM.jumpi()])
+        # branch_pattern = KSequence([jumpi_pattern, pc_next_pattern, KEVM.sharp_execute(), KVariable('###CONTINUATION')])
+        # if subst := branch_pattern.match(k_cell):
+        #     cond = subst['###COND']
+        #     if cond_subst := KEVM.bool_2_word(KVariable('###BOOL_2_WORD')).match(cond):
+        #         cond = cond_subst['###BOOL_2_WORD']
+        #     else:
+        #         cond = KApply('_==Int_', [cond, intToken(0)])
+        #     return [mlEqualsTrue(cond), mlEqualsTrue(KApply('notBool_', [cond]))]
         return []
 
     def abstract_node(self, cterm: CTerm) -> CTerm:
