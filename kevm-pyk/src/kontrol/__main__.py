@@ -220,7 +220,7 @@ def exec_foundry_prove(
 def exec_foundry_show(
     foundry_root: Path,
     test: str,
-    id: str | None,
+    version: int | None,
     nodes: Iterable[NodeIdLike] = (),
     node_deltas: Iterable[tuple[NodeIdLike, NodeIdLike]] = (),
     to_module: bool = False,
@@ -236,7 +236,7 @@ def exec_foundry_show(
     output = foundry_show(
         foundry_root=foundry_root,
         test=test,
-        id=id,
+        version=version,
         nodes=nodes,
         node_deltas=node_deltas,
         to_module=to_module,
@@ -251,8 +251,8 @@ def exec_foundry_show(
     print(output)
 
 
-def exec_foundry_to_dot(foundry_root: Path, test: str, id: str | None, **kwargs: Any) -> None:
-    foundry_to_dot(foundry_root=foundry_root, test=test, id=id)
+def exec_foundry_to_dot(foundry_root: Path, test: str, version: int | None, **kwargs: Any) -> None:
+    foundry_to_dot(foundry_root=foundry_root, test=test, version=version)
 
 
 def exec_foundry_list(foundry_root: Path, **kwargs: Any) -> None:
@@ -260,9 +260,9 @@ def exec_foundry_list(foundry_root: Path, **kwargs: Any) -> None:
     print('\n'.join(stats))
 
 
-def exec_foundry_view_kcfg(foundry_root: Path, test: str, id: str | None, **kwargs: Any) -> None:
+def exec_foundry_view_kcfg(foundry_root: Path, test: str, version: int | None, **kwargs: Any) -> None:
     foundry = Foundry(foundry_root)
-    test_id = foundry.get_test_id(test, id)
+    test_id = foundry.get_test_id(test, version)
     contract_name, _ = test_id.split('.')
     proof = foundry.get_apr_proof(test_id)
 
@@ -277,14 +277,16 @@ def exec_foundry_view_kcfg(foundry_root: Path, test: str, id: str | None, **kwar
     viewer.run()
 
 
-def exec_foundry_remove_node(foundry_root: Path, test: str, node: NodeIdLike, id: str | None, **kwargs: Any) -> None:
-    foundry_remove_node(foundry_root=foundry_root, test=test, id=id, node=node)
+def exec_foundry_remove_node(
+    foundry_root: Path, test: str, node: NodeIdLike, version: int | None, **kwargs: Any
+) -> None:
+    foundry_remove_node(foundry_root=foundry_root, test=test, version=version, node=node)
 
 
 def exec_foundry_simplify_node(
     foundry_root: Path,
     test: str,
-    id: str | None,
+    version: int | None,
     node: NodeIdLike,
     replace: bool = False,
     minimize: bool = True,
@@ -303,7 +305,7 @@ def exec_foundry_simplify_node(
     pretty_term = foundry_simplify_node(
         foundry_root=foundry_root,
         test=test,
-        id=id,
+        version=version,
         node=node,
         replace=replace,
         minimize=minimize,
@@ -319,7 +321,7 @@ def exec_foundry_simplify_node(
 def exec_foundry_step_node(
     foundry_root: Path,
     test: str,
-    id: str | None,
+    version: int | None,
     node: NodeIdLike,
     repeat: int = 1,
     depth: int = 1,
@@ -337,7 +339,7 @@ def exec_foundry_step_node(
     foundry_step_node(
         foundry_root=foundry_root,
         test=test,
-        id=id,
+        version=version,
         node=node,
         repeat=repeat,
         depth=depth,
@@ -351,18 +353,18 @@ def exec_foundry_step_node(
 def exec_foundry_merge_nodes(
     foundry_root: Path,
     test: str,
-    id: str | None,
+    version: int | None,
     nodes: Iterable[NodeIdLike],
     bug_report: bool = False,
     **kwargs: Any,
 ) -> None:
-    foundry_merge_nodes(foundry_root=foundry_root, node_ids=nodes, test=test, id=id)
+    foundry_merge_nodes(foundry_root=foundry_root, node_ids=nodes, test=test, version=version)
 
 
 def exec_foundry_section_edge(
     foundry_root: Path,
     test: str,
-    id: str | None,
+    version: int | None,
     edge: tuple[str, str],
     sections: int = 2,
     replace: bool = False,
@@ -380,7 +382,7 @@ def exec_foundry_section_edge(
     foundry_section_edge(
         foundry_root=foundry_root,
         test=test,
-        id=id,
+        version=version,
         edge=edge,
         sections=sections,
         replace=replace,
@@ -394,7 +396,7 @@ def exec_foundry_section_edge(
 def exec_foundry_get_model(
     foundry_root: Path,
     test: str,
-    id: str | None,
+    version: int | None,
     nodes: Iterable[NodeIdLike] = (),
     pending: bool = False,
     failing: bool = False,
@@ -403,7 +405,7 @@ def exec_foundry_get_model(
     output = foundry_get_model(
         foundry_root=foundry_root,
         test=test,
-        id=id,
+        version=version,
         nodes=nodes,
         pending=pending,
         failing=failing,
@@ -439,15 +441,15 @@ def _create_argument_parser() -> ArgumentParser:
     solc_to_k_args.add_argument('contract_file', type=file_path, help='Path to contract file.')
     solc_to_k_args.add_argument('contract_name', type=str, help='Name of contract to generate K helpers for.')
 
-    def _parse_test_id_tuple(value: str) -> tuple[str, str | None]:
+    def _parse_test_version_tuple(value: str) -> tuple[str, int | None]:
         pattern = r'^([^,]+)(?:,\s*(\S+))?$'
         match = re.match(pattern, value)
 
         if match:
             groups = match.groups()
-            return groups[0], groups[1] if groups[1] is not None else None
+            return groups[0], int(groups[1]) if groups[1] is not None else None
         else:
-            raise argparse.ArgumentTypeError("Invalid tuple format. Expected 'test, id' or 'test'")
+            raise argparse.ArgumentTypeError("Invalid tuple format. Expected 'test,version' or 'test'")
 
     foundry_kompile = command_parser.add_parser(
         'foundry-kompile',
@@ -491,7 +493,7 @@ def _create_argument_parser() -> ArgumentParser:
     )
     foundry_prove_args.add_argument(
         '--test',
-        type=_parse_test_id_tuple,
+        type=_parse_test_version_tuple,
         dest='tests',
         default=[],
         action='append',
@@ -499,7 +501,7 @@ def _create_argument_parser() -> ArgumentParser:
     )
     foundry_prove_args.add_argument(
         '--exclude-test',
-        type=_parse_test_id_tuple,
+        type=_parse_test_version_tuple,
         dest='exclude_tests',
         default=[],
         action='append',
