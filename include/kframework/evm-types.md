@@ -228,7 +228,7 @@ A cons-list is used for the EVM wordstack.
 
 ```k
     syntax WordStack ::= ".WordStack"      [smtlib(_dotWS)]
-                       | Int ":" WordStack [klabel(_:_WS), smtlib(_WS_)]
+                       | Int ":" WordStack [smtlib(_WS_)]
  // --------------------------------------------------------------------
 ```
 
