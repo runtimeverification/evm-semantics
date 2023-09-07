@@ -402,20 +402,19 @@ class Foundry:
             return Proof.read_proof_data(self.proofs_dir, test_id)
         return None
 
+    def get_method(self, test: str) -> Method:
+        contract_name, method_name = test.split('.')
+        contract = self.contracts[contract_name]
+        return contract.method_by_sig[method_name]
+
+
     def resolve_proof_version(
         self,
         test: str,
         reinit: bool,
         user_specified_version: int | None,
     ) -> int:
-        def _proof_up_to_date() -> bool:
-            contract_name, method_name = test.split('.')
-            contract = self.contracts[contract_name]
-            method = contract.method_by_sig[method_name]
-            if not method.up_to_date(self.digest_file):
-                method.update_digest(self.digest_file)
-                return False
-            return True
+        method = self.get_method(test)
 
         if reinit and user_specified_version is not None:
             raise ValueError('--reinit is not compatible with specifying proof versions.')
@@ -428,13 +427,13 @@ class Foundry:
             _LOGGER.info(f'Using user-specified versions {user_specified_version} for test {test}')
             if not Proof.proof_data_exists(f'{test}:{user_specified_version}', self.proofs_dir):
                 raise ValueError(f'The specified version {user_specified_version} of proof {test} does not exist.')
-            if not _proof_up_to_date():
+            if not method.up_to_date(self.digest_file):
                 _LOGGER.warn(
                     f'Using specified version {user_specified_version} of proof {test}, but it is out of date.'
                 )
             return user_specified_version
 
-        if not _proof_up_to_date():
+        if not method.up_to_date(self.digest_file):
             _LOGGER.info(f'Creating a new version of test {test} because it is out of date.')
             return self.free_proof_version(test)
 
@@ -735,6 +734,13 @@ def foundry_prove(
         (setup_method_name, foundry.resolve_proof_version(setup_method_name, reinit, None))
         for setup_method_name in setup_methods
     ]
+
+    _LOGGER.info(f'Updating digests: {[test_name for test_name, _ in tests]}')
+    for (test_name, _) in tests:
+        foundry.get_method(test_name).update_digest(foundry.digest_file)
+    _LOGGER.info(f'Updating digests: {setup_methods}')
+    for test_name in setup_methods:
+        foundry.get_method(test_name).update_digest(foundry.digest_file)
 
     _LOGGER.info(f'Running setup functions in parallel: {list(setup_methods)}')
     results = run_cfg_group(setup_methods_with_versions)
