@@ -1,7 +1,7 @@
 [submodule "tests/ethereum-tests"]
 	path = tests/ethereum-tests
 	url = https://github.com/ethereum/tests.git
-	branch = develop
+	branch = master
 	ignore = untracked
 [submodule "deps/plugin"]
 	path = deps/plugin
