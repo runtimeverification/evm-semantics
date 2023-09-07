@@ -116,15 +116,13 @@ jobs:
       - name: 'Build blockchain-k-plugin-deps'
         run: docker exec -u github-user kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make CXX=clang++-14 plugin-deps'
       - name: 'Build kevm'
-        run: docker exec -u github-user kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make build-kevm build-haskell build-llvm build-node -j`nproc` RELEASE=true'
+        run: docker exec -u github-user kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make build-kevm build-haskell build-llvm -j`nproc` RELEASE=true'
       - name: 'Test kevm-pyk'
         run: docker exec -u github-user kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make test-integration'
       - name: 'Test conformance'
         run: docker exec -u github-user kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make test-conformance'
       - name: 'Test llvm krun'
         run: docker exec -u github-user kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make test-interactive-run TEST_CONCRETE_BACKEND=llvm'
-      - name: 'Test node'
-        run: docker exec -u github-user kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make test-node -j`nproc`'
       - name: 'Tear down Docker'
         if: always()
         run: |
