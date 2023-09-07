@@ -35,7 +35,7 @@ mulInt   = lambda i1, i2: pyk.KApply('_*Int_' , [i1, i2])
 minusInt = lambda i1, i2: pyk.KApply('_-Int_' , [i1, i2])
 
 empt_word = pyk.KConstant('.WordStack_EVM-TYPES_WordStack')
-cons_word = lambda w, ws: pyk.KApply('_:_WS', [w, ws])
+cons_word = lambda w, ws: pyk.KApply('_:__EVM-TYPES_WordStack_Int_WordStack', [w, ws])
 
 infGas = lambda g: pyk.KApply('infGas', [g])
 
