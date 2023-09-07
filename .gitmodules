@@ -12,3 +12,6 @@
 [submodule "tests/foundry/lib/forge-std"]
 	path = tests/foundry/lib/forge-std
 	url = https://github.com/foundry-rs/forge-std
+[submodule "tests/ethereum-tests"]
+	path = tests/ethereum-tests
+	url = https://github.com/ethereum/tests.git
