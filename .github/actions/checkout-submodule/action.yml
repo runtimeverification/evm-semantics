@@ -7,6 +7,6 @@ runs:
     shell: bash {0}
     run: |
       set -euxo pipefail
-      
-      git submodule foreach git pull --depth=1
+
+      git submodule foreach git fetch
       git submodule update --init --recursive
