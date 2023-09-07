@@ -147,7 +147,7 @@ def exec_foundry_prove(
     max_depth: int = 1000,
     max_iterations: int | None = None,
     reinit: bool = False,
-    tests: Iterable[tuple[str, str | None]] = (),
+    tests: Iterable[tuple[str, int | None]] = (),
     exclude_tests: Iterable[str] = (),
     workers: int = 1,
     simplify_init: bool = True,

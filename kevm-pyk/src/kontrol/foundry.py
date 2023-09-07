@@ -405,8 +405,8 @@ class Foundry:
         self,
         test: str,
         reinit: bool,
-        user_specified_id: str | None,
-    ) -> str:
+        user_specified_id: int | None,
+    ) -> int:
         def _proof_up_to_date() -> bool:
             contract_name, method_name = test.split('.')
             contract = self.contracts[contract_name]
@@ -445,12 +445,12 @@ class Foundry:
         _LOGGER.info(
             f'Test {test} is up to date in {self.digest_file}, but does not exist on disk. Assigning version 0'
         )
-        return '0'
+        return 0
 
     def latest_proof_id(
         self,
         test: str,
-    ) -> str | None:
+    ) -> int | None:
         """
         find the highest used proof ID, to be used as a default. Returns None if no version of this proof exists.
         """
@@ -473,18 +473,18 @@ class Foundry:
             return None
         else:
             ids = test_ids[test]
-            return str(max(ids))
+            return max(ids)
             # find the first free id
             i = 0
             while True:
                 if i not in ids:
-                    return str(i)
+                    return i
                 i += 1
 
     def free_proof_id(
         self,
         test: str,
-    ) -> str:
+    ) -> int:
         """
         find the lowest proof id that is not used yet
         """
@@ -504,14 +504,14 @@ class Foundry:
                 ids.add(id_num)
                 test_ids[test_name] = ids
         if test_ids.get(test) is None:
-            return '0'
+            return 0
         else:
             ids = test_ids[test]
             # find the first free id
             i = 0
             while True:
                 if i not in ids:
-                    return str(i)
+                    return i
                 i += 1
 
 
@@ -646,7 +646,7 @@ def foundry_prove(
     max_depth: int = 1000,
     max_iterations: int | None = None,
     reinit: bool = False,
-    tests: Iterable[tuple[str, str | None]] = (),
+    tests: Iterable[tuple[str, int | None]] = (),
     exclude_tests: Iterable[str] = (),
     workers: int = 1,
     simplify_init: bool = True,
@@ -664,7 +664,7 @@ def foundry_prove(
     trace_rewrites: bool = False,
     auto_abstract_gas: bool = False,
     port: int | None = None,
-) -> dict[tuple[str, str], tuple[bool, list[str] | None]]:
+) -> dict[tuple[str, int], tuple[bool, list[str] | None]]:
     if workers <= 0:
         raise ValueError(f'Must have at least one worker, found: --workers {workers}')
     if max_iterations is not None and max_iterations < 0:
@@ -703,12 +703,11 @@ def foundry_prove(
         )
     )
 
-    def _init_and_run_proof(_init_problem: tuple[str, str, str | None]) -> tuple[bool, list[str] | None]:
+    def _init_and_run_proof(_init_problem: tuple[str, str, int]) -> tuple[bool, list[str] | None]:
         contract_name, method_sig, id = _init_problem
         contract = foundry.contracts[contract_name]
         method = contract.method_by_sig[method_sig]
-        id = ':' + id if id is not None else ''
-        test_id = f'{contract_name}.{method_sig}{id}'
+        test_id = f'{contract_name}.{method_sig}:{id}'
         llvm_definition_dir = foundry.llvm_library if use_booster else None
 
         start_server = port is None
@@ -752,8 +751,8 @@ def foundry_prove(
                 failure_log = print_failure_info(proof, kcfg_explore, counterexample_info)
             return passed, failure_log
 
-    def run_cfg_group(tests: list[tuple[str, str]]) -> dict[tuple[str, str], tuple[bool, list[str] | None]]:
-        def _split_test(test: tuple[str, str]) -> tuple[str, str, str | None]:
+    def run_cfg_group(tests: list[tuple[str, int]]) -> dict[tuple[str, int], tuple[bool, list[str] | None]]:
+        def _split_test(test: tuple[str, int]) -> tuple[str, str, int]:
             test_name, id = test
             contract, method = test_name.split('.')
             return contract, method, id
