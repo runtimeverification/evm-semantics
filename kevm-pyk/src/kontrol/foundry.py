@@ -167,7 +167,7 @@ class Foundry:
         digest_dict = json.loads(self.digest_file.read_text())
         if 'foundry' not in digest_dict:
             digest_dict['foundry'] = ''
-        self.digest_file.write_text(json.dumps(digest_dict))
+        self.digest_file.write_text(json.dumps(digest_dict, indent=4))
         return digest_dict['foundry'] == self.digest
 
     def update_digest(self) -> None:
@@ -175,7 +175,7 @@ class Foundry:
         if self.digest_file.exists():
             digest_dict = json.loads(self.digest_file.read_text())
         digest_dict['foundry'] = self.digest
-        self.digest_file.write_text(json.dumps(digest_dict))
+        self.digest_file.write_text(json.dumps(digest_dict, indent=4))
 
         _LOGGER.info(f'Updated Foundry digest file: {self.digest_file}')
 
@@ -402,11 +402,10 @@ class Foundry:
             return Proof.read_proof_data(self.proofs_dir, test_id)
         return None
 
-    def get_method(self, test: str) -> Method:
+    def get_method(self, test: str) -> Contract.Method:
         contract_name, method_name = test.split('.')
         contract = self.contracts[contract_name]
         return contract.method_by_sig[method_name]
-
 
     def resolve_proof_version(
         self,
@@ -442,6 +441,10 @@ class Foundry:
             _LOGGER.info(
                 f'Using the the latest version {latest_version} of test {test} because it is up to date and no version was specified.'
             )
+            if not method.contract_up_to_date(self.digest_file):
+                _LOGGER.warning(
+                    f'Test {test} was not reinitialized because it is up to date, but the contract it is a part of has changed.'
+                )
             return latest_version
 
         _LOGGER.info(
@@ -567,7 +570,7 @@ def foundry_kompile(
         digest_dict = json.loads(foundry.digest_file.read_text())
         if 'kompilation' not in digest_dict:
             digest_dict['kompilation'] = ''
-        foundry.digest_file.write_text(json.dumps(digest_dict))
+        foundry.digest_file.write_text(json.dumps(digest_dict, indent=4))
         return digest_dict['kompilation'] == kompilation_digest()
 
     def update_kompilation_digest() -> None:
@@ -575,7 +578,7 @@ def foundry_kompile(
         if foundry.digest_file.exists():
             digest_dict = json.loads(foundry.digest_file.read_text())
         digest_dict['kompilation'] = kompilation_digest()
-        foundry.digest_file.write_text(json.dumps(digest_dict))
+        foundry.digest_file.write_text(json.dumps(digest_dict, indent=4))
 
         _LOGGER.info('Updated Kompilation digest')
 
@@ -736,7 +739,7 @@ def foundry_prove(
     ]
 
     _LOGGER.info(f'Updating digests: {[test_name for test_name, _ in tests]}')
-    for (test_name, _) in tests:
+    for test_name, _ in tests:
         foundry.get_method(test_name).update_digest(foundry.digest_file)
     _LOGGER.info(f'Updating digests: {setup_methods}')
     for test_name in setup_methods:

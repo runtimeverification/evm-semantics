@@ -137,10 +137,21 @@ class Contract:
             digest_dict = json.loads(digest_file.read_text())
             if 'methods' not in digest_dict:
                 digest_dict['methods'] = {}
-                digest_file.write_text(json.dumps(digest_dict))
+                digest_file.write_text(json.dumps(digest_dict, indent=4))
             if self.qualified_name not in digest_dict['methods']:
                 return False
             return digest_dict['methods'][self.qualified_name]['method'] == self.digest
+
+        def contract_up_to_date(self, digest_file: Path) -> bool:
+            if not digest_file.exists():
+                return False
+            digest_dict = json.loads(digest_file.read_text())
+            if 'methods' not in digest_dict:
+                digest_dict['methods'] = {}
+                digest_file.write_text(json.dumps(digest_dict, indent=4))
+            if self.qualified_name not in digest_dict['methods']:
+                return False
+            return digest_dict['methods'][self.qualified_name]['contract'] == self.contract_digest
 
         def update_digest(self, digest_file: Path) -> None:
             digest_dict = {}
@@ -148,8 +159,8 @@ class Contract:
                 digest_dict = json.loads(digest_file.read_text())
             if 'methods' not in digest_dict:
                 digest_dict['methods'] = {}
-            digest_dict['methods'][self.qualified_name] = {'method': self.digest}
-            digest_file.write_text(json.dumps(digest_dict))
+            digest_dict['methods'][self.qualified_name] = {'method': self.digest, 'contract': self.contract_digest}
+            digest_file.write_text(json.dumps(digest_dict, indent=4))
 
             _LOGGER.info(f'Updated method {self.qualified_name} in digest file: {digest_file}')
 
