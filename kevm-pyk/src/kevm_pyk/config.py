@@ -44,5 +44,4 @@ check_dir_path(INCLUDE_DIR)
 LLVM_DIR: Final = KEVM_LIB / 'llvm'
 HASKELL_DIR: Final = KEVM_LIB / 'haskell'
 HASKELL_STANDALONE_DIR: Final = KEVM_LIB / 'haskell-standalone'
-NODE_DIR: Final = KEVM_LIB / 'node'
 FOUNDRY_DIR: Final = KEVM_LIB / 'foundry'
