@@ -174,12 +174,6 @@ class KEVMCLIArgs(KCLIArgs):
     def rpc_args(self) -> ArgumentParser:
         args = ArgumentParser(add_help=False)
         args.add_argument(
-            '--bug-report',
-            default=False,
-            action='store_true',
-            help='Generate a haskell-backend bug report for the execution.',
-        )
-        args.add_argument(
             '--trace-rewrites',
             default=False,
             action='store_true',

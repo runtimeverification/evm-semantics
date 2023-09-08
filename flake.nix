@@ -49,7 +49,6 @@
           openssl.dev
           pkg-config
           procps
-          protobuf
           python310
           (solc.mkDefault pkgs solc_0_8_13)
           time
@@ -88,8 +87,6 @@
             dontUseCmakeConfigure = true;
 
             postPatch = ''
-              substituteInPlace ./cmake/node/CMakeLists.txt \
-                --replace 'set(K_LIB ''${K_BIN}/../lib)' 'set(K_LIB ${k}/lib)'
               substituteInPlace ./bin/kevm \
                 --replace 'kevm-pyk' '${final.kevm-pyk}/bin/kevm-pyk'
               substituteInPlace ./bin/kevm \

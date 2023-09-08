@@ -35,9 +35,6 @@ RUN    apt-get update                  \
             llvm-${LLVM_VERSION}-dev   \
             llvm-${LLVM_VERSION}-tools \
             maven                      \
-            netcat                     \
-            protobuf-compiler          \
-            maven                      \
             python3                    \
             python3-pip
 
