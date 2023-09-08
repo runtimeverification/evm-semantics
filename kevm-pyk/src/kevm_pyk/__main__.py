@@ -494,7 +494,7 @@ def exec_run(
         kore_pgm = kevm.kast_to_kore(kast_pgm, sort=KSort('EthereumSimulation'))
         kore_pattern = kore_pgm_to_kore(kore_pgm, SORT_ETHEREUM_SIMULATION, schedule, mode, chainid)
 
-    kevm.run_kore(
+    kevm.run(
         kore_pattern,
         depth=depth,
         term=True,
