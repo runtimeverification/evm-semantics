@@ -94,7 +94,7 @@ module SOLIDITY-CODE-SPEC
 ```k
     claim [bad-call-data]:
           <mode>     NORMAL   </mode>
-          <schedule> SHANGHAI </schedule>
+          <schedule> ISTANBUL </schedule>
 
           <callStack> .List                                 </callStack>
           <program>   #binRuntime()                         </program>
@@ -123,7 +123,7 @@ module SOLIDITY-CODE-SPEC
 ```k
     claim [add-positive]:
           <mode>     NORMAL   </mode>
-          <schedule> SHANGHAI </schedule>
+          <schedule> ISTANBUL </schedule>
 
           <callStack> .List                                 </callStack>
           <program>   #binRuntime()                         </program>
@@ -157,7 +157,7 @@ module SOLIDITY-CODE-SPEC
 ```k
     claim [add-negative]:
           <mode>     NORMAL   </mode>
-          <schedule> SHANGHAI </schedule>
+          <schedule> ISTANBUL </schedule>
 
           <callStack> .List                                 </callStack>
           <program>   #binRuntime()                         </program>
@@ -191,7 +191,7 @@ module SOLIDITY-CODE-SPEC
 ```
     claim [badAdd-negative]:
           <mode>     NORMAL   </mode>
-          <schedule> SHANGHAI </schedule>
+          <schedule> ISTANBUL </schedule>
 
           <callStack> .List                                 </callStack>
           <program>   #binRuntime()                         </program>
@@ -224,7 +224,7 @@ module SOLIDITY-CODE-SPEC
 ```k
     claim [max-positive]:
           <mode>     NORMAL   </mode>
-          <schedule> SHANGHAI </schedule>
+          <schedule> ISTANBUL </schedule>
 
           <callStack> .List                                 </callStack>
           <program>   #binRuntime()                         </program>
