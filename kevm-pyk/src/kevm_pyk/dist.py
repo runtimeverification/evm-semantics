@@ -2,17 +2,22 @@ from __future__ import annotations
 
 import logging
 import shutil
+from contextlib import contextmanager
+from distutils.dir_util import copy_tree
+from pathlib import Path
+from subprocess import CalledProcessError
+from tempfile import TemporaryDirectory
 from typing import TYPE_CHECKING
 
-from pyk.utils import hash_str
+from pyk.kbuild.utils import sync_files
+from pyk.utils import hash_str, run_process
 from xdg_base_dirs import xdg_cache_home
 
 from . import config
 from .kompile import KompileTarget, kevm_kompile
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping
-    from pathlib import Path
+    from collections.abc import Iterator, Mapping
     from typing import Any, Final
 
 
@@ -21,6 +26,11 @@ _LOGGER: Final = logging.getLogger(__name__)
 
 DIGEST: Final = hash_str({'module-dir': config.MODULE_DIR})[:7]
 DIST_DIR: Final = xdg_cache_home() / f'evm-semantics-{DIGEST}'
+
+
+# ---------
+# K targets
+# ---------
 
 
 def build(target: str) -> Path:
@@ -95,3 +105,55 @@ def _target_dir(target: str) -> Path:
 def _check_target(target: str) -> None:
     if target not in _TARGETS:
         raise ValueError(f'Unknown build target: {target}')
+
+
+# --------------
+# Plugin project
+# --------------
+
+
+def plugin_dir() -> Path:
+    target_dir = DIST_DIR / 'plugin'
+    if target_dir.exists():
+        return target_dir
+    return build_plugin()
+
+
+def build_plugin() -> Path:
+    target_dir = DIST_DIR / 'plugin'
+
+    _LOGGER.info(f'Building plugin project: {target_dir}')
+
+    sync_files(
+        source_dir=config.PLUGIN_DIR / 'plugin-c',
+        target_dir=target_dir / 'plugin-c',
+        file_names=[
+            'blake2.cpp',
+            'blake2.h',
+            'crypto.cpp',
+            'plugin_util.cpp',
+            'plugin_util.h',
+        ],
+    )
+
+    with _plugin_build_env() as build_dir:
+        try:
+            run_process(['make', 'libcryptopp', 'libff', 'libsecp256k1'], cwd=build_dir, pipe_stdout=False)
+        except CalledProcessError as err:
+            shutil.rmtree(DIST_DIR / 'plugin')
+            raise RuntimeError('Compilation of native dependencies failed') from err
+
+        output_dir = build_dir / 'build'
+        copy_tree(str(output_dir / 'libcryptopp'), str(target_dir / 'libcryptopp'))
+        copy_tree(str(output_dir / 'libff'), str(target_dir / 'libff'))
+        copy_tree(str(output_dir / 'libsecp256k1'), str(target_dir / 'libsecp256k1'))
+
+    return target_dir
+
+
+@contextmanager
+def _plugin_build_env() -> Iterator[Path]:
+    with TemporaryDirectory(prefix='evm-semantics-plugin-') as build_dir_str:
+        build_dir = Path(build_dir_str)
+        copy_tree(str(config.PLUGIN_DIR), str(build_dir))
+        yield build_dir
