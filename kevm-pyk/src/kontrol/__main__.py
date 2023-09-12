@@ -12,8 +12,7 @@ from pyk.cli.utils import file_path
 from pyk.proof.tui import APRProofViewer
 
 from kevm_pyk.cli import KEVMCLIArgs, node_id_like
-from kevm_pyk.config import KEVM_LIB
-from kevm_pyk.kompile import KompileTarget
+from kevm_pyk.dist import DistTarget
 from kevm_pyk.utils import arg_pair_of
 
 from .foundry import (
@@ -75,9 +74,7 @@ def main() -> None:
 
 
 def exec_version(**kwargs: Any) -> None:
-    version_file = KEVM_LIB / 'version'
-    version = version_file.read_text().strip()
-    print(f'Kontrol Version: {version}')
+    raise NotImplementedError()
 
 
 def exec_compile(contract_file: Path, **kwargs: Any) -> None:
@@ -91,14 +88,14 @@ def exec_solc_to_k(
     main_module: str | None,
     requires: list[str],
     imports: list[str],
-    target: KompileTarget | None = None,
+    target: DistTarget | None = None,
     **kwargs: Any,
 ) -> None:
     if target is None:
-        target = KompileTarget.HASKELL
+        target = DistTarget.HASKELL
 
     k_text = solc_to_k(
-        definition_dir=target.definition_dir,
+        definition_dir=target.check(),
         contract_file=contract_file,
         contract_name=contract_name,
         main_module=main_module,

@@ -4,6 +4,7 @@ import logging
 import shutil
 from contextlib import contextmanager
 from distutils.dir_util import copy_tree
+from enum import Enum
 from pathlib import Path
 from subprocess import CalledProcessError
 from tempfile import TemporaryDirectory
@@ -33,55 +34,61 @@ DIST_DIR: Final = xdg_cache_home() / f'evm-semantics-{DIGEST}'
 # ---------
 
 
-def build(target: str) -> Path:
-    target_dir = _target_dir(target)
-    _LOGGER.info(f'Building target: {target_dir}')
-    target_dir.mkdir(parents=True, exist_ok=True)
-    return kevm_kompile(output_dir=target_dir, **_TARGETS[target])
+class DistTarget(Enum):
+    LLVM = 'llvm'
+    HASKELL = 'haskell'
+    HASKELL_STANDALONE = 'haskell-standalone'
+    FOUNDRY = 'foundry'
+
+    @property
+    def path(self) -> Path:
+        return DIST_DIR / self.value
+
+    def get(self) -> Path | None:
+        if not self.path.exists():
+            return None
+        return self.path
+
+    def check(self) -> Path:
+        if not self.path.exists():
+            raise ValueError(f'Target {self.name} is not built')
+        return self.path
+
+    def build(self, *, force: bool = False) -> Path:
+        if force or not self.path.exists():
+            self._do_build()
+        return self.path
+
+    def clean(self) -> Path:
+        shutil.rmtree(self.path, ignore_errors=True)
+        return self.path
+
+    def _do_build(self) -> None:
+        _LOGGER.info(f'Building target {self.name}: {self.path}')
+        self.path.mkdir(parents=True, exist_ok=True)
+        kevm_kompile(output_dir=self.path, **_TARGET_PARAMS[self])
 
 
-def clean(target: str | None = None) -> Path:
-    dir_to_clean = _target_dir(target) if target is not None else DIST_DIR
-    shutil.rmtree(dir_to_clean, ignore_errors=True)
-    return dir_to_clean
-
-
-def llvm_dir() -> Path:
-    return _get('llvm')
-
-
-def haskell_dir() -> Path:
-    return _get('haskell')
-
-
-def haskell_standalone_dir() -> Path:
-    return _get('haskell-standalone')
-
-
-def foundry_dir() -> Path:
-    return _get('foundry')
-
-
-_TARGETS: Final[Mapping[str, Any]] = {
-    'llvm': {
+_TARGET_PARAMS: Final[Mapping[DistTarget, Any]] = {
+    DistTarget.LLVM: {
         'target': KompileTarget.LLVM,
         'main_file': config.EVM_SEMANTICS_DIR / 'driver.md',
         'main_module': 'ETHEREUM-SIMULATION',
         'syntax_module': 'ETHEREUM-SIMULATION',
     },
-    'haskell': {
+    DistTarget.HASKELL: {
         'target': KompileTarget.HASKELL,
         'main_file': config.EVM_SEMANTICS_DIR / 'edsl.md',
         'main_module': 'EDSL',
         'syntax_module': 'EDSL',
     },
-    'haskell-standalone': {
+    DistTarget.HASKELL_STANDALONE: {
         'target': KompileTarget.HASKELL_STANDALONE,
         'main_file': config.EVM_SEMANTICS_DIR / 'driver.md',
         'main_module': 'ETHEREUM-SIMULATION',
         'syntax_module': 'ETHEREUM-SIMULATION',
     },
-    'foundry': {
+    DistTarget.FOUNDRY: {
         'target': KompileTarget.FOUNDRY,
         'main_file': config.EVM_SEMANTICS_DIR / 'foundry.md',
         'main_module': 'FOUNDRY',
@@ -90,43 +97,37 @@ _TARGETS: Final[Mapping[str, Any]] = {
 }
 
 
-def _get(target: str) -> Path:
-    target_dir = _target_dir(target)
-    if target_dir.exists():
-        return target_dir
-    return build(target)
-
-
-def _target_dir(target: str) -> Path:
-    _check_target(target)
-    return DIST_DIR / target
-
-
-def _check_target(target: str) -> None:
-    if target not in _TARGETS:
-        raise ValueError(f'Unknown build target: {target}')
-
-
 # --------------
 # Plugin project
 # --------------
 
 
-def plugin_dir() -> Path:
-    target_dir = DIST_DIR / 'plugin'
-    if target_dir.exists():
-        return target_dir
-    return build_plugin()
+PLUGIN_DIR: Final = DIST_DIR / 'plugin'
 
 
-def build_plugin() -> Path:
-    target_dir = DIST_DIR / 'plugin'
+def check_plugin() -> Path:
+    if not PLUGIN_DIR.exists():
+        raise ValueError('Plugin project is not built')
+    return PLUGIN_DIR
 
-    _LOGGER.info(f'Building plugin project: {target_dir}')
+
+def build_plugin(force: bool = False) -> Path:
+    if force or not PLUGIN_DIR.exists():
+        _do_build_plugin()
+    return PLUGIN_DIR
+
+
+def clean_plugin() -> Path:
+    shutil.rmtree(PLUGIN_DIR, ignore_errors=True)
+    return PLUGIN_DIR
+
+
+def _do_build_plugin() -> None:
+    _LOGGER.info(f'Building Plugin project: {PLUGIN_DIR}')
 
     sync_files(
         source_dir=config.PLUGIN_DIR / 'plugin-c',
-        target_dir=target_dir / 'plugin-c',
+        target_dir=PLUGIN_DIR / 'plugin-c',
         file_names=[
             'blake2.cpp',
             'blake2.h',
@@ -140,15 +141,13 @@ def build_plugin() -> Path:
         try:
             run_process(['make', 'libcryptopp', 'libff', 'libsecp256k1'], cwd=build_dir, pipe_stdout=False)
         except CalledProcessError as err:
-            shutil.rmtree(DIST_DIR / 'plugin')
-            raise RuntimeError('Compilation of native dependencies failed') from err
+            clean_plugin()
+            raise RuntimeError('Compilation of native dependencies of Plugin failed') from err
 
         output_dir = build_dir / 'build'
-        copy_tree(str(output_dir / 'libcryptopp'), str(target_dir / 'libcryptopp'))
-        copy_tree(str(output_dir / 'libff'), str(target_dir / 'libff'))
-        copy_tree(str(output_dir / 'libsecp256k1'), str(target_dir / 'libsecp256k1'))
-
-    return target_dir
+        copy_tree(str(output_dir / 'libcryptopp'), str(PLUGIN_DIR / 'libcryptopp'))
+        copy_tree(str(output_dir / 'libff'), str(PLUGIN_DIR / 'libff'))
+        copy_tree(str(output_dir / 'libsecp256k1'), str(PLUGIN_DIR / 'libsecp256k1'))
 
 
 @contextmanager
