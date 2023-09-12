@@ -39,7 +39,11 @@ def _kevm_lib() -> Path:
 
 MODULE_DIR: Final = Path(kevm_pyk.__file__).parent
 KPROJ_DIR: Final = MODULE_DIR / 'kproj'
-INCLUDE_DIR: Final = KPROJ_DIR / 'evm-semantics'
+EVM_SEMANTICS_DIR: Final = KPROJ_DIR / 'evm-semantics'
+PLUGIN_DIR: Final = KPROJ_DIR / 'plugin'
+
+
+INCLUDE_DIRS: Final = (EVM_SEMANTICS_DIR, PLUGIN_DIR)
 
 
 NIX_LIBS: Final = os.getenv('NIX_LIBS')

@@ -55,25 +55,25 @@ def foundry_dir() -> Path:
 _TARGETS: Final[Mapping[str, Any]] = {
     'llvm': {
         'target': KompileTarget.LLVM,
-        'main_file': config.INCLUDE_DIR / 'driver.md',
+        'main_file': config.EVM_SEMANTICS_DIR / 'driver.md',
         'main_module': 'ETHEREUM-SIMULATION',
         'syntax_module': 'ETHEREUM-SIMULATION',
     },
     'haskell': {
         'target': KompileTarget.HASKELL,
-        'main_file': config.INCLUDE_DIR / 'edsl.md',
+        'main_file': config.EVM_SEMANTICS_DIR / 'edsl.md',
         'main_module': 'EDSL',
         'syntax_module': 'EDSL',
     },
     'haskell-standalone': {
         'target': KompileTarget.HASKELL_STANDALONE,
-        'main_file': config.INCLUDE_DIR / 'driver.md',
+        'main_file': config.EVM_SEMANTICS_DIR / 'driver.md',
         'main_module': 'ETHEREUM-SIMULATION',
         'syntax_module': 'ETHEREUM-SIMULATION',
     },
     'foundry': {
         'target': KompileTarget.FOUNDRY,
-        'main_file': config.INCLUDE_DIR / 'foundry.md',
+        'main_file': config.EVM_SEMANTICS_DIR / 'foundry.md',
         'main_module': 'FOUNDRY',
         'syntax_module': 'FOUNDRY',
     },

@@ -82,7 +82,7 @@ def kevm_kompile(
         llvm_library = output_dir / 'llvm-library'
 
     include_dirs = [Path(include) for include in includes]
-    include_dirs += [config.INCLUDE_DIR]
+    include_dirs += config.INCLUDE_DIRS
 
     base_args = KompileArgs(
         main_file=main_file,

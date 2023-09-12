@@ -22,8 +22,9 @@ from pyk.proof.show import APRProofShow
 from pyk.proof.tui import APRProofViewer
 from pyk.utils import single
 
+from . import config
 from .cli import KEVMCLIArgs, node_id_like
-from .config import INCLUDE_DIR, KEVM_LIB
+from .config import KEVM_LIB
 from .gst_to_kore import SORT_ETHEREUM_SIMULATION, gst_to_kore, kore_pgm_to_kore
 from .kevm import KEVM, KEVMSemantics, kevm_node_printer
 from .kompile import KompileTarget, kevm_kompile
@@ -149,7 +150,7 @@ def exec_prove_legacy(
     kevm = KEVM(definition_dir, use_directory=save_directory)
 
     include_dirs = [Path(include) for include in includes]
-    include_dirs += [INCLUDE_DIR]
+    include_dirs += config.INCLUDE_DIRS
 
     final_state = kevm.prove_legacy(
         spec_file=spec_file,
@@ -211,7 +212,7 @@ def exec_prove(
     kevm = KEVM(definition_dir, use_directory=save_directory, bug_report=bug_report)
 
     include_dirs = [Path(include) for include in includes]
-    include_dirs += [INCLUDE_DIR]
+    include_dirs += config.INCLUDE_DIRS
 
     _LOGGER.info(f'Extracting claims from file: {spec_file}')
     claims = kevm.get_claims(
@@ -358,7 +359,7 @@ def exec_prune_proof(
     kevm = KEVM(definition_dir, use_directory=save_directory)
 
     include_dirs = [Path(include) for include in includes]
-    include_dirs += [INCLUDE_DIR]
+    include_dirs += config.INCLUDE_DIRS
 
     _LOGGER.info(f'Extracting claims from file: {spec_file}')
     claim = single(
@@ -399,7 +400,7 @@ def exec_show_kcfg(
 ) -> None:
     kevm = KEVM(definition_dir)
     include_dirs = [Path(include) for include in includes]
-    include_dirs += [INCLUDE_DIR]
+    include_dirs += config.INCLUDE_DIRS
     proof = get_apr_proof_for_spec(
         kevm,
         spec_file,
@@ -448,7 +449,7 @@ def exec_view_kcfg(
 ) -> None:
     kevm = KEVM(definition_dir)
     include_dirs = [Path(include) for include in includes]
-    include_dirs += [INCLUDE_DIR]
+    include_dirs += config.INCLUDE_DIRS
     proof = get_apr_proof_for_spec(
         kevm,
         spec_file,
