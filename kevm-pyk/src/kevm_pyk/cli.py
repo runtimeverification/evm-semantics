@@ -166,7 +166,7 @@ class KEVMCLIArgs(KCLIArgs):
     def foundry_test_args(self) -> ArgumentParser:
         args = ArgumentParser(add_help=False)
         args.add_argument('test', type=str, help='Test to run')
-        args.add_argument('--id', type=str, default=None, required=False, help='ID of the test')
+        args.add_argument('--version', type=str, default=None, required=False, help='Version of the test to use')
         return args
 
     @cached_property
