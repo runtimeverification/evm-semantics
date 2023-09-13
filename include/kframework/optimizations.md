@@ -24,6 +24,37 @@ module EVM-OPTIMIZATIONS [kore]
 
 rule <kevm>
        <k>
+         ( #next[ PUSHZERO ] => . ) ...
+       </k>
+       <schedule>
+         SCHED
+       </schedule>
+       <ethereum>
+         <evm>
+           <callState>
+             <wordStack>
+               ( WS => 0 : WS )
+             </wordStack>
+             <pc>
+               ( PCOUNT => ( PCOUNT +Int 1 ) )
+             </pc>
+             <gas>
+               ( GAVAIL => ( GAVAIL -Gas Gbase < SCHED > ) )
+             </gas>
+             ...
+           </callState>
+           ...
+         </evm>
+         ...
+       </ethereum>
+       ...
+     </kevm>
+  requires ( Gbase < SCHED > <=Gas GAVAIL )
+   andBool ( #sizeWordStack( 0 : WS ) <=Int 1024 )
+    [priority(40)]
+
+rule <kevm>
+       <k>
          ( #next[ PUSH(N) ] => . ) ...
        </k>
        <schedule>

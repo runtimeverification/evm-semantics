@@ -253,7 +253,7 @@ make build-llvm KEVM_OPTS=--enable-llvm-debug
 To debug a conformance test, add the `--debugger` flag to the command:
 
 ```sh
-kevm run tests/ethereum-tests/BlockchainTests/GeneralStateTests/stExample/add11.json --target llvm --mode NORMAL --schedule MERGE --chainid 1 --debugger
+kevm run tests/ethereum-tests/BlockchainTests/GeneralStateTests/stExample/add11.json --target llvm --mode NORMAL --schedule SHANGHAI --chainid 1 --debugger
 ```
 
 ### Keeping in mind while developing

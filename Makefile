@@ -312,7 +312,7 @@ TEST_SYMBOLIC_BACKEND := haskell
 CHECK := git --no-pager diff --no-index --ignore-all-space -R
 
 KEVM_MODE     := NORMAL
-KEVM_SCHEDULE := MERGE
+KEVM_SCHEDULE := SHANGHAI
 KEVM_CHAINID  := 1
 
 KPROVE_MODULE  = VERIFICATION
