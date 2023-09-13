@@ -230,20 +230,29 @@ def test_foundry_merge_nodes(foundry_root: Path, bug_report: BugReport | None, s
     foundry_prove(
         foundry_root,
         tests=[(test, None)],
-        max_iterations=4,
+        max_iterations=3,
         port=server.port,
         bug_report=bug_report,
     )
-    check_pending(foundry_root, test, [6, 7])
 
-    foundry_step_node(foundry_root, test, node=6, depth=49, port=server.port)
-    foundry_step_node(foundry_root, test, node=7, depth=50, port=server.port)
+    check_pending(foundry_root, test, [5, 6])
 
-    check_pending(foundry_root, test, [8, 9])
+    foundry_remove_node(
+        foundry_root=foundry_root,
+        test=test,
+        node=6,
+    )
 
-    foundry_merge_nodes(foundry_root=foundry_root, test=test, node_ids=[8, 9], include_disjunct=True)
+    check_pending(foundry_root, test, [4, 5])
 
-    check_pending(foundry_root, test, [10])
+    foundry_step_node(foundry_root, test, node=4, depth=49, port=server.port)
+    foundry_step_node(foundry_root, test, node=5, depth=50, port=server.port)
+
+    check_pending(foundry_root, test, [7, 8])
+
+    foundry_merge_nodes(foundry_root=foundry_root, test=test, node_ids=[7, 8], include_disjunct=True)
+
+    check_pending(foundry_root, test, [9])
 
     prove_res = foundry_prove(
         foundry_root,
