@@ -217,7 +217,7 @@ def test_pyk_prove(
 ) -> None:
     caplog.set_level(logging.INFO)
 
-    if spec_file in FAILING_PYK_TESTS or (use_booster and spec_file in FAILING_BOOSTER_TESTS):
+    if (not use_booster and spec_file in FAILING_PYK_TESTS) or (use_booster and spec_file in FAILING_BOOSTER_TESTS):
         pytest.skip()
 
     # Given
