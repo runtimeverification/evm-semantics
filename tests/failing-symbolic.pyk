@@ -1,4 +1,6 @@
+tests/specs/benchmarks/ecrecoverloop00-sig1-invalid-spec.k
 tests/specs/benchmarks/functional-spec.k
+tests/specs/bihu/collectToken-spec.k
 tests/specs/bihu/forwardToHotWallet-failure-1-spec.k
 tests/specs/bihu/forwardToHotWallet-failure-3-spec.k
 tests/specs/bihu/forwardToHotWallet-failure-4-spec.k
@@ -13,14 +15,19 @@ tests/specs/erc20/hkg/transferFrom-failure-2-spec.k
 tests/specs/erc20/hkg/transferFrom-success-2-spec.k
 tests/specs/erc20/hkg/transfer-success-1-spec.k
 tests/specs/erc20/hkg/transfer-success-2-spec.k
-tests/specs/examples/sum-to-n-spec.k
 tests/specs/examples/sum-to-n-foundry-spec.k
+tests/specs/examples/sum-to-n-spec.k
 tests/specs/functional/int-simplifications-spec.k
 tests/specs/functional/lemmas-no-smt-spec.k
 tests/specs/functional/lemmas-spec.k
 tests/specs/functional/merkle-spec.k
 tests/specs/functional/storageRoot-spec.k
+tests/specs/mcd/flapper-tend-guy-diff-pass-rough-spec.k
+tests/specs/mcd/vat-frob-diff-zero-dart-pass-rough-spec.k
 tests/specs/mcd/vat-move-diff-rough-spec.k
+tests/specs/mcd/vow-cage-deficit-pass-rough-spec.k
+tests/specs/mcd/vow-cage-surplus-pass-rough-spec.k
 tests/specs/mcd/vow-fess-fail-rough-spec.k
 tests/specs/mcd/vow-flog-fail-rough-spec.k
+tests/specs/opcodes/create-spec.k
 tests/specs/opcodes/evm-optimizations-spec.md
