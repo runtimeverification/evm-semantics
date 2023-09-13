@@ -1,11 +1,10 @@
 requires "edsl.md"
-requires "evm-symbolic.k"
 requires "lemmas/lemmas.k"
 
 module VERIFICATION
     imports VERIFICATION-HASKELL
     imports LEMMAS
-
+    imports EVM
 endmodule
 
 module VERIFICATION-HASKELL [symbolic, kore]
