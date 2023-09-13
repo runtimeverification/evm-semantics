@@ -213,12 +213,11 @@ SKIPPED_PYK_BOOSTER_TESTS: Final = set().union(SLOW_TESTS, FAILING_TESTS, FAILIN
 class TParams:
     main_claim_id: str
     leaf_number: int | None
-    dont_extract_branches: bool
 
 
 TEST_PARAMS: dict[str, TParams] = {
     r'mcd/vat-slip-pass-rough-spec.k': TParams(
-        main_claim_id='VAT-SLIP-PASS-ROUGH-SPEC.Vat.slip.pass.rough', leaf_number=1, dont_extract_branches=True
+        main_claim_id='VAT-SLIP-PASS-ROUGH-SPEC.Vat.slip.pass.rough', leaf_number=1
     )
 }
 
@@ -254,9 +253,6 @@ def test_pyk_prove(
     # When
     try:
         target = kompiled_target_for(spec_file, use_booster)
-        name = str(spec_file.relative_to(SPEC_DIR))
-        dont_extract_branches = TEST_PARAMS[name].dont_extract_branches if name in TEST_PARAMS else False
-
         exec_prove(
             spec_file=spec_file,
             definition_dir=target.definition_dir,
@@ -267,9 +263,8 @@ def test_pyk_prove(
             md_selector='foo',  # TODO Ignored flag, this is to avoid KeyError
             use_booster=use_booster,
             bug_report=bug_report,
-            dont_extract_branches=dont_extract_branches,
         )
-
+        name = str(spec_file.relative_to(SPEC_DIR))
         if name in TEST_PARAMS:
             params = TEST_PARAMS[name]
             apr_proof = APRProof.read_proof_data(

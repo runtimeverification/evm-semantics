@@ -212,7 +212,6 @@ def exec_prove(
     trace_rewrites: bool = False,
     failure_info: bool = True,
     auto_abstract_gas: bool = False,
-    dont_extract_branches: bool = False,
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'md_selector', f'--md-selector: {kwargs["md_selector"]}')
@@ -247,9 +246,7 @@ def exec_prove(
     def _init_and_run_proof(claim: KClaim) -> tuple[bool, list[str] | None]:
         with legacy_explore(
             kevm,
-            kcfg_semantics=KEVMSemantics(
-                auto_abstract_gas=auto_abstract_gas, dont_extract_branches=dont_extract_branches
-            ),
+            kcfg_semantics=KEVMSemantics(auto_abstract_gas=auto_abstract_gas),
             id=claim.label,
             bug_report=bug_report,
             kore_rpc_command=kore_rpc_command,

@@ -37,11 +37,9 @@ _LOGGER: Final = logging.getLogger(__name__)
 
 class KEVMSemantics(KCFGSemantics):
     auto_abstract_gas: bool
-    dont_extract_branches: bool
 
-    def __init__(self, auto_abstract_gas: bool = False, dont_extract_branches: bool = False) -> None:
+    def __init__(self, auto_abstract_gas: bool = False) -> None:
         self.auto_abstract_gas = auto_abstract_gas
-        self.dont_extract_branches = dont_extract_branches
 
     def is_terminal(self, cterm: CTerm) -> bool:
         k_cell = cterm.cell('K_CELL')
@@ -81,8 +79,6 @@ class KEVMSemantics(KCFGSemantics):
         return False
 
     def extract_branches(self, cterm: CTerm) -> list[KInner]:
-        if self.dont_extract_branches:
-            return []
         k_cell = cterm.cell('K_CELL')
         jumpi_pattern = KEVM.jumpi_applied(KVariable('###PCOUNT'), KVariable('###COND'))
         pc_next_pattern = KApply('#pc[_]_EVM_InternalOp_OpCode', [KEVM.jumpi()])
