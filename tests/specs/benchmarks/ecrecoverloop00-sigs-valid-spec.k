@@ -63,6 +63,7 @@ module ECRECOVERLOOP00-SIGS-VALID-SPEC
           <blockNonce> _ </blockNonce>
           <baseFee> _ </baseFee>
           <ommerBlockHeaders> _ </ommerBlockHeaders>
+          <withdrawalsRoot> _ </withdrawalsRoot>
         </block>
       </evm>
       <network>

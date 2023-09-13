@@ -107,7 +107,7 @@ REST_BCHAIN_TESTS: Final = tuple(test_file for test_file in ALL_BCHAIN_TESTS if 
     ids=[str(test_file.relative_to(TEST_DIR)) for test_file in BCHAIN_TESTS],
 )
 def test_bchain(test_file: Path) -> None:
-    _test(test_file, 'MERGE', 'NORMAL', 1)
+    _test(test_file, 'SHANGHAI', 'NORMAL', 1)
 
 
 @pytest.mark.skip(reason='failing / slow blockchain tests')
@@ -117,4 +117,4 @@ def test_bchain(test_file: Path) -> None:
     ids=[str(test_file.relative_to(TEST_DIR)) for test_file in REST_BCHAIN_TESTS],
 )
 def test_rest_bchain(test_file: Path) -> None:
-    _test(test_file, 'MERGE', 'NORMAL', 1)
+    _test(test_file, 'SHANGHAI', 'NORMAL', 1)

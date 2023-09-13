@@ -60,6 +60,7 @@ module VOW-CAGE-DEFICIT-PASS-ROUGH-SPEC
             <blockNonce> _ </blockNonce>
             <baseFee> _ </baseFee>
             <ommerBlockHeaders> _ </ommerBlockHeaders>
+            <withdrawalsRoot> _ </withdrawalsRoot>
           </block>
         </evm>
         <network>
@@ -328,6 +329,7 @@ module VOW-CAGE-DEFICIT-PASS-ROUGH-SPEC
             <blockNonce> _ </blockNonce>
             <baseFee> _ </baseFee>
             <ommerBlockHeaders> _ </ommerBlockHeaders>
+            <withdrawalsRoot> _ </withdrawalsRoot>
           </block>
         </evm>
         <network>
@@ -426,6 +428,7 @@ module VOW-CAGE-DEFICIT-PASS-ROUGH-SPEC
             <blockNonce> _ </blockNonce>
             <baseFee> _ </baseFee>
             <ommerBlockHeaders> _ </ommerBlockHeaders>
+            <withdrawalsRoot> _ </withdrawalsRoot>
           </block>
         </evm>
         <network>
@@ -526,6 +529,7 @@ module VOW-CAGE-DEFICIT-PASS-ROUGH-SPEC
             <blockNonce> _ </blockNonce>
             <baseFee> _ </baseFee>
             <ommerBlockHeaders> _ </ommerBlockHeaders>
+            <withdrawalsRoot> _ </withdrawalsRoot>
           </block>
         </evm>
         <network>
@@ -626,6 +630,7 @@ module VOW-CAGE-DEFICIT-PASS-ROUGH-SPEC
             <blockNonce> _ </blockNonce>
             <baseFee> _ </baseFee>
             <ommerBlockHeaders> _ </ommerBlockHeaders>
+            <withdrawalsRoot> _ </withdrawalsRoot>
           </block>
         </evm>
         <network>
@@ -748,6 +753,7 @@ module VOW-CAGE-DEFICIT-PASS-ROUGH-SPEC
             <blockNonce> _ </blockNonce>
             <baseFee> _ </baseFee>
             <ommerBlockHeaders> _ </ommerBlockHeaders>
+            <withdrawalsRoot> _ </withdrawalsRoot>
           </block>
         </evm>
         <network>
@@ -892,6 +898,7 @@ module VOW-CAGE-DEFICIT-PASS-ROUGH-SPEC
             <blockNonce> _ </blockNonce>
             <baseFee> _ </baseFee>
             <ommerBlockHeaders> _ </ommerBlockHeaders>
+            <withdrawalsRoot> _ </withdrawalsRoot>
           </block>
         </evm>
         <network>

@@ -60,6 +60,7 @@ module FLOPPER-KICK-PASS-ROUGH-SPEC
             <blockNonce> _ </blockNonce>
             <baseFee> _ </baseFee>
             <ommerBlockHeaders> _ </ommerBlockHeaders>
+            <withdrawalsRoot> _ </withdrawalsRoot>
           </block>
         </evm>
         <network>
@@ -213,6 +214,7 @@ module FLOPPER-KICK-PASS-ROUGH-SPEC
             <blockNonce> _ </blockNonce>
             <baseFee> _ </baseFee>
             <ommerBlockHeaders> _ </ommerBlockHeaders>
+            <withdrawalsRoot> _ </withdrawalsRoot>
           </block>
         </evm>
         <network>
