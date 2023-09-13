@@ -335,7 +335,7 @@ tests/ethereum-tests/LegacyTests/Constantinople/VMTests/%: KEVM_MODE     = VMTES
 tests/ethereum-tests/LegacyTests/Constantinople/VMTests/%: KEVM_SCHEDULE = DEFAULT
 
 tests/%.run-interactive: tests/%
-	$(POETRY_RUN) $(KEVM) run $< $(KEVM_OPTS) $(KRUN_OPTS) --target $(TEST_CONCRETE_BACKEND)                           \
+	$(POETRY_RUN) kevm-pyk run $< $(KEVM_OPTS) $(KRUN_OPTS) --target $(TEST_CONCRETE_BACKEND)                          \
 	    --mode $(KEVM_MODE) --schedule $(KEVM_SCHEDULE) --chainid $(KEVM_CHAINID)                                      \
 	    > tests/$*.$(TEST_CONCRETE_BACKEND)-out                                                                        \
 	    || $(CHECK) tests/$*.$(TEST_CONCRETE_BACKEND)-out tests/templates/output-success-$(TEST_CONCRETE_BACKEND).json
@@ -347,7 +347,7 @@ tests/%.run-interactive: tests/%
 PYTEST_PARALLEL := 8
 PYTEST_ARGS     :=
 
-test-foundry-prove: poetry build-kevm build-foundry
+test-foundry-prove: poetry
 	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+="-k test_foundry_prove.py -n$(PYTEST_PARALLEL) $(PYTEST_ARGS)"
 
 tests/specs/examples/%-bin-runtime.k: KEVM_OPTS += --verbose
@@ -392,40 +392,40 @@ smoke_tests_prove=tests/specs/erc20/ds/transfer-failure-1-a-spec.k
 
 # Conformance Tests
 
-test-conformance: poetry build-kevm build-llvm
+test-conformance: poetry
 	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+="-k test_conformance.py -n$(PYTEST_PARALLEL) $(PYTEST_ARGS)"
 
-test-vm: poetry build-kevm build-llvm
+test-vm: poetry
 	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+="-k test_vm -n$(PYTEST_PARALLEL) $(PYTEST_ARGS)"
 
-test-rest-vm: poetry build-kevm build-llvm
+test-rest-vm: poetry
 	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+="-k test_rest_vm -n$(PYTEST_PARALLEL) $(PYTEST_ARGS)"
 
-test-bchain: poetry build-kevm build-llvm
+test-bchain: poetry
 	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+="-k test_bchain -n$(PYTEST_PARALLEL) $(PYTEST_ARGS)"
 
-test-rest-bchain: poetry build-kevm build-llvm
+test-rest-bchain: poetry
 	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+="-k test_rest_bchain -n$(PYTEST_PARALLEL) $(PYTEST_ARGS)"
 
 # Proof Tests
 
 prove_smoke_tests := $(shell cat tests/specs/smoke)
 
-test-prove: tests/specs/opcodes/evm-optimizations-spec.md poetry build-kevm build-haskell
+test-prove: tests/specs/opcodes/evm-optimizations-spec.md poetry
 	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+="-k test_prove -n$(PYTEST_PARALLEL) $(PYTEST_ARGS)"
 
 test-prove-smoke: $(prove_smoke_tests:=.prove)
 
 # to generate optimizations.md, run: ./optimizer/optimize.sh &> output
-tests/specs/opcodes/evm-optimizations-spec.md: include/kframework/optimizations.md
-	cat $< | sed 's/^rule/claim/' | sed 's/EVM-OPTIMIZATIONS/EVM-OPTIMIZATIONS-SPEC/' | grep -v 'priority(40)' > $@
+tests/specs/opcodes/evm-optimizations-spec.md:
+	cat kevm-pyk/src/kevm_pyk/kproj/evm-semantics/optimizations.md | sed 's/^rule/claim/' | sed 's/EVM-OPTIMIZATIONS/EVM-OPTIMIZATIONS-SPEC/' | grep -v 'priority(40)' > $@
 
 # Integration Tests
 
-test-integration: poetry build-kevm build-haskell build-llvm
+test-integration: poetry
 	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+='-k "(test_kast.py or test_run.py or test_solc_to_k.py)" -n$(PYTEST_PARALLEL) $(PYTEST_ARGS)'
 
-profile: poetry build-foundry
+profile: poetry
 	$(MAKE) -C kevm-pyk/ profile PROF_ARGS+='-n$(PYTEST_PARALLEL) $(PYTEST_ARGS)'
 	find /tmp/pytest-of-$$(whoami)/pytest-current/ -type f -name '*.prof' | sort | xargs tail -n +1
 
