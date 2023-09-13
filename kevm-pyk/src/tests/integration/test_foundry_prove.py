@@ -309,23 +309,17 @@ def test_foundry_remove_node(foundry_root: Path, update_expected_output: bool, s
     assert_pass(test, prove_res)
 
 
-def assert_pass(test: str, prove_res: dict[tuple[str, str | None], tuple[bool, list[str] | None]]) -> None:
-    id = id_for_test(test, prove_res)
-    passed, log = prove_res[(test, id)]
+def assert_pass(test: str, prove_res: dict[str, tuple[bool, list[str] | None]]) -> None:
+    passed, log = prove_res[test]
     if not passed:
         assert log
         pytest.fail('\n'.join(log))
 
 
-def assert_fail(test: str, prove_res: dict[tuple[str, str | None], tuple[bool, list[str] | None]]) -> None:
-    id = id_for_test(test, prove_res)
-    passed, log = prove_res[test, id]
+def assert_fail(test: str, prove_res: dict[str, tuple[bool, list[str] | None]]) -> None:
+    passed, log = prove_res[test]
     assert not passed
     assert log
-
-
-def id_for_test(test: str, prove_res: dict[tuple[str, str | None], tuple[bool, list[str] | None]]) -> str:
-    return single(_id for _test, _id in prove_res.keys() if _test == test and _id is not None)
 
 
 def assert_or_update_show_output(show_res: str, expected_file: Path, *, update: bool) -> None:
@@ -357,15 +351,16 @@ def test_foundry_resume_proof(foundry_root: Path, update_expected_output: bool, 
     foundry = Foundry(foundry_root)
     test = 'AssumeTest.test_assume_false(uint256,uint256)'
 
+    id = '1'
+
     prove_res = foundry_prove(
         foundry_root,
-        tests=[(test, None)],
+        tests=[(test, id)],
         auto_abstract_gas=True,
         max_iterations=4,
         reinit=True,
         port=server.port,
     )
-    id = id_for_test(test, prove_res)
 
     proof = foundry.get_apr_proof(f'{test}:{id}')
     assert proof.pending
