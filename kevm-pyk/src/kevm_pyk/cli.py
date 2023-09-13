@@ -119,6 +119,7 @@ class KEVMCLIArgs(KCLIArgs):
             'BERLIN',
             'LONDON',
             'MERGE',
+            'SHANGHAI',
         )
         modes = ('NORMAL', 'VMTESTS')
 
@@ -126,7 +127,7 @@ class KEVMCLIArgs(KCLIArgs):
         args.add_argument(
             '--schedule',
             choices=schedules,
-            default='MERGE',
+            default='SHANGHAI',
             help=f"schedule to use for execution [{'|'.join(schedules)}]",
         )
         args.add_argument('--chainid', type=int, default=1, help='chain ID to use for execution')

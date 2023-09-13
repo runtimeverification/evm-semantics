@@ -28,7 +28,7 @@
 │
 │  (1000 steps)
 ├─ 6
-│   k: #gasExec ( LONDON , JUMP 2621 ) ~> #deductGas ~> #access [ JUMP , JUMP 2621 ] ~> ...
+│   k: #gasExec ( SHANGHAI , JUMP 2621 ) ~> #deductGas ~> #access [ JUMP , JUMP 2621 ]  ...
 │   pc: 2691
 │   callDepth: 0
 │   statusCode: STATUSCODE:StatusCode
@@ -94,7 +94,7 @@
                NORMAL
              </mode>
              <schedule>
-               LONDON
+               SHANGHAI
              </schedule>
              <ethereum>
                <evm>
@@ -314,7 +314,7 @@
                NORMAL
              </mode>
              <schedule>
-               LONDON
+               SHANGHAI
              </schedule>
              <ethereum>
                <evm>
@@ -526,7 +526,7 @@
                NORMAL
              </mode>
              <schedule>
-               LONDON
+               SHANGHAI
              </schedule>
              <ethereum>
                <evm>
@@ -733,7 +733,7 @@
              <k>
                ( #gas [ MSTORE , MSTORE 192 46308022326495007027972728677917914892729792999299745830475596687180801507328 ]
                ~> MSTORE 192 46308022326495007027972728677917914892729792999299745830475596687180801507328
-               ~> #pc [ MSTORE ] => #gasExec ( LONDON , JUMP 2621 )
+               ~> #pc [ MSTORE ] => #gasExec ( SHANGHAI , JUMP 2621 )
                ~> #deductGas
                ~> #access [ JUMP , JUMP 2621 ]
                ~> JUMP 2621
@@ -745,7 +745,7 @@
                NORMAL
              </mode>
              <schedule>
-               LONDON
+               SHANGHAI
              </schedule>
              <ethereum>
                <evm>
@@ -949,7 +949,7 @@
     rule [BASIC-BLOCK-6-TO-7]: <foundry>
            <kevm>
              <k>
-               ( #gasExec ( LONDON , JUMP 2621 )
+               ( #gasExec ( SHANGHAI , JUMP 2621 )
                ~> #deductGas
                ~> #access [ JUMP , JUMP 2621 ]
                ~> JUMP 2621
@@ -962,7 +962,7 @@
                NORMAL
              </mode>
              <schedule>
-               LONDON
+               SHANGHAI
              </schedule>
              <ethereum>
                <evm>
@@ -1177,7 +1177,7 @@
                NORMAL
              </mode>
              <schedule>
-               LONDON
+               SHANGHAI
              </schedule>
              <ethereum>
                <evm>
@@ -1393,7 +1393,7 @@
                NORMAL
              </mode>
              <schedule>
-               LONDON
+               SHANGHAI
              </schedule>
              <ethereum>
                <evm>
@@ -1606,7 +1606,7 @@
                NORMAL
              </mode>
              <schedule>
-               LONDON
+               SHANGHAI
              </schedule>
              <ethereum>
                <evm>
@@ -1822,7 +1822,7 @@
                NORMAL
              </mode>
              <schedule>
-               LONDON
+               SHANGHAI
              </schedule>
              <ethereum>
                <evm>
