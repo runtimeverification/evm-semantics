@@ -74,7 +74,6 @@ def exclude_list(exclude_file: Path) -> list[Path]:
 
 FAILING_PYK_TESTS: Final = exclude_list(TEST_DIR / 'failing-symbolic.pyk')
 FAILING_BOOSTER_TESTS: Final = exclude_list(TEST_DIR / 'failing-symbolic.haskell-booster')
-SLOW_TESTS: Final = exclude_list(TEST_DIR / 'slow.haskell')
 FAILING_TESTS: Final = exclude_list(TEST_DIR / 'failing-symbolic.haskell')
 
 
@@ -203,10 +202,6 @@ def _target_for_spec(spec_file: Path, use_booster: bool) -> Target:
 # ---------
 
 
-SKIPPED_PYK_TESTS: Final = set().union(SLOW_TESTS, FAILING_TESTS, FAILING_PYK_TESTS)
-SKIPPED_PYK_BOOSTER_TESTS: Final = set().union(SLOW_TESTS, FAILING_TESTS, FAILING_PYK_TESTS, FAILING_BOOSTER_TESTS)
-
-
 @pytest.mark.parametrize(
     'spec_file',
     ALL_TESTS,
@@ -222,7 +217,7 @@ def test_pyk_prove(
 ) -> None:
     caplog.set_level(logging.INFO)
 
-    if spec_file in SKIPPED_PYK_TESTS or (use_booster and spec_file in SKIPPED_PYK_BOOSTER_TESTS):
+    if spec_file in FAILING_PYK_TESTS or (use_booster and spec_file in FAILING_BOOSTER_TESTS):
         pytest.skip()
 
     # Given
@@ -255,9 +250,6 @@ def test_pyk_prove(
 # ------------
 
 
-SKIPPED_LEGACY_TESTS: Final = set().union(SLOW_TESTS, FAILING_TESTS)
-
-
 PROVE_ARGS: Final[dict[str, Any]] = {
     'functional/lemmas-no-smt-spec.k': {
         'haskell_args': ['--smt=none'],
@@ -279,7 +271,7 @@ def test_legacy_prove(
 ) -> None:
     caplog.set_level(logging.INFO)
 
-    if spec_file in SKIPPED_LEGACY_TESTS:
+    if spec_file in FAILING_TESTS:
         pytest.skip()
 
     # Given
