@@ -265,6 +265,12 @@ class KEVMCLIArgs(KCLIArgs):
             help='Automatically extract gas cell when infinite gas is enabled',
         )
         args.add_argument(
+            '--dont-extract-branches',
+            dest='dont_extract_branches',
+            action='store_true',
+            help="Do not use KEVM's `extract_branches` feature",
+        )
+        args.add_argument(
             '--counterexample-information',
             dest='counterexample_info',
             default=False,
