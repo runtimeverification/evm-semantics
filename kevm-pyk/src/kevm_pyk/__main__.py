@@ -23,7 +23,7 @@ from pyk.proof import APRProof
 from pyk.proof.equality import EqualityProof
 from pyk.proof.show import APRProofShow
 from pyk.proof.tui import APRProofViewer
-from pyk.utils import BugReport, single
+from pyk.utils import single
 
 from .cli import KEVMCLIArgs, node_id_like
 from .config import INCLUDE_DIR, KEVM_LIB
@@ -40,6 +40,7 @@ if TYPE_CHECKING:
     from pyk.kast.outer import KClaim
     from pyk.kcfg.kcfg import NodeIdLike
     from pyk.proof.proof import Proof
+    from pyk.utils import BugReport
 
     T = TypeVar('T')
 
@@ -130,7 +131,7 @@ def exec_prove_legacy(
     spec_file: Path,
     definition_dir: Path | None = None,
     includes: Iterable[str] = (),
-    bug_report: bool = False,
+    bug_report_legacy: bool = False,
     save_directory: Path | None = None,
     spec_module: str | None = None,
     claim_labels: Iterable[str] | None = None,
@@ -156,7 +157,7 @@ def exec_prove_legacy(
     final_state = kevm.prove_legacy(
         spec_file=spec_file,
         includes=include_dirs,
-        bug_report=bug_report,
+        bug_report=bug_report_legacy,
         spec_module=spec_module,
         claim_labels=claim_labels,
         exclude_claim_labels=exclude_claim_labels,
@@ -191,7 +192,7 @@ def exec_prove(
     spec_file: Path,
     includes: Iterable[str],
     definition_dir: Path | None = None,
-    bug_report: bool = False,
+    bug_report: BugReport | None = None,
     save_directory: Path | None = None,
     spec_module: str | None = None,
     claim_labels: Iterable[str] | None = None,
@@ -214,7 +215,7 @@ def exec_prove(
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'md_selector', f'--md-selector: {kwargs["md_selector"]}')
-    md_selector = 'k & ! node'
+    md_selector = 'k'
 
     if definition_dir is None:
         definition_dir = KompileTarget.HASKELL.definition_dir
@@ -224,8 +225,7 @@ def exec_prove(
     if smt_retry_limit is None:
         smt_retry_limit = 10
 
-    br = BugReport(spec_file.with_suffix('.bug_report')) if bug_report else None
-    kevm = KEVM(definition_dir, use_directory=save_directory, bug_report=br)
+    kevm = KEVM(definition_dir, use_directory=save_directory, bug_report=bug_report)
 
     include_dirs = [Path(include) for include in includes]
     include_dirs += [INCLUDE_DIR]
@@ -248,7 +248,7 @@ def exec_prove(
             kevm,
             kcfg_semantics=KEVMSemantics(auto_abstract_gas=auto_abstract_gas),
             id=claim.label,
-            bug_report=br,
+            bug_report=bug_report,
             kore_rpc_command=kore_rpc_command,
             smt_timeout=smt_timeout,
             smt_retry_limit=smt_retry_limit,
@@ -384,7 +384,7 @@ def exec_prune_proof(
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'md_selector', f'--md-selector: {kwargs["md_selector"]}')
-    md_selector = 'k & ! node'
+    md_selector = 'k'
 
     if save_directory is None:
         raise ValueError('Must pass --save-directory to prune-proof!')
@@ -592,9 +592,7 @@ def _create_argument_parser() -> ArgumentParser:
         parents=[kevm_cli_args.logging_args, kevm_cli_args.k_args, kevm_cli_args.kompile_args],
     )
     kevm_kompile_args.add_argument('main_file', type=file_path, help='Path to file with main module.')
-    kevm_kompile_args.add_argument(
-        '--target', type=KompileTarget, help='[llvm|haskell|haskell-standalone|node|foundry]'
-    )
+    kevm_kompile_args.add_argument('--target', type=KompileTarget, help='[llvm|haskell|haskell-standalone|foundry]')
     kevm_kompile_args.add_argument(
         '-o', '--output-definition', type=Path, dest='output_dir', help='Path to write kompiled definition to.'
     )
@@ -608,6 +606,7 @@ def _create_argument_parser() -> ArgumentParser:
             kevm_cli_args.k_args,
             kevm_cli_args.kprove_args,
             kevm_cli_args.rpc_args,
+            kevm_cli_args.bug_report_args,
             kevm_cli_args.smt_args,
             kevm_cli_args.explore_args,
             kevm_cli_args.spec_args,
@@ -639,7 +638,7 @@ def _create_argument_parser() -> ArgumentParser:
     )
     prune_proof_args.add_argument('node', type=node_id_like, help='Node to remove CFG subgraph from.')
 
-    command_parser.add_parser(
+    prove_legacy_args = command_parser.add_parser(
         'prove-legacy',
         help='Run KEVM proof using the legacy kprove binary.',
         parents=[
@@ -648,6 +647,9 @@ def _create_argument_parser() -> ArgumentParser:
             kevm_cli_args.spec_args,
             kevm_cli_args.kprove_legacy_args,
         ],
+    )
+    prove_legacy_args.add_argument(
+        '--bug-report-legacy', default=False, action='store_true', help='Generate a legacy bug report.'
     )
 
     command_parser.add_parser(

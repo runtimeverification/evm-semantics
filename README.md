@@ -92,13 +92,12 @@ If you wish to install from the source, install it to an appropriate prefix (e.g
 On Ubuntu >= 22.04 (for example):
 
 ```sh
-sudo apt-get install --yes                                                             \
-            autoconf bison clang-12 cmake curl flex gcc jq libboost-test-dev           \
-            libcrypto++-dev libffi-dev libgflags-dev libjemalloc-dev libmpfr-dev       \
-            libprocps-dev libsecp256k1-dev libssl-dev libtool libyaml-dev lld-12       \
-            llvm-12-tools make maven netcat-openbsd openjdk-11-jdk pkg-config          \
-            protobuf-compiler python3 python3-dev python3-pip rapidjson-dev time       \
-            zlib1g-dev libfmt-dev
+sudo apt-get install --yes                                                         \
+            autoconf bison clang-12 cmake curl flex gcc jq libboost-test-dev       \
+            libcrypto++-dev libffi-dev libgflags-dev libjemalloc-dev libmpfr-dev   \
+            libprocps-dev libsecp256k1-dev libssl-dev libtool libyaml-dev lld-12   \
+            llvm-12-tools make maven openjdk-11-jdk pkg-config python3 python3-dev \
+            python3-pip rapidjson-dev time zlib1g-dev libfmt-dev
 ```
 
 On Ubuntu < 18.04, you'll need to skip `libsecp256k1-dev` and instead build it from source (via our `Makefile`):
@@ -115,7 +114,7 @@ On ArchLinux:
 sudo pacman -S                                               \
     base base-devel boost clang cmake crypto++ curl git gmp  \
     gflags jdk-openjdk jemalloc libsecp256k1 lld llvm maven  \
-    mpfr protobuf poetry python stack yaml-cpp zlib
+    mpfr poetry python stack yaml-cpp zlib
 ```
 
 #### macOS
@@ -124,7 +123,7 @@ After installing the Command Line Tools, [Homebrew](https://brew.sh/), and getti
 
 ```sh
 brew tap kframework/k
-brew install java automake libtool gmp mpfr pkg-config maven libffi llvm@14 openssl protobuf python bash kframework/k/cryptopp@8.6.0 poetry solidity
+brew install java automake libtool gmp mpfr pkg-config maven libffi llvm@14 openssl python bash kframework/k/cryptopp@8.6.0 poetry solidity
 make libsecp256k1
 ```
 
@@ -254,7 +253,7 @@ make build-llvm KEVM_OPTS=--enable-llvm-debug
 To debug a conformance test, add the `--debugger` flag to the command:
 
 ```sh
-kevm run tests/ethereum-tests/BlockchainTests/GeneralStateTests/stExample/add11.json --target llvm --mode NORMAL --schedule MERGE --chainid 1 --debugger
+kevm run tests/ethereum-tests/BlockchainTests/GeneralStateTests/stExample/add11.json --target llvm --mode NORMAL --schedule SHANGHAI --chainid 1 --debugger
 ```
 
 ### Keeping in mind while developing

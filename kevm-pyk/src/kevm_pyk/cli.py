@@ -119,6 +119,7 @@ class KEVMCLIArgs(KCLIArgs):
             'BERLIN',
             'LONDON',
             'MERGE',
+            'SHANGHAI',
         )
         modes = ('NORMAL', 'VMTESTS')
 
@@ -126,7 +127,7 @@ class KEVMCLIArgs(KCLIArgs):
         args.add_argument(
             '--schedule',
             choices=schedules,
-            default='MERGE',
+            default='SHANGHAI',
             help=f"schedule to use for execution [{'|'.join(schedules)}]",
         )
         args.add_argument('--chainid', type=int, default=1, help='chain ID to use for execution')
@@ -172,12 +173,6 @@ class KEVMCLIArgs(KCLIArgs):
     @cached_property
     def rpc_args(self) -> ArgumentParser:
         args = ArgumentParser(add_help=False)
-        args.add_argument(
-            '--bug-report',
-            default=False,
-            action='store_true',
-            help='Generate a haskell-backend bug report for the execution.',
-        )
         args.add_argument(
             '--trace-rewrites',
             default=False,
