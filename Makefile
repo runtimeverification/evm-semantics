@@ -1,95 +1,4 @@
-# Settings
-# --------
-
-UNAME_S := $(shell uname -s)
-
-DEPS_DIR      := deps
-BUILD_DIR     := .build
-BUILD_LOCAL   := $(abspath $(BUILD_DIR)/local)
-LOCAL_LIB     := $(BUILD_LOCAL)/lib
-LOCAL_BIN     := $(BUILD_LOCAL)/bin
-export LOCAL_LIB
-
-INSTALL_PREFIX  := /usr
-INSTALL_BIN     ?= $(INSTALL_PREFIX)/bin
-INSTALL_LIB     ?= $(INSTALL_PREFIX)/lib/kevm
-INSTALL_INCLUDE ?= $(INSTALL_LIB)/include
-
-KEVM_BIN     := $(BUILD_DIR)$(INSTALL_BIN)
-KEVM_LIB     := $(BUILD_DIR)$(INSTALL_LIB)
-KEVM_INCLUDE := $(KEVM_LIB)/include
-KEVM_K_BIN   := $(KEVM_LIB)/kframework/bin
-KEVM         := kevm
-KEVM_LIB_ABS := $(abspath $(KEVM_LIB))
-export KEVM_LIB_ABS
-
-KEVM_VERSION     ?= $(shell cat package/version)
-KEVM_RELEASE_TAG ?= v$(KEVM_VERSION)-$(shell git rev-parse --short HEAD)
-
-K_SUBMODULE := $(DEPS_DIR)/k
-
-C_INCLUDE_PATH     += :$(BUILD_LOCAL)/include
-CPLUS_INCLUDE_PATH += :$(BUILD_LOCAL)/include
-PATH               := $(abspath $(KEVM_BIN)):$(abspath $(KEVM_K_BIN)):$(LOCAL_BIN):$(PATH)
-
-export C_INCLUDE_PATH
-export CPLUS_INCLUDE_PATH
-export PATH
-
-PLUGIN_SUBMODULE := $(DEPS_DIR)/plugin
-PLUGIN_SOURCE    := $(KEVM_INCLUDE)/kframework/blockchain-k-plugin/krypto.md
-PLUGIN_FULL_PATH := $(abspath ${PLUGIN_SUBMODULE})
-export PLUGIN_FULL_PATH
-
-
-.PHONY: all clean distclean install uninstall                                                   \
-        plugin-deps                                                                             \
-        poetry-env poetry shell kevm-pyk                                                        \
-        build build-haskell build-haskell-standalone build-foundry build-llvm build-kevm        \
-        test test-integration test-conformance test-prove test-foundry-prove test-prove-smoke   \
-        test-vm test-rest-vm test-bchain test-rest-bchain test-interactive test-interactive-run \
-        profile                                                                                 \
-        media media-pdf metropolis-theme
-
-.SECONDARY:
-
-all: build
-
-clean:
-	rm -rf $(KEVM_BIN) $(KEVM_LIB)
-
-distclean:
-	rm -rf $(BUILD_DIR)
-
-# K Dependencies
-# --------------
-
-plugin_k_include  := $(KEVM_INCLUDE)/kframework/plugin
-plugin_include    := $(KEVM_LIB)/blockchain-k-plugin/include
-plugin_k          := krypto.md
-plugin_c          := plugin_util.cpp crypto.cpp blake2.cpp plugin_util.h blake2.h
-plugin_needed_lib := libcryptopp libff libsecp256k1
-plugin_includes   := $(patsubst %, $(plugin_k_include)/%, $(plugin_k))
-plugin_c_includes := $(patsubst %, $(plugin_include)/c/%, $(plugin_c))
-plugin_needed_libs := $(patsubst %, $(KEVM_LIB)/%, $(plugin_needed_lib))
-
-$(plugin_include)/c/%: $(PLUGIN_SUBMODULE)/plugin-c/%
-	@mkdir -p $(dir $@)
-	install $< $@
-
-$(plugin_k_include)/%: $(PLUGIN_SUBMODULE)/plugin/%
-	@mkdir -p $(dir $@)
-	install $< $@
-
-
-$(KEVM_LIB)/%: $(PLUGIN_SUBMODULE)/build/%
-	@mkdir -p $(dir $@)
-	cp -r $< $@
-
-$(PLUGIN_SUBMODULE)/build/lib%:
-	cd $(PLUGIN_SUBMODULE) && $(MAKE) lib$*
-
-plugin-deps: $(plugin_includes) $(plugin_c_includes) $(plugin_needed_libs)
+all: poetry
 
 
 # Building
@@ -100,6 +9,8 @@ KEVM_PYK_DIR := ./kevm-pyk
 POETRY       := poetry -C $(KEVM_PYK_DIR)
 POETRY_RUN   := $(POETRY) run --
 
+
+.PHONY: poetry-env
 poetry-env:
 	$(POETRY) env use $(PYTHON_BIN)
 
@@ -112,237 +23,14 @@ shell: poetry
 kevm-pyk: poetry-env
 	$(MAKE) -C $(KEVM_PYK_DIR)
 
-kevm_files := abi.md                          \
-              asm.md                          \
-              buf.md                          \
-              data.md                         \
-              driver.md                       \
-              edsl.md                         \
-              evm.md                          \
-              evm-types.md                    \
-              foundry.md                      \
-              hashed-locations.md             \
-              gas.md                          \
-              json-rpc.md                     \
-              network.md                      \
-              optimizations.md                \
-              schedule.md                     \
-              serialization.md                \
-              state-utils.md                  \
-              word.md                         \
-              lemmas/lemmas.k                 \
-              lemmas/evm-int-simplification.k \
-              lemmas/int-simplification.k     \
-              lemmas/bitwise-simplification.k \
-              lemmas/bytes-simplification.k
-
-kevm_includes := $(patsubst %, $(KEVM_INCLUDE)/kframework/%, $(kevm_files))
-
-includes := $(kevm_includes) $(plugin_includes) $(plugin_c_includes)
-
-$(KEVM_INCLUDE)/%: include/%
-	@mkdir -p $(dir $@)
-	install $< $@
-
-$(KEVM_INCLUDE)/kframework/lemmas/%.k: tests/specs/%.k
-	@mkdir -p $(dir $@)
-	install $< $@
-
-KEVM_PYK              := $(POETRY_RUN) kevm-pyk
-KOMPILE               := KEVM_LIB=$(KEVM_LIB) $(KEVM_PYK) kompile
-KOMPILE_MAIN_FILE     :=
-KOMPILE_TARGET        :=
-KOMPILE_MAIN_MODULE   :=
-KOMPILE_SYNTAX_MODULE :=
-
-KOMPILE_OPTS :=
-ifneq (,$(RELEASE))
-    KOMPILE_OPTS += -O2
-else
-    KOMPILE_OPTS += -O1
-endif
-
-kompile =                                        \
-    $(KOMPILE)                                   \
-        $(KOMPILE_MAIN_FILE)                     \
-        --target $(KOMPILE_TARGET)               \
-        --main-module $(KOMPILE_MAIN_MODULE)     \
-        --syntax-module $(KOMPILE_SYNTAX_MODULE) \
-        $(KOMPILE_OPTS)
-
-
-# Haskell
-
-haskell_dir      := haskell
-haskell_kompiled := $(haskell_dir)/definition.kore
-kompile_haskell  := $(KEVM_LIB)/$(haskell_kompiled)
-
-ifeq ($(UNAME_S),Darwin)
-$(kompile_haskell): $(libsecp256k1_out)
-endif
-
-$(kompile_haskell): $(kevm_includes) $(plugin_includes)
-
-$(kompile_haskell): KOMPILE_TARGET        := haskell
-$(kompile_haskell): KOMPILE_MAIN_FILE     := $(KEVM_INCLUDE)/kframework/edsl.md
-$(kompile_haskell): KOMPILE_MAIN_MODULE   := EDSL
-$(kompile_haskell): KOMPILE_SYNTAX_MODULE := EDSL
-$(kompile_haskell):
-	$(kompile)
-
-
-# Standalone
-
-llvm_dir      := llvm
-llvm_kompiled := $(llvm_dir)/interpreter
-kompile_llvm  := $(KEVM_LIB)/$(llvm_kompiled)
-
-
-
-$(kompile_llvm): $(kevm_includes) $(plugin_includes) $(plugin_c_includes)
-
-$(kompile_llvm): KOMPILE_TARGET        := llvm
-$(kompile_llvm): KOMPILE_MAIN_FILE     := $(KEVM_INCLUDE)/kframework/driver.md
-$(kompile_llvm): KOMPILE_MAIN_MODULE   := ETHEREUM-SIMULATION
-$(kompile_llvm): KOMPILE_SYNTAX_MODULE := ETHEREUM-SIMULATION
-$(kompile_llvm):
-	$(kompile)
-
-
-# Haskell Standalone
-
-haskell_standalone_dir      := haskell-standalone
-haskell_standalone_kompiled := $(haskell_standalone_dir)/definition.kore
-kompile_haskell_standalone  := $(KEVM_LIB)/$(haskell_standalone_kompiled)
-
-
-$(kompile_haskell_standalone): $(kevm_includes) $(plugin_includes)
-
-$(kompile_haskell_standalone): KOMPILE_TARGET        := haskell-standalone
-$(kompile_haskell_standalone): KOMPILE_MAIN_FILE     := $(KEVM_INCLUDE)/kframework/driver.md
-$(kompile_haskell_standalone): KOMPILE_MAIN_MODULE   := ETHEREUM-SIMULATION
-$(kompile_haskell_standalone): KOMPILE_SYNTAX_MODULE := ETHEREUM-SIMULATION
-$(kompile_haskell_standalone):
-	$(kompile)
-
-# Foundry
-
-foundry_dir      := foundry
-foundry_kompiled := $(foundry_dir)/definition.kore
-kompile_foundry  := $(KEVM_LIB)/$(foundry_kompiled)
-
-
-$(kompile_foundry): $(kevm_includes) $(plugin_includes) $(lemma_includes)
-
-$(kompile_foundry): KOMPILE_TARGET        := foundry
-$(kompile_foundry): KOMPILE_MAIN_FILE     := $(KEVM_INCLUDE)/kframework/foundry.md
-$(kompile_foundry): KOMPILE_MAIN_MODULE   := FOUNDRY
-$(kompile_foundry): KOMPILE_SYNTAX_MODULE := FOUNDRY
-$(kompile_foundry):
-	$(kompile)
-
-
-# Installing
-# ----------
-
-install_bins := kevm
-
-install_libs := $(haskell_kompiled)                                        \
-                $(llvm_kompiled)                                           \
-                $(foundry_kompiled)                                        \
-                $(haskell_standalone_kompiled)                             \
-                $(patsubst %, include/kframework/lemmas/%, $(kevm_lemmas)) \
-                release.md                                                 \
-                version
-
-$(KEVM_BIN)/%: bin/%
-	@mkdir -p $(dir $@)
-	install $< $@
-
-$(KEVM_LIB)/%.py: scripts/%.py
-	@mkdir -p $(dir $@)
-	install $< $@
-
-$(KEVM_LIB)/version: package/version
-	@mkdir -p $(dir $@)
-	install $< $@
-
-$(KEVM_LIB)/release.md: INSTALL.md
-	@mkdir -p $(dir $@)
-	echo "KEVM Release $(shell cat package/version)"  > $@
-	echo                                             >> $@
-	cat INSTALL.md                                   >> $@
-
-build: $(patsubst %, $(KEVM_BIN)/%, $(install_bins)) $(patsubst %, $(KEVM_LIB)/%, $(install_libs))
-
-build-llvm:               $(KEVM_LIB)/$(llvm_kompiled)
-build-haskell:            $(KEVM_LIB)/$(haskell_kompiled)
-build-haskell-standalone: $(KEVM_LIB)/$(haskell_standalone_kompiled)
-build-kevm:               $(KEVM_BIN)/kevm $(KEVM_LIB)/version $(kevm_includes) $(plugin_includes)
-build-foundry:            $(KEVM_BIN)/kevm $(KEVM_LIB)/$(foundry_kompiled)
-
-all_bin_sources := $(shell find $(KEVM_BIN) -type f | sed 's|^$(KEVM_BIN)/||')
-all_lib_sources := $(shell find $(KEVM_LIB) -type f                                            \
-                            -not -path "$(KEVM_LIB)/**/dt/*"                                   \
-                            -not -path "$(KEVM_LIB)/kframework/share/kframework/pl-tutorial/*" \
-                            -not -path "$(KEVM_LIB)/kframework/share/kframework/k-tutorial/*"  \
-                        | sed 's|^$(KEVM_LIB)/||')
-
-install: $(patsubst %, $(DESTDIR)$(INSTALL_BIN)/%, $(all_bin_sources)) \
-         $(patsubst %, $(DESTDIR)$(INSTALL_LIB)/%, $(all_lib_sources))
-
-$(DESTDIR)$(INSTALL_BIN)/%: $(KEVM_BIN)/%
-	@mkdir -p $(dir $@)
-	install $< $@
-
-$(DESTDIR)$(INSTALL_LIB)/%: $(KEVM_LIB)/%
-	@mkdir -p $(dir $@)
-	install $< $@
-
-uninstall:
-	rm -rf $(DESTDIR)$(INSTALL_BIN)/kevm
-	rm -rf $(DESTDIR)$(INSTALL_LIB)/kevm
 
 # Tests
 # -----
 
-TEST_CONCRETE_BACKEND := llvm
-TEST_SYMBOLIC_BACKEND := haskell
-
-CHECK := git --no-pager diff --no-index --ignore-all-space -R
-
-KEVM_MODE     := NORMAL
-KEVM_SCHEDULE := SHANGHAI
-KEVM_CHAINID  := 1
-
-KPROVE_MODULE  = VERIFICATION
-KPROVE_FILE    = verification
-KPROVE_EXT     = k
-
-KEVM_OPTS    ?=
-KPROVE_OPTS  ?=
-KAST_OPTS    ?=
-KRUN_OPTS    ?=
-KSEARCH_OPTS ?=
-
-KEEP_OUTPUTS := false
-
 test: test-integration test-conformance test-prove test-interactive
 
-# Generic Test Harnesses
 
-tests/ethereum-tests/LegacyTests/Constantinople/VMTests/%: KEVM_MODE     = VMTESTS
-tests/ethereum-tests/LegacyTests/Constantinople/VMTests/%: KEVM_SCHEDULE = DEFAULT
-
-tests/%.run-interactive: tests/%
-	$(POETRY_RUN) kevm-pyk run $< $(KEVM_OPTS) $(KRUN_OPTS) --target $(TEST_CONCRETE_BACKEND)                          \
-	    --mode $(KEVM_MODE) --schedule $(KEVM_SCHEDULE) --chainid $(KEVM_CHAINID)                                      \
-	    > tests/$*.$(TEST_CONCRETE_BACKEND)-out                                                                        \
-	    || $(CHECK) tests/$*.$(TEST_CONCRETE_BACKEND)-out tests/templates/output-success-$(TEST_CONCRETE_BACKEND).json
-	$(KEEP_OUTPUTS) || rm -rf tests/$*.$(TEST_CONCRETE_BACKEND)-out
-
-# solc-to-k
-# ---------
+# Foundry Tests
 
 PYTEST_PARALLEL := 8
 PYTEST_ARGS     :=
@@ -350,45 +38,6 @@ PYTEST_ARGS     :=
 test-foundry-prove: poetry
 	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+="-k test_foundry_prove.py -n$(PYTEST_PARALLEL) $(PYTEST_ARGS)"
 
-tests/specs/examples/%-bin-runtime.k: KEVM_OPTS += --verbose
-tests/specs/examples/%-bin-runtime.k: KEVM := $(POETRY_RUN) kevm
-
-tests/specs/examples/erc20-spec/haskell/timestamp: tests/specs/examples/erc20-bin-runtime.k
-tests/specs/examples/erc20-bin-runtime.k: tests/specs/examples/ERC20.sol $(KEVM_LIB)/$(haskell_kompiled) poetry
-	$(KEVM) solc-to-k $< ERC20 $(KEVM_OPTS) --verbose --definition $(KEVM_LIB)/$(haskell_dir) --main-module ERC20-VERIFICATION > $@
-
-tests/specs/examples/erc721-spec/haskell/timestamp: tests/specs/examples/erc721-bin-runtime.k
-tests/specs/examples/erc721-bin-runtime.k: tests/specs/examples/ERC721.sol $(KEVM_LIB)/$(haskell_kompiled) poetry
-	$(KEVM) solc-to-k $< ERC721 $(KEVM_OPTS) --verbose --definition $(KEVM_LIB)/$(haskell_dir) --main-module ERC721-VERIFICATION > $@
-
-tests/specs/examples/storage-spec/haskell/timestamp: tests/specs/examples/storage-bin-runtime.k
-tests/specs/examples/storage-bin-runtime.k: tests/specs/examples/Storage.sol $(KEVM_LIB)/$(haskell_kompiled) poetry
-	$(KEVM) solc-to-k $< Storage $(KEVM_OPTS) --verbose --definition $(KEVM_LIB)/$(haskell_dir) --main-module STORAGE-VERIFICATION > $@
-
-tests/specs/examples/empty-bin-runtime.k: tests/specs/examples/Empty.sol $(KEVM_LIB)/$(haskell_kompiled) poetry
-	$(KEVM) solc-to-k $< Empty $(KEVM_OPTS) --verbose --definition $(KEVM_LIB)/$(haskell_dir) --main-module EMPTY-VERIFICATION > $@
-
-.SECONDEXPANSION:
-tests/specs/%.prove: tests/specs/% tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)/timestamp
-	$(POETRY_RUN) $(KEVM) prove $< $(KEVM_OPTS) --target $(TEST_SYMBOLIC_BACKEND) $(KPROVE_OPTS) \
-	    --definition tests/specs/$(firstword $(subst /, ,$*))/$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)
-
-tests/specs/%/timestamp: tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE).$$(KPROVE_EXT) $(kevm_includes) $(plugin_includes)
-	$(KOMPILE)                                                                                                  \
-		$<                                                                                                      \
-		--target $(word 3, $(subst /, , $*))                                                                    \
-	    --output-definition tests/specs/$(firstword $(subst /, ,$*))/$(KPROVE_FILE)/$(word 3, $(subst /, , $*)) \
-	    --main-module $(KPROVE_MODULE)                                                                          \
-	    --syntax-module $(KPROVE_MODULE)                                                                        \
-	    $(KOMPILE_OPTS)
-
-# Smoke Tests
-
-smoke_tests_run = tests/ethereum-tests/LegacyTests/Constantinople/VMTests/vmArithmeticTest/add0.json      \
-                  tests/ethereum-tests/LegacyTests/Constantinople/VMTests/vmIOandFlowOperations/pop1.json \
-                  tests/interactive/sumTo10.evm
-
-smoke_tests_prove=tests/specs/erc20/ds/transfer-failure-1-a-spec.k
 
 # Conformance Tests
 
@@ -407,18 +56,16 @@ test-bchain: poetry
 test-rest-bchain: poetry
 	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+="-k test_rest_bchain -n$(PYTEST_PARALLEL) $(PYTEST_ARGS)"
 
-# Proof Tests
 
-prove_smoke_tests := $(shell cat tests/specs/smoke)
+# Proof Tests
 
 test-prove: tests/specs/opcodes/evm-optimizations-spec.md poetry
 	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+="-k test_prove -n$(PYTEST_PARALLEL) $(PYTEST_ARGS)"
 
-test-prove-smoke: $(prove_smoke_tests:=.prove)
-
 # to generate optimizations.md, run: ./optimizer/optimize.sh &> output
 tests/specs/opcodes/evm-optimizations-spec.md:
 	cat kevm-pyk/src/kevm_pyk/kproj/evm-semantics/optimizations.md | sed 's/^rule/claim/' | sed 's/EVM-OPTIMIZATIONS/EVM-OPTIMIZATIONS-SPEC/' | grep -v 'priority(40)' > $@
+
 
 # Integration Tests
 
@@ -429,11 +76,86 @@ profile: poetry
 	$(MAKE) -C kevm-pyk/ profile PROF_ARGS+='-n$(PYTEST_PARALLEL) $(PYTEST_ARGS)'
 	find /tmp/pytest-of-$$(whoami)/pytest-current/ -type f -name '*.prof' | sort | xargs tail -n +1
 
+
+# Smoke Tests
+
+TEST_SYMBOLIC_BACKEND := haskell
+
+KPROVE_MODULE = VERIFICATION
+KPROVE_FILE   = verification
+KPROVE_EXT    = k
+
+KEVM_OPTS    ?=
+KPROVE_OPTS  ?=
+
+
+tests/specs/examples/%-bin-runtime.k: KEVM_OPTS += --verbose
+
+tests/specs/examples/erc20-spec/haskell/timestamp: tests/specs/examples/erc20-bin-runtime.k
+tests/specs/examples/erc20-bin-runtime.k: tests/specs/examples/ERC20.sol $(KEVM_LIB)/$(haskell_kompiled) poetry
+	$(KEVM) solc-to-k $< ERC20 $(KEVM_OPTS) --verbose --definition $(KEVM_LIB)/$(haskell_dir) --main-module ERC20-VERIFICATION > $@
+
+tests/specs/examples/erc721-spec/haskell/timestamp: tests/specs/examples/erc721-bin-runtime.k
+tests/specs/examples/erc721-bin-runtime.k: tests/specs/examples/ERC721.sol $(KEVM_LIB)/$(haskell_kompiled) poetry
+	$(KEVM) solc-to-k $< ERC721 $(KEVM_OPTS) --verbose --definition $(KEVM_LIB)/$(haskell_dir) --main-module ERC721-VERIFICATION > $@
+
+tests/specs/examples/storage-spec/haskell/timestamp: tests/specs/examples/storage-bin-runtime.k
+tests/specs/examples/storage-bin-runtime.k: tests/specs/examples/Storage.sol $(KEVM_LIB)/$(haskell_kompiled) poetry
+	$(KEVM) solc-to-k $< Storage $(KEVM_OPTS) --verbose --definition $(KEVM_LIB)/$(haskell_dir) --main-module STORAGE-VERIFICATION > $@
+
+tests/specs/examples/empty-bin-runtime.k: tests/specs/examples/Empty.sol $(KEVM_LIB)/$(haskell_kompiled) poetry
+	$(KEVM) solc-to-k $< Empty $(KEVM_OPTS) --verbose --definition $(KEVM_LIB)/$(haskell_dir) --main-module EMPTY-VERIFICATION > $@
+
+.SECONDEXPANSION:
+tests/specs/%.prove: tests/specs/% tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)/timestamp
+	$(POETRY_RUN) kevm-pyk prove $< $(KEVM_OPTS) $(KPROVE_OPTS) \
+		--definition tests/specs/$(firstword $(subst /, ,$*))/$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)
+
+tests/specs/%/timestamp: tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE).$$(KPROVE_EXT)
+	$(POETRY_RUN) kevm-pyk kompile                                                                             \
+		$<                                                                                                      \
+		--target $(word 3, $(subst /, , $*))                                                                    \
+		--output-definition tests/specs/$(firstword $(subst /, ,$*))/$(KPROVE_FILE)/$(word 3, $(subst /, , $*)) \
+		--main-module $(KPROVE_MODULE)                                                                          \
+		--syntax-module $(KPROVE_MODULE)                                                                        \
+		$(KOMPILE_OPTS)
+
+prove_smoke_tests := $(shell cat tests/specs/smoke)
+
+.PHONY: test-prove-smoke
+test-prove-smoke: $(prove_smoke_tests:=.prove)
+
+
 # Interactive Tests
 
-test-interactive: test-interactive-run
+TEST_CONCRETE_BACKEND := llvm
 
-test-interactive-run: $(smoke_tests_run:=.run-interactive)
+KEVM_MODE     := NORMAL
+KEVM_SCHEDULE := SHANGHAI
+KEVM_CHAINID  := 1
+
+KRUN_OPTS     ?=
+
+KEEP_OUTPUTS  := false
+CHECK         := git --no-pager diff --no-index --ignore-all-space -R
+
+tests/ethereum-tests/LegacyTests/Constantinople/VMTests/%: KEVM_MODE     = VMTESTS
+tests/ethereum-tests/LegacyTests/Constantinople/VMTests/%: KEVM_SCHEDULE = DEFAULT
+
+tests/%.run-interactive: tests/%
+	$(POETRY_RUN) kevm-pyk run $< $(KEVM_OPTS) $(KRUN_OPTS) --target $(TEST_CONCRETE_BACKEND)                          \
+	    --mode $(KEVM_MODE) --schedule $(KEVM_SCHEDULE) --chainid $(KEVM_CHAINID)                                      \
+	    > tests/$*.$(TEST_CONCRETE_BACKEND)-out                                                                        \
+	    || $(CHECK) tests/$*.$(TEST_CONCRETE_BACKEND)-out tests/templates/output-success-$(TEST_CONCRETE_BACKEND).json
+	$(KEEP_OUTPUTS) || rm -rf tests/$*.$(TEST_CONCRETE_BACKEND)-out
+
+interactive_tests = tests/ethereum-tests/LegacyTests/Constantinople/VMTests/vmArithmeticTest/add0.json      \
+                    tests/ethereum-tests/LegacyTests/Constantinople/VMTests/vmIOandFlowOperations/pop1.json \
+                    tests/interactive/sumTo10.evm
+
+.PHONY: test-interactive
+test-interactive: $(interactive_tests:=.run-interactive)
+
 
 # Media
 # -----
@@ -442,6 +164,7 @@ media: media-pdf
 
 ### Media generated PDFs
 
+.PHONY: media_pdfs
 media_pdfs := 201710-presentation-devcon3                          \
               201801-presentation-csf                              \
               201905-exercise-k-workshop                           \
@@ -451,8 +174,10 @@ media/%.pdf: media/%.md media/citations.md
 	@mkdir -p $(dir $@)
 	cat $^ | pandoc --from markdown --filter pandoc-citeproc --to beamer --output $@
 
+.PHONY: media-pdf
 media-pdf: $(patsubst %, media/%.pdf, $(media_pdfs))
 
+.PHONY: metropolis-theme
 metropolis-theme: $(BUILD_DIR)/media/metropolis/beamerthememetropolis.sty
 
 $(BUILD_DIR)/media/metropolis/beamerthememetropolis.sty:
