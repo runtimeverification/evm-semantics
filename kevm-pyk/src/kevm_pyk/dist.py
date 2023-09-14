@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import os
 import shutil
 import time
 from argparse import ArgumentParser
@@ -33,8 +34,16 @@ _LOGGER: Final = logging.getLogger(__name__)
 _LOG_FORMAT: Final = '%(levelname)s %(asctime)s %(name)s - %(message)s'
 
 
-DIGEST: Final = hash_str({'module-dir': config.MODULE_DIR})[:7]
-DIST_DIR: Final = xdg_cache_home() / f'evm-semantics-{DIGEST}'
+def _dist_dir() -> Path:
+    dist_dir_env = os.getenv('KEVM_DIST_DIR')
+    if dist_dir_env:
+        return Path(dist_dir_env).resolve()
+
+    digest = hash_str({'module-dir': config.MODULE_DIR})[:7]
+    return xdg_cache_home() / f'evm-semantics-{digest}'
+
+
+DIST_DIR: Final = _dist_dir()
 
 
 # ---------
