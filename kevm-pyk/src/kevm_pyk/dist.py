@@ -87,6 +87,7 @@ _TARGET_PARAMS: Final[Mapping[DistTarget, Any]] = {
         'main_file': config.EVM_SEMANTICS_DIR / 'driver.md',
         'main_module': 'ETHEREUM-SIMULATION',
         'syntax_module': 'ETHEREUM-SIMULATION',
+        'optimization': 2,
     },
     DistTarget.HASKELL: {
         'target': KompileTarget.HASKELL,
