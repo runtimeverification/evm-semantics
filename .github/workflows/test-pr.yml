@@ -29,7 +29,9 @@ jobs:
           og_version=$(git show origin/${GITHUB_BASE_REF}:package/version)
           ./package/version.sh bump ${og_version}
           ./package/version.sh sub
-          git add --update && git commit --message "Set Version: $(cat package/version)" || true
+          new_version=$(cat package/version)
+          sed --in-place "s/^VERSION: Final = '.*'$/VERSION: Final = '${new_version}'/" kevm-pyk/src/kevm_pyk/__init__.py
+          git add --update && git commit --message "Set Version: ${new_version}" || true
       - name: 'Push updates'
         run: git push origin HEAD:${GITHUB_HEAD_REF}
 
