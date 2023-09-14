@@ -115,6 +115,7 @@
     MIXHASH_CELL <- MIXHASH_CELL:Int
     BLOCKNONCE_CELL <- BLOCKNONCE_CELL:Int
     BASEFEE_CELL <- BASEFEE_CELL:Int
+    WITHDRAWALSROOT_CELL <- WITHDRAWALSROOT_CELL:Int
     OMMERBLOCKHEADERS_CELL <- OMMERBLOCKHEADERS_CELL:JSON
     CHAINID_CELL <- CHAINID_CELL:Int
     TXORDER_CELL <- TXORDER_CELL:List
@@ -1110,7 +1111,7 @@ Node 10:
                NORMAL
              </mode>
              <schedule>
-               LONDON
+               SHANGHAI
              </schedule>
              <ethereum>
                <evm>

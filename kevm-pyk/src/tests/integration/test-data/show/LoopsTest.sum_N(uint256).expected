@@ -1555,7 +1555,7 @@
                NORMAL
              </mode>
              <schedule>
-               LONDON
+               SHANGHAI
              </schedule>
              <ethereum>
                <evm>
@@ -1771,7 +1771,7 @@
                NORMAL
              </mode>
              <schedule>
-               LONDON
+               SHANGHAI
              </schedule>
              <ethereum>
                <evm>
@@ -1983,7 +1983,7 @@
                NORMAL
              </mode>
              <schedule>
-               LONDON
+               SHANGHAI
              </schedule>
              <ethereum>
                <evm>
@@ -2198,7 +2198,7 @@
                NORMAL
              </mode>
              <schedule>
-               LONDON
+               SHANGHAI
              </schedule>
              <ethereum>
                <evm>
@@ -2417,7 +2417,7 @@
                NORMAL
              </mode>
              <schedule>
-               LONDON
+               SHANGHAI
              </schedule>
              <ethereum>
                <evm>
@@ -2637,7 +2637,7 @@
                NORMAL
              </mode>
              <schedule>
-               LONDON
+               SHANGHAI
              </schedule>
              <ethereum>
                <evm>
@@ -2860,7 +2860,7 @@
                NORMAL
              </mode>
              <schedule>
-               LONDON
+               SHANGHAI
              </schedule>
              <ethereum>
                <evm>
@@ -3084,7 +3084,7 @@
                NORMAL
              </mode>
              <schedule>
-               LONDON
+               SHANGHAI
              </schedule>
              <ethereum>
                <evm>
@@ -3307,7 +3307,7 @@
                NORMAL
              </mode>
              <schedule>
-               LONDON
+               SHANGHAI
              </schedule>
              <ethereum>
                <evm>
@@ -3531,7 +3531,7 @@
                NORMAL
              </mode>
              <schedule>
-               LONDON
+               SHANGHAI
              </schedule>
              <ethereum>
                <evm>
@@ -3756,7 +3756,7 @@
                NORMAL
              </mode>
              <schedule>
-               LONDON
+               SHANGHAI
              </schedule>
              <ethereum>
                <evm>
@@ -3979,7 +3979,7 @@
                NORMAL
              </mode>
              <schedule>
-               LONDON
+               SHANGHAI
              </schedule>
              <ethereum>
                <evm>
@@ -4206,7 +4206,7 @@
                NORMAL
              </mode>
              <schedule>
-               LONDON
+               SHANGHAI
              </schedule>
              <ethereum>
                <evm>
@@ -4434,7 +4434,7 @@
                NORMAL
              </mode>
              <schedule>
-               LONDON
+               SHANGHAI
              </schedule>
              <ethereum>
                <evm>
@@ -4660,7 +4660,7 @@
                NORMAL
              </mode>
              <schedule>
-               LONDON
+               SHANGHAI
              </schedule>
              <ethereum>
                <evm>
@@ -4890,7 +4890,7 @@
                NORMAL
              </mode>
              <schedule>
-               LONDON
+               SHANGHAI
              </schedule>
              <ethereum>
                <evm>
@@ -5121,7 +5121,7 @@
                NORMAL
              </mode>
              <schedule>
-               LONDON
+               SHANGHAI
              </schedule>
              <ethereum>
                <evm>
@@ -5353,7 +5353,7 @@
                NORMAL
              </mode>
              <schedule>
-               LONDON
+               SHANGHAI
              </schedule>
              <ethereum>
                <evm>
@@ -5586,7 +5586,7 @@
                NORMAL
              </mode>
              <schedule>
-               LONDON
+               SHANGHAI
              </schedule>
              <ethereum>
                <evm>
@@ -5817,7 +5817,7 @@
                NORMAL
              </mode>
              <schedule>
-               LONDON
+               SHANGHAI
              </schedule>
              <ethereum>
                <evm>
@@ -6049,7 +6049,7 @@
                NORMAL
              </mode>
              <schedule>
-               LONDON
+               SHANGHAI
              </schedule>
              <ethereum>
                <evm>
@@ -6282,7 +6282,7 @@
                NORMAL
              </mode>
              <schedule>
-               LONDON
+               SHANGHAI
              </schedule>
              <ethereum>
                <evm>
@@ -6518,7 +6518,7 @@
                NORMAL
              </mode>
              <schedule>
-               LONDON
+               SHANGHAI
              </schedule>
              <ethereum>
                <evm>
@@ -6981,218 +6981,7 @@
                )))))))))))))))))))))))))))))))))))
       [label(BASIC-BLOCK-33-TO-34)]
     
-    rule [BASIC-BLOCK-10-TO-12]: <foundry>
-           <kevm>
-             <k>
-               #halt
-               ~> ( #pc [ RETURN ]
-               ~> #execute => .K )
-               ~> _CONTINUATION
-             </k>
-             <mode>
-               NORMAL
-             </mode>
-             <schedule>
-               SHANGHAI
-             </schedule>
-             <ethereum>
-               <evm>
-                 <output>
-                   b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
-                 </output>
-                 <statusCode>
-                   EVMC_SUCCESS
-                 </statusCode>
-                 <callStack>
-                   .List
-                 </callStack>
-                 <interimStates>
-                   .List
-                 </interimStates>
-                 <callState>
-                   ...
-                   ...
-                   <id>
-                     728815563385977040452943777879061427756277306518
-                   </id>
-                   <caller>
-                     CALLER_ID:Int
-                   </caller>
-                   <callData>
-                     b"~\x8e#\xd0\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
-                   </callData>
-                   <callValue>
-                     0
-                   </callValue>
-                   <wordStack>
-                     ( selector ( "sum_N(uint256)" ) : .WordStack )
-                   </wordStack>
-                   <localMem>
-                     b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01"
-                   </localMem>
-                   ...
-                   ...
-                   <memoryUsed>
-                     6
-                   </memoryUsed>
-                   <callGas>
-                     9079256848778916870
-                   </callGas>
-                   <static>
-                     false
-                   </static>
-                   <callDepth>
-                     0
-                   </callDepth>
-                 </callState>
-                 <substate>
-                   <log>
-                     .List
-                   </log>
-                   <accessedAccounts>
-                     SetItem ( 645326474426547203313410069153905908525362434349 )
-                   </accessedAccounts>
-                   <accessedStorage>
-                     .Map
-                   </accessedStorage>
-                   ...
-                 </substate>
-                 <origin>
-                   ORIGIN_ID:Int
-                 </origin>
-                 <block>
-                   <number>
-                     NUMBER_CELL:Int
-                   </number>
-                   ...
-                 </block>
-                 ...
-               </evm>
-               <network>
-                 <accounts>
-                   ( <account>
-                     <acctID>
-                       645326474426547203313410069153905908525362434349
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     ...
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       0
-                     </nonce>
-                   </account>
-                   <account>
-                     <acctID>
-                       728815563385977040452943777879061427756277306518
-                     </acctID>
-                     <balance>
-                       0
-                     </balance>
-                     ...
-                     <storage>
-                       .Map
-                     </storage>
-                     <origStorage>
-                       .Map
-                     </origStorage>
-                     <nonce>
-                       1
-                     </nonce>
-                   </account> )
-                 </accounts>
-                 ...
-               </network>
-             </ethereum>
-             ...
-           </kevm>
-           <cheatcodes>
-             <prank>
-               <prevCaller>
-                 .Account
-               </prevCaller>
-               <prevOrigin>
-                 .Account
-               </prevOrigin>
-               <newCaller>
-                 .Account
-               </newCaller>
-               <newOrigin>
-                 .Account
-               </newOrigin>
-               <active>
-                 false
-               </active>
-               <singleCall>
-                 false
-               </singleCall>
-               ...
-             </prank>
-             <expectedRevert>
-               <isRevertExpected>
-                 false
-               </isRevertExpected>
-               ...
-             </expectedRevert>
-             <expectedOpcode>
-               <isOpcodeExpected>
-                 false
-               </isOpcodeExpected>
-               <expectedAddress>
-                 .Account
-               </expectedAddress>
-               <expectedValue>
-                 0
-               </expectedValue>
-               <expectedData>
-                 b""
-               </expectedData>
-               <opcodeType>
-                 .OpcodeType
-               </opcodeType>
-             </expectedOpcode>
-             <expectEmit>
-               <recordEvent>
-                 false
-               </recordEvent>
-               <isEventExpected>
-                 false
-               </isEventExpected>
-               ...
-             </expectEmit>
-             <whitelist>
-               <isCallWhitelistActive>
-                 false
-               </isCallWhitelistActive>
-               <isStorageWhitelistActive>
-                 false
-               </isStorageWhitelistActive>
-               <addressSet>
-                 .Set
-               </addressSet>
-               <storageSlotSet>
-                 .Set
-               </storageSlotSet>
-             </whitelist>
-           </cheatcodes>
-         </foundry>
-      requires ( _VV0_n_114b9705 ==K 0
-       andBool ( 0 <=Int CALLER_ID:Int
-       andBool ( 0 <=Int ORIGIN_ID:Int
-       andBool ( 0 <=Int NUMBER_CELL:Int
-       andBool ( CALLER_ID:Int <Int pow160
-       andBool ( ORIGIN_ID:Int <Int pow160
-       andBool ( NUMBER_CELL:Int <=Int maxSInt256
-               )))))))
-      [label(BASIC-BLOCK-10-TO-12)]
-    
-    rule [BASIC-BLOCK-11-TO-13]: <foundry>
+    rule [BASIC-BLOCK-34-TO-35]: <foundry>
            <kevm>
              <k>
                #halt
