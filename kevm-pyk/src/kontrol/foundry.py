@@ -1245,7 +1245,7 @@ def _init_cterm(
     )
     init_subst = {
         'MODE_CELL': KApply('NORMAL'),
-        'SCHEDULE_CELL': KApply('LONDON_EVM'),
+        'SCHEDULE_CELL': KApply('SHANGHAI_EVM'),
         'STATUSCODE_CELL': KVariable('STATUSCODE'),
         'CALLSTACK_CELL': KApply('.List'),
         'CALLDEPTH_CELL': intToken(0),
