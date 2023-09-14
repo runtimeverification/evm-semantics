@@ -64,8 +64,6 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 -   `loadTx(_)` loads the next transaction to be executed into the current state.
 -   `finishTx` is a place-holder for performing necessary cleanup after a transaction.
 
-**TODO**: `loadTx(_) => loadTx_`
-
 ```k
     syntax EthereumCommand ::= "startTx"
  // ------------------------------------
@@ -84,6 +82,17 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 
     syntax EthereumCommand ::= loadTx ( Account )
  // ---------------------------------------------
+    rule <k> loadTx(_) => #end EVMC_OUT_OF_GAS ... </k>
+         <schedule> SCHED </schedule>
+         <txPending> ListItem(TXID:Int) ... </txPending>
+         <message>
+           <msgID>      TXID     </msgID>
+           <to>         .Account </to>
+           <data>       CODE     </data>
+           ...
+         </message>
+       requires notBool #hasValidInitCode(lengthBytes(CODE), SCHED)
+
     rule <k> loadTx(ACCTFROM)
           => #accessAccounts ACCTFROM #newAddr(ACCTFROM, NONCE) #precompiledAccounts(SCHED)
           ~> #loadAccessList(TA)
@@ -113,8 +122,9 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
            <nonce> NONCE </nonce>
            ...
          </account>
-         <accessedAccounts> _ => .Set </accessedAccounts>
+         <accessedAccounts> _ => #if Ghaswarmcoinbase << SCHED >> #then SetItem(MINER) #else .Set #fi </accessedAccounts>
          <touchedAccounts> _ => SetItem(MINER) </touchedAccounts>
+      requires #hasValidInitCode(lengthBytes(CODE), SCHED)
 
     rule <k> loadTx(ACCTFROM)
           => #accessAccounts ACCTFROM ACCTTO #precompiledAccounts(SCHED)
@@ -145,7 +155,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
            <nonce> NONCE => NONCE +Int 1 </nonce>
            ...
          </account>
-         <accessedAccounts> _ => .Set </accessedAccounts>
+         <accessedAccounts> _ => #if Ghaswarmcoinbase << SCHED >> #then SetItem(MINER) #else .Set #fi </accessedAccounts>
          <touchedAccounts> _ => SetItem(MINER) </touchedAccounts>
       requires ACCTTO =/=K .Account
 
@@ -261,7 +271,7 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
 ```k
     syntax Set ::= "#loadKeys" [function]
  // -------------------------------------
-    rule #loadKeys => ( SetItem("env") SetItem("pre") SetItem("rlp") SetItem("network") SetItem("genesisRLP") )
+    rule #loadKeys => ( SetItem("env") SetItem("pre") SetItem("rlp") SetItem("network") SetItem("genesisRLP") SetItem("withdrawals") )
 
     rule <k> run  TESTID : { KEY : (VAL:JSON) , REST } => load KEY : VAL ~> run TESTID : { REST } ... </k>
       requires KEY in #loadKeys
@@ -459,7 +469,7 @@ Here we check the other post-conditions associated with an EVM test.
       requires KEY in ( SetItem("coinbase") SetItem("difficulty") SetItem("gasLimit") SetItem("gasUsed")
                         SetItem("mixHash") SetItem("nonce") SetItem("number") SetItem("parentHash")
                         SetItem("receiptTrie") SetItem("stateRoot") SetItem("timestamp")
-                        SetItem("transactionsTrie") SetItem("uncleHash") SetItem("baseFeePerGas")
+                        SetItem("transactionsTrie") SetItem("uncleHash") SetItem("baseFeePerGas") SetItem("withdrawalsRoot")
                       )
 
     rule <k> check "blockHeader" : { "bloom"            : VALUE } => . ... </k> <logsBloom>        VALUE </logsBloom>
@@ -478,6 +488,7 @@ Here we check the other post-conditions associated with an EVM test.
     rule <k> check "blockHeader" : { "transactionsTrie" : VALUE } => . ... </k> <transactionsRoot> VALUE </transactionsRoot>
     rule <k> check "blockHeader" : { "uncleHash"        : VALUE } => . ... </k> <ommersHash>       VALUE </ommersHash>
     rule <k> check "blockHeader" : { "baseFeePerGas"    : VALUE } => . ... </k> <baseFee>          VALUE </baseFee>
+    rule <k> check "blockHeader" : { "withdrawalsRoot"  : VALUE } => . ... </k> <withdrawalsRoot>  VALUE </withdrawalsRoot>
 
     rule <k> check "blockHeader" : { "hash": HASH:Bytes } => . ...</k>
          <previousHash>     HP </previousHash>
@@ -496,8 +507,10 @@ Here we check the other post-conditions associated with an EVM test.
          <mixHash>          HM </mixHash>
          <blockNonce>       HN </blockNonce>
          <baseFee>          HF </baseFee>
-      requires #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN)     ==Int #asWord(HASH)
-        orBool #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF) ==Int #asWord(HASH)
+         <withdrawalsRoot>  WR </withdrawalsRoot>
+      requires #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN)         ==Int #asWord(HASH)
+        orBool #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF)     ==Int #asWord(HASH)
+        orBool #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR) ==Int #asWord(HASH)
 
     rule check TESTID : { "genesisBlockHeader" : BLOCKHEADER } => check "genesisBlockHeader" : BLOCKHEADER ~> failure TESTID
  // ------------------------------------------------------------------------------------------------------------------------

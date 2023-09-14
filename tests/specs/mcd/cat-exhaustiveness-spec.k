@@ -60,7 +60,8 @@ module CAT-EXHAUSTIVENESS-SPEC
              <blockNonce> _ </blockNonce>
              <baseFee> _ </baseFee>
              <ommerBlockHeaders> _ </ommerBlockHeaders>
-           </block>
+             <withdrawalsRoot> _ </withdrawalsRoot>
+          </block>
          </evm>
          <network>
            <chainID> VChainId </chainID>

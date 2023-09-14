@@ -60,6 +60,7 @@ module ECRECOVER00-SIGVALID-SPEC
           <blockNonce> _ </blockNonce>
           <baseFee> _ </baseFee>
           <ommerBlockHeaders> _ </ommerBlockHeaders>
+          <withdrawalsRoot> _ </withdrawalsRoot>
         </block>
       </evm>
       <network>

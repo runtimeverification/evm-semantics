@@ -117,6 +117,7 @@ Operator `#revOps` can be used to reverse a program.
     rule #asmOpCode( MSIZE          ) =>  89
     rule #asmOpCode( GAS            ) =>  90
     rule #asmOpCode( JUMPDEST       ) =>  91
+    rule #asmOpCode( PUSHZERO       ) =>  95
     rule #asmOpCode( PUSH(1)        ) =>  96
     rule #asmOpCode( PUSH(2)        ) =>  97
     rule #asmOpCode( PUSH(3)        ) =>  98
