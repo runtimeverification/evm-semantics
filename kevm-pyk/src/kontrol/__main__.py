@@ -442,14 +442,11 @@ def _create_argument_parser() -> ArgumentParser:
     solc_to_k_args.add_argument('contract_name', type=str, help='Name of contract to generate K helpers for.')
 
     def _parse_test_version_tuple(value: str) -> tuple[str, int | None]:
-        pattern = r'^([^,]+)(?:,\s*(\S+))?$'
-        match = re.match(pattern, value)
-
-        if match:
-            groups = match.groups()
-            return groups[0], int(groups[1]) if groups[1] is not None else None
+        if ':' in value:
+            test, version = value.split(':')
+            return (test, int(version))
         else:
-            raise argparse.ArgumentTypeError("Invalid tuple format. Expected 'test,version' or 'test'")
+            return (value,  None)
 
     foundry_kompile = command_parser.add_parser(
         'foundry-kompile',
