@@ -62,20 +62,22 @@ class DistTarget(Enum):
             raise ValueError(f'Target {self.name} is not built')
         return self.path
 
-    def build(self, *, force: bool = False, verbose: bool = False) -> Path:
+    def build(self, *, force: bool = False, enable_llvm_debug: bool = False, verbose: bool = False) -> Path:
         if force or not self.path.exists():
-            self._do_build(verbose=verbose)
+            self._do_build(enable_llvm_debug=enable_llvm_debug, verbose=verbose)
         return self.path
 
     def clean(self) -> Path:
         shutil.rmtree(self.path, ignore_errors=True)
         return self.path
 
-    def _do_build(self, *, verbose: bool) -> None:
+    def _do_build(self, *, enable_llvm_debug: bool, verbose: bool) -> None:
         _LOGGER.info(f'Building target {self.name}: {self.path}')
         DIST_DIR.mkdir(parents=True, exist_ok=True)
         try:
-            kevm_kompile(output_dir=self.path, verbose=verbose, **_TARGET_PARAMS[self])
+            kevm_kompile(
+                output_dir=self.path, enable_llvm_debug=enable_llvm_debug, verbose=verbose, **_TARGET_PARAMS[self]
+            )
         except RuntimeError:
             self.clean()
             raise
@@ -202,6 +204,7 @@ def _exec_build(
     targets: list[str],
     jobs: int,
     force: bool,
+    enable_llvm_debug: bool,
     verbose: bool,
     debug: bool,
 ) -> None:
@@ -224,7 +227,9 @@ def _exec_build(
                 pending.append(plugin)
                 continue
 
-            pending.append(pool.submit(DistTarget(target).build, force=force, verbose=verbose))
+            pending.append(
+                pool.submit(DistTarget(target).build, force=force, enable_llvm_debug=enable_llvm_debug, verbose=verbose)
+            )
 
         while pending:
             current = next((future for future in pending if future.done()), None)
@@ -300,6 +305,9 @@ def _parse_arguments() -> Namespace:
     )
     build_parser.add_argument('-f', '--force', action='store_true', default=False, help='force build')
     build_parser.add_argument('-j', '--jobs', metavar='N', type=int, default=1, help='maximal number of build jobs')
+    build_parser.add_argument(
+        '--enable-llvm-debug', action='store_true', default=True, help='enable debug symbols for the LLVM target'
+    )
 
     clean_parser = command_parser.add_parser('clean', help='clean targets')
     add_target_arg(clean_parser, 'target to clean')
