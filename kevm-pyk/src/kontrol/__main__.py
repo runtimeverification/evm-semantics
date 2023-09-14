@@ -1,9 +1,7 @@
 from __future__ import annotations
 
-import argparse
 import json
 import logging
-import re
 import sys
 from argparse import ArgumentParser
 from typing import TYPE_CHECKING
@@ -446,7 +444,7 @@ def _create_argument_parser() -> ArgumentParser:
             test, version = value.split(':')
             return (test, int(version))
         else:
-            return (value,  None)
+            return (value, None)
 
     foundry_kompile = command_parser.add_parser(
         'foundry-kompile',
