@@ -773,11 +773,14 @@ def foundry_prove(
 
         #          start_server = port is None
 
-        def generate_subproof_name(node: int) -> str:
+        def generate_subproof_name(proof: APRProof, node: int) -> str:
+
+            id_without_version = proof.id.split(':')[0]
+
             return (
-                f'{contract.name}.{method.signature}_node_{node}:{id}'
+                f'{id_without_version}_node_{node}:{id}'
                 if id
-                else f'{contract.name}.{method.signature}_node_{node}:{id}'
+                else f'{id_without_version}_node_{node}:{id}'
             )
 
         with legacy_explore(
@@ -1312,7 +1315,7 @@ def _method_to_apr_proof(
     test_id: str,
     simplify_init: bool = True,
     bmc_depth: int | None = None,
-    generate_subproof_name: Callable[[int], str] | None = None,
+    generate_subproof_name: Callable[[APRProof, int], str] | None = None,
 ) -> APRProof | APRBMCProof:
     contract_name = contract.name
     method_sig = method.signature
