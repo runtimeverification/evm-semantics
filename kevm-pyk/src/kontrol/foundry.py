@@ -732,7 +732,7 @@ def foundry_prove(
             foundry.kevm,
             kcfg_semantics=KEVMSemantics(auto_abstract_gas=auto_abstract_gas),
             id=proof.id,
-            bug_report=br,
+            bug_report=bug_report,
             kore_rpc_command=kore_rpc_command,
             llvm_definition_dir=llvm_definition_dir,
             smt_timeout=smt_timeout,
@@ -838,7 +838,7 @@ def foundry_prove(
                 llvm_definition_dir=llvm_definition_dir,
                 module_name=foundry.kevm.main_module,
                 command=kore_rpc_command,
-                bug_report=br,
+                bug_report=bug_report,
                 smt_timeout=smt_timeout,
                 smt_retry_limit=smt_retry_limit,
             )
