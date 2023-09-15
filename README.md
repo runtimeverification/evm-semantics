@@ -188,6 +188,18 @@ git submodule update --init --recursive
 poetry -C kevm-pyk run kevm-dist --verbose build plugin
 ```
 
+To change the default compiler:
+
+```sh
+CXX=clang++-14 poetry -C kevm-pyk run kevm-dist --verbose build plugin
+```
+
+On Apple silicon:
+
+```sh
+APPLE_SILICON=true poetry -C kevm-pyk run kevm-dist --verbose build plugin
+```
+
 #### K Definitions
 
 Finally, you can build the semantics.
