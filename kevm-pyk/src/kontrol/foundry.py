@@ -774,14 +774,9 @@ def foundry_prove(
         #          start_server = port is None
 
         def generate_subproof_name(proof: APRProof, node: int) -> str:
-
             id_without_version = proof.id.split(':')[0]
 
-            return (
-                f'{id_without_version}_node_{node}:{id}'
-                if id
-                else f'{id_without_version}_node_{node}:{id}'
-            )
+            return f'{id_without_version}_node_{node}:{id}' if id else f'{id_without_version}_node_{node}:{id}'
 
         with legacy_explore(
             foundry.kevm,
