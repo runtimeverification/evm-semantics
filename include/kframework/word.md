@@ -539,10 +539,10 @@ Range of types
     rule #rangeSmall    (   X          ) => #range ( 0               <= X < 10               )
     rule #rangeBlockNum (   X          ) => #range ( 0               <= X <= maxBlockNum     )
 
-    syntax Bool ::= "#range" "(" Int "<"  Int "<"  Int ")" [macro]
-                  | "#range" "(" Int "<"  Int "<=" Int ")" [macro]
-                  | "#range" "(" Int "<=" Int "<"  Int ")" [macro]
-                  | "#range" "(" Int "<=" Int "<=" Int ")" [macro]
+    syntax Bool ::= "#range" "(" Int "<"  Int "<"  Int ")" [alias]
+                  | "#range" "(" Int "<"  Int "<=" Int ")" [alias]
+                  | "#range" "(" Int "<=" Int "<"  Int ")" [alias]
+                  | "#range" "(" Int "<=" Int "<=" Int ")" [alias]
  // --------------------------------------------------------------
     rule #range ( LB <  X <  UB ) => LB  <Int X andBool X  <Int UB
     rule #range ( LB <  X <= UB ) => LB  <Int X andBool X <=Int UB
