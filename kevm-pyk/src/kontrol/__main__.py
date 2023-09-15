@@ -9,6 +9,7 @@ from argparse import ArgumentParser
 from typing import TYPE_CHECKING
 
 from pyk.cli.utils import file_path
+from pyk.proof.proof import ProofStatus
 from pyk.proof.tui import APRProofViewer
 
 from kevm_pyk.cli import KEVMCLIArgs, node_id_like
@@ -164,6 +165,7 @@ def exec_foundry_prove(
     counterexample_info: bool = False,
     trace_rewrites: bool = False,
     auto_abstract_gas: bool = False,
+    max_branches: int | None = None,
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'main_module', f'--main-module: {kwargs["main_module"]}')
@@ -200,19 +202,31 @@ def exec_foundry_prove(
         smt_retry_limit=smt_retry_limit,
         trace_rewrites=trace_rewrites,
         auto_abstract_gas=auto_abstract_gas,
+        max_branches=max_branches,
     )
     failed = 0
-    for pid, r in results.items():
-        passed, failure_log = r
-        if passed:
-            print(f'PROOF PASSED: {pid}')
-        else:
-            failed += 1
-            print(f'PROOF FAILED: {pid}')
+    for proof, failure_log in results:
+        if proof.passed:
+            print(f'PROOF PASSED: {proof.id}')
+        elif proof.status == ProofStatus.PENDING:
+            print(f'PROOF PENDING: {proof.id}')
+        elif proof.failed:
+            print(f'PROOF FAILED: {proof.id}')
             if failure_info and failure_log is not None:
                 failure_log += Foundry.help_info()
                 for line in failure_log:
                     print(line)
+
+    #          passed, failure_log = r
+    #          if passed:
+    #              print(f'PROOF PASSED: {pid}')
+    #          else:
+    #              failed += 1
+    #              print(f'PROOF FAILED: {pid}')
+    #              if failure_info and failure_log is not None:
+    #                  failure_log += Foundry.help_info()
+    #                  for line in failure_log:
+    #                      print(line)
 
     sys.exit(failed)
 
@@ -518,6 +532,13 @@ def _create_argument_parser() -> ArgumentParser:
         default=None,
         type=int,
         help='Enables bounded model checking. Specifies the maximum depth to unroll all loops to.',
+    )
+    foundry_prove_args.add_argument(
+        '--max-branches',
+        dest='max_branches',
+        default=None,
+        type=int,
+        help='Enables subproof splitting when the number of pending nodes exceeds max_branches',
     )
     foundry_prove_args.add_argument(
         '--use-booster',

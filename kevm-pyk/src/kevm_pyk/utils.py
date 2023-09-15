@@ -82,7 +82,7 @@ def kevm_prove(
     break_on_calls: bool = True,
     extract_branches: Callable[[CTerm], Iterable[KInner]] | None = None,
     abstract_node: Callable[[CTerm], CTerm] | None = None,
-    max_branches: int | None = 1,
+    max_branches: int | None = None,
 ) -> bool:
     proof = proof
     terminal_rules = ['EVM.halt']

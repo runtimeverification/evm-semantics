@@ -415,12 +415,12 @@ class Foundry:
         return res_lines
 
     def proofs_with_test(self, test: str) -> list[Proof]:
-#          print([pid.split(':')[0] for pid in listdir(self.proofs_dir)])
-#          print(single(self._escape_brackets([test])))
+        #          print([pid.split(':')[0] for pid in listdir(self.proofs_dir)])
+        #          print(single(self._escape_brackets([test])))
         proofs = [
             self.get_optional_proof(pid)
             for pid in listdir(self.proofs_dir)
-#              if re.search(single(self._escape_brackets([test])), pid.split(':')[0])
+            #              if re.search(single(self._escape_brackets([test])), pid.split(':')[0])
             if test == pid.split(':')[0]
         ]
         return [proof for proof in proofs if proof is not None]
@@ -637,7 +637,8 @@ def foundry_prove(
     trace_rewrites: bool = False,
     auto_abstract_gas: bool = False,
     port: int | None = None,
-) -> dict[str, tuple[bool, list[str] | None]]:
+    max_branches: int | None = None,
+) -> list[tuple[Proof, list[str] | None]]:
     if workers <= 0:
         raise ValueError(f'Must have at least one worker, found: --workers {workers}')
     if max_iterations is not None and max_iterations < 0:
@@ -721,7 +722,7 @@ def foundry_prove(
         assert id is not None
         tests[i] = (test, id)
 
-    def _run_proof(_init_problem: tuple[int, Proof]) -> tuple[bool, Proof, list[str] | None]:
+    def _run_proof(_init_problem: tuple[int, Proof]) -> tuple[Proof, list[str] | None]:
         port, proof = _init_problem
 
         llvm_definition_dir = foundry.llvm_library if use_booster else None
@@ -749,17 +750,17 @@ def foundry_prove(
                 break_every_step=break_every_step,
                 break_on_jumpi=break_on_jumpi,
                 break_on_calls=break_on_calls,
+                max_branches=max_branches,
             )
             failure_log = None
             if not passed:
                 failure_log = print_failure_info(proof, kcfg_explore, counterexample_info)
             return (
-                passed,
                 proof,
                 failure_log,
             )
 
-    def _init_and_run_proof(_init_problem: tuple[str, str, str | None]) -> tuple[bool, APRProof, list[str] | None]:
+    def _init_and_run_proof(_init_problem: tuple[str, str, str | None]) -> tuple[APRProof, list[str] | None]:
         contract_name, method_sig, id = _init_problem
         contract = foundry.contracts[contract_name]
         method = contract.method_by_sig[method_sig]
@@ -813,17 +814,17 @@ def foundry_prove(
                 break_every_step=break_every_step,
                 break_on_jumpi=break_on_jumpi,
                 break_on_calls=break_on_calls,
+                max_branches=max_branches,
             )
             failure_log = None
             if not passed:
                 failure_log = print_failure_info(proof, kcfg_explore, counterexample_info)
             return (
-                passed,
                 proof,
                 failure_log,
             )
 
-    def run_cfg_group(tests: list[tuple[str, str | None]]) -> dict[str, tuple[bool, list[str] | None]]:
+    def run_cfg_group(tests: list[tuple[str, str | None]]) -> list[tuple[Proof, list[str] | None]]:
         #          def _split_test(test: tuple[str, str | None]) -> tuple[int, str, str, str | None]:
         #              test_name, id = test
         #              contract, method = test_name.split('.')
@@ -861,18 +862,12 @@ def foundry_prove(
                 self._proof = proof
                 self._port = port
 
-        results = {}
+        results = []
         futures: dict[str, Future] = {}
         executor = ThreadPoolExecutor(max_workers=workers)
 
         tasks: list[Task] = [CreateAndRunTask(test, id) for test, id in tests]
-        print('tasks:')
-        for task in tasks:
-            print(f'{task._test} {task._id}')
-        print('')
-
         base_proofs = {test: test for test, _ in tests}
-
         servers = {}
 
         for test, _ in tests:
@@ -894,8 +889,9 @@ def foundry_prove(
                 done_futures = [(_proof, future) for (_proof, future) in futures.items() if future.done()]
                 futures = {_proof: future for (_proof, future) in futures.items() if not future.done()}
                 for _proof, future in done_futures:
-                    results[_proof] = future.result()
-                    proof = results[_proof][1]
+                    result = future.result()
+                    results.append(result)
+                    proof = result[0]
 
                     subproofs = proof.subproofs
                     print(f'subproofs: {subproofs}')
@@ -919,9 +915,7 @@ def foundry_prove(
         #              for subproof in subproofs:
         #                  proofs.append((subproof.id, None))
 
-        result_keys = results.keys()
-        print(result_keys)
-        print(results.values())
+        print(results)
 
         #          _apr_proofs: list[tuple[bool, list[str] | None]]
         #          if workers > 1:
@@ -932,13 +926,14 @@ def foundry_prove(
         #              for init_problem in init_problems:
         #                  _apr_proofs.append(_init_and_run_proof(init_problem))
         #
-        #          return results
-        apr_proofs = {key: (result, logs) for (key, (result, _, logs)) in results.items()}
-        return apr_proofs
+        return results
+
+    #          apr_proofs = {key: (result, logs) for (key, (result, _, logs)) in results.items()}
+    #          return apr_proofs
 
     _LOGGER.info(f'Running setup functions in parallel: {list(setup_methods.values())}')
     results = run_cfg_group([(method, None) for method in setup_methods.values()])
-    failed = [setup_cfg for setup_cfg, passed in results.items() if not passed]
+    failed = [proof.id for proof, _ in results if not proof.passed]
     if failed:
         raise ValueError(f'Running setUp method failed for {len(failed)} contracts: {failed}')
 

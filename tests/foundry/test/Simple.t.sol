@@ -17,6 +17,25 @@ contract AssertTest is Test, KEVMCheats {
         assert(true);
     }
 
+    function test_many_branches(uint x) public {
+        if (x < 1) {
+            y = 3;
+        } else if (x < 2) {
+            y = 3;
+        } else if (x < 3) {
+            y = 3;
+        } else if (x < 4) {
+            y = 3;
+        } else if (x < 5) {
+            y = 3;
+        } else if (x < 6) {
+            y = 3;
+        } else if (x < 7) {
+            y = 3;
+        }
+        assert(y == 3);
+    }
+
     function test_assert_true_branch(uint x) public {
         if (x < 3) {
             y = x;
