@@ -43,6 +43,7 @@ if TYPE_CHECKING:
     from pyk.cterm import CTerm
     from pyk.kcfg.kcfg import NodeIdLike
     from pyk.kcfg.tui import KCFGElem
+    from pyk.utils import BugReport
 
     T = TypeVar('T')
 
@@ -156,7 +157,7 @@ def exec_foundry_prove(
     break_on_jumpi: bool = False,
     break_on_calls: bool = True,
     bmc_depth: int | None = None,
-    bug_report: bool = False,
+    bug_report: BugReport | None = None,
     kore_rpc_command: str | Iterable[str] | None = None,
     use_booster: bool = False,
     smt_timeout: int | None = None,
@@ -303,7 +304,7 @@ def exec_foundry_simplify_node(
     replace: bool = False,
     minimize: bool = True,
     sort_collections: bool = False,
-    bug_report: bool = False,
+    bug_report: BugReport | None = None,
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
     trace_rewrites: bool = False,
@@ -337,7 +338,7 @@ def exec_foundry_step_node(
     node: NodeIdLike,
     repeat: int = 1,
     depth: int = 1,
-    bug_report: bool = False,
+    bug_report: BugReport | None = None,
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
     trace_rewrites: bool = False,
@@ -367,7 +368,6 @@ def exec_foundry_merge_nodes(
     test: str,
     id: str | None,
     nodes: Iterable[NodeIdLike],
-    bug_report: bool = False,
     **kwargs: Any,
 ) -> None:
     foundry_merge_nodes(foundry_root=foundry_root, node_ids=nodes, test=test, id=id)
@@ -380,7 +380,7 @@ def exec_foundry_section_edge(
     edge: tuple[str, str],
     sections: int = 2,
     replace: bool = False,
-    bug_report: bool = False,
+    bug_report: BugReport | None = None,
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
     trace_rewrites: bool = False,
@@ -499,6 +499,7 @@ def _create_argument_parser() -> ArgumentParser:
             kevm_cli_args.kprove_args,
             kevm_cli_args.smt_args,
             kevm_cli_args.rpc_args,
+            kevm_cli_args.bug_report_args,
             kevm_cli_args.explore_args,
             kevm_cli_args.foundry_args,
         ],
@@ -600,6 +601,7 @@ def _create_argument_parser() -> ArgumentParser:
             kevm_cli_args.logging_args,
             kevm_cli_args.smt_args,
             kevm_cli_args.rpc_args,
+            kevm_cli_args.bug_report_args,
             kevm_cli_args.display_args,
             kevm_cli_args.foundry_args,
         ],
@@ -616,6 +618,7 @@ def _create_argument_parser() -> ArgumentParser:
             kevm_cli_args.foundry_test_args,
             kevm_cli_args.logging_args,
             kevm_cli_args.rpc_args,
+            kevm_cli_args.bug_report_args,
             kevm_cli_args.smt_args,
             kevm_cli_args.foundry_args,
         ],
@@ -652,6 +655,7 @@ def _create_argument_parser() -> ArgumentParser:
             kevm_cli_args.foundry_test_args,
             kevm_cli_args.logging_args,
             kevm_cli_args.rpc_args,
+            kevm_cli_args.bug_report_args,
             kevm_cli_args.smt_args,
             kevm_cli_args.foundry_args,
         ],

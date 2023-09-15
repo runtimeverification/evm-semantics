@@ -27,8 +27,9 @@ module SCHEDULE
                           | "Ghasrevert"              | "Ghasreturndata"   | "Ghasstaticcall"      | "Ghasshift"
                           | "Ghasdirtysstore"         | "Ghascreate2"      | "Ghasextcodehash"     | "Ghasselfbalance"
                           | "Ghassstorestipend"       | "Ghaschainid"      | "Ghasaccesslist"      | "Ghasbasefee"
-                          | "Ghasrejectedfirstbyte"   | "Ghasprevrandao"
- // --------------------------------------------------------------------
+                          | "Ghasrejectedfirstbyte"   | "Ghasprevrandao"   | "Ghasmaxinitcodesize" | "Ghaspushzero"
+                          | "Ghaswarmcoinbase"
+ // ------------------------------------------
 ```
 
 ### Schedule Constants
@@ -39,15 +40,15 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     syntax Int ::= ScheduleConst "<" Schedule ">" [function, total]
  // ---------------------------------------------------------------
 
-    syntax ScheduleConst ::= "Gzero"            | "Gbase"              | "Gverylow"      | "Glow"          | "Gmid"        | "Ghigh"
-                           | "Gextcodesize"     | "Gextcodecopy"       | "Gbalance"      | "Gsload"        | "Gjumpdest"   | "Gsstoreset"
-                           | "Gsstorereset"     | "Rsstoreclear"       | "Rselfdestruct" | "Gselfdestruct" | "Gcreate"     | "Gcodedeposit"  | "Gcall"
-                           | "Gcallvalue"       | "Gcallstipend"       | "Gnewaccount"   | "Gexp"          | "Gexpbyte"    | "Gmemory"       | "Gtxcreate"
-                           | "Gtxdatazero"      | "Gtxdatanonzero"     | "Gtransaction"  | "Glog"          | "Glogdata"    | "Glogtopic"     | "Gsha3"
-                           | "Gsha3word"        | "Gcopy"              | "Gblockhash"    | "Gquadcoeff"    | "maxCodeSize" | "Rb"            | "Gquaddivisor"
-                           | "Gecadd"           | "Gecmul"             | "Gecpairconst"  | "Gecpaircoeff"  | "Gfround"     | "Gcoldsload"    | "Gcoldaccountaccess"
-                           | "Gwarmstorageread" | "Gaccesslistaddress" | "Gaccessliststoragekey"           | "Rmaxquotient"
- // -----------------------------------------------------------------------------------------------------------------------
+    syntax ScheduleConst ::= "Gzero"         | "Gbase"         | "Gverylow"      | "Glow"              | "Gmid"               | "Ghigh"            | "Gextcodesize"
+                           | "Gextcodecopy"  | "Gbalance"      | "Gsload"        | "Gjumpdest"         | "Gsstoreset"         | "Gsstorereset"     | "Rsstoreclear"
+                           | "Rselfdestruct" | "Gselfdestruct" | "Gcreate"       | "Gcodedeposit"      | "Gcall"              | "Gcallvalue"       | "Gcallstipend"
+                           | "Gnewaccount"   | "Gexp"          | "Gexpbyte"      | "Gmemory"           | "Gtxcreate"          | "Gtxdatazero"      | "Gtxdatanonzero"
+                           | "Gtransaction"  | "Glog"          | "Glogdata"      | "Glogtopic"         | "Gsha3"              | "Gsha3word"        | "Gcopy"
+                           | "Gblockhash"    | "Gquadcoeff"    | "maxCodeSize"   | "Rb"                | "Gquaddivisor"       | "Gecadd"           | "Gecmul"
+                           | "Gecpairconst"  | "Gecpaircoeff"  | "Gfround"       | "Gcoldsload"        | "Gcoldaccountaccess" | "Gwarmstorageread" | "Gaccesslistaddress"
+                           | "Gaccessliststoragekey"           | "Rmaxquotient"  | "Ginitcodewordcost" | "maxInitCodeSize"
+ // ----------------------------------------------------------------------------------------------------------------------
 ```
 
 ### Default Schedule
@@ -118,6 +119,9 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Gaccessliststoragekey < DEFAULT > => 0
     rule Gaccesslistaddress    < DEFAULT > => 0
 
+    rule maxInitCodeSize   < DEFAULT > => 0
+    rule Ginitcodewordcost < DEFAULT > => 0
+
     rule Rmaxquotient < DEFAULT > => 2
 
     rule Gselfdestructnewaccount << DEFAULT >> => false
@@ -138,6 +142,9 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghasbasefee             << DEFAULT >> => false
     rule Ghasrejectedfirstbyte   << DEFAULT >> => false
     rule Ghasprevrandao          << DEFAULT >> => false
+    rule Ghasmaxinitcodesize     << DEFAULT >> => false
+    rule Ghaspushzero            << DEFAULT >> => false
+    rule Ghaswarmcoinbase        << DEFAULT >> => false
 ```
 
 ### Frontier Schedule
@@ -343,6 +350,27 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghasprevrandao << MERGE >> => true
     rule SCHEDFLAG      << MERGE >> => SCHEDFLAG << LONDON >>
       requires notBool SCHEDFLAG ==K Ghasprevrandao
+```
 
+### Shanghai Schedule
+
+```k
+    syntax Schedule ::= "SHANGHAI" [klabel(SHANGHAI_EVM), symbol, smtlib(schedule_SHANGHAI)]
+ // ----------------------------------------------------------------------------------------
+    rule maxInitCodeSize   < SHANGHAI > => 2 *Int maxCodeSize < SHANGHAI >
+    rule Ginitcodewordcost < SHANGHAI > => 2
+    rule SCHEDCONST        < SHANGHAI > => SCHEDCONST < MERGE >
+      requires notBool ( SCHEDCONST ==K maxInitCodeSize
+                  orBool SCHEDCONST ==K Ginitcodewordcost
+                       )
+
+    rule Ghasmaxinitcodesize << SHANGHAI >> => true
+    rule Ghaspushzero        << SHANGHAI >> => true
+    rule Ghaswarmcoinbase    << SHANGHAI >> => true
+    rule SCHEDFLAG           << SHANGHAI >> => SCHEDFLAG << MERGE >>
+      requires notBool ( SCHEDFLAG ==K Ghasmaxinitcodesize
+                  orBool SCHEDFLAG ==K Ghaspushzero
+                  orBool SCHEDFLAG ==K Ghaswarmcoinbase
+                       )
 endmodule
 ```

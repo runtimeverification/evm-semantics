@@ -28,6 +28,7 @@ if TYPE_CHECKING:
 
     from pyk.kore.rpc import KoreServer
     from pyk.proof.proof import Proof
+    from pyk.utils import BugReport
     from pytest import TempPathFactory
 
 
@@ -51,7 +52,7 @@ def server(foundry_root: Path, use_booster: bool) -> Iterator[KoreServer]:
 
 
 @pytest.fixture(scope='session')
-def foundry_root(tmp_path_factory: TempPathFactory, worker_id: str, use_booster: bool) -> Path:
+def foundry_root(tmp_path_factory: TempPathFactory, worker_id: str) -> Path:
     if worker_id == 'master':
         root_tmp_dir = tmp_path_factory.getbasetemp()
     else:
@@ -117,14 +118,24 @@ SHOW_TESTS = set((TEST_DATA_DIR / 'foundry-show').read_text().splitlines())
 
 @pytest.mark.parametrize('test_id', ALL_PROVE_TESTS)
 def test_foundry_prove(
-    test_id: str, foundry_root: Path, update_expected_output: bool, use_booster: bool, server: KoreServer
+    test_id: str,
+    foundry_root: Path,
+    update_expected_output: bool,
+    use_booster: bool,
+    bug_report: BugReport | None,
+    server: KoreServer,
 ) -> None:
     if test_id in SKIPPED_PROVE_TESTS or (update_expected_output and not test_id in SHOW_TESTS):
         pytest.skip()
 
     # When
     prove_res = foundry_prove(
-        foundry_root, tests=[(test_id, None)], simplify_init=False, counterexample_info=True, port=server.port
+        foundry_root,
+        tests=[(test_id, None)],
+        simplify_init=False,
+        counterexample_info=True,
+        port=server.port,
+        bug_report=bug_report,
     )
 
     # Then
@@ -196,7 +207,7 @@ SKIPPED_BMC_TESTS: Final = set((TEST_DATA_DIR / 'foundry-bmc-skip').read_text().
 
 
 @pytest.mark.parametrize('test_id', ALL_BMC_TESTS)
-def test_foundry_bmc(test_id: str, foundry_root: Path, use_booster: bool, server: KoreServer) -> None:
+def test_foundry_bmc(test_id: str, foundry_root: Path, bug_report: BugReport | None, server: KoreServer) -> None:
     if test_id in SKIPPED_BMC_TESTS:
         pytest.skip()
 
@@ -207,13 +218,14 @@ def test_foundry_bmc(test_id: str, foundry_root: Path, use_booster: bool, server
         bmc_depth=3,
         simplify_init=False,
         port=server.port,
+        bug_report=bug_report,
     )
 
     # Then
     assert_pass(test_id, prove_res)
 
 
-def test_foundry_merge_nodes(foundry_root: Path, use_booster: bool, server: KoreServer) -> None:
+def test_foundry_merge_nodes(foundry_root: Path, bug_report: BugReport | None, server: KoreServer) -> None:
     test = 'AssertTest.test_branch_merge(uint256)'
 
     foundry_prove(
@@ -221,6 +233,7 @@ def test_foundry_merge_nodes(foundry_root: Path, use_booster: bool, server: Kore
         tests=[(test, None)],
         max_iterations=4,
         port=server.port,
+        bug_report=bug_report,
     )
     check_pending(foundry_root, test, [6, 7])
 
@@ -237,6 +250,7 @@ def test_foundry_merge_nodes(foundry_root: Path, use_booster: bool, server: Kore
         foundry_root,
         tests=[(test, None)],
         port=server.port,
+        bug_report=bug_report,
     )
     assert_pass(test, prove_res)
 
@@ -250,13 +264,18 @@ def check_pending(foundry_root: Path, test: str, pending: list[int]) -> None:
 
 
 def test_foundry_auto_abstraction(
-    foundry_root: Path, update_expected_output: bool, server: KoreServer, use_booster: bool
+    foundry_root: Path,
+    update_expected_output: bool,
+    bug_report: BugReport | None,
+    server: KoreServer,
+    use_booster: bool,
 ) -> None:
     test_id = 'GasTest.testInfiniteGas()'
     foundry_prove(
         foundry_root,
         tests=[(test_id, None)],
         auto_abstract_gas=True,
+        bug_report=bug_report,
         port=server.port,
         simplify_init=False,
     )
@@ -280,7 +299,9 @@ def test_foundry_auto_abstraction(
     assert_or_update_show_output(show_res, TEST_DATA_DIR / 'gas-abstraction.expected', update=update_expected_output)
 
 
-def test_foundry_remove_node(foundry_root: Path, update_expected_output: bool, server: KoreServer) -> None:
+def test_foundry_remove_node(
+    foundry_root: Path, update_expected_output: bool, bug_report: BugReport | None, server: KoreServer
+) -> None:
     test = 'AssertTest.test_assert_true()'
 
     foundry = Foundry(foundry_root)
@@ -289,6 +310,7 @@ def test_foundry_remove_node(foundry_root: Path, update_expected_output: bool, s
         foundry_root,
         tests=[(test, None)],
         port=server.port,
+        bug_report=bug_report,
     )
     assert_pass(test, prove_res)
 
@@ -306,6 +328,7 @@ def test_foundry_remove_node(foundry_root: Path, update_expected_output: bool, s
         foundry_root,
         tests=[(test, None)],
         port=server.port,
+        bug_report=bug_report,
     )
     assert_pass(test, prove_res)
 
@@ -350,7 +373,9 @@ def assert_or_update_show_output(show_res: str, expected_file: Path, *, update: 
         assert actual_text == expected_text
 
 
-def test_foundry_resume_proof(foundry_root: Path, update_expected_output: bool, server: KoreServer) -> None:
+def test_foundry_resume_proof(
+    foundry_root: Path, update_expected_output: bool, bug_report: BugReport | None, server: KoreServer
+) -> None:
     foundry = Foundry(foundry_root)
     test = 'AssumeTest.test_assume_false(uint256,uint256)'
 
@@ -363,6 +388,7 @@ def test_foundry_resume_proof(foundry_root: Path, update_expected_output: bool, 
         max_iterations=4,
         reinit=True,
         port=server.port,
+        bug_report=bug_report,
     )
 
     proof = foundry.get_apr_proof(f'{test}:{id}')
@@ -375,5 +401,6 @@ def test_foundry_resume_proof(foundry_root: Path, update_expected_output: bool, 
         max_iterations=6,
         reinit=False,
         port=server.port,
+        bug_report=bug_report,
     )
     assert_fail(test, prove_res)

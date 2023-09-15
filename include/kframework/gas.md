@@ -118,6 +118,7 @@ module GAS-FEES
                  | Cextcodehash   ( Schedule )                           [function, total, smtlib(gas_Cextcodehash)  ]
                  | Cbalance       ( Schedule )                           [function, total, smtlib(gas_Cbalance)      ]
                  | Cmodexp        ( Schedule , Bytes , Int , Int , Int ) [function, total, smtlib(gas_Cmodexp)       ]
+                 | Cinitcode      ( Schedule , Int )                     [function, total, smtlib(gas_Cinitcode)     ]
  // ------------------------------------------------------------------------------------------------------------------
     rule [Cgascap]:
          Cgascap(SCHED, GCAP:Int, GAVAIL:Int, GEXTRA)
@@ -202,6 +203,9 @@ module GAS-FEES
       requires Ghasaccesslist << SCHED >>
       [concrete]
 
+    rule [Cinitcode.new]: Cinitcode(SCHED, INITCODELEN) => Ginitcodewordcost < SCHED > *Int ( INITCODELEN up/Int 32 ) requires         Ghasmaxinitcodesize << SCHED >> [concrete]
+    rule [Cinitcode.old]: Cinitcode(SCHED, _)           => 0                                                          requires notBool Ghasmaxinitcodesize << SCHED >> [concrete]
+
     syntax Bool ::= #accountEmpty ( AccountCode , Int , Int ) [function, total, klabel(accountEmpty), symbol]
  // ---------------------------------------------------------------------------------------------------------
     rule #accountEmpty(CODE, NONCE, BAL) => CODE ==K .Bytes andBool NONCE ==Int 0 andBool BAL ==Int 0
@@ -212,14 +216,11 @@ module GAS-FEES
     rule [allBut64th.pos]: #allBut64th(N) => N -Int (N /Int 64) requires 0 <=Int N
     rule [allBut64th.neg]: #allBut64th(N) => 0                  requires N  <Int 0
 
-    syntax Int ::= G0 ( Schedule , Bytes , Bool )           [function]
+    syntax Int ::= G0 ( Schedule , Bytes , Bool )           [function, klabel(G0base)]
                  | G0 ( Schedule , Bytes , Int , Int, Int ) [function, klabel(G0data)]
-                 | G0 ( Schedule , Bool )                   [function, klabel(G0base)]
  // ----------------------------------------------------------------------------------
-    rule G0(SCHED, WS, B) => G0(SCHED, WS, 0, lengthBytes(WS), 0) +Int G0(SCHED, B)
-
-    rule G0(SCHED, true)  => Gtxcreate    < SCHED >
-    rule G0(SCHED, false) => Gtransaction < SCHED >
+    rule G0(SCHED, WS, false) => G0(SCHED, WS, 0, lengthBytes(WS), 0) +Int Gtransaction < SCHED >
+    rule G0(SCHED, WS, true)  => G0(SCHED, WS, 0, lengthBytes(WS), 0) +Int Gtxcreate < SCHED > +Int Cinitcode(SCHED, lengthBytes(WS))
 
     rule G0(    _,  _, I, I, R) => R
     rule G0(SCHED, WS, I, J, R) => G0(SCHED, WS, I +Int 1, J, R +Int #if WS[I] ==Int 0 #then Gtxdatazero < SCHED > #else Gtxdatanonzero < SCHED > #fi) [owise]

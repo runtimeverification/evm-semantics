@@ -5,11 +5,9 @@ UNAME_S := $(shell uname -s)
 
 DEPS_DIR      := deps
 BUILD_DIR     := .build
-NODE_DIR      := $(abspath node)
 BUILD_LOCAL   := $(abspath $(BUILD_DIR)/local)
 LOCAL_LIB     := $(BUILD_LOCAL)/lib
 LOCAL_BIN     := $(BUILD_LOCAL)/bin
-export NODE_DIR
 export LOCAL_LIB
 
 INSTALL_PREFIX  := /usr
@@ -44,13 +42,13 @@ PLUGIN_FULL_PATH := $(abspath ${PLUGIN_SUBMODULE})
 export PLUGIN_FULL_PATH
 
 
-.PHONY: all clean distclean install uninstall                                                             \
-        plugin-deps protobuf proto-tester                                                                 \
-        poetry-env poetry shell kevm-pyk                                                                  \
-        build build-haskell build-haskell-standalone build-foundry build-llvm build-node build-kevm       \
-        test test-integration test-conformance test-prove test-foundry-prove test-prove-smoke             \
-        test-vm test-rest-vm test-bchain test-rest-bchain test-node test-interactive test-interactive-run \
-        profile                                                                                           \
+.PHONY: all clean distclean install uninstall                                                   \
+        plugin-deps                                                                             \
+        poetry-env poetry shell kevm-pyk                                                        \
+        build build-haskell build-haskell-standalone build-foundry build-llvm build-kevm        \
+        test test-integration test-conformance test-prove test-foundry-prove test-prove-smoke   \
+        test-vm test-rest-vm test-bchain test-rest-bchain test-interactive test-interactive-run \
+        profile                                                                                 \
         media media-pdf metropolis-theme
 
 .SECONDARY:
@@ -62,17 +60,6 @@ clean:
 
 distclean:
 	rm -rf $(BUILD_DIR)
-
-# Non-K Dependencies
-# ------------------
-
-protobuf_out := $(LOCAL_LIB)/proto/proto/msg.pb.cc
-protobuf: $(protobuf_out)
-
-$(protobuf_out): $(NODE_DIR)/proto/msg.proto
-	@mkdir -p $(LOCAL_LIB)/proto
-	protoc --cpp_out=$(LOCAL_LIB)/proto -I $(NODE_DIR) $(NODE_DIR)/proto/msg.proto
-
 
 # K Dependencies
 # --------------
@@ -133,7 +120,6 @@ kevm_files := abi.md                          \
               edsl.md                         \
               evm.md                          \
               evm-types.md                    \
-              evm-node.md                     \
               foundry.md                      \
               hashed-locations.md             \
               gas.md                          \
@@ -239,30 +225,6 @@ $(kompile_haskell_standalone): KOMPILE_SYNTAX_MODULE := ETHEREUM-SIMULATION
 $(kompile_haskell_standalone):
 	$(kompile)
 
-
-# Node
-#
-node_dir      := node
-node_kore     := $(node_dir)/definition.kore
-node_kompiled := $(node_dir)/build/kevm-vm
-kompile_node  := $(KEVM_LIB)/$(node_kore)
-export node_dir
-
-$(kompile_node): $(kevm_includes) $(plugin_includes) $(plugin_c_includes)
-
-$(kompile_node): KOMPILE_TARGET        := node
-$(kompile_node): KOMPILE_MAIN_FILE     := $(KEVM_INCLUDE)/kframework/evm-node.md
-$(kompile_node): KOMPILE_MAIN_MODULE   := EVM-NODE
-$(kompile_node): KOMPILE_SYNTAX_MODULE := EVM-NODE
-$(kompile_node):
-	$(kompile)
-
-
-$(KEVM_LIB)/$(node_kompiled): $(KEVM_LIB)/$(node_kore) $(protobuf_out)
-	@mkdir -p $(dir $@)
-	cd $(dir $@) && cmake $(CURDIR)/cmake/node -DCMAKE_INSTALL_PREFIX=$(INSTALL_LIB)/$(node_dir) -DCMAKE_CXX_FLAGS=-std=c++17 && $(MAKE)
-
-
 # Foundry
 
 foundry_dir      := foundry
@@ -283,8 +245,7 @@ $(kompile_foundry):
 # Installing
 # ----------
 
-install_bins := kevm    \
-                kevm-vm
+install_bins := kevm
 
 install_libs := $(haskell_kompiled)                                        \
                 $(llvm_kompiled)                                           \
@@ -295,10 +256,6 @@ install_libs := $(haskell_kompiled)                                        \
                 version
 
 $(KEVM_BIN)/%: bin/%
-	@mkdir -p $(dir $@)
-	install $< $@
-
-$(KEVM_BIN)/kevm-vm: $(KEVM_LIB)/$(node_kompiled)
 	@mkdir -p $(dir $@)
 	install $< $@
 
@@ -321,7 +278,6 @@ build: $(patsubst %, $(KEVM_BIN)/%, $(install_bins)) $(patsubst %, $(KEVM_LIB)/%
 build-llvm:               $(KEVM_LIB)/$(llvm_kompiled)
 build-haskell:            $(KEVM_LIB)/$(haskell_kompiled)
 build-haskell-standalone: $(KEVM_LIB)/$(haskell_standalone_kompiled)
-build-node:               $(KEVM_LIB)/$(node_kompiled)
 build-kevm:               $(KEVM_BIN)/kevm $(KEVM_LIB)/version $(kevm_includes) $(plugin_includes)
 build-foundry:            $(KEVM_BIN)/kevm $(KEVM_LIB)/$(foundry_kompiled)
 
@@ -356,7 +312,7 @@ TEST_SYMBOLIC_BACKEND := haskell
 CHECK := git --no-pager diff --no-index --ignore-all-space -R
 
 KEVM_MODE     := NORMAL
-KEVM_SCHEDULE := MERGE
+KEVM_SCHEDULE := SHANGHAI
 KEVM_CHAINID  := 1
 
 KPROVE_MODULE  = VERIFICATION
@@ -478,23 +434,6 @@ profile: poetry build-foundry
 test-interactive: test-interactive-run
 
 test-interactive-run: $(smoke_tests_run:=.run-interactive)
-
-node_tests:=$(wildcard tests/vm/*.bin)
-test-node: $(node_tests:=.run-node)
-
-proto_tester := $(LOCAL_BIN)/proto_tester
-proto-tester: $(proto_tester)
-$(proto_tester): tests/vm/proto_tester.cpp
-	@mkdir -p $(LOCAL_BIN)
-	$(CXX) -I $(LOCAL_LIB)/proto $(protobuf_out) $< -o $@ -lprotobuf -lpthread
-
-tests/vm/%.run-node: tests/vm/%.expected $(KEVM_BIN)/kevm-vm $(proto_tester)
-	bash -c " \
-	  kevm-vm 8888 127.0.0.1 & \
-	  while ! netcat -z 127.0.0.1 8888; do sleep 0.1; done; \
-	  netcat -N 127.0.0.1 8888 < tests/vm/$* > tests/vm/$*.out; \
-	  kill %kevm-vm || true"
-	$(proto_tester) $< tests/vm/$*.out
 
 # Media
 # -----
