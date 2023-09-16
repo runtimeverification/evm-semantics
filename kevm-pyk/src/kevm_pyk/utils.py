@@ -129,6 +129,9 @@ def kevm_prove(
             if proof.passed:
                 _LOGGER.info(f'Proof passed: {proof.id}')
                 return True
+            elif proof.is_pending:
+                _LOGGER.info(f'Proof pending: {proof.id}')
+                return True
             else:
                 _LOGGER.error(f'Proof failed: {proof.id}')
                 return False

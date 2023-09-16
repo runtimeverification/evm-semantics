@@ -9,7 +9,6 @@ from argparse import ArgumentParser
 from typing import TYPE_CHECKING
 
 from pyk.cli.utils import file_path
-from pyk.proof.proof import ProofStatus
 from pyk.proof.tui import APRProofViewer
 
 from kevm_pyk.cli import KEVMCLIArgs, node_id_like
@@ -209,7 +208,7 @@ def exec_foundry_prove(
     for proof in results:
         if proof.passed:
             print(f'PROOF PASSED: {proof.id}')
-        elif proof.status == ProofStatus.PENDING:
+        elif proof.is_pending:
             print(f'PROOF PENDING: {proof.id}')
         elif proof.failed:
             print(f'PROOF FAILED: {proof.id}')
