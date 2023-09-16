@@ -206,28 +206,18 @@ def exec_foundry_prove(
         max_branches=max_branches,
     )
     failed = 0
-    for proof, failure_log in results:
+    for proof in results:
         if proof.passed:
             print(f'PROOF PASSED: {proof.id}')
         elif proof.status == ProofStatus.PENDING:
             print(f'PROOF PENDING: {proof.id}')
         elif proof.failed:
             print(f'PROOF FAILED: {proof.id}')
-            if failure_info and failure_log is not None:
+            if failure_info and proof.failure_info is not None:
+                failure_log = proof.failure_info.print()
                 failure_log += Foundry.help_info()
                 for line in failure_log:
                     print(line)
-
-    #          passed, failure_log = r
-    #          if passed:
-    #              print(f'PROOF PASSED: {pid}')
-    #          else:
-    #              failed += 1
-    #              print(f'PROOF FAILED: {pid}')
-    #              if failure_info and failure_log is not None:
-    #                  failure_log += Foundry.help_info()
-    #                  for line in failure_log:
-    #                      print(line)
 
     sys.exit(failed)
 

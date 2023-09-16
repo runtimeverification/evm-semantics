@@ -27,7 +27,6 @@ if TYPE_CHECKING:
     from typing import Final
 
     from pyk.kore.rpc import KoreServer
-    from pyk.proof.proof import Proof
     from pyk.utils import BugReport
     from pytest import TempPathFactory
 
@@ -333,19 +332,19 @@ def test_foundry_remove_node(
     assert_pass(test, prove_res)
 
 
-def assert_pass(test: str, prove_res: list[tuple[Proof, list[str] | None]]) -> None:
-    proof_dict = {proof.id: (proof, failure_info) for proof, failure_info in prove_res}
-    proof, log = proof_dict[test]
+def assert_pass(test: str, prove_res: list[APRProof]) -> None:
+    proof_dict = {proof.id: proof for proof in prove_res}
+    proof = proof_dict[test]
     if not proof.passed:
-        assert log
-        pytest.fail('\n'.join(log))
+        assert proof.failure_info is not None
+        pytest.fail('\n'.join(proof.failure_info.print()))
 
 
-def assert_fail(test: str, prove_res: list[tuple[Proof, list[str] | None]]) -> None:
-    proof_dict = {proof.id: (proof, failure_info) for proof, failure_info in prove_res}
-    passed, log = proof_dict[test]
-    assert not passed
-    assert log
+def assert_fail(test: str, prove_res: list[APRProof]) -> None:
+    proof_dict = {proof.id: proof for proof in prove_res}
+    proof = proof_dict[test]
+    assert not proof.passed
+    assert proof.failure_info is not None
 
 
 def assert_or_update_show_output(show_res: str, expected_file: Path, *, update: bool) -> None:

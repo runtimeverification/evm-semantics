@@ -639,7 +639,7 @@ def foundry_prove(
     auto_abstract_gas: bool = False,
     port: int | None = None,
     max_branches: int | None = None,
-) -> list[tuple[Proof, list[str] | None]]:
+) -> list[APRProof]:
     if workers <= 0:
         raise ValueError(f'Must have at least one worker, found: --workers {workers}')
     if max_iterations is not None and max_iterations < 0:
@@ -722,7 +722,7 @@ def foundry_prove(
         assert id is not None
         tests[i] = (test, id)
 
-    def _run_proof(_init_problem: tuple[int, Proof]) -> tuple[Proof, list[str] | None]:
+    def _run_proof(_init_problem: tuple[int, Proof]) -> Proof:
         port, proof = _init_problem
 
         llvm_definition_dir = foundry.llvm_library if use_booster else None
@@ -741,7 +741,7 @@ def foundry_prove(
             start_server=start_server,
             port=port,
         ) as kcfg_explore:
-            passed = kevm_prove(
+            kevm_prove(
                 foundry.kevm,
                 proof,
                 kcfg_explore,
@@ -752,15 +752,9 @@ def foundry_prove(
                 break_on_calls=break_on_calls,
                 max_branches=max_branches,
             )
-            failure_log = None
-            if not passed:
-                failure_log = print_failure_info(proof, kcfg_explore, counterexample_info)
-            return (
-                proof,
-                failure_log,
-            )
+            return proof
 
-    def _init_and_run_proof(_init_problem: tuple[str, str, str | None]) -> tuple[APRProof, list[str] | None]:
+    def _init_and_run_proof(_init_problem: tuple[str, str, str | None]) -> APRProof:
         contract_name, method_sig, id = _init_problem
         contract = foundry.contracts[contract_name]
         method = contract.method_by_sig[method_sig]
@@ -803,7 +797,7 @@ def foundry_prove(
                 generate_subproof_name=generate_subproof_name,
             )
 
-            passed = kevm_prove(
+            kevm_prove(
                 foundry.kevm,
                 proof,
                 kcfg_explore,
@@ -814,15 +808,9 @@ def foundry_prove(
                 break_on_calls=break_on_calls,
                 max_branches=max_branches,
             )
-            failure_log = None
-            if not passed:
-                failure_log = print_failure_info(proof, kcfg_explore, counterexample_info)
-            return (
-                proof,
-                failure_log,
-            )
+            return proof
 
-    def run_cfg_group(tests: list[tuple[str, str | None]]) -> list[tuple[Proof, list[str] | None]]:
+    def run_cfg_group(tests: list[tuple[str, str | None]]) -> list[APRProof]:
         #          def _split_test(test: tuple[str, str | None]) -> tuple[int, str, str, str | None]:
         #              test_name, id = test
         #              contract, method = test_name.split('.')
@@ -931,7 +919,7 @@ def foundry_prove(
 
     _LOGGER.info(f'Running setup functions in parallel: {list(setup_methods.values())}')
     results = run_cfg_group([(method, None) for method in setup_methods.values()])
-    failed = [proof.id for proof, _ in results if not proof.passed]
+    failed = [proof.id for proof in results if not proof.passed]
     if failed:
         raise ValueError(f'Running setUp method failed for {len(failed)} contracts: {failed}')
 
