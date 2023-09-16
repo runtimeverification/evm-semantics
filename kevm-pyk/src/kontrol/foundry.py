@@ -764,8 +764,6 @@ def foundry_prove(
 
         llvm_definition_dir = foundry.llvm_library if use_booster else None
 
-        #          start_server = port is None
-
         def generate_subproof_name(proof: APRProof, node: int) -> str:
             id_without_version = proof.id.split(':')[0]
 
@@ -781,7 +779,6 @@ def foundry_prove(
             smt_timeout=smt_timeout,
             smt_retry_limit=smt_retry_limit,
             trace_rewrites=trace_rewrites,
-            #              start_server=start_server,
             port=port,
         ) as kcfg_explore:
             proof = _method_to_apr_proof(
