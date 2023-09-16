@@ -633,7 +633,6 @@ def foundry_prove(
     use_booster: bool = False,
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
-    failure_info: bool = True,
     counterexample_info: bool = False,
     trace_rewrites: bool = False,
     auto_abstract_gas: bool = False,
