@@ -810,11 +810,6 @@ def foundry_prove(
             return proof
 
     def run_cfg_group(tests: list[tuple[str, str | None]]) -> list[APRProof]:
-        #          def _split_test(test: tuple[str, str | None]) -> tuple[int, str, str, str | None]:
-        #              test_name, id = test
-        #              contract, method = test_name.split('.')
-        #              return contract, method, id
-
         llvm_definition_dir = foundry.llvm_library if use_booster else None
 
         def create_server() -> KoreServer:
@@ -893,28 +888,9 @@ def foundry_prove(
             time.sleep(1)
         executor.shutdown()
 
-        #          done_futures = [(_proof, future) for (_proof, future) in futures.items() if future.done()]
-        #          for _proof, future in done_futures:
-        #              results[_proof] = future.result()
-        #              subproofs = results[_proof][1].subproofs
-        #              for subproof in subproofs:
-        #                  proofs.append((subproof.id, None))
-
         print(results)
 
-        #          _apr_proofs: list[tuple[bool, list[str] | None]]
-        #          if workers > 1:
-        #              with ProcessPool(ncpus=workers) as process_pool:
-        #                  _apr_proofs = process_pool.map(_init_and_run_proof, init_problems)
-        #          else:
-        #              _apr_proofs = []
-        #              for init_problem in init_problems:
-        #                  _apr_proofs.append(_init_and_run_proof(init_problem))
-        #
         return results
-
-    #          apr_proofs = {key: (result, logs) for (key, (result, _, logs)) in results.items()}
-    #          return apr_proofs
 
     _LOGGER.info(f'Running setup functions in parallel: {list(setup_methods.values())}')
     results = run_cfg_group([(method, None) for method in setup_methods.values()])
