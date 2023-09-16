@@ -6,8 +6,7 @@ import os
 import re
 import shutil
 import sys
-import time
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, wait
 from functools import cached_property
 from os import listdir
 from pathlib import Path
@@ -760,8 +759,6 @@ def foundry_prove(
         id_prefix = ':' + id if id is not None else ''
         test_id = f'{contract_name}.{method_sig}{id_prefix}'
 
-        print(f'test_id: {test_id}')
-
         llvm_definition_dir = foundry.llvm_library if use_booster else None
 
         def generate_subproof_name(proof: APRProof, node: int) -> str:
@@ -866,26 +863,17 @@ def foundry_prove(
                 done_futures = [(_proof, future) for (_proof, future) in futures.items() if future.done()]
                 futures = {_proof: future for (_proof, future) in futures.items() if not future.done()}
                 for _proof, future in done_futures:
-                    result = future.result()
-                    results.append(result)
-                    proof = result[0]
+                    proof = future.result()
+                    results.append(proof)
 
                     subproofs = proof.subproofs
-                    print(f'subproofs: {subproofs}')
                     for subproof in subproofs:
                         base_proofs[subproof.id] = base_proofs[_proof]
                         port = servers[base_proofs[subproof.id]].port
                         tasks.append(RunTask(subproof, port))
 
-            print(f'tasks: {tasks}')
-            print(f'futures: {futures}')
-            print(f'results: {results}')
-            print('')
-
-            time.sleep(1)
+            wait(futures.values())
         executor.shutdown()
-
-        print(results)
 
         return results
 
@@ -1364,7 +1352,6 @@ def _method_to_cfg(
 
 
 def get_final_accounts_cell(proof_id: str, proof_dir: Path) -> tuple[KInner, Iterable[KInner]]:
-    print(proof_id, proof_dir)
     apr_proof = APRProof.read_proof_data(proof_dir, proof_id)
     target = apr_proof.kcfg.node(apr_proof.target)
     target_states = apr_proof.kcfg.covers(target_id=target.id)
