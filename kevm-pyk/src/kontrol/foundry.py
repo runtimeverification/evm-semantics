@@ -16,7 +16,7 @@ import tomlkit
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cterm import CTerm
 from pyk.kast.inner import KApply, KSequence, KSort, KToken, KVariable, Subst
-from pyk.kast.manip import free_vars, minimize_term
+from pyk.kast.manip import flatten_label, free_vars, minimize_term, set_cell
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
 from pyk.kcfg import KCFG
 from pyk.prelude.bytes import bytesToken
@@ -1208,7 +1208,9 @@ def _method_to_cfg(
     return cfg, init_node.id, target_node.id
 
 
-def get_final_accounts_cell(proof_id: str, proof_dir: Path) -> tuple[KInner, Iterable[KInner]]:
+def get_final_accounts_cell(
+    proof_id: str, proof_dir: Path, overwrite_code_cell: KInner | None = None
+) -> tuple[KInner, Iterable[KInner]]:
     apr_proof = APRProof.read_proof_data(proof_dir, proof_id)
     target = apr_proof.kcfg.node(apr_proof.target)
     target_states = apr_proof.kcfg.covers(target_id=target.id)
@@ -1220,6 +1222,19 @@ def get_final_accounts_cell(proof_id: str, proof_dir: Path) -> tuple[KInner, Ite
         raise ValueError(f'setUp() function for {apr_proof.id} branched and has {len(target_states)} target states.')
     cterm = single(target_states).source.cterm
     acct_cell = cterm.cell('ACCOUNTS_CELL')
+
+    if overwrite_code_cell is not None:
+        new_accounts = [CTerm(account, []) for account in flatten_label('_AccountCellMap_', acct_cell)]
+        new_accounts_map = {account.cell('ACCTID_CELL'): account for account in new_accounts}
+        test_contract_account = new_accounts_map[Foundry.address_TEST_CONTRACT()]
+
+        new_accounts_map[Foundry.address_TEST_CONTRACT()] = CTerm(
+            set_cell(test_contract_account.config, 'CODE_CELL', overwrite_code_cell),
+            [],
+        )
+
+        acct_cell = KEVM.accounts([account.config for account in new_accounts_map.values()])
+
     fvars = free_vars(acct_cell)
     acct_cons = constraints_for(fvars, cterm.constraints)
     return (acct_cell, acct_cons)
@@ -1293,7 +1308,7 @@ def _init_cterm(
 
     constraints = None
     if init_state:
-        accts, constraints = get_final_accounts_cell(init_state, kcfgs_dir)
+        accts, constraints = get_final_accounts_cell(init_state, kcfgs_dir, overwrite_code_cell=program)
         init_subst['ACCOUNTS_CELL'] = accts
 
     if calldata is not None:
