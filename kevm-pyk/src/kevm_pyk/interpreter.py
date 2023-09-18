@@ -26,7 +26,7 @@ def interpret(gst_data: Any, schedule: str, mode: str, chainid: int, *, check: b
 
 
 def _interpret(gst_data: Any, schedule: str, mode: str, chainid: int) -> CompletedProcess:
-    interpreter = DistTarget.LLVM.check() / 'interpreter'
+    interpreter = DistTarget.LLVM.get() / 'interpreter'
     init_kore = gst_to_kore(gst_data, schedule, mode, chainid)
     proc_res = run_process([str(interpreter), '/dev/stdin', '-1', '/dev/stdout'], input=init_kore.text, check=False)
     return proc_res

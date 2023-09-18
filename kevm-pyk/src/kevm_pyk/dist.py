@@ -61,14 +61,14 @@ class DistTarget(Enum):
     def path(self) -> Path:
         return DIST_DIR / self.value
 
-    def get(self) -> Path | None:
-        if not self.path.exists():
-            return None
-        return self.path
-
-    def check(self) -> Path:
+    def get(self) -> Path:
         if not self.path.exists():
             raise ValueError(f'Target {self.name} is not built')
+        return self.path
+
+    def get_or_none(self) -> Path | None:
+        if not self.path.exists():
+            return None
         return self.path
 
     def build(self, *, force: bool = False, enable_llvm_debug: bool = False, verbose: bool = False) -> Path:

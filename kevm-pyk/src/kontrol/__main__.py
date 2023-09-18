@@ -95,7 +95,7 @@ def exec_solc_to_k(
         target = DistTarget.HASKELL
 
     k_text = solc_to_k(
-        definition_dir=target.check(),
+        definition_dir=target.get(),
         contract_file=contract_file,
         contract_name=contract_name,
         main_module=main_module,

@@ -145,7 +145,7 @@ def exec_prove_legacy(
     _ignore_arg(kwargs, 'md_selector', f'--md-selector: {kwargs["md_selector"]}')
 
     if definition_dir is None:
-        definition_dir = DistTarget.HASKELL.check()
+        definition_dir = DistTarget.HASKELL.get()
 
     kevm = KEVM(definition_dir, use_directory=save_directory)
 
@@ -202,7 +202,7 @@ def exec_prove(
     md_selector = 'k'
 
     if definition_dir is None:
-        definition_dir = DistTarget.HASKELL.check()
+        definition_dir = DistTarget.HASKELL.get()
 
     if smt_timeout is None:
         smt_timeout = 300
@@ -484,7 +484,7 @@ def exec_run(
         target = DistTarget.LLVM
 
     _ignore_arg(kwargs, 'definition_dir', f'--definition: {kwargs["definition_dir"]}')
-    kevm = KEVM(target.check(), use_directory=save_directory)
+    kevm = KEVM(target.get(), use_directory=save_directory)
 
     try:
         json_read = json.loads(input_file.read_text())
@@ -520,7 +520,7 @@ def exec_kast(
         target = DistTarget.LLVM
 
     _ignore_arg(kwargs, 'definition_dir', f'--definition: {kwargs["definition_dir"]}')
-    kevm = KEVM(target.check(), use_directory=save_directory)
+    kevm = KEVM(target.get(), use_directory=save_directory)
 
     try:
         json_read = json.loads(input_file.read_text())

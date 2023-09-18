@@ -32,7 +32,7 @@ def test_run(gst_file: Path) -> None:
 
     # When
     pattern = interpret(gst_data, 'SHANGHAI', 'NORMAL', 1, check=False)
-    actual = kore_print(pattern, definition_dir=DistTarget.LLVM.check(), output=PrintOutput.PRETTY)
+    actual = kore_print(pattern, definition_dir=DistTarget.LLVM.get(), output=PrintOutput.PRETTY)
 
     # Then
     assert actual == expected

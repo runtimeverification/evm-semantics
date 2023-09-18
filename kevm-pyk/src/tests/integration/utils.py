@@ -23,7 +23,7 @@ def gen_bin_runtime(contract_file: Path, output_dir: Path) -> tuple[Path, str]:
     main_file = output_dir / f'{contract_name.lower()}-bin-runtime.k'
 
     k_text = solc_to_k(
-        definition_dir=DistTarget.HASKELL.check(),
+        definition_dir=DistTarget.HASKELL.get(),
         contract_file=contract_file,
         contract_name=contract_name,
         main_module=main_module_name,
