@@ -29,7 +29,9 @@ jobs:
           og_version=$(git show origin/${GITHUB_BASE_REF}:package/version)
           ./package/version.sh bump ${og_version}
           ./package/version.sh sub
-          git add --update && git commit --message "Set Version: $(cat package/version)" || true
+          new_version=$(cat package/version)
+          sed --in-place "s/^VERSION: Final = '.*'$/VERSION: Final = '${new_version}'/" kevm-pyk/src/kevm_pyk/__init__.py
+          git add --update && git commit --message "Set Version: ${new_version}" || true
       - name: 'Push updates'
         run: git push origin HEAD:${GITHUB_HEAD_REF}
 
@@ -59,11 +61,8 @@ jobs:
           fetch-depth: 0
       - name: 'Install Poetry'
         uses: Gr1N/setup-poetry@v8
-      - name: 'Build kevm'
-        run: make build-kevm -j8
       - name: 'Run unit tests'
         run: |
-          export PATH=$(pwd)/.build/usr/bin:${PATH}
           make -C kevm-pyk cov-unit
 
   kevm-pyk-profile:
@@ -83,10 +82,8 @@ jobs:
           container-name: kevm-ci-profile-${{ github.sha }}
       - name: 'Build kevm-pyk'
         run: docker exec -u github-user kevm-ci-profile-${GITHUB_SHA} /bin/bash -c 'make poetry'
-      - name: 'Build blockchain-k-plugin-deps'
-        run: docker exec -u github-user kevm-ci-profile-${GITHUB_SHA} /bin/bash -c 'make CXX=clang++-14 plugin-deps'
-      - name: 'Build Foundry'
-        run: docker exec -u github-user kevm-ci-profile-${GITHUB_SHA} /bin/bash -c 'make build-foundry'
+      - name: 'Build targets'
+        run: docker exec -u github-user kevm-ci-profile-${GITHUB_SHA} /bin/bash -c 'CXX=clang++-14 poetry -C kevm-pyk run kevm-dist --verbose build -j`nproc` plugin foundry'
       - name: 'Run profiling'
         run: |
           docker exec -u github-user kevm-ci-profile-${GITHUB_SHA} /bin/bash -c 'make profile'
@@ -112,16 +109,14 @@ jobs:
           container-name: kevm-ci-concrete-${{ github.sha }}
       - name: 'Build kevm-pyk'
         run: docker exec -u github-user kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make poetry'
-      - name: 'Build blockchain-k-plugin-deps'
-        run: docker exec -u github-user kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make CXX=clang++-14 plugin-deps'
-      - name: 'Build kevm'
-        run: docker exec -u github-user kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make build-kevm build-haskell build-llvm -j`nproc` RELEASE=true'
-      - name: 'Test kevm-pyk'
+      - name: 'Build targets'
+        run: docker exec -u github-user kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'CXX=clang++-14 poetry -C kevm-pyk run kevm-dist --verbose build -j`nproc` plugin llvm haskell'
+      - name: 'Test integration'
         run: docker exec -u github-user kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make test-integration'
       - name: 'Test conformance'
         run: docker exec -u github-user kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make test-conformance'
       - name: 'Test llvm krun'
-        run: docker exec -u github-user kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make test-interactive-run TEST_CONCRETE_BACKEND=llvm'
+        run: docker exec -u github-user kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make test-interactive'
       - name: 'Tear down Docker'
         if: always()
         run: |
@@ -142,8 +137,10 @@ jobs:
         uses: ./.github/actions/with-docker
         with:
           container-name: kevm-ci-haskell-${{ github.sha }}
-      - name: 'Build blockchain-k-plugin-deps'
-        run: docker exec -u github-user kevm-ci-haskell-${GITHUB_SHA} /bin/bash -c 'make CXX=clang++-14 plugin-deps'
+      - name: 'Build kevm-pyk'
+        run: docker exec -u github-user kevm-ci-haskell-${GITHUB_SHA} /bin/bash -c 'make poetry'
+      - name: 'Build targets'
+        run: docker exec -u github-user kevm-ci-haskell-${GITHUB_SHA} /bin/bash -c 'CXX=clang++-14 poetry -C kevm-pyk run kevm-dist --verbose build -j`nproc` plugin haskell'
       - name: 'Prove Haskell'
         run: docker exec -u github-user kevm-ci-haskell-${GITHUB_SHA} /bin/bash -c 'make test-prove PYTEST_ARGS=-vv'
       - name: 'Tear down Docker'
@@ -165,8 +162,10 @@ jobs:
         uses: ./.github/actions/with-docker
         with:
           container-name: kevm-ci-haskell-booster-${{ github.sha }}
-      - name: 'Build blockchain-k-plugin-deps'
-        run: docker exec -u github-user kevm-ci-haskell-booster-${GITHUB_SHA} /bin/bash -c 'make CXX=clang++-14 plugin-deps'
+      - name: 'Build kevm-pyk'
+        run: docker exec -u github-user kevm-ci-haskell-booster-${GITHUB_SHA} /bin/bash -c 'make poetry'
+      - name: 'Build targets'
+        run: docker exec -u github-user kevm-ci-haskell-booster-${GITHUB_SHA} /bin/bash -c 'CXX=clang++-14 poetry -C kevm-pyk run kevm-dist --verbose build -j`nproc` plugin haskell'
       - name: 'Prove Haskell'
         run: docker exec -u github-user kevm-ci-haskell-booster-${GITHUB_SHA} /bin/bash -c 'make test-prove PYTEST_ARGS="-vv --use-booster"'
       - name: 'Tear down Docker'
@@ -191,10 +190,8 @@ jobs:
           container-name: kevm-ci-foundry-${{ github.sha }}
       - name: 'Build kevm-pyk'
         run: docker exec -u github-user kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make poetry'
-      - name: 'Build blockchain-k-plugin-deps'
-        run: docker exec -u github-user kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make CXX=clang++-14 plugin-deps'
-      - name: 'Build Foundry'
-        run: docker exec -u github-user kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make build-foundry -j2'
+      - name: 'Build targets'
+        run: docker exec -u github-user kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'CXX=clang++-14 poetry -C kevm-pyk run kevm-dist --verbose build -j`nproc` plugin foundry'
       - name: 'Foundry Prove'
         run: docker exec -u github-user kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make test-foundry-prove PYTEST_ARGS=-vv'
       - name: 'Tear down Docker'
@@ -219,10 +216,8 @@ jobs:
           container-name: kevm-ci-booster-${{ github.sha }}
       - name: 'Build kevm-pyk'
         run: docker exec -u github-user kevm-ci-booster-${GITHUB_SHA} /bin/bash -c 'make poetry'
-      - name: 'Build blockchain-k-plugin-deps'
-        run: docker exec -u github-user kevm-ci-booster-${GITHUB_SHA} /bin/bash -c 'make CXX=clang++-14 plugin-deps'
-      - name: 'Build Foundry'
-        run: docker exec -u github-user kevm-ci-booster-${GITHUB_SHA} /bin/bash -c 'make build-foundry -j2'
+      - name: 'Build targets'
+        run: docker exec -u github-user kevm-ci-booster-${GITHUB_SHA} /bin/bash -c 'CXX=clang++-14 poetry -C kevm-pyk run kevm-dist --verbose build -j`nproc` plugin foundry'
       - name: 'Foundry Prove'
         run: docker exec -u github-user kevm-ci-booster-${GITHUB_SHA} /bin/bash -c 'make test-foundry-prove PYTEST_ARGS="-vv --use-booster"'
       - name: 'Tear down Docker'

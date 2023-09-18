@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 from pyk.cli.args import KCLIArgs
 from pyk.cli.utils import dir_path
 
-from .kompile import KompileTarget
+from .dist import DistTarget
 from .utils import arg_pair_of
 
 if TYPE_CHECKING:
@@ -38,7 +38,7 @@ class KEVMCLIArgs(KCLIArgs):
     @cached_property
     def target_args(self) -> ArgumentParser:
         args = ArgumentParser(add_help=False)
-        args.add_argument('--target', type=KompileTarget, choices=list(KompileTarget))
+        args.add_argument('--target', type=DistTarget, choices=list(DistTarget))
         return args
 
     @cached_property
