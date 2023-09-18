@@ -236,8 +236,7 @@ def test_pyk_prove(
         exec_prove(
             spec_file=spec_file,
             definition_dir=target.definition_dir,
-            includes=[str(include_dir) for include_dir in config.INCLUDE_DIRS]
-            + target.includes,  # TODO are target.includes required?
+            includes=[str(include_dir) for include_dir in config.INCLUDE_DIRS] + target.includes,
             save_directory=use_directory,
             smt_timeout=300,
             smt_retry_limit=10,
