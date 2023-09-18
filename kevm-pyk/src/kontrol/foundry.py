@@ -30,6 +30,7 @@ from pyk.proof.reachability import APRBMCProof, APRProof
 from pyk.proof.show import APRBMCProofNodePrinter, APRProofNodePrinter, APRProofShow
 from pyk.utils import ensure_dir_path, hash_str, run_process, single, unique
 
+from kevm_pyk.dist import DistTarget
 from kevm_pyk.kevm import KEVM, KEVMNodePrinter, KEVMSemantics
 from kevm_pyk.utils import (
     KDefinition__expand_macros,
@@ -548,7 +549,7 @@ def foundry_kompile(
         copied_requires = []
         copied_requires += [f'requires/{name}' for name in list(requires_paths.keys())]
         imports = ['FOUNDRY']
-        kevm = KEVM(KompileTarget.FOUNDRY.definition_dir)
+        kevm = KEVM(DistTarget.FOUNDRY.get())
         empty_config = kevm.definition.empty_config(Foundry.Sorts.FOUNDRY_CELL)
         bin_runtime_definition = _foundry_to_contract_def(
             empty_config=empty_config,
@@ -565,7 +566,7 @@ def foundry_kompile(
         )
 
         kevm = KEVM(
-            KompileTarget.FOUNDRY.definition_dir,
+            DistTarget.FOUNDRY.get(),
             extra_unparsing_modules=(bin_runtime_definition.all_modules + contract_main_definition.all_modules),
         )
         foundry_contracts_file.write_text(kevm.pretty_print(bin_runtime_definition, unalias=False) + '\n')
