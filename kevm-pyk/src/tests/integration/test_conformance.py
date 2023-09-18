@@ -9,7 +9,7 @@ from pyk.kore.prelude import int_dv
 from pyk.kore.syntax import App
 from pyk.kore.tools import PrintOutput, kore_print
 
-from kevm_pyk import config
+from kevm_pyk.dist import DistTarget
 from kevm_pyk.interpreter import interpret
 
 from ..utils import REPO_ROOT
@@ -50,7 +50,7 @@ def _assert_exit_code_zero(pattern: Pattern) -> None:
     if exit_code == int_dv(0):
         return
 
-    pretty = kore_print(pattern, definition_dir=config.LLVM_DIR, output=PrintOutput.PRETTY)
+    pretty = kore_print(pattern, definition_dir=DistTarget.LLVM.get(), output=PrintOutput.PRETTY)
     assert pretty == GOLDEN
 
 
