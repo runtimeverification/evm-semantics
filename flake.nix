@@ -59,7 +59,7 @@
           prev.stdenv.mkDerivation {
             pname = "kevm";
             version = self.rev or "dirty";
-            buildInputs = buildInputs final k;
+            buildInputs = buildInputs final k ++ [ final.kevm-pyk ];
             nativeBuildInputs = [ prev.makeWrapper ];
 
             src = prev.stdenv.mkDerivation {
@@ -86,34 +86,31 @@
 
             dontUseCmakeConfigure = true;
 
-            postPatch = ''
-              substituteInPlace ./bin/kevm \
-                --replace 'kevm-pyk' '${final.kevm-pyk}/bin/kevm-pyk'
-              substituteInPlace ./bin/kevm \
-                --replace 'kontrol' '${final.kevm-pyk}/bin/kontrol'
-            '';
-
-            buildFlagsArray = "NIX_LIBS=${nixLibs prev}";
-
-            buildFlags = [ "KEVM_PYK=${final.kevm-pyk}/bin/kevm-pyk" ]
-              ++ prev.lib.optional
-              (prev.stdenv.isAarch64 && prev.stdenv.isDarwin)
-              "APPLE_SILICON=true";
             enableParallelBuilding = true;
 
-            preBuild = ''
-              mkdir -p .build/usr/lib/kevm/
-              ln -s ${prev.blockchain-k-plugin}/lib/* .build/usr/lib/kevm/
+            buildPhase = ''
+              XDG_CACHE_HOME=$(pwd) NIX_LIBS="${nixLibs prev}" ${
+                prev.lib.optionalString
+                (prev.stdenv.isAarch64 && prev.stdenv.isDarwin)
+                "APPLE_SILICON=true"
+              } kevm-dist build -j4
             '';
 
             installPhase = ''
               mkdir -p $out
-              mv .build/usr/* $out/
-              wrapProgram $out/bin/kevm --prefix PATH : ${
-                prev.lib.makeBinPath [ (solc.mkDefault final final.solc_0_8_13) final.foundry-bin prev.which k ]
-              } --set NIX_LIBS "${nixLibs prev}"
-              ln -s ${k} $out/lib/kevm/kframework
-
+              cp -r ./evm-semantics-*/* $out/
+              mkdir -p $out/bin
+              makeWrapper ${final.kevm-pyk}/bin/kevm $out/bin/kevm --prefix PATH : ${
+                prev.lib.makeBinPath [ prev.which k ]
+              } --set NIX_LIBS "${nixLibs prev}" --set KEVM_DIST_DIR $out
+              makeWrapper ${final.kevm-pyk}/bin/kontrol $out/bin/kontrol --prefix PATH : ${
+                prev.lib.makeBinPath [
+                  (solc.mkDefault final final.solc_0_8_13)
+                  final.foundry-bin
+                  prev.which
+                  k
+                ]
+              } --set NIX_LIBS "${nixLibs prev}" --set KEVM_DIST_DIR $out
             '';
           };
 
@@ -151,15 +148,27 @@
           projectDir = ./kevm-pyk;
 
           postPatch = ''
-              substituteInPlace ./src/kontrol/foundry.py \
-                --replace "'forge', 'build'," "'forge', 'build', '--no-auto-detect',"
-            '';
+            substituteInPlace ./src/kontrol/foundry.py \
+              --replace "'forge', 'build'," "'forge', 'build', '--no-auto-detect',"
+          '';
 
           overrides = prev.poetry2nix.overrides.withDefaults
-            (finalPython: prevPython: { pyk = prev.pyk-python310; });
+            (finalPython: prevPython: {
+              pyk = prev.pyk-python310;
+              xdg-base-dirs = prevPython.xdg-base-dirs.overridePythonAttrs
+                (old: {
+                  propagatedBuildInputs = (old.propagatedBuildInputs or [ ])
+                    ++ [ finalPython.poetry ];
+                });
+            });
           groups = [ ];
           # We remove `"dev"` from `checkGroups`, so that poetry2nix does not try to resolve dev dependencies.
           checkGroups = [ ];
+
+          postInstall = ''
+            mkdir -p $out/${prev.python310.sitePackages}/kevm_pyk/kproj/plugin
+            cp -rv ${prev.blockchain-k-plugin-src}/* $out/${prev.python310.sitePackages}/kevm_pyk/kproj/plugin/
+          '';
         };
 
       };
@@ -173,7 +182,10 @@
         pkgs = import nixpkgs {
           inherit system;
           overlays = [
-            (final: prev: { llvm-backend-release = false; poetry-nixpkgs = prev.poetry; })
+            (final: prev: {
+              llvm-backend-release = false;
+              poetry-nixpkgs = prev.poetry;
+            })
             k-framework.overlay
             blockchain-k-plugin.overlay
             poetry2nix.overlay
