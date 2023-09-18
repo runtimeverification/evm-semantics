@@ -35,7 +35,7 @@ _LOG_FORMAT: Final = '%(levelname)s %(asctime)s %(name)s - %(message)s'
 
 
 def _dist_dir() -> Path:
-    dist_dir_env = os.getenv('KEVM_DIST_DIR')
+    dist_dir_env = os.getenv('KEVM_DIST_DIR')  # Used by Nix flake to set the output
     if dist_dir_env:
         return Path(dist_dir_env).resolve()
 
