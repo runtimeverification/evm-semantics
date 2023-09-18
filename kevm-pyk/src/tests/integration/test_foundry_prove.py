@@ -321,7 +321,7 @@ def test_foundry_remove_node(
 
     proof = single(foundry.proofs_with_test(test))
     assert type(proof) is APRProof
-    assert proof.is_pending
+    assert proof.is_proof_pending
 
     prove_res = foundry_prove(
         foundry_root,
@@ -391,7 +391,7 @@ def test_foundry_resume_proof(
     )
 
     proof = foundry.get_apr_proof(f'{test}:{id}')
-    assert proof.is_pending
+    assert proof.is_proof_pending
 
     prove_res = foundry_prove(
         foundry_root,

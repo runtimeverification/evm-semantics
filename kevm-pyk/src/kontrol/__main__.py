@@ -205,7 +205,7 @@ def exec_foundry_prove(
     for proof in results:
         if proof.passed:
             print(f'PROOF PASSED: {proof.id}')
-        elif proof.is_pending:
+        elif proof.is_proof_pending:
             print(f'PROOF PENDING: {proof.id}')
         elif proof.failed:
             print(f'PROOF FAILED: {proof.id}')
