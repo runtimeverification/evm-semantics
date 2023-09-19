@@ -32,7 +32,7 @@ jobs:
           # User subdir: <path> if you need to be in a lower folder to build something. Otherwise leave as default (.)
           # subdir: <path to sub folder to mount into container instead of top level repository checkout>
       - name: 'Build devShell'
-        env: 
+        env:
           CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_PUBLIC_TOKEN }}
         run: cachix watch-exec k-framework -- nix build --extra-experimental-features 'nix-command flakes' .#devShell.x86_64-linux.inputDerivation --no-link
       - name: 'Build k-deps'
