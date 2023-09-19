@@ -7,16 +7,11 @@ module VERIFICATION
     imports DSS-BIN-RUNTIME
     imports DSS-STORAGE
     imports LEMMAS-MCD
-
+    imports LEMMAS-MCD-SYNTAX
 endmodule
 
-module LEMMAS-MCD
-    imports LEMMAS-MCD-HASKELL
-
-endmodule
-
-module LEMMAS-MCD-SYNTAX [symbolic]
-    imports LEMMAS
+module LEMMAS-MCD-SYNTAX
+    imports EVM
 
   // ########################
   // Constants
@@ -52,8 +47,10 @@ module LEMMAS-MCD-SYNTAX [symbolic]
 
 endmodule
 
-module LEMMAS-MCD-HASKELL [symbolic, kore]
-    imports LEMMAS-MCD-COMMON
+module LEMMAS-MCD [symbolic, kore]
+    imports LEMMAS
+    imports LEMMAS-MCD-SYNTAX
+    imports WORD-PACK
 
   // ########################
   // Arithmetic
@@ -139,13 +136,6 @@ module LEMMAS-MCD-HASKELL [symbolic, kore]
                                                                                                                        andBool K +Int 1                 ==Int K'                                                                                [concrete(K, K', V, VS'), simplification]
     rule { (M:Map [K <- V1]) #Equals (M [K <- V2]) } => { V1 #Equals V2 }
          [simplification]
-
-endmodule
-
-
-module LEMMAS-MCD-COMMON [symbolic]
-    imports LEMMAS-MCD-SYNTAX
-    imports WORD-PACK
 
   // ########################
   // Buffer Reasoning
