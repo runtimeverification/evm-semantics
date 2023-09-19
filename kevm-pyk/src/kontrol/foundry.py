@@ -11,7 +11,7 @@ from functools import cached_property
 from os import listdir
 from pathlib import Path
 from subprocess import CalledProcessError
-from typing import TYPE_CHECKING, Callable
+from typing import TYPE_CHECKING
 
 import tomlkit
 from pyk.cterm import CTerm
@@ -46,7 +46,7 @@ from kevm_pyk.utils import (
 from .solc_to_k import Contract, contract_to_main_module, contract_to_verification_module
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
+    from collections.abc import Callable, Iterable
     from typing import Any, Final
 
     from pyk.kast.inner import KInner
