@@ -6,7 +6,9 @@ import os
 import re
 import shutil
 import sys
+from abc import ABC, abstractmethod
 from concurrent.futures import ThreadPoolExecutor, wait
+from dataclasses import dataclass
 from functools import cached_property
 from os import listdir
 from pathlib import Path
@@ -818,62 +820,73 @@ def foundry_prove(
                 smt_retry_limit=smt_retry_limit,
             )
 
-        class Task:
-            ...
+        class Task(ABC):
 
+            @property
+            @abstractmethod
+            def name(self) -> str:
+                ...
+
+            @abstractmethod
+            def submit(self, executor: ThreadPoolExecutor) -> Future:
+                ...
+
+        @dataclass(frozen=True)
         class CreateAndRunTask(Task):
-            _test: str
-            _id: str | None
+            test: str
+            id: str | None
 
-            def __init__(self, test: str, id: str | None):
-                self._test = test
-                self._id = id
+            def submit(self, executor: ThreadPoolExecutor) -> Future:
+                contract, method = self.test.split('.')
+                return executor.submit(_init_and_run_proof, (contract, method, self.id))
 
+            @property
+            def name(self) -> str:
+                return self.test
+
+        @dataclass(frozen=True)
         class RunTask(Task):
-            _proof: Proof
-            _port: int
+            proof: Proof
+            port: int
 
-            def __init__(self, proof: Proof, port: int):
-                self._proof = proof
-                self._port = port
+            def submit(self, executor: ThreadPoolExecutor) -> Future:
+                return executor.submit(_run_proof, (self.port, self.proof))
+
+            @property
+            def name(self) -> str:
+                return self.proof.id
 
         results = []
-        futures: dict[str, Future] = {}
         executor = ThreadPoolExecutor(max_workers=workers)
 
-        tasks: list[Task] = [CreateAndRunTask(test, id) for test, id in tests]
+        pending_futures: dict[str, Future] = {}
+        task: Task
+        for test, id in tests:
+            task = CreateAndRunTask(test, id)
+            pending_futures[task.name] = task.submit(executor)
+
         base_proofs = {test: test for test, _ in tests}
         servers = {}
 
         for test, _ in tests:
             servers[test] = create_server()
 
-        while len(tasks) > 0 or len(futures) > 0:
-            if len(tasks) > 0:
-                task = tasks.pop()
+        while pending_futures:
+            done_futures = [(_proof, future) for (_proof, future) in pending_futures.items() if future.done()]
+            pending_futures = {_proof: future for (_proof, future) in pending_futures.items() if not future.done()}
 
-                if type(task) is CreateAndRunTask:
-                    contract, method = task._test.split('.')
+            for _proof, future in done_futures:
+                proof = future.result()
+                results.append(proof)
 
-                    futures[task._test] = executor.submit(_init_and_run_proof, (contract, method, task._id))
+                subproofs = proof.subproofs
+                for subproof in subproofs:
+                    base_proofs[subproof.id] = base_proofs[_proof]
+                    port = servers[base_proofs[subproof.id]].port
+                    task = RunTask(subproof, port)
+                    pending_futures[task.name] = task.submit(executor)
 
-                elif type(task) is RunTask:
-                    futures[task._proof.id] = executor.submit(_run_proof, (task._port, task._proof))
-
-            if len(futures) > 0:
-                done_futures = [(_proof, future) for (_proof, future) in futures.items() if future.done()]
-                futures = {_proof: future for (_proof, future) in futures.items() if not future.done()}
-                for _proof, future in done_futures:
-                    proof = future.result()
-                    results.append(proof)
-
-                    subproofs = proof.subproofs
-                    for subproof in subproofs:
-                        base_proofs[subproof.id] = base_proofs[_proof]
-                        port = servers[base_proofs[subproof.id]].port
-                        tasks.append(RunTask(subproof, port))
-
-            wait(futures.values())
+            wait(pending_futures.values(), return_when='FIRST_COMPLETED')
         executor.shutdown()
 
         return results
