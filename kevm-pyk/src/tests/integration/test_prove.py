@@ -256,7 +256,7 @@ def test_pyk_prove(
         exec_prove(
             spec_file=spec_file,
             definition_dir=target.definition_dir,
-            includes=[str(config.INCLUDE_DIR)] + target.includes,  # TODO are target.includes required?
+            includes=[str(include_dir) for include_dir in config.INCLUDE_DIRS] + target.includes,
             save_directory=use_directory,
             smt_timeout=300,
             smt_retry_limit=10,
@@ -328,7 +328,7 @@ def test_legacy_prove(
     try:
         target = kompiled_target_for(spec_file, False)
         kevm = KEVM(target.definition_dir, use_directory=use_directory)
-        actual = kevm.prove(spec_file=spec_file, include_dirs=[config.INCLUDE_DIR] + target.include_dirs, **args)
+        actual = kevm.prove(spec_file=spec_file, include_dirs=list(config.INCLUDE_DIRS) + target.include_dirs, **args)
     except BaseException:
         raise
     finally:

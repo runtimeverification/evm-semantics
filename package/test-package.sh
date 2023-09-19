@@ -32,7 +32,7 @@ if ! ${APPLE_SILICON:-false}; then
 fi
 
 
-kevm solc-to-k tests/specs/examples/ERC20.sol ERC20 --target haskell --main-module ERC20-VERIFICATION > tests/specs/examples/erc20-bin-runtime.k
+kontrol solc-to-k tests/specs/examples/ERC20.sol ERC20 --target haskell --main-module ERC20-VERIFICATION > tests/specs/examples/erc20-bin-runtime.k
 kevm kompile tests/specs/examples/erc20-spec.md                 \
     --target haskell                                            \
     --output-definition tests/specs/examples/erc20-spec/haskell \
