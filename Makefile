@@ -36,25 +36,25 @@ PYTEST_PARALLEL := 8
 PYTEST_ARGS     :=
 
 test-foundry-prove: poetry
-	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+="-k test_foundry_prove.py -n$(PYTEST_PARALLEL) $(PYTEST_ARGS)"
+	$(MAKE) -C kevm-pyk/ test-integration PYTEST_ARGS+="-k test_foundry_prove.py -n$(PYTEST_PARALLEL)"
 
 
 # Conformance Tests
 
 test-conformance: poetry
-	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+="-k test_conformance.py -n$(PYTEST_PARALLEL) $(PYTEST_ARGS)"
+	$(MAKE) -C kevm-pyk/ test-integration PYTEST_ARGS+="-k test_conformance.py -n$(PYTEST_PARALLEL)"
 
 test-vm: poetry
-	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+="-k test_vm -n$(PYTEST_PARALLEL) $(PYTEST_ARGS)"
+	$(MAKE) -C kevm-pyk/ test-integration PYTEST_ARGS+="-k test_vm -n$(PYTEST_PARALLEL)"
 
 test-rest-vm: poetry
-	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+="-k test_rest_vm -n$(PYTEST_PARALLEL) $(PYTEST_ARGS)"
+	$(MAKE) -C kevm-pyk/ test-integration PYTEST_ARGS+="-k test_rest_vm -n$(PYTEST_PARALLEL)"
 
 test-bchain: poetry
-	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+="-k test_bchain -n$(PYTEST_PARALLEL) $(PYTEST_ARGS)"
+	$(MAKE) -C kevm-pyk/ test-integration PYTEST_ARGS+="-k test_bchain -n$(PYTEST_PARALLEL)"
 
 test-rest-bchain: poetry
-	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+="-k test_rest_bchain -n$(PYTEST_PARALLEL) $(PYTEST_ARGS)"
+	$(MAKE) -C kevm-pyk/ test-integration PYTEST_ARGS+="-k test_rest_bchain -n$(PYTEST_PARALLEL)"
 
 
 # Proof Tests
@@ -62,10 +62,10 @@ test-rest-bchain: poetry
 test-prove: test-prove-pyk test-prove-legacy
 
 test-prove-pyk: tests/specs/opcodes/evm-optimizations-spec.md poetry
-	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+="-k test_pyk_prove -n$(PYTEST_PARALLEL) $(PYTEST_ARGS)"
+	$(MAKE) -C kevm-pyk/ test-integration PYTEST_ARGS+="-k test_pyk_prove -n$(PYTEST_PARALLEL)"
 
 test-prove-legacy: tests/specs/opcodes/evm-optimizations-spec.md poetry
-	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+="-k test_legacy_prove -n$(PYTEST_PARALLEL) $(PYTEST_ARGS)"
+	$(MAKE) -C kevm-pyk/ test-integration PYTEST_ARGS+="-k test_legacy_prove -n$(PYTEST_PARALLEL)"
 
 # to generate optimizations.md, run: ./optimizer/optimize.sh &> output
 tests/specs/opcodes/evm-optimizations-spec.md:
@@ -75,10 +75,10 @@ tests/specs/opcodes/evm-optimizations-spec.md:
 # Integration Tests
 
 test-integration: poetry
-	$(MAKE) -C kevm-pyk/ test-integration TEST_ARGS+='-k "(test_kast.py or test_run.py or test_solc_to_k.py)" -n$(PYTEST_PARALLEL) $(PYTEST_ARGS)'
+	$(MAKE) -C kevm-pyk/ test-integration PYTEST_ARGS+='-k "(test_kast.py or test_run.py or test_solc_to_k.py)" -n$(PYTEST_PARALLEL)'
 
 profile: poetry
-	$(MAKE) -C kevm-pyk/ profile PROF_ARGS+='-n$(PYTEST_PARALLEL) $(PYTEST_ARGS)'
+	$(MAKE) -C kevm-pyk/ profile PROF_ARGS+='-n$(PYTEST_PARALLEL)'
 	find /tmp/pytest-of-$$(whoami)/pytest-current/ -type f -name '*.prof' | sort | xargs tail -n +1
 
 
