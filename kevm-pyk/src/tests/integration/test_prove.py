@@ -104,7 +104,6 @@ KOMPILE_MAIN_FILE: Final = {
 }
 
 KOMPILE_MAIN_MODULE: Final = {
-    'erc20/functional-spec.k': 'FUNCTIONAL-SPEC-SYNTAX',
     'opcodes/evm-optimizations-spec.md': 'EVM-OPTIMIZATIONS-SPEC-LEMMAS',
 }
 
