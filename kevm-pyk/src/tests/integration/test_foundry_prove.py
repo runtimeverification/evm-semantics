@@ -9,7 +9,7 @@ from pyk.kore.rpc import kore_server
 from pyk.proof import APRProof
 from pyk.utils import run_process, single
 
-from kontrol.foundry import (
+from kontrolx.foundry import (
     Foundry,
     foundry_kompile,
     foundry_merge_nodes,
