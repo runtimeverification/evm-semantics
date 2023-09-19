@@ -33,20 +33,6 @@ class KompileTarget(Enum):
     FOUNDRY = 'foundry'
 
     @property
-    def definition_dir(self) -> Path:
-        match self:
-            case self.LLVM:
-                return config.LLVM_DIR
-            case self.HASKELL:
-                return config.HASKELL_DIR
-            case self.HASKELL_STANDALONE:
-                return config.HASKELL_STANDALONE_DIR
-            case self.FOUNDRY:
-                return config.FOUNDRY_DIR
-            case _:
-                raise AssertionError()
-
-    @property
     def md_selector(self) -> str:
         match self:
             case self.LLVM:
@@ -59,8 +45,8 @@ class KompileTarget(Enum):
 
 def kevm_kompile(
     target: KompileTarget,
+    output_dir: Path,
     *,
-    output_dir: Path | None = None,
     main_file: Path,
     main_module: str | None,
     syntax_module: str | None,
@@ -75,14 +61,11 @@ def kevm_kompile(
     debug: bool = False,
     verbose: bool = False,
 ) -> Path:
-    if output_dir is None:
-        output_dir = target.definition_dir
-
     if llvm_library is None:
         llvm_library = output_dir / 'llvm-library'
 
     include_dirs = [Path(include) for include in includes]
-    include_dirs += [config.INCLUDE_DIR]
+    include_dirs += config.INCLUDE_DIRS
 
     base_args = KompileArgs(
         main_file=main_file,
@@ -110,14 +93,14 @@ def kevm_kompile(
                     llvm_kompile_type=llvm_kompile_type,
                     enable_llvm_debug=enable_llvm_debug,
                 )
-                return kompile(output_dir=output_dir or target.definition_dir, debug=debug, verbose=verbose)
+                return kompile(output_dir=output_dir, debug=debug, verbose=verbose)
 
             case KompileTarget.HASKELL | KompileTarget.FOUNDRY | KompileTarget.HASKELL_STANDALONE:
                 kompile = HaskellKompile(
                     base_args=base_args,
                     haskell_binary=haskell_binary,
                 )
-                return kompile(output_dir=output_dir or target.definition_dir, debug=debug, verbose=verbose)
+                return kompile(output_dir=output_dir, debug=debug, verbose=verbose)
 
             case KompileTarget.HASKELL_BOOSTER:
                 ccopts = list(ccopts) + _lib_ccopts(kernel)
@@ -163,24 +146,28 @@ def kevm_kompile(
 
 
 def _lib_ccopts(kernel: str) -> list[str]:
+    from . import dist
+
     ccopts = ['-g', '-std=c++17']
 
     ccopts += ['-lssl', '-lcrypto']
 
-    libff_dir = config.KEVM_LIB / 'libff'
+    plugin_dir = dist.check_plugin()
+
+    libff_dir = plugin_dir / 'libff'
     ccopts += [f'{libff_dir}/lib/libff.a', f'-I{libff_dir}/include']
 
-    libcryptopp_dir = config.KEVM_LIB / 'libcryptopp'
+    libcryptopp_dir = plugin_dir / 'libcryptopp'
     ccopts += [f'{libcryptopp_dir}/lib/libcryptopp.a', f'-I{libcryptopp_dir}/include']
 
-    libsecp256k1_dir = config.KEVM_LIB / 'libsecp256k1'
+    libsecp256k1_dir = plugin_dir / 'libsecp256k1'
     ccopts += [f'{libsecp256k1_dir}/lib/libsecp256k1.a', f'-I{libsecp256k1_dir}/include']
 
-    plugin_include = config.KEVM_LIB / 'blockchain-k-plugin/include'
+    plugin_include = plugin_dir / 'plugin-c'
     ccopts += [
-        f'{plugin_include}/c/plugin_util.cpp',
-        f'{plugin_include}/c/crypto.cpp',
-        f'{plugin_include}/c/blake2.cpp',
+        f'{plugin_include}/plugin_util.cpp',
+        f'{plugin_include}/crypto.cpp',
+        f'{plugin_include}/blake2.cpp',
     ]
 
     if kernel == 'darwin':
