@@ -6,8 +6,8 @@ from typing import TYPE_CHECKING
 
 from pyk.proof.proof import Proof
 
-from kontrol.foundry import foundry_list
-from kontrol.solc_to_k import Contract
+from kontrolx.foundry import foundry_list
+from kontrolx.solc_to_k import Contract
 
 from .utils import TEST_DATA_DIR
 
@@ -53,7 +53,7 @@ class FoundryMock:
 
 
 def test_foundry_list(mocker: MockerFixture, update_expected_output: bool) -> None:
-    foundry_mock = mocker.patch('kontrol.foundry.Foundry')
+    foundry_mock = mocker.patch('kontrolx.foundry.Foundry')
     foundry_mock.return_value = FoundryMock()
 
     with LIST_EXPECTED.open() as f:
