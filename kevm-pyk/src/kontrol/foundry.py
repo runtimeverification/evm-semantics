@@ -818,7 +818,6 @@ def foundry_prove(
             )
 
         class Task(ABC):
-
             @property
             @abstractmethod
             def name(self) -> str:
