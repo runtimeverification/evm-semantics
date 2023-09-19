@@ -424,7 +424,7 @@ class Foundry:
             return self.free_proof_version(test)
 
         if user_specified_version:
-            _LOGGER.info(f'Using user-specified versions {user_specified_version} for test {test}')
+            _LOGGER.info(f'Using user-specified version {user_specified_version} for test {test}')
             if not Proof.proof_data_exists(f'{test}:{user_specified_version}', self.proofs_dir):
                 raise ValueError(f'The specified version {user_specified_version} of proof {test} does not exist.')
             if not method.up_to_date(self.digest_file):
