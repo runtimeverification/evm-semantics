@@ -471,9 +471,8 @@ class Foundry:
         """
         find the lowest proof id that is not used yet
         """
-        proof_ids = listdir(self.proofs_dir)
-        versions = {int(pid.split(':')[1]) for pid in proof_ids if pid.split(':')[0] == test}
-        return max(versions, default=-1) + 1
+        latest_version = self.latest_proof_version(test)
+        return latest_version + 1 if latest_version is not None else 0
 
 
 def foundry_kompile(
