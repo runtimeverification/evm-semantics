@@ -3,12 +3,6 @@ requires "evm.md"
 module VERIFICATION
     imports EVM
 
-    syntax StepSort ::= MerkleTree | String | Int
-    syntax    KItem ::= runMerkle ( StepSort )
-                      | doneMerkle( StepSort )
- // ------------------------------------------
-    rule <k> runMerkle( T ) => doneMerkle( T ) ... </k>
-
     syntax MerkleTree ::= "#initTree" [macro]
  // -----------------------------------------
     rule #initTree => MerkleUpdateMap( .MerkleTree,
@@ -25,61 +19,56 @@ module MERKLE-SPEC
     ////////////////////
     // Symbolic Tests //
     ////////////////////
-    claim <k> runMerkle ( MerkleUpdate( .MerkleTree, .Bytes, V ) )
-           => doneMerkle( MerkleLeaf( .Bytes, V ) ) </k>
-      requires V =/=String ""
+    claim MerkleUpdate( .MerkleTree, .Bytes, V ) => MerkleLeaf( .Bytes, V ) requires V =/=String ""
 
     // Update on MerkleLeaf
-    claim <k> runMerkle ( MerkleUpdate( MerkleLeaf( #parseByteStack("0x0607"), _ ), #parseByteStack("0x0607"), V ) )
-           => doneMerkle( MerkleLeaf ( #parseByteStack("0x0607"), V ) ) </k>
+    claim MerkleUpdate( MerkleLeaf( #parseByteStack("0x0607"), _ ), #parseByteStack("0x0607"), V ) => MerkleLeaf ( #parseByteStack("0x0607"), V )
       requires V =/=String ""
 
-    claim <k> runMerkle ( MerkleUpdate( MerkleLeaf( #parseByteStack("0x0607"), _ ), #parseByteStack("0x0608"), V ) )
-           => doneMerkle( MerkleExtension( #parseByteStack("0x06"), ?_ ) ) </k>
+    claim MerkleUpdate( MerkleLeaf( #parseByteStack("0x0607"), _ ), #parseByteStack("0x0608"), V )
+       => MerkleExtension( #parseByteStack("0x06"), ?_ )
       requires V =/=String ""
 
-    claim <k> runMerkle ( MerkleUpdate( MerkleLeaf( #parseByteStack("0x05"), _ ), #parseByteStack("0x06"), V ) )
-           => doneMerkle( MerkleBranch( ?_, ?_ ) ) </k>
+    claim MerkleUpdate( MerkleLeaf( #parseByteStack("0x05"), _ ), #parseByteStack("0x06"), V )
+       => MerkleBranch( ?_, ?_ )
       requires V =/=String ""
 
     // Update on MerkleExtension
-    claim <k> runMerkle ( MerkleUpdate( MerkleExtension( #parseByteStack("0x06"), .MerkleTree ), #parseByteStack("0x06"), V ) )
-           => doneMerkle( MerkleExtension( #parseByteStack("0x06"), MerkleLeaf( .Bytes, V ) ) ) </k>
+    claim MerkleUpdate( MerkleExtension( #parseByteStack("0x06"), .MerkleTree ), #parseByteStack("0x06"), V )
+       => MerkleExtension( #parseByteStack("0x06"), MerkleLeaf( .Bytes, V ) )
       requires V =/=String ""
 
-    claim <k> runMerkle ( MerkleUpdate( MerkleExtension( #parseByteStack("0x07"), _ ), #parseByteStack("0x06"), V ) )
-           => doneMerkle( MerkleBranch( ?_, ?_ ) ) </k>
+    claim MerkleUpdate( MerkleExtension( #parseByteStack("0x07"), _ ), #parseByteStack("0x06"), V )
+       => MerkleBranch( ?_, ?_ )
       requires V =/=String ""
 
-    claim <k> runMerkle ( MerkleUpdate( MerkleExtension( #parseByteStack("0x0708"), _ ), #parseByteStack("0x0709"), V ) )
-           => doneMerkle( MerkleExtension( #parseByteStack("0x07"), MerkleBranch( ?_, ?_ ) ) ) </k>
+    claim MerkleUpdate( MerkleExtension( #parseByteStack("0x0708"), _ ), #parseByteStack("0x0709"), V )
+       => MerkleExtension( #parseByteStack("0x07"), MerkleBranch( ?_, ?_ ) )
       requires V =/=String ""
 
     // Update on MerkleBranch
-    claim <k> runMerkle ( MerkleUpdate( MerkleBranch( M, _ ), .Bytes, V ) )
-           => doneMerkle( MerkleBranch( M, V ) ) </k>
-      requires V =/=String ""
+    claim MerkleUpdate( MerkleBranch( M, _ ), .Bytes, V ) => MerkleBranch( M, V ) requires V =/=String ""
 
-    claim <k> runMerkle  ( #merkleExtensionBuilder ( #parseByteStack("0e") , #parseByteStack("") , "verb" , #parseByteStack("0f0e") , "coin" ) )
-           => doneMerkle ( MerkleExtension ( #parseByteStack("0e") , MerkleBranch ( 15 |-> MerkleLeaf ( #parseByteStack("0e") , "coin" ) , "verb" ) ) ) </k>
+    claim #merkleExtensionBuilder ( #parseByteStack("0e") , #parseByteStack("") , "verb" , #parseByteStack("0f0e") , "coin" )
+       => MerkleExtension ( #parseByteStack("0e") , MerkleBranch ( 15 |-> MerkleLeaf ( #parseByteStack("0e") , "coin" ) , "verb" ) )
 
     ////////////////////////
     // MerkleDelete Tests //
     ////////////////////////
 
-    claim <k> runMerkle ( Keccak256( #rlpEncodeMerkleTree( MerkleUpdate( #initTree, "de", "" ) ) ) )
-           => doneMerkle( "4ba393b447e1c78b2f647e10ae687de132f01f49d67e396bcdea4da2de05370f" ) </k>
+    claim Keccak256( #rlpEncodeMerkleTree( MerkleUpdate( #initTree, "de", "" ) ) )
+       => "4ba393b447e1c78b2f647e10ae687de132f01f49d67e396bcdea4da2de05370f"
 
-    claim <k> runMerkle ( Keccak256( #rlpEncodeMerkleTree( MerkleUpdate( #initTree, "becfe", "" ) ) ) )
-           => doneMerkle( "4ba393b447e1c78b2f647e10ae687de132f01f49d67e396bcdea4da2de05370f" ) </k>
+    claim Keccak256( #rlpEncodeMerkleTree( MerkleUpdate( #initTree, "becfe", "" ) ) )
+       => "4ba393b447e1c78b2f647e10ae687de132f01f49d67e396bcdea4da2de05370f"
 
-    claim <k> runMerkle ( Keccak256( #rlpEncodeMerkleTree( MerkleUpdate( #initTree, "def", "" ) ) ) )
-           => doneMerkle( "4ba393b447e1c78b2f647e10ae687de132f01f49d67e396bcdea4da2de05370f" ) </k>
+    claim Keccak256( #rlpEncodeMerkleTree( MerkleUpdate( #initTree, "def", "" ) ) )
+       => "4ba393b447e1c78b2f647e10ae687de132f01f49d67e396bcdea4da2de05370f"
 
-    claim <k> runMerkle ( Keccak256( #rlpEncodeMerkleTree( MerkleUpdate( #initTree, "defe", "" ) ) ) )
-           => doneMerkle( "4ba393b447e1c78b2f647e10ae687de132f01f49d67e396bcdea4da2de05370f" ) </k>
+    claim Keccak256( #rlpEncodeMerkleTree( MerkleUpdate( #initTree, "defe", "" ) ) )
+       => "4ba393b447e1c78b2f647e10ae687de132f01f49d67e396bcdea4da2de05370f"
 
-    claim <k> runMerkle ( Keccak256( #rlpEncodeMerkleTree( MerkleUpdate( MerkleUpdate( #initTree, "defe", "" ), "becfe", "" ) ) ) )
-           => doneMerkle( "4ba393b447e1c78b2f647e10ae687de132f01f49d67e396bcdea4da2de05370f" ) </k>
+    claim Keccak256( #rlpEncodeMerkleTree( MerkleUpdate( MerkleUpdate( #initTree, "defe", "" ), "becfe", "" ) ) )
+       => "4ba393b447e1c78b2f647e10ae687de132f01f49d67e396bcdea4da2de05370f"
 
 endmodule
