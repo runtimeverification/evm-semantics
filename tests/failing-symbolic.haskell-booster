@@ -1,7 +1,5 @@
 tests/specs/benchmarks/ecrecoverloop00-sig1-invalid-spec.k
-tests/specs/benchmarks/ecrecoverloop00-sigs-valid-spec.k
 tests/specs/bihu/collectToken-spec.k
-tests/specs/erc20/hkg/transferFrom-failure-2-spec.k
 tests/specs/examples/erc721-spec.md
 tests/specs/examples/sum-to-n-foundry-spec.k
 tests/specs/examples/sum-to-n-spec.k
