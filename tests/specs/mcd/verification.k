@@ -42,23 +42,6 @@ module LEMMAS-MCD-SYNTAX [symbolic]
  // -------------------------------------------------
     rule #string2Word(S) => #asWord(#padRightToWidth(32, #parseByteStackRaw(S)))
 
-    syntax Int ::= nthbyteof ( Int , Int , Int ) [function, smtlib(smt_nthbyteof)]
- // ------------------------------------------------------------------------------
-    rule nthbyteof(V, I, N) => nthbyteof(V /Int 256, I, N -Int 1) when N  >Int (I +Int 1) [concrete]
-    rule nthbyteof(V, I, N) =>           V modInt 256             when N ==Int (I +Int 1) [concrete]
-
-  // ########################
-  // Buffer Reasoning
-  // ########################
-
-    syntax Bytes ::= #asByteStackInWidth    ( Int, Int )             [function]
-                   | #asByteStackInWidthaux ( Int, Int, Int, Bytes ) [function]
- // ---------------------------------------------------------------------------
-    rule #asByteStackInWidth(X, N) => #asByteStackInWidthaux(X, N -Int 1, N, .Bytes)
-
-    rule #asByteStackInWidthaux(X, I, N, WS) => #asByteStackInWidthaux(X, I -Int 1, N, nthbyteof(X, I, N) : WS) when I >Int 0
-    rule #asByteStackInWidthaux(X, 0, N, WS) => nthbyteof(X, 0, N) : WS
-
   // ########################
   // Arithmetic
   // ########################
