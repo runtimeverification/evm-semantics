@@ -3,7 +3,6 @@ tests/specs/bihu/collectToken-spec.k
 tests/specs/examples/erc721-spec.md
 tests/specs/examples/sum-to-n-foundry-spec.k
 tests/specs/examples/sum-to-n-spec.k
-tests/specs/functional/lemmas-spec.k
 tests/specs/mcd/dstoken-burn-self-fail-rough-spec.k
 tests/specs/mcd/dstoken-transferfrom-fail-rough-spec.k
 tests/specs/mcd/end-cash-pass-rough-spec.k
