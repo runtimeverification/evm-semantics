@@ -21,6 +21,7 @@ jobs:
         with:
           submodules: recursive
           token: ${{ secrets.JENKINS_GITHUB_PAT }}
+          fetch-depth: 0
       - name: 'Configure GitHub user'
         run: |
           git config user.name devops
@@ -38,12 +39,6 @@ jobs:
           K_VERSION=$(poetry -C kevm-pyk run python3 -c 'import pyk; print(pyk.K_VERSION)')
           echo ${K_VERSION} > deps/k_release
           git add deps/k_release && git commit -m "deps/k_release: sync release file version ${K_VERSION}" || true
-      - name: 'Update K submodule'
-        run: |
-          K_VERSION=$(cat deps/k_release)
-          git -C deps/k fetch --tags
-          git -C deps/k checkout "v${K_VERSION}"
-          git add deps/k && git commit -m "deps/k: sync K submodule version v${K_VERSION}" || true
       - name: 'Update plugin release file'
         run: |
           BKP_VERSION=$(git -C deps/plugin rev-parse HEAD)

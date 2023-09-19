@@ -3,12 +3,8 @@
 	url = https://github.com/ethereum/tests.git
 	branch = develop
 	ignore = untracked
-[submodule "deps/k"]
-	path = deps/k
-	url = https://github.com/runtimeverification/k
-	ignore = untracked
 [submodule "deps/plugin"]
-	path = deps/plugin
+	path = kevm-pyk/src/kevm_pyk/kproj/plugin
 	url = https://github.com/runtimeverification/blockchain-k-plugin
 	ignore = untracked
 [submodule "deps/metropolis"]

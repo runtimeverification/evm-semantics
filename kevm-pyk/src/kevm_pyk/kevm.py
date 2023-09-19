@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 from pyk.cterm import CTerm
@@ -21,6 +20,7 @@ from pyk.proof.show import APRBMCProofNodePrinter, APRProofNodePrinter
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
+    from pathlib import Path
     from typing import Final
 
     from pyk.kast import KInner
@@ -168,7 +168,6 @@ class KEVM(KProve, KRun):
             '_|->_',
             '#And',
             '_andBool_',
-            '_:__EVM-TYPES_WordStack_Int_WordStack',
             '#Implies',
             '_impliesBool_',
             '_&Int_',
@@ -184,7 +183,7 @@ class KEVM(KProve, KRun):
             '_Set_',
             'typedArgs',
             '_up/Int__EVM-TYPES_Int_Int_Int',
-            '_:_WS',
+            '_:__EVM-TYPES_WordStack_Int_WordStack',
         ]
         for symb in paren_symbols:
             if symb in symbol_table:
@@ -195,14 +194,18 @@ class KEVM(KProve, KRun):
         KEVM_CELL: Final = KSort('KevmCell')
 
     def short_info(self, cterm: CTerm) -> list[str]:
-        k_cell = self.pretty_print(cterm.cell('K_CELL')).replace('\n', ' ')
-        if len(k_cell) > 80:
-            k_cell = k_cell[0:80] + ' ...'
-        k_str = f'k: {k_cell}'
-        ret_strs = [k_str]
-        for cell, name in [('PC_CELL', 'pc'), ('CALLDEPTH_CELL', 'callDepth'), ('STATUSCODE_CELL', 'statusCode')]:
-            if cell in cterm.cells:
-                ret_strs.append(f'{name}: {self.pretty_print(cterm.cell(cell))}')
+        k_cell = cterm.try_cell('K_CELL')
+        if k_cell is not None:
+            pretty_cell = self.pretty_print(k_cell).replace('\n', ' ')
+            if len(pretty_cell) > 80:
+                pretty_cell = pretty_cell[0:80] + ' ...'
+            k_str = f'k: {pretty_cell}'
+            ret_strs = [k_str]
+            for cell, name in [('PC_CELL', 'pc'), ('CALLDEPTH_CELL', 'callDepth'), ('STATUSCODE_CELL', 'statusCode')]:
+                if cell in cterm.cells:
+                    ret_strs.append(f'{name}: {self.pretty_print(cterm.cell(cell))}')
+        else:
+            ret_strs = ['(empty configuration)']
         return ret_strs
 
     @staticmethod
@@ -405,7 +408,7 @@ class KEVM(KProve, KRun):
     def prove_legacy(
         self,
         spec_file: Path,
-        includes: Iterable[str] = (),
+        includes: Iterable[Path] = (),
         bug_report: bool = False,
         spec_module: str | None = None,
         claim_labels: Iterable[str] | None = None,
@@ -416,8 +419,8 @@ class KEVM(KProve, KRun):
         max_counterexamples: int | None = None,
         branching_allowed: int | None = None,
         haskell_backend_args: Iterable[str] = (),
-    ) -> KInner:
-        md_selector = 'k & ! node'
+    ) -> list[CTerm]:
+        md_selector = 'k'
         args: list[str] = []
         haskell_args: list[str] = []
         if claim_labels:
@@ -441,7 +444,7 @@ class KEVM(KProve, KRun):
             spec_file=spec_file,
             spec_module_name=spec_module,
             args=args,
-            include_dirs=[Path(i) for i in includes],
+            include_dirs=includes,
             md_selector=md_selector,
             haskell_args=haskell_args,
             depth=max_depth,
