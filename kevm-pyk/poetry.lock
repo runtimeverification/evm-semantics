@@ -1034,6 +1034,17 @@ files = [
 ]
 
 [[package]]
+name = "xdg-base-dirs"
+version = "6.0.0"
+description = "Variables defined by the XDG Base Directory Specification"
+optional = false
+python-versions = ">=3.10,<4.0"
+files = [
+    {file = "xdg_base_dirs-6.0.0-py3-none-any.whl", hash = "sha256:71b878d3b6c80923a8ddd7c4fb25f9f694c6796aa79214c3fe32dd49a13dcc82"},
+    {file = "xdg_base_dirs-6.0.0.tar.gz", hash = "sha256:3bc8813e260a78acba2f718b48eb00b5ff82bd9f02688b54b9e4ccd8a65d42cc"},
+]
+
+[[package]]
 name = "zipp"
 version = "3.16.2"
 description = "Backport of pathlib-compatible object wrapper for zip files"
@@ -1051,4 +1062,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "513bafc88660d4fa528cb5e2bc7ae6e0b528248d9d58d67718a49db1ff9470b0"
+content-hash = "da9b9790aea17d6ee39ef26decf96bd82e8c6f84ad67901506879875f07c131d"
