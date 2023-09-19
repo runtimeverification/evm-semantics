@@ -4,14 +4,6 @@ requires "lemmas/lemmas.k"
 module VERIFICATION
     imports INFINITE-GAS
     imports LEMMAS
-
-    syntax KItem ::= runLemma ( Step ) | doneLemma ( Step )
- // -------------------------------------------------------
-    rule <k> runLemma(S) => doneLemma(S) ... </k>
-
-    syntax Step ::= Bool | Int | Gas
- // --------------------------------
-
 endmodule
 
 module INFINITE-GAS-SPEC
@@ -109,8 +101,8 @@ module INFINITE-GAS-SPEC
 
     claim [gas.comp.19]: (Gverylow < _ > <=Gas #gas(_)) => (true) 
 
-    claim [gas.comp.20]: <k> runLemma(Gexp < SCHED > +Int Gexpbyte < SCHED > *Int ( log2Int ( W1 ) /Int 8 +Int 1 ) <=Gas #gas(_)) => doneLemma(true) ... </k>  requires 0 <Int W1 andBool W1 <Int pow256
-    claim [gas.comp.21]: <k> runLemma(#gas(_) <Gas Gexp < SCHED > +Int Gexpbyte < SCHED > *Int ( log2Int ( W1) /Int 8 +Int 1 ))  => doneLemma(false)  ... </k> requires 0 <Int W1 andBool W1 <Int pow256
+    claim [gas.comp.20]: Gexp < SCHED > +Int Gexpbyte < SCHED > *Int ( log2Int ( W1 ) /Int 8 +Int 1 ) <=Gas #gas(_) => true  requires 0 <Int W1 andBool W1 <Int pow256
+    claim [gas.comp.21]: #gas(_) <Gas Gexp < SCHED > +Int Gexpbyte < SCHED > *Int ( log2Int ( W1) /Int 8 +Int 1 )   => false requires 0 <Int W1 andBool W1 <Int pow256
 
     claim [gas.comp.22]: (#gas(_) <Gas 3 *Int (DATA_LEN up/Int 32) +Int 3) => (false)  requires 0 <=Int DATA_LEN andBool DATA_LEN <Int pow16
     claim [gas.comp.23]: (#gas(_) <Gas         DATA_LEN up/Int 32        ) => (false)  requires 0 <=Int DATA_LEN andBool DATA_LEN <Int pow16
