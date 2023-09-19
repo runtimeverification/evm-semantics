@@ -119,9 +119,9 @@ def exec_foundry_kompile(
     verbose: bool = False,
     **kwargs: Any,
 ) -> None:
-    _ignore_arg(kwargs, 'main_module', f'--main-module {kwargs["main_module"]}')
-    _ignore_arg(kwargs, 'syntax_module', f'--syntax-module {kwargs["syntax_module"]}')
-    _ignore_arg(kwargs, 'spec_module', f'--spec-module {kwargs["spec_module"]}')
+    _ignore_arg(kwargs, 'main_module', f'--main-module {kwargs.get("main_module", "")}')
+    _ignore_arg(kwargs, 'syntax_module', f'--syntax-module {kwargs.get("syntax_module","")}')
+    _ignore_arg(kwargs, 'spec_module', f'--spec-module {kwargs.get("spec_module", "")}')
     _ignore_arg(kwargs, 'o0', '-O0')
     _ignore_arg(kwargs, 'o1', '-O1')
     _ignore_arg(kwargs, 'o2', '-O2')
@@ -164,10 +164,10 @@ def exec_foundry_prove(
     auto_abstract_gas: bool = False,
     **kwargs: Any,
 ) -> None:
-    _ignore_arg(kwargs, 'main_module', f'--main-module: {kwargs["main_module"]}')
-    _ignore_arg(kwargs, 'syntax_module', f'--syntax-module: {kwargs["syntax_module"]}')
-    _ignore_arg(kwargs, 'definition_dir', f'--definition: {kwargs["definition_dir"]}')
-    _ignore_arg(kwargs, 'spec_module', f'--spec-module: {kwargs["spec_module"]}')
+    _ignore_arg(kwargs, 'main_module', f'--main-module: {kwargs.get("main_module", "")}')
+    _ignore_arg(kwargs, 'syntax_module', f'--syntax-module: {kwargs.get("syntax_module", "")}')
+    _ignore_arg(kwargs, 'definition_dir', f'--definition: {kwargs.get("definition_dir", "")}')
+    _ignore_arg(kwargs, 'spec_module', f'--spec-module: {kwargs.get("spec_module", "")}')
 
     if smt_timeout is None:
         smt_timeout = 300
