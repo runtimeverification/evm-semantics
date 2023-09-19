@@ -15,7 +15,7 @@ endmodule
 
 module LEMMAS-NO-SMT-SPEC
     imports VERIFICATION
- 
+
  // Arithmetic simplification
  // -------------------------
 
