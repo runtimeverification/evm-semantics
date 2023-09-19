@@ -418,13 +418,10 @@ class Foundry:
         return res_lines
 
     def proofs_with_test(self, test: str) -> list[Proof]:
-        #          print([pid.split(':')[0] for pid in listdir(self.proofs_dir)])
-        #          print(single(self._escape_brackets([test])))
         proofs = [
             self.get_optional_proof(pid)
             for pid in listdir(self.proofs_dir)
-            #              if re.search(single(self._escape_brackets([test])), pid.split(':')[0])
-            if test == pid.split(':')[0]
+            if re.search(single(self._escape_brackets([test])), pid.split(':')[0])
         ]
         return [proof for proof in proofs if proof is not None]
 
