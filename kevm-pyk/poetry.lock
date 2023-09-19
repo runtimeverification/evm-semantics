@@ -913,13 +913,13 @@ testing = ["filelock"]
 
 [[package]]
 name = "pyupgrade"
-version = "3.11.0"
+version = "3.11.1"
 description = "A tool to automatically upgrade syntax for newer versions."
 optional = false
 python-versions = ">=3.8.1"
 files = [
-    {file = "pyupgrade-3.11.0-py2.py3-none-any.whl", hash = "sha256:7bd8b83bc1a61b3a4c8fea5e16313b7b29e5cdf1be6184f8c6c467557e9cfab3"},
-    {file = "pyupgrade-3.11.0.tar.gz", hash = "sha256:1d0bf0dbadf179ff8952d92d52759a5984526597a055d1626884397c46f94003"},
+    {file = "pyupgrade-3.11.1-py2.py3-none-any.whl", hash = "sha256:6e9dd362394b3068123e06ca268de5845d41e2bb29f387b38323cc1009fb3100"},
+    {file = "pyupgrade-3.11.1.tar.gz", hash = "sha256:3e6c7689d2f3ae418c6a60ee981477fe9130eccaed3e33dac6c21274cf7d45f4"},
 ]
 
 [package.dependencies]
