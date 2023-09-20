@@ -32,12 +32,8 @@ test: test-integration test-conformance test-prove test-prove-pyk test-prove-leg
 
 # Foundry Tests
 
-PYTEST_PARALLEL := 8
-PYTEST_ARGS     :=
-
 test-foundry-prove: poetry
 	$(MAKE) -C kevm-pyk/ test-integration PYTEST_ARGS+="-k test_foundry_prove.py"
-
 
 # Conformance Tests
 
