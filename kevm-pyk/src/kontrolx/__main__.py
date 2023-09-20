@@ -48,6 +48,7 @@ if TYPE_CHECKING:
 _LOGGER: Final = logging.getLogger(__name__)
 _LOG_FORMAT: Final = '%(levelname)s %(asctime)s %(name)s - %(message)s'
 
+
 def main() -> None:
     sys.setrecursionlimit(15000000)
     parser = _create_argument_parser()
