@@ -27,7 +27,7 @@ kevm-pyk: poetry-env
 # Tests
 # -----
 
-test: test-integration test-conformance test-prove test-prove-pyk test-prove-legacy test-interactive
+test: test-integration test-conformance test-prove test-prove-pyk test-prove-kprove test-interactive
 
 
 # Foundry Tests
@@ -55,13 +55,13 @@ test-rest-bchain: poetry
 
 # Proof Tests
 
-test-prove: test-prove-pyk test-prove-legacy
+test-prove: test-prove-pyk test-prove-kprove
 
 test-prove-pyk: tests/specs/opcodes/evm-optimizations-spec.md poetry
 	$(MAKE) -C kevm-pyk/ test-integration PYTEST_ARGS+="-k test_pyk_prove"
 
-test-prove-legacy: tests/specs/opcodes/evm-optimizations-spec.md poetry
-	$(MAKE) -C kevm-pyk/ test-integration PYTEST_ARGS+="-k test_legacy_prove"
+test-prove-kprove: tests/specs/opcodes/evm-optimizations-spec.md poetry
+	$(MAKE) -C kevm-pyk/ test-integration PYTEST_ARGS+="-k test_kprove_prove"
 
 # to generate optimizations.md, run: ./optimizer/optimize.sh &> output
 tests/specs/opcodes/evm-optimizations-spec.md:

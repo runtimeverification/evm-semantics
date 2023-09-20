@@ -262,7 +262,7 @@ PROVE_ARGS: Final[dict[str, Any]] = {
     FAILING_PYK_TESTS,
     ids=[str(spec_file.relative_to(SPEC_DIR)) for spec_file in FAILING_PYK_TESTS],
 )
-def test_legacy_prove(
+def test_kprove_prove(
     spec_file: Path,
     kompiled_target_for: Callable[[Path, bool], KompiledTarget],
     tmp_path: Path,
