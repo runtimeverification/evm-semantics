@@ -122,38 +122,14 @@ jobs:
         run: |
           docker stop --time=0 kevm-ci-concrete-${GITHUB_SHA}
 
-  test-prove-haskell-kprove:
-    name: 'Build and Test KEVM haskell proofs (kprove)'
-    needs: kevm-pyk-code-quality-checks
-    runs-on: [self-hosted, linux, normal]
-    timeout-minutes: 120
-    steps:
-      - name: 'Check out code'
-        uses: actions/checkout@v3
-        with:
-          submodules: recursive
-          fetch-depth: 0
-      - name: 'Set up Docker'
-        uses: ./.github/actions/with-docker
-        with:
-          container-name: kevm-ci-haskell-kprove-${{ github.sha }}
-      - name: 'Build distribution'
-        run: docker exec -u github-user kevm-ci-haskell-kprove-${{ matrix.backend }}-${GITHUB_SHA} /bin/bash -c 'CXX=clang++-14 poetry -C kevm-pyk run kevm-dist --verbose build -j`nproc` plugin haskell'
-      - name: 'Prove Haskell'
-        run: docker exec -u github-user kevm-ci-haskell-kprove-${GITHUB_SHA} /bin/bash -c 'make test-prove-legacy PYTEST_ARGS=-vv'
-      - name: 'Tear down Docker'
-        if: always()
-        run: |
-          docker stop --time=0 kevm-ci-haskell-kprove-${GITHUB_SHA}
-
-  test-prove-haskell-pyk:
-    name: 'Build and Test KEVM haskell proofs'
+  test-prove:
+    name: 'Build and Test KEVM proofs'
     needs: kevm-pyk-code-quality-checks
     runs-on: [self-hosted, linux, normal]
     timeout-minutes: 150
     strategy:
       matrix:
-        backend: ['legacy', 'booster']
+        backend: ['kprove', 'legacy', 'booster']
     steps:
       - name: 'Check out code'
         uses: actions/checkout@v3
@@ -162,19 +138,27 @@ jobs:
       - name: 'Set up Docker'
         uses: ./.github/actions/with-docker
         with:
-          container-name: kevm-ci-haskell-pyk-${{ matrix.backend }}-${{ github.sha }}
+          container-name: kevm-ci-haskell-${{ matrix.backend }}-${{ github.sha }}
       - name: 'Build distribution'
-        run: docker exec -u github-user kevm-ci-haskell-pyk-${{ matrix.backend }}-${GITHUB_SHA} /bin/bash -c 'CXX=clang++-14 poetry -C kevm-pyk run kevm-dist --verbose build -j`nproc` plugin haskell'
-      - name: 'Prove Haskell (pyk)'
+        run: docker exec -u github-user kevm-ci-haskell-${{ matrix.backend }}-${GITHUB_SHA} /bin/bash -c 'CXX=clang++-14 poetry -C kevm-pyk run kevm-dist --verbose build -j`nproc` plugin haskell'
+      - name: 'Prove Haskell'
         run: |
           set -eux
-          PROF_ARGS=
-          [ ${{ matrix.backend }} == 'booster' ] && PROF_ARGS=--use-booster
-          docker exec -u github-user kevm-ci-haskell-pyk-${{ matrix.backend }}-${GITHUB_SHA} /bin/bash -c "make test-prove-pyk PYTEST_ARGS='-vv ${PROF_ARGS}'"
+          prove_args=
+          prove_target=
+          if [ ${{ matrix.backend }} == 'kprove' ]; then
+            prove_target=test-prove-kprove
+          elif [ ${{ matrix.backend }} == 'legacy' ]; then
+            prove_target=test-prove-pyk
+          elif [ ${{ matrix.backend }} == 'booster' ]; then
+            prove_target=test-prove-pyk
+            prove_args=--use-booster
+          fi
+          docker exec -u github-user kevm-ci-haskell-${{ matrix.backend }}-${GITHUB_SHA} /bin/bash -c "make ${prove_target} PYTEST_ARGS='-vv ${prove_args}'"
       - name: 'Tear down Docker'
         if: always()
         run: |
-          docker stop --time=0 kevm-ci-haskell-pyk-${{ matrix.backend }}-${GITHUB_SHA}
+          docker stop --time=0 kevm-ci-haskell-${{ matrix.backend }}-${GITHUB_SHA}
 
   test-prove-foundry:
     name: 'Build and Test KEVM Foundry proofs'
