@@ -165,6 +165,9 @@ jobs:
     needs: kevm-pyk-code-quality-checks
     runs-on: [self-hosted, linux, normal]
     timeout-minutes: 150
+    strategy:
+      matrix:
+        backend: ['legacy', 'booster']
     steps:
       - name: 'Check out code'
         uses: actions/checkout@v3
@@ -180,37 +183,17 @@ jobs:
       - name: 'Build targets'
         run: docker exec -u github-user kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'CXX=clang++-14 poetry -C kevm-pyk run kevm-dist --verbose build -j`nproc` plugin foundry'
       - name: 'Foundry Prove'
-        run: docker exec -u github-user kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make test-foundry-prove PYTEST_ARGS=-vv'
+        run: |
+          set -eux
+          prove_args=
+          if [ ${{ matrix.backend == 'booster' ]; then
+            prove_args=--use-booster
+          fi
+          docker exec -u github-user kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c "make test-foundry-prove PYTEST_ARGS='-vv ${prove_args}'"
       - name: 'Tear down Docker'
         if: always()
         run: |
           docker stop --time=0 kevm-ci-foundry-${GITHUB_SHA}
-
-  test-prove-foundry-booster:
-    name: 'Build and Test KEVM Foundry proofs (booster)'
-    needs: kevm-pyk-code-quality-checks
-    runs-on: [self-hosted, linux, normal]
-    timeout-minutes: 150
-    steps:
-      - name: 'Check out code'
-        uses: actions/checkout@v3
-        with:
-          submodules: recursive
-          fetch-depth: 0
-      - name: 'Set up Docker'
-        uses: ./.github/actions/with-docker
-        with:
-          container-name: kevm-ci-booster-${{ github.sha }}
-      - name: 'Build kevm-pyk'
-        run: docker exec -u github-user kevm-ci-booster-${GITHUB_SHA} /bin/bash -c 'make poetry'
-      - name: 'Build targets'
-        run: docker exec -u github-user kevm-ci-booster-${GITHUB_SHA} /bin/bash -c 'CXX=clang++-14 poetry -C kevm-pyk run kevm-dist --verbose build -j`nproc` plugin foundry'
-      - name: 'Foundry Prove'
-        run: docker exec -u github-user kevm-ci-booster-${GITHUB_SHA} /bin/bash -c 'make test-foundry-prove PYTEST_ARGS="-vv --use-booster"'
-      - name: 'Tear down Docker'
-        if: always()
-        run: |
-          docker stop --time=0 kevm-ci-booster-${GITHUB_SHA}
 
   nix:
     name: 'Nix'
