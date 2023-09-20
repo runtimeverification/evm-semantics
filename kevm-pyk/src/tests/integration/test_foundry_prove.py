@@ -378,7 +378,7 @@ def test_foundry_resume_proof(
     foundry = Foundry(foundry_root)
     test = 'AssumeTest.test_assume_false(uint256,uint256)'
 
-    id = '1'
+    id = 1
 
     prove_res = foundry_prove(
         foundry_root,

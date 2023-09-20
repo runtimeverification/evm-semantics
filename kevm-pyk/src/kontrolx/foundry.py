@@ -18,7 +18,7 @@ from typing import TYPE_CHECKING
 import tomlkit
 from pyk.cterm import CTerm
 from pyk.kast.inner import KApply, KSequence, KSort, KToken, KVariable, Subst
-from pyk.kast.manip import free_vars, minimize_term
+from pyk.kast.manip import flatten_label, free_vars, minimize_term, set_cell
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
 from pyk.kcfg import KCFG
 from pyk.kore.rpc import kore_server
@@ -95,10 +95,6 @@ class Foundry:
         return self.out / 'proofs'
 
     @property
-    def proofs_index(self) -> Path:
-        return self.proofs_dir / 'index.json'
-
-    @property
     def digest_file(self) -> Path:
         return self.out / 'digest'
 
@@ -147,10 +143,6 @@ class Foundry:
 
     def mk_proofs_dir(self) -> None:
         self.proofs_dir.mkdir(exist_ok=True)
-        try:
-            self.proofs_index.open('x')
-        except FileExistsError:
-            pass
 
     def method_digest(self, contract_name: str, method_sig: str) -> str:
         return self.contracts[contract_name].method_by_sig[method_sig].digest
@@ -159,35 +151,6 @@ class Foundry:
     def digest(self) -> str:
         contract_digests = [self.contracts[c].digest for c in sorted(self.contracts)]
         return hash_str('\n'.join(contract_digests))
-
-    def proof_digest(self, test_id: str) -> str:
-        with open(self.proofs_index) as f:
-            content = f.read()
-            if content != '':
-                try:
-                    return json.loads(content)[test_id]['digest']
-                except KeyError:
-                    pass
-            return ''
-
-    def write_proof_digest(self, test_id: str) -> None:
-        contract_name, test = test_id.split('.')
-        if test == 'setUp()':
-            method_sig = test
-        else:
-            method_sig, _ = test.split(':')
-        if not self.proofs_index.exists():
-            self.proofs_index.open('r+')
-        content = self.proofs_index.read_text()
-        if content != '':
-            obj = json.loads(content)
-        else:
-            obj = {}
-        if test_id not in content:
-            obj[test_id] = {}
-        foundry_digest = self.method_digest(contract_name, method_sig)
-        obj[test_id]['digest'] = foundry_digest
-        self.proofs_index.write_text(json.dumps(obj))
 
     @cached_property
     def llvm_dylib(self) -> Path | None:
@@ -210,7 +173,7 @@ class Foundry:
         digest_dict = json.loads(self.digest_file.read_text())
         if 'foundry' not in digest_dict:
             digest_dict['foundry'] = ''
-        self.digest_file.write_text(json.dumps(digest_dict))
+        self.digest_file.write_text(json.dumps(digest_dict, indent=4))
         return digest_dict['foundry'] == self.digest
 
     def update_digest(self) -> None:
@@ -218,7 +181,7 @@ class Foundry:
         if self.digest_file.exists():
             digest_dict = json.loads(self.digest_file.read_text())
         digest_dict['foundry'] = self.digest
-        self.digest_file.write_text(json.dumps(digest_dict))
+        self.digest_file.write_text(json.dumps(digest_dict, indent=4))
 
         _LOGGER.info(f'Updated Foundry digest file: {self.digest_file}')
 
@@ -341,7 +304,7 @@ class Foundry:
         test_sig = self.matching_sig(test).split('.')[1]
         return (contract_name, test_sig)
 
-    def get_test_id(self, test: str, id: str | None) -> str:
+    def get_test_id(self, test: str, id: int | None) -> str:
         matching_proofs = self.proofs_with_test(test)
         if not matching_proofs:
             raise ValueError(f'Found no matching proofs for {test}.')
@@ -354,7 +317,7 @@ class Foundry:
             return test_id
         else:
             for proof in matching_proofs:
-                if proof.id.endswith(id):
+                if proof.id.endswith(str(id)):
                     return proof.id
             raise ValueError('No proof matching this predicate.')
 
@@ -425,15 +388,6 @@ class Foundry:
         ]
         return [proof for proof in proofs if proof is not None]
 
-    def up_to_date_proofs(self, test: str) -> list[Proof]:
-        contract_name, method_sig = test.split('.')
-        matching_proofs = self.proofs_with_test(test)
-        return [
-            proof
-            for proof in matching_proofs
-            if self.proof_digest(proof.id) == self.method_digest(contract_name, method_sig)
-        ]
-
     def get_apr_proof(self, test_id: str) -> APRProof:
         proof = Proof.read_proof_data(self.proofs_dir, test_id)
         if not isinstance(proof, APRProof):
@@ -454,38 +408,76 @@ class Foundry:
             return Proof.read_proof_data(self.proofs_dir, test_id)
         return None
 
-    def free_proof_id(
+    def get_method(self, test: str) -> Contract.Method:
+        contract_name, method_name = test.split('.')
+        contract = self.contracts[contract_name]
+        return contract.method_by_sig[method_name]
+
+    def resolve_proof_version(
         self,
         test: str,
-    ) -> str:
+        reinit: bool,
+        user_specified_version: int | None,
+    ) -> int:
+        method = self.get_method(test)
+
+        if reinit and user_specified_version is not None:
+            raise ValueError('--reinit is not compatible with specifying proof versions.')
+
+        if reinit:
+            _LOGGER.info(f'Creating a new version of test {test} because --reinit was specified.')
+            return self.free_proof_version(test)
+
+        if user_specified_version:
+            _LOGGER.info(f'Using user-specified version {user_specified_version} for test {test}')
+            if not Proof.proof_data_exists(f'{test}:{user_specified_version}', self.proofs_dir):
+                raise ValueError(f'The specified version {user_specified_version} of proof {test} does not exist.')
+            if not method.up_to_date(self.digest_file):
+                _LOGGER.warn(
+                    f'Using specified version {user_specified_version} of proof {test}, but it is out of date.'
+                )
+            return user_specified_version
+
+        if not method.up_to_date(self.digest_file):
+            _LOGGER.info(f'Creating a new version of test {test} because it is out of date.')
+            return self.free_proof_version(test)
+
+        latest_version = self.latest_proof_version(test)
+        if latest_version is not None:
+            _LOGGER.info(
+                f'Using the the latest version {latest_version} of test {test} because it is up to date and no version was specified.'
+            )
+            if not method.contract_up_to_date(self.digest_file):
+                _LOGGER.warning(
+                    f'Test {test} was not reinitialized because it is up to date, but the contract it is a part of has changed.'
+                )
+            return latest_version
+
+        _LOGGER.info(
+            f'Test {test} is up to date in {self.digest_file}, but does not exist on disk. Assigning version 0'
+        )
+        return 0
+
+    def latest_proof_version(
+        self,
+        test: str,
+    ) -> int | None:
+        """
+        find the highest used proof ID, to be used as a default. Returns None if no version of this proof exists.
+        """
+        proof_ids = listdir(self.proofs_dir)
+        versions = {int(pid.split(':')[1]) for pid in proof_ids if pid.split(':')[0] == test}
+        return max(versions, default=None)
+
+    def free_proof_version(
+        self,
+        test: str,
+    ) -> int:
         """
         find the lowest proof id that is not used yet
         """
-        test_ids: dict[str, set[int]] = {}
-        for pid in listdir(self.proofs_dir):
-            if pid.find(':') >= 0:
-                test_name, tid = pid.split(':')
-                if test_ids.get(test_name) is None:
-                    ids = set()
-                else:
-                    ids = test_ids[test_name]
-                try:
-                    id_num = int(tid)
-                except ValueError:
-                    # falls back to hex string if it fails
-                    id_num = int(tid.encode('utf-8').hex())
-                ids.add(id_num)
-                test_ids[test_name] = ids
-        if test_ids.get(test) is None:
-            return '0'
-        else:
-            ids = test_ids[test]
-            # find the first free id
-            i = 0
-            while True:
-                if i not in ids:
-                    return str(i)
-                i += 1
+        latest_version = self.latest_proof_version(test)
+        return latest_version + 1 if latest_version is not None else 0
 
 
 def foundry_kompile(
@@ -583,7 +575,7 @@ def foundry_kompile(
         digest_dict = json.loads(foundry.digest_file.read_text())
         if 'kompilation' not in digest_dict:
             digest_dict['kompilation'] = ''
-        foundry.digest_file.write_text(json.dumps(digest_dict))
+        foundry.digest_file.write_text(json.dumps(digest_dict, indent=4))
         return digest_dict['kompilation'] == kompilation_digest()
 
     def update_kompilation_digest() -> None:
@@ -591,7 +583,7 @@ def foundry_kompile(
         if foundry.digest_file.exists():
             digest_dict = json.loads(foundry.digest_file.read_text())
         digest_dict['kompilation'] = kompilation_digest()
-        foundry.digest_file.write_text(json.dumps(digest_dict))
+        foundry.digest_file.write_text(json.dumps(digest_dict, indent=4))
 
         _LOGGER.info('Updated Kompilation digest')
 
@@ -619,7 +611,7 @@ def foundry_prove(
     max_depth: int = 1000,
     max_iterations: int | None = None,
     reinit: bool = False,
-    tests: Iterable[tuple[str, str | None]] = (),
+    tests: Iterable[tuple[str, int | None]] = (),
     exclude_tests: Iterable[str] = (),
     workers: int = 1,
     simplify_init: bool = True,
@@ -660,65 +652,20 @@ def foundry_prove(
 
     if not tests:
         tests = [(test, None) for test in foundry.all_tests]
-    tests = list({(foundry.matching_sig(test), id) for test, id in tests})
+    tests = list({(foundry.matching_sig(test), version) for test, version in tests})
     test_names = [test[0] for test in tests]
 
     _LOGGER.info(f'Running tests: {test_names}')
 
-    setup_methods: dict[str, str] = {}
     contracts = set(unique({test.split('.')[0] for test in test_names}))
-    for contract_name in contracts:
-        if 'setUp' in foundry.contracts[contract_name].method_by_name:
-            setup_methods[contract_name] = f'{contract_name}.setUp()'
 
-    test_methods = [
-        method
-        for contract in foundry.contracts.values()
-        for method in contract.methods
-        if (
-            f'{method.contract_name}.{method.signature}' in test_names
-            or (method.is_setup and method.contract_name in contracts)
+    setup_methods = set(
+        unique(
+            f'{contract_name}.setUp()'
+            for contract_name in contracts
+            if 'setUp' in foundry.contracts[contract_name].method_by_name
         )
-    ]
-
-    out_of_date_methods: set[str] = set()
-    for method in test_methods:
-        if not method.up_to_date(foundry.out / 'digest') or reinit:
-            out_of_date_methods.add(method.signature)
-            _LOGGER.info(f'Method {method.signature} is out of date, so it was reinitialized')
-        else:
-            _LOGGER.info(f'Method {method.signature} not reinitialized because it is up to date')
-            if not method.contract_up_to_date(foundry.out / 'digest'):
-                _LOGGER.warning(
-                    f'Method {method.signature} not reinitialized because digest was up to date, but the contract it is a part of has changed.'
-                )
-        method.update_digest(foundry.out / 'digest')
-
-    for i, (test, id) in enumerate(tests):
-        contract_name, method_sig = test.split('.')
-        foundry_digest = foundry.method_digest(contract_name, method_sig)
-        up_to_date_proofs = foundry.up_to_date_proofs(test)
-        if id is None and not reinit and len(up_to_date_proofs) > 0:
-            matching_proofs = foundry.proofs_with_test(test)
-            up_to_date_proofs = [proof for proof in matching_proofs if foundry.proof_digest(proof.id) == foundry_digest]
-            if len(up_to_date_proofs) > 1:
-                raise ValueError(
-                    f'Found {len(up_to_date_proofs)} up to date proofs for {test}. Specify an id with "--test {test},`id`" flag to choose one.'
-                )
-            elif len(up_to_date_proofs) == 1:
-                id = single(up_to_date_proofs).id.split(':')[1]
-        elif reinit or test in out_of_date_methods or len(up_to_date_proofs) == 0:
-            if id is not None:
-                _LOGGER.warn(
-                    'an id was specified but the proof has to be reinitialized so a new id will be attributed.'
-                )
-            id = foundry.free_proof_id(test)
-        else:
-            test_id = f'{test}:{id}'
-            if foundry.proof_digest(test_id) != foundry_digest:
-                raise ValueError(f'Proof with id `{test_id}` is not up to date.')
-        assert id is not None
-        tests[i] = (test, id)
+    )
 
     def _run_proof(_init_problem: tuple[int, Proof]) -> Proof:
         port, proof = _init_problem
@@ -752,13 +699,12 @@ def foundry_prove(
             )
             return proof
 
-    def _init_and_run_proof(_init_problem: tuple[str, str, str | None]) -> APRProof:
+    def _init_and_run_proof(_init_problem: tuple[str, str, int]) -> APRProof:
         contract_name, method_sig, id = _init_problem
         contract = foundry.contracts[contract_name]
         method = contract.method_by_sig[method_sig]
-        id_prefix = ':' + id if id is not None else ''
+        id_prefix = ':' + str(id) if id is not None else ''
         test_id = f'{contract_name}.{method_sig}{id_prefix}'
-
         llvm_definition_dir = foundry.llvm_library if use_booster else None
 
         def generate_subproof_name(proof: APRProof, node: int) -> str:
@@ -803,7 +749,7 @@ def foundry_prove(
             )
             return proof
 
-    def run_cfg_group(tests: list[tuple[str, str | None]]) -> list[APRProof]:
+    def run_cfg_group(tests: list[tuple[str, int]]) -> list[APRProof]:
         llvm_definition_dir = foundry.llvm_library if use_booster else None
 
         def create_server() -> KoreServer:
@@ -830,7 +776,7 @@ def foundry_prove(
         @dataclass(frozen=True)
         class CreateAndRunTask(Task):
             test: str
-            id: str | None
+            id: int
 
             def submit(self, executor: ThreadPoolExecutor) -> Future:
                 contract, method = self.test.split('.')
@@ -887,14 +833,30 @@ def foundry_prove(
 
         return results
 
-    _LOGGER.info(f'Running setup functions in parallel: {list(setup_methods.values())}')
-    results = run_cfg_group([(method, None) for method in setup_methods.values()])
+    tests_with_versions = [
+        (test_name, foundry.resolve_proof_version(test_name, reinit, version)) for (test_name, version) in tests
+    ]
+    setup_methods_with_versions = [
+        (setup_method_name, foundry.resolve_proof_version(setup_method_name, reinit, None))
+        for setup_method_name in setup_methods
+    ]
+
+    _LOGGER.info(f'Updating digests: {[test_name for test_name, _ in tests]}')
+    for test_name, _ in tests:
+        foundry.get_method(test_name).update_digest(foundry.digest_file)
+    _LOGGER.info(f'Updating digests: {setup_methods}')
+    for test_name in setup_methods:
+        foundry.get_method(test_name).update_digest(foundry.digest_file)
+
+    _LOGGER.info(f'Running setup functions in parallel: {list(setup_methods)}')
+    results = run_cfg_group(setup_methods_with_versions)
     failed = [proof.id for proof in results if not proof.passed]
+
     if failed:
         raise ValueError(f'Running setUp method failed for {len(failed)} contracts: {failed}')
 
     _LOGGER.info(f'Running test functions in parallel: {test_names}')
-    results = run_cfg_group(tests)
+    results = run_cfg_group(tests_with_versions)
 
     return results
 
@@ -902,7 +864,7 @@ def foundry_prove(
 def foundry_show(
     foundry_root: Path,
     test: str,
-    id: str | None = None,
+    version: int | None = None,
     nodes: Iterable[NodeIdLike] = (),
     node_deltas: Iterable[tuple[NodeIdLike, NodeIdLike]] = (),
     to_module: bool = False,
@@ -919,7 +881,7 @@ def foundry_show(
 ) -> str:
     contract_name, _ = test.split('.')
     foundry = Foundry(foundry_root)
-    test_id = foundry.get_test_id(test, id)
+    test_id = foundry.get_test_id(test, version)
     proof = foundry.get_apr_proof(test_id)
 
     if pending:
@@ -967,10 +929,10 @@ def foundry_show(
     return '\n'.join(res_lines)
 
 
-def foundry_to_dot(foundry_root: Path, test: str, id: str | None = None) -> None:
+def foundry_to_dot(foundry_root: Path, test: str, version: int | None = None) -> None:
     foundry = Foundry(foundry_root)
     dump_dir = foundry.proofs_dir / 'dump'
-    test_id = foundry.get_test_id(test, id)
+    test_id = foundry.get_test_id(test, version)
     contract_name, _ = test.split('.')
     proof = foundry.get_apr_proof(test_id)
 
@@ -1002,9 +964,9 @@ def foundry_list(foundry_root: Path) -> list[str]:
     return lines
 
 
-def foundry_remove_node(foundry_root: Path, test: str, node: NodeIdLike, id: str | None = None) -> None:
+def foundry_remove_node(foundry_root: Path, test: str, node: NodeIdLike, version: int | None = None) -> None:
     foundry = Foundry(foundry_root)
-    test_id = foundry.get_test_id(test, id)
+    test_id = foundry.get_test_id(test, version)
     apr_proof = foundry.get_apr_proof(test_id)
     node_ids = apr_proof.prune(node)
     _LOGGER.info(f'Pruned nodes: {node_ids}')
@@ -1015,7 +977,7 @@ def foundry_simplify_node(
     foundry_root: Path,
     test: str,
     node: NodeIdLike,
-    id: str | None = None,
+    version: int | None = None,
     replace: bool = False,
     minimize: bool = True,
     sort_collections: bool = False,
@@ -1026,7 +988,7 @@ def foundry_simplify_node(
     port: int | None = None,
 ) -> str:
     foundry = Foundry(foundry_root, bug_report=bug_report)
-    test_id = foundry.get_test_id(test, id)
+    test_id = foundry.get_test_id(test, version)
     apr_proof = foundry.get_apr_proof(test_id)
     cterm = apr_proof.kcfg.node(node).cterm
     start_server = port is None
@@ -1054,7 +1016,7 @@ def foundry_merge_nodes(
     foundry_root: Path,
     test: str,
     node_ids: Iterable[NodeIdLike],
-    id: str | None = None,
+    version: int | None = None,
     bug_report: BugReport | None = None,
     include_disjunct: bool = False,
 ) -> None:
@@ -1071,7 +1033,7 @@ def foundry_merge_nodes(
         return True
 
     foundry = Foundry(foundry_root, bug_report=bug_report)
-    test_id = foundry.get_test_id(test, id)
+    test_id = foundry.get_test_id(test, version)
     apr_proof = foundry.get_apr_proof(test_id)
 
     if len(list(node_ids)) < 2:
@@ -1100,7 +1062,7 @@ def foundry_step_node(
     foundry_root: Path,
     test: str,
     node: NodeIdLike,
-    id: str | None = None,
+    version: int | None = None,
     repeat: int = 1,
     depth: int = 1,
     bug_report: BugReport | None = None,
@@ -1115,7 +1077,7 @@ def foundry_step_node(
         raise ValueError(f'Expected positive value for --depth, got: {depth}')
 
     foundry = Foundry(foundry_root, bug_report=bug_report)
-    test_id = foundry.get_test_id(test, id)
+    test_id = foundry.get_test_id(test, version)
     apr_proof = foundry.get_apr_proof(test_id)
     start_server = port is None
 
@@ -1139,7 +1101,7 @@ def foundry_section_edge(
     foundry_root: Path,
     test: str,
     edge: tuple[str, str],
-    id: str | None = None,
+    version: int | None = None,
     sections: int = 2,
     replace: bool = False,
     bug_report: BugReport | None = None,
@@ -1149,7 +1111,7 @@ def foundry_section_edge(
     port: int | None = None,
 ) -> None:
     foundry = Foundry(foundry_root, bug_report=bug_report)
-    test_id = foundry.get_test_id(test, id)
+    test_id = foundry.get_test_id(test, version)
     apr_proof = foundry.get_apr_proof(test_id)
     source_id, target_id = edge
     start_server = port is None
@@ -1174,14 +1136,14 @@ def foundry_section_edge(
 def foundry_get_model(
     foundry_root: Path,
     test: str,
-    id: str | None = None,
+    version: int | None = None,
     nodes: Iterable[NodeIdLike] = (),
     pending: bool = False,
     failing: bool = False,
     port: int | None = None,
 ) -> str:
     foundry = Foundry(foundry_root)
-    test_id = foundry.get_test_id(test, id)
+    test_id = foundry.get_test_id(test, version)
     proof = foundry.get_apr_proof(test_id)
 
     if not nodes:
@@ -1279,7 +1241,8 @@ def _method_to_apr_proof(
 
         setup_digest = None
         if method_sig != 'setUp()' and 'setUp' in contract.method_by_name:
-            setup_digest = f'{contract_name}.setUp()'
+            latest_version = foundry.latest_proof_version(f'{contract.name}.setUp()')
+            setup_digest = f'{contract_name}.setUp():{latest_version}'
             _LOGGER.info(f'Using setUp method for test: {test_id}')
 
         empty_config = foundry.kevm.definition.empty_config(GENERATED_TOP_CELL)
@@ -1300,8 +1263,6 @@ def _method_to_apr_proof(
         target_term = KDefinition__expand_macros(foundry.kevm.definition, target_term)
         target_cterm = CTerm.from_kast(target_term)
         kcfg.replace_node(target_node_id, target_cterm)
-
-        foundry.write_proof_digest(test_id)
 
         if simplify_init:
             _LOGGER.info(f'Simplifying KCFG for test: {test_id}')
@@ -1361,7 +1322,9 @@ def _method_to_cfg(
     return cfg, init_node.id, target_node.id
 
 
-def get_final_accounts_cell(proof_id: str, proof_dir: Path) -> tuple[KInner, Iterable[KInner]]:
+def get_final_accounts_cell(
+    proof_id: str, proof_dir: Path, overwrite_code_cell: KInner | None = None
+) -> tuple[KInner, Iterable[KInner]]:
     apr_proof = APRProof.read_proof_data(proof_dir, proof_id)
     target = apr_proof.kcfg.node(apr_proof.target)
     target_states = apr_proof.kcfg.covers(target_id=target.id)
@@ -1373,6 +1336,19 @@ def get_final_accounts_cell(proof_id: str, proof_dir: Path) -> tuple[KInner, Ite
         raise ValueError(f'setUp() function for {apr_proof.id} branched and has {len(target_states)} target states.')
     cterm = single(target_states).source.cterm
     acct_cell = cterm.cell('ACCOUNTS_CELL')
+
+    if overwrite_code_cell is not None:
+        new_accounts = [CTerm(account, []) for account in flatten_label('_AccountCellMap_', acct_cell)]
+        new_accounts_map = {account.cell('ACCTID_CELL'): account for account in new_accounts}
+        test_contract_account = new_accounts_map[Foundry.address_TEST_CONTRACT()]
+
+        new_accounts_map[Foundry.address_TEST_CONTRACT()] = CTerm(
+            set_cell(test_contract_account.config, 'CODE_CELL', overwrite_code_cell),
+            [],
+        )
+
+        acct_cell = KEVM.accounts([account.config for account in new_accounts_map.values()])
+
     fvars = free_vars(acct_cell)
     acct_cons = constraints_for(fvars, cterm.constraints)
     return (acct_cell, acct_cons)
@@ -1446,7 +1422,7 @@ def _init_cterm(
 
     constraints = None
     if init_state:
-        accts, constraints = get_final_accounts_cell(init_state, kcfgs_dir)
+        accts, constraints = get_final_accounts_cell(init_state, kcfgs_dir, overwrite_code_cell=program)
         init_subst['ACCOUNTS_CELL'] = accts
 
     if calldata is not None:
