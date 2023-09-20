@@ -333,16 +333,18 @@ def test_foundry_remove_node(
 
 
 def assert_pass(test: str, prove_res: list[APRProof]) -> None:
+    test_with_version = f'{test}:0'
     proof_dict = {proof.id: proof for proof in prove_res}
-    proof = proof_dict[test]
+    proof = proof_dict[test_with_version]
     if not proof.passed:
         assert proof.failure_info is not None
         pytest.fail('\n'.join(proof.failure_info.print()))
 
 
 def assert_fail(test: str, prove_res: list[APRProof]) -> None:
+    test_with_version = f'{test}:0'
     proof_dict = {proof.id: proof for proof in prove_res}
-    proof = proof_dict[test]
+    proof = proof_dict[test_with_version]
     assert not proof.passed
     assert proof.failure_info is not None
 

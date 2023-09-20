@@ -311,7 +311,7 @@ class Foundry:
         if id is None:
             if len(matching_proofs) > 1:
                 raise ValueError(
-                    f'Found {len(matching_proofs)} matching proofs for {test}. Use the --id flag to choose one.'
+                    f'Found {len(matching_proofs)} matching proofs for {test}. Use the --version flag to choose one.'
                 )
             test_id = single(matching_proofs).id
             return test_id
@@ -706,6 +706,7 @@ def foundry_prove(
         id_prefix = ':' + str(id) if id is not None else ''
         test_id = f'{contract_name}.{method_sig}{id_prefix}'
         llvm_definition_dir = foundry.llvm_library if use_booster else None
+        start_server = port is None
 
         def generate_subproof_name(proof: APRProof, node: int) -> str:
             id_without_version = proof.id.split(':')[0]
@@ -722,6 +723,7 @@ def foundry_prove(
             smt_timeout=smt_timeout,
             smt_retry_limit=smt_retry_limit,
             trace_rewrites=trace_rewrites,
+            start_server=start_server,
             port=port,
         ) as kcfg_explore:
             proof = _method_to_apr_proof(
