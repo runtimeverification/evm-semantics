@@ -132,13 +132,13 @@ jobs:
         include:
           - test-suite: 'test-prove-kprove'
             test-args:
-            timeout: 60
+            timeout: 90
           - test-suite: 'test-prove-pyk'
             test-args:
             timeout: 90
           - test-suite: 'test-prove-pyk'
             test-args: '--use-booster'
-            timeout: 150
+            timeout: 60
     timeout-minutes: ${{ matrix.timeout }}
     steps:
       - name: 'Check out code'
