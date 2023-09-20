@@ -127,6 +127,7 @@ jobs:
     needs: kevm-pyk-code-quality-checks
     runs-on: [self-hosted, linux, normal]
     strategy:
+      fail-fast: false
       matrix:
         include:
           - test-suite: 'test-prove-kprove'
@@ -164,6 +165,7 @@ jobs:
     needs: kevm-pyk-code-quality-checks
     runs-on: [self-hosted, linux, normal]
     strategy:
+      fail-fast: false
       matrix:
         include:
           - test-suite: 'legacy'
