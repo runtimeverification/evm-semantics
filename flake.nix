@@ -103,7 +103,7 @@
               makeWrapper ${final.kevm-pyk}/bin/kevm $out/bin/kevm --prefix PATH : ${
                 prev.lib.makeBinPath [ prev.which k ]
               } --set NIX_LIBS "${nixLibs prev}" --set KEVM_DIST_DIR $out
-              makeWrapper ${final.kevm-pyk}/bin/kontrol $out/bin/kontrol --prefix PATH : ${
+              makeWrapper ${final.kevm-pyk}/bin/kontrolx $out/bin/kontrolx --prefix PATH : ${
                 prev.lib.makeBinPath [
                   (solc.mkDefault final final.solc_0_8_13)
                   final.foundry-bin
@@ -148,7 +148,7 @@
           projectDir = ./kevm-pyk;
 
           postPatch = ''
-            substituteInPlace ./src/kontrol/foundry.py \
+            substituteInPlace ./src/kontrolx/foundry.py \
               --replace "'forge', 'build'," "'forge', 'build', '--no-auto-detect',"
           '';
 
