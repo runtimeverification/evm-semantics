@@ -332,7 +332,7 @@ def test_foundry_remove_node(
     assert_pass(test, prove_res)
 
 
-def assert_pass(test: str, prove_res: dict[tuple[str, str | None], tuple[bool, list[str] | None]]) -> None:
+def assert_pass(test: str, prove_res: dict[tuple[str, int], tuple[bool, list[str] | None]]) -> None:
     id = id_for_test(test, prove_res)
     passed, log = prove_res[(test, id)]
     if not passed:
@@ -340,14 +340,14 @@ def assert_pass(test: str, prove_res: dict[tuple[str, str | None], tuple[bool, l
         pytest.fail('\n'.join(log))
 
 
-def assert_fail(test: str, prove_res: dict[tuple[str, str | None], tuple[bool, list[str] | None]]) -> None:
+def assert_fail(test: str, prove_res: dict[tuple[str, int], tuple[bool, list[str] | None]]) -> None:
     id = id_for_test(test, prove_res)
     passed, log = prove_res[test, id]
     assert not passed
     assert log
 
 
-def id_for_test(test: str, prove_res: dict[tuple[str, str | None], tuple[bool, list[str] | None]]) -> str:
+def id_for_test(test: str, prove_res: dict[tuple[str, int], tuple[bool, list[str] | None]]) -> int:
     return single(_id for _test, _id in prove_res.keys() if _test == test and _id is not None)
 
 
