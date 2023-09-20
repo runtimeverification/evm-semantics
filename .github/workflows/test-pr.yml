@@ -138,7 +138,7 @@ jobs:
         with:
           container-name: kevm-ci-haskell-kprove-${{ github.sha }}
       - name: 'Build distribution'
-        run: docker exec -u github-user kevm-ci-haskell-pyk-${{ matrix.backend }}-${GITHUB_SHA} /bin/bash -c 'CXX=clang++-14 poetry -C kevm-pyk run kevm-dist --verbose build -j`nproc` plugin haskell'
+        run: docker exec -u github-user kevm-ci-haskell-kprove-${{ matrix.backend }}-${GITHUB_SHA} /bin/bash -c 'CXX=clang++-14 poetry -C kevm-pyk run kevm-dist --verbose build -j`nproc` plugin haskell'
       - name: 'Prove Haskell'
         run: docker exec -u github-user kevm-ci-haskell-kprove-${GITHUB_SHA} /bin/bash -c 'make test-prove-legacy PYTEST_ARGS=-vv'
       - name: 'Tear down Docker'
