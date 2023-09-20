@@ -186,7 +186,7 @@ jobs:
         run: |
           set -eux
           prove_args=
-          if [ ${{ matrix.backend == 'booster' ]; then
+          if [ ${{ matrix.backend }} == 'booster' ]; then
             prove_args=--use-booster
           fi
           docker exec -u github-user kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c "make test-foundry-prove PYTEST_ARGS='-vv ${prove_args}'"
