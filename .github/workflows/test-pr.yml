@@ -179,11 +179,11 @@ jobs:
       - name: 'Set up Docker'
         uses: ./.github/actions/with-docker
         with:
-          container-name: kevm-ci-foundry-${{ github.sha }}
+          container-name: kevm-ci-foundry-${{ matrix.backend }}-${{ github.sha }}
       - name: 'Build kevm-pyk'
-        run: docker exec -u github-user kevm-ci-foundry-${{ github.sha }} /bin/bash -c 'make poetry'
+        run: docker exec -u github-user kevm-ci-foundry-${{ matrix.backend }}-${{ github.sha }} /bin/bash -c 'make poetry'
       - name: 'Build targets'
-        run: docker exec -u github-user kevm-ci-foundry-${{ github.sha }} /bin/bash -c 'CXX=clang++-14 poetry -C kevm-pyk run kevm-dist --verbose build -j`nproc` plugin foundry'
+        run: docker exec -u github-user kevm-ci-foundry-${{ matrix.backend }}-${{ github.sha }} /bin/bash -c 'CXX=clang++-14 poetry -C kevm-pyk run kevm-dist --verbose build -j`nproc` plugin foundry'
       - name: 'Foundry Prove'
         run: |
           set -eux
@@ -191,11 +191,11 @@ jobs:
           if [ ${{ matrix.backend }} == 'booster' ]; then
             prove_args=--use-booster
           fi
-          docker exec -u github-user kevm-ci-foundry-${{ github.sha }} /bin/bash -c "make test-foundry-prove PYTEST_ARGS='-vv ${prove_args}'"
+          docker exec -u github-user kevm-ci-foundry-${{ matrix.backend }}-${{ github.sha }} /bin/bash -c "make test-foundry-prove PYTEST_ARGS='-vv ${prove_args}'"
       - name: 'Tear down Docker'
         if: always()
         run: |
-          docker stop --time=0 kevm-ci-foundry-${{ github.sha }}
+          docker stop --time=0 kevm-ci-foundry-${{ matrix.backend }}-${{ github.sha }}
 
   nix:
     name: 'Nix'
