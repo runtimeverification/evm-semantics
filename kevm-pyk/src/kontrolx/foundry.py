@@ -632,7 +632,7 @@ def foundry_prove(
     trace_rewrites: bool = False,
     auto_abstract_gas: bool = False,
     port: int | None = None,
-) -> dict[tuple[str, str | None], tuple[bool, list[str] | None]]:
+) -> tuple[Foundry, dict[tuple[str, str | None], tuple[bool, list[str] | None, Prover]]]:
     if workers <= 0:
         raise ValueError(f'Must have at least one worker, found: --workers {workers}')
     if max_iterations is not None and max_iterations < 0:
@@ -715,7 +715,7 @@ def foundry_prove(
         assert id is not None
         tests[i] = (test, id)
 
-    def _init_and_run_proof(_init_problem: tuple[str, str, str | None]) -> tuple[bool, list[str] | None]:
+    def _init_and_run_proof(_init_problem: tuple[str, str, str | None]) -> tuple[bool, list[str] | None, Prover]:
         contract_name, method_sig, id = _init_problem
         contract = foundry.contracts[contract_name]
         method = contract.method_by_sig[method_sig]
@@ -749,7 +749,7 @@ def foundry_prove(
                 bmc_depth=bmc_depth,
             )
 
-            passed = kevm_prove(
+            passed, prover = kevm_prove(
                 foundry.kevm,
                 proof,
                 kcfg_explore,
@@ -762,7 +762,7 @@ def foundry_prove(
             failure_log = None
             if not passed:
                 failure_log = print_failure_info(proof, kcfg_explore, counterexample_info)
-            return passed, failure_log
+            return passed, failure_log, prover
 
     def run_cfg_group(
         tests: list[tuple[str, str | None]]
@@ -774,7 +774,7 @@ def foundry_prove(
 
         init_problems = [_split_test(test) for test in tests]
 
-        _apr_proofs: list[tuple[bool, list[str] | None]]
+        _apr_proofs: list[tuple[bool, list[str] | None, Proof, KCFGExplore]]
         if workers > 1:
             with ProcessPool(ncpus=workers) as process_pool:
                 _apr_proofs = process_pool.map(_init_and_run_proof, init_problems)
@@ -795,7 +795,7 @@ def foundry_prove(
     _LOGGER.info(f'Running test functions in parallel: {test_names}')
     results = run_cfg_group(tests)
 
-    return results
+    return foundry, results
 
 
 def foundry_show(

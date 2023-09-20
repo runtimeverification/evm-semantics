@@ -82,7 +82,7 @@ def kevm_prove(
     break_on_calls: bool = True,
     extract_branches: Callable[[CTerm], Iterable[KInner]] | None = None,
     abstract_node: Callable[[CTerm], CTerm] | None = None,
-) -> bool:
+) -> tuple[bool, Prover]:
     proof = proof
     terminal_rules = ['EVM.halt']
     cut_point_rules = []
@@ -126,28 +126,28 @@ def kevm_prove(
             assert isinstance(proof, APRProof)
             if proof.passed:
                 _LOGGER.info(f'Proof passed: {proof.id}')
-                return True
+                return True, prover
             else:
                 _LOGGER.error(f'Proof failed: {proof.id}')
-                return False
+                return False, prover
         elif type(prover) is EqualityProver:
             prover.advance_proof()
             if prover.proof.passed:
                 _LOGGER.info(f'Proof passed: {prover.proof.id}')
-                return True
+                return True, prover
             elif prover.proof.failed:
                 _LOGGER.error(f'Proof failed: {prover.proof.id}')
                 if type(proof) is EqualityProof:
                     _LOGGER.info(proof.pretty(kprove))
-                return False
+                return False, prover
             else:
                 _LOGGER.info(f'Proof pending: {prover.proof.id}')
-                return False
-        return False
+                return False, prover
+        return False, prover
 
     except Exception as e:
         _LOGGER.error(f'Proof crashed: {proof.id}\n{e}', exc_info=True)
-        return False
+        return False, prover
 
 
 def print_failure_info(proof: Proof, kcfg_explore: KCFGExplore, counterexample_info: bool = False) -> list[str]:

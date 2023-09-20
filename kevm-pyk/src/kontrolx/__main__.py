@@ -157,7 +157,7 @@ def exec_foundry_prove(
     if isinstance(kore_rpc_command, str):
         kore_rpc_command = kore_rpc_command.split()
 
-    results = foundry_prove(
+    foundry, results = foundry_prove(
         foundry_root=foundry_root,
         max_depth=max_depth,
         max_iterations=max_iterations,
