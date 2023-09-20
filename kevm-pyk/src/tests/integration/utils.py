@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 from pyk.utils import check_dir_path
 
 from kevm_pyk.dist import DistTarget
-from kontrol.solc_to_k import solc_to_k
+from kontrolx.solc_to_k import solc_to_k
 
 if TYPE_CHECKING:
     from typing import Final
