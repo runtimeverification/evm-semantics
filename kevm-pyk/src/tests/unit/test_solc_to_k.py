@@ -6,7 +6,7 @@ import pytest
 from pyk.kast.inner import KToken, KVariable
 
 from kevm_pyk.kevm import KEVM
-from kontrol.solc_to_k import _range_predicate
+from kontrolx.solc_to_k import Contract, _range_predicate
 
 from .utils import TEST_DATA_DIR
 
@@ -38,8 +38,6 @@ def test_range_predicate(test_id: str, term: KInner, type: str, expected: KInner
     # Then
     assert ret == expected
 
-
-from kontrol.solc_to_k import Contract
 
 ESCAPE_DATA: list[tuple[str, str, str, str]] = [
     ('has_underscore', 'S2K', 'My_contract', 'S2KMyZUndcontract'),

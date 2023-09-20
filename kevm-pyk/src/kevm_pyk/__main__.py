@@ -244,11 +244,14 @@ def exec_prove(
             claim_lhs = claim_lhs.lhs
         return not (type(claim_lhs) is KApply and claim_lhs.label.name == '<generatedTop>')
 
+    llvm_definition_dir = definition_dir / 'llvm-library' if use_booster else None
+
     def _init_and_run_proof(claim: KClaim) -> tuple[bool, list[str] | None]:
         with legacy_explore(
             kevm,
             kcfg_semantics=KEVMSemantics(auto_abstract_gas=auto_abstract_gas),
             id=claim.label,
+            llvm_definition_dir=llvm_definition_dir,
             bug_report=bug_report,
             kore_rpc_command=kore_rpc_command,
             smt_timeout=smt_timeout,
@@ -530,7 +533,7 @@ def exec_run(
         kore_pgm = kevm.kast_to_kore(kast_pgm, sort=KSort('EthereumSimulation'))
         kore_pattern = kore_pgm_to_kore(kore_pgm, SORT_ETHEREUM_SIMULATION, schedule, mode, chainid)
 
-    kevm.run_kore(
+    kevm.run(
         kore_pattern,
         depth=depth,
         term=True,
