@@ -4,6 +4,10 @@ tests/specs/benchmarks/ecrecover00-siginvalid-spec.k
 tests/specs/benchmarks/ecrecover00-sigvalid-spec.k
 tests/specs/benchmarks/ecrecoverloop00-sig0-invalid-spec.k
 tests/specs/benchmarks/ecrecoverloop00-sig1-invalid-spec.k
+tests/specs/benchmarks/ecrecoverloop00-sigs-valid-spec.k
+tests/specs/benchmarks/ecrecoverloop02-sig0-invalid-spec.k
+tests/specs/benchmarks/ecrecoverloop02-sig1-invalid-spec.k
+tests/specs/benchmarks/ecrecoverloop02-sigs-valid-spec.k
 tests/specs/benchmarks/encode-keccak00-spec.k
 tests/specs/benchmarks/encodepacked-keccak01-spec.k
 tests/specs/benchmarks/functional-spec.k
@@ -38,11 +42,13 @@ tests/specs/erc20/ds/transfer-failure-1-c-spec.k
 tests/specs/erc20/ds/transfer-failure-2-a-spec.k
 tests/specs/erc20/ds/transfer-failure-2-b-spec.k
 tests/specs/erc20/ds/transferFrom-failure-1-a-spec.k
+tests/specs/erc20/ds/transferFrom-failure-1-b-spec.k
 tests/specs/erc20/ds/transferFrom-failure-1-c-spec.k
 tests/specs/erc20/ds/transferFrom-failure-1-d-spec.k
 tests/specs/erc20/ds/transferFrom-failure-2-a-spec.k
 tests/specs/erc20/ds/transferFrom-failure-2-b-spec.k
 tests/specs/erc20/ds/transferFrom-failure-2-c-spec.k
+tests/specs/erc20/ds/transferFrom-success-1-spec.k
 tests/specs/erc20/ds/transferFrom-success-2-spec.k
 tests/specs/erc20/ds/transfer-success-1-spec.k
 tests/specs/erc20/ds/transfer-success-2-spec.k
@@ -90,6 +96,7 @@ tests/specs/mcd/flipper-ttl-pass-spec.k
 tests/specs/mcd/flopper-cage-pass-spec.k
 tests/specs/mcd/flopper-dent-guy-diff-tic-not-0-pass-rough-spec.k
 tests/specs/mcd/flopper-dent-guy-same-pass-rough-spec.k
+tests/specs/mcd/flopper-file-pass-rough-spec.k
 tests/specs/mcd/flopper-kick-pass-rough-spec.k
 tests/specs/mcd/flopper-tick-pass-rough-spec.k
 tests/specs/mcd/functional-spec.k
