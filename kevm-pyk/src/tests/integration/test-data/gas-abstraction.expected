@@ -7,8 +7,22 @@
 │
 │  (621 steps)
 ├─ 3
-│   k: #end EVMC_REVERT ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
-│   pc: 856
+│   k: CALL 9223372036854772946 645326474426547203313410069153905908525362434349 0 128  ...
+│   pc: 361
+│   callDepth: 0
+│   statusCode: STATUSCODE:StatusCode
+│
+│  (1 step)
+├─ 4
+│   k: #checkCall 728815563385977040452943777879061427756277306518 0 ~> #call 728815563 ...
+│   pc: 361
+│   callDepth: 0
+│   statusCode: STATUSCODE:StatusCode
+│
+│  (344 steps)
+├─ 5
+│   k: #pc [ JUMPI ] ~> #execute ~> CONTINUATION:K
+│   pc: 420
 │   callDepth: 0
 │   statusCode: STATUSCODE:StatusCode
 │
@@ -19,9 +33,9 @@
     STATUSCODE <- STATUSCODE:StatusCode
     TOUCHEDACCOUNTS_CELL <- TOUCHEDACCOUNTS_CELL:Set
     CALLER_ID <- CALLER_ID:Int
-    VGAS <- VGAS:Int
-    VGAS_f5342075 <- ( VGAS:Int +Int -329 )
-    CALLGAS_CELL <- CALLGAS_CELL:Gas
+    ?_VGAS <- ?_VGAS:Int
+    ?_VCALLGAS <- ?_VCALLGAS:Int
+    VGAS_2285f3e8 <- ( ( ?_VGAS:Int +Int ?_VCALLGAS:Int ) +Int -157 )
     SELFDESTRUCT_CELL <- SELFDESTRUCT_CELL:Set
     REFUND_CELL <- REFUND_CELL:Int
     GASPRICE_CELL <- GASPRICE_CELL:Int
@@ -57,21 +71,79 @@
     EXPECTEDEVENTADDRESS_CELL <- EXPECTEDEVENTADDRESS_CELL:Account
     GENERATEDCOUNTER_CELL <- GENERATEDCOUNTER_CELL:Int
 }
-├─ 4
+├─ 6
+│   k: #pc [ JUMPI ] ~> #execute ~> CONTINUATION:K
+│   pc: 420
+│   callDepth: 0
+│   statusCode: STATUSCODE:StatusCode
+│
+│  (101 steps)
+├─ 7
+│   k: #end EVMC_REVERT ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
+│   pc: 856
+│   callDepth: 0
+│   statusCode: STATUSCODE:StatusCode
+│
+┊  constraint: true
+┊  subst: {
+    CONTINUATION <- CONTINUATION:K
+    EXITCODE_CELL <- EXITCODE_CELL:Int
+    STATUSCODE <- STATUSCODE:StatusCode
+    TOUCHEDACCOUNTS_CELL <- TOUCHEDACCOUNTS_CELL:Set
+    CALLER_ID <- CALLER_ID:Int
+    ?_VGAS <- ?_VGAS:Int
+    ?_VCALLGAS <- ?_VCALLGAS:Int
+    VGAS_d38c7e07 <- ( VGAS_2285f3e8:Int +Int -45 )
+    SELFDESTRUCT_CELL <- SELFDESTRUCT_CELL:Set
+    REFUND_CELL <- REFUND_CELL:Int
+    GASPRICE_CELL <- GASPRICE_CELL:Int
+    ORIGIN_ID <- ORIGIN_ID:Int
+    BLOCKHASHES_CELL <- BLOCKHASHES_CELL:List
+    PREVIOUSHASH_CELL <- PREVIOUSHASH_CELL:Int
+    OMMERSHASH_CELL <- OMMERSHASH_CELL:Int
+    COINBASE_CELL <- COINBASE_CELL:Int
+    STATEROOT_CELL <- STATEROOT_CELL:Int
+    TRANSACTIONSROOT_CELL <- TRANSACTIONSROOT_CELL:Int
+    RECEIPTSROOT_CELL <- RECEIPTSROOT_CELL:Int
+    LOGSBLOOM_CELL <- LOGSBLOOM_CELL:Bytes
+    DIFFICULTY_CELL <- DIFFICULTY_CELL:Int
+    NUMBER_CELL <- NUMBER_CELL:Int
+    GASLIMIT_CELL <- GASLIMIT_CELL:Int
+    GASUSED_CELL <- GASUSED_CELL:Gas
+    TIMESTAMP_CELL <- TIMESTAMP_CELL:Int
+    EXTRADATA_CELL <- EXTRADATA_CELL:Bytes
+    MIXHASH_CELL <- MIXHASH_CELL:Int
+    BLOCKNONCE_CELL <- BLOCKNONCE_CELL:Int
+    BASEFEE_CELL <- BASEFEE_CELL:Int
+    WITHDRAWALSROOT_CELL <- WITHDRAWALSROOT_CELL:Int
+    OMMERBLOCKHEADERS_CELL <- OMMERBLOCKHEADERS_CELL:JSON
+    CHAINID_CELL <- CHAINID_CELL:Int
+    TXORDER_CELL <- TXORDER_CELL:List
+    TXPENDING_CELL <- TXPENDING_CELL:List
+    MESSAGES_CELL <- MESSAGES_CELL:MessageCellMap
+    DEPTH_CELL <- DEPTH_CELL:Int
+    EXPECTEDREASON_CELL <- EXPECTEDREASON_CELL:Bytes
+    EXPECTEDDEPTH_CELL <- EXPECTEDDEPTH_CELL:Int
+    CHECKEDTOPICS_CELL <- CHECKEDTOPICS_CELL:List
+    CHECKEDDATA_CELL <- CHECKEDDATA_CELL:Bool
+    EXPECTEDEVENTADDRESS_CELL <- EXPECTEDEVENTADDRESS_CELL:Account
+    GENERATEDCOUNTER_CELL <- GENERATEDCOUNTER_CELL:Int
+}
+├─ 6
 │   k: #end EVMC_REVERT ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
 │   pc: 856
 │   callDepth: 0
 │   statusCode: STATUSCODE:StatusCode
 │
 │  (1 step)
-├─ 5
+├─ 7
 │   k: #halt ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
 │   pc: 856
 │   callDepth: 0
 │   statusCode: EVMC_REVERT
 │
 │  (2 steps)
-└─ 6 (leaf, terminal)
+└─ 8 (leaf, terminal)
     k: #halt ~> CONTINUATION:K
     pc: 856
     callDepth: 0
@@ -85,7 +157,7 @@
 │   statusCode: STATUSCODE_FINAL
 
 
-Node 6:
+Node 8:
 
 ( <generatedTop>
   <foundry>
@@ -614,6 +686,217 @@ Node 6:
     rule [BASIC-BLOCK-4-TO-5]: <foundry>
            <kevm>
              <k>
+               ( #checkCall 728815563385977040452943777879061427756277306518 0
+               ~> #call 728815563385977040452943777879061427756277306518 645326474426547203313410069153905908525362434349 645326474426547203313410069153905908525362434349 0 0 b"\xed\x9fsS" false
+               ~> #return 128 0
+               ~> #pc [ CALL ] => #end EVMC_REVERT
+               ~> #pc [ REVERT ] )
+               ~> #execute
+               ~> _CONTINUATION
+             </k>
+             <mode>
+               NORMAL
+             </mode>
+             <schedule>
+               SHANGHAI
+             </schedule>
+             <ethereum>
+               <evm>
+                 <output>
+                   ( _OUTPUT_CELL => b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01" )
+                 </output>
+                 <callStack>
+                   .List
+                 </callStack>
+                 <interimStates>
+                   .List
+                 </interimStates>
+                 <callState>
+                   ...
+                   ...
+                   <id>
+                     728815563385977040452943777879061427756277306518
+                   </id>
+                   <caller>
+                     CALLER_ID:Int
+                   </caller>
+                   <callData>
+                     b"c\xfe\xc36"
+                   </callData>
+                   <callValue>
+                     0
+                   </callValue>
+                   <wordStack>
+                     ( ( 132 => 428 ) : ( ( selector ( "infiniteGas()" ) => ( ( ??_VGAS +Int ??_VCALLGAS ) +Int -127 ) ) : ( ( 645326474426547203313410069153905908525362434349 => 583 ) : ( ( 167 => 928 ) : ( ( selector ( "testInfiniteGas()" ) => 345 ) : ( .WordStack => ( ( ( ??_VGAS +Int ??_VCALLGAS ) +Int -36 ) : ( 167 : ( selector ( "testInfiniteGas()" ) : .WordStack ) ) ) ) ) ) ) ) )
+                   </wordStack>
+                   <localMem>
+                     ( b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xed\x9fsS\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" => b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xed\x9fsS\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" )
+                   </localMem>
+                   ...
+                   ...
+                   <memoryUsed>
+                     5
+                   </memoryUsed>
+                   <callGas>
+                     ( 9079256848778917021 => #gas ( ??_VCALLGAS ) )
+                   </callGas>
+                   <static>
+                     false
+                   </static>
+                   <callDepth>
+                     0
+                   </callDepth>
+                 </callState>
+                 <substate>
+                   <log>
+                     .List
+                   </log>
+                   <accessedAccounts>
+                     SetItem ( 645326474426547203313410069153905908525362434349 )
+                   </accessedAccounts>
+                   <accessedStorage>
+                     .Map
+                   </accessedStorage>
+                   ...
+                 </substate>
+                 <origin>
+                   ORIGIN_ID:Int
+                 </origin>
+                 <block>
+                   <number>
+                     NUMBER_CELL:Int
+                   </number>
+                   ...
+                 </block>
+                 ...
+               </evm>
+               <network>
+                 <accounts>
+                   ( <account>
+                     <acctID>
+                       645326474426547203313410069153905908525362434349
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     ...
+                     <storage>
+                       .Map
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       0
+                     </nonce>
+                   </account>
+                   <account>
+                     <acctID>
+                       728815563385977040452943777879061427756277306518
+                     </acctID>
+                     <balance>
+                       0
+                     </balance>
+                     ...
+                     <storage>
+                       .Map
+                     </storage>
+                     <origStorage>
+                       .Map
+                     </origStorage>
+                     <nonce>
+                       1
+                     </nonce>
+                   </account> )
+                 </accounts>
+                 ...
+               </network>
+             </ethereum>
+             ...
+           </kevm>
+           <cheatcodes>
+             <prank>
+               <prevCaller>
+                 .Account
+               </prevCaller>
+               <prevOrigin>
+                 .Account
+               </prevOrigin>
+               <newCaller>
+                 .Account
+               </newCaller>
+               <newOrigin>
+                 .Account
+               </newOrigin>
+               <active>
+                 false
+               </active>
+               <singleCall>
+                 false
+               </singleCall>
+               ...
+             </prank>
+             <expectedRevert>
+               <isRevertExpected>
+                 false
+               </isRevertExpected>
+               ...
+             </expectedRevert>
+             <expectedOpcode>
+               <isOpcodeExpected>
+                 false
+               </isOpcodeExpected>
+               <expectedAddress>
+                 .Account
+               </expectedAddress>
+               <expectedValue>
+                 0
+               </expectedValue>
+               <expectedData>
+                 b""
+               </expectedData>
+               <opcodeType>
+                 .OpcodeType
+               </opcodeType>
+             </expectedOpcode>
+             <expectEmit>
+               <recordEvent>
+                 false
+               </recordEvent>
+               <isEventExpected>
+                 false
+               </isEventExpected>
+               ...
+             </expectEmit>
+             <whitelist>
+               <isCallWhitelistActive>
+                 false
+               </isCallWhitelistActive>
+               <isStorageWhitelistActive>
+                 false
+               </isStorageWhitelistActive>
+               <addressSet>
+                 .Set
+               </addressSet>
+               <storageSlotSet>
+                 .Set
+               </storageSlotSet>
+             </whitelist>
+           </cheatcodes>
+         </foundry>
+      requires ( 0 <=Int CALLER_ID:Int
+       andBool ( 0 <=Int ORIGIN_ID:Int
+       andBool ( 0 <=Int NUMBER_CELL:Int
+       andBool ( CALLER_ID:Int <Int pow160
+       andBool ( ORIGIN_ID:Int <Int pow160
+       andBool ( NUMBER_CELL:Int <=Int maxSInt256
+               ))))))
+       ensures ( ??_VGAS +Int ??_VCALLGAS ) <Int ( ( ??_VGAS +Int ??_VCALLGAS ) +Int 91 )
+      [label(BASIC-BLOCK-4-TO-5)]
+    
+    rule [BASIC-BLOCK-6-TO-7]: <foundry>
+           <kevm>
+             <k>
                ( #end EVMC_REVERT => #halt )
                ~> #pc [ REVERT ]
                ~> #execute
@@ -818,9 +1101,9 @@ Node 6:
        andBool ( NUMBER_CELL:Int <=Int maxSInt256
        andBool ( VGAS:Int <Int ( VGAS:Int +Int 91 )
                )))))))
-      [label(BASIC-BLOCK-4-TO-5)]
+      [label(BASIC-BLOCK-8-TO-9)]
     
-    rule [BASIC-BLOCK-5-TO-6]: <foundry>
+    rule [BASIC-BLOCK-7-TO-8]: <foundry>
            <kevm>
              <k>
                #halt
@@ -1027,14 +1310,14 @@ Node 6:
        andBool ( NUMBER_CELL:Int <=Int maxSInt256
        andBool ( VGAS:Int <Int ( VGAS:Int +Int 91 )
                )))))))
-      [label(BASIC-BLOCK-5-TO-6)]
+      [label(BASIC-BLOCK-7-TO-8)]
 
 endmodule
 1 Failure nodes. (0 pending and 1 failing)
 
 Failing nodes:
 
-  Node id: 6
+  Node id: 10
   Failure reason:
     Implication check failed, the following is the remaining implication:
     ( ( { true #Equals 0 <=Int CALLER_ID:Int }

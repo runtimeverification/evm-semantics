@@ -29,7 +29,6 @@ version_sub() {
     local version
     version="$(cat $version_file)"
     sed --in-place 's/^version = ".*"$/version = "'${version}'"/' kevm-pyk/pyproject.toml
-    sed --in-place 's/^kevm (.*) unstable; urgency=medium$/kevm ('${version}') unstable; urgency=medium/' package/debian/changelog
 }
 
 version_command="$1" ; shift
