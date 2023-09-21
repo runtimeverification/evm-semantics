@@ -17,7 +17,7 @@ contract AssertTest is Test, KEVMCheats {
         assert(true);
     }
 
-    function test_many_branches(uint x) public {
+    function test_long_branches(uint x) public {
         if (x < 1) {
             y = 3;
             assert(true);
@@ -28,6 +28,22 @@ contract AssertTest is Test, KEVMCheats {
         for(uint i=0; i<10; i++){
             y = y + 1;
         }
+        assert(y >= 13);
+    }
+
+    function test_many_branches(uint x) public {
+        uint a = 7;
+        while(a > 0) {
+            if(x >= a) {
+                y = 3;
+                assert(true);
+            }
+        }
+
+        for(uint i=0; i<10; i++){
+            y = y + 1;
+        }
+
         assert(y >= 13);
     }
 
