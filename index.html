@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+<meta charset="utf-8" />
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0, maximum-scale=1.0"
+/>
+<meta
+  name="description"
+  content="K Semantics of the Ethereum Virtual Machine (EVM)"
+/>
+<meta
+  name="keywords"
+  content="runtime, verification, rv, k, ethereum virtual machine, evm"
+/>
+<meta name="author" content="EVM Semantics | Runtime Verification Inc" />
+<meta name="robots" content="index, follow" />
+
+<!--favicon icon-->
+<link rel="icon" type="image/png" href="./assets/img/favicon.ico" />
+
+<title>KEVM: Semantics of EVM in K | Runtime Verification, Inc. </title>
+
+<link rel="canonical" href="https://jellopaper.org/" />
+
+<!--web fonts-->
+<link
+  href="https://fonts.googleapis.com/css?family=Nunito:300,400,600,700,800"
+  rel="stylesheet"
+/>
+<link
+  href="https://fonts.googleapis.com/css?family=Lora:400i"
+  rel="stylesheet"
+/>
+
+<link
+  href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.14.0/css/all.min.css"
+  rel="stylesheet"
+/>
+
+<link href="./assets/css/index.css" rel="stylesheet" />
+
+<!--[if (gt IE 9) |!(IE)]><!-->
+<!--<link rel="stylesheet" href="/assets/vendor/custom-nav/css/effects/fade-menu.css"/>-->
+<!-- <link rel="stylesheet" href="./assets/k/vl-nav/css/effects/slide-menu.css" /> -->
+<!--<![endif]-->
+
+  </head>
+
+  <body>
+<header
+  class="navbar navbar-expand navbar-dark flex-column flex-md-row bd-navbar"
+>
+  <a class="logo-link" href="./index.html"> EVM Semantics </a>
+  <ul class="navbar-nav ml-md-auto">
+    <li class="nav-item">
+      <a
+        class="nav-link pl-2 pr-1 mx-1 py-3 my-n2"
+        href="https://github.com/runtimeverification/evm-semantics"
+        target="_blank"
+        rel="noopener"
+        aria-label="GitHub"
+      >
+        <i class="fab fa-github"></i>
+      </a>
+    </li>
+  </ul>
+  <!--
+  <a
+    class="btn btn-rv-blue d-none d-lg-inline-block mb-3 mb-md-0 ml-md-3"
+    href="./downloads"
+    >Download</a
+  >
+  -->
+</header>
+
+
+    <div class="container-fluid">
+      <div class="row flex-xl-nowrap">
+<div class="col-12 col-md-3 col-xl-2 bd-sidebar mb-3">
+  <form
+    role="search"
+    class="bd-search d-flex align-items-center justify-content-between"
+  >
+    <input
+      type="search"
+      class="form-control"
+      placeholder="Search..."
+      aria-label="Search for..."
+      autocomplete="false"
+      id="search-box"
+    />
+    <button
+      class="btn bd-search-docs-toggle d-md-none p-0 ml-3 collapsed"
+      type="button"
+      aria-label="Toggle docs navigation"
+      style="font-size: 1.4rem"
+    >
+      <i class="fas fa-bars"></i>
+    </button>
+  </form>
+  <nav class="collapse bd-links" aria-label="Main navigation">
+    <div class="bd-toc-item">
+      <a class="bd-toc-link" href="./">Homepage</a>
+      <a class="bd-toc-link" href="./INSTALL/">Install</a>
+    </div>
+  </nav>
+</div>
+
+        <main
+          class="col-12 col-md-6 col-xl-8 py-md-3 pl-md-5 bd-content"
+          role="main"
+        >
+          <div class="markdown-preview"><html><head></head><body><h1 id="kevm%3A-semantics-of-evm-in-k">KEVM: Semantics of EVM in K</h1>
+<p>In this repository, we provide a model of the EVM in K.</p>
+<h2 id="fast-installation">Fast Installation</h2>
+<ul>
+<li><code>bash &lt;(curl https://kframework.org/install)</code>: install <a href="https://github.com/runtimeverification/kup" target="_blank" rel="noreferrer noopener">kup package manager</a>.</li>
+<li><code>kup install kevm</code>: install KEVM.</li>
+<li><code>kup list kevm</code>: list available KEVM versions.</li>
+<li><code>kup update kevm</code>: update to latest KEVM version.</li>
+</ul>
+<p><strong>NOTE</strong>: The first run will take longer to fetch all the libraries and compile sources. (30m to 1h)</p>
+<h2 id="documentation%2Fsupport">Documentation/Support</h2>
+<p>These may be useful for learning KEVM and K (newest to oldest):</p>
+<ul>
+<li><a href="https://www.youtube.com/watch?v=9PLnQStkiUo" target="_blank" rel="noreferrer noopener">K, KEVM and Foundry Integration overview</a></li>
+<li><a href="https://jellopaper.org" target="_blank" rel="noreferrer noopener">Jello Paper</a>, a nice presentation of this repository.</li>
+<li><a href="https://www.youtube.com/watch?v=tIq_xECoicQNov" target="_blank" rel="noreferrer noopener">20 minute tour of the semantics</a> at <a href="https://archive.devcon.org/archive/watch?edition=3&amp;order=desc&amp;sort=edition" target="_blank" rel="noreferrer noopener">2017 Devcon3</a>.</li>
+<li><a href="http://hdl.handle.net/2142/97207" target="_blank" rel="noreferrer noopener">KEVM 1.0 technical report</a>, especially sections 3 and 5.</li>
+<li><a href="https://fsl.cs.illinois.edu/publications/hildenbrandt-saxena-zhu-rodrigues-daian-guth-moore-zhang-park-rosu-2018-csf" target="_blank" rel="noreferrer noopener">KEVM Paper at CSF'18/FLoC</a>.</li>
+</ul>
+<p>To get support for KEVM, please join our <a href="https://discord.com/invite/CurfmXNtbN" target="_blank" rel="noreferrer noopener">Discord Channel</a>.</p>
+<p>If you want to start proving with KEVM, refer to <a href="VERIFICATION/">VERIFICATION.md</a>.</p>
+<h2 id="repository-structure">Repository Structure</h2>
+<p>The following files constitute the KEVM semantics:</p>
+<ul>
+<li><a href="kevm-pyk/src/kevm_pyk/kproj/evm-semantics/network/">network.md</a> provides the status codes reported to an Ethereum client on execution exceptions.</li>
+<li><a href="kevm-pyk/src/kevm_pyk/kproj/evm-semantics/json-rpc/">json-rpc.md</a> is an implementation of JSON RPC in K.</li>
+<li><a href="kevm-pyk/src/kevm_pyk/kproj/evm-semantics/evm-types/">evm-types.md</a> provides the (functional) data of EVM (256-bit words, wordstacks, etc...).</li>
+<li><a href="kevm-pyk/src/kevm_pyk/kproj/evm-semantics/serialization/">serialization.md</a> provides helpers for parsing and unparsing data (hex strings, recursive-length prefix, Merkle trees, etc.).</li>
+<li><a href="kevm-pyk/src/kevm_pyk/kproj/evm-semantics/evm/">evm.md</a> is the main KEVM semantics, containing EVM’s configuration and transition rules.</li>
+<li><a href="kevm-pyk/src/kevm_pyk/kproj/evm-semantics/gas/">gas.md</a> contains all information relevant to gas.</li>
+<li><a href="kevm-pyk/src/kevm_pyk/kproj/evm-semantics/schedule/">schedule.md</a> contains all information relevant to EVM schedules.</li>
+</ul>
+<p>These additional files extend the semantics to make the repository more useful:</p>
+<ul>
+<li><a href="kevm-pyk/src/kevm_pyk/kproj/evm-semantics/buf/">buf.md</a> defines the <code>#buf</code> byte-buffer abstraction for use during symbolic execution.</li>
+<li><a href="kevm-pyk/src/kevm_pyk/kproj/evm-semantics/abi/">abi.md</a> defines the <a href="https://docs.soliditylang.org/en/v0.8.1/abi-spec.html" target="_blank" rel="noreferrer noopener">Contract ABI Specification</a> for use in proofs and easy contract/function specification.</li>
+<li><a href="kevm-pyk/src/kevm_pyk/kproj/evm-semantics/hashed-locations/">hashed-locations.md</a> defines the <code>#hashedLocation</code> abstraction used to specify Solidity-generated storage layouts.</li>
+<li><a href="kevm-pyk/src/kevm_pyk/kproj/evm-semantics/edsl/">edsl.md</a> combines the previous three abstractions for ease-of-use.</li>
+<li><a href="kevm-pyk/src/kevm_pyk/kproj/evm-semantics/foundry/">foundry.md</a> adds Foundry capabilities to KEVM.</li>
+</ul>
+<p>These files are used for testing the semantics itself:</p>
+<ul>
+<li><a href="kevm-pyk/src/kevm_pyk/kproj/evm-semantics/state-utils/">state-utils.md</a> provides functionality for EVM initialization, setup, and querying.</li>
+<li><a href="kevm-pyk/src/kevm_pyk/kproj/evm-semantics/driver/">driver.md</a> is an execution harness for KEVM, providing a simple language for describing tests/programs.</li>
+</ul>
+<h2 id="building-from-source">Building from source</h2>
+<p>There are two backends of K available: LLVM for concrete execution and Haskell for symbolic execution.
+This repository generates the build-products for each backend in <code>$XDG_CACHE_HOME/evm-semantics-&lt;digest&gt;</code>.</p>
+<h3 id="system-dependencies">System Dependencies</h3>
+<p>First install the following tools:</p>
+<ul>
+<li><a href="https://git-scm.com/" target="_blank" rel="noreferrer noopener">git</a></li>
+<li>GNU <a href="https://www.gnu.org/software/bison/" target="_blank" rel="noreferrer noopener">Bison</a>, <a href="https://github.com/westes/flex" target="_blank" rel="noreferrer noopener">Flex</a>, and <a href="http://www.gnu.org/software/autoconf/" target="_blank" rel="noreferrer noopener">Autoconf</a>.</li>
+<li>GNU <a href="https://www.mpfr.org/" target="_blank" rel="noreferrer noopener">libmpfr</a> and <a href="https://www.gnu.org/software/libtool/" target="_blank" rel="noreferrer noopener">libtool</a>.</li>
+<li><a href="https://github.com/Z3Prover/z3" target="_blank" rel="noreferrer noopener">Z3</a> version 4.12.1</li>
+</ul>
+<h4 id="installing-z3">Installing Z3</h4>
+<p>KEVM requires Z3 version 4.12.1, which you may need to install from a source build if your package manager supplies a different version.
+To do so, follow the instructions <a href="https://github.com/Z3Prover/z3#building-z3-using-make-and-gccclang" target="_blank" rel="noreferrer noopener">here</a> after checking out the correct tag in the Z3 repository:</p>
+<pre><code class="language-sh"><span class="token function">git</span> clone https://github.com/Z3Prover/z3.git
+<span class="token builtin class-name">cd</span> z3
+<span class="token function">git</span> checkout z3-4.12.1
+python scripts/mk_make.py
+<span class="token builtin class-name">cd</span> build
+<span class="token function">make</span>
+<span class="token function">sudo</span> <span class="token function">make</span> <span class="token function">install</span>
+</code></pre>
+<p>On macOS, it is easiest to install Z3 from Homebrew.
+If you wish to install from the source, install it to an appropriate prefix (e.g. <code>/usr/local</code> on Intel machines).</p>
+<h4 id="ubuntu">Ubuntu</h4>
+<p>On Ubuntu &gt;= 22.04 (for example):</p>
+<pre><code class="language-sh"><span class="token function">sudo</span> <span class="token function">apt-get</span> <span class="token function">install</span> <span class="token parameter variable">--yes</span>                                                         <span class="token punctuation">\</span>
+            autoconf bison clang-12 cmake <span class="token function">curl</span> flex gcc jq libboost-test-dev       <span class="token punctuation">\</span>
+            libcrypto++-dev libffi-dev libgflags-dev libjemalloc-dev libmpfr-dev   <span class="token punctuation">\</span>
+            libprocps-dev libsecp256k1-dev libssl-dev libtool libyaml-dev lld-12   <span class="token punctuation">\</span>
+            llvm-12-tools <span class="token function">make</span> maven openjdk-11-jdk pkg-config python3 python3-dev <span class="token punctuation">\</span>
+            python3-pip rapidjson-dev <span class="token function">time</span> zlib1g-dev libfmt-dev
+</code></pre>
+<p>On Ubuntu &lt; 18.04, you'll need to skip <code>libsecp256k1-dev</code> and instead build it from source (via our <code>Makefile</code>):</p>
+<pre><code class="language-sh"><span class="token function">make</span> libsecp256k1
+</code></pre>
+<h4 id="arch-linux">Arch Linux</h4>
+<p>On ArchLinux:</p>
+<pre><code class="language-sh"><span class="token function">sudo</span> pacman <span class="token parameter variable">-S</span>                                               <span class="token punctuation">\</span>
+    base base-devel boost clang cmake crypto++ <span class="token function">curl</span> <span class="token function">git</span> gmp  <span class="token punctuation">\</span>
+    gflags jdk-openjdk jemalloc libsecp256k1 lld llvm maven  <span class="token punctuation">\</span>
+    mpfr poetry python stack yaml-cpp zlib
+</code></pre>
+<h4 id="macos">macOS</h4>
+<p>After installing the Command Line Tools, <a href="https://brew.sh/" target="_blank" rel="noreferrer noopener">Homebrew</a>, and getting the <a href="#blockchain-plugin">blockchain plugin</a>, run:</p>
+<pre><code class="language-sh">brew tap kframework/k
+brew <span class="token function">install</span> <span class="token function">java</span> automake libtool gmp mpfr pkg-config maven libffi llvm@14 openssl python <span class="token function">bash</span> kframework/k/cryptopp@8.6.0 poetry solidity
+<span class="token function">make</span> libsecp256k1
+</code></pre>
+<p><strong>NOTE</strong>: It is recommended to use the homebrew version of <code>flex</code> and XCode.</p>
+<p>If you are building on an Apple Silicon machine, ensure that your <code>PATH</code> is set up correctly before running <code>make deps</code> or <code>make k-deps</code>.
+You can do so using <a href="https://direnv.net/" target="_blank" rel="noreferrer noopener"><code>direnv</code></a> by copying <code>macos-envrc</code> to <code>.envrc</code>, then running <code>direnv allow</code>.</p>
+<p>If the build on macOS still fails, you can also try adding the following lines to the top of your <code>Makefile</code> under <code>UNAME_S</code>:</p>
+<pre><code class="language-sh">ifeq <span class="token punctuation">(</span><span class="token variable"><span class="token variable">$(</span>UNAME_S<span class="token variable">)</span></span>, Darwin<span class="token punctuation">)</span>
+<span class="token environment constant">SHELL</span> :<span class="token operator">=</span> /usr/local/bin/bash
+<span class="token environment constant">PATH</span> :<span class="token operator">=</span> <span class="token variable"><span class="token variable">$(</span><span class="token builtin class-name">pwd</span><span class="token variable">)</span></span>/.build/usr/bin:<span class="token variable"><span class="token variable">$(</span><span class="token environment constant">PATH</span><span class="token variable">)</span></span>
+endif
+</code></pre>
+<h4 id="haskell-stack-(all-platforms)">Haskell Stack (all platforms)</h4>
+<ul>
+<li><a href="https://docs.haskellstack.org/en/stable/install_and_upgrade/#installupgrade" target="_blank" rel="noreferrer noopener">Haskell Stack</a>.
+Note that the version of the <code>stack</code> tool provided by your package manager might not be recent enough.
+Please follow installation instructions from the Haskell Stack website linked above.</li>
+</ul>
+<p>To upgrade <code>stack</code> (if needed):</p>
+<pre><code class="language-sh">stack upgrade
+<span class="token builtin class-name">export</span> <span class="token assign-left variable"><span class="token environment constant">PATH</span></span><span class="token operator">=</span><span class="token environment constant">$HOME</span>/.local/bin:<span class="token environment constant">$PATH</span>
+</code></pre>
+<h3 id="build-dependencies">Build Dependencies</h3>
+<h4 id="k-framework">K Framework</h4>
+<p>You need to install the <a href="https://kframework.org" target="_blank" rel="noreferrer noopener">K Framework</a> on your system, see the instructions there.
+The fastest way is via the <a href="https://github.com/runtimeverification/kup" target="_blank" rel="noreferrer noopener">kup package manager</a>, with which you can do to get the correct version of K:</p>
+<pre><code class="language-sh">kup <span class="token function">install</span> k.openssl.procps <span class="token parameter variable">--version</span> <span class="token function">v</span><span class="token variable"><span class="token variable">$(</span><span class="token function">cat</span> deps/k_release<span class="token variable">)</span></span>
+</code></pre>
+<p>You can also drop into a single development shell with the correct version of K on path by doing:</p>
+<pre><code class="language-sh">kup shell k.openssl.procps <span class="token parameter variable">--version</span> <span class="token function">v</span><span class="token variable"><span class="token variable">$(</span><span class="token function">cat</span> deps/k_release<span class="token variable">)</span></span>
+</code></pre>
+<h3 id="building">Building</h3>
+<p>First you need to set up a virtual environment using Poetry with the prerequisites <code>python 3.8.*</code>, <code>pip &gt;= 20.0.2</code>, <code>poetry &gt;= 1.3.2</code>:</p>
+<pre><code class="language-sh"><span class="token function">make</span> poetry
+</code></pre>
+<h4 id="blockchain-plugin">Blockchain Plugin</h4>
+<p>You also need to get the blockchain plugin submodule and install it.</p>
+<pre><code class="language-sh"><span class="token function">git</span> submodule update <span class="token parameter variable">--init</span> <span class="token parameter variable">--recursive</span>
+poetry <span class="token parameter variable">-C</span> kevm-pyk run kevm-dist <span class="token parameter variable">--verbose</span> build plugin
+</code></pre>
+<p>To change the default compiler:</p>
+<pre><code class="language-sh"><span class="token assign-left variable">CXX</span><span class="token operator">=</span>clang++-14 poetry <span class="token parameter variable">-C</span> kevm-pyk run kevm-dist <span class="token parameter variable">--verbose</span> build plugin
+</code></pre>
+<p>On Apple silicon:</p>
+<pre><code class="language-sh"><span class="token assign-left variable">APPLE_SILICON</span><span class="token operator">=</span>true poetry <span class="token parameter variable">-C</span> kevm-pyk run kevm-dist <span class="token parameter variable">--verbose</span> build plugin
+</code></pre>
+<h4 id="k-definitions">K Definitions</h4>
+<p>Finally, you can build the semantics.</p>
+<pre><code class="language-sh">poetry <span class="token parameter variable">-C</span> kevm-pyk run kevm-dist <span class="token parameter variable">--verbose</span> build <span class="token parameter variable">-j4</span>
+</code></pre>
+<p>You can build specific targets using options <code>llvm</code>, <code>haskell</code>, <code>haskell-standalone</code> or <code>foundry</code>, e.g.:</p>
+<pre><code class="language-sh">poetry <span class="token parameter variable">-C</span> kevm-pyk run kevm-dist build <span class="token parameter variable">-j2</span> llvm haskell
+</code></pre>
+<p>Targets can be cleaned with</p>
+<pre><code class="language-sh">poetry <span class="token parameter variable">-C</span> kevm-pyk run kevm-dist clean
+</code></pre>
+<p>For more information, refer to <code>kevm-dist --help</code> and the <a href="https://github.com/kframework/evm-semantics/tree/master/kevm-pyk/src/kevm_pyk/dist.py">dist.py</a> module.</p>
+<h2 id="running-tests">Running Tests</h2>
+<p>To execute tests from the <a href="https://github.com/ethereum/tests" target="_blank" rel="noreferrer noopener">Ethereum Test Set</a>, the submodule needs to be fetched first.</p>
+<pre><code class="language-sh"><span class="token function">git</span> submodule update <span class="token parameter variable">--init</span> <span class="token parameter variable">--recursive</span>  -- tests/ethereum-tests
+</code></pre>
+<p>The tests are run using the supplied <code>Makefile</code>.</p>
+<p>The following subsume all other tests:</p>
+<ul>
+<li><code>make test</code>: All of the quick tests.</li>
+<li><code>make test-all</code>: All of the quick and slow tests.</li>
+</ul>
+<p>These are the individual test-suites (all of these can be suffixed with <code>-all</code> to also run slow tests):</p>
+<ul>
+<li><code>make test-vm</code>: VMTests from the <a href="https://github.com/ethereum/tests" target="_blank" rel="noreferrer noopener">Ethereum Test Set</a>.</li>
+<li><code>make test-bchain</code>: Subset of BlockchainTests from the <a href="https://github.com/ethereum/tests" target="_blank" rel="noreferrer noopener">Ethereum Test Set</a>.</li>
+<li><code>make test-proof</code>: Proofs from the <a href="https://github.com/runtimeverification/verified-smart-contracts" target="_blank" rel="noreferrer noopener">Verified Smart Contracts</a>.</li>
+<li><code>make test-interactive</code>: Tests of the <code>kevm</code> command.</li>
+</ul>
+<h2 id="for-developers">For Developers</h2>
+<p>If built from the source, the <code>kevm-pyk</code> executable will be installed in a virtual environemtn handled by Poetry.
+You can call <code>kevm-pyk --help</code> to get a quick summary of how to use the script.</p>
+<p>Run the file <code>tests/ethereum-tests/LegacyTests/Constantinople/VMTests/vmArithmeticTest/add0.json</code>:</p>
+<pre><code class="language-sh">poetry <span class="token parameter variable">-C</span> kevm-pyk run kevm-pyk run tests/ethereum-tests/LegacyTests/Constantinople/VMTests/vmArithmeticTest/add0.json <span class="token parameter variable">--schedule</span> DEFAULT <span class="token parameter variable">--mode</span> VMTESTS
+</code></pre>
+<p>To enable the debug symbols for the llvm backend, build using this command:</p>
+<pre><code class="language-sh">poetry <span class="token parameter variable">-C</span> kevm-pyk run kevm-dist build llvm --enable-llvm-debug
+</code></pre>
+<p>To debug a conformance test, add the <code>--debugger</code> flag to the command:</p>
+<pre><code class="language-sh">poetry <span class="token parameter variable">-C</span> kevm-pyk run kevm-pyk run tests/ethereum-tests/BlockchainTests/GeneralStateTests/stExample/add11.json <span class="token parameter variable">--target</span> llvm <span class="token parameter variable">--mode</span> NORMAL <span class="token parameter variable">--schedule</span> SHANGHAI <span class="token parameter variable">--chainid</span> <span class="token number">1</span> <span class="token parameter variable">--debugger</span>
+</code></pre>
+<h3 id="keeping-in-mind-while-developing">Keeping in mind while developing</h3>
+<p>Always have your build up-to-date.</p>
+<ul>
+<li>If using the kup package manager, run <code>kup install kevm --version .</code> to install the local version.</li>
+<li>If building from source:
+<ul>
+<li><code>make poetry</code> needs to be re-run if you touch any of the <code>kevm-pyk</code> code.</li>
+<li><code>poetry -C kevm-pyk run kevm-dist build &lt;target&gt; --force</code> needs to be re-run if you touch any of this repos files.</li>
+<li><code>poetry -C kevm-pyk run kevm-dist clean</code> is a safe way to remove the target directory</li>
+</ul>
+</li>
+</ul>
+<h3 id="building-with-nix">Building with Nix</h3>
+<p>We now support building KEVM using <a href="https://nixos.wiki/wiki/Flakes" target="_blank" rel="noreferrer noopener">nix flakes</a>.
+To set up nix flakes you will need to be on <code>nix</code> 2.4 or higher and follow the instructions <a href="https://nixos.wiki/wiki/Flakes" target="_blank" rel="noreferrer noopener">here</a>.</p>
+<p>For example, if you are on a standard Linux distribution, such as Ubuntu, first <a href="https://nixos.org/download.html#download-nix" target="_blank" rel="noreferrer noopener">install nix</a>
+and then enable flakes by editing either <code>~/.config/nix/nix.conf</code> or <code>/etc/nix/nix.conf</code> and adding:</p>
+<pre><code>experimental-features = nix-command flakes
+</code></pre>
+<p>This is needed to expose the Nix 2.0 CLI and flakes support that are hidden behind feature-flags.</p>
+<p>By default, Nix will build the project and its transitive dependencies from source, which can take up to an hour.
+We recommend setting up <a href="https://app.cachix.org/cache/kore" target="_blank" rel="noreferrer noopener">the binary cache</a> to speed up the build process significantly.</p>
+<p>To build KEVM, run:</p>
+<pre><code class="language-sh">nix build <span class="token builtin class-name">.</span><span class="token comment">#kevm</span>
+</code></pre>
+<p>This will build all of KEVM and K and put a link to the resulting binaries in the <code>result/</code> folder.</p>
+<p><strong>NOTE</strong>: Mac users, especially those running M1/M2 Macs may find nix segfaulting on occasion. If this happens, try running the nix command like this: <code>GC_DONT_GC=1 nix build .</code></p>
+<p>If you want to temporarily add the <code>kevm</code> binary to the current shell, run</p>
+<pre><code class="language-sh">nix shell <span class="token builtin class-name">.</span><span class="token comment">#kevm</span>
+</code></pre>
+<h3 id="profiling-with-nix">Profiling with Nix</h3>
+<p>Nix can also be used to quickly profile different versions of the Haskell backend. Simply run:</p>
+<pre><code class="language-sh">nix build github:runtimeverification/evm-semantics<span class="token comment">#profile \</span>
+  --override-input k-framework/haskell-backend github:runtimeverification/haskell-backend/<span class="token operator">&lt;</span>HASH<span class="token operator">&gt;</span> <span class="token punctuation">\</span>
+  <span class="token parameter variable">-o</span> prof-<span class="token operator">&lt;</span>HASH<span class="token operator">&gt;</span>
+</code></pre>
+<p>replacing <code>&lt;HASH&gt;</code> with the commit you want to run profiling against.</p>
+<p>If you want to profile against a working version of the Haskell backend repository, simply <code>cd</code> into the root of the repo and run:</p>
+<pre><code class="language-sh">nix build github:runtimeverification/evm-semantics<span class="token comment">#profile \</span>
+  --override-input k-framework/haskell-backend <span class="token variable"><span class="token variable">$(</span><span class="token builtin class-name">pwd</span><span class="token variable">)</span></span> <span class="token punctuation">\</span>
+  <span class="token parameter variable">-o</span> prof-my-feature
+</code></pre>
+<p>To compare profiles, you can use:</p>
+<pre><code class="language-sh">nix run github:runtimeverification/evm-semantics<span class="token comment">#compare-profiles -- prof-my-feature prof-&lt;HASH&gt;</span>
+</code></pre>
+<p>This will produce a nice table with the times for both versions of the haskell-backend.
+Note that <code>#profile</code> pre-pends the output of <code>kore-exec --version</code> to the profile run, which is then used as a tag by the <code>#compare-profiles</code> script.
+Therefore, any profiled local checkout of the haskell-backend will report as <code>dirty-ghc8107</code> in the resulting table.</p>
+<h2 id="media">Media</h2>
+<p>This repository can build two pieces of documentation for you, the <a href="https://jellopaper.org" target="_blank" rel="noreferrer noopener">Jello Paper</a> and the <a href="https://archive.devcon.org/archive/watch?edition=3&amp;order=desc&amp;sort=edition" target="_blank" rel="noreferrer noopener">2017 Devcon3</a> presentation.</p>
+<h3 id="system-dependencies-1">System Dependencies</h3>
+<p>For the presentations in the <code>media</code> directory, you'll need <code>pdflatex</code>, commonly provided with <code>texlive-full</code>, and <code>pandoc</code>.</p>
+<pre><code class="language-sh"><span class="token function">sudo</span> <span class="token function">apt</span> <span class="token function">install</span> texlive-full pandoc
+</code></pre>
+<h3 id="building-1">Building</h3>
+<p>To build all the PDFs (presentations and reports) available in the <code>media/</code> directory, use:</p>
+<pre><code class="language-sh"><span class="token function">make</span> media
+</code></pre>
+<h1 id="resources">Resources</h1>
+<ul>
+<li><a href="https://github.com/ethereum/yellowpaper" target="_blank" rel="noreferrer noopener">EVM Yellowpaper</a>: Original specification of EVM.</li>
+<li><a href="https://github.com/pirapira/eth-isabelle" target="_blank" rel="noreferrer noopener">LEM Semantics of EVM</a></li>
+<li><a href="https://www.evm.codes/?fork=merge" target="_blank" rel="noreferrer noopener">EVM Opcode Interactive Reference</a></li>
+<li><a href="https://docs.soliditylang.org/en/v0.8.19/abi-spec.html" target="_blank" rel="noreferrer noopener">Solidity ABI Encoding</a></li>
+</ul>
+<p>For more information about the <a href="https://kframework.org" target="_blank" rel="noreferrer noopener">K Framework</a>, refer to these sources:</p>
+<ul>
+<li><a href="https://github.com/runtimeverification/k/tree/master/k-distribution/k-tutorial" target="_blank" rel="noreferrer noopener">The K Tutorial</a></li>
+<li><a href="https://fsl.cs.illinois.edu/publications/stefanescu-park-yuwen-li-rosu-2016-oopsla" target="_blank" rel="noreferrer noopener">Semantics-Based Program Verifiers for All Languages</a></li>
+<li><a href="http://fsl.cs.illinois.edu/index.php/Reachability_Logic_in_K" target="_blank" rel="noreferrer noopener">Reachability Logic Resources</a></li>
+<li><a href="http://www.matching-logic.org/" target="_blank" rel="noreferrer noopener">Matching Logic Resources</a></li>
+<li><a href="https://dl.acm.org/doi/10.5555/208683.208700" target="_blank" rel="noreferrer noopener">Logical Frameworks</a>: Discussion of logical frameworks.</li>
+</ul>
+</body></html></div>
+        </main>
+
+        <!-- Page ToC -->
+        <div class="col-12 col-md-3 col-xl-2 py-md-3 bd-sidebar page-toc mb-3">
+          
+<div>
+<details style="padding:0.25rem 0;;padding-left: 0px;">
+            <summary class="bd-toc-link-wrapper">
+              <a href="#kevm%3A-semantics-of-evm-in-k" class="bd-toc-link">KEVM: Semantics of EVM in K</a>
+              </summary>
+            <div>
+              <div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#fast-installation"
+                class="bd-toc-link"
+                style="padding-left: 8px;;"
+              >
+                Fast Installation
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#documentation%2Fsupport"
+                class="bd-toc-link"
+                style="padding-left: 8px;;"
+              >
+                Documentation/Support
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#repository-structure"
+                class="bd-toc-link"
+                style="padding-left: 8px;;"
+              >
+                Repository Structure
+              </a></div><details style="padding:0.25rem 0;;padding-left: 8px;">
+            <summary class="bd-toc-link-wrapper">
+              <a href="#building-from-source" class="bd-toc-link">Building from source</a>
+              </summary>
+            <div>
+              <details style="padding:0.25rem 0;;padding-left: 16px;">
+            <summary class="bd-toc-link-wrapper">
+              <a href="#system-dependencies" class="bd-toc-link">System Dependencies</a>
+              </summary>
+            <div>
+              <div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#installing-z3"
+                class="bd-toc-link"
+                style="padding-left: 24px;;"
+              >
+                Installing Z3
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#ubuntu"
+                class="bd-toc-link"
+                style="padding-left: 24px;;"
+              >
+                Ubuntu
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#arch-linux"
+                class="bd-toc-link"
+                style="padding-left: 24px;;"
+              >
+                Arch Linux
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#macos"
+                class="bd-toc-link"
+                style="padding-left: 24px;;"
+              >
+                macOS
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#haskell-stack-(all-platforms)"
+                class="bd-toc-link"
+                style="padding-left: 24px;;"
+              >
+                Haskell Stack (all platforms)
+              </a></div>
+            </div>
+          </details>
+        <details style="padding:0.25rem 0;;padding-left: 16px;">
+            <summary class="bd-toc-link-wrapper">
+              <a href="#build-dependencies" class="bd-toc-link">Build Dependencies</a>
+              </summary>
+            <div>
+              <div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#k-framework"
+                class="bd-toc-link"
+                style="padding-left: 24px;;"
+              >
+                K Framework
+              </a></div>
+            </div>
+          </details>
+        <details style="padding:0.25rem 0;;padding-left: 16px;">
+            <summary class="bd-toc-link-wrapper">
+              <a href="#building" class="bd-toc-link">Building</a>
+              </summary>
+            <div>
+              <div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#blockchain-plugin"
+                class="bd-toc-link"
+                style="padding-left: 24px;;"
+              >
+                Blockchain Plugin
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#k-definitions"
+                class="bd-toc-link"
+                style="padding-left: 24px;;"
+              >
+                K Definitions
+              </a></div>
+            </div>
+          </details>
+        
+            </div>
+          </details>
+        <div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#running-tests"
+                class="bd-toc-link"
+                style="padding-left: 8px;;"
+              >
+                Running Tests
+              </a></div><details style="padding:0.25rem 0;;padding-left: 8px;">
+            <summary class="bd-toc-link-wrapper">
+              <a href="#for-developers" class="bd-toc-link">For Developers</a>
+              </summary>
+            <div>
+              <div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#keeping-in-mind-while-developing"
+                class="bd-toc-link"
+                style="padding-left: 16px;;"
+              >
+                Keeping in mind while developing
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#building-with-nix"
+                class="bd-toc-link"
+                style="padding-left: 16px;;"
+              >
+                Building with Nix
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#profiling-with-nix"
+                class="bd-toc-link"
+                style="padding-left: 16px;;"
+              >
+                Profiling with Nix
+              </a></div>
+            </div>
+          </details>
+        <details style="padding:0.25rem 0;;padding-left: 8px;">
+            <summary class="bd-toc-link-wrapper">
+              <a href="#media" class="bd-toc-link">Media</a>
+              </summary>
+            <div>
+              <div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#system-dependencies-1"
+                class="bd-toc-link"
+                style="padding-left: 16px;;"
+              >
+                System Dependencies
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#building-1"
+                class="bd-toc-link"
+                style="padding-left: 16px;;"
+              >
+                Building
+              </a></div>
+            </div>
+          </details>
+        
+            </div>
+          </details>
+        <div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#resources"
+                class="bd-toc-link"
+                style="padding-left: 0px;;"
+              >
+                Resources
+              </a></div>
+</div>
+
+        </div>
+        <div class="btn btn-rv-blue page-toc-toggle-btn"></div>
+        <!-- End Page ToC -->
+      </div>
+    </div>
+<!-- The footer is now controlled by the k-web-theme git submodule -->
+<footer id="rvsite-footer" class="app-footer text-md-left text-center">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-md-4 mb-md-0 mb-4">
+        <a href="https://runtimeverification.com/" target="_blank">
+          <picture>
+            <source
+              srcset="
+                https://runtimeverification.com/assets/img/rv-logo-dark.png
+              "
+              media="(prefers-color-scheme: dark)"
+            />
+            <img
+              class="logo-dark"
+              src="https://runtimeverification.com/assets/img/rv-logo.png"
+              alt="Runtime Verification logo"
+              style="height: 32px"
+            /> </picture
+        ></a>
+        <p class="mt-2 text-md-left copyright">
+          <a href="https://goo.gl/maps/5iu2nhbUA48fs7fP6" target="_blank"
+            >333 North Green Street, Chicago, IL</a
+          >
+        </p>
+      </div>
+      <div class="col-md-4 text-md-center mb-md-0 mb-4"></div>
+      <div class="col-md-4 mb-md-0 mb-4 pl-0 text-md-right">
+        <p class="copyright">2023 © all rights reserved</p>
+        <span class="copyright"><a href="https://runtimeverification.com/privacy-policy">privacy policy</a> | <a
+                href="https://runtimeverification.com/terms-of-use">terms of use</a></span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Typist/1.2/typist.min.js"></script>
+    <script src="./assets/js/index.js"></script>
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script
+  async
+  src="https://www.googletagmanager.com/gtag/js?id=G-QL0D8HRYFW"
+></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag() {
+    dataLayer.push(arguments);
+  }
+  gtag("js", new Date());
+  gtag("config", "G-QL0D8HRYFW");
+</script>
+
+  </body>
+</html>
