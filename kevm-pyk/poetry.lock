@@ -834,7 +834,7 @@ plugins = ["importlib-metadata"]
 
 [[package]]
 name = "pyk"
-version = "0.1.446"
+version = "0.1.448"
 description = ""
 category = "main"
 optional = false
@@ -856,7 +856,7 @@ tomli = "^2.0.1"
 type = "git"
 url = "https://github.com/runtimeverification/pyk.git"
 reference = "noah/subproof-split"
-resolved_reference = "0d95e58bcfa01b5f71109194225769dd97a36425"
+resolved_reference = "78bfded5f6d80f3c256c43140efa643235e64c8f"
 
 [[package]]
 name = "pyperclip"
@@ -1094,14 +1094,14 @@ files = [
 
 [[package]]
 name = "xdg-base-dirs"
-version = "6.0.0"
+version = "6.0.1"
 description = "Variables defined by the XDG Base Directory Specification"
 category = "main"
 optional = false
 python-versions = ">=3.10,<4.0"
 files = [
-    {file = "xdg_base_dirs-6.0.0-py3-none-any.whl", hash = "sha256:71b878d3b6c80923a8ddd7c4fb25f9f694c6796aa79214c3fe32dd49a13dcc82"},
-    {file = "xdg_base_dirs-6.0.0.tar.gz", hash = "sha256:3bc8813e260a78acba2f718b48eb00b5ff82bd9f02688b54b9e4ccd8a65d42cc"},
+    {file = "xdg_base_dirs-6.0.1-py3-none-any.whl", hash = "sha256:63f6ebc1721ced2e86c340856e004ef829501a30a37e17079c52cfaf0e1741b9"},
+    {file = "xdg_base_dirs-6.0.1.tar.gz", hash = "sha256:b4c8f4ba72d1286018b25eea374ec6fbf4fddda3d4137edf50de95de53e195a6"},
 ]
 
 [[package]]
