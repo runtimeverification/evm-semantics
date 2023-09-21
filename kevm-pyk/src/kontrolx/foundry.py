@@ -384,7 +384,7 @@ class Foundry:
         proofs = [
             self.get_optional_proof(pid)
             for pid in listdir(self.proofs_dir)
-            if re.search(single(self._escape_brackets([test])), pid.split(':')[0])
+            if test == pid.split(':')[0]
         ]
         return [proof for proof in proofs if proof is not None]
 
