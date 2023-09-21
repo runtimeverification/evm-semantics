@@ -34,6 +34,10 @@ def node_id_like(s: str) -> NodeIdLike:
         return s
 
 
+def _parse_subproof_path(value: str) -> list[int]:
+    return [int(node_id) for node_id in value.split(',')]
+
+
 class KEVMCLIArgs(KCLIArgs):
     @cached_property
     def target_args(self) -> ArgumentParser:
@@ -168,6 +172,13 @@ class KEVMCLIArgs(KCLIArgs):
         args = ArgumentParser(add_help=False)
         args.add_argument('test', type=str, help='Test to run')
         args.add_argument('--version', type=int, default=None, required=False, help='Version of the test to use')
+        args.add_argument(
+            '--subproof',
+            type=_parse_subproof_path,
+            default=None,
+            required=False,
+            help='Comma separated list of nodes to look up subproofs. --subproof 3,2,5 will look up ContractName.testName()_node_3_node_2_node_5.',
+        )
         return args
 
     @cached_property

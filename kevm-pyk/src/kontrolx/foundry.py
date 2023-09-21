@@ -304,22 +304,24 @@ class Foundry:
         test_sig = self.matching_sig(test).split('.')[1]
         return (contract_name, test_sig)
 
-    def get_test_id(self, test: str, id: int | None) -> str:
-        matching_proofs = self.proofs_with_test(test)
-        if not matching_proofs:
-            raise ValueError(f'Found no matching proofs for {test}.')
-        if id is None:
-            if len(matching_proofs) > 1:
-                raise ValueError(
-                    f'Found {len(matching_proofs)} matching proofs for {test}. Use the --version flag to choose one.'
-                )
-            test_id = single(matching_proofs).id
-            return test_id
-        else:
-            for proof in matching_proofs:
-                if proof.id.endswith(str(id)):
-                    return proof.id
-            raise ValueError('No proof matching this predicate.')
+    def get_test_id(self, test: str, id: int | None, subproof_path: list[int] | None = None) -> str:
+        proof = self.proof_by_test_and_subproof_path(test, subproof_path=subproof_path)
+        return proof.id
+
+    #          if not matching_proofs:
+    #              raise ValueError(f'Found no matching proofs for {test}.')
+    #          if id is None:
+    #              if len(matching_proofs) > 1:
+    #                  raise ValueError(
+    #                      f'Found {len(matching_proofs)} matching proofs for {test}. Use the --version flag to choose one.'
+    #                  )
+    #              test_id = single(matching_proofs).id
+    #              return test_id
+    #          else:
+    #              for proof in matching_proofs:
+    #                  if proof.id.endswith(str(id)):
+    #                      return proof.id
+    #              raise ValueError('No proof matching this predicate.')
 
     @staticmethod
     def success(s: KInner, dst: KInner, r: KInner, c: KInner, e1: KInner, e2: KInner) -> KApply:
@@ -381,12 +383,22 @@ class Foundry:
         return res_lines
 
     def proofs_with_test(self, test: str) -> list[Proof]:
-        proofs = [
-            self.get_optional_proof(pid)
-            for pid in listdir(self.proofs_dir)
-            if test == pid.split(':')[0]
-        ]
+        proofs = [self.get_optional_proof(pid) for pid in listdir(self.proofs_dir) if test == pid.split(':')[0]]
         return [proof for proof in proofs if proof is not None]
+
+    def proof_by_test_and_subproof_path(self, test: str, subproof_path: list[int] | None = None) -> Proof:
+        proofs = self.proofs_with_test(test)
+        suffix = ''
+        if subproof_path is None:
+            return single(proofs)
+        for node_id in subproof_path:
+            suffix += f'_node_{node_id}'
+        proofs = [proof for proof in proofs if proof.id.endswith(suffix)]
+        if len(proofs) > 1:
+            raise ValueError(
+                'Given test {test} and subproof_path {subproof_path}, found more than one matching proof: {proofs}'
+            )
+        return single(proofs)
 
     def get_apr_proof(self, test_id: str) -> APRProof:
         proof = Proof.read_proof_data(self.proofs_dir, test_id)
@@ -880,10 +892,11 @@ def foundry_show(
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
     port: int | None = None,
+    subproof_path: list[int] | None = None,
 ) -> str:
     contract_name, _ = test.split('.')
     foundry = Foundry(foundry_root)
-    test_id = foundry.get_test_id(test, version)
+    test_id = foundry.get_test_id(test, version, subproof_path=subproof_path)
     proof = foundry.get_apr_proof(test_id)
 
     if pending:
@@ -931,10 +944,12 @@ def foundry_show(
     return '\n'.join(res_lines)
 
 
-def foundry_to_dot(foundry_root: Path, test: str, version: int | None = None) -> None:
+def foundry_to_dot(
+    foundry_root: Path, test: str, version: int | None = None, subproof_path: list[int] | None = None
+) -> None:
     foundry = Foundry(foundry_root)
     dump_dir = foundry.proofs_dir / 'dump'
-    test_id = foundry.get_test_id(test, version)
+    test_id = foundry.get_test_id(test, version, subproof_path=subproof_path)
     contract_name, _ = test.split('.')
     proof = foundry.get_apr_proof(test_id)
 
@@ -966,9 +981,11 @@ def foundry_list(foundry_root: Path) -> list[str]:
     return lines
 
 
-def foundry_remove_node(foundry_root: Path, test: str, node: NodeIdLike, version: int | None = None) -> None:
+def foundry_remove_node(
+    foundry_root: Path, test: str, node: NodeIdLike, version: int | None = None, subproof_path: list[int] | None = None
+) -> None:
     foundry = Foundry(foundry_root)
-    test_id = foundry.get_test_id(test, version)
+    test_id = foundry.get_test_id(test, version, subproof_path=subproof_path)
     apr_proof = foundry.get_apr_proof(test_id)
     node_ids = apr_proof.prune(node)
     _LOGGER.info(f'Pruned nodes: {node_ids}')
@@ -988,9 +1005,10 @@ def foundry_simplify_node(
     smt_retry_limit: int | None = None,
     trace_rewrites: bool = False,
     port: int | None = None,
+    subproof_path: list[int] | None = None,
 ) -> str:
     foundry = Foundry(foundry_root, bug_report=bug_report)
-    test_id = foundry.get_test_id(test, version)
+    test_id = foundry.get_test_id(test, version, subproof_path=subproof_path)
     apr_proof = foundry.get_apr_proof(test_id)
     cterm = apr_proof.kcfg.node(node).cterm
     start_server = port is None
@@ -1021,6 +1039,7 @@ def foundry_merge_nodes(
     version: int | None = None,
     bug_report: BugReport | None = None,
     include_disjunct: bool = False,
+    subproof_path: list[int] | None = None,
 ) -> None:
     def check_cells_equal(cell: str, nodes: Iterable[KCFG.Node]) -> bool:
         nodes = list(nodes)
@@ -1035,7 +1054,7 @@ def foundry_merge_nodes(
         return True
 
     foundry = Foundry(foundry_root, bug_report=bug_report)
-    test_id = foundry.get_test_id(test, version)
+    test_id = foundry.get_test_id(test, version, subproof_path=subproof_path)
     apr_proof = foundry.get_apr_proof(test_id)
 
     if len(list(node_ids)) < 2:
@@ -1072,6 +1091,7 @@ def foundry_step_node(
     smt_retry_limit: int | None = None,
     trace_rewrites: bool = False,
     port: int | None = None,
+    subproof_path: list[int] | None = None,
 ) -> None:
     if repeat < 1:
         raise ValueError(f'Expected positive value for --repeat, got: {repeat}')
@@ -1079,7 +1099,7 @@ def foundry_step_node(
         raise ValueError(f'Expected positive value for --depth, got: {depth}')
 
     foundry = Foundry(foundry_root, bug_report=bug_report)
-    test_id = foundry.get_test_id(test, version)
+    test_id = foundry.get_test_id(test, version, subproof_path=subproof_path)
     apr_proof = foundry.get_apr_proof(test_id)
     start_server = port is None
 
@@ -1111,9 +1131,10 @@ def foundry_section_edge(
     smt_retry_limit: int | None = None,
     trace_rewrites: bool = False,
     port: int | None = None,
+    subproof_path: list[int] | None = None,
 ) -> None:
     foundry = Foundry(foundry_root, bug_report=bug_report)
-    test_id = foundry.get_test_id(test, version)
+    test_id = foundry.get_test_id(test, version, subproof_path=subproof_path)
     apr_proof = foundry.get_apr_proof(test_id)
     source_id, target_id = edge
     start_server = port is None
@@ -1143,9 +1164,10 @@ def foundry_get_model(
     pending: bool = False,
     failing: bool = False,
     port: int | None = None,
+    subproof_path: list[int] | None = None,
 ) -> str:
     foundry = Foundry(foundry_root)
-    test_id = foundry.get_test_id(test, version)
+    test_id = foundry.get_test_id(test, version, subproof_path=subproof_path)
     proof = foundry.get_apr_proof(test_id)
 
     if not nodes:

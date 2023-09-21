@@ -7,7 +7,7 @@ import pytest
 from filelock import FileLock
 from pyk.kore.rpc import kore_server
 from pyk.proof import APRProof
-from pyk.utils import run_process, single
+from pyk.utils import run_process
 
 from kontrolx.foundry import (
     Foundry,
@@ -256,9 +256,8 @@ def test_foundry_merge_nodes(foundry_root: Path, bug_report: BugReport | None, s
 
 def check_pending(foundry_root: Path, test: str, pending: list[int]) -> None:
     foundry = Foundry(foundry_root)
-    proofs = foundry.proofs_with_test(test)
-    apr_proofs: list[APRProof] = [proof for proof in proofs if type(proof) is APRProof]
-    proof = single(apr_proofs)
+    proof = foundry.proof_by_test_and_subproof_path(test)
+    assert isinstance(proof, APRProof)
     assert [node.id for node in proof.pending] == pending
 
 
@@ -319,7 +318,7 @@ def test_foundry_remove_node(
         node=4,
     )
 
-    proof = single(foundry.proofs_with_test(test))
+    proof = foundry.proof_by_test_and_subproof_path(test)
     assert type(proof) is APRProof
     assert proof.is_proof_pending
 
