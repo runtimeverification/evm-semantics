@@ -1279,6 +1279,7 @@ def _method_to_apr_proof(
                 {},
                 bmc_depth,
                 proof_dir=save_directory,
+                generate_subproof_name=generate_subproof_name,
             )
         else:
             apr_proof = APRProof(
