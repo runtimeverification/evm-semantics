@@ -33,32 +33,32 @@ Repository Structure
 
 The following files constitute the KEVM semantics:
 
--   [network.md](include/kframework/network.md) provides the status codes reported to an Ethereum client on execution exceptions.
--   [json-rpc.md](include/kframework/json-rpc.md) is an implementation of JSON RPC in K.
--   [evm-types.md](include/kframework/evm-types.md) provides the (functional) data of EVM (256-bit words, wordstacks, etc...).
--   [serialization.md](include/kframework/serialization.md) provides helpers for parsing and unparsing data (hex strings, recursive-length prefix, Merkle trees, etc.).
--   [evm.md](include/kframework/evm.md) is the main KEVM semantics, containing EVM’s configuration and transition rules.
--   [gas.md](include/kframework/gas.md) contains all information relevant to gas.
--   [schedule.md](include/kframework/schedule.md) contains all information relevant to EVM schedules.
+-   [network.md](kevm-pyk/src/kevm_pyk/kproj/evm-semantics/network.md) provides the status codes reported to an Ethereum client on execution exceptions.
+-   [json-rpc.md](kevm-pyk/src/kevm_pyk/kproj/evm-semantics/json-rpc.md) is an implementation of JSON RPC in K.
+-   [evm-types.md](kevm-pyk/src/kevm_pyk/kproj/evm-semantics/evm-types.md) provides the (functional) data of EVM (256-bit words, wordstacks, etc...).
+-   [serialization.md](kevm-pyk/src/kevm_pyk/kproj/evm-semantics/serialization.md) provides helpers for parsing and unparsing data (hex strings, recursive-length prefix, Merkle trees, etc.).
+-   [evm.md](kevm-pyk/src/kevm_pyk/kproj/evm-semantics/evm.md) is the main KEVM semantics, containing EVM’s configuration and transition rules.
+-   [gas.md](kevm-pyk/src/kevm_pyk/kproj/evm-semantics/gas.md) contains all information relevant to gas.
+-   [schedule.md](kevm-pyk/src/kevm_pyk/kproj/evm-semantics/schedule.md) contains all information relevant to EVM schedules.
 
 These additional files extend the semantics to make the repository more useful:
 
--   [buf.md](include/kframework/buf.md) defines the `#buf` byte-buffer abstraction for use during symbolic execution.
--   [abi.md](include/kframework/abi.md) defines the [Contract ABI Specification](https://docs.soliditylang.org/en/v0.8.1/abi-spec.html) for use in proofs and easy contract/function specification.
--   [hashed-locations.md](include/kframework/hashed-locations.md) defines the `#hashedLocation` abstraction used to specify Solidity-generated storage layouts.
--   [edsl.md](include/kframework/edsl.md) combines the previous three abstractions for ease-of-use.
--   [foundry.md](include/kframework/foundry.md) adds Foundry capabilities to KEVM.
+-   [buf.md](kevm-pyk/src/kevm_pyk/kproj/evm-semantics/buf.md) defines the `#buf` byte-buffer abstraction for use during symbolic execution.
+-   [abi.md](kevm-pyk/src/kevm_pyk/kproj/evm-semantics/abi.md) defines the [Contract ABI Specification](https://docs.soliditylang.org/en/v0.8.1/abi-spec.html) for use in proofs and easy contract/function specification.
+-   [hashed-locations.md](kevm-pyk/src/kevm_pyk/kproj/evm-semantics/hashed-locations.md) defines the `#hashedLocation` abstraction used to specify Solidity-generated storage layouts.
+-   [edsl.md](kevm-pyk/src/kevm_pyk/kproj/evm-semantics/edsl.md) combines the previous three abstractions for ease-of-use.
+-   [foundry.md](kevm-pyk/src/kevm_pyk/kproj/evm-semantics/foundry.md) adds Foundry capabilities to KEVM.
 
 These files are used for testing the semantics itself:
 
--   [state-utils.md](include/kframework/state-utils.md) provides functionality for EVM initialization, setup, and querying.
--   [driver.md](include/kframework/driver.md) is an execution harness for KEVM, providing a simple language for describing tests/programs.
+-   [state-utils.md](kevm-pyk/src/kevm_pyk/kproj/evm-semantics/state-utils.md) provides functionality for EVM initialization, setup, and querying.
+-   [driver.md](kevm-pyk/src/kevm_pyk/kproj/evm-semantics/driver.md) is an execution harness for KEVM, providing a simple language for describing tests/programs.
 
 Building from source
 --------------------
 
 There are two backends of K available: LLVM for concrete execution and Haskell for symbolic execution.
-This repository generates the build-products for each backend in `.build/usr/lib/kevm`.
+This repository generates the build-products for each backend in `$XDG_CACHE_HOME/evm-semantics-<digest>`.
 
 ### System Dependencies
 
@@ -171,31 +171,56 @@ You can also drop into a single development shell with the correct version of K 
 kup shell k.openssl.procps --version v$(cat deps/k_release)
 ```
 
-#### Blockchain Plugin
-
-You also need to get the blockchain plugin submodule and install it.
-
-```sh
-git submodule update --init --recursive -- deps/plugin
-make plugin-deps
-```
-
 ### Building
 
-You need to set up a virtual environment using Poetry with the prerequisites `python 3.8.*`, `pip >= 20.0.2`, `poetry >= 1.3.2`:
+First you need to set up a virtual environment using Poetry with the prerequisites `python 3.8.*`, `pip >= 20.0.2`, `poetry >= 1.3.2`:
 
 ```sh
 make poetry
 ```
 
+#### Blockchain Plugin
+
+You also need to get the blockchain plugin submodule and install it.
+
+```sh
+git submodule update --init --recursive
+poetry -C kevm-pyk run kevm-dist --verbose build plugin
+```
+
+To change the default compiler:
+
+```sh
+CXX=clang++-14 poetry -C kevm-pyk run kevm-dist --verbose build plugin
+```
+
+On Apple silicon:
+
+```sh
+APPLE_SILICON=true poetry -C kevm-pyk run kevm-dist --verbose build plugin
+```
+
+#### K Definitions
+
 Finally, you can build the semantics.
 
 ```sh
-make build
+poetry -C kevm-pyk run kevm-dist --verbose build -j4
 ```
 
-You can build specific targets using `build-llvm`, `build-Haskell`, or `build-foundry`.
-For more information, refer to the [Makefile].
+You can build specific targets using options `llvm`, `haskell`, `haskell-standalone` or `foundry`, e.g.:
+
+```sh
+poetry -C kevm-pyk run kevm-dist build -j2 llvm haskell
+```
+
+Targets can be cleaned with
+
+```sh
+poetry -C kevm-pyk run kevm-dist clean
+```
+
+For more information, refer to `kevm-dist --help` and the [dist.py](kevm-pyk/src/kevm_pyk/dist.py) module.
 
 Running Tests
 -------------
@@ -207,7 +232,6 @@ git submodule update --init --recursive  -- tests/ethereum-tests
 ```
 
 The tests are run using the supplied `Makefile`.
-Run `make build-prove` to generate tests from the markdown files.
 
 The following subsume all other tests:
 
@@ -221,39 +245,28 @@ These are the individual test-suites (all of these can be suffixed with `-all` t
 -   `make test-proof`: Proofs from the [Verified Smart Contracts].
 -   `make test-interactive`: Tests of the `kevm` command.
 
-When running tests with the `Makefile`, you can specify the `TEST_CONCRETE_BACKEND` (for concrete tests), or `TEST_SYMBOLIC_BACKEND` (for proofs).
-
 For Developers
 --------------
 
-If built from the source, the `kevm` executable will be in the `.build/usr/bin` directory.
-To make sure you are using the correct `kevm`, add this directory to your `PATH`:
-
-```sh
-export PATH=$(pwd)/.build/usr/bin:$PATH
-```
-
-Alternatively, if you work on multiple checkouts of `evm-semantics` or other semantics, you could add the relative path `.build/usr/bin` to your `PATH`.
-Do note, however, that this is a security concern.
-
-You can call `kevm --help` to get a quick summary of how to use the script.
+If built from the source, the `kevm-pyk` executable will be installed in a virtual environemtn handled by Poetry.
+You can call `kevm-pyk --help` to get a quick summary of how to use the script.
 
 Run the file `tests/ethereum-tests/LegacyTests/Constantinople/VMTests/vmArithmeticTest/add0.json`:
 
 ```sh
-kevm run tests/ethereum-tests/LegacyTests/Constantinople/VMTests/vmArithmeticTest/add0.json --schedule DEFAULT --mode VMTESTS
+poetry -C kevm-pyk run kevm-pyk run tests/ethereum-tests/LegacyTests/Constantinople/VMTests/vmArithmeticTest/add0.json --schedule DEFAULT --mode VMTESTS
 ```
 
 To enable the debug symbols for the llvm backend, build using this command:
 
 ```sh
-make build-llvm KEVM_OPTS=--enable-llvm-debug
+poetry -C kevm-pyk run kevm-dist build llvm --enable-llvm-debug
 ```
 
 To debug a conformance test, add the `--debugger` flag to the command:
 
 ```sh
-kevm run tests/ethereum-tests/BlockchainTests/GeneralStateTests/stExample/add11.json --target llvm --mode NORMAL --schedule MERGE --chainid 1 --debugger
+poetry -C kevm-pyk run kevm-pyk run tests/ethereum-tests/BlockchainTests/GeneralStateTests/stExample/add11.json --target llvm --mode NORMAL --schedule SHANGHAI --chainid 1 --debugger
 ```
 
 ### Keeping in mind while developing
@@ -263,10 +276,8 @@ Always have your build up-to-date.
 - If using the kup package manager, run `kup install kevm --version .` to install the local version.
 - If building from source:
     -   `make poetry` needs to be re-run if you touch any of the `kevm-pyk` code.
-    -   `make build` needs to be re-run if you touch any of this repos files.
-    -   `make deps` needs to be re-run if there is an update of the K submodule (you did `git submodule update --init --recursive -- deps/k` and it actually did something).
-    -   If both `deps` and `build` need to be re-run, you need to do `deps` first.
-    -   `make clean` is a safe way to remove the `.build` directory, but then you need to re-run `make deps` (should be quick this time) and `make build`.
+    -   `poetry -C kevm-pyk run kevm-dist build <target> --force` needs to be re-run if you touch any of this repos files.
+    -   `poetry -C kevm-pyk run kevm-dist clean` is a safe way to remove the target directory
 
 ### Building with Nix
 

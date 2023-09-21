@@ -108,6 +108,7 @@ In the comments next to each cell, we've marked which component of the YellowPap
               <mixHash>          0      </mixHash>          // I_Hm
               <blockNonce>       0      </blockNonce>       // I_Hn
               <baseFee>          0      </baseFee>
+              <withdrawalsRoot>  0      </withdrawalsRoot>
 
               <ommerBlockHeaders> [ .JSONs ] </ommerBlockHeaders>
             </block>
@@ -357,7 +358,7 @@ The `#next [_]` operator initiates execution by:
 
     syntax Int ::= #stackNeeded ( OpCode ) [function]
  // -------------------------------------------------
-    rule #stackNeeded(PUSH(_))          => 0
+    rule #stackNeeded(_POP:PushOp)      => 0
     rule #stackNeeded(_IOP:InvalidOp)   => 0
     rule #stackNeeded(_NOP:NullStackOp) => 0
     rule #stackNeeded(_UOP:UnStackOp)   => 1
@@ -845,8 +846,11 @@ Some operators don't calculate anything, they just push the stack around a bit.
     rule <k> DUP(N)  WS:WordStack => #setStack ((WS [ N -Int 1 ]) : WS)                      ... </k>
     rule <k> SWAP(N) (W0 : WS)    => #setStack ((WS [ N -Int 1 ]) : (WS [ N -Int 1 := W0 ])) ... </k>
 
-    syntax PushOp ::= PUSH ( Int )
+    syntax PushOp ::= "PUSHZERO"
+                    | PUSH ( Int )
  // ------------------------------
+    rule <k> PUSHZERO => 0 ~> #push ... </k>
+
     rule <k> PUSH(N) => #asWord(#range(PGM, PCOUNT +Int 1, N)) ~> #push ... </k>
          <pc> PCOUNT </pc>
          <program> PGM </program>
@@ -1457,6 +1461,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
 -   `#create____` transfers the endowment to the new account and triggers the execution of the initialization code.
 -   `#codeDeposit_` checks the result of initialization code and whether the code deposit can be paid, indicating an error if not.
 -   `#isValidCode_` checks if the code returned by the execution of the initialization code begins with a reserved byte. [EIP-3541]
+-   `#hasValidInitCode` checks the length of the transaction data in a create transaction. [EIP-3860]
 
 ```k
     syntax InternalOp ::= "#create"   Int Int Int Bytes
@@ -1496,6 +1501,10 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
            <nonce> NONCE => NONCE +Int 1 </nonce>
            ...
          </account>
+
+    syntax Bool ::= #hasValidInitCode ( Int , Schedule ) [function]
+ // ---------------------------------------------------------------
+    rule #hasValidInitCode(INITCODELEN, SCHED) => notBool Ghasmaxinitcodesize << SCHED >> orBool INITCODELEN <=Int maxInitCodeSize < SCHED >
 
     syntax Bool ::= #isValidCode ( Bytes , Schedule ) [function]
  // ------------------------------------------------------------
@@ -1562,7 +1571,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
 ```k
     syntax TernStackOp ::= "CREATE"
  // -------------------------------
-    rule [create]:
+    rule [create-valid]:
          <k> CREATE VALUE MEMSTART MEMWIDTH
           => #accessAccounts #newAddr(ACCT, NONCE)
           ~> #checkCall ACCT VALUE
@@ -1577,6 +1586,11 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
            <nonce> NONCE </nonce>
            ...
          </account>
+         <schedule> SCHED </schedule>
+      requires #hasValidInitCode(MEMWIDTH, SCHED)
+
+    rule [create-invalid]:
+         <k> CREATE _ _ _ => #end EVMC_OUT_OF_GAS ... </k> [owise]
 ```
 
 `CREATE2` will attempt to `#create` the account, but with the new scheme for choosing the account address.
@@ -1584,7 +1598,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
 ```k
     syntax QuadStackOp ::= "CREATE2"
  // --------------------------------
-    rule [create2]:
+    rule [create2-valid]:
          <k> CREATE2 VALUE MEMSTART MEMWIDTH SALT
           => #accessAccounts #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH))
           ~> #checkCall ACCT VALUE
@@ -1594,6 +1608,11 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          </k>
          <id> ACCT </id>
          <localMem> LM </localMem>
+         <schedule> SCHED </schedule>
+      requires #hasValidInitCode( MEMWIDTH /Int 2, SCHED)
+
+    rule [create2-invalid]:
+         <k> CREATE2 _ _ _ _ => #end EVMC_OUT_OF_GAS ... </k> [owise]
 ```
 
 `SELFDESTRUCT` marks the current account for deletion and transfers funds out of the current account.
@@ -1657,6 +1676,7 @@ Precompiled Contracts
     rule #precompiledAccounts(BERLIN)            => #precompiledAccounts(ISTANBUL)
     rule #precompiledAccounts(LONDON)            => #precompiledAccounts(BERLIN)
     rule #precompiledAccounts(MERGE)             => #precompiledAccounts(LONDON)
+    rule #precompiledAccounts(SHANGHAI)          => #precompiledAccounts(MERGE)
 ```
 
 -   `ECREC` performs ECDSA public key recovery.
@@ -2014,14 +2034,14 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
            ...
          </account>
 
-    rule <k> #gasExec(SCHED, CREATE _ _ _)
-          => Gcreate < SCHED > ~> #deductGas
+    rule <k> #gasExec(SCHED, CREATE _ _ WIDTH)
+          => Gcreate < SCHED > +Int Cinitcode(SCHED, WIDTH) ~> #deductGas
           ~> #allocateCreateGas ~> 0
          ...
          </k>
 
     rule <k> #gasExec(SCHED, CREATE2 _ _ WIDTH _)
-          => Gcreate < SCHED > +Int Gsha3word < SCHED > *Int (WIDTH up/Int 32) ~> #deductGas
+          => Gcreate < SCHED > +Int Gsha3word < SCHED > *Int (WIDTH up/Int 32) +Int Cinitcode(SCHED, WIDTH) ~> #deductGas
           ~> #allocateCreateGas ~> 0
          ...
          </k>
@@ -2056,6 +2076,7 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
     rule <k> #gasExec(SCHED, BASEFEE)        => Gbase < SCHED > ... </k>
     rule <k> #gasExec(SCHED, POP _)          => Gbase < SCHED > ... </k>
     rule <k> #gasExec(SCHED, PC)             => Gbase < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, PUSHZERO)       => Gbase < SCHED > ... </k>
     rule <k> #gasExec(SCHED, MSIZE)          => Gbase < SCHED > ... </k>
     rule <k> #gasExec(SCHED, GAS)            => Gbase < SCHED > ... </k>
     rule <k> #gasExec(SCHED, CHAINID)        => Gbase < SCHED > ... </k>
@@ -2260,6 +2281,7 @@ After interpreting the strings representing programs as a `WordStack`, it should
     rule #dasmOpCode(  89,     _ ) => MSIZE
     rule #dasmOpCode(  90,     _ ) => GAS
     rule #dasmOpCode(  91,     _ ) => JUMPDEST
+    rule #dasmOpCode(  95, SCHED ) => PUSHZERO requires Ghaspushzero << SCHED >>
     rule #dasmOpCode(  96,     _ ) => PUSH(1)
     rule #dasmOpCode(  97,     _ ) => PUSH(2)
     rule #dasmOpCode(  98,     _ ) => PUSH(3)

@@ -71,6 +71,7 @@ module STATE-UTILS
          <ommerBlockHeaders> _ => [ .JSONs ] </ommerBlockHeaders>
          <blockhashes>       _ => .List      </blockhashes>
          <baseFee>           _ => 0          </baseFee>
+         <withdrawalsRoot>   _ => 0          </withdrawalsRoot>
 
     syntax EthereumCommand ::= "clearNETWORK"
  // -----------------------------------------
@@ -79,6 +80,7 @@ module STATE-UTILS
          <accounts>       _ => .Bag        </accounts>
          <messages>       _ => .Bag        </messages>
          <schedule>       _ => DEFAULT     </schedule>
+
 ```
 
 ### Loading State
@@ -175,6 +177,7 @@ The `"network"` key allows setting the fee schedule inside the test.
     rule #asScheduleString("Berlin")            => BERLIN
     rule #asScheduleString("London")            => LONDON
     rule #asScheduleString("Merge")             => MERGE
+    rule #asScheduleString("Shanghai")          => SHANGHAI
 ```
 
 The `"rlp"` key loads the block information.
@@ -205,26 +208,20 @@ The `"rlp"` key loads the block information.
          <ommerBlockHeaders> _ => BU                              </ommerBlockHeaders>
 
     rule <k> load "rlp" : [ [ HP , HO , HC , HR , HT , HE , HB , HD , HI , HL , HG , HS , HX , HM , HN , HF , .JSONs ] , BT , BU , .JSONs ]
-          => load "transaction" : BT
+          => load "rlp" : [ [ HP , HO , HC , HR , HT , HE , HB , HD , HI , HL , HG , HS , HX , HM , HN , .JSONs ] , BT , BU , .JSONs ]
          ...
          </k>
-         <previousHash>      _ => #asWord(#parseByteStackRaw(HP)) </previousHash>
-         <ommersHash>        _ => #asWord(#parseByteStackRaw(HO)) </ommersHash>
-         <coinbase>          _ => #asWord(#parseByteStackRaw(HC)) </coinbase>
-         <stateRoot>         _ => #asWord(#parseByteStackRaw(HR)) </stateRoot>
-         <transactionsRoot>  _ => #asWord(#parseByteStackRaw(HT)) </transactionsRoot>
-         <receiptsRoot>      _ => #asWord(#parseByteStackRaw(HE)) </receiptsRoot>
-         <logsBloom>         _ => #parseByteStackRaw(HB)          </logsBloom>
-         <difficulty>        _ => #asWord(#parseByteStackRaw(HD)) </difficulty>
-         <number>            _ => #asWord(#parseByteStackRaw(HI)) </number>
-         <gasLimit>          _ => #asWord(#parseByteStackRaw(HL)) </gasLimit>
-         <gasUsed>           _ => #asWord(#parseByteStackRaw(HG)) </gasUsed>
-         <timestamp>         _ => #asWord(#parseByteStackRaw(HS)) </timestamp>
-         <extraData>         _ => #parseByteStackRaw(HX)          </extraData>
-         <mixHash>           _ => #asWord(#parseByteStackRaw(HM)) </mixHash>
-         <blockNonce>        _ => #asWord(#parseByteStackRaw(HN)) </blockNonce>
-         <baseFee>           _ => #asWord(#parseByteStackRaw(HF)) </baseFee>
-         <ommerBlockHeaders> _ => BU                              </ommerBlockHeaders>
+         <baseFee> _ => #asWord(#parseByteStackRaw(HF)) </baseFee>
+
+    rule <k> load "rlp" : [ [ HP , HO , HC , HR , HT , HE , HB , HD , HI , HL , HG , HS , HX , HM , HN , HF , WR , .JSONs ] , BT , BU , BW , .JSONs ]
+          => load "rlp" : [ [ HP , HO , HC , HR , HT , HE , HB , HD , HI , HL , HG , HS , HX , HM , HN , HF , .JSONs ] , BT , BU , .JSONs ]
+          ~> load "withdraw" : BW
+         ...
+         </k>
+         <withdrawalsRoot> _ => #asWord(#parseByteStackRaw(WR)) </withdrawalsRoot>
+
+    rule <k> load "genesisRLP": [ [ HP, HO, HC, HR, HT, HE:String, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR, .JSONs ], _, _, _, .JSONs ] => .K ... </k>
+         <blockhashes> .List => ListItem(#blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR)) ListItem(#asWord(#parseByteStackRaw(HP))) ... </blockhashes>
 
     rule <k> load "genesisRLP": [ [ HP, HO, HC, HR, HT, HE:String, HB, HD, HI, HL, HG, HS, HX, HM, HN, .JSONs ], _, _, .JSONs ] => .K ... </k>
          <blockhashes> .List => ListItem(#blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN)) ListItem(#asWord(#parseByteStackRaw(HP))) ... </blockhashes>

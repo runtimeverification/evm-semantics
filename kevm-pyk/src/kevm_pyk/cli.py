@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 from pyk.cli.args import KCLIArgs
 from pyk.cli.utils import dir_path
 
-from .kompile import KompileTarget
+from .dist import DistTarget
 from .utils import arg_pair_of
 
 if TYPE_CHECKING:
@@ -38,7 +38,7 @@ class KEVMCLIArgs(KCLIArgs):
     @cached_property
     def target_args(self) -> ArgumentParser:
         args = ArgumentParser(add_help=False)
-        args.add_argument('--target', type=KompileTarget, choices=list(KompileTarget))
+        args.add_argument('--target', type=DistTarget, choices=list(DistTarget))
         return args
 
     @cached_property
@@ -119,6 +119,7 @@ class KEVMCLIArgs(KCLIArgs):
             'BERLIN',
             'LONDON',
             'MERGE',
+            'SHANGHAI',
         )
         modes = ('NORMAL', 'VMTESTS')
 
@@ -126,7 +127,7 @@ class KEVMCLIArgs(KCLIArgs):
         args.add_argument(
             '--schedule',
             choices=schedules,
-            default='MERGE',
+            default='SHANGHAI',
             help=f"schedule to use for execution [{'|'.join(schedules)}]",
         )
         args.add_argument('--chainid', type=int, default=1, help='chain ID to use for execution')
@@ -166,7 +167,7 @@ class KEVMCLIArgs(KCLIArgs):
     def foundry_test_args(self) -> ArgumentParser:
         args = ArgumentParser(add_help=False)
         args.add_argument('test', type=str, help='Test to run')
-        args.add_argument('--id', type=str, default=None, required=False, help='ID of the test')
+        args.add_argument('--version', type=int, default=None, required=False, help='Version of the test to use')
         return args
 
     @cached_property

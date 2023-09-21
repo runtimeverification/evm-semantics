@@ -22,8 +22,9 @@ from pyk.proof.show import APRProofShow
 from pyk.proof.tui import APRProofViewer
 from pyk.utils import single
 
+from . import VERSION, config
 from .cli import KEVMCLIArgs, node_id_like
-from .config import INCLUDE_DIR, KEVM_LIB
+from .dist import DistTarget
 from .gst_to_kore import SORT_ETHEREUM_SIMULATION, gst_to_kore, kore_pgm_to_kore
 from .kevm import KEVM, KEVMSemantics, kevm_node_printer
 from .kompile import KompileTarget, kevm_kompile
@@ -70,9 +71,7 @@ def main() -> None:
 
 
 def exec_version(**kwargs: Any) -> None:
-    version_file = KEVM_LIB / 'version'
-    version = version_file.read_text().strip()
-    print(f'KEVM Version: {version}')
+    print(f'KEVM Version: {VERSION}')
 
 
 def exec_kompile(
@@ -97,6 +96,8 @@ def exec_kompile(
 ) -> None:
     if target is None:
         target = KompileTarget.LLVM
+
+    output_dir = output_dir or Path()
 
     optimization = 0
     if o1:
@@ -144,12 +145,12 @@ def exec_prove_legacy(
     _ignore_arg(kwargs, 'md_selector', f'--md-selector: {kwargs["md_selector"]}')
 
     if definition_dir is None:
-        definition_dir = KompileTarget.HASKELL.definition_dir
+        definition_dir = DistTarget.HASKELL.get()
 
     kevm = KEVM(definition_dir, use_directory=save_directory)
 
     include_dirs = [Path(include) for include in includes]
-    include_dirs += [INCLUDE_DIR]
+    include_dirs += config.INCLUDE_DIRS
 
     final_state = kevm.prove_legacy(
         spec_file=spec_file,
@@ -201,7 +202,7 @@ def exec_prove(
     md_selector = 'k'
 
     if definition_dir is None:
-        definition_dir = KompileTarget.HASKELL.definition_dir
+        definition_dir = DistTarget.HASKELL.get()
 
     if smt_timeout is None:
         smt_timeout = 300
@@ -211,7 +212,7 @@ def exec_prove(
     kevm = KEVM(definition_dir, use_directory=save_directory, bug_report=bug_report)
 
     include_dirs = [Path(include) for include in includes]
-    include_dirs += [INCLUDE_DIR]
+    include_dirs += config.INCLUDE_DIRS
 
     _LOGGER.info(f'Extracting claims from file: {spec_file}')
     claims = kevm.get_claims(
@@ -237,11 +238,14 @@ def exec_prove(
             claim_lhs = claim_lhs.lhs
         return not (type(claim_lhs) is KApply and claim_lhs.label.name == '<generatedTop>')
 
+    llvm_definition_dir = definition_dir / 'llvm-library' if use_booster else None
+
     def _init_and_run_proof(claim: KClaim) -> tuple[bool, list[str] | None]:
         with legacy_explore(
             kevm,
             kcfg_semantics=KEVMSemantics(auto_abstract_gas=auto_abstract_gas),
             id=claim.label,
+            llvm_definition_dir=llvm_definition_dir,
             bug_report=bug_report,
             kore_rpc_command=kore_rpc_command,
             smt_timeout=smt_timeout,
@@ -358,7 +362,7 @@ def exec_prune_proof(
     kevm = KEVM(definition_dir, use_directory=save_directory)
 
     include_dirs = [Path(include) for include in includes]
-    include_dirs += [INCLUDE_DIR]
+    include_dirs += config.INCLUDE_DIRS
 
     _LOGGER.info(f'Extracting claims from file: {spec_file}')
     claim = single(
@@ -399,7 +403,7 @@ def exec_show_kcfg(
 ) -> None:
     kevm = KEVM(definition_dir)
     include_dirs = [Path(include) for include in includes]
-    include_dirs += [INCLUDE_DIR]
+    include_dirs += config.INCLUDE_DIRS
     proof = get_apr_proof_for_spec(
         kevm,
         spec_file,
@@ -448,7 +452,7 @@ def exec_view_kcfg(
 ) -> None:
     kevm = KEVM(definition_dir)
     include_dirs = [Path(include) for include in includes]
-    include_dirs += [INCLUDE_DIR]
+    include_dirs += config.INCLUDE_DIRS
     proof = get_apr_proof_for_spec(
         kevm,
         spec_file,
@@ -474,16 +478,16 @@ def exec_run(
     schedule: str,
     mode: str,
     chainid: int,
-    target: KompileTarget | None = None,
+    target: DistTarget | None = None,
     save_directory: Path | None = None,
     debugger: bool = False,
     **kwargs: Any,
 ) -> None:
     if target is None:
-        target = KompileTarget.LLVM
+        target = DistTarget.LLVM
 
     _ignore_arg(kwargs, 'definition_dir', f'--definition: {kwargs["definition_dir"]}')
-    kevm = KEVM(target.definition_dir, use_directory=save_directory)
+    kevm = KEVM(target.get(), use_directory=save_directory)
 
     try:
         json_read = json.loads(input_file.read_text())
@@ -494,7 +498,7 @@ def exec_run(
         kore_pgm = kevm.kast_to_kore(kast_pgm, sort=KSort('EthereumSimulation'))
         kore_pattern = kore_pgm_to_kore(kore_pgm, SORT_ETHEREUM_SIMULATION, schedule, mode, chainid)
 
-    kevm.run_kore(
+    kevm.run(
         kore_pattern,
         depth=depth,
         term=True,
@@ -511,15 +515,15 @@ def exec_kast(
     schedule: str,
     mode: str,
     chainid: int,
-    target: KompileTarget | None = None,
+    target: DistTarget | None = None,
     save_directory: Path | None = None,
     **kwargs: Any,
 ) -> None:
     if target is None:
-        target = KompileTarget.LLVM
+        target = DistTarget.LLVM
 
     _ignore_arg(kwargs, 'definition_dir', f'--definition: {kwargs["definition_dir"]}')
-    kevm = KEVM(target.definition_dir, use_directory=save_directory)
+    kevm = KEVM(target.get(), use_directory=save_directory)
 
     try:
         json_read = json.loads(input_file.read_text())

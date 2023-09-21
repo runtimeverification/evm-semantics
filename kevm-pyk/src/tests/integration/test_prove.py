@@ -74,7 +74,6 @@ def exclude_list(exclude_file: Path) -> list[Path]:
 
 FAILING_PYK_TESTS: Final = exclude_list(TEST_DIR / 'failing-symbolic.pyk')
 FAILING_BOOSTER_TESTS: Final = exclude_list(TEST_DIR / 'failing-symbolic.haskell-booster')
-SLOW_TESTS: Final = exclude_list(TEST_DIR / 'slow.haskell')
 FAILING_TESTS: Final = exclude_list(TEST_DIR / 'failing-symbolic.haskell')
 
 
@@ -105,9 +104,6 @@ KOMPILE_MAIN_FILE: Final = {
 
 KOMPILE_MAIN_MODULE: Final = {
     'benchmarks/functional-spec.k': 'FUNCTIONAL-SPEC-SYNTAX',
-    'bihu/functional-spec.k': 'FUNCTIONAL-SPEC-SYNTAX',
-    'erc20/functional-spec.k': 'FUNCTIONAL-SPEC-SYNTAX',
-    'mcd/functional-spec.k': 'FUNCTIONAL-SPEC-SYNTAX',
     'opcodes/evm-optimizations-spec.md': 'EVM-OPTIMIZATIONS-SPEC-LEMMAS',
 }
 
@@ -203,10 +199,6 @@ def _target_for_spec(spec_file: Path, use_booster: bool) -> Target:
 # ---------
 
 
-SKIPPED_PYK_TESTS: Final = set().union(SLOW_TESTS, FAILING_TESTS, FAILING_PYK_TESTS)
-SKIPPED_PYK_BOOSTER_TESTS: Final = set().union(SLOW_TESTS, FAILING_TESTS, FAILING_PYK_TESTS, FAILING_BOOSTER_TESTS)
-
-
 @pytest.mark.parametrize(
     'spec_file',
     ALL_TESTS,
@@ -222,7 +214,7 @@ def test_pyk_prove(
 ) -> None:
     caplog.set_level(logging.INFO)
 
-    if spec_file in SKIPPED_PYK_TESTS or (use_booster and spec_file in SKIPPED_PYK_BOOSTER_TESTS):
+    if (not use_booster and spec_file in FAILING_PYK_TESTS) or (use_booster and spec_file in FAILING_BOOSTER_TESTS):
         pytest.skip()
 
     # Given
@@ -236,7 +228,7 @@ def test_pyk_prove(
         exec_prove(
             spec_file=spec_file,
             definition_dir=target.definition_dir,
-            includes=[str(config.INCLUDE_DIR)] + target.includes,  # TODO are target.includes required?
+            includes=[str(include_dir) for include_dir in config.INCLUDE_DIRS] + target.includes,
             save_directory=use_directory,
             smt_timeout=300,
             smt_retry_limit=10,
@@ -255,9 +247,6 @@ def test_pyk_prove(
 # ------------
 
 
-SKIPPED_LEGACY_TESTS: Final = set().union(SLOW_TESTS, FAILING_TESTS)
-
-
 PROVE_ARGS: Final[dict[str, Any]] = {
     'functional/lemmas-no-smt-spec.k': {
         'haskell_args': ['--smt=none'],
@@ -270,7 +259,7 @@ PROVE_ARGS: Final[dict[str, Any]] = {
     FAILING_PYK_TESTS,
     ids=[str(spec_file.relative_to(SPEC_DIR)) for spec_file in FAILING_PYK_TESTS],
 )
-def test_legacy_prove(
+def test_kprove_prove(
     spec_file: Path,
     kompiled_target_for: Callable[[Path, bool], KompiledTarget],
     tmp_path: Path,
@@ -279,7 +268,7 @@ def test_legacy_prove(
 ) -> None:
     caplog.set_level(logging.INFO)
 
-    if spec_file in SKIPPED_LEGACY_TESTS:
+    if spec_file in FAILING_TESTS:
         pytest.skip()
 
     # Given
@@ -298,7 +287,7 @@ def test_legacy_prove(
     try:
         target = kompiled_target_for(spec_file, False)
         kevm = KEVM(target.definition_dir, use_directory=use_directory)
-        actual = kevm.prove(spec_file=spec_file, include_dirs=[config.INCLUDE_DIR] + target.include_dirs, **args)
+        actual = kevm.prove(spec_file=spec_file, include_dirs=list(config.INCLUDE_DIRS) + target.include_dirs, **args)
     except BaseException:
         raise
     finally:

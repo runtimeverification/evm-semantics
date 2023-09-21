@@ -4,21 +4,22 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "kevm-pyk"
-version = "1.0.290"
+version = "1.0.301"
 description = ""
 authors = [
     "Runtime Verification, Inc. <contact@runtimeverification.com>",
 ]
 packages = [
     { include = "kevm_pyk", from = "src/" },
-    { include = "kontrol", from = "src/" },
+    { include = "kontrolx", from = "src/" },
 ]
 
 [tool.poetry.dependencies]
 python = "^3.10"
 pathos = "*"
-pyk = { git = "https://github.com/runtimeverification/pyk.git", tag="v0.1.434" }
+pyk = { git = "https://github.com/runtimeverification/pyk.git", tag="v0.1.446" }
 tomlkit = "^0.11.6"
+xdg-base-dirs = "^6.0.0"
 
 [tool.poetry.group.dev.dependencies]
 autoflake = "*"
@@ -32,15 +33,18 @@ isort = "*"
 mypy = "*"
 pep8-naming = "*"
 pytest = "*"
+pytest-timeout = "*"
 pytest-cov = "*"
 pytest-mock = "*"
 pytest-xdist = "*"
 pyupgrade = "*"
 
 [tool.poetry.scripts]
+kevm = "kevm_pyk.__main__:main"
 kevm-pyk = "kevm_pyk.__main__:main"
+kevm-dist = "kevm_pyk.dist:main"
 gst-to-kore = "kevm_pyk.gst_to_kore:main"
-kontrol = "kontrol.__main__:main"
+kontrolx = "kontrolx.__main__:main"
 
 [tool.isort]
 profile = "black"
@@ -53,10 +57,12 @@ remove-all-unused-imports = true
 ignore-init-module-imports = true
 remove-duplicate-keys = true
 remove-unused-variables = true
+exclude = [ "src/kevm_pyk/kproj" ]
 
 [tool.black]
 line-length = 120
 skip-string-normalization = true
+exclude = "src/kevm_pyk/kproj"
 
 [tool.mypy]
 disallow_untyped_defs = true

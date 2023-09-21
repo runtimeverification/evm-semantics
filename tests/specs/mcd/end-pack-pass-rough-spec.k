@@ -60,6 +60,7 @@ module END-PACK-PASS-ROUGH-SPEC
             <blockNonce> _ </blockNonce>
             <baseFee> _ </baseFee>
             <ommerBlockHeaders> _ </ommerBlockHeaders>
+            <withdrawalsRoot> _ </withdrawalsRoot>
           </block>
         </evm>
         <network>
@@ -217,6 +218,7 @@ module END-PACK-PASS-ROUGH-SPEC
             <blockNonce> _ </blockNonce>
             <baseFee> _ </baseFee>
             <ommerBlockHeaders> _ </ommerBlockHeaders>
+            <withdrawalsRoot> _ </withdrawalsRoot>
           </block>
         </evm>
         <network>
@@ -316,6 +318,7 @@ module END-PACK-PASS-ROUGH-SPEC
             <blockNonce> _ </blockNonce>
             <baseFee> _ </baseFee>
             <ommerBlockHeaders> _ </ommerBlockHeaders>
+            <withdrawalsRoot> _ </withdrawalsRoot>
           </block>
         </evm>
         <network>
@@ -415,6 +418,7 @@ module END-PACK-PASS-ROUGH-SPEC
             <blockNonce> _ </blockNonce>
             <baseFee> _ </baseFee>
             <ommerBlockHeaders> _ </ommerBlockHeaders>
+            <withdrawalsRoot> _ </withdrawalsRoot>
           </block>
         </evm>
         <network>
