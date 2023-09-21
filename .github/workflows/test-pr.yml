@@ -132,7 +132,7 @@ jobs:
         include:
           - test-suite: 'test-prove-kprove'
             test-args:
-            timeout: 120
+            timeout: 45
           - test-suite: 'test-prove-pyk'
             test-args:
             timeout: 120
@@ -170,7 +170,7 @@ jobs:
         include:
           - test-suite: 'legacy'
             test-args:
-            timeout: 240
+            timeout: 180
           - test-suite: 'booster'
             test-args: '--use-booster'
             timeout: 90
