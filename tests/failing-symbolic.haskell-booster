@@ -1,4 +1,6 @@
+tests/specs/benchmarks/ecrecoverloop00-sig0-invalid-spec.k
 tests/specs/benchmarks/ecrecoverloop00-sig1-invalid-spec.k
+tests/specs/benchmarks/ecrecoverloop00-sigs-valid-spec.k
 tests/specs/benchmarks/ecrecoverloop02-sig0-invalid-spec.k
 tests/specs/benchmarks/ecrecoverloop02-sig1-invalid-spec.k
 tests/specs/benchmarks/ecrecoverloop02-sigs-valid-spec.k
