@@ -411,8 +411,10 @@ class Foundry:
         contract_name, method_name = test.split('.')
 
         if method_name == 'init':
-            return self.contracts[contract_name].constructor
-        
+            constructor = self.contracts[contract_name].constructor
+            assert constructor is not None
+            return constructor
+
         contract = self.contracts[contract_name]
         print(contract.method_by_sig)
         return contract.method_by_sig[method_name]
@@ -451,7 +453,7 @@ class Foundry:
             _LOGGER.info(
                 f'Using the the latest version {latest_version} of test {test} because it is up to date and no version was specified.'
             )
-            if not method.contract_up_to_date(self.digest_file):
+            if type(method) is Contract.Method and not method.contract_up_to_date(self.digest_file):
                 _LOGGER.warning(
                     f'Test {test} was not reinitialized because it is up to date, but the contract it is a part of has changed.'
                 )
