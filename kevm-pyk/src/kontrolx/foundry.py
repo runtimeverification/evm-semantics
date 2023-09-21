@@ -306,7 +306,7 @@ class Foundry:
         if id is None:
             if len(matching_proofs) > 1:
                 raise ValueError(
-                    f'Found {len(matching_proofs)} matching proofs for {test}. Use the --id flag to choose one.'
+                    f'Found {len(matching_proofs)} matching proofs for {test}. Use the --version flag to choose one.'
                 )
             test_id = single(matching_proofs).id
             return test_id
