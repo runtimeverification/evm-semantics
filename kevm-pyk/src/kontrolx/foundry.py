@@ -304,24 +304,28 @@ class Foundry:
         test_sig = self.matching_sig(test).split('.')[1]
         return (contract_name, test_sig)
 
-    def get_test_id(self, test: str, id: int | None, subproof_path: list[int] | None = None) -> str:
-        proof = self.proof_by_test_and_subproof_path(test, subproof_path=subproof_path)
-        return proof.id
+    def get_test_id(self, test: str, version: int | None = None, subproof_path: list[int] | None = None) -> str:
+        proof_id = test
+        if subproof_path:
+            suffix = ''
+            for node_id in subproof_path:
+                suffix += f'_node_{node_id}'
+            proof_id += suffix
 
-    #          if not matching_proofs:
-    #              raise ValueError(f'Found no matching proofs for {test}.')
-    #          if id is None:
-    #              if len(matching_proofs) > 1:
-    #                  raise ValueError(
-    #                      f'Found {len(matching_proofs)} matching proofs for {test}. Use the --version flag to choose one.'
-    #                  )
-    #              test_id = single(matching_proofs).id
-    #              return test_id
-    #          else:
-    #              for proof in matching_proofs:
-    #                  if proof.id.endswith(str(id)):
-    #                      return proof.id
-    #              raise ValueError('No proof matching this predicate.')
+        if version:
+            proof_id += f':{version}'
+        else:
+            proof_id += f':{self.latest_proof_version(proof_id)}'
+
+        matching_proofs = [pid for pid in listdir(self.proofs_dir) if pid == proof_id]
+
+        if len(matching_proofs) == 0:
+            raise ValueError(f'Found no matching proofs for {test}.')
+
+        if len(matching_proofs) > 1:
+            raise ValueError(f'Found {len(matching_proofs)} matching proofs for {test}: {matching_proofs}')
+
+        return single(matching_proofs)
 
     @staticmethod
     def success(s: KInner, dst: KInner, r: KInner, c: KInner, e1: KInner, e2: KInner) -> KApply:
@@ -381,24 +385,6 @@ class Foundry:
             'Access documentation for KEVM foundry integration at https://docs.runtimeverification.com/kevm-integration-for-foundry/'
         )
         return res_lines
-
-    def proofs_with_test(self, test: str) -> list[Proof]:
-        proofs = [self.get_optional_proof(pid) for pid in listdir(self.proofs_dir) if test == pid.split(':')[0]]
-        return [proof for proof in proofs if proof is not None]
-
-    def proof_by_test_and_subproof_path(self, test: str, subproof_path: list[int] | None = None) -> Proof:
-        proofs = self.proofs_with_test(test)
-        suffix = ''
-        if subproof_path is None:
-            return single(proofs)
-        for node_id in subproof_path:
-            suffix += f'_node_{node_id}'
-        proofs = [proof for proof in proofs if proof.id.endswith(suffix)]
-        if len(proofs) > 1:
-            raise ValueError(
-                'Given test {test} and subproof_path {subproof_path}, found more than one matching proof: {proofs}'
-            )
-        return single(proofs)
 
     def get_apr_proof(self, test_id: str) -> APRProof:
         proof = Proof.read_proof_data(self.proofs_dir, test_id)

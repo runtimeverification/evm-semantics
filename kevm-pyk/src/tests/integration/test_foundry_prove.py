@@ -256,7 +256,7 @@ def test_foundry_merge_nodes(foundry_root: Path, bug_report: BugReport | None, s
 
 def check_pending(foundry_root: Path, test: str, pending: list[int]) -> None:
     foundry = Foundry(foundry_root)
-    proof = foundry.proof_by_test_and_subproof_path(test)
+    proof = foundry.get_apr_proof(foundry.get_test_id(test))
     assert isinstance(proof, APRProof)
     assert [node.id for node in proof.pending] == pending
 
@@ -318,7 +318,7 @@ def test_foundry_remove_node(
         node=4,
     )
 
-    proof = foundry.proof_by_test_and_subproof_path(test)
+    proof = foundry.get_apr_proof(foundry.get_test_id(test))
     assert type(proof) is APRProof
     assert proof.is_proof_pending
 

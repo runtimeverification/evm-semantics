@@ -35,6 +35,8 @@ def node_id_like(s: str) -> NodeIdLike:
 
 
 def _parse_subproof_path(value: str) -> list[int]:
+    if ',' not in value:
+        return [int(value)]
     return [int(node_id) for node_id in value.split(',')]
 
 
@@ -177,6 +179,7 @@ class KEVMCLIArgs(KCLIArgs):
             type=_parse_subproof_path,
             default=None,
             required=False,
+            dest='subproof_path',
             help='Comma separated list of nodes to look up subproofs. --subproof 3,2,5 will look up ContractName.testName()_node_3_node_2_node_5.',
         )
         return args
