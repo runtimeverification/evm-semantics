@@ -53,69 +53,10 @@ jobs:
             drv=$(nix-store --query --deriver ${kevm})
             nix-store --query --requisites --include-outputs ${drv} | cachix push k-framework
 
-  dockerhub-image:
-    name: 'Build Ubuntu Jammy DockerHub Image'
-    runs-on: [self-hosted, linux, normal]
-    steps:
-      - name: 'Check out code'
-        uses: actions/checkout@v3
-        with:
-          submodules: recursive
-          ref: ${{ github.event.push.head.sha }}
-          fetch-depth: 0
-      - name: 'Set up Docker'
-        uses: ./.github/actions/with-docker
-        with:
-          container-name: kevm-package-jammy-${{ github.sha }}
-
-      - name: 'Build Package'
-        run: |
-          set -euxo pipefail
-          version=$(cat package/version)
-          docker exec -u github-user kevm-package-jammy-${GITHUB_SHA} /bin/bash -c 'package/debian/package jammy'
-          docker cp kevm-package-jammy-${GITHUB_SHA}:/home/github-user/kevm_${version}_amd64.deb ./
-
-      - name: 'Set Version ID'
-        run: echo "KEVM_VERSION=$(cat package/version)" >> "${GITHUB_ENV}"
-
-      - name: 'Setup Foundry Test Docker'
-        uses: ./.github/actions/with-docker
-        with:
-          container-name: kevm-ci-test-${{ github.sha }}
-          tag-name: runtimeverificationinc/kevm:ubuntu-jammy-${{ env.KEVM_VERSION }}
-          dockerfile: package/docker/Dockerfile
-
-      - name: 'KEVM Foundry Test'
-        run: |
-          set -euxo pipefail
-          docker cp ./tests/foundry kevm-ci-test-${GITHUB_SHA}:/home/github-user/foundry
-          docker exec -u github-user kevm-ci-test-${GITHUB_SHA} /bin/bash -c "sudo chown github-user:github-user -R /home/github-user/foundry"
-          docker exec -u github-user kevm-ci-test-${GITHUB_SHA} /bin/bash -c "forge build --root /home/github-user/foundry"
-          docker exec -u github-user kevm-ci-test-${GITHUB_SHA} /bin/bash -c "kevm foundry-kompile --foundry-project-root /home/github-user/foundry --verbose"
-          docker exec -u github-user kevm-ci-test-${GITHUB_SHA} /bin/bash -c "kevm foundry-prove --foundry-project-root /home/github-user/foundry --verbose --test AssertTest.test_assert_true_branch"
-          docker exec -u github-user kevm-ci-test-${GITHUB_SHA} /bin/bash -c "kevm foundry-show --foundry-project-root /home/github-user/foundry --verbose AssertTest.test_assert_true_branch"
-          docker exec -u github-user kevm-ci-test-${GITHUB_SHA} /bin/bash -c "kevm foundry-list --foundry-project-root /home/github-user/foundry --verbose"
-
-      - name: 'Push Docker Image to DockerHub'
-        env:
-          DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
-        run: |
-          set -euxo pipefail
-          dockerhub_repo=runtimeverificationinc/kevm
-          tag_name=ubuntu-jammy-${KEVM_VERSION}
-          docker login --username rvdockerhub --password ${DOCKERHUB_PASSWORD}
-          docker image push "${dockerhub_repo}:${tag_name}"
-
-      - name: 'Tear down Docker'
-        if: always()
-        run: |
-          docker stop --time=0 kevm-package-jammy-${GITHUB_SHA}
-          docker stop --time=0 kevm-ci-test-${GITHUB_SHA}
-
   make-release:
     name: 'Cut Release'
     runs-on: ubuntu-latest
-    needs: [nix-cache, dockerhub-image]
+    needs: nix-cache
     steps:
       - name: 'Check out code'
         uses: actions/checkout@v3
@@ -128,7 +69,7 @@ jobs:
         run: |
           set -x
           kevm_version=v$(cat package/version)
-          gh release create "${kevm_version}" --target "${GITHUB_SHA}"
+          gh release create "${kevm_version}" --target "${{ github.sha }}"
 
   gh-pages:
     name: 'Publish GH Pages'
@@ -153,7 +94,7 @@ jobs:
           npm run build-sitemap
           cd -
           mv web/public_content ./
-          rm -rf $(find . -maxdepth 1 -not -name public_content -a -not -name .git -a -not -path . -a -not -path .. -a -not -name CNAME)
+          rm -rf $(find . -maxdepth 1 -not -name public_content -a -not -name .git -a -not -name .gitmodules -a -not -path . -a -not -path .. -a -not -name CNAME)
           mv public_content/* ./
           rm -rf public_content
           git add ./

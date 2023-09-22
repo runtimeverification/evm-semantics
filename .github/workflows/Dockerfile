@@ -35,9 +35,6 @@ RUN    apt-get update                  \
             llvm-${LLVM_VERSION}-dev   \
             llvm-${LLVM_VERSION}-tools \
             maven                      \
-            netcat                     \
-            protobuf-compiler          \
-            maven                      \
             python3                    \
             python3-pip
 
@@ -56,6 +53,6 @@ ENV PATH=/home/${USER}/.cargo/bin:/home/${USER}/.local/bin:/usr/local/bin/:${PAT
 RUN    curl -sSL https://install.python-poetry.org | python3 - \
     && poetry --version
 
-RUN    cargo install svm-rs --version 0.3.0 \
-    && svm install 0.8.13                   \
+RUN    cargo install svm-rs --version 0.3.0 --locked \
+    && svm install 0.8.13                            \
     && solc --version

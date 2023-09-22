@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 from pyk.utils import run_process
 
-from kontrol.foundry import foundry_kompile, foundry_prove
+from kontrolx.foundry import foundry_kompile, foundry_prove
 
 from .utils import TEST_DATA_DIR
 
@@ -29,16 +29,12 @@ def test_foundy_prove(profile: Profiler, use_booster: bool, tmp_path: Path) -> N
     _forge_build(foundry_root)
 
     with profile('kompile.prof', sort_keys=('cumtime', 'tottime'), limit=15):
-        foundry_kompile(
-            foundry_root=foundry_root,
-            includes=(),
-            llvm_library=use_booster,
-        )
+        foundry_kompile(foundry_root=foundry_root, includes=())
 
     with profile('prove.prof', sort_keys=('cumtime', 'tottime'), limit=100):
         foundry_prove(
             foundry_root,
-            tests=['AssertTest.test_revert_branch'],
+            tests=[('AssertTest.test_revert_branch', None)],
             simplify_init=False,
             smt_timeout=300,
             smt_retry_limit=10,

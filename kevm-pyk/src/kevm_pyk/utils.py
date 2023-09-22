@@ -174,11 +174,8 @@ def print_failure_info(proof: Proof, kcfg_explore: KCFGExplore, counterexample_i
                 res_lines.append('')
                 res_lines.append(f'  Node id: {str(node.id)}')
 
-                simplified_node, _ = kcfg_explore.cterm_simplify(node.cterm)
-                simplified_target, _ = kcfg_explore.cterm_simplify(target.cterm)
-
-                node_cterm = CTerm.from_kast(simplified_node)
-                target_cterm = CTerm.from_kast(simplified_target)
+                node_cterm, _ = kcfg_explore.cterm_simplify(node.cterm)
+                target_cterm, _ = kcfg_explore.cterm_simplify(target.cterm)
 
                 res_lines.append('  Failure reason:')
                 _, reason = kcfg_explore.implication_failure_reason(node_cterm, target_cterm)
@@ -315,22 +312,35 @@ def legacy_explore(
     haskell_log_entries: Iterable[str] = (),
     log_axioms_file: Path | None = None,
     trace_rewrites: bool = False,
+    start_server: bool = True,
 ) -> Iterator[KCFGExplore]:
-    # Old way of handling KCFGExplore, to be removed
-    with kore_server(
-        definition_dir=kprint.definition_dir,
-        llvm_definition_dir=llvm_definition_dir,
-        module_name=kprint.main_module,
-        port=port,
-        command=kore_rpc_command,
-        bug_report=bug_report,
-        smt_timeout=smt_timeout,
-        smt_retry_limit=smt_retry_limit,
-        haskell_log_format=haskell_log_format,
-        haskell_log_entries=haskell_log_entries,
-        log_axioms_file=log_axioms_file,
-    ) as server:
-        with KoreClient('localhost', server.port, bug_report=bug_report) as client:
+    if start_server:
+        # Old way of handling KCFGExplore, to be removed
+        with kore_server(
+            definition_dir=kprint.definition_dir,
+            llvm_definition_dir=llvm_definition_dir,
+            module_name=kprint.main_module,
+            port=port,
+            command=kore_rpc_command,
+            bug_report=bug_report,
+            smt_timeout=smt_timeout,
+            smt_retry_limit=smt_retry_limit,
+            haskell_log_format=haskell_log_format,
+            haskell_log_entries=haskell_log_entries,
+            log_axioms_file=log_axioms_file,
+        ) as server:
+            with KoreClient('localhost', server.port, bug_report=bug_report) as client:
+                yield KCFGExplore(
+                    kprint=kprint,
+                    kore_client=client,
+                    kcfg_semantics=kcfg_semantics,
+                    id=id,
+                    trace_rewrites=trace_rewrites,
+                )
+    else:
+        if port is None:
+            raise ValueError('Missing port with start_server=False')
+        with KoreClient('localhost', port, bug_report=bug_report) as client:
             yield KCFGExplore(
                 kprint=kprint,
                 kore_client=client,
