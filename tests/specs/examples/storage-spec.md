@@ -131,7 +131,7 @@ module STORAGE-SPEC
        requires #rangeBool(NEW_VAL)
         andBool MYBOOL_KEY          ==Int #loc(S2KStorage . myBool)
         andBool OLD_STORAGE_CONTENT ==Int #lookup ( ACCT_STORAGE , MYBOOL_KEY )
-        andBool NEW_STORAGE_CONTENT ==Int NEW_VAL |Int ((~Word 255) &Int OLD_STORAGE_CONTENT) 
+        andBool NEW_STORAGE_CONTENT ==Int NEW_VAL |Int ((~Word 255) &Int OLD_STORAGE_CONTENT)
 
 ```
 

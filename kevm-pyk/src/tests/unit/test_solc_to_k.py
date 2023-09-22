@@ -6,7 +6,7 @@ import pytest
 from pyk.kast.inner import KApply, KToken, KVariable
 
 from kevm_pyk.kevm import KEVM
-from kontrol.solc_to_k import Contract, Input, _range_predicates
+from kontrolx.solc_to_k import Contract, _range_predicate
 
 from .utils import TEST_DATA_DIR
 

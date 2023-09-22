@@ -168,7 +168,6 @@ class KEVM(KProve, KRun):
             '_|->_',
             '#And',
             '_andBool_',
-            '_:__EVM-TYPES_WordStack_Int_WordStack',
             '#Implies',
             '_impliesBool_',
             '_&Int_',
@@ -184,7 +183,7 @@ class KEVM(KProve, KRun):
             '_Set_',
             'typedArgs',
             '_up/Int__EVM-TYPES_Int_Int_Int',
-            '_:_WS',
+            '_:__EVM-TYPES_WordStack_Int_WordStack',
         ]
         for symb in paren_symbols:
             if symb in symbol_table:
@@ -434,7 +433,7 @@ class KEVM(KProve, KRun):
         branching_allowed: int | None = None,
         haskell_backend_args: Iterable[str] = (),
     ) -> list[CTerm]:
-        md_selector = 'k & ! node'
+        md_selector = 'k'
         args: list[str] = []
         haskell_args: list[str] = []
         if claim_labels:
