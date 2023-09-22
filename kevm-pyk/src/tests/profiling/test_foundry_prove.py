@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 from pyk.utils import run_process
 
-from kontrol.foundry import foundry_kompile, foundry_prove
+from kontrolx.foundry import foundry_kompile, foundry_prove
 
 from .utils import TEST_DATA_DIR
 
