@@ -5,7 +5,7 @@ module VERIFICATION
     imports LEMMAS
     imports INFINITE-GAS
 
-    rule N xorInt maxUInt256 => maxUInt256 -Int N 
+    rule N xorInt maxUInt256 => maxUInt256 -Int N
     requires #rangeUInt(256, N)
     [simplification]
 
@@ -39,10 +39,10 @@ claim [foundry-sum-to-n-loop-invariant]:
           </jumpDests>
           <wordStack>
               (S => (S +Int ((N *Int (N +Int 1)) /Int 2)))
-            : 0 
+            : 0
             : (N => 0)
-            : 334 
-            : 2123244496 
+            : 334
+            : 2123244496
             : .WordStack
           </wordStack>
           <pc>
