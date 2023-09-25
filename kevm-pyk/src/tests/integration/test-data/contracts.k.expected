@@ -5306,8 +5306,8 @@ module SymbolicStore-CONTRACT
     syntax SymbolicStoreField ::= "testNumber" [symbol(), klabel(field_SymbolicStore_testNumber)]
     
     rule  ( #loc ( S2KSymbolicStore . testNumber ) => 0 )
-
       
+
 endmodule
 
 module Test-CONTRACT
