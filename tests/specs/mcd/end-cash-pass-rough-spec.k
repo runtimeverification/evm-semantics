@@ -157,6 +157,6 @@ module END-CASH-PASS-ROUGH-SPEC
        andBool #Vat.can[ACCT_ID][ACCT_ID] =/=Int #Vat.gem[ABI_ilk][CALLER_ID]
        andBool #Vat.gem[ABI_ilk][ACCT_ID] =/=Int #Vat.gem[ABI_ilk][CALLER_ID]
 
-    [depends(END-ARITHMETIC-SPEC.End.adduu.pass,END-ARITHMETIC-SPEC.End.rmul.pass,VAT-FLUX-DIFF-PASS.Vat.flux-diff.pass)]
+    [depends(END-ARITHMETIC-SPEC.End.adduu.pass,END-ARITHMETIC-SPEC.End.rmul.pass,VAT-FLUX-DIFF-PASS-SPEC.Vat.flux-diff.pass)]
 
 endmodule
