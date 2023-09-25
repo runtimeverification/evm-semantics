@@ -1,9 +1,9 @@
 requires "vat-arithmetic-spec.k"
 
-module VAT-FLUX-DIFF-PASS-ROUGH-SPEC
+module VAT-FLUX-DIFF-PASS-SPEC
     imports VAT-ARITHMETIC-SPEC
 
-    claim [Vat.flux-diff.pass.rough]:
+    claim [Vat.flux-diff.pass]:
       <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
@@ -25,7 +25,7 @@ module VAT-FLUX-DIFF-PASS-ROUGH-SPEC
             <wordStack> .WordStack => ?_ </wordStack>
             <localMem> .Bytes => ?_ </localMem>
             <pc> 0 => ?_ </pc>
-            <gas> #gas(VGas) => ?_ </gas>
+            <gas> #gas(VGas) => #gas ( ( ( ( VGas -Int Csstore( ISTANBUL , ( Gem_src -Int ABI_wad ) , Gem_src , Junk_1 ) ) -Int Csstore( ISTANBUL , ( Gem_dst +Int ABI_wad ) , Gem_dst , Junk_2 ) ) +Int -8307 ) ) </gas>
             <memoryUsed> 0 => ?_ </memoryUsed>
             <callGas> _ => ?_ </callGas>
             <static> false </static>
@@ -71,7 +71,7 @@ module VAT-FLUX-DIFF-PASS-ROUGH-SPEC
               <code> Vat_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE [ #Vat.gem[ABI_ilk][ABI_src] <- Gem_src -Int ABI_wad ] [ #Vat.gem[ABI_ilk][ABI_dst] <- Gem_dst +Int ABI_wad ] </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
-              <nonce> _Nonce_Vat => ?_ </nonce>
+              <nonce> Nonce_Vat </nonce>
             </account>
            ...
           </accounts>
@@ -90,6 +90,7 @@ module VAT-FLUX-DIFF-PASS-ROUGH-SPEC
        andBool VCallDepth <=Int 1024
        andBool #rangeUInt(256, VCallValue)
        andBool #rangeUInt(256, VChainId)
+       andBool #rangeNonce(Nonce_Vat)
 
        andBool (#rangeBytes(32, ABI_ilk)
        andBool (#rangeAddress(ABI_src)

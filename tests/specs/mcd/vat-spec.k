@@ -3,6 +3,7 @@ requires "vat-arithmetic-spec.k"
 requires "vat-dai-pass-spec.k"
 requires "vat-deny-diff-fail-rough-spec.k"
 requires "vat-flux-diff-pass-rough-spec.k"
+requires "vat-flux-diff-pass-spec.k"
 requires "vat-fold-pass-rough-spec.k"
 requires "vat-fork-diff-pass-rough-spec.k"
 requires "vat-frob-diff-zero-dart-pass-rough-spec.k"
@@ -20,6 +21,7 @@ module VAT-SPEC
     imports VAT-DAI-PASS-SPEC
     imports VAT-DENY-DIFF-FAIL-ROUGH-SPEC
     imports VAT-FLUX-DIFF-PASS-ROUGH-SPEC
+    imports VAT-FLUX-DIFF-PASS-SPEC
     imports VAT-FOLD-PASS-ROUGH-SPEC
     imports VAT-FORK-DIFF-PASS-ROUGH-SPEC
     imports VAT-FROB-DIFF-ZERO-DART-PASS-ROUGH-SPEC
