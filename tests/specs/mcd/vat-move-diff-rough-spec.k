@@ -1,7 +1,8 @@
 requires "verification.k"
 
+
 module VAT-MOVE-DIFF-ROUGH-SPEC
-    imports VERIFICATION
+    imports VAT-MOVE-DIFF-ROUGH-ARITH-SPEC
 
     // Vat_move-diff
     claim [Vat.move-diff.pass.rough]:
@@ -118,6 +119,13 @@ module VAT-MOVE-DIFF-ROUGH-SPEC
      andBool #Vat.can[ABI_src][CALLER_ID] =/=Int #Vat.dai[ABI_src]
      andBool #Vat.can[ABI_src][CALLER_ID] =/=Int #Vat.dai[ABI_dst]
      andBool #Vat.dai[ABI_src] =/=Int #Vat.dai[ABI_dst]
+    [depends(VAT-MOVE-DIFF-ROUGH-ARITH-SPEC.Vat.adduu.pass,VAT-MOVE-DIFF-ROUGH-ARITH-SPEC.Vat.subuu.pass)]
+
+endmodule
+
+
+module VAT-MOVE-DIFF-ROUGH-ARITH-SPEC
+    imports VERIFICATION
 
     // Vat_adduu
     claim [Vat.adduu.pass]:
@@ -214,8 +222,6 @@ module VAT-MOVE-DIFF-ROUGH-SPEC
      andBool ((#sizeWordStack(WS) <=Int 100)
      andBool (#rangeUInt(256, VMemoryUsed)
      andBool ((#rangeUInt(256, ABI_x +Int ABI_y)))))))
-    [trusted]
-
 
     // Vat_subuu
     claim [Vat.subuu.pass]:
@@ -312,7 +318,6 @@ module VAT-MOVE-DIFF-ROUGH-SPEC
      andBool ((#sizeWordStack(WS) <=Int 100)
      andBool (#rangeUInt(256, VMemoryUsed)
      andBool ((#rangeUInt(256, ABI_x -Int ABI_y)))))))
-    [trusted]
-
 
 endmodule
+
