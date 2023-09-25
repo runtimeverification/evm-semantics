@@ -3,7 +3,6 @@ requires "verification.k"
 module VAT-FLUX-DIFF-PASS-ROUGH-SPEC
     imports VERIFICATION
 
-    // Vat_flux-diff
     claim [Vat.flux-diff.pass.rough]:
       <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
       <mode> NORMAL </mode>
