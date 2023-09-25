@@ -330,7 +330,7 @@ def exec_prove(
                         target_node_id,
                         {},
                         proof_dir=save_directory,
-                        subproof_ids=[f'{spec_module_name}.{d}' for d in claim.dependencies],
+                        subproof_ids=claims_graph[claim.label],
                     )
 
             passed = kevm_prove(
