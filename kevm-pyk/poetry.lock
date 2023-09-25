@@ -790,7 +790,7 @@ plugins = ["importlib-metadata"]
 
 [[package]]
 name = "pyk"
-version = "0.1.446"
+version = "0.1.447"
 description = ""
 optional = false
 python-versions = "^3.10"
@@ -810,8 +810,8 @@ tomli = "^2.0.1"
 [package.source]
 type = "git"
 url = "https://github.com/runtimeverification/pyk.git"
-reference = "v0.1.446"
-resolved_reference = "89b7f4bd0f8a9d8ec8755d9a48cca57c5c709107"
+reference = "v0.1.447"
+resolved_reference = "abed8298b54de758d33494d1b802a8869c728554"
 
 [[package]]
 name = "pyperclip"
@@ -892,6 +892,20 @@ pytest = ">=5.0"
 dev = ["pre-commit", "pytest-asyncio", "tox"]
 
 [[package]]
+name = "pytest-timeout"
+version = "2.1.0"
+description = "pytest plugin to abort hanging tests"
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "pytest-timeout-2.1.0.tar.gz", hash = "sha256:c07ca07404c612f8abbe22294b23c368e2e5104b521c1790195561f37e1ac3d9"},
+    {file = "pytest_timeout-2.1.0-py3-none-any.whl", hash = "sha256:f6f50101443ce70ad325ceb4473c4255e9d74e3c7cd0ef827309dfa4c0d975c6"},
+]
+
+[package.dependencies]
+pytest = ">=5.0.0"
+
+[[package]]
 name = "pytest-xdist"
 version = "3.3.1"
 description = "pytest xdist plugin for distributed testing, most importantly across multiple CPUs"
@@ -913,13 +927,13 @@ testing = ["filelock"]
 
 [[package]]
 name = "pyupgrade"
-version = "3.11.1"
+version = "3.12.0"
 description = "A tool to automatically upgrade syntax for newer versions."
 optional = false
 python-versions = ">=3.8.1"
 files = [
-    {file = "pyupgrade-3.11.1-py2.py3-none-any.whl", hash = "sha256:6e9dd362394b3068123e06ca268de5845d41e2bb29f387b38323cc1009fb3100"},
-    {file = "pyupgrade-3.11.1.tar.gz", hash = "sha256:3e6c7689d2f3ae418c6a60ee981477fe9130eccaed3e33dac6c21274cf7d45f4"},
+    {file = "pyupgrade-3.12.0-py2.py3-none-any.whl", hash = "sha256:c6f9c129560b9538e75b93fb0aee20508faae454714e8373d462e408985bd96a"},
+    {file = "pyupgrade-3.12.0.tar.gz", hash = "sha256:defc292ffaf402942b8fccaa97491964063e343fc1993230e44890b971dc1234"},
 ]
 
 [package.dependencies]
@@ -1034,13 +1048,13 @@ files = [
 
 [[package]]
 name = "xdg-base-dirs"
-version = "6.0.0"
+version = "6.0.1"
 description = "Variables defined by the XDG Base Directory Specification"
 optional = false
 python-versions = ">=3.10,<4.0"
 files = [
-    {file = "xdg_base_dirs-6.0.0-py3-none-any.whl", hash = "sha256:71b878d3b6c80923a8ddd7c4fb25f9f694c6796aa79214c3fe32dd49a13dcc82"},
-    {file = "xdg_base_dirs-6.0.0.tar.gz", hash = "sha256:3bc8813e260a78acba2f718b48eb00b5ff82bd9f02688b54b9e4ccd8a65d42cc"},
+    {file = "xdg_base_dirs-6.0.1-py3-none-any.whl", hash = "sha256:63f6ebc1721ced2e86c340856e004ef829501a30a37e17079c52cfaf0e1741b9"},
+    {file = "xdg_base_dirs-6.0.1.tar.gz", hash = "sha256:b4c8f4ba72d1286018b25eea374ec6fbf4fddda3d4137edf50de95de53e195a6"},
 ]
 
 [[package]]
@@ -1061,4 +1075,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "6f83f7e557ad5dbf3cd8a869937b94d031abbd861a942395b7a2496a6b3853b3"
+content-hash = "5c198aab6e1f8f04c6bab2d2f4c97cc629d31e2dacaa5e38b58f10b9a63959ac"

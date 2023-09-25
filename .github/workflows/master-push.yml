@@ -69,7 +69,7 @@ jobs:
         run: |
           set -x
           kevm_version=v$(cat package/version)
-          gh release create "${kevm_version}" --target "${GITHUB_SHA}"
+          gh release create "${kevm_version}" --target "${{ github.sha }}"
 
   gh-pages:
     name: 'Publish GH Pages'
