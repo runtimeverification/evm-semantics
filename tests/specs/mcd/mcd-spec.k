@@ -1,0 +1,44 @@
+requires "cat-exhaustiveness-spec.k"
+requires "cat-file-addr-pass-rough-spec.k"
+requires "dai-adduu-fail-rough-spec.k"
+requires "dai-symbol-pass-spec.k"
+requires "dstoken-spec.k"
+requires "dsvalue-peek-pass-rough-spec.k"
+requires "dsvalue-read-pass-spec.k"
+requires "dsvalue-read-pass-summarize-spec.k"
+requires "end-spec.k"
+requires "flapper-spec.k"
+requires "flipper-addu48u48-fail-rough-spec.k"
+requires "flipper-bids-pass-rough-spec.k"
+requires "flipper-tau-pass-spec.k"
+requires "flipper-ttl-pass-spec.k"
+requires "flopper-spec.k"
+requires "functional-spec.k"
+requires "gemjoin-spec.k"
+requires "pot-spec.k"
+requires "vat-spec.k"
+requires "vow-arithmetic-spec.k"
+requires "vow-spec.k"
+
+module MCD-SPEC
+    imports CAT-EXHAUSTIVENESS-SPEC
+    imports CAT-FILE-ADDR-PASS-ROUGH-SPEC
+    imports DAI-ADDUU-FAIL-ROUGH-SPEC
+    imports DAI-SYMBOL-PASS-SPEC
+    imports DSTOKEN-SPEC
+    imports DSVALUE-PEEK-PASS-ROUGH-SPEC
+    imports DSVALUE-READ-PASS-SPEC
+    imports DSVALUE-READ-PASS-SUMMARIZE-SPEC
+    imports END-SPEC
+    imports FLAPPER-SPEC
+    imports FLIPPER-ADDU48U48-FAIL-ROUGH-SPEC
+    imports FLIPPER-BIDS-PASS-ROUGH-SPEC
+    imports FLIPPER-TAU-PASS-SPEC
+    imports FLIPPER-TTL-PASS-SPEC
+    imports FLOPPER-SPEC
+    imports FUNCTIONAL-SPEC
+    imports GEMJOIN-SPEC
+    imports POT-SPEC
+    imports VAT-SPEC
+    imports VOW-SPEC
+endmodule
