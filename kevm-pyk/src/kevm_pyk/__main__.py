@@ -31,7 +31,14 @@ from .dist import DistTarget
 from .gst_to_kore import SORT_ETHEREUM_SIMULATION, gst_to_kore, kore_pgm_to_kore
 from .kevm import KEVM, KEVMSemantics, kevm_node_printer
 from .kompile import KompileTarget, kevm_kompile
-from .utils import ensure_ksequence_on_k_cell, get_apr_proof_for_spec, kevm_prove, legacy_explore, print_failure_info
+from .utils import (
+    claim_dependency_dict,
+    ensure_ksequence_on_k_cell,
+    get_apr_proof_for_spec,
+    kevm_prove,
+    legacy_explore,
+    print_failure_info,
+)
 
 if TYPE_CHECKING:
     from argparse import Namespace
@@ -342,18 +349,9 @@ def exec_prove(
 
     if all_claims is None:
         raise ValueError(f'No claims found in file: {spec_file}')
-
     all_claims_by_label: dict[str, KClaim] = {c.label: c for c in all_claims}
-    graph: dict[str, list[str]] = {}
-    for claim in all_claims:
-        graph[claim.label] = []
-        for dependency in claim.dependencies:
-            if dependency not in all_claims_by_label:
-                spec_dependency = f'{spec_module_name}.{dependency}'
-                if spec_dependency not in all_claims_by_label:
-                    raise ValueError(f'Could not find dependency: {dependency} or {spec_dependency}')
-                dependency = spec_dependency
-            graph[claim.label].append(dependency)
+
+    graph = claim_dependency_dict(all_claims)
     topological_sorter = graphlib.TopologicalSorter(graph)
     topological_sorter.prepare()
     with wrap_process_pool(workers=workers) as process_pool:

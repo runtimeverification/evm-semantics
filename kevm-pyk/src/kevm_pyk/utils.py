@@ -27,7 +27,7 @@ if TYPE_CHECKING:
     from collections.abc import Callable, Collection, Iterable, Iterator
     from typing import Final, TypeVar
 
-    from pyk.kast.outer import KDefinition
+    from pyk.kast.outer import KClaim, KDefinition
     from pyk.kcfg import KCFG
     from pyk.kcfg.semantics import KCFGSemantics
     from pyk.ktool.kprint import KPrint
@@ -39,6 +39,24 @@ if TYPE_CHECKING:
     T2 = TypeVar('T2')
 
 _LOGGER: Final = logging.getLogger(__name__)
+
+
+def claim_dependency_dict(claims: Iterable[KClaim], spec_module_name: str | None = None) -> dict[str, list[str]]:
+    claims_by_label = {claim.label: claim for claim in claims}
+    graph: dict[str, list[str]] = {}
+    for claim in claims:
+        graph[claim.label] = []
+        for dependency in claim.dependencies:
+            if dependency not in claims_by_label:
+                if spec_module_name is None:
+                    raise ValueError(f'Could not find dependency and no spec_module provided: {dependency}')
+                else:
+                    spec_dependency = f'{spec_module_name}.{dependency}'
+                    if spec_dependency not in claims_by_label:
+                        raise ValueError(f'Could not find dependency: {dependency} or {spec_dependency}')
+                    dependency = spec_dependency
+            graph[claim.label].append(dependency)
+    return graph
 
 
 def get_apr_proof_for_spec(  # noqa: N802
