@@ -104,6 +104,7 @@ tests/specs/mcd/gemjoin-exit-pass-rough-spec.k
 tests/specs/mcd/pot-join-pass-rough-spec.k
 tests/specs/mcd/vat-addui-fail-rough-spec.k
 tests/specs/mcd/vat-addui-pass-spec.k
+tests/specs/mcd/vat-arithmetic-spec.k
 tests/specs/mcd/vat-deny-diff-fail-rough-spec.k
 tests/specs/mcd/vat-flux-diff-pass-rough-spec.k
 tests/specs/mcd/vat-fold-pass-rough-spec.k
@@ -113,6 +114,7 @@ tests/specs/mcd/vat-move-diff-rough-spec.k
 tests/specs/mcd/vat-mului-pass-spec.k
 tests/specs/mcd/vat-muluu-pass-spec.k
 tests/specs/mcd/vat-slip-pass-rough-spec.k
+tests/specs/mcd/vat-spec.k
 tests/specs/mcd/vat-subui-fail-rough-spec.k
 tests/specs/mcd/vat-subui-pass-rough-spec.k
 tests/specs/mcd/vat-subui-pass-spec.k
