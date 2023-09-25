@@ -6,6 +6,9 @@ import os
 import re
 import shutil
 import sys
+from abc import ABC, abstractmethod
+from concurrent.futures import ThreadPoolExecutor, wait
+from dataclasses import dataclass
 from functools import cached_property
 from os import listdir
 from pathlib import Path
@@ -13,12 +16,12 @@ from subprocess import CalledProcessError
 from typing import TYPE_CHECKING
 
 import tomlkit
-from pathos.pools import ProcessPool  # type: ignore
 from pyk.cterm import CTerm
 from pyk.kast.inner import KApply, KSequence, KSort, KToken, KVariable, Subst
 from pyk.kast.manip import flatten_label, free_vars, minimize_term, set_cell
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire
 from pyk.kcfg import KCFG
+from pyk.kore.rpc import kore_server
 from pyk.prelude.bytes import bytesToken
 from pyk.prelude.k import GENERATED_TOP_CELL
 from pyk.prelude.kbool import FALSE, notBool
@@ -45,13 +48,15 @@ from kevm_pyk.utils import (
 from .solc_to_k import Contract, contract_to_main_module, contract_to_verification_module
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
+    from collections.abc import Callable, Iterable
     from typing import Any, Final
 
     from pyk.kast.inner import KInner
     from pyk.kcfg import KCFGExplore
     from pyk.kcfg.kcfg import NodeIdLike
     from pyk.kcfg.tui import KCFGElem
+    from pyk.kore.pool import Future
+    from pyk.kore.rpc import KoreServer
     from pyk.proof.show import NodePrinter
     from pyk.utils import BugReport
 
@@ -299,22 +304,28 @@ class Foundry:
         test_sig = self.matching_sig(test).split('.')[1]
         return (contract_name, test_sig)
 
-    def get_test_id(self, test: str, id: int | None) -> str:
-        matching_proofs = self.proofs_with_test(test)
-        if not matching_proofs:
-            raise ValueError(f'Found no matching proofs for {test}.')
-        if id is None:
-            if len(matching_proofs) > 1:
-                raise ValueError(
-                    f'Found {len(matching_proofs)} matching proofs for {test}. Use the --version flag to choose one.'
-                )
-            test_id = single(matching_proofs).id
-            return test_id
+    def get_test_id(self, test: str, version: int | None = None, subproof_path: list[int] | None = None) -> str:
+        proof_id = test
+        if subproof_path:
+            suffix = ''
+            for node_id in subproof_path:
+                suffix += f'_node_{node_id}'
+            proof_id += suffix
+
+        if version:
+            proof_id += f':{version}'
         else:
-            for proof in matching_proofs:
-                if proof.id.endswith(str(id)):
-                    return proof.id
-            raise ValueError('No proof matching this predicate.')
+            proof_id += f':{self.latest_proof_version(proof_id)}'
+
+        matching_proofs = [pid for pid in listdir(self.proofs_dir) if pid == proof_id]
+
+        if len(matching_proofs) == 0:
+            raise ValueError(f'Found no matching proofs for {test}.')
+
+        if len(matching_proofs) > 1:
+            raise ValueError(f'Found {len(matching_proofs)} matching proofs for {test}: {matching_proofs}')
+
+        return single(matching_proofs)
 
     @staticmethod
     def success(s: KInner, dst: KInner, r: KInner, c: KInner, e1: KInner, e2: KInner) -> KApply:
@@ -374,14 +385,6 @@ class Foundry:
             'Access documentation for KEVM foundry integration at https://docs.runtimeverification.com/kevm-integration-for-foundry/'
         )
         return res_lines
-
-    def proofs_with_test(self, test: str) -> list[Proof]:
-        proofs = [
-            self.get_optional_proof(pid)
-            for pid in listdir(self.proofs_dir)
-            if re.search(single(self._escape_brackets([test])), pid.split(':')[0])
-        ]
-        return [proof for proof in proofs if proof is not None]
 
     def get_apr_proof(self, test_id: str) -> APRProof:
         proof = Proof.read_proof_data(self.proofs_dir, test_id)
@@ -619,12 +622,12 @@ def foundry_prove(
     use_booster: bool = False,
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
-    failure_info: bool = True,
     counterexample_info: bool = False,
     trace_rewrites: bool = False,
     auto_abstract_gas: bool = False,
     port: int | None = None,
-) -> dict[tuple[str, int], tuple[bool, list[str] | None]]:
+    max_branches: int | None = None,
+) -> list[APRProof]:
     if workers <= 0:
         raise ValueError(f'Must have at least one worker, found: --workers {workers}')
     if max_iterations is not None and max_iterations < 0:
@@ -662,14 +665,51 @@ def foundry_prove(
         )
     )
 
-    def _init_and_run_proof(_init_problem: tuple[str, str, int]) -> tuple[bool, list[str] | None]:
-        contract_name, method_sig, version = _init_problem
+    def _run_proof(_init_problem: tuple[int, Proof]) -> Proof:
+        port, proof = _init_problem
+
+        llvm_definition_dir = foundry.llvm_library if use_booster else None
+        start_server = port is None
+
+        with legacy_explore(
+            foundry.kevm,
+            kcfg_semantics=KEVMSemantics(auto_abstract_gas=auto_abstract_gas),
+            id=proof.id,
+            bug_report=bug_report,
+            kore_rpc_command=kore_rpc_command,
+            llvm_definition_dir=llvm_definition_dir,
+            smt_timeout=smt_timeout,
+            smt_retry_limit=smt_retry_limit,
+            trace_rewrites=trace_rewrites,
+            start_server=start_server,
+            port=port,
+        ) as kcfg_explore:
+            kevm_prove(
+                foundry.kevm,
+                proof,
+                kcfg_explore,
+                max_depth=max_depth,
+                max_iterations=max_iterations,
+                break_every_step=break_every_step,
+                break_on_jumpi=break_on_jumpi,
+                break_on_calls=break_on_calls,
+                max_branches=max_branches,
+            )
+            return proof
+
+    def _init_and_run_proof(_init_problem: tuple[str, str, int]) -> APRProof:
+        contract_name, method_sig, id = _init_problem
         contract = foundry.contracts[contract_name]
         method = contract.method_by_sig[method_sig]
-        test_id = f'{contract_name}.{method_sig}:{version}'
+        id_prefix = ':' + str(id) if id is not None else ''
+        test_id = f'{contract_name}.{method_sig}{id_prefix}'
         llvm_definition_dir = foundry.llvm_library if use_booster else None
-
         start_server = port is None
+
+        def generate_subproof_name(proof: APRProof, node: int) -> str:
+            id_without_version = proof.id.split(':')[0]
+
+            return f'{id_without_version}_node_{node}:{id}' if id else f'{id_without_version}_node_{node}:{id}'
 
         with legacy_explore(
             foundry.kevm,
@@ -693,9 +733,10 @@ def foundry_prove(
                 test_id,
                 simplify_init=simplify_init,
                 bmc_depth=bmc_depth,
+                generate_subproof_name=generate_subproof_name,
             )
 
-            passed = kevm_prove(
+            kevm_prove(
                 foundry.kevm,
                 proof,
                 kcfg_explore,
@@ -704,31 +745,93 @@ def foundry_prove(
                 break_every_step=break_every_step,
                 break_on_jumpi=break_on_jumpi,
                 break_on_calls=break_on_calls,
+                max_branches=max_branches,
             )
-            failure_log = None
-            if not passed:
-                failure_log = print_failure_info(proof, kcfg_explore, counterexample_info)
-            return passed, failure_log
+            return proof
 
-    def run_cfg_group(tests: list[tuple[str, int]]) -> dict[tuple[str, int], tuple[bool, list[str] | None]]:
-        def _split_test(test: tuple[str, int]) -> tuple[str, str, int]:
-            test_name, version = test
-            contract, method = test_name.split('.')
-            return contract, method, version
+    def run_cfg_group(tests: list[tuple[str, int]]) -> list[APRProof]:
+        llvm_definition_dir = foundry.llvm_library if use_booster else None
 
-        init_problems = [_split_test(test) for test in tests]
+        def create_server() -> KoreServer:
+            return kore_server(
+                definition_dir=foundry.kevm.definition_dir,
+                llvm_definition_dir=llvm_definition_dir,
+                module_name=foundry.kevm.main_module,
+                command=kore_rpc_command,
+                bug_report=bug_report,
+                smt_timeout=smt_timeout,
+                smt_retry_limit=smt_retry_limit,
+            )
 
-        _apr_proofs: list[tuple[bool, list[str] | None]]
-        if workers > 1:
-            with ProcessPool(ncpus=workers) as process_pool:
-                _apr_proofs = process_pool.map(_init_and_run_proof, init_problems)
-        else:
-            _apr_proofs = []
-            for init_problem in init_problems:
-                _apr_proofs.append(_init_and_run_proof(init_problem))
+        class Task(ABC):
+            @property
+            @abstractmethod
+            def name(self) -> str:
+                ...
 
-        apr_proofs = dict(zip(tests, _apr_proofs, strict=True))
-        return apr_proofs
+            @abstractmethod
+            def submit(self, executor: ThreadPoolExecutor) -> Future:
+                ...
+
+        @dataclass(frozen=True)
+        class CreateAndRunTask(Task):
+            test: str
+            id: int
+
+            def submit(self, executor: ThreadPoolExecutor) -> Future:
+                contract, method = self.test.split('.')
+                return executor.submit(_init_and_run_proof, (contract, method, self.id))
+
+            @property
+            def name(self) -> str:
+                return self.test
+
+        @dataclass(frozen=True)
+        class RunTask(Task):
+            proof: Proof
+            port: int
+
+            def submit(self, executor: ThreadPoolExecutor) -> Future:
+                return executor.submit(_run_proof, (self.port, self.proof))
+
+            @property
+            def name(self) -> str:
+                return self.proof.id
+
+        results = []
+        executor = ThreadPoolExecutor(max_workers=workers)
+
+        pending_futures: dict[str, Future] = {}
+        task: Task
+        for test, id in tests:
+            task = CreateAndRunTask(test, id)
+            pending_futures[task.name] = task.submit(executor)
+
+        base_proofs = {test: test for test, _ in tests}
+        servers = {}
+
+        for test, _ in tests:
+            servers[test] = create_server()
+
+        while pending_futures:
+            done_futures = [(_proof, future) for (_proof, future) in pending_futures.items() if future.done()]
+            pending_futures = {_proof: future for (_proof, future) in pending_futures.items() if not future.done()}
+
+            for _proof, future in done_futures:
+                proof = future.result()
+                results.append(proof)
+
+                subproofs = proof.subproofs
+                for subproof in subproofs:
+                    base_proofs[subproof.id] = base_proofs[_proof]
+                    port = servers[base_proofs[subproof.id]].port
+                    task = RunTask(subproof, port)
+                    pending_futures[task.name] = task.submit(executor)
+
+            wait(pending_futures.values(), return_when='FIRST_COMPLETED')
+        executor.shutdown()
+
+        return results
 
     tests_with_versions = [
         (test_name, foundry.resolve_proof_version(test_name, reinit, version)) for (test_name, version) in tests
@@ -747,7 +850,8 @@ def foundry_prove(
 
     _LOGGER.info(f'Running setup functions in parallel: {list(setup_methods)}')
     results = run_cfg_group(setup_methods_with_versions)
-    failed = [setup_cfg for setup_cfg, passed in results.items() if not passed]
+    failed = [proof.id for proof in results if not proof.passed]
+
     if failed:
         raise ValueError(f'Running setUp method failed for {len(failed)} contracts: {failed}')
 
@@ -774,10 +878,11 @@ def foundry_show(
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
     port: int | None = None,
+    subproof_path: list[int] | None = None,
 ) -> str:
     contract_name, _ = test.split('.')
     foundry = Foundry(foundry_root)
-    test_id = foundry.get_test_id(test, version)
+    test_id = foundry.get_test_id(test, version, subproof_path=subproof_path)
     proof = foundry.get_apr_proof(test_id)
 
     if pending:
@@ -825,10 +930,12 @@ def foundry_show(
     return '\n'.join(res_lines)
 
 
-def foundry_to_dot(foundry_root: Path, test: str, version: int | None = None) -> None:
+def foundry_to_dot(
+    foundry_root: Path, test: str, version: int | None = None, subproof_path: list[int] | None = None
+) -> None:
     foundry = Foundry(foundry_root)
     dump_dir = foundry.proofs_dir / 'dump'
-    test_id = foundry.get_test_id(test, version)
+    test_id = foundry.get_test_id(test, version, subproof_path=subproof_path)
     contract_name, _ = test.split('.')
     proof = foundry.get_apr_proof(test_id)
 
@@ -860,9 +967,11 @@ def foundry_list(foundry_root: Path) -> list[str]:
     return lines
 
 
-def foundry_remove_node(foundry_root: Path, test: str, node: NodeIdLike, version: int | None = None) -> None:
+def foundry_remove_node(
+    foundry_root: Path, test: str, node: NodeIdLike, version: int | None = None, subproof_path: list[int] | None = None
+) -> None:
     foundry = Foundry(foundry_root)
-    test_id = foundry.get_test_id(test, version)
+    test_id = foundry.get_test_id(test, version, subproof_path=subproof_path)
     apr_proof = foundry.get_apr_proof(test_id)
     node_ids = apr_proof.prune(node)
     _LOGGER.info(f'Pruned nodes: {node_ids}')
@@ -882,9 +991,10 @@ def foundry_simplify_node(
     smt_retry_limit: int | None = None,
     trace_rewrites: bool = False,
     port: int | None = None,
+    subproof_path: list[int] | None = None,
 ) -> str:
     foundry = Foundry(foundry_root, bug_report=bug_report)
-    test_id = foundry.get_test_id(test, version)
+    test_id = foundry.get_test_id(test, version, subproof_path=subproof_path)
     apr_proof = foundry.get_apr_proof(test_id)
     cterm = apr_proof.kcfg.node(node).cterm
     start_server = port is None
@@ -915,6 +1025,7 @@ def foundry_merge_nodes(
     version: int | None = None,
     bug_report: BugReport | None = None,
     include_disjunct: bool = False,
+    subproof_path: list[int] | None = None,
 ) -> None:
     def check_cells_equal(cell: str, nodes: Iterable[KCFG.Node]) -> bool:
         nodes = list(nodes)
@@ -929,7 +1040,7 @@ def foundry_merge_nodes(
         return True
 
     foundry = Foundry(foundry_root, bug_report=bug_report)
-    test_id = foundry.get_test_id(test, version)
+    test_id = foundry.get_test_id(test, version, subproof_path=subproof_path)
     apr_proof = foundry.get_apr_proof(test_id)
 
     if len(list(node_ids)) < 2:
@@ -966,6 +1077,7 @@ def foundry_step_node(
     smt_retry_limit: int | None = None,
     trace_rewrites: bool = False,
     port: int | None = None,
+    subproof_path: list[int] | None = None,
 ) -> None:
     if repeat < 1:
         raise ValueError(f'Expected positive value for --repeat, got: {repeat}')
@@ -973,7 +1085,7 @@ def foundry_step_node(
         raise ValueError(f'Expected positive value for --depth, got: {depth}')
 
     foundry = Foundry(foundry_root, bug_report=bug_report)
-    test_id = foundry.get_test_id(test, version)
+    test_id = foundry.get_test_id(test, version, subproof_path=subproof_path)
     apr_proof = foundry.get_apr_proof(test_id)
     start_server = port is None
 
@@ -1005,9 +1117,10 @@ def foundry_section_edge(
     smt_retry_limit: int | None = None,
     trace_rewrites: bool = False,
     port: int | None = None,
+    subproof_path: list[int] | None = None,
 ) -> None:
     foundry = Foundry(foundry_root, bug_report=bug_report)
-    test_id = foundry.get_test_id(test, version)
+    test_id = foundry.get_test_id(test, version, subproof_path=subproof_path)
     apr_proof = foundry.get_apr_proof(test_id)
     source_id, target_id = edge
     start_server = port is None
@@ -1037,9 +1150,10 @@ def foundry_get_model(
     pending: bool = False,
     failing: bool = False,
     port: int | None = None,
+    subproof_path: list[int] | None = None,
 ) -> str:
     foundry = Foundry(foundry_root)
-    test_id = foundry.get_test_id(test, version)
+    test_id = foundry.get_test_id(test, version, subproof_path=subproof_path)
     proof = foundry.get_apr_proof(test_id)
 
     if not nodes:
@@ -1126,6 +1240,7 @@ def _method_to_apr_proof(
     test_id: str,
     simplify_init: bool = True,
     bmc_depth: int | None = None,
+    generate_subproof_name: Callable[[APRProof, int], str] | None = None,
 ) -> APRProof | APRBMCProof:
     contract_name = contract.name
     method_sig = method.signature
@@ -1172,9 +1287,19 @@ def _method_to_apr_proof(
                 {},
                 bmc_depth,
                 proof_dir=save_directory,
+                generate_subproof_name=generate_subproof_name,
             )
         else:
-            apr_proof = APRProof(test_id, kcfg, [], init_node_id, target_node_id, {}, proof_dir=save_directory)
+            apr_proof = APRProof(
+                test_id,
+                kcfg,
+                [],
+                init_node_id,
+                target_node_id,
+                {},
+                proof_dir=save_directory,
+                generate_subproof_name=generate_subproof_name,
+            )
 
     apr_proof.write_proof_data()
     return apr_proof

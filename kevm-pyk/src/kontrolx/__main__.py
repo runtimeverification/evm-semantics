@@ -160,6 +160,7 @@ def exec_foundry_prove(
     counterexample_info: bool = False,
     trace_rewrites: bool = False,
     auto_abstract_gas: bool = False,
+    max_branches: int | None = None,
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'main_module', f'--main-module: {kwargs["main_module"]}')
@@ -196,16 +197,18 @@ def exec_foundry_prove(
         smt_retry_limit=smt_retry_limit,
         trace_rewrites=trace_rewrites,
         auto_abstract_gas=auto_abstract_gas,
+        max_branches=max_branches,
     )
     failed = 0
-    for pid, r in results.items():
-        passed, failure_log = r
-        if passed:
-            print(f'PROOF PASSED: {pid}')
-        else:
-            failed += 1
-            print(f'PROOF FAILED: {pid}')
-            if failure_info and failure_log is not None:
+    for proof in results:
+        if proof.passed:
+            print(f'PROOF PASSED: {proof.id}')
+        elif proof.is_proof_pending:
+            print(f'PROOF PENDING: {proof.id}')
+        elif proof.failed:
+            print(f'PROOF FAILED: {proof.id}')
+            if failure_info and proof.failure_info is not None:
+                failure_log = proof.failure_info.print()
                 failure_log += Foundry.help_info()
                 for line in failure_log:
                     print(line)
@@ -227,6 +230,7 @@ def exec_foundry_show(
     failing: bool = False,
     failure_info: bool = False,
     counterexample_info: bool = False,
+    subproof_path: list[int] | None = None,
     **kwargs: Any,
 ) -> None:
     output = foundry_show(
@@ -243,12 +247,15 @@ def exec_foundry_show(
         failing=failing,
         failure_info=failure_info,
         counterexample_info=counterexample_info,
+        subproof_path=subproof_path,
     )
     print(output)
 
 
-def exec_foundry_to_dot(foundry_root: Path, test: str, version: int | None, **kwargs: Any) -> None:
-    foundry_to_dot(foundry_root=foundry_root, test=test, version=version)
+def exec_foundry_to_dot(
+    foundry_root: Path, test: str, version: int | None, subproof_path: list[int] | None = None, **kwargs: Any
+) -> None:
+    foundry_to_dot(foundry_root=foundry_root, test=test, version=version, subproof_path=subproof_path)
 
 
 def exec_foundry_list(foundry_root: Path, **kwargs: Any) -> None:
@@ -256,9 +263,11 @@ def exec_foundry_list(foundry_root: Path, **kwargs: Any) -> None:
     print('\n'.join(stats))
 
 
-def exec_foundry_view_kcfg(foundry_root: Path, test: str, version: int | None, **kwargs: Any) -> None:
+def exec_foundry_view_kcfg(
+    foundry_root: Path, test: str, version: int | None, subproof_path: list[int] | None = None, **kwargs: Any
+) -> None:
     foundry = Foundry(foundry_root)
-    test_id = foundry.get_test_id(test, version)
+    test_id = foundry.get_test_id(test, version, subproof_path=subproof_path)
     contract_name, _ = test_id.split('.')
     proof = foundry.get_apr_proof(test_id)
 
@@ -274,9 +283,14 @@ def exec_foundry_view_kcfg(foundry_root: Path, test: str, version: int | None, *
 
 
 def exec_foundry_remove_node(
-    foundry_root: Path, test: str, node: NodeIdLike, version: int | None, **kwargs: Any
+    foundry_root: Path,
+    test: str,
+    node: NodeIdLike,
+    version: int | None,
+    subproof_path: list[int] | None = None,
+    **kwargs: Any,
 ) -> None:
-    foundry_remove_node(foundry_root=foundry_root, test=test, version=version, node=node)
+    foundry_remove_node(foundry_root=foundry_root, test=test, version=version, node=node, subproof_path=subproof_path)
 
 
 def exec_foundry_simplify_node(
@@ -291,6 +305,7 @@ def exec_foundry_simplify_node(
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
     trace_rewrites: bool = False,
+    subproof_path: list[int] | None = None,
     **kwargs: Any,
 ) -> None:
     if smt_timeout is None:
@@ -310,6 +325,7 @@ def exec_foundry_simplify_node(
         smt_timeout=smt_timeout,
         smt_retry_limit=smt_retry_limit,
         trace_rewrites=trace_rewrites,
+        subproof_path=subproof_path,
     )
     print(f'Simplified:\n{pretty_term}')
 
@@ -325,6 +341,7 @@ def exec_foundry_step_node(
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
     trace_rewrites: bool = False,
+    subproof_path: list[int] | None = None,
     **kwargs: Any,
 ) -> None:
     if smt_timeout is None:
@@ -343,6 +360,7 @@ def exec_foundry_step_node(
         smt_timeout=smt_timeout,
         smt_retry_limit=smt_retry_limit,
         trace_rewrites=trace_rewrites,
+        subproof_path=subproof_path,
     )
 
 
@@ -351,9 +369,12 @@ def exec_foundry_merge_nodes(
     test: str,
     version: int | None,
     nodes: Iterable[NodeIdLike],
+    subproof_path: list[int] | None = None,
     **kwargs: Any,
 ) -> None:
-    foundry_merge_nodes(foundry_root=foundry_root, node_ids=nodes, test=test, version=version)
+    foundry_merge_nodes(
+        foundry_root=foundry_root, node_ids=nodes, test=test, version=version, subproof_path=subproof_path
+    )
 
 
 def exec_foundry_section_edge(
@@ -367,6 +388,7 @@ def exec_foundry_section_edge(
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
     trace_rewrites: bool = False,
+    subproof_path: list[int] | None = None,
     **kwargs: Any,
 ) -> None:
     if smt_timeout is None:
@@ -385,6 +407,7 @@ def exec_foundry_section_edge(
         smt_timeout=smt_timeout,
         smt_retry_limit=smt_retry_limit,
         trace_rewrites=trace_rewrites,
+        subproof_path=subproof_path,
     )
 
 
@@ -395,6 +418,7 @@ def exec_foundry_get_model(
     nodes: Iterable[NodeIdLike] = (),
     pending: bool = False,
     failing: bool = False,
+    subproof_path: list[int] | None = None,
     **kwargs: Any,
 ) -> None:
     output = foundry_get_model(
@@ -404,6 +428,7 @@ def exec_foundry_get_model(
         nodes=nodes,
         pending=pending,
         failing=failing,
+        subproof_path=subproof_path,
     )
     print(output)
 
@@ -513,6 +538,13 @@ def _create_argument_parser() -> ArgumentParser:
         default=None,
         type=int,
         help='Enables bounded model checking. Specifies the maximum depth to unroll all loops to.',
+    )
+    foundry_prove_args.add_argument(
+        '--max-branches',
+        dest='max_branches',
+        default=None,
+        type=int,
+        help='Enables subproof splitting when the number of pending nodes exceeds max_branches',
     )
     foundry_prove_args.add_argument(
         '--use-booster',
