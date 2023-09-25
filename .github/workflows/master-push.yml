@@ -39,7 +39,7 @@ jobs:
         uses: cachix/cachix-action@v12
         with:
           name: k-framework
-          signingKey: ${{ secrets.GITHUB_TOKEN }}
+          signingKey: ${{ secrets.CACHIX_SIGNING_KEY }}
           skipPush: true
       - name: 'Build and cache KEVM'
         uses: workflow/nix-shell-action@v3.0.3
@@ -65,7 +65,7 @@ jobs:
           fetch-depth: 0
       - name: 'Make Release'
         env:
-         GITHUB_TOKEN: ${{ secrets.JENKINS_GITHUB_PAT }}
+         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -x
           kevm_version=v$(cat package/version)
