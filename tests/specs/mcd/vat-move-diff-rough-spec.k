@@ -1,7 +1,8 @@
 requires "verification.k"
 
+
 module VAT-MOVE-DIFF-ROUGH-SPEC
-    imports VERIFICATION
+    imports VAT-MOVE-DIFF-ROUGH-ARITH-SPEC
 
     // Vat_move-diff
     claim [Vat.move-diff.pass.rough]:
@@ -118,10 +119,17 @@ module VAT-MOVE-DIFF-ROUGH-SPEC
      andBool #Vat.can[ABI_src][CALLER_ID] =/=Int #Vat.dai[ABI_src]
      andBool #Vat.can[ABI_src][CALLER_ID] =/=Int #Vat.dai[ABI_dst]
      andBool #Vat.dai[ABI_src] =/=Int #Vat.dai[ABI_dst]
+    [depends(VAT-MOVE-DIFF-ROUGH-ARITH-SPEC.Vat.adduu.pass,VAT-MOVE-DIFF-ROUGH-ARITH-SPEC.Vat.subuu.pass)]
+
+endmodule
+
+
+module VAT-MOVE-DIFF-ROUGH-ARITH-SPEC
+    imports VERIFICATION
 
     // Vat_adduu
     claim [Vat.adduu.pass]:
-      <k> #execute ~> CONTINUATION => #execute ~> CONTINUATION </k>
+      <k> #execute ~> CONTINUATION => JUMP JMPTO ~> #pc [ JUMP ] ~> #execute ~> CONTINUATION </k>
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
@@ -139,10 +147,10 @@ module VAT-MOVE-DIFF-ROUGH-SPEC
             <caller> CALLER_ID </caller>
             <callData> _ => ?_ </callData>
             <callValue> VCallValue </callValue>
-            <wordStack> ABI_y : ABI_x : JMPTO : WS  =>  JMPTO : ABI_x +Int ABI_y : WS </wordStack>
+            <wordStack> ABI_y : ABI_x : JMPTO : WS  =>  ABI_x +Int ABI_y : WS </wordStack>
             <localMem> _ </localMem>
             <pc> 13086 => 13111 </pc>
-            <gas> #gas(VGas) => #gas ( ( VGas +Int 54 ) ) </gas>
+            <gas> #gas(VGas) => #gas ( ( VGas -Int 62 ) ) </gas>
             <memoryUsed> VMemoryUsed </memoryUsed>
             <callGas> _ => ?_ </callGas>
             <static> _ </static>
@@ -214,12 +222,10 @@ module VAT-MOVE-DIFF-ROUGH-SPEC
      andBool ((#sizeWordStack(WS) <=Int 100)
      andBool (#rangeUInt(256, VMemoryUsed)
      andBool ((#rangeUInt(256, ABI_x +Int ABI_y)))))))
-    [trusted]
-
 
     // Vat_subuu
     claim [Vat.subuu.pass]:
-      <k> #execute ~> CONTINUATION => #execute ~> CONTINUATION </k>
+      <k> #execute ~> CONTINUATION => JUMP JMPTO ~> #pc [ JUMP ] ~> #execute ~> CONTINUATION </k>
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
@@ -237,10 +243,10 @@ module VAT-MOVE-DIFF-ROUGH-SPEC
             <caller> CALLER_ID </caller>
             <callData> _ => ?_ </callData>
             <callValue> VCallValue </callValue>
-            <wordStack> ABI_y : ABI_x : JMPTO : WS  =>  JMPTO : ABI_x -Int ABI_y : WS </wordStack>
+            <wordStack> ABI_y : ABI_x : JMPTO : WS  =>  ABI_x -Int ABI_y : WS </wordStack>
             <localMem> _ </localMem>
             <pc> 13060 => 13085 </pc>
-            <gas> #gas(VGas) => #gas ( ( VGas +Int 54 ) ) </gas>
+            <gas> #gas(VGas) => #gas ( ( VGas -Int 62 ) ) </gas>
             <memoryUsed> VMemoryUsed </memoryUsed>
             <callGas> _ => ?_ </callGas>
             <static> _ </static>
@@ -312,7 +318,6 @@ module VAT-MOVE-DIFF-ROUGH-SPEC
      andBool ((#sizeWordStack(WS) <=Int 100)
      andBool (#rangeUInt(256, VMemoryUsed)
      andBool ((#rangeUInt(256, ABI_x -Int ABI_y)))))))
-    [trusted]
-
 
 endmodule
+
