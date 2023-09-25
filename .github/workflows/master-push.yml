@@ -39,7 +39,7 @@ jobs:
         uses: cachix/cachix-action@v12
         with:
           name: k-framework
-          signingKey: ${{ secrets.CACHIX_SIGNING_KEY }}
+          signingKey: ${{ secrets.GITHUB_TOKEN }}
           skipPush: true
       - name: 'Build and cache KEVM'
         uses: workflow/nix-shell-action@v3.0.3
