@@ -59,7 +59,7 @@ def claim_dependency_dict(claims: Iterable[KClaim], spec_module_name: str | None
     return graph
 
 
-def get_apr_proof_for_spec(  # noqa: N802
+def get_apr_proof_for_spec(
     kprove: KProve,
     spec_file: Path,
     save_directory: Path | None,
