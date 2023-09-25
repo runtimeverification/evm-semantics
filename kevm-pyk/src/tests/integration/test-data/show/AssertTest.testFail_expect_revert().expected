@@ -22,21 +22,21 @@
 │  (212 steps)
 ├─ 5
 │   k: #end EVMC_REVERT ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
-│   pc: 1127
+│   pc: 1131
 │   callDepth: 0
 │   statusCode: STATUSCODE:StatusCode
 │
 │  (1 step)
 ├─ 6
 │   k: #halt ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
-│   pc: 1127
+│   pc: 1131
 │   callDepth: 0
 │   statusCode: EVMC_REVERT
 │
 │  (5 steps)
 └─ 7 (leaf, terminal)
     k: #halt ~> CONTINUATION:K
-    pc: 1127
+    pc: 1131
     callDepth: 0
     statusCode: EVMC_SUCCESS
 
@@ -100,7 +100,7 @@ Node 7:
               5
             </memoryUsed>
             <callGas>
-              #gas ( Cgascap ( LONDON , ( VGAS:Int +Int -2929 ) , ( VGAS:Int +Int -2929 ) , 100 ) )
+              #gas ( Cgascap ( SHANGHAI , ( VGAS:Int +Int -2929 ) , ( VGAS:Int +Int -2929 ) , 100 ) )
             </callGas>
             <static>
               false
@@ -315,7 +315,7 @@ Node 7:
                      ( 0 => 5 )
                    </memoryUsed>
                    <callGas>
-                     ( _CALLGAS_CELL => #gas ( Cgascap ( LONDON , ( VGAS:Int +Int -2929 ) , ( VGAS:Int +Int -2929 ) , 100 ) ) )
+                     ( _CALLGAS_CELL => #gas ( Cgascap ( SHANGHAI , ( VGAS:Int +Int -2929 ) , ( VGAS:Int +Int -2929 ) , 100 ) ) )
                    </callGas>
                    <static>
                      false
@@ -531,7 +531,7 @@ Node 7:
                      5
                    </memoryUsed>
                    <callGas>
-                     #gas ( Cgascap ( LONDON , ( VGAS:Int +Int -2929 ) , ( VGAS:Int +Int -2929 ) , 100 ) )
+                     #gas ( Cgascap ( SHANGHAI , ( VGAS:Int +Int -2929 ) , ( VGAS:Int +Int -2929 ) , 100 ) )
                    </callGas>
                    <static>
                      false
@@ -741,7 +741,7 @@ Node 7:
                      5
                    </memoryUsed>
                    <callGas>
-                     #gas ( Cgascap ( LONDON , ( VGAS:Int +Int -2929 ) , ( VGAS:Int +Int -2929 ) , 100 ) )
+                     #gas ( Cgascap ( SHANGHAI , ( VGAS:Int +Int -2929 ) , ( VGAS:Int +Int -2929 ) , 100 ) )
                    </callGas>
                    <static>
                      false
@@ -956,7 +956,7 @@ Node 7:
                      5
                    </memoryUsed>
                    <callGas>
-                     #gas ( Cgascap ( LONDON , ( VGAS:Int +Int -2929 ) , ( VGAS:Int +Int -2929 ) , 100 ) )
+                     #gas ( Cgascap ( SHANGHAI , ( VGAS:Int +Int -2929 ) , ( VGAS:Int +Int -2929 ) , 100 ) )
                    </callGas>
                    <static>
                      false
@@ -1171,7 +1171,7 @@ Node 7:
                      5
                    </memoryUsed>
                    <callGas>
-                     #gas ( Cgascap ( LONDON , ( VGAS:Int +Int -2929 ) , ( VGAS:Int +Int -2929 ) , 100 ) )
+                     #gas ( Cgascap ( SHANGHAI , ( VGAS:Int +Int -2929 ) , ( VGAS:Int +Int -2929 ) , 100 ) )
                    </callGas>
                    <static>
                      false

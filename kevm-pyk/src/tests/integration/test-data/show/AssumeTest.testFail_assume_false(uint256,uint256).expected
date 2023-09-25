@@ -100,7 +100,7 @@ Node 7:
               6
             </memoryUsed>
             <callGas>
-              #gas ( Cgascap ( LONDON , ( VGAS:Int +Int -3073 ) , ( VGAS:Int +Int -3073 ) , 100 ) )
+              #gas ( Cgascap ( SHANGHAI , ( VGAS:Int +Int -3073 ) , ( VGAS:Int +Int -3073 ) , 100 ) )
             </callGas>
             <static>
               false
@@ -313,7 +313,7 @@ Node 7:
                      ( 0 => 6 )
                    </memoryUsed>
                    <callGas>
-                     ( _CALLGAS_CELL => #gas ( Cgascap ( LONDON , ( VGAS:Int +Int -3073 ) , ( VGAS:Int +Int -3073 ) , 100 ) ) )
+                     ( _CALLGAS_CELL => #gas ( Cgascap ( SHANGHAI , ( VGAS:Int +Int -3073 ) , ( VGAS:Int +Int -3073 ) , 100 ) ) )
                    </callGas>
                    <static>
                      false
@@ -533,7 +533,7 @@ Node 7:
                      6
                    </memoryUsed>
                    <callGas>
-                     #gas ( Cgascap ( LONDON , ( VGAS:Int +Int -3073 ) , ( VGAS:Int +Int -3073 ) , 100 ) )
+                     #gas ( Cgascap ( SHANGHAI , ( VGAS:Int +Int -3073 ) , ( VGAS:Int +Int -3073 ) , 100 ) )
                    </callGas>
                    <static>
                      false
@@ -747,7 +747,7 @@ Node 7:
                      6
                    </memoryUsed>
                    <callGas>
-                     #gas ( Cgascap ( LONDON , ( VGAS:Int +Int -3073 ) , ( VGAS:Int +Int -3073 ) , 100 ) )
+                     #gas ( Cgascap ( SHANGHAI , ( VGAS:Int +Int -3073 ) , ( VGAS:Int +Int -3073 ) , 100 ) )
                    </callGas>
                    <static>
                      false
@@ -962,7 +962,7 @@ Node 7:
                      6
                    </memoryUsed>
                    <callGas>
-                     #gas ( Cgascap ( LONDON , ( VGAS:Int +Int -3073 ) , ( VGAS:Int +Int -3073 ) , 100 ) )
+                     #gas ( Cgascap ( SHANGHAI , ( VGAS:Int +Int -3073 ) , ( VGAS:Int +Int -3073 ) , 100 ) )
                    </callGas>
                    <static>
                      false
@@ -1175,7 +1175,7 @@ Node 7:
                      6
                    </memoryUsed>
                    <callGas>
-                     #gas ( Cgascap ( LONDON , ( VGAS:Int +Int -3073 ) , ( VGAS:Int +Int -3073 ) , 100 ) )
+                     #gas ( Cgascap ( SHANGHAI , ( VGAS:Int +Int -3073 ) , ( VGAS:Int +Int -3073 ) , 100 ) )
                    </callGas>
                    <static>
                      false

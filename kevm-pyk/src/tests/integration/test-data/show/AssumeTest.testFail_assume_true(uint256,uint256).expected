@@ -131,7 +131,7 @@
                      ( 0 => 6 )
                    </memoryUsed>
                    <callGas>
-                     ( _CALLGAS_CELL => #gas ( Cgascap ( LONDON , ( VGAS:Int +Int -2999 ) , ( VGAS:Int +Int -2999 ) , 100 ) ) )
+                     ( _CALLGAS_CELL => #gas ( Cgascap ( SHANGHAI , ( VGAS:Int +Int -2999 ) , ( VGAS:Int +Int -2999 ) , 100 ) ) )
                    </callGas>
                    <static>
                      false
@@ -351,7 +351,7 @@
                      6
                    </memoryUsed>
                    <callGas>
-                     #gas ( Cgascap ( LONDON , ( VGAS:Int +Int -2999 ) , ( VGAS:Int +Int -2999 ) , 100 ) )
+                     #gas ( Cgascap ( SHANGHAI , ( VGAS:Int +Int -2999 ) , ( VGAS:Int +Int -2999 ) , 100 ) )
                    </callGas>
                    <static>
                      false
@@ -566,7 +566,7 @@
                      ( 6 => 8 )
                    </memoryUsed>
                    <callGas>
-                     #gas ( Cgascap ( LONDON , ( VGAS:Int +Int -2999 ) , ( VGAS:Int +Int -2999 ) , 100 ) )
+                     #gas ( Cgascap ( SHANGHAI , ( VGAS:Int +Int -2999 ) , ( VGAS:Int +Int -2999 ) , 100 ) )
                    </callGas>
                    <static>
                      false
@@ -785,7 +785,7 @@
                      ( 8 => 13 )
                    </memoryUsed>
                    <callGas>
-                     #gas ( Cgascap ( LONDON , ( VGAS:Int +Int -2999 ) , ( VGAS:Int +Int -2999 ) , 100 ) )
+                     #gas ( Cgascap ( SHANGHAI , ( VGAS:Int +Int -2999 ) , ( VGAS:Int +Int -2999 ) , 100 ) )
                    </callGas>
                    <static>
                      false
@@ -1002,7 +1002,7 @@
                      ( 13 => 17 )
                    </memoryUsed>
                    <callGas>
-                     #gas ( Cgascap ( LONDON , ( VGAS:Int +Int ( -2999 => -10144 ) ) , ( VGAS:Int +Int ( -2999 => -10144 ) ) , 100 ) )
+                     #gas ( Cgascap ( SHANGHAI , ( VGAS:Int +Int ( -2999 => -10144 ) ) , ( VGAS:Int +Int ( -2999 => -10144 ) ) , 100 ) )
                    </callGas>
                    <static>
                      false
@@ -1217,7 +1217,7 @@
                      17
                    </memoryUsed>
                    <callGas>
-                     #gas ( Cgascap ( LONDON , ( VGAS:Int +Int -10144 ) , ( VGAS:Int +Int -10144 ) , 100 ) )
+                     #gas ( Cgascap ( SHANGHAI , ( VGAS:Int +Int -10144 ) , ( VGAS:Int +Int -10144 ) , 100 ) )
                    </callGas>
                    <static>
                      false
@@ -1433,7 +1433,7 @@
                      17
                    </memoryUsed>
                    <callGas>
-                     #gas ( Cgascap ( LONDON , ( VGAS:Int +Int -10144 ) , ( VGAS:Int +Int -10144 ) , 100 ) )
+                     #gas ( Cgascap ( SHANGHAI , ( VGAS:Int +Int -10144 ) , ( VGAS:Int +Int -10144 ) , 100 ) )
                    </callGas>
                    <static>
                      false
@@ -1649,7 +1649,7 @@
                      17
                    </memoryUsed>
                    <callGas>
-                     #gas ( Cgascap ( LONDON , ( VGAS:Int +Int -10144 ) , ( VGAS:Int +Int -10144 ) , 100 ) )
+                     #gas ( Cgascap ( SHANGHAI , ( VGAS:Int +Int -10144 ) , ( VGAS:Int +Int -10144 ) , 100 ) )
                    </callGas>
                    <static>
                      false
@@ -1865,7 +1865,7 @@
                      17
                    </memoryUsed>
                    <callGas>
-                     #gas ( Cgascap ( LONDON , ( VGAS:Int +Int -10144 ) , ( VGAS:Int +Int -10144 ) , 100 ) )
+                     #gas ( Cgascap ( SHANGHAI , ( VGAS:Int +Int -10144 ) , ( VGAS:Int +Int -10144 ) , 100 ) )
                    </callGas>
                    <static>
                      false

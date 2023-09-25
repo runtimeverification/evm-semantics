@@ -3031,6 +3031,8 @@ module LoopsTest-CONTRACT
     
     syntax S2KLoopsTestMethod ::= "S2Kfailed" "(" ")" [symbol(), klabel(method_LoopsTest_S2Kfailed_)]
     
+    syntax S2KLoopsTestMethod ::= "S2Kkevm" "(" ")" [symbol(), klabel(method_LoopsTest_S2Kkevm_)]
+    
     syntax S2KLoopsTestMethod ::= "S2KsumZUndN" "(" Int ":" "uint256" ")" [symbol(), klabel(method_LoopsTest_S2KsumZUndN_uint256)]
     
     syntax S2KLoopsTestMethod ::= "S2KtestIsNotPrime" "(" Int ":" "uint256" ")" [symbol(), klabel(method_LoopsTest_S2KtestIsNotPrime_uint256)]
@@ -3072,6 +3074,9 @@ module LoopsTest-CONTRACT
       
     
     rule  ( S2KLoopsTest . S2Kfailed ( ) => #abiCallData ( "failed" , .TypedArgs ) )
+      
+    
+    rule  ( S2KLoopsTest . S2Kkevm ( ) => #abiCallData ( "kevm" , .TypedArgs ) )
       
     
     rule  ( S2KLoopsTest . S2KsumZUndN ( V0_n : uint256 ) => #abiCallData ( "sum_N" , #uint256 ( V0_n ) , .TypedArgs ) )
@@ -3135,6 +3140,9 @@ module LoopsTest-CONTRACT
       
     
     rule  ( selector ( "failed()" ) => 3124842406 )
+      
+    
+    rule  ( selector ( "kevm()" ) => 3601001590 )
       
     
     rule  ( selector ( "sum_N(uint256)" ) => 2123244496 )
@@ -5298,8 +5306,8 @@ module SymbolicStore-CONTRACT
     syntax SymbolicStoreField ::= "testNumber" [symbol(), klabel(field_SymbolicStore_testNumber)]
     
     rule  ( #loc ( S2KSymbolicStore . testNumber ) => 0 )
-      
 
+      
 endmodule
 
 module Test-CONTRACT

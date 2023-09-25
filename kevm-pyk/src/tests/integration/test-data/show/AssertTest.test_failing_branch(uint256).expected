@@ -7,8 +7,8 @@
 │
 │  (574 steps)
 ├─ 3 (split)
-│   k: JUMPI 665 bool2Word ( 100 <=Int VV0_x_114b9705:Int ) ~> #pc [ JUMPI ] ~> #execut ...
-│   pc: 657
+│   k: JUMPI 648 bool2Word ( 100 <=Int VV0_x_114b9705:Int ) ~> #pc [ JUMPI ] ~> #execut ...
+│   pc: 660
 │   callDepth: 0
 │   statusCode: STATUSCODE:StatusCode
 ┃
@@ -16,8 +16,8 @@
 ┣━━┓ constraint: { true #Equals 100 <=Int VV0_x_114b9705:Int }
 ┃  │
 ┃  ├─ 4
-┃  │   k: JUMPI 665 bool2Word ( 100 <=Int VV0_x_114b9705:Int ) ~> #pc [ JUMPI ] ~> #execut ...
-┃  │   pc: 657
+┃  │   k: JUMPI 648 bool2Word ( 100 <=Int VV0_x_114b9705:Int ) ~> #pc [ JUMPI ] ~> #execut ...
+┃  │   pc: 660
 ┃  │   callDepth: 0
 ┃  │   statusCode: STATUSCODE:StatusCode
 ┃  │
@@ -53,29 +53,29 @@
 ┗━━┓ constraint: { true #Equals ( notBool 100 <=Int VV0_x_114b9705:Int ) }
    │
    ├─ 5
-   │   k: JUMPI 665 bool2Word ( 100 <=Int VV0_x_114b9705:Int ) ~> #pc [ JUMPI ] ~> #execut ...
-   │   pc: 657
+   │   k: JUMPI 648 bool2Word ( 100 <=Int VV0_x_114b9705:Int ) ~> #pc [ JUMPI ] ~> #execut ...
+   │   pc: 660
    │   callDepth: 0
    │   statusCode: STATUSCODE:StatusCode
    │
    │  (102 steps)
    ├─ 7
    │   k: #end EVMC_REVERT ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
-   │   pc: 1127
+   │   pc: 1131
    │   callDepth: 0
    │   statusCode: STATUSCODE:StatusCode
    │
    │  (1 step)
    ├─ 9
    │   k: #halt ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
-   │   pc: 1127
+   │   pc: 1131
    │   callDepth: 0
    │   statusCode: EVMC_REVERT
    │
    │  (2 steps)
    └─ 11 (leaf, terminal)
        k: #halt ~> CONTINUATION:K
-       pc: 1127
+       pc: 1131
        callDepth: 0
        statusCode: EVMC_REVERT
 
@@ -124,7 +124,7 @@ Node 11:
               0
             </callValue>
             <wordStack>
-              ( 665 : ( VV0_x_114b9705:Int : ( 250 : ( selector ( "test_failing_branch(uint256)" ) : .WordStack ) ) ) )
+              ( 648 : ( VV0_x_114b9705:Int : ( 250 : ( selector ( "test_failing_branch(uint256)" ) : .WordStack ) ) ) )
             </wordStack>
             <localMem>
               b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80"
@@ -297,7 +297,7 @@ Node 11:
            <kevm>
              <k>
                ( #execute
-               ~> CONTINUATION => JUMPI 665 bool2Word ( 100 <=Int VV0_x_114b9705:Int )
+               ~> CONTINUATION => JUMPI 648 bool2Word ( 100 <=Int VV0_x_114b9705:Int )
                ~> #pc [ JUMPI ]
                ~> #execute
                ~> CONTINUATION:K )
@@ -511,7 +511,7 @@ Node 11:
     rule [BASIC-BLOCK-4-TO-6]: <foundry>
            <kevm>
              <k>
-               ( JUMPI 665 bool2Word ( 100 <=Int VV0_x_114b9705:Int )
+               ( JUMPI 648 bool2Word ( 100 <=Int VV0_x_114b9705:Int )
                ~> #pc [ JUMPI ] => #end EVMC_SUCCESS
                ~> #pc [ STOP ] )
                ~> #execute
@@ -720,7 +720,7 @@ Node 11:
     rule [BASIC-BLOCK-5-TO-7]: <foundry>
            <kevm>
              <k>
-               ( JUMPI 665 bool2Word ( 100 <=Int VV0_x_114b9705:Int )
+               ( JUMPI 648 bool2Word ( 100 <=Int VV0_x_114b9705:Int )
                ~> #pc [ JUMPI ] => #end EVMC_REVERT
                ~> #pc [ REVERT ] )
                ~> #execute
@@ -759,7 +759,7 @@ Node 11:
                      0
                    </callValue>
                    <wordStack>
-                     ( ( VV0_x_114b9705:Int => 665 ) : ( ( 250 => VV0_x_114b9705:Int ) : ( ( selector ( "test_failing_branch(uint256)" ) => 250 ) : ( .WordStack => ( selector ( "test_failing_branch(uint256)" ) : .WordStack ) ) ) ) )
+                     ( ( VV0_x_114b9705:Int => 648 ) : ( ( 250 => VV0_x_114b9705:Int ) : ( ( selector ( "test_failing_branch(uint256)" ) => 250 ) : ( .WordStack => ( selector ( "test_failing_branch(uint256)" ) : .WordStack ) ) ) ) )
                    </wordStack>
                    <localMem>
                      ( b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80" => b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80" )
@@ -1182,7 +1182,7 @@ Node 11:
                      0
                    </callValue>
                    <wordStack>
-                     ( 665 : ( VV0_x_114b9705:Int : ( 250 : ( selector ( "test_failing_branch(uint256)" ) : .WordStack ) ) ) )
+                     ( 648 : ( VV0_x_114b9705:Int : ( 250 : ( selector ( "test_failing_branch(uint256)" ) : .WordStack ) ) ) )
                    </wordStack>
                    <localMem>
                      b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80"
@@ -1604,7 +1604,7 @@ Node 11:
                      0
                    </callValue>
                    <wordStack>
-                     ( 665 : ( VV0_x_114b9705:Int : ( 250 : ( selector ( "test_failing_branch(uint256)" ) : .WordStack ) ) ) )
+                     ( 648 : ( VV0_x_114b9705:Int : ( 250 : ( selector ( "test_failing_branch(uint256)" ) : .WordStack ) ) ) )
                    </wordStack>
                    <localMem>
                      b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80"
