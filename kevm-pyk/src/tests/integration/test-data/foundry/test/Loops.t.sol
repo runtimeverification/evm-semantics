@@ -54,8 +54,9 @@ contract LoopsTest is Test, KEVMCheats {
         // Amount of gas consumed per iteration: 178
         // Number of iterations: n
         // 9223372036854772642 // 178 = 51816696836262767
-        kevm.setGas(9223372036854772642);
         vm.assume(n <= 51816696836262767);
+        // Allocating enough gas for the loop to be analyzed
+        kevm.setGas(9223372036854772693);
         uint s = 0;
         while (0 < n) {
             s = s + n;

@@ -11,7 +11,7 @@ module SUM-TO-N-INVARIANT
   rule [foundry-sum-to-n-loop-invariant]:
   <kevm>
     <k>
-      ((JUMPI 1569 CONDITION) => JUMP 1569)
+      ((JUMPI 1727 CONDITION) => JUMP 1727)
       ~> #pc [ JUMPI ]
       ~> #execute
       ...
@@ -35,12 +35,12 @@ module SUM-TO-N-INVARIANT
               (S => (S +Int ((N *Int (N +Int 1)) /Int 2)))
             : 0 
             : (N => 0)
-            : 334 
+            : 345 
             : 2123244496 
             : .WordStack
           </wordStack>
           <pc>
-            1539
+            1697
           </pc>
           <gas>
             GAS_AMT:Int => GAS_AMT -Int (N *Int 178)
