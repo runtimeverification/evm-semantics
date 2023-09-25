@@ -344,7 +344,16 @@ def exec_prove(
         raise ValueError(f'No claims found in file: {spec_file}')
 
     all_claims_by_label: dict[str, KClaim] = {c.label: c for c in all_claims}
-    graph = {c.label: [f'{spec_module_name}.{d}' for d in c.dependencies] for c in all_claims}
+    graph: dict[str, list[str]] = {}
+    for claim in all_claims:
+        graph[claim.label] = []
+        for dependency in claim.dependencies:
+            if dependency not in all_claims_by_label:
+                spec_dependency = f'{spec_module_name}.{dependency}'
+                if spec_dependency not in all_claims_by_label:
+                    raise ValueError(f'Could not find dependency: {dependency} or {spec_dependency}')
+                dependency = spec_dependency
+            graph[claim.label].append(dependency)
     topological_sorter = graphlib.TopologicalSorter(graph)
     topological_sorter.prepare()
     with wrap_process_pool(workers=workers) as process_pool:
