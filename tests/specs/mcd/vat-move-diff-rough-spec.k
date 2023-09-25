@@ -129,7 +129,7 @@ module VAT-MOVE-DIFF-ROUGH-ARITH-SPEC
 
     // Vat_adduu
     claim [Vat.adduu.pass]:
-      <k> #execute ~> CONTINUATION => #execute ~> CONTINUATION </k>
+      <k> #execute ~> CONTINUATION => JUMP JMPTO ~> #pc [ JUMP ] ~> #execute ~> CONTINUATION </k>
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
@@ -147,10 +147,10 @@ module VAT-MOVE-DIFF-ROUGH-ARITH-SPEC
             <caller> CALLER_ID </caller>
             <callData> _ => ?_ </callData>
             <callValue> VCallValue </callValue>
-            <wordStack> ABI_y : ABI_x : JMPTO : WS  =>  JMPTO : ABI_x +Int ABI_y : WS </wordStack>
+            <wordStack> ABI_y : ABI_x : JMPTO : WS  =>  ABI_x +Int ABI_y : WS </wordStack>
             <localMem> _ </localMem>
             <pc> 13086 => 13111 </pc>
-            <gas> #gas(VGas) => #gas ( ( VGas +Int 54 ) ) </gas>
+            <gas> #gas(VGas) => #gas ( ( VGas -Int 62 ) ) </gas>
             <memoryUsed> VMemoryUsed </memoryUsed>
             <callGas> _ => ?_ </callGas>
             <static> _ </static>
@@ -225,7 +225,7 @@ module VAT-MOVE-DIFF-ROUGH-ARITH-SPEC
 
     // Vat_subuu
     claim [Vat.subuu.pass]:
-      <k> #execute ~> CONTINUATION => #execute ~> CONTINUATION </k>
+      <k> #execute ~> CONTINUATION => JUMP JMPTO ~> #pc [ JUMP ] ~> #execute ~> CONTINUATION </k>
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
@@ -243,10 +243,10 @@ module VAT-MOVE-DIFF-ROUGH-ARITH-SPEC
             <caller> CALLER_ID </caller>
             <callData> _ => ?_ </callData>
             <callValue> VCallValue </callValue>
-            <wordStack> ABI_y : ABI_x : JMPTO : WS  =>  JMPTO : ABI_x -Int ABI_y : WS </wordStack>
+            <wordStack> ABI_y : ABI_x : JMPTO : WS  =>  ABI_x -Int ABI_y : WS </wordStack>
             <localMem> _ </localMem>
             <pc> 13060 => 13085 </pc>
-            <gas> #gas(VGas) => #gas ( ( VGas +Int 54 ) ) </gas>
+            <gas> #gas(VGas) => #gas ( ( VGas -Int 62 ) ) </gas>
             <memoryUsed> VMemoryUsed </memoryUsed>
             <callGas> _ => ?_ </callGas>
             <static> _ </static>
