@@ -243,8 +243,6 @@ def exec_prove(
     elif isinstance(kore_rpc_command, str):
         kore_rpc_command = kore_rpc_command.split()
 
-    spec_module_name = spec_module if spec_module is not None else os.path.splitext(spec_file.name)[0].upper()
-
     def is_functional(claim: KClaim) -> bool:
         claim_lhs = claim.body
         if type(claim_lhs) is KRewrite:
@@ -252,6 +250,21 @@ def exec_prove(
         return not (type(claim_lhs) is KApply and claim_lhs.label.name == '<generatedTop>')
 
     llvm_definition_dir = definition_dir / 'llvm-library' if use_booster else None
+
+    _LOGGER.info(f'Extracting claims from file: {spec_file}')
+    all_claims = kevm.get_claims(
+        spec_file,
+        spec_module_name=spec_module,
+        include_dirs=include_dirs,
+        md_selector=md_selector,
+        claim_labels=None,
+        exclude_claim_labels=exclude_claim_labels,
+    )
+    if all_claims is None:
+        raise ValueError(f'No claims found in file: {spec_file}')
+    all_claims_by_label: dict[str, KClaim] = {c.label: c for c in all_claims}
+    spec_module_name = spec_module if spec_module is not None else os.path.splitext(spec_file.name)[0].upper()
+    claims_graph = claim_dependency_dict(all_claims, spec_module_name=spec_module_name)
 
     def _init_and_run_proof(claim: KClaim) -> tuple[bool, list[str] | None]:
         with legacy_explore(
@@ -336,23 +349,7 @@ def exec_prove(
 
             return passed, failure_log
 
-    _LOGGER.info(f'Extracting claims from file: {spec_file}')
-
-    all_claims = kevm.get_claims(
-        spec_file,
-        spec_module_name=spec_module,
-        include_dirs=include_dirs,
-        md_selector=md_selector,
-        claim_labels=None,
-        exclude_claim_labels=exclude_claim_labels,
-    )
-
-    if all_claims is None:
-        raise ValueError(f'No claims found in file: {spec_file}')
-    all_claims_by_label: dict[str, KClaim] = {c.label: c for c in all_claims}
-
-    graph = claim_dependency_dict(all_claims)
-    topological_sorter = graphlib.TopologicalSorter(graph)
+    topological_sorter = graphlib.TopologicalSorter(claims_graph)
     topological_sorter.prepare()
     with wrap_process_pool(workers=workers) as process_pool:
         selected_results: list[tuple[bool, list[str] | None]] = []
