@@ -1,6 +1,6 @@
 requires "verification.k"
 
-module DSTOKEN-TRANSFER-SPEC
+module DSTOKEN-TRANSFER-PASS-SPEC
     imports VERIFICATION
 
     claim [DSToken.transfer.pass]:
