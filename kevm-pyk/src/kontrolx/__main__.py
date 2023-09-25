@@ -156,6 +156,7 @@ def exec_foundry_prove(
     use_booster: bool = False,
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
+    smt_tactic: str | None = None,
     failure_info: bool = True,
     counterexample_info: bool = False,
     trace_rewrites: bool = False,
@@ -194,6 +195,7 @@ def exec_foundry_prove(
         counterexample_info=counterexample_info,
         smt_timeout=smt_timeout,
         smt_retry_limit=smt_retry_limit,
+        smt_tactic=smt_tactic,
         trace_rewrites=trace_rewrites,
         auto_abstract_gas=auto_abstract_gas,
     )
