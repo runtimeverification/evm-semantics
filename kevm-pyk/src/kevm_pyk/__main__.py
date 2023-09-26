@@ -1,10 +1,8 @@
 from __future__ import annotations
 
 import contextlib
-import graphlib
 import json
 import logging
-import os
 import sys
 import time
 from argparse import ArgumentParser
@@ -13,18 +11,15 @@ from typing import TYPE_CHECKING
 
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli.utils import file_path
-from pyk.cterm import CTerm
 from pyk.kast.outer import KApply, KRewrite, KSort, KToken
-from pyk.kcfg import KCFG
 from pyk.kore.tools import PrintOutput, kore_print
 from pyk.ktool.kompile import LLVMKompileType
 from pyk.ktool.krun import KRunOutput
 from pyk.prelude.ml import is_top, mlOr
-from pyk.proof import APRProof
-from pyk.proof.equality import EqualityProof
+from pyk.proof import APRProof, ProofStatus
 from pyk.proof.show import APRProofShow
 from pyk.proof.tui import APRProofViewer
-from pyk.utils import single
+from pyk.utils import single, unique_by_frequency
 
 from . import VERSION, config
 from .cli import KEVMCLIArgs, node_id_like
@@ -32,14 +27,7 @@ from .dist import DistTarget
 from .gst_to_kore import SORT_ETHEREUM_SIMULATION, gst_to_kore, kore_pgm_to_kore
 from .kevm import KEVM, KEVMSemantics, kevm_node_printer
 from .kompile import KompileTarget, kevm_kompile
-from .utils import (
-    claim_dependency_dict,
-    ensure_ksequence_on_k_cell,
-    get_apr_proof_for_spec,
-    kevm_prove,
-    legacy_explore,
-    print_failure_info,
-)
+from .utils import get_apr_proof_for_spec, kevm_prove, legacy_explore, print_failure_info
 
 if TYPE_CHECKING:
     from argparse import Namespace
@@ -257,25 +245,25 @@ def exec_prove(
     llvm_definition_dir = definition_dir / 'llvm-library' if use_booster else None
 
     _LOGGER.info(f'Extracting claims from file: {spec_file}')
-    all_claims = kevm.get_claims(
-        spec_file,
-        spec_module_name=spec_module,
-        include_dirs=include_dirs,
-        md_selector=md_selector,
-        claim_labels=None,
-        exclude_claim_labels=exclude_claim_labels,
+    spec_modules = kevm.get_claim_modules(
+        spec_file, spec_module_name=spec_module, include_dirs=include_dirs, md_selector=md_selector
     )
-    if all_claims is None:
-        raise ValueError(f'No claims found in file: {spec_file}')
-    all_claims_by_label: dict[str, KClaim] = {c.label: c for c in all_claims}
-    spec_module_name = spec_module if spec_module is not None else os.path.splitext(spec_file.name)[0].upper()
-    claims_graph = claim_dependency_dict(all_claims, spec_module_name=spec_module_name)
+    proofs = APRProof.from_spec_modules(
+        kevm.definition, spec_modules, spec_labels=claim_labels, logs={}, proof_dir=save_directory
+    )
+    _proofs = list(unique_by_frequency(p for proof in proofs for p in proof.proof_list))
+    proofs = []
+    for proof in _proofs:
+        if type(proof) is APRProof:
+            proofs.append(proof)
+        else:
+            raise ValueError(f'Non APRProof found: {proof.id}')
 
-    def _init_and_run_proof(claim: KClaim) -> tuple[bool, list[str] | None]:
+    def _init_and_run_proof(proof: Proof) -> tuple[bool, list[str] | None]:
         with legacy_explore(
             kevm,
             kcfg_semantics=KEVMSemantics(auto_abstract_gas=auto_abstract_gas),
-            id=claim.label,
+            id=proof.id,
             llvm_definition_dir=llvm_definition_dir,
             bug_report=bug_report,
             kore_rpc_command=kore_rpc_command,
@@ -283,65 +271,21 @@ def exec_prove(
             smt_retry_limit=smt_retry_limit,
             trace_rewrites=trace_rewrites,
         ) as kcfg_explore:
-            proof_problem: Proof
-            if is_functional(claim):
-                if (
-                    save_directory is not None
-                    and not reinit
-                    and EqualityProof.proof_exists(claim.label, save_directory)
-                ):
-                    proof_problem = EqualityProof.read_proof_data(save_directory, claim.label)
-                else:
-                    proof_problem = EqualityProof.from_claim(claim, kevm.definition, proof_dir=save_directory)
-            else:
-                if (
-                    save_directory is not None
-                    and not reinit
-                    and APRProof.proof_data_exists(claim.label, save_directory)
-                ):
-                    proof_problem = APRProof.read_proof_data(save_directory, claim.label)
-
-                else:
-                    _LOGGER.info(f'Converting claim to KCFG: {claim.label}')
-                    kcfg, init_node_id, target_node_id = KCFG.from_claim(kevm.definition, claim)
-
-                    new_init = ensure_ksequence_on_k_cell(kcfg.node(init_node_id).cterm)
-                    new_target = ensure_ksequence_on_k_cell(kcfg.node(target_node_id).cterm)
-
-                    _LOGGER.info(f'Computing definedness constraint for initial node: {claim.label}')
-                    new_init = kcfg_explore.cterm_assume_defined(new_init)
-
-                    if simplify_init:
-                        _LOGGER.info(f'Simplifying initial and target node: {claim.label}')
-                        new_init, _ = kcfg_explore.cterm_simplify(new_init)
-                        new_target, _ = kcfg_explore.cterm_simplify(new_target)
-                        if CTerm._is_bottom(new_init.kast):
-                            raise ValueError(
-                                'Simplifying initial node led to #Bottom, are you sure your LHS is defined?'
-                            )
-                        if CTerm._is_top(new_target.kast):
-                            raise ValueError(
-                                'Simplifying target node led to #Bottom, are you sure your RHS is defined?'
-                            )
-
-                    kcfg.replace_node(init_node_id, new_init)
-                    kcfg.replace_node(target_node_id, new_target)
-
-                    proof_problem = APRProof(
-                        claim.label,
-                        kcfg,
-                        [],
-                        init_node_id,
-                        target_node_id,
-                        {},
-                        proof_dir=save_directory,
-                        subproof_ids=claims_graph[claim.label],
-                    )
-
             start_time = time.time()
+            if proof.passed:
+                _LOGGER.info(f'Proof already passed, skipping: {proof.id}')
+                return True, None
+            if proof.failed:
+                _LOGGER.info(f'Proof already failed, skipping: {proof.id}')
+            sleep_count = 0
+            while proof.subproofs_status == ProofStatus.PENDING:
+                if sleep_count % 60 == 0:
+                    _LOGGER.info(f'Waiting for subproofs to complete: {proof.id}')
+                time.sleep(1)
+                sleep_count += 1
             passed = kevm_prove(
                 kevm,
-                proof_problem,
+                proof,
                 kcfg_explore,
                 max_depth=max_depth,
                 max_iterations=max_iterations,
@@ -350,36 +294,23 @@ def exec_prove(
                 break_on_calls=break_on_calls,
             )
             end_time = time.time()
-            _LOGGER.info(f'Proof timing {proof_problem.id}: {end_time - start_time}s')
+            _LOGGER.info(f'Proof timing {proof.id}: {end_time - start_time}s')
             failure_log = None
             if not passed:
-                failure_log = print_failure_info(proof_problem, kcfg_explore)
-
+                failure_log = print_failure_info(proof, kcfg_explore)
             return passed, failure_log
 
-    topological_sorter = graphlib.TopologicalSorter(claims_graph)
-    topological_sorter.prepare()
     with wrap_process_pool(workers=workers) as process_pool:
-        selected_results: list[tuple[bool, list[str] | None]] = []
-        selected_claims = []
-        while topological_sorter.is_active():
-            ready = topological_sorter.get_ready()
-            _LOGGER.info(f'Discharging proof obligations: {ready}')
-            curr_claim_list = [all_claims_by_label[label] for label in ready]
-            results: list[tuple[bool, list[str] | None]] = process_pool.map(_init_and_run_proof, curr_claim_list)
-            for label in ready:
-                topological_sorter.done(label)
-            selected_results.extend(results)
-            selected_claims.extend(curr_claim_list)
+        results = process_pool.map(_init_and_run_proof, proofs)
 
     failed = 0
-    for claim, r in zip(selected_claims, selected_results, strict=True):
+    for proof, r in zip(proofs, results, strict=True):
         passed, failure_log = r
         if passed:
-            print(f'PROOF PASSED: {claim.label}')
+            print(f'PROOF PASSED: {proof.id}')
         else:
             failed += 1
-            print(f'PROOF FAILED: {claim.label}')
+            print(f'PROOF FAILED: {proof.id}')
             if failure_info and failure_log is not None:
                 for line in failure_log:
                     print(line)
