@@ -31,8 +31,6 @@ tests/specs/mcd/vat-flux-diff-pass-rough-spec.k
 tests/specs/mcd/vat-fold-pass-rough-spec.k
 tests/specs/mcd/vat-fork-diff-pass-rough-spec.k
 tests/specs/mcd/vat-frob-diff-zero-dart-pass-rough-spec.k
-tests/specs/mcd/vat-move-diff-rough-spec.k
-tests/specs/mcd/vat-slip-pass-rough-spec.k
 tests/specs/mcd/vow-cage-deficit-pass-rough-spec.k
 tests/specs/mcd/vow-cage-surplus-pass-rough-spec.k
 tests/specs/mcd/vow-fess-fail-rough-spec.k
