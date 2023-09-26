@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+import dataclasses
 import logging
 import sys
 from typing import TYPE_CHECKING, NamedTuple
 
 import pytest
 from pyk.cterm import CTerm
+from pyk.proof.reachability import APRProof
 
 from kevm_pyk import config
 from kevm_pyk.__main__ import exec_prove
@@ -199,6 +201,24 @@ def _target_for_spec(spec_file: Path, use_booster: bool) -> Target:
 # ---------
 
 
+@dataclasses.dataclass(frozen=True)
+class TParams:
+    main_claim_id: str
+    leaf_number: int | None
+
+
+TEST_PARAMS: dict[str, TParams] = {
+    r'mcd/vat-slip-pass-rough-spec.k': TParams(
+        main_claim_id='VAT-SLIP-PASS-ROUGH-SPEC.Vat.slip.pass.rough', leaf_number=1
+    )
+}
+
+
+def leaf_number(proof: APRProof) -> int:
+    non_target_leaves = [nd for nd in proof.kcfg.leaves if not proof.is_target(nd.id)]
+    return len(non_target_leaves) + len(proof.kcfg.predecessors(proof.target))
+
+
 @pytest.mark.parametrize(
     'spec_file',
     ALL_TESTS,
@@ -236,6 +256,16 @@ def test_pyk_prove(
             use_booster=use_booster,
             bug_report=bug_report,
         )
+        name = str(spec_file.relative_to(SPEC_DIR))
+        if name in TEST_PARAMS:
+            params = TEST_PARAMS[name]
+            apr_proof = APRProof.read_proof_data(
+                proof_dir=use_directory,
+                id=params.main_claim_id,
+            )
+            expected_leaf_number = params.leaf_number
+            actual_leaf_number = leaf_number(apr_proof)
+            assert expected_leaf_number == actual_leaf_number
     except BaseException:
         raise
     finally:
