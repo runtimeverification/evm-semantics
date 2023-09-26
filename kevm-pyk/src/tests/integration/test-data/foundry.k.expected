@@ -6,9 +6,13 @@ module FOUNDRY-MAIN
     imports public AddrTest-VERIFICATION
     imports public AllowChangesTest-VERIFICATION
     imports public ValueStore-VERIFICATION
+    imports public AmbiguousTest-VERIFICATION
     imports public ArithmeticTest-VERIFICATION
     imports public AssumeTest-VERIFICATION
     imports public BMCLoopsTest-VERIFICATION
+    imports public CommonBase-VERIFICATION
+    imports public ScriptBase-VERIFICATION
+    imports public TestBase-VERIFICATION
     imports public BlockParamsTest-VERIFICATION
     imports public BroadcastTest-VERIFICATION
     imports public Constants-VERIFICATION
@@ -30,10 +34,15 @@ module FOUNDRY-MAIN
     imports public FfiTest-VERIFICATION
     imports public FilesTest-VERIFICATION
     imports public ForkTest-VERIFICATION
+    imports public FreshIntTest-VERIFICATION
     imports public GasTest-VERIFICATION
     imports public GetCodeTest-VERIFICATION
+    imports public IMulticall3-VERIFICATION
+    imports public KEVMBase-VERIFICATION
     imports public KEVMCheats-VERIFICATION
     imports public KEVMCheatsBase-VERIFICATION
+    imports public KEVMUtils-VERIFICATION
+    imports public SymbolicWords-VERIFICATION
     imports public LabelTest-VERIFICATION
     imports public LoopsTest-VERIFICATION
     imports public MethodDisambiguateTest-VERIFICATION
@@ -51,21 +60,29 @@ module FOUNDRY-MAIN
     imports public RecordLogsTest-VERIFICATION
     imports public Safe-VERIFICATION
     imports public SafeTest-VERIFICATION
-    imports public Script-VERIFICATION
     imports public Setup2Test-VERIFICATION
     imports public SetUpDeployTest-VERIFICATION
     imports public SetUpTest-VERIFICATION
     imports public SignTest-VERIFICATION
     imports public AssertTest-VERIFICATION
     imports public SnapshotTest-VERIFICATION
+    imports public StdAssertions-VERIFICATION
+    imports public StdChains-VERIFICATION
+    imports public StdCheats-VERIFICATION
+    imports public StdCheatsSafe-VERIFICATION
+    imports public stdError-VERIFICATION
+    imports public StdInvariant-VERIFICATION
+    imports public stdJson-VERIFICATION
+    imports public stdMath-VERIFICATION
+    imports public stdStorage-VERIFICATION
+    imports public stdStorageSafe-VERIFICATION
+    imports public StdStyle-VERIFICATION
+    imports public StdUtils-VERIFICATION
     imports public Store-VERIFICATION
     imports public StoreTest-VERIFICATION
     imports public SymbolicStorageTest-VERIFICATION
     imports public SymbolicStore-VERIFICATION
     imports public Test-VERIFICATION
-    imports public stdError-VERIFICATION
-    imports public stdMath-VERIFICATION
-    imports public stdStorage-VERIFICATION
     imports public TestNumber-VERIFICATION
     imports public ToStringTest-VERIFICATION
     imports public Token-VERIFICATION
@@ -73,8 +90,10 @@ module FOUNDRY-MAIN
     imports public IntTypeTest-VERIFICATION
     imports public UintTypeTest-VERIFICATION
     imports public Vm-VERIFICATION
+    imports public VmSafe-VERIFICATION
     imports public console-VERIFICATION
     imports public console2-VERIFICATION
+    imports public safeconsole-VERIFICATION
     imports public DSTest-VERIFICATION
     
     
@@ -109,6 +128,13 @@ module ValueStore-VERIFICATION
 
 endmodule
 
+module AmbiguousTest-VERIFICATION
+    imports public AmbiguousTest-CONTRACT
+    
+    
+
+endmodule
+
 module ArithmeticTest-VERIFICATION
     imports public ArithmeticTest-CONTRACT
     
@@ -125,6 +151,27 @@ endmodule
 
 module BMCLoopsTest-VERIFICATION
     imports public BMCLoopsTest-CONTRACT
+    
+    
+
+endmodule
+
+module CommonBase-VERIFICATION
+    imports public CommonBase-CONTRACT
+    
+    
+
+endmodule
+
+module ScriptBase-VERIFICATION
+    imports public ScriptBase-CONTRACT
+    
+    
+
+endmodule
+
+module TestBase-VERIFICATION
+    imports public TestBase-CONTRACT
     
     
 
@@ -277,6 +324,13 @@ module ForkTest-VERIFICATION
 
 endmodule
 
+module FreshIntTest-VERIFICATION
+    imports public FreshIntTest-CONTRACT
+    
+    
+
+endmodule
+
 module GasTest-VERIFICATION
     imports public GasTest-CONTRACT
     
@@ -291,6 +345,20 @@ module GetCodeTest-VERIFICATION
 
 endmodule
 
+module IMulticall3-VERIFICATION
+    imports public IMulticall3-CONTRACT
+    
+    
+
+endmodule
+
+module KEVMBase-VERIFICATION
+    imports public KEVMBase-CONTRACT
+    
+    
+
+endmodule
+
 module KEVMCheats-VERIFICATION
     imports public KEVMCheats-CONTRACT
     
@@ -300,6 +368,20 @@ endmodule
 
 module KEVMCheatsBase-VERIFICATION
     imports public KEVMCheatsBase-CONTRACT
+    
+    
+
+endmodule
+
+module KEVMUtils-VERIFICATION
+    imports public KEVMUtils-CONTRACT
+    
+    
+
+endmodule
+
+module SymbolicWords-VERIFICATION
+    imports public SymbolicWords-CONTRACT
     
     
 
@@ -425,13 +507,6 @@ module SafeTest-VERIFICATION
 
 endmodule
 
-module Script-VERIFICATION
-    imports public Script-CONTRACT
-    
-    
-
-endmodule
-
 module Setup2Test-VERIFICATION
     imports public Setup2Test-CONTRACT
     
@@ -474,6 +549,90 @@ module SnapshotTest-VERIFICATION
 
 endmodule
 
+module StdAssertions-VERIFICATION
+    imports public StdAssertions-CONTRACT
+    
+    
+
+endmodule
+
+module StdChains-VERIFICATION
+    imports public StdChains-CONTRACT
+    
+    
+
+endmodule
+
+module StdCheats-VERIFICATION
+    imports public StdCheats-CONTRACT
+    
+    
+
+endmodule
+
+module StdCheatsSafe-VERIFICATION
+    imports public StdCheatsSafe-CONTRACT
+    
+    
+
+endmodule
+
+module stdError-VERIFICATION
+    imports public stdError-CONTRACT
+    
+    
+
+endmodule
+
+module StdInvariant-VERIFICATION
+    imports public StdInvariant-CONTRACT
+    
+    
+
+endmodule
+
+module stdJson-VERIFICATION
+    imports public stdJson-CONTRACT
+    
+    
+
+endmodule
+
+module stdMath-VERIFICATION
+    imports public stdMath-CONTRACT
+    
+    
+
+endmodule
+
+module stdStorage-VERIFICATION
+    imports public stdStorage-CONTRACT
+    
+    
+
+endmodule
+
+module stdStorageSafe-VERIFICATION
+    imports public stdStorageSafe-CONTRACT
+    
+    
+
+endmodule
+
+module StdStyle-VERIFICATION
+    imports public StdStyle-CONTRACT
+    
+    
+
+endmodule
+
+module StdUtils-VERIFICATION
+    imports public StdUtils-CONTRACT
+    
+    
+
+endmodule
+
 module Store-VERIFICATION
     imports public Store-CONTRACT
     
@@ -504,27 +663,6 @@ endmodule
 
 module Test-VERIFICATION
     imports public Test-CONTRACT
-    
-    
-
-endmodule
-
-module stdError-VERIFICATION
-    imports public stdError-CONTRACT
-    
-    
-
-endmodule
-
-module stdMath-VERIFICATION
-    imports public stdMath-CONTRACT
-    
-    
-
-endmodule
-
-module stdStorage-VERIFICATION
-    imports public stdStorage-CONTRACT
     
     
 
@@ -579,6 +717,13 @@ module Vm-VERIFICATION
 
 endmodule
 
+module VmSafe-VERIFICATION
+    imports public VmSafe-CONTRACT
+    
+    
+
+endmodule
+
 module console-VERIFICATION
     imports public console-CONTRACT
     
@@ -588,6 +733,13 @@ endmodule
 
 module console2-VERIFICATION
     imports public console2-CONTRACT
+    
+    
+
+endmodule
+
+module safeconsole-VERIFICATION
+    imports public safeconsole-CONTRACT
     
     
 
