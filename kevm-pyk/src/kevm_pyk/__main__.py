@@ -4,6 +4,7 @@ import contextlib
 import json
 import logging
 import sys
+import tempfile
 import time
 from argparse import ArgumentParser
 from pathlib import Path
@@ -19,7 +20,7 @@ from pyk.prelude.ml import is_top, mlOr
 from pyk.proof import APRProof, ProofStatus
 from pyk.proof.show import APRProofShow
 from pyk.proof.tui import APRProofViewer
-from pyk.utils import single, unique_by_frequency
+from pyk.utils import single, unique
 
 from . import VERSION, config
 from .cli import KEVMCLIArgs, node_id_like
@@ -36,7 +37,6 @@ if TYPE_CHECKING:
 
     from pyk.kast.outer import KClaim
     from pyk.kcfg.kcfg import NodeIdLike
-    from pyk.proof.proof import Proof
     from pyk.utils import BugReport
 
     T = TypeVar('T')
@@ -226,6 +226,9 @@ def exec_prove(
     if smt_retry_limit is None:
         smt_retry_limit = 10
 
+    if save_directory is None:
+        save_directory = Path(tempfile.TemporaryDirectory().name)
+
     kevm = KEVM(definition_dir, use_directory=save_directory, bug_report=bug_report)
 
     include_dirs = [Path(include) for include in includes]
@@ -251,15 +254,21 @@ def exec_prove(
     proofs = APRProof.from_spec_modules(
         kevm.definition, spec_modules, spec_labels=claim_labels, logs={}, proof_dir=save_directory
     )
-    _proofs = list(unique_by_frequency(p for proof in proofs for p in proof.proof_list))
-    proofs = []
-    for proof in _proofs:
-        if type(proof) is APRProof:
-            proofs.append(proof)
-        else:
-            raise ValueError(f'Non APRProof found: {proof.id}')
+    proofs = list(unique(proofs))
 
-    def _init_and_run_proof(proof: Proof) -> tuple[bool, list[str] | None]:
+    def _init_and_run_proof(proof_id: str) -> tuple[bool, list[str] | None]:
+        proof = APRProof.read_proof_data(save_directory, proof_id)
+        if proof.passed:
+            _LOGGER.info(f'Proof already passed, skipping: {proof.id}')
+            return True, None
+        if proof.failed:
+            _LOGGER.info(f'Proof already failed, skipping: {proof.id}')
+            return False, None
+        while proof.subproofs_status == ProofStatus.PENDING:
+            pending_subproofs = [subproof.id for subproof in proof.subproofs if subproof.status == ProofStatus.PENDING]
+            _LOGGER.info(f'Waiting for subproofs to complete {proof.id}: {pending_subproofs}')
+            time.sleep(10)
+            proof = APRProof.read_proof_data(save_directory, proof_id)
         with legacy_explore(
             kevm,
             kcfg_semantics=KEVMSemantics(auto_abstract_gas=auto_abstract_gas),
@@ -272,17 +281,6 @@ def exec_prove(
             trace_rewrites=trace_rewrites,
         ) as kcfg_explore:
             start_time = time.time()
-            if proof.passed:
-                _LOGGER.info(f'Proof already passed, skipping: {proof.id}')
-                return True, None
-            if proof.failed:
-                _LOGGER.info(f'Proof already failed, skipping: {proof.id}')
-            sleep_count = 0
-            while proof.subproofs_status == ProofStatus.PENDING:
-                if sleep_count % 60 == 0:
-                    _LOGGER.info(f'Waiting for subproofs to complete: {proof.id}')
-                time.sleep(1)
-                sleep_count += 1
             passed = kevm_prove(
                 kevm,
                 proof,
@@ -295,13 +293,11 @@ def exec_prove(
             )
             end_time = time.time()
             _LOGGER.info(f'Proof timing {proof.id}: {end_time - start_time}s')
-            failure_log = None
-            if not passed:
-                failure_log = print_failure_info(proof, kcfg_explore)
+            failure_log = None if not passed else print_failure_info(proof, kcfg_explore)
             return passed, failure_log
 
     with wrap_process_pool(workers=workers) as process_pool:
-        results = process_pool.map(_init_and_run_proof, proofs)
+        results = process_pool.map(_init_and_run_proof, [proof.id for proof in proofs])
 
     failed = 0
     for proof, r in zip(proofs, results, strict=True):
