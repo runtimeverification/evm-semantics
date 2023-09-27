@@ -1,18 +1,17 @@
-requires "verification.k"
+requires "vat-arithmetic-spec.k"
 
-module VAT-SUBUI-PASS-SPEC
-    imports VERIFICATION
+module VAT-SLIP-PASS-SPEC
+    imports VAT-ARITHMETIC-SPEC
 
-    // Vat_subui
-    claim [Vat.subui.pass]:
-      <k> #execute ~> CONTINUATION => JUMP JMPTO ~> #pc [ JUMP ] ~> #execute ~> CONTINUATION </k>
+    claim [Vat.slip.pass]:
+      <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
       <ethereum>
         <evm>
-          <output> VOutput => VOutput </output>
-          <statusCode> _ => ?_ </statusCode>
+          <output> .Bytes </output>
+          <statusCode> _ => EVMC_SUCCESS </statusCode>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
           <touchedAccounts> _ => ?_ </touchedAccounts>
@@ -21,21 +20,21 @@ module VAT-SUBUI-PASS-SPEC
             <jumpDests> #computeValidJumpDests(Vat_bin_runtime) </jumpDests>
             <id> ACCT_ID </id>
             <caller> CALLER_ID </caller>
-            <callData> _ => ?_ </callData>
+            <callData> #abiCallData("slip", #bytes32(ABI_ilk), #address(ABI_usr), #int256(ABI_wad)) +Bytes CD => ?_ </callData>
             <callValue> VCallValue </callValue>
-            <wordStack> chop(ABI_y) : ABI_x : JMPTO : WS  =>  ABI_x -Int ABI_y : WS </wordStack>
-            <localMem> _ </localMem>
-            <pc> 13304 => 13366 </pc>
-            <gas> #gas(VGas) => #if ( ABI_y =/=Int 0 andBool 0 <=Int ABI_y )
-              #then   #gas ( ( VGas +Int -136 ) )
-              #else   #if 0 <=Int ABI_y
-                #then   #gas ( ( VGas +Int -122 ) )
-                #else   #gas ( ( VGas +Int -136 ) )
+            <wordStack> .WordStack => ?_ </wordStack>
+            <localMem> .Bytes => ?_ </localMem>
+            <pc> 0 => ?_ </pc>
+            <gas> #gas(VGas) => #if ( ABI_wad <Int 0 andBool ( minSInt256 <=Int ABI_wad andBool ( ABI_wad <=Int maxSInt256 andBool 0 <=Int ( Gem +Int ABI_wad ) ) ) )
+              #then   #gas ( ( ( VGas -Int Csstore( ISTANBUL , ( Gem +Int ABI_wad ) , Gem , Junk_1 ) ) +Int -6884 ) )
+              #else   #if ABI_wad <=Int 0
+                #then   #gas ( ( ( VGas -Int Csstore( ISTANBUL , ( Gem +Int ABI_wad ) , Gem , Junk_1 ) ) +Int -6870 ) )
+                #else   #gas ( ( ( VGas -Int Csstore( ISTANBUL , ( Gem +Int ABI_wad ) , Gem , Junk_1 ) ) +Int -6884 ) )
               #fi
             #fi </gas>
-            <memoryUsed> VMemoryUsed </memoryUsed>
+            <memoryUsed> 0 => ?_ </memoryUsed>
             <callGas> _ => ?_ </callGas>
-            <static> _ </static>
+            <static> false </static>
             <callDepth> VCallDepth </callDepth>
           </callState>
           <substate>
@@ -76,8 +75,8 @@ module VAT-SUBUI-PASS-SPEC
               <acctID> ACCT_ID </acctID>
               <balance> ACCT_ID_balance </balance>
               <code> Vat_bin_runtime </code>
-              <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE  </storage>
-              <origStorage> _ACCT_ID_ORIG_STORAGE </origStorage>
+              <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE [ #Vat.gem[ABI_ilk][ABI_usr] <- Gem +Int ABI_wad ] </storage>
+              <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
               <nonce> Nonce_Vat </nonce>
             </account>
            ...
@@ -99,12 +98,24 @@ module VAT-SUBUI-PASS-SPEC
        andBool #rangeUInt(256, VChainId)
        andBool #rangeNonce(Nonce_Vat)
 
-       andBool (#rangeUInt(256, ABI_x)
-       andBool (#rangeSInt(256, ABI_y)
-       andBool ((#sizeWordStack(WS) <=Int 1015)
-       andBool (#rangeUInt(256, VMemoryUsed)
-       andBool ((#rangeUInt(256, ABI_x -Int ABI_y)))))))
+       andBool (#rangeBytes(32, ABI_ilk)
+       andBool (#rangeAddress(ABI_usr)
+       andBool (#rangeSInt(256, ABI_wad)
+       andBool (#rangeUInt(256, May)
+       andBool (#rangeUInt(256, Gem)
+       andBool (lengthBytes(CD) <=Int 1250000000
+       andBool (#rangeUInt(256, Junk_0)
+       andBool (#rangeUInt(256, Junk_1)
+       andBool (((May ==Int 1))
+       andBool (((VCallValue ==Int 0))
+       andBool ((#rangeUInt(256, Gem +Int ABI_wad)))))))))))))
 
+       andBool #lookup(ACCT_ID_STORAGE, #Vat.wards[CALLER_ID]) ==Int May
+       andBool #lookup(ACCT_ID_STORAGE, #Vat.gem[ABI_ilk][ABI_usr]) ==Int Gem
+       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Vat.wards[CALLER_ID]) ==Int Junk_0
+       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Vat.gem[ABI_ilk][ABI_usr]) ==Int Junk_1
+       andBool #Vat.wards[CALLER_ID] =/=Int #Vat.gem[ABI_ilk][ABI_usr]
 
+    [depends(VAT-ARITHMETIC-SPEC.Vat.addui.pass)]
 
 endmodule

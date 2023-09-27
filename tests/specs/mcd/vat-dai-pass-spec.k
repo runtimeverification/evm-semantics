@@ -1,33 +1,32 @@
 requires "verification.k"
 
-module END-SUBUU-PASS-SPEC
+module VAT-DAI-PASS-SPEC
     imports VERIFICATION
 
-    // End_subuu
-    claim [End.subuu.pass]:
-      <k> #execute ~> CONTINUATION => JUMP JMPTO ~> #pc [ JUMP ] ~> #execute ~> CONTINUATION </k>
+    claim [Vat.dai.pass]:
+      <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
       <ethereum>
         <evm>
-          <output> VOutput => VOutput </output>
-          <statusCode> _ => ?_ </statusCode>
+          <output> _ => #buf(32, Rad) </output>
+          <statusCode> _ => EVMC_SUCCESS </statusCode>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
           <touchedAccounts> _ => ?_ </touchedAccounts>
           <callState>
-            <program> End_bin_runtime </program>
-            <jumpDests> #computeValidJumpDests(End_bin_runtime) </jumpDests>
+            <program> Vat_bin_runtime </program>
+            <jumpDests> #computeValidJumpDests(Vat_bin_runtime) </jumpDests>
             <id> ACCT_ID </id>
             <caller> CALLER_ID </caller>
-            <callData> _ => ?_ </callData>
+            <callData> #abiCallData("dai", #address(ABI_usr)) +Bytes CD => ?_ </callData>
             <callValue> VCallValue </callValue>
-            <wordStack> ABI_y : ABI_x : JMPTO:Int : WS  => ABI_x -Int ABI_y : WS </wordStack>
-            <localMem> _ </localMem>
-            <pc> 14664 => 14689 </pc>
-            <gas> #gas(VGas) => #gas ( ( VGas +Int -62 ) ) </gas> // -54
-            <memoryUsed> VMemoryUsed </memoryUsed>
+            <wordStack> .WordStack => ?_ </wordStack>
+            <localMem> .Bytes => ?_ </localMem>
+            <pc> 0 => ?_ </pc>
+            <gas> #gas(VGas) => #gas ( ( VGas +Int -1236 ) ) </gas>
+            <memoryUsed> 0 => ?_ </memoryUsed>
             <callGas> _ => ?_ </callGas>
             <static> _ </static>
             <callDepth> VCallDepth </callDepth>
@@ -69,10 +68,10 @@ module END-SUBUU-PASS-SPEC
             <account>
               <acctID> ACCT_ID </acctID>
               <balance> ACCT_ID_balance </balance>
-              <code> End_bin_runtime </code>
+              <code> Vat_bin_runtime </code>
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE  </storage>
-              <origStorage> _ACCT_ID_ORIG_STORAGE </origStorage>
-              <nonce> _Nonce_End => ?_ </nonce>
+              <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
+              <nonce> Nonce_Vat </nonce>
             </account>
            ...
           </accounts>
@@ -91,13 +90,15 @@ module END-SUBUU-PASS-SPEC
        andBool VCallDepth <=Int 1024
        andBool #rangeUInt(256, VCallValue)
        andBool #rangeUInt(256, VChainId)
+       andBool #rangeNonce(Nonce_Vat)
 
-       andBool (#rangeUInt(256, ABI_x)
-       andBool (#rangeUInt(256, ABI_y)
-       andBool ((#sizeWordStack(WS) <=Int 100)
-       andBool (#rangeUInt(256, VMemoryUsed)
-       andBool ((#rangeUInt(256, ABI_x -Int ABI_y)))))))
+       andBool (#rangeAddress(ABI_usr)
+       andBool (#rangeUInt(256, Rad)
+       andBool (lengthBytes(CD) <=Int 1250000000
+       andBool (#rangeUInt(256, Junk_0)
+       andBool ((VCallValue ==Int 0))))))
 
-
+       andBool #lookup(ACCT_ID_STORAGE, #Vat.dai[ABI_usr]) ==Int Rad
+       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Vat.dai[ABI_usr]) ==Int Junk_0
 
 endmodule
