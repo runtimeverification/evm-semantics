@@ -281,6 +281,13 @@ def exec_prove(
             trace_rewrites=trace_rewrites,
         ) as kcfg_explore:
             start_time = time.time()
+            if len(proof.kcfg.successors(proof.init)) == 0:
+                new_init_cterm, _ = kcfg_explore.cterm_simplify(proof.kcfg.node(proof.init).cterm)
+                new_init_cterm = kcfg_explore.cterm_assume_defined(new_init_cterm)
+                new_target_cterm, _ = kcfg_explore.cterm_simplify(proof.kcfg.node(proof.target).cterm)
+                proof.kcfg.replace_node(proof.init, new_init_cterm)
+                proof.kcfg.replace_node(proof.target, new_target_cterm)
+                proof.write_proof_data()
             passed = kevm_prove(
                 kevm,
                 proof,
