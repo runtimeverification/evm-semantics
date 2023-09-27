@@ -5,24 +5,24 @@
 │   callDepth: 0
 │   statusCode: STATUSCODE
 │
-│  (435 steps)
+│  (531 steps)
 ├─ 3
 │   k: #end EVMC_SUCCESS ~> #pc [ STOP ] ~> #execute ~> CONTINUATION:K
-│   pc: 112
+│   pc: 194
 │   callDepth: 0
 │   statusCode: STATUSCODE:StatusCode
 │
 │  (1 step)
 ├─ 4
 │   k: #halt ~> #pc [ STOP ] ~> #execute ~> CONTINUATION:K
-│   pc: 112
+│   pc: 194
 │   callDepth: 0
 │   statusCode: EVMC_SUCCESS
 │
 │  (2 steps)
 ├─ 5 (terminal)
 │   k: #halt ~> CONTINUATION:K
-│   pc: 112
+│   pc: 194
 │   callDepth: 0
 │   statusCode: EVMC_SUCCESS
 │
@@ -107,7 +107,7 @@
                      ( .Set => SetItem ( 491460923342184218035706888008750043977755113263 ) )
                    </accessedAccounts>
                    <accessedStorage>
-                     ( .Map => ( 728815563385977040452943777879061427756277306518 |-> SetItem ( 8 ) ) )
+                     ( .Map => ( 728815563385977040452943777879061427756277306518 |-> SetItem ( 27 ) ) )
                    </accessedStorage>
                    ...
                  </substate>
@@ -169,7 +169,7 @@
                      </balance>
                      ...
                      <storage>
-                       ( 8 |-> 491460923342184218035706888008750043977755113263 )
+                       ( 27 |-> 491460923342184218035706888008750043977755113263 )
                      </storage>
                      <origStorage>
                        .Map
@@ -345,7 +345,7 @@
                      SetItem ( 491460923342184218035706888008750043977755113263 )
                    </accessedAccounts>
                    <accessedStorage>
-                     ( 728815563385977040452943777879061427756277306518 |-> SetItem ( 8 ) )
+                     ( 728815563385977040452943777879061427756277306518 |-> SetItem ( 27 ) )
                    </accessedStorage>
                    ...
                  </substate>
@@ -407,7 +407,7 @@
                      </balance>
                      ...
                      <storage>
-                       ( 8 |-> 491460923342184218035706888008750043977755113263 )
+                       ( 27 |-> 491460923342184218035706888008750043977755113263 )
                      </storage>
                      <origStorage>
                        .Map
@@ -571,7 +571,7 @@
                      SetItem ( 491460923342184218035706888008750043977755113263 )
                    </accessedAccounts>
                    <accessedStorage>
-                     ( 728815563385977040452943777879061427756277306518 |-> SetItem ( 8 ) )
+                     ( 728815563385977040452943777879061427756277306518 |-> SetItem ( 27 ) )
                    </accessedStorage>
                    ...
                  </substate>
@@ -633,7 +633,7 @@
                      </balance>
                      ...
                      <storage>
-                       ( 8 |-> 491460923342184218035706888008750043977755113263 )
+                       ( 27 |-> 491460923342184218035706888008750043977755113263 )
                      </storage>
                      <origStorage>
                        .Map

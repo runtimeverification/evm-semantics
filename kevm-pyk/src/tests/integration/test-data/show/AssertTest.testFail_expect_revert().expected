@@ -5,38 +5,38 @@
 │   callDepth: 0
 │   statusCode: STATUSCODE
 │
-│  (588 steps)
+│  (641 steps)
 ├─ 3
-│   k: CALL 9223372036854772878 645326474426547203313410069153905908525362434349 0 128  ...
-│   pc: 576
+│   k: CALL 9223372036854772856 645326474426547203313410069153905908525362434349 0 128  ...
+│   pc: 745
 │   callDepth: 0
 │   statusCode: STATUSCODE:StatusCode
 │
 │  (1 step)
 ├─ 4
 │   k: #checkCall 728815563385977040452943777879061427756277306518 0 ~> #call 728815563 ...
-│   pc: 576
+│   pc: 745
 │   callDepth: 0
 │   statusCode: STATUSCODE:StatusCode
 │
 │  (212 steps)
 ├─ 5
 │   k: #end EVMC_REVERT ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
-│   pc: 1249
+│   pc: 3019
 │   callDepth: 0
 │   statusCode: STATUSCODE:StatusCode
 │
 │  (1 step)
 ├─ 6
 │   k: #halt ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
-│   pc: 1249
+│   pc: 3019
 │   callDepth: 0
 │   statusCode: EVMC_REVERT
 │
 │  (5 steps)
 └─ 7 (leaf, terminal)
     k: #halt ~> CONTINUATION:K
-    pc: 1249
+    pc: 3019
     callDepth: 0
     statusCode: EVMC_SUCCESS
 
@@ -91,7 +91,7 @@ Node 7:
               0
             </callValue>
             <wordStack>
-              ( 495 : ( 250 : ( selector ( "testFail_expect_revert()" ) : .WordStack ) ) )
+              ( 548 : ( 305 : ( selector ( "testFail_expect_revert()" ) : .WordStack ) ) )
             </wordStack>
             <localMem>
               b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xf4\x84H\x14\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
@@ -100,7 +100,7 @@ Node 7:
               5
             </memoryUsed>
             <callGas>
-              9079256848778916954
+              9079256848778916932
             </callGas>
             <static>
               false
@@ -269,7 +269,7 @@ Node 7:
            <kevm>
              <k>
                ( #execute
-               ~> CONTINUATION => CALL 9223372036854772878 645326474426547203313410069153905908525362434349 0 128 4 128 0
+               ~> CONTINUATION => CALL 9223372036854772856 645326474426547203313410069153905908525362434349 0 128 4 128 0
                ~> #pc [ CALL ]
                ~> #execute
                ~> CONTINUATION:K )
@@ -304,7 +304,7 @@ Node 7:
                      0
                    </callValue>
                    <wordStack>
-                     ( .WordStack => ( 132 : ( selector ( "expectRevert()" ) : ( 645326474426547203313410069153905908525362434349 : ( 250 : ( selector ( "testFail_expect_revert()" ) : .WordStack ) ) ) ) ) )
+                     ( .WordStack => ( 132 : ( selector ( "expectRevert()" ) : ( 645326474426547203313410069153905908525362434349 : ( 305 : ( selector ( "testFail_expect_revert()" ) : .WordStack ) ) ) ) ) )
                    </wordStack>
                    <localMem>
                      ( .Bytes => b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xf4\x84H\x14\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" )
@@ -315,7 +315,7 @@ Node 7:
                      ( 0 => 5 )
                    </memoryUsed>
                    <callGas>
-                     ( _CALLGAS_CELL => 9079256848778916954 )
+                     ( _CALLGAS_CELL => 9079256848778916932 )
                    </callGas>
                    <static>
                      false
@@ -485,7 +485,7 @@ Node 7:
     rule [BASIC-BLOCK-3-TO-4]: <foundry>
            <kevm>
              <k>
-               ( CALL 9223372036854772878 645326474426547203313410069153905908525362434349 0 128 4 128 0 => #checkCall 728815563385977040452943777879061427756277306518 0
+               ( CALL 9223372036854772856 645326474426547203313410069153905908525362434349 0 128 4 128 0 => #checkCall 728815563385977040452943777879061427756277306518 0
                ~> #call 728815563385977040452943777879061427756277306518 645326474426547203313410069153905908525362434349 645326474426547203313410069153905908525362434349 0 0 b"\xf4\x84H\x14" false
                ~> #return 128 0 )
                ~> #pc [ CALL ]
@@ -522,7 +522,7 @@ Node 7:
                      0
                    </callValue>
                    <wordStack>
-                     ( 132 : ( selector ( "expectRevert()" ) : ( 645326474426547203313410069153905908525362434349 : ( 250 : ( selector ( "testFail_expect_revert()" ) : .WordStack ) ) ) ) )
+                     ( 132 : ( selector ( "expectRevert()" ) : ( 645326474426547203313410069153905908525362434349 : ( 305 : ( selector ( "testFail_expect_revert()" ) : .WordStack ) ) ) ) )
                    </wordStack>
                    <localMem>
                      b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xf4\x84H\x14\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
@@ -533,7 +533,7 @@ Node 7:
                      5
                    </memoryUsed>
                    <callGas>
-                     9079256848778916954
+                     9079256848778916932
                    </callGas>
                    <static>
                      false
@@ -732,7 +732,7 @@ Node 7:
                      0
                    </callValue>
                    <wordStack>
-                     ( ( 132 => 495 ) : ( ( selector ( "expectRevert()" ) => 250 ) : ( ( 645326474426547203313410069153905908525362434349 => selector ( "testFail_expect_revert()" ) ) : ( ( 250 : ( selector ( "testFail_expect_revert()" ) : .WordStack ) ) => .WordStack ) ) ) )
+                     ( ( 132 => 548 ) : ( ( selector ( "expectRevert()" ) => 305 ) : ( ( 645326474426547203313410069153905908525362434349 => selector ( "testFail_expect_revert()" ) ) : ( ( 305 : ( selector ( "testFail_expect_revert()" ) : .WordStack ) ) => .WordStack ) ) ) )
                    </wordStack>
                    <localMem>
                      ( b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xf4\x84H\x14\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" => b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xf4\x84H\x14\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" )
@@ -743,7 +743,7 @@ Node 7:
                      5
                    </memoryUsed>
                    <callGas>
-                     9079256848778916954
+                     9079256848778916932
                    </callGas>
                    <static>
                      false
@@ -947,7 +947,7 @@ Node 7:
                      0
                    </callValue>
                    <wordStack>
-                     ( 495 : ( 250 : ( selector ( "testFail_expect_revert()" ) : .WordStack ) ) )
+                     ( 548 : ( 305 : ( selector ( "testFail_expect_revert()" ) : .WordStack ) ) )
                    </wordStack>
                    <localMem>
                      b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xf4\x84H\x14\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
@@ -958,7 +958,7 @@ Node 7:
                      5
                    </memoryUsed>
                    <callGas>
-                     9079256848778916954
+                     9079256848778916932
                    </callGas>
                    <static>
                      false
@@ -1162,7 +1162,7 @@ Node 7:
                      0
                    </callValue>
                    <wordStack>
-                     ( 495 : ( 250 : ( selector ( "testFail_expect_revert()" ) : .WordStack ) ) )
+                     ( 548 : ( 305 : ( selector ( "testFail_expect_revert()" ) : .WordStack ) ) )
                    </wordStack>
                    <localMem>
                      b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xf4\x84H\x14\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
@@ -1173,7 +1173,7 @@ Node 7:
                      5
                    </memoryUsed>
                    <callGas>
-                     9079256848778916954
+                     9079256848778916932
                    </callGas>
                    <static>
                      false

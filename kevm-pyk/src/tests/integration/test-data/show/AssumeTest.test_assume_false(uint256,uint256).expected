@@ -5,66 +5,66 @@
 │   callDepth: 0
 │   statusCode: STATUSCODE
 │
-│  (872 steps)
+│  (890 steps)
 ├─ 3
-│   k: CALL 9223372036854772765 645326474426547203313410069153905908525362434349 0 128  ...
-│   pc: 424
+│   k: STATICCALL 9223372036854772746 645326474426547203313410069153905908525362434349  ...
+│   pc: 563
 │   callDepth: 0
 │   statusCode: STATUSCODE:StatusCode
 │
 │  (1 step)
 ├─ 4
 │   k: #checkCall 728815563385977040452943777879061427756277306518 0 ~> #call 728815563 ...
-│   pc: 424
+│   pc: 563
 │   callDepth: 0
 │   statusCode: STATUSCODE:StatusCode
 │
 │  (1000 steps)
 ├─ 5
 │   k: #gas [ MSTORE , MSTORE 192 46308022326495007027972728677917914892729792999299745 ...
-│   pc: 2271
+│   pc: 3667
 │   callDepth: 0
 │   statusCode: STATUSCODE:StatusCode
 │
 │  (1000 steps)
 ├─ 6
-│   k: #gasExec ( SHANGHAI , JUMP 2621 ) ~> #deductGas ~> #access [ JUMP , JUMP 2621 ]  ...
-│   pc: 2691
+│   k: #next [ DUP ( 2 ) ] ~> #execute ~> CONTINUATION:K
+│   pc: 4451
 │   callDepth: 0
 │   statusCode: STATUSCODE:StatusCode
 │
-│  (819 steps)
+│  (797 steps)
 ├─ 7
-│   k: CALL 9223372036854765620 645326474426547203313410069153905908525362434349 0 388  ...
-│   pc: 2389
+│   k: CALL 9223372036854765634 645326474426547203313410069153905908525362434349 0 388  ...
+│   pc: 3785
 │   callDepth: 0
 │   statusCode: STATUSCODE:StatusCode
 │
 │  (1 step)
 ├─ 8
 │   k: #checkCall 728815563385977040452943777879061427756277306518 0 ~> #call 728815563 ...
-│   pc: 2389
+│   pc: 3785
 │   callDepth: 0
 │   statusCode: STATUSCODE:StatusCode
 │
 │  (387 steps)
 ├─ 9
 │   k: #end EVMC_SUCCESS ~> #pc [ STOP ] ~> #execute ~> CONTINUATION:K
-│   pc: 183
+│   pc: 281
 │   callDepth: 0
 │   statusCode: STATUSCODE:StatusCode
 │
 │  (1 step)
 ├─ 10
 │   k: #halt ~> #pc [ STOP ] ~> #execute ~> CONTINUATION:K
-│   pc: 183
+│   pc: 281
 │   callDepth: 0
 │   statusCode: EVMC_SUCCESS
 │
 │  (2 steps)
 └─ 11 (leaf, terminal)
     k: #halt ~> CONTINUATION:K
-    pc: 183
+    pc: 281
     callDepth: 0
     statusCode: EVMC_SUCCESS
 
@@ -128,7 +128,7 @@ Node 11:
               17
             </memoryUsed>
             <callGas>
-              9079256848778909809
+              9079256848778909823
             </callGas>
             <static>
               false
@@ -146,7 +146,7 @@ Node 11:
               SetItem ( 645326474426547203313410069153905908525362434349 )
             </accessedAccounts>
             <accessedStorage>
-              ( 728815563385977040452943777879061427756277306518 |-> SetItem ( 0 ) )
+              ( 728815563385977040452943777879061427756277306518 |-> SetItem ( 7 ) )
             </accessedStorage>
             ...
           </substate>
@@ -189,7 +189,7 @@ Node 11:
                 0
               </balance>
               <storage>
-                ( 0 |-> 256 )
+                ( 7 |-> 256 )
               </storage>
               <origStorage>
                 .Map
@@ -298,8 +298,8 @@ Node 11:
            <kevm>
              <k>
                ( #execute
-               ~> CONTINUATION => CALL 9223372036854772765 645326474426547203313410069153905908525362434349 0 128 36 128 0
-               ~> #pc [ CALL ]
+               ~> CONTINUATION => STATICCALL 9223372036854772746 645326474426547203313410069153905908525362434349 128 36 128 0
+               ~> #pc [ STATICCALL ]
                ~> #execute
                ~> CONTINUATION:K )
              </k>
@@ -333,7 +333,7 @@ Node 11:
                      0
                    </callValue>
                    <wordStack>
-                     ( .WordStack => ( 164 : ( selector ( "assume(bool)" ) : ( 645326474426547203313410069153905908525362434349 : ( VV1_b_114b9705:Int : ( VV0_a_114b9705:Int : ( 182 : ( selector ( "test_assume_false(uint256,uint256)" ) : .WordStack ) ) ) ) ) ) ) )
+                     ( .WordStack => ( 164 : ( selector ( "assume(bool)" ) : ( 645326474426547203313410069153905908525362434349 : ( VV1_b_114b9705:Int : ( VV0_a_114b9705:Int : ( 280 : ( selector ( "test_assume_false(uint256,uint256)" ) : .WordStack ) ) ) ) ) ) ) )
                    </wordStack>
                    <localMem>
                      ( .Bytes => b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00Lc\xe5b" +Bytes #buf ( 32 , bool2Word ( ( notBool VV0_a_114b9705:Int ==Int VV1_b_114b9705:Int ) ) ) )
@@ -344,7 +344,7 @@ Node 11:
                      ( 0 => 6 )
                    </memoryUsed>
                    <callGas>
-                     ( _CALLGAS_CELL => 9079256848778916843 )
+                     ( _CALLGAS_CELL => 9079256848778916824 )
                    </callGas>
                    <static>
                      false
@@ -518,10 +518,10 @@ Node 11:
     rule [BASIC-BLOCK-3-TO-4]: <foundry>
            <kevm>
              <k>
-               ( CALL 9223372036854772765 645326474426547203313410069153905908525362434349 0 128 36 128 0 => #checkCall 728815563385977040452943777879061427756277306518 0
-               ~> #call 728815563385977040452943777879061427756277306518 645326474426547203313410069153905908525362434349 645326474426547203313410069153905908525362434349 0 0 b"Lc\xe5b" +Bytes #buf ( 32 , bool2Word ( ( notBool VV0_a_114b9705:Int ==Int VV1_b_114b9705:Int ) ) ) false
+               ( STATICCALL 9223372036854772746 645326474426547203313410069153905908525362434349 128 36 128 0 => #checkCall 728815563385977040452943777879061427756277306518 0
+               ~> #call 728815563385977040452943777879061427756277306518 645326474426547203313410069153905908525362434349 645326474426547203313410069153905908525362434349 0 0 b"Lc\xe5b" +Bytes #buf ( 32 , bool2Word ( ( notBool VV0_a_114b9705:Int ==Int VV1_b_114b9705:Int ) ) ) true
                ~> #return 128 0 )
-               ~> #pc [ CALL ]
+               ~> #pc [ STATICCALL ]
                ~> #execute
                ~> _CONTINUATION
              </k>
@@ -555,7 +555,7 @@ Node 11:
                      0
                    </callValue>
                    <wordStack>
-                     ( 164 : ( selector ( "assume(bool)" ) : ( 645326474426547203313410069153905908525362434349 : ( VV1_b_114b9705:Int : ( VV0_a_114b9705:Int : ( 182 : ( selector ( "test_assume_false(uint256,uint256)" ) : .WordStack ) ) ) ) ) ) )
+                     ( 164 : ( selector ( "assume(bool)" ) : ( 645326474426547203313410069153905908525362434349 : ( VV1_b_114b9705:Int : ( VV0_a_114b9705:Int : ( 280 : ( selector ( "test_assume_false(uint256,uint256)" ) : .WordStack ) ) ) ) ) ) )
                    </wordStack>
                    <localMem>
                      b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00Lc\xe5b" +Bytes #buf ( 32 , bool2Word ( ( notBool VV0_a_114b9705:Int ==Int VV1_b_114b9705:Int ) ) )
@@ -566,7 +566,7 @@ Node 11:
                      6
                    </memoryUsed>
                    <callGas>
-                     9079256848778916843
+                     9079256848778916824
                    </callGas>
                    <static>
                      false
@@ -729,9 +729,9 @@ Node 11:
            <kevm>
              <k>
                ( #checkCall 728815563385977040452943777879061427756277306518 0
-               ~> #call 728815563385977040452943777879061427756277306518 645326474426547203313410069153905908525362434349 645326474426547203313410069153905908525362434349 0 0 b"Lc\xe5b" +Bytes #buf ( 32 , bool2Word ( ( notBool VV0_a_114b9705:Int ==Int VV1_b_114b9705:Int ) ) ) false
+               ~> #call 728815563385977040452943777879061427756277306518 645326474426547203313410069153905908525362434349 645326474426547203313410069153905908525362434349 0 0 b"Lc\xe5b" +Bytes #buf ( 32 , bool2Word ( ( notBool VV0_a_114b9705:Int ==Int VV1_b_114b9705:Int ) ) ) true
                ~> #return 128 0
-               ~> #pc [ CALL ] => #gas [ MSTORE , MSTORE 192 46308022326495007027972728677917914892729792999299745830475596687180801507328 ]
+               ~> #pc [ STATICCALL ] => #gas [ MSTORE , MSTORE 192 46308022326495007027972728677917914892729792999299745830475596687180801507328 ]
                ~> MSTORE 192 46308022326495007027972728677917914892729792999299745830475596687180801507328
                ~> #pc [ MSTORE ] )
                ~> #execute
@@ -770,7 +770,7 @@ Node 11:
                      0
                    </callValue>
                    <wordStack>
-                     ( ( 164 => 128 ) : ( ( selector ( "assume(bool)" ) => 645326474426547203313410069153905908525362434349 ) : ( ( 645326474426547203313410069153905908525362434349 => 455 ) : ( VV1_b_114b9705:Int : ( VV0_a_114b9705:Int : ( ( 182 => 455 ) : ( ( selector ( "test_assume_false(uint256,uint256)" ) => VV1_b_114b9705:Int ) : ( .WordStack => ( VV0_a_114b9705:Int : ( 182 : ( selector ( "test_assume_false(uint256,uint256)" ) : .WordStack ) ) ) ) ) ) ) ) ) ) )
+                     ( ( 164 => 128 ) : ( ( selector ( "assume(bool)" ) => 645326474426547203313410069153905908525362434349 ) : ( ( 645326474426547203313410069153905908525362434349 => 594 ) : ( VV1_b_114b9705:Int : ( VV0_a_114b9705:Int : ( ( 280 => 594 ) : ( ( selector ( "test_assume_false(uint256,uint256)" ) => VV1_b_114b9705:Int ) : ( .WordStack => ( VV0_a_114b9705:Int : ( 280 : ( selector ( "test_assume_false(uint256,uint256)" ) : .WordStack ) ) ) ) ) ) ) ) ) ) )
                    </wordStack>
                    <localMem>
                      ( b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00Lc\xe5b" +Bytes #buf ( 32 , bool2Word ( ( notBool VV0_a_114b9705:Int ==Int VV1_b_114b9705:Int ) ) ) => b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00@\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00q\tp\x9e\xcf\xa9\x1a\x80bo\xf3\x98\x9dh\xf6\x7f[\x1d\xd1-\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\n     Right\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" )
@@ -781,7 +781,7 @@ Node 11:
                      ( 6 => 8 )
                    </memoryUsed>
                    <callGas>
-                     9079256848778916843
+                     9079256848778916824
                    </callGas>
                    <static>
                      false
@@ -948,11 +948,7 @@ Node 11:
              <k>
                ( #gas [ MSTORE , MSTORE 192 46308022326495007027972728677917914892729792999299745830475596687180801507328 ]
                ~> MSTORE 192 46308022326495007027972728677917914892729792999299745830475596687180801507328
-               ~> #pc [ MSTORE ] => #gasExec ( SHANGHAI , JUMP 2621 )
-               ~> #deductGas
-               ~> #access [ JUMP , JUMP 2621 ]
-               ~> JUMP 2621
-               ~> #pc [ JUMP ] )
+               ~> #pc [ MSTORE ] => #next [ DUP ( 2 ) ] )
                ~> #execute
                ~> _CONTINUATION
              </k>
@@ -989,7 +985,7 @@ Node 11:
                      0
                    </callValue>
                    <wordStack>
-                     ( ( 128 => 256 ) : ( ( 645326474426547203313410069153905908525362434349 => 388 ) : ( ( 455 => 2540 ) : ( ( VV1_b_114b9705:Int => 0 ) : ( ( VV0_a_114b9705:Int => 388 ) : ( ( 455 => 256 ) : ( ( VV1_b_114b9705:Int => 2375 ) : ( ( VV0_a_114b9705:Int => 645326474426547203313410069153905908525362434349 ) : ( ( 182 => 0 ) : ( ( selector ( "test_assume_false(uint256,uint256)" ) => 455 ) : ( .WordStack => ( VV1_b_114b9705:Int : ( VV0_a_114b9705:Int : ( 455 : ( VV1_b_114b9705:Int : ( VV0_a_114b9705:Int : ( 182 : ( selector ( "test_assume_false(uint256,uint256)" ) : .WordStack ) ) ) ) ) ) ) ) ) ) ) ) ) ) ) ) ) )
+                     ( ( 128 => 4461 ) : ( ( 645326474426547203313410069153905908525362434349 => 100 ) : ( ( 594 => 0 ) : ( ( VV1_b_114b9705:Int => 388 ) : ( ( VV0_a_114b9705:Int => 256 ) : ( ( 594 => 3771 ) : ( ( VV1_b_114b9705:Int => 645326474426547203313410069153905908525362434349 ) : ( ( VV0_a_114b9705:Int => 0 ) : ( ( 280 => 594 ) : ( ( selector ( "test_assume_false(uint256,uint256)" ) => VV1_b_114b9705:Int ) : ( .WordStack => ( VV0_a_114b9705:Int : ( 594 : ( VV1_b_114b9705:Int : ( VV0_a_114b9705:Int : ( 280 : ( selector ( "test_assume_false(uint256,uint256)" ) : .WordStack ) ) ) ) ) ) ) ) ) ) ) ) ) ) ) ) )
                    </wordStack>
                    <localMem>
                      ( b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00@\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00q\tp\x9e\xcf\xa9\x1a\x80bo\xf3\x98\x9dh\xf6\x7f[\x1d\xd1-\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\n     Right\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" => b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x84\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00`\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00q\tp\x9e\xcf\xa9\x1a\x80bo\xf3\x98\x9dh\xf6\x7f[\x1d\xd1-failed\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00dp\xca\x10\xbb\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00q\tp\x9e\xcf\xa9\x1a\x80bo\xf3\x98\x9dh\xf6\x7f[\x1d\xd1-failed\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01" )
@@ -1000,7 +996,7 @@ Node 11:
                      ( 8 => 13 )
                    </memoryUsed>
                    <callGas>
-                     9079256848778916843
+                     9079256848778916824
                    </callGas>
                    <static>
                      false
@@ -1164,11 +1160,7 @@ Node 11:
     rule [BASIC-BLOCK-6-TO-7]: <foundry>
            <kevm>
              <k>
-               ( #gasExec ( SHANGHAI , JUMP 2621 )
-               ~> #deductGas
-               ~> #access [ JUMP , JUMP 2621 ]
-               ~> JUMP 2621
-               ~> #pc [ JUMP ] => CALL 9223372036854765620 645326474426547203313410069153905908525362434349 0 388 100 388 0
+               ( #next [ DUP ( 2 ) ] => CALL 9223372036854765634 645326474426547203313410069153905908525362434349 0 388 100 388 0
                ~> #pc [ CALL ] )
                ~> #execute
                ~> _CONTINUATION
@@ -1206,7 +1198,7 @@ Node 11:
                      0
                    </callValue>
                    <wordStack>
-                     ( ( 256 => 488 ) : ( ( 388 => 645326474426547203313410069153905908525362434349 ) : ( ( 2540 => 0 ) : ( ( 0 => 455 ) : ( ( 388 => VV1_b_114b9705:Int ) : ( ( 256 => VV0_a_114b9705:Int ) : ( ( 2375 => 455 ) : ( ( 645326474426547203313410069153905908525362434349 => VV1_b_114b9705:Int ) : ( ( 0 => VV0_a_114b9705:Int ) : ( ( 455 => 182 ) : ( ( VV1_b_114b9705:Int => selector ( "test_assume_false(uint256,uint256)" ) ) : ( ( VV0_a_114b9705:Int : ( 455 : ( VV1_b_114b9705:Int : ( VV0_a_114b9705:Int : ( 182 : ( selector ( "test_assume_false(uint256,uint256)" ) : .WordStack ) ) ) ) ) ) => .WordStack ) ) ) ) ) ) ) ) ) ) ) )
+                     ( ( 4461 => 488 ) : ( ( 100 => 645326474426547203313410069153905908525362434349 ) : ( 0 : ( ( 388 => 594 ) : ( ( 256 => VV1_b_114b9705:Int ) : ( ( 3771 => VV0_a_114b9705:Int ) : ( ( 645326474426547203313410069153905908525362434349 => 594 ) : ( ( 0 => VV1_b_114b9705:Int ) : ( ( 594 => VV0_a_114b9705:Int ) : ( ( VV1_b_114b9705:Int => 280 ) : ( ( VV0_a_114b9705:Int => selector ( "test_assume_false(uint256,uint256)" ) ) : ( ( 594 : ( VV1_b_114b9705:Int : ( VV0_a_114b9705:Int : ( 280 : ( selector ( "test_assume_false(uint256,uint256)" ) : .WordStack ) ) ) ) ) => .WordStack ) ) ) ) ) ) ) ) ) ) ) )
                    </wordStack>
                    <localMem>
                      ( b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x84\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00`\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00q\tp\x9e\xcf\xa9\x1a\x80bo\xf3\x98\x9dh\xf6\x7f[\x1d\xd1-failed\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00dp\xca\x10\xbb\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00q\tp\x9e\xcf\xa9\x1a\x80bo\xf3\x98\x9dh\xf6\x7f[\x1d\xd1-failed\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01" => b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x84\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00`\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00q\tp\x9e\xcf\xa9\x1a\x80bo\xf3\x98\x9dh\xf6\x7f[\x1d\xd1-failed\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00dp\xca\x10\xbb\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00q\tp\x9e\xcf\xa9\x1a\x80bo\xf3\x98\x9dh\xf6\x7f[\x1d\xd1-failed\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01p\xca\x10\xbb\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00q\tp\x9e\xcf\xa9\x1a\x80bo\xf3\x98\x9dh\xf6\x7f[\x1d\xd1-failed\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" )
@@ -1217,7 +1209,7 @@ Node 11:
                      ( 13 => 17 )
                    </memoryUsed>
                    <callGas>
-                     ( 9079256848778916843 => 9079256848778909809 )
+                     ( 9079256848778916824 => 9079256848778909823 )
                    </callGas>
                    <static>
                      false
@@ -1381,7 +1373,7 @@ Node 11:
     rule [BASIC-BLOCK-7-TO-8]: <foundry>
            <kevm>
              <k>
-               ( CALL 9223372036854765620 645326474426547203313410069153905908525362434349 0 388 100 388 0 => #checkCall 728815563385977040452943777879061427756277306518 0
+               ( CALL 9223372036854765634 645326474426547203313410069153905908525362434349 0 388 100 388 0 => #checkCall 728815563385977040452943777879061427756277306518 0
                ~> #call 728815563385977040452943777879061427756277306518 645326474426547203313410069153905908525362434349 645326474426547203313410069153905908525362434349 0 0 b"p\xca\x10\xbb\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00q\tp\x9e\xcf\xa9\x1a\x80bo\xf3\x98\x9dh\xf6\x7f[\x1d\xd1-failed\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01" false
                ~> #return 388 0 )
                ~> #pc [ CALL ]
@@ -1421,7 +1413,7 @@ Node 11:
                      0
                    </callValue>
                    <wordStack>
-                     ( 488 : ( 645326474426547203313410069153905908525362434349 : ( 0 : ( 455 : ( VV1_b_114b9705:Int : ( VV0_a_114b9705:Int : ( 455 : ( VV1_b_114b9705:Int : ( VV0_a_114b9705:Int : ( 182 : ( selector ( "test_assume_false(uint256,uint256)" ) : .WordStack ) ) ) ) ) ) ) ) ) ) )
+                     ( 488 : ( 645326474426547203313410069153905908525362434349 : ( 0 : ( 594 : ( VV1_b_114b9705:Int : ( VV0_a_114b9705:Int : ( 594 : ( VV1_b_114b9705:Int : ( VV0_a_114b9705:Int : ( 280 : ( selector ( "test_assume_false(uint256,uint256)" ) : .WordStack ) ) ) ) ) ) ) ) ) ) )
                    </wordStack>
                    <localMem>
                      b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x84\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00`\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00q\tp\x9e\xcf\xa9\x1a\x80bo\xf3\x98\x9dh\xf6\x7f[\x1d\xd1-failed\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00dp\xca\x10\xbb\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00q\tp\x9e\xcf\xa9\x1a\x80bo\xf3\x98\x9dh\xf6\x7f[\x1d\xd1-failed\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01p\xca\x10\xbb\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00q\tp\x9e\xcf\xa9\x1a\x80bo\xf3\x98\x9dh\xf6\x7f[\x1d\xd1-failed\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
@@ -1432,7 +1424,7 @@ Node 11:
                      17
                    </memoryUsed>
                    <callGas>
-                     9079256848778909809
+                     9079256848778909823
                    </callGas>
                    <static>
                      false
@@ -1637,7 +1629,7 @@ Node 11:
                      0
                    </callValue>
                    <wordStack>
-                     ( ( 488 => selector ( "test_assume_false(uint256,uint256)" ) ) : ( ( 645326474426547203313410069153905908525362434349 : ( 0 : ( 455 : ( VV1_b_114b9705:Int : ( VV0_a_114b9705:Int : ( 455 : ( VV1_b_114b9705:Int : ( VV0_a_114b9705:Int : ( 182 : ( selector ( "test_assume_false(uint256,uint256)" ) : .WordStack ) ) ) ) ) ) ) ) ) ) => .WordStack ) )
+                     ( ( 488 => selector ( "test_assume_false(uint256,uint256)" ) ) : ( ( 645326474426547203313410069153905908525362434349 : ( 0 : ( 594 : ( VV1_b_114b9705:Int : ( VV0_a_114b9705:Int : ( 594 : ( VV1_b_114b9705:Int : ( VV0_a_114b9705:Int : ( 280 : ( selector ( "test_assume_false(uint256,uint256)" ) : .WordStack ) ) ) ) ) ) ) ) ) ) => .WordStack ) )
                    </wordStack>
                    <localMem>
                      b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x84\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00`\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00q\tp\x9e\xcf\xa9\x1a\x80bo\xf3\x98\x9dh\xf6\x7f[\x1d\xd1-failed\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00dp\xca\x10\xbb\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00q\tp\x9e\xcf\xa9\x1a\x80bo\xf3\x98\x9dh\xf6\x7f[\x1d\xd1-failed\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01p\xca\x10\xbb\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00q\tp\x9e\xcf\xa9\x1a\x80bo\xf3\x98\x9dh\xf6\x7f[\x1d\xd1-failed\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
@@ -1648,7 +1640,7 @@ Node 11:
                      17
                    </memoryUsed>
                    <callGas>
-                     9079256848778909809
+                     9079256848778909823
                    </callGas>
                    <static>
                      false
@@ -1665,7 +1657,7 @@ Node 11:
                      SetItem ( 645326474426547203313410069153905908525362434349 )
                    </accessedAccounts>
                    <accessedStorage>
-                     ( .Map => ( 728815563385977040452943777879061427756277306518 |-> SetItem ( 0 ) ) )
+                     ( .Map => ( 728815563385977040452943777879061427756277306518 |-> SetItem ( 7 ) ) )
                    </accessedStorage>
                    ...
                  </substate>
@@ -1709,7 +1701,7 @@ Node 11:
                      </balance>
                      ...
                      <storage>
-                       ( .Map => ( 0 |-> 256 ) )
+                       ( .Map => ( 7 |-> 256 ) )
                      </storage>
                      <origStorage>
                        .Map
@@ -1864,7 +1856,7 @@ Node 11:
                      17
                    </memoryUsed>
                    <callGas>
-                     9079256848778909809
+                     9079256848778909823
                    </callGas>
                    <static>
                      false
@@ -1881,7 +1873,7 @@ Node 11:
                      SetItem ( 645326474426547203313410069153905908525362434349 )
                    </accessedAccounts>
                    <accessedStorage>
-                     ( 728815563385977040452943777879061427756277306518 |-> SetItem ( 0 ) )
+                     ( 728815563385977040452943777879061427756277306518 |-> SetItem ( 7 ) )
                    </accessedStorage>
                    ...
                  </substate>
@@ -1925,7 +1917,7 @@ Node 11:
                      </balance>
                      ...
                      <storage>
-                       ( 0 |-> 256 )
+                       ( 7 |-> 256 )
                      </storage>
                      <origStorage>
                        .Map
@@ -2080,7 +2072,7 @@ Node 11:
                      17
                    </memoryUsed>
                    <callGas>
-                     9079256848778909809
+                     9079256848778909823
                    </callGas>
                    <static>
                      false
@@ -2097,7 +2089,7 @@ Node 11:
                      SetItem ( 645326474426547203313410069153905908525362434349 )
                    </accessedAccounts>
                    <accessedStorage>
-                     ( 728815563385977040452943777879061427756277306518 |-> SetItem ( 0 ) )
+                     ( 728815563385977040452943777879061427756277306518 |-> SetItem ( 7 ) )
                    </accessedStorage>
                    ...
                  </substate>
@@ -2141,7 +2133,7 @@ Node 11:
                      </balance>
                      ...
                      <storage>
-                       ( 0 |-> 256 )
+                       ( 7 |-> 256 )
                      </storage>
                      <origStorage>
                        .Map

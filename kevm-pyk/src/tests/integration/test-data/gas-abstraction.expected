@@ -5,24 +5,24 @@
 │   callDepth: 0
 │   statusCode: STATUSCODE
 │
-│  (511 steps)
+│  (607 steps)
 ├─ 3
-│   k: CALL 9223372036854772946 645326474426547203313410069153905908525362434349 0 128  ...
-│   pc: 361
+│   k: CALL 9223372036854772879 645326474426547203313410069153905908525362434349 0 128  ...
+│   pc: 720
 │   callDepth: 0
 │   statusCode: STATUSCODE:StatusCode
 │
 │  (1 step)
 ├─ 4
 │   k: #checkCall 728815563385977040452943777879061427756277306518 0 ~> #call 728815563 ...
-│   pc: 361
+│   pc: 720
 │   callDepth: 0
 │   statusCode: STATUSCODE:StatusCode
 │
 │  (344 steps)
 ├─ 5
 │   k: #pc [ JUMPI ] ~> #execute ~> CONTINUATION:K
-│   pc: 420
+│   pc: 779
 │   callDepth: 0
 │   statusCode: STATUSCODE:StatusCode
 │
@@ -73,14 +73,14 @@
 }
 ├─ 6
 │   k: #pc [ JUMPI ] ~> #execute ~> CONTINUATION:K
-│   pc: 420
+│   pc: 779
 │   callDepth: 0
 │   statusCode: STATUSCODE:StatusCode
 │
 │  (101 steps)
 ├─ 7
 │   k: #end EVMC_REVERT ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
-│   pc: 808
+│   pc: 2576
 │   callDepth: 0
 │   statusCode: STATUSCODE:StatusCode
 │
@@ -131,21 +131,21 @@
 }
 ├─ 8
 │   k: #end EVMC_REVERT ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
-│   pc: 808
+│   pc: 2576
 │   callDepth: 0
 │   statusCode: STATUSCODE:StatusCode
 │
 │  (1 step)
 ├─ 9
 │   k: #halt ~> #pc [ REVERT ] ~> #execute ~> CONTINUATION:K
-│   pc: 808
+│   pc: 2576
 │   callDepth: 0
 │   statusCode: EVMC_REVERT
 │
 │  (2 steps)
 └─ 10 (leaf, terminal)
     k: #halt ~> CONTINUATION:K
-    pc: 808
+    pc: 2576
     callDepth: 0
     statusCode: EVMC_REVERT
 
@@ -208,7 +208,7 @@ Node 10:
               0
             </callValue>
             <wordStack>
-              ( 428 : ( ( ( ?_VGAS:Int +Int ?_VCALLGAS:Int ) +Int -127 ) : ( 583 : ( 928 : ( 345 : ( ( ( ?_VGAS:Int +Int ?_VCALLGAS:Int ) +Int -36 ) : ( 167 : ( selector ( "testInfiniteGas()" ) : .WordStack ) ) ) ) ) ) ) )
+              ( 787 : ( ( ( ?_VGAS:Int +Int ?_VCALLGAS:Int ) +Int -127 ) : ( 583 : ( 928 : ( 345 : ( ( ( ?_VGAS:Int +Int ?_VCALLGAS:Int ) +Int -36 ) : ( 228 : ( selector ( "testInfiniteGas()" ) : .WordStack ) ) ) ) ) ) ) )
             </wordStack>
             <localMem>
               b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xed\x9fsS\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
@@ -470,7 +470,7 @@ Node 10:
            <kevm>
              <k>
                ( #execute
-               ~> CONTINUATION => CALL 9223372036854772946 645326474426547203313410069153905908525362434349 0 128 4 128 0
+               ~> CONTINUATION => CALL 9223372036854772879 645326474426547203313410069153905908525362434349 0 128 4 128 0
                ~> #pc [ CALL ]
                ~> #execute
                ~> CONTINUATION:K )
@@ -505,7 +505,7 @@ Node 10:
                      0
                    </callValue>
                    <wordStack>
-                     ( .WordStack => ( 132 : ( selector ( "infiniteGas()" ) : ( 645326474426547203313410069153905908525362434349 : ( 167 : ( selector ( "testInfiniteGas()" ) : .WordStack ) ) ) ) ) )
+                     ( .WordStack => ( 132 : ( selector ( "infiniteGas()" ) : ( 645326474426547203313410069153905908525362434349 : ( 228 : ( selector ( "testInfiniteGas()" ) : .WordStack ) ) ) ) ) )
                    </wordStack>
                    <localMem>
                      ( .Bytes => b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xed\x9fsS\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" )
@@ -516,7 +516,7 @@ Node 10:
                      ( 0 => 5 )
                    </memoryUsed>
                    <callGas>
-                     ( _CALLGAS_CELL => 9079256848778917021 )
+                     ( _CALLGAS_CELL => 9079256848778916955 )
                    </callGas>
                    <static>
                      false
@@ -686,7 +686,7 @@ Node 10:
     rule [BASIC-BLOCK-3-TO-4]: <foundry>
            <kevm>
              <k>
-               ( CALL 9223372036854772946 645326474426547203313410069153905908525362434349 0 128 4 128 0 => #checkCall 728815563385977040452943777879061427756277306518 0
+               ( CALL 9223372036854772879 645326474426547203313410069153905908525362434349 0 128 4 128 0 => #checkCall 728815563385977040452943777879061427756277306518 0
                ~> #call 728815563385977040452943777879061427756277306518 645326474426547203313410069153905908525362434349 645326474426547203313410069153905908525362434349 0 0 b"\xed\x9fsS" false
                ~> #return 128 0 )
                ~> #pc [ CALL ]
@@ -723,7 +723,7 @@ Node 10:
                      0
                    </callValue>
                    <wordStack>
-                     ( 132 : ( selector ( "infiniteGas()" ) : ( 645326474426547203313410069153905908525362434349 : ( 167 : ( selector ( "testInfiniteGas()" ) : .WordStack ) ) ) ) )
+                     ( 132 : ( selector ( "infiniteGas()" ) : ( 645326474426547203313410069153905908525362434349 : ( 228 : ( selector ( "testInfiniteGas()" ) : .WordStack ) ) ) ) )
                    </wordStack>
                    <localMem>
                      b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xed\x9fsS\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
@@ -734,7 +734,7 @@ Node 10:
                      5
                    </memoryUsed>
                    <callGas>
-                     9079256848778917021
+                     9079256848778916955
                    </callGas>
                    <static>
                      false
@@ -932,7 +932,7 @@ Node 10:
                      0
                    </callValue>
                    <wordStack>
-                     ( ( 132 => ( ( ??_VGAS +Int ??_VCALLGAS ) +Int -127 ) ) : ( ( selector ( "infiniteGas()" ) => 583 ) : ( ( 645326474426547203313410069153905908525362434349 => 928 ) : ( ( 167 => 345 ) : ( ( selector ( "testInfiniteGas()" ) => ( ( ??_VGAS +Int ??_VCALLGAS ) +Int -36 ) ) : ( .WordStack => ( 167 : ( selector ( "testInfiniteGas()" ) : .WordStack ) ) ) ) ) ) ) )
+                     ( ( 132 => ( ( ??_VGAS +Int ??_VCALLGAS ) +Int -127 ) ) : ( ( selector ( "infiniteGas()" ) => 583 ) : ( ( 645326474426547203313410069153905908525362434349 => 928 ) : ( ( 228 => 345 ) : ( ( selector ( "testInfiniteGas()" ) => ( ( ??_VGAS +Int ??_VCALLGAS ) +Int -36 ) ) : ( .WordStack => ( 228 : ( selector ( "testInfiniteGas()" ) : .WordStack ) ) ) ) ) ) ) )
                    </wordStack>
                    <localMem>
                      b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xed\x9fsS\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
@@ -943,7 +943,7 @@ Node 10:
                      5
                    </memoryUsed>
                    <callGas>
-                     ( 9079256848778917021 => #gas ( ??_VCALLGAS ) )
+                     ( 9079256848778916955 => #gas ( ??_VCALLGAS ) )
                    </callGas>
                    <static>
                      false
@@ -1140,7 +1140,7 @@ Node 10:
                      0
                    </callValue>
                    <wordStack>
-                     ( ( ( ( ?_VGAS:Int +Int ?_VCALLGAS:Int ) +Int -127 ) => 428 ) : ( ( 583 => ( ( ?_VGAS:Int +Int ?_VCALLGAS:Int ) +Int -127 ) ) : ( ( 928 => 583 ) : ( ( 345 => 928 ) : ( ( ( ( ?_VGAS:Int +Int ?_VCALLGAS:Int ) +Int -36 ) => 345 ) : ( ( 167 => ( ( ?_VGAS:Int +Int ?_VCALLGAS:Int ) +Int -36 ) ) : ( ( selector ( "testInfiniteGas()" ) => 167 ) : ( .WordStack => ( selector ( "testInfiniteGas()" ) : .WordStack ) ) ) ) ) ) ) ) )
+                     ( ( ( ( ?_VGAS:Int +Int ?_VCALLGAS:Int ) +Int -127 ) => 787 ) : ( ( 583 => ( ( ?_VGAS:Int +Int ?_VCALLGAS:Int ) +Int -127 ) ) : ( ( 928 => 583 ) : ( ( 345 => 928 ) : ( ( ( ( ?_VGAS:Int +Int ?_VCALLGAS:Int ) +Int -36 ) => 345 ) : ( ( 228 => ( ( ?_VGAS:Int +Int ?_VCALLGAS:Int ) +Int -36 ) ) : ( ( selector ( "testInfiniteGas()" ) => 228 ) : ( .WordStack => ( selector ( "testInfiniteGas()" ) : .WordStack ) ) ) ) ) ) ) ) )
                    </wordStack>
                    <localMem>
                      ( b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xed\x9fsS\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" => b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xed\x9fsS\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" )
@@ -1351,7 +1351,7 @@ Node 10:
                      0
                    </callValue>
                    <wordStack>
-                     ( 428 : ( ( ( ?_VGAS:Int +Int ?_VCALLGAS:Int ) +Int -127 ) : ( 583 : ( 928 : ( 345 : ( ( ( ?_VGAS:Int +Int ?_VCALLGAS:Int ) +Int -36 ) : ( 167 : ( selector ( "testInfiniteGas()" ) : .WordStack ) ) ) ) ) ) ) )
+                     ( 787 : ( ( ( ?_VGAS:Int +Int ?_VCALLGAS:Int ) +Int -127 ) : ( 583 : ( 928 : ( 345 : ( ( ( ?_VGAS:Int +Int ?_VCALLGAS:Int ) +Int -36 ) : ( 228 : ( selector ( "testInfiniteGas()" ) : .WordStack ) ) ) ) ) ) ) )
                    </wordStack>
                    <localMem>
                      b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xed\x9fsS\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
@@ -1562,7 +1562,7 @@ Node 10:
                      0
                    </callValue>
                    <wordStack>
-                     ( 428 : ( ( ( ?_VGAS:Int +Int ?_VCALLGAS:Int ) +Int -127 ) : ( 583 : ( 928 : ( 345 : ( ( ( ?_VGAS:Int +Int ?_VCALLGAS:Int ) +Int -36 ) : ( 167 : ( selector ( "testInfiniteGas()" ) : .WordStack ) ) ) ) ) ) ) )
+                     ( 787 : ( ( ( ?_VGAS:Int +Int ?_VCALLGAS:Int ) +Int -127 ) : ( 583 : ( 928 : ( 345 : ( ( ( ?_VGAS:Int +Int ?_VCALLGAS:Int ) +Int -36 ) : ( 228 : ( selector ( "testInfiniteGas()" ) : .WordStack ) ) ) ) ) ) ) )
                    </wordStack>
                    <localMem>
                      b"NH{q\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xed\x9fsS\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"

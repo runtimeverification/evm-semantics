@@ -5,24 +5,24 @@
 │   callDepth: 0
 │   statusCode: STATUSCODE
 │
-│  (258 steps)
+│  (396 steps)
 ├─ 3
 │   k: #end EVMC_SUCCESS ~> #pc [ STOP ] ~> #execute ~> CONTINUATION:K
-│   pc: 251
+│   pc: 306
 │   callDepth: 0
 │   statusCode: STATUSCODE:StatusCode
 │
 │  (1 step)
 ├─ 4
 │   k: #halt ~> #pc [ STOP ] ~> #execute ~> CONTINUATION:K
-│   pc: 251
+│   pc: 306
 │   callDepth: 0
 │   statusCode: EVMC_SUCCESS
 │
 │  (2 steps)
 ├─ 5 (terminal)
 │   k: #halt ~> CONTINUATION:K
-│   pc: 251
+│   pc: 306
 │   callDepth: 0
 │   statusCode: EVMC_SUCCESS
 │
