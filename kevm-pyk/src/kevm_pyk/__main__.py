@@ -1,17 +1,20 @@
 from __future__ import annotations
 
+import abc
 import contextlib
-import graphlib
+import dataclasses
 import json
 import logging
-import os
+import multiprocessing
 import sys
+import tempfile
 import time
 from argparse import ArgumentParser
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from pathos.pools import ProcessPool  # type: ignore
+import multiprocess  # type: ignore
+import pathos  # type: ignore
 from pyk.cli.utils import file_path
 from pyk.cterm import CTerm
 from pyk.kast.outer import KApply, KRewrite, KSort, KToken
@@ -24,7 +27,7 @@ from pyk.proof import APRProof
 from pyk.proof.equality import EqualityProof
 from pyk.proof.show import APRProofShow
 from pyk.proof.tui import APRProofViewer
-from pyk.utils import single
+from pyk.utils import single, unique
 
 from . import VERSION, config, kdist
 from .cli import KEVMCLIArgs, node_id_like
@@ -43,7 +46,7 @@ from .utils import (
 if TYPE_CHECKING:
     from argparse import Namespace
     from collections.abc import Callable, Iterable, Iterator
-    from typing import Any, Final, TypeVar
+    from typing import Any, Final, Mapping, TypeVar
 
     from pyk.kast.outer import KClaim
     from pyk.kcfg.kcfg import NodeIdLike
@@ -192,12 +195,48 @@ class ZeroProcessPool:
 
 
 @contextlib.contextmanager
-def wrap_process_pool(workers: int) -> Iterator[ZeroProcessPool | ProcessPool]:
+def wrap_process_pool(workers: int) -> Iterator[ZeroProcessPool | pathos.pools.ProcessPool]:
     if workers <= 1:
         yield ZeroProcessPool()
     else:
-        with ProcessPool(ncpus=workers) as pp:
+        with pathos.pools.ProcessPool(ncpus=workers) as pp:
             yield pp
+
+
+class TodoQueueTask(abc.ABC):
+    ...
+
+
+@dataclasses.dataclass
+class TodoQueueProofTask(TodoQueueTask):
+    proof_id: str
+
+
+@dataclasses.dataclass
+class TodoQueueStop(TodoQueueTask):
+    ...
+
+
+class DoneQueueTask(abc.ABC):
+    ...
+
+
+@dataclasses.dataclass
+class DoneQueueTaskFinished(DoneQueueTask):
+    proof_id: str
+    passed: bool
+    failure_log: list[str] | None
+
+
+class MyEnvironment:
+    number_of_workers: int
+    to_do_queue: multiprocessing.Queue  # only instances of TodoQueueTask go there
+    done_queue: multiprocessing.Queue  # only instances of DoneQueueTask go there
+
+    def __init__(self, number_of_workers: int):
+        self.number_of_workers = number_of_workers
+        self.to_do_queue = multiprocessing.Queue()
+        self.done_queue = multiprocessing.Queue()
 
 
 def exec_prove(
@@ -238,6 +277,9 @@ def exec_prove(
     if smt_retry_limit is None:
         smt_retry_limit = 10
 
+    if save_directory is None:
+        save_directory = Path(tempfile.TemporaryDirectory().name)
+
     kevm = KEVM(definition_dir, use_directory=save_directory, bug_report=bug_report)
 
     include_dirs = [Path(include) for include in includes]
@@ -257,6 +299,7 @@ def exec_prove(
     llvm_definition_dir = definition_dir / 'llvm-library' if use_booster else None
 
     _LOGGER.info(f'Extracting claims from file: {spec_file}')
+
     all_claims = kevm.get_claims(
         spec_file,
         spec_module_name=spec_module,
@@ -265,11 +308,18 @@ def exec_prove(
         claim_labels=None,
         exclude_claim_labels=exclude_claim_labels,
     )
-    if all_claims is None:
-        raise ValueError(f'No claims found in file: {spec_file}')
-    all_claims_by_label: dict[str, KClaim] = {c.label: c for c in all_claims}
-    spec_module_name = spec_module if spec_module is not None else os.path.splitext(spec_file.name)[0].upper()
-    claims_graph = claim_dependency_dict(all_claims, spec_module_name=spec_module_name)
+
+    spec_modules = kevm.get_claim_modules(
+        spec_file, spec_module_name=spec_module, include_dirs=include_dirs, md_selector=md_selector
+    )
+
+    all_claims_by_id: Mapping[str, KClaim] = {f'{spec_module}.{claim.label}': claim for claim in all_claims}
+
+    claims_graph = claim_dependency_dict(all_claims, spec_module_name=spec_module)
+    proofs: list[APRProof] = APRProof.from_spec_modules(
+        kevm.definition, spec_modules, spec_labels=claim_labels, logs={}, proof_dir=save_directory
+    )
+    proofs = list(unique(proofs))
 
     def _init_and_run_proof(claim: KClaim) -> tuple[bool, list[str] | None]:
         with legacy_explore(
@@ -358,29 +408,90 @@ def exec_prove(
 
             return passed, failure_log
 
-    topological_sorter = graphlib.TopologicalSorter(claims_graph)
-    topological_sorter.prepare()
-    with wrap_process_pool(workers=workers) as process_pool:
-        selected_results: list[tuple[bool, list[str] | None]] = []
-        selected_claims = []
-        while topological_sorter.is_active():
-            ready = topological_sorter.get_ready()
-            _LOGGER.info(f'Discharging proof obligations: {ready}')
-            curr_claim_list = [all_claims_by_label[label] for label in ready]
-            results: list[tuple[bool, list[str] | None]] = process_pool.map(_init_and_run_proof, curr_claim_list)
-            for label in ready:
-                topological_sorter.done(label)
-            selected_results.extend(results)
-            selected_claims.extend(curr_claim_list)
+    def worker(env: MyEnvironment) -> None:
+        while True:
+            msg = env.to_do_queue.get()
+            match msg:
+                case TodoQueueStop():
+                    return
+                case TodoQueueProofTask(proof_id):
+                    passed, failure_log = _init_and_run_proof(all_claims_by_id[proof_id])
+                    env.done_queue.put(DoneQueueTaskFinished(proof_id=proof_id, passed=passed, failure_log=failure_log))
+
+    def coordinator(env: MyEnvironment, proofs_to_do: list[APRProof]) -> list[tuple[bool, list[str] | None]]:
+        id_to_proof: dict[str, APRProof] = {pf.id: pf for pf in proofs_to_do}
+        remaining_proof_ids: set[str] = {pf.id for pf in proofs_to_do}
+        finished_proof_ids: dict[str, tuple[bool, list[str] | None]] = {}
+
+        def get_a_ready_id() -> str | None:
+            for proof_id in remaining_proof_ids:
+                if set(id_to_proof[proof_id].subproof_ids).issubset(finished_proof_ids.keys()):
+                    remaining_proof_ids.remove(proof_id)
+                    return proof_id
+            return None
+
+        def put_all_ready_into_queue() -> int:
+            n = 0
+            while True:
+                opt_proof_id: str | None = get_a_ready_id()
+                if opt_proof_id is None:
+                    return n
+                env.to_do_queue.put(TodoQueueProofTask(opt_proof_id))
+                n = n + 1
+
+        def process_incoming_message(msg: DoneQueueTask) -> bool:
+            match msg:
+                case DoneQueueTaskFinished(proof_id=proof_id, passed=passed, failure_log=failure_log):
+                    finished_proof_ids[proof_id] = (passed, failure_log)
+                    return True
+            return False
+
+        def take_all_proven_from_queue() -> int:
+            n = 0
+            while not env.done_queue.empty():
+                msg = env.done_queue.get()
+                if process_incoming_message(msg):
+                    n = n + 1
+            return n
+
+        enqueued_counter: int = 0
+        while True:
+            newly_removed_from_queue = take_all_proven_from_queue()
+            newly_enqueued = put_all_ready_into_queue()
+            enqueued_counter = enqueued_counter + newly_enqueued - newly_removed_from_queue
+            assert enqueued_counter >= 0
+            if enqueued_counter == 0:
+                break
+            assert enqueued_counter > 0
+            # We can wait for some incoming message.
+            # Unfortunately, a `wait_until_nonempty` primitive is missing, so we have to block using `get`.
+            msg = env.done_queue.get()
+            if process_incoming_message(msg):
+                enqueued_counter = enqueued_counter - 1
+            # And now we are going to process all the other incoming messages (if any)
+            continue
+        # Now we want to stop all the workers
+        for _ in range(env.number_of_workers):
+            env.to_do_queue.put(TodoQueueStop())
+        return [finished_proof_ids[p.id] for p in proofs_to_do]
+
+    # ctx = multiprocessing.get_context('spawn')
+    env = MyEnvironment(number_of_workers=workers)
+    worker_processes = [multiprocess.Process(target=worker, args=(env,)) for _ in range(workers)]
+    for w in worker_processes:
+        w.start()
+    results = coordinator(env, proofs)
+    for w in worker_processes:
+        w.join()
 
     failed = 0
-    for claim, r in zip(selected_claims, selected_results, strict=True):
+    for proof, r in zip(proofs, results, strict=True):
         passed, failure_log = r
         if passed:
-            print(f'PROOF PASSED: {claim.label}')
+            print(f'PROOF PASSED: {proof.id}')
         else:
             failed += 1
-            print(f'PROOF FAILED: {claim.label}')
+            print(f'PROOF FAILED: {proof.id}')
             if failure_info and failure_log is not None:
                 for line in failure_log:
                     print(line)
