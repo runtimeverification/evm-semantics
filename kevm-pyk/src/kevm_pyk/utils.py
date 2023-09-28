@@ -5,18 +5,15 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from pyk.cterm import CTerm
 from pyk.kast.inner import KApply, KInner, KRewrite, KVariable, Subst
 from pyk.kast.manip import (
     abstract_term_safely,
     bottom_up,
     free_vars,
     is_anon_var,
-    set_cell,
     split_config_and_constraints,
     split_config_from,
 )
-from pyk.kast.outer import KSequence
 from pyk.kcfg import KCFGExplore
 from pyk.kore.rpc import KoreClient, KoreExecLogFormat, kore_server
 from pyk.proof import APRBMCProof, APRBMCProver, APRProof, APRProver
@@ -27,7 +24,8 @@ if TYPE_CHECKING:
     from collections.abc import Callable, Collection, Iterable, Iterator
     from typing import Final, TypeVar
 
-    from pyk.kast.outer import KClaim, KDefinition
+    from pyk.cterm import CTerm
+    from pyk.kast.outer import KDefinition
     from pyk.kcfg import KCFG
     from pyk.kcfg.semantics import KCFGSemantics
     from pyk.ktool.kprint import KPrint
@@ -39,24 +37,6 @@ if TYPE_CHECKING:
     T2 = TypeVar('T2')
 
 _LOGGER: Final = logging.getLogger(__name__)
-
-
-def claim_dependency_dict(claims: Iterable[KClaim], spec_module_name: str | None = None) -> dict[str, list[str]]:
-    claims_by_label = {claim.label: claim for claim in claims}
-    graph: dict[str, list[str]] = {}
-    for claim in claims:
-        graph[claim.label] = []
-        for dependency in claim.dependencies:
-            if dependency not in claims_by_label:
-                if spec_module_name is None:
-                    raise ValueError(f'Could not find dependency and no spec_module provided: {dependency}')
-                else:
-                    spec_dependency = f'{spec_module_name}.{dependency}'
-                    if spec_dependency not in claims_by_label:
-                        raise ValueError(f'Could not find dependency: {dependency} or {spec_dependency}')
-                    dependency = spec_dependency
-            graph[claim.label].append(dependency)
-    return graph
 
 
 def get_apr_proof_for_spec(
@@ -291,14 +271,6 @@ def abstract_cell_vars(cterm: KInner, keep_vars: Collection[KVariable] = ()) -> 
         if type(subst[s]) is KVariable and not is_anon_var(subst[s]) and subst[s] not in keep_vars:
             subst[s] = abstract_term_safely(KVariable('_'), base_name=s)
     return Subst(subst)(config)
-
-
-def ensure_ksequence_on_k_cell(cterm: CTerm) -> CTerm:
-    k_cell = cterm.cell('K_CELL')
-    if type(k_cell) is not KSequence:
-        _LOGGER.info('Introducing artificial KSequence on <k> cell.')
-        return CTerm.from_kast(set_cell(cterm.kast, 'K_CELL', KSequence([k_cell])))
-    return cterm
 
 
 def constraints_for(vars: list[str], constraints: Iterable[KInner]) -> Iterable[KInner]:
