@@ -6,6 +6,7 @@ import json
 import logging
 import os
 import sys
+import time
 from argparse import ArgumentParser
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -337,6 +338,7 @@ def exec_prove(
                         subproof_ids=claims_graph[claim.label],
                     )
 
+            start_time = time.time()
             passed = kevm_prove(
                 kevm,
                 proof_problem,
@@ -347,6 +349,8 @@ def exec_prove(
                 break_on_jumpi=break_on_jumpi,
                 break_on_calls=break_on_calls,
             )
+            end_time = time.time()
+            _LOGGER.info(f'Proof timing {proof_problem.id}: {end_time - start_time}s')
             failure_log = None
             if not passed:
                 failure_log = print_failure_info(proof_problem, kcfg_explore)
