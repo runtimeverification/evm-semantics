@@ -217,7 +217,7 @@ def _exec_build(
     verbose: bool,
     debug: bool,
 ) -> None:
-    _LOGGER.info(f"Building tagets: {', '.join(targets)}")
+    _LOGGER.info(f"Building targets: {', '.join(targets)}")
 
     verbose = verbose or debug
 
