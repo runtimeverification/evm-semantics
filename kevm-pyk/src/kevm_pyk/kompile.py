@@ -58,6 +58,7 @@ def kevm_kompile(
     llvm_kompile_type: LLVMKompileType | None = None,
     enable_llvm_debug: bool = False,
     llvm_library: Path | None = None,
+    debug_build: bool = False,
     debug: bool = False,
     verbose: bool = False,
 ) -> Path:
@@ -85,7 +86,7 @@ def kevm_kompile(
     try:
         match target:
             case KompileTarget.LLVM:
-                ccopts = list(ccopts) + _lib_ccopts(kernel)
+                ccopts = list(ccopts) + _lib_ccopts(kernel, debug_build=debug_build)
                 kompile = LLVMKompile(
                     base_args=base_args,
                     ccopts=ccopts,
@@ -103,7 +104,7 @@ def kevm_kompile(
                 return kompile(output_dir=output_dir, debug=debug, verbose=verbose)
 
             case KompileTarget.HASKELL_BOOSTER:
-                ccopts = list(ccopts) + _lib_ccopts(kernel)
+                ccopts = list(ccopts) + _lib_ccopts(kernel, debug_build=debug_build)
                 base_args_llvm = KompileArgs(
                     main_file=main_file,
                     main_module=main_module,
@@ -145,10 +146,13 @@ def kevm_kompile(
         raise
 
 
-def _lib_ccopts(kernel: str) -> list[str]:
+def _lib_ccopts(kernel: str, debug_build: bool = False) -> list[str]:
     from . import dist
 
-    ccopts = ['-g', '-std=c++17']
+    ccopts = ['-std=c++17']
+
+    if debug_build:
+        ccopts += ['-g']
 
     ccopts += ['-lssl', '-lcrypto']
 
