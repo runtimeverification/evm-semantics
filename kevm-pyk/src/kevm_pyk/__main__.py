@@ -98,9 +98,10 @@ def exec_kompile(
     o1: bool = False,
     o2: bool = False,
     o3: bool = False,
-    debug: bool = False,
     enable_llvm_debug: bool = False,
     llvm_library: bool = False,
+    debug_build: bool = False,
+    debug: bool = False,
     verbose: bool = False,
     **kwargs: Any,
 ) -> None:
@@ -116,6 +117,8 @@ def exec_kompile(
         optimization = 2
     if o3:
         optimization = 3
+    if debug_build:
+        optimization = 0
 
     kevm_kompile(
         target,
@@ -130,6 +133,7 @@ def exec_kompile(
         optimization=optimization,
         enable_llvm_debug=enable_llvm_debug,
         llvm_kompile_type=LLVMKompileType.C if llvm_library else LLVMKompileType.MAIN,
+        debug_build=debug_build,
         debug=debug,
         verbose=verbose,
     )
@@ -603,6 +607,9 @@ def _create_argument_parser() -> ArgumentParser:
     kevm_kompile_args.add_argument('--target', type=KompileTarget, help='[llvm|haskell|haskell-standalone|foundry]')
     kevm_kompile_args.add_argument(
         '-o', '--output-definition', type=Path, dest='output_dir', help='Path to write kompiled definition to.'
+    )
+    kevm_kompile_args.add_argument(
+        '--debug-build', dest='debug_build', default=False, help='Enable debug symbols in LLVM builds.'
     )
 
     prove_args = command_parser.add_parser(
