@@ -163,7 +163,7 @@ def _do_build_plugin(*, verbose: bool) -> None:
 
     with _plugin_build_env() as build_dir:
         try:
-            run_process(['make', 'libcryptopp', 'libff', 'libsecp256k1'], cwd=build_dir, pipe_stdout=not verbose)
+            run_process(['make', 'libcryptopp', 'libff', 'libsecp256k1', '-j3'], cwd=build_dir, pipe_stdout=not verbose)
         except CalledProcessError:
             clean_plugin()
             raise
