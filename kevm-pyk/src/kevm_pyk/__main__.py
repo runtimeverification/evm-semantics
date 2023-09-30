@@ -390,7 +390,7 @@ def exec_prove(
         sys.exit(failed)
 
 
-def exec_prune_proof(
+def exec_prune(
     definition_dir: Path,
     spec_file: Path,
     node: NodeIdLike,
@@ -405,7 +405,7 @@ def exec_prune_proof(
     md_selector = 'k'
 
     if save_directory is None:
-        raise ValueError('Must pass --save-directory to prune-proof!')
+        raise ValueError('Must pass --save-directory to prune!')
 
     kevm = KEVM(definition_dir, use_directory=save_directory)
 
@@ -695,8 +695,8 @@ def _create_argument_parser() -> ArgumentParser:
         help="Use the booster RPC server instead of kore-rpc. Requires calling kompile with '--target haskell-booster' flag",
     )
 
-    prune_proof_args = command_parser.add_parser(
-        'prune-proof',
+    prune_args = command_parser.add_parser(
+        'prune',
         help='Remove a node and its successors from the proof state.',
         parents=[
             kevm_cli_args.logging_args,
@@ -704,7 +704,7 @@ def _create_argument_parser() -> ArgumentParser:
             kevm_cli_args.spec_args,
         ],
     )
-    prune_proof_args.add_argument('node', type=node_id_like, help='Node to remove CFG subgraph from.')
+    prune_args.add_argument('node', type=node_id_like, help='Node to remove CFG subgraph from.')
 
     section_edge_args = command_parser.add_parser(
         'section-edge',
