@@ -440,7 +440,12 @@ def exec_section_edge(
     spec_module: str | None = None,
     claim_labels: Iterable[str] | None = None,
     exclude_claim_labels: Iterable[str] = (),
+    smt_timeout: int | None = None,
+    smt_retry_limit: int | None = None,
+    kore_rpc_command: str | Iterable[str] | None = None,
+    trace_rewrites: bool = False,
     bug_report: BugReport | None = None,
+    use_booster: bool = False,
     **kwargs: Any,
 ) -> None:
     md_selector = 'k'
@@ -448,7 +453,18 @@ def exec_section_edge(
     if save_directory is None:
         raise ValueError('Must pass --save-directory to section-edge!')
 
+    if kore_rpc_command is None:
+        kore_rpc_command = ('kore-rpc-booster',) if use_booster else ('kore-rpc',)
+    elif isinstance(kore_rpc_command, str):
+        kore_rpc_command = kore_rpc_command.split()
+
+    if smt_timeout is None:
+        smt_timeout = 300
+    if smt_retry_limit is None:
+        smt_retry_limit = 10
+
     kevm = KEVM(definition_dir, use_directory=save_directory)
+    llvm_definition_dir = definition_dir / 'llvm-library' if use_booster else None
 
     include_dirs = [Path(include) for include in includes]
     include_dirs += config.INCLUDE_DIRS
@@ -471,6 +487,11 @@ def exec_section_edge(
         kcfg_semantics=KEVMSemantics(),
         id=proof.id,
         bug_report=bug_report,
+        kore_rpc_command=kore_rpc_command,
+        smt_timeout=smt_timeout,
+        smt_retry_limit=smt_retry_limit,
+        trace_rewrites=trace_rewrites,
+        llvm_definition_dir=llvm_definition_dir,
     ) as kcfg_explore:
         kcfg, _ = kcfg_explore.section_edge(
             proof.kcfg, source_id=int(source_id), target_id=int(target_id), logs=proof.logs, sections=sections
@@ -718,6 +739,13 @@ def _create_argument_parser() -> ArgumentParser:
     section_edge_args.add_argument('edge', type=arg_pair_of(str, str), help='Edge to section in CFG.')
     section_edge_args.add_argument(
         '--sections', type=int, default=2, help='Number of sections to make from edge (>= 2).'
+    )
+    section_edge_args.add_argument(
+        '--use-booster',
+        dest='use_booster',
+        default=False,
+        action='store_true',
+        help="Use the booster RPC server instead of kore-rpc. Requires calling kompile with '--target haskell-booster' flag",
     )
 
     prove_legacy_args = command_parser.add_parser(
