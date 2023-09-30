@@ -790,7 +790,7 @@ plugins = ["importlib-metadata"]
 
 [[package]]
 name = "pyk"
-version = "0.1.457"
+version = "0.1.458"
 description = ""
 optional = false
 python-versions = "^3.10"
@@ -810,8 +810,8 @@ tomli = "^2.0.1"
 [package.source]
 type = "git"
 url = "https://github.com/runtimeverification/pyk.git"
-reference = "v0.1.457"
-resolved_reference = "666d5e3f0bc2fe6d1729b261a3e0f46cd5f30e4f"
+reference = "v0.1.458"
+resolved_reference = "900a06dad5741822c64bc9f13a171987869b3a4a"
 
 [[package]]
 name = "pyperclip"
@@ -1037,13 +1037,13 @@ test = ["coverage", "pytest", "pytest-cov"]
 
 [[package]]
 name = "wcwidth"
-version = "0.2.7"
+version = "0.2.8"
 description = "Measures the displayed width of unicode strings in a terminal"
 optional = false
 python-versions = "*"
 files = [
-    {file = "wcwidth-0.2.7-py2.py3-none-any.whl", hash = "sha256:fabf3e32999d9b0dab7d19d845149f326f04fe29bac67709ee071dbd92640a36"},
-    {file = "wcwidth-0.2.7.tar.gz", hash = "sha256:1b6d30a98ddd5ce9bbdb33658191fd2423fc9da203fe3ef1855407dcb7ee4e26"},
+    {file = "wcwidth-0.2.8-py2.py3-none-any.whl", hash = "sha256:77f719e01648ed600dfa5402c347481c0992263b81a027344f3e1ba25493a704"},
+    {file = "wcwidth-0.2.8.tar.gz", hash = "sha256:8705c569999ffbb4f6a87c6d1b80f324bd6db952f5eb0b95bc07517f4c1813d4"},
 ]
 
 [[package]]
@@ -1075,4 +1075,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "2164a4e1abefb93803b99e3f87c7da6d0f84390f158a20dd71d2da8935a431da"
+content-hash = "936c8560bee26974e91d5ab744ef125326820c9b5cd214f222a5bbbf38cb8e95"
