@@ -402,6 +402,30 @@ module LEMMAS-SPEC
     claim <k> runLemma ( N &Int maxUInt8   ) => doneLemma ( N ) ... </k> requires #rangeUInt(8,   N)
     claim <k> runLemma ( maxUInt8 &Int N   ) => doneLemma ( N ) ... </k> requires #rangeUInt(8,   N)
 
+ // bitwise
+ // -------
+
+    claim <k> runLemma ( notMaxUInt8  &Int X ) => doneLemma( 0 ) ... </k> requires #rangeUInt (  8 , X )
+    claim <k> runLemma ( notMaxUInt16 &Int X ) => doneLemma( 0 ) ... </k> requires #rangeUInt ( 16 , X )
+    claim <k> runLemma ( notMaxUInt32 &Int X ) => doneLemma( 0 ) ... </k> requires #rangeUInt ( 32 , X )
+    claim <k> runLemma ( notMaxUInt64 &Int X ) => doneLemma( 0 ) ... </k> requires #rangeUInt ( 64 , X )
+    claim <k> runLemma ( notMaxUInt240 &Int ( X <<Int 240 ) ) => doneLemma( X <<Int 240 ) ... </k> requires #rangeUInt ( 16 , X )
+    claim <k> runLemma ( notMaxUInt248 &Int ( X <<Int 248 ) ) => doneLemma( X <<Int 248 ) ... </k> requires #rangeUInt (  8 , X )
+    claim <k> runLemma ( maxUInt8  &Int ( X |Int (  notMaxUInt8 &Int Y ) ) ) => doneLemma( X ) ... </k> requires #rangeUInt (  8 , X ) andBool 0 <=Int Y
+    claim <k> runLemma ( maxUInt16 &Int ( X |Int ( notMaxUInt16 &Int Y ) ) ) => doneLemma( X ) ... </k> requires #rangeUInt ( 16 , X ) andBool 0 <=Int Y
+    claim <k> runLemma ( maxUInt32 &Int ( X |Int ( notMaxUInt32 &Int Y ) ) ) => doneLemma( X ) ... </k> requires #rangeUInt ( 32 , X ) andBool 0 <=Int Y
+    claim <k> runLemma ( maxUInt64 &Int ( X |Int ( notMaxUInt64 &Int Y ) ) ) => doneLemma( X ) ... </k> requires #rangeUInt ( 64 , X ) andBool 0 <=Int Y
+    claim <k> runLemma ( #buf ( 32 , #asWord ( X ) ) ) => doneLemma( X ) </k> requires lengthBytes(X) ==Int 32
+    claim <k> runLemma ( #buf ( 32 , X <<Int 248 ) ) => doneLemma( #buf ( 1 , X ) +Bytes #buf ( 31 , 0 ) ) ... </k> requires #rangeUInt (  8 , X )
+    claim <k> runLemma ( #buf ( 32 , X <<Int 240 ) ) => doneLemma( #buf ( 2 , X ) +Bytes #buf ( 30 , 0 ) ) ... </k> requires #rangeUInt ( 16 , X )
+
+ // shift
+ // -----
+
+    claim [shift-16] : <k> runLemma ( ( X <<Int  16 ) <Int pow256 ) => doneLemma ( true ) ... </k> requires #rangeUInt ( 240 , X )
+    claim [shift-240]: <k> runLemma ( ( X <<Int 240 ) <Int pow256 ) => doneLemma ( true ) ... </k> requires #rangeUInt (  16 , X )
+    claim [shift-248]: <k> runLemma ( ( X <<Int 248 ) <Int pow256 ) => doneLemma ( true ) ... </k> requires #rangeUInt (   8 , X )
+
  // ecrecover
  // ---------
 
