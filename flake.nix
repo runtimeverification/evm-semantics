@@ -3,7 +3,7 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/b01f185e4866de7c5b5a82f833ca9ea3c3f72fc4";
-    k-framework.url = "github:runtimeverification/k/v6.0.69";
+    k-framework.url = "github:runtimeverification/k/v6.0.87";
     k-framework.inputs.nixpkgs.follows = "nixpkgs";
     #nixpkgs.follows = "k-framework/nixpkgs";
     flake-utils.follows = "k-framework/flake-utils";
@@ -17,7 +17,7 @@
     ethereum-legacytests.url = "github:ethereum/legacytests/d7abc42a7b352a7b44b1f66b58aca54e4af6a9d7";
     ethereum-legacytests.flake = false;
     haskell-backend.follows = "k-framework/haskell-backend";
-    pyk.url = "github:runtimeverification/pyk/v0.1.434";
+    pyk.url = "github:runtimeverification/pyk/v0.1.448";
     pyk.inputs.flake-utils.follows = "k-framework/flake-utils";
     pyk.inputs.nixpkgs.follows = "k-framework/nixpkgs";
     foundry.url = "github:shazow/foundry.nix/monthly"; # Use monthly branch for permanent releases
@@ -103,7 +103,7 @@
               makeWrapper ${final.kevm-pyk}/bin/kevm $out/bin/kevm --prefix PATH : ${
                 prev.lib.makeBinPath [ prev.which k ]
               } --set NIX_LIBS "${nixLibs prev}" --set KEVM_DIST_DIR $out
-              makeWrapper ${final.kevm-pyk}/bin/kontrol $out/bin/kontrol --prefix PATH : ${
+              makeWrapper ${final.kevm-pyk}/bin/kontrolx $out/bin/kontrolx --prefix PATH : ${
                 prev.lib.makeBinPath [
                   (solc.mkDefault final final.solc_0_8_13)
                   final.foundry-bin
@@ -148,7 +148,7 @@
           projectDir = ./kevm-pyk;
 
           postPatch = ''
-            substituteInPlace ./src/kontrol/foundry.py \
+            substituteInPlace ./src/kontrolx/foundry.py \
               --replace "'forge', 'build'," "'forge', 'build', '--no-auto-detect',"
           '';
 

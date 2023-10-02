@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+import dataclasses
 import logging
 import sys
 from typing import TYPE_CHECKING, NamedTuple
 
 import pytest
 from pyk.cterm import CTerm
+from pyk.proof.reachability import APRProof
 
 from kevm_pyk import config
 from kevm_pyk.__main__ import exec_prove
@@ -74,7 +76,6 @@ def exclude_list(exclude_file: Path) -> list[Path]:
 
 FAILING_PYK_TESTS: Final = exclude_list(TEST_DIR / 'failing-symbolic.pyk')
 FAILING_BOOSTER_TESTS: Final = exclude_list(TEST_DIR / 'failing-symbolic.haskell-booster')
-SLOW_TESTS: Final = exclude_list(TEST_DIR / 'slow.haskell')
 FAILING_TESTS: Final = exclude_list(TEST_DIR / 'failing-symbolic.haskell')
 
 
@@ -105,9 +106,6 @@ KOMPILE_MAIN_FILE: Final = {
 
 KOMPILE_MAIN_MODULE: Final = {
     'benchmarks/functional-spec.k': 'FUNCTIONAL-SPEC-SYNTAX',
-    'bihu/functional-spec.k': 'FUNCTIONAL-SPEC-SYNTAX',
-    'erc20/functional-spec.k': 'FUNCTIONAL-SPEC-SYNTAX',
-    'mcd/functional-spec.k': 'FUNCTIONAL-SPEC-SYNTAX',
     'opcodes/evm-optimizations-spec.md': 'EVM-OPTIMIZATIONS-SPEC-LEMMAS',
 }
 
@@ -203,8 +201,22 @@ def _target_for_spec(spec_file: Path, use_booster: bool) -> Target:
 # ---------
 
 
-SKIPPED_PYK_TESTS: Final = set().union(SLOW_TESTS, FAILING_TESTS, FAILING_PYK_TESTS)
-SKIPPED_PYK_BOOSTER_TESTS: Final = set().union(SLOW_TESTS, FAILING_TESTS, FAILING_PYK_TESTS, FAILING_BOOSTER_TESTS)
+@dataclasses.dataclass(frozen=True)
+class TParams:
+    main_claim_id: str
+    leaf_number: int | None
+
+
+TEST_PARAMS: dict[str, TParams] = {
+    r'mcd/vat-slip-pass-rough-spec.k': TParams(
+        main_claim_id='VAT-SLIP-PASS-ROUGH-SPEC.Vat.slip.pass.rough', leaf_number=1
+    )
+}
+
+
+def leaf_number(proof: APRProof) -> int:
+    non_target_leaves = [nd for nd in proof.kcfg.leaves if not proof.is_target(nd.id)]
+    return len(non_target_leaves) + len(proof.kcfg.predecessors(proof.target))
 
 
 @pytest.mark.parametrize(
@@ -222,7 +234,7 @@ def test_pyk_prove(
 ) -> None:
     caplog.set_level(logging.INFO)
 
-    if spec_file in SKIPPED_PYK_TESTS or (use_booster and spec_file in SKIPPED_PYK_BOOSTER_TESTS):
+    if (not use_booster and spec_file in FAILING_PYK_TESTS) or (use_booster and spec_file in FAILING_BOOSTER_TESTS):
         pytest.skip()
 
     # Given
@@ -244,6 +256,16 @@ def test_pyk_prove(
             use_booster=use_booster,
             bug_report=bug_report,
         )
+        name = str(spec_file.relative_to(SPEC_DIR))
+        if name in TEST_PARAMS:
+            params = TEST_PARAMS[name]
+            apr_proof = APRProof.read_proof_data(
+                proof_dir=use_directory,
+                id=params.main_claim_id,
+            )
+            expected_leaf_number = params.leaf_number
+            actual_leaf_number = leaf_number(apr_proof)
+            assert expected_leaf_number == actual_leaf_number
     except BaseException:
         raise
     finally:
@@ -253,9 +275,6 @@ def test_pyk_prove(
 # ------------
 # Legacy tests
 # ------------
-
-
-SKIPPED_LEGACY_TESTS: Final = set().union(SLOW_TESTS, FAILING_TESTS)
 
 
 PROVE_ARGS: Final[dict[str, Any]] = {
@@ -270,7 +289,7 @@ PROVE_ARGS: Final[dict[str, Any]] = {
     FAILING_PYK_TESTS,
     ids=[str(spec_file.relative_to(SPEC_DIR)) for spec_file in FAILING_PYK_TESTS],
 )
-def test_legacy_prove(
+def test_kprove_prove(
     spec_file: Path,
     kompiled_target_for: Callable[[Path, bool], KompiledTarget],
     tmp_path: Path,
@@ -279,7 +298,7 @@ def test_legacy_prove(
 ) -> None:
     caplog.set_level(logging.INFO)
 
-    if spec_file in SKIPPED_LEGACY_TESTS:
+    if spec_file in FAILING_TESTS:
         pytest.skip()
 
     # Given
