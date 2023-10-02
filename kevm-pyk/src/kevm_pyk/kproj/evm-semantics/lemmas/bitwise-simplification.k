@@ -27,8 +27,6 @@ module BITWISE-SIMPLIFICATION [symbolic]
     rule _ &Int 0 => 0 [simplification]
     rule A &Int A => A [simplification]
 
-    rule 1 &Int X => X modInt 2 [simplification]
-
     rule chop ( ( maxUInt48 &Int X:Int ) *Int Y:Int ) => ( maxUInt48 &Int X:Int ) *Int Y
       requires 0 <=Int X andBool 0 <=Int Y andBool Y <=Int pow208 [simplification]
 
