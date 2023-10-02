@@ -70,10 +70,10 @@ module BYTES-SIMPLIFICATION [symbolic]
       [simplification]
 
     rule [buf-shift]:
-      #buf(W:Int, X <<Int (8 *Int Y)) => #buf(W -Int Y, X) +Bytes #buf(Y, 0)
+      #buf(W:Int, X <<Int Y) => #buf(W -Int (Y /Int 8), X) +Bytes #buf(Y /Int 8, 0) 
       requires 0 <=Int W andBool W <=Int 32
-       andBool 0 <=Int X andBool X <Int 2 ^Int (256 -Int (8 *Int Y))
-       andBool 0 <=Int Y andBool Y <Int W
+       andBool 0 <=Int X andBool X <Int 2 ^Int (256 -Int Y)
+       andBool 0 <=Int Y andBool ( Y <Int W *Int 8 ) andBool Y modInt 8 ==Int 0
       [simplification]
 
     // #range
