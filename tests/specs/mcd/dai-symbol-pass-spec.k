@@ -11,7 +11,7 @@ module DAI-SYMBOL-PASS-SPEC
       <schedule> ISTANBUL </schedule>
       <ethereum>
         <evm>
-          <output> _ => #asByteStackInWidthaux(32, 31, 32, #enc(#string("DAI"))) </output>
+          <output> _ => #buf(32, 32) +Bytes #buf(32, 3) +Bytes b"DAI" +Bytes #buf(29, 0) </output>
           <statusCode> _ => EVMC_SUCCESS </statusCode>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
@@ -60,6 +60,7 @@ module DAI-SYMBOL-PASS-SPEC
             <blockNonce> _ </blockNonce>
             <baseFee> _ </baseFee>
             <ommerBlockHeaders> _ </ommerBlockHeaders>
+            <withdrawalsRoot> _ </withdrawalsRoot>
           </block>
         </evm>
         <network>

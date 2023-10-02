@@ -27,7 +27,7 @@ if TYPE_CHECKING:
     from collections.abc import Callable, Collection, Iterable, Iterator
     from typing import Final, TypeVar
 
-    from pyk.kast.outer import KDefinition
+    from pyk.kast.outer import KClaim, KDefinition
     from pyk.kcfg import KCFG
     from pyk.kcfg.semantics import KCFGSemantics
     from pyk.ktool.kprint import KPrint
@@ -41,7 +41,25 @@ if TYPE_CHECKING:
 _LOGGER: Final = logging.getLogger(__name__)
 
 
-def get_apr_proof_for_spec(  # noqa: N802
+def claim_dependency_dict(claims: Iterable[KClaim], spec_module_name: str | None = None) -> dict[str, list[str]]:
+    claims_by_label = {claim.label: claim for claim in claims}
+    graph: dict[str, list[str]] = {}
+    for claim in claims:
+        graph[claim.label] = []
+        for dependency in claim.dependencies:
+            if dependency not in claims_by_label:
+                if spec_module_name is None:
+                    raise ValueError(f'Could not find dependency and no spec_module provided: {dependency}')
+                else:
+                    spec_dependency = f'{spec_module_name}.{dependency}'
+                    if spec_dependency not in claims_by_label:
+                        raise ValueError(f'Could not find dependency: {dependency} or {spec_dependency}')
+                    dependency = spec_dependency
+            graph[claim.label].append(dependency)
+    return graph
+
+
+def get_apr_proof_for_spec(
     kprove: KProve,
     spec_file: Path,
     save_directory: Path | None,
@@ -174,11 +192,8 @@ def print_failure_info(proof: Proof, kcfg_explore: KCFGExplore, counterexample_i
                 res_lines.append('')
                 res_lines.append(f'  Node id: {str(node.id)}')
 
-                simplified_node, _ = kcfg_explore.cterm_simplify(node.cterm)
-                simplified_target, _ = kcfg_explore.cterm_simplify(target.cterm)
-
-                node_cterm = CTerm.from_kast(simplified_node)
-                target_cterm = CTerm.from_kast(simplified_target)
+                node_cterm, _ = kcfg_explore.cterm_simplify(node.cterm)
+                target_cterm, _ = kcfg_explore.cterm_simplify(target.cterm)
 
                 res_lines.append('  Failure reason:')
                 _, reason = kcfg_explore.implication_failure_reason(node_cterm, target_cterm)
@@ -315,22 +330,35 @@ def legacy_explore(
     haskell_log_entries: Iterable[str] = (),
     log_axioms_file: Path | None = None,
     trace_rewrites: bool = False,
+    start_server: bool = True,
 ) -> Iterator[KCFGExplore]:
-    # Old way of handling KCFGExplore, to be removed
-    with kore_server(
-        definition_dir=kprint.definition_dir,
-        llvm_definition_dir=llvm_definition_dir,
-        module_name=kprint.main_module,
-        port=port,
-        command=kore_rpc_command,
-        bug_report=bug_report,
-        smt_timeout=smt_timeout,
-        smt_retry_limit=smt_retry_limit,
-        haskell_log_format=haskell_log_format,
-        haskell_log_entries=haskell_log_entries,
-        log_axioms_file=log_axioms_file,
-    ) as server:
-        with KoreClient('localhost', server.port, bug_report=bug_report) as client:
+    if start_server:
+        # Old way of handling KCFGExplore, to be removed
+        with kore_server(
+            definition_dir=kprint.definition_dir,
+            llvm_definition_dir=llvm_definition_dir,
+            module_name=kprint.main_module,
+            port=port,
+            command=kore_rpc_command,
+            bug_report=bug_report,
+            smt_timeout=smt_timeout,
+            smt_retry_limit=smt_retry_limit,
+            haskell_log_format=haskell_log_format,
+            haskell_log_entries=haskell_log_entries,
+            log_axioms_file=log_axioms_file,
+        ) as server:
+            with KoreClient('localhost', server.port, bug_report=bug_report) as client:
+                yield KCFGExplore(
+                    kprint=kprint,
+                    kore_client=client,
+                    kcfg_semantics=kcfg_semantics,
+                    id=id,
+                    trace_rewrites=trace_rewrites,
+                )
+    else:
+        if port is None:
+            raise ValueError('Missing port with start_server=False')
+        with KoreClient('localhost', port, bug_report=bug_report) as client:
             yield KCFGExplore(
                 kprint=kprint,
                 kore_client=client,

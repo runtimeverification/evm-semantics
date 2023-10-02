@@ -5,3 +5,5 @@ extend-ignore = B950,E,W1,W2,W3,W4,W5
 per-file-ignores =
     */__init__.py: F401
 type-checking-strict = true
+exclude =
+    src/kevm_pyk/kproj/

@@ -7,16 +7,11 @@ module VERIFICATION
     imports DSS-BIN-RUNTIME
     imports DSS-STORAGE
     imports LEMMAS-MCD
-
-endmodule
-
-module LEMMAS-MCD
-    imports LEMMAS-MCD-HASKELL
-
+    imports LEMMAS-MCD-SYNTAX
 endmodule
 
 module LEMMAS-MCD-SYNTAX
-    imports LEMMAS
+    imports EVM
 
   // ########################
   // Constants
@@ -42,23 +37,6 @@ module LEMMAS-MCD-SYNTAX
  // -------------------------------------------------
     rule #string2Word(S) => #asWord(#padRightToWidth(32, #parseByteStackRaw(S)))
 
-    syntax Int ::= nthbyteof ( Int , Int , Int ) [function, smtlib(smt_nthbyteof)]
- // ------------------------------------------------------------------------------
-    rule nthbyteof(V, I, N) => nthbyteof(V /Int 256, I, N -Int 1) when N  >Int (I +Int 1) [concrete]
-    rule nthbyteof(V, I, N) =>           V modInt 256             when N ==Int (I +Int 1) [concrete]
-
-  // ########################
-  // Buffer Reasoning
-  // ########################
-
-    syntax Bytes ::= #asByteStackInWidth    ( Int, Int )             [function]
-                   | #asByteStackInWidthaux ( Int, Int, Int, Bytes ) [function]
- // ---------------------------------------------------------------------------
-    rule #asByteStackInWidth(X, N) => #asByteStackInWidthaux(X, N -Int 1, N, .Bytes)
-
-    rule #asByteStackInWidthaux(X, I, N, WS) => #asByteStackInWidthaux(X, I -Int 1, N, nthbyteof(X, I, N) : WS) when I >Int 0
-    rule #asByteStackInWidthaux(X, 0, N, WS) => nthbyteof(X, 0, N) : WS
-
   // ########################
   // Arithmetic
   // ########################
@@ -69,8 +47,10 @@ module LEMMAS-MCD-SYNTAX
 
 endmodule
 
-module LEMMAS-MCD-HASKELL [symbolic, kore]
-    imports LEMMAS-MCD-COMMON
+module LEMMAS-MCD [symbolic, kore]
+    imports LEMMAS
+    imports LEMMAS-MCD-SYNTAX
+    imports WORD-PACK
 
   // ########################
   // Arithmetic
@@ -156,13 +136,6 @@ module LEMMAS-MCD-HASKELL [symbolic, kore]
                                                                                                                        andBool K +Int 1                 ==Int K'                                                                                [concrete(K, K', V, VS'), simplification]
     rule { (M:Map [K <- V1]) #Equals (M [K <- V2]) } => { V1 #Equals V2 }
          [simplification]
-
-endmodule
-
-
-module LEMMAS-MCD-COMMON
-    imports LEMMAS-MCD-SYNTAX
-    imports WORD-PACK
 
   // ########################
   // Buffer Reasoning
