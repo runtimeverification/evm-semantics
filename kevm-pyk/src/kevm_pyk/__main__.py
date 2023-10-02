@@ -6,6 +6,7 @@ import json
 import logging
 import os
 import sys
+import time
 from argparse import ArgumentParser
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -98,9 +99,10 @@ def exec_kompile(
     o1: bool = False,
     o2: bool = False,
     o3: bool = False,
-    debug: bool = False,
     enable_llvm_debug: bool = False,
     llvm_library: bool = False,
+    debug_build: bool = False,
+    debug: bool = False,
     verbose: bool = False,
     **kwargs: Any,
 ) -> None:
@@ -116,6 +118,8 @@ def exec_kompile(
         optimization = 2
     if o3:
         optimization = 3
+    if debug_build:
+        optimization = 0
 
     kevm_kompile(
         target,
@@ -130,6 +134,7 @@ def exec_kompile(
         optimization=optimization,
         enable_llvm_debug=enable_llvm_debug,
         llvm_kompile_type=LLVMKompileType.C if llvm_library else LLVMKompileType.MAIN,
+        debug_build=debug_build,
         debug=debug,
         verbose=verbose,
     )
@@ -333,6 +338,7 @@ def exec_prove(
                         subproof_ids=claims_graph[claim.label],
                     )
 
+            start_time = time.time()
             passed = kevm_prove(
                 kevm,
                 proof_problem,
@@ -343,6 +349,8 @@ def exec_prove(
                 break_on_jumpi=break_on_jumpi,
                 break_on_calls=break_on_calls,
             )
+            end_time = time.time()
+            _LOGGER.info(f'Proof timing {proof_problem.id}: {end_time - start_time}s')
             failure_log = None
             if not passed:
                 failure_log = print_failure_info(proof_problem, kcfg_explore)
@@ -603,6 +611,9 @@ def _create_argument_parser() -> ArgumentParser:
     kevm_kompile_args.add_argument('--target', type=KompileTarget, help='[llvm|haskell|haskell-standalone|foundry]')
     kevm_kompile_args.add_argument(
         '-o', '--output-definition', type=Path, dest='output_dir', help='Path to write kompiled definition to.'
+    )
+    kevm_kompile_args.add_argument(
+        '--debug-build', dest='debug_build', default=False, help='Enable debug symbols in LLVM builds.'
     )
 
     prove_args = command_parser.add_parser(
