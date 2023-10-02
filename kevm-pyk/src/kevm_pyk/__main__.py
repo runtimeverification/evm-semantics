@@ -213,7 +213,7 @@ class JSONEncoder(json.JSONEncoder):
 @dataclass(frozen=True)
 class KClaimJob:
     claim: KClaim
-    dependencies: list[KClaimJob]
+    dependencies: frozenset[KClaimJob]
 
     @cached_property
     def digest(self) -> str:
@@ -248,7 +248,7 @@ class KClaimJob:
         _LOGGER.info(f'Updated claim {self.claim.label} in digest file: {digest_file}')
 
 
-def init_claim_jobs(spec_module_name: str, claims: list[KClaim]) -> list[KClaimJob]:
+def init_claim_jobs(spec_module_name: str, claims: list[KClaim]) -> frozenset[KClaimJob]:
     labels_to_claims = {claim.label: claim for claim in claims}
     labels_to_claim_jobs: dict[str, KClaimJob] = {}
 
@@ -258,12 +258,12 @@ def init_claim_jobs(spec_module_name: str, claims: list[KClaim]) -> list[KClaimJ
                 claim = labels_to_claims[claim_label]
             if f'{spec_module_name}.{claim_label}' in labels_to_claims:
                 claim = labels_to_claims[f'{spec_module_name}.{claim_label}']
-            deps = [get_or_load_claim_job(dep_label) for dep_label in claim.dependencies]
+            deps = frozenset({get_or_load_claim_job(dep_label) for dep_label in claim.dependencies})
             claim_job = KClaimJob(claim, deps)
             labels_to_claim_jobs[claim_label] = claim_job
         return labels_to_claim_jobs[claim_label]
 
-    return [get_or_load_claim_job(claim.label) for claim in claims]
+    return frozenset({get_or_load_claim_job(claim.label) for claim in claims})
 
 
 def exec_prove(
