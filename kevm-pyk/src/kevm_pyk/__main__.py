@@ -9,6 +9,7 @@ import sys
 import time
 from argparse import ArgumentParser
 from dataclasses import dataclass
+from functools import cached_property
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -209,12 +210,12 @@ class JSONEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, obj)
 
 
-@dataclass
+@dataclass(frozen=True)
 class KClaimJob:
     claim: KClaim
     dependencies: list[KClaimJob]
 
-    @property
+    @cached_property
     def digest(self) -> str:
         deps_digest = ''.join([dep.digest for dep in self.dependencies])
         claim_hash = hash_str(json.dumps(self.claim.to_dict(), sort_keys=True, cls=JSONEncoder))
