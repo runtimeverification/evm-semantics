@@ -885,12 +885,30 @@ function stopPrank() external;
 Gas Manipulation
 ----------------
 
+### `setGas` - Sets the current gas left (reported by `GAS` opcode) to a specific amount.
+
+```
+function setGas(uint256 newGas) external;
+```
+
+`setGas` is useful when writing tests that depend on the gas used, and so a specific concrete amount is needed instead of the default infinite gas.
+
+```{.k .bytes}
+    rule [foundry.call.setGas]:
+         <k> #call_foundry SELECTOR ARGS => . ... </k>
+         <gas> _ => #asWord(ARGS) </gas>
+         <callGas> _ => 0 </callGas>
+      requires SELECTOR ==Int selector ( "setGas(uint256)" )
+```
+
+### `infiniteGas` - Sets the remaining gas to an infinite value.
+
 ```
 function infiniteGas() external;
 ```
 
-Set the remaining gas to an infinite value.
-This is useful for running tests without them running out of gas.
+`infiniteGas` is useful for running tests without them running out of gas.
+It is applied by default.
 
 ```{.k .bytes .symbolic}
     rule [foundry.call.infiniteGas]:
@@ -1460,6 +1478,7 @@ If the production is matched when no prank is active, it will be ignored.
     rule ( selector ( "allowCallsToAddress(address)" )             => 1850795572 )
     rule ( selector ( "allowChangesToStorage(address,uint256)" )   => 4207417100 )
     rule ( selector ( "infiniteGas()" )                            => 3986649939 )
+    rule ( selector ( "setGas(uint256)" )                          => 3713137314 )
 ```
 
 - selectors for unimplemented cheat code functions.
