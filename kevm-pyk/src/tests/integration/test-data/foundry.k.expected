@@ -62,10 +62,6 @@ module FOUNDRY-MAIN
     imports public StoreTest-VERIFICATION
     imports public SymbolicStorageTest-VERIFICATION
     imports public SymbolicStore-VERIFICATION
-    imports public Test-VERIFICATION
-    imports public stdError-VERIFICATION
-    imports public stdMath-VERIFICATION
-    imports public stdStorage-VERIFICATION
     imports public TestNumber-VERIFICATION
     imports public ToStringTest-VERIFICATION
     imports public Token-VERIFICATION
@@ -76,6 +72,10 @@ module FOUNDRY-MAIN
     imports public console-VERIFICATION
     imports public console2-VERIFICATION
     imports public DSTest-VERIFICATION
+    imports public Test-VERIFICATION
+    imports public stdError-VERIFICATION
+    imports public stdMath-VERIFICATION
+    imports public stdStorage-VERIFICATION
     
     
 
@@ -502,34 +502,6 @@ module SymbolicStore-VERIFICATION
 
 endmodule
 
-module Test-VERIFICATION
-    imports public Test-CONTRACT
-    
-    
-
-endmodule
-
-module stdError-VERIFICATION
-    imports public stdError-CONTRACT
-    
-    
-
-endmodule
-
-module stdMath-VERIFICATION
-    imports public stdMath-CONTRACT
-    
-    
-
-endmodule
-
-module stdStorage-VERIFICATION
-    imports public stdStorage-CONTRACT
-    
-    
-
-endmodule
-
 module TestNumber-VERIFICATION
     imports public TestNumber-CONTRACT
     
@@ -595,6 +567,34 @@ endmodule
 
 module DSTest-VERIFICATION
     imports public DSTest-CONTRACT
+    
+    
+
+endmodule
+
+module Test-VERIFICATION
+    imports public Test-CONTRACT
+    
+    
+
+endmodule
+
+module stdError-VERIFICATION
+    imports public stdError-CONTRACT
+    
+    
+
+endmodule
+
+module stdMath-VERIFICATION
+    imports public stdMath-CONTRACT
+    
+    
+
+endmodule
+
+module stdStorage-VERIFICATION
+    imports public stdStorage-CONTRACT
     
     
 

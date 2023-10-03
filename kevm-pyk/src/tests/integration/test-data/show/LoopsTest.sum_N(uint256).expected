@@ -258,8 +258,8 @@
 
 
 
-
-
+    
+    
     rule [BASIC-BLOCK-1-TO-3]: <foundry>
            <kevm>
              <k>
@@ -478,7 +478,7 @@
        andBool ( NUMBER_CELL:Int <=Int maxSInt256
                ))))))
       [label(BASIC-BLOCK-1-TO-3)]
-
+    
     rule [BASIC-BLOCK-3-TO-4]: <foundry>
            <kevm>
              <k>
@@ -686,7 +686,7 @@
        andBool ( VV0_n_114b9705:Int <Int pow256
                ))))))))
       [label(BASIC-BLOCK-3-TO-4)]
-
+    
     rule [BASIC-BLOCK-4-TO-5]: <foundry>
            <kevm>
              <k>
@@ -899,7 +899,7 @@
                ))))))))
        ensures VV0_n_114b9705:Int <=Int 51816696836262767
       [label(BASIC-BLOCK-4-TO-5)]
-
+    
     rule [BASIC-BLOCK-6-TO-8]: <foundry>
            <kevm>
              <k>
@@ -1104,15 +1104,15 @@
        andBool ( 0 <=Int NUMBER_CELL:Int
        andBool ( 0 <=Int VV0_n_114b9705:Int
        andBool ( VV0_n_114b9705:Int ==Int 0
+       andBool ( VV0_n_114b9705:Int <=Int 51816696836262767
        andBool ( CALLER_ID:Int <Int pow160
        andBool ( ORIGIN_ID:Int <Int pow160
        andBool ( NUMBER_CELL:Int <=Int maxSInt256
        andBool ( VV0_n_114b9705:Int <Int pow256
-       andBool ( VV0_n_114b9705:Int <=Int 51816696836262767
                ))))))))))
        ensures VV0_n_114b9705:Int ==K 0
       [label(BASIC-BLOCK-6-TO-8)]
-
+    
     rule [BASIC-BLOCK-7-TO-9]: <foundry>
            <kevm>
              <k>
@@ -1315,12 +1315,12 @@
        andBool ( 0 <=Int ORIGIN_ID:Int
        andBool ( 0 <=Int NUMBER_CELL:Int
        andBool ( 0 <=Int VV0_n_114b9705:Int
+       andBool ( VV0_n_114b9705:Int <=Int 51816696836262767
        andBool ( CALLER_ID:Int <Int pow160
        andBool ( ORIGIN_ID:Int <Int pow160
        andBool ( VV0_n_114b9705:Int =/=Int 0
        andBool ( NUMBER_CELL:Int <=Int maxSInt256
        andBool ( VV0_n_114b9705:Int <Int pow256
-       andBool ( VV0_n_114b9705:Int <=Int 51816696836262767
                ))))))))))
        ensures ( VV0_n_114b9705:Int =/=K 0
        andBool ( 0 <Int VV0_n_114b9705:Int
@@ -1329,7 +1329,7 @@
        andBool ( ( ( VV0_n_114b9705:Int *Int ( VV0_n_114b9705:Int +Int 1 ) ) /Int 2 ) <Int pow256
                )))))
       [label(BASIC-BLOCK-7-TO-9)]
-
+    
     rule [BASIC-BLOCK-8-TO-10]: <foundry>
            <kevm>
              <k>
@@ -1540,7 +1540,7 @@
        andBool ( NUMBER_CELL:Int <=Int maxSInt256
                )))))))
       [label(BASIC-BLOCK-8-TO-10)]
-
+    
     rule [BASIC-BLOCK-9-TO-11]: <foundry>
            <kevm>
              <k>
@@ -1747,18 +1747,18 @@
        andBool ( 0 <=Int NUMBER_CELL:Int
        andBool ( 0 <Int VV0_n_114b9705:Int
        andBool ( 0 <=Int VV0_n_114b9705:Int
+       andBool ( VV0_n_114b9705:Int <=Int 51816696836262767
        andBool ( CALLER_ID:Int <Int pow160
        andBool ( ORIGIN_ID:Int <Int pow160
        andBool ( NUMBER_CELL:Int <=Int maxSInt256
        andBool ( VV0_n_114b9705:Int <Int pow256
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772639
-       andBool ( VV0_n_114b9705:Int <=Int 51816696836262767 ==Bool true
        andBool ( 0 <=Int ( ( VV0_n_114b9705:Int *Int ( VV0_n_114b9705:Int +Int 1 ) ) /Int 2 )
        andBool ( ( ( VV0_n_114b9705:Int *Int ( VV0_n_114b9705:Int +Int 1 ) ) /Int 2 ) <Int pow256
                ))))))))))))))
        ensures ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772638
       [label(BASIC-BLOCK-9-TO-11)]
-
+    
     rule [BASIC-BLOCK-10-TO-12]: <foundry>
            <kevm>
              <k>
@@ -1969,7 +1969,7 @@
        andBool ( NUMBER_CELL:Int <=Int maxSInt256
                )))))))
       [label(BASIC-BLOCK-10-TO-12)]
-
+    
     rule [BASIC-BLOCK-11-TO-13]: <foundry>
            <kevm>
              <k>
@@ -2175,19 +2175,19 @@
        andBool ( 0 <=Int NUMBER_CELL:Int
        andBool ( 0 <Int VV0_n_114b9705:Int
        andBool ( 0 <=Int VV0_n_114b9705:Int
+       andBool ( VV0_n_114b9705:Int <=Int 51816696836262767
        andBool ( CALLER_ID:Int <Int pow160
        andBool ( ORIGIN_ID:Int <Int pow160
        andBool ( NUMBER_CELL:Int <=Int maxSInt256
        andBool ( VV0_n_114b9705:Int <Int pow256
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772638
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772639
-       andBool ( VV0_n_114b9705:Int <=Int 51816696836262767 ==Bool true
        andBool ( 0 <=Int ( ( VV0_n_114b9705:Int *Int ( VV0_n_114b9705:Int +Int 1 ) ) /Int 2 )
        andBool ( ( ( VV0_n_114b9705:Int *Int ( VV0_n_114b9705:Int +Int 1 ) ) /Int 2 ) <Int pow256
                )))))))))))))))
        ensures ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772635
       [label(BASIC-BLOCK-11-TO-13)]
-
+    
     rule [BASIC-BLOCK-13-TO-14]: <foundry>
            <kevm>
              <k>
@@ -2390,6 +2390,7 @@
        andBool ( 0 <=Int NUMBER_CELL:Int
        andBool ( 0 <Int VV0_n_114b9705:Int
        andBool ( 0 <=Int VV0_n_114b9705:Int
+       andBool ( VV0_n_114b9705:Int <=Int 51816696836262767
        andBool ( CALLER_ID:Int <Int pow160
        andBool ( ORIGIN_ID:Int <Int pow160
        andBool ( NUMBER_CELL:Int <=Int maxSInt256
@@ -2397,13 +2398,12 @@
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772635
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772638
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772639
-       andBool ( VV0_n_114b9705:Int <=Int 51816696836262767 ==Bool true
        andBool ( 0 <=Int ( ( VV0_n_114b9705:Int *Int ( VV0_n_114b9705:Int +Int 1 ) ) /Int 2 )
        andBool ( ( ( VV0_n_114b9705:Int *Int ( VV0_n_114b9705:Int +Int 1 ) ) /Int 2 ) <Int pow256
                ))))))))))))))))
        ensures ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772632
       [label(BASIC-BLOCK-13-TO-14)]
-
+    
     rule [BASIC-BLOCK-14-TO-15]: <foundry>
            <kevm>
              <k>
@@ -2609,6 +2609,7 @@
        andBool ( 0 <=Int NUMBER_CELL:Int
        andBool ( 0 <Int VV0_n_114b9705:Int
        andBool ( 0 <=Int VV0_n_114b9705:Int
+       andBool ( VV0_n_114b9705:Int <=Int 51816696836262767
        andBool ( CALLER_ID:Int <Int pow160
        andBool ( ORIGIN_ID:Int <Int pow160
        andBool ( NUMBER_CELL:Int <=Int maxSInt256
@@ -2617,13 +2618,12 @@
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772635
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772638
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772639
-       andBool ( VV0_n_114b9705:Int <=Int 51816696836262767 ==Bool true
        andBool ( 0 <=Int ( ( VV0_n_114b9705:Int *Int ( VV0_n_114b9705:Int +Int 1 ) ) /Int 2 )
        andBool ( ( ( VV0_n_114b9705:Int *Int ( VV0_n_114b9705:Int +Int 1 ) ) /Int 2 ) <Int pow256
                )))))))))))))))))
        ensures ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772630
       [label(BASIC-BLOCK-14-TO-15)]
-
+    
     rule [BASIC-BLOCK-15-TO-16]: <foundry>
            <kevm>
              <k>
@@ -2829,6 +2829,7 @@
        andBool ( 0 <=Int NUMBER_CELL:Int
        andBool ( 0 <Int VV0_n_114b9705:Int
        andBool ( 0 <=Int VV0_n_114b9705:Int
+       andBool ( VV0_n_114b9705:Int <=Int 51816696836262767
        andBool ( CALLER_ID:Int <Int pow160
        andBool ( ORIGIN_ID:Int <Int pow160
        andBool ( NUMBER_CELL:Int <=Int maxSInt256
@@ -2838,13 +2839,12 @@
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772635
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772638
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772639
-       andBool ( VV0_n_114b9705:Int <=Int 51816696836262767 ==Bool true
        andBool ( 0 <=Int ( ( VV0_n_114b9705:Int *Int ( VV0_n_114b9705:Int +Int 1 ) ) /Int 2 )
        andBool ( ( ( VV0_n_114b9705:Int *Int ( VV0_n_114b9705:Int +Int 1 ) ) /Int 2 ) <Int pow256
                ))))))))))))))))))
        ensures ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772628
       [label(BASIC-BLOCK-15-TO-16)]
-
+    
     rule [BASIC-BLOCK-16-TO-17]: <foundry>
            <kevm>
              <k>
@@ -3052,6 +3052,7 @@
        andBool ( 0 <=Int NUMBER_CELL:Int
        andBool ( 0 <Int VV0_n_114b9705:Int
        andBool ( 0 <=Int VV0_n_114b9705:Int
+       andBool ( VV0_n_114b9705:Int <=Int 51816696836262767
        andBool ( CALLER_ID:Int <Int pow160
        andBool ( ORIGIN_ID:Int <Int pow160
        andBool ( NUMBER_CELL:Int <=Int maxSInt256
@@ -3062,13 +3063,12 @@
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772635
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772638
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772639
-       andBool ( VV0_n_114b9705:Int <=Int 51816696836262767 ==Bool true
        andBool ( 0 <=Int ( ( VV0_n_114b9705:Int *Int ( VV0_n_114b9705:Int +Int 1 ) ) /Int 2 )
        andBool ( ( ( VV0_n_114b9705:Int *Int ( VV0_n_114b9705:Int +Int 1 ) ) /Int 2 ) <Int pow256
                )))))))))))))))))))
        ensures ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772620
       [label(BASIC-BLOCK-16-TO-17)]
-
+    
     rule [BASIC-BLOCK-17-TO-18]: <foundry>
            <kevm>
              <k>
@@ -3276,6 +3276,7 @@
        andBool ( 0 <=Int NUMBER_CELL:Int
        andBool ( 0 <Int VV0_n_114b9705:Int
        andBool ( 0 <=Int VV0_n_114b9705:Int
+       andBool ( VV0_n_114b9705:Int <=Int 51816696836262767
        andBool ( CALLER_ID:Int <Int pow160
        andBool ( ORIGIN_ID:Int <Int pow160
        andBool ( NUMBER_CELL:Int <=Int maxSInt256
@@ -3287,13 +3288,12 @@
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772635
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772638
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772639
-       andBool ( VV0_n_114b9705:Int <=Int 51816696836262767 ==Bool true
        andBool ( 0 <=Int ( ( VV0_n_114b9705:Int *Int ( VV0_n_114b9705:Int +Int 1 ) ) /Int 2 )
        andBool ( ( ( VV0_n_114b9705:Int *Int ( VV0_n_114b9705:Int +Int 1 ) ) /Int 2 ) <Int pow256
                ))))))))))))))))))))
        ensures ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772619
       [label(BASIC-BLOCK-17-TO-18)]
-
+    
     rule [BASIC-BLOCK-18-TO-19]: <foundry>
            <kevm>
              <k>
@@ -3499,6 +3499,7 @@
        andBool ( 0 <=Int NUMBER_CELL:Int
        andBool ( 0 <Int VV0_n_114b9705:Int
        andBool ( 0 <=Int VV0_n_114b9705:Int
+       andBool ( VV0_n_114b9705:Int <=Int 51816696836262767
        andBool ( CALLER_ID:Int <Int pow160
        andBool ( ORIGIN_ID:Int <Int pow160
        andBool ( NUMBER_CELL:Int <=Int maxSInt256
@@ -3511,13 +3512,12 @@
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772635
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772638
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772639
-       andBool ( VV0_n_114b9705:Int <=Int 51816696836262767 ==Bool true
        andBool ( 0 <=Int ( ( VV0_n_114b9705:Int *Int ( VV0_n_114b9705:Int +Int 1 ) ) /Int 2 )
        andBool ( ( ( VV0_n_114b9705:Int *Int ( VV0_n_114b9705:Int +Int 1 ) ) /Int 2 ) <Int pow256
                )))))))))))))))))))))
        ensures ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772616
       [label(BASIC-BLOCK-18-TO-19)]
-
+    
     rule [BASIC-BLOCK-19-TO-20]: <foundry>
            <kevm>
              <k>
@@ -3723,6 +3723,7 @@
        andBool ( 0 <=Int NUMBER_CELL:Int
        andBool ( 0 <Int VV0_n_114b9705:Int
        andBool ( 0 <=Int VV0_n_114b9705:Int
+       andBool ( VV0_n_114b9705:Int <=Int 51816696836262767
        andBool ( CALLER_ID:Int <Int pow160
        andBool ( ORIGIN_ID:Int <Int pow160
        andBool ( NUMBER_CELL:Int <=Int maxSInt256
@@ -3736,13 +3737,12 @@
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772635
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772638
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772639
-       andBool ( VV0_n_114b9705:Int <=Int 51816696836262767 ==Bool true
        andBool ( 0 <=Int ( ( VV0_n_114b9705:Int *Int ( VV0_n_114b9705:Int +Int 1 ) ) /Int 2 )
        andBool ( ( ( VV0_n_114b9705:Int *Int ( VV0_n_114b9705:Int +Int 1 ) ) /Int 2 ) <Int pow256
                ))))))))))))))))))))))
        ensures ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772613
       [label(BASIC-BLOCK-19-TO-20)]
-
+    
     rule [BASIC-BLOCK-20-TO-21]: <foundry>
            <kevm>
              <k>
@@ -3948,6 +3948,7 @@
        andBool ( 0 <=Int NUMBER_CELL:Int
        andBool ( 0 <Int VV0_n_114b9705:Int
        andBool ( 0 <=Int VV0_n_114b9705:Int
+       andBool ( VV0_n_114b9705:Int <=Int 51816696836262767
        andBool ( CALLER_ID:Int <Int pow160
        andBool ( ORIGIN_ID:Int <Int pow160
        andBool ( NUMBER_CELL:Int <=Int maxSInt256
@@ -3962,13 +3963,12 @@
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772635
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772638
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772639
-       andBool ( VV0_n_114b9705:Int <=Int 51816696836262767 ==Bool true
        andBool ( 0 <=Int ( ( VV0_n_114b9705:Int *Int ( VV0_n_114b9705:Int +Int 1 ) ) /Int 2 )
        andBool ( ( ( VV0_n_114b9705:Int *Int ( VV0_n_114b9705:Int +Int 1 ) ) /Int 2 ) <Int pow256
                )))))))))))))))))))))))
        ensures ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772610
       [label(BASIC-BLOCK-20-TO-21)]
-
+    
     rule [BASIC-BLOCK-21-TO-22]: <foundry>
            <kevm>
              <k>
@@ -4171,6 +4171,7 @@
        andBool ( 0 <=Int NUMBER_CELL:Int
        andBool ( 0 <Int VV0_n_114b9705:Int
        andBool ( 0 <=Int VV0_n_114b9705:Int
+       andBool ( VV0_n_114b9705:Int <=Int 51816696836262767
        andBool ( CALLER_ID:Int <Int pow160
        andBool ( ORIGIN_ID:Int <Int pow160
        andBool ( NUMBER_CELL:Int <=Int maxSInt256
@@ -4186,13 +4187,12 @@
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772635
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772638
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772639
-       andBool ( VV0_n_114b9705:Int <=Int 51816696836262767 ==Bool true
        andBool ( 0 <=Int ( ( VV0_n_114b9705:Int *Int ( VV0_n_114b9705:Int +Int 1 ) ) /Int 2 )
        andBool ( ( ( VV0_n_114b9705:Int *Int ( VV0_n_114b9705:Int +Int 1 ) ) /Int 2 ) <Int pow256
                ))))))))))))))))))))))))
        ensures ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772607
       [label(BASIC-BLOCK-21-TO-22)]
-
+    
     rule [BASIC-BLOCK-22-TO-23]: <foundry>
            <kevm>
              <k>
@@ -4398,6 +4398,7 @@
        andBool ( 0 <=Int NUMBER_CELL:Int
        andBool ( 0 <Int VV0_n_114b9705:Int
        andBool ( 0 <=Int VV0_n_114b9705:Int
+       andBool ( VV0_n_114b9705:Int <=Int 51816696836262767
        andBool ( CALLER_ID:Int <Int pow160
        andBool ( ORIGIN_ID:Int <Int pow160
        andBool ( NUMBER_CELL:Int <=Int maxSInt256
@@ -4414,13 +4415,12 @@
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772635
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772638
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772639
-       andBool ( VV0_n_114b9705:Int <=Int 51816696836262767 ==Bool true
        andBool ( 0 <=Int ( ( VV0_n_114b9705:Int *Int ( VV0_n_114b9705:Int +Int 1 ) ) /Int 2 )
        andBool ( ( ( VV0_n_114b9705:Int *Int ( VV0_n_114b9705:Int +Int 1 ) ) /Int 2 ) <Int pow256
                )))))))))))))))))))))))))
        ensures ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772604
       [label(BASIC-BLOCK-22-TO-23)]
-
+    
     rule [BASIC-BLOCK-23-TO-24]: <foundry>
            <kevm>
              <k>
@@ -4626,6 +4626,7 @@
        andBool ( 0 <=Int NUMBER_CELL:Int
        andBool ( 0 <Int VV0_n_114b9705:Int
        andBool ( 0 <=Int VV0_n_114b9705:Int
+       andBool ( VV0_n_114b9705:Int <=Int 51816696836262767
        andBool ( CALLER_ID:Int <Int pow160
        andBool ( ORIGIN_ID:Int <Int pow160
        andBool ( NUMBER_CELL:Int <=Int maxSInt256
@@ -4643,13 +4644,12 @@
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772635
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772638
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772639
-       andBool ( VV0_n_114b9705:Int <=Int 51816696836262767 ==Bool true
        andBool ( 0 <=Int ( ( VV0_n_114b9705:Int *Int ( VV0_n_114b9705:Int +Int 1 ) ) /Int 2 )
        andBool ( ( ( VV0_n_114b9705:Int *Int ( VV0_n_114b9705:Int +Int 1 ) ) /Int 2 ) <Int pow256
                ))))))))))))))))))))))))))
        ensures ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772601
       [label(BASIC-BLOCK-23-TO-24)]
-
+    
     rule [BASIC-BLOCK-24-TO-25]: <foundry>
            <kevm>
              <k>
@@ -4852,6 +4852,7 @@
        andBool ( 0 <=Int NUMBER_CELL:Int
        andBool ( 0 <Int VV0_n_114b9705:Int
        andBool ( 0 <=Int VV0_n_114b9705:Int
+       andBool ( VV0_n_114b9705:Int <=Int 51816696836262767
        andBool ( CALLER_ID:Int <Int pow160
        andBool ( ORIGIN_ID:Int <Int pow160
        andBool ( NUMBER_CELL:Int <=Int maxSInt256
@@ -4870,13 +4871,12 @@
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772635
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772638
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772639
-       andBool ( VV0_n_114b9705:Int <=Int 51816696836262767 ==Bool true
        andBool ( 0 <=Int ( ( VV0_n_114b9705:Int *Int ( VV0_n_114b9705:Int +Int 1 ) ) /Int 2 )
        andBool ( ( ( VV0_n_114b9705:Int *Int ( VV0_n_114b9705:Int +Int 1 ) ) /Int 2 ) <Int pow256
                )))))))))))))))))))))))))))
        ensures ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772598
       [label(BASIC-BLOCK-24-TO-25)]
-
+    
     rule [BASIC-BLOCK-25-TO-26]: <foundry>
            <kevm>
              <k>
@@ -5082,6 +5082,7 @@
        andBool ( 0 <=Int NUMBER_CELL:Int
        andBool ( 0 <Int VV0_n_114b9705:Int
        andBool ( 0 <=Int VV0_n_114b9705:Int
+       andBool ( VV0_n_114b9705:Int <=Int 51816696836262767
        andBool ( CALLER_ID:Int <Int pow160
        andBool ( ORIGIN_ID:Int <Int pow160
        andBool ( NUMBER_CELL:Int <=Int maxSInt256
@@ -5101,13 +5102,12 @@
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772635
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772638
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772639
-       andBool ( VV0_n_114b9705:Int <=Int 51816696836262767 ==Bool true
        andBool ( 0 <=Int ( ( VV0_n_114b9705:Int *Int ( VV0_n_114b9705:Int +Int 1 ) ) /Int 2 )
        andBool ( ( ( VV0_n_114b9705:Int *Int ( VV0_n_114b9705:Int +Int 1 ) ) /Int 2 ) <Int pow256
                ))))))))))))))))))))))))))))
        ensures ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772597
       [label(BASIC-BLOCK-25-TO-26)]
-
+    
     rule [BASIC-BLOCK-26-TO-27]: <foundry>
            <kevm>
              <k>
@@ -5313,6 +5313,7 @@
        andBool ( 0 <=Int NUMBER_CELL:Int
        andBool ( 0 <Int VV0_n_114b9705:Int
        andBool ( 0 <=Int VV0_n_114b9705:Int
+       andBool ( VV0_n_114b9705:Int <=Int 51816696836262767
        andBool ( CALLER_ID:Int <Int pow160
        andBool ( ORIGIN_ID:Int <Int pow160
        andBool ( NUMBER_CELL:Int <=Int maxSInt256
@@ -5333,13 +5334,12 @@
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772635
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772638
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772639
-       andBool ( VV0_n_114b9705:Int <=Int 51816696836262767 ==Bool true
        andBool ( 0 <=Int ( ( VV0_n_114b9705:Int *Int ( VV0_n_114b9705:Int +Int 1 ) ) /Int 2 )
        andBool ( ( ( VV0_n_114b9705:Int *Int ( VV0_n_114b9705:Int +Int 1 ) ) /Int 2 ) <Int pow256
                )))))))))))))))))))))))))))))
        ensures ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772594
       [label(BASIC-BLOCK-26-TO-27)]
-
+    
     rule [BASIC-BLOCK-27-TO-28]: <foundry>
            <kevm>
              <k>
@@ -5545,6 +5545,7 @@
        andBool ( 0 <=Int NUMBER_CELL:Int
        andBool ( 0 <Int VV0_n_114b9705:Int
        andBool ( 0 <=Int VV0_n_114b9705:Int
+       andBool ( VV0_n_114b9705:Int <=Int 51816696836262767
        andBool ( CALLER_ID:Int <Int pow160
        andBool ( ORIGIN_ID:Int <Int pow160
        andBool ( NUMBER_CELL:Int <=Int maxSInt256
@@ -5566,13 +5567,12 @@
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772635
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772638
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772639
-       andBool ( VV0_n_114b9705:Int <=Int 51816696836262767 ==Bool true
        andBool ( 0 <=Int ( ( VV0_n_114b9705:Int *Int ( VV0_n_114b9705:Int +Int 1 ) ) /Int 2 )
        andBool ( ( ( VV0_n_114b9705:Int *Int ( VV0_n_114b9705:Int +Int 1 ) ) /Int 2 ) <Int pow256
                ))))))))))))))))))))))))))))))
        ensures ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772591
       [label(BASIC-BLOCK-27-TO-28)]
-
+    
     rule [BASIC-BLOCK-28-TO-29]: <foundry>
            <kevm>
              <k>
@@ -5778,6 +5778,7 @@
        andBool ( 0 <=Int NUMBER_CELL:Int
        andBool ( 0 <Int VV0_n_114b9705:Int
        andBool ( 0 <=Int VV0_n_114b9705:Int
+       andBool ( VV0_n_114b9705:Int <=Int 51816696836262767
        andBool ( CALLER_ID:Int <Int pow160
        andBool ( ORIGIN_ID:Int <Int pow160
        andBool ( NUMBER_CELL:Int <=Int maxSInt256
@@ -5800,13 +5801,12 @@
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772635
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772638
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772639
-       andBool ( VV0_n_114b9705:Int <=Int 51816696836262767 ==Bool true
        andBool ( 0 <=Int ( ( VV0_n_114b9705:Int *Int ( VV0_n_114b9705:Int +Int 1 ) ) /Int 2 )
        andBool ( ( ( VV0_n_114b9705:Int *Int ( VV0_n_114b9705:Int +Int 1 ) ) /Int 2 ) <Int pow256
                )))))))))))))))))))))))))))))))
        ensures ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772588
       [label(BASIC-BLOCK-28-TO-29)]
-
+    
     rule [BASIC-BLOCK-29-TO-30]: <foundry>
            <kevm>
              <k>
@@ -6009,6 +6009,7 @@
        andBool ( 0 <=Int NUMBER_CELL:Int
        andBool ( 0 <Int VV0_n_114b9705:Int
        andBool ( 0 <=Int VV0_n_114b9705:Int
+       andBool ( VV0_n_114b9705:Int <=Int 51816696836262767
        andBool ( CALLER_ID:Int <Int pow160
        andBool ( ORIGIN_ID:Int <Int pow160
        andBool ( NUMBER_CELL:Int <=Int maxSInt256
@@ -6032,13 +6033,12 @@
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772635
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772638
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772639
-       andBool ( VV0_n_114b9705:Int <=Int 51816696836262767 ==Bool true
        andBool ( 0 <=Int ( ( VV0_n_114b9705:Int *Int ( VV0_n_114b9705:Int +Int 1 ) ) /Int 2 )
        andBool ( ( ( VV0_n_114b9705:Int *Int ( VV0_n_114b9705:Int +Int 1 ) ) /Int 2 ) <Int pow256
                ))))))))))))))))))))))))))))))))
        ensures ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772585
       [label(BASIC-BLOCK-29-TO-30)]
-
+    
     rule [BASIC-BLOCK-30-TO-31]: <foundry>
            <kevm>
              <k>
@@ -6241,6 +6241,7 @@
        andBool ( 0 <=Int NUMBER_CELL:Int
        andBool ( 0 <Int VV0_n_114b9705:Int
        andBool ( 0 <=Int VV0_n_114b9705:Int
+       andBool ( VV0_n_114b9705:Int <=Int 51816696836262767
        andBool ( CALLER_ID:Int <Int pow160
        andBool ( ORIGIN_ID:Int <Int pow160
        andBool ( NUMBER_CELL:Int <=Int maxSInt256
@@ -6265,13 +6266,12 @@
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772635
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772638
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772639
-       andBool ( VV0_n_114b9705:Int <=Int 51816696836262767 ==Bool true
        andBool ( 0 <=Int ( ( VV0_n_114b9705:Int *Int ( VV0_n_114b9705:Int +Int 1 ) ) /Int 2 )
        andBool ( ( ( VV0_n_114b9705:Int *Int ( VV0_n_114b9705:Int +Int 1 ) ) /Int 2 ) <Int pow256
                )))))))))))))))))))))))))))))))))
        ensures ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772582
       [label(BASIC-BLOCK-30-TO-31)]
-
+    
     rule [BASIC-BLOCK-31-TO-32]: <foundry>
            <kevm>
              <k>
@@ -6474,6 +6474,7 @@
        andBool ( 0 <=Int NUMBER_CELL:Int
        andBool ( 0 <Int VV0_n_114b9705:Int
        andBool ( 0 <=Int VV0_n_114b9705:Int
+       andBool ( VV0_n_114b9705:Int <=Int 51816696836262767
        andBool ( CALLER_ID:Int <Int pow160
        andBool ( ORIGIN_ID:Int <Int pow160
        andBool ( NUMBER_CELL:Int <=Int maxSInt256
@@ -6499,13 +6500,12 @@
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772635
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772638
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772639
-       andBool ( VV0_n_114b9705:Int <=Int 51816696836262767 ==Bool true
        andBool ( 0 <=Int ( ( VV0_n_114b9705:Int *Int ( VV0_n_114b9705:Int +Int 1 ) ) /Int 2 )
        andBool ( ( ( VV0_n_114b9705:Int *Int ( VV0_n_114b9705:Int +Int 1 ) ) /Int 2 ) <Int pow256
                ))))))))))))))))))))))))))))))))))
        ensures ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772579
       [label(BASIC-BLOCK-31-TO-32)]
-
+    
     rule [BASIC-BLOCK-32-TO-33]: <foundry>
            <kevm>
              <k>
@@ -6710,6 +6710,7 @@
        andBool ( 0 <=Int NUMBER_CELL:Int
        andBool ( 0 <Int VV0_n_114b9705:Int
        andBool ( 0 <=Int VV0_n_114b9705:Int
+       andBool ( VV0_n_114b9705:Int <=Int 51816696836262767
        andBool ( CALLER_ID:Int <Int pow160
        andBool ( ORIGIN_ID:Int <Int pow160
        andBool ( NUMBER_CELL:Int <=Int maxSInt256
@@ -6736,12 +6737,11 @@
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772635
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772638
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772639
-       andBool ( VV0_n_114b9705:Int <=Int 51816696836262767 ==Bool true
        andBool ( 0 <=Int ( ( VV0_n_114b9705:Int *Int ( VV0_n_114b9705:Int +Int 1 ) ) /Int 2 )
        andBool ( ( ( VV0_n_114b9705:Int *Int ( VV0_n_114b9705:Int +Int 1 ) ) /Int 2 ) <Int pow256
                )))))))))))))))))))))))))))))))))))
       [label(BASIC-BLOCK-32-TO-33)]
-
+    
     rule [BASIC-BLOCK-33-TO-34]: <foundry>
            <kevm>
              <k>
@@ -6949,6 +6949,7 @@
        andBool ( 0 <=Int NUMBER_CELL:Int
        andBool ( 0 <Int VV0_n_114b9705:Int
        andBool ( 0 <=Int VV0_n_114b9705:Int
+       andBool ( VV0_n_114b9705:Int <=Int 51816696836262767
        andBool ( CALLER_ID:Int <Int pow160
        andBool ( ORIGIN_ID:Int <Int pow160
        andBool ( NUMBER_CELL:Int <=Int maxSInt256
@@ -6975,12 +6976,11 @@
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772635
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772638
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772639
-       andBool ( VV0_n_114b9705:Int <=Int 51816696836262767
        andBool ( 0 <=Int ( ( VV0_n_114b9705:Int *Int ( VV0_n_114b9705:Int +Int 1 ) ) /Int 2 )
        andBool ( ( ( VV0_n_114b9705:Int *Int ( VV0_n_114b9705:Int +Int 1 ) ) /Int 2 ) <Int pow256
                )))))))))))))))))))))))))))))))))))
       [label(BASIC-BLOCK-33-TO-34)]
-
+    
     rule [BASIC-BLOCK-34-TO-35]: <foundry>
            <kevm>
              <k>
@@ -7188,6 +7188,7 @@
        andBool ( 0 <=Int NUMBER_CELL:Int
        andBool ( 0 <Int VV0_n_114b9705:Int
        andBool ( 0 <=Int VV0_n_114b9705:Int
+       andBool ( VV0_n_114b9705:Int <=Int 51816696836262767
        andBool ( CALLER_ID:Int <Int pow160
        andBool ( ORIGIN_ID:Int <Int pow160
        andBool ( NUMBER_CELL:Int <=Int maxSInt256
@@ -7214,7 +7215,6 @@
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772635
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772638
        andBool ( ( VV0_n_114b9705:Int *Int 178 ) <=Int 9223372036854772639
-       andBool ( VV0_n_114b9705:Int <=Int 51816696836262767
        andBool ( 0 <=Int ( ( VV0_n_114b9705:Int *Int ( VV0_n_114b9705:Int +Int 1 ) ) /Int 2 )
        andBool ( ( ( VV0_n_114b9705:Int *Int ( VV0_n_114b9705:Int +Int 1 ) ) /Int 2 ) <Int pow256
                )))))))))))))))))))))))))))))))))))
