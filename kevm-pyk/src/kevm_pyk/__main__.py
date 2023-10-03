@@ -256,8 +256,10 @@ def init_claim_jobs(spec_module_name: str, claims: list[KClaim]) -> frozenset[KC
         if claim_label not in labels_to_claim_jobs:
             if claim_label in labels_to_claims:
                 claim = labels_to_claims[claim_label]
-            if f'{spec_module_name}.{claim_label}' in labels_to_claims:
+            elif f'{spec_module_name}.{claim_label}' in labels_to_claims:
                 claim = labels_to_claims[f'{spec_module_name}.{claim_label}']
+            else:
+                raise ValueError(f'Claim with label {claim_label} not found.')
             deps = frozenset({get_or_load_claim_job(dep_label) for dep_label in claim.dependencies})
             claim_job = KClaimJob(claim, deps)
             labels_to_claim_jobs[claim_label] = claim_job
@@ -329,7 +331,7 @@ def exec_prove(
         spec_module_name=spec_module,
         include_dirs=include_dirs,
         md_selector=md_selector,
-        claim_labels=None,
+        claim_labels=claim_labels,
         exclude_claim_labels=exclude_claim_labels,
     )
     if all_claims is None:
