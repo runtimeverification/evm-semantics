@@ -19,7 +19,7 @@ from pyk.proof.reachability import APRBMCProof, APRProof
 from pyk.proof.show import APRBMCProofNodePrinter, APRProofNodePrinter
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
+    from collections.abc import Iterable, Sequence
     from pathlib import Path
     from typing import Final
 
@@ -325,7 +325,7 @@ class KEVM(KProve, KRun):
         return KApply('#lookup(_,_)_EVM-TYPES_Int_Map_Int', [map, key])
 
     @staticmethod
-    def abi_calldata(name: str, args: list[KInner]) -> KApply:
+    def abi_calldata(name: str, args: list[KApply]) -> KApply:
         return KApply('#abiCallData(_,_)_EVM-ABI_Bytes_String_TypedArgs', [stringToken(name), KEVM.typed_args(args)])
 
     @staticmethod
@@ -343,6 +343,10 @@ class KEVM(KProve, KRun):
     @staticmethod
     def abi_type(type: str, value: KInner) -> KApply:
         return KApply('abi_type_' + type, [value])
+
+    @staticmethod
+    def abi_tuple(values: Sequence[KInner]) -> KApply:
+        return KApply('abi_type_tuple', values)
 
     @staticmethod
     def empty_typedargs() -> KApply:
@@ -388,11 +392,20 @@ class KEVM(KProve, KRun):
         return res
 
     @staticmethod
-    def typed_args(args: list[KInner]) -> KApply:
-        res = KApply('.List{"_,__EVM-ABI_TypedArgs_TypedArg_TypedArgs"}_TypedArgs')
-        for i in reversed(args):
-            res = KApply('_,__EVM-ABI_TypedArgs_TypedArg_TypedArgs', [i, res])
+    def typed_args(args: list[KApply], res: KApply | None = None) -> KApply:
+        res = KEVM.empty_typedargs() if res is None else res
+        for arg in reversed(args):
+            res = KEVM.to_typed_arg(arg, res)
         return res
+
+    @staticmethod
+    def to_typed_arg(arg: KApply, res: KApply) -> KApply:
+        if arg.label.name == 'abi_type_tuple':
+            args = [arg for arg in arg.args if type(arg) is KApply]
+            ret_arg = KApply('abi_type_tuple', [KEVM.typed_args(args), KEVM.empty_typedargs()])
+        else:
+            ret_arg = arg
+        return KApply('_,__EVM-ABI_TypedArgs_TypedArg_TypedArgs', [ret_arg, res])
 
     @staticmethod
     def accounts(accts: list[KInner]) -> KInner:
