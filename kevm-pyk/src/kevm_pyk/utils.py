@@ -167,6 +167,7 @@ def kevm_prove(
         _LOGGER.error(f'Proof crashed: {proof.id}\n{e}', exc_info=True)
         return False
 
+
 def kevm_debug(
     kprove: KProve,
     proof: Proof,
@@ -201,7 +202,7 @@ def kevm_debug(
                 'EVM.return.success',
             ]
         )
-    
+
     prover: APRBMCProver | APRProver | EqualityProver
     if type(proof) is APRBMCProof:
         prover = APRBMCProver(proof, kcfg_explore)
