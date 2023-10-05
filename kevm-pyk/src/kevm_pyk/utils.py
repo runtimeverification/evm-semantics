@@ -167,6 +167,61 @@ def kevm_prove(
         _LOGGER.error(f'Proof crashed: {proof.id}\n{e}', exc_info=True)
         return False
 
+def kevm_debug(
+    kprove: KProve,
+    proof: Proof,
+    kcfg_explore: KCFGExplore,
+    max_depth: int = 1000,
+    max_iterations: int | None = None,
+    break_every_step: bool = False,
+    break_on_jumpi: bool = False,
+    break_on_calls: bool = True,
+    extract_branches: Callable[[CTerm], Iterable[KInner]] | None = None,
+    abstract_node: Callable[[CTerm], CTerm] | None = None,
+) -> Prover:
+    terminal_rules = ['EVM.halt']
+    cut_point_rules = []
+    if break_every_step:
+        terminal_rules.append('EVM.step')
+    if break_on_jumpi:
+        cut_point_rules.extend(['EVM.jumpi.true', 'EVM.jumpi.false'])
+    if break_on_calls:
+        cut_point_rules.extend(
+            [
+                'EVM.call',
+                'EVM.callcode',
+                'EVM.delegatecall',
+                'EVM.staticcall',
+                'EVM.create',
+                'EVM.create2',
+                'FOUNDRY.foundry.call',
+                'EVM.end',
+                'EVM.return.exception',
+                'EVM.return.revert',
+                'EVM.return.success',
+            ]
+        )
+    
+    prover: APRBMCProver | APRProver | EqualityProver
+    if type(proof) is APRBMCProof:
+        prover = APRBMCProver(proof, kcfg_explore)
+    elif type(proof) is APRProof:
+        prover = APRProver(proof, kcfg_explore)
+    else:
+        raise ValueError(f'Only APRProof and APRBMCProof support debug mode: {proof}')
+
+    try:
+        prover.advance_proof(
+            max_iterations=max_iterations,
+            execute_depth=max_depth,
+            terminal_rules=terminal_rules,
+            cut_point_rules=cut_point_rules,
+        )
+    except Exception as e:
+        _LOGGER.error(f'Proof crashed: {proof.id}\n{e}', exc_info=True)
+    finally:
+        return prover
+
 
 def print_failure_info(proof: Proof, kcfg_explore: KCFGExplore, counterexample_info: bool = False) -> list[str]:
     if type(proof) is APRProof or type(proof) is APRBMCProof:
