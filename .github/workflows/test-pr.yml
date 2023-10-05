@@ -163,7 +163,7 @@ jobs:
   test-prove-foundry:
     name: 'Build and Test KEVM Foundry proofs'
     needs: kevm-pyk-code-quality-checks
-    runs-on: [self-hosted, linux, normal]
+    runs-on: [self-hosted, linux, normal, fast]
     strategy:
       fail-fast: false
       matrix:
