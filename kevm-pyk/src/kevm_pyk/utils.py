@@ -19,7 +19,7 @@ from pyk.kast.manip import (
 from pyk.kast.outer import KSequence
 from pyk.kcfg import KCFGExplore
 from pyk.kore.rpc import KoreClient, KoreExecLogFormat, kore_server
-from pyk.proof import APRBMCProof, APRBMCProver, APRProof, APRProver
+from pyk.proof import APRBMCProof, APRBMCProver, APRProof, APRProver, Prover
 from pyk.proof.equality import EqualityProof, EqualityProver
 from pyk.utils import single
 
