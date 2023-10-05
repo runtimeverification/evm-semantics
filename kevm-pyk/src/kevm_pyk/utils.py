@@ -220,8 +220,7 @@ def kevm_debug(
         )
     except Exception as e:
         _LOGGER.error(f'Proof crashed: {proof.id}\n{e}', exc_info=True)
-    finally:
-        return prover
+    return prover
 
 
 def print_failure_info(proof: Proof, kcfg_explore: KCFGExplore, counterexample_info: bool = False) -> list[str]:
