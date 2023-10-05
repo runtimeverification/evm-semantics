@@ -402,6 +402,64 @@ module LEMMAS-SPEC
     claim <k> runLemma ( N &Int maxUInt8   ) => doneLemma ( N ) ... </k> requires #rangeUInt(8,   N)
     claim <k> runLemma ( maxUInt8 &Int N   ) => doneLemma ( N ) ... </k> requires #rangeUInt(8,   N)
 
+ // bitwise
+ // -------
+
+    claim <k> runLemma ( notMaxUInt5   &Int X ) => doneLemma( 0 ) ... </k> requires #rangeUInt (   5 , X )
+    claim <k> runLemma ( notMaxUInt8   &Int X ) => doneLemma( 0 ) ... </k> requires #rangeUInt (   8 , X )
+    claim <k> runLemma ( notMaxUInt16  &Int X ) => doneLemma( 0 ) ... </k> requires #rangeUInt (  16 , X )
+    claim <k> runLemma ( notMaxUInt32  &Int X ) => doneLemma( 0 ) ... </k> requires #rangeUInt (  32 , X )
+    claim <k> runLemma ( notMaxUInt64  &Int X ) => doneLemma( 0 ) ... </k> requires #rangeUInt (  64 , X )
+    claim <k> runLemma ( notMaxUInt96  &Int X ) => doneLemma( 0 ) ... </k> requires #rangeUInt (  96 , X )
+    claim <k> runLemma ( notMaxUInt128 &Int X ) => doneLemma( 0 ) ... </k> requires #rangeUInt ( 128 , X )
+    claim <k> runLemma ( notMaxUInt160 &Int X ) => doneLemma( 0 ) ... </k> requires #rangeUInt ( 160 , X )
+    claim <k> runLemma ( notMaxUInt192 &Int X ) => doneLemma( 0 ) ... </k> requires #rangeUInt ( 192 , X )
+    claim <k> runLemma ( notMaxUInt208 &Int X ) => doneLemma( 0 ) ... </k> requires #rangeUInt ( 208 , X )
+    claim <k> runLemma ( notMaxUInt224 &Int X ) => doneLemma( 0 ) ... </k> requires #rangeUInt ( 224 , X )
+    claim <k> runLemma ( notMaxUInt240 &Int X ) => doneLemma( 0 ) ... </k> requires #rangeUInt ( 240 , X )
+    claim <k> runLemma ( notMaxUInt248 &Int X ) => doneLemma( 0 ) ... </k> requires #rangeUInt ( 248 , X )
+
+    claim <k> runLemma ( notMaxUInt240 &Int ( X <<Int 240 ) ) => doneLemma( X <<Int 240 ) ... </k> requires #rangeUInt ( 16 , X )
+    claim <k> runLemma ( notMaxUInt248 &Int ( X <<Int 248 ) ) => doneLemma( X <<Int 248 ) ... </k> requires #rangeUInt (  8 , X )
+
+    claim <k> runLemma ( maxUInt8   &Int ( X |Int ( notMaxUInt8   &Int Y ) ) ) => doneLemma( X ) ... </k> requires #rangeUInt (   8 , X )
+    claim <k> runLemma ( maxUInt16  &Int ( X |Int ( notMaxUInt16  &Int Y ) ) ) => doneLemma( X ) ... </k> requires #rangeUInt (  16 , X )
+    claim <k> runLemma ( maxUInt32  &Int ( X |Int ( notMaxUInt32  &Int Y ) ) ) => doneLemma( X ) ... </k> requires #rangeUInt (  32 , X )
+    claim <k> runLemma ( maxUInt64  &Int ( X |Int ( notMaxUInt64  &Int Y ) ) ) => doneLemma( X ) ... </k> requires #rangeUInt (  64 , X )
+    claim <k> runLemma ( maxUInt96  &Int ( X |Int ( notMaxUInt96  &Int Y ) ) ) => doneLemma( X ) ... </k> requires #rangeUInt (  96 , X )
+    claim <k> runLemma ( maxUInt128 &Int ( X |Int ( notMaxUInt128 &Int Y ) ) ) => doneLemma( X ) ... </k> requires #rangeUInt ( 128 , X )
+    claim <k> runLemma ( maxUInt160 &Int ( X |Int ( notMaxUInt160 &Int Y ) ) ) => doneLemma( X ) ... </k> requires #rangeUInt ( 160 , X )
+    claim <k> runLemma ( maxUInt192 &Int ( X |Int ( notMaxUInt192 &Int Y ) ) ) => doneLemma( X ) ... </k> requires #rangeUInt ( 192 , X )
+    claim <k> runLemma ( maxUInt208 &Int ( X |Int ( notMaxUInt208 &Int Y ) ) ) => doneLemma( X ) ... </k> requires #rangeUInt ( 208 , X )
+    claim <k> runLemma ( maxUInt224 &Int ( X |Int ( notMaxUInt224 &Int Y ) ) ) => doneLemma( X ) ... </k> requires #rangeUInt ( 224 , X )
+    claim <k> runLemma ( maxUInt240 &Int ( X |Int ( notMaxUInt240 &Int Y ) ) ) => doneLemma( X ) ... </k> requires #rangeUInt ( 240 , X )
+    claim <k> runLemma ( maxUInt248 &Int ( X |Int ( notMaxUInt248 &Int Y ) ) ) => doneLemma( X ) ... </k> requires #rangeUInt ( 248 , X )
+
+    claim <k> runLemma ( #buf ( 32 , #asWord ( X ) ) ) => doneLemma( X ) </k> requires lengthBytes(X) ==Int 32
+    claim <k> runLemma ( #buf ( 32 , X <<Int 248 ) ) => doneLemma( #buf ( 1 , X ) +Bytes #buf ( 31 , 0 ) ) ... </k> requires #rangeUInt (  8 , X )
+    claim <k> runLemma ( #buf ( 32 , X <<Int 240 ) ) => doneLemma( #buf ( 2 , X ) +Bytes #buf ( 30 , 0 ) ) ... </k> requires #rangeUInt ( 16 , X )
+
+ // shift
+ // -----
+
+    claim [shift-16] : <k> runLemma ( ( X <<Int  16 ) <Int pow256 ) => doneLemma ( true ) ... </k> requires #rangeUInt ( 240 , X )
+    claim [shift-240]: <k> runLemma ( ( X <<Int 240 ) <Int pow256 ) => doneLemma ( true ) ... </k> requires #rangeUInt (  16 , X )
+    claim [shift-248]: <k> runLemma ( ( X <<Int 248 ) <Int pow256 ) => doneLemma ( true ) ... </k> requires #rangeUInt (   8 , X )
+
+    claim [shift-range]: <k> runLemma ( #rangeUInt ( 256 , X <<Int 16 ) ) => doneLemma ( true ) ... </k> requires #rangeUInt ( 16 , X )
+    claim [shift-mod]: <k> runLemma ( ( X <<Int 16 ) modInt pow256 ) => doneLemma ( X <<Int 16 ) ... </k> requires #rangeUInt ( 16 , X )
+
+ // concat
+ // ------
+
+    claim <k> runLemma ( lengthBytes ( #range ( #buf ( 32 , _X ) , 3 , 29 ) +Bytes b"\x01" +Bytes #buf ( 2 , Y ) ) )
+        => doneLemma ( 32 ) ... </k>
+        requires #rangeUInt ( 16 , Y )
+
+    claim <k> runLemma ( #asWord ( #range ( #buf ( 32 , X ) , 0 , 29 ) +Bytes #range ( #buf ( 32 , X ) , 29 , 3 ) ) )
+        => doneLemma ( X ) ... </k>
+        requires #rangeUInt ( 256 , X )
+
  // ecrecover
  // ---------
 
