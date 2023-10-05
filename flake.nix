@@ -125,14 +125,6 @@
                   k-framework.packages.${prev.system}.k
                 ]
               } --set NIX_LIBS "${nixLibs prev}" --set KEVM_DIST_DIR $out
-              makeWrapper ${final.kevm-pyk}/bin/kontrolx $out/bin/kontrolx --prefix PATH : ${
-                prev.lib.makeBinPath [
-                  (solc.mkDefault final final.solc_0_8_13)
-                  final.foundry-bin
-                  prev.which
-                  k-framework.packages.${prev.system}.k
-                ]
-              } --set NIX_LIBS "${nixLibs prev}" --set KEVM_DIST_DIR $out
             '';
           };
 
@@ -167,12 +159,6 @@
           kevm-pyk = poetry2nix.mkPoetryApplication {
             python = nixpkgs-pyk.python310;
             projectDir = ./kevm-pyk;
-
-            postPatch = ''
-              substituteInPlace ./src/kontrolx/foundry.py \
-                --replace "'forge', 'build'," "'forge', 'build', '--no-auto-detect',"
-            '';
-
             overrides = poetry2nix.overrides.withDefaults
               (finalPython: prevPython: {
                 pyk = nixpkgs-pyk.pyk-python310;
@@ -185,7 +171,6 @@
             groups = [ ];
             # We remove `"dev"` from `checkGroups`, so that poetry2nix does not try to resolve dev dependencies.
             checkGroups = [ ];
-
             postInstall = ''
               mkdir -p $out/${nixpkgs-pyk.python310.sitePackages}/kevm_pyk/kproj/plugin
               cp -rv ${prev.blockchain-k-plugin-src}/* $out/${nixpkgs-pyk.python310.sitePackages}/kevm_pyk/kproj/plugin/
