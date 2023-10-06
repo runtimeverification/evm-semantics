@@ -345,7 +345,7 @@ class KEVM(KProve, KRun):
         return KApply('abi_type_' + type, [value])
 
     @staticmethod
-    def abi_tuple(values: Sequence[KInner]) -> KApply:
+    def abi_tuple(values: Iterable[KInner]) -> KApply:
         return KApply('abi_type_tuple', values)
 
     @staticmethod
