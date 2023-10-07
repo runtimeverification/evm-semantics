@@ -27,7 +27,8 @@ module BIN-RUNTIME
     imports EVM-ABI
 
     syntax Contract
-    syntax Bytes ::= #binRuntime ( Contract ) [alias, klabel(binRuntime), symbol, function, no-evaluators]
+    syntax Bytes ::= #binRuntime ( Contract )   [alias, klabel(binRuntime),   symbol, function, no-evaluators] 
+                   | #initBytecode ( Contract ) [alias, klabel(initBytecode), symbol, function, no-evaluators]
  // ------------------------------------------------------------------------------------------------------
 
 endmodule

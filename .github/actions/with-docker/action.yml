@@ -53,14 +53,10 @@ runs:
 
       USER=github-user
       GROUP=${USER}
-      Z3_VERSION=4.12.1
+      Z3_VERSION=$(cat deps/z3)
       K_VERSION=$(cat deps/k_release)
       USER_ID=1000
       GROUP_ID=${USER_ID}
-
-      docker build .                           \
-        --file .github/workflows/Dockerfile.z3 \
-        --tag z3:${Z3_VERSION}                 \
 
       docker build . --file ${DOCKERFILE}        \
         --tag ${TAG_NAME}                        \
