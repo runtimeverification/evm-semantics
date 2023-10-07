@@ -152,9 +152,9 @@ jobs:
       - name: 'Build kevm-pyk'
         run: docker exec -u github-user kevm-ci-haskell-${{ matrix.test-suite }}-${{ github.sha }} /bin/bash -c 'make poetry'
       - name: 'Build distribution'
-        run: docker exec -u github-user kevm-ci-haskell-${{ matrix.test-suite }}-${{ github.sha }} /bin/bash -c 'CXX=clang++-14 poetry -C kevm-pyk run kevm-dist --verbose build -j7 plugin haskell'
+        run: docker exec -u github-user kevm-ci-haskell-${{ matrix.test-suite }}-${{ github.sha }} /bin/bash -c 'CXX=clang++-14 poetry -C kevm-pyk run kevm-dist --verbose build -j`nproc` plugin haskell'
       - name: 'Prove Haskell'
-        run: docker exec -u github-user kevm-ci-haskell-${{ matrix.test-suite }}-${{ github.sha }} /bin/bash -c "make ${{ matrix.test-suite }} PYTEST_ARGS='-vv ${{ matrix.test-args }}'"
+        run: docker exec -u github-user kevm-ci-haskell-${{ matrix.test-suite }}-${{ github.sha }} /bin/bash -c "make ${{ matrix.test-suite }} PYTEST_ARGS='-vv ${{ matrix.test-args }}' PYTEST_PARALLEL=7"
       - name: 'Tear down Docker'
         if: always()
         run: |
