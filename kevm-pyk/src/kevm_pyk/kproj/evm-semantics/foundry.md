@@ -1467,7 +1467,7 @@ If the production is matched when no prank is active, it will be ignored.
          <k> #pc [ OP ] => #cut ... </k>
          <pc> PCOUNT => PCOUNT +Int #widthOp(OP) </pc>
          <cutPC> CPC </cutPC>
-      requires PCOUNT in CPC
+      requires (PCOUNT +Int #widthOp(OP)) in CPC
       [priority(40)]
 ```
 
