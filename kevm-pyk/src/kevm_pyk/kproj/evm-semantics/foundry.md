@@ -192,7 +192,7 @@ The configuration of the Foundry Cheat Codes is defined as follwing:
     - `<isStorageWhitelistActive>` flags if the whitelist mode is enabled for storage changes.
     - `<addressSet>` - stores the address whitelist.
     - `<storageSlotSet>` - stores the storage whitelist containing pairs of addresses and storage indexes.
-6. The `<cutPC` cell stores a set of program counters inserted using the `cut` cheat code.
+6. The `<cutPC>` cell stores a set of program counters inserted using the `cut` cheat code.
 Each program counter in the set will end up creating a new node in the KCFG.
 
 ```k
