@@ -101,38 +101,8 @@ def kevm_prove(
     extract_branches: Callable[[CTerm], Iterable[KInner]] | None = None,
     abstract_node: Callable[[CTerm], CTerm] | None = None,
 ) -> bool:
-    proof = proof
-    terminal_rules = ['EVM.halt']
-    cut_point_rules = []
-    if break_every_step:
-        terminal_rules.append('EVM.step')
-    if break_on_jumpi:
-        cut_point_rules.extend(['EVM.jumpi.true', 'EVM.jumpi.false'])
-    if break_on_calls:
-        cut_point_rules.extend(
-            [
-                'EVM.call',
-                'EVM.callcode',
-                'EVM.delegatecall',
-                'EVM.staticcall',
-                'EVM.create',
-                'EVM.create2',
-                'FOUNDRY.foundry.call',
-                'EVM.end',
-                'EVM.return.exception',
-                'EVM.return.revert',
-                'EVM.return.success',
-            ]
-        )
-    prover: APRBMCProver | APRProver | EqualityProver
-    if type(proof) is APRBMCProof:
-        prover = APRBMCProver(proof, kcfg_explore)
-    elif type(proof) is APRProof:
-        prover = APRProver(proof, kcfg_explore)
-    elif type(proof) is EqualityProof:
-        prover = EqualityProver(kcfg_explore=kcfg_explore, proof=proof)
-    else:
-        raise ValueError(f'Do not know how to build prover for proof: {proof}')
+    prover = build_prover(proof, kcfg_explore)
+    terminal_rules, cut_point_rules = terminal_and_cut_point_rules(break_every_step, break_on_jumpi, break_on_calls)
     try:
         if type(prover) is APRBMCProver or type(prover) is APRProver:
             prover.advance_proof(
@@ -168,18 +138,12 @@ def kevm_prove(
         return False
 
 
-def kevm_debug(
-    kprove: KProve,
-    proof: Proof,
-    kcfg_explore: KCFGExplore,
-    max_depth: int = 1000,
-    max_iterations: int | None = None,
-    break_every_step: bool = False,
-    break_on_jumpi: bool = False,
-    break_on_calls: bool = True,
-    extract_branches: Callable[[CTerm], Iterable[KInner]] | None = None,
-    abstract_node: Callable[[CTerm], CTerm] | None = None,
-) -> Prover:
+def terminal_and_cut_point_rules(
+    break_every_step: bool = False, break_on_jumpi: bool = False, break_on_calls: bool = True
+) -> tuple[list[str], list[str]]:
+    """
+    Get the terminal and cut point rules for the prover.
+    """
     terminal_rules = ['EVM.halt']
     cut_point_rules = []
     if break_every_step:
@@ -202,24 +166,23 @@ def kevm_debug(
                 'EVM.return.success',
             ]
         )
+    return terminal_rules, cut_point_rules
 
+
+def build_prover(proof: Proof, kcfg_explore: KCFGExplore) -> Prover:
+    """
+    Get the prover for the given proof.
+    """
     prover: APRBMCProver | APRProver | EqualityProver
     if type(proof) is APRBMCProof:
         prover = APRBMCProver(proof, kcfg_explore)
     elif type(proof) is APRProof:
         prover = APRProver(proof, kcfg_explore)
+    elif type(proof) is EqualityProof:
+        prover = EqualityProver(kcfg_explore=kcfg_explore, proof=proof)
     else:
-        raise ValueError(f'Only APRProof and APRBMCProof support debug mode: {proof}')
+        raise ValueError(f'Do not know how to build prover for proof: {proof}')
 
-    try:
-        prover.advance_proof(
-            max_iterations=max_iterations,
-            execute_depth=max_depth,
-            terminal_rules=terminal_rules,
-            cut_point_rules=cut_point_rules,
-        )
-    except Exception as e:
-        _LOGGER.error(f'Proof crashed: {proof.id}\n{e}', exc_info=True)
     return prover
 
 
