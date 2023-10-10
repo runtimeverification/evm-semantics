@@ -1087,7 +1087,7 @@ The `ECDSASign` function returns the signed data in [r,s,v] form, which we conve
       requires SELECTOR ==Int selector ( "sign(uint256,bytes32)" )
 ```
 
-#### `sign` - Signs a digest with private key
+#### `cut` - Adds a new KCFG node at the given program counter.
 
 ```
 function cut(uint256 programCounter) external;
