@@ -29,6 +29,8 @@ interface KEVMCheatsBase {
     function freshUInt(uint8) external returns (uint256);
     // Returns a symbolic boolean value
     function freshBool() external returns (uint256);
+    // Adds a new KCFG node at the given program counter.
+    function cut(uint256) external;
 }
 
 abstract contract SymbolicWords {

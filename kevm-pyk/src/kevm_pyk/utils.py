@@ -103,7 +103,7 @@ def kevm_prove(
 ) -> bool:
     proof = proof
     terminal_rules = ['EVM.halt']
-    cut_point_rules = []
+    cut_point_rules = ['FOUNDRY.foundry.cut']
     if break_every_step:
         terminal_rules.append('EVM.step')
     if break_on_jumpi:

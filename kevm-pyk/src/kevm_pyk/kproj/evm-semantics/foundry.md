@@ -192,6 +192,8 @@ The configuration of the Foundry Cheat Codes is defined as follwing:
     - `<isStorageWhitelistActive>` flags if the whitelist mode is enabled for storage changes.
     - `<addressSet>` - stores the address whitelist.
     - `<storageSlotSet>` - stores the storage whitelist containing pairs of addresses and storage indexes.
+6. The `<cutPC` cell stores a set of program counters inserted using the `cut` cheat code.
+Each program counter in the set will end up creating a new node in the KCFG.
 
 ```k
 module FOUNDRY-CHEAT-CODES
@@ -236,6 +238,7 @@ module FOUNDRY-CHEAT-CODES
           <addressSet> .Set </addressSet>
           <storageSlotSet> .Set </storageSlotSet>
         </whitelist>
+        <cutPC> .Set </cutPC>
       </cheatcodes>
 ```
 
@@ -1084,6 +1087,23 @@ The `ECDSASign` function returns the signed data in [r,s,v] form, which we conve
       requires SELECTOR ==Int selector ( "sign(uint256,bytes32)" )
 ```
 
+#### `sign` - Signs a digest with private key
+
+```
+function cut(uint256 programCounter) external;
+```
+
+`foundry.call.cut` will match when the `cut` cheat code function is called.
+This rule will add the `programCounter` argument to the `cutPC` set.
+
+```k
+    rule [foundry.call.cut]:
+         <k> #call_foundry SELECTOR ARGS => . ... </k>
+         <cutPC> CPC => CPC SetItem(#range(ARGS, 0, 32)) </cutPC>
+      requires SELECTOR ==Int selector ( "cut(uint256)" )
+```
+
+
 Otherwise, throw an error for any other call to the Foundry contract.
 
 ```k
@@ -1440,6 +1460,25 @@ If the production is matched when no prank is active, it will be ignored.
         </whitelist>
 ```
 
+- `foundry.pc` triggers the `#cut` rule when a program counter that is in the `cutPC` set is executed.
+
+```k
+    rule [foundry.pc]:
+         <k> #pc [ OP ] => #cut ... </k>
+         <pc> PCOUNT => PCOUNT +Int #widthOp(OP) </pc>
+         <cutPC> CPC </cutPC>
+      requires PCOUNT in CPC
+      [priority(40)]
+```
+
+- `foundry_cut` is an empty rule used to create a node in the KCFG.
+
+```k
+    syntax KItem ::= "#cut" [klabel(foundry_cut)]
+ // ---------------------------------------------
+    rule [foundry.cut]: <k> #cut => . ... </k>
+```
+
 - selectors for cheat code functions.
 
 ```k
@@ -1479,6 +1518,7 @@ If the production is matched when no prank is active, it will be ignored.
     rule ( selector ( "allowChangesToStorage(address,uint256)" )   => 4207417100 )
     rule ( selector ( "infiniteGas()" )                            => 3986649939 )
     rule ( selector ( "setGas(uint256)" )                          => 3713137314 )
+    rule ( selector ( "cut(uint256)" )                             => 153488823  )
 ```
 
 - selectors for unimplemented cheat code functions.
