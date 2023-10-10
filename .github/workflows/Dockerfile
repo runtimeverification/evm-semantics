@@ -6,7 +6,7 @@ ARG LLVM_VERSION
 FROM ghcr.io/foundry-rs/foundry:nightly-ca67d15f4abd46394b324c50e21e66f306a1162d as FOUNDRY
 
 ARG Z3_VERSION
-FROM z3:${Z3_VERSION} as Z3
+FROM runtimeverificationinc/ubuntu-jammy-z3:${Z3_VERSION} as Z3
 
 ARG K_VERSION
 FROM runtimeverificationinc/kframework-k:ubuntu-jammy-${K_VERSION}
