@@ -1349,10 +1349,10 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     rule #computeValidJumpDestsWithinBound(PGM, I, RESULT) => .Set
 
 
-    syntax Bool ::= #isValidJumpDest ( Bytes, Int ) [function, total]
+    syntax Bool ::= #isValidJumpDest(Bytes, Int) [function, total]
 
-    rule #isValidJumpDest(PGM, I) => PGM [ I ] ==Int 91 requires 0 <=Int I andBool I <Int lengthBytes(PGM)
-    rule #isValidJumpDest(PGM, I) => false              [owise]
+    rule #isValidJumpDest(PGM, I) => true  requires PGM [ I ] ==Int 91
+    rule #isValidJumpDest(PGM, I) => false [owise]
 
     rule 
 ```
