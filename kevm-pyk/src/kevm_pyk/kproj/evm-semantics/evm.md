@@ -1354,7 +1354,6 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     rule #isValidJumpDest(PGM, I) => true  requires PGM [ I ] ==Int 91
     rule #isValidJumpDest(PGM, I) => false [owise]
 
-    rule 
 ```
 
 ```k
