@@ -4,6 +4,7 @@ import logging
 import os
 import shutil
 import time
+from abc import ABC, abstractmethod
 from argparse import ArgumentParser
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
@@ -46,6 +47,67 @@ def _dist_dir() -> Path:
 DIST_DIR: Final = _dist_dir()
 
 
+class Target(ABC):
+    @abstractmethod
+    def build(self, output_dir: Path, args: dict[str, Any]) -> None:
+        ...
+
+
+class KEVMTarget(Target):
+    _kompile_args: dict[str, Any]
+
+    def __init__(self, kompile_args: Mapping[str, Any]):
+        self._kompile_args = dict(kompile_args)
+
+    def build(self, output_dir: Path, args: dict[str, Any]) -> None:
+        verbose = args.get('verbose', False)
+        enable_llvm_debug = args.get('enable_llvm_debug', False)
+
+        kevm_kompile(
+            output_dir=output_dir,
+            enable_llvm_debug=enable_llvm_debug,
+            verbose=verbose,
+            **self._kompile_args,
+        )
+
+
+TARGETS: Final = {
+    'llvm': KEVMTarget(
+        {
+            'target': KompileTarget.LLVM,
+            'main_file': config.EVM_SEMANTICS_DIR / 'driver.md',
+            'main_module': 'ETHEREUM-SIMULATION',
+            'syntax_module': 'ETHEREUM-SIMULATION',
+            'optimization': 2,
+        },
+    ),
+    'haskell': KEVMTarget(
+        {
+            'target': KompileTarget.HASKELL,
+            'main_file': config.EVM_SEMANTICS_DIR / 'edsl.md',
+            'main_module': 'EDSL',
+            'syntax_module': 'EDSL',
+        },
+    ),
+    'haskell-standalone': KEVMTarget(
+        {
+            'target': KompileTarget.HASKELL_STANDALONE,
+            'main_file': config.EVM_SEMANTICS_DIR / 'driver.md',
+            'main_module': 'ETHEREUM-SIMULATION',
+            'syntax_module': 'ETHEREUM-SIMULATION',
+        },
+    ),
+    'foundry': KEVMTarget(
+        {
+            'target': KompileTarget.FOUNDRY,
+            'main_file': config.EVM_SEMANTICS_DIR / 'foundry.md',
+            'main_module': 'FOUNDRY',
+            'syntax_module': 'FOUNDRY',
+        },
+    ),
+}
+
+
 # ---------
 # K targets
 # ---------
@@ -84,41 +146,10 @@ class DistTarget(Enum):
         _LOGGER.info(f'Building target {self.name}: {self.path}')
         DIST_DIR.mkdir(parents=True, exist_ok=True)
         try:
-            kevm_kompile(
-                output_dir=self.path, enable_llvm_debug=enable_llvm_debug, verbose=verbose, **_TARGET_PARAMS[self]
-            )
+            TARGETS[self.value].build(self.path, {'enable_llvm_debug': enable_llvm_debug, 'verbose': verbose})
         except RuntimeError:
             self.clean()
             raise
-
-
-_TARGET_PARAMS: Final[Mapping[DistTarget, Any]] = {
-    DistTarget.LLVM: {
-        'target': KompileTarget.LLVM,
-        'main_file': config.EVM_SEMANTICS_DIR / 'driver.md',
-        'main_module': 'ETHEREUM-SIMULATION',
-        'syntax_module': 'ETHEREUM-SIMULATION',
-        'optimization': 2,
-    },
-    DistTarget.HASKELL: {
-        'target': KompileTarget.HASKELL,
-        'main_file': config.EVM_SEMANTICS_DIR / 'edsl.md',
-        'main_module': 'EDSL',
-        'syntax_module': 'EDSL',
-    },
-    DistTarget.HASKELL_STANDALONE: {
-        'target': KompileTarget.HASKELL_STANDALONE,
-        'main_file': config.EVM_SEMANTICS_DIR / 'driver.md',
-        'main_module': 'ETHEREUM-SIMULATION',
-        'syntax_module': 'ETHEREUM-SIMULATION',
-    },
-    DistTarget.FOUNDRY: {
-        'target': KompileTarget.FOUNDRY,
-        'main_file': config.EVM_SEMANTICS_DIR / 'foundry.md',
-        'main_module': 'FOUNDRY',
-        'syntax_module': 'FOUNDRY',
-    },
-}
 
 
 # --------------
