@@ -1340,19 +1340,19 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     syntax Set ::= #computeValidJumpDests(Bytes)            [function, memo, total]
                  | #computeValidJumpDests(Bytes, Int, List) [function, klabel(#computeValidJumpDestsAux)]
  // -----------------------------------------------------------------------------------------------------
-    rule #computeValidJumpDests(PGM) => .Set
-    rule #computeValidJumpDests(PGM, I, RESULT) => .Set
+    rule #computeValidJumpDests(_PGM) => .Set
+    rule #computeValidJumpDests(_PGM, _I, _RESULT) => .Set
 
 
     syntax Set ::= #computeValidJumpDestsWithinBound(Bytes, Int, List) [function]
  // -----------------------------------------------------------------------------
-    rule #computeValidJumpDestsWithinBound(PGM, I, RESULT) => .Set
+    rule #computeValidJumpDestsWithinBound(_PGM, _I, _RESULT) => .Set
 
 
     syntax Bool ::= #isValidJumpDest(Bytes, Int) [function, total]
 
-    rule #isValidJumpDest(PGM, I) => PGM [ I ] ==Int 91 requires 0 <=Int I andBool I <Int lengthBytes(PGM)
-    rule #isValidJumpDest(PGM, I) => false              [owise]
+    rule #isValidJumpDest( PGM,  I) => PGM [ I ] ==Int 91 requires 0 <=Int I andBool I <Int lengthBytes(PGM)
+    rule #isValidJumpDest(_PGM, _I) => false              [owise]
 
 ```
 
