@@ -9,11 +9,9 @@ from argparse import ArgumentParser
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
 from distutils.dir_util import copy_tree
-from enum import Enum
 from pathlib import Path
-from subprocess import CalledProcessError
 from tempfile import TemporaryDirectory
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING
 
 from pyk.cli.args import KCLIArgs
 from pyk.cli.utils import loglevel
@@ -35,16 +33,9 @@ _LOGGER: Final = logging.getLogger(__name__)
 _LOG_FORMAT: Final = '%(levelname)s %(asctime)s %(name)s - %(message)s'
 
 
-def _dist_dir() -> Path:
-    dist_dir_env = os.getenv('KEVM_DIST_DIR')  # Used by Nix flake to set the output
-    if dist_dir_env:
-        return Path(dist_dir_env).resolve()
-
-    digest = hash_str({'module-dir': config.MODULE_DIR})[:7]
-    return xdg_cache_home() / f'evm-semantics-{digest}'
-
-
-DIST_DIR: Final = _dist_dir()
+# -------
+# Targets
+# -------
 
 
 class Target(ABC):
@@ -69,6 +60,40 @@ class KEVMTarget(Target):
             verbose=verbose,
             **self._kompile_args,
         )
+
+
+class PluginTarget(Target):
+    def build(self, output_dir: Path, args: dict[str, Any]) -> None:
+        verbose = args.get('verbose', False)
+
+        sync_files(
+            source_dir=config.PLUGIN_DIR / 'plugin-c',
+            target_dir=output_dir / 'plugin-c',
+            file_names=[
+                'blake2.cpp',
+                'blake2.h',
+                'crypto.cpp',
+                'plugin_util.cpp',
+                'plugin_util.h',
+            ],
+        )
+
+        with self._build_env() as build_dir:
+            run_process(
+                ['make', 'libcryptopp', 'libff', 'libsecp256k1', '-j3'],
+                cwd=build_dir,
+                pipe_stdout=not verbose,
+            )
+            copy_tree(str(build_dir / 'build/libcryptopp'), str(output_dir / 'libcryptopp'))
+            copy_tree(str(build_dir / 'build/libff'), str(output_dir / 'libff'))
+            copy_tree(str(build_dir / 'build/libsecp256k1'), str(output_dir / 'libsecp256k1'))
+
+    @contextmanager
+    def _build_env(self) -> Iterator[Path]:
+        with TemporaryDirectory(prefix='evm-semantics-plugin-') as build_dir_str:
+            build_dir = Path(build_dir_str)
+            copy_tree(str(config.PLUGIN_DIR), str(build_dir))
+            yield build_dir
 
 
 TARGETS: Final = {
@@ -105,112 +130,73 @@ TARGETS: Final = {
             'syntax_module': 'FOUNDRY',
         },
     ),
+    'plugin': PluginTarget(),
 }
 
 
-# ---------
-# K targets
-# ---------
+# -----
+# Build
+# -----
 
 
-class DistTarget(Enum):
-    LLVM = 'llvm'
-    HASKELL = 'haskell'
-    HASKELL_STANDALONE = 'haskell-standalone'
-    FOUNDRY = 'foundry'
+def _dist_dir() -> Path:
+    dist_dir_env = os.getenv('KEVM_DIST_DIR')  # Used by Nix flake to set the output
+    if dist_dir_env:
+        return Path(dist_dir_env).resolve()
 
-    @property
-    def path(self) -> Path:
-        return DIST_DIR / self.value
-
-    def get(self) -> Path:
-        if not self.path.exists():
-            raise ValueError(f'Target {self.name} is not built')
-        return self.path
-
-    def get_or_none(self) -> Path | None:
-        if not self.path.exists():
-            return None
-        return self.path
-
-    def build(self, *, force: bool = False, enable_llvm_debug: bool = False, verbose: bool = False) -> Path:
-        if force or not self.path.exists():
-            self._do_build(enable_llvm_debug=enable_llvm_debug, verbose=verbose)
-        return self.path
-
-    def clean(self) -> Path:
-        shutil.rmtree(self.path, ignore_errors=True)
-        return self.path
-
-    def _do_build(self, *, enable_llvm_debug: bool, verbose: bool) -> None:
-        _LOGGER.info(f'Building target {self.name}: {self.path}')
-        DIST_DIR.mkdir(parents=True, exist_ok=True)
-        try:
-            TARGETS[self.value].build(self.path, {'enable_llvm_debug': enable_llvm_debug, 'verbose': verbose})
-        except RuntimeError:
-            self.clean()
-            raise
+    digest = hash_str({'module-dir': config.MODULE_DIR})[:7]
+    return xdg_cache_home() / f'evm-semantics-{digest}'
 
 
-# --------------
-# Plugin project
-# --------------
+DIST_DIR: Final = _dist_dir()
 
 
-PLUGIN_DIR: Final = DIST_DIR / 'plugin'
+def check(target: str) -> None:
+    if target not in TARGETS:
+        raise ValueError('Undefined target: {target}')
 
 
-def check_plugin() -> Path:
-    if not PLUGIN_DIR.exists():
-        raise ValueError('Plugin project is not built')
-    return PLUGIN_DIR
+def which(target: str | None = None) -> Path:
+    if target:
+        check(target)
+        return DIST_DIR / target
+    return DIST_DIR
 
 
-def build_plugin(*, force: bool = False, verbose: bool = False) -> Path:
-    if force or not PLUGIN_DIR.exists():
-        _do_build_plugin(verbose=verbose)
-    return PLUGIN_DIR
+def clean(target: str | None = None) -> Path:
+    res = which(target)
+    shutil.rmtree(res, ignore_errors=True)
+    return res
 
 
-def clean_plugin() -> Path:
-    shutil.rmtree(PLUGIN_DIR, ignore_errors=True)
-    return PLUGIN_DIR
+def get(target: str) -> Path:
+    res = which(target)
+    if not res.exists():
+        raise ValueError('Target is not built: {target}')
+    return res
 
 
-def _do_build_plugin(*, verbose: bool) -> None:
-    _LOGGER.info(f'Building Plugin project: {PLUGIN_DIR}')
-
-    sync_files(
-        source_dir=config.PLUGIN_DIR / 'plugin-c',
-        target_dir=PLUGIN_DIR / 'plugin-c',
-        file_names=[
-            'blake2.cpp',
-            'blake2.h',
-            'crypto.cpp',
-            'plugin_util.cpp',
-            'plugin_util.h',
-        ],
-    )
-
-    with _plugin_build_env() as build_dir:
-        try:
-            run_process(['make', 'libcryptopp', 'libff', 'libsecp256k1', '-j3'], cwd=build_dir, pipe_stdout=not verbose)
-        except CalledProcessError:
-            clean_plugin()
-            raise
-
-        output_dir = build_dir / 'build'
-        copy_tree(str(output_dir / 'libcryptopp'), str(PLUGIN_DIR / 'libcryptopp'))
-        copy_tree(str(output_dir / 'libff'), str(PLUGIN_DIR / 'libff'))
-        copy_tree(str(output_dir / 'libsecp256k1'), str(PLUGIN_DIR / 'libsecp256k1'))
+def get_or_none(target: str) -> Path | None:
+    res = which(target)
+    if not res.exists():
+        return None
+    return res
 
 
-@contextmanager
-def _plugin_build_env() -> Iterator[Path]:
-    with TemporaryDirectory(prefix='evm-semantics-plugin-') as build_dir_str:
+def build(target: str, *, force: bool = False, **kwargs: Any) -> Path:
+    res = which(target)
+    if not force and res.exists():
+        return res
+
+    _target = TARGETS[target]
+
+    with TemporaryDirectory(prefix=f'kevm-dist-{target}-') as build_dir_str:
         build_dir = Path(build_dir_str)
-        copy_tree(str(config.PLUGIN_DIR), str(build_dir))
-        yield build_dir
+        _target.build(output_dir=build_dir, args=kwargs)
+        # TODO Locking
+        shutil.copytree(build_dir_str, str(res), dirs_exist_ok=True)
+
+    return res
 
 
 # ---
@@ -236,9 +222,6 @@ def main() -> None:
         raise AssertionError()
 
 
-CliTarget = DistTarget | Literal['plugin']
-
-
 def _exec_build(
     command: str,
     targets: list[str],
@@ -262,62 +245,41 @@ def _exec_build(
             if target == 'llvm' and delay_llvm:
                 continue
 
-            if target == 'plugin':
-                plugin = pool.submit(build_plugin, force=force, verbose=verbose)
-                pending.append(plugin)
-                continue
-
-            pending.append(
-                pool.submit(DistTarget(target).build, force=force, enable_llvm_debug=enable_llvm_debug, verbose=verbose)
+            plugin = pool.submit(
+                build, target=target, force=force, enable_llvm_debug=enable_llvm_debug, verbose=verbose
             )
+            pending.append(plugin)
 
         while pending:
             current = next((future for future in pending if future.done()), None)
 
             if current is None:
-                time.sleep(0.1)
+                time.sleep(0.01)
                 continue
 
             result = current.result()
             print(result)
 
             if current == plugin and delay_llvm:
-                pending += [pool.submit(DistTarget.LLVM.build, force=force)]
+                pending.append(
+                    pool.submit(build, target='llvm', force=force, enable_llvm_debug=enable_llvm_debug, verbose=verbose)
+                )
 
             pending.remove(current)
 
 
 def _exec_clean(target: str | None) -> None:
-    if not target:
-        shutil.rmtree(DIST_DIR, ignore_errors=True)
-        print(DIST_DIR)
-        return
-
-    cli_target = _cli_target(target)
-    if isinstance(cli_target, DistTarget):
-        cli_target.clean()
-        print(cli_target.path)
-        return
-
-    clean_plugin()
-    print(PLUGIN_DIR)
+    res = clean(target)
+    print(res)
 
 
 def _exec_which(target: str | None) -> None:
-    if not target:
-        print(DIST_DIR)
-        return
-
-    cli_target = _cli_target(target)
-    if isinstance(cli_target, DistTarget):
-        print(cli_target.path)
-        return
-
-    print(PLUGIN_DIR)
+    res = which(target)
+    print(res)
 
 
 def _parse_arguments() -> Namespace:
-    targets = [item.value for item in DistTarget] + ['plugin']
+    targets = list(TARGETS)
 
     def target(s: str) -> str:
         #  choices does not work well with nargs="*"
@@ -356,15 +318,6 @@ def _parse_arguments() -> Namespace:
     add_target_arg(which_parser, 'target to print directory for')
 
     return parser.parse_args()
-
-
-def _cli_target(s: str) -> CliTarget:
-    try:
-        return DistTarget(s)
-    except ValueError:
-        if s == 'plugin':
-            return 'plugin'
-        raise TypeError(f'Invalid target: {s}') from None
 
 
 if __name__ == '__main__':

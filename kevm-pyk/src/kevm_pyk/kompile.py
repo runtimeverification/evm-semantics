@@ -156,7 +156,7 @@ def _lib_ccopts(kernel: str, debug_build: bool = False) -> list[str]:
 
     ccopts += ['-lssl', '-lcrypto']
 
-    plugin_dir = dist.check_plugin()
+    plugin_dir = dist.get('plugin')
 
     libff_dir = plugin_dir / 'libff'
     ccopts += [f'{libff_dir}/lib/libff.a', f'-I{libff_dir}/include']
