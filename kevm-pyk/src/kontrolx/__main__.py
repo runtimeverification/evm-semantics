@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING
 from pyk.cli.utils import file_path
 from pyk.proof.tui import APRProofViewer
 
-from kevm_pyk import dist
+from kevm_pyk import kdist
 from kevm_pyk.cli import KEVMCLIArgs, node_id_like
 from kevm_pyk.utils import arg_pair_of
 
@@ -93,7 +93,7 @@ def exec_solc_to_k(
         target = 'haskell'
 
     k_text = solc_to_k(
-        definition_dir=dist.get(target),
+        definition_dir=kdist.get(target),
         contract_file=contract_file,
         contract_name=contract_name,
         main_module=main_module,

@@ -26,7 +26,7 @@ from pyk.proof.show import APRProofShow
 from pyk.proof.tui import APRProofViewer
 from pyk.utils import single
 
-from . import VERSION, config, dist
+from . import VERSION, config, kdist
 from .cli import KEVMCLIArgs, node_id_like
 from .gst_to_kore import SORT_ETHEREUM_SIMULATION, gst_to_kore, kore_pgm_to_kore
 from .kevm import KEVM, KEVMSemantics, kevm_node_printer
@@ -159,7 +159,7 @@ def exec_prove_legacy(
     _ignore_arg(kwargs, 'md_selector', f'--md-selector: {kwargs["md_selector"]}')
 
     if definition_dir is None:
-        definition_dir = dist.get('haskell')
+        definition_dir = kdist.get('haskell')
 
     kevm = KEVM(definition_dir, use_directory=save_directory)
 
@@ -230,7 +230,7 @@ def exec_prove(
     md_selector = 'k'
 
     if definition_dir is None:
-        definition_dir = dist.get('haskell')
+        definition_dir = kdist.get('haskell')
 
     if smt_timeout is None:
         smt_timeout = 300
@@ -533,7 +533,7 @@ def exec_run(
         target = 'llvm'
 
     _ignore_arg(kwargs, 'definition_dir', f'--definition: {kwargs["definition_dir"]}')
-    kevm = KEVM(dist.get(target), use_directory=save_directory)
+    kevm = KEVM(kdist.get(target), use_directory=save_directory)
 
     try:
         json_read = json.loads(input_file.read_text())
@@ -569,7 +569,7 @@ def exec_kast(
         target = 'llvm'
 
     _ignore_arg(kwargs, 'definition_dir', f'--definition: {kwargs["definition_dir"]}')
-    kevm = KEVM(dist.get(target), use_directory=save_directory)
+    kevm = KEVM(kdist.get(target), use_directory=save_directory)
 
     try:
         json_read = json.loads(input_file.read_text())

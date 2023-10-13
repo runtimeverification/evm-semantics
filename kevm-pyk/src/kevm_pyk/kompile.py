@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING
 from pyk.ktool.kompile import HaskellKompile, KompileArgs, LLVMKompile, LLVMKompileType
 from pyk.utils import run_process
 
-from . import config
+from . import config, kdist
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -147,8 +147,6 @@ def kevm_kompile(
 
 
 def _lib_ccopts(kernel: str, debug_build: bool = False) -> list[str]:
-    from . import dist
-
     ccopts = ['-std=c++17']
 
     if debug_build:
@@ -156,7 +154,7 @@ def _lib_ccopts(kernel: str, debug_build: bool = False) -> list[str]:
 
     ccopts += ['-lssl', '-lcrypto']
 
-    plugin_dir = dist.get('plugin')
+    plugin_dir = kdist.get('plugin')
 
     libff_dir = plugin_dir / 'libff'
     ccopts += [f'{libff_dir}/lib/libff.a', f'-I{libff_dir}/include']
