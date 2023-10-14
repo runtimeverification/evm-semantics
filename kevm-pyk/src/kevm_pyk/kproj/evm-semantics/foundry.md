@@ -1072,9 +1072,8 @@ function sign(uint256 privateKey, bytes32 digest) external returns (uint8 v, byt
 ```
 
 `foundry.call.sign` will match when the `sign` cheat code function is called.
-This rule then takes from the `privateKey` to sign using `#range(ARGS,0,32)` and the `digest` to be signed using `#range(ARGS, 32, 32)`.
-To perform the signature we use the `ECDSASign ( String, String )` function (from KEVM).
-This function receives as arguments 2 strings: the data to be signed and the private key, therefore we use `#unparseByteStack` to convert the `Bytes` with the `privateKey` and `digest` into strings.
+This rule takes the `privateKey` to sign using `#range(ARGS,0,32)` and the `digest` to be signed using `#range(ARGS, 32, 32)`,
+then performs the signature by passing them to the `ECDSASign ( Bytes, Bytes )` function (from KEVM).
 The `ECDSASign` function returns the signed data in [r,s,v] form, which we convert to a `Bytes` using `#parseByteStack`.
 
 ```k
@@ -1367,7 +1366,7 @@ If the production is matched when no prank is active, it will be ignored.
 ```k
     syntax Bytes ::= #sign ( Bytes , Bytes ) [function,klabel(foundry_sign)]
  // ------------------------------------------------------------------------
-    rule #sign(BA1, BA2) => #parseByteStack(ECDSASign(#unparseByteStack(BA1), #unparseByteStack(BA2))) [concrete]
+    rule #sign(BA1, BA2) => #parseByteStack(ECDSASign(BA1, BA2)) [concrete]
 ```
 
 - `#setExpectEmit` will initialize the `<expectEmit/>` subconfiguration, based on the arguments provided with the `expectEmit` cheat code.
