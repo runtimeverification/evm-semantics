@@ -128,7 +128,7 @@ def clean(target: str | None = None) -> Path:
 def get(target: str) -> Path:
     res = which(target)
     if not res.exists():
-        raise ValueError('Target is not built: {target}')
+        raise ValueError(f'Target is not built: {target}')
     return res
 
 
