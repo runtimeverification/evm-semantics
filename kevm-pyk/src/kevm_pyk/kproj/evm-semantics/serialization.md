@@ -1,3 +1,4 @@
+
 Parsing/Unparsing
 =================
 
@@ -34,28 +35,28 @@ Address/Hash Helpers
     syntax Int ::= #newAddr ( Int , Int )         [function]
                  | #newAddr ( Int , Int , Bytes ) [function, klabel(#newAddrCreate2)]
  // ---------------------------------------------------------------------------------
-    rule [#newAddr]:        #newAddr(ACCT, NONCE) => #addr(#parseHexWord(Keccak256(String2Bytes(#rlpEncode([#addrBytes(ACCT), NONCE])))))                                                                                                                                                     [concrete]
-    rule [#newAddrCreate2]: #newAddr(ACCT, SALT, INITCODE) => #addr(#parseHexWord(Keccak256(b"\xff" +Bytes #addrBytes(ACCT) +Bytes #wordBytes(SALT) +Bytes #parseHexBytes(Keccak256(INITCODE))))) [concrete]
+    rule [#newAddr]:        #newAddr(ACCT, NONCE) => #addr(#parseHexWord(Keccak256(#rlpEncode([#addrBytes(ACCT), NONCE]))))                                                          [concrete]
+    rule [#newAddrCreate2]: #newAddr(ACCT, SALT, INITCODE) => #addr(#parseHexWord(Keccak256(b"\xff" +Bytes #addrBytes(ACCT) +Bytes #wordBytes(SALT) +Bytes Keccak256raw(INITCODE)))) [concrete]
 
     syntax Account ::= #sender ( TxData , Int , Bytes , Bytes ) [function, klabel(#senderTxData)]
-                     | #sender ( String , Int , String , String )  [function, klabel(#senderAux)   ]
-                     | #sender ( String )                        [function, klabel(#senderAux2)  ]
+                     | #sender ( Bytes  , Int , Bytes , Bytes ) [function, klabel(#senderAux)   ]
+                     | #sender ( Bytes )                        [function, klabel(#senderAux2)  ]
  // -----------------------------------------------------------------------------------------------
     rule #sender(_:TxData, TW => TW +Int 27, _, _)
       requires TW ==Int 0 orBool TW ==Int 1
 
     rule #sender(TXDATA, TW, TR, TS)
-      => #sender(Hex2Raw(#hashTxData(TXDATA)), TW, #unparseByteStack(TR), #unparseByteStack(TS))
+      => #sender(#parseByteStack(#hashTxData(TXDATA)), TW, TR, TS)
       requires TW =/=Int 0 andBool TW =/=Int 1
 
-    rule #sender(HT, TW, TR, TS) => #sender(Bytes2String(ECDSARecover(String2Bytes(HT), TW, String2Bytes(TR), String2Bytes(TS))))
+    rule #sender(HT, TW, TR, TS) => #sender(ECDSARecover(HT, TW, TR, TS))
 
-    rule #sender("")  => .Account
-    rule #sender(STR) => #addr(#parseHexWord(Keccak256(String2Bytes(STR)))) requires STR =/=String ""
+    rule #sender(b"")  => .Account
+    rule #sender(BYTES) => #addr(#parseHexWord(Keccak256(BYTES))) requires BYTES =/=K b""
 
     syntax Int ::= #addrFromPrivateKey ( String ) [function, klabel(addrFromPrivateKey)]
  // ------------------------------------------------------------------------------------
-    rule [addrFromPrivateKey]: #addrFromPrivateKey ( KEY ) => #addr( #parseHexWord( Keccak256( String2Bytes( Hex2Raw( ECDSAPubKey( String2Bytes( Hex2Raw( KEY ) ) ) ) ) ) ) ) [concrete]
+    rule [addrFromPrivateKey]: #addrFromPrivateKey ( KEY ) => #addr( #parseHexWord( Keccak256( #parseByteStack( ECDSAPubKey( #parseByteStack( KEY ) ) ) ) ) ) [concrete]
 ```
 
 -   `#blockHeaderHash` computes the hash of a block header given all the block data.
@@ -69,46 +70,43 @@ Address/Hash Helpers
                  | #blockHeaderHash(String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String) [function, klabel(#blockHashHeaderWithdrawalsStr), symbol]
  // ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     rule #blockHeaderHash(HP:String, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN)
-         => #parseHexWord( Keccak256( String2Bytes ( #rlpEncode( [ HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN ] ) ) ) )
+         => #parseHexWord( Keccak256( #rlpEncode( [ HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN ] ) ) )
 
     rule #blockHeaderHash(HP:Int, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN)
-         => #parseHexWord( Keccak256( String2Bytes (
-		                              #rlpEncode( [ #wordBytes(HP), #wordBytes(HO), #addrBytes(HC)
+         => #parseHexWord( Keccak256( #rlpEncode( [ #wordBytes(HP), #wordBytes(HO), #addrBytes(HC)
                                                   , #wordBytes(HR), #wordBytes(HT), #wordBytes(HE)
                                                   , HB, HD, HI, HL, HG, HS, HX
                                                   , #wordBytes(HM), #padToWidth(8, #asByteStack(HN))
                                                   ]
-                                                ) )
+                                                )
                                     )
                          )
 
     rule #blockHeaderHash(HP:String, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF)
-         => #parseHexWord( Keccak256( String2Bytes ( #rlpEncode( [ HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF ] ) ) ) )
+         => #parseHexWord( Keccak256( #rlpEncode( [ HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF ] ) ) )
 
     rule #blockHeaderHash(HP:Int, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF)
-         => #parseHexWord( Keccak256( String2Bytes ( 
-		                              #rlpEncode( [ #wordBytes(HP), #wordBytes(HO), #addrBytes(HC)
+         => #parseHexWord( Keccak256( #rlpEncode( [ #wordBytes(HP), #wordBytes(HO), #addrBytes(HC)
                                                   , #wordBytes(HR), #wordBytes(HT), #wordBytes(HE)
                                                   , HB, HD, HI, HL, HG, HS, HX
                                                   , #wordBytes(HM), #padToWidth(8, #asByteStack(HN))
                                                   , HF
                                                   ]
-                                                ) )
+                                                )
                                     )
                          )
 
     rule #blockHeaderHash(HP:String, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WF)
-         => #parseHexWord( Keccak256( String2Bytes( #rlpEncode( [ HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WF ] ) ) ) )
+         => #parseHexWord( Keccak256( #rlpEncode( [ HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WF ] ) ) )
 
     rule #blockHeaderHash(HP:Int, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WF)
-         => #parseHexWord( Keccak256( String2Bytes (
-		                              #rlpEncode( [ #wordBytes(HP), #wordBytes(HO), #addrBytes(HC)
+         => #parseHexWord( Keccak256( #rlpEncode( [ #wordBytes(HP), #wordBytes(HO), #addrBytes(HC)
                                                   , #wordBytes(HR), #wordBytes(HT), #wordBytes(HE)
                                                   , HB, HD, HI, HL, HG, HS, HX
                                                   , #wordBytes(HM), #padToWidth(8, #asByteStack(HN))
                                                   , HF , #wordBytes(WF)
                                                   ]
-                                                ) )
+                                                )
                                     )
                          )
 ```
@@ -120,13 +118,13 @@ Address/Hash Helpers
                     | #hashTxData  ( TxData )                                                        [function]
  // -----------------------------------------------------------------------------------------------------------
     rule #hashSignedTx(TN, TP, TG, TT, TV, TD, TW, TR, TS)
-      => Keccak256( String2Bytes( #rlpEncode([ TN, TP, TG, #addrBytes(TT), TV, TD, TW, TR, TS ]) ) )
+      => Keccak256( #rlpEncode([ TN, TP, TG, #addrBytes(TT), TV, TD, TW, TR, TS ]) )
 
-    rule #hashTxData( TXDATA ) => Keccak256(                String2Bytes( #rlpEncodeTxData(TXDATA) ) )
+    rule #hashTxData( TXDATA ) => Keccak256(                #rlpEncodeTxData(TXDATA) )
 		requires isLegacyTx    (TXDATA)
-    rule #hashTxData( TXDATA ) => Keccak256( b"\x01" +Bytes String2Bytes( #rlpEncodeTxData(TXDATA) ) ) 
+    rule #hashTxData( TXDATA ) => Keccak256( b"\x01" +Bytes #rlpEncodeTxData(TXDATA) )
 		requires isAccessListTx(TXDATA)
-    rule #hashTxData( TXDATA ) => Keccak256( b"\x02" +Bytes String2Bytes( #rlpEncodeTxData(TXDATA) ) )
+    rule #hashTxData( TXDATA ) => Keccak256( b"\x02" +Bytes #rlpEncodeTxData(TXDATA) )
 		requires isDynamicFeeTx(TXDATA)
 ```
 
@@ -266,90 +264,91 @@ Encoding
 -   `#rlpEncodeWord` RLP encodes a 256-bit wide EVM word.
 -   `#rlpEncodeAddress` RLP encodes a 160-bit wide Ethereum address (or the null address: .Account).
 -   `#rlpEncodeBytes` RLP encodes a Bytes.
--   `#rlpEncodeString` RLP encodes a String.
+-   `#rlpEncodeString` RLP encodes a String. All code points must be less than `U+00FF`, and `U+00HH` is treated as the byte `0xHH`.
 -   `#rlpEncode( JSON )` can take a JSON array and make an rlp encoding. It must be a JSON array! JSON objects aren't supported.
     example: `#rlpEncode( [ 0, 1, 1, "", #parseByteStack("0xef880") ] )`
 
 ```k
-    syntax String ::= #rlpEncodeInt ( Int )              [function]
-                    | #rlpEncodeWord ( Int )             [function]
-                    | #rlpEncodeAddress ( Account )      [function]
-                    | #rlpEncodeBytes ( Bytes )      [function]
-                    | #rlpEncodeString ( String )        [function]
-                    | #rlpEncode ( JSON )                [function]
-                    | #rlpEncode ( JSONs, StringBuffer ) [function, klabel(#rlpEncodeJsonAux)]
+    syntax Bytes ::= #rlpEncodeInt ( Int )              [function]
+                   | #rlpEncodeWord ( Int )             [function]
+                   | #rlpEncodeAddress ( Account )      [function]
+                   | #rlpEncodeString ( String )        [function]
+				   | #rlpEncodeBytes ( Bytes )          [function]
+                   | #rlpEncode ( JSON )                [function]
+                   | #rlpEncode ( JSONs, StringBuffer ) [function, klabel(#rlpEncodeJsonAux)]
  // ------------------------------------------------------------------------------------------
-    rule #rlpEncodeInt(0) => "\x80"
-    rule #rlpEncodeInt(WORD) => chrChar(WORD) requires WORD >Int 0 andBool WORD <Int 128
+    rule #rlpEncodeInt(0) => b"\x80"
+    rule #rlpEncodeInt(WORD) => #asByteStack(WORD) requires WORD >Int 0 andBool WORD <Int 128
     rule #rlpEncodeInt(WORD) => #rlpEncodeBytes(#asByteStack(WORD)) requires WORD >=Int 128
 
     rule #rlpEncodeWord(WORD) => #rlpEncodeBytes(#wordBytes(WORD))
 
     rule #rlpEncodeAddress(ACCT) => #rlpEncodeBytes(#addrBytes(ACCT))
 
-    rule #rlpEncodeBytes(BYTES) => #rlpEncodeString(#unparseByteStack(BYTES))
+	rule #rlpEncodeString(STR) => #rlpEncodeBytes(#parseByteStackRaw(STR))
 
-    rule #rlpEncodeString(STR) => "\x80"                     requires lengthString(STR)  <Int 1
-    rule #rlpEncodeString(STR) => STR                        requires lengthString(STR) ==Int 1 andBool ordChar(substrString(STR, 0, 1)) <Int 128
-    rule #rlpEncodeString(STR) => #rlpEncodeLength(STR, 128) [owise]
+    rule #rlpEncodeBytes(BYTES) => b"\x80"                    requires lengthBytes(BYTES)  <Int 1
+    rule #rlpEncodeBytes(BYTES) => BYTES                      requires lengthBytes(BYTES) ==Int 1 andBool #asInteger(substrBytes(BYTES, 0, 1)) <Int 128
+    rule #rlpEncodeBytes(BYTES) => #rlpEncodeLength(BYTES, 128) [owise]
 
     syntax JSON ::= Bytes
     rule #rlpEncode( [ J:JSONs ] ) => #rlpEncodeLength( #rlpEncode(J, .StringBuffer) , 192 )
 
-    rule #rlpEncode( .JSONs                   , BUF ) => StringBuffer2String(BUF)
-    rule #rlpEncode( (J:Int,       REST:JSONs), BUF ) => #rlpEncode(REST, BUF +String #rlpEncodeInt(J)   )
-    rule #rlpEncode( (J:String,    REST:JSONs), BUF ) => #rlpEncode(REST, BUF +String #rlpEncodeString(J))
-    rule #rlpEncode( (J:Bytes,     REST:JSONs), BUF ) => #rlpEncode(REST, BUF +String #rlpEncodeBytes(J) )
-    rule #rlpEncode( ([ J ],       REST:JSONs), BUF ) => #rlpEncode(REST, BUF +String #rlpEncode([ J ])  )
+    rule #rlpEncode( .JSONs                   , BUF ) => #parseByteStackRaw(StringBuffer2String(BUF))
+    rule #rlpEncode( (J:Int,       REST:JSONs), BUF ) => #rlpEncode(REST, BUF +String #unparseByteStack(#rlpEncodeInt(J)   ))
+    rule #rlpEncode( (J:String,    REST:JSONs), BUF ) => #rlpEncode(REST, BUF +String #unparseByteStack(#rlpEncodeString(J)))
+    rule #rlpEncode( (J:Bytes,     REST:JSONs), BUF ) => #rlpEncode(REST, BUF +String #unparseByteStack(#rlpEncodeBytes(J) ))
+    rule #rlpEncode( ([ J ],       REST:JSONs), BUF ) => #rlpEncode(REST, BUF +String #unparseByteStack(#rlpEncode([ J ])  ))
 
-    syntax String ::= #rlpEncodeLength ( String , Int )          [function]
-                    | #rlpEncodeLength ( String , Int , String ) [function, klabel(#rlpEncodeLengthAux)]
+    syntax Bytes ::= #rlpEncodeLength ( Bytes , Int )          [function]
+                   | #rlpEncodeLength ( Bytes , Int , Bytes ) [function, klabel(#rlpEncodeLengthAux)]
  // ----------------------------------------------------------------------------------------------------
-    rule #rlpEncodeLength(STR, OFFSET) => chrChar(lengthString(STR) +Int OFFSET) +String STR                                requires           lengthString(STR) <Int 56
-    rule #rlpEncodeLength(STR, OFFSET) => #rlpEncodeLength(STR, OFFSET, #unparseByteStack(#asByteStack(lengthString(STR)))) requires notBool ( lengthString(STR) <Int 56 )
-    rule #rlpEncodeLength(STR, OFFSET, BL) => chrChar(lengthString(BL) +Int OFFSET +Int 55) +String BL +String STR
+    rule #rlpEncodeLength(BYTES, OFFSET) => #asByteStack(lengthBytes(BYTES) +Int OFFSET) +Bytes BYTES         requires           lengthBytes(BYTES) <Int 56
+    rule #rlpEncodeLength(BYTES, OFFSET) => #rlpEncodeLength(BYTES, OFFSET, #asByteStack(lengthBytes(BYTES))) requires notBool ( lengthBytes(BYTES) <Int 56 )
+    rule #rlpEncodeLength(BYTES, OFFSET, BL) => #asByteStack(lengthBytes(BL) +Int OFFSET +Int 55) +Bytes BL +Bytes BYTES
 
-    syntax String ::= #rlpEncodeFullAccount( Int, Int, Map, Bytes ) [function]
+    syntax Bytes ::= #rlpEncodeFullAccount( Int, Int, Map, Bytes ) [function]
  // --------------------------------------------------------------------------
     rule [rlpAcct]: #rlpEncodeFullAccount( NONCE, BAL, STORAGE, CODE )
-                 => #rlpEncodeLength(         #rlpEncodeInt(NONCE)
-                                      +String #rlpEncodeInt(BAL)
-                                      +String #rlpEncodeString( Hex2Raw( Keccak256( String2Bytes( #rlpEncodeMerkleTree( #storageRoot( STORAGE ) ) ) ) ) )
-                                      +String #rlpEncodeString( Hex2Raw( Keccak256( CODE ) ) )
+                 => #rlpEncodeLength(        #rlpEncodeInt(NONCE)
+                                      +Bytes #rlpEncodeInt(BAL)
+                                      +Bytes #rlpEncodeBytes( Keccak256raw( #rlpEncodeMerkleTree( #storageRoot( STORAGE ) ) ) )
+                                      +Bytes #rlpEncodeBytes( Keccak256raw( CODE ) )
                                     , 192
                                     )
 
-    syntax String ::= #rlpEncodeReceipt ( Int , Int , Bytes , List ) [function]
-                    | #rlpEncodeLogs    ( List )                     [function]
-                    | #rlpEncodeLogsAux ( List, StringBuffer )       [function]
-                    | #rlpEncodeTopics  ( List, StringBuffer )       [function]
+    syntax Bytes ::= #rlpEncodeReceipt ( Int , Int , Bytes , List ) [function]
+                   | #rlpEncodeLogs    ( List )                     [function]
+                   | #rlpEncodeLogsAux ( List, StringBuffer )       [function]
+                   | #rlpEncodeTopics  ( List, StringBuffer )       [function]
  // ---------------------------------------------------------------------------
     rule [rlpReceipt]: #rlpEncodeReceipt(RS, RG, RB, RL)
-                    => #rlpEncodeLength(         #rlpEncodeInt(RS)
-                                         +String #rlpEncodeInt(RG)
-                                         +String #rlpEncodeString(#unparseByteStack(RB))
-                                         +String #rlpEncodeLogs(RL)
+                    => #rlpEncodeLength(        #rlpEncodeInt(RS)
+                                         +Bytes #rlpEncodeInt(RG)
+                                         +Bytes #rlpEncodeBytes(RB)
+                                         +Bytes #rlpEncodeLogs(RL)
                                        , 192
                                        )
 
     rule #rlpEncodeLogs( LOGS ) => #rlpEncodeLogsAux( LOGS, .StringBuffer )
 
-    rule #rlpEncodeLogsAux( .List, OUT ) => #rlpEncodeLength(StringBuffer2String(OUT),192)
+    rule #rlpEncodeLogsAux( .List, OUT ) => #rlpEncodeLength(#parseByteStackRaw(StringBuffer2String(OUT)),192)
     rule #rlpEncodeLogsAux( ( ListItem({ ACCT | TOPICS | DATA }) => .List ) _
-                          , ( OUT => OUT +String #rlpEncodeLength(         #rlpEncodeAddress(ACCT)
-                                                                   +String #rlpEncodeTopics(TOPICS,.StringBuffer)
-                                                                   +String #rlpEncodeString(#unparseByteStack(DATA))
-                                                                 , 192
-                                                                 )
+                          , ( OUT => OUT +String #unparseByteStack(
+						      #rlpEncodeLength(        #rlpEncodeAddress(ACCT)
+							                    +Bytes #rlpEncodeTopics(TOPICS,.StringBuffer)
+                                                +Bytes #rlpEncodeBytes(DATA)
+                                               , 192
+											   ))
                             )
                           )
 
-    rule #rlpEncodeTopics( .List, OUT ) => #rlpEncodeLength(StringBuffer2String(OUT),192)
+    rule #rlpEncodeTopics( .List, OUT ) => #rlpEncodeLength(#parseByteStackRaw(StringBuffer2String(OUT)),192)
     rule #rlpEncodeTopics( ( ListItem( X:Int ) => .List ) _
-                         , ( OUT => OUT +String #rlpEncodeWord(X) )
+                         , ( OUT => OUT +String #unparseByteStack( #rlpEncodeWord(X) ) )
                          )
 
-    syntax String ::= #rlpEncodeTxData( TxData ) [function]
+    syntax Bytes ::= #rlpEncodeTxData( TxData ) [function]
  // -------------------------------------------------------
     rule #rlpEncodeTxData( LegacyTxData( TN, TP, TG, TT, TV, TD ) )
       => #rlpEncode( [ TN, TP, TG, #addrBytes(TT), TV, TD ] )
@@ -363,91 +362,91 @@ Encoding
     rule #rlpEncodeTxData( DynamicFeeTxData(TN, TPF, TM, TG, TT, TV, DATA, CID, [TA]) )
       => #rlpEncode( [ CID, TN, TPF, TM, TG, #addrBytes(TT), TV, DATA, [TA] ] )
 
-    syntax String ::= #rlpEncodeMerkleTree ( MerkleTree ) [function]
+    syntax Bytes ::= #rlpEncodeMerkleTree ( MerkleTree ) [function]
  // ----------------------------------------------------------------
-    rule #rlpEncodeMerkleTree ( .MerkleTree ) => "\x80"
+    rule #rlpEncodeMerkleTree ( .MerkleTree ) => b"\x80"
 
     rule #rlpEncodeMerkleTree ( MerkleLeaf ( PATH, VALUE ) )
-      => #rlpEncodeLength(         #rlpEncodeString( #unparseByteStack( #HPEncode( PATH, 1 ) ) )
-                           +String #rlpEncodeString( VALUE )
+      => #rlpEncodeLength(        #rlpEncodeBytes( #HPEncode( PATH, 1 ) )
+                           +Bytes #rlpEncodeString( VALUE )
                          , 192
                          )
 
     rule #rlpEncodeMerkleTree ( MerkleExtension ( PATH, TREE ) )
-      => #rlpEncodeLength(         #rlpEncodeString( #unparseByteStack( #HPEncode( PATH, 0 ) ) )
-                           +String #rlpMerkleH( #rlpEncodeMerkleTree( TREE ) )
+      => #rlpEncodeLength(        #rlpEncodeBytes( #HPEncode( PATH, 0 ) )
+                           +Bytes #rlpMerkleH( #rlpEncodeMerkleTree( TREE ) )
                          , 192
                          )
 
     rule #rlpEncodeMerkleTree ( MerkleBranch ( M , VALUE ) )
-      => #rlpEncodeLength(         MerkleMapRLP(M, 0) +String MerkleMapRLP(M, 1)
-                           +String MerkleMapRLP(M, 2) +String MerkleMapRLP(M, 3)
-                           +String MerkleMapRLP(M, 4) +String MerkleMapRLP(M, 5)
-                           +String MerkleMapRLP(M, 6) +String MerkleMapRLP(M, 7)
-                           +String MerkleMapRLP(M, 8) +String MerkleMapRLP(M, 9)
-                           +String MerkleMapRLP(M,10) +String MerkleMapRLP(M,11)
-                           +String MerkleMapRLP(M,12) +String MerkleMapRLP(M,13)
-                           +String MerkleMapRLP(M,14) +String MerkleMapRLP(M,15)
-                           +String #rlpEncodeString( VALUE )
+      => #rlpEncodeLength(        MerkleMapRLP(M, 0) +Bytes MerkleMapRLP(M, 1)
+                           +Bytes MerkleMapRLP(M, 2) +Bytes MerkleMapRLP(M, 3)
+                           +Bytes MerkleMapRLP(M, 4) +Bytes MerkleMapRLP(M, 5)
+                           +Bytes MerkleMapRLP(M, 6) +Bytes MerkleMapRLP(M, 7)
+                           +Bytes MerkleMapRLP(M, 8) +Bytes MerkleMapRLP(M, 9)
+                           +Bytes MerkleMapRLP(M,10) +Bytes MerkleMapRLP(M,11)
+                           +Bytes MerkleMapRLP(M,12) +Bytes MerkleMapRLP(M,13)
+                           +Bytes MerkleMapRLP(M,14) +Bytes MerkleMapRLP(M,15)
+                           +Bytes #rlpEncodeString( VALUE )
                          , 192
                          )
 
-    syntax String ::= MerkleMapRLP( Map, Int ) [function]
+    syntax Bytes ::= MerkleMapRLP( Map, Int ) [function]
  // -----------------------------------------------------
     rule MerkleMapRLP(M, I) => #rlpMerkleH( #rlpEncodeMerkleTree( { M[I] orDefault .MerkleTree }:>MerkleTree ) )
 
-    syntax String ::= #rlpMerkleH ( String ) [function,klabel(MerkleRLPAux)]
+    syntax Bytes ::= #rlpMerkleH ( Bytes ) [function,klabel(MerkleRLPAux)]
  // ------------------------------------------------------------------------
-    rule #rlpMerkleH ( X ) => #rlpEncodeString( Hex2Raw( Keccak256( String2Bytes( X ) ) ) )
-      requires lengthString(X) >=Int 32
+    rule #rlpMerkleH ( X ) => #rlpEncodeBytes( Keccak256raw( X ) )
+      requires lengthBytes(X) >=Int 32
 
     rule #rlpMerkleH ( X ) => X
-      requires notBool lengthString(X) >=Int 32
+      requires notBool lengthBytes(X) >=Int 32
 ```
 
 Decoding
 --------
 
--   `#rlpDecode` RLP decodes a single `String` into a `JSON`.
--   `#rlpDecodeList` RLP decodes a single `String` into a `JSONs`, interpereting the string as the RLP encoding of a list.
+-   `#rlpDecode` RLP decodes a single `Bytes` into a `JSON`.
+-   `#rlpDecodeList` RLP decodes a single `Bytes` into a `JSONs`, interpereting the input as the RLP encoding of a list.
 
 ```k
-    syntax JSON ::= #rlpDecode(String)               [function]
-                  | #rlpDecode(String, LengthPrefix) [function, klabel(#rlpDecodeAux)]
+    syntax JSON ::= #rlpDecode(Bytes)               [function]
+                  | #rlpDecode(Bytes, LengthPrefix) [function, klabel(#rlpDecodeAux)]
  // ----------------------------------------------------------------------------------
-    rule #rlpDecode(STR) => #rlpDecode(STR, #decodeLengthPrefix(STR, 0))
-    rule #rlpDecode(STR,  #str( LEN, POS)) => substrString(STR, POS, POS +Int LEN)
-    rule #rlpDecode(STR, #list(_LEN, POS)) => [#rlpDecodeList(STR, POS)]
+    rule #rlpDecode(BYTES) => #rlpDecode(BYTES, #decodeLengthPrefix(BYTES, 0))
+    rule #rlpDecode(BYTES,  #str( LEN, POS)) => #unparseByteStack(substrBytes(BYTES, POS, POS +Int LEN))
+    rule #rlpDecode(BYTES, #list(_LEN, POS)) => [#rlpDecodeList(BYTES, POS)]
 
-    syntax JSONs ::= #rlpDecodeList(String, Int)               [function]
-                   | #rlpDecodeList(String, Int, LengthPrefix) [function, klabel(#rlpDecodeListAux)]
+    syntax JSONs ::= #rlpDecodeList(Bytes, Int)               [function]
+                   | #rlpDecodeList(Bytes, Int, LengthPrefix) [function, klabel(#rlpDecodeListAux)]
  // ------------------------------------------------------------------------------------------------
-    rule #rlpDecodeList(STR, POS) => #rlpDecodeList(STR, POS, #decodeLengthPrefix(STR, POS)) requires POS <Int lengthString(STR)
-    rule #rlpDecodeList(  _,   _) => .JSONs [owise]
-    rule #rlpDecodeList(STR, POS, _:LengthPrefixType(L, P)) => #rlpDecode(substrString(STR, POS, L +Int P)) , #rlpDecodeList(STR, L +Int P)
+    rule #rlpDecodeList(BYTES, POS) => #rlpDecodeList(BYTES, POS, #decodeLengthPrefix(BYTES, POS)) requires POS <Int lengthBytes(BYTES)
+    rule #rlpDecodeList(    _,   _) => .JSONs [owise]
+    rule #rlpDecodeList(BYTES, POS, _:LengthPrefixType(L, P)) => #rlpDecode(substrBytes(BYTES, POS, L +Int P)) , #rlpDecodeList(BYTES, L +Int P)
 
     syntax LengthPrefixType ::= "#str" | "#list"
     syntax LengthPrefix ::= LengthPrefixType "(" Int "," Int ")"
-                          | #decodeLengthPrefix ( String , Int )                                [function]
-                          | #decodeLengthPrefix ( String , Int , Int )                          [function, klabel(#decodeLengthPrefixAux)]
-                          | #decodeLengthPrefixLength ( LengthPrefixType , String , Int , Int ) [function]
-                          | #decodeLengthPrefixLength ( LengthPrefixType , Int    , Int , Int ) [function, klabel(#decodeLengthPrefixLengthAux)]
+                          | #decodeLengthPrefix ( Bytes , Int )                                [function]
+                          | #decodeLengthPrefix ( Bytes , Int , Int )                          [function, klabel(#decodeLengthPrefixAux)]
+                          | #decodeLengthPrefixLength ( LengthPrefixType , Bytes , Int , Int ) [function]
+                          | #decodeLengthPrefixLength ( LengthPrefixType , Int   , Int , Int ) [function, klabel(#decodeLengthPrefixLengthAux)]
  // --------------------------------------------------------------------------------------------------------------------------------------------
-    rule #decodeLengthPrefix(STR, START) => #decodeLengthPrefix(STR, START, ordChar(substrString(STR, START, START +Int 1)))
+    rule #decodeLengthPrefix(BYTES, START) => #decodeLengthPrefix(BYTES, START, #asWord(substrBytes(BYTES, START, START +Int 1)))
 
-    rule #decodeLengthPrefix(  _, START, B0) => #str(1, START)                                   requires B0 <Int 128
-    rule #decodeLengthPrefix(  _, START, B0) => #str(B0 -Int 128, START +Int 1)                  requires B0 >=Int 128 andBool B0 <Int (128 +Int 56)
-    rule #decodeLengthPrefix(STR, START, B0) => #decodeLengthPrefixLength(#str, STR, START, B0)  requires B0 >=Int (128 +Int 56) andBool B0 <Int 192
-    rule #decodeLengthPrefix(  _, START, B0) => #list(B0 -Int 192, START +Int 1)                 requires B0 >=Int 192 andBool B0 <Int 192 +Int 56
-    rule #decodeLengthPrefix(STR, START, B0) => #decodeLengthPrefixLength(#list, STR, START, B0) [owise]
+    rule #decodeLengthPrefix(    _, START, B0) => #str(1, START)                                     requires B0 <Int 128
+    rule #decodeLengthPrefix(    _, START, B0) => #str(B0 -Int 128, START +Int 1)                    requires B0 >=Int 128 andBool B0 <Int (128 +Int 56)
+    rule #decodeLengthPrefix(BYTES, START, B0) => #decodeLengthPrefixLength(#str, BYTES, START, B0)  requires B0 >=Int (128 +Int 56) andBool B0 <Int 192
+    rule #decodeLengthPrefix(    _, START, B0) => #list(B0 -Int 192, START +Int 1)                   requires B0 >=Int 192 andBool B0 <Int 192 +Int 56
+    rule #decodeLengthPrefix(BYTES, START, B0) => #decodeLengthPrefixLength(#list, BYTES, START, B0) [owise]
 
-    rule #decodeLengthPrefixLength(#str,  STR, START, B0) => #decodeLengthPrefixLength(#str,  START, B0 -Int 128 -Int 56 +Int 1, #asWord(#parseByteStackRaw(substrString(STR, START +Int 1, START +Int 1 +Int (B0 -Int 128 -Int 56 +Int 1)))))
-    rule #decodeLengthPrefixLength(#list, STR, START, B0) => #decodeLengthPrefixLength(#list, START, B0 -Int 192 -Int 56 +Int 1, #asWord(#parseByteStackRaw(substrString(STR, START +Int 1, START +Int 1 +Int (B0 -Int 192 -Int 56 +Int 1)))))
+    rule #decodeLengthPrefixLength(#str,  BYTES, START, B0) => #decodeLengthPrefixLength(#str,  START, B0 -Int 128 -Int 56 +Int 1, #asWord(substrBytes(BYTES, START +Int 1, START +Int 1 +Int (B0 -Int 128 -Int 56 +Int 1))))
+    rule #decodeLengthPrefixLength(#list, BYTES, START, B0) => #decodeLengthPrefixLength(#list, START, B0 -Int 192 -Int 56 +Int 1, #asWord(substrBytes(BYTES, START +Int 1, START +Int 1 +Int (B0 -Int 192 -Int 56 +Int 1))))
     rule #decodeLengthPrefixLength(TYPE, START, LL, L) => TYPE(L, START +Int 1 +Int LL)
 
     syntax JSONs ::= #rlpDecodeTransaction(Bytes) [function]
  // --------------------------------------------------------
-    rule #rlpDecodeTransaction(T) => #unparseByteStack(#range(T, 0, 1)), #rlpDecode(#unparseByteStack(#range(T, 1,  lengthBytes(T) -Int 1)))
+    rule #rlpDecodeTransaction(T) => #range(T, 0, 1), #rlpDecode(#range(T, 1,  lengthBytes(T) -Int 1))
 ```
 
 Merkle Patricia Tree
@@ -706,12 +705,12 @@ Tree Root Helper Functions
     rule #precompiledAccountsMapAux( .List, M ) => M
     rule #precompiledAccountsMapAux( (ListItem( ACCT ) => .List) _, M => M[#parseByteStackRaw( Hex2Raw( #unparseData( ACCT, 20 ) ) ) <- #emptyContractRLP] )
 
-    syntax String ::= "#emptyContractRLP" [function]
+    syntax Bytes ::= "#emptyContractRLP" [function]
  // ------------------------------------------------
-    rule #emptyContractRLP => #rlpEncodeLength(         #rlpEncodeInt(0)
-                                                +String #rlpEncodeInt(0)
-                                                +String #rlpEncodeString( Hex2Raw( Keccak256(b"\x80") ) )
-                                                +String #rlpEncodeString( Hex2Raw( Keccak256(b"") ) )
+    rule #emptyContractRLP => #rlpEncodeLength(        #rlpEncodeInt(0)
+                                                +Bytes #rlpEncodeInt(0)
+                                                +Bytes #rlpEncodeBytes( Keccak256raw(b"\x80") )
+                                                +Bytes #rlpEncodeBytes( Keccak256raw(b"") )
                                               , 192
                                               )
 endmodule

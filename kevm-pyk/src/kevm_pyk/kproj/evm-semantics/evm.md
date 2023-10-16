@@ -1694,7 +1694,7 @@ Precompiled Contracts
     syntax Bytes ::= #ecrec ( Bytes , Bytes , Bytes , Bytes ) [function, smtlib(ecrec)]
                    | #ecrec ( Account )                       [function]
  // --------------------------------------------------------------------
-    rule [ecrec]: #ecrec(HASH, SIGV, SIGR, SIGS) => #ecrec(#sender(#unparseByteStack(HASH), #asWord(SIGV), #unparseByteStack(SIGR), #unparseByteStack(SIGS))) [concrete]
+    rule [ecrec]: #ecrec(HASH, SIGV, SIGR, SIGS) => #ecrec(#sender(HASH, #asWord(SIGV), SIGR, SIGS)) [concrete]
 
     rule #ecrec(.Account) => .Bytes
     rule #ecrec(N:Int)    => #padToWidth(32, #asByteStack(N))
