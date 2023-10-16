@@ -6,7 +6,6 @@ import shutil
 from abc import ABC, abstractmethod
 from collections.abc import Mapping
 from pathlib import Path
-from tempfile import TemporaryDirectory
 from typing import TYPE_CHECKING
 
 from pyk.utils import hash_str
@@ -140,16 +139,12 @@ def get_or_none(target: str) -> Path | None:
 
 
 def build(target: str, *, force: bool = False, **kwargs: Any) -> Path:
-    res = which(target)
-    if not force and res.exists():
-        return res
+    # TODO Locking
+    output_dir = which(target)
+    if not force and output_dir.exists():
+        return output_dir
 
+    output_dir.mkdir(parents=True)
     _target = targets()[target]
-
-    with TemporaryDirectory(prefix=f'kevm-dist-{target}-') as build_dir_str:
-        build_dir = Path(build_dir_str)
-        _target.build(output_dir=build_dir, args=kwargs)
-        # TODO Locking
-        shutil.copytree(build_dir_str, str(res), dirs_exist_ok=True)
-
-    return res
+    _target.build(output_dir, args=kwargs)
+    return output_dir
