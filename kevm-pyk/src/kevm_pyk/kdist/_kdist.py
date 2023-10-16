@@ -45,11 +45,11 @@ def _load() -> dict[str, Target]:
     import importlib
     from importlib.metadata import entry_points
 
-    plugins = entry_points(group='kevm-dist')
+    plugins = entry_points(group='kdist')
 
     res: dict[str, Target] = {}
     for plugin in plugins:
-        _LOGGER.info(f'Loading kevm-dist plugin: {plugin.name}')
+        _LOGGER.info(f'Loading kdist plugin: {plugin.name}')
         module_name = plugin.value
         try:
             _LOGGER.info(f'Importing module: {module_name}')
