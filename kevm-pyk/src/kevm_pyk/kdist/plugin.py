@@ -70,7 +70,7 @@ class PluginTarget(Target):
             yield build_dir
 
 
-TARGETS: Final = {
+__TARGETS__: Final = {
     'llvm': KEVMTarget(
         {
             'target': KompileTarget.LLVM,

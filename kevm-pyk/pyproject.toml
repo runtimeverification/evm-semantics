@@ -46,6 +46,9 @@ kevm-dist = "kevm_pyk.kdist.__main__:main"
 gst-to-kore = "kevm_pyk.gst_to_kore:main"
 kontrolx = "kontrolx.__main__:main"
 
+[tool.poetry.plugins.kevm-dist]
+evm-semantics = "kevm_pyk.kdist.plugin"
+
 [tool.isort]
 profile = "black"
 line_length = 120

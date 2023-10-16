@@ -35,6 +35,9 @@ def main() -> None:
     elif args.command == 'which':
         _exec_which(args.target)
 
+    elif args.command == 'list':
+        _exec_list()
+
     else:
         raise AssertionError()
 
@@ -97,6 +100,12 @@ def _exec_which(target: str | None) -> None:
     print(res)
 
 
+def _exec_list() -> None:
+    targets = kdist.targets()
+    for target in targets:
+        print(target)
+
+
 def _parse_arguments() -> Namespace:
     targets = list(kdist.targets())
 
@@ -135,6 +144,8 @@ def _parse_arguments() -> Namespace:
 
     which_parser = command_parser.add_parser('which', help='print target location')
     add_target_arg(which_parser, 'target to print directory for')
+
+    command_parser.add_parser('list', help='print list of available targets')
 
     return parser.parse_args()
 
