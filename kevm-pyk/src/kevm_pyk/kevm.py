@@ -4,7 +4,7 @@ import logging
 from typing import TYPE_CHECKING
 
 from pyk.cterm import CTerm
-from pyk.kast.inner import KApply, KLabel, KSequence, KSort, KVariable, build_assoc
+from pyk.kast.inner import KApply, KLabel, KSequence, KSort, KVariable, build_assoc, build_cons
 from pyk.kast.manip import abstract_term_safely, bottom_up, flatten_label
 from pyk.kast.pretty import paren
 from pyk.kcfg.semantics import KCFGSemantics
@@ -399,8 +399,9 @@ class KEVM(KProve, KRun):
     def typed_args(args: list[KApply], res: KApply | None = None) -> KApply:
         res = KEVM.empty_typedargs() if res is None else res
         for arg in reversed(args):
-            res = KEVM.to_typed_arg(arg, res)
-        return res
+        #     res = KEVM.to_typed_arg(arg, res)
+        # return res
+        return build_cons(res, '_,__EVM-ABI_TypedArgs_TypedArg_TypedArgs', reversed(args))
 
     @staticmethod
     def to_typed_arg(arg: KApply, res: KApply) -> KApply:
