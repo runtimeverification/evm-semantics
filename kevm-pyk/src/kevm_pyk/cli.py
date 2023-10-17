@@ -271,6 +271,13 @@ class KEVMCLIArgs(KCLIArgs):
             action='store_true',
             help='Show models for failing nodes.',
         )
+        args.add_argument(
+            '--fail-fast',
+            dest='fail_fast',
+            default=False,
+            action='store_true',
+            help='Stop execution on other branches if failing node is detected.',
+        )
         return args
 
     @cached_property

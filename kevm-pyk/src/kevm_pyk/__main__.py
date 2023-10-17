@@ -225,6 +225,7 @@ def exec_prove(
     trace_rewrites: bool = False,
     failure_info: bool = True,
     auto_abstract_gas: bool = False,
+    fail_fast: bool = False,
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'md_selector', f'--md-selector: {kwargs["md_selector"]}')
@@ -348,6 +349,7 @@ def exec_prove(
                 break_every_step=break_every_step,
                 break_on_jumpi=break_on_jumpi,
                 break_on_calls=break_on_calls,
+                fail_fast=fail_fast,
             )
             end_time = time.time()
             _LOGGER.info(f'Proof timing {proof_problem.id}: {end_time - start_time}s')
