@@ -342,13 +342,13 @@ flake8 = "*"
 
 [[package]]
 name = "flake8-type-checking"
-version = "2.4.2"
+version = "2.5.0"
 description = "A flake8 plugin for managing type-checking imports & forward references"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "flake8_type_checking-2.4.2-py3-none-any.whl", hash = "sha256:921efdcb2bfcd6d6cd3bb411419e9dcbd506bd8893ad749030d9cce032129f28"},
-    {file = "flake8_type_checking-2.4.2.tar.gz", hash = "sha256:468a7c91ca6ebe58c4af6836dda3bfeba7bfb7c0b5f724baf5024ad5fda0504c"},
+    {file = "flake8_type_checking-2.5.0-py3-none-any.whl", hash = "sha256:a848d4fff3decee0d74a96da8484a6f40d6942db35d71ccd89a29921d88c184e"},
+    {file = "flake8_type_checking-2.5.0.tar.gz", hash = "sha256:6d50c52699853837dd17b5d7718bdf77c74ff14f546ed53d6977223db9f88525"},
 ]
 
 [package.dependencies]
@@ -792,7 +792,7 @@ plugins = ["importlib-metadata"]
 
 [[package]]
 name = "pyk"
-version = "0.1.466"
+version = "0.1.467"
 description = ""
 optional = false
 python-versions = "^3.10"
@@ -812,8 +812,8 @@ tomli = "^2.0.1"
 [package.source]
 type = "git"
 url = "https://github.com/runtimeverification/pyk.git"
-reference = "v0.1.466"
-resolved_reference = "ea37c367a68f74d23d8f57e24c433e4d1ad81676"
+reference = "v0.1.467"
+resolved_reference = "daf738ffa19d42e0485bb33c77fba49ffbddb913"
 
 [[package]]
 name = "pyperclip"
@@ -1077,4 +1077,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "0a0bee9985251cabf7d14666dfbe23e61f2b5a9e7d9ef51e1ada2975152a15c0"
+content-hash = "a29253fb58e179842badab1572b9ee1169ae7cd17664409acaefad4b7dfebd6c"
