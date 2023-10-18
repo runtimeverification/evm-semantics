@@ -25,21 +25,10 @@
       flake = false;
     };
     haskell-backend.follows = "k-framework/haskell-backend";
-    foundry = {
-      url =
-        "github:shazow/foundry.nix/monthly"; # Use monthly branch for permanent releases
-      inputs.nixpkgs.follows = "k-framework/nixpkgs";
-      inputs.flake-utils.follows = "k-framework/flake-utils";
-    };
-    solc = {
-      url = "github:hellwolf/solc.nix";
-      inputs.nixpkgs.follows = "k-framework/nixpkgs";
-      inputs.flake-utils.follows = "k-framework/flake-utils";
-    };
   };
   outputs = { self, k-framework, haskell-backend, nixpkgs, flake-utils
     , blockchain-k-plugin, ethereum-tests, ethereum-legacytests, rv-utils, pyk
-    , foundry, solc, ... }@inputs:
+    , ... }@inputs:
     let
       nixLibs = pkgs:
         with pkgs;
@@ -61,7 +50,6 @@
           pkg-config
           procps
           python310-pyk
-          (solc.mkDefault pkgs solc_0_8_13)
           time
         ] ++ lib.optional (!stdenv.isDarwin) elfutils;
 
@@ -194,8 +182,6 @@
             })
             k-framework.overlay
             blockchain-k-plugin.overlay
-            foundry.overlay
-            solc.overlay
             overlay
           ];
         };
@@ -204,7 +190,7 @@
         packages.default = kevm;
         devShell = pkgs.mkShell {
           buildInputs = buildInputs pkgs
-            ++ [ pkgs.poetry-nixpkgs pkgs.foundry-bin ];
+            ++ [ pkgs.poetry-nixpkgs ];
 
           shellHook = ''
             export NIX_LIBS="${nixLibs pkgs}"

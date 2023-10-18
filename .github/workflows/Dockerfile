@@ -3,17 +3,11 @@ ARG K_VERSION
 ARG BASE_DISTRO
 ARG LLVM_VERSION
 
-FROM ghcr.io/foundry-rs/foundry:nightly-ca67d15f4abd46394b324c50e21e66f306a1162d as FOUNDRY
-
 ARG Z3_VERSION
 FROM runtimeverificationinc/z3:ubuntu-jammy-${Z3_VERSION} as Z3
 
 ARG K_VERSION
 FROM runtimeverificationinc/kframework-k:ubuntu-jammy-${K_VERSION}
-
-COPY --from=FOUNDRY /usr/local/bin/forge /usr/local/bin/forge
-COPY --from=FOUNDRY /usr/local/bin/anvil /usr/local/bin/anvil
-COPY --from=FOUNDRY /usr/local/bin/cast /usr/local/bin/cast
 
 COPY --from=Z3 /usr/bin/z3 /usr/bin/z3
 
