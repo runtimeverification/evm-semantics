@@ -47,7 +47,6 @@ These additional files extend the semantics to make the repository more useful:
 -   [abi.md](kevm-pyk/src/kevm_pyk/kproj/evm-semantics/abi.md) defines the [Contract ABI Specification](https://docs.soliditylang.org/en/v0.8.22/abi-spec.html) for use in proofs and easy contract/function specification.
 -   [hashed-locations.md](kevm-pyk/src/kevm_pyk/kproj/evm-semantics/hashed-locations.md) defines the `#hashedLocation` abstraction used to specify Solidity-generated storage layouts.
 -   [edsl.md](kevm-pyk/src/kevm_pyk/kproj/evm-semantics/edsl.md) combines the previous three abstractions for ease-of-use.
--   [foundry.md](kevm-pyk/src/kevm_pyk/kproj/evm-semantics/foundry.md) adds Foundry capabilities to KEVM.
 
 These files are used for testing the semantics itself:
 
