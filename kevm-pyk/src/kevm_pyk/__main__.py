@@ -26,9 +26,8 @@ from pyk.proof.show import APRProofShow
 from pyk.proof.tui import APRProofViewer
 from pyk.utils import single
 
-from . import VERSION, config
+from . import VERSION, config, kdist
 from .cli import KEVMCLIArgs, node_id_like
-from .dist import DistTarget
 from .gst_to_kore import SORT_ETHEREUM_SIMULATION, gst_to_kore, kore_pgm_to_kore
 from .kevm import KEVM, KEVMSemantics, kevm_node_printer
 from .kompile import KompileTarget, kevm_kompile
@@ -160,7 +159,7 @@ def exec_prove_legacy(
     _ignore_arg(kwargs, 'md_selector', f'--md-selector: {kwargs["md_selector"]}')
 
     if definition_dir is None:
-        definition_dir = DistTarget.HASKELL.get()
+        definition_dir = kdist.get('haskell')
 
     kevm = KEVM(definition_dir, use_directory=save_directory)
 
@@ -232,7 +231,7 @@ def exec_prove(
     md_selector = 'k'
 
     if definition_dir is None:
-        definition_dir = DistTarget.HASKELL.get()
+        definition_dir = kdist.get('haskell')
 
     if smt_timeout is None:
         smt_timeout = 300
@@ -527,16 +526,16 @@ def exec_run(
     schedule: str,
     mode: str,
     chainid: int,
-    target: DistTarget | None = None,
+    target: str | None = None,
     save_directory: Path | None = None,
     debugger: bool = False,
     **kwargs: Any,
 ) -> None:
     if target is None:
-        target = DistTarget.LLVM
+        target = 'llvm'
 
     _ignore_arg(kwargs, 'definition_dir', f'--definition: {kwargs["definition_dir"]}')
-    kevm = KEVM(target.get(), use_directory=save_directory)
+    kevm = KEVM(kdist.get(target), use_directory=save_directory)
 
     try:
         json_read = json.loads(input_file.read_text())
@@ -564,15 +563,15 @@ def exec_kast(
     schedule: str,
     mode: str,
     chainid: int,
-    target: DistTarget | None = None,
+    target: str | None = None,
     save_directory: Path | None = None,
     **kwargs: Any,
 ) -> None:
     if target is None:
-        target = DistTarget.LLVM
+        target = 'llvm'
 
     _ignore_arg(kwargs, 'definition_dir', f'--definition: {kwargs["definition_dir"]}')
-    kevm = KEVM(target.get(), use_directory=save_directory)
+    kevm = KEVM(kdist.get(target), use_directory=save_directory)
 
     try:
         json_read = json.loads(input_file.read_text())
