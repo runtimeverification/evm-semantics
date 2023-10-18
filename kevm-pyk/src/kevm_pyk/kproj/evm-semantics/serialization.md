@@ -446,7 +446,7 @@ Decoding
 
     syntax JSONs ::= #rlpDecodeTransaction(Bytes) [function]
  // --------------------------------------------------------
-    rule #rlpDecodeTransaction(T) => #range(T, 0, 1), #rlpDecode(#range(T, 1,  lengthBytes(T) -Int 1))
+    rule #rlpDecodeTransaction(T) => #unparseByteStack(#range(T, 0, 1)), #rlpDecode(#range(T, 1, lengthBytes(T) -Int 1))
 ```
 
 Merkle Patricia Tree
