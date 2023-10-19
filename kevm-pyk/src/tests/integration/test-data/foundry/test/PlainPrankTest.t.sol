@@ -90,6 +90,4 @@ contract PlainPrankTest is Test {
         token.incrementCount();
         assert(token.count() == 1);
     }
-
-
 }
