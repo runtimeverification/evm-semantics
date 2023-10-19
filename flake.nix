@@ -3,13 +3,13 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/b01f185e4866de7c5b5a82f833ca9ea3c3f72fc4";
-    k-framework.url = "github:runtimeverification/k/v6.0.87";
+    k-framework.url = "github:runtimeverification/k/v6.0.133";
     k-framework.inputs.nixpkgs.follows = "nixpkgs";
     #nixpkgs.follows = "k-framework/nixpkgs";
     flake-utils.follows = "k-framework/flake-utils";
     rv-utils.url = "github:runtimeverification/rv-nix-tools";
     poetry2nix.follows = "pyk/poetry2nix";
-    blockchain-k-plugin.url = "github:runtimeverification/blockchain-k-plugin/c095983f3aec21c52f00b2d433202052ad7db104";
+    blockchain-k-plugin.url = "github:runtimeverification/blockchain-k-plugin/b42e6ede9f6b72cedabc519810416e2994caad45";
     blockchain-k-plugin.inputs.flake-utils.follows = "k-framework/flake-utils";
     blockchain-k-plugin.inputs.nixpkgs.follows = "k-framework/nixpkgs";
     ethereum-tests.url = "github:ethereum/tests/6401889dec4eee58e808fd178fb2c7f628a3e039";
@@ -17,7 +17,7 @@
     ethereum-legacytests.url = "github:ethereum/legacytests/d7abc42a7b352a7b44b1f66b58aca54e4af6a9d7";
     ethereum-legacytests.flake = false;
     haskell-backend.follows = "k-framework/haskell-backend";
-    pyk.url = "github:runtimeverification/pyk/v0.1.448";
+    pyk.url = "github:runtimeverification/pyk/v0.1.461";
     pyk.inputs.flake-utils.follows = "k-framework/flake-utils";
     pyk.inputs.nixpkgs.follows = "k-framework/nixpkgs";
     foundry.url = "github:shazow/foundry.nix/monthly"; # Use monthly branch for permanent releases
