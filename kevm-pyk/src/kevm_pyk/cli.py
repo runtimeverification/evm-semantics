@@ -245,6 +245,20 @@ class KEVMCLIArgs(KCLIArgs):
             help='Custom command to start RPC server',
         )
         args.add_argument(
+            '--port',
+            dest='port',
+            type=int,
+            default=None,
+            help='Use existing RPC server on named port',
+        )
+        args.add_argument(
+            '--maude-port',
+            dest='maude_port',
+            type=int,
+            default=None,
+            help='Use existing Maude RPC server on named port',
+        )
+        args.add_argument(
             '--failure-information',
             dest='failure_info',
             default=True,
