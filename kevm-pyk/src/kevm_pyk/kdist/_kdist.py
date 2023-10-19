@@ -148,7 +148,6 @@ def build(
     force: bool = False,
     enable_llvm_debug: bool = False,
     verbose: bool = False,
-    debug: bool = False,
 ) -> None:
     _LOGGER.info(f"Building targets: {', '.join(targets)}")
 
