@@ -18,10 +18,24 @@ contract AdditionalToken {
     }
 }
 
+contract MyErc20 {
+    constructor() {
+       // this check should not fail
+        require(msg.sender == address(0xdeadbeef));
+    }
+}
+
 contract PlainPrankTest is Test {
+    MyErc20 erc20a;
 
     function internalCounter() public view returns (bool) {
         return msg.sender == address(15);
+    }
+
+    function testPrank() external {
+        vm.startPrank(address(0xdeadbeef));
+        erc20a = new MyErc20();
+        vm.stopPrank();
     }
 
     function testFail_startPrank_internalCall() public {
@@ -76,4 +90,6 @@ contract PlainPrankTest is Test {
         token.incrementCount();
         assert(token.count() == 1);
     }
+
+
 }
