@@ -1304,7 +1304,7 @@ def _init_cterm(
         'ISSTORAGEWHITELISTACTIVE_CELL': FALSE,
         'ADDRESSSET_CELL': KApply('.Set'),
         'STORAGESLOTSET_CELL': KApply('.Set'),
-        'CUTPC': KApply('.Set'),
+        'CUTPC_CELL': KApply('.Set'),
     }
 
     constraints = None
