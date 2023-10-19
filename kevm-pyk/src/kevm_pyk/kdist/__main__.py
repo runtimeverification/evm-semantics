@@ -1,9 +1,7 @@
 from __future__ import annotations
 
 import logging
-import time
 from argparse import ArgumentParser
-from concurrent.futures import ThreadPoolExecutor
 from typing import TYPE_CHECKING
 
 from pyk.cli.args import KCLIArgs
@@ -13,7 +11,6 @@ from .. import kdist
 
 if TYPE_CHECKING:
     from argparse import Namespace
-    from concurrent.futures import Future
     from typing import Final
 
 
@@ -51,43 +48,15 @@ def _exec_build(
     verbose: bool,
     debug: bool,
 ) -> None:
-    _LOGGER.info(f"Building targets: {', '.join(targets)}")
-
-    verbose = verbose or debug
-
-    delay_llvm = 'llvm' in targets and 'plugin' in targets
-
-    with ThreadPoolExecutor(max_workers=jobs) as pool:
-        pending: list[Future] = []
-        plugin: Future | None = None
-
-        for target in targets:
-            if target == 'llvm' and delay_llvm:
-                continue
-
-            plugin = pool.submit(
-                kdist._build_target, target=target, force=force, enable_llvm_debug=enable_llvm_debug, verbose=verbose
-            )
-            pending.append(plugin)
-
-        while pending:
-            current = next((future for future in pending if future.done()), None)
-
-            if current is None:
-                time.sleep(0.01)
-                continue
-
-            result = current.result()
-            print(result)
-
-            if current == plugin and delay_llvm:
-                pending.append(
-                    pool.submit(
-                        kdist._build_target, target='llvm', force=force, enable_llvm_debug=enable_llvm_debug, verbose=verbose
-                    )
-                )
-
-            pending.remove(current)
+    kdist.build(
+        command=command,
+        targets=targets,
+        jobs=jobs,
+        force=force,
+        enable_llvm_debug=enable_llvm_debug,
+        verbose=verbose,
+        debug=debug,
+    )
 
 
 def _exec_clean(target: str | None) -> None:
