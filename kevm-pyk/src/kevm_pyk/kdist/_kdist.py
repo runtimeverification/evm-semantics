@@ -143,11 +143,12 @@ def get_or_none(target: str) -> Path | None:
 
 def build(
     targets: list[str],
-    jobs: int,
-    force: bool,
-    enable_llvm_debug: bool,
-    verbose: bool,
-    debug: bool,
+    *,
+    jobs: int = 1,
+    force: bool = False,
+    enable_llvm_debug: bool = False,
+    verbose: bool = False,
+    debug: bool = False,
 ) -> None:
     _LOGGER.info(f"Building targets: {', '.join(targets)}")
 
