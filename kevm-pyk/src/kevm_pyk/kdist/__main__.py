@@ -48,13 +48,13 @@ def _exec_build(
     verbose: bool,
     debug: bool,
 ) -> None:
+    verbose = verbose or debug
     kdist.build(
         targets=targets,
         jobs=jobs,
         force=force,
         enable_llvm_debug=enable_llvm_debug,
         verbose=verbose,
-        debug=debug,
     )
 
 

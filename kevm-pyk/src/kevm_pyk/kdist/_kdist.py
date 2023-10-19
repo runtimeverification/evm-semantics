@@ -152,8 +152,6 @@ def build(
 ) -> None:
     _LOGGER.info(f"Building targets: {', '.join(targets)}")
 
-    verbose = verbose or debug
-
     delay_llvm = 'llvm' in targets and 'plugin' in targets
 
     with ThreadPoolExecutor(max_workers=jobs) as pool:
