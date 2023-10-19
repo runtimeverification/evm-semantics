@@ -58,8 +58,8 @@ jobs:
         with:
           submodules: true
           fetch-depth: 0
-      - name: 'Install Poetry'
-        uses: Gr1N/setup-poetry@v8
+      # - name: 'Install Poetry'
+      #   uses: Gr1N/setup-poetry@v8
       - name: 'Run unit tests'
         run: |
           make -C kevm-pyk cov-unit
