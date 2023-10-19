@@ -138,7 +138,7 @@ def get_or_none(target: str) -> Path | None:
     return res
 
 
-def build(target: str, *, force: bool = False, **kwargs: Any) -> Path:
+def _build_target(target: str, *, force: bool = False, **kwargs: Any) -> Path:
     # TODO Locking
     output_dir = which(target)
     if not force and output_dir.exists():

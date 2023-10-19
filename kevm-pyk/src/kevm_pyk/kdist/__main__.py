@@ -66,7 +66,7 @@ def _exec_build(
                 continue
 
             plugin = pool.submit(
-                kdist.build, target=target, force=force, enable_llvm_debug=enable_llvm_debug, verbose=verbose
+                kdist._build_target, target=target, force=force, enable_llvm_debug=enable_llvm_debug, verbose=verbose
             )
             pending.append(plugin)
 
@@ -83,7 +83,7 @@ def _exec_build(
             if current == plugin and delay_llvm:
                 pending.append(
                     pool.submit(
-                        kdist.build, target='llvm', force=force, enable_llvm_debug=enable_llvm_debug, verbose=verbose
+                        kdist._build_target, target='llvm', force=force, enable_llvm_debug=enable_llvm_debug, verbose=verbose
                     )
                 )
 
