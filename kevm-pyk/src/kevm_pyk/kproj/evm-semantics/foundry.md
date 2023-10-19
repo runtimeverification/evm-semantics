@@ -776,7 +776,7 @@ Pranks
 
 #### Injecting addresses in a call
 
-To inject the pranked `msg.sender` and `tx.origin` we add two new rules for the `#call` production, defined in [evm.md](./evm.md).
+To inject the pranked `msg.sender` and `tx.origin` we add two new rules for each of the `#call` and `#create` productions, defined in [evm.md](./evm.md).
 These rules have a higher priority.
 The only difference between these rules is that one will also set the `tx.origin`, if required.
 First, will match only if the `<active>` cell has the `true` value, signaling that a prank is active, and if the current depth of the call is at the same level with the depth at which the prank was invoked.
@@ -784,7 +784,7 @@ This is needed in order to prevent overwriting the caller for subcalls.
 Finally, the original sender of the transaction, `ACCTFROM` is changed to the new caller, `NCL`.
 
 ```k
-    rule [foundry.prank.injectCaller]:
+    rule [foundry.prank.call.injectCaller]:
          <k> #call (ACCTFROM => NCL) _ACCTTO _ACCTCODE _VALUE _APPVALUE _ARGS _STATIC ... </k>
          <callDepth> CD </callDepth>
          <prank>
@@ -798,8 +798,38 @@ Finally, the original sender of the transaction, `ACCTFROM` is changed to the ne
        andBool ACCTFROM =/=Int NCL
       [priority(40)]
 
-    rule [foundry.prank.injectCallerAndOrigin]:
+    rule [foundry.prank.call.injectCallerAndOrigin]:
          <k> #call (ACCTFROM => NCL) _ACCTTO _ACCTCODE _VALUE _APPVALUE _ARGS _STATIC ... </k>
+         <callDepth> CD </callDepth>
+         <origin> _ => NOG </origin>
+         <prank>
+            <newCaller> NCL </newCaller>
+            <newOrigin> NOG </newOrigin>
+            <active> true </active>
+            <depth> CD </depth>
+            ...
+         </prank>
+      requires NCL =/=K .Account
+       andBool NOG =/=K .Account
+       andBool ACCTFROM =/=Int NCL
+      [priority(40)]
+
+    rule [foundry.prank.create.injectCaller]:
+         <k> #create (ACCTFROM => NCL) _ACCTTO _VALUE _INITCODE ... </k>
+         <callDepth> CD </callDepth>
+         <prank>
+            <newCaller> NCL </newCaller>
+            <newOrigin> .Account </newOrigin>
+            <active> true </active>
+            <depth> CD </depth>
+            ...
+         </prank>
+      requires NCL =/=K .Account
+       andBool ACCTFROM =/=Int NCL
+      [priority(40)]
+
+    rule [foundry.prank.create.injectCallerAndOrigin]:
+         <k>#create ( ACCTFROM => NCL) _ACCTTO _VALUE _INITCODE ... </k>
          <callDepth> CD </callDepth>
          <origin> _ => NOG </origin>
          <prank>
