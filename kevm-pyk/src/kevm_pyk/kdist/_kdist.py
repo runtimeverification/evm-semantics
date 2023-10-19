@@ -142,7 +142,6 @@ def get_or_none(target: str) -> Path | None:
 
 
 def build(
-    command: str,
     targets: list[str],
     jobs: int,
     force: bool,

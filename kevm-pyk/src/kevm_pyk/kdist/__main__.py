@@ -49,7 +49,6 @@ def _exec_build(
     debug: bool,
 ) -> None:
     kdist.build(
-        command=command,
         targets=targets,
         jobs=jobs,
         force=force,
