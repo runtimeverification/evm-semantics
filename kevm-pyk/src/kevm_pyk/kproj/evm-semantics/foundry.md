@@ -776,7 +776,7 @@ Pranks
 
 #### Injecting addresses in a call
 
-To inject the pranked `msg.sender` and `tx.origin` we add two new rules for the `#call` production, defined in [evm.md](./evm.md).
+To inject the pranked `msg.sender` and `tx.origin` we add two new rules for each of the `#call` and `#create` productions, defined in [evm.md](./evm.md).
 These rules have a higher priority.
 The only difference between these rules is that one will also set the `tx.origin`, if required.
 First, will match only if the `<active>` cell has the `true` value, signaling that a prank is active, and if the current depth of the call is at the same level with the depth at which the prank was invoked.
@@ -784,7 +784,7 @@ This is needed in order to prevent overwriting the caller for subcalls.
 Finally, the original sender of the transaction, `ACCTFROM` is changed to the new caller, `NCL`.
 
 ```k
-    rule [foundry.prank.injectCaller]:
+    rule [foundry.prank.call.injectCaller]:
          <k> #call (ACCTFROM => NCL) _ACCTTO _ACCTCODE _VALUE _APPVALUE _ARGS _STATIC ... </k>
          <callDepth> CD </callDepth>
          <prank>
@@ -798,8 +798,38 @@ Finally, the original sender of the transaction, `ACCTFROM` is changed to the ne
        andBool ACCTFROM =/=Int NCL
       [priority(40)]
 
-    rule [foundry.prank.injectCallerAndOrigin]:
+    rule [foundry.prank.call.injectCallerAndOrigin]:
          <k> #call (ACCTFROM => NCL) _ACCTTO _ACCTCODE _VALUE _APPVALUE _ARGS _STATIC ... </k>
+         <callDepth> CD </callDepth>
+         <origin> _ => NOG </origin>
+         <prank>
+            <newCaller> NCL </newCaller>
+            <newOrigin> NOG </newOrigin>
+            <active> true </active>
+            <depth> CD </depth>
+            ...
+         </prank>
+      requires NCL =/=K .Account
+       andBool NOG =/=K .Account
+       andBool ACCTFROM =/=Int NCL
+      [priority(40)]
+
+    rule [foundry.prank.create.injectCaller]:
+         <k> #create (ACCTFROM => NCL) _ACCTTO _VALUE _INITCODE ... </k>
+         <callDepth> CD </callDepth>
+         <prank>
+            <newCaller> NCL </newCaller>
+            <newOrigin> .Account </newOrigin>
+            <active> true </active>
+            <depth> CD </depth>
+            ...
+         </prank>
+      requires NCL =/=K .Account
+       andBool ACCTFROM =/=Int NCL
+      [priority(40)]
+
+    rule [foundry.prank.create.injectCallerAndOrigin]:
+         <k>#create ( ACCTFROM => NCL) _ACCTTO _VALUE _INITCODE ... </k>
          <callDepth> CD </callDepth>
          <origin> _ => NOG </origin>
          <prank>
@@ -885,12 +915,30 @@ function stopPrank() external;
 Gas Manipulation
 ----------------
 
+### `setGas` - Sets the current gas left (reported by `GAS` opcode) to a specific amount.
+
+```
+function setGas(uint256 newGas) external;
+```
+
+`setGas` is useful when writing tests that depend on the gas used, and so a specific concrete amount is needed instead of the default infinite gas.
+
+```{.k .bytes}
+    rule [foundry.call.setGas]:
+         <k> #call_foundry SELECTOR ARGS => . ... </k>
+         <gas> _ => #asWord(ARGS) </gas>
+         <callGas> _ => 0 </callGas>
+      requires SELECTOR ==Int selector ( "setGas(uint256)" )
+```
+
+### `infiniteGas` - Sets the remaining gas to an infinite value.
+
 ```
 function infiniteGas() external;
 ```
 
-Set the remaining gas to an infinite value.
-This is useful for running tests without them running out of gas.
+`infiniteGas` is useful for running tests without them running out of gas.
+It is applied by default.
 
 ```{.k .bytes .symbolic}
     rule [foundry.call.infiniteGas]:
@@ -1460,6 +1508,7 @@ If the production is matched when no prank is active, it will be ignored.
     rule ( selector ( "allowCallsToAddress(address)" )             => 1850795572 )
     rule ( selector ( "allowChangesToStorage(address,uint256)" )   => 4207417100 )
     rule ( selector ( "infiniteGas()" )                            => 3986649939 )
+    rule ( selector ( "setGas(uint256)" )                          => 3713137314 )
 ```
 
 - selectors for unimplemented cheat code functions.
