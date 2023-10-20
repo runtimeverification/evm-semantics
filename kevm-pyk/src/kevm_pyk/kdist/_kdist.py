@@ -1,25 +1,30 @@
 from __future__ import annotations
 
+import concurrent.futures
 import logging
 import os
 import shutil
-from abc import ABC, abstractmethod
 from collections.abc import Mapping
+from concurrent.futures import ThreadPoolExecutor
+from graphlib import CycleError, TopologicalSorter
 from pathlib import Path
 from typing import TYPE_CHECKING
 
 from pyk.utils import hash_str
 from xdg_base_dirs import xdg_cache_home
 
-from .. import config
+import kevm_pyk
+
+from .api import Target
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from concurrent.futures import Future
     from types import ModuleType
     from typing import Any, Final
 
 
 _LOGGER: Final = logging.getLogger(__name__)
-_LOG_FORMAT: Final = '%(levelname)s %(asctime)s %(name)s - %(message)s'
 
 
 def _dist_dir() -> Path:
@@ -27,20 +32,12 @@ def _dist_dir() -> Path:
     if dist_dir_env:
         return Path(dist_dir_env).resolve()
 
-    digest = hash_str({'module-dir': config.MODULE_DIR})[:7]
-    return xdg_cache_home() / f'evm-semantics-{digest}'
+    module_dir = Path(kevm_pyk.__file__).parent
+    digest = hash_str({'module-dir': module_dir})[:7]
+    return xdg_cache_home() / f'kdist-{digest}'
 
 
-DIST_DIR: Final = _dist_dir()
-
-
-class Target(ABC):
-    @abstractmethod
-    def build(self, output_dir: Path, args: dict[str, Any]) -> None:
-        ...
-
-
-def _load() -> dict[str, Target]:
+def _targets() -> dict[str, Target]:
     import importlib
     from importlib.metadata import entry_points
 
@@ -96,26 +93,24 @@ def _load_targets(module: ModuleType) -> dict[str, Target]:
     return res
 
 
-_TARGETS: dict[str, Target] | None = None
+_DIST_DIR: Final = _dist_dir()
+_TARGETS: Final = _targets()
 
 
-def targets() -> dict[str, Target]:
-    global _TARGETS
-    if _TARGETS is None:
-        _TARGETS = _load()
-    return dict(_TARGETS)
+def targets() -> list[str]:
+    return list(_TARGETS)
 
 
 def check(target: str) -> None:
-    if target not in targets():
+    if target not in _TARGETS:
         raise ValueError('Undefined target: {target}')
 
 
 def which(target: str | None = None) -> Path:
     if target:
         check(target)
-        return DIST_DIR / target
-    return DIST_DIR
+        return _DIST_DIR / target
+    return _DIST_DIR
 
 
 def clean(target: str | None = None) -> Path:
@@ -138,13 +133,83 @@ def get_or_none(target: str) -> Path | None:
     return res
 
 
-def build(target: str, *, force: bool = False, **kwargs: Any) -> Path:
+def build(
+    targets: list[str],
+    *,
+    jobs: int = 1,
+    force: bool = False,
+    enable_llvm_debug: bool = False,
+    verbose: bool = False,
+) -> None:
+    deps = _resolve_deps(targets)
+    target_graph = TopologicalSorter(deps)
+    try:
+        target_graph.prepare()
+    except CycleError as err:
+        raise RuntimeError(f'Cyclic dependencies found: {err.args[1]}') from err
+
+    _LOGGER.info(f"Building targets: {', '.join(deps)}")
+
+    with ThreadPoolExecutor(max_workers=jobs) as pool:
+        pending: dict[Future[Path], str] = {}
+
+        def submit(target: str) -> None:
+            future = pool.submit(
+                _build_target,
+                target=target,
+                args={'enable_llvm_debug': enable_llvm_debug, 'verbose': verbose},
+                force=force,
+            )
+            pending[future] = target
+
+        for target in target_graph.get_ready():
+            submit(target)
+
+        while pending:
+            done, _ = concurrent.futures.wait(pending, return_when=concurrent.futures.FIRST_COMPLETED)
+            for future in done:
+                result = future.result()
+                print(result)
+                target = pending[future]
+                target_graph.done(target)
+                for new_target in target_graph.get_ready():
+                    submit(new_target)
+                pending.pop(future)
+
+
+def _resolve_deps(targets: Iterable[str]) -> dict[str, list[str]]:
+    res: dict[str, list[str]] = {}
+    pending = list(targets)
+    while pending:
+        target_name = pending.pop()
+        if target_name in res:
+            continue
+        target = _resolve(target_name)
+        deps = list(target.deps())
+        res[target_name] = deps
+        pending += deps
+    return res
+
+
+def _resolve(target: str) -> Target:
+    check(target)
+    return _TARGETS[target]
+
+
+def _build_target(
+    target: str,
+    args: dict[str, Any],
+    *,
+    force: bool = False,
+) -> Path:
     # TODO Locking
     output_dir = which(target)
     if not force and output_dir.exists():
         return output_dir
 
     output_dir.mkdir(parents=True)
-    _target = targets()[target]
-    _target.build(output_dir, args=kwargs)
+    _target = _TARGETS[target]
+    deps = {target: which(target) for target in _target.deps()}
+    _target.build(output_dir, deps=deps, args=args)
+
     return output_dir
