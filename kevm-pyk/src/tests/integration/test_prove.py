@@ -2,10 +2,14 @@ from __future__ import annotations
 
 import dataclasses
 import logging
+import subprocess
 import sys
+from pathlib import Path
 from typing import TYPE_CHECKING, NamedTuple
 
+import inotify.adapters  # type: ignore
 import pytest
+from filelock import FileLock
 from pyk.cterm import CTerm
 from pyk.proof.reachability import APRProof
 
@@ -18,8 +22,7 @@ from ..utils import REPO_ROOT
 from .utils import TEST_DATA_DIR, gen_bin_runtime
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
-    from pathlib import Path
+    from collections.abc import Callable, Iterator
     from typing import Any, Final
 
     from pyk.utils import BugReport
@@ -165,8 +168,32 @@ class KompiledTarget(NamedTuple):
         return [str(include_dir) for include_dir in self.include_dirs]
 
 
+@pytest.fixture(scope='session')
+def kserver(tmp_path_factory: TempPathFactory, worker_id: str) -> Iterator[Path]:
+    if worker_id == 'master':
+        root_tmp_dir = tmp_path_factory.getbasetemp()
+    else:
+        root_tmp_dir = tmp_path_factory.getbasetemp().parent
+
+    lock = root_tmp_dir / 'kserver'
+    kserver = None
+    with FileLock(str(lock) + '.lock'):
+        if not lock.exists():
+            i = inotify.adapters.Inotify()
+            i.add_watch(str(Path.home() / '.kserver'))
+            kserver = subprocess.Popen(['kserver'], stdout=subprocess.PIPE)
+            for _, types, _, filename in i.event_gen(yield_nones=False):
+                if filename == 'socket' and 'IN_CREATE' in types:
+                    break
+            lock.touch()
+
+    yield lock
+    if kserver is not None:
+        kserver.terminate()
+
+
 @pytest.fixture(scope='module')
-def kompiled_target_for(tmp_path_factory: TempPathFactory) -> Callable[[Path, bool], KompiledTarget]:
+def kompiled_target_for(tmp_path_factory: TempPathFactory, kserver: Path) -> Callable[[Path, bool], KompiledTarget]:
     cache_dir = tmp_path_factory.mktemp('target')
     cache: dict[Target, KompiledTarget] = {}
 
