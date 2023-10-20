@@ -14,15 +14,17 @@ from ..kompile import KompileTarget, kevm_kompile
 from . import Target
 
 if TYPE_CHECKING:
-    from collections.abc import Iterator, Mapping
+    from collections.abc import Iterable, Iterator, Mapping
     from typing import Any, Final
 
 
 class KEVMTarget(Target):
     _kompile_args: dict[str, Any]
+    _deps: tuple[str, ...]
 
-    def __init__(self, kompile_args: Mapping[str, Any]):
+    def __init__(self, kompile_args: Mapping[str, Any], *, deps: Iterable[str] | None = None):
         self._kompile_args = dict(kompile_args)
+        self._deps = tuple(deps) if deps is not None else ()
 
     def build(self, output_dir: Path, args: dict[str, Any]) -> None:
         verbose = args.get('verbose', False)
@@ -34,6 +36,9 @@ class KEVMTarget(Target):
             verbose=verbose,
             **self._kompile_args,
         )
+
+    def deps(self) -> tuple[str, ...]:
+        return self._deps
 
 
 class PluginTarget(Target):
