@@ -4,7 +4,6 @@ import concurrent.futures
 import logging
 import os
 import shutil
-from abc import ABC, abstractmethod
 from collections.abc import Mapping
 from concurrent.futures import ThreadPoolExecutor
 from graphlib import CycleError, TopologicalSorter
@@ -16,6 +15,8 @@ from xdg_base_dirs import xdg_cache_home
 
 import kevm_pyk
 
+from .api import Target
+
 if TYPE_CHECKING:
     from collections.abc import Iterable
     from concurrent.futures import Future
@@ -24,15 +25,6 @@ if TYPE_CHECKING:
 
 
 _LOGGER: Final = logging.getLogger(__name__)
-
-
-class Target(ABC):
-    @abstractmethod
-    def build(self, output_dir: Path, args: dict[str, Any]) -> None:
-        ...
-
-    def deps(self) -> Iterable[str]:
-        return ()
 
 
 def _dist_dir() -> Path:

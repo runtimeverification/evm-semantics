@@ -11,7 +11,7 @@ from pyk.utils import run_process
 
 from .. import config
 from ..kompile import KompileTarget, kevm_kompile
-from . import Target
+from .api import Target
 
 if TYPE_CHECKING:
     from collections.abc import Iterable, Iterator, Mapping
