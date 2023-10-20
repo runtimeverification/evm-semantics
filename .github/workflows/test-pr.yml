@@ -65,6 +65,33 @@ jobs:
         run: |
           make -C kevm-pyk cov-unit
 
+  kevm-pyk-profile:
+    needs: kevm-pyk-code-quality-checks
+    name: 'Profiling'
+    runs-on: [self-hosted, linux, normal]
+    timeout-minutes: 15
+    steps:
+      - name: 'Check out code'
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+          fetch-depth: 0
+      - name: 'Set up Docker'
+        uses: ./.github/actions/with-docker
+        with:
+          container-name: kevm-ci-profile-${{ github.sha }}
+      - name: 'Build kevm-pyk'
+        run: docker exec -u github-user kevm-ci-profile-${{ github.sha }} /bin/bash -c 'make poetry'
+      - name: 'Build targets'
+        run: docker exec -u github-user kevm-ci-profile-${{ github.sha }} /bin/bash -c 'CXX=clang++-14 poetry -C kevm-pyk run kevm-dist --verbose build -j`nproc` plugin'
+      - name: 'Run profiling'
+        run: |
+          docker exec -u github-user kevm-ci-profile-${{ github.sha }} /bin/bash -c 'make profile'
+      - name: 'Tear down Docker'
+        if: always()
+        run: |
+          docker stop --time=0 kevm-ci-profile-${{ github.sha }}
+
   test-concrete-execution:
     name: 'Build and Test KEVM concrete execution'
     needs: kevm-pyk-code-quality-checks
