@@ -26,6 +26,12 @@ if TYPE_CHECKING:
 _LOGGER: Final = logging.getLogger(__name__)
 
 
+class Target(ABC):
+    @abstractmethod
+    def build(self, output_dir: Path, args: dict[str, Any]) -> None:
+        ...
+
+
 def _dist_dir() -> Path:
     dist_dir_env = os.getenv('KEVM_DIST_DIR')  # Used by Nix flake to set the output
     if dist_dir_env:
@@ -34,15 +40,6 @@ def _dist_dir() -> Path:
     module_dir = Path(kevm_pyk.__file__).parent
     digest = hash_str({'module-dir': module_dir})[:7]
     return xdg_cache_home() / f'evm-semantics-{digest}'
-
-
-_DIST_DIR: Final = _dist_dir()
-
-
-class Target(ABC):
-    @abstractmethod
-    def build(self, output_dir: Path, args: dict[str, Any]) -> None:
-        ...
 
 
 def _load() -> dict[str, Target]:
@@ -101,6 +98,7 @@ def _load_targets(module: ModuleType) -> dict[str, Target]:
     return res
 
 
+_DIST_DIR: Final = _dist_dir()
 _TARGETS: dict[str, Target] | None = None
 
 
