@@ -84,6 +84,7 @@ __TARGETS__: Final = {
             'syntax_module': 'ETHEREUM-SIMULATION',
             'optimization': 2,
         },
+        deps=('plugin',),
     ),
     'haskell': KEVMTarget(
         {
