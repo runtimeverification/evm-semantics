@@ -155,7 +155,10 @@ def build(
 
         def submit(target: str) -> None:
             future = pool.submit(
-                _build_target, target=target, force=force, enable_llvm_debug=enable_llvm_debug, verbose=verbose
+                _build_target,
+                target=target,
+                args={'enable_llvm_debug': enable_llvm_debug, 'verbose': verbose},
+                force=force,
             )
             pending[future] = target
 
@@ -193,7 +196,12 @@ def _resolve(target: str) -> Target:
     return _TARGETS[target]
 
 
-def _build_target(target: str, *, force: bool = False, **kwargs: Any) -> Path:
+def _build_target(
+    target: str,
+    args: dict[str, Any],
+    *,
+    force: bool = False,
+) -> Path:
     # TODO Locking
     output_dir = which(target)
     if not force and output_dir.exists():
@@ -201,6 +209,6 @@ def _build_target(target: str, *, force: bool = False, **kwargs: Any) -> Path:
 
     output_dir.mkdir(parents=True)
     _target = _TARGETS[target]
-    _target.build(output_dir, args=kwargs)
+    _target.build(output_dir, args=args)
 
     return output_dir
