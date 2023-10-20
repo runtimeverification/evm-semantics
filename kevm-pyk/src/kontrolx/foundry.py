@@ -593,6 +593,7 @@ def foundry_kompile(
             emit_json=True,
             ccopts=ccopts,
             llvm_library=foundry.llvm_library,
+            plugin_dir=kdist.get('plugin'),
             debug=debug,
             verbose=verbose,
         )
