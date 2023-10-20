@@ -275,7 +275,7 @@ class KEVMCLIArgs(KCLIArgs):
             dest='fail_fast',
             default=False,
             action='store_true',
-            help='Stop execution on other branches if failing node is detected.',
+            help='Stop execution on other branches if a failing node is detected.',
         )
         return args
 
