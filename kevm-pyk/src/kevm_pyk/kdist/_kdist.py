@@ -39,7 +39,7 @@ def _dist_dir() -> Path:
 
     module_dir = Path(kevm_pyk.__file__).parent
     digest = hash_str({'module-dir': module_dir})[:7]
-    return xdg_cache_home() / f'evm-semantics-{digest}'
+    return xdg_cache_home() / f'kdist-{digest}'
 
 
 def _load() -> dict[str, Target]:
