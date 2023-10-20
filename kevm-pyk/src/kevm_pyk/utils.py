@@ -349,7 +349,7 @@ def legacy_explore(
             haskell_log_entries=haskell_log_entries,
             log_axioms_file=log_axioms_file,
         ) as server:
-            with KoreClient('localhost', server.port, bug_report=bug_report) as client:
+            with KoreClient('localhost', server.port, bug_report=bug_report, bug_report_id=id) as client:
                 yield KCFGExplore(
                     kprint=kprint,
                     kore_client=client,
@@ -360,7 +360,7 @@ def legacy_explore(
     else:
         if port is None:
             raise ValueError('Missing port with start_server=False')
-        with KoreClient('localhost', port, bug_report=bug_report) as client:
+        with KoreClient('localhost', port, bug_report=bug_report, bug_report_id=id) as client:
             yield KCFGExplore(
                 kprint=kprint,
                 kore_client=client,
