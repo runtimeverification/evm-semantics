@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 
 class Target(ABC):
     @abstractmethod
-    def build(self, output_dir: Path, args: dict[str, Any]) -> None:
+    def build(self, output_dir: Path, deps: dict[str, Path], args: dict[str, Any]) -> None:
         ...
 
     def deps(self) -> Iterable[str]:

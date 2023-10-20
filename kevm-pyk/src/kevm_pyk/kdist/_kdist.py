@@ -209,6 +209,6 @@ def _build_target(
 
     output_dir.mkdir(parents=True)
     _target = _TARGETS[target]
-    _target.build(output_dir, args=args)
+    _target.build(output_dir, deps={}, args=args)
 
     return output_dir

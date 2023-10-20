@@ -26,7 +26,7 @@ class KEVMTarget(Target):
         self._kompile_args = dict(kompile_args)
         self._deps = tuple(deps) if deps is not None else ()
 
-    def build(self, output_dir: Path, args: dict[str, Any]) -> None:
+    def build(self, output_dir: Path, deps: dict[str, Path], args: dict[str, Any]) -> None:
         verbose = args.get('verbose', False)
         enable_llvm_debug = args.get('enable_llvm_debug', False)
 
@@ -42,7 +42,7 @@ class KEVMTarget(Target):
 
 
 class PluginTarget(Target):
-    def build(self, output_dir: Path, args: dict[str, Any]) -> None:
+    def build(self, output_dir: Path, deps: dict[str, Any], args: dict[str, Any]) -> None:
         verbose = args.get('verbose', False)
 
         sync_files(
