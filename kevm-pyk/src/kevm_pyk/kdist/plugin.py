@@ -90,7 +90,7 @@ __TARGETS__: Final = {
     ),
     'haskell-standalone': KEVMTarget(
         {
-            'target': KompileTarget.HASKELL_STANDALONE,
+            'target': KompileTarget.HASKELL,
             'main_file': config.EVM_SEMANTICS_DIR / 'driver.md',
             'main_module': 'ETHEREUM-SIMULATION',
             'syntax_module': 'ETHEREUM-SIMULATION',
@@ -98,7 +98,7 @@ __TARGETS__: Final = {
     ),
     'foundry': KEVMTarget(
         {
-            'target': KompileTarget.FOUNDRY,
+            'target': KompileTarget.HASKELL,
             'main_file': config.EVM_SEMANTICS_DIR / 'foundry.md',
             'main_module': 'FOUNDRY',
             'syntax_module': 'FOUNDRY',
