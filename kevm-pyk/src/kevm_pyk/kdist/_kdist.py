@@ -31,6 +31,9 @@ class Target(ABC):
     def build(self, output_dir: Path, args: dict[str, Any]) -> None:
         ...
 
+    def deps(self) -> Iterable[str]:
+        return ()
+
 
 def _dist_dir() -> Path:
     dist_dir_env = os.getenv('KEVM_DIST_DIR')  # Used by Nix flake to set the output
