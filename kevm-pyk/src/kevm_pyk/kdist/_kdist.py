@@ -36,7 +36,7 @@ def _dist_dir() -> Path:
     return xdg_cache_home() / f'evm-semantics-{digest}'
 
 
-DIST_DIR: Final = _dist_dir()
+_DIST_DIR: Final = _dist_dir()
 
 
 class Target(ABC):
@@ -119,8 +119,8 @@ def check(target: str) -> None:
 def which(target: str | None = None) -> Path:
     if target:
         check(target)
-        return DIST_DIR / target
-    return DIST_DIR
+        return _DIST_DIR / target
+    return _DIST_DIR
 
 
 def clean(target: str | None = None) -> Path:
