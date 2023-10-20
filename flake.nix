@@ -98,7 +98,7 @@
 
             installPhase = ''
               mkdir -p $out
-              cp -r ./evm-semantics-*/* $out/
+              cp -r ./kdist-*/* $out/
               mkdir -p $out/bin
               makeWrapper ${final.kevm-pyk}/bin/kevm $out/bin/kevm --prefix PATH : ${
                 prev.lib.makeBinPath [ prev.which k ]

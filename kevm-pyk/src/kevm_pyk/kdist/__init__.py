@@ -1,1 +1,1 @@
-from ._kdist import Target, build, check, clean, get, get_or_none, targets, which
+from ._kdist import build, check, clean, get, get_or_none, targets, which
