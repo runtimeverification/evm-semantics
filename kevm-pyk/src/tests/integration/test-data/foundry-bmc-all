@@ -1,2 +1,0 @@
-BMCLoopsTest.test_countdown_concrete()
-BMCLoopsTest.test_countdown_symbolic(uint256)
