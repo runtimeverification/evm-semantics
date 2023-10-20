@@ -14,7 +14,7 @@ from typing import TYPE_CHECKING
 from pyk.utils import hash_str
 from xdg_base_dirs import xdg_cache_home
 
-from .. import config
+import kevm_pyk
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -31,7 +31,8 @@ def _dist_dir() -> Path:
     if dist_dir_env:
         return Path(dist_dir_env).resolve()
 
-    digest = hash_str({'module-dir': config.MODULE_DIR})[:7]
+    module_dir = Path(kevm_pyk.__file__).parent
+    digest = hash_str({'module-dir': module_dir})[:7]
     return xdg_cache_home() / f'evm-semantics-{digest}'
 
 
