@@ -209,6 +209,7 @@ def _build_target(
 
     output_dir.mkdir(parents=True)
     _target = _TARGETS[target]
-    _target.build(output_dir, deps={}, args=args)
+    deps = {target: which(target) for target in _target.deps()}
+    _target.build(output_dir, deps=deps, args=args)
 
     return output_dir
