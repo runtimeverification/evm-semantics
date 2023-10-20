@@ -29,15 +29,13 @@ class KompileTarget(Enum):
     LLVM = 'llvm'
     HASKELL = 'haskell'
     HASKELL_BOOSTER = 'haskell-booster'
-    HASKELL_STANDALONE = 'haskell-standalone'
-    FOUNDRY = 'foundry'
 
     @property
     def md_selector(self) -> str:
         match self:
             case self.LLVM:
                 return 'k & ! symbolic'
-            case self.HASKELL | self.HASKELL_STANDALONE | self.HASKELL_BOOSTER | self.FOUNDRY:
+            case self.HASKELL | self.HASKELL_BOOSTER:
                 return 'k & ! concrete'
             case _:
                 raise AssertionError()
@@ -96,7 +94,7 @@ def kevm_kompile(
                 )
                 return kompile(output_dir=output_dir, debug=debug, verbose=verbose)
 
-            case KompileTarget.HASKELL | KompileTarget.FOUNDRY | KompileTarget.HASKELL_STANDALONE:
+            case KompileTarget.HASKELL:
                 kompile = HaskellKompile(
                     base_args=base_args,
                     haskell_binary=haskell_binary,
