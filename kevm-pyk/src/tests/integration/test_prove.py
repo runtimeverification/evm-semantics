@@ -177,6 +177,8 @@ def kserver(tmp_path_factory: TempPathFactory, worker_id: str) -> Iterator[Path]
 
     lock = root_tmp_dir / 'kserver'
     kserver = None
+    kserver_dir = Path.home() / '.kserver'
+    kserver_dir.mkdir(exist_ok=True)
     with FileLock(str(lock) + '.lock'):
         if not lock.exists():
             i = inotify.adapters.Inotify()
