@@ -607,7 +607,7 @@ def _create_argument_parser() -> ArgumentParser:
         parents=[kevm_cli_args.logging_args, kevm_cli_args.k_args, kevm_cli_args.kompile_args],
     )
     kevm_kompile_args.add_argument('main_file', type=file_path, help='Path to file with main module.')
-    kevm_kompile_args.add_argument('--target', type=KompileTarget, help='[llvm|haskell|haskell-standalone|foundry]')
+    kevm_kompile_args.add_argument('--target', type=KompileTarget, help='[llvm|haskell|haskell-booster]')
     kevm_kompile_args.add_argument(
         '-o', '--output-definition', type=Path, dest='output_dir', help='Path to write kompiled definition to.'
     )
