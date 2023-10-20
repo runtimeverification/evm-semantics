@@ -1,12 +1,13 @@
 from __future__ import annotations
 
+import concurrent.futures
 import logging
 import os
 import shutil
-import time
 from abc import ABC, abstractmethod
 from collections.abc import Mapping
 from concurrent.futures import ThreadPoolExecutor
+from graphlib import CycleError, TopologicalSorter
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -16,6 +17,7 @@ from xdg_base_dirs import xdg_cache_home
 from .. import config
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
     from concurrent.futures import Future
     from types import ModuleType
     from typing import Any, Final
@@ -149,41 +151,45 @@ def build(
     enable_llvm_debug: bool = False,
     verbose: bool = False,
 ) -> None:
-    _LOGGER.info(f"Building targets: {', '.join(targets)}")
+    deps = _resolve_deps(targets)
+    target_graph = TopologicalSorter(deps)
+    try:
+        target_graph.prepare()
+    except CycleError as err:
+        raise RuntimeError(f'Cyclic dependencies found: {err.args[1]}') from err
 
-    delay_llvm = 'llvm' in targets and 'plugin' in targets
+    _LOGGER.info(f"Building targets: {', '.join(deps)}")
 
     with ThreadPoolExecutor(max_workers=jobs) as pool:
-        pending: list[Future] = []
-        plugin: Future | None = None
+        pending: dict[Future[Path], str] = {}
 
-        for target in targets:
-            if target == 'llvm' and delay_llvm:
-                continue
-
-            plugin = pool.submit(
+        def submit(target: str) -> None:
+            future = pool.submit(
                 _build_target, target=target, force=force, enable_llvm_debug=enable_llvm_debug, verbose=verbose
             )
-            pending.append(plugin)
+            pending[future] = target
+
+        for target in target_graph.get_ready():
+            submit(target)
 
         while pending:
-            current = next((future for future in pending if future.done()), None)
+            done, _ = concurrent.futures.wait(pending, return_when=concurrent.futures.FIRST_COMPLETED)
+            for future in done:
+                result = future.result()
+                print(result)
+                target = pending[future]
+                target_graph.done(target)
+                for new_target in target_graph.get_ready():
+                    submit(new_target)
+                pending.pop(future)
 
-            if current is None:
-                time.sleep(0.01)
-                continue
 
-            result = current.result()
-            print(result)
-
-            if current == plugin and delay_llvm:
-                pending.append(
-                    pool.submit(
-                        _build_target, target='llvm', force=force, enable_llvm_debug=enable_llvm_debug, verbose=verbose
-                    )
-                )
-
-            pending.remove(current)
+def _resolve_deps(targets: Iterable[str]) -> dict[str, list[str]]:
+    res: dict[str, list[str]] = {}
+    for target in targets:
+        res[target] = ['plugin'] if target == 'llvm' else []
+        res['plugin'] = []
+    return res
 
 
 def _build_target(target: str, *, force: bool = False, **kwargs: Any) -> Path:
@@ -195,4 +201,5 @@ def _build_target(target: str, *, force: bool = False, **kwargs: Any) -> Path:
     output_dir.mkdir(parents=True)
     _target = targets()[target]
     _target.build(output_dir, args=kwargs)
+
     return output_dir
