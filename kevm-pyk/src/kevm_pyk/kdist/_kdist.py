@@ -184,10 +184,21 @@ def build(
 
 def _resolve_deps(targets: Iterable[str]) -> dict[str, list[str]]:
     res: dict[str, list[str]] = {}
-    for target in targets:
-        res[target] = ['plugin'] if target == 'llvm' else []
-        res['plugin'] = []
+    pending = list(targets)
+    while pending:
+        target_name = pending.pop()
+        if target_name in res:
+            continue
+        target = _resolve(target_name)
+        deps = list(target.deps())
+        res[target_name] = deps
+        pending += deps
     return res
+
+
+def _resolve(target: str) -> Target:
+    check(target)
+    return _TARGETS[target]
 
 
 def _build_target(target: str, *, force: bool = False, **kwargs: Any) -> Path:
