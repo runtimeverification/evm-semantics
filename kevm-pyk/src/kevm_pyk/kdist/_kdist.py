@@ -45,7 +45,7 @@ def _dist_dir() -> Path:
     return xdg_cache_home() / f'kdist-{digest}'
 
 
-def _load() -> dict[str, Target]:
+def _targets() -> dict[str, Target]:
     import importlib
     from importlib.metadata import entry_points
 
@@ -102,18 +102,15 @@ def _load_targets(module: ModuleType) -> dict[str, Target]:
 
 
 _DIST_DIR: Final = _dist_dir()
-_TARGETS: dict[str, Target] | None = None
+_TARGETS: Final = _targets()
 
 
-def targets() -> dict[str, Target]:
-    global _TARGETS
-    if _TARGETS is None:
-        _TARGETS = _load()
-    return dict(_TARGETS)
+def targets() -> list[str]:
+    return list(_TARGETS)
 
 
 def check(target: str) -> None:
-    if target not in targets():
+    if target not in _TARGETS:
         raise ValueError('Undefined target: {target}')
 
 
@@ -200,7 +197,7 @@ def _build_target(target: str, *, force: bool = False, **kwargs: Any) -> Path:
         return output_dir
 
     output_dir.mkdir(parents=True)
-    _target = targets()[target]
+    _target = _TARGETS[target]
     _target.build(output_dir, args=kwargs)
 
     return output_dir

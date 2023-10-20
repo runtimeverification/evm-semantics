@@ -69,13 +69,12 @@ def _exec_which(target: str | None) -> None:
 
 
 def _exec_list() -> None:
-    targets = kdist.targets()
-    for target in targets:
+    for target in kdist.targets():
         print(target)
 
 
 def _parse_arguments() -> Namespace:
-    targets = list(kdist.targets())
+    targets = kdist.targets()
 
     def target(s: str) -> str:
         #  choices does not work well with nargs="*"
