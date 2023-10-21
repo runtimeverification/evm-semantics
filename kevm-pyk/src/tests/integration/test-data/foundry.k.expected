@@ -44,6 +44,7 @@ module FOUNDRY-MAIN
     imports public OwnerUpOnly-VERIFICATION
     imports public OwnerUpOnlyTest-VERIFICATION
     imports public AdditionalToken-VERIFICATION
+    imports public MyErc20-VERIFICATION
     imports public PlainPrankTest-VERIFICATION
     imports public Prank-VERIFICATION
     imports public PrankTest-VERIFICATION
@@ -371,6 +372,13 @@ endmodule
 
 module AdditionalToken-VERIFICATION
     imports public AdditionalToken-CONTRACT
+    
+    
+
+endmodule
+
+module MyErc20-VERIFICATION
+    imports public MyErc20-CONTRACT
     
     
 

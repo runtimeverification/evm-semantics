@@ -3710,6 +3710,17 @@ module AdditionalToken-CONTRACT
 
 endmodule
 
+module MyErc20-CONTRACT
+    imports public FOUNDRY
+    
+    syntax Contract ::= S2KMyErc20Contract
+    
+    syntax S2KMyErc20Contract ::= "S2KMyErc20" [symbol(), klabel(contract_MyErc20)]
+    
+      
+
+endmodule
+
 module PlainPrankTest-CONTRACT
     imports public FOUNDRY
     
@@ -3729,6 +3740,8 @@ module PlainPrankTest-CONTRACT
     
     syntax PlainPrankTestField ::= "stdstore" [symbol(), klabel(field_PlainPrankTest_stdstore)]
     
+    syntax PlainPrankTestField ::= "erc20a" [symbol(), klabel(field_PlainPrankTest_erc20a)]
+    
     rule  ( #loc ( S2KPlainPrankTest . IS_TEST ) => 0 )
       
     
@@ -3739,6 +3752,9 @@ module PlainPrankTest-CONTRACT
       
     
     rule  ( #loc ( S2KPlainPrankTest . stdstore ) => 1 )
+      
+    
+    rule  ( #loc ( S2KPlainPrankTest . erc20a ) => 8 )
       
     
     syntax Bytes ::= S2KPlainPrankTestContract "." S2KPlainPrankTestMethod [function(), symbol(), klabel(method_PlainPrankTest)]
@@ -3754,6 +3770,8 @@ module PlainPrankTest-CONTRACT
     syntax S2KPlainPrankTestMethod ::= "S2KtestFailZUndstartPrankZUndexistingAlready" "(" ")" [symbol(), klabel(method_PlainPrankTest_S2KtestFailZUndstartPrankZUndexistingAlready_)]
     
     syntax S2KPlainPrankTestMethod ::= "S2KtestFailZUndstartPrankZUndinternalCall" "(" ")" [symbol(), klabel(method_PlainPrankTest_S2KtestFailZUndstartPrankZUndinternalCall_)]
+    
+    syntax S2KPlainPrankTestMethod ::= "S2KtestPrank" "(" ")" [symbol(), klabel(method_PlainPrankTest_S2KtestPrank_)]
     
     syntax S2KPlainPrankTestMethod ::= "S2KtestZUndprankZUndzeroAddressZUndtrue" "(" ")" [symbol(), klabel(method_PlainPrankTest_S2KtestZUndprankZUndzeroAddressZUndtrue_)]
     
@@ -3783,6 +3801,9 @@ module PlainPrankTest-CONTRACT
       
     
     rule  ( S2KPlainPrankTest . S2KtestFailZUndstartPrankZUndinternalCall ( ) => #abiCallData ( "testFail_startPrank_internalCall" , .TypedArgs ) )
+      
+    
+    rule  ( S2KPlainPrankTest . S2KtestPrank ( ) => #abiCallData ( "testPrank" , .TypedArgs ) )
       
     
     rule  ( S2KPlainPrankTest . S2KtestZUndprankZUndzeroAddressZUndtrue ( ) => #abiCallData ( "test_prank_zeroAddress_true" , .TypedArgs ) )
@@ -3819,6 +3840,9 @@ module PlainPrankTest-CONTRACT
       
     
     rule  ( selector ( "testFail_startPrank_internalCall()" ) => 3075676477 )
+      
+    
+    rule  ( selector ( "testPrank()" ) => 2119502508 )
       
     
     rule  ( selector ( "test_prank_zeroAddress_true()" ) => 3793950116 )
