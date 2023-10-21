@@ -1,4 +1,3 @@
-
 Parsing/Unparsing
 =================
 
@@ -19,7 +18,7 @@ module SERIALIZATION
 Address/Hash Helpers
 --------------------
 
--   `keccak` and serves as a wrapper around the `Keccak256` in `KRYPTO`.
+-   `keccak` serves as a wrapper around the `Keccak256` in `KRYPTO`.
 
 ```k
     syntax Int ::= keccak ( Bytes ) [function, total, smtlib(smt_keccak)]
@@ -28,11 +27,11 @@ Address/Hash Helpers
 ```
 
 -   Each `bytes` function serves as a wrapper around the corresponding `KRYPTO` function, but using `Bytes`
-    to represent byte strings rather than `String`.
+    to represent raw byte strings rather than `String`.
 ```k
     syntax String ::= Keccak256bytes ( Bytes ) [function, total]
-	                | Sha256bytes ( Bytes )    [function, total]
-					| RipEmd160bytes ( Bytes ) [function, total]
+                    | Sha256bytes ( Bytes )    [function, total]
+                    | RipEmd160bytes ( Bytes ) [function, total]
                     | Blake2Compressbytes ( Bytes ) [function, total]
 
    syntax Bytes  ::= ECDSARecoverbytes ( Bytes , Int , Bytes , Bytes ) [function, total]
@@ -40,13 +39,13 @@ Address/Hash Helpers
                    | ECDSAPubKeybytes ( Bytes )                        [function, total]
  // -------------------------------------------------------------------------
     rule Keccak256bytes(BS)      => Keccak256(Bytes2String(BS))      [concrete]
-	rule Sha256bytes(BS)         => Sha256(Bytes2String(BS))         [concrete]
-	rule RipEmd160bytes(BS)      => RipEmd160(Bytes2String(BS))      [concrete]
-	rule Blake2Compressbytes(BS) => Blake2Compress(Bytes2String(BS)) [concrete]
+    rule Sha256bytes(BS)         => Sha256(Bytes2String(BS))         [concrete]
+    rule RipEmd160bytes(BS)      => RipEmd160(Bytes2String(BS))      [concrete]
+    rule Blake2Compressbytes(BS) => Blake2Compress(Bytes2String(BS)) [concrete]
 
-	rule ECDSARecoverbytes(BM, V, BR, BS) => String2Bytes(ECDSARecover(Bytes2String(BM), V, Bytes2String(BR), Bytes2String(BS))) [concrete]
-	rule ECDSASignbytes(BM, BP) => ECDSASign(Bytes2String(BM), Bytes2String(BP)) [concrete]
-	rule ECDSAPubKeybytes(BP) => ECDSAPubKey(Bytes2String(BP)) [concrete]
+    rule ECDSARecoverbytes(BM, V, BR, BS) => String2Bytes(ECDSARecover(Bytes2String(BM), V, Bytes2String(BR), Bytes2String(BS))) [concrete]
+    rule ECDSASignbytes(BM, BP) => ECDSASign(Bytes2String(BM), Bytes2String(BP)) [concrete]
+    rule ECDSAPubKeybytes(BP) => ECDSAPubKey(Bytes2String(BP))                   [concrete]
 ```
 
 -   `#newAddr` computes the address of a new account given the address and nonce of the creating account.
@@ -73,8 +72,8 @@ Address/Hash Helpers
 
     rule #sender(HT, TW, TR, TS) => #sender(ECDSARecoverbytes(HT, TW, TR, TS))
 
-    rule #sender(BYTES)  => .Account requires lengthBytes(BYTES) ==Int 0
-    rule #sender(BYTES) => #addr(#parseHexWord(Keccak256bytes(BYTES))) requires lengthBytes(BYTES) =/=Int 0
+    rule #sender(b"")   => .Account
+    rule #sender(BYTES) => #addr(#parseHexWord(Keccak256bytes(BYTES))) requires BYTES =/=K b""
 
     syntax Int ::= #addrFromPrivateKey ( String ) [function, klabel(addrFromPrivateKey)]
  // ------------------------------------------------------------------------------------
