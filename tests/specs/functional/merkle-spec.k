@@ -67,19 +67,19 @@ module MERKLE-SPEC
     // MerkleDelete Tests //
     ////////////////////////
 
-    claim <k> runMerkle ( Keccak256( #rlpEncodeMerkleTree( MerkleUpdate( #initTree, "de", "" ) ) ) )
+    claim <k> runMerkle ( Keccak256bytes( #rlpEncodeMerkleTree( MerkleUpdate( #initTree, "de", "" ) ) ) )
            => doneMerkle( "4ba393b447e1c78b2f647e10ae687de132f01f49d67e396bcdea4da2de05370f" ) </k>
 
-    claim <k> runMerkle ( Keccak256( #rlpEncodeMerkleTree( MerkleUpdate( #initTree, "becfe", "" ) ) ) )
+    claim <k> runMerkle ( Keccak256bytes( #rlpEncodeMerkleTree( MerkleUpdate( #initTree, "becfe", "" ) ) ) )
            => doneMerkle( "4ba393b447e1c78b2f647e10ae687de132f01f49d67e396bcdea4da2de05370f" ) </k>
 
-    claim <k> runMerkle ( Keccak256( #rlpEncodeMerkleTree( MerkleUpdate( #initTree, "def", "" ) ) ) )
+    claim <k> runMerkle ( Keccak256bytes( #rlpEncodeMerkleTree( MerkleUpdate( #initTree, "def", "" ) ) ) )
            => doneMerkle( "4ba393b447e1c78b2f647e10ae687de132f01f49d67e396bcdea4da2de05370f" ) </k>
 
-    claim <k> runMerkle ( Keccak256( #rlpEncodeMerkleTree( MerkleUpdate( #initTree, "defe", "" ) ) ) )
+    claim <k> runMerkle ( Keccak256bytes( #rlpEncodeMerkleTree( MerkleUpdate( #initTree, "defe", "" ) ) ) )
            => doneMerkle( "4ba393b447e1c78b2f647e10ae687de132f01f49d67e396bcdea4da2de05370f" ) </k>
 
-    claim <k> runMerkle ( Keccak256( #rlpEncodeMerkleTree( MerkleUpdate( MerkleUpdate( #initTree, "defe", "" ), "becfe", "" ) ) ) )
+    claim <k> runMerkle ( Keccak256bytes( #rlpEncodeMerkleTree( MerkleUpdate( MerkleUpdate( #initTree, "defe", "" ), "becfe", "" ) ) ) )
            => doneMerkle( "4ba393b447e1c78b2f647e10ae687de132f01f49d67e396bcdea4da2de05370f" ) </k>
 
 endmodule

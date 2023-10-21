@@ -51,7 +51,7 @@ module VERIFICATION
 
     syntax Bytes ::= #abiCallData2 ( String , TypedArgs ) [function]
 
-    rule #abiCallData2(FSIG, ARGS) => #parseByteStack(substrString(Keccak256(String2Bytes(FSIG)), 0, 8)) +Bytes #encodeArgs(ARGS)
+    rule #abiCallData2(FSIG, ARGS) => #parseByteStack(substrString(Keccak256bytes(String2Bytes(FSIG)), 0, 8)) +Bytes #encodeArgs(ARGS)
 
     rule chop(I) => 0 requires I ==Int pow256 [simplification]
 

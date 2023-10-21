@@ -24,7 +24,7 @@ def interpret(gst_data: Any, schedule: str, mode: str, chainid: int, *, check: b
     kore = KoreParser(proc_res.stdout).pattern()
     return kore
 
-
+import pytest
 def _interpret(gst_data: Any, schedule: str, mode: str, chainid: int) -> CompletedProcess:
     interpreter = kdist.get('llvm') / 'interpreter'
     init_kore = gst_to_kore(gst_data, schedule, mode, chainid)
