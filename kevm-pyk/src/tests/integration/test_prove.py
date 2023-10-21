@@ -9,7 +9,7 @@ import pytest
 from pyk.cterm import CTerm
 from pyk.proof.reachability import APRProof
 
-from kevm_pyk import config
+from kevm_pyk import config, kdist
 from kevm_pyk.__main__ import exec_prove
 from kevm_pyk.kevm import KEVM
 from kevm_pyk.kompile import KompileTarget, kevm_kompile
@@ -134,6 +134,8 @@ class Target(NamedTuple):
         else:
             include_dir = None
 
+        plugin_dir = kdist.get('plugin') if self.use_booster else None
+
         result = KompiledTarget(definition_dir, include_dir)
         target = KompileTarget.HASKELL if not self.use_booster else KompileTarget.HASKELL_BOOSTER
 
@@ -144,6 +146,7 @@ class Target(NamedTuple):
             main_module=self.main_module_name,
             syntax_module=self.main_module_name,
             includes=result.includes,
+            plugin_dir=plugin_dir,
             debug=True,
         )
 

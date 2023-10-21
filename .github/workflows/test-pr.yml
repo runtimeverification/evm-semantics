@@ -110,7 +110,7 @@ jobs:
       - name: 'Build kevm-pyk'
         run: docker exec -u github-user kevm-ci-concrete-${{ github.sha }} /bin/bash -c 'make poetry'
       - name: 'Build targets'
-        run: docker exec -u github-user kevm-ci-concrete-${{ github.sha }} /bin/bash -c 'CXX=clang++-14 poetry -C kevm-pyk run kevm-dist --verbose build -j`nproc` plugin llvm haskell'
+        run: docker exec -u github-user kevm-ci-concrete-${{ github.sha }} /bin/bash -c 'CXX=clang++-14 poetry -C kevm-pyk run kevm-dist --verbose build -j`nproc` llvm haskell'
       - name: 'Test integration'
         run: docker exec -u github-user kevm-ci-concrete-${{ github.sha }} /bin/bash -c 'make test-integration'
       - name: 'Test conformance'
