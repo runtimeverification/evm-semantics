@@ -212,6 +212,7 @@ def exec_prove(
     trace_rewrites: bool = False,
     failure_info: bool = True,
     auto_abstract_gas: bool = False,
+    fail_fast: bool = False,
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'md_selector', f'--md-selector: {kwargs["md_selector"]}')
@@ -296,6 +297,7 @@ def exec_prove(
                 break_every_step=break_every_step,
                 break_on_jumpi=break_on_jumpi,
                 break_on_calls=break_on_calls,
+                fail_fast=fail_fast,
             )
             end_time = time.time()
             _LOGGER.info(f'Proof timing {proof.id}: {end_time - start_time}s')
@@ -541,7 +543,7 @@ def _create_argument_parser() -> ArgumentParser:
         parents=[kevm_cli_args.logging_args, kevm_cli_args.k_args, kevm_cli_args.kompile_args],
     )
     kevm_kompile_args.add_argument('main_file', type=file_path, help='Path to file with main module.')
-    kevm_kompile_args.add_argument('--target', type=KompileTarget, help='[llvm|haskell|haskell-standalone|foundry]')
+    kevm_kompile_args.add_argument('--target', type=KompileTarget, help='[llvm|haskell|haskell-booster]')
     kevm_kompile_args.add_argument(
         '-o', '--output-definition', type=Path, dest='output_dir', help='Path to write kompiled definition to.'
     )

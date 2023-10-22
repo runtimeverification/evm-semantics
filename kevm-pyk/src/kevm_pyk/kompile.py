@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING
 from pyk.ktool.kompile import HaskellKompile, KompileArgs, LLVMKompile, LLVMKompileType
 from pyk.utils import run_process
 
-from . import config, kdist
+from . import config
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -29,15 +29,13 @@ class KompileTarget(Enum):
     LLVM = 'llvm'
     HASKELL = 'haskell'
     HASKELL_BOOSTER = 'haskell-booster'
-    HASKELL_STANDALONE = 'haskell-standalone'
-    FOUNDRY = 'foundry'
 
     @property
     def md_selector(self) -> str:
         match self:
             case self.LLVM:
                 return 'k & ! symbolic'
-            case self.HASKELL | self.HASKELL_STANDALONE | self.HASKELL_BOOSTER | self.FOUNDRY:
+            case self.HASKELL | self.HASKELL_BOOSTER:
                 return 'k & ! concrete'
             case _:
                 raise AssertionError()
@@ -58,12 +56,16 @@ def kevm_kompile(
     llvm_kompile_type: LLVMKompileType | None = None,
     enable_llvm_debug: bool = False,
     llvm_library: Path | None = None,
+    plugin_dir: Path | None = None,
     debug_build: bool = False,
     debug: bool = False,
     verbose: bool = False,
 ) -> Path:
     if llvm_library is None:
         llvm_library = output_dir / 'llvm-library'
+
+    if target in [KompileTarget.LLVM, KompileTarget.HASKELL_BOOSTER] and not plugin_dir:
+        raise ValueError(f'Parameter plugin_dir is required for target: {target.value}')
 
     include_dirs = [Path(include) for include in includes]
     include_dirs += config.INCLUDE_DIRS
@@ -86,7 +88,8 @@ def kevm_kompile(
     try:
         match target:
             case KompileTarget.LLVM:
-                ccopts = list(ccopts) + _lib_ccopts(kernel, debug_build=debug_build)
+                assert plugin_dir
+                ccopts = list(ccopts) + _lib_ccopts(plugin_dir, kernel, debug_build=debug_build)
                 kompile = LLVMKompile(
                     base_args=base_args,
                     ccopts=ccopts,
@@ -96,7 +99,7 @@ def kevm_kompile(
                 )
                 return kompile(output_dir=output_dir, debug=debug, verbose=verbose)
 
-            case KompileTarget.HASKELL | KompileTarget.FOUNDRY | KompileTarget.HASKELL_STANDALONE:
+            case KompileTarget.HASKELL:
                 kompile = HaskellKompile(
                     base_args=base_args,
                     haskell_binary=haskell_binary,
@@ -104,7 +107,8 @@ def kevm_kompile(
                 return kompile(output_dir=output_dir, debug=debug, verbose=verbose)
 
             case KompileTarget.HASKELL_BOOSTER:
-                ccopts = list(ccopts) + _lib_ccopts(kernel, debug_build=debug_build)
+                assert plugin_dir
+                ccopts = list(ccopts) + _lib_ccopts(plugin_dir, kernel, debug_build=debug_build)
                 base_args_llvm = KompileArgs(
                     main_file=main_file,
                     main_module=main_module,
@@ -146,15 +150,13 @@ def kevm_kompile(
         raise
 
 
-def _lib_ccopts(kernel: str, debug_build: bool = False) -> list[str]:
+def _lib_ccopts(plugin_dir: Path, kernel: str, debug_build: bool = False) -> list[str]:
     ccopts = ['-std=c++17']
 
     if debug_build:
         ccopts += ['-g']
 
     ccopts += ['-lssl', '-lcrypto']
-
-    plugin_dir = kdist.get('plugin')
 
     libff_dir = plugin_dir / 'libff'
     ccopts += [f'{libff_dir}/lib/libff.a', f'-I{libff_dir}/include']

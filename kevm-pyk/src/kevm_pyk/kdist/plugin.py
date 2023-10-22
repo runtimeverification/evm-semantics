@@ -11,20 +11,22 @@ from pyk.utils import run_process
 
 from .. import config
 from ..kompile import KompileTarget, kevm_kompile
-from . import Target
+from .api import Target
 
 if TYPE_CHECKING:
-    from collections.abc import Iterator, Mapping
+    from collections.abc import Iterable, Iterator, Mapping
     from typing import Any, Final
 
 
 class KEVMTarget(Target):
     _kompile_args: dict[str, Any]
+    _deps: tuple[str, ...]
 
-    def __init__(self, kompile_args: Mapping[str, Any]):
+    def __init__(self, kompile_args: Mapping[str, Any], *, deps: Iterable[str] | None = None):
         self._kompile_args = dict(kompile_args)
+        self._deps = tuple(deps) if deps is not None else ()
 
-    def build(self, output_dir: Path, args: dict[str, Any]) -> None:
+    def build(self, output_dir: Path, deps: dict[str, Path], args: dict[str, Any]) -> None:
         verbose = args.get('verbose', False)
         enable_llvm_debug = args.get('enable_llvm_debug', False)
 
@@ -32,12 +34,16 @@ class KEVMTarget(Target):
             output_dir=output_dir,
             enable_llvm_debug=enable_llvm_debug,
             verbose=verbose,
+            plugin_dir=deps.get('plugin'),
             **self._kompile_args,
         )
 
+    def deps(self) -> tuple[str, ...]:
+        return self._deps
+
 
 class PluginTarget(Target):
-    def build(self, output_dir: Path, args: dict[str, Any]) -> None:
+    def build(self, output_dir: Path, deps: dict[str, Any], args: dict[str, Any]) -> None:
         verbose = args.get('verbose', False)
 
         sync_files(
@@ -79,6 +85,7 @@ __TARGETS__: Final = {
             'syntax_module': 'ETHEREUM-SIMULATION',
             'optimization': 2,
         },
+        deps=('plugin',),
     ),
     'haskell': KEVMTarget(
         {
@@ -90,7 +97,7 @@ __TARGETS__: Final = {
     ),
     'haskell-standalone': KEVMTarget(
         {
-            'target': KompileTarget.HASKELL_STANDALONE,
+            'target': KompileTarget.HASKELL,
             'main_file': config.EVM_SEMANTICS_DIR / 'driver.md',
             'main_module': 'ETHEREUM-SIMULATION',
             'syntax_module': 'ETHEREUM-SIMULATION',
@@ -98,7 +105,7 @@ __TARGETS__: Final = {
     ),
     'foundry': KEVMTarget(
         {
-            'target': KompileTarget.FOUNDRY,
+            'target': KompileTarget.HASKELL,
             'main_file': config.EVM_SEMANTICS_DIR / 'foundry.md',
             'main_module': 'FOUNDRY',
             'syntax_module': 'FOUNDRY',
