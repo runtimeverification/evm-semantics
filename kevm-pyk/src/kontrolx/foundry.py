@@ -1276,8 +1276,6 @@ def _init_cterm(
         'LOCALMEM_CELL': KApply('.Bytes_BYTES-HOOKED_Bytes'),
         'PREVCALLER_CELL': KApply('.Account_EVM-TYPES_Account'),
         'PREVORIGIN_CELL': KApply('.Account_EVM-TYPES_Account'),
-        'NEWCALLER_CELL': KApply('.Account_EVM-TYPES_Account'),
-        'NEWORIGIN_CELL': KApply('.Account_EVM-TYPES_Account'),
         'ACTIVE_CELL': FALSE,
         'STATIC_CELL': FALSE,
         'MEMORYUSED_CELL': intToken(0),

@@ -27,15 +27,24 @@ contract MyErc20 {
 
 contract PlainPrankTest is Test {
     MyErc20 erc20a;
+    MyErc20 erc20b;
 
     function internalCounter() public view returns (bool) {
         return msg.sender == address(15);
     }
 
-    function testPrank() external {
+    function testPrankCreate() external {
+        vm.startPrank(address(0xdeadbeef));
+        erc20a = new MyErc20();
+        erc20b = new MyErc20();
+        vm.stopPrank();
+    }
+
+    function testPrankCreateAddress() external {
         vm.startPrank(address(0xdeadbeef));
         erc20a = new MyErc20();
         vm.stopPrank();
+        assert(address(erc20a) == 0xE8279BE14E9fe2Ad2D8E52E42Ca96Fb33a813BBe);
     }
 
     function testFail_startPrank_internalCall() public {

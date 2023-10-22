@@ -167,7 +167,6 @@ The configuration of the Foundry Cheat Codes is defined as follwing:
 1. The `<prank>` subconfiguration stores values which are used during the execution of any kind of `prank` cheat code:
     - `<prevCaller>` keeps the current address of the contract that initiated the prank.
     - `<prevOrigin>` keeps the current address of the `tx.origin` value.
-    - `<newCaller>` and `<newOrigin>` are addresses to be assigned after the prank call to `msg.sender` and `tx.origin`.
     - `<active>` signals if a prank is active or not.
     - `<depth>` records the current call depth at which the prank was invoked.
     - `<singleCall>` tells whether the prank stops by itself after the next call or when a `stopPrank` cheat code is invoked.
@@ -205,8 +204,6 @@ module FOUNDRY-CHEAT-CODES
         <prank>
           <prevCaller> .Account </prevCaller>
           <prevOrigin> .Account </prevOrigin>
-          <newCaller> .Account </newCaller>
-          <newOrigin> .Account </newOrigin>
           <active> false </active>
           <depth> 0 </depth>
           <singleCall> false </singleCall>
@@ -774,77 +771,6 @@ Next, everytime one of the `STATICCALL`, `DELEGATECALL`, `CALL`, `CREATE` or `CR
 Pranks
 ------
 
-#### Injecting addresses in a call
-
-To inject the pranked `msg.sender` and `tx.origin` we add two new rules for each of the `#call` and `#create` productions, defined in [evm.md](./evm.md).
-These rules have a higher priority.
-The only difference between these rules is that one will also set the `tx.origin`, if required.
-First, will match only if the `<active>` cell has the `true` value, signaling that a prank is active, and if the current depth of the call is at the same level with the depth at which the prank was invoked.
-This is needed in order to prevent overwriting the caller for subcalls.
-Finally, the original sender of the transaction, `ACCTFROM` is changed to the new caller, `NCL`.
-
-```k
-    rule [foundry.prank.call.injectCaller]:
-         <k> #call (ACCTFROM => NCL) _ACCTTO _ACCTCODE _VALUE _APPVALUE _ARGS _STATIC ... </k>
-         <callDepth> CD </callDepth>
-         <prank>
-            <newCaller> NCL </newCaller>
-            <newOrigin> .Account </newOrigin>
-            <active> true </active>
-            <depth> CD </depth>
-            ...
-         </prank>
-      requires NCL =/=K .Account
-       andBool ACCTFROM =/=Int NCL
-      [priority(40)]
-
-    rule [foundry.prank.call.injectCallerAndOrigin]:
-         <k> #call (ACCTFROM => NCL) _ACCTTO _ACCTCODE _VALUE _APPVALUE _ARGS _STATIC ... </k>
-         <callDepth> CD </callDepth>
-         <origin> _ => NOG </origin>
-         <prank>
-            <newCaller> NCL </newCaller>
-            <newOrigin> NOG </newOrigin>
-            <active> true </active>
-            <depth> CD </depth>
-            ...
-         </prank>
-      requires NCL =/=K .Account
-       andBool NOG =/=K .Account
-       andBool ACCTFROM =/=Int NCL
-      [priority(40)]
-
-    rule [foundry.prank.create.injectCaller]:
-         <k> #create (ACCTFROM => NCL) _ACCTTO _VALUE _INITCODE ... </k>
-         <callDepth> CD </callDepth>
-         <prank>
-            <newCaller> NCL </newCaller>
-            <newOrigin> .Account </newOrigin>
-            <active> true </active>
-            <depth> CD </depth>
-            ...
-         </prank>
-      requires NCL =/=K .Account
-       andBool ACCTFROM =/=Int NCL
-      [priority(40)]
-
-    rule [foundry.prank.create.injectCallerAndOrigin]:
-         <k>#create ( ACCTFROM => NCL) _ACCTTO _VALUE _INITCODE ... </k>
-         <callDepth> CD </callDepth>
-         <origin> _ => NOG </origin>
-         <prank>
-            <newCaller> NCL </newCaller>
-            <newOrigin> NOG </newOrigin>
-            <active> true </active>
-            <depth> CD </depth>
-            ...
-         </prank>
-      requires NCL =/=K .Account
-       andBool NOG =/=K .Account
-       andBool ACCTFROM =/=Int NCL
-      [priority(40)]
-```
-
 We define a new rule for the `#halt ~> #return _ _` production that will trigger the `#endPrank` rules if the prank was set only for a single call and if the current call depth is equal to the depth at which `prank` was invoked plus one.
 
 
@@ -868,7 +794,7 @@ function startPrank(address sender, address origin) external;
 ```
 
 `foundry.call.startPrank` and `foundry.call.startPrankWithOrigin` will match when either of `startPrank` functions are called.
-The addresses which will be used to impersonate future calls are retrieved from the local memory using `#asWord(#range(ARGS, 0, 32)` for the sender, and `#asWord(#range(ARGS, 32, 32)` for the origin (only for the `foundry.call.startPrankWithOrigin` rule).
+The addresses which will be used to impersonate future calls are retrieved from the local memory using `#asWord(#range(ARGS, 0, 32)` for the sender, and `#asWord(#range(ARGS, 32, 32)` for the origin.
 The `#loadAccount` production is used to load accounts into the state if they are missing.
 
 ```k
@@ -1340,19 +1266,31 @@ Will also return true if REASON is `.Bytes`.
 ```k
     syntax KItem ::= "#setPrank" Int Account Bool [klabel(foundry_setPrank)]
  // ------------------------------------------------------------------------
+    rule <k> #setPrank NEWCALLER .Account SINGLEPRANK => . ... </k>
+         <callDepth> CD </callDepth>
+         <caller> CL => NEWCALLER </caller>
+         <prank>
+           <prevCaller> .Account => CL </prevCaller>
+           <active> false => true </active>
+           <depth> _ => CD </depth>
+           <singleCall> _ => SINGLEPRANK </singleCall>
+           ...
+         </prank>
+      requires NEWCALLER =/=K .Account
+
     rule <k> #setPrank NEWCALLER NEWORIGIN SINGLEPRANK => . ... </k>
          <callDepth> CD </callDepth>
-         <caller> CL </caller>
-         <origin> OG </origin>
+         <caller> CL => NEWCALLER </caller>
+         <origin> OG => NEWORIGIN </origin>
          <prank>
            <prevCaller> .Account => CL </prevCaller>
            <prevOrigin> .Account => OG </prevOrigin>
-           <newCaller> _ => NEWCALLER </newCaller>
-           <newOrigin> _ => NEWORIGIN </newOrigin>
            <active> false => true </active>
            <depth> _ => CD </depth>
            <singleCall> _ => SINGLEPRANK </singleCall>
          </prank>
+      requires NEWCALLER =/=K .Account
+       andBool NEWORIGIN =/=K .Account
 ```
 
 - `#endPrank` will end the prank, restoring the previous caller and origin to the `<caller>` and `<origin>` cells in the configuration.
@@ -1387,8 +1325,6 @@ If the production is matched when no prank is active, it will be ignored.
         <prank>
           <prevCaller> _ => .Account </prevCaller>
           <prevOrigin> _ => .Account </prevOrigin>
-          <newCaller> _ => .Account </newCaller>
-          <newOrigin> _ => .Account </newOrigin>
           <active> _ => false </active>
           <depth> _ => 0 </depth>
           <singleCall> _ => false </singleCall>
