@@ -83,7 +83,7 @@ jobs:
       - name: 'Build kevm-pyk'
         run: docker exec -u github-user kevm-ci-profile-${{ github.sha }} /bin/bash -c 'make poetry'
       - name: 'Build targets'
-        run: docker exec -u github-user kevm-ci-profile-${{ github.sha }} /bin/bash -c 'CXX=clang++-14 poetry -C kevm-pyk run kevm-dist --verbose build -j`nproc` plugin foundry'
+        run: docker exec -u github-user kevm-ci-profile-${{ github.sha }} /bin/bash -c 'CXX=clang++-14 poetry -C kevm-pyk run kevm-dist --verbose build -j`nproc` plugin'
       - name: 'Run profiling'
         run: |
           docker exec -u github-user kevm-ci-profile-${{ github.sha }} /bin/bash -c 'make profile'
@@ -110,7 +110,7 @@ jobs:
       - name: 'Build kevm-pyk'
         run: docker exec -u github-user kevm-ci-concrete-${{ github.sha }} /bin/bash -c 'make poetry'
       - name: 'Build targets'
-        run: docker exec -u github-user kevm-ci-concrete-${{ github.sha }} /bin/bash -c 'CXX=clang++-14 poetry -C kevm-pyk run kevm-dist --verbose build -j`nproc` plugin llvm haskell'
+        run: docker exec -u github-user kevm-ci-concrete-${{ github.sha }} /bin/bash -c 'CXX=clang++-14 poetry -C kevm-pyk run kevm-dist --verbose build -j`nproc` llvm haskell'
       - name: 'Test integration'
         run: docker exec -u github-user kevm-ci-concrete-${{ github.sha }} /bin/bash -c 'make test-integration'
       - name: 'Test conformance'
@@ -159,42 +159,6 @@ jobs:
         if: always()
         run: |
           docker stop --time=0 kevm-ci-haskell-${{ matrix.test-suite }}-${{ github.sha }}
-
-  test-prove-foundry:
-    name: 'Build and Test KEVM Foundry proofs'
-    needs: kevm-pyk-code-quality-checks
-    runs-on: [self-hosted, linux, normal, fast]
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - test-suite: 'legacy'
-            test-args:
-            timeout: 180
-          - test-suite: 'booster'
-            test-args: '--use-booster'
-            timeout: 90
-    timeout-minutes: ${{ matrix.timeout }}
-    steps:
-      - name: 'Check out code'
-        uses: actions/checkout@v3
-        with:
-          submodules: recursive
-          fetch-depth: 0
-      - name: 'Set up Docker'
-        uses: ./.github/actions/with-docker
-        with:
-          container-name: kevm-ci-foundry-${{ matrix.test-suite }}-${{ github.sha }}
-      - name: 'Build kevm-pyk'
-        run: docker exec -u github-user kevm-ci-foundry-${{ matrix.test-suite }}-${{ github.sha }} /bin/bash -c 'make poetry'
-      - name: 'Build targets'
-        run: docker exec -u github-user kevm-ci-foundry-${{ matrix.test-suite }}-${{ github.sha }} /bin/bash -c 'CXX=clang++-14 poetry -C kevm-pyk run kevm-dist --verbose build -j`nproc` plugin foundry'
-      - name: 'Foundry Prove'
-        run: docker exec -u github-user kevm-ci-foundry-${{ matrix.test-suite }}-${{ github.sha }} /bin/bash -c "make test-foundry-prove PYTEST_ARGS='-vv ${{ matrix.test-args }}'"
-      - name: 'Tear down Docker'
-        if: always()
-        run: |
-          docker stop --time=0 kevm-ci-foundry-${{ matrix.test-suite }}-${{ github.sha }}
 
   nix:
     name: 'Nix'
