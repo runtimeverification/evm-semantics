@@ -125,7 +125,7 @@ jobs:
   test-prove:
     name: 'Build and Test KEVM proofs'
     needs: kevm-pyk-code-quality-checks
-    runs-on: [self-hosted, linux, normal, fast]
+    runs-on: [self-hosted, linux, fast]
     strategy:
       fail-fast: false
       matrix:
