@@ -697,7 +697,7 @@ After executing a transaction, it's necessary to have the effect of the substate
 ```k
     syntax Int ::= "M3:2048" "(" Bytes ")" [function]
  // -------------------------------------------------
-    rule M3:2048(WS) => setBloomFilterBits(#parseByteStack(Keccak256(#unparseByteStack(WS))))
+    rule M3:2048(WS) => setBloomFilterBits(#parseByteStack(Keccak256bytes(WS)))
 
     syntax Int ::= setBloomFilterBits(Bytes) [function]
  // ---------------------------------------------------
@@ -1694,7 +1694,7 @@ Precompiled Contracts
     syntax Bytes ::= #ecrec ( Bytes , Bytes , Bytes , Bytes ) [function, smtlib(ecrec)]
                    | #ecrec ( Account )                       [function]
  // --------------------------------------------------------------------
-    rule [ecrec]: #ecrec(HASH, SIGV, SIGR, SIGS) => #ecrec(#sender(#unparseByteStack(HASH), #asWord(SIGV), #unparseByteStack(SIGR), #unparseByteStack(SIGS))) [concrete]
+    rule [ecrec]: #ecrec(HASH, SIGV, SIGR, SIGS) => #ecrec(#sender(HASH, #asWord(SIGV), SIGR, SIGS)) [concrete]
 
     rule #ecrec(.Account) => .Bytes
     rule #ecrec(N:Int)    => #padToWidth(32, #asByteStack(N))
@@ -1703,13 +1703,13 @@ Precompiled Contracts
  // ---------------------------------
     rule <k> SHA256 => #end EVMC_SUCCESS ... </k>
          <callData> DATA </callData>
-         <output> _ => #parseHexBytes(Sha256(#unparseByteStack(DATA))) </output>
+         <output> _ => #parseHexBytes(Sha256bytes(DATA)) </output>
 
     syntax PrecompiledOp ::= "RIP160"
  // ---------------------------------
     rule <k> RIP160 => #end EVMC_SUCCESS ... </k>
          <callData> DATA </callData>
-         <output> _ => #padToWidth(32, #parseHexBytes(RipEmd160(#unparseByteStack(DATA)))) </output>
+         <output> _ => #padToWidth(32, #parseHexBytes(RipEmd160bytes(DATA))) </output>
 
     syntax PrecompiledOp ::= "ID"
  // -----------------------------
@@ -1788,7 +1788,7 @@ Precompiled Contracts
     syntax PrecompiledOp ::= "BLAKE2F"
  // ----------------------------------
     rule <k> BLAKE2F => #end EVMC_SUCCESS ... </k>
-         <output> _ => #parseByteStack( Blake2Compress( #unparseByteStack( DATA ) ) ) </output>
+         <output> _ => #parseByteStack( Blake2Compressbytes( DATA ) ) </output>
          <callData> DATA </callData>
       requires lengthBytes( DATA ) ==Int 213
        andBool DATA[212] <=Int 1
