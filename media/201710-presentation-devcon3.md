@@ -456,7 +456,7 @@ Verifing ABI compliant contracts
  // -------------------------------------------------------------------
     rule #abiCallData( FNAME , ARGS ) =>
         #parseByteStack(substrString(
-            Keccak256(#generateSignature(FNAME +String "(", ARGS)), 0, 8))
+            Keccak256bytes(#generateSignature(FNAME +String "(", ARGS)), 0, 8))
             ++ #encodeArgs(.WordStack | ARGS)
 ```
 
