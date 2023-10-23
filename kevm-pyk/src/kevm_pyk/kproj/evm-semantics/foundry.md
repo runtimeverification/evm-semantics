@@ -785,8 +785,8 @@ Finally, the original sender of the transaction, `ACCTFROM` is changed to the ne
 
 ```k
     rule [foundry.CALL.withPrank]:
-      <k> CALL _GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
-       => #injectPrank ~> CALL _GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH ~> #endPrank ... </k>
+      <k> CALL GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
+       => #injectPrank ~> CALL GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH ~> #endPrank ... </k>
        <callDepth> CD </callDepth>
        <prank>
          <active> true </active>
@@ -796,8 +796,8 @@ Finally, the original sender of the transaction, `ACCTFROM` is changed to the ne
       [priority(40)]
 
     rule [foundry.CALLCODE.withPrank]:
-      <k> CALLCODE _GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
-       => #injectPrank ~> CALLCODE _GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH ~> #endPrank ... </k>
+      <k> CALLCODE GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
+       => #injectPrank ~> CALLCODE GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH ~> #endPrank ... </k>
        <callDepth> CD </callDepth>
        <prank>
          <active> true </active>
@@ -807,8 +807,8 @@ Finally, the original sender of the transaction, `ACCTFROM` is changed to the ne
       [priority(40)]
 
     rule [foundry.STATICCALL.withPrank]:
-      <k> STATICCALL _GCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
-       => #injectPrank ~> STATICCALL _GCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH ~> #endPrank ... </k>
+      <k> STATICCALL GCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
+       => #injectPrank ~> STATICCALL GCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH ~> #endPrank ... </k>
        <callDepth> CD </callDepth>
        <prank>
          <active> true </active>
