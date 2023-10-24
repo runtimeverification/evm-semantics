@@ -785,7 +785,8 @@ Finally, the original sender of the transaction, `ACCTFROM` is changed to the ne
 
 ```k
     rule [foundry.prank.call.injectCaller]:
-         <k> #call (ACCTFROM => NCL) _ACCTTO _ACCTCODE _VALUE _APPVALUE _ARGS _STATIC ... </k>
+         <k> #checkCall (ACCTFROM => NCL) VALUE
+             ~> #call   (ACCTFROM => NCL) _ACCTTO _ACCTCODE VALUE _APPVALUE _ARGS _STATIC ... </k>
          <callDepth> CD </callDepth>
          <prank>
             <newCaller> NCL </newCaller>
@@ -799,7 +800,8 @@ Finally, the original sender of the transaction, `ACCTFROM` is changed to the ne
       [priority(40)]
 
     rule [foundry.prank.call.injectCallerAndOrigin]:
-         <k> #call (ACCTFROM => NCL) _ACCTTO _ACCTCODE _VALUE _APPVALUE _ARGS _STATIC ... </k>
+         <k> #checkCall (ACCTFROM => NCL) VALUE
+             ~> #call   (ACCTFROM => NCL) _ACCTTO _ACCTCODE VALUE _APPVALUE _ARGS _STATIC ... </k>
          <callDepth> CD </callDepth>
          <origin> _ => NOG </origin>
          <prank>
@@ -815,8 +817,21 @@ Finally, the original sender of the transaction, `ACCTFROM` is changed to the ne
       [priority(40)]
 
     rule [foundry.prank.create.injectCaller]:
-         <k> #create (ACCTFROM => NCL) _ACCTTO _VALUE _INITCODE ... </k>
+         <k> CREATE VALUE MEMSTART MEMWIDTH
+          => #accessAccounts #newAddr(NCL, NONCE)
+          ~> #checkCall NCL VALUE
+          ~> #create NCL #newAddr(NCL, NONCE) VALUE #range(LM, MEMSTART, MEMWIDTH)
+          ~> #codeDeposit #newAddr(NCL, NONCE)
+         ...
+         </k>
          <callDepth> CD </callDepth>
+         <localMem> LM </localMem>
+         <account>
+           <acctID> NCL </acctID>
+           <nonce> NONCE </nonce>
+           ...
+         </account>
+         <schedule> SCHED </schedule>
          <prank>
             <newCaller> NCL </newCaller>
             <newOrigin> .Account </newOrigin>
@@ -824,14 +839,27 @@ Finally, the original sender of the transaction, `ACCTFROM` is changed to the ne
             <depth> CD </depth>
             ...
          </prank>
-      requires NCL =/=K .Account
-       andBool ACCTFROM =/=Int NCL
+      requires #hasValidInitCode(MEMWIDTH, SCHED)
+       andBool NCL =/=K .Account
       [priority(40)]
 
     rule [foundry.prank.create.injectCallerAndOrigin]:
-         <k>#create ( ACCTFROM => NCL) _ACCTTO _VALUE _INITCODE ... </k>
+         <k> CREATE VALUE MEMSTART MEMWIDTH
+          => #accessAccounts #newAddr(NCL, NONCE)
+          ~> #checkCall NCL VALUE
+          ~> #create NCL #newAddr(NCL, NONCE) VALUE #range(LM, MEMSTART, MEMWIDTH)
+          ~> #codeDeposit #newAddr(NCL, NONCE)
+         ...
+         </k>
          <callDepth> CD </callDepth>
          <origin> _ => NOG </origin>
+         <localMem> LM </localMem>
+         <account>
+           <acctID> NCL </acctID>
+           <nonce> NONCE </nonce>
+           ...
+         </account>
+         <schedule> SCHED </schedule>
          <prank>
             <newCaller> NCL </newCaller>
             <newOrigin> NOG </newOrigin>
@@ -839,9 +867,9 @@ Finally, the original sender of the transaction, `ACCTFROM` is changed to the ne
             <depth> CD </depth>
             ...
          </prank>
-      requires NCL =/=K .Account
+      requires #hasValidInitCode(MEMWIDTH, SCHED)
        andBool NOG =/=K .Account
-       andBool ACCTFROM =/=Int NCL
+       andBool NCL =/=K .Account
       [priority(40)]
 ```
 
