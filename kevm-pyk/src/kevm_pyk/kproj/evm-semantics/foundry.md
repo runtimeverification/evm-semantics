@@ -787,56 +787,71 @@ Finally, the original sender of the transaction, `ACCTFROM` is changed to the ne
     rule [foundry.CALL.withPrank]:
       <k> CALL GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
        => #injectPrank ~> CALL GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH ~> #endPrank ... </k>
+       <id> ACCT </id>
        <callDepth> CD </callDepth>
        <prank>
          <active> true </active>
+         <newCaller> NCL </newCaller>
          <depth> CD </depth>
          ...
        </prank>
+      requires ACCT =/=K NCL
       [priority(40)]
 
     rule [foundry.CALLCODE.withPrank]:
       <k> CALLCODE GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
        => #injectPrank ~> CALLCODE GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH ~> #endPrank ... </k>
+       <id> ACCT </id>
        <callDepth> CD </callDepth>
        <prank>
          <active> true </active>
+         <newCaller> NCL </newCaller>
          <depth> CD </depth>
          ...
        </prank>
+      requires ACCT =/=K NCL
       [priority(40)]
 
     rule [foundry.STATICCALL.withPrank]:
       <k> STATICCALL GCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
        => #injectPrank ~> STATICCALL GCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH ~> #endPrank ... </k>
+       <id> ACCT </id>
        <callDepth> CD </callDepth>
        <prank>
          <active> true </active>
+         <newCaller> NCL </newCaller>
          <depth> CD </depth>
          ...
        </prank>
+      requires ACCT =/=K NCL
       [priority(40)]
 
     rule [foundry.CREATE.withPrank]:
       <k> CREATE VALUE MEMSTART MEMWIDTH
        => #injectPrank ~> CREATE VALUE MEMSTART MEMWIDTH ~> #endPrank ... </k>
+       <id> ACCT </id>
        <callDepth> CD </callDepth>
        <prank>
          <active> true </active>
+         <newCaller> NCL </newCaller>
          <depth> CD </depth>
          ...
        </prank>
+      requires ACCT =/=K NCL
       [priority(40)]
 
     rule [foundry.CREATE2.withPrank]:
       <k> CREATE2 VALUE MEMSTART MEMWIDTH SALT
        => #injectPrank ~> CREATE2 VALUE MEMSTART MEMWIDTH SALT ~> #endPrank ... </k>
+       <id> ACCT </id>
        <callDepth> CD </callDepth>
        <prank>
          <active> true </active>
+         <newCaller> NCL </newCaller>
          <depth> CD </depth>
          ...
        </prank>
+      requires ACCT =/=K NCL
       [priority(40)]
 ```
 
