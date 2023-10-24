@@ -10,6 +10,7 @@ from graphlib import CycleError, TopologicalSorter
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from filelock import SoftFileLock
 from pyk.utils import hash_str
 from xdg_base_dirs import xdg_cache_home
 
@@ -22,6 +23,8 @@ if TYPE_CHECKING:
     from concurrent.futures import Future
     from types import ModuleType
     from typing import Any, Final
+
+    from filelock import FileLock
 
 
 _LOGGER: Final = logging.getLogger(__name__)
@@ -103,7 +106,7 @@ def targets() -> list[str]:
 
 def check(target: str) -> None:
     if target not in _TARGETS:
-        raise ValueError('Undefined target: {target}')
+        raise ValueError(f'Undefined target: {target}')
 
 
 def which(target: str | None = None) -> Path:
@@ -202,14 +205,28 @@ def _build_target(
     *,
     force: bool = False,
 ) -> Path:
-    # TODO Locking
     output_dir = which(target)
-    if not force and output_dir.exists():
+
+    with _lock(target):
+        if not force and output_dir.exists():
+            return output_dir
+
+        shutil.rmtree(output_dir, ignore_errors=True)
+        output_dir.mkdir(parents=True)
+
+        _target = _TARGETS[target]
+        deps = {target: which(target) for target in _target.deps()}
+
+        try:
+            _target.build(output_dir, deps=deps, args=args)
+        except BaseException as err:
+            shutil.rmtree(output_dir, ignore_errors=True)
+            raise RuntimeError(f'Build failed: {target}') from err
+
         return output_dir
 
-    output_dir.mkdir(parents=True)
-    _target = _TARGETS[target]
-    deps = {target: which(target) for target in _target.deps()}
-    _target.build(output_dir, deps=deps, args=args)
 
-    return output_dir
+def _lock(target: str) -> FileLock:
+    lock_file = which(target).with_suffix('.lock')
+    lock_file.parent.mkdir(parents=True, exist_ok=True)
+    return SoftFileLock(lock_file)
