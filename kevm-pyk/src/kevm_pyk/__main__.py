@@ -6,6 +6,7 @@ import json
 import logging
 import os
 import sys
+import tempfile
 import time
 from argparse import ArgumentParser
 from pathlib import Path
@@ -236,6 +237,9 @@ def exec_prove(
         smt_timeout = 300
     if smt_retry_limit is None:
         smt_retry_limit = 10
+
+    if save_directory is None:
+        save_directory = Path(tempfile.TemporaryDirectory().name)
 
     kevm = KEVM(definition_dir, use_directory=save_directory, bug_report=bug_report)
 
