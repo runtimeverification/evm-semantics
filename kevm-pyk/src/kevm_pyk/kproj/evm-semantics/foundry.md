@@ -1396,7 +1396,7 @@ If the production is matched when no prank is active, it will be ignored.
 ```k
     syntax Bytes ::= #sign ( Bytes , Bytes ) [function,klabel(foundry_sign)]
  // ------------------------------------------------------------------------
-    rule #sign(BA1, BA2) => #parseByteStack(ECDSASignbytes(BA1, BA2)) [concrete]
+    rule #sign(BA1, BA2) => #parseByteStack(ECDSASign(BA1, BA2)) [concrete]
 ```
 
 - `#setExpectEmit` will initialize the `<expectEmit/>` subconfiguration, based on the arguments provided with the `expectEmit` cheat code.
