@@ -5,7 +5,7 @@ import logging
 import os
 import shutil
 from collections.abc import Mapping
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ProcessPoolExecutor
 from graphlib import CycleError, TopologicalSorter
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -153,7 +153,7 @@ def build(
 
     _LOGGER.info(f"Building targets: {', '.join(deps)}")
 
-    with ThreadPoolExecutor(max_workers=jobs) as pool:
+    with ProcessPoolExecutor(max_workers=jobs) as pool:
         pending: dict[Future[Path], str] = {}
 
         def submit(target: str) -> None:
