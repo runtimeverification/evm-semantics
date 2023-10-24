@@ -1371,7 +1371,7 @@ If the production is matched when no prank is active, it will be ignored.
 ```k
     syntax KItem ::= "#endPrank" [klabel(foundry_endPrank)]
  // -------------------------------------------------------
-    rule <k> #endPrank ... </k>
+    rule <k> #endPrank => . ... </k>
         <caller> _ => CL </caller>
         <origin> _ => OG </origin>
         <prank>
