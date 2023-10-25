@@ -192,7 +192,7 @@ class Contract:
             arg_vars = [KVariable(aname) for aname in self.arg_names]
             prod_klabel = self.unique_klabel
             assert prod_klabel is not None
-            args: list[KInner] = []
+            args: list[KApply] = []
             conjuncts: list[KInner] = []
             for input_name, input_type in zip(self.arg_names, self.arg_types, strict=True):
                 args.append(KEVM.abi_type(input_type, KVariable(input_name)))
