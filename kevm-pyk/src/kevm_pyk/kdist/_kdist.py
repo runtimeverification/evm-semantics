@@ -5,12 +5,15 @@ import logging
 import os
 import shutil
 from collections.abc import Mapping
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ProcessPoolExecutor
+from contextlib import contextmanager
 from graphlib import CycleError, TopologicalSorter
 from pathlib import Path
+from tempfile import TemporaryDirectory
 from typing import TYPE_CHECKING
 
-from pyk.utils import hash_str
+from filelock import SoftFileLock
+from pyk.utils import check_dir_path, hash_str
 from xdg_base_dirs import xdg_cache_home
 
 import kevm_pyk
@@ -18,10 +21,12 @@ import kevm_pyk
 from .api import Target
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
+    from collections.abc import Iterable, Iterator
     from concurrent.futures import Future
     from types import ModuleType
     from typing import Any, Final
+
+    from filelock import FileLock
 
 
 _LOGGER: Final = logging.getLogger(__name__)
@@ -103,7 +108,7 @@ def targets() -> list[str]:
 
 def check(target: str) -> None:
     if target not in _TARGETS:
-        raise ValueError('Undefined target: {target}')
+        raise ValueError(f'Undefined target: {target}')
 
 
 def which(target: str | None = None) -> Path:
@@ -150,7 +155,7 @@ def build(
 
     _LOGGER.info(f"Building targets: {', '.join(deps)}")
 
-    with ThreadPoolExecutor(max_workers=jobs) as pool:
+    with ProcessPoolExecutor(max_workers=jobs) as pool:
         pending: dict[Future[Path], str] = {}
 
         def submit(target: str) -> None:
@@ -202,14 +207,48 @@ def _build_target(
     *,
     force: bool = False,
 ) -> Path:
-    # TODO Locking
     output_dir = which(target)
-    if not force and output_dir.exists():
+
+    with _lock(target):
+        if not force and output_dir.exists():
+            return output_dir
+
+        shutil.rmtree(output_dir, ignore_errors=True)
+        output_dir.mkdir(parents=True)
+
+        _target = _TARGETS[target]
+        deps = {target: which(target) for target in _target.deps()}
+
+        with (
+            _build_dir(target) as build_dir,
+            _cwd(build_dir),
+        ):
+            try:
+                _target.build(output_dir, deps=deps, args=args)
+            except BaseException as err:
+                shutil.rmtree(output_dir, ignore_errors=True)
+                raise RuntimeError(f'Build failed: {target}') from err
+
         return output_dir
 
-    output_dir.mkdir(parents=True)
-    _target = _TARGETS[target]
-    deps = {target: which(target) for target in _target.deps()}
-    _target.build(output_dir, deps=deps, args=args)
 
-    return output_dir
+def _lock(target: str) -> FileLock:
+    lock_file = which(target).with_suffix('.lock')
+    lock_file.parent.mkdir(parents=True, exist_ok=True)
+    return SoftFileLock(lock_file)
+
+
+@contextmanager
+def _build_dir(target: str) -> Iterator[Path]:
+    with TemporaryDirectory(prefix=f'kdist-{target}-') as build_dir_str:
+        build_dir = Path(build_dir_str)
+        yield build_dir
+
+
+@contextmanager
+def _cwd(path: Path) -> Iterator[None]:
+    check_dir_path(path)
+    old_cwd = os.getcwd()
+    os.chdir(str(path))
+    yield
+    os.chdir(old_cwd)
