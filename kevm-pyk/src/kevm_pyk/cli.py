@@ -200,15 +200,9 @@ class KEVMCLIArgs(KCLIArgs):
         args.add_argument(
             '--break-on-calls',
             dest='break_on_calls',
-            default=True,
+            default=False,
             action='store_true',
             help='Store a node for every EVM call made.',
-        )
-        args.add_argument(
-            '--no-break-on-calls',
-            dest='break_on_calls',
-            action='store_false',
-            help='Do not store a node for every EVM call made.',
         )
         args.add_argument(
             '--simplify-init',
