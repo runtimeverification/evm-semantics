@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import abc
-import contextlib
 import dataclasses
 import json
 import logging
@@ -14,7 +13,6 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import multiprocess  # type: ignore
-import pathos  # type: ignore
 from pyk.cli.utils import file_path
 from pyk.cterm import CTerm
 from pyk.kast.outer import KApply, KRewrite, KSort, KToken
@@ -45,7 +43,7 @@ from .utils import (
 
 if TYPE_CHECKING:
     from argparse import Namespace
-    from collections.abc import Callable, Iterable, Iterator
+    from collections.abc import Callable, Iterable
     from typing import Any, Final, Mapping, TypeVar
 
     from pyk.kast.outer import KClaim
@@ -187,20 +185,6 @@ def exec_prove_legacy(
     print(kevm.pretty_print(final_kast))
     if not is_top(final_kast):
         raise SystemExit(1)
-
-
-class ZeroProcessPool:
-    def map(self, f: Callable[[Any], Any], xs: list[Any]) -> list[Any]:
-        return [f(x) for x in xs]
-
-
-@contextlib.contextmanager
-def wrap_process_pool(workers: int) -> Iterator[ZeroProcessPool | pathos.pools.ProcessPool]:
-    if workers <= 1:
-        yield ZeroProcessPool()
-    else:
-        with pathos.pools.ProcessPool(ncpus=workers) as pp:
-            yield pp
 
 
 class TodoQueueTask(abc.ABC):
