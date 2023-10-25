@@ -1,9 +1,6 @@
 from __future__ import annotations
 
-from contextlib import contextmanager
 from distutils.dir_util import copy_tree
-from pathlib import Path
-from tempfile import TemporaryDirectory
 from typing import TYPE_CHECKING
 
 from pyk.kbuild.utils import sync_files
@@ -14,7 +11,8 @@ from ..kompile import KompileTarget, kevm_kompile
 from .api import Target
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable, Iterator, Mapping
+    from collections.abc import Iterable, Mapping
+    from pathlib import Path
     from typing import Any, Final
 
 
@@ -58,22 +56,15 @@ class PluginTarget(Target):
             ],
         )
 
-        with self._build_env() as build_dir:
-            run_process(
-                ['make', 'libcryptopp', 'libff', 'libsecp256k1', '-j3'],
-                cwd=build_dir,
-                pipe_stdout=not verbose,
-            )
-            copy_tree(str(build_dir / 'build/libcryptopp'), str(output_dir / 'libcryptopp'))
-            copy_tree(str(build_dir / 'build/libff'), str(output_dir / 'libff'))
-            copy_tree(str(build_dir / 'build/libsecp256k1'), str(output_dir / 'libsecp256k1'))
+        copy_tree(str(config.PLUGIN_DIR), '.')
+        run_process(
+            ['make', 'libcryptopp', 'libff', 'libsecp256k1', '-j3'],
+            pipe_stdout=not verbose,
+        )
 
-    @contextmanager
-    def _build_env(self) -> Iterator[Path]:
-        with TemporaryDirectory(prefix='evm-semantics-plugin-') as build_dir_str:
-            build_dir = Path(build_dir_str)
-            copy_tree(str(config.PLUGIN_DIR), str(build_dir))
-            yield build_dir
+        copy_tree('./build/libcryptopp', str(output_dir / 'libcryptopp'))
+        copy_tree('./build/libff', str(output_dir / 'libff'))
+        copy_tree('./build/libsecp256k1', str(output_dir / 'libsecp256k1'))
 
 
 __TARGETS__: Final = {
