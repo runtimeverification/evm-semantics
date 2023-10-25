@@ -2,8 +2,7 @@
   description = "A flake for the KEVM Semantics";
 
   inputs = {
-    k-framework.url = "github:runtimeverification/k/96ad36e09b5c1fdc0d0395f2f9d410e7812cb5c2";
-    # k-framework.url = "github:runtimeverification/k/v6.0.163";
+    k-framework.url = "github:runtimeverification/k/v6.0.163";
     nixpkgs.follows = "k-framework/nixpkgs";
     flake-utils.follows = "k-framework/flake-utils";
     rv-utils.follows = "k-framework/rv-utils";
