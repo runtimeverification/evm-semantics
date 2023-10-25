@@ -2,28 +2,38 @@
   description = "A flake for the KEVM Semantics";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/b01f185e4866de7c5b5a82f833ca9ea3c3f72fc4";
-    k-framework.url = "github:runtimeverification/k/v6.0.163";
-    k-framework.inputs.nixpkgs.follows = "nixpkgs";
-    #nixpkgs.follows = "k-framework/nixpkgs";
+    k-framework.url = "github:runtimeverification/k/96ad36e09b5c1fdc0d0395f2f9d410e7812cb5c2";
+    # k-framework.url = "github:runtimeverification/k/v6.0.163";
+    nixpkgs.follows = "k-framework/nixpkgs";
     flake-utils.follows = "k-framework/flake-utils";
-    rv-utils.url = "github:runtimeverification/rv-nix-tools";
-    poetry2nix.follows = "pyk/poetry2nix";
-    blockchain-k-plugin.url = "github:runtimeverification/blockchain-k-plugin/b42e6ede9f6b72cedabc519810416e2994caad45";
-    blockchain-k-plugin.inputs.flake-utils.follows = "k-framework/flake-utils";
-    blockchain-k-plugin.inputs.nixpkgs.follows = "k-framework/nixpkgs";
-    ethereum-tests.url = "github:ethereum/tests/6401889dec4eee58e808fd178fb2c7f628a3e039";
-    ethereum-tests.flake = false;
-    ethereum-legacytests.url = "github:ethereum/legacytests/d7abc42a7b352a7b44b1f66b58aca54e4af6a9d7";
-    ethereum-legacytests.flake = false;
-    haskell-backend.follows = "k-framework/haskell-backend";
+    rv-utils.follows = "k-framework/rv-utils";
     pyk.url = "github:runtimeverification/pyk/v0.1.478";
     pyk.inputs.flake-utils.follows = "k-framework/flake-utils";
     pyk.inputs.nixpkgs.follows = "k-framework/nixpkgs";
-    foundry.url = "github:shazow/foundry.nix/monthly"; # Use monthly branch for permanent releases
+    poetry2nix.follows = "pyk/poetry2nix";
+    blockchain-k-plugin = {
+      url = "github:runtimeverification/blockchain-k-plugin/b42e6ede9f6b72cedabc519810416e2994caad45";
+      inputs.flake-utils.follows = "k-framework/flake-utils";
+      inputs.nixpkgs.follows = "k-framework/nixpkgs";
+    };
+    ethereum-tests = {
+      url = "github:ethereum/tests/6401889dec4eee58e808fd178fb2c7f628a3e039";
+      flake = false;
+    };
+    ethereum-legacytests = {
+      url = "github:ethereum/legacytests/d7abc42a7b352a7b44b1f66b58aca54e4af6a9d7";
+      flake = false;
+    };
+    haskell-backend.follows = "k-framework/haskell-backend";
+    foundry = {
+      url = "github:shazow/foundry.nix/monthly"; # Use monthly branch for permanent releases
+      inputs.nixpkgs.follows =  "k-framework/nixpkgs";
+      inputs.flake-utils.follows =  "k-framework/flake-utils";
+    };
     solc = {
       url = "github:hellwolf/solc.nix";
-      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nixpkgs.follows =  "k-framework/nixpkgs";
+      inputs.flake-utils.follows =  "k-framework/flake-utils";
     };
   };
   outputs = { self, k-framework, haskell-backend, nixpkgs, flake-utils
