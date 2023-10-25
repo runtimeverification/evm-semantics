@@ -43,8 +43,8 @@ from .utils import (
 
 if TYPE_CHECKING:
     from argparse import Namespace
-    from collections.abc import Callable, Iterable
-    from typing import Any, Final, Mapping, TypeVar
+    from collections.abc import Callable, Iterable, Mapping
+    from typing import Any, Final, TypeVar
 
     from pyk.kast.outer import KClaim
     from pyk.kcfg.kcfg import NodeIdLike
