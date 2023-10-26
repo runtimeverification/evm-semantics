@@ -197,7 +197,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
       requires notBool Ghasaccesslist << SCHED >>
 
     rule <k> #loadAccessList ([[ACCT, [STRG:JSONs]], REST])
-          => #loadAccessListAux (#asAccount(#parseByteStackRaw(ACCT)), #parseAccessListStorageKeys([STRG]))
+          => #loadAccessListAux (#asAccount(ACCT), #parseAccessListStorageKeys([STRG]))
           ~> #loadAccessList ([REST])
          ...
          </k>
@@ -346,19 +346,18 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
     rule <k> loadAccount _ { "code"    : ((CODE:String)     => #parseByteStack(CODE)),  _ } ... </k>
     rule <k> loadAccount _ { "storage" : ({ STORAGE:JSONs } => #parseMap({ STORAGE })), _ } ... </k>
 
-    rule <k> loadTransaction _ { "type"                 : (TT:String => #asWord(#parseByteStackRaw(TT))), _         } ... </k>
-    rule <k> loadTransaction _ { "chainID"              : (TC:String => #asWord(#parseByteStackRaw(TC))), _         } ... </k>
-    rule <k> loadTransaction _ { "gasLimit"             : (TG:String => #asWord(#parseByteStackRaw(TG))), _         } ... </k>
-    rule <k> loadTransaction _ { "gasPrice"             : (TP:String => #asWord(#parseByteStackRaw(TP))), _         } ... </k>
-    rule <k> loadTransaction _ { "nonce"                : (TN:String => #asWord(#parseByteStackRaw(TN))), _         } ... </k>
-    rule <k> loadTransaction _ { "v"                    : (TW:String => #asWord(#parseByteStackRaw(TW))), _         } ... </k>
-    rule <k> loadTransaction _ { "value"                : (TV:String => #asWord(#parseByteStackRaw(TV))), _         } ... </k>
-    rule <k> loadTransaction _ { "to"                   : (TT:String => #asAccount(#parseByteStackRaw(TT))), _      } ... </k>
-    rule <k> loadTransaction _ { "data"                 : (TI:String => #parseByteStackRaw(TI)), _                  } ... </k>
-    rule <k> loadTransaction _ { "r"                    : (TR:String => #padToWidth(32, #parseByteStackRaw(TR))), _ } ... </k>
-    rule <k> loadTransaction _ { "s"                    : (TS:String => #padToWidth(32, #parseByteStackRaw(TS))), _ } ... </k>
-    rule <k> loadTransaction _ { "maxPriorityFeePerGas" : (V:String  => #asWord(#parseByteStackRaw(V))), _          } ... </k>
-    rule <k> loadTransaction _ { "maxFeePerGas"         : (V:String  => #asWord(#parseByteStackRaw(V))), _          } ... </k>
+    rule <k> loadTransaction _ { "type"                 : (TT:Bytes => #asWord(TT)), _         } ... </k>
+    rule <k> loadTransaction _ { "chainID"              : (TC:Bytes => #asWord(TC)), _         } ... </k>
+    rule <k> loadTransaction _ { "gasLimit"             : (TG:Bytes => #asWord(TG)), _         } ... </k>
+    rule <k> loadTransaction _ { "gasPrice"             : (TP:Bytes => #asWord(TP)), _         } ... </k>
+    rule <k> loadTransaction _ { "nonce"                : (TN:Bytes => #asWord(TN)), _         } ... </k>
+    rule <k> loadTransaction _ { "v"                    : (TW:Bytes => #asWord(TW)), _         } ... </k>
+    rule <k> loadTransaction _ { "value"                : (TV:Bytes => #asWord(TV)), _         } ... </k>
+    rule <k> loadTransaction _ { "to"                   : (TT:Bytes => #asAccount(TT)), _      } ... </k>
+    rule <k> loadTransaction _ { "r"                    : (TR:Bytes => #padToWidth(32, TR)), _ } ... </k> requires lengthBytes(TR) <Int 32
+    rule <k> loadTransaction _ { "s"                    : (TS:Bytes => #padToWidth(32, TS)), _ } ... </k> requires lengthBytes(TS) <Int 32
+    rule <k> loadTransaction _ { "maxPriorityFeePerGas" : (V:Bytes  => #asWord(V)), _          } ... </k>
+    rule <k> loadTransaction _ { "maxFeePerGas"         : (V:Bytes  => #asWord(V)), _          } ... </k>
 ```
 
 ### Checking State
@@ -451,7 +450,7 @@ Here we check the other post-conditions associated with an EVM test.
 
     rule <k> check TESTID : { "logs" : LOGS } => check "logs" : LOGS ~> failure TESTID ... </k>
  // -------------------------------------------------------------------------------------------
-    rule <k> check "logs" : HASH:String => . ... </k> <log> SL </log> requires #parseHexBytes(Keccak256(#rlpEncodeLogs(SL))) ==K #parseByteStack(HASH)
+    rule <k> check "logs" : HASH:String => . ... </k> <log> SL </log> requires #parseHexBytes(Keccak256bytes(#rlpEncodeLogs(SL))) ==K #parseByteStack(HASH)
 
     rule <k> check TESTID : { "gas" : GLEFT } => check "gas" : GLEFT ~> failure TESTID ... </k>
  // -------------------------------------------------------------------------------------------
@@ -559,18 +558,18 @@ Here we check the other post-conditions associated with an EVM test.
     rule <k> check "transactions" : ("type"                 : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txType>        VALUE </txType>         ... </message>
     rule <k> check "transactions" : ("maxFeePerGas"         : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txMaxFee>      VALUE </txMaxFee>       ... </message>
     rule <k> check "transactions" : ("maxPriorityFeePerGas" : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txPriorityFee> VALUE </txPriorityFee>  ... </message>
-    rule <k> check "transactions" : ("sender"               : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <sigV> TW </sigV> <sigR> TR </sigR> <sigS> TS </sigS> ... </message> requires  #sender( #getTxData(TXID), TW, TR, TS ) ==K VALUE
+    rule <k> check "transactions" : ("sender"               : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <sigV> TW </sigV> <sigR> TR </sigR> <sigS> TS </sigS> ... </message> requires #sender( #getTxData(TXID), TW, TR, TS ) ==K VALUE
 
     syntax Bool ::= isInAccessListStorage ( Int , JSON )    [function]
                   | isInAccessList ( Account , Int , JSON ) [function]
  // ------------------------------------------------------------------
     rule isInAccessList(_   , _  , [.JSONs                     ]) => false
-    rule isInAccessList(ADDR, KEY, [[ACCT, [STRG:JSONs]],  REST]) => #if   ADDR ==K #asAccount(#parseByteStackRaw(ACCT))
+    rule isInAccessList(ADDR, KEY, [[ACCT, [STRG:JSONs]],  REST]) => #if   ADDR ==K #asAccount(ACCT)
                                                                      #then isInAccessListStorage (KEY, [STRG]) orBool isInAccessList(ADDR, KEY, [REST])
                                                                      #else isInAccessList(ADDR, KEY, [REST]) #fi
 
     rule isInAccessListStorage(_  , [.JSONs    ]) => false
-    rule isInAccessListStorage(KEY, [SKEY, REST]) => #if   KEY ==Int #asWord(#parseByteStackRaw(SKEY))
+    rule isInAccessListStorage(KEY, [SKEY, REST]) => #if   KEY ==Int #asWord(SKEY)
                                                      #then true
                                                      #else isInAccessListStorage(KEY, [REST]) #fi
 ```

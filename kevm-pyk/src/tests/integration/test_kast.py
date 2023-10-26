@@ -1,6 +1,6 @@
 from pyk.ktool.kprint import KAstInput, KAstOutput, _kast
 
-from kevm_pyk.dist import DistTarget
+from kevm_pyk import kdist
 
 from ..utils import REPO_ROOT
 
@@ -14,7 +14,7 @@ def test_parse() -> None:
     # When
     actual = _kast(
         file=evm_file,
-        definition_dir=DistTarget.LLVM.get(),
+        definition_dir=kdist.get('llvm'),
         input=KAstInput.PROGRAM,
         output=KAstOutput.KORE,
     ).stdout

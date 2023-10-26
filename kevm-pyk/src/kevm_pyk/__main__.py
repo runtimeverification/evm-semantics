@@ -28,9 +28,8 @@ from pyk.proof.show import APRProofShow
 from pyk.proof.tui import APRProofViewer
 from pyk.utils import FrozenDict, hash_str, single
 
-from . import VERSION, config
+from . import VERSION, config, kdist
 from .cli import KEVMCLIArgs, node_id_like
-from .dist import DistTarget
 from .gst_to_kore import SORT_ETHEREUM_SIMULATION, gst_to_kore, kore_pgm_to_kore
 from .kevm import KEVM, KEVMSemantics, kevm_node_printer
 from .kompile import KompileTarget, kevm_kompile
@@ -162,7 +161,7 @@ def exec_prove_legacy(
     _ignore_arg(kwargs, 'md_selector', f'--md-selector: {kwargs["md_selector"]}')
 
     if definition_dir is None:
-        definition_dir = DistTarget.HASKELL.get()
+        definition_dir = kdist.get('haskell')
 
     kevm = KEVM(definition_dir, use_directory=save_directory)
 
@@ -292,6 +291,7 @@ def exec_prove(
     trace_rewrites: bool = False,
     failure_info: bool = True,
     auto_abstract_gas: bool = False,
+    fail_fast: bool = False,
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'md_selector', f'--md-selector: {kwargs["md_selector"]}')
@@ -300,7 +300,7 @@ def exec_prove(
     digest_file = save_directory / 'digest' if save_directory is not None else None
 
     if definition_dir is None:
-        definition_dir = DistTarget.HASKELL.get()
+        definition_dir = kdist.get('haskell')
 
     if smt_timeout is None:
         smt_timeout = 300
@@ -427,6 +427,7 @@ def exec_prove(
                 break_every_step=break_every_step,
                 break_on_jumpi=break_on_jumpi,
                 break_on_calls=break_on_calls,
+                fail_fast=fail_fast,
             )
             end_time = time.time()
             _LOGGER.info(f'Proof timing {proof_problem.id}: {end_time - start_time}s')
@@ -604,16 +605,16 @@ def exec_run(
     schedule: str,
     mode: str,
     chainid: int,
-    target: DistTarget | None = None,
+    target: str | None = None,
     save_directory: Path | None = None,
     debugger: bool = False,
     **kwargs: Any,
 ) -> None:
     if target is None:
-        target = DistTarget.LLVM
+        target = 'llvm'
 
     _ignore_arg(kwargs, 'definition_dir', f'--definition: {kwargs["definition_dir"]}')
-    kevm = KEVM(target.get(), use_directory=save_directory)
+    kevm = KEVM(kdist.get(target), use_directory=save_directory)
 
     try:
         json_read = json.loads(input_file.read_text())
@@ -641,15 +642,15 @@ def exec_kast(
     schedule: str,
     mode: str,
     chainid: int,
-    target: DistTarget | None = None,
+    target: str | None = None,
     save_directory: Path | None = None,
     **kwargs: Any,
 ) -> None:
     if target is None:
-        target = DistTarget.LLVM
+        target = 'llvm'
 
     _ignore_arg(kwargs, 'definition_dir', f'--definition: {kwargs["definition_dir"]}')
-    kevm = KEVM(target.get(), use_directory=save_directory)
+    kevm = KEVM(kdist.get(target), use_directory=save_directory)
 
     try:
         json_read = json.loads(input_file.read_text())
@@ -687,7 +688,7 @@ def _create_argument_parser() -> ArgumentParser:
         parents=[kevm_cli_args.logging_args, kevm_cli_args.k_args, kevm_cli_args.kompile_args],
     )
     kevm_kompile_args.add_argument('main_file', type=file_path, help='Path to file with main module.')
-    kevm_kompile_args.add_argument('--target', type=KompileTarget, help='[llvm|haskell|haskell-standalone|foundry]')
+    kevm_kompile_args.add_argument('--target', type=KompileTarget, help='[llvm|haskell|haskell-booster]')
     kevm_kompile_args.add_argument(
         '-o', '--output-definition', type=Path, dest='output_dir', help='Path to write kompiled definition to.'
     )

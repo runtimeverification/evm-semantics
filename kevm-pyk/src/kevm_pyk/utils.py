@@ -100,6 +100,7 @@ def kevm_prove(
     break_on_calls: bool = True,
     extract_branches: Callable[[CTerm], Iterable[KInner]] | None = None,
     abstract_node: Callable[[CTerm], CTerm] | None = None,
+    fail_fast: bool = False,
 ) -> bool:
     proof = proof
     terminal_rules = ['EVM.halt']
@@ -140,6 +141,7 @@ def kevm_prove(
                 execute_depth=max_depth,
                 terminal_rules=terminal_rules,
                 cut_point_rules=cut_point_rules,
+                fail_fast=fail_fast,
             )
             assert isinstance(proof, APRProof)
             if proof.passed:
@@ -347,7 +349,7 @@ def legacy_explore(
             haskell_log_entries=haskell_log_entries,
             log_axioms_file=log_axioms_file,
         ) as server:
-            with KoreClient('localhost', server.port, bug_report=bug_report) as client:
+            with KoreClient('localhost', server.port, bug_report=bug_report, bug_report_id=id) as client:
                 yield KCFGExplore(
                     kprint=kprint,
                     kore_client=client,
@@ -358,7 +360,7 @@ def legacy_explore(
     else:
         if port is None:
             raise ValueError('Missing port with start_server=False')
-        with KoreClient('localhost', port, bug_report=bug_report) as client:
+        with KoreClient('localhost', port, bug_report=bug_report, bug_report_id=id) as client:
             yield KCFGExplore(
                 kprint=kprint,
                 kore_client=client,
