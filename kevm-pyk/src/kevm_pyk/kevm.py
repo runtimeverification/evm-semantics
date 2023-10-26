@@ -4,7 +4,7 @@ import logging
 from typing import TYPE_CHECKING
 
 from pyk.cterm import CTerm
-from pyk.kast.inner import KApply, KLabel, KSequence, KSort, KVariable, build_assoc
+from pyk.kast.inner import KApply, KLabel, KSequence, KSort, KVariable, build_assoc, build_cons
 from pyk.kast.manip import abstract_term_safely, bottom_up, flatten_label
 from pyk.kast.pretty import paren
 from pyk.kcfg.semantics import KCFGSemantics
@@ -19,7 +19,7 @@ from pyk.proof.reachability import APRBMCProof, APRProof
 from pyk.proof.show import APRBMCProofNodePrinter, APRProofNodePrinter
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable, Sequence
+    from collections.abc import Iterable
     from pathlib import Path
     from typing import Final
 
@@ -349,8 +349,8 @@ class KEVM(KProve, KRun):
         return KApply('abi_type_' + type, [value])
 
     @staticmethod
-    def abi_tuple(values: Sequence[KInner]) -> KApply:
-        return KApply('abi_type_tuple', values)
+    def abi_tuple(values: list[KApply]) -> KApply:
+        return KApply('abi_type_tuple', [KEVM.typed_args(values)])
 
     @staticmethod
     def abi_array(elem_type: KInner, length: KInner, elems: list[KApply]) -> KApply:
@@ -402,18 +402,9 @@ class KEVM(KProve, KRun):
     @staticmethod
     def typed_args(args: list[KApply], res: KApply | None = None) -> KApply:
         res = KEVM.empty_typedargs() if res is None else res
-        for arg in reversed(args):
-            res = KEVM.to_typed_arg(arg, res)
-        return res
-
-    @staticmethod
-    def to_typed_arg(arg: KApply, res: KApply) -> KApply:
-        if arg.label.name == 'abi_type_tuple':
-            args = [arg for arg in arg.args if type(arg) is KApply]
-            ret_arg = KApply('abi_type_tuple', [KEVM.typed_args(args)])
-        else:
-            ret_arg = arg
-        return KApply('_,__EVM-ABI_TypedArgs_TypedArg_TypedArgs', [ret_arg, res])
+        con = build_cons(res, '_,__EVM-ABI_TypedArgs_TypedArg_TypedArgs', reversed(args))
+        assert type(con) == KApply
+        return con
 
     @staticmethod
     def accounts(accts: list[KInner]) -> KInner:
