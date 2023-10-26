@@ -5,6 +5,7 @@ import dataclasses
 import json
 import logging
 import multiprocessing
+import os
 import sys
 import tempfile
 import time
@@ -284,9 +285,11 @@ def exec_prove(
 
     _LOGGER.info(f'Extracting claims from file: {spec_file}')
 
+    spec_module_name = spec_module if spec_module is not None else os.path.splitext(spec_file.name)[0].upper()
+
     all_claims = kevm.get_claims(
         spec_file,
-        spec_module_name=spec_module,
+        spec_module_name=spec_module_name,
         include_dirs=include_dirs,
         md_selector=md_selector,
         claim_labels=None,
@@ -294,12 +297,12 @@ def exec_prove(
     )
 
     spec_modules = kevm.get_claim_modules(
-        spec_file, spec_module_name=spec_module, include_dirs=include_dirs, md_selector=md_selector
+        spec_file, spec_module_name=spec_module_name, include_dirs=include_dirs, md_selector=md_selector
     )
 
-    all_claims_by_id: Mapping[str, KClaim] = {f'{spec_module}.{claim.label}': claim for claim in all_claims}
+    all_claims_by_id: Mapping[str, KClaim] = {f'{spec_module_name}.{claim.label}': claim for claim in all_claims}
 
-    claims_graph = claim_dependency_dict(all_claims, spec_module_name=spec_module)
+    claims_graph = claim_dependency_dict(all_claims, spec_module_name=spec_module_name)
     proofs: list[APRProof] = APRProof.from_spec_modules(
         kevm.definition, spec_modules, spec_labels=claim_labels, logs={}, proof_dir=save_directory
     )
