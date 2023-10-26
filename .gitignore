@@ -22,7 +22,6 @@
 /tests/foundry/test/filecopy.txt
 /tests/foundry/test/fileline.txt
 /tests/**/*.rule-profile
-/tests/specs/**/*-bin-runtime.k
 /tests/specs/foundry/*.out
 /tests/specs/**/haskell
 /tests/specs/**/java

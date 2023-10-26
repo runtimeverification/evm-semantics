@@ -19,7 +19,6 @@ from kevm_pyk.kevm import KEVM
 from kevm_pyk.kompile import KompileTarget, kevm_kompile
 
 from ..utils import REPO_ROOT
-from .utils import TEST_DATA_DIR, gen_bin_runtime
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterator
@@ -112,63 +111,27 @@ KOMPILE_MAIN_MODULE: Final = {
     'opcodes/evm-optimizations-spec.md': 'EVM-OPTIMIZATIONS-SPEC-LEMMAS',
 }
 
-KOMPILE_CONTRACT: Final = {
-    'examples/erc20-spec.md': TEST_DATA_DIR / 'examples/ERC20.sol',
-    'examples/erc721-spec.md': TEST_DATA_DIR / 'examples/ERC721.sol',
-    'examples/storage-spec.md': TEST_DATA_DIR / 'examples/Storage.sol',
-}
-
 
 class Target(NamedTuple):
     main_file: Path
     main_module_name: str
-    contract_file: Path | None
     use_booster: bool
 
-    def __call__(self, output_dir: Path) -> KompiledTarget:
+    def __call__(self, output_dir: Path) -> Path:
         definition_subdir = 'kompiled' if not self.use_booster else 'kompiled-booster'
         definition_dir = output_dir / definition_subdir
-
-        include_dir: Path | None
-        if self.contract_file:
-            include_dir = output_dir / 'include'
-            include_dir.mkdir()
-            gen_bin_runtime(self.contract_file, output_dir=include_dir)
-        else:
-            include_dir = None
-
         plugin_dir = kdist.get('plugin') if self.use_booster else None
-
-        result = KompiledTarget(definition_dir, include_dir)
         target = KompileTarget.HASKELL if not self.use_booster else KompileTarget.HASKELL_BOOSTER
-
-        kevm_kompile(
+        return kevm_kompile(
             output_dir=definition_dir,
             target=target,
             main_file=self.main_file,
             main_module=self.main_module_name,
             syntax_module=self.main_module_name,
-            includes=result.includes,
+            includes=[],
             plugin_dir=plugin_dir,
             debug=True,
         )
-
-        return result
-
-
-class KompiledTarget(NamedTuple):
-    definition_dir: Path
-    include_dir: Path | None
-
-    @property
-    def include_dirs(self) -> list[Path]:
-        if self.include_dir:
-            return [self.include_dir]
-        return []
-
-    @property
-    def includes(self) -> list[str]:
-        return [str(include_dir) for include_dir in self.include_dirs]
 
 
 @pytest.fixture(scope='session')
@@ -198,11 +161,11 @@ def kserver(tmp_path_factory: TempPathFactory, worker_id: str) -> Iterator[Path]
 
 
 @pytest.fixture(scope='module')
-def kompiled_target_for(tmp_path_factory: TempPathFactory, kserver: Path) -> Callable[[Path, bool], KompiledTarget]:
+def kompiled_target_for(tmp_path_factory: TempPathFactory, kserver: Path) -> Callable[[Path, bool], Path]:
     cache_dir = tmp_path_factory.mktemp('target')
-    cache: dict[Target, KompiledTarget] = {}
+    cache: dict[Target, Path] = {}
 
-    def kompile(spec_file: Path, use_booster: bool) -> KompiledTarget:
+    def kompile(spec_file: Path, use_booster: bool) -> Path:
         target = _target_for_spec(spec_file, use_booster=use_booster)
 
         if target not in cache:
@@ -221,11 +184,7 @@ def _target_for_spec(spec_file: Path, use_booster: bool) -> Target:
     spec_root = SPEC_DIR / spec_file.relative_to(SPEC_DIR).parents[-2]
     main_file = spec_root / KOMPILE_MAIN_FILE.get(spec_id, 'verification.k')
     main_module_name = KOMPILE_MAIN_MODULE.get(spec_id, 'VERIFICATION')
-
-    main_id = str(main_file.relative_to(SPEC_DIR))
-    contract_file = KOMPILE_CONTRACT.get(main_id)
-
-    return Target(main_file, main_module_name, contract_file, use_booster)
+    return Target(main_file, main_module_name, use_booster)
 
 
 # ---------
@@ -258,7 +217,7 @@ def leaf_number(proof: APRProof) -> int:
 )
 def test_pyk_prove(
     spec_file: Path,
-    kompiled_target_for: Callable[[Path, bool], KompiledTarget],
+    kompiled_target_for: Callable[[Path, bool], Path],
     tmp_path: Path,
     caplog: LogCaptureFixture,
     use_booster: bool,
@@ -276,11 +235,11 @@ def test_pyk_prove(
 
     # When
     try:
-        target = kompiled_target_for(spec_file, use_booster)
+        definition_dir = kompiled_target_for(spec_file, use_booster)
         exec_prove(
             spec_file=spec_file,
-            definition_dir=target.definition_dir,
-            includes=[str(include_dir) for include_dir in config.INCLUDE_DIRS] + target.includes,
+            definition_dir=definition_dir,
+            includes=[str(include_dir) for include_dir in config.INCLUDE_DIRS],
             save_directory=use_directory,
             max_depth=300,  # Workaround for ecrecover00-siginvalid issue
             smt_timeout=300,
@@ -324,7 +283,7 @@ PROVE_ARGS: Final[dict[str, Any]] = {
 )
 def test_kprove_prove(
     spec_file: Path,
-    kompiled_target_for: Callable[[Path, bool], KompiledTarget],
+    kompiled_target_for: Callable[[Path, bool], Path],
     tmp_path: Path,
     caplog: LogCaptureFixture,
     bug_report: BugReport | None,
@@ -348,9 +307,9 @@ def test_kprove_prove(
 
     # When
     try:
-        target = kompiled_target_for(spec_file, False)
-        kevm = KEVM(target.definition_dir, use_directory=use_directory)
-        actual = kevm.prove(spec_file=spec_file, include_dirs=list(config.INCLUDE_DIRS) + target.include_dirs, **args)
+        definition_dir = kompiled_target_for(spec_file, False)
+        kevm = KEVM(definition_dir, use_directory=use_directory)
+        actual = kevm.prove(spec_file=spec_file, include_dirs=list(config.INCLUDE_DIRS), **args)
     except BaseException:
         raise
     finally:
