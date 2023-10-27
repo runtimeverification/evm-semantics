@@ -221,9 +221,7 @@ class KClaimJob:
         return hash_str(f'{claim_hash}{deps_digest}')
 
     def up_to_date(self, digest_file: Path | None) -> bool:
-        if digest_file is None:
-            return False
-        if not digest_file.exists():
+        if not isinstance(digest_file, Path) or not digest_file.exists(): 
             return False
         digest_dict = json.loads(digest_file.read_text())
         if 'claims' not in digest_dict:
