@@ -5,7 +5,7 @@ all: poetry
 # --------
 
 PYTHON_BIN   := python3.10
-KEVM_PYK_DIR := ./kevm-pyk
+KEVM_PYK_DIR := $(abspath ./kevm-pyk)
 POETRY       := poetry -C $(KEVM_PYK_DIR)
 POETRY_RUN   := $(POETRY) run --
 
