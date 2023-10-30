@@ -4,7 +4,6 @@ import abc
 import dataclasses
 import json
 import logging
-import multiprocessing
 import os
 import sys
 import tempfile
@@ -215,13 +214,13 @@ class DoneQueueTaskFinished(DoneQueueTask):
 
 class MyEnvironment:
     number_of_workers: int
-    to_do_queue: multiprocessing.Queue  # only instances of TodoQueueTask go there
-    done_queue: multiprocessing.Queue  # only instances of DoneQueueTask go there
+    #to_do_queue: multiprocessing.Queue  # only instances of TodoQueueTask go there
+    #done_queue: multiprocessing.Queue  # only instances of DoneQueueTask go there
 
     def __init__(self, number_of_workers: int):
         self.number_of_workers = number_of_workers
-        self.to_do_queue = multiprocessing.Queue()
-        self.done_queue = multiprocessing.Queue()
+        self.to_do_queue = multiprocess.Queue()
+        self.done_queue = multiprocess.Queue()
 
 
 def exec_prove(
@@ -300,7 +299,9 @@ def exec_prove(
         spec_file, spec_module_name=spec_module_name, include_dirs=include_dirs, md_selector=md_selector
     )
 
-    all_claims_by_id: Mapping[str, KClaim] = {f'{spec_module_name}.{claim.label}': claim for claim in all_claims}
+    #all_claims_by_id: Mapping[str, KClaim] = {f'{spec_module_name}.{claim.label}': claim for claim in all_claims}
+    all_claims_by_id: Mapping[str, KClaim] = {claim.label: claim for claim in all_claims}
+    _LOGGER.warning(f'claims by id (keys): {all_claims_by_id.keys()}')
 
     claims_graph = claim_dependency_dict(all_claims, spec_module_name=spec_module_name)
     proofs: list[APRProof] = APRProof.from_spec_modules(
@@ -402,8 +403,11 @@ def exec_prove(
                 case TodoQueueStop():
                     return
                 case TodoQueueProofTask(proof_id):
-                    passed, failure_log = _init_and_run_proof(all_claims_by_id[proof_id])
-                    env.done_queue.put(DoneQueueTaskFinished(proof_id=proof_id, passed=passed, failure_log=failure_log))
+                    try:
+                        passed, failure_log = _init_and_run_proof(all_claims_by_id[proof_id])
+                        env.done_queue.put(DoneQueueTaskFinished(proof_id=proof_id, passed=passed, failure_log=failure_log))
+                    except Exception as e:
+                        env.done_queue.put(DoneQueueTaskFinished(proof_id=proof_id, passed=False, failure_log=[str(e)]))
 
     def coordinator(env: MyEnvironment, proofs_to_do: list[APRProof]) -> list[tuple[bool, list[str] | None]]:
         id_to_proof: dict[str, APRProof] = {pf.id: pf for pf in proofs_to_do}
@@ -462,7 +466,7 @@ def exec_prove(
             env.to_do_queue.put(TodoQueueStop())
         return [finished_proof_ids[p.id] for p in proofs_to_do]
 
-    # ctx = multiprocessing.get_context('spawn')
+    #return None
     env = MyEnvironment(number_of_workers=workers)
     worker_processes = [multiprocess.Process(target=worker, args=(env,)) for _ in range(workers)]
     for w in worker_processes:
