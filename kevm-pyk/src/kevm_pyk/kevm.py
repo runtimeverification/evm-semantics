@@ -329,7 +329,7 @@ class KEVM(KProve, KRun):
         return KApply('#lookup(_,_)_EVM-TYPES_Int_Map_Int', [map, key])
 
     @staticmethod
-    def abi_calldata(name: str, args: list[KApply]) -> KApply:
+    def abi_calldata(name: str, args: list[KInner]) -> KApply:
         return KApply('#abiCallData(_,_)_EVM-ABI_Bytes_String_TypedArgs', [stringToken(name), KEVM.typed_args(args)])
 
     @staticmethod
@@ -349,11 +349,11 @@ class KEVM(KProve, KRun):
         return KApply('abi_type_' + type, [value])
 
     @staticmethod
-    def abi_tuple(values: list[KApply]) -> KApply:
+    def abi_tuple(values: list[KInner]) -> KApply:
         return KApply('abi_type_tuple', [KEVM.typed_args(values)])
 
     @staticmethod
-    def abi_array(elem_type: KInner, length: KInner, elems: list[KApply]) -> KApply:
+    def abi_array(elem_type: KInner, length: KInner, elems: list[KInner]) -> KApply:
         return KApply('abi_type_array', [elem_type, length, KEVM.typed_args(elems)])
 
     @staticmethod
@@ -400,11 +400,9 @@ class KEVM(KProve, KRun):
         return res
 
     @staticmethod
-    def typed_args(args: list[KApply], res: KApply | None = None) -> KApply:
-        res = KEVM.empty_typedargs() if res is None else res
-        con = build_cons(res, '_,__EVM-ABI_TypedArgs_TypedArg_TypedArgs', reversed(args))
-        assert type(con) == KApply
-        return con
+    def typed_args(args: list[KInner]) -> KInner:
+        res = KEVM.empty_typedargs()
+        return build_cons(res, '_,__EVM-ABI_TypedArgs_TypedArg_TypedArgs', reversed(args))
 
     @staticmethod
     def accounts(accts: list[KInner]) -> KInner:
