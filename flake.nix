@@ -37,9 +37,9 @@
       inputs.flake-utils.follows = "k-framework/flake-utils";
     };
   };
-  outputs = { self, k-framework, haskell-backend, nixpkgs
-    , flake-utils, blockchain-k-plugin, ethereum-tests, ethereum-legacytests
-    , rv-utils, pyk, foundry, solc, ... }@inputs:
+  outputs = { self, k-framework, haskell-backend, nixpkgs, flake-utils
+    , blockchain-k-plugin, ethereum-tests, ethereum-legacytests, rv-utils, pyk
+    , foundry, solc, ... }@inputs:
     let
       nixLibs = pkgs:
         with pkgs;
@@ -69,6 +69,7 @@
         let
           nixpkgs-pyk = import inputs.nixpkgs-pyk {
             system = prev.system;
+            overlays = [ pyk.overlay ];
           };
           poetry2nix =
             inputs.poetry2nix.lib.mkPoetry2Nix { pkgs = nixpkgs-pyk; };
@@ -174,7 +175,7 @@
 
             overrides = poetry2nix.overrides.withDefaults
               (finalPython: prevPython: {
-                pyk = pyk.packages.${prev.system}.pyk-python310;
+                pyk = nixpkgs-pyk.pyk-python310;
                 xdg-base-dirs = prevPython.xdg-base-dirs.overridePythonAttrs
                   (old: {
                     propagatedBuildInputs = (old.propagatedBuildInputs or [ ])
