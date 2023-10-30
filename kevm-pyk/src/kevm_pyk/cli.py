@@ -8,7 +8,6 @@ from typing import TYPE_CHECKING
 from pyk.cli.args import KCLIArgs
 from pyk.cli.utils import dir_path
 
-from .dist import DistTarget
 from .utils import arg_pair_of
 
 if TYPE_CHECKING:
@@ -38,7 +37,7 @@ class KEVMCLIArgs(KCLIArgs):
     @cached_property
     def target_args(self) -> ArgumentParser:
         args = ArgumentParser(add_help=False)
-        args.add_argument('--target', type=DistTarget, choices=list(DistTarget))
+        args.add_argument('--target', choices=['llvm', 'haskell', 'haskell-standalone', 'foundry'])
         return args
 
     @cached_property
@@ -270,6 +269,13 @@ class KEVMCLIArgs(KCLIArgs):
             default=False,
             action='store_true',
             help='Show models for failing nodes.',
+        )
+        args.add_argument(
+            '--fail-fast',
+            dest='fail_fast',
+            default=False,
+            action='store_true',
+            help='Stop execution on other branches if a failing node is detected.',
         )
         return args
 
