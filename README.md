@@ -44,7 +44,7 @@ The following files constitute the KEVM semantics:
 These additional files extend the semantics to make the repository more useful:
 
 -   [buf.md](kevm-pyk/src/kevm_pyk/kproj/evm-semantics/buf.md) defines the `#buf` byte-buffer abstraction for use during symbolic execution.
--   [abi.md](kevm-pyk/src/kevm_pyk/kproj/evm-semantics/abi.md) defines the [Contract ABI Specification](https://docs.soliditylang.org/en/v0.8.1/abi-spec.html) for use in proofs and easy contract/function specification.
+-   [abi.md](kevm-pyk/src/kevm_pyk/kproj/evm-semantics/abi.md) defines the [Contract ABI Specification](https://docs.soliditylang.org/en/v0.8.22/abi-spec.html) for use in proofs and easy contract/function specification.
 -   [hashed-locations.md](kevm-pyk/src/kevm_pyk/kproj/evm-semantics/hashed-locations.md) defines the `#hashedLocation` abstraction used to specify Solidity-generated storage layouts.
 -   [edsl.md](kevm-pyk/src/kevm_pyk/kproj/evm-semantics/edsl.md) combines the previous three abstractions for ease-of-use.
 -   [foundry.md](kevm-pyk/src/kevm_pyk/kproj/evm-semantics/foundry.md) adds Foundry capabilities to KEVM.
@@ -370,7 +370,7 @@ Resources
 -   [EVM Yellowpaper](https://github.com/ethereum/yellowpaper): Original specification of EVM.
 -   [LEM Semantics of EVM](https://github.com/pirapira/eth-isabelle)
 -   [EVM Opcode Interactive Reference](https://www.evm.codes/?fork=merge)
--   [Solidity ABI Encoding](https://docs.soliditylang.org/en/v0.8.19/abi-spec.html)
+-   [Solidity ABI Encoding](https://docs.soliditylang.org/en/v0.8.22/abi-spec.html)
 
 For more information about the [K Framework], refer to these sources:
 
