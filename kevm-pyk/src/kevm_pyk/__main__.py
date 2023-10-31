@@ -1,11 +1,12 @@
 from __future__ import annotations
 
-import contextlib
-import graphlib
+import abc
+import dataclasses
 import json
 import logging
 import os
 import sys
+import tempfile
 import time
 from argparse import ArgumentParser
 from dataclasses import dataclass
@@ -13,7 +14,7 @@ from functools import cached_property
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from pathos.pools import ProcessPool  # type: ignore
+import multiprocess  # type: ignore
 from pyk.cli.utils import file_path
 from pyk.cterm import CTerm
 from pyk.kast.outer import KApply, KRewrite, KSort, KToken
@@ -44,7 +45,7 @@ from .utils import (
 
 if TYPE_CHECKING:
     from argparse import Namespace
-    from collections.abc import Callable, Iterable, Iterator
+    from collections.abc import Callable, Iterable, Mapping
     from typing import Any, Final, TypeVar
 
     from pyk.kast.outer import KClaim
@@ -188,18 +189,40 @@ def exec_prove_legacy(
         raise SystemExit(1)
 
 
-class ZeroProcessPool:
-    def map(self, f: Callable[[Any], Any], xs: list[Any]) -> list[Any]:
-        return [f(x) for x in xs]
+class TodoQueueTask(abc.ABC):
+    ...
 
 
-@contextlib.contextmanager
-def wrap_process_pool(workers: int) -> Iterator[ZeroProcessPool | ProcessPool]:
-    if workers <= 1:
-        yield ZeroProcessPool()
-    else:
-        with ProcessPool(ncpus=workers) as pp:
-            yield pp
+@dataclasses.dataclass
+class TodoQueueProofTask(TodoQueueTask):
+    proof_id: str
+
+
+@dataclasses.dataclass
+class TodoQueueStop(TodoQueueTask):
+    ...
+
+
+class DoneQueueTask(abc.ABC):
+    ...
+
+
+@dataclasses.dataclass
+class DoneQueueTaskFinished(DoneQueueTask):
+    claim_label: str
+    passed: bool
+    failure_log: list[str] | None
+
+
+class MyEnvironment:
+    number_of_workers: int
+    # to_do_queue: multiprocessing.Queue  # only instances of TodoQueueTask go there
+    # done_queue: multiprocessing.Queue  # only instances of DoneQueueTask go there
+
+    def __init__(self, number_of_workers: int):
+        self.number_of_workers = number_of_workers
+        self.to_do_queue = multiprocess.Queue()
+        self.done_queue = multiprocess.Queue()
 
 
 class JSONEncoder(json.JSONEncoder):
@@ -305,6 +328,9 @@ def exec_prove(
     if smt_retry_limit is None:
         smt_retry_limit = 10
 
+    if save_directory is None:
+        save_directory = Path(tempfile.TemporaryDirectory().name)
+
     kevm = KEVM(definition_dir, use_directory=save_directory, bug_report=bug_report)
 
     include_dirs = [Path(include) for include in includes]
@@ -324,9 +350,12 @@ def exec_prove(
     llvm_definition_dir = definition_dir / 'llvm-library' if use_booster else None
 
     _LOGGER.info(f'Extracting claims from file: {spec_file}')
+
+    spec_module_name = spec_module if spec_module is not None else os.path.splitext(spec_file.name)[0].upper()
+
     all_claims = kevm.get_claims(
         spec_file,
-        spec_module_name=spec_module,
+        spec_module_name=spec_module_name,
         include_dirs=include_dirs,
         md_selector=md_selector,
         claim_labels=claim_labels,
@@ -334,9 +363,10 @@ def exec_prove(
     )
     if all_claims is None:
         raise ValueError(f'No claims found in file: {spec_file}')
+
     spec_module_name = spec_module if spec_module is not None else os.path.splitext(spec_file.name)[0].upper()
     all_claim_jobs = init_claim_jobs(spec_module_name, all_claims)
-    all_claim_jobs_by_label = {c.claim.label: c for c in all_claim_jobs}
+    all_claim_jobs_by_label: Mapping[str, KClaimJob] = {c.claim.label: c for c in all_claim_jobs}
     claims_graph = claim_dependency_dict(all_claims, spec_module_name=spec_module_name)
 
     def _init_and_run_proof(claim_job: KClaimJob) -> tuple[bool, list[str] | None]:
@@ -435,23 +465,91 @@ def exec_prove(
 
             return passed, failure_log
 
-    topological_sorter = graphlib.TopologicalSorter(claims_graph)
-    topological_sorter.prepare()
-    with wrap_process_pool(workers=workers) as process_pool:
-        selected_results: list[tuple[bool, list[str] | None]] = []
-        selected_claims = []
-        while topological_sorter.is_active():
-            ready = topological_sorter.get_ready()
-            _LOGGER.info(f'Discharging proof obligations: {ready}')
-            curr_claim_list = [all_claim_jobs_by_label[label] for label in ready]
-            results: list[tuple[bool, list[str] | None]] = process_pool.map(_init_and_run_proof, curr_claim_list)
-            for label in ready:
-                topological_sorter.done(label)
-            selected_results.extend(results)
-            selected_claims.extend(curr_claim_list)
+    def worker(env: MyEnvironment) -> None:
+        while True:
+            msg = env.to_do_queue.get()
+            match msg:
+                case TodoQueueStop():
+                    return
+                case TodoQueueProofTask(claim_label):
+                    try:
+                        passed, failure_log = _init_and_run_proof(all_claim_jobs_by_label[claim_label])
+                        env.done_queue.put(
+                            DoneQueueTaskFinished(claim_label=claim_label, passed=passed, failure_log=failure_log)
+                        )
+                    except Exception as e:
+                        env.done_queue.put(
+                            DoneQueueTaskFinished(claim_label=claim_label, passed=False, failure_log=[str(e)])
+                        )
+
+    def coordinator(env: MyEnvironment, jobs_to_do: list[KClaimJob]) -> list[tuple[bool, list[str] | None]]:
+        id_to_job: dict[str, KClaimJob] = {job.claim.label: job for job in jobs_to_do}
+        remaining_job_labels: set[str] = {job.claim.label for job in jobs_to_do}
+        finished_job_labels: dict[str, tuple[bool, list[str] | None]] = {}
+
+        def get_a_ready_id() -> str | None:
+            for job_label in remaining_job_labels:
+                if set({d.claim.label for d in id_to_job[job_label].dependencies}).issubset(finished_job_labels.keys()):
+                    remaining_job_labels.remove(job_label)
+                    return job_label
+            return None
+
+        def put_all_ready_into_queue() -> int:
+            n = 0
+            while True:
+                opt_proof_id: str | None = get_a_ready_id()
+                if opt_proof_id is None:
+                    return n
+                env.to_do_queue.put(TodoQueueProofTask(opt_proof_id))
+                n = n + 1
+
+        def process_incoming_message(msg: DoneQueueTask) -> bool:
+            match msg:
+                case DoneQueueTaskFinished(claim_label=claim_label, passed=passed, failure_log=failure_log):
+                    finished_job_labels[claim_label] = (passed, failure_log)
+                    return True
+            return False
+
+        def take_all_proven_from_queue() -> int:
+            n = 0
+            while not env.done_queue.empty():
+                msg = env.done_queue.get()
+                if process_incoming_message(msg):
+                    n = n + 1
+            return n
+
+        enqueued_counter: int = 0
+        while True:
+            newly_removed_from_queue = take_all_proven_from_queue()
+            newly_enqueued = put_all_ready_into_queue()
+            enqueued_counter = enqueued_counter + newly_enqueued - newly_removed_from_queue
+            assert enqueued_counter >= 0
+            if enqueued_counter == 0:
+                break
+            assert enqueued_counter > 0
+            # We can wait for some incoming message.
+            # Unfortunately, a `wait_until_nonempty` primitive is missing, so we have to block using `get`.
+            msg = env.done_queue.get()
+            if process_incoming_message(msg):
+                enqueued_counter = enqueued_counter - 1
+            # And now we are going to process all the other incoming messages (if any)
+            continue
+        # Now we want to stop all the workers
+        for _ in range(env.number_of_workers):
+            env.to_do_queue.put(TodoQueueStop())
+        return [finished_job_labels[job.claim.label] for job in jobs_to_do]
+
+    env = MyEnvironment(number_of_workers=workers)
+    worker_processes = [multiprocess.Process(target=worker, args=(env,)) for _ in range(workers)]
+    for w in worker_processes:
+        w.start()
+    all_claim_jobs_list = list(all_claim_jobs)
+    results = coordinator(env, all_claim_jobs_list)
+    for w in worker_processes:
+        w.join()
 
     failed = 0
-    for job, r in zip(selected_claims, selected_results, strict=True):
+    for job, r in zip(all_claim_jobs_list, results, strict=True):
         passed, failure_log = r
         if passed:
             print(f'PROOF PASSED: {job.claim.label}')
