@@ -9,6 +9,8 @@ import sys
 import tempfile
 import time
 from argparse import ArgumentParser
+from dataclasses import dataclass
+from functools import cached_property
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -25,7 +27,7 @@ from pyk.proof import APRProof
 from pyk.proof.equality import EqualityProof
 from pyk.proof.show import APRProofShow
 from pyk.proof.tui import APRProofViewer
-from pyk.utils import single, unique
+from pyk.utils import FrozenDict, hash_str, single, unique
 
 from . import VERSION, config, kdist
 from .cli import KEVMCLIArgs, node_id_like
@@ -207,7 +209,7 @@ class DoneQueueTask(abc.ABC):
 
 @dataclasses.dataclass
 class DoneQueueTaskFinished(DoneQueueTask):
-    proof_id: str
+    claim_label: str
     passed: bool
     failure_log: list[str] | None
 
@@ -221,6 +223,69 @@ class MyEnvironment:
         self.number_of_workers = number_of_workers
         self.to_do_queue = multiprocess.Queue()
         self.done_queue = multiprocess.Queue()
+
+
+class JSONEncoder(json.JSONEncoder):
+    def default(self, obj: Any) -> Any:
+        if isinstance(obj, FrozenDict):
+            return json.JSONEncoder.encode(self, dict(obj))
+        return json.JSONEncoder.default(self, obj)
+
+
+@dataclass(frozen=True)
+class KClaimJob:
+    claim: KClaim
+    dependencies: frozenset[KClaimJob]
+
+    @cached_property
+    def digest(self) -> str:
+        deps_digest = ''.join([dep.digest for dep in self.dependencies])
+        claim_hash = hash_str(json.dumps(self.claim.to_dict(), sort_keys=True, cls=JSONEncoder))
+        return hash_str(f'{claim_hash}{deps_digest}')
+
+    def up_to_date(self, digest_file: Path | None) -> bool:
+        if not isinstance(digest_file, Path) or not digest_file.exists():
+            return False
+        digest_dict = json.loads(digest_file.read_text())
+        if 'claims' not in digest_dict:
+            digest_dict['claims'] = {}
+            digest_file.write_text(json.dumps(digest_dict, indent=4))
+        if self.claim.label not in digest_dict['claims']:
+            return False
+        return digest_dict['claims'][self.claim.label] == self.digest
+
+    def update_digest(self, digest_file: Path | None) -> None:
+        if digest_file is None:
+            return
+        digest_dict = {}
+        if digest_file.exists():
+            digest_dict = json.loads(digest_file.read_text())
+        if 'claims' not in digest_dict:
+            digest_dict['claims'] = {}
+        digest_dict['claims'][self.claim.label] = self.digest
+        digest_file.write_text(json.dumps(digest_dict, indent=4))
+
+        _LOGGER.info(f'Updated claim {self.claim.label} in digest file: {digest_file}')
+
+
+def init_claim_jobs(spec_module_name: str, claims: list[KClaim]) -> frozenset[KClaimJob]:
+    labels_to_claims = {claim.label: claim for claim in claims}
+    labels_to_claim_jobs: dict[str, KClaimJob] = {}
+
+    def get_or_load_claim_job(claim_label: str) -> KClaimJob:
+        if claim_label not in labels_to_claim_jobs:
+            if claim_label in labels_to_claims:
+                claim = labels_to_claims[claim_label]
+            elif f'{spec_module_name}.{claim_label}' in labels_to_claims:
+                claim = labels_to_claims[f'{spec_module_name}.{claim_label}']
+            else:
+                raise ValueError(f'Claim with label {claim_label} not found.')
+            deps = frozenset({get_or_load_claim_job(dep_label) for dep_label in claim.dependencies})
+            claim_job = KClaimJob(claim, deps)
+            labels_to_claim_jobs[claim_label] = claim_job
+        return labels_to_claim_jobs[claim_label]
+
+    return frozenset({get_or_load_claim_job(claim.label) for claim in claims})
 
 
 def exec_prove(
@@ -252,6 +317,8 @@ def exec_prove(
 ) -> None:
     _ignore_arg(kwargs, 'md_selector', f'--md-selector: {kwargs["md_selector"]}')
     md_selector = 'k'
+
+    digest_file = save_directory / 'digest' if save_directory is not None else None
 
     if definition_dir is None:
         definition_dir = kdist.get('haskell')
@@ -291,25 +358,25 @@ def exec_prove(
         spec_module_name=spec_module_name,
         include_dirs=include_dirs,
         md_selector=md_selector,
-        claim_labels=None,
+        claim_labels=claim_labels,
         exclude_claim_labels=exclude_claim_labels,
     )
+    if all_claims is None:
+        raise ValueError(f'No claims found in file: {spec_file}')
 
-    spec_modules = kevm.get_claim_modules(
-        spec_file, spec_module_name=spec_module_name, include_dirs=include_dirs, md_selector=md_selector
-    )
-
-    # all_claims_by_id: Mapping[str, KClaim] = {f'{spec_module_name}.{claim.label}': claim for claim in all_claims}
-    all_claims_by_id: Mapping[str, KClaim] = {claim.label: claim for claim in all_claims}
-    _LOGGER.warning(f'claims by id (keys): {all_claims_by_id.keys()}')
-
+    spec_module_name = spec_module if spec_module is not None else os.path.splitext(spec_file.name)[0].upper()
+    all_claim_jobs = init_claim_jobs(spec_module_name, all_claims)
+    all_claim_jobs_by_label: Mapping[str, KClaimJob] = {c.claim.label: c for c in all_claim_jobs}
     claims_graph = claim_dependency_dict(all_claims, spec_module_name=spec_module_name)
-    proofs: list[APRProof] = APRProof.from_spec_modules(
-        kevm.definition, spec_modules, spec_labels=claim_labels, logs={}, proof_dir=save_directory
-    )
-    proofs = list(unique(proofs))
 
-    def _init_and_run_proof(claim: KClaim) -> tuple[bool, list[str] | None]:
+    def _init_and_run_proof(claim_job: KClaimJob) -> tuple[bool, list[str] | None]:
+        claim = claim_job.claim
+        up_to_date = claim_job.up_to_date(digest_file)
+        if up_to_date:
+            _LOGGER.info(f'Claim {claim.label} is up to date.')
+        else:
+            _LOGGER.info(f'Claim {claim.label} reinitialized because it is out of date.')
+        claim_job.update_digest(digest_file)
         with legacy_explore(
             kevm,
             kcfg_semantics=KEVMSemantics(auto_abstract_gas=auto_abstract_gas),
@@ -326,6 +393,7 @@ def exec_prove(
                 if (
                     save_directory is not None
                     and not reinit
+                    and up_to_date
                     and EqualityProof.proof_exists(claim.label, save_directory)
                 ):
                     proof_problem = EqualityProof.read_proof_data(save_directory, claim.label)
@@ -335,6 +403,7 @@ def exec_prove(
                 if (
                     save_directory is not None
                     and not reinit
+                    and up_to_date
                     and APRProof.proof_data_exists(claim.label, save_directory)
                 ):
                     proof_problem = APRProof.read_proof_data(save_directory, claim.label)
@@ -402,24 +471,24 @@ def exec_prove(
             match msg:
                 case TodoQueueStop():
                     return
-                case TodoQueueProofTask(proof_id):
+                case TodoQueueProofTask(claim_label):
                     try:
-                        passed, failure_log = _init_and_run_proof(all_claims_by_id[proof_id])
+                        passed, failure_log = _init_and_run_proof(all_claim_jobs_by_label[claim_label])
                         env.done_queue.put(
-                            DoneQueueTaskFinished(proof_id=proof_id, passed=passed, failure_log=failure_log)
+                            DoneQueueTaskFinished(claim_label=claim_label, passed=passed, failure_log=failure_log)
                         )
                     except Exception as e:
-                        env.done_queue.put(DoneQueueTaskFinished(proof_id=proof_id, passed=False, failure_log=[str(e)]))
+                        env.done_queue.put(DoneQueueTaskFinished(claim_label=claim_label, passed=False, failure_log=[str(e)]))
 
-    def coordinator(env: MyEnvironment, proofs_to_do: list[APRProof]) -> list[tuple[bool, list[str] | None]]:
-        id_to_proof: dict[str, APRProof] = {pf.id: pf for pf in proofs_to_do}
-        remaining_proof_ids: set[str] = {pf.id for pf in proofs_to_do}
-        finished_proof_ids: dict[str, tuple[bool, list[str] | None]] = {}
+    def coordinator(env: MyEnvironment, jobs_to_do: list[KClaimJob]) -> list[tuple[bool, list[str] | None]]:
+        id_to_job: dict[str, KClaimJob] = {job.claim.label : job for job in jobs_to_do}
+        remaining_job_labels: set[str] = {job.claim.label for job in jobs_to_do}
+        finished_job_labels: dict[str, tuple[bool, list[str] | None]] = {}
 
         def get_a_ready_id() -> str | None:
-            for proof_id in remaining_proof_ids:
-                if set(id_to_proof[proof_id].subproof_ids).issubset(finished_proof_ids.keys()):
-                    remaining_proof_ids.remove(proof_id)
+            for proof_id in remaining_job_labels:
+                if set(id_to_proof[proof_id].subproof_ids).issubset(finished_job_labels.keys()):
+                    remaining_job_labels.remove(proof_id)
                     return proof_id
             return None
 
@@ -435,7 +504,7 @@ def exec_prove(
         def process_incoming_message(msg: DoneQueueTask) -> bool:
             match msg:
                 case DoneQueueTaskFinished(proof_id=proof_id, passed=passed, failure_log=failure_log):
-                    finished_proof_ids[proof_id] = (passed, failure_log)
+                    finished_job_labels[proof_id] = (passed, failure_log)
                     return True
             return False
 
@@ -466,25 +535,26 @@ def exec_prove(
         # Now we want to stop all the workers
         for _ in range(env.number_of_workers):
             env.to_do_queue.put(TodoQueueStop())
-        return [finished_proof_ids[p.id] for p in proofs_to_do]
+        return [finished_job_labels[p.id] for p in proofs_to_do]
 
-    # return None
+
     env = MyEnvironment(number_of_workers=workers)
     worker_processes = [multiprocess.Process(target=worker, args=(env,)) for _ in range(workers)]
     for w in worker_processes:
         w.start()
+    jobs: list[KClaimJob] = []
     results = coordinator(env, proofs)
     for w in worker_processes:
         w.join()
 
     failed = 0
-    for proof, r in zip(proofs, results, strict=True):
+    for job, r in zip(jobs, results, strict=True):
         passed, failure_log = r
         if passed:
-            print(f'PROOF PASSED: {proof.id}')
+            print(f'PROOF PASSED: {job.claim.label}')
         else:
             failed += 1
-            print(f'PROOF FAILED: {proof.id}')
+            print(f'PROOF FAILED: {job.claim.label}')
             if failure_info and failure_log is not None:
                 for line in failure_log:
                     print(line)
