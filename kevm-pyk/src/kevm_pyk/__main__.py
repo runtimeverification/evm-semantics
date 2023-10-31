@@ -27,7 +27,7 @@ from pyk.proof import APRProof
 from pyk.proof.equality import EqualityProof
 from pyk.proof.show import APRProofShow
 from pyk.proof.tui import APRProofViewer
-from pyk.utils import FrozenDict, hash_str, single, unique
+from pyk.utils import FrozenDict, hash_str, single
 
 from . import VERSION, config, kdist
 from .cli import KEVMCLIArgs, node_id_like
@@ -478,18 +478,20 @@ def exec_prove(
                             DoneQueueTaskFinished(claim_label=claim_label, passed=passed, failure_log=failure_log)
                         )
                     except Exception as e:
-                        env.done_queue.put(DoneQueueTaskFinished(claim_label=claim_label, passed=False, failure_log=[str(e)]))
+                        env.done_queue.put(
+                            DoneQueueTaskFinished(claim_label=claim_label, passed=False, failure_log=[str(e)])
+                        )
 
     def coordinator(env: MyEnvironment, jobs_to_do: list[KClaimJob]) -> list[tuple[bool, list[str] | None]]:
-        id_to_job: dict[str, KClaimJob] = {job.claim.label : job for job in jobs_to_do}
+        id_to_job: dict[str, KClaimJob] = {job.claim.label: job for job in jobs_to_do}
         remaining_job_labels: set[str] = {job.claim.label for job in jobs_to_do}
         finished_job_labels: dict[str, tuple[bool, list[str] | None]] = {}
 
         def get_a_ready_id() -> str | None:
-            for proof_id in remaining_job_labels:
-                if set(id_to_proof[proof_id].subproof_ids).issubset(finished_job_labels.keys()):
-                    remaining_job_labels.remove(proof_id)
-                    return proof_id
+            for job_label in remaining_job_labels:
+                if set({d.claim.label for d in id_to_job[job_label].dependencies}).issubset(finished_job_labels.keys()):
+                    remaining_job_labels.remove(job_label)
+                    return job_label
             return None
 
         def put_all_ready_into_queue() -> int:
@@ -503,8 +505,8 @@ def exec_prove(
 
         def process_incoming_message(msg: DoneQueueTask) -> bool:
             match msg:
-                case DoneQueueTaskFinished(proof_id=proof_id, passed=passed, failure_log=failure_log):
-                    finished_job_labels[proof_id] = (passed, failure_log)
+                case DoneQueueTaskFinished(claim_label=claim_label, passed=passed, failure_log=failure_log):
+                    finished_job_labels[claim_label] = (passed, failure_log)
                     return True
             return False
 
@@ -535,20 +537,19 @@ def exec_prove(
         # Now we want to stop all the workers
         for _ in range(env.number_of_workers):
             env.to_do_queue.put(TodoQueueStop())
-        return [finished_job_labels[p.id] for p in proofs_to_do]
-
+        return [finished_job_labels[job.claim.label] for job in jobs_to_do]
 
     env = MyEnvironment(number_of_workers=workers)
     worker_processes = [multiprocess.Process(target=worker, args=(env,)) for _ in range(workers)]
     for w in worker_processes:
         w.start()
-    jobs: list[KClaimJob] = []
-    results = coordinator(env, proofs)
+    all_claim_jobs_list = list(all_claim_jobs)
+    results = coordinator(env, all_claim_jobs_list)
     for w in worker_processes:
         w.join()
 
     failed = 0
-    for job, r in zip(jobs, results, strict=True):
+    for job, r in zip(all_claim_jobs_list, results, strict=True):
         passed, failure_log = r
         if passed:
             print(f'PROOF PASSED: {job.claim.label}')
