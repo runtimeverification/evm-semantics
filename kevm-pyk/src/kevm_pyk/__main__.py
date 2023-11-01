@@ -6,8 +6,11 @@ import json
 import logging
 import os
 import sys
+import tempfile
 import time
 from argparse import ArgumentParser
+from dataclasses import dataclass
+from functools import cached_property
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -24,7 +27,7 @@ from pyk.proof import APRProof
 from pyk.proof.equality import EqualityProof
 from pyk.proof.show import APRProofShow
 from pyk.proof.tui import APRProofViewer
-from pyk.utils import single
+from pyk.utils import FrozenDict, hash_str, single
 
 from . import VERSION, config, kdist
 from .cli import KEVMCLIArgs, node_id_like
@@ -200,6 +203,69 @@ def wrap_process_pool(workers: int) -> Iterator[ZeroProcessPool | ProcessPool]:
             yield pp
 
 
+class JSONEncoder(json.JSONEncoder):
+    def default(self, obj: Any) -> Any:
+        if isinstance(obj, FrozenDict):
+            return json.JSONEncoder.encode(self, dict(obj))
+        return json.JSONEncoder.default(self, obj)
+
+
+@dataclass(frozen=True)
+class KClaimJob:
+    claim: KClaim
+    dependencies: frozenset[KClaimJob]
+
+    @cached_property
+    def digest(self) -> str:
+        deps_digest = ''.join([dep.digest for dep in self.dependencies])
+        claim_hash = hash_str(json.dumps(self.claim.to_dict(), sort_keys=True, cls=JSONEncoder))
+        return hash_str(f'{claim_hash}{deps_digest}')
+
+    def up_to_date(self, digest_file: Path | None) -> bool:
+        if not isinstance(digest_file, Path) or not digest_file.exists():
+            return False
+        digest_dict = json.loads(digest_file.read_text())
+        if 'claims' not in digest_dict:
+            digest_dict['claims'] = {}
+            digest_file.write_text(json.dumps(digest_dict, indent=4))
+        if self.claim.label not in digest_dict['claims']:
+            return False
+        return digest_dict['claims'][self.claim.label] == self.digest
+
+    def update_digest(self, digest_file: Path | None) -> None:
+        if digest_file is None:
+            return
+        digest_dict = {}
+        if digest_file.exists():
+            digest_dict = json.loads(digest_file.read_text())
+        if 'claims' not in digest_dict:
+            digest_dict['claims'] = {}
+        digest_dict['claims'][self.claim.label] = self.digest
+        digest_file.write_text(json.dumps(digest_dict, indent=4))
+
+        _LOGGER.info(f'Updated claim {self.claim.label} in digest file: {digest_file}')
+
+
+def init_claim_jobs(spec_module_name: str, claims: list[KClaim]) -> frozenset[KClaimJob]:
+    labels_to_claims = {claim.label: claim for claim in claims}
+    labels_to_claim_jobs: dict[str, KClaimJob] = {}
+
+    def get_or_load_claim_job(claim_label: str) -> KClaimJob:
+        if claim_label not in labels_to_claim_jobs:
+            if claim_label in labels_to_claims:
+                claim = labels_to_claims[claim_label]
+            elif f'{spec_module_name}.{claim_label}' in labels_to_claims:
+                claim = labels_to_claims[f'{spec_module_name}.{claim_label}']
+            else:
+                raise ValueError(f'Claim with label {claim_label} not found.')
+            deps = frozenset({get_or_load_claim_job(dep_label) for dep_label in claim.dependencies})
+            claim_job = KClaimJob(claim, deps)
+            labels_to_claim_jobs[claim_label] = claim_job
+        return labels_to_claim_jobs[claim_label]
+
+    return frozenset({get_or_load_claim_job(claim.label) for claim in claims})
+
+
 def exec_prove(
     spec_file: Path,
     includes: Iterable[str],
@@ -213,7 +279,6 @@ def exec_prove(
     max_depth: int = 1000,
     max_iterations: int | None = None,
     workers: int = 1,
-    simplify_init: bool = True,
     break_every_step: bool = False,
     break_on_jumpi: bool = False,
     break_on_calls: bool = True,
@@ -230,6 +295,8 @@ def exec_prove(
     _ignore_arg(kwargs, 'md_selector', f'--md-selector: {kwargs["md_selector"]}')
     md_selector = 'k'
 
+    digest_file = save_directory / 'digest' if save_directory is not None else None
+
     if definition_dir is None:
         definition_dir = kdist.get('haskell')
 
@@ -237,6 +304,9 @@ def exec_prove(
         smt_timeout = 300
     if smt_retry_limit is None:
         smt_retry_limit = 10
+
+    if save_directory is None:
+        save_directory = Path(tempfile.TemporaryDirectory().name)
 
     kevm = KEVM(definition_dir, use_directory=save_directory, bug_report=bug_report)
 
@@ -262,16 +332,24 @@ def exec_prove(
         spec_module_name=spec_module,
         include_dirs=include_dirs,
         md_selector=md_selector,
-        claim_labels=None,
+        claim_labels=claim_labels,
         exclude_claim_labels=exclude_claim_labels,
     )
     if all_claims is None:
         raise ValueError(f'No claims found in file: {spec_file}')
-    all_claims_by_label: dict[str, KClaim] = {c.label: c for c in all_claims}
     spec_module_name = spec_module if spec_module is not None else os.path.splitext(spec_file.name)[0].upper()
+    all_claim_jobs = init_claim_jobs(spec_module_name, all_claims)
+    all_claim_jobs_by_label = {c.claim.label: c for c in all_claim_jobs}
     claims_graph = claim_dependency_dict(all_claims, spec_module_name=spec_module_name)
 
-    def _init_and_run_proof(claim: KClaim) -> tuple[bool, list[str] | None]:
+    def _init_and_run_proof(claim_job: KClaimJob) -> tuple[bool, list[str] | None]:
+        claim = claim_job.claim
+        up_to_date = claim_job.up_to_date(digest_file)
+        if up_to_date:
+            _LOGGER.info(f'Claim {claim.label} is up to date.')
+        else:
+            _LOGGER.info(f'Claim {claim.label} reinitialized because it is out of date.')
+        claim_job.update_digest(digest_file)
         with legacy_explore(
             kevm,
             kcfg_semantics=KEVMSemantics(auto_abstract_gas=auto_abstract_gas),
@@ -288,6 +366,7 @@ def exec_prove(
                 if (
                     save_directory is not None
                     and not reinit
+                    and up_to_date
                     and EqualityProof.proof_exists(claim.label, save_directory)
                 ):
                     proof_problem = EqualityProof.read_proof_data(save_directory, claim.label)
@@ -297,6 +376,7 @@ def exec_prove(
                 if (
                     save_directory is not None
                     and not reinit
+                    and up_to_date
                     and APRProof.proof_data_exists(claim.label, save_directory)
                 ):
                     proof_problem = APRProof.read_proof_data(save_directory, claim.label)
@@ -311,18 +391,13 @@ def exec_prove(
                     _LOGGER.info(f'Computing definedness constraint for initial node: {claim.label}')
                     new_init = kcfg_explore.cterm_assume_defined(new_init)
 
-                    if simplify_init:
-                        _LOGGER.info(f'Simplifying initial and target node: {claim.label}')
-                        new_init, _ = kcfg_explore.cterm_simplify(new_init)
-                        new_target, _ = kcfg_explore.cterm_simplify(new_target)
-                        if CTerm._is_bottom(new_init.kast):
-                            raise ValueError(
-                                'Simplifying initial node led to #Bottom, are you sure your LHS is defined?'
-                            )
-                        if CTerm._is_top(new_target.kast):
-                            raise ValueError(
-                                'Simplifying target node led to #Bottom, are you sure your RHS is defined?'
-                            )
+                    _LOGGER.info(f'Simplifying initial and target node: {claim.label}')
+                    new_init, _ = kcfg_explore.cterm_simplify(new_init)
+                    new_target, _ = kcfg_explore.cterm_simplify(new_target)
+                    if CTerm._is_bottom(new_init.kast):
+                        raise ValueError('Simplifying initial node led to #Bottom, are you sure your LHS is defined?')
+                    if CTerm._is_top(new_target.kast):
+                        raise ValueError('Simplifying target node led to #Bottom, are you sure your RHS is defined?')
 
                     kcfg.replace_node(init_node_id, new_init)
                     kcfg.replace_node(target_node_id, new_target)
@@ -366,7 +441,7 @@ def exec_prove(
         while topological_sorter.is_active():
             ready = topological_sorter.get_ready()
             _LOGGER.info(f'Discharging proof obligations: {ready}')
-            curr_claim_list = [all_claims_by_label[label] for label in ready]
+            curr_claim_list = [all_claim_jobs_by_label[label] for label in ready]
             results: list[tuple[bool, list[str] | None]] = process_pool.map(_init_and_run_proof, curr_claim_list)
             for label in ready:
                 topological_sorter.done(label)
@@ -374,13 +449,13 @@ def exec_prove(
             selected_claims.extend(curr_claim_list)
 
     failed = 0
-    for claim, r in zip(selected_claims, selected_results, strict=True):
+    for job, r in zip(selected_claims, selected_results, strict=True):
         passed, failure_log = r
         if passed:
-            print(f'PROOF PASSED: {claim.label}')
+            print(f'PROOF PASSED: {job.claim.label}')
         else:
             failed += 1
-            print(f'PROOF FAILED: {claim.label}')
+            print(f'PROOF FAILED: {job.claim.label}')
             if failure_info and failure_log is not None:
                 for line in failure_log:
                     print(line)
