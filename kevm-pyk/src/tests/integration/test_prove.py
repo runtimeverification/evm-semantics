@@ -2,14 +2,10 @@ from __future__ import annotations
 
 import dataclasses
 import logging
-import subprocess
 import sys
-from pathlib import Path
 from typing import TYPE_CHECKING, NamedTuple
 
-import inotify.adapters  # type: ignore
 import pytest
-from filelock import FileLock
 from pyk.cterm import CTerm
 from pyk.proof.reachability import APRProof
 
@@ -21,7 +17,8 @@ from kevm_pyk.kompile import KompileTarget, kevm_kompile
 from ..utils import REPO_ROOT
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Iterator
+    from collections.abc import Callable
+    from pathlib import Path
     from typing import Any, Final
 
     from pyk.utils import BugReport
@@ -134,34 +131,8 @@ class Target(NamedTuple):
         )
 
 
-@pytest.fixture(scope='session')
-def kserver(tmp_path_factory: TempPathFactory, worker_id: str) -> Iterator[Path]:
-    if worker_id == 'master':
-        root_tmp_dir = tmp_path_factory.getbasetemp()
-    else:
-        root_tmp_dir = tmp_path_factory.getbasetemp().parent
-
-    lock = root_tmp_dir / 'kserver'
-    kserver = None
-    kserver_dir = Path.home() / '.kserver'
-    kserver_dir.mkdir(exist_ok=True)
-    with FileLock(str(lock) + '.lock'):
-        if not lock.exists():
-            i = inotify.adapters.Inotify()
-            i.add_watch(str(Path.home() / '.kserver'))
-            kserver = subprocess.Popen(['kserver'], stdout=subprocess.PIPE)
-            for _, types, _, filename in i.event_gen(yield_nones=False):
-                if filename == 'socket' and 'IN_CREATE' in types:
-                    break
-            lock.touch()
-
-    yield lock
-    if kserver is not None:
-        kserver.terminate()
-
-
 @pytest.fixture(scope='module')
-def kompiled_target_for(tmp_path_factory: TempPathFactory, kserver: Path) -> Callable[[Path, bool], Path]:
+def kompiled_target_for(tmp_path_factory: TempPathFactory) -> Callable[[Path, bool], Path]:
     cache_dir = tmp_path_factory.mktemp('target')
     cache: dict[Target, Path] = {}
 
@@ -241,7 +212,6 @@ def test_pyk_prove(
             definition_dir=definition_dir,
             includes=[str(include_dir) for include_dir in config.INCLUDE_DIRS],
             save_directory=use_directory,
-            max_depth=300,  # Workaround for ecrecover00-siginvalid issue
             smt_timeout=300,
             smt_retry_limit=10,
             md_selector='foo',  # TODO Ignored flag, this is to avoid KeyError

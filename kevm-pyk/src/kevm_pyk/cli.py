@@ -211,19 +211,6 @@ class KEVMCLIArgs(KCLIArgs):
             help='Do not store a node for every EVM call made.',
         )
         args.add_argument(
-            '--simplify-init',
-            dest='simplify_init',
-            default=True,
-            action='store_true',
-            help='Simplify the initial and target states at startup.',
-        )
-        args.add_argument(
-            '--no-simplify-init',
-            dest='simplify_init',
-            action='store_false',
-            help='Do not simplify the initial and target states at startup.',
-        )
-        args.add_argument(
             '--max-depth',
             dest='max_depth',
             default=1000,
