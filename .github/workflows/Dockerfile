@@ -41,5 +41,7 @@ USER ${USER}:${GROUP}
 RUN mkdir /home/${USER}/workspace
 WORKDIR /home/${USER}/workspace
 
+ENV PATH=/home/${USER}/.local/bin:${PATH}
+
 RUN    curl -sSL https://install.python-poetry.org | python3 - --version 1.6.1 \
     && poetry --version
