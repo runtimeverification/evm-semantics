@@ -41,5 +41,5 @@ USER ${USER}:${GROUP}
 RUN mkdir /home/${USER}/workspace
 WORKDIR /home/${USER}/workspace
 
-RUN    curl -sSL https://install.python-poetry.org | python3 - \
+RUN    curl -sSL https://install.python-poetry.org | python3 - --version 1.6.1 \
     && poetry --version
