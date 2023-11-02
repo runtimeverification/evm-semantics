@@ -38,9 +38,9 @@ from .utils import (
     claim_dependency_dict,
     ensure_ksequence_on_k_cell,
     get_apr_proof_for_spec,
-    kevm_prove,
     legacy_explore,
     print_failure_info,
+    run_prover,
 )
 
 if TYPE_CHECKING:
@@ -414,7 +414,7 @@ def exec_prove(
                     )
 
             start_time = time.time()
-            passed = kevm_prove(
+            passed = run_prover(
                 kevm,
                 proof_problem,
                 kcfg_explore,

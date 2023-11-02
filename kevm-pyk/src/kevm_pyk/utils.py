@@ -89,7 +89,7 @@ def get_apr_proof_for_spec(
     return apr_proof
 
 
-def kevm_prove(
+def run_prover(
     kprove: KProve,
     proof: Proof,
     kcfg_explore: KCFGExplore,

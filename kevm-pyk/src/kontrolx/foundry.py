@@ -36,10 +36,10 @@ from kevm_pyk.utils import (
     abstract_cell_vars,
     byte_offset_to_lines,
     constraints_for,
-    kevm_prove,
     legacy_explore,
     print_failure_info,
     print_model,
+    run_prover,
 )
 
 from .solc_to_k import Contract, contract_to_main_module, contract_to_verification_module
@@ -696,7 +696,7 @@ def foundry_prove(
                 bmc_depth=bmc_depth,
             )
 
-            passed = kevm_prove(
+            passed = run_prover(
                 foundry.kevm,
                 proof,
                 kcfg_explore,
