@@ -34,8 +34,11 @@ module LEMMAS [symbolic]
   // Set Reasoning
   // ########################
 
-    rule X in SetItem ( Y ) S:Set => ( X ==K Y andBool notBool ( X in S ) ) orBool ( X =/=K Y andBool X in S ) [simplification]
-    rule X in S:Set SetItem ( Y ) => ( X ==K Y andBool notBool ( X in S ) ) orBool ( X =/=K Y andBool X in S ) [simplification]
+    rule X in SetItem ( Y ) S:Set => true   requires X ==Int Y  [simplification]
+    rule X in SetItem ( Y ) S:Set => X in S requires X =/=Int Y [simplification]
+
+    rule X in S:Set SetItem ( Y ) => true   requires X ==Int Y  [simplification]
+    rule X in S:Set SetItem ( Y ) => X in S requires X =/=Int Y [simplification]
 
     rule X in S1:Set |Set S2:Set => ( X in S1 ) orBool ( X in S2 ) [simplification]
 
