@@ -16,7 +16,6 @@ ARG LLVM_VERSION
 RUN    apt-get update                  \
     && apt-get upgrade --yes           \
     && apt-get install --yes           \
-            cargo                      \
             clang-${LLVM_VERSION}      \
             cmake                      \
             curl                       \
@@ -42,11 +41,5 @@ USER ${USER}:${GROUP}
 RUN mkdir /home/${USER}/workspace
 WORKDIR /home/${USER}/workspace
 
-ENV PATH=/home/${USER}/.cargo/bin:/home/${USER}/.local/bin:/usr/local/bin/:${PATH}
-
 RUN    curl -sSL https://install.python-poetry.org | python3 - \
     && poetry --version
-
-RUN    cargo install svm-rs --version 0.3.0 --locked \
-    && svm install 0.8.13                            \
-    && solc --version
