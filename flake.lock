@@ -298,16 +298,16 @@
         "rv-utils": "rv-utils"
       },
       "locked": {
-        "lastModified": 1698840206,
-        "narHash": "sha256-JCaBNmt/GRe3O9vYRlYweUGY++HyK7rrjhTG8p06ds4=",
+        "lastModified": 1698945957,
+        "narHash": "sha256-w7BMKdyQn+1Z/twv2Od2J1MxjsWlMhpfc75ep90GTc0=",
         "owner": "runtimeverification",
         "repo": "k",
-        "rev": "c884b1b2be05aeac51b9389c145a7b6c260ac039",
+        "rev": "adbcb355ae553b9f825003b101dd3db0bfe48402",
         "type": "github"
       },
       "original": {
         "owner": "runtimeverification",
-        "ref": "v6.0.187",
+        "ref": "v6.0.189",
         "repo": "k",
         "type": "github"
       }
@@ -376,15 +376,15 @@
         ]
       },
       "locked": {
-        "lastModified": 1643802645,
-        "narHash": "sha256-BynM25iwp/l3FyrcHqiNJdDxvN6IxSM3/zkFR6PD3B0=",
-        "owner": "nix-community",
+        "lastModified": 1689018333,
+        "narHash": "sha256-sthxx50rj0E7gv38oeMj8GZOp7i1776P1qZsM7pVLd0=",
+        "owner": "goodlyrottenapple",
         "repo": "mavenix",
-        "rev": "ce9ddfd7f361190e8e8dcfaf6b8282eebbb3c7cb",
+        "rev": "153d69e62f87e5dd37d35492cc3e35dd80d2b5fa",
         "type": "github"
       },
       "original": {
-        "owner": "nix-community",
+        "owner": "goodlyrottenapple",
         "repo": "mavenix",
         "type": "github"
       }
@@ -495,16 +495,16 @@
         "poetry2nix": "poetry2nix"
       },
       "locked": {
-        "lastModified": 1698847506,
-        "narHash": "sha256-IbfS+V0WUTklanWsCEIvQpGnge8tBhiwKakM3MJ2Flc=",
+        "lastModified": 1698954242,
+        "narHash": "sha256-7FnZiJ6DG2bqeDQzOCML97daMMyFVqC7Dv05S0rst2w=",
         "owner": "runtimeverification",
         "repo": "pyk",
-        "rev": "f7283bae60c9ec5303794e0918965ab1b38695ff",
+        "rev": "9428c92fa077a905df99c3215fb7f83427a78292",
         "type": "github"
       },
       "original": {
         "owner": "runtimeverification",
-        "ref": "v0.1.489",
+        "ref": "v0.1.490",
         "repo": "pyk",
         "type": "github"
       }
