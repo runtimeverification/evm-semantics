@@ -420,9 +420,8 @@ def exec_prove(
                 kcfg_explore,
                 max_depth=max_depth,
                 max_iterations=max_iterations,
-                break_every_step=break_every_step,
-                break_on_jumpi=break_on_jumpi,
-                break_on_calls=break_on_calls,
+                cut_point_rules=KEVMSemantics.cut_point_rules(break_on_jumpi, break_on_calls),
+                terminal_rules=KEVMSemantics.terminal_rules(break_every_step),
                 fail_fast=fail_fast,
             )
             end_time = time.time()
