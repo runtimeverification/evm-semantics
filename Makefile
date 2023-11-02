@@ -59,7 +59,7 @@ test-prove-kprove: tests/specs/opcodes/evm-optimizations-spec.md poetry
 	$(MAKE) -C kevm-pyk/ test-integration PYTEST_ARGS+="-k test_kprove_prove"
 
 # to generate optimizations.md, run: ./optimizer/optimize.sh &> output
-tests/specs/opcodes/evm-optimizations-spec.md:
+tests/specs/opcodes/evm-optimizations-spec.md: kevm-pyk/src/kevm_pyk/kproj/evm-semantics/optimizations.md
 	cat kevm-pyk/src/kevm_pyk/kproj/evm-semantics/optimizations.md | sed 's/^rule/claim/' | sed 's/EVM-OPTIMIZATIONS/EVM-OPTIMIZATIONS-SPEC/' | grep -v 'priority(40)' > $@
 
 
