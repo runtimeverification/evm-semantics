@@ -160,14 +160,14 @@ The `<op>Word` comparisons similarly lift K operators to EVM ones:
 Bitwise logical operators are lifted from the integer versions.
 
 ```k
-    syntax Int ::= "~Word" Int       [function, total]
-                 | Int "|Word"   Int [function, total]
-                 | Int "&Word"   Int [function, total]
-                 | Int "xorWord" Int [function, total]
-                 | Int "<<Word"  Int [function, total]
-                 | Int ">>Word"  Int [function, total]
-                 | Int ">>sWord" Int [function, total]
- // --------------------------------------------------
+    syntax Int ::= "~Word" Int       [function, total, smtlib(notWord)]
+                 | Int "|Word"   Int [function, total, smtlib(orWord)]
+                 | Int "&Word"   Int [function, total, smtlib(andWord)]
+                 | Int "xorWord" Int [function, total, smtlib(xorWord)]
+                 | Int "<<Word"  Int [function, total, smtlib(shlWord)]
+                 | Int ">>Word"  Int [function, total, smtlib(shrWord)]
+                 | Int ">>sWord" Int [function, total, smtlib(shrsWord)]
+ // --------------------------------------------------------------------
     rule ~Word W       => W xorInt maxUInt256
     rule W0 |Word   W1 => W0 |Int W1
     rule W0 &Word   W1 => W0 &Int W1
