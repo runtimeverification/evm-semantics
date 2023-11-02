@@ -6,6 +6,7 @@ import json
 import logging
 import os
 import sys
+import tempfile
 import time
 from argparse import ArgumentParser
 from dataclasses import dataclass
@@ -278,7 +279,6 @@ def exec_prove(
     max_depth: int = 1000,
     max_iterations: int | None = None,
     workers: int = 1,
-    simplify_init: bool = True,
     break_every_step: bool = False,
     break_on_jumpi: bool = False,
     break_on_calls: bool = True,
@@ -304,6 +304,9 @@ def exec_prove(
         smt_timeout = 300
     if smt_retry_limit is None:
         smt_retry_limit = 10
+
+    if save_directory is None:
+        save_directory = Path(tempfile.TemporaryDirectory().name)
 
     kevm = KEVM(definition_dir, use_directory=save_directory, bug_report=bug_report)
 
@@ -388,18 +391,13 @@ def exec_prove(
                     _LOGGER.info(f'Computing definedness constraint for initial node: {claim.label}')
                     new_init = kcfg_explore.cterm_assume_defined(new_init)
 
-                    if simplify_init:
-                        _LOGGER.info(f'Simplifying initial and target node: {claim.label}')
-                        new_init, _ = kcfg_explore.cterm_simplify(new_init)
-                        new_target, _ = kcfg_explore.cterm_simplify(new_target)
-                        if CTerm._is_bottom(new_init.kast):
-                            raise ValueError(
-                                'Simplifying initial node led to #Bottom, are you sure your LHS is defined?'
-                            )
-                        if CTerm._is_top(new_target.kast):
-                            raise ValueError(
-                                'Simplifying target node led to #Bottom, are you sure your RHS is defined?'
-                            )
+                    _LOGGER.info(f'Simplifying initial and target node: {claim.label}')
+                    new_init, _ = kcfg_explore.cterm_simplify(new_init)
+                    new_target, _ = kcfg_explore.cterm_simplify(new_target)
+                    if CTerm._is_bottom(new_init.kast):
+                        raise ValueError('Simplifying initial node led to #Bottom, are you sure your LHS is defined?')
+                    if CTerm._is_top(new_target.kast):
+                        raise ValueError('Simplifying target node led to #Bottom, are you sure your RHS is defined?')
 
                     kcfg.replace_node(init_node_id, new_init)
                     kcfg.replace_node(target_node_id, new_target)
