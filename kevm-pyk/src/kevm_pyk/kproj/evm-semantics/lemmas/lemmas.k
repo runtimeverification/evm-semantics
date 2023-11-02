@@ -42,8 +42,8 @@ module LEMMAS [symbolic]
     rule X in S:Set SetItem ( Y ) => true   requires X ==Int Y  [simplification]
     rule X in S:Set SetItem ( Y ) => X in S requires X =/=Int Y [simplification]
 
-    rule X in S:Set | SetItem ( Y ) => true   requires X ==Int Y  [simplification]
-    rule X in S:Set | SetItem ( Y ) => X in S requires X =/=Int Y [simplification]
+    rule X in ( S:Set | SetItem ( Y ) ) => true   requires X ==Int Y  [simplification]
+    rule X in ( S:Set | SetItem ( Y ) ) => X in S requires X =/=Int Y [simplification]
 
   // ########################
   // Word Reasoning
