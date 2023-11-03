@@ -54,7 +54,7 @@ jobs:
   kevm-pyk-unit-tests:
     needs: kevm-pyk-code-quality-checks
     name: 'Unit Tests'
-    runs-on: [self-hosted, linux, normal]
+    runs-on: [self-hosted, linux, normal-ephemeral]
     steps:
       - name: 'Check out code'
         uses: actions/checkout@v3
@@ -73,7 +73,7 @@ jobs:
   kevm-pyk-profile:
     needs: kevm-pyk-code-quality-checks
     name: 'Profiling'
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, normal-ephemeral]
     steps:
       - name: 'Check out code'
         uses: actions/checkout@v3
