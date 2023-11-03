@@ -115,6 +115,36 @@ class KEVMSemantics(KCFGSemantics):
 
         return CTerm(config=bottom_up(_replace, cterm.config), constraints=cterm.constraints)
 
+    @staticmethod
+    def cut_point_rules(break_on_jumpi: bool, break_on_calls: bool) -> list[str]:
+        cut_point_rules = []
+        if break_on_jumpi:
+            cut_point_rules.extend(['EVM.jumpi.true', 'EVM.jumpi.false'])
+        if break_on_calls:
+            cut_point_rules.extend(
+                [
+                    'EVM.call',
+                    'EVM.callcode',
+                    'EVM.delegatecall',
+                    'EVM.staticcall',
+                    'EVM.create',
+                    'EVM.create2',
+                    'FOUNDRY.foundry.call',
+                    'EVM.end',
+                    'EVM.return.exception',
+                    'EVM.return.revert',
+                    'EVM.return.success',
+                ]
+            )
+        return cut_point_rules
+
+    @staticmethod
+    def terminal_rules(break_every_step: bool) -> list[str]:
+        terminal_rules = ['EVM.halt']
+        if break_every_step:
+            terminal_rules.append('EVM.step')
+        return terminal_rules
+
 
 class KEVM(KProve, KRun):
     def __init__(
