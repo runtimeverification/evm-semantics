@@ -11,7 +11,7 @@ jobs:
 
   version-bump:
     name: 'Version Bump'
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, flyweight-ephemeral]
     steps:
       - name: 'Check out code'
         uses: actions/checkout@v3
@@ -36,12 +36,14 @@ jobs:
         run: git push origin HEAD:${GITHUB_HEAD_REF}
 
   kevm-pyk-code-quality-checks:
-    needs: version-bump
     name: 'Code Quality Checks'
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, flyweight]
     steps:
       - name: 'Check out code'
         uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+            python-version: "3.10"
       - name: 'Install Poetry'
         uses: Gr1N/setup-poetry@v8
       - name: 'Run code quality checks'
@@ -52,13 +54,16 @@ jobs:
   kevm-pyk-unit-tests:
     needs: kevm-pyk-code-quality-checks
     name: 'Unit Tests'
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, normal]
     steps:
       - name: 'Check out code'
         uses: actions/checkout@v3
         with:
           submodules: true
           fetch-depth: 0
+      - uses: actions/setup-python@v4
+        with:
+            python-version: "3.10"
       - name: 'Install Poetry'
         uses: Gr1N/setup-poetry@v8
       - name: 'Run unit tests'

@@ -36,10 +36,10 @@ from kevm_pyk.utils import (
     abstract_cell_vars,
     byte_offset_to_lines,
     constraints_for,
-    kevm_prove,
     legacy_explore,
     print_failure_info,
     print_model,
+    run_prover,
 )
 
 from .solc_to_k import Contract, contract_to_main_module, contract_to_verification_module
@@ -696,15 +696,14 @@ def foundry_prove(
                 bmc_depth=bmc_depth,
             )
 
-            passed = kevm_prove(
+            passed = run_prover(
                 foundry.kevm,
                 proof,
                 kcfg_explore,
                 max_depth=max_depth,
                 max_iterations=max_iterations,
-                break_every_step=break_every_step,
-                break_on_jumpi=break_on_jumpi,
-                break_on_calls=break_on_calls,
+                cut_point_rules=KEVMSemantics.cut_point_rules(break_on_jumpi, break_on_calls),
+                terminal_rules=KEVMSemantics.terminal_rules(break_every_step),
             )
             failure_log = None
             if not passed:
