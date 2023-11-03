@@ -31,18 +31,6 @@ module LEMMAS [symbolic]
     rule #if B #then C +Int C1 #else C +Int C2 #fi => C +Int #if B #then C1 #else C2 #fi [simplification]
 
   // ########################
-  // Set Reasoning
-  // ########################
-
-    rule S:Set |Set SetItem( X ) => S requires X in S [simplification]
-
-    rule X in SetItem ( Y ) S:Set => true   requires X ==Int Y  [simplification]
-    rule X in SetItem ( Y ) S:Set => X in S requires X =/=Int Y [simplification]
-
-    rule X in S:Set SetItem ( Y ) => true   requires X ==Int Y  [simplification]
-    rule X in S:Set SetItem ( Y ) => X in S requires X =/=Int Y [simplification]
-
-  // ########################
   // Word Reasoning
   // ########################
 
