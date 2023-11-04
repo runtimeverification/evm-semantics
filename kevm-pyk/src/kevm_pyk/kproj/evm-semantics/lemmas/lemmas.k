@@ -36,14 +36,8 @@ module LEMMAS [symbolic]
 
     rule S:Set |Set SetItem( X ) => S requires X in S [concrete(X), simplification]
 
-    rule X in SetItem ( Y ) S:Set => true   requires X ==Int Y  [concrete(X, Y), simplification]
-    rule X in SetItem ( Y ) S:Set => X in S requires X =/=Int Y [concrete(X, Y), simplification]
-
     rule X in S:Set SetItem ( Y ) => true   requires X ==Int Y  [concrete(X, Y), simplification]
     rule X in S:Set SetItem ( Y ) => X in S requires X =/=Int Y [concrete(X, Y), simplification]
-
-    rule X in SetItem ( Y ) S:Set => true requires X in S [concrete(X), symbolic(Y), simplification]
-    rule X in S:Set SetItem ( Y ) => true requires X in S [concrete(X), symbolic(Y), simplification]
 
   // ########################
   // Word Reasoning
