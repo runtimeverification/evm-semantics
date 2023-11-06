@@ -87,7 +87,7 @@ def exec_version(**kwargs: Any) -> None:
     print(f'KEVM Version: {VERSION}')
 
 
-def exec_kompile(
+def exec_kompile_spec(
     output_dir: Path | None,
     main_file: Path,
     emit_json: bool,
@@ -124,7 +124,7 @@ def exec_kompile(
         optimization = 0
 
     kevm_kompile(
-        target,
+        KompileTarget.HASKELL,
         output_dir=output_dir,
         main_file=main_file,
         main_module=main_module,
@@ -678,7 +678,7 @@ def _create_argument_parser() -> ArgumentParser:
     command_parser.add_parser('version', help='Print KEVM version and exit.', parents=[kevm_cli_args.logging_args])
 
     kevm_kompile_args = command_parser.add_parser(
-        'kompile',
+        'kompile-spec',
         help='Kompile KEVM specification.',
         parents=[kevm_cli_args.logging_args, kevm_cli_args.k_args, kevm_cli_args.kompile_args],
     )

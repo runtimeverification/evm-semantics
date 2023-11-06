@@ -108,9 +108,8 @@ tests/specs/%.prove: tests/specs/% tests/specs/$$(firstword $$(subst /, ,$$*))/$
 		--definition tests/specs/$(firstword $(subst /, ,$*))/$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)
 
 tests/specs/%/timestamp: tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE).$$(KPROVE_EXT)
-	$(POETRY_RUN) kevm-pyk kompile                                                                             \
+	$(POETRY_RUN) kevm-pyk kompile-spec                                                                         \
 		$<                                                                                                      \
-		--target $(word 3, $(subst /, , $*))                                                                    \
 		--output-definition tests/specs/$(firstword $(subst /, ,$*))/$(KPROVE_FILE)/$(word 3, $(subst /, , $*)) \
 		--main-module $(KPROVE_MODULE)                                                                          \
 		--syntax-module $(KPROVE_MODULE)                                                                        \
