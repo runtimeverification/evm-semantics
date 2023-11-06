@@ -133,89 +133,75 @@ def targets() -> list[str]:
     return [TargetId(plugin, target).fqn for plugin, targets in plugins().items() for target in targets]
 
 
-def resolve(target: str) -> TargetId:
-    if not target:
-        raise ValueError('Unexpected empty string')
+def resolve(target_fqn: str) -> TargetId:
+    segments = target_fqn.split('.')
+    if len(segments) != 2:
+        raise ValueError(f'Expected fully qualified target name, got: {target_fqn!r}')
 
-    segments = target.split('.')
+    plugin, target = segments
 
-    if len(segments) > 2:
-        raise ValueError('Exected at most one period: {target}')
-
-    if len(segments) == 2:
-        plugin, target = segments
-    else:
-        plugin = None
-        target = segments[0]
-
-    if plugin is not None and not _valid_id(plugin):
-        raise ValueError(f'Invalid plugin identifer: {plugin!r}')
+    if not _valid_id(plugin):
+        raise ValueError(f'Invalid plugin identifier: {plugin!r}')
 
     if not _valid_id(target):
         raise ValueError(f'Invalid target identifier: {target!r}')
 
     _plugins = plugins()
 
-    if plugin:
-        try:
-            targets = _plugins[plugin]
-        except KeyError:
-            raise ValueError(f'Undefined plugin: {plugin}') from None
-        if not target in targets:
-            raise ValueError(f'Plugin {plugin} does not define target: {target}')
-        return TargetId(plugin, target)
+    try:
+        targets = _plugins[plugin]
+    except KeyError:
+        raise ValueError(f'Undefined plugin: {plugin}') from None
 
-    matching_plugins = [plugin for plugin, targets in _plugins.items() if target in targets]
-    if not matching_plugins:
-        raise ValueError(f'No plugin defines target: {target}')
-    if len(matching_plugins) > 1:
-        raise ValueError(f'Multiple plugins define target {target}: {matching_plugins}')
-    return TargetId(matching_plugins[0], target)
+    if not target in targets:
+        raise ValueError(f'Plugin {plugin} does not define target: {target}')
+
+    return TargetId(plugin, target)
 
 
-def which(target: str | None = None) -> Path:
-    if target:
-        return resolve(target).dir
+def which(target_fqn: str | None = None) -> Path:
+    if target_fqn:
+        return resolve(target_fqn).dir
     return _DIST_DIR
 
 
-def clean(target: str | None = None) -> Path:
-    res = which(target)
+def clean(target_fqn: str | None = None) -> Path:
+    res = which(target_fqn)
     shutil.rmtree(res, ignore_errors=True)
     return res
 
 
-def get(target: str) -> Path:
-    res = which(target)
+def get(target_fqn: str) -> Path:
+    res = which(target_fqn)
     if not res.exists():
-        raise ValueError(f'Target is not built: {target}')
+        raise ValueError(f'Target is not built: {target_fqn}')
     return res
 
 
-def get_or_none(target: str) -> Path | None:
-    res = which(target)
+def get_or_none(target_fqn: str) -> Path | None:
+    res = which(target_fqn)
     if not res.exists():
         return None
     return res
 
 
 def build(
-    targets: list[str],
+    target_fqns: list[str],
     *,
     jobs: int = 1,
     force: bool = False,
     enable_llvm_debug: bool = False,
     verbose: bool = False,
 ) -> None:
-    deps = _resolve_deps(targets)
+    deps = _resolve_deps(target_fqns)
     target_graph = TopologicalSorter(deps)
     try:
         target_graph.prepare()
     except CycleError as err:
         raise RuntimeError(f'Cyclic dependencies found: {err.args[1]}') from err
 
-    target_fqns = [target.fqn for target in deps]
-    _LOGGER.info(f"Building targets: {', '.join(target_fqns)}")
+    deps_fqns = [target.fqn for target in deps]
+    _LOGGER.info(f"Building targets: {', '.join(deps_fqns)}")
 
     with ProcessPoolExecutor(max_workers=jobs) as pool:
         pending: dict[Future[Path], TargetId] = {}
@@ -244,9 +230,9 @@ def build(
                 pending.pop(future)
 
 
-def _resolve_deps(targets: Iterable[str]) -> dict[TargetId, list[TargetId]]:
+def _resolve_deps(target_fqns: Iterable[str]) -> dict[TargetId, list[TargetId]]:
     res: dict[TargetId, list[TargetId]] = {}
-    pending = [resolve(target) for target in targets]
+    pending = [resolve(target) for target in target_fqns]
     while pending:
         target_id = pending.pop()
         if target_id in res:

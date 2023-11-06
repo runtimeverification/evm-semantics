@@ -32,7 +32,7 @@ class KEVMTarget(Target):
             output_dir=output_dir,
             enable_llvm_debug=enable_llvm_debug,
             verbose=verbose,
-            plugin_dir=deps.get('plugin'),
+            plugin_dir=deps.get('evm-semantics.plugin'),
             **self._kompile_args,
         )
 
@@ -76,7 +76,7 @@ __TARGETS__: Final = {
             'syntax_module': 'ETHEREUM-SIMULATION',
             'optimization': 2,
         },
-        deps=('plugin',),
+        deps=('evm-semantics.plugin',),
     ),
     'haskell': KEVMTarget(
         {
