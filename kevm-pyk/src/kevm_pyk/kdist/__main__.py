@@ -69,25 +69,21 @@ def _exec_which(target: str | None) -> None:
 
 
 def _exec_list() -> None:
-    for target in kdist.targets():
-        print(target)
+    plugins = kdist.plugins()
+    for plugin in plugins:
+        print(plugin)
+        for target in plugins[plugin]:
+            print(f'* {target}')
 
 
 def _parse_arguments() -> Namespace:
     targets = kdist.targets()
-
-    def target(s: str) -> str:
-        #  choices does not work well with nargs="*"
-        if s not in targets:
-            raise TypeError()
-        return s
 
     def add_target_arg(parser: ArgumentParser, help_text: str) -> None:
         parser.add_argument(
             'target',
             metavar='TARGET',
             nargs='?',
-            choices=targets,
             help=help_text,
         )
 
@@ -97,9 +93,7 @@ def _parse_arguments() -> Namespace:
     command_parser = parser.add_subparsers(dest='command', required=True)
 
     build_parser = command_parser.add_parser('build', help='build targets')
-    build_parser.add_argument(
-        'targets', metavar='TARGET', nargs='*', type=target, default=targets, help='target to build'
-    )
+    build_parser.add_argument('targets', metavar='TARGET', nargs='*', default=targets, help='target to build')
     build_parser.add_argument('-f', '--force', action='store_true', default=False, help='force build')
     build_parser.add_argument('-j', '--jobs', metavar='N', type=int, default=1, help='maximal number of build jobs')
     build_parser.add_argument(
