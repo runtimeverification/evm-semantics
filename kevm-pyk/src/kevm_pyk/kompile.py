@@ -7,7 +7,7 @@ from enum import Enum
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from pyk.ktool.kompile import HaskellKompile, KompileArgs, LLVMKompile, LLVMKompileType
+from pyk.ktool.kompile import HaskellKompile, KompileArgs, LLVMKompile, LLVMKompileType, MaudeKompile
 from pyk.utils import run_process
 
 from . import config
@@ -29,13 +29,14 @@ class KompileTarget(Enum):
     LLVM = 'llvm'
     HASKELL = 'haskell'
     HASKELL_BOOSTER = 'haskell-booster'
+    MAUDE = 'maude'
 
     @property
     def md_selector(self) -> str:
         match self:
             case self.LLVM:
                 return 'k & ! symbolic'
-            case self.HASKELL | self.HASKELL_BOOSTER:
+            case self.HASKELL | self.HASKELL_BOOSTER | self.MAUDE:
                 return 'k & ! concrete'
             case _:
                 raise AssertionError()
@@ -106,6 +107,28 @@ def kevm_kompile(
                 )
                 return kompile(output_dir=output_dir, debug=debug, verbose=verbose)
 
+            case KompileTarget.MAUDE:
+                kompile_maude = MaudeKompile(
+                    base_args=base_args,
+                )
+                kompile_haskell = HaskellKompile(base_args=base_args)
+
+                maude_dir = output_dir / 'kompiled-maude'
+
+                def _kompile_maude() -> None:
+                    kompile_maude(output_dir=maude_dir, debug=debug, verbose=verbose)
+
+                def _kompile_haskell() -> None:
+                    kompile_haskell(output_dir=output_dir, debug=debug, verbose=verbose)
+
+                with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+                    futures = [
+                        executor.submit(_kompile_maude),
+                        executor.submit(_kompile_haskell),
+                    ]
+                    [future.result() for future in futures]
+
+                return output_dir
             case KompileTarget.HASKELL_BOOSTER:
                 assert plugin_dir
                 ccopts = list(ccopts) + _lib_ccopts(plugin_dir, kernel, debug_build=debug_build)
