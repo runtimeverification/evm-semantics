@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import fnmatch
 import logging
 from argparse import ArgumentParser
 from typing import TYPE_CHECKING
@@ -48,9 +49,17 @@ def _exec_build(
     verbose: bool,
     debug: bool,
 ) -> None:
+    all_target_fqns = kdist.targets()
+    target_fqns = []
+    for pattern in targets:
+        matches = fnmatch.filter(all_target_fqns, pattern)
+        if not matches:
+            raise ValueError(f'No target matches pattern: {pattern!r}')
+        target_fqns += matches
+
     verbose = verbose or debug
     kdist.build(
-        target_fqns=targets,
+        target_fqns=target_fqns,
         jobs=jobs,
         force=force,
         enable_llvm_debug=enable_llvm_debug,
@@ -77,8 +86,6 @@ def _exec_list() -> None:
 
 
 def _parse_arguments() -> Namespace:
-    targets = kdist.targets()
-
     def add_target_arg(parser: ArgumentParser, help_text: str) -> None:
         parser.add_argument(
             'target',
@@ -93,7 +100,7 @@ def _parse_arguments() -> Namespace:
     command_parser = parser.add_subparsers(dest='command', required=True)
 
     build_parser = command_parser.add_parser('build', help='build targets')
-    build_parser.add_argument('targets', metavar='TARGET', nargs='*', default=targets, help='target to build')
+    build_parser.add_argument('targets', metavar='TARGET', nargs='*', default='*', help='target to build')
     build_parser.add_argument('-f', '--force', action='store_true', default=False, help='force build')
     build_parser.add_argument('-j', '--jobs', metavar='N', type=int, default=1, help='maximal number of build jobs')
     build_parser.add_argument(
