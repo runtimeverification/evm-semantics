@@ -3,6 +3,7 @@ from __future__ import annotations
 import concurrent.futures
 import logging
 import os
+import re
 import shutil
 from collections.abc import Mapping
 from concurrent.futures import ProcessPoolExecutor
@@ -32,6 +33,13 @@ if TYPE_CHECKING:
 _LOGGER: Final = logging.getLogger(__name__)
 
 
+_ID_PATTERN = re.compile('[a-z0-9]+(-[a-z0-9]+)*')
+
+
+def _valid_id(s: str) -> bool:
+    return _ID_PATTERN.fullmatch(s) is not None
+
+
 def _dist_dir() -> Path:
     dist_dir_env = os.getenv('KEVM_DIST_DIR')  # Used by Nix flake to set the output
     if dist_dir_env:
@@ -50,6 +58,10 @@ def _targets() -> dict[str, Target]:
 
     res: dict[str, Target] = {}
     for plugin in plugins:
+        if not _valid_id(plugin.name):
+            _LOGGER.warning(f'Invalid plugin name, skipping: {plugin.name}')
+            continue
+
         _LOGGER.info(f'Loading kdist plugin: {plugin.name}')
         module_name = plugin.value
         try:
@@ -87,6 +99,10 @@ def _load_targets(module: ModuleType) -> dict[str, Target]:
     for key, value in targets.items():
         if not isinstance(key, str):
             _LOGGER.warning(f'Invalid target key in {module.__name__}: {key!r}')
+            continue
+
+        if not _valid_id(key):
+            _LOGGER.warning(f'Invalid target name (in {module.__name__}): {key}')
             continue
 
         if not isinstance(value, Target):
