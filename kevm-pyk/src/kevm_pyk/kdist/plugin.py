@@ -6,8 +6,8 @@ from typing import TYPE_CHECKING
 from pyk.kbuild.utils import sync_files
 from pyk.utils import run_process
 
-from .. import config
-from ..kompile import KompileTarget, kevm_kompile
+from .. import config, kdist
+from ..kompile import KompileTarget, kevm_kompile, lib_ccopts
 from .api import Target
 
 if TYPE_CHECKING:
@@ -27,11 +27,15 @@ class KEVMTarget(Target):
     def build(self, output_dir: Path, deps: dict[str, Path], args: dict[str, Any]) -> None:
         verbose = args.get('verbose', False)
         enable_llvm_debug = args.get('enable_llvm_debug', False)
+        debug_build = args.get('debug_build', False)
+        ccopts = args.get('ccopts', [])
 
+        ccopts = ccopts + lib_ccopts(kdist.get('plugin'), debug_build=debug_build)
         kevm_kompile(
             output_dir=output_dir,
             enable_llvm_debug=enable_llvm_debug,
             verbose=verbose,
+            ccopts=ccopts,
             **self._kompile_args,
         )
 

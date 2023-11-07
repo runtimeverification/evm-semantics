@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING
 from pyk.ktool.kompile import HaskellKompile, KompileArgs, LLVMKompile, LLVMKompileType, MaudeKompile
 from pyk.utils import run_process
 
-from . import config, kdist
+from . import config
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -67,8 +67,6 @@ def kevm_kompile(
     include_dirs = [Path(include) for include in includes]
     include_dirs += config.INCLUDE_DIRS
 
-    plugin_dir = kdist.get('plugin')
-
     base_args = KompileArgs(
         main_file=main_file,
         main_module=main_module,
@@ -83,7 +81,6 @@ def kevm_kompile(
     kompile: Kompile
     kernel = sys.platform
     haskell_binary = kernel != 'darwin'
-    ccopts = list(ccopts) + _lib_ccopts(plugin_dir, kernel, debug_build=debug_build)
 
     try:
         match target:
@@ -169,7 +166,9 @@ def kevm_kompile(
         raise
 
 
-def _lib_ccopts(plugin_dir: Path, kernel: str, debug_build: bool = False) -> list[str]:
+def lib_ccopts(plugin_dir: Path, debug_build: bool = False) -> list[str]:
+    kernel = sys.platform
+
     ccopts = ['-std=c++17']
 
     if debug_build:
