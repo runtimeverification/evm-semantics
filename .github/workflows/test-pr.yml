@@ -133,10 +133,10 @@ jobs:
             timeout: 45
           - test-suite: 'test-prove-pyk'
             test-args:
-            timeout: 120
+            timeout: 150
           - test-suite: 'test-prove-pyk'
             test-args: '--use-booster'
-            timeout: 90
+            timeout: 120
     timeout-minutes: ${{ matrix.timeout }}
     steps:
       - name: 'Check out code'
