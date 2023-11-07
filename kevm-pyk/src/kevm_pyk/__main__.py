@@ -38,9 +38,9 @@ from .utils import (
     claim_dependency_dict,
     ensure_ksequence_on_k_cell,
     get_apr_proof_for_spec,
-    kevm_prove,
     legacy_explore,
     print_failure_info,
+    run_prover,
 )
 
 if TYPE_CHECKING:
@@ -301,7 +301,6 @@ def exec_prove(
     max_depth: int = 1000,
     max_iterations: int | None = None,
     workers: int = 1,
-    simplify_init: bool = True,
     break_every_step: bool = False,
     break_on_jumpi: bool = False,
     break_on_calls: bool = True,
@@ -418,18 +417,13 @@ def exec_prove(
                     _LOGGER.info(f'Computing definedness constraint for initial node: {claim.label}')
                     new_init = kcfg_explore.cterm_assume_defined(new_init)
 
-                    if simplify_init:
-                        _LOGGER.info(f'Simplifying initial and target node: {claim.label}')
-                        new_init, _ = kcfg_explore.cterm_simplify(new_init)
-                        new_target, _ = kcfg_explore.cterm_simplify(new_target)
-                        if CTerm._is_bottom(new_init.kast):
-                            raise ValueError(
-                                'Simplifying initial node led to #Bottom, are you sure your LHS is defined?'
-                            )
-                        if CTerm._is_top(new_target.kast):
-                            raise ValueError(
-                                'Simplifying target node led to #Bottom, are you sure your RHS is defined?'
-                            )
+                    _LOGGER.info(f'Simplifying initial and target node: {claim.label}')
+                    new_init, _ = kcfg_explore.cterm_simplify(new_init)
+                    new_target, _ = kcfg_explore.cterm_simplify(new_target)
+                    if CTerm._is_bottom(new_init.kast):
+                        raise ValueError('Simplifying initial node led to #Bottom, are you sure your LHS is defined?')
+                    if CTerm._is_top(new_target.kast):
+                        raise ValueError('Simplifying target node led to #Bottom, are you sure your RHS is defined?')
 
                     kcfg.replace_node(init_node_id, new_init)
                     kcfg.replace_node(target_node_id, new_target)
@@ -446,15 +440,14 @@ def exec_prove(
                     )
 
             start_time = time.time()
-            passed = kevm_prove(
+            passed = run_prover(
                 kevm,
                 proof_problem,
                 kcfg_explore,
                 max_depth=max_depth,
                 max_iterations=max_iterations,
-                break_every_step=break_every_step,
-                break_on_jumpi=break_on_jumpi,
-                break_on_calls=break_on_calls,
+                cut_point_rules=KEVMSemantics.cut_point_rules(break_on_jumpi, break_on_calls),
+                terminal_rules=KEVMSemantics.terminal_rules(break_every_step),
                 fail_fast=fail_fast,
             )
             end_time = time.time()

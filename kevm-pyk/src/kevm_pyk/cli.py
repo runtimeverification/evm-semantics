@@ -211,19 +211,6 @@ class KEVMCLIArgs(KCLIArgs):
             help='Do not store a node for every EVM call made.',
         )
         args.add_argument(
-            '--simplify-init',
-            dest='simplify_init',
-            default=True,
-            action='store_true',
-            help='Simplify the initial and target states at startup.',
-        )
-        args.add_argument(
-            '--no-simplify-init',
-            dest='simplify_init',
-            action='store_false',
-            help='Do not simplify the initial and target states at startup.',
-        )
-        args.add_argument(
             '--max-depth',
             dest='max_depth',
             default=1000,
@@ -243,6 +230,20 @@ class KEVMCLIArgs(KCLIArgs):
             type=str,
             default=None,
             help='Custom command to start RPC server',
+        )
+        args.add_argument(
+            '--port',
+            dest='port',
+            type=int,
+            default=None,
+            help='Use existing RPC server on named port',
+        )
+        args.add_argument(
+            '--maude-port',
+            dest='maude_port',
+            type=int,
+            default=None,
+            help='Use existing Maude RPC server on named port',
         )
         args.add_argument(
             '--failure-information',
