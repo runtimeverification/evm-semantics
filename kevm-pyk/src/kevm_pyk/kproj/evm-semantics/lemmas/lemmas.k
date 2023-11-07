@@ -34,10 +34,8 @@ module LEMMAS [symbolic]
   // Set Reasoning
   // ########################
 
-    rule S:Set |Set SetItem( X ) => S requires X in S [concrete(X), simplification]
-
-    rule X in S:Set SetItem ( Y ) => true   requires X ==Int Y  [concrete(X, Y), simplification]
-    rule X in S:Set SetItem ( Y ) => X in S requires X =/=Int Y [concrete(X, Y), simplification]
+    rule   ( S:Set |SetItem ( X )                ) |Set SetItem( X )   => S [simplification]
+    rule ( ( S:Set |SetItem ( X ) |SetItem ( Y ) ) |Set SetItem( X ) ) => S [simplification]
 
   // ########################
   // Word Reasoning
