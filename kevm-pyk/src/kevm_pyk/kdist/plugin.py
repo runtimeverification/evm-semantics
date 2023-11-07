@@ -32,7 +32,6 @@ class KEVMTarget(Target):
             output_dir=output_dir,
             enable_llvm_debug=enable_llvm_debug,
             verbose=verbose,
-            plugin_dir=deps.get('plugin'),
             **self._kompile_args,
         )
 
