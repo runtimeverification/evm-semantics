@@ -532,11 +532,12 @@ def exec_prove(
             env.to_do_queue.put(TodoQueueStop())
         return [finished_job_labels[job.claim.label] for job in jobs_to_do]
 
+    all_claim_jobs_list = list(all_claim_jobs)
+    workers = min(workers, len(all_claim_jobs_list))
     env = MyEnvironment(number_of_workers=workers)
     worker_processes = [multiprocess.Process(target=worker, args=(env,)) for _ in range(workers)]
     for w in worker_processes:
         w.start()
-    all_claim_jobs_list = list(all_claim_jobs)
     results = coordinator(env, all_claim_jobs_list)
     for w in worker_processes:
         w.join()
