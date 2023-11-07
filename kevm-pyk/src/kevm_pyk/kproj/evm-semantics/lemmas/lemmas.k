@@ -37,8 +37,8 @@ module LEMMAS [symbolic]
     rule X in (SetItem(Y) _   ) => true      requires X  ==Int Y [simplification]
     rule X in (SetItem(Y) REST) => X in REST requires X =/=Int Y [simplification]
 
-    rule   ( S:Set |SetItem ( X )                ) |Set SetItem( X )   => S [simplification]
-    rule ( ( S:Set |SetItem ( X ) ) |SetItem ( Y ) |Set SetItem( X ) ) => S [simplification]
+    rule   ( S:Set |SetItem ( X )                  ) |Set SetItem( X ) => S [simplification]
+    rule ( ( S:Set |SetItem ( X ) ) |SetItem ( Y ) ) |Set SetItem( X ) => S [simplification]
 
   // ########################
   // Word Reasoning
