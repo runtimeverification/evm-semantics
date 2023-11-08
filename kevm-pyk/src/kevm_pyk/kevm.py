@@ -129,7 +129,6 @@ class KEVMSemantics(KCFGSemantics):
                     'EVM.staticcall',
                     'EVM.create',
                     'EVM.create2',
-                    'FOUNDRY.foundry.call',
                     'EVM.end',
                     'EVM.return.exception',
                     'EVM.return.revert',
