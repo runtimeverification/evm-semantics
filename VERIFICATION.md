@@ -18,11 +18,12 @@ It has two modules:
 The first step is kompiling the `.k` file with the below command.
 
 ```sh
-kevm kompile-spec sum-to-n-spec.k --syntax-module VERIFICATION --main-module VERIFICATION --definition sum-to-n-spec/haskell
+kevm kompile-spec sum-to-n-spec.k --target haskell-booster --syntax-module VERIFICATION --main-module VERIFICATION --definition sum-to-n-spec/haskell
 ```
 
 In this example, the arguments used are:
 
+  - `--target haskell-booster`: specify which symbolic backend to use for reasoning.
   - `--syntax-module VERIFICATION`: explicitly state the syntax module.
   - `--main-module VERIFICATION`: explicitly state the main module.
   - `--definition sum-to-n-spec/haskell`: the path where the kompiled definition is stored.
