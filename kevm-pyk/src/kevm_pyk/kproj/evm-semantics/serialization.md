@@ -22,7 +22,7 @@ Address/Hash Helpers
 
 ```k
     syntax Int ::= keccak ( Bytes ) [function, total, injective, smtlib(smt_keccak)]
- // -------------------------------------------------------------------------
+ // --------------------------------------------------------------------------------
     rule [keccak]: keccak(WS) => #parseHexWord(Keccak256bytes(WS)) [concrete]
 ```
 
