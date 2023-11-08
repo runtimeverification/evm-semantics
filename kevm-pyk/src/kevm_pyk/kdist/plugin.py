@@ -94,13 +94,5 @@ __TARGETS__: Final = {
             'syntax_module': 'ETHEREUM-SIMULATION',
         },
     ),
-    'foundry': KEVMTarget(
-        {
-            'target': KompileTarget.HASKELL,
-            'main_file': config.EVM_SEMANTICS_DIR / 'foundry.md',
-            'main_module': 'FOUNDRY',
-            'syntax_module': 'FOUNDRY',
-        },
-    ),
     'plugin': PluginTarget(),
 }

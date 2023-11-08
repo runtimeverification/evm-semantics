@@ -2,11 +2,9 @@ from __future__ import annotations
 
 from argparse import ArgumentParser
 from functools import cached_property
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 from pyk.cli.args import KCLIArgs
-from pyk.cli.utils import dir_path
 
 from .utils import arg_pair_of
 
@@ -151,25 +149,6 @@ class KEVMCLIArgs(KCLIArgs):
         return args
 
     @cached_property
-    def foundry_args(self) -> ArgumentParser:
-        args = ArgumentParser(add_help=False)
-        args.add_argument(
-            '--foundry-project-root',
-            dest='foundry_root',
-            type=dir_path,
-            default=Path('.'),
-            help='Path to Foundry project root directory.',
-        )
-        return args
-
-    @cached_property
-    def foundry_test_args(self) -> ArgumentParser:
-        args = ArgumentParser(add_help=False)
-        args.add_argument('test', type=str, help='Test to run')
-        args.add_argument('--version', type=int, default=None, required=False, help='Version of the test to use')
-        return args
-
-    @cached_property
     def rpc_args(self) -> ArgumentParser:
         args = ArgumentParser(add_help=False)
         args.add_argument(
@@ -211,19 +190,6 @@ class KEVMCLIArgs(KCLIArgs):
             help='Do not store a node for every EVM call made.',
         )
         args.add_argument(
-            '--simplify-init',
-            dest='simplify_init',
-            default=True,
-            action='store_true',
-            help='Simplify the initial and target states at startup.',
-        )
-        args.add_argument(
-            '--no-simplify-init',
-            dest='simplify_init',
-            action='store_false',
-            help='Do not simplify the initial and target states at startup.',
-        )
-        args.add_argument(
             '--max-depth',
             dest='max_depth',
             default=1000,
@@ -243,6 +209,20 @@ class KEVMCLIArgs(KCLIArgs):
             type=str,
             default=None,
             help='Custom command to start RPC server',
+        )
+        args.add_argument(
+            '--port',
+            dest='port',
+            type=int,
+            default=None,
+            help='Use existing RPC server on named port',
+        )
+        args.add_argument(
+            '--maude-port',
+            dest='maude_port',
+            type=int,
+            default=None,
+            help='Use existing Maude RPC server on named port',
         )
         args.add_argument(
             '--failure-information',
