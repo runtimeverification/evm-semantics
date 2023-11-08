@@ -533,14 +533,17 @@ def exec_prove(
         return [finished_job_labels[job.claim.label] for job in jobs_to_do]
 
     all_claim_jobs_list = list(all_claim_jobs)
-    workers = min(workers, len(all_claim_jobs_list))
-    env = MyEnvironment(number_of_workers=workers)
-    worker_processes = [multiprocess.Process(target=worker, args=(env,)) for _ in range(workers)]
-    for w in worker_processes:
-        w.start()
-    results = coordinator(env, all_claim_jobs_list)
-    for w in worker_processes:
-        w.join()
+    if len(all_claim_jobs_list) == 1:
+        results = [_init_and_run_proof(all_claim_jobs_list[0])]
+    else:
+        workers = min(workers, len(all_claim_jobs_list))
+        env = MyEnvironment(number_of_workers=workers)
+        worker_processes = [multiprocess.Process(target=worker, args=(env,)) for _ in range(workers)]
+        for w in worker_processes:
+            w.start()
+        results = coordinator(env, all_claim_jobs_list)
+        for w in worker_processes:
+            w.join()
 
     failed = 0
     for job, r in zip(all_claim_jobs_list, results, strict=True):
