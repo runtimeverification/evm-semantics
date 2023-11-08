@@ -741,13 +741,13 @@ def _create_argument_parser() -> ArgumentParser:
 
     command_parser.add_parser(
         'view-kcfg',
-        help='Display tree view of CFG',
+        help='Explore a given proof in the KCFG visualizer.',
         parents=[kevm_cli_args.logging_args, kevm_cli_args.k_args, kevm_cli_args.spec_args],
     )
 
     command_parser.add_parser(
         'show-kcfg',
-        help='Display tree show of CFG',
+        help='Print the CFG for a given proof.',
         parents=[
             kevm_cli_args.logging_args,
             kevm_cli_args.k_args,
