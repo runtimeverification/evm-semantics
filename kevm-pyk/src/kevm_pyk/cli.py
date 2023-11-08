@@ -174,9 +174,24 @@ class KEVMCLIArgs(KCLIArgs):
         args = ArgumentParser(add_help=False)
         args.add_argument(
             '--trace-rewrites',
+            dest='trace_rewrites',
             default=False,
             action='store_true',
             help='Log traces of all simplification and rewrite rule applications.',
+        )
+        args.add_argument(
+            '--kore-rpc-command',
+            dest='kore_rpc_command',
+            type=str,
+            default=None,
+            help='Custom command to start RPC server',
+        )
+        args.add_argument(
+            '--use-booster',
+            dest='use_booster',
+            default=False,
+            action='store_true',
+            help="Use the booster RPC server instead of kore-rpc. Requires calling kompile with '--target haskell-booster' flag",
         )
         return args
 
@@ -223,13 +238,6 @@ class KEVMCLIArgs(KCLIArgs):
             default=None,
             type=int,
             help='Number of times to expand the next pending node in the CFG.',
-        )
-        args.add_argument(
-            '--kore-rpc-command',
-            dest='kore_rpc_command',
-            type=str,
-            default=None,
-            help='Custom command to start RPC server',
         )
         args.add_argument(
             '--port',

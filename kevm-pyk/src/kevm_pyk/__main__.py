@@ -713,13 +713,6 @@ def _create_argument_parser() -> ArgumentParser:
         action='store_true',
         help='Reinitialize CFGs even if they already exist.',
     )
-    prove_args.add_argument(
-        '--use-booster',
-        dest='use_booster',
-        default=False,
-        action='store_true',
-        help="Use the booster RPC server instead of kore-rpc. Requires calling kompile with '--target haskell-booster' flag",
-    )
 
     prune_proof_args = command_parser.add_parser(
         'prune-proof',
