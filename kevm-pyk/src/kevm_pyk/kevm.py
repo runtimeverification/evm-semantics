@@ -470,7 +470,7 @@ class KEVM(KProve, KRun):
         if max_counterexamples:
             haskell_args += ['--max-counterexamples', f'{max_counterexamples}']
         if bug_report:
-            haskell_args += ['--bug-report', f'kevm-bug-{spec_file.name.rstrip("-spec.k")}']
+            haskell_args += ['--bug-report', f'kevm-bug-{spec_file.name.removesuffix("-spec.k")}']
         if haskell_backend_args:
             haskell_args += list(haskell_backend_args)
 
