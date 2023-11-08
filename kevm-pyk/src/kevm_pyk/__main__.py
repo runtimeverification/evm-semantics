@@ -365,20 +365,12 @@ def exec_prove(
         ) as kcfg_explore:
             proof_problem: Proof
             if is_functional(claim):
-                if (
-                    not reinit
-                    and up_to_date
-                    and EqualityProof.proof_exists(claim.label, save_directory)
-                ):
+                if not reinit and up_to_date and EqualityProof.proof_exists(claim.label, save_directory):
                     proof_problem = EqualityProof.read_proof_data(save_directory, claim.label)
                 else:
                     proof_problem = EqualityProof.from_claim(claim, kevm.definition, proof_dir=save_directory)
             else:
-                if (
-                    not reinit
-                    and up_to_date
-                    and APRProof.proof_data_exists(claim.label, save_directory)
-                ):
+                if not reinit and up_to_date and APRProof.proof_data_exists(claim.label, save_directory):
                     proof_problem = APRProof.read_proof_data(save_directory, claim.label)
 
                 else:
