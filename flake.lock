@@ -218,32 +218,6 @@
         "type": "github"
       }
     },
-    "foundry": {
-      "inputs": {
-        "flake-utils": [
-          "k-framework",
-          "flake-utils"
-        ],
-        "nixpkgs": [
-          "k-framework",
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1699089190,
-        "narHash": "sha256-t9W8eIeJBUVt6n8sfDrG9J/t0B4KZ73M3ARis+DwQhM=",
-        "owner": "shazow",
-        "repo": "foundry.nix",
-        "rev": "fc064153ac002e825724ff2091cd91e7d501ffef",
-        "type": "github"
-      },
-      "original": {
-        "owner": "shazow",
-        "ref": "monthly",
-        "repo": "foundry.nix",
-        "type": "github"
-      }
-    },
     "haskell-backend": {
       "inputs": {
         "nixpkgs": "nixpkgs",
@@ -536,7 +510,6 @@
           "k-framework",
           "flake-utils"
         ],
-        "foundry": "foundry",
         "haskell-backend": [
           "k-framework",
           "haskell-backend"
@@ -558,8 +531,7 @@
         "rv-utils": [
           "k-framework",
           "rv-utils"
-        ],
-        "solc": "solc"
+        ]
       }
     },
     "rv-utils": {
@@ -591,31 +563,6 @@
         "owner": "bitcoin-core",
         "repo": "secp256k1",
         "rev": "f532bdc9f77f7bbf7e93faabfbe9c483f0a9f75f",
-        "type": "github"
-      }
-    },
-    "solc": {
-      "inputs": {
-        "flake-utils": [
-          "k-framework",
-          "flake-utils"
-        ],
-        "nixpkgs": [
-          "k-framework",
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1692871473,
-        "narHash": "sha256-2eLQOPBzQomQfcC8wQdYekccvl1KtYCqkDdw7oPeOiU=",
-        "owner": "hellwolf",
-        "repo": "solc.nix",
-        "rev": "fbbe5553a7fc52f2d423afac81316023a183e72c",
-        "type": "github"
-      },
-      "original": {
-        "owner": "hellwolf",
-        "repo": "solc.nix",
         "type": "github"
       }
     },

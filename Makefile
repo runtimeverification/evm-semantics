@@ -30,11 +30,6 @@ kevm-pyk: poetry-env
 test: test-integration test-conformance test-prove test-prove-pyk test-prove-kprove test-interactive
 
 
-# Foundry Tests
-
-test-foundry-prove: poetry
-	$(MAKE) -C kevm-pyk/ test-integration PYTEST_ARGS+="-k test_foundry_prove.py"
-
 # Conformance Tests
 
 test-conformance: poetry

@@ -10,17 +10,6 @@
 /package/src
 /pkg
 /tests/**/*.debug-log
-/tests/foundry/cache
-/tests/foundry/foundry.k
-/tests/foundry/foundry.k.check.stripped
-/tests/foundry/contracts.k.check.stripped
-/tests/foundry/foundry-list.check.stripped
-/tests/foundry/golden/*.out
-/tests/foundry/*.out
-/tests/foundry/out
-/tests/foundry/test/filecopy2.txt
-/tests/foundry/test/filecopy.txt
-/tests/foundry/test/fileline.txt
 /tests/**/*.rule-profile
 /tests/specs/foundry/*.out
 /tests/specs/**/haskell
