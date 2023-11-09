@@ -49,6 +49,7 @@ if TYPE_CHECKING:
     from typing import Any, Final, TypeVar
 
     from pyk.kast.outer import KClaim
+    from pyk.kcfg.explore import KCFGExplore
     from pyk.kcfg.kcfg import NodeIdLike
     from pyk.proof.proof import Proof
     from pyk.utils import BugReport
@@ -194,12 +195,45 @@ class ZeroProcessPool:
         return [f(x) for x in xs]
 
 
+global_kcfg_explore = None
+
+
+def make_process_initializer(
+    kevm: KEVM,
+    *,
+    auto_abstract_gas: bool = False,
+    llvm_definition_dir: Path | None = None,
+    bug_report: BugReport | None = None,
+    kore_rpc_command: str | Iterable[str] | None = None,
+    smt_timeout: int | None = None,
+    smt_retry_limit: int | None = None,
+    trace_rewrites: bool = False,
+) -> Callable[[], Any]:
+    @contextlib.contextmanager
+    def process_initializer() -> Iterator[KCFGExplore]:
+        with legacy_explore(
+            kevm,
+            kcfg_semantics=KEVMSemantics(auto_abstract_gas=auto_abstract_gas),
+            llvm_definition_dir=llvm_definition_dir,
+            bug_report=bug_report,
+            kore_rpc_command=kore_rpc_command,
+            smt_timeout=smt_timeout,
+            smt_retry_limit=smt_retry_limit,
+            trace_rewrites=trace_rewrites,
+        ) as kcfg_explore:
+            global global_kcfg_explore
+            global_kcfg_explore = kcfg_explore
+            yield kcfg_explore
+
+    return process_initializer
+
+
 @contextlib.contextmanager
-def wrap_process_pool(workers: int) -> Iterator[ZeroProcessPool | ProcessPool]:
+def wrap_process_pool(workers: int, initializer: Callable[[], Any]) -> Iterator[ZeroProcessPool | ProcessPool]:
     if workers <= 1:
         yield ZeroProcessPool()
     else:
-        with ProcessPool(ncpus=workers) as pp:
+        with ProcessPool(ncpus=workers, initializer=initializer) as pp:
             yield pp
 
 
@@ -350,91 +384,95 @@ def exec_prove(
         else:
             _LOGGER.info(f'Claim {claim.label} reinitialized because it is out of date.')
         claim_job.update_digest(digest_file)
-        with legacy_explore(
+        global global_kcfg_explore
+        assert global_kcfg_explore is not None
+        kcfg_explore = global_kcfg_explore
+        proof_problem: Proof
+        if is_functional(claim):
+            if (
+                save_directory is not None
+                and not reinit
+                and up_to_date
+                and EqualityProof.proof_exists(claim.label, save_directory)
+            ):
+                proof_problem = EqualityProof.read_proof_data(save_directory, claim.label)
+            else:
+                proof_problem = EqualityProof.from_claim(claim, kevm.definition, proof_dir=save_directory)
+        else:
+            if (
+                save_directory is not None
+                and not reinit
+                and up_to_date
+                and APRProof.proof_data_exists(claim.label, save_directory)
+            ):
+                proof_problem = APRProof.read_proof_data(save_directory, claim.label)
+
+            else:
+                _LOGGER.info(f'Converting claim to KCFG: {claim.label}')
+                kcfg, init_node_id, target_node_id = KCFG.from_claim(kevm.definition, claim)
+
+                new_init = ensure_ksequence_on_k_cell(kcfg.node(init_node_id).cterm)
+                new_target = ensure_ksequence_on_k_cell(kcfg.node(target_node_id).cterm)
+
+                _LOGGER.info(f'Computing definedness constraint for initial node: {claim.label}')
+                new_init = kcfg_explore.cterm_assume_defined(new_init)
+
+                _LOGGER.info(f'Simplifying initial and target node: {claim.label}')
+                new_init, _ = kcfg_explore.cterm_simplify(new_init)
+                new_target, _ = kcfg_explore.cterm_simplify(new_target)
+                if CTerm._is_bottom(new_init.kast):
+                    raise ValueError('Simplifying initial node led to #Bottom, are you sure your LHS is defined?')
+                if CTerm._is_top(new_target.kast):
+                    raise ValueError('Simplifying target node led to #Bottom, are you sure your RHS is defined?')
+
+                kcfg.replace_node(init_node_id, new_init)
+                kcfg.replace_node(target_node_id, new_target)
+
+                proof_problem = APRProof(
+                    claim.label,
+                    kcfg,
+                    [],
+                    init_node_id,
+                    target_node_id,
+                    {},
+                    proof_dir=save_directory,
+                    subproof_ids=claims_graph[claim.label],
+                )
+
+        start_time = time.time()
+        passed = run_prover(
             kevm,
-            kcfg_semantics=KEVMSemantics(auto_abstract_gas=auto_abstract_gas),
-            id=claim.label,
+            proof_problem,
+            kcfg_explore,
+            max_depth=max_depth,
+            max_iterations=max_iterations,
+            cut_point_rules=KEVMSemantics.cut_point_rules(break_on_jumpi, break_on_calls),
+            terminal_rules=KEVMSemantics.terminal_rules(break_every_step),
+            fail_fast=fail_fast,
+        )
+        end_time = time.time()
+        _LOGGER.info(f'Proof timing {proof_problem.id}: {end_time - start_time}s')
+        failure_log = None
+        if not passed:
+            failure_log = print_failure_info(proof_problem, kcfg_explore)
+
+        return passed, failure_log
+
+    topological_sorter = graphlib.TopologicalSorter(claims_graph)
+    topological_sorter.prepare()
+    with wrap_process_pool(
+        workers=workers,
+        initializer=make_process_initializer(
+            kevm=kevm,
+            auto_abstract_gas=auto_abstract_gas,
             llvm_definition_dir=llvm_definition_dir,
             bug_report=bug_report,
             kore_rpc_command=kore_rpc_command,
             smt_timeout=smt_timeout,
             smt_retry_limit=smt_retry_limit,
             trace_rewrites=trace_rewrites,
-        ) as kcfg_explore:
-            proof_problem: Proof
-            if is_functional(claim):
-                if (
-                    save_directory is not None
-                    and not reinit
-                    and up_to_date
-                    and EqualityProof.proof_exists(claim.label, save_directory)
-                ):
-                    proof_problem = EqualityProof.read_proof_data(save_directory, claim.label)
-                else:
-                    proof_problem = EqualityProof.from_claim(claim, kevm.definition, proof_dir=save_directory)
-            else:
-                if (
-                    save_directory is not None
-                    and not reinit
-                    and up_to_date
-                    and APRProof.proof_data_exists(claim.label, save_directory)
-                ):
-                    proof_problem = APRProof.read_proof_data(save_directory, claim.label)
-
-                else:
-                    _LOGGER.info(f'Converting claim to KCFG: {claim.label}')
-                    kcfg, init_node_id, target_node_id = KCFG.from_claim(kevm.definition, claim)
-
-                    new_init = ensure_ksequence_on_k_cell(kcfg.node(init_node_id).cterm)
-                    new_target = ensure_ksequence_on_k_cell(kcfg.node(target_node_id).cterm)
-
-                    _LOGGER.info(f'Computing definedness constraint for initial node: {claim.label}')
-                    new_init = kcfg_explore.cterm_assume_defined(new_init)
-
-                    _LOGGER.info(f'Simplifying initial and target node: {claim.label}')
-                    new_init, _ = kcfg_explore.cterm_simplify(new_init)
-                    new_target, _ = kcfg_explore.cterm_simplify(new_target)
-                    if CTerm._is_bottom(new_init.kast):
-                        raise ValueError('Simplifying initial node led to #Bottom, are you sure your LHS is defined?')
-                    if CTerm._is_top(new_target.kast):
-                        raise ValueError('Simplifying target node led to #Bottom, are you sure your RHS is defined?')
-
-                    kcfg.replace_node(init_node_id, new_init)
-                    kcfg.replace_node(target_node_id, new_target)
-
-                    proof_problem = APRProof(
-                        claim.label,
-                        kcfg,
-                        [],
-                        init_node_id,
-                        target_node_id,
-                        {},
-                        proof_dir=save_directory,
-                        subproof_ids=claims_graph[claim.label],
-                    )
-
-            start_time = time.time()
-            passed = run_prover(
-                kevm,
-                proof_problem,
-                kcfg_explore,
-                max_depth=max_depth,
-                max_iterations=max_iterations,
-                cut_point_rules=KEVMSemantics.cut_point_rules(break_on_jumpi, break_on_calls),
-                terminal_rules=KEVMSemantics.terminal_rules(break_every_step),
-                fail_fast=fail_fast,
-            )
-            end_time = time.time()
-            _LOGGER.info(f'Proof timing {proof_problem.id}: {end_time - start_time}s')
-            failure_log = None
-            if not passed:
-                failure_log = print_failure_info(proof_problem, kcfg_explore)
-
-            return passed, failure_log
-
-    topological_sorter = graphlib.TopologicalSorter(claims_graph)
-    topological_sorter.prepare()
-    with wrap_process_pool(workers=workers) as process_pool:
+        ),
+    ) as process_pool:
         selected_results: list[tuple[bool, list[str] | None]] = []
         selected_claims = []
         while topological_sorter.is_active():
