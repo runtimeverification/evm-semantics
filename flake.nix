@@ -2,11 +2,11 @@
   description = "A flake for the KEVM Semantics";
 
   inputs = {
-    k-framework.url = "github:runtimeverification/k/v6.0.196";
+    k-framework.url = "github:runtimeverification/k/v6.1.1";
     nixpkgs.follows = "k-framework/nixpkgs";
     flake-utils.follows = "k-framework/flake-utils";
     rv-utils.follows = "k-framework/rv-utils";
-    pyk.url = "github:runtimeverification/pyk/v0.1.492";
+    pyk.url = "github:runtimeverification/pyk/v0.1.494";
     nixpkgs-pyk.follows = "pyk/nixpkgs";
     poetry2nix.follows = "pyk/poetry2nix";
     blockchain-k-plugin = {
@@ -25,21 +25,10 @@
       flake = false;
     };
     haskell-backend.follows = "k-framework/haskell-backend";
-    foundry = {
-      url =
-        "github:shazow/foundry.nix/monthly"; # Use monthly branch for permanent releases
-      inputs.nixpkgs.follows = "k-framework/nixpkgs";
-      inputs.flake-utils.follows = "k-framework/flake-utils";
-    };
-    solc = {
-      url = "github:hellwolf/solc.nix";
-      inputs.nixpkgs.follows = "k-framework/nixpkgs";
-      inputs.flake-utils.follows = "k-framework/flake-utils";
-    };
   };
   outputs = { self, k-framework, haskell-backend, nixpkgs, flake-utils
     , blockchain-k-plugin, ethereum-tests, ethereum-legacytests, rv-utils, pyk
-    , foundry, solc, ... }@inputs:
+    , ... }@inputs:
     let
       nixLibs = pkgs:
         with pkgs;
@@ -61,7 +50,6 @@
           pkg-config
           procps
           python310-pyk
-          (solc.mkDefault pkgs solc_0_8_13)
           time
         ] ++ lib.optional (!stdenv.isDarwin) elfutils;
 
@@ -125,14 +113,6 @@
                   k-framework.packages.${prev.system}.k
                 ]
               } --set NIX_LIBS "${nixLibs prev}" --set KEVM_DIST_DIR $out
-              makeWrapper ${final.kevm-pyk}/bin/kontrolx $out/bin/kontrolx --prefix PATH : ${
-                prev.lib.makeBinPath [
-                  (solc.mkDefault final final.solc_0_8_13)
-                  final.foundry-bin
-                  prev.which
-                  k-framework.packages.${prev.system}.k
-                ]
-              } --set NIX_LIBS "${nixLibs prev}" --set KEVM_DIST_DIR $out
             '';
           };
 
@@ -167,12 +147,6 @@
           kevm-pyk = poetry2nix.mkPoetryApplication {
             python = nixpkgs-pyk.python310;
             projectDir = ./kevm-pyk;
-
-            postPatch = ''
-              substituteInPlace ./src/kontrolx/foundry.py \
-                --replace "'forge', 'build'," "'forge', 'build', '--no-auto-detect',"
-            '';
-
             overrides = poetry2nix.overrides.withDefaults
               (finalPython: prevPython: {
                 pyk = nixpkgs-pyk.pyk-python310;
@@ -185,7 +159,6 @@
             groups = [ ];
             # We remove `"dev"` from `checkGroups`, so that poetry2nix does not try to resolve dev dependencies.
             checkGroups = [ ];
-
             postInstall = ''
               mkdir -p $out/${nixpkgs-pyk.python310.sitePackages}/kevm_pyk/kproj/plugin
               cp -rv ${prev.blockchain-k-plugin-src}/* $out/${nixpkgs-pyk.python310.sitePackages}/kevm_pyk/kproj/plugin/
@@ -209,8 +182,6 @@
             })
             k-framework.overlay
             blockchain-k-plugin.overlay
-            foundry.overlay
-            solc.overlay
             overlay
           ];
         };
@@ -219,7 +190,7 @@
         packages.default = kevm;
         devShell = pkgs.mkShell {
           buildInputs = buildInputs pkgs
-            ++ [ pkgs.poetry-nixpkgs pkgs.foundry-bin ];
+            ++ [ pkgs.poetry-nixpkgs ];
 
           shellHook = ''
             export NIX_LIBS="${nixLibs pkgs}"
