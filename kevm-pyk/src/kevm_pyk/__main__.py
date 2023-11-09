@@ -297,8 +297,6 @@ def exec_prove(
 
     if save_directory is None:
         save_directory = Path(tempfile.mkdtemp())
-        print(save_directory)
-        print('\n\n\n')
 
     digest_file = save_directory / 'digest'
 
