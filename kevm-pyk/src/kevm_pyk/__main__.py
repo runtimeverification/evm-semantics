@@ -295,7 +295,10 @@ def exec_prove(
     _ignore_arg(kwargs, 'md_selector', f'--md-selector: {kwargs["md_selector"]}')
     md_selector = 'k'
 
-    digest_file = save_directory / 'digest' if save_directory is not None else None
+    if save_directory is None:
+        save_directory = Path(tempfile.mkdtemp())
+
+    digest_file = save_directory / 'digest'
 
     if definition_dir is None:
         definition_dir = kdist.get('evm-semantics.haskell')
@@ -304,9 +307,6 @@ def exec_prove(
         smt_timeout = 300
     if smt_retry_limit is None:
         smt_retry_limit = 10
-
-    if save_directory is None:
-        save_directory = Path(tempfile.TemporaryDirectory().name)
 
     kevm = KEVM(definition_dir, use_directory=save_directory, bug_report=bug_report)
 
@@ -363,22 +363,12 @@ def exec_prove(
         ) as kcfg_explore:
             proof_problem: Proof
             if is_functional(claim):
-                if (
-                    save_directory is not None
-                    and not reinit
-                    and up_to_date
-                    and EqualityProof.proof_exists(claim.label, save_directory)
-                ):
+                if not reinit and up_to_date and EqualityProof.proof_exists(claim.label, save_directory):
                     proof_problem = EqualityProof.read_proof_data(save_directory, claim.label)
                 else:
                     proof_problem = EqualityProof.from_claim(claim, kevm.definition, proof_dir=save_directory)
             else:
-                if (
-                    save_directory is not None
-                    and not reinit
-                    and up_to_date
-                    and APRProof.proof_data_exists(claim.label, save_directory)
-                ):
+                if not reinit and up_to_date and APRProof.proof_data_exists(claim.label, save_directory):
                     proof_problem = APRProof.read_proof_data(save_directory, claim.label)
 
                 else:
