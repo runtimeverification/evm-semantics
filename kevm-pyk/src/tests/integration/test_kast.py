@@ -14,7 +14,7 @@ def test_parse() -> None:
     # When
     actual = _kast(
         file=evm_file,
-        definition_dir=kdist.get('llvm'),
+        definition_dir=kdist.get('evm-semantics.llvm'),
         input=KAstInput.PROGRAM,
         output=KAstOutput.KORE,
     ).stdout
