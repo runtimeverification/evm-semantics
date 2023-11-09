@@ -1370,7 +1370,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
 
     rule [return.revert]:
          <statusCode> EVMC_REVERT </statusCode>
-         <k> #halt ~> #return RETSTART RETWIDTH
+         <k> #halt ~> #return RETSTART _
           => #popCallStack ~> #popWorldState
           ~> 0 ~> #push ~> #refund GAVAIL ~> #setLocalMem RETSTART OUT
          ...
@@ -1387,6 +1387,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          </k>
          <output> OUT </output>
          <gas> GAVAIL </gas>
+      requires lengthBytes(OUT) ==Int RETWIDTH
 
     syntax InternalOp ::= "#refund" Gas
                         | "#setLocalMem" Int Bytes
