@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 import pytest
 from pyk.kore.tools import PrintOutput, kore_print
 
-from kevm_pyk import config
+from kevm_pyk import kdist
 from kevm_pyk.interpreter import interpret
 
 from ..utils import REPO_ROOT
@@ -31,8 +31,8 @@ def test_run(gst_file: Path) -> None:
         gst_data = json.load(f)
 
     # When
-    pattern = interpret(gst_data, 'MERGE', 'NORMAL', 1, check=False)
-    actual = kore_print(pattern, definition_dir=config.LLVM_DIR, output=PrintOutput.PRETTY)
+    pattern = interpret(gst_data, 'SHANGHAI', 'NORMAL', 1, check=False)
+    actual = kore_print(pattern, definition_dir=kdist.get('evm-semantics.llvm'), output=PrintOutput.PRETTY)
 
     # Then
     assert actual == expected

@@ -41,7 +41,7 @@ jobs:
           git add deps/k_release && git commit -m "deps/k_release: sync release file version ${K_VERSION}" || true
       - name: 'Update plugin release file'
         run: |
-          BKP_VERSION=$(git -C deps/plugin rev-parse HEAD)
+          BKP_VERSION=$(git -C kevm-pyk/src/kevm_pyk/kproj/plugin rev-parse HEAD)
           echo ${BKP_VERSION} > deps/blockchain-k-plugin_release
           git add deps/blockchain-k-plugin_release && git commit -m "deps/blockchain-k-plugin_release: sync release file version ${BKP_VERSION}" || true
       - name: 'Install Nix/Cachix'

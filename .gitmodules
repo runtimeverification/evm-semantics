@@ -4,7 +4,7 @@
 	branch = develop
 	ignore = untracked
 [submodule "deps/plugin"]
-	path = deps/plugin
+	path = kevm-pyk/src/kevm_pyk/kproj/plugin
 	url = https://github.com/runtimeverification/blockchain-k-plugin
 	ignore = untracked
 [submodule "deps/metropolis"]
@@ -14,6 +14,3 @@
 [submodule "web/k-web-theme"]
 	path = web/k-web-theme
 	url = https://github.com/runtimeverification/k-web-theme
-[submodule "tests/foundry/lib/forge-std"]
-	path = tests/foundry/lib/forge-std
-	url = https://github.com/foundry-rs/forge-std

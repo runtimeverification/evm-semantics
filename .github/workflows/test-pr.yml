@@ -11,7 +11,7 @@ jobs:
 
   version-bump:
     name: 'Version Bump'
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, flyweight-ephemeral]
     steps:
       - name: 'Check out code'
         uses: actions/checkout@v3
@@ -29,17 +29,21 @@ jobs:
           og_version=$(git show origin/${GITHUB_BASE_REF}:package/version)
           ./package/version.sh bump ${og_version}
           ./package/version.sh sub
-          git add --update && git commit --message "Set Version: $(cat package/version)" || true
+          new_version=$(cat package/version)
+          sed --in-place "s/^VERSION: Final = '.*'$/VERSION: Final = '${new_version}'/" kevm-pyk/src/kevm_pyk/__init__.py
+          git add --update && git commit --message "Set Version: ${new_version}" || true
       - name: 'Push updates'
         run: git push origin HEAD:${GITHUB_HEAD_REF}
 
   kevm-pyk-code-quality-checks:
-    needs: version-bump
     name: 'Code Quality Checks'
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, flyweight-ephemeral]
     steps:
       - name: 'Check out code'
         uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+            python-version: "3.10"
       - name: 'Install Poetry'
         uses: Gr1N/setup-poetry@v8
       - name: 'Run code quality checks'
@@ -50,50 +54,41 @@ jobs:
   kevm-pyk-unit-tests:
     needs: kevm-pyk-code-quality-checks
     name: 'Unit Tests'
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, normal-ephemeral]
     steps:
       - name: 'Check out code'
         uses: actions/checkout@v3
         with:
           submodules: true
           fetch-depth: 0
+      - uses: actions/setup-python@v4
+        with:
+            python-version: "3.10"
       - name: 'Install Poetry'
         uses: Gr1N/setup-poetry@v8
-      - name: 'Build kevm'
-        run: make build-kevm -j8
       - name: 'Run unit tests'
         run: |
-          export PATH=$(pwd)/.build/usr/bin:${PATH}
           make -C kevm-pyk cov-unit
 
   kevm-pyk-profile:
     needs: kevm-pyk-code-quality-checks
     name: 'Profiling'
-    runs-on: [self-hosted, linux, normal]
-    timeout-minutes: 15
+    runs-on: [self-hosted, linux, normal-ephemeral]
     steps:
       - name: 'Check out code'
         uses: actions/checkout@v3
         with:
           submodules: recursive
           fetch-depth: 0
-      - name: 'Set up Docker'
-        uses: ./.github/actions/with-docker
+      - name: Setup Python
+        uses: actions/setup-python@v4
         with:
-          container-name: kevm-ci-profile-${{ github.sha }}
-      - name: 'Build kevm-pyk'
-        run: docker exec -u github-user kevm-ci-profile-${GITHUB_SHA} /bin/bash -c 'make poetry'
-      - name: 'Build blockchain-k-plugin-deps'
-        run: docker exec -u github-user kevm-ci-profile-${GITHUB_SHA} /bin/bash -c 'make CXX=clang++-14 plugin-deps'
-      - name: 'Build Foundry'
-        run: docker exec -u github-user kevm-ci-profile-${GITHUB_SHA} /bin/bash -c 'make build-foundry'
+          python-version: '3.10'
+      - name: 'Install Poetry'
+        uses: Gr1N/setup-poetry@v8
       - name: 'Run profiling'
         run: |
-          docker exec -u github-user kevm-ci-profile-${GITHUB_SHA} /bin/bash -c 'make profile'
-      - name: 'Tear down Docker'
-        if: always()
-        run: |
-          docker stop --time=0 kevm-ci-profile-${GITHUB_SHA}
+          make -C kevm-pyk profile
 
   test-concrete-execution:
     name: 'Build and Test KEVM concrete execution'
@@ -111,53 +106,38 @@ jobs:
         with:
           container-name: kevm-ci-concrete-${{ github.sha }}
       - name: 'Build kevm-pyk'
-        run: docker exec -u github-user kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make poetry'
-      - name: 'Build blockchain-k-plugin-deps'
-        run: docker exec -u github-user kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make CXX=clang++-14 plugin-deps'
-      - name: 'Build kevm'
-        run: docker exec -u github-user kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make build-kevm build-haskell build-llvm build-node -j`nproc` RELEASE=true'
-      - name: 'Test kevm-pyk'
-        run: docker exec -u github-user kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make test-integration'
+        run: docker exec -u github-user kevm-ci-concrete-${{ github.sha }} /bin/bash -c 'make poetry'
+      - name: 'Build targets'
+        run: docker exec -u github-user kevm-ci-concrete-${{ github.sha }} /bin/bash -c 'CXX=clang++-14 poetry -C kevm-pyk run kevm-dist --verbose build -j`nproc` evm-semantics.llvm evm-semantics.haskell'
+      - name: 'Test integration'
+        run: docker exec -u github-user kevm-ci-concrete-${{ github.sha }} /bin/bash -c 'make test-integration'
       - name: 'Test conformance'
-        run: docker exec -u github-user kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make test-conformance'
+        run: docker exec -u github-user kevm-ci-concrete-${{ github.sha }} /bin/bash -c 'make test-conformance'
       - name: 'Test llvm krun'
-        run: docker exec -u github-user kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make test-interactive-run TEST_CONCRETE_BACKEND=llvm'
-      - name: 'Test node'
-        run: docker exec -u github-user kevm-ci-concrete-${GITHUB_SHA} /bin/bash -c 'make test-node -j`nproc`'
+        run: docker exec -u github-user kevm-ci-concrete-${{ github.sha }} /bin/bash -c 'make test-interactive'
       - name: 'Tear down Docker'
         if: always()
         run: |
-          docker stop --time=0 kevm-ci-concrete-${GITHUB_SHA}
+          docker stop --time=0 kevm-ci-concrete-${{ github.sha }}
 
-  test-prove-haskell:
-    name: 'Build and Test KEVM haskell proofs'
+  test-prove:
+    name: 'Build and Test KEVM proofs'
     needs: kevm-pyk-code-quality-checks
-    runs-on: [self-hosted, linux, normal]
-    timeout-minutes: 120
-    steps:
-      - name: 'Check out code'
-        uses: actions/checkout@v3
-        with:
-          submodules: recursive
-          fetch-depth: 0
-      - name: 'Set up Docker'
-        uses: ./.github/actions/with-docker
-        with:
-          container-name: kevm-ci-haskell-${{ github.sha }}
-      - name: 'Build blockchain-k-plugin-deps'
-        run: docker exec -u github-user kevm-ci-haskell-${GITHUB_SHA} /bin/bash -c 'make CXX=clang++-14 plugin-deps'
-      - name: 'Prove Haskell'
-        run: docker exec -u github-user kevm-ci-haskell-${GITHUB_SHA} /bin/bash -c 'make test-prove PYTEST_ARGS=-vv'
-      - name: 'Tear down Docker'
-        if: always()
-        run: |
-          docker stop --time=0 kevm-ci-haskell-${GITHUB_SHA}
-
-  test-prove-haskell-booster:
-    name: 'Build and Test KEVM haskell proofs (booster)'
-    needs: kevm-pyk-code-quality-checks
-    runs-on: [self-hosted, linux, normal]
-    timeout-minutes: 120
+    runs-on: [self-hosted, linux, fast]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - test-suite: 'test-prove-kprove'
+            test-args:
+            timeout: 45
+          - test-suite: 'test-prove-pyk'
+            test-args:
+            timeout: 150
+          - test-suite: 'test-prove-pyk'
+            test-args: '--use-booster'
+            timeout: 120
+    timeout-minutes: ${{ matrix.timeout }}
     steps:
       - name: 'Check out code'
         uses: actions/checkout@v3
@@ -166,71 +146,17 @@ jobs:
       - name: 'Set up Docker'
         uses: ./.github/actions/with-docker
         with:
-          container-name: kevm-ci-haskell-booster-${{ github.sha }}
-      - name: 'Build blockchain-k-plugin-deps'
-        run: docker exec -u github-user kevm-ci-haskell-booster-${GITHUB_SHA} /bin/bash -c 'make CXX=clang++-14 plugin-deps'
-      - name: 'Prove Haskell'
-        run: docker exec -u github-user kevm-ci-haskell-booster-${GITHUB_SHA} /bin/bash -c 'make test-prove PYTEST_ARGS="-vv --use-booster"'
-      - name: 'Tear down Docker'
-        if: always()
-        run: |
-          docker stop --time=0 kevm-ci-haskell-booster-${GITHUB_SHA}
-
-  test-prove-foundry:
-    name: 'Build and Test KEVM Foundry proofs'
-    needs: kevm-pyk-code-quality-checks
-    runs-on: [self-hosted, linux, normal]
-    timeout-minutes: 150
-    steps:
-      - name: 'Check out code'
-        uses: actions/checkout@v3
-        with:
-          submodules: recursive
-          fetch-depth: 0
-      - name: 'Set up Docker'
-        uses: ./.github/actions/with-docker
-        with:
-          container-name: kevm-ci-foundry-${{ github.sha }}
+          container-name: kevm-ci-haskell-${{ matrix.test-suite }}-${{ github.sha }}
       - name: 'Build kevm-pyk'
-        run: docker exec -u github-user kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make poetry'
-      - name: 'Build blockchain-k-plugin-deps'
-        run: docker exec -u github-user kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make CXX=clang++-14 plugin-deps'
-      - name: 'Build Foundry'
-        run: docker exec -u github-user kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make build-foundry -j2'
-      - name: 'Foundry Prove'
-        run: docker exec -u github-user kevm-ci-foundry-${GITHUB_SHA} /bin/bash -c 'make test-foundry-prove PYTEST_ARGS=-vv'
+        run: docker exec -u github-user kevm-ci-haskell-${{ matrix.test-suite }}-${{ github.sha }} /bin/bash -c 'make poetry'
+      - name: 'Build distribution'
+        run: docker exec -u github-user kevm-ci-haskell-${{ matrix.test-suite }}-${{ github.sha }} /bin/bash -c 'CXX=clang++-14 poetry -C kevm-pyk run kevm-dist --verbose build -j`nproc` evm-semantics.plugin evm-semantics.haskell'
+      - name: 'Prove Haskell'
+        run: docker exec -u github-user kevm-ci-haskell-${{ matrix.test-suite }}-${{ github.sha }} /bin/bash -c "make ${{ matrix.test-suite }} PYTEST_ARGS='-vv ${{ matrix.test-args }}' PYTEST_PARALLEL=4"
       - name: 'Tear down Docker'
         if: always()
         run: |
-          docker stop --time=0 kevm-ci-foundry-${GITHUB_SHA}
-
-  test-prove-foundry-booster:
-    name: 'Build and Test KEVM Foundry proofs (booster)'
-    needs: kevm-pyk-code-quality-checks
-    runs-on: [self-hosted, linux, normal]
-    timeout-minutes: 150
-    steps:
-      - name: 'Check out code'
-        uses: actions/checkout@v3
-        with:
-          submodules: recursive
-          fetch-depth: 0
-      - name: 'Set up Docker'
-        uses: ./.github/actions/with-docker
-        with:
-          container-name: kevm-ci-booster-${{ github.sha }}
-      - name: 'Build kevm-pyk'
-        run: docker exec -u github-user kevm-ci-booster-${GITHUB_SHA} /bin/bash -c 'make poetry'
-      - name: 'Build blockchain-k-plugin-deps'
-        run: docker exec -u github-user kevm-ci-booster-${GITHUB_SHA} /bin/bash -c 'make CXX=clang++-14 plugin-deps'
-      - name: 'Build Foundry'
-        run: docker exec -u github-user kevm-ci-booster-${GITHUB_SHA} /bin/bash -c 'make build-foundry -j2'
-      - name: 'Foundry Prove'
-        run: docker exec -u github-user kevm-ci-booster-${GITHUB_SHA} /bin/bash -c 'make test-foundry-prove PYTEST_ARGS="-vv --use-booster"'
-      - name: 'Tear down Docker'
-        if: always()
-        run: |
-          docker stop --time=0 kevm-ci-booster-${GITHUB_SHA}
+          docker stop --time=0 kevm-ci-haskell-${{ matrix.test-suite }}-${{ github.sha }}
 
   nix:
     name: 'Nix'
@@ -269,47 +195,3 @@ jobs:
         run: GC_DONT_GC=1 nix build --extra-experimental-features 'nix-command flakes' --print-build-logs
       - name: 'Test KEVM'
         run: GC_DONT_GC=1 nix build --extra-experimental-features 'nix-command flakes' --print-build-logs .#kevm-test
-
-  build-deb-package:
-    name: 'Build Ubuntu Jammy DockerHub Image'
-    runs-on: [self-hosted, linux, normal]
-    needs: kevm-pyk-code-quality-checks
-    steps:
-      - name: 'Check out code'
-        uses: actions/checkout@v3
-        with:
-          submodules: recursive
-          ref: ${{ github.event.push.head.sha }}
-      - name: 'Set up Docker'
-        uses: ./.github/actions/with-docker
-        with:
-          container-name: kevm-package-jammy-${{ github.sha }}
-      - name: 'Build Package'
-        run: |
-          set -euxo pipefail
-          version=$(cat package/version)
-          docker exec -u github-user kevm-package-jammy-${GITHUB_SHA} /bin/bash -c 'package/debian/package jammy'
-          docker cp kevm-package-jammy-${GITHUB_SHA}:/home/github-user/kevm_${version}_amd64.deb ./
-
-      - name: 'Setup Foundry Test Docker'
-        uses: ./.github/actions/with-docker
-        with:
-          container-name: kevm-ci-test-${{ github.sha }}
-          dockerfile: package/docker/Dockerfile
-
-      - name: 'KEVM Foundry Test'
-        run: |
-          set -euxo pipefail
-          docker cp ./tests/foundry kevm-ci-test-${GITHUB_SHA}:/home/github-user/foundry
-          docker exec -u github-user kevm-ci-test-${GITHUB_SHA} /bin/bash -c "sudo chown github-user:github-user -R /home/github-user/foundry"
-          docker exec -u github-user kevm-ci-test-${GITHUB_SHA} /bin/bash -c "forge build --root /home/github-user/foundry"
-          docker exec -u github-user kevm-ci-test-${GITHUB_SHA} /bin/bash -c "kevm foundry-kompile --foundry-project-root /home/github-user/foundry --verbose"
-          docker exec -u github-user kevm-ci-test-${GITHUB_SHA} /bin/bash -c "kevm foundry-prove --foundry-project-root /home/github-user/foundry --verbose --test AssertTest.test_assert_true_branch"
-          docker exec -u github-user kevm-ci-test-${GITHUB_SHA} /bin/bash -c "kevm foundry-show --foundry-project-root /home/github-user/foundry --verbose AssertTest.test_assert_true_branch"
-          docker exec -u github-user kevm-ci-test-${GITHUB_SHA} /bin/bash -c "kevm foundry-list --foundry-project-root /home/github-user/foundry --verbose"
-
-      - name: 'Tear down Docker'
-        if: always()
-        run: |
-          docker stop --time=0 kevm-package-jammy-${GITHUB_SHA}
-          docker stop --time=0 kevm-ci-test-${GITHUB_SHA}
