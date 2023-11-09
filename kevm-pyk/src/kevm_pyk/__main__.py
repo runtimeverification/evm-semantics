@@ -162,7 +162,7 @@ def exec_prove_legacy(
     _ignore_arg(kwargs, 'md_selector', f'--md-selector: {kwargs["md_selector"]}')
 
     if definition_dir is None:
-        definition_dir = kdist.get('haskell')
+        definition_dir = kdist.get('evm-semantics.haskell')
 
     kevm = KEVM(definition_dir, use_directory=save_directory)
 
@@ -298,7 +298,7 @@ def exec_prove(
     digest_file = save_directory / 'digest' if save_directory is not None else None
 
     if definition_dir is None:
-        definition_dir = kdist.get('haskell')
+        definition_dir = kdist.get('evm-semantics.haskell')
 
     if smt_timeout is None:
         smt_timeout = 300
@@ -608,8 +608,10 @@ def exec_run(
     if target is None:
         target = 'llvm'
 
+    target_fqn = f'evm-semantics.{target}'
+
     _ignore_arg(kwargs, 'definition_dir', f'--definition: {kwargs["definition_dir"]}')
-    kevm = KEVM(kdist.get(target), use_directory=save_directory)
+    kevm = KEVM(kdist.get(target_fqn), use_directory=save_directory)
 
     try:
         json_read = json.loads(input_file.read_text())
@@ -644,8 +646,10 @@ def exec_kast(
     if target is None:
         target = 'llvm'
 
+    target_fqn = f'evm-semantics.{target}'
+
     _ignore_arg(kwargs, 'definition_dir', f'--definition: {kwargs["definition_dir"]}')
-    kevm = KEVM(kdist.get(target), use_directory=save_directory)
+    kevm = KEVM(kdist.get(target_fqn), use_directory=save_directory)
 
     try:
         json_read = json.loads(input_file.read_text())
