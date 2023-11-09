@@ -1372,7 +1372,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <statusCode> EVMC_REVERT </statusCode>
          <k> #halt ~> #return RETSTART _
           => #popCallStack ~> #popWorldState
-          ~> 0 ~> #push ~> #refund GAVAIL ~> #setLocalMem RETSTART OUT
+          ~> 0 ~> #push ~> #refund GAVAIL ~> #setLocalMem RETSTART lengthBytes(OUT) OUT
          ...
          </k>
          <output> OUT </output>
@@ -1382,20 +1382,19 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <statusCode> EVMC_SUCCESS </statusCode>
          <k> #halt ~> #return RETSTART RETWIDTH
           => #popCallStack ~> #dropWorldState
-          ~> 1 ~> #push ~> #refund GAVAIL ~> #setLocalMem RETSTART OUT
+          ~> 1 ~> #push ~> #refund GAVAIL ~> #setLocalMem RETSTART RETWIDTH OUT
          ...
          </k>
          <output> OUT </output>
          <gas> GAVAIL </gas>
-      requires lengthBytes(OUT) ==Int RETWIDTH
 
     syntax InternalOp ::= "#refund" Gas
-                        | "#setLocalMem" Int Bytes
+                        | "#setLocalMem" Int Int Bytes
  // --------------------------------------------------
     rule [refund]: <k> #refund G:Gas => . ... </k> <gas> GAVAIL => GAVAIL +Gas G </gas>
 
-    rule <k> #setLocalMem START WS => . ... </k>
-         <localMem> LM => LM [ START := WS ] </localMem>
+    rule <k> #setLocalMem START WIDTH WS => . ... </k>
+         <localMem> LM => LM [ START := #range(WS, 0, minInt(WIDTH, lengthBytes(WS))) ] </localMem>
 ```
 
 Ethereum Network OpCodes
