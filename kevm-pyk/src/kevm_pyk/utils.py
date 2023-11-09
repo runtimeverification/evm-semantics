@@ -18,7 +18,7 @@ from pyk.kast.manip import (
 )
 from pyk.kast.outer import KSequence
 from pyk.kcfg import KCFGExplore
-from pyk.kore.rpc import KoreClient, KoreExecLogFormat, kore_server
+from pyk.kore.rpc import KoreClient, KoreExecLogFormat, TransportType, kore_server
 from pyk.proof import APRBMCProof, APRBMCProver, APRProof, APRProver
 from pyk.proof.equality import EqualityProof, EqualityProver
 from pyk.utils import single
@@ -27,7 +27,7 @@ if TYPE_CHECKING:
     from collections.abc import Callable, Collection, Iterable, Iterator
     from typing import Final, TypeVar
 
-    from pyk.kast.outer import KDefinition
+    from pyk.kast.outer import KClaim, KDefinition
     from pyk.kcfg import KCFG
     from pyk.kcfg.semantics import KCFGSemantics
     from pyk.ktool.kprint import KPrint
@@ -41,7 +41,25 @@ if TYPE_CHECKING:
 _LOGGER: Final = logging.getLogger(__name__)
 
 
-def get_apr_proof_for_spec(  # noqa: N802
+def claim_dependency_dict(claims: Iterable[KClaim], spec_module_name: str | None = None) -> dict[str, list[str]]:
+    claims_by_label = {claim.label: claim for claim in claims}
+    graph: dict[str, list[str]] = {}
+    for claim in claims:
+        graph[claim.label] = []
+        for dependency in claim.dependencies:
+            if dependency not in claims_by_label:
+                if spec_module_name is None:
+                    raise ValueError(f'Could not find dependency and no spec_module provided: {dependency}')
+                else:
+                    spec_dependency = f'{spec_module_name}.{dependency}'
+                    if spec_dependency not in claims_by_label:
+                        raise ValueError(f'Could not find dependency: {dependency} or {spec_dependency}')
+                    dependency = spec_dependency
+            graph[claim.label].append(dependency)
+    return graph
+
+
+def get_apr_proof_for_spec(
     kprove: KProve,
     spec_file: Path,
     save_directory: Path | None,
@@ -71,41 +89,19 @@ def get_apr_proof_for_spec(  # noqa: N802
     return apr_proof
 
 
-def kevm_prove(
+def run_prover(
     kprove: KProve,
     proof: Proof,
     kcfg_explore: KCFGExplore,
     max_depth: int = 1000,
     max_iterations: int | None = None,
-    break_every_step: bool = False,
-    break_on_jumpi: bool = False,
-    break_on_calls: bool = True,
+    cut_point_rules: Iterable[str] = (),
+    terminal_rules: Iterable[str] = (),
     extract_branches: Callable[[CTerm], Iterable[KInner]] | None = None,
     abstract_node: Callable[[CTerm], CTerm] | None = None,
+    fail_fast: bool = False,
 ) -> bool:
     proof = proof
-    terminal_rules = ['EVM.halt']
-    cut_point_rules = []
-    if break_every_step:
-        terminal_rules.append('EVM.step')
-    if break_on_jumpi:
-        cut_point_rules.extend(['EVM.jumpi.true', 'EVM.jumpi.false'])
-    if break_on_calls:
-        cut_point_rules.extend(
-            [
-                'EVM.call',
-                'EVM.callcode',
-                'EVM.delegatecall',
-                'EVM.staticcall',
-                'EVM.create',
-                'EVM.create2',
-                'FOUNDRY.foundry.call',
-                'EVM.end',
-                'EVM.return.exception',
-                'EVM.return.revert',
-                'EVM.return.success',
-            ]
-        )
     prover: APRBMCProver | APRProver | EqualityProver
     if type(proof) is APRBMCProof:
         prover = APRBMCProver(proof, kcfg_explore)
@@ -122,6 +118,7 @@ def kevm_prove(
                 execute_depth=max_depth,
                 terminal_rules=terminal_rules,
                 cut_point_rules=cut_point_rules,
+                fail_fast=fail_fast,
             )
             assert isinstance(proof, APRProof)
             if proof.passed:
@@ -307,12 +304,14 @@ def legacy_explore(
     llvm_definition_dir: Path | None = None,
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
+    smt_tactic: str | None = None,
     bug_report: BugReport | None = None,
     haskell_log_format: KoreExecLogFormat = KoreExecLogFormat.ONELINE,
     haskell_log_entries: Iterable[str] = (),
     log_axioms_file: Path | None = None,
     trace_rewrites: bool = False,
     start_server: bool = True,
+    maude_port: int | None = None,
 ) -> Iterator[KCFGExplore]:
     if start_server:
         # Old way of handling KCFGExplore, to be removed
@@ -325,11 +324,12 @@ def legacy_explore(
             bug_report=bug_report,
             smt_timeout=smt_timeout,
             smt_retry_limit=smt_retry_limit,
+            smt_tactic=smt_tactic,
             haskell_log_format=haskell_log_format,
             haskell_log_entries=haskell_log_entries,
             log_axioms_file=log_axioms_file,
         ) as server:
-            with KoreClient('localhost', server.port, bug_report=bug_report) as client:
+            with KoreClient('localhost', server.port, bug_report=bug_report, bug_report_id=id) as client:
                 yield KCFGExplore(
                     kprint=kprint,
                     kore_client=client,
@@ -340,7 +340,18 @@ def legacy_explore(
     else:
         if port is None:
             raise ValueError('Missing port with start_server=False')
-        with KoreClient('localhost', port, bug_report=bug_report) as client:
+        if maude_port is None:
+            dispatch = None
+        else:
+            dispatch = {
+                'execute': [('localhost', maude_port, TransportType.HTTP)],
+                'simplify': [('localhost', maude_port, TransportType.HTTP)],
+                'add-module': [
+                    ('localhost', maude_port, TransportType.HTTP),
+                    ('localhost', port, TransportType.SINGLE_SOCKET),
+                ],
+            }
+        with KoreClient('localhost', port, bug_report=bug_report, bug_report_id=id, dispatch=dispatch) as client:
             yield KCFGExplore(
                 kprint=kprint,
                 kore_client=client,

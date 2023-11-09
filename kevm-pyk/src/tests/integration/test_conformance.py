@@ -9,7 +9,7 @@ from pyk.kore.prelude import int_dv
 from pyk.kore.syntax import App
 from pyk.kore.tools import PrintOutput, kore_print
 
-from kevm_pyk import config
+from kevm_pyk import kdist
 from kevm_pyk.interpreter import interpret
 
 from ..utils import REPO_ROOT
@@ -50,7 +50,7 @@ def _assert_exit_code_zero(pattern: Pattern) -> None:
     if exit_code == int_dv(0):
         return
 
-    pretty = kore_print(pattern, definition_dir=config.LLVM_DIR, output=PrintOutput.PRETTY)
+    pretty = kore_print(pattern, definition_dir=kdist.get('evm-semantics.llvm'), output=PrintOutput.PRETTY)
     assert pretty == GOLDEN
 
 
@@ -107,7 +107,7 @@ REST_BCHAIN_TESTS: Final = tuple(test_file for test_file in ALL_BCHAIN_TESTS if 
     ids=[str(test_file.relative_to(TEST_DIR)) for test_file in BCHAIN_TESTS],
 )
 def test_bchain(test_file: Path) -> None:
-    _test(test_file, 'MERGE', 'NORMAL', 1)
+    _test(test_file, 'SHANGHAI', 'NORMAL', 1)
 
 
 @pytest.mark.skip(reason='failing / slow blockchain tests')
@@ -117,4 +117,4 @@ def test_bchain(test_file: Path) -> None:
     ids=[str(test_file.relative_to(TEST_DIR)) for test_file in REST_BCHAIN_TESTS],
 )
 def test_rest_bchain(test_file: Path) -> None:
-    _test(test_file, 'MERGE', 'NORMAL', 1)
+    _test(test_file, 'SHANGHAI', 'NORMAL', 1)

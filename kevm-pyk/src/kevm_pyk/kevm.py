@@ -115,6 +115,35 @@ class KEVMSemantics(KCFGSemantics):
 
         return CTerm(config=bottom_up(_replace, cterm.config), constraints=cterm.constraints)
 
+    @staticmethod
+    def cut_point_rules(break_on_jumpi: bool, break_on_calls: bool) -> list[str]:
+        cut_point_rules = []
+        if break_on_jumpi:
+            cut_point_rules.extend(['EVM.jumpi.true', 'EVM.jumpi.false'])
+        if break_on_calls:
+            cut_point_rules.extend(
+                [
+                    'EVM.call',
+                    'EVM.callcode',
+                    'EVM.delegatecall',
+                    'EVM.staticcall',
+                    'EVM.create',
+                    'EVM.create2',
+                    'EVM.end',
+                    'EVM.return.exception',
+                    'EVM.return.revert',
+                    'EVM.return.success',
+                ]
+            )
+        return cut_point_rules
+
+    @staticmethod
+    def terminal_rules(break_every_step: bool) -> list[str]:
+        terminal_rules = ['EVM.halt']
+        if break_every_step:
+            terminal_rules.append('EVM.step')
+        return terminal_rules
+
 
 class KEVM(KProve, KRun):
     def __init__(
@@ -168,7 +197,6 @@ class KEVM(KProve, KRun):
             '_|->_',
             '#And',
             '_andBool_',
-            '_:__EVM-TYPES_WordStack_Int_WordStack',
             '#Implies',
             '_impliesBool_',
             '_&Int_',
@@ -184,7 +212,7 @@ class KEVM(KProve, KRun):
             '_Set_',
             'typedArgs',
             '_up/Int__EVM-TYPES_Int_Int_Int',
-            '_:_WS',
+            '_:__EVM-TYPES_WordStack_Int_WordStack',
         ]
         for symb in paren_symbols:
             if symb in symbol_table:
@@ -309,6 +337,10 @@ class KEVM(KProve, KRun):
         return KApply('binRuntime', [c])
 
     @staticmethod
+    def init_bytecode(c: KInner) -> KApply:
+        return KApply('initBytecode', [c])
+
+    @staticmethod
     def hashed_location(compiler: str, base: KInner, offset: KInner, member_offset: int = 0) -> KApply:
         location = KApply(
             '#hashedLocation(_,_,_)_HASHED-LOCATIONS_Int_String_Int_IntList', [stringToken(compiler), base, offset]
@@ -421,7 +453,7 @@ class KEVM(KProve, KRun):
         branching_allowed: int | None = None,
         haskell_backend_args: Iterable[str] = (),
     ) -> list[CTerm]:
-        md_selector = 'k & ! node'
+        md_selector = 'k'
         args: list[str] = []
         haskell_args: list[str] = []
         if claim_labels:
@@ -437,7 +469,7 @@ class KEVM(KProve, KRun):
         if max_counterexamples:
             haskell_args += ['--max-counterexamples', f'{max_counterexamples}']
         if bug_report:
-            haskell_args += ['--bug-report', f'kevm-bug-{spec_file.name.rstrip("-spec.k")}']
+            haskell_args += ['--bug-report', f'kevm-bug-{spec_file.name.removesuffix("-spec.k")}']
         if haskell_backend_args:
             haskell_args += list(haskell_backend_args)
 
