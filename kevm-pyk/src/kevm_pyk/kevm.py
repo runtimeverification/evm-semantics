@@ -4,7 +4,7 @@ import logging
 from typing import TYPE_CHECKING
 
 from pyk.cterm import CTerm
-from pyk.kast.inner import KApply, KLabel, KSequence, KSort, KVariable, build_assoc
+from pyk.kast.inner import KApply, KLabel, KSequence, KSort, KVariable, build_assoc, build_cons
 from pyk.kast.manip import abstract_term_safely, bottom_up, flatten_label
 from pyk.kast.pretty import paren
 from pyk.kcfg.semantics import KCFGSemantics
@@ -129,7 +129,6 @@ class KEVMSemantics(KCFGSemantics):
                     'EVM.staticcall',
                     'EVM.create',
                     'EVM.create2',
-                    'FOUNDRY.foundry.call',
                     'EVM.end',
                     'EVM.return.exception',
                     'EVM.return.revert',
@@ -379,6 +378,14 @@ class KEVM(KProve, KRun):
         return KApply('abi_type_' + type, [value])
 
     @staticmethod
+    def abi_tuple(values: list[KInner]) -> KApply:
+        return KApply('abi_type_tuple', [KEVM.typed_args(values)])
+
+    @staticmethod
+    def abi_array(elem_type: KInner, length: KInner, elems: list[KInner]) -> KApply:
+        return KApply('abi_type_array', [elem_type, length, KEVM.typed_args(elems)])
+
+    @staticmethod
     def empty_typedargs() -> KApply:
         return KApply('.List{"_,__EVM-ABI_TypedArgs_TypedArg_TypedArgs"}_TypedArgs')
 
@@ -422,11 +429,9 @@ class KEVM(KProve, KRun):
         return res
 
     @staticmethod
-    def typed_args(args: list[KInner]) -> KApply:
-        res = KApply('.List{"_,__EVM-ABI_TypedArgs_TypedArg_TypedArgs"}_TypedArgs')
-        for i in reversed(args):
-            res = KApply('_,__EVM-ABI_TypedArgs_TypedArg_TypedArgs', [i, res])
-        return res
+    def typed_args(args: list[KInner]) -> KInner:
+        res = KEVM.empty_typedargs()
+        return build_cons(res, '_,__EVM-ABI_TypedArgs_TypedArg_TypedArgs', reversed(args))
 
     @staticmethod
     def accounts(accts: list[KInner]) -> KInner:
