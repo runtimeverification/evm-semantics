@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+import functools
 from distutils.dir_util import copy_tree
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, overload
 
 from pyk.kbuild.utils import sync_files
 from pyk.utils import run_process
@@ -9,23 +10,18 @@ from pyk.utils import run_process
 from .. import config
 from ..kompile import KompileTarget, kevm_kompile
 from . import api as kdist
-from .api import Target
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable, Mapping
+    from collections.abc import Callable, Iterable, Mapping
     from pathlib import Path
     from typing import Any
 
+    from .api import Builder
 
-class KEVMTarget(Target):
-    _kompile_args: dict[str, Any]
-    _deps: tuple[str, ...]
 
-    def __init__(self, kompile_args: Mapping[str, Any], *, deps: Iterable[str] | None = None):
-        self._kompile_args = dict(kompile_args)
-        self._deps = tuple(deps) if deps is not None else ()
-
-    def build(self, output_dir: Path, deps: dict[str, Path], args: dict[str, Any]) -> None:
+def _kevm_builder(kompile_args: Callable[[], Mapping[str, Any]]) -> Builder:
+    @functools.wraps(kompile_args)
+    def build(output_dir: Path, deps: dict[str, Path], args: dict[str, Any]) -> None:
         verbose = args.get('verbose', False)
         enable_llvm_debug = args.get('enable_llvm_debug', False)
 
@@ -34,41 +30,66 @@ class KEVMTarget(Target):
             enable_llvm_debug=enable_llvm_debug,
             verbose=verbose,
             plugin_dir=deps.get('evm-semantics.plugin'),
-            **self._kompile_args,
+            **kompile_args(),
         )
 
-    def deps(self) -> tuple[str, ...]:
-        return self._deps
+    return build
 
 
-__TARGETS__ = {
-    'llvm': KEVMTarget(
-        {
-            'target': KompileTarget.LLVM,
-            'main_file': config.EVM_SEMANTICS_DIR / 'driver.md',
-            'main_module': 'ETHEREUM-SIMULATION',
-            'syntax_module': 'ETHEREUM-SIMULATION',
-            'optimization': 2,
-        },
-        deps=('evm-semantics.plugin',),
-    ),
-    'haskell': KEVMTarget(
-        {
-            'target': KompileTarget.HASKELL,
-            'main_file': config.EVM_SEMANTICS_DIR / 'edsl.md',
-            'main_module': 'EDSL',
-            'syntax_module': 'EDSL',
-        },
-    ),
-    'haskell-standalone': KEVMTarget(
-        {
-            'target': KompileTarget.HASKELL,
-            'main_file': config.EVM_SEMANTICS_DIR / 'driver.md',
-            'main_module': 'ETHEREUM-SIMULATION',
-            'syntax_module': 'ETHEREUM-SIMULATION',
-        },
-    ),
-}
+@overload
+def kevm_target(kompile_args: Callable[[], Mapping[str, Any]]) -> None:
+    ...
+
+
+@overload
+def kevm_target(*, deps: Iterable[str] = ...) -> Callable[[Callable[[], Mapping[str, Any]]], None]:
+    ...
+
+
+def kevm_target(
+    kompile_args: Callable[[], Mapping[str, Any]] | None = None,
+    *,
+    deps: Iterable[str] = (),
+) -> Callable[[Callable[[], Mapping[str, Any]]], None] | None:
+    def decorator(kompile_args: Callable[[], Mapping[str, Any]]) -> None:
+        return kdist.target(deps=deps)(_kevm_builder(kompile_args))
+
+    if kompile_args is None:
+        return decorator
+
+    decorator(kompile_args)
+    return None
+
+
+@kevm_target(deps=('evm-semantics.plugin',))
+def llvm() -> Mapping[str, Any]:
+    return {
+        'target': KompileTarget.LLVM,
+        'main_file': config.EVM_SEMANTICS_DIR / 'driver.md',
+        'main_module': 'ETHEREUM-SIMULATION',
+        'syntax_module': 'ETHEREUM-SIMULATION',
+        'optimization': 2,
+    }
+
+
+@kevm_target
+def haskell() -> Mapping[str, Any]:
+    return {
+        'target': KompileTarget.HASKELL,
+        'main_file': config.EVM_SEMANTICS_DIR / 'edsl.md',
+        'main_module': 'EDSL',
+        'syntax_module': 'EDSL',
+    }
+
+
+@kevm_target
+def haskell_standalone() -> Mapping[str, Any]:
+    return {
+        'target': KompileTarget.HASKELL,
+        'main_file': config.EVM_SEMANTICS_DIR / 'driver.md',
+        'main_module': 'ETHEREUM-SIMULATION',
+        'syntax_module': 'ETHEREUM-SIMULATION',
+    }
 
 
 @kdist.target
