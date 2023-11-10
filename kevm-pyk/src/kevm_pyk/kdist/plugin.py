@@ -66,6 +66,9 @@ class PluginTarget(Target):
         copy_tree('./build/libff', str(output_dir / 'libff'))
         copy_tree('./build/libsecp256k1', str(output_dir / 'libsecp256k1'))
 
+    def deps(self) -> tuple[()]:
+        return ()
+
 
 __TARGETS__: Final = {
     'llvm': KEVMTarget(
