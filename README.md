@@ -184,19 +184,19 @@ You also need to get the blockchain plugin submodule and install it.
 
 ```sh
 git submodule update --init --recursive
-poetry -C kevm-pyk run kevm-dist --verbose build plugin
+poetry -C kevm-pyk run kevm-dist --verbose build evm-semantics.plugin
 ```
 
 To change the default compiler:
 
 ```sh
-CXX=clang++-14 poetry -C kevm-pyk run kevm-dist --verbose build plugin
+CXX=clang++-14 poetry -C kevm-pyk run kevm-dist --verbose build evm-semantics.plugin
 ```
 
 On Apple silicon:
 
 ```sh
-APPLE_SILICON=true poetry -C kevm-pyk run kevm-dist --verbose build plugin
+APPLE_SILICON=true poetry -C kevm-pyk run kevm-dist --verbose build evm-semantics.plugin
 ```
 
 #### K Definitions
@@ -207,10 +207,10 @@ Finally, you can build the semantics.
 poetry -C kevm-pyk run kevm-dist --verbose build -j4
 ```
 
-You can build specific targets using options `llvm`, `haskell`, `haskell-standalone`, or `plugin` e.g.:
+You can build specific targets using options `evm-semantics.{llvm,haskell,haskell-standalone,plugin}`, e.g.:
 
 ```sh
-poetry -C kevm-pyk run kevm-dist build -j2 llvm haskell
+poetry -C kevm-pyk run kevm-dist build -j2 evm-semantics.llvm evm-semantics.haskell
 ```
 
 Targets can be cleaned with
@@ -259,7 +259,7 @@ poetry -C kevm-pyk run kevm-pyk run tests/ethereum-tests/LegacyTests/Constantino
 To enable the debug symbols for the llvm backend, build using this command:
 
 ```sh
-poetry -C kevm-pyk run kevm-dist build llvm --enable-llvm-debug
+poetry -C kevm-pyk run kevm-dist build evm-semantics.llvm --enable-llvm-debug
 ```
 
 To debug a conformance test, add the `--debugger` flag to the command:

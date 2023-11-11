@@ -118,7 +118,7 @@ class Target(NamedTuple):
         definition_subdir = 'kompiled' if not self.use_booster else 'kompiled-booster'
         definition_dir = output_dir / definition_subdir
         target = KompileTarget.HASKELL if not self.use_booster else KompileTarget.HASKELL_BOOSTER
-        ccopts = lib_ccopts(kdist.get('plugin')) if self.use_booster else []
+        ccopts = lib_ccopts(kdist.get('evm-semantics.plugin')) if self.use_booster else []
         return kevm_kompile(
             output_dir=definition_dir,
             target=target,
