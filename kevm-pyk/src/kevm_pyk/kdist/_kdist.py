@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import concurrent.futures
+import json
 import logging
 import os
 import re
@@ -78,6 +79,10 @@ class TargetId(NamedTuple):
     @property
     def dir(self) -> Path:
         return _DIST_DIR / self.plugin / self.target
+
+    @property
+    def manifest_file(self) -> Path:
+        return _DIST_DIR / self.plugin / f'{self.target}.json'
 
 
 class TargetCache:
@@ -276,11 +281,14 @@ def _build_target(
     output_dir = target_id.dir
 
     with _lock(target_id):
-        if not force and output_dir.exists():
+        manifest = _manifest(target_id, args)
+
+        if not force and _up_to_date(target_id, manifest):
             return output_dir
 
         shutil.rmtree(output_dir, ignore_errors=True)
         output_dir.mkdir(parents=True)
+        target_id.manifest_file.unlink(missing_ok=True)
 
         target = _CACHE.resolve(target_id)
         deps = {target: which(target) for target in target.deps()}
@@ -295,7 +303,25 @@ def _build_target(
                 shutil.rmtree(output_dir, ignore_errors=True)
                 raise RuntimeError(f'Build failed: {target_id.fqn}') from err
 
+        target_id.manifest_file.write_text(json.dumps(manifest))
         return output_dir
+
+
+def _manifest(target_id: TargetId, args: dict[str, Any]) -> dict[str, Any]:
+    target = _CACHE.resolve(target_id)
+    res = target.manifest()
+    res['args'] = dict(args)
+    res['deps'] = {dep_fqn: utils.timestamp(_resolve(dep_fqn).manifest_file) for dep_fqn in target.deps()}
+    return res
+
+
+def _up_to_date(target_id: TargetId, new_manifest: dict[str, Any]) -> bool:
+    if not target_id.dir.exists():
+        return False
+    if not target_id.manifest_file.exists():
+        return False
+    old_manifest = json.loads(target_id.manifest_file.read_text())
+    return new_manifest == old_manifest
 
 
 def _resolve(target_fqn: str) -> TargetId:

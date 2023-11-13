@@ -3,7 +3,7 @@ from __future__ import annotations
 from distutils.dir_util import copy_tree
 from typing import TYPE_CHECKING
 
-from pyk.kbuild.utils import sync_files
+from pyk.kbuild.utils import k_version, sync_files
 from pyk.utils import run_process
 
 from .. import config
@@ -41,6 +41,12 @@ class KEVMTarget(Target):
     def deps(self) -> tuple[str, ...]:
         return ('evm-semantics.plugin',)
 
+    def source(self) -> tuple[Path, ...]:
+        return (config.EVM_SEMANTICS_DIR,) + tuple(config.MODULE_DIR.rglob('*.py'))
+
+    def context(self) -> dict[str, str]:
+        return {'k-version': k_version().text}
+
 
 class PluginTarget(Target):
     def build(self, output_dir: Path, deps: dict[str, Any], args: dict[str, Any]) -> None:
@@ -67,6 +73,9 @@ class PluginTarget(Target):
         copy_tree('./build/libcryptopp', str(output_dir / 'libcryptopp'))
         copy_tree('./build/libff', str(output_dir / 'libff'))
         copy_tree('./build/libsecp256k1', str(output_dir / 'libsecp256k1'))
+
+    def source(self) -> tuple[Path]:
+        return (config.PLUGIN_DIR,)
 
 
 __TARGETS__: Final = {
