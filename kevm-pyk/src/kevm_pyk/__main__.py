@@ -131,7 +131,7 @@ def exec_kompile_spec(
     ccopts = list(ccopts) + lib_ccopts(kdist.get('evm-semantics.plugin'), debug_build=debug_build)
 
     kevm_kompile(
-        KompileTarget.HASKELL,
+        target,
         output_dir=output_dir,
         main_file=main_file,
         main_module=main_module,
