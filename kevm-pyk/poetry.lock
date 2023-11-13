@@ -682,13 +682,13 @@ flake8 = ">=5.0.0"
 
 [[package]]
 name = "platformdirs"
-version = "3.11.0"
+version = "4.0.0"
 description = "A small Python package for determining appropriate platform-specific dirs, e.g. a \"user data dir\"."
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "platformdirs-3.11.0-py3-none-any.whl", hash = "sha256:e9d171d00af68be50e9202731309c4e658fd8bc76f55c11c7dd760d023bda68e"},
-    {file = "platformdirs-3.11.0.tar.gz", hash = "sha256:cf8ee52a3afdb965072dcc652433e0c7e3e40cf5ea1477cd4b3b1d2eb75495b3"},
+    {file = "platformdirs-4.0.0-py3-none-any.whl", hash = "sha256:118c954d7e949b35437270383a3f2531e99dd93cf7ce4dc8340d3356d30f173b"},
+    {file = "platformdirs-4.0.0.tar.gz", hash = "sha256:cb633b2bcf10c51af60beb0ab06d2f1d69064b43abf4c185ca6b28865f3f9731"},
 ]
 
 [package.extras]
@@ -813,7 +813,7 @@ plugins = ["importlib-metadata"]
 
 [[package]]
 name = "pyk"
-version = "0.1.496"
+version = "0.1.497"
 description = ""
 optional = false
 python-versions = "^3.10"
@@ -833,8 +833,8 @@ tomli = "^2.0.1"
 [package.source]
 type = "git"
 url = "https://github.com/runtimeverification/pyk.git"
-reference = "v0.1.496"
-resolved_reference = "dd40fd825827736036b98c534acc7c953d117a0f"
+reference = "v0.1.497"
+resolved_reference = "f28b2f48f4512ca0ba0338fe584442f172f15222"
 
 [[package]]
 name = "pyperclip"
@@ -930,13 +930,13 @@ pytest = ">=5.0.0"
 
 [[package]]
 name = "pytest-xdist"
-version = "3.3.1"
+version = "3.4.0"
 description = "pytest xdist plugin for distributed testing, most importantly across multiple CPUs"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "pytest-xdist-3.3.1.tar.gz", hash = "sha256:d5ee0520eb1b7bcca50a60a518ab7a7707992812c578198f8b44fdfac78e8c93"},
-    {file = "pytest_xdist-3.3.1-py3-none-any.whl", hash = "sha256:ff9daa7793569e6a68544850fd3927cd257cc03a7ef76c95e86915355e82b5f2"},
+    {file = "pytest-xdist-3.4.0.tar.gz", hash = "sha256:3a94a931dd9e268e0b871a877d09fe2efb6175c2c23d60d56a6001359002b832"},
+    {file = "pytest_xdist-3.4.0-py3-none-any.whl", hash = "sha256:e513118bf787677a427e025606f55e95937565e06dfaac8d87f55301e57ae607"},
 ]
 
 [package.dependencies]
@@ -1098,4 +1098,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "4f34535207da0df0e867b4a6ca53bb421c16a6ef869c16b40630b5eee5fc0b1f"
+content-hash = "e849f8a99b0173379344fec48f1fe397da31de1669683ff8560f1ac3ab2c05da"
