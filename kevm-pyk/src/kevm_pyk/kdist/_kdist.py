@@ -133,35 +133,9 @@ def targets() -> list[str]:
     return [TargetId(plugin, target).fqn for plugin, targets in plugins().items() for target in targets]
 
 
-def resolve(target_fqn: str) -> TargetId:
-    segments = target_fqn.split('.')
-    if len(segments) != 2:
-        raise ValueError(f'Expected fully qualified target name, got: {target_fqn!r}')
-
-    plugin, target = segments
-
-    if not _valid_id(plugin):
-        raise ValueError(f'Invalid plugin identifier: {plugin!r}')
-
-    if not _valid_id(target):
-        raise ValueError(f'Invalid target identifier: {target!r}')
-
-    _plugins = plugins()
-
-    try:
-        targets = _plugins[plugin]
-    except KeyError:
-        raise ValueError(f'Undefined plugin: {plugin}') from None
-
-    if not target in targets:
-        raise ValueError(f'Plugin {plugin} does not define target: {target}')
-
-    return TargetId(plugin, target)
-
-
 def which(target_fqn: str | None = None) -> Path:
     if target_fqn:
-        return resolve(target_fqn).dir
+        return _resolve(target_fqn).dir
     return _DIST_DIR
 
 
@@ -230,21 +204,6 @@ def build(
                 pending.pop(future)
 
 
-def _resolve_deps(target_fqns: Iterable[str]) -> dict[TargetId, list[TargetId]]:
-    res: dict[TargetId, list[TargetId]] = {}
-    pending = [resolve(target) for target in target_fqns]
-    while pending:
-        target_id = pending.pop()
-        if target_id in res:
-            continue
-        plugin, target = target_id
-        _target = _PLUGINS[plugin][target]
-        deps = [resolve(target_id) for target_id in _target.deps()]
-        res[target_id] = deps
-        pending += deps
-    return res
-
-
 def _build_target(
     target_id: TargetId,
     args: dict[str, Any],
@@ -260,15 +219,15 @@ def _build_target(
         shutil.rmtree(output_dir, ignore_errors=True)
         output_dir.mkdir(parents=True)
 
-        _target = _PLUGINS[target_id.plugin][target_id.target]
-        deps = {target: which(target) for target in _target.deps()}
+        target = _resolve_id(target_id)
+        deps = {target: which(target) for target in target.deps()}
 
         with (
             _build_dir(target_id) as build_dir,
             _cwd(build_dir),
         ):
             try:
-                _target.build(output_dir, deps=deps, args=args)
+                target.build(output_dir, deps=deps, args=args)
             except BaseException as err:
                 shutil.rmtree(output_dir, ignore_errors=True)
                 raise RuntimeError(f'Build failed: {target_id.fqn}') from err
@@ -276,8 +235,53 @@ def _build_target(
         return output_dir
 
 
-def _lock(target: TargetId) -> FileLock:
-    lock_file = target.dir.with_suffix('.lock')
+def _resolve(target_fqn: str) -> TargetId:
+    segments = target_fqn.split('.')
+    if len(segments) != 2:
+        raise ValueError(f'Expected fully qualified target name, got: {target_fqn!r}')
+
+    plugin, target = segments
+
+    if not _valid_id(plugin):
+        raise ValueError(f'Invalid plugin identifier: {plugin!r}')
+
+    if not _valid_id(target):
+        raise ValueError(f'Invalid target identifier: {target!r}')
+
+    _plugins = plugins()
+
+    try:
+        targets = _plugins[plugin]
+    except KeyError:
+        raise ValueError(f'Undefined plugin: {plugin}') from None
+
+    if not target in targets:
+        raise ValueError(f'Plugin {plugin} does not define target: {target}')
+
+    return TargetId(plugin, target)
+
+
+def _resolve_id(target_id: TargetId) -> Target:
+    plugin, target = target_id
+    return _PLUGINS[plugin][target]
+
+
+def _resolve_deps(target_fqns: Iterable[str]) -> dict[TargetId, list[TargetId]]:
+    res: dict[TargetId, list[TargetId]] = {}
+    pending = [_resolve(target_fqn) for target_fqn in target_fqns]
+    while pending:
+        target_id = pending.pop()
+        if target_id in res:
+            continue
+        target = _resolve_id(target_id)
+        deps = [_resolve(target_fqn) for target_fqn in target.deps()]
+        res[target_id] = deps
+        pending += deps
+    return res
+
+
+def _lock(target_id: TargetId) -> FileLock:
+    lock_file = target_id.dir.with_suffix('.lock')
     lock_file.parent.mkdir(parents=True, exist_ok=True)
     return SoftFileLock(lock_file)
 
