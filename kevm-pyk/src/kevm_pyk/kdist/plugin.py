@@ -30,9 +30,7 @@ class KEVMTarget(Target):
         debug_build = args.get('debug_build', False)
         ccopts = args.get('ccopts', [])
 
-        plugin_dir = deps.get('evm-semantics.plugin')
-        if plugin_dir is None:
-            raise ValueError(f'Cannot build target without dependency evm-semantics.plugin already built: {output_dir}')
+        plugin_dir = deps['evm-semantics.plugin']
         ccopts = ccopts + lib_ccopts(plugin_dir, debug_build=debug_build)
         kevm_kompile(
             output_dir=output_dir,
@@ -91,6 +89,7 @@ __TARGETS__: Final = {
             'main_module': 'EDSL',
             'syntax_module': 'EDSL',
         },
+        deps=('evm-semantics.plugin',),
     ),
     'haskell-standalone': KEVMTarget(
         {
@@ -99,6 +98,7 @@ __TARGETS__: Final = {
             'main_module': 'ETHEREUM-SIMULATION',
             'syntax_module': 'ETHEREUM-SIMULATION',
         },
+        deps=('evm-semantics.plugin',),
     ),
     'plugin': PluginTarget(),
 }
