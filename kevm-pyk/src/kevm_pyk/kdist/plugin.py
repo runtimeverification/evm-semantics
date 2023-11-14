@@ -7,7 +7,7 @@ from pyk.kbuild.utils import sync_files
 from pyk.utils import run_process
 
 from .. import config
-from ..kompile import KompileTarget, kevm_kompile, lib_ccopts
+from ..kompile import KompileTarget, kevm_kompile
 from .api import Target
 
 if TYPE_CHECKING:
@@ -30,13 +30,12 @@ class KEVMTarget(Target):
         debug_build = args.get('debug_build', False)
         ccopts = args.get('ccopts', [])
 
-        plugin_dir = deps['evm-semantics.plugin']
-        ccopts = ccopts + lib_ccopts(plugin_dir, debug_build=debug_build)
         kevm_kompile(
             output_dir=output_dir,
             enable_llvm_debug=enable_llvm_debug,
             verbose=verbose,
             ccopts=ccopts,
+            debug_build=debug_build,
             **self._kompile_args,
         )
 

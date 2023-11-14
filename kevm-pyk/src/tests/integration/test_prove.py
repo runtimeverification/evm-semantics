@@ -9,10 +9,10 @@ import pytest
 from pyk.cterm import CTerm
 from pyk.proof.reachability import APRProof
 
-from kevm_pyk import config, kdist
+from kevm_pyk import config
 from kevm_pyk.__main__ import exec_prove
 from kevm_pyk.kevm import KEVM
-from kevm_pyk.kompile import KompileTarget, kevm_kompile, lib_ccopts
+from kevm_pyk.kompile import KompileTarget, kevm_kompile
 
 from ..utils import REPO_ROOT
 
@@ -118,15 +118,12 @@ class Target(NamedTuple):
         definition_subdir = 'kompiled' if not self.use_booster else 'kompiled-booster'
         definition_dir = output_dir / definition_subdir
         target = KompileTarget.HASKELL if not self.use_booster else KompileTarget.HASKELL_BOOSTER
-        ccopts = lib_ccopts(kdist.get('evm-semantics.plugin')) if self.use_booster else []
         return kevm_kompile(
             output_dir=definition_dir,
             target=target,
             main_file=self.main_file,
             main_module=self.main_module_name,
             syntax_module=self.main_module_name,
-            includes=[],
-            ccopts=ccopts,
             debug=True,
         )
 

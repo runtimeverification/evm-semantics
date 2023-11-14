@@ -33,7 +33,7 @@ from . import VERSION, config, kdist
 from .cli import KEVMCLIArgs, node_id_like
 from .gst_to_kore import SORT_ETHEREUM_SIMULATION, gst_to_kore, kore_pgm_to_kore
 from .kevm import KEVM, KEVMSemantics, kevm_node_printer
-from .kompile import KompileTarget, kevm_kompile, lib_ccopts
+from .kompile import KompileTarget, kevm_kompile
 from .utils import (
     claim_dependency_dict,
     ensure_ksequence_on_k_cell,
@@ -127,8 +127,6 @@ def exec_kompile_spec(
         optimization = 3
     if debug_build:
         optimization = 0
-
-    ccopts = list(ccopts) + lib_ccopts(kdist.get('evm-semantics.plugin'), debug_build=debug_build)
 
     kevm_kompile(
         target,
