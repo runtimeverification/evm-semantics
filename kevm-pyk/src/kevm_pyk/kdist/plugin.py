@@ -4,7 +4,7 @@ from distutils.dir_util import copy_tree
 from typing import TYPE_CHECKING
 
 from pyk.kbuild.utils import sync_files
-from pyk.utils import run_process
+from pyk.utils import run_process, unique
 
 from .. import config
 from ..kompile import KompileTarget, kevm_kompile
@@ -40,7 +40,7 @@ class KEVMTarget(Target):
         )
 
     def deps(self) -> tuple[str, ...]:
-        return self._deps
+        return tuple(unique(['evm-semantics.plugin'] + list(self._deps)))
 
 
 class PluginTarget(Target):
