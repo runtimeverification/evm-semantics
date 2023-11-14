@@ -62,7 +62,7 @@ def kevm_kompile(
     verbose: bool = False,
 ) -> Path:
     plugin_dir = kdist.get('evm-semantics.plugin')
-    ccopts = list(ccopts) + lib_ccopts(plugin_dir, debug_build=debug_build)
+    ccopts = list(ccopts) + _lib_ccopts(plugin_dir, debug_build=debug_build)
     return run_kompile(
         target,
         output_dir,
@@ -207,7 +207,7 @@ def run_kompile(
         raise
 
 
-def lib_ccopts(plugin_dir: Path, debug_build: bool = False) -> list[str]:
+def _lib_ccopts(plugin_dir: Path, debug_build: bool = False) -> list[str]:
     kernel = sys.platform
 
     ccopts = ['-std=c++17']
