@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 from pyk.kbuild.utils import sync_files
 from pyk.utils import run_process
 
-from .. import config, kdist
+from .. import config
 from ..kompile import KompileTarget, kevm_kompile, lib_ccopts
 from .api import Target
 
@@ -30,7 +30,10 @@ class KEVMTarget(Target):
         debug_build = args.get('debug_build', False)
         ccopts = args.get('ccopts', [])
 
-        ccopts = ccopts + lib_ccopts(kdist.get('evm-semantics.plugin'), debug_build=debug_build)
+        plugin_dir = deps.get('evm-semantics.plugin')
+        if plugin_dir is None:
+            raise ValueError(f'Cannot build target without dependency evm-semantics.plugin already built: {output_dir}')
+        ccopts = ccopts + lib_ccopts(plugin_dir, debug_build=debug_build)
         kevm_kompile(
             output_dir=output_dir,
             enable_llvm_debug=enable_llvm_debug,
