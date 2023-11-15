@@ -4,25 +4,23 @@ from distutils.dir_util import copy_tree
 from typing import TYPE_CHECKING
 
 from pyk.kbuild.utils import sync_files
-from pyk.utils import run_process, unique
+from pyk.utils import run_process
 
 from .. import config
 from ..kompile import KompileTarget, kevm_kompile
 from .api import Target
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable, Mapping
+    from collections.abc import Mapping
     from pathlib import Path
     from typing import Any, Final
 
 
 class KEVMTarget(Target):
     _kompile_args: dict[str, Any]
-    _deps: tuple[str, ...]
 
-    def __init__(self, kompile_args: Mapping[str, Any], *, deps: Iterable[str] | None = None):
+    def __init__(self, kompile_args: Mapping[str, Any]):
         self._kompile_args = dict(kompile_args)
-        self._deps = tuple(deps) if deps is not None else ()
 
     def build(self, output_dir: Path, deps: dict[str, Path], args: dict[str, Any]) -> None:
         verbose = args.get('verbose', False)
@@ -40,7 +38,7 @@ class KEVMTarget(Target):
         )
 
     def deps(self) -> tuple[str, ...]:
-        return tuple(unique(['evm-semantics.plugin'] + list(self._deps)))
+        return ('evm-semantics.plugin',)
 
 
 class PluginTarget(Target):
@@ -79,7 +77,6 @@ __TARGETS__: Final = {
             'syntax_module': 'ETHEREUM-SIMULATION',
             'optimization': 2,
         },
-        deps=('evm-semantics.plugin',),
     ),
     'haskell': KEVMTarget(
         {
@@ -88,7 +85,6 @@ __TARGETS__: Final = {
             'main_module': 'EDSL',
             'syntax_module': 'EDSL',
         },
-        deps=('evm-semantics.plugin',),
     ),
     'haskell-standalone': KEVMTarget(
         {
@@ -97,7 +93,6 @@ __TARGETS__: Final = {
             'main_module': 'ETHEREUM-SIMULATION',
             'syntax_module': 'ETHEREUM-SIMULATION',
         },
-        deps=('evm-semantics.plugin',),
     ),
     'plugin': PluginTarget(),
 }
