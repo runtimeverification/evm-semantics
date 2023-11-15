@@ -4,6 +4,7 @@ requires "gas.md"
 module VERIFICATION
     imports LEMMAS
     imports INFINITE-GAS
+    imports EVM
 
     rule N xorInt maxUInt256 => maxUInt256 -Int N
     requires #rangeUInt(256, N)

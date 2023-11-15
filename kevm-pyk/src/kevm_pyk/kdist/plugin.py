@@ -11,33 +11,34 @@ from ..kompile import KompileTarget, kevm_kompile
 from .api import Target
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable, Mapping
+    from collections.abc import Mapping
     from pathlib import Path
     from typing import Any, Final
 
 
 class KEVMTarget(Target):
     _kompile_args: dict[str, Any]
-    _deps: tuple[str, ...]
 
-    def __init__(self, kompile_args: Mapping[str, Any], *, deps: Iterable[str] | None = None):
+    def __init__(self, kompile_args: Mapping[str, Any]):
         self._kompile_args = dict(kompile_args)
-        self._deps = tuple(deps) if deps is not None else ()
 
     def build(self, output_dir: Path, deps: dict[str, Path], args: dict[str, Any]) -> None:
         verbose = args.get('verbose', False)
         enable_llvm_debug = args.get('enable_llvm_debug', False)
+        debug_build = args.get('debug_build', False)
+        ccopts = args.get('ccopts', [])
 
         kevm_kompile(
             output_dir=output_dir,
             enable_llvm_debug=enable_llvm_debug,
             verbose=verbose,
-            plugin_dir=deps.get('evm-semantics.plugin'),
+            ccopts=ccopts,
+            debug_build=debug_build,
             **self._kompile_args,
         )
 
     def deps(self) -> tuple[str, ...]:
-        return self._deps
+        return ('evm-semantics.plugin',)
 
 
 class PluginTarget(Target):
@@ -76,7 +77,6 @@ __TARGETS__: Final = {
             'syntax_module': 'ETHEREUM-SIMULATION',
             'optimization': 2,
         },
-        deps=('evm-semantics.plugin',),
     ),
     'haskell': KEVMTarget(
         {
