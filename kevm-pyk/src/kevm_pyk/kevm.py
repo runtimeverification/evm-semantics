@@ -431,7 +431,7 @@ class KEVM(KProve, KRun):
     @staticmethod
     def typed_args(args: list[KInner]) -> KInner:
         res = KEVM.empty_typedargs()
-        return build_cons(res, '_,__EVM-ABI_TypedArgs_TypedArg_TypedArgs', reversed(args))
+        return build_cons(res, '_,__EVM-ABI_TypedArgs_TypedArg_TypedArgs', args)
 
     @staticmethod
     def accounts(accts: list[KInner]) -> KInner:
