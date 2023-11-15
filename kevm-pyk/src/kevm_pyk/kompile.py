@@ -179,7 +179,7 @@ def run_kompile(
                 kompile_llvm = LLVMKompile(
                     base_args=base_args_llvm, ccopts=ccopts, opt_level=optimization, llvm_kompile_type=LLVMKompileType.C
                 )
-                kompile_haskell = HaskellKompile(base_args=base_args)
+                kompile_haskell = HaskellKompile(base_args=base_args, haskell_binary=haskell_binary)
 
                 def _kompile_llvm() -> None:
                     kompile_llvm(output_dir=llvm_library, debug=debug, verbose=verbose)
