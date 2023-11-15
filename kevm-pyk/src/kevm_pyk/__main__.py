@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import atexit
 import contextlib
 import graphlib
 import json
@@ -208,7 +209,7 @@ def make_process_initializer(
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
     trace_rewrites: bool = False,
-) -> Callable[[], Any]:
+) -> Callable[[], contextlib._GeneratorContextManager[KCFGExplore]]:
     @contextlib.contextmanager
     def process_initializer() -> Iterator[KCFGExplore]:
         with legacy_explore(
@@ -229,11 +230,23 @@ def make_process_initializer(
 
 
 @contextlib.contextmanager
-def wrap_process_pool(workers: int, initializer: Callable[[], Any]) -> Iterator[ZeroProcessPool | ProcessPool]:
+def wrap_process_pool(
+    workers: int, initializer: Callable[[], contextlib._GeneratorContextManager[KCFGExplore]]
+) -> Iterator[ZeroProcessPool | ProcessPool]:
     if workers <= 1:
-        yield ZeroProcessPool()
+        with initializer() as _:
+            yield ZeroProcessPool()
     else:
-        with ProcessPool(ncpus=workers, initializer=initializer) as pp:
+
+        def my_initializer() -> None:
+            kcfgexplore = initializer()
+
+            def cleanup() -> None:
+                kcfgexplore.__exit__(None, None, None)
+
+            atexit.register(cleanup)
+
+        with ProcessPool(ncpus=workers, initializer=my_initializer) as pp:
             yield pp
 
 
@@ -376,7 +389,7 @@ def exec_prove(
     all_claim_jobs_by_label = {c.claim.label: c for c in all_claim_jobs}
     claims_graph = claim_dependency_dict(all_claims, spec_module_name=spec_module_name)
 
-    def _init_and_run_proof(claim_job: KClaimJob) -> tuple[bool, list[str] | None]:
+    def _init_and_run_proof(kcfg_explore: KCFGExplore, claim_job: KClaimJob) -> tuple[bool, list[str] | None]:
         claim = claim_job.claim
         up_to_date = claim_job.up_to_date(digest_file)
         if up_to_date:
@@ -384,9 +397,6 @@ def exec_prove(
         else:
             _LOGGER.info(f'Claim {claim.label} reinitialized because it is out of date.')
         claim_job.update_digest(digest_file)
-        global global_kcfg_explore
-        assert global_kcfg_explore is not None
-        kcfg_explore = global_kcfg_explore
         proof_problem: Proof
         if is_functional(claim):
             if (
@@ -458,6 +468,11 @@ def exec_prove(
 
         return passed, failure_log
 
+    def _init_and_run_proof0(claim_job: KClaimJob) -> tuple[bool, list[str] | None]:
+        global global_kcfg_explore
+        assert global_kcfg_explore is not None
+        return _init_and_run_proof(kcfg_explore=global_kcfg_explore, claim_job=claim_job)
+
     topological_sorter = graphlib.TopologicalSorter(claims_graph)
     topological_sorter.prepare()
     with wrap_process_pool(
@@ -479,7 +494,7 @@ def exec_prove(
             ready = topological_sorter.get_ready()
             _LOGGER.info(f'Discharging proof obligations: {ready}')
             curr_claim_list = [all_claim_jobs_by_label[label] for label in ready]
-            results: list[tuple[bool, list[str] | None]] = process_pool.map(_init_and_run_proof, curr_claim_list)
+            results: list[tuple[bool, list[str] | None]] = process_pool.map(_init_and_run_proof0, curr_claim_list)
             for label in ready:
                 topological_sorter.done(label)
             selected_results.extend(results)
