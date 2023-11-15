@@ -4,6 +4,7 @@ requires "lemmas/lemmas.k"
 module VERIFICATION
     imports INFINITE-GAS
     imports LEMMAS
+    imports EVM
 endmodule
 
 module INFINITE-GAS-SPEC

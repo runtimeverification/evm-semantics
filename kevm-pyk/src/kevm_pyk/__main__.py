@@ -87,7 +87,7 @@ def exec_version(**kwargs: Any) -> None:
     print(f'KEVM Version: {VERSION}')
 
 
-def exec_kompile(
+def exec_kompile_spec(
     output_dir: Path | None,
     main_file: Path,
     emit_json: bool,
@@ -109,7 +109,12 @@ def exec_kompile(
     **kwargs: Any,
 ) -> None:
     if target is None:
-        target = KompileTarget.LLVM
+        target = KompileTarget.HASKELL_BOOSTER
+
+    if target not in [KompileTarget.HASKELL, KompileTarget.HASKELL_BOOSTER, KompileTarget.MAUDE]:
+        raise ValueError(
+            f'Can only call kevm kompile-spec with --target [haskell,haskell-booster,maude], got: {target.value}'
+        )
 
     output_dir = output_dir or Path()
 
@@ -671,17 +676,17 @@ def _create_argument_parser() -> ArgumentParser:
 
     command_parser.add_parser('version', help='Print KEVM version and exit.', parents=[kevm_cli_args.logging_args])
 
-    kevm_kompile_args = command_parser.add_parser(
-        'kompile',
+    kevm_kompile_spec_args = command_parser.add_parser(
+        'kompile-spec',
         help='Kompile KEVM specification.',
         parents=[kevm_cli_args.logging_args, kevm_cli_args.k_args, kevm_cli_args.kompile_args],
     )
-    kevm_kompile_args.add_argument('main_file', type=file_path, help='Path to file with main module.')
-    kevm_kompile_args.add_argument('--target', type=KompileTarget, help='[llvm|haskell|haskell-booster]')
-    kevm_kompile_args.add_argument(
+    kevm_kompile_spec_args.add_argument('main_file', type=file_path, help='Path to file with main module.')
+    kevm_kompile_spec_args.add_argument('--target', type=KompileTarget, help='[haskell|haskell-booster|maude]')
+    kevm_kompile_spec_args.add_argument(
         '-o', '--output-definition', type=Path, dest='output_dir', help='Path to write kompiled definition to.'
     )
-    kevm_kompile_args.add_argument(
+    kevm_kompile_spec_args.add_argument(
         '--debug-build', dest='debug_build', default=False, help='Enable debug symbols in LLVM builds.'
     )
 
