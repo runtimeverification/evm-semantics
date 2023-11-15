@@ -28,7 +28,6 @@ HOOK_NAMESPACES: Final = ('JSON', 'KRYPTO')
 class KompileTarget(Enum):
     LLVM = 'llvm'
     HASKELL = 'haskell'
-    HASKELL_BOOSTER = 'haskell-booster'
     MAUDE = 'maude'
 
     @property
@@ -36,7 +35,7 @@ class KompileTarget(Enum):
         match self:
             case self.LLVM:
                 return 'k & ! symbolic'
-            case self.HASKELL | self.HASKELL_BOOSTER | self.MAUDE:
+            case self.HASKELL | self.MAUDE:
                 return 'k & ! concrete'
             case _:
                 raise AssertionError()
@@ -135,13 +134,6 @@ def run_kompile(
                 )
                 return kompile(output_dir=output_dir, debug=debug, verbose=verbose)
 
-            case KompileTarget.HASKELL:
-                kompile = HaskellKompile(
-                    base_args=base_args,
-                    haskell_binary=haskell_binary,
-                )
-                return kompile(output_dir=output_dir, debug=debug, verbose=verbose)
-
             case KompileTarget.MAUDE:
                 kompile_maude = MaudeKompile(
                     base_args=base_args,
@@ -165,7 +157,7 @@ def run_kompile(
 
                 return output_dir
 
-            case KompileTarget.HASKELL_BOOSTER:
+            case KompileTarget.HASKELL:
                 base_args_llvm = KompileArgs(
                     main_file=main_file,
                     main_module=main_module,

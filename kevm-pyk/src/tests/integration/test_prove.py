@@ -117,10 +117,9 @@ class Target(NamedTuple):
     def __call__(self, output_dir: Path) -> Path:
         definition_subdir = 'kompiled' if not self.use_booster else 'kompiled-booster'
         definition_dir = output_dir / definition_subdir
-        target = KompileTarget.HASKELL if not self.use_booster else KompileTarget.HASKELL_BOOSTER
         return kevm_kompile(
             output_dir=definition_dir,
-            target=target,
+            target=KompileTarget.HASKELL,
             main_file=self.main_file,
             main_module=self.main_module_name,
             syntax_module=self.main_module_name,

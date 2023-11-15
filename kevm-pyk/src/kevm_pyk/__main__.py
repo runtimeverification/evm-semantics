@@ -109,12 +109,10 @@ def exec_kompile_spec(
     **kwargs: Any,
 ) -> None:
     if target is None:
-        target = KompileTarget.HASKELL_BOOSTER
+        target = KompileTarget.HASKELL
 
-    if target not in [KompileTarget.HASKELL, KompileTarget.HASKELL_BOOSTER, KompileTarget.MAUDE]:
-        raise ValueError(
-            f'Can only call kevm kompile-spec with --target [haskell,haskell-booster,maude], got: {target.value}'
-        )
+    if target not in [KompileTarget.HASKELL, KompileTarget.MAUDE]:
+        raise ValueError(f'Can only call kevm kompile-spec with --target [haskell,maude], got: {target.value}')
 
     output_dir = output_dir or Path()
 
@@ -682,7 +680,7 @@ def _create_argument_parser() -> ArgumentParser:
         parents=[kevm_cli_args.logging_args, kevm_cli_args.k_args, kevm_cli_args.kompile_args],
     )
     kevm_kompile_spec_args.add_argument('main_file', type=file_path, help='Path to file with main module.')
-    kevm_kompile_spec_args.add_argument('--target', type=KompileTarget, help='[haskell|haskell-booster|maude]')
+    kevm_kompile_spec_args.add_argument('--target', type=KompileTarget, help='[haskell|maude]')
     kevm_kompile_spec_args.add_argument(
         '-o', '--output-definition', type=Path, dest='output_dir', help='Path to write kompiled definition to.'
     )
