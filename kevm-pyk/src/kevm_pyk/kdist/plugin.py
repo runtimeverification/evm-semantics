@@ -33,6 +33,7 @@ class KEVMTarget(Target):
             enable_llvm_debug=enable_llvm_debug,
             verbose=verbose,
             ccopts=ccopts,
+            plugin_dir=deps['evm-semantics.plugin'],
             debug_build=debug_build,
             **self._kompile_args,
         )
