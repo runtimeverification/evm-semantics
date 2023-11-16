@@ -4,7 +4,7 @@ import logging
 from typing import TYPE_CHECKING
 
 from pyk.cterm import CTerm
-from pyk.kast.inner import KApply, KLabel, KSequence, KSort, KVariable, build_assoc, build_cons
+from pyk.kast.inner import KApply, KLabel, KSequence, KSort, KVariable, build_assoc
 from pyk.kast.manip import abstract_term_safely, bottom_up, flatten_label
 from pyk.kast.pretty import paren
 from pyk.kcfg.semantics import KCFGSemantics
@@ -350,38 +350,6 @@ class KEVM(KProve, KRun):
         return KApply('#lookup(_,_)_EVM-TYPES_Int_Map_Int', [map, key])
 
     @staticmethod
-    def abi_calldata(name: str, args: list[KInner]) -> KApply:
-        return KApply('#abiCallData(_,_)_EVM-ABI_Bytes_String_TypedArgs', [stringToken(name), KEVM.typed_args(args)])
-
-    @staticmethod
-    def abi_selector(name: str) -> KApply:
-        return KApply('abi_selector', [stringToken(name)])
-
-    @staticmethod
-    def abi_address(a: KInner) -> KApply:
-        return KApply('#address(_)_EVM-ABI_TypedArg_Int', [a])
-
-    @staticmethod
-    def abi_bool(b: KInner) -> KApply:
-        return KApply('#bool(_)_EVM-ABI_TypedArg_Int', [b])
-
-    @staticmethod
-    def abi_type(type: str, value: KInner) -> KApply:
-        return KApply('abi_type_' + type, [value])
-
-    @staticmethod
-    def abi_tuple(values: list[KInner]) -> KApply:
-        return KApply('abi_type_tuple', [KEVM.typed_args(values)])
-
-    @staticmethod
-    def abi_array(elem_type: KInner, length: KInner, elems: list[KInner]) -> KApply:
-        return KApply('abi_type_array', [elem_type, length, KEVM.typed_args(elems)])
-
-    @staticmethod
-    def empty_typedargs() -> KApply:
-        return KApply('.List{"_,__EVM-ABI_TypedArgs_TypedArg_TypedArgs"}_TypedArgs')
-
-    @staticmethod
     def bytes_append(b1: KInner, b2: KInner) -> KApply:
         return KApply('_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes', [b1, b2])
 
@@ -419,11 +387,6 @@ class KEVM(KProve, KRun):
         for i in reversed(ints):
             res = KApply('___HASHED-LOCATIONS_IntList_Int_IntList', [i, res])
         return res
-
-    @staticmethod
-    def typed_args(args: list[KInner]) -> KInner:
-        res = KEVM.empty_typedargs()
-        return build_cons(res, '_,__EVM-ABI_TypedArgs_TypedArg_TypedArgs', args)
 
     @staticmethod
     def accounts(accts: list[KInner]) -> KInner:
