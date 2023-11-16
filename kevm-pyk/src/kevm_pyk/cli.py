@@ -172,6 +172,20 @@ class KEVMCLIArgs(KCLIArgs):
             action='store_true',
             help="Use the booster RPC server instead of kore-rpc. Requires calling kompile with '--target haskell-booster' flag",
         )
+        args.add_argument(
+            '--port',
+            dest='port',
+            type=int,
+            default=None,
+            help='Use existing RPC server on named port',
+        )
+        args.add_argument(
+            '--maude-port',
+            dest='maude_port',
+            type=int,
+            default=None,
+            help='Use existing Maude RPC server on named port',
+        )
         return args
 
     @cached_property
@@ -217,20 +231,6 @@ class KEVMCLIArgs(KCLIArgs):
             default=None,
             type=int,
             help='Number of times to expand the next pending node in the CFG.',
-        )
-        args.add_argument(
-            '--port',
-            dest='port',
-            type=int,
-            default=None,
-            help='Use existing RPC server on named port',
-        )
-        args.add_argument(
-            '--maude-port',
-            dest='maude_port',
-            type=int,
-            default=None,
-            help='Use existing Maude RPC server on named port',
         )
         args.add_argument(
             '--failure-information',
