@@ -20,16 +20,5 @@ module EDSL
     imports EVM-ABI
     imports EVM-OPTIMIZATIONS
     imports INFINITE-GAS
-    imports BIN-RUNTIME
-endmodule
-
-module BIN-RUNTIME
-    imports EVM-ABI
-
-    syntax Contract
-    syntax Bytes ::= #binRuntime ( Contract )   [alias, klabel(binRuntime),   symbol, function, no-evaluators] 
-                   | #initBytecode ( Contract ) [alias, klabel(initBytecode), symbol, function, no-evaluators]
- // ------------------------------------------------------------------------------------------------------
-
 endmodule
 ```
