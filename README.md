@@ -207,7 +207,7 @@ Finally, you can build the semantics.
 poetry -C kevm-pyk run kevm-dist --verbose build -j4
 ```
 
-You can build specific targets using options `evm-semantics.{llvm,haskell,haskell-standalone}`, e.g.:
+You can build specific targets using options `evm-semantics.{llvm,haskell,haskell-standalone,plugin}`, e.g.:
 
 ```sh
 poetry -C kevm-pyk run kevm-dist build -j2 evm-semantics.llvm evm-semantics.haskell

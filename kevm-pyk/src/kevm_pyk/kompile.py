@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING
 from pyk.ktool.kompile import HaskellKompile, KompileArgs, LLVMKompile, LLVMKompileType, MaudeKompile
 from pyk.utils import run_process
 
-from . import config
+from . import config, kdist
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -45,8 +45,8 @@ class KompileTarget(Enum):
 def kevm_kompile(
     target: KompileTarget,
     output_dir: Path,
-    *,
     main_file: Path,
+    *,
     main_module: str | None,
     syntax_module: str | None,
     includes: Iterable[str] = (),
@@ -57,16 +57,53 @@ def kevm_kompile(
     llvm_kompile_type: LLVMKompileType | None = None,
     enable_llvm_debug: bool = False,
     llvm_library: Path | None = None,
-    plugin_dir: Path | None = None,
+    debug_build: bool = False,
+    debug: bool = False,
+    verbose: bool = False,
+) -> Path:
+    plugin_dir = kdist.get('evm-semantics.plugin')
+    ccopts = list(ccopts) + _lib_ccopts(plugin_dir, debug_build=debug_build)
+    return run_kompile(
+        target,
+        output_dir,
+        main_file,
+        main_module=main_module,
+        syntax_module=syntax_module,
+        includes=includes,
+        emit_json=emit_json,
+        read_only=read_only,
+        ccopts=ccopts,
+        optimization=optimization,
+        llvm_kompile_type=llvm_kompile_type,
+        enable_llvm_debug=enable_llvm_debug,
+        llvm_library=llvm_library,
+        debug_build=debug_build,
+        debug=debug,
+        verbose=verbose,
+    )
+
+
+def run_kompile(
+    target: KompileTarget,
+    output_dir: Path,
+    main_file: Path,
+    *,
+    main_module: str | None,
+    syntax_module: str | None,
+    includes: Iterable[str] = (),
+    emit_json: bool = True,
+    read_only: bool = False,
+    ccopts: Iterable[str] = (),
+    optimization: int = 0,
+    llvm_kompile_type: LLVMKompileType | None = None,
+    enable_llvm_debug: bool = False,
+    llvm_library: Path | None = None,
     debug_build: bool = False,
     debug: bool = False,
     verbose: bool = False,
 ) -> Path:
     if llvm_library is None:
         llvm_library = output_dir / 'llvm-library'
-
-    if target in [KompileTarget.LLVM, KompileTarget.HASKELL_BOOSTER] and not plugin_dir:
-        raise ValueError(f'Parameter plugin_dir is required for target: {target.value}')
 
     include_dirs = [Path(include) for include in includes]
     include_dirs += config.INCLUDE_DIRS
@@ -89,8 +126,6 @@ def kevm_kompile(
     try:
         match target:
             case KompileTarget.LLVM:
-                assert plugin_dir
-                ccopts = list(ccopts) + _lib_ccopts(plugin_dir, kernel, debug_build=debug_build)
                 kompile = LLVMKompile(
                     base_args=base_args,
                     ccopts=ccopts,
@@ -129,9 +164,8 @@ def kevm_kompile(
                     [future.result() for future in futures]
 
                 return output_dir
+
             case KompileTarget.HASKELL_BOOSTER:
-                assert plugin_dir
-                ccopts = list(ccopts) + _lib_ccopts(plugin_dir, kernel, debug_build=debug_build)
                 base_args_llvm = KompileArgs(
                     main_file=main_file,
                     main_module=main_module,
@@ -173,7 +207,9 @@ def kevm_kompile(
         raise
 
 
-def _lib_ccopts(plugin_dir: Path, kernel: str, debug_build: bool = False) -> list[str]:
+def _lib_ccopts(plugin_dir: Path, debug_build: bool = False) -> list[str]:
+    kernel = sys.platform
+
     ccopts = ['-std=c++17']
 
     if debug_build:
