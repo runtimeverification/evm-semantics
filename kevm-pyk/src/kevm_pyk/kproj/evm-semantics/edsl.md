@@ -8,14 +8,11 @@ The notations are inspired by the production compilers of the smart contract lan
 
 ```k
 requires "buf.md"
-requires "hashed-locations.md"
 requires "gas.md"
 requires "optimizations.md"
 
 module EDSL
     imports BUF
-    imports HASHED-LOCATIONS
-    imports SOLIDITY-FIELDS
     imports EVM-OPTIMIZATIONS
     imports INFINITE-GAS
 endmodule

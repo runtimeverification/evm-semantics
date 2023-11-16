@@ -14,7 +14,6 @@ from pyk.ktool.krun import KRun
 from pyk.prelude.k import K
 from pyk.prelude.kint import intToken, ltInt
 from pyk.prelude.ml import mlEqualsTrue
-from pyk.prelude.string import stringToken
 from pyk.proof.reachability import APRBMCProof, APRProof
 from pyk.proof.show import APRBMCProofNodePrinter, APRProofNodePrinter
 
@@ -333,19 +332,6 @@ class KEVM(KProve, KRun):
         return KApply('#computeValidJumpDests(_)_EVM_Set_Bytes', [p])
 
     @staticmethod
-    def hashed_location(compiler: str, base: KInner, offset: KInner, member_offset: int = 0) -> KApply:
-        location = KApply(
-            '#hashedLocation(_,_,_)_HASHED-LOCATIONS_Int_String_Int_IntList', [stringToken(compiler), base, offset]
-        )
-        if member_offset > 0:
-            location = KApply('_+Int_', [location, intToken(member_offset)])
-        return location
-
-    @staticmethod
-    def loc(accessor: KInner) -> KApply:
-        return KApply('contract_access_loc', [accessor])
-
-    @staticmethod
     def lookup(map: KInner, key: KInner) -> KApply:
         return KApply('#lookup(_,_)_EVM-TYPES_Int_Map_Int', [map, key])
 
@@ -380,13 +366,6 @@ class KEVM(KProve, KRun):
     @staticmethod
     def bytes_empty() -> KApply:
         return KApply('.Bytes_BYTES-HOOKED_Bytes')
-
-    @staticmethod
-    def intlist(ints: list[KInner]) -> KApply:
-        res = KApply('.List{"___HASHED-LOCATIONS_IntList_Int_IntList"}_IntList')
-        for i in reversed(ints):
-            res = KApply('___HASHED-LOCATIONS_IntList_Int_IntList', [i, res])
-        return res
 
     @staticmethod
     def accounts(accts: list[KInner]) -> KInner:
