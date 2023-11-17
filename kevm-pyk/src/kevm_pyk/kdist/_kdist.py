@@ -14,11 +14,12 @@ from tempfile import TemporaryDirectory
 from typing import TYPE_CHECKING, NamedTuple
 
 from filelock import SoftFileLock
-from pyk.utils import check_dir_path, hash_str
+from pyk.utils import hash_str
 from xdg_base_dirs import xdg_cache_home
 
 import kevm_pyk
 
+from . import utils
 from .api import Target
 
 if TYPE_CHECKING:
@@ -286,7 +287,7 @@ def _build_target(
 
         with (
             _build_dir(target_id) as build_dir,
-            _cwd(build_dir),
+            utils.cwd(build_dir),
         ):
             try:
                 target.build(output_dir, deps=deps, args=args)
@@ -340,12 +341,3 @@ def _build_dir(target_id: TargetId) -> Iterator[Path]:
     with TemporaryDirectory(prefix=tmp_dir_prefix) as build_dir_str:
         build_dir = Path(build_dir_str)
         yield build_dir
-
-
-@contextmanager
-def _cwd(path: Path) -> Iterator[None]:
-    check_dir_path(path)
-    old_cwd = os.getcwd()
-    os.chdir(str(path))
-    yield
-    os.chdir(old_cwd)
