@@ -106,6 +106,11 @@ class TargetCache:
 
         return res
 
+    def parse(self, fqn: str) -> TargetId:
+        res = TargetId.parse(fqn)
+        self.resolve(res)
+        return res
+
     @property
     def target_ids(self) -> list[TargetId]:
         return [TargetId(plugin, target) for plugin, targets in self._plugins.items() for target in targets]
@@ -192,7 +197,7 @@ def targets() -> list[str]:
 
 def which(target_fqn: str | None = None) -> Path:
     if target_fqn:
-        return _resolve(target_fqn).dir
+        return _CACHE.parse(target_fqn).dir
     return _DIST_DIR
 
 
@@ -311,13 +316,13 @@ def _resolve(target_fqn: str) -> TargetId:
 
 def _resolve_deps(target_fqns: Iterable[str]) -> dict[TargetId, list[TargetId]]:
     res: dict[TargetId, list[TargetId]] = {}
-    pending = [_resolve(target_fqn) for target_fqn in target_fqns]
+    pending = [_CACHE.parse(target_fqn) for target_fqn in target_fqns]
     while pending:
         target_id = pending.pop()
         if target_id in res:
             continue
         target = _CACHE.resolve(target_id)
-        deps = [_resolve(target_fqn) for target_fqn in target.deps()]
+        deps = [_CACHE.parse(target_fqn) for target_fqn in target.deps()]
         res[target_id] = deps
         pending += deps
     return res
