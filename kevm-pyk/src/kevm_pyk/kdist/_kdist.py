@@ -50,68 +50,6 @@ def _dist_dir() -> Path:
     return xdg_cache_home() / f'kdist-{digest}'
 
 
-def _plugins() -> dict[str, dict[str, Target]]:
-    import importlib
-    from importlib.metadata import entry_points
-
-    plugins = entry_points(group='kdist')
-
-    res: dict[str, dict[str, Target]] = {}
-    for plugin in plugins:
-        plugin_name = plugin.name
-
-        if not _valid_id(plugin_name):
-            _LOGGER.warning(f'Invalid plugin name, skipping: {plugin_name}')
-            continue
-
-        _LOGGER.info(f'Loading kdist plugin: {plugin_name}')
-        module_name = plugin.value
-        try:
-            _LOGGER.info(f'Importing module: {module_name}')
-            module = importlib.import_module(module_name)
-        except Exception:
-            _LOGGER.error(f'Module {module_name} cannot be imported', exc_info=True)
-            continue
-
-        res[plugin_name] = _load_targets(module)
-
-    return res
-
-
-def _load_targets(module: ModuleType) -> dict[str, Target]:
-    if not hasattr(module, '__TARGETS__'):
-        _LOGGER.warning(f'Module does not define __TARGETS__: {module.__name__}')
-        return {}
-
-    targets = module.__TARGETS__
-
-    if not isinstance(targets, Mapping):
-        _LOGGER.warning(f'Invalid __TARGETS__ attribute: {module.__name__}')
-        return {}
-
-    res: dict[str, Target] = {}
-    for key, value in targets.items():
-        if not isinstance(key, str):
-            _LOGGER.warning(f'Invalid target key in {module.__name__}: {key!r}')
-            continue
-
-        if not _valid_id(key):
-            _LOGGER.warning(f'Invalid target name (in {module.__name__}): {key}')
-            continue
-
-        if not isinstance(value, Target):
-            _LOGGER.warning(f'Invalid target value in {module.__name__} for key {key}: {value!r}')
-            continue
-
-        res[key] = value
-
-    return res
-
-
-_DIST_DIR: Final = _dist_dir()
-_PLUGINS: Final = _plugins()
-
-
 class TargetId(NamedTuple):
     plugin: str
     target: str
@@ -141,12 +79,115 @@ class TargetId(NamedTuple):
         return _DIST_DIR / self.plugin / self.target
 
 
+class TargetCache:
+    _plugins: dict[str, dict[str, Target]]
+
+    def __init__(self, plugins: Mapping[str, Mapping[str, Target]]):
+        _plugins: dict[str, dict[str, Target]] = {}
+        for plugin_name, targets in plugins.items():
+            _targets: dict[str, Target] = {}
+            _plugins[plugin_name] = _targets
+            for target_name, target in targets.items():
+                TargetId(plugin_name, target_name)
+                _targets[target_name] = target
+        self._plugins = _plugins
+
+    def resolve(self, target_id: TargetId) -> Target:
+        plugin, target = target_id
+        try:
+            targets = self._plugins[plugin]
+        except KeyError:
+            raise ValueError(f'Undefined plugin: {plugin}') from None
+
+        try:
+            res = targets[target]
+        except KeyError:
+            raise ValueError(f'Plugin {plugin} does not define target: {target}') from None
+
+        return res
+
+    @property
+    def target_ids(self) -> list[TargetId]:
+        return [TargetId(plugin, target) for plugin, targets in self._plugins.items() for target in targets]
+
+    @staticmethod
+    def load() -> TargetCache:
+        return TargetCache(TargetCache._load_plugins())
+
+    @staticmethod
+    def _load_plugins() -> dict[str, dict[str, Target]]:
+        import importlib
+        from importlib.metadata import entry_points
+
+        plugins = entry_points(group='kdist')
+
+        res: dict[str, dict[str, Target]] = {}
+        for plugin in plugins:
+            plugin_name = plugin.name
+
+            if not _valid_id(plugin_name):
+                _LOGGER.warning(f'Invalid plugin name, skipping: {plugin_name}')
+                continue
+
+            _LOGGER.info(f'Loading kdist plugin: {plugin_name}')
+            module_name = plugin.value
+            try:
+                _LOGGER.info(f'Importing module: {module_name}')
+                module = importlib.import_module(module_name)
+            except Exception:
+                _LOGGER.error(f'Module {module_name} cannot be imported', exc_info=True)
+                continue
+
+            res[plugin_name] = TargetCache._load_targets(module)
+
+        return res
+
+    @staticmethod
+    def _load_targets(module: ModuleType) -> dict[str, Target]:
+        if not hasattr(module, '__TARGETS__'):
+            _LOGGER.warning(f'Module does not define __TARGETS__: {module.__name__}')
+            return {}
+
+        targets = module.__TARGETS__
+
+        if not isinstance(targets, Mapping):
+            _LOGGER.warning(f'Invalid __TARGETS__ attribute: {module.__name__}')
+            return {}
+
+        res: dict[str, Target] = {}
+        for key, value in targets.items():
+            if not isinstance(key, str):
+                _LOGGER.warning(f'Invalid target key in {module.__name__}: {key!r}')
+                continue
+
+            if not _valid_id(key):
+                _LOGGER.warning(f'Invalid target name (in {module.__name__}): {key}')
+                continue
+
+            if not isinstance(value, Target):
+                _LOGGER.warning(f'Invalid target value in {module.__name__} for key {key}: {value!r}')
+                continue
+
+            res[key] = value
+
+        return res
+
+
+_DIST_DIR: Final = _dist_dir()
+_CACHE: Final = TargetCache.load()
+
+
 def plugins() -> dict[str, list[str]]:
-    return {plugin: list(targets) for plugin, targets in _PLUGINS.items()}
+    res: dict[str, list[str]] = {}
+    for plugin, target in _CACHE.target_ids:
+        targets = res.get(plugin, [])
+        targets.append(target)
+        res[plugin] = targets
+    return res
 
 
 def targets() -> list[str]:
-    return [TargetId(plugin, target).fqn for plugin, targets in plugins().items() for target in targets]
+    return [target_id.fqn for target_id in _CACHE.target_ids]
 
 
 def which(target_fqn: str | None = None) -> Path:
@@ -235,7 +276,7 @@ def _build_target(
         shutil.rmtree(output_dir, ignore_errors=True)
         output_dir.mkdir(parents=True)
 
-        target = _resolve_id(target_id)
+        target = _CACHE.resolve(target_id)
         deps = {target: which(target) for target in target.deps()}
 
         with (
@@ -268,11 +309,6 @@ def _resolve(target_fqn: str) -> TargetId:
     return res
 
 
-def _resolve_id(target_id: TargetId) -> Target:
-    plugin, target = target_id
-    return _PLUGINS[plugin][target]
-
-
 def _resolve_deps(target_fqns: Iterable[str]) -> dict[TargetId, list[TargetId]]:
     res: dict[TargetId, list[TargetId]] = {}
     pending = [_resolve(target_fqn) for target_fqn in target_fqns]
@@ -280,7 +316,7 @@ def _resolve_deps(target_fqns: Iterable[str]) -> dict[TargetId, list[TargetId]]:
         target_id = pending.pop()
         if target_id in res:
             continue
-        target = _resolve_id(target_id)
+        target = _CACHE.resolve(target_id)
         deps = [_resolve(target_fqn) for target_fqn in target.deps()]
         res[target_id] = deps
         pending += deps
