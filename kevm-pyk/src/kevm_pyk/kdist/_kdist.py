@@ -116,6 +116,22 @@ class TargetId(NamedTuple):
     plugin: str
     target: str
 
+    @staticmethod
+    def parse(fqn: str) -> TargetId:
+        segments = fqn.split('.')
+        if len(segments) != 2:
+            raise ValueError(f'Expected fully qualified target name, got: {fqn!r}')
+
+        plugin, target = segments
+
+        if not _valid_id(plugin):
+            raise ValueError(f'Invalid plugin identifier: {plugin!r}')
+
+        if not _valid_id(target):
+            raise ValueError(f'Invalid target identifier: {target!r}')
+
+        return TargetId(plugin, target)
+
     @property
     def fqn(self) -> str:
         return f'{self.plugin}.{self.target}'
@@ -236,17 +252,8 @@ def _build_target(
 
 
 def _resolve(target_fqn: str) -> TargetId:
-    segments = target_fqn.split('.')
-    if len(segments) != 2:
-        raise ValueError(f'Expected fully qualified target name, got: {target_fqn!r}')
-
-    plugin, target = segments
-
-    if not _valid_id(plugin):
-        raise ValueError(f'Invalid plugin identifier: {plugin!r}')
-
-    if not _valid_id(target):
-        raise ValueError(f'Invalid target identifier: {target!r}')
+    res = TargetId.parse(target_fqn)
+    plugin, target = res
 
     _plugins = plugins()
 
@@ -258,7 +265,7 @@ def _resolve(target_fqn: str) -> TargetId:
     if not target in targets:
         raise ValueError(f'Plugin {plugin} does not define target: {target}')
 
-    return TargetId(plugin, target)
+    return res
 
 
 def _resolve_id(target_id: TargetId) -> Target:
