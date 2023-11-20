@@ -121,8 +121,8 @@ sudo pacman -S                                               \
 After installing the Command Line Tools, [Homebrew](https://brew.sh/), and getting the [blockchain plugin](#blockchain-plugin), run:
 
 ```sh
-brew tap kframework/k
-brew install java automake libtool gmp mpfr pkg-config maven libffi llvm@14 openssl python bash kframework/k/cryptopp@8.6.0 poetry solidity
+brew tap runtimeverification/k
+brew install java automake libtool gmp mpfr pkg-config maven libffi llvm@14 openssl python bash runtimeverification/k/cryptopp@8.6.0 poetry solidity
 make libsecp256k1
 ```
 
