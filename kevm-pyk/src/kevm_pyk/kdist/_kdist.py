@@ -73,7 +73,7 @@ class TargetId(NamedTuple):
         return TargetId(plugin, target)
 
     @property
-    def fqn(self) -> str:
+    def full_name(self) -> str:
         return f'{self.plugin}.{self.target}'
 
     @property
@@ -198,7 +198,7 @@ def plugins() -> dict[str, list[str]]:
 
 
 def targets() -> list[str]:
-    return [target_id.fqn for target_id in _CACHE.target_ids]
+    return [target_id.full_name for target_id in _CACHE.target_ids]
 
 
 def which(target_fqn: str | None = None) -> Path:
@@ -235,14 +235,14 @@ def build(
     enable_llvm_debug: bool = False,
     verbose: bool = False,
 ) -> None:
-    deps = _resolve_deps(target_fqns)
-    target_graph = TopologicalSorter(deps)
+    dep_ids = _resolve_deps(target_fqns)
+    target_graph = TopologicalSorter(dep_ids)
     try:
         target_graph.prepare()
     except CycleError as err:
         raise RuntimeError(f'Cyclic dependencies found: {err.args[1]}') from err
 
-    deps_fqns = [target.fqn for target in deps]
+    deps_fqns = [target_id.full_name for target_id in dep_ids]
     _LOGGER.info(f"Building targets: {', '.join(deps_fqns)}")
 
     with ProcessPoolExecutor(max_workers=jobs) as pool:
@@ -301,7 +301,7 @@ def _build_target(
                 target.build(output_dir, deps=deps, args=args)
             except BaseException as err:
                 shutil.rmtree(output_dir, ignore_errors=True)
-                raise RuntimeError(f'Build failed: {target_id.fqn}') from err
+                raise RuntimeError(f'Build failed: {target_id.full_name}') from err
 
         target_id.manifest_file.write_text(json.dumps(manifest))
         return output_dir
