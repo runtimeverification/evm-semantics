@@ -259,7 +259,7 @@ poetry -C kevm-pyk run kevm-pyk run tests/ethereum-tests/LegacyTests/Constantino
 To enable the debug symbols for the llvm backend, build using this command:
 
 ```sh
-poetry -C kevm-pyk run kevm-dist build evm-semantics.llvm --enable-llvm-debug
+poetry -C kevm-pyk run kevm-dist build evm-semantics.llvm --arg enable-llvm-debug=true
 ```
 
 To debug a conformance test, add the `--debugger` flag to the command:
