@@ -23,8 +23,8 @@ class KEVMTarget(Target):
         self._kompile_args = dict(kompile_args)
 
     def build(self, output_dir: Path, deps: dict[str, Path], args: dict[str, Any], verbose: bool) -> None:
-        enable_llvm_debug = bool(args.get('enable_llvm_debug', ''))
-        debug_build = bool(args.get('debug_build', ''))
+        enable_llvm_debug = bool(args.get('enable-llvm-debug', ''))
+        debug_build = bool(args.get('debug-build', ''))
         ccopts = [ccopt for ccopt in args.get('ccopts', '').split(' ') if ccopt]
 
         kevm_kompile(
