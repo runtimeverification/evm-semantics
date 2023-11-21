@@ -244,6 +244,10 @@ These are the individual test-suites (all of these can be suffixed with `-all` t
 -   `make test-proof`: Proofs from the [Verified Smart Contracts].
 -   `make test-interactive`: Tests of the `kevm` command.
 
+You can customize the run by giving extra arguments to make via `PYTEST_ARGS+='-n 12 -vv'`.
+
+More details about the exact commands being run can be found in `/tmp/pytest-of-<user>/...`.
+
 For Developers
 --------------
 
