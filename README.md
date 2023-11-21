@@ -258,7 +258,7 @@ make test-vm PYTEST_ARGS+=-n0
 
 to execute them on a single worker.
 
-More details about the exact commands being run can be found in `/tmp/pytest-of-<user>/...`.
+Files produced by test runs, e.g. kompiled definition and logs, can be found in `/tmp/pytest-of-<user>/`.
 
 For Developers
 --------------
