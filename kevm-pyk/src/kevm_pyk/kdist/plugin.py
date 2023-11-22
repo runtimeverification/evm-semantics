@@ -22,11 +22,10 @@ class KEVMTarget(Target):
     def __init__(self, kompile_args: Mapping[str, Any]):
         self._kompile_args = dict(kompile_args)
 
-    def build(self, output_dir: Path, deps: dict[str, Path], args: dict[str, Any]) -> None:
-        verbose = args.get('verbose', False)
-        enable_llvm_debug = args.get('enable_llvm_debug', False)
-        debug_build = args.get('debug_build', False)
-        ccopts = args.get('ccopts', [])
+    def build(self, output_dir: Path, deps: dict[str, Path], args: dict[str, Any], verbose: bool) -> None:
+        enable_llvm_debug = bool(args.get('enable-llvm-debug', ''))
+        debug_build = bool(args.get('debug-build', ''))
+        ccopts = [ccopt for ccopt in args.get('ccopts', '').split(' ') if ccopt]
 
         kevm_kompile(
             output_dir=output_dir,
@@ -49,9 +48,7 @@ class KEVMTarget(Target):
 
 
 class PluginTarget(Target):
-    def build(self, output_dir: Path, deps: dict[str, Any], args: dict[str, Any]) -> None:
-        verbose = args.get('verbose', False)
-
+    def build(self, output_dir: Path, deps: dict[str, Any], args: dict[str, Any], verbose: bool) -> None:
         sync_files(
             source_dir=config.PLUGIN_DIR / 'plugin-c',
             target_dir=output_dir / 'plugin-c',
