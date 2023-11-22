@@ -244,6 +244,22 @@ These are the individual test-suites (all of these can be suffixed with `-all` t
 -   `make test-proof`: Proofs from the [Verified Smart Contracts].
 -   `make test-interactive`: Tests of the `kevm` command.
 
+All these targets call `pytest` under the hood. You can pass additional arguments to the call by appending them to variable `PYTEST_ARGS`. E.g. run
+
+```
+make test-vm PYTEST_ARGS+=-vv
+```
+
+to execute VMTests with increased verbosity, and
+
+```
+make test-vm PYTEST_ARGS+=-n0
+```
+
+to execute them on a single worker.
+
+Files produced by test runs, e.g. kompiled definition and logs, can be found in `/tmp/pytest-of-<user>/`.
+
 For Developers
 --------------
 
