@@ -43,28 +43,41 @@ def main() -> None:
 def _exec_build(
     command: str,
     targets: list[str],
+    args: list[str],
     jobs: int,
     force: bool,
-    enable_llvm_debug: bool,
     verbose: bool,
     debug: bool,
 ) -> None:
+    kdist.build(
+        target_fqns=_process_targets(targets),
+        args=_process_args(args),
+        jobs=jobs,
+        force=force,
+        verbose=verbose or debug,
+    )
+
+
+def _process_targets(targets: list[str]) -> list[str]:
     all_target_fqns = kdist.targets()
-    target_fqns = []
+    res = []
     for pattern in targets:
         matches = fnmatch.filter(all_target_fqns, pattern)
         if not matches:
             raise ValueError(f'No target matches pattern: {pattern!r}')
-        target_fqns += matches
+        res += matches
+    return res
 
-    verbose = verbose or debug
-    kdist.build(
-        target_fqns=target_fqns,
-        jobs=jobs,
-        force=force,
-        enable_llvm_debug=enable_llvm_debug,
-        verbose=verbose,
-    )
+
+def _process_args(args: list[str]) -> dict[str, str]:
+    res: dict[str, str] = {}
+    for arg in args:
+        segments = arg.split('=')
+        if len(segments) < 2:
+            raise ValueError(f"Expected assignment of the form 'arg=value', got: {arg!r}")
+        key, *values = segments
+        res[key] = '='.join(values)
+    return res
 
 
 def _exec_clean(target: str | None) -> None:
@@ -101,11 +114,17 @@ def _parse_arguments() -> Namespace:
 
     build_parser = command_parser.add_parser('build', help='build targets')
     build_parser.add_argument('targets', metavar='TARGET', nargs='*', default='*', help='target to build')
+    build_parser.add_argument(
+        '-a',
+        '--arg',
+        dest='args',
+        metavar='ARG',
+        action='append',
+        default=[],
+        help='build with argument',
+    )
     build_parser.add_argument('-f', '--force', action='store_true', default=False, help='force build')
     build_parser.add_argument('-j', '--jobs', metavar='N', type=int, default=1, help='maximal number of build jobs')
-    build_parser.add_argument(
-        '--enable-llvm-debug', action='store_true', default=True, help='enable debug symbols for the LLVM target'
-    )
 
     clean_parser = command_parser.add_parser('clean', help='clean targets')
     add_target_arg(clean_parser, 'target to clean')
