@@ -121,8 +121,8 @@ sudo pacman -S                                               \
 After installing the Command Line Tools, [Homebrew](https://brew.sh/), and getting the [blockchain plugin](#blockchain-plugin), run:
 
 ```sh
-brew tap kframework/k
-brew install java automake libtool gmp mpfr pkg-config maven libffi llvm@14 openssl python bash kframework/k/cryptopp@8.6.0 poetry solidity
+brew tap runtimeverification/k
+brew install java automake libtool gmp mpfr pkg-config maven libffi llvm@14 openssl python bash runtimeverification/k/cryptopp@8.6.0 poetry solidity
 make libsecp256k1
 ```
 
@@ -244,6 +244,22 @@ These are the individual test-suites (all of these can be suffixed with `-all` t
 -   `make test-proof`: Proofs from the [Verified Smart Contracts].
 -   `make test-interactive`: Tests of the `kevm` command.
 
+All these targets call `pytest` under the hood. You can pass additional arguments to the call by appending them to variable `PYTEST_ARGS`. E.g. run
+
+```
+make test-vm PYTEST_ARGS+=-vv
+```
+
+to execute VMTests with increased verbosity, and
+
+```
+make test-vm PYTEST_ARGS+=-n0
+```
+
+to execute them on a single worker.
+
+Files produced by test runs, e.g. kompiled definition and logs, can be found in `/tmp/pytest-of-<user>/`.
+
 For Developers
 --------------
 
@@ -259,7 +275,7 @@ poetry -C kevm-pyk run kevm-pyk run tests/ethereum-tests/LegacyTests/Constantino
 To enable the debug symbols for the llvm backend, build using this command:
 
 ```sh
-poetry -C kevm-pyk run kevm-dist build evm-semantics.llvm --enable-llvm-debug
+poetry -C kevm-pyk run kevm-dist build evm-semantics.llvm --arg enable-llvm-debug=true
 ```
 
 To debug a conformance test, add the `--debugger` flag to the command:

@@ -230,11 +230,12 @@ def get_or_none(target_fqn: str) -> Path | None:
 def build(
     target_fqns: list[str],
     *,
+    args: Mapping[str, str] | None = None,
     jobs: int = 1,
     force: bool = False,
-    enable_llvm_debug: bool = False,
     verbose: bool = False,
 ) -> None:
+    args = dict(args) if args else {}
     dep_ids = _resolve_deps(target_fqns)
     target_graph = TopologicalSorter(dep_ids)
     try:
@@ -252,8 +253,9 @@ def build(
             future = pool.submit(
                 _build_target,
                 target_id=target_id,
-                args={'enable_llvm_debug': enable_llvm_debug, 'verbose': verbose},
+                args=args,
                 force=force,
+                verbose=verbose,
             )
             pending[future] = target_id
 
@@ -276,7 +278,8 @@ def _build_target(
     target_id: TargetId,
     args: dict[str, Any],
     *,
-    force: bool = False,
+    force: bool,
+    verbose: bool,
 ) -> Path:
     output_dir = target_id.dir
 
@@ -298,7 +301,7 @@ def _build_target(
             utils.cwd(build_dir),
         ):
             try:
-                target.build(output_dir, deps=deps, args=args)
+                target.build(output_dir, deps=deps, args=args, verbose=verbose)
             except BaseException as err:
                 shutil.rmtree(output_dir, ignore_errors=True)
                 raise RuntimeError(f'Build failed: {target_id.full_name}') from err
