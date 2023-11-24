@@ -3,7 +3,7 @@ from __future__ import annotations
 from distutils.dir_util import copy_tree
 from typing import TYPE_CHECKING
 
-from pyk.kbuild.utils import sync_files
+from pyk.kbuild.utils import k_version, sync_files
 from pyk.utils import run_process
 
 from .. import config
@@ -22,17 +22,17 @@ class KEVMTarget(Target):
     def __init__(self, kompile_args: Mapping[str, Any]):
         self._kompile_args = dict(kompile_args)
 
-    def build(self, output_dir: Path, deps: dict[str, Path], args: dict[str, Any]) -> None:
-        verbose = args.get('verbose', False)
-        enable_llvm_debug = args.get('enable_llvm_debug', False)
-        debug_build = args.get('debug_build', False)
-        ccopts = args.get('ccopts', [])
+    def build(self, output_dir: Path, deps: dict[str, Path], args: dict[str, Any], verbose: bool) -> None:
+        enable_llvm_debug = bool(args.get('enable-llvm-debug', ''))
+        debug_build = bool(args.get('debug-build', ''))
+        ccopts = [ccopt for ccopt in args.get('ccopts', '').split(' ') if ccopt]
 
         kevm_kompile(
             output_dir=output_dir,
             enable_llvm_debug=enable_llvm_debug,
             verbose=verbose,
             ccopts=ccopts,
+            plugin_dir=deps['evm-semantics.plugin'],
             debug_build=debug_build,
             **self._kompile_args,
         )
@@ -40,11 +40,15 @@ class KEVMTarget(Target):
     def deps(self) -> tuple[str, ...]:
         return ('evm-semantics.plugin',)
 
+    def source(self) -> tuple[Path, ...]:
+        return (config.EVM_SEMANTICS_DIR,) + tuple(config.MODULE_DIR.rglob('*.py'))
+
+    def context(self) -> dict[str, str]:
+        return {'k-version': k_version().text}
+
 
 class PluginTarget(Target):
-    def build(self, output_dir: Path, deps: dict[str, Any], args: dict[str, Any]) -> None:
-        verbose = args.get('verbose', False)
-
+    def build(self, output_dir: Path, deps: dict[str, Any], args: dict[str, Any], verbose: bool) -> None:
         sync_files(
             source_dir=config.PLUGIN_DIR / 'plugin-c',
             target_dir=output_dir / 'plugin-c',
@@ -66,6 +70,9 @@ class PluginTarget(Target):
         copy_tree('./build/libcryptopp', str(output_dir / 'libcryptopp'))
         copy_tree('./build/libff', str(output_dir / 'libff'))
         copy_tree('./build/libsecp256k1', str(output_dir / 'libsecp256k1'))
+
+    def source(self) -> tuple[Path]:
+        return (config.PLUGIN_DIR,)
 
 
 __TARGETS__: Final = {

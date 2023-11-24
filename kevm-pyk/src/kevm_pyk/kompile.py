@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING
 from pyk.ktool.kompile import HaskellKompile, KompileArgs, LLVMKompile, LLVMKompileType, MaudeKompile
 from pyk.utils import run_process
 
-from . import config, kdist
+from . import config
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -56,11 +56,16 @@ def kevm_kompile(
     llvm_kompile_type: LLVMKompileType | None = None,
     enable_llvm_debug: bool = False,
     llvm_library: Path | None = None,
+    plugin_dir: Path | None = None,
     debug_build: bool = False,
     debug: bool = False,
     verbose: bool = False,
 ) -> Path:
-    plugin_dir = kdist.get('evm-semantics.plugin')
+    if plugin_dir is None:
+        from . import kdist
+
+        plugin_dir = kdist.get('evm-semantics.plugin')
+
     ccopts = list(ccopts) + _lib_ccopts(plugin_dir, debug_build=debug_build)
     return run_kompile(
         target,
