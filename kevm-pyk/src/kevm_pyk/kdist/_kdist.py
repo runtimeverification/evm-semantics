@@ -52,6 +52,7 @@ def _dist_dir() -> Path:
     return xdg_cache_home() / f'kdist-{digest}'
 
 
+# TODO validate
 class TargetId(NamedTuple):
     plugin: str
     target: str
@@ -85,20 +86,24 @@ class TargetId(NamedTuple):
         return _DIST_DIR / self.plugin / f'{self.target}.json'
 
 
-class TargetCache:
-    _plugins: dict[str, dict[str, Target]]
+class CachedTarget(NamedTuple):
+    id: TargetId
+    target: Target
 
-    def __init__(self, plugins: Mapping[str, Mapping[str, Target]]):
-        _plugins: dict[str, dict[str, Target]] = {}
+
+class TargetCache:
+    _plugins: dict[str, dict[str, CachedTarget]]
+
+    def __init__(self, plugins: Mapping[str, Mapping[str, CachedTarget]]):
+        _plugins: dict[str, dict[str, CachedTarget]] = {}
         for plugin_name, targets in plugins.items():
-            _targets: dict[str, Target] = {}
+            _targets: dict[str, CachedTarget] = {}
             _plugins[plugin_name] = _targets
             for target_name, target in targets.items():
-                TargetId(plugin_name, target_name)
                 _targets[target_name] = target
         self._plugins = _plugins
 
-    def resolve(self, target_id: TargetId) -> Target:
+    def resolve(self, target_id: TargetId) -> CachedTarget:
         plugin, target = target_id
         try:
             targets = self._plugins[plugin]
@@ -126,13 +131,13 @@ class TargetCache:
         return TargetCache(TargetCache._load_plugins())
 
     @staticmethod
-    def _load_plugins() -> dict[str, dict[str, Target]]:
+    def _load_plugins() -> dict[str, dict[str, CachedTarget]]:
         import importlib
         from importlib.metadata import entry_points
 
         plugins = entry_points(group='kdist')
 
-        res: dict[str, dict[str, Target]] = {}
+        res: dict[str, dict[str, CachedTarget]] = {}
         for plugin in plugins:
             plugin_name = plugin.name
 
@@ -149,12 +154,12 @@ class TargetCache:
                 _LOGGER.error(f'Module {module_name} cannot be imported', exc_info=True)
                 continue
 
-            res[plugin_name] = TargetCache._load_targets(module)
+            res[plugin_name] = TargetCache._load_targets(plugin_name, module)
 
         return res
 
     @staticmethod
-    def _load_targets(module: ModuleType) -> dict[str, Target]:
+    def _load_targets(plugin_name: str, module: ModuleType) -> dict[str, CachedTarget]:
         if not hasattr(module, '__TARGETS__'):
             _LOGGER.warning(f'Module does not define __TARGETS__: {module.__name__}')
             return {}
@@ -165,21 +170,21 @@ class TargetCache:
             _LOGGER.warning(f'Invalid __TARGETS__ attribute: {module.__name__}')
             return {}
 
-        res: dict[str, Target] = {}
-        for key, value in targets.items():
-            if not isinstance(key, str):
-                _LOGGER.warning(f'Invalid target key in {module.__name__}: {key!r}')
+        res: dict[str, CachedTarget] = {}
+        for target_name, target in targets.items():
+            if not isinstance(target_name, str):
+                _LOGGER.warning(f'Invalid target name in {module.__name__}: {target_name!r}')
                 continue
 
-            if not _valid_id(key):
-                _LOGGER.warning(f'Invalid target name (in {module.__name__}): {key}')
+            if not _valid_id(target_name):
+                _LOGGER.warning(f'Invalid target name (in {module.__name__}): {target_name}')
                 continue
 
-            if not isinstance(value, Target):
-                _LOGGER.warning(f'Invalid target value in {module.__name__} for key {key}: {value!r}')
+            if not isinstance(target, Target):
+                _LOGGER.warning(f'Invalid target in {module.__name__} for name {target_name}: {target!r}')
                 continue
 
-            res[key] = value
+            res[target_name] = CachedTarget(TargetId(plugin_name, target_name), target)
 
         return res
 
@@ -294,14 +299,14 @@ def _build_target(
         target_id.manifest_file.unlink(missing_ok=True)
 
         target = _CACHE.resolve(target_id)
-        deps = {target: which(target) for target in target.deps()}
+        deps = {target: which(target) for target in target.target.deps()}
 
         with (
             _build_dir(target_id) as build_dir,
             utils.cwd(build_dir),
         ):
             try:
-                target.build(output_dir, deps=deps, args=args, verbose=verbose)
+                target.target.build(output_dir, deps=deps, args=args, verbose=verbose)
             except BaseException as err:
                 shutil.rmtree(output_dir, ignore_errors=True)
                 raise RuntimeError(f'Build failed: {target_id.full_name}') from err
@@ -312,9 +317,9 @@ def _build_target(
 
 def _manifest(target_id: TargetId, args: dict[str, Any]) -> dict[str, Any]:
     target = _CACHE.resolve(target_id)
-    res = target.manifest()
+    res = target.target.manifest()
     res['args'] = dict(args)
-    res['deps'] = {dep_fqn: utils.timestamp(_resolve(dep_fqn).manifest_file) for dep_fqn in target.deps()}
+    res['deps'] = {dep_fqn: utils.timestamp(_resolve(dep_fqn).manifest_file) for dep_fqn in target.target.deps()}
     return res
 
 
@@ -352,7 +357,7 @@ def _resolve_deps(target_fqns: Iterable[str]) -> dict[TargetId, list[TargetId]]:
         if target_id in res:
             continue
         target = _CACHE.resolve(target_id)
-        deps = [_CACHE.parse(target_fqn) for target_fqn in target.deps()]
+        deps = [_CACHE.parse(target_fqn) for target_fqn in target.target.deps()]
         res[target_id] = deps
         pending += deps
     return res
