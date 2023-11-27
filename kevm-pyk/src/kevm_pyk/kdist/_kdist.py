@@ -54,7 +54,7 @@ def _dist_dir() -> Path:
 
 # TODO validate
 class TargetId(NamedTuple):
-    plugin: str
+    plugin_name: str
     target: str
 
     @staticmethod
@@ -63,19 +63,19 @@ class TargetId(NamedTuple):
         if len(segments) != 2:
             raise ValueError(f'Expected fully qualified target name, got: {fqn!r}')
 
-        plugin, target = segments
+        plugin_name, target = segments
 
-        if not _valid_id(plugin):
-            raise ValueError(f'Invalid plugin identifier: {plugin!r}')
+        if not _valid_id(plugin_name):
+            raise ValueError(f'Invalid plugin identifier: {plugin_name!r}')
 
         if not _valid_id(target):
             raise ValueError(f'Invalid target identifier: {target!r}')
 
-        return TargetId(plugin, target)
+        return TargetId(plugin_name, target)
 
     @property
     def full_name(self) -> str:
-        return f'{self.plugin}.{self.target}'
+        return f'{self.plugin_name}.{self.target}'
 
 
 class CachedTarget(NamedTuple):
@@ -84,11 +84,11 @@ class CachedTarget(NamedTuple):
 
     @property
     def dir(self) -> Path:
-        return _DIST_DIR / self.id.plugin / self.id.target
+        return _DIST_DIR / self.id.plugin_name / self.id.target
 
     @property
     def manifest_file(self) -> Path:
-        return _DIST_DIR / self.id.plugin / f'{self.id.target}.json'
+        return _DIST_DIR / self.id.plugin_name / f'{self.id.target}.json'
 
 
 class TargetCache:
@@ -104,16 +104,16 @@ class TargetCache:
         self._plugins = _plugins
 
     def resolve(self, target_id: TargetId) -> CachedTarget:
-        plugin, target = target_id
+        plugin_name, target = target_id
         try:
-            targets = self._plugins[plugin]
+            targets = self._plugins[plugin_name]
         except KeyError:
-            raise ValueError(f'Undefined plugin: {plugin}') from None
+            raise ValueError(f'Undefined plugin: {plugin_name}') from None
 
         try:
             res = targets[target]
         except KeyError:
-            raise ValueError(f'Plugin {plugin} does not define target: {target}') from None
+            raise ValueError(f'Plugin {plugin_name} does not define target: {target}') from None
 
         return res
 
@@ -124,7 +124,7 @@ class TargetCache:
 
     @property
     def target_ids(self) -> list[TargetId]:
-        return [TargetId(plugin, target) for plugin, targets in self._plugins.items() for target in targets]
+        return [TargetId(plugin_name, target) for plugin_name, targets in self._plugins.items() for target in targets]
 
     @staticmethod
     def load() -> TargetCache:
@@ -195,10 +195,10 @@ _CACHE: Final = TargetCache.load()
 
 def plugins() -> dict[str, list[str]]:
     res: dict[str, list[str]] = {}
-    for plugin, target in _CACHE.target_ids:
-        targets = res.get(plugin, [])
+    for plugin_name, target in _CACHE.target_ids:
+        targets = res.get(plugin_name, [])
         targets.append(target)
-        res[plugin] = targets
+        res[plugin_name] = targets
     return res
 
 
@@ -337,17 +337,17 @@ def _up_to_date(target: CachedTarget, new_manifest: dict[str, Any]) -> bool:
 
 def _resolve(target_fqn: str) -> TargetId:
     res = TargetId.parse(target_fqn)
-    plugin, target = res
+    plugin_name, target = res
 
     _plugins = plugins()
 
     try:
-        targets = _plugins[plugin]
+        targets = _plugins[plugin_name]
     except KeyError:
-        raise ValueError(f'Undefined plugin: {plugin}') from None
+        raise ValueError(f'Undefined plugin: {plugin_name}') from None
 
     if not target in targets:
-        raise ValueError(f'Plugin {plugin} does not define target: {target}')
+        raise ValueError(f'Plugin {plugin_name} does not define target: {target}')
 
     return res
 
@@ -374,7 +374,7 @@ def _lock(target: CachedTarget) -> FileLock:
 
 @contextmanager
 def _build_dir(target_id: TargetId) -> Iterator[Path]:
-    tmp_dir_prefix = f'kdist-{target_id.plugin}-{target_id.target}-'
+    tmp_dir_prefix = f'kdist-{target_id.plugin_name}-{target_id.target}-'
     with TemporaryDirectory(prefix=tmp_dir_prefix) as build_dir_str:
         build_dir = Path(build_dir_str)
         yield build_dir
