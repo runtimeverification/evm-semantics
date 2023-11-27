@@ -77,18 +77,18 @@ class TargetId(NamedTuple):
     def full_name(self) -> str:
         return f'{self.plugin}.{self.target}'
 
-    @property
-    def dir(self) -> Path:
-        return _DIST_DIR / self.plugin / self.target
-
-    @property
-    def manifest_file(self) -> Path:
-        return _DIST_DIR / self.plugin / f'{self.target}.json'
-
 
 class CachedTarget(NamedTuple):
     id: TargetId
     target: Target
+
+    @property
+    def dir(self) -> Path:
+        return _DIST_DIR / self.id.plugin / self.id.target
+
+    @property
+    def manifest_file(self) -> Path:
+        return _DIST_DIR / self.id.plugin / f'{self.id.target}.json'
 
 
 class TargetCache:
@@ -208,7 +208,8 @@ def targets() -> list[str]:
 
 def which(target_fqn: str | None = None) -> Path:
     if target_fqn:
-        return _CACHE.parse(target_fqn).dir
+        target_id = TargetId.parse(target_fqn)
+        return _CACHE.resolve(target_id).dir
     return _DIST_DIR
 
 
@@ -286,19 +287,18 @@ def _build_target(
     force: bool,
     verbose: bool,
 ) -> Path:
-    output_dir = target_id.dir
+    target = _CACHE.resolve(target_id)
 
-    with _lock(target_id):
+    with _lock(target):
         manifest = _manifest(target_id, args)
 
-        if not force and _up_to_date(target_id, manifest):
-            return output_dir
+        if not force and _up_to_date(target, manifest):
+            return target.dir
 
-        shutil.rmtree(output_dir, ignore_errors=True)
-        output_dir.mkdir(parents=True)
-        target_id.manifest_file.unlink(missing_ok=True)
+        shutil.rmtree(target.dir, ignore_errors=True)
+        target.dir.mkdir(parents=True)
+        target.manifest_file.unlink(missing_ok=True)
 
-        target = _CACHE.resolve(target_id)
         deps = {target: which(target) for target in target.target.deps()}
 
         with (
@@ -306,29 +306,32 @@ def _build_target(
             utils.cwd(build_dir),
         ):
             try:
-                target.target.build(output_dir, deps=deps, args=args, verbose=verbose)
+                target.target.build(target.dir, deps=deps, args=args, verbose=verbose)
             except BaseException as err:
-                shutil.rmtree(output_dir, ignore_errors=True)
+                shutil.rmtree(target.dir, ignore_errors=True)
                 raise RuntimeError(f'Build failed: {target_id.full_name}') from err
 
-        target_id.manifest_file.write_text(json.dumps(manifest))
-        return output_dir
+        target.manifest_file.write_text(json.dumps(manifest))
+        return target.dir
 
 
 def _manifest(target_id: TargetId, args: dict[str, Any]) -> dict[str, Any]:
     target = _CACHE.resolve(target_id)
     res = target.target.manifest()
     res['args'] = dict(args)
-    res['deps'] = {dep_fqn: utils.timestamp(_resolve(dep_fqn).manifest_file) for dep_fqn in target.target.deps()}
+    res['deps'] = {
+        dep_fqn: utils.timestamp(_CACHE.resolve(TargetId.parse(dep_fqn)).manifest_file)
+        for dep_fqn in target.target.deps()
+    }
     return res
 
 
-def _up_to_date(target_id: TargetId, new_manifest: dict[str, Any]) -> bool:
-    if not target_id.dir.exists():
+def _up_to_date(target: CachedTarget, new_manifest: dict[str, Any]) -> bool:
+    if not target.dir.exists():
         return False
-    if not target_id.manifest_file.exists():
+    if not target.manifest_file.exists():
         return False
-    old_manifest = json.loads(target_id.manifest_file.read_text())
+    old_manifest = json.loads(target.manifest_file.read_text())
     return new_manifest == old_manifest
 
 
@@ -363,8 +366,8 @@ def _resolve_deps(target_fqns: Iterable[str]) -> dict[TargetId, list[TargetId]]:
     return res
 
 
-def _lock(target_id: TargetId) -> FileLock:
-    lock_file = target_id.dir.with_suffix('.lock')
+def _lock(target: CachedTarget) -> FileLock:
+    lock_file = target.dir.with_suffix('.lock')
     lock_file.parent.mkdir(parents=True, exist_ok=True)
     return SoftFileLock(lock_file)
 
