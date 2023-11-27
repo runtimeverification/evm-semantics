@@ -112,7 +112,10 @@ class TargetCache:
                 _targets[target_name] = target
         self._plugins = _plugins
 
-    def resolve(self, target_id: TargetId) -> CachedTarget:
+    def resolve(self, target_id: str | TargetId) -> CachedTarget:
+        if isinstance(target_id, str):
+            target_id = TargetId.parse(target_id)
+
         plugin_name, target_name = target_id
         try:
             targets = self._plugins[plugin_name]
@@ -124,11 +127,6 @@ class TargetCache:
         except KeyError:
             raise ValueError(f'Plugin {plugin_name} does not define target: {target_name}') from None
 
-        return res
-
-    def parse(self, fqn: str) -> TargetId:
-        res = TargetId.parse(fqn)
-        self.resolve(res)
         return res
 
     @property
@@ -348,33 +346,15 @@ def _up_to_date(target: CachedTarget, new_manifest: dict[str, Any]) -> bool:
     return new_manifest == old_manifest
 
 
-def _resolve(target_fqn: str) -> TargetId:
-    res = TargetId.parse(target_fqn)
-    plugin_name, target = res
-
-    _plugins = plugins()
-
-    try:
-        targets = _plugins[plugin_name]
-    except KeyError:
-        raise ValueError(f'Undefined plugin: {plugin_name}') from None
-
-    if not target in targets:
-        raise ValueError(f'Plugin {plugin_name} does not define target: {target}')
-
-    return res
-
-
 def _resolve_deps(target_fqns: Iterable[str]) -> dict[TargetId, list[TargetId]]:
     res: dict[TargetId, list[TargetId]] = {}
-    pending = [_CACHE.parse(target_fqn) for target_fqn in target_fqns]
+    pending = [_CACHE.resolve(target_fqn) for target_fqn in target_fqns]
     while pending:
-        target_id = pending.pop()
-        if target_id in res:
+        target = pending.pop()
+        if target.id in res:
             continue
-        target = _CACHE.resolve(target_id)
-        deps = [_CACHE.parse(target_fqn) for target_fqn in target.target.deps()]
-        res[target_id] = deps
+        deps = [_CACHE.resolve(target_fqn) for target_fqn in target.target.deps()]
+        res[target.id] = [dep.id for dep in deps]
         pending += deps
     return res
 
