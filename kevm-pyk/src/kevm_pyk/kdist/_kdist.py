@@ -9,10 +9,11 @@ import shutil
 from collections.abc import Mapping
 from concurrent.futures import ProcessPoolExecutor
 from contextlib import contextmanager
+from dataclasses import dataclass
 from graphlib import CycleError, TopologicalSorter
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import TYPE_CHECKING, NamedTuple
+from typing import TYPE_CHECKING, NamedTuple, final
 
 from filelock import SoftFileLock
 from pyk.utils import hash_str
@@ -52,10 +53,25 @@ def _dist_dir() -> Path:
     return xdg_cache_home() / f'kdist-{digest}'
 
 
-# TODO validate
-class TargetId(NamedTuple):
+@final
+@dataclass(frozen=True)
+class TargetId:
     plugin_name: str
     target_name: str
+
+    def __init__(self, plugin_name: str, target_name: str):
+        if not _valid_id(plugin_name):
+            raise ValueError(f'Invalid plugin name: {plugin_name!r}')
+
+        if not _valid_id(target_name):
+            raise ValueError(f'Invalid target name: {target_name!r}')
+
+        object.__setattr__(self, 'plugin_name', plugin_name)
+        object.__setattr__(self, 'target_name', target_name)
+
+    def __iter__(self) -> Iterator[str]:
+        yield self.plugin_name
+        yield self.target_name
 
     @staticmethod
     def parse(fqn: str) -> TargetId:
@@ -64,13 +80,6 @@ class TargetId(NamedTuple):
             raise ValueError(f'Expected fully qualified target name, got: {fqn!r}')
 
         plugin_name, target_name = segments
-
-        if not _valid_id(plugin_name):
-            raise ValueError(f'Invalid plugin identifier: {plugin_name!r}')
-
-        if not _valid_id(target_name):
-            raise ValueError(f'Invalid target identifier: {target_name!r}')
-
         return TargetId(plugin_name, target_name)
 
     @property
