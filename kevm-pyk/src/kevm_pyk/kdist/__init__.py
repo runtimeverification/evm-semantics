@@ -1,1 +1,2 @@
-from ._kdist import KDist, TargetId, target_ids
+from ._cache import target_ids
+from ._kdist import KDist
