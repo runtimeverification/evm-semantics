@@ -99,6 +99,39 @@ class CachedTarget(NamedTuple):
     def manifest_file(self) -> Path:
         return _DIST_DIR / self.id.plugin_name / f'{self.id.target_name}.json'
 
+    @property
+    def deps(self) -> dict[str, Path]:
+        return {dep_fqn: _CACHE.resolve(dep_fqn).dir for dep_fqn in self.target.deps()}
+
+    def up_to_date(self, new_manifest: dict[str, Any]) -> bool:
+        if not self.dir.exists():
+            return False
+        if not self.manifest_file.exists():
+            return False
+        old_manifest = json.loads(self.manifest_file.read_text())
+        return new_manifest == old_manifest
+
+    def manifest(self, args: dict[str, Any]) -> dict[str, Any]:
+        res = self.target.manifest()
+        res['args'] = dict(args)
+        res['deps'] = {
+            dep_fqn: utils.timestamp(_CACHE.resolve(TargetId.parse(dep_fqn)).manifest_file)
+            for dep_fqn in self.target.deps()
+        }
+        return res
+
+    def lock(self) -> FileLock:
+        lock_file = self.dir.with_suffix('.lock')
+        lock_file.parent.mkdir(parents=True, exist_ok=True)
+        return SoftFileLock(lock_file)
+
+    @contextmanager
+    def build_dir(self) -> Iterator[Path]:
+        tmp_dir_prefix = f'kdist-{self.id.plugin_name}-{self.id.target_name}-'
+        with TemporaryDirectory(prefix=tmp_dir_prefix) as build_dir_str:
+            build_dir = Path(build_dir_str)
+            yield build_dir
+
 
 class TargetCache:
     _plugins: dict[str, dict[str, CachedTarget]]
@@ -300,50 +333,28 @@ def _build_target(
 ) -> Path:
     target = _CACHE.resolve(target_id)
 
-    with _lock(target):
-        manifest = _manifest(target_id, args)
+    with target.lock():
+        manifest = target.manifest(args)
 
-        if not force and _up_to_date(target, manifest):
+        if not force and target.up_to_date(manifest):
             return target.dir
 
         shutil.rmtree(target.dir, ignore_errors=True)
         target.dir.mkdir(parents=True)
         target.manifest_file.unlink(missing_ok=True)
 
-        deps = {target: which(target) for target in target.target.deps()}
-
         with (
-            _build_dir(target_id) as build_dir,
+            target.build_dir() as build_dir,
             utils.cwd(build_dir),
         ):
             try:
-                target.target.build(target.dir, deps=deps, args=args, verbose=verbose)
+                target.target.build(target.dir, deps=target.deps, args=args, verbose=verbose)
             except BaseException as err:
                 shutil.rmtree(target.dir, ignore_errors=True)
                 raise RuntimeError(f'Build failed: {target_id.full_name}') from err
 
         target.manifest_file.write_text(json.dumps(manifest))
         return target.dir
-
-
-def _manifest(target_id: TargetId, args: dict[str, Any]) -> dict[str, Any]:
-    target = _CACHE.resolve(target_id)
-    res = target.target.manifest()
-    res['args'] = dict(args)
-    res['deps'] = {
-        dep_fqn: utils.timestamp(_CACHE.resolve(TargetId.parse(dep_fqn)).manifest_file)
-        for dep_fqn in target.target.deps()
-    }
-    return res
-
-
-def _up_to_date(target: CachedTarget, new_manifest: dict[str, Any]) -> bool:
-    if not target.dir.exists():
-        return False
-    if not target.manifest_file.exists():
-        return False
-    old_manifest = json.loads(target.manifest_file.read_text())
-    return new_manifest == old_manifest
 
 
 def _resolve_deps(target_fqns: Iterable[str]) -> dict[TargetId, list[TargetId]]:
@@ -357,17 +368,3 @@ def _resolve_deps(target_fqns: Iterable[str]) -> dict[TargetId, list[TargetId]]:
         res[target.id] = [dep.id for dep in deps]
         pending += deps
     return res
-
-
-def _lock(target: CachedTarget) -> FileLock:
-    lock_file = target.dir.with_suffix('.lock')
-    lock_file.parent.mkdir(parents=True, exist_ok=True)
-    return SoftFileLock(lock_file)
-
-
-@contextmanager
-def _build_dir(target_id: TargetId) -> Iterator[Path]:
-    tmp_dir_prefix = f'kdist-{target_id.plugin_name}-{target_id.target_name}-'
-    with TemporaryDirectory(prefix=tmp_dir_prefix) as build_dir_str:
-        build_dir = Path(build_dir_str)
-        yield build_dir
