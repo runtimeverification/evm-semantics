@@ -3,7 +3,6 @@ from __future__ import annotations
 import concurrent.futures
 import json
 import logging
-import os
 import re
 import shutil
 from collections.abc import Mapping
@@ -18,8 +17,6 @@ from typing import TYPE_CHECKING, NamedTuple, final
 from filelock import SoftFileLock
 from pyk.utils import hash_str
 from xdg_base_dirs import xdg_cache_home
-
-import kevm_pyk
 
 from . import utils
 from .api import Target
@@ -41,16 +38,6 @@ _ID_PATTERN = re.compile('[a-z0-9]+(-[a-z0-9]+)*')
 
 def _valid_id(s: str) -> bool:
     return _ID_PATTERN.fullmatch(s) is not None
-
-
-def _dist_dir() -> Path:
-    dist_dir_env = os.getenv('KEVM_DIST_DIR')  # Used by Nix flake to set the output
-    if dist_dir_env:
-        return Path(dist_dir_env).resolve()
-
-    module_dir = Path(kevm_pyk.__file__).parent
-    digest = hash_str({'module-dir': module_dir})[:7]
-    return xdg_cache_home() / f'kdist-{digest}'
 
 
 @final
@@ -91,47 +78,6 @@ class CachedTarget(NamedTuple):
     id: TargetId
     target: Target
 
-    @property
-    def dir(self) -> Path:
-        return _DIST_DIR / self.id.plugin_name / self.id.target_name
-
-    @property
-    def manifest_file(self) -> Path:
-        return _DIST_DIR / self.id.plugin_name / f'{self.id.target_name}.json'
-
-    @property
-    def deps(self) -> dict[str, Path]:
-        return {dep_fqn: _CACHE.resolve(dep_fqn).dir for dep_fqn in self.target.deps()}
-
-    def up_to_date(self, new_manifest: dict[str, Any]) -> bool:
-        if not self.dir.exists():
-            return False
-        if not self.manifest_file.exists():
-            return False
-        old_manifest = json.loads(self.manifest_file.read_text())
-        return new_manifest == old_manifest
-
-    def manifest(self, args: dict[str, Any]) -> dict[str, Any]:
-        res = self.target.manifest()
-        res['args'] = dict(args)
-        res['deps'] = {
-            dep_fqn: utils.timestamp(_CACHE.resolve(TargetId.parse(dep_fqn)).manifest_file)
-            for dep_fqn in self.target.deps()
-        }
-        return res
-
-    def lock(self) -> FileLock:
-        lock_file = self.dir.with_suffix('.lock')
-        lock_file.parent.mkdir(parents=True, exist_ok=True)
-        return SoftFileLock(lock_file)
-
-    @contextmanager
-    def build_dir(self) -> Iterator[Path]:
-        tmp_dir_prefix = f'kdist-{self.id.plugin_name}-{self.id.target_name}-'
-        with TemporaryDirectory(prefix=tmp_dir_prefix) as build_dir_str:
-            build_dir = Path(build_dir_str)
-            yield build_dir
-
 
 class TargetCache:
     _plugins: dict[str, dict[str, CachedTarget]]
@@ -162,13 +108,21 @@ class TargetCache:
 
         return res
 
+    def resolve_deps(self, target_ids: Iterable[str | TargetId]) -> dict[TargetId, list[TargetId]]:
+        res: dict[TargetId, list[TargetId]] = {}
+        pending = [self.resolve(target_id) for target_id in target_ids]
+        while pending:
+            target = pending.pop()
+            if target.id in res:
+                continue
+            deps = [self.resolve(target_fqn) for target_fqn in target.target.deps()]
+            res[target.id] = [dep.id for dep in deps]
+            pending += deps
+        return res
+
     @property
     def target_ids(self) -> list[TargetId]:
-        return [
-            TargetId(plugin_name, target_name)
-            for plugin_name, targets in self._plugins.items()
-            for target_name in targets
-        ]
+        return [target.id for plugin_name, targets in self._plugins.items() for target_name, target in targets.items()]
 
     @staticmethod
     def load() -> TargetCache:
@@ -233,138 +187,176 @@ class TargetCache:
         return res
 
 
-_DIST_DIR: Final = _dist_dir()
 _CACHE: Final = TargetCache.load()
 
 
-def plugins() -> dict[str, list[str]]:
-    res: dict[str, list[str]] = {}
-    for plugin_name, target in _CACHE.target_ids:
-        targets = res.get(plugin_name, [])
-        targets.append(target)
-        res[plugin_name] = targets
-    return res
+def target_ids() -> list[TargetId]:
+    return _CACHE.target_ids
 
 
-def targets() -> list[str]:
-    return [target_id.full_name for target_id in _CACHE.target_ids]
+@final
+@dataclass(frozen=True)
+class KDist:
+    kdist_dir: Path
 
+    def __init__(self, kdist_dir: str | Path | None):
+        if kdist_dir is None:
+            kdist_dir = KDist.default_dir()
+        kdist_dir = Path(kdist_dir).resolve()
+        object.__setattr__(self, 'kdist_dir', kdist_dir)
 
-def which(target_fqn: str | None = None) -> Path:
-    if target_fqn:
-        target_id = TargetId.parse(target_fqn)
-        return _CACHE.resolve(target_id).dir
-    return _DIST_DIR
+    @staticmethod
+    def default_dir() -> Path:
+        import kevm_pyk
 
+        module_dir = Path(kevm_pyk.__file__).parent
+        digest = hash_str({'module-dir': module_dir})[:7]
+        return xdg_cache_home() / f'kdist-{digest}'
 
-def clean(target_fqn: str | None = None) -> Path:
-    res = which(target_fqn)
-    shutil.rmtree(res, ignore_errors=True)
-    return res
+    def which(self, target_id: str | TargetId | None = None) -> Path:
+        if target_id:
+            target_id = _CACHE.resolve(target_id).id
+            return self._target_dir(target_id)
+        return self.kdist_dir
 
+    def clean(self, target_id: str | TargetId | None = None) -> Path:
+        res = self.which(target_id)
+        shutil.rmtree(res, ignore_errors=True)
+        return res
 
-def get(target_fqn: str) -> Path:
-    res = which(target_fqn)
-    if not res.exists():
-        raise ValueError(f'Target is not built: {target_fqn}')
-    return res
+    def get(self, target_id: str | TargetId) -> Path:
+        res = self.which(target_id)
+        if not res.exists():
+            if isinstance(target_id, TargetId):
+                target_id = target_id.full_name
+            raise ValueError(f'Target is not built: {target_id}')
+        return res
 
+    def get_or_none(self, target_id: str | TargetId) -> Path | None:
+        res = self.which(target_id)
+        if not res.exists():
+            return None
+        return res
 
-def get_or_none(target_fqn: str) -> Path | None:
-    res = which(target_fqn)
-    if not res.exists():
-        return None
-    return res
+    def build(
+        self,
+        target_ids: Iterable[str | TargetId],
+        *,
+        args: Mapping[str, str] | None = None,
+        jobs: int = 1,
+        force: bool = False,
+        verbose: bool = False,
+    ) -> None:
+        args = dict(args) if args else {}
+        dep_ids = _CACHE.resolve_deps(target_ids)
+        target_graph = TopologicalSorter(dep_ids)
+        try:
+            target_graph.prepare()
+        except CycleError as err:
+            raise RuntimeError(f'Cyclic dependencies found: {err.args[1]}') from err
 
+        deps_fqns = [target_id.full_name for target_id in dep_ids]
+        _LOGGER.info(f"Building targets: {', '.join(deps_fqns)}")
 
-def build(
-    target_fqns: list[str],
-    *,
-    args: Mapping[str, str] | None = None,
-    jobs: int = 1,
-    force: bool = False,
-    verbose: bool = False,
-) -> None:
-    args = dict(args) if args else {}
-    dep_ids = _resolve_deps(target_fqns)
-    target_graph = TopologicalSorter(dep_ids)
-    try:
-        target_graph.prepare()
-    except CycleError as err:
-        raise RuntimeError(f'Cyclic dependencies found: {err.args[1]}') from err
+        with ProcessPoolExecutor(max_workers=jobs) as pool:
+            pending: dict[Future[Path], TargetId] = {}
 
-    deps_fqns = [target_id.full_name for target_id in dep_ids]
-    _LOGGER.info(f"Building targets: {', '.join(deps_fqns)}")
+            def submit(target_id: TargetId) -> None:
+                future = pool.submit(
+                    self._build_target,
+                    target_id=target_id,
+                    args=args,
+                    force=force,
+                    verbose=verbose,
+                )
+                pending[future] = target_id
 
-    with ProcessPoolExecutor(max_workers=jobs) as pool:
-        pending: dict[Future[Path], TargetId] = {}
+            for target_id in target_graph.get_ready():
+                submit(target_id)
 
-        def submit(target_id: TargetId) -> None:
-            future = pool.submit(
-                _build_target,
-                target_id=target_id,
-                args=args,
-                force=force,
-                verbose=verbose,
-            )
-            pending[future] = target_id
+            while pending:
+                done, _ = concurrent.futures.wait(pending, return_when=concurrent.futures.FIRST_COMPLETED)
+                for future in done:
+                    result = future.result()
+                    print(result)
+                    target_id = pending[future]
+                    target_graph.done(target_id)
+                    for new_target_id in target_graph.get_ready():
+                        submit(new_target_id)
+                    pending.pop(future)
 
-        for target_id in target_graph.get_ready():
-            submit(target_id)
+    # Helpers
 
-        while pending:
-            done, _ = concurrent.futures.wait(pending, return_when=concurrent.futures.FIRST_COMPLETED)
-            for future in done:
-                result = future.result()
-                print(result)
-                target_id = pending[future]
-                target_graph.done(target_id)
-                for new_target_id in target_graph.get_ready():
-                    submit(new_target_id)
-                pending.pop(future)
+    def _build_target(
+        self,
+        target_id: TargetId,
+        args: dict[str, Any],
+        *,
+        force: bool,
+        verbose: bool,
+    ) -> Path:
+        target = _CACHE.resolve(target_id)
+        output_dir = self._target_dir(target_id)
+        manifest_file = self._manifest_file(target_id)
 
+        with self._lock(target_id):
+            manifest = self._manifest(target, args)
 
-def _build_target(
-    target_id: TargetId,
-    args: dict[str, Any],
-    *,
-    force: bool,
-    verbose: bool,
-) -> Path:
-    target = _CACHE.resolve(target_id)
+            if not force and self._up_to_date(target_id, manifest):
+                return output_dir
 
-    with target.lock():
-        manifest = target.manifest(args)
+            shutil.rmtree(output_dir, ignore_errors=True)
+            output_dir.mkdir(parents=True)
+            manifest_file.unlink(missing_ok=True)
 
-        if not force and target.up_to_date(manifest):
-            return target.dir
+            with (
+                self._build_dir(target_id) as build_dir,
+                utils.cwd(build_dir),
+            ):
+                try:
+                    target.target.build(output_dir, deps=self._deps(target), args=args, verbose=verbose)
+                except BaseException as err:
+                    shutil.rmtree(output_dir, ignore_errors=True)
+                    raise RuntimeError(f'Build failed: {target_id.full_name}') from err
 
-        shutil.rmtree(target.dir, ignore_errors=True)
-        target.dir.mkdir(parents=True)
-        target.manifest_file.unlink(missing_ok=True)
+            manifest_file.write_text(json.dumps(manifest))
+            return output_dir
 
-        with (
-            target.build_dir() as build_dir,
-            utils.cwd(build_dir),
-        ):
-            try:
-                target.target.build(target.dir, deps=target.deps, args=args, verbose=verbose)
-            except BaseException as err:
-                shutil.rmtree(target.dir, ignore_errors=True)
-                raise RuntimeError(f'Build failed: {target_id.full_name}') from err
+    def _target_dir(self, target_id: TargetId) -> Path:
+        return self.kdist_dir / target_id.plugin_name / target_id.target_name
 
-        target.manifest_file.write_text(json.dumps(manifest))
-        return target.dir
+    def _manifest_file(self, target_id: TargetId) -> Path:
+        return self.kdist_dir / target_id.plugin_name / f'{target_id.target_name}.json'
 
+    def _deps(self, target: CachedTarget) -> dict[str, Path]:
+        return {dep_fqn: self._target_dir(_CACHE.resolve(dep_fqn).id) for dep_fqn in target.target.deps()}
 
-def _resolve_deps(target_fqns: Iterable[str]) -> dict[TargetId, list[TargetId]]:
-    res: dict[TargetId, list[TargetId]] = {}
-    pending = [_CACHE.resolve(target_fqn) for target_fqn in target_fqns]
-    while pending:
-        target = pending.pop()
-        if target.id in res:
-            continue
-        deps = [_CACHE.resolve(target_fqn) for target_fqn in target.target.deps()]
-        res[target.id] = [dep.id for dep in deps]
-        pending += deps
-    return res
+    def _manifest(self, target: CachedTarget, args: dict[str, Any]) -> dict[str, Any]:
+        res = target.target.manifest()
+        res['args'] = dict(args)
+        res['deps'] = {
+            dep_fqn: utils.timestamp(self._manifest_file(_CACHE.resolve(dep_fqn).id))
+            for dep_fqn in target.target.deps()
+        }
+        return res
+
+    def _up_to_date(self, target_id: TargetId, new_manifest: dict[str, Any]) -> bool:
+        if not self._target_dir(target_id).exists():
+            return False
+        manifest_file = self._manifest_file(target_id)
+        if not manifest_file.exists():
+            return False
+        old_manifest = json.loads(manifest_file.read_text())
+        return new_manifest == old_manifest
+
+    def _lock(self, target_id: TargetId) -> FileLock:
+        lock_file = self._target_dir(target_id).with_suffix('.lock')
+        lock_file.parent.mkdir(parents=True, exist_ok=True)
+        return SoftFileLock(lock_file)
+
+    @contextmanager
+    def _build_dir(self, target_id: TargetId) -> Iterator[Path]:
+        tmp_dir_prefix = f'kdist-{target_id.plugin_name}-{target_id.target_name}-'
+        with TemporaryDirectory(prefix=tmp_dir_prefix) as build_dir_str:
+            build_dir = Path(build_dir_str)
+            yield build_dir
