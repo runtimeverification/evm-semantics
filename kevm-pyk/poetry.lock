@@ -293,13 +293,13 @@ pyflakes = ">=3.1.0,<3.2.0"
 
 [[package]]
 name = "flake8-bugbear"
-version = "23.9.16"
+version = "23.11.26"
 description = "A plugin for flake8 finding likely bugs and design problems in your program. Contains warnings that don't belong in pyflakes and pycodestyle."
 optional = false
 python-versions = ">=3.8.1"
 files = [
-    {file = "flake8-bugbear-23.9.16.tar.gz", hash = "sha256:90cf04b19ca02a682feb5aac67cae8de742af70538590509941ab10ae8351f71"},
-    {file = "flake8_bugbear-23.9.16-py3-none-any.whl", hash = "sha256:b182cf96ea8f7a8595b2f87321d7d9b28728f4d9c3318012d896543d19742cb5"},
+    {file = "flake8-bugbear-23.11.26.tar.gz", hash = "sha256:8e36119071bab626b6dab834fadd6d03c06090e9b189e67b4905821df8212fee"},
+    {file = "flake8_bugbear-23.11.26-py3-none-any.whl", hash = "sha256:55d00c8a3c48c995c1f0ec0df54f8c9cf530c06035ce53975a03517d2e7f53e5"},
 ]
 
 [package.dependencies]
@@ -338,13 +338,13 @@ flake8 = "*"
 
 [[package]]
 name = "flake8-type-checking"
-version = "2.5.1"
+version = "2.6.0"
 description = "A flake8 plugin for managing type-checking imports & forward references"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "flake8_type_checking-2.5.1-py3-none-any.whl", hash = "sha256:1cd5cd9731f34921b33640751455643ca1cf7ee4a347a45cd94d3af328a3dd64"},
-    {file = "flake8_type_checking-2.5.1.tar.gz", hash = "sha256:bfc51dd6e09a26662ab19191f44102f0606377ec0271a0e764ae993346a206d6"},
+    {file = "flake8_type_checking-2.6.0-py3-none-any.whl", hash = "sha256:d3c758762b747de1eb205eaae27cb270d919c741e9937b29a772cb6f5a31f260"},
+    {file = "flake8_type_checking-2.6.0.tar.gz", hash = "sha256:379e2c444fa3c332f2f5bd6f5469d03959206f46111cd7981bff604aab585e12"},
 ]
 
 [package.dependencies]
@@ -814,7 +814,7 @@ windows-terminal = ["colorama (>=0.4.6)"]
 
 [[package]]
 name = "pyk"
-version = "0.1.513"
+version = "0.1.514"
 description = ""
 optional = false
 python-versions = "^3.10"
@@ -834,8 +834,8 @@ tomli = "^2.0.1"
 [package.source]
 type = "git"
 url = "https://github.com/runtimeverification/pyk.git"
-reference = "v0.1.513"
-resolved_reference = "3c948debc4d6219315e94b60508cddc8e5bbe9b9"
+reference = "v0.1.514"
+resolved_reference = "bb20d0e27e438b224034b1ada86ee205753065b5"
 
 [[package]]
 name = "pyperclip"
@@ -1099,4 +1099,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "af3b782e71867c132006e56be3a5af308c30b341f071347a6c31e67cfc7df98e"
+content-hash = "6fe22d129b7c0ea218f6a008e0509e27776cf4dcd09dcac2228590b4f87d4ba2"
