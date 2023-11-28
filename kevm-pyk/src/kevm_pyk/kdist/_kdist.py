@@ -64,18 +64,18 @@ class KDist:
         return res
 
     def get(self, target_id: str | TargetId) -> Path:
-        res = self.which(target_id)
+        if isinstance(target_id, str):
+            target_id = TargetId.parse(target_id)
+        res = self._target_dir(target_id)
         if not res.exists():
-            if isinstance(target_id, TargetId):
-                target_id = target_id.full_name
-            raise ValueError(f'Target is not built: {target_id}')
+            raise ValueError(f'Target undefined or not built: {target_id.full_name}')
         return res
 
     def get_or_none(self, target_id: str | TargetId) -> Path | None:
-        res = self.which(target_id)
-        if not res.exists():
+        try:
+            return self.get(target_id)
+        except ValueError:
             return None
-        return res
 
     def build(
         self,
