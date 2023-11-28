@@ -29,8 +29,9 @@ from pyk.proof.show import APRProofShow
 from pyk.proof.tui import APRProofViewer
 from pyk.utils import FrozenDict, hash_str, single
 
-from . import VERSION, config, kdist
+from . import VERSION, config
 from .cli import KEVMCLIArgs, node_id_like
+from .config import kdist
 from .gst_to_kore import SORT_ETHEREUM_SIMULATION, gst_to_kore, kore_pgm_to_kore
 from .kevm import KEVM, KEVMSemantics, kevm_node_printer
 from .kompile import KompileTarget, kevm_kompile

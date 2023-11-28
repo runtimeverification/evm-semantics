@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 import pytest
 from pyk.kore.tools import PrintOutput, kore_print
 
-from kevm_pyk import kdist
+from kevm_pyk.config import kdist
 from kevm_pyk.interpreter import interpret
 
 from ..utils import REPO_ROOT

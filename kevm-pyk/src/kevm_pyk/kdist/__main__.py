@@ -8,7 +8,8 @@ from typing import TYPE_CHECKING
 from pyk.cli.args import KCLIArgs
 from pyk.cli.utils import loglevel
 
-from .. import kdist
+from ..config import kdist
+from ..kdist import target_ids
 
 if TYPE_CHECKING:
     from argparse import Namespace
@@ -50,7 +51,7 @@ def _exec_build(
     debug: bool,
 ) -> None:
     kdist.build(
-        target_fqns=_process_targets(targets),
+        target_ids=_process_targets(targets),
         args=_process_args(args),
         jobs=jobs,
         force=force,
@@ -59,7 +60,7 @@ def _exec_build(
 
 
 def _process_targets(targets: list[str]) -> list[str]:
-    all_target_fqns = kdist.targets()
+    all_target_fqns = [target_id.full_name for target_id in target_ids()]
     res = []
     for pattern in targets:
         matches = fnmatch.filter(all_target_fqns, pattern)
@@ -91,11 +92,16 @@ def _exec_which(target: str | None) -> None:
 
 
 def _exec_list() -> None:
-    plugins = kdist.plugins()
-    for plugin in plugins:
-        print(plugin)
-        for target in plugins[plugin]:
-            print(f'* {target}')
+    targets_by_plugin: dict[str, list[str]] = {}
+    for plugin_name, target_name in target_ids():
+        targets = targets_by_plugin.get(plugin_name, [])
+        targets.append(target_name)
+        targets_by_plugin[plugin_name] = targets
+
+    for plugin_name in targets_by_plugin:
+        print(plugin_name)
+        for target_name in targets_by_plugin[plugin_name]:
+            print(f'* {target_name}')
 
 
 def _parse_arguments() -> Namespace:
