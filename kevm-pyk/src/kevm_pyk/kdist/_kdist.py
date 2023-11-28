@@ -17,7 +17,7 @@ from pyk.utils import hash_str
 from xdg_base_dirs import xdg_cache_home
 
 from . import utils
-from ._cache import CACHE
+from ._cache import target_cache
 from .api import TargetId
 
 if TYPE_CHECKING:
@@ -54,7 +54,7 @@ class KDist:
 
     def which(self, target_id: str | TargetId | None = None) -> Path:
         if target_id:
-            target_id = CACHE.resolve(target_id).id
+            target_id = target_cache().resolve(target_id).id
             return self._target_dir(target_id)
         return self.kdist_dir
 
@@ -87,7 +87,7 @@ class KDist:
         verbose: bool = False,
     ) -> None:
         args = dict(args) if args else {}
-        dep_ids = CACHE.resolve_deps(target_ids)
+        dep_ids = target_cache().resolve_deps(target_ids)
         target_graph = TopologicalSorter(dep_ids)
         try:
             target_graph.prepare()
@@ -117,7 +117,7 @@ class KDist:
                 done, _ = concurrent.futures.wait(pending, return_when=concurrent.futures.FIRST_COMPLETED)
                 for future in done:
                     result = future.result()
-                    print(result)
+                    print(result, flush=True)
                     target_id = pending[future]
                     target_graph.done(target_id)
                     for new_target_id in target_graph.get_ready():
@@ -134,7 +134,7 @@ class KDist:
         force: bool,
         verbose: bool,
     ) -> Path:
-        target = CACHE.resolve(target_id)
+        target = target_cache().resolve(target_id)
         output_dir = self._target_dir(target_id)
         manifest_file = self._manifest_file(target_id)
 
@@ -168,13 +168,14 @@ class KDist:
         return self.kdist_dir / target_id.plugin_name / f'{target_id.target_name}.json'
 
     def _deps(self, target: CachedTarget) -> dict[str, Path]:
-        return {dep_fqn: self._target_dir(CACHE.resolve(dep_fqn).id) for dep_fqn in target.target.deps()}
+        return {dep_fqn: self._target_dir(target_cache().resolve(dep_fqn).id) for dep_fqn in target.target.deps()}
 
     def _manifest(self, target: CachedTarget, args: dict[str, Any]) -> dict[str, Any]:
         res = target.target.manifest()
         res['args'] = dict(args)
         res['deps'] = {
-            dep_fqn: utils.timestamp(self._manifest_file(CACHE.resolve(dep_fqn).id)) for dep_fqn in target.target.deps()
+            dep_fqn: utils.timestamp(self._manifest_file(target_cache().resolve(dep_fqn).id))
+            for dep_fqn in target.target.deps()
         }
         return res
 

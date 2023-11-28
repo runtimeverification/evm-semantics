@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import time
 from collections.abc import Mapping
 from typing import TYPE_CHECKING, NamedTuple
 
@@ -84,7 +85,7 @@ class TargetCache:
                 _LOGGER.warning(f'Invalid plugin name, skipping: {plugin_name}')
                 continue
 
-            _LOGGER.info(f'Loading kdist plugin: {plugin_name}')
+            _LOGGER.info(f'Loading plugin: {plugin_name}')
             module_name = plugin.value
             try:
                 _LOGGER.info(f'Importing module: {module_name}')
@@ -128,8 +129,20 @@ class TargetCache:
         return res
 
 
-CACHE: Final = TargetCache.load()
+_TARGET_CACHE: TargetCache | None = None
+
+
+def target_cache() -> TargetCache:
+    global _TARGET_CACHE
+    if not _TARGET_CACHE:
+        _LOGGER.info('Loading target cache')
+        start_time = time.time()
+        _TARGET_CACHE = TargetCache.load()
+        end_time = time.time()
+        delta_time = end_time - start_time
+        _LOGGER.info(f'Target cache loaded in {delta_time:.3f}s')
+    return _TARGET_CACHE
 
 
 def target_ids() -> list[TargetId]:
-    return CACHE.target_ids
+    return target_cache().target_ids
