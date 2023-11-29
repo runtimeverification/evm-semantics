@@ -30,6 +30,11 @@ module VERIFICATION
     imports EVM-OPTIMIZATIONS
     imports STORAGE-VERIFICATION
 
+    syntax Step ::= Bytes | Int
+    syntax KItem ::= runLemma ( Step ) | doneLemma ( Step )
+ // -------------------------------------------------------
+    rule <k> runLemma(S) => doneLemma(S) ... </k>
+
  // decimals lemmas
  // ---------------
 
@@ -54,7 +59,7 @@ module STORAGE-SPEC
 ### Functional Claims
 
 ```k
-    claim (#bufStrict(32, #loc(S2KStorage . myBool))) => (#buf(32,0))
+    claim runLemma(#bufStrict(32, #loc(S2KStorage . myBool))) => doneLemma(#buf(32,0)) ... </k>
 ```
 
 ### Calling myBool() works
