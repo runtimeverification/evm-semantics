@@ -13,7 +13,12 @@ module EVM-INT-SIMPLIFICATIONS-SPEC
  // up/Int
  // ------
 
-    claim [upInt-01]:      (X up/Int Y) *Int Y <Int X +Int Z => true  requires 0 <Int Y andBool Y <=Int Z
-    claim [upInt-refl-lt]: (X up/Int Y) *Int Y <Int X        => false requires 0 <Int Y
+    claim [upInt-01]: ( ((X up/Int Y) *Int Y) <Int X +Int Z )
+                           => ( true )
+                          requires 0 <Int Y andBool Y <=Int Z
+
+    claim [upInt-refl-lt]: ( ((X up/Int Y) *Int Y) <Int X )
+                            => ( false )
+                           requires 0 <Int Y
 
 endmodule

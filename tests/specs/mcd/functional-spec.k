@@ -1,7 +1,19 @@
 requires "verification.k"
 
-module FUNCTIONAL-SPEC
+module FUNCTIONAL-SPEC-SYNTAX
     imports VERIFICATION
+
+    syntax KItem ::= runLemma ( Step ) | doneLemma ( Step )
+ // -------------------------------------------------------
+    rule <k> runLemma(S) => doneLemma(S) ... </k>
+
+    syntax Step ::= Bool | Int | Bytes
+ // ----------------------------------
+
+endmodule
+
+module FUNCTIONAL-SPEC
+    imports FUNCTIONAL-SPEC-SYNTAX
 
     // Arithmetic
 
@@ -54,15 +66,17 @@ module FUNCTIONAL-SPEC
       requires GUY_TIC_END ==Int #WordPackAddrUInt48UInt48(GUY, TIC, END)
        andBool #rangeAddress(GAL)
 
-    claim [wordPackSimplify1]: ((TIME +Int (maxUInt48 &Int (TTL_TAU /Int pow48))) *Int pow208) |Int (maxUInt208 &Int (GAL |Int (notMaxUInt160 &Int GUY_TIC_END)))
-                            => #WordPackAddrUInt48UInt48(GAL, TIC, TIME +Int TAU)
+    claim [wordPackSimplify1]: <k> runLemma((((TIME +Int (maxUInt48 &Int (TTL_TAU /Int pow48))) *Int pow208) |Int (maxUInt208 &Int
+    (GAL |Int (notMaxUInt160 &Int GUY_TIC_END))))) => doneLemma(#WordPackAddrUInt48UInt48(GAL, TIC, TIME +Int TAU))
+    ... </k>
       requires TTL_TAU     ==Int #WordPackUInt48UInt48(TTL, TAU)
        andBool GUY_TIC_END ==Int #WordPackAddrUInt48UInt48(GUY, TIC, END)
        andBool #rangeAddress(GAL)
        andBool #rangeUInt(48, TIME +Int TAU)
 
-    claim [wordPackSimplify2]: (((TIME +Int (maxUInt48 &Int TTL_TAU)) *Int pow160) |Int (maskWordPackAddrUInt48UInt48_2 &Int GUY_TIC_END))
-                              => #WordPackAddrUInt48UInt48(GUY, TIME +Int TTL, END)
+    claim [wordPackSimplify2]: <k> runLemma((((TIME +Int (maxUInt48 &Int TTL_TAU)) *Int pow160) |Int
+    (maskWordPackAddrUInt48UInt48_2 &Int GUY_TIC_END))) => doneLemma(#WordPackAddrUInt48UInt48(GUY, TIME +Int TTL,
+    END)) ... </k>
       requires TTL_TAU     ==Int #WordPackUInt48UInt48(TTL, TAU)
        andBool GUY_TIC_END ==Int #WordPackAddrUInt48UInt48(GUY, TIC, END)
        andBool #rangeUInt(48, TIME +Int TTL)
@@ -75,11 +89,11 @@ module FUNCTIONAL-SPEC
         requires #lookup(ACCT_ID_STORAGE, 6) ==Int #WordPackUInt48UInt48(_, Tau)
         andBool #rangeUInt(48, TIME +Int Tau)
 
-    claim [bytesDisjointSetCommutative1]:     ACCT_ID_STORAGE [ keccak ( #buf ( 32 , ABI_id ) +Bytes X) +Int 1 <- ABI_lot:Int ]
-                                                              [ keccak ( #buf ( 32 , ABI_id ) +Bytes X) +Int 2 <- #WordPackAddrUInt48UInt48 ( CALLER_ID , TIME +Int ( maxUInt48 &Int #lookup ( ACCT_ID_STORAGE , 6 ) ) , #lookup ( ACCT_ID_STORAGE , keccak ( #buf ( 32 , ABI_id ) +Bytes X) +Int 2 ) /Int pow208 ) ]
-                                          ==K ACCT_ID_STORAGE [ keccak ( #buf ( 32 , ABI_id ) +Bytes X) +Int 2 <- #WordPackAddrUInt48UInt48 ( CALLER_ID , TIME +Int ( maxUInt48 &Int #lookup ( ACCT_ID_STORAGE , 6 ) ) , #lookup ( ACCT_ID_STORAGE , keccak ( #buf ( 32 , ABI_id ) +Bytes X) +Int 2 ) /Int pow208 ) ]
-                                                              [ keccak ( #buf ( 32 , ABI_id ) +Bytes X) +Int 1 <- ABI_lot:Int ]
-                                          => true
+    claim [bytesDisjointSetCommutative1]: <k> runLemma( ACCT_ID_STORAGE [ keccak ( #buf ( 32 , ABI_id ) +Bytes X) +Int 1 <- ABI_lot:Int ] [ keccak ( #buf ( 32 , ABI_id ) +Bytes X) +Int 2 <- #WordPackAddrUInt48UInt48 ( CALLER_ID , TIME +Int ( maxUInt48 &Int #lookup ( ACCT_ID_STORAGE , 6 ) ) , #lookup ( ACCT_ID_STORAGE , keccak ( #buf ( 32 , ABI_id ) +Bytes X) +Int 2 ) /Int pow208 ) ]
+                          ==K
+                        ACCT_ID_STORAGE [ keccak ( #buf ( 32 , ABI_id ) +Bytes X) +Int 2 <- #WordPackAddrUInt48UInt48 ( CALLER_ID , TIME +Int ( maxUInt48 &Int #lookup ( ACCT_ID_STORAGE , 6 ) ) , #lookup ( ACCT_ID_STORAGE , keccak ( #buf ( 32 , ABI_id ) +Bytes X) +Int 2 ) /Int pow208 ) ] [ keccak ( #buf ( 32 , ABI_id ) +Bytes X) +Int 1 <- ABI_lot:Int ])
+           => doneLemma(true) ... </k>
+
 
     claim (#lookup( M:Map [ keccak(_) <- _ ], I:Int ))
            => (#lookup( M , I ))
@@ -87,7 +101,8 @@ module FUNCTIONAL-SPEC
 
     // Memory operations
 
-    claim [bufferRangeSelectSymbolic]: #range(M:Bytes [ 0 := #buf(4, X) ] [ 0 <- 10 ] [ 1 <- 11 ] [ 2 <- 12 ] [ 3 <- 13 ], 0, 4) => 10 : 11 : 12 : 13 : .Bytes
+    claim [bufferRangeSelectSymbolic]: <k> runLemma(#range(M:Bytes [ 0 := #buf(4, X) ] [ 0 <- 10 ] [ 1 <- 11 ] [ 2 <- 12 ] [ 3 <- 13 ], 0, 4)) =>
+    doneLemma(10 : 11 : 12 : 13 : .Bytes) ... </k>
 
     claim ( M:Bytes [ 132 := #buf(32, B11) ] [ 128  := #buf(32, B21) +Bytes #buf(32, B22) ] ) => ( M [ 128 := (#buf(32, B21) +Bytes #buf(32, B22)) ] )
       requires #rangeUInt(256, B11) andBool #rangeUInt(256, B21) andBool #rangeUInt(256, B22)
