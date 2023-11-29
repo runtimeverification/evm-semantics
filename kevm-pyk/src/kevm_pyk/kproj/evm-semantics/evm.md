@@ -1208,9 +1208,9 @@ These rules reach into the network state and load/store from account storage:
 
 The various `CALL*` (and other inter-contract control flow) operations will be desugared into these `InternalOp`s.
 
--   `#checkCall` takes the calling account and the value of the call and triggers a few checks before executing the call.
--   `#checkBalanceUnderflow` takes the calling account and the value of the call and checks if the account balance is less than equal the call value.
--   `#checkDepthExceeded` checks if the current call depth is greater or equal than `1024`.
+-   `#checkCall` takes the calling account and the value of the call and triggers several checks before executing the call.
+-   `#checkBalanceUnderflow` takes the calling account and the value of the call and checks if the call value is greater than the account balance.
+-   `#checkDepthExceeded` checks if the current call depth is greater than or equal to `1024`.
 -   `#checkNonceExceeded` takes the calling account and checks if the nonce is less than `maxUInt64` (`18446744073709551615`).
 -   `#call` takes the calling account, the account to execute as, the account whose code should execute, the gas limit, the amount to transfer, the arguments, and the static flag.
 -   `#callWithCode` takes the calling account, the accout to execute as, the code to execute (as a `Bytes`), the gas limit, the amount to transfer, the arguments, and the static flag.
