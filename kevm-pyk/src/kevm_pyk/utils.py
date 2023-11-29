@@ -89,6 +89,18 @@ def get_apr_proof_for_spec(
     return apr_proof
 
 
+def build_prover_for_proof(
+    kcfg_explore: KCFGExplore, proof: Proof, parallel: bool = False
+) -> APRBMCProver | APRProver | EqualityProver:
+    if type(proof) is APRBMCProof:
+        return APRBMCProver(proof, kcfg_explore)
+    if type(proof) is APRProof:
+        return APRProver(proof, kcfg_explore)
+    if type(proof) is EqualityProof:
+        return EqualityProver(kcfg_explore=kcfg_explore, proof=proof)
+    raise ValueError(f'Do not know how to build prover for proof: {proof}')
+
+
 def run_prover(
     kprove: KProve,
     proof: Proof,
@@ -102,15 +114,7 @@ def run_prover(
     fail_fast: bool = False,
 ) -> bool:
     proof = proof
-    prover: APRBMCProver | APRProver | EqualityProver
-    if type(proof) is APRBMCProof:
-        prover = APRBMCProver(proof, kcfg_explore)
-    elif type(proof) is APRProof:
-        prover = APRProver(proof, kcfg_explore)
-    elif type(proof) is EqualityProof:
-        prover = EqualityProver(kcfg_explore=kcfg_explore, proof=proof)
-    else:
-        raise ValueError(f'Do not know how to build prover for proof: {proof}')
+    prover: APRBMCProver | APRProver | EqualityProver = build_prover_for_proof(kcfg_explore, proof)
     try:
         if type(prover) is APRBMCProver or type(prover) is APRProver:
             prover.advance_proof(

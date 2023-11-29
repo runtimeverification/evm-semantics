@@ -14,6 +14,7 @@ from functools import cached_property
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+import pyk.proof.parallel as proof_parallel
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli.utils import file_path
 from pyk.cterm import CTerm
@@ -25,6 +26,7 @@ from pyk.ktool.krun import KRunOutput
 from pyk.prelude.ml import is_top, mlOr
 from pyk.proof import APRProof
 from pyk.proof.equality import EqualityProof
+from pyk.proof.proof import ProofStatus
 from pyk.proof.show import APRProofShow
 from pyk.proof.tui import APRProofViewer
 from pyk.utils import FrozenDict, hash_str, single
@@ -36,6 +38,7 @@ from .gst_to_kore import SORT_ETHEREUM_SIMULATION, gst_to_kore, kore_pgm_to_kore
 from .kevm import KEVM, KEVMSemantics, kevm_node_printer
 from .kompile import KompileTarget, kevm_kompile
 from .utils import (
+    build_prover_for_proof,
     claim_dependency_dict,
     ensure_ksequence_on_k_cell,
     get_apr_proof_for_spec,
@@ -46,10 +49,11 @@ from .utils import (
 
 if TYPE_CHECKING:
     from argparse import Namespace
-    from collections.abc import Callable, Iterable, Iterator
+    from collections.abc import Callable, Iterable, Iterator, Mapping
     from typing import Any, Final, TypeVar
 
     from pyk.kast.outer import KClaim
+    from pyk.kcfg.explore import KCFGExplore
     from pyk.kcfg.kcfg import NodeIdLike
     from pyk.proof.proof import Proof
     from pyk.utils import BugReport
@@ -270,6 +274,11 @@ def init_claim_jobs(spec_module_name: str, claims: list[KClaim]) -> frozenset[KC
     return frozenset({get_or_load_claim_job(claim.label) for claim in claims})
 
 
+class MyProcessData(proof_parallel.ProcessData):
+    def cleanup(self) -> None:
+        pass
+
+
 def exec_prove(
     spec_file: Path,
     includes: Iterable[str],
@@ -342,9 +351,51 @@ def exec_prove(
     if all_claims is None:
         raise ValueError(f'No claims found in file: {spec_file}')
     spec_module_name = spec_module if spec_module is not None else os.path.splitext(spec_file.name)[0].upper()
-    all_claim_jobs = init_claim_jobs(spec_module_name, all_claims)
-    all_claim_jobs_by_label = {c.claim.label: c for c in all_claim_jobs}
+    all_claim_jobs: frozenset[KClaimJob] = init_claim_jobs(spec_module_name, all_claims)
+    all_claim_jobs_by_label: dict[str, KClaimJob] = {c.claim.label: c for c in all_claim_jobs}
     claims_graph = claim_dependency_dict(all_claims, spec_module_name=spec_module_name)
+
+    def _get_proof_problem(kcfg_explore: KCFGExplore, claim: KClaim, up_to_date: bool) -> APRProof | EqualityProof:
+        if is_functional(claim):
+            if not reinit and up_to_date and EqualityProof.proof_exists(claim.label, save_directory):
+                return EqualityProof.read_proof_data(save_directory, claim.label)
+            else:
+                return EqualityProof.from_claim(claim, kevm.definition, proof_dir=save_directory)
+        else:
+            if not reinit and up_to_date and APRProof.proof_data_exists(claim.label, save_directory):
+                return APRProof.read_proof_data(save_directory, claim.label)
+
+            else:
+                _LOGGER.info(f'Converting claim to KCFG: {claim.label}')
+                kcfg, init_node_id, target_node_id = KCFG.from_claim(kevm.definition, claim)
+
+                new_init = ensure_ksequence_on_k_cell(kcfg.node(init_node_id).cterm)
+                new_target = ensure_ksequence_on_k_cell(kcfg.node(target_node_id).cterm)
+
+                _LOGGER.info(f'Computing definedness constraint for initial node: {claim.label}')
+                new_init = kcfg_explore.cterm_assume_defined(new_init)
+
+                _LOGGER.info(f'Simplifying initial and target node: {claim.label}')
+                new_init, _ = kcfg_explore.cterm_simplify(new_init)
+                new_target, _ = kcfg_explore.cterm_simplify(new_target)
+                if CTerm._is_bottom(new_init.kast):
+                    raise ValueError('Simplifying initial node led to #Bottom, are you sure your LHS is defined?')
+                if CTerm._is_top(new_target.kast):
+                    raise ValueError('Simplifying target node led to #Bottom, are you sure your RHS is defined?')
+
+                kcfg.replace_node(init_node_id, new_init)
+                kcfg.replace_node(target_node_id, new_target)
+
+                return APRProof(
+                    claim.label,
+                    kcfg,
+                    [],
+                    init_node_id,
+                    target_node_id,
+                    {},
+                    proof_dir=save_directory,
+                    subproof_ids=claims_graph[claim.label],
+                )
 
     def _init_and_run_proof(claim_job: KClaimJob) -> tuple[bool, list[str] | None]:
         claim = claim_job.claim
@@ -365,47 +416,7 @@ def exec_prove(
             smt_retry_limit=smt_retry_limit,
             trace_rewrites=trace_rewrites,
         ) as kcfg_explore:
-            proof_problem: Proof
-            if is_functional(claim):
-                if not reinit and up_to_date and EqualityProof.proof_exists(claim.label, save_directory):
-                    proof_problem = EqualityProof.read_proof_data(save_directory, claim.label)
-                else:
-                    proof_problem = EqualityProof.from_claim(claim, kevm.definition, proof_dir=save_directory)
-            else:
-                if not reinit and up_to_date and APRProof.proof_data_exists(claim.label, save_directory):
-                    proof_problem = APRProof.read_proof_data(save_directory, claim.label)
-
-                else:
-                    _LOGGER.info(f'Converting claim to KCFG: {claim.label}')
-                    kcfg, init_node_id, target_node_id = KCFG.from_claim(kevm.definition, claim)
-
-                    new_init = ensure_ksequence_on_k_cell(kcfg.node(init_node_id).cterm)
-                    new_target = ensure_ksequence_on_k_cell(kcfg.node(target_node_id).cterm)
-
-                    _LOGGER.info(f'Computing definedness constraint for initial node: {claim.label}')
-                    new_init = kcfg_explore.cterm_assume_defined(new_init)
-
-                    _LOGGER.info(f'Simplifying initial and target node: {claim.label}')
-                    new_init, _ = kcfg_explore.cterm_simplify(new_init)
-                    new_target, _ = kcfg_explore.cterm_simplify(new_target)
-                    if CTerm._is_bottom(new_init.kast):
-                        raise ValueError('Simplifying initial node led to #Bottom, are you sure your LHS is defined?')
-                    if CTerm._is_top(new_target.kast):
-                        raise ValueError('Simplifying target node led to #Bottom, are you sure your RHS is defined?')
-
-                    kcfg.replace_node(init_node_id, new_init)
-                    kcfg.replace_node(target_node_id, new_target)
-
-                    proof_problem = APRProof(
-                        claim.label,
-                        kcfg,
-                        [],
-                        init_node_id,
-                        target_node_id,
-                        {},
-                        proof_dir=save_directory,
-                        subproof_ids=claims_graph[claim.label],
-                    )
+            proof_problem: Proof = _get_proof_problem(kcfg_explore, claim, up_to_date=up_to_date)
 
             start_time = time.time()
             passed = run_prover(
@@ -428,18 +439,69 @@ def exec_prove(
 
     topological_sorter = graphlib.TopologicalSorter(claims_graph)
     topological_sorter.prepare()
-    with wrap_process_pool(workers=workers) as process_pool:
-        selected_results: list[tuple[bool, list[str] | None]] = []
-        selected_claims = []
-        while topological_sorter.is_active():
-            ready = topological_sorter.get_ready()
-            _LOGGER.info(f'Discharging proof obligations: {ready}')
-            curr_claim_list = [all_claim_jobs_by_label[label] for label in ready]
-            results: list[tuple[bool, list[str] | None]] = process_pool.map(_init_and_run_proof, curr_claim_list)
+
+    selected_results: list[tuple[bool, list[str] | None]] = []
+    selected_claims = []
+    while topological_sorter.is_active():
+        ready = topological_sorter.get_ready()
+        _LOGGER.info(f'Discharging proof obligations: {ready}')
+        curr_claim_list = [all_claim_jobs_by_label[label] for label in ready]
+        kcfg_explore_managers = {
+            label: legacy_explore(
+                kevm,
+                kcfg_semantics=KEVMSemantics(auto_abstract_gas=auto_abstract_gas),
+                id=label,
+                llvm_definition_dir=llvm_definition_dir,
+                bug_report=bug_report,
+                kore_rpc_command=kore_rpc_command,
+                smt_timeout=smt_timeout,
+                smt_retry_limit=smt_retry_limit,
+                trace_rewrites=trace_rewrites,
+            )
+            for label in ready
+        }
+        try:
+            kcfg_explores = {k: e.__enter__() for k, e in kcfg_explore_managers.items()}
+            ###
+            # results: list[tuple[bool, list[str] | None]] = process_pool.map(_init_and_run_proof, curr_claim_list)
+            curr_proofs = {
+                label: _get_proof_problem(
+                    kcfg_explore=kcfg_explores[label],
+                    claim=all_claim_jobs_by_label[label].claim,
+                    up_to_date=False,  # TODO?
+                )
+                for label in ready
+            }
+            curr_provers = {
+                label: build_prover_for_proof(kcfg_explore=kcfg_explores[label], proof=curr_proofs[label])
+                for label in ready
+            }
+
+            curr_proofs_to_prove: Mapping[str, proof_parallel.Proof] = {
+                k: v for k, v in curr_proofs.items() if isinstance(v, proof_parallel.Proof)
+            }
+            # TODO handle these
+            non_apr_proofs_to_prove: Mapping[str, Proof] = {k: v for k, v in curr_proofs.items() if v is not APRProof}
+            curr_provers_to_use: Mapping[str, proof_parallel.Prover] = {
+                k: v for k, v in curr_provers.items() if isinstance(v, proof_parallel.Prover)
+            }
+
+            non_apr_proofs_to_prove = non_apr_proofs_to_prove
+            par_result = proof_parallel.prove_parallel(
+                proofs=curr_proofs_to_prove,
+                provers=curr_provers_to_use,
+                max_workers=workers,
+                process_data=MyProcessData(),
+            )
+            results = [(p.status == ProofStatus.PASSED, None) for p in par_result]
+            ###
             for label in ready:
                 topological_sorter.done(label)
             selected_results.extend(results)
             selected_claims.extend(curr_claim_list)
+        finally:
+            for e in kcfg_explore_managers.values():
+                e.__exit__(None, None, None)
 
     failed = 0
     for job, r in zip(selected_claims, selected_results, strict=True):
