@@ -21,6 +21,7 @@ from pyk.kcfg import KCFGExplore
 from pyk.kore.rpc import KoreClient, KoreExecLogFormat, TransportType, kore_server
 from pyk.proof import APRBMCProof, APRBMCProver, APRProof, APRProver
 from pyk.proof.equality import EqualityProof, EqualityProver
+from pyk.proof.reachability import ParallelAPRBMCProver, ParallelAPRProver
 from pyk.utils import single
 
 if TYPE_CHECKING:
@@ -90,12 +91,54 @@ def get_apr_proof_for_spec(
 
 
 def build_prover_for_proof(
-    kcfg_explore: KCFGExplore, proof: Proof, parallel: bool = False
-) -> APRBMCProver | APRProver | EqualityProver:
+    kcfg_explore: KCFGExplore,
+    proof: Proof,
+    module_name: str,
+    definition_dir: Path,
+    execute_depth: int | None,
+    kprint: KPrint,
+    kcfg_semantics: KCFGSemantics | None,
+    id: str | None,
+    trace_rewrites: bool,
+    cut_point_rules: Iterable[str],
+    terminal_rules: Iterable[str],
+    bug_report_id: str | None,
+    build_parallel: bool = False,
+) -> APRBMCProver | APRProver | EqualityProver | ParallelAPRBMCProver | ParallelAPRProver:
     if type(proof) is APRBMCProof:
-        return APRBMCProver(proof, kcfg_explore)
+        if build_parallel:
+            return ParallelAPRBMCProver(
+                proof,
+                module_name=module_name,
+                definition_dir=definition_dir,
+                execute_depth=execute_depth,
+                kprint=kprint,
+                kcfg_semantics=kcfg_semantics,
+                id=id,
+                bug_report_id=bug_report_id,
+                trace_rewrites=trace_rewrites,
+                cut_point_rules=cut_point_rules,
+                terminal_rules=terminal_rules,
+            )
+        else:
+            return APRBMCProver(proof, kcfg_explore)
     if type(proof) is APRProof:
-        return APRProver(proof, kcfg_explore)
+        if build_parallel:
+            return ParallelAPRProver(
+                proof,
+                module_name=module_name,
+                definition_dir=definition_dir,
+                execute_depth=execute_depth,
+                kprint=kprint,
+                kcfg_semantics=kcfg_semantics,
+                id=id,
+                bug_report_id=bug_report_id,
+                trace_rewrites=trace_rewrites,
+                cut_point_rules=cut_point_rules,
+                terminal_rules=terminal_rules,
+            )
+        else:
+            return APRProver(proof, kcfg_explore)
     if type(proof) is EqualityProof:
         return EqualityProver(kcfg_explore=kcfg_explore, proof=proof)
     raise ValueError(f'Do not know how to build prover for proof: {proof}')
@@ -104,7 +147,7 @@ def build_prover_for_proof(
 def run_prover(
     kprove: KProve,
     proof: Proof,
-    kcfg_explore: KCFGExplore,
+    prover: APRBMCProver | APRProver | EqualityProver,
     max_depth: int = 1000,
     max_iterations: int | None = None,
     cut_point_rules: Iterable[str] = (),
@@ -113,8 +156,6 @@ def run_prover(
     abstract_node: Callable[[CTerm], CTerm] | None = None,
     fail_fast: bool = False,
 ) -> bool:
-    proof = proof
-    prover: APRBMCProver | APRProver | EqualityProver = build_prover_for_proof(kcfg_explore, proof)
     try:
         if type(prover) is APRBMCProver or type(prover) is APRProver:
             prover.advance_proof(

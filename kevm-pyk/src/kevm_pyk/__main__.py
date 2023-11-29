@@ -54,7 +54,8 @@ if TYPE_CHECKING:
     from pyk.kast.outer import KClaim
     from pyk.kcfg.explore import KCFGExplore
     from pyk.kcfg.kcfg import NodeIdLike
-    from pyk.proof.proof import Proof, Prover
+    from pyk.proof import APRBMCProver, APRProver, EqualityProver
+    from pyk.proof.proof import Proof
     from pyk.utils import BugReport
 
     T = TypeVar('T')
@@ -430,8 +431,23 @@ def exec_prove(
                 )
                 for label in ready
             }
+            curr_semantics = {label: KEVMSemantics(auto_abstract_gas=auto_abstract_gas) for label in ready}
             curr_provers = {
-                label: build_prover_for_proof(kcfg_explore=kcfg_explores[label], proof=curr_proofs[label])
+                label: build_prover_for_proof(
+                    kcfg_explore=kcfg_explores[label],
+                    proof=curr_proofs[label],
+                    module_name=spec_module_name,
+                    definition_dir=definition_dir,
+                    build_parallel=True,
+                    execute_depth=max_depth,
+                    kprint=kevm,
+                    kcfg_semantics=curr_semantics[label],
+                    id=label,
+                    bug_report_id=label,
+                    trace_rewrites=trace_rewrites,
+                    cut_point_rules=KEVMSemantics.cut_point_rules(break_on_jumpi, break_on_calls),
+                    terminal_rules=KEVMSemantics.terminal_rules(break_every_step),
+                )
                 for label in ready
             }
 
@@ -441,11 +457,17 @@ def exec_prove(
             curr_provers_to_use: Mapping[str, proof_parallel.Prover] = {
                 k: v for k, v in curr_provers.items() if isinstance(v, proof_parallel.Prover)
             }
+            _LOGGER.info(f'Proofs to prove {curr_proofs_to_prove}')
+            _LOGGER.info(f'Provers to use {curr_provers_to_use}')
+
+            # Check that every proof has a corresponding prover
+            for k, _ in curr_proofs_to_prove.items():
+                assert k in curr_provers_to_use.keys()
 
             non_parallel_proofs_to_prove: Mapping[str, Proof] = {
                 k: v for k, v in curr_proofs.items() if not isinstance(v, proof_parallel.Proof)
             }
-            non_parallel_provers_to_use: Mapping[str, Prover] = {
+            non_parallel_provers_to_use: Mapping[str, APRBMCProver | APRProver | EqualityProver] = {
                 k: v for k, v in curr_provers.items() if not isinstance(v, proof_parallel.Prover)
             }
 
@@ -459,8 +481,8 @@ def exec_prove(
             seq_return = {
                 k: run_prover(
                     kevm,
-                    non_parallel_proofs_to_prove[k],
-                    non_parallel_provers_to_use[k].kcfg_explore,
+                    proof=non_parallel_proofs_to_prove[k],
+                    prover=non_parallel_provers_to_use[k],
                     max_depth=max_depth,
                     max_iterations=max_iterations,
                     cut_point_rules=KEVMSemantics.cut_point_rules(break_on_jumpi, break_on_calls),
@@ -478,6 +500,7 @@ def exec_prove(
             selected_claims.extend(curr_claim_list)
         finally:
             for e in kcfg_explore_managers.values():
+                _LOGGER.info(f'Exitting a KcfgExplore: {e}')
                 e.__exit__(None, None, None)
 
     failed = 0
