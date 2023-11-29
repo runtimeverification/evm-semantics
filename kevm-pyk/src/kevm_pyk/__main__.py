@@ -7,7 +7,6 @@ import logging
 import os
 import sys
 import tempfile
-import time
 from argparse import ArgumentParser
 from dataclasses import dataclass
 from functools import cached_property
@@ -55,7 +54,7 @@ if TYPE_CHECKING:
     from pyk.kast.outer import KClaim
     from pyk.kcfg.explore import KCFGExplore
     from pyk.kcfg.kcfg import NodeIdLike
-    from pyk.proof.proof import Proof
+    from pyk.proof.proof import Proof, Prover
     from pyk.utils import BugReport
 
     T = TypeVar('T')
@@ -311,7 +310,7 @@ def exec_prove(
     if save_directory is None:
         save_directory = Path(tempfile.mkdtemp())
 
-    digest_file = save_directory / 'digest'
+    # digest_file = save_directory / 'digest'
 
     if definition_dir is None:
         definition_dir = kdist.get('evm-semantics.haskell')
@@ -397,46 +396,6 @@ def exec_prove(
                     subproof_ids=claims_graph[claim.label],
                 )
 
-    def _init_and_run_proof(claim_job: KClaimJob) -> tuple[bool, list[str] | None]:
-        claim = claim_job.claim
-        up_to_date = claim_job.up_to_date(digest_file)
-        if up_to_date:
-            _LOGGER.info(f'Claim {claim.label} is up to date.')
-        else:
-            _LOGGER.info(f'Claim {claim.label} reinitialized because it is out of date.')
-        claim_job.update_digest(digest_file)
-        with legacy_explore(
-            kevm,
-            kcfg_semantics=KEVMSemantics(auto_abstract_gas=auto_abstract_gas),
-            id=claim.label,
-            llvm_definition_dir=llvm_definition_dir,
-            bug_report=bug_report,
-            kore_rpc_command=kore_rpc_command,
-            smt_timeout=smt_timeout,
-            smt_retry_limit=smt_retry_limit,
-            trace_rewrites=trace_rewrites,
-        ) as kcfg_explore:
-            proof_problem: Proof = _get_proof_problem(kcfg_explore, claim, up_to_date=up_to_date)
-
-            start_time = time.time()
-            passed = run_prover(
-                kevm,
-                proof_problem,
-                kcfg_explore,
-                max_depth=max_depth,
-                max_iterations=max_iterations,
-                cut_point_rules=KEVMSemantics.cut_point_rules(break_on_jumpi, break_on_calls),
-                terminal_rules=KEVMSemantics.terminal_rules(break_every_step),
-                fail_fast=fail_fast,
-            )
-            end_time = time.time()
-            _LOGGER.info(f'Proof timing {proof_problem.id}: {end_time - start_time}s')
-            failure_log = None
-            if not passed:
-                failure_log = print_failure_info(proof_problem, kcfg_explore)
-
-            return passed, failure_log
-
     topological_sorter = graphlib.TopologicalSorter(claims_graph)
     topological_sorter.prepare()
 
@@ -462,8 +421,7 @@ def exec_prove(
         }
         try:
             kcfg_explores = {k: e.__enter__() for k, e in kcfg_explore_managers.items()}
-            ###
-            # results: list[tuple[bool, list[str] | None]] = process_pool.map(_init_and_run_proof, curr_claim_list)
+
             curr_proofs = {
                 label: _get_proof_problem(
                     kcfg_explore=kcfg_explores[label],
@@ -480,21 +438,40 @@ def exec_prove(
             curr_proofs_to_prove: Mapping[str, proof_parallel.Proof] = {
                 k: v for k, v in curr_proofs.items() if isinstance(v, proof_parallel.Proof)
             }
-            # TODO handle these
-            non_apr_proofs_to_prove: Mapping[str, Proof] = {k: v for k, v in curr_proofs.items() if v is not APRProof}
             curr_provers_to_use: Mapping[str, proof_parallel.Prover] = {
                 k: v for k, v in curr_provers.items() if isinstance(v, proof_parallel.Prover)
             }
 
-            non_apr_proofs_to_prove = non_apr_proofs_to_prove
-            par_result = proof_parallel.prove_parallel(
+            non_parallel_proofs_to_prove: Mapping[str, Proof] = {
+                k: v for k, v in curr_proofs.items() if not isinstance(v, proof_parallel.Proof)
+            }
+            non_parallel_provers_to_use: Mapping[str, Prover] = {
+                k: v for k, v in curr_provers.items() if not isinstance(v, proof_parallel.Prover)
+            }
+
+            par_return = proof_parallel.prove_parallel(
                 proofs=curr_proofs_to_prove,
                 provers=curr_provers_to_use,
                 max_workers=workers,
                 process_data=MyProcessData(),
             )
-            results = [(p.status == ProofStatus.PASSED, None) for p in par_result]
-            ###
+            par_results = [(p.status == ProofStatus.PASSED, None) for p in par_return]
+            seq_return = {
+                k: run_prover(
+                    kevm,
+                    non_parallel_proofs_to_prove[k],
+                    non_parallel_provers_to_use[k].kcfg_explore,
+                    max_depth=max_depth,
+                    max_iterations=max_iterations,
+                    cut_point_rules=KEVMSemantics.cut_point_rules(break_on_jumpi, break_on_calls),
+                    terminal_rules=KEVMSemantics.terminal_rules(break_every_step),
+                    fail_fast=fail_fast,
+                )
+                for k in non_parallel_proofs_to_prove.keys()
+            }
+            seq_results = [(p, None) for p in seq_return.values()]
+            results = seq_results + par_results
+
             for label in ready:
                 topological_sorter.done(label)
             selected_results.extend(results)
