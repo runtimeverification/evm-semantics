@@ -59,7 +59,7 @@ module STORAGE-SPEC
 ### Functional Claims
 
 ```k
-    claim runLemma(#bufStrict(32, #loc(S2KStorage . myBool))) => doneLemma(#buf(32,0)) ... </k>
+    claim <k> runLemma(#bufStrict(32, #loc(S2KStorage . myBool))) => doneLemma(#buf(32,0)) ... </k>
 ```
 
 ### Calling myBool() works
