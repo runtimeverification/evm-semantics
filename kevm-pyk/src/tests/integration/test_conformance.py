@@ -9,7 +9,7 @@ from pyk.kore.prelude import int_dv
 from pyk.kore.syntax import App
 from pyk.kore.tools import PrintOutput, kore_print
 
-from kevm_pyk import kdist
+from kevm_pyk.config import kdist
 from kevm_pyk.interpreter import interpret
 
 from ..utils import REPO_ROOT

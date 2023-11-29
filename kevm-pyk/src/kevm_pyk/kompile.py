@@ -62,7 +62,7 @@ def kevm_kompile(
     verbose: bool = False,
 ) -> Path:
     if plugin_dir is None:
-        from . import kdist
+        from .config import kdist
 
         plugin_dir = kdist.get('evm-semantics.plugin')
 
