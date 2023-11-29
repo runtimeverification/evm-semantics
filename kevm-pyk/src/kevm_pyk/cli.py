@@ -170,7 +170,7 @@ class KEVMCLIArgs(KCLIArgs):
             dest='use_booster',
             default=False,
             action='store_true',
-            help="Use the booster RPC server instead of kore-rpc. Requires calling kompile with '--target haskell-booster' flag",
+            help='Use the booster RPC server instead of kore-rpc.',
         )
         args.add_argument(
             '--port',
