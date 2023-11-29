@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 from pyk.kore.parser import KoreParser
 from pyk.utils import run_process
 
-from . import kdist
+from .config import kdist
 from .gst_to_kore import gst_to_kore
 
 if TYPE_CHECKING:

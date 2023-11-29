@@ -1,1 +1,2 @@
-from ._kdist import build, clean, get, get_or_none, plugins, targets, which
+from ._cache import target_ids
+from ._kdist import KDist
