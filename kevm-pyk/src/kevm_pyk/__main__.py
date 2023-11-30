@@ -436,13 +436,13 @@ def exec_prove(
                 label: build_prover_for_proof(
                     kcfg_explore=kcfg_explores[label],
                     proof=curr_proofs[label],
-                    module_name=spec_module_name,
-                    definition_dir=definition_dir,
+                    module_name=kevm.main_module,  # or `module_name=spec_module_name` ?
+                    definition_dir=definition_dir,  # or `definition_dir=kevm.definition_dir` ?
                     build_parallel=True,
                     execute_depth=max_depth,
                     kprint=kevm,
                     kcfg_semantics=curr_semantics[label],
-                    id=label,
+                    proof_id=label,
                     bug_report_id=label,
                     trace_rewrites=trace_rewrites,
                     cut_point_rules=KEVMSemantics.cut_point_rules(break_on_jumpi, break_on_calls),
