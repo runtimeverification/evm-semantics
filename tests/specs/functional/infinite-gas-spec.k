@@ -61,7 +61,7 @@ module INFINITE-GAS-SPEC
     claim [gas.inf.9]:  <k> runLemma(#gas(G) -Gas 3 *Int (DATA_LEN up/Int 32)) => doneLemma(#gas(G -Int 3 *Int (DATA_LEN up/Int 32))) ... </k> requires 0 <=Int DATA_LEN andBool DATA_LEN <Int pow16
 
     claim [gas.inf.10]: <k> runLemma (#gas(-271 -Int Cmem(ISTANBUL, #memoryUsageUpdate(5, 160, DATA_LEN))) -Gas ((3 *Int (DATA_LEN up/Int 32) +Int 3)))
-           => (#gas(-271 -Int Cmem(ISTANBUL, #memoryUsageUpdate(5, 160, DATA_LEN)) -Int (3 *Int (DATA_LEN up/Int 32) +Int 3)))
+           => (#gas(-271 -Int Cmem(ISTANBUL, #memoryUsageUpdate(5, 160, DATA_LEN)) -Int (3 *Int (DATA_LEN up/Int 32) +Int 3))) ... </k>
       requires 0 <=Int DATA_LEN andBool DATA_LEN <Int pow16
 
     claim [gas.inf.11]: <k> runLemma(  #gas( -271 -Int CMEM -Int 3 *Int ( DATA_LEN up/Int 32 ) -Int CMEM' +Int CMEM -Int Cmem ( ISTANBUL , #memoryUsageUpdate ( 5 , ( DATA_LEN +Int 31 ) /Int 32 *Int 32 +Int 160 , 32 ) ) +Int CMEM' +Int -122))
