@@ -6,8 +6,6 @@ from typing import TYPE_CHECKING
 
 import kevm_pyk
 
-from .kdist import KDist
-
 if TYPE_CHECKING:
     from typing import Final
 
@@ -22,6 +20,3 @@ INCLUDE_DIRS: Final = (EVM_SEMANTICS_DIR, PLUGIN_DIR)
 
 
 NIX_LIBS: Final = os.getenv('NIX_LIBS')
-
-KEVM_DIST_DIR: Final = os.getenv('KEVM_DIST_DIR')  # Used by Nix flake to set the output
-kdist: Final = KDist(KEVM_DIST_DIR)

@@ -184,19 +184,19 @@ You also need to get the blockchain plugin submodule and install it.
 
 ```sh
 git submodule update --init --recursive
-poetry -C kevm-pyk run kevm-dist --verbose build evm-semantics.plugin
+poetry -C kevm-pyk run kdist --verbose build evm-semantics.plugin
 ```
 
 To change the default compiler:
 
 ```sh
-CXX=clang++-14 poetry -C kevm-pyk run kevm-dist --verbose build evm-semantics.plugin
+CXX=clang++-14 poetry -C kevm-pyk run kdist --verbose build evm-semantics.plugin
 ```
 
 On Apple silicon:
 
 ```sh
-APPLE_SILICON=true poetry -C kevm-pyk run kevm-dist --verbose build evm-semantics.plugin
+APPLE_SILICON=true poetry -C kevm-pyk run kdist --verbose build evm-semantics.plugin
 ```
 
 #### K Definitions
@@ -204,22 +204,22 @@ APPLE_SILICON=true poetry -C kevm-pyk run kevm-dist --verbose build evm-semantic
 Finally, you can build the semantics.
 
 ```sh
-poetry -C kevm-pyk run kevm-dist --verbose build -j4
+poetry -C kevm-pyk run kdist --verbose build -j4
 ```
 
 You can build specific targets using options `evm-semantics.{llvm,haskell,haskell-standalone,plugin}`, e.g.:
 
 ```sh
-poetry -C kevm-pyk run kevm-dist build -j2 evm-semantics.llvm evm-semantics.haskell
+poetry -C kevm-pyk run kdist build -j2 evm-semantics.llvm evm-semantics.haskell
 ```
 
 Targets can be cleaned with
 
 ```sh
-poetry -C kevm-pyk run kevm-dist clean
+poetry -C kevm-pyk run kdist clean
 ```
 
-For more information, refer to `kevm-dist --help` and the [dist.py](kevm-pyk/src/kevm_pyk/dist.py) module.
+For more information, refer to `kdist --help` and the [dist.py](kevm-pyk/src/kevm_pyk/dist.py) module.
 
 Running Tests
 -------------
@@ -275,7 +275,7 @@ poetry -C kevm-pyk run kevm-pyk run tests/ethereum-tests/LegacyTests/Constantino
 To enable the debug symbols for the llvm backend, build using this command:
 
 ```sh
-poetry -C kevm-pyk run kevm-dist build evm-semantics.llvm --arg enable-llvm-debug=true
+poetry -C kevm-pyk run kdist build evm-semantics.llvm --arg enable-llvm-debug=true
 ```
 
 To debug a conformance test, add the `--debugger` flag to the command:
@@ -291,8 +291,8 @@ Always have your build up-to-date.
 - If using the kup package manager, run `kup install kevm --version .` to install the local version.
 - If building from source:
     -   `make poetry` needs to be re-run if you touch any of the `kevm-pyk` code.
-    -   `poetry -C kevm-pyk run kevm-dist build <target> --force` needs to be re-run if you touch any of this repos files.
-    -   `poetry -C kevm-pyk run kevm-dist clean` is a safe way to remove the target directory
+    -   `poetry -C kevm-pyk run kdist build <target> --force` needs to be re-run if you touch any of this repos files.
+    -   `poetry -C kevm-pyk run kdist clean` is a safe way to remove the target directory
 
 ### Building with Nix
 

@@ -108,7 +108,7 @@ jobs:
       - name: 'Build kevm-pyk'
         run: docker exec -u github-user kevm-ci-concrete-${{ github.sha }} /bin/bash -c 'make poetry'
       - name: 'Build targets'
-        run: docker exec -u github-user kevm-ci-concrete-${{ github.sha }} /bin/bash -c 'CXX=clang++-14 poetry -C kevm-pyk run kevm-dist --verbose build -j`nproc` evm-semantics.llvm evm-semantics.haskell'
+        run: docker exec -u github-user kevm-ci-concrete-${{ github.sha }} /bin/bash -c 'CXX=clang++-14 poetry -C kevm-pyk run kdist --verbose build -j`nproc` evm-semantics.llvm evm-semantics.haskell'
       - name: 'Test integration'
         run: docker exec -u github-user kevm-ci-concrete-${{ github.sha }} /bin/bash -c 'make test-integration'
       - name: 'Test conformance'
@@ -150,7 +150,7 @@ jobs:
       - name: 'Build kevm-pyk'
         run: docker exec -u github-user kevm-ci-haskell-${{ matrix.test-suite }}-${{ github.sha }} /bin/bash -c 'make poetry'
       - name: 'Build distribution'
-        run: docker exec -u github-user kevm-ci-haskell-${{ matrix.test-suite }}-${{ github.sha }} /bin/bash -c 'CXX=clang++-14 poetry -C kevm-pyk run kevm-dist --verbose build -j`nproc` evm-semantics.plugin evm-semantics.haskell'
+        run: docker exec -u github-user kevm-ci-haskell-${{ matrix.test-suite }}-${{ github.sha }} /bin/bash -c 'CXX=clang++-14 poetry -C kevm-pyk run kdist --verbose build -j`nproc` evm-semantics.plugin evm-semantics.haskell'
       - name: 'Prove Haskell'
         run: docker exec -u github-user kevm-ci-haskell-${{ matrix.test-suite }}-${{ github.sha }} /bin/bash -c "make ${{ matrix.test-suite }} PYTEST_ARGS='-vv ${{ matrix.test-args }}' PYTEST_PARALLEL=4"
       - name: 'Tear down Docker'
