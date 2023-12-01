@@ -267,6 +267,9 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
 
     rule #typeName( #array(T, _, _)) => #typeName(T) +String "[]"
 
+   // TODO(palina): the type name differs between `bytes` and `T[]`
+    rule #typeName( #dynArray(T)) => #typeName(T)
+
     rule #typeName( #tuple(TARGS))   => "(" +String #generateSignatureArgs(TARGS) +String ")"
 
     syntax Bytes ::= #encodeArgs    ( TypedArgs )                       [function]
@@ -400,6 +403,9 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
 
     rule #lenOfHead(#array(_, _, _)) => 32
 
+   // TODO(palina):
+    rule #lenOfHead(#dynArray( _ )) => 32
+
     syntax Bool ::= #isStaticType ( TypedArg ) [function, total]
  // ------------------------------------------------------------
     rule #isStaticType(  #address( _ )) => true
@@ -511,6 +517,8 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
 
     rule #isStaticType(#array(_, _, _)) => false
 
+    rule #isStaticType(#dynArray( _ )) => false
+
     syntax Int ::= #sizeOfDynamicType ( TypedArg ) [function]
  // ---------------------------------------------------------
     rule #sizeOfDynamicType(#bytes(BS)) => 32 +Int #ceil32(lengthBytes(BS))
@@ -519,6 +527,10 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
       requires #isStaticType(T)
 
     rule #sizeOfDynamicType(#array(T, N, ELEMS)) => 32 *Int (1 +Int N +Int #sizeOfDynamicTypeAux(ELEMS))
+      requires notBool #isStaticType(T)
+
+   // TODO(palina): placeholder rule for dynamic arrays
+    rule #sizeOfDynamicType(#dynArray(T)) => 32 *Int (1 +Int #sizeOfDynamicType(T))
       requires notBool #isStaticType(T)
 
     syntax Int ::= #sizeOfDynamicTypeAux ( TypedArgs ) [function]
@@ -638,6 +650,9 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #enc(        #bytes(BS)) => #encBytes(lengthBytes(BS), BS)
     rule #enc(#array(_, N, DATA)) => #enc(#uint256(N)) +Bytes #encodeArgs(DATA)
     rule #enc(      #string(STR)) => #enc(#bytes(String2Bytes(STR)))
+
+   // TODO(palina): placeholder rule for dynamic arrays
+    rule #enc(#dynArray(T)) => #enc(T)
 
     syntax Bytes ::= #encBytes ( Int , Bytes ) [function]
  // -----------------------------------------------------
