@@ -100,7 +100,7 @@
                 prev.lib.optionalString
                 (prev.stdenv.isAarch64 && prev.stdenv.isDarwin)
                 "APPLE_SILICON=true"
-              } kevm-dist build -j4
+              } kdist build -j4
             '';
 
             installPhase = ''
@@ -112,7 +112,7 @@
                   prev.which
                   k-framework.packages.${prev.system}.k
                 ]
-              } --set NIX_LIBS "${nixLibs prev}" --set KEVM_DIST_DIR $out
+              } --set NIX_LIBS "${nixLibs prev}" --set KDIST_DIR $out
             '';
           };
 

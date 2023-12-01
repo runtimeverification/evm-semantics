@@ -15,7 +15,6 @@ python = "^3.10"
 pathos = "*"
 pyk = { git = "https://github.com/runtimeverification/pyk.git", tag="v0.1.524" }
 tomlkit = "^0.11.6"
-xdg-base-dirs = "^6.0.0"
 
 [tool.poetry.group.dev.dependencies]
 autoflake = "*"
@@ -39,7 +38,6 @@ pyupgrade = "*"
 [tool.poetry.scripts]
 kevm = "kevm_pyk.__main__:main"
 kevm-pyk = "kevm_pyk.__main__:main"
-kevm-dist = "kevm_pyk.kdist.__main__:main"
 gst-to-kore = "kevm_pyk.gst_to_kore:main"
 
 [tool.poetry.plugins.kdist]

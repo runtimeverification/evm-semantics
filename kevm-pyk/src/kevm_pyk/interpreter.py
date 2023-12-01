@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from pyk.kdist import kdist
 from pyk.kore.parser import KoreParser
 from pyk.utils import run_process
 
-from .config import kdist
 from .gst_to_kore import gst_to_kore
 
 if TYPE_CHECKING:
