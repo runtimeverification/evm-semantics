@@ -132,6 +132,7 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
                       | #bytes   ( Bytes )                      [klabel(abi_type_bytes),   symbol]
                       | #string  ( String )                     [klabel(abi_type_string),  symbol]
                       | #array   ( TypedArg , Int , TypedArgs ) [klabel(abi_type_array),   symbol]
+                      | #dynArray( TypedArg )                   [klabel(abi_type_dynamic_array), symbol]
                       | #tuple   ( TypedArgs )                  [klabel(abi_type_tuple),   symbol]
  // ----------------------------------------------------------------------------------------------
 
