@@ -35,7 +35,7 @@ kevm kompile-spec tests/specs/benchmarks/verification.k             \
     --output-definition tests/specs/benchmarks/verification/haskell \
     --main-module VERIFICATION                                      \
     --syntax-module VERIFICATION                                    \
-    --target haskell-booster                                        \
+    --target haskell                                                \
     --verbose
 
 kevm prove tests/specs/benchmarks/structarg00-spec.k         \

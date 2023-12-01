@@ -105,6 +105,9 @@ KOMPILE_MAIN_FILE: Final = {
 
 KOMPILE_MAIN_MODULE: Final = {
     'benchmarks/functional-spec.k': 'FUNCTIONAL-SPEC-SYNTAX',
+    'bihu/functional-spec.k': 'FUNCTIONAL-SPEC-SYNTAX',
+    'erc20/functional-spec.k': 'FUNCTIONAL-SPEC-SYNTAX',
+    'mcd/functional-spec.k': 'FUNCTIONAL-SPEC-SYNTAX',
     'opcodes/evm-optimizations-spec.md': 'EVM-OPTIMIZATIONS-SPEC-LEMMAS',
 }
 
@@ -112,15 +115,11 @@ KOMPILE_MAIN_MODULE: Final = {
 class Target(NamedTuple):
     main_file: Path
     main_module_name: str
-    use_booster: bool
 
     def __call__(self, output_dir: Path) -> Path:
-        definition_subdir = 'kompiled' if not self.use_booster else 'kompiled-booster'
-        definition_dir = output_dir / definition_subdir
-        target = KompileTarget.HASKELL if not self.use_booster else KompileTarget.HASKELL_BOOSTER
         return kevm_kompile(
-            output_dir=definition_dir,
-            target=target,
+            output_dir=output_dir / 'kompiled',
+            target=KompileTarget.HASKELL,
             main_file=self.main_file,
             main_module=self.main_module_name,
             syntax_module=self.main_module_name,
@@ -129,12 +128,12 @@ class Target(NamedTuple):
 
 
 @pytest.fixture(scope='module')
-def kompiled_target_for(tmp_path_factory: TempPathFactory) -> Callable[[Path, bool], Path]:
+def kompiled_target_for(tmp_path_factory: TempPathFactory) -> Callable[[Path], Path]:
     cache_dir = tmp_path_factory.mktemp('target')
     cache: dict[Target, Path] = {}
 
-    def kompile(spec_file: Path, use_booster: bool) -> Path:
-        target = _target_for_spec(spec_file, use_booster=use_booster)
+    def kompile(spec_file: Path) -> Path:
+        target = _target_for_spec(spec_file)
 
         if target not in cache:
             output_dir = cache_dir / f'{target.main_file.stem}-{len(cache)}'
@@ -146,13 +145,13 @@ def kompiled_target_for(tmp_path_factory: TempPathFactory) -> Callable[[Path, bo
     return kompile
 
 
-def _target_for_spec(spec_file: Path, use_booster: bool) -> Target:
+def _target_for_spec(spec_file: Path) -> Target:
     spec_file = spec_file.resolve()
     spec_id = str(spec_file.relative_to(SPEC_DIR))
     spec_root = SPEC_DIR / spec_file.relative_to(SPEC_DIR).parents[-2]
     main_file = spec_root / KOMPILE_MAIN_FILE.get(spec_id, 'verification.k')
     main_module_name = KOMPILE_MAIN_MODULE.get(spec_id, 'VERIFICATION')
-    return Target(main_file, main_module_name, use_booster)
+    return Target(main_file, main_module_name)
 
 
 # ---------
@@ -185,7 +184,7 @@ def leaf_number(proof: APRProof) -> int:
 )
 def test_pyk_prove(
     spec_file: Path,
-    kompiled_target_for: Callable[[Path, bool], Path],
+    kompiled_target_for: Callable[[Path], Path],
     tmp_path: Path,
     caplog: LogCaptureFixture,
     use_booster: bool,
@@ -203,7 +202,7 @@ def test_pyk_prove(
 
     # When
     try:
-        definition_dir = kompiled_target_for(spec_file, use_booster)
+        definition_dir = kompiled_target_for(spec_file)
         exec_prove(
             spec_file=spec_file,
             definition_dir=definition_dir,
@@ -250,7 +249,7 @@ PROVE_ARGS: Final[dict[str, Any]] = {
 )
 def test_kprove_prove(
     spec_file: Path,
-    kompiled_target_for: Callable[[Path, bool], Path],
+    kompiled_target_for: Callable[[Path], Path],
     tmp_path: Path,
     caplog: LogCaptureFixture,
     bug_report: BugReport | None,
@@ -274,7 +273,7 @@ def test_kprove_prove(
 
     # When
     try:
-        definition_dir = kompiled_target_for(spec_file, False)
+        definition_dir = kompiled_target_for(spec_file)
         kevm = KEVM(definition_dir, use_directory=use_directory)
         actual = kevm.prove(spec_file=spec_file, include_dirs=list(config.INCLUDE_DIRS), **args)
     except BaseException:

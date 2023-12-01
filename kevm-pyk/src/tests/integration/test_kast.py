@@ -1,6 +1,6 @@
 from pyk.ktool.kprint import KAstInput, KAstOutput, _kast
 
-from kevm_pyk import kdist
+from kevm_pyk.config import kdist
 
 from ..utils import REPO_ROOT
 
