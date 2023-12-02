@@ -26,6 +26,7 @@ from pyk.prelude.ml import is_top, mlOr
 from pyk.proof import APRProof
 from pyk.proof.equality import EqualityProof
 from pyk.proof.proof import ProofStatus
+from pyk.proof.reachability import APRProofProcessData
 from pyk.proof.show import APRProofShow
 from pyk.proof.tui import APRProofViewer
 from pyk.utils import FrozenDict, hash_str, single
@@ -273,12 +274,6 @@ def init_claim_jobs(spec_module_name: str, claims: list[KClaim]) -> frozenset[KC
 
     return frozenset({get_or_load_claim_job(claim.label) for claim in claims})
 
-
-class MyProcessData(proof_parallel.ProcessData):
-    def cleanup(self) -> None:
-        pass
-
-
 def exec_prove(
     spec_file: Path,
     includes: Iterable[str],
@@ -431,7 +426,7 @@ def exec_prove(
                 )
                 for label in ready
             }
-            curr_semantics = {label: KEVMSemantics(auto_abstract_gas=auto_abstract_gas) for label in ready}
+            curr_semantics = KEVMSemantics(auto_abstract_gas=auto_abstract_gas)
             curr_provers = {
                 label: build_prover_for_proof(
                     kcfg_explore=kcfg_explores[label],
@@ -441,7 +436,7 @@ def exec_prove(
                     build_parallel=True,
                     execute_depth=max_depth,
                     kprint=kevm,
-                    kcfg_semantics=curr_semantics[label],
+                    kcfg_semantics=curr_semantics,
                     proof_id=label,
                     bug_report_id=label,
                     trace_rewrites=trace_rewrites,
@@ -471,11 +466,18 @@ def exec_prove(
                 k: v for k, v in curr_provers.items() if not isinstance(v, proof_parallel.Prover)
             }
 
+            process_data = APRProofProcessData(
+                kprint=kevm,
+                kcfg_semantics=curr_semantics,
+                definition_dir=definition_dir,
+                module_name=kevm.main_module,
+            )
+
             par_return = proof_parallel.prove_parallel(
                 proofs=curr_proofs_to_prove,
                 provers=curr_provers_to_use,
                 max_workers=workers,
-                process_data=MyProcessData(),
+                process_data=process_data,
             )
             par_results = [(p.status == ProofStatus.PASSED, None) for p in par_return]
             seq_return = {
