@@ -7,6 +7,7 @@ from enum import Enum
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from pyk.kdist import kdist
 from pyk.ktool.kompile import HaskellKompile, KompileArgs, LLVMKompile, LLVMKompileType, MaudeKompile
 from pyk.utils import run_process
 
@@ -62,8 +63,6 @@ def kevm_kompile(
     verbose: bool = False,
 ) -> Path:
     if plugin_dir is None:
-        from .config import kdist
-
         plugin_dir = kdist.get('evm-semantics.plugin')
 
     ccopts = list(ccopts) + _lib_ccopts(plugin_dir, debug_build=debug_build)

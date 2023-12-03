@@ -2,12 +2,12 @@
   description = "A flake for the KEVM Semantics";
 
   inputs = {
-    k-framework.url = "github:runtimeverification/k/v6.1.26";
+    k-framework.url = "github:runtimeverification/k/v6.1.34";
     nixpkgs.follows = "k-framework/nixpkgs";
     flake-utils.follows = "k-framework/flake-utils";
     rv-utils.follows = "k-framework/rv-utils";
-    #pyk.url = "github:runtimeverification/pyk/v0.1.515";
-    pyk.url = "github:runtimeverification/pyk/noah/apr-proof-parallel";
+    #pyk.url = "github:runtimeverification/pyk/v0.1.524";
+    pyk.url = "github:runtimeverification/pyk/update-apr-proof-parallel";
     nixpkgs-pyk.follows = "pyk/nixpkgs";
     poetry2nix.follows = "pyk/poetry2nix";
     blockchain-k-plugin = {
@@ -101,7 +101,7 @@
                 prev.lib.optionalString
                 (prev.stdenv.isAarch64 && prev.stdenv.isDarwin)
                 "APPLE_SILICON=true"
-              } kevm-dist build -j4
+              } kdist build -j4
             '';
 
             installPhase = ''
@@ -113,7 +113,7 @@
                   prev.which
                   k-framework.packages.${prev.system}.k
                 ]
-              } --set NIX_LIBS "${nixLibs prev}" --set KEVM_DIST_DIR $out
+              } --set NIX_LIBS "${nixLibs prev}" --set KDIST_DIR $out
             '';
           };
 

@@ -30,6 +30,11 @@ module VERIFICATION
     imports EVM-OPTIMIZATIONS
     imports ERC20-VERIFICATION
 
+    syntax Step ::= Bytes | Int
+    syntax KItem ::= runLemma ( Step ) | doneLemma ( Step )
+ // -------------------------------------------------------
+    rule <k> runLemma(S) => doneLemma(S) ... </k>
+
  // decimals lemmas
  // ---------------
 
@@ -52,7 +57,7 @@ module ERC20-SPEC
 ### Functional Claims
 
 ```k
-    claim (#bufStrict(32, #loc(S2KERC20._allowances[OWNER]))) => (#buf(32, keccak(#buf(32, OWNER) +Bytes #buf(32, 1))))
+    claim <k> runLemma(#bufStrict(32, #loc(S2KERC20._allowances[OWNER]))) => doneLemma(#buf(32, keccak(#buf(32, OWNER) +Bytes #buf(32, 1)))) ... </k>
       requires #rangeAddress(OWNER)
 ```
 
