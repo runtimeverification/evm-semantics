@@ -274,6 +274,7 @@ def init_claim_jobs(spec_module_name: str, claims: list[KClaim]) -> frozenset[KC
 
     return frozenset({get_or_load_claim_job(claim.label) for claim in claims})
 
+
 def exec_prove(
     spec_file: Path,
     includes: Iterable[str],
