@@ -387,7 +387,6 @@ class KEVM(KProve, KRun):
 
     @staticmethod
     def abi_dynamic_array(elem_type: KInner) -> KApply:
-        # TODO(palina): this should be element's type
         return KApply('abi_type_dynamic_array', [elem_type])
 
     @staticmethod
