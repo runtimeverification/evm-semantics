@@ -42,7 +42,6 @@ module INT-SIMPLIFICATION-HASKELL [symbolic, kore]
     rule A        <=Int B +Int C => A -Int C <=Int B        [concrete(A, C), simplification(40)]
     rule A -Int B  <Int C        => A -Int C  <Int B        [concrete(A, C), simplification(40)]
     rule A        <=Int B -Int C => C        <=Int B -Int A [concrete(A, B), simplification(40)]
-    rule A +Int B ==Int C        => A        ==Int C -Int B [concrete(B, C), simplification(40)]
 
 endmodule
 
