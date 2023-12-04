@@ -13,8 +13,6 @@ module INT-SIMPLIFICATION-HASKELL [symbolic, kore]
 
     // associativity normalization
 
-    rule A +Int B => B +Int A [concrete(A), symbolic(B), simplification(40)]
-
     rule A +Int (B +Int C) => (A +Int B) +Int C [symbolic(A, B), concrete(C), simplification(40)]
     rule A +Int (B -Int C) => (A +Int B) -Int C [symbolic(A, B), concrete(C), simplification(40)]
     rule A -Int (B +Int C) => (A -Int B) -Int C [symbolic(A, B), concrete(C), simplification(40)]
@@ -34,58 +32,58 @@ module INT-SIMPLIFICATION-HASKELL [symbolic, kore]
     rule (A -Int B) -Int C => A -Int (B +Int C) [concrete(B, C), symbolic(A), simplification(40)]
 
   // ###########################################################################
-  // comparison normalisation
+  // comparison normalization
   // ###########################################################################
 
-    rule A +Int B   <Int C => A  <Int C -Int B [concrete(B, C), symbolic(A), simplification(40)]
-    rule A +Int B  <=Int C => A <=Int C -Int B [concrete(B, C), symbolic(A), simplification(40)]
-    rule A +Int B   >Int C => A  >Int C -Int B [concrete(B, C), symbolic(A), simplification(40)]
-    rule A +Int B  >=Int C => A >=Int C -Int B [concrete(B, C), symbolic(A), simplification(40)]
+    rule A +Int B   <Int C => A  <Int C -Int B [concrete(B, C), symbolic(A), simplification(45)]
+    rule A +Int B  <=Int C => A <=Int C -Int B [concrete(B, C), symbolic(A), simplification(45)]
+    rule A +Int B   >Int C => A  >Int C -Int B [concrete(B, C), symbolic(A), simplification(45)]
+    rule A +Int B  >=Int C => A >=Int C -Int B [concrete(B, C), symbolic(A), simplification(45)]
 
-    rule A +Int B   <Int C => B  <Int C -Int A [concrete(A, C), symbolic(B), simplification(40)]
-    rule A +Int B  <=Int C => B <=Int C -Int A [concrete(A, C), symbolic(B), simplification(40)]
-    rule A +Int B   >Int C => B  >Int C -Int A [concrete(A, C), symbolic(B), simplification(40)]
-    rule A +Int B  >=Int C => B >=Int C -Int A [concrete(A, C), symbolic(B), simplification(40)]
+    rule A +Int B   <Int C => B  <Int C -Int A [concrete(A, C), symbolic(B), simplification(45)]
+    rule A +Int B  <=Int C => B <=Int C -Int A [concrete(A, C), symbolic(B), simplification(45)]
+    rule A +Int B   >Int C => B  >Int C -Int A [concrete(A, C), symbolic(B), simplification(45)]
+    rule A +Int B  >=Int C => B >=Int C -Int A [concrete(A, C), symbolic(B), simplification(45)]
 
-    rule A -Int B   <Int C => A  <Int C +Int B [concrete(B, C), symbolic(A), simplification(40)]
-    rule A -Int B  <=Int C => A <=Int C +Int B [concrete(B, C), symbolic(A), simplification(40)]
-    rule A -Int B   >Int C => A  >Int C +Int B [concrete(B, C), symbolic(A), simplification(40)]
-    rule A -Int B  >=Int C => A >=Int C +Int B [concrete(B, C), symbolic(A), simplification(40)]
+    rule A -Int B   <Int C => A  <Int C +Int B [concrete(B, C), symbolic(A), simplification(45)]
+    rule A -Int B  <=Int C => A <=Int C +Int B [concrete(B, C), symbolic(A), simplification(45)]
+    rule A -Int B   >Int C => A  >Int C +Int B [concrete(B, C), symbolic(A), simplification(45)]
+    rule A -Int B  >=Int C => A >=Int C +Int B [concrete(B, C), symbolic(A), simplification(45)]
 
-    rule A -Int B   <Int C => A -Int C  <Int B [concrete(A, C), symbolic(B), simplification(40)]
-    rule A -Int B  <=Int C => A -Int C <=Int B [concrete(A, C), symbolic(B), simplification(40)]
-    rule A -Int B   >Int C => A -Int C  >Int B [concrete(A, C), symbolic(B), simplification(40)]
-    rule A -Int B  >=Int C => A -Int C >=Int B [concrete(A, C), symbolic(B), simplification(40)]
+    rule A -Int B   <Int C => A -Int C  <Int B [concrete(A, C), symbolic(B), simplification(45)]
+    rule A -Int B  <=Int C => A -Int C <=Int B [concrete(A, C), symbolic(B), simplification(45)]
+    rule A -Int B   >Int C => A -Int C  >Int B [concrete(A, C), symbolic(B), simplification(45)]
+    rule A -Int B  >=Int C => A -Int C >=Int B [concrete(A, C), symbolic(B), simplification(45)]
 
-    rule A   <Int B +Int C => A -Int B  <Int C [concrete(A, B), symbolic(C), simplification(40)]
-    rule A  <=Int B +Int C => A -Int B <=Int C [concrete(A, B), symbolic(C), simplification(40)]
-    rule A   >Int B +Int C => A -Int B  >Int C [concrete(A, B), symbolic(C), simplification(40)]
-    rule A  >=Int B +Int C => A -Int B >=Int C [concrete(A, B), symbolic(C), simplification(40)]
+    rule A   <Int B +Int C => A -Int B  <Int C [concrete(A, B), symbolic(C), simplification(45)]
+    rule A  <=Int B +Int C => A -Int B <=Int C [concrete(A, B), symbolic(C), simplification(45)]
+    rule A   >Int B +Int C => A -Int B  >Int C [concrete(A, B), symbolic(C), simplification(45)]
+    rule A  >=Int B +Int C => A -Int B >=Int C [concrete(A, B), symbolic(C), simplification(45)]
 
-    rule A   <Int B +Int C => A -Int C  <Int B [concrete(A, C), symbolic(B), simplification(40)]
-    rule A  <=Int B +Int C => A -Int C <=Int B [concrete(A, C), symbolic(B), simplification(40)]
-    rule A   >Int B +Int C => A -Int C  >Int B [concrete(A, C), symbolic(B), simplification(40)]
-    rule A  >=Int B +Int C => A -Int C >=Int B [concrete(A, C), symbolic(B), simplification(40)]
+    rule A   <Int B +Int C => A -Int C  <Int B [concrete(A, C), symbolic(B), simplification(45)]
+    rule A  <=Int B +Int C => A -Int C <=Int B [concrete(A, C), symbolic(B), simplification(45)]
+    rule A   >Int B +Int C => A -Int C  >Int B [concrete(A, C), symbolic(B), simplification(45)]
+    rule A  >=Int B +Int C => A -Int C >=Int B [concrete(A, C), symbolic(B), simplification(45)]
 
-    rule A   <Int B -Int C => C  <Int B -Int A [concrete(A, B), symbolic(C), simplification(40)]
-    rule A  <=Int B -Int C => C <=Int B -Int A [concrete(A, B), symbolic(C), simplification(40)]
-    rule A   >Int B -Int C => C  >Int B -Int A [concrete(A, B), symbolic(C), simplification(40)]
-    rule A  >=Int B -Int C => C >=Int B -Int A [concrete(A, B), symbolic(C), simplification(40)]
+    rule A   <Int B -Int C => C  <Int B -Int A [concrete(A, B), symbolic(C), simplification(45)]
+    rule A  <=Int B -Int C => C <=Int B -Int A [concrete(A, B), symbolic(C), simplification(45)]
+    rule A   >Int B -Int C => C  >Int B -Int A [concrete(A, B), symbolic(C), simplification(45)]
+    rule A  >=Int B -Int C => C >=Int B -Int A [concrete(A, B), symbolic(C), simplification(45)]
 
-    rule A   <Int B -Int C => A +Int C  <Int B [concrete(A, C), symbolic(B), simplification(40)]
-    rule A  <=Int B -Int C => A +Int C <=Int B [concrete(A, C), symbolic(B), simplification(40)]
-    rule A   >Int B -Int C => A +Int C  >Int B [concrete(A, C), symbolic(B), simplification(40)]
-    rule A  >=Int B -Int C => A +Int C >=Int B [concrete(A, C), symbolic(B), simplification(40)]
+    rule A   <Int B -Int C => A +Int C  <Int B [concrete(A, C), symbolic(B), simplification(45)]
+    rule A  <=Int B -Int C => A +Int C <=Int B [concrete(A, C), symbolic(B), simplification(45)]
+    rule A   >Int B -Int C => A +Int C  >Int B [concrete(A, C), symbolic(B), simplification(45)]
+    rule A  >=Int B -Int C => A +Int C >=Int B [concrete(A, C), symbolic(B), simplification(45)]
 
-    // rule A +Int B  ==Int C => A ==Int C -Int B [concrete(B, C), symbolic(A), simplification(40), comm]
-    // rule A +Int B  ==Int C => B ==Int C -Int A [concrete(A, C), symbolic(B), simplification(40), comm]
-    // rule A -Int B  ==Int C => A ==Int C +Int B [concrete(B, C), symbolic(A), simplification(40), comm]
-    // rule A -Int B  ==Int C => A -Int C ==Int B [concrete(A, C), symbolic(B), simplification(40), comm]
+    rule A +Int B  ==Int C => A ==Int C -Int B [concrete(B, C), symbolic(A), simplification(45), comm]
+    rule A +Int B  ==Int C => B ==Int C -Int A [concrete(A, C), symbolic(B), simplification(45), comm]
+    rule A -Int B  ==Int C => A ==Int C +Int B [concrete(B, C), symbolic(A), simplification(45), comm]
+    rule A -Int B  ==Int C => A -Int C ==Int B [concrete(A, C), symbolic(B), simplification(45), comm]
 
-    // rule { A +Int B #Equals C } => { A #Equals C -Int B } [concrete(B, C), symbolic(A), simplification(40), comm]
-    // rule { A +Int B #Equals C } => { B #Equals C -Int A } [concrete(A, C), symbolic(B), simplification(40), comm]
-    // rule { A -Int B #Equals C } => { A #Equals C +Int B } [concrete(B, C), symbolic(A), simplification(40), comm]
-    // rule { A -Int B #Equals C } => { A -Int C #Equals B } [concrete(A, C), symbolic(B), simplification(40), comm]
+    rule { A +Int B #Equals C } => { A #Equals C -Int B } [concrete(B, C), symbolic(A), simplification(45), comm]
+    rule { A +Int B #Equals C } => { B #Equals C -Int A } [concrete(A, C), symbolic(B), simplification(45), comm]
+    rule { A -Int B #Equals C } => { A #Equals C +Int B } [concrete(B, C), symbolic(A), simplification(45), comm]
+    rule { A -Int B #Equals C } => { A -Int C #Equals B } [concrete(A, C), symbolic(B), simplification(45), comm]
 
 endmodule
 
