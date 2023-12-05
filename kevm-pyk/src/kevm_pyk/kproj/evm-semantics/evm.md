@@ -35,6 +35,7 @@ In the comments next to each cell, we've marked which component of the YellowPap
         <exit-code exit=""> 1 </exit-code>
         <mode> $MODE:Mode </mode>
         <schedule> $SCHEDULE:Schedule </schedule>
+        <use-gas> $USEGAS:Bool </use-gas>
 
         <ethereum>
 
@@ -1850,6 +1851,8 @@ Overall Gas
           ~> #access [ OP , AOP ]
          ...
         </k>
+        <use-gas> true </use-gas>
+    rule <k> #gas [ _ , _ ] => . ...  </k> <use-gas> false </use-gas>
 
     rule <k> #gas [ OP ] => #gasExec(SCHED, OP) ~> #deductGas ... </k>
          <schedule> SCHED </schedule>

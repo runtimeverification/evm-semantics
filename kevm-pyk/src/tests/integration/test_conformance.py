@@ -27,13 +27,13 @@ TEST_DIR: Final = REPO_ROOT / 'tests/ethereum-tests'
 GOLDEN: Final = (REPO_ROOT / 'tests/templates/output-success-llvm.json').read_text().rstrip()
 
 
-def _test(gst_file: Path, schedule: str, mode: str, chainid: int) -> None:
+def _test(gst_file: Path, schedule: str, mode: str, chainid: int, use_gas: bool) -> None:
     # Given
     with gst_file.open() as f:
         gst_data = json.load(f)
 
     # When
-    res = interpret(gst_data, schedule, mode, chainid, check=False)
+    res = interpret(gst_data, schedule, mode, chainid, use_gas, check=False)
 
     # Then
     _assert_exit_code_zero(res)
@@ -77,7 +77,7 @@ REST_VM_TESTS: Final = tuple(test_file for test_file in ALL_VM_TESTS if test_fil
     ids=[str(test_file.relative_to(VM_TEST_DIR)) for test_file in VM_TESTS],
 )
 def test_vm(test_file: Path) -> None:
-    _test(test_file, 'DEFAULT', 'VMTESTS', 1)
+    _test(test_file, 'DEFAULT', 'VMTESTS', 1, True)
 
 
 @pytest.mark.skip(reason='failing / slow VM tests')
@@ -87,7 +87,7 @@ def test_vm(test_file: Path) -> None:
     ids=[str(test_file.relative_to(VM_TEST_DIR)) for test_file in REST_VM_TESTS],
 )
 def test_rest_vm(test_file: Path) -> None:
-    _test(test_file, 'DEFAULT', 'VMTESTS', 1)
+    _test(test_file, 'DEFAULT', 'VMTESTS', 1, True)
 
 
 BCHAIN_NEW_TEST_DIR: Final = TEST_DIR / 'BlockchainTests/GeneralStateTests'
@@ -107,7 +107,7 @@ REST_BCHAIN_TESTS: Final = tuple(test_file for test_file in ALL_BCHAIN_TESTS if 
     ids=[str(test_file.relative_to(TEST_DIR)) for test_file in BCHAIN_TESTS],
 )
 def test_bchain(test_file: Path) -> None:
-    _test(test_file, 'SHANGHAI', 'NORMAL', 1)
+    _test(test_file, 'SHANGHAI', 'NORMAL', 1, True)
 
 
 @pytest.mark.skip(reason='failing / slow blockchain tests')
@@ -117,4 +117,4 @@ def test_bchain(test_file: Path) -> None:
     ids=[str(test_file.relative_to(TEST_DIR)) for test_file in REST_BCHAIN_TESTS],
 )
 def test_rest_bchain(test_file: Path) -> None:
-    _test(test_file, 'SHANGHAI', 'NORMAL', 1)
+    _test(test_file, 'SHANGHAI', 'NORMAL', 1, True)

@@ -134,6 +134,9 @@ class KEVMCLIArgs(KCLIArgs):
             default='NORMAL',
             help="execution mode to use [{'|'.join(modes)}]",
         )
+        args.add_argument(
+            '--no-gas', action='store_false', dest='use_gas', default=True, help='omit gas cost computations'
+        )
         return args
 
     @cached_property
