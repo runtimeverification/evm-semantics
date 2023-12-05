@@ -814,7 +814,7 @@ windows-terminal = ["colorama (>=0.4.6)"]
 
 [[package]]
 name = "pyk"
-version = "0.1.529"
+version = "0.1.530"
 description = ""
 optional = false
 python-versions = "^3.10"
@@ -835,8 +835,8 @@ xdg-base-dirs = "^6.0.1"
 [package.source]
 type = "git"
 url = "https://github.com/runtimeverification/pyk.git"
-reference = "v0.1.529"
-resolved_reference = "5cc2fbc9881e16bc1893634daaed79d6127fde22"
+reference = "v0.1.530"
+resolved_reference = "00e07a30cf0049a33ae1df1c28c6d3f95792e2ab"
 
 [[package]]
 name = "pyperclip"
@@ -1100,4 +1100,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "ce7218f72517d290313d44f559af6f8ed5de13e5bbcfd243f61b1a606fb381cb"
+content-hash = "ad2831fc2aa85060c6681776e3de2675a2811bebbbdeea87a22ee5920c47a98e"
