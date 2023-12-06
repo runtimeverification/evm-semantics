@@ -44,8 +44,8 @@ def test_gst_to_kore(gst_path: str, expected_path: str, update_expected_output: 
 
     # Then
     if update_expected_output:
-        with expected_file.open('w') as io_obj:
-            actual.write(io_obj)
+        with expected_file.open('w') as f:
+            actual.write(f)
         return
 
     assert actual == expected
