@@ -29,6 +29,9 @@ claim [foundry-sum-to-n-loop-invariant]:
     <schedule>
       LONDON
     </schedule>
+    <use-gas>
+      True
+    </use-gas>
     <ethereum>
       <evm>
         <callState>

@@ -9,6 +9,7 @@ module VOW-FLOG-FAIL-ROUGH-SPEC
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
+      <use-gas> True </use-gas>
       <ethereum>
         <evm>
           <output> _ => ?_ </output>
@@ -126,6 +127,7 @@ module VOW-FLOG-FAIL-ROUGH-SPEC
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
+      <use-gas> True </use-gas>
       <ethereum>
         <evm>
           <output> VOutput => VOutput </output>
@@ -226,6 +228,7 @@ module VOW-FLOG-FAIL-ROUGH-SPEC
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
+      <use-gas> True </use-gas>
       <ethereum>
         <evm>
           <output> VOutput => VOutput </output>

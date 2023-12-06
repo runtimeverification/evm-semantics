@@ -10,6 +10,7 @@ module FORWARDTOHOTWALLET-SUCCESS-2-SPEC
     <exit-code> 1 </exit-code>
     <mode> NORMAL </mode>
     <schedule> BYZANTIUM </schedule>
+    <use-gas> True </use-gas>
 
     <ethereum>
       <evm>

@@ -9,6 +9,7 @@ module VAT-FLUX-DIFF-PASS-ROUGH-SPEC
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
+      <use-gas> True </use-gas>
       <ethereum>
         <evm>
           <output> .Bytes </output>
@@ -125,6 +126,7 @@ module VAT-FLUX-DIFF-PASS-ROUGH-SPEC
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
+      <use-gas> True </use-gas>
       <ethereum>
         <evm>
           <output> VOutput => VOutput </output>
@@ -224,6 +226,7 @@ module VAT-FLUX-DIFF-PASS-ROUGH-SPEC
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
+      <use-gas> True </use-gas>
       <ethereum>
         <evm>
           <output> VOutput => VOutput </output>

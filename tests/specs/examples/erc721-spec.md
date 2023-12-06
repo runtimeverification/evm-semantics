@@ -79,6 +79,7 @@ claim <k> runLemma(#lookup(ACCT_STORAGE, 0) /Int 2 <Int 32)
     claim [name.short.success]:
           <mode>     NORMAL   </mode>
           <schedule> ISTANBUL </schedule>
+          <use-gas>  True     </use-gas>
 
           <callStack> .List                                       </callStack>
           <program>   #binRuntime(S2KERC721)                         </program>
@@ -113,6 +114,7 @@ claim <k> runLemma(#lookup(ACCT_STORAGE, 0) /Int 2 <Int 32)
     claim [name.short.revert]:
           <mode>     NORMAL   </mode>
           <schedule> ISTANBUL </schedule>
+          <use-gas>  True     </use-gas>
 
           <callStack> .List                                       </callStack>
           <program>   #binRuntime(S2KERC721)                         </program>

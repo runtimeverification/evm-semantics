@@ -9,6 +9,7 @@ module STORAGEVAR02-NOOVERFLOW-SPEC
     <exit-code> 1 </exit-code>
     <mode> NORMAL </mode>
     <schedule> ISTANBUL </schedule>
+    <use-gas> True </use-gas>
     <ethereum>
       <evm>
         <output> _ => #encodeArgs(#uint256(N0 +Int 1)) </output>

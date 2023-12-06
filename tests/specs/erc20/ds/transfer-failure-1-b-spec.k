@@ -10,6 +10,7 @@ module TRANSFER-FAILURE-1-B-SPEC
     <exit-code> 1 </exit-code>
     <mode> NORMAL </mode>
     <schedule> CONSTANTINOPLE </schedule>
+    <use-gas> True </use-gas>
 
     <ethereum>
       <evm>

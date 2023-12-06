@@ -9,6 +9,7 @@ module ECRECOVERLOOP02-SIGS-VALID-SPEC
     <exit-code> 1 </exit-code>
     <mode> NORMAL </mode>
     <schedule> ISTANBUL </schedule>
+    <use-gas> True </use-gas>
     <ethereum>
       <evm>
         <output> _ => .Bytes </output>

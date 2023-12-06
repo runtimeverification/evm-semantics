@@ -9,6 +9,7 @@ module FLIPPER-BIDS-PASS-ROUGH-SPEC
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
+      <use-gas> True </use-gas>
       <ethereum>
         <evm>
           <output> _ => #buf(32, Bid) +Bytes #buf(32, Lot) +Bytes #buf(32, Guy) +Bytes #buf(32, Tic) +Bytes #buf(32, End) +Bytes #buf(32, Usr) +Bytes #buf(32, Gal) +Bytes #buf(32, Tab) </output>

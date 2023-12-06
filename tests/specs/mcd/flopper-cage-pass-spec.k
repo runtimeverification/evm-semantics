@@ -9,6 +9,7 @@ module FLOPPER-CAGE-PASS-SPEC
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
+      <use-gas> True </use-gas>
       <ethereum>
         <evm>
           <output> .Bytes </output>

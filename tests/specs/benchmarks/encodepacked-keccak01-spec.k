@@ -9,6 +9,7 @@ module ENCODEPACKED-KECCAK01-SPEC
     <exit-code> 1 </exit-code>
     <mode> NORMAL </mode>
     <schedule> ISTANBUL </schedule>
+    <use-gas> True </use-gas>
     <ethereum>
       <evm>
         <output> _ => #encodeArgs(#bytes32(keccak(1 : #encodeArgs(#uint256(A0))))) </output>

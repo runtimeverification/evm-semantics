@@ -9,6 +9,7 @@ module ECRECOVER00-SIGINVALID-SPEC
     <exit-code> 1 </exit-code>
     <mode> NORMAL </mode>
     <schedule> ISTANBUL </schedule>
+    <use-gas> True </use-gas>
     <ethereum>
       <evm>
         <output> _ => ?_ </output>
