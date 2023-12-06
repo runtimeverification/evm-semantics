@@ -362,6 +362,10 @@ class KEVM(KProve, KRun):
         return KApply('#abiCallData(_,_)_EVM-ABI_Bytes_String_TypedArgs', [stringToken(name), KEVM.typed_args(args)])
 
     @staticmethod
+    def abi_symbolic_calldata(name: str, args: list[KInner]) -> KApply:
+        return KApply('_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes', [KApply('#signatureCallData(_,_)_EVM-ABI_Bytes_String_TypedArgs',[stringToken(name), KEVM.typed_args(args)]), KVariable('SYMBOLIC_CALLDATA')]) 
+
+    @staticmethod
     def abi_selector(name: str) -> KApply:
         return KApply('abi_selector', [stringToken(name)])
 
