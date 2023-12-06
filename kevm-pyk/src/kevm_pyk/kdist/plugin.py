@@ -4,11 +4,11 @@ from distutils.dir_util import copy_tree
 from typing import TYPE_CHECKING
 
 from pyk.kbuild.utils import k_version, sync_files
+from pyk.kdist.api import Target
 from pyk.utils import run_process
 
 from .. import config
 from ..kompile import KompileTarget, kevm_kompile
-from .api import Target
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
