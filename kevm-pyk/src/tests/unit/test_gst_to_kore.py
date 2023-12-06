@@ -40,7 +40,7 @@ def test_gst_to_kore(gst_path: str, expected_path: str, update_expected_output: 
     expected = KoreParser(expected_file.read_text()).pattern()
 
     # When
-    actual = gst_to_kore(gst_data, 'SHANGHAI', 'NORMAL', 1, True)
+    actual = gst_to_kore(gst_data, 'SHANGHAI', 'NORMAL', 1)
 
     # Then
     if update_expected_output:
