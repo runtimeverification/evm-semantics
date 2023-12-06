@@ -31,7 +31,7 @@ TEST_DATA: Final = (
 
 
 @pytest.mark.parametrize('gst_path,expected_path', TEST_DATA, ids=[gst_path for gst_path, _ in TEST_DATA])
-def test_gst_to_kore(gst_path: str, expected_path: str) -> None:
+def test_gst_to_kore(gst_path: str, expected_path: str, update_expected_output: bool) -> None:
     # Given
     gst_file = REPO_ROOT / gst_path
     gst_data = json.loads(gst_file.read_text())
@@ -40,7 +40,12 @@ def test_gst_to_kore(gst_path: str, expected_path: str) -> None:
     expected = KoreParser(expected_file.read_text()).pattern()
 
     # When
-    actual = gst_to_kore(gst_data, 'SHANGHAI', 'NORMAL', 1)
+    actual = gst_to_kore(gst_data, 'SHANGHAI', 'NORMAL', 1, True)
 
     # Then
+    if update_expected_output:
+        with expected_file.open('w') as io_obj:
+            actual.write(io_obj)
+        return
+
     assert actual == expected
