@@ -1870,8 +1870,9 @@ Overall Gas
          <memoryUsed> MU => MU' </memoryUsed> <schedule> SCHED </schedule>
 
     rule <k> _G:Gas ~> (#deductMemoryGas => #deductGas)   ... </k> //Required for verification
-    rule <k>  G:Gas ~> #deductGas => #end EVMC_OUT_OF_GAS ... </k> <gas> GAVAIL:Gas                  </gas> requires GAVAIL <Gas G
-    rule <k>  G:Gas ~> #deductGas => .                    ... </k> <gas> GAVAIL:Gas => GAVAIL -Gas G </gas> requires G <=Gas GAVAIL
+    rule <k>  G:Gas ~> #deductGas => #end EVMC_OUT_OF_GAS ... </k> <gas> GAVAIL:Gas                  </gas> <use-gas> true </use-gas> requires GAVAIL <Gas G
+    rule <k>  G:Gas ~> #deductGas => .                    ... </k> <gas> GAVAIL:Gas => GAVAIL -Gas G </gas> <use-gas> true </use-gas> requires G <=Gas GAVAIL
+    rule <k>  _:Gas ~> #deductGas => .                    ... </k> <use-gas> false </use-gas>
 
     syntax Bool ::= #inStorage     ( Map   , Account , Int ) [function, total]
                   | #inStorageAux1 ( KItem ,           Int ) [function, total]
