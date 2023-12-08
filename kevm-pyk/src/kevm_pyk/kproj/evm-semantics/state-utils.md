@@ -183,51 +183,51 @@ The `"network"` key allows setting the fee schedule inside the test.
 The `"rlp"` key loads the block information.
 
 ```k
-    rule <k> load "rlp"        : (VAL:String => #rlpDecode(#unparseByteStack(#parseByteStack(VAL)))) ... </k>
-    rule <k> load "genesisRLP" : (VAL:String => #rlpDecode(#unparseByteStack(#parseByteStack(VAL)))) ... </k>
+    rule <k> load "rlp"        : (VAL:String => #rlpDecode(#parseByteStack(VAL))) ... </k>
+    rule <k> load "genesisRLP" : (VAL:String => #rlpDecode(#parseByteStack(VAL))) ... </k>
  // ---------------------------------------------------------------------------------------------------------
     rule <k> load "rlp" : [ [ HP , HO , HC , HR , HT , HE , HB , HD , HI , HL , HG , HS , HX , HM , HN , .JSONs ] , BT , BU , .JSONs ]
           => load "transaction" : BT
          ...
          </k>
-         <previousHash>      _ => #asWord(#parseByteStackRaw(HP)) </previousHash>
-         <ommersHash>        _ => #asWord(#parseByteStackRaw(HO)) </ommersHash>
-         <coinbase>          _ => #asWord(#parseByteStackRaw(HC)) </coinbase>
-         <stateRoot>         _ => #asWord(#parseByteStackRaw(HR)) </stateRoot>
-         <transactionsRoot>  _ => #asWord(#parseByteStackRaw(HT)) </transactionsRoot>
-         <receiptsRoot>      _ => #asWord(#parseByteStackRaw(HE)) </receiptsRoot>
-         <logsBloom>         _ => #parseByteStackRaw(HB)          </logsBloom>
-         <difficulty>        _ => #asWord(#parseByteStackRaw(HD)) </difficulty>
-         <number>            _ => #asWord(#parseByteStackRaw(HI)) </number>
-         <gasLimit>          _ => #asWord(#parseByteStackRaw(HL)) </gasLimit>
-         <gasUsed>           _ => #asWord(#parseByteStackRaw(HG)) </gasUsed>
-         <timestamp>         _ => #asWord(#parseByteStackRaw(HS)) </timestamp>
-         <extraData>         _ => #parseByteStackRaw(HX)          </extraData>
-         <mixHash>           _ => #asWord(#parseByteStackRaw(HM)) </mixHash>
-         <blockNonce>        _ => #asWord(#parseByteStackRaw(HN)) </blockNonce>
-         <ommerBlockHeaders> _ => BU                              </ommerBlockHeaders>
+         <previousHash>      _ => #asWord(HP) </previousHash>
+         <ommersHash>        _ => #asWord(HO) </ommersHash>
+         <coinbase>          _ => #asWord(HC) </coinbase>
+         <stateRoot>         _ => #asWord(HR) </stateRoot>
+         <transactionsRoot>  _ => #asWord(HT) </transactionsRoot>
+         <receiptsRoot>      _ => #asWord(HE) </receiptsRoot>
+         <logsBloom>         _ => HB          </logsBloom>
+         <difficulty>        _ => #asWord(HD) </difficulty>
+         <number>            _ => #asWord(HI) </number>
+         <gasLimit>          _ => #asWord(HL) </gasLimit>
+         <gasUsed>           _ => #asWord(HG) </gasUsed>
+         <timestamp>         _ => #asWord(HS) </timestamp>
+         <extraData>         _ => HX          </extraData>
+         <mixHash>           _ => #asWord(HM) </mixHash>
+         <blockNonce>        _ => #asWord(HN) </blockNonce>
+         <ommerBlockHeaders> _ => BU          </ommerBlockHeaders>
 
     rule <k> load "rlp" : [ [ HP , HO , HC , HR , HT , HE , HB , HD , HI , HL , HG , HS , HX , HM , HN , HF , .JSONs ] , BT , BU , .JSONs ]
           => load "rlp" : [ [ HP , HO , HC , HR , HT , HE , HB , HD , HI , HL , HG , HS , HX , HM , HN , .JSONs ] , BT , BU , .JSONs ]
          ...
          </k>
-         <baseFee> _ => #asWord(#parseByteStackRaw(HF)) </baseFee>
+         <baseFee> _ => #asWord(HF) </baseFee>
 
     rule <k> load "rlp" : [ [ HP , HO , HC , HR , HT , HE , HB , HD , HI , HL , HG , HS , HX , HM , HN , HF , WR , .JSONs ] , BT , BU , BW , .JSONs ]
           => load "rlp" : [ [ HP , HO , HC , HR , HT , HE , HB , HD , HI , HL , HG , HS , HX , HM , HN , HF , .JSONs ] , BT , BU , .JSONs ]
           ~> load "withdraw" : BW
          ...
          </k>
-         <withdrawalsRoot> _ => #asWord(#parseByteStackRaw(WR)) </withdrawalsRoot>
+         <withdrawalsRoot> _ => #asWord(WR) </withdrawalsRoot>
 
-    rule <k> load "genesisRLP": [ [ HP, HO, HC, HR, HT, HE:String, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR, .JSONs ], _, _, _, .JSONs ] => .K ... </k>
-         <blockhashes> .List => ListItem(#blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR)) ListItem(#asWord(#parseByteStackRaw(HP))) ... </blockhashes>
+    rule <k> load "genesisRLP": [ [ HP, HO, HC, HR, HT, HE:Bytes, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR, .JSONs ], _, _, _, .JSONs ] => .K ... </k>
+         <blockhashes> .List => ListItem(#blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR)) ListItem(#asWord(HP)) ... </blockhashes>
 
-    rule <k> load "genesisRLP": [ [ HP, HO, HC, HR, HT, HE:String, HB, HD, HI, HL, HG, HS, HX, HM, HN, .JSONs ], _, _, .JSONs ] => .K ... </k>
-         <blockhashes> .List => ListItem(#blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN)) ListItem(#asWord(#parseByteStackRaw(HP))) ... </blockhashes>
+    rule <k> load "genesisRLP": [ [ HP, HO, HC, HR, HT, HE:Bytes, HB, HD, HI, HL, HG, HS, HX, HM, HN, .JSONs ], _, _, .JSONs ] => .K ... </k>
+         <blockhashes> .List => ListItem(#blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN)) ListItem(#asWord(HP)) ... </blockhashes>
 
-    rule <k> load "genesisRLP": [ [ HP, HO, HC, HR, HT, HE:String, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, .JSONs ], _, _, .JSONs ] => .K ... </k>
-         <blockhashes> .List => ListItem(#blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF)) ListItem(#asWord(#parseByteStackRaw(HP))) ... </blockhashes>
+    rule <k> load "genesisRLP": [ [ HP, HO, HC, HR, HT, HE:Bytes, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, .JSONs ], _, _, .JSONs ] => .K ... </k>
+         <blockhashes> .List => ListItem(#blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF)) ListItem(#asWord(HP)) ... </blockhashes>
 
     syntax EthereumCommand ::= "mkTX" Int
  // -------------------------------------
@@ -248,7 +248,7 @@ The `"rlp"` key loads the block information.
           ...
           </messages>
 
-    rule <k> load "transaction" : [ (T => [#rlpDecodeTransaction(#parseByteStackRaw(T))]) , _ ] ... </k>
+    rule <k> load "transaction" : [ (T => [#rlpDecodeTransaction(T)]) , _ ] ... </k>
 
     rule <k> load "transaction" : [ [ TN , TP , TG , TT , TV , TI , TW , TR , TS ] , REST ]
           => mkTX !ID:Int
@@ -274,7 +274,7 @@ The `"rlp"` key loads the block information.
           ~> load "transaction" : [ REST ]
           ...
          </k>
-    requires #asWord(#parseByteStackRaw(TYPE)) ==Int #dasmTxPrefix(AccessList)
+    requires #asWord(TYPE) ==Int #dasmTxPrefix(AccessList)
 
 
     rule <k> load "transaction" : [ [TYPE , [TC, TN, TP, TF, TG, TT, TV, TI, TA, TY , TR, TS ]] , REST ]
@@ -288,7 +288,7 @@ The `"rlp"` key loads the block information.
           ~> load "transaction" : [ REST ]
           ...
          </k>
-    requires #asWord(#parseByteStackRaw(TYPE)) ==Int #dasmTxPrefix(DynamicFee)
+    requires #asWord(TYPE) ==Int #dasmTxPrefix(DynamicFee)
 
     syntax EthereumCommand ::= "loadTransaction" Int JSON
  // -----------------------------------------------------

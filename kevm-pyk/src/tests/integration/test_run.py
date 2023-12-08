@@ -4,9 +4,9 @@ import json
 from typing import TYPE_CHECKING
 
 import pytest
+from pyk.kdist import kdist
 from pyk.kore.tools import PrintOutput, kore_print
 
-from kevm_pyk.dist import DistTarget
 from kevm_pyk.interpreter import interpret
 
 from ..utils import REPO_ROOT
@@ -32,7 +32,7 @@ def test_run(gst_file: Path) -> None:
 
     # When
     pattern = interpret(gst_data, 'SHANGHAI', 'NORMAL', 1, check=False)
-    actual = kore_print(pattern, definition_dir=DistTarget.LLVM.get(), output=PrintOutput.PRETTY)
+    actual = kore_print(pattern, definition_dir=kdist.get('evm-semantics.llvm'), output=PrintOutput.PRETTY)
 
     # Then
     assert actual == expected

@@ -31,17 +31,15 @@ if ! ${APPLE_SILICON:-false}; then
     rm -rf tests/failing/static_callcodecallcodecall_110_OOGMAfter_2_d0g0v0.json.llvm-out
 fi
 
-
-kontrolx solc-to-k tests/specs/examples/ERC20.sol ERC20 --target haskell --main-module ERC20-VERIFICATION > tests/specs/examples/erc20-bin-runtime.k
-kevm kompile tests/specs/examples/erc20-spec.md                 \
-    --target haskell                                            \
-    --output-definition tests/specs/examples/erc20-spec/haskell \
-    --main-module VERIFICATION                                  \
-    --syntax-module VERIFICATION                                \
+kevm kompile-spec tests/specs/benchmarks/verification.k             \
+    --output-definition tests/specs/benchmarks/verification/haskell \
+    --main-module VERIFICATION                                      \
+    --syntax-module VERIFICATION                                    \
+    --target haskell                                                \
     --verbose
-kevm prove tests/specs/examples/erc20-spec.md --definition tests/specs/examples/erc20-spec/haskell
 
-# Commented because of https://github.com/foundry-rs/foundry/issues/545, and we can't install solc 0.8.13
-# forge build --root tests/foundry --no-auto-detect
-# kevm foundry-kompile --foundry-project-root tests/foundry --verbose
-# kevm foundry-prove --foundry-project-root tests/foundry --verbose --test AssertTest.test_assert_true_branch
+kevm prove tests/specs/benchmarks/structarg00-spec.k         \
+    --definition tests/specs/benchmarks/verification/haskell \
+    --save-directory proofs                                  \
+    --verbose                                                \
+    --use-booster

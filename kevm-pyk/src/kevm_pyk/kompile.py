@@ -7,7 +7,8 @@ from enum import Enum
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from pyk.ktool.kompile import HaskellKompile, KompileArgs, LLVMKompile, LLVMKompileType
+from pyk.kdist import kdist
+from pyk.ktool.kompile import HaskellKompile, KompileArgs, LLVMKompile, LLVMKompileType, MaudeKompile
 from pyk.utils import run_process
 
 from . import config
@@ -28,16 +29,14 @@ HOOK_NAMESPACES: Final = ('JSON', 'KRYPTO')
 class KompileTarget(Enum):
     LLVM = 'llvm'
     HASKELL = 'haskell'
-    HASKELL_BOOSTER = 'haskell-booster'
-    HASKELL_STANDALONE = 'haskell-standalone'
-    FOUNDRY = 'foundry'
+    MAUDE = 'maude'
 
     @property
     def md_selector(self) -> str:
         match self:
             case self.LLVM:
                 return 'k & ! symbolic'
-            case self.HASKELL | self.HASKELL_STANDALONE | self.HASKELL_BOOSTER | self.FOUNDRY:
+            case self.HASKELL | self.MAUDE:
                 return 'k & ! concrete'
             case _:
                 raise AssertionError()
@@ -46,8 +45,52 @@ class KompileTarget(Enum):
 def kevm_kompile(
     target: KompileTarget,
     output_dir: Path,
-    *,
     main_file: Path,
+    *,
+    main_module: str | None,
+    syntax_module: str | None,
+    includes: Iterable[str] = (),
+    emit_json: bool = True,
+    read_only: bool = False,
+    ccopts: Iterable[str] = (),
+    optimization: int = 0,
+    llvm_kompile_type: LLVMKompileType | None = None,
+    enable_llvm_debug: bool = False,
+    llvm_library: Path | None = None,
+    plugin_dir: Path | None = None,
+    debug_build: bool = False,
+    debug: bool = False,
+    verbose: bool = False,
+) -> Path:
+    if plugin_dir is None:
+        plugin_dir = kdist.get('evm-semantics.plugin')
+
+    ccopts = list(ccopts) + _lib_ccopts(plugin_dir, debug_build=debug_build)
+    return run_kompile(
+        target,
+        output_dir,
+        main_file,
+        main_module=main_module,
+        syntax_module=syntax_module,
+        includes=includes,
+        emit_json=emit_json,
+        read_only=read_only,
+        ccopts=ccopts,
+        optimization=optimization,
+        llvm_kompile_type=llvm_kompile_type,
+        enable_llvm_debug=enable_llvm_debug,
+        llvm_library=llvm_library,
+        debug_build=debug_build,
+        debug=debug,
+        verbose=verbose,
+    )
+
+
+def run_kompile(
+    target: KompileTarget,
+    output_dir: Path,
+    main_file: Path,
+    *,
     main_module: str | None,
     syntax_module: str | None,
     includes: Iterable[str] = (),
@@ -86,7 +129,6 @@ def kevm_kompile(
     try:
         match target:
             case KompileTarget.LLVM:
-                ccopts = list(ccopts) + _lib_ccopts(kernel, debug_build=debug_build)
                 kompile = LLVMKompile(
                     base_args=base_args,
                     ccopts=ccopts,
@@ -96,15 +138,30 @@ def kevm_kompile(
                 )
                 return kompile(output_dir=output_dir, debug=debug, verbose=verbose)
 
-            case KompileTarget.HASKELL | KompileTarget.FOUNDRY | KompileTarget.HASKELL_STANDALONE:
-                kompile = HaskellKompile(
+            case KompileTarget.MAUDE:
+                kompile_maude = MaudeKompile(
                     base_args=base_args,
-                    haskell_binary=haskell_binary,
                 )
-                return kompile(output_dir=output_dir, debug=debug, verbose=verbose)
+                kompile_haskell = HaskellKompile(base_args=base_args)
 
-            case KompileTarget.HASKELL_BOOSTER:
-                ccopts = list(ccopts) + _lib_ccopts(kernel, debug_build=debug_build)
+                maude_dir = output_dir / 'kompiled-maude'
+
+                def _kompile_maude() -> None:
+                    kompile_maude(output_dir=maude_dir, debug=debug, verbose=verbose)
+
+                def _kompile_haskell() -> None:
+                    kompile_haskell(output_dir=output_dir, debug=debug, verbose=verbose)
+
+                with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+                    futures = [
+                        executor.submit(_kompile_maude),
+                        executor.submit(_kompile_haskell),
+                    ]
+                    [future.result() for future in futures]
+
+                return output_dir
+
+            case KompileTarget.HASKELL:
                 base_args_llvm = KompileArgs(
                     main_file=main_file,
                     main_module=main_module,
@@ -118,7 +175,7 @@ def kevm_kompile(
                 kompile_llvm = LLVMKompile(
                     base_args=base_args_llvm, ccopts=ccopts, opt_level=optimization, llvm_kompile_type=LLVMKompileType.C
                 )
-                kompile_haskell = HaskellKompile(base_args=base_args)
+                kompile_haskell = HaskellKompile(base_args=base_args, haskell_binary=haskell_binary)
 
                 def _kompile_llvm() -> None:
                     kompile_llvm(output_dir=llvm_library, debug=debug, verbose=verbose)
@@ -146,8 +203,8 @@ def kevm_kompile(
         raise
 
 
-def _lib_ccopts(kernel: str, debug_build: bool = False) -> list[str]:
-    from . import dist
+def _lib_ccopts(plugin_dir: Path, debug_build: bool = False) -> list[str]:
+    kernel = sys.platform
 
     ccopts = ['-std=c++17']
 
@@ -155,8 +212,6 @@ def _lib_ccopts(kernel: str, debug_build: bool = False) -> list[str]:
         ccopts += ['-g']
 
     ccopts += ['-lssl', '-lcrypto']
-
-    plugin_dir = dist.check_plugin()
 
     libff_dir = plugin_dir / 'libff'
     ccopts += [f'{libff_dir}/lib/libff.a', f'-I{libff_dir}/include']

@@ -697,7 +697,7 @@ After executing a transaction, it's necessary to have the effect of the substate
 ```k
     syntax Int ::= "M3:2048" "(" Bytes ")" [function]
  // -------------------------------------------------
-    rule M3:2048(WS) => setBloomFilterBits(#parseByteStack(Keccak256(#unparseByteStack(WS))))
+    rule M3:2048(WS) => setBloomFilterBits(#parseByteStack(Keccak256bytes(WS)))
 
     syntax Int ::= setBloomFilterBits(Bytes) [function]
  // ---------------------------------------------------
@@ -1208,43 +1208,70 @@ These rules reach into the network state and load/store from account storage:
 
 The various `CALL*` (and other inter-contract control flow) operations will be desugared into these `InternalOp`s.
 
--   The `callLog` is used to store the `CALL*`/`CREATE` operations so that we can compare them against the test-set.
-
--   `#call_____` takes the calling account, the account to execute as, the account whose code should execute, the gas limit, the amount to transfer, the arguments, and the static flag.
--   `#callWithCode______` takes the calling account, the accout to execute as, the code to execute (as a `Bytes`), the gas limit, the amount to transfer, the arguments, and the static flag.
--   `#return__` is a placeholder for the calling program, specifying where to place the returned data in memory.
+-   `#checkCall` takes the calling account and the value of the call and triggers several checks before executing the call.
+-   `#checkBalanceUnderflow` takes the calling account and the value of the call and checks if the call value is greater than the account balance.
+-   `#checkDepthExceeded` checks if the current call depth is greater than or equal to `1024`.
+-   `#checkNonceExceeded` takes the calling account and checks if the nonce is less than `maxUInt64` (`18446744073709551615`).
+-   `#call` takes the calling account, the account to execute as, the account whose code should execute, the gas limit, the amount to transfer, the arguments, and the static flag.
+-   `#callWithCode` takes the calling account, the accout to execute as, the code to execute (as a `Bytes`), the gas limit, the amount to transfer, the arguments, and the static flag.
+-   `#return` is a placeholder for the calling program, specifying where to place the returned data in memory.
 
 ```k
-    syntax InternalOp ::= "#checkCall" Int Int
-                        | "#call"         Int Int Int Int Int Bytes Bool
-                        | "#callWithCode" Int Int Int Bytes Int Int Bytes Bool
-                        | "#mkCall"       Int Int Int Bytes     Int Bytes Bool
- // --------------------------------------------------------------------------
-    rule <k> #checkCall ACCT VALUE
-          => #refund GCALL ~> #pushCallStack ~> #pushWorldState
-          ~> #end #if VALUE >Int BAL #then EVMC_BALANCE_UNDERFLOW #else #if CD >=Int 1024 #then EVMC_CALL_DEPTH_EXCEEDED #else EVMC_NONCE_EXCEEDED #fi #fi
-         ...
-         </k>
-         <callDepth> CD </callDepth>
+    syntax InternalOp ::= "#checkCall"             Int Int
+                        | "#checkBalanceUnderflow" Int Int
+                        | "#checkNonceExceeded"    Int
+                        | "#checkDepthExceeded"
+                        | "#call"                  Int Int Int Int Int Bytes Bool
+                        | "#callWithCode"          Int Int Int Bytes Int Int Bytes Bool
+                        | "#mkCall"                Int Int Int Bytes     Int Bytes Bool
+ // -----------------------------------------------------------------------------------
+     rule <k> #checkBalanceUnderflow ACCT VALUE => #refund GCALL ~> #pushCallStack ~> #pushWorldState ~> #end EVMC_BALANCE_UNDERFLOW ... </k>
          <output> _ => .Bytes </output>
-         <account>
-           <acctID> ACCT </acctID>
-           <balance> BAL </balance>
-           <nonce> NONCE </nonce>
-           ...
-         </account>
          <callGas> GCALL </callGas>
-      requires VALUE >Int BAL orBool CD >=Int 1024 orBool notBool #rangeNonce(NONCE)
-
-     rule <k> #checkCall ACCT VALUE => . ... </k>
-         <callDepth> CD </callDepth>
          <account>
            <acctID> ACCT </acctID>
            <balance> BAL </balance>
+           ...
+         </account>
+      requires VALUE >Int BAL
+
+    rule <k> #checkBalanceUnderflow ACCT VALUE => . ... </k>
+         <account>
+           <acctID> ACCT </acctID>
+           <balance> BAL </balance>
+           ...
+         </account>
+      requires VALUE <=Int BAL
+
+    rule <k> #checkDepthExceeded => #refund GCALL ~> #pushCallStack ~> #pushWorldState ~> #end EVMC_CALL_DEPTH_EXCEEDED ... </k> 
+         <output> _ => .Bytes </output>
+         <callGas> GCALL </callGas>
+         <callDepth> CD </callDepth>
+      requires CD >=Int 1024
+
+    rule <k> #checkDepthExceeded => . ... </k>
+         <callDepth> CD </callDepth>
+      requires CD <Int 1024
+
+    rule <k> #checkNonceExceeded ACCT => #refund GCALL ~> #pushCallStack ~> #pushWorldState ~> #end EVMC_NONCE_EXCEEDED ... </k>
+         <output> _ => .Bytes </output>
+         <callGas> GCALL </callGas>
+         <account>
+           <acctID> ACCT </acctID>
            <nonce> NONCE </nonce>
            ...
          </account>
-      requires notBool (VALUE >Int BAL orBool CD >=Int 1024 orBool notBool #rangeNonce(NONCE))
+      requires notBool #rangeNonce(NONCE)
+
+    rule <k> #checkNonceExceeded ACCT => . ... </k>
+         <account>
+           <acctID> ACCT </acctID>
+           <nonce> NONCE </nonce>
+           ...
+         </account>
+      requires #rangeNonce(NONCE)
+
+    rule <k> #checkCall ACCT VALUE => #checkBalanceUnderflow ACCT VALUE ~> #checkDepthExceeded ~> #checkNonceExceeded ACCT ... </k>
 
     rule <k> #call ACCTFROM ACCTTO ACCTCODE VALUE APPVALUE ARGS STATIC
           => #callWithCode ACCTFROM ACCTTO ACCTCODE CODE VALUE APPVALUE ARGS STATIC
@@ -1698,7 +1725,7 @@ Precompiled Contracts
     syntax Bytes ::= #ecrec ( Bytes , Bytes , Bytes , Bytes ) [function, smtlib(ecrec)]
                    | #ecrec ( Account )                       [function]
  // --------------------------------------------------------------------
-    rule [ecrec]: #ecrec(HASH, SIGV, SIGR, SIGS) => #ecrec(#sender(#unparseByteStack(HASH), #asWord(SIGV), #unparseByteStack(SIGR), #unparseByteStack(SIGS))) [concrete]
+    rule [ecrec]: #ecrec(HASH, SIGV, SIGR, SIGS) => #ecrec(#sender(HASH, #asWord(SIGV), SIGR, SIGS)) [concrete]
 
     rule #ecrec(.Account) => .Bytes
     rule #ecrec(N:Int)    => #padToWidth(32, #asByteStack(N))
@@ -1707,13 +1734,13 @@ Precompiled Contracts
  // ---------------------------------
     rule <k> SHA256 => #end EVMC_SUCCESS ... </k>
          <callData> DATA </callData>
-         <output> _ => #parseHexBytes(Sha256(#unparseByteStack(DATA))) </output>
+         <output> _ => #parseHexBytes(Sha256bytes(DATA)) </output>
 
     syntax PrecompiledOp ::= "RIP160"
  // ---------------------------------
     rule <k> RIP160 => #end EVMC_SUCCESS ... </k>
          <callData> DATA </callData>
-         <output> _ => #padToWidth(32, #parseHexBytes(RipEmd160(#unparseByteStack(DATA)))) </output>
+         <output> _ => #padToWidth(32, #parseHexBytes(RipEmd160bytes(DATA))) </output>
 
     syntax PrecompiledOp ::= "ID"
  // -----------------------------
@@ -1792,7 +1819,7 @@ Precompiled Contracts
     syntax PrecompiledOp ::= "BLAKE2F"
  // ----------------------------------
     rule <k> BLAKE2F => #end EVMC_SUCCESS ... </k>
-         <output> _ => #parseByteStack( Blake2Compress( #unparseByteStack( DATA ) ) ) </output>
+         <output> _ => #parseByteStack( Blake2Compressbytes( DATA ) ) </output>
          <callData> DATA </callData>
       requires lengthBytes( DATA ) ==Int 213
        andBool DATA[212] <=Int 1

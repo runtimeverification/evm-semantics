@@ -132,6 +132,7 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
                       | #bytes   ( Bytes )                      [klabel(abi_type_bytes),   symbol]
                       | #string  ( String )                     [klabel(abi_type_string),  symbol]
                       | #array   ( TypedArg , Int , TypedArgs ) [klabel(abi_type_array),   symbol]
+                      | #tuple   ( TypedArgs )                  [klabel(abi_type_tuple),   symbol]
  // ----------------------------------------------------------------------------------------------
 
     syntax TypedArgs ::= List{TypedArg, ","} [klabel(typedArgs)]
@@ -143,7 +144,7 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
 
     syntax Bytes ::= #signatureCallData ( String, TypedArgs ) [function]
  // --------------------------------------------------------------------
-    rule #signatureCallData( FNAME , ARGS ) => #parseByteStack(substrString(Keccak256(#generateSignature(FNAME, ARGS)), 0, 8))
+    rule #signatureCallData( FNAME , ARGS ) => #parseByteStack(substrString(Keccak256bytes(String2Bytes(#generateSignature(FNAME, ARGS))), 0, 8))
 
     syntax String ::= #generateSignature     ( String, TypedArgs ) [function, total]
                     | #generateSignatureArgs ( TypedArgs )         [function, total]
@@ -265,11 +266,13 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
 
     rule #typeName( #array(T, _, _)) => #typeName(T) +String "[]"
 
+    rule #typeName( #tuple(TARGS))   => "(" +String #generateSignatureArgs(TARGS) +String ")"
+
     syntax Bytes ::= #encodeArgs    ( TypedArgs )                       [function]
     syntax Bytes ::= #encodeArgsAux ( TypedArgs , Int , Bytes , Bytes ) [function]
  // ------------------------------------------------------------------------------
     rule #encodeArgs(ARGS) => #encodeArgsAux(ARGS, #lenOfHeads(ARGS), .Bytes, .Bytes)
-
+    rule #encodeArgs(#tuple(ARGS)) => #encodeArgs(ARGS)
     rule #encodeArgsAux(.TypedArgs, _:Int, HEADS, TAILS) => HEADS +Bytes TAILS
 
     rule #encodeArgsAux((ARG, ARGS), OFFSET, HEADS, TAILS)
@@ -633,7 +636,7 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     // dynamic Type
     rule #enc(        #bytes(BS)) => #encBytes(lengthBytes(BS), BS)
     rule #enc(#array(_, N, DATA)) => #enc(#uint256(N)) +Bytes #encodeArgs(DATA)
-    rule #enc(      #string(STR)) => #enc(#bytes(#parseByteStackRaw(STR)))
+    rule #enc(      #string(STR)) => #enc(#bytes(String2Bytes(STR)))
 
     syntax Bytes ::= #encBytes ( Int , Bytes ) [function]
  // -----------------------------------------------------
@@ -793,7 +796,7 @@ where `1003892871367861763272476045097431689001461395759728643661426852242313133
     syntax List ::= #getEventTopics ( String , EventArgs ) [function]
  // -----------------------------------------------------------------
     rule #getEventTopics(ENAME, EARGS)
-      => ListItem(#parseHexWord(Keccak256(#generateSignature(ENAME, #getTypedArgs(EARGS)))))
+      => ListItem(#parseHexWord(Keccak256bytes(String2Bytes(#generateSignature(ENAME, #getTypedArgs(EARGS))))))
          #getIndexedArgs(EARGS)
 
     syntax TypedArgs ::= #getTypedArgs ( EventArgs ) [function]

@@ -4,7 +4,7 @@ import logging
 from typing import TYPE_CHECKING
 
 from pyk.cterm import CTerm
-from pyk.kast.inner import KApply, KLabel, KSequence, KSort, KVariable, build_assoc
+from pyk.kast.inner import KApply, KLabel, KSequence, KSort, KVariable, build_assoc, build_cons
 from pyk.kast.manip import abstract_term_safely, bottom_up, flatten_label
 from pyk.kast.pretty import paren
 from pyk.kcfg.semantics import KCFGSemantics
@@ -114,6 +114,35 @@ class KEVMSemantics(KCFGSemantics):
                 return term
 
         return CTerm(config=bottom_up(_replace, cterm.config), constraints=cterm.constraints)
+
+    @staticmethod
+    def cut_point_rules(break_on_jumpi: bool, break_on_calls: bool) -> list[str]:
+        cut_point_rules = []
+        if break_on_jumpi:
+            cut_point_rules.extend(['EVM.jumpi.true', 'EVM.jumpi.false'])
+        if break_on_calls:
+            cut_point_rules.extend(
+                [
+                    'EVM.call',
+                    'EVM.callcode',
+                    'EVM.delegatecall',
+                    'EVM.staticcall',
+                    'EVM.create',
+                    'EVM.create2',
+                    'EVM.end',
+                    'EVM.return.exception',
+                    'EVM.return.revert',
+                    'EVM.return.success',
+                ]
+            )
+        return cut_point_rules
+
+    @staticmethod
+    def terminal_rules(break_every_step: bool) -> list[str]:
+        terminal_rules = ['EVM.halt']
+        if break_every_step:
+            terminal_rules.append('EVM.step')
+        return terminal_rules
 
 
 class KEVM(KProve, KRun):
@@ -349,6 +378,14 @@ class KEVM(KProve, KRun):
         return KApply('abi_type_' + type, [value])
 
     @staticmethod
+    def abi_tuple(values: list[KInner]) -> KApply:
+        return KApply('abi_type_tuple', [KEVM.typed_args(values)])
+
+    @staticmethod
+    def abi_array(elem_type: KInner, length: KInner, elems: list[KInner]) -> KApply:
+        return KApply('abi_type_array', [elem_type, length, KEVM.typed_args(elems)])
+
+    @staticmethod
     def empty_typedargs() -> KApply:
         return KApply('.List{"_,__EVM-ABI_TypedArgs_TypedArg_TypedArgs"}_TypedArgs')
 
@@ -392,11 +429,9 @@ class KEVM(KProve, KRun):
         return res
 
     @staticmethod
-    def typed_args(args: list[KInner]) -> KApply:
-        res = KApply('.List{"_,__EVM-ABI_TypedArgs_TypedArg_TypedArgs"}_TypedArgs')
-        for i in reversed(args):
-            res = KApply('_,__EVM-ABI_TypedArgs_TypedArg_TypedArgs', [i, res])
-        return res
+    def typed_args(args: list[KInner]) -> KInner:
+        res = KEVM.empty_typedargs()
+        return build_cons(res, '_,__EVM-ABI_TypedArgs_TypedArg_TypedArgs', args)
 
     @staticmethod
     def accounts(accts: list[KInner]) -> KInner:
@@ -440,7 +475,7 @@ class KEVM(KProve, KRun):
         if max_counterexamples:
             haskell_args += ['--max-counterexamples', f'{max_counterexamples}']
         if bug_report:
-            haskell_args += ['--bug-report', f'kevm-bug-{spec_file.name.rstrip("-spec.k")}']
+            haskell_args += ['--bug-report', f'kevm-bug-{spec_file.name.removesuffix("-spec.k")}']
         if haskell_backend_args:
             haskell_args += list(haskell_backend_args)
 

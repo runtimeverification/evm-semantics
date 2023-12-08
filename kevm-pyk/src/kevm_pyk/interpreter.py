@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from pyk.kdist import kdist
 from pyk.kore.parser import KoreParser
 from pyk.utils import run_process
 
-from .dist import DistTarget
 from .gst_to_kore import gst_to_kore
 
 if TYPE_CHECKING:
@@ -26,7 +26,7 @@ def interpret(gst_data: Any, schedule: str, mode: str, chainid: int, *, check: b
 
 
 def _interpret(gst_data: Any, schedule: str, mode: str, chainid: int) -> CompletedProcess:
-    interpreter = DistTarget.LLVM.get() / 'interpreter'
+    interpreter = kdist.get('evm-semantics.llvm') / 'interpreter'
     init_kore = gst_to_kore(gst_data, schedule, mode, chainid)
     proc_res = run_process([str(interpreter), '/dev/stdin', '-1', '/dev/stdout'], input=init_kore.text, check=False)
     return proc_res

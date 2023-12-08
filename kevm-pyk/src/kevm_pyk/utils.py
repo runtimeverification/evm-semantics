@@ -18,7 +18,7 @@ from pyk.kast.manip import (
 )
 from pyk.kast.outer import KSequence
 from pyk.kcfg import KCFGExplore
-from pyk.kore.rpc import KoreClient, KoreExecLogFormat, kore_server
+from pyk.kore.rpc import KoreClient, KoreExecLogFormat, TransportType, kore_server
 from pyk.proof import APRBMCProof, APRBMCProver, APRProof, APRProver
 from pyk.proof.equality import EqualityProof, EqualityProver
 from pyk.utils import single
@@ -89,41 +89,19 @@ def get_apr_proof_for_spec(
     return apr_proof
 
 
-def kevm_prove(
+def run_prover(
     kprove: KProve,
     proof: Proof,
     kcfg_explore: KCFGExplore,
     max_depth: int = 1000,
     max_iterations: int | None = None,
-    break_every_step: bool = False,
-    break_on_jumpi: bool = False,
-    break_on_calls: bool = True,
+    cut_point_rules: Iterable[str] = (),
+    terminal_rules: Iterable[str] = (),
     extract_branches: Callable[[CTerm], Iterable[KInner]] | None = None,
     abstract_node: Callable[[CTerm], CTerm] | None = None,
+    fail_fast: bool = False,
 ) -> bool:
     proof = proof
-    terminal_rules = ['EVM.halt']
-    cut_point_rules = []
-    if break_every_step:
-        terminal_rules.append('EVM.step')
-    if break_on_jumpi:
-        cut_point_rules.extend(['EVM.jumpi.true', 'EVM.jumpi.false'])
-    if break_on_calls:
-        cut_point_rules.extend(
-            [
-                'EVM.call',
-                'EVM.callcode',
-                'EVM.delegatecall',
-                'EVM.staticcall',
-                'EVM.create',
-                'EVM.create2',
-                'FOUNDRY.foundry.call',
-                'EVM.end',
-                'EVM.return.exception',
-                'EVM.return.revert',
-                'EVM.return.success',
-            ]
-        )
     prover: APRBMCProver | APRProver | EqualityProver
     if type(proof) is APRBMCProof:
         prover = APRBMCProver(proof, kcfg_explore)
@@ -140,6 +118,7 @@ def kevm_prove(
                 execute_depth=max_depth,
                 terminal_rules=terminal_rules,
                 cut_point_rules=cut_point_rules,
+                fail_fast=fail_fast,
             )
             assert isinstance(proof, APRProof)
             if proof.passed:
@@ -325,12 +304,14 @@ def legacy_explore(
     llvm_definition_dir: Path | None = None,
     smt_timeout: int | None = None,
     smt_retry_limit: int | None = None,
+    smt_tactic: str | None = None,
     bug_report: BugReport | None = None,
     haskell_log_format: KoreExecLogFormat = KoreExecLogFormat.ONELINE,
     haskell_log_entries: Iterable[str] = (),
     log_axioms_file: Path | None = None,
     trace_rewrites: bool = False,
     start_server: bool = True,
+    maude_port: int | None = None,
 ) -> Iterator[KCFGExplore]:
     if start_server:
         # Old way of handling KCFGExplore, to be removed
@@ -343,11 +324,12 @@ def legacy_explore(
             bug_report=bug_report,
             smt_timeout=smt_timeout,
             smt_retry_limit=smt_retry_limit,
+            smt_tactic=smt_tactic,
             haskell_log_format=haskell_log_format,
             haskell_log_entries=haskell_log_entries,
             log_axioms_file=log_axioms_file,
         ) as server:
-            with KoreClient('localhost', server.port, bug_report=bug_report) as client:
+            with KoreClient('localhost', server.port, bug_report=bug_report, bug_report_id=id) as client:
                 yield KCFGExplore(
                     kprint=kprint,
                     kore_client=client,
@@ -358,7 +340,18 @@ def legacy_explore(
     else:
         if port is None:
             raise ValueError('Missing port with start_server=False')
-        with KoreClient('localhost', port, bug_report=bug_report) as client:
+        if maude_port is None:
+            dispatch = None
+        else:
+            dispatch = {
+                'execute': [('localhost', maude_port, TransportType.HTTP)],
+                'simplify': [('localhost', maude_port, TransportType.HTTP)],
+                'add-module': [
+                    ('localhost', maude_port, TransportType.HTTP),
+                    ('localhost', port, TransportType.SINGLE_SOCKET),
+                ],
+            }
+        with KoreClient('localhost', port, bug_report=bug_report, bug_report_id=id, dispatch=dispatch) as client:
             yield KCFGExplore(
                 kprint=kprint,
                 kore_client=client,

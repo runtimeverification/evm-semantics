@@ -44,10 +44,9 @@ The following files constitute the KEVM semantics:
 These additional files extend the semantics to make the repository more useful:
 
 -   [buf.md](kevm-pyk/src/kevm_pyk/kproj/evm-semantics/buf.md) defines the `#buf` byte-buffer abstraction for use during symbolic execution.
--   [abi.md](kevm-pyk/src/kevm_pyk/kproj/evm-semantics/abi.md) defines the [Contract ABI Specification](https://docs.soliditylang.org/en/v0.8.1/abi-spec.html) for use in proofs and easy contract/function specification.
+-   [abi.md](kevm-pyk/src/kevm_pyk/kproj/evm-semantics/abi.md) defines the [Contract ABI Specification](https://docs.soliditylang.org/en/v0.8.22/abi-spec.html) for use in proofs and easy contract/function specification.
 -   [hashed-locations.md](kevm-pyk/src/kevm_pyk/kproj/evm-semantics/hashed-locations.md) defines the `#hashedLocation` abstraction used to specify Solidity-generated storage layouts.
 -   [edsl.md](kevm-pyk/src/kevm_pyk/kproj/evm-semantics/edsl.md) combines the previous three abstractions for ease-of-use.
--   [foundry.md](kevm-pyk/src/kevm_pyk/kproj/evm-semantics/foundry.md) adds Foundry capabilities to KEVM.
 
 These files are used for testing the semantics itself:
 
@@ -122,8 +121,8 @@ sudo pacman -S                                               \
 After installing the Command Line Tools, [Homebrew](https://brew.sh/), and getting the [blockchain plugin](#blockchain-plugin), run:
 
 ```sh
-brew tap kframework/k
-brew install java automake libtool gmp mpfr pkg-config maven libffi llvm@14 openssl python bash kframework/k/cryptopp@8.6.0 poetry solidity
+brew tap runtimeverification/k
+brew install java automake libtool gmp mpfr pkg-config maven libffi llvm@14 openssl python bash runtimeverification/k/cryptopp@8.6.0 poetry solidity
 make libsecp256k1
 ```
 
@@ -185,19 +184,19 @@ You also need to get the blockchain plugin submodule and install it.
 
 ```sh
 git submodule update --init --recursive
-poetry -C kevm-pyk run kevm-dist --verbose build plugin
+poetry -C kevm-pyk run kdist --verbose build evm-semantics.plugin
 ```
 
 To change the default compiler:
 
 ```sh
-CXX=clang++-14 poetry -C kevm-pyk run kevm-dist --verbose build plugin
+CXX=clang++-14 poetry -C kevm-pyk run kdist --verbose build evm-semantics.plugin
 ```
 
 On Apple silicon:
 
 ```sh
-APPLE_SILICON=true poetry -C kevm-pyk run kevm-dist --verbose build plugin
+APPLE_SILICON=true poetry -C kevm-pyk run kdist --verbose build evm-semantics.plugin
 ```
 
 #### K Definitions
@@ -205,22 +204,22 @@ APPLE_SILICON=true poetry -C kevm-pyk run kevm-dist --verbose build plugin
 Finally, you can build the semantics.
 
 ```sh
-poetry -C kevm-pyk run kevm-dist --verbose build -j4
+poetry -C kevm-pyk run kdist --verbose build -j4
 ```
 
-You can build specific targets using options `llvm`, `haskell`, `haskell-standalone` or `foundry`, e.g.:
+You can build specific targets using options `evm-semantics.{llvm,haskell,haskell-standalone,plugin}`, e.g.:
 
 ```sh
-poetry -C kevm-pyk run kevm-dist build -j2 llvm haskell
+poetry -C kevm-pyk run kdist build -j2 evm-semantics.llvm evm-semantics.haskell
 ```
 
 Targets can be cleaned with
 
 ```sh
-poetry -C kevm-pyk run kevm-dist clean
+poetry -C kevm-pyk run kdist clean
 ```
 
-For more information, refer to `kevm-dist --help` and the [dist.py](kevm-pyk/src/kevm_pyk/dist.py) module.
+For more information, refer to `kdist --help` and the [dist.py](kevm-pyk/src/kevm_pyk/dist.py) module.
 
 Running Tests
 -------------
@@ -245,6 +244,22 @@ These are the individual test-suites (all of these can be suffixed with `-all` t
 -   `make test-proof`: Proofs from the [Verified Smart Contracts].
 -   `make test-interactive`: Tests of the `kevm` command.
 
+All these targets call `pytest` under the hood. You can pass additional arguments to the call by appending them to variable `PYTEST_ARGS`. E.g. run
+
+```
+make test-vm PYTEST_ARGS+=-vv
+```
+
+to execute VMTests with increased verbosity, and
+
+```
+make test-vm PYTEST_ARGS+=-n0
+```
+
+to execute them on a single worker.
+
+Files produced by test runs, e.g. kompiled definition and logs, can be found in `/tmp/pytest-of-<user>/`.
+
 For Developers
 --------------
 
@@ -260,7 +275,7 @@ poetry -C kevm-pyk run kevm-pyk run tests/ethereum-tests/LegacyTests/Constantino
 To enable the debug symbols for the llvm backend, build using this command:
 
 ```sh
-poetry -C kevm-pyk run kevm-dist build llvm --enable-llvm-debug
+poetry -C kevm-pyk run kdist build evm-semantics.llvm --arg enable-llvm-debug=true
 ```
 
 To debug a conformance test, add the `--debugger` flag to the command:
@@ -276,8 +291,8 @@ Always have your build up-to-date.
 - If using the kup package manager, run `kup install kevm --version .` to install the local version.
 - If building from source:
     -   `make poetry` needs to be re-run if you touch any of the `kevm-pyk` code.
-    -   `poetry -C kevm-pyk run kevm-dist build <target> --force` needs to be re-run if you touch any of this repos files.
-    -   `poetry -C kevm-pyk run kevm-dist clean` is a safe way to remove the target directory
+    -   `poetry -C kevm-pyk run kdist build <target> --force` needs to be re-run if you touch any of this repos files.
+    -   `poetry -C kevm-pyk run kdist clean` is a safe way to remove the target directory
 
 ### Building with Nix
 
@@ -370,7 +385,7 @@ Resources
 -   [EVM Yellowpaper](https://github.com/ethereum/yellowpaper): Original specification of EVM.
 -   [LEM Semantics of EVM](https://github.com/pirapira/eth-isabelle)
 -   [EVM Opcode Interactive Reference](https://www.evm.codes/?fork=merge)
--   [Solidity ABI Encoding](https://docs.soliditylang.org/en/v0.8.19/abi-spec.html)
+-   [Solidity ABI Encoding](https://docs.soliditylang.org/en/v0.8.22/abi-spec.html)
 
 For more information about the [K Framework], refer to these sources:
 

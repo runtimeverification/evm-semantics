@@ -35,7 +35,7 @@ module LEMMAS-MCD-SYNTAX
 
     syntax Int ::= #string2Word ( String ) [function]
  // -------------------------------------------------
-    rule #string2Word(S) => #asWord(#padRightToWidth(32, #parseByteStackRaw(S)))
+    rule #string2Word(S) => #asWord(#padRightToWidth(32, String2Bytes(S)))
 
   // ########################
   // Arithmetic
