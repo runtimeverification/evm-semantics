@@ -394,6 +394,10 @@ class KEVM(KProve, KRun):
         return KApply('abi_type_dynamic_array', [elem_type])
 
     @staticmethod
+    def abi_dynamic_bytes_array(elem_type: KInner) -> KApply:
+        return KApply('abi_type_dynamic_bytes_array', [elem_type])
+
+    @staticmethod
     def empty_typedargs() -> KApply:
         return KApply('.List{"_,__EVM-ABI_TypedArgs_TypedArg_TypedArgs"}_TypedArgs')
 

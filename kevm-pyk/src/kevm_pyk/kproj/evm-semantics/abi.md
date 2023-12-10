@@ -133,6 +133,7 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
                       | #string  ( String )                     [klabel(abi_type_string),  symbol]
                       | #array   ( TypedArg , Int , TypedArgs ) [klabel(abi_type_array),   symbol]
                       | #dynArray( TypedArg )                   [klabel(abi_type_dynamic_array), symbol]
+                      | #dynBytesArray( TypedArg )              [klabel(abi_type_dynamic_bytes_array), symbol]
                       | #tuple   ( TypedArgs )                  [klabel(abi_type_tuple),   symbol]
  // ----------------------------------------------------------------------------------------------
 
@@ -268,7 +269,9 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #typeName( #array(T, _, _)) => #typeName(T) +String "[]"
 
    // TODO(palina): the type name differs between `bytes` and `T[]`
-    rule #typeName( #dynArray(T)) => #typeName(T)
+    rule #typeName( #dynArray( T )) => #typeName(T) +String "[]"
+
+    rule #typeName( #dynBytesArray( T ) ) => #typeName(T)
 
     rule #typeName( #tuple(TARGS))   => "(" +String #generateSignatureArgs(TARGS) +String ")"
 
@@ -405,6 +408,7 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
 
    // TODO(palina):
     rule #lenOfHead(#dynArray( _ )) => 32
+    rule #lenOfHead(#dynBytesArray( _ )) => 32
 
     syntax Bool ::= #isStaticType ( TypedArg ) [function, total]
  // ------------------------------------------------------------
@@ -518,6 +522,8 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #isStaticType(#array(_, _, _)) => false
 
     rule #isStaticType(#dynArray( _ )) => false
+
+    rule #isStaticType(#dynBytesArray( _ )) => false
 
     syntax Int ::= #sizeOfDynamicType ( TypedArg ) [function]
  // ---------------------------------------------------------
@@ -653,6 +659,7 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
 
    // TODO(palina): placeholder rule for dynamic arrays
     rule #enc(#dynArray(T)) => #enc(T)
+    rule #enc(#dynBytesArray(T)) => #enc(T)
 
     syntax Bytes ::= #encBytes ( Int , Bytes ) [function]
  // -----------------------------------------------------
