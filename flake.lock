@@ -67,17 +67,17 @@
         ]
       },
       "locked": {
-        "lastModified": 1701955831,
-        "narHash": "sha256-KgyowTAPxflKyMBCFIhhKLrqwmppziSF5IOduf3RPQk=",
+        "lastModified": 1702042943,
+        "narHash": "sha256-r0YXiSLMePHxGJzIfpN+OGJsxJZFv+4BdBJEeTDtVh4=",
         "owner": "runtimeverification",
         "repo": "hs-backend-booster",
-        "rev": "7fa64107dbe26453024e5210d441b7999ef31f0b",
+        "rev": "9469f18e3546aa4d7a77b661ed3025572b770bba",
         "type": "github"
       },
       "original": {
         "owner": "runtimeverification",
         "repo": "hs-backend-booster",
-        "rev": "7fa64107dbe26453024e5210d441b7999ef31f0b",
+        "rev": "9469f18e3546aa4d7a77b661ed3025572b770bba",
         "type": "github"
       }
     },
@@ -254,16 +254,16 @@
         "rv-utils": "rv-utils"
       },
       "locked": {
-        "lastModified": 1702039716,
-        "narHash": "sha256-EvoVFBtY3N3eOtSBUHqpXJ2x1fBtUGhCbYW6zIvwefU=",
+        "lastModified": 1702292585,
+        "narHash": "sha256-27qZBQrS62ppa8TwjMcfw7ykt/0sz7xSaifcdTNkBuE=",
         "owner": "runtimeverification",
         "repo": "k",
-        "rev": "13a2912d68d658ba1e350f8bc1a1279a4c2413c3",
+        "rev": "9ee1950c1e6c90c4ad9b0b497c73c61ce8a5b2b6",
         "type": "github"
       },
       "original": {
         "owner": "runtimeverification",
-        "ref": "v6.1.51",
+        "ref": "v6.1.52",
         "repo": "k",
         "type": "github"
       }
@@ -455,16 +455,16 @@
         "poetry2nix": "poetry2nix"
       },
       "locked": {
-        "lastModified": 1702292653,
-        "narHash": "sha256-oTk0KVg0KsnMktUiM2uhqV+hqQGbR11k2oQj3pJ5ids=",
+        "lastModified": 1702302236,
+        "narHash": "sha256-63AwbQM2ZW5wDOwmkz2blAgSIkg7MKjK4JHyl3xP+A8=",
         "owner": "runtimeverification",
         "repo": "pyk",
-        "rev": "c1f6b9552f4cc29bb34a1691a03ae6715dd05484",
+        "rev": "b5c15a28a350a7ad1e353f68a023310d4639b441",
         "type": "github"
       },
       "original": {
         "owner": "runtimeverification",
-        "ref": "v0.1.541",
+        "ref": "v0.1.542",
         "repo": "pyk",
         "type": "github"
       }
