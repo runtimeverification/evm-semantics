@@ -79,6 +79,7 @@ class KEVMSemantics(KCFGSemantics):
         return False
 
     def extract_branches(self, cterm: CTerm) -> list[KInner]:
+        # print(f'constraints when extracting branches are: {cterm.constraints}')
         k_cell = cterm.cell('K_CELL')
         jumpi_pattern = KEVM.jumpi_applied(KVariable('###PCOUNT'), KVariable('###COND'))
         pc_next_pattern = KApply('#pc[_]_EVM_InternalOp_OpCode', [KEVM.jumpi()])
@@ -363,7 +364,15 @@ class KEVM(KProve, KRun):
 
     @staticmethod
     def abi_symbolic_calldata(name: str, args: list[KInner]) -> KApply:
-        return KApply('_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes', [KApply('#signatureCallData(_,_)_EVM-ABI_Bytes_String_TypedArgs',[stringToken(name), KEVM.typed_args(args)]), KVariable('SYMBOLIC_CALLDATA')]) 
+        return KApply(
+            '_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes',
+            [
+                KApply(
+                    '#signatureCallData(_,_)_EVM-ABI_Bytes_String_TypedArgs', [stringToken(name), KEVM.typed_args(args)]
+                ),
+                KVariable('SYMBOLIC_CALLDATA'),
+            ],
+        )
 
     @staticmethod
     def abi_selector(name: str) -> KApply:
