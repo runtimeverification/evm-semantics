@@ -29,6 +29,39 @@ rule <kevm>
        <schedule>
          SCHED
        </schedule>
+       <use-gas>
+         False
+       </use-gas>
+       <ethereum>
+         <evm>
+           <callState>
+             <wordStack>
+               ( WS => 0 : WS )
+             </wordStack>
+             <pc>
+               ( PCOUNT => ( PCOUNT +Int 1 ) )
+             </pc>
+             ...
+           </callState>
+           ...
+         </evm>
+         ...
+       </ethereum>
+       ...
+     </kevm>
+  requires ( #sizeWordStack( 0 : WS ) <=Int 1024 )
+    [priority(40)]
+
+rule <kevm>
+       <k>
+         ( #next[ PUSHZERO ] => . ) ...
+       </k>
+       <schedule>
+         SCHED
+       </schedule>
+       <use-gas>
+         True
+       </use-gas>
        <ethereum>
          <evm>
            <callState>
@@ -60,6 +93,42 @@ rule <kevm>
        <schedule>
          SCHED
        </schedule>
+       <use-gas>
+         False
+       </use-gas>
+       <ethereum>
+         <evm>
+           <callState>
+             <program>
+               PGM
+             </program>
+             <wordStack>
+               ( WS => #asWord( #range(PGM, PCOUNT +Int 1, N) ) : WS )
+             </wordStack>
+             <pc>
+               ( PCOUNT => ( ( PCOUNT +Int N ) +Int 1 ) )
+             </pc>
+             ...
+           </callState>
+           ...
+         </evm>
+         ...
+       </ethereum>
+       ...
+     </kevm>
+  requires ( #sizeWordStack( #asWord( #range(PGM, PCOUNT +Int 1, N) ) : WS ) <=Int 1024 )
+    [priority(40)]
+
+rule <kevm>
+       <k>
+         ( #next[ PUSH(N) ] => . ) ...
+       </k>
+       <schedule>
+         SCHED
+       </schedule>
+       <use-gas>
+         True
+       </use-gas>
        <ethereum>
          <evm>
            <callState>
@@ -87,6 +156,36 @@ rule <kevm>
    andBool ( #sizeWordStack( #asWord( #range(PGM, PCOUNT +Int 1, N) ) : WS ) <=Int 1024 )
     [priority(40)]
 
+rule <kevm>
+       <k>
+         ( #next[ DUP(N) ] => . ) ...
+       </k>
+       <schedule>
+         SCHED
+       </schedule>
+       <use-gas>
+         False
+       </use-gas>
+       <ethereum>
+         <evm>
+           <callState>
+             <wordStack>
+               ( WS => WS [ ( N +Int -1 ) ] : WS )
+             </wordStack>
+             <pc>
+               ( PCOUNT => ( PCOUNT +Int 1 ) )
+             </pc>
+             ...
+           </callState>
+           ...
+         </evm>
+         ...
+       </ethereum>
+       ...
+     </kevm>
+  requires #stackNeeded(DUP(N)) <=Int #sizeWordStack(WS)
+   andBool ( #sizeWordStack( WS [ ( N +Int -1 ) ] : WS ) <=Int 1024 )
+    [priority(40)]
 
 rule <kevm>
        <k>
@@ -95,6 +194,9 @@ rule <kevm>
        <schedule>
          SCHED
        </schedule>
+       <use-gas>
+         True
+       </use-gas>
        <ethereum>
          <evm>
            <callState>
@@ -120,6 +222,36 @@ rule <kevm>
    andBool ( #sizeWordStack( WS [ ( N +Int -1 ) ] : WS ) <=Int 1024 )
     [priority(40)]
 
+rule <kevm>
+       <k>
+         ( #next[ SWAP(N) ] => . ) ...
+       </k>
+       <schedule>
+         SCHED
+       </schedule>
+       <use-gas>
+         False
+       </use-gas>
+       <ethereum>
+         <evm>
+           <callState>
+             <wordStack>
+               ( W0 : WS => WS [ ( N +Int -1 ) ] : ( WS [ ( N +Int -1 ) := W0 ] ) )
+             </wordStack>
+             <pc>
+               ( PCOUNT => ( PCOUNT +Int 1 ) )
+             </pc>
+             ...
+           </callState>
+           ...
+         </evm>
+         ...
+       </ethereum>
+       ...
+     </kevm>
+  requires #stackNeeded(SWAP(N)) <=Int #sizeWordStack(W0 : WS)
+   andBool ( #sizeWordStack( WS [ ( N +Int -1 ) ] : ( WS [ ( N +Int -1 ) := W0 ] ) ) <=Int 1024 )
+    [priority(40)]
 
 rule <kevm>
        <k>
@@ -128,6 +260,9 @@ rule <kevm>
        <schedule>
          SCHED
        </schedule>
+       <use-gas>
+         True
+       </use-gas>
        <ethereum>
          <evm>
            <callState>
@@ -153,6 +288,35 @@ rule <kevm>
    andBool ( #sizeWordStack( WS [ ( N +Int -1 ) ] : ( WS [ ( N +Int -1 ) := W0 ] ) ) <=Int 1024 )
     [priority(40)]
 
+rule <kevm>
+       <k>
+         ( #next[ ADD ] => . ) ...
+       </k>
+       <schedule>
+         SCHED
+       </schedule>
+       <use-gas>
+         False
+       </use-gas>
+       <ethereum>
+         <evm>
+           <callState>
+             <wordStack>
+               ( W0 : W1 : WS => chop( ( W0 +Int W1 ) ) : WS )
+             </wordStack>
+             <pc>
+               ( PCOUNT => ( PCOUNT +Int 1 ) )
+             </pc>
+             ...
+           </callState>
+           ...
+         </evm>
+         ...
+       </ethereum>
+       ...
+     </kevm>
+  requires ( #sizeWordStack( chop( ( W0 +Int W1 ) ) : WS ) <=Int 1024 )
+    [priority(40)]
 
 rule <kevm>
        <k>
@@ -161,6 +325,9 @@ rule <kevm>
        <schedule>
          SCHED
        </schedule>
+       <use-gas>
+         True
+       </use-gas>
        <ethereum>
          <evm>
            <callState>
@@ -185,6 +352,35 @@ rule <kevm>
    andBool ( #sizeWordStack( chop( ( W0 +Int W1 ) ) : WS ) <=Int 1024 )
     [priority(40)]
 
+rule <kevm>
+       <k>
+         ( #next[ SUB ] => . ) ...
+       </k>
+       <schedule>
+         SCHED
+       </schedule>
+       <use-gas>
+         False
+       </use-gas>
+       <ethereum>
+         <evm>
+           <callState>
+             <wordStack>
+               ( W0 : W1 : WS => chop( ( W0 -Int W1 ) ) : WS )
+             </wordStack>
+             <pc>
+               ( PCOUNT => ( PCOUNT +Int 1 ) )
+             </pc>
+             ...
+           </callState>
+           ...
+         </evm>
+         ...
+       </ethereum>
+       ...
+     </kevm>
+  requires ( #sizeWordStack( chop( ( W0 -Int W1 ) ) : WS ) <=Int 1024 )
+    [priority(40)]
 
 rule <kevm>
        <k>
@@ -193,6 +389,9 @@ rule <kevm>
        <schedule>
          SCHED
        </schedule>
+       <use-gas>
+         True
+       </use-gas>
        <ethereum>
          <evm>
            <callState>
@@ -217,6 +416,35 @@ rule <kevm>
    andBool ( #sizeWordStack( chop( ( W0 -Int W1 ) ) : WS ) <=Int 1024 )
     [priority(40)]
 
+rule <kevm>
+       <k>
+         ( #next[ AND ] => . ) ...
+       </k>
+       <schedule>
+         SCHED
+       </schedule>
+       <use-gas>
+         False
+       </use-gas>
+       <ethereum>
+         <evm>
+           <callState>
+             <wordStack>
+               ( W0 : W1 : WS => W0 &Int W1 : WS )
+             </wordStack>
+             <pc>
+               ( PCOUNT => ( PCOUNT +Int 1 ) )
+             </pc>
+             ...
+           </callState>
+           ...
+         </evm>
+         ...
+       </ethereum>
+       ...
+     </kevm>
+  requires ( #sizeWordStack( W0 &Int W1 : WS ) <=Int 1024 )
+    [priority(40)]
 
 rule <kevm>
        <k>
@@ -225,6 +453,9 @@ rule <kevm>
        <schedule>
          SCHED
        </schedule>
+       <use-gas>
+         True
+       </use-gas>
        <ethereum>
          <evm>
            <callState>
@@ -249,6 +480,35 @@ rule <kevm>
    andBool ( #sizeWordStack( W0 &Int W1 : WS ) <=Int 1024 )
     [priority(40)]
 
+rule <kevm>
+       <k>
+         ( #next[ LT ] => . ) ...
+       </k>
+       <schedule>
+         SCHED
+       </schedule>
+       <use-gas>
+         False
+       </use-gas>
+       <ethereum>
+         <evm>
+           <callState>
+             <wordStack>
+               ( W0 : W1 : WS => bool2Word( W0 <Int W1 ) : WS )
+             </wordStack>
+             <pc>
+               ( PCOUNT => ( PCOUNT +Int 1 ) )
+             </pc>
+             ...
+           </callState>
+           ...
+         </evm>
+         ...
+       </ethereum>
+       ...
+     </kevm>
+  requires ( #sizeWordStack( bool2Word( W0 <Int W1 ) : WS ) <=Int 1024 )
+    [priority(40)]
 
 rule <kevm>
        <k>
@@ -257,6 +517,9 @@ rule <kevm>
        <schedule>
          SCHED
        </schedule>
+       <use-gas>
+         True
+       </use-gas>
        <ethereum>
          <evm>
            <callState>
@@ -281,6 +544,35 @@ rule <kevm>
    andBool ( #sizeWordStack( bool2Word( W0 <Int W1 ) : WS ) <=Int 1024 )
     [priority(40)]
 
+rule <kevm>
+       <k>
+         ( #next[ GT ] => . ) ...
+       </k>
+       <schedule>
+         SCHED
+       </schedule>
+       <use-gas>
+         False
+       </use-gas>
+       <ethereum>
+         <evm>
+           <callState>
+             <wordStack>
+               ( W0 : W1 : WS => bool2Word( W1 <Int W0 ) : WS )
+             </wordStack>
+             <pc>
+               ( PCOUNT => ( PCOUNT +Int 1 ) )
+             </pc>
+             ...
+           </callState>
+           ...
+         </evm>
+         ...
+       </ethereum>
+       ...
+     </kevm>
+  requires ( #sizeWordStack( bool2Word( W1 <Int W0 ) : WS ) <=Int 1024 )
+    [priority(40)]
 
 rule <kevm>
        <k>
@@ -289,6 +581,9 @@ rule <kevm>
        <schedule>
          SCHED
        </schedule>
+       <use-gas>
+         True
+       </use-gas>
        <ethereum>
          <evm>
            <callState>
