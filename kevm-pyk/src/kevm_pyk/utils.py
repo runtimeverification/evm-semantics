@@ -100,13 +100,14 @@ def run_prover(
     extract_branches: Callable[[CTerm], Iterable[KInner]] | None = None,
     abstract_node: Callable[[CTerm], CTerm] | None = None,
     fail_fast: bool = False,
+    counterexample_info: bool = False,
 ) -> bool:
     proof = proof
     prover: APRBMCProver | APRProver | EqualityProver
     if type(proof) is APRBMCProof:
-        prover = APRBMCProver(proof, kcfg_explore)
+        prover = APRBMCProver(proof, kcfg_explore, counterexample_info=counterexample_info)
     elif type(proof) is APRProof:
-        prover = APRProver(proof, kcfg_explore)
+        prover = APRProver(proof, kcfg_explore, counterexample_info=counterexample_info)
     elif type(proof) is EqualityProof:
         prover = EqualityProver(kcfg_explore=kcfg_explore, proof=proof)
     else:
