@@ -30,7 +30,7 @@ rule <kevm>
          SCHED
        </schedule>
        <use-gas>
-         False
+         false
        </use-gas>
        <ethereum>
          <evm>
@@ -60,7 +60,7 @@ rule <kevm>
          SCHED
        </schedule>
        <use-gas>
-         True
+         true
        </use-gas>
        <ethereum>
          <evm>
@@ -94,7 +94,7 @@ rule <kevm>
          SCHED
        </schedule>
        <use-gas>
-         False
+         false
        </use-gas>
        <ethereum>
          <evm>
@@ -127,7 +127,7 @@ rule <kevm>
          SCHED
        </schedule>
        <use-gas>
-         True
+         true
        </use-gas>
        <ethereum>
          <evm>
@@ -164,7 +164,7 @@ rule <kevm>
          SCHED
        </schedule>
        <use-gas>
-         False
+         false
        </use-gas>
        <ethereum>
          <evm>
@@ -195,7 +195,7 @@ rule <kevm>
          SCHED
        </schedule>
        <use-gas>
-         True
+         true
        </use-gas>
        <ethereum>
          <evm>
@@ -230,7 +230,7 @@ rule <kevm>
          SCHED
        </schedule>
        <use-gas>
-         False
+         false
        </use-gas>
        <ethereum>
          <evm>
@@ -261,7 +261,7 @@ rule <kevm>
          SCHED
        </schedule>
        <use-gas>
-         True
+         true
        </use-gas>
        <ethereum>
          <evm>
@@ -296,7 +296,7 @@ rule <kevm>
          SCHED
        </schedule>
        <use-gas>
-         False
+         false
        </use-gas>
        <ethereum>
          <evm>
@@ -326,7 +326,7 @@ rule <kevm>
          SCHED
        </schedule>
        <use-gas>
-         True
+         true
        </use-gas>
        <ethereum>
          <evm>
@@ -360,7 +360,7 @@ rule <kevm>
          SCHED
        </schedule>
        <use-gas>
-         False
+         false
        </use-gas>
        <ethereum>
          <evm>
@@ -390,7 +390,7 @@ rule <kevm>
          SCHED
        </schedule>
        <use-gas>
-         True
+         true
        </use-gas>
        <ethereum>
          <evm>
@@ -424,7 +424,7 @@ rule <kevm>
          SCHED
        </schedule>
        <use-gas>
-         False
+         false
        </use-gas>
        <ethereum>
          <evm>
@@ -454,7 +454,7 @@ rule <kevm>
          SCHED
        </schedule>
        <use-gas>
-         True
+         true
        </use-gas>
        <ethereum>
          <evm>
@@ -488,7 +488,7 @@ rule <kevm>
          SCHED
        </schedule>
        <use-gas>
-         False
+         false
        </use-gas>
        <ethereum>
          <evm>
@@ -518,7 +518,7 @@ rule <kevm>
          SCHED
        </schedule>
        <use-gas>
-         True
+         true
        </use-gas>
        <ethereum>
          <evm>
@@ -552,7 +552,7 @@ rule <kevm>
          SCHED
        </schedule>
        <use-gas>
-         False
+         false
        </use-gas>
        <ethereum>
          <evm>
@@ -582,7 +582,7 @@ rule <kevm>
          SCHED
        </schedule>
        <use-gas>
-         True
+         true
        </use-gas>
        <ethereum>
          <evm>
