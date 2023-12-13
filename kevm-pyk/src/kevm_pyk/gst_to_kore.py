@@ -29,8 +29,8 @@ SORT_MODE: Final = SortApp('SortMode')
 SORT_ETHEREUM_SIMULATION: Final = SortApp('SortEthereumSimulation')
 
 
-def gst_to_kore(gst_data: Any, schedule: str, mode: str, chainid: int, use_gas: bool) -> App:
-    return kore_pgm_to_kore(json_to_kore(gst_data), SORT_JSON, schedule, mode, chainid, use_gas)
+def gst_to_kore(gst_data: Any, schedule: str, mode: str, chainid: int, _use_gas: bool) -> App:
+    return kore_pgm_to_kore(json_to_kore(gst_data), SORT_JSON, schedule, mode, chainid, False)
 
 
 def kore_pgm_to_kore(pgm: Pattern, pattern_sort: SortApp, schedule: str, mode: str, chainid: int, use_gas: bool) -> App:
