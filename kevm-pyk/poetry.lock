@@ -431,14 +431,17 @@ nose = "*"
 
 [[package]]
 name = "isort"
-version = "5.13.1"
+version = "5.13.2"
 description = "A Python utility / library to sort Python imports."
 optional = false
 python-versions = ">=3.8.0"
 files = [
-    {file = "isort-5.13.1-py3-none-any.whl", hash = "sha256:56a51732c25f94ca96f6721be206dd96a95f42950502eb26c1015d333bc6edb7"},
-    {file = "isort-5.13.1.tar.gz", hash = "sha256:aaed790b463e8703fb1eddb831dfa8e8616bacde2c083bd557ef73c8189b7263"},
+    {file = "isort-5.13.2-py3-none-any.whl", hash = "sha256:8ca5e72a8d85860d5a3fa69b8745237f2939afe12dbf656afbcb47fe72d947a6"},
+    {file = "isort-5.13.2.tar.gz", hash = "sha256:48fdfcb9face5d58a4f6dde2e72a1fb8dcaf8ab26f95ab49fab84c2ddefb0109"},
 ]
+
+[package.extras]
+colors = ["colorama (>=0.4.6)"]
 
 [[package]]
 name = "linkify-it-py"
@@ -812,7 +815,7 @@ windows-terminal = ["colorama (>=0.4.6)"]
 
 [[package]]
 name = "pyk"
-version = "0.1.543"
+version = "0.1.546"
 description = ""
 optional = false
 python-versions = "^3.10"
@@ -833,8 +836,8 @@ xdg-base-dirs = "^6.0.1"
 [package.source]
 type = "git"
 url = "https://github.com/runtimeverification/pyk.git"
-reference = "v0.1.543"
-resolved_reference = "f9a2da504dd4d4b366973185b7d66f07b00bba12"
+reference = "v0.1.546"
+resolved_reference = "1613585a09a656994ffc20fcbbe05d157fb98423"
 
 [[package]]
 name = "pyperclip"
@@ -1098,4 +1101,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "2179f486ee576eae068ae729a2e247b2dfdbf5f4aec66d62a96af7c257ee017e"
+content-hash = "5d729e78e1e9f359a59b637a3c046db264a5c7b87295853c74135ba4b62f3a7f"
