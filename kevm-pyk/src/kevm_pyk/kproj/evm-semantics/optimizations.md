@@ -29,9 +29,9 @@ rule <kevm>
        <schedule>
          SCHED
        </schedule>
-       <use-gas>
+       <useGas>
          false
-       </use-gas>
+       </useGas>
        <ethereum>
          <evm>
            <callState>
@@ -59,9 +59,9 @@ rule <kevm>
        <schedule>
          SCHED
        </schedule>
-       <use-gas>
+       <useGas>
          true
-       </use-gas>
+       </useGas>
        <ethereum>
          <evm>
            <callState>
@@ -93,9 +93,9 @@ rule <kevm>
        <schedule>
          SCHED
        </schedule>
-       <use-gas>
+       <useGas>
          false
-       </use-gas>
+       </useGas>
        <ethereum>
          <evm>
            <callState>
@@ -126,9 +126,9 @@ rule <kevm>
        <schedule>
          SCHED
        </schedule>
-       <use-gas>
+       <useGas>
          true
-       </use-gas>
+       </useGas>
        <ethereum>
          <evm>
            <callState>
@@ -163,9 +163,9 @@ rule <kevm>
        <schedule>
          SCHED
        </schedule>
-       <use-gas>
+       <useGas>
          false
-       </use-gas>
+       </useGas>
        <ethereum>
          <evm>
            <callState>
@@ -194,9 +194,9 @@ rule <kevm>
        <schedule>
          SCHED
        </schedule>
-       <use-gas>
+       <useGas>
          true
-       </use-gas>
+       </useGas>
        <ethereum>
          <evm>
            <callState>
@@ -229,9 +229,9 @@ rule <kevm>
        <schedule>
          SCHED
        </schedule>
-       <use-gas>
+       <useGas>
          false
-       </use-gas>
+       </useGas>
        <ethereum>
          <evm>
            <callState>
@@ -260,9 +260,9 @@ rule <kevm>
        <schedule>
          SCHED
        </schedule>
-       <use-gas>
+       <useGas>
          true
-       </use-gas>
+       </useGas>
        <ethereum>
          <evm>
            <callState>
@@ -295,9 +295,9 @@ rule <kevm>
        <schedule>
          SCHED
        </schedule>
-       <use-gas>
+       <useGas>
          false
-       </use-gas>
+       </useGas>
        <ethereum>
          <evm>
            <callState>
@@ -325,9 +325,9 @@ rule <kevm>
        <schedule>
          SCHED
        </schedule>
-       <use-gas>
+       <useGas>
          true
-       </use-gas>
+       </useGas>
        <ethereum>
          <evm>
            <callState>
@@ -359,9 +359,9 @@ rule <kevm>
        <schedule>
          SCHED
        </schedule>
-       <use-gas>
+       <useGas>
          false
-       </use-gas>
+       </useGas>
        <ethereum>
          <evm>
            <callState>
@@ -389,9 +389,9 @@ rule <kevm>
        <schedule>
          SCHED
        </schedule>
-       <use-gas>
+       <useGas>
          true
-       </use-gas>
+       </useGas>
        <ethereum>
          <evm>
            <callState>
@@ -423,9 +423,9 @@ rule <kevm>
        <schedule>
          SCHED
        </schedule>
-       <use-gas>
+       <useGas>
          false
-       </use-gas>
+       </useGas>
        <ethereum>
          <evm>
            <callState>
@@ -453,9 +453,9 @@ rule <kevm>
        <schedule>
          SCHED
        </schedule>
-       <use-gas>
+       <useGas>
          true
-       </use-gas>
+       </useGas>
        <ethereum>
          <evm>
            <callState>
@@ -487,9 +487,9 @@ rule <kevm>
        <schedule>
          SCHED
        </schedule>
-       <use-gas>
+       <useGas>
          false
-       </use-gas>
+       </useGas>
        <ethereum>
          <evm>
            <callState>
@@ -517,9 +517,9 @@ rule <kevm>
        <schedule>
          SCHED
        </schedule>
-       <use-gas>
+       <useGas>
          true
-       </use-gas>
+       </useGas>
        <ethereum>
          <evm>
            <callState>
@@ -551,9 +551,9 @@ rule <kevm>
        <schedule>
          SCHED
        </schedule>
-       <use-gas>
+       <useGas>
          false
-       </use-gas>
+       </useGas>
        <ethereum>
          <evm>
            <callState>
@@ -581,9 +581,9 @@ rule <kevm>
        <schedule>
          SCHED
        </schedule>
-       <use-gas>
+       <useGas>
          true
-       </use-gas>
+       </useGas>
        <ethereum>
          <evm>
            <callState>

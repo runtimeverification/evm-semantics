@@ -35,7 +35,7 @@ In the comments next to each cell, we've marked which component of the YellowPap
         <exit-code exit=""> 1 </exit-code>
         <mode> $MODE:Mode </mode>
         <schedule> $SCHEDULE:Schedule </schedule>
-        <use-gas> $USEGAS:Bool </use-gas>
+        <useGas> $USEGAS:Bool </useGas>
 
         <ethereum>
 
@@ -552,7 +552,7 @@ After executing a transaction, it's necessary to have the effect of the substate
          <accessedStorage> _ => .Map </accessedStorage>
 
     rule <k> #finalizeTx(false) ... </k>
-         <use-gas> true </use-gas>
+         <useGas> true </useGas>
          <schedule> SCHED </schedule>
          <gas> GAVAIL => G*(GAVAIL, GLIMIT, REFUND, SCHED) </gas>
          <refund> REFUND => 0 </refund>
@@ -565,7 +565,7 @@ After executing a transaction, it's necessary to have the effect of the substate
       requires REFUND =/=Int 0
 
     rule <k> #finalizeTx(false => true) ... </k>
-         <use-gas> true </use-gas>
+         <useGas> true </useGas>
          <baseFee> BFEE </baseFee>
          <origin> ORG </origin>
          <coinbase> MINER </coinbase>
@@ -592,7 +592,7 @@ After executing a transaction, it's necessary to have the effect of the substate
       requires ORG =/=Int MINER
 
     rule <k> #finalizeTx(false => true) ... </k>
-         <use-gas> true </use-gas>
+         <useGas> true </useGas>
          <baseFee> BFEE </baseFee>
          <origin> ACCT </origin>
          <coinbase> ACCT </coinbase>
@@ -612,7 +612,7 @@ After executing a transaction, it's necessary to have the effect of the substate
            ...
          </message>
 
-    rule <k> #finalizeTx(false => true) ... </k> <use-gas> false </use-gas> <txPending> ListItem(_:Int) REST => REST </txPending>
+    rule <k> #finalizeTx(false => true) ... </k> <useGas> false </useGas> <txPending> ListItem(_:Int) REST => REST </txPending>
 
     rule <k> (. => #deleteAccounts(Set2List(ACCTS))) ~> #finalizeTx(true) ... </k>
          <selfDestruct> ACCTS => .Set </selfDestruct>
@@ -1249,7 +1249,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          </account>
       requires VALUE <=Int BAL
 
-    rule <k> #checkDepthExceeded => #refund GCALL ~> #pushCallStack ~> #pushWorldState ~> #end EVMC_CALL_DEPTH_EXCEEDED ... </k> 
+    rule <k> #checkDepthExceeded => #refund GCALL ~> #pushCallStack ~> #pushWorldState ~> #end EVMC_CALL_DEPTH_EXCEEDED ... </k>
          <output> _ => .Bytes </output>
          <callGas> GCALL </callGas>
          <callDepth> CD </callDepth>
@@ -1305,7 +1305,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
           => #touchAccounts ACCTFROM ACCTTO ~> #accessAccounts ACCTFROM ACCTTO ~> #loadProgram BYTES ~> #initVM ~> #precompiled?(ACCTCODE, SCHED) ~> #execute
          ...
          </k>
-         <use-gas> true </use-gas>
+         <useGas> true </useGas>
          <callDepth> CD => CD +Int 1 </callDepth>
          <callData> _ => ARGS </callData>
          <callValue> _ => APPVALUE </callValue>
@@ -1320,7 +1320,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
            => #touchAccounts ACCTFROM ACCTTO ~> #accessAccounts ACCTFROM ACCTTO ~> #loadProgram BYTES ~> #initVM ~> #precompiled?(ACCTCODE, SCHED) ~> #execute
           ...
           </k>
-          <use-gas> false </use-gas>
+          <useGas> false </useGas>
           <callDepth> CD => CD +Int 1 </callDepth>
           <callData> _ => ARGS </callData>
           <callValue> _ => APPVALUE </callValue>
@@ -1438,8 +1438,8 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     syntax InternalOp ::= "#refund" Gas
                         | "#setLocalMem" Int Int Bytes
  // --------------------------------------------------
-    rule [refund]: <k> #refund G:Gas => . ... </k> <gas> GAVAIL => GAVAIL +Gas G </gas> <use-gas> true </use-gas>
-    rule [refund.noGas]: <k> #refund _ => . ... </k> <use-gas> false </use-gas>
+    rule [refund]: <k> #refund G:Gas => . ... </k> <gas> GAVAIL => GAVAIL +Gas G </gas> <useGas> true </useGas>
+    rule [refund.noGas]: <k> #refund _ => . ... </k> <useGas> false </useGas>
 
 
     rule <k> #setLocalMem START WIDTH WS => . ... </k>
@@ -1530,7 +1530,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
           => #touchAccounts ACCTFROM ACCTTO ~> #accessAccounts ACCTFROM ACCTTO ~> #loadProgram INITCODE ~> #initVM ~> #execute
          ...
          </k>
-         <use-gas> true </use-gas>
+         <useGas> true </useGas>
          <schedule> SCHED </schedule>
          <id> _ => ACCTTO </id>
          <gas> _ => GCALL </gas>
@@ -1549,7 +1549,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
           => #touchAccounts ACCTFROM ACCTTO ~> #accessAccounts ACCTFROM ACCTTO ~> #loadProgram INITCODE ~> #initVM ~> #execute
          ...
          </k>
-         <use-gas> false </use-gas>
+         <useGas> false </useGas>
          <id> _ => ACCTTO </id>
          <caller> _ => ACCTFROM </caller>
          <callDepth> CD => CD +Int 1 </callDepth>
@@ -1889,8 +1889,8 @@ Overall Gas
           ~> #access [ OP , AOP ]
          ...
         </k>
-        <use-gas> true </use-gas>
-    rule <k> #gas [ _ , _ ] => . ...  </k> <use-gas> false </use-gas>
+        <useGas> true </useGas>
+    rule <k> #gas [ _ , _ ] => . ...  </k> <useGas> false </useGas>
 
     rule <k> #gas [ OP ] => #gasExec(SCHED, OP) ~> #deductGas ... </k>
          <schedule> SCHED </schedule>
@@ -1908,9 +1908,9 @@ Overall Gas
          <memoryUsed> MU => MU' </memoryUsed> <schedule> SCHED </schedule>
 
     rule <k> _G:Gas ~> (#deductMemoryGas => #deductGas)   ... </k> //Required for verification
-    rule <k>  G:Gas ~> #deductGas => #end EVMC_OUT_OF_GAS ... </k> <gas> GAVAIL:Gas                  </gas> <use-gas> true </use-gas> requires GAVAIL <Gas G
-    rule <k>  G:Gas ~> #deductGas => .                    ... </k> <gas> GAVAIL:Gas => GAVAIL -Gas G </gas> <use-gas> true </use-gas> requires G <=Gas GAVAIL
-    rule <k>  _:Gas ~> #deductGas => .                    ... </k> <use-gas> false </use-gas>
+    rule <k>  G:Gas ~> #deductGas => #end EVMC_OUT_OF_GAS ... </k> <gas> GAVAIL:Gas                  </gas> <useGas> true </useGas> requires GAVAIL <Gas G
+    rule <k>  G:Gas ~> #deductGas => .                    ... </k> <gas> GAVAIL:Gas => GAVAIL -Gas G </gas> <useGas> true </useGas> requires G <=Gas GAVAIL
+    rule <k>  _:Gas ~> #deductGas => .                    ... </k> <useGas> false </useGas>
 
     syntax Bool ::= #inStorage     ( Map   , Account , Int ) [function, total]
                   | #inStorageAux1 ( KItem ,           Int ) [function, total]
