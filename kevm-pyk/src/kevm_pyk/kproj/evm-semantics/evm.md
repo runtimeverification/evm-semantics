@@ -552,6 +552,7 @@ After executing a transaction, it's necessary to have the effect of the substate
          <accessedStorage> _ => .Map </accessedStorage>
 
     rule <k> #finalizeTx(false) ... </k>
+         <use-gas> true </use-gas>
          <schedule> SCHED </schedule>
          <gas> GAVAIL => G*(GAVAIL, GLIMIT, REFUND, SCHED) </gas>
          <refund> REFUND => 0 </refund>
@@ -564,6 +565,7 @@ After executing a transaction, it's necessary to have the effect of the substate
       requires REFUND =/=Int 0
 
     rule <k> #finalizeTx(false => true) ... </k>
+         <use-gas> true </use-gas>
          <baseFee> BFEE </baseFee>
          <origin> ORG </origin>
          <coinbase> MINER </coinbase>
@@ -590,6 +592,7 @@ After executing a transaction, it's necessary to have the effect of the substate
       requires ORG =/=Int MINER
 
     rule <k> #finalizeTx(false => true) ... </k>
+         <use-gas> true </use-gas>
          <baseFee> BFEE </baseFee>
          <origin> ACCT </origin>
          <coinbase> ACCT </coinbase>
@@ -608,6 +611,8 @@ After executing a transaction, it's necessary to have the effect of the substate
            <txGasLimit> GLIMIT </txGasLimit>
            ...
          </message>
+
+    rule <k> #finalizeTx(false => true) ... </k> <use-gas> false </use-gas> <txPending> ListItem(_:Int) REST => REST </txPending>
 
     rule <k> (. => #deleteAccounts(Set2List(ACCTS))) ~> #finalizeTx(true) ... </k>
          <selfDestruct> ACCTS => .Set </selfDestruct>
@@ -1300,6 +1305,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
           => #touchAccounts ACCTFROM ACCTTO ~> #accessAccounts ACCTFROM ACCTTO ~> #loadProgram BYTES ~> #initVM ~> #precompiled?(ACCTCODE, SCHED) ~> #execute
          ...
          </k>
+         <use-gas> true </use-gas>
          <callDepth> CD => CD +Int 1 </callDepth>
          <callData> _ => ARGS </callData>
          <callValue> _ => APPVALUE </callValue>
@@ -1309,6 +1315,19 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <caller> _ => ACCTFROM </caller>
          <static> OLDSTATIC:Bool => OLDSTATIC orBool STATIC </static>
          <schedule> SCHED </schedule>
+
+    rule <k> #mkCall ACCTFROM ACCTTO ACCTCODE BYTES APPVALUE ARGS STATIC:Bool
+           => #touchAccounts ACCTFROM ACCTTO ~> #accessAccounts ACCTFROM ACCTTO ~> #loadProgram BYTES ~> #initVM ~> #precompiled?(ACCTCODE, SCHED) ~> #execute
+          ...
+          </k>
+          <use-gas> false </use-gas>
+          <callDepth> CD => CD +Int 1 </callDepth>
+          <callData> _ => ARGS </callData>
+          <callValue> _ => APPVALUE </callValue>
+          <id> _ => ACCTTO </id>
+          <caller> _ => ACCTFROM </caller>
+          <static> OLDSTATIC:Bool => OLDSTATIC orBool STATIC </static>
+          <schedule> SCHED </schedule>
 
     syntax InternalOp ::= "#precompiled?" "(" Int "," Schedule ")"
  // --------------------------------------------------------------
@@ -1344,7 +1363,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <touchedAccounts> TOUCHED_ACCOUNTS => TOUCHED_ACCOUNTS |Set SetItem(ADDR) </touchedAccounts>
 
     syntax KItem ::= "#accessStorage" Account Int
- // --------------------------------------------
+ // ---------------------------------------------
     rule <k> #accessStorage ACCT INDEX => . ... </k>
          <accessedStorage> ... ACCT |-> (TS:Set => TS |Set SetItem(INDEX)) ... </accessedStorage>
     rule <k> #accessStorage ACCT INDEX => . ... </k>
@@ -1355,7 +1374,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
                    | "#accessAccounts" Set
                    | "#accessAccounts" Account Account
                    | "#accessAccounts" Account Account Set
- // -----------------------------------------------------
+ // ------------------------------------------------------
     rule <k> #accessAccounts ADDR1:Account ADDR2:Account ADDRSET:Set => #accessAccounts ADDR1 ~> #accessAccounts ADDR2 ~> #accessAccounts ADDRSET ... </k>
 
     rule <k> #accessAccounts ADDR1:Account ADDR2:Account => #accessAccounts ADDR1 ~> #accessAccounts ADDR2 ... </k>
@@ -1419,7 +1438,9 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     syntax InternalOp ::= "#refund" Gas
                         | "#setLocalMem" Int Int Bytes
  // --------------------------------------------------
-    rule [refund]: <k> #refund G:Gas => . ... </k> <gas> GAVAIL => GAVAIL +Gas G </gas>
+    rule [refund]: <k> #refund G:Gas => . ... </k> <gas> GAVAIL => GAVAIL +Gas G </gas> <use-gas> true </use-gas>
+    rule [refund.noGas]: <k> #refund _ => . ... </k> <use-gas> false </use-gas>
+
 
     rule <k> #setLocalMem START WIDTH WS => . ... </k>
          <localMem> LM => LM [ START := #range(WS, 0, minInt(WIDTH, lengthBytes(WS))) ] </localMem>
@@ -1509,6 +1530,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
           => #touchAccounts ACCTFROM ACCTTO ~> #accessAccounts ACCTFROM ACCTTO ~> #loadProgram INITCODE ~> #initVM ~> #execute
          ...
          </k>
+         <use-gas> true </use-gas>
          <schedule> SCHED </schedule>
          <id> _ => ACCTTO </id>
          <gas> _ => GCALL </gas>
@@ -1520,6 +1542,22 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          <account>
            <acctID> ACCTTO </acctID>
            <nonce> NONCE => #if Gemptyisnonexistent << SCHED >> #then NONCE +Int 1 #else NONCE #fi </nonce>
+           ...
+         </account>
+
+    rule <k> #mkCreate ACCTFROM ACCTTO VALUE INITCODE
+          => #touchAccounts ACCTFROM ACCTTO ~> #accessAccounts ACCTFROM ACCTTO ~> #loadProgram INITCODE ~> #initVM ~> #execute
+         ...
+         </k>
+         <use-gas> false </use-gas>
+         <id> _ => ACCTTO </id>
+         <caller> _ => ACCTFROM </caller>
+         <callDepth> CD => CD +Int 1 </callDepth>
+         <callData> _ => .Bytes </callData>
+         <callValue> _ => VALUE </callValue>
+         <account>
+           <acctID> ACCTTO </acctID>
+           <nonce> NONCE => NONCE +Int 1 </nonce>
            ...
          </account>
 
