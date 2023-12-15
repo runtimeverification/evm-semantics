@@ -12,7 +12,7 @@
     BYZANTIUM
   </schedule>
   <use-gas>
-    True
+    true
   </use-gas>
   <ethereum>
     <evm>
