@@ -9,7 +9,7 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
-      <use-gas> True </use-gas>
+      <use-gas> true </use-gas>
       <ethereum>
         <evm>
           <output> .Bytes </output>
@@ -277,7 +277,7 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
-      <use-gas> True </use-gas>
+      <use-gas> true </use-gas>
       <ethereum>
         <evm>
           <output> VOutput => VOutput </output>
@@ -380,7 +380,7 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
-      <use-gas> True </use-gas>
+      <use-gas> true </use-gas>
       <ethereum>
         <evm>
           <output> _ => #buf(32, Rad) </output>
@@ -482,7 +482,7 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
-      <use-gas> True </use-gas>
+      <use-gas> true </use-gas>
       <ethereum>
         <evm>
           <output> _ => #buf(32, Rad) </output>
@@ -584,7 +584,7 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
-      <use-gas> True </use-gas>
+      <use-gas> true </use-gas>
       <ethereum>
         <evm>
           <output> .Bytes </output>
@@ -708,7 +708,7 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
-      <use-gas> True </use-gas>
+      <use-gas> true </use-gas>
       <ethereum>
         <evm>
           <output> .Bytes </output>
@@ -854,7 +854,7 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
-      <use-gas> True </use-gas>
+      <use-gas> true </use-gas>
       <ethereum>
         <evm>
           <output> .Bytes </output>

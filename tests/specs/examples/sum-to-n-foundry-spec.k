@@ -30,7 +30,7 @@ claim [foundry-sum-to-n-loop-invariant]:
       LONDON
     </schedule>
     <use-gas>
-      True
+      true
     </use-gas>
     <ethereum>
       <evm>

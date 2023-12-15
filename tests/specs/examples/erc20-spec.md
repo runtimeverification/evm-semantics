@@ -72,7 +72,7 @@ module ERC20-SPEC
     claim [decimals]:
           <mode>     NORMAL   </mode>
           <schedule> ISTANBUL </schedule>
-          <use-gas>  True     </use-gas>
+          <use-gas>  true     </use-gas>
 
           <callStack> .List                                      </callStack>
           <program>   #binRuntime(S2KERC20)                         </program>
@@ -113,7 +113,7 @@ module ERC20-SPEC
     claim [totalSupply]:
           <mode>     NORMAL   </mode>
           <schedule> ISTANBUL </schedule>
-          <use-gas>  True     </use-gas>
+          <use-gas>  true     </use-gas>
 
           <callStack> .List                                      </callStack>
           <program>   #binRuntime(S2KERC20)                         </program>
@@ -155,7 +155,7 @@ module ERC20-SPEC
     claim [approve.success]:
           <mode>     NORMAL   </mode>
           <schedule> ISTANBUL </schedule>
-          <use-gas>  True     </use-gas>
+          <use-gas>  true     </use-gas>
 
           <callStack> .List                                      </callStack>
           <program>   #binRuntime(S2KERC20)                         </program>
@@ -195,7 +195,7 @@ module ERC20-SPEC
     claim [approve.revert]:
           <mode>     NORMAL   </mode>
           <schedule> ISTANBUL </schedule>
-          <use-gas>  True     </use-gas>
+          <use-gas>  true     </use-gas>
 
           <callStack> .List                                      </callStack>
           <program>   #binRuntime(S2KERC20)                         </program>

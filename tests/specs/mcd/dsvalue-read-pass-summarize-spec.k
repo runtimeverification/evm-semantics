@@ -112,7 +112,7 @@ module DSVALUE-READ-PASS-SUMMARIZE-SPEC
     claim [DSValue.read.pass]:
       <k> #execute => #halt ... </k>
       <schedule> ISTANBUL </schedule>
-      <use-gas> True </use-gas>
+      <use-gas> true </use-gas>
       <evm>
         <output> _ => #buf(32, #lookup(ACCT_STORAGE, 2)) </output>              // from counterexample
         <statusCode> _ => EVMC_SUCCESS </statusCode>

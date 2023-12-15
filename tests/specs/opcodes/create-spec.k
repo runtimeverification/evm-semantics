@@ -20,7 +20,7 @@ module CREATE-SPEC
             <exit-code> 1 </exit-code>
             <mode> NORMAL </mode>
             <schedule> PETERSBURG </schedule>
-            <use-gas> True </use-gas>
+            <use-gas> true </use-gas>
             <ethereum>
               <evm>
                 <output> _ => .Bytes </output>
@@ -105,7 +105,7 @@ module CREATE-SPEC
             <exit-code> 1 </exit-code>
             <mode> NORMAL </mode>
             <schedule> PETERSBURG </schedule>
-            <use-gas> True </use-gas>
+            <use-gas> true </use-gas>
             <ethereum>
               <evm>
                 <output> _ => #generatedCode </output>
