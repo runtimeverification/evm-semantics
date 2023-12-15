@@ -10,7 +10,7 @@ module TRANSFER-FAILURE-2-B-SPEC
     <exit-code> 1 </exit-code>
     <mode> NORMAL </mode>
     <schedule> ISTANBUL </schedule>
-    <use-gas> True </use-gas>
+    <use-gas> true </use-gas>
 
     <ethereum>
       <evm>
