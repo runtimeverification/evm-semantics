@@ -612,7 +612,13 @@ After executing a transaction, it's necessary to have the effect of the substate
            ...
          </message>
 
-    rule <k> #finalizeTx(false => true) ... </k> <useGas> false </useGas> <txPending> ListItem(_:Int) REST => REST </txPending>
+    rule <k> #finalizeTx(false => true) ... </k>
+         <useGas> false </useGas>
+         <txPending> ListItem(MsgId:Int) REST => REST </txPending>
+         <message>
+           <msgID> MsgId </msgID>
+           ...
+         </message>
 
     rule <k> (. => #deleteAccounts(Set2List(ACCTS))) ~> #finalizeTx(true) ... </k>
          <selfDestruct> ACCTS => .Set </selfDestruct>
@@ -1317,7 +1323,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <schedule> SCHED </schedule>
 
     rule <k> #mkCall ACCTFROM ACCTTO ACCTCODE BYTES APPVALUE ARGS STATIC:Bool
-           => #touchAccounts ACCTFROM ACCTTO ~> #accessAccounts ACCTFROM ACCTTO ~> #loadProgram BYTES ~> #initVM ~> #precompiled?(ACCTCODE, SCHED) ~> #execute
+          => #touchAccounts ACCTFROM ACCTTO ~> #accessAccounts ACCTFROM ACCTTO ~> #loadProgram BYTES ~> #initVM ~> #precompiled?(ACCTCODE, SCHED) ~> #execute
           ...
           </k>
           <useGas> false </useGas>
