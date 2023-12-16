@@ -14,7 +14,7 @@ Important Powers
 ----------------
 
 Some important numbers that are referred to often during execution.
-These can be used for pattern-matching on the LHS of rules as well (`alias` attribute expands all occurances of these in rules).
+These can be used for pattern-matching on the LHS of rules as well (`alias` attribute expands all occurrences of these in rules).
 
 ```k
     syntax Int ::= "pow5"   [macro] /* 2 ^Int 5   */

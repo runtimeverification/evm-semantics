@@ -1985,7 +1985,7 @@ Execution Gas
 
 The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
 
--   `#gasExec` loads all the relevant surronding state and uses that to compute the intrinsic execution gas of each opcode.
+-   `#gasExec` loads all the relevant surrounding state and uses that to compute the intrinsic execution gas of each opcode.
 
 ```k
     syntax InternalOp ::= #gasExec ( Schedule , OpCode )
