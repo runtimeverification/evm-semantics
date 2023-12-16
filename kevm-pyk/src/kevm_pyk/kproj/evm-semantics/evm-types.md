@@ -61,7 +61,7 @@ Word Operations
 
 -   `up/Int` performs integer division but rounds up instead of down.
 
-NOTE: Here, we choose to add `I2 -Int 1` to the numerator beforing doing the division to mimic the C++ implementation.
+NOTE: Here, we choose to add `I2 -Int 1` to the numerator before doing the division to mimic the C++ implementation.
 You could alternatively calculate `I1 modInt I2`, then add one to the normal integer division afterward depending on the result.
 
 ```k
