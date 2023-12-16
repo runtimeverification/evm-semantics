@@ -27,9 +27,6 @@ module EVM-OPTIMIZATIONS [kore]
       <k>
         ( #next[ PUSHZERO ] => . ) ...
       </k>
-      <schedule>
-        SCHED
-      </schedule>
       <useGas>
         false
       </useGas>
@@ -93,9 +90,6 @@ module EVM-OPTIMIZATIONS [kore]
       <k>
         ( #next[ PUSH(N) ] => . ) ...
       </k>
-      <schedule>
-        SCHED
-      </schedule>
       <useGas>
         false
       </useGas>
@@ -165,9 +159,6 @@ module EVM-OPTIMIZATIONS [kore]
       <k>
         ( #next[ DUP(N) ] => . ) ...
       </k>
-      <schedule>
-        SCHED
-      </schedule>
       <useGas>
         false
       </useGas>
@@ -233,9 +224,6 @@ module EVM-OPTIMIZATIONS [kore]
       <k>
         ( #next[ SWAP(N) ] => . ) ...
       </k>
-      <schedule>
-        SCHED
-      </schedule>
       <useGas>
         false
       </useGas>
@@ -301,9 +289,6 @@ module EVM-OPTIMIZATIONS [kore]
       <k>
         ( #next[ ADD ] => . ) ...
       </k>
-      <schedule>
-        SCHED
-      </schedule>
       <useGas>
         false
       </useGas>
@@ -367,9 +352,6 @@ module EVM-OPTIMIZATIONS [kore]
       <k>
         ( #next[ SUB ] => . ) ...
       </k>
-      <schedule>
-        SCHED
-      </schedule>
       <useGas>
         false
       </useGas>
@@ -433,9 +415,6 @@ module EVM-OPTIMIZATIONS [kore]
       <k>
         ( #next[ AND ] => . ) ...
       </k>
-      <schedule>
-        SCHED
-      </schedule>
       <useGas>
         false
       </useGas>
@@ -499,9 +478,6 @@ module EVM-OPTIMIZATIONS [kore]
       <k>
         ( #next[ LT ] => . ) ...
       </k>
-      <schedule>
-        SCHED
-      </schedule>
       <useGas>
         false
       </useGas>
@@ -565,9 +541,6 @@ module EVM-OPTIMIZATIONS [kore]
       <k>
         ( #next[ GT ] => . ) ...
       </k>
-      <schedule>
-        SCHED
-      </schedule>
       <useGas>
         false
       </useGas>
