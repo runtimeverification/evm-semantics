@@ -10,10 +10,10 @@ requires "lemmas/int-simplification.k"
 module EVM-OPTIMIZATIONS-LEMMAS [kore]
   imports EVM
 
-  rule #sizeWordStack(WS           , N) => #sizeWordStack(WS, 0) +Int N requires N =/=Int 0                [simplification]
-  rule #sizeWordStack(WS [ I := _ ], N) => #sizeWordStack(WS, N)        requires I <Int #sizeWordStack(WS) [simplification]
-  rule 0 <=Int #sizeWordStack(_ , 0)    => true                                                            [simplification]
-  rule #sizeWordStack(_ , 0) <Int N     => false                        requires N <=Int 0                 [simplification]
+    rule #sizeWordStack(WS           , N) => #sizeWordStack(WS, 0) +Int N requires N =/=Int 0                [simplification]
+    rule #sizeWordStack(WS [ I := _ ], N) => #sizeWordStack(WS, N)        requires I <Int #sizeWordStack(WS) [simplification]
+    rule 0 <=Int #sizeWordStack(_ , 0)    => true                                                            [simplification]
+    rule #sizeWordStack(_ , 0) <Int N     => false                        requires N <=Int 0                 [simplification]
 
 endmodule
 
@@ -312,8 +312,8 @@ module EVM-OPTIMIZATIONS [kore]
     requires ( #sizeWordStack( chop( ( W0 +Int W1 ) ) : WS ) <=Int 1024 )
     [priority(40)]
 
-	rule
-		<kevm>
+  rule
+    <kevm>
       <k>
         ( #next[ ADD ] => . ) ...
       </k>
@@ -347,8 +347,8 @@ module EVM-OPTIMIZATIONS [kore]
      andBool ( #sizeWordStack( chop( ( W0 +Int W1 ) ) : WS ) <=Int 1024 )
      [priority(40)]
 
-	rule
-		<kevm>
+  rule
+    <kevm>
       <k>
         ( #next[ SUB ] => . ) ...
       </k>
@@ -375,8 +375,8 @@ module EVM-OPTIMIZATIONS [kore]
     requires ( #sizeWordStack( chop( ( W0 -Int W1 ) ) : WS ) <=Int 1024 )
     [priority(40)]
 
-	rule
-		<kevm>
+  rule
+    <kevm>
       <k>
         ( #next[ SUB ] => . ) ...
       </k>
@@ -410,8 +410,8 @@ module EVM-OPTIMIZATIONS [kore]
      andBool ( #sizeWordStack( chop( ( W0 -Int W1 ) ) : WS ) <=Int 1024 )
      [priority(40)]
 
-	rule
-		<kevm>
+  rule
+    <kevm>
       <k>
         ( #next[ AND ] => . ) ...
       </k>
@@ -438,8 +438,8 @@ module EVM-OPTIMIZATIONS [kore]
     requires ( #sizeWordStack( W0 &Int W1 : WS ) <=Int 1024 )
     [priority(40)]
 
-	rule
-		<kevm>
+  rule
+    <kevm>
       <k>
         ( #next[ AND ] => . ) ...
       </k>
@@ -473,8 +473,8 @@ module EVM-OPTIMIZATIONS [kore]
      andBool ( #sizeWordStack( W0 &Int W1 : WS ) <=Int 1024 )
      [priority(40)]
 
-	rule
-		<kevm>
+  rule
+    <kevm>
       <k>
         ( #next[ LT ] => . ) ...
       </k>
@@ -501,8 +501,8 @@ module EVM-OPTIMIZATIONS [kore]
     requires ( #sizeWordStack( bool2Word( W0 <Int W1 ) : WS ) <=Int 1024 )
     [priority(40)]
 
-	rule
-		<kevm>
+  rule
+    <kevm>
       <k>
         ( #next[ LT ] => . ) ...
       </k>
@@ -536,8 +536,8 @@ module EVM-OPTIMIZATIONS [kore]
      andBool ( #sizeWordStack( bool2Word( W0 <Int W1 ) : WS ) <=Int 1024 )
      [priority(40)]
 
-	rule
-		<kevm>
+  rule
+    <kevm>
       <k>
         ( #next[ GT ] => . ) ...
       </k>
@@ -564,8 +564,8 @@ module EVM-OPTIMIZATIONS [kore]
     requires ( #sizeWordStack( bool2Word( W1 <Int W0 ) : WS ) <=Int 1024 )
     [priority(40)]
 
-	rule
-		<kevm>
+  rule
+    <kevm>
       <k>
         ( #next[ GT ] => . ) ...
       </k>
