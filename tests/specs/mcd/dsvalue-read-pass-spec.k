@@ -9,7 +9,7 @@ module DSVALUE-READ-PASS-SPEC
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
-      <use-gas> true </use-gas>
+      <useGas> true </useGas>
       <ethereum>
         <evm>
           <output> _ => #buf(32, Value) </output>

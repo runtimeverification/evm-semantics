@@ -95,7 +95,7 @@ module SOLIDITY-CODE-SPEC
     claim [bad-call-data]:
           <mode>     NORMAL   </mode>
           <schedule> ISTANBUL </schedule>
-        <use-gas>    true     </use-gas>
+        <useGas>    true     </useGas>
 
           <callStack> .List                                 </callStack>
           <program>   #binRuntime()                         </program>
@@ -125,7 +125,7 @@ module SOLIDITY-CODE-SPEC
     claim [add-positive]:
           <mode>     NORMAL   </mode>
           <schedule> ISTANBUL </schedule>
-          <use-gas>  true     </use-gas>
+          <useGas>  true     </useGas>
 
           <callStack> .List                                 </callStack>
           <program>   #binRuntime()                         </program>
@@ -160,7 +160,7 @@ module SOLIDITY-CODE-SPEC
     claim [add-negative]:
           <mode>     NORMAL   </mode>
           <schedule> ISTANBUL </schedule>
-          <use-gas>  true     </use-gas>
+          <useGas>  true     </useGas>
 
           <callStack> .List                                 </callStack>
           <program>   #binRuntime()                         </program>
@@ -195,7 +195,7 @@ module SOLIDITY-CODE-SPEC
     claim [badAdd-negative]:
           <mode>     NORMAL   </mode>
           <schedule> ISTANBUL </schedule>
-          <use-gas>  true     </use-gas>
+          <useGas>  true     </useGas>
 
           <callStack> .List                                 </callStack>
           <program>   #binRuntime()                         </program>
@@ -229,7 +229,7 @@ module SOLIDITY-CODE-SPEC
     claim [max-positive]:
           <mode>     NORMAL   </mode>
           <schedule> ISTANBUL </schedule>
-          <use-gas>  true     </use-gas>
+          <useGas>  true     </useGas>
 
           <callStack> .List                                 </callStack>
           <program>   #binRuntime()                         </program>

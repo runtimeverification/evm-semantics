@@ -9,7 +9,7 @@ module FLOPPER-TICK-PASS-ROUGH-SPEC
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
-      <use-gas> true </use-gas>
+      <useGas> true </useGas>
       <ethereum>
         <evm>
           <output> .Bytes </output>
@@ -135,7 +135,7 @@ module FLOPPER-TICK-PASS-ROUGH-SPEC
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
-    <use-gas> true </use-gas>
+    <useGas> true </useGas>
       <ethereum>
         <evm>
           <output> VOutput => VOutput </output>

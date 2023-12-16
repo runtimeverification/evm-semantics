@@ -9,7 +9,7 @@ module FLOPPER-DENT-GUY-SAME-PASS-ROUGH-SPEC
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
-      <use-gas> true </use-gas>
+      <useGas> true </useGas>
       <ethereum>
         <evm>
           <output> .Bytes </output>
@@ -172,7 +172,7 @@ module FLOPPER-DENT-GUY-SAME-PASS-ROUGH-SPEC
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
-      <use-gas> true </use-gas>
+      <useGas> true </useGas>
       <ethereum>
         <evm>
           <output> VOutput => VOutput </output>
@@ -275,7 +275,7 @@ module FLOPPER-DENT-GUY-SAME-PASS-ROUGH-SPEC
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
-      <use-gas> true </use-gas>
+      <useGas> true </useGas>
       <ethereum>
         <evm>
           <output> VOutput => VOutput </output>

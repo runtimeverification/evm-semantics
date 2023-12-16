@@ -11,9 +11,9 @@
   <schedule>
     DEFAULT
   </schedule>
-  <use-gas>
+  <useGas>
     true
-  </use-gas>
+  </useGas>
   <ethereum>
     <evm>
       <output>
