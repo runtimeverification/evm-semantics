@@ -1202,6 +1202,7 @@ These rules reach into the network state and load/store from account storage:
            <storage> STORAGE => STORAGE [ INDEX <- NEW ] </storage>
            ...
          </account>
+      [preserves-definedness]
 ```
 
 ### Call Operations
