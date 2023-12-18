@@ -455,16 +455,16 @@
         "poetry2nix": "poetry2nix"
       },
       "locked": {
-        "lastModified": 1702643479,
-        "narHash": "sha256-umKe3kkRGP3CB/Meujbc51hu6+aM/xDgEk8dRhezrH8=",
+        "lastModified": 1702894012,
+        "narHash": "sha256-QAGQxyGQtqIHtg5e5covB6nzOySHtZpdXiZdJf7ni08=",
         "owner": "runtimeverification",
         "repo": "pyk",
-        "rev": "c397bba169e7e3f46ea403452a5f44c4cfa9eab0",
+        "rev": "af9b608dbe751a7b2ac1a2eb335d909fa57e161e",
         "type": "github"
       },
       "original": {
         "owner": "runtimeverification",
-        "ref": "v0.1.549",
+        "ref": "noah/apr-proof-parallel",
         "repo": "pyk",
         "type": "github"
       }
