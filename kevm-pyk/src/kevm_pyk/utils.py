@@ -104,6 +104,7 @@ def build_prover_for_proof(
     terminal_rules: Iterable[str],
     bug_report_id: str | None,
     build_parallel: bool = False,
+    counterexample_info: bool = False,
 ) -> APRBMCProver | APRProver | EqualityProver | ParallelAPRBMCProver | ParallelAPRProver:
     if type(proof) is APRBMCProof:
         if build_parallel:
@@ -121,7 +122,7 @@ def build_prover_for_proof(
                 terminal_rules=terminal_rules,
             )
         else:
-            return APRBMCProver(proof, kcfg_explore)
+            return APRBMCProver(proof, kcfg_explore, counterexample_info=counterexample_info)
     if type(proof) is APRProof:
         if build_parallel:
             return ParallelAPRProver(
@@ -138,7 +139,7 @@ def build_prover_for_proof(
                 terminal_rules=terminal_rules,
             )
         else:
-            return APRProver(proof, kcfg_explore)
+            return APRProver(proof, kcfg_explore, counterexample_info=counterexample_info)
     if type(proof) is EqualityProof:
         return EqualityProver(kcfg_explore=kcfg_explore, proof=proof)
     raise ValueError(f'Do not know how to build prover for proof: {proof}')
