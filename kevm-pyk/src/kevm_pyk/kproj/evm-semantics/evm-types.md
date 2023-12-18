@@ -105,8 +105,8 @@ The helper `powmod` is a totalization of the operator `_^%Int__` (which comes wi
 `_^%Int__` is not defined when the modulus (third argument) is zero, but `powmod` is.
 
 ```k
-    syntax Int ::= Int "^Word" Int       [function]
-    syntax Int ::= powmod(Int, Int, Int) [function, total]
+    syntax Int ::= Int "^Word" Int       [function, total]
+                 | powmod(Int, Int, Int) [function, total]
  // ------------------------------------------------------
     rule W0 ^Word W1 => powmod(W0, W1, pow256)
 
