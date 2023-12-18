@@ -77,13 +77,6 @@ module LEMMAS [symbolic]
     rule 0 <=Int keccak( _ )             => true [simplification]
     rule         keccak( _ ) <Int pow256 => true [simplification]
 
-    // A symbolic keccak is different from a given concrete value. This is not sound in principle,
-    // but is justified as keccak equality questions come up only in understanding storage lookup,
-    // where the slots in question have to be different, as otherwise the ecosystem would be broken.
-    rule [symb-keccak-neq-concrete]:         keccak(_X)  ==Int  _Y   => false   [symbolic(_X), concrete(_Y), simplification, comm]
-    rule [symb-keccak-neq-concrete-ml-lr]: { keccak(_X) #Equals _Y } => #Bottom [symbolic(_X), concrete(_Y), simplification]
-    rule [symb-keccak-neq-concrete-ml-rl]: { _Y #Equals keccak(_X) } => #Bottom [symbolic(_X), concrete(_Y), simplification]
-
   // ########################
   // Map Reasoning
   // ########################
