@@ -418,6 +418,8 @@ The `#next [_]` operator initiates execution by:
     rule #changesState(_            , _)                 => false [owise]
 ```
 
+-   `NOT_PERMITTED` is a token that signals that a function that should not have been called was called. Currently used to ensure no gas is manipulated
+
 ```k
     syntax KItem ::= "NOT_PERMITTED" String
 
@@ -435,6 +437,7 @@ The `#next [_]` operator initiates execution by:
     rule <useGas> false </useGas> <k> #refund _               => NOT_PERMITTED "#refund _"  ... </k>
     rule <useGas> false </useGas> <k> ( _:Gas ~> #deductGas ) => NOT_PERMITTED "#deductGas" ... </k>
 ```
+
 ### Execution Step
 
 -   `#exec` will load the arguments of the opcode (it assumes `#stackNeeded?` is accurate and has been called) and trigger the subsequent operations.
@@ -444,8 +447,8 @@ The `#next [_]` operator initiates execution by:
  // --------------------------------------------
     rule <k> #exec [ IOP:InvalidOp ] => IOP ... </k>
 
-    rule <k> #exec [ OP ] => #gas [ OP , OP ] ~> OP ... </k> <useGas> true </useGas> requires isNullStackOp(OP) orBool isPushOp(OP)
-    rule <k> #exec [ OP ] => OP ... </k> <useGas> false </useGas> requires isNullStackOp(OP) orBool isPushOp(OP)
+    rule <k> #exec [ OP ] => #gas [ OP , OP ] ~> OP ... </k> <useGas> true  </useGas> requires isNullStackOp(OP) orBool isPushOp(OP)
+    rule <k> #exec [ OP ] =>                     OP ... </k> <useGas> false </useGas> requires isNullStackOp(OP) orBool isPushOp(OP)
 ```
 
 Here we load the correct number of arguments from the `wordStack` based on the sort of the opcode.
@@ -461,14 +464,14 @@ Here we load the correct number of arguments from the `wordStack` based on the s
                         | TernStackOp Int Int Int
                         | QuadStackOp Int Int Int Int
  // -------------------------------------------------
-    rule <k> #exec [ UOP:UnStackOp   ] => #gas [ UOP , UOP W0          ] ~> UOP W0          ... </k> <wordStack> W0 : WS                => WS </wordStack> <useGas> true </useGas>
-    rule <k> #exec [ BOP:BinStackOp  ] => #gas [ BOP , BOP W0 W1       ] ~> BOP W0 W1       ... </k> <wordStack> W0 : W1 : WS           => WS </wordStack> <useGas> true </useGas>
-    rule <k> #exec [ TOP:TernStackOp ] => #gas [ TOP , TOP W0 W1 W2    ] ~> TOP W0 W1 W2    ... </k> <wordStack> W0 : W1 : W2 : WS      => WS </wordStack> <useGas> true </useGas>
-    rule <k> #exec [ QOP:QuadStackOp ] => #gas [ QOP , QOP W0 W1 W2 W3 ] ~> QOP W0 W1 W2 W3 ... </k> <wordStack> W0 : W1 : W2 : W3 : WS => WS </wordStack> <useGas> true </useGas>
-    rule <k> #exec [ UOP:UnStackOp   ] => UOP W0          ... </k> <wordStack> W0 : WS                => WS </wordStack> <useGas> false </useGas>
-    rule <k> #exec [ BOP:BinStackOp  ] => BOP W0 W1       ... </k> <wordStack> W0 : W1 : WS           => WS </wordStack> <useGas> false </useGas>
-    rule <k> #exec [ TOP:TernStackOp ] => TOP W0 W1 W2    ... </k> <wordStack> W0 : W1 : W2 : WS      => WS </wordStack> <useGas> false </useGas>
-    rule <k> #exec [ QOP:QuadStackOp ] => QOP W0 W1 W2 W3 ... </k> <wordStack> W0 : W1 : W2 : W3 : WS => WS </wordStack> <useGas> false </useGas>
+    rule <k> #exec [ UOP:UnStackOp   ] => #gas [ UOP , UOP W0          ] ~> UOP W0          ... </k> <wordStack> W0 : WS                => WS </wordStack> <useGas> true  </useGas>
+    rule <k> #exec [ BOP:BinStackOp  ] => #gas [ BOP , BOP W0 W1       ] ~> BOP W0 W1       ... </k> <wordStack> W0 : W1 : WS           => WS </wordStack> <useGas> true  </useGas>
+    rule <k> #exec [ TOP:TernStackOp ] => #gas [ TOP , TOP W0 W1 W2    ] ~> TOP W0 W1 W2    ... </k> <wordStack> W0 : W1 : W2 : WS      => WS </wordStack> <useGas> true  </useGas>
+    rule <k> #exec [ QOP:QuadStackOp ] => #gas [ QOP , QOP W0 W1 W2 W3 ] ~> QOP W0 W1 W2 W3 ... </k> <wordStack> W0 : W1 : W2 : W3 : WS => WS </wordStack> <useGas> true  </useGas>
+    rule <k> #exec [ UOP:UnStackOp   ] =>                                   UOP W0          ... </k> <wordStack> W0 : WS                => WS </wordStack> <useGas> false </useGas>
+    rule <k> #exec [ BOP:BinStackOp  ] =>                                   BOP W0 W1       ... </k> <wordStack> W0 : W1 : WS           => WS </wordStack> <useGas> false </useGas>
+    rule <k> #exec [ TOP:TernStackOp ] =>                                   TOP W0 W1 W2    ... </k> <wordStack> W0 : W1 : W2 : WS      => WS </wordStack> <useGas> false </useGas>
+    rule <k> #exec [ QOP:QuadStackOp ] =>                                   QOP W0 W1 W2 W3 ... </k> <wordStack> W0 : W1 : W2 : W3 : WS => WS </wordStack> <useGas> false </useGas>
 ```
 
 `StackOp` is used for opcodes which require a large portion of the stack.
@@ -476,8 +479,8 @@ Here we load the correct number of arguments from the `wordStack` based on the s
 ```k
     syntax InternalOp ::= StackOp WordStack
  // ---------------------------------------
-    rule <k> #exec [ SO:StackOp ] => #gas [ SO , SO WS ] ~> SO WS ... </k> <wordStack> WS </wordStack> <useGas> true </useGas>
-    rule <k> #exec [ SO:StackOp ] => SO WS ... </k> <wordStack> WS </wordStack> <useGas> false </useGas>
+    rule <k> #exec [ SO:StackOp ] => #gas [ SO , SO WS ] ~> SO WS ... </k> <wordStack> WS </wordStack> <useGas> true  </useGas>
+    rule <k> #exec [ SO:StackOp ] =>                        SO WS ... </k> <wordStack> WS </wordStack> <useGas> false </useGas>
 ```
 
 The `CallOp` opcodes all interperet their second argument as an address.
@@ -486,10 +489,10 @@ The `CallOp` opcodes all interperet their second argument as an address.
     syntax InternalOp ::= CallSixOp Int Int     Int Int Int Int
                         | CallOp    Int Int Int Int Int Int Int
  // -----------------------------------------------------------
-    rule <k> #exec [ CSO:CallSixOp ] => #gas [ CSO , CSO W0 W1    W2 W3 W4 W5 ] ~> CSO W0 W1    W2 W3 W4 W5 ... </k> <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : WS      => WS </wordStack> <useGas> true </useGas>
+    rule <k> #exec [ CSO:CallSixOp ] => #gas [ CSO , CSO W0 W1 W2 W3 W4 W5    ] ~> CSO W0 W1 W2 W3 W4 W5    ... </k> <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : WS      => WS </wordStack> <useGas> true </useGas>
     rule <k> #exec [ CO:CallOp     ] => #gas [ CO  , CO  W0 W1 W2 W3 W4 W5 W6 ] ~> CO  W0 W1 W2 W3 W4 W5 W6 ... </k> <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : W6 : WS => WS </wordStack> <useGas> true </useGas>
-    rule <k> #exec [ CSO:CallSixOp ] => CSO W0 W1    W2 W3 W4 W5 ... </k> <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : WS      => WS </wordStack> <useGas> false </useGas>
-    rule <k> #exec [ CO:CallOp     ] => CO  W0 W1 W2 W3 W4 W5 W6 ... </k> <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : W6 : WS => WS </wordStack> <useGas> false </useGas>
+    rule <k> #exec [ CSO:CallSixOp ] =>                                            CSO W0 W1 W2 W3 W4 W5    ... </k> <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : WS      => WS </wordStack> <useGas> false </useGas>
+    rule <k> #exec [ CO:CallOp     ] =>                                            CO  W0 W1 W2 W3 W4 W5 W6 ... </k> <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : W6 : WS => WS </wordStack> <useGas> false </useGas>
 ```
 
 ### Address Conversion
@@ -1508,12 +1511,12 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
 
     rule [return.revert.noGas]:
          <statusCode> EVMC_REVERT </statusCode>
+         <useGas> false </useGas>
          <k> #halt ~> #return RETSTART RETWIDTH
           => #popCallStack ~> #popWorldState
           ~> 0 ~> #push ~> #setLocalMem RETSTART RETWIDTH OUT
          ...
          </k>
-         <useGas> false </useGas>
          <output> OUT </output>
 
     rule [return.success]:
@@ -1529,19 +1532,18 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
 
     rule [return.success.noGas]:
          <statusCode> EVMC_SUCCESS </statusCode>
+         <useGas> false </useGas>
          <k> #halt ~> #return RETSTART RETWIDTH
           => #popCallStack ~> #dropWorldState
           ~> 1 ~> #push ~> #setLocalMem RETSTART RETWIDTH OUT
          ...
          </k>
-         <useGas> false </useGas>
          <output> OUT </output>
 
     syntax InternalOp ::= "#refund" Gas
                         | "#setLocalMem" Int Int Bytes
  // --------------------------------------------------
     rule [refund]: <k> #refund G:Gas => . ... </k> <gas> GAVAIL => GAVAIL +Gas G </gas> <useGas> true </useGas>
-
 
     rule <k> #setLocalMem START WIDTH WS => . ... </k>
          <localMem> LM => LM [ START := #range(WS, 0, minInt(WIDTH, lengthBytes(WS))) ] </localMem>
@@ -1702,8 +1704,8 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
           ~> #finishCodeDeposit ACCT OUT
          ...
          </k>
-         <schedule> SCHED </schedule>
          <useGas> true </useGas>
+         <schedule> SCHED </schedule>
          <output> OUT => .Bytes </output>
       requires lengthBytes(OUT) <=Int maxCodeSize < SCHED > andBool #isValidCode(OUT, SCHED)
 
@@ -2024,7 +2026,6 @@ Overall Gas
          ...
         </k>
         <useGas> true </useGas>
-    rule <k> #gas [ _ , _ ] => . ...  </k> <useGas> false </useGas>
 
     rule <k> #gas [ OP ] => #gasExec(SCHED, OP) ~> #deductGas ... </k>
          <schedule> SCHED </schedule>
@@ -2044,7 +2045,6 @@ Overall Gas
     rule <k> _G:Gas ~> (#deductMemoryGas => #deductGas)   ... </k> //Required for verification
     rule <k>  G:Gas ~> #deductGas => #end EVMC_OUT_OF_GAS ... </k> <gas> GAVAIL:Gas                  </gas> <useGas> true </useGas> requires GAVAIL <Gas G
     rule <k>  G:Gas ~> #deductGas => .                    ... </k> <gas> GAVAIL:Gas => GAVAIL -Gas G </gas> <useGas> true </useGas> requires G <=Gas GAVAIL
-    rule <k>  _:Gas ~> #deductGas => .                    ... </k> <useGas> false </useGas>
 
     syntax Bool ::= #inStorage     ( Map   , Account , Int ) [function, total]
                   | #inStorageAux1 ( KItem ,           Int ) [function, total]
