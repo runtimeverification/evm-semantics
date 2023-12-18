@@ -418,6 +418,23 @@ The `#next [_]` operator initiates execution by:
     rule #changesState(_            , _)                 => false [owise]
 ```
 
+```k
+    syntax KItem ::= "NOT_PERMITTED" String
+
+    rule       <useGas> false </useGas> <k>            #gas               [ _, _ ] => NOT_PERMITTED "#gas [ _, _ ]"       ... </k>
+      rule     <useGas> false </useGas> <k>            #memory            [ _, _ ] => NOT_PERMITTED "#memory [ _, _ ]"    ... </k>
+        rule   <useGas> false </useGas> <k> ( _:Int ~> #deductMemory             ) => NOT_PERMITTED "#deductMemory"       ... </k>
+          rule <useGas> false </useGas> <k> ( _:Gas ~> #deductMemoryGas          ) => NOT_PERMITTED "#deductMemoryGas"    ... </k>
+      rule     <useGas> false </useGas> <k>            #access            [ _, _ ] => NOT_PERMITTED "#access [ _, _ ]"    ... </k>
+        rule   <useGas> false </useGas> <k>            #gasAccess         ( _, _ ) => NOT_PERMITTED "#gasAccess ( _, _ )" ... </k>
+      rule     <useGas> false </useGas> <k>            #gas               [    _ ] => NOT_PERMITTED "#gas [ _ ]"          ... </k>
+        rule   <useGas> false </useGas> <k>            #gasExec           ( _, _ ) => NOT_PERMITTED "#gasExec ( _, _ )"   ... </k>
+          rule <useGas> false </useGas> <k> ( _:Gas ~> #allocateCallGas          ) => NOT_PERMITTED "#allocateCallGas"    ... </k>
+          rule <useGas> false </useGas> <k>            #allocateCreateGas          => NOT_PERMITTED "#allocateCreateGas"  ... </k>
+
+    rule <useGas> false </useGas> <k> #refund _               => NOT_PERMITTED "#refund _"  ... </k>
+    rule <useGas> false </useGas> <k> ( _:Gas ~> #deductGas ) => NOT_PERMITTED "#deductGas" ... </k>
+```
 ### Execution Step
 
 -   `#exec` will load the arguments of the opcode (it assumes `#stackNeeded?` is accurate and has been called) and trigger the subsequent operations.
@@ -1206,6 +1223,16 @@ These rules reach into the network state and load/store from account storage:
     syntax UnStackOp ::= "SLOAD"
  // ----------------------------
     rule <k> SLOAD INDEX => #lookup(STORAGE, INDEX) ~> #push ... </k>
+         <useGas> true </useGas>
+         <id> ACCT </id>
+         <account>
+           <acctID> ACCT </acctID>
+           <storage> STORAGE </storage>
+           ...
+         </account>
+
+    rule <k> SLOAD INDEX => #accessStorage ACCT INDEX ~> #lookup(STORAGE, INDEX) ~> #push ... </k>
+         <useGas> false </useGas>
          <id> ACCT </id>
          <account>
            <acctID> ACCT </acctID>
@@ -1216,6 +1243,16 @@ These rules reach into the network state and load/store from account storage:
     syntax BinStackOp ::= "SSTORE"
  // ------------------------------
     rule <k> SSTORE INDEX NEW => . ... </k>
+         <useGas> true </useGas>
+         <id> ACCT </id>
+         <account>
+           <acctID> ACCT </acctID>
+           <storage> STORAGE => STORAGE [ INDEX <- NEW ] </storage>
+           ...
+         </account>
+
+    rule <k> SSTORE INDEX NEW => #accessStorage ACCT INDEX ... </k>
+         <useGas> false </useGas>
          <id> ACCT </id>
          <account>
            <acctID> ACCT </acctID>
@@ -1246,8 +1283,19 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
                         | "#mkCall"                Int Int Int Bytes     Int Bytes Bool
  // -----------------------------------------------------------------------------------
      rule <k> #checkBalanceUnderflow ACCT VALUE => #refund GCALL ~> #pushCallStack ~> #pushWorldState ~> #end EVMC_BALANCE_UNDERFLOW ... </k>
+         <useGas> true </useGas>
          <output> _ => .Bytes </output>
          <callGas> GCALL </callGas>
+         <account>
+           <acctID> ACCT </acctID>
+           <balance> BAL </balance>
+           ...
+         </account>
+      requires VALUE >Int BAL
+
+     rule <k> #checkBalanceUnderflow ACCT VALUE => #pushCallStack ~> #pushWorldState ~> #end EVMC_BALANCE_UNDERFLOW ... </k>
+         <useGas> false </useGas>
+         <output> _ => .Bytes </output>
          <account>
            <acctID> ACCT </acctID>
            <balance> BAL </balance>
@@ -1264,8 +1312,15 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
       requires VALUE <=Int BAL
 
     rule <k> #checkDepthExceeded => #refund GCALL ~> #pushCallStack ~> #pushWorldState ~> #end EVMC_CALL_DEPTH_EXCEEDED ... </k>
+         <useGas> true </useGas>
          <output> _ => .Bytes </output>
          <callGas> GCALL </callGas>
+         <callDepth> CD </callDepth>
+      requires CD >=Int 1024
+
+    rule <k> #checkDepthExceeded => #pushCallStack ~> #pushWorldState ~> #end EVMC_CALL_DEPTH_EXCEEDED ... </k>
+         <useGas> false </useGas>
+         <output> _ => .Bytes </output>
          <callDepth> CD </callDepth>
       requires CD >=Int 1024
 
@@ -1274,8 +1329,19 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
       requires CD <Int 1024
 
     rule <k> #checkNonceExceeded ACCT => #refund GCALL ~> #pushCallStack ~> #pushWorldState ~> #end EVMC_NONCE_EXCEEDED ... </k>
+         <useGas> true </useGas>
          <output> _ => .Bytes </output>
          <callGas> GCALL </callGas>
+         <account>
+           <acctID> ACCT </acctID>
+           <nonce> NONCE </nonce>
+           ...
+         </account>
+      requires notBool #rangeNonce(NONCE)
+
+    rule <k> #checkNonceExceeded ACCT => #pushCallStack ~> #pushWorldState ~> #end EVMC_NONCE_EXCEEDED ... </k>
+         <useGas> false </useGas>
+         <output> _ => .Bytes </output>
          <account>
            <acctID> ACCT </acctID>
            <nonce> NONCE </nonce>
@@ -1431,6 +1497,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
 
     rule [return.revert]:
          <statusCode> EVMC_REVERT </statusCode>
+         <useGas> true </useGas>
          <k> #halt ~> #return RETSTART RETWIDTH
           => #popCallStack ~> #popWorldState
           ~> 0 ~> #push ~> #refund GAVAIL ~> #setLocalMem RETSTART RETWIDTH OUT
@@ -1439,8 +1506,19 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <output> OUT </output>
          <gas> GAVAIL </gas>
 
+    rule [return.revert.noGas]:
+         <statusCode> EVMC_REVERT </statusCode>
+         <k> #halt ~> #return RETSTART RETWIDTH
+          => #popCallStack ~> #popWorldState
+          ~> 0 ~> #push ~> #setLocalMem RETSTART RETWIDTH OUT
+         ...
+         </k>
+         <useGas> false </useGas>
+         <output> OUT </output>
+
     rule [return.success]:
          <statusCode> EVMC_SUCCESS </statusCode>
+         <useGas> true </useGas>
          <k> #halt ~> #return RETSTART RETWIDTH
           => #popCallStack ~> #dropWorldState
           ~> 1 ~> #push ~> #refund GAVAIL ~> #setLocalMem RETSTART RETWIDTH OUT
@@ -1449,11 +1527,20 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <output> OUT </output>
          <gas> GAVAIL </gas>
 
+    rule [return.success.noGas]:
+         <statusCode> EVMC_SUCCESS </statusCode>
+         <k> #halt ~> #return RETSTART RETWIDTH
+          => #popCallStack ~> #dropWorldState
+          ~> 1 ~> #push ~> #setLocalMem RETSTART RETWIDTH OUT
+         ...
+         </k>
+         <useGas> false </useGas>
+         <output> OUT </output>
+
     syntax InternalOp ::= "#refund" Gas
                         | "#setLocalMem" Int Int Bytes
  // --------------------------------------------------
     rule [refund]: <k> #refund G:Gas => . ... </k> <gas> GAVAIL => GAVAIL +Gas G </gas> <useGas> true </useGas>
-    rule [refund.noGas]: <k> #refund _ => . ... </k> <useGas> false </useGas>
 
 
     rule <k> #setLocalMem START WIDTH WS => . ... </k>
@@ -1600,7 +1687,12 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
 
     rule <statusCode> EVMC_REVERT </statusCode>
          <k> #halt ~> #codeDeposit _ => #popCallStack ~> #popWorldState ~> #refund GAVAIL ~> 0 ~> #push ... </k>
+         <useGas> true </useGas>
          <gas> GAVAIL </gas>
+
+    rule <statusCode> EVMC_REVERT </statusCode>
+         <useGas> false </useGas>
+         <k> #halt ~> #codeDeposit _ => #popCallStack ~> #popWorldState ~> 0 ~> #push ... </k>
 
     rule <statusCode> EVMC_SUCCESS </statusCode>
          <k> #halt ~> #codeDeposit ACCT => #mkCodeDeposit ACCT ... </k>
@@ -1610,6 +1702,13 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
           ~> #finishCodeDeposit ACCT OUT
          ...
          </k>
+         <schedule> SCHED </schedule>
+         <useGas> true </useGas>
+         <output> OUT => .Bytes </output>
+      requires lengthBytes(OUT) <=Int maxCodeSize < SCHED > andBool #isValidCode(OUT, SCHED)
+
+    rule <k> #mkCodeDeposit ACCT => #finishCodeDeposit ACCT OUT ... </k>
+         <useGas> false </useGas>
          <schedule> SCHED </schedule>
          <output> OUT => .Bytes </output>
       requires lengthBytes(OUT) <=Int maxCodeSize < SCHED > andBool #isValidCode(OUT, SCHED)
@@ -1624,7 +1723,19 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
           ~> #refund GAVAIL ~> ACCT ~> #push
          ...
          </k>
+         <useGas> true </useGas>
          <gas> GAVAIL </gas>
+         <account>
+           <acctID> ACCT </acctID>
+           <code> _ => OUT </code>
+           ...
+         </account>
+
+    rule <k> #finishCodeDeposit ACCT OUT
+          => #popCallStack ~> #dropWorldState ~> ACCT ~> #push
+         ...
+         </k>
+         <useGas> false </useGas>
          <account>
            <acctID> ACCT </acctID>
            <code> _ => OUT </code>
@@ -1637,7 +1748,16 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
           ~> #refund GAVAIL ~> ACCT ~> #push
          ...
          </k>
+         <useGas> true </useGas>
          <gas> GAVAIL </gas>
+         <schedule> FRONTIER </schedule>
+
+    rule <statusCode> _:ExceptionalStatusCode </statusCode>
+         <k> #halt ~> #finishCodeDeposit ACCT _
+          => #popCallStack ~> #dropWorldState ~> ACCT ~> #push
+         ...
+         </k>
+         <useGas> false </useGas>
          <schedule> FRONTIER </schedule>
 
     rule <statusCode> _:ExceptionalStatusCode </statusCode>
