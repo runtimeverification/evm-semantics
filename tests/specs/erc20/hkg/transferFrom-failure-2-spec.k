@@ -10,6 +10,7 @@ module TRANSFERFROM-FAILURE-2-SPEC
     <exit-code> 1 </exit-code>
     <mode> NORMAL </mode>
     <schedule> ISTANBUL </schedule>
+    <useGas> true </useGas>
 
     <ethereum>
       <evm>

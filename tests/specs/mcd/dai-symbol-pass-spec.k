@@ -9,6 +9,7 @@ module DAI-SYMBOL-PASS-SPEC
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
+      <useGas> true </useGas>
       <ethereum>
         <evm>
           <output> _ => #buf(32, 32) +Bytes #buf(32, 3) +Bytes b"DAI" +Bytes #buf(29, 0) </output>

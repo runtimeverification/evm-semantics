@@ -9,6 +9,7 @@ module POT-JOIN-PASS-ROUGH-SPEC
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
+      <useGas> true </useGas>
       <ethereum>
         <evm>
           <output> .Bytes </output>
@@ -171,6 +172,7 @@ module POT-JOIN-PASS-ROUGH-SPEC
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
+    <useGas> true </useGas>
       <ethereum>
         <evm>
           <output> VOutput => VOutput </output>
@@ -271,6 +273,7 @@ module POT-JOIN-PASS-ROUGH-SPEC
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
+    <useGas> true </useGas>
       <ethereum>
         <evm>
           <output> VOutput => VOutput </output>
@@ -374,6 +377,7 @@ module POT-JOIN-PASS-ROUGH-SPEC
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
+    <useGas> true </useGas>
       <ethereum>
         <evm>
           <output> .Bytes </output>
