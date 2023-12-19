@@ -8,7 +8,7 @@ requires "evm.md"
 requires "lemmas/int-simplification.k"
 
 module EVM-OPTIMIZATIONS-LEMMAS [kore]
-    imports EVM
+  imports EVM
 
     rule #sizeWordStack(WS           , N) => #sizeWordStack(WS, 0) +Int N requires N =/=Int 0                [simplification]
     rule #sizeWordStack(WS [ I := _ ], N) => #sizeWordStack(WS, N)        requires I <Int #sizeWordStack(WS) [simplification]
