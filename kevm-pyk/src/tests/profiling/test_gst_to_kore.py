@@ -19,4 +19,4 @@ def test_gst_to_kore(profile: Profiler) -> None:
     with profile(sort_keys=('cumtime', 'tottime'), limit=30):
         from kevm_pyk.gst_to_kore import gst_to_kore
 
-        gst_to_kore(gst_data, 'DEFAULT', 'VMTESTS', 1)
+        gst_to_kore(gst_data, 'DEFAULT', 'VMTESTS', 1, True)

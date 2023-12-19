@@ -9,6 +9,7 @@ module KECCAK00-SPEC
     <exit-code> 1 </exit-code>
     <mode> NORMAL </mode>
     <schedule> ISTANBUL </schedule>
+    <useGas> true </useGas>
     <ethereum>
       <evm>
         <output> _ => #encodeArgs(#bytes32(keccak(#buf(DATA_LEN, DATA)))) </output>
