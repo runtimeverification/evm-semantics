@@ -656,7 +656,7 @@ def exec_kast(
         kore_pgm = kevm.kast_to_kore(kast_pgm)
         kore_pattern = kore_pgm_to_kore(kore_pgm, SORT_ETHEREUM_SIMULATION, schedule, mode, chainid, usegas)
 
-    output_text = kore_print(kore_pattern, kevm.definition_dir, output)
+    output_text = kore_print(kore_pattern, definition_dir=kevm.definition_dir, output=output)
     print(output_text)
 
 
