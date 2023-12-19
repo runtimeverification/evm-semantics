@@ -30,6 +30,15 @@ module LEMMAS [symbolic]
     rule X *Int Y <Int pow256 => true requires Y <=Int maxUInt256 /Int X [simplification]
     rule #if B #then C +Int C1 #else C +Int C2 #fi => C +Int #if B #then C1 #else C2 #fi [simplification] 
 
+    // Sum of two `uint64` values is less than max `uint256`
+    rule chop (A:Int +Int B:Int) =>  A +Int B 
+      requires #rangeUInt(64, A)
+       andBool #rangeUInt(64, B)
+       [simplification]
+
+    // chop is idempotent through +Int
+    rule chop ( chop ( X ) +Int Y ) => chop ( X +Int Y ) [simplification]
+
   // ########################
   // Set Reasoning
   // ########################
