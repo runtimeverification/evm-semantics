@@ -79,7 +79,6 @@ class KEVMSemantics(KCFGSemantics):
         return False
 
     def extract_branches(self, cterm: CTerm) -> list[KInner]:
-        # print(f'constraints when extracting branches are: {cterm.constraints}')
         k_cell = cterm.cell('K_CELL')
         jumpi_pattern = KEVM.jumpi_applied(KVariable('###PCOUNT'), KVariable('###COND'))
         pc_next_pattern = KApply('#pc[_]_EVM_InternalOp_OpCode', [KEVM.jumpi()])
@@ -364,15 +363,519 @@ class KEVM(KProve, KRun):
 
     @staticmethod
     def abi_symbolic_calldata(name: str, args: list[KInner]) -> KApply:
-        return KApply(
+        term_one = KApply(
             '_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes',
             [
                 KApply(
                     '#signatureCallData(_,_)_EVM-ABI_Bytes_String_TypedArgs', [stringToken(name), KEVM.typed_args(args)]
                 ),
-                KVariable('SYMBOLIC_CALLDATA'),
+                KApply(
+                    '_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes',
+                    [
+                        KApply('#buf(_,_)_BUF-SYNTAX_Bytes_Int_Int', [intToken(32), intToken(224)]),
+                        KApply(
+                            '_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes',
+                            [
+                                KApply(
+                                    '#buf(_,_)_BUF-SYNTAX_Bytes_Int_Int',
+                                    [intToken(32), KVariable('l2OutputIndex', 'Int')],
+                                ),
+                                KApply(
+                                    '_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes',
+                                    [
+                                        KApply(
+                                            '#buf(_,_)_BUF-SYNTAX_Bytes_Int_Int',
+                                            [intToken(32), KVariable('version', 'Int')],
+                                        ),
+                                        KApply(
+                                            '_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes',
+                                            [
+                                                KApply(
+                                                    '#buf(_,_)_BUF-SYNTAX_Bytes_Int_Int',
+                                                    [intToken(32), KVariable('stateRoot', 'Int')],
+                                                ),
+                                                KApply(
+                                                    '_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes',
+                                                    [
+                                                        KApply(
+                                                            '#buf(_,_)_BUF-SYNTAX_Bytes_Int_Int',
+                                                            [
+                                                                intToken(32),
+                                                                KVariable('messagePasserStorageRoot', 'Int'),
+                                                            ],
+                                                        ),
+                                                        KApply(
+                                                            '_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes',
+                                                            [
+                                                                KApply(
+                                                                    '#buf(_,_)_BUF-SYNTAX_Bytes_Int_Int',
+                                                                    [
+                                                                        intToken(32),
+                                                                        KVariable('latestBlockhash', 'Int'),
+                                                                    ],
+                                                                ),
+                                                                KApply(
+                                                                    '_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes',
+                                                                    [
+                                                                        KApply(
+                                                                            '#buf(_,_)_BUF-SYNTAX_Bytes_Int_Int',
+                                                                            [intToken(32), intToken(786)],
+                                                                        ),
+                                                                        KApply(
+                                                                            '_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes',
+                                                                            [
+                                                                                KApply(
+                                                                                    '#buf(_,_)_BUF-SYNTAX_Bytes_Int_Int',
+                                                                                    [
+                                                                                        intToken(32),
+                                                                                        KVariable('nonce', 'Int'),
+                                                                                    ],
+                                                                                ),
+                                                                                KApply(
+                                                                                    '_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes',
+                                                                                    [
+                                                                                        KApply(
+                                                                                            '#buf(_,_)_BUF-SYNTAX_Bytes_Int_Int',
+                                                                                            [
+                                                                                                intToken(32),
+                                                                                                KVariable(
+                                                                                                    'sender',
+                                                                                                    'Int',
+                                                                                                ),
+                                                                                            ],
+                                                                                        ),
+                                                                                        KApply(
+                                                                                            '_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes',
+                                                                                            [
+                                                                                                KApply(
+                                                                                                    '#buf(_,_)_BUF-SYNTAX_Bytes_Int_Int',
+                                                                                                    [
+                                                                                                        intToken(32),
+                                                                                                        KVariable(
+                                                                                                            'target',
+                                                                                                            'Int',
+                                                                                                        ),
+                                                                                                    ],
+                                                                                                ),
+                                                                                                KApply(
+                                                                                                    '_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes',
+                                                                                                    [
+                                                                                                        KApply(
+                                                                                                            '#buf(_,_)_BUF-SYNTAX_Bytes_Int_Int',
+                                                                                                            [
+                                                                                                                intToken(
+                                                                                                                    32
+                                                                                                                ),
+                                                                                                                KVariable(
+                                                                                                                    'value',
+                                                                                                                    'Int',
+                                                                                                                ),
+                                                                                                            ],
+                                                                                                        ),
+                                                                                                        KApply(
+                                                                                                            '_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes',
+                                                                                                            [
+                                                                                                                KApply(
+                                                                                                                    '#buf(_,_)_BUF-SYNTAX_Bytes_Int_Int',
+                                                                                                                    [
+                                                                                                                        intToken(
+                                                                                                                            32
+                                                                                                                        ),
+                                                                                                                        KVariable(
+                                                                                                                            'gasLimit',
+                                                                                                                            'Int',
+                                                                                                                        ),
+                                                                                                                    ],
+                                                                                                                ),
+                                                                                                                KApply(
+                                                                                                                    '_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes',
+                                                                                                                    [
+                                                                                                                        KApply(
+                                                                                                                            '#buf(_,_)_BUF-SYNTAX_Bytes_Int_Int',
+                                                                                                                            [
+                                                                                                                                intToken(
+                                                                                                                                    32
+                                                                                                                                ),
+                                                                                                                                intToken(
+                                                                                                                                    192
+                                                                                                                                ),
+                                                                                                                            ],
+                                                                                                                        ),
+                                                                                                                        KApply(
+                                                                                                                            '_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes',
+                                                                                                                            [
+                                                                                                                                KApply(
+                                                                                                                                    '#buf(_,_)_BUF-SYNTAX_Bytes_Int_Int',
+                                                                                                                                    [
+                                                                                                                                        intToken(
+                                                                                                                                            32
+                                                                                                                                        ),
+                                                                                                                                        intToken(
+                                                                                                                                            320
+                                                                                                                                        ),
+                                                                                                                                    ],
+                                                                                                                                ),
+                                                                                                                                KVariable(
+                                                                                                                                    'BYTES_DATA',
+                                                                                                                                    'Bytes',
+                                                                                                                                ),
+                                                                                                                            ],
+                                                                                                                        ),
+                                                                                                                    ],
+                                                                                                                ),
+                                                                                                            ],
+                                                                                                        ),
+                                                                                                    ],
+                                                                                                ),
+                                                                                            ],
+                                                                                        ),
+                                                                                    ],
+                                                                                ),
+                                                                            ],
+                                                                        ),
+                                                                    ],
+                                                                ),
+                                                            ],
+                                                        ),
+                                                    ],
+                                                ),
+                                            ],
+                                        ),
+                                    ],
+                                ),
+                            ],
+                        ),
+                    ],
+                ),
             ],
         )
+
+        term_two = KApply(
+            '_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes',
+            [
+                term_one,
+                KApply(
+                    '_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes',
+                    [
+                        KApply('#buf(_,_)_BUF-SYNTAX_Bytes_Int_Int', [intToken(32), intToken(10)]),
+                        KApply(
+                            '_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes',
+                            [
+                                KApply('#buf(_,_)_BUF-SYNTAX_Bytes_Int_Int', [intToken(32), intToken(320)]),
+                                KApply(
+                                    '_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes',
+                                    [
+                                        KApply('#buf(_,_)_BUF-SYNTAX_Bytes_Int_Int', [intToken(32), intToken(960)]),
+                                        KApply(
+                                            '_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes',
+                                            [
+                                                KApply(
+                                                    '#buf(_,_)_BUF-SYNTAX_Bytes_Int_Int', [intToken(32), intToken(1600)]
+                                                ),
+                                                KApply(
+                                                    '_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes',
+                                                    [
+                                                        KApply(
+                                                            '#buf(_,_)_BUF-SYNTAX_Bytes_Int_Int',
+                                                            [intToken(32), intToken(2240)],
+                                                        ),
+                                                        KApply(
+                                                            '_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes',
+                                                            [
+                                                                KApply(
+                                                                    '#buf(_,_)_BUF-SYNTAX_Bytes_Int_Int',
+                                                                    [intToken(32), intToken(2880)],
+                                                                ),
+                                                                KApply(
+                                                                    '_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes',
+                                                                    [
+                                                                        KApply(
+                                                                            '#buf(_,_)_BUF-SYNTAX_Bytes_Int_Int',
+                                                                            [intToken(32), intToken(3520)],
+                                                                        ),
+                                                                        KApply(
+                                                                            '_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes',
+                                                                            [
+                                                                                KApply(
+                                                                                    '#buf(_,_)_BUF-SYNTAX_Bytes_Int_Int',
+                                                                                    [intToken(32), intToken(4160)],
+                                                                                ),
+                                                                                KApply(
+                                                                                    '_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes',
+                                                                                    [
+                                                                                        KApply(
+                                                                                            '#buf(_,_)_BUF-SYNTAX_Bytes_Int_Int',
+                                                                                            [
+                                                                                                intToken(32),
+                                                                                                intToken(4800),
+                                                                                            ],
+                                                                                        ),
+                                                                                        KApply(
+                                                                                            '_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes',
+                                                                                            [
+                                                                                                KApply(
+                                                                                                    '#buf(_,_)_BUF-SYNTAX_Bytes_Int_Int',
+                                                                                                    [
+                                                                                                        intToken(32),
+                                                                                                        intToken(5540),
+                                                                                                    ],
+                                                                                                ),
+                                                                                                KApply(
+                                                                                                    '_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes',
+                                                                                                    [
+                                                                                                        KApply(
+                                                                                                            '#buf(_,_)_BUF-SYNTAX_Bytes_Int_Int',
+                                                                                                            [
+                                                                                                                intToken(
+                                                                                                                    32
+                                                                                                                ),
+                                                                                                                intToken(
+                                                                                                                    6080
+                                                                                                                ),
+                                                                                                            ],
+                                                                                                        ),
+                                                                                                        KApply(
+                                                                                                            '#buf(_,_)_BUF-SYNTAX_Bytes_Int_Int',
+                                                                                                            [
+                                                                                                                intToken(
+                                                                                                                    32
+                                                                                                                ),
+                                                                                                                intToken(
+                                                                                                                    600
+                                                                                                                ),
+                                                                                                            ],
+                                                                                                        ),
+                                                                                                    ],
+                                                                                                ),
+                                                                                            ],
+                                                                                        ),
+                                                                                    ],
+                                                                                ),
+                                                                            ],
+                                                                        ),
+                                                                    ],
+                                                                ),
+                                                            ],
+                                                        ),
+                                                    ],
+                                                ),
+                                            ],
+                                        ),
+                                    ],
+                                ),
+                            ],
+                        ),
+                    ],
+                ),
+            ],
+        )
+
+        bytes_one = KApply(
+            '_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes',
+            [
+                KVariable('BYTES_1', 'Bytes'),
+                KApply(
+                    '_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes',
+                    [
+                        KApply('#buf(_,_)_BUF-SYNTAX_Bytes_Int_Int', [intToken(8), intToken(0)]),
+                        KApply('#buf(_,_)_BUF-SYNTAX_Bytes_Int_Int', [intToken(32), intToken(600)]),
+                    ],
+                ),
+            ],
+        )
+
+        bytes_two = KApply(
+            '_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes',
+            [
+                bytes_one,
+                KApply(
+                    '_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes',
+                    [
+                        KVariable('BYTES_2', 'Bytes'),
+                        KApply(
+                            '_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes',
+                            [
+                                KApply('#buf(_,_)_BUF-SYNTAX_Bytes_Int_Int', [intToken(8), intToken(0)]),
+                                KApply('#buf(_,_)_BUF-SYNTAX_Bytes_Int_Int', [intToken(32), intToken(600)]),
+                            ],
+                        ),
+                    ],
+                ),
+            ],
+        )
+
+        bytes_three = KApply(
+            '_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes',
+            [
+                bytes_two,
+                KApply(
+                    '_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes',
+                    [
+                        KVariable('BYTES_3', 'Bytes'),
+                        KApply(
+                            '_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes',
+                            [
+                                KApply('#buf(_,_)_BUF-SYNTAX_Bytes_Int_Int', [intToken(8), intToken(0)]),
+                                KApply('#buf(_,_)_BUF-SYNTAX_Bytes_Int_Int', [intToken(32), intToken(600)]),
+                            ],
+                        ),
+                    ],
+                ),
+            ],
+        )
+
+        bytes_four = KApply(
+            '_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes',
+            [
+                bytes_three,
+                KApply(
+                    '_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes',
+                    [
+                        KVariable('BYTES_4', 'Bytes'),
+                        KApply(
+                            '_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes',
+                            [
+                                KApply('#buf(_,_)_BUF-SYNTAX_Bytes_Int_Int', [intToken(8), intToken(0)]),
+                                KApply('#buf(_,_)_BUF-SYNTAX_Bytes_Int_Int', [intToken(32), intToken(600)]),
+                            ],
+                        ),
+                    ],
+                ),
+            ],
+        )
+
+        bytes_five = KApply(
+            '_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes',
+            [
+                bytes_four,
+                KApply(
+                    '_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes',
+                    [
+                        KVariable('BYTES_5', 'Bytes'),
+                        KApply(
+                            '_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes',
+                            [
+                                KApply('#buf(_,_)_BUF-SYNTAX_Bytes_Int_Int', [intToken(8), intToken(0)]),
+                                KApply('#buf(_,_)_BUF-SYNTAX_Bytes_Int_Int', [intToken(32), intToken(600)]),
+                            ],
+                        ),
+                    ],
+                ),
+            ],
+        )
+
+        bytes_six = KApply(
+            '_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes',
+            [
+                bytes_five,
+                KApply(
+                    '_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes',
+                    [
+                        KVariable('BYTES_6', 'Bytes'),
+                        KApply(
+                            '_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes',
+                            [
+                                KApply('#buf(_,_)_BUF-SYNTAX_Bytes_Int_Int', [intToken(8), intToken(0)]),
+                                KApply('#buf(_,_)_BUF-SYNTAX_Bytes_Int_Int', [intToken(32), intToken(600)]),
+                            ],
+                        ),
+                    ],
+                ),
+            ],
+        )
+
+        bytes_seven = KApply(
+            '_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes',
+            [
+                bytes_six,
+                KApply(
+                    '_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes',
+                    [
+                        KVariable('BYTES_7', 'Bytes'),
+                        KApply(
+                            '_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes',
+                            [
+                                KApply('#buf(_,_)_BUF-SYNTAX_Bytes_Int_Int', [intToken(8), intToken(0)]),
+                                KApply('#buf(_,_)_BUF-SYNTAX_Bytes_Int_Int', [intToken(32), intToken(600)]),
+                            ],
+                        ),
+                    ],
+                ),
+            ],
+        )
+
+        bytes_eight = KApply(
+            '_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes',
+            [
+                bytes_seven,
+                KApply(
+                    '_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes',
+                    [
+                        KVariable('BYTES_8', 'Bytes'),
+                        KApply(
+                            '_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes',
+                            [
+                                KApply('#buf(_,_)_BUF-SYNTAX_Bytes_Int_Int', [intToken(8), intToken(0)]),
+                                KApply('#buf(_,_)_BUF-SYNTAX_Bytes_Int_Int', [intToken(32), intToken(600)]),
+                            ],
+                        ),
+                    ],
+                ),
+            ],
+        )
+
+        bytes_nine = KApply(
+            '_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes',
+            [
+                bytes_eight,
+                KApply(
+                    '_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes',
+                    [
+                        KVariable('BYTES_9', 'Bytes'),
+                        KApply(
+                            '_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes',
+                            [
+                                KApply('#buf(_,_)_BUF-SYNTAX_Bytes_Int_Int', [intToken(8), intToken(0)]),
+                                KApply('#buf(_,_)_BUF-SYNTAX_Bytes_Int_Int', [intToken(32), intToken(600)]),
+                            ],
+                        ),
+                    ],
+                ),
+            ],
+        )
+
+        bytes_all = KApply(
+            '_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes',
+            [
+                bytes_nine,
+                KApply(
+                    '_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes',
+                    [
+                        KVariable('BYTES_10', 'Bytes'),
+                        KApply(
+                            '_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes',
+                            [
+                                KApply('#buf(_,_)_BUF-SYNTAX_Bytes_Int_Int', [intToken(8), intToken(0)]),
+                                KApply('#buf(_,_)_BUF-SYNTAX_Bytes_Int_Int', [intToken(32), intToken(600)]),
+                            ],
+                        ),
+                    ],
+                ),
+            ],
+        )
+
+        # return KApply(
+        #     '_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes',
+        #     [
+        #         KApply(
+        #             '#signatureCallData(_,_)_EVM-ABI_Bytes_String_TypedArgs', [stringToken(name), KEVM.typed_args(args)]
+        #         ),
+        #         KVariable('SYMBOLIC_CALLDATA'),
+        #     ],
+        # )
+
+        return KApply('_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes', [term_two, bytes_all])
+
 
     @staticmethod
     def abi_selector(name: str) -> KApply:
