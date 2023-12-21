@@ -363,6 +363,8 @@ class KEVM(KProve, KRun):
 
     @staticmethod
     def abi_symbolic_calldata(name: str, args: list[KInner]) -> KApply:
+        #  TODO(palina): hardcoded structured calldata with `BYTES_DATA` being 320 bytes long,
+        #                  and `bytes[]` having 10 elements, each (`BYTES_N`) 600 bytes long
         term_one = KApply(
             '_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes',
             [
@@ -419,7 +421,7 @@ class KEVM(KProve, KRun):
                                                                     [
                                                                         KApply(
                                                                             '#buf(_,_)_BUF-SYNTAX_Bytes_Int_Int',
-                                                                            [intToken(32), intToken(786)],
+                                                                            [intToken(32), intToken(768)],
                                                                         ),
                                                                         KApply(
                                                                             '_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes',
@@ -617,7 +619,7 @@ class KEVM(KProve, KRun):
                                                                                                     '#buf(_,_)_BUF-SYNTAX_Bytes_Int_Int',
                                                                                                     [
                                                                                                         intToken(32),
-                                                                                                        intToken(5540),
+                                                                                                        intToken(5440),
                                                                                                     ],
                                                                                                 ),
                                                                                                 KApply(
@@ -852,30 +854,26 @@ class KEVM(KProve, KRun):
                     '_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes',
                     [
                         KVariable('BYTES_10', 'Bytes'),
-                        KApply(
-                            '_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes',
-                            [
-                                KApply('#buf(_,_)_BUF-SYNTAX_Bytes_Int_Int', [intToken(8), intToken(0)]),
-                                KApply('#buf(_,_)_BUF-SYNTAX_Bytes_Int_Int', [intToken(32), intToken(600)]),
-                            ],
-                        ),
+                        KApply('#buf(_,_)_BUF-SYNTAX_Bytes_Int_Int', [intToken(8), intToken(0)]),
                     ],
                 ),
             ],
         )
 
-        # return KApply(
-        #     '_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes',
-        #     [
-        #         KApply(
-        #             '#signatureCallData(_,_)_EVM-ABI_Bytes_String_TypedArgs', [stringToken(name), KEVM.typed_args(args)]
-        #         ),
-        #         KVariable('SYMBOLIC_CALLDATA'),
-        #     ],
-        # )
-
         return KApply('_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes', [term_two, bytes_all])
 
+        # TODO(palina): uncomment for fully symbolic calldata
+        '''
+        return KApply(
+            '_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes',
+            [
+                KApply(
+                    '#signatureCallData(_,_)_EVM-ABI_Bytes_String_TypedArgs', [stringToken(name), KEVM.typed_args(args)]
+                ),
+                KVariable('SYMBOLIC_CALLDATA'),
+            ],
+        )
+        '''
 
     @staticmethod
     def abi_selector(name: str) -> KApply:
