@@ -296,6 +296,8 @@ def exec_prove(
     fail_fast: bool = False,
     always_check_subsumption: bool = True,
     fast_check_subsumption: bool = True,
+    fallback_on: Iterable[str] = (),
+    post_exec_simplify: bool = True,
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'md_selector', f'--md-selector: {kwargs["md_selector"]}')
@@ -320,7 +322,15 @@ def exec_prove(
     include_dirs += config.INCLUDE_DIRS
 
     if kore_rpc_command is None:
-        kore_rpc_command = ('kore-rpc-booster',) if use_booster else ('kore-rpc',)
+        if use_booster:
+            _kore_rpc_command = ['kore-rpc-booster']
+            if fallback_on:
+                _kore_rpc_command += ['--fallback-on', ','.join(fallback_on)]
+            if not post_exec_simplify:
+                _kore_rpc_command += ['--no-post-exec-simplify']
+            kore_rpc_command = tuple(_kore_rpc_command)
+        else:
+            kore_rpc_command = ('kore-rpc',)
     elif isinstance(kore_rpc_command, str):
         kore_rpc_command = kore_rpc_command.split()
 

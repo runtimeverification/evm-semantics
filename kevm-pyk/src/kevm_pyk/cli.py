@@ -202,6 +202,26 @@ class KEVMCLIArgs(KCLIArgs):
             help='Use the booster RPC server instead of kore-rpc.',
         )
         args.add_argument(
+            '--fallback-on',
+            dest='fallback_on',
+            type=list_of(str, delim=','),
+            default=[],
+            help='Comma-separated reasons to fallback from booster to kore, only usable with --use-booster argument. Options [Branching,Aborted,Stuck].',
+        )
+        args.add_argument(
+            '--post-exec-simplify',
+            dest='post_exec_simplify',
+            default=True,
+            action='store_true',
+            help='Always simplify states with kore backend after booster execution.',
+        )
+        args.add_argument(
+            '--no-post-exec-simplify',
+            dest='post_exec_simplify',
+            action='store_false',
+            help='Do not simplify states with kore backend after booster execution.',
+        )
+        args.add_argument(
             '--port',
             dest='port',
             type=int,
