@@ -294,6 +294,8 @@ def exec_prove(
     failure_info: bool = True,
     auto_abstract_gas: bool = False,
     fail_fast: bool = False,
+    always_check_subsumption: bool = True,
+    fast_check_subsumption: bool = True,
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'md_selector', f'--md-selector: {kwargs["md_selector"]}')
@@ -417,6 +419,8 @@ def exec_prove(
                 cut_point_rules=KEVMSemantics.cut_point_rules(break_on_jumpi, break_on_calls),
                 terminal_rules=KEVMSemantics.terminal_rules(break_every_step),
                 fail_fast=fail_fast,
+                always_check_subsumption=always_check_subsumption,
+                fast_check_subsumption=fast_check_subsumption,
             )
             end_time = time.time()
             _LOGGER.info(f'Proof timing {proof_problem.id}: {end_time - start_time}s')

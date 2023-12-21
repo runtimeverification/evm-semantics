@@ -101,13 +101,27 @@ def run_prover(
     abstract_node: Callable[[CTerm], CTerm] | None = None,
     fail_fast: bool = False,
     counterexample_info: bool = False,
+    always_check_subsumption: bool = False,
+    fast_check_subsumption: bool = False,
 ) -> bool:
     proof = proof
     prover: APRBMCProver | APRProver | EqualityProver
     if type(proof) is APRBMCProof:
-        prover = APRBMCProver(proof, kcfg_explore, counterexample_info=counterexample_info)
+        prover = APRBMCProver(
+            proof,
+            kcfg_explore,
+            counterexample_info=counterexample_info,
+            always_check_subsumption=always_check_subsumption,
+            fast_check_subsumption=fast_check_subsumption,
+        )
     elif type(proof) is APRProof:
-        prover = APRProver(proof, kcfg_explore, counterexample_info=counterexample_info)
+        prover = APRProver(
+            proof,
+            kcfg_explore,
+            counterexample_info=counterexample_info,
+            always_check_subsumption=always_check_subsumption,
+            fast_check_subsumption=fast_check_subsumption,
+        )
     elif type(proof) is EqualityProof:
         prover = EqualityProver(kcfg_explore=kcfg_explore, proof=proof)
     else:

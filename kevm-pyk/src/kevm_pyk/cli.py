@@ -53,6 +53,32 @@ class KEVMCLIArgs(KCLIArgs):
             default=[],
             help='Comma-separate list of equations to debug.',
         )
+        args.add_argument(
+            '--always-check-subsumption',
+            dest='always-check_subsumption',
+            default=True,
+            action='store_true',
+            help='Check subsumption even on non-terminal nodes.',
+        )
+        args.add_argument(
+            '--no-always-check-subsumption',
+            dest='always-check_subsumption',
+            action='store_false',
+            help='Do not check subsumption on non-terminal nodes.',
+        )
+        args.add_argument(
+            '--fast-check-subsumption',
+            dest='fast_check_subsumption',
+            default=True,
+            action='store_true',
+            help='Use fast-check on k-cell to determine subsumption.',
+        )
+        args.add_argument(
+            '--no-fast-check-subsumption',
+            dest='fast_check_subsumption',
+            action='store_false',
+            help='Use fast-check on k-cell to determine subsumption.',
+        )
         return args
 
     @cached_property
