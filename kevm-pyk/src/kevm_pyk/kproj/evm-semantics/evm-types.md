@@ -61,7 +61,7 @@ Word Operations
 
 -   `up/Int` performs integer division but rounds up instead of down.
 
-NOTE: Here, we choose to add `I2 -Int 1` to the numerator beforing doing the division to mimic the C++ implementation.
+NOTE: Here, we choose to add `I2 -Int 1` to the numerator before doing the division to mimic the C++ implementation.
 You could alternatively calculate `I1 modInt I2`, then add one to the normal integer division afterward depending on the result.
 
 ```k
@@ -105,8 +105,8 @@ The helper `powmod` is a totalization of the operator `_^%Int__` (which comes wi
 `_^%Int__` is not defined when the modulus (third argument) is zero, but `powmod` is.
 
 ```k
-    syntax Int ::= Int "^Word" Int       [function]
-    syntax Int ::= powmod(Int, Int, Int) [function, total]
+    syntax Int ::= Int "^Word" Int       [function, total]
+                 | powmod(Int, Int, Int) [function, total]
  // ------------------------------------------------------
     rule W0 ^Word W1 => powmod(W0, W1, pow256)
 
