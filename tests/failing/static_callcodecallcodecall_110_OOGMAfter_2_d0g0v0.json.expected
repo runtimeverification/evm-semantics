@@ -11,6 +11,9 @@
   <schedule>
     BYZANTIUM
   </schedule>
+  <useGas>
+    true
+  </useGas>
   <ethereum>
     <evm>
       <output>

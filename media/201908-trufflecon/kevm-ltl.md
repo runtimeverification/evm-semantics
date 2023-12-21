@@ -104,7 +104,13 @@ module KEVM-LTL
     syntax EthereumCommand ::= "load" JSON | "start"
  // ------------------------------------------------
     rule <k> load { "gas" : GAVAIL , "code" : OPS:OpCodes , .JSONList } => . ... </k>
+         <useGas> true </useGas>
          <gas> _ => GAVAIL </gas>
+         <program> _ => #asMapOpCodes(OPS) </program>
+         <exit-code> _ => 0 </exit-code>
+
+    rule <k> load { "gas" : _ , "code" : OPS:OpCodes , .JSONList } => . ... </k>
+         <useGas> false </useGas>
          <program> _ => #asMapOpCodes(OPS) </program>
          <exit-code> _ => 0 </exit-code>
 
