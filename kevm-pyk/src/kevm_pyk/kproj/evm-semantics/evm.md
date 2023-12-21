@@ -741,7 +741,7 @@ These are just used by the other operators for shuffling local execution state a
     rule <k> #setStack WS    => . ... </k> <wordStack> _  => WS      </wordStack>
 ```
 
--   `#newAccount_` allows declaring a new empty account with the given address (and assumes the rounding to 160 bits has already occured).
+-   `#newAccount_` allows declaring a new empty account with the given address (and assumes the rounding to 160 bits has already occurred).
     If the account already exists with non-zero nonce or non-empty code, an exception is thrown.
     Otherwise, if the account already exists, the storage is cleared.
 
@@ -1226,7 +1226,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
 -   `#checkDepthExceeded` checks if the current call depth is greater than or equal to `1024`.
 -   `#checkNonceExceeded` takes the calling account and checks if the nonce is less than `maxUInt64` (`18446744073709551615`).
 -   `#call` takes the calling account, the account to execute as, the account whose code should execute, the gas limit, the amount to transfer, the arguments, and the static flag.
--   `#callWithCode` takes the calling account, the accout to execute as, the code to execute (as a `Bytes`), the gas limit, the amount to transfer, the arguments, and the static flag.
+-   `#callWithCode` takes the calling account, the account to execute as, the code to execute (as a `Bytes`), the gas limit, the amount to transfer, the arguments, and the static flag.
 -   `#return` is a placeholder for the calling program, specifying where to place the returned data in memory.
 
 ```k
@@ -2034,7 +2034,7 @@ Execution Gas
 
 The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
 
--   `#gasExec` loads all the relevant surronding state and uses that to compute the intrinsic execution gas of each opcode.
+-   `#gasExec` loads all the relevant surrounding state and uses that to compute the intrinsic execution gas of each opcode.
 
 ```k
     syntax InternalOp ::= #gasExec ( Schedule , OpCode )
