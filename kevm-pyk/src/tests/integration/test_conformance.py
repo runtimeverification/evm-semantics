@@ -10,7 +10,7 @@ from pyk.kore.prelude import int_dv
 from pyk.kore.syntax import App
 from pyk.kore.tools import PrintOutput, kore_print
 
-from kevm_pyk.interpreter import interpret
+from kevm_pyk.interpreter import kllvm_interpret
 
 from ..utils import REPO_ROOT
 
@@ -33,7 +33,7 @@ def _test(gst_file: Path, schedule: str, mode: str, chainid: int, usegas: bool) 
         gst_data = json.load(f)
 
     # When
-    res = interpret(gst_data, schedule, mode, chainid, usegas, check=False)
+    res = kllvm_interpret(gst_data, schedule, mode, chainid, usegas)
 
     # Then
     _assert_exit_code_zero(res)
