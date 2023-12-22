@@ -73,6 +73,46 @@ module LEMMAS-SPEC
                                   => doneLemma(368263281805664599098893944405654396525700029268) ... </k>
                                requires #lookup(ACCT_STORAGE, 8) <Int pow160
 
+ // Comparisons
+ // -----------
+
+    claim [comp-norm-01]:
+      <k> runLemma (
+            ( ( 20 -Int ( 10 +Int X:Int ) ) -Int 5 ) +Int 3 <=Int 7
+          ) =>
+          doneLemma (
+            1 <=Int X
+          ) ...
+      </k>
+
+    claim [comp-norm-02]:
+      <k> runLemma (
+            ( ( 20 -Int ( 10 +Int X:Int ) ) -Int 5 ) +Int 3 <Int 7
+          ) =>
+          doneLemma (
+            1 <Int X
+          ) ...
+      </k>
+
+    claim [comp-norm-03]:
+      <k> runLemma (
+            ( ( 20 -Int ( 10 +Int X:Int ) ) -Int 5 ) +Int 3 >Int 7
+          ) =>
+          doneLemma (
+            1 >Int X
+          ) ...
+      </k>
+
+    claim [comp-norm-04]:
+      <k> runLemma (
+            ( ( 20 -Int ( 10 +Int X:Int ) ) -Int 5 ) +Int 3 >=Int 7
+          ) =>
+          doneLemma (
+            1 >=Int X
+          ) ...
+      </k>
+
+
  // Sets
  // ----
 
