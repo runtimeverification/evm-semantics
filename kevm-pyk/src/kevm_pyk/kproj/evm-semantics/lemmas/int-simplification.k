@@ -243,4 +243,11 @@ module INT-SIMPLIFICATION-COMMON
       requires 0 <Int Y
       [simplification, comm]
 
+  // ###########################################################################
+  // comparisons
+  // ###########################################################################
+
+    rule X ==Int 0 => true  requires 0 <=Int X andBool X <=Int 0 [simplification, comm]
+    rule X ==Int 0 => false requires 0 <Int X                    [simplification, comm]
+
 endmodule

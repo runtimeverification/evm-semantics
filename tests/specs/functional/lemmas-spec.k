@@ -23,6 +23,9 @@ module LEMMAS-SPEC
 
     claim <k> runLemma ( bool2Word((UINT8 ==K 0) ==K false) ) => doneLemma ( UINT8 ) ... </k> requires #rangeBool(UINT8)
 
+    claim [bool2Word-0]: <k> runLemma ( bool2Word(X ==Int 0) ) => doneLemma ( 1 ) ... </k> requires 0 <=Int X andBool X <=Int 0
+    claim [bool2Word-1]: <k> runLemma ( bool2Word(X ==Int 0) ) => doneLemma ( 0 ) ... </k> requires 0 <=Int X andBool 0 <Int X
+
  // sizeBytes
  // -------------
 
