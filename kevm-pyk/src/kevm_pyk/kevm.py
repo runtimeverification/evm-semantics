@@ -11,7 +11,6 @@ from pyk.kcfg.semantics import KCFGSemantics
 from pyk.kcfg.show import NodePrinter
 from pyk.ktool.kprove import KProve
 from pyk.ktool.krun import KRun
-from pyk.prelude.k import K
 from pyk.prelude.kint import intToken, ltInt
 from pyk.prelude.ml import mlEqualsTrue
 from pyk.prelude.string import stringToken
@@ -54,9 +53,7 @@ class KEVMSemantics(KCFGSemantics):
             elif k_cell.arity == 1 and k_cell[0] == KEVM.halt():
                 return True
             # <k> #halt ~> X:K </k>
-            elif (
-                k_cell.arity == 2 and k_cell[0] == KEVM.halt() and type(k_cell[1]) is KVariable and k_cell[1].sort == K
-            ):
+            elif k_cell.arity == 2 and k_cell[0] == KEVM.halt() and type(k_cell[1]) is KVariable:
                 return True
         return False
 
