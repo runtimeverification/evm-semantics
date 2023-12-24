@@ -36,4 +36,8 @@ module INT-SIMPLIFICATIONS-SPEC
       <k> runLemma ( minInt(_A +Int E, B +Int E) <=Int maxInt(_C +Int F, D +Int F) ) => doneLemma ( true ) ... </k>
       requires B <=Int D andBool E <=Int F
 
+    claim [xor-maxuint256]:
+      <k> runLemma ( notBool ( 0 -Int V0 <=Int V0 xorInt maxUInt256 ) ) => doneLemma ( false ) ... </k>
+      requires #rangeUInt(96, V0)
+
 endmodule
