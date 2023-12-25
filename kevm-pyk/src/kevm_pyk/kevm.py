@@ -113,7 +113,7 @@ class KEVMSemantics(KCFGSemantics):
         return CTerm(config=bottom_up(_replace, cterm.config), constraints=cterm.constraints)
 
     @staticmethod
-    def cut_point_rules(break_on_jumpi: bool, break_on_calls: bool) -> list[str]:
+    def cut_point_rules(break_on_jumpi: bool, break_on_calls: bool, break_on_storage: bool) -> list[str]:
         cut_point_rules = []
         if break_on_jumpi:
             cut_point_rules.extend(['EVM.jumpi.true', 'EVM.jumpi.false'])
@@ -132,6 +132,8 @@ class KEVMSemantics(KCFGSemantics):
                     'EVM.return.success',
                 ]
             )
+        if break_on_storage:
+            cut_point_rules.extend(['EVM.sstore', 'EVM.sload'])
         return cut_point_rules
 
     @staticmethod

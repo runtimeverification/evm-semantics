@@ -1197,7 +1197,8 @@ These rules reach into the network state and load/store from account storage:
 ```k
     syntax UnStackOp ::= "SLOAD"
  // ----------------------------
-    rule <k> SLOAD INDEX => #lookup(STORAGE, INDEX) ~> #push ... </k>
+    rule [sload]:
+         <k> SLOAD INDEX => #lookup(STORAGE, INDEX) ~> #push ... </k>
          <id> ACCT </id>
          <account>
            <acctID> ACCT </acctID>
@@ -1207,7 +1208,8 @@ These rules reach into the network state and load/store from account storage:
 
     syntax BinStackOp ::= "SSTORE"
  // ------------------------------
-    rule <k> SSTORE INDEX NEW => . ... </k>
+    rule [sstore]:
+         <k> SSTORE INDEX NEW => . ... </k>
          <id> ACCT </id>
          <account>
            <acctID> ACCT </acctID>

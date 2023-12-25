@@ -286,6 +286,7 @@ def exec_prove(
     break_every_step: bool = False,
     break_on_jumpi: bool = False,
     break_on_calls: bool = True,
+    break_on_storage: bool = False,
     kore_rpc_command: str | Iterable[str] | None = None,
     use_booster: bool = False,
     smt_timeout: int | None = None,
@@ -414,7 +415,7 @@ def exec_prove(
                 kcfg_explore,
                 max_depth=max_depth,
                 max_iterations=max_iterations,
-                cut_point_rules=KEVMSemantics.cut_point_rules(break_on_jumpi, break_on_calls),
+                cut_point_rules=KEVMSemantics.cut_point_rules(break_on_jumpi, break_on_calls, break_on_storage),
                 terminal_rules=KEVMSemantics.terminal_rules(break_every_step),
                 fail_fast=fail_fast,
             )
