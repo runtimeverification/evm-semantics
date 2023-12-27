@@ -365,11 +365,11 @@ class KEVM(KProve, KRun):
     def abi_symbolic_calldata(name: str, args: list[KInner]) -> KApply:
         # TODO(palina): hardcoded structured calldata with `BYTES_DATA` having SYMBOLIC LENGTH `BYTES_SIZE`,
         # and `bytes[]` having 10 elements, each (`BYTES_N`) 600 bytes long
-        # return KEVM.structured_symbolic_data_calldata(name, args)
+        return KEVM.structured_symbolic_data_calldata(name, args)
 
         # TODO(palina): hardcoded structured calldata with `BYTES_DATA` being 320 bytes long,
         # and `bytes[]` having 10 elements, each (`BYTES_N`) 600 bytes long
-        return KEVM.structured_calldata(name, args)
+        # return KEVM.structured_calldata(name, args)
 
         # TODO(palina): uncomment for fully symbolic calldata
         # return KEVM.fully_symbolic_calldata(name, args)
