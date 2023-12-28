@@ -51,6 +51,7 @@ BIHU_TESTS: Final = spec_files('bihu', '*-spec.k')
 EXAMPLES_TESTS: Final = spec_files('examples', '*-spec.k') + spec_files('examples', '*-spec.md')
 MCD_TESTS: Final = spec_files('mcd', '*-spec.k')
 OPTIMIZATION_TESTS: Final = (SPEC_DIR / 'opcodes/evm-optimizations-spec.md',)
+KONTROL_TESTS: Final = spec_files('kontrol', '*-spec.k')
 
 ALL_TESTS: Final = sum(
     [
@@ -62,6 +63,7 @@ ALL_TESTS: Final = sum(
         EXAMPLES_TESTS,
         MCD_TESTS,
         OPTIMIZATION_TESTS,
+        KONTROL_TESTS,
     ],
     (),
 )
