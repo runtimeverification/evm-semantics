@@ -19,9 +19,6 @@ module VERIFICATION
     syntax Int ::= "maxBytesLength" [alias]
     rule maxBytesLength => 9223372036854775808
 
-    // Limiting the length of byte-arrays
-    rule lengthBytes(_:Bytes) <Int maxBytesLength => true [simplification, smt-lemma]
-
     rule B:Bytes [ X:Int ] => #asWord ( #range (B, X, 1) )
       requires X <=Int lengthBytes(B)
       [simplification(40)]

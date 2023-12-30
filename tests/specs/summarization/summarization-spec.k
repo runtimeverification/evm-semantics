@@ -41,23 +41,6 @@ module SUMMARIZATION-SPEC
        andBool lengthBytes(OFFSET_BYTES) ==Int 2
        andBool PCOUNT <=Int lengthBytes(PROGRAM)
 
-    claim [bytes-data-summary]:
-      <k> #execute ... </k>
-      <schedule> SHANGHAI </schedule>
-      <program> PROGRAM </program>
-      <pc> PCOUNT => PCOUNT +Int 56 </pc>
-      <wordStack> LENGTH : SRC : 32 : DEST : WS => LENGTH : SRC : 32 : 0 : DEST : WS </wordStack>
-      <localMem>
-        LM => LM [ DEST +Int OFFSET := #range ( LM, SRC, LENGTH ) +Bytes
-                                       #buf ( ( ( notMaxUInt5 &Int ( LENGTH +Int maxUInt5 ) ) -Int LENGTH ) , 0 ) ]
-      </localMem>
-      requires #range(PROGRAM, PCOUNT, 25) ==K b"`\x00\x92\x91\x90\x83[\x81\x81\x10\x15a\x05\xb6W\x82\x81\x01\x84\x01Q\x86\x82\x01a"
-       andBool #range(PROGRAM, PCOUNT +Int 27, 20) ==K b"\x01R\x83\x01a\x05\x99V[\x81\x81\x11\x15a\x05\xc9W`\x00a"
-       andBool #range(PROGRAM, PCOUNT +Int 49, 7) ==K b"\x83\x88\x01\x01R[P"
-       andBool OFFSET:Int ==Int #asWord ( #range( PROGRAM, PCOUNT +Int 25, 2 ) )
-       andBool OFFSET:Int ==Int #asWord ( #range( PROGRAM, PCOUNT +Int 47, 2 ) )
-       andBool DEST +Int OFFSET <=Int lengthBytes(LM)
-
     claim [bytes-data-provable]:
       <k> #execute ... </k>
       <schedule> SHANGHAI </schedule>
@@ -151,5 +134,46 @@ module SUMMARIZATION-SPEC
 
        // Tractability
        andBool LENGTH ==Int 67
+
+    claim [copy-memory-to-memory-provable]:
+      <k> #execute ... </k>
+      <useGas> false </useGas>
+      <schedule> SHANGHAI </schedule>
+      <jumpDests> JUMPDESTS </jumpDests>
+      <program> PROG_PRE +Bytes CP +Bytes _PROG_POST </program>
+      <pc> PCOUNT => PCOUNT +Int 56 </pc>
+      <wordStack> LENGTH : SRC : 32 : DEST : WS => LENGTH : SRC : 32 : 0 : DEST : WS </wordStack>
+      <localMem>
+        LM => LM [ DEST +Int OFFSET := #range ( LM, SRC +Int 32, LENGTH ) +Bytes
+                                       #buf ( ( ( notMaxUInt5 &Int ( LENGTH +Int maxUInt5 ) ) -Int LENGTH ) , 0 ) +Bytes
+                                       #buf ( ( ( ( 32 -Int ( ( notMaxUInt5 &Int ( LENGTH +Int maxUInt5 ) ) -Int LENGTH ) ) ) modInt 32 ), 0 ) ]
+      </localMem>
+      requires OP ==K b"`\x00\x92\x91\x90\x83[\x81\x81\x10\x15a\x05\xb6W\x82\x81\x01\x84\x01Q\x86\x82\x01a\x01\xc0\x01R\x83\x01a\x05\x99V[\x81\x81\x11\x15a\x05\xc9W`\x00a\x01\xc0\x83\x88\x01\x01R[P"
+       andBool lengthBytes(PROG_PRE) ==Int PCOUNT
+       andBool lengthBytes(OFFSET_BYTES) ==K 2
+       andBool OFFSET ==Int #asWord ( OFFSET_BYTES )
+
+       andBool CP ==K OP
+                      [ 12 := #buf(2, PCOUNT +Int 35) ]
+                      [ 25 := OFFSET_BYTES ]
+                      [ 32 := #buf(2, PCOUNT +Int  6) ]
+                      [ 41 := #buf(2, PCOUNT +Int 54) ]
+                      [ 47 := OFFSET_BYTES ]
+
+       andBool 0 <=Int PCOUNT
+       andBool 0 <=Int LENGTH andBool LENGTH <Int maxBytesLength
+       andBool 0 <=Int SRC    andBool SRC    <Int maxBytesLength
+       andBool 0 <=Int DEST   andBool DEST   <Int maxBytesLength
+       andBool 0 <=Int OFFSET andBool OFFSET <Int maxBytesLength
+       andBool #sizeWordStack(WS) <=Int 1014
+
+       // Well-formedness:
+       andBool SRC +Int 32 +Int LENGTH <=Int DEST +Int OFFSET           // No overlap between source and destination
+       andBool DEST +Int OFFSET <=Int lengthBytes(LM)                   // Destination starts within current memory
+       // All JUMPDESTs in the program are valid
+       andBool (PCOUNT +Int 6) in JUMPDESTS andBool (PCOUNT +Int 35) in JUMPDESTS andBool (PCOUNT +Int 54) in JUMPDESTS
+       andBool PCOUNT +Int 55 <Int 2 ^Int 16  // and fit into two bytes
+
+       andBool LENGTH ==Int 42
 
 endmodule
