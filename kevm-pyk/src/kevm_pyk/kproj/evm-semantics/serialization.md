@@ -22,7 +22,7 @@ Address/Hash Helpers
 
 ```k
     syntax Int ::= keccak ( Bytes ) [function, total, smtlib(smt_keccak)]
- // -------------------------------------------------------------------------
+ // ---------------------------------------------------------------------
     rule [keccak]: keccak(WS) => #parseHexWord(Keccak256bytes(WS)) [concrete]
 ```
 
@@ -37,7 +37,7 @@ Address/Hash Helpers
    syntax Bytes  ::= ECDSARecoverbytes ( Bytes , Int , Bytes , Bytes ) [function, total]
    syntax String ::= ECDSASignbytes ( Bytes, Bytes )                   [function, total]
                    | ECDSAPubKeybytes ( Bytes )                        [function, total]
- // -------------------------------------------------------------------------
+ // ------------------------------------------------------------------------------------
     rule Keccak256bytes(BS)      => Keccak256(Bytes2String(BS))      [concrete]
     rule Sha256bytes(BS)         => Sha256(Bytes2String(BS))         [concrete]
     rule RipEmd160bytes(BS)      => RipEmd160(Bytes2String(BS))      [concrete]
