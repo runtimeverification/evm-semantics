@@ -84,10 +84,10 @@
 
               installPhase = ''
                 mkdir $out
-                cp -rv $src/* $out
+                cp -r $src/* $out
                 chmod -R u+w $out
                 mkdir -p $out/deps/plugin
-                cp -rv ${prev.blockchain-k-plugin-src}/* $out/deps/plugin/
+                cp -r ${prev.blockchain-k-plugin-src}/* $out/deps/plugin/
               '';
             };
 
@@ -128,8 +128,8 @@
 
             buildPhase = ''
               mkdir -p tests/ethereum-tests/LegacyTests
-              cp -rv ${ethereum-tests}/* tests/ethereum-tests/
-              cp -rv ${ethereum-legacytests}/* tests/ethereum-tests/LegacyTests/
+              cp -r ${ethereum-tests}/* tests/ethereum-tests/
+              cp -r ${ethereum-legacytests}/* tests/ethereum-tests/LegacyTests/
               chmod -R u+w tests
               APPLE_SILICON=${
                 if prev.stdenv.isAarch64 && prev.stdenv.isDarwin then
@@ -161,7 +161,7 @@
             checkGroups = [ ];
             postInstall = ''
               mkdir -p $out/${nixpkgs-pyk.python310.sitePackages}/kevm_pyk/kproj/plugin
-              cp -rv ${prev.blockchain-k-plugin-src}/* $out/${nixpkgs-pyk.python310.sitePackages}/kevm_pyk/kproj/plugin/
+              cp -r ${prev.blockchain-k-plugin-src}/* $out/${nixpkgs-pyk.python310.sitePackages}/kevm_pyk/kproj/plugin/
             '';
           };
 
