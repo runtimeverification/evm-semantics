@@ -222,6 +222,13 @@ class KEVMCLIArgs(KCLIArgs):
             help='Do not store a node for every EVM call made.',
         )
         args.add_argument(
+            '--break-on-storage',
+            dest='break_on_storage',
+            default=False,
+            action='store_true',
+            help='Store a node for every EVM SSTORE/SLOAD made.',
+        )
+        args.add_argument(
             '--max-depth',
             dest='max_depth',
             default=1000,
