@@ -1049,8 +1049,8 @@ The `JUMP*` family of operations affect the current program counter.
 
     syntax InternalOp ::= "#endBasicBlock"
  // --------------------------------------
-    rule <k> #endBasicBlock ~> (_:OpCode => .) ... </k>
-    rule <k> (#endBasicBlock => .) ~> #execute ... </k>
+    rule                    <k> #endBasicBlock ~> (_:OpCode => .) ... </k>
+    rule [end-basic-block]: <k> (#endBasicBlock => .) ~> #execute ... </k>
 ```
 
 ### `STOP`, `REVERT`, and `RETURN`
