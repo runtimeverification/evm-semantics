@@ -11,7 +11,6 @@ from pyk.kcfg.semantics import KCFGSemantics
 from pyk.kcfg.show import NodePrinter
 from pyk.ktool.kprove import KProve
 from pyk.ktool.krun import KRun
-from pyk.prelude.k import K
 from pyk.prelude.kint import intToken, ltInt
 from pyk.prelude.ml import mlEqualsTrue
 from pyk.prelude.string import stringToken
@@ -54,9 +53,7 @@ class KEVMSemantics(KCFGSemantics):
             elif k_cell.arity == 1 and k_cell[0] == KEVM.halt():
                 return True
             # <k> #halt ~> X:K </k>
-            elif (
-                k_cell.arity == 2 and k_cell[0] == KEVM.halt() and type(k_cell[1]) is KVariable and k_cell[1].sort == K
-            ):
+            elif k_cell.arity == 2 and k_cell[0] == KEVM.halt() and type(k_cell[1]) is KVariable:
                 return True
         return False
 
@@ -116,11 +113,15 @@ class KEVMSemantics(KCFGSemantics):
         return CTerm(config=bottom_up(_replace, cterm.config), constraints=cterm.constraints)
 
     @staticmethod
-    def cut_point_rules(break_on_jumpi: bool, break_on_calls: bool) -> list[str]:
+    def cut_point_rules(
+        break_on_jumpi: bool, break_on_calls: bool, break_on_storage: bool, break_on_basic_blocks: bool
+    ) -> list[str]:
         cut_point_rules = []
         if break_on_jumpi:
             cut_point_rules.extend(['EVM.jumpi.true', 'EVM.jumpi.false'])
-        if break_on_calls:
+        if break_on_basic_blocks:
+            cut_point_rules.append('EVM.end-basic-block')
+        if break_on_calls or break_on_basic_blocks:
             cut_point_rules.extend(
                 [
                     'EVM.call',
@@ -135,6 +136,8 @@ class KEVMSemantics(KCFGSemantics):
                     'EVM.return.success',
                 ]
             )
+        if break_on_storage:
+            cut_point_rules.extend(['EVM.sstore', 'EVM.sload'])
         return cut_point_rules
 
     @staticmethod
