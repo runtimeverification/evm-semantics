@@ -91,7 +91,7 @@ module BITWISE-SIMPLIFICATION [symbolic]
   // bit-xor
   // ###########################################################################
 
-    rule X xorInt Y <Int 0 -Int X => false requires 0 <=Int X andBool 0 <=Int Y [simplification]
+    rule X xorInt Y <Int 0 -Int Z => false requires 0 <=Int X andBool 0 <=Int Y andBool 0 <=Int Z [simplification]
 
   // ###########################################################################
   // shift
