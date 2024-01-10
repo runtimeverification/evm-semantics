@@ -885,6 +885,7 @@ These operations are getters/setters of the local execution memory.
 
     rule <k> MSTORE8 INDEX VALUE => . ... </k>
          <localMem> LM => #write(LM, INDEX, (VALUE modInt 256)) </localMem>
+//         <localMem> LM => LM [ INDEX := #buf(1, VALUE modInt 256) ] </localMem>
 ```
 
 ### Expressions
