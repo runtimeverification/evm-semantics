@@ -62,7 +62,7 @@ Address/Hash Helpers
     syntax Account ::= #sender ( TxData , Int , Bytes , Bytes ) [function, klabel(#senderTxData)     ]
                      | #sender ( Bytes  , Int , Bytes , Bytes ) [function, klabel(#senderAux), total ]
                      | #sender ( Bytes )                        [function, klabel(#senderAux2), total]
- // -----------------------------------------------------------------------------------------------
+ // -------------------------------------------------------------------------------------------------
     rule #sender(_:TxData, TW => TW +Int 27, _, _)
       requires TW ==Int 0 orBool TW ==Int 1
 
