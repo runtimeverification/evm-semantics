@@ -79,7 +79,7 @@ module BYTES-SIMPLIFICATION [symbolic]
       requires 0 <=Int W andBool W <=Int 32
        andBool 0 <=Int X andBool X <Int 2 ^Int (256 -Int Y)
        andBool 0 <=Int Y andBool ( Y <Int W *Int 8 ) andBool Y modInt 8 ==Int 0
-      [simplification]
+      [simplification, preserves-definedness]
 
     // #range
 
@@ -246,9 +246,9 @@ module BYTES-SIMPLIFICATION [symbolic]
     // #ecrec
 
     rule lengthBytes ( #ecrec ( _ , _ , _ , _ ) ) <=Int 32 => true
-        [simplification, smt-lemma]
+        [simplification, smt-lemma, preserves-definedness]
 
     rule #asWord ( #ecrec ( _ , _ , _ , _ ) ) <Int pow160 => true
-        [simplification, smt-lemma]
+        [simplification, smt-lemma, preserves-definedness]
 
 endmodule

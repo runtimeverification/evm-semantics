@@ -60,11 +60,11 @@ module LEMMAS [symbolic]
     rule bool2Word( B) &Int 1 => bool2Word(B) [simplification]
 
     // #newAddr range
-    rule 0 <=Int #newAddr(_,_)             => true   [simplification]
-    rule         #newAddr(_,_) <Int pow160 => true   [simplification]
-    rule         #newAddr(_,_) <Int pow256 => true   [simplification]
+    rule 0 <=Int #newAddr(_,_)             => true   [simplification, preserves-definedness]
+    rule         #newAddr(_,_) <Int pow160 => true   [simplification, preserves-definedness]
+    rule         #newAddr(_,_) <Int pow256 => true   [simplification, preserves-definedness]
 
-    rule #isPrecompiledAccount(#newAddr(_, _), _) => false [simplification]
+    rule #isPrecompiledAccount(#newAddr(_, _), _) => false [simplification, preserves-definedness]
 
     rule 0 <=Int #asWord(_WS)             => true [simplification]
     rule         #asWord(_WS) <Int pow256 => true [simplification]
@@ -165,7 +165,7 @@ module LEMMAS-HASKELL [symbolic, kore]
 
     rule #asWord(BUF) /Int D => #asWord(#range(BUF, 0, lengthBytes(BUF) -Int log256Int(D)))
        requires D ==Int 256 ^Int log256Int(D) andBool D >=Int 0
-        andBool lengthBytes(BUF) >=Int log256Int(D) [simplification]
+        andBool lengthBytes(BUF) >=Int log256Int(D) [simplification, preserves-definedness]
 
     rule #asWord(#buf(N, BUF)) => BUF
       requires #range(0 < N <= 32)

@@ -62,8 +62,8 @@ module BITWISE-SIMPLIFICATION [symbolic]
     rule notMaxUInt240 &Int X => 0 requires #rangeUInt(240, X) [simplification]
     rule notMaxUInt248 &Int X => 0 requires #rangeUInt(248, X) [simplification]
 
-    rule notMaxUInt240 &Int (X <<Int 240) => X <<Int 240 requires #rangeUInt(16, X) [simplification]
-    rule notMaxUInt248 &Int (X <<Int 248) => X <<Int 248 requires #rangeUInt( 8, X) [simplification]
+    rule notMaxUInt240 &Int (X <<Int 240) => X <<Int 240 requires #rangeUInt(16, X) [simplification, preserves-definedness]
+    rule notMaxUInt248 &Int (X <<Int 248) => X <<Int 248 requires #rangeUInt( 8, X) [simplification, preserves-definedness]
 
     rule maxUInt8   &Int (X |Int (notMaxUInt8   &Int _)) => maxUInt8   &Int X [simplification]
     rule maxUInt16  &Int (X |Int (notMaxUInt16  &Int _)) => maxUInt16  &Int X [simplification]
@@ -91,8 +91,10 @@ module BITWISE-SIMPLIFICATION [symbolic]
   // shift
   // ###########################################################################
 
-    rule (X <<Int Y) <Int pow256 => true requires 0 <=Int X andBool 0 <=Int Y andBool Y <Int 256 andBool X <Int 2 ^Int (256 -Int Y) [simplification]
+    rule (X <<Int Y) <Int pow256 => true
+      requires 0 <=Int X andBool 0 <=Int Y andBool Y <Int 256 andBool X <Int 2 ^Int (256 -Int Y)
+      [simplification, preserves-definedness]
 
-    rule 0 <=Int (X <<Int Y) => true requires 0 <=Int X andBool 0 <=Int Y [simplification]
+    rule 0 <=Int (X <<Int Y) => true requires 0 <=Int X andBool 0 <=Int Y [simplification, preserves-definedness]
 
 endmodule
