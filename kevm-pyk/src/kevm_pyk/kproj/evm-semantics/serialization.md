@@ -135,18 +135,15 @@ Address/Hash Helpers
 - `#hashSignedTx` Takes transaction data. Returns the hash of the rlp-encoded transaction with R S and V.
 
 ```k
-    syntax String ::= #hashSignedTx( Int , Int , Int , Account , Int , Bytes , Int , Bytes , Bytes ) [function]
-                    | #hashTxData  ( TxData )                                                        [function]
- // -----------------------------------------------------------------------------------------------------------
+    syntax Bytes ::= #hashSignedTx( Int , Int , Int , Account , Int , Bytes , Int , Bytes , Bytes ) [function]
+                   | #hashTxData  ( TxData )                                                        [function]
+ // ----------------------------------------------------------------------------------------------------------
     rule #hashSignedTx(TN, TP, TG, TT, TV, TD, TW, TR, TS)
-      => Keccak256bytes( #rlpEncode([ TN, TP, TG, #addrBytes(TT), TV, TD, TW, TR, TS ]) )
+      => Keccak256raw( #rlpEncode([ TN, TP, TG, #addrBytes(TT), TV, TD, TW, TR, TS ]) )
 
-    rule #hashTxData( TXDATA ) => Keccak256bytes(                #rlpEncodeTxData(TXDATA) )
-        requires isLegacyTx    (TXDATA)
-    rule #hashTxData( TXDATA ) => Keccak256bytes( b"\x01" +Bytes #rlpEncodeTxData(TXDATA) )
-        requires isAccessListTx(TXDATA)
-    rule #hashTxData( TXDATA ) => Keccak256bytes( b"\x02" +Bytes #rlpEncodeTxData(TXDATA) )
-        requires isDynamicFeeTx(TXDATA)
+    rule #hashTxData( TXDATA ) => Keccak256raw(                #rlpEncodeTxData(TXDATA) ) requires isLegacyTx    (TXDATA)
+    rule #hashTxData( TXDATA ) => Keccak256raw( b"\x01" +Bytes #rlpEncodeTxData(TXDATA) ) requires isAccessListTx(TXDATA)
+    rule #hashTxData( TXDATA ) => Keccak256raw( b"\x02" +Bytes #rlpEncodeTxData(TXDATA) ) requires isDynamicFeeTx(TXDATA)
 ```
 
 The EVM test-sets are represented in JSON format with hex-encoding of the data and programs.
