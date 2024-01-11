@@ -51,14 +51,14 @@ module BITWISE-SIMPLIFICATION [symbolic]
     // Generalization of: notMaxUIntXXX &Int Y => 0 requires #rangeUInt(XXX, Y)
     rule [bitwise-and-notMaxUInt-zero]:
       X &Int Y => 0
-      requires 0 <=Int X andBool X <Int pow256
+      requires #rangeUInt(256, X)
        andBool 2 ^Int ( log2Int ( pow256 -Int X ) ) ==Int pow256 -Int X
        andBool 0 <=Int Y andBool Y <=Int pow256 -Int X
       [simplification, concrete(X)]
 
     // Generalization of: notMaxUIntXXX &Int (Y <<Int XXX) => Y <<Int XXX requires #rangeUInt(256 -Int XXX, Y)
     rule X &Int (Y <<Int Z) => Y <<Int Z
-      requires 0 <=Int X andBool X <Int pow256
+      requires #rangeUInt(256, X)
        andBool 2 ^Int ( log2Int ( pow256 -Int X ) ) ==Int pow256 -Int X
        andBool Z ==Int log2Int ( pow256 -Int X )
        andBool 0 <=Int Y andBool Y <Int 2 ^Int ( 256 -Int Z )
