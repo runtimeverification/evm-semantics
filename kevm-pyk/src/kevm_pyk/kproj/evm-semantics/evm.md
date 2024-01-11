@@ -1383,7 +1383,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <schedule> SCHED </schedule>
       requires Ghasaccesslist << SCHED >> andBool notBool ACCT in_keys(TS)
 
-    rule <k> #accessStorage ACCT INDEX => . ... </k>
+    rule <k> #accessStorage _ _ => . ... </k>
          <schedule> SCHED </schedule>
       requires notBool Ghasaccesslist << SCHED >>
 
