@@ -1049,8 +1049,8 @@ The `JUMP*` family of operations affect the current program counter.
 
     syntax InternalOp ::= "#endBasicBlock"
  // --------------------------------------
-    rule <k> #endBasicBlock ~> (_:OpCode => .) ... </k>
-    rule <k> (#endBasicBlock => .) ~> #execute ... </k>
+    rule                    <k> #endBasicBlock ~> (_:OpCode => .) ... </k>
+    rule [end-basic-block]: <k> (#endBasicBlock => .) ~> #execute ... </k>
 ```
 
 ### `STOP`, `REVERT`, and `RETURN`
@@ -1142,29 +1142,29 @@ Operators that require access to the rest of the Ethereum network world-state ca
 ```k
     syntax UnStackOp ::= "BALANCE"
  // ------------------------------
-    rule <k> BALANCE ACCT => BAL ~> #push ... </k>
+    rule <k> BALANCE ACCT => #accessAccounts ACCT ~> BAL ~> #push ... </k>
          <account>
            <acctID> ACCT </acctID>
            <balance> BAL </balance>
            ...
          </account>
 
-    rule <k> BALANCE _ => 0 ~> #push ... </k> [owise]
+    rule <k> BALANCE ACCT => #accessAccounts ACCT ~> 0 ~> #push ... </k> [owise]
 
     syntax UnStackOp ::= "EXTCODESIZE"
  // ----------------------------------
-    rule <k> EXTCODESIZE ACCT => lengthBytes(CODE) ~> #push ... </k>
+    rule <k> EXTCODESIZE ACCT => #accessAccounts ACCT ~> lengthBytes(CODE) ~> #push ... </k>
          <account>
            <acctID> ACCT </acctID>
            <code> CODE </code>
            ...
          </account>
 
-    rule <k> EXTCODESIZE _ => 0 ~> #push ... </k> [owise]
+    rule <k> EXTCODESIZE ACCT => #accessAccounts ACCT ~> 0 ~> #push ... </k> [owise]
 
     syntax UnStackOp ::= "EXTCODEHASH"
  // ----------------------------------
-    rule <k> EXTCODEHASH ACCT => keccak(CODE) ~> #push ... </k>
+    rule <k> EXTCODEHASH ACCT => #accessAccounts ACCT ~> keccak(CODE) ~> #push ... </k>
          <account>
            <acctID> ACCT </acctID>
            <code> CODE:Bytes </code>
@@ -1174,11 +1174,11 @@ Operators that require access to the rest of the Ethereum network world-state ca
          </account>
       requires notBool #accountEmpty(CODE, NONCE, BAL)
 
-    rule <k> EXTCODEHASH _ => 0 ~> #push ... </k> [owise]
+    rule <k> EXTCODEHASH ACCT => #accessAccounts ACCT ~> 0 ~> #push ... </k> [owise]
 
     syntax QuadStackOp ::= "EXTCODECOPY"
  // ------------------------------------
-    rule <k> EXTCODECOPY ACCT MEMSTART PGMSTART WIDTH => . ... </k>
+    rule <k> EXTCODECOPY ACCT MEMSTART PGMSTART WIDTH => #accessAccounts ACCT ... </k>
          <localMem> LM => LM [ MEMSTART := #range(PGM, PGMSTART, WIDTH) ] </localMem>
          <account>
            <acctID> ACCT </acctID>
@@ -1186,7 +1186,7 @@ Operators that require access to the rest of the Ethereum network world-state ca
            ...
          </account>
 
-    rule <k> EXTCODECOPY _ MEMSTART _ WIDTH => . ... </k>
+    rule <k> EXTCODECOPY ACCT MEMSTART _ WIDTH => #accessAccounts ACCT ... </k>
          <localMem> LM => LM [ MEMSTART := #padToWidth(WIDTH, .Bytes) ] </localMem> [owise]
 ```
 
@@ -1197,7 +1197,8 @@ These rules reach into the network state and load/store from account storage:
 ```k
     syntax UnStackOp ::= "SLOAD"
  // ----------------------------
-    rule <k> SLOAD INDEX => #lookup(STORAGE, INDEX) ~> #push ... </k>
+    rule [sload]:
+         <k> SLOAD INDEX => #accessStorage ACCT INDEX ~> #lookup(STORAGE, INDEX) ~> #push ... </k>
          <id> ACCT </id>
          <account>
            <acctID> ACCT </acctID>
@@ -1207,7 +1208,8 @@ These rules reach into the network state and load/store from account storage:
 
     syntax BinStackOp ::= "SSTORE"
  // ------------------------------
-    rule <k> SSTORE INDEX NEW => . ... </k>
+    rule [sstore]:
+         <k> SSTORE INDEX NEW => #accessStorage ACCT INDEX ... </k>
          <id> ACCT </id>
          <account>
            <acctID> ACCT </acctID>
@@ -1373,9 +1375,17 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
  // ---------------------------------------------
     rule <k> #accessStorage ACCT INDEX => . ... </k>
          <accessedStorage> ... ACCT |-> (TS:Set => TS |Set SetItem(INDEX)) ... </accessedStorage>
+         <schedule> SCHED </schedule>
+         requires Ghasaccesslist << SCHED >>
+
     rule <k> #accessStorage ACCT INDEX => . ... </k>
          <accessedStorage> TS => TS[ACCT <- SetItem(INDEX)] </accessedStorage>
-      requires notBool ACCT in_keys(TS)
+         <schedule> SCHED </schedule>
+      requires Ghasaccesslist << SCHED >> andBool notBool ACCT in_keys(TS)
+
+    rule <k> #accessStorage _ _ => . ... </k>
+         <schedule> SCHED </schedule>
+      requires notBool Ghasaccesslist << SCHED >>
 
     syntax KItem ::= "#accessAccounts" Account
                    | "#accessAccounts" Set
@@ -1465,7 +1475,8 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
  // ------------------------
     rule [call]:
          <k> CALL _GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
-          => #checkCall ACCTFROM VALUE
+          => #accessAccounts ACCTTO
+          ~> #checkCall ACCTFROM VALUE
           ~> #call ACCTFROM ACCTTO ACCTTO VALUE VALUE #range(LM, ARGSTART, ARGWIDTH) false
           ~> #return RETSTART RETWIDTH
          ...
@@ -1477,7 +1488,8 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
  // ----------------------------
     rule [callcode]:
          <k> CALLCODE _GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
-          => #checkCall ACCTFROM VALUE
+          => #accessAccounts ACCTTO
+          ~> #checkCall ACCTFROM VALUE
           ~> #call ACCTFROM ACCTFROM ACCTTO VALUE VALUE #range(LM, ARGSTART, ARGWIDTH) false
           ~> #return RETSTART RETWIDTH
          ...
@@ -1489,7 +1501,8 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
  // -----------------------------------
     rule [delegatecall]:
          <k> DELEGATECALL _GCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
-          => #checkCall ACCTFROM 0
+          => #accessAccounts ACCTTO
+          ~> #checkCall ACCTFROM 0
           ~> #call ACCTAPPFROM ACCTFROM ACCTTO 0 VALUE #range(LM, ARGSTART, ARGWIDTH) false
           ~> #return RETSTART RETWIDTH
          ...
@@ -1503,7 +1516,8 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
  // ---------------------------------
     rule [staticcall]:
          <k> STATICCALL _GCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
-          => #checkCall ACCTFROM 0
+          => #accessAccounts ACCTTO
+          ~> #checkCall ACCTFROM 0
           ~> #call ACCTFROM ACCTTO ACCTTO 0 0 #range(LM, ARGSTART, ARGWIDTH) true
           ~> #return RETSTART RETWIDTH
          ...
@@ -1694,7 +1708,7 @@ Self destructing to yourself, unlike a regular transfer, destroys the balance in
 ```k
     syntax UnStackOp ::= "SELFDESTRUCT"
  // -----------------------------------
-    rule <k> SELFDESTRUCT ACCTTO => #touchAccounts ACCT ACCTTO ~> #transferFunds ACCT ACCTTO BALFROM ~> #end EVMC_SUCCESS ... </k>
+    rule <k> SELFDESTRUCT ACCTTO => #touchAccounts ACCT ACCTTO ~> #accessAccounts ACCTTO ~> #transferFunds ACCT ACCTTO BALFROM ~> #end EVMC_SUCCESS ... </k>
          <id> ACCT </id>
          <selfDestruct> SDS => SDS |Set SetItem(ACCT) </selfDestruct>
          <account>
@@ -1705,7 +1719,7 @@ Self destructing to yourself, unlike a regular transfer, destroys the balance in
          <output> _ => .Bytes </output>
       requires ACCT =/=Int ACCTTO
 
-    rule <k> SELFDESTRUCT ACCT => #touchAccounts ACCT ~> #end EVMC_SUCCESS ... </k>
+    rule <k> SELFDESTRUCT ACCT => #touchAccounts ACCT ~> #accessAccounts ACCT ~> #end EVMC_SUCCESS ... </k>
          <id> ACCT </id>
          <selfDestruct> SDS => SDS |Set SetItem(ACCT) </selfDestruct>
          <account>
@@ -2014,18 +2028,13 @@ Access List Gas
 
     syntax InternalOp ::= #gasAccess ( Schedule, OpCode )
  // -----------------------------------------------------
-    rule <k> #gasAccess(SCHED, EXTCODESIZE ACCT)            => #accessAccounts ACCT ~> Caddraccess(SCHED, ACCT in ACCTS)                                           ... </k> <accessedAccounts> ACCTS </accessedAccounts>
-    rule <k> #gasAccess(SCHED, EXTCODECOPY ACCT _ _ _)      => #accessAccounts ACCT ~> Caddraccess(SCHED, ACCT in ACCTS)                                           ... </k> <accessedAccounts> ACCTS </accessedAccounts>
-    rule <k> #gasAccess(SCHED, EXTCODEHASH ACCT)            => #accessAccounts ACCT ~> Caddraccess(SCHED, ACCT in ACCTS)                                           ... </k> <accessedAccounts> ACCTS </accessedAccounts>
-    rule <k> #gasAccess(SCHED, BALANCE ACCT)                => #accessAccounts ACCT ~> Caddraccess(SCHED, ACCT in ACCTS)                                           ... </k> <accessedAccounts> ACCTS </accessedAccounts>
-    rule <k> #gasAccess(SCHED, SELFDESTRUCT ACCT)           => #accessAccounts ACCT ~> #if ACCT in ACCTS #then 0 #else Gcoldaccountaccess < SCHED > #fi            ... </k> <accessedAccounts> ACCTS </accessedAccounts>
-    rule <k> #gasAccess(_    , CALL _ ACCT _ _ _ _ _)       => #accessAccounts ACCT ~> 0                                                                           ... </k>
-    rule <k> #gasAccess(_    , CALLCODE _ ACCT _ _ _ _ _)   => #accessAccounts ACCT ~> 0                                                                           ... </k>
-    rule <k> #gasAccess(_    , DELEGATECALL _ ACCT _ _ _ _) => #accessAccounts ACCT ~> 0                                                                           ... </k>
-    rule <k> #gasAccess(_    , STATICCALL _ ACCT _ _ _ _)   => #accessAccounts ACCT ~> 0                                                                           ... </k>
-    rule <k> #gasAccess(_    , SLOAD INDEX )                => #accessStorage ACCT INDEX ~> 0                                                                      ... </k> <id> ACCT </id>
-    rule <k> #gasAccess(SCHED, SSTORE INDEX _)              => #accessStorage ACCT INDEX ~> #if #inStorage(TS, ACCT, INDEX) #then 0 #else Gcoldsload < SCHED > #fi ... </k> <id> ACCT </id> <accessedStorage> TS </accessedStorage>
-    rule <k> #gasAccess(_    , _ )                          => 0                                                                                                  ... </k> [owise]
+    rule <k> #gasAccess(SCHED, EXTCODESIZE ACCT)       => Caddraccess(SCHED, ACCT in ACCTS)                                      ... </k> <accessedAccounts> ACCTS </accessedAccounts>
+    rule <k> #gasAccess(SCHED, EXTCODECOPY ACCT _ _ _) => Caddraccess(SCHED, ACCT in ACCTS)                                      ... </k> <accessedAccounts> ACCTS </accessedAccounts>
+    rule <k> #gasAccess(SCHED, EXTCODEHASH ACCT)       => Caddraccess(SCHED, ACCT in ACCTS)                                      ... </k> <accessedAccounts> ACCTS </accessedAccounts>
+    rule <k> #gasAccess(SCHED, BALANCE ACCT)           => Caddraccess(SCHED, ACCT in ACCTS)                                      ... </k> <accessedAccounts> ACCTS </accessedAccounts>
+    rule <k> #gasAccess(SCHED, SELFDESTRUCT ACCT)      => #if ACCT in ACCTS #then 0 #else Gcoldaccountaccess < SCHED > #fi       ... </k> <accessedAccounts> ACCTS </accessedAccounts>
+    rule <k> #gasAccess(SCHED, SSTORE INDEX _)         => #if #inStorage(TS, ACCT, INDEX) #then 0 #else Gcoldsload < SCHED > #fi ... </k> <id> ACCT </id> <accessedStorage> TS </accessedStorage>
+    rule <k> #gasAccess(_    , _ )                     => 0                                                                      ... </k> [owise]
 
 ```
 
