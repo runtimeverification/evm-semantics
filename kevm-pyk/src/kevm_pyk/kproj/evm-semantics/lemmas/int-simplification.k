@@ -194,7 +194,7 @@ module INT-SIMPLIFICATION-COMMON
 
     rule A <Int A -Int B => false requires 0 <=Int B [simplification]
 
-    rule 0 <Int 1 <<Int A => true requires 0 <=Int A [simplification]
+    rule 0 <Int 1 <<Int A => true requires 0 <=Int A [simplification, preserves-definedness]
 
     // inequality sign normalization
     rule          A  >Int B  => B  <Int A [simplification]
