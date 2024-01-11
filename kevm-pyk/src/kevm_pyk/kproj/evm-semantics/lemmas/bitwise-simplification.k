@@ -53,7 +53,7 @@ module BITWISE-SIMPLIFICATION [symbolic]
       X &Int Y => 0
       requires #rangeUInt(256, X)
        andBool 2 ^Int ( log2Int ( pow256 -Int X ) ) ==Int pow256 -Int X
-       andBool 0 <=Int Y andBool Y <=Int pow256 -Int X
+       andBool 0 <=Int Y andBool Y <Int pow256 -Int X
       [simplification, concrete(X)]
 
     // Generalization of: notMaxUIntXXX &Int (Y <<Int XXX) => Y <<Int XXX requires #rangeUInt(256 -Int XXX, Y)
