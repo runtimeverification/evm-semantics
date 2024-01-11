@@ -242,18 +242,20 @@ class KEVM(KProve, KRun):
 
     @staticmethod
     def add_invariant(cterm: CTerm) -> CTerm:
-        def _add_account_invariant(account: KApply) -> None:
+        def _add_account_invariant(account: KApply) -> list[KApply]:
+            _account_constraints = []
             acct_id, balance, nonce = account.args[0], account.args[1], account.args[5]
 
             if type(acct_id) is KApply and type(acct_id.args[0]) is KVariable:
-                constraints.append(mlEqualsTrue(KEVM.range_address(acct_id.args[0])))
-                constraints.append(
+                _account_constraints.append(mlEqualsTrue(KEVM.range_address(acct_id.args[0])))
+                _account_constraints.append(
                     mlEqualsFalse(KEVM.is_precompiled_account(acct_id.args[0], cterm.cell('SCHEDULE_CELL')))
                 )
             if type(balance) is KApply and type(balance.args[0]) is KVariable:
-                constraints.append(mlEqualsTrue(KEVM.range_uint(256, balance.args[0])))
+                _account_constraints.append(mlEqualsTrue(KEVM.range_uint(256, balance.args[0])))
             if type(nonce) is KApply and type(nonce.args[0]) is KVariable:
-                constraints.append(mlEqualsTrue(KEVM.range_nonce(nonce.args[0])))
+                _account_constraints.append(mlEqualsTrue(KEVM.range_nonce(nonce.args[0])))
+            return _account_constraints
 
         constraints = []
         word_stack = cterm.cell('WORDSTACK_CELL')
@@ -271,7 +273,7 @@ class KEVM(KProve, KRun):
 
                 account = wrapped_account.args[1]
                 if type(account) is KApply:
-                    _add_account_invariant(account)
+                    constraints.extend(_add_account_invariant(account))
 
         constraints.append(mlEqualsTrue(KEVM.range_address(cterm.cell('ID_CELL'))))
         constraints.append(mlEqualsTrue(KEVM.range_address(cterm.cell('CALLER_CELL'))))
