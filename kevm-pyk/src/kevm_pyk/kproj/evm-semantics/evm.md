@@ -203,13 +203,13 @@ The `callStack` cell stores a list of previous VM execution states.
     syntax InternalOp ::= "#pushCallStack"
  // --------------------------------------
     rule <k> #pushCallStack => . ... </k>
-         <callStack> STACK => ListItem(CALLSTATE) STACK </callStack>
+         <callStack> STACK => ListItem(<callState> CALLSTATE </callState>) STACK </callStack>
          <callState> CALLSTATE </callState>
 
     syntax InternalOp ::= "#popCallStack"
  // -------------------------------------
     rule <k> #popCallStack => . ... </k>
-         <callStack> ListItem(CALLSTATE) REST => REST </callStack>
+         <callStack> ListItem(<callState> CALLSTATE </callState>) REST => REST </callStack>
          <callState> _ => CALLSTATE </callState>
 
     syntax InternalOp ::= "#dropCallStack"
@@ -227,22 +227,22 @@ The `interimStates` cell stores a list of previous world states.
 -   `#dropWorldState` removes the top element of the `interimStates`.
 
 ```k
-    syntax Accounts ::= "{" AccountsCellFragment "|" SubstateCellFragment "}"
- // -------------------------------------------------------------------------
+    syntax Accounts ::= "{" AccountsCell "|" SubstateCell "}"
+ // ---------------------------------------------------------
 
     syntax InternalOp ::= "#pushWorldState"
  // ---------------------------------------
     rule <k> #pushWorldState => .K ... </k>
-         <interimStates> STATES => ListItem({ ACCTDATA | SUBSTATE }) STATES </interimStates>
-         <accounts>       ACCTDATA </accounts>
-         <substate>       SUBSTATE </substate>
+         <interimStates> STATES => ListItem({ <accounts> ACCTDATA </accounts> | <substate> SUBSTATE </substate> }) STATES </interimStates>
+         <accounts> ACCTDATA </accounts>
+         <substate> SUBSTATE </substate>
 
     syntax InternalOp ::= "#popWorldState"
  // --------------------------------------
     rule <k> #popWorldState => .K ... </k>
-         <interimStates> ListItem({ ACCTDATA | SUBSTATE }) REST => REST </interimStates>
-         <accounts>       _ => ACCTDATA </accounts>
-         <substate>       _ => SUBSTATE </substate>
+         <interimStates> ListItem({ <accounts> ACCTDATA </accounts> | <substate> SUBSTATE </substate> }) REST => REST </interimStates>
+         <accounts> _ => ACCTDATA </accounts>
+         <substate> _ => SUBSTATE </substate>
 
     syntax InternalOp ::= "#dropWorldState"
  // ---------------------------------------
