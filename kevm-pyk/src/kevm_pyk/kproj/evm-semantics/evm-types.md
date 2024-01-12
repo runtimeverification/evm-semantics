@@ -164,8 +164,6 @@ Bitwise logical operators are lifted from the integer versions.
                  | Int "|Word"   Int [function, total]
                  | Int "&Word"   Int [function, total]
                  | Int "xorWord" Int [function, total]
-//                 | Int "<<Word"  Int [smtlib(lsWord), function, total]
-//                 | Int ">>Word"  Int [smtlib(rsWord), function, total]
                  | Int "<<Word"  Int [function, total]
                  | Int ">>Word"  Int [function, total]
                  | Int ">>sWord" Int [function, total]
