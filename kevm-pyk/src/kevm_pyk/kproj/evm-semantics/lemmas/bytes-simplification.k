@@ -246,9 +246,9 @@ module BYTES-SIMPLIFICATION [symbolic]
     // #ecrec
 
     rule lengthBytes ( #ecrec ( _ , _ , _ , _ ) ) <=Int 32 => true
-        [simplification, smt-lemma, preserves-definedness]
+        [simplification, smt-lemma]
 
     rule #asWord ( #ecrec ( _ , _ , _ , _ ) ) <Int pow160 => true
-        [simplification, smt-lemma, preserves-definedness]
+        [simplification, smt-lemma]
 
 endmodule

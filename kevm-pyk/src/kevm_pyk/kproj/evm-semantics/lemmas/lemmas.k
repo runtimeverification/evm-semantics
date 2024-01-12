@@ -60,11 +60,11 @@ module LEMMAS [symbolic]
     rule bool2Word( B) &Int 1 => bool2Word(B) [simplification]
 
     // #newAddr range
-    rule 0 <=Int #newAddr(_,_)             => true   [simplification, preserves-definedness]
-    rule         #newAddr(_,_) <Int pow160 => true   [simplification, preserves-definedness]
-    rule         #newAddr(_,_) <Int pow256 => true   [simplification, preserves-definedness]
+    rule 0 <=Int #newAddr(_,_)             => true   [simplification]
+    rule         #newAddr(_,_) <Int pow160 => true   [simplification]
+    rule         #newAddr(_,_) <Int pow256 => true   [simplification]
 
-    rule #isPrecompiledAccount(#newAddr(_, _), _) => false [simplification, preserves-definedness]
+    rule #isPrecompiledAccount(#newAddr(_, _), _) => false [simplification]
 
     rule 0 <=Int #asWord(_WS)             => true [simplification]
     rule         #asWord(_WS) <Int pow256 => true [simplification]
