@@ -164,6 +164,8 @@ Bitwise logical operators are lifted from the integer versions.
                  | Int "|Word"   Int [function, total]
                  | Int "&Word"   Int [function, total]
                  | Int "xorWord" Int [function, total]
+//                 | Int "<<Word"  Int [smtlib(lsWord), function, total]
+//                 | Int ">>Word"  Int [smtlib(rsWord), function, total]
                  | Int "<<Word"  Int [function, total]
                  | Int ">>Word"  Int [function, total]
                  | Int ">>sWord" Int [function, total]
@@ -323,6 +325,8 @@ A cons-list is used for the EVM wordstack.
     syntax Bytes ::= "#write" "(" Bytes "," Int "," Int ")" [function]
                    | Bytes "[" Int ":=" Bytes "]" [function, total, klabel(mapWriteRange)]
  // --------------------------------------------------------------------------------------
+    rule #write(WM, IDX, VAL) => padRightBytes(WM, IDX +Int 1, 0) [ IDX <- VAL ] [concrete]
+
     rule WS [ START := WS' ] => WS                                                                            requires 0     <=Int START andBool lengthBytes(WS')  ==Int 0 [concrete]
     rule WS [ START := WS' ] => replaceAtBytes(padRightBytes(WS, START +Int lengthBytes(WS'), 0), START, WS') requires 0     <=Int START andBool lengthBytes(WS') =/=Int 0 [concrete]
     rule _  [ START := _ ]   => .Bytes                                                                        requires START  <Int 0                                       [concrete]
