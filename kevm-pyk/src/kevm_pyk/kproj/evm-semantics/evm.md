@@ -748,10 +748,23 @@ These are just used by the other operators for shuffling local execution state a
 ```k
     syntax InternalOp ::= "#newAccount" Int
                         | "#newExistingAccount" Int
-                        | "#newFreshAccount" Int
  // --------------------------------------------
     rule <k> #newAccount ACCT => #newExistingAccount ACCT ... </k> <account> <acctID> ACCT </acctID> ... </account>
-    rule <k> #newAccount ACCT => #newFreshAccount ACCT    ... </k> [owise]
+    rule <k> #newAccount ACCT => .    ... </k>
+             <accounts>
+               ( .Bag
+                  =>
+                 <account>
+                    <acctID> ACCT </acctID>
+                    <balance>     0                  </balance>
+                    <code>        .Bytes:AccountCode </code>
+                    <storage>     .Map               </storage>
+                    <origStorage> .Map               </origStorage>
+                    <nonce>       0                  </nonce>
+                 </account>
+               )
+               ...
+             </accounts> [owise, preserves-definedness]
 
     rule <k> #newExistingAccount ACCT => #end EVMC_ACCOUNT_ALREADY_EXISTS ... </k>
          <account>
@@ -772,17 +785,6 @@ These are just used by the other operators for shuffling local execution state a
            ...
          </account>
       requires lengthBytes(CODE) ==Int 0
-
-    rule <k> #newFreshAccount ACCT => . ... </k>
-         <accounts>
-           ( .Bag
-          => <account>
-               <acctID> ACCT </acctID>
-               ...
-             </account>
-           )
-           ...
-         </accounts>
 ```
 
 -   `#transferFunds` moves money from one account into another, creating the destination account if it doesn't exist.
@@ -811,6 +813,7 @@ These are just used by the other operators for shuffling local execution state a
            ...
          </account>
       requires ACCTFROM =/=K ACCTTO andBool VALUE <=Int ORIGFROM
+      [preserves-definedness]
 
     rule <k> #transferFunds ACCTFROM _ACCTTO VALUE => #end EVMC_BALANCE_UNDERFLOW ... </k>
          <account>
