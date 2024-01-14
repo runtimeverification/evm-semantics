@@ -2,6 +2,7 @@ requires "evm.md"
 requires "buf.md"
 requires "bitwise-simplification.k"
 requires "bytes-simplification.k"
+requires "evm-int-simplification.k"
 requires "int-simplification.k"
 
 
@@ -10,6 +11,7 @@ module LEMMAS [symbolic]
     imports BITWISE-SIMPLIFICATION
     imports BYTES-SIMPLIFICATION
     imports INT-SIMPLIFICATION
+    imports EVM-INT-SIMPLIFICATION
     imports LEMMAS-HASKELL
 
   // ########################
