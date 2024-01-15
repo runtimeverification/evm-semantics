@@ -21,6 +21,12 @@ def pytest_addoption(parser: Parser) -> None:
         default=False,
         help='Use the kore-rpc-booster binary instead of kore-rpc',
     )
+    parser.addoption(
+        '--kore-rpc-command',
+        type=str,
+        default=None,
+        help='Custom command to start RPC server',
+    )
 
 
 @pytest.fixture
@@ -31,3 +37,7 @@ def update_expected_output(request: FixtureRequest) -> bool:
 @pytest.fixture(scope='session')
 def use_booster(request: FixtureRequest) -> bool:
     return request.config.getoption('--use-booster')
+
+@pytest.fixture(scope='session')
+def kore_rpc_command(request: FixtureRequest) -> str | None:
+    return request.config.getoption('--kore-rpc-command')

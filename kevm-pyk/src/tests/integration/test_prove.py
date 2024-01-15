@@ -189,6 +189,7 @@ def test_pyk_prove(
     caplog: LogCaptureFixture,
     use_booster: bool,
     bug_report: BugReport | None,
+    kore_rpc_command: str | None,
 ) -> None:
     caplog.set_level(logging.INFO)
 
@@ -213,6 +214,7 @@ def test_pyk_prove(
             md_selector='foo',  # TODO Ignored flag, this is to avoid KeyError
             use_booster=use_booster,
             bug_report=bug_report,
+            kore_rpc_command=kore_rpc_command
         )
         name = str(spec_file.relative_to(SPEC_DIR))
         if name in TEST_PARAMS:
