@@ -20,12 +20,12 @@ module EVM-INT-SIMPLIFICATION-COMMON
     rule [upInt-lt-true]:
       ((X up/Int Y) *Int Y) <Int Z => true
       requires X +Int Y <=Int Z andBool 0 <Int Y
-      [simplification, preserves-definedness]
+      [simplification]
 
     rule [upInt-lt-false]:
       ((X up/Int Y) *Int Y) <Int Z => false
       requires Z <=Int X andBool 0 <Int Y
-      [simplification, preserves-definedness]
+      [simplification]
 
     rule [upInt-refl-leq]:
       ((X up/Int Y) *Int Y) <=Int X => X modInt Y ==Int 0
@@ -40,7 +40,7 @@ module EVM-INT-SIMPLIFICATION-COMMON
     rule [upInt-refl-geq]:
       X <=Int ((X up/Int Y) *Int Y) => true
       requires 0 <Int Y
-      [simplification, preserves-definedness]
+      [simplification]
 
     rule [upInt-ref-eq]:
       X ==Int ((X up/Int Y) *Int Y) => X modInt Y ==Int 0
