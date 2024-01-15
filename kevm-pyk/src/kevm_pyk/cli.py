@@ -134,6 +134,9 @@ class KEVMCLIArgs(KCLIArgs):
             default='NORMAL',
             help="execution mode to use [{'|'.join(modes)}]",
         )
+        args.add_argument(
+            '--no-gas', action='store_false', dest='usegas', default=True, help='omit gas cost computations'
+        )
         return args
 
     @cached_property
@@ -217,6 +220,20 @@ class KEVMCLIArgs(KCLIArgs):
             dest='break_on_calls',
             action='store_false',
             help='Do not store a node for every EVM call made.',
+        )
+        args.add_argument(
+            '--break-on-storage',
+            dest='break_on_storage',
+            default=False,
+            action='store_true',
+            help='Store a node for every EVM SSTORE/SLOAD made.',
+        )
+        args.add_argument(
+            '--break-on-basic-blocks',
+            dest='break_on_basic_blocks',
+            default=False,
+            action='store_true',
+            help='Store a node for every EVM basic block (implies --break-on-calls).',
         )
         args.add_argument(
             '--max-depth',

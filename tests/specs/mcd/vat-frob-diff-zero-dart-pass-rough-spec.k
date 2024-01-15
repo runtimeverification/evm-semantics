@@ -9,6 +9,7 @@ module VAT-FROB-DIFF-ZERO-DART-PASS-ROUGH-SPEC
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
+      <useGas> true </useGas>
       <ethereum>
         <evm>
           <output> .Bytes </output>
@@ -290,6 +291,7 @@ module VAT-FROB-DIFF-ZERO-DART-PASS-ROUGH-SPEC
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
+      <useGas> true </useGas>
       <ethereum>
         <evm>
           <output> VOutput => VOutput </output>

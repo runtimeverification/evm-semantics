@@ -35,6 +35,7 @@ In the comments next to each cell, we've marked which component of the YellowPap
         <exit-code exit=""> 1 </exit-code>
         <mode> $MODE:Mode </mode>
         <schedule> $SCHEDULE:Schedule </schedule>
+        <useGas> $USEGAS:Bool </useGas>
 
         <ethereum>
 
@@ -202,13 +203,13 @@ The `callStack` cell stores a list of previous VM execution states.
     syntax InternalOp ::= "#pushCallStack"
  // --------------------------------------
     rule <k> #pushCallStack => . ... </k>
-         <callStack> STACK => ListItem(CALLSTATE) STACK </callStack>
+         <callStack> STACK => ListItem(<callState> CALLSTATE </callState>) STACK </callStack>
          <callState> CALLSTATE </callState>
 
     syntax InternalOp ::= "#popCallStack"
  // -------------------------------------
     rule <k> #popCallStack => . ... </k>
-         <callStack> ListItem(CALLSTATE) REST => REST </callStack>
+         <callStack> ListItem(<callState> CALLSTATE </callState>) REST => REST </callStack>
          <callState> _ => CALLSTATE </callState>
 
     syntax InternalOp ::= "#dropCallStack"
@@ -226,22 +227,22 @@ The `interimStates` cell stores a list of previous world states.
 -   `#dropWorldState` removes the top element of the `interimStates`.
 
 ```k
-    syntax Accounts ::= "{" AccountsCellFragment "|" SubstateCellFragment "}"
- // -------------------------------------------------------------------------
+    syntax Accounts ::= "{" AccountsCell "|" SubstateCell "}"
+ // ---------------------------------------------------------
 
     syntax InternalOp ::= "#pushWorldState"
  // ---------------------------------------
     rule <k> #pushWorldState => .K ... </k>
-         <interimStates> STATES => ListItem({ ACCTDATA | SUBSTATE }) STATES </interimStates>
-         <accounts>       ACCTDATA </accounts>
-         <substate>       SUBSTATE </substate>
+         <interimStates> STATES => ListItem({ <accounts> ACCTDATA </accounts> | <substate> SUBSTATE </substate> }) STATES </interimStates>
+         <accounts> ACCTDATA </accounts>
+         <substate> SUBSTATE </substate>
 
     syntax InternalOp ::= "#popWorldState"
  // --------------------------------------
     rule <k> #popWorldState => .K ... </k>
-         <interimStates> ListItem({ ACCTDATA | SUBSTATE }) REST => REST </interimStates>
-         <accounts>       _ => ACCTDATA </accounts>
-         <substate>       _ => SUBSTATE </substate>
+         <interimStates> ListItem({ <accounts> ACCTDATA </accounts> | <substate> SUBSTATE </substate> }) REST => REST </interimStates>
+         <accounts> _ => ACCTDATA </accounts>
+         <substate> _ => SUBSTATE </substate>
 
     syntax InternalOp ::= "#dropWorldState"
  // ---------------------------------------
@@ -551,6 +552,7 @@ After executing a transaction, it's necessary to have the effect of the substate
          <accessedStorage> _ => .Map </accessedStorage>
 
     rule <k> #finalizeTx(false) ... </k>
+         <useGas> true </useGas>
          <schedule> SCHED </schedule>
          <gas> GAVAIL => G*(GAVAIL, GLIMIT, REFUND, SCHED) </gas>
          <refund> REFUND => 0 </refund>
@@ -563,6 +565,7 @@ After executing a transaction, it's necessary to have the effect of the substate
       requires REFUND =/=Int 0
 
     rule <k> #finalizeTx(false => true) ... </k>
+         <useGas> true </useGas>
          <baseFee> BFEE </baseFee>
          <origin> ORG </origin>
          <coinbase> MINER </coinbase>
@@ -589,6 +592,7 @@ After executing a transaction, it's necessary to have the effect of the substate
       requires ORG =/=Int MINER
 
     rule <k> #finalizeTx(false => true) ... </k>
+         <useGas> true </useGas>
          <baseFee> BFEE </baseFee>
          <origin> ACCT </origin>
          <coinbase> ACCT </coinbase>
@@ -605,6 +609,14 @@ After executing a transaction, it's necessary to have the effect of the substate
          <message>
            <msgID> MsgId </msgID>
            <txGasLimit> GLIMIT </txGasLimit>
+           ...
+         </message>
+
+    rule <k> #finalizeTx(false => true) ... </k>
+         <useGas> false </useGas>
+         <txPending> ListItem(MsgId:Int) REST => REST </txPending>
+         <message>
+           <msgID> MsgId </msgID>
            ...
          </message>
 
@@ -729,7 +741,7 @@ These are just used by the other operators for shuffling local execution state a
     rule <k> #setStack WS    => . ... </k> <wordStack> _  => WS      </wordStack>
 ```
 
--   `#newAccount_` allows declaring a new empty account with the given address (and assumes the rounding to 160 bits has already occured).
+-   `#newAccount_` allows declaring a new empty account with the given address (and assumes the rounding to 160 bits has already occurred).
     If the account already exists with non-zero nonce or non-empty code, an exception is thrown.
     Otherwise, if the account already exists, the storage is cleared.
 
@@ -1037,8 +1049,8 @@ The `JUMP*` family of operations affect the current program counter.
 
     syntax InternalOp ::= "#endBasicBlock"
  // --------------------------------------
-    rule <k> #endBasicBlock ~> (_:OpCode => .) ... </k>
-    rule <k> (#endBasicBlock => .) ~> #execute ... </k>
+    rule                    <k> #endBasicBlock ~> (_:OpCode => .) ... </k>
+    rule [end-basic-block]: <k> (#endBasicBlock => .) ~> #execute ... </k>
 ```
 
 ### `STOP`, `REVERT`, and `RETURN`
@@ -1130,29 +1142,29 @@ Operators that require access to the rest of the Ethereum network world-state ca
 ```k
     syntax UnStackOp ::= "BALANCE"
  // ------------------------------
-    rule <k> BALANCE ACCT => BAL ~> #push ... </k>
+    rule <k> BALANCE ACCT => #accessAccounts ACCT ~> BAL ~> #push ... </k>
          <account>
            <acctID> ACCT </acctID>
            <balance> BAL </balance>
            ...
          </account>
 
-    rule <k> BALANCE _ => 0 ~> #push ... </k> [owise]
+    rule <k> BALANCE ACCT => #accessAccounts ACCT ~> 0 ~> #push ... </k> [owise]
 
     syntax UnStackOp ::= "EXTCODESIZE"
  // ----------------------------------
-    rule <k> EXTCODESIZE ACCT => lengthBytes(CODE) ~> #push ... </k>
+    rule <k> EXTCODESIZE ACCT => #accessAccounts ACCT ~> lengthBytes(CODE) ~> #push ... </k>
          <account>
            <acctID> ACCT </acctID>
            <code> CODE </code>
            ...
          </account>
 
-    rule <k> EXTCODESIZE _ => 0 ~> #push ... </k> [owise]
+    rule <k> EXTCODESIZE ACCT => #accessAccounts ACCT ~> 0 ~> #push ... </k> [owise]
 
     syntax UnStackOp ::= "EXTCODEHASH"
  // ----------------------------------
-    rule <k> EXTCODEHASH ACCT => keccak(CODE) ~> #push ... </k>
+    rule <k> EXTCODEHASH ACCT => #accessAccounts ACCT ~> keccak(CODE) ~> #push ... </k>
          <account>
            <acctID> ACCT </acctID>
            <code> CODE:Bytes </code>
@@ -1162,11 +1174,11 @@ Operators that require access to the rest of the Ethereum network world-state ca
          </account>
       requires notBool #accountEmpty(CODE, NONCE, BAL)
 
-    rule <k> EXTCODEHASH _ => 0 ~> #push ... </k> [owise]
+    rule <k> EXTCODEHASH ACCT => #accessAccounts ACCT ~> 0 ~> #push ... </k> [owise]
 
     syntax QuadStackOp ::= "EXTCODECOPY"
  // ------------------------------------
-    rule <k> EXTCODECOPY ACCT MEMSTART PGMSTART WIDTH => . ... </k>
+    rule <k> EXTCODECOPY ACCT MEMSTART PGMSTART WIDTH => #accessAccounts ACCT ... </k>
          <localMem> LM => LM [ MEMSTART := #range(PGM, PGMSTART, WIDTH) ] </localMem>
          <account>
            <acctID> ACCT </acctID>
@@ -1174,7 +1186,7 @@ Operators that require access to the rest of the Ethereum network world-state ca
            ...
          </account>
 
-    rule <k> EXTCODECOPY _ MEMSTART _ WIDTH => . ... </k>
+    rule <k> EXTCODECOPY ACCT MEMSTART _ WIDTH => #accessAccounts ACCT ... </k>
          <localMem> LM => LM [ MEMSTART := #padToWidth(WIDTH, .Bytes) ] </localMem> [owise]
 ```
 
@@ -1185,7 +1197,8 @@ These rules reach into the network state and load/store from account storage:
 ```k
     syntax UnStackOp ::= "SLOAD"
  // ----------------------------
-    rule <k> SLOAD INDEX => #lookup(STORAGE, INDEX) ~> #push ... </k>
+    rule [sload]:
+         <k> SLOAD INDEX => #accessStorage ACCT INDEX ~> #lookup(STORAGE, INDEX) ~> #push ... </k>
          <id> ACCT </id>
          <account>
            <acctID> ACCT </acctID>
@@ -1195,13 +1208,15 @@ These rules reach into the network state and load/store from account storage:
 
     syntax BinStackOp ::= "SSTORE"
  // ------------------------------
-    rule <k> SSTORE INDEX NEW => . ... </k>
+    rule [sstore]:
+         <k> SSTORE INDEX NEW => #accessStorage ACCT INDEX ... </k>
          <id> ACCT </id>
          <account>
            <acctID> ACCT </acctID>
            <storage> STORAGE => STORAGE [ INDEX <- NEW ] </storage>
            ...
          </account>
+      [preserves-definedness]
 ```
 
 ### Call Operations
@@ -1213,7 +1228,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
 -   `#checkDepthExceeded` checks if the current call depth is greater than or equal to `1024`.
 -   `#checkNonceExceeded` takes the calling account and checks if the nonce is less than `maxUInt64` (`18446744073709551615`).
 -   `#call` takes the calling account, the account to execute as, the account whose code should execute, the gas limit, the amount to transfer, the arguments, and the static flag.
--   `#callWithCode` takes the calling account, the accout to execute as, the code to execute (as a `Bytes`), the gas limit, the amount to transfer, the arguments, and the static flag.
+-   `#callWithCode` takes the calling account, the account to execute as, the code to execute (as a `Bytes`), the gas limit, the amount to transfer, the arguments, and the static flag.
 -   `#return` is a placeholder for the calling program, specifying where to place the returned data in memory.
 
 ```k
@@ -1243,7 +1258,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          </account>
       requires VALUE <=Int BAL
 
-    rule <k> #checkDepthExceeded => #refund GCALL ~> #pushCallStack ~> #pushWorldState ~> #end EVMC_CALL_DEPTH_EXCEEDED ... </k> 
+    rule <k> #checkDepthExceeded => #refund GCALL ~> #pushCallStack ~> #pushWorldState ~> #end EVMC_CALL_DEPTH_EXCEEDED ... </k>
          <output> _ => .Bytes </output>
          <callGas> GCALL </callGas>
          <callDepth> CD </callDepth>
@@ -1299,6 +1314,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
           => #touchAccounts ACCTFROM ACCTTO ~> #accessAccounts ACCTFROM ACCTTO ~> #loadProgram BYTES ~> #initVM ~> #precompiled?(ACCTCODE, SCHED) ~> #execute
          ...
          </k>
+         <useGas> true </useGas>
          <callDepth> CD => CD +Int 1 </callDepth>
          <callData> _ => ARGS </callData>
          <callValue> _ => APPVALUE </callValue>
@@ -1308,6 +1324,19 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <caller> _ => ACCTFROM </caller>
          <static> OLDSTATIC:Bool => OLDSTATIC orBool STATIC </static>
          <schedule> SCHED </schedule>
+
+    rule <k> #mkCall ACCTFROM ACCTTO ACCTCODE BYTES APPVALUE ARGS STATIC:Bool
+          => #touchAccounts ACCTFROM ACCTTO ~> #accessAccounts ACCTFROM ACCTTO ~> #loadProgram BYTES ~> #initVM ~> #precompiled?(ACCTCODE, SCHED) ~> #execute
+          ...
+          </k>
+          <useGas> false </useGas>
+          <callDepth> CD => CD +Int 1 </callDepth>
+          <callData> _ => ARGS </callData>
+          <callValue> _ => APPVALUE </callValue>
+          <id> _ => ACCTTO </id>
+          <caller> _ => ACCTFROM </caller>
+          <static> OLDSTATIC:Bool => OLDSTATIC orBool STATIC </static>
+          <schedule> SCHED </schedule>
 
     syntax InternalOp ::= "#precompiled?" "(" Int "," Schedule ")"
  // --------------------------------------------------------------
@@ -1343,18 +1372,26 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <touchedAccounts> TOUCHED_ACCOUNTS => TOUCHED_ACCOUNTS |Set SetItem(ADDR) </touchedAccounts>
 
     syntax KItem ::= "#accessStorage" Account Int
- // --------------------------------------------
+ // ---------------------------------------------
     rule <k> #accessStorage ACCT INDEX => . ... </k>
          <accessedStorage> ... ACCT |-> (TS:Set => TS |Set SetItem(INDEX)) ... </accessedStorage>
+         <schedule> SCHED </schedule>
+         requires Ghasaccesslist << SCHED >>
+
     rule <k> #accessStorage ACCT INDEX => . ... </k>
          <accessedStorage> TS => TS[ACCT <- SetItem(INDEX)] </accessedStorage>
-      requires notBool ACCT in_keys(TS)
+         <schedule> SCHED </schedule>
+      requires Ghasaccesslist << SCHED >> andBool notBool ACCT in_keys(TS)
+
+    rule <k> #accessStorage _ _ => . ... </k>
+         <schedule> SCHED </schedule>
+      requires notBool Ghasaccesslist << SCHED >>
 
     syntax KItem ::= "#accessAccounts" Account
                    | "#accessAccounts" Set
                    | "#accessAccounts" Account Account
                    | "#accessAccounts" Account Account Set
- // -----------------------------------------------------
+ // ------------------------------------------------------
     rule <k> #accessAccounts ADDR1:Account ADDR2:Account ADDRSET:Set => #accessAccounts ADDR1 ~> #accessAccounts ADDR2 ~> #accessAccounts ADDRSET ... </k>
 
     rule <k> #accessAccounts ADDR1:Account ADDR2:Account => #accessAccounts ADDR1 ~> #accessAccounts ADDR2 ... </k>
@@ -1418,7 +1455,9 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     syntax InternalOp ::= "#refund" Gas
                         | "#setLocalMem" Int Int Bytes
  // --------------------------------------------------
-    rule [refund]: <k> #refund G:Gas => . ... </k> <gas> GAVAIL => GAVAIL +Gas G </gas>
+    rule [refund]: <k> #refund G:Gas => . ... </k> <gas> GAVAIL => GAVAIL +Gas G </gas> <useGas> true </useGas>
+    rule [refund.noGas]: <k> #refund _ => . ... </k> <useGas> false </useGas>
+
 
     rule <k> #setLocalMem START WIDTH WS => . ... </k>
          <localMem> LM => LM [ START := #range(WS, 0, minInt(WIDTH, lengthBytes(WS))) ] </localMem>
@@ -1436,7 +1475,8 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
  // ------------------------
     rule [call]:
          <k> CALL _GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
-          => #checkCall ACCTFROM VALUE
+          => #accessAccounts ACCTTO
+          ~> #checkCall ACCTFROM VALUE
           ~> #call ACCTFROM ACCTTO ACCTTO VALUE VALUE #range(LM, ARGSTART, ARGWIDTH) false
           ~> #return RETSTART RETWIDTH
          ...
@@ -1448,7 +1488,8 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
  // ----------------------------
     rule [callcode]:
          <k> CALLCODE _GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
-          => #checkCall ACCTFROM VALUE
+          => #accessAccounts ACCTTO
+          ~> #checkCall ACCTFROM VALUE
           ~> #call ACCTFROM ACCTFROM ACCTTO VALUE VALUE #range(LM, ARGSTART, ARGWIDTH) false
           ~> #return RETSTART RETWIDTH
          ...
@@ -1460,7 +1501,8 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
  // -----------------------------------
     rule [delegatecall]:
          <k> DELEGATECALL _GCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
-          => #checkCall ACCTFROM 0
+          => #accessAccounts ACCTTO
+          ~> #checkCall ACCTFROM 0
           ~> #call ACCTAPPFROM ACCTFROM ACCTTO 0 VALUE #range(LM, ARGSTART, ARGWIDTH) false
           ~> #return RETSTART RETWIDTH
          ...
@@ -1474,7 +1516,8 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
  // ---------------------------------
     rule [staticcall]:
          <k> STATICCALL _GCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
-          => #checkCall ACCTFROM 0
+          => #accessAccounts ACCTTO
+          ~> #checkCall ACCTFROM 0
           ~> #call ACCTFROM ACCTTO ACCTTO 0 0 #range(LM, ARGSTART, ARGWIDTH) true
           ~> #return RETSTART RETWIDTH
          ...
@@ -1508,6 +1551,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
           => #touchAccounts ACCTFROM ACCTTO ~> #accessAccounts ACCTFROM ACCTTO ~> #loadProgram INITCODE ~> #initVM ~> #execute
          ...
          </k>
+         <useGas> true </useGas>
          <schedule> SCHED </schedule>
          <id> _ => ACCTTO </id>
          <gas> _ => GCALL </gas>
@@ -1519,6 +1563,22 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          <account>
            <acctID> ACCTTO </acctID>
            <nonce> NONCE => #if Gemptyisnonexistent << SCHED >> #then NONCE +Int 1 #else NONCE #fi </nonce>
+           ...
+         </account>
+
+    rule <k> #mkCreate ACCTFROM ACCTTO VALUE INITCODE
+          => #touchAccounts ACCTFROM ACCTTO ~> #accessAccounts ACCTFROM ACCTTO ~> #loadProgram INITCODE ~> #initVM ~> #execute
+         ...
+         </k>
+         <useGas> false </useGas>
+         <id> _ => ACCTTO </id>
+         <caller> _ => ACCTFROM </caller>
+         <callDepth> CD => CD +Int 1 </callDepth>
+         <callData> _ => .Bytes </callData>
+         <callValue> _ => VALUE </callValue>
+         <account>
+           <acctID> ACCTTO </acctID>
+           <nonce> NONCE => NONCE +Int 1 </nonce>
            ...
          </account>
 
@@ -1648,7 +1708,7 @@ Self destructing to yourself, unlike a regular transfer, destroys the balance in
 ```k
     syntax UnStackOp ::= "SELFDESTRUCT"
  // -----------------------------------
-    rule <k> SELFDESTRUCT ACCTTO => #touchAccounts ACCT ACCTTO ~> #transferFunds ACCT ACCTTO BALFROM ~> #end EVMC_SUCCESS ... </k>
+    rule <k> SELFDESTRUCT ACCTTO => #touchAccounts ACCT ACCTTO ~> #accessAccounts ACCTTO ~> #transferFunds ACCT ACCTTO BALFROM ~> #end EVMC_SUCCESS ... </k>
          <id> ACCT </id>
          <selfDestruct> SDS => SDS |Set SetItem(ACCT) </selfDestruct>
          <account>
@@ -1659,7 +1719,7 @@ Self destructing to yourself, unlike a regular transfer, destroys the balance in
          <output> _ => .Bytes </output>
       requires ACCT =/=Int ACCTTO
 
-    rule <k> SELFDESTRUCT ACCT => #touchAccounts ACCT ~> #end EVMC_SUCCESS ... </k>
+    rule <k> SELFDESTRUCT ACCT => #touchAccounts ACCT ~> #accessAccounts ACCT ~> #end EVMC_SUCCESS ... </k>
          <id> ACCT </id>
          <selfDestruct> SDS => SDS |Set SetItem(ACCT) </selfDestruct>
          <account>
@@ -1850,6 +1910,8 @@ Overall Gas
           ~> #access [ OP , AOP ]
          ...
         </k>
+        <useGas> true </useGas>
+    rule <k> #gas [ _ , _ ] => . ...  </k> <useGas> false </useGas>
 
     rule <k> #gas [ OP ] => #gasExec(SCHED, OP) ~> #deductGas ... </k>
          <schedule> SCHED </schedule>
@@ -1867,8 +1929,9 @@ Overall Gas
          <memoryUsed> MU => MU' </memoryUsed> <schedule> SCHED </schedule>
 
     rule <k> _G:Gas ~> (#deductMemoryGas => #deductGas)   ... </k> //Required for verification
-    rule <k>  G:Gas ~> #deductGas => #end EVMC_OUT_OF_GAS ... </k> <gas> GAVAIL:Gas                  </gas> requires GAVAIL <Gas G
-    rule <k>  G:Gas ~> #deductGas => .                    ... </k> <gas> GAVAIL:Gas => GAVAIL -Gas G </gas> requires G <=Gas GAVAIL
+    rule <k>  G:Gas ~> #deductGas => #end EVMC_OUT_OF_GAS ... </k> <gas> GAVAIL:Gas                  </gas> <useGas> true </useGas> requires GAVAIL <Gas G
+    rule <k>  G:Gas ~> #deductGas => .                    ... </k> <gas> GAVAIL:Gas => GAVAIL -Gas G </gas> <useGas> true </useGas> requires G <=Gas GAVAIL
+    rule <k>  _:Gas ~> #deductGas => .                    ... </k> <useGas> false </useGas>
 
     syntax Bool ::= #inStorage     ( Map   , Account , Int ) [function, total]
                   | #inStorageAux1 ( KItem ,           Int ) [function, total]
@@ -1965,18 +2028,13 @@ Access List Gas
 
     syntax InternalOp ::= #gasAccess ( Schedule, OpCode )
  // -----------------------------------------------------
-    rule <k> #gasAccess(SCHED, EXTCODESIZE ACCT)            => #accessAccounts ACCT ~> Caddraccess(SCHED, ACCT in ACCTS)                                           ... </k> <accessedAccounts> ACCTS </accessedAccounts>
-    rule <k> #gasAccess(SCHED, EXTCODECOPY ACCT _ _ _)      => #accessAccounts ACCT ~> Caddraccess(SCHED, ACCT in ACCTS)                                           ... </k> <accessedAccounts> ACCTS </accessedAccounts>
-    rule <k> #gasAccess(SCHED, EXTCODEHASH ACCT)            => #accessAccounts ACCT ~> Caddraccess(SCHED, ACCT in ACCTS)                                           ... </k> <accessedAccounts> ACCTS </accessedAccounts>
-    rule <k> #gasAccess(SCHED, BALANCE ACCT)                => #accessAccounts ACCT ~> Caddraccess(SCHED, ACCT in ACCTS)                                           ... </k> <accessedAccounts> ACCTS </accessedAccounts>
-    rule <k> #gasAccess(SCHED, SELFDESTRUCT ACCT)           => #accessAccounts ACCT ~> #if ACCT in ACCTS #then 0 #else Gcoldaccountaccess < SCHED > #fi            ... </k> <accessedAccounts> ACCTS </accessedAccounts>
-    rule <k> #gasAccess(_    , CALL _ ACCT _ _ _ _ _)       => #accessAccounts ACCT ~> 0                                                                           ... </k>
-    rule <k> #gasAccess(_    , CALLCODE _ ACCT _ _ _ _ _)   => #accessAccounts ACCT ~> 0                                                                           ... </k>
-    rule <k> #gasAccess(_    , DELEGATECALL _ ACCT _ _ _ _) => #accessAccounts ACCT ~> 0                                                                           ... </k>
-    rule <k> #gasAccess(_    , STATICCALL _ ACCT _ _ _ _)   => #accessAccounts ACCT ~> 0                                                                           ... </k>
-    rule <k> #gasAccess(_    , SLOAD INDEX )                => #accessStorage ACCT INDEX ~> 0                                                                      ... </k> <id> ACCT </id>
-    rule <k> #gasAccess(SCHED, SSTORE INDEX _)              => #accessStorage ACCT INDEX ~> #if #inStorage(TS, ACCT, INDEX) #then 0 #else Gcoldsload < SCHED > #fi ... </k> <id> ACCT </id> <accessedStorage> TS </accessedStorage>
-    rule <k> #gasAccess(_    , _ )                          => 0                                                                                                  ... </k> [owise]
+    rule <k> #gasAccess(SCHED, EXTCODESIZE ACCT)       => Caddraccess(SCHED, ACCT in ACCTS)                                      ... </k> <accessedAccounts> ACCTS </accessedAccounts>
+    rule <k> #gasAccess(SCHED, EXTCODECOPY ACCT _ _ _) => Caddraccess(SCHED, ACCT in ACCTS)                                      ... </k> <accessedAccounts> ACCTS </accessedAccounts>
+    rule <k> #gasAccess(SCHED, EXTCODEHASH ACCT)       => Caddraccess(SCHED, ACCT in ACCTS)                                      ... </k> <accessedAccounts> ACCTS </accessedAccounts>
+    rule <k> #gasAccess(SCHED, BALANCE ACCT)           => Caddraccess(SCHED, ACCT in ACCTS)                                      ... </k> <accessedAccounts> ACCTS </accessedAccounts>
+    rule <k> #gasAccess(SCHED, SELFDESTRUCT ACCT)      => #if ACCT in ACCTS #then 0 #else Gcoldaccountaccess < SCHED > #fi       ... </k> <accessedAccounts> ACCTS </accessedAccounts>
+    rule <k> #gasAccess(SCHED, SSTORE INDEX _)         => #if #inStorage(TS, ACCT, INDEX) #then 0 #else Gcoldsload < SCHED > #fi ... </k> <id> ACCT </id> <accessedStorage> TS </accessedStorage>
+    rule <k> #gasAccess(_    , _ )                     => 0                                                                      ... </k> [owise]
 
 ```
 
@@ -1985,7 +2043,7 @@ Execution Gas
 
 The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
 
--   `#gasExec` loads all the relevant surronding state and uses that to compute the intrinsic execution gas of each opcode.
+-   `#gasExec` loads all the relevant surrounding state and uses that to compute the intrinsic execution gas of each opcode.
 
 ```k
     syntax InternalOp ::= #gasExec ( Schedule , OpCode )

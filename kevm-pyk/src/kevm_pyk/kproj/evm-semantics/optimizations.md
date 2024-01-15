@@ -8,7 +8,7 @@ requires "evm.md"
 requires "lemmas/int-simplification.k"
 
 module EVM-OPTIMIZATIONS-LEMMAS [kore]
-    imports EVM
+  imports EVM
 
     rule #sizeWordStack(WS           , N) => #sizeWordStack(WS, 0) +Int N requires N =/=Int 0                [simplification]
     rule #sizeWordStack(WS [ I := _ ], N) => #sizeWordStack(WS, N)        requires I <Int #sizeWordStack(WS) [simplification]
@@ -18,300 +18,586 @@ module EVM-OPTIMIZATIONS-LEMMAS [kore]
 endmodule
 
 module EVM-OPTIMIZATIONS [kore]
-    imports EVM
-    imports EVM-OPTIMIZATIONS-LEMMAS
-    imports INT-SIMPLIFICATION
+  imports EVM
+  imports EVM-OPTIMIZATIONS-LEMMAS
+  imports INT-SIMPLIFICATION
 
-rule <kevm>
-       <k>
-         ( #next[ PUSHZERO ] => . ) ...
-       </k>
-       <schedule>
-         SCHED
-       </schedule>
-       <ethereum>
-         <evm>
-           <callState>
-             <wordStack>
-               ( WS => 0 : WS )
-             </wordStack>
-             <pc>
-               ( PCOUNT => ( PCOUNT +Int 1 ) )
-             </pc>
-             <gas>
-               ( GAVAIL => ( GAVAIL -Gas Gbase < SCHED > ) )
-             </gas>
-             ...
-           </callState>
-           ...
-         </evm>
-         ...
-       </ethereum>
-       ...
-     </kevm>
-  requires ( Gbase < SCHED > <=Gas GAVAIL )
-   andBool ( #sizeWordStack( 0 : WS ) <=Int 1024 )
+  rule
+    <kevm>
+      <k>
+        ( #next[ PUSHZERO ] => . ) ...
+      </k>
+      <useGas>
+        false
+      </useGas>
+      <ethereum>
+        <evm>
+          <callState>
+            <wordStack>
+              ( WS => 0 : WS )
+            </wordStack>
+            <pc>
+              ( PCOUNT => ( PCOUNT +Int 1 ) )
+            </pc>
+            ...
+          </callState>
+          ...
+        </evm>
+        ...
+      </ethereum>
+      ...
+    </kevm>
+  requires ( #sizeWordStack( 0 : WS ) <=Int 1024 )
+  [priority(40)]
+
+  rule
+    <kevm>
+      <k>
+        ( #next[ PUSHZERO ] => . ) ...
+      </k>
+      <schedule>
+        SCHED
+      </schedule>
+      <useGas>
+        true
+      </useGas>
+      <ethereum>
+        <evm>
+          <callState>
+            <wordStack>
+              ( WS => 0 : WS )
+            </wordStack>
+            <pc>
+              ( PCOUNT => ( PCOUNT +Int 1 ) )
+            </pc>
+            <gas>
+              ( GAVAIL => ( GAVAIL -Gas Gbase < SCHED > ) )
+            </gas>
+            ...
+          </callState>
+          ...
+        </evm>
+        ...
+      </ethereum>
+      ...
+    </kevm>
+    requires ( Gbase < SCHED > <=Gas GAVAIL )
+     andBool ( #sizeWordStack( 0 : WS ) <=Int 1024 )
+     [priority(40)]
+
+  rule
+    <kevm>
+      <k>
+        ( #next[ PUSH(N) ] => . ) ...
+      </k>
+      <useGas>
+        false
+      </useGas>
+      <ethereum>
+        <evm>
+          <callState>
+            <program>
+              PGM
+            </program>
+            <wordStack>
+              ( WS => #asWord( #range(PGM, PCOUNT +Int 1, N) ) : WS )
+            </wordStack>
+            <pc>
+              ( PCOUNT => ( ( PCOUNT +Int N ) +Int 1 ) )
+            </pc>
+            ...
+          </callState>
+          ...
+        </evm>
+        ...
+      </ethereum>
+      ...
+    </kevm>
+    requires ( #sizeWordStack( #asWord( #range(PGM, PCOUNT +Int 1, N) ) : WS ) <=Int 1024 )
     [priority(40)]
 
-rule <kevm>
-       <k>
-         ( #next[ PUSH(N) ] => . ) ...
-       </k>
-       <schedule>
-         SCHED
-       </schedule>
-       <ethereum>
-         <evm>
-           <callState>
-             <program>
-               PGM
-             </program>
-             <wordStack>
-               ( WS => #asWord( #range(PGM, PCOUNT +Int 1, N) ) : WS )
-             </wordStack>
-             <pc>
-               ( PCOUNT => ( ( PCOUNT +Int N ) +Int 1 ) )
-             </pc>
-             <gas>
-               ( GAVAIL => ( GAVAIL -Gas Gverylow < SCHED > ) )
-             </gas>
-             ...
-           </callState>
-           ...
-         </evm>
-         ...
-       </ethereum>
-       ...
-     </kevm>
-  requires ( Gverylow < SCHED > <=Gas GAVAIL )
-   andBool ( #sizeWordStack( #asWord( #range(PGM, PCOUNT +Int 1, N) ) : WS ) <=Int 1024 )
+  rule
+    <kevm>
+      <k>
+        ( #next[ PUSH(N) ] => . ) ...
+      </k>
+      <schedule>
+        SCHED
+      </schedule>
+      <useGas>
+        true
+      </useGas>
+      <ethereum>
+        <evm>
+          <callState>
+            <program>
+              PGM
+            </program>
+            <wordStack>
+              ( WS => #asWord( #range(PGM, PCOUNT +Int 1, N) ) : WS )
+            </wordStack>
+            <pc>
+              ( PCOUNT => ( ( PCOUNT +Int N ) +Int 1 ) )
+            </pc>
+            <gas>
+              ( GAVAIL => ( GAVAIL -Gas Gverylow < SCHED > ) )
+            </gas>
+            ...
+          </callState>
+          ...
+        </evm>
+        ...
+      </ethereum>
+      ...
+    </kevm>
+    requires ( Gverylow < SCHED > <=Gas GAVAIL )
+     andBool ( #sizeWordStack( #asWord( #range(PGM, PCOUNT +Int 1, N) ) : WS ) <=Int 1024 )
+     [priority(40)]
+
+  rule
+    <kevm>
+      <k>
+        ( #next[ DUP(N) ] => . ) ...
+      </k>
+      <useGas>
+        false
+      </useGas>
+      <ethereum>
+        <evm>
+          <callState>
+            <wordStack>
+              ( WS => WS [ ( N +Int -1 ) ] : WS )
+            </wordStack>
+            <pc>
+              ( PCOUNT => ( PCOUNT +Int 1 ) )
+            </pc>
+            ...
+          </callState>
+          ...
+        </evm>
+        ...
+      </ethereum>
+      ...
+    </kevm>
+    requires #stackNeeded(DUP(N)) <=Int #sizeWordStack(WS)
+     andBool ( #sizeWordStack( WS [ ( N +Int -1 ) ] : WS ) <=Int 1024 )
+     [priority(40)]
+
+  rule
+    <kevm>
+      <k>
+        ( #next[ DUP(N) ] => . ) ...
+      </k>
+      <schedule>
+        SCHED
+      </schedule>
+      <useGas>
+        true
+      </useGas>
+      <ethereum>
+        <evm>
+          <callState>
+            <wordStack>
+              ( WS => WS [ ( N +Int -1 ) ] : WS )
+            </wordStack>
+            <pc>
+              ( PCOUNT => ( PCOUNT +Int 1 ) )
+            </pc>
+            <gas>
+              ( GAVAIL => ( GAVAIL -Gas Gverylow < SCHED > ) )
+            </gas>
+            ...
+          </callState>
+          ...
+        </evm>
+        ...
+      </ethereum>
+      ...
+    </kevm>
+    requires #stackNeeded(DUP(N)) <=Int #sizeWordStack(WS)
+     andBool ( Gverylow < SCHED > <=Gas GAVAIL )
+     andBool ( #sizeWordStack( WS [ ( N +Int -1 ) ] : WS ) <=Int 1024 )
+     [priority(40)]
+
+  rule
+    <kevm>
+      <k>
+        ( #next[ SWAP(N) ] => . ) ...
+      </k>
+      <useGas>
+        false
+      </useGas>
+      <ethereum>
+        <evm>
+          <callState>
+            <wordStack>
+              ( W0 : WS => WS [ ( N +Int -1 ) ] : ( WS [ ( N +Int -1 ) := W0 ] ) )
+            </wordStack>
+            <pc>
+              ( PCOUNT => ( PCOUNT +Int 1 ) )
+            </pc>
+            ...
+          </callState>
+          ...
+        </evm>
+        ...
+      </ethereum>
+      ...
+    </kevm>
+    requires #stackNeeded(SWAP(N)) <=Int #sizeWordStack(W0 : WS)
+     andBool ( #sizeWordStack( WS [ ( N +Int -1 ) ] : ( WS [ ( N +Int -1 ) := W0 ] ) ) <=Int 1024 )
+     [priority(40)]
+
+  rule
+    <kevm>
+      <k>
+        ( #next[ SWAP(N) ] => . ) ...
+      </k>
+      <schedule>
+        SCHED
+      </schedule>
+      <useGas>
+        true
+      </useGas>
+      <ethereum>
+        <evm>
+          <callState>
+            <wordStack>
+              ( W0 : WS => WS [ ( N +Int -1 ) ] : ( WS [ ( N +Int -1 ) := W0 ] ) )
+            </wordStack>
+            <pc>
+              ( PCOUNT => ( PCOUNT +Int 1 ) )
+            </pc>
+            <gas>
+              ( GAVAIL => ( GAVAIL -Gas Gverylow < SCHED > ) )
+            </gas>
+            ...
+          </callState>
+          ...
+        </evm>
+        ...
+      </ethereum>
+      ...
+    </kevm>
+    requires #stackNeeded(SWAP(N)) <=Int #sizeWordStack(W0 : WS)
+     andBool ( Gverylow < SCHED > <=Gas GAVAIL )
+     andBool ( #sizeWordStack( WS [ ( N +Int -1 ) ] : ( WS [ ( N +Int -1 ) := W0 ] ) ) <=Int 1024 )
+     [priority(40)]
+
+  rule
+    <kevm>
+      <k>
+        ( #next[ ADD ] => . ) ...
+      </k>
+      <useGas>
+        false
+      </useGas>
+      <ethereum>
+        <evm>
+          <callState>
+            <wordStack>
+              ( W0 : W1 : WS => chop( ( W0 +Int W1 ) ) : WS )
+            </wordStack>
+            <pc>
+              ( PCOUNT => ( PCOUNT +Int 1 ) )
+            </pc>
+            ...
+          </callState>
+          ...
+        </evm>
+        ...
+      </ethereum>
+      ...
+    </kevm>
+    requires ( #sizeWordStack( chop( ( W0 +Int W1 ) ) : WS ) <=Int 1024 )
     [priority(40)]
 
+  rule
+    <kevm>
+      <k>
+        ( #next[ ADD ] => . ) ...
+      </k>
+      <schedule>
+        SCHED
+      </schedule>
+      <useGas>
+        true
+      </useGas>
+      <ethereum>
+        <evm>
+          <callState>
+            <wordStack>
+              ( W0 : W1 : WS => chop( ( W0 +Int W1 ) ) : WS )
+            </wordStack>
+            <pc>
+              ( PCOUNT => ( PCOUNT +Int 1 ) )
+            </pc>
+            <gas>
+              ( GAVAIL => ( GAVAIL -Gas Gverylow < SCHED > ) )
+            </gas>
+            ...
+          </callState>
+          ...
+        </evm>
+        ...
+      </ethereum>
+      ...
+    </kevm>
+    requires ( Gverylow < SCHED > <=Gas GAVAIL )
+     andBool ( #sizeWordStack( chop( ( W0 +Int W1 ) ) : WS ) <=Int 1024 )
+     [priority(40)]
 
-rule <kevm>
-       <k>
-         ( #next[ DUP(N) ] => . ) ...
-       </k>
-       <schedule>
-         SCHED
-       </schedule>
-       <ethereum>
-         <evm>
-           <callState>
-             <wordStack>
-               ( WS => WS [ ( N +Int -1 ) ] : WS )
-             </wordStack>
-             <pc>
-               ( PCOUNT => ( PCOUNT +Int 1 ) )
-             </pc>
-             <gas>
-               ( GAVAIL => ( GAVAIL -Gas Gverylow < SCHED > ) )
-             </gas>
-             ...
-           </callState>
-           ...
-         </evm>
-         ...
-       </ethereum>
-       ...
-     </kevm>
-  requires #stackNeeded(DUP(N)) <=Int #sizeWordStack(WS)
-   andBool ( Gverylow < SCHED > <=Gas GAVAIL )
-   andBool ( #sizeWordStack( WS [ ( N +Int -1 ) ] : WS ) <=Int 1024 )
+  rule
+    <kevm>
+      <k>
+        ( #next[ SUB ] => . ) ...
+      </k>
+      <useGas>
+        false
+      </useGas>
+      <ethereum>
+        <evm>
+          <callState>
+            <wordStack>
+              ( W0 : W1 : WS => chop( ( W0 -Int W1 ) ) : WS )
+            </wordStack>
+            <pc>
+              ( PCOUNT => ( PCOUNT +Int 1 ) )
+            </pc>
+            ...
+          </callState>
+          ...
+        </evm>
+        ...
+      </ethereum>
+      ...
+    </kevm>
+    requires ( #sizeWordStack( chop( ( W0 -Int W1 ) ) : WS ) <=Int 1024 )
     [priority(40)]
 
+  rule
+    <kevm>
+      <k>
+        ( #next[ SUB ] => . ) ...
+      </k>
+      <schedule>
+        SCHED
+      </schedule>
+      <useGas>
+        true
+      </useGas>
+      <ethereum>
+        <evm>
+          <callState>
+            <wordStack>
+              ( W0 : W1 : WS => chop( ( W0 -Int W1 ) ) : WS )
+            </wordStack>
+            <pc>
+              ( PCOUNT => ( PCOUNT +Int 1 ) )
+            </pc>
+            <gas>
+              ( GAVAIL => ( GAVAIL -Gas Gverylow < SCHED > ) )
+            </gas>
+            ...
+          </callState>
+          ...
+        </evm>
+        ...
+      </ethereum>
+      ...
+    </kevm>
+    requires ( Gverylow < SCHED > <=Gas GAVAIL )
+     andBool ( #sizeWordStack( chop( ( W0 -Int W1 ) ) : WS ) <=Int 1024 )
+     [priority(40)]
 
-rule <kevm>
-       <k>
-         ( #next[ SWAP(N) ] => . ) ...
-       </k>
-       <schedule>
-         SCHED
-       </schedule>
-       <ethereum>
-         <evm>
-           <callState>
-             <wordStack>
-               ( W0 : WS => WS [ ( N +Int -1 ) ] : ( WS [ ( N +Int -1 ) := W0 ] ) )
-             </wordStack>
-             <pc>
-               ( PCOUNT => ( PCOUNT +Int 1 ) )
-             </pc>
-             <gas>
-               ( GAVAIL => ( GAVAIL -Gas Gverylow < SCHED > ) )
-             </gas>
-             ...
-           </callState>
-           ...
-         </evm>
-         ...
-       </ethereum>
-       ...
-     </kevm>
-  requires #stackNeeded(SWAP(N)) <=Int #sizeWordStack(W0 : WS)
-   andBool ( Gverylow < SCHED > <=Gas GAVAIL )
-   andBool ( #sizeWordStack( WS [ ( N +Int -1 ) ] : ( WS [ ( N +Int -1 ) := W0 ] ) ) <=Int 1024 )
+  rule
+    <kevm>
+      <k>
+        ( #next[ AND ] => . ) ...
+      </k>
+      <useGas>
+        false
+      </useGas>
+      <ethereum>
+        <evm>
+          <callState>
+            <wordStack>
+              ( W0 : W1 : WS => W0 &Int W1 : WS )
+            </wordStack>
+            <pc>
+              ( PCOUNT => ( PCOUNT +Int 1 ) )
+            </pc>
+            ...
+          </callState>
+          ...
+        </evm>
+        ...
+      </ethereum>
+      ...
+    </kevm>
+    requires ( #sizeWordStack( W0 &Int W1 : WS ) <=Int 1024 )
     [priority(40)]
 
+  rule
+    <kevm>
+      <k>
+        ( #next[ AND ] => . ) ...
+      </k>
+      <schedule>
+        SCHED
+      </schedule>
+      <useGas>
+        true
+      </useGas>
+      <ethereum>
+        <evm>
+          <callState>
+            <wordStack>
+              ( W0 : W1 : WS => W0 &Int W1 : WS )
+            </wordStack>
+            <pc>
+              ( PCOUNT => ( PCOUNT +Int 1 ) )
+            </pc>
+            <gas>
+              ( GAVAIL => ( GAVAIL -Gas Gverylow < SCHED > ) )
+            </gas>
+            ...
+          </callState>
+          ...
+        </evm>
+        ...
+      </ethereum>
+      ...
+    </kevm>
+    requires ( Gverylow < SCHED > <=Gas GAVAIL )
+     andBool ( #sizeWordStack( W0 &Int W1 : WS ) <=Int 1024 )
+     [priority(40)]
 
-rule <kevm>
-       <k>
-         ( #next[ ADD ] => . ) ...
-       </k>
-       <schedule>
-         SCHED
-       </schedule>
-       <ethereum>
-         <evm>
-           <callState>
-             <wordStack>
-               ( W0 : W1 : WS => chop( ( W0 +Int W1 ) ) : WS )
-             </wordStack>
-             <pc>
-               ( PCOUNT => ( PCOUNT +Int 1 ) )
-             </pc>
-             <gas>
-               ( GAVAIL => ( GAVAIL -Gas Gverylow < SCHED > ) )
-             </gas>
-             ...
-           </callState>
-           ...
-         </evm>
-         ...
-       </ethereum>
-       ...
-     </kevm>
-  requires ( Gverylow < SCHED > <=Gas GAVAIL )
-   andBool ( #sizeWordStack( chop( ( W0 +Int W1 ) ) : WS ) <=Int 1024 )
+  rule
+    <kevm>
+      <k>
+        ( #next[ LT ] => . ) ...
+      </k>
+      <useGas>
+        false
+      </useGas>
+      <ethereum>
+        <evm>
+          <callState>
+            <wordStack>
+              ( W0 : W1 : WS => bool2Word( W0 <Int W1 ) : WS )
+            </wordStack>
+            <pc>
+              ( PCOUNT => ( PCOUNT +Int 1 ) )
+            </pc>
+            ...
+          </callState>
+          ...
+        </evm>
+        ...
+      </ethereum>
+      ...
+    </kevm>
+    requires ( #sizeWordStack( bool2Word( W0 <Int W1 ) : WS ) <=Int 1024 )
     [priority(40)]
 
+  rule
+    <kevm>
+      <k>
+        ( #next[ LT ] => . ) ...
+      </k>
+      <schedule>
+        SCHED
+      </schedule>
+      <useGas>
+        true
+      </useGas>
+      <ethereum>
+        <evm>
+          <callState>
+            <wordStack>
+              ( W0 : W1 : WS => bool2Word( W0 <Int W1 ) : WS )
+            </wordStack>
+            <pc>
+              ( PCOUNT => ( PCOUNT +Int 1 ) )
+            </pc>
+            <gas>
+              ( GAVAIL => ( GAVAIL -Gas Gverylow < SCHED > ) )
+            </gas>
+            ...
+          </callState>
+          ...
+        </evm>
+        ...
+      </ethereum>
+      ...
+    </kevm>
+    requires ( Gverylow < SCHED > <=Gas GAVAIL )
+     andBool ( #sizeWordStack( bool2Word( W0 <Int W1 ) : WS ) <=Int 1024 )
+     [priority(40)]
 
-rule <kevm>
-       <k>
-         ( #next[ SUB ] => . ) ...
-       </k>
-       <schedule>
-         SCHED
-       </schedule>
-       <ethereum>
-         <evm>
-           <callState>
-             <wordStack>
-               ( W0 : W1 : WS => chop( ( W0 -Int W1 ) ) : WS )
-             </wordStack>
-             <pc>
-               ( PCOUNT => ( PCOUNT +Int 1 ) )
-             </pc>
-             <gas>
-               ( GAVAIL => ( GAVAIL -Gas Gverylow < SCHED > ) )
-             </gas>
-             ...
-           </callState>
-           ...
-         </evm>
-         ...
-       </ethereum>
-       ...
-     </kevm>
-  requires ( Gverylow < SCHED > <=Gas GAVAIL )
-   andBool ( #sizeWordStack( chop( ( W0 -Int W1 ) ) : WS ) <=Int 1024 )
+  rule
+    <kevm>
+      <k>
+        ( #next[ GT ] => . ) ...
+      </k>
+      <useGas>
+        false
+      </useGas>
+      <ethereum>
+        <evm>
+          <callState>
+            <wordStack>
+              ( W0 : W1 : WS => bool2Word( W1 <Int W0 ) : WS )
+            </wordStack>
+            <pc>
+              ( PCOUNT => ( PCOUNT +Int 1 ) )
+            </pc>
+            ...
+          </callState>
+          ...
+        </evm>
+        ...
+      </ethereum>
+      ...
+    </kevm>
+    requires ( #sizeWordStack( bool2Word( W1 <Int W0 ) : WS ) <=Int 1024 )
     [priority(40)]
 
-
-rule <kevm>
-       <k>
-         ( #next[ AND ] => . ) ...
-       </k>
-       <schedule>
-         SCHED
-       </schedule>
-       <ethereum>
-         <evm>
-           <callState>
-             <wordStack>
-               ( W0 : W1 : WS => W0 &Int W1 : WS )
-             </wordStack>
-             <pc>
-               ( PCOUNT => ( PCOUNT +Int 1 ) )
-             </pc>
-             <gas>
-               ( GAVAIL => ( GAVAIL -Gas Gverylow < SCHED > ) )
-             </gas>
-             ...
-           </callState>
-           ...
-         </evm>
-         ...
-       </ethereum>
-       ...
-     </kevm>
-  requires ( Gverylow < SCHED > <=Gas GAVAIL )
-   andBool ( #sizeWordStack( W0 &Int W1 : WS ) <=Int 1024 )
-    [priority(40)]
-
-
-rule <kevm>
-       <k>
-         ( #next[ LT ] => . ) ...
-       </k>
-       <schedule>
-         SCHED
-       </schedule>
-       <ethereum>
-         <evm>
-           <callState>
-             <wordStack>
-               ( W0 : W1 : WS => bool2Word( W0 <Int W1 ) : WS )
-             </wordStack>
-             <pc>
-               ( PCOUNT => ( PCOUNT +Int 1 ) )
-             </pc>
-             <gas>
-               ( GAVAIL => ( GAVAIL -Gas Gverylow < SCHED > ) )
-             </gas>
-             ...
-           </callState>
-           ...
-         </evm>
-         ...
-       </ethereum>
-       ...
-     </kevm>
-  requires ( Gverylow < SCHED > <=Gas GAVAIL )
-   andBool ( #sizeWordStack( bool2Word( W0 <Int W1 ) : WS ) <=Int 1024 )
-    [priority(40)]
-
-
-rule <kevm>
-       <k>
-         ( #next[ GT ] => . ) ...
-       </k>
-       <schedule>
-         SCHED
-       </schedule>
-       <ethereum>
-         <evm>
-           <callState>
-             <wordStack>
-               ( W0 : W1 : WS => bool2Word( W1 <Int W0 ) : WS )
-             </wordStack>
-             <pc>
-               ( PCOUNT => ( PCOUNT +Int 1 ) )
-             </pc>
-             <gas>
-               ( GAVAIL => ( GAVAIL -Gas Gverylow < SCHED > ) )
-             </gas>
-             ...
-           </callState>
-           ...
-         </evm>
-         ...
-       </ethereum>
-       ...
-     </kevm>
-  requires ( Gverylow < SCHED > <=Gas GAVAIL )
-   andBool ( #sizeWordStack( bool2Word( W1 <Int W0 ) : WS ) <=Int 1024 )
-    [priority(40)]
+  rule
+    <kevm>
+      <k>
+        ( #next[ GT ] => . ) ...
+      </k>
+      <schedule>
+        SCHED
+      </schedule>
+      <useGas>
+        true
+      </useGas>
+      <ethereum>
+        <evm>
+          <callState>
+            <wordStack>
+              ( W0 : W1 : WS => bool2Word( W1 <Int W0 ) : WS )
+            </wordStack>
+            <pc>
+              ( PCOUNT => ( PCOUNT +Int 1 ) )
+            </pc>
+            <gas>
+              ( GAVAIL => ( GAVAIL -Gas Gverylow < SCHED > ) )
+            </gas>
+            ...
+          </callState>
+          ...
+        </evm>
+        ...
+      </ethereum>
+      ...
+    </kevm>
+    requires ( Gverylow < SCHED > <=Gas GAVAIL )
+     andBool ( #sizeWordStack( bool2Word( W1 <Int W0 ) : WS ) <=Int 1024 )
+     [priority(40)]
 
 
 // {OPTIMIZATIONS}

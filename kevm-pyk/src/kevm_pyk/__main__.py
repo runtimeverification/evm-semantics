@@ -286,6 +286,8 @@ def exec_prove(
     break_every_step: bool = False,
     break_on_jumpi: bool = False,
     break_on_calls: bool = True,
+    break_on_storage: bool = False,
+    break_on_basic_blocks: bool = False,
     kore_rpc_command: str | Iterable[str] | None = None,
     use_booster: bool = False,
     smt_timeout: int | None = None,
@@ -414,7 +416,9 @@ def exec_prove(
                 kcfg_explore,
                 max_depth=max_depth,
                 max_iterations=max_iterations,
-                cut_point_rules=KEVMSemantics.cut_point_rules(break_on_jumpi, break_on_calls),
+                cut_point_rules=KEVMSemantics.cut_point_rules(
+                    break_on_jumpi, break_on_calls, break_on_storage, break_on_basic_blocks
+                ),
                 terminal_rules=KEVMSemantics.terminal_rules(break_every_step),
                 fail_fast=fail_fast,
             )
@@ -594,6 +598,7 @@ def exec_run(
     schedule: str,
     mode: str,
     chainid: int,
+    usegas: bool,
     target: str | None = None,
     save_directory: Path | None = None,
     debugger: bool = False,
@@ -609,12 +614,12 @@ def exec_run(
 
     try:
         json_read = json.loads(input_file.read_text())
-        kore_pattern = gst_to_kore(json_read, schedule, mode, chainid)
+        kore_pattern = gst_to_kore(json_read, schedule, mode, chainid, usegas)
     except json.JSONDecodeError:
         pgm_token = KToken(input_file.read_text(), KSort('EthereumSimulation'))
         kast_pgm = kevm.parse_token(pgm_token)
         kore_pgm = kevm.kast_to_kore(kast_pgm, sort=KSort('EthereumSimulation'))
-        kore_pattern = kore_pgm_to_kore(kore_pgm, SORT_ETHEREUM_SIMULATION, schedule, mode, chainid)
+        kore_pattern = kore_pgm_to_kore(kore_pgm, SORT_ETHEREUM_SIMULATION, schedule, mode, chainid, usegas)
 
     kevm.run(
         kore_pattern,
@@ -633,6 +638,7 @@ def exec_kast(
     schedule: str,
     mode: str,
     chainid: int,
+    usegas: bool,
     target: str | None = None,
     save_directory: Path | None = None,
     **kwargs: Any,
@@ -647,14 +653,14 @@ def exec_kast(
 
     try:
         json_read = json.loads(input_file.read_text())
-        kore_pattern = gst_to_kore(json_read, schedule, mode, chainid)
+        kore_pattern = gst_to_kore(json_read, schedule, mode, chainid, usegas)
     except json.JSONDecodeError:
         pgm_token = KToken(input_file.read_text(), KSort('EthereumSimulation'))
         kast_pgm = kevm.parse_token(pgm_token)
         kore_pgm = kevm.kast_to_kore(kast_pgm)
-        kore_pattern = kore_pgm_to_kore(kore_pgm, SORT_ETHEREUM_SIMULATION, schedule, mode, chainid)
+        kore_pattern = kore_pgm_to_kore(kore_pgm, SORT_ETHEREUM_SIMULATION, schedule, mode, chainid, usegas)
 
-    output_text = kore_print(kore_pattern, kevm.definition_dir, output)
+    output_text = kore_print(kore_pattern, definition_dir=kevm.definition_dir, output=output)
     print(output_text)
 
 

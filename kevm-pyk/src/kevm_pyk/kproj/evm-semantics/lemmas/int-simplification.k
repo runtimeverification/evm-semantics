@@ -1,5 +1,3 @@
-requires "evm-types.md"
-
 module INT-SIMPLIFICATION
     imports INT-SIMPLIFICATION-HASKELL
 endmodule
@@ -13,20 +11,18 @@ module INT-SIMPLIFICATION-HASKELL [symbolic, kore]
 
     // associativity normalization
 
-    rule A +Int B => B +Int A [concrete(A), symbolic(B), simplification(40)]
-
-    rule A +Int (B +Int C) => (A +Int B) +Int C [symbolic(A, B), simplification(40)]
-    rule A +Int (B -Int C) => (A +Int B) -Int C [symbolic(A, B), simplification(40)]
-    rule A -Int (B +Int C) => (A -Int B) -Int C [symbolic(A, B), simplification(40)]
-    rule A -Int (B -Int C) => (A -Int B) +Int C [symbolic(A, B), simplification(40)]
+    rule A +Int (B +Int C) => (A +Int B) +Int C [symbolic(A, B), concrete(C), simplification(40)]
+    rule A +Int (B -Int C) => (A +Int B) -Int C [symbolic(A, B), concrete(C), simplification(40)]
+    rule A -Int (B +Int C) => (A -Int B) -Int C [symbolic(A, B), concrete(C), simplification(40)]
+    rule A -Int (B -Int C) => (A -Int B) +Int C [symbolic(A, B), concrete(C), simplification(40)]
 
     rule A +Int (B -Int C) => (A -Int C) +Int B [symbolic(A, C), concrete(B), simplification(40)]
     rule A -Int (B -Int C) => (A +Int C) -Int B [symbolic(A, C), concrete(B), simplification(40)]
 
-    rule (A +Int B) +Int C => (A +Int C) +Int B [concrete(B), symbolic(C), simplification(40)]
-    rule (A +Int B) -Int C => (A -Int C) +Int B [concrete(B), symbolic(C), simplification(40)]
-    rule (A -Int B) +Int C => (A +Int C) -Int B [concrete(B), symbolic(C), simplification(40)]
-    rule (A -Int B) -Int C => (A -Int C) -Int B [concrete(B), symbolic(C), simplification(40)]
+    rule (A +Int B) +Int C => (A +Int C) +Int B [concrete(B), symbolic(A, C), simplification(40)]
+    rule (A +Int B) -Int C => (A -Int C) +Int B [concrete(B), symbolic(A, C), simplification(40)]
+    rule (A -Int B) +Int C => (A +Int C) -Int B [concrete(B), symbolic(A, C), simplification(40)]
+    rule (A -Int B) -Int C => (A -Int C) -Int B [concrete(B), symbolic(A, C), simplification(40)]
 
     rule (A +Int B) +Int C => A +Int (B +Int C) [concrete(B, C), symbolic(A), simplification(40)]
     rule (A +Int B) -Int C => A +Int (B -Int C) [concrete(B, C), symbolic(A), simplification(40)]
@@ -34,21 +30,64 @@ module INT-SIMPLIFICATION-HASKELL [symbolic, kore]
     rule (A -Int B) -Int C => A -Int (B +Int C) [concrete(B, C), symbolic(A), simplification(40)]
 
   // ###########################################################################
-  // inequality
+  // comparison normalization
   // ###########################################################################
 
-    rule A +Int B  <Int C        => A         <Int C -Int B [concrete(B), simplification(40)]
-    rule A         <Int B +Int C => A -Int C  <Int B        [concrete(A, C), simplification(40)]
-    rule A        <=Int B +Int C => A -Int C <=Int B        [concrete(A, C), simplification(40)]
-    rule A -Int B  <Int C        => A -Int C  <Int B        [concrete(A, C), simplification(40)]
-    rule A        <=Int B -Int C => C        <=Int B -Int A [concrete(A, B), simplification(40)]
+    rule A +Int B   <Int C => A  <Int C -Int B [concrete(B, C), symbolic(A), simplification(45)]
+    rule A +Int B  <=Int C => A <=Int C -Int B [concrete(B, C), symbolic(A), simplification(45)]
+    rule A +Int B   >Int C => A  >Int C -Int B [concrete(B, C), symbolic(A), simplification(45)]
+    rule A +Int B  >=Int C => A >=Int C -Int B [concrete(B, C), symbolic(A), simplification(45)]
+
+    rule A +Int B   <Int C => B  <Int C -Int A [concrete(A, C), symbolic(B), simplification(45)]
+    rule A +Int B  <=Int C => B <=Int C -Int A [concrete(A, C), symbolic(B), simplification(45)]
+    rule A +Int B   >Int C => B  >Int C -Int A [concrete(A, C), symbolic(B), simplification(45)]
+    rule A +Int B  >=Int C => B >=Int C -Int A [concrete(A, C), symbolic(B), simplification(45)]
+
+    rule A -Int B   <Int C => A  <Int C +Int B [concrete(B, C), symbolic(A), simplification(45)]
+    rule A -Int B  <=Int C => A <=Int C +Int B [concrete(B, C), symbolic(A), simplification(45)]
+    rule A -Int B   >Int C => A  >Int C +Int B [concrete(B, C), symbolic(A), simplification(45)]
+    rule A -Int B  >=Int C => A >=Int C +Int B [concrete(B, C), symbolic(A), simplification(45)]
+
+    rule A -Int B   <Int C => A -Int C  <Int B [concrete(A, C), symbolic(B), simplification(45)]
+    rule A -Int B  <=Int C => A -Int C <=Int B [concrete(A, C), symbolic(B), simplification(45)]
+    rule A -Int B   >Int C => A -Int C  >Int B [concrete(A, C), symbolic(B), simplification(45)]
+    rule A -Int B  >=Int C => A -Int C >=Int B [concrete(A, C), symbolic(B), simplification(45)]
+
+    rule A   <Int B +Int C => A -Int B  <Int C [concrete(A, B), symbolic(C), simplification(45)]
+    rule A  <=Int B +Int C => A -Int B <=Int C [concrete(A, B), symbolic(C), simplification(45)]
+    rule A   >Int B +Int C => A -Int B  >Int C [concrete(A, B), symbolic(C), simplification(45)]
+    rule A  >=Int B +Int C => A -Int B >=Int C [concrete(A, B), symbolic(C), simplification(45)]
+
+    rule A   <Int B +Int C => A -Int C  <Int B [concrete(A, C), symbolic(B), simplification(45)]
+    rule A  <=Int B +Int C => A -Int C <=Int B [concrete(A, C), symbolic(B), simplification(45)]
+    rule A   >Int B +Int C => A -Int C  >Int B [concrete(A, C), symbolic(B), simplification(45)]
+    rule A  >=Int B +Int C => A -Int C >=Int B [concrete(A, C), symbolic(B), simplification(45)]
+
+    rule A   <Int B -Int C => C  <Int B -Int A [concrete(A, B), symbolic(C), simplification(45)]
+    rule A  <=Int B -Int C => C <=Int B -Int A [concrete(A, B), symbolic(C), simplification(45)]
+    rule A   >Int B -Int C => C  >Int B -Int A [concrete(A, B), symbolic(C), simplification(45)]
+    rule A  >=Int B -Int C => C >=Int B -Int A [concrete(A, B), symbolic(C), simplification(45)]
+
+    rule A   <Int B -Int C => A +Int C  <Int B [concrete(A, C), symbolic(B), simplification(45)]
+    rule A  <=Int B -Int C => A +Int C <=Int B [concrete(A, C), symbolic(B), simplification(45)]
+    rule A   >Int B -Int C => A +Int C  >Int B [concrete(A, C), symbolic(B), simplification(45)]
+    rule A  >=Int B -Int C => A +Int C >=Int B [concrete(A, C), symbolic(B), simplification(45)]
+
+    rule A +Int B  ==Int C => A ==Int C -Int B [concrete(B, C), symbolic(A), simplification(45), comm]
+    rule A +Int B  ==Int C => B ==Int C -Int A [concrete(A, C), symbolic(B), simplification(45), comm]
+    rule A -Int B  ==Int C => A ==Int C +Int B [concrete(B, C), symbolic(A), simplification(45), comm]
+    rule A -Int B  ==Int C => A -Int C ==Int B [concrete(A, C), symbolic(B), simplification(45), comm]
+
+    rule { A +Int B #Equals C } => { A #Equals C -Int B } [concrete(B, C), symbolic(A), simplification(45), comm]
+    rule { A +Int B #Equals C } => { B #Equals C -Int A } [concrete(A, C), symbolic(B), simplification(45), comm]
+    rule { A -Int B #Equals C } => { A #Equals C +Int B } [concrete(B, C), symbolic(A), simplification(45), comm]
+    rule { A -Int B #Equals C } => { A -Int C #Equals B } [concrete(A, C), symbolic(B), simplification(45), comm]
 
 endmodule
 
 module INT-SIMPLIFICATION-COMMON
     imports INT
     imports BOOL
-    imports EVM-TYPES
 
   // ###########################################################################
   // add, sub
@@ -161,44 +200,5 @@ module INT-SIMPLIFICATION-COMMON
     rule 0 <=Int A *Int B => true requires 0 <=Int A andBool 0 <=Int B [simplification]
 
     rule A -Int B +Int C <=Int D => false requires D <Int A -Int B andBool 0 <=Int C [simplification]
-
-  // ###########################################################################
-  // up/Int
-  // ###########################################################################
-
-    rule [upInt-lt-true]:
-      ((X up/Int Y) *Int Y) <Int Z => true
-      requires X +Int Y <=Int Z andBool 0 <Int Y
-      [simplification]
-
-    rule [upInt-lt-false]:
-      ((X up/Int Y) *Int Y) <Int Z => false
-      requires Z <=Int X andBool 0 <Int Y
-      [simplification]
-
-    rule [upInt-refl-leq]:
-      ((X up/Int Y) *Int Y) <=Int X => X modInt Y ==Int 0
-      requires 0 <Int Y
-      [simplification]
-
-    rule [upInt-refl-gt]:
-      X <Int ((X up/Int Y) *Int Y) => X modInt Y =/=Int 0
-      requires 0 <Int Y
-      [simplification]
-
-    rule [upInt-refl-geq]:
-      X <=Int ((X up/Int Y) *Int Y) => true
-      requires 0 <Int Y
-      [simplification]
-
-    rule [upInt-ref-eq]:
-      X ==Int ((X up/Int Y) *Int Y) => X modInt Y ==Int 0
-      requires 0 <Int Y
-      [simplification, comm]
-
-    rule [upInt-refl-neq]:
-      X =/=Int ((X up/Int Y) *Int Y) => X modInt Y =/=Int 0
-      requires 0 <Int Y
-      [simplification, comm]
 
 endmodule

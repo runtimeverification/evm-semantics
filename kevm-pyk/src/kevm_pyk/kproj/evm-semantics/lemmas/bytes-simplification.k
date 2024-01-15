@@ -54,6 +54,11 @@ module BYTES-SIMPLIFICATION [symbolic]
       requires lengthBytes(B) <=Int 32
        andBool #rangeUInt(256, X) [simplification, concrete(B), comm]
 
+    rule [buf-as-int-ml]:
+      { B:Bytes #Equals #buf(32, X:Int) } => { X #Equals #asInteger(B) }
+      requires lengthBytes(B) <=Int 32
+       andBool #rangeUInt(256, X) [simplification, concrete(B), comm]
+
     rule [buf-asWord-invert]:
       #buf (W:Int , #asWord(B:Bytes)) => #buf(W -Int lengthBytes(B), 0) +Bytes B
       requires lengthBytes(B) <=Int W andBool W <=Int 32
