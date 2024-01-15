@@ -11,9 +11,8 @@ from pyk.kcfg.semantics import KCFGSemantics
 from pyk.kcfg.show import NodePrinter
 from pyk.ktool.kprove import KProve
 from pyk.ktool.krun import KRun
-from pyk.prelude.k import K
 from pyk.prelude.kint import intToken, ltInt
-from pyk.prelude.ml import mlEqualsTrue
+from pyk.prelude.ml import mlEqualsFalse, mlEqualsTrue
 from pyk.prelude.string import stringToken
 from pyk.proof.reachability import APRBMCProof, APRProof
 from pyk.proof.show import APRBMCProofNodePrinter, APRProofNodePrinter
@@ -54,9 +53,7 @@ class KEVMSemantics(KCFGSemantics):
             elif k_cell.arity == 1 and k_cell[0] == KEVM.halt():
                 return True
             # <k> #halt ~> X:K </k>
-            elif (
-                k_cell.arity == 2 and k_cell[0] == KEVM.halt() and type(k_cell[1]) is KVariable and k_cell[1].sort == K
-            ):
+            elif k_cell.arity == 2 and k_cell[0] == KEVM.halt() and type(k_cell[1]) is KVariable:
                 return True
         return False
 
@@ -116,11 +113,15 @@ class KEVMSemantics(KCFGSemantics):
         return CTerm(config=bottom_up(_replace, cterm.config), constraints=cterm.constraints)
 
     @staticmethod
-    def cut_point_rules(break_on_jumpi: bool, break_on_calls: bool) -> list[str]:
+    def cut_point_rules(
+        break_on_jumpi: bool, break_on_calls: bool, break_on_storage: bool, break_on_basic_blocks: bool
+    ) -> list[str]:
         cut_point_rules = []
         if break_on_jumpi:
             cut_point_rules.extend(['EVM.jumpi.true', 'EVM.jumpi.false'])
-        if break_on_calls:
+        if break_on_basic_blocks:
+            cut_point_rules.append('EVM.end-basic-block')
+        if break_on_calls or break_on_basic_blocks:
             cut_point_rules.extend(
                 [
                     'EVM.call',
@@ -135,6 +136,8 @@ class KEVMSemantics(KCFGSemantics):
                     'EVM.return.success',
                 ]
             )
+        if break_on_storage:
+            cut_point_rules.extend(['EVM.sstore', 'EVM.sload'])
         return cut_point_rules
 
     @staticmethod
@@ -239,6 +242,21 @@ class KEVM(KProve, KRun):
 
     @staticmethod
     def add_invariant(cterm: CTerm) -> CTerm:
+        def _add_account_invariant(account: KApply) -> list[KApply]:
+            _account_constraints = []
+            acct_id, balance, nonce = account.args[0], account.args[1], account.args[5]
+
+            if type(acct_id) is KApply and type(acct_id.args[0]) is KVariable:
+                _account_constraints.append(mlEqualsTrue(KEVM.range_address(acct_id.args[0])))
+                _account_constraints.append(
+                    mlEqualsFalse(KEVM.is_precompiled_account(acct_id.args[0], cterm.cell('SCHEDULE_CELL')))
+                )
+            if type(balance) is KApply and type(balance.args[0]) is KVariable:
+                _account_constraints.append(mlEqualsTrue(KEVM.range_uint(256, balance.args[0])))
+            if type(nonce) is KApply and type(nonce.args[0]) is KVariable:
+                _account_constraints.append(mlEqualsTrue(KEVM.range_nonce(nonce.args[0])))
+            return _account_constraints
+
         constraints = []
         word_stack = cterm.cell('WORDSTACK_CELL')
         if type(word_stack) is not KVariable:
@@ -246,9 +264,17 @@ class KEVM(KProve, KRun):
             for i in word_stack_items[:-1]:
                 constraints.append(mlEqualsTrue(KEVM.range_uint(256, i)))
 
-        gas_cell = cterm.cell('GAS_CELL')
-        if not (type(gas_cell) is KApply and gas_cell.label.name == 'infGas'):
-            constraints.append(mlEqualsTrue(KEVM.range_uint(256, gas_cell)))
+        accounts_cell = cterm.cell('ACCOUNTS_CELL')
+        if type(accounts_cell) is not KApply('.AccountCellMap'):
+            accounts = flatten_label('_AccountCellMap_', cterm.cell('ACCOUNTS_CELL'))
+            for wrapped_account in accounts:
+                if not (type(wrapped_account) is KApply and wrapped_account.label.name == 'AccountCellMapItem'):
+                    continue
+
+                account = wrapped_account.args[1]
+                if type(account) is KApply:
+                    constraints.extend(_add_account_invariant(account))
+
         constraints.append(mlEqualsTrue(KEVM.range_address(cterm.cell('ID_CELL'))))
         constraints.append(mlEqualsTrue(KEVM.range_address(cterm.cell('CALLER_CELL'))))
         constraints.append(mlEqualsTrue(KEVM.range_address(cterm.cell('ORIGIN_CELL'))))
@@ -313,6 +339,10 @@ class KEVM(KProve, KRun):
         return KApply('#rangeBytes(_,_)_WORD_Bool_Int_Int', [width, ba])
 
     @staticmethod
+    def range_nonce(i: KInner) -> KApply:
+        return KApply('#rangeNonce(_)_WORD_Bool_Int', [i])
+
+    @staticmethod
     def range_blocknum(ba: KInner) -> KApply:
         return KApply('#rangeBlockNum(_)_WORD_Bool_Int', [ba])
 
@@ -339,6 +369,10 @@ class KEVM(KProve, KRun):
     @staticmethod
     def init_bytecode(c: KInner) -> KApply:
         return KApply('initBytecode', [c])
+
+    @staticmethod
+    def is_precompiled_account(i: KInner, s: KInner) -> KApply:
+        return KApply('#isPrecompiledAccount(_,_)_EVM_Bool_Int_Schedule', [i, s])
 
     @staticmethod
     def hashed_location(compiler: str, base: KInner, offset: KInner, member_offset: int = 0) -> KApply:
