@@ -370,6 +370,12 @@ module LEMMAS-SPEC
     claim [chop-range-inferred]: <k> runLemma(X <Int chop(X *Int Y) /Int 1000000000000000000) => doneLemma(X <Int (X *Int Y) /Int 1000000000000000000) ... </k>
       requires #rangeUInt(256, X) andBool #rangeUInt(256, Y) andBool Y <=Int maxUInt256 /Int X
 
+    claim [chop-idempotence]: <k> runLemma ( chop ( ( chop ( X +Int 4 ) ) +Int 64 ) ) => doneLemma( chop ( X +Int 68 ) ) ... </k>
+
+    claim [chop-sum-range]: <k> runLemma ( chop ( X +Int 4 ) ) => doneLemma( X +Int 4 ) ... </k>
+      requires #rangeUInt(64, X)
+
+
  // #padToWidth simplification
  // --------------------------
 
