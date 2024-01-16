@@ -79,7 +79,7 @@ module BYTES-SIMPLIFICATION [symbolic]
       requires 0 <=Int W andBool W <=Int 32
        andBool 0 <=Int X andBool X <Int 2 ^Int (256 -Int Y)
        andBool 0 <=Int Y andBool ( Y <Int W *Int 8 ) andBool Y modInt 8 ==Int 0
-      [simplification]
+      [simplification, preserves-definedness]
 
     // #range
 
