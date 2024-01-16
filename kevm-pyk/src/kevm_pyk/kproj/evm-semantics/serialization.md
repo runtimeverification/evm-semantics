@@ -59,10 +59,10 @@ Address/Hash Helpers
     rule [#newAddr]:        #newAddr(ACCT, NONCE) => #addr(#parseHexWord(Keccak256bytes(#rlpEncode([#addrBytes(ACCT), NONCE]))))                                                          [concrete]
     rule [#newAddrCreate2]: #newAddr(ACCT, SALT, INITCODE) => #addr(#parseHexWord(Keccak256bytes(b"\xff" +Bytes #addrBytes(ACCT) +Bytes #wordBytes(SALT) +Bytes #parseByteStack(Keccak256bytes(INITCODE))))) [concrete]
 
-    syntax Account ::= #sender ( TxData , Int , Bytes , Bytes ) [function, klabel(#senderTxData)]
-                     | #sender ( Bytes  , Int , Bytes , Bytes ) [function, klabel(#senderAux)   ]
-                     | #sender ( Bytes )                        [function, klabel(#senderAux2)  ]
- // -----------------------------------------------------------------------------------------------
+    syntax Account ::= #sender ( TxData , Int , Bytes , Bytes ) [function, klabel(#senderTxData)    ]
+                     | #sender ( Bytes  , Int , Bytes , Bytes ) [function, klabel(#senderAux), total]
+                     | #sender ( Bytes )                        [function, klabel(#senderAux2)      ]
+ // -------------------------------------------------------------------------------------------------
     rule #sender(_:TxData, TW => TW +Int 27, _, _)
       requires TW ==Int 0 orBool TW ==Int 1
 
