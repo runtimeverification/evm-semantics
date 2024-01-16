@@ -279,7 +279,7 @@ class KEVMCLIArgs(KCLIArgs):
         args.add_argument(
             '--no-counterexample-information',
             dest='counterexample_info',
-            action='store_true',
+            action='store_false',
             help='Do not show models for failing nodes.',
         )
         args.add_argument(
