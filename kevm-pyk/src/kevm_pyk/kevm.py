@@ -932,8 +932,8 @@ class KEVM(KProve, KRun):
         return KApply('abi_type_' + type, [value])
 
     @staticmethod
-    def abi_tuple(values: list[KInner]) -> KApply:
-        return KApply('abi_type_tuple', [KEVM.typed_args(values)])
+    def abi_tuple(values: list[KInner], has_dynamic_types: KInner) -> KApply:
+        return KApply('abi_type_tuple', [KEVM.typed_args(values), has_dynamic_types])
 
     @staticmethod
     def abi_array(elem_type: KInner, length: KInner, elems: list[KInner]) -> KApply:
@@ -943,9 +943,13 @@ class KEVM(KProve, KRun):
     def abi_dynamic_array(elem_type: KInner) -> KApply:
         return KApply('abi_type_dynamic_array', [elem_type])
 
+    # @staticmethod
+    # def abi_dynamic_bytes_array(elem_type: KInner) -> KApply:
+    #     return KApply('abi_type_dynamic_bytes_array', [elem_type])
+
     @staticmethod
-    def abi_dynamic_bytes_array(elem_type: KInner) -> KApply:
-        return KApply('abi_type_dynamic_bytes_array', [elem_type])
+    def abi_bytes_array(length: KInner, elems_size: KInner, elems: list[KInner]) -> KApply:
+        return KApply('abi_type_bytes_array', [length, elems_size, KEVM.typed_args(elems)])
 
     @staticmethod
     def empty_typedargs() -> KApply:
