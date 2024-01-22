@@ -590,6 +590,8 @@ def exec_view_kcfg(
     def custom_view(element: KCFGElem) -> list[str]:
         if type(element) is KCFG.Edge:
             return list(element.rules)
+        if type(element) is KCFG.NDBranch:
+            return list(element.rules)
         return []
 
     proof_view = APRProofViewer(proof, kevm, node_printer=node_printer, custom_view=custom_view)
