@@ -278,7 +278,9 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
  // ------------------------------------------------------------------------------
     rule #encodeArgs(ARGS) => #encodeArgsAux(ARGS, #lenOfHeads(ARGS), .Bytes, .Bytes)
    //  TODO(palina): this has to be modified if the struct has a dyn-sized element
-    rule #encodeArgs(#tuple(ARGS, _)) => #encodeArgs(ARGS)
+    rule #encodeArgs(#tuple(ARGS, B)) => #encodeArgs(ARGS)
+      // requires B
+
     rule #encodeArgsAux(.TypedArgs, _:Int, HEADS, TAILS) => HEADS +Bytes TAILS
 
     rule #encodeArgsAux((ARG, ARGS), OFFSET, HEADS, TAILS)
@@ -521,8 +523,9 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
 
     rule #isStaticType(#dynArray( _ )) => false
 
-   // a tuple (i.e., struct) can be encoded as either dynamic or static type
-   // depending on the type of its elements
+   // TODO(palina): a tuple (i.e., struct) can be encoded as either dynamic or static type
+   // depending on the type of its elements — there might be a more efficient way to identify
+   // if a struct contains a dynamic element
     rule #isStaticType(#tuple( _ , B)) => true
       requires B
 
@@ -536,6 +539,8 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #sizeOfDynamicType(#bytes(BS)) => 32 +Int #ceil32(lengthBytes(BS))
 
    // TODO(palina): add size of dynamic type `struct` — the sum of all elements plus size of #bytes or #bytesArray
+   //  rule #sizeOfDynamicType(#tuple(ARGS, B)) => 
+   //    requires notBool B
 
     rule #sizeOfDynamicType(#array(T, N, _)) => 32 *Int (1 +Int N)
       requires #isStaticType(T)
@@ -547,9 +552,7 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #sizeOfDynamicType(#dynArray(T)) => 32 *Int (1 +Int #sizeOfDynamicType(T))
       requires notBool #isStaticType(T)
 
-    rule #sizeOfDynamicType(#bytesArray(N, L, _)) => 32 +Int N *Int (64 +Int #ceil32(L)) //  32 *Int (1 +Int #sizeOfDynamicType(T))
-      // requires notBool #isStaticType(T)
-      // TODO(palina): ensures `lengthBytes(BS) == L`
+    rule #sizeOfDynamicType(#bytesArray(N, L, _)) => 32 +Int N *Int (64 +Int #ceil32(L))
 
     syntax Int ::= #sizeOfDynamicTypeAux ( TypedArgs ) [function]
  // -------------------------------------------------------------
@@ -666,13 +669,15 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
 
     // dynamic Type
     rule #enc(        #bytes(BS)) => #encBytes(lengthBytes(BS), BS)
+    // length of `bytes` variable is <= 1 Gb
+      ensures lengthBytes(BS) <=Int 1073741824
+
     rule #enc(#array(_, N, DATA)) => #enc(#uint256(N)) +Bytes #encodeArgs(DATA)
     rule #enc(      #string(STR)) => #enc(#bytes(String2Bytes(STR)))
     rule #enc(#bytesArray(N, L, DATA)) => #enc(#uint256(N)) +Bytes #encodeArgsBytes(DATA, L)
 
-   // TODO(palina): placeholder rule for dynamic arrays
+   // TODO: placeholder rule for dynamic arrays
     rule #enc(#dynArray(T)) => #enc(T)
-   //  rule #enc(#dynBytesArray(T)) => #enc(T)
 
     syntax Bytes ::= #encBytes ( Int , Bytes ) [function]
  // -----------------------------------------------------
