@@ -133,7 +133,6 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
                       | #string  ( String )                     [klabel(abi_type_string),  symbol]
                       | #array   ( TypedArg , Int , TypedArgs ) [klabel(abi_type_array),   symbol]
                       | #dynArray( TypedArg )                   [klabel(abi_type_dynamic_array), symbol]
-                      | #dynBytesArray( TypedArg )              [klabel(abi_type_dynamic_bytes_array), symbol]
                       | #bytesArray   ( Int , Int , TypedArgs ) [klabel(abi_type_bytes_array), symbol]
                       | #tuple   ( TypedArgs , Bool )           [klabel(abi_type_tuple),   symbol]
  // ----------------------------------------------------------------------------------------------
@@ -269,10 +268,7 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
 
     rule #typeName( #array(T, _, _)) => #typeName(T) +String "[]"
 
-   // TODO(palina): the type name differs between `bytes` and `T[]`
     rule #typeName( #dynArray( T )) => #typeName(T) +String "[]"
-
-    rule #typeName( #dynBytesArray( T ) ) => #typeName(T)
 
     rule #typeName( #tuple(TARGS, _ ))   => "(" +String #generateSignatureArgs(TARGS) +String ")"
     rule #typeName( #bytesArray( _, _, _ )) => "bytes[]"
@@ -409,10 +405,7 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
 
     rule #lenOfHead(#array(_, _, _)) => 32
 
-   // TODO(palina):
     rule #lenOfHead(#dynArray( _ )) => 32
-    rule #lenOfHead(#dynBytesArray( _ )) => 32
-
     rule #lenOfHead(#bytesArray( _, _, _ )) => 32
 
     syntax Bool ::= #isStaticType ( TypedArg ) [function, total]
@@ -527,8 +520,6 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #isStaticType(#array(_, _, _)) => false
 
     rule #isStaticType(#dynArray( _ )) => false
-
-    rule #isStaticType(#dynBytesArray( _ )) => false
 
    // a tuple (i.e., struct) can be encoded as either dynamic or static type
    // depending on the type of its elements
@@ -677,15 +668,29 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #enc(        #bytes(BS)) => #encBytes(lengthBytes(BS), BS)
     rule #enc(#array(_, N, DATA)) => #enc(#uint256(N)) +Bytes #encodeArgs(DATA)
     rule #enc(      #string(STR)) => #enc(#bytes(String2Bytes(STR)))
-    rule #enc(#bytesArray(N, L, DATA)) => #enc(#uint256(N)) +Bytes #encodeArgs(DATA)
+    rule #enc(#bytesArray(N, L, DATA)) => #enc(#uint256(N)) +Bytes #encodeArgsBytes(DATA, L)
 
    // TODO(palina): placeholder rule for dynamic arrays
     rule #enc(#dynArray(T)) => #enc(T)
-    rule #enc(#dynBytesArray(T)) => #enc(T)
+   //  rule #enc(#dynBytesArray(T)) => #enc(T)
 
     syntax Bytes ::= #encBytes ( Int , Bytes ) [function]
  // -----------------------------------------------------
     rule #encBytes(N, BS) => #enc(#uint256(N)) +Bytes BS +Bytes #bufStrict(#ceil32(N) -Int N, 0)
+
+   // Auxilliary bytes encoding functions (for elements of `bytes[]`):
+    syntax Bytes ::= #encBytes ( Int , TypedArg ) [function]
+    syntax Bytes ::= #encodeArgsBytes( TypedArgs, Int ) [function]
+    syntax Bytes ::= #encodeArgsAuxBytes ( TypedArgs , Int , Bytes , Bytes, Int ) [function]
+ // -----------------------------------------------------
+    rule #encBytes(N, #bytes(BS)) => #enc(#uint256(N)) +Bytes BS +Bytes #bufStrict(#ceil32(N) -Int N, 0)
+      ensures lengthBytes(BS) ==Int N
+
+    rule #encodeArgsBytes(ARGS, N) => #encodeArgsAuxBytes(ARGS, #lenOfHeads(ARGS), .Bytes, .Bytes, N)
+    rule #encodeArgsAuxBytes(.TypedArgs, _:Int, HEADS, TAILS, N) => HEADS +Bytes TAILS
+
+    rule #encodeArgsAuxBytes((ARG, ARGS), OFFSET, HEADS, TAILS, N)
+        => #encodeArgsAuxBytes(ARGS, OFFSET +Int #sizeOfDynamicType(ARG), HEADS +Bytes #enc(#uint256(OFFSET)), TAILS +Bytes #encBytes(N, ARG), N)
 ```
 
 ```k
