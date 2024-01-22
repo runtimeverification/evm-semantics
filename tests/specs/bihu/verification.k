@@ -22,8 +22,8 @@ module VERIFICATION
   // Arithmetic
   // ########################
 
-    rule 0 <=Int X /Int Y             => true requires 0 <=Int X andBool X <Int pow256 andBool 0 <Int  Y andBool Y <Int pow256 [simplification]
-    rule         X /Int Y <Int pow256 => true requires 0 <=Int X andBool X <Int pow256 andBool 0 <Int  Y andBool Y <Int pow256 [simplification]
+    rule 0 <=Int X /Int Y             => true requires 0 <=Int X andBool X <Int pow256 andBool 0 <Int  Y andBool Y <Int pow256 [simplification, preserves-definedness]
+    rule         X /Int Y <Int pow256 => true requires 0 <=Int X andBool X <Int pow256 andBool 0 <Int  Y andBool Y <Int pow256 [simplification, preserves-definedness]
 
     rule chop(I1 -Int I2) => I1 -Int I2 requires #rangeUInt(256, I1) andBool #rangeUInt(256, I2) andBool I2 <=Int I1 [simplification]
 
@@ -45,15 +45,15 @@ module VERIFICATION
     rule #roundpower(ACC,                         BASEN, BASED, 0       ) => ACC                                              requires BASEN >Int 0 andBool BASED >=Int BASEN
     rule #roundpower((ACC *Int BASEN) /Int BASED, BASEN, BASED, EXPONENT) => #roundpower(ACC, BASEN, BASED, EXPONENT +Int 1)  requires BASEN >Int 0 andBool BASED >=Int BASEN andBool EXPONENT >=Int 0 [simplification]
 
-    rule 0 <=Int #roundpower(ACC, BASEN, BASED, EXPONENT)              => true  requires ACC >=Int 0 andBool BASEN >Int 0 andBool BASED >=Int BASEN andBool EXPONENT >=Int 0                             [simplification]
-    rule         #roundpower(ACC, BASEN, BASED, EXPONENT) <=Int ACC    => true  requires ACC >=Int 0 andBool BASEN >Int 0 andBool BASED >=Int BASEN andBool EXPONENT >=Int 0                             [simplification]
-    rule         #roundpower(ACC, BASEN, BASED, EXPONENT)  <Int pow256 => true  requires ACC >=Int 0 andBool BASEN >Int 0 andBool BASED >=Int BASEN andBool EXPONENT >=Int 0 andBool ACC <Int 2 ^Int 256 [simplification]
+    rule 0 <=Int #roundpower(ACC, BASEN, BASED, EXPONENT)              => true  requires ACC >=Int 0 andBool BASEN >Int 0 andBool BASED >=Int BASEN andBool EXPONENT >=Int 0                             [simplification, preserves-definedness]
+    rule         #roundpower(ACC, BASEN, BASED, EXPONENT) <=Int ACC    => true  requires ACC >=Int 0 andBool BASEN >Int 0 andBool BASED >=Int BASEN andBool EXPONENT >=Int 0                             [simplification, preserves-definedness]
+    rule         #roundpower(ACC, BASEN, BASED, EXPONENT)  <Int pow256 => true  requires ACC >=Int 0 andBool BASEN >Int 0 andBool BASED >=Int BASEN andBool EXPONENT >=Int 0 andBool ACC <Int 2 ^Int 256 [simplification, preserves-definedness]
 
-    rule 0 <=Int (#roundpower(ACC, BASEN, BASED, EXPONENT) *Int 10)             => true  requires  ACC >=Int 0 andBool BASEN >Int 0 andBool BASED >=Int BASEN andBool EXPONENT >=Int 0                                     [simplification]
-    rule         (#roundpower(ACC, BASEN, BASED, EXPONENT) *Int 10) <Int pow256 => true  requires  ACC >=Int 0 andBool BASEN >Int 0 andBool BASED >=Int BASEN andBool EXPONENT >=Int 0 andBool ACC *Int 10 <Int 2 ^Int 256 [simplification]
+    rule 0 <=Int (#roundpower(ACC, BASEN, BASED, EXPONENT) *Int 10)             => true  requires  ACC >=Int 0 andBool BASEN >Int 0 andBool BASED >=Int BASEN andBool EXPONENT >=Int 0                                     [simplification, preserves-definedness]
+    rule         (#roundpower(ACC, BASEN, BASED, EXPONENT) *Int 10) <Int pow256 => true  requires  ACC >=Int 0 andBool BASEN >Int 0 andBool BASED >=Int BASEN andBool EXPONENT >=Int 0 andBool ACC *Int 10 <Int 2 ^Int 256 [simplification, preserves-definedness]
 
-    rule 0 <=Int (#roundpower(ACC, BASEN, BASED, EXPONENT) *Int A /Int B *Int C)            => true  requires  ACC >=Int 0 andBool BASEN >Int 0 andBool BASED >=Int BASEN andBool EXPONENT >=Int 0 andBool A >=Int 0 andBool B >Int 0 andBool C >=Int 0                                                  [simplification]
-    rule          #roundpower(ACC, BASEN, BASED, EXPONENT) *Int A /Int B *Int C <Int pow256 => true  requires  ACC >=Int 0 andBool BASEN >Int 0 andBool BASED >=Int BASEN andBool EXPONENT >=Int 0 andBool A >=Int 0 andBool B >Int 0 andBool C >=Int 0 andBool ACC *Int A /Int B *Int C <Int 2 ^Int 256 [simplification]
+    rule 0 <=Int (#roundpower(ACC, BASEN, BASED, EXPONENT) *Int A /Int B *Int C)            => true  requires  ACC >=Int 0 andBool BASEN >Int 0 andBool BASED >=Int BASEN andBool EXPONENT >=Int 0 andBool A >=Int 0 andBool B >Int 0 andBool C >=Int 0                                                  [simplification, preserves-definedness]
+    rule          #roundpower(ACC, BASEN, BASED, EXPONENT) *Int A /Int B *Int C <Int pow256 => true  requires  ACC >=Int 0 andBool BASEN >Int 0 andBool BASED >=Int BASEN andBool EXPONENT >=Int 0 andBool A >=Int 0 andBool B >Int 0 andBool C >=Int 0 andBool ACC *Int A /Int B *Int C <Int 2 ^Int 256 [simplification, preserves-definedness]
 
 
     syntax Int ::= "@remainingTokens" "(" Int "," Int "," Int ")"    [macro]
