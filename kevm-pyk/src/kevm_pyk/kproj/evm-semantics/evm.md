@@ -1749,9 +1749,9 @@ Precompiled Contracts
          <callData> DATA </callData>
          <output> _ => #ecrec(#range(DATA, 0, 32), #range(DATA, 32, 32), #range(DATA, 64, 32), #range(DATA, 96, 32)) </output>
 
-    syntax Bytes ::= #ecrec ( Bytes , Bytes , Bytes , Bytes ) [function, smtlib(ecrec)]
-                   | #ecrec ( Account )                       [function]
- // --------------------------------------------------------------------
+    syntax Bytes ::= #ecrec ( Bytes , Bytes , Bytes , Bytes ) [function, smtlib(ecrec), total]
+                   | #ecrec ( Account )                       [function, total]
+ // ----------------------------------------------------------------------------
     rule [ecrec]: #ecrec(HASH, SIGV, SIGR, SIGS) => #ecrec(#sender(HASH, #asWord(SIGV), SIGR, SIGS)) [concrete]
 
     rule #ecrec(.Account) => .Bytes
@@ -2038,8 +2038,8 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
       requires Ghassstorestipend << SCHED >>
        andBool GAVAIL <=Gas Gcallstipend < SCHED >
 
-    rule <k> #gasExec(SCHED, EXP _ 0)  => Gexp < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, EXP _ W1) => Gexp < SCHED > +Int (Gexpbyte < SCHED > *Int (1 +Int (log256Int(W1)))) ... </k> requires W1 =/=Int 0
+    rule <k> #gasExec(SCHED, EXP _ W1) => Gexp < SCHED > ... </k>                                                         requires W1 <=Int 0
+    rule <k> #gasExec(SCHED, EXP _ W1) => Gexp < SCHED > +Int (Gexpbyte < SCHED > *Int (1 +Int (log256Int(W1)))) ... </k> requires 0 <Int W1 [preserves-definedness]
 
     rule <k> #gasExec(SCHED, CALLDATACOPY    _ _ WIDTH) => Gverylow < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32)) ... </k>
     rule <k> #gasExec(SCHED, RETURNDATACOPY  _ _ WIDTH) => Gverylow < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32)) ... </k>
