@@ -329,6 +329,9 @@ def legacy_explore(
             haskell_log_format=haskell_log_format,
             haskell_log_entries=haskell_log_entries,
             log_axioms_file=log_axioms_file,
+            fallback_on=None,
+            interim_simplification=None,
+            no_post_exec_simplify=None,
         ) as server:
             with KoreClient('localhost', server.port, bug_report=bug_report, bug_report_id=id) as client:
                 yield KCFGExplore(
