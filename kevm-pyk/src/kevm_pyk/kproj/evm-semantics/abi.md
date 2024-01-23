@@ -144,7 +144,7 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
 
     syntax Bytes ::= #signatureCallData ( String, TypedArgs ) [function]
  // --------------------------------------------------------------------
-    rule #signatureCallData( FNAME , ARGS ) => #parseByteStack(substrString(Keccak256bytes(String2Bytes(#generateSignature(FNAME, ARGS))), 0, 8))
+    rule #signatureCallData( FNAME , ARGS ) => #parseByteStack(substrString(Keccak256(String2Bytes(#generateSignature(FNAME, ARGS))), 0, 8))
 
     syntax String ::= #generateSignature     ( String, TypedArgs ) [function, total]
                     | #generateSignatureArgs ( TypedArgs )         [function, total]
@@ -796,7 +796,7 @@ where `1003892871367861763272476045097431689001461395759728643661426852242313133
     syntax List ::= #getEventTopics ( String , EventArgs ) [function]
  // -----------------------------------------------------------------
     rule #getEventTopics(ENAME, EARGS)
-      => ListItem(#parseHexWord(Keccak256bytes(String2Bytes(#generateSignature(ENAME, #getTypedArgs(EARGS))))))
+      => ListItem(#parseHexWord(Keccak256(String2Bytes(#generateSignature(ENAME, #getTypedArgs(EARGS))))))
          #getIndexedArgs(EARGS)
 
     syntax TypedArgs ::= #getTypedArgs ( EventArgs ) [function]
