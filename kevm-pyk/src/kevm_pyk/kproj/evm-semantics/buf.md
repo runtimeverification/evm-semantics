@@ -39,8 +39,9 @@ module BUF
  // rule #powByteLen(SIZE) => 2 ^Int (SIZE *Int 8)
     rule 2 ^Int (SIZE *Int 8) => #powByteLen(SIZE) [symbolic(SIZE), simplification]
 
-    rule 0    <Int #powByteLen(SIZE) => true requires 0 <=Int SIZE [simplification]
-    rule SIZE <Int #powByteLen(SIZE) => true requires 0 <=Int SIZE [simplification]
+    rule 0    <Int #powByteLen(SIZE) => true requires 0 <=Int SIZE [simplification, preserves-definedness]
+    rule SIZE <Int #powByteLen(SIZE) => true requires 0 <=Int SIZE [simplification, preserves-definedness]
+    rule #write(WM, IDX, VAL) => WM [ IDX := #buf(1, VAL) ] [simplification]
 
     rule #bufStrict(SIZE, DATA) => #buf(SIZE, DATA)
       requires #range(0 <= DATA < (2 ^Int (SIZE *Int 8)))

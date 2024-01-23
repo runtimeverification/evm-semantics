@@ -257,13 +257,14 @@ class KEVMCLIArgs(KCLIArgs):
         args.add_argument(
             '--break-on-calls',
             dest='break_on_calls',
-            default=True,
+            default=False,
             action='store_true',
             help='Store a node for every EVM call made.',
         )
         args.add_argument(
             '--no-break-on-calls',
             dest='break_on_calls',
+            default=True,
             action='store_false',
             help='Do not store a node for every EVM call made.',
         )
@@ -317,16 +318,28 @@ class KEVMCLIArgs(KCLIArgs):
         args.add_argument(
             '--counterexample-information',
             dest='counterexample_info',
-            default=False,
+            default=True,
             action='store_true',
             help='Show models for failing nodes.',
         )
         args.add_argument(
+            '--no-counterexample-information',
+            dest='counterexample_info',
+            action='store_false',
+            help='Do not show models for failing nodes.',
+        )
+        args.add_argument(
             '--fail-fast',
             dest='fail_fast',
-            default=False,
+            default=True,
             action='store_true',
             help='Stop execution on other branches if a failing node is detected.',
+        )
+        args.add_argument(
+            '--no-fail-fast',
+            dest='fail_fast',
+            action='store_false',
+            help='Continue execution on other branches if a failing node is detected.',
         )
         return args
 

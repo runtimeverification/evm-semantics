@@ -709,7 +709,7 @@ After executing a transaction, it's necessary to have the effect of the substate
 ```k
     syntax Int ::= "M3:2048" "(" Bytes ")" [function]
  // -------------------------------------------------
-    rule M3:2048(WS) => setBloomFilterBits(#parseByteStack(Keccak256bytes(WS)))
+    rule M3:2048(WS) => setBloomFilterBits(#parseByteStack(Keccak256(WS)))
 
     syntax Int ::= setBloomFilterBits(Bytes) [function]
  // ---------------------------------------------------
@@ -1314,29 +1314,16 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
           => #touchAccounts ACCTFROM ACCTTO ~> #accessAccounts ACCTFROM ACCTTO ~> #loadProgram BYTES ~> #initVM ~> #precompiled?(ACCTCODE, SCHED) ~> #execute
          ...
          </k>
-         <useGas> true </useGas>
+         <useGas> USEGAS:Bool </useGas>
          <callDepth> CD => CD +Int 1 </callDepth>
          <callData> _ => ARGS </callData>
          <callValue> _ => APPVALUE </callValue>
          <id> _ => ACCTTO </id>
-         <gas> _ => GCALL </gas>
-         <callGas> GCALL => 0 </callGas>
+         <gas> GAVAIL:Gas => #if USEGAS #then GCALL:Gas #else GAVAIL:Gas #fi </gas>
+         <callGas> GCALL:Gas => #if USEGAS #then 0:Gas #else GCALL:Gas #fi </callGas>
          <caller> _ => ACCTFROM </caller>
          <static> OLDSTATIC:Bool => OLDSTATIC orBool STATIC </static>
          <schedule> SCHED </schedule>
-
-    rule <k> #mkCall ACCTFROM ACCTTO ACCTCODE BYTES APPVALUE ARGS STATIC:Bool
-          => #touchAccounts ACCTFROM ACCTTO ~> #accessAccounts ACCTFROM ACCTTO ~> #loadProgram BYTES ~> #initVM ~> #precompiled?(ACCTCODE, SCHED) ~> #execute
-          ...
-          </k>
-          <useGas> false </useGas>
-          <callDepth> CD => CD +Int 1 </callDepth>
-          <callData> _ => ARGS </callData>
-          <callValue> _ => APPVALUE </callValue>
-          <id> _ => ACCTTO </id>
-          <caller> _ => ACCTFROM </caller>
-          <static> OLDSTATIC:Bool => OLDSTATIC orBool STATIC </static>
-          <schedule> SCHED </schedule>
 
     syntax InternalOp ::= "#precompiled?" "(" Int "," Schedule ")"
  // --------------------------------------------------------------
@@ -1551,11 +1538,11 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
           => #touchAccounts ACCTFROM ACCTTO ~> #accessAccounts ACCTFROM ACCTTO ~> #loadProgram INITCODE ~> #initVM ~> #execute
          ...
          </k>
-         <useGas> true </useGas>
+         <useGas> USEGAS </useGas>
          <schedule> SCHED </schedule>
          <id> _ => ACCTTO </id>
-         <gas> _ => GCALL </gas>
-         <callGas> GCALL => 0 </callGas>
+         <gas> GAVAIL => #if USEGAS #then GCALL #else GAVAIL #fi </gas>
+         <callGas> GCALL => #if USEGAS #then 0 #else GCALL #fi </callGas>
          <caller> _ => ACCTFROM </caller>
          <callDepth> CD => CD +Int 1 </callDepth>
          <callData> _ => .Bytes </callData>
@@ -1563,22 +1550,6 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          <account>
            <acctID> ACCTTO </acctID>
            <nonce> NONCE => #if Gemptyisnonexistent << SCHED >> #then NONCE +Int 1 #else NONCE #fi </nonce>
-           ...
-         </account>
-
-    rule <k> #mkCreate ACCTFROM ACCTTO VALUE INITCODE
-          => #touchAccounts ACCTFROM ACCTTO ~> #accessAccounts ACCTFROM ACCTTO ~> #loadProgram INITCODE ~> #initVM ~> #execute
-         ...
-         </k>
-         <useGas> false </useGas>
-         <id> _ => ACCTTO </id>
-         <caller> _ => ACCTFROM </caller>
-         <callDepth> CD => CD +Int 1 </callDepth>
-         <callData> _ => .Bytes </callData>
-         <callValue> _ => VALUE </callValue>
-         <account>
-           <acctID> ACCTTO </acctID>
-           <nonce> NONCE => NONCE +Int 1 </nonce>
            ...
          </account>
 
@@ -1778,9 +1749,9 @@ Precompiled Contracts
          <callData> DATA </callData>
          <output> _ => #ecrec(#range(DATA, 0, 32), #range(DATA, 32, 32), #range(DATA, 64, 32), #range(DATA, 96, 32)) </output>
 
-    syntax Bytes ::= #ecrec ( Bytes , Bytes , Bytes , Bytes ) [function, smtlib(ecrec)]
-                   | #ecrec ( Account )                       [function]
- // --------------------------------------------------------------------
+    syntax Bytes ::= #ecrec ( Bytes , Bytes , Bytes , Bytes ) [function, smtlib(ecrec), total]
+                   | #ecrec ( Account )                       [function, total]
+ // ----------------------------------------------------------------------------
     rule [ecrec]: #ecrec(HASH, SIGV, SIGR, SIGS) => #ecrec(#sender(HASH, #asWord(SIGV), SIGR, SIGS)) [concrete]
 
     rule #ecrec(.Account) => .Bytes
@@ -1790,13 +1761,13 @@ Precompiled Contracts
  // ---------------------------------
     rule <k> SHA256 => #end EVMC_SUCCESS ... </k>
          <callData> DATA </callData>
-         <output> _ => #parseHexBytes(Sha256bytes(DATA)) </output>
+         <output> _ => #parseHexBytes(Sha256(DATA)) </output>
 
     syntax PrecompiledOp ::= "RIP160"
  // ---------------------------------
     rule <k> RIP160 => #end EVMC_SUCCESS ... </k>
          <callData> DATA </callData>
-         <output> _ => #padToWidth(32, #parseHexBytes(RipEmd160bytes(DATA))) </output>
+         <output> _ => #padToWidth(32, #parseHexBytes(RipEmd160(DATA))) </output>
 
     syntax PrecompiledOp ::= "ID"
  // -----------------------------
@@ -1875,7 +1846,7 @@ Precompiled Contracts
     syntax PrecompiledOp ::= "BLAKE2F"
  // ----------------------------------
     rule <k> BLAKE2F => #end EVMC_SUCCESS ... </k>
-         <output> _ => #parseByteStack( Blake2Compressbytes( DATA ) ) </output>
+         <output> _ => #parseByteStack( Blake2Compress( DATA ) ) </output>
          <callData> DATA </callData>
       requires lengthBytes( DATA ) ==Int 213
        andBool DATA[212] <=Int 1
@@ -1911,6 +1882,7 @@ Overall Gas
          ...
         </k>
         <useGas> true </useGas>
+
     rule <k> #gas [ _ , _ ] => . ...  </k> <useGas> false </useGas>
 
     rule <k> #gas [ OP ] => #gasExec(SCHED, OP) ~> #deductGas ... </k>
@@ -2066,8 +2038,8 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
       requires Ghassstorestipend << SCHED >>
        andBool GAVAIL <=Gas Gcallstipend < SCHED >
 
-    rule <k> #gasExec(SCHED, EXP _ 0)  => Gexp < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, EXP _ W1) => Gexp < SCHED > +Int (Gexpbyte < SCHED > *Int (1 +Int (log256Int(W1)))) ... </k> requires W1 =/=Int 0
+    rule <k> #gasExec(SCHED, EXP _ W1) => Gexp < SCHED > ... </k>                                                         requires W1 <=Int 0
+    rule <k> #gasExec(SCHED, EXP _ W1) => Gexp < SCHED > +Int (Gexpbyte < SCHED > *Int (1 +Int (log256Int(W1)))) ... </k> requires 0 <Int W1 [preserves-definedness]
 
     rule <k> #gasExec(SCHED, CALLDATACOPY    _ _ WIDTH) => Gverylow < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32)) ... </k>
     rule <k> #gasExec(SCHED, RETURNDATACOPY  _ _ WIDTH) => Gverylow < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32)) ... </k>

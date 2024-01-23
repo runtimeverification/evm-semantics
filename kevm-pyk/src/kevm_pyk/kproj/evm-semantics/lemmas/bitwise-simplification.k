@@ -62,7 +62,7 @@ module BITWISE-SIMPLIFICATION [symbolic]
        andBool 2 ^Int ( log2Int ( pow256 -Int X ) ) ==Int pow256 -Int X
        andBool Z ==Int log2Int ( pow256 -Int X )
        andBool 0 <=Int Y andBool Y <Int 2 ^Int ( 256 -Int Z )
-      [simplification, concrete(X, Z), comm]
+      [simplification, concrete(X, Z), comm, preserves-definedness]
 
     // Generalization of: maxUIntXXX &Int (Y |Int (notMaxUIntXXX &Int T)) => maxUIntXXX &Int Y
     rule X &Int (Y |Int (Z &Int T)) => X &Int Y
@@ -84,8 +84,10 @@ module BITWISE-SIMPLIFICATION [symbolic]
   // shift
   // ###########################################################################
 
-    rule (X <<Int Y) <Int pow256 => true requires 0 <=Int X andBool 0 <=Int Y andBool Y <Int 256 andBool X <Int 2 ^Int (256 -Int Y) [simplification]
+    rule (X <<Int Y) <Int pow256 => true
+      requires 0 <=Int X andBool 0 <=Int Y andBool Y <Int 256 andBool X <Int 2 ^Int (256 -Int Y)
+      [simplification, preserves-definedness]
 
-    rule 0 <=Int (X <<Int Y) => true requires 0 <=Int X andBool 0 <=Int Y [simplification]
+    rule 0 <=Int (X <<Int Y) => true requires 0 <=Int X andBool 0 <=Int Y [simplification, preserves-definedness]
 
 endmodule
