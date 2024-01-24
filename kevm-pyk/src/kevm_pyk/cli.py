@@ -207,26 +207,26 @@ class KEVMCLIArgs(KCLIArgs):
             dest='fallback_on',
             type=list_of(FallbackReason, delim=','),
             default=[],
-            help='Comma-separated reasons to fallback from booster to kore, only usable with --use-booster argument. Options [Branching,Aborted,Stuck].',
+            help='Comma-separated reasons to fallback from booster to kore, only usable with --use-booster. Options [Branching,Aborted,Stuck].',
         )
         args.add_argument(
             '--post-exec-simplify',
             dest='post_exec_simplify',
             default=True,
             action='store_true',
-            help='Always simplify states with kore backend after booster execution.',
+            help='Always simplify states with kore backend after booster execution, only usable with --use-booster.',
         )
         args.add_argument(
             '--no-post-exec-simplify',
             dest='post_exec_simplify',
             action='store_false',
-            help='Do not simplify states with kore backend after booster execution.',
+            help='Do not simplify states with kore backend after booster execution, only usable with --use-booster.',
         )
         args.add_argument(
             '--interim-simplification',
             dest='interim_simplification',
             type=int,
-            help='Max number of steps to execute before applying simplifier to term in booster backend.',
+            help='Max number of steps to execute before applying simplifier to term in booster backend, only usable with --use-booster.',
         )
         args.add_argument(
             '--port',
