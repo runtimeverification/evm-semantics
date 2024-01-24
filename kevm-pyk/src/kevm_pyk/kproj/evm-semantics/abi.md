@@ -138,7 +138,10 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
  // ----------------------------------------------------------------------------------------------
 
     syntax TypedArgs ::= List{TypedArg, ","} [klabel(typedArgs)]
- // ------------------------------------------------------------
+    syntax TypedArgs ::= "concat" "(" TypedArgs "," TypedArgs ")" [function, total]
+ // -------------------------------------------------------------------------------
+   rule concat(.TypedArgs, TA)        => TA
+   rule concat((A, TA:TypedArgs), TB) => concat(TA, (A, TB))
 
     syntax Bytes ::= #abiCallData ( String , TypedArgs ) [function]
  // ---------------------------------------------------------------
@@ -281,8 +284,8 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
 
     rule #encodeArgsAux(.TypedArgs, _:Int, HEADS, TAILS) => HEADS +Bytes TAILS
 
-    rule #encodeArgsAux((#tuple(TARGS), ARGS), OFFSET, HEADS, TAILS)
-        => #encodeArgsAux((TARGS, ARGS), OFFSET, HEADS, TAILS)
+    rule #encodeArgsAux((#tuple(TARGS:TypedArgs), ARGS:TypedArgs), OFFSET, HEADS, TAILS)
+        => #encodeArgsAux(concat(TARGS,ARGS), OFFSET, HEADS, TAILS)
 
     rule #encodeArgsAux((ARG, ARGS), OFFSET, HEADS, TAILS)
         => #encodeArgsAux(ARGS, OFFSET, HEADS +Bytes #enc(ARG), TAILS)
