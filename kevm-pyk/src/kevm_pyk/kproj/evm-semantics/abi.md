@@ -284,16 +284,13 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
 
     rule #encodeArgsAux(.TypedArgs, _:Int, HEADS, TAILS) => HEADS +Bytes TAILS
 
-    rule #encodeArgsAux((#tuple(TARGS:TypedArgs), ARGS:TypedArgs), OFFSET, HEADS, TAILS)
-        => #encodeArgsAux(concat(TARGS,ARGS), OFFSET, HEADS, TAILS)
-
     rule #encodeArgsAux((ARG, ARGS), OFFSET, HEADS, TAILS)
         => #encodeArgsAux(ARGS, OFFSET, HEADS +Bytes #enc(ARG), TAILS)
-      requires #isStaticType(ARG) andBool notBool #isTuple(ARG)
+      requires #isStaticType(ARG)
 
     rule #encodeArgsAux((ARG, ARGS), OFFSET, HEADS, TAILS)
         => #encodeArgsAux(ARGS, OFFSET +Int #sizeOfDynamicType(ARG), HEADS +Bytes #enc(#uint256(OFFSET)), TAILS +Bytes #enc(ARG))
-      requires notBool(#isStaticType(ARG)) andBool notBool #isTuple(ARG)
+      requires notBool(#isStaticType(ARG))
 
     syntax Bool ::= #isTuple (TypedArg) [function, total]
  // -----------------------------------------------------
@@ -414,7 +411,8 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
 
     rule #lenOfHead(   #string( _ )) => 32
 
-    rule #lenOfHead( #tuple( ARGS )) => #lenOfHeads(ARGS)
+    rule #lenOfHead( #tuple( ARGS )) => #lenOfHeads(ARGS) requires #isStaticType(#tuple(ARGS))
+    rule #lenOfHead( #tuple( ARGS )) => 32 requires notBool #isStaticType(#tuple(ARGS))
 
     rule #lenOfHead(#array(_, _, _)) => 32
 
@@ -548,7 +546,7 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
  // ---------------------------------------------------------
     rule #sizeOfDynamicType(#bytes(BS)) => 32 +Int #ceil32(lengthBytes(BS))
 
-    rule #sizeOfDynamicType(#tuple(ARGS)) => #sizeOfDynamicTypeAux(ARGS)
+    rule #sizeOfDynamicType(#tuple(ARGS)) => 32 +Int #sizeOfDynamicTypeAux(ARGS)
 
     rule #sizeOfDynamicType(#array(T, N, _)) => 32 *Int (1 +Int N)
       requires #isStaticType(T)
@@ -562,10 +560,13 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
 
     rule #sizeOfDynamicType(#bytesArray(N, L, _)) => 32 +Int N *Int (64 +Int #ceil32(L))
 
-    syntax Int ::= #sizeOfDynamicTypeAux ( TypedArgs ) [function]
- // -------------------------------------------------------------
+    syntax Int ::= #sizeOfDynamicTypeAux ( TypedArgs ) [function, total]
+ // --------------------------------------------------------------------
     rule #sizeOfDynamicTypeAux(TARG, TARGS) => #sizeOfDynamicType(TARG) +Int #sizeOfDynamicTypeAux(TARGS)
       requires notBool #isStaticType(TARG)
+
+    rule #sizeOfDynamicTypeAux(TARG, TARGS) => #lenOfHead(TARG) +Int #sizeOfDynamicTypeAux(TARGS)
+      requires #isStaticType(TARG)
 
     rule #sizeOfDynamicTypeAux(.TypedArgs) => 0
 
@@ -674,6 +675,7 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #enc( #bytes32( DATA )) => #bufStrict(32, #getValue(#bytes32( DATA )))
 
     rule #enc(   #bool( DATA )) => #bufStrict(32, #getValue(   #bool( DATA )))
+    rule #enc(  #tuple( DATA )) => #encodeArgs(DATA)
 
     // dynamic Type
     rule #enc(        #bytes(BS)) => #encBytes(lengthBytes(BS), BS)
