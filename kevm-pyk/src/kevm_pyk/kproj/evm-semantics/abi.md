@@ -134,7 +134,7 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
                       | #array   ( TypedArg , Int , TypedArgs ) [klabel(abi_type_array),   symbol]
                       | #dynArray( TypedArg )                   [klabel(abi_type_dynamic_array), symbol]
                       | #bytesArray   ( Int , Int , TypedArgs ) [klabel(abi_type_bytes_array), symbol]
-                      | #tuple   ( TypedArgs , Bool )           [klabel(abi_type_tuple),   symbol]
+                      | #tuple   ( TypedArgs )                  [klabel(abi_type_tuple),   symbol]
  // ----------------------------------------------------------------------------------------------
 
     syntax TypedArgs ::= List{TypedArg, ","} [klabel(typedArgs)]
@@ -270,26 +270,32 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
 
     rule #typeName( #dynArray( T )) => #typeName(T) +String "[]"
 
-    rule #typeName( #tuple(TARGS, _ ))   => "(" +String #generateSignatureArgs(TARGS) +String ")"
+    rule #typeName( #tuple( ARGS ))  => "(" +String #generateSignatureArgs(ARGS) +String ")"
+
     rule #typeName( #bytesArray( _, _, _ )) => "bytes[]"
 
     syntax Bytes ::= #encodeArgs    ( TypedArgs )                       [function]
     syntax Bytes ::= #encodeArgsAux ( TypedArgs , Int , Bytes , Bytes ) [function]
  // ------------------------------------------------------------------------------
     rule #encodeArgs(ARGS) => #encodeArgsAux(ARGS, #lenOfHeads(ARGS), .Bytes, .Bytes)
-   //  TODO(palina): this has to be modified if the struct has a dyn-sized element
-    rule #encodeArgs(#tuple(ARGS, B)) => #encodeArgs(ARGS)
-      // requires B
 
     rule #encodeArgsAux(.TypedArgs, _:Int, HEADS, TAILS) => HEADS +Bytes TAILS
 
+    rule #encodeArgsAux((#tuple(TARGS), ARGS), OFFSET, HEADS, TAILS)
+        => #encodeArgsAux((TARGS, ARGS), OFFSET, HEADS, TAILS)
+
     rule #encodeArgsAux((ARG, ARGS), OFFSET, HEADS, TAILS)
         => #encodeArgsAux(ARGS, OFFSET, HEADS +Bytes #enc(ARG), TAILS)
-      requires #isStaticType(ARG)
+      requires #isStaticType(ARG) andBool notBool #isTuple(ARG)
 
     rule #encodeArgsAux((ARG, ARGS), OFFSET, HEADS, TAILS)
         => #encodeArgsAux(ARGS, OFFSET +Int #sizeOfDynamicType(ARG), HEADS +Bytes #enc(#uint256(OFFSET)), TAILS +Bytes #enc(ARG))
-      requires notBool(#isStaticType(ARG))
+      requires notBool(#isStaticType(ARG)) andBool notBool #isTuple(ARG)
+
+    syntax Bool ::= #isTuple (TypedArg) [function, total]
+ // -----------------------------------------------------
+    rule #isTuple(#tuple(_)) => true
+    rule #isTuple(_) => false
 
     syntax Int ::= #lenOfHeads ( TypedArgs ) [function, total]
  // ----------------------------------------------------------
@@ -404,6 +410,8 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #lenOfHead(    #bytes( _ )) => 32
 
     rule #lenOfHead(   #string( _ )) => 32
+
+    rule #lenOfHead( #tuple( ARGS )) => #lenOfHeads(ARGS)
 
     rule #lenOfHead(#array(_, _, _)) => 32
 
@@ -523,24 +531,21 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
 
     rule #isStaticType(#dynArray( _ )) => false
 
-   // TODO(palina): a tuple (i.e., struct) can be encoded as either dynamic or static type
-   // depending on the type of its elements — there might be a more efficient way to identify
-   // if a struct contains a dynamic element
-    rule #isStaticType(#tuple( _ , B)) => true
-      requires B
-
-    rule #isStaticType(#tuple( _ , B)) => false
-      requires notBool B
+    rule #isStaticType(#tuple( ARGS )) => notBool #hasDynamicType(ARGS)
 
     rule #isStaticType(#bytesArray( _ , _ , _)) => false
+
+    syntax Bool ::= #hasDynamicType(TypedArgs) [function, total]
+ // ------------------------------------------------------------
+    rule #hasDynamicType(.TypedArgs) => false
+    rule #hasDynamicType(T, TS ) => #hasDynamicType(TS) requires #isStaticType(T)
+    rule #hasDynamicType(T, _ )  => true requires notBool #isStaticType(T)
 
     syntax Int ::= #sizeOfDynamicType ( TypedArg ) [function]
  // ---------------------------------------------------------
     rule #sizeOfDynamicType(#bytes(BS)) => 32 +Int #ceil32(lengthBytes(BS))
 
-   // TODO(palina): add size of dynamic type `struct` — the sum of all elements plus size of #bytes or #bytesArray
-   //  rule #sizeOfDynamicType(#tuple(ARGS, B)) => 
-   //    requires notBool B
+    rule #sizeOfDynamicType(#tuple(ARGS)) => #sizeOfDynamicTypeAux(ARGS)
 
     rule #sizeOfDynamicType(#array(T, N, _)) => 32 *Int (1 +Int N)
       requires #isStaticType(T)
@@ -692,7 +697,7 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
       ensures lengthBytes(BS) ==Int N
 
     rule #encodeArgsBytes(ARGS, N) => #encodeArgsAuxBytes(ARGS, #lenOfHeads(ARGS), .Bytes, .Bytes, N)
-    rule #encodeArgsAuxBytes(.TypedArgs, _:Int, HEADS, TAILS, N) => HEADS +Bytes TAILS
+    rule #encodeArgsAuxBytes(.TypedArgs, _:Int, HEADS, TAILS, _) => HEADS +Bytes TAILS
 
     rule #encodeArgsAuxBytes((ARG, ARGS), OFFSET, HEADS, TAILS, N)
         => #encodeArgsAuxBytes(ARGS, OFFSET +Int #sizeOfDynamicType(ARG), HEADS +Bytes #enc(#uint256(OFFSET)), TAILS +Bytes #encBytes(N, ARG), N)
