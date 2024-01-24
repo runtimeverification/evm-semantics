@@ -51,6 +51,7 @@ if TYPE_CHECKING:
 
     from pyk.kast.outer import KClaim
     from pyk.kcfg.kcfg import NodeIdLike
+    from pyk.kcfg.tui import KCFGElem
     from pyk.proof.proof import Proof
     from pyk.utils import BugReport
 
@@ -599,7 +600,15 @@ def exec_view_kcfg(
     )
 
     node_printer = kevm_node_printer(kevm, proof)
-    proof_view = APRProofViewer(proof, kevm, node_printer=node_printer)
+
+    def custom_view(element: KCFGElem) -> list[str]:
+        if type(element) is KCFG.Edge:
+            return list(element.rules)
+        if type(element) is KCFG.NDBranch:
+            return list(element.rules)
+        return []
+
+    proof_view = APRProofViewer(proof, kevm, node_printer=node_printer, custom_view=custom_view)
 
     proof_view.run()
 
