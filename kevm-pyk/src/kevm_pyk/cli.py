@@ -5,6 +5,7 @@ from functools import cached_property
 from typing import TYPE_CHECKING
 
 from pyk.cli.args import KCLIArgs
+from pyk.kore.rpc import FallbackReason
 
 from .utils import arg_pair_of
 
@@ -204,7 +205,7 @@ class KEVMCLIArgs(KCLIArgs):
         args.add_argument(
             '--fallback-on',
             dest='fallback_on',
-            type=list_of(str, delim=','),
+            type=list_of(FallbackReason, delim=','),
             default=[],
             help='Comma-separated reasons to fallback from booster to kore, only usable with --use-booster argument. Options [Branching,Aborted,Stuck].',
         )
@@ -220,6 +221,12 @@ class KEVMCLIArgs(KCLIArgs):
             dest='post_exec_simplify',
             action='store_false',
             help='Do not simplify states with kore backend after booster execution.',
+        )
+        args.add_argument(
+            '--interim-simplification',
+            dest='interim_simplification',
+            type=int,
+            help='Max number of steps to execute before applying simplifier to term in booster backend.',
         )
         args.add_argument(
             '--port',

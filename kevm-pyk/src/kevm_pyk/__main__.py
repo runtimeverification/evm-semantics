@@ -52,6 +52,7 @@ if TYPE_CHECKING:
     from pyk.kast.outer import KClaim
     from pyk.kcfg.kcfg import NodeIdLike
     from pyk.kcfg.tui import KCFGElem
+    from pyk.kore.rpc import FallbackReason
     from pyk.proof.proof import Proof
     from pyk.utils import BugReport
 
@@ -299,7 +300,8 @@ def exec_prove(
     fail_fast: bool = False,
     always_check_subsumption: bool = True,
     fast_check_subsumption: bool = True,
-    fallback_on: Iterable[str] = (),
+    fallback_on: Iterable[FallbackReason] = (),
+    interim_simplification: int | None = None,
     post_exec_simplify: bool = True,
     **kwargs: Any,
 ) -> None:
@@ -325,15 +327,7 @@ def exec_prove(
     include_dirs += config.INCLUDE_DIRS
 
     if kore_rpc_command is None:
-        if use_booster:
-            _kore_rpc_command = ['kore-rpc-booster']
-            if fallback_on:
-                _kore_rpc_command += ['--fallback-on', ','.join(fallback_on)]
-            if not post_exec_simplify:
-                _kore_rpc_command += ['--no-post-exec-simplify']
-            kore_rpc_command = tuple(_kore_rpc_command)
-        else:
-            kore_rpc_command = ('kore-rpc',)
+        kore_rpc_command = ('kore-rpc-booster',) if use_booster else ('kore-rpc',)
     elif isinstance(kore_rpc_command, str):
         kore_rpc_command = kore_rpc_command.split()
 
@@ -379,6 +373,9 @@ def exec_prove(
             smt_timeout=smt_timeout,
             smt_retry_limit=smt_retry_limit,
             trace_rewrites=trace_rewrites,
+            fallback_on=fallback_on,
+            interim_simplification=interim_simplification,
+            no_post_exec_simplify=(not post_exec_simplify),
         ) as kcfg_explore:
             proof_problem: Proof
             if is_functional(claim):
