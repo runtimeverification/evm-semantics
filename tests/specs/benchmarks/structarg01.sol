@@ -3,8 +3,9 @@ pragma experimental ABIEncoderV2;
 
 contract structarg01 {
     struct Var {
-        uint a;
-        bytes b;
+        bytes a;
+        uint b;
+        uint256 c;
     }
 
     function execute(Var p) public returns (uint) {
