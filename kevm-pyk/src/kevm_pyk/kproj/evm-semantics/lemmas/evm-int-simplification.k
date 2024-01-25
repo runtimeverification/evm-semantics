@@ -12,6 +12,7 @@ module EVM-INT-SIMPLIFICATION-COMMON
     imports INT
     imports BOOL
     imports EVM-TYPES
+    imports SERIALIZATION
 
   // ###########################################################################
   // up/Int
@@ -51,5 +52,13 @@ module EVM-INT-SIMPLIFICATION-COMMON
       X =/=Int ((X up/Int Y) *Int Y) => X modInt Y =/=Int 0
       requires 0 <Int Y
       [simplification, comm, preserves-definedness]
+
+  // ###########################################################################
+  // #asWord
+  // ###########################################################################
+
+  rule #asWord ( BA ) <Int X => true
+    requires 2 ^Int ( lengthBytes(BA) *Int 8) <=Int X
+    [concrete(X), simplification]
 
 endmodule

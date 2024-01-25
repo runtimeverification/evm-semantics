@@ -63,7 +63,7 @@ module BITWISE-SIMPLIFICATION [symbolic]
      andBool X +Int 1 ==Int 2 ^Int log2Int(X +Int 1)
      andBool log2Int (X +Int 1) modInt 8 ==Int 0
      andBool lengthBytes(BA) ==Int 32
-     [simplification(60), concrete(X), preserves-definedness]
+     [simplification, concrete(X), preserves-definedness]
 
     // Generalization of: notMaxUIntXXX &Int #asWord ( BA )
     rule X &Int #asWord ( BA ) => #asWord ( #range ( BA, 0, 32 -Int log2Int(pow256 -Int X) /Int 8 ) +Bytes padRightBytes(.Bytes, log2Int(pow256 -Int X) /Int 8, 0 ) )
@@ -71,7 +71,7 @@ module BITWISE-SIMPLIFICATION [symbolic]
      andBool pow256 -Int X ==Int 2 ^Int ( log2Int ( pow256 -Int X ) )
      andBool log2Int ( pow256 -Int X ) modInt 8 ==Int 0
      andBool lengthBytes(BA) ==Int 32
-     [simplification(60), concrete(X), preserves-definedness]
+     [simplification, concrete(X), preserves-definedness]
 
     // Generalization of: notMaxUIntXXX &Int (Y <<Int XXX) => Y <<Int XXX requires #rangeUInt(256 -Int XXX, Y)
     rule X &Int (Y <<Int Z) => Y <<Int Z
