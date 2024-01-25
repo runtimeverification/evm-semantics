@@ -266,13 +266,13 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
 
     rule #typeName( #array(T, _, _)) => #typeName(T) +String "[]"
 
-    rule #typeName( #tuple(TARGS))   => "(" +String #generateSignatureArgs(TARGS) +String ")"
+    rule #typeName(    #tuple(ARGS)) => "(" +String #generateSignatureArgs(ARGS) +String ")"
 
     syntax Bytes ::= #encodeArgs    ( TypedArgs )                       [function]
     syntax Bytes ::= #encodeArgsAux ( TypedArgs , Int , Bytes , Bytes ) [function]
  // ------------------------------------------------------------------------------
     rule #encodeArgs(ARGS) => #encodeArgsAux(ARGS, #lenOfHeads(ARGS), .Bytes, .Bytes)
-    rule #encodeArgs(#tuple(ARGS)) => #encodeArgs(ARGS)
+
     rule #encodeArgsAux(.TypedArgs, _:Int, HEADS, TAILS) => HEADS +Bytes TAILS
 
     rule #encodeArgsAux((ARG, ARGS), OFFSET, HEADS, TAILS)
@@ -399,6 +399,9 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
 
     rule #lenOfHead(#array(_, _, _)) => 32
 
+    rule #lenOfHead( #tuple( ARGS )) => #lenOfHeads(ARGS) requires #isStaticType(#tuple(ARGS))
+    rule #lenOfHead( #tuple( ARGS )) => 32                requires notBool #isStaticType(#tuple(ARGS))
+
     syntax Bool ::= #isStaticType ( TypedArg ) [function, total]
  // ------------------------------------------------------------
     rule #isStaticType(  #address( _ )) => true
@@ -510,9 +513,19 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
 
     rule #isStaticType(#array(_, _, _)) => false
 
+    rule #isStaticType(#tuple( ARGS )) => notBool #hasDynamicType(ARGS)
+
+    syntax Bool ::= #hasDynamicType(TypedArgs) [function, total]
+ // ------------------------------------------------------------
+    rule #hasDynamicType(.TypedArgs) => false
+    rule #hasDynamicType(T, TS) => #hasDynamicType(TS) requires #isStaticType(T)
+    rule #hasDynamicType(T,  _) => true requires notBool #isStaticType(T)
+
     syntax Int ::= #sizeOfDynamicType ( TypedArg ) [function]
  // ---------------------------------------------------------
     rule #sizeOfDynamicType(#bytes(BS)) => 32 +Int #ceil32(lengthBytes(BS))
+
+    rule #sizeOfDynamicType(#tuple(ARGS)) => 32 +Int #sizeOfDynamicTypeAux(ARGS)
 
     rule #sizeOfDynamicType(#array(T, N, _)) => 32 *Int (1 +Int N)
       requires #isStaticType(T)
@@ -520,10 +533,13 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #sizeOfDynamicType(#array(T, N, ELEMS)) => 32 *Int (1 +Int N +Int #sizeOfDynamicTypeAux(ELEMS))
       requires notBool #isStaticType(T)
 
-    syntax Int ::= #sizeOfDynamicTypeAux ( TypedArgs ) [function]
- // -------------------------------------------------------------
+    syntax Int ::= #sizeOfDynamicTypeAux ( TypedArgs ) [function, total]
+ // --------------------------------------------------------------------
     rule #sizeOfDynamicTypeAux(TARG, TARGS) => #sizeOfDynamicType(TARG) +Int #sizeOfDynamicTypeAux(TARGS)
       requires notBool #isStaticType(TARG)
+
+    rule #sizeOfDynamicTypeAux(TARG, TARGS) => #lenOfHead(TARG) +Int #sizeOfDynamicTypeAux(TARGS)
+      requires #isStaticType(TARG)
 
     rule #sizeOfDynamicTypeAux(.TypedArgs) => 0
 
@@ -635,8 +651,9 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
 
     // dynamic Type
     rule #enc(        #bytes(BS)) => #encBytes(lengthBytes(BS), BS)
-    rule #enc(#array(_, N, DATA)) => #enc(#uint256(N)) +Bytes #encodeArgs(DATA)
     rule #enc(      #string(STR)) => #enc(#bytes(String2Bytes(STR)))
+    rule #enc(#array(_, N, DATA)) => #enc(#uint256(N)) +Bytes #encodeArgs(DATA)
+    rule #enc(    #tuple( DATA )) => #encodeArgs(DATA)
 
     syntax Bytes ::= #encBytes ( Int , Bytes ) [function]
  // -----------------------------------------------------
