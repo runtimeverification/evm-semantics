@@ -282,7 +282,12 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #encodeArgsAux((ARG, ARGS), OFFSET, HEADS, TAILS)
         => #encodeArgsAux(ARGS, OFFSET +Int #sizeOfDynamicType(ARG), HEADS +Bytes #enc(#uint256(OFFSET)), TAILS +Bytes #enc(ARG))
       requires notBool(#isStaticType(ARG))
+```
 
+The `#lenOfHeads` is a recursive function used to calculate the space required for the 'head' of data structures in Solidity.
+For most types, this is a fixed 32 bytes, except for static tuples, for which the length is the cumulative length of their contents.
+
+```k
     syntax Int ::= #lenOfHeads ( TypedArgs ) [function, total]
  // ----------------------------------------------------------
     rule #lenOfHeads(.TypedArgs) => 0
@@ -290,258 +295,56 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
 
     syntax Int ::= #lenOfHead ( TypedArg ) [function, total]
  // --------------------------------------------------------
-    rule #lenOfHead(  #address( _ )) => 32
-
-    rule #lenOfHead(  #uint256( _ )) => 32
-    rule #lenOfHead(  #uint248( _ )) => 32
-    rule #lenOfHead(  #uint240( _ )) => 32
-    rule #lenOfHead(  #uint232( _ )) => 32
-    rule #lenOfHead(  #uint224( _ )) => 32
-    rule #lenOfHead(  #uint216( _ )) => 32
-    rule #lenOfHead(  #uint208( _ )) => 32
-    rule #lenOfHead(  #uint200( _ )) => 32
-    rule #lenOfHead(  #uint192( _ )) => 32
-    rule #lenOfHead(  #uint184( _ )) => 32
-    rule #lenOfHead(  #uint176( _ )) => 32
-    rule #lenOfHead(  #uint168( _ )) => 32
-    rule #lenOfHead(  #uint160( _ )) => 32
-    rule #lenOfHead(  #uint152( _ )) => 32
-    rule #lenOfHead(  #uint144( _ )) => 32
-    rule #lenOfHead(  #uint136( _ )) => 32
-    rule #lenOfHead(  #uint128( _ )) => 32
-    rule #lenOfHead(  #uint120( _ )) => 32
-    rule #lenOfHead(  #uint112( _ )) => 32
-    rule #lenOfHead(  #uint104( _ )) => 32
-    rule #lenOfHead(   #uint96( _ )) => 32
-    rule #lenOfHead(   #uint88( _ )) => 32
-    rule #lenOfHead(   #uint80( _ )) => 32
-    rule #lenOfHead(   #uint72( _ )) => 32
-    rule #lenOfHead(   #uint64( _ )) => 32
-    rule #lenOfHead(   #uint56( _ )) => 32
-    rule #lenOfHead(   #uint48( _ )) => 32
-    rule #lenOfHead(   #uint40( _ )) => 32
-    rule #lenOfHead(   #uint32( _ )) => 32
-    rule #lenOfHead(   #uint24( _ )) => 32
-    rule #lenOfHead(   #uint16( _ )) => 32
-    rule #lenOfHead(    #uint8( _ )) => 32
-
-    rule #lenOfHead(   #int256( _ )) => 32
-    rule #lenOfHead(   #int248( _ )) => 32
-    rule #lenOfHead(   #int240( _ )) => 32
-    rule #lenOfHead(   #int232( _ )) => 32
-    rule #lenOfHead(   #int224( _ )) => 32
-    rule #lenOfHead(   #int216( _ )) => 32
-    rule #lenOfHead(   #int208( _ )) => 32
-    rule #lenOfHead(   #int200( _ )) => 32
-    rule #lenOfHead(   #int192( _ )) => 32
-    rule #lenOfHead(   #int184( _ )) => 32
-    rule #lenOfHead(   #int176( _ )) => 32
-    rule #lenOfHead(   #int168( _ )) => 32
-    rule #lenOfHead(   #int160( _ )) => 32
-    rule #lenOfHead(   #int152( _ )) => 32
-    rule #lenOfHead(   #int144( _ )) => 32
-    rule #lenOfHead(   #int136( _ )) => 32
-    rule #lenOfHead(   #int128( _ )) => 32
-    rule #lenOfHead(   #int120( _ )) => 32
-    rule #lenOfHead(   #int112( _ )) => 32
-    rule #lenOfHead(   #int104( _ )) => 32
-    rule #lenOfHead(    #int96( _ )) => 32
-    rule #lenOfHead(    #int88( _ )) => 32
-    rule #lenOfHead(    #int80( _ )) => 32
-    rule #lenOfHead(    #int72( _ )) => 32
-    rule #lenOfHead(    #int64( _ )) => 32
-    rule #lenOfHead(    #int56( _ )) => 32
-    rule #lenOfHead(    #int48( _ )) => 32
-    rule #lenOfHead(    #int40( _ )) => 32
-    rule #lenOfHead(    #int32( _ )) => 32
-    rule #lenOfHead(    #int24( _ )) => 32
-    rule #lenOfHead(    #int16( _ )) => 32
-    rule #lenOfHead(     #int8( _ )) => 32
-
-    rule #lenOfHead(   #bytes1( _ )) => 32
-    rule #lenOfHead(   #bytes2( _ )) => 32
-    rule #lenOfHead(   #bytes3( _ )) => 32
-    rule #lenOfHead(   #bytes4( _ )) => 32
-    rule #lenOfHead(   #bytes5( _ )) => 32
-    rule #lenOfHead(   #bytes6( _ )) => 32
-    rule #lenOfHead(   #bytes7( _ )) => 32
-    rule #lenOfHead(   #bytes8( _ )) => 32
-    rule #lenOfHead(   #bytes9( _ )) => 32
-    rule #lenOfHead(  #bytes10( _ )) => 32
-    rule #lenOfHead(  #bytes11( _ )) => 32
-    rule #lenOfHead(  #bytes12( _ )) => 32
-    rule #lenOfHead(  #bytes13( _ )) => 32
-    rule #lenOfHead(  #bytes14( _ )) => 32
-    rule #lenOfHead(  #bytes15( _ )) => 32
-    rule #lenOfHead(  #bytes16( _ )) => 32
-    rule #lenOfHead(  #bytes17( _ )) => 32
-    rule #lenOfHead(  #bytes18( _ )) => 32
-    rule #lenOfHead(  #bytes19( _ )) => 32
-    rule #lenOfHead(  #bytes20( _ )) => 32
-    rule #lenOfHead(  #bytes21( _ )) => 32
-    rule #lenOfHead(  #bytes22( _ )) => 32
-    rule #lenOfHead(  #bytes23( _ )) => 32
-    rule #lenOfHead(  #bytes24( _ )) => 32
-    rule #lenOfHead(  #bytes25( _ )) => 32
-    rule #lenOfHead(  #bytes26( _ )) => 32
-    rule #lenOfHead(  #bytes27( _ )) => 32
-    rule #lenOfHead(  #bytes28( _ )) => 32
-    rule #lenOfHead(  #bytes29( _ )) => 32
-    rule #lenOfHead(  #bytes30( _ )) => 32
-    rule #lenOfHead(  #bytes31( _ )) => 32
-    rule #lenOfHead(  #bytes32( _ )) => 32
-
-    rule #lenOfHead(     #bool( _ )) => 32
-
-    rule #lenOfHead(    #bytes( _ )) => 32
-
-    rule #lenOfHead(   #string( _ )) => 32
-
-    rule #lenOfHead(#array(_, _, _)) => 32
-
     rule #lenOfHead( #tuple( ARGS )) => #lenOfHeads(ARGS) requires #isStaticType(#tuple(ARGS))
-    rule #lenOfHead( #tuple( ARGS )) => 32                requires notBool #isStaticType(#tuple(ARGS))
+    rule #lenOfHead(              _) => 32 [owise]
+```
 
+`#isStaticType` checks if a given `TypedArg` is a static type in order to determine if it has a fixed size.
+
+```k
     syntax Bool ::= #isStaticType ( TypedArg ) [function, total]
  // ------------------------------------------------------------
-    rule #isStaticType(  #address( _ )) => true
-
-    rule #isStaticType(  #uint256( _ )) => true
-    rule #isStaticType(  #uint248( _ )) => true
-    rule #isStaticType(  #uint240( _ )) => true
-    rule #isStaticType(  #uint232( _ )) => true
-    rule #isStaticType(  #uint224( _ )) => true
-    rule #isStaticType(  #uint216( _ )) => true
-    rule #isStaticType(  #uint208( _ )) => true
-    rule #isStaticType(  #uint200( _ )) => true
-    rule #isStaticType(  #uint192( _ )) => true
-    rule #isStaticType(  #uint184( _ )) => true
-    rule #isStaticType(  #uint176( _ )) => true
-    rule #isStaticType(  #uint168( _ )) => true
-    rule #isStaticType(  #uint160( _ )) => true
-    rule #isStaticType(  #uint152( _ )) => true
-    rule #isStaticType(  #uint144( _ )) => true
-    rule #isStaticType(  #uint136( _ )) => true
-    rule #isStaticType(  #uint128( _ )) => true
-    rule #isStaticType(  #uint120( _ )) => true
-    rule #isStaticType(  #uint112( _ )) => true
-    rule #isStaticType(  #uint104( _ )) => true
-    rule #isStaticType(   #uint96( _ )) => true
-    rule #isStaticType(   #uint88( _ )) => true
-    rule #isStaticType(   #uint80( _ )) => true
-    rule #isStaticType(   #uint72( _ )) => true
-    rule #isStaticType(   #uint64( _ )) => true
-    rule #isStaticType(   #uint56( _ )) => true
-    rule #isStaticType(   #uint48( _ )) => true
-    rule #isStaticType(   #uint40( _ )) => true
-    rule #isStaticType(   #uint32( _ )) => true
-    rule #isStaticType(   #uint24( _ )) => true
-    rule #isStaticType(   #uint16( _ )) => true
-    rule #isStaticType(    #uint8( _ )) => true
-
-    rule #isStaticType(   #int256( _ )) => true
-    rule #isStaticType(   #int248( _ )) => true
-    rule #isStaticType(   #int240( _ )) => true
-    rule #isStaticType(   #int232( _ )) => true
-    rule #isStaticType(   #int224( _ )) => true
-    rule #isStaticType(   #int216( _ )) => true
-    rule #isStaticType(   #int208( _ )) => true
-    rule #isStaticType(   #int200( _ )) => true
-    rule #isStaticType(   #int192( _ )) => true
-    rule #isStaticType(   #int184( _ )) => true
-    rule #isStaticType(   #int176( _ )) => true
-    rule #isStaticType(   #int168( _ )) => true
-    rule #isStaticType(   #int160( _ )) => true
-    rule #isStaticType(   #int152( _ )) => true
-    rule #isStaticType(   #int144( _ )) => true
-    rule #isStaticType(   #int136( _ )) => true
-    rule #isStaticType(   #int128( _ )) => true
-    rule #isStaticType(   #int120( _ )) => true
-    rule #isStaticType(   #int112( _ )) => true
-    rule #isStaticType(   #int104( _ )) => true
-    rule #isStaticType(    #int96( _ )) => true
-    rule #isStaticType(    #int88( _ )) => true
-    rule #isStaticType(    #int80( _ )) => true
-    rule #isStaticType(    #int72( _ )) => true
-    rule #isStaticType(    #int64( _ )) => true
-    rule #isStaticType(    #int56( _ )) => true
-    rule #isStaticType(    #int48( _ )) => true
-    rule #isStaticType(    #int40( _ )) => true
-    rule #isStaticType(    #int32( _ )) => true
-    rule #isStaticType(    #int24( _ )) => true
-    rule #isStaticType(    #int16( _ )) => true
-    rule #isStaticType(     #int8( _ )) => true
-
-    rule #isStaticType(   #bytes1( _ )) => true
-    rule #isStaticType(   #bytes2( _ )) => true
-    rule #isStaticType(   #bytes3( _ )) => true
-    rule #isStaticType(   #bytes4( _ )) => true
-    rule #isStaticType(   #bytes5( _ )) => true
-    rule #isStaticType(   #bytes6( _ )) => true
-    rule #isStaticType(   #bytes7( _ )) => true
-    rule #isStaticType(   #bytes8( _ )) => true
-    rule #isStaticType(   #bytes9( _ )) => true
-    rule #isStaticType(  #bytes10( _ )) => true
-    rule #isStaticType(  #bytes11( _ )) => true
-    rule #isStaticType(  #bytes12( _ )) => true
-    rule #isStaticType(  #bytes13( _ )) => true
-    rule #isStaticType(  #bytes14( _ )) => true
-    rule #isStaticType(  #bytes15( _ )) => true
-    rule #isStaticType(  #bytes16( _ )) => true
-    rule #isStaticType(  #bytes17( _ )) => true
-    rule #isStaticType(  #bytes18( _ )) => true
-    rule #isStaticType(  #bytes19( _ )) => true
-    rule #isStaticType(  #bytes20( _ )) => true
-    rule #isStaticType(  #bytes21( _ )) => true
-    rule #isStaticType(  #bytes22( _ )) => true
-    rule #isStaticType(  #bytes23( _ )) => true
-    rule #isStaticType(  #bytes24( _ )) => true
-    rule #isStaticType(  #bytes25( _ )) => true
-    rule #isStaticType(  #bytes26( _ )) => true
-    rule #isStaticType(  #bytes27( _ )) => true
-    rule #isStaticType(  #bytes28( _ )) => true
-    rule #isStaticType(  #bytes29( _ )) => true
-    rule #isStaticType(  #bytes30( _ )) => true
-    rule #isStaticType(  #bytes31( _ )) => true
-    rule #isStaticType(  #bytes32( _ )) => true
-
-    rule #isStaticType(     #bool( _ )) => true
-
     rule #isStaticType(    #bytes( _ )) => false
-
     rule #isStaticType(   #string( _ )) => false
-
     rule #isStaticType(#array(_, _, _)) => false
-
-    rule #isStaticType(#tuple( ARGS )) => notBool #hasDynamicType(ARGS)
+    rule #isStaticType( #tuple( ARGS )) => notBool #hasDynamicType(ARGS)
+    rule #isStaticType(              _) => true
 
     syntax Bool ::= #hasDynamicType(TypedArgs) [function, total]
  // ------------------------------------------------------------
     rule #hasDynamicType(.TypedArgs) => false
     rule #hasDynamicType(T, TS) => #hasDynamicType(TS) requires #isStaticType(T)
     rule #hasDynamicType(T,  _) => true requires notBool #isStaticType(T)
+```
 
+`#sizeOfDynamicType` is used to calculate the size of a single dynamic `TypedArg`.
+ - for `#bytes(BS)`, the size is 32 bytes for the length prefix plus the size of the actual byte sequence, rounded up to the nearest multiple of 32.
+ - for `#tuple(ARGS)`, the size is 32 bytes for the length prefix plus the cumulative size of its elements.
+ - for `#array(T, N, _)` that has elements of a static `TypedArg` `T`, the size is `32 * (1 + N)`,which accounts for 32 bytes for the length prefix and 32 bytes for each element.
+ - for dynamic type arrays `#array(T, N, ELEMS)`, the size is `32 * (1 + N + #sizeOfDynamicTypeList(ELEMS))`.
+
+```k
     syntax Int ::= #sizeOfDynamicType ( TypedArg ) [function]
  // ---------------------------------------------------------
     rule #sizeOfDynamicType(#bytes(BS)) => 32 +Int #ceil32(lengthBytes(BS))
 
-    rule #sizeOfDynamicType(#tuple(ARGS)) => 32 +Int #sizeOfDynamicTypeAux(ARGS)
+    rule #sizeOfDynamicType(#tuple(ARGS)) => 32 +Int #sizeOfDynamicTypeList(ARGS)
 
     rule #sizeOfDynamicType(#array(T, N, _)) => 32 *Int (1 +Int N)
       requires #isStaticType(T)
 
-    rule #sizeOfDynamicType(#array(T, N, ELEMS)) => 32 *Int (1 +Int N +Int #sizeOfDynamicTypeAux(ELEMS))
+    rule #sizeOfDynamicType(#array(T, N, ELEMS)) => 32 *Int (1 +Int N +Int #sizeOfDynamicTypeList(ELEMS))
       requires notBool #isStaticType(T)
 
-    syntax Int ::= #sizeOfDynamicTypeAux ( TypedArgs ) [function, total]
- // --------------------------------------------------------------------
-    rule #sizeOfDynamicTypeAux(TARG, TARGS) => #sizeOfDynamicType(TARG) +Int #sizeOfDynamicTypeAux(TARGS)
+    syntax Int ::= #sizeOfDynamicTypeList ( TypedArgs ) [function]
+ // --------------------------------------------------------------
+    rule #sizeOfDynamicTypeList(TARG, TARGS) => #sizeOfDynamicType(TARG) +Int #sizeOfDynamicTypeList(TARGS)
       requires notBool #isStaticType(TARG)
 
-    rule #sizeOfDynamicTypeAux(TARG, TARGS) => #lenOfHead(TARG) +Int #sizeOfDynamicTypeAux(TARGS)
+    rule #sizeOfDynamicTypeList(TARG, TARGS) => #lenOfHead(TARG) +Int #sizeOfDynamicTypeList(TARGS)
       requires #isStaticType(TARG)
 
-    rule #sizeOfDynamicTypeAux(.TypedArgs) => 0
+    rule #sizeOfDynamicTypeList(.TypedArgs) => 0
 
     syntax Bytes ::= #enc ( TypedArg ) [function]
  // ---------------------------------------------
