@@ -353,10 +353,13 @@ def exec_prove(
         claim = claim_job.claim
         up_to_date = claim_job.up_to_date(digest_file)
         if up_to_date:
-            _LOGGER.info(f'Claim {claim.label} is up to date.')
+            _LOGGER.info(f'Claim is up to date: {claim.label}')
         else:
-            _LOGGER.info(f'Claim {claim.label} reinitialized because it is out of date.')
+            _LOGGER.info(f'Claim reinitialized because it is out of date: {claim.label}')
         claim_job.update_digest(digest_file)
+        if claim.is_trusted:
+            _LOGGER.info(f'Skipping execution of claim because it is marked as trusted: {claim.label}')
+            return True, None
         with legacy_explore(
             kevm,
             kcfg_semantics=KEVMSemantics(auto_abstract_gas=auto_abstract_gas),
