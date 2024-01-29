@@ -58,6 +58,15 @@ module BITWISE-SIMPLIFICATION [symbolic]
       [simplification, concrete(X)]
 
     // Generalization of: maxUIntXXX &Int #asWord ( BA )
+    rule X &Int #asWord ( BA ) => #asWord ( BA )
+    requires #rangeUInt(256, X)
+     andBool X +Int 1 ==Int 2 ^Int log2Int(X +Int 1)
+     andBool log2Int (X +Int 1) modInt 8 ==Int 0
+     andBool #asWord ( BA ) <Int X +Int 1
+     andBool lengthBytes(BA) ==Int 32
+     [simplification(30), concrete(X)]
+
+    // Generalization of: maxUIntXXX &Int #asWord ( BA )
     rule X &Int #asWord ( BA ) => #asWord ( #range(BA, 32 -Int (log2Int(X +Int 1) /Int 8), log2Int(X +Int 1) /Int 8) )
     requires #rangeUInt(256, X)
      andBool X +Int 1 ==Int 2 ^Int log2Int(X +Int 1)

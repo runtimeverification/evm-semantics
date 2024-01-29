@@ -12,7 +12,6 @@ module EVM-INT-SIMPLIFICATION-COMMON
     imports INT
     imports BOOL
     imports EVM-TYPES
-    imports SERIALIZATION
 
   // ###########################################################################
   // up/Int
@@ -60,10 +59,5 @@ module EVM-INT-SIMPLIFICATION-COMMON
   rule #asWord ( BA ) <Int X => true
     requires 2 ^Int ( lengthBytes(BA) *Int 8) <=Int X
     [concrete(X), simplification]
-
-  rule #asWord ( #range ( X:Bytes, S:Int, W:Int ) ) => #asWord ( X )
-    requires 0 <=Int S andBool 0 <=Int W
-     andBool #asWord ( X ) <Int 2 ^Int (W *Int 8)
-    [simplification, concrete(X)]
 
 endmodule
