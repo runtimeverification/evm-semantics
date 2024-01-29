@@ -134,6 +134,8 @@ class KEVMSemantics(KCFGSemantics):
                     'EVM.return.exception',
                     'EVM.return.revert',
                     'EVM.return.success',
+                    'EVM.precompile.true',
+                    'EVM.precompile.false',
                 ]
             )
         if break_on_storage:
