@@ -357,9 +357,6 @@ def exec_prove(
         else:
             _LOGGER.info(f'Claim reinitialized because it is out of date: {claim.label}')
         claim_job.update_digest(digest_file)
-        if claim.is_trusted:
-            _LOGGER.info(f'Skipping execution of claim because it is marked as trusted: {claim.label}')
-            return True, None
         with legacy_explore(
             kevm,
             kcfg_semantics=KEVMSemantics(auto_abstract_gas=auto_abstract_gas),
@@ -411,7 +408,13 @@ def exec_prove(
                         {},
                         proof_dir=save_directory,
                         subproof_ids=claims_graph[claim.label],
+                        admitted=claim.is_trusted,
                     )
+
+            if proof_problem.admitted:
+                proof_problem.write_proof_data()
+                _LOGGER.info(f'Skipping execution of proof because it is marked as admitted: {proof_problem.id}')
+                return True, None
 
             start_time = time.time()
             passed = run_prover(
