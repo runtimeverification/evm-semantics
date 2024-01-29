@@ -452,7 +452,8 @@ For most types, this is a fixed 32 bytes, except for static tuples, for which th
     rule #enc(   #bool( DATA )) => #bufStrict(32, #getValue(   #bool( DATA )))
 
     // dynamic Type
-    rule #enc(        #bytes(BS)) => #encBytes(lengthBytes(BS), BS)
+    // length of `bytes` variable is <= 1 Gb
+    rule #enc(        #bytes(BS)) => #encBytes(lengthBytes(BS), BS) ensures lengthBytes(BS) <=Int 1073741824
     rule #enc(      #string(STR)) => #enc(#bytes(String2Bytes(STR)))
     rule #enc(#array(_, N, DATA)) => #enc(#uint256(N)) +Bytes #encodeArgs(DATA)
     rule #enc(    #tuple( DATA )) => #encodeArgs(DATA)
