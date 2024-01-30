@@ -353,9 +353,9 @@ def exec_prove(
         claim = claim_job.claim
         up_to_date = claim_job.up_to_date(digest_file)
         if up_to_date:
-            _LOGGER.info(f'Claim {claim.label} is up to date.')
+            _LOGGER.info(f'Claim is up to date: {claim.label}')
         else:
-            _LOGGER.info(f'Claim {claim.label} reinitialized because it is out of date.')
+            _LOGGER.info(f'Claim reinitialized because it is out of date: {claim.label}')
         claim_job.update_digest(digest_file)
         with legacy_explore(
             kevm,
@@ -408,7 +408,13 @@ def exec_prove(
                         {},
                         proof_dir=save_directory,
                         subproof_ids=claims_graph[claim.label],
+                        admitted=claim.is_trusted,
                     )
+
+            if proof_problem.admitted:
+                proof_problem.write_proof_data()
+                _LOGGER.info(f'Skipping execution of proof because it is marked as admitted: {proof_problem.id}')
+                return True, None
 
             start_time = time.time()
             passed = run_prover(
