@@ -214,6 +214,6 @@ module VAT-SLIP-PASS-ROUGH-SPEC
        andBool ((#sizeWordStack(WS) <=Int 1015)
        andBool (#rangeUInt(256, VMemoryUsed)
        andBool ((#rangeUInt(256, ABI_x +Int ABI_y)))))))
-
+    [trusted]
 
 endmodule
