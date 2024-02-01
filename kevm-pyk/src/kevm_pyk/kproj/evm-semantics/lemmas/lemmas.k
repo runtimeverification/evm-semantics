@@ -154,7 +154,7 @@ module LEMMAS [symbolic]
 
 endmodule
 
-module LEMMAS-HASKELL [symbolic, kore]
+module LEMMAS-HASKELL [symbolic]
     imports INT-SYMBOLIC
     imports EVM
     imports BUF
