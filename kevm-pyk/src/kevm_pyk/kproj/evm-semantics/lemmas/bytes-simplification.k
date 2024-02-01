@@ -226,6 +226,24 @@ module BYTES-SIMPLIFICATION [symbolic]
       #range(#padRightToWidth(_, BUF), 0, WIDTH) => BUF
       requires lengthBytes(BUF) ==Int WIDTH [simplification]
 
+    rule [range-eq-check]:
+      BZ +Bytes #range ( B, S, W ) ==K B => true
+      requires 0 <=Int S andBool 0 <=Int W
+      andBool lengthBytes( B ) ==Int S +Int W
+      andBool #asInteger( BZ ) ==Int 0
+      andBool lengthBytes( BZ ) ==Int S
+      andBool #asWord ( B ) <Int 2 ^Int ( 8 *Int W )
+      [simplification, concrete(BZ, S, W), comm]
+
+    rule [range-eq-check-ml]:
+      { BZ +Bytes #range ( B, S, W ) #Equals B } => #Top
+      requires 0 <=Int S andBool 0 <=Int W
+      andBool lengthBytes( B ) ==Int S +Int W
+      andBool #asInteger( BZ ) ==Int 0
+      andBool lengthBytes( BZ ) ==Int S
+      andBool #asWord ( B ) <Int 2 ^Int ( 8 *Int W )
+      [simplification, concrete(BZ, S, W), comm]
+
     // Memory update
 
     rule [memUpdate-is-empty]:
