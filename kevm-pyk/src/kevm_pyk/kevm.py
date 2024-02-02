@@ -277,6 +277,7 @@ class KEVM(KProve, KRun):
                 if type(account) is KApply:
                     constraints.extend(_add_account_invariant(account))
 
+        constraints.append(mlEqualsTrue(KEVM.range_uint(256, cterm.cell('TIMESTAMP_CELL'))))
         constraints.append(mlEqualsTrue(KEVM.range_address(cterm.cell('ID_CELL'))))
         constraints.append(mlEqualsTrue(KEVM.range_address(cterm.cell('CALLER_CELL'))))
         constraints.append(mlEqualsTrue(KEVM.range_address(cterm.cell('ORIGIN_CELL'))))
