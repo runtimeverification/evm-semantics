@@ -116,12 +116,6 @@ module LEMMAS-MCD [symbolic, kore]
 
     rule { BA1:Bytes +Bytes (BA2:Bytes +Bytes BA3:Bytes) #Equals BA4:Bytes +Bytes BA3 } => { (BA1 +Bytes BA2) #Equals BA4 } [simplification]
 
-    rule { BA1:Bytes +Bytes BA2:Bytes #Equals BA3:Bytes +Bytes BA4:Bytes } =>
-         { true #Equals BA1 ==K BA3 andBool BA2 ==K BA4 }
-         requires (lengthBytes(BA1) ==Int lengthBytes(BA3))
-           orBool (lengthBytes(BA2) ==Int lengthBytes(BA4))
-         [simplification]
-
     rule { BA1:Bytes #Equals BA2:Bytes +Bytes BA3:Bytes } =>
          { true #Equals BA1 ==K BA2 andBool .Bytes ==K BA3 }
          requires (lengthBytes(BA1) ==Int lengthBytes(BA2))
@@ -144,12 +138,6 @@ module LEMMAS-MCD [symbolic, kore]
     rule #range( (W0 : WS) , 0     , WIDTH ) => W0 : ( #range(WS, 0, WIDTH -Int 1 ))  requires 0 <Int WIDTH [simplification]
     rule #range( (_  : WS) , START , WIDTH ) => #range( WS, START -Int 1, WIDTH )     requires 0 <Int START [simplification]
 
-    rule #range(#range(WS, START, WIDTH), 0, WIDTH' )  => #range(WS, START, WIDTH')  requires WIDTH' <=Int WIDTH [simplification]
-
-    // ### cat-exhaustiveness
-
-    rule ( BA1:Bytes +Bytes BA2:Bytes ) +Bytes BA3:Bytes => BA1 +Bytes ( BA2 +Bytes BA3 ) [simplification]
-
   // ########################
   // Keccak
   // ########################
@@ -161,8 +149,6 @@ module LEMMAS-MCD [symbolic, kore]
   // ########################
   // Word Reasoning
   // ########################
-
-    rule notMaxUInt160 &Int ADDR => 0  requires #rangeAddress(ADDR) [simplification]
 
     rule #sizeWordStack(WS, N) => #sizeWordStack(WS, 0) +Int N  requires N =/=Int 0 [simplification]
 
