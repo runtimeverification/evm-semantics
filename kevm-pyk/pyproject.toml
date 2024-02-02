@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "kevm-pyk"
-version = "1.0.437"
+version = "1.0.438"
 description = ""
 authors = [
     "Runtime Verification, Inc. <contact@runtimeverification.com>",
@@ -28,7 +28,7 @@ inotify = "*"
 isort = "*"
 mypy = "*"
 pep8-naming = "*"
-pytest = "*"
+pytest = "^7"
 pytest-timeout = "*"
 pytest-cov = "*"
 pytest-mock = "*"
