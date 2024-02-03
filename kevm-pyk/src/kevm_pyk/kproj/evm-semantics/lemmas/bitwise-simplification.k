@@ -99,11 +99,6 @@ module BITWISE-SIMPLIFICATION [symbolic]
       lengthBytes(X) +Int 32 >Int notMaxUInt5 &Int ( lengthBytes(X) +Int 31 ) => true
       [simplification, smt-lemma]
 
-    rule [notMaxUInt5-nested]:
-      ( notMaxUInt5 &Int ( ( notMaxUInt5 &Int X ) +Int Y ) ) => ( notMaxUInt5 &Int X ) +Int ( notMaxUInt5 &Int Y )
-      requires #rangeUInt(256, X) andBool #rangeUInt(256, Y)
-      [simplification, concrete(Y)]
-
   // ###########################################################################
   // shift
   // ###########################################################################
