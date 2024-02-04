@@ -4,7 +4,7 @@ module EVM-INT-SIMPLIFICATION
     imports EVM-INT-SIMPLIFICATION-HASKELL
 endmodule
 
-module EVM-INT-SIMPLIFICATION-HASKELL [symbolic, kore]
+module EVM-INT-SIMPLIFICATION-HASKELL [symbolic]
     imports EVM-INT-SIMPLIFICATION-COMMON
 endmodule
 

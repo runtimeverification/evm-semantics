@@ -18,7 +18,7 @@ module WORD-PACK
     imports WORD-PACK-HASKELL
 endmodule
 
-module WORD-PACK-HASKELL [kore]
+module WORD-PACK-HASKELL
     imports WORD-PACK-COMMON
 
     rule    { ADDR_UINT48_UINT48:Int #Equals #WordPackAddrUInt48UInt48(ADDR:Int, UINT48_1:Int, UINT48_2:Int) }
