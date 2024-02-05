@@ -2,7 +2,7 @@ module INT-SIMPLIFICATION
     imports INT-SIMPLIFICATION-HASKELL
 endmodule
 
-module INT-SIMPLIFICATION-HASKELL [symbolic, kore]
+module INT-SIMPLIFICATION-HASKELL [symbolic]
     imports INT-SIMPLIFICATION-COMMON
 
   // ###########################################################################
