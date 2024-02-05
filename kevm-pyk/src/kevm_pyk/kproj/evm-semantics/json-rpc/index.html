@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+<meta charset="utf-8" />
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0, maximum-scale=1.0"
+/>
+<meta
+  name="description"
+  content="K Semantics of the Ethereum Virtual Machine (EVM)"
+/>
+<meta
+  name="keywords"
+  content="runtime, verification, rv, k, ethereum virtual machine, evm"
+/>
+<meta name="author" content="EVM Semantics | Runtime Verification Inc" />
+<meta name="robots" content="index, follow" />
+
+<!--favicon icon-->
+<link rel="icon" type="image/png" href="../../../../../../assets/img/favicon.ico" />
+
+<title>KEVM: Semantics of EVM in K | Runtime Verification, Inc. </title>
+
+<link rel="canonical" href="https://jellopaper.org/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/json-rpc/" />
+
+<!--web fonts-->
+<link
+  href="https://fonts.googleapis.com/css?family=Nunito:300,400,600,700,800"
+  rel="stylesheet"
+/>
+<link
+  href="https://fonts.googleapis.com/css?family=Lora:400i"
+  rel="stylesheet"
+/>
+
+<link
+  href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.14.0/css/all.min.css"
+  rel="stylesheet"
+/>
+
+<link href="../../../../../../assets/css/index.css" rel="stylesheet" />
+
+<!--[if (gt IE 9) |!(IE)]><!-->
+<!--<link rel="stylesheet" href="/assets/vendor/custom-nav/css/effects/fade-menu.css"/>-->
+<!-- <link rel="stylesheet" href="../../../../../../assets/k/vl-nav/css/effects/slide-menu.css" /> -->
+<!--<![endif]-->
+
+  </head>
+
+  <body>
+<header
+  class="navbar navbar-expand navbar-dark flex-column flex-md-row bd-navbar"
+>
+  <a class="logo-link" href="../../../../../../index.html"> EVM Semantics </a>
+  <ul class="navbar-nav ml-md-auto">
+    <li class="nav-item">
+      <a
+        class="nav-link pl-2 pr-1 mx-1 py-3 my-n2"
+        href="https://github.com/runtimeverification/evm-semantics"
+        target="_blank"
+        rel="noopener"
+        aria-label="GitHub"
+      >
+        <i class="fab fa-github"></i>
+      </a>
+    </li>
+  </ul>
+  <!--
+  <a
+    class="btn btn-rv-blue d-none d-lg-inline-block mb-3 mb-md-0 ml-md-3"
+    href="../../../../../../downloads"
+    >Download</a
+  >
+  -->
+</header>
+
+
+    <div class="container-fluid">
+      <div class="row flex-xl-nowrap">
+<div class="col-12 col-md-3 col-xl-2 bd-sidebar mb-3">
+  <form
+    role="search"
+    class="bd-search d-flex align-items-center justify-content-between"
+  >
+    <input
+      type="search"
+      class="form-control"
+      placeholder="Search..."
+      aria-label="Search for..."
+      autocomplete="false"
+      id="search-box"
+    />
+    <button
+      class="btn bd-search-docs-toggle d-md-none p-0 ml-3 collapsed"
+      type="button"
+      aria-label="Toggle docs navigation"
+      style="font-size: 1.4rem"
+    >
+      <i class="fas fa-bars"></i>
+    </button>
+  </form>
+  <nav class="collapse bd-links" aria-label="Main navigation">
+    <div class="bd-toc-item">
+      <a class="bd-toc-link" href="../../../../../../">Homepage</a>
+      <a class="bd-toc-link" href="../../../../../../INSTALL/">Install</a>
+    </div>
+  </nav>
+</div>
+
+        <main
+          class="col-12 col-md-6 col-xl-8 py-md-3 pl-md-5 bd-content"
+          role="main"
+        >
+          <div class="markdown-preview"><html><head></head><body><h1 id="json-rpc">JSON RPC</h1>
+<pre><code class="language-k"><span class="token keyword">requires</span> <span class="token string">"json.md"</span>
+</code></pre>
+<h2 id="json-extensions">JSON Extensions</h2>
+<p>Some common functions and extensions of JSON are provided here.</p>
+<pre><code class="language-k"><span class="token keyword">module</span> JSON<span class="token operator">-</span>EXT
+    <span class="token keyword">imports</span> JSON
+    <span class="token keyword">imports</span> STRING
+    <span class="token keyword">imports</span> BOOL
+</code></pre>
+<ul>
+<li><code>+JSONs</code> appends two JSON lists.</li>
+<li><code>reverseJSONs</code> reverses a JSON list.</li>
+</ul>
+<pre><code class="language-k">    <span class="token keyword">syntax</span> JSONs <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> JSONs <span class="token string">"+JSONs"</span> JSONs <span class="token punctuation">[</span>function<span class="token punctuation">]</span>
+ <span class="token comment">// ------------------------------------------------</span>
+    <span class="token keyword">rule</span> <span class="token punctuation">.</span>JSONs   <span class="token operator">+</span>JSONs JS<span class="token string">' =&gt; JS'</span>
+    <span class="token keyword">rule</span> <span class="token punctuation">(</span>J <span class="token punctuation">,</span> JS<span class="token punctuation">)</span> <span class="token operator">+</span>JSONs JS<span class="token string">' =&gt; J , (JS +JSONs JS'</span><span class="token punctuation">)</span>
+
+    <span class="token keyword">syntax</span> JSONs <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> reverseJSONs    <span class="token punctuation">(</span> JSONs         <span class="token punctuation">)</span> <span class="token punctuation">[</span>function<span class="token punctuation">]</span>
+                   <span class="token operator">|</span> reverseJSONsAux <span class="token punctuation">(</span> JSONs <span class="token punctuation">,</span> JSONs <span class="token punctuation">)</span> <span class="token punctuation">[</span>function<span class="token punctuation">]</span>
+ <span class="token comment">// -------------------------------------------------------------</span>
+    <span class="token keyword">rule</span> reverseJSONs<span class="token punctuation">(</span>JS<span class="token punctuation">)</span> <span class="token operator">=&gt;</span> reverseJSONsAux<span class="token punctuation">(</span>JS<span class="token punctuation">,</span> <span class="token punctuation">.</span>JSONs<span class="token punctuation">)</span>
+
+    <span class="token keyword">rule</span> reverseJSONsAux<span class="token punctuation">(</span><span class="token punctuation">.</span>JSONs<span class="token punctuation">,</span> JS<span class="token string">') =&gt; JS'</span>
+    <span class="token keyword">rule</span> reverseJSONsAux<span class="token punctuation">(</span><span class="token punctuation">(</span>J<span class="token punctuation">,</span> JS<span class="token punctuation">:</span>JSONs<span class="token punctuation">)</span><span class="token punctuation">,</span> JS<span class="token string">') =&gt; reverseJSONsAux(JS, (J, JS'</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<ul>
+<li><code>qsortJSONs</code> quick-sorts a list of key-value pairs.</li>
+<li><code>sortedJSONs</code> is a predicate saying whether a given list of JSONs is sorted or not.</li>
+</ul>
+<pre><code class="language-k">    <span class="token keyword">syntax</span> JSONs <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> qsortJSONs <span class="token punctuation">(</span> JSONs <span class="token punctuation">)</span>          <span class="token punctuation">[</span>function<span class="token punctuation">]</span>
+                   <span class="token operator">|</span> #entriesLT <span class="token punctuation">(</span> <span class="token keyword">String</span> <span class="token punctuation">,</span> JSONs <span class="token punctuation">)</span> <span class="token punctuation">[</span>function<span class="token punctuation">]</span>
+                   <span class="token operator">|</span> #entriesGE <span class="token punctuation">(</span> <span class="token keyword">String</span> <span class="token punctuation">,</span> JSONs <span class="token punctuation">)</span> <span class="token punctuation">[</span>function<span class="token punctuation">]</span>
+ <span class="token comment">// ---------------------------------------------------------</span>
+    <span class="token keyword">rule</span> qsortJSONs<span class="token punctuation">(</span><span class="token punctuation">.</span>JSONs<span class="token punctuation">)</span>            <span class="token operator">=&gt;</span> <span class="token punctuation">.</span>JSONs
+    <span class="token keyword">rule</span> qsortJSONs<span class="token punctuation">(</span>KEY <span class="token punctuation">:</span> VALUE<span class="token punctuation">,</span> REST<span class="token punctuation">)</span> <span class="token operator">=&gt;</span> qsortJSONs<span class="token punctuation">(</span>#entriesLT<span class="token punctuation">(</span>KEY<span class="token punctuation">,</span> REST<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">+</span>JSONs <span class="token punctuation">(</span>KEY <span class="token punctuation">:</span> VALUE <span class="token punctuation">,</span> qsortJSONs<span class="token punctuation">(</span>#entriesGE<span class="token punctuation">(</span>KEY<span class="token punctuation">,</span> REST<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+    <span class="token keyword">rule</span> #entriesLT<span class="token punctuation">(</span>_KEY<span class="token punctuation">,</span> <span class="token punctuation">.</span>JSONs<span class="token punctuation">)</span>              <span class="token operator">=&gt;</span> <span class="token punctuation">.</span>JSONs
+    <span class="token keyword">rule</span> #entriesLT<span class="token punctuation">(</span> KEY<span class="token punctuation">,</span> <span class="token punctuation">(</span>KEY<span class="token string">': VALUE, REST)) =&gt; KEY'</span><span class="token punctuation">:</span> VALUE <span class="token punctuation">,</span> #entriesLT<span class="token punctuation">(</span>KEY<span class="token punctuation">,</span> REST<span class="token punctuation">)</span> <span class="token keyword">requires</span>         KEY' &lt;<span class="token keyword">String</span> KEY
+    <span class="token keyword">rule</span> #entriesLT<span class="token punctuation">(</span> KEY<span class="token punctuation">,</span> <span class="token punctuation">(</span>KEY<span class="token string">':     _, REST)) =&gt;               #entriesLT(KEY, REST) requires notBool KEY'</span> &lt;<span class="token keyword">String</span> KEY
+
+    <span class="token keyword">rule</span> #entriesGE<span class="token punctuation">(</span>_KEY<span class="token punctuation">,</span> <span class="token punctuation">.</span>JSONs<span class="token punctuation">)</span>              <span class="token operator">=&gt;</span> <span class="token punctuation">.</span>JSONs
+    <span class="token keyword">rule</span> #entriesGE<span class="token punctuation">(</span> KEY<span class="token punctuation">,</span> <span class="token punctuation">(</span>KEY<span class="token string">': VALUE, REST)) =&gt; KEY'</span><span class="token punctuation">:</span> VALUE <span class="token punctuation">,</span> #entriesGE<span class="token punctuation">(</span>KEY<span class="token punctuation">,</span> REST<span class="token punctuation">)</span> <span class="token keyword">requires</span>         KEY' <span class="token operator">&gt;=</span><span class="token keyword">String</span> KEY
+    <span class="token keyword">rule</span> #entriesGE<span class="token punctuation">(</span> KEY<span class="token punctuation">,</span> <span class="token punctuation">(</span>KEY<span class="token string">':     _, REST)) =&gt;               #entriesGE(KEY, REST) requires notBool KEY'</span> <span class="token operator">&gt;=</span><span class="token keyword">String</span> KEY
+
+    <span class="token keyword">syntax</span> <span class="token keyword">Bool</span> <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> sortedJSONs <span class="token punctuation">(</span> JSONs <span class="token punctuation">)</span> <span class="token punctuation">[</span>function<span class="token punctuation">]</span>
+ <span class="token comment">// ------------------------------------------------</span>
+    <span class="token keyword">rule</span> sortedJSONs<span class="token punctuation">(</span> <span class="token punctuation">.</span>JSONs   <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token boolean">true</span>
+    <span class="token keyword">rule</span> sortedJSONs<span class="token punctuation">(</span> _KEY <span class="token punctuation">:</span> _ <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token boolean">true</span>
+    <span class="token keyword">rule</span> sortedJSONs<span class="token punctuation">(</span> <span class="token punctuation">(</span>KEY <span class="token punctuation">:</span> _<span class="token punctuation">)</span> <span class="token punctuation">,</span> <span class="token punctuation">(</span>KEY<span class="token string">' : VAL) , REST ) =&gt; KEY &lt;=String KEY'</span> andThenBool sortedJSONs<span class="token punctuation">(</span><span class="token punctuation">(</span>KEY' <span class="token punctuation">:</span> VAL<span class="token punctuation">)</span> <span class="token punctuation">,</span> REST<span class="token punctuation">)</span>
+</code></pre>
+<p><strong>TODO</strong>: Adding <code>Int</code> to <code>JSONKey</code> is a hack to make certain parts of semantics easier.</p>
+<pre><code class="language-k">    <span class="token keyword">syntax</span> JSONKey <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> <span class="token keyword">Int</span>
+ <span class="token comment">// ----------------------</span>
+</code></pre>
+<pre><code class="language-k"><span class="token keyword">endmodule</span>
+</code></pre>
+<h2 id="json-rpc-1">JSON-RPC</h2>
+<pre><code class="language-k"><span class="token keyword">module</span> JSON<span class="token operator">-</span>RPC
+    <span class="token keyword">imports</span> K<span class="token operator">-</span>IO
+    <span class="token keyword">imports</span> LIST
+    <span class="token keyword">imports</span> JSON<span class="token operator">-</span>EXT
+
+    <span class="token keyword">configuration</span>
+      <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>json-rpc</span><span class="token punctuation">&gt;</span></span>
+        <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>web3input</span><span class="token punctuation">&gt;</span></span> $INPUT<span class="token punctuation">:</span><span class="token keyword">Int</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>web3input</span><span class="token punctuation">&gt;</span></span>
+        <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>web3output</span><span class="token punctuation">&gt;</span></span> $OUTPUT<span class="token punctuation">:</span><span class="token keyword">Int</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>web3output</span><span class="token punctuation">&gt;</span></span>
+        <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>web3request</span><span class="token punctuation">&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>jsonrpc</span><span class="token punctuation">&gt;</span></span> <span class="token string">""</span><span class="token punctuation">:</span>JSON <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>jsonrpc</span><span class="token punctuation">&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>callid</span><span class="token punctuation">&gt;</span></span> <span class="token number">0</span><span class="token punctuation">:</span>JSON <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>callid</span><span class="token punctuation">&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>method</span><span class="token punctuation">&gt;</span></span> <span class="token string">""</span><span class="token punctuation">:</span>JSON <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>method</span><span class="token punctuation">&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>params</span><span class="token punctuation">&gt;</span></span> <span class="token punctuation">[</span> <span class="token punctuation">.</span>JSONs <span class="token punctuation">]</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>params</span><span class="token punctuation">&gt;</span></span>
+          <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>batch</span><span class="token punctuation">&gt;</span></span> undef <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>batch</span><span class="token punctuation">&gt;</span></span>
+        <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>web3request</span><span class="token punctuation">&gt;</span></span>
+        <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>web3response</span><span class="token punctuation">&gt;</span></span> <span class="token punctuation">.</span>List <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>web3response</span><span class="token punctuation">&gt;</span></span>
+      <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>json-rpc</span><span class="token punctuation">&gt;</span></span>
+
+    <span class="token keyword">syntax</span> JSON <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> <span class="token string">"undef"</span> <span class="token punctuation">[</span><span class="token class-name">klabel</span><span class="token punctuation">(</span>JSON<span class="token operator">-</span>RPCundef<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token class-name">symbol</span><span class="token punctuation">]</span>
+ <span class="token comment">// -------------------------------------------------------</span>
+
+    <span class="token keyword">syntax</span> <span class="token keyword">Bool</span> <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> isProperJson     <span class="token punctuation">(</span> JSON  <span class="token punctuation">)</span> <span class="token punctuation">[</span>function<span class="token punctuation">]</span>
+                  <span class="token operator">|</span> isProperJsonList <span class="token punctuation">(</span> JSONs <span class="token punctuation">)</span> <span class="token punctuation">[</span>function<span class="token punctuation">]</span>
+ <span class="token comment">// -----------------------------------------------------</span>
+    <span class="token keyword">rule</span> isProperJson<span class="token punctuation">(</span>_<span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token boolean">false</span> <span class="token punctuation">[</span>owise<span class="token punctuation">]</span>
+
+    <span class="token keyword">rule</span> isProperJson<span class="token punctuation">(</span>null<span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token boolean">true</span>
+
+    <span class="token keyword">rule</span> isProperJson<span class="token punctuation">(</span>_<span class="token punctuation">:</span><span class="token keyword">Int</span><span class="token punctuation">)</span>    <span class="token operator">=&gt;</span> <span class="token boolean">true</span>
+    <span class="token keyword">rule</span> isProperJson<span class="token punctuation">(</span>_<span class="token punctuation">:</span><span class="token keyword">Bool</span><span class="token punctuation">)</span>   <span class="token operator">=&gt;</span> <span class="token boolean">true</span>
+    <span class="token keyword">rule</span> isProperJson<span class="token punctuation">(</span>_<span class="token punctuation">:</span><span class="token keyword">String</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token boolean">true</span>
+
+    <span class="token keyword">rule</span> isProperJson<span class="token punctuation">(</span>_<span class="token punctuation">:</span>JSONKey <span class="token punctuation">:</span> J<span class="token punctuation">)</span> <span class="token operator">=&gt;</span> isProperJson<span class="token punctuation">(</span>J<span class="token punctuation">)</span>
+
+    <span class="token keyword">rule</span> isProperJson<span class="token punctuation">(</span><span class="token punctuation">[</span> JS <span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> isProperJsonList<span class="token punctuation">(</span>JS<span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> isProperJson<span class="token punctuation">(</span><span class="token punctuation">{</span> JS <span class="token punctuation">}</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> isProperJsonList<span class="token punctuation">(</span>JS<span class="token punctuation">)</span>
+
+    <span class="token keyword">rule</span> isProperJsonList<span class="token punctuation">(</span><span class="token punctuation">.</span>JSONs<span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token boolean">true</span>
+    <span class="token keyword">rule</span> isProperJsonList<span class="token punctuation">(</span>J<span class="token punctuation">,</span> JS<span class="token punctuation">)</span>  <span class="token operator">=&gt;</span> isProperJson<span class="token punctuation">(</span>J<span class="token punctuation">)</span> andBool isProperJsonList<span class="token punctuation">(</span>JS<span class="token punctuation">)</span>
+
+    <span class="token keyword">syntax</span> JSONs <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> flattenJSONs <span class="token punctuation">(</span> JSONs <span class="token punctuation">)</span> <span class="token punctuation">[</span>function<span class="token punctuation">]</span>
+ <span class="token comment">// --------------------------------------------------</span>
+    <span class="token keyword">rule</span> flattenJSONs<span class="token punctuation">(</span><span class="token punctuation">.</span>JSONs      <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">.</span>JSONs
+    <span class="token keyword">rule</span> flattenJSONs<span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token punctuation">.</span>JSONs<span class="token punctuation">]</span><span class="token punctuation">,</span> JL<span class="token punctuation">)</span> <span class="token operator">=&gt;</span> flattenJSONs<span class="token punctuation">(</span>JL<span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> flattenJSONs<span class="token punctuation">(</span><span class="token punctuation">[</span>J<span class="token punctuation">,</span>JS<span class="token punctuation">]</span>  <span class="token punctuation">,</span> JL<span class="token punctuation">)</span> <span class="token operator">=&gt;</span> J<span class="token punctuation">,</span> flattenJSONs<span class="token punctuation">(</span><span class="token punctuation">[</span>JS<span class="token punctuation">]</span><span class="token punctuation">,</span> JL<span class="token punctuation">)</span>
+<span class="token keyword">endmodule</span>
+</code></pre>
+</body></html></div>
+        </main>
+
+        <!-- Page ToC -->
+        <div class="col-12 col-md-3 col-xl-2 py-md-3 bd-sidebar page-toc mb-3">
+          
+<div>
+<details style="padding:0.25rem 0;;padding-left: 0px;">
+            <summary class="bd-toc-link-wrapper">
+              <a href="#json-rpc" class="bd-toc-link">JSON RPC</a>
+              </summary>
+            <div>
+              <div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#json-extensions"
+                class="bd-toc-link"
+                style="padding-left: 8px;;"
+              >
+                JSON Extensions
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#json-rpc-1"
+                class="bd-toc-link"
+                style="padding-left: 8px;;"
+              >
+                JSON-RPC
+              </a></div>
+            </div>
+          </details>
+        
+</div>
+
+        </div>
+        <div class="btn btn-rv-blue page-toc-toggle-btn"></div>
+        <!-- End Page ToC -->
+      </div>
+    </div>
+<!-- The footer is now controlled by the k-web-theme git submodule -->
+<footer id="rvsite-footer" class="app-footer text-md-left text-center">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-md-4 mb-md-0 mb-4">
+        <a href="https://runtimeverification.com/" target="_blank">
+          <picture>
+            <source
+              srcset="
+                https://runtimeverification.com/assets/img/rv-logo-dark.png
+              "
+              media="(prefers-color-scheme: dark)"
+            />
+            <img
+              class="logo-dark"
+              src="https://runtimeverification.com/assets/img/rv-logo.png"
+              alt="Runtime Verification logo"
+              style="height: 32px"
+            /> </picture
+        ></a>
+        <p class="mt-2 text-md-left copyright">
+          <a href="https://goo.gl/maps/5iu2nhbUA48fs7fP6" target="_blank"
+            >333 North Green Street, Chicago, IL</a
+          >
+        </p>
+      </div>
+      <div class="col-md-4 text-md-center mb-md-0 mb-4"></div>
+      <div class="col-md-4 mb-md-0 mb-4 pl-0 text-md-right">
+        <p class="copyright">2024 © all rights reserved</p>
+        <span class="copyright"><a href="https://runtimeverification.com/privacy-policy">privacy policy</a> | <a
+                href="https://runtimeverification.com/terms-of-use">terms of use</a></span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Typist/1.2/typist.min.js"></script>
+    <script src="../../../../../../assets/js/index.js"></script>
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script
+  async
+  src="https://www.googletagmanager.com/gtag/js?id=G-QL0D8HRYFW"
+></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag() {
+    dataLayer.push(arguments);
+  }
+  gtag("js", new Date());
+  gtag("config", "G-QL0D8HRYFW");
+</script>
+
+  </body>
+</html>
