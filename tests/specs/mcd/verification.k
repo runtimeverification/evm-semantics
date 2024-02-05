@@ -47,7 +47,7 @@ module LEMMAS-MCD-SYNTAX
 
 endmodule
 
-module LEMMAS-MCD [symbolic, kore]
+module LEMMAS-MCD [symbolic]
     imports LEMMAS
     imports LEMMAS-MCD-SYNTAX
     imports WORD-PACK

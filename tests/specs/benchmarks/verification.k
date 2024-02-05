@@ -133,7 +133,7 @@ module VERIFICATION
 
 endmodule
 
-module VERIFICATION-HASKELL [symbolic, kore]
+module VERIFICATION-HASKELL [symbolic]
     imports VERIFICATION-COMMON
 
   // ########################
