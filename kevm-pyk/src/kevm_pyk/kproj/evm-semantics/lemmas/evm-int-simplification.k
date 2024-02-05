@@ -12,6 +12,7 @@ module EVM-INT-SIMPLIFICATION-COMMON
     imports INT
     imports BOOL
     imports EVM-TYPES
+    imports WORD
 
   // ###########################################################################
   // up/Int
@@ -51,5 +52,21 @@ module EVM-INT-SIMPLIFICATION-COMMON
       X =/=Int ((X up/Int Y) *Int Y) => X modInt Y =/=Int 0
       requires 0 <Int Y
       [simplification, comm, preserves-definedness]
+
+  // ###########################################################################
+  // chop
+  // ###########################################################################
+
+  rule [chop-idempotent]:
+    chop ( chop ( X:Int ) ) => chop ( X )
+    [simplification]
+
+  rule [chop-sum-left]:
+    chop ( chop ( X:Int ) +Int Y:Int ) => chop ( X +Int Y )
+    [simplification]
+
+  rule [chop-sum-right]:
+    chop ( X:Int +Int chop ( Y:Int ) ) => chop ( X +Int Y )
+    [simplification]
 
 endmodule
