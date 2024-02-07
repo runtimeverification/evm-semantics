@@ -206,7 +206,6 @@ class KEVMCLIArgs(KCLIArgs):
             '--fallback-on',
             dest='fallback_on',
             type=list_of(FallbackReason, delim=','),
-            default=[],
             help='Comma-separated reasons to fallback from booster to kore, only usable with --use-booster. Options [Branching,Aborted,Stuck].',
         )
         args.add_argument(

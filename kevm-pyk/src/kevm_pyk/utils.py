@@ -328,7 +328,7 @@ def legacy_explore(
     trace_rewrites: bool = False,
     start_server: bool = True,
     maude_port: int | None = None,
-    fallback_on: Iterable[FallbackReason] = (),
+    fallback_on: Iterable[FallbackReason] | None = None,
     interim_simplification: int | None = None,
     no_post_exec_simplify: bool = False,
 ) -> Iterator[KCFGExplore]:

@@ -300,7 +300,7 @@ def exec_prove(
     fail_fast: bool = False,
     always_check_subsumption: bool = True,
     fast_check_subsumption: bool = True,
-    fallback_on: Iterable[FallbackReason] = (),
+    fallback_on: Iterable[FallbackReason] | None = None,
     interim_simplification: int | None = None,
     post_exec_simplify: bool = True,
     **kwargs: Any,
