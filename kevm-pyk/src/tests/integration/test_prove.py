@@ -181,8 +181,8 @@ TEST_PARAMS: dict[str, TParams] = {
 }
 
 
-for KONTROL_SPEC in KONTROL_SPECS:
-    TEST_PARAMS[KONTROL_SPEC] = TParams(break_on_calls=True)
+for KONTROL_TEST in KONTROL_TESTS:
+    TEST_PARAMS[f'kontrol/{KONTROL_TEST.name}'] = TParams(break_on_calls=True)
 
 
 def leaf_number(proof: APRProof) -> int:
