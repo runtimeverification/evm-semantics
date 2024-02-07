@@ -287,7 +287,7 @@ def exec_prove(
     workers: int = 1,
     break_every_step: bool = False,
     break_on_jumpi: bool = False,
-    break_on_calls: bool = True,
+    break_on_calls: bool = False,
     break_on_storage: bool = False,
     break_on_basic_blocks: bool = False,
     kore_rpc_command: str | Iterable[str] | None = None,
