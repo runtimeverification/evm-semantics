@@ -204,10 +204,10 @@ APPLE_SILICON=true poetry -C kevm-pyk run kdist --verbose build evm-semantics.pl
 Finally, you can build the semantics.
 
 ```sh
-poetry -C kevm-pyk run kdist --verbose build -j4
+poetry -C kevm-pyk run kdist --verbose build -j6
 ```
 
-You can build specific targets using options `evm-semantics.{llvm,haskell,haskell-standalone,plugin}`, e.g.:
+You can build specific targets using options `evm-semantics.{llvm,kllvm,kllvm-runtime,haskell,haskell-standalone,plugin}`, e.g.:
 
 ```sh
 poetry -C kevm-pyk run kdist build -j2 evm-semantics.llvm evm-semantics.haskell
