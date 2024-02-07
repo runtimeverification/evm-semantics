@@ -52,6 +52,7 @@ if TYPE_CHECKING:
     from pyk.kast.outer import KClaim
     from pyk.kcfg.kcfg import NodeIdLike
     from pyk.kcfg.tui import KCFGElem
+    from pyk.kore.rpc import FallbackReason
     from pyk.proof.proof import Proof
     from pyk.utils import BugReport
 
@@ -286,7 +287,7 @@ def exec_prove(
     workers: int = 1,
     break_every_step: bool = False,
     break_on_jumpi: bool = False,
-    break_on_calls: bool = True,
+    break_on_calls: bool = False,
     break_on_storage: bool = False,
     break_on_basic_blocks: bool = False,
     kore_rpc_command: str | Iterable[str] | None = None,
@@ -297,6 +298,11 @@ def exec_prove(
     failure_info: bool = True,
     auto_abstract_gas: bool = False,
     fail_fast: bool = False,
+    always_check_subsumption: bool = True,
+    fast_check_subsumption: bool = True,
+    fallback_on: Iterable[FallbackReason] | None = None,
+    interim_simplification: int | None = None,
+    post_exec_simplify: bool = True,
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'md_selector', f'--md-selector: {kwargs["md_selector"]}')
@@ -367,6 +373,9 @@ def exec_prove(
             smt_timeout=smt_timeout,
             smt_retry_limit=smt_retry_limit,
             trace_rewrites=trace_rewrites,
+            fallback_on=fallback_on,
+            interim_simplification=interim_simplification,
+            no_post_exec_simplify=(not post_exec_simplify),
         ) as kcfg_explore:
             proof_problem: Proof
             if is_functional(claim):
@@ -428,6 +437,8 @@ def exec_prove(
                 ),
                 terminal_rules=KEVMSemantics.terminal_rules(break_every_step),
                 fail_fast=fail_fast,
+                always_check_subsumption=always_check_subsumption,
+                fast_check_subsumption=fast_check_subsumption,
             )
             end_time = time.time()
             _LOGGER.info(f'Proof timing {proof_problem.id}: {end_time - start_time}s')
