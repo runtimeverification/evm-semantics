@@ -78,7 +78,7 @@ class KEVMCLIArgs(KCLIArgs):
             '--no-fast-check-subsumption',
             dest='fast_check_subsumption',
             action='store_false',
-            help='Use fast-check on k-cell to determine subsumption.',
+            help='Do not use fast-check on k-cell to determine subsumption.',
         )
         return args
 
