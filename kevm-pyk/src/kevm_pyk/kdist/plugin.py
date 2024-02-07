@@ -1,14 +1,16 @@
 from __future__ import annotations
 
+import sys
 from distutils.dir_util import copy_tree
 from typing import TYPE_CHECKING
 
 from pyk.kbuild.utils import k_version, sync_files
 from pyk.kdist.api import Target
+from pyk.kllvm.compiler import compile_kllvm, compile_runtime
 from pyk.utils import run_process
 
 from .. import config
-from ..kompile import KompileTarget, kevm_kompile
+from ..kompile import KompileTarget, kevm_kompile, lib_ccopts
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
@@ -75,6 +77,41 @@ class PluginTarget(Target):
         return (config.PLUGIN_DIR,)
 
 
+class KLLVMTarget(Target):
+    def build(self, output_dir: Path, deps: dict[str, Path], args: dict[str, Any], verbose: bool) -> None:
+        compile_kllvm(output_dir, verbose=verbose)
+
+    def context(self) -> dict[str, str]:
+        return {
+            'k-version': k_version().text,
+            'python-path': sys.executable,
+            'python-version': sys.version,
+        }
+
+
+class KLLVMRuntimeTarget(Target):
+    def build(self, output_dir: Path, deps: dict[str, Path], args: dict[str, Any], verbose: bool) -> None:
+        compile_runtime(
+            definition_dir=deps['evm-semantics.llvm'],
+            target_dir=output_dir,
+            ccopts=lib_ccopts(deps['evm-semantics.plugin']),
+            verbose=verbose,
+        )
+
+    def deps(self) -> tuple[str, ...]:
+        return ('evm-semantics.plugin', 'evm-semantics.llvm')
+
+    def source(self) -> tuple[Path, ...]:
+        return (config.EVM_SEMANTICS_DIR,) + tuple(config.MODULE_DIR.rglob('*.py'))
+
+    def context(self) -> dict[str, str]:
+        return {
+            'k-version': k_version().text,
+            'python-path': sys.executable,
+            'python-version': sys.version,
+        }
+
+
 __TARGETS__: Final = {
     'llvm': KEVMTarget(
         {
@@ -102,4 +139,6 @@ __TARGETS__: Final = {
         },
     ),
     'plugin': PluginTarget(),
+    'kllvm': KLLVMTarget(),
+    'kllvm-runtime': KLLVMRuntimeTarget(),
 }
