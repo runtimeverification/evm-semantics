@@ -186,18 +186,17 @@ class KEVM(KProve, KRun):
 
     @classmethod
     def _kevm_patch_symbol_table(cls, symbol_table: SymbolTable) -> None:
-        # fmt: off
-        symbol_table['#Bottom']                                       = lambda: '#Bottom'
-        symbol_table['_Map_']                                         = paren(lambda m1, m2: m1 + '\n' + m2)
-        symbol_table['_AccountCellMap_']                              = paren(lambda a1, a2: a1 + '\n' + a2)
-        symbol_table['.AccountCellMap']                               = lambda: '.Bag'
-        symbol_table['AccountCellMapItem']                            = lambda k, v: v
-        symbol_table['_<Word__EVM-TYPES_Int_Int_Int']                 = paren(lambda a1, a2: '(' + a1 + ') <Word ('  + a2 + ')')
-        symbol_table['_>Word__EVM-TYPES_Int_Int_Int']                 = paren(lambda a1, a2: '(' + a1 + ') >Word ('  + a2 + ')')
-        symbol_table['_<=Word__EVM-TYPES_Int_Int_Int']                = paren(lambda a1, a2: '(' + a1 + ') <=Word (' + a2 + ')')
-        symbol_table['_>=Word__EVM-TYPES_Int_Int_Int']                = paren(lambda a1, a2: '(' + a1 + ') >=Word (' + a2 + ')')
-        symbol_table['_==Word__EVM-TYPES_Int_Int_Int']                = paren(lambda a1, a2: '(' + a1 + ') ==Word (' + a2 + ')')
-        symbol_table['_s<Word__EVM-TYPES_Int_Int_Int']                = paren(lambda a1, a2: '(' + a1 + ') s<Word (' + a2 + ')')
+        symbol_table['#Bottom'] = lambda: '#Bottom'
+        symbol_table['_Map_'] = paren(lambda m1, m2: m1 + '\n' + m2)
+        symbol_table['_AccountCellMap_'] = paren(lambda a1, a2: a1 + '\n' + a2)
+        symbol_table['.AccountCellMap'] = lambda: '.Bag'
+        symbol_table['AccountCellMapItem'] = lambda k, v: v
+        symbol_table['_<Word__EVM-TYPES_Int_Int_Int'] = paren(lambda a1, a2: '(' + a1 + ') <Word (' + a2 + ')')
+        symbol_table['_>Word__EVM-TYPES_Int_Int_Int'] = paren(lambda a1, a2: '(' + a1 + ') >Word (' + a2 + ')')
+        symbol_table['_<=Word__EVM-TYPES_Int_Int_Int'] = paren(lambda a1, a2: '(' + a1 + ') <=Word (' + a2 + ')')
+        symbol_table['_>=Word__EVM-TYPES_Int_Int_Int'] = paren(lambda a1, a2: '(' + a1 + ') >=Word (' + a2 + ')')
+        symbol_table['_==Word__EVM-TYPES_Int_Int_Int'] = paren(lambda a1, a2: '(' + a1 + ') ==Word (' + a2 + ')')
+        symbol_table['_s<Word__EVM-TYPES_Int_Int_Int'] = paren(lambda a1, a2: '(' + a1 + ') s<Word (' + a2 + ')')
         paren_symbols = [
             '_|->_',
             '#And',
@@ -222,7 +221,6 @@ class KEVM(KProve, KRun):
         for symb in paren_symbols:
             if symb in symbol_table:
                 symbol_table[symb] = paren(symbol_table[symb])
-        # fmt: on
 
     class Sorts:
         KEVM_CELL: Final = KSort('KevmCell')
