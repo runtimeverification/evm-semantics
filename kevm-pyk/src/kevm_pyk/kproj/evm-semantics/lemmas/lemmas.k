@@ -22,11 +22,6 @@ module LEMMAS [symbolic]
     rule 0 <=Int #ceil32(I)        => true requires 0 <=Int I [simplification, smt-lemma]
     rule 0 <=Int #ceil32(I) -Int I => true requires 0 <=Int I [simplification]
 
-    // chop range & simplification
-    rule chop(I) => I requires #rangeUInt( 256 , I ) [simplification]
-    rule 0 <=Int chop(_V)             => true        [simplification, smt-lemma]
-    rule         chop(_V) <Int pow256 => true        [simplification]
-
     rule X *Int Y <Int pow256 => true requires Y <=Int maxUInt256 /Int X [simplification]
     rule #if B #then C +Int C1 #else C +Int C2 #fi => C +Int #if B #then C1 #else C2 #fi [simplification]
 

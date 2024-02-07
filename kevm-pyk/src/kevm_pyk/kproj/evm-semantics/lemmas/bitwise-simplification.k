@@ -42,8 +42,11 @@ module BITWISE-SIMPLIFICATION [symbolic]
        andBool 0 <=Int Y andBool Y <Int X +Int 1
        [concrete(X), simplification, comm]
 
-    rule [bitwise-or-geq-zero]:  0 <=Int (X |Int Y) => true requires 0 <=Int X andBool 0 <=Int Y [simplification]
-    rule [bitwise-and-geq-zero]: 0 <=Int (X &Int Y) => true requires 0 <=Int X andBool 0 <=Int Y [simplification]
+    rule [bitwise-or-geq-zero]:  0 <=Int (X |Int Y) => true requires 0 <=Int X andBool 0 <=Int Y [simplification, smt-lemma]
+    rule [bitwise-and-geq-zero]: 0 <=Int (X &Int Y) => true requires 0 <=Int X andBool 0 <=Int Y [simplification, smt-lemma]
+
+    rule [bitwise-or-lt-zero]:  (X |Int Y) <Int Z => false requires 0 <=Int X andBool 0 <=Int Y andBool Z <=Int 0 [concrete(Z), simplification]
+    rule [bitwise-and-lt-zero]: (X &Int Y) <Int Z => false requires 0 <=Int X andBool 0 <=Int Y andBool Z <=Int 0 [concrete(Z), simplification]
 
     rule [bitwise-and-lt]:       (X &Int Y) <Int Z      => true requires 0 <=Int X andBool 0 <=Int Y andBool (X <Int Z orBool Y <Int Z)          [simplification]
     rule [bitwise-or-lt-pow256]: (X |Int Y) <Int pow256 => true requires 0 <=Int X andBool 0 <=Int Y andBool X <Int pow256 andBool Y <Int pow256 [simplification]
@@ -70,6 +73,11 @@ module BITWISE-SIMPLIFICATION [symbolic]
        andBool X +Int 1 ==Int 2 ^Int log2Int(X +Int 1)
        andBool X +Int Z ==Int maxUInt256
       [simplification, concrete(X, Z), comm]
+
+    rule [notMaxUInt5-bit-and-nested]:
+      notMaxUInt5 &Int ( ( notMaxUInt5 &Int X ) +Int Y ) => chop ( ( notMaxUInt5 &Int X ) +Int ( notMaxUInt5 &Int Y ) )
+      requires 0 <=Int X andBool 0 <=Int Y
+      [simplification, concrete(Y)]
 
     rule [lengthBytes-upInt-32-lower-bound]:
       lengthBytes(X) <=Int notMaxUInt5 &Int ( lengthBytes(X) +Int 31 ) => true
