@@ -64,8 +64,8 @@ module EVM-INT-SIMPLIFICATION-COMMON
   rule [asWord-lt-range]:
     #asWord ( #range ( _:Bytes, S, W ) ) <Int X => true
     requires 0 <=Int S andBool 0 <=Int W
-     andBool X ==Int 2 ^Int log2Int( X )
      andBool 2 ^Int ( 8 *Int W ) <=Int X
+     andBool X ==Int 2 ^Int log2Int( X )
     [simplification, concrete(S, W, X)]
 
   rule [lt-asWord-range]:
