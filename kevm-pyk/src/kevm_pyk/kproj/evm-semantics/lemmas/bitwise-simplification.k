@@ -76,6 +76,7 @@ module BITWISE-SIMPLIFICATION [symbolic]
 
     rule [notMaxUInt5-bit-and-nested]:
       notMaxUInt5 &Int ( ( notMaxUInt5 &Int X ) +Int Y ) => chop ( ( notMaxUInt5 &Int X ) +Int ( notMaxUInt5 &Int Y ) )
+      requires 0 <=Int X andBool 0 <=Int Y
       [simplification, concrete(Y)]
 
     rule [lengthBytes-upInt-32-lower-bound]:

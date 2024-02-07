@@ -90,7 +90,7 @@ module INT-SIMPLIFICATION-HASKELL [symbolic]
 
     rule A +Int B ==Int C +Int D => A -Int C ==Int D -Int B [concrete(B, D), symbolic(A, C), simplification(45)]
 
-    rule { A +Int B #Equals C +Int D } => { A -Int C #Equals D -Int B } [concrete(B, D), symbolic(A, C), simplification(45), comm]
+    rule { A +Int B #Equals C +Int D } => { A -Int C #Equals D -Int B } [concrete(B, D), symbolic(A, C), simplification(45)]
 
 endmodule
 

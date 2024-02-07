@@ -57,16 +57,11 @@ module EVM-INT-SIMPLIFICATION-COMMON
   // chop
   // ###########################################################################
 
-  rule [chop-idempotent]:
-    chop ( chop ( X:Int ) ) => chop ( X )
-    [simplification]
+  rule [chop-idempotent]:  chop(I) => I requires #rangeUInt( 256 , I ) [simplification]
+  rule [chop-upper-bound]: 0 <=Int chop(_V)             => true        [simplification, smt-lemma]
+  rule [chop-lower-bound]:         chop(_V) <Int pow256 => true        [simplification, smt-lemma]
 
-  rule [chop-sum-left]:
-    chop ( chop ( X:Int ) +Int Y:Int ) => chop ( X +Int Y )
-    [simplification]
-
-  rule [chop-sum-right]:
-    chop ( X:Int +Int chop ( Y:Int ) ) => chop ( X +Int Y )
-    [simplification]
+  rule [chop-sum-left]:  chop ( chop ( X:Int ) +Int Y:Int ) => chop ( X +Int Y ) [simplification]
+  rule [chop-sum-right]: chop ( X:Int +Int chop ( Y:Int ) ) => chop ( X +Int Y ) [simplification]
 
 endmodule
