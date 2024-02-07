@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+<meta charset="utf-8" />
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0, maximum-scale=1.0"
+/>
+<meta
+  name="description"
+  content="K Semantics of the Ethereum Virtual Machine (EVM)"
+/>
+<meta
+  name="keywords"
+  content="runtime, verification, rv, k, ethereum virtual machine, evm"
+/>
+<meta name="author" content="EVM Semantics | Runtime Verification Inc" />
+<meta name="robots" content="index, follow" />
+
+<!--favicon icon-->
+<link rel="icon" type="image/png" href="../../../../../../assets/img/favicon.ico" />
+
+<title>KEVM: Semantics of EVM in K | Runtime Verification, Inc. </title>
+
+<link rel="canonical" href="https://jellopaper.org/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/schedule/" />
+
+<!--web fonts-->
+<link
+  href="https://fonts.googleapis.com/css?family=Nunito:300,400,600,700,800"
+  rel="stylesheet"
+/>
+<link
+  href="https://fonts.googleapis.com/css?family=Lora:400i"
+  rel="stylesheet"
+/>
+
+<link
+  href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.14.0/css/all.min.css"
+  rel="stylesheet"
+/>
+
+<link href="../../../../../../assets/css/index.css" rel="stylesheet" />
+
+<!--[if (gt IE 9) |!(IE)]><!-->
+<!--<link rel="stylesheet" href="/assets/vendor/custom-nav/css/effects/fade-menu.css"/>-->
+<!-- <link rel="stylesheet" href="../../../../../../assets/k/vl-nav/css/effects/slide-menu.css" /> -->
+<!--<![endif]-->
+
+  </head>
+
+  <body>
+<header
+  class="navbar navbar-expand navbar-dark flex-column flex-md-row bd-navbar"
+>
+  <a class="logo-link" href="../../../../../../index.html"> EVM Semantics </a>
+  <ul class="navbar-nav ml-md-auto">
+    <li class="nav-item">
+      <a
+        class="nav-link pl-2 pr-1 mx-1 py-3 my-n2"
+        href="https://github.com/runtimeverification/evm-semantics"
+        target="_blank"
+        rel="noopener"
+        aria-label="GitHub"
+      >
+        <i class="fab fa-github"></i>
+      </a>
+    </li>
+  </ul>
+  <!--
+  <a
+    class="btn btn-rv-blue d-none d-lg-inline-block mb-3 mb-md-0 ml-md-3"
+    href="../../../../../../downloads"
+    >Download</a
+  >
+  -->
+</header>
+
+
+    <div class="container-fluid">
+      <div class="row flex-xl-nowrap">
+<div class="col-12 col-md-3 col-xl-2 bd-sidebar mb-3">
+  <form
+    role="search"
+    class="bd-search d-flex align-items-center justify-content-between"
+  >
+    <input
+      type="search"
+      class="form-control"
+      placeholder="Search..."
+      aria-label="Search for..."
+      autocomplete="false"
+      id="search-box"
+    />
+    <button
+      class="btn bd-search-docs-toggle d-md-none p-0 ml-3 collapsed"
+      type="button"
+      aria-label="Toggle docs navigation"
+      style="font-size: 1.4rem"
+    >
+      <i class="fas fa-bars"></i>
+    </button>
+  </form>
+  <nav class="collapse bd-links" aria-label="Main navigation">
+    <div class="bd-toc-item">
+      <a class="bd-toc-link" href="../../../../../../">Homepage</a>
+      <a class="bd-toc-link" href="../../../../../../INSTALL/">Install</a>
+    </div>
+  </nav>
+</div>
+
+        <main
+          class="col-12 col-md-6 col-xl-8 py-md-3 pl-md-5 bd-content"
+          role="main"
+        >
+          <div class="markdown-preview"><html><head></head><body><h1 id="kevm-schedules">KEVM Schedules</h1>
+<h2 id="fee-schedule">Fee Schedule</h2>
+<p>The <code>Schedule</code> determines the constants/modes of operation for each hard fork.
+There are <code>ScheduleFlag</code>s and <code>ScheduleConstant</code>s.</p>
+<ul>
+<li>A <code>ScheduleFlag</code> is a boolean value determining whether a certain feature is turned on.</li>
+<li>A <code>ScheduleConst</code> is an <code>Int</code> parameter which is used during EVM execution.</li>
+</ul>
+<h3 id="schedule-flags">Schedule Flags</h3>
+<p>A <code>ScheduleFlag</code> is a boolean determined by the fee schedule; applying a <code>ScheduleFlag</code> to a <code>Schedule</code> yields whether the flag is set or not.</p>
+<pre><code class="language-k"><span class="token keyword">requires</span> <span class="token string">"data.md"</span>
+
+<span class="token keyword">module</span> SCHEDULE
+    <span class="token keyword">imports</span> EVM<span class="token operator">-</span>DATA
+
+    <span class="token keyword">syntax</span> <span class="token keyword">Bool</span> <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> ScheduleFlag <span class="token string">"&lt;&lt;"</span> Schedule <span class="token string">"&gt;&gt;"</span> <span class="token punctuation">[</span>function<span class="token punctuation">,</span> total<span class="token punctuation">]</span>
+ <span class="token comment">// -----------------------------------------------------------------</span>
+
+    <span class="token keyword">syntax</span> ScheduleFlag <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> <span class="token string">"Gselfdestructnewaccount"</span> <span class="token operator">|</span> <span class="token string">"Gstaticcalldepth"</span> <span class="token operator">|</span> <span class="token string">"Gemptyisnonexistent"</span> <span class="token operator">|</span> <span class="token string">"Gzerovaluenewaccountgas"</span>
+                          <span class="token operator">|</span> <span class="token string">"Ghasrevert"</span>              <span class="token operator">|</span> <span class="token string">"Ghasreturndata"</span>   <span class="token operator">|</span> <span class="token string">"Ghasstaticcall"</span>      <span class="token operator">|</span> <span class="token string">"Ghasshift"</span>
+                          <span class="token operator">|</span> <span class="token string">"Ghasdirtysstore"</span>         <span class="token operator">|</span> <span class="token string">"Ghascreate2"</span>      <span class="token operator">|</span> <span class="token string">"Ghasextcodehash"</span>     <span class="token operator">|</span> <span class="token string">"Ghasselfbalance"</span>
+                          <span class="token operator">|</span> <span class="token string">"Ghassstorestipend"</span>       <span class="token operator">|</span> <span class="token string">"Ghaschainid"</span>      <span class="token operator">|</span> <span class="token string">"Ghasaccesslist"</span>      <span class="token operator">|</span> <span class="token string">"Ghasbasefee"</span>
+                          <span class="token operator">|</span> <span class="token string">"Ghasrejectedfirstbyte"</span>   <span class="token operator">|</span> <span class="token string">"Ghasprevrandao"</span>   <span class="token operator">|</span> <span class="token string">"Ghasmaxinitcodesize"</span> <span class="token operator">|</span> <span class="token string">"Ghaspushzero"</span>
+                          <span class="token operator">|</span> <span class="token string">"Ghaswarmcoinbase"</span>
+ <span class="token comment">// ------------------------------------------</span>
+</code></pre>
+<h3 id="schedule-constants">Schedule Constants</h3>
+<p>A <code>ScheduleConst</code> is a constant determined by the fee schedule.</p>
+<pre><code class="language-k">    <span class="token keyword">syntax</span> <span class="token keyword">Int</span> <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> ScheduleConst <span class="token string">"&lt;"</span> Schedule <span class="token string">"&gt;"</span> <span class="token punctuation">[</span>function<span class="token punctuation">,</span> total<span class="token punctuation">]</span>
+ <span class="token comment">// ---------------------------------------------------------------</span>
+
+    <span class="token keyword">syntax</span> ScheduleConst <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> <span class="token string">"Gzero"</span>         <span class="token operator">|</span> <span class="token string">"Gbase"</span>         <span class="token operator">|</span> <span class="token string">"Gverylow"</span>      <span class="token operator">|</span> <span class="token string">"Glow"</span>              <span class="token operator">|</span> <span class="token string">"Gmid"</span>               <span class="token operator">|</span> <span class="token string">"Ghigh"</span>            <span class="token operator">|</span> <span class="token string">"Gextcodesize"</span>
+                           <span class="token operator">|</span> <span class="token string">"Gextcodecopy"</span>  <span class="token operator">|</span> <span class="token string">"Gbalance"</span>      <span class="token operator">|</span> <span class="token string">"Gsload"</span>        <span class="token operator">|</span> <span class="token string">"Gjumpdest"</span>         <span class="token operator">|</span> <span class="token string">"Gsstoreset"</span>         <span class="token operator">|</span> <span class="token string">"Gsstorereset"</span>     <span class="token operator">|</span> <span class="token string">"Rsstoreclear"</span>
+                           <span class="token operator">|</span> <span class="token string">"Rselfdestruct"</span> <span class="token operator">|</span> <span class="token string">"Gselfdestruct"</span> <span class="token operator">|</span> <span class="token string">"Gcreate"</span>       <span class="token operator">|</span> <span class="token string">"Gcodedeposit"</span>      <span class="token operator">|</span> <span class="token string">"Gcall"</span>              <span class="token operator">|</span> <span class="token string">"Gcallvalue"</span>       <span class="token operator">|</span> <span class="token string">"Gcallstipend"</span>
+                           <span class="token operator">|</span> <span class="token string">"Gnewaccount"</span>   <span class="token operator">|</span> <span class="token string">"Gexp"</span>          <span class="token operator">|</span> <span class="token string">"Gexpbyte"</span>      <span class="token operator">|</span> <span class="token string">"Gmemory"</span>           <span class="token operator">|</span> <span class="token string">"Gtxcreate"</span>          <span class="token operator">|</span> <span class="token string">"Gtxdatazero"</span>      <span class="token operator">|</span> <span class="token string">"Gtxdatanonzero"</span>
+                           <span class="token operator">|</span> <span class="token string">"Gtransaction"</span>  <span class="token operator">|</span> <span class="token string">"Glog"</span>          <span class="token operator">|</span> <span class="token string">"Glogdata"</span>      <span class="token operator">|</span> <span class="token string">"Glogtopic"</span>         <span class="token operator">|</span> <span class="token string">"Gsha3"</span>              <span class="token operator">|</span> <span class="token string">"Gsha3word"</span>        <span class="token operator">|</span> <span class="token string">"Gcopy"</span>
+                           <span class="token operator">|</span> <span class="token string">"Gblockhash"</span>    <span class="token operator">|</span> <span class="token string">"Gquadcoeff"</span>    <span class="token operator">|</span> <span class="token string">"maxCodeSize"</span>   <span class="token operator">|</span> <span class="token string">"Rb"</span>                <span class="token operator">|</span> <span class="token string">"Gquaddivisor"</span>       <span class="token operator">|</span> <span class="token string">"Gecadd"</span>           <span class="token operator">|</span> <span class="token string">"Gecmul"</span>
+                           <span class="token operator">|</span> <span class="token string">"Gecpairconst"</span>  <span class="token operator">|</span> <span class="token string">"Gecpaircoeff"</span>  <span class="token operator">|</span> <span class="token string">"Gfround"</span>       <span class="token operator">|</span> <span class="token string">"Gcoldsload"</span>        <span class="token operator">|</span> <span class="token string">"Gcoldaccountaccess"</span> <span class="token operator">|</span> <span class="token string">"Gwarmstorageread"</span> <span class="token operator">|</span> <span class="token string">"Gaccesslistaddress"</span>
+                           <span class="token operator">|</span> <span class="token string">"Gaccessliststoragekey"</span>           <span class="token operator">|</span> <span class="token string">"Rmaxquotient"</span>  <span class="token operator">|</span> <span class="token string">"Ginitcodewordcost"</span> <span class="token operator">|</span> <span class="token string">"maxInitCodeSize"</span>
+ <span class="token comment">// ----------------------------------------------------------------------------------------------------------------------</span>
+</code></pre>
+<h3 id="default-schedule">Default Schedule</h3>
+<pre><code class="language-k">    <span class="token keyword">syntax</span> Schedule <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> <span class="token string">"DEFAULT"</span> <span class="token punctuation">[</span><span class="token class-name">klabel</span><span class="token punctuation">(</span>DEFAULT_EVM<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token class-name">symbol</span><span class="token punctuation">,</span> smtlib<span class="token punctuation">(</span>schedule_DEFAULT<span class="token punctuation">)</span><span class="token punctuation">]</span>
+ <span class="token comment">// -------------------------------------------------------------------------------------</span>
+    <span class="token keyword">rule</span> Gzero    &lt; DEFAULT &gt; <span class="token operator">=&gt;</span> <span class="token number">0</span>
+    <span class="token keyword">rule</span> Gbase    &lt; DEFAULT &gt; <span class="token operator">=&gt;</span> <span class="token number">2</span>
+    <span class="token keyword">rule</span> Gverylow &lt; DEFAULT &gt; <span class="token operator">=&gt;</span> <span class="token number">3</span>
+    <span class="token keyword">rule</span> Glow     &lt; DEFAULT &gt; <span class="token operator">=&gt;</span> <span class="token number">5</span>
+    <span class="token keyword">rule</span> Gmid     &lt; DEFAULT &gt; <span class="token operator">=&gt;</span> <span class="token number">8</span>
+    <span class="token keyword">rule</span> Ghigh    &lt; DEFAULT &gt; <span class="token operator">=&gt;</span> <span class="token number">10</span>
+
+    <span class="token keyword">rule</span> Gexp      &lt; DEFAULT &gt; <span class="token operator">=&gt;</span> <span class="token number">10</span>
+    <span class="token keyword">rule</span> Gexpbyte  &lt; DEFAULT &gt; <span class="token operator">=&gt;</span> <span class="token number">10</span>
+    <span class="token keyword">rule</span> Gsha3     &lt; DEFAULT &gt; <span class="token operator">=&gt;</span> <span class="token number">30</span>
+    <span class="token keyword">rule</span> Gsha3word &lt; DEFAULT &gt; <span class="token operator">=&gt;</span> <span class="token number">6</span>
+
+    <span class="token keyword">rule</span> Gsload       &lt; DEFAULT &gt; <span class="token operator">=&gt;</span> <span class="token number">50</span>
+    <span class="token keyword">rule</span> Gsstoreset   &lt; DEFAULT &gt; <span class="token operator">=&gt;</span> <span class="token number">20000</span>
+    <span class="token keyword">rule</span> Gsstorereset &lt; DEFAULT &gt; <span class="token operator">=&gt;</span> <span class="token number">5000</span>
+    <span class="token keyword">rule</span> Rsstoreclear &lt; DEFAULT &gt; <span class="token operator">=&gt;</span> <span class="token number">15000</span>
+
+    <span class="token keyword">rule</span> Glog      &lt; DEFAULT &gt; <span class="token operator">=&gt;</span> <span class="token number">375</span>
+    <span class="token keyword">rule</span> Glogdata  &lt; DEFAULT &gt; <span class="token operator">=&gt;</span> <span class="token number">8</span>
+    <span class="token keyword">rule</span> Glogtopic &lt; DEFAULT &gt; <span class="token operator">=&gt;</span> <span class="token number">375</span>
+
+    <span class="token keyword">rule</span> Gcall        &lt; DEFAULT &gt; <span class="token operator">=&gt;</span> <span class="token number">40</span>
+    <span class="token keyword">rule</span> Gcallstipend &lt; DEFAULT &gt; <span class="token operator">=&gt;</span> <span class="token number">2300</span>
+    <span class="token keyword">rule</span> Gcallvalue   &lt; DEFAULT &gt; <span class="token operator">=&gt;</span> <span class="token number">9000</span>
+    <span class="token keyword">rule</span> Gnewaccount  &lt; DEFAULT &gt; <span class="token operator">=&gt;</span> <span class="token number">25000</span>
+
+    <span class="token keyword">rule</span> Gcreate       &lt; DEFAULT &gt; <span class="token operator">=&gt;</span> <span class="token number">32000</span>
+    <span class="token keyword">rule</span> Gcodedeposit  &lt; DEFAULT &gt; <span class="token operator">=&gt;</span> <span class="token number">200</span>
+    <span class="token keyword">rule</span> Gselfdestruct &lt; DEFAULT &gt; <span class="token operator">=&gt;</span> <span class="token number">0</span>
+    <span class="token keyword">rule</span> Rselfdestruct &lt; DEFAULT &gt; <span class="token operator">=&gt;</span> <span class="token number">24000</span>
+
+    <span class="token keyword">rule</span> Gmemory      &lt; DEFAULT &gt; <span class="token operator">=&gt;</span> <span class="token number">3</span>
+    <span class="token keyword">rule</span> Gquadcoeff   &lt; DEFAULT &gt; <span class="token operator">=&gt;</span> <span class="token number">512</span>
+    <span class="token keyword">rule</span> Gcopy        &lt; DEFAULT &gt; <span class="token operator">=&gt;</span> <span class="token number">3</span>
+    <span class="token keyword">rule</span> Gquaddivisor &lt; DEFAULT &gt; <span class="token operator">=&gt;</span> <span class="token number">20</span>
+
+    <span class="token keyword">rule</span> Gtransaction   &lt; DEFAULT &gt; <span class="token operator">=&gt;</span> <span class="token number">21000</span>
+    <span class="token keyword">rule</span> Gtxcreate      &lt; DEFAULT &gt; <span class="token operator">=&gt;</span> <span class="token number">53000</span>
+    <span class="token keyword">rule</span> Gtxdatazero    &lt; DEFAULT &gt; <span class="token operator">=&gt;</span> <span class="token number">4</span>
+    <span class="token keyword">rule</span> Gtxdatanonzero &lt; DEFAULT &gt; <span class="token operator">=&gt;</span> <span class="token number">68</span>
+
+    <span class="token keyword">rule</span> Gjumpdest    &lt; DEFAULT &gt; <span class="token operator">=&gt;</span> <span class="token number">1</span>
+    <span class="token keyword">rule</span> Gbalance     &lt; DEFAULT &gt; <span class="token operator">=&gt;</span> <span class="token number">20</span>
+    <span class="token keyword">rule</span> Gblockhash   &lt; DEFAULT &gt; <span class="token operator">=&gt;</span> <span class="token number">20</span>
+    <span class="token keyword">rule</span> Gextcodesize &lt; DEFAULT &gt; <span class="token operator">=&gt;</span> <span class="token number">20</span>
+    <span class="token keyword">rule</span> Gextcodecopy &lt; DEFAULT &gt; <span class="token operator">=&gt;</span> <span class="token number">20</span>
+
+    <span class="token keyword">rule</span> Gecadd       &lt; DEFAULT &gt; <span class="token operator">=&gt;</span> <span class="token number">500</span>
+    <span class="token keyword">rule</span> Gecmul       &lt; DEFAULT &gt; <span class="token operator">=&gt;</span> <span class="token number">40000</span>
+    <span class="token keyword">rule</span> Gecpairconst &lt; DEFAULT &gt; <span class="token operator">=&gt;</span> <span class="token number">100000</span>
+    <span class="token keyword">rule</span> Gecpaircoeff &lt; DEFAULT &gt; <span class="token operator">=&gt;</span> <span class="token number">80000</span>
+    <span class="token keyword">rule</span> Gfround      &lt; DEFAULT &gt; <span class="token operator">=&gt;</span> <span class="token number">1</span>
+
+    <span class="token keyword">rule</span> maxCodeSize &lt; DEFAULT &gt; <span class="token operator">=&gt;</span> <span class="token number">2</span> <span class="token operator">^</span><span class="token keyword">Int</span> <span class="token number">32</span> <span class="token operator">-</span><span class="token keyword">Int</span> <span class="token number">1</span>
+    <span class="token keyword">rule</span> Rb          &lt; DEFAULT &gt; <span class="token operator">=&gt;</span> <span class="token number">5</span> <span class="token operator">*</span><span class="token keyword">Int</span> <span class="token punctuation">(</span><span class="token number">10</span> <span class="token operator">^</span><span class="token keyword">Int</span> <span class="token number">18</span><span class="token punctuation">)</span>
+
+    <span class="token keyword">rule</span> Gcoldsload         &lt; DEFAULT &gt; <span class="token operator">=&gt;</span> <span class="token number">0</span>
+    <span class="token keyword">rule</span> Gcoldaccountaccess &lt; DEFAULT &gt; <span class="token operator">=&gt;</span> <span class="token number">0</span>
+    <span class="token keyword">rule</span> Gwarmstorageread   &lt; DEFAULT &gt; <span class="token operator">=&gt;</span> <span class="token number">0</span>
+
+    <span class="token keyword">rule</span> Gaccessliststoragekey &lt; DEFAULT &gt; <span class="token operator">=&gt;</span> <span class="token number">0</span>
+    <span class="token keyword">rule</span> Gaccesslistaddress    &lt; DEFAULT &gt; <span class="token operator">=&gt;</span> <span class="token number">0</span>
+
+    <span class="token keyword">rule</span> maxInitCodeSize   &lt; DEFAULT &gt; <span class="token operator">=&gt;</span> <span class="token number">0</span>
+    <span class="token keyword">rule</span> Ginitcodewordcost &lt; DEFAULT &gt; <span class="token operator">=&gt;</span> <span class="token number">0</span>
+
+    <span class="token keyword">rule</span> Rmaxquotient &lt; DEFAULT &gt; <span class="token operator">=&gt;</span> <span class="token number">2</span>
+
+    <span class="token keyword">rule</span> Gselfdestructnewaccount &lt;&lt; DEFAULT &gt;&gt; <span class="token operator">=&gt;</span> <span class="token boolean">false</span>
+    <span class="token keyword">rule</span> Gstaticcalldepth        &lt;&lt; DEFAULT &gt;&gt; <span class="token operator">=&gt;</span> <span class="token boolean">true</span>
+    <span class="token keyword">rule</span> Gemptyisnonexistent     &lt;&lt; DEFAULT &gt;&gt; <span class="token operator">=&gt;</span> <span class="token boolean">false</span>
+    <span class="token keyword">rule</span> Gzerovaluenewaccountgas &lt;&lt; DEFAULT &gt;&gt; <span class="token operator">=&gt;</span> <span class="token boolean">true</span>
+    <span class="token keyword">rule</span> Ghasrevert              &lt;&lt; DEFAULT &gt;&gt; <span class="token operator">=&gt;</span> <span class="token boolean">false</span>
+    <span class="token keyword">rule</span> Ghasreturndata          &lt;&lt; DEFAULT &gt;&gt; <span class="token operator">=&gt;</span> <span class="token boolean">false</span>
+    <span class="token keyword">rule</span> Ghasstaticcall          &lt;&lt; DEFAULT &gt;&gt; <span class="token operator">=&gt;</span> <span class="token boolean">false</span>
+    <span class="token keyword">rule</span> Ghasshift               &lt;&lt; DEFAULT &gt;&gt; <span class="token operator">=&gt;</span> <span class="token boolean">false</span>
+    <span class="token keyword">rule</span> Ghasdirtysstore         &lt;&lt; DEFAULT &gt;&gt; <span class="token operator">=&gt;</span> <span class="token boolean">false</span>
+    <span class="token keyword">rule</span> Ghassstorestipend       &lt;&lt; DEFAULT &gt;&gt; <span class="token operator">=&gt;</span> <span class="token boolean">false</span>
+    <span class="token keyword">rule</span> Ghascreate2             &lt;&lt; DEFAULT &gt;&gt; <span class="token operator">=&gt;</span> <span class="token boolean">false</span>
+    <span class="token keyword">rule</span> Ghasextcodehash         &lt;&lt; DEFAULT &gt;&gt; <span class="token operator">=&gt;</span> <span class="token boolean">false</span>
+    <span class="token keyword">rule</span> Ghasselfbalance         &lt;&lt; DEFAULT &gt;&gt; <span class="token operator">=&gt;</span> <span class="token boolean">false</span>
+    <span class="token keyword">rule</span> Ghaschainid             &lt;&lt; DEFAULT &gt;&gt; <span class="token operator">=&gt;</span> <span class="token boolean">false</span>
+    <span class="token keyword">rule</span> Ghasaccesslist          &lt;&lt; DEFAULT &gt;&gt; <span class="token operator">=&gt;</span> <span class="token boolean">false</span>
+    <span class="token keyword">rule</span> Ghasbasefee             &lt;&lt; DEFAULT &gt;&gt; <span class="token operator">=&gt;</span> <span class="token boolean">false</span>
+    <span class="token keyword">rule</span> Ghasrejectedfirstbyte   &lt;&lt; DEFAULT &gt;&gt; <span class="token operator">=&gt;</span> <span class="token boolean">false</span>
+    <span class="token keyword">rule</span> Ghasprevrandao          &lt;&lt; DEFAULT &gt;&gt; <span class="token operator">=&gt;</span> <span class="token boolean">false</span>
+    <span class="token keyword">rule</span> Ghasmaxinitcodesize     &lt;&lt; DEFAULT &gt;&gt; <span class="token operator">=&gt;</span> <span class="token boolean">false</span>
+    <span class="token keyword">rule</span> Ghaspushzero            &lt;&lt; DEFAULT &gt;&gt; <span class="token operator">=&gt;</span> <span class="token boolean">false</span>
+    <span class="token keyword">rule</span> Ghaswarmcoinbase        &lt;&lt; DEFAULT &gt;&gt; <span class="token operator">=&gt;</span> <span class="token boolean">false</span>
+</code></pre>
+<h3 id="frontier-schedule">Frontier Schedule</h3>
+<pre><code class="language-k">    <span class="token keyword">syntax</span> Schedule <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> <span class="token string">"FRONTIER"</span> <span class="token punctuation">[</span><span class="token class-name">klabel</span><span class="token punctuation">(</span>FRONTIER_EVM<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token class-name">symbol</span><span class="token punctuation">,</span> smtlib<span class="token punctuation">(</span>schedule_FRONTIER<span class="token punctuation">)</span><span class="token punctuation">]</span>
+ <span class="token comment">// ----------------------------------------------------------------------------------------</span>
+    <span class="token keyword">rule</span> Gtxcreate  &lt; FRONTIER &gt; <span class="token operator">=&gt;</span> <span class="token number">21000</span>
+    <span class="token keyword">rule</span> SCHEDCONST &lt; FRONTIER &gt; <span class="token operator">=&gt;</span> SCHEDCONST &lt; DEFAULT &gt; <span class="token keyword">requires</span> SCHEDCONST <span class="token operator">=</span><span class="token operator">/</span><span class="token operator">=</span>K Gtxcreate
+
+    <span class="token keyword">rule</span> SCHEDFLAG &lt;&lt; FRONTIER &gt;&gt; <span class="token operator">=&gt;</span> SCHEDFLAG &lt;&lt; DEFAULT &gt;&gt;
+</code></pre>
+<h3 id="homestead-schedule">Homestead Schedule</h3>
+<pre><code class="language-k">    <span class="token keyword">syntax</span> Schedule <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> <span class="token string">"HOMESTEAD"</span> <span class="token punctuation">[</span><span class="token class-name">klabel</span><span class="token punctuation">(</span>HOMESTEAD_EVM<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token class-name">symbol</span><span class="token punctuation">,</span> smtlib<span class="token punctuation">(</span>schedule_HOMESTEAD<span class="token punctuation">)</span><span class="token punctuation">]</span>
+ <span class="token comment">// -------------------------------------------------------------------------------------------</span>
+    <span class="token keyword">rule</span> SCHEDCONST &lt; HOMESTEAD &gt; <span class="token operator">=&gt;</span> SCHEDCONST &lt; DEFAULT &gt;
+
+    <span class="token keyword">rule</span> SCHEDFLAG &lt;&lt; HOMESTEAD &gt;&gt; <span class="token operator">=&gt;</span> SCHEDFLAG &lt;&lt; DEFAULT &gt;&gt;
+</code></pre>
+<h3 id="tangerine-whistle-schedule">Tangerine Whistle Schedule</h3>
+<pre><code class="language-k">    <span class="token keyword">syntax</span> Schedule <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> <span class="token string">"TANGERINE_WHISTLE"</span> <span class="token punctuation">[</span><span class="token class-name">klabel</span><span class="token punctuation">(</span>TANGERINE_WHISTLE_EVM<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token class-name">symbol</span><span class="token punctuation">,</span> smtlib<span class="token punctuation">(</span>schedule_TANGERINE_WHISTLE<span class="token punctuation">)</span><span class="token punctuation">]</span>
+ <span class="token comment">// -------------------------------------------------------------------------------------------------------------------</span>
+    <span class="token keyword">rule</span> Gbalance      &lt; TANGERINE_WHISTLE &gt; <span class="token operator">=&gt;</span> <span class="token number">400</span>
+    <span class="token keyword">rule</span> Gsload        &lt; TANGERINE_WHISTLE &gt; <span class="token operator">=&gt;</span> <span class="token number">200</span>
+    <span class="token keyword">rule</span> Gcall         &lt; TANGERINE_WHISTLE &gt; <span class="token operator">=&gt;</span> <span class="token number">700</span>
+    <span class="token keyword">rule</span> Gselfdestruct &lt; TANGERINE_WHISTLE &gt; <span class="token operator">=&gt;</span> <span class="token number">5000</span>
+    <span class="token keyword">rule</span> Gextcodesize  &lt; TANGERINE_WHISTLE &gt; <span class="token operator">=&gt;</span> <span class="token number">700</span>
+    <span class="token keyword">rule</span> Gextcodecopy  &lt; TANGERINE_WHISTLE &gt; <span class="token operator">=&gt;</span> <span class="token number">700</span>
+
+    <span class="token keyword">rule</span> SCHEDCONST    &lt; TANGERINE_WHISTLE &gt; <span class="token operator">=&gt;</span> SCHEDCONST &lt; HOMESTEAD &gt;
+      <span class="token keyword">requires</span> notBool      <span class="token punctuation">(</span> SCHEDCONST <span class="token operator">==</span>K Gbalance      orBool SCHEDCONST <span class="token operator">==</span>K Gsload       orBool SCHEDCONST <span class="token operator">==</span>K Gcall
+                       orBool SCHEDCONST <span class="token operator">==</span>K Gselfdestruct orBool SCHEDCONST <span class="token operator">==</span>K Gextcodesize orBool SCHEDCONST <span class="token operator">==</span>K Gextcodecopy
+                            <span class="token punctuation">)</span>
+
+    <span class="token keyword">rule</span> Gselfdestructnewaccount &lt;&lt; TANGERINE_WHISTLE &gt;&gt; <span class="token operator">=&gt;</span> <span class="token boolean">true</span>
+    <span class="token keyword">rule</span> Gstaticcalldepth        &lt;&lt; TANGERINE_WHISTLE &gt;&gt; <span class="token operator">=&gt;</span> <span class="token boolean">false</span>
+    <span class="token keyword">rule</span> SCHEDCONST              &lt;&lt; TANGERINE_WHISTLE &gt;&gt; <span class="token operator">=&gt;</span> SCHEDCONST &lt;&lt; HOMESTEAD &gt;&gt;
+      <span class="token keyword">requires</span> notBool      <span class="token punctuation">(</span> SCHEDCONST <span class="token operator">==</span>K Gselfdestructnewaccount orBool SCHEDCONST <span class="token operator">==</span>K Gstaticcalldepth <span class="token punctuation">)</span>
+</code></pre>
+<h3 id="spurious-dragon-schedule">Spurious Dragon Schedule</h3>
+<pre><code class="language-k">    <span class="token keyword">syntax</span> Schedule <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> <span class="token string">"SPURIOUS_DRAGON"</span> <span class="token punctuation">[</span><span class="token class-name">klabel</span><span class="token punctuation">(</span>SPURIOUS_DRAGON_EVM<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token class-name">symbol</span><span class="token punctuation">,</span> smtlib<span class="token punctuation">(</span>schedule_SPURIOUS_DRAGON<span class="token punctuation">)</span><span class="token punctuation">]</span>
+ <span class="token comment">// -------------------------------------------------------------------------------------------------------------</span>
+    <span class="token keyword">rule</span> Gexpbyte    &lt; SPURIOUS_DRAGON &gt; <span class="token operator">=&gt;</span> <span class="token number">50</span>
+    <span class="token keyword">rule</span> maxCodeSize &lt; SPURIOUS_DRAGON &gt; <span class="token operator">=&gt;</span> <span class="token number">24576</span>
+
+    <span class="token keyword">rule</span> SCHEDCONST  &lt; SPURIOUS_DRAGON &gt; <span class="token operator">=&gt;</span> SCHEDCONST &lt; TANGERINE_WHISTLE &gt; <span class="token keyword">requires</span> SCHEDCONST <span class="token operator">=</span><span class="token operator">/</span><span class="token operator">=</span>K Gexpbyte andBool SCHEDCONST <span class="token operator">=</span><span class="token operator">/</span><span class="token operator">=</span>K maxCodeSize
+
+    <span class="token keyword">rule</span> Gemptyisnonexistent     &lt;&lt; SPURIOUS_DRAGON &gt;&gt; <span class="token operator">=&gt;</span> <span class="token boolean">true</span>
+    <span class="token keyword">rule</span> Gzerovaluenewaccountgas &lt;&lt; SPURIOUS_DRAGON &gt;&gt; <span class="token operator">=&gt;</span> <span class="token boolean">false</span>
+    <span class="token keyword">rule</span> SCHEDCONST              &lt;&lt; SPURIOUS_DRAGON &gt;&gt; <span class="token operator">=&gt;</span> SCHEDCONST &lt;&lt; TANGERINE_WHISTLE &gt;&gt;
+      <span class="token keyword">requires</span> notBool      <span class="token punctuation">(</span> SCHEDCONST <span class="token operator">==</span>K Gemptyisnonexistent orBool SCHEDCONST <span class="token operator">==</span>K Gzerovaluenewaccountgas <span class="token punctuation">)</span>
+</code></pre>
+<h3 id="byzantium-schedule">Byzantium Schedule</h3>
+<pre><code class="language-k">    <span class="token keyword">syntax</span> Schedule <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> <span class="token string">"BYZANTIUM"</span> <span class="token punctuation">[</span><span class="token class-name">klabel</span><span class="token punctuation">(</span>BYZANTIUM_EVM<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token class-name">symbol</span><span class="token punctuation">,</span> smtlib<span class="token punctuation">(</span>schedule_BYZANTIUM<span class="token punctuation">)</span><span class="token punctuation">]</span>
+ <span class="token comment">// -------------------------------------------------------------------------------------------</span>
+    <span class="token keyword">rule</span> Rb         &lt; BYZANTIUM &gt; <span class="token operator">=&gt;</span> <span class="token number">3</span> <span class="token operator">*</span><span class="token keyword">Int</span> eth
+    <span class="token keyword">rule</span> SCHEDCONST &lt; BYZANTIUM &gt; <span class="token operator">=&gt;</span> SCHEDCONST &lt; SPURIOUS_DRAGON &gt;
+      <span class="token keyword">requires</span> notBool <span class="token punctuation">(</span> SCHEDCONST <span class="token operator">==</span>K Rb <span class="token punctuation">)</span>
+
+    <span class="token keyword">rule</span> Ghasrevert     &lt;&lt; BYZANTIUM &gt;&gt; <span class="token operator">=&gt;</span> <span class="token boolean">true</span>
+    <span class="token keyword">rule</span> Ghasreturndata &lt;&lt; BYZANTIUM &gt;&gt; <span class="token operator">=&gt;</span> <span class="token boolean">true</span>
+    <span class="token keyword">rule</span> Ghasstaticcall &lt;&lt; BYZANTIUM &gt;&gt; <span class="token operator">=&gt;</span> <span class="token boolean">true</span>
+    <span class="token keyword">rule</span> SCHEDFLAG      &lt;&lt; BYZANTIUM &gt;&gt; <span class="token operator">=&gt;</span> SCHEDFLAG &lt;&lt; SPURIOUS_DRAGON &gt;&gt;
+      <span class="token keyword">requires</span> notBool <span class="token punctuation">(</span> SCHEDFLAG <span class="token operator">==</span>K Ghasrevert orBool SCHEDFLAG <span class="token operator">==</span>K Ghasreturndata orBool SCHEDFLAG <span class="token operator">==</span>K Ghasstaticcall <span class="token punctuation">)</span>
+</code></pre>
+<h3 id="constantinople-schedule">Constantinople Schedule</h3>
+<pre><code class="language-k">    <span class="token keyword">syntax</span> Schedule <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> <span class="token string">"CONSTANTINOPLE"</span> <span class="token punctuation">[</span><span class="token class-name">klabel</span><span class="token punctuation">(</span>CONSTANTINOPLE_EVM<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token class-name">symbol</span><span class="token punctuation">,</span> smtlib<span class="token punctuation">(</span>schedule_CONSTANTINOPLE<span class="token punctuation">)</span><span class="token punctuation">]</span>
+ <span class="token comment">// ----------------------------------------------------------------------------------------------------------</span>
+    <span class="token keyword">rule</span> Rb         &lt; CONSTANTINOPLE &gt; <span class="token operator">=&gt;</span> <span class="token number">2</span> <span class="token operator">*</span><span class="token keyword">Int</span> eth
+    <span class="token keyword">rule</span> SCHEDCONST &lt; CONSTANTINOPLE &gt; <span class="token operator">=&gt;</span> SCHEDCONST &lt; BYZANTIUM &gt;
+      <span class="token keyword">requires</span> notBool <span class="token punctuation">(</span> SCHEDCONST <span class="token operator">==</span>K Rb <span class="token punctuation">)</span>
+
+    <span class="token keyword">rule</span> Ghasshift       &lt;&lt; CONSTANTINOPLE &gt;&gt; <span class="token operator">=&gt;</span> <span class="token boolean">true</span>
+    <span class="token keyword">rule</span> Ghasdirtysstore &lt;&lt; CONSTANTINOPLE &gt;&gt; <span class="token operator">=&gt;</span> <span class="token boolean">true</span>
+    <span class="token keyword">rule</span> Ghascreate2     &lt;&lt; CONSTANTINOPLE &gt;&gt; <span class="token operator">=&gt;</span> <span class="token boolean">true</span>
+    <span class="token keyword">rule</span> Ghasextcodehash &lt;&lt; CONSTANTINOPLE &gt;&gt; <span class="token operator">=&gt;</span> <span class="token boolean">true</span>
+    <span class="token keyword">rule</span> SCHEDFLAG       &lt;&lt; CONSTANTINOPLE &gt;&gt; <span class="token operator">=&gt;</span> SCHEDFLAG &lt;&lt; BYZANTIUM &gt;&gt;
+      <span class="token keyword">requires</span> notBool <span class="token punctuation">(</span> SCHEDFLAG <span class="token operator">==</span>K Ghasshift orBool SCHEDFLAG <span class="token operator">==</span>K Ghasdirtysstore orBool SCHEDFLAG <span class="token operator">==</span>K Ghascreate2 orBool SCHEDFLAG <span class="token operator">==</span>K Ghasextcodehash <span class="token punctuation">)</span>
+</code></pre>
+<h3 id="petersburg-schedule">Petersburg Schedule</h3>
+<pre><code class="language-k">    <span class="token keyword">syntax</span> Schedule <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> <span class="token string">"PETERSBURG"</span> <span class="token punctuation">[</span><span class="token class-name">klabel</span><span class="token punctuation">(</span>PETERSBURG_EVM<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token class-name">symbol</span><span class="token punctuation">,</span> smtlib<span class="token punctuation">(</span>schedule_PETERSBURG<span class="token punctuation">)</span><span class="token punctuation">]</span>
+ <span class="token comment">// ----------------------------------------------------------------------------------------------</span>
+    <span class="token keyword">rule</span> SCHEDCONST &lt; PETERSBURG &gt; <span class="token operator">=&gt;</span> SCHEDCONST &lt; CONSTANTINOPLE &gt;
+
+    <span class="token keyword">rule</span> Ghasdirtysstore &lt;&lt; PETERSBURG &gt;&gt; <span class="token operator">=&gt;</span> <span class="token boolean">false</span>
+    <span class="token keyword">rule</span> SCHEDFLAG       &lt;&lt; PETERSBURG &gt;&gt; <span class="token operator">=&gt;</span> SCHEDFLAG &lt;&lt; CONSTANTINOPLE &gt;&gt;
+      <span class="token keyword">requires</span> notBool <span class="token punctuation">(</span> SCHEDFLAG <span class="token operator">==</span>K Ghasdirtysstore <span class="token punctuation">)</span>
+</code></pre>
+<h3 id="istanbul-schedule">Istanbul Schedule</h3>
+<pre><code class="language-k">    <span class="token keyword">syntax</span> Schedule <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> <span class="token string">"ISTANBUL"</span> <span class="token punctuation">[</span><span class="token class-name">klabel</span><span class="token punctuation">(</span>ISTANBUL_EVM<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token class-name">symbol</span><span class="token punctuation">,</span> smtlib<span class="token punctuation">(</span>schedule_ISTANBUL<span class="token punctuation">)</span><span class="token punctuation">]</span>
+ <span class="token comment">// ----------------------------------------------------------------------------------------</span>
+    <span class="token keyword">rule</span> Gecadd         &lt; ISTANBUL &gt; <span class="token operator">=&gt;</span> <span class="token number">150</span>
+    <span class="token keyword">rule</span> Gecmul         &lt; ISTANBUL &gt; <span class="token operator">=&gt;</span> <span class="token number">6000</span>
+    <span class="token keyword">rule</span> Gecpairconst   &lt; ISTANBUL &gt; <span class="token operator">=&gt;</span> <span class="token number">45000</span>
+    <span class="token keyword">rule</span> Gecpaircoeff   &lt; ISTANBUL &gt; <span class="token operator">=&gt;</span> <span class="token number">34000</span>
+    <span class="token keyword">rule</span> Gtxdatanonzero &lt; ISTANBUL &gt; <span class="token operator">=&gt;</span> <span class="token number">16</span>
+    <span class="token keyword">rule</span> Gsload         &lt; ISTANBUL &gt; <span class="token operator">=&gt;</span> <span class="token number">800</span>
+    <span class="token keyword">rule</span> Gbalance       &lt; ISTANBUL &gt; <span class="token operator">=&gt;</span> <span class="token number">700</span>
+    <span class="token keyword">rule</span> SCHEDCONST     &lt; ISTANBUL &gt; <span class="token operator">=&gt;</span> SCHEDCONST &lt; PETERSBURG &gt;
+      <span class="token keyword">requires</span> notBool <span class="token punctuation">(</span> SCHEDCONST <span class="token operator">==</span>K Gecadd
+                  orBool SCHEDCONST <span class="token operator">==</span>K Gecmul
+                  orBool SCHEDCONST <span class="token operator">==</span>K Gecpairconst
+                  orBool SCHEDCONST <span class="token operator">==</span>K Gecpaircoeff
+                  orBool SCHEDCONST <span class="token operator">==</span>K Gtxdatanonzero
+                  orBool SCHEDCONST <span class="token operator">==</span>K Gsload
+                  orBool SCHEDCONST <span class="token operator">==</span>K Gbalance
+                       <span class="token punctuation">)</span>
+
+    <span class="token keyword">rule</span> Ghasselfbalance   &lt;&lt; ISTANBUL &gt;&gt; <span class="token operator">=&gt;</span> <span class="token boolean">true</span>
+    <span class="token keyword">rule</span> Ghasdirtysstore   &lt;&lt; ISTANBUL &gt;&gt; <span class="token operator">=&gt;</span> <span class="token boolean">true</span>
+    <span class="token keyword">rule</span> Ghassstorestipend &lt;&lt; ISTANBUL &gt;&gt; <span class="token operator">=&gt;</span> <span class="token boolean">true</span>
+    <span class="token keyword">rule</span> Ghaschainid       &lt;&lt; ISTANBUL &gt;&gt; <span class="token operator">=&gt;</span> <span class="token boolean">true</span>
+    <span class="token keyword">rule</span> SCHEDFLAG         &lt;&lt; ISTANBUL &gt;&gt; <span class="token operator">=&gt;</span> SCHEDFLAG &lt;&lt; PETERSBURG &gt;&gt;
+      <span class="token keyword">requires</span> notBool <span class="token punctuation">(</span> SCHEDFLAG <span class="token operator">==</span>K Ghasselfbalance
+                  orBool SCHEDFLAG <span class="token operator">==</span>K Ghasdirtysstore
+                  orBool SCHEDFLAG <span class="token operator">==</span>K Ghassstorestipend
+                  orBool SCHEDFLAG <span class="token operator">==</span>K Ghaschainid
+                       <span class="token punctuation">)</span>
+</code></pre>
+<h3 id="berlin-schedule">Berlin Schedule</h3>
+<pre><code class="language-k">    <span class="token keyword">syntax</span> Schedule <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> <span class="token string">"BERLIN"</span> <span class="token punctuation">[</span><span class="token class-name">klabel</span><span class="token punctuation">(</span>BERLIN_EVM<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token class-name">symbol</span><span class="token punctuation">,</span> smtlib<span class="token punctuation">(</span>schedule_BERLIN<span class="token punctuation">)</span><span class="token punctuation">]</span>
+ <span class="token comment">// ----------------------------------------------------------------------------------</span>
+    <span class="token keyword">rule</span> Gcoldsload            &lt; BERLIN &gt; <span class="token operator">=&gt;</span> <span class="token number">2100</span>
+    <span class="token keyword">rule</span> Gcoldaccountaccess    &lt; BERLIN &gt; <span class="token operator">=&gt;</span> <span class="token number">2600</span>
+    <span class="token keyword">rule</span> Gwarmstorageread      &lt; BERLIN &gt; <span class="token operator">=&gt;</span> <span class="token number">100</span>
+    <span class="token keyword">rule</span> Gsload                &lt; BERLIN &gt; <span class="token operator">=&gt;</span> Gwarmstorageread &lt; BERLIN &gt;
+    <span class="token keyword">rule</span> Gsstorereset          &lt; BERLIN &gt; <span class="token operator">=&gt;</span> <span class="token number">5000</span> <span class="token operator">-</span><span class="token keyword">Int</span> Gcoldsload &lt; BERLIN &gt;
+    <span class="token keyword">rule</span> Gquaddivisor          &lt; BERLIN &gt; <span class="token operator">=&gt;</span> <span class="token number">3</span>
+    <span class="token keyword">rule</span> Gaccessliststoragekey &lt; BERLIN &gt; <span class="token operator">=&gt;</span> <span class="token number">1900</span>
+    <span class="token keyword">rule</span> Gaccesslistaddress    &lt; BERLIN &gt; <span class="token operator">=&gt;</span> <span class="token number">2400</span>
+
+    <span class="token keyword">rule</span> SCHEDCONST            &lt; BERLIN &gt; <span class="token operator">=&gt;</span> SCHEDCONST &lt; ISTANBUL &gt;
+      <span class="token keyword">requires</span> notBool <span class="token punctuation">(</span> SCHEDCONST <span class="token operator">==</span>K Gcoldsload
+                  orBool SCHEDCONST <span class="token operator">==</span>K Gcoldaccountaccess
+                  orBool SCHEDCONST <span class="token operator">==</span>K Gwarmstorageread
+                  orBool SCHEDCONST <span class="token operator">==</span>K Gsload
+                  orBool SCHEDCONST <span class="token operator">==</span>K Gsstorereset
+                  orBool SCHEDCONST <span class="token operator">==</span>K Gquaddivisor
+                  orBool SCHEDCONST <span class="token operator">==</span>K Gaccessliststoragekey
+                  orBool SCHEDCONST <span class="token operator">==</span>K Gaccesslistaddress
+                       <span class="token punctuation">)</span>
+
+    <span class="token keyword">rule</span> Ghasaccesslist &lt;&lt; BERLIN &gt;&gt; <span class="token operator">=&gt;</span> <span class="token boolean">true</span>
+    <span class="token keyword">rule</span> SCHEDFLAG      &lt;&lt; BERLIN &gt;&gt; <span class="token operator">=&gt;</span> SCHEDFLAG &lt;&lt; ISTANBUL &gt;&gt;
+      <span class="token keyword">requires</span> notBool <span class="token punctuation">(</span> SCHEDFLAG <span class="token operator">==</span>K Ghasaccesslist <span class="token punctuation">)</span>
+</code></pre>
+<h3 id="london-schedule">London Schedule</h3>
+<pre><code class="language-k">    <span class="token keyword">syntax</span> Schedule <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> <span class="token string">"LONDON"</span> <span class="token punctuation">[</span><span class="token class-name">klabel</span><span class="token punctuation">(</span>LONDON_EVM<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token class-name">symbol</span><span class="token punctuation">,</span> smtlib<span class="token punctuation">(</span>schedule_LONDON<span class="token punctuation">)</span><span class="token punctuation">]</span>
+ <span class="token comment">// ----------------------------------------------------------------------------------</span>
+    <span class="token keyword">rule</span> Rselfdestruct &lt; LONDON &gt; <span class="token operator">=&gt;</span> <span class="token number">0</span>
+    <span class="token keyword">rule</span> Rsstoreclear  &lt; LONDON &gt; <span class="token operator">=&gt;</span> Gsstorereset &lt; LONDON &gt; <span class="token operator">+</span><span class="token keyword">Int</span> Gaccessliststoragekey &lt; LONDON &gt;
+    <span class="token keyword">rule</span> Rmaxquotient  &lt; LONDON &gt; <span class="token operator">=&gt;</span> <span class="token number">5</span>
+    <span class="token keyword">rule</span> SCHEDCONST    &lt; LONDON &gt; <span class="token operator">=&gt;</span> SCHEDCONST &lt; BERLIN &gt;
+      <span class="token keyword">requires</span> notBool <span class="token punctuation">(</span> SCHEDCONST <span class="token operator">==</span>K Rselfdestruct
+                  orBool SCHEDCONST <span class="token operator">==</span>K Rsstoreclear
+                  orBool SCHEDCONST <span class="token operator">==</span>K Rmaxquotient
+                       <span class="token punctuation">)</span>
+
+    <span class="token keyword">rule</span> Ghasbasefee           &lt;&lt; LONDON &gt;&gt; <span class="token operator">=&gt;</span> <span class="token boolean">true</span>
+    <span class="token keyword">rule</span> Ghasrejectedfirstbyte &lt;&lt; LONDON &gt;&gt; <span class="token operator">=&gt;</span> <span class="token boolean">true</span>
+    <span class="token keyword">rule</span> SCHEDFLAG             &lt;&lt; LONDON &gt;&gt; <span class="token operator">=&gt;</span> SCHEDFLAG &lt;&lt; BERLIN &gt;&gt;
+      <span class="token keyword">requires</span> notBool <span class="token punctuation">(</span> SCHEDFLAG <span class="token operator">==</span>K Ghasbasefee
+                  orBool SCHEDFLAG <span class="token operator">==</span>K Ghasrejectedfirstbyte
+                       <span class="token punctuation">)</span>
+</code></pre>
+<h3 id="merge-schedule">Merge Schedule</h3>
+<pre><code class="language-k">    <span class="token keyword">syntax</span> Schedule <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> <span class="token string">"MERGE"</span> <span class="token punctuation">[</span><span class="token class-name">klabel</span><span class="token punctuation">(</span>MERGE_EVM<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token class-name">symbol</span><span class="token punctuation">,</span> smtlib<span class="token punctuation">(</span>schedule_MERGE<span class="token punctuation">)</span><span class="token punctuation">]</span>
+ <span class="token comment">// -------------------------------------------------------------------------------</span>
+    <span class="token keyword">rule</span> Rb         &lt; MERGE &gt; <span class="token operator">=&gt;</span> <span class="token number">0</span>
+    <span class="token keyword">rule</span> SCHEDCONST &lt; MERGE &gt; <span class="token operator">=&gt;</span> SCHEDCONST &lt; LONDON &gt;
+      <span class="token keyword">requires</span> notBool SCHEDCONST <span class="token operator">==</span>K Rb
+
+    <span class="token keyword">rule</span> Ghasprevrandao &lt;&lt; MERGE &gt;&gt; <span class="token operator">=&gt;</span> <span class="token boolean">true</span>
+    <span class="token keyword">rule</span> SCHEDFLAG      &lt;&lt; MERGE &gt;&gt; <span class="token operator">=&gt;</span> SCHEDFLAG &lt;&lt; LONDON &gt;&gt;
+      <span class="token keyword">requires</span> notBool SCHEDFLAG <span class="token operator">==</span>K Ghasprevrandao
+</code></pre>
+<h3 id="shanghai-schedule">Shanghai Schedule</h3>
+<pre><code class="language-k">    <span class="token keyword">syntax</span> Schedule <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> <span class="token string">"SHANGHAI"</span> <span class="token punctuation">[</span><span class="token class-name">klabel</span><span class="token punctuation">(</span>SHANGHAI_EVM<span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token class-name">symbol</span><span class="token punctuation">,</span> smtlib<span class="token punctuation">(</span>schedule_SHANGHAI<span class="token punctuation">)</span><span class="token punctuation">]</span>
+ <span class="token comment">// ----------------------------------------------------------------------------------------</span>
+    <span class="token keyword">rule</span> maxInitCodeSize   &lt; SHANGHAI &gt; <span class="token operator">=&gt;</span> <span class="token number">2</span> <span class="token operator">*</span><span class="token keyword">Int</span> maxCodeSize &lt; SHANGHAI &gt;
+    <span class="token keyword">rule</span> Ginitcodewordcost &lt; SHANGHAI &gt; <span class="token operator">=&gt;</span> <span class="token number">2</span>
+    <span class="token keyword">rule</span> SCHEDCONST        &lt; SHANGHAI &gt; <span class="token operator">=&gt;</span> SCHEDCONST &lt; MERGE &gt;
+      <span class="token keyword">requires</span> notBool <span class="token punctuation">(</span> SCHEDCONST <span class="token operator">==</span>K maxInitCodeSize
+                  orBool SCHEDCONST <span class="token operator">==</span>K Ginitcodewordcost
+                       <span class="token punctuation">)</span>
+
+    <span class="token keyword">rule</span> Ghasmaxinitcodesize &lt;&lt; SHANGHAI &gt;&gt; <span class="token operator">=&gt;</span> <span class="token boolean">true</span>
+    <span class="token keyword">rule</span> Ghaspushzero        &lt;&lt; SHANGHAI &gt;&gt; <span class="token operator">=&gt;</span> <span class="token boolean">true</span>
+    <span class="token keyword">rule</span> Ghaswarmcoinbase    &lt;&lt; SHANGHAI &gt;&gt; <span class="token operator">=&gt;</span> <span class="token boolean">true</span>
+    <span class="token keyword">rule</span> SCHEDFLAG           &lt;&lt; SHANGHAI &gt;&gt; <span class="token operator">=&gt;</span> SCHEDFLAG &lt;&lt; MERGE &gt;&gt;
+      <span class="token keyword">requires</span> notBool <span class="token punctuation">(</span> SCHEDFLAG <span class="token operator">==</span>K Ghasmaxinitcodesize
+                  orBool SCHEDFLAG <span class="token operator">==</span>K Ghaspushzero
+                  orBool SCHEDFLAG <span class="token operator">==</span>K Ghaswarmcoinbase
+                       <span class="token punctuation">)</span>
+<span class="token keyword">endmodule</span>
+</code></pre>
+</body></html></div>
+        </main>
+
+        <!-- Page ToC -->
+        <div class="col-12 col-md-3 col-xl-2 py-md-3 bd-sidebar page-toc mb-3">
+          
+<div>
+<details style="padding:0.25rem 0;;padding-left: 0px;">
+            <summary class="bd-toc-link-wrapper">
+              <a href="#kevm-schedules" class="bd-toc-link">KEVM Schedules</a>
+              </summary>
+            <div>
+              <details style="padding:0.25rem 0;;padding-left: 8px;">
+            <summary class="bd-toc-link-wrapper">
+              <a href="#fee-schedule" class="bd-toc-link">Fee Schedule</a>
+              </summary>
+            <div>
+              <div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#schedule-flags"
+                class="bd-toc-link"
+                style="padding-left: 16px;;"
+              >
+                Schedule Flags
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#schedule-constants"
+                class="bd-toc-link"
+                style="padding-left: 16px;;"
+              >
+                Schedule Constants
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#default-schedule"
+                class="bd-toc-link"
+                style="padding-left: 16px;;"
+              >
+                Default Schedule
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#frontier-schedule"
+                class="bd-toc-link"
+                style="padding-left: 16px;;"
+              >
+                Frontier Schedule
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#homestead-schedule"
+                class="bd-toc-link"
+                style="padding-left: 16px;;"
+              >
+                Homestead Schedule
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#tangerine-whistle-schedule"
+                class="bd-toc-link"
+                style="padding-left: 16px;;"
+              >
+                Tangerine Whistle Schedule
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#spurious-dragon-schedule"
+                class="bd-toc-link"
+                style="padding-left: 16px;;"
+              >
+                Spurious Dragon Schedule
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#byzantium-schedule"
+                class="bd-toc-link"
+                style="padding-left: 16px;;"
+              >
+                Byzantium Schedule
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#constantinople-schedule"
+                class="bd-toc-link"
+                style="padding-left: 16px;;"
+              >
+                Constantinople Schedule
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#petersburg-schedule"
+                class="bd-toc-link"
+                style="padding-left: 16px;;"
+              >
+                Petersburg Schedule
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#istanbul-schedule"
+                class="bd-toc-link"
+                style="padding-left: 16px;;"
+              >
+                Istanbul Schedule
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#berlin-schedule"
+                class="bd-toc-link"
+                style="padding-left: 16px;;"
+              >
+                Berlin Schedule
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#london-schedule"
+                class="bd-toc-link"
+                style="padding-left: 16px;;"
+              >
+                London Schedule
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#merge-schedule"
+                class="bd-toc-link"
+                style="padding-left: 16px;;"
+              >
+                Merge Schedule
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#shanghai-schedule"
+                class="bd-toc-link"
+                style="padding-left: 16px;;"
+              >
+                Shanghai Schedule
+              </a></div>
+            </div>
+          </details>
+        
+            </div>
+          </details>
+        
+</div>
+
+        </div>
+        <div class="btn btn-rv-blue page-toc-toggle-btn"></div>
+        <!-- End Page ToC -->
+      </div>
+    </div>
+<!-- The footer is now controlled by the k-web-theme git submodule -->
+<footer id="rvsite-footer" class="app-footer text-md-left text-center">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-md-4 mb-md-0 mb-4">
+        <a href="https://runtimeverification.com/" target="_blank">
+          <picture>
+            <source
+              srcset="
+                https://runtimeverification.com/assets/img/rv-logo-dark.png
+              "
+              media="(prefers-color-scheme: dark)"
+            />
+            <img
+              class="logo-dark"
+              src="https://runtimeverification.com/assets/img/rv-logo.png"
+              alt="Runtime Verification logo"
+              style="height: 32px"
+            /> </picture
+        ></a>
+        <p class="mt-2 text-md-left copyright">
+          <a href="https://goo.gl/maps/5iu2nhbUA48fs7fP6" target="_blank"
+            >333 North Green Street, Chicago, IL</a
+          >
+        </p>
+      </div>
+      <div class="col-md-4 text-md-center mb-md-0 mb-4"></div>
+      <div class="col-md-4 mb-md-0 mb-4 pl-0 text-md-right">
+        <p class="copyright">2024 © all rights reserved</p>
+        <span class="copyright"><a href="https://runtimeverification.com/privacy-policy">privacy policy</a> | <a
+                href="https://runtimeverification.com/terms-of-use">terms of use</a></span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Typist/1.2/typist.min.js"></script>
+    <script src="../../../../../../assets/js/index.js"></script>
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script
+  async
+  src="https://www.googletagmanager.com/gtag/js?id=G-QL0D8HRYFW"
+></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag() {
+    dataLayer.push(arguments);
+  }
+  gtag("js", new Date());
+  gtag("config", "G-QL0D8HRYFW");
+</script>
+
+  </body>
+</html>
