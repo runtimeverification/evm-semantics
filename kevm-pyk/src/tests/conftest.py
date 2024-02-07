@@ -21,6 +21,12 @@ def pytest_addoption(parser: Parser) -> None:
         default=False,
         help='Use the kore-rpc-booster binary instead of kore-rpc',
     )
+    parser.addoption(
+        '--spec-name',
+        default=None,
+        type=str,
+        help='Run only this specific specification (skip others)',
+    )
 
 
 @pytest.fixture
@@ -31,3 +37,8 @@ def update_expected_output(request: FixtureRequest) -> bool:
 @pytest.fixture(scope='session')
 def use_booster(request: FixtureRequest) -> bool:
     return request.config.getoption('--use-booster')
+
+
+@pytest.fixture(scope='session')
+def spec_name(request: FixtureRequest) -> str | None:
+    return request.config.getoption('--spec-name')

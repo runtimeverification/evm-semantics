@@ -189,10 +189,14 @@ def test_pyk_prove(
     caplog: LogCaptureFixture,
     use_booster: bool,
     bug_report: BugReport | None,
+    spec_name: str | None,
 ) -> None:
     caplog.set_level(logging.INFO)
 
     if (not use_booster and spec_file in FAILING_PYK_TESTS) or (use_booster and spec_file in FAILING_BOOSTER_TESTS):
+        pytest.skip()
+
+    if spec_name is not None and str(spec_file).find(spec_name) < 0:
         pytest.skip()
 
     # Given
