@@ -225,11 +225,12 @@ module BYTES-SIMPLIFICATION [symbolic]
 
     // lengthBytes
 
-    rule [lengthBytes-geq-zero]: 0 <=Int lengthBytes ( _ )                     => true                                     [simplification, smt-lemma]
-    rule [lengthBytes-concat]:   lengthBytes(BUF1 +Bytes BUF2)                 => lengthBytes(BUF1) +Int lengthBytes(BUF2) [simplification]
-    rule [lengthBytes-buf]:      lengthBytes(#buf(S, _))                       => S requires 0 <=Int S                     [simplification]
-    rule [lengthBytes-range]:    lengthBytes(#range(_, S:Int, W:Int))          => maxInt(0, W) requires 0 <=Int S          [simplification]
-    rule [lengthBytes-prtw]:     lengthBytes(#padRightToWidth(W:Int, B:Bytes)) => maxInt(lengthBytes(B), W)                [simplification]
+    rule [lengthBytes-geq-zero]:   0 <=Int lengthBytes ( _ )                     => true                                     [simplification, smt-lemma]
+    rule [lengthBytes-geq-nonPos]: X <=Int lengthBytes ( _ )                     => true requires X <=Int 0                  [simplification, concrete(X)]
+    rule [lengthBytes-concat]:     lengthBytes(BUF1 +Bytes BUF2)                 => lengthBytes(BUF1) +Int lengthBytes(BUF2) [simplification]
+    rule [lengthBytes-buf]:        lengthBytes(#buf(S, _))                       => S requires 0 <=Int S                     [simplification]
+    rule [lengthBytes-range]:      lengthBytes(#range(_, S:Int, W:Int))          => maxInt(0, W) requires 0 <=Int S          [simplification]
+    rule [lengthBytes-prtw]:       lengthBytes(#padRightToWidth(W:Int, B:Bytes)) => maxInt(lengthBytes(B), W)                [simplification]
 
     rule [lengthBytes-leq-zero]: lengthBytes(B:Bytes) <=Int 0 => B ==K .Bytes [simplification]
 

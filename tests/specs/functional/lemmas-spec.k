@@ -367,8 +367,18 @@ module LEMMAS-SPEC
     claim <k> runLemma ( chop( #lookup(M, KEY)   ) ) => doneLemma( #lookup(M, KEY) ) ... </k>
     claim <k> runLemma ( chop( bool2Word(B:Bool) ) ) => doneLemma( bool2Word(B)    ) ... </k>
 
+    claim [chop-chop]: <k> runLemma ( chop( chop ( X ) ) ) => doneLemma( chop ( X ) ) ... </k>
+
     claim [chop-range-inferred]: <k> runLemma(X <Int chop(X *Int Y) /Int 1000000000000000000) => doneLemma(X <Int (X *Int Y) /Int 1000000000000000000) ... </k>
       requires #rangeUInt(256, X) andBool #rangeUInt(256, Y) andBool Y <=Int maxUInt256 /Int X
+
+    claim [chop-notMaxUInt5]:
+      <k> runLemma (
+            ( notBool ( notBool ( chop ( ( chop ( ( ( notMaxUInt5 &Int ( ( notMaxUInt5 &Int ( lengthBytes ( B:Bytes ) +Int maxUInt5 ) ) +Int 95 ) ) +Int 128 ) ) +Int ( notMaxUInt5 &Int ( ( notMaxUInt5 &Int ( lengthBytes ( B:Bytes ) +Int maxUInt5 ) ) +Int 63 ) ) ) ) <Int chop ( ( ( notMaxUInt5 &Int ( ( notMaxUInt5 &Int ( lengthBytes ( B:Bytes ) +Int maxUInt5 ) ) +Int 95 ) ) +Int 128 ) ) ) ) )
+          ) => doneLemma (
+            false
+          ) ... </k>
+      requires lengthBytes(B) <Int 2 ^Int 64
 
  // #padToWidth simplification
  // --------------------------
