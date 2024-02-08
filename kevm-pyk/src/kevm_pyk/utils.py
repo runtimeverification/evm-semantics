@@ -30,6 +30,7 @@ if TYPE_CHECKING:
     from pyk.kast.outer import KClaim, KDefinition
     from pyk.kcfg import KCFG
     from pyk.kcfg.semantics import KCFGSemantics
+    from pyk.kore.rpc import FallbackReason
     from pyk.ktool.kprint import KPrint
     from pyk.ktool.kprove import KProve
     from pyk.proof.proof import Proof
@@ -101,13 +102,27 @@ def run_prover(
     abstract_node: Callable[[CTerm], CTerm] | None = None,
     fail_fast: bool = False,
     counterexample_info: bool = False,
+    always_check_subsumption: bool = False,
+    fast_check_subsumption: bool = False,
 ) -> bool:
     proof = proof
     prover: APRBMCProver | APRProver | EqualityProver
     if type(proof) is APRBMCProof:
-        prover = APRBMCProver(proof, kcfg_explore, counterexample_info=counterexample_info)
+        prover = APRBMCProver(
+            proof,
+            kcfg_explore,
+            counterexample_info=counterexample_info,
+            always_check_subsumption=always_check_subsumption,
+            fast_check_subsumption=fast_check_subsumption,
+        )
     elif type(proof) is APRProof:
-        prover = APRProver(proof, kcfg_explore, counterexample_info=counterexample_info)
+        prover = APRProver(
+            proof,
+            kcfg_explore,
+            counterexample_info=counterexample_info,
+            always_check_subsumption=always_check_subsumption,
+            fast_check_subsumption=fast_check_subsumption,
+        )
     elif type(proof) is EqualityProof:
         prover = EqualityProver(kcfg_explore=kcfg_explore, proof=proof)
     else:
@@ -313,6 +328,9 @@ def legacy_explore(
     trace_rewrites: bool = False,
     start_server: bool = True,
     maude_port: int | None = None,
+    fallback_on: Iterable[FallbackReason] | None = None,
+    interim_simplification: int | None = None,
+    no_post_exec_simplify: bool = False,
 ) -> Iterator[KCFGExplore]:
     if start_server:
         # Old way of handling KCFGExplore, to be removed
@@ -329,9 +347,9 @@ def legacy_explore(
             haskell_log_format=haskell_log_format,
             haskell_log_entries=haskell_log_entries,
             log_axioms_file=log_axioms_file,
-            fallback_on=None,
-            interim_simplification=None,
-            no_post_exec_simplify=None,
+            fallback_on=fallback_on,
+            interim_simplification=interim_simplification,
+            no_post_exec_simplify=no_post_exec_simplify,
         ) as server:
             with KoreClient('localhost', server.port, bug_report=bug_report, bug_report_id=id) as client:
                 yield KCFGExplore(
