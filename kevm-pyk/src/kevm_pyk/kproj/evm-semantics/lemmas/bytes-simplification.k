@@ -293,6 +293,12 @@ module BYTES-SIMPLIFICATION [symbolic]
 
     rule #padToWidth(32, #asByteStack(V)) => #buf(32, V)  requires #rangeUInt(256, V) [simplification]
 
+    // #padRightToWidth
+
+    rule #padRightToWidth ( X:Int, B:Bytes ) => B +Bytes padRightBytes(.Bytes, X -Int lengthBytes(B), 0 )
+      requires lengthBytes(B) <=Int X
+      [simplification, concrete(X)]
+
     // #ecrec
 
     rule lengthBytes ( #ecrec ( _ , _ , _ , _ ) ) <=Int 32 => true
