@@ -612,6 +612,7 @@ module LEMMAS-SPEC
           ) => doneLemma(
             false
           ) ... </k>
+        requires #rangeUInt(32, VV0_x_114b9705)
 
  // ecrecover
  // ---------
