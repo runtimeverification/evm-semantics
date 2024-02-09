@@ -12,10 +12,12 @@ tests/specs/mcd/end-pack-pass-rough-spec.k
 tests/specs/mcd/flapper-tend-guy-diff-pass-rough-spec.k
 tests/specs/mcd/flapper-yank-pass-rough-spec.k
 tests/specs/mcd/flopper-dent-guy-diff-tic-not-0-pass-rough-spec.k
+tests/specs/mcd/flopper-dent-guy-same-pass-rough-spec.k
 tests/specs/mcd/gemjoin-exit-pass-rough-spec.k
 tests/specs/mcd/pot-join-pass-rough-spec.k
 tests/specs/mcd/vat-fold-pass-rough-spec.k
 tests/specs/mcd/vat-fork-diff-pass-rough-spec.k
+tests/specs/mcd/vat-frob-diff-zero-dart-pass-rough-spec.k
 tests/specs/mcd/vow-cage-deficit-pass-rough-spec.k
 tests/specs/mcd/vow-cage-surplus-pass-rough-spec.k
 tests/specs/opcodes/create-spec.k
