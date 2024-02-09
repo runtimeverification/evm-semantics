@@ -299,7 +299,7 @@ def exec_prove(
     auto_abstract_gas: bool = False,
     fail_fast: bool = False,
     always_check_subsumption: bool = True,
-    fast_check_subsumption: bool = True,
+    fast_check_subsumption: bool = False,
     fallback_on: Iterable[FallbackReason] | None = None,
     interim_simplification: int | None = None,
     post_exec_simplify: bool = True,
