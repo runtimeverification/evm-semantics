@@ -602,6 +602,18 @@ module LEMMAS-SPEC
         => doneLemma ( X ) ... </k>
         requires #rangeUInt ( 256 , X )
 
+ // #padRightToWidth
+ // ----------------
+
+    claim [pRTW-01]:
+      <k> runLemma (
+            notBool ( #asWord ( #padRightToWidth ( 32 , #buf ( 4 , VV0_x_114b9705:Int ) ) ) ==Int
+              #asWord ( #buf ( 4 , VV0_x_114b9705:Int ) +Bytes b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" ) )
+          ) => doneLemma(
+            false
+          ) ... </k>
+        requires #rangeUInt(32, VV0_x_114b9705)
+
  // ecrecover
  // ---------
 

@@ -299,13 +299,13 @@ pyflakes = ">=3.2.0,<3.3.0"
 
 [[package]]
 name = "flake8-bugbear"
-version = "24.1.17"
+version = "24.2.6"
 description = "A plugin for flake8 finding likely bugs and design problems in your program. Contains warnings that don't belong in pyflakes and pycodestyle."
 optional = false
 python-versions = ">=3.8.1"
 files = [
-    {file = "flake8-bugbear-24.1.17.tar.gz", hash = "sha256:bcb388a4f3b516258749b1e690ee394c082eff742f44595e3754cf5c7781c2c7"},
-    {file = "flake8_bugbear-24.1.17-py3-none-any.whl", hash = "sha256:46cc840ddaed26507cd0ada530d1526418b717ee76c9b5dfdbd238b5eab34139"},
+    {file = "flake8-bugbear-24.2.6.tar.gz", hash = "sha256:f9cb5f2a9e792dd80ff68e89a14c12eed8620af8b41a49d823b7a33064ac9658"},
+    {file = "flake8_bugbear-24.2.6-py3-none-any.whl", hash = "sha256:663ef5de80cd32aacd39d362212983bc4636435a6f83700b4ed35acbd0b7d1b8"},
 ]
 
 [package.dependencies]
@@ -813,7 +813,7 @@ windows-terminal = ["colorama (>=0.4.6)"]
 
 [[package]]
 name = "pyk"
-version = "0.1.614"
+version = "0.1.618"
 description = ""
 optional = false
 python-versions = "^3.10"
@@ -834,8 +834,8 @@ xdg-base-dirs = "^6.0.1"
 [package.source]
 type = "git"
 url = "https://github.com/runtimeverification/pyk.git"
-reference = "v0.1.614"
-resolved_reference = "272bc8cbcb61b82e1e0ad4fc3669812de213a936"
+reference = "v0.1.618"
+resolved_reference = "e1519523721e84eec783019f7c061121bc50241e"
 
 [[package]]
 name = "pyperclip"
@@ -1099,4 +1099,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "55813d5ecf38e188f7b560d68d223485ca0301153e1bb5bfc586f81a24aff4bc"
+content-hash = "822019ab07759406f834b401e897a26b6b60586a0179319355d17e9539649bf7"
