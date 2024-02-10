@@ -91,7 +91,6 @@ def get_apr_proof_for_spec(
 
 
 def run_prover(
-    kprove: KProve,
     proof: Proof,
     kcfg_explore: KCFGExplore,
     max_depth: int = 1000,
@@ -141,8 +140,6 @@ def run_prover(
                 return True
             elif prover.proof.failed:
                 _LOGGER.error(f'Proof failed: {prover.proof.id}')
-                if type(proof) is EqualityProof:
-                    _LOGGER.info(proof.pretty(kprove))
                 return False
             else:
                 _LOGGER.info(f'Proof pending: {prover.proof.id}')
