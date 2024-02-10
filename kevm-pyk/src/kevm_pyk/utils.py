@@ -97,8 +97,6 @@ def run_prover(
     max_iterations: int | None = None,
     cut_point_rules: Iterable[str] = (),
     terminal_rules: Iterable[str] = (),
-    extract_branches: Callable[[CTerm], Iterable[KInner]] | None = None,
-    abstract_node: Callable[[CTerm], CTerm] | None = None,
     fail_fast: bool = False,
     counterexample_info: bool = False,
     always_check_subsumption: bool = False,
