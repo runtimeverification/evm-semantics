@@ -157,7 +157,7 @@ class KEVMCLIArgs(KCLIArgs):
         args.add_argument(
             '--trace-rewrites',
             dest='trace_rewrites',
-            default=False,
+            default=None,
             action='store_true',
             help='Log traces of all simplification and rewrite rule applications.',
         )
@@ -171,7 +171,7 @@ class KEVMCLIArgs(KCLIArgs):
         args.add_argument(
             '--use-booster',
             dest='use_booster',
-            default=False,
+            default=None,
             action='store_true',
             help='Use the booster RPC server instead of kore-rpc.',
         )
@@ -197,42 +197,42 @@ class KEVMCLIArgs(KCLIArgs):
         args.add_argument(
             '--break-every-step',
             dest='break_every_step',
-            default=False,
+            default=None,
             action='store_true',
             help='Store a node for every EVM opcode step (expensive).',
         )
         args.add_argument(
             '--break-on-jumpi',
             dest='break_on_jumpi',
-            default=False,
+            default=None,
             action='store_true',
             help='Store a node for every EVM jump opcode.',
         )
         args.add_argument(
             '--break-on-calls',
             dest='break_on_calls',
-            default=False,
+            default=None,
             action='store_true',
             help='Store a node for every EVM call made.',
         )
         args.add_argument(
             '--no-break-on-calls',
             dest='break_on_calls',
-            default=True,
+            default=None,
             action='store_false',
             help='Do not store a node for every EVM call made.',
         )
         args.add_argument(
             '--break-on-storage',
             dest='break_on_storage',
-            default=False,
+            default=None,
             action='store_true',
             help='Store a node for every EVM SSTORE/SLOAD made.',
         )
         args.add_argument(
             '--break-on-basic-blocks',
             dest='break_on_basic_blocks',
-            default=False,
+            default=None,
             action='store_true',
             help='Store a node for every EVM basic block (implies --break-on-calls).',
         )
@@ -253,7 +253,7 @@ class KEVMCLIArgs(KCLIArgs):
         args.add_argument(
             '--failure-information',
             dest='failure_info',
-            default=True,
+            default=None,
             action='store_true',
             help='Show failure summary for all failing tests',
         )
@@ -266,13 +266,14 @@ class KEVMCLIArgs(KCLIArgs):
         args.add_argument(
             '--auto-abstract-gas',
             dest='auto_abstract_gas',
+            default=None,
             action='store_true',
             help='Automatically extract gas cell when infinite gas is enabled',
         )
         args.add_argument(
             '--counterexample-information',
             dest='counterexample_info',
-            default=True,
+            default=None,
             action='store_true',
             help='Show models for failing nodes.',
         )
@@ -285,7 +286,7 @@ class KEVMCLIArgs(KCLIArgs):
         args.add_argument(
             '--fail-fast',
             dest='fail_fast',
-            default=True,
+            default=None,
             action='store_true',
             help='Stop execution on other branches if a failing node is detected.',
         )
