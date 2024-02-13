@@ -19,7 +19,7 @@ from pyk.kast.manip import (
 from pyk.kast.outer import KSequence
 from pyk.kcfg import KCFGExplore
 from pyk.kore.rpc import KoreClient, KoreExecLogFormat, TransportType, kore_server
-from pyk.proof import APRBMCProof, APRBMCProver, APRProof, APRProver
+from pyk.proof import APRProof, APRProver
 from pyk.proof.equality import EqualityProof, EqualityProver
 from pyk.utils import single
 
@@ -105,17 +105,8 @@ def run_prover(
     always_check_subsumption: bool = False,
     fast_check_subsumption: bool = False,
 ) -> bool:
-    proof = proof
-    prover: APRBMCProver | APRProver | EqualityProver
-    if type(proof) is APRBMCProof:
-        prover = APRBMCProver(
-            proof,
-            kcfg_explore,
-            counterexample_info=counterexample_info,
-            always_check_subsumption=always_check_subsumption,
-            fast_check_subsumption=fast_check_subsumption,
-        )
-    elif type(proof) is APRProof:
+    prover: APRProver | EqualityProver
+    if type(proof) is APRProof:
         prover = APRProver(
             proof,
             kcfg_explore,
@@ -128,7 +119,7 @@ def run_prover(
     else:
         raise ValueError(f'Do not know how to build prover for proof: {proof}')
     try:
-        if type(prover) is APRBMCProver or type(prover) is APRProver:
+        if type(prover) is APRProver:
             prover.advance_proof(
                 max_iterations=max_iterations,
                 execute_depth=max_depth,
@@ -164,7 +155,7 @@ def run_prover(
 
 
 def print_failure_info(proof: Proof, kcfg_explore: KCFGExplore, counterexample_info: bool = False) -> list[str]:
-    if type(proof) is APRProof or type(proof) is APRBMCProof:
+    if type(proof) is APRProof:
         target = proof.kcfg.node(proof.target)
 
         res_lines: list[str] = []

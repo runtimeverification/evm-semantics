@@ -14,8 +14,8 @@ from pyk.ktool.krun import KRun
 from pyk.prelude.kint import intToken, ltInt
 from pyk.prelude.ml import mlEqualsFalse, mlEqualsTrue
 from pyk.prelude.string import stringToken
-from pyk.proof.reachability import APRBMCProof, APRProof
-from pyk.proof.show import APRBMCProofNodePrinter, APRProofNodePrinter
+from pyk.proof.reachability import APRProof
+from pyk.proof.show import APRProofNodePrinter
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -545,15 +545,7 @@ class KEVMAPRNodePrinter(KEVMNodePrinter, APRProofNodePrinter):
         APRProofNodePrinter.__init__(self, proof, kevm)
 
 
-class KEVMAPRBMCNodePrinter(KEVMNodePrinter, APRBMCProofNodePrinter):
-    def __init__(self, kevm: KEVM, proof: APRBMCProof):
-        KEVMNodePrinter.__init__(self, kevm)
-        APRBMCProofNodePrinter.__init__(self, proof, kevm)
-
-
 def kevm_node_printer(kevm: KEVM, proof: APRProof) -> NodePrinter:
-    if type(proof) is APRBMCProof:
-        return KEVMAPRBMCNodePrinter(kevm, proof)
     if type(proof) is APRProof:
         return KEVMAPRNodePrinter(kevm, proof)
     raise ValueError(f'Cannot build NodePrinter for proof type: {type(proof)}')
