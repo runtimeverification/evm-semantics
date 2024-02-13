@@ -107,6 +107,9 @@ def run_prover(
         prover = APRProver(
             proof,
             kcfg_explore,
+            execute_depth=max_depth,
+            terminal_rules=terminal_rules,
+            cut_point_rules=cut_point_rules,
             counterexample_info=counterexample_info,
             always_check_subsumption=always_check_subsumption,
             fast_check_subsumption=fast_check_subsumption,
@@ -117,16 +120,7 @@ def run_prover(
         raise ValueError(f'Do not know how to build prover for proof: {proof}')
 
     try:
-        if type(prover) is APRProver:
-            prover.advance_proof(
-                max_iterations=max_iterations,
-                execute_depth=max_depth,
-                terminal_rules=terminal_rules,
-                cut_point_rules=cut_point_rules,
-                fail_fast=fail_fast,
-            )
-        elif type(prover) is ImpliesProver:
-            prover.advance_proof()
+        prover.advance_proof(max_iterations=max_iterations, fail_fast=fail_fast)
 
     except Exception as e:
         _LOGGER.error(f'Proof crashed: {proof.id}\n{e}', exc_info=True)
