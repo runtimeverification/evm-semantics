@@ -59,10 +59,23 @@ module BYTES-SIMPLIFICATION [symbolic]
       requires lengthBytes(B) <=Int 32
        andBool #rangeUInt(256, X) [simplification, concrete(B), comm]
 
-    rule [buf-asWord-invert]:
+    rule [buf-asWord-invert-lr]:
       #buf (W:Int , #asWord(B:Bytes)) => #buf(W -Int lengthBytes(B), 0) +Bytes B
       requires lengthBytes(B) <=Int W andBool W <=Int 32
       [simplification]
+
+    rule [buf-asWord-invert-rl]:
+      #asWord ( #buf ( WB:Int, X:Int ) ) => X
+      requires 0 <=Int WB andBool WB <=Int 32
+       andBool 0 <=Int X  andBool X <Int 2 ^Int (WB *Int 8)
+      [simplification, concrete(WB)]
+
+    rule [buf-asWord-invert-rl-range]:
+      #asWord ( #range ( #buf ( WB:Int, X:Int ), S:Int, WR:Int ) ) => X
+      requires 0 <=Int WB andBool 0 <=Int X andBool 0 <=Int S andBool 0 <=Int WR
+       andBool S +Int WR ==Int WB
+       andBool X <Int 2 ^Int (WR *Int 8)
+      [simplification, concrete(WB, S, WR)]
 
     rule [buf-zero-concat-base]:
       #buf(W1:Int, 0) +Bytes #buf(W2:Int, 0) => #buf(W1 +Int W2, 0)
@@ -166,6 +179,18 @@ module BYTES-SIMPLIFICATION [symbolic]
        andBool #asInteger(B) ==Int 0
       [concrete(B), simplification]
 
+    rule [range-buf-zero-concat]:
+      B:Bytes +Bytes #buf(W:Int, X:Int) => #buf(lengthBytes(B) +Int W, X)
+      requires 0 <=Int W andBool 0 <=Int X andBool X <Int 2 ^Int (W *Int 8)
+       andBool #asInteger(B) ==Int 0
+      [concrete(B, W), simplification]
+
+    rule [range-buf-zero-concat-extend]:
+      B1:Bytes +Bytes #buf(W:Int, X:Int) +Bytes B2 => #buf(lengthBytes(B1) +Int W, X) +Bytes B2
+      requires 0 <=Int W andBool 0 <=Int X andBool X <Int 2 ^Int (W *Int 8)
+       andBool #asInteger(B1) ==Int 0
+      [concrete(B1, W), simplification]
+
     rule [range-memUpdate-before]:
       #range(B1:Bytes [ S1:Int := B2:Bytes ], S2:Int, W2:Int) =>
         #let W = minInt(W2, S1 -Int S2) #in
@@ -191,9 +216,33 @@ module BYTES-SIMPLIFICATION [symbolic]
        andBool 0 <=Int S2 andBool 0 <=Int W2 andBool S2 +Int W2 <=Int W1
       [simplification, concrete(W1, S2, W2)]
 
+    rule [range-buf-value]:
+      #range (#buf(W1:Int, X:Int), S2:Int, W2:Int) => #buf(W2, X)
+      requires 0 <=Int X andBool X <Int 2 ^Int (8 *Int W2)
+       andBool 0 <=Int S2 andBool 0 <=Int W2 andBool W1 ==Int S2 +Int W2
+      [simplification, concrete(W1, S2, W2)]
+
     rule [range-padRightToWidth]:
       #range(#padRightToWidth(_, BUF), 0, WIDTH) => BUF
       requires lengthBytes(BUF) ==Int WIDTH [simplification]
+
+    rule [range-eq-check]:
+      BZ +Bytes #range ( B, S, W ) ==K B => true
+      requires 0 <=Int S andBool 0 <=Int W
+      andBool lengthBytes( B ) ==Int S +Int W
+      andBool #asInteger( BZ ) ==Int 0
+      andBool lengthBytes( BZ ) ==Int S
+      andBool #asWord ( B ) <Int 2 ^Int ( 8 *Int W )
+      [simplification, concrete(BZ, S, W), comm]
+
+    rule [range-eq-check-ml]:
+      { BZ +Bytes #range ( B, S, W ) #Equals B } => #Top
+      requires 0 <=Int S andBool 0 <=Int W
+      andBool lengthBytes( B ) ==Int S +Int W
+      andBool #asInteger( BZ ) ==Int 0
+      andBool lengthBytes( BZ ) ==Int S
+      andBool #asWord ( B ) <Int 2 ^Int ( 8 *Int W )
+      [simplification, concrete(BZ, S, W), comm]
 
     // Memory update
 
@@ -225,11 +274,12 @@ module BYTES-SIMPLIFICATION [symbolic]
 
     // lengthBytes
 
-    rule [lengthBytes-geq-zero]: 0 <=Int lengthBytes ( _ )                     => true                                     [simplification, smt-lemma]
-    rule [lengthBytes-concat]:   lengthBytes(BUF1 +Bytes BUF2)                 => lengthBytes(BUF1) +Int lengthBytes(BUF2) [simplification]
-    rule [lengthBytes-buf]:      lengthBytes(#buf(S, _))                       => S requires 0 <=Int S                     [simplification]
-    rule [lengthBytes-range]:    lengthBytes(#range(_, S:Int, W:Int))          => maxInt(0, W) requires 0 <=Int S          [simplification]
-    rule [lengthBytes-prtw]:     lengthBytes(#padRightToWidth(W:Int, B:Bytes)) => maxInt(lengthBytes(B), W)                [simplification]
+    rule [lengthBytes-geq-zero]:   0 <=Int lengthBytes ( _ )                     => true                                     [simplification, smt-lemma]
+    rule [lengthBytes-geq-nonPos]: X <=Int lengthBytes ( _ )                     => true requires X <=Int 0                  [simplification, concrete(X)]
+    rule [lengthBytes-concat]:     lengthBytes(BUF1 +Bytes BUF2)                 => lengthBytes(BUF1) +Int lengthBytes(BUF2) [simplification]
+    rule [lengthBytes-buf]:        lengthBytes(#buf(S, _))                       => S requires 0 <=Int S                     [simplification]
+    rule [lengthBytes-range]:      lengthBytes(#range(_, S:Int, W:Int))          => maxInt(0, W) requires 0 <=Int S          [simplification]
+    rule [lengthBytes-prtw]:       lengthBytes(#padRightToWidth(W:Int, B:Bytes)) => maxInt(lengthBytes(B), W)                [simplification]
 
     rule [lengthBytes-leq-zero]: lengthBytes(B:Bytes) <=Int 0 => B ==K .Bytes [simplification]
 
@@ -242,6 +292,12 @@ module BYTES-SIMPLIFICATION [symbolic]
       requires lengthBytes(BUF) <=Int 4 [simplification]
 
     rule #padToWidth(32, #asByteStack(V)) => #buf(32, V)  requires #rangeUInt(256, V) [simplification]
+
+    // #padRightToWidth
+
+    rule #padRightToWidth ( X:Int, B:Bytes ) => B +Bytes padRightBytes(.Bytes, X -Int lengthBytes(B), 0 )
+      requires lengthBytes(B) <=Int X
+      [simplification, concrete(X)]
 
     // #ecrec
 

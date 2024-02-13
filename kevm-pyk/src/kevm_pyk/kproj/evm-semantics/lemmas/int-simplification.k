@@ -2,7 +2,7 @@ module INT-SIMPLIFICATION
     imports INT-SIMPLIFICATION-HASKELL
 endmodule
 
-module INT-SIMPLIFICATION-HASKELL [symbolic, kore]
+module INT-SIMPLIFICATION-HASKELL [symbolic]
     imports INT-SIMPLIFICATION-COMMON
 
   // ###########################################################################
@@ -82,6 +82,15 @@ module INT-SIMPLIFICATION-HASKELL [symbolic, kore]
     rule { A +Int B #Equals C } => { B #Equals C -Int A } [concrete(A, C), symbolic(B), simplification(45), comm]
     rule { A -Int B #Equals C } => { A #Equals C +Int B } [concrete(B, C), symbolic(A), simplification(45), comm]
     rule { A -Int B #Equals C } => { A -Int C #Equals B } [concrete(A, C), symbolic(B), simplification(45), comm]
+
+    rule A +Int B  <Int C +Int D => A -Int C  <Int D -Int B [concrete(B, D), symbolic(A, C), simplification(45)]
+    rule A +Int B <=Int C +Int D => A -Int C <=Int D -Int B [concrete(B, D), symbolic(A, C), simplification(45)]
+    rule A +Int B  >Int C +Int D => A -Int C  >Int D -Int B [concrete(B, D), symbolic(A, C), simplification(45)]
+    rule A +Int B >=Int C +Int D => A -Int C >=Int D -Int B [concrete(B, D), symbolic(A, C), simplification(45)]
+
+    rule A +Int B ==Int C +Int D => A -Int C ==Int D -Int B [concrete(B, D), symbolic(A, C), simplification(45)]
+
+    rule { A +Int B #Equals C +Int D } => { A -Int C #Equals D -Int B } [concrete(B, D), symbolic(A, C), simplification(45)]
 
 endmodule
 
@@ -199,6 +208,7 @@ module INT-SIMPLIFICATION-COMMON
     rule notBool (A  <Int B) => B <=Int A [simplification]
     rule notBool (A <=Int B) => B  <Int A [simplification]
 
+    rule 0 <=Int A +Int B => true requires 0 <=Int A andBool 0 <=Int B [simplification]
     rule 0 <=Int A *Int B => true requires 0 <=Int A andBool 0 <=Int B [simplification]
 
     rule A -Int B +Int C <=Int D => false requires D <Int A -Int B andBool 0 <=Int C [simplification]

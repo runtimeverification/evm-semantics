@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import dataclasses
 import logging
 import sys
 from typing import TYPE_CHECKING, NamedTuple
@@ -51,6 +50,7 @@ BIHU_TESTS: Final = spec_files('bihu', '*-spec.k')
 EXAMPLES_TESTS: Final = spec_files('examples', '*-spec.k') + spec_files('examples', '*-spec.md')
 MCD_TESTS: Final = spec_files('mcd', '*-spec.k')
 OPTIMIZATION_TESTS: Final = (SPEC_DIR / 'opcodes/evm-optimizations-spec.md',)
+KONTROL_TESTS: Final = spec_files('kontrol', '*-spec.k')
 
 ALL_TESTS: Final = sum(
     [
@@ -62,6 +62,7 @@ ALL_TESTS: Final = sum(
         EXAMPLES_TESTS,
         MCD_TESTS,
         OPTIMIZATION_TESTS,
+        KONTROL_TESTS,
     ],
     (),
 )
@@ -159,17 +160,29 @@ def _target_for_spec(spec_file: Path) -> Target:
 # ---------
 
 
-@dataclasses.dataclass(frozen=True)
 class TParams:
-    main_claim_id: str
+    main_claim_id: str | None
     leaf_number: int | None
+    break_on_calls: bool
+
+    def __init__(
+        self, main_claim_id: str | None = None, leaf_number: int | None = None, break_on_calls: bool = False
+    ) -> None:
+        self.main_claim_id = main_claim_id
+        self.leaf_number = leaf_number
+        self.break_on_calls = break_on_calls
 
 
 TEST_PARAMS: dict[str, TParams] = {
-    r'mcd/vat-slip-pass-rough-spec.k': TParams(
-        main_claim_id='VAT-SLIP-PASS-ROUGH-SPEC.Vat.slip.pass.rough', leaf_number=1
-    )
+    'mcd/vat-slip-pass-rough-spec.k': TParams(
+        main_claim_id='VAT-SLIP-PASS-ROUGH-SPEC.Vat.slip.pass.rough',
+        leaf_number=1,
+    ),
 }
+
+
+for KONTROL_TEST in KONTROL_TESTS:
+    TEST_PARAMS[f'kontrol/{KONTROL_TEST.name}'] = TParams(break_on_calls=True)
 
 
 def leaf_number(proof: APRProof) -> int:
@@ -189,10 +202,14 @@ def test_pyk_prove(
     caplog: LogCaptureFixture,
     use_booster: bool,
     bug_report: BugReport | None,
+    spec_name: str | None,
 ) -> None:
     caplog.set_level(logging.INFO)
 
     if (not use_booster and spec_file in FAILING_PYK_TESTS) or (use_booster and spec_file in FAILING_BOOSTER_TESTS):
+        pytest.skip()
+
+    if spec_name is not None and str(spec_file).find(spec_name) < 0:
         pytest.skip()
 
     # Given
@@ -203,6 +220,8 @@ def test_pyk_prove(
     # When
     try:
         definition_dir = kompiled_target_for(spec_file)
+        name = str(spec_file.relative_to(SPEC_DIR))
+        break_on_calls = name in TEST_PARAMS and TEST_PARAMS[name].break_on_calls
         exec_prove(
             spec_file=spec_file,
             definition_dir=definition_dir,
@@ -213,17 +232,18 @@ def test_pyk_prove(
             md_selector='foo',  # TODO Ignored flag, this is to avoid KeyError
             use_booster=use_booster,
             bug_report=bug_report,
+            break_on_calls=break_on_calls,
         )
-        name = str(spec_file.relative_to(SPEC_DIR))
         if name in TEST_PARAMS:
             params = TEST_PARAMS[name]
-            apr_proof = APRProof.read_proof_data(
-                proof_dir=use_directory,
-                id=params.main_claim_id,
-            )
-            expected_leaf_number = params.leaf_number
-            actual_leaf_number = leaf_number(apr_proof)
-            assert expected_leaf_number == actual_leaf_number
+            if params.leaf_number is not None and params.main_claim_id is not None:
+                apr_proof = APRProof.read_proof_data(
+                    proof_dir=use_directory,
+                    id=params.main_claim_id,
+                )
+                expected_leaf_number = params.leaf_number
+                actual_leaf_number = leaf_number(apr_proof)
+                assert expected_leaf_number == actual_leaf_number
     except BaseException:
         raise
     finally:

@@ -224,6 +224,7 @@ module VAT-MOVE-DIFF-ROUGH-ARITH-SPEC
      andBool ((#sizeWordStack(WS) <=Int 100)
      andBool (#rangeUInt(256, VMemoryUsed)
      andBool ((#rangeUInt(256, ABI_x +Int ABI_y)))))))
+    [trusted]
 
     // Vat_subuu
     claim [Vat.subuu.pass]:
@@ -321,6 +322,7 @@ module VAT-MOVE-DIFF-ROUGH-ARITH-SPEC
      andBool ((#sizeWordStack(WS) <=Int 100)
      andBool (#rangeUInt(256, VMemoryUsed)
      andBool ((#rangeUInt(256, ABI_x -Int ABI_y)))))))
+    [trusted]
 
 endmodule
 

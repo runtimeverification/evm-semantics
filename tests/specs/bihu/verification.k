@@ -83,7 +83,7 @@ module VERIFICATION
 
 endmodule
 
-module VERIFICATION-HASKELL [symbolic, kore]
+module VERIFICATION-HASKELL [symbolic]
     imports EVM
 
     rule X <Int Csstore(SCHED, _, _, _) => false

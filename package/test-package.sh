@@ -43,3 +43,9 @@ kevm prove tests/specs/benchmarks/structarg00-spec.k         \
     --save-directory proofs                                  \
     --verbose                                                \
     --use-booster
+
+kevm prove tests/specs/benchmarks/structarg01-spec.k         \
+    --definition tests/specs/benchmarks/verification/haskell \
+    --save-directory proofs                                  \
+    --verbose                                                \
+    --use-booster
