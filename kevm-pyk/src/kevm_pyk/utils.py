@@ -20,7 +20,7 @@ from pyk.kast.outer import KSequence
 from pyk.kcfg import KCFGExplore
 from pyk.kore.rpc import KoreClient, KoreExecLogFormat, TransportType, kore_server
 from pyk.proof import APRProof, APRProver
-from pyk.proof.equality import EqualityProof, EqualityProver
+from pyk.proof.equality import EqualityProof, ImpliesProver
 from pyk.utils import single
 
 if TYPE_CHECKING:
@@ -102,7 +102,7 @@ def run_prover(
     always_check_subsumption: bool = False,
     fast_check_subsumption: bool = False,
 ) -> bool:
-    prover: APRProver | EqualityProver
+    prover: APRProver | ImpliesProver
     if type(proof) is APRProof:
         prover = APRProver(
             proof,
@@ -112,7 +112,7 @@ def run_prover(
             fast_check_subsumption=fast_check_subsumption,
         )
     elif type(proof) is EqualityProof:
-        prover = EqualityProver(kcfg_explore=kcfg_explore, proof=proof)
+        prover = ImpliesProver(proof=proof, kcfg_explore=kcfg_explore)
     else:
         raise ValueError(f'Do not know how to build prover for proof: {proof}')
 
@@ -125,7 +125,7 @@ def run_prover(
                 cut_point_rules=cut_point_rules,
                 fail_fast=fail_fast,
             )
-        elif type(prover) is EqualityProver:
+        elif type(prover) is ImpliesProver:
             prover.advance_proof()
 
     except Exception as e:
