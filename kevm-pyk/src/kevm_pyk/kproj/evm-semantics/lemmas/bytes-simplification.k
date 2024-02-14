@@ -179,18 +179,6 @@ module BYTES-SIMPLIFICATION [symbolic]
        andBool #asInteger(B) ==Int 0
       [concrete(B), simplification]
 
-    rule [range-buf-zero-concat]:
-      B:Bytes +Bytes #buf(W:Int, X:Int) => #buf(lengthBytes(B) +Int W, X)
-      requires 0 <=Int W andBool 0 <=Int X andBool X <Int 2 ^Int (W *Int 8)
-       andBool #asInteger(B) ==Int 0
-      [concrete(B, W), simplification]
-
-    rule [range-buf-zero-concat-extend]:
-      B1:Bytes +Bytes #buf(W:Int, X:Int) +Bytes B2 => #buf(lengthBytes(B1) +Int W, X) +Bytes B2
-      requires 0 <=Int W andBool 0 <=Int X andBool X <Int 2 ^Int (W *Int 8)
-       andBool #asInteger(B1) ==Int 0
-      [concrete(B1, W), simplification]
-
     rule [range-memUpdate-before]:
       #range(B1:Bytes [ S1:Int := B2:Bytes ], S2:Int, W2:Int) =>
         #let W = minInt(W2, S1 -Int S2) #in
