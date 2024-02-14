@@ -66,8 +66,9 @@ module BYTES-SIMPLIFICATION [symbolic]
 
     rule [buf-asWord-invert-rl]:
       #asWord ( #buf ( WB:Int, X:Int ) ) => X
-      requires 0 <=Int WB andBool WB <=Int 32
-       andBool 0 <=Int X  andBool X <Int 2 ^Int (WB *Int 8)
+      requires 0 <=Int WB andBool 0 <=Int X andBool
+               ( ( WB <=Int 32 andBool X <Int 2 ^Int (WB *Int 8) ) orBool
+                 ( WB  >Int 32 andBool X <Int pow256 ) )
       [simplification, concrete(WB)]
 
     rule [buf-asWord-invert-rl-range]:
@@ -178,6 +179,18 @@ module BYTES-SIMPLIFICATION [symbolic]
       requires 0 <=Int S1 andBool 0 <=Int W1
        andBool #asInteger(B) ==Int 0
       [concrete(B), simplification]
+
+    rule [range-buf-zero-concat]:
+      B:Bytes +Bytes #buf(W:Int, X:Int) => #buf(lengthBytes(B) +Int W, X)
+      requires 0 <=Int W andBool 0 <=Int X andBool X <Int 2 ^Int (W *Int 8)
+       andBool #asInteger(B) ==Int 0
+      [concrete(B, W), simplification]
+
+    rule [range-buf-zero-concat-extend]:
+      B1:Bytes +Bytes #buf(W:Int, X:Int) +Bytes B2 => #buf(lengthBytes(B1) +Int W, X) +Bytes B2
+      requires 0 <=Int W andBool 0 <=Int X andBool X <Int 2 ^Int (W *Int 8)
+       andBool #asInteger(B1) ==Int 0
+      [concrete(B1, W), simplification]
 
     rule [range-memUpdate-before]:
       #range(B1:Bytes [ S1:Int := B2:Bytes ], S2:Int, W2:Int) =>
