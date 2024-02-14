@@ -57,7 +57,7 @@ class KEVMCLIArgs(KCLIArgs):
         args.add_argument(
             '--always-check-subsumption',
             dest='always-check_subsumption',
-            default=True,
+            default=None,
             action='store_true',
             help='Check subsumption even on non-terminal nodes.',
         )
@@ -70,7 +70,7 @@ class KEVMCLIArgs(KCLIArgs):
         args.add_argument(
             '--fast-check-subsumption',
             dest='fast_check_subsumption',
-            default=True,
+            default=None,
             action='store_true',
             help='Use fast-check on k-cell to determine subsumption.',
         )
@@ -211,7 +211,7 @@ class KEVMCLIArgs(KCLIArgs):
         args.add_argument(
             '--post-exec-simplify',
             dest='post_exec_simplify',
-            default=True,
+            default=None,
             action='store_true',
             help='Always simplify states with kore backend after booster execution, only usable with --use-booster.',
         )
