@@ -427,7 +427,6 @@ def exec_prove(
 
             start_time = time.time()
             passed = run_prover(
-                kevm,
                 proof_problem,
                 kcfg_explore,
                 max_depth=max_depth,

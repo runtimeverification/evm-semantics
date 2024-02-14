@@ -91,15 +91,12 @@ def get_apr_proof_for_spec(
 
 
 def run_prover(
-    kprove: KProve,
     proof: Proof,
     kcfg_explore: KCFGExplore,
     max_depth: int = 1000,
     max_iterations: int | None = None,
     cut_point_rules: Iterable[str] = (),
     terminal_rules: Iterable[str] = (),
-    extract_branches: Callable[[CTerm], Iterable[KInner]] | None = None,
-    abstract_node: Callable[[CTerm], CTerm] | None = None,
     fail_fast: bool = False,
     counterexample_info: bool = False,
     always_check_subsumption: bool = False,
@@ -118,6 +115,7 @@ def run_prover(
         prover = EqualityProver(kcfg_explore=kcfg_explore, proof=proof)
     else:
         raise ValueError(f'Do not know how to build prover for proof: {proof}')
+
     try:
         if type(prover) is APRProver:
             prover.advance_proof(
@@ -127,31 +125,15 @@ def run_prover(
                 cut_point_rules=cut_point_rules,
                 fail_fast=fail_fast,
             )
-            assert isinstance(proof, APRProof)
-            if proof.passed:
-                _LOGGER.info(f'Proof passed: {proof.id}')
-                return True
-            else:
-                _LOGGER.error(f'Proof failed: {proof.id}')
-                return False
         elif type(prover) is EqualityProver:
             prover.advance_proof()
-            if prover.proof.passed:
-                _LOGGER.info(f'Proof passed: {prover.proof.id}')
-                return True
-            elif prover.proof.failed:
-                _LOGGER.error(f'Proof failed: {prover.proof.id}')
-                if type(proof) is EqualityProof:
-                    _LOGGER.info(proof.pretty(kprove))
-                return False
-            else:
-                _LOGGER.info(f'Proof pending: {prover.proof.id}')
-                return False
-        return False
 
     except Exception as e:
         _LOGGER.error(f'Proof crashed: {proof.id}\n{e}', exc_info=True)
         return False
+
+    _LOGGER.info(f'Proof status: {proof.status}')
+    return proof.passed
 
 
 def print_failure_info(proof: Proof, kcfg_explore: KCFGExplore, counterexample_info: bool = False) -> list[str]:
