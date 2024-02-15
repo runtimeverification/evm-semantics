@@ -19,8 +19,8 @@ from pyk.kast.manip import (
 from pyk.kast.outer import KSequence
 from pyk.kcfg import KCFGExplore
 from pyk.kore.rpc import KoreClient, KoreExecLogFormat, TransportType, kore_server
-from pyk.proof import APRBMCProof, APRBMCProver, APRProof, APRProver
-from pyk.proof.equality import EqualityProof, EqualityProver
+from pyk.proof import APRProof, APRProver
+from pyk.proof.equality import EqualityProof, ImpliesProver
 from pyk.utils import single
 
 if TYPE_CHECKING:
@@ -30,6 +30,7 @@ if TYPE_CHECKING:
     from pyk.kast.outer import KClaim, KDefinition
     from pyk.kcfg import KCFG
     from pyk.kcfg.semantics import KCFGSemantics
+    from pyk.kore.rpc import FallbackReason
     from pyk.ktool.kprint import KPrint
     from pyk.ktool.kprove import KProve
     from pyk.proof.proof import Proof
@@ -90,66 +91,47 @@ def get_apr_proof_for_spec(
 
 
 def run_prover(
-    kprove: KProve,
     proof: Proof,
     kcfg_explore: KCFGExplore,
     max_depth: int = 1000,
     max_iterations: int | None = None,
     cut_point_rules: Iterable[str] = (),
     terminal_rules: Iterable[str] = (),
-    extract_branches: Callable[[CTerm], Iterable[KInner]] | None = None,
-    abstract_node: Callable[[CTerm], CTerm] | None = None,
     fail_fast: bool = False,
     counterexample_info: bool = False,
+    always_check_subsumption: bool = False,
+    fast_check_subsumption: bool = False,
 ) -> bool:
-    proof = proof
-    prover: APRBMCProver | APRProver | EqualityProver
-    if type(proof) is APRBMCProof:
-        prover = APRBMCProver(proof, kcfg_explore, counterexample_info=counterexample_info)
-    elif type(proof) is APRProof:
-        prover = APRProver(proof, kcfg_explore, counterexample_info=counterexample_info)
+    prover: APRProver | ImpliesProver
+    if type(proof) is APRProof:
+        prover = APRProver(
+            proof,
+            kcfg_explore,
+            execute_depth=max_depth,
+            terminal_rules=terminal_rules,
+            cut_point_rules=cut_point_rules,
+            counterexample_info=counterexample_info,
+            always_check_subsumption=always_check_subsumption,
+            fast_check_subsumption=fast_check_subsumption,
+        )
     elif type(proof) is EqualityProof:
-        prover = EqualityProver(kcfg_explore=kcfg_explore, proof=proof)
+        prover = ImpliesProver(proof=proof, kcfg_explore=kcfg_explore)
     else:
         raise ValueError(f'Do not know how to build prover for proof: {proof}')
+
     try:
-        if type(prover) is APRBMCProver or type(prover) is APRProver:
-            prover.advance_proof(
-                max_iterations=max_iterations,
-                execute_depth=max_depth,
-                terminal_rules=terminal_rules,
-                cut_point_rules=cut_point_rules,
-                fail_fast=fail_fast,
-            )
-            assert isinstance(proof, APRProof)
-            if proof.passed:
-                _LOGGER.info(f'Proof passed: {proof.id}')
-                return True
-            else:
-                _LOGGER.error(f'Proof failed: {proof.id}')
-                return False
-        elif type(prover) is EqualityProver:
-            prover.advance_proof()
-            if prover.proof.passed:
-                _LOGGER.info(f'Proof passed: {prover.proof.id}')
-                return True
-            elif prover.proof.failed:
-                _LOGGER.error(f'Proof failed: {prover.proof.id}')
-                if type(proof) is EqualityProof:
-                    _LOGGER.info(proof.pretty(kprove))
-                return False
-            else:
-                _LOGGER.info(f'Proof pending: {prover.proof.id}')
-                return False
-        return False
+        prover.advance_proof(max_iterations=max_iterations, fail_fast=fail_fast)
 
     except Exception as e:
         _LOGGER.error(f'Proof crashed: {proof.id}\n{e}', exc_info=True)
         return False
 
+    _LOGGER.info(f'Proof status: {proof.status}')
+    return proof.passed
+
 
 def print_failure_info(proof: Proof, kcfg_explore: KCFGExplore, counterexample_info: bool = False) -> list[str]:
-    if type(proof) is APRProof or type(proof) is APRBMCProof:
+    if type(proof) is APRProof:
         target = proof.kcfg.node(proof.target)
 
         res_lines: list[str] = []
@@ -313,6 +295,9 @@ def legacy_explore(
     trace_rewrites: bool = False,
     start_server: bool = True,
     maude_port: int | None = None,
+    fallback_on: Iterable[FallbackReason] | None = None,
+    interim_simplification: int | None = None,
+    no_post_exec_simplify: bool = False,
 ) -> Iterator[KCFGExplore]:
     if start_server:
         # Old way of handling KCFGExplore, to be removed
@@ -329,9 +314,9 @@ def legacy_explore(
             haskell_log_format=haskell_log_format,
             haskell_log_entries=haskell_log_entries,
             log_axioms_file=log_axioms_file,
-            fallback_on=None,
-            interim_simplification=None,
-            no_post_exec_simplify=None,
+            fallback_on=fallback_on,
+            interim_simplification=interim_simplification,
+            no_post_exec_simplify=no_post_exec_simplify,
         ) as server:
             with KoreClient('localhost', server.port, bug_report=bug_report, bug_report_id=id) as client:
                 yield KCFGExplore(

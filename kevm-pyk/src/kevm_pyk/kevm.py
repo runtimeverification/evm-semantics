@@ -14,8 +14,8 @@ from pyk.ktool.krun import KRun
 from pyk.prelude.kint import intToken, ltInt
 from pyk.prelude.ml import mlEqualsFalse, mlEqualsTrue
 from pyk.prelude.string import stringToken
-from pyk.proof.reachability import APRBMCProof, APRProof
-from pyk.proof.show import APRBMCProofNodePrinter, APRProofNodePrinter
+from pyk.proof.reachability import APRProof
+from pyk.proof.show import APRProofNodePrinter
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -186,18 +186,17 @@ class KEVM(KProve, KRun):
 
     @classmethod
     def _kevm_patch_symbol_table(cls, symbol_table: SymbolTable) -> None:
-        # fmt: off
-        symbol_table['#Bottom']                                       = lambda: '#Bottom'
-        symbol_table['_Map_']                                         = paren(lambda m1, m2: m1 + '\n' + m2)
-        symbol_table['_AccountCellMap_']                              = paren(lambda a1, a2: a1 + '\n' + a2)
-        symbol_table['.AccountCellMap']                               = lambda: '.Bag'
-        symbol_table['AccountCellMapItem']                            = lambda k, v: v
-        symbol_table['_<Word__EVM-TYPES_Int_Int_Int']                 = paren(lambda a1, a2: '(' + a1 + ') <Word ('  + a2 + ')')
-        symbol_table['_>Word__EVM-TYPES_Int_Int_Int']                 = paren(lambda a1, a2: '(' + a1 + ') >Word ('  + a2 + ')')
-        symbol_table['_<=Word__EVM-TYPES_Int_Int_Int']                = paren(lambda a1, a2: '(' + a1 + ') <=Word (' + a2 + ')')
-        symbol_table['_>=Word__EVM-TYPES_Int_Int_Int']                = paren(lambda a1, a2: '(' + a1 + ') >=Word (' + a2 + ')')
-        symbol_table['_==Word__EVM-TYPES_Int_Int_Int']                = paren(lambda a1, a2: '(' + a1 + ') ==Word (' + a2 + ')')
-        symbol_table['_s<Word__EVM-TYPES_Int_Int_Int']                = paren(lambda a1, a2: '(' + a1 + ') s<Word (' + a2 + ')')
+        symbol_table['#Bottom'] = lambda: '#Bottom'
+        symbol_table['_Map_'] = paren(lambda m1, m2: m1 + '\n' + m2)
+        symbol_table['_AccountCellMap_'] = paren(lambda a1, a2: a1 + '\n' + a2)
+        symbol_table['.AccountCellMap'] = lambda: '.Bag'
+        symbol_table['AccountCellMapItem'] = lambda k, v: v
+        symbol_table['_<Word__EVM-TYPES_Int_Int_Int'] = paren(lambda a1, a2: '(' + a1 + ') <Word (' + a2 + ')')
+        symbol_table['_>Word__EVM-TYPES_Int_Int_Int'] = paren(lambda a1, a2: '(' + a1 + ') >Word (' + a2 + ')')
+        symbol_table['_<=Word__EVM-TYPES_Int_Int_Int'] = paren(lambda a1, a2: '(' + a1 + ') <=Word (' + a2 + ')')
+        symbol_table['_>=Word__EVM-TYPES_Int_Int_Int'] = paren(lambda a1, a2: '(' + a1 + ') >=Word (' + a2 + ')')
+        symbol_table['_==Word__EVM-TYPES_Int_Int_Int'] = paren(lambda a1, a2: '(' + a1 + ') ==Word (' + a2 + ')')
+        symbol_table['_s<Word__EVM-TYPES_Int_Int_Int'] = paren(lambda a1, a2: '(' + a1 + ') s<Word (' + a2 + ')')
         paren_symbols = [
             '_|->_',
             '#And',
@@ -222,7 +221,6 @@ class KEVM(KProve, KRun):
         for symb in paren_symbols:
             if symb in symbol_table:
                 symbol_table[symb] = paren(symbol_table[symb])
-        # fmt: on
 
     class Sorts:
         KEVM_CELL: Final = KSort('KevmCell')
@@ -547,15 +545,7 @@ class KEVMAPRNodePrinter(KEVMNodePrinter, APRProofNodePrinter):
         APRProofNodePrinter.__init__(self, proof, kevm)
 
 
-class KEVMAPRBMCNodePrinter(KEVMNodePrinter, APRBMCProofNodePrinter):
-    def __init__(self, kevm: KEVM, proof: APRBMCProof):
-        KEVMNodePrinter.__init__(self, kevm)
-        APRBMCProofNodePrinter.__init__(self, proof, kevm)
-
-
 def kevm_node_printer(kevm: KEVM, proof: APRProof) -> NodePrinter:
-    if type(proof) is APRBMCProof:
-        return KEVMAPRBMCNodePrinter(kevm, proof)
     if type(proof) is APRProof:
         return KEVMAPRNodePrinter(kevm, proof)
     raise ValueError(f'Cannot build NodePrinter for proof type: {type(proof)}')
