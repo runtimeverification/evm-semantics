@@ -391,7 +391,7 @@ module LEMMAS-SPEC
     claim <k> runLemma ( 160 ==Int #asWord ( #buf( 4, 160 ) +Bytes ( #range( #buf( 32 , _BUF ), 0, 28 ) ) ) >>Int 224 )
            => doneLemma( true ) ... </k>
 
- // buffer range sinplification
+ // buffer range simplification
  // ---------------------------
     claim <k> runLemma  ( #range((#buf(DATA_LEN, DATA) +Bytes _BUF), 0, DATA_LEN) )
            => doneLemma ( #range( #buf(DATA_LEN, DATA)             , 0, DATA_LEN) ) ... </k>
@@ -613,6 +613,17 @@ module LEMMAS-SPEC
             false
           ) ... </k>
         requires #rangeUInt(32, VV0_x_114b9705)
+
+ // #asWord
+ // ----------------
+
+    claim  [buf-asWord-invert]:
+      <k> runLemma( 
+            #asWord ( #buf ( 63 , lengthBytes ( VV0_data_114b9705:Bytes ) ) )
+          ) => doneLemma(
+             ( lengthBytes ( VV0_data_114b9705:Bytes ) ) 
+          ) ... </k>
+        requires lengthBytes ( VV0_data_114b9705:Bytes ) <=Int 1073741824
 
  // ecrecover
  // ---------
