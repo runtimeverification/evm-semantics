@@ -54,7 +54,7 @@ More information about how storage locations are defined in Solidity can be foun
 Specifically, `#hashedLocation` is defined as follows, capturing the storage layout schemes of Solidity and Vyper.
 
 ```k
-    syntax Int ::= #hashedLocation( String , Int , IntList ) [function, klabel(hashLoc), smtlib(hashLoc)]
+    syntax Int ::= #hashedLocation( String , Int , IntList ) [klabel(hashLoc), function, smtlib(hashLoc)]
  // -----------------------------------------------------------------------------------------------------
     rule #hashedLocation(_LANG, BASE, .IntList      ) => BASE
     rule #hashedLocation( LANG, BASE, OFFSET OFFSETS) => #hashedLocation(LANG, #hashedLocation(LANG, BASE, OFFSET .IntList), OFFSETS) requires OFFSETS =/=K .IntList
@@ -82,12 +82,12 @@ module SOLIDITY-FIELDS
                             | ContractAccess "[" Int "]" [klabel(contract_access_index), symbol]
  // --------------------------------------------------------------------------------------------
 
-    syntax Int ::= #loc ( ContractAccess ) [function, klabel(contract_access_loc), symbol]
+    syntax Int ::= #loc ( ContractAccess ) [klabel(contract_access_loc), function, symbol]
  // --------------------------------------------------------------------------------------
     rule #loc(_:Contract) => 0
     rule #loc(C [ I ])    => #hash(#loc(C), I)
 
-    syntax Int ::= #hash ( Int , Int ) [function, klabel(contract_access_hash), symbol]
+    syntax Int ::= #hash ( Int , Int ) [klabel(contract_access_hash), function, symbol]
  // -----------------------------------------------------------------------------------
     rule #hash(I1, I2) => keccak(#bufStrict(32, I2) +Bytes #bufStrict(32, I1))
 
