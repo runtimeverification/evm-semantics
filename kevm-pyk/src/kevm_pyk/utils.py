@@ -20,7 +20,7 @@ from pyk.kast.outer import KSequence
 from pyk.kcfg import KCFGExplore
 from pyk.kore.rpc import KoreClient, KoreExecLogFormat, TransportType, kore_server
 from pyk.proof import APRProof, APRProver
-from pyk.proof.equality import EqualityProof, ImpliesProver
+from pyk.proof.implies import EqualityProof, ImpliesProver
 from pyk.utils import single
 
 if TYPE_CHECKING:

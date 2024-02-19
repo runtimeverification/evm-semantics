@@ -25,7 +25,7 @@ from pyk.ktool.kompile import LLVMKompileType
 from pyk.ktool.krun import KRunOutput
 from pyk.prelude.ml import is_top, mlOr
 from pyk.proof import APRProof
-from pyk.proof.equality import EqualityProof
+from pyk.proof.implies import EqualityProof
 from pyk.proof.show import APRProofShow
 from pyk.proof.tui import APRProofViewer
 from pyk.utils import FrozenDict, hash_str, single
