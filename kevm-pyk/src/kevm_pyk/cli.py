@@ -70,15 +70,9 @@ class KEVMCLIArgs(KCLIArgs):
         args.add_argument(
             '--fast-check-subsumption',
             dest='fast_check_subsumption',
-            default=True,
+            default=False,
             action='store_true',
             help='Use fast-check on k-cell to determine subsumption.',
-        )
-        args.add_argument(
-            '--no-fast-check-subsumption',
-            dest='fast_check_subsumption',
-            action='store_false',
-            help='Do not use fast-check on k-cell to determine subsumption.',
         )
         return args
 
