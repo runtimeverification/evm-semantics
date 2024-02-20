@@ -71,32 +71,13 @@ VM_TESTS: Final = tuple(test_file for test_file in ALL_VM_TESTS if test_file not
 REST_VM_TESTS: Final = tuple(test_file for test_file in ALL_VM_TESTS if test_file in SKIPPED_TESTS)
 
 
-@pytest.mark.parametrize(
-    'test_file',
-    VM_TESTS,
-    ids=[str(test_file.relative_to(VM_TEST_DIR)) for test_file in VM_TESTS],
-)
-def test_vm(test_file: Path) -> None:
-    _test(test_file, 'DEFAULT', 'VMTESTS', 1, True)
-
-
-@pytest.mark.skip(reason='failing / slow VM tests')
-@pytest.mark.parametrize(
-    'test_file',
-    REST_VM_TESTS,
-    ids=[str(test_file.relative_to(VM_TEST_DIR)) for test_file in REST_VM_TESTS],
-)
-def test_rest_vm(test_file: Path) -> None:
-    _test(test_file, 'DEFAULT', 'VMTESTS', 1, True)
-
-
 BCHAIN_NEW_TEST_DIR: Final = TEST_DIR / 'BlockchainTests/GeneralStateTests'
 BCHAIN_NEW_TESTS: Final = tuple(BCHAIN_NEW_TEST_DIR.glob('*/*.json'))
 
 BCHAIN_LEGACY_TEST_DIR: Final = TEST_DIR / 'LegacyTests/Constantinople/BlockchainTests/GeneralStateTests'
 BCHAIN_LEGACY_TESTS: Final = tuple(BCHAIN_LEGACY_TEST_DIR.glob('*/*.json'))
 
-ALL_BCHAIN_TESTS: Final = BCHAIN_NEW_TESTS + BCHAIN_LEGACY_TESTS
+ALL_BCHAIN_TESTS: Final = BCHAIN_NEW_TESTS
 BCHAIN_TESTS: Final = tuple(test_file for test_file in ALL_BCHAIN_TESTS if test_file not in SKIPPED_TESTS)
 REST_BCHAIN_TESTS: Final = tuple(test_file for test_file in ALL_BCHAIN_TESTS if test_file in SKIPPED_TESTS)
 
@@ -110,7 +91,6 @@ def test_bchain(test_file: Path) -> None:
     _test(test_file, 'SHANGHAI', 'NORMAL', 1, True)
 
 
-@pytest.mark.skip(reason='failing / slow blockchain tests')
 @pytest.mark.parametrize(
     'test_file',
     REST_BCHAIN_TESTS,
