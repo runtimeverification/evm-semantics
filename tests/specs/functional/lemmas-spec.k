@@ -617,11 +617,11 @@ module LEMMAS-SPEC
  // #asWord
  // ----------------
 
-    claim  [buf-asWord-invert]:
-      <k> runLemma( 
-            #asWord ( #buf ( 63 , lengthBytes ( VV0_data_114b9705:Bytes ) ) )
+    claim [buf-asWord-invert]:
+      <k> runLemma(
+            #asWord ( #buf ( 63 , lengthBytes ( VV0_data_114b9705:Bytes ) ) ) <=Int maxUInt64
           ) => doneLemma(
-             ( lengthBytes ( VV0_data_114b9705:Bytes ) ) 
+            true
           ) ... </k>
         requires lengthBytes ( VV0_data_114b9705:Bytes ) <=Int 1073741824
 
