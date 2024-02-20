@@ -66,8 +66,9 @@ module BYTES-SIMPLIFICATION [symbolic]
 
     rule [buf-asWord-invert-rl]:
       #asWord ( #buf ( WB:Int, X:Int ) ) => X
-      requires 0 <=Int WB andBool WB <=Int 32
-       andBool 0 <=Int X  andBool X <Int 2 ^Int (WB *Int 8)
+      requires 0 <=Int WB andBool 0 <=Int X andBool
+               ( ( WB <=Int 32 andBool X <Int 2 ^Int (WB *Int 8) ) orBool
+                 ( WB  >Int 32 andBool X <Int pow256 ) )
       [simplification, concrete(WB)]
 
     rule [buf-asWord-invert-rl-range]:
