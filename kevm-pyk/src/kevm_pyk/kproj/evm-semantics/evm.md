@@ -602,7 +602,7 @@ After executing a transaction, it's necessary to have the effect of the substate
          <refund> 0 </refund>
          <account>
            <acctID> ACCT </acctID>
-           <balance> BAL => BAL +Int GLIMIT *Int (GPRICE -Int BFEE) </balance>
+           <balance> BAL => BAL +Int GLIMIT *Int GPRICE -Int (GLIMIT -Int GAVAIL) *Int BFEE </balance>
            ...
          </account>
          <txPending> ListItem(MsgId:Int) REST => REST </txPending>
