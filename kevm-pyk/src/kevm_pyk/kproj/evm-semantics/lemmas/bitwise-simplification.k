@@ -24,9 +24,10 @@ module BITWISE-SIMPLIFICATION [symbolic]
 
     rule A &Int B => B &Int A [symbolic(A), concrete(B), simplification]
 
-    rule 0 &Int _ => 0 [simplification]
-    rule _ &Int 0 => 0 [simplification]
-    rule A &Int A => A [simplification]
+    rule 0 &Int _ => 0          [simplification]
+    rule _ &Int 0 => 0          [simplification]
+    rule A &Int A => A          [simplification]
+    rule 1 &Int A => A modInt 2 [simplification]
 
     rule chop ( ( maxUInt48 &Int X:Int ) *Int Y:Int ) => ( maxUInt48 &Int X:Int ) *Int Y
       requires 0 <=Int X andBool 0 <=Int Y andBool Y <=Int pow208 [simplification]
@@ -107,14 +108,24 @@ module BITWISE-SIMPLIFICATION [symbolic]
       lengthBytes(X) +Int 32 >Int notMaxUInt5 &Int ( lengthBytes(X) +Int 31 ) => true
       [simplification, smt-lemma]
 
+    rule [ceil32-0-32]: notMaxUInt5 &Int ( X +Int 31 ) => 32 requires 0 <Int X andBool X <Int 32 [simplification]
+
   // ###########################################################################
   // shift
   // ###########################################################################
 
     rule (X <<Int Y) <Int pow256 => true
       requires 0 <=Int X andBool 0 <=Int Y andBool Y <Int 256 andBool X <Int 2 ^Int (256 -Int Y)
-      [simplification, preserves-definedness]
+      [simplification]
 
-    rule 0 <=Int (X <<Int Y) => true requires 0 <=Int X andBool 0 <=Int Y [simplification, preserves-definedness]
+    rule 0 <=Int (X <<Int Y) => true requires 0 <=Int X andBool 0 <=Int Y                         [simplification]
+    rule          X >>Int Y  => 0    requires 0 <=Int X andBool 0 <=Int Y andBool X <Int 2 ^Int Y [simplification, concrete(Y)]
+
+    rule [shr-lt-l]:    A >>Int B  <Int C => A  <Int C <<Int B                        requires 0 <=Int A andBool 0 <=Int B andBool 0 <=Int C [simplification, concrete(B, C)]
+    rule [shr-lt-r]:    C  <Int A >>Int B => C <<Int B +Int (2 ^Int B -Int 1)  <Int A requires 0 <=Int A andBool 0 <=Int B andBool 0 <=Int C [simplification, concrete(B, C)]
+    rule [shr-le-r]:    C <=Int A >>Int B => C <<Int B +Int (2 ^Int B -Int 1) <=Int A requires 0 <=Int A andBool 0 <=Int B andBool 0 <=Int C [simplification, concrete(B, C)]
+    rule [shr-eq-zero]: A >>Int B ==Int 0 => A  <Int 2 ^Int B                         requires 0 <=Int A andBool 0 <=Int B                   [simplification, concrete(B)]
+
+    rule [shr-eq]: A >>Int B ==Int C => true requires C *Int (2 ^Int B) <=Int A andBool A <Int (C +Int 1) *Int (2 ^Int B) [simplification, comm]
 
 endmodule

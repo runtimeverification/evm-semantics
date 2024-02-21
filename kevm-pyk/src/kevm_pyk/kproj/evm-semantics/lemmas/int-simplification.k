@@ -109,6 +109,7 @@ module INT-SIMPLIFICATION-COMMON
     rule A +Int 0 => A [simplification]
 
   // 3 terms
+    rule  (A +Int  B) -Int B  => A [simplification]
     rule  (A -Int  B) +Int B  => A [simplification]
     rule   A -Int (A  -Int B) => B [simplification]
     rule   A +Int (B  -Int A) => B [simplification]
@@ -116,11 +117,13 @@ module INT-SIMPLIFICATION-COMMON
 
   // 4 terms
     // NOTE: these rules appear to be necessary for tests/specs/benchmarks/ecrecoverloop02-sig1-invalid-spec.k
-    rule  (A +Int B) +Int (C  -Int A) => B +Int C [simplification]
-    rule  (A +Int B) -Int (A  +Int C) => B -Int C [simplification]
-    rule  (A +Int B) -Int (C  +Int A) => B -Int C [simplification]
-    rule  (A +Int B) +Int (C  -Int B) => A +Int C [simplification]
-    rule ((A -Int B) -Int  C) +Int B  => A -Int C [simplification]
+    rule  (A +Int B) +Int (C -Int A) => B +Int C [simplification]
+    rule  (A +Int B) -Int (A +Int C) => B -Int C [simplification]
+    rule  (A +Int B) -Int (C +Int A) => B -Int C [simplification]
+    rule  (A +Int B) +Int (C -Int B) => A +Int C [simplification]
+    rule  (A -Int B) -Int (C -Int B) => A -Int C [simplification]
+    rule ((A -Int B) -Int C) +Int B  => A -Int C [simplification]
+    rule  A +Int ((B -Int A) +Int C) => B +Int C [simplification]
 
   // 5 terms
     // NOTE: required for `tests/specs/functional/infinite-gas-spec.k.prove` (haskell)
@@ -165,6 +168,14 @@ module INT-SIMPLIFICATION-COMMON
 
     rule A modInt B => A requires 0 <=Int A andBool A <Int B [simplification, preserves-definedness]
 
+    rule   ( A +Int A )          modInt 2 => 0          [simplification]
+    rule ( ( A +Int A ) +Int B ) modInt 2 => B modInt 2 [simplification, preserves-definedness]
+
+    rule ( A |Int B ) modInt 2 => ( A modInt 2 ) |Int ( B modInt 2 ) [simplification, preserves-definedness]
+
+    rule          _   modInt C ==Int D => false                                             requires 0 <Int C andBool (D <Int 0 orBool C <=Int D) [simplification, concrete(C, D)]
+    rule ( A +Int B ) modInt C ==Int D => A modInt C ==Int ( D -Int (B modInt C) ) modInt C requires 0 <Int C andBool 0 <=Int D andBool D <Int C  [simplification, concrete(B, C, D), preserves-definedness]
+
   // ###########################################################################
   // max, min
   // ###########################################################################
@@ -208,8 +219,16 @@ module INT-SIMPLIFICATION-COMMON
     rule notBool (A  <Int B) => B <=Int A [simplification]
     rule notBool (A <=Int B) => B  <Int A [simplification]
 
+    rule { true #Equals          A  >Int B  } => { true #Equals B  <Int A } [simplification]
+    rule { true #Equals          A >=Int B  } => { true #Equals B <=Int A } [simplification]
+    rule { true #Equals notBool (A  <Int B) } => { true #Equals B <=Int A } [simplification]
+    rule { true #Equals notBool (A <=Int B) } => { true #Equals B  <Int A } [simplification]
+
     rule 0 <=Int A +Int B => true requires 0 <=Int A andBool 0 <=Int B [simplification]
     rule 0 <=Int A *Int B => true requires 0 <=Int A andBool 0 <=Int B [simplification]
+
+    rule C <=Int A +Int B => true requires C <=Int 0 andBool 0 <=Int A andBool 0 <=Int B [simplification, concrete(C)]
+    rule C <=Int A *Int B => true requires C <=Int 0 andBool 0 <=Int A andBool 0 <=Int B [simplification, concrete(C)]
 
     rule A -Int B +Int C <=Int D => false requires D <Int A -Int B andBool 0 <=Int C [simplification]
 

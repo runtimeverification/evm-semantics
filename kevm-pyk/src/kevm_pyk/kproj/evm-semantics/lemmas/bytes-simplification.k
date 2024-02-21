@@ -88,12 +88,11 @@ module BYTES-SIMPLIFICATION [symbolic]
       requires 0 <=Int W1 andBool 0 <=Int W2
       [simplification]
 
-    rule [buf-shift]:
-      #buf(W:Int, X <<Int Y) => #buf(W -Int (Y /Int 8), X) +Bytes #buf(Y /Int 8, 0)
-      requires 0 <=Int W andBool W <=Int 32
-       andBool 0 <=Int X andBool X <Int 2 ^Int (256 -Int Y)
-       andBool 0 <=Int Y andBool ( Y <Int W *Int 8 ) andBool Y modInt 8 ==Int 0
-      [simplification, preserves-definedness]
+    rule [shift-as-asWord]:
+      X <<Int Y => #asWord ( #buf ( 32 -Int (Y /Int 8) , X ) +Bytes #buf ( Y /Int 8 , 0 ) )
+      requires 0 <=Int X andBool X <Int 2 ^Int (256 -Int Y)
+       andBool 0 <=Int Y andBool Y <=Int 256 andBool Y modInt 8 ==Int 0
+      [simplification, concrete(Y), preserves-definedness]
 
     // #range
 
@@ -271,6 +270,11 @@ module BYTES-SIMPLIFICATION [symbolic]
     rule [memUpdate-subsume]:
       B:Bytes [ S1:Int := B1:Bytes] [ S2:Int := B2:Bytes ] => B [ S2 := B2 ]
       requires 0 <=Int S2 andBool S2 <=Int S1 andBool S1 +Int lengthBytes(B1) <=Int S2 +Int lengthBytes(B2)
+      [simplification]
+
+    rule [memUpdate-concat-tail]:
+      ( B1:Bytes +Bytes B2:Bytes ) [ S:Int := B ] => B1 +Bytes ( B2 [ S -Int lengthBytes(B1) := B ] )
+      requires lengthBytes(B1) <=Int S
       [simplification]
 
     // lengthBytes

@@ -78,6 +78,11 @@ module EVM-INT-SIMPLIFICATION-COMMON
      andBool #asWord ( B ) <Int 2 ^Int ( 8 *Int W )
     [simplification, concrete(X, S, W)]
 
+  rule [asWord-modInt-2]:
+    #asWord ( _ +Bytes B ) modInt 2 => #asWord ( B ) modInt 2
+    requires 0 <Int lengthBytes(B)
+    [simplification]
+
   // ###########################################################################
   // chop
   // ###########################################################################
@@ -88,5 +93,9 @@ module EVM-INT-SIMPLIFICATION-COMMON
 
     rule [chop-sum-left]:  chop ( chop ( X:Int ) +Int Y:Int ) => chop ( X +Int Y ) [simplification]
     rule [chop-sum-right]: chop ( X:Int +Int chop ( Y:Int ) ) => chop ( X +Int Y ) [simplification]
+
+    rule [chop-sub-zero]: chop ( A:Int -Int B:Int ) ==Int 0 => A ==Int B
+      requires #rangeUInt( 256 , A ) andBool #rangeUInt( 256 , B )
+      [simplification]
 
 endmodule
