@@ -24,7 +24,7 @@ Some Ethereum commands take an Ethereum specification (eg. for an account or tra
     syntax EthereumSimulation ::= ".EthereumSimulation"
                                 | EthereumCommand EthereumSimulation
  // ----------------------------------------------------------------
-    rule <k> .EthereumSimulation                        => .          ... </k>
+    rule <k> .EthereumSimulation                        => .K         ... </k>
     rule <k> ETC                 .EthereumSimulation    => ETC        ... </k>
     rule <k> ETC                 ETS:EthereumSimulation => ETC ~> ETS ... </k> requires ETS =/=K .EthereumSimulation
 
@@ -188,11 +188,11 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
     syntax EthereumCommand ::= #loadAccessList ( JSON )
                              | #loadAccessListAux ( Account , List )
  // ----------------------------------------------------------------
-    rule <k> #loadAccessList ([ .JSONs ]) => . ... </k>
+    rule <k> #loadAccessList ([ .JSONs ]) => .K ... </k>
          <schedule> SCHED </schedule>
       requires Ghasaccesslist << SCHED >>
 
-    rule <k> #loadAccessList ([ _ ]) => . ... </k>
+    rule <k> #loadAccessList ([ _ ]) => .K ... </k>
          <schedule> SCHED </schedule>
       requires notBool Ghasaccesslist << SCHED >>
 
@@ -228,18 +228,18 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
     syntax EthereumCommand ::= "exception" | "status" StatusCode
  // ------------------------------------------------------------
     rule <statusCode> _:ExceptionalStatusCode </statusCode>
-         <k> #halt ~> exception => . ... </k>
+         <k> #halt ~> exception => .K ... </k>
 
-    rule <k> status SC => . ... </k> <statusCode> SC </statusCode>
+    rule <k> status SC => .K ... </k> <statusCode> SC </statusCode>
 
     syntax EthereumCommand ::= "failure" String | "success"
  // -------------------------------------------------------
-    rule <k> success => . ... </k>
+    rule <k> success => .K ... </k>
          <exit-code> _ => 0 </exit-code>
          <mode> _ => SUCCESS </mode>
 
-    rule <k>          failure _ => . ... </k>
-    rule <k> #halt ~> failure _ => . ... </k>
+    rule <k>          failure _ => .K ... </k>
+    rule <k> #halt ~> failure _ => .K ... </k>
 ```
 
 ### Running Tests
@@ -251,7 +251,7 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
 ```k
     syntax EthereumCommand ::= "run" JSON
  // -------------------------------------
-    rule <k> run { .JSONs } => . ... </k>
+    rule <k> run { .JSONs } => .K ... </k>
     rule <k> run { TESTID : { TEST:JSONs } , TESTS }
           => run ( TESTID : { qsortJSONs(TEST) } )
           ~> #if #hasPost?( { TEST } ) #then .K #else exception #fi
@@ -371,8 +371,8 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
  // ---------------------------------------
     rule <k> #halt ~> check J:JSON => check J ~> #halt ... </k>
 
-    rule <k> check DATA : { .JSONs } => . ... </k> requires DATA =/=String "transactions"
-    rule <k> check DATA : [ .JSONs ] => . ... </k> requires DATA =/=String "ommerHeaders"
+    rule <k> check DATA : { .JSONs } => .K ... </k> requires DATA =/=String "transactions"
+    rule <k> check DATA : [ .JSONs ] => .K ... </k> requires DATA =/=String "ommerHeaders"
 
     rule <k> check DATA : { (KEY:String) : VALUE , REST } => check DATA : { KEY : VALUE } ~> check DATA : { REST } ... </k>
       requires REST =/=K .JSONs andBool notBool DATA in (SetItem("callcreates") SetItem("transactions"))
@@ -396,7 +396,7 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
     rule <k> check "account" : { (_ACCT:Int) : { "storage" : ({ STORAGE:JSONs } => #parseMap({ STORAGE })) } } ... </k>
 
     rule <mode> EXECMODE </mode>
-         <k> check "account" : { ACCT : { "balance" : (BAL:Int) } } => . ... </k>
+         <k> check "account" : { ACCT : { "balance" : (BAL:Int) } } => .K ... </k>
          <account>
            <acctID> ACCT </acctID>
            <balance> BAL </balance>
@@ -405,16 +405,16 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
       requires EXECMODE =/=K VMTESTS
 
     rule <mode> VMTESTS </mode>
-         <k> check "account" : { _ACCT : { "balance" : (_:Int) } } => . ... </k>
+         <k> check "account" : { _ACCT : { "balance" : (_:Int) } } => .K ... </k>
 
-    rule <k> check "account" : {  ACCT : { "nonce" : (NONCE:Int) } } => . ... </k>
+    rule <k> check "account" : {  ACCT : { "nonce" : (NONCE:Int) } } => .K ... </k>
          <account>
            <acctID> ACCT </acctID>
            <nonce> NONCE </nonce>
            ...
          </account>
 
-    rule <k> check "account" : { ACCT : { "storage" : (STORAGE:Map) } } => . ... </k>
+    rule <k> check "account" : { ACCT : { "storage" : (STORAGE:Map) } } => .K ... </k>
          <account>
            <acctID> ACCT </acctID>
            <storage> ACCTSTORAGE </storage>
@@ -422,7 +422,7 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
          </account>
       requires #removeZeros(ACCTSTORAGE) ==K STORAGE
 
-    rule <k> check "account" : { ACCT : { "code" : (CODE:Bytes) } } => . ... </k>
+    rule <k> check "account" : { ACCT : { "code" : (CODE:Bytes) } } => .K ... </k>
          <account>
            <acctID> ACCT </acctID>
            <code> CODE </code>
@@ -448,16 +448,16 @@ Here we check the other post-conditions associated with an EVM test.
     rule <k> check TESTID : { "out" : OUT } => check "out" : OUT ~> failure TESTID ... </k>
  // ---------------------------------------------------------------------------------------
     rule <k> check "out" : ((OUT:String) => #parseByteStack(OUT)) ... </k>
-    rule <k> check "out" : OUT => . ... </k> <output> OUT </output>
+    rule <k> check "out" : OUT => .K ... </k> <output> OUT </output>
 
     rule <k> check TESTID : { "logs" : LOGS } => check "logs" : LOGS ~> failure TESTID ... </k>
  // -------------------------------------------------------------------------------------------
-    rule <k> check "logs" : HASH:String => . ... </k> <log> SL </log> requires #parseHexBytes(Keccak256(#rlpEncodeLogs(SL))) ==K #parseByteStack(HASH)
+    rule <k> check "logs" : HASH:String => .K ... </k> <log> SL </log> requires #parseHexBytes(Keccak256(#rlpEncodeLogs(SL))) ==K #parseByteStack(HASH)
 
     rule <k> check TESTID : { "gas" : GLEFT } => check "gas" : GLEFT ~> failure TESTID ... </k>
  // -------------------------------------------------------------------------------------------
     rule <k> check "gas" : ((GLEFT:String) => #parseWord(GLEFT)) ... </k>
-    rule <k> check "gas" : GLEFT => . ... </k> <gas> GLEFT </gas>
+    rule <k> check "gas" : GLEFT => .K ... </k> <gas> GLEFT </gas>
 
     rule check TESTID : { "blockHeader" : BLOCKHEADER } => check "blockHeader" : BLOCKHEADER ~> failure TESTID
  // ----------------------------------------------------------------------------------------------------------
@@ -473,25 +473,25 @@ Here we check the other post-conditions associated with an EVM test.
                         SetItem("transactionsTrie") SetItem("uncleHash") SetItem("baseFeePerGas") SetItem("withdrawalsRoot")
                       )
 
-    rule <k> check "blockHeader" : { "bloom"            : VALUE } => . ... </k> <logsBloom>        VALUE </logsBloom>
-    rule <k> check "blockHeader" : { "coinbase"         : VALUE } => . ... </k> <coinbase>         VALUE </coinbase>
-    rule <k> check "blockHeader" : { "difficulty"       : VALUE } => . ... </k> <difficulty>       VALUE </difficulty>
-    rule <k> check "blockHeader" : { "extraData"        : VALUE } => . ... </k> <extraData>        VALUE </extraData>
-    rule <k> check "blockHeader" : { "gasLimit"         : VALUE } => . ... </k> <gasLimit>         VALUE </gasLimit>
-    rule <k> check "blockHeader" : { "gasUsed"          : VALUE } => . ... </k> <gasUsed>          VALUE </gasUsed>
-    rule <k> check "blockHeader" : { "mixHash"          : VALUE } => . ... </k> <mixHash>          VALUE </mixHash>
-    rule <k> check "blockHeader" : { "nonce"            : VALUE } => . ... </k> <blockNonce>       VALUE </blockNonce>
-    rule <k> check "blockHeader" : { "number"           : VALUE } => . ... </k> <number>           VALUE </number>
-    rule <k> check "blockHeader" : { "parentHash"       : VALUE } => . ... </k> <previousHash>     VALUE </previousHash>
-    rule <k> check "blockHeader" : { "receiptTrie"      : VALUE } => . ... </k> <receiptsRoot>     VALUE </receiptsRoot>
-    rule <k> check "blockHeader" : { "stateRoot"        : VALUE } => . ... </k> <stateRoot>        VALUE </stateRoot>
-    rule <k> check "blockHeader" : { "timestamp"        : VALUE } => . ... </k> <timestamp>        VALUE </timestamp>
-    rule <k> check "blockHeader" : { "transactionsTrie" : VALUE } => . ... </k> <transactionsRoot> VALUE </transactionsRoot>
-    rule <k> check "blockHeader" : { "uncleHash"        : VALUE } => . ... </k> <ommersHash>       VALUE </ommersHash>
-    rule <k> check "blockHeader" : { "baseFeePerGas"    : VALUE } => . ... </k> <baseFee>          VALUE </baseFee>
-    rule <k> check "blockHeader" : { "withdrawalsRoot"  : VALUE } => . ... </k> <withdrawalsRoot>  VALUE </withdrawalsRoot>
+    rule <k> check "blockHeader" : { "bloom"            : VALUE } => .K ... </k> <logsBloom>        VALUE </logsBloom>
+    rule <k> check "blockHeader" : { "coinbase"         : VALUE } => .K ... </k> <coinbase>         VALUE </coinbase>
+    rule <k> check "blockHeader" : { "difficulty"       : VALUE } => .K ... </k> <difficulty>       VALUE </difficulty>
+    rule <k> check "blockHeader" : { "extraData"        : VALUE } => .K ... </k> <extraData>        VALUE </extraData>
+    rule <k> check "blockHeader" : { "gasLimit"         : VALUE } => .K ... </k> <gasLimit>         VALUE </gasLimit>
+    rule <k> check "blockHeader" : { "gasUsed"          : VALUE } => .K ... </k> <gasUsed>          VALUE </gasUsed>
+    rule <k> check "blockHeader" : { "mixHash"          : VALUE } => .K ... </k> <mixHash>          VALUE </mixHash>
+    rule <k> check "blockHeader" : { "nonce"            : VALUE } => .K ... </k> <blockNonce>       VALUE </blockNonce>
+    rule <k> check "blockHeader" : { "number"           : VALUE } => .K ... </k> <number>           VALUE </number>
+    rule <k> check "blockHeader" : { "parentHash"       : VALUE } => .K ... </k> <previousHash>     VALUE </previousHash>
+    rule <k> check "blockHeader" : { "receiptTrie"      : VALUE } => .K ... </k> <receiptsRoot>     VALUE </receiptsRoot>
+    rule <k> check "blockHeader" : { "stateRoot"        : VALUE } => .K ... </k> <stateRoot>        VALUE </stateRoot>
+    rule <k> check "blockHeader" : { "timestamp"        : VALUE } => .K ... </k> <timestamp>        VALUE </timestamp>
+    rule <k> check "blockHeader" : { "transactionsTrie" : VALUE } => .K ... </k> <transactionsRoot> VALUE </transactionsRoot>
+    rule <k> check "blockHeader" : { "uncleHash"        : VALUE } => .K ... </k> <ommersHash>       VALUE </ommersHash>
+    rule <k> check "blockHeader" : { "baseFeePerGas"    : VALUE } => .K ... </k> <baseFee>          VALUE </baseFee>
+    rule <k> check "blockHeader" : { "withdrawalsRoot"  : VALUE } => .K ... </k> <withdrawalsRoot>  VALUE </withdrawalsRoot>
 
-    rule <k> check "blockHeader" : { "hash": HASH:Bytes } => . ...</k>
+    rule <k> check "blockHeader" : { "hash": HASH:Bytes } => .K ...</k>
          <previousHash>     HP </previousHash>
          <ommersHash>       HO </ommersHash>
          <coinbase>         HC </coinbase>
@@ -521,13 +521,13 @@ Here we check the other post-conditions associated with an EVM test.
     rule <k> check "genesisBlockHeader" : { KEY : _ } => .K ... </k> requires KEY =/=String "hash"
 
     rule <k> check "genesisBlockHeader" : { "hash": (HASH:String => #asWord(#parseByteStack(HASH))) } ... </k>
-    rule <k> check "genesisBlockHeader" : { "hash": HASH } => . ... </k>
+    rule <k> check "genesisBlockHeader" : { "hash": HASH } => .K ... </k>
          <blockhashes> ... ListItem(HASH) ListItem(_) </blockhashes>
 
     rule <k> check TESTID : { "transactions" : TRANSACTIONS } => check "transactions" : TRANSACTIONS ~> failure TESTID ... </k>
  // ---------------------------------------------------------------------------------------------------------------------------
-    rule <k> check "transactions" : [ .JSONs ] => . ... </k> <txOrder> .List                    </txOrder>
-    rule <k> check "transactions" : { .JSONs } => . ... </k> <txOrder> ListItem(_) => .List ... </txOrder>
+    rule <k> check "transactions" : [ .JSONs ] => .K ... </k> <txOrder> .List                    </txOrder>
+    rule <k> check "transactions" : { .JSONs } => .K ... </k> <txOrder> ListItem(_) => .List ... </txOrder>
 
     rule <k> check "transactions" : [ TRANSACTION , REST ] => check "transactions" : TRANSACTION   ~> check "transactions" : [ REST ] ... </k>
     rule <k> check "transactions" : { KEY : VALUE , REST } => check "transactions" : (KEY : VALUE) ~> check "transactions" : { REST } ... </k>
@@ -543,24 +543,24 @@ Here we check the other post-conditions associated with an EVM test.
     rule <k> check "transactions" : "accessList" : { "address" : V1 , "storageKeys": V2 , .JSONs } => check "transactions" : "accessList" : "address" : #parseHexWord(V1) : "storageKeys" : V2  ... </k>
     rule <k> check "transactions" : "accessList" : "address" : ADDR : "storageKeys" : [ KEY , REST ] => check "transactions" : "accessList" : "address" : ADDR : "storageKeys" : #parseHexWord(KEY) ~> check "transactions" : "accessList" : "address" : ADDR : "storageKeys" : [ REST ] ... </k>
 
-    rule <k> check "transactions" : "accessList" : "address" : _    : "storageKeys" : [ .JSONs ] => . ... </k>
-    rule <k> check "transactions" : "accessList" : [ .JSONs ] => . ... </k>
+    rule <k> check "transactions" : "accessList" : "address" : _    : "storageKeys" : [ .JSONs ] => .K ... </k>
+    rule <k> check "transactions" : "accessList" : [ .JSONs ] => .K ... </k>
 
-    rule <k> check "transactions" : "accessList" : "address" : ADDR : "storageKeys" : KEY        => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txAccess> TA </txAccess> ... </message> requires isInAccessList(ADDR, KEY, TA)
-    rule <k> check "transactions" : ("data"                 : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <data>          VALUE </data>           ... </message>
-    rule <k> check "transactions" : ("gasLimit"             : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txGasLimit>    VALUE </txGasLimit>     ... </message>
-    rule <k> check "transactions" : ("gasPrice"             : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txGasPrice>    VALUE </txGasPrice>     ... </message>
-    rule <k> check "transactions" : ("nonce"                : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txNonce>       VALUE </txNonce>        ... </message>
-    rule <k> check "transactions" : ("r"                    : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <sigR>          VALUE </sigR>           ... </message>
-    rule <k> check "transactions" : ("s"                    : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <sigS>          VALUE </sigS>           ... </message>
-    rule <k> check "transactions" : ("to"                   : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <to>            VALUE </to>             ... </message>
-    rule <k> check "transactions" : ("v"                    : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <sigV>          VALUE </sigV>           ... </message>
-    rule <k> check "transactions" : ("value"                : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <value>         VALUE </value>          ... </message>
-    rule <k> check "transactions" : ("chainId"              : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txChainID>     VALUE </txChainID>      ... </message>
-    rule <k> check "transactions" : ("type"                 : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txType>        VALUE </txType>         ... </message>
-    rule <k> check "transactions" : ("maxFeePerGas"         : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txMaxFee>      VALUE </txMaxFee>       ... </message>
-    rule <k> check "transactions" : ("maxPriorityFeePerGas" : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txPriorityFee> VALUE </txPriorityFee>  ... </message>
-    rule <k> check "transactions" : ("sender"               : VALUE) => . ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <sigV> TW </sigV> <sigR> TR </sigR> <sigS> TS </sigS> ... </message> requires #sender( #getTxData(TXID), TW, TR, TS ) ==K VALUE
+    rule <k> check "transactions" : "accessList" : "address" : ADDR : "storageKeys" : KEY        => .K ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txAccess> TA </txAccess> ... </message> requires isInAccessList(ADDR, KEY, TA)
+    rule <k> check "transactions" : ("data"                 : VALUE) => .K ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <data>          VALUE </data>           ... </message>
+    rule <k> check "transactions" : ("gasLimit"             : VALUE) => .K ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txGasLimit>    VALUE </txGasLimit>     ... </message>
+    rule <k> check "transactions" : ("gasPrice"             : VALUE) => .K ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txGasPrice>    VALUE </txGasPrice>     ... </message>
+    rule <k> check "transactions" : ("nonce"                : VALUE) => .K ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txNonce>       VALUE </txNonce>        ... </message>
+    rule <k> check "transactions" : ("r"                    : VALUE) => .K ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <sigR>          VALUE </sigR>           ... </message>
+    rule <k> check "transactions" : ("s"                    : VALUE) => .K ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <sigS>          VALUE </sigS>           ... </message>
+    rule <k> check "transactions" : ("to"                   : VALUE) => .K ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <to>            VALUE </to>             ... </message>
+    rule <k> check "transactions" : ("v"                    : VALUE) => .K ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <sigV>          VALUE </sigV>           ... </message>
+    rule <k> check "transactions" : ("value"                : VALUE) => .K ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <value>         VALUE </value>          ... </message>
+    rule <k> check "transactions" : ("chainId"              : VALUE) => .K ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txChainID>     VALUE </txChainID>      ... </message>
+    rule <k> check "transactions" : ("type"                 : VALUE) => .K ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txType>        VALUE </txType>         ... </message>
+    rule <k> check "transactions" : ("maxFeePerGas"         : VALUE) => .K ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txMaxFee>      VALUE </txMaxFee>       ... </message>
+    rule <k> check "transactions" : ("maxPriorityFeePerGas" : VALUE) => .K ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txPriorityFee> VALUE </txPriorityFee>  ... </message>
+    rule <k> check "transactions" : ("sender"               : VALUE) => .K ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <sigV> TW </sigV> <sigR> TR </sigR> <sigS> TS </sigS> ... </message> requires #sender( #getTxData(TXID), TW, TR, TS ) ==K VALUE
 
     syntax Bool ::= isInAccessListStorage ( Int , JSON )    [function]
                   | isInAccessList ( Account , Int , JSON ) [function]
@@ -581,7 +581,7 @@ TODO: case with nonzero ommers.
 ```k
     rule <k> check TESTID : { "uncleHeaders" : OMMERS } => check "ommerHeaders" : OMMERS ~> failure TESTID ... </k>
  // ---------------------------------------------------------------------------------------------------------------
-    rule <k> check "ommerHeaders" : [ .JSONs ] => . ... </k> <ommerBlockHeaders> [ .JSONs ] </ommerBlockHeaders>
+    rule <k> check "ommerHeaders" : [ .JSONs ] => .K ... </k> <ommerBlockHeaders> [ .JSONs ] </ommerBlockHeaders>
 ```
 
 ```k
