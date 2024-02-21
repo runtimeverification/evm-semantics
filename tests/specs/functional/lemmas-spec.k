@@ -73,7 +73,6 @@ module LEMMAS-SPEC
                                   => doneLemma(368263281805664599098893944405654396525700029268) ... </k>
                                requires #lookup(ACCT_STORAGE, 8) <Int pow160
 
-
     claim [cancellation-01]:
       <k> runLemma (
             ( ( ( ( ( X +Int X ) -Int Y ) -Int ( X -Int Y ) ) -Int Y ) -Int ( X -Int Y ) )
@@ -88,41 +87,14 @@ module LEMMAS-SPEC
             0
           ) ... </k>
 
-    claim [modInt-01]:
+    claim [asWord-shift]:
       <k> runLemma (
-            1 &Int ( ( lengthBytes ( B:Bytes ) +Int lengthBytes ( B:Bytes ) ) +Int 1 ) ==Int 0
-          ) => doneLemma (
-            false
-          ) ... </k>
-
-    claim [complex-arith-01]:
-      <k> runLemma (
-            chop (
-              ( ( ( lengthBytes ( B:Bytes ) +Int lengthBytes ( B:Bytes ) ) +Int 1 ) modInt 2 )
-                -Int
-              bool2Word ( ( ( lengthBytes ( B:Bytes ) +Int lengthBytes ( B:Bytes ) ) +Int 1 ) >>Int 1 <Int 32 )
-            ) ==Int 0
-          ) => doneLemma (
-            false
-          ) ... </k>
-          requires notBool ( lengthBytes ( B:Bytes ) <=Int 32 )
-           andBool           lengthBytes ( B:Bytes ) <=Int 48
-
-    claim [complex-arith-02]:
-      <k> runLemma (
-            chop ( ( 0 -Int bool2Word ( ( maxSInt8 &Int ( ( lengthBytes ( B:Bytes ) +Int lengthBytes ( B:Bytes ) ) |Int #asWord ( B:Bytes +Bytes #range ( #buf ( ( ( notMaxUInt5 &Int ( lengthBytes ( B:Bytes ) +Int maxUInt5 ) ) -Int lengthBytes ( B:Bytes ) ) , 0 ) +Bytes #buf ( 32 , _W:Int ) +Bytes b"Lc\xe5b\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01" +Bytes #buf ( ( ( lengthBytes ( B:Bytes ) +Int ( ( ( notMaxUInt5 &Int ( lengthBytes ( B:Bytes ) +Int maxUInt5 ) ) -Int lengthBytes ( B:Bytes ) ) +Int ( notMaxUInt5 &Int ( lengthBytes ( B:Bytes ) +Int maxUInt5 ) ) ) ) -Int ( ( notMaxUInt5 &Int ( lengthBytes ( B:Bytes ) +Int maxUInt5 ) ) +Int ( notMaxUInt5 &Int ( lengthBytes ( B:Bytes ) +Int maxUInt5 ) ) ) ) , 0 ) , 0 , ( maxUInt5 -Int lengthBytes ( B:Bytes ) ) ) +Bytes b"\x00" ) ) >>Int 1 ) <Int 32 ) ) ) ==Int 0
-          ) => doneLemma (
-            false
-          ) ... </k>
-
-    claim [complex-arith-03]:
-      <k> runLemma (
-            chop ( lengthBytes ( B:Bytes ) -Int #asWord ( #range ( ( b"\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x1d\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00" +Bytes #buf ( 32 , chop ( ( ( ( ( notMaxUInt5 &Int ( lengthBytes ( B:Bytes ) +Int maxUInt5 ) ) +Int ( notMaxUInt5 &Int ( lengthBytes ( B:Bytes ) +Int maxUInt5 ) ) ) +Int ( ( chop ( ( ( ( lengthBytes ( B:Bytes ) +Int lengthBytes ( B:Bytes ) ) +Int 1 ) >>Int 1 +Int maxUInt5 ) ) /Int 32 ) *Int 32 ) ) +Int 320 ) ) ) +Bytes #buf ( 64 , lengthBytes ( B:Bytes ) ) +Bytes b"\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00 " +Bytes #buf ( 32 , lengthBytes ( B:Bytes ) ) +Bytes B:Bytes +Bytes #buf ( ( ( notMaxUInt5 &Int ( lengthBytes ( B:Bytes ) +Int maxUInt5 ) ) -Int lengthBytes ( B:Bytes ) ) , 0 ) +Bytes #buf ( 32 , lengthBytes ( B:Bytes ) ) +Bytes B:Bytes +Bytes #buf ( ( ( notMaxUInt5 &Int ( lengthBytes ( B:Bytes ) +Int maxUInt5 ) ) -Int lengthBytes ( B:Bytes ) ) , 0 ) +Bytes #buf ( 32 , _W:Int ) +Bytes b"Lc\\xe5b\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x01" ) [ ( ( ( notMaxUInt5 &Int ( lengthBytes ( B:Bytes ) +Int maxUInt5 ) ) +Int ( notMaxUInt5 &Int ( lengthBytes ( B:Bytes ) +Int maxUInt5 ) ) ) +Int 288 ) := #padToWidth ( 32 , #asByteStack ( ( ( lengthBytes ( B:Bytes ) +Int lengthBytes ( B:Bytes ) ) +Int 1 ) >>Int 1 ) ) ] , ( ( ( notMaxUInt5 &Int ( lengthBytes ( B:Bytes ) +Int maxUInt5 ) ) +Int ( notMaxUInt5 &Int ( lengthBytes ( B:Bytes ) +Int maxUInt5 ) ) ) +Int 288 ) , 32 ) ) ) ==Int 0
+            #asWord ( #range ( B:Bytes , ( ( W:Int +Int ( notMaxUInt5 &Int ( lengthBytes ( B:Bytes ) +Int maxUInt5 ) ) ) -Int ( notMaxUInt5 &Int ( lengthBytes ( B:Bytes ) +Int maxUInt5 ) ) ) , 1 ) +Bytes b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" ) ==Int #asWord ( #range ( B:Bytes , ( ( W:Int +Int ( notMaxUInt5 &Int ( lengthBytes ( B:Bytes ) +Int maxUInt5 ) ) ) -Int ( notMaxUInt5 &Int ( lengthBytes ( B:Bytes ) +Int maxUInt5 ) ) ) , 1 ) ) <<Int 248
           ) => doneLemma (
             true
           ) ... </k>
-          requires 0 =/=Int lengthBytes ( B:Bytes )
-           andBool lengthBytes ( B:Bytes ) <Int 32
+          requires 0 <=Int W
+
 
  // Comparisons
  // -----------

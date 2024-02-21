@@ -182,13 +182,13 @@ module BYTES-SIMPLIFICATION [symbolic]
     rule [range-buf-zero-concat]:
       B:Bytes +Bytes #buf(W:Int, X:Int) => #buf(lengthBytes(B) +Int W, X)
       requires 0 <=Int W andBool 0 <=Int X andBool X <Int 2 ^Int (W *Int 8)
-       andBool #asInteger(B) ==Int 0
+       andBool #asInteger(B) ==Int 0 andBool lengthBytes(B) +Int W <=Int 32
       [concrete(B, W), simplification]
 
     rule [range-buf-zero-concat-extend]:
       B1:Bytes +Bytes #buf(W:Int, X:Int) +Bytes B2 => #buf(lengthBytes(B1) +Int W, X) +Bytes B2
       requires 0 <=Int W andBool 0 <=Int X andBool X <Int 2 ^Int (W *Int 8)
-       andBool #asInteger(B1) ==Int 0
+       andBool #asInteger(B1) ==Int 0 andBool lengthBytes(B1) +Int W <=Int 32
       [concrete(B1, W), simplification]
 
     rule [range-memUpdate-before]:
@@ -270,11 +270,6 @@ module BYTES-SIMPLIFICATION [symbolic]
     rule [memUpdate-subsume]:
       B:Bytes [ S1:Int := B1:Bytes] [ S2:Int := B2:Bytes ] => B [ S2 := B2 ]
       requires 0 <=Int S2 andBool S2 <=Int S1 andBool S1 +Int lengthBytes(B1) <=Int S2 +Int lengthBytes(B2)
-      [simplification]
-
-    rule [memUpdate-concat-tail]:
-      ( B1:Bytes +Bytes B2:Bytes ) [ S:Int := B ] => B1 +Bytes ( B2 [ S -Int lengthBytes(B1) := B ] )
-      requires lengthBytes(B1) <=Int S
       [simplification]
 
     // lengthBytes
