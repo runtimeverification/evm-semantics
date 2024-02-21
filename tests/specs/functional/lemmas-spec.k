@@ -87,13 +87,13 @@ module LEMMAS-SPEC
             0
           ) ... </k>
 
-    claim [asWord-shift]:
+    claim [buf-shift]:
       <k> runLemma (
-            #asWord ( #range ( B:Bytes , ( ( W:Int +Int ( notMaxUInt5 &Int ( lengthBytes ( B:Bytes ) +Int maxUInt5 ) ) ) -Int ( notMaxUInt5 &Int ( lengthBytes ( B:Bytes ) +Int maxUInt5 ) ) ) , 1 ) +Bytes b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" ) ==Int #asWord ( #range ( B:Bytes , ( ( W:Int +Int ( notMaxUInt5 &Int ( lengthBytes ( B:Bytes ) +Int maxUInt5 ) ) ) -Int ( notMaxUInt5 &Int ( lengthBytes ( B:Bytes ) +Int maxUInt5 ) ) ) , 1 ) ) <<Int 248
+            #buf ( 20, X <<Int 16 )
           ) => doneLemma (
-            true
+            #buf ( 18 , X:Int ) +Bytes b"\x00\x00"
           ) ... </k>
-          requires 0 <=Int W
+          requires 0 <=Int X andBool X <Int 2 ^Int 144
 
 
  // Comparisons
