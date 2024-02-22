@@ -65,6 +65,11 @@ module EVM-INT-SIMPLIFICATION-COMMON
     requires 2 ^Int ( lengthBytes(BA) *Int 8) <=Int X
     [concrete(X), simplification]
 
+  rule [asWord-lt-concat]:
+    #asWord ( BA1 +Bytes BA2 ) <Int X => #asWord ( BA1 ) <Int ( X -Int #asWord ( BA2 ) ) /Int ( 2 ^Int ( 8 *Int lengthBytes ( BA2 ) ) )
+    requires ( X -Int #asWord ( BA2 ) ) modInt ( 2 ^Int ( 8 *Int lengthBytes ( BA2 ) ) ) ==Int 0
+    [concrete(BA2, X), simplification]
+
   rule [asWord-lt-range]:
     #asWord ( #range ( _:Bytes, S, W ) ) <Int X => true
     requires 0 <=Int S andBool 0 <=Int W

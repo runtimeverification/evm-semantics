@@ -59,9 +59,15 @@ module BYTES-SIMPLIFICATION [symbolic]
       requires lengthBytes(B) <=Int 32
        andBool #rangeUInt(256, X) [simplification, concrete(B), comm]
 
-    rule [buf-asWord-invert-lr]:
+    rule [buf-asWord-invert-lr-len-leq]:
       #buf (W:Int , #asWord(B:Bytes)) => #buf(W -Int lengthBytes(B), 0) +Bytes B
       requires lengthBytes(B) <=Int W andBool W <=Int 32
+      [simplification]
+
+    rule [buf-asWord-invert-lr-len-gt]:
+      #buf (W:Int , #asWord(B:Bytes)) => #range(B, lengthBytes(B) -Int W, W)
+      requires W <Int lengthBytes(B) andBool lengthBytes(B) <=Int 32
+       andBool #asWord(B) <Int 2 ^Int (8 *Int W)
       [simplification]
 
     rule [buf-asWord-invert-rl]:
@@ -88,12 +94,11 @@ module BYTES-SIMPLIFICATION [symbolic]
       requires 0 <=Int W1 andBool 0 <=Int W2
       [simplification]
 
-    rule [buf-shift]:
-      #buf(W:Int, X <<Int Y) => #buf(W -Int (Y /Int 8), X) +Bytes #buf(Y /Int 8, 0)
-      requires 0 <=Int W andBool W <=Int 32
-       andBool 0 <=Int X andBool X <Int 2 ^Int (256 -Int Y)
-       andBool 0 <=Int Y andBool ( Y <Int W *Int 8 ) andBool Y modInt 8 ==Int 0
-      [simplification, preserves-definedness]
+    rule [shift-as-asWord]:
+      X <<Int Y => #asWord ( #buf ( 32 -Int (Y /Int 8) , X ) +Bytes #buf ( Y /Int 8 , 0 ) )
+      requires 0 <=Int X andBool X <Int 2 ^Int (256 -Int Y)
+       andBool 0 <=Int Y andBool Y <=Int 256 andBool Y modInt 8 ==Int 0
+      [simplification, concrete(Y), preserves-definedness]
 
     // #range
 
@@ -183,13 +188,13 @@ module BYTES-SIMPLIFICATION [symbolic]
     rule [range-buf-zero-concat]:
       B:Bytes +Bytes #buf(W:Int, X:Int) => #buf(lengthBytes(B) +Int W, X)
       requires 0 <=Int W andBool 0 <=Int X andBool X <Int 2 ^Int (W *Int 8)
-       andBool #asInteger(B) ==Int 0
+       andBool #asInteger(B) ==Int 0 andBool lengthBytes(B) +Int W <=Int 32
       [concrete(B, W), simplification]
 
     rule [range-buf-zero-concat-extend]:
       B1:Bytes +Bytes #buf(W:Int, X:Int) +Bytes B2 => #buf(lengthBytes(B1) +Int W, X) +Bytes B2
       requires 0 <=Int W andBool 0 <=Int X andBool X <Int 2 ^Int (W *Int 8)
-       andBool #asInteger(B1) ==Int 0
+       andBool #asInteger(B1) ==Int 0 andBool lengthBytes(B1) +Int W <=Int 32
       [concrete(B1, W), simplification]
 
     rule [range-memUpdate-before]:
