@@ -62,13 +62,13 @@ module BYTES-SIMPLIFICATION [symbolic]
     rule [buf-asWord-invert-lr-len-leq]:
       #buf (W:Int , #asWord(B:Bytes)) => #buf(W -Int lengthBytes(B), 0) +Bytes B
       requires lengthBytes(B) <=Int W andBool W <=Int 32
-      [simplification]
+      [simplification, concrete(W)]
 
     rule [buf-asWord-invert-lr-len-gt]:
       #buf (W:Int , #asWord(B:Bytes)) => #range(B, lengthBytes(B) -Int W, W)
-      requires W <Int lengthBytes(B) andBool lengthBytes(B) <=Int 32
+      requires 0 <=Int W andBool W <Int lengthBytes(B) andBool lengthBytes(B) <=Int 32
        andBool #asWord(B) <Int 2 ^Int (8 *Int W)
-      [simplification]
+      [simplification, concrete(W)]
 
     rule [buf-asWord-invert-rl]:
       #asWord ( #buf ( WB:Int, X:Int ) ) => X
