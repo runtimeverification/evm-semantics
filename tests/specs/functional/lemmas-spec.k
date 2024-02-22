@@ -73,6 +73,29 @@ module LEMMAS-SPEC
                                   => doneLemma(368263281805664599098893944405654396525700029268) ... </k>
                                requires #lookup(ACCT_STORAGE, 8) <Int pow160
 
+    claim [cancellation-01]:
+      <k> runLemma (
+            ( ( ( ( ( X +Int X ) -Int Y ) -Int ( X -Int Y ) ) -Int Y ) -Int ( X -Int Y ) )
+          ) => doneLemma (
+            0
+          ) ... </k>
+
+    claim [cancellation-02]:
+      <k> runLemma (
+            ( ( A +Int ( ( B -Int A ) +Int B ) ) -Int ( B +Int B ) )
+          ) => doneLemma (
+            0
+          ) ... </k>
+
+    claim [buf-shift]:
+      <k> runLemma (
+            #buf ( 20, X <<Int 16 )
+          ) => doneLemma (
+            #buf ( 18 , X:Int ) +Bytes b"\x00\x00"
+          ) ... </k>
+          requires 0 <=Int X andBool X <Int 2 ^Int 144
+
+
  // Comparisons
  // -----------
 
