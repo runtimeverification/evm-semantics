@@ -1524,7 +1524,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
                         | "#mkCreate" Int Int Int Bytes
                         | "#incrementNonce" Int
                         | "#checkCreate" Int Int
- // -------------------------------------------
+ // --------------------------------------------
     rule <k> #create ACCTFROM ACCTTO VALUE INITCODE
           => #incrementNonce ACCTFROM
           ~> #pushCallStack ~> #pushWorldState
