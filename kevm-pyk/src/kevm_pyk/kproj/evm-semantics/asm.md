@@ -26,9 +26,9 @@ Operator `#revOps` can be used to reverse a program.
     syntax OpCodes ::= ".OpCodes" | OpCode ";" OpCodes
  // --------------------------------------------------
 
-    syntax OpCodes ::= #revOps    ( OpCodes )           [function]
-                     | #revOpsAux ( OpCodes , OpCodes ) [function]
- // --------------------------------------------------------------
+    syntax OpCodes ::= #revOps    ( OpCodes )           [klabel(#revOps), function]
+                     | #revOpsAux ( OpCodes , OpCodes ) [klabel(#revOpsAux), function]
+ // ----------------------------------------------------------------------------------
     rule #revOps(OPS) => #revOpsAux(OPS, .OpCodes)
 
     rule #revOpsAux( .OpCodes , OPS' ) => OPS'
@@ -36,8 +36,8 @@ Operator `#revOps` can be used to reverse a program.
 ```
 
 ```k
-    syntax Bytes ::= #asmOpCodes ( OpCodes ) [function]
- // ---------------------------------------------------
+    syntax Bytes ::= #asmOpCodes ( OpCodes ) [klabel(#asmOpCodes), function]
+ // ------------------------------------------------------------------------
 ```
 
 ```k
@@ -51,8 +51,8 @@ Operator `#revOps` can be used to reverse a program.
 ```
 
 ```k
-    syntax Int ::= #asmOpCode ( OpCode ) [function]
- // -----------------------------------------------
+    syntax Int ::= #asmOpCode ( OpCode ) [klabel(#asmOpCode), function]
+ // -------------------------------------------------------------------
     rule #asmOpCode( STOP           ) =>   0
     rule #asmOpCode( ADD            ) =>   1
     rule #asmOpCode( MUL            ) =>   2

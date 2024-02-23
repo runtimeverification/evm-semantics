@@ -166,8 +166,8 @@ The `"network"` key allows setting the fee schedule inside the test.
     rule <k> load "network" : SCHEDSTRING => .K ... </k>
          <schedule> _ => #asScheduleString(SCHEDSTRING) </schedule>
 
-    syntax Schedule ::= #asScheduleString ( String ) [function]
- // -----------------------------------------------------------
+    syntax Schedule ::= #asScheduleString ( String ) [klabel(#asScheduleString), function]
+ // --------------------------------------------------------------------------------------
     rule #asScheduleString("Frontier")          => FRONTIER
     rule #asScheduleString("Homestead")         => HOMESTEAD
     rule #asScheduleString("EIP150")            => TANGERINE_WHISTLE
@@ -346,8 +346,8 @@ The `"rlp"` key loads the block information.
 - `#effectiveGasPrice` will compute the gas price for TXID, as specified by EIP-1559
 
 ```k
-    syntax TxData ::= #getTxData( Int ) [function]
- // ----------------------------------------------
+    syntax TxData ::= #getTxData( Int ) [klabel(#getTxData), function]
+ // ------------------------------------------------------------------
     rule [[ #getTxData( TXID ) => LegacyTxData(TN, TP, TG, TT, TV, DATA) ]]
          <message>
            <msgID>      TXID </msgID>
@@ -410,8 +410,8 @@ The `"rlp"` key loads the block information.
            ...
          </message>
 
-    syntax Int ::= #effectiveGasPrice( Int ) [function]
- // ---------------------------------------------------
+    syntax Int ::= #effectiveGasPrice( Int ) [klabel(#effectiveGasPrice), function]
+ // -------------------------------------------------------------------------------
     rule [[ #effectiveGasPrice( TXID )
          => #if ( notBool Ghasbasefee << SCHED >> )
                 orBool TXTYPE ==K Legacy
@@ -441,8 +441,8 @@ The `"rlp"` key loads the block information.
                              | "EARLIEST"
  // -------------------------------------
 
-    syntax BlockIdentifier ::= #parseBlockIdentifier ( JSON ) [function]
- // --------------------------------------------------------------------
+    syntax BlockIdentifier ::= #parseBlockIdentifier ( JSON ) [klabel(#parseBlockIdentifier), function]
+ // ---------------------------------------------------------------------------------------------------
     rule #parseBlockIdentifier(BLOCKNUM:Int) => BLOCKNUM
     rule #parseBlockIdentifier("pending")    => PENDING
     rule #parseBlockIdentifier("latest")     => LATEST

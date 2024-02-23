@@ -138,25 +138,25 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     syntax TypedArgs ::= List{TypedArg, ","} [klabel(typedArgs)]
  // ------------------------------------------------------------
 
-    syntax Bytes ::= #abiCallData ( String , TypedArgs ) [function]
- // ---------------------------------------------------------------
+    syntax Bytes ::= #abiCallData ( String , TypedArgs ) [klabel(#abiCallData), function]
+ // -------------------------------------------------------------------------------------
     rule #abiCallData( FNAME , ARGS ) => #signatureCallData(FNAME, ARGS) +Bytes #encodeArgs(ARGS)
 
-    syntax Bytes ::= #signatureCallData ( String, TypedArgs ) [function]
- // --------------------------------------------------------------------
+    syntax Bytes ::= #signatureCallData ( String, TypedArgs ) [klabel(#signatureCallData), function]
+ // ------------------------------------------------------------------------------------------------
     rule #signatureCallData( FNAME , ARGS ) => #parseByteStack(substrString(Keccak256(String2Bytes(#generateSignature(FNAME, ARGS))), 0, 8))
 
-    syntax String ::= #generateSignature     ( String, TypedArgs ) [function, total]
-                    | #generateSignatureArgs ( TypedArgs )         [function, total]
- // --------------------------------------------------------------------------------
+    syntax String ::= #generateSignature     ( String, TypedArgs ) [klabel(#generateSignature), function, total]
+                    | #generateSignatureArgs ( TypedArgs )         [klabel(#generateSignatureArgs),function, total]
+ // --------------------------------------------------------------------------------------------------------------
     rule #generateSignature( FNAME , ARGS ) => FNAME +String "(" +String #generateSignatureArgs(ARGS) +String ")"
 
     rule #generateSignatureArgs(.TypedArgs)                            => ""
     rule #generateSignatureArgs(TARGA:TypedArg, .TypedArgs)            => #typeName(TARGA)
     rule #generateSignatureArgs(TARGA:TypedArg, TARGB:TypedArg, TARGS) => #typeName(TARGA) +String "," +String #generateSignatureArgs(TARGB, TARGS)
 
-    syntax String ::= #typeName ( TypedArg ) [function, total]
- // ----------------------------------------------------------
+    syntax String ::= #typeName ( TypedArg ) [klabel(#typeName), function, total]
+ // -----------------------------------------------------------------------------
     rule #typeName(   #address( _ )) => "address"
 
     rule #typeName(   #uint256( _ )) => "uint256"
@@ -268,9 +268,9 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
 
     rule #typeName(    #tuple(ARGS)) => "(" +String #generateSignatureArgs(ARGS) +String ")"
 
-    syntax Bytes ::= #encodeArgs    ( TypedArgs )                       [function]
-    syntax Bytes ::= #encodeArgsAux ( TypedArgs , Int , Bytes , Bytes ) [function]
- // ------------------------------------------------------------------------------
+    syntax Bytes ::= #encodeArgs    ( TypedArgs )                       [klabel(#encodeArgs), function]
+    syntax Bytes ::= #encodeArgsAux ( TypedArgs , Int , Bytes , Bytes ) [klabel(#encodeArgsAux), function]
+ // ------------------------------------------------------------------------------------------------------
     rule #encodeArgs(ARGS) => #encodeArgsAux(ARGS, #lenOfHeads(ARGS), .Bytes, .Bytes)
 
     rule #encodeArgsAux(.TypedArgs, _:Int, HEADS, TAILS) => HEADS +Bytes TAILS
@@ -288,13 +288,13 @@ The `#lenOfHeads` is a recursive function used to calculate the space required f
 For most types, this is a fixed 32 bytes, except for static tuples, for which the length is the cumulative length of their contents.
 
 ```k
-    syntax Int ::= #lenOfHeads ( TypedArgs ) [function, total]
- // ----------------------------------------------------------
+    syntax Int ::= #lenOfHeads ( TypedArgs ) [klabel(#lenOfHeads), function, total]
+ // -------------------------------------------------------------------------------
     rule #lenOfHeads(.TypedArgs) => 0
     rule #lenOfHeads(ARG, ARGS)  => #lenOfHead(ARG) +Int #lenOfHeads(ARGS)
 
-    syntax Int ::= #lenOfHead ( TypedArg ) [function, total]
- // --------------------------------------------------------
+    syntax Int ::= #lenOfHead ( TypedArg ) [klabel(#lenOfHead), function, total]
+ // ----------------------------------------------------------------------------
     rule #lenOfHead( #tuple( ARGS )) => #lenOfHeads(ARGS) requires #isStaticType(#tuple(ARGS))
     rule #lenOfHead(              _) => 32 [owise]
 ```
@@ -302,16 +302,16 @@ For most types, this is a fixed 32 bytes, except for static tuples, for which th
 `#isStaticType` checks if a given `TypedArg` is a static type in order to determine if it has a fixed size.
 
 ```k
-    syntax Bool ::= #isStaticType ( TypedArg ) [function, total]
- // ------------------------------------------------------------
+    syntax Bool ::= #isStaticType ( TypedArg ) [klabel(#isStaticType), function, total]
+ // -----------------------------------------------------------------------------------
     rule #isStaticType(    #bytes( _ )) => false
     rule #isStaticType(   #string( _ )) => false
     rule #isStaticType(#array(_, _, _)) => false
     rule #isStaticType( #tuple( ARGS )) => notBool #hasDynamicType(ARGS)
     rule #isStaticType(              _) => true
 
-    syntax Bool ::= #hasDynamicType(TypedArgs) [function, total]
- // ------------------------------------------------------------
+    syntax Bool ::= #hasDynamicType(TypedArgs) [klabel(#hasDynamicType), function, total]
+ // -------------------------------------------------------------------------------------
     rule #hasDynamicType(.TypedArgs) => false
     rule #hasDynamicType(T, TS) => #hasDynamicType(TS) requires #isStaticType(T)
     rule #hasDynamicType(T,  _) => true requires notBool #isStaticType(T)
@@ -324,8 +324,8 @@ For most types, this is a fixed 32 bytes, except for static tuples, for which th
  - for dynamic type arrays `#array(T, N, ELEMS)`, the size is `32 * (1 + N + #sizeOfDynamicTypeList(ELEMS))`.
 
 ```k
-    syntax Int ::= #sizeOfDynamicType ( TypedArg ) [function]
- // ---------------------------------------------------------
+    syntax Int ::= #sizeOfDynamicType ( TypedArg ) [klabel(#sizeOfDynamicType), function]
+ // -------------------------------------------------------------------------------------
     rule #sizeOfDynamicType(     #bytes(BS)) => 32 +Int #ceil32(lengthBytes(BS))
     rule #sizeOfDynamicType(    #string(BS)) => 32 +Int #ceil32(lengthBytes(String2Bytes(BS)))
     rule #sizeOfDynamicType(   #tuple(ARGS)) => 32 +Int #sizeOfDynamicTypeList(ARGS)
@@ -335,8 +335,8 @@ For most types, this is a fixed 32 bytes, except for static tuples, for which th
     rule #sizeOfDynamicType(#array(T, N, ELEMS)) => 32 *Int (1 +Int N +Int #sizeOfDynamicTypeList(ELEMS))
       requires notBool #isStaticType(T)
 
-    syntax Int ::= #sizeOfDynamicTypeList ( TypedArgs ) [function, total]
- // ---------------------------------------------------------------------
+    syntax Int ::= #sizeOfDynamicTypeList ( TypedArgs ) [klabel(#sizeOfDynamicTypeList), function, total]
+ // -----------------------------------------------------------------------------------------------------
     rule #sizeOfDynamicTypeList(TARG, TARGS) => #sizeOfDynamicType(TARG) +Int #sizeOfDynamicTypeList(TARGS)
       requires notBool #isStaticType(TARG)
 
@@ -345,8 +345,8 @@ For most types, this is a fixed 32 bytes, except for static tuples, for which th
 
     rule #sizeOfDynamicTypeList(.TypedArgs) => 0
 
-    syntax Bytes ::= #enc ( TypedArg ) [function]
- // ---------------------------------------------
+    syntax Bytes ::= #enc ( TypedArg ) [klabel(#enc), function]
+ // -----------------------------------------------------------
     // static Type
     rule #enc(#address( DATA )) => #bufStrict(32, #getValue(#address( DATA )))
 
@@ -458,14 +458,14 @@ For most types, this is a fixed 32 bytes, except for static tuples, for which th
     rule #enc(#array(_, N, DATA)) => #enc(#uint256(N)) +Bytes #encodeArgs(DATA)
     rule #enc(    #tuple( DATA )) => #encodeArgs(DATA)
 
-    syntax Bytes ::= #encBytes ( Int , Bytes ) [function]
- // -----------------------------------------------------
+    syntax Bytes ::= #encBytes ( Int , Bytes ) [klabel(#encBytes), function]
+ // ------------------------------------------------------------------------
     rule #encBytes(N, BS) => #enc(#uint256(N)) +Bytes BS +Bytes #bufStrict(#ceil32(N) -Int N, 0)
 ```
 
 ```k
-    syntax Int ::= #getValue ( TypedArg ) [function]
- // ------------------------------------------------
+    syntax Int ::= #getValue ( TypedArg ) [klabel(#getValue), function]
+ // -------------------------------------------------------------------
     rule #getValue(   #bool( X )) => X       requires #rangeBool(X)
 
     rule #getValue(#address( X )) => X       requires #rangeAddress(X)
@@ -602,37 +602,37 @@ where `1003892871367861763272476045097431689001461395759728643661426852242313133
 
 ```k
     syntax EventArg ::= TypedArg
-                      | #indexed ( TypedArg )
- // -----------------------------------------
+                      | #indexed ( TypedArg ) [klabel(#indexed)]
+ // ------------------------------------------------------------
 
     syntax EventArgs ::= List{EventArg, ","} [klabel(eventArgs)]
  // ------------------------------------------------------------
 
-    syntax SubstateLogEntry ::= #abiEventLog ( Int , String , EventArgs ) [function]
- // --------------------------------------------------------------------------------
+    syntax SubstateLogEntry ::= #abiEventLog ( Int , String , EventArgs ) [klabel(#abiEventLog), function]
+ // ------------------------------------------------------------------------------------------------------
     rule #abiEventLog(ACCT_ID, EVENT_NAME, EVENT_ARGS)
       => { ACCT_ID | #getEventTopics(EVENT_NAME, EVENT_ARGS) | #encodeArgs(#getNonIndexedArgs(EVENT_ARGS)) }
 
-    syntax List ::= #getEventTopics ( String , EventArgs ) [function]
- // -----------------------------------------------------------------
+    syntax List ::= #getEventTopics ( String , EventArgs ) [klabel(#getEventTopics), function]
+ // ------------------------------------------------------------------------------------------
     rule #getEventTopics(ENAME, EARGS)
       => ListItem(#parseHexWord(Keccak256(String2Bytes(#generateSignature(ENAME, #getTypedArgs(EARGS))))))
          #getIndexedArgs(EARGS)
 
-    syntax TypedArgs ::= #getTypedArgs ( EventArgs ) [function]
- // -----------------------------------------------------------
+    syntax TypedArgs ::= #getTypedArgs ( EventArgs ) [klabel(#getTypedArgs), function]
+ // ----------------------------------------------------------------------------------
     rule #getTypedArgs(#indexed(E), ES) => E, #getTypedArgs(ES)
     rule #getTypedArgs(E:TypedArg,  ES) => E, #getTypedArgs(ES)
     rule #getTypedArgs(.EventArgs)      => .TypedArgs
 
-    syntax List ::= #getIndexedArgs ( EventArgs ) [function]
- // --------------------------------------------------------
+    syntax List ::= #getIndexedArgs ( EventArgs ) [klabel(#getIndexedArgs), function]
+ // ---------------------------------------------------------------------------------
     rule #getIndexedArgs(#indexed(E), ES) => ListItem(#getValue(E)) #getIndexedArgs(ES)
     rule #getIndexedArgs(_:TypedArg,  ES) =>                        #getIndexedArgs(ES)
     rule #getIndexedArgs(.EventArgs)      => .List
 
-    syntax TypedArgs ::= #getNonIndexedArgs ( EventArgs ) [function]
- // ----------------------------------------------------------------
+    syntax TypedArgs ::= #getNonIndexedArgs ( EventArgs ) [klabel(#getNonIndexedArgs), function]
+ // --------------------------------------------------------------------------------------------
     rule #getNonIndexedArgs(#indexed(_), ES) =>    #getNonIndexedArgs(ES)
     rule #getNonIndexedArgs(E:TypedArg,  ES) => E, #getNonIndexedArgs(ES)
     rule #getNonIndexedArgs(.EventArgs)      => .TypedArgs

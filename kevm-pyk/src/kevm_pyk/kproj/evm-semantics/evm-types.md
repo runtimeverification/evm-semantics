@@ -27,13 +27,13 @@ Primitives provide the basic conversion from K's sorts `Int` and `Bool` to EVM's
 -   `word2Bool` interprets a `Int` as a `Bool`.
 
 ```k
-    syntax Int ::= bool2Word ( Bool ) [function, total, smtlib(bool2Word)]
- // ----------------------------------------------------------------------
+    syntax Int ::= bool2Word ( Bool ) [klabel(bool2Word), function, total, smtlib(bool2Word)]
+ // -----------------------------------------------------------------------------------------
     rule bool2Word( true  ) => 1
     rule bool2Word( false ) => 0
 
-    syntax Bool ::= word2Bool ( Int ) [function, total]
- // ---------------------------------------------------
+    syntax Bool ::= word2Bool ( Int ) [klabel(word2Bool), function, total]
+ // ----------------------------------------------------------------------
     rule word2Bool( W ) => false requires W  ==Int 0
     rule word2Bool( W ) => true  requires W =/=Int 0
 ```
@@ -42,9 +42,9 @@ Primitives provide the basic conversion from K's sorts `Int` and `Bool` to EVM's
 -   `abs` gives the twos-complement interperetation of the magnitude of a word.
 
 ```k
-    syntax Int ::= sgn ( Int ) [function, total]
-                 | abs ( Int ) [function, total]
- // --------------------------------------------
+    syntax Int ::= sgn ( Int ) [klabel(sgn), function, total]
+                 | abs ( Int ) [klabel(abs), function, total]
+ // ---------------------------------------------------------
     rule sgn(I) => -1 requires pow255 <=Int I andBool I <Int pow256
     rule sgn(I) =>  1 requires 0 <=Int I andBool I <Int pow255
     rule sgn(I) =>  0 requires I <Int 0 orBool pow256 <=Int I
@@ -76,8 +76,8 @@ You could alternatively calculate `I1 modInt I2`, then add one to the normal int
 -   `log256Int` returns the log base 256 (floored) of an integer.
 
 ```k
-    syntax Int ::= log256Int ( Int ) [function]
- // -------------------------------------------
+    syntax Int ::= log256Int ( Int ) [klabel(log256Int), function]
+ // --------------------------------------------------------------
     rule log256Int(N) => log2Int(N) /Int 8
 ```
 
@@ -106,8 +106,8 @@ The helper `powmod` is a totalization of the operator `_^%Int__` (which comes wi
 
 ```k
     syntax Int ::= Int "^Word" Int       [function, total]
-                 | powmod(Int, Int, Int) [function, total]
- // ------------------------------------------------------
+                 | powmod(Int, Int, Int) [klabel(powmod), function, total]
+ // ----------------------------------------------------------------------
     rule W0 ^Word W1 => powmod(W0, W1, pow256)
 
     rule [powmod.nonzero]: powmod(W0, W1, W2) => W0 ^%Int W1 W2  requires W2 =/=Int 0 [concrete]
@@ -184,9 +184,9 @@ Bitwise logical operators are lifted from the integer versions.
 -   `byte` gets byte `N` (0 being the MSB).
 
 ```k
-    syntax Int ::= bit  ( Int , Int ) [function]
-                 | byte ( Int , Int ) [function]
- // --------------------------------------------
+    syntax Int ::= bit  ( Int , Int ) [klabel(bit), function]
+                 | byte ( Int , Int ) [klabel(byte), function]
+ // ----------------------------------------------------------
     rule bit (N, _) => 0 requires notBool (N >=Int 0 andBool N <Int 256)
     rule byte(N, _) => 0 requires notBool (N >=Int 0 andBool N <Int  32)
 
@@ -198,9 +198,9 @@ Bitwise logical operators are lifted from the integer versions.
 -   `#nBytes` shifts in `N` bytes of ones from the right.
 
 ```k
-    syntax Int ::= #nBits  ( Int )  [function]
-                 | #nBytes ( Int )  [function]
- // ------------------------------------------
+    syntax Int ::= #nBits  ( Int )  [klabel(#nBits), function]
+                 | #nBytes ( Int )  [klabel(#nBytes), function]
+ // -----------------------------------------------------------
     rule #nBits(N)  => (1 <<Int N) -Int 1 requires N >=Int 0
     rule #nBytes(N) => #nBits(N *Int 8)   requires N >=Int 0
 ```
@@ -208,8 +208,8 @@ Bitwise logical operators are lifted from the integer versions.
 -   `signextend(N, W)` sign-extends from byte `N` of `W` (0 being MSB).
 
 ```k
-    syntax Int ::= signextend( Int , Int ) [function, total]
- // --------------------------------------------------------
+    syntax Int ::= signextend( Int , Int ) [klabel(signextend), function, total]
+ // ----------------------------------------------------------------------------
     rule [signextend.invalid]:  signextend(N, W) => W requires N >=Int 32 orBool N <Int 0                                                                                                                      [concrete]
     rule [signextend.negative]: signextend(N, W) => chop( (#nBytes(31 -Int N) <<Byte (N +Int 1)) |Int W ) requires N <Int 32 andBool N >=Int 0 andBool         word2Bool(bit(256 -Int (8 *Int (N +Int 1)), W)) [concrete]
     rule [signextend.positive]: signextend(N, W) => chop( #nBytes(N +Int 1)                      &Int W ) requires N <Int 32 andBool N >=Int 0 andBool notBool word2Bool(bit(256 -Int (8 *Int (N +Int 1)), W)) [concrete]
@@ -280,8 +280,8 @@ A cons-list is used for the EVM wordstack.
 -   `_in_` determines if a `Int` occurs in a `WordStack`.
 
 ```k
-    syntax Int ::= #sizeWordStack ( WordStack )       [function, total, smtlib(sizeWordStack)]
-                 | #sizeWordStack ( WordStack , Int ) [function, total, klabel(sizeWordStackAux), smtlib(sizeWordStackAux)]
+    syntax Int ::= #sizeWordStack ( WordStack )       [klabel(#sizeWordStack), function, total, smtlib(sizeWordStack)]
+                 | #sizeWordStack ( WordStack , Int ) [klabel(sizeWordStackAux), function, total, smtlib(sizeWordStackAux)]
  // -----------------------------------------------------------------------------------------------------------------------
     rule #sizeWordStack ( WS ) => #sizeWordStack(WS, 0)
     rule #sizeWordStack ( .WordStack, SIZE ) => SIZE
@@ -297,9 +297,9 @@ A cons-list is used for the EVM wordstack.
 -   `#replicate` is a `WordStack` of length `N` with `A` the value of every element.
 
 ```k
-    syntax WordStack ::= #replicate    ( Int, Int )            [function, total]
-                       | #replicateAux ( Int, Int, WordStack ) [function, total]
- // ----------------------------------------------------------------------------
+    syntax WordStack ::= #replicate    ( Int, Int )            [klabel(#replicate), function, total]
+                       | #replicateAux ( Int, Int, WordStack ) [klabel(#replicateAux), function, total]
+ // ---------------------------------------------------------------------------------------------------
     rule #replicate   ( N,  A )     => #replicateAux(N, A, .WordStack)
     rule #replicateAux( N,  A, WS ) => #replicateAux(N -Int 1, A, A : WS) requires         N >Int 0
     rule #replicateAux( N, _A, WS ) => WS                                 requires notBool N >Int 0
@@ -308,8 +308,8 @@ A cons-list is used for the EVM wordstack.
 -   `WordStack2List` converts a term of sort `WordStack` to a term of sort `List`.
 
 ```k
-    syntax List ::= WordStack2List ( WordStack ) [function, total]
- // --------------------------------------------------------------
+    syntax List ::= WordStack2List ( WordStack ) [klabel(WordStack2List), function, total]
+ // --------------------------------------------------------------------------------------
     rule WordStack2List(.WordStack) => .List
     rule WordStack2List(W : WS) => ListItem(W) WordStack2List(WS)
 ```
@@ -342,32 +342,32 @@ Bytes helper functions
 -   `#padToWidth(N, WS)` and `#padRightToWidth` make sure that a `Bytes` is the correct size.
 
 ```k
-    syntax Int ::= #asWord ( Bytes ) [function, total, smtlib(asWord)]
- // ------------------------------------------------------------------
+    syntax Int ::= #asWord ( Bytes ) [klabel(#asWord), function, total, smtlib(asWord)]
+ // -----------------------------------------------------------------------------------
     rule #asWord(WS) => chop(Bytes2Int(WS, BE, Unsigned)) [concrete]
 
-    syntax Int ::= #asInteger ( Bytes ) [function, total]
- // -----------------------------------------------------
+    syntax Int ::= #asInteger ( Bytes ) [klabel(#asInteger), function, total]
+ // -------------------------------------------------------------------------
     rule #asInteger(WS) => Bytes2Int(WS, BE, Unsigned) [concrete]
 
-    syntax Account ::= #asAccount ( Bytes ) [function]
- // --------------------------------------------------
+    syntax Account ::= #asAccount ( Bytes ) [klabel(#asAccount), function]
+ // ----------------------------------------------------------------------
     rule #asAccount(BS) => .Account    requires lengthBytes(BS) ==Int 0
     rule #asAccount(BS) => #asWord(BS) [owise]
 
-    syntax Bytes ::= #asByteStack ( Int ) [function, total]
- // -------------------------------------------------------
+    syntax Bytes ::= #asByteStack ( Int ) [klabel(#asByteStack), function, total]
+ // -----------------------------------------------------------------------------
     rule #asByteStack(W) => Int2Bytes(W, BE, Unsigned) [concrete]
 
-    syntax Bytes ::= #range ( Bytes , Int , Int ) [function, total]
- // ---------------------------------------------------------------
+    syntax Bytes ::= #range ( Bytes , Int , Int ) [klabel(#range), function, total]
+ // -------------------------------------------------------------------------------
     rule                #range(_, START, WIDTH)  => .Bytes                                                                       requires notBool (WIDTH >=Int 0 andBool START >=Int 0) [concrete]
     rule [bytesRange] : #range(WS, START, WIDTH) => substrBytes(padRightBytes(WS, START +Int WIDTH, 0), START, START +Int WIDTH) requires WIDTH >=Int 0 andBool START >=Int 0 andBool START <Int lengthBytes(WS) [concrete]
     rule                #range(_, _, WIDTH)      => padRightBytes(.Bytes, WIDTH, 0) [owise, concrete]
 
-    syntax Bytes ::= #padToWidth      ( Int , Bytes ) [function, total]
-                   | #padRightToWidth ( Int , Bytes ) [function, total]
- // -------------------------------------------------------------------
+    syntax Bytes ::= #padToWidth      ( Int , Bytes ) [klabel(#padToWidth), function, total]
+                   | #padRightToWidth ( Int , Bytes ) [klabel(#padRightToWidth), function, total]
+ // ---------------------------------------------------------------------------------------------
     rule #padToWidth(N, BS)      =>               BS        requires notBool (0 <=Int N) [concrete]
     rule #padToWidth(N, BS)      =>  padLeftBytes(BS, N, 0) requires          0 <=Int N  [concrete]
     rule #padRightToWidth(N, BS) =>               BS        requires notBool (0 <=Int N) [concrete]
@@ -396,8 +396,8 @@ Accounts
 -   `#addr` turns an Ethereum word into the corresponding Ethereum address (160 LSB).
 
 ```k
-    syntax Int ::= #addr ( Int ) [function, total]
- // ---------------------------------------
+    syntax Int ::= #addr ( Int ) [klabel(#addr), function, total]
+ // -------------------------------------------------------------
     rule #addr(W) => W %Word pow160
 ```
 
@@ -407,9 +407,9 @@ Storage/Memory Lookup
 `#lookup*` looks up a key in a map and returns 0 if the key doesn't exist, otherwise returning its value.
 
 ```k
-    syntax Int ::= #lookup        ( Map , Int ) [function, total, smtlib(lookup)]
-                 | #lookupMemory  ( Map , Int ) [function, total, smtlib(lookupMemory)]
- // -----------------------------------------------------------------------------------
+    syntax Int ::= #lookup        ( Map , Int ) [klabel(#lookup), function, total, smtlib(lookup)]
+                 | #lookupMemory  ( Map , Int ) [klabel(#lookupMemory), function, total, smtlib(lookupMemory)]
+ // ----------------------------------------------------------------------------------------------------------
     rule [#lookup.some]:         #lookup(       (KEY |-> VAL:Int) _M, KEY ) => VAL modInt pow256
     rule [#lookup.none]:         #lookup(                          M, KEY ) => 0                 requires notBool KEY in_keys(M)
     //Impossible case, for completeness
@@ -444,14 +444,14 @@ Productions related to transactions
                     | "DynamicFee"
  // ------------------------------
 
-    syntax Int ::= #dasmTxPrefix ( TxType ) [function]
- // --------------------------------------------------
+    syntax Int ::= #dasmTxPrefix ( TxType ) [klabel(#dasmTxPrefix), function]
+ // -------------------------------------------------------------------------
     rule #dasmTxPrefix (Legacy)     => 0
     rule #dasmTxPrefix (AccessList) => 1
     rule #dasmTxPrefix (DynamicFee) => 2
 
-    syntax TxType ::= #asmTxPrefix ( Int ) [function]
- // -------------------------------------------------
+    syntax TxType ::= #asmTxPrefix ( Int ) [klabel(#asmTxPrefix), function]
+ // -----------------------------------------------------------------------
     rule #asmTxPrefix (0) => Legacy
     rule #asmTxPrefix (1) => AccessList
     rule #asmTxPrefix (2) => DynamicFee
@@ -459,10 +459,10 @@ Productions related to transactions
     syntax TxData ::= LegacyTx | AccessListTx | DynamicFeeTx
  // --------------------------------------------------------
 
-    syntax LegacyTx     ::= LegacyTxData         ( nonce: Int, gasPrice: Int, gasLimit: Int, to: Account, value: Int, data: Bytes )
-                          | LegacyProtectedTxData( nonce: Int, gasPrice: Int, gasLimit: Int, to: Account, value: Int, data: Bytes, chainId: Int )
-    syntax AccessListTx ::= AccessListTxData     ( nonce: Int, gasPrice: Int, gasLimit: Int, to: Account, value: Int, data: Bytes, chainId: Int, accessLists: JSONs )
-    syntax DynamicFeeTx ::= DynamicFeeTxData     ( nonce: Int, priorityGasFee: Int, maxGasFee: Int, gasLimit: Int, to: Account, value: Int, data: Bytes, chainId: Int, accessLists: JSONs)
+    syntax LegacyTx     ::= LegacyTxData         ( nonce: Int, gasPrice: Int, gasLimit: Int, to: Account, value: Int, data: Bytes ) [klabel(LegacyTxData)]
+                          | LegacyProtectedTxData( nonce: Int, gasPrice: Int, gasLimit: Int, to: Account, value: Int, data: Bytes, chainId: Int ) [klabel(LegacyProtectedTxData)]
+    syntax AccessListTx ::= AccessListTxData     ( nonce: Int, gasPrice: Int, gasLimit: Int, to: Account, value: Int, data: Bytes, chainId: Int, accessLists: JSONs ) [klabel(AccessListTxData)]
+    syntax DynamicFeeTx ::= DynamicFeeTxData     ( nonce: Int, priorityGasFee: Int, maxGasFee: Int, gasLimit: Int, to: Account, value: Int, data: Bytes, chainId: Int, accessLists: JSONs) [klabel(DynamicFeeTxData)]
  // --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 endmodule

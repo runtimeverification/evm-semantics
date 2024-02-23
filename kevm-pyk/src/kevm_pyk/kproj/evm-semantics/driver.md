@@ -80,8 +80,8 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
            ...
          </message>
 
-    syntax EthereumCommand ::= loadTx ( Account )
- // ---------------------------------------------
+    syntax EthereumCommand ::= loadTx ( Account ) [klabel(loadTx)]
+ // --------------------------------------------------------------
     rule <k> loadTx(_) => #end EVMC_OUT_OF_GAS ... </k>
          <schedule> SCHED </schedule>
          <txPending> ListItem(TXID:Int) ... </txPending>
@@ -185,9 +185,9 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          </message>
       requires TT =/=K .Account
 
-    syntax EthereumCommand ::= #loadAccessList ( JSON )
-                             | #loadAccessListAux ( Account , List )
- // ----------------------------------------------------------------
+    syntax EthereumCommand ::= #loadAccessList ( JSON )              [klabel(#loadAccessList)]
+                             | #loadAccessListAux ( Account , List ) [klabel(#loadAccessListAux)]
+ // ---------------------------------------------------------------------------------------------
     rule <k> #loadAccessList ([ .JSONs ]) => .K ... </k>
          <schedule> SCHED </schedule>
       requires Ghasaccesslist << SCHED >>
@@ -433,8 +433,8 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
 -   `#removeZeros` removes any entries in a map with zero values.
 
 ```k
-    syntax Map ::= #removeZeros ( Map ) [function]
-                 | #removeZeros ( List , Map ) [function, klabel(#removeZerosAux)]
+    syntax Map ::= #removeZeros ( Map )        [klabel(#removeZeros), function]
+                 | #removeZeros ( List , Map ) [klabel(#removeZerosAux), function]
  // ------------------------------------------------------------------------------
     rule #removeZeros( M )                                   => #removeZeros(Set2List(keys(M)), M)
     rule #removeZeros( .List, .Map )                         => .Map
@@ -562,9 +562,9 @@ Here we check the other post-conditions associated with an EVM test.
     rule <k> check "transactions" : ("maxPriorityFeePerGas" : VALUE) => .K ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txPriorityFee> VALUE </txPriorityFee>  ... </message>
     rule <k> check "transactions" : ("sender"               : VALUE) => .K ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <sigV> TW </sigV> <sigR> TR </sigR> <sigS> TS </sigS> ... </message> requires #sender( #getTxData(TXID), TW, TR, TS ) ==K VALUE
 
-    syntax Bool ::= isInAccessListStorage ( Int , JSON )    [function]
-                  | isInAccessList ( Account , Int , JSON ) [function]
- // ------------------------------------------------------------------
+    syntax Bool ::= isInAccessListStorage ( Int , JSON )    [klabel(isInAccessListStorage), function]
+                  | isInAccessList ( Account , Int , JSON ) [klabel(isInAccessList), function]
+ // -------------------------------------------------------------------------------------------------
     rule isInAccessList(_   , _  , [.JSONs                     ]) => false
     rule isInAccessList(ADDR, KEY, [[ACCT, [STRG:JSONs]],  REST]) => #if   ADDR ==K #asAccount(ACCT)
                                                                      #then isInAccessListStorage (KEY, [STRG]) orBool isInAccessList(ADDR, KEY, [REST])
