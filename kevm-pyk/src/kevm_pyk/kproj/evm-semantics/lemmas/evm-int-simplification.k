@@ -57,10 +57,18 @@ module EVM-INT-SIMPLIFICATION-COMMON
   // #asWord
   // ###########################################################################
 
+  rule [asWord-lb]: 0 <=Int #asWord(_WS)     => true [simplification, smt-lemma]
+  rule [asWord-ub]: #asWord(_WS) <Int pow256 => true [simplification, smt-lemma]
+
   rule [asWord-lt]:
     #asWord ( BA ) <Int X => true
     requires 2 ^Int ( lengthBytes(BA) *Int 8) <=Int X
     [concrete(X), simplification]
+
+  rule [asWord-lt-concat]:
+    #asWord ( BA1 +Bytes BA2 ) <Int X => #asWord ( BA1 ) <Int ( X -Int #asWord ( BA2 ) ) /Int ( 2 ^Int ( 8 *Int lengthBytes ( BA2 ) ) )
+    requires ( X -Int #asWord ( BA2 ) ) modInt ( 2 ^Int ( 8 *Int lengthBytes ( BA2 ) ) ) ==Int 0
+    [concrete(BA2, X), simplification]
 
   rule [asWord-lt-range]:
     #asWord ( #range ( _:Bytes, S, W ) ) <Int X => true

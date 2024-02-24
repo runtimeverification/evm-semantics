@@ -101,25 +101,25 @@ Here are some internal helper functions for calculating gas. Most of these funct
 module GAS-FEES
     imports GAS-SYNTAX
     imports SCHEDULE
-    
-    syntax Gas ::= Cgascap        ( Schedule , Gas , Gas , Int )         [function, total, smtlib(gas_Cgascap_Gas)   ]
-    syntax Int ::= Cgascap        ( Schedule , Int , Int , Int )         [function, total, smtlib(gas_Cgascap_Int)   ]
-                 | Csstore        ( Schedule , Int , Int , Int )         [function, total, smtlib(gas_Csstore)       ]
-                 | Rsstore        ( Schedule , Int , Int , Int )         [function, total, smtlib(gas_Rsstore)       ]
-                 | Cextra         ( Schedule , Bool , Int , Bool )       [function, total, smtlib(gas_Cextra)        ]
-                 | Cnew           ( Schedule , Bool , Int )              [function, total, smtlib(gas_Cnew)          ]
-                 | Cxfer          ( Schedule , Int )                     [function, total, smtlib(gas_Cxfer)         ]
-                 | Cmem           ( Schedule , Int )                     [function, total, smtlib(gas_Cmem), memo    ]
-                 | Caddraccess    ( Schedule , Bool )                    [function, total, smtlib(gas_Caddraccess)   ]
-                 | Cstorageaccess ( Schedule , Bool )                    [function, total, smtlib(gas_Cstorageaccess)]
-                 | Csload         ( Schedule , Bool )                    [function, total, smtlib(gas_Csload)        ]
-                 | Cextcodesize   ( Schedule )                           [function, total, smtlib(gas_Cextcodesize)  ]
-                 | Cextcodecopy   ( Schedule , Int )                     [function, total, smtlib(gas_Cextcodecopy)  ]
-                 | Cextcodehash   ( Schedule )                           [function, total, smtlib(gas_Cextcodehash)  ]
-                 | Cbalance       ( Schedule )                           [function, total, smtlib(gas_Cbalance)      ]
-                 | Cmodexp        ( Schedule , Bytes , Int , Int , Int ) [function, total, smtlib(gas_Cmodexp)       ]
-                 | Cinitcode      ( Schedule , Int )                     [function, total, smtlib(gas_Cinitcode)     ]
- // ------------------------------------------------------------------------------------------------------------------
+
+    syntax Gas ::= Cgascap        ( Schedule , Gas , Gas , Int )         [klabel(Cgascap),         function, total, smtlib(gas_Cgascap_Gas)  ]
+    syntax Int ::= Cgascap        ( Schedule , Int , Int , Int )         [klabel(Cgascap),         function, total, smtlib(gas_Cgascap_Int)  ]
+                 | Csstore        ( Schedule , Int , Int , Int )         [klabel(Csstore),         function, total, smtlib(gas_Csstore)      ]
+                 | Rsstore        ( Schedule , Int , Int , Int )         [klabel(Rsstore),         function, total, smtlib(gas_Rsstore)      ]
+                 | Cextra         ( Schedule , Bool , Int , Bool )       [klabel(Cextra),          function, total, smtlib(gas_Cextra)       ]
+                 | Cnew           ( Schedule , Bool , Int )              [klabel(Cnew),            function, total, smtlib(gas_Cnew)         ]
+                 | Cxfer          ( Schedule , Int )                     [klabel(Cxfer),           function, total, smtlib(gas_Cxfer)        ]
+                 | Cmem           ( Schedule , Int )                     [klabel(Cmem),            function, total, smtlib(gas_Cmem), memo   ]
+                 | Caddraccess    ( Schedule , Bool )                    [klabel(Caddraccess),     function, total, smtlib(gas_Caddraccess)  ]
+                 | Cstorageaccess ( Schedule , Bool )                    [klabel(Cstorageaccess), function, total, smtlib(gas_Cstorageaccess)]
+                 | Csload         ( Schedule , Bool )                    [klabel(Csload),          function, total, smtlib(gas_Csload)       ]
+                 | Cextcodesize   ( Schedule )                           [klabel(Cextcodesize),    function, total, smtlib(gas_Cextcodesize) ]
+                 | Cextcodecopy   ( Schedule , Int )                     [klabel(Cextcodecopy),    function, total, smtlib(gas_Cextcodecopy) ]
+                 | Cextcodehash   ( Schedule )                           [klabel(Cextcodehash),    function, total, smtlib(gas_Cextcodehash) ]
+                 | Cbalance       ( Schedule )                           [klabel(Cbalance),        function, total, smtlib(gas_Cbalance)     ]
+                 | Cmodexp        ( Schedule , Bytes , Int , Int , Int ) [klabel(Cmodexp),         function, total, smtlib(gas_Cmodexp)      ]
+                 | Cinitcode      ( Schedule , Int )                     [klabel(Cinitcode),       function, total, smtlib(gas_Cinitcode)    ]
+ // ------------------------------------------------------------------------------------------------------------------------------------------
     rule [Cgascap]:
          Cgascap(SCHED, GCAP:Int, GAVAIL:Int, GEXTRA)
       => #if GAVAIL <Int GEXTRA orBool Gstaticcalldepth << SCHED >> #then GCAP #else minInt(#allBut64th(GAVAIL -Int GEXTRA), GCAP) #fi
@@ -210,9 +210,9 @@ module GAS-FEES
  // ---------------------------------------------------------------------------------------------------------
     rule #accountEmpty(CODE, NONCE, BAL) => CODE ==K .Bytes andBool NONCE ==Int 0 andBool BAL ==Int 0
 
-    syntax Gas ::= #allBut64th ( Gas ) [function, total, smtlib(gas_allBut64th_Gas)]
-    syntax Int ::= #allBut64th ( Int ) [function, total, smtlib(gas_allBut64th_Int)]
- // --------------------------------------------------------------------------------
+    syntax Gas ::= #allBut64th ( Gas ) [klabel(#allBut64th), function, total, smtlib(gas_allBut64th_Gas)]
+    syntax Int ::= #allBut64th ( Int ) [klabel(#allBut64th), function, total, smtlib(gas_allBut64th_Int)]
+ // -----------------------------------------------------------------------------------------------------
     rule [allBut64th.pos]: #allBut64th(N) => N -Int (N /Int 64) requires 0 <=Int N
     rule [allBut64th.neg]: #allBut64th(N) => 0                  requires N  <Int 0
 
@@ -229,17 +229,17 @@ module GAS-FEES
  // -----------------------------------------------------------------------
     rule G*(GAVAIL, GLIMIT, REFUND, SCHED) => GAVAIL +Gas minGas((GLIMIT -Gas GAVAIL) /Gas Rmaxquotient < SCHED >, REFUND)
 
-    syntax Int ::= #multComplexity(Int)    [function]
-                 | #newMultComplexity(Int) [function]
- // -------------------------------------------------
+    syntax Int ::= #multComplexity(Int)    [klabel(#multComplexity),    function]
+                 | #newMultComplexity(Int) [klabel(#newMultComplexity), function]
+ // -----------------------------------------------------------------------------
     rule #multComplexity(X) => X *Int X                                     requires X <=Int 64
     rule #multComplexity(X) => X *Int X /Int 4 +Int 96 *Int X -Int 3072     requires X >Int 64 andBool X <=Int 1024
     rule #multComplexity(X) => X *Int X /Int 16 +Int 480 *Int X -Int 199680 requires X >Int 1024
 
     rule #newMultComplexity(X) => (X up/Int 8) ^Int 2
 
-    syntax Int ::= #adjustedExpLength(Int, Int, Bytes) [function]
-                 | #adjustedExpLength(Int)             [function, klabel(#adjustedExpLengthAux)]
+    syntax Int ::= #adjustedExpLength(Int, Int, Bytes) [klabel(#adjustedExpLength),    function]
+                 | #adjustedExpLength(Int)             [klabel(#adjustedExpLengthAux), function]
  // --------------------------------------------------------------------------------------------
     rule #adjustedExpLength(BASELEN, EXPLEN, DATA) => #if EXPLEN <=Int 32 #then 0 #else 8 *Int (EXPLEN -Int 32) #fi +Int #adjustedExpLength(#asInteger(#range(DATA, 96 +Int BASELEN, minInt(EXPLEN, 32))))
 

@@ -25,7 +25,7 @@ module EVM-OPTIMIZATIONS
   rule
     <kevm>
       <k>
-        ( #next[ PUSHZERO ] => . ) ...
+        ( #next[ PUSHZERO ] => .K ) ...
       </k>
       <schedule>
         SCHED
@@ -60,7 +60,7 @@ module EVM-OPTIMIZATIONS
   rule
     <kevm>
       <k>
-        ( #next[ PUSH(N) ] => . ) ...
+        ( #next[ PUSH(N) ] => .K ) ...
       </k>
       <schedule>
         SCHED
@@ -98,7 +98,7 @@ module EVM-OPTIMIZATIONS
   rule
     <kevm>
       <k>
-        ( #next[ DUP(N) ] => . ) ...
+        ( #next[ DUP(N) ] => .K ) ...
       </k>
       <schedule>
         SCHED
@@ -134,7 +134,7 @@ module EVM-OPTIMIZATIONS
   rule
     <kevm>
       <k>
-        ( #next[ SWAP(N) ] => . ) ...
+        ( #next[ SWAP(N) ] => .K ) ...
       </k>
       <schedule>
         SCHED
@@ -170,7 +170,7 @@ module EVM-OPTIMIZATIONS
   rule
     <kevm>
       <k>
-        ( #next[ ADD ] => . ) ...
+        ( #next[ ADD ] => .K ) ...
       </k>
       <schedule>
         SCHED
@@ -205,7 +205,7 @@ module EVM-OPTIMIZATIONS
   rule
     <kevm>
       <k>
-        ( #next[ SUB ] => . ) ...
+        ( #next[ SUB ] => .K ) ...
       </k>
       <schedule>
         SCHED
@@ -240,7 +240,7 @@ module EVM-OPTIMIZATIONS
   rule
     <kevm>
       <k>
-        ( #next[ AND ] => . ) ...
+        ( #next[ AND ] => .K ) ...
       </k>
       <schedule>
         SCHED
@@ -275,7 +275,7 @@ module EVM-OPTIMIZATIONS
   rule
     <kevm>
       <k>
-        ( #next[ LT ] => . ) ...
+        ( #next[ LT ] => .K ) ...
       </k>
       <schedule>
         SCHED
@@ -310,7 +310,7 @@ module EVM-OPTIMIZATIONS
   rule
     <kevm>
       <k>
-        ( #next[ GT ] => . ) ...
+        ( #next[ GT ] => .K ) ...
       </k>
       <schedule>
         SCHED

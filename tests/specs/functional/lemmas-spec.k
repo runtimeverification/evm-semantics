@@ -73,6 +73,29 @@ module LEMMAS-SPEC
                                   => doneLemma(368263281805664599098893944405654396525700029268) ... </k>
                                requires #lookup(ACCT_STORAGE, 8) <Int pow160
 
+    claim [cancellation-01]:
+      <k> runLemma (
+            ( ( ( ( ( X +Int X ) -Int Y ) -Int ( X -Int Y ) ) -Int Y ) -Int ( X -Int Y ) )
+          ) => doneLemma (
+            0
+          ) ... </k>
+
+    claim [cancellation-02]:
+      <k> runLemma (
+            ( ( A +Int ( ( B -Int A ) +Int B ) ) -Int ( B +Int B ) )
+          ) => doneLemma (
+            0
+          ) ... </k>
+
+    claim [buf-shift]:
+      <k> runLemma (
+            #buf ( 20, X <<Int 16 )
+          ) => doneLemma (
+            #buf ( 18 , X:Int ) +Bytes b"\x00\x00"
+          ) ... </k>
+          requires 0 <=Int X andBool X <Int 2 ^Int 144
+
+
  // Comparisons
  // -----------
 
@@ -391,7 +414,7 @@ module LEMMAS-SPEC
     claim <k> runLemma ( 160 ==Int #asWord ( #buf( 4, 160 ) +Bytes ( #range( #buf( 32 , _BUF ), 0, 28 ) ) ) >>Int 224 )
            => doneLemma( true ) ... </k>
 
- // buffer range sinplification
+ // buffer range simplification
  // ---------------------------
     claim <k> runLemma  ( #range((#buf(DATA_LEN, DATA) +Bytes _BUF), 0, DATA_LEN) )
            => doneLemma ( #range( #buf(DATA_LEN, DATA)             , 0, DATA_LEN) ) ... </k>
@@ -613,6 +636,17 @@ module LEMMAS-SPEC
             false
           ) ... </k>
         requires #rangeUInt(32, VV0_x_114b9705)
+
+ // #asWord
+ // ----------------
+
+    claim [buf-asWord-invert]:
+      <k> runLemma(
+            #asWord ( #buf ( 63 , lengthBytes ( VV0_data_114b9705:Bytes ) ) ) <=Int maxUInt64
+          ) => doneLemma(
+            true
+          ) ... </k>
+        requires lengthBytes ( VV0_data_114b9705:Bytes ) <=Int 1073741824
 
  // ecrecover
  // ---------
