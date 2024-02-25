@@ -814,6 +814,7 @@ These are just used by the other operators for shuffling local execution state a
            ...
          </account>
       requires ACCTFROM =/=K ACCTTO andBool VALUE <=Int ORIGFROM
+      [preserves-definedness]
 
     rule <k> #transferFunds ACCTFROM _ACCTTO VALUE => #end EVMC_BALANCE_UNDERFLOW ... </k>
          <account>
@@ -1367,6 +1368,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <accessedStorage> ... ACCT |-> (TS:Set => TS |Set SetItem(INDEX)) ... </accessedStorage>
          <schedule> SCHED </schedule>
          requires Ghasaccesslist << SCHED >>
+         [preserves-definedness]
 
     rule <k> #accessStorage ACCT INDEX => .K ... </k>
          <accessedStorage> TS => TS[ACCT <- SetItem(INDEX)] </accessedStorage>
