@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from pyk.cterm import CTerm
+from pyk.kast import Atts
 from pyk.kast.inner import KApply, KInner, KRewrite, KVariable, Subst
 from pyk.kast.manip import (
     abstract_term_safely,
@@ -229,7 +230,7 @@ def KDefinition__expand_macros(defn: KDefinition, term: KInner) -> KInner:  # no
     def _expand_macros(_term: KInner) -> KInner:
         if type(_term) is KApply:
             prod = defn.production_for_klabel(_term.label)
-            if 'macro' in prod.att or 'alias' in prod.att or 'macro-rec' in prod.att or 'alias-rec' in prod.att:
+            if any(key in prod.att for key in [Atts.MACRO, Atts.ALIAS, Atts.MACRO_REC, Atts.ALIAS_REC]):
                 for r in defn.macro_rules:
                     assert type(r.body) is KRewrite
                     _new_term = r.body.apply_top(_term)
