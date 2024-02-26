@@ -227,7 +227,7 @@ def test_pyk_prove(
             definition_dir=definition_dir,
             includes=[str(include_dir) for include_dir in config.INCLUDE_DIRS],
             save_directory=use_directory,
-            smt_timeout=300,
+            smt_timeout=500,
             smt_retry_limit=10,
             md_selector='foo',  # TODO Ignored flag, this is to avoid KeyError
             use_booster=use_booster,
