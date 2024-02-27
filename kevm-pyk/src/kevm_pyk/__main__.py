@@ -395,11 +395,11 @@ def exec_prove(
                     new_target = ensure_ksequence_on_k_cell(kcfg.node(target_node_id).cterm)
 
                     _LOGGER.info(f'Computing definedness constraint for initial node: {claim.label}')
-                    new_init = kcfg_explore.cterm_assume_defined(new_init)
+                    new_init = kcfg_explore.cterm_symbolic.assume_defined(new_init)
 
                     _LOGGER.info(f'Simplifying initial and target node: {claim.label}')
-                    new_init, _ = kcfg_explore.cterm_simplify(new_init)
-                    new_target, _ = kcfg_explore.cterm_simplify(new_target)
+                    new_init, _ = kcfg_explore.cterm_symbolic.simplify(new_init)
+                    new_target, _ = kcfg_explore.cterm_symbolic.simplify(new_target)
                     if CTerm._is_bottom(new_init.kast):
                         raise ValueError('Simplifying initial node led to #Bottom, are you sure your LHS is defined?')
                     if CTerm._is_top(new_target.kast):
