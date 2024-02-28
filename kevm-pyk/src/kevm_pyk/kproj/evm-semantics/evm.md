@@ -1730,8 +1730,7 @@ Precompiled Contracts
 
     syntax Set ::= #precompiledAccounts ( Schedule ) [klabel(#precompiledAccounts), function, total]
  // ------------------------------------------------------------------------------------------------
-    rule #precompiledAccounts(DEFAULT)           => SetItem(1) SetItem(2) SetItem(3) SetItem(4)
-    rule #precompiledAccounts(FRONTIER)          => #precompiledAccounts(DEFAULT)
+    rule #precompiledAccounts(FRONTIER)          => SetItem(1) SetItem(2) SetItem(3) SetItem(4)
     rule #precompiledAccounts(HOMESTEAD)         => #precompiledAccounts(FRONTIER)
     rule #precompiledAccounts(TANGERINE_WHISTLE) => #precompiledAccounts(HOMESTEAD)
     rule #precompiledAccounts(SPURIOUS_DRAGON)   => #precompiledAccounts(TANGERINE_WHISTLE)
