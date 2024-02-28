@@ -15,14 +15,12 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from pathos.pools import ProcessPool  # type: ignore
-from pyk.cli.utils import file_path
 from pyk.cterm import CTerm
 from pyk.kast.outer import KApply, KRewrite, KSort, KToken
 from pyk.kcfg import KCFG
 from pyk.kdist import kdist
-from pyk.kore.tools import PrintOutput, kore_print
+from pyk.kore.tools import kore_print
 from pyk.ktool.kompile import LLVMKompileType
-from pyk.ktool.krun import KRunOutput
 from pyk.prelude.ml import is_top, mlOr
 from pyk.proof import APRProof
 from pyk.proof.implies import EqualityProof
@@ -31,7 +29,17 @@ from pyk.proof.tui import APRProofViewer
 from pyk.utils import FrozenDict, hash_str, single
 
 from . import VERSION, config
-from .cli import KEVMCLIArgs, node_id_like
+from .cli import (
+    KastOptions,
+    KompileSpecOptions,
+    ProveLegacyOptions,
+    ProveOptions,
+    PruneProofOptions,
+    RunOptions,
+    ShowKCFGOptions,
+    VersionOptions,
+    ViewKCFGOptions,
+)
 from .gst_to_kore import SORT_ETHEREUM_SIMULATION, gst_to_kore, kore_pgm_to_kore
 from .kevm import KEVM, KEVMSemantics, kevm_node_printer
 from .kompile import KompileTarget, kevm_kompile
@@ -53,6 +61,8 @@ if TYPE_CHECKING:
     from pyk.kcfg.kcfg import NodeIdLike
     from pyk.kcfg.tui import KCFGElem
     from pyk.kore.rpc import FallbackReason
+    from pyk.kore.tools import PrintOutput
+    from pyk.ktool.krun import KRunOutput
     from pyk.proof.proof import Proof
     from pyk.utils import BugReport
 
@@ -699,147 +709,19 @@ def _create_argument_parser() -> ArgumentParser:
 
         return parse
 
-    kevm_cli_args = KEVMCLIArgs()
     parser = ArgumentParser(prog='kevm-pyk')
 
     command_parser = parser.add_subparsers(dest='command', required=True)
 
-    command_parser.add_parser('version', help='Print KEVM version and exit.', parents=[kevm_cli_args.logging_args])
-
-    kevm_kompile_spec_args = command_parser.add_parser(
-        'kompile-spec',
-        help='Kompile KEVM specification.',
-        parents=[kevm_cli_args.logging_args, kevm_cli_args.k_args, kevm_cli_args.kompile_args],
-    )
-    kevm_kompile_spec_args.add_argument('main_file', type=file_path, help='Path to file with main module.')
-    kevm_kompile_spec_args.add_argument('--target', type=KompileTarget, help='[haskell|maude]')
-    kevm_kompile_spec_args.add_argument(
-        '-o', '--output-definition', type=Path, dest='output_dir', help='Path to write kompiled definition to.'
-    )
-    kevm_kompile_spec_args.add_argument(
-        '--debug-build', dest='debug_build', default=False, help='Enable debug symbols in LLVM builds.'
-    )
-
-    prove_args = command_parser.add_parser(
-        'prove',
-        help='Run KEVM proof.',
-        parents=[
-            kevm_cli_args.logging_args,
-            kevm_cli_args.parallel_args,
-            kevm_cli_args.k_args,
-            kevm_cli_args.kprove_args,
-            kevm_cli_args.rpc_args,
-            kevm_cli_args.bug_report_args,
-            kevm_cli_args.smt_args,
-            kevm_cli_args.explore_args,
-            kevm_cli_args.spec_args,
-        ],
-    )
-    prove_args.add_argument(
-        '--reinit',
-        dest='reinit',
-        default=False,
-        action='store_true',
-        help='Reinitialize CFGs even if they already exist.',
-    )
-
-    prune_proof_args = command_parser.add_parser(
-        'prune-proof',
-        help='Remove a node and its successors from the proof state.',
-        parents=[
-            kevm_cli_args.logging_args,
-            kevm_cli_args.k_args,
-            kevm_cli_args.spec_args,
-        ],
-    )
-    prune_proof_args.add_argument('node', type=node_id_like, help='Node to remove CFG subgraph from.')
-
-    prove_legacy_args = command_parser.add_parser(
-        'prove-legacy',
-        help='Run KEVM proof using the legacy kprove binary.',
-        parents=[
-            kevm_cli_args.logging_args,
-            kevm_cli_args.k_args,
-            kevm_cli_args.spec_args,
-            kevm_cli_args.kprove_legacy_args,
-        ],
-    )
-    prove_legacy_args.add_argument(
-        '--bug-report-legacy', default=False, action='store_true', help='Generate a legacy bug report.'
-    )
-
-    command_parser.add_parser(
-        'view-kcfg',
-        help='Explore a given proof in the KCFG visualizer.',
-        parents=[kevm_cli_args.logging_args, kevm_cli_args.k_args, kevm_cli_args.spec_args],
-    )
-
-    command_parser.add_parser(
-        'show-kcfg',
-        help='Print the CFG for a given proof.',
-        parents=[
-            kevm_cli_args.logging_args,
-            kevm_cli_args.k_args,
-            kevm_cli_args.kcfg_show_args,
-            kevm_cli_args.spec_args,
-            kevm_cli_args.display_args,
-        ],
-    )
-
-    run_args = command_parser.add_parser(
-        'run',
-        help='Run KEVM test/simulation.',
-        parents=[
-            kevm_cli_args.logging_args,
-            kevm_cli_args.target_args,
-            kevm_cli_args.evm_chain_args,
-            kevm_cli_args.k_args,
-        ],
-    )
-    run_args.add_argument('input_file', type=file_path, help='Path to input file.')
-    run_args.add_argument(
-        '--output',
-        default=KRunOutput.PRETTY,
-        type=KRunOutput,
-        choices=list(KRunOutput),
-    )
-    run_args.add_argument(
-        '--expand-macros',
-        dest='expand_macros',
-        default=True,
-        action='store_true',
-        help='Expand macros on the input term before execution.',
-    )
-    run_args.add_argument(
-        '--no-expand-macros',
-        dest='expand_macros',
-        action='store_false',
-        help='Do not expand macros on the input term before execution.',
-    )
-    run_args.add_argument(
-        '--debugger',
-        dest='debugger',
-        action='store_true',
-        help='Run GDB debugger for execution.',
-    )
-
-    kast_args = command_parser.add_parser(
-        'kast',
-        help='Run KEVM program.',
-        parents=[
-            kevm_cli_args.logging_args,
-            kevm_cli_args.target_args,
-            kevm_cli_args.evm_chain_args,
-            kevm_cli_args.k_args,
-        ],
-    )
-    kast_args.add_argument('input_file', type=file_path, help='Path to input file.')
-    kast_args.add_argument(
-        '--output',
-        default=PrintOutput.KORE,
-        type=PrintOutput,
-        choices=list(PrintOutput),
-    )
+    command_parser = VersionOptions.parser(command_parser)
+    command_parser = KompileSpecOptions.parser(command_parser)
+    command_parser = ProveOptions.parser(command_parser)
+    command_parser = PruneProofOptions.parser(command_parser)
+    command_parser = ProveLegacyOptions.parser(command_parser)
+    command_parser = ViewKCFGOptions.parser(command_parser)
+    command_parser = ShowKCFGOptions.parser(command_parser)
+    command_parser = RunOptions.parser(command_parser)
+    command_parser = KastOptions.parser(command_parser)
 
     return parser
 
