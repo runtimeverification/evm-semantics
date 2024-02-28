@@ -1675,7 +1675,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          <id> ACCT </id>
          <localMem> LM </localMem>
          <schedule> SCHED </schedule>
-      requires #hasValidInitCode( MEMWIDTH /Int 2, SCHED)
+      requires #hasValidInitCode(MEMWIDTH, SCHED)
 
     rule [create2-invalid]:
          <k> CREATE2 _ _ _ _ => #end EVMC_OUT_OF_GAS ... </k> [owise]
