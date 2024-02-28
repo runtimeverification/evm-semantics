@@ -1716,8 +1716,7 @@ Precompiled Contracts
 
     syntax Int ::= #precompiledAccountsUB ( Schedule ) [klabel(#precompiledAccountsUB), function, total]
  // ----------------------------------------------------------------------------------------------------
-    rule #precompiledAccountsUB(DEFAULT)           => 4
-    rule #precompiledAccountsUB(FRONTIER)          => #precompiledAccountsUB(DEFAULT)
+    rule #precompiledAccountsUB(FRONTIER)          => 4
     rule #precompiledAccountsUB(HOMESTEAD)         => #precompiledAccountsUB(FRONTIER)
     rule #precompiledAccountsUB(TANGERINE_WHISTLE) => #precompiledAccountsUB(HOMESTEAD)
     rule #precompiledAccountsUB(SPURIOUS_DRAGON)   => #precompiledAccountsUB(TANGERINE_WHISTLE)
