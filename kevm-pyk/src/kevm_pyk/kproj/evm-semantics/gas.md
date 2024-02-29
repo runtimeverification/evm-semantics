@@ -104,6 +104,7 @@ module GAS-FEES
 
     syntax Gas ::= Cgascap        ( Schedule , Gas , Gas , Int ) [symbol(Cgascap_Gas), overload(Cgascap), function, total, smtlib(gas_Cgascap_Gas)]
     syntax Int ::= Cgascap        ( Schedule , Int , Int , Int ) [symbol(Cgascap_Int), overload(Cgascap), function, total, smtlib(gas_Cgascap_Int)]
+
     syntax Int ::= Csstore        ( Schedule , Int , Int , Int )         [klabel(Csstore),        function, total, smtlib(gas_Csstore)       ]
                  | Rsstore        ( Schedule , Int , Int , Int )         [klabel(Rsstore),        function, total, smtlib(gas_Rsstore)       ]
                  | Cextra         ( Schedule , Bool , Int , Bool )       [klabel(Cextra),         function, total, smtlib(gas_Cextra)        ]
