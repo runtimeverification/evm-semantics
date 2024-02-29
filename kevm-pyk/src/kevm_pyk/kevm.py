@@ -55,6 +55,12 @@ class KEVMSemantics(KCFGSemantics):
             # <k> #halt ~> X:K </k>
             elif k_cell.arity == 2 and k_cell[0] == KEVM.halt() and type(k_cell[1]) is KVariable:
                 return True
+
+        program_cell = cterm.cell('PROGRAM_CELL')
+        # Fully symbolic program
+        if type(program_cell) is KVariable:
+            return True
+
         return False
 
     def same_loop(self, cterm1: CTerm, cterm2: CTerm) -> bool:
