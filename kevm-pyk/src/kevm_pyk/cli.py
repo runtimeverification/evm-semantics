@@ -13,6 +13,7 @@ from pyk.cli.args import (
     LoggingOptions,
     Options,
     ParallelOptions,
+    SaveDirOptions,
     SMTOptions,
     SpecOptions,
 )
@@ -141,7 +142,7 @@ class KompileSpecOptions(LoggingOptions, KOptions, KompileOptions):
         return parser
 
 
-class ShowKCFGOptions(LoggingOptions, KOptions, SpecOptions, DisplayOptions):
+class ShowKCFGOptions(LoggingOptions, KOptions, SpecOptions, KEVMDisplayOptions):
     nodes: list[NodeIdLike]
     node_deltas: list[tuple[NodeIdLike, NodeIdLike]]
     failure_info: bool
@@ -266,7 +267,7 @@ class RPCOptions(Options):
     trace_rewrites: bool
     kore_rpc_command: str | None
     use_booster: bool
-    fallback_on: list[FallbackReason]
+    fallback_on: list[FallbackReason] | None
     post_exec_simplify: bool
     interim_simplification: int | None
     port: int | None
@@ -282,6 +283,7 @@ class RPCOptions(Options):
             'interim_simplification': None,
             'port': None,
             'maude_port': None,
+            'fallback_on': None,
         }
 
     @staticmethod
@@ -485,7 +487,15 @@ class ExploreOptions(Options):
 
 
 class ProveOptions(
-    LoggingOptions, KOptions, ParallelOptions, KProveOptions, BugReportOptions, SMTOptions, ExploreOptions, SpecOptions
+    LoggingOptions,
+    KOptions,
+    ParallelOptions,
+    KProveOptions,
+    BugReportOptions,
+    SMTOptions,
+    ExploreOptions,
+    SpecOptions,
+    RPCOptions,
 ):
     reinit: bool
 
@@ -652,7 +662,7 @@ class TargetOptions(Options):
     @staticmethod
     def default() -> dict[str, Any]:
         return {
-            'target': 'haskell',
+            'target': 'llvm',
         }
 
     @staticmethod
@@ -714,7 +724,7 @@ class EVMChainOptions(Options):
         return parser
 
 
-class RunOptions(LoggingOptions, KOptions, TargetOptions, EVMChainOptions):
+class RunOptions(LoggingOptions, KOptions, TargetOptions, EVMChainOptions, SaveDirOptions):
     input_file: Path
     output: KRunOutput
     expand_macros: bool
@@ -768,7 +778,7 @@ class RunOptions(LoggingOptions, KOptions, TargetOptions, EVMChainOptions):
         return parser
 
 
-class KastOptions(LoggingOptions, TargetOptions, EVMChainOptions, KOptions):
+class KastOptions(LoggingOptions, TargetOptions, EVMChainOptions, SaveDirOptions):
     input_file: Path
     output: PrintOutput
 
