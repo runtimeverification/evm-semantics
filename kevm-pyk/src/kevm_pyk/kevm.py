@@ -275,13 +275,21 @@ class KEVM(KProve, KRun):
                 if type(account) is KApply:
                     constraints.extend(_add_account_invariant(account))
 
-        constraints.append(mlEqualsTrue(KEVM.range_uint(256, cterm.cell('TIMESTAMP_CELL'))))
         constraints.append(mlEqualsTrue(KEVM.range_address(cterm.cell('ID_CELL'))))
         constraints.append(mlEqualsTrue(KEVM.range_address(cterm.cell('CALLER_CELL'))))
-        constraints.append(mlEqualsTrue(KEVM.range_address(cterm.cell('ORIGIN_CELL'))))
+        constraints.append(
+            mlEqualsFalse(KEVM.is_precompiled_account(cterm.cell('CALLER_CELL'), cterm.cell('SCHEDULE_CELL')))
+        )
         constraints.append(mlEqualsTrue(ltInt(KEVM.size_bytes(cterm.cell('CALLDATA_CELL')), KEVM.pow128())))
+        constraints.append(mlEqualsTrue(KEVM.range_uint(256, cterm.cell('CALLVALUE_CELL'))))
+
+        constraints.append(mlEqualsTrue(KEVM.range_address(cterm.cell('ORIGIN_CELL'))))
+        constraints.append(
+            mlEqualsFalse(KEVM.is_precompiled_account(cterm.cell('ORIGIN_CELL'), cterm.cell('SCHEDULE_CELL')))
+        )
 
         constraints.append(mlEqualsTrue(KEVM.range_blocknum(cterm.cell('NUMBER_CELL'))))
+        constraints.append(mlEqualsTrue(KEVM.range_uint(256, cterm.cell('TIMESTAMP_CELL'))))
 
         for c in constraints:
             cterm = cterm.add_constraint(c)
