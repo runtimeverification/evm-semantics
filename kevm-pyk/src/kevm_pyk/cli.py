@@ -264,11 +264,11 @@ class KProveOptions(Options):
 
 class RPCOptions(Options):
     trace_rewrites: bool
-    kore_rpc_command: str
+    kore_rpc_command: str | None
     use_booster: bool
     fallback_on: list[FallbackReason]
     post_exec_simplify: bool
-    interim_simplification: int
+    interim_simplification: int | None
     port: int | None
     maude_port: int | None
 
@@ -278,6 +278,10 @@ class RPCOptions(Options):
             'trace_rewrites': False,
             'use_booster': False,
             'post_exec_simplify': True,
+            'kore_rpc_command': None,
+            'interim_simplification': None,
+            'port': None,
+            'maude_port': None,
         }
 
     @staticmethod
@@ -370,6 +374,8 @@ class ExploreOptions(Options):
             'failure_info': True,
             'counterexample_info': True,
             'fail_fast': True,
+            'max_iterations': None,
+            'auto_abstract_gas': False,
         }
 
     @staticmethod
@@ -552,6 +558,9 @@ class KProveLegacyOptions(Options):
         return {
             'bug_report': False,
             'debugger': False,
+            'max_depth': None,
+            'max_counterexamples': None,
+            'branching_allowed': None,
         }
 
     @staticmethod
@@ -641,6 +650,12 @@ class TargetOptions(Options):
     target: str
 
     @staticmethod
+    def default() -> dict[str, Any]:
+        return {
+            'target': 'haskell',
+        }
+
+    @staticmethod
     def args(parser: ArgumentParser) -> ArgumentParser:
         parser.add_argument('--target', choices=['llvm', 'haskell', 'haskell-standalone', 'foundry'])
         return parser
@@ -710,6 +725,7 @@ class RunOptions(LoggingOptions, KOptions, TargetOptions, EVMChainOptions):
         return {
             'output': KRunOutput.PRETTY,
             'expand_macros': True,
+            'debugger': False,
         }
 
     @staticmethod
