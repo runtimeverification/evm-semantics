@@ -39,6 +39,7 @@ from .cli import (
     ShowKCFGOptions,
     VersionOptions,
     ViewKCFGOptions,
+    generate_command_options,
 )
 from .gst_to_kore import SORT_ETHEREUM_SIMULATION, gst_to_kore, kore_pgm_to_kore
 from .kevm import KEVM, KEVMSemantics, kevm_node_printer
@@ -84,120 +85,98 @@ def main() -> None:
     parser = _create_argument_parser()
     args = parser.parse_args()
     logging.basicConfig(level=_loglevel(args), format=_LOG_FORMAT)
+    options = generate_command_options({key: val for (key, val) in vars(args).items() if val is not None})
 
     executor_name = 'exec_' + args.command.lower().replace('-', '_')
     if executor_name not in globals():
         raise AssertionError(f'Unimplemented command: {args.command}')
 
     execute = globals()[executor_name]
-    execute(**vars(args))
+    execute(options)
 
 
 # Command implementation
 
 
-def exec_version(**kwargs: Any) -> None:
+def exec_version(options: VersionOptions) -> None:
     print(f'KEVM Version: {VERSION}')
 
 
-def exec_kompile_spec(
-    output_dir: Path | None,
-    main_file: Path,
-    emit_json: bool,
-    includes: list[str],
-    main_module: str | None,
-    syntax_module: str | None,
-    target: KompileTarget | None = None,
-    read_only: bool = False,
-    ccopts: Iterable[str] = (),
-    o0: bool = False,
-    o1: bool = False,
-    o2: bool = False,
-    o3: bool = False,
-    enable_llvm_debug: bool = False,
-    llvm_library: bool = False,
-    debug_build: bool = False,
-    debug: bool = False,
-    verbose: bool = False,
-    **kwargs: Any,
-) -> None:
-    if target is None:
-        target = KompileTarget.HASKELL
-
-    if target not in [KompileTarget.HASKELL, KompileTarget.MAUDE]:
-        raise ValueError(f'Can only call kevm kompile-spec with --target [haskell,maude], got: {target.value}')
-
-    output_dir = output_dir or Path()
+def exec_kompile_spec(options: KompileSpecOptions) -> None:
+    if options.target not in [KompileTarget.HASKELL, KompileTarget.MAUDE]:
+        raise ValueError(f'Can only call kevm kompile-spec with --target [haskell,maude], got: {options.target.value}')
 
     optimization = 0
-    if o1:
+    if options.o1:
         optimization = 1
-    if o2:
+    if options.o2:
         optimization = 2
-    if o3:
+    if options.o3:
         optimization = 3
-    if debug_build:
+    if options.debug_build:
         optimization = 0
 
     kevm_kompile(
-        target,
-        output_dir=output_dir,
-        main_file=main_file,
-        main_module=main_module,
-        syntax_module=syntax_module,
-        includes=includes,
-        emit_json=emit_json,
-        read_only=read_only,
-        ccopts=ccopts,
+        options.target,
+        output_dir=options.output_dir,
+        main_file=options.main_file,
+        main_module=options.main_module,
+        syntax_module=options.syntax_module,
+        includes=options.includes,
+        emit_json=options.emit_json,
+        read_only=options.read_only,
+        ccopts=options.ccopts,
         optimization=optimization,
-        enable_llvm_debug=enable_llvm_debug,
-        llvm_kompile_type=LLVMKompileType.C if llvm_library else LLVMKompileType.MAIN,
-        debug_build=debug_build,
-        debug=debug,
-        verbose=verbose,
+        enable_llvm_debug=options.enable_llvm_debug,
+        llvm_kompile_type=LLVMKompileType.C if options.llvm_library else LLVMKompileType.MAIN,
+        debug_build=options.debug_build,
+        debug=options.debug,
+        verbose=options.verbose,
     )
 
 
 def exec_prove_legacy(
-    spec_file: Path,
-    definition_dir: Path | None = None,
-    includes: Iterable[str] = (),
-    bug_report_legacy: bool = False,
-    save_directory: Path | None = None,
-    spec_module: str | None = None,
-    claim_labels: Iterable[str] | None = None,
-    exclude_claim_labels: Iterable[str] = (),
-    debug: bool = False,
-    debugger: bool = False,
-    max_depth: int | None = None,
-    max_counterexamples: int | None = None,
-    branching_allowed: int | None = None,
-    haskell_backend_args: Iterable[str] = (),
-    **kwargs: Any,
+    options: ProveLegacyOptions,
+    #      spec_file: Path,
+    #      definition_dir: Path | None = None,
+    #      includes: Iterable[str] = (),
+    #      bug_report_legacy: bool = False,
+    #      save_directory: Path | None = None,
+    #      spec_module: str | None = None,
+    #      claim_labels: Iterable[str] | None = None,
+    #      exclude_claim_labels: Iterable[str] = (),
+    #      debug: bool = False,
+    #      debugger: bool = False,
+    #      max_depth: int | None = None,
+    #      max_counterexamples: int | None = None,
+    #      branching_allowed: int | None = None,
+    #      haskell_backend_args: Iterable[str] = (),
+    #      **kwargs: Any,
 ) -> None:
-    _ignore_arg(kwargs, 'md_selector', f'--md-selector: {kwargs["md_selector"]}')
+    #      _ignore_arg(kwargs, 'md_selector', f'--md-selector: {kwargs["md_selector"]}')
 
+    definition_dir = options.definition_dir
     if definition_dir is None:
         definition_dir = kdist.get('evm-semantics.haskell')
 
-    kevm = KEVM(definition_dir, use_directory=save_directory)
+    kevm = KEVM(definition_dir, use_directory=options.save_directory)
 
-    include_dirs = [Path(include) for include in includes]
+    include_dirs = [Path(include) for include in options.includes]
     include_dirs += config.INCLUDE_DIRS
 
     final_state = kevm.prove_legacy(
-        spec_file=spec_file,
+        spec_file=options.spec_file,
         includes=include_dirs,
-        bug_report=bug_report_legacy,
-        spec_module=spec_module,
-        claim_labels=claim_labels,
-        exclude_claim_labels=exclude_claim_labels,
-        debug=debug,
-        debugger=debugger,
-        max_depth=max_depth,
-        max_counterexamples=max_counterexamples,
-        branching_allowed=branching_allowed,
-        haskell_backend_args=haskell_backend_args,
+        bug_report=options.bug_report_legacy,
+        spec_module=options.spec_module,
+        claim_labels=options.claim_labels,
+        exclude_claim_labels=options.exclude_claim_labels,
+        debug=options.debug,
+        debugger=options.debugger,
+        max_depth=options.max_depth,
+        max_counterexamples=options.max_counterexamples,
+        branching_allowed=options.branching_allowed,
+        haskell_backend_args=options.haskell_backend_args,
     )
     final_kast = mlOr([state.kast for state in final_state])
     print(kevm.pretty_print(final_kast))

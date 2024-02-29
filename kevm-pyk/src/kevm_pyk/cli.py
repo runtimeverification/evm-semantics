@@ -48,6 +48,31 @@ def node_id_like(s: str) -> NodeIdLike:
         return s
 
 
+def generate_command_options(args: dict[str, Any]) -> LoggingOptions:
+    command = args['command'].lower()
+    match command:
+        case 'version':
+            return VersionOptions(args)
+        case 'kompile-spec':
+            return KompileSpecOptions(args)
+        case 'prove':
+            return ProveOptions(args)
+        case 'prune-proof':
+            return PruneProofOptions(args)
+        case 'prove-legacy':
+            return ProveLegacyOptions(args)
+        case 'view-kcfg':
+            return ViewKCFGOptions(args)
+        case 'show-kcfg':
+            return ShowKCFGOptions(args)
+        case 'run':
+            return RunOptions(args)
+        case 'kast':
+            return KastOptions(args)
+        case _:
+            raise ValueError('Unrecognized command.')
+
+
 class KEVMDisplayOptions(DisplayOptions):
     sort_collections: bool
 
@@ -90,6 +115,8 @@ class KompileSpecOptions(LoggingOptions, KOptions, KompileOptions):
     def default() -> dict[str, Any]:
         return {
             'debug_build': False,
+            'output_dir': Path(),
+            'target': KompileTarget.HASKELL,
         }
 
     @staticmethod
