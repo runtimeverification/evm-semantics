@@ -163,7 +163,7 @@ def print_failure_info(proof: Proof, kcfg_explore: KCFGExplore, counterexample_i
                 res_lines += [f'    {line}' for line in reason.split('\n')]
 
                 res_lines.append('  Path condition:')
-                res_lines += [f'    {kcfg_explore.kprint.pretty_print(proof.path_constraints(node.id))}']
+                res_lines += [f'    {kcfg_explore.pretty_print(proof.path_constraints(node.id))}']
                 if counterexample_info:
                     res_lines.extend(print_model(node, kcfg_explore))
 
@@ -186,7 +186,7 @@ def print_model(node: KCFG.Node, kcfg_explore: KCFGExplore) -> list[str]:
         res_lines.append('  Model:')
         for var, term in result_subst.to_dict().items():
             term_kast = KInner.from_dict(term)
-            res_lines.append(f'    {var} = {kcfg_explore.kprint.pretty_print(term_kast)}')
+            res_lines.append(f'    {var} = {kcfg_explore.pretty_print(term_kast)}')
     else:
         res_lines.append('  Failed to generate a model.')
 
@@ -323,7 +323,7 @@ def legacy_explore(
                 cterm_symbolic = CTermSymbolic(
                     client, kprint.definition, kprint.kompiled_kore, trace_rewrites=trace_rewrites
                 )
-                yield KCFGExplore(kprint, cterm_symbolic, kcfg_semantics=kcfg_semantics, id=id)
+                yield KCFGExplore(cterm_symbolic, kcfg_semantics=kcfg_semantics, id=id)
     else:
         if port is None:
             raise ValueError('Missing port with start_server=False')
@@ -342,4 +342,4 @@ def legacy_explore(
             cterm_symbolic = CTermSymbolic(
                 client, kprint.definition, kprint.kompiled_kore, trace_rewrites=trace_rewrites
             )
-            yield KCFGExplore(kprint, cterm_symbolic, kcfg_semantics=kcfg_semantics, id=id)
+            yield KCFGExplore(cterm_symbolic, kcfg_semantics=kcfg_semantics, id=id)
