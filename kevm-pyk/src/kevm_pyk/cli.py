@@ -49,6 +49,8 @@ def node_id_like(s: str) -> NodeIdLike:
 
 
 class KEVMDisplayOptions(DisplayOptions):
+    sort_collections: bool
+
     @staticmethod
     def default() -> dict[str, Any]:
         return {'sort_collections': False}
@@ -66,6 +68,11 @@ class KEVMDisplayOptions(DisplayOptions):
 
 
 class KOptions(KDefinitionOptions):
+    depth: int | None
+
+    @staticmethod
+    def default() -> dict[str, Any]:
+        return {'depth': None}
 
     @staticmethod
     def args(parser: ArgumentParser) -> ArgumentParser:
@@ -74,6 +81,11 @@ class KOptions(KDefinitionOptions):
 
 
 class KompileSpecOptions(LoggingOptions, KOptions, KompileOptions):
+    main_file: Path
+    target: KompileTarget
+    output_dir: Path
+    debug_build: bool
+
     @staticmethod
     def default() -> dict[str, Any]:
         return {
@@ -103,6 +115,14 @@ class KompileSpecOptions(LoggingOptions, KOptions, KompileOptions):
 
 
 class ShowKCFGOptions(LoggingOptions, KOptions, SpecOptions, DisplayOptions):
+    nodes: list[NodeIdLike]
+    node_deltas: list[tuple[NodeIdLike, NodeIdLike]]
+    failure_info: bool
+    to_module: bool
+    pending: bool
+    failing: bool
+    counterexample_info: bool
+
     @staticmethod
     def parser(base: _SubParsersAction) -> _SubParsersAction:
         base.add_parser(
@@ -111,6 +131,16 @@ class ShowKCFGOptions(LoggingOptions, KOptions, SpecOptions, DisplayOptions):
             parents=[ShowKCFGOptions.all_args()],
         )
         return base
+
+    @staticmethod
+    def default() -> dict[str, Any]:
+        return {
+            'failure_info': False,
+            'to_module': False,
+            'pending': False,
+            'failing': False,
+            'counterexample_info': False,
+        }
 
     @staticmethod
     def args(parser: ArgumentParser) -> ArgumentParser:
@@ -133,7 +163,7 @@ class ShowKCFGOptions(LoggingOptions, KOptions, SpecOptions, DisplayOptions):
         parser.add_argument(
             '--failure-information',
             dest='failure_info',
-            default=False,
+            default=None,
             action='store_true',
             help='Show failure summary for cfg',
         )
@@ -144,18 +174,18 @@ class ShowKCFGOptions(LoggingOptions, KOptions, SpecOptions, DisplayOptions):
             help='Do not show failure summary for cfg',
         )
         parser.add_argument(
-            '--to-module', dest='to_module', default=False, action='store_true', help='Output edges as a K module.'
+            '--to-module', dest='to_module', default=None, action='store_true', help='Output edges as a K module.'
         )
         parser.add_argument(
-            '--pending', dest='pending', default=False, action='store_true', help='Also display pending nodes'
+            '--pending', dest='pending', default=None, action='store_true', help='Also display pending nodes'
         )
         parser.add_argument(
-            '--failing', dest='failing', default=False, action='store_true', help='Also display failing nodes'
+            '--failing', dest='failing', default=None, action='store_true', help='Also display failing nodes'
         )
         parser.add_argument(
             '--counterexample-information',
             dest='counterexample_info',
-            default=False,
+            default=None,
             action='store_true',
             help="Show models for failing nodes. Should be called with the '--failure-information' flag",
         )
@@ -163,6 +193,17 @@ class ShowKCFGOptions(LoggingOptions, KOptions, SpecOptions, DisplayOptions):
 
 
 class KProveOptions(Options):
+    debug_equations: list[str]
+    always_check_subsumption: bool
+    fast_check_subsumption: bool
+
+    @staticmethod
+    def default() -> dict[str, Any]:
+        return {
+            'always_check_subsumption': True,
+            'fast_check_subsumption': False,
+        }
+
     @staticmethod
     def args(parser: ArgumentParser) -> ArgumentParser:
         parser.add_argument(
@@ -173,21 +214,21 @@ class KProveOptions(Options):
         )
         parser.add_argument(
             '--always-check-subsumption',
-            dest='always-check_subsumption',
-            default=True,
+            dest='always_check_subsumption',
+            default=None,
             action='store_true',
             help='Check subsumption even on non-terminal nodes.',
         )
         parser.add_argument(
             '--no-always-check-subsumption',
-            dest='always-check_subsumption',
+            dest='always_check_subsumption',
             action='store_false',
             help='Do not check subsumption on non-terminal nodes.',
         )
         parser.add_argument(
             '--fast-check-subsumption',
             dest='fast_check_subsumption',
-            default=False,
+            default=None,
             action='store_true',
             help='Use fast-check on k-cell to determine subsumption.',
         )
@@ -195,12 +236,29 @@ class KProveOptions(Options):
 
 
 class RPCOptions(Options):
+    trace_rewrites: bool
+    kore_rpc_command: str
+    use_booster: bool
+    fallback_on: list[FallbackReason]
+    post_exec_simplify: bool
+    interim_simplification: int
+    port: int | None
+    maude_port: int | None
+
+    @staticmethod
+    def default() -> dict[str, Any]:
+        return {
+            'trace_rewrites': False,
+            'use_booster': False,
+            'post_exec_simplify': True,
+        }
+
     @staticmethod
     def args(parser: ArgumentParser) -> ArgumentParser:
         parser.add_argument(
             '--trace-rewrites',
             dest='trace_rewrites',
-            default=False,
+            default=None,
             action='store_true',
             help='Log traces of all simplification and rewrite rule applications.',
         )
@@ -214,7 +272,7 @@ class RPCOptions(Options):
         parser.add_argument(
             '--use-booster',
             dest='use_booster',
-            default=False,
+            default=None,
             action='store_true',
             help='Use the booster RPC server instead of kore-rpc.',
         )
@@ -227,7 +285,7 @@ class RPCOptions(Options):
         parser.add_argument(
             '--post-exec-simplify',
             dest='post_exec_simplify',
-            default=True,
+            default=None,
             action='store_true',
             help='Always simplify states with kore backend after booster execution, only usable with --use-booster.',
         )
@@ -261,55 +319,80 @@ class RPCOptions(Options):
 
 
 class ExploreOptions(Options):
+    break_every_step: bool
+    break_on_jumpi: bool
+    break_on_calls: bool
+    break_on_storage: bool
+    break_on_basic_blocks: bool
+    max_depth: int
+    max_iterations: int | None
+    failure_info: bool
+    auto_abstract_gas: bool
+    counterexample_info: bool
+    fail_fast: bool
+
+    @staticmethod
+    def default() -> dict[str, Any]:
+        return {
+            'break_every_step': False,
+            'break_on_jumpi': False,
+            'break_on_calls': False,
+            'break_on_storage': False,
+            'break_on_basic_blocks': False,
+            'max_depth': 1000,
+            'failure_info': True,
+            'counterexample_info': True,
+            'fail_fast': True,
+        }
 
     @staticmethod
     def args(parser: ArgumentParser) -> ArgumentParser:
         parser.add_argument(
             '--break-every-step',
             dest='break_every_step',
-            default=False,
+            default=None,
             action='store_true',
             help='Store a node for every EVM opcode step (expensive).',
         )
         parser.add_argument(
             '--break-on-jumpi',
             dest='break_on_jumpi',
-            default=False,
+            default=None,
             action='store_true',
             help='Store a node for every EVM jump opcode.',
         )
         parser.add_argument(
             '--break-on-calls',
             dest='break_on_calls',
-            default=False,
+            default=None,
             action='store_true',
             help='Store a node for every EVM call made.',
         )
         parser.add_argument(
             '--no-break-on-calls',
             dest='break_on_calls',
-            default=True,
+            default=None,
             action='store_false',
             help='Do not store a node for every EVM call made.',
         )
         parser.add_argument(
             '--break-on-storage',
             dest='break_on_storage',
-            default=False,
+            default=None,
             action='store_true',
             help='Store a node for every EVM SSTORE/SLOAD made.',
         )
         parser.add_argument(
             '--break-on-basic-blocks',
             dest='break_on_basic_blocks',
-            default=False,
+            default=None,
             action='store_true',
             help='Store a node for every EVM basic block (implies --break-on-calls).',
         )
         parser.add_argument(
             '--max-depth',
             dest='max_depth',
-            default=1000,
+            default=None,
             type=int,
             help='Maximum number of K steps before the state is saved in a new node in the CFG. Branching will cause this to happen earlier.',
         )
@@ -323,7 +406,7 @@ class ExploreOptions(Options):
         parser.add_argument(
             '--failure-information',
             dest='failure_info',
-            default=True,
+            default=None,
             action='store_true',
             help='Show failure summary for all failing tests',
         )
@@ -342,7 +425,7 @@ class ExploreOptions(Options):
         parser.add_argument(
             '--counterexample-information',
             dest='counterexample_info',
-            default=True,
+            default=None,
             action='store_true',
             help='Show models for failing nodes.',
         )
@@ -355,7 +438,7 @@ class ExploreOptions(Options):
         parser.add_argument(
             '--fail-fast',
             dest='fail_fast',
-            default=True,
+            default=None,
             action='store_true',
             help='Stop execution on other branches if a failing node is detected.',
         )
@@ -371,6 +454,14 @@ class ExploreOptions(Options):
 class ProveOptions(
     LoggingOptions, KOptions, ParallelOptions, KProveOptions, BugReportOptions, SMTOptions, ExploreOptions, SpecOptions
 ):
+    reinit: bool
+
+    @staticmethod
+    def default() -> dict[str, Any]:
+        return {
+            'reinit': False,
+        }
+
     @staticmethod
     def parser(base: _SubParsersAction) -> _SubParsersAction:
         base.add_parser(
@@ -385,7 +476,7 @@ class ProveOptions(
         parser.add_argument(
             '--reinit',
             dest='reinit',
-            default=False,
+            default=None,
             action='store_true',
             help='Reinitialize CFGs even if they already exist.',
         )
@@ -404,6 +495,8 @@ class VersionOptions(LoggingOptions):
 
 
 class PruneProofOptions(LoggingOptions, KOptions, SpecOptions):
+    node: NodeIdLike
+
     @staticmethod
     def parser(base: _SubParsersAction) -> _SubParsersAction:
         base.add_parser(
@@ -420,18 +513,32 @@ class PruneProofOptions(LoggingOptions, KOptions, SpecOptions):
 
 
 class KProveLegacyOptions(Options):
+    bug_report: bool
+    debugger: bool
+    max_depth: int | None
+    max_counterexamples: int | None
+    branching_allowed: int | None
+    haskell_backend_args: list[str]
+
+    @staticmethod
+    def default() -> dict[str, Any]:
+        return {
+            'bug_report': False,
+            'debugger': False,
+        }
+
     @staticmethod
     def args(parser: ArgumentParser) -> ArgumentParser:
         parser.add_argument(
             '--bug-report',
-            default=False,
+            default=None,
             action='store_true',
             help='Generate a haskell-backend bug report for the execution.',
         )
         parser.add_argument(
             '--debugger',
             dest='debugger',
-            default=False,
+            default=None,
             action='store_true',
             help='Launch proof in an interactive debugger.',
         )
@@ -467,6 +574,14 @@ class KProveLegacyOptions(Options):
 
 
 class ProveLegacyOptions(LoggingOptions, KOptions, SpecOptions, KProveLegacyOptions):
+    bug_report_legacy: bool
+
+    @staticmethod
+    def default() -> dict[str, Any]:
+        return {
+            'bug_report_legacy': False,
+        }
+
     @staticmethod
     def parser(base: _SubParsersAction) -> _SubParsersAction:
         base.add_parser(
@@ -479,7 +594,7 @@ class ProveLegacyOptions(LoggingOptions, KOptions, SpecOptions, KProveLegacyOpti
     @staticmethod
     def args(parser: ArgumentParser) -> ArgumentParser:
         parser.add_argument(
-            '--bug-report-legacy', default=False, action='store_true', help='Generate a legacy bug report.'
+            '--bug-report-legacy', default=None, action='store_true', help='Generate a legacy bug report.'
         )
         return parser
 
@@ -496,6 +611,8 @@ class ViewKCFGOptions(LoggingOptions, KOptions, SpecOptions):
 
 
 class TargetOptions(Options):
+    target: str
+
     @staticmethod
     def args(parser: ArgumentParser) -> ArgumentParser:
         parser.add_argument('--target', choices=['llvm', 'haskell', 'haskell-standalone', 'foundry'])
@@ -503,6 +620,20 @@ class TargetOptions(Options):
 
 
 class EVMChainOptions(Options):
+    schedule: str
+    chainid: int
+    mode: str
+    usegas: bool
+
+    @staticmethod
+    def default() -> dict[str, Any]:
+        return {
+            'schedule': 'SHANGHAI',
+            'chainid': 1,
+            'mode': 'NORMAL',
+            'usegas': False,
+        }
+
     @staticmethod
     def args(parser: ArgumentParser) -> ArgumentParser:
         schedules = (
@@ -525,23 +656,35 @@ class EVMChainOptions(Options):
         parser.add_argument(
             '--schedule',
             choices=schedules,
-            default='SHANGHAI',
+            default=None,
             help=f"schedule to use for execution [{'|'.join(schedules)}]",
         )
-        parser.add_argument('--chainid', type=int, default=1, help='chain ID to use for execution')
+        parser.add_argument('--chainid', type=int, default=None, help='chain ID to use for execution')
         parser.add_argument(
             '--mode',
             choices=modes,
-            default='NORMAL',
+            default=None,
             help="execution mode to use [{'|'.join(modes)}]",
         )
         parser.add_argument(
-            '--no-gas', action='store_false', dest='usegas', default=True, help='omit gas cost computations'
+            '--no-gas', action='store_false', dest='usegas', default=None, help='omit gas cost computations'
         )
         return parser
 
 
 class RunOptions(LoggingOptions, KOptions, TargetOptions, EVMChainOptions):
+    input_file: Path
+    output: KRunOutput
+    expand_macros: bool
+    debugger: bool
+
+    @staticmethod
+    def default() -> dict[str, Any]:
+        return {
+            'output': KRunOutput.PRETTY,
+            'expand_macros': True,
+        }
+
     @staticmethod
     def parser(base: _SubParsersAction) -> _SubParsersAction:
         base.add_parser(
@@ -556,14 +699,14 @@ class RunOptions(LoggingOptions, KOptions, TargetOptions, EVMChainOptions):
         parser.add_argument('input_file', type=file_path, help='Path to input file.')
         parser.add_argument(
             '--output',
-            default=KRunOutput.PRETTY,
+            default=None,
             type=KRunOutput,
             choices=list(KRunOutput),
         )
         parser.add_argument(
             '--expand-macros',
             dest='expand_macros',
-            default=True,
+            default=None,
             action='store_true',
             help='Expand macros on the input term before execution.',
         )
@@ -583,6 +726,15 @@ class RunOptions(LoggingOptions, KOptions, TargetOptions, EVMChainOptions):
 
 
 class KastOptions(LoggingOptions, TargetOptions, EVMChainOptions, KOptions):
+    input_file: Path
+    output: PrintOutput
+
+    @staticmethod
+    def default() -> dict[str, Any]:
+        return {
+            'output': PrintOutput.KORE,
+        }
+
     @staticmethod
     def parser(base: _SubParsersAction) -> _SubParsersAction:
         base.add_parser(
@@ -597,7 +749,7 @@ class KastOptions(LoggingOptions, TargetOptions, EVMChainOptions, KOptions):
         parser.add_argument('input_file', type=file_path, help='Path to input file.')
         parser.add_argument(
             '--output',
-            default=PrintOutput.KORE,
+            default=None,
             type=PrintOutput,
             choices=list(PrintOutput),
         )
