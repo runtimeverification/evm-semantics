@@ -4,7 +4,7 @@ from pyk.ktool.kprint import KAstInput, KAstOutput, _kast
 from ..utils import REPO_ROOT
 
 
-def test_parse() -> None:
+def test_parse(update_expected_output: bool) -> None:
     # Given
     evm_file = REPO_ROOT / 'tests/interactive/sumTo10.evm'
     expected_file = REPO_ROOT / 'tests/interactive/sumTo10.evm.parse-expected'
@@ -19,4 +19,8 @@ def test_parse() -> None:
     ).stdout
 
     # Then
+    if update_expected_output:
+        expected_file.write_text(actual)
+        return
+
     assert actual == expected
