@@ -124,6 +124,8 @@ def run_prover(
         prover.advance_proof(max_iterations=max_iterations, fail_fast=fail_fast)
 
     except Exception as e:
+        if type(proof) is APRProof:
+            proof.error_info = e
         _LOGGER.error(f'Proof crashed: {proof.id}\n{e}', exc_info=True)
         return False
 
