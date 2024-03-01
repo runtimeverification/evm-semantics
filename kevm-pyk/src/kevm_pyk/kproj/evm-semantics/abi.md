@@ -135,7 +135,7 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
                       | #tuple   ( TypedArgs )                  [klabel(abi_type_tuple),   symbol]
  // ----------------------------------------------------------------------------------------------
 
-    syntax TypedArgs ::= List{TypedArg, ","} [klabel(typedArgs)]
+    syntax TypedArgs ::= List{TypedArg, ","} [symbol(typedArgs)]
  // ------------------------------------------------------------
 
     syntax Bytes ::= #abiCallData ( String , TypedArgs ) [klabel(#abiCallData), function]
@@ -605,7 +605,7 @@ where `1003892871367861763272476045097431689001461395759728643661426852242313133
                       | #indexed ( TypedArg ) [klabel(#indexed)]
  // ------------------------------------------------------------
 
-    syntax EventArgs ::= List{EventArg, ","} [klabel(eventArgs)]
+    syntax EventArgs ::= List{EventArg, ","} [symbol(eventArgs)]
  // ------------------------------------------------------------
 
     syntax SubstateLogEntry ::= #abiEventLog ( Int , String , EventArgs ) [klabel(#abiEventLog), function]
