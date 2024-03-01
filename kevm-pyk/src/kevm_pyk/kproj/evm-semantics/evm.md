@@ -171,7 +171,7 @@ In the comments next to each cell, we've marked which component of the YellowPap
       </kevm>
 
     syntax EthereumSimulation
- // ----------------------------
+ // -------------------------
 ```
 
 Modal Semantics
@@ -749,9 +749,9 @@ These are just used by the other operators for shuffling local execution state a
 ```k
     syntax InternalOp ::= "#newAccount" Int
                         | "#newExistingAccount" Int
- // --------------------------------------------
+ // -----------------------------------------------
     rule <k> #newAccount ACCT => #newExistingAccount ACCT ... </k> <account> <acctID> ACCT </acctID> ... </account>
-    rule <k> #newAccount ACCT => .    ... </k>
+    rule <k> #newAccount ACCT => .K    ... </k>
              <accounts>
                ( .Bag
                   =>
@@ -1394,9 +1394,9 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     rule <k> #accessAccounts ADDRSET:Set => .K ... </k>
          <accessedAccounts> TOUCHED_ACCOUNTS => TOUCHED_ACCOUNTS |Set ADDRSET </accessedAccounts>
 
-    syntax Set ::= #computeValidJumpDests(Bytes)            [klabel(#computeValidJumpDests), function, memo, total]
-                 | #computeValidJumpDests(Bytes, Int, List) [klabel(#computeValidJumpDestsAux), function]
- // ---------------------------------------------------------------------------------------------------------------
+    syntax Set ::= #computeValidJumpDests(Bytes)            [klabel(#computeValidJumpDests),    function, memo, total]
+                 | #computeValidJumpDests(Bytes, Int, List) [klabel(#computeValidJumpDestsAux), function             ]
+ // ------------------------------------------------------------------------------------------------------------------
     rule #computeValidJumpDests(PGM) => #computeValidJumpDests(PGM, 0, .List)
 
     syntax Set ::= #computeValidJumpDestsWithinBound(Bytes, Int, List) [klabel(#computeValidJumpDestsWithinBound), function]
@@ -1793,7 +1793,7 @@ Precompiled Contracts
                    | #modexp2 ( Int , Int , Int , Bytes ) [klabel(#modexp2), function]
                    | #modexp3 ( Int , Int , Int , Bytes ) [klabel(#modexp3), function]
                    | #modexp4 ( Int , Int , Int )         [klabel(#modexp4), function]
- // ----------------------------------------------------------------
+ // ----------------------------------------------------------------------------------
     rule #modexp1(BASELEN, EXPLEN,   MODLEN, DATA) => #modexp2(#asInteger(#range(DATA, 0, BASELEN)), EXPLEN, MODLEN, #range(DATA, BASELEN, maxInt(0, lengthBytes(DATA) -Int BASELEN))) requires MODLEN =/=Int 0
     rule #modexp1(_,       _,        0,      _)    => .Bytes
     rule #modexp2(BASE,    EXPLEN,   MODLEN, DATA) => #modexp3(BASE, #asInteger(#range(DATA, 0, EXPLEN)), MODLEN, #range(DATA, EXPLEN, maxInt(0, lengthBytes(DATA) -Int EXPLEN)))
