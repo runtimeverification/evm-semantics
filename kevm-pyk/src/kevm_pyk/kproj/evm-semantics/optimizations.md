@@ -37,7 +37,7 @@ module EVM-OPTIMIZATIONS
         <evm>
           <callState>
             <wordStack>
-              ( WS => 0 : WS )
+              ( WS => pushList(0, WS) )
             </wordStack>
             <pc>
               ( PCOUNT => ( PCOUNT +Int 1 ) )
@@ -54,7 +54,7 @@ module EVM-OPTIMIZATIONS
       ...
     </kevm>
     requires ( #if USEGAS #then Gbase < SCHED > <=Gas GAVAIL #else true #fi )
-     andBool ( #sizeWordStack( 0 : WS ) <=Int 1024 )
+     andBool ( size(WS) <=Int 1023 )
      [priority(40)]
 
   rule
@@ -75,7 +75,7 @@ module EVM-OPTIMIZATIONS
               PGM
             </program>
             <wordStack>
-              ( WS => #asWord( #range(PGM, PCOUNT +Int 1, N) ) : WS )
+              ( WS => pushList(#asWord( #range(PGM, PCOUNT +Int 1, N) ), WS) )
             </wordStack>
             <pc>
               ( PCOUNT => ( ( PCOUNT +Int N ) +Int 1 ) )
@@ -92,7 +92,7 @@ module EVM-OPTIMIZATIONS
       ...
     </kevm>
     requires ( #if USEGAS #then Gverylow < SCHED > <=Gas GAVAIL #else true #fi )
-     andBool ( #sizeWordStack( #asWord( #range(PGM, PCOUNT +Int 1, N) ) : WS ) <=Int 1024 )
+     andBool ( size( WS ) <=Int 1023 )
      [priority(40)]
 
   rule
@@ -110,7 +110,7 @@ module EVM-OPTIMIZATIONS
         <evm>
           <callState>
             <wordStack>
-              ( WS => WS [ ( N +Int -1 ) ] : WS )
+              ( WS => pushList(WS [ ( N +Int -1 ) ], WS) )
             </wordStack>
             <pc>
               ( PCOUNT => ( PCOUNT +Int 1 ) )
@@ -126,9 +126,9 @@ module EVM-OPTIMIZATIONS
       </ethereum>
       ...
     </kevm>
-    requires #stackNeeded(DUP(N)) <=Int #sizeWordStack(WS)
+    requires #stackNeeded(DUP(N)) <=Int size(WS)
      andBool ( #if USEGAS #then Gverylow < SCHED > <=Gas GAVAIL #else true #fi )
-     andBool ( #sizeWordStack( WS [ ( N +Int -1 ) ] : WS ) <=Int 1024 )
+     andBool ( size( WS ) <=Int 1023 )
      [priority(40)]
 
   rule
@@ -146,7 +146,7 @@ module EVM-OPTIMIZATIONS
         <evm>
           <callState>
             <wordStack>
-              ( W0 : WS => WS [ ( N +Int -1 ) ] : ( WS [ ( N +Int -1 ) := W0 ] ) )
+              ( ListItem(W0) WS => pushList(WS [ ( N +Int -1 ) ], ( WS [ ( N +Int -1 ) <- W0 ] )) )
             </wordStack>
             <pc>
               ( PCOUNT => ( PCOUNT +Int 1 ) )
@@ -162,9 +162,9 @@ module EVM-OPTIMIZATIONS
       </ethereum>
       ...
     </kevm>
-    requires #stackNeeded(SWAP(N)) <=Int #sizeWordStack(W0 : WS)
+    requires #stackNeeded(SWAP(N)) <=Int size(WS) +Int 1
      andBool ( #if USEGAS #then Gverylow < SCHED > <=Gas GAVAIL #else true #fi )
-     andBool ( #sizeWordStack( WS [ ( N +Int -1 ) ] : ( WS [ ( N +Int -1 ) := W0 ] ) ) <=Int 1024 )
+     andBool ( size( WS ) <=Int 1023 )
      [priority(40)]
 
   rule
@@ -182,7 +182,7 @@ module EVM-OPTIMIZATIONS
         <evm>
           <callState>
             <wordStack>
-              ( W0 : W1 : WS => chop( ( W0 +Int W1 ) ) : WS )
+              ( ListItem(W0) ListItem(W1) WS => pushList(chop( ( W0 +Int W1 ) ), WS) )
             </wordStack>
             <pc>
               ( PCOUNT => ( PCOUNT +Int 1 ) )
@@ -199,7 +199,7 @@ module EVM-OPTIMIZATIONS
       ...
     </kevm>
     requires ( #if USEGAS #then Gverylow < SCHED > <=Gas GAVAIL #else true #fi )
-     andBool ( #sizeWordStack( chop( ( W0 +Int W1 ) ) : WS ) <=Int 1024 )
+     andBool ( size( WS ) <=Int 1023 )
      [priority(40)]
 
   rule
@@ -217,7 +217,7 @@ module EVM-OPTIMIZATIONS
         <evm>
           <callState>
             <wordStack>
-              ( W0 : W1 : WS => chop( ( W0 -Int W1 ) ) : WS )
+              ( ListItem(W0) ListItem(W1) WS => pushList(chop( ( W0 -Int W1 ) ), WS) )
             </wordStack>
             <pc>
               ( PCOUNT => ( PCOUNT +Int 1 ) )
@@ -234,7 +234,7 @@ module EVM-OPTIMIZATIONS
       ...
     </kevm>
     requires ( #if USEGAS #then Gverylow < SCHED > <=Gas GAVAIL #else true #fi )
-     andBool ( #sizeWordStack( chop( ( W0 -Int W1 ) ) : WS ) <=Int 1024 )
+     andBool ( size( WS ) <=Int 1023 )
      [priority(40)]
 
   rule
@@ -252,7 +252,7 @@ module EVM-OPTIMIZATIONS
         <evm>
           <callState>
             <wordStack>
-              ( W0 : W1 : WS => W0 &Int W1 : WS )
+              ( ListItem(W0) ListItem(W1) WS => pushList(W0 &Int W1, WS) )
             </wordStack>
             <pc>
               ( PCOUNT => ( PCOUNT +Int 1 ) )
@@ -269,7 +269,7 @@ module EVM-OPTIMIZATIONS
       ...
     </kevm>
     requires ( #if USEGAS #then Gverylow < SCHED > <=Gas GAVAIL #else true #fi )
-     andBool ( #sizeWordStack( W0 &Int W1 : WS ) <=Int 1024 )
+     andBool ( size( WS ) <=Int 1023 )
      [priority(40)]
 
   rule
@@ -287,7 +287,7 @@ module EVM-OPTIMIZATIONS
         <evm>
           <callState>
             <wordStack>
-              ( W0 : W1 : WS => bool2Word( W0 <Int W1 ) : WS )
+              ( ListItem(W0) ListItem(W1) WS => pushList(bool2Word( W0 <Int W1 ), WS) )
             </wordStack>
             <pc>
               ( PCOUNT => ( PCOUNT +Int 1 ) )
@@ -304,7 +304,7 @@ module EVM-OPTIMIZATIONS
       ...
     </kevm>
     requires ( #if USEGAS #then Gverylow < SCHED > <=Gas GAVAIL #else true #fi )
-     andBool ( #sizeWordStack( bool2Word( W0 <Int W1 ) : WS ) <=Int 1024 )
+     andBool ( size( WS ) <=Int 1023 )
      [priority(40)]
 
   rule
@@ -322,7 +322,7 @@ module EVM-OPTIMIZATIONS
         <evm>
           <callState>
             <wordStack>
-              ( W0 : W1 : WS => bool2Word( W1 <Int W0 ) : WS )
+              ( ListItem(W0) ListItem(W1) WS => pushList(bool2Word( W1 <Int W0 ), WS) )
             </wordStack>
             <pc>
               ( PCOUNT => ( PCOUNT +Int 1 ) )
@@ -339,7 +339,7 @@ module EVM-OPTIMIZATIONS
       ...
     </kevm>
     requires ( #if USEGAS #then Gverylow < SCHED > <=Gas GAVAIL #else true #fi )
-     andBool ( #sizeWordStack( bool2Word( W1 <Int W0 ) : WS ) <=Int 1024 )
+     andBool ( size( WS ) <=Int 1023 )
      [priority(40)]
 
 
