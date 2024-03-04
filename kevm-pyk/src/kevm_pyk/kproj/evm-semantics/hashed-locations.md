@@ -63,7 +63,7 @@ Specifically, `#hashedLocation` is defined as follows, capturing the storage lay
     rule #hashedLocation("Solidity", BASE, OFFSET .IntList) => keccak(#bufStrict(32, OFFSET) +Bytes #bufStrict(32, BASE))   requires #rangeUInt(256, BASE) andBool #rangeUInt(256, OFFSET) [simplification]
     rule #hashedLocation("Array",    BASE, OFFSET .IntList) => keccak(#bufStrict(32, BASE))  +Word OFFSET                   requires #rangeUInt(256, BASE) andBool #rangeUInt(256, OFFSET)
 
-    syntax IntList ::= List{Int, ""} [klabel(intList), smtlib(intList)]
+    syntax IntList ::= List{Int, ""} [symbol(intList), smtlib(intList)]
  // -------------------------------------------------------------------
 ```
 

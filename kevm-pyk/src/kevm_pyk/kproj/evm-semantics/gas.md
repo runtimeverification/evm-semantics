@@ -102,23 +102,24 @@ module GAS-FEES
     imports GAS-SYNTAX
     imports SCHEDULE
 
-    syntax Gas ::= Cgascap        ( Schedule , Gas , Gas , Int )         [klabel(Cgascap),         function, total, smtlib(gas_Cgascap_Gas)  ]
-    syntax Int ::= Cgascap        ( Schedule , Int , Int , Int )         [klabel(Cgascap),         function, total, smtlib(gas_Cgascap_Int)  ]
-                 | Csstore        ( Schedule , Int , Int , Int )         [klabel(Csstore),         function, total, smtlib(gas_Csstore)      ]
-                 | Rsstore        ( Schedule , Int , Int , Int )         [klabel(Rsstore),         function, total, smtlib(gas_Rsstore)      ]
-                 | Cextra         ( Schedule , Bool , Int , Bool )       [klabel(Cextra),          function, total, smtlib(gas_Cextra)       ]
-                 | Cnew           ( Schedule , Bool , Int )              [klabel(Cnew),            function, total, smtlib(gas_Cnew)         ]
-                 | Cxfer          ( Schedule , Int )                     [klabel(Cxfer),           function, total, smtlib(gas_Cxfer)        ]
-                 | Cmem           ( Schedule , Int )                     [klabel(Cmem),            function, total, smtlib(gas_Cmem), memo   ]
-                 | Caddraccess    ( Schedule , Bool )                    [klabel(Caddraccess),     function, total, smtlib(gas_Caddraccess)  ]
+    syntax Gas ::= Cgascap        ( Schedule , Gas , Gas , Int ) [symbol(Cgascap_Gas), overload(Cgascap), function, total, smtlib(gas_Cgascap_Gas)]
+    syntax Int ::= Cgascap        ( Schedule , Int , Int , Int ) [symbol(Cgascap_Int), overload(Cgascap), function, total, smtlib(gas_Cgascap_Int)]
+
+    syntax Int ::= Csstore        ( Schedule , Int , Int , Int )         [klabel(Csstore),        function, total, smtlib(gas_Csstore)       ]
+                 | Rsstore        ( Schedule , Int , Int , Int )         [klabel(Rsstore),        function, total, smtlib(gas_Rsstore)       ]
+                 | Cextra         ( Schedule , Bool , Int , Bool )       [klabel(Cextra),         function, total, smtlib(gas_Cextra)        ]
+                 | Cnew           ( Schedule , Bool , Int )              [klabel(Cnew),           function, total, smtlib(gas_Cnew)          ]
+                 | Cxfer          ( Schedule , Int )                     [klabel(Cxfer),          function, total, smtlib(gas_Cxfer)         ]
+                 | Cmem           ( Schedule , Int )                     [klabel(Cmem),           function, total, smtlib(gas_Cmem), memo    ]
+                 | Caddraccess    ( Schedule , Bool )                    [klabel(Caddraccess),    function, total, smtlib(gas_Caddraccess)   ]
                  | Cstorageaccess ( Schedule , Bool )                    [klabel(Cstorageaccess), function, total, smtlib(gas_Cstorageaccess)]
-                 | Csload         ( Schedule , Bool )                    [klabel(Csload),          function, total, smtlib(gas_Csload)       ]
-                 | Cextcodesize   ( Schedule )                           [klabel(Cextcodesize),    function, total, smtlib(gas_Cextcodesize) ]
-                 | Cextcodecopy   ( Schedule , Int )                     [klabel(Cextcodecopy),    function, total, smtlib(gas_Cextcodecopy) ]
-                 | Cextcodehash   ( Schedule )                           [klabel(Cextcodehash),    function, total, smtlib(gas_Cextcodehash) ]
-                 | Cbalance       ( Schedule )                           [klabel(Cbalance),        function, total, smtlib(gas_Cbalance)     ]
-                 | Cmodexp        ( Schedule , Bytes , Int , Int , Int ) [klabel(Cmodexp),         function, total, smtlib(gas_Cmodexp)      ]
-                 | Cinitcode      ( Schedule , Int )                     [klabel(Cinitcode),       function, total, smtlib(gas_Cinitcode)    ]
+                 | Csload         ( Schedule , Bool )                    [klabel(Csload),         function, total, smtlib(gas_Csload)        ]
+                 | Cextcodesize   ( Schedule )                           [klabel(Cextcodesize),   function, total, smtlib(gas_Cextcodesize)  ]
+                 | Cextcodecopy   ( Schedule , Int )                     [klabel(Cextcodecopy),   function, total, smtlib(gas_Cextcodecopy)  ]
+                 | Cextcodehash   ( Schedule )                           [klabel(Cextcodehash),   function, total, smtlib(gas_Cextcodehash)  ]
+                 | Cbalance       ( Schedule )                           [klabel(Cbalance),       function, total, smtlib(gas_Cbalance)      ]
+                 | Cmodexp        ( Schedule , Bytes , Int , Int , Int ) [klabel(Cmodexp),        function, total, smtlib(gas_Cmodexp)       ]
+                 | Cinitcode      ( Schedule , Int )                     [klabel(Cinitcode),      function, total, smtlib(gas_Cinitcode)     ]
  // ------------------------------------------------------------------------------------------------------------------------------------------
     rule [Cgascap]:
          Cgascap(SCHED, GCAP:Int, GAVAIL:Int, GEXTRA)
@@ -210,9 +211,9 @@ module GAS-FEES
  // ---------------------------------------------------------------------------------------------------------
     rule #accountEmpty(CODE, NONCE, BAL) => CODE ==K .Bytes andBool NONCE ==Int 0 andBool BAL ==Int 0
 
-    syntax Gas ::= #allBut64th ( Gas ) [klabel(#allBut64th), function, total, smtlib(gas_allBut64th_Gas)]
-    syntax Int ::= #allBut64th ( Int ) [klabel(#allBut64th), function, total, smtlib(gas_allBut64th_Int)]
- // -----------------------------------------------------------------------------------------------------
+    syntax Gas ::= #allBut64th ( Gas ) [symbol(#allBut64th_Gas), overload(#allBut64th), function, total, smtlib(gas_allBut64th_Gas)]
+    syntax Int ::= #allBut64th ( Int ) [symbol(#allBut64th_Int), overload(#allBut64th), function, total, smtlib(gas_allBut64th_Int)]
+ // --------------------------------------------------------------------------------------------------------------------------------
     rule [allBut64th.pos]: #allBut64th(N) => N -Int (N /Int 64) requires 0 <=Int N
     rule [allBut64th.neg]: #allBut64th(N) => 0                  requires N  <Int 0
 
