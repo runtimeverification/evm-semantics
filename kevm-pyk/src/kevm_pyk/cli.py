@@ -1,38 +1,20 @@
 from __future__ import annotations
 
+import logging
 from argparse import ArgumentParser
 from functools import cached_property
-from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-from pyk.cli.args import (
-    BugReportOptions,
-    DisplayOptions,
-    KDefinitionOptions,
-    KompileOptions,
-    LoggingOptions,
-    Options,
-    ParallelOptions,
-    SaveDirOptions,
-    SMTOptions,
-    SpecOptions,
-)
-from pyk.cli.utils import file_path
+from pyk.cli.args import DisplayOptions, KDefinitionOptions, Options
 from pyk.kore.rpc import FallbackReason
-from pyk.kore.tools import PrintOutput
-from pyk.ktool.krun import KRunOutput
-
-from .kompile import KompileTarget
-from .utils import arg_pair_of
 
 if TYPE_CHECKING:
-    from argparse import _SubParsersAction
     from collections.abc import Callable
-    from typing import TypeVar
-
-    from pyk.kcfg.kcfg import NodeIdLike
+    from typing import Final, TypeVar
 
     T = TypeVar('T')
+
+_LOGGER: Final = logging.getLogger(__name__)
 
 
 def list_of(elem_type: Callable[[str], T], delim: str = ';') -> Callable[[str], list[T]]:
@@ -40,38 +22,6 @@ def list_of(elem_type: Callable[[str], T], delim: str = ';') -> Callable[[str], 
         return [elem_type(elem) for elem in s.split(delim)]
 
     return parse
-
-
-def node_id_like(s: str) -> NodeIdLike:
-    try:
-        return int(s)
-    except ValueError:
-        return s
-
-
-def generate_command_options(args: dict[str, Any]) -> LoggingOptions:
-    command = args['command'].lower()
-    match command:
-        case 'version':
-            return VersionOptions(args)
-        case 'kompile-spec':
-            return KompileSpecOptions(args)
-        case 'prove':
-            return ProveOptions(args)
-        case 'prune-proof':
-            return PruneProofOptions(args)
-        case 'prove-legacy':
-            return ProveLegacyOptions(args)
-        case 'view-kcfg':
-            return ViewKCFGOptions(args)
-        case 'show-kcfg':
-            return ShowKCFGOptions(args)
-        case 'run':
-            return RunOptions(args)
-        case 'kast':
-            return KastOptions(args)
-        case _:
-            raise ValueError('Unrecognized command.')
 
 
 class KEVMDisplayOptions(DisplayOptions):
@@ -103,120 +53,6 @@ class KOptions(KDefinitionOptions):
     @staticmethod
     def args(parser: ArgumentParser) -> ArgumentParser:
         parser.add_argument('--depth', default=None, type=int, help='Maximum depth to execute to.')
-        return parser
-
-
-class KompileSpecOptions(LoggingOptions, KOptions, KompileOptions):
-    main_file: Path
-    target: KompileTarget
-    output_dir: Path
-    debug_build: bool
-
-    @staticmethod
-    def default() -> dict[str, Any]:
-        return {
-            'debug_build': False,
-            'output_dir': Path(),
-            'target': KompileTarget.HASKELL,
-        }
-
-    @staticmethod
-    def parser(base: _SubParsersAction) -> _SubParsersAction:
-        base.add_parser(
-            'kompile-spec',
-            help='Kompile KEVM specification.',
-            parents=[KompileSpecOptions.all_args()],
-        )
-        return base
-
-    @staticmethod
-    def args(parser: ArgumentParser) -> ArgumentParser:
-        parser.add_argument('main_file', type=file_path, help='Path to file with main module.')
-        parser.add_argument('--target', type=KompileTarget, help='[haskell|maude]')
-        parser.add_argument(
-            '-o', '--output-definition', type=Path, dest='output_dir', help='Path to write kompiled definition to.'
-        )
-        parser.add_argument(
-            '--debug-build', dest='debug_build', default=None, help='Enable debug symbols in LLVM builds.'
-        )
-        return parser
-
-
-class ShowKCFGOptions(LoggingOptions, KOptions, SpecOptions, KEVMDisplayOptions):
-    nodes: list[NodeIdLike]
-    node_deltas: list[tuple[NodeIdLike, NodeIdLike]]
-    failure_info: bool
-    to_module: bool
-    pending: bool
-    failing: bool
-    counterexample_info: bool
-
-    @staticmethod
-    def parser(base: _SubParsersAction) -> _SubParsersAction:
-        base.add_parser(
-            'show-kcfg',
-            help='Print the CFG for a given proof.',
-            parents=[ShowKCFGOptions.all_args()],
-        )
-        return base
-
-    @staticmethod
-    def default() -> dict[str, Any]:
-        return {
-            'failure_info': False,
-            'to_module': False,
-            'pending': False,
-            'failing': False,
-            'counterexample_info': False,
-        }
-
-    @staticmethod
-    def args(parser: ArgumentParser) -> ArgumentParser:
-        parser.add_argument(
-            '--node',
-            type=node_id_like,
-            dest='nodes',
-            default=[],
-            action='append',
-            help='List of nodes to display as well.',
-        )
-        parser.add_argument(
-            '--node-delta',
-            type=arg_pair_of(node_id_like, node_id_like),
-            dest='node_deltas',
-            default=[],
-            action='append',
-            help='List of nodes to display delta for.',
-        )
-        parser.add_argument(
-            '--failure-information',
-            dest='failure_info',
-            default=None,
-            action='store_true',
-            help='Show failure summary for cfg',
-        )
-        parser.add_argument(
-            '--no-failure-information',
-            dest='failure_info',
-            action='store_false',
-            help='Do not show failure summary for cfg',
-        )
-        parser.add_argument(
-            '--to-module', dest='to_module', default=None, action='store_true', help='Output edges as a K module.'
-        )
-        parser.add_argument(
-            '--pending', dest='pending', default=None, action='store_true', help='Also display pending nodes'
-        )
-        parser.add_argument(
-            '--failing', dest='failing', default=None, action='store_true', help='Also display failing nodes'
-        )
-        parser.add_argument(
-            '--counterexample-information',
-            dest='counterexample_info',
-            default=None,
-            action='store_true',
-            help="Show models for failing nodes. Should be called with the '--failure-information' flag",
-        )
         return parser
 
 
@@ -486,75 +322,6 @@ class ExploreOptions(Options):
         return parser
 
 
-class ProveOptions(
-    LoggingOptions,
-    KOptions,
-    ParallelOptions,
-    KProveOptions,
-    BugReportOptions,
-    SMTOptions,
-    ExploreOptions,
-    SpecOptions,
-    RPCOptions,
-):
-    reinit: bool
-
-    @staticmethod
-    def default() -> dict[str, Any]:
-        return {
-            'reinit': False,
-        }
-
-    @staticmethod
-    def parser(base: _SubParsersAction) -> _SubParsersAction:
-        base.add_parser(
-            'prove',
-            help='Run KEVM proof.',
-            parents=[ProveOptions.all_args()],
-        )
-        return base
-
-    @staticmethod
-    def args(parser: ArgumentParser) -> ArgumentParser:
-        parser.add_argument(
-            '--reinit',
-            dest='reinit',
-            default=None,
-            action='store_true',
-            help='Reinitialize CFGs even if they already exist.',
-        )
-        return parser
-
-
-class VersionOptions(LoggingOptions):
-    @staticmethod
-    def parser(base: _SubParsersAction) -> _SubParsersAction:
-        base.add_parser(
-            'version',
-            help='Print KEVM version and exit.',
-            parents=[VersionOptions.all_args()],
-        )
-        return base
-
-
-class PruneProofOptions(LoggingOptions, KOptions, SpecOptions):
-    node: NodeIdLike
-
-    @staticmethod
-    def parser(base: _SubParsersAction) -> _SubParsersAction:
-        base.add_parser(
-            'prune-proof',
-            help='Remove a node and its successors from the proof state.',
-            parents=[PruneProofOptions.all_args()],
-        )
-        return base
-
-    @staticmethod
-    def args(parser: ArgumentParser) -> ArgumentParser:
-        parser.add_argument('node', type=node_id_like, help='Node to remove CFG subgraph from.')
-        return parser
-
-
 class KProveLegacyOptions(Options):
     bug_report: bool
     debugger: bool
@@ -617,43 +384,6 @@ class KProveLegacyOptions(Options):
             help='Arguments passed to the Haskell backend execution engine.',
         )
         return parser
-
-
-class ProveLegacyOptions(LoggingOptions, KOptions, SpecOptions, KProveLegacyOptions):
-    bug_report_legacy: bool
-
-    @staticmethod
-    def default() -> dict[str, Any]:
-        return {
-            'bug_report_legacy': False,
-        }
-
-    @staticmethod
-    def parser(base: _SubParsersAction) -> _SubParsersAction:
-        base.add_parser(
-            'prove-legacy',
-            help='Run KEVM proof using the legacy kprove binary.',
-            parents=[ProveLegacyOptions.all_args()],
-        )
-        return base
-
-    @staticmethod
-    def args(parser: ArgumentParser) -> ArgumentParser:
-        parser.add_argument(
-            '--bug-report-legacy', default=None, action='store_true', help='Generate a legacy bug report.'
-        )
-        return parser
-
-
-class ViewKCFGOptions(LoggingOptions, KOptions, SpecOptions):
-    @staticmethod
-    def parser(base: _SubParsersAction) -> _SubParsersAction:
-        base.add_parser(
-            'view-kcfg',
-            help='Explore a given proof in the KCFG visualizer.',
-            parents=[ViewKCFGOptions.all_args()],
-        )
-        return base
 
 
 class TargetOptions(Options):
@@ -720,91 +450,6 @@ class EVMChainOptions(Options):
         )
         parser.add_argument(
             '--no-gas', action='store_false', dest='usegas', default=None, help='omit gas cost computations'
-        )
-        return parser
-
-
-class RunOptions(LoggingOptions, KOptions, TargetOptions, EVMChainOptions, SaveDirOptions):
-    input_file: Path
-    output: KRunOutput
-    expand_macros: bool
-    debugger: bool
-
-    @staticmethod
-    def default() -> dict[str, Any]:
-        return {
-            'output': KRunOutput.PRETTY,
-            'expand_macros': True,
-            'debugger': False,
-        }
-
-    @staticmethod
-    def parser(base: _SubParsersAction) -> _SubParsersAction:
-        base.add_parser(
-            'run',
-            help='Run KEVM test/simulation.',
-            parents=[RunOptions.all_args()],
-        )
-        return base
-
-    @staticmethod
-    def args(parser: ArgumentParser) -> ArgumentParser:
-        parser.add_argument('input_file', type=file_path, help='Path to input file.')
-        parser.add_argument(
-            '--output',
-            default=None,
-            type=KRunOutput,
-            choices=list(KRunOutput),
-        )
-        parser.add_argument(
-            '--expand-macros',
-            dest='expand_macros',
-            default=None,
-            action='store_true',
-            help='Expand macros on the input term before execution.',
-        )
-        parser.add_argument(
-            '--no-expand-macros',
-            dest='expand_macros',
-            action='store_false',
-            help='Do not expand macros on the input term before execution.',
-        )
-        parser.add_argument(
-            '--debugger',
-            dest='debugger',
-            action='store_true',
-            help='Run GDB debugger for execution.',
-        )
-        return parser
-
-
-class KastOptions(LoggingOptions, TargetOptions, EVMChainOptions, SaveDirOptions):
-    input_file: Path
-    output: PrintOutput
-
-    @staticmethod
-    def default() -> dict[str, Any]:
-        return {
-            'output': PrintOutput.KORE,
-        }
-
-    @staticmethod
-    def parser(base: _SubParsersAction) -> _SubParsersAction:
-        base.add_parser(
-            'kast',
-            help='Run KEVM program.',
-            parents=[KastOptions.all_args()],
-        )
-        return base
-
-    @staticmethod
-    def args(parser: ArgumentParser) -> ArgumentParser:
-        parser.add_argument('input_file', type=file_path, help='Path to input file.')
-        parser.add_argument(
-            '--output',
-            default=None,
-            type=PrintOutput,
-            choices=list(PrintOutput),
         )
         return parser
 

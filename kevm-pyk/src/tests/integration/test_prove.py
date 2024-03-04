@@ -9,8 +9,7 @@ from pyk.cterm import CTerm
 from pyk.proof.reachability import APRProof
 
 from kevm_pyk import config
-from kevm_pyk.__main__ import exec_prove
-from kevm_pyk.cli import ProveOptions
+from kevm_pyk.__main__ import ProveCommand
 from kevm_pyk.kevm import KEVM
 from kevm_pyk.kompile import KompileTarget, kevm_kompile
 
@@ -224,7 +223,7 @@ def test_pyk_prove(
         name = str(spec_file.relative_to(SPEC_DIR))
         break_on_calls = name in TEST_PARAMS and TEST_PARAMS[name].break_on_calls
 
-        options = ProveOptions(
+        options = ProveCommand(
             {
                 'spec_file': spec_file,
                 'definition_dir': definition_dir,
@@ -237,7 +236,7 @@ def test_pyk_prove(
             }
         )
 
-        exec_prove(options)
+        options.exec()
         if name in TEST_PARAMS:
             params = TEST_PARAMS[name]
             if params.leaf_number is not None and params.main_claim_id is not None:
