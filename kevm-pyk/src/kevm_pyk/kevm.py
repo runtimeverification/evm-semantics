@@ -436,7 +436,7 @@ class KEVM(KProve, KRun):
 
     @staticmethod
     def empty_typedargs() -> KApply:
-        return KApply('.List{"_,__EVM-ABI_TypedArgs_TypedArg_TypedArgs"}_TypedArgs')
+        return KApply('.List{"typedArgs"}')
 
     @staticmethod
     def bytes_append(b1: KInner, b2: KInner) -> KApply:
@@ -480,7 +480,7 @@ class KEVM(KProve, KRun):
     @staticmethod
     def typed_args(args: list[KInner]) -> KInner:
         res = KEVM.empty_typedargs()
-        return build_cons(res, '_,__EVM-ABI_TypedArgs_TypedArg_TypedArgs', args)
+        return build_cons(res, 'typedArgs', args)
 
     @staticmethod
     def accounts(accts: list[KInner]) -> KInner:
