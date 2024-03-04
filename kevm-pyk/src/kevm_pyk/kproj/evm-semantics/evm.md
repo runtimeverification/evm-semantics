@@ -1333,12 +1333,11 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     syntax InternalOp ::= "#precompiled?" "(" Int "," Schedule ")"
  // --------------------------------------------------------------
     rule [precompile.true]:  <k> #precompiled?(ACCTCODE, SCHED) => #next [ #precompiled(ACCTCODE) ] ... </k> requires         #isPrecompiledAccount(ACCTCODE, SCHED) [preserves-definedness]
-    rule [precompile.false]: <k> #precompiled?(ACCTCODE, SCHED) => .K                                ... </k> requires notBool #isPrecompiledAccount(ACCTCODE, SCHED)
+    rule [precompile.false]: <k> #precompiled?(ACCTCODE, SCHED) => .K                               ... </k> requires notBool #isPrecompiledAccount(ACCTCODE, SCHED)
 
     syntax Bool ::= #isPrecompiledAccount ( Int , Schedule ) [klabel(#isPrecompiledAccount), function, total, smtlib(isPrecompiledAccount)]
  // ---------------------------------------------------------------------------------------------------------------------------------------
-    rule [isPrecompiledAccount.true]:  #isPrecompiledAccount(ACCTCODE, SCHED) => true  requires         ACCTCODE in #precompiledAccounts(SCHED)
-    rule [isPrecompiledAccount.false]: #isPrecompiledAccount(ACCTCODE, SCHED) => false requires notBool ACCTCODE in #precompiledAccounts(SCHED)
+    rule [isPrecompiledAccount]:  #isPrecompiledAccount(ACCTCODE, SCHED) => 0 <Int ACCTCODE andBool ACCTCODE <=Int #precompiledAccounts(SCHED)
 
     syntax KItem ::= "#initVM"
  // --------------------------
@@ -1728,21 +1727,37 @@ Precompiled Contracts
     rule #precompiled(8) => ECPAIRING
     rule #precompiled(9) => BLAKE2F
 
-    syntax Set ::= #precompiledAccounts ( Schedule ) [klabel(#precompiledAccounts), function, total]
+    syntax Int ::= #precompiledAccounts ( Schedule ) [klabel(#precompiledAccounts), function, total]
  // ------------------------------------------------------------------------------------------------
-    rule #precompiledAccounts(DEFAULT)           => SetItem(1) SetItem(2) SetItem(3) SetItem(4)
+    rule #precompiledAccounts(DEFAULT)           => 4
     rule #precompiledAccounts(FRONTIER)          => #precompiledAccounts(DEFAULT)
     rule #precompiledAccounts(HOMESTEAD)         => #precompiledAccounts(FRONTIER)
     rule #precompiledAccounts(TANGERINE_WHISTLE) => #precompiledAccounts(HOMESTEAD)
     rule #precompiledAccounts(SPURIOUS_DRAGON)   => #precompiledAccounts(TANGERINE_WHISTLE)
-    rule #precompiledAccounts(BYZANTIUM)         => #precompiledAccounts(SPURIOUS_DRAGON) SetItem(5) SetItem(6) SetItem(7) SetItem(8)
+    rule #precompiledAccounts(BYZANTIUM)         => 8
     rule #precompiledAccounts(CONSTANTINOPLE)    => #precompiledAccounts(BYZANTIUM)
     rule #precompiledAccounts(PETERSBURG)        => #precompiledAccounts(CONSTANTINOPLE)
-    rule #precompiledAccounts(ISTANBUL)          => #precompiledAccounts(PETERSBURG) SetItem(9)
+    rule #precompiledAccounts(ISTANBUL)          => 9
     rule #precompiledAccounts(BERLIN)            => #precompiledAccounts(ISTANBUL)
     rule #precompiledAccounts(LONDON)            => #precompiledAccounts(BERLIN)
     rule #precompiledAccounts(MERGE)             => #precompiledAccounts(LONDON)
     rule #precompiledAccounts(SHANGHAI)          => #precompiledAccounts(MERGE)
+
+    syntax Set ::= #precompiledAccountsAsSet ( Schedule ) [klabel(#precompiledAccountsAsSet), function, total]
+ // ------------------------------------------------------------------------------------------------
+    rule #precompiledAccountsAsSet(DEFAULT)           => SetItem(1) SetItem(2) SetItem(3) SetItem(4)
+    rule #precompiledAccountsAsSet(FRONTIER)          => #precompiledAccountsAsSet(DEFAULT)
+    rule #precompiledAccountsAsSet(HOMESTEAD)         => #precompiledAccountsAsSet(FRONTIER)
+    rule #precompiledAccountsAsSet(TANGERINE_WHISTLE) => #precompiledAccountsAsSet(HOMESTEAD)
+    rule #precompiledAccountsAsSet(SPURIOUS_DRAGON)   => #precompiledAccountsAsSet(TANGERINE_WHISTLE)
+    rule #precompiledAccountsAsSet(BYZANTIUM)         => #precompiledAccountsAsSet(SPURIOUS_DRAGON) SetItem(5) SetItem(6) SetItem(7) SetItem(8)
+    rule #precompiledAccountsAsSet(CONSTANTINOPLE)    => #precompiledAccountsAsSet(BYZANTIUM)
+    rule #precompiledAccountsAsSet(PETERSBURG)        => #precompiledAccountsAsSet(CONSTANTINOPLE)
+    rule #precompiledAccountsAsSet(ISTANBUL)          => #precompiledAccountsAsSet(PETERSBURG) SetItem(9)
+    rule #precompiledAccountsAsSet(BERLIN)            => #precompiledAccountsAsSet(ISTANBUL)
+    rule #precompiledAccountsAsSet(LONDON)            => #precompiledAccountsAsSet(BERLIN)
+    rule #precompiledAccountsAsSet(MERGE)             => #precompiledAccountsAsSet(LONDON)
+    rule #precompiledAccountsAsSet(SHANGHAI)          => #precompiledAccountsAsSet(MERGE)
 ```
 
 -   `ECREC` performs ECDSA public key recovery.

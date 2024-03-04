@@ -94,7 +94,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
        requires notBool #hasValidInitCode(lengthBytes(CODE), SCHED)
 
     rule <k> loadTx(ACCTFROM)
-          => #accessAccounts ACCTFROM #newAddr(ACCTFROM, NONCE) #precompiledAccounts(SCHED)
+          => #accessAccounts ACCTFROM #newAddr(ACCTFROM, NONCE) #precompiledAccountsAsSet(SCHED)
           ~> #loadAccessList(TA)
           ~> #create ACCTFROM #newAddr(ACCTFROM, NONCE) VALUE CODE
           ~> #finishTx ~> #finalizeTx(false) ~> startTx
@@ -127,7 +127,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
       requires #hasValidInitCode(lengthBytes(CODE), SCHED)
 
     rule <k> loadTx(ACCTFROM)
-          => #accessAccounts ACCTFROM ACCTTO #precompiledAccounts(SCHED)
+          => #accessAccounts ACCTFROM ACCTTO #precompiledAccountsAsSet(SCHED)
           ~> #loadAccessList(TA)
           ~> #call ACCTFROM ACCTTO ACCTTO VALUE VALUE DATA false
           ~> #finishTx ~> #finalizeTx(false) ~> startTx
