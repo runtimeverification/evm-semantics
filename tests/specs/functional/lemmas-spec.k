@@ -669,10 +669,27 @@ module LEMMAS-SPEC
     claim [addr-from-private-key]: <k> runLemma  ( #addrFromPrivateKey(#unparseDataBytes(b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01")) )
                                     => doneLemma ( 721457446580647751014191829380889690493307935711 ) ... </k>
 
- // Pre-compiled accounts
- // -------------------
+ // Precompiled accounts
+ // --------------------
 
-    claim [precompiledAccounts]: <k> runLemma  ( X:Bool ) => doneLemma ( X:Bool ) ... </k>
+    claim [precompiledAccountsSet-correctness]:
+          <k> runLemma (
+                         #precompiledAccountsSet(DEFAULT)           ==K SetItem (1) ( SetItem (2) ( SetItem (3) SetItem (4) ) )
+                 andBool #precompiledAccountsSet(FRONTIER)          ==K SetItem (1) ( SetItem (2) ( SetItem (3) SetItem (4) ) )
+                 andBool #precompiledAccountsSet(HOMESTEAD)         ==K SetItem (1) ( SetItem (2) ( SetItem (3) SetItem (4) ) )
+                 andBool #precompiledAccountsSet(TANGERINE_WHISTLE) ==K SetItem (1) ( SetItem (2) ( SetItem (3) SetItem (4) ) )
+                 andBool #precompiledAccountsSet(SPURIOUS_DRAGON)   ==K SetItem (1) ( SetItem (2) ( SetItem (3) SetItem (4) ) )
+                 andBool #precompiledAccountsSet(BYZANTIUM)         ==K SetItem (1) ( SetItem (2) ( SetItem (3) ( SetItem (4) ( SetItem (5) ( SetItem (6) ( SetItem (7) SetItem (8) ) ) ) ) ) )
+                 andBool #precompiledAccountsSet(CONSTANTINOPLE)    ==K SetItem (1) ( SetItem (2) ( SetItem (3) ( SetItem (4) ( SetItem (5) ( SetItem (6) ( SetItem (7) SetItem (8) ) ) ) ) ) )
+                 andBool #precompiledAccountsSet(PETERSBURG)        ==K SetItem (1) ( SetItem (2) ( SetItem (3) ( SetItem (4) ( SetItem (5) ( SetItem (6) ( SetItem (7) SetItem (8) ) ) ) ) ) )
+                 andBool #precompiledAccountsSet(ISTANBUL)          ==K SetItem (1) ( SetItem (2) ( SetItem (3) ( SetItem (4) ( SetItem (5) ( SetItem (6) ( SetItem (7) ( SetItem (8) SetItem (9) ) ) ) ) ) ) )
+                 andBool #precompiledAccountsSet(BERLIN)            ==K SetItem (1) ( SetItem (2) ( SetItem (3) ( SetItem (4) ( SetItem (5) ( SetItem (6) ( SetItem (7) ( SetItem (8) SetItem (9) ) ) ) ) ) ) )
+                 andBool #precompiledAccountsSet(LONDON)            ==K SetItem (1) ( SetItem (2) ( SetItem (3) ( SetItem (4) ( SetItem (5) ( SetItem (6) ( SetItem (7) ( SetItem (8) SetItem (9) ) ) ) ) ) ) )
+                 andBool #precompiledAccountsSet(MERGE)             ==K SetItem (1) ( SetItem (2) ( SetItem (3) ( SetItem (4) ( SetItem (5) ( SetItem (6) ( SetItem (7) ( SetItem (8) SetItem (9) ) ) ) ) ) ) )
+                 andBool #precompiledAccountsSet(SHANGHAI)          ==K SetItem (1) ( SetItem (2) ( SetItem (3) ( SetItem (4) ( SetItem (5) ( SetItem (6) ( SetItem (7) ( SetItem (8) SetItem (9) ) ) ) ) ) ) )
+              ) => doneLemma ( true ) ... </k>
+
+    claim [precompiledAccounts-slowdown]: <k> runLemma  ( X:Bool ) => doneLemma ( X:Bool ) ... </k>
       requires #isPrecompiledAccount(_A00, SHANGHAI) andBool #isPrecompiledAccount(_A01, SHANGHAI) andBool #isPrecompiledAccount(_A02, SHANGHAI) andBool #isPrecompiledAccount(_A03, SHANGHAI) andBool #isPrecompiledAccount(_A04, SHANGHAI)
        andBool #isPrecompiledAccount(_A05, SHANGHAI) andBool #isPrecompiledAccount(_A06, SHANGHAI) andBool #isPrecompiledAccount(_A07, SHANGHAI) andBool #isPrecompiledAccount(_A08, SHANGHAI) andBool #isPrecompiledAccount(_A09, SHANGHAI)
        andBool #isPrecompiledAccount(_A10, SHANGHAI) andBool #isPrecompiledAccount(_A11, SHANGHAI) andBool #isPrecompiledAccount(_A12, SHANGHAI) andBool #isPrecompiledAccount(_A13, SHANGHAI) andBool #isPrecompiledAccount(_A14, SHANGHAI)
