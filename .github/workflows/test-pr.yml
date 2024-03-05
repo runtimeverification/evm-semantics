@@ -187,7 +187,7 @@ jobs:
             trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ=
       - name: 'Install Cachix'
         if: ${{ matrix.runner == 'macos-13' }}
-        uses: cachix/cachix-action@v12
+        uses: cachix/cachix-action@v14
         with:
           name: k-framework
           authToken: ${{ secrets.CACHIX_PUBLIC_TOKEN }}
