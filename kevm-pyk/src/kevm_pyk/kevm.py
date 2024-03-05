@@ -74,7 +74,7 @@ class KEVMSemantics(KCFGSemantics):
             ):
                 return False
             else:
-              return True
+                return True
 
         return False
 
