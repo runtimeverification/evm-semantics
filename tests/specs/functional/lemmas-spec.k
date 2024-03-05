@@ -8,7 +8,7 @@ module VERIFICATION
     syntax StepSort ::= Map | Bytes | Int | Bool
  // --------------------------------------------
 
-    syntax KItem ::= runLemma ( StepSort )
+    syntax KItem ::= runLemma ( StepSort ) [symbol(runLemma)]
                    | doneLemma( StepSort )
  // --------------------------------------
     rule runLemma( T ) => doneLemma( T )
