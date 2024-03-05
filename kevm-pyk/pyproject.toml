@@ -13,8 +13,8 @@ authors = [
 [tool.poetry.dependencies]
 python = "^3.10"
 pathos = "*"
-# pyk = { git = "https://github.com/runtimeverification/pyk.git", branch="noah/default-options" }
-pyk = { path = "/home/noah/dev/pyk", develop=true }
+pyk = { git = "https://github.com/runtimeverification/pyk.git", branch="noah/default-options" }
+# pyk = { path = "/home/noah/dev/pyk", develop=true }
 tomlkit = "^0.11.6"
 
 [tool.poetry.group.dev.dependencies]

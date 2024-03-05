@@ -14,16 +14,8 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from pathos.pools import ProcessPool  # type: ignore
-from pyk.cli.args import (
-    CLI,
-    BugReportOptions,
-    Command,
-    KompileOptions,
-    ParallelOptions,
-    SaveDirOptions,
-    SMTOptions,
-    SpecOptions,
-)
+from pyk.cli.args import BugReportOptions, KompileOptions, ParallelOptions, SaveDirOptions, SMTOptions, SpecOptions
+from pyk.cli.cli import CLI, Command
 from pyk.cli.utils import file_path
 from pyk.cterm import CTerm
 from pyk.kast.outer import KApply, KRewrite, KSort, KToken
