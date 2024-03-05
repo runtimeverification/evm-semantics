@@ -669,4 +669,19 @@ module LEMMAS-SPEC
     claim [addr-from-private-key]: <k> runLemma  ( #addrFromPrivateKey(#unparseDataBytes(b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01")) )
                                     => doneLemma ( 721457446580647751014191829380889690493307935711 ) ... </k>
 
+ // Pre-compiled accounts
+ // -------------------
+
+    claim [precompiledAccounts]: <k> runLemma  ( X:Bool ) => doneLemma ( X:Bool ) ... </k>
+      requires #isPrecompiledAccount(_A00, SHANGHAI) andBool #isPrecompiledAccount(_A01, SHANGHAI) andBool #isPrecompiledAccount(_A02, SHANGHAI) andBool #isPrecompiledAccount(_A03, SHANGHAI) andBool #isPrecompiledAccount(_A04, SHANGHAI)
+       andBool #isPrecompiledAccount(_A05, SHANGHAI) andBool #isPrecompiledAccount(_A06, SHANGHAI) andBool #isPrecompiledAccount(_A07, SHANGHAI) andBool #isPrecompiledAccount(_A08, SHANGHAI) andBool #isPrecompiledAccount(_A09, SHANGHAI)
+       andBool #isPrecompiledAccount(_A10, SHANGHAI) andBool #isPrecompiledAccount(_A11, SHANGHAI) andBool #isPrecompiledAccount(_A12, SHANGHAI) andBool #isPrecompiledAccount(_A13, SHANGHAI) andBool #isPrecompiledAccount(_A14, SHANGHAI)
+       andBool #isPrecompiledAccount(_A15, SHANGHAI) andBool #isPrecompiledAccount(_A16, SHANGHAI) andBool #isPrecompiledAccount(_A17, SHANGHAI) andBool #isPrecompiledAccount(_A18, SHANGHAI) andBool #isPrecompiledAccount(_A19, SHANGHAI)
+       andBool #isPrecompiledAccount(_A20, SHANGHAI) andBool #isPrecompiledAccount(_A21, SHANGHAI) andBool #isPrecompiledAccount(_A22, SHANGHAI) andBool #isPrecompiledAccount(_A23, SHANGHAI) andBool #isPrecompiledAccount(_A24, SHANGHAI)
+       andBool #isPrecompiledAccount(_A25, SHANGHAI) andBool #isPrecompiledAccount(_A26, SHANGHAI) andBool #isPrecompiledAccount(_A27, SHANGHAI) andBool #isPrecompiledAccount(_A28, SHANGHAI) andBool #isPrecompiledAccount(_A29, SHANGHAI)
+       andBool #isPrecompiledAccount(_A30, SHANGHAI) andBool #isPrecompiledAccount(_A31, SHANGHAI) andBool #isPrecompiledAccount(_A32, SHANGHAI) andBool #isPrecompiledAccount(_A33, SHANGHAI) andBool #isPrecompiledAccount(_A34, SHANGHAI)
+       andBool #isPrecompiledAccount(_A35, SHANGHAI) andBool #isPrecompiledAccount(_A36, SHANGHAI) andBool #isPrecompiledAccount(_A37, SHANGHAI) andBool #isPrecompiledAccount(_A38, SHANGHAI) andBool #isPrecompiledAccount(_A39, SHANGHAI)
+       andBool #isPrecompiledAccount(_A40, SHANGHAI) andBool #isPrecompiledAccount(_A41, SHANGHAI) andBool #isPrecompiledAccount(_A42, SHANGHAI) andBool #isPrecompiledAccount(_A43, SHANGHAI) andBool #isPrecompiledAccount(_A44, SHANGHAI)
+       andBool #isPrecompiledAccount(_A45, SHANGHAI) andBool #isPrecompiledAccount(_A46, SHANGHAI) andBool #isPrecompiledAccount(_A47, SHANGHAI) andBool #isPrecompiledAccount(_A48, SHANGHAI) andBool #isPrecompiledAccount(_A49, SHANGHAI)
+
 endmodule
