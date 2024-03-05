@@ -36,7 +36,6 @@ class KEVMDisplayOptions(DisplayOptions):
         parser.add_argument(
             '--sort-collections',
             dest='sort_collections',
-            default=None,
             action='store_true',
             help='Sort collections before outputting term.',
         )
@@ -52,7 +51,7 @@ class KOptions(KDefinitionOptions):
 
     @staticmethod
     def args(parser: ArgumentParser) -> ArgumentParser:
-        parser.add_argument('--depth', default=None, type=int, help='Maximum depth to execute to.')
+        parser.add_argument('--depth', type=int, help='Maximum depth to execute to.')
         return parser
 
 
@@ -63,23 +62,18 @@ class KProveOptions(Options):
 
     @staticmethod
     def default() -> dict[str, Any]:
-        return {
-            'always_check_subsumption': True,
-            'fast_check_subsumption': False,
-        }
+        return {'always_check_subsumption': True, 'fast_check_subsumption': False, 'debug_equations': []}
 
     @staticmethod
     def args(parser: ArgumentParser) -> ArgumentParser:
         parser.add_argument(
             '--debug-equations',
             type=list_of(str, delim=','),
-            default=[],
             help='Comma-separate list of equations to debug.',
         )
         parser.add_argument(
             '--always-check-subsumption',
             dest='always_check_subsumption',
-            default=None,
             action='store_true',
             help='Check subsumption even on non-terminal nodes.',
         )
@@ -92,7 +86,6 @@ class KProveOptions(Options):
         parser.add_argument(
             '--fast-check-subsumption',
             dest='fast_check_subsumption',
-            default=None,
             action='store_true',
             help='Use fast-check on k-cell to determine subsumption.',
         )
@@ -127,7 +120,6 @@ class RPCOptions(Options):
         parser.add_argument(
             '--trace-rewrites',
             dest='trace_rewrites',
-            default=None,
             action='store_true',
             help='Log traces of all simplification and rewrite rule applications.',
         )
@@ -135,13 +127,11 @@ class RPCOptions(Options):
             '--kore-rpc-command',
             dest='kore_rpc_command',
             type=str,
-            default=None,
             help='Custom command to start RPC server',
         )
         parser.add_argument(
             '--use-booster',
             dest='use_booster',
-            default=None,
             action='store_true',
             help='Use the booster RPC server instead of kore-rpc.',
         )
@@ -154,7 +144,6 @@ class RPCOptions(Options):
         parser.add_argument(
             '--post-exec-simplify',
             dest='post_exec_simplify',
-            default=None,
             action='store_true',
             help='Always simplify states with kore backend after booster execution, only usable with --use-booster.',
         )
@@ -174,14 +163,12 @@ class RPCOptions(Options):
             '--port',
             dest='port',
             type=int,
-            default=None,
             help='Use existing RPC server on named port',
         )
         parser.add_argument(
             '--maude-port',
             dest='maude_port',
             type=int,
-            default=None,
             help='Use existing Maude RPC server on named port',
         )
         return parser
@@ -221,63 +208,54 @@ class ExploreOptions(Options):
         parser.add_argument(
             '--break-every-step',
             dest='break_every_step',
-            default=None,
             action='store_true',
             help='Store a node for every EVM opcode step (expensive).',
         )
         parser.add_argument(
             '--break-on-jumpi',
             dest='break_on_jumpi',
-            default=None,
             action='store_true',
             help='Store a node for every EVM jump opcode.',
         )
         parser.add_argument(
             '--break-on-calls',
             dest='break_on_calls',
-            default=None,
             action='store_true',
             help='Store a node for every EVM call made.',
         )
         parser.add_argument(
             '--no-break-on-calls',
             dest='break_on_calls',
-            default=None,
             action='store_false',
             help='Do not store a node for every EVM call made.',
         )
         parser.add_argument(
             '--break-on-storage',
             dest='break_on_storage',
-            default=None,
             action='store_true',
             help='Store a node for every EVM SSTORE/SLOAD made.',
         )
         parser.add_argument(
             '--break-on-basic-blocks',
             dest='break_on_basic_blocks',
-            default=None,
             action='store_true',
             help='Store a node for every EVM basic block (implies --break-on-calls).',
         )
         parser.add_argument(
             '--max-depth',
             dest='max_depth',
-            default=None,
             type=int,
             help='Maximum number of K steps before the state is saved in a new node in the CFG. Branching will cause this to happen earlier.',
         )
         parser.add_argument(
             '--max-iterations',
             dest='max_iterations',
-            default=None,
             type=int,
             help='Number of times to expand the next pending node in the CFG.',
         )
         parser.add_argument(
             '--failure-information',
             dest='failure_info',
-            default=None,
             action='store_true',
             help='Show failure summary for all failing tests',
         )
@@ -296,7 +274,6 @@ class ExploreOptions(Options):
         parser.add_argument(
             '--counterexample-information',
             dest='counterexample_info',
-            default=None,
             action='store_true',
             help='Show models for failing nodes.',
         )
@@ -309,7 +286,6 @@ class ExploreOptions(Options):
         parser.add_argument(
             '--fail-fast',
             dest='fail_fast',
-            default=None,
             action='store_true',
             help='Stop execution on other branches if a failing node is detected.',
         )
@@ -338,27 +314,25 @@ class KProveLegacyOptions(Options):
             'max_depth': None,
             'max_counterexamples': None,
             'branching_allowed': None,
+            'haskell_backend_args': [],
         }
 
     @staticmethod
     def args(parser: ArgumentParser) -> ArgumentParser:
         parser.add_argument(
             '--bug-report',
-            default=None,
             action='store_true',
             help='Generate a haskell-backend bug report for the execution.',
         )
         parser.add_argument(
             '--debugger',
             dest='debugger',
-            default=None,
             action='store_true',
             help='Launch proof in an interactive debugger.',
         )
         parser.add_argument(
             '--max-depth',
             dest='max_depth',
-            default=None,
             type=int,
             help='The maximum number of computational steps to prove.',
         )
@@ -366,20 +340,17 @@ class KProveLegacyOptions(Options):
             '--max-counterexamples',
             type=int,
             dest='max_counterexamples',
-            default=None,
             help='Maximum number of counterexamples reported before a forcible stop.',
         )
         parser.add_argument(
             '--branching-allowed',
             type=int,
             dest='branching_allowed',
-            default=None,
             help='Number of branching events allowed before a forcible stop.',
         )
         parser.add_argument(
             '--haskell-backend-arg',
             dest='haskell_backend_args',
-            default=[],
             action='append',
             help='Arguments passed to the Haskell backend execution engine.',
         )
@@ -438,23 +409,28 @@ class EVMChainOptions(Options):
         parser.add_argument(
             '--schedule',
             choices=schedules,
-            default=None,
             help=f"schedule to use for execution [{'|'.join(schedules)}]",
         )
-        parser.add_argument('--chainid', type=int, default=None, help='chain ID to use for execution')
+        parser.add_argument('--chainid', type=int, help='chain ID to use for execution')
         parser.add_argument(
             '--mode',
             choices=modes,
-            default=None,
             help="execution mode to use [{'|'.join(modes)}]",
         )
-        parser.add_argument(
-            '--no-gas', action='store_false', dest='usegas', default=None, help='omit gas cost computations'
-        )
+        parser.add_argument('--no-gas', action='store_false', dest='usegas', help='omit gas cost computations')
         return parser
 
 
 class KEVMCLIArgs:
+    requires: list[str]
+    imports: list[str]
+
+    @staticmethod
+    def default() -> dict[str, Any]:
+        return {
+            'requires': [],
+            'imports': [],
+        }
 
     @cached_property
     def k_gen_args(self) -> ArgumentParser:
@@ -462,14 +438,12 @@ class KEVMCLIArgs:
         args.add_argument(
             '--require',
             dest='requires',
-            default=[],
             action='append',
             help='Extra K requires to include in generated output.',
         )
         args.add_argument(
             '--module-import',
             dest='imports',
-            default=[],
             action='append',
             help='Extra modules to import into generated main module.',
         )

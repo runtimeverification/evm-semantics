@@ -139,9 +139,7 @@ class KompileSpecCommand(Command, KOptions, KompileOptions):
         parser.add_argument(
             '-o', '--output-definition', type=Path, dest='output_dir', help='Path to write kompiled definition to.'
         )
-        parser.add_argument(
-            '--debug-build', dest='debug_build', default=None, help='Enable debug symbols in LLVM builds.'
-        )
+        parser.add_argument('--debug-build', dest='debug_build', help='Enable debug symbols in LLVM builds.')
         return parser
 
     def exec(self) -> None:
@@ -202,6 +200,8 @@ class ShowKCFGCommand(Command, KOptions, SpecOptions, KEVMDisplayOptions):
             'pending': False,
             'failing': False,
             'counterexample_info': False,
+            'nodes': [],
+            'node_deltas': [],
         }
 
     @staticmethod
@@ -210,7 +210,6 @@ class ShowKCFGCommand(Command, KOptions, SpecOptions, KEVMDisplayOptions):
             '--node',
             type=node_id_like,
             dest='nodes',
-            default=[],
             action='append',
             help='List of nodes to display as well.',
         )
@@ -218,14 +217,12 @@ class ShowKCFGCommand(Command, KOptions, SpecOptions, KEVMDisplayOptions):
             '--node-delta',
             type=arg_pair_of(node_id_like, node_id_like),
             dest='node_deltas',
-            default=[],
             action='append',
             help='List of nodes to display delta for.',
         )
         parser.add_argument(
             '--failure-information',
             dest='failure_info',
-            default=None,
             action='store_true',
             help='Show failure summary for cfg',
         )
@@ -235,19 +232,12 @@ class ShowKCFGCommand(Command, KOptions, SpecOptions, KEVMDisplayOptions):
             action='store_false',
             help='Do not show failure summary for cfg',
         )
-        parser.add_argument(
-            '--to-module', dest='to_module', default=None, action='store_true', help='Output edges as a K module.'
-        )
-        parser.add_argument(
-            '--pending', dest='pending', default=None, action='store_true', help='Also display pending nodes'
-        )
-        parser.add_argument(
-            '--failing', dest='failing', default=None, action='store_true', help='Also display failing nodes'
-        )
+        parser.add_argument('--to-module', dest='to_module', action='store_true', help='Output edges as a K module.')
+        parser.add_argument('--pending', dest='pending', action='store_true', help='Also display pending nodes')
+        parser.add_argument('--failing', dest='failing', action='store_true', help='Also display failing nodes')
         parser.add_argument(
             '--counterexample-information',
             dest='counterexample_info',
-            default=None,
             action='store_true',
             help="Show models for failing nodes. Should be called with the '--failure-information' flag",
         )
@@ -412,7 +402,6 @@ class ProveCommand(
         parser.add_argument(
             '--reinit',
             dest='reinit',
-            default=None,
             action='store_true',
             help='Reinitialize CFGs even if they already exist.',
         )
@@ -673,9 +662,7 @@ class ProveLegacyCommand(Command, KOptions, SpecOptions, KProveLegacyOptions):
 
     @staticmethod
     def args(parser: ArgumentParser) -> ArgumentParser:
-        parser.add_argument(
-            '--bug-report-legacy', default=None, action='store_true', help='Generate a legacy bug report.'
-        )
+        parser.add_argument('--bug-report-legacy', action='store_true', help='Generate a legacy bug report.')
         return parser
 
     def exec(self) -> None:
@@ -776,14 +763,12 @@ class RunCommand(Command, KOptions, TargetOptions, EVMChainOptions, SaveDirOptio
         parser.add_argument('input_file', type=file_path, help='Path to input file.')
         parser.add_argument(
             '--output',
-            default=None,
             type=KRunOutput,
             choices=list(KRunOutput),
         )
         parser.add_argument(
             '--expand-macros',
             dest='expand_macros',
-            default=None,
             action='store_true',
             help='Expand macros on the input term before execution.',
         )
@@ -851,7 +836,6 @@ class KastCommand(Command, TargetOptions, EVMChainOptions, SaveDirOptions):
         parser.add_argument('input_file', type=file_path, help='Path to input file.')
         parser.add_argument(
             '--output',
-            default=None,
             type=PrintOutput,
             choices=list(PrintOutput),
         )
