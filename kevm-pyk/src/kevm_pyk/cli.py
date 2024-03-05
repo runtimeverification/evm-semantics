@@ -32,14 +32,13 @@ class KEVMDisplayOptions(DisplayOptions):
         return {'sort_collections': False}
 
     @staticmethod
-    def args(parser: ArgumentParser) -> ArgumentParser:
+    def update_args(parser: ArgumentParser) -> None:
         parser.add_argument(
             '--sort-collections',
             dest='sort_collections',
             action='store_true',
             help='Sort collections before outputting term.',
         )
-        return parser
 
 
 class KOptions(KDefinitionOptions):
@@ -50,9 +49,8 @@ class KOptions(KDefinitionOptions):
         return {'depth': None}
 
     @staticmethod
-    def args(parser: ArgumentParser) -> ArgumentParser:
+    def update_args(parser: ArgumentParser) -> None:
         parser.add_argument('--depth', type=int, help='Maximum depth to execute to.')
-        return parser
 
 
 class KProveOptions(Options):
@@ -65,7 +63,7 @@ class KProveOptions(Options):
         return {'always_check_subsumption': True, 'fast_check_subsumption': False, 'debug_equations': []}
 
     @staticmethod
-    def args(parser: ArgumentParser) -> ArgumentParser:
+    def update_args(parser: ArgumentParser) -> None:
         parser.add_argument(
             '--debug-equations',
             type=list_of(str, delim=','),
@@ -89,7 +87,6 @@ class KProveOptions(Options):
             action='store_true',
             help='Use fast-check on k-cell to determine subsumption.',
         )
-        return parser
 
 
 class RPCOptions(Options):
@@ -116,7 +113,7 @@ class RPCOptions(Options):
         }
 
     @staticmethod
-    def args(parser: ArgumentParser) -> ArgumentParser:
+    def update_args(parser: ArgumentParser) -> None:
         parser.add_argument(
             '--trace-rewrites',
             dest='trace_rewrites',
@@ -171,7 +168,6 @@ class RPCOptions(Options):
             type=int,
             help='Use existing Maude RPC server on named port',
         )
-        return parser
 
 
 class ExploreOptions(Options):
@@ -204,7 +200,7 @@ class ExploreOptions(Options):
         }
 
     @staticmethod
-    def args(parser: ArgumentParser) -> ArgumentParser:
+    def update_args(parser: ArgumentParser) -> None:
         parser.add_argument(
             '--break-every-step',
             dest='break_every_step',
@@ -295,7 +291,6 @@ class ExploreOptions(Options):
             action='store_false',
             help='Continue execution on other branches if a failing node is detected.',
         )
-        return parser
 
 
 class KProveLegacyOptions(Options):
@@ -318,7 +313,7 @@ class KProveLegacyOptions(Options):
         }
 
     @staticmethod
-    def args(parser: ArgumentParser) -> ArgumentParser:
+    def update_args(parser: ArgumentParser) -> None:
         parser.add_argument(
             '--bug-report',
             action='store_true',
@@ -354,7 +349,6 @@ class KProveLegacyOptions(Options):
             action='append',
             help='Arguments passed to the Haskell backend execution engine.',
         )
-        return parser
 
 
 class TargetOptions(Options):
@@ -367,9 +361,8 @@ class TargetOptions(Options):
         }
 
     @staticmethod
-    def args(parser: ArgumentParser) -> ArgumentParser:
+    def update_args(parser: ArgumentParser) -> None:
         parser.add_argument('--target', choices=['llvm', 'haskell', 'haskell-standalone', 'foundry'])
-        return parser
 
 
 class EVMChainOptions(Options):
@@ -388,7 +381,7 @@ class EVMChainOptions(Options):
         }
 
     @staticmethod
-    def args(parser: ArgumentParser) -> ArgumentParser:
+    def update_args(parser: ArgumentParser) -> None:
         schedules = (
             'DEFAULT',
             'FRONTIER',
@@ -418,7 +411,6 @@ class EVMChainOptions(Options):
             help="execution mode to use [{'|'.join(modes)}]",
         )
         parser.add_argument('--no-gas', action='store_false', dest='usegas', help='omit gas cost computations')
-        return parser
 
 
 class KEVMCLIArgs:

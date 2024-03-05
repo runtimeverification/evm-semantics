@@ -133,14 +133,13 @@ class KompileSpecCommand(Command, KOptions, KompileOptions):
         }
 
     @staticmethod
-    def args(parser: ArgumentParser) -> ArgumentParser:
+    def update_args(parser: ArgumentParser) -> None:
         parser.add_argument('main_file', type=file_path, help='Path to file with main module.')
         parser.add_argument('--target', type=KompileTarget, help='[haskell|maude]')
         parser.add_argument(
             '-o', '--output-definition', type=Path, dest='output_dir', help='Path to write kompiled definition to.'
         )
         parser.add_argument('--debug-build', dest='debug_build', help='Enable debug symbols in LLVM builds.')
-        return parser
 
     def exec(self) -> None:
         if self.target not in [KompileTarget.HASKELL, KompileTarget.MAUDE]:
@@ -205,7 +204,7 @@ class ShowKCFGCommand(Command, KOptions, SpecOptions, KEVMDisplayOptions):
         }
 
     @staticmethod
-    def args(parser: ArgumentParser) -> ArgumentParser:
+    def update_args(parser: ArgumentParser) -> None:
         parser.add_argument(
             '--node',
             type=node_id_like,
@@ -241,7 +240,6 @@ class ShowKCFGCommand(Command, KOptions, SpecOptions, KEVMDisplayOptions):
             action='store_true',
             help="Show models for failing nodes. Should be called with the '--failure-information' flag",
         )
-        return parser
 
     def exec(self) -> None:
         if self.definition_dir is None:
@@ -398,14 +396,13 @@ class ProveCommand(
         }
 
     @staticmethod
-    def args(parser: ArgumentParser) -> ArgumentParser:
+    def update_args(parser: ArgumentParser) -> None:
         parser.add_argument(
             '--reinit',
             dest='reinit',
             action='store_true',
             help='Reinitialize CFGs even if they already exist.',
         )
-        return parser
 
     def exec(self) -> None:
         md_selector = 'k'
@@ -607,9 +604,8 @@ class PruneProofCommand(Command, KOptions, SpecOptions):
         return 'Remove a node and its successors from the proof state.'
 
     @staticmethod
-    def args(parser: ArgumentParser) -> ArgumentParser:
+    def update_args(parser: ArgumentParser) -> None:
         parser.add_argument('node', type=node_id_like, help='Node to remove CFG subgraph from.')
-        return parser
 
     def exec(self) -> None:
         md_selector = 'k'
@@ -661,9 +657,8 @@ class ProveLegacyCommand(Command, KOptions, SpecOptions, KProveLegacyOptions):
         }
 
     @staticmethod
-    def args(parser: ArgumentParser) -> ArgumentParser:
+    def update_args(parser: ArgumentParser) -> None:
         parser.add_argument('--bug-report-legacy', action='store_true', help='Generate a legacy bug report.')
-        return parser
 
     def exec(self) -> None:
         definition_dir = self.definition_dir
@@ -759,7 +754,7 @@ class RunCommand(Command, KOptions, TargetOptions, EVMChainOptions, SaveDirOptio
         }
 
     @staticmethod
-    def args(parser: ArgumentParser) -> ArgumentParser:
+    def update_args(parser: ArgumentParser) -> None:
         parser.add_argument('input_file', type=file_path, help='Path to input file.')
         parser.add_argument(
             '--output',
@@ -784,7 +779,6 @@ class RunCommand(Command, KOptions, TargetOptions, EVMChainOptions, SaveDirOptio
             action='store_true',
             help='Run GDB debugger for execution.',
         )
-        return parser
 
     def exec(self) -> None:
         target_fqn = f'evm-semantics.{self.target}'
@@ -832,14 +826,13 @@ class KastCommand(Command, TargetOptions, EVMChainOptions, SaveDirOptions):
         }
 
     @staticmethod
-    def args(parser: ArgumentParser) -> ArgumentParser:
+    def update_args(parser: ArgumentParser) -> None:
         parser.add_argument('input_file', type=file_path, help='Path to input file.')
         parser.add_argument(
             '--output',
             type=PrintOutput,
             choices=list(PrintOutput),
         )
-        return parser
 
     def exec(self) -> None:
         target_fqn = f'evm-semantics.{self.target}'
