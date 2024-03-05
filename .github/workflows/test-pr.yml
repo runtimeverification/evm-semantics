@@ -178,7 +178,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
       - name: 'Install Nix'
         if: ${{ matrix.runner == 'macos-13' }}
-        uses: cachix/install-nix-action@v19
+        uses: cachix/install-nix-action@v25
         with:
           install_url: https://releases.nixos.org/nix/nix-2.19.3/install
           extra_nix_config: |
