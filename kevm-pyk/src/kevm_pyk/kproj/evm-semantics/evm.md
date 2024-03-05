@@ -1730,7 +1730,7 @@ Precompiled Contracts
     rule #precompiled(9) => BLAKE2F
 
     syntax Int ::= #precompiledAccountsUB ( Schedule ) [klabel(#precompiledAccountsUB), function, total]
- // ------------------------------------------------------------------------------------------------
+ // ----------------------------------------------------------------------------------------------------
     rule #precompiledAccountsUB(DEFAULT)           => 4
     rule #precompiledAccountsUB(FRONTIER)          => #precompiledAccountsUB(DEFAULT)
     rule #precompiledAccountsUB(HOMESTEAD)         => #precompiledAccountsUB(FRONTIER)
@@ -1748,7 +1748,7 @@ Precompiled Contracts
 
     syntax Set ::= #precompiledAccountsSet    ( Schedule ) [klabel(#precompiledAccountsSet),    function, total]
     syntax Set ::= #precompiledAccountsSetAux ( Int      ) [klabel(#precompiledAccountsSetAux), function, total]
- // ----------------------------------------------------------------------------------------------------------------
+ // ------------------------------------------------------------------------------------------------------------
     rule #precompiledAccountsSet(SCHED) => #precompiledAccountsSetAux(#precompiledAccountsUB(SCHED))
 
     rule #precompiledAccountsSetAux(N)  => .Set requires N <=Int 0
