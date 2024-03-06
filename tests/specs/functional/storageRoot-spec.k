@@ -5,7 +5,7 @@ module VERIFICATION
     imports EVM
     imports EDSL
 
-    syntax KItem ::= runLemma ( Step ) | doneLemma ( Step )
+    syntax KItem ::= runLemma ( Step ) [symbol(runLemma)] | doneLemma ( Step )
  // -------------------------------------------------------
     rule <k> runLemma(S) => doneLemma(S) ... </k>
 
