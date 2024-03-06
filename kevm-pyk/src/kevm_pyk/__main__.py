@@ -14,7 +14,15 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from pathos.pools import ProcessPool  # type: ignore
-from pyk.cli.args import BugReportOptions, KompileOptions, ParallelOptions, SaveDirOptions, SMTOptions, SpecOptions
+from pyk.cli.args import (
+    BugReportOptions,
+    KompileOptions,
+    LoggingOptions,
+    ParallelOptions,
+    SaveDirOptions,
+    SMTOptions,
+    SpecOptions,
+)
 from pyk.cli.cli import CLI, Command
 from pyk.cli.utils import file_path
 from pyk.cterm import CTerm
@@ -56,7 +64,7 @@ from .utils import (
 )
 
 if TYPE_CHECKING:
-    from argparse import ArgumentParser, Namespace
+    from argparse import ArgumentParser
     from collections.abc import Callable, Iterable, Iterator
     from typing import Any, Final, TypeVar
 
@@ -94,15 +102,13 @@ def main() -> None:
             ViewKCFGCommand,
         )
     )
-    parser = kevm_cli.create_argument_parser()
-    args = parser.parse_args()
-
-    logging.basicConfig(level=_loglevel(args), format=_LOG_FORMAT)
-    command = kevm_cli.generate_command({key: val for (key, val) in vars(args).items() if val is not None})
+    command = kevm_cli.get_command()
+    assert isinstance(command, LoggingOptions)
+    logging.basicConfig(level=_loglevel(command), format=_LOG_FORMAT)
     command.exec()
 
 
-class KompileSpecCommand(Command, KOptions, KompileOptions):
+class KompileSpecCommand(Command, KOptions, KompileOptions, LoggingOptions):
     main_file: Path
     target: KompileTarget
     output_dir: Path
@@ -166,7 +172,7 @@ class KompileSpecCommand(Command, KOptions, KompileOptions):
         )
 
 
-class ShowKCFGCommand(Command, KOptions, SpecOptions, KEVMDisplayOptions):
+class ShowKCFGCommand(Command, KOptions, SpecOptions, KEVMDisplayOptions, LoggingOptions):
     nodes: list[NodeIdLike]
     node_deltas: list[tuple[NodeIdLike, NodeIdLike]]
     failure_info: bool
@@ -370,6 +376,7 @@ class ProveCommand(
     ExploreOptions,
     SpecOptions,
     RPCOptions,
+    LoggingOptions,
 ):
     reinit: bool
 
@@ -571,7 +578,7 @@ class ProveCommand(
             sys.exit(failed)
 
 
-class VersionCommand(Command):
+class VersionCommand(Command, LoggingOptions):
     @staticmethod
     def name() -> str:
         return 'version'
@@ -584,7 +591,7 @@ class VersionCommand(Command):
         print(f'KEVM Version: {VERSION}')
 
 
-class PruneProofCommand(Command, KOptions, SpecOptions):
+class PruneProofCommand(Command, KOptions, SpecOptions, LoggingOptions):
     node: NodeIdLike
 
     @staticmethod
@@ -631,7 +638,7 @@ class PruneProofCommand(Command, KOptions, SpecOptions):
         apr_proof.write_proof_data()
 
 
-class ProveLegacyCommand(Command, KOptions, SpecOptions, KProveLegacyOptions):
+class ProveLegacyCommand(Command, KOptions, SpecOptions, KProveLegacyOptions, LoggingOptions):
     bug_report_legacy: bool
 
     @staticmethod
@@ -682,7 +689,7 @@ class ProveLegacyCommand(Command, KOptions, SpecOptions, KProveLegacyOptions):
             raise SystemExit(1)
 
 
-class ViewKCFGCommand(Command, KOptions, SpecOptions):
+class ViewKCFGCommand(Command, KOptions, SpecOptions, LoggingOptions):
     @staticmethod
     def name() -> str:
         return 'view-kcfg'
@@ -723,7 +730,7 @@ class ViewKCFGCommand(Command, KOptions, SpecOptions):
         proof_view.run()
 
 
-class RunCommand(Command, KOptions, TargetOptions, EVMChainOptions, SaveDirOptions):
+class RunCommand(Command, KOptions, TargetOptions, EVMChainOptions, SaveDirOptions, LoggingOptions):
     input_file: Path
     output: KRunOutput
     expand_macros: bool
@@ -799,7 +806,7 @@ class RunCommand(Command, KOptions, TargetOptions, EVMChainOptions, SaveDirOptio
         )
 
 
-class KastCommand(Command, TargetOptions, EVMChainOptions, SaveDirOptions):
+class KastCommand(Command, TargetOptions, EVMChainOptions, SaveDirOptions, LoggingOptions):
     input_file: Path
     output: PrintOutput
 
@@ -849,7 +856,7 @@ class KastCommand(Command, TargetOptions, EVMChainOptions, SaveDirOptions):
 # Helpers
 
 
-def _loglevel(args: Namespace) -> int:
+def _loglevel(args: LoggingOptions) -> int:
     if args.debug:
         return logging.DEBUG
 
