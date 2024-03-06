@@ -40,6 +40,10 @@ class KEVMSemantics(KCFGSemantics):
     def __init__(self, auto_abstract_gas: bool = False) -> None:
         self.auto_abstract_gas = auto_abstract_gas
 
+    @staticmethod
+    def is_functional(term: KInner) -> bool:
+        return type(term) == KApply and term.label.name == 'runLemma'
+
     def is_terminal(self, cterm: CTerm) -> bool:
         k_cell = cterm.cell('K_CELL')
         # <k> #halt </k>
@@ -55,6 +59,23 @@ class KEVMSemantics(KCFGSemantics):
             # <k> #halt ~> X:K </k>
             elif k_cell.arity == 2 and k_cell[0] == KEVM.halt() and type(k_cell[1]) is KVariable:
                 return True
+
+        program_cell = cterm.cell('PROGRAM_CELL')
+        # Fully symbolic program is terminal unless we are executing a functional claim
+        if type(program_cell) is KVariable:
+            # <k> runLemma ( ... ) </k>
+            if KEVMSemantics.is_functional(k_cell):
+                return False
+            # <k> runLemma ( ... ) [ ~> X:K ] </k>
+            elif (
+                type(k_cell) is KSequence
+                and (k_cell.arity == 1 or (k_cell.arity == 2 and type(k_cell[1]) is KVariable))
+                and KEVMSemantics.is_functional(k_cell[0])
+            ):
+                return False
+            else:
+                return True
+
         return False
 
     def same_loop(self, cterm1: CTerm, cterm2: CTerm) -> bool:

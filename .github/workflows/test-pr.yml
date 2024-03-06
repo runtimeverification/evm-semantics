@@ -178,16 +178,16 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
       - name: 'Install Nix'
         if: ${{ matrix.runner == 'macos-13' }}
-        uses: cachix/install-nix-action@v19
+        uses: cachix/install-nix-action@v25
         with:
-          install_url: https://releases.nixos.org/nix/nix-2.13.3/install
+          install_url: https://releases.nixos.org/nix/nix-2.19.3/install
           extra_nix_config: |
             access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
             substituters = http://cache.nixos.org https://cache.iog.io
             trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ=
       - name: 'Install Cachix'
         if: ${{ matrix.runner == 'macos-13' }}
-        uses: cachix/cachix-action@v12
+        uses: cachix/cachix-action@v14
         with:
           name: k-framework
           authToken: ${{ secrets.CACHIX_PUBLIC_TOKEN }}
