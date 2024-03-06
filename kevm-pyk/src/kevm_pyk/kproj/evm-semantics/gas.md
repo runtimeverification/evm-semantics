@@ -73,9 +73,9 @@ module INFINITE-GAS
     rule #gas(G) /Gas #gas(G') => #gas(G /Int G')  requires G' =/=Int 0
 
     rule _:Int    <Gas #gas(_) => true
-    rule #gas(_)  <Gas _       => false [simplification]
+    rule #gas(_)  <Gas _       => false
     rule #gas(_) <=Gas _:Int   => false
-    rule _       <=Gas #gas(_) => true  [simplification]
+    rule _       <=Gas #gas(_) => true
 
     rule minGas(#gas(G), #gas(G')) => #gas(minInt(G, G'))
     rule minGas(G:Int  , #gas(G')) => #gas(minInt(G, G'))
