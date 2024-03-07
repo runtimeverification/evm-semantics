@@ -1,7 +1,7 @@
 Verification Instructions for KEVM
 ==================================
 
-If you're trying to run Solidity programs with symbolic execution, check out our guide for KONTROL at [docs.runtimeverification.com/kontrol].
+If you're trying to analyze Solidity smart contracts with symbolic execution, check out our guide for Kontrol at [docs.runtimeverification.com/kontrol].
 
 We assume that KEVM is installed, and the [K tutorial] has been completed.
 This document provides instructions for kompiling and running claims using KEVM.
@@ -43,11 +43,11 @@ Debugging a proof
 
 For `kevm prove-legacy`, you can use the `--debugger` flag to debug a proof. With it, you can use `step`/`stepf` to navigate through the rewrite steps and `konfig` to display the K configuration. You can see all the available commands using `help`.
 
-For `kevm prove`. you can use `kevm show-kcfg ...` or `kevm view-kcfg ...` to get a visualization.
+For `kevm prove`, you can use `kevm show-kcfg ...` or `kevm view-kcfg ...` to get a visualization.
 ***Note:*** this is not compatible with `kevm prove-legacy`.
 
 `kevm view-kcfg [spec_file] [--save-directory save_directory] [--claim claim_label] ...` command takes the same basic arguments as `kevm prove ...` does, including:
-  - `spec_file` is the file to look in for specifications. This is the same file used for `kevm prove …`.
+  - `spec_file` is the file to look in for specifications. This is the same file that is used for `kevm prove …`.
   - `--save-directory` must be passed as where the KCFGs have been saved (by a previous call to `kevm prove --save-directory save_directory ...`)
   - `--claim claim_label` lets you select an individual claim out of the `spec_file`. If the flag is ommited, it’s assumed that only one claim is present. If the flag is ommited and more than one claim is present in the `spec_file` then an error will be raised.
   - `--spec-module spec_module` is also an inherited option.
