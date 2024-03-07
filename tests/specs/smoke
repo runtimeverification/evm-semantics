@@ -1,5 +1,6 @@
 tests/specs/benchmarks/address00-spec.k
 tests/specs/benchmarks/bytes00-spec.k
+tests/specs/benchmarks/dynamicarray00-spec.k
 tests/specs/benchmarks/encode-keccak00-spec.k
 tests/specs/benchmarks/encodepacked-keccak01-spec.k
 tests/specs/benchmarks/keccak00-spec.k
@@ -10,6 +11,8 @@ tests/specs/benchmarks/staticarray00-spec.k
 tests/specs/benchmarks/staticloop00-a0lt10-spec.k
 tests/specs/benchmarks/storagevar02-nooverflow-spec.k
 tests/specs/benchmarks/storagevar02-overflow-spec.k
+tests/specs/benchmarks/structarg00-spec.k
+tests/specs/benchmarks/structarg01-spec.k
 tests/specs/bihu/forwardToHotWallet-failure-1-spec.k
 tests/specs/bihu/forwardToHotWallet-failure-2-spec.k
 tests/specs/bihu/forwardToHotWallet-failure-3-spec.k

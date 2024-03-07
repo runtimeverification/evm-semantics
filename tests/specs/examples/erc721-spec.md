@@ -30,6 +30,11 @@ module VERIFICATION
     imports EVM-OPTIMIZATIONS
     imports ERC721-VERIFICATION
 
+    syntax Step ::= Bytes | Int | Bool
+    syntax KItem ::= runLemma ( Step ) [symbol(runLemma)] | doneLemma ( Step )
+ // -------------------------------------------------------
+    rule <k> runLemma(S) => doneLemma(S) ... </k>
+
  // Lemmas
  // ---------------
 
@@ -52,13 +57,13 @@ module ERC721-SPEC
 ```
 
 ```k
-claim (chop(chop(chop(chop(chop(chop((#lookup(ACCT_STORAGE, 0) /Int 2 &Int 127) +Int 31) /Int 32 *Int 32) +Int 32) +Int 128) +Int 32) +Int 32))
-       => (((#lookup(ACCT_STORAGE, 0) /Int 2 &Int 127) +Int 31) /Int 32 *Int 32 +Int 224)
+claim <k> runLemma(chop(chop(chop(chop(chop(chop((#lookup(ACCT_STORAGE, 0) /Int 2 &Int 127) +Int 31) /Int 32 *Int 32) +Int 32) +Int 128) +Int 32) +Int 32))
+       => doneLemma(((#lookup(ACCT_STORAGE, 0) /Int 2 &Int 127) +Int 31) /Int 32 *Int 32 +Int 224) ... </k>
 ```
 
 ```k
-claim (#lookup(ACCT_STORAGE, 0) /Int 2 <Int 32)
-       => (false)
+claim <k> runLemma(#lookup(ACCT_STORAGE, 0) /Int 2 <Int 32)
+       => doneLemma(false) ... </k>
  requires 32 <=Int #lookup(ACCT_STORAGE, 0) /Int 2 &Int 127
 ```
 
@@ -74,6 +79,7 @@ claim (#lookup(ACCT_STORAGE, 0) /Int 2 <Int 32)
     claim [name.short.success]:
           <mode>     NORMAL   </mode>
           <schedule> ISTANBUL </schedule>
+          <useGas>  true     </useGas>
 
           <callStack> .List                                       </callStack>
           <program>   #binRuntime(S2KERC721)                         </program>
@@ -108,6 +114,7 @@ claim (#lookup(ACCT_STORAGE, 0) /Int 2 <Int 32)
     claim [name.short.revert]:
           <mode>     NORMAL   </mode>
           <schedule> ISTANBUL </schedule>
+          <useGas>  true     </useGas>
 
           <callStack> .List                                       </callStack>
           <program>   #binRuntime(S2KERC721)                         </program>

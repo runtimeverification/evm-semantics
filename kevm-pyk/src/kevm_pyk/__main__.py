@@ -6,8 +6,11 @@ import json
 import logging
 import os
 import sys
+import tempfile
 import time
 from argparse import ArgumentParser
+from dataclasses import dataclass
+from functools import cached_property
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -16,17 +19,18 @@ from pyk.cli.utils import file_path
 from pyk.cterm import CTerm
 from pyk.kast.outer import KApply, KRewrite, KSort, KToken
 from pyk.kcfg import KCFG
+from pyk.kdist import kdist
 from pyk.kore.tools import PrintOutput, kore_print
 from pyk.ktool.kompile import LLVMKompileType
 from pyk.ktool.krun import KRunOutput
 from pyk.prelude.ml import is_top, mlOr
 from pyk.proof import APRProof
-from pyk.proof.equality import EqualityProof
+from pyk.proof.implies import EqualityProof
 from pyk.proof.show import APRProofShow
 from pyk.proof.tui import APRProofViewer
-from pyk.utils import single
+from pyk.utils import FrozenDict, hash_str, single
 
-from . import VERSION, config, kdist
+from . import VERSION, config
 from .cli import KEVMCLIArgs, node_id_like
 from .gst_to_kore import SORT_ETHEREUM_SIMULATION, gst_to_kore, kore_pgm_to_kore
 from .kevm import KEVM, KEVMSemantics, kevm_node_printer
@@ -36,9 +40,9 @@ from .utils import (
     claim_dependency_dict,
     ensure_ksequence_on_k_cell,
     get_apr_proof_for_spec,
-    kevm_prove,
     legacy_explore,
     print_failure_info,
+    run_prover,
 )
 
 if TYPE_CHECKING:
@@ -48,6 +52,8 @@ if TYPE_CHECKING:
 
     from pyk.kast.outer import KClaim
     from pyk.kcfg.kcfg import NodeIdLike
+    from pyk.kcfg.tui import KCFGElem
+    from pyk.kore.rpc import FallbackReason
     from pyk.proof.proof import Proof
     from pyk.utils import BugReport
 
@@ -85,7 +91,7 @@ def exec_version(**kwargs: Any) -> None:
     print(f'KEVM Version: {VERSION}')
 
 
-def exec_kompile(
+def exec_kompile_spec(
     output_dir: Path | None,
     main_file: Path,
     emit_json: bool,
@@ -107,7 +113,10 @@ def exec_kompile(
     **kwargs: Any,
 ) -> None:
     if target is None:
-        target = KompileTarget.LLVM
+        target = KompileTarget.HASKELL
+
+    if target not in [KompileTarget.HASKELL, KompileTarget.MAUDE]:
+        raise ValueError(f'Can only call kevm kompile-spec with --target [haskell,maude], got: {target.value}')
 
     output_dir = output_dir or Path()
 
@@ -160,7 +169,7 @@ def exec_prove_legacy(
     _ignore_arg(kwargs, 'md_selector', f'--md-selector: {kwargs["md_selector"]}')
 
     if definition_dir is None:
-        definition_dir = kdist.get('haskell')
+        definition_dir = kdist.get('evm-semantics.haskell')
 
     kevm = KEVM(definition_dir, use_directory=save_directory)
 
@@ -201,6 +210,69 @@ def wrap_process_pool(workers: int) -> Iterator[ZeroProcessPool | ProcessPool]:
             yield pp
 
 
+class JSONEncoder(json.JSONEncoder):
+    def default(self, obj: Any) -> Any:
+        if isinstance(obj, FrozenDict):
+            return json.JSONEncoder.encode(self, dict(obj))
+        return json.JSONEncoder.default(self, obj)
+
+
+@dataclass(frozen=True)
+class KClaimJob:
+    claim: KClaim
+    dependencies: frozenset[KClaimJob]
+
+    @cached_property
+    def digest(self) -> str:
+        deps_digest = ''.join([dep.digest for dep in self.dependencies])
+        claim_hash = hash_str(json.dumps(self.claim.to_dict(), sort_keys=True, cls=JSONEncoder))
+        return hash_str(f'{claim_hash}{deps_digest}')
+
+    def up_to_date(self, digest_file: Path | None) -> bool:
+        if not isinstance(digest_file, Path) or not digest_file.exists():
+            return False
+        digest_dict = json.loads(digest_file.read_text())
+        if 'claims' not in digest_dict:
+            digest_dict['claims'] = {}
+            digest_file.write_text(json.dumps(digest_dict, indent=4))
+        if self.claim.label not in digest_dict['claims']:
+            return False
+        return digest_dict['claims'][self.claim.label] == self.digest
+
+    def update_digest(self, digest_file: Path | None) -> None:
+        if digest_file is None:
+            return
+        digest_dict = {}
+        if digest_file.exists():
+            digest_dict = json.loads(digest_file.read_text())
+        if 'claims' not in digest_dict:
+            digest_dict['claims'] = {}
+        digest_dict['claims'][self.claim.label] = self.digest
+        digest_file.write_text(json.dumps(digest_dict, indent=4))
+
+        _LOGGER.info(f'Updated claim {self.claim.label} in digest file: {digest_file}')
+
+
+def init_claim_jobs(spec_module_name: str, claims: list[KClaim]) -> frozenset[KClaimJob]:
+    labels_to_claims = {claim.label: claim for claim in claims}
+    labels_to_claim_jobs: dict[str, KClaimJob] = {}
+
+    def get_or_load_claim_job(claim_label: str) -> KClaimJob:
+        if claim_label not in labels_to_claim_jobs:
+            if claim_label in labels_to_claims:
+                claim = labels_to_claims[claim_label]
+            elif f'{spec_module_name}.{claim_label}' in labels_to_claims:
+                claim = labels_to_claims[f'{spec_module_name}.{claim_label}']
+            else:
+                raise ValueError(f'Claim with label {claim_label} not found.')
+            deps = frozenset({get_or_load_claim_job(dep_label) for dep_label in claim.dependencies})
+            claim_job = KClaimJob(claim, deps)
+            labels_to_claim_jobs[claim_label] = claim_job
+        return labels_to_claim_jobs[claim_label]
+
+    return frozenset({get_or_load_claim_job(claim.label) for claim in claims})
+
+
 def exec_prove(
     spec_file: Path,
     includes: Iterable[str],
@@ -214,10 +286,11 @@ def exec_prove(
     max_depth: int = 1000,
     max_iterations: int | None = None,
     workers: int = 1,
-    simplify_init: bool = True,
     break_every_step: bool = False,
     break_on_jumpi: bool = False,
-    break_on_calls: bool = True,
+    break_on_calls: bool = False,
+    break_on_storage: bool = False,
+    break_on_basic_blocks: bool = False,
     kore_rpc_command: str | Iterable[str] | None = None,
     use_booster: bool = False,
     smt_timeout: int | None = None,
@@ -226,13 +299,23 @@ def exec_prove(
     failure_info: bool = True,
     auto_abstract_gas: bool = False,
     fail_fast: bool = False,
+    always_check_subsumption: bool = True,
+    fast_check_subsumption: bool = False,
+    fallback_on: Iterable[FallbackReason] | None = None,
+    interim_simplification: int | None = None,
+    post_exec_simplify: bool = True,
     **kwargs: Any,
 ) -> None:
     _ignore_arg(kwargs, 'md_selector', f'--md-selector: {kwargs["md_selector"]}')
     md_selector = 'k'
 
+    if save_directory is None:
+        save_directory = Path(tempfile.mkdtemp())
+
+    digest_file = save_directory / 'digest'
+
     if definition_dir is None:
-        definition_dir = kdist.get('haskell')
+        definition_dir = kdist.get('evm-semantics.haskell')
 
     if smt_timeout is None:
         smt_timeout = 300
@@ -263,16 +346,24 @@ def exec_prove(
         spec_module_name=spec_module,
         include_dirs=include_dirs,
         md_selector=md_selector,
-        claim_labels=None,
+        claim_labels=claim_labels,
         exclude_claim_labels=exclude_claim_labels,
     )
     if all_claims is None:
         raise ValueError(f'No claims found in file: {spec_file}')
-    all_claims_by_label: dict[str, KClaim] = {c.label: c for c in all_claims}
     spec_module_name = spec_module if spec_module is not None else os.path.splitext(spec_file.name)[0].upper()
+    all_claim_jobs = init_claim_jobs(spec_module_name, all_claims)
+    all_claim_jobs_by_label = {c.claim.label: c for c in all_claim_jobs}
     claims_graph = claim_dependency_dict(all_claims, spec_module_name=spec_module_name)
 
-    def _init_and_run_proof(claim: KClaim) -> tuple[bool, list[str] | None]:
+    def _init_and_run_proof(claim_job: KClaimJob) -> tuple[bool, list[str] | None]:
+        claim = claim_job.claim
+        up_to_date = claim_job.up_to_date(digest_file)
+        if up_to_date:
+            _LOGGER.info(f'Claim is up to date: {claim.label}')
+        else:
+            _LOGGER.info(f'Claim reinitialized because it is out of date: {claim.label}')
+        claim_job.update_digest(digest_file)
         with legacy_explore(
             kevm,
             kcfg_semantics=KEVMSemantics(auto_abstract_gas=auto_abstract_gas),
@@ -283,23 +374,18 @@ def exec_prove(
             smt_timeout=smt_timeout,
             smt_retry_limit=smt_retry_limit,
             trace_rewrites=trace_rewrites,
+            fallback_on=fallback_on,
+            interim_simplification=interim_simplification,
+            no_post_exec_simplify=(not post_exec_simplify),
         ) as kcfg_explore:
             proof_problem: Proof
             if is_functional(claim):
-                if (
-                    save_directory is not None
-                    and not reinit
-                    and EqualityProof.proof_exists(claim.label, save_directory)
-                ):
+                if not reinit and up_to_date and EqualityProof.proof_exists(claim.label, save_directory):
                     proof_problem = EqualityProof.read_proof_data(save_directory, claim.label)
                 else:
                     proof_problem = EqualityProof.from_claim(claim, kevm.definition, proof_dir=save_directory)
             else:
-                if (
-                    save_directory is not None
-                    and not reinit
-                    and APRProof.proof_data_exists(claim.label, save_directory)
-                ):
+                if not reinit and up_to_date and APRProof.proof_data_exists(claim.label, save_directory):
                     proof_problem = APRProof.read_proof_data(save_directory, claim.label)
 
                 else:
@@ -310,20 +396,15 @@ def exec_prove(
                     new_target = ensure_ksequence_on_k_cell(kcfg.node(target_node_id).cterm)
 
                     _LOGGER.info(f'Computing definedness constraint for initial node: {claim.label}')
-                    new_init = kcfg_explore.cterm_assume_defined(new_init)
+                    new_init = kcfg_explore.cterm_symbolic.assume_defined(new_init)
 
-                    if simplify_init:
-                        _LOGGER.info(f'Simplifying initial and target node: {claim.label}')
-                        new_init, _ = kcfg_explore.cterm_simplify(new_init)
-                        new_target, _ = kcfg_explore.cterm_simplify(new_target)
-                        if CTerm._is_bottom(new_init.kast):
-                            raise ValueError(
-                                'Simplifying initial node led to #Bottom, are you sure your LHS is defined?'
-                            )
-                        if CTerm._is_top(new_target.kast):
-                            raise ValueError(
-                                'Simplifying target node led to #Bottom, are you sure your RHS is defined?'
-                            )
+                    _LOGGER.info(f'Simplifying initial and target node: {claim.label}')
+                    new_init, _ = kcfg_explore.cterm_symbolic.simplify(new_init)
+                    new_target, _ = kcfg_explore.cterm_symbolic.simplify(new_target)
+                    if CTerm._is_bottom(new_init.kast):
+                        raise ValueError('Simplifying initial node led to #Bottom, are you sure your LHS is defined?')
+                    if CTerm._is_top(new_target.kast):
+                        raise ValueError('Simplifying target node led to #Bottom, are you sure your RHS is defined?')
 
                     kcfg.replace_node(init_node_id, new_init)
                     kcfg.replace_node(target_node_id, new_target)
@@ -337,19 +418,27 @@ def exec_prove(
                         {},
                         proof_dir=save_directory,
                         subproof_ids=claims_graph[claim.label],
+                        admitted=claim.is_trusted,
                     )
 
+            if proof_problem.admitted:
+                proof_problem.write_proof_data()
+                _LOGGER.info(f'Skipping execution of proof because it is marked as admitted: {proof_problem.id}')
+                return True, None
+
             start_time = time.time()
-            passed = kevm_prove(
-                kevm,
+            passed = run_prover(
                 proof_problem,
                 kcfg_explore,
                 max_depth=max_depth,
                 max_iterations=max_iterations,
-                break_every_step=break_every_step,
-                break_on_jumpi=break_on_jumpi,
-                break_on_calls=break_on_calls,
+                cut_point_rules=KEVMSemantics.cut_point_rules(
+                    break_on_jumpi, break_on_calls, break_on_storage, break_on_basic_blocks
+                ),
+                terminal_rules=KEVMSemantics.terminal_rules(break_every_step),
                 fail_fast=fail_fast,
+                always_check_subsumption=always_check_subsumption,
+                fast_check_subsumption=fast_check_subsumption,
             )
             end_time = time.time()
             _LOGGER.info(f'Proof timing {proof_problem.id}: {end_time - start_time}s')
@@ -367,7 +456,7 @@ def exec_prove(
         while topological_sorter.is_active():
             ready = topological_sorter.get_ready()
             _LOGGER.info(f'Discharging proof obligations: {ready}')
-            curr_claim_list = [all_claims_by_label[label] for label in ready]
+            curr_claim_list = [all_claim_jobs_by_label[label] for label in ready]
             results: list[tuple[bool, list[str] | None]] = process_pool.map(_init_and_run_proof, curr_claim_list)
             for label in ready:
                 topological_sorter.done(label)
@@ -375,13 +464,13 @@ def exec_prove(
             selected_claims.extend(curr_claim_list)
 
     failed = 0
-    for claim, r in zip(selected_claims, selected_results, strict=True):
+    for job, r in zip(selected_claims, selected_results, strict=True):
         passed, failure_log = r
         if passed:
-            print(f'PROOF PASSED: {claim.label}')
+            print(f'PROOF PASSED: {job.claim.label}')
         else:
             failed += 1
-            print(f'PROOF FAILED: {claim.label}')
+            print(f'PROOF FAILED: {job.claim.label}')
             if failure_info and failure_log is not None:
                 for line in failure_log:
                     print(line)
@@ -582,7 +671,15 @@ def exec_view_kcfg(
     )
 
     node_printer = kevm_node_printer(kevm, proof)
-    proof_view = APRProofViewer(proof, kevm, node_printer=node_printer)
+
+    def custom_view(element: KCFGElem) -> list[str]:
+        if type(element) is KCFG.Edge:
+            return list(element.rules)
+        if type(element) is KCFG.NDBranch:
+            return list(element.rules)
+        return []
+
+    proof_view = APRProofViewer(proof, kevm, node_printer=node_printer, custom_view=custom_view)
 
     proof_view.run()
 
@@ -595,6 +692,7 @@ def exec_run(
     schedule: str,
     mode: str,
     chainid: int,
+    usegas: bool,
     target: str | None = None,
     save_directory: Path | None = None,
     debugger: bool = False,
@@ -603,17 +701,19 @@ def exec_run(
     if target is None:
         target = 'llvm'
 
+    target_fqn = f'evm-semantics.{target}'
+
     _ignore_arg(kwargs, 'definition_dir', f'--definition: {kwargs["definition_dir"]}')
-    kevm = KEVM(kdist.get(target), use_directory=save_directory)
+    kevm = KEVM(kdist.get(target_fqn), use_directory=save_directory)
 
     try:
         json_read = json.loads(input_file.read_text())
-        kore_pattern = gst_to_kore(json_read, schedule, mode, chainid)
+        kore_pattern = gst_to_kore(json_read, schedule, mode, chainid, usegas)
     except json.JSONDecodeError:
         pgm_token = KToken(input_file.read_text(), KSort('EthereumSimulation'))
         kast_pgm = kevm.parse_token(pgm_token)
         kore_pgm = kevm.kast_to_kore(kast_pgm, sort=KSort('EthereumSimulation'))
-        kore_pattern = kore_pgm_to_kore(kore_pgm, SORT_ETHEREUM_SIMULATION, schedule, mode, chainid)
+        kore_pattern = kore_pgm_to_kore(kore_pgm, SORT_ETHEREUM_SIMULATION, schedule, mode, chainid, usegas)
 
     kevm.run(
         kore_pattern,
@@ -632,6 +732,7 @@ def exec_kast(
     schedule: str,
     mode: str,
     chainid: int,
+    usegas: bool,
     target: str | None = None,
     save_directory: Path | None = None,
     **kwargs: Any,
@@ -639,19 +740,21 @@ def exec_kast(
     if target is None:
         target = 'llvm'
 
+    target_fqn = f'evm-semantics.{target}'
+
     _ignore_arg(kwargs, 'definition_dir', f'--definition: {kwargs["definition_dir"]}')
-    kevm = KEVM(kdist.get(target), use_directory=save_directory)
+    kevm = KEVM(kdist.get(target_fqn), use_directory=save_directory)
 
     try:
         json_read = json.loads(input_file.read_text())
-        kore_pattern = gst_to_kore(json_read, schedule, mode, chainid)
+        kore_pattern = gst_to_kore(json_read, schedule, mode, chainid, usegas)
     except json.JSONDecodeError:
         pgm_token = KToken(input_file.read_text(), KSort('EthereumSimulation'))
         kast_pgm = kevm.parse_token(pgm_token)
         kore_pgm = kevm.kast_to_kore(kast_pgm)
-        kore_pattern = kore_pgm_to_kore(kore_pgm, SORT_ETHEREUM_SIMULATION, schedule, mode, chainid)
+        kore_pattern = kore_pgm_to_kore(kore_pgm, SORT_ETHEREUM_SIMULATION, schedule, mode, chainid, usegas)
 
-    output_text = kore_print(kore_pattern, kevm.definition_dir, output)
+    output_text = kore_print(kore_pattern, definition_dir=kevm.definition_dir, output=output)
     print(output_text)
 
 
@@ -672,17 +775,17 @@ def _create_argument_parser() -> ArgumentParser:
 
     command_parser.add_parser('version', help='Print KEVM version and exit.', parents=[kevm_cli_args.logging_args])
 
-    kevm_kompile_args = command_parser.add_parser(
-        'kompile',
+    kevm_kompile_spec_args = command_parser.add_parser(
+        'kompile-spec',
         help='Kompile KEVM specification.',
         parents=[kevm_cli_args.logging_args, kevm_cli_args.k_args, kevm_cli_args.kompile_args],
     )
-    kevm_kompile_args.add_argument('main_file', type=file_path, help='Path to file with main module.')
-    kevm_kompile_args.add_argument('--target', type=KompileTarget, help='[llvm|haskell|haskell-booster]')
-    kevm_kompile_args.add_argument(
+    kevm_kompile_spec_args.add_argument('main_file', type=file_path, help='Path to file with main module.')
+    kevm_kompile_spec_args.add_argument('--target', type=KompileTarget, help='[haskell|maude]')
+    kevm_kompile_spec_args.add_argument(
         '-o', '--output-definition', type=Path, dest='output_dir', help='Path to write kompiled definition to.'
     )
-    kevm_kompile_args.add_argument(
+    kevm_kompile_spec_args.add_argument(
         '--debug-build', dest='debug_build', default=False, help='Enable debug symbols in LLVM builds.'
     )
 
@@ -707,13 +810,6 @@ def _create_argument_parser() -> ArgumentParser:
         default=False,
         action='store_true',
         help='Reinitialize CFGs even if they already exist.',
-    )
-    prove_args.add_argument(
-        '--use-booster',
-        dest='use_booster',
-        default=False,
-        action='store_true',
-        help="Use the booster RPC server instead of kore-rpc. Requires calling kompile with '--target haskell-booster' flag",
     )
 
     prune_args = command_parser.add_parser(
@@ -764,13 +860,13 @@ def _create_argument_parser() -> ArgumentParser:
 
     command_parser.add_parser(
         'view-kcfg',
-        help='Display tree view of CFG',
+        help='Explore a given proof in the KCFG visualizer.',
         parents=[kevm_cli_args.logging_args, kevm_cli_args.k_args, kevm_cli_args.spec_args],
     )
 
     command_parser.add_parser(
         'show-kcfg',
-        help='Display tree show of CFG',
+        help='Print the CFG for a given proof.',
         parents=[
             kevm_cli_args.logging_args,
             kevm_cli_args.k_args,

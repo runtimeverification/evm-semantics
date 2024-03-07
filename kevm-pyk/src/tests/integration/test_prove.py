@@ -1,28 +1,23 @@
 from __future__ import annotations
 
-import dataclasses
 import logging
-import subprocess
 import sys
-from pathlib import Path
 from typing import TYPE_CHECKING, NamedTuple
 
-import inotify.adapters  # type: ignore
 import pytest
-from filelock import FileLock
 from pyk.cterm import CTerm
 from pyk.proof.reachability import APRProof
 
-from kevm_pyk import config, kdist
+from kevm_pyk import config
 from kevm_pyk.__main__ import exec_prove
 from kevm_pyk.kevm import KEVM
 from kevm_pyk.kompile import KompileTarget, kevm_kompile
 
 from ..utils import REPO_ROOT
-from .utils import TEST_DATA_DIR, gen_bin_runtime
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Iterator
+    from collections.abc import Callable
+    from pathlib import Path
     from typing import Any, Final
 
     from pyk.utils import BugReport
@@ -55,6 +50,7 @@ BIHU_TESTS: Final = spec_files('bihu', '*-spec.k')
 EXAMPLES_TESTS: Final = spec_files('examples', '*-spec.k') + spec_files('examples', '*-spec.md')
 MCD_TESTS: Final = spec_files('mcd', '*-spec.k')
 OPTIMIZATION_TESTS: Final = (SPEC_DIR / 'opcodes/evm-optimizations-spec.md',)
+KONTROL_TESTS: Final = spec_files('kontrol', '*-spec.k')
 
 ALL_TESTS: Final = sum(
     [
@@ -66,6 +62,7 @@ ALL_TESTS: Final = sum(
         EXAMPLES_TESTS,
         MCD_TESTS,
         OPTIMIZATION_TESTS,
+        KONTROL_TESTS,
     ],
     (),
 )
@@ -109,101 +106,35 @@ KOMPILE_MAIN_FILE: Final = {
 
 KOMPILE_MAIN_MODULE: Final = {
     'benchmarks/functional-spec.k': 'FUNCTIONAL-SPEC-SYNTAX',
+    'bihu/functional-spec.k': 'FUNCTIONAL-SPEC-SYNTAX',
+    'erc20/functional-spec.k': 'FUNCTIONAL-SPEC-SYNTAX',
+    'mcd/functional-spec.k': 'FUNCTIONAL-SPEC-SYNTAX',
     'opcodes/evm-optimizations-spec.md': 'EVM-OPTIMIZATIONS-SPEC-LEMMAS',
-}
-
-KOMPILE_CONTRACT: Final = {
-    'examples/erc20-spec.md': TEST_DATA_DIR / 'examples/ERC20.sol',
-    'examples/erc721-spec.md': TEST_DATA_DIR / 'examples/ERC721.sol',
-    'examples/storage-spec.md': TEST_DATA_DIR / 'examples/Storage.sol',
 }
 
 
 class Target(NamedTuple):
     main_file: Path
     main_module_name: str
-    contract_file: Path | None
-    use_booster: bool
 
-    def __call__(self, output_dir: Path) -> KompiledTarget:
-        definition_subdir = 'kompiled' if not self.use_booster else 'kompiled-booster'
-        definition_dir = output_dir / definition_subdir
-
-        include_dir: Path | None
-        if self.contract_file:
-            include_dir = output_dir / 'include'
-            include_dir.mkdir()
-            gen_bin_runtime(self.contract_file, output_dir=include_dir)
-        else:
-            include_dir = None
-
-        plugin_dir = kdist.get('plugin') if self.use_booster else None
-
-        result = KompiledTarget(definition_dir, include_dir)
-        target = KompileTarget.HASKELL if not self.use_booster else KompileTarget.HASKELL_BOOSTER
-
-        kevm_kompile(
-            output_dir=definition_dir,
-            target=target,
+    def __call__(self, output_dir: Path) -> Path:
+        return kevm_kompile(
+            output_dir=output_dir / 'kompiled',
+            target=KompileTarget.HASKELL,
             main_file=self.main_file,
             main_module=self.main_module_name,
             syntax_module=self.main_module_name,
-            includes=result.includes,
-            plugin_dir=plugin_dir,
             debug=True,
         )
 
-        return result
-
-
-class KompiledTarget(NamedTuple):
-    definition_dir: Path
-    include_dir: Path | None
-
-    @property
-    def include_dirs(self) -> list[Path]:
-        if self.include_dir:
-            return [self.include_dir]
-        return []
-
-    @property
-    def includes(self) -> list[str]:
-        return [str(include_dir) for include_dir in self.include_dirs]
-
-
-@pytest.fixture(scope='session')
-def kserver(tmp_path_factory: TempPathFactory, worker_id: str) -> Iterator[Path]:
-    if worker_id == 'master':
-        root_tmp_dir = tmp_path_factory.getbasetemp()
-    else:
-        root_tmp_dir = tmp_path_factory.getbasetemp().parent
-
-    lock = root_tmp_dir / 'kserver'
-    kserver = None
-    kserver_dir = Path.home() / '.kserver'
-    kserver_dir.mkdir(exist_ok=True)
-    with FileLock(str(lock) + '.lock'):
-        if not lock.exists():
-            i = inotify.adapters.Inotify()
-            i.add_watch(str(Path.home() / '.kserver'))
-            kserver = subprocess.Popen(['kserver'], stdout=subprocess.PIPE)
-            for _, types, _, filename in i.event_gen(yield_nones=False):
-                if filename == 'socket' and 'IN_CREATE' in types:
-                    break
-            lock.touch()
-
-    yield lock
-    if kserver is not None:
-        kserver.terminate()
-
 
 @pytest.fixture(scope='module')
-def kompiled_target_for(tmp_path_factory: TempPathFactory, kserver: Path) -> Callable[[Path, bool], KompiledTarget]:
+def kompiled_target_for(tmp_path_factory: TempPathFactory) -> Callable[[Path], Path]:
     cache_dir = tmp_path_factory.mktemp('target')
-    cache: dict[Target, KompiledTarget] = {}
+    cache: dict[Target, Path] = {}
 
-    def kompile(spec_file: Path, use_booster: bool) -> KompiledTarget:
-        target = _target_for_spec(spec_file, use_booster=use_booster)
+    def kompile(spec_file: Path) -> Path:
+        target = _target_for_spec(spec_file)
 
         if target not in cache:
             output_dir = cache_dir / f'{target.main_file.stem}-{len(cache)}'
@@ -215,17 +146,13 @@ def kompiled_target_for(tmp_path_factory: TempPathFactory, kserver: Path) -> Cal
     return kompile
 
 
-def _target_for_spec(spec_file: Path, use_booster: bool) -> Target:
+def _target_for_spec(spec_file: Path) -> Target:
     spec_file = spec_file.resolve()
     spec_id = str(spec_file.relative_to(SPEC_DIR))
     spec_root = SPEC_DIR / spec_file.relative_to(SPEC_DIR).parents[-2]
     main_file = spec_root / KOMPILE_MAIN_FILE.get(spec_id, 'verification.k')
     main_module_name = KOMPILE_MAIN_MODULE.get(spec_id, 'VERIFICATION')
-
-    main_id = str(main_file.relative_to(SPEC_DIR))
-    contract_file = KOMPILE_CONTRACT.get(main_id)
-
-    return Target(main_file, main_module_name, contract_file, use_booster)
+    return Target(main_file, main_module_name)
 
 
 # ---------
@@ -233,17 +160,29 @@ def _target_for_spec(spec_file: Path, use_booster: bool) -> Target:
 # ---------
 
 
-@dataclasses.dataclass(frozen=True)
 class TParams:
-    main_claim_id: str
+    main_claim_id: str | None
     leaf_number: int | None
+    break_on_calls: bool
+
+    def __init__(
+        self, main_claim_id: str | None = None, leaf_number: int | None = None, break_on_calls: bool = False
+    ) -> None:
+        self.main_claim_id = main_claim_id
+        self.leaf_number = leaf_number
+        self.break_on_calls = break_on_calls
 
 
 TEST_PARAMS: dict[str, TParams] = {
-    r'mcd/vat-slip-pass-rough-spec.k': TParams(
-        main_claim_id='VAT-SLIP-PASS-ROUGH-SPEC.Vat.slip.pass.rough', leaf_number=1
-    )
+    'mcd/vat-slip-pass-rough-spec.k': TParams(
+        main_claim_id='VAT-SLIP-PASS-ROUGH-SPEC.Vat.slip.pass.rough',
+        leaf_number=1,
+    ),
 }
+
+
+for KONTROL_TEST in KONTROL_TESTS:
+    TEST_PARAMS[f'kontrol/{KONTROL_TEST.name}'] = TParams(break_on_calls=True)
 
 
 def leaf_number(proof: APRProof) -> int:
@@ -258,15 +197,19 @@ def leaf_number(proof: APRProof) -> int:
 )
 def test_pyk_prove(
     spec_file: Path,
-    kompiled_target_for: Callable[[Path, bool], KompiledTarget],
+    kompiled_target_for: Callable[[Path], Path],
     tmp_path: Path,
     caplog: LogCaptureFixture,
     use_booster: bool,
     bug_report: BugReport | None,
+    spec_name: str | None,
 ) -> None:
     caplog.set_level(logging.INFO)
 
     if (not use_booster and spec_file in FAILING_PYK_TESTS) or (use_booster and spec_file in FAILING_BOOSTER_TESTS):
+        pytest.skip()
+
+    if spec_name is not None and str(spec_file).find(spec_name) < 0:
         pytest.skip()
 
     # Given
@@ -276,29 +219,31 @@ def test_pyk_prove(
 
     # When
     try:
-        target = kompiled_target_for(spec_file, use_booster)
+        definition_dir = kompiled_target_for(spec_file)
+        name = str(spec_file.relative_to(SPEC_DIR))
+        break_on_calls = name in TEST_PARAMS and TEST_PARAMS[name].break_on_calls
         exec_prove(
             spec_file=spec_file,
-            definition_dir=target.definition_dir,
-            includes=[str(include_dir) for include_dir in config.INCLUDE_DIRS] + target.includes,
+            definition_dir=definition_dir,
+            includes=[str(include_dir) for include_dir in config.INCLUDE_DIRS],
             save_directory=use_directory,
-            max_depth=300,  # Workaround for ecrecover00-siginvalid issue
             smt_timeout=300,
             smt_retry_limit=10,
             md_selector='foo',  # TODO Ignored flag, this is to avoid KeyError
             use_booster=use_booster,
             bug_report=bug_report,
+            break_on_calls=break_on_calls,
         )
-        name = str(spec_file.relative_to(SPEC_DIR))
         if name in TEST_PARAMS:
             params = TEST_PARAMS[name]
-            apr_proof = APRProof.read_proof_data(
-                proof_dir=use_directory,
-                id=params.main_claim_id,
-            )
-            expected_leaf_number = params.leaf_number
-            actual_leaf_number = leaf_number(apr_proof)
-            assert expected_leaf_number == actual_leaf_number
+            if params.leaf_number is not None and params.main_claim_id is not None:
+                apr_proof = APRProof.read_proof_data(
+                    proof_dir=use_directory,
+                    id=params.main_claim_id,
+                )
+                expected_leaf_number = params.leaf_number
+                actual_leaf_number = leaf_number(apr_proof)
+                assert expected_leaf_number == actual_leaf_number
     except BaseException:
         raise
     finally:
@@ -324,7 +269,7 @@ PROVE_ARGS: Final[dict[str, Any]] = {
 )
 def test_kprove_prove(
     spec_file: Path,
-    kompiled_target_for: Callable[[Path, bool], KompiledTarget],
+    kompiled_target_for: Callable[[Path], Path],
     tmp_path: Path,
     caplog: LogCaptureFixture,
     bug_report: BugReport | None,
@@ -348,9 +293,9 @@ def test_kprove_prove(
 
     # When
     try:
-        target = kompiled_target_for(spec_file, False)
-        kevm = KEVM(target.definition_dir, use_directory=use_directory)
-        actual = kevm.prove(spec_file=spec_file, include_dirs=list(config.INCLUDE_DIRS) + target.include_dirs, **args)
+        definition_dir = kompiled_target_for(spec_file)
+        kevm = KEVM(definition_dir, use_directory=use_directory)
+        actual = kevm.prove(spec_file=spec_file, include_dirs=list(config.INCLUDE_DIRS), **args)
     except BaseException:
         raise
     finally:

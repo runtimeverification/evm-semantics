@@ -4,6 +4,7 @@ requires "gas.md"
 module VERIFICATION
     imports LEMMAS
     imports INFINITE-GAS
+    imports EVM
 
     rule N xorInt maxUInt256 => maxUInt256 -Int N
     requires #rangeUInt(256, N)
@@ -28,6 +29,9 @@ claim [foundry-sum-to-n-loop-invariant]:
     <schedule>
       LONDON
     </schedule>
+    <useGas>
+      true
+    </useGas>
     <ethereum>
       <evm>
         <callState>

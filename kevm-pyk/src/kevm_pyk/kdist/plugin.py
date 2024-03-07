@@ -1,51 +1,56 @@
 from __future__ import annotations
 
-from contextlib import contextmanager
+import sys
 from distutils.dir_util import copy_tree
-from pathlib import Path
-from tempfile import TemporaryDirectory
 from typing import TYPE_CHECKING
 
-from pyk.kbuild.utils import sync_files
+from pyk.kbuild.utils import k_version, sync_files
+from pyk.kdist.api import Target
+from pyk.kllvm.compiler import compile_kllvm, compile_runtime
 from pyk.utils import run_process
 
 from .. import config
-from ..kompile import KompileTarget, kevm_kompile
-from .api import Target
+from ..kompile import KompileTarget, kevm_kompile, lib_ccopts
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable, Iterator, Mapping
+    from collections.abc import Mapping
+    from pathlib import Path
     from typing import Any, Final
 
 
 class KEVMTarget(Target):
     _kompile_args: dict[str, Any]
-    _deps: tuple[str, ...]
 
-    def __init__(self, kompile_args: Mapping[str, Any], *, deps: Iterable[str] | None = None):
+    def __init__(self, kompile_args: Mapping[str, Any]):
         self._kompile_args = dict(kompile_args)
-        self._deps = tuple(deps) if deps is not None else ()
 
-    def build(self, output_dir: Path, deps: dict[str, Path], args: dict[str, Any]) -> None:
-        verbose = args.get('verbose', False)
-        enable_llvm_debug = args.get('enable_llvm_debug', False)
+    def build(self, output_dir: Path, deps: dict[str, Path], args: dict[str, Any], verbose: bool) -> None:
+        enable_llvm_debug = bool(args.get('enable-llvm-debug', ''))
+        debug_build = bool(args.get('debug-build', ''))
+        ccopts = [ccopt for ccopt in args.get('ccopts', '').split(' ') if ccopt]
 
         kevm_kompile(
             output_dir=output_dir,
             enable_llvm_debug=enable_llvm_debug,
             verbose=verbose,
-            plugin_dir=deps.get('plugin'),
+            ccopts=ccopts,
+            plugin_dir=deps['evm-semantics.plugin'],
+            debug_build=debug_build,
             **self._kompile_args,
         )
 
     def deps(self) -> tuple[str, ...]:
-        return self._deps
+        return ('evm-semantics.plugin',)
+
+    def source(self) -> tuple[Path, ...]:
+        return (config.EVM_SEMANTICS_DIR,) + tuple(config.MODULE_DIR.rglob('*.py'))
+
+    def context(self) -> dict[str, str]:
+        return {'k-version': k_version().text}
 
 
 class PluginTarget(Target):
-    def build(self, output_dir: Path, deps: dict[str, Any], args: dict[str, Any]) -> None:
-        verbose = args.get('verbose', False)
-
+    def build(self, output_dir: Path, deps: dict[str, Any], args: dict[str, Any], verbose: bool) -> None:
         sync_files(
             source_dir=config.PLUGIN_DIR / 'plugin-c',
             target_dir=output_dir / 'plugin-c',
@@ -58,22 +63,53 @@ class PluginTarget(Target):
             ],
         )
 
-        with self._build_env() as build_dir:
-            run_process(
-                ['make', 'libcryptopp', 'libff', 'libsecp256k1', '-j3'],
-                cwd=build_dir,
-                pipe_stdout=not verbose,
-            )
-            copy_tree(str(build_dir / 'build/libcryptopp'), str(output_dir / 'libcryptopp'))
-            copy_tree(str(build_dir / 'build/libff'), str(output_dir / 'libff'))
-            copy_tree(str(build_dir / 'build/libsecp256k1'), str(output_dir / 'libsecp256k1'))
+        copy_tree(str(config.PLUGIN_DIR), '.')
+        run_process(
+            ['make', 'libcryptopp', 'libff', 'libsecp256k1', '-j3'],
+            pipe_stdout=not verbose,
+        )
 
-    @contextmanager
-    def _build_env(self) -> Iterator[Path]:
-        with TemporaryDirectory(prefix='evm-semantics-plugin-') as build_dir_str:
-            build_dir = Path(build_dir_str)
-            copy_tree(str(config.PLUGIN_DIR), str(build_dir))
-            yield build_dir
+        copy_tree('./build/libcryptopp', str(output_dir / 'libcryptopp'))
+        copy_tree('./build/libff', str(output_dir / 'libff'))
+        copy_tree('./build/libsecp256k1', str(output_dir / 'libsecp256k1'))
+
+    def source(self) -> tuple[Path]:
+        return (config.PLUGIN_DIR,)
+
+
+class KLLVMTarget(Target):
+    def build(self, output_dir: Path, deps: dict[str, Path], args: dict[str, Any], verbose: bool) -> None:
+        compile_kllvm(output_dir, verbose=verbose)
+
+    def context(self) -> dict[str, str]:
+        return {
+            'k-version': k_version().text,
+            'python-path': sys.executable,
+            'python-version': sys.version,
+        }
+
+
+class KLLVMRuntimeTarget(Target):
+    def build(self, output_dir: Path, deps: dict[str, Path], args: dict[str, Any], verbose: bool) -> None:
+        compile_runtime(
+            definition_dir=deps['evm-semantics.llvm'],
+            target_dir=output_dir,
+            ccopts=lib_ccopts(deps['evm-semantics.plugin']),
+            verbose=verbose,
+        )
+
+    def deps(self) -> tuple[str, ...]:
+        return ('evm-semantics.plugin', 'evm-semantics.llvm')
+
+    def source(self) -> tuple[Path, ...]:
+        return (config.EVM_SEMANTICS_DIR,) + tuple(config.MODULE_DIR.rglob('*.py'))
+
+    def context(self) -> dict[str, str]:
+        return {
+            'k-version': k_version().text,
+            'python-path': sys.executable,
+            'python-version': sys.version,
+        }
 
 
 __TARGETS__: Final = {
@@ -85,7 +121,6 @@ __TARGETS__: Final = {
             'syntax_module': 'ETHEREUM-SIMULATION',
             'optimization': 2,
         },
-        deps=('plugin',),
     ),
     'haskell': KEVMTarget(
         {
@@ -103,13 +138,7 @@ __TARGETS__: Final = {
             'syntax_module': 'ETHEREUM-SIMULATION',
         },
     ),
-    'foundry': KEVMTarget(
-        {
-            'target': KompileTarget.HASKELL,
-            'main_file': config.EVM_SEMANTICS_DIR / 'foundry.md',
-            'main_module': 'FOUNDRY',
-            'syntax_module': 'FOUNDRY',
-        },
-    ),
     'plugin': PluginTarget(),
+    'kllvm': KLLVMTarget(),
+    'kllvm-runtime': KLLVMRuntimeTarget(),
 }

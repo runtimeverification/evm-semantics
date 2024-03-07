@@ -22,25 +22,26 @@ is just carried on from LHS without changes. Definition rule LHS should only use
 Claims should always use `#bufStrict` in LHS and `#buf` in RHS.
 
 ```k
-    syntax Bytes ::= #bufStrict ( Int , Int ) [function]
-    syntax Bytes ::= #buf ( Int , Int ) [function, total, smtlib(buf)]
+    syntax Bytes ::= #bufStrict ( Int , Int ) [klabel(#bufStrict), function]
+    syntax Bytes ::= #buf ( Int , Int ) [klabel(#buf), function, total, smtlib(buf)]
 
-    syntax Int ::= #ceil32 ( Int ) [macro]
- // --------------------------------------
-    rule #ceil32(N) => (N up/Int 32) *Int 32
+    syntax Int ::= #ceil32 ( Int ) [klabel(#ceil32), macro]
+ // -------------------------------------------------------
+    rule #ceil32(N) => notMaxUInt5 &Int ( N +Int maxUInt5 )
 
 endmodule
 
 module BUF
     imports BUF-SYNTAX
 
-    syntax Int ::= #powByteLen ( Int ) [function, no-evaluators]
- // ------------------------------------------------------------
+    syntax Int ::= #powByteLen ( Int ) [klabel(#powByteLen), function, no-evaluators]
+ // ---------------------------------------------------------------------------------
  // rule #powByteLen(SIZE) => 2 ^Int (SIZE *Int 8)
     rule 2 ^Int (SIZE *Int 8) => #powByteLen(SIZE) [symbolic(SIZE), simplification]
 
-    rule 0    <Int #powByteLen(SIZE) => true requires 0 <=Int SIZE [simplification]
-    rule SIZE <Int #powByteLen(SIZE) => true requires 0 <=Int SIZE [simplification]
+    rule 0    <Int #powByteLen(SIZE) => true requires 0 <=Int SIZE [simplification, preserves-definedness]
+    rule SIZE <Int #powByteLen(SIZE) => true requires 0 <=Int SIZE [simplification, preserves-definedness]
+    rule #write(WM, IDX, VAL) => WM [ IDX := #buf(1, VAL) ] [simplification]
 
     rule #bufStrict(SIZE, DATA) => #buf(SIZE, DATA)
       requires #range(0 <= DATA < (2 ^Int (SIZE *Int 8)))

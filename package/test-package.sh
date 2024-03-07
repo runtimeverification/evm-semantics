@@ -30,3 +30,22 @@ if ! ${APPLE_SILICON:-false}; then
         || git --no-pager diff --no-index --ignore-all-space -R tests/failing/static_callcodecallcodecall_110_OOGMAfter_2_d0g0v0.json.llvm-out tests/failing/static_callcodecallcodecall_110_OOGMAfter_2_d0g0v0.json.expected
     rm -rf tests/failing/static_callcodecallcodecall_110_OOGMAfter_2_d0g0v0.json.llvm-out
 fi
+
+kevm kompile-spec tests/specs/benchmarks/verification.k             \
+    --output-definition tests/specs/benchmarks/verification/haskell \
+    --main-module VERIFICATION                                      \
+    --syntax-module VERIFICATION                                    \
+    --target haskell                                                \
+    --verbose
+
+kevm prove tests/specs/benchmarks/structarg00-spec.k         \
+    --definition tests/specs/benchmarks/verification/haskell \
+    --save-directory proofs                                  \
+    --verbose                                                \
+    --use-booster
+
+kevm prove tests/specs/benchmarks/structarg01-spec.k         \
+    --definition tests/specs/benchmarks/verification/haskell \
+    --save-directory proofs                                  \
+    --verbose                                                \
+    --use-booster

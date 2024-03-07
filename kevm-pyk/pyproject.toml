@@ -4,22 +4,17 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "kevm-pyk"
-version = "1.0.326"
+version = "1.0.485"
 description = ""
 authors = [
     "Runtime Verification, Inc. <contact@runtimeverification.com>",
-]
-packages = [
-    { include = "kevm_pyk", from = "src/" },
-    { include = "kontrolx", from = "src/" },
 ]
 
 [tool.poetry.dependencies]
 python = "^3.10"
 pathos = "*"
-pyk = { git = "https://github.com/runtimeverification/pyk.git", tag="v0.1.478" }
+pyk = { git = "https://github.com/runtimeverification/pyk.git", tag="v0.1.685" }
 tomlkit = "^0.11.6"
-xdg-base-dirs = "^6.0.0"
 
 [tool.poetry.group.dev.dependencies]
 autoflake = "*"
@@ -33,7 +28,7 @@ inotify = "*"
 isort = "*"
 mypy = "*"
 pep8-naming = "*"
-pytest = "*"
+pytest = "^7"
 pytest-timeout = "*"
 pytest-cov = "*"
 pytest-mock = "*"
@@ -43,9 +38,7 @@ pyupgrade = "*"
 [tool.poetry.scripts]
 kevm = "kevm_pyk.__main__:main"
 kevm-pyk = "kevm_pyk.__main__:main"
-kevm-dist = "kevm_pyk.kdist.__main__:main"
 gst-to-kore = "kevm_pyk.gst_to_kore:main"
-kontrolx = "kontrolx.__main__:main"
 
 [tool.poetry.plugins.kdist]
 evm-semantics = "kevm_pyk.kdist.plugin"

@@ -18,13 +18,12 @@ It has two modules:
 The first step is kompiling the `.k` file with the below command.
 
 ```sh
-kevm kompile sum-to-n-spec.k --target haskell --syntax-module VERIFICATION --main-module VERIFICATION --definition sum-to-n-spec/haskell
+kevm kompile-spec sum-to-n-spec.k --target haskell --syntax-module VERIFICATION --main-module VERIFICATION --definition sum-to-n-spec/haskell
 ```
 
 In this example, the arguments used are:
 
-  - `—-pyk`: a flag that enables the pyk library.
-  - `—-backend haskell`: used to kompile the definition with the Haskell backend, enabling the symbolic execution ([more about it here]).
+  - `--target haskell`: specify which symbolic backend to use for reasoning.
   - `--syntax-module VERIFICATION`: explicitly state the syntax module.
   - `--main-module VERIFICATION`: explicitly state the main module.
   - `--definition sum-to-n-spec/haskell`: the path where the kompiled definition is stored.
@@ -61,7 +60,7 @@ These rules are then used in the claims. As an example, the `#binRuntime(ERC20)`
 Following this, we can compile the Markdown file with:
 
 ```sh
-kevm kompile erc20-spec.md --target haskell --syntax-module VERIFICATION --main-module VERIFICATION --definition erc20-spec/haskell
+kevm kompile-spec erc20-spec.md --syntax-module VERIFICATION --main-module VERIFICATION --definition erc20-spec/haskell
 ```
 
 Next, run the prover with:
@@ -101,7 +100,7 @@ A running example:
 
 ```sh
 mkdir kcfgs
-kevm kompile --target haskell tests/specs/benchmarks/verification.k --definition tests/specs/benchmarks/verification/haskell --main-module VERIFICATION --syntax-module VERIFICATION
+kevm kompile-spec tests/specs/benchmarks/verification.k --definition tests/specs/benchmarks/verification/haskell --main-module VERIFICATION --syntax-module VERIFICATION
 kevm prove tests/specs/benchmarks/address00-spec.k --definition tests/specs/benchmarks/verification/haskell --verbose --save-directory kcfgs
 kevm view-kcfg --verbose kcfgs tests/specs/benchmarks/address00-spec.k --definition tests/specs/benchmarks/verification/haskell
 ```

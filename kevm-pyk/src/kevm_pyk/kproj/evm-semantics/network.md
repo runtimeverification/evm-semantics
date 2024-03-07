@@ -8,8 +8,8 @@ It will incrementally build up to supporting the entire [EVM-C API].
 module NETWORK
     imports STRING-SYNTAX
 
-    syntax String ::= StatusCode2String(StatusCode) [function]
- // ----------------------------------------------------------
+    syntax String ::= StatusCode2String(StatusCode) [klabel(StatusCode2String), function]
+ // -------------------------------------------------------------------------------------
 ```
 
 EVM Status Codes
@@ -27,7 +27,7 @@ The following codes all indicate that the VM ended execution with an exception, 
 -   `EVMC_STACK_OVERFLOW` indicates pushing more than 1024 elements onto the wordstack.
 -   `EVMC_STACK_UNDERFLOW` indicates popping elements off an empty wordstack.
 -   `EVMC_CALL_DEPTH_EXCEEDED` indicates that we have executed too deeply a nested sequence of `CALL*` or `CREATE` opcodes.
--   `EVMC_INVALID_MEMORY_ACCESS` indicates that a bad memory access occured.
+-   `EVMC_INVALID_MEMORY_ACCESS` indicates that a bad memory access occurred.
     This can happen when accessing local memory with `CODECOPY*` or `CALLDATACOPY`, or when accessing return data with `RETURNDATACOPY`.
 -   `EVMC_STATIC_MODE_VIOLATION` indicates that a `STATICCALL` tried to change state.
     **TODO:** Avoid `_ERROR` suffix that suggests fatal error.

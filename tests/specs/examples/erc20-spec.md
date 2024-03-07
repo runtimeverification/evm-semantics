@@ -30,6 +30,11 @@ module VERIFICATION
     imports EVM-OPTIMIZATIONS
     imports ERC20-VERIFICATION
 
+    syntax Step ::= Bytes | Int
+    syntax KItem ::= runLemma ( Step ) [symbol(runLemma)] | doneLemma ( Step )
+ // -------------------------------------------------------
+    rule <k> runLemma(S) => doneLemma(S) ... </k>
+
  // decimals lemmas
  // ---------------
 
@@ -52,7 +57,7 @@ module ERC20-SPEC
 ### Functional Claims
 
 ```k
-    claim (#bufStrict(32, #loc(S2KERC20._allowances[OWNER]))) => (#buf(32, keccak(#buf(32, OWNER) +Bytes #buf(32, 1))))
+    claim <k> runLemma(#bufStrict(32, #loc(S2KERC20._allowances[OWNER]))) => doneLemma(#buf(32, keccak(#buf(32, OWNER) +Bytes #buf(32, 1)))) ... </k>
       requires #rangeAddress(OWNER)
 ```
 
@@ -67,6 +72,7 @@ module ERC20-SPEC
     claim [decimals]:
           <mode>     NORMAL   </mode>
           <schedule> ISTANBUL </schedule>
+          <useGas>  true     </useGas>
 
           <callStack> .List                                      </callStack>
           <program>   #binRuntime(S2KERC20)                         </program>
@@ -107,6 +113,7 @@ module ERC20-SPEC
     claim [totalSupply]:
           <mode>     NORMAL   </mode>
           <schedule> ISTANBUL </schedule>
+          <useGas>  true     </useGas>
 
           <callStack> .List                                      </callStack>
           <program>   #binRuntime(S2KERC20)                         </program>
@@ -135,6 +142,38 @@ module ERC20-SPEC
         andBool TOTALSUPPLY     ==Int #lookup(ACCT_STORAGE,  TOTALSUPPLY_KEY)
 ```
 
+```k
+    claim [totalSupply.noGas]:
+          <mode>     NORMAL   </mode>
+          <schedule> ISTANBUL </schedule>
+          <useGas>  false     </useGas>
+
+          <callStack> .List                                         </callStack>
+          <program>   #binRuntime(S2KERC20)                         </program>
+          <jumpDests> #computeValidJumpDests(#binRuntime(S2KERC20)) </jumpDests>
+
+          <id>         ACCTID      => ?_ </id>
+          <localMem>   .Bytes      => ?_ </localMem>
+          <memoryUsed> 0           => ?_ </memoryUsed>
+          <wordStack>  .WordStack  => ?_ </wordStack>
+          <pc>         0           => ?_ </pc>
+          <gas>        _                  </gas>
+          <callValue>  0           => ?_ </callValue>
+
+          <callData>   S2KERC20.S2KtotalSupply()         </callData>
+          <k>          #execute => #halt ...             </k>
+          <output>     .Bytes   => #buf(32, TOTALSUPPLY) </output>
+          <statusCode> _        => EVMC_SUCCESS          </statusCode>
+
+          <account>
+            <acctID> ACCTID </acctID>
+            <storage> ACCT_STORAGE </storage>
+            ...
+          </account>
+
+       requires TOTALSUPPLY_KEY ==Int #loc(S2KERC20._totalSupply)
+        andBool TOTALSUPPLY     ==Int #lookup(ACCT_STORAGE,  TOTALSUPPLY_KEY)
+```
 ### Calling Approve works
 
 -   Everything from `<mode>` to `<substate>` is boilerplate.
@@ -148,6 +187,7 @@ module ERC20-SPEC
     claim [approve.success]:
           <mode>     NORMAL   </mode>
           <schedule> ISTANBUL </schedule>
+          <useGas>  true     </useGas>
 
           <callStack> .List                                      </callStack>
           <program>   #binRuntime(S2KERC20)                         </program>
@@ -187,6 +227,7 @@ module ERC20-SPEC
     claim [approve.revert]:
           <mode>     NORMAL   </mode>
           <schedule> ISTANBUL </schedule>
+          <useGas>  true     </useGas>
 
           <callStack> .List                                      </callStack>
           <program>   #binRuntime(S2KERC20)                         </program>

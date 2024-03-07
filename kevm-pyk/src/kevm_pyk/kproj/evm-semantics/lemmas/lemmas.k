@@ -22,13 +22,8 @@ module LEMMAS [symbolic]
     rule 0 <=Int #ceil32(I)        => true requires 0 <=Int I [simplification, smt-lemma]
     rule 0 <=Int #ceil32(I) -Int I => true requires 0 <=Int I [simplification]
 
-    // chop range & simplification
-    rule chop(I) => I requires #rangeUInt( 256 , I ) [simplification]
-    rule 0 <=Int chop(_V)             => true        [simplification, smt-lemma]
-    rule         chop(_V) <Int pow256 => true        [simplification]
-
     rule X *Int Y <Int pow256 => true requires Y <=Int maxUInt256 /Int X [simplification]
-    rule #if B #then C +Int C1 #else C +Int C2 #fi => C +Int #if B #then C1 #else C2 #fi [simplification] 
+    rule #if B #then C +Int C1 #else C +Int C2 #fi => C +Int #if B #then C1 #else C2 #fi [simplification]
 
   // ########################
   // Set Reasoning
@@ -36,6 +31,9 @@ module LEMMAS [symbolic]
 
     rule X in (SetItem(Y) _   ) => true      requires X  ==Int Y [simplification]
     rule X in (SetItem(Y) REST) => X in REST requires X =/=Int Y [simplification]
+
+    rule   ( S:Set |Set SetItem ( X )                      ) |Set SetItem( X ) =>   ( S:Set |Set SetItem ( X )                      ) [simplification]
+    rule ( ( S:Set |Set SetItem ( X ) ) |Set SetItem ( Y ) ) |Set SetItem( X ) => ( ( S:Set |Set SetItem ( X ) ) |Set SetItem ( Y ) ) [simplification]
 
   // ########################
   // Word Reasoning
@@ -56,8 +54,6 @@ module LEMMAS [symbolic]
     rule bool2Word(_B) |Int 1 => 1            [simplification]
     rule bool2Word( B) &Int 1 => bool2Word(B) [simplification]
 
-    rule notBool notBool B => B [simplification]
-
     // #newAddr range
     rule 0 <=Int #newAddr(_,_)             => true   [simplification]
     rule         #newAddr(_,_) <Int pow160 => true   [simplification]
@@ -65,14 +61,11 @@ module LEMMAS [symbolic]
 
     rule #isPrecompiledAccount(#newAddr(_, _), _) => false [simplification]
 
-    rule 0 <=Int #asWord(_WS)             => true [simplification]
-    rule         #asWord(_WS) <Int pow256 => true [simplification]
-
   // ########################
   // Keccak
   // ########################
 
-    //Required for #Ceil(#buf)
+    // Required for #Ceil(#buf)
     rule 0 <=Int keccak( _ )             => true [simplification]
     rule         keccak( _ ) <Int pow256 => true [simplification]
 
@@ -80,11 +73,12 @@ module LEMMAS [symbolic]
   // Map Reasoning
   // ########################
 
-    rule #lookup ( _M:Map [ K1 <- V1 ] , K2 ) => #lookup ( K1 |-> V1 , K1 )  requires K1 ==Int  K2 [simplification]
-    rule #lookup (  M:Map [ K1 <- _  ] , K2 ) => #lookup ( M         , K2 )  requires K1 =/=Int K2 [simplification]
-
     rule 0 <=Int #lookup( _M:Map , _ )             => true [simplification, smt-lemma]
     rule         #lookup( _M:Map , _ ) <Int pow256 => true [simplification, smt-lemma]
+
+    rule #lookup ( _M:Map [ K1 <- V1 ] , K2 )    => #lookup ( K1 |-> V1 , K1 ) requires K1 ==Int  K2 [simplification]
+    rule #lookup (  M:Map [ K1 <- _  ] , K2 )    => #lookup ( M         , K2 ) requires K1 =/=Int K2 [simplification]
+    rule #lookup ( (K1:Int |-> _) M:Map, K2:Int) => #lookup ( M         , K2 ) requires K1 =/=Int K2 [simplification]
 
     rule M:Map [ I1:Int <- V1:Int ] [ I2:Int <- V2:Int ] ==K M:Map [ I2 <- V2 ] [ I1 <- V1 ] => true
       requires I1 =/=Int I2
@@ -152,7 +146,7 @@ module LEMMAS [symbolic]
 
 endmodule
 
-module LEMMAS-HASKELL [symbolic, kore]
+module LEMMAS-HASKELL [symbolic]
     imports INT-SYMBOLIC
     imports EVM
     imports BUF
@@ -163,7 +157,7 @@ module LEMMAS-HASKELL [symbolic, kore]
 
     rule #asWord(BUF) /Int D => #asWord(#range(BUF, 0, lengthBytes(BUF) -Int log256Int(D)))
        requires D ==Int 256 ^Int log256Int(D) andBool D >=Int 0
-        andBool lengthBytes(BUF) >=Int log256Int(D) [simplification]
+        andBool lengthBytes(BUF) >=Int log256Int(D) [simplification, preserves-definedness]
 
     rule #asWord(#buf(N, BUF)) => BUF
       requires #range(0 < N <= 32)
@@ -217,6 +211,11 @@ module LEMMAS-HASKELL [symbolic, kore]
   // Boolean Logic
   // ########################
 
-    rule B ==Bool false => notBool B [simplification]
+    rule B ==Bool true  => B         [simplification, comm]
+    rule B ==Bool false => notBool B [simplification, comm]
+
+    rule notBool notBool B => B [simplification]
+
     rule (notBool (A andBool B)) andBool A => (notBool B) andBool A [simplification]
+
 endmodule

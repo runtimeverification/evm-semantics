@@ -30,6 +30,11 @@ module VERIFICATION
     imports EVM-OPTIMIZATIONS
     imports STORAGE-VERIFICATION
 
+    syntax Step ::= Bytes | Int
+    syntax KItem ::= runLemma ( Step ) [symbol(runLemma)] | doneLemma ( Step )
+ // -------------------------------------------------------
+    rule <k> runLemma(S) => doneLemma(S) ... </k>
+
  // decimals lemmas
  // ---------------
 
@@ -54,7 +59,7 @@ module STORAGE-SPEC
 ### Functional Claims
 
 ```k
-    claim (#bufStrict(32, #loc(S2KStorage . myBool))) => (#buf(32,0))
+    claim <k> runLemma(#bufStrict(32, #loc(S2KStorage . myBool))) => doneLemma(#buf(32,0)) ... </k>
 ```
 
 ### Calling myBool() works
@@ -68,6 +73,7 @@ module STORAGE-SPEC
     claim [myBool]:
           <mode>     NORMAL   </mode>
           <schedule> ISTANBUL </schedule>
+          <useGas>  true     </useGas>
 
           <callStack> .List                                        </callStack>
           <program>   #binRuntime(S2KStorage)                         </program>
@@ -101,6 +107,7 @@ module STORAGE-SPEC
     claim [setMyBool]:
           <mode>     NORMAL   </mode>
           <schedule> ISTANBUL </schedule>
+          <useGas>  true     </useGas>
 
           <callStack> .List                                        </callStack>
           <program>   #binRuntime(S2KStorage)                         </program>

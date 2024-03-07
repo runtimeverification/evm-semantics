@@ -2,11 +2,10 @@ from __future__ import annotations
 
 from argparse import ArgumentParser
 from functools import cached_property
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 from pyk.cli.args import KCLIArgs
-from pyk.cli.utils import dir_path
+from pyk.kore.rpc import FallbackReason
 
 from .utils import arg_pair_of
 
@@ -54,6 +53,26 @@ class KEVMCLIArgs(KCLIArgs):
             type=list_of(str, delim=','),
             default=[],
             help='Comma-separate list of equations to debug.',
+        )
+        args.add_argument(
+            '--always-check-subsumption',
+            dest='always-check_subsumption',
+            default=True,
+            action='store_true',
+            help='Check subsumption even on non-terminal nodes.',
+        )
+        args.add_argument(
+            '--no-always-check-subsumption',
+            dest='always-check_subsumption',
+            action='store_false',
+            help='Do not check subsumption on non-terminal nodes.',
+        )
+        args.add_argument(
+            '--fast-check-subsumption',
+            dest='fast_check_subsumption',
+            default=False,
+            action='store_true',
+            help='Use fast-check on k-cell to determine subsumption.',
         )
         return args
 
@@ -136,6 +155,9 @@ class KEVMCLIArgs(KCLIArgs):
             default='NORMAL',
             help="execution mode to use [{'|'.join(modes)}]",
         )
+        args.add_argument(
+            '--no-gas', action='store_false', dest='usegas', default=True, help='omit gas cost computations'
+        )
         return args
 
     @cached_property
@@ -151,32 +173,67 @@ class KEVMCLIArgs(KCLIArgs):
         return args
 
     @cached_property
-    def foundry_args(self) -> ArgumentParser:
-        args = ArgumentParser(add_help=False)
-        args.add_argument(
-            '--foundry-project-root',
-            dest='foundry_root',
-            type=dir_path,
-            default=Path('.'),
-            help='Path to Foundry project root directory.',
-        )
-        return args
-
-    @cached_property
-    def foundry_test_args(self) -> ArgumentParser:
-        args = ArgumentParser(add_help=False)
-        args.add_argument('test', type=str, help='Test to run')
-        args.add_argument('--version', type=int, default=None, required=False, help='Version of the test to use')
-        return args
-
-    @cached_property
     def rpc_args(self) -> ArgumentParser:
         args = ArgumentParser(add_help=False)
         args.add_argument(
             '--trace-rewrites',
+            dest='trace_rewrites',
             default=False,
             action='store_true',
             help='Log traces of all simplification and rewrite rule applications.',
+        )
+        args.add_argument(
+            '--kore-rpc-command',
+            dest='kore_rpc_command',
+            type=str,
+            default=None,
+            help='Custom command to start RPC server',
+        )
+        args.add_argument(
+            '--use-booster',
+            dest='use_booster',
+            default=False,
+            action='store_true',
+            help='Use the booster RPC server instead of kore-rpc.',
+        )
+        args.add_argument(
+            '--fallback-on',
+            dest='fallback_on',
+            type=list_of(FallbackReason, delim=','),
+            help='Comma-separated reasons to fallback from booster to kore, only usable with --use-booster. Options [Branching,Aborted,Stuck].',
+        )
+        args.add_argument(
+            '--post-exec-simplify',
+            dest='post_exec_simplify',
+            default=True,
+            action='store_true',
+            help='Always simplify states with kore backend after booster execution, only usable with --use-booster.',
+        )
+        args.add_argument(
+            '--no-post-exec-simplify',
+            dest='post_exec_simplify',
+            action='store_false',
+            help='Do not simplify states with kore backend after booster execution, only usable with --use-booster.',
+        )
+        args.add_argument(
+            '--interim-simplification',
+            dest='interim_simplification',
+            type=int,
+            help='Max number of steps to execute before applying simplifier to term in booster backend, only usable with --use-booster.',
+        )
+        args.add_argument(
+            '--port',
+            dest='port',
+            type=int,
+            default=None,
+            help='Use existing RPC server on named port',
+        )
+        args.add_argument(
+            '--maude-port',
+            dest='maude_port',
+            type=int,
+            default=None,
+            help='Use existing Maude RPC server on named port',
         )
         return args
 
@@ -200,28 +257,30 @@ class KEVMCLIArgs(KCLIArgs):
         args.add_argument(
             '--break-on-calls',
             dest='break_on_calls',
-            default=True,
+            default=False,
             action='store_true',
             help='Store a node for every EVM call made.',
         )
         args.add_argument(
             '--no-break-on-calls',
             dest='break_on_calls',
+            default=True,
             action='store_false',
             help='Do not store a node for every EVM call made.',
         )
         args.add_argument(
-            '--simplify-init',
-            dest='simplify_init',
-            default=True,
+            '--break-on-storage',
+            dest='break_on_storage',
+            default=False,
             action='store_true',
-            help='Simplify the initial and target states at startup.',
+            help='Store a node for every EVM SSTORE/SLOAD made.',
         )
         args.add_argument(
-            '--no-simplify-init',
-            dest='simplify_init',
-            action='store_false',
-            help='Do not simplify the initial and target states at startup.',
+            '--break-on-basic-blocks',
+            dest='break_on_basic_blocks',
+            default=False,
+            action='store_true',
+            help='Store a node for every EVM basic block (implies --break-on-calls).',
         )
         args.add_argument(
             '--max-depth',
@@ -236,13 +295,6 @@ class KEVMCLIArgs(KCLIArgs):
             default=None,
             type=int,
             help='Number of times to expand the next pending node in the CFG.',
-        )
-        args.add_argument(
-            '--kore-rpc-command',
-            dest='kore_rpc_command',
-            type=str,
-            default=None,
-            help='Custom command to start RPC server',
         )
         args.add_argument(
             '--failure-information',
@@ -266,16 +318,28 @@ class KEVMCLIArgs(KCLIArgs):
         args.add_argument(
             '--counterexample-information',
             dest='counterexample_info',
-            default=False,
+            default=True,
             action='store_true',
             help='Show models for failing nodes.',
         )
         args.add_argument(
+            '--no-counterexample-information',
+            dest='counterexample_info',
+            action='store_false',
+            help='Do not show models for failing nodes.',
+        )
+        args.add_argument(
             '--fail-fast',
             dest='fail_fast',
-            default=False,
+            default=True,
             action='store_true',
             help='Stop execution on other branches if a failing node is detected.',
+        )
+        args.add_argument(
+            '--no-fail-fast',
+            dest='fail_fast',
+            action='store_false',
+            help='Continue execution on other branches if a failing node is detected.',
         )
         return args
 

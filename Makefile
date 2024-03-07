@@ -30,11 +30,6 @@ kevm-pyk: poetry-env
 test: test-integration test-conformance test-prove test-prove-pyk test-prove-kprove test-interactive
 
 
-# Foundry Tests
-
-test-foundry-prove: poetry
-	$(MAKE) -C kevm-pyk/ test-integration PYTEST_ARGS+="-k test_foundry_prove.py"
-
 # Conformance Tests
 
 test-conformance: poetry
@@ -64,8 +59,8 @@ test-prove-kprove: tests/specs/opcodes/evm-optimizations-spec.md poetry
 	$(MAKE) -C kevm-pyk/ test-integration PYTEST_ARGS+="-k test_kprove_prove"
 
 # to generate optimizations.md, run: ./optimizer/optimize.sh &> output
-tests/specs/opcodes/evm-optimizations-spec.md:
-	cat kevm-pyk/src/kevm_pyk/kproj/evm-semantics/optimizations.md | sed 's/^rule/claim/' | sed 's/EVM-OPTIMIZATIONS/EVM-OPTIMIZATIONS-SPEC/' | grep -v 'priority(40)' > $@
+tests/specs/opcodes/evm-optimizations-spec.md: kevm-pyk/src/kevm_pyk/kproj/evm-semantics/optimizations.md
+	cat kevm-pyk/src/kevm_pyk/kproj/evm-semantics/optimizations.md | sed 's/^  rule/  claim/' | sed 's/EVM-OPTIMIZATIONS/EVM-OPTIMIZATIONS-SPEC/' | grep -v 'priority(40)' > $@
 
 
 # Integration Tests
@@ -113,7 +108,7 @@ tests/specs/%.prove: tests/specs/% tests/specs/$$(firstword $$(subst /, ,$$*))/$
 		--definition tests/specs/$(firstword $(subst /, ,$*))/$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)
 
 tests/specs/%/timestamp: tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE).$$(KPROVE_EXT)
-	$(POETRY_RUN) kevm-pyk kompile                                                                             \
+	$(POETRY_RUN) kevm-pyk kompile-spec                                                                         \
 		$<                                                                                                      \
 		--target $(word 3, $(subst /, , $*))                                                                    \
 		--output-definition tests/specs/$(firstword $(subst /, ,$*))/$(KPROVE_FILE)/$(word 3, $(subst /, , $*)) \

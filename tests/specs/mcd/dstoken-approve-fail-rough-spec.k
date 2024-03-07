@@ -9,6 +9,7 @@ module DSTOKEN-APPROVE-FAIL-ROUGH-SPEC
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
+      <useGas> true </useGas>
       <ethereum>
         <evm>
           <output> _ => ?_ </output>
