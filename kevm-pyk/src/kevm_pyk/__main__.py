@@ -36,6 +36,7 @@ from .gst_to_kore import SORT_ETHEREUM_SIMULATION, gst_to_kore, kore_pgm_to_kore
 from .kevm import KEVM, KEVMSemantics, kevm_node_printer
 from .kompile import KompileTarget, kevm_kompile
 from .utils import (
+    arg_pair_of,
     claim_dependency_dict,
     ensure_ksequence_on_k_cell,
     get_apr_proof_for_spec,
@@ -478,7 +479,7 @@ def exec_prove(
         sys.exit(failed)
 
 
-def exec_prune_proof(
+def exec_prune(
     definition_dir: Path,
     spec_file: Path,
     node: NodeIdLike,
@@ -493,9 +494,8 @@ def exec_prune_proof(
     md_selector = 'k'
 
     if save_directory is None:
-        raise ValueError('Must pass --save-directory to prune-proof!')
+        raise ValueError('Must pass --save-directory to prune!')
 
-    _LOGGER.warning(f'definition_dir: {definition_dir}')
     kevm = KEVM(definition_dir, use_directory=save_directory)
 
     include_dirs = [Path(include) for include in includes]
@@ -517,6 +517,75 @@ def exec_prune_proof(
     node_ids = apr_proof.prune(node)
     _LOGGER.info(f'Pruned nodes: {node_ids}')
     apr_proof.write_proof_data()
+
+
+def exec_section_edge(
+    definition_dir: Path,
+    spec_file: Path,
+    edge: tuple[str, str],
+    sections: int = 2,
+    includes: Iterable[str] = (),
+    save_directory: Path | None = None,
+    spec_module: str | None = None,
+    claim_labels: Iterable[str] | None = None,
+    exclude_claim_labels: Iterable[str] = (),
+    smt_timeout: int | None = None,
+    smt_retry_limit: int | None = None,
+    kore_rpc_command: str | Iterable[str] | None = None,
+    trace_rewrites: bool = False,
+    bug_report: BugReport | None = None,
+    use_booster: bool = False,
+    **kwargs: Any,
+) -> None:
+    md_selector = 'k'
+
+    if save_directory is None:
+        raise ValueError('Must pass --save-directory to section-edge!')
+
+    if kore_rpc_command is None:
+        kore_rpc_command = ('kore-rpc-booster',) if use_booster else ('kore-rpc',)
+    elif isinstance(kore_rpc_command, str):
+        kore_rpc_command = kore_rpc_command.split()
+
+    if smt_timeout is None:
+        smt_timeout = 300
+    if smt_retry_limit is None:
+        smt_retry_limit = 10
+
+    kevm = KEVM(definition_dir, use_directory=save_directory)
+    llvm_definition_dir = definition_dir / 'llvm-library' if use_booster else None
+
+    include_dirs = [Path(include) for include in includes]
+    include_dirs += config.INCLUDE_DIRS
+
+    claim = single(
+        kevm.get_claims(
+            spec_file,
+            spec_module_name=spec_module,
+            include_dirs=include_dirs,
+            md_selector=md_selector,
+            claim_labels=claim_labels,
+            exclude_claim_labels=exclude_claim_labels,
+        )
+    )
+
+    proof = APRProof.read_proof_data(save_directory, claim.label)
+    source_id, target_id = edge
+    with legacy_explore(
+        kevm,
+        kcfg_semantics=KEVMSemantics(),
+        id=proof.id,
+        bug_report=bug_report,
+        kore_rpc_command=kore_rpc_command,
+        smt_timeout=smt_timeout,
+        smt_retry_limit=smt_retry_limit,
+        trace_rewrites=trace_rewrites,
+        llvm_definition_dir=llvm_definition_dir,
+    ) as kcfg_explore:
+        kcfg, _ = kcfg_explore.section_edge(
+            proof.kcfg, source_id=int(source_id), target_id=int(target_id), logs=proof.logs, sections=sections
+        )
+    proof.write_proof_data()
 
 
 def exec_show_kcfg(
@@ -743,8 +812,8 @@ def _create_argument_parser() -> ArgumentParser:
         help='Reinitialize CFGs even if they already exist.',
     )
 
-    prune_proof_args = command_parser.add_parser(
-        'prune-proof',
+    prune_args = command_parser.add_parser(
+        'prune',
         help='Remove a node and its successors from the proof state.',
         parents=[
             kevm_cli_args.logging_args,
@@ -752,7 +821,28 @@ def _create_argument_parser() -> ArgumentParser:
             kevm_cli_args.spec_args,
         ],
     )
-    prune_proof_args.add_argument('node', type=node_id_like, help='Node to remove CFG subgraph from.')
+    prune_args.add_argument('node', type=node_id_like, help='Node to remove CFG subgraph from.')
+
+    section_edge_args = command_parser.add_parser(
+        'section-edge',
+        help='Break an edge into sections.',
+        parents=[
+            kevm_cli_args.logging_args,
+            kevm_cli_args.k_args,
+            kevm_cli_args.spec_args,
+        ],
+    )
+    section_edge_args.add_argument('edge', type=arg_pair_of(str, str), help='Edge to section in CFG.')
+    section_edge_args.add_argument(
+        '--sections', type=int, default=2, help='Number of sections to make from edge (>= 2).'
+    )
+    section_edge_args.add_argument(
+        '--use-booster',
+        dest='use_booster',
+        default=False,
+        action='store_true',
+        help="Use the booster RPC server instead of kore-rpc. Requires calling kompile with '--target haskell-booster' flag",
+    )
 
     prove_legacy_args = command_parser.add_parser(
         'prove-legacy',
