@@ -83,6 +83,7 @@ sudo apt-get install    \
     libmpfr-dev         \
     libsecp256k1-dev    \
     libstdc++-12-dev    \
+    libtool             \
     libyaml-dev         \
     libz3-dev           \
     lld-15              \
