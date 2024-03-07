@@ -41,7 +41,10 @@ The expected output is `#Top` which represents that all the claims have been pro
 Debugging a proof
 -----------------
 
-You can use `kevm show-kcfg ...` or `kevm view-kcfg ...` to get a visualization.
+For `kevm prove-legacy`, you can use the `--debugger` flag to debug a proof. With it, you can use `step`/`stepf` to navigate through the rewrite steps and `konfig` to display the K configuration. You can see all the available commands using `help`.
+
+For `kevm prove`. you can use `kevm show-kcfg ...` or `kevm view-kcfg ...` to get a visualization.
+***Note:*** this is not compatible with `kevm prove-legacy`.
 
 `kevm view-kcfg [spec_file] [--save-directory save_directory] [--claim claim_label] ...` command takes the same basic arguments as `kevm prove ...` does, including:
   - `spec_file` is the file to look in for specifications. This is the same file used for `kevm prove …`.
