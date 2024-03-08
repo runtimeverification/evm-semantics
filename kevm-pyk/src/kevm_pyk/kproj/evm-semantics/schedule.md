@@ -54,313 +54,273 @@ A `ScheduleConst` is a constant determined by the fee schedule.
 ### Frontier Schedule
 
 ```k
+    syntax Schedule ::= "AFTER_FRONTIER" [macro]
     syntax Schedule ::= "FRONTIER" [klabel(FRONTIER_EVM), symbol, smtlib(schedule_FRONTIER)]
  // ----------------------------------------------------------------------------------------
-    rule Gzero    < FRONTIER > => 0
-    rule Gbase    < FRONTIER > => 2
-    rule Gverylow < FRONTIER > => 3
-    rule Glow     < FRONTIER > => 5
-    rule Gmid     < FRONTIER > => 8
-    rule Ghigh    < FRONTIER > => 10
+    rule AFTER_FRONTIER => FRONTIER #Or AFTER_HOMESTEAD
 
-    rule Gexp      < FRONTIER > => 10
-    rule Gexpbyte  < FRONTIER > => 10
-    rule Gsha3     < FRONTIER > => 30
-    rule Gsha3word < FRONTIER > => 6
+    rule Gzero    < AFTER_FRONTIER > => 0 [priority(200)]
+    rule Gbase    < AFTER_FRONTIER > => 2 [priority(200)]
+    rule Gverylow < AFTER_FRONTIER > => 3 [priority(200)]
+    rule Glow     < AFTER_FRONTIER > => 5 [priority(200)]
+    rule Gmid     < AFTER_FRONTIER > => 8 [priority(200)]
+    rule Ghigh    < AFTER_FRONTIER > => 10 [priority(200)]
 
-    rule Gsload       < FRONTIER > => 50
-    rule Gsstoreset   < FRONTIER > => 20000
-    rule Gsstorereset < FRONTIER > => 5000
-    rule Rsstoreclear < FRONTIER > => 15000
+    rule Gexp      < AFTER_FRONTIER > => 10 [priority(200)]
+    rule Gexpbyte  < AFTER_FRONTIER > => 10 [priority(200)]
+    rule Gsha3     < AFTER_FRONTIER > => 30 [priority(200)]
+    rule Gsha3word < AFTER_FRONTIER > => 6 [priority(200)]
 
-    rule Glog      < FRONTIER > => 375
-    rule Glogdata  < FRONTIER > => 8
-    rule Glogtopic < FRONTIER > => 375
+    rule Gsload       < AFTER_FRONTIER > => 50 [priority(200)]
+    rule Gsstoreset   < AFTER_FRONTIER > => 20000 [priority(200)]
+    rule Gsstorereset < AFTER_FRONTIER > => 5000 [priority(200)]
+    rule Rsstoreclear < AFTER_FRONTIER > => 15000 [priority(200)]
 
-    rule Gcall        < FRONTIER > => 40
-    rule Gcallstipend < FRONTIER > => 2300
-    rule Gcallvalue   < FRONTIER > => 9000
-    rule Gnewaccount  < FRONTIER > => 25000
+    rule Glog      < AFTER_FRONTIER > => 375 [priority(200)]
+    rule Glogdata  < AFTER_FRONTIER > => 8 [priority(200)]
+    rule Glogtopic < AFTER_FRONTIER > => 375 [priority(200)]
 
-    rule Gcreate       < FRONTIER > => 32000
-    rule Gcodedeposit  < FRONTIER > => 200
-    rule Gselfdestruct < FRONTIER > => 0
-    rule Rselfdestruct < FRONTIER > => 24000
+    rule Gcall        < AFTER_FRONTIER > => 40 [priority(200)]
+    rule Gcallstipend < AFTER_FRONTIER > => 2300 [priority(200)]
+    rule Gcallvalue   < AFTER_FRONTIER > => 9000 [priority(200)]
+    rule Gnewaccount  < AFTER_FRONTIER > => 25000 [priority(200)]
 
-    rule Gmemory      < FRONTIER > => 3
-    rule Gquadcoeff   < FRONTIER > => 512
-    rule Gcopy        < FRONTIER > => 3
-    rule Gquaddivisor < FRONTIER > => 20
+    rule Gcreate       < AFTER_FRONTIER > => 32000 [priority(200)]
+    rule Gcodedeposit  < AFTER_FRONTIER > => 200 [priority(200)]
+    rule Gselfdestruct < AFTER_FRONTIER > => 0 [priority(200)]
+    rule Rselfdestruct < AFTER_FRONTIER > => 24000 [priority(200)]
 
-    rule Gtransaction   < FRONTIER > => 21000
-    rule Gtxcreate      < FRONTIER > => 21000
-    rule Gtxdatazero    < FRONTIER > => 4
-    rule Gtxdatanonzero < FRONTIER > => 68
+    rule Gmemory      < AFTER_FRONTIER > => 3 [priority(200)]
+    rule Gquadcoeff   < AFTER_FRONTIER > => 512 [priority(200)]
+    rule Gcopy        < AFTER_FRONTIER > => 3 [priority(200)]
+    rule Gquaddivisor < AFTER_FRONTIER > => 20 [priority(200)]
 
-    rule Gjumpdest    < FRONTIER > => 1
-    rule Gbalance     < FRONTIER > => 20
-    rule Gblockhash   < FRONTIER > => 20
-    rule Gextcodesize < FRONTIER > => 20
-    rule Gextcodecopy < FRONTIER > => 20
+    rule Gtransaction   < AFTER_FRONTIER > => 21000 [priority(200)]
+    rule Gtxcreate      < AFTER_FRONTIER > => 21000 [priority(200)]
+    rule Gtxdatazero    < AFTER_FRONTIER > => 4 [priority(200)]
+    rule Gtxdatanonzero < AFTER_FRONTIER > => 68 [priority(200)]
 
-    rule Gecadd       < FRONTIER > => 500
-    rule Gecmul       < FRONTIER > => 40000
-    rule Gecpairconst < FRONTIER > => 100000
-    rule Gecpaircoeff < FRONTIER > => 80000
-    rule Gfround      < FRONTIER > => 1
+    rule Gjumpdest    < AFTER_FRONTIER > => 1 [priority(200)]
+    rule Gbalance     < AFTER_FRONTIER > => 20 [priority(200)]
+    rule Gblockhash   < AFTER_FRONTIER > => 20 [priority(200)]
+    rule Gextcodesize < AFTER_FRONTIER > => 20 [priority(200)]
+    rule Gextcodecopy < AFTER_FRONTIER > => 20 [priority(200)]
 
-    rule maxCodeSize < FRONTIER > => 2 ^Int 32 -Int 1
-    rule Rb          < FRONTIER > => 5 *Int (10 ^Int 18)
+    rule Gecadd       < AFTER_FRONTIER > => 500 [priority(200)]
+    rule Gecmul       < AFTER_FRONTIER > => 40000 [priority(200)]
+    rule Gecpairconst < AFTER_FRONTIER > => 100000 [priority(200)]
+    rule Gecpaircoeff < AFTER_FRONTIER > => 80000 [priority(200)]
+    rule Gfround      < AFTER_FRONTIER > => 1 [priority(200)]
 
-    rule Gcoldsload         < FRONTIER > => 0
-    rule Gcoldaccountaccess < FRONTIER > => 0
-    rule Gwarmstorageread   < FRONTIER > => 0
+    rule maxCodeSize < AFTER_FRONTIER > => maxUInt32 [priority(200)]
+    rule Rb          < AFTER_FRONTIER > => 5 *Int eth [priority(200)]
 
-    rule Gaccessliststoragekey < FRONTIER > => 0
-    rule Gaccesslistaddress    < FRONTIER > => 0
+    rule Gcoldsload         < AFTER_FRONTIER > => 0 [priority(200)]
+    rule Gcoldaccountaccess < AFTER_FRONTIER > => 0 [priority(200)]
+    rule Gwarmstorageread   < AFTER_FRONTIER > => 0 [priority(200)]
 
-    rule maxInitCodeSize   < FRONTIER > => 0
-    rule Ginitcodewordcost < FRONTIER > => 0
+    rule Gaccessliststoragekey < AFTER_FRONTIER > => 0 [priority(200)]
+    rule Gaccesslistaddress    < AFTER_FRONTIER > => 0 [priority(200)]
 
-    rule Rmaxquotient < FRONTIER > => 2
+    rule maxInitCodeSize   < AFTER_FRONTIER > => 0 [priority(200)]
+    rule Ginitcodewordcost < AFTER_FRONTIER > => 0 [priority(200)]
 
-    rule Gselfdestructnewaccount << FRONTIER >> => false
-    rule Gstaticcalldepth        << FRONTIER >> => true
-    rule Gemptyisnonexistent     << FRONTIER >> => false
-    rule Gzerovaluenewaccountgas << FRONTIER >> => true
-    rule Ghasrevert              << FRONTIER >> => false
-    rule Ghasreturndata          << FRONTIER >> => false
-    rule Ghasstaticcall          << FRONTIER >> => false
-    rule Ghasshift               << FRONTIER >> => false
-    rule Ghasdirtysstore         << FRONTIER >> => false
-    rule Ghassstorestipend       << FRONTIER >> => false
-    rule Ghascreate2             << FRONTIER >> => false
-    rule Ghasextcodehash         << FRONTIER >> => false
-    rule Ghasselfbalance         << FRONTIER >> => false
-    rule Ghaschainid             << FRONTIER >> => false
-    rule Ghasaccesslist          << FRONTIER >> => false
-    rule Ghasbasefee             << FRONTIER >> => false
-    rule Ghasrejectedfirstbyte   << FRONTIER >> => false
-    rule Ghasprevrandao          << FRONTIER >> => false
-    rule Ghasmaxinitcodesize     << FRONTIER >> => false
-    rule Ghaspushzero            << FRONTIER >> => false
-    rule Ghaswarmcoinbase        << FRONTIER >> => false
+    rule Rmaxquotient < AFTER_FRONTIER > => 2 [priority(200)]
+
+    rule Gselfdestructnewaccount << AFTER_FRONTIER >> => false [priority(200)]
+    rule Gstaticcalldepth        << AFTER_FRONTIER >> => true [priority(200)]
+    rule Gemptyisnonexistent     << AFTER_FRONTIER >> => false [priority(200)]
+    rule Gzerovaluenewaccountgas << AFTER_FRONTIER >> => true [priority(200)]
+    rule Ghasrevert              << AFTER_FRONTIER >> => false [priority(200)]
+    rule Ghasreturndata          << AFTER_FRONTIER >> => false [priority(200)]
+    rule Ghasstaticcall          << AFTER_FRONTIER >> => false [priority(200)]
+    rule Ghasshift               << AFTER_FRONTIER >> => false [priority(200)]
+    rule Ghasdirtysstore         << AFTER_FRONTIER >> => false [priority(200)]
+    rule Ghassstorestipend       << AFTER_FRONTIER >> => false [priority(200)]
+    rule Ghascreate2             << AFTER_FRONTIER >> => false [priority(200)]
+    rule Ghasextcodehash         << AFTER_FRONTIER >> => false [priority(200)]
+    rule Ghasselfbalance         << AFTER_FRONTIER >> => false [priority(200)]
+    rule Ghaschainid             << AFTER_FRONTIER >> => false [priority(200)]
+    rule Ghasaccesslist          << AFTER_FRONTIER >> => false [priority(200)]
+    rule Ghasbasefee             << AFTER_FRONTIER >> => false [priority(200)]
+    rule Ghasrejectedfirstbyte   << AFTER_FRONTIER >> => false [priority(200)]
+    rule Ghasprevrandao          << AFTER_FRONTIER >> => false [priority(200)]
+    rule Ghasmaxinitcodesize     << AFTER_FRONTIER >> => false [priority(200)]
+    rule Ghaspushzero            << AFTER_FRONTIER >> => false [priority(200)]
+    rule Ghaswarmcoinbase        << AFTER_FRONTIER >> => false [priority(200)]
 ```
 
 ### Homestead Schedule
 
 ```k
+    syntax Schedule ::= "AFTER_HOMESTEAD" [macro]
     syntax Schedule ::= "HOMESTEAD" [klabel(HOMESTEAD_EVM), symbol, smtlib(schedule_HOMESTEAD)]
  // -------------------------------------------------------------------------------------------
-    rule Gtxcreate  < HOMESTEAD > => 53000
-    rule SCHEDCONST < HOMESTEAD > => SCHEDCONST < FRONTIER > requires SCHEDCONST =/=K Gtxcreate
+    rule AFTER_HOMESTEAD => HOMESTEAD #Or AFTER_TANGERINE_WHISTLE
 
-    rule SCHEDFLAG << HOMESTEAD >> => SCHEDFLAG << FRONTIER >>
+    rule Gtxcreate  < AFTER_HOMESTEAD > => 53000 [priority(199)]
 ```
 
 ### Tangerine Whistle Schedule
 
 ```k
+    syntax Schedule ::= "AFTER_TANGERINE_WHISTLE" [macro]
     syntax Schedule ::= "TANGERINE_WHISTLE" [klabel(TANGERINE_WHISTLE_EVM), symbol, smtlib(schedule_TANGERINE_WHISTLE)]
  // -------------------------------------------------------------------------------------------------------------------
-    rule Gbalance      < TANGERINE_WHISTLE > => 400
-    rule Gsload        < TANGERINE_WHISTLE > => 200
-    rule Gcall         < TANGERINE_WHISTLE > => 700
-    rule Gselfdestruct < TANGERINE_WHISTLE > => 5000
-    rule Gextcodesize  < TANGERINE_WHISTLE > => 700
-    rule Gextcodecopy  < TANGERINE_WHISTLE > => 700
+    rule AFTER_TANGERINE_WHISTLE => TANGERINE_WHISTLE #Or AFTER_SPURIOUS_DRAGON
 
-    rule SCHEDCONST    < TANGERINE_WHISTLE > => SCHEDCONST < HOMESTEAD >
-      requires notBool      ( SCHEDCONST ==K Gbalance      orBool SCHEDCONST ==K Gsload       orBool SCHEDCONST ==K Gcall
-                       orBool SCHEDCONST ==K Gselfdestruct orBool SCHEDCONST ==K Gextcodesize orBool SCHEDCONST ==K Gextcodecopy
-                            )
+    rule Gbalance      < AFTER_TANGERINE_WHISTLE > => 400 [priority(198)]
+    rule Gsload        < AFTER_TANGERINE_WHISTLE > => 200 [priority(198)]
+    rule Gcall         < AFTER_TANGERINE_WHISTLE > => 700 [priority(198)]
+    rule Gselfdestruct < AFTER_TANGERINE_WHISTLE > => 5000 [priority(198)]
+    rule Gextcodesize  < AFTER_TANGERINE_WHISTLE > => 700 [priority(198)]
+    rule Gextcodecopy  < AFTER_TANGERINE_WHISTLE > => 700 [priority(198)]
 
-    rule Gselfdestructnewaccount << TANGERINE_WHISTLE >> => true
-    rule Gstaticcalldepth        << TANGERINE_WHISTLE >> => false
-    rule SCHEDCONST              << TANGERINE_WHISTLE >> => SCHEDCONST << HOMESTEAD >>
-      requires notBool      ( SCHEDCONST ==K Gselfdestructnewaccount orBool SCHEDCONST ==K Gstaticcalldepth )
+    rule Gselfdestructnewaccount << AFTER_TANGERINE_WHISTLE >> => true [priority(198)]
+    rule Gstaticcalldepth        << AFTER_TANGERINE_WHISTLE >> => false [priority(198)]
 ```
 
 ### Spurious Dragon Schedule
 
 ```k
+    syntax Schedule ::= "AFTER_SPURIOUS_DRAGON" [macro]
     syntax Schedule ::= "SPURIOUS_DRAGON" [klabel(SPURIOUS_DRAGON_EVM), symbol, smtlib(schedule_SPURIOUS_DRAGON)]
  // -------------------------------------------------------------------------------------------------------------
-    rule Gexpbyte    < SPURIOUS_DRAGON > => 50
-    rule maxCodeSize < SPURIOUS_DRAGON > => 24576
+    rule AFTER_SPURIOUS_DRAGON => SPURIOUS_DRAGON #Or AFTER_BYZANTIUM
 
-    rule SCHEDCONST  < SPURIOUS_DRAGON > => SCHEDCONST < TANGERINE_WHISTLE > requires SCHEDCONST =/=K Gexpbyte andBool SCHEDCONST =/=K maxCodeSize
+    rule Gexpbyte    < AFTER_SPURIOUS_DRAGON > => 50 [priority(197)]
+    rule maxCodeSize < AFTER_SPURIOUS_DRAGON > => 24576 [priority(197)]
 
-    rule Gemptyisnonexistent     << SPURIOUS_DRAGON >> => true
-    rule Gzerovaluenewaccountgas << SPURIOUS_DRAGON >> => false
-    rule SCHEDCONST              << SPURIOUS_DRAGON >> => SCHEDCONST << TANGERINE_WHISTLE >>
-      requires notBool      ( SCHEDCONST ==K Gemptyisnonexistent orBool SCHEDCONST ==K Gzerovaluenewaccountgas )
+    rule Gemptyisnonexistent     << AFTER_SPURIOUS_DRAGON >> => true [priority(197)]
+    rule Gzerovaluenewaccountgas << AFTER_SPURIOUS_DRAGON >> => false [priority(197)]
 ```
 
 ### Byzantium Schedule
 
 ```k
+    syntax Schedule ::= "AFTER_BYZANTIUM" [macro]
     syntax Schedule ::= "BYZANTIUM" [klabel(BYZANTIUM_EVM), symbol, smtlib(schedule_BYZANTIUM)]
  // -------------------------------------------------------------------------------------------
-    rule Rb         < BYZANTIUM > => 3 *Int eth
-    rule SCHEDCONST < BYZANTIUM > => SCHEDCONST < SPURIOUS_DRAGON >
-      requires notBool ( SCHEDCONST ==K Rb )
+    rule AFTER_BYZANTIUM => BYZANTIUM #Or AFTER_CONSTANTINOPLE
 
-    rule Ghasrevert     << BYZANTIUM >> => true
-    rule Ghasreturndata << BYZANTIUM >> => true
-    rule Ghasstaticcall << BYZANTIUM >> => true
-    rule SCHEDFLAG      << BYZANTIUM >> => SCHEDFLAG << SPURIOUS_DRAGON >>
-      requires notBool ( SCHEDFLAG ==K Ghasrevert orBool SCHEDFLAG ==K Ghasreturndata orBool SCHEDFLAG ==K Ghasstaticcall )
+    rule Rb         < AFTER_BYZANTIUM > => 3 *Int eth [priority(196)]
+
+    rule Ghasrevert     << AFTER_BYZANTIUM >> => true [priority(196)]
+    rule Ghasreturndata << AFTER_BYZANTIUM >> => true [priority(196)]
+    rule Ghasstaticcall << AFTER_BYZANTIUM >> => true [priority(196)]
 ```
 
 ### Constantinople Schedule
 
 ```k
+    syntax Schedule ::= "AFTER_CONSTANTINOPLE" [macro]
     syntax Schedule ::= "CONSTANTINOPLE" [klabel(CONSTANTINOPLE_EVM), symbol, smtlib(schedule_CONSTANTINOPLE)]
  // ----------------------------------------------------------------------------------------------------------
-    rule Rb         < CONSTANTINOPLE > => 2 *Int eth
-    rule SCHEDCONST < CONSTANTINOPLE > => SCHEDCONST < BYZANTIUM >
-      requires notBool ( SCHEDCONST ==K Rb )
+    rule AFTER_CONSTANTINOPLE => CONSTANTINOPLE #Or AFTER_PETERSBURG
 
-    rule Ghasshift       << CONSTANTINOPLE >> => true
-    rule Ghasdirtysstore << CONSTANTINOPLE >> => true
-    rule Ghascreate2     << CONSTANTINOPLE >> => true
-    rule Ghasextcodehash << CONSTANTINOPLE >> => true
-    rule SCHEDFLAG       << CONSTANTINOPLE >> => SCHEDFLAG << BYZANTIUM >>
-      requires notBool ( SCHEDFLAG ==K Ghasshift orBool SCHEDFLAG ==K Ghasdirtysstore orBool SCHEDFLAG ==K Ghascreate2 orBool SCHEDFLAG ==K Ghasextcodehash )
+    rule Rb         < AFTER_CONSTANTINOPLE > => 2 *Int eth [priority(195)]
+
+    rule Ghasshift       << AFTER_CONSTANTINOPLE >> => true [priority(195)]
+    rule Ghasdirtysstore << AFTER_CONSTANTINOPLE >> => true [priority(195)]
+    rule Ghascreate2     << AFTER_CONSTANTINOPLE >> => true [priority(195)]
+    rule Ghasextcodehash << AFTER_CONSTANTINOPLE >> => true [priority(195)]
 ```
 
 ### Petersburg Schedule
 
 ```k
+    syntax Schedule ::= "AFTER_PETERSBURG" [macro]
     syntax Schedule ::= "PETERSBURG" [klabel(PETERSBURG_EVM), symbol, smtlib(schedule_PETERSBURG)]
  // ----------------------------------------------------------------------------------------------
-    rule SCHEDCONST < PETERSBURG > => SCHEDCONST < CONSTANTINOPLE >
+    rule AFTER_PETERSBURG => PETERSBURG #Or AFTER_ISTANBUL
 
-    rule Ghasdirtysstore << PETERSBURG >> => false
-    rule SCHEDFLAG       << PETERSBURG >> => SCHEDFLAG << CONSTANTINOPLE >>
-      requires notBool ( SCHEDFLAG ==K Ghasdirtysstore )
+    rule Ghasdirtysstore << AFTER_PETERSBURG >> => false [priority(194)]
 ```
 
 ### Istanbul Schedule
 
 ```k
+    syntax Schedule ::= "AFTER_ISTANBUL" [macro]
     syntax Schedule ::= "ISTANBUL" [klabel(ISTANBUL_EVM), symbol, smtlib(schedule_ISTANBUL)]
  // ----------------------------------------------------------------------------------------
-    rule Gecadd         < ISTANBUL > => 150
-    rule Gecmul         < ISTANBUL > => 6000
-    rule Gecpairconst   < ISTANBUL > => 45000
-    rule Gecpaircoeff   < ISTANBUL > => 34000
-    rule Gtxdatanonzero < ISTANBUL > => 16
-    rule Gsload         < ISTANBUL > => 800
-    rule Gbalance       < ISTANBUL > => 700
-    rule SCHEDCONST     < ISTANBUL > => SCHEDCONST < PETERSBURG >
-      requires notBool ( SCHEDCONST ==K Gecadd
-                  orBool SCHEDCONST ==K Gecmul
-                  orBool SCHEDCONST ==K Gecpairconst
-                  orBool SCHEDCONST ==K Gecpaircoeff
-                  orBool SCHEDCONST ==K Gtxdatanonzero
-                  orBool SCHEDCONST ==K Gsload
-                  orBool SCHEDCONST ==K Gbalance
-                       )
+    rule AFTER_ISTANBUL => ISTANBUL #Or AFTER_BERLIN
 
-    rule Ghasselfbalance   << ISTANBUL >> => true
-    rule Ghasdirtysstore   << ISTANBUL >> => true
-    rule Ghassstorestipend << ISTANBUL >> => true
-    rule Ghaschainid       << ISTANBUL >> => true
-    rule SCHEDFLAG         << ISTANBUL >> => SCHEDFLAG << PETERSBURG >>
-      requires notBool ( SCHEDFLAG ==K Ghasselfbalance
-                  orBool SCHEDFLAG ==K Ghasdirtysstore
-                  orBool SCHEDFLAG ==K Ghassstorestipend
-                  orBool SCHEDFLAG ==K Ghaschainid
-                       )
+    rule Gecadd         < AFTER_ISTANBUL > => 150 [priority(193)]
+    rule Gecmul         < AFTER_ISTANBUL > => 6000 [priority(193)]
+    rule Gecpairconst   < AFTER_ISTANBUL > => 45000 [priority(193)]
+    rule Gecpaircoeff   < AFTER_ISTANBUL > => 34000 [priority(193)]
+    rule Gtxdatanonzero < AFTER_ISTANBUL > => 16 [priority(193)]
+    rule Gsload         < AFTER_ISTANBUL > => 800 [priority(193)]
+    rule Gbalance       < AFTER_ISTANBUL > => 700 [priority(193)]
+
+    rule Ghasselfbalance   << AFTER_ISTANBUL >> => true [priority(193)]
+    rule Ghasdirtysstore   << AFTER_ISTANBUL >> => true [priority(193)]
+    rule Ghassstorestipend << AFTER_ISTANBUL >> => true [priority(193)]
+    rule Ghaschainid       << AFTER_ISTANBUL >> => true [priority(193)]
 ```
 
 ### Berlin Schedule
 
 ```k
+    syntax Schedule ::= "AFTER_BERLIN" [macro]
     syntax Schedule ::= "BERLIN" [klabel(BERLIN_EVM), symbol, smtlib(schedule_BERLIN)]
  // ----------------------------------------------------------------------------------
-    rule Gcoldsload            < BERLIN > => 2100
-    rule Gcoldaccountaccess    < BERLIN > => 2600
-    rule Gwarmstorageread      < BERLIN > => 100
-    rule Gsload                < BERLIN > => Gwarmstorageread < BERLIN >
-    rule Gsstorereset          < BERLIN > => 5000 -Int Gcoldsload < BERLIN >
-    rule Gquaddivisor          < BERLIN > => 3
-    rule Gaccessliststoragekey < BERLIN > => 1900
-    rule Gaccesslistaddress    < BERLIN > => 2400
+    rule AFTER_BERLIN => BERLIN #Or AFTER_LONDON
 
-    rule SCHEDCONST            < BERLIN > => SCHEDCONST < ISTANBUL >
-      requires notBool ( SCHEDCONST ==K Gcoldsload
-                  orBool SCHEDCONST ==K Gcoldaccountaccess
-                  orBool SCHEDCONST ==K Gwarmstorageread
-                  orBool SCHEDCONST ==K Gsload
-                  orBool SCHEDCONST ==K Gsstorereset
-                  orBool SCHEDCONST ==K Gquaddivisor
-                  orBool SCHEDCONST ==K Gaccessliststoragekey
-                  orBool SCHEDCONST ==K Gaccesslistaddress
-                       )
+    rule Gcoldsload            < AFTER_BERLIN > => 2100 [priority(192)]
+    rule Gcoldaccountaccess    < AFTER_BERLIN > => 2600 [priority(192)]
+    rule Gwarmstorageread      < AFTER_BERLIN > => 100 [priority(192)]
+    rule Gsload                < AFTER_BERLIN > => 100 [priority(192)]
+    rule Gsstorereset          < AFTER_BERLIN > => 2900 [priority(192)]
+    rule Gquaddivisor          < AFTER_BERLIN > => 3 [priority(192)]
+    rule Gaccessliststoragekey < AFTER_BERLIN > => 1900 [priority(192)]
+    rule Gaccesslistaddress    < AFTER_BERLIN > => 2400 [priority(192)]
 
-    rule Ghasaccesslist << BERLIN >> => true
-    rule SCHEDFLAG      << BERLIN >> => SCHEDFLAG << ISTANBUL >>
-      requires notBool ( SCHEDFLAG ==K Ghasaccesslist )
+    rule Ghasaccesslist << AFTER_BERLIN >> => true [priority(192)]
 ```
 
 ### London Schedule
 
 ```k
+    syntax Schedule ::= "AFTER_LONDON" [macro]
     syntax Schedule ::= "LONDON" [klabel(LONDON_EVM), symbol, smtlib(schedule_LONDON)]
  // ----------------------------------------------------------------------------------
-    rule Rselfdestruct < LONDON > => 0
-    rule Rsstoreclear  < LONDON > => Gsstorereset < LONDON > +Int Gaccessliststoragekey < LONDON >
-    rule Rmaxquotient  < LONDON > => 5
-    rule SCHEDCONST    < LONDON > => SCHEDCONST < BERLIN >
-      requires notBool ( SCHEDCONST ==K Rselfdestruct
-                  orBool SCHEDCONST ==K Rsstoreclear
-                  orBool SCHEDCONST ==K Rmaxquotient
-                       )
+    rule AFTER_LONDON => LONDON #Or AFTER_MERGE
 
-    rule Ghasbasefee           << LONDON >> => true
-    rule Ghasrejectedfirstbyte << LONDON >> => true
-    rule SCHEDFLAG             << LONDON >> => SCHEDFLAG << BERLIN >>
-      requires notBool ( SCHEDFLAG ==K Ghasbasefee
-                  orBool SCHEDFLAG ==K Ghasrejectedfirstbyte
-                       )
+    rule Rselfdestruct < AFTER_LONDON > => 0 [priority(191)]
+    rule Rsstoreclear  < AFTER_LONDON > => 4800 [priority(191)]
+    rule Rmaxquotient  < AFTER_LONDON > => 5 [priority(191)]
+
+    rule Ghasbasefee           << AFTER_LONDON >> => true [priority(191)]
+    rule Ghasrejectedfirstbyte << AFTER_LONDON >> => true [priority(191)]
 ```
 
 ### Merge Schedule
 
 ```k
+    syntax Schedule ::= "AFTER_MERGE" [macro]
     syntax Schedule ::= "MERGE" [klabel(MERGE_EVM), symbol, smtlib(schedule_MERGE)]
  // -------------------------------------------------------------------------------
-    rule Rb         < MERGE > => 0
-    rule SCHEDCONST < MERGE > => SCHEDCONST < LONDON >
-      requires notBool SCHEDCONST ==K Rb
+    rule AFTER_MERGE => MERGE #Or AFTER_SHANGHAI
 
-    rule Ghasprevrandao << MERGE >> => true
-    rule SCHEDFLAG      << MERGE >> => SCHEDFLAG << LONDON >>
-      requires notBool SCHEDFLAG ==K Ghasprevrandao
+    rule Rb         < AFTER_MERGE > => 0 [priority(190)]
+
+    rule Ghasprevrandao << AFTER_MERGE >> => true [priority(190)]
 ```
 
 ### Shanghai Schedule
 
 ```k
+    syntax Schedule ::= "AFTER_SHANGHAI" [macro]
     syntax Schedule ::= "SHANGHAI" [klabel(SHANGHAI_EVM), symbol, smtlib(schedule_SHANGHAI)]
  // ----------------------------------------------------------------------------------------
-    rule maxInitCodeSize   < SHANGHAI > => 2 *Int maxCodeSize < SHANGHAI >
-    rule Ginitcodewordcost < SHANGHAI > => 2
-    rule SCHEDCONST        < SHANGHAI > => SCHEDCONST < MERGE >
-      requires notBool ( SCHEDCONST ==K maxInitCodeSize
-                  orBool SCHEDCONST ==K Ginitcodewordcost
-                       )
+    rule AFTER_SHANGHAI => SHANGHAI
 
-    rule Ghasmaxinitcodesize << SHANGHAI >> => true
-    rule Ghaspushzero        << SHANGHAI >> => true
-    rule Ghaswarmcoinbase    << SHANGHAI >> => true
-    rule SCHEDFLAG           << SHANGHAI >> => SCHEDFLAG << MERGE >>
-      requires notBool ( SCHEDFLAG ==K Ghasmaxinitcodesize
-                  orBool SCHEDFLAG ==K Ghaspushzero
-                  orBool SCHEDFLAG ==K Ghaswarmcoinbase
-                       )
+    rule maxInitCodeSize   < AFTER_SHANGHAI > => 49152 [priority(189)]
+    rule Ginitcodewordcost < AFTER_SHANGHAI > => 2 [priority(189)]
+
+    rule Ghasmaxinitcodesize << AFTER_SHANGHAI >> => true [priority(189)]
+    rule Ghaspushzero        << AFTER_SHANGHAI >> => true [priority(189)]
+    rule Ghaswarmcoinbase    << AFTER_SHANGHAI >> => true [priority(189)]
 endmodule
 ```
