@@ -95,7 +95,7 @@ def main() -> None:
             KompileSpecCommand,
             ProveLegacyCommand,
             ProveCommand,
-            PruneProofCommand,
+            PruneCommand,
             RunCommand,
             ShowKCFGCommand,
             VersionCommand,
@@ -591,7 +591,7 @@ class VersionCommand(Command, LoggingOptions):
         print(f'KEVM Version: {VERSION}')
 
 
-class PruneProofCommand(Command, KOptions, SpecOptions, LoggingOptions):
+class PruneCommand(Command, KOptions, SpecOptions, LoggingOptions):
     node: NodeIdLike
 
     @staticmethod
@@ -852,6 +852,88 @@ class KastCommand(Command, TargetOptions, EVMChainOptions, SaveDirOptions, Loggi
         output_text = kore_print(kore_pattern, definition_dir=kevm.definition_dir, output=self.output)
         print(output_text)
 
+
+
+class SectionEdgeCommand(Command, LoggingOptions, KOptions, SpecOptions, RPCOptions, BugReportOptions, SMTOptions):
+    edge: tuple[str, str]
+    sections: int
+    use_booster: bool
+
+    @staticmethod
+    def name() -> str:
+        return 'section-edge'
+
+    @staticmethod
+    def help_str() -> str:
+        return 'Break an edge into sections.'
+
+    @staticmethod
+    def default() -> dict[str, Any]:
+        return {
+            'sections': 2,
+            'use-booster': False,
+        }
+
+    @staticmethod
+    def update_args(parser: ArgumentParser) -> None:
+        parser.add_argument('edge', type=arg_pair_of(str, str), help='Edge to section in CFG.')
+        parser.add_argument('--sections', type=int, help='Number of sections to make from edge (>= 2).')
+        parser.add_argument(
+            '--use-booster',
+            dest='use_booster',
+            action='store_true',
+            help="Use the booster RPC server instead of kore-rpc. Requires calling kompile with '--target haskell-booster' flag",
+        )
+
+    def exec(self) -> None:
+        md_selector = 'k'
+
+        if self.save_directory is None:
+            raise ValueError('Must pass --save-directory to section-edge!')
+
+        kore_rpc_command: Iterable[str]
+        if self.kore_rpc_command is None:
+            kore_rpc_command = ('kore-rpc-booster',) if self.use_booster else ('kore-rpc',)
+        elif isinstance(self.kore_rpc_command, str):
+            kore_rpc_command = self.kore_rpc_command.split()
+
+        if self.definition_dir is None:
+            raise ValueError('Must pass --definition to section-edge!')
+
+        kevm = KEVM(self.definition_dir, use_directory=self.save_directory)
+        llvm_definition_dir = self.definition_dir / 'llvm-library' if self.use_booster else None
+
+        include_dirs = [Path(include) for include in self.includes]
+        include_dirs += config.INCLUDE_DIRS
+
+        claim = single(
+            kevm.get_claims(
+                self.spec_file,
+                spec_module_name=self.spec_module,
+                include_dirs=include_dirs,
+                md_selector=md_selector,
+                claim_labels=self.claim_labels,
+                exclude_claim_labels=self.exclude_claim_labels,
+            )
+        )
+
+        proof = APRProof.read_proof_data(self.save_directory, claim.label)
+        source_id, target_id = self.edge
+        with legacy_explore(
+            kevm,
+            kcfg_semantics=KEVMSemantics(),
+            id=proof.id,
+            bug_report=self.bug_report,
+            kore_rpc_command=kore_rpc_command,
+            smt_timeout=self.smt_timeout,
+            smt_retry_limit=self.smt_retry_limit,
+            trace_rewrites=self.trace_rewrites,
+            llvm_definition_dir=llvm_definition_dir,
+        ) as kcfg_explore:
+            kcfg, _ = kcfg_explore.section_edge(
+                proof.kcfg, source_id=int(source_id), target_id=int(target_id), logs=proof.logs, sections=self.sections
+            )
+        proof.write_proof_data()
 
 # Helpers
 

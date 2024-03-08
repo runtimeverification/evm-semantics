@@ -91,7 +91,7 @@ def test_rest_vm(test_file: Path) -> None:
 
 
 BCHAIN_NEW_TEST_DIR: Final = TEST_DIR / 'BlockchainTests/GeneralStateTests'
-BCHAIN_NEW_TESTS: Final = tuple(BCHAIN_NEW_TEST_DIR.glob('*/*.json'))
+BCHAIN_NEW_TESTS: Final = tuple(BCHAIN_NEW_TEST_DIR.glob('**/*.json'))
 
 BCHAIN_LEGACY_TEST_DIR: Final = TEST_DIR / 'LegacyTests/Constantinople/BlockchainTests/GeneralStateTests'
 BCHAIN_LEGACY_TESTS: Final = tuple(BCHAIN_LEGACY_TEST_DIR.glob('*/*.json'))
