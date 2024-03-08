@@ -61,42 +61,41 @@ This repository generates the build-products for each backend in `$XDG_CACHE_HOM
 
 ### System Dependencies
 
-First install the following tools:
-
--   [git](https://git-scm.com/)
--   GNU [Bison](https://www.gnu.org/software/bison/), [Flex](https://github.com/westes/flex), and [Autoconf](http://www.gnu.org/software/autoconf/).
--   GNU [libmpfr](https://www.mpfr.org/) and [libtool](https://www.gnu.org/software/libtool/).
--   [Z3](https://github.com/Z3Prover/z3) version 4.12.1
-
-#### Installing Z3
-
-KEVM requires Z3 version 4.12.1, which you may need to install from a source build if your package manager supplies a different version.
-To do so, follow the instructions [here](https://github.com/Z3Prover/z3#building-z3-using-make-and-gccclang) after checking out the correct tag in the Z3 repository:
-
-```sh
-git clone https://github.com/Z3Prover/z3.git
-cd z3
-git checkout z3-4.12.1
-python scripts/mk_make.py
-cd build
-make
-sudo make install
-```
-
-On macOS, it is easiest to install Z3 from Homebrew.
-If you wish to install from the source, install it to an appropriate prefix (e.g. `/usr/local` on Intel machines).
 
 #### Ubuntu
 
 On Ubuntu >= 22.04 (for example):
 
 ```sh
-sudo apt-get install --yes                                                         \
-            autoconf bison clang-12 cmake curl flex gcc jq libboost-test-dev       \
-            libcrypto++-dev libffi-dev libgflags-dev libjemalloc-dev libmpfr-dev   \
-            libprocps-dev libsecp256k1-dev libssl-dev libtool libyaml-dev lld-12   \
-            llvm-12-tools make maven openjdk-11-jdk pkg-config python3 python3-dev \
-            python3-pip rapidjson-dev time zlib1g-dev libfmt-dev
+sudo apt-get install    \
+    bison               \
+    build-essential     \
+    clang-15            \
+    cmake               \
+    curl                \
+    flex                \
+    g++                 \
+    gcc                 \
+    libboost-test-dev   \
+    libfmt-dev          \
+    libgmp-dev          \
+    libjemalloc-dev     \
+    libmpfr-dev         \
+    libsecp256k1-dev    \
+    libstdc++-12-dev    \
+    libtool             \
+    libyaml-dev         \
+    libz3-dev           \
+    lld-15              \
+    llvm-15-tools       \
+    m4                  \
+    maven               \
+    openjdk-17-jdk      \
+    pkg-config          \
+    python3             \
+    python3-dev         \
+    z3                  \
+    zlib1g-dev
 ```
 
 On Ubuntu < 18.04, you'll need to skip `libsecp256k1-dev` and instead build it from source (via our `Makefile`):
@@ -122,8 +121,27 @@ After installing the Command Line Tools, [Homebrew](https://brew.sh/), and getti
 
 ```sh
 brew tap runtimeverification/k
-brew install java automake libtool gmp mpfr pkg-config maven libffi llvm@14 openssl python bash runtimeverification/k/cryptopp@8.6.0 poetry solidity
-make libsecp256k1
+brew install    \
+    bison       \
+    boost       \
+    cmake       \
+    flex        \
+    fmt         \
+    gcc         \
+    gmp         \
+    openjdk     \
+    jemalloc    \
+    libyaml     \
+    llvm        \
+    make        \
+    maven       \
+    mpfr        \
+    pkg-config  \
+    python      \
+    secp256k1   \
+    stack       \
+    zlib        \
+    z3
 ```
 
 **NOTE**: It is recommended to use the homebrew version of `flex` and XCode.

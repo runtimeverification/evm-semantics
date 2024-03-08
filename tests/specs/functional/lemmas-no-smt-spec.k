@@ -6,7 +6,7 @@ module VERIFICATION
     syntax StepSort ::= Int | Bool
  // ------------------------------
 
-    syntax KItem ::= runLemma ( StepSort )
+    syntax KItem ::= runLemma ( StepSort ) [symbol(runLemma)]
                    | doneLemma( StepSort )
  // --------------------------------------
     rule <k> runLemma( T ) => doneLemma( T ) ... </k>

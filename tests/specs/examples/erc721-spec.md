@@ -31,7 +31,7 @@ module VERIFICATION
     imports ERC721-VERIFICATION
 
     syntax Step ::= Bytes | Int | Bool
-    syntax KItem ::= runLemma ( Step ) | doneLemma ( Step )
+    syntax KItem ::= runLemma ( Step ) [symbol(runLemma)] | doneLemma ( Step )
  // -------------------------------------------------------
     rule <k> runLemma(S) => doneLemma(S) ... </k>
 

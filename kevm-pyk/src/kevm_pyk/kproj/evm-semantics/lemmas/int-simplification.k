@@ -109,6 +109,7 @@ module INT-SIMPLIFICATION-COMMON
     rule A +Int 0 => A [simplification]
 
   // 3 terms
+    rule  (A +Int  B) -Int B  => A [simplification]
     rule  (A -Int  B) +Int B  => A [simplification]
     rule   A -Int (A  -Int B) => B [simplification]
     rule   A +Int (B  -Int A) => B [simplification]
@@ -120,6 +121,7 @@ module INT-SIMPLIFICATION-COMMON
     rule  (A +Int B) -Int (A  +Int C) => B -Int C [simplification]
     rule  (A +Int B) -Int (C  +Int A) => B -Int C [simplification]
     rule  (A +Int B) +Int (C  -Int B) => A +Int C [simplification]
+    rule  (A -Int B) -Int (C  -Int B) => A -Int C [simplification]
     rule ((A -Int B) -Int  C) +Int B  => A -Int C [simplification]
 
   // 5 terms

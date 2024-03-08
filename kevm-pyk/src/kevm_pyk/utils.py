@@ -5,7 +5,8 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from pyk.cterm import CTerm
+from pyk.cterm import CTerm, CTermSymbolic
+from pyk.kast import Atts
 from pyk.kast.inner import KApply, KInner, KRewrite, KVariable, Subst
 from pyk.kast.manip import (
     abstract_term_safely,
@@ -20,7 +21,7 @@ from pyk.kast.outer import KSequence
 from pyk.kcfg import KCFGExplore
 from pyk.kore.rpc import KoreClient, KoreExecLogFormat, TransportType, kore_server
 from pyk.proof import APRProof, APRProver
-from pyk.proof.equality import EqualityProof, ImpliesProver
+from pyk.proof.implies import EqualityProof, ImpliesProver
 from pyk.utils import single
 
 if TYPE_CHECKING:
@@ -123,6 +124,8 @@ def run_prover(
         prover.advance_proof(max_iterations=max_iterations, fail_fast=fail_fast)
 
     except Exception as e:
+        if type(proof) is APRProof:
+            proof.error_info = e
         _LOGGER.error(f'Proof crashed: {proof.id}\n{e}', exc_info=True)
         return False
 
@@ -154,15 +157,15 @@ def print_failure_info(proof: Proof, kcfg_explore: KCFGExplore, counterexample_i
                 res_lines.append('')
                 res_lines.append(f'  Node id: {str(node.id)}')
 
-                node_cterm, _ = kcfg_explore.cterm_simplify(node.cterm)
-                target_cterm, _ = kcfg_explore.cterm_simplify(target.cterm)
+                node_cterm, _ = kcfg_explore.cterm_symbolic.simplify(node.cterm)
+                target_cterm, _ = kcfg_explore.cterm_symbolic.simplify(target.cterm)
 
                 res_lines.append('  Failure reason:')
                 _, reason = kcfg_explore.implication_failure_reason(node_cterm, target_cterm)
                 res_lines += [f'    {line}' for line in reason.split('\n')]
 
                 res_lines.append('  Path condition:')
-                res_lines += [f'    {kcfg_explore.kprint.pretty_print(proof.path_constraints(node.id))}']
+                res_lines += [f'    {kcfg_explore.pretty_print(proof.path_constraints(node.id))}']
                 if counterexample_info:
                     res_lines.extend(print_model(node, kcfg_explore))
 
@@ -180,12 +183,12 @@ def print_failure_info(proof: Proof, kcfg_explore: KCFGExplore, counterexample_i
 
 def print_model(node: KCFG.Node, kcfg_explore: KCFGExplore) -> list[str]:
     res_lines: list[str] = []
-    result_subst = kcfg_explore.cterm_get_model(node.cterm)
+    result_subst = kcfg_explore.cterm_symbolic.get_model(node.cterm)
     if type(result_subst) is Subst:
         res_lines.append('  Model:')
         for var, term in result_subst.to_dict().items():
             term_kast = KInner.from_dict(term)
-            res_lines.append(f'    {var} = {kcfg_explore.kprint.pretty_print(term_kast)}')
+            res_lines.append(f'    {var} = {kcfg_explore.pretty_print(term_kast)}')
     else:
         res_lines.append('  Failed to generate a model.')
 
@@ -229,7 +232,7 @@ def KDefinition__expand_macros(defn: KDefinition, term: KInner) -> KInner:  # no
     def _expand_macros(_term: KInner) -> KInner:
         if type(_term) is KApply:
             prod = defn.production_for_klabel(_term.label)
-            if 'macro' in prod.att or 'alias' in prod.att or 'macro-rec' in prod.att or 'alias-rec' in prod.att:
+            if any(key in prod.att for key in [Atts.MACRO, Atts.ALIAS, Atts.MACRO_REC, Atts.ALIAS_REC]):
                 for r in defn.macro_rules:
                     assert type(r.body) is KRewrite
                     _new_term = r.body.apply_top(_term)
@@ -319,13 +322,10 @@ def legacy_explore(
             no_post_exec_simplify=no_post_exec_simplify,
         ) as server:
             with KoreClient('localhost', server.port, bug_report=bug_report, bug_report_id=id) as client:
-                yield KCFGExplore(
-                    kprint=kprint,
-                    kore_client=client,
-                    kcfg_semantics=kcfg_semantics,
-                    id=id,
-                    trace_rewrites=trace_rewrites,
+                cterm_symbolic = CTermSymbolic(
+                    client, kprint.definition, kprint.kompiled_kore, trace_rewrites=trace_rewrites
                 )
+                yield KCFGExplore(cterm_symbolic, kcfg_semantics=kcfg_semantics, id=id)
     else:
         if port is None:
             raise ValueError('Missing port with start_server=False')
@@ -341,10 +341,7 @@ def legacy_explore(
                 ],
             }
         with KoreClient('localhost', port, bug_report=bug_report, bug_report_id=id, dispatch=dispatch) as client:
-            yield KCFGExplore(
-                kprint=kprint,
-                kore_client=client,
-                kcfg_semantics=kcfg_semantics,
-                id=id,
-                trace_rewrites=trace_rewrites,
+            cterm_symbolic = CTermSymbolic(
+                client, kprint.definition, kprint.kompiled_kore, trace_rewrites=trace_rewrites
             )
+            yield KCFGExplore(cterm_symbolic, kcfg_semantics=kcfg_semantics, id=id)

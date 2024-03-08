@@ -40,6 +40,10 @@ class KEVMSemantics(KCFGSemantics):
     def __init__(self, auto_abstract_gas: bool = False) -> None:
         self.auto_abstract_gas = auto_abstract_gas
 
+    @staticmethod
+    def is_functional(term: KInner) -> bool:
+        return type(term) == KApply and term.label.name == 'runLemma'
+
     def is_terminal(self, cterm: CTerm) -> bool:
         k_cell = cterm.cell('K_CELL')
         # <k> #halt </k>
@@ -55,6 +59,23 @@ class KEVMSemantics(KCFGSemantics):
             # <k> #halt ~> X:K </k>
             elif k_cell.arity == 2 and k_cell[0] == KEVM.halt() and type(k_cell[1]) is KVariable:
                 return True
+
+        program_cell = cterm.cell('PROGRAM_CELL')
+        # Fully symbolic program is terminal unless we are executing a functional claim
+        if type(program_cell) is KVariable:
+            # <k> runLemma ( ... ) </k>
+            if KEVMSemantics.is_functional(k_cell):
+                return False
+            # <k> runLemma ( ... ) [ ~> X:K ] </k>
+            elif (
+                type(k_cell) is KSequence
+                and (k_cell.arity == 1 or (k_cell.arity == 2 and type(k_cell[1]) is KVariable))
+                and KEVMSemantics.is_functional(k_cell[0])
+            ):
+                return False
+            else:
+                return True
+
         return False
 
     def same_loop(self, cterm1: CTerm, cterm2: CTerm) -> bool:
@@ -275,13 +296,21 @@ class KEVM(KProve, KRun):
                 if type(account) is KApply:
                     constraints.extend(_add_account_invariant(account))
 
-        constraints.append(mlEqualsTrue(KEVM.range_uint(256, cterm.cell('TIMESTAMP_CELL'))))
         constraints.append(mlEqualsTrue(KEVM.range_address(cterm.cell('ID_CELL'))))
         constraints.append(mlEqualsTrue(KEVM.range_address(cterm.cell('CALLER_CELL'))))
-        constraints.append(mlEqualsTrue(KEVM.range_address(cterm.cell('ORIGIN_CELL'))))
+        constraints.append(
+            mlEqualsFalse(KEVM.is_precompiled_account(cterm.cell('CALLER_CELL'), cterm.cell('SCHEDULE_CELL')))
+        )
         constraints.append(mlEqualsTrue(ltInt(KEVM.size_bytes(cterm.cell('CALLDATA_CELL')), KEVM.pow128())))
+        constraints.append(mlEqualsTrue(KEVM.range_uint(256, cterm.cell('CALLVALUE_CELL'))))
+
+        constraints.append(mlEqualsTrue(KEVM.range_address(cterm.cell('ORIGIN_CELL'))))
+        constraints.append(
+            mlEqualsFalse(KEVM.is_precompiled_account(cterm.cell('ORIGIN_CELL'), cterm.cell('SCHEDULE_CELL')))
+        )
 
         constraints.append(mlEqualsTrue(KEVM.range_blocknum(cterm.cell('NUMBER_CELL'))))
+        constraints.append(mlEqualsTrue(KEVM.range_uint(256, cterm.cell('TIMESTAMP_CELL'))))
 
         for c in constraints:
             cterm = cterm.add_constraint(c)
@@ -422,7 +451,7 @@ class KEVM(KProve, KRun):
 
     @staticmethod
     def empty_typedargs() -> KApply:
-        return KApply('.List{"_,__EVM-ABI_TypedArgs_TypedArg_TypedArgs"}_TypedArgs')
+        return KApply('.List{"typedArgs"}')
 
     @staticmethod
     def bytes_append(b1: KInner, b2: KInner) -> KApply:
@@ -466,7 +495,7 @@ class KEVM(KProve, KRun):
     @staticmethod
     def typed_args(args: list[KInner]) -> KInner:
         res = KEVM.empty_typedargs()
-        return build_cons(res, '_,__EVM-ABI_TypedArgs_TypedArg_TypedArgs', args)
+        return build_cons(res, 'typedArgs', args)
 
     @staticmethod
     def accounts(accts: list[KInner]) -> KInner:

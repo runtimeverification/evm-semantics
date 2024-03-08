@@ -26,7 +26,7 @@ module STATE-UTILS
 
     syntax EthereumCommand ::= "clearTX"
  // ------------------------------------
-    rule <k> clearTX => . ... </k>
+    rule <k> clearTX => .K ... </k>
          <output>           _ => .Bytes     </output>
          <memoryUsed>       _ => 0          </memoryUsed>
          <callDepth>        _ => 0          </callDepth>
@@ -52,7 +52,7 @@ module STATE-UTILS
 
     syntax EthereumCommand ::= "clearBLOCK"
  // ---------------------------------------
-    rule <k> clearBLOCK => . ... </k>
+    rule <k> clearBLOCK => .K ... </k>
          <previousHash>      _ => 0          </previousHash>
          <ommersHash>        _ => 0          </ommersHash>
          <coinbase>          _ => 0          </coinbase>
@@ -75,7 +75,7 @@ module STATE-UTILS
 
     syntax EthereumCommand ::= "clearNETWORK"
  // -----------------------------------------
-    rule <k> clearNETWORK => . ... </k>
+    rule <k> clearNETWORK => .K ... </k>
          <statusCode>     _ => .StatusCode </statusCode>
          <accounts>       _ => .Bag        </accounts>
          <messages>       _ => .Bag        </messages>
@@ -98,11 +98,11 @@ module STATE-UTILS
 ```k
     syntax EthereumCommand ::= "load" JSON
  // --------------------------------------
-    rule <k> load _DATA : { .JSONs }             => .                                                   ... </k>
+    rule <k> load _DATA : { .JSONs }             => .K                                                   ... </k>
     rule <k> load  DATA : { KEY : VALUE , REST } => load DATA : { KEY : VALUE } ~> load DATA : { REST } ... </k>
       requires REST =/=K .JSONs andBool DATA =/=String "transaction"
 
-    rule <k> load _DATA : [ .JSONs ]          => .                                            ... </k>
+    rule <k> load _DATA : [ .JSONs ]          => .K                                            ... </k>
     rule <k> load  DATA : [ { TEST } , REST ] => load DATA : { TEST } ~> load DATA : [ REST ] ... </k>
 ```
 
@@ -113,7 +113,7 @@ Here we perform pre-proccesing on account data which allows "pretty" specificati
 
     syntax EthereumCommand ::= "loadAccount" Int JSON
  // -------------------------------------------------
-    rule <k> loadAccount _ { .JSONs } => . ... </k>
+    rule <k> loadAccount _ { .JSONs } => .K ... </k>
 
     rule <k> loadAccount ACCT { "balance" : (BAL:Int), REST => REST } ... </k>
          <account> <acctID> ACCT </acctID> <balance> _ => BAL </balance> ... </account>
@@ -136,13 +136,13 @@ Here we load the environmental information.
     rule <k> load "env" : { KEY : ((VAL:String) => #parseHexWord(VAL)) } ... </k>
       requires KEY in (SetItem("currentCoinbase") SetItem("previousHash"))
  // ----------------------------------------------------------------------
-    rule <k> load "env" : { "currentCoinbase"   : (CB:Int)     } => . ... </k> <coinbase>     _ => CB     </coinbase>
-    rule <k> load "env" : { "currentDifficulty" : (DIFF:Int)   } => . ... </k> <difficulty>   _ => DIFF   </difficulty>
-    rule <k> load "env" : { "currentGasLimit"   : (GLIMIT:Int) } => . ... </k> <gasLimit>     _ => GLIMIT </gasLimit>
-    rule <k> load "env" : { "currentNumber"     : (NUM:Int)    } => . ... </k> <number>       _ => NUM    </number>
-    rule <k> load "env" : { "previousHash"      : (HASH:Int)   } => . ... </k> <previousHash> _ => HASH   </previousHash>
-    rule <k> load "env" : { "currentTimestamp"  : (TS:Int)     } => . ... </k> <timestamp>    _ => TS     </timestamp>
-    rule <k> load "env" : { "currentBaseFee"    : (BF:Int)     } => . ... </k> <baseFee>      _ => BF     </baseFee>
+    rule <k> load "env" : { "currentCoinbase"   : (CB:Int)     } => .K ... </k> <coinbase>     _ => CB     </coinbase>
+    rule <k> load "env" : { "currentDifficulty" : (DIFF:Int)   } => .K ... </k> <difficulty>   _ => DIFF   </difficulty>
+    rule <k> load "env" : { "currentGasLimit"   : (GLIMIT:Int) } => .K ... </k> <gasLimit>     _ => GLIMIT </gasLimit>
+    rule <k> load "env" : { "currentNumber"     : (NUM:Int)    } => .K ... </k> <number>       _ => NUM    </number>
+    rule <k> load "env" : { "previousHash"      : (HASH:Int)   } => .K ... </k> <previousHash> _ => HASH   </previousHash>
+    rule <k> load "env" : { "currentTimestamp"  : (TS:Int)     } => .K ... </k> <timestamp>    _ => TS     </timestamp>
+    rule <k> load "env" : { "currentBaseFee"    : (BF:Int)     } => .K ... </k> <baseFee>      _ => BF     </baseFee>
 
     syntax KItem ::= "loadCallState" JSON
  // -------------------------------------
@@ -157,17 +157,17 @@ Here we load the environmental information.
     rule <k> loadCallState { "value"    : VALUE:Int , REST => REST } ... </k> <callValue> _ => VALUE  </callValue>
     rule <k> loadCallState { "data"     : DATA:Bytes, REST => REST } ... </k> <callData>  _ => DATA   </callData>
 
-    rule <k> loadCallState { .JSONs } => . ... </k>
+    rule <k> loadCallState { .JSONs } => .K ... </k>
 ```
 
 The `"network"` key allows setting the fee schedule inside the test.
 
 ```k
-    rule <k> load "network" : SCHEDSTRING => . ... </k>
+    rule <k> load "network" : SCHEDSTRING => .K ... </k>
          <schedule> _ => #asScheduleString(SCHEDSTRING) </schedule>
 
-    syntax Schedule ::= #asScheduleString ( String ) [function]
- // -----------------------------------------------------------
+    syntax Schedule ::= #asScheduleString ( String ) [klabel(#asScheduleString), function]
+ // --------------------------------------------------------------------------------------
     rule #asScheduleString("Frontier")          => FRONTIER
     rule #asScheduleString("Homestead")         => HOMESTEAD
     rule #asScheduleString("EIP150")            => TANGERINE_WHISTLE
@@ -233,7 +233,7 @@ The `"rlp"` key loads the block information.
 
     syntax EthereumCommand ::= "mkTX" Int
  // -------------------------------------
-    rule <k> mkTX TXID => . ... </k>
+    rule <k> mkTX TXID => .K ... </k>
          <chainID> CID </chainID>
          <txOrder>   ... (.List => ListItem(TXID)) </txOrder>
          <txPending> ... (.List => ListItem(TXID)) </txPending>
@@ -294,7 +294,7 @@ The `"rlp"` key loads the block information.
 
     syntax EthereumCommand ::= "loadTransaction" Int JSON
  // -----------------------------------------------------
-    rule <k> loadTransaction _ { .JSONs } => . ... </k>
+    rule <k> loadTransaction _ { .JSONs } => .K ... </k>
 
     rule <k> loadTransaction TXID { GLIMIT : TG:Int, REST => REST } ... </k>
          <message> <msgID> TXID </msgID> <txGasLimit> _ => TG </txGasLimit> ... </message>
@@ -346,8 +346,8 @@ The `"rlp"` key loads the block information.
 - `#effectiveGasPrice` will compute the gas price for TXID, as specified by EIP-1559
 
 ```k
-    syntax TxData ::= #getTxData( Int ) [function]
- // ----------------------------------------------
+    syntax TxData ::= #getTxData( Int ) [klabel(#getTxData), function]
+ // ------------------------------------------------------------------
     rule [[ #getTxData( TXID ) => LegacyTxData(TN, TP, TG, TT, TV, DATA) ]]
          <message>
            <msgID>      TXID </msgID>
@@ -410,8 +410,8 @@ The `"rlp"` key loads the block information.
            ...
          </message>
 
-    syntax Int ::= #effectiveGasPrice( Int ) [function]
- // ---------------------------------------------------
+    syntax Int ::= #effectiveGasPrice( Int ) [klabel(#effectiveGasPrice), function]
+ // -------------------------------------------------------------------------------
     rule [[ #effectiveGasPrice( TXID )
          => #if ( notBool Ghasbasefee << SCHED >> )
                 orBool TXTYPE ==K Legacy
@@ -441,8 +441,8 @@ The `"rlp"` key loads the block information.
                              | "EARLIEST"
  // -------------------------------------
 
-    syntax BlockIdentifier ::= #parseBlockIdentifier ( JSON ) [function]
- // --------------------------------------------------------------------
+    syntax BlockIdentifier ::= #parseBlockIdentifier ( JSON ) [klabel(#parseBlockIdentifier), function]
+ // ---------------------------------------------------------------------------------------------------
     rule #parseBlockIdentifier(BLOCKNUM:Int) => BLOCKNUM
     rule #parseBlockIdentifier("pending")    => PENDING
     rule #parseBlockIdentifier("latest")     => LATEST

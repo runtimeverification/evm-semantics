@@ -113,8 +113,8 @@ module BITWISE-SIMPLIFICATION [symbolic]
 
     rule (X <<Int Y) <Int pow256 => true
       requires 0 <=Int X andBool 0 <=Int Y andBool Y <Int 256 andBool X <Int 2 ^Int (256 -Int Y)
-      [simplification, preserves-definedness]
+      [simplification]
 
-    rule 0 <=Int (X <<Int Y) => true requires 0 <=Int X andBool 0 <=Int Y [simplification, preserves-definedness]
+    rule 0 <=Int (X <<Int Y) => true requires 0 <=Int X andBool 0 <=Int Y [simplification]
 
 endmodule
