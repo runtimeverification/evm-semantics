@@ -853,7 +853,6 @@ class KastCommand(Command, TargetOptions, EVMChainOptions, SaveDirOptions, Loggi
         print(output_text)
 
 
-
 class SectionEdgeCommand(Command, LoggingOptions, KOptions, SpecOptions, RPCOptions, BugReportOptions, SMTOptions):
     edge: tuple[str, str]
     sections: int
@@ -934,6 +933,7 @@ class SectionEdgeCommand(Command, LoggingOptions, KOptions, SpecOptions, RPCOpti
                 proof.kcfg, source_id=int(source_id), target_id=int(target_id), logs=proof.logs, sections=self.sections
             )
         proof.write_proof_data()
+
 
 # Helpers
 
