@@ -79,7 +79,7 @@ module STATE-UTILS
          <statusCode>     _ => .StatusCode </statusCode>
          <accounts>       _ => .Bag        </accounts>
          <messages>       _ => .Bag        </messages>
-         <schedule>       _ => DEFAULT     </schedule>
+         <schedule>       _ => HOMESTEAD   </schedule>
 
 ```
 
