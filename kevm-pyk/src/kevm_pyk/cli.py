@@ -433,7 +433,9 @@ class EVMChainOptions(Options):
             choices=modes,
             help="execution mode to use [{'|'.join(modes)}]",
         )
-        parser.add_argument('--no-gas', default=None, action='store_false', dest='usegas', help='omit gas cost computations')
+        parser.add_argument(
+            '--no-gas', default=None, action='store_false', dest='usegas', help='omit gas cost computations'
+        )
 
 
 class KEVMCLIArgs:

@@ -231,9 +231,15 @@ class ShowKCFGCommand(Command, KOptions, SpecOptions, KEVMDisplayOptions, Loggin
             action='store_false',
             help='Do not show failure summary for cfg',
         )
-        parser.add_argument('--to-module', dest='to_module', default=None, action='store_true', help='Output edges as a K module.')
-        parser.add_argument('--pending', dest='pending', default=None, action='store_true', help='Also display pending nodes')
-        parser.add_argument('--failing', dest='failing', default=None, action='store_true', help='Also display failing nodes')
+        parser.add_argument(
+            '--to-module', dest='to_module', default=None, action='store_true', help='Output edges as a K module.'
+        )
+        parser.add_argument(
+            '--pending', dest='pending', default=None, action='store_true', help='Also display pending nodes'
+        )
+        parser.add_argument(
+            '--failing', dest='failing', default=None, action='store_true', help='Also display failing nodes'
+        )
         parser.add_argument(
             '--counterexample-information',
             dest='counterexample_info',
@@ -661,7 +667,9 @@ class ProveLegacyCommand(Command, KOptions, SpecOptions, KProveLegacyOptions, Lo
 
     @staticmethod
     def update_args(parser: ArgumentParser) -> None:
-        parser.add_argument('--bug-report-legacy', default=None, action='store_true', help='Generate a legacy bug report.')
+        parser.add_argument(
+            '--bug-report-legacy', default=None, action='store_true', help='Generate a legacy bug report.'
+        )
 
     def exec(self) -> None:
         definition_dir = self.definition_dir
