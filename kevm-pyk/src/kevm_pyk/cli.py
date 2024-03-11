@@ -36,6 +36,7 @@ class KEVMDisplayOptions(DisplayOptions):
         parser.add_argument(
             '--sort-collections',
             dest='sort_collections',
+            default=None,
             action='store_true',
             help='Sort collections before outputting term.',
         )
@@ -72,18 +73,21 @@ class KProveOptions(Options):
         parser.add_argument(
             '--always-check-subsumption',
             dest='always_check_subsumption',
+            default=None,
             action='store_true',
             help='Check subsumption even on non-terminal nodes.',
         )
         parser.add_argument(
             '--no-always-check-subsumption',
             dest='always_check_subsumption',
+            default=None,
             action='store_false',
             help='Do not check subsumption on non-terminal nodes.',
         )
         parser.add_argument(
             '--fast-check-subsumption',
             dest='fast_check_subsumption',
+            default=None,
             action='store_true',
             help='Use fast-check on k-cell to determine subsumption.',
         )
@@ -117,6 +121,7 @@ class RPCOptions(Options):
         parser.add_argument(
             '--trace-rewrites',
             dest='trace_rewrites',
+            default=None,
             action='store_true',
             help='Log traces of all simplification and rewrite rule applications.',
         )
@@ -129,6 +134,7 @@ class RPCOptions(Options):
         parser.add_argument(
             '--use-booster',
             dest='use_booster',
+            default=None,
             action='store_true',
             help='Use the booster RPC server instead of kore-rpc.',
         )
@@ -141,12 +147,14 @@ class RPCOptions(Options):
         parser.add_argument(
             '--post-exec-simplify',
             dest='post_exec_simplify',
+            default=None,
             action='store_true',
             help='Always simplify states with kore backend after booster execution, only usable with --use-booster.',
         )
         parser.add_argument(
             '--no-post-exec-simplify',
             dest='post_exec_simplify',
+            default=None,
             action='store_false',
             help='Do not simplify states with kore backend after booster execution, only usable with --use-booster.',
         )
@@ -204,36 +212,42 @@ class ExploreOptions(Options):
         parser.add_argument(
             '--break-every-step',
             dest='break_every_step',
+            default=None,
             action='store_true',
             help='Store a node for every EVM opcode step (expensive).',
         )
         parser.add_argument(
             '--break-on-jumpi',
             dest='break_on_jumpi',
+            default=None,
             action='store_true',
             help='Store a node for every EVM jump opcode.',
         )
         parser.add_argument(
             '--break-on-calls',
             dest='break_on_calls',
+            default=None,
             action='store_true',
             help='Store a node for every EVM call made.',
         )
         parser.add_argument(
             '--no-break-on-calls',
             dest='break_on_calls',
+            default=None,
             action='store_false',
             help='Do not store a node for every EVM call made.',
         )
         parser.add_argument(
             '--break-on-storage',
             dest='break_on_storage',
+            default=None,
             action='store_true',
             help='Store a node for every EVM SSTORE/SLOAD made.',
         )
         parser.add_argument(
             '--break-on-basic-blocks',
             dest='break_on_basic_blocks',
+            default=None,
             action='store_true',
             help='Store a node for every EVM basic block (implies --break-on-calls).',
         )
@@ -252,42 +266,49 @@ class ExploreOptions(Options):
         parser.add_argument(
             '--failure-information',
             dest='failure_info',
+            default=None,
             action='store_true',
             help='Show failure summary for all failing tests',
         )
         parser.add_argument(
             '--no-failure-information',
             dest='failure_info',
+            default=None,
             action='store_false',
             help='Do not show failure summary for failing tests',
         )
         parser.add_argument(
             '--auto-abstract-gas',
             dest='auto_abstract_gas',
+            default=None,
             action='store_true',
             help='Automatically extract gas cell when infinite gas is enabled',
         )
         parser.add_argument(
             '--counterexample-information',
             dest='counterexample_info',
+            default=None,
             action='store_true',
             help='Show models for failing nodes.',
         )
         parser.add_argument(
             '--no-counterexample-information',
             dest='counterexample_info',
+            default=None,
             action='store_false',
             help='Do not show models for failing nodes.',
         )
         parser.add_argument(
             '--fail-fast',
             dest='fail_fast',
+            default=None,
             action='store_true',
             help='Stop execution on other branches if a failing node is detected.',
         )
         parser.add_argument(
             '--no-fail-fast',
             dest='fail_fast',
+            default=None,
             action='store_false',
             help='Continue execution on other branches if a failing node is detected.',
         )
@@ -316,12 +337,14 @@ class KProveLegacyOptions(Options):
     def update_args(parser: ArgumentParser) -> None:
         parser.add_argument(
             '--bug-report',
+            default=None,
             action='store_true',
             help='Generate a haskell-backend bug report for the execution.',
         )
         parser.add_argument(
             '--debugger',
             dest='debugger',
+            default=None,
             action='store_true',
             help='Launch proof in an interactive debugger.',
         )
@@ -410,7 +433,7 @@ class EVMChainOptions(Options):
             choices=modes,
             help="execution mode to use [{'|'.join(modes)}]",
         )
-        parser.add_argument('--no-gas', action='store_false', dest='usegas', help='omit gas cost computations')
+        parser.add_argument('--no-gas', default=None, action='store_false', dest='usegas', help='omit gas cost computations')
 
 
 class KEVMCLIArgs:

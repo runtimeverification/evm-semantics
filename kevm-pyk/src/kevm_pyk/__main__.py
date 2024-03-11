@@ -220,21 +220,24 @@ class ShowKCFGCommand(Command, KOptions, SpecOptions, KEVMDisplayOptions, Loggin
         parser.add_argument(
             '--failure-information',
             dest='failure_info',
+            default=None,
             action='store_true',
             help='Show failure summary for cfg',
         )
         parser.add_argument(
             '--no-failure-information',
             dest='failure_info',
+            default=None,
             action='store_false',
             help='Do not show failure summary for cfg',
         )
-        parser.add_argument('--to-module', dest='to_module', action='store_true', help='Output edges as a K module.')
-        parser.add_argument('--pending', dest='pending', action='store_true', help='Also display pending nodes')
-        parser.add_argument('--failing', dest='failing', action='store_true', help='Also display failing nodes')
+        parser.add_argument('--to-module', dest='to_module', default=None, action='store_true', help='Output edges as a K module.')
+        parser.add_argument('--pending', dest='pending', default=None, action='store_true', help='Also display pending nodes')
+        parser.add_argument('--failing', dest='failing', default=None, action='store_true', help='Also display failing nodes')
         parser.add_argument(
             '--counterexample-information',
             dest='counterexample_info',
+            default=None,
             action='store_true',
             help="Show models for failing nodes. Should be called with the '--failure-information' flag",
         )
@@ -399,6 +402,7 @@ class ProveCommand(
         parser.add_argument(
             '--reinit',
             dest='reinit',
+            default=None,
             action='store_true',
             help='Reinitialize CFGs even if they already exist.',
         )
@@ -657,7 +661,7 @@ class ProveLegacyCommand(Command, KOptions, SpecOptions, KProveLegacyOptions, Lo
 
     @staticmethod
     def update_args(parser: ArgumentParser) -> None:
-        parser.add_argument('--bug-report-legacy', action='store_true', help='Generate a legacy bug report.')
+        parser.add_argument('--bug-report-legacy', default=None, action='store_true', help='Generate a legacy bug report.')
 
     def exec(self) -> None:
         definition_dir = self.definition_dir
@@ -763,18 +767,21 @@ class RunCommand(Command, KOptions, TargetOptions, EVMChainOptions, SaveDirOptio
         parser.add_argument(
             '--expand-macros',
             dest='expand_macros',
+            default=None,
             action='store_true',
             help='Expand macros on the input term before execution.',
         )
         parser.add_argument(
             '--no-expand-macros',
             dest='expand_macros',
+            default=None,
             action='store_false',
             help='Do not expand macros on the input term before execution.',
         )
         parser.add_argument(
             '--debugger',
             dest='debugger',
+            default=None,
             action='store_true',
             help='Run GDB debugger for execution.',
         )
@@ -880,6 +887,7 @@ class SectionEdgeCommand(Command, LoggingOptions, KOptions, SpecOptions, RPCOpti
         parser.add_argument(
             '--use-booster',
             dest='use_booster',
+            default=None,
             action='store_true',
             help="Use the booster RPC server instead of kore-rpc. Requires calling kompile with '--target haskell-booster' flag",
         )
