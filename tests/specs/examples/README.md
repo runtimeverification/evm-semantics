@@ -56,7 +56,7 @@ If the flag is ommited and more than one claim is present in the `spec_file` the
 
 The interactive KCFG (`view-kcfg`) puts your terminal in *application mode*.
 To select text in this mode, hold the modifier key provided by your terminal emulator (typically SHIFT or OPTION) while clicking and dragging.
-Refer to the [Textualize documentation](https://github.com/Textualize/textual/blob/main/FAQ.md#how-can-i-select-and-copy-text-in-a-textual-app) for more information.
+Refer to the [Textualize documentation](https://github.com/Textualize/textual/blob/main/docs/FAQ.md#how-can-i-select-and-copy-text-in-a-textual-app) for more information.
 
 `kevm show-kcfg [spec_file] [--save-directory save_directory] [--claim claim_label] ...` command is pretty similar, but prints out the K Control Flow Graph to `stdout` instead.
 
