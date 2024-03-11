@@ -3,8 +3,7 @@ Verification Instructions for KEVM
 
 If you're trying to analyze Solidity smart contracts with symbolic execution, check out our guide for Kontrol at [docs.runtimeverification.com/kontrol].
 
-This folder contains instructions for kompiling and running claims using KEVM.
-You can find a few examples to get you started on proving with kevm.
+This folder contains instructions for kompiling and running claims using KEVM to help you start proving.
 
 Example: Sum to N
 -----------------
