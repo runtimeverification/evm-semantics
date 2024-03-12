@@ -281,8 +281,8 @@ OpCode Execution
 ```k
     syntax MaybeOpCode ::= ".NoOpCode" | OpCode
 
-    syntax MaybeOpCode ::= "#lookupOpCode" "(" Bytes "," Int "," Schedule ")" [function, total]
- // -------------------------------------------------------------------------------------------
+    syntax MaybeOpCode ::= "#lookupOpCode" "(" Bytes "," Int "," ScheduleTuple ")" [function, total]
+ // ------------------------------------------------------------------------------------------------
     rule #lookupOpCode(BA, I, SCHED) => #dasmOpCode(BA[I], SCHED) requires 0 <=Int I andBool I <Int lengthBytes(BA)
     rule #lookupOpCode(_, _, _)  => .NoOpCode [owise]
 ```
@@ -1566,12 +1566,12 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
            ...
          </account>
 
-    syntax Bool ::= #hasValidInitCode ( Int , Schedule ) [klabel(#hasValidInitCode), function]
- // ------------------------------------------------------------------------------------------
+    syntax Bool ::= #hasValidInitCode ( Int , ScheduleTuple ) [klabel(#hasValidInitCode), function]
+ // -----------------------------------------------------------------------------------------------
     rule #hasValidInitCode(INITCODELEN, SCHED) => notBool Ghasmaxinitcodesize << SCHED >> orBool INITCODELEN <=Int maxInitCodeSize < SCHED >
 
-    syntax Bool ::= #isValidCode ( Bytes , Schedule ) [klabel(#isValidCode), function]
- // ----------------------------------------------------------------------------------
+    syntax Bool ::= #isValidCode ( Bytes , ScheduleTuple ) [klabel(#isValidCode), function]
+ // ---------------------------------------------------------------------------------------
     rule #isValidCode( OUT ,  SCHED) => Ghasrejectedfirstbyte << SCHED >> impliesBool OUT[0] =/=Int 239 requires lengthBytes(OUT) >Int 0
     rule #isValidCode(_OUT , _SCHED) => true                                                            [owise]
 
@@ -2016,8 +2016,8 @@ Access List Gas
 
     rule <k> #access [ _ , _ ] => .K ... </k> <schedule> _ </schedule> [owise]
 
-    syntax InternalOp ::= #gasAccess ( Schedule, OpCode ) [klabel(#gasAccess)]
- // --------------------------------------------------------------------------
+    syntax InternalOp ::= #gasAccess ( ScheduleTuple, OpCode ) [klabel(#gasAccess)]
+ // -------------------------------------------------------------------------------
     rule <k> #gasAccess(SCHED, EXTCODESIZE ACCT)       => Caddraccess(SCHED, ACCT in ACCTS)                                                                   ... </k> <accessedAccounts> ACCTS </accessedAccounts>
     rule <k> #gasAccess(SCHED, EXTCODECOPY ACCT _ _ _) => Caddraccess(SCHED, ACCT in ACCTS)                                                                   ... </k> <accessedAccounts> ACCTS </accessedAccounts>
     rule <k> #gasAccess(SCHED, EXTCODEHASH ACCT)       => Caddraccess(SCHED, ACCT in ACCTS)                                                                   ... </k> <accessedAccounts> ACCTS </accessedAccounts>
@@ -2037,8 +2037,8 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
 -   `#gasExec` loads all the relevant surrounding state and uses that to compute the intrinsic execution gas of each opcode.
 
 ```k
-    syntax InternalOp ::= #gasExec ( Schedule , OpCode ) [klabel(#gasExec)]
- // -----------------------------------------------------------------------
+    syntax InternalOp ::= #gasExec ( ScheduleTuple , OpCode ) [klabel(#gasExec)]
+ // ----------------------------------------------------------------------------
     rule <k> #gasExec(SCHED, SSTORE INDEX NEW) => Csstore(SCHED, NEW, #lookup(STORAGE, INDEX), #lookup(ORIGSTORAGE, INDEX)) ... </k>
          <id> ACCT </id>
          <gas> GAVAIL </gas>
@@ -2238,10 +2238,10 @@ There are several helpers for calculating gas (most of them also specified in th
 ```k
     syntax Exp     ::= Int | Gas
     syntax KResult ::= Int
-    syntax Exp ::= Ccall         ( Schedule , BExp , Gas , Gas , Int , Bool ) [klabel(Ccall), strict(2)]
-                 | Ccallgas      ( Schedule , BExp , Gas , Gas , Int , Bool ) [klabel(Ccallgas), strict(2)]
-                 | Cselfdestruct ( Schedule , BExp , Int )                    [klabel(Cselfdestruct), strict(2)]
- // ------------------------------------------------------------------------------------------------------------
+    syntax Exp ::= Ccall         ( ScheduleTuple , BExp , Gas , Gas , Int , Bool ) [klabel(Ccall), strict(2)]
+                 | Ccallgas      ( ScheduleTuple , BExp , Gas , Gas , Int , Bool ) [klabel(Ccallgas), strict(2)]
+                 | Cselfdestruct ( ScheduleTuple , BExp , Int )                    [klabel(Cselfdestruct), strict(2)]
+ // -----------------------------------------------------------------------------------------------------------------
     rule <k> Ccall(SCHED, ISEMPTY:Bool, GCAP, GAVAIL, VALUE, ISWARM)
           => Cextra(SCHED, ISEMPTY, VALUE, ISWARM) +Gas Cgascap(SCHED, GCAP, GAVAIL, Cextra(SCHED, ISEMPTY, VALUE, ISWARM)) ... </k>
 
@@ -2290,8 +2290,8 @@ After interpreting the strings representing programs as a `WordStack`, it should
 -   `#dasmOpCode` interperets a `Int` as an `OpCode`.
 
 ```k
-    syntax OpCode ::= #dasmOpCode ( Int , Schedule ) [klabel(#dasmOpCode), function, memo, total]
- // ---------------------------------------------------------------------------------------------
+    syntax OpCode ::= #dasmOpCode ( Int , ScheduleTuple ) [klabel(#dasmOpCode), function, memo, total]
+ // --------------------------------------------------------------------------------------------------
     rule #dasmOpCode(   0,     _ ) => STOP
     rule #dasmOpCode(   1,     _ ) => ADD
     rule #dasmOpCode(   2,     _ ) => MUL
