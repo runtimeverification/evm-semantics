@@ -80,6 +80,7 @@ module STATE-UTILS
          <accounts>       _ => .Bag        </accounts>
          <messages>       _ => .Bag        </messages>
          <schedule>       _ => HOMESTEAD   </schedule>
+         <scheduleTuple>  _ => getSchedule(HOMESTEAD) </scheduleTuple>
 
 ```
 
@@ -165,6 +166,7 @@ The `"network"` key allows setting the fee schedule inside the test.
 ```k
     rule <k> load "network" : SCHEDSTRING => .K ... </k>
          <schedule> _ => #asScheduleString(SCHEDSTRING) </schedule>
+         <scheduleTuple> _ => getSchedule(#asScheduleString(SCHEDSTRING)) </scheduleTuple>
 
     syntax Schedule ::= #asScheduleString ( String ) [klabel(#asScheduleString), function]
  // --------------------------------------------------------------------------------------
