@@ -415,7 +415,7 @@ The `"rlp"` key loads the block information.
     syntax Int ::= #effectiveGasPrice( Int ) [klabel(#effectiveGasPrice), function]
  // -------------------------------------------------------------------------------
     rule [[ #effectiveGasPrice( TXID )
-         => #if ( notBool Ghasbasefee << SCHED >> )
+         => #if ( notBool Ghasbasefee(SCHED) )
                 orBool TXTYPE ==K Legacy
                 orBool TXTYPE ==K AccessList
               #then GPRICE
