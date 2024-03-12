@@ -102,25 +102,25 @@ module GAS-FEES
     imports GAS-SYNTAX
     imports SCHEDULE
 
-    syntax Gas ::= Cgascap        ( Schedule , Gas , Gas , Int ) [symbol(Cgascap_Gas), overload(Cgascap), function, total, smtlib(gas_Cgascap_Gas)]
-    syntax Int ::= Cgascap        ( Schedule , Int , Int , Int ) [symbol(Cgascap_Int), overload(Cgascap), function, total, smtlib(gas_Cgascap_Int)]
+    syntax Gas ::= Cgascap        ( ScheduleTuple , Gas , Gas , Int ) [symbol(Cgascap_Gas), overload(Cgascap), function, total, smtlib(gas_Cgascap_Gas)]
+    syntax Int ::= Cgascap        ( ScheduleTuple , Int , Int , Int ) [symbol(Cgascap_Int), overload(Cgascap), function, total, smtlib(gas_Cgascap_Int)]
 
-    syntax Int ::= Csstore        ( Schedule , Int , Int , Int )         [klabel(Csstore),        function, total, smtlib(gas_Csstore)       ]
-                 | Rsstore        ( Schedule , Int , Int , Int )         [klabel(Rsstore),        function, total, smtlib(gas_Rsstore)       ]
-                 | Cextra         ( Schedule , Bool , Int , Bool )       [klabel(Cextra),         function, total, smtlib(gas_Cextra)        ]
-                 | Cnew           ( Schedule , Bool , Int )              [klabel(Cnew),           function, total, smtlib(gas_Cnew)          ]
-                 | Cxfer          ( Schedule , Int )                     [klabel(Cxfer),          function, total, smtlib(gas_Cxfer)         ]
-                 | Cmem           ( Schedule , Int )                     [klabel(Cmem),           function, total, smtlib(gas_Cmem), memo    ]
-                 | Caddraccess    ( Schedule , Bool )                    [klabel(Caddraccess),    function, total, smtlib(gas_Caddraccess)   ]
-                 | Cstorageaccess ( Schedule , Bool )                    [klabel(Cstorageaccess), function, total, smtlib(gas_Cstorageaccess)]
-                 | Csload         ( Schedule , Bool )                    [klabel(Csload),         function, total, smtlib(gas_Csload)        ]
-                 | Cextcodesize   ( Schedule )                           [klabel(Cextcodesize),   function, total, smtlib(gas_Cextcodesize)  ]
-                 | Cextcodecopy   ( Schedule , Int )                     [klabel(Cextcodecopy),   function, total, smtlib(gas_Cextcodecopy)  ]
-                 | Cextcodehash   ( Schedule )                           [klabel(Cextcodehash),   function, total, smtlib(gas_Cextcodehash)  ]
-                 | Cbalance       ( Schedule )                           [klabel(Cbalance),       function, total, smtlib(gas_Cbalance)      ]
-                 | Cmodexp        ( Schedule , Bytes , Int , Int , Int ) [klabel(Cmodexp),        function, total, smtlib(gas_Cmodexp)       ]
-                 | Cinitcode      ( Schedule , Int )                     [klabel(Cinitcode),      function, total, smtlib(gas_Cinitcode)     ]
- // ------------------------------------------------------------------------------------------------------------------------------------------
+    syntax Int ::= Csstore        ( ScheduleTuple , Int , Int , Int )         [klabel(Csstore),        function, total, smtlib(gas_Csstore)       ]
+                 | Rsstore        ( ScheduleTuple , Int , Int , Int )         [klabel(Rsstore),        function, total, smtlib(gas_Rsstore)       ]
+                 | Cextra         ( ScheduleTuple , Bool , Int , Bool )       [klabel(Cextra),         function, total, smtlib(gas_Cextra)        ]
+                 | Cnew           ( ScheduleTuple , Bool , Int )              [klabel(Cnew),           function, total, smtlib(gas_Cnew)          ]
+                 | Cxfer          ( ScheduleTuple , Int )                     [klabel(Cxfer),          function, total, smtlib(gas_Cxfer)         ]
+                 | Cmem           ( ScheduleTuple , Int )                     [klabel(Cmem),           function, total, smtlib(gas_Cmem), memo    ]
+                 | Caddraccess    ( ScheduleTuple , Bool )                    [klabel(Caddraccess),    function, total, smtlib(gas_Caddraccess)   ]
+                 | Cstorageaccess ( ScheduleTuple , Bool )                    [klabel(Cstorageaccess), function, total, smtlib(gas_Cstorageaccess)]
+                 | Csload         ( ScheduleTuple , Bool )                    [klabel(Csload),         function, total, smtlib(gas_Csload)        ]
+                 | Cextcodesize   ( ScheduleTuple )                           [klabel(Cextcodesize),   function, total, smtlib(gas_Cextcodesize)  ]
+                 | Cextcodecopy   ( ScheduleTuple , Int )                     [klabel(Cextcodecopy),   function, total, smtlib(gas_Cextcodecopy)  ]
+                 | Cextcodehash   ( ScheduleTuple )                           [klabel(Cextcodehash),   function, total, smtlib(gas_Cextcodehash)  ]
+                 | Cbalance       ( ScheduleTuple )                           [klabel(Cbalance),       function, total, smtlib(gas_Cbalance)      ]
+                 | Cmodexp        ( ScheduleTuple , Bytes , Int , Int , Int ) [klabel(Cmodexp),        function, total, smtlib(gas_Cmodexp)       ]
+                 | Cinitcode      ( ScheduleTuple , Int )                     [klabel(Cinitcode),      function, total, smtlib(gas_Cinitcode)     ]
+ // -----------------------------------------------------------------------------------------------------------------------------------------------
     rule [Cgascap]:
          Cgascap(SCHED, GCAP:Int, GAVAIL:Int, GEXTRA)
       => #if GAVAIL <Int GEXTRA orBool Gstaticcalldepth << SCHED >> #then GCAP #else minInt(#allBut64th(GAVAIL -Int GEXTRA), GCAP) #fi
@@ -217,17 +217,17 @@ module GAS-FEES
     rule [allBut64th.pos]: #allBut64th(N) => N -Int (N /Int 64) requires 0 <=Int N
     rule [allBut64th.neg]: #allBut64th(N) => 0                  requires N  <Int 0
 
-    syntax Int ::= G0 ( Schedule , Bytes , Bool )           [function, klabel(G0base)]
-                 | G0 ( Schedule , Bytes , Int , Int, Int ) [function, klabel(G0data)]
- // ----------------------------------------------------------------------------------
+    syntax Int ::= G0 ( ScheduleTuple , Bytes , Bool )           [function, klabel(G0base)]
+                 | G0 ( ScheduleTuple , Bytes , Int , Int, Int ) [function, klabel(G0data)]
+ // ---------------------------------------------------------------------------------------
     rule G0(SCHED, WS, false) => G0(SCHED, WS, 0, lengthBytes(WS), 0) +Int Gtransaction < SCHED >
     rule G0(SCHED, WS, true)  => G0(SCHED, WS, 0, lengthBytes(WS), 0) +Int Gtxcreate < SCHED > +Int Cinitcode(SCHED, lengthBytes(WS))
 
     rule G0(    _,  _, I, I, R) => R
     rule G0(SCHED, WS, I, J, R) => G0(SCHED, WS, I +Int 1, J, R +Int #if WS[I] ==Int 0 #then Gtxdatazero < SCHED > #else Gtxdatanonzero < SCHED > #fi) [owise]
 
-    syntax Gas ::= "G*" "(" Gas "," Int "," Int "," Schedule ")" [function]
- // -----------------------------------------------------------------------
+    syntax Gas ::= "G*" "(" Gas "," Int "," Int "," ScheduleTuple ")" [function]
+ // ----------------------------------------------------------------------------
     rule G*(GAVAIL, GLIMIT, REFUND, SCHED) => GAVAIL +Gas minGas((GLIMIT -Gas GAVAIL) /Gas Rmaxquotient < SCHED >, REFUND)
 
     syntax Int ::= #multComplexity(Int)    [klabel(#multComplexity),    function]
