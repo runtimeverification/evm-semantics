@@ -190,11 +190,11 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
  // ---------------------------------------------------------------------------------------------
     rule <k> #loadAccessList ([ .JSONs ]) => .K ... </k>
          <scheduleTuple> SCHED </scheduleTuple>
-      requires Ghasaccesslist << SCHED >>
+      requires Ghasaccesslist(SCHED)
 
     rule <k> #loadAccessList ([ _ ]) => .K ... </k>
          <scheduleTuple> SCHED </scheduleTuple>
-      requires notBool Ghasaccesslist << SCHED >>
+      requires notBool Ghasaccesslist(SCHED)
 
     rule <k> #loadAccessList ([[ACCT, [STRG:JSONs]], REST])
           => #loadAccessListAux (#asAccount(ACCT), #parseAccessListStorageKeys([STRG]))
@@ -202,7 +202,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          ...
          </k>
          <scheduleTuple> SCHED </scheduleTuple>
-      requires Ghasaccesslist << SCHED >>
+      requires Ghasaccesslist(SCHED)
 
     rule <k> #loadAccessListAux (ACCT, (ListItem(STRGK) STRGKS))
           => #accessStorage ACCT STRGK:Int
@@ -210,11 +210,11 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          ...
          </k>
          <scheduleTuple> SCHED </scheduleTuple>
-         <callGas> GLIMIT => GLIMIT -Int Gaccessliststoragekey < SCHED > </callGas>
+         <callGas> GLIMIT => GLIMIT -Int Gaccessliststoragekey(SCHED) </callGas>
 
     rule <k> #loadAccessListAux (ACCT, .List) => #accessAccounts ACCT ... </k>
          <scheduleTuple> SCHED </scheduleTuple>
-         <callGas> GLIMIT => GLIMIT -Int Gaccesslistaddress < SCHED > </callGas>
+         <callGas> GLIMIT => GLIMIT -Int Gaccesslistaddress(SCHED) </callGas>
 ```
 
 -   `exception` only clears from the `<k>` cell if there is an exception preceding it.
