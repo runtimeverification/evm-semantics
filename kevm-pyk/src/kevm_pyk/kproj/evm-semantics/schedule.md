@@ -28,8 +28,8 @@ module SCHEDULE
                           | "Ghasdirtysstore"         | "Ghascreate2"      | "Ghasextcodehash"     | "Ghasselfbalance"
                           | "Ghassstorestipend"       | "Ghaschainid"      | "Ghasaccesslist"      | "Ghasbasefee"
                           | "Ghasrejectedfirstbyte"   | "Ghasprevrandao"   | "Ghasmaxinitcodesize" | "Ghaspushzero"
-                          | "Ghaswarmcoinbase"
- // ------------------------------------------
+                          | "Ghaswarmcoinbase"        | "Ghasdelegatecall"
+ // ----------------------------------------------------------------------
 ```
 
 ### Schedule Constants
@@ -145,6 +145,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghasmaxinitcodesize     << FRONTIER >> => false
     rule Ghaspushzero            << FRONTIER >> => false
     rule Ghaswarmcoinbase        << FRONTIER >> => false
+    rule Ghasdelegatecall        << FRONTIER >> => false
 ```
 
 ### Homestead Schedule
@@ -155,7 +156,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Gtxcreate  < HOMESTEAD > => 53000
     rule SCHEDCONST < HOMESTEAD > => SCHEDCONST < FRONTIER > requires SCHEDCONST =/=K Gtxcreate
 
-    rule SCHEDFLAG << HOMESTEAD >> => SCHEDFLAG << FRONTIER >>
+    rule Ghasdelegatecall << HOMESTEAD >> => true
+    rule SCHEDFLAG << HOMESTEAD >> => SCHEDFLAG << FRONTIER >> requires SCHEDFLAG =/=K Ghasdelegatecall
 ```
 
 ### Tangerine Whistle Schedule

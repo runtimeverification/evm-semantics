@@ -2430,7 +2430,7 @@ After interpreting the strings representing programs as a `WordStack`, it should
     rule #dasmOpCode( 241,     _ ) => CALL
     rule #dasmOpCode( 242,     _ ) => CALLCODE
     rule #dasmOpCode( 243,     _ ) => RETURN
-    rule #dasmOpCode( 244, SCHED ) => DELEGATECALL requires SCHED =/=K FRONTIER
+    rule #dasmOpCode( 244, SCHED ) => DELEGATECALL requires Ghasdelegatecall << SCHED >>
     rule #dasmOpCode( 245, SCHED ) => CREATE2      requires Ghascreate2    << SCHED >>
     rule #dasmOpCode( 250, SCHED ) => STATICCALL   requires Ghasstaticcall << SCHED >>
     rule #dasmOpCode( 253, SCHED ) => REVERT       requires Ghasrevert     << SCHED >>
