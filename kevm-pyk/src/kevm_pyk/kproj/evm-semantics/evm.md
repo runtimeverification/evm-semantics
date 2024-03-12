@@ -299,7 +299,7 @@ OpCode Execution
          <k> (.K => #next [ #lookupOpCode(PGM, PCOUNT, SCHED) ]) ~> #execute ... </k>
          <program> PGM </program>
          <pc> PCOUNT </pc>
-         <schedule> SCHED </schedule>
+         <scheduleTuple> SCHED </scheduleTuple>
 ```
 
 ### Single Step
@@ -554,7 +554,7 @@ After executing a transaction, it's necessary to have the effect of the substate
 
     rule <k> #finalizeTx(false) ... </k>
          <useGas> true </useGas>
-         <schedule> SCHED </schedule>
+         <scheduleTuple> SCHED </scheduleTuple>
          <gas> GAVAIL => G*(GAVAIL, GLIMIT, REFUND, SCHED) </gas>
          <refund> REFUND => 0 </refund>
          <txPending> ListItem(MSGID:Int) ... </txPending>
@@ -660,7 +660,7 @@ After executing a transaction, it's necessary to have the effect of the substate
                              | #rewardOmmers ( JSONs ) [klabel(#rewardOmmers)]
  // --------------------------------------------------------------------------
     rule <k> #finalizeBlock => #rewardOmmers(OMMERS) ... </k>
-         <schedule> SCHED </schedule>
+         <scheduleTuple> SCHED </scheduleTuple>
          <ommerBlockHeaders> [ OMMERS ] </ommerBlockHeaders>
          <coinbase> MINER </coinbase>
          <account>
@@ -676,7 +676,7 @@ After executing a transaction, it's necessary to have the effect of the substate
 
     rule <k> #rewardOmmers(.JSONs) => .K ... </k>
     rule <k> #rewardOmmers([ _ , _ , OMMER , _ , _ , _ , _ , _ , OMMNUM , _ ] , REST) => #rewardOmmers(REST) ... </k>
-         <schedule> SCHED </schedule>
+         <scheduleTuple> SCHED </scheduleTuple>
          <coinbase> MINER </coinbase>
          <number> CURNUM </number>
          <account>
@@ -828,12 +828,12 @@ These are just used by the other operators for shuffling local execution state a
     rule <k> #transferFunds ACCTFROM ACCTTO VALUE => #transferFundsToNonExistent ACCTFROM ACCTTO VALUE ... </k> [owise]
 
     rule <k> #transferFundsToNonExistent ACCTFROM ACCTTO VALUE => #newAccount ACCTTO ~> #transferFunds ACCTFROM ACCTTO VALUE ... </k>
-         <schedule> SCHED </schedule>
+         <scheduleTuple> SCHED </scheduleTuple>
       requires ACCTFROM =/=K ACCTTO
        andBool (VALUE >Int 0 orBool notBool Gemptyisnonexistent << SCHED >>)
 
     rule <k> #transferFundsToNonExistent ACCTFROM ACCTTO 0 => .K ... </k>
-         <schedule> SCHED </schedule>
+         <scheduleTuple> SCHED </scheduleTuple>
       requires ACCTFROM =/=K ACCTTO
        andBool Gemptyisnonexistent << SCHED >>
 ```
@@ -1366,17 +1366,17 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
  // ---------------------------------------------
     rule <k> #accessStorage ACCT INDEX => .K ... </k>
          <accessedStorage> ... ACCT |-> (TS:Set => TS |Set SetItem(INDEX)) ... </accessedStorage>
-         <schedule> SCHED </schedule>
+         <scheduleTuple> SCHED </scheduleTuple>
          requires Ghasaccesslist << SCHED >>
          [preserves-definedness]
 
     rule <k> #accessStorage ACCT INDEX => .K ... </k>
          <accessedStorage> TS => TS[ACCT <- SetItem(INDEX)] </accessedStorage>
-         <schedule> SCHED </schedule>
+         <scheduleTuple> SCHED </scheduleTuple>
       requires Ghasaccesslist << SCHED >> andBool notBool ACCT in_keys(TS)
 
     rule <k> #accessStorage _ _ => .K ... </k>
-         <schedule> SCHED </schedule>
+         <scheduleTuple> SCHED </scheduleTuple>
       requires notBool Ghasaccesslist << SCHED >>
 
     syntax KItem ::= "#accessAccounts" Account
@@ -1545,7 +1545,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          ...
          </k>
          <useGas> USEGAS </useGas>
-         <schedule> SCHED </schedule>
+         <scheduleTuple> SCHED </scheduleTuple>
          <id> _ => ACCTTO </id>
          <gas> GAVAIL => #if USEGAS #then GCALL #else GAVAIL #fi </gas>
          <callGas> GCALL => #if USEGAS #then 0 #else GCALL #fi </callGas>
@@ -1594,12 +1594,12 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
           ~> #finishCodeDeposit ACCT OUT
          ...
          </k>
-         <schedule> SCHED </schedule>
+         <scheduleTuple> SCHED </scheduleTuple>
          <output> OUT => .Bytes </output>
       requires lengthBytes(OUT) <=Int maxCodeSize < SCHED > andBool #isValidCode(OUT, SCHED)
 
     rule <k> #mkCodeDeposit _ACCT => #popCallStack ~> #popWorldState ~> 0 ~> #push ... </k>
-         <schedule> SCHED </schedule>
+         <scheduleTuple> SCHED </scheduleTuple>
          <output> OUT => .Bytes </output>
       requires notBool ( lengthBytes(OUT) <=Int maxCodeSize < SCHED > andBool #isValidCode(OUT, SCHED) )
 
@@ -1652,7 +1652,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
            <nonce> NONCE </nonce>
            ...
          </account>
-         <schedule> SCHED </schedule>
+         <scheduleTuple> SCHED </scheduleTuple>
       requires #hasValidInitCode(MEMWIDTH, SCHED)
 
     rule [create-invalid]:
@@ -1674,7 +1674,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          </k>
          <id> ACCT </id>
          <localMem> LM </localMem>
-         <schedule> SCHED </schedule>
+         <scheduleTuple> SCHED </scheduleTuple>
       requires #hasValidInitCode(MEMWIDTH, SCHED)
 
     rule [create2-invalid]:
@@ -1904,7 +1904,7 @@ Overall Gas
     rule <k> #gas [ _ , _ ] => .K ...  </k> <useGas> false </useGas>
 
     rule <k> #gas [ OP ] => #gasExec(SCHED, OP) ~> #deductGas ... </k>
-         <schedule> SCHED </schedule>
+         <scheduleTuple> SCHED </scheduleTuple>
 
     rule <k> #memory [ OP , AOP ] => #memory(AOP, MU) ~> #deductMemory ... </k>
          <memoryUsed> MU </memoryUsed>
@@ -2011,7 +2011,7 @@ Access List Gas
     syntax InternalOp ::= "#access" "[" OpCode "," OpCode "]"
  // ---------------------------------------------------------
     rule <k> #access [ OP , AOP ] => #gasAccess(SCHED, AOP) ~> #deductGas ... </k>
-         <schedule> SCHED </schedule>
+         <scheduleTuple> SCHED </scheduleTuple>
       requires Ghasaccesslist << SCHED >> andBool #usesAccessList(OP)
 
     rule <k> #access [ _ , _ ] => .K ... </k> <schedule> _ </schedule> [owise]
@@ -2226,7 +2226,7 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
 
     syntax InternalOp ::= "#allocateCreateGas"
  // ------------------------------------------
-    rule <schedule> SCHED </schedule>
+    rule <scheduleTuple> SCHED </scheduleTuple>
          <k> #allocateCreateGas => .K ... </k>
          <gas>     GAVAIL => #if Gstaticcalldepth << SCHED >> #then 0      #else GAVAIL /Gas 64      #fi </gas>
          <callGas> _      => #if Gstaticcalldepth << SCHED >> #then GAVAIL #else #allBut64th(GAVAIL) #fi </callGas>
@@ -2256,7 +2256,7 @@ There are several helpers for calculating gas (most of them also specified in th
     syntax BExp ::= #accountNonexistent ( Int ) [klabel(#accountNonexistent)]
  // -------------------------------------------------------------------------
     rule <k> #accountNonexistent(ACCT) => #accountEmpty(CODE, NONCE, BAL) andBool Gemptyisnonexistent << SCHED >> ... </k>
-         <schedule> SCHED </schedule>
+         <scheduleTuple> SCHED </scheduleTuple>
          <account>
            <acctID>  ACCT  </acctID>
            <balance> BAL   </balance>

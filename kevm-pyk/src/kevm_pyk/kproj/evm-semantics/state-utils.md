@@ -422,7 +422,7 @@ The `"rlp"` key loads the block information.
               #else BFEE +Int minInt(TPF, TM -Int BFEE)
             #fi
          ]]
-         <schedule> SCHED </schedule>
+         <scheduleTuple> SCHED </scheduleTuple>
          <baseFee> BFEE </baseFee>
          <message>
            <msgID>         TXID   </msgID>
