@@ -20,7 +20,7 @@ requires "data.md"
 module SCHEDULE
     imports EVM-DATA
 
-    syntax Bool ::= ScheduleFlag "<<" Schedule ">>" [function, total]
+    syntax Bool ::= ScheduleFlag "<<" Schedule ">>" [function, total, private]
  // -----------------------------------------------------------------
 
     syntax ScheduleFlag ::= "Gselfdestructnewaccount" | "Gstaticcalldepth" | "Gemptyisnonexistent" | "Gzerovaluenewaccountgas"
@@ -37,7 +37,7 @@ module SCHEDULE
 A `ScheduleConst` is a constant determined by the fee schedule.
 
 ```k
-    syntax Int ::= ScheduleConst "<" Schedule ">" [function, total]
+    syntax Int ::= ScheduleConst "<" Schedule ">" [function, total, private]
  // ---------------------------------------------------------------
 
     syntax ScheduleConst ::= "Gzero"         | "Gbase"         | "Gverylow"      | "Glow"              | "Gmid"               | "Ghigh"            | "Gextcodesize"
