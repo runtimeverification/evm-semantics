@@ -27,9 +27,9 @@ module EVM-OPTIMIZATIONS
       <k>
         ( #next[ PUSHZERO ] => .K ) ...
       </k>
-      <schedule>
+      <scheduleTuple>
         SCHED
-      </schedule>
+      </scheduleTuple>
       <useGas>
         USEGAS
       </useGas>
@@ -62,9 +62,9 @@ module EVM-OPTIMIZATIONS
       <k>
         ( #next[ PUSH(N) ] => .K ) ...
       </k>
-      <schedule>
+      <scheduleTuple>
         SCHED
-      </schedule>
+      </scheduleTuple>
       <useGas>
         USEGAS
       </useGas>
@@ -100,9 +100,9 @@ module EVM-OPTIMIZATIONS
       <k>
         ( #next[ DUP(N) ] => .K ) ...
       </k>
-      <schedule>
+      <scheduleTuple>
         SCHED
-      </schedule>
+      </scheduleTuple>
       <useGas>
         USEGAS
       </useGas>
@@ -136,9 +136,9 @@ module EVM-OPTIMIZATIONS
       <k>
         ( #next[ SWAP(N) ] => .K ) ...
       </k>
-      <schedule>
+      <scheduleTuple>
         SCHED
-      </schedule>
+      </scheduleTuple>
       <useGas>
         USEGAS
       </useGas>
@@ -172,9 +172,9 @@ module EVM-OPTIMIZATIONS
       <k>
         ( #next[ ADD ] => .K ) ...
       </k>
-      <schedule>
+      <scheduleTuple>
         SCHED
-      </schedule>
+      </scheduleTuple>
       <useGas>
         USEGAS
       </useGas>
@@ -207,9 +207,9 @@ module EVM-OPTIMIZATIONS
       <k>
         ( #next[ SUB ] => .K ) ...
       </k>
-      <schedule>
+      <scheduleTuple>
         SCHED
-      </schedule>
+      </scheduleTuple>
       <useGas>
         USEGAS
       </useGas>
@@ -242,9 +242,9 @@ module EVM-OPTIMIZATIONS
       <k>
         ( #next[ AND ] => .K ) ...
       </k>
-      <schedule>
+      <scheduleTuple>
         SCHED
-      </schedule>
+      </scheduleTuple>
       <useGas>
         USEGAS
       </useGas>
@@ -277,9 +277,9 @@ module EVM-OPTIMIZATIONS
       <k>
         ( #next[ LT ] => .K ) ...
       </k>
-      <schedule>
+      <scheduleTuple>
         SCHED
-      </schedule>
+      </scheduleTuple>
       <useGas>
         USEGAS
       </useGas>
@@ -312,9 +312,9 @@ module EVM-OPTIMIZATIONS
       <k>
         ( #next[ GT ] => .K ) ...
       </k>
-      <schedule>
+      <scheduleTuple>
         SCHED
-      </schedule>
+      </scheduleTuple>
       <useGas>
         USEGAS
       </useGas>

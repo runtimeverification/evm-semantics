@@ -83,7 +83,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
     syntax EthereumCommand ::= loadTx ( Account ) [klabel(loadTx)]
  // --------------------------------------------------------------
     rule <k> loadTx(_) => #end EVMC_OUT_OF_GAS ... </k>
-         <schedule> SCHED </schedule>
+         <scheduleTuple> SCHED </scheduleTuple>
          <txPending> ListItem(TXID:Int) ... </txPending>
          <message>
            <msgID>      TXID     </msgID>
@@ -189,11 +189,11 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
                              | #loadAccessListAux ( Account , List ) [klabel(#loadAccessListAux)]
  // ---------------------------------------------------------------------------------------------
     rule <k> #loadAccessList ([ .JSONs ]) => .K ... </k>
-         <schedule> SCHED </schedule>
+         <scheduleTuple> SCHED </scheduleTuple>
       requires Ghasaccesslist << SCHED >>
 
     rule <k> #loadAccessList ([ _ ]) => .K ... </k>
-         <schedule> SCHED </schedule>
+         <scheduleTuple> SCHED </scheduleTuple>
       requires notBool Ghasaccesslist << SCHED >>
 
     rule <k> #loadAccessList ([[ACCT, [STRG:JSONs]], REST])
@@ -201,7 +201,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
           ~> #loadAccessList ([REST])
          ...
          </k>
-         <schedule> SCHED </schedule>
+         <scheduleTuple> SCHED </scheduleTuple>
       requires Ghasaccesslist << SCHED >>
 
     rule <k> #loadAccessListAux (ACCT, (ListItem(STRGK) STRGKS))
@@ -209,11 +209,11 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
           ~> #loadAccessListAux (ACCT, STRGKS)
          ...
          </k>
-         <schedule> SCHED </schedule>
+         <scheduleTuple> SCHED </scheduleTuple>
          <callGas> GLIMIT => GLIMIT -Int Gaccessliststoragekey < SCHED > </callGas>
 
     rule <k> #loadAccessListAux (ACCT, .List) => #accessAccounts ACCT ... </k>
-         <schedule> SCHED </schedule>
+         <scheduleTuple> SCHED </scheduleTuple>
          <callGas> GLIMIT => GLIMIT -Int Gaccesslistaddress < SCHED > </callGas>
 ```
 
