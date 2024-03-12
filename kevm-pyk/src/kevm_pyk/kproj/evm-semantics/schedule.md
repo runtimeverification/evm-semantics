@@ -51,6 +51,51 @@ A `ScheduleConst` is a constant determined by the fee schedule.
  // ----------------------------------------------------------------------------------------------------------------------
 ```
 
+### Schedule Tuple
+
+A `ScheduleTuple` is a tuple containing all of the fee schedule values for a particular `Schedule`.
+
+```k
+    syntax ScheduleTuple ::= schedule(
+        Gzero: Int,         Gbase: Int,         Gverylow: Int,     Glow: Int,              Gmid: Int,               Ghigh: Int,            Gextcodesize: Int,
+        Gextcodecopy: Int,  Gbalance: Int,      Gsload: Int,       Gjumpdest: Int,         Gsstoreset: Int,         Gsstorereset: Int,     Rsstoreclear: Int,
+        Rselfdestruct: Int, Gselfdestruct: Int, Gcreate: Int,      Gcodedeposit: Int,      Gcall: Int,              Gcallvalue: Int,       Gcallstipend: Int,
+        Gnewaccount: Int,   Gexp: Int,          Gexpbyte: Int,     Gmemory: Int,           Gtxcreate: Int,          Gtxdatazero: Int,      Gtxdatanonzero: Int,
+        Gtransaction: Int,  Glog: Int,          Glogdata: Int,     Glogtopic: Int,         Gsha3: Int,              Gsha3word: Int,        Gcopy: Int,
+        Gblockhash: Int,    Gquadcoeff: Int,    maxCodeSize: Int,  Rb: Int,                Gquaddivisor: Int,       Gecadd: Int,           Gecmul: Int,
+        Gecpairconst: Int,  Gecpaircoeff: Int,  Gfround: Int,      Gcoldsload: Int,        Gcoldaccountaccess: Int, Gwarmstorageread: Int, Gaccesslistaddress: Int,
+        Gaccessliststoragekey: Int,             Rmaxquotient: Int, Ginitcodewordcost: Int, maxInitCodeSize: Int,
+
+        Gselfdestructnewaccount: Bool, Gstaticcalldepth: Bool, Gemptyisnonexistent: Bool, Gzerovaluenewaccountgas: Bool,
+        Ghasrevert: Bool,              Ghasreturndata: Bool,   Ghasstaticcall: Bool,      Ghasshift: Bool,
+        Ghasdirtysstore: Bool,         Ghascreate2: Bool,      Ghasextcodehash: Bool,     Ghasselfbalance: Bool,
+        Ghassstorestipend: Bool,       Ghaschainid: Bool,      Ghasaccesslist: Bool,      Ghasbasefee: Bool,
+        Ghasrejectedfirstbyte: Bool,   Ghasprevrandao: Bool,   Ghasmaxinitcodesize: Bool, Ghaspushzero: Bool,
+        Ghaswarmcoinbase: Bool,        Ghasdelegatecall: Bool
+    ) [klabel(schedule), symbol, smtlib(schedule)]
+
+    syntax ScheduleTuple ::= getSchedule(Schedule) [function, total]
+ // ----------------------------------------------------------------
+
+    rule getSchedule(S) => schedule(
+        Gzero < S >,         Gbase < S >,         Gverylow < S >,     Glow < S >,              Gmid < S >,               Ghigh < S >,            Gextcodesize < S >,
+        Gextcodecopy < S >,  Gbalance < S >,      Gsload < S >,       Gjumpdest < S >,         Gsstoreset < S >,         Gsstorereset < S >,     Rsstoreclear < S >,
+        Rselfdestruct < S >, Gselfdestruct < S >, Gcreate < S >,      Gcodedeposit < S >,      Gcall < S >,              Gcallvalue < S >,       Gcallstipend < S >,
+        Gnewaccount < S >,   Gexp < S >,          Gexpbyte < S >,     Gmemory < S >,           Gtxcreate < S >,          Gtxdatazero < S >,      Gtxdatanonzero < S >,
+        Gtransaction < S >,  Glog < S >,          Glogdata < S >,     Glogtopic < S >,         Gsha3 < S >,              Gsha3word < S >,        Gcopy < S >,
+        Gblockhash < S >,    Gquadcoeff < S >,    maxCodeSize < S >,  Rb < S >,                Gquaddivisor < S >,       Gecadd < S >,           Gecmul < S >,
+        Gecpairconst < S >,  Gecpaircoeff < S >,  Gfround < S >,      Gcoldsload < S >,        Gcoldaccountaccess < S >, Gwarmstorageread < S >, Gaccesslistaddress < S >,
+        Gaccessliststoragekey < S >,              Rmaxquotient < S >, Ginitcodewordcost < S >, maxInitCodeSize < S >,
+
+        Gselfdestructnewaccount << S >>, Gstaticcalldepth << S >>, Gemptyisnonexistent << S >>, Gzerovaluenewaccountgas << S >>,
+        Ghasrevert << S >>,              Ghasreturndata << S >>,   Ghasstaticcall << S >>,      Ghasshift << S >>,
+        Ghasdirtysstore << S >>,         Ghascreate2 << S >>,      Ghasextcodehash << S >>,     Ghasselfbalance << S >>,
+        Ghassstorestipend << S >>,       Ghaschainid << S >>,      Ghasaccesslist << S >>,      Ghasbasefee << S >>,
+        Ghasrejectedfirstbyte << S >>,   Ghasprevrandao << S >>,   Ghasmaxinitcodesize << S >>, Ghaspushzero << S >>,
+        Ghaswarmcoinbase << S >>,        Ghasdelegatecall << S >>
+    )
+```
+
 ### Frontier Schedule
 
 ```k
