@@ -836,7 +836,7 @@ xdg-base-dirs = "^6.0.1"
 type = "git"
 url = "https://github.com/runtimeverification/pyk.git"
 reference = "noah/options-refactor"
-resolved_reference = "7ec4f5fab23e27c157f23ac45222652cdf8c4b5c"
+resolved_reference = "e3d14ceb063263c7fc507b8cc0a0e2c3ff4ae32a"
 
 [[package]]
 name = "pyperclip"
