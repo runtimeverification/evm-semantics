@@ -65,7 +65,7 @@ class KEVMCLIArgs(KCLIArgs):
             '--no-always-check-subsumption',
             dest='always-check_subsumption',
             action='store_false',
-            help='Do not check subsumption on non-terminal nodes.',
+            help='Do not check subsumption on non-terminal nodes (default).',
         )
         args.add_argument(
             '--fast-check-subsumption',
@@ -266,7 +266,7 @@ class KEVMCLIArgs(KCLIArgs):
             dest='break_on_calls',
             default=True,
             action='store_false',
-            help='Do not store a node for every EVM call made.',
+            help='Do not store a node for every EVM call made (default).',
         )
         args.add_argument(
             '--break-on-storage',
@@ -301,7 +301,7 @@ class KEVMCLIArgs(KCLIArgs):
             dest='failure_info',
             default=True,
             action='store_true',
-            help='Show failure summary for all failing tests',
+            help='Show failure summary for all failing tests (default)',
         )
         args.add_argument(
             '--no-failure-information',
@@ -320,7 +320,7 @@ class KEVMCLIArgs(KCLIArgs):
             dest='counterexample_info',
             default=True,
             action='store_true',
-            help='Show models for failing nodes.',
+            help='Show models for failing nodes (default)',
         )
         args.add_argument(
             '--no-counterexample-information',
@@ -333,7 +333,7 @@ class KEVMCLIArgs(KCLIArgs):
             dest='fail_fast',
             default=True,
             action='store_true',
-            help='Stop execution on other branches if a failing node is detected.',
+            help='Stop execution on other branches if a failing node is detected (default).',
         )
         args.add_argument(
             '--no-fail-fast',
