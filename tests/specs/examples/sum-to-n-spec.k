@@ -35,6 +35,7 @@ module SUM-TO-N-SPEC
     claim <k> #execute ... </k>
           <mode> NORMAL </mode>
           <schedule> ISTANBUL </schedule>
+          <scheduleTuple> getSchedule(ISTANBUL) </scheduleTuple>
           <useGas> true </useGas>
           <callStack> .List </callStack>
           <memoryUsed> 0   </memoryUsed>
@@ -53,6 +54,7 @@ module SUM-TO-N-SPEC
     claim <k> #execute ... </k>
           <mode> NORMAL </mode>
           <schedule> ISTANBUL </schedule>
+          <scheduleTuple> getSchedule(ISTANBUL) </scheduleTuple>
           <useGas> true </useGas>
           <callStack> .List </callStack>
           <memoryUsed> 0   </memoryUsed>
