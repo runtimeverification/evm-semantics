@@ -703,7 +703,6 @@ def exec_run(
 
     target_fqn = f'evm-semantics.{target}'
 
-
     kevm = KEVM(kdist.get(target_fqn), use_directory=save_directory)
 
     try:
