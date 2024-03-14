@@ -11,7 +11,7 @@
     poetry2nix.follows = "pyk/poetry2nix";
     blockchain-k-plugin = {
       url =
-        "github:runtimeverification/blockchain-k-plugin/f27c5ec4861272c1ad4496bc6aab9f47dd6d473a";
+        "github:runtimeverification/blockchain-k-plugin/b4081b228d9023406543bb16128bdd63df67d9b3";
       inputs.flake-utils.follows = "k-framework/flake-utils";
       inputs.nixpkgs.follows = "k-framework/nixpkgs";
     };
@@ -51,6 +51,7 @@
           procps
           python310-pyk
           time
+          secp256k1
         ] ++ lib.optional (!stdenv.isDarwin) elfutils;
 
       overlay = final: prev:

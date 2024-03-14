@@ -31,21 +31,20 @@
           "k-framework",
           "nixpkgs"
         ],
-        "secp256k1": "secp256k1",
         "xbyak": "xbyak"
       },
       "locked": {
-        "lastModified": 1699442461,
-        "narHash": "sha256-atipDHnmcV1M9C0zRPnqno1rDFxs/dZ4em0YgcUGQYw=",
+        "lastModified": 1710406806,
+        "narHash": "sha256-MRY5K/radsnxmcqfOB8AxB82r9QPic0azHh31IhsCB0=",
         "owner": "runtimeverification",
         "repo": "blockchain-k-plugin",
-        "rev": "f27c5ec4861272c1ad4496bc6aab9f47dd6d473a",
+        "rev": "b4081b228d9023406543bb16128bdd63df67d9b3",
         "type": "github"
       },
       "original": {
         "owner": "runtimeverification",
         "repo": "blockchain-k-plugin",
-        "rev": "f27c5ec4861272c1ad4496bc6aab9f47dd6d473a",
+        "rev": "b4081b228d9023406543bb16128bdd63df67d9b3",
         "type": "github"
       }
     },
@@ -644,23 +643,6 @@
       "original": {
         "owner": "runtimeverification",
         "repo": "rv-nix-tools",
-        "type": "github"
-      }
-    },
-    "secp256k1": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1502408521,
-        "narHash": "sha256-PyqNZGER9VypH35S/aU4EBeepieI3BGXrYsJ141os24=",
-        "owner": "bitcoin-core",
-        "repo": "secp256k1",
-        "rev": "f532bdc9f77f7bbf7e93faabfbe9c483f0a9f75f",
-        "type": "github"
-      },
-      "original": {
-        "owner": "bitcoin-core",
-        "repo": "secp256k1",
-        "rev": "f532bdc9f77f7bbf7e93faabfbe9c483f0a9f75f",
         "type": "github"
       }
     },
