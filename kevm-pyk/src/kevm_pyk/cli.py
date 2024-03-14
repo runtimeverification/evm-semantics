@@ -59,7 +59,7 @@ class KEVMCLIArgs(KCLIArgs):
             dest='always-check_subsumption',
             default=True,
             action='store_true',
-            help='Check subsumption even on non-terminal nodes.',
+            help='Check subsumption even on non-terminal nodes (experimental).',
         )
         args.add_argument(
             '--no-always-check-subsumption',
@@ -72,7 +72,7 @@ class KEVMCLIArgs(KCLIArgs):
             dest='fast_check_subsumption',
             default=False,
             action='store_true',
-            help='Use fast-check on k-cell to determine subsumption.',
+            help='Use fast-check on k-cell to determine subsumption (experimental).',
         )
         return args
 
