@@ -50,6 +50,7 @@ module STATE-UTILS
          <touchedAccounts>  _ => .Set       </touchedAccounts>
          <accessedAccounts> _ => .Set       </accessedAccounts>
          <createdAccounts>  _ => .Set       </createdAccounts>
+         <accountsState>    _ => .Bag       </accountsState>
 
     syntax EthereumCommand ::= "clearBLOCK"
  // ---------------------------------------

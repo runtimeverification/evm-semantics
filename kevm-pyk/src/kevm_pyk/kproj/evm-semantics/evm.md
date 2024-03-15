@@ -77,6 +77,13 @@ In the comments next to each cell, we've marked which component of the YellowPap
               <callDepth> 0     </callDepth>
             </callState>
 
+            <accountsState>
+              <accountState multiplicity="*" type="Map">
+                <acctStateID> 0    </acctStateID>
+                <tstorage>    .Map </tstorage>
+              </accountState>
+            </accountsState>
+
             // A_* (execution substate)
             <substate>
               <selfDestruct>     .Set  </selfDestruct>            // A_s
@@ -229,21 +236,23 @@ The `interimStates` cell stores a list of previous world states.
 -   `#dropWorldState` removes the top element of the `interimStates`.
 
 ```k
-    syntax Accounts ::= "{" AccountsCell "|" SubstateCell "}"
- // ---------------------------------------------------------
+    syntax Accounts ::= "{" AccountsCell "|" AccountsStateCell "|" SubstateCell "}"
+ // -------------------------------------------------------------------------------
 
     syntax InternalOp ::= "#pushWorldState"
  // ---------------------------------------
     rule <k> #pushWorldState => .K ... </k>
-         <interimStates> STATES => ListItem({ <accounts> ACCTDATA </accounts> | <substate> SUBSTATE </substate> }) STATES </interimStates>
+         <interimStates> STATES => ListItem({ <accounts> ACCTDATA </accounts> | <accountsState> TSTORAGE </accountsState> | <substate> SUBSTATE </substate> }) STATES </interimStates>
          <accounts> ACCTDATA </accounts>
+         <accountsState> TSTORAGE </accountsState>
          <substate> SUBSTATE </substate>
 
     syntax InternalOp ::= "#popWorldState"
  // --------------------------------------
     rule <k> #popWorldState => .K ... </k>
-         <interimStates> ListItem({ <accounts> ACCTDATA </accounts> | <substate> SUBSTATE </substate> }) REST => REST </interimStates>
+         <interimStates> ListItem({ <accounts> ACCTDATA </accounts> | <accountsState> TSTORAGE </accountsState> | <substate> SUBSTATE </substate> }) REST => REST </interimStates>
          <accounts> _ => ACCTDATA </accounts>
+         <accountsState> _ => TSTORAGE </accountsState>
          <substate> _ => SUBSTATE </substate>
 
     syntax InternalOp ::= "#dropWorldState"
@@ -385,6 +394,7 @@ The `#next [_]` operator initiates execution by:
     rule #stackAdded(MSTORE)         => 0
     rule #stackAdded(MSTORE8)        => 0
     rule #stackAdded(SSTORE)         => 0
+    rule #stackAdded(TSTORE)         => 0
     rule #stackAdded(JUMP)           => 0
     rule #stackAdded(JUMPI)          => 0
     rule #stackAdded(JUMPDEST)       => 0
@@ -415,6 +425,7 @@ The `#next [_]` operator initiates execution by:
     rule #changesState(CALL         , _ : _ : VALUE : _) => true  requires VALUE =/=Int 0
     rule #changesState(LOG(_)       , _)                 => true
     rule #changesState(SSTORE       , _)                 => true
+    rule #changesState(TSTORE       , _)                 => true
     rule #changesState(CREATE       , _)                 => true
     rule #changesState(CREATE2      , _)                 => true
     rule #changesState(SELFDESTRUCT , _)                 => true
@@ -1230,6 +1241,62 @@ These rules reach into the network state and load/store from account storage:
            ...
          </account>
       [preserves-definedness]
+```
+
+### Transient Storage Operations
+
+These rules manipulate the transient storage of an account. Transient storage is preserved throughout a transaction but does not persist
+between transactions on the network.
+
+```k
+    syntax UnStackOp ::= "TLOAD"
+ // ----------------------------
+    rule [tload]:
+         <k> TLOAD INDEX => #lookup(TSTORAGE, INDEX) ~> #push ... </k>
+         <id> ACCT </id>
+         <accountState>
+           <acctStateID> ACCT </acctStateID>
+           <tstorage> TSTORAGE </tstorage>
+           ...
+         </accountState>
+
+    rule <k> TLOAD _ ... </k>
+         <id> ACCT </id>
+         <accountsState>
+           ( .Bag
+              =>
+             <accountState>
+               <accountStateID> ACCT </accountStateID>
+               <tstorage> .Map </tstorage>
+             </accountState>
+           )
+           ...
+         </accountsState> [owise]
+
+    syntax BinStackOp ::= "TSTORE"
+ // ------------------------------
+    rule [tstore]:
+         <k> TSTORE INDEX NEW => .K ... </k>
+         <id> ACCT </id>
+         <accountState>
+           <acctStateID> ACCT </acctStateID>
+           <tstorage> TSTORAGE => TSTORAGE [ INDEX <- NEW ] </tstorage>
+           ...
+         </accountState>
+      [preserves-definedness]
+
+    rule <k> TSTORE _ _ ... </k>
+         <id> ACCT </id>
+         <accountsState>
+           ( .Bag
+              =>
+             <accountState>
+               <accountStateID> ACCT </accountStateID>
+               <tstorage> .Map </tstorage>
+             </accountState>
+           )
+           ...
+         </accountsState> [owise]
 ```
 
 ### Call Operations
@@ -2072,6 +2139,8 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
       requires Ghassstorestipend(SCHED)
        andBool GAVAIL <=Gas Gcallstipend(SCHED)
 
+    rule <k> #gasExec(SCHED, TSTORE _ _) => Gsload(SCHED) ... </k>
+
     rule <k> #gasExec(SCHED, EXP _ W1) => Gexp(SCHED) ... </k>                                                      requires W1 <=Int 0
     rule <k> #gasExec(SCHED, EXP _ W1) => Gexp(SCHED) +Int (Gexpbyte(SCHED) *Int (1 +Int (log256Int(W1)))) ... </k> requires 0 <Int W1 [preserves-definedness]
 
@@ -2144,6 +2213,7 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
     rule <k> #gasExec(SCHED, SLOAD INDEX) => Csload(SCHED, #inStorage(TS, ACCT, INDEX)) ... </k>
          <id> ACCT </id>
          <accessedStorage> TS </accessedStorage>
+    rule <k> #gasExec(SCHED, TLOAD INDEX) => Gwarmstorageread(SCHED) ... </k>
 
     // Wzero
     rule <k> #gasExec(SCHED, STOP)       => Gzero(SCHED) ... </k>
@@ -2373,6 +2443,8 @@ After interpreting the strings representing programs as a `WordStack`, it should
     rule #dasmOpCode(  89,     _ ) => MSIZE
     rule #dasmOpCode(  90,     _ ) => GAS
     rule #dasmOpCode(  91,     _ ) => JUMPDEST
+    rule #dasmOpCode(  92, SCHED ) => TLOAD    requires Ghaststorage(SCHED)
+    rule #dasmOpCode(  93, SCHED ) => TSTORE   requires Ghaststorage(SCHED)
     rule #dasmOpCode(  94, SCHED ) => MCOPY    requires Ghasmcopy   (SCHED)
     rule #dasmOpCode(  95, SCHED ) => PUSHZERO requires Ghaspushzero(SCHED)
     rule #dasmOpCode(  96,     _ ) => PUSH(1)
