@@ -51,7 +51,6 @@
           procps
           python310-pyk
           time
-          secp256k1
         ] ++ lib.optional (!stdenv.isDarwin) elfutils;
 
       overlay = final: prev:
@@ -69,6 +68,7 @@
             version = self.rev or "dirty";
             buildInputs = buildInputs final ++ [ final.kevm-pyk ];
             nativeBuildInputs = [ prev.makeWrapper ];
+            propagatedBuildInputs = [ final.secp256k1 ];
 
             src = prev.stdenv.mkDerivation {
               name = "kevm-${self.rev or "dirty"}-src";
