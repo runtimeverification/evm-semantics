@@ -19,6 +19,9 @@ module TEST-OWNERUPONLYTEST-TESTINCREMENTASOWNER-0-SPEC
            <schedule>
              SHANGHAI
            </schedule>
+           <scheduleTuple>
+             getSchedule(SHANGHAI)
+           </scheduleTuple>
            <useGas>
              true
            </useGas>
@@ -321,6 +324,9 @@ module TEST-OWNERUPONLYTEST-TESTINCREMENTASOWNER-0-SPEC
            <schedule>
              SHANGHAI
            </schedule>
+           <scheduleTuple>
+             getSchedule(SHANGHAI)
+           </scheduleTuple>
            <useGas>
              true
            </useGas>
