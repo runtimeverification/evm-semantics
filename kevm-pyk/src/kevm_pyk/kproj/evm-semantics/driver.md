@@ -125,6 +125,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          </account>
          <accessedAccounts> _ => #if Ghaswarmcoinbase(SCHEDT) #then SetItem(MINER) #else .Set #fi </accessedAccounts>
          <touchedAccounts> _ => SetItem(MINER) </touchedAccounts>
+         <createdAccounts> _ => SetItem(#newAddr(ACCTFROM, NONCE)) </createdAccounts>
       requires #hasValidInitCode(lengthBytes(CODE), SCHEDT)
 
     rule <k> loadTx(ACCTFROM)
@@ -159,6 +160,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          </account>
          <accessedAccounts> _ => #if Ghaswarmcoinbase(SCHEDT) #then SetItem(MINER) #else .Set #fi </accessedAccounts>
          <touchedAccounts> _ => SetItem(MINER) </touchedAccounts>
+         <createdAccounts> _ => .Set </createdAccounts>
       requires ACCTTO =/=K .Account
 
     syntax EthereumCommand ::= "#finishTx"

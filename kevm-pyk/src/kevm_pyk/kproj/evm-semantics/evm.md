@@ -53,6 +53,7 @@ In the comments next to each cell, we've marked which component of the YellowPap
             <callStack>       .List       </callStack>
             <interimStates>   .List       </interimStates>
             <touchedAccounts> .Set        </touchedAccounts>
+            <createdAccounts> .Set        </createdAccounts>
 
             <callState>
               <program>   .Bytes </program>
@@ -1544,6 +1545,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
           => #touchAccounts ACCTFROM ACCTTO ~> #accessAccounts ACCTFROM ACCTTO ~> #loadProgram INITCODE ~> #initVM ~> #execute
          ...
          </k>
+         <createdAccounts> ACCTS => ACCTS |Set SetItem(ACCTTO) </createdAccounts>
          <useGas> USEGAS </useGas>
          <scheduleTuple> SCHED </scheduleTuple>
          <id> _ => ACCTTO </id>
@@ -1689,24 +1691,29 @@ Self destructing to yourself, unlike a regular transfer, destroys the balance in
  // -----------------------------------
     rule <k> SELFDESTRUCT ACCTTO => #touchAccounts ACCT ACCTTO ~> #accessAccounts ACCTTO ~> #transferFunds ACCT ACCTTO BALFROM ~> #end EVMC_SUCCESS ... </k>
          <id> ACCT </id>
-         <selfDestruct> SDS => SDS |Set SetItem(ACCT) </selfDestruct>
+         <selfDestruct> SDS => #if notBool ACCT in ACCTS andBool Gselfdestructkeepsstate(SCHED) #then SDS #else SDS |Set SetItem(ACCT) #fi </selfDestruct>
+         <createdAccounts> ACCTS </createdAccounts>
+         <scheduleTuple> SCHED </scheduleTuple>
          <account>
            <acctID> ACCT </acctID>
            <balance> BALFROM </balance>
            ...
          </account>
          <output> _ => .Bytes </output>
-      requires ACCT =/=Int ACCTTO
+      requires ACCT =/=Int ACCTTO orBool (notBool ACCT in ACCTS andBool Gselfdestructkeepsstate(SCHED))
 
     rule <k> SELFDESTRUCT ACCT => #touchAccounts ACCT ~> #accessAccounts ACCT ~> #end EVMC_SUCCESS ... </k>
          <id> ACCT </id>
          <selfDestruct> SDS => SDS |Set SetItem(ACCT) </selfDestruct>
+         <createdAccounts> ACCTS </createdAccounts>
+         <scheduleTuple> SCHED </scheduleTuple>
          <account>
            <acctID> ACCT </acctID>
            <balance> _ => 0 </balance>
            ...
          </account>
          <output> _ => .Bytes </output>
+      requires ACCT in ACCTS orBool notBool Gselfdestructkeepsstate(SCHED)
 ```
 
 Precompiled Contracts

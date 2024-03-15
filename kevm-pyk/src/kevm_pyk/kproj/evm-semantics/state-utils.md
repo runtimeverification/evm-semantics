@@ -49,6 +49,7 @@ module STATE-UTILS
          <origin>           _ => .Account   </origin>
          <touchedAccounts>  _ => .Set       </touchedAccounts>
          <accessedAccounts> _ => .Set       </accessedAccounts>
+         <createdAccounts>  _ => .Set       </createdAccounts>
 
     syntax EthereumCommand ::= "clearBLOCK"
  // ---------------------------------------
