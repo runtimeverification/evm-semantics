@@ -28,8 +28,8 @@ module SCHEDULE
                           | "Ghasdirtysstore"         | "Ghascreate2"      | "Ghasextcodehash"     | "Ghasselfbalance"
                           | "Ghassstorestipend"       | "Ghaschainid"      | "Ghasaccesslist"      | "Ghasbasefee"
                           | "Ghasrejectedfirstbyte"   | "Ghasprevrandao"   | "Ghasmaxinitcodesize" | "Ghaspushzero"
-                          | "Ghaswarmcoinbase"        | "Ghasdelegatecall"
- // ----------------------------------------------------------------------
+                          | "Ghaswarmcoinbase"        | "Ghasdelegatecall" | "Ghasmcopy"
+ // ------------------------------------------------------------------------------------
 ```
 
 ### Schedule Constants
@@ -71,7 +71,7 @@ A `ScheduleTuple` is a tuple containing all of the fee schedule values for a par
         Ghasdirtysstore: Bool,         Ghascreate2: Bool,      Ghasextcodehash: Bool,     Ghasselfbalance: Bool,
         Ghassstorestipend: Bool,       Ghaschainid: Bool,      Ghasaccesslist: Bool,      Ghasbasefee: Bool,
         Ghasrejectedfirstbyte: Bool,   Ghasprevrandao: Bool,   Ghasmaxinitcodesize: Bool, Ghaspushzero: Bool,
-        Ghaswarmcoinbase: Bool,        Ghasdelegatecall: Bool
+        Ghaswarmcoinbase: Bool,        Ghasdelegatecall: Bool, Ghasmcopy: Bool
     ) [klabel(schedule), symbol, smtlib(schedule)]
 
     syntax ScheduleTuple ::= getSchedule(Schedule) [function, total]
@@ -92,7 +92,7 @@ A `ScheduleTuple` is a tuple containing all of the fee schedule values for a par
         Ghasdirtysstore << S >>,         Ghascreate2 << S >>,      Ghasextcodehash << S >>,     Ghasselfbalance << S >>,
         Ghassstorestipend << S >>,       Ghaschainid << S >>,      Ghasaccesslist << S >>,      Ghasbasefee << S >>,
         Ghasrejectedfirstbyte << S >>,   Ghasprevrandao << S >>,   Ghasmaxinitcodesize << S >>, Ghaspushzero << S >>,
-        Ghaswarmcoinbase << S >>,        Ghasdelegatecall << S >>
+        Ghaswarmcoinbase << S >>,        Ghasdelegatecall << S >>, Ghasmcopy << S >>
     )
 ```
 
@@ -191,6 +191,7 @@ A `ScheduleTuple` is a tuple containing all of the fee schedule values for a par
     rule Ghaspushzero            << FRONTIER >> => false
     rule Ghaswarmcoinbase        << FRONTIER >> => false
     rule Ghasdelegatecall        << FRONTIER >> => false
+    rule Ghasmcopy               << FRONTIER >> => false
 ```
 
 ### Homestead Schedule
@@ -408,6 +409,19 @@ A `ScheduleTuple` is a tuple containing all of the fee schedule values for a par
       requires notBool ( SCHEDFLAG ==K Ghasmaxinitcodesize
                   orBool SCHEDFLAG ==K Ghaspushzero
                   orBool SCHEDFLAG ==K Ghaswarmcoinbase
+                       )
+```
+
+### Cancuin Schedule
+
+```k
+    syntax Schedule ::= "CANCUN" [klabel(CANCUN_EVM), symbol, smtlib(schedule_CANCUN)]
+ // ----------------------------------------------------------------------------------
+    rule SCHEDCONST < CANCUN > => SCHEDCONST < SHANGHAI >
+
+    rule Ghasmcopy << CANCUN >> => true
+    rule SCHEDFLAG << CANCUN >> => SCHEDFLAG << SHANGHAI >>
+      requires notBool ( SCHEDFLAG ==K Ghasmcopy
                        )
 endmodule
 ```

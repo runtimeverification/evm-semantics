@@ -380,6 +380,7 @@ The `#next [_]` operator initiates execution by:
     rule #stackAdded(RETURNDATACOPY) => 0
     rule #stackAdded(CODECOPY)       => 0
     rule #stackAdded(EXTCODECOPY)    => 0
+    rule #stackAdded(MCOPY)          => 0
     rule #stackAdded(POP)            => 0
     rule #stackAdded(MSTORE)         => 0
     rule #stackAdded(MSTORE8)        => 0
@@ -892,6 +893,11 @@ These operations are getters/setters of the local execution memory.
 
     rule <k> MSTORE8 INDEX VALUE => .K ... </k>
          <localMem> LM => #write(LM, INDEX, (VALUE modInt 256)) </localMem>
+
+    syntax TernStackOp ::= "MCOPY"
+ // ------------------------------
+    rule <k> MCOPY DESTSTART SRCSTART WIDTH => .K ... </k>
+         <localMem> LM => LM [ DESTSTART := #range(LM, SRCSTART, WIDTH) ] </localMem>
 ```
 
 ### Expressions
@@ -1967,6 +1973,7 @@ In the YellowPaper, each opcode is defined to consume zero gas unless specified 
     rule #memory ( EXTCODECOPY _ START _ WIDTH  , MU ) => #memoryUsageUpdate(MU, START, WIDTH)
     rule #memory ( CALLDATACOPY START _ WIDTH   , MU ) => #memoryUsageUpdate(MU, START, WIDTH)
     rule #memory ( RETURNDATACOPY START _ WIDTH , MU ) => #memoryUsageUpdate(MU, START, WIDTH)
+    rule #memory ( MCOPY START _ WIDTH          , MU ) => #memoryUsageUpdate(MU, START, WIDTH)
 
     rule #memory ( CREATE  _ START WIDTH   , MU ) => #memoryUsageUpdate(MU, START, WIDTH)
     rule #memory ( CREATE2 _ START WIDTH _ , MU ) => #memoryUsageUpdate(MU, START, WIDTH)
@@ -1991,6 +1998,7 @@ In the YellowPaper, each opcode is defined to consume zero gas unless specified 
     rule #usesMemory(EXTCODECOPY)    => true
     rule #usesMemory(CALLDATACOPY)   => true
     rule #usesMemory(RETURNDATACOPY) => true
+    rule #usesMemory(MCOPY)          => true
     rule #usesMemory(CREATE)         => true
     rule #usesMemory(CREATE2)        => true
     rule #usesMemory(RETURN)         => true
@@ -2070,6 +2078,7 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
     rule <k> #gasExec(SCHED, CALLDATACOPY    _ _ WIDTH) => Gverylow(SCHED) +Int (Gcopy(SCHED) *Int (WIDTH up/Int 32)) ... </k>
     rule <k> #gasExec(SCHED, RETURNDATACOPY  _ _ WIDTH) => Gverylow(SCHED) +Int (Gcopy(SCHED) *Int (WIDTH up/Int 32)) ... </k>
     rule <k> #gasExec(SCHED, CODECOPY        _ _ WIDTH) => Gverylow(SCHED) +Int (Gcopy(SCHED) *Int (WIDTH up/Int 32)) ... </k>
+    rule <k> #gasExec(SCHED, MCOPY           _ _ WIDTH) => Gverylow(SCHED) +Int (Gcopy(SCHED) *Int (WIDTH up/Int 32)) ... </k>
 
     rule <k> #gasExec(SCHED, LOG(N) _ WIDTH) => (Glog(SCHED) +Int (Glogdata(SCHED) *Int WIDTH) +Int (N *Int Glogtopic(SCHED))) ... </k>
 
@@ -2364,6 +2373,7 @@ After interpreting the strings representing programs as a `WordStack`, it should
     rule #dasmOpCode(  89,     _ ) => MSIZE
     rule #dasmOpCode(  90,     _ ) => GAS
     rule #dasmOpCode(  91,     _ ) => JUMPDEST
+    rule #dasmOpCode(  94, SCHED ) => MCOPY    requires Ghasmcopy   (SCHED)
     rule #dasmOpCode(  95, SCHED ) => PUSHZERO requires Ghaspushzero(SCHED)
     rule #dasmOpCode(  96,     _ ) => PUSH(1)
     rule #dasmOpCode(  97,     _ ) => PUSH(2)
