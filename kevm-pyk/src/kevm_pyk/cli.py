@@ -59,13 +59,13 @@ class KEVMCLIArgs(KCLIArgs):
             dest='always-check_subsumption',
             default=True,
             action='store_true',
-            help='Check subsumption even on non-terminal nodes (experimental).',
+            help='Check subsumption even on non-terminal nodes (default)(experimental).',
         )
         args.add_argument(
             '--no-always-check-subsumption',
             dest='always-check_subsumption',
             action='store_false',
-            help='Do not check subsumption on non-terminal nodes (default).',
+            help='Do not check subsumption on non-terminal nodes (experimental).',
         )
         args.add_argument(
             '--fast-check-subsumption',
