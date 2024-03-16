@@ -31,6 +31,7 @@ def node_id_like(s: str) -> NodeIdLike:
     except ValueError:
         return s
 
+class KOptions()
 
 class KEVMCLIArgs(KCLIArgs):
     @cached_property

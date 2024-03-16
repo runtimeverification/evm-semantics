@@ -86,9 +86,30 @@ def main() -> None:
 
 # Command implementation
 
+def VersionOptions(LoggingOptions):
+    ...
 
-def exec_version(**kwargs: Any) -> None:
+
+def exec_version(options: VersionOptions) -> None:
     print(f'KEVM Version: {VERSION}')
+
+
+def KompileSpecOptions(LoggingOptions, k_args)
+    kompile
+
+    kevm_kompile_spec_args = command_parser.add_parser(
+        'kompile-spec',
+        help='Kompile KEVM specification.',
+        parents=[kevm_cli_args.logging_args, kevm_cli_args.k_args, kevm_cli_args.kompile_args],
+    )
+    kevm_kompile_spec_args.add_argument('main_file', type=file_path, help='Path to file with main module.')
+    kevm_kompile_spec_args.add_argument('--target', type=KompileTarget, help='[haskell|maude]')
+    kevm_kompile_spec_args.add_argument(
+        '-o', '--output-definition', type=Path, dest='output_dir', help='Path to write kompiled definition to.'
+    )
+    kevm_kompile_spec_args.add_argument(
+        '--debug-build', dest='debug_build', default=False, help='Enable debug symbols in LLVM builds.'
+    )
 
 
 def exec_kompile_spec(
