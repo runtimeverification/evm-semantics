@@ -61,7 +61,7 @@ class KEVMCLIArgs(KCLIArgs):
             dest='always-check_subsumption',
             default=True,
             action='store_true',
-            help='Check subsumption even on non-terminal nodes (default)(experimental).',
+            help='Check subsumption even on non-terminal nodes (default, experimental).',
         )
         args.add_argument(
             '--no-always-check-subsumption',
@@ -148,17 +148,17 @@ class KEVMCLIArgs(KCLIArgs):
             '--schedule',
             choices=schedules,
             default='SHANGHAI',
-            help=f"schedule to use for execution [{'|'.join(schedules)}]",
+            help=f"schedule to use for execution [{'|'.join(schedules)}].",
         )
-        args.add_argument('--chainid', type=int, default=1, help='chain ID to use for execution')
+        args.add_argument('--chainid', type=int, default=1, help='chain ID to use for execution.')
         args.add_argument(
             '--mode',
             choices=modes,
             default='NORMAL',
-            help="execution mode to use [{'|'.join(modes)}]",
+            help="execution mode to use [{'|'.join(modes)}].",
         )
         args.add_argument(
-            '--no-gas', action='store_false', dest='usegas', default=True, help='omit gas cost computations'
+            '--no-gas', action='store_false', dest='usegas', default=True, help='omit gas cost computations.'
         )
         return args
 
@@ -189,7 +189,7 @@ class KEVMCLIArgs(KCLIArgs):
             dest='kore_rpc_command',
             type=str,
             default=None,
-            help='Custom command to start RPC server',
+            help='Custom command to start RPC server.',
         )
         args.add_argument(
             '--use-booster',
@@ -228,14 +228,14 @@ class KEVMCLIArgs(KCLIArgs):
             dest='port',
             type=int,
             default=None,
-            help='Use existing RPC server on named port',
+            help='Use existing RPC server on named port.',
         )
         args.add_argument(
             '--maude-port',
             dest='maude_port',
             type=int,
             default=None,
-            help='Use existing Maude RPC server on named port',
+            help='Use existing Maude RPC server on named port.',
         )
         return args
 
@@ -303,26 +303,26 @@ class KEVMCLIArgs(KCLIArgs):
             dest='failure_info',
             default=True,
             action='store_true',
-            help='Show failure summary for all failing tests (default)',
+            help='Show failure summary for all failing tests (default).',
         )
         args.add_argument(
             '--no-failure-information',
             dest='failure_info',
             action='store_false',
-            help='Do not show failure summary for failing tests',
+            help='Do not show failure summary for failing tests.',
         )
         args.add_argument(
             '--auto-abstract-gas',
             dest='auto_abstract_gas',
             action='store_true',
-            help='Automatically extract gas cell when infinite gas is enabled',
+            help='Automatically extract gas cell when infinite gas is enabled.',
         )
         args.add_argument(
             '--counterexample-information',
             dest='counterexample_info',
             default=True,
             action='store_true',
-            help='Show models for failing nodes (default)',
+            help='Show models for failing nodes (default).',
         )
         args.add_argument(
             '--no-counterexample-information',
@@ -388,7 +388,7 @@ class KEVMCLIArgs(KCLIArgs):
             dest='failure_info',
             default=False,
             action='store_true',
-            help='Show failure summary for cfg',
+            help='Show failure summary for cfg..',
         )
         args.add_argument(
             '--no-failure-information',
@@ -400,16 +400,16 @@ class KEVMCLIArgs(KCLIArgs):
             '--to-module', dest='to_module', default=False, action='store_true', help='Output edges as a K module.'
         )
         args.add_argument(
-            '--pending', dest='pending', default=False, action='store_true', help='Also display pending nodes'
+            '--pending', dest='pending', default=False, action='store_true', help='Also display pending nodes.'
         )
         args.add_argument(
-            '--failing', dest='failing', default=False, action='store_true', help='Also display failing nodes'
+            '--failing', dest='failing', default=False, action='store_true', help='Also display failing nodes.'
         )
         args.add_argument(
             '--counterexample-information',
             dest='counterexample_info',
             default=False,
             action='store_true',
-            help="Show models for failing nodes. Should be called with the '--failure-information' flag",
+            help="Show models for failing nodes. Should be called with the '--failure-information' flag.",
         )
         return args
