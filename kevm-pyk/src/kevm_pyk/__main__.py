@@ -724,7 +724,6 @@ def exec_run(
 
     target_fqn = f'evm-semantics.{target}'
 
-    _ignore_arg(kwargs, 'definition_dir', f'--definition: {kwargs["definition_dir"]}')
     kevm = KEVM(kdist.get(target_fqn), use_directory=save_directory)
 
     try:
@@ -763,7 +762,6 @@ def exec_kast(
 
     target_fqn = f'evm-semantics.{target}'
 
-    _ignore_arg(kwargs, 'definition_dir', f'--definition: {kwargs["definition_dir"]}')
     kevm = KEVM(kdist.get(target_fqn), use_directory=save_directory)
 
     try:
