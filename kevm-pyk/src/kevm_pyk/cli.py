@@ -388,13 +388,13 @@ class KEVMCLIArgs(KCLIArgs):
             dest='failure_info',
             default=False,
             action='store_true',
-            help='Show failure summary for cfg..',
+            help='Show failure summary for cfg.',
         )
         args.add_argument(
             '--no-failure-information',
             dest='failure_info',
             action='store_false',
-            help='Do not show failure summary for cfg',
+            help='Do not show failure summary for cfg.',
         )
         args.add_argument(
             '--to-module', dest='to_module', default=False, action='store_true', help='Output edges as a K module.'
