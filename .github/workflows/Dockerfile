@@ -23,6 +23,7 @@ RUN    apt-get update                  \
             libboost-test-dev          \
             libcrypto++-dev            \
             libprocps-dev              \
+            libsecp256k1-dev           \
             libssl-dev                 \
             libyaml-dev                \
             llvm-${LLVM_VERSION}-dev   \

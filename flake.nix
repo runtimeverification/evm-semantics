@@ -11,7 +11,7 @@
     poetry2nix.follows = "pyk/poetry2nix";
     blockchain-k-plugin = {
       url =
-        "github:runtimeverification/blockchain-k-plugin/c9698c764521e71d9b8049eb41e4cc2a46343c64";
+        "github:runtimeverification/blockchain-k-plugin/05c2003c23c4a8fa1ddd3fb497cd610f03dadb05";
       inputs.flake-utils.follows = "k-framework/flake-utils";
       inputs.nixpkgs.follows = "k-framework/nixpkgs";
     };
@@ -68,6 +68,7 @@
             version = self.rev or "dirty";
             buildInputs = buildInputs final ++ [ final.kevm-pyk ];
             nativeBuildInputs = [ prev.makeWrapper ];
+            propagatedBuildInputs = [ final.secp256k1 ];
 
             src = prev.stdenv.mkDerivation {
               name = "kevm-${self.rev or "dirty"}-src";
