@@ -92,7 +92,7 @@ def exec_version(**kwargs: Any) -> None:
 
 
 def exec_kompile_spec(
-    output_dir: Path | None,
+    definition_dir: Path | None,
     main_file: Path,
     emit_json: bool,
     includes: list[str],
@@ -118,7 +118,7 @@ def exec_kompile_spec(
     if target not in [KompileTarget.HASKELL, KompileTarget.MAUDE]:
         raise ValueError(f'Can only call kevm kompile-spec with --target [haskell,maude], got: {target.value}')
 
-    output_dir = output_dir or Path()
+    definition_dir = definition_dir or Path()
 
     optimization = 0
     if o1:
@@ -132,7 +132,7 @@ def exec_kompile_spec(
 
     kevm_kompile(
         target,
-        output_dir=output_dir,
+        output_dir=definition_dir,
         main_file=main_file,
         main_module=main_module,
         syntax_module=syntax_module,
