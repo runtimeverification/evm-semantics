@@ -9,6 +9,7 @@ module FLOPPER-DENT-GUY-DIFF-TIC-NOT-0-PASS-ROUGH-SPEC
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
+      <scheduleTuple> getSchedule(ISTANBUL) </scheduleTuple>
       <useGas> true </useGas>
       <ethereum>
         <evm>
@@ -205,6 +206,7 @@ module FLOPPER-DENT-GUY-DIFF-TIC-NOT-0-PASS-ROUGH-SPEC
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
+      <scheduleTuple> getSchedule(ISTANBUL) </scheduleTuple>
       <useGas> true </useGas>
       <ethereum>
         <evm>
@@ -309,6 +311,7 @@ module FLOPPER-DENT-GUY-DIFF-TIC-NOT-0-PASS-ROUGH-SPEC
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
+      <scheduleTuple> getSchedule(ISTANBUL) </scheduleTuple>
       <useGas> true </useGas>
       <ethereum>
         <evm>
@@ -409,6 +412,7 @@ module FLOPPER-DENT-GUY-DIFF-TIC-NOT-0-PASS-ROUGH-SPEC
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
+      <scheduleTuple> getSchedule(ISTANBUL) </scheduleTuple>
       <useGas> true </useGas>
       <ethereum>
         <evm>
