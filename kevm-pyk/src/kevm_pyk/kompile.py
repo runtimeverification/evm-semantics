@@ -211,16 +211,13 @@ def lib_ccopts(plugin_dir: Path, debug_build: bool = False) -> list[str]:
     if debug_build:
         ccopts += ['-g']
 
-    ccopts += ['-lssl', '-lcrypto']
+    ccopts += ['-lssl', '-lcrypto', '-lsecp256k1']
 
     libff_dir = plugin_dir / 'libff'
     ccopts += [f'{libff_dir}/lib/libff.a', f'-I{libff_dir}/include']
 
     libcryptopp_dir = plugin_dir / 'libcryptopp'
     ccopts += [f'{libcryptopp_dir}/lib/libcryptopp.a', f'-I{libcryptopp_dir}/include']
-
-    libsecp256k1_dir = plugin_dir / 'libsecp256k1'
-    ccopts += [f'{libsecp256k1_dir}/lib/libsecp256k1.a', f'-I{libsecp256k1_dir}/include']
 
     plugin_include = plugin_dir / 'plugin-c'
     ccopts += [
