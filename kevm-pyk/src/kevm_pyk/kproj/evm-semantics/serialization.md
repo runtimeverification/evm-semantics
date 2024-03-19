@@ -122,6 +122,7 @@ Address/Hash Helpers
     rule #hashTxData( TXDATA ) => Keccak256raw(                #rlpEncodeTxData(TXDATA) ) requires isLegacyTx    (TXDATA)
     rule #hashTxData( TXDATA ) => Keccak256raw( b"\x01" +Bytes #rlpEncodeTxData(TXDATA) ) requires isAccessListTx(TXDATA)
     rule #hashTxData( TXDATA ) => Keccak256raw( b"\x02" +Bytes #rlpEncodeTxData(TXDATA) ) requires isDynamicFeeTx(TXDATA)
+    rule #hashTxData( TXDATA ) => Keccak256raw( b"\x03" +Bytes #rlpEncodeTxData(TXDATA) ) requires isBlobTx      (TXDATA)
 ```
 
 The EVM test-sets are represented in JSON format with hex-encoding of the data and programs.
@@ -331,6 +332,9 @@ Encoding
 
     rule #rlpEncodeTxData( DynamicFeeTxData(TN, TPF, TM, TG, TT, TV, DATA, CID, [TA]) )
       => #rlpEncode( [ CID, TN, TPF, TM, TG, #addrBytes(TT), TV, DATA, [TA] ] )
+
+    rule #rlpEncodeTxData (BlobTxData(TN, TPF, TM, TG, TT, TV, DATA, CID [TA], TB, [TH] )
+      => #rlpEncode( [ CID, TN, TPF, TM, TG, #addrBytes(TT), TV, DATA, CID [TA], TB, [TH] )
 
     syntax Bytes ::= #rlpEncodeMerkleTree ( MerkleTree ) [klabel(#rlpEncodeMerkleTree), function]
  // ---------------------------------------------------------------------------------------------

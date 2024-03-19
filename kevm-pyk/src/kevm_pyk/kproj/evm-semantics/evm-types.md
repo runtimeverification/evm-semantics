@@ -442,6 +442,7 @@ Productions related to transactions
                     | "Legacy"
                     | "AccessList"
                     | "DynamicFee"
+                    | "Blob"
  // ------------------------------
 
     syntax Int ::= #dasmTxPrefix ( TxType ) [klabel(#dasmTxPrefix), function]
@@ -449,21 +450,24 @@ Productions related to transactions
     rule #dasmTxPrefix (Legacy)     => 0
     rule #dasmTxPrefix (AccessList) => 1
     rule #dasmTxPrefix (DynamicFee) => 2
+    rule #dasmTxPrefix (Blob)       => 3
 
     syntax TxType ::= #asmTxPrefix ( Int ) [klabel(#asmTxPrefix), function]
  // -----------------------------------------------------------------------
     rule #asmTxPrefix (0) => Legacy
     rule #asmTxPrefix (1) => AccessList
     rule #asmTxPrefix (2) => DynamicFee
+    rule #asmTxPrefix (3) => Blob
 
-    syntax TxData ::= LegacyTx | AccessListTx | DynamicFeeTx
- // --------------------------------------------------------
+    syntax TxData ::= LegacyTx | AccessListTx | DynamicFeeTx | BlobTx
+ // -----------------------------------------------------------------
 
     syntax LegacyTx     ::= LegacyTxData         ( nonce: Int, gasPrice: Int, gasLimit: Int, to: Account, value: Int, data: Bytes ) [klabel(LegacyTxData)]
                           | LegacyProtectedTxData( nonce: Int, gasPrice: Int, gasLimit: Int, to: Account, value: Int, data: Bytes, chainId: Int ) [klabel(LegacyProtectedTxData)]
     syntax AccessListTx ::= AccessListTxData     ( nonce: Int, gasPrice: Int, gasLimit: Int, to: Account, value: Int, data: Bytes, chainId: Int, accessLists: JSONs ) [klabel(AccessListTxData)]
     syntax DynamicFeeTx ::= DynamicFeeTxData     ( nonce: Int, priorityGasFee: Int, maxGasFee: Int, gasLimit: Int, to: Account, value: Int, data: Bytes, chainId: Int, accessLists: JSONs) [klabel(DynamicFeeTxData)]
- // --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    syntax BlobTx       ::= BlobTxData           ( nonce: Int, priorityGasFee: Int, maxGasFee: Int, gasLimit: Int, to: Int, value: Int, data: Bytes, chainId: Int, accessLists: JSONs, maxFeePerBlobGas: Int, blobVersionHashes: JSONs)
+ // -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 endmodule
 ```

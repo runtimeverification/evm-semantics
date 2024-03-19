@@ -475,6 +475,7 @@ Here we check the other post-conditions associated with an EVM test.
                         SetItem("mixHash") SetItem("nonce") SetItem("number") SetItem("parentHash")
                         SetItem("receiptTrie") SetItem("stateRoot") SetItem("timestamp")
                         SetItem("transactionsTrie") SetItem("uncleHash") SetItem("baseFeePerGas") SetItem("withdrawalsRoot")
+                        SetItem("blobGasUsed") SetItem("excessBlobGas")
                       )
 
     rule <k> check "blockHeader" : { "bloom"            : VALUE } => .K ... </k> <logsBloom>        VALUE </logsBloom>
@@ -494,6 +495,8 @@ Here we check the other post-conditions associated with an EVM test.
     rule <k> check "blockHeader" : { "uncleHash"        : VALUE } => .K ... </k> <ommersHash>       VALUE </ommersHash>
     rule <k> check "blockHeader" : { "baseFeePerGas"    : VALUE } => .K ... </k> <baseFee>          VALUE </baseFee>
     rule <k> check "blockHeader" : { "withdrawalsRoot"  : VALUE } => .K ... </k> <withdrawalsRoot>  VALUE </withdrawalsRoot>
+    rule <k> check "blockHeader" : { "blobGasUsed"      : VALUE } => .K ... </k> <blobGasUsed>      VALUE </blobGasUsed>
+    rule <k> check "blockHeader" : { "excessBlobGas"    : VALUE } => .K ... </k> <excessBlobGas>    VALUE </excessBlobGas>
 
     rule <k> check "blockHeader" : { "hash": HASH:Bytes } => .K ...</k>
          <previousHash>     HP </previousHash>
@@ -513,9 +516,12 @@ Here we check the other post-conditions associated with an EVM test.
          <blockNonce>       HN </blockNonce>
          <baseFee>          HF </baseFee>
          <withdrawalsRoot>  WR </withdrawalsRoot>
+         <blobGasUsed>      BG </blobGasUsed>
+         <excessBlobGas>    EG </excessBlobGas>
       requires #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN)         ==Int #asWord(HASH)
         orBool #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF)     ==Int #asWord(HASH)
         orBool #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR) ==Int #asWord(HASH)
+        orBool #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR, BG, EG) ==Int #asWord(HASH)
 
     rule check TESTID : { "genesisBlockHeader" : BLOCKHEADER } => check "genesisBlockHeader" : BLOCKHEADER ~> failure TESTID
  // ------------------------------------------------------------------------------------------------------------------------

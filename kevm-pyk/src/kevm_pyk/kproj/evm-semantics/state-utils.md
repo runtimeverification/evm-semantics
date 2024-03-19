@@ -74,6 +74,8 @@ module STATE-UTILS
          <blockhashes>       _ => .List      </blockhashes>
          <baseFee>           _ => 0          </baseFee>
          <withdrawalsRoot>   _ => 0          </withdrawalsRoot>
+         <blobGasUsed>       _ => 0          </blobGasUsed>
+         <excessBlobGas>     _ => 0          </excessBlobGas>
 
     syntax EthereumCommand ::= "clearNETWORK"
  // -----------------------------------------
@@ -226,8 +228,18 @@ The `"rlp"` key loads the block information.
          </k>
          <withdrawalsRoot> _ => #asWord(WR) </withdrawalsRoot>
 
+    rule <k> load "rlp" : [ [ HP , HO , HC , HR , HT , HE , HB , HD , HI , HL , HG , HS , HX , HM , HN , HF , WR , BG, EG, .JSONs ] , BT , BU , BW , .JSONs ]
+          => load "rlp" : [ [ HP , HO , HC , HR , HT , HE , HB , HD , HI , HL , HG , HS , HX , HM , HN , HF , WR, .JSONs ] , BT , BU , BW, .JSONs ]
+         ...
+         </k>
+         <blobGasUsed> _ => #asWord(BG) </blobGasUsed>
+         <excessBlobGas> _ => #asWord(EG) </excessBlobGas>
+
     rule <k> load "genesisRLP": [ [ HP, HO, HC, HR, HT, HE:Bytes, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR, .JSONs ], _, _, _, .JSONs ] => .K ... </k>
          <blockhashes> .List => ListItem(#blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR)) ListItem(#asWord(HP)) ... </blockhashes>
+
+    rule <k> load "genesisRLP": [ [ HP, HO, HC, HR, HT, HE:Bytes, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR, BG, EG, .JSONs ], _, _, _, .JSONs ] => .K ... </k>
+         <blockhashes> .List => ListItem(#blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR, BG, EG)) ListItem(#asWord(HP)) ... </blockhashes>
 
     rule <k> load "genesisRLP": [ [ HP, HO, HC, HR, HT, HE:Bytes, HB, HD, HI, HL, HG, HS, HX, HM, HN, .JSONs ], _, _, .JSONs ] => .K ... </k>
          <blockhashes> .List => ListItem(#blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN)) ListItem(#asWord(HP)) ... </blockhashes>
@@ -262,7 +274,8 @@ The `"rlp"` key loads the block information.
                                  , "nonce" : TN   ,   "r"        : TR   ,   "s"                    : TS
                                  , "to"    : TT   ,   "v"        : TW   ,   "value"                : TV
                                  , "type"  : #dasmTxPrefix(Legacy)      ,   "maxPriorityFeePerGas" : TP
-                                 , "maxFeePerGas": TP                   , .JSONs
+                                 , "maxFeePerGas": TP                   ,   "maxFeePerBlobGas"     : 0
+                                 , "blobVersionedHashes" : [ .JSONs ]   ,   .JSONs
                                  }
           ~> load "transaction" : [ REST ]
           ...
@@ -270,11 +283,12 @@ The `"rlp"` key loads the block information.
 
     rule <k> load "transaction" : [ [TYPE , [TC, TN, TP, TG, TT, TV, TI, TA, TY , TR, TS ]] , REST ]
           => mkTX !ID:Int
-          ~> loadTransaction !ID { "data"       : TI   ,   "gasLimit" : TG   ,   "gasPrice"  : TP
-                                 , "nonce"      : TN   ,   "r"        : TR   ,   "s"         : TS
-                                 , "to"         : TT   ,   "v"        : TY   ,   "value"     : TV
-                                 , "accessList" : TA   ,   "type"     : TYPE ,   "chainID"   : TC
-                                 , "maxPriorityFeePerGas" : TP               , "maxFeePerGas": TP
+          ~> loadTransaction !ID { "data"       : TI   ,   "gasLimit" : TG   ,   "gasPrice"          : TP
+                                 , "nonce"      : TN   ,   "r"        : TR   ,   "s"                 : TS
+                                 , "to"         : TT   ,   "v"        : TY   ,   "value"             : TV
+                                 , "accessList" : TA   ,   "type"     : TYPE ,   "chainID"           : TC
+                                 , "maxPriorityFeePerGas" : TP               , "maxFeePerGas"        : TP
+                                 , "maxFeePerBlobGas"     : 0                , "blobVersionedHashes" : [ .JSONs ]
                                  , .JSONs
                                  }
           ~> load "transaction" : [ REST ]
@@ -289,12 +303,27 @@ The `"rlp"` key loads the block information.
                                  , "nonce"        : TN   ,   "r"        : TR   ,   "s"                    : TS
                                  , "to"           : TT   ,   "v"        : TY   ,   "value"                : TV
                                  , "accessList"   : TA   ,   "type"     : TYPE ,   "chainID"              : TC
-                                 , "maxFeePerGas" : TF   , .JSONs
+                                 , "maxFeePerGas" : TF   ,   "maxFeePerBlobGas"                           : 0
+                                 , "blobVersionedHashes" : [.JSONs ]           , .JSONs
                                  }
           ~> load "transaction" : [ REST ]
           ...
          </k>
     requires #asWord(TYPE) ==Int #dasmTxPrefix(DynamicFee)
+
+    rule <k> load "transaction" : [ [TYPE , [TC, TN, TP, TF, TG, TT, TV, TI, TA, TY, TR, TS, TB, TH ]] , REST ]
+          => mkTx !ID:Int
+          ~> loadTransaction !ID { "data"         : TI   ,   "gasLimit"         : TG   ,   "maxPriorityFeePerGas" : TP
+                                 , "nonce"        : TN   ,   "r"                : TR   ,   "s"                    : TS
+                                 , "to"           : TT   ,   "v"                : TY   ,   "value"                : TV
+                                 , "accessList"   : TA   ,   "type"             : TYPE ,   "chainID"              : TC
+                                 , "maxFeePerGas" : TF   ,   "maxFeePerBlobGas" : TB   ,   "blobVersionedHashes"  : TH
+                                 , .JSONs
+                                 }
+          ~> load "transaction" : [ REST ]
+          ...
+         </k>
+    requires #asWord(TYPE) ==Int #dasmTxPrefix(Blob)
 
     syntax EthereumCommand ::= "loadTransaction" Int JSON
  // -----------------------------------------------------
@@ -342,6 +371,12 @@ The `"rlp"` key loads the block information.
 
     rule <k> loadTransaction TXID { "maxFeePerGas" : TF:Int, REST => REST } ... </k>
          <message> <msgID> TXID </msgID> <txMaxFee> _ => TF </txMaxFee> ... </message>
+
+    rule <k> loadTransaction TXID { "maxFeePerBlobGas" : TB:Int, REST => REST } ... </k>
+         <message> <msgID> TXID </msgID> <txMaxBlobFee> _ => TB </txMaxBlobFee> ... </message>
+
+    rule <k> loadTransaction TXID { "blobVersionedHashes" : [TH:JSONs], REST => REST } ... </k>
+         <message> <msgID> TXID </msgID> <blobHashes> _ => [TH] </blobHashes> ... </message>
 ```
 
 ### Getting State
@@ -413,6 +448,23 @@ The `"rlp"` key loads the block information.
            <txType> DynamicFee </txType>
            ...
          </message>
+
+    rule [[ #getTxData( TXID ) => BlobTxData(TN, TPF, TM, TG, TT, TV, DATA, CID, TA, TB, TH) ]]
+         <message>
+           <msgID>         TXID </msgID>
+           <txNonce>       TN   </txNonce>
+           <txGasLimit>    TG   </txGasLimit>
+           <to>            TT   </to>
+           <value>         TV   </value>
+           <data>          DATA </data>
+           <txChainID>     CID  </txChainID>
+           <txAccess>      TA   </txAccess>
+           <txPriorityFee> TPF  </txPriorityFee>
+           <txMaxFee>      TM   </txMaxFee>
+           <txMaxBlobFee>  TB   </txMaxBlobFee>
+           <blobHashes>    TH   </blobHashes>
+           <txType> Blob </txType>
+        
 
     syntax Int ::= #effectiveGasPrice( Int ) [klabel(#effectiveGasPrice), function]
  // -------------------------------------------------------------------------------
