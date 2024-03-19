@@ -12,7 +12,7 @@ from argparse import ArgumentParser
 from dataclasses import dataclass
 from functools import cached_property
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Iterable
 
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli.args import (
@@ -95,12 +95,44 @@ def main() -> None:
     args = parser.parse_args()
     logging.basicConfig(level=_loglevel(args), format=_LOG_FORMAT)
 
+    stripped_args = {
+        key: val for (key, val) in vars(args).items() if val is not None and not (isinstance(val, Iterable) and not val)
+    }
+    options = generate_options(stripped_args)
+
     executor_name = 'exec_' + args.command.lower().replace('-', '_')
     if executor_name not in globals():
         raise AssertionError(f'Unimplemented command: {args.command}')
 
     execute = globals()[executor_name]
-    execute(args)
+    execute(options)
+
+
+def generate_options(args: dict[str, Any]) -> LoggingOptions:
+    command = args['command']
+    match command:
+        case 'version':
+            return VersionOptions(args)
+        case 'kompile-spec':
+            return KompileSpecOptions(args)
+        case 'prove-legacy':
+            return ProveLegacyOptions(args)
+        case 'prove':
+            return ProveOptions(args)
+        case 'prune':
+            return PruneOptions(args)
+        case 'section-edge':
+            return SectionEdgeOptions(args)
+        case 'show-kcfg':
+            return ShowKCFGOptions(args)
+        case 'view-kcfg':
+            return ViewKCFGOptions(args)
+        case 'kast':
+            return KastOptions(args)
+        case 'run':
+            return RunOptions(args)
+        case _:
+            raise ValueError(f'Unrecognized command: {command}')
 
 
 # Command implementation
