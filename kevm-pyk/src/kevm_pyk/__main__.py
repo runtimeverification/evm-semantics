@@ -12,7 +12,8 @@ from argparse import ArgumentParser
 from dataclasses import dataclass
 from functools import cached_property
 from pathlib import Path
-from typing import TYPE_CHECKING, Iterable
+from typing import TYPE_CHECKING
+from collections.abc import Iterable
 
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli.args import (
