@@ -791,7 +791,7 @@ def _create_argument_parser() -> ArgumentParser:
         '-o', '--output-definition', type=Path, dest='output_dir', help='Path to write kompiled definition to.'
     )
     kevm_kompile_spec_args.add_argument(
-        '--debug-build', dest='debug_build', default=False, help='Enable debug symbols in LLVM builds.'
+        '--debug-build', dest='debug_build', default=None, help='Enable debug symbols in LLVM builds.'
     )
 
     prove_args = command_parser.add_parser(
@@ -812,7 +812,7 @@ def _create_argument_parser() -> ArgumentParser:
     prove_args.add_argument(
         '--reinit',
         dest='reinit',
-        default=False,
+        default=None,
         action='store_true',
         help='Reinitialize CFGs even if they already exist.',
     )
@@ -839,12 +839,12 @@ def _create_argument_parser() -> ArgumentParser:
     )
     section_edge_args.add_argument('edge', type=arg_pair_of(str, str), help='Edge to section in CFG.')
     section_edge_args.add_argument(
-        '--sections', type=int, default=2, help='Number of sections to make from edge (>= 2).'
+        '--sections', type=int, help='Number of sections to make from edge (>= 2).'
     )
     section_edge_args.add_argument(
         '--use-booster',
         dest='use_booster',
-        default=False,
+        default=None,
         action='store_true',
         help="Use the booster RPC server instead of kore-rpc. Requires calling kompile with '--target haskell-booster' flag",
     )
@@ -860,7 +860,7 @@ def _create_argument_parser() -> ArgumentParser:
         ],
     )
     prove_legacy_args.add_argument(
-        '--bug-report-legacy', default=False, action='store_true', help='Generate a legacy bug report.'
+        '--bug-report-legacy', default=None, action='store_true', help='Generate a legacy bug report.'
     )
 
     command_parser.add_parser(
@@ -894,14 +894,13 @@ def _create_argument_parser() -> ArgumentParser:
     run_args.add_argument('input_file', type=file_path, help='Path to input file.')
     run_args.add_argument(
         '--output',
-        default=KRunOutput.PRETTY,
         type=KRunOutput,
         choices=list(KRunOutput),
     )
     run_args.add_argument(
         '--expand-macros',
         dest='expand_macros',
-        default=True,
+        default=None,
         action='store_true',
         help='Expand macros on the input term before execution.',
     )
@@ -931,7 +930,6 @@ def _create_argument_parser() -> ArgumentParser:
     kast_args.add_argument('input_file', type=file_path, help='Path to input file.')
     kast_args.add_argument(
         '--output',
-        default=PrintOutput.KORE,
         type=PrintOutput,
         choices=list(PrintOutput),
     )
