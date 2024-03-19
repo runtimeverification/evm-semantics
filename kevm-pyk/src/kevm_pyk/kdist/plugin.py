@@ -65,13 +65,12 @@ class PluginTarget(Target):
 
         copy_tree(str(config.PLUGIN_DIR), '.')
         run_process(
-            ['make', 'libcryptopp', 'libff', 'libsecp256k1', '-j3'],
+            ['make', 'libcryptopp', 'libff', '-j8'],
             pipe_stdout=not verbose,
         )
 
         copy_tree('./build/libcryptopp', str(output_dir / 'libcryptopp'))
         copy_tree('./build/libff', str(output_dir / 'libff'))
-        copy_tree('./build/libsecp256k1', str(output_dir / 'libsecp256k1'))
 
     def source(self) -> tuple[Path]:
         return (config.PLUGIN_DIR,)
