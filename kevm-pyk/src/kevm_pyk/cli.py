@@ -193,6 +193,18 @@ class DisplayOptions(PykDisplayOptions):
         }
 
 
+class KGenOptions(Options):
+    requires: list[str]
+    imports: list[str]
+
+    @staticmethod
+    def default() -> dict[str, Any]:
+        return {
+            'requires': [],
+            'imports': [],
+        }
+
+
 class KEVMCLIArgs(KCLIArgs):
     @cached_property
     def target_args(self) -> ArgumentParser:
