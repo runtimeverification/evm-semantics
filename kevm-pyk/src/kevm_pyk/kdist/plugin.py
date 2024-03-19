@@ -119,7 +119,7 @@ __TARGETS__: Final = {
             'main_file': config.EVM_SEMANTICS_DIR / 'driver.md',
             'main_module': 'ETHEREUM-SIMULATION',
             'syntax_module': 'ETHEREUM-SIMULATION',
-            'optimization': 2,
+            'optimization': 3,
         },
     ),
     'haskell': KEVMTarget(
