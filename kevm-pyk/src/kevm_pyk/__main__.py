@@ -9,11 +9,11 @@ import sys
 import tempfile
 import time
 from argparse import ArgumentParser
+from collections.abc import Iterable
 from dataclasses import dataclass
 from functools import cached_property
 from pathlib import Path
 from typing import TYPE_CHECKING
-from collections.abc import Iterable
 
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli.args import (
