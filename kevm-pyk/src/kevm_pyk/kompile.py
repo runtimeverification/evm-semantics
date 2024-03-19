@@ -223,7 +223,7 @@ def lib_ccopts(plugin_dir: Path, debug_build: bool = False) -> list[str]:
     ccopts += [
         f'{plugin_include}/plugin_util.cpp',
         f'{plugin_include}/crypto.cpp',
-        f'{plugin_include}/blake2.cpp',
+        f'{plugin_include}/blake2.a',
     ]
 
     if kernel == 'darwin':
