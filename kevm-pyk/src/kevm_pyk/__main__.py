@@ -100,7 +100,7 @@ def main() -> None:
         raise AssertionError(f'Unimplemented command: {args.command}')
 
     execute = globals()[executor_name]
-    execute(**vars(args))
+    execute(args)
 
 
 # Command implementation
