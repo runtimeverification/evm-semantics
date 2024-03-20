@@ -32,7 +32,7 @@
     let
       nixLibs = pkgs:
         with pkgs;
-        "-I${procps}/include -L${procps}/lib -I${openssl.dev}/include -L${openssl.out}/lib";
+        "-I${procps}/include -L${procps}/lib -I${openssl.dev}/include -L${openssl.out}/lib -I${secp256k1}/include -L${secp256k1}/lib";
       buildInputs = pkgs:
         with pkgs;
         [
@@ -68,7 +68,6 @@
             version = self.rev or "dirty";
             buildInputs = buildInputs final ++ [ final.kevm-pyk ];
             nativeBuildInputs = [ prev.makeWrapper ];
-            propagatedBuildInputs = [ final.secp256k1 ];
 
             src = prev.stdenv.mkDerivation {
               name = "kevm-${self.rev or "dirty"}-src";
