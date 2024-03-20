@@ -87,15 +87,15 @@ module VERIFICATION-HASKELL [symbolic]
     imports EVM
 
     rule X <Int Csstore(SCHED, _, _, _) => false
-      requires Gsload       < SCHED > <=Int X
-       andBool Gsstoreset   < SCHED > <=Int X
-       andBool Gsstorereset < SCHED > <=Int X
+      requires Gsload       (SCHED) <=Int X
+       andBool Gsstoreset   (SCHED) <=Int X
+       andBool Gsstorereset (SCHED) <=Int X
       [simplification]
 
     rule Csstore(SCHED, _, _, _) <=Int X => true
-      requires Gsload       < SCHED > <=Int X
-       andBool Gsstoreset   < SCHED > <=Int X
-       andBool Gsstorereset < SCHED > <=Int X
+      requires Gsload       (SCHED) <=Int X
+       andBool Gsstoreset   (SCHED) <=Int X
+       andBool Gsstorereset (SCHED) <=Int X
       [simplification]
 
     rule X -Int Y <Int Z  => X -Int Z <Int Y  [concrete(X, Z), symbolic(Y), simplification]

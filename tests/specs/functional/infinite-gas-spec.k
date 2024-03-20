@@ -56,7 +56,7 @@ module INFINITE-GAS-SPEC
     claim [gas.inf.7]:  <k> runLemma(#gas(G) -Gas Cmem(SCHED, #memoryUsageUpdate(MU, W0, 32))) => doneLemma(#gas(G -Int Cmem(SCHED, #memoryUsageUpdate(MU, W0, 32)))) ... </k>
            requires #rangeUInt(256, MU) andBool #rangeUInt(256, W0)
 
-    claim [gas.inf.8]:  <k> runLemma(#gas(G) -Gas Gverylow < SCHED >) => doneLemma(#gas(G -Int Gverylow < SCHED >)) ... </k>
+    claim [gas.inf.8]:  <k> runLemma(#gas(G) -Gas Gverylow(SCHED)) => doneLemma(#gas(G -Int Gverylow(SCHED))) ... </k>
 
     claim [gas.inf.9]:  <k> runLemma(#gas(G) -Gas 3 *Int (DATA_LEN up/Int 32)) => doneLemma(#gas(G -Int 3 *Int (DATA_LEN up/Int 32))) ... </k> requires 0 <=Int DATA_LEN andBool DATA_LEN <Int pow16
 
@@ -112,8 +112,8 @@ module INFINITE-GAS-SPEC
 
     claim [gas.comp.19]: <k> runLemma(Gverylow < _ > <=Gas #gas(_)) => doneLemma(true) ... </k>
 
-    claim [gas.comp.20]: <k> runLemma(Gexp < SCHED > +Int Gexpbyte < SCHED > *Int ( log2Int ( W1 ) /Int 8 +Int 1 ) <=Gas #gas(_)) => doneLemma(true)  ... </k> requires 0 <Int W1 andBool W1 <Int pow256
-    claim [gas.comp.21]: <k> runLemma(#gas(_) <Gas Gexp < SCHED > +Int Gexpbyte < SCHED > *Int ( log2Int ( W1 ) /Int 8 +Int 1 ))  => doneLemma(false) ... </k> requires 0 <Int W1 andBool W1 <Int pow256
+    claim [gas.comp.20]: <k> runLemma(Gexp(SCHED) +Int Gexpbyte(SCHED) *Int ( log2Int ( W1 ) /Int 8 +Int 1 ) <=Gas #gas(_)) => doneLemma(true)  ... </k> requires 0 <Int W1 andBool W1 <Int pow256
+    claim [gas.comp.21]: <k> runLemma(#gas(_) <Gas Gexp(SCHED) +Int Gexpbyte(SCHED) *Int ( log2Int ( W1 ) /Int 8 +Int 1 ))  => doneLemma(false) ... </k> requires 0 <Int W1 andBool W1 <Int pow256
 
     claim [gas.comp.22]: <k> runLemma(#gas(_) <Gas 3 *Int (DATA_LEN up/Int 32) +Int 3) => doneLemma(false) ... </k> requires 0 <=Int DATA_LEN andBool DATA_LEN <Int pow16
     claim [gas.comp.23]: <k> runLemma(#gas(_) <Gas         DATA_LEN up/Int 32        ) => doneLemma(false) ... </k> requires 0 <=Int DATA_LEN andBool DATA_LEN <Int pow16
