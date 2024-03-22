@@ -2,9 +2,10 @@ from __future__ import annotations
 
 from argparse import ArgumentParser
 from functools import cached_property
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
-from pyk.cli.args import KCLIArgs
+from pyk.cli.args import DisplayOptions as PykDisplayOptions
+from pyk.cli.args import KCLIArgs, KDefinitionOptions, Options
 from pyk.cli.utils import dir_path
 from pyk.kore.rpc import FallbackReason
 
@@ -12,6 +13,7 @@ from .utils import arg_pair_of
 
 if TYPE_CHECKING:
     from collections.abc import Callable
+    from pathlib import Path
     from typing import TypeVar
 
     from pyk.kcfg.kcfg import NodeIdLike
@@ -31,6 +33,176 @@ def node_id_like(s: str) -> NodeIdLike:
         return int(s)
     except ValueError:
         return s
+
+
+class KOptions(KDefinitionOptions):
+    definition_dir: Path | None
+    depth: int | None
+
+    @staticmethod
+    def default() -> dict[str, Any]:
+        return {
+            'definition_dir': None,
+            'depth': None,
+        }
+
+
+class KProveLegacyOptions(Options):
+    bug_report: bool
+    debugger: bool
+    max_depth: int | None
+    max_counterexamples: int | None
+    branching_allowed: int | None
+    haskell_backend_args: list[str]
+
+    @staticmethod
+    def default() -> dict[str, Any]:
+        return {
+            'bug_report': False,
+            'debugger': False,
+            'max_depth': None,
+            'max_counterexamples': None,
+            'branching_allowed': None,
+            'haskell_backend_args': [],
+        }
+
+
+class RPCOptions(Options):
+    trace_rewrites: bool
+    kore_rpc_command: str | None
+    use_booster: bool
+    fallback_on: list[FallbackReason]
+    post_exec_simplify: bool
+    interim_simplification: int | None
+    port: int | None
+    maude_port: int | None
+
+    @staticmethod
+    def default() -> dict[str, Any]:
+        return {
+            'trace_rewrites': False,
+            'kore_rpc_command': None,
+            'use_booster': False,
+            'fallback_on': [],
+            'post_exec_simplify': True,
+            'interim_simplification': None,
+            'port': None,
+            'maude_port': None,
+        }
+
+
+class ExploreOptions(Options):
+    break_every_step: bool
+    break_on_jumpi: bool
+    break_on_calls: bool
+    break_on_storage: bool
+    break_on_basic_blocks: bool
+    max_depth: int
+    max_iterations: int | None
+    failure_info: bool
+    auto_abstract_gas: bool
+    counterexample_info: bool
+    fail_fast: bool
+
+    @staticmethod
+    def default() -> dict[str, Any]:
+        return {
+            'break_every_step': False,
+            'break_on_jumpi': False,
+            'break_on_calls': False,
+            'break_on_storage': False,
+            'break_on_basic_blocks': False,
+            'max_depth': 1000,
+            'max_iterations': None,
+            'failure_info': True,
+            'auto_abstract_gas': False,
+            'counterexample_info': True,
+            'fail_fast': True,
+        }
+
+
+class KProveOptions(Options):
+    debug_equations: list[str]
+    always_check_subsumption: bool
+    fast_check_subsumption: bool
+
+    @staticmethod
+    def default() -> dict[str, Any]:
+        return {
+            'debug_equations': [],
+            'always_check_subsumption': True,
+            'fast_check_subsumption': False,
+        }
+
+
+class KCFGShowOptions(Options):
+    nodes: list[NodeIdLike]
+    node_deltas: list[tuple[NodeIdLike, NodeIdLike]]
+    failure_info: bool
+    to_module: bool
+    pending: bool
+    failing: bool
+    counterexample_info: bool
+
+    @staticmethod
+    def default() -> dict[str, Any]:
+        return {
+            'nodes': [],
+            'node_deltas': [],
+            'failure_info': False,
+            'to_module': False,
+            'pending': False,
+            'failing': False,
+            'counterexample_info': False,
+        }
+
+
+class TargetOptions(Options):
+    target: str | None
+
+    @staticmethod
+    def default() -> dict[str, Any]:
+        return {
+            'target': None,
+        }
+
+
+class EVMChainOptions(Options):
+    schedule: str
+    chainid: int
+    mode: str
+    usegas: bool
+
+    @staticmethod
+    def default() -> dict[str, Any]:
+        return {
+            'schedule': 'SHANGHAI',
+            'chainid': 1,
+            'mode': 'NORMAL',
+            'use_gas': True,
+        }
+
+
+class DisplayOptions(PykDisplayOptions):
+    sort_collections: bool
+
+    @staticmethod
+    def default() -> dict[str, Any]:
+        return {
+            'sort_collections': False,
+        }
+
+
+class KGenOptions(Options):
+    requires: list[str]
+    imports: list[str]
+
+    @staticmethod
+    def default() -> dict[str, Any]:
+        return {
+            'requires': [],
+            'imports': [],
+        }
 
 
 class KEVMCLIArgs(KCLIArgs):
@@ -58,14 +230,14 @@ class KEVMCLIArgs(KCLIArgs):
         )
         args.add_argument(
             '--always-check-subsumption',
-            dest='always-check_subsumption',
+            dest='always_check_subsumption',
             default=True,
             action='store_true',
             help='Check subsumption even on non-terminal nodes (default, experimental).',
         )
         args.add_argument(
             '--no-always-check-subsumption',
-            dest='always-check_subsumption',
+            dest='always_check_subsumption',
             action='store_false',
             help='Do not check subsumption on non-terminal nodes (experimental).',
         )
