@@ -820,9 +820,7 @@ def _create_argument_parser() -> ArgumentParser:
     )
     kevm_kompile_spec_args.add_argument('main_file', type=file_path, help='Path to file with main module.')
     kevm_kompile_spec_args.add_argument('--target', type=KompileTarget, help='[haskell|maude]')
-    kevm_kompile_spec_args.add_argument(
-        '-o', '--output-definition', type=Path, dest='output_dir', help='Path to write kompiled definition to.'
-    )
+
     kevm_kompile_spec_args.add_argument(
         '--debug-build', dest='debug_build', default=None, help='Enable debug symbols in LLVM builds.'
     )
