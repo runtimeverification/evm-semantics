@@ -231,7 +231,7 @@ def byte_offset_to_lines(lines: Iterable[str], byte_start: int, byte_width: int)
 def KDefinition__expand_macros(defn: KDefinition, term: KInner) -> KInner:  # noqa: N802
     def _expand_macros(_term: KInner) -> KInner:
         if type(_term) is KApply:
-            prod = defn.production_for_klabel(_term.label)
+            prod = defn.symbols[_term.label.name]
             if any(key in prod.att for key in [Atts.MACRO, Atts.ALIAS, Atts.MACRO_REC, Atts.ALIAS_REC]):
                 for r in defn.macro_rules:
                     assert type(r.body) is KRewrite

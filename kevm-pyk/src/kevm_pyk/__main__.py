@@ -149,14 +149,12 @@ def exec_version(options: VersionOptions) -> None:
 class KompileSpecOptions(LoggingOptions, KOptions, KompileOptions):
     main_file: Path
     target: KompileTarget
-    output_dir: Path | None
     debug_build: bool
 
     @staticmethod
     def default() -> dict[str, Any]:
         return {
             'target': KompileTarget.HASKELL,
-            'output_dir': None,
             'debug_build': False,
         }
 
@@ -165,7 +163,7 @@ def exec_kompile_spec(options: KompileSpecOptions) -> None:
     if options.target not in [KompileTarget.HASKELL, KompileTarget.MAUDE]:
         raise ValueError(f'Can only call kevm kompile-spec with --target [haskell,maude], got: {options.target.value}')
 
-    output_dir = options.output_dir or Path()
+    definition_dir = options.definition_dir or Path()
 
     optimization = 0
     if options.o1:
@@ -179,7 +177,7 @@ def exec_kompile_spec(options: KompileSpecOptions) -> None:
 
     kevm_kompile(
         options.target,
-        output_dir=output_dir,
+        output_dir=definition_dir,
         main_file=options.main_file,
         main_module=options.main_module,
         syntax_module=options.syntax_module,
@@ -820,9 +818,7 @@ def _create_argument_parser() -> ArgumentParser:
     )
     kevm_kompile_spec_args.add_argument('main_file', type=file_path, help='Path to file with main module.')
     kevm_kompile_spec_args.add_argument('--target', type=KompileTarget, help='[haskell|maude]')
-    kevm_kompile_spec_args.add_argument(
-        '-o', '--output-definition', type=Path, dest='output_dir', help='Path to write kompiled definition to.'
-    )
+
     kevm_kompile_spec_args.add_argument(
         '--debug-build', dest='debug_build', default=None, help='Enable debug symbols in LLVM builds.'
     )
