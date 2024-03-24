@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import shutil
 import sys
 from distutils.dir_util import copy_tree
 from typing import TYPE_CHECKING
@@ -65,13 +64,13 @@ class PluginTarget(Target):
 
         copy_tree(str(config.PLUGIN_DIR), '.')
         run_process(
-            ['make', 'libcryptopp', 'libff', 'plugin-c/blake2.a', '-j8'],
+            ['make', 'libcryptopp', 'libff', 'blake2', '-j8'],
             pipe_stdout=not verbose,
         )
 
         copy_tree('./build/libcryptopp', str(output_dir / 'libcryptopp'))
         copy_tree('./build/libff', str(output_dir / 'libff'))
-        shutil.copy2('./plugin-c/blake2.a', output_dir / 'plugin-c' / 'blake2.a')
+        copy_tree('./build/blake2', str(output_dir / 'blake2'))
 
     def source(self) -> tuple[Path]:
         return (config.PLUGIN_DIR,)
