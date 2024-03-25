@@ -22,7 +22,7 @@ poetry-install:
 
 # Tests
 
-PYTEST_BASE_ARGS := --verbose --durations=0 --dist=worksteal
+PYTEST_BASE_ARGS := --verbose --durations=0
 PYTEST_ARGS      :=
 PYTEST_PARALLEL  := 8
 PYTEST_MAXFAIL   := 1
@@ -36,7 +36,7 @@ test-unit: poetry-install
 	$(POETRY_RUN) pytest src/tests/unit $(PYTEST_BASE_ARGS) --maxfail=$(PYTEST_MAXFAIL) --numprocesses=$(PYTEST_PARALLEL) $(PYTEST_ARGS)
 
 test-integration: poetry-install
-	$(POETRY_RUN) pytest src/tests/integration $(PYTEST_BASE_ARGS) --maxfail=$(PYTEST_MAXFAIL) --numprocesses=$(PYTEST_PARALLEL) $(PYTEST_ARGS)
+	$(POETRY_RUN) pytest src/tests/integration $(PYTEST_BASE_ARGS) --maxfail=$(PYTEST_MAXFAIL) $(PYTEST_ARGS)
 
 
 # Coverage

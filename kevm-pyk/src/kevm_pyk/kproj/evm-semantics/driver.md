@@ -9,12 +9,14 @@ requires "evm.md"
 requires "optimizations.md"
 requires "asm.md"
 requires "state-utils.md"
+requires "timer.md"
 
 module ETHEREUM-SIMULATION
     imports EVM
     imports EVM-OPTIMIZATIONS
     imports EVM-ASSEMBLY
     imports STATE-UTILS
+    imports TIMER
 ```
 
 An Ethereum simulation is a list of Ethereum commands.
@@ -93,8 +95,12 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          </message>
        requires notBool #hasValidInitCode(lengthBytes(CODE), SCHED)
 
+    syntax KItem ::= "timerstart"
+    rule timerstart => timerStart()
+
     rule <k> loadTx(ACCTFROM)
-          => #accessAccounts ACCTFROM #newAddr(ACCTFROM, NONCE) #precompiledAccountsSet(SCHED)
+          => timerstart
+          ~> #accessAccounts ACCTFROM #newAddr(ACCTFROM, NONCE) #precompiledAccountsSet(SCHED)
           ~> #loadAccessList(TA)
           ~> #create ACCTFROM #newAddr(ACCTFROM, NONCE) VALUE CODE
           ~> #finishTx ~> #finalizeTx(false) ~> startTx
@@ -128,7 +134,8 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
       requires #hasValidInitCode(lengthBytes(CODE), SCHEDT)
 
     rule <k> loadTx(ACCTFROM)
-          => #accessAccounts ACCTFROM ACCTTO #precompiledAccountsSet(SCHED)
+          => timerstart
+          ~> #accessAccounts ACCTFROM ACCTTO #precompiledAccountsSet(SCHED)
           ~> #loadAccessList(TA)
           ~> #call ACCTFROM ACCTTO ACCTTO VALUE VALUE DATA false
           ~> #finishTx ~> #finalizeTx(false) ~> startTx
