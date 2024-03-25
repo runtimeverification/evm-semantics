@@ -254,7 +254,7 @@ class KEVM(KProve, KRun):
             '_Set_',
             'typedArgs',
             '_up/Int__EVM-TYPES_Int_Int_Int',
-            '_:__EVM-TYPES_WordStack_Int_WordStack',
+            '_WS_'
         ]
         for symb in paren_symbols:
             if symb in symbol_table:
@@ -298,7 +298,7 @@ class KEVM(KProve, KRun):
         constraints = []
         word_stack = cterm.cell('WORDSTACK_CELL')
         if type(word_stack) is not KVariable:
-            word_stack_items = flatten_label('_:__EVM-TYPES_WordStack_Int_WordStack', word_stack)
+            word_stack_items = flatten_label('_WS_', word_stack)
             for i in word_stack_items[:-1]:
                 constraints.append(mlEqualsTrue(KEVM.range_uint(256, i)))
 
@@ -520,7 +520,7 @@ class KEVM(KProve, KRun):
 
     @staticmethod
     def wordstack_len(wordstack: KInner) -> int:
-        return len(flatten_label('_:__EVM-TYPES_WordStack_Int_WordStack', wordstack))
+        return len(flatten_label('_WS_', wordstack))
 
     @staticmethod
     def parse_bytestack(s: KInner) -> KApply:
