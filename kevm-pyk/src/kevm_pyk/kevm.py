@@ -254,7 +254,7 @@ class KEVM(KProve, KRun):
             '_Set_',
             'typedArgs',
             '_up/Int__EVM-TYPES_Int_Int_Int',
-            '_WS_'
+            '_WS_',
         ]
         for symb in paren_symbols:
             if symb in symbol_table:
