@@ -11,12 +11,14 @@ This file only defines the local execution operations, the file `driver.md` will
 requires "data.md"
 requires "network.md"
 requires "gas.md"
+requires "timer.md"
 
 module EVM
     imports STRING
     imports EVM-DATA
     imports NETWORK
     imports GAS
+    imports TIMER
 ```
 
 Configuration
@@ -538,7 +540,10 @@ After executing a transaction, it's necessary to have the effect of the substate
            ...
          </account>
 
-    rule <k> #finalizeStorage(.List) => .K ... </k>
+    syntax KItem ::= "timerstop"
+    rule timerstop => timerStop()
+
+    rule <k> #finalizeStorage(.List) => timerstop ... </k>
 
     rule <k> (.K => #newAccount ACCT) ~> #finalizeStorage(ListItem(ACCT) _ACCTS) ... </k> [owise]
 
