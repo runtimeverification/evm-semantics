@@ -219,11 +219,13 @@ def lib_ccopts(plugin_dir: Path, debug_build: bool = False) -> list[str]:
     libcryptopp_dir = plugin_dir / 'libcryptopp'
     ccopts += [f'{libcryptopp_dir}/lib/libcryptopp.a', f'-I{libcryptopp_dir}/include']
 
+    blake2_dir = plugin_dir / 'blake2'
+    ccopts += [f'{blake2_dir}/lib/blake2.a']
+
     plugin_include = plugin_dir / 'plugin-c'
     ccopts += [
         f'{plugin_include}/plugin_util.cpp',
         f'{plugin_include}/crypto.cpp',
-        f'{plugin_include}/blake2.a',
     ]
 
     if kernel == 'darwin':
