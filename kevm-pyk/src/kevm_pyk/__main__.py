@@ -84,7 +84,7 @@ def main() -> None:
     toml_args = parse_toml_args(args)
     logging.basicConfig(level=_loglevel(args), format=_LOG_FORMAT)
 
-    stripped_args =  toml_args | {
+    stripped_args = toml_args | {
         key: val for (key, val) in vars(args).items() if val is not None and not (isinstance(val, Iterable) and not val)
     }
     options = generate_options(stripped_args)

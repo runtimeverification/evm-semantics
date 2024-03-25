@@ -3,10 +3,11 @@ from __future__ import annotations
 import logging
 from argparse import ArgumentParser
 from functools import cached_property
+from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 import tomli
-from pyk.cli.args import BugReportOptions, ConfigArgs
+from pyk.cli.args import BugReportOptions
 from pyk.cli.args import DisplayOptions as PykDisplayOptions
 from pyk.cli.args import (
     KCLIArgs,
@@ -30,7 +31,6 @@ from .utils import arg_pair_of
 if TYPE_CHECKING:
     from argparse import Namespace
     from collections.abc import Callable
-    from pathlib import Path
     from typing import Final, TypeVar
 
     from pyk.kcfg.kcfg import NodeIdLike
@@ -643,6 +643,26 @@ class KastOptions(
         return {
             'output': PrintOutput.KORE,
         }
+
+
+class ConfigArgs:
+    @cached_property
+    def config_args(self) -> ArgumentParser:
+        args = ArgumentParser(add_help=False)
+        args.add_argument(
+            '--config-file',
+            dest='config_file',
+            type=file_path,
+            default=Path('./kevm-pyk.toml'),
+            help='Path to Pyk config file.',
+        )
+        args.add_argument(
+            '--config-profile',
+            dest='config_profile',
+            default='default',
+            help='Config profile to be used.',
+        )
+        return args
 
 
 class KEVMCLIArgs(KCLIArgs):
