@@ -81,10 +81,10 @@ def main() -> None:
     sys.setrecursionlimit(15000000)
     parser = _create_argument_parser()
     args = parser.parse_args()
-    parse_toml_args(args)
+    toml_args = parse_toml_args(args)
     logging.basicConfig(level=_loglevel(args), format=_LOG_FORMAT)
 
-    stripped_args = {
+    stripped_args =  toml_args | {
         key: val for (key, val) in vars(args).items() if val is not None and not (isinstance(val, Iterable) and not val)
     }
     options = generate_options(stripped_args)
