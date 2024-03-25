@@ -103,8 +103,8 @@ REST_BCHAIN_TESTS: Final = tuple(test_file for test_file in ALL_BCHAIN_TESTS if 
 
 @pytest.mark.parametrize(
     'test_file',
-    BCHAIN_TESTS,
-    ids=[str(test_file.relative_to(TEST_DIR)) for test_file in BCHAIN_TESTS],
+    BCHAIN_NEW_TESTS,
+    ids=[str(test_file.relative_to(TEST_DIR)) for test_file in BCHAIN_NEW_TESTS],
 )
 def test_bchain(test_file: Path) -> None:
     _test(test_file, 'SHANGHAI', 'NORMAL', 1, True)
