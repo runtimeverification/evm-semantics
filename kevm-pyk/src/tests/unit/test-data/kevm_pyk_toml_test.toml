@@ -1,0 +1,6 @@
+[run]
+no-usegas = true
+
+[run.a_profile]
+debugger = true
+no-usegas = false
