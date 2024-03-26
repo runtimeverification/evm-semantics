@@ -231,7 +231,7 @@ A cons-list is used for the EVM wordstack.
                   | Int ":" List [macro, symbol(_WS_)]
  // ---------------------------------------------------------
     rule .WordStack => .List
-    rule I:Int : L:List => ListItem(I) L
+    rule I : L => ListItem(I) L
 ```
 
 ```k
