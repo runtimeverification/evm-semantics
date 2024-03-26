@@ -33,6 +33,5 @@ module VERIFICATION
 
     rule chop(I) => I  requires 0 <=Int I andBool I <Int pow256 [simplification]
 
-    rule 0 <=Int #sizeWordStack ( _  , N ) => true                             requires 0  <=Int N [simplification, smt-lemma]
-    rule         #sizeWordStack ( WS , N ) => N +Int #sizeWordStack ( WS , 0 ) requires N =/=Int 0 [simplification]
+    rule 0 <=Int #sizeWordStack ( _ ) => true                              [simplification, smt-lemma]
 endmodule
