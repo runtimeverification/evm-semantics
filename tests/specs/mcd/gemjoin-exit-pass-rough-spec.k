@@ -202,10 +202,10 @@ module GEMJOIN-EXIT-PASS-ROUGH-SPEC
             <localMem> .Bytes => ?_ </localMem>
             <pc> 0 => ?_ </pc>
             <gas> #gas(VGas) => #if ( ABI_wad <Int 0 andBool ( minSInt256 <=Int ABI_wad andBool ( ABI_wad <=Int maxSInt256 andBool 0 <=Int ( Gem +Int ABI_wad ) ) ) )
-              #then   #gas ( ( ( VGas -Int Csstore( ISTANBUL , ( Gem +Int ABI_wad ) , Gem , Junk_1 ) ) +Int -6884 ) )
+              #then   #gas ( ( ( VGas -Int Csstore( getSchedule(ISTANBUL) , ( Gem +Int ABI_wad ) , Gem , Junk_1 ) ) +Int -6884 ) )
               #else   #if ABI_wad <=Int 0
-                #then   #gas ( ( ( VGas -Int Csstore( ISTANBUL , ( Gem +Int ABI_wad ) , Gem , Junk_1 ) ) +Int -6870 ) )
-                #else   #gas ( ( ( VGas -Int Csstore( ISTANBUL , ( Gem +Int ABI_wad ) , Gem , Junk_1 ) ) +Int -6884 ) )
+                #then   #gas ( ( ( VGas -Int Csstore( getSchedule(ISTANBUL) , ( Gem +Int ABI_wad ) , Gem , Junk_1 ) ) +Int -6870 ) )
+                #else   #gas ( ( ( VGas -Int Csstore( getSchedule(ISTANBUL) , ( Gem +Int ABI_wad ) , Gem , Junk_1 ) ) +Int -6884 ) )
               #fi
             #fi </gas>
             <memoryUsed> 0 => ?_ </memoryUsed>
@@ -319,7 +319,7 @@ module GEMJOIN-EXIT-PASS-ROUGH-SPEC
             <wordStack> .WordStack => ?_ </wordStack>
             <localMem> .Bytes => ?_ </localMem>
             <pc> 0 => ?_ </pc>
-            <gas> #gas(VGas) => #gas ( ( ( ( VGas -Int Csstore( ISTANBUL , ( Gem_c -Int ABI_wad ) , Gem_c , Junk_0 ) ) -Int Csstore( ISTANBUL , ( Gem_u +Int ABI_wad ) , Gem_u , Junk_1 ) ) +Int -6391 ) ) </gas>
+            <gas> #gas(VGas) => #gas ( ( ( ( VGas -Int Csstore( getSchedule(ISTANBUL) , ( Gem_c -Int ABI_wad ) , Gem_c , Junk_0 ) ) -Int Csstore( getSchedule(ISTANBUL) , ( Gem_u +Int ABI_wad ) , Gem_u , Junk_1 ) ) +Int -6391 ) ) </gas>
             <memoryUsed> 0 => ?_ </memoryUsed>
             <callGas> _ => ?_ </callGas>
             <static> false </static>

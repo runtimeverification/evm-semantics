@@ -28,7 +28,7 @@ module FLOPPER-CAGE-PASS-SPEC
             <wordStack> .WordStack => ?_ </wordStack>
             <localMem> .Bytes => ?_ </localMem>
             <pc> 0 => ?_ </pc>
-            <gas> #gas(VGas) => #gas ( ( ( ( VGas -Int Csstore( ISTANBUL , 0 , Live , Junk_1 ) ) -Int Csstore( ISTANBUL , CALLER_ID , Vow , Junk_2 ) ) +Int -6351 ) ) </gas>
+            <gas> #gas(VGas) => #gas ( ( ( ( VGas -Int Csstore( getSchedule(ISTANBUL) , 0 , Live , Junk_1 ) ) -Int Csstore( getSchedule(ISTANBUL) , CALLER_ID , Vow , Junk_2 ) ) +Int -6351 ) ) </gas>
             <memoryUsed> 0 => ?_ </memoryUsed>
             <callGas> _ => ?_ </callGas>
             <static> false </static>
