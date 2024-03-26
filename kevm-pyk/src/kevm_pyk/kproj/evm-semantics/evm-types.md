@@ -240,6 +240,15 @@ A cons-list is used for the EVM wordstack.
     rule I : BS => Int2Bytes(1, I, BE) +Bytes BS requires I <Int 256
 ```
 
+-   `#sizeWordStack` calculates the size of a `WordStack`.
+-   `_in_` determines if a `Int` occurs in a `WordStack`.
+
+```k
+    syntax Int ::= #sizeWordStack ( List )       [macro]
+ // ----------------------------------------------------
+    rule #sizeWordStack ( WS ) => size ( WS )
+```
+
 -   `WS [ START := WS' ]` assigns a contiguous chunk of `WS'` to `WS` starting at position `START`.
 -   `#write(WM, IDX, VAL)` assigns a value `VAL` at position `IDX` in `WM`.
 -   TODO: remove the first rule for `:=` when [#1844](https://github.com/runtimeverification/evm-semantics/issues/1844) is fixed.
