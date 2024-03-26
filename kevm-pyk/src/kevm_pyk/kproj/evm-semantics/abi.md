@@ -308,7 +308,7 @@ For most types, this is a fixed 32 bytes, except for static tuples, for which th
     rule #isStaticType(   #string( _ )) => false
     rule #isStaticType(#array(_, _, _)) => false
     rule #isStaticType( #tuple( ARGS )) => notBool #hasDynamicType(ARGS)
-    rule #isStaticType(              _) => true
+    rule #isStaticType(              _) => true                          [owise]
 
     syntax Bool ::= #hasDynamicType(TypedArgs) [klabel(#hasDynamicType), function, total]
  // -------------------------------------------------------------------------------------
