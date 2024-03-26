@@ -477,11 +477,11 @@ We make sure the given arguments (to be interpreted as addresses) are with 160 b
  // --------------------------------------------
     rule <k> #addr [ OP:OpCode ] => .K ... </k>
          <wordStack> WS => WS [ 0 <- #addr({WS [ 0 ]}:>Int) ] </wordStack>
-      requires isAddr1Op(OP)
+      requires isAddr1Op(OP) [preserves-definedness]
 
     rule <k> #addr [ OP:OpCode ] => .K ... </k>
          <wordStack> WS => WS [ 1 <- #addr({WS [ 1 ]}:>Int) ] </wordStack>
-      requires isAddr2Op(OP)
+      requires isAddr2Op(OP) [preserves-definedness]
 
     rule <k> #addr [ OP:OpCode ] => .K ... </k>
       requires notBool ( isAddr1Op(OP) orBool isAddr2Op(OP) )
