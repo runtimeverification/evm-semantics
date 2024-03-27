@@ -835,8 +835,8 @@ xdg-base-dirs = "^6.0.1"
 [package.source]
 type = "git"
 url = "https://github.com/runtimeverification/pyk.git"
-reference = "v0.1.746"
-resolved_reference = "c0831dbde94e67cd13ea28f22a3dfd28c3d866f3"
+reference = "sigterm-server"
+resolved_reference = "3732904d121a7305b70b01a2dc9205f5a07ddd44"
 
 [[package]]
 name = "pyperclip"
@@ -1116,4 +1116,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "85f81ee444b0d14f6fe8e3ac3b09093488aecdaafc8fe01e261125091c97bcf2"
+content-hash = "f0a40928a4cd8d18e4c2d1d2a1977908738ccab5a376eb47410d100b1f7ad141"
