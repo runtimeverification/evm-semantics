@@ -105,8 +105,8 @@ module INFINITE-GAS-SPEC
     claim [gas.comp.16]: <k> runLemma(#if _:Int ==Int 0 #then #gas(VGas -Int Csstore(_, _, _,_)) #else #gas(VGas +Int -344) #fi <Gas minGas(#if _ #then #gas(_) #else #gas(_) #fi, #gas(_)))  => doneLemma(false) ... </k>
     claim [gas.comp.17]: <k> runLemma(minGas(#if _ #then #gas(_) #else #gas(_) #fi, #gas(_)) <=Gas #if _:Int ==Int 0 #then #gas(VGas -Int Csstore(_, _, _,_)) #else #gas(VGas +Int -344) #fi) => doneLemma(true) ... </k>
 
-    claim [Csstore-1]:   <k> runLemma(9223372036854696114 -Int Csstore(LONDON, _, _, _) <Int 8) => doneLemma(false) ... </k>
-    claim [Csstore-2]:   <k> runLemma(8 <=Int 9223372036854763220 -Int Csstore(LONDON, _, _, _)) => doneLemma(true) ... </k>
+    claim [Csstore-1]:   <k> runLemma(9223372036854696114 -Int Csstore(getSchedule(LONDON), _, _, _) <Int 8) => doneLemma(false) ... </k>
+    claim [Csstore-2]:   <k> runLemma(8 <=Int 9223372036854763220 -Int Csstore(getSchedule(LONDON), _, _, _)) => doneLemma(true) ... </k>
 
     claim [gas.comp.18]: <k> runLemma(#allBut64th(#gas(_G)) <Gas #gas(_G')) => doneLemma(false) ... </k>
 
