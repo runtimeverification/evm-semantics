@@ -8,7 +8,7 @@ module DSVALUE-READ-PASS-SUMMARIZE-SPEC
 //    claim [DSValue.read.pass]:
 //      <k> #execute => #halt ... </k>
 //      <schedule> ISTANBUL </schedule>
-      <scheduleTuple> getSchedule(ISTANBUL) </scheduleTuple>
+//      <scheduleTuple> getSchedule(ISTANBUL) </scheduleTuple>
 //      <evm>
 //        <statusCode> _ => ?FAILURE:EndStatusCode </statusCode>
 //        <callState>
