@@ -110,7 +110,7 @@ module INFINITE-GAS-SPEC
 
     claim [gas.comp.18]: <k> runLemma(#allBut64th(#gas(_G)) <Gas #gas(_G')) => doneLemma(false) ... </k>
 
-    claim [gas.comp.19]: <k> runLemma(Gverylow < _ > <=Gas #gas(_)) => doneLemma(true) ... </k>
+    claim [gas.comp.19]: <k> runLemma(Gverylow( _ ) <=Gas #gas(_)) => doneLemma(true) ... </k>
 
     claim [gas.comp.20]: <k> runLemma(Gexp(SCHED) +Int Gexpbyte(SCHED) *Int ( log2Int ( W1 ) /Int 8 +Int 1 ) <=Gas #gas(_)) => doneLemma(true)  ... </k> requires 0 <Int W1 andBool W1 <Int pow256
     claim [gas.comp.21]: <k> runLemma(#gas(_) <Gas Gexp(SCHED) +Int Gexpbyte(SCHED) *Int ( log2Int ( W1 ) /Int 8 +Int 1 ))  => doneLemma(false) ... </k> requires 0 <Int W1 andBool W1 <Int pow256
