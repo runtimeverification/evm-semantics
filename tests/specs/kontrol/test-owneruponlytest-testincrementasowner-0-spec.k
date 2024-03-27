@@ -368,13 +368,13 @@ module TEST-OWNERUPONLYTEST-TESTINCREMENTASOWNER-0-SPEC
                      1541
                    </pc>
                    <gas>
-                     #gas ( ( ( VGAS:Int -Int Cgascap ( SHANGHAI , ( VGAS:Int +Int -7882 ) , ( VGAS:Int +Int -7882 ) , 100 ) ) +Int -7982 ) )
+                     #gas ( ( ( VGAS:Int -Int Cgascap ( getSchedule(SHANGHAI) , ( VGAS:Int +Int -7882 ) , ( VGAS:Int +Int -7882 ) , 100 ) ) +Int -7982 ) )
                    </gas>
                    <memoryUsed>
                      6
                    </memoryUsed>
                    <callGas>
-                     #gas ( Cgascap ( SHANGHAI , ( VGAS:Int +Int -7882 ) , ( VGAS:Int +Int -7882 ) , 100 ) )
+                     #gas ( Cgascap ( getSchedule(SHANGHAI) , ( VGAS:Int +Int -7882 ) , ( VGAS:Int +Int -7882 ) , 100 ) )
                    </callGas>
                    <static>
                      false
@@ -497,13 +497,13 @@ module TEST-OWNERUPONLYTEST-TESTINCREMENTASOWNER-0-SPEC
                    ( 1541 => 170 )
                  </pc>
                  <gas>
-                   #gas ( ( ( ( VGAS:Int -Int Cgascap ( SHANGHAI , ( VGAS:Int +Int -7882 ) , ( VGAS:Int +Int -7882 ) , 100 ) ) => Cgascap ( SHANGHAI , ( VGAS:Int +Int -7882 ) , ( VGAS:Int +Int -7882 ) , 100 ) ) +Int ( -7982 => -20392 ) ) )
+                   #gas ( ( ( ( VGAS:Int -Int Cgascap ( getSchedule(SHANGHAI) , ( VGAS:Int +Int -7882 ) , ( VGAS:Int +Int -7882 ) , 100 ) ) => Cgascap ( getSchedule(SHANGHAI) , ( VGAS:Int +Int -7882 ) , ( VGAS:Int +Int -7882 ) , 100 ) ) +Int ( -7982 => -20392 ) ) )
                  </gas>
                  <memoryUsed>
                    ( 6 => 3 )
                  </memoryUsed>
                  <callGas>
-                   ( #gas ( Cgascap ( SHANGHAI , ( VGAS:Int +Int -7882 ) , ( VGAS:Int +Int -7882 ) , 100 ) ) => 0 )
+                   ( #gas ( Cgascap ( getSchedule(SHANGHAI) , ( VGAS:Int +Int -7882 ) , ( VGAS:Int +Int -7882 ) , 100 ) ) => 0 )
                  </callGas>
                  <static>
                    false

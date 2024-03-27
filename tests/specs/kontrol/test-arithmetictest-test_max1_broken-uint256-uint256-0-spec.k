@@ -69,7 +69,7 @@ module TEST-ARITHMETICTEST-TEST_MAX1_BROKEN-UINT256-UINT256-0-SPEC
                    6
                  </memoryUsed>
                  <callGas>
-                   #gas ( Cgascap ( SHANGHAI , ( VGAS:Int +Int -3094 ) , ( VGAS:Int +Int -3094 ) , 100 ) )
+                   #gas ( Cgascap ( getSchedule(SHANGHAI) , ( VGAS:Int +Int -3094 ) , ( VGAS:Int +Int -3094 ) , 100 ) )
                  </callGas>
                  <static>
                    false

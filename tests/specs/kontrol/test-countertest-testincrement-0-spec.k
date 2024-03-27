@@ -313,7 +313,7 @@ module TEST-COUNTERTEST-TESTINCREMENT-0-SPEC
              ~> #dropWorldState
              ~> 1
              ~> #push
-             ~> #refund #gas ( ( Cgascap ( SHANGHAI , ( ( ( ( VGAS:Int +Int -32352 ) /Int 64 ) +Int #allBut64th ( ( VGAS:Int +Int -32352 ) ) ) +Int -74781 ) , ( ( ( ( VGAS:Int +Int -32352 ) /Int 64 ) +Int #allBut64th ( ( VGAS:Int +Int -32352 ) ) ) +Int -74781 ) , 100 ) +Int -20340 ) )
+             ~> #refund #gas ( ( Cgascap ( getSchedule(SHANGHAI) , ( ( ( ( VGAS:Int +Int -32352 ) /Int 64 ) +Int #allBut64th ( ( VGAS:Int +Int -32352 ) ) ) +Int -74781 ) , ( ( ( ( VGAS:Int +Int -32352 ) /Int 64 ) +Int #allBut64th ( ( VGAS:Int +Int -32352 ) ) ) +Int -74781 ) , 100 ) +Int -20340 ) )
              ~> #setLocalMem 128 0 b""
              ~> #pc [ CALL ] => STATICCALL ( ( ( ( VGAS:Int +Int -32352 ) /Int 64 ) +Int #allBut64th ( ( VGAS:Int +Int -32352 ) ) ) +Int -95486 ) 491460923342184218035706888008750043977755113263 128 4 128 32
              ~> #pc [ STATICCALL ] )
@@ -370,13 +370,13 @@ module TEST-COUNTERTEST-TESTINCREMENT-0-SPEC
                      2284
                    </pc>
                    <gas>
-                     #gas ( ( ( ( ( ( VGAS:Int +Int -32352 ) /Int 64 ) +Int #allBut64th ( ( VGAS:Int +Int -32352 ) ) ) -Int Cgascap ( SHANGHAI , ( ( ( ( VGAS:Int +Int -32352 ) /Int 64 ) +Int #allBut64th ( ( VGAS:Int +Int -32352 ) ) ) +Int -74781 ) , ( ( ( ( VGAS:Int +Int -32352 ) /Int 64 ) +Int #allBut64th ( ( VGAS:Int +Int -32352 ) ) ) +Int -74781 ) , 100 ) ) +Int -74881 ) )
+                     #gas ( ( ( ( ( ( VGAS:Int +Int -32352 ) /Int 64 ) +Int #allBut64th ( ( VGAS:Int +Int -32352 ) ) ) -Int Cgascap ( getSchedule(SHANGHAI) , ( ( ( ( VGAS:Int +Int -32352 ) /Int 64 ) +Int #allBut64th ( ( VGAS:Int +Int -32352 ) ) ) +Int -74781 ) , ( ( ( ( VGAS:Int +Int -32352 ) /Int 64 ) +Int #allBut64th ( ( VGAS:Int +Int -32352 ) ) ) +Int -74781 ) , 100 ) ) +Int -74881 ) )
                    </gas>
                    <memoryUsed>
                      13
                    </memoryUsed>
                    <callGas>
-                     #gas ( Cgascap ( SHANGHAI , ( ( ( ( VGAS:Int +Int -32352 ) /Int 64 ) +Int #allBut64th ( ( VGAS:Int +Int -32352 ) ) ) +Int -74781 ) , ( ( ( ( VGAS:Int +Int -32352 ) /Int 64 ) +Int #allBut64th ( ( VGAS:Int +Int -32352 ) ) ) +Int -74781 ) , 100 ) )
+                     #gas ( Cgascap ( getSchedule(SHANGHAI) , ( ( ( ( VGAS:Int +Int -32352 ) /Int 64 ) +Int #allBut64th ( ( VGAS:Int +Int -32352 ) ) ) +Int -74781 ) , ( ( ( ( VGAS:Int +Int -32352 ) /Int 64 ) +Int #allBut64th ( ( VGAS:Int +Int -32352 ) ) ) +Int -74781 ) , 100 ) )
                    </callGas>
                    <static>
                      false
@@ -499,13 +499,13 @@ module TEST-COUNTERTEST-TESTINCREMENT-0-SPEC
                    ( 82 => 2374 )
                  </pc>
                  <gas>
-                   #gas ( ( ( Cgascap ( SHANGHAI , ( ( ( ( VGAS:Int +Int -32352 ) /Int 64 ) +Int #allBut64th ( ( VGAS:Int +Int -32352 ) ) ) +Int -74781 ) , ( ( ( ( VGAS:Int +Int -32352 ) /Int 64 ) +Int #allBut64th ( ( VGAS:Int +Int -32352 ) ) ) +Int -74781 ) , 100 ) => ( ( ( ( VGAS:Int +Int -32352 ) /Int 64 ) +Int #allBut64th ( ( VGAS:Int +Int -32352 ) ) ) -Int Cgascap ( SHANGHAI , ( ( ( ( VGAS:Int +Int -32352 ) /Int 64 ) +Int #allBut64th ( ( VGAS:Int +Int -32352 ) ) ) +Int -95486 ) , ( ( ( ( VGAS:Int +Int -32352 ) /Int 64 ) +Int #allBut64th ( ( VGAS:Int +Int -32352 ) ) ) +Int -95486 ) , 100 ) ) ) +Int ( -20340 => -95586 ) ) )
+                   #gas ( ( ( Cgascap ( getSchedule(SHANGHAI) , ( ( ( ( VGAS:Int +Int -32352 ) /Int 64 ) +Int #allBut64th ( ( VGAS:Int +Int -32352 ) ) ) +Int -74781 ) , ( ( ( ( VGAS:Int +Int -32352 ) /Int 64 ) +Int #allBut64th ( ( VGAS:Int +Int -32352 ) ) ) +Int -74781 ) , 100 ) => ( ( ( ( VGAS:Int +Int -32352 ) /Int 64 ) +Int #allBut64th ( ( VGAS:Int +Int -32352 ) ) ) -Int Cgascap ( getSchedule(SHANGHAI) , ( ( ( ( VGAS:Int +Int -32352 ) /Int 64 ) +Int #allBut64th ( ( VGAS:Int +Int -32352 ) ) ) +Int -95486 ) , ( ( ( ( VGAS:Int +Int -32352 ) /Int 64 ) +Int #allBut64th ( ( VGAS:Int +Int -32352 ) ) ) +Int -95486 ) , 100 ) ) ) +Int ( -20340 => -95586 ) ) )
                  </gas>
                  <memoryUsed>
                    ( 3 => 13 )
                  </memoryUsed>
                  <callGas>
-                   ( 0 => #gas ( Cgascap ( SHANGHAI , ( ( ( ( VGAS:Int +Int -32352 ) /Int 64 ) +Int #allBut64th ( ( VGAS:Int +Int -32352 ) ) ) +Int -95486 ) , ( ( ( ( VGAS:Int +Int -32352 ) /Int 64 ) +Int #allBut64th ( ( VGAS:Int +Int -32352 ) ) ) +Int -95486 ) , 100 ) ) )
+                   ( 0 => #gas ( Cgascap ( getSchedule(SHANGHAI) , ( ( ( ( VGAS:Int +Int -32352 ) /Int 64 ) +Int #allBut64th ( ( VGAS:Int +Int -32352 ) ) ) +Int -95486 ) , ( ( ( ( VGAS:Int +Int -32352 ) /Int 64 ) +Int #allBut64th ( ( VGAS:Int +Int -32352 ) ) ) +Int -95486 ) , 100 ) ) )
                  </callGas>
                  <static>
                    false
@@ -681,13 +681,13 @@ module TEST-COUNTERTEST-TESTINCREMENT-0-SPEC
                      2374
                    </pc>
                    <gas>
-                     #gas ( ( ( ( ( ( VGAS:Int +Int -32352 ) /Int 64 ) +Int #allBut64th ( ( VGAS:Int +Int -32352 ) ) ) -Int Cgascap ( SHANGHAI , ( ( ( ( VGAS:Int +Int -32352 ) /Int 64 ) +Int #allBut64th ( ( VGAS:Int +Int -32352 ) ) ) +Int -95486 ) , ( ( ( ( VGAS:Int +Int -32352 ) /Int 64 ) +Int #allBut64th ( ( VGAS:Int +Int -32352 ) ) ) +Int -95486 ) , 100 ) ) +Int -95586 ) )
+                     #gas ( ( ( ( ( ( VGAS:Int +Int -32352 ) /Int 64 ) +Int #allBut64th ( ( VGAS:Int +Int -32352 ) ) ) -Int Cgascap ( getSchedule(SHANGHAI) , ( ( ( ( VGAS:Int +Int -32352 ) /Int 64 ) +Int #allBut64th ( ( VGAS:Int +Int -32352 ) ) ) +Int -95486 ) , ( ( ( ( VGAS:Int +Int -32352 ) /Int 64 ) +Int #allBut64th ( ( VGAS:Int +Int -32352 ) ) ) +Int -95486 ) , 100 ) ) +Int -95586 ) )
                    </gas>
                    <memoryUsed>
                      13
                    </memoryUsed>
                    <callGas>
-                     #gas ( Cgascap ( SHANGHAI , ( ( ( ( VGAS:Int +Int -32352 ) /Int 64 ) +Int #allBut64th ( ( VGAS:Int +Int -32352 ) ) ) +Int -95486 ) , ( ( ( ( VGAS:Int +Int -32352 ) /Int 64 ) +Int #allBut64th ( ( VGAS:Int +Int -32352 ) ) ) +Int -95486 ) , 100 ) )
+                     #gas ( Cgascap ( getSchedule(SHANGHAI) , ( ( ( ( VGAS:Int +Int -32352 ) /Int 64 ) +Int #allBut64th ( ( VGAS:Int +Int -32352 ) ) ) +Int -95486 ) , ( ( ( ( VGAS:Int +Int -32352 ) /Int 64 ) +Int #allBut64th ( ( VGAS:Int +Int -32352 ) ) ) +Int -95486 ) , 100 ) )
                    </callGas>
                    <static>
                      false
@@ -810,13 +810,13 @@ module TEST-COUNTERTEST-TESTINCREMENT-0-SPEC
                    ( 2374 => 108 )
                  </pc>
                  <gas>
-                   #gas ( ( ( ( ( ( ( VGAS:Int +Int -32352 ) /Int 64 ) +Int #allBut64th ( ( VGAS:Int +Int -32352 ) ) ) -Int Cgascap ( SHANGHAI , ( ( ( ( VGAS:Int +Int -32352 ) /Int 64 ) +Int #allBut64th ( ( VGAS:Int +Int -32352 ) ) ) +Int -95486 ) , ( ( ( ( VGAS:Int +Int -32352 ) /Int 64 ) +Int #allBut64th ( ( VGAS:Int +Int -32352 ) ) ) +Int -95486 ) , 100 ) ) => Cgascap ( SHANGHAI , ( ( ( ( VGAS:Int +Int -32352 ) /Int 64 ) +Int #allBut64th ( ( VGAS:Int +Int -32352 ) ) ) +Int -95486 ) , ( ( ( ( VGAS:Int +Int -32352 ) /Int 64 ) +Int #allBut64th ( ( VGAS:Int +Int -32352 ) ) ) +Int -95486 ) , 100 ) ) +Int ( -95586 => -283 ) ) )
+                   #gas ( ( ( ( ( ( ( VGAS:Int +Int -32352 ) /Int 64 ) +Int #allBut64th ( ( VGAS:Int +Int -32352 ) ) ) -Int Cgascap ( getSchedule(SHANGHAI) , ( ( ( ( VGAS:Int +Int -32352 ) /Int 64 ) +Int #allBut64th ( ( VGAS:Int +Int -32352 ) ) ) +Int -95486 ) , ( ( ( ( VGAS:Int +Int -32352 ) /Int 64 ) +Int #allBut64th ( ( VGAS:Int +Int -32352 ) ) ) +Int -95486 ) , 100 ) ) => Cgascap ( getSchedule(SHANGHAI) , ( ( ( ( VGAS:Int +Int -32352 ) /Int 64 ) +Int #allBut64th ( ( VGAS:Int +Int -32352 ) ) ) +Int -95486 ) , ( ( ( ( VGAS:Int +Int -32352 ) /Int 64 ) +Int #allBut64th ( ( VGAS:Int +Int -32352 ) ) ) +Int -95486 ) , 100 ) ) +Int ( -95586 => -283 ) ) )
                  </gas>
                  <memoryUsed>
                    ( 13 => 5 )
                  </memoryUsed>
                  <callGas>
-                   ( #gas ( Cgascap ( SHANGHAI , ( ( ( ( VGAS:Int +Int -32352 ) /Int 64 ) +Int #allBut64th ( ( VGAS:Int +Int -32352 ) ) ) +Int -95486 ) , ( ( ( ( VGAS:Int +Int -32352 ) /Int 64 ) +Int #allBut64th ( ( VGAS:Int +Int -32352 ) ) ) +Int -95486 ) , 100 ) ) => 0 )
+                   ( #gas ( Cgascap ( getSchedule(SHANGHAI) , ( ( ( ( VGAS:Int +Int -32352 ) /Int 64 ) +Int #allBut64th ( ( VGAS:Int +Int -32352 ) ) ) +Int -95486 ) , ( ( ( ( VGAS:Int +Int -32352 ) /Int 64 ) +Int #allBut64th ( ( VGAS:Int +Int -32352 ) ) ) +Int -95486 ) , 100 ) ) => 0 )
                  </callGas>
                  <static>
                    ( false => true )

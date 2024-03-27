@@ -378,7 +378,7 @@ module TEST-EXPECTREVERTTEST-TESTFAIL_EXPECTREVERT_FALSE-0-SPEC
                    25
                  </memoryUsed>
                  <callGas>
-                   #gas ( Cgascap ( SHANGHAI , ( ( ( ( VGAS:Int +Int -32496 ) /Int 64 ) +Int #allBut64th ( ( VGAS:Int +Int -32496 ) ) ) +Int -127571 ) , ( ( ( ( VGAS:Int +Int -32496 ) /Int 64 ) +Int #allBut64th ( ( VGAS:Int +Int -32496 ) ) ) +Int -127571 ) , 100 ) )
+                   #gas ( Cgascap ( getSchedule(SHANGHAI) , ( ( ( ( VGAS:Int +Int -32496 ) /Int 64 ) +Int #allBut64th ( ( VGAS:Int +Int -32496 ) ) ) +Int -127571 ) , ( ( ( ( VGAS:Int +Int -32496 ) /Int 64 ) +Int #allBut64th ( ( VGAS:Int +Int -32496 ) ) ) +Int -127571 ) , 100 ) )
                  </callGas>
                  <static>
                    false
