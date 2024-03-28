@@ -8,7 +8,7 @@ It will incrementally build up to supporting the entire [EVM-C API].
 module NETWORK
     imports STRING-SYNTAX
 
-    syntax String ::= StatusCode2String(StatusCode) [klabel(StatusCode2String), function]
+    syntax String ::= StatusCode2String(StatusCode) [symbol(StatusCode2String), function]
  // -------------------------------------------------------------------------------------
 ```
 
