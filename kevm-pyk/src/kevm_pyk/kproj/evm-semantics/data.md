@@ -14,6 +14,7 @@ module EVM-DATA
     imports STRING-BUFFER
     imports MAP-SYMBOLIC
     imports SET-SYMBOLIC
+    imports LIST-SYMBOLIC
     imports COLLECTIONS
     imports JSON-EXT
 ```
