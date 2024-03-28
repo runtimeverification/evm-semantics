@@ -13,16 +13,17 @@ module VERIFICATION
 
 endmodule
 
-module HELPERS-SPEC
+module ABI-SPEC
     imports VERIFICATION
-
 
  // EVM Type helper
  // ---------------
 
     // checking the function evaluation that went wrong in LLVM (issue booster-558)
     claim [isStaticType-fix-2371]:
-//      <k> runLemma ( #isStaticType( #bytes(b"\229\230/\221") ) ) => doneLemma ( false ) ... </k>
+      <k> runLemma ( #isStaticType( #bytes(b"\xe6\xe5/\xdd") ) ) => doneLemma ( false ) ... </k>
+
+    claim [isStaticType-bytes-false]:
       <k> runLemma ( #isStaticType( #bytes(_) ) ) => doneLemma ( false ) ... </k>
 
     // checking the resulting #encodeArgs behaviour
