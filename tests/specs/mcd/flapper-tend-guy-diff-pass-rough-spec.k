@@ -9,6 +9,7 @@ module FLAPPER-TEND-GUY-DIFF-PASS-ROUGH-SPEC
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
+      <scheduleTuple> getSchedule(ISTANBUL) </scheduleTuple>
       <useGas> true </useGas>
       <ethereum>
         <evm>
@@ -224,6 +225,7 @@ module FLAPPER-TEND-GUY-DIFF-PASS-ROUGH-SPEC
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
+      <scheduleTuple> getSchedule(ISTANBUL) </scheduleTuple>
     <useGas> true </useGas>
       <ethereum>
         <evm>
@@ -325,6 +327,7 @@ module FLAPPER-TEND-GUY-DIFF-PASS-ROUGH-SPEC
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
+      <scheduleTuple> getSchedule(ISTANBUL) </scheduleTuple>
     <useGas> true </useGas>
       <ethereum>
         <evm>
@@ -429,6 +432,7 @@ module FLAPPER-TEND-GUY-DIFF-PASS-ROUGH-SPEC
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
+      <scheduleTuple> getSchedule(ISTANBUL) </scheduleTuple>
     <useGas> true </useGas>
       <ethereum>
         <evm>
@@ -448,8 +452,8 @@ module FLAPPER-TEND-GUY-DIFF-PASS-ROUGH-SPEC
             <localMem> .Bytes => ?_ </localMem>
             <pc> 0 => ?_ </pc>
             <gas> #gas(VGas) => #if ( #lookup( ACCT_ID_STORAGE , #hashedLocation("Solidity", 2, ABI_src CALLER_ID .IntList) ) ==Int maxUInt256 andBool ( Allowance ==Int maxUInt256 andBool ( maxUInt256 ==Int maxUInt256 orBool ABI_wad <=Int maxUInt256 ) ) )
-              #then   #gas ( ( ( ( VGas -Int Csstore( ISTANBUL , ( Gem_s -Int ABI_wad ) , Gem_s , Junk_1 ) ) -Int Csstore( ISTANBUL , ( Gem_d +Int ABI_wad ) , Gem_d , Junk_2 ) ) +Int -7281 ) )
-              #else   #gas ( ( ( ( ( VGas -Int Csstore( ISTANBUL , ( Allowance -Int ABI_wad ) , Allowance , Junk_0 ) ) -Int Csstore( ISTANBUL , ( Gem_s -Int ABI_wad ) , Gem_s , Junk_1 ) ) -Int Csstore( ISTANBUL , ( Gem_d +Int ABI_wad ) , Gem_d , Junk_2 ) ) +Int -9538 ) )
+              #then   #gas ( ( ( ( VGas -Int Csstore( getSchedule(ISTANBUL) , ( Gem_s -Int ABI_wad ) , Gem_s , Junk_1 ) ) -Int Csstore( getSchedule(ISTANBUL) , ( Gem_d +Int ABI_wad ) , Gem_d , Junk_2 ) ) +Int -7281 ) )
+              #else   #gas ( ( ( ( ( VGas -Int Csstore( getSchedule(ISTANBUL) , ( Allowance -Int ABI_wad ) , Allowance , Junk_0 ) ) -Int Csstore( getSchedule(ISTANBUL) , ( Gem_s -Int ABI_wad ) , Gem_s , Junk_1 ) ) -Int Csstore( getSchedule(ISTANBUL) , ( Gem_d +Int ABI_wad ) , Gem_d , Junk_2 ) ) +Int -9538 ) )
             #fi </gas>
             <memoryUsed> 0 => ?_ </memoryUsed>
             <callGas> _ => ?_ </callGas>

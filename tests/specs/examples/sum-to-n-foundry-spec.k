@@ -29,6 +29,7 @@ claim [foundry-sum-to-n-loop-invariant]:
     <schedule>
       LONDON
     </schedule>
+    <scheduleTuple> getSchedule(LONDON) </scheduleTuple>
     <useGas>
       true
     </useGas>

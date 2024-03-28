@@ -19,6 +19,9 @@ module TEST-SAFETEST-TESTWITHDRAWFUZZ-UINT96-0-SPEC
            <schedule>
              SHANGHAI
            </schedule>
+           <scheduleTuple>
+             getSchedule(SHANGHAI)
+           </scheduleTuple>
            <useGas>
              true
            </useGas>

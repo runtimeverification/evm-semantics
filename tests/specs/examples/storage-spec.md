@@ -73,6 +73,7 @@ module STORAGE-SPEC
     claim [myBool]:
           <mode>     NORMAL   </mode>
           <schedule> ISTANBUL </schedule>
+          <scheduleTuple> getSchedule(ISTANBUL) </scheduleTuple>
           <useGas>  true     </useGas>
 
           <callStack> .List                                        </callStack>
@@ -107,6 +108,7 @@ module STORAGE-SPEC
     claim [setMyBool]:
           <mode>     NORMAL   </mode>
           <schedule> ISTANBUL </schedule>
+          <scheduleTuple> getSchedule(ISTANBUL) </scheduleTuple>
           <useGas>  true     </useGas>
 
           <callStack> .List                                        </callStack>

@@ -16,6 +16,9 @@ module TEST-ARITHMETICTEST-TEST_WMUL_WDIV_INVERSE_UNDERFLOW-UINT256-UINT256-0-SP
            <schedule>
              SHANGHAI
            </schedule>
+           <scheduleTuple>
+             getSchedule(SHANGHAI)
+           </scheduleTuple>
            <useGas>
              true
            </useGas>

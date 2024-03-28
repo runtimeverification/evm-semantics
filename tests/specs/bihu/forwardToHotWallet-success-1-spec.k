@@ -10,6 +10,7 @@ module FORWARDTOHOTWALLET-SUCCESS-1-SPEC
     <exit-code> 1 </exit-code>
     <mode> NORMAL </mode>
     <schedule> BYZANTIUM </schedule>
+    <scheduleTuple> getSchedule(BYZANTIUM) </scheduleTuple>
     <useGas> true </useGas>
 
     <ethereum>

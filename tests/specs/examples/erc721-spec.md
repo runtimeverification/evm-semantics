@@ -79,6 +79,7 @@ claim <k> runLemma(#lookup(ACCT_STORAGE, 0) /Int 2 <Int 32)
     claim [name.short.success]:
           <mode>     NORMAL   </mode>
           <schedule> ISTANBUL </schedule>
+          <scheduleTuple> getSchedule(ISTANBUL) </scheduleTuple>
           <useGas>  true     </useGas>
 
           <callStack> .List                                       </callStack>
@@ -114,6 +115,7 @@ claim <k> runLemma(#lookup(ACCT_STORAGE, 0) /Int 2 <Int 32)
     claim [name.short.revert]:
           <mode>     NORMAL   </mode>
           <schedule> ISTANBUL </schedule>
+          <scheduleTuple> getSchedule(ISTANBUL) </scheduleTuple>
           <useGas>  true     </useGas>
 
           <callStack> .List                                       </callStack>

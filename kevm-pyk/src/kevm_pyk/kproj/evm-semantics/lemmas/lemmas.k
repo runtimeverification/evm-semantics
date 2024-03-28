@@ -116,32 +116,31 @@ module LEMMAS [symbolic]
     rule 0 <=Int Cgascap(_, _:Int, _:Int, _)    => true                                       [simplification]
     rule 0 <=Int #allBut64th(_:Int)             => true                                       [simplification]
     rule 0 <=Int Cextra(_, _, _, _)             => true                                       [simplification]
-    rule 0 <=Int _:ScheduleConst < _:Schedule > => true                                       [simplification]
     rule 0 <=Int G up/Int I                     => true requires 0 <=Int G andBool 0 <Int I   [simplification]
     rule Cextra(_, _, _, _) <Int pow256         => true                                       [simplification]
 
     rule G <Int Csstore(SCHED, _:Int, _:Int, _) => false
-      requires Gsload       < SCHED > <=Int G
-       andBool Gsstoreset   < SCHED > <=Int G
-       andBool Gsstorereset < SCHED > <=Int G
+      requires Gsload       (SCHED) <=Int G
+       andBool Gsstoreset   (SCHED) <=Int G
+       andBool Gsstorereset (SCHED) <=Int G
       [simplification]
 
     rule Csstore(SCHED, _:Int, _:Int, _) <=Int G => true
-      requires Gsload       < SCHED > <=Int G
-       andBool Gsstoreset   < SCHED > <=Int G
-       andBool Gsstorereset < SCHED > <=Int G
+      requires Gsload       (SCHED) <=Int G
+       andBool Gsstoreset   (SCHED) <=Int G
+       andBool Gsstorereset (SCHED) <=Int G
       [simplification]
 
     rule G <=Int Csstore(SCHED, _:Int, _:Int, _) => false
-      requires Gsload       < SCHED > <Int G
-       andBool Gsstoreset   < SCHED > <Int G
-       andBool Gsstorereset < SCHED > <Int G
+      requires Gsload       (SCHED) <Int G
+       andBool Gsstoreset   (SCHED) <Int G
+       andBool Gsstorereset (SCHED) <Int G
       [simplification]
 
     rule Csstore(SCHED, _:Int, _:Int, _) <Int G => true
-      requires Gsload       < SCHED > <Int G
-       andBool Gsstoreset   < SCHED > <Int G
-       andBool Gsstorereset < SCHED > <Int G
+      requires Gsload       (SCHED) <Int G
+       andBool Gsstoreset   (SCHED) <Int G
+       andBool Gsstorereset (SCHED) <Int G
       [simplification]
 
 endmodule

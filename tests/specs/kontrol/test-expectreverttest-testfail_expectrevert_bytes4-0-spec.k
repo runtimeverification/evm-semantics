@@ -19,6 +19,9 @@ module TEST-EXPECTREVERTTEST-TESTFAIL_EXPECTREVERT_BYTES4-0-SPEC
            <schedule>
              SHANGHAI
            </schedule>
+           <scheduleTuple>
+             getSchedule(SHANGHAI)
+           </scheduleTuple>
            <useGas>
              true
            </useGas>

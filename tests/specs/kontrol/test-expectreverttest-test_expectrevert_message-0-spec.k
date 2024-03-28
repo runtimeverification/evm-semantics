@@ -19,6 +19,9 @@ module TEST-EXPECTREVERTTEST-TEST_EXPECTREVERT_MESSAGE-0-SPEC
            <schedule>
              SHANGHAI
            </schedule>
+           <scheduleTuple>
+             getSchedule(SHANGHAI)
+           </scheduleTuple>
            <useGas>
              true
            </useGas>

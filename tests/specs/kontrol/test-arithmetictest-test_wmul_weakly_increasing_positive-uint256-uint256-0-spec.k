@@ -16,6 +16,9 @@ module TEST-ARITHMETICTEST-TEST_WMUL_WEAKLY_INCREASING_POSITIVE-UINT256-UINT256-
            <schedule>
              SHANGHAI
            </schedule>
+           <scheduleTuple>
+             getSchedule(SHANGHAI)
+           </scheduleTuple>
            <useGas>
              true
            </useGas>
@@ -169,6 +172,9 @@ module TEST-ARITHMETICTEST-TEST_WMUL_WEAKLY_INCREASING_POSITIVE-UINT256-UINT256-
            <schedule>
              SHANGHAI
            </schedule>
+           <scheduleTuple>
+             getSchedule(SHANGHAI)
+           </scheduleTuple>
            <useGas>
              true
            </useGas>

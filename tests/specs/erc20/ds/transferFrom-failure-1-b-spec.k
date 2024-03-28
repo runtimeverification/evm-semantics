@@ -10,6 +10,7 @@ module TRANSFERFROM-FAILURE-1-B-SPEC
     <exit-code> 1 </exit-code>
     <mode> NORMAL </mode>
     <schedule> CONSTANTINOPLE </schedule>
+    <scheduleTuple> getSchedule(CONSTANTINOPLE) </scheduleTuple>
     <useGas> true </useGas>
 
     <ethereum>

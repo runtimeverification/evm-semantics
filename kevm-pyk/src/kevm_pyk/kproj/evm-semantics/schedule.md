@@ -20,7 +20,7 @@ requires "data.md"
 module SCHEDULE
     imports EVM-DATA
 
-    syntax Bool ::= ScheduleFlag "<<" Schedule ">>" [function, total]
+    syntax Bool ::= ScheduleFlag "<<" Schedule ">>" [function, total, private]
  // -----------------------------------------------------------------
 
     syntax ScheduleFlag ::= "Gselfdestructnewaccount" | "Gstaticcalldepth" | "Gemptyisnonexistent" | "Gzerovaluenewaccountgas"
@@ -28,8 +28,8 @@ module SCHEDULE
                           | "Ghasdirtysstore"         | "Ghascreate2"      | "Ghasextcodehash"     | "Ghasselfbalance"
                           | "Ghassstorestipend"       | "Ghaschainid"      | "Ghasaccesslist"      | "Ghasbasefee"
                           | "Ghasrejectedfirstbyte"   | "Ghasprevrandao"   | "Ghasmaxinitcodesize" | "Ghaspushzero"
-                          | "Ghaswarmcoinbase"
- // ------------------------------------------
+                          | "Ghaswarmcoinbase"        | "Ghasdelegatecall"
+ // ----------------------------------------------------------------------
 ```
 
 ### Schedule Constants
@@ -37,7 +37,7 @@ module SCHEDULE
 A `ScheduleConst` is a constant determined by the fee schedule.
 
 ```k
-    syntax Int ::= ScheduleConst "<" Schedule ">" [function, total]
+    syntax Int ::= ScheduleConst "<" Schedule ">" [function, total, private]
  // ---------------------------------------------------------------
 
     syntax ScheduleConst ::= "Gzero"         | "Gbase"         | "Gverylow"      | "Glow"              | "Gmid"               | "Ghigh"            | "Gextcodesize"
@@ -51,100 +51,49 @@ A `ScheduleConst` is a constant determined by the fee schedule.
  // ----------------------------------------------------------------------------------------------------------------------
 ```
 
-### Default Schedule
+### Schedule Tuple
+
+A `ScheduleTuple` is a tuple containing all of the fee schedule values for a particular `Schedule`.
 
 ```k
-    syntax Schedule ::= "DEFAULT" [klabel(DEFAULT_EVM), symbol, smtlib(schedule_DEFAULT)]
- // -------------------------------------------------------------------------------------
-    rule Gzero    < DEFAULT > => 0
-    rule Gbase    < DEFAULT > => 2
-    rule Gverylow < DEFAULT > => 3
-    rule Glow     < DEFAULT > => 5
-    rule Gmid     < DEFAULT > => 8
-    rule Ghigh    < DEFAULT > => 10
+    syntax ScheduleTuple ::= schedule(
+        Gzero: Int,         Gbase: Int,         Gverylow: Int,     Glow: Int,              Gmid: Int,               Ghigh: Int,            Gextcodesize: Int,
+        Gextcodecopy: Int,  Gbalance: Int,      Gsload: Int,       Gjumpdest: Int,         Gsstoreset: Int,         Gsstorereset: Int,     Rsstoreclear: Int,
+        Rselfdestruct: Int, Gselfdestruct: Int, Gcreate: Int,      Gcodedeposit: Int,      Gcall: Int,              Gcallvalue: Int,       Gcallstipend: Int,
+        Gnewaccount: Int,   Gexp: Int,          Gexpbyte: Int,     Gmemory: Int,           Gtxcreate: Int,          Gtxdatazero: Int,      Gtxdatanonzero: Int,
+        Gtransaction: Int,  Glog: Int,          Glogdata: Int,     Glogtopic: Int,         Gsha3: Int,              Gsha3word: Int,        Gcopy: Int,
+        Gblockhash: Int,    Gquadcoeff: Int,    maxCodeSize: Int,  Rb: Int,                Gquaddivisor: Int,       Gecadd: Int,           Gecmul: Int,
+        Gecpairconst: Int,  Gecpaircoeff: Int,  Gfround: Int,      Gcoldsload: Int,        Gcoldaccountaccess: Int, Gwarmstorageread: Int, Gaccesslistaddress: Int,
+        Gaccessliststoragekey: Int,             Rmaxquotient: Int, Ginitcodewordcost: Int, maxInitCodeSize: Int,
 
-    rule Gexp      < DEFAULT > => 10
-    rule Gexpbyte  < DEFAULT > => 10
-    rule Gsha3     < DEFAULT > => 30
-    rule Gsha3word < DEFAULT > => 6
+        Gselfdestructnewaccount: Bool, Gstaticcalldepth: Bool, Gemptyisnonexistent: Bool, Gzerovaluenewaccountgas: Bool,
+        Ghasrevert: Bool,              Ghasreturndata: Bool,   Ghasstaticcall: Bool,      Ghasshift: Bool,
+        Ghasdirtysstore: Bool,         Ghascreate2: Bool,      Ghasextcodehash: Bool,     Ghasselfbalance: Bool,
+        Ghassstorestipend: Bool,       Ghaschainid: Bool,      Ghasaccesslist: Bool,      Ghasbasefee: Bool,
+        Ghasrejectedfirstbyte: Bool,   Ghasprevrandao: Bool,   Ghasmaxinitcodesize: Bool, Ghaspushzero: Bool,
+        Ghaswarmcoinbase: Bool,        Ghasdelegatecall: Bool
+    ) [klabel(schedule), symbol, smtlib(schedule)]
 
-    rule Gsload       < DEFAULT > => 50
-    rule Gsstoreset   < DEFAULT > => 20000
-    rule Gsstorereset < DEFAULT > => 5000
-    rule Rsstoreclear < DEFAULT > => 15000
+    syntax ScheduleTuple ::= getSchedule(Schedule) [function, total]
+ // ----------------------------------------------------------------
 
-    rule Glog      < DEFAULT > => 375
-    rule Glogdata  < DEFAULT > => 8
-    rule Glogtopic < DEFAULT > => 375
+    rule getSchedule(S) => schedule(
+        Gzero < S >,         Gbase < S >,         Gverylow < S >,     Glow < S >,              Gmid < S >,               Ghigh < S >,            Gextcodesize < S >,
+        Gextcodecopy < S >,  Gbalance < S >,      Gsload < S >,       Gjumpdest < S >,         Gsstoreset < S >,         Gsstorereset < S >,     Rsstoreclear < S >,
+        Rselfdestruct < S >, Gselfdestruct < S >, Gcreate < S >,      Gcodedeposit < S >,      Gcall < S >,              Gcallvalue < S >,       Gcallstipend < S >,
+        Gnewaccount < S >,   Gexp < S >,          Gexpbyte < S >,     Gmemory < S >,           Gtxcreate < S >,          Gtxdatazero < S >,      Gtxdatanonzero < S >,
+        Gtransaction < S >,  Glog < S >,          Glogdata < S >,     Glogtopic < S >,         Gsha3 < S >,              Gsha3word < S >,        Gcopy < S >,
+        Gblockhash < S >,    Gquadcoeff < S >,    maxCodeSize < S >,  Rb < S >,                Gquaddivisor < S >,       Gecadd < S >,           Gecmul < S >,
+        Gecpairconst < S >,  Gecpaircoeff < S >,  Gfround < S >,      Gcoldsload < S >,        Gcoldaccountaccess < S >, Gwarmstorageread < S >, Gaccesslistaddress < S >,
+        Gaccessliststoragekey < S >,              Rmaxquotient < S >, Ginitcodewordcost < S >, maxInitCodeSize < S >,
 
-    rule Gcall        < DEFAULT > => 40
-    rule Gcallstipend < DEFAULT > => 2300
-    rule Gcallvalue   < DEFAULT > => 9000
-    rule Gnewaccount  < DEFAULT > => 25000
-
-    rule Gcreate       < DEFAULT > => 32000
-    rule Gcodedeposit  < DEFAULT > => 200
-    rule Gselfdestruct < DEFAULT > => 0
-    rule Rselfdestruct < DEFAULT > => 24000
-
-    rule Gmemory      < DEFAULT > => 3
-    rule Gquadcoeff   < DEFAULT > => 512
-    rule Gcopy        < DEFAULT > => 3
-    rule Gquaddivisor < DEFAULT > => 20
-
-    rule Gtransaction   < DEFAULT > => 21000
-    rule Gtxcreate      < DEFAULT > => 53000
-    rule Gtxdatazero    < DEFAULT > => 4
-    rule Gtxdatanonzero < DEFAULT > => 68
-
-    rule Gjumpdest    < DEFAULT > => 1
-    rule Gbalance     < DEFAULT > => 20
-    rule Gblockhash   < DEFAULT > => 20
-    rule Gextcodesize < DEFAULT > => 20
-    rule Gextcodecopy < DEFAULT > => 20
-
-    rule Gecadd       < DEFAULT > => 500
-    rule Gecmul       < DEFAULT > => 40000
-    rule Gecpairconst < DEFAULT > => 100000
-    rule Gecpaircoeff < DEFAULT > => 80000
-    rule Gfround      < DEFAULT > => 1
-
-    rule maxCodeSize < DEFAULT > => 2 ^Int 32 -Int 1
-    rule Rb          < DEFAULT > => 5 *Int (10 ^Int 18)
-
-    rule Gcoldsload         < DEFAULT > => 0
-    rule Gcoldaccountaccess < DEFAULT > => 0
-    rule Gwarmstorageread   < DEFAULT > => 0
-
-    rule Gaccessliststoragekey < DEFAULT > => 0
-    rule Gaccesslistaddress    < DEFAULT > => 0
-
-    rule maxInitCodeSize   < DEFAULT > => 0
-    rule Ginitcodewordcost < DEFAULT > => 0
-
-    rule Rmaxquotient < DEFAULT > => 2
-
-    rule Gselfdestructnewaccount << DEFAULT >> => false
-    rule Gstaticcalldepth        << DEFAULT >> => true
-    rule Gemptyisnonexistent     << DEFAULT >> => false
-    rule Gzerovaluenewaccountgas << DEFAULT >> => true
-    rule Ghasrevert              << DEFAULT >> => false
-    rule Ghasreturndata          << DEFAULT >> => false
-    rule Ghasstaticcall          << DEFAULT >> => false
-    rule Ghasshift               << DEFAULT >> => false
-    rule Ghasdirtysstore         << DEFAULT >> => false
-    rule Ghassstorestipend       << DEFAULT >> => false
-    rule Ghascreate2             << DEFAULT >> => false
-    rule Ghasextcodehash         << DEFAULT >> => false
-    rule Ghasselfbalance         << DEFAULT >> => false
-    rule Ghaschainid             << DEFAULT >> => false
-    rule Ghasaccesslist          << DEFAULT >> => false
-    rule Ghasbasefee             << DEFAULT >> => false
-    rule Ghasrejectedfirstbyte   << DEFAULT >> => false
-    rule Ghasprevrandao          << DEFAULT >> => false
-    rule Ghasmaxinitcodesize     << DEFAULT >> => false
-    rule Ghaspushzero            << DEFAULT >> => false
-    rule Ghaswarmcoinbase        << DEFAULT >> => false
+        Gselfdestructnewaccount << S >>, Gstaticcalldepth << S >>, Gemptyisnonexistent << S >>, Gzerovaluenewaccountgas << S >>,
+        Ghasrevert << S >>,              Ghasreturndata << S >>,   Ghasstaticcall << S >>,      Ghasshift << S >>,
+        Ghasdirtysstore << S >>,         Ghascreate2 << S >>,      Ghasextcodehash << S >>,     Ghasselfbalance << S >>,
+        Ghassstorestipend << S >>,       Ghaschainid << S >>,      Ghasaccesslist << S >>,      Ghasbasefee << S >>,
+        Ghasrejectedfirstbyte << S >>,   Ghasprevrandao << S >>,   Ghasmaxinitcodesize << S >>, Ghaspushzero << S >>,
+        Ghaswarmcoinbase << S >>,        Ghasdelegatecall << S >>
+    )
 ```
 
 ### Frontier Schedule
@@ -152,10 +101,96 @@ A `ScheduleConst` is a constant determined by the fee schedule.
 ```k
     syntax Schedule ::= "FRONTIER" [klabel(FRONTIER_EVM), symbol, smtlib(schedule_FRONTIER)]
  // ----------------------------------------------------------------------------------------
-    rule Gtxcreate  < FRONTIER > => 21000
-    rule SCHEDCONST < FRONTIER > => SCHEDCONST < DEFAULT > requires SCHEDCONST =/=K Gtxcreate
+    rule Gzero    < FRONTIER > => 0
+    rule Gbase    < FRONTIER > => 2
+    rule Gverylow < FRONTIER > => 3
+    rule Glow     < FRONTIER > => 5
+    rule Gmid     < FRONTIER > => 8
+    rule Ghigh    < FRONTIER > => 10
 
-    rule SCHEDFLAG << FRONTIER >> => SCHEDFLAG << DEFAULT >>
+    rule Gexp      < FRONTIER > => 10
+    rule Gexpbyte  < FRONTIER > => 10
+    rule Gsha3     < FRONTIER > => 30
+    rule Gsha3word < FRONTIER > => 6
+
+    rule Gsload       < FRONTIER > => 50
+    rule Gsstoreset   < FRONTIER > => 20000
+    rule Gsstorereset < FRONTIER > => 5000
+    rule Rsstoreclear < FRONTIER > => 15000
+
+    rule Glog      < FRONTIER > => 375
+    rule Glogdata  < FRONTIER > => 8
+    rule Glogtopic < FRONTIER > => 375
+
+    rule Gcall        < FRONTIER > => 40
+    rule Gcallstipend < FRONTIER > => 2300
+    rule Gcallvalue   < FRONTIER > => 9000
+    rule Gnewaccount  < FRONTIER > => 25000
+
+    rule Gcreate       < FRONTIER > => 32000
+    rule Gcodedeposit  < FRONTIER > => 200
+    rule Gselfdestruct < FRONTIER > => 0
+    rule Rselfdestruct < FRONTIER > => 24000
+
+    rule Gmemory      < FRONTIER > => 3
+    rule Gquadcoeff   < FRONTIER > => 512
+    rule Gcopy        < FRONTIER > => 3
+    rule Gquaddivisor < FRONTIER > => 20
+
+    rule Gtransaction   < FRONTIER > => 21000
+    rule Gtxcreate      < FRONTIER > => 21000
+    rule Gtxdatazero    < FRONTIER > => 4
+    rule Gtxdatanonzero < FRONTIER > => 68
+
+    rule Gjumpdest    < FRONTIER > => 1
+    rule Gbalance     < FRONTIER > => 20
+    rule Gblockhash   < FRONTIER > => 20
+    rule Gextcodesize < FRONTIER > => 20
+    rule Gextcodecopy < FRONTIER > => 20
+
+    rule Gecadd       < FRONTIER > => 500
+    rule Gecmul       < FRONTIER > => 40000
+    rule Gecpairconst < FRONTIER > => 100000
+    rule Gecpaircoeff < FRONTIER > => 80000
+    rule Gfround      < FRONTIER > => 1
+
+    rule maxCodeSize < FRONTIER > => 2 ^Int 32 -Int 1
+    rule Rb          < FRONTIER > => 5 *Int (10 ^Int 18)
+
+    rule Gcoldsload         < FRONTIER > => 0
+    rule Gcoldaccountaccess < FRONTIER > => 0
+    rule Gwarmstorageread   < FRONTIER > => 0
+
+    rule Gaccessliststoragekey < FRONTIER > => 0
+    rule Gaccesslistaddress    < FRONTIER > => 0
+
+    rule maxInitCodeSize   < FRONTIER > => 0
+    rule Ginitcodewordcost < FRONTIER > => 0
+
+    rule Rmaxquotient < FRONTIER > => 2
+
+    rule Gselfdestructnewaccount << FRONTIER >> => false
+    rule Gstaticcalldepth        << FRONTIER >> => true
+    rule Gemptyisnonexistent     << FRONTIER >> => false
+    rule Gzerovaluenewaccountgas << FRONTIER >> => true
+    rule Ghasrevert              << FRONTIER >> => false
+    rule Ghasreturndata          << FRONTIER >> => false
+    rule Ghasstaticcall          << FRONTIER >> => false
+    rule Ghasshift               << FRONTIER >> => false
+    rule Ghasdirtysstore         << FRONTIER >> => false
+    rule Ghassstorestipend       << FRONTIER >> => false
+    rule Ghascreate2             << FRONTIER >> => false
+    rule Ghasextcodehash         << FRONTIER >> => false
+    rule Ghasselfbalance         << FRONTIER >> => false
+    rule Ghaschainid             << FRONTIER >> => false
+    rule Ghasaccesslist          << FRONTIER >> => false
+    rule Ghasbasefee             << FRONTIER >> => false
+    rule Ghasrejectedfirstbyte   << FRONTIER >> => false
+    rule Ghasprevrandao          << FRONTIER >> => false
+    rule Ghasmaxinitcodesize     << FRONTIER >> => false
+    rule Ghaspushzero            << FRONTIER >> => false
+    rule Ghaswarmcoinbase        << FRONTIER >> => false
+    rule Ghasdelegatecall        << FRONTIER >> => false
 ```
 
 ### Homestead Schedule
@@ -163,9 +198,11 @@ A `ScheduleConst` is a constant determined by the fee schedule.
 ```k
     syntax Schedule ::= "HOMESTEAD" [klabel(HOMESTEAD_EVM), symbol, smtlib(schedule_HOMESTEAD)]
  // -------------------------------------------------------------------------------------------
-    rule SCHEDCONST < HOMESTEAD > => SCHEDCONST < DEFAULT >
+    rule Gtxcreate  < HOMESTEAD > => 53000
+    rule SCHEDCONST < HOMESTEAD > => SCHEDCONST < FRONTIER > requires SCHEDCONST =/=K Gtxcreate
 
-    rule SCHEDFLAG << HOMESTEAD >> => SCHEDFLAG << DEFAULT >>
+    rule Ghasdelegatecall << HOMESTEAD >> => true
+    rule SCHEDFLAG << HOMESTEAD >> => SCHEDFLAG << FRONTIER >> requires SCHEDFLAG =/=K Ghasdelegatecall
 ```
 
 ### Tangerine Whistle Schedule

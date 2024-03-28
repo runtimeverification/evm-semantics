@@ -20,6 +20,7 @@ module CREATE-SPEC
             <exit-code> 1 </exit-code>
             <mode> NORMAL </mode>
             <schedule> PETERSBURG </schedule>
+            <scheduleTuple> getSchedule(PETERSBURG) </scheduleTuple>
             <useGas> true </useGas>
             <ethereum>
               <evm>
@@ -105,6 +106,7 @@ module CREATE-SPEC
             <exit-code> 1 </exit-code>
             <mode> NORMAL </mode>
             <schedule> PETERSBURG </schedule>
+            <scheduleTuple> getSchedule(PETERSBURG) </scheduleTuple>
             <useGas> true </useGas>
             <ethereum>
               <evm>

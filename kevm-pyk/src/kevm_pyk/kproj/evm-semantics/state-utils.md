@@ -79,7 +79,8 @@ module STATE-UTILS
          <statusCode>     _ => .StatusCode </statusCode>
          <accounts>       _ => .Bag        </accounts>
          <messages>       _ => .Bag        </messages>
-         <schedule>       _ => DEFAULT     </schedule>
+         <schedule>       _ => HOMESTEAD   </schedule>
+         <scheduleTuple>  _ => getSchedule(HOMESTEAD) </scheduleTuple>
 
 ```
 
@@ -165,6 +166,7 @@ The `"network"` key allows setting the fee schedule inside the test.
 ```k
     rule <k> load "network" : SCHEDSTRING => .K ... </k>
          <schedule> _ => #asScheduleString(SCHEDSTRING) </schedule>
+         <scheduleTuple> _ => getSchedule(#asScheduleString(SCHEDSTRING)) </scheduleTuple>
 
     syntax Schedule ::= #asScheduleString ( String ) [klabel(#asScheduleString), function]
  // --------------------------------------------------------------------------------------
@@ -413,14 +415,14 @@ The `"rlp"` key loads the block information.
     syntax Int ::= #effectiveGasPrice( Int ) [klabel(#effectiveGasPrice), function]
  // -------------------------------------------------------------------------------
     rule [[ #effectiveGasPrice( TXID )
-         => #if ( notBool Ghasbasefee << SCHED >> )
+         => #if ( notBool Ghasbasefee(SCHED) )
                 orBool TXTYPE ==K Legacy
                 orBool TXTYPE ==K AccessList
               #then GPRICE
               #else BFEE +Int minInt(TPF, TM -Int BFEE)
             #fi
          ]]
-         <schedule> SCHED </schedule>
+         <scheduleTuple> SCHED </scheduleTuple>
          <baseFee> BFEE </baseFee>
          <message>
            <msgID>         TXID   </msgID>

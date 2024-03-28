@@ -72,6 +72,7 @@ module ERC20-SPEC
     claim [decimals]:
           <mode>     NORMAL   </mode>
           <schedule> ISTANBUL </schedule>
+          <scheduleTuple> getSchedule(ISTANBUL) </scheduleTuple>
           <useGas>  true     </useGas>
 
           <callStack> .List                                      </callStack>
@@ -113,6 +114,7 @@ module ERC20-SPEC
     claim [totalSupply]:
           <mode>     NORMAL   </mode>
           <schedule> ISTANBUL </schedule>
+          <scheduleTuple> getSchedule(ISTANBUL) </scheduleTuple>
           <useGas>  true     </useGas>
 
           <callStack> .List                                      </callStack>
@@ -146,6 +148,7 @@ module ERC20-SPEC
     claim [totalSupply.noGas]:
           <mode>     NORMAL   </mode>
           <schedule> ISTANBUL </schedule>
+          <scheduleTuple> getSchedule(ISTANBUL) </scheduleTuple>
           <useGas>  false     </useGas>
 
           <callStack> .List                                         </callStack>
@@ -187,6 +190,7 @@ module ERC20-SPEC
     claim [approve.success]:
           <mode>     NORMAL   </mode>
           <schedule> ISTANBUL </schedule>
+          <scheduleTuple> getSchedule(ISTANBUL) </scheduleTuple>
           <useGas>  true     </useGas>
 
           <callStack> .List                                      </callStack>
@@ -227,6 +231,7 @@ module ERC20-SPEC
     claim [approve.revert]:
           <mode>     NORMAL   </mode>
           <schedule> ISTANBUL </schedule>
+          <scheduleTuple> getSchedule(ISTANBUL) </scheduleTuple>
           <useGas>  true     </useGas>
 
           <callStack> .List                                      </callStack>
