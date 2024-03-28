@@ -98,6 +98,7 @@ KOMPILE_MAIN_FILE: Final = {
     'functional/int-simplifications-spec.k': 'int-simplifications-spec.k',
     'functional/lemmas-no-smt-spec.k': 'lemmas-no-smt-spec.k',
     'functional/lemmas-spec.k': 'lemmas-spec.k',
+    'functional/helpers-spec.k': 'helpers-spec.k',
     'functional/merkle-spec.k': 'merkle-spec.k',
     'functional/storageRoot-spec.k': 'storageRoot-spec.k',
     'mcd/functional-spec.k': 'functional-spec.k',
