@@ -38,7 +38,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
 
 ```k
     syntax Int ::= ScheduleConst "<" Schedule ">" [function, total, private]
- // ---------------------------------------------------------------
+ // ------------------------------------------------------------------------
 
     syntax ScheduleConst ::= "Gzero"         | "Gbase"         | "Gverylow"      | "Glow"              | "Gmid"               | "Ghigh"            | "Gextcodesize"
                            | "Gextcodecopy"  | "Gbalance"      | "Gsload"        | "Gjumpdest"         | "Gsstoreset"         | "Gsstorereset"     | "Rsstoreclear"
