@@ -166,7 +166,7 @@ The `"network"` key allows setting the fee schedule inside the test.
     rule <k> load "network" : SCHEDSTRING => .K ... </k>
          <schedule> _ => #asScheduleString(SCHEDSTRING) </schedule>
 
-    syntax Schedule ::= #asScheduleString ( String ) [klabel(#asScheduleString), function]
+    syntax Schedule ::= #asScheduleString ( String ) [symbol(#asScheduleString), function]
  // --------------------------------------------------------------------------------------
     rule #asScheduleString("Frontier")          => FRONTIER
     rule #asScheduleString("Homestead")         => HOMESTEAD
@@ -346,7 +346,7 @@ The `"rlp"` key loads the block information.
 - `#effectiveGasPrice` will compute the gas price for TXID, as specified by EIP-1559
 
 ```k
-    syntax TxData ::= #getTxData( Int ) [klabel(#getTxData), function]
+    syntax TxData ::= #getTxData( Int ) [symbol(#getTxData), function]
  // ------------------------------------------------------------------
     rule [[ #getTxData( TXID ) => LegacyTxData(TN, TP, TG, TT, TV, DATA) ]]
          <message>
@@ -410,7 +410,7 @@ The `"rlp"` key loads the block information.
            ...
          </message>
 
-    syntax Int ::= #effectiveGasPrice( Int ) [klabel(#effectiveGasPrice), function]
+    syntax Int ::= #effectiveGasPrice( Int ) [symbol(#effectiveGasPrice), function]
  // -------------------------------------------------------------------------------
     rule [[ #effectiveGasPrice( TXID )
          => #if ( notBool Ghasbasefee << SCHED >> )
@@ -441,7 +441,7 @@ The `"rlp"` key loads the block information.
                              | "EARLIEST"
  // -------------------------------------
 
-    syntax BlockIdentifier ::= #parseBlockIdentifier ( JSON ) [klabel(#parseBlockIdentifier), function]
+    syntax BlockIdentifier ::= #parseBlockIdentifier ( JSON ) [symbol(#parseBlockIdentifier), function]
  // ---------------------------------------------------------------------------------------------------
     rule #parseBlockIdentifier(BLOCKNUM:Int) => BLOCKNUM
     rule #parseBlockIdentifier("pending")    => PENDING
