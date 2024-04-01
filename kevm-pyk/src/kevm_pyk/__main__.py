@@ -427,8 +427,8 @@ def exec_prove(options: ProveOptions) -> None:
                     if CTerm._is_top(new_target.kast):
                         raise ValueError('Simplifying target node led to #Bottom, are you sure your RHS is defined?')
 
-                    kcfg.replace_node(init_node_id, new_init)
-                    kcfg.replace_node(target_node_id, new_target)
+                    kcfg.let_node(init_node_id, cterm=new_init)
+                    kcfg.let_node(target_node_id, cterm=new_target)
 
                     proof_problem = APRProof(
                         claim.label,
