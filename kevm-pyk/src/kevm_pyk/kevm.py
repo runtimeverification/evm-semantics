@@ -350,7 +350,7 @@ class KEVM(KProve, KRun):
         Converts values within a KInner object of sorts `INT` or `BYTES` to hexadecimal representation.
         """
 
-        def _to_hex(kast: KInner) -> KInner:
+        def to_hex(kast: KInner) -> KInner:
             if type(kast) is KToken and kast.sort == INT:
                 return KToken(hex(int(kast.token)), INT)
             if type(kast) is KToken and kast.sort == BYTES:
@@ -358,8 +358,8 @@ class KEVM(KProve, KRun):
             return kast
 
         if isinstance(kast, KToken):
-            return _to_hex(kast)
-        return top_down(_to_hex, kast)
+            return to_hex(kast)
+        return top_down(to_hex, kast)
 
     @staticmethod
     def halt() -> KApply:
