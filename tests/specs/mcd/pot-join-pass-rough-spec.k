@@ -9,6 +9,7 @@ module POT-JOIN-PASS-ROUGH-SPEC
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
+      <scheduleTuple> getSchedule(ISTANBUL) </scheduleTuple>
       <useGas> true </useGas>
       <ethereum>
         <evm>
@@ -172,6 +173,7 @@ module POT-JOIN-PASS-ROUGH-SPEC
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
+      <scheduleTuple> getSchedule(ISTANBUL) </scheduleTuple>
     <useGas> true </useGas>
       <ethereum>
         <evm>
@@ -273,6 +275,7 @@ module POT-JOIN-PASS-ROUGH-SPEC
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
+      <scheduleTuple> getSchedule(ISTANBUL) </scheduleTuple>
     <useGas> true </useGas>
       <ethereum>
         <evm>
@@ -377,6 +380,7 @@ module POT-JOIN-PASS-ROUGH-SPEC
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
+      <scheduleTuple> getSchedule(ISTANBUL) </scheduleTuple>
     <useGas> true </useGas>
       <ethereum>
         <evm>
@@ -395,7 +399,7 @@ module POT-JOIN-PASS-ROUGH-SPEC
             <wordStack> .WordStack => ?_ </wordStack>
             <localMem> .Bytes => ?_ </localMem>
             <pc> 0 => ?_ </pc>
-            <gas> #gas(VGas) => #gas ( ( ( ( VGas -Int Csstore( ISTANBUL , ( Dai_src -Int ABI_rad ) , Dai_src , Junk_1 ) ) -Int Csstore( ISTANBUL , ( Dai_dst +Int ABI_rad ) , Dai_dst , Junk_2 ) ) +Int -7943 ) ) </gas>
+            <gas> #gas(VGas) => #gas ( ( ( ( VGas -Int Csstore( getSchedule(ISTANBUL) , ( Dai_src -Int ABI_rad ) , Dai_src , Junk_1 ) ) -Int Csstore( getSchedule(ISTANBUL) , ( Dai_dst +Int ABI_rad ) , Dai_dst , Junk_2 ) ) +Int -7943 ) ) </gas>
             <memoryUsed> 0 => ?_ </memoryUsed>
             <callGas> _ => ?_ </callGas>
             <static> false </static>

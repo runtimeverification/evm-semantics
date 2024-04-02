@@ -9,6 +9,7 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
+      <scheduleTuple> getSchedule(ISTANBUL) </scheduleTuple>
       <useGas> true </useGas>
       <ethereum>
         <evm>
@@ -277,6 +278,7 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
+      <scheduleTuple> getSchedule(ISTANBUL) </scheduleTuple>
       <useGas> true </useGas>
       <ethereum>
         <evm>
@@ -380,6 +382,7 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
+      <scheduleTuple> getSchedule(ISTANBUL) </scheduleTuple>
       <useGas> true </useGas>
       <ethereum>
         <evm>
@@ -482,6 +485,7 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
+      <scheduleTuple> getSchedule(ISTANBUL) </scheduleTuple>
       <useGas> true </useGas>
       <ethereum>
         <evm>
@@ -584,6 +588,7 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
+      <scheduleTuple> getSchedule(ISTANBUL) </scheduleTuple>
       <useGas> true </useGas>
       <ethereum>
         <evm>
@@ -602,7 +607,7 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
             <wordStack> .WordStack => ?_ </wordStack>
             <localMem> .Bytes => ?_ </localMem>
             <pc> 0 => ?_ </pc>
-            <gas> #gas(VGas) => #gas ( ( ( ( ( ( VGas -Int Csstore( ISTANBUL , ( Sin -Int ABI_rad ) , Sin , Junk_0 ) ) -Int Csstore( ISTANBUL , ( Dai -Int ABI_rad ) , Dai , Junk_1 ) ) -Int Csstore( ISTANBUL , ( Vice -Int ABI_rad ) , Vice , Junk_2 ) ) -Int Csstore( ISTANBUL , ( Debt -Int ABI_rad ) , Debt , Junk_3 ) ) +Int -8616 ) ) </gas>
+            <gas> #gas(VGas) => #gas ( ( ( ( ( ( VGas -Int Csstore( getSchedule(ISTANBUL) , ( Sin -Int ABI_rad ) , Sin , Junk_0 ) ) -Int Csstore( getSchedule(ISTANBUL) , ( Dai -Int ABI_rad ) , Dai , Junk_1 ) ) -Int Csstore( getSchedule(ISTANBUL) , ( Vice -Int ABI_rad ) , Vice , Junk_2 ) ) -Int Csstore( getSchedule(ISTANBUL) , ( Debt -Int ABI_rad ) , Debt , Junk_3 ) ) +Int -8616 ) ) </gas>
             <memoryUsed> 0 => ?_ </memoryUsed>
             <callGas> _ => ?_ </callGas>
             <static> false </static>
@@ -708,6 +713,7 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
+      <scheduleTuple> getSchedule(ISTANBUL) </scheduleTuple>
       <useGas> true </useGas>
       <ethereum>
         <evm>
@@ -726,7 +732,7 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
             <wordStack> .WordStack => ?_ </wordStack>
             <localMem> .Bytes => ?_ </localMem>
             <pc> 0 => ?_ </pc>
-            <gas> #gas(VGas) => #gas ( ( ( ( ( VGas -Int Csstore( ISTANBUL , 0 , Live , Junk_2 ) ) -Int Csstore( ISTANBUL , ( Dai_a -Int ABI_rad ) , Dai_a , Junk_5 ) ) -Int Csstore( ISTANBUL , ( Dai_u +Int ABI_rad ) , Dai_u , Junk_6 ) ) +Int -15964 ) ) </gas>
+            <gas> #gas(VGas) => #gas ( ( ( ( ( VGas -Int Csstore( getSchedule(ISTANBUL) , 0 , Live , Junk_2 ) ) -Int Csstore( getSchedule(ISTANBUL) , ( Dai_a -Int ABI_rad ) , Dai_a , Junk_5 ) ) -Int Csstore( getSchedule(ISTANBUL) , ( Dai_u +Int ABI_rad ) , Dai_u , Junk_6 ) ) +Int -15964 ) ) </gas>
             <memoryUsed> 0 => ?_ </memoryUsed>
             <callGas> _ => ?_ </callGas>
             <static> false </static>
@@ -854,6 +860,7 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
+      <scheduleTuple> getSchedule(ISTANBUL) </scheduleTuple>
       <useGas> true </useGas>
       <ethereum>
         <evm>
@@ -872,7 +879,7 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
             <wordStack> .WordStack => ?_ </wordStack>
             <localMem> .Bytes => ?_ </localMem>
             <pc> 0 => ?_ </pc>
-            <gas> #gas(VGas) => #gas ( ( ( ( VGas -Int Csstore( ISTANBUL , 0 , Live , Junk_1 ) ) -Int Csstore( ISTANBUL , CALLER_ID , Vow , Junk_2 ) ) +Int -6351 ) ) </gas>
+            <gas> #gas(VGas) => #gas ( ( ( ( VGas -Int Csstore( getSchedule(ISTANBUL) , 0 , Live , Junk_1 ) ) -Int Csstore( getSchedule(ISTANBUL) , CALLER_ID , Vow , Junk_2 ) ) +Int -6351 ) ) </gas>
             <memoryUsed> 0 => ?_ </memoryUsed>
             <callGas> _ => ?_ </callGas>
             <static> false </static>

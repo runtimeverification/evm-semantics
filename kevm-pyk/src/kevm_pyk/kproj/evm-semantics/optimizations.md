@@ -25,9 +25,9 @@ module EVM-OPTIMIZATIONS
       <k>
         ( #next[ PUSHZERO ] => .K ) ...
       </k>
-      <schedule>
+      <scheduleTuple>
         SCHED
-      </schedule>
+      </scheduleTuple>
       <useGas>
         USEGAS
       </useGas>
@@ -41,7 +41,7 @@ module EVM-OPTIMIZATIONS
               ( PCOUNT => ( PCOUNT +Int 1 ) )
             </pc>
             <gas>
-              ( GAVAIL => ( #if USEGAS #then ( GAVAIL -Gas Gbase < SCHED > ) #else GAVAIL #fi ) )
+              ( GAVAIL => ( #if USEGAS #then ( GAVAIL -Gas Gbase(SCHED) ) #else GAVAIL #fi ) )
             </gas>
             ...
           </callState>
@@ -51,7 +51,7 @@ module EVM-OPTIMIZATIONS
       </ethereum>
       ...
     </kevm>
-    requires ( #if USEGAS #then Gbase < SCHED > <=Gas GAVAIL #else true #fi )
+    requires ( #if USEGAS #then Gbase(SCHED) <=Gas GAVAIL #else true #fi )
      andBool ( size(WS) <=Int 1023 )
      [priority(40)]
 
@@ -60,9 +60,9 @@ module EVM-OPTIMIZATIONS
       <k>
         ( #next[ PUSH(N) ] => .K ) ...
       </k>
-      <schedule>
+      <scheduleTuple>
         SCHED
-      </schedule>
+      </scheduleTuple>
       <useGas>
         USEGAS
       </useGas>
@@ -79,7 +79,7 @@ module EVM-OPTIMIZATIONS
               ( PCOUNT => ( ( PCOUNT +Int N ) +Int 1 ) )
             </pc>
             <gas>
-              ( GAVAIL => #if USEGAS #then ( GAVAIL -Gas Gverylow < SCHED > ) #else GAVAIL #fi )
+              ( GAVAIL => #if USEGAS #then ( GAVAIL -Gas Gverylow(SCHED) ) #else GAVAIL #fi )
             </gas>
             ...
           </callState>
@@ -89,7 +89,7 @@ module EVM-OPTIMIZATIONS
       </ethereum>
       ...
     </kevm>
-    requires ( #if USEGAS #then Gverylow < SCHED > <=Gas GAVAIL #else true #fi )
+    requires ( #if USEGAS #then Gverylow(SCHED) <=Gas GAVAIL #else true #fi )
      andBool ( size( WS ) <=Int 1023 )
      [priority(40)]
 
@@ -98,9 +98,9 @@ module EVM-OPTIMIZATIONS
       <k>
         ( #next[ DUP(N) ] => .K ) ...
       </k>
-      <schedule>
+      <scheduleTuple>
         SCHED
-      </schedule>
+      </scheduleTuple>
       <useGas>
         USEGAS
       </useGas>
@@ -114,7 +114,7 @@ module EVM-OPTIMIZATIONS
               ( PCOUNT => ( PCOUNT +Int 1 ) )
             </pc>
             <gas>
-              ( GAVAIL => #if USEGAS #then ( GAVAIL -Gas Gverylow < SCHED > ) #else GAVAIL #fi )
+              ( GAVAIL => #if USEGAS #then ( GAVAIL -Gas Gverylow(SCHED) ) #else GAVAIL #fi )
             </gas>
             ...
           </callState>
@@ -125,7 +125,7 @@ module EVM-OPTIMIZATIONS
       ...
     </kevm>
     requires #stackNeeded(DUP(N)) <=Int size(WS)
-     andBool ( #if USEGAS #then Gverylow < SCHED > <=Gas GAVAIL #else true #fi )
+     andBool ( #if USEGAS #then Gverylow(SCHED) <=Gas GAVAIL #else true #fi )
      andBool ( size( WS ) <=Int 1023 )
      [priority(40)]
 
@@ -134,9 +134,9 @@ module EVM-OPTIMIZATIONS
       <k>
         ( #next[ SWAP(N) ] => .K ) ...
       </k>
-      <schedule>
+      <scheduleTuple>
         SCHED
-      </schedule>
+      </scheduleTuple>
       <useGas>
         USEGAS
       </useGas>
@@ -150,7 +150,7 @@ module EVM-OPTIMIZATIONS
               ( PCOUNT => ( PCOUNT +Int 1 ) )
             </pc>
             <gas>
-              ( GAVAIL => #if USEGAS #then ( GAVAIL -Gas Gverylow < SCHED > ) #else GAVAIL #fi )
+              ( GAVAIL => #if USEGAS #then ( GAVAIL -Gas Gverylow(SCHED) ) #else GAVAIL #fi )
             </gas>
             ...
           </callState>
@@ -161,7 +161,7 @@ module EVM-OPTIMIZATIONS
       ...
     </kevm>
     requires #stackNeeded(SWAP(N)) <=Int size(WS) +Int 1
-     andBool ( #if USEGAS #then Gverylow < SCHED > <=Gas GAVAIL #else true #fi )
+     andBool ( #if USEGAS #then Gverylow(SCHED) <=Gas GAVAIL #else true #fi )
      andBool ( size( WS ) <=Int 1023 )
      [priority(40)]
 
@@ -170,9 +170,9 @@ module EVM-OPTIMIZATIONS
       <k>
         ( #next[ ADD ] => .K ) ...
       </k>
-      <schedule>
+      <scheduleTuple>
         SCHED
-      </schedule>
+      </scheduleTuple>
       <useGas>
         USEGAS
       </useGas>
@@ -186,7 +186,7 @@ module EVM-OPTIMIZATIONS
               ( PCOUNT => ( PCOUNT +Int 1 ) )
             </pc>
             <gas>
-              ( GAVAIL => #if USEGAS #then ( GAVAIL -Gas Gverylow < SCHED > ) #else GAVAIL #fi )
+              ( GAVAIL => #if USEGAS #then ( GAVAIL -Gas Gverylow(SCHED) ) #else GAVAIL #fi )
             </gas>
             ...
           </callState>
@@ -196,7 +196,7 @@ module EVM-OPTIMIZATIONS
       </ethereum>
       ...
     </kevm>
-    requires ( #if USEGAS #then Gverylow < SCHED > <=Gas GAVAIL #else true #fi )
+    requires ( #if USEGAS #then Gverylow(SCHED) <=Gas GAVAIL #else true #fi )
      andBool ( size( WS ) <=Int 1023 )
      [priority(40)]
 
@@ -205,9 +205,9 @@ module EVM-OPTIMIZATIONS
       <k>
         ( #next[ SUB ] => .K ) ...
       </k>
-      <schedule>
+      <scheduleTuple>
         SCHED
-      </schedule>
+      </scheduleTuple>
       <useGas>
         USEGAS
       </useGas>
@@ -221,7 +221,7 @@ module EVM-OPTIMIZATIONS
               ( PCOUNT => ( PCOUNT +Int 1 ) )
             </pc>
             <gas>
-              ( GAVAIL => #if USEGAS #then ( GAVAIL -Gas Gverylow < SCHED > ) #else GAVAIL #fi )
+              ( GAVAIL => #if USEGAS #then ( GAVAIL -Gas Gverylow(SCHED) ) #else GAVAIL #fi )
             </gas>
             ...
           </callState>
@@ -231,7 +231,7 @@ module EVM-OPTIMIZATIONS
       </ethereum>
       ...
     </kevm>
-    requires ( #if USEGAS #then Gverylow < SCHED > <=Gas GAVAIL #else true #fi )
+    requires ( #if USEGAS #then Gverylow(SCHED) <=Gas GAVAIL #else true #fi )
      andBool ( size( WS ) <=Int 1023 )
      [priority(40)]
 
@@ -240,9 +240,9 @@ module EVM-OPTIMIZATIONS
       <k>
         ( #next[ AND ] => .K ) ...
       </k>
-      <schedule>
+      <scheduleTuple>
         SCHED
-      </schedule>
+      </scheduleTuple>
       <useGas>
         USEGAS
       </useGas>
@@ -256,7 +256,7 @@ module EVM-OPTIMIZATIONS
               ( PCOUNT => ( PCOUNT +Int 1 ) )
             </pc>
             <gas>
-              ( GAVAIL => #if USEGAS #then ( GAVAIL -Gas Gverylow < SCHED > ) #else GAVAIL #fi )
+              ( GAVAIL => #if USEGAS #then ( GAVAIL -Gas Gverylow(SCHED) ) #else GAVAIL #fi )
             </gas>
             ...
           </callState>
@@ -266,7 +266,7 @@ module EVM-OPTIMIZATIONS
       </ethereum>
       ...
     </kevm>
-    requires ( #if USEGAS #then Gverylow < SCHED > <=Gas GAVAIL #else true #fi )
+    requires ( #if USEGAS #then Gverylow(SCHED) <=Gas GAVAIL #else true #fi )
      andBool ( size( WS ) <=Int 1023 )
      [priority(40)]
 
@@ -275,9 +275,9 @@ module EVM-OPTIMIZATIONS
       <k>
         ( #next[ LT ] => .K ) ...
       </k>
-      <schedule>
+      <scheduleTuple>
         SCHED
-      </schedule>
+      </scheduleTuple>
       <useGas>
         USEGAS
       </useGas>
@@ -291,7 +291,7 @@ module EVM-OPTIMIZATIONS
               ( PCOUNT => ( PCOUNT +Int 1 ) )
             </pc>
             <gas>
-              ( GAVAIL => #if USEGAS #then ( GAVAIL -Gas Gverylow < SCHED > ) #else GAVAIL #fi )
+              ( GAVAIL => #if USEGAS #then ( GAVAIL -Gas Gverylow(SCHED) ) #else GAVAIL #fi )
             </gas>
             ...
           </callState>
@@ -301,7 +301,7 @@ module EVM-OPTIMIZATIONS
       </ethereum>
       ...
     </kevm>
-    requires ( #if USEGAS #then Gverylow < SCHED > <=Gas GAVAIL #else true #fi )
+    requires ( #if USEGAS #then Gverylow(SCHED) <=Gas GAVAIL #else true #fi )
      andBool ( size( WS ) <=Int 1023 )
      [priority(40)]
 
@@ -310,9 +310,9 @@ module EVM-OPTIMIZATIONS
       <k>
         ( #next[ GT ] => .K ) ...
       </k>
-      <schedule>
+      <scheduleTuple>
         SCHED
-      </schedule>
+      </scheduleTuple>
       <useGas>
         USEGAS
       </useGas>
@@ -326,7 +326,7 @@ module EVM-OPTIMIZATIONS
               ( PCOUNT => ( PCOUNT +Int 1 ) )
             </pc>
             <gas>
-              ( GAVAIL => #if USEGAS #then ( GAVAIL -Gas Gverylow < SCHED > ) #else GAVAIL #fi )
+              ( GAVAIL => #if USEGAS #then ( GAVAIL -Gas Gverylow(SCHED) ) #else GAVAIL #fi )
             </gas>
             ...
           </callState>
@@ -336,7 +336,7 @@ module EVM-OPTIMIZATIONS
       </ethereum>
       ...
     </kevm>
-    requires ( #if USEGAS #then Gverylow < SCHED > <=Gas GAVAIL #else true #fi )
+    requires ( #if USEGAS #then Gverylow(SCHED) <=Gas GAVAIL #else true #fi )
      andBool ( size( WS ) <=Int 1023 )
      [priority(40)]
 

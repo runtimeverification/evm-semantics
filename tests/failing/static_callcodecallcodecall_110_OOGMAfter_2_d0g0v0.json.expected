@@ -11,6 +11,9 @@
   <schedule>
     BYZANTIUM
   </schedule>
+  <scheduleTuple>
+    schedule (... Gzero: 0 , Gbase: 2 , Gverylow: 3 , Glow: 5 , Gmid: 8 , Ghigh: 10 , Gextcodesize: 700 , Gextcodecopy: 700 , Gbalance: 400 , Gsload: 200 , Gjumpdest: 1 , Gsstoreset: 20000 , Gsstorereset: 5000 , Rsstoreclear: 15000 , Rselfdestruct: 24000 , Gselfdestruct: 5000 , Gcreate: 32000 , Gcodedeposit: 200 , Gcall: 700 , Gcallvalue: 9000 , Gcallstipend: 2300 , Gnewaccount: 25000 , Gexp: 10 , Gexpbyte: 50 , Gmemory: 3 , Gtxcreate: 53000 , Gtxdatazero: 4 , Gtxdatanonzero: 68 , Gtransaction: 21000 , Glog: 375 , Glogdata: 8 , Glogtopic: 375 , Gsha3: 30 , Gsha3word: 6 , Gcopy: 3 , Gblockhash: 20 , Gquadcoeff: 512 , maxCodeSize: 24576 , Rb: 3000000000000000000 , Gquaddivisor: 20 , Gecadd: 500 , Gecmul: 40000 , Gecpairconst: 100000 , Gecpaircoeff: 80000 , Gfround: 1 , Gcoldsload: 0 , Gcoldaccountaccess: 0 , Gwarmstorageread: 0 , Gaccesslistaddress: 0 , Gaccessliststoragekey: 0 , Rmaxquotient: 2 , Ginitcodewordcost: 0 , maxInitCodeSize: 0 , Gselfdestructnewaccount: true , Gstaticcalldepth: false , Gemptyisnonexistent: true , Gzerovaluenewaccountgas: false , Ghasrevert: true , Ghasreturndata: true , Ghasstaticcall: true , Ghasshift: false , Ghasdirtysstore: false , Ghascreate2: false , Ghasextcodehash: false , Ghasselfbalance: false , Ghassstorestipend: false , Ghaschainid: false , Ghasaccesslist: false , Ghasbasefee: false , Ghasrejectedfirstbyte: false , Ghasprevrandao: false , Ghasmaxinitcodesize: false , Ghaspushzero: false , Ghaswarmcoinbase: false , Ghasdelegatecall: true )
+  </scheduleTuple>
   <useGas>
     true
   </useGas>

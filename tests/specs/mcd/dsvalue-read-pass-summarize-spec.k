@@ -8,6 +8,7 @@ module DSVALUE-READ-PASS-SUMMARIZE-SPEC
 //    claim [DSValue.read.pass]:
 //      <k> #execute => #halt ... </k>
 //      <schedule> ISTANBUL </schedule>
+//      <scheduleTuple> getSchedule(ISTANBUL) </scheduleTuple>
 //      <evm>
 //        <statusCode> _ => ?FAILURE:EndStatusCode </statusCode>
 //        <callState>
@@ -112,6 +113,7 @@ module DSVALUE-READ-PASS-SUMMARIZE-SPEC
     claim [DSValue.read.pass]:
       <k> #execute => #halt ... </k>
       <schedule> ISTANBUL </schedule>
+      <scheduleTuple> getSchedule(ISTANBUL) </scheduleTuple>
       <useGas> true </useGas>
       <evm>
         <output> _ => #buf(32, #lookup(ACCT_STORAGE, 2)) </output>              // from counterexample

@@ -83,7 +83,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
     syntax EthereumCommand ::= loadTx ( Account ) [klabel(loadTx)]
  // --------------------------------------------------------------
     rule <k> loadTx(_) => #end EVMC_OUT_OF_GAS ... </k>
-         <schedule> SCHED </schedule>
+         <scheduleTuple> SCHED </scheduleTuple>
          <txPending> ListItem(TXID:Int) ... </txPending>
          <message>
            <msgID>      TXID     </msgID>
@@ -101,8 +101,9 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          ...
          </k>
          <schedule> SCHED </schedule>
+         <scheduleTuple> SCHEDT </scheduleTuple>
          <gasPrice> _ => #effectiveGasPrice(TXID) </gasPrice>
-         <callGas> _ => GLIMIT -Int G0(SCHED, CODE, true) </callGas>
+         <callGas> _ => GLIMIT -Int G0(SCHEDT, CODE, true) </callGas>
          <origin> _ => ACCTFROM </origin>
          <callDepth> _ => -1 </callDepth>
          <txPending> ListItem(TXID:Int) ... </txPending>
@@ -122,9 +123,9 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
            <nonce> NONCE </nonce>
            ...
          </account>
-         <accessedAccounts> _ => #if Ghaswarmcoinbase << SCHED >> #then SetItem(MINER) #else .Set #fi </accessedAccounts>
+         <accessedAccounts> _ => #if Ghaswarmcoinbase(SCHEDT) #then SetItem(MINER) #else .Set #fi </accessedAccounts>
          <touchedAccounts> _ => SetItem(MINER) </touchedAccounts>
-      requires #hasValidInitCode(lengthBytes(CODE), SCHED)
+      requires #hasValidInitCode(lengthBytes(CODE), SCHEDT)
 
     rule <k> loadTx(ACCTFROM)
           => #accessAccounts ACCTFROM ACCTTO #precompiledAccountsSet(SCHED)
@@ -134,8 +135,9 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          ...
          </k>
          <schedule> SCHED </schedule>
+         <scheduleTuple> SCHEDT </scheduleTuple>
          <gasPrice> _ => #effectiveGasPrice(TXID) </gasPrice>
-         <callGas> _ => GLIMIT -Int G0(SCHED, DATA, false) </callGas>
+         <callGas> _ => GLIMIT -Int G0(SCHEDT, DATA, false) </callGas>
          <origin> _ => ACCTFROM </origin>
          <callDepth> _ => -1 </callDepth>
          <txPending> ListItem(TXID:Int) ... </txPending>
@@ -155,7 +157,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
            <nonce> NONCE => NONCE +Int 1 </nonce>
            ...
          </account>
-         <accessedAccounts> _ => #if Ghaswarmcoinbase << SCHED >> #then SetItem(MINER) #else .Set #fi </accessedAccounts>
+         <accessedAccounts> _ => #if Ghaswarmcoinbase(SCHEDT) #then SetItem(MINER) #else .Set #fi </accessedAccounts>
          <touchedAccounts> _ => SetItem(MINER) </touchedAccounts>
       requires ACCTTO =/=K .Account
 
@@ -189,32 +191,32 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
                              | #loadAccessListAux ( Account , List ) [klabel(#loadAccessListAux)]
  // ---------------------------------------------------------------------------------------------
     rule <k> #loadAccessList ([ .JSONs ]) => .K ... </k>
-         <schedule> SCHED </schedule>
-      requires Ghasaccesslist << SCHED >>
+         <scheduleTuple> SCHED </scheduleTuple>
+      requires Ghasaccesslist(SCHED)
 
     rule <k> #loadAccessList ([ _ ]) => .K ... </k>
-         <schedule> SCHED </schedule>
-      requires notBool Ghasaccesslist << SCHED >>
+         <scheduleTuple> SCHED </scheduleTuple>
+      requires notBool Ghasaccesslist(SCHED)
 
     rule <k> #loadAccessList ([[ACCT, [STRG:JSONs]], REST])
           => #loadAccessListAux (#asAccount(ACCT), #parseAccessListStorageKeys([STRG]))
           ~> #loadAccessList ([REST])
          ...
          </k>
-         <schedule> SCHED </schedule>
-      requires Ghasaccesslist << SCHED >>
+         <scheduleTuple> SCHED </scheduleTuple>
+      requires Ghasaccesslist(SCHED)
 
     rule <k> #loadAccessListAux (ACCT, (ListItem(STRGK) STRGKS))
           => #accessStorage ACCT STRGK:Int
           ~> #loadAccessListAux (ACCT, STRGKS)
          ...
          </k>
-         <schedule> SCHED </schedule>
-         <callGas> GLIMIT => GLIMIT -Int Gaccessliststoragekey < SCHED > </callGas>
+         <scheduleTuple> SCHED </scheduleTuple>
+         <callGas> GLIMIT => GLIMIT -Int Gaccessliststoragekey(SCHED) </callGas>
 
     rule <k> #loadAccessListAux (ACCT, .List) => #accessAccounts ACCT ... </k>
-         <schedule> SCHED </schedule>
-         <callGas> GLIMIT => GLIMIT -Int Gaccesslistaddress < SCHED > </callGas>
+         <scheduleTuple> SCHED </scheduleTuple>
+         <callGas> GLIMIT => GLIMIT -Int Gaccesslistaddress(SCHED) </callGas>
 ```
 
 -   `exception` only clears from the `<k>` cell if there is an exception preceding it.

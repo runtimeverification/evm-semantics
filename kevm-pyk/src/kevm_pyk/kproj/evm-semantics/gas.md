@@ -102,28 +102,28 @@ module GAS-FEES
     imports GAS-SYNTAX
     imports SCHEDULE
 
-    syntax Gas ::= Cgascap        ( Schedule , Gas , Gas , Int ) [symbol(Cgascap_Gas), overload(Cgascap), function, total, smtlib(gas_Cgascap_Gas)]
-    syntax Int ::= Cgascap        ( Schedule , Int , Int , Int ) [symbol(Cgascap_Int), overload(Cgascap), function, total, smtlib(gas_Cgascap_Int)]
+    syntax Gas ::= Cgascap        ( ScheduleTuple , Gas , Gas , Int ) [symbol(Cgascap_Gas), overload(Cgascap), function, total, smtlib(gas_Cgascap_Gas)]
+    syntax Int ::= Cgascap        ( ScheduleTuple , Int , Int , Int ) [symbol(Cgascap_Int), overload(Cgascap), function, total, smtlib(gas_Cgascap_Int)]
 
-    syntax Int ::= Csstore        ( Schedule , Int , Int , Int )         [klabel(Csstore),        function, total, smtlib(gas_Csstore)       ]
-                 | Rsstore        ( Schedule , Int , Int , Int )         [klabel(Rsstore),        function, total, smtlib(gas_Rsstore)       ]
-                 | Cextra         ( Schedule , Bool , Int , Bool )       [klabel(Cextra),         function, total, smtlib(gas_Cextra)        ]
-                 | Cnew           ( Schedule , Bool , Int )              [klabel(Cnew),           function, total, smtlib(gas_Cnew)          ]
-                 | Cxfer          ( Schedule , Int )                     [klabel(Cxfer),          function, total, smtlib(gas_Cxfer)         ]
-                 | Cmem           ( Schedule , Int )                     [klabel(Cmem),           function, total, smtlib(gas_Cmem), memo    ]
-                 | Caddraccess    ( Schedule , Bool )                    [klabel(Caddraccess),    function, total, smtlib(gas_Caddraccess)   ]
-                 | Cstorageaccess ( Schedule , Bool )                    [klabel(Cstorageaccess), function, total, smtlib(gas_Cstorageaccess)]
-                 | Csload         ( Schedule , Bool )                    [klabel(Csload),         function, total, smtlib(gas_Csload)        ]
-                 | Cextcodesize   ( Schedule )                           [klabel(Cextcodesize),   function, total, smtlib(gas_Cextcodesize)  ]
-                 | Cextcodecopy   ( Schedule , Int )                     [klabel(Cextcodecopy),   function, total, smtlib(gas_Cextcodecopy)  ]
-                 | Cextcodehash   ( Schedule )                           [klabel(Cextcodehash),   function, total, smtlib(gas_Cextcodehash)  ]
-                 | Cbalance       ( Schedule )                           [klabel(Cbalance),       function, total, smtlib(gas_Cbalance)      ]
-                 | Cmodexp        ( Schedule , Bytes , Int , Int , Int ) [klabel(Cmodexp),        function, total, smtlib(gas_Cmodexp)       ]
-                 | Cinitcode      ( Schedule , Int )                     [klabel(Cinitcode),      function, total, smtlib(gas_Cinitcode)     ]
- // ------------------------------------------------------------------------------------------------------------------------------------------
+    syntax Int ::= Csstore        ( ScheduleTuple , Int , Int , Int )         [klabel(Csstore),        function, total, smtlib(gas_Csstore)       ]
+                 | Rsstore        ( ScheduleTuple , Int , Int , Int )         [klabel(Rsstore),        function, total, smtlib(gas_Rsstore)       ]
+                 | Cextra         ( ScheduleTuple , Bool , Int , Bool )       [klabel(Cextra),         function, total, smtlib(gas_Cextra)        ]
+                 | Cnew           ( ScheduleTuple , Bool , Int )              [klabel(Cnew),           function, total, smtlib(gas_Cnew)          ]
+                 | Cxfer          ( ScheduleTuple , Int )                     [klabel(Cxfer),          function, total, smtlib(gas_Cxfer)         ]
+                 | Cmem           ( ScheduleTuple , Int )                     [klabel(Cmem),           function, total, smtlib(gas_Cmem), memo    ]
+                 | Caddraccess    ( ScheduleTuple , Bool )                    [klabel(Caddraccess),    function, total, smtlib(gas_Caddraccess)   ]
+                 | Cstorageaccess ( ScheduleTuple , Bool )                    [klabel(Cstorageaccess), function, total, smtlib(gas_Cstorageaccess)]
+                 | Csload         ( ScheduleTuple , Bool )                    [klabel(Csload),         function, total, smtlib(gas_Csload)        ]
+                 | Cextcodesize   ( ScheduleTuple )                           [klabel(Cextcodesize),   function, total, smtlib(gas_Cextcodesize)  ]
+                 | Cextcodecopy   ( ScheduleTuple , Int )                     [klabel(Cextcodecopy),   function, total, smtlib(gas_Cextcodecopy)  ]
+                 | Cextcodehash   ( ScheduleTuple )                           [klabel(Cextcodehash),   function, total, smtlib(gas_Cextcodehash)  ]
+                 | Cbalance       ( ScheduleTuple )                           [klabel(Cbalance),       function, total, smtlib(gas_Cbalance)      ]
+                 | Cmodexp        ( ScheduleTuple , Bytes , Int , Int , Int ) [klabel(Cmodexp),        function, total, smtlib(gas_Cmodexp)       ]
+                 | Cinitcode      ( ScheduleTuple , Int )                     [klabel(Cinitcode),      function, total, smtlib(gas_Cinitcode)     ]
+ // -----------------------------------------------------------------------------------------------------------------------------------------------
     rule [Cgascap]:
          Cgascap(SCHED, GCAP:Int, GAVAIL:Int, GEXTRA)
-      => #if GAVAIL <Int GEXTRA orBool Gstaticcalldepth << SCHED >> #then GCAP #else minInt(#allBut64th(GAVAIL -Int GEXTRA), GCAP) #fi
+      => #if GAVAIL <Int GEXTRA orBool Gstaticcalldepth(SCHED) #then GCAP #else minInt(#allBut64th(GAVAIL -Int GEXTRA), GCAP) #fi
       requires 0 <=Int GCAP
       [concrete]
 
@@ -131,81 +131,81 @@ module GAS-FEES
 
     rule [Csstore.new]:
          Csstore(SCHED, NEW, CURR, ORIG)
-      => #if CURR ==Int NEW orBool ORIG =/=Int CURR #then Gsload < SCHED > #else #if ORIG ==Int 0 #then Gsstoreset < SCHED > #else Gsstorereset < SCHED > #fi #fi
-      requires Ghasdirtysstore << SCHED >>
+      => #if CURR ==Int NEW orBool ORIG =/=Int CURR #then Gsload(SCHED) #else #if ORIG ==Int 0 #then Gsstoreset(SCHED) #else Gsstorereset(SCHED) #fi #fi
+      requires Ghasdirtysstore(SCHED)
       [concrete]
 
     rule [Csstore.old]:
          Csstore(SCHED, NEW, CURR, _ORIG)
-      => #if CURR ==Int 0 andBool NEW =/=Int 0 #then Gsstoreset < SCHED > #else Gsstorereset < SCHED > #fi
-      requires notBool Ghasdirtysstore << SCHED >>
+      => #if CURR ==Int 0 andBool NEW =/=Int 0 #then Gsstoreset(SCHED) #else Gsstorereset(SCHED) #fi
+      requires notBool Ghasdirtysstore(SCHED)
       [concrete]
 
     rule [Rsstore.new]:
          Rsstore(SCHED, NEW, CURR, ORIG)
       => #if CURR =/=Int NEW andBool ORIG ==Int CURR andBool NEW ==Int 0 #then
-             Rsstoreclear < SCHED >
+             Rsstoreclear(SCHED)
          #else
              #if CURR =/=Int NEW andBool ORIG =/=Int CURR andBool ORIG =/=Int 0 #then
-                 #if CURR ==Int 0 #then 0 -Int Rsstoreclear < SCHED > #else #if NEW ==Int 0 #then Rsstoreclear < SCHED > #else 0 #fi #fi
+                 #if CURR ==Int 0 #then 0 -Int Rsstoreclear(SCHED) #else #if NEW ==Int 0 #then Rsstoreclear(SCHED) #else 0 #fi #fi
              #else
                  0
              #fi +Int
              #if CURR =/=Int NEW andBool ORIG ==Int NEW #then
-                 #if ORIG ==Int 0 #then Gsstoreset < SCHED > #else Gsstorereset < SCHED > #fi -Int Gsload < SCHED >
+                 #if ORIG ==Int 0 #then Gsstoreset(SCHED) #else Gsstorereset(SCHED) #fi -Int Gsload(SCHED)
              #else
                  0
              #fi
          #fi
-      requires Ghasdirtysstore << SCHED >>
+      requires Ghasdirtysstore(SCHED)
       [concrete]
 
     rule [Rsstore.old]:
          Rsstore(SCHED, NEW, CURR, _ORIG)
-      => #if CURR =/=Int 0 andBool NEW ==Int 0 #then Rsstoreclear < SCHED > #else 0 #fi
-      requires notBool Ghasdirtysstore << SCHED >>
+      => #if CURR =/=Int 0 andBool NEW ==Int 0 #then Rsstoreclear(SCHED) #else 0 #fi
+      requires notBool Ghasdirtysstore(SCHED)
       [concrete]
 
-    rule [Cextra.new]: Cextra(SCHED, ISEMPTY, VALUE, ISWARM)  => Caddraccess(SCHED, ISWARM) +Int Cnew(SCHED, ISEMPTY, VALUE) +Int Cxfer(SCHED, VALUE) requires         Ghasaccesslist << SCHED >>
-    rule [Cextra.old]: Cextra(SCHED, ISEMPTY, VALUE, _ISWARM) => Gcall < SCHED > +Int Cnew(SCHED, ISEMPTY, VALUE) +Int Cxfer(SCHED, VALUE)            requires notBool Ghasaccesslist << SCHED >>
+    rule [Cextra.new]: Cextra(SCHED, ISEMPTY, VALUE, ISWARM)  => Caddraccess(SCHED, ISWARM) +Int Cnew(SCHED, ISEMPTY, VALUE) +Int Cxfer(SCHED, VALUE) requires         Ghasaccesslist(SCHED)
+    rule [Cextra.old]: Cextra(SCHED, ISEMPTY, VALUE, _ISWARM) => Gcall(SCHED) +Int Cnew(SCHED, ISEMPTY, VALUE) +Int Cxfer(SCHED, VALUE)               requires notBool Ghasaccesslist(SCHED)
 
     rule [Cnew]:
          Cnew(SCHED, ISEMPTY:Bool, VALUE)
-      => #if ISEMPTY andBool (VALUE =/=Int 0 orBool Gzerovaluenewaccountgas << SCHED >>) #then Gnewaccount < SCHED > #else 0 #fi
+      => #if ISEMPTY andBool (VALUE =/=Int 0 orBool Gzerovaluenewaccountgas(SCHED)) #then Gnewaccount(SCHED) #else 0 #fi
 
     rule [Cxfer.none]: Cxfer(_SCHED, 0) => 0
-    rule [Cxfer.some]: Cxfer( SCHED, N) => Gcallvalue < SCHED > requires N =/=Int 0
+    rule [Cxfer.some]: Cxfer( SCHED, N) => Gcallvalue(SCHED) requires N =/=Int 0
 
-    rule [Cmem]: Cmem(SCHED, N) => (N *Int Gmemory < SCHED >) +Int ((N *Int N) /Int Gquadcoeff < SCHED >) [concrete]
+    rule [Cmem]: Cmem(SCHED, N) => (N *Int Gmemory(SCHED)) +Int ((N *Int N) /Int Gquadcoeff(SCHED)) [concrete]
 
-    rule [Caddraccess]:    Caddraccess(SCHED, ISWARM)    => #if ISWARM #then Gwarmstorageread < SCHED > #else Gcoldaccountaccess < SCHED > #fi
-    rule [Cstorageaccess]: Cstorageaccess(SCHED, ISWARM) => #if ISWARM #then Gwarmstorageread < SCHED > #else Gcoldsload < SCHED >         #fi
+    rule [Caddraccess]:    Caddraccess(SCHED, ISWARM)    => #if ISWARM #then Gwarmstorageread(SCHED) #else Gcoldaccountaccess(SCHED) #fi
+    rule [Cstorageaccess]: Cstorageaccess(SCHED, ISWARM) => #if ISWARM #then Gwarmstorageread(SCHED) #else Gcoldsload(SCHED)         #fi
 
-    rule [Csload.new]: Csload(SCHED, ISWARM)  => Cstorageaccess(SCHED, ISWARM) requires         Ghasaccesslist << SCHED >>
-    rule [Csload.old]: Csload(SCHED, _ISWARM) => Gsload < SCHED >              requires notBool Ghasaccesslist << SCHED >>
+    rule [Csload.new]: Csload(SCHED, ISWARM)  => Cstorageaccess(SCHED, ISWARM) requires         Ghasaccesslist(SCHED)
+    rule [Csload.old]: Csload(SCHED, _ISWARM) => Gsload(SCHED)                 requires notBool Ghasaccesslist(SCHED)
 
-    rule [Cextcodesize.new]: Cextcodesize(SCHED) => 0                      requires         Ghasaccesslist << SCHED >>
-    rule [Cextcodesize.old]: Cextcodesize(SCHED) => Gextcodesize < SCHED > requires notBool Ghasaccesslist << SCHED >>
+    rule [Cextcodesize.new]: Cextcodesize(SCHED) => 0                   requires         Ghasaccesslist(SCHED)
+    rule [Cextcodesize.old]: Cextcodesize(SCHED) => Gextcodesize(SCHED) requires notBool Ghasaccesslist(SCHED)
 
-    rule [Cextcodehash.new]: Cextcodehash(SCHED) => 0                  requires         Ghasaccesslist << SCHED >>
-    rule [Cextcodehash.old]: Cextcodehash(SCHED) => Gbalance < SCHED > requires notBool Ghasaccesslist << SCHED >>
+    rule [Cextcodehash.new]: Cextcodehash(SCHED) => 0               requires         Ghasaccesslist(SCHED)
+    rule [Cextcodehash.old]: Cextcodehash(SCHED) => Gbalance(SCHED) requires notBool Ghasaccesslist(SCHED)
 
-    rule [Cbalance.new]: Cbalance(SCHED) => 0                  requires         Ghasaccesslist << SCHED >>
-    rule [Cbalance.old]: Cbalance(SCHED) => Gbalance < SCHED > requires notBool Ghasaccesslist << SCHED >>
+    rule [Cbalance.new]: Cbalance(SCHED) => 0               requires         Ghasaccesslist (SCHED)
+    rule [Cbalance.old]: Cbalance(SCHED) => Gbalance(SCHED) requires notBool Ghasaccesslist (SCHED)
 
-    rule [Cextcodecopy.new]: Cextcodecopy(SCHED, WIDTH) => Gcopy < SCHED > *Int (WIDTH up/Int 32)                               requires         Ghasaccesslist << SCHED >> [concrete]
-    rule [Cextcodecopy.old]: Cextcodecopy(SCHED, WIDTH) => Gextcodecopy < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32)) requires notBool Ghasaccesslist << SCHED >> [concrete]
+    rule [Cextcodecopy.new]: Cextcodecopy(SCHED, WIDTH) => Gcopy(SCHED) *Int (WIDTH up/Int 32)                            requires         Ghasaccesslist(SCHED) [concrete]
+    rule [Cextcodecopy.old]: Cextcodecopy(SCHED, WIDTH) => Gextcodecopy(SCHED) +Int (Gcopy(SCHED) *Int (WIDTH up/Int 32)) requires notBool Ghasaccesslist(SCHED) [concrete]
 
-    rule [Cmodexp.old]: Cmodexp(SCHED, DATA, BASELEN, EXPLEN, MODLEN) => #multComplexity(maxInt(BASELEN, MODLEN)) *Int maxInt(#adjustedExpLength(BASELEN, EXPLEN, DATA), 1) /Int Gquaddivisor < SCHED >
-      requires notBool Ghasaccesslist << SCHED >>
+    rule [Cmodexp.old]: Cmodexp(SCHED, DATA, BASELEN, EXPLEN, MODLEN) => #multComplexity(maxInt(BASELEN, MODLEN)) *Int maxInt(#adjustedExpLength(BASELEN, EXPLEN, DATA), 1) /Int Gquaddivisor(SCHED)
+      requires notBool Ghasaccesslist(SCHED)
       [concrete]
 
-    rule [Cmodexp.new]: Cmodexp(SCHED, DATA, BASELEN, EXPLEN, MODLEN) => maxInt(200, (#newMultComplexity(maxInt(BASELEN, MODLEN)) *Int maxInt(#adjustedExpLength(BASELEN, EXPLEN, DATA), 1)) /Int Gquaddivisor < SCHED > )
-      requires Ghasaccesslist << SCHED >>
+    rule [Cmodexp.new]: Cmodexp(SCHED, DATA, BASELEN, EXPLEN, MODLEN) => maxInt(200, (#newMultComplexity(maxInt(BASELEN, MODLEN)) *Int maxInt(#adjustedExpLength(BASELEN, EXPLEN, DATA), 1)) /Int Gquaddivisor(SCHED) )
+      requires Ghasaccesslist(SCHED)
       [concrete]
 
-    rule [Cinitcode.new]: Cinitcode(SCHED, INITCODELEN) => Ginitcodewordcost < SCHED > *Int ( INITCODELEN up/Int 32 ) requires         Ghasmaxinitcodesize << SCHED >> [concrete]
-    rule [Cinitcode.old]: Cinitcode(SCHED, _)           => 0                                                          requires notBool Ghasmaxinitcodesize << SCHED >> [concrete]
+    rule [Cinitcode.new]: Cinitcode(SCHED, INITCODELEN) => Ginitcodewordcost(SCHED) *Int ( INITCODELEN up/Int 32 ) requires         Ghasmaxinitcodesize(SCHED) [concrete]
+    rule [Cinitcode.old]: Cinitcode(SCHED, _)           => 0                                                       requires notBool Ghasmaxinitcodesize(SCHED) [concrete]
 
     syntax Bool ::= #accountEmpty ( AccountCode , Int , Int ) [function, total, klabel(accountEmpty), symbol]
  // ---------------------------------------------------------------------------------------------------------
@@ -217,18 +217,18 @@ module GAS-FEES
     rule [allBut64th.pos]: #allBut64th(N) => N -Int (N /Int 64) requires 0 <=Int N
     rule [allBut64th.neg]: #allBut64th(N) => 0                  requires N  <Int 0
 
-    syntax Int ::= G0 ( Schedule , Bytes , Bool )           [function, klabel(G0base)]
-                 | G0 ( Schedule , Bytes , Int , Int, Int ) [function, klabel(G0data)]
- // ----------------------------------------------------------------------------------
-    rule G0(SCHED, WS, false) => G0(SCHED, WS, 0, lengthBytes(WS), 0) +Int Gtransaction < SCHED >
-    rule G0(SCHED, WS, true)  => G0(SCHED, WS, 0, lengthBytes(WS), 0) +Int Gtxcreate < SCHED > +Int Cinitcode(SCHED, lengthBytes(WS))
+    syntax Int ::= G0 ( ScheduleTuple , Bytes , Bool )           [function, klabel(G0base)]
+                 | G0 ( ScheduleTuple , Bytes , Int , Int, Int ) [function, klabel(G0data)]
+ // ---------------------------------------------------------------------------------------
+    rule G0(SCHED, WS, false) => G0(SCHED, WS, 0, lengthBytes(WS), 0) +Int Gtransaction(SCHED)
+    rule G0(SCHED, WS, true)  => G0(SCHED, WS, 0, lengthBytes(WS), 0) +Int Gtxcreate(SCHED) +Int Cinitcode(SCHED, lengthBytes(WS))
 
     rule G0(    _,  _, I, I, R) => R
-    rule G0(SCHED, WS, I, J, R) => G0(SCHED, WS, I +Int 1, J, R +Int #if WS[I] ==Int 0 #then Gtxdatazero < SCHED > #else Gtxdatanonzero < SCHED > #fi) [owise]
+    rule G0(SCHED, WS, I, J, R) => G0(SCHED, WS, I +Int 1, J, R +Int #if WS[I] ==Int 0 #then Gtxdatazero(SCHED) #else Gtxdatanonzero(SCHED) #fi) [owise]
 
-    syntax Gas ::= "G*" "(" Gas "," Int "," Int "," Schedule ")" [function]
- // -----------------------------------------------------------------------
-    rule G*(GAVAIL, GLIMIT, REFUND, SCHED) => GAVAIL +Gas minGas((GLIMIT -Gas GAVAIL) /Gas Rmaxquotient < SCHED >, REFUND)
+    syntax Gas ::= "G*" "(" Gas "," Int "," Int "," ScheduleTuple ")" [function]
+ // ----------------------------------------------------------------------------
+    rule G*(GAVAIL, GLIMIT, REFUND, SCHED) => GAVAIL +Gas minGas((GLIMIT -Gas GAVAIL) /Gas Rmaxquotient(SCHED), REFUND)
 
     syntax Int ::= #multComplexity(Int)    [klabel(#multComplexity),    function]
                  | #newMultComplexity(Int) [klabel(#newMultComplexity), function]
