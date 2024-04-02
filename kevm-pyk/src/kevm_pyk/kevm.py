@@ -5,7 +5,18 @@ from typing import TYPE_CHECKING
 
 from pyk.cterm import CTerm
 from pyk.kast import KInner
-from pyk.kast.inner import KApply, KLabel, KSequence, KSort, KToken, KVariable, bottom_up, build_assoc, build_cons
+from pyk.kast.inner import (
+    KApply,
+    KLabel,
+    KSequence,
+    KSort,
+    KToken,
+    KVariable,
+    bottom_up,
+    build_assoc,
+    build_cons,
+    top_down,
+)
 from pyk.kast.manip import abstract_term_safely, flatten_label
 from pyk.kast.pretty import paren
 from pyk.kcfg.semantics import KCFGSemantics
@@ -174,6 +185,8 @@ class KEVMSemantics(KCFGSemantics):
 
 
 class KEVM(KProve, KRun):
+    _use_hex: bool
+
     def __init__(
         self,
         definition_dir: Path,
@@ -183,6 +196,7 @@ class KEVM(KProve, KRun):
         krun_command: str = 'krun',
         extra_unparsing_modules: Iterable[KFlatModule] = (),
         bug_report: BugReport | None = None,
+        use_hex: bool = False,
     ) -> None:
         # I'm going for the simplest version here, we can change later if there is an advantage.
         # https://stackoverflow.com/questions/9575409/calling-parent-class-init-with-multiple-inheritance-whats-the-right-way
@@ -206,6 +220,7 @@ class KEVM(KProve, KRun):
             bug_report=bug_report,
             patch_symbol_table=KEVM._kevm_patch_symbol_table,
         )
+        self._use_hex = use_hex
 
     @classmethod
     def _kevm_patch_symbol_table(cls, symbol_table: SymbolTable) -> None:
@@ -318,10 +333,14 @@ class KEVM(KProve, KRun):
             cterm = cterm.add_constraint(c)
         return cterm
 
+    @property
+    def use_hex_encoding(self) -> bool:
+        return self._use_hex
+
     def pretty_print(
         self, kast: KAst, *, in_module: str | None = None, unalias: bool = True, sort_collections: bool = False
     ) -> str:
-        if isinstance(kast, KInner):
+        if isinstance(kast, KInner) and self.use_hex_encoding:
             kast = KEVM.kinner_to_hex(kast)
         return super().pretty_print(kast, unalias=unalias, sort_collections=sort_collections)
 
@@ -336,11 +355,11 @@ class KEVM(KProve, KRun):
                 return KToken(hex(int(kast.token)), INT)
             if type(kast) is KToken and kast.sort == BYTES:
                 return KToken('0x' + pretty_bytes(kast).hex(), BYTES)
-            return kast.map_inner(_to_hex)
+            return kast
 
         if isinstance(kast, KToken):
             return _to_hex(kast)
-        return kast.map_inner(_to_hex)
+        return top_down(_to_hex, kast)
 
     @staticmethod
     def halt() -> KApply:
