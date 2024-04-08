@@ -44,26 +44,5 @@ jobs:
           BKP_VERSION=$(git -C kevm-pyk/src/kevm_pyk/kproj/plugin rev-parse HEAD)
           echo ${BKP_VERSION} > deps/blockchain-k-plugin_release
           git add deps/blockchain-k-plugin_release && git commit -m "deps/blockchain-k-plugin_release: sync release file version ${BKP_VERSION}" || true
-      - name: 'Install Nix/Cachix'
-        uses: cachix/install-nix-action@v19
-        with:
-          install_url: https://releases.nixos.org/nix/nix-2.13.3/install
-          extra_nix_config: |
-            access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
-      - uses: cachix/cachix-action@v12
-        with:
-          name: k-framework
-          authToken: ${{ secrets.CACHIX_PUBLIC_TOKEN }}
-      - name: 'Update nix flake inputs'
-        run: |
-          K_VERSION=$(cat deps/k_release)
-          BKP_VERSION=$(cat deps/blockchain-k-plugin_release)
-          PYK_VERSION=$(cat deps/pyk_release)
-          sed -i 's!    k-framework.url = "github:runtimeverification/k/[v0-9\.]*"!    k-framework.url = "github:runtimeverification/k/v'"${K_VERSION}"'"!' flake.nix
-          sed -i 's!    blockchain-k-plugin.url = "github:runtimeverification/blockchain-k-plugin/[0-9a-f]*"!    blockchain-k-plugin.url = "github:runtimeverification/blockchain-k-plugin/'"${BKP_VERSION}"'"!' flake.nix
-          sed -i 's!    pyk.url = "github:runtimeverification/pyk/[v0-9\.]*"!    pyk.url = "github:runtimeverification/pyk/'"${PYK_VERSION}"'"!' flake.nix
-          nix run .#update-from-submodules
-          nix flake update
-          git add flake.nix flake.lock && git commit -m 'flake.{nix,lock}: update Nix derivations' || true
       - name: 'Push updates'
         run: git push
