@@ -153,8 +153,7 @@ Here we load the environmental information.
 
     rule <k> loadCallState { "code" : CODE:Bytes, REST } => #loadProgram CODE ~> loadCallState { REST } ... </k>
 
-    rule <k> loadCallState { "gas"      : GLIMIT:Int, REST => REST } ... </k> <gas> _ => GLIMIT </gas> <useGas> true  </useGas>
-    rule <k> loadCallState { "gas"      :      _:Int, REST => REST } ... </k>                          <useGas> false </useGas>
+    rule <k> loadCallState { "gas"      : GLIMIT:Int, REST => REST } ... </k> <gas> _ => GLIMIT </gas>
 
     rule <k> loadCallState { "gasPrice" : GPRICE:Int, REST => REST } ... </k> <gasPrice>  _ => GPRICE </gasPrice>
     rule <k> loadCallState { "value"    : VALUE:Int , REST => REST } ... </k> <callValue> _ => VALUE  </callValue>

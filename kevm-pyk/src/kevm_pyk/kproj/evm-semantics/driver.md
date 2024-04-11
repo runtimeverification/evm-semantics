@@ -311,8 +311,6 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
 
     rule <k> loadCallState { "code" : (CODE:OpCodes), REST } => #loadProgram #asmOpCodes(CODE) ~> loadCallState { REST } ... </k>
 
-    rule <k> loadCallState { "usegas" : (USEGAS:Bool), REST => REST }  ... </k> <useGas> _ => USEGAS </useGas>
-
     rule <k> loadCallState { KEY : ((VAL:String) => #parseWord(VAL)), _ } ... </k>
       requires KEY in (SetItem("gas") SetItem("gasPrice") SetItem("value"))
 
