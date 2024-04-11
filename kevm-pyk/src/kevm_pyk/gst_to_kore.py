@@ -7,7 +7,7 @@ from argparse import ArgumentParser
 from typing import TYPE_CHECKING
 
 from pyk.cli.utils import file_path
-from pyk.kore.prelude import BOOL, INT, SORT_JSON, SORT_K_ITEM, bool_dv, inj, int_dv, json_to_kore, top_cell_initializer
+from pyk.kore.prelude import INT, SORT_JSON, SORT_K_ITEM, inj, int_dv, json_to_kore, top_cell_initializer
 from pyk.kore.syntax import App, SortApp
 
 from .cli import KEVMCLIArgs
@@ -39,7 +39,6 @@ def kore_pgm_to_kore(pgm: Pattern, pattern_sort: SortApp, schedule: str, mode: s
         '$SCHEDULE': inj(SORT_SCHEDULE, SORT_K_ITEM, _schedule_to_kore(schedule)),
         '$MODE': inj(SORT_MODE, SORT_K_ITEM, _mode_to_kore(mode)),
         '$CHAINID': inj(INT, SORT_K_ITEM, int_dv(chainid)),
-        '$USEGAS': inj(BOOL, SORT_K_ITEM, bool_dv(usegas)),
     }
     return top_cell_initializer(config)
 
