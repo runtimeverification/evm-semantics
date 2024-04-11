@@ -30,7 +30,7 @@ GOLDEN: Final = (REPO_ROOT / 'tests/templates/output-success-llvm.json').read_te
 def _test(gst_file: Path, schedule: str, mode: str, chainid: int, usegas: bool) -> None:
     # Given
     with gst_file.open() as f:
-        gst_data = json.load(f)
+        gst_data = f.read()
 
     # When
     res = interpret(gst_data, schedule, mode, chainid, usegas, check=False)
