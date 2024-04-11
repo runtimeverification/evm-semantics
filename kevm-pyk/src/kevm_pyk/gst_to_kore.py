@@ -39,7 +39,6 @@ def kore_pgm_to_kore(pgm: Pattern, pattern_sort: SortApp, schedule: str, mode: s
         '$SCHEDULE': inj(SORT_SCHEDULE, SORT_K_ITEM, _schedule_to_kore(schedule)),
         '$MODE': inj(SORT_MODE, SORT_K_ITEM, _mode_to_kore(mode)),
         '$CHAINID': inj(INT, SORT_K_ITEM, int_dv(chainid)),
-        '$USEGAS': inj(BOOL, SORT_K_ITEM, bool_dv(usegas)),
     }
     return top_cell_initializer(config)
 
