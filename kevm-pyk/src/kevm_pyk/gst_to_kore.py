@@ -7,7 +7,7 @@ from argparse import ArgumentParser
 from typing import TYPE_CHECKING
 
 from pyk.cli.utils import file_path
-from pyk.kore.prelude import BOOL, INT, SORT_JSON, SORT_K_ITEM, bool_dv, inj, int_dv, json_to_kore, top_cell_initializer
+from pyk.kore.prelude import INT, SORT_JSON, SORT_K_ITEM, inj, int_dv, json_to_kore, top_cell_initializer
 from pyk.kore.syntax import App, SortApp
 
 from .cli import KEVMCLIArgs
