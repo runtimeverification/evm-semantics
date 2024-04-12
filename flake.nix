@@ -147,6 +147,11 @@
           kevm-pyk = poetry2nix.mkPoetryApplication {
             python = nixpkgs-pyk.python310;
             projectDir = ./kevm-pyk;
+            src = rv-utils.lib.mkPykAppSrc {
+              pkgs = import nixpkgs { system = prev.system; };
+              src = ./kevm-pyk;
+              cleaner = poetry2nix.cleanPythonSources;
+            };
             overrides = poetry2nix.overrides.withDefaults
               (finalPython: prevPython: {
                 pyk = nixpkgs-pyk.pyk-python310;
