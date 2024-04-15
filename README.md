@@ -219,7 +219,7 @@ You can call `kevm-pyk --help` to get a quick summary of how to use the script.
 Run the file `tests/ethereum-tests/BlockchainTests/GeneralStateTests/VMTests/vmArithmeticTest/add0.json`:
 
 ```sh
-poetry -C kevm-pyk run kevm-pyk run tests/ethereum-tests/BlockchainTests/GeneralStateTests/VMTests/vmArithmeticTest/add0.json --schedule DEFAULT --mode VMTESTS
+poetry -C kevm-pyk run kevm-pyk run tests/ethereum-tests/BlockchainTests/GeneralStateTests/VMTests/vmArithmeticTest/add0.json --schedule HOMESTEAD --mode VMTESTS
 ```
 
 To enable the debug symbols for the llvm backend, build using this command:

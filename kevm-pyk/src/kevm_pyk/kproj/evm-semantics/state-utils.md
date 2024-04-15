@@ -84,7 +84,7 @@ module STATE-UTILS
          <accounts>       _ => .Bag        </accounts>
          <messages>       _ => .Bag        </messages>
          <withdrawals>    _ => .Bag        </withdrawals>
-         <schedule>       _ => DEFAULT     </schedule>
+         <schedule>       _ => HOMESTEAD     </schedule>
 
 ```
 
