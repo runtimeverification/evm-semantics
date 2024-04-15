@@ -896,7 +896,6 @@ class KEVMCLIArgs(KCLIArgs):
     @cached_property
     def evm_chain_args(self) -> ArgumentParser:
         schedules = (
-            'DEFAULT',
             'FRONTIER',
             'HOMESTEAD',
             'TANGERINE_WHISTLE',

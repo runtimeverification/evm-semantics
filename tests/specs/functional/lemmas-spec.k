@@ -815,8 +815,7 @@ module LEMMAS-SPEC
 
     claim [precompiledAccountsSet-correctness]:
           <k> runLemma (
-                         #precompiledAccountsSet(DEFAULT)           ==K SetItem (1) ( SetItem (2) ( SetItem (3) SetItem (4) ) )
-                 andBool #precompiledAccountsSet(FRONTIER)          ==K SetItem (1) ( SetItem (2) ( SetItem (3) SetItem (4) ) )
+                         #precompiledAccountsSet(FRONTIER)          ==K SetItem (1) ( SetItem (2) ( SetItem (3) SetItem (4) ) )
                  andBool #precompiledAccountsSet(HOMESTEAD)         ==K SetItem (1) ( SetItem (2) ( SetItem (3) SetItem (4) ) )
                  andBool #precompiledAccountsSet(TANGERINE_WHISTLE) ==K SetItem (1) ( SetItem (2) ( SetItem (3) SetItem (4) ) )
                  andBool #precompiledAccountsSet(SPURIOUS_DRAGON)   ==K SetItem (1) ( SetItem (2) ( SetItem (3) SetItem (4) ) )

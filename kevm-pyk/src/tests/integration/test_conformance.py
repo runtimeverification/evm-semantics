@@ -93,7 +93,7 @@ SKIPPED_VM_TESTS: Final = tuple(test_file for test_file in VM_TESTS if test_file
     ids=[str(test_file.relative_to(VM_TEST_DIR)) for test_file in VM_TESTS],
 )
 def test_vm(test_file: Path) -> None:
-    _test(test_file, 'DEFAULT', 'VMTESTS', 1, True)
+    _test(test_file, 'HOMESTEAD', 'VMTESTS', 1, True)
 
 
 @pytest.mark.skip(reason='failing / slow VM tests')
@@ -103,7 +103,7 @@ def test_vm(test_file: Path) -> None:
     ids=[str(test_file.relative_to(VM_TEST_DIR)) for test_file in SKIPPED_VM_TESTS],
 )
 def test_rest_vm(test_file: Path) -> None:
-    _test(test_file, 'DEFAULT', 'VMTESTS', 1, True)
+    _test(test_file, 'HOMESTEAD', 'VMTESTS', 1, True)
 
 
 ALL_TEST_DIR: Final = TEST_DIR / 'BlockchainTests/GeneralStateTests'

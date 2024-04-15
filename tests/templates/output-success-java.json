@@ -9,7 +9,7 @@
     SUCCESS
   </mode>
   <schedule>
-    DEFAULT
+    HOMESTEAD
   </schedule>
   <useGas>
   true
