@@ -136,7 +136,7 @@ KEEP_OUTPUTS  := false
 CHECK         := git --no-pager diff --no-index --ignore-all-space -R
 
 tests/ethereum-tests/LegacyTests/Constantinople/VMTests/%: KEVM_MODE     = VMTESTS
-tests/ethereum-tests/LegacyTests/Constantinople/VMTests/%: KEVM_SCHEDULE = DEFAULT
+tests/ethereum-tests/LegacyTests/Constantinople/VMTests/%: KEVM_SCHEDULE = HOMESTEAD
 
 tests/%.run-interactive: tests/%
 	$(POETRY_RUN) kevm-pyk run $< $(KEVM_OPTS) $(KRUN_OPTS) --target $(TEST_CONCRETE_BACKEND)                          \
