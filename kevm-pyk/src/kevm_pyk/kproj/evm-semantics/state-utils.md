@@ -38,7 +38,7 @@ module STATE-UTILS
          <caller>           _ => .Account   </caller>
          <callData>         _ => .Bytes     </callData>
          <callValue>        _ => 0          </callValue>
-         <wordStack>        _ => .WordStack </wordStack>
+         <wordStack>        _ => .List      </wordStack>
          <localMem>         _ => .Bytes     </localMem>
          <pc>               _ => 0          </pc>
          <gas>              _ => 0          </gas>

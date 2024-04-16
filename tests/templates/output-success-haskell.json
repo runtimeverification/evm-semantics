@@ -48,7 +48,7 @@
           0
         </callValue>
         <wordStack>
-          .WordStack
+          .List
         </wordStack>
         <localMem>
           b""
