@@ -63,12 +63,12 @@ In the comments next to each cell, we've marked which component of the YellowPap
               <callValue> 0        </callValue>             // I_v
 
               // \mu_*
-              <wordStack>   .WordStack </wordStack>           // \mu_s
-              <localMem>    .Bytes     </localMem>            // \mu_m
-              <pc>          0          </pc>                  // \mu_pc
-              <gas>         0:Gas      </gas>                 // \mau_g
-              <memoryUsed>  0          </memoryUsed>          // \mu_i
-              <callGas>     0:Gas      </callGas>
+              <wordStack>   .List  </wordStack>           // \mu_s
+              <localMem>    .Bytes </localMem>            // \mu_m
+              <pc>          0      </pc>                  // \mu_pc
+              <gas>         0:Gas  </gas>                 // \mau_g
+              <memoryUsed>  0      </memoryUsed>          // \mu_i
+              <callGas>     0:Gas  </callGas>
 
               <static>    false </static>
               <callDepth> 0     </callDepth>
@@ -350,11 +350,11 @@ The `#next [_]` operator initiates execution by:
 -   `#stackDelta` is the delta the stack will have after the opcode executes.
 
 ```k
-    syntax Bool ::= #stackUnderflow ( WordStack , OpCode ) [klabel(#stackUnderflow), macro]
-                  | #stackOverflow  ( WordStack , OpCode ) [klabel(#stackOverflow), macro]
- // ---------------------------------------------------------------------------------------
-    rule #stackUnderflow(WS, OP:OpCode) => #sizeWordStack(WS) <Int #stackNeeded(OP)
-    rule #stackOverflow (WS, OP) => #sizeWordStack(WS) +Int #stackDelta(OP) >Int 1024
+    syntax Bool ::= #stackUnderflow ( List , OpCode ) [klabel(#stackUnderflow), macro]
+                  | #stackOverflow  ( List , OpCode ) [klabel(#stackOverflow), macro]
+ // ---------------------------------------------------------------------------------
+    rule #stackUnderflow(WS, OP:OpCode) => size(WS) <Int #stackNeeded(OP)
+    rule #stackOverflow (WS, OP) => size(WS) +Int #stackDelta(OP) >Int 1024
 
     syntax Int ::= #stackNeeded ( OpCode ) [klabel(#stackNeeded), function]
  // -----------------------------------------------------------------------
@@ -403,12 +403,12 @@ The `#next [_]` operator initiates execution by:
 -   `#changesState` is true if the given opcode will change `<network>` state given the arguments.
 
 ```k
-    syntax Bool ::= #changesState ( OpCode , WordStack ) [klabel(#changesState), function]
- // --------------------------------------------------------------------------------------
+    syntax Bool ::= #changesState ( OpCode , List ) [klabel(#changesState), function]
+ // ---------------------------------------------------------------------------------
 ```
 
 ```k
-    rule #changesState(CALL         , _ : _ : VALUE : _) => true  requires VALUE =/=Int 0
+    rule #changesState(CALL         , ListItem(_) ListItem(_) ListItem(VALUE) _) => true  requires VALUE =/=Int 0
     rule #changesState(LOG(_)       , _)                 => true
     rule #changesState(SSTORE       , _)                 => true
     rule #changesState(CREATE       , _)                 => true
@@ -442,17 +442,17 @@ Here we load the correct number of arguments from the `wordStack` based on the s
                         | TernStackOp Int Int Int
                         | QuadStackOp Int Int Int Int
  // -------------------------------------------------
-    rule <k> #exec [ UOP:UnStackOp   ] => #gas [ UOP , UOP W0          ] ~> UOP W0          ... </k> <wordStack> W0 : WS                => WS </wordStack>
-    rule <k> #exec [ BOP:BinStackOp  ] => #gas [ BOP , BOP W0 W1       ] ~> BOP W0 W1       ... </k> <wordStack> W0 : W1 : WS           => WS </wordStack>
-    rule <k> #exec [ TOP:TernStackOp ] => #gas [ TOP , TOP W0 W1 W2    ] ~> TOP W0 W1 W2    ... </k> <wordStack> W0 : W1 : W2 : WS      => WS </wordStack>
-    rule <k> #exec [ QOP:QuadStackOp ] => #gas [ QOP , QOP W0 W1 W2 W3 ] ~> QOP W0 W1 W2 W3 ... </k> <wordStack> W0 : W1 : W2 : W3 : WS => WS </wordStack>
+    rule <k> #exec [ UOP:UnStackOp   ] => #gas [ UOP , UOP W0          ] ~> UOP W0          ... </k> <wordStack> ListItem(W0) => .List ...</wordStack>
+    rule <k> #exec [ BOP:BinStackOp  ] => #gas [ BOP , BOP W0 W1       ] ~> BOP W0 W1       ... </k> <wordStack> ListItem(W0) ListItem(W1) => .List ...</wordStack>
+    rule <k> #exec [ TOP:TernStackOp ] => #gas [ TOP , TOP W0 W1 W2    ] ~> TOP W0 W1 W2    ... </k> <wordStack> ListItem(W0) ListItem(W1) ListItem(W2) => .List ...</wordStack>
+    rule <k> #exec [ QOP:QuadStackOp ] => #gas [ QOP , QOP W0 W1 W2 W3 ] ~> QOP W0 W1 W2 W3 ... </k> <wordStack> ListItem(W0) ListItem(W1) ListItem(W2) ListItem(W3) => .List ...</wordStack>
 ```
 
 `StackOp` is used for opcodes which require a large portion of the stack.
 
 ```k
-    syntax InternalOp ::= StackOp WordStack
- // ---------------------------------------
+    syntax InternalOp ::= StackOp List
+ // ----------------------------------
     rule <k> #exec [ SO:StackOp ] => #gas [ SO , SO WS ] ~> SO WS ... </k> <wordStack> WS </wordStack>
 ```
 
@@ -462,8 +462,8 @@ The `CallOp` opcodes all interperet their second argument as an address.
     syntax InternalOp ::= CallSixOp Int Int     Int Int Int Int
                         | CallOp    Int Int Int Int Int Int Int
  // -----------------------------------------------------------
-    rule <k> #exec [ CSO:CallSixOp ] => #gas [ CSO , CSO W0 W1    W2 W3 W4 W5 ] ~> CSO W0 W1    W2 W3 W4 W5 ... </k> <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : WS      => WS </wordStack>
-    rule <k> #exec [ CO:CallOp     ] => #gas [ CO  , CO  W0 W1 W2 W3 W4 W5 W6 ] ~> CO  W0 W1 W2 W3 W4 W5 W6 ... </k> <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : W6 : WS => WS </wordStack>
+    rule <k> #exec [ CSO:CallSixOp ] => #gas [ CSO , CSO W0 W1    W2 W3 W4 W5 ] ~> CSO W0 W1    W2 W3 W4 W5 ... </k> <wordStack> ListItem(W0) ListItem(W1) ListItem(W2) ListItem(W3) ListItem(W4) ListItem(W5) => .List ...</wordStack>
+    rule <k> #exec [ CO:CallOp     ] => #gas [ CO  , CO  W0 W1 W2 W3 W4 W5 W6 ] ~> CO  W0 W1 W2 W3 W4 W5 W6 ... </k> <wordStack> ListItem(W0) ListItem(W1) ListItem(W2) ListItem(W3) ListItem(W4) ListItem(W5) ListItem(W6) => .List ...</wordStack>
 ```
 
 ### Address Conversion
@@ -475,11 +475,11 @@ We make sure the given arguments (to be interpreted as addresses) are with 160 b
     syntax InternalOp ::= "#addr" "[" OpCode "]"
  // --------------------------------------------
     rule <k> #addr [ OP:OpCode ] => .K ... </k>
-         <wordStack> (W0 => #addr(W0)) : _WS </wordStack>
+         <wordStack> WS => WS [ 0 <- #addr({WS [ 0 ]}:>Int) ] </wordStack>
       requires isAddr1Op(OP)
 
     rule <k> #addr [ OP:OpCode ] => .K ... </k>
-         <wordStack> _W0 : (W1 => #addr(W1)) : _WS </wordStack>
+         <wordStack> WS => WS [ 1 <- #addr({WS [ 1 ]}:>Int) ] </wordStack>
       requires isAddr2Op(OP)
 
     rule <k> #addr [ OP:OpCode ] => .K ... </k>
@@ -724,9 +724,9 @@ These are just used by the other operators for shuffling local execution state a
 -   `#setStack_` will set the current stack to the given one.
 
 ```k
-    syntax InternalOp ::= "#push" | "#setStack" WordStack
- // -----------------------------------------------------
-    rule <k> W0:Int ~> #push => .K ... </k> <wordStack> WS => W0 : WS </wordStack>
+    syntax InternalOp ::= "#push" | "#setStack" List
+ // ------------------------------------------------
+    rule <k> W0:Int ~> #push => .K ... </k> <wordStack> WS => pushList(W0, WS) </wordStack>
     rule <k> #setStack WS    => .K ... </k> <wordStack> _  => WS      </wordStack>
 ```
 
@@ -848,8 +848,8 @@ Some operators don't calculate anything, they just push the stack around a bit.
     syntax StackOp ::= DUP  ( Int ) [klabel(DUP)]
                      | SWAP ( Int ) [klabel(SWAP)]
  // ----------------------------------------------
-    rule <k> DUP(N)  WS:WordStack => #setStack ((WS [ N -Int 1 ]) : WS)                      ... </k>
-    rule <k> SWAP(N) (W0 : WS)    => #setStack ((WS [ N -Int 1 ]) : (WS [ N -Int 1 := W0 ])) ... </k>
+    rule <k> DUP(N)  WS:List => #setStack (pushList(WS [ N -Int 1 ], WS))                      ... </k>
+    rule <k> SWAP(N) (ListItem(W0) WS)    => #setStack (pushList(WS [ N -Int 1 ], (WS [ N -Int 1 <- W0 ]))) ... </k>
 
     syntax PushOp ::= "PUSHZERO"
                     | PUSH ( Int ) [klabel(PUSH)]
@@ -1119,10 +1119,10 @@ These operators query about the current return data buffer.
  // ------------------------------------------
     rule <k> LOG(N) MEMSTART MEMWIDTH => .K ... </k>
          <id> ACCT </id>
-         <wordStack> WS => #drop(N, WS) </wordStack>
+         <wordStack> WS => range(WS, N, 0) </wordStack>
          <localMem> LM </localMem>
-         <log> L => L ListItem({ ACCT | WordStack2List(#take(N, WS)) | #range(LM, MEMSTART, MEMWIDTH) }) </log>
-      requires #sizeWordStack(WS) >=Int N
+         <log> L => L ListItem({ ACCT | range(WS, 0, size(WS) -Int N) | #range(LM, MEMSTART, MEMWIDTH) }) </log>
+      requires size(WS) >=Int N
 ```
 
 Ethereum Network OpCodes
@@ -1328,12 +1328,12 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
 
     syntax KItem ::= "#initVM"
  // --------------------------
-    rule <k> #initVM      => .K ...      </k>
-         <pc>           _ => 0          </pc>
-         <memoryUsed>   _ => 0          </memoryUsed>
-         <output>       _ => .Bytes     </output>
-         <wordStack>    _ => .WordStack </wordStack>
-         <localMem>     _ => .Bytes     </localMem>
+    rule <k> #initVM      => .K ... </k>
+         <pc>           _ => 0      </pc>
+         <memoryUsed>   _ => 0      </memoryUsed>
+         <output>       _ => .Bytes </output>
+         <wordStack>    _ => .List  </wordStack>
+         <localMem>     _ => .Bytes </localMem>
 
     syntax KItem ::= "#loadProgram" Bytes
  // -------------------------------------
