@@ -315,6 +315,38 @@ module EVM-OPTIMIZATIONS
      andBool ( size( WS ) <=Int 1023 )
      [priority(40)]
 
+  rule
+    <kevm>
+      <k>
+        ( #next [ ISZERO ] => .K ) ...
+      </k>
+      <schedule>
+        SCHED
+      </schedule>
+      <ethereum>
+        <evm>
+          <callState>
+            <wordStack>
+              ( ListItem(W0) WS => pushList(bool2Word( W0 ==Int 0 ), WS) )
+            </wordStack>
+            <pc>
+              ( PCOUNT => ( PCOUNT +Int 1 ) )
+            </pc>
+            <gas>
+              ( GAVAIL => ( GAVAIL -Gas Gverylow < SCHED > ) )
+            </gas>
+            ...
+          </callState>
+          ...
+        </evm>
+        ...
+      </ethereum>
+      ...
+    </kevm>
+    requires ( Gverylow < SCHED > <=Gas GAVAIL )
+     andBool ( size( WS ) <=Int 1023 )
+     [priority(40)]
+
 
 // {OPTIMIZATIONS}
 
