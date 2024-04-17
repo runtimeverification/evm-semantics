@@ -104,24 +104,23 @@ def run_prover(
     fast_check_subsumption: bool = False,
 ) -> bool:
     prover: APRProver | ImpliesProver
-    if type(proof) is APRProof:
-        prover = APRProver(
-            proof,
-            kcfg_explore,
-            execute_depth=max_depth,
-            terminal_rules=terminal_rules,
-            cut_point_rules=cut_point_rules,
-            counterexample_info=counterexample_info,
-            always_check_subsumption=always_check_subsumption,
-            fast_check_subsumption=fast_check_subsumption,
-        )
-    elif type(proof) is EqualityProof:
-        prover = ImpliesProver(proof=proof, kcfg_explore=kcfg_explore)
-    else:
-        raise ValueError(f'Do not know how to build prover for proof: {proof}')
-
     try:
-        prover.advance_proof(max_iterations=max_iterations, fail_fast=fail_fast)
+        if type(proof) is APRProof:
+            prover = APRProver(
+                kcfg_explore,
+                execute_depth=max_depth,
+                terminal_rules=terminal_rules,
+                cut_point_rules=cut_point_rules,
+                counterexample_info=counterexample_info,
+                always_check_subsumption=always_check_subsumption,
+                fast_check_subsumption=fast_check_subsumption,
+            )
+            prover.advance_proof(proof, max_iterations=max_iterations, fail_fast=fail_fast)
+        elif type(proof) is EqualityProof:
+            prover = ImpliesProver(proof, kcfg_explore=kcfg_explore)
+            prover.advance_proof(proof)
+        else:
+            raise ValueError(f'Do not know how to build prover for proof: {proof}')
 
     except Exception as e:
         if type(proof) is APRProof:
