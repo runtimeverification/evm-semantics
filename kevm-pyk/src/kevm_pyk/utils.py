@@ -69,7 +69,7 @@ def get_apr_proof_for_spec(
     include_dirs: Iterable[Path] = (),
     md_selector: str | None = None,
     claim_labels: Iterable[str] | None = None,
-    exclude_claim_labels: Iterable[str] = (),
+    exclude_claim_labels: Iterable[str] | None = None,
 ) -> APRProof:
     if save_directory is None:
         save_directory = Path('.')
