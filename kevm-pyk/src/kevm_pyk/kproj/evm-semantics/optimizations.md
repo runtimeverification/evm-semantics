@@ -375,6 +375,42 @@ module EVM-OPTIMIZATIONS
     requires ( Gjumpdest < SCHED > <=Gas GAVAIL )
      [priority(40)]
 
+  rule
+    <kevm>
+      <k>
+        ( #next [ JUMP ] => .K ) ...
+      </k>
+      <schedule>
+        SCHED
+      </schedule>
+      <ethereum>
+        <evm>
+          <callState>
+            <jumpDests>
+              DESTS
+            </jumpDests>
+            <wordStack>
+              ( ListItem(W0) WS => WS )
+            </wordStack>
+            <pc>
+              ( PCOUNT => W0 )
+            </pc>
+            <gas>
+              ( GAVAIL => ( GAVAIL -Gas Gmid < SCHED > ) )
+            </gas>
+            ...
+          </callState>
+          ...
+        </evm>
+        ...
+      </ethereum>
+      ...
+    </kevm>
+    requires ( Gmid < SCHED > <=Gas GAVAIL )
+     andBool ( size( WS ) <=Int 1023 )
+     andBool W0 in DESTS
+     [priority(40)]
+
 
 // {OPTIMIZATIONS}
 
