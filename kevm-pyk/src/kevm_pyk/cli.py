@@ -6,7 +6,6 @@ from typing import TYPE_CHECKING, Any
 
 from pyk.cli.args import DisplayOptions as PykDisplayOptions
 from pyk.cli.args import KCLIArgs, KDefinitionOptions, Options
-from pyk.cli.utils import dir_path
 from pyk.kore.rpc import FallbackReason
 
 from .utils import arg_pair_of
@@ -221,7 +220,6 @@ class KEVMCLIArgs(KCLIArgs):
     @cached_property
     def kprove_args(self) -> ArgumentParser:
         args = ArgumentParser(add_help=False)
-        args.add_argument('--definition', type=dir_path, dest='definition_dir', help='Path to definition to use.')
         args.add_argument(
             '--debug-equations',
             type=list_of(str, delim=','),
@@ -253,7 +251,6 @@ class KEVMCLIArgs(KCLIArgs):
     @cached_property
     def kprove_legacy_args(self) -> ArgumentParser:
         args = ArgumentParser(add_help=False)
-        args.add_argument('--definition', type=dir_path, dest='definition_dir', help='Path to definition to use.')
         args.add_argument(
             '--bug-report',
             default=False,
