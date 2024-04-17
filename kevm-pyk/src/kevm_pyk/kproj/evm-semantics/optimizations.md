@@ -347,6 +347,34 @@ module EVM-OPTIMIZATIONS
      andBool ( size( WS ) <=Int 1023 )
      [priority(40)]
 
+  rule
+    <kevm>
+      <k>
+        ( #next [ JUMPDEST ] => .K ) ...
+      </k>
+      <schedule>
+        SCHED
+      </schedule>
+      <ethereum>
+        <evm>
+          <callState>
+            <pc>
+              ( PCOUNT => ( PCOUNT +Int 1 ) )
+            </pc>
+            <gas>
+              ( GAVAIL => ( GAVAIL -Gas Gjumpdest < SCHED > ) )
+            </gas>
+            ...
+          </callState>
+          ...
+        </evm>
+        ...
+      </ethereum>
+      ...
+    </kevm>
+    requires ( Gjumpdest < SCHED > <=Gas GAVAIL )
+     [priority(40)]
+
 
 // {OPTIMIZATIONS}
 
