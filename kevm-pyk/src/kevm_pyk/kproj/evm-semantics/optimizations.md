@@ -411,6 +411,42 @@ module EVM-OPTIMIZATIONS
      andBool W0 in DESTS
      [priority(40)]
 
+  rule
+    <kevm>
+      <k>
+        ( #next [ JUMPI ] => .K ) ...
+      </k>
+      <schedule>
+        SCHED
+      </schedule>
+      <ethereum>
+        <evm>
+          <callState>
+            <jumpDests>
+              DESTS
+            </jumpDests>
+            <wordStack>
+              ( ListItem(W0) ListItem(W1) WS => WS )
+            </wordStack>
+            <pc>
+              ( PCOUNT => #if W1 =/=Int 0 #then W0 #else PCOUNT +Int 1 #fi )
+            </pc>
+            <gas>
+              ( GAVAIL => ( GAVAIL -Gas Ghigh < SCHED > ) )
+            </gas>
+            ...
+          </callState>
+          ...
+        </evm>
+        ...
+      </ethereum>
+      ...
+    </kevm>
+    requires ( Ghigh < SCHED > <=Gas GAVAIL )
+     andBool ( size( WS ) <=Int 1023 )
+     andBool W0 in DESTS
+     [priority(40)]
+
 
 // {OPTIMIZATIONS}
 
