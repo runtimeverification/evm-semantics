@@ -814,7 +814,7 @@ windows-terminal = ["colorama (>=0.4.6)"]
 
 [[package]]
 name = "pyk"
-version = "7.0.13"
+version = "7.0.0"
 description = ""
 optional = false
 python-versions = "^3.10"
@@ -835,8 +835,8 @@ xdg-base-dirs = "^6.0.1"
 [package.source]
 type = "git"
 url = "https://github.com/runtimeverification/k.git"
-reference = "v7.0.13"
-resolved_reference = "c2e3ba5c0706422cd1ae59b8aabe7f4c905f9c93"
+reference = "noah/apr-prove-parallel-2"
+resolved_reference = "2afab9fe1fd3b6b861c9a250d60a12fb76fd0323"
 subdirectory = "pyk"
 
 [[package]]
@@ -1117,4 +1117,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "43ee3672935f89dd24b38dc3f1850d99a197f64b6012e828dffae11529e865b1"
+content-hash = "b53c755d2e5d0ff924b19233c6c42db728abb1bd3a6cda9fe2f10ecb32f0dc11"

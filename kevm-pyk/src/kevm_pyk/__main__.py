@@ -26,10 +26,12 @@ from pyk.cli.args import (
     SpecOptions,
 )
 from pyk.cli.utils import file_path
-from pyk.cterm import CTerm
+from pyk.cterm import CTerm, CTermSymbolic
 from pyk.kast.outer import KApply, KRewrite, KSort, KToken
 from pyk.kcfg import KCFG
+from pyk.kcfg.explore import KCFGExplore
 from pyk.kdist import kdist
+from pyk.kore.rpc import KoreClient
 from pyk.kore.tools import PrintOutput, kore_print
 from pyk.ktool.kompile import LLVMKompileType
 from pyk.ktool.krun import KRunOutput
@@ -385,6 +387,7 @@ def exec_prove(options: ProveOptions) -> None:
         else:
             _LOGGER.info(f'Claim reinitialized because it is out of date: {claim.label}')
         claim_job.update_digest(digest_file)
+
         with legacy_explore(
             kevm,
             kcfg_semantics=KEVMSemantics(auto_abstract_gas=options.auto_abstract_gas),
@@ -398,7 +401,27 @@ def exec_prove(options: ProveOptions) -> None:
             fallback_on=options.fallback_on,
             interim_simplification=options.interim_simplification,
             no_post_exec_simplify=(not options.post_exec_simplify),
+            port=options.port,
         ) as kcfg_explore:
+
+            def create_kcfg_explore() -> KCFGExplore:
+                dispatch = None
+                with KoreClient(
+                    'localhost',
+                    kcfg_explore.cterm_symbolic._kore_client.port,
+                    bug_report=options.bug_report,
+                    bug_report_id=claim.label,
+                    dispatch=dispatch,
+                ) as client:
+                    cterm_symbolic = CTermSymbolic(
+                        client, kevm.definition, kevm.kompiled_kore, trace_rewrites=options.trace_rewrites
+                    )
+                    return KCFGExplore(
+                        cterm_symbolic,
+                        kcfg_semantics=KEVMSemantics(auto_abstract_gas=options.auto_abstract_gas),
+                        id=claim.label,
+                    )
+
             proof_problem: Proof
             if is_functional(claim):
                 if not options.reinit and up_to_date and EqualityProof.proof_exists(claim.label, save_directory):
@@ -450,7 +473,7 @@ def exec_prove(options: ProveOptions) -> None:
             start_time = time.time()
             passed = run_prover(
                 proof_problem,
-                kcfg_explore,
+                create_kcfg_explore,
                 max_depth=options.max_depth,
                 max_iterations=options.max_iterations,
                 cut_point_rules=KEVMSemantics.cut_point_rules(

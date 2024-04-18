@@ -22,6 +22,8 @@ from pyk.kcfg import KCFGExplore
 from pyk.kore.rpc import KoreClient, KoreExecLogFormat, TransportType, kore_server
 from pyk.proof import APRProof, APRProver
 from pyk.proof.implies import EqualityProof, ImpliesProver
+from pyk.proof.proof import ParallelProver
+from pyk.proof.reachability import APRProofResult, APRProofStep
 from pyk.utils import single
 
 if TYPE_CHECKING:
@@ -93,7 +95,7 @@ def get_apr_proof_for_spec(
 
 def run_prover(
     proof: Proof,
-    kcfg_explore: KCFGExplore,
+    create_kcfg_explore: Callable[[], KCFGExplore],
     max_depth: int = 1000,
     max_iterations: int | None = None,
     cut_point_rules: Iterable[str] = (),
@@ -106,18 +108,30 @@ def run_prover(
     prover: APRProver | ImpliesProver
     try:
         if type(proof) is APRProof:
-            prover = APRProver(
-                kcfg_explore,
-                execute_depth=max_depth,
-                terminal_rules=terminal_rules,
-                cut_point_rules=cut_point_rules,
-                counterexample_info=counterexample_info,
-                always_check_subsumption=always_check_subsumption,
-                fast_check_subsumption=fast_check_subsumption,
+
+            def create_prover() -> APRProver:
+                return APRProver(
+                    create_kcfg_explore(),
+                    execute_depth=max_depth,
+                    terminal_rules=terminal_rules,
+                    cut_point_rules=cut_point_rules,
+                    counterexample_info=counterexample_info,
+                    always_check_subsumption=always_check_subsumption,
+                    fast_check_subsumption=fast_check_subsumption,
+                )
+
+            par_prover = ParallelProver[APRProof, APRProofStep, APRProofResult]()
+
+            par_prover.parallel_advance_proof(
+                proof=proof,
+                max_iterations=max_iterations,
+                fail_fast=fail_fast,
+                max_workers=3,
+                create_prover=create_prover,
             )
-            prover.advance_proof(proof, max_iterations=max_iterations, fail_fast=fail_fast)
+
         elif type(proof) is EqualityProof:
-            prover = ImpliesProver(proof, kcfg_explore=kcfg_explore)
+            prover = ImpliesProver(proof, kcfg_explore=create_kcfg_explore())
             prover.advance_proof(proof)
         else:
             raise ValueError(f'Do not know how to build prover for proof: {proof}')
