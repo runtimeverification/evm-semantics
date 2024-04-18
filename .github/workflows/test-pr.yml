@@ -41,6 +41,8 @@ jobs:
     steps:
       - name: 'Check out code'
         uses: actions/checkout@v3
+        with:
+          submodules: recursive
       - name: 'Install Poetry'
         uses: Gr1N/setup-poetry@v8
       - name: 'Run code quality checks'
@@ -56,8 +58,7 @@ jobs:
       - name: 'Check out code'
         uses: actions/checkout@v3
         with:
-          submodules: true
-          fetch-depth: 0
+          submodules: recursive
       - name: 'Install Poetry'
         uses: Gr1N/setup-poetry@v8
       - name: 'Run unit tests'
@@ -72,7 +73,6 @@ jobs:
         uses: actions/checkout@v3
         with:
           submodules: recursive
-          fetch-depth: 0
       - name: 'Install Poetry'
         uses: Gr1N/setup-poetry@v8
       - name: 'Run profiling'
@@ -89,7 +89,6 @@ jobs:
         uses: actions/checkout@v3
         with:
           submodules: recursive
-          fetch-depth: 0
       - name: 'Set up Docker'
         uses: ./.github/actions/with-docker
         with:

@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "kevm-pyk"
-version = "1.0.530"
+version = "1.0.531"
 description = ""
 authors = [
     "Runtime Verification, Inc. <contact@runtimeverification.com>",
@@ -46,6 +46,7 @@ evm-semantics = "kevm_pyk.kdist.plugin"
 [tool.isort]
 profile = "black"
 line_length = 120
+skip = [ "src/kevm_pyk/kproj" ]
 
 [tool.autoflake]
 recursive = true
