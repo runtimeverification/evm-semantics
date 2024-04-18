@@ -46,6 +46,7 @@ evm-semantics = "kevm_pyk.kdist.plugin"
 [tool.isort]
 profile = "black"
 line_length = 120
+skip = [ "src/kevm_pyk/kproj" ]
 
 [tool.autoflake]
 recursive = true
