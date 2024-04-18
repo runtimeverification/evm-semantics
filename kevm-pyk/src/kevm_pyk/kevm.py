@@ -560,7 +560,7 @@ class KEVM(KProve, KRun):
         bug_report: bool = False,
         spec_module: str | None = None,
         claim_labels: Iterable[str] | None = None,
-        exclude_claim_labels: Iterable[str] = (),
+        exclude_claim_labels: Iterable[str] | None = None,
         debug: bool = False,
         debugger: bool = False,
         max_depth: int | None = None,
