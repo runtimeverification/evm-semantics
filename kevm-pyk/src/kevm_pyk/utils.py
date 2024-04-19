@@ -104,6 +104,7 @@ def run_prover(
     counterexample_info: bool = False,
     always_check_subsumption: bool = False,
     fast_check_subsumption: bool = False,
+    max_frontier_parallel: int = 3,
 ) -> bool:
     prover: APRProver | ImpliesProver
     try:
@@ -126,7 +127,7 @@ def run_prover(
                 proof=proof,
                 max_iterations=max_iterations,
                 fail_fast=fail_fast,
-                max_workers=3,
+                max_workers=max_frontier_parallel,
                 create_prover=create_prover,
             )
 
