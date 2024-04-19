@@ -152,7 +152,6 @@ module EVM-OPTIMIZATIONS
     </kevm>
     requires #stackNeeded(SWAP(N)) <=Int size(WS) +Int 1
      andBool ( Gverylow < SCHED > <=Gas GAVAIL )
-     andBool ( size( WS ) <=Int 1023 )
      [priority(40)]
 
   rule
@@ -184,7 +183,6 @@ module EVM-OPTIMIZATIONS
       ...
     </kevm>
     requires ( Gverylow < SCHED > <=Gas GAVAIL )
-     andBool ( size( WS ) <=Int 1023 )
      [priority(40)]
 
   rule
@@ -216,7 +214,6 @@ module EVM-OPTIMIZATIONS
       ...
     </kevm>
     requires ( Gverylow < SCHED > <=Gas GAVAIL )
-     andBool ( size( WS ) <=Int 1023 )
      [priority(40)]
 
   rule
@@ -248,7 +245,6 @@ module EVM-OPTIMIZATIONS
       ...
     </kevm>
     requires ( Gverylow < SCHED > <=Gas GAVAIL )
-     andBool ( size( WS ) <=Int 1023 )
      [priority(40)]
 
   rule
@@ -280,7 +276,6 @@ module EVM-OPTIMIZATIONS
       ...
     </kevm>
     requires ( Gverylow < SCHED > <=Gas GAVAIL )
-     andBool ( size( WS ) <=Int 1023 )
      [priority(40)]
 
   rule
@@ -312,7 +307,6 @@ module EVM-OPTIMIZATIONS
       ...
     </kevm>
     requires ( Gverylow < SCHED > <=Gas GAVAIL )
-     andBool ( size( WS ) <=Int 1023 )
      [priority(40)]
 
   rule
@@ -344,7 +338,6 @@ module EVM-OPTIMIZATIONS
       ...
     </kevm>
     requires ( Gverylow < SCHED > <=Gas GAVAIL )
-     andBool ( size( WS ) <=Int 1023 )
      [priority(40)]
 
   rule
@@ -407,7 +400,6 @@ module EVM-OPTIMIZATIONS
       ...
     </kevm>
     requires ( Gmid < SCHED > <=Gas GAVAIL )
-     andBool ( size( WS ) <=Int 1023 )
      andBool W0 in DESTS
      [priority(40)]
 
@@ -443,7 +435,6 @@ module EVM-OPTIMIZATIONS
       ...
     </kevm>
     requires ( Ghigh < SCHED > <=Gas GAVAIL )
-     andBool ( size( WS ) <=Int 1023 )
      andBool W0 in DESTS
      [priority(40)]
 
