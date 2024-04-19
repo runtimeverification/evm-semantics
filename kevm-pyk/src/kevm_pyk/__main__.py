@@ -406,21 +406,21 @@ def exec_prove(options: ProveOptions) -> None:
 
             def create_kcfg_explore() -> KCFGExplore:
                 dispatch = None
-                with KoreClient(
+                client = KoreClient(
                     'localhost',
                     kcfg_explore.cterm_symbolic._kore_client.port,
                     bug_report=options.bug_report,
                     bug_report_id=claim.label,
                     dispatch=dispatch,
-                ) as client:
-                    cterm_symbolic = CTermSymbolic(
-                        client, kevm.definition, kevm.kompiled_kore, trace_rewrites=options.trace_rewrites
-                    )
-                    return KCFGExplore(
-                        cterm_symbolic,
-                        kcfg_semantics=KEVMSemantics(auto_abstract_gas=options.auto_abstract_gas),
-                        id=claim.label,
-                    )
+                )
+                cterm_symbolic = CTermSymbolic(
+                    client, kevm.definition, kevm.kompiled_kore, trace_rewrites=options.trace_rewrites
+                )
+                return KCFGExplore(
+                    cterm_symbolic,
+                    kcfg_semantics=KEVMSemantics(auto_abstract_gas=options.auto_abstract_gas),
+                    id=claim.label,
+                )
 
             proof_problem: Proof
             if is_functional(claim):
