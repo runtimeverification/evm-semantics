@@ -32,7 +32,8 @@ Some Ethereum commands take an Ethereum specification (eg. for an account or tra
 
     syntax EthereumSimulation ::= JSON
  // ----------------------------------
-    rule <k> JSONINPUT:JSON => run JSONINPUT success .EthereumSimulation </k>
+    rule <k> JSONINPUT:String => run String2JSON(JSONINPUT) success .EthereumSimulation </k>
+    rule <k> JSONINPUT:JSON => run JSONINPUT success .EthereumSimulation </k> [owise]
 ```
 
 For verification purposes, it's much easier to specify a program in terms of its op-codes and not the hex-encoding that the tests use.

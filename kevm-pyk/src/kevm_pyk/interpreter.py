@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from typing import TYPE_CHECKING
 
 from pyk.kdist import kdist
@@ -28,6 +29,6 @@ def interpret(gst_data: Any, schedule: str, mode: str, chainid: int, usegas: boo
 def _interpret(gst_data: Any, schedule: str, mode: str, chainid: int, usegas: bool) -> CompletedProcess:
     gst_data_filtered = filter_gst_keys(gst_data)
     interpreter = kdist.get('evm-semantics.llvm') / 'interpreter'
-    init_kore = gst_to_kore(gst_data_filtered, schedule, mode, chainid, usegas)
+    init_kore = gst_to_kore(json.dumps(gst_data_filtered), schedule, mode, chainid, usegas)
     proc_res = run_process_2([str(interpreter), '/dev/stdin', '-1', '/dev/stdout'], input=init_kore.text, check=False)
     return proc_res
