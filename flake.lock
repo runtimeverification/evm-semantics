@@ -242,16 +242,16 @@
         "rv-utils": "rv-utils_3"
       },
       "locked": {
-        "lastModified": 1713450319,
-        "narHash": "sha256-avxWXaJVCkmJy+qh4ItF7V7DjDNK7W2UplTIRi0Qh4U=",
+        "lastModified": 1713483001,
+        "narHash": "sha256-NDsS/CLHgKbjIrabhwoGcKSQqe1jP/bn//OQKD/aZ34=",
         "owner": "runtimeverification",
         "repo": "k",
-        "rev": "c2e3ba5c0706422cd1ae59b8aabe7f4c905f9c93",
+        "rev": "2afab9fe1fd3b6b861c9a250d60a12fb76fd0323",
         "type": "github"
       },
       "original": {
         "owner": "runtimeverification",
-        "ref": "v7.0.13",
+        "ref": "noah/apr-prove-parallel-2",
         "repo": "k",
         "type": "github"
       }
