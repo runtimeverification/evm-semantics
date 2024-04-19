@@ -45,7 +45,7 @@ def _test(gst_file: Path, schedule: str, mode: str, chainid: int, usegas: bool) 
         _LOGGER.info(f'Running test: {gst_file} - {test_name}')
         if test_name in skipped_gst_tests:
             continue
-        res = interpret({test_name: test}, schedule, mode, chainid, usegas, check=False)
+        res = interpret(json.dumps({test_name: test}), schedule, mode, chainid, usegas, check=False)
         _assert_exit_code_zero(res)
 
 

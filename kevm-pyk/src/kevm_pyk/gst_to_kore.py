@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 import logging
 import sys
 from argparse import ArgumentParser
@@ -58,7 +57,7 @@ def main() -> None:
 
 
 def _exec_gst_to_kore(input_file: Path, schedule: str, mode: str, chainid: int, usegas: bool) -> None:
-    gst_data = json.loads(input_file.read_text())
+    gst_data = input_file.read_text()
     kore = gst_to_kore(gst_data, schedule, mode, chainid, usegas)
     kore.write(sys.stdout)
     sys.stdout.write('\n')
