@@ -143,7 +143,6 @@ module EVM-OPTIMIZATIONS
     </kevm>
     requires #stackNeeded(SWAP(N)) <=Int size(WS) +Int 1
      andBool ( Gverylow < SCHED > <=Gas GAVAIL )
-     andBool ( size( WS ) <=Int 1023 )
      [priority(40)]
 
   rule
@@ -176,7 +175,6 @@ module EVM-OPTIMIZATIONS
       ...
     </kevm>
     requires ( Gverylow < SCHED > <=Gas GAVAIL )
-     andBool ( size( WS ) <=Int 1023 )
      [priority(40)]
 
   rule
@@ -209,7 +207,6 @@ module EVM-OPTIMIZATIONS
       ...
     </kevm>
     requires ( Gverylow < SCHED > <=Gas GAVAIL )
-     andBool ( size( WS ) <=Int 1023 )
      [priority(40)]
 
   rule
@@ -242,7 +239,6 @@ module EVM-OPTIMIZATIONS
       ...
     </kevm>
     requires ( Gverylow < SCHED > <=Gas GAVAIL )
-     andBool ( size( WS ) <=Int 1023 )
      [priority(40)]
 
   rule
@@ -275,7 +271,6 @@ module EVM-OPTIMIZATIONS
       ...
     </kevm>
     requires ( Gverylow < SCHED > <=Gas GAVAIL )
-     andBool ( size( WS ) <=Int 1023 )
      [priority(40)]
 
   rule
@@ -308,7 +303,135 @@ module EVM-OPTIMIZATIONS
       ...
     </kevm>
     requires ( Gverylow < SCHED > <=Gas GAVAIL )
-     andBool ( size( WS ) <=Int 1023 )
+     [priority(40)]
+
+  rule
+    <kevm>
+      <k>
+        ( #next [ ISZERO ] => .K ) ...
+      </k>
+      <schedule>
+        SCHED
+      </schedule>
+      <ethereum>
+        <evm>
+          <callState>
+            <wordStack>
+              ( ListItem(W0) WS => pushList(bool2Word( W0 ==Int 0 ), WS) )
+            </wordStack>
+            <pc>
+              ( PCOUNT => ( PCOUNT +Int 1 ) )
+            </pc>
+            <gas>
+              ( GAVAIL => ( GAVAIL -Gas Gverylow < SCHED > ) )
+            </gas>
+            ...
+          </callState>
+          ...
+        </evm>
+        ...
+      </ethereum>
+      ...
+    </kevm>
+    requires ( Gverylow < SCHED > <=Gas GAVAIL )
+     [priority(40)]
+
+  rule
+    <kevm>
+      <k>
+        ( #next [ JUMPDEST ] => .K ) ...
+      </k>
+      <schedule>
+        SCHED
+      </schedule>
+      <ethereum>
+        <evm>
+          <callState>
+            <pc>
+              ( PCOUNT => ( PCOUNT +Int 1 ) )
+            </pc>
+            <gas>
+              ( GAVAIL => ( GAVAIL -Gas Gjumpdest < SCHED > ) )
+            </gas>
+            ...
+          </callState>
+          ...
+        </evm>
+        ...
+      </ethereum>
+      ...
+    </kevm>
+    requires ( Gjumpdest < SCHED > <=Gas GAVAIL )
+     [priority(40)]
+
+  rule
+    <kevm>
+      <k>
+        ( #next [ JUMP ] => .K ) ...
+      </k>
+      <schedule>
+        SCHED
+      </schedule>
+      <ethereum>
+        <evm>
+          <callState>
+            <jumpDests>
+              DESTS
+            </jumpDests>
+            <wordStack>
+              ( ListItem(W0) WS => WS )
+            </wordStack>
+            <pc>
+              ( PCOUNT => W0 )
+            </pc>
+            <gas>
+              ( GAVAIL => ( GAVAIL -Gas Gmid < SCHED > ) )
+            </gas>
+            ...
+          </callState>
+          ...
+        </evm>
+        ...
+      </ethereum>
+      ...
+    </kevm>
+    requires ( Gmid < SCHED > <=Gas GAVAIL )
+     andBool ( W0 <Int lengthBytes(DESTS) andBool DESTS[W0] ==Int 1 )
+     [priority(40)]
+
+  rule
+    <kevm>
+      <k>
+        ( #next [ JUMPI ] => .K ) ...
+      </k>
+      <schedule>
+        SCHED
+      </schedule>
+      <ethereum>
+        <evm>
+          <callState>
+            <jumpDests>
+              DESTS
+            </jumpDests>
+            <wordStack>
+              ( ListItem(W0) ListItem(W1) WS => WS )
+            </wordStack>
+            <pc>
+              ( PCOUNT => #if W1 =/=Int 0 #then W0 #else PCOUNT +Int 1 #fi )
+            </pc>
+            <gas>
+              ( GAVAIL => ( GAVAIL -Gas Ghigh < SCHED > ) )
+            </gas>
+            ...
+          </callState>
+          ...
+        </evm>
+        ...
+      </ethereum>
+      ...
+    </kevm>
+    requires ( Ghigh < SCHED > <=Gas GAVAIL )
+     andBool ( W0 <Int lengthBytes(DESTS) andBool DESTS[W0] ==Int 1 )
      [priority(40)]
 
 
