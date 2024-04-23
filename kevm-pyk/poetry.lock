@@ -814,7 +814,7 @@ windows-terminal = ["colorama (>=0.4.6)"]
 
 [[package]]
 name = "pyk"
-version = "7.0.17"
+version = "7.0.0"
 description = ""
 optional = false
 python-versions = "^3.10"
@@ -835,8 +835,8 @@ xdg-base-dirs = "^6.0.1"
 [package.source]
 type = "git"
 url = "https://github.com/runtimeverification/k.git"
-reference = "v7.0.17"
-resolved_reference = "1c1c0717c85468290b2c3faa54aae24386c7f03b"
+reference = "petar/efficient-branching"
+resolved_reference = "6b445fc6878e33dd2bbc79c3521d9b2ada8cef7f"
 subdirectory = "pyk"
 
 [[package]]
@@ -1117,4 +1117,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "ab8511963158f78586c395c42fc40d85e0de67e9d9d7dc0736cad12d62e0a483"
+content-hash = "389edfc96a7e83c017e2b362c066284c4e0c582d73814150ceb74ea19b798468"
