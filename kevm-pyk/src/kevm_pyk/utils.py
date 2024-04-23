@@ -47,7 +47,7 @@ def claim_dependency_dict(claims: Iterable[KClaim], spec_module_name: str | None
     claims_by_label = {claim.label: claim for claim in claims}
     graph: dict[str, list[str]] = {}
     for claim in claims:
-        graph[claim.label] = []
+        graph[claim.label] = []  # noqa: B909
         for dependency in claim.dependencies:
             if dependency not in claims_by_label:
                 if spec_module_name is None:
@@ -253,7 +253,7 @@ def abstract_cell_vars(cterm: KInner, keep_vars: Collection[KVariable] = ()) -> 
     config, subst = split_config_from(state)
     for s in subst:
         if type(subst[s]) is KVariable and not is_anon_var(subst[s]) and subst[s] not in keep_vars:
-            subst[s] = abstract_term_safely(KVariable('_'), base_name=s)
+            subst[s] = abstract_term_safely(KVariable('_'), base_name=s)  # noqa: B909
     return Subst(subst)(config)
 
 

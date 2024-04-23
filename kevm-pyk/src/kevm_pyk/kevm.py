@@ -258,7 +258,7 @@ class KEVM(KProve, KRun):
         ]
         for symb in paren_symbols:
             if symb in symbol_table:
-                symbol_table[symb] = paren(symbol_table[symb])
+                symbol_table[symb] = paren(symbol_table[symb])  # noqa: B909
 
     class Sorts:
         KEVM_CELL: Final = KSort('KevmCell')
