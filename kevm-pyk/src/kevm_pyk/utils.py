@@ -22,8 +22,7 @@ from pyk.kcfg import KCFGExplore
 from pyk.kore.rpc import KoreClient, KoreExecLogFormat, TransportType, kore_server
 from pyk.proof import APRProof, APRProver
 from pyk.proof.implies import EqualityProof, ImpliesProver
-from pyk.proof.proof import ParallelProver
-from pyk.proof.reachability import APRProofResult, APRProofStep
+from pyk.proof.proof import parallel_advance_proof
 from pyk.utils import single
 
 if TYPE_CHECKING:
@@ -121,9 +120,7 @@ def run_prover(
                     fast_check_subsumption=fast_check_subsumption,
                 )
 
-            par_prover = ParallelProver[APRProof, APRProofStep, APRProofResult]()
-
-            par_prover.parallel_advance_proof(
+            parallel_advance_proof(
                 proof=proof,
                 max_iterations=max_iterations,
                 fail_fast=fail_fast,
