@@ -9,7 +9,6 @@ from typing import TYPE_CHECKING
 
 from pyk.kdist import kdist
 from pyk.ktool.kompile import HaskellKompile, KompileArgs, LLVMKompile, LLVMKompileType, MaudeKompile
-from pyk.utils import run_process
 
 from . import config
 
@@ -213,42 +212,13 @@ def lib_ccopts(plugin_dir: Path, debug_build: bool = False) -> list[str]:
 
     ccopts += ['-lssl', '-lcrypto', '-lsecp256k1']
 
-    libff_dir = plugin_dir / 'libff'
-    ccopts += [f'{libff_dir}/lib/libff.a', f'-I{libff_dir}/include']
-
-    libcryptopp_dir = plugin_dir / 'libcryptopp'
-    ccopts += [f'{libcryptopp_dir}/lib/libcryptopp.a', f'-I{libcryptopp_dir}/include']
-
-    blake2_dir = plugin_dir / 'blake2'
-    ccopts += [f'{blake2_dir}/lib/blake2.a']
-
-    plugin_include = plugin_dir / 'plugin-c'
-    ccopts += [
-        f'{plugin_include}/plugin_util.cpp',
-        f'{plugin_include}/crypto.cpp',
-    ]
-
-    if kernel == 'darwin':
-        if not config.NIX_LIBS:
-            brew_root = run_process(('brew', '--prefix'), pipe_stderr=True, logger=_LOGGER).stdout.strip()
-            ccopts += [
-                f'-I{brew_root}/include',
-                f'-L{brew_root}/lib',
-            ]
-
-            openssl_root = run_process(('brew', '--prefix', 'openssl'), pipe_stderr=True, logger=_LOGGER).stdout.strip()
-            ccopts += [
-                f'-I{openssl_root}/include',
-                f'-L{openssl_root}/lib',
-            ]
-        else:
-            ccopts += config.NIX_LIBS.split(' ')
-    elif kernel == 'linux':
+    if kernel == 'linux':
         ccopts += ['-lprocps']
-        if config.NIX_LIBS:
-            ccopts += config.NIX_LIBS.split(' ')
-    else:
-        raise AssertionError()
+
+    ccopts += [str(plugin_dir / 'krypto.a')]
+
+    if config.NIX_LIBS:
+        ccopts += config.NIX_LIBS.split(' ')
 
     return ccopts
 
