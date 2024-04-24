@@ -2,11 +2,11 @@
   description = "A flake for the KEVM Semantics";
 
   inputs = {
-    k-framework.url = "github:runtimeverification/k/v6.3.64";
+    k-framework.url = "github:runtimeverification/k/v7.0.17";
     nixpkgs.follows = "k-framework/nixpkgs";
     flake-utils.follows = "k-framework/flake-utils";
     rv-utils.follows = "k-framework/rv-utils";
-    pyk.url = "github:runtimeverification/pyk/v0.1.747";
+    pyk.url = "github:runtimeverification/k/v7.0.17?dir=pyk";
     nixpkgs-pyk.follows = "pyk/nixpkgs";
     poetry2nix.follows = "pyk/poetry2nix";
     blockchain-k-plugin = {
@@ -147,6 +147,11 @@
           kevm-pyk = poetry2nix.mkPoetryApplication {
             python = nixpkgs-pyk.python310;
             projectDir = ./kevm-pyk;
+            src = rv-utils.lib.mkPykAppSrc {
+              pkgs = import nixpkgs { system = prev.system; };
+              src = ./kevm-pyk;
+              cleaner = poetry2nix.cleanPythonSources;
+            };
             overrides = poetry2nix.overrides.withDefaults
               (finalPython: prevPython: {
                 pyk = nixpkgs-pyk.pyk-python310;

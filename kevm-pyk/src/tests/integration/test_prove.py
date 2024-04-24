@@ -98,6 +98,7 @@ KOMPILE_MAIN_FILE: Final = {
     'functional/int-simplifications-spec.k': 'int-simplifications-spec.k',
     'functional/lemmas-no-smt-spec.k': 'lemmas-no-smt-spec.k',
     'functional/lemmas-spec.k': 'lemmas-spec.k',
+    'functional/abi-spec.k': 'abi-spec.k',
     'functional/merkle-spec.k': 'merkle-spec.k',
     'functional/storageRoot-spec.k': 'storageRoot-spec.k',
     'mcd/functional-spec.k': 'functional-spec.k',
@@ -182,7 +183,7 @@ TEST_PARAMS: dict[str, TParams] = {
 
 
 for KONTROL_TEST in KONTROL_TESTS:
-    TEST_PARAMS[f'kontrol/{KONTROL_TEST.name}'] = TParams(break_on_calls=True)
+    TEST_PARAMS[f'kontrol/{KONTROL_TEST.name}'] = TParams(break_on_calls=True)  # noqa: B909
 
 
 def leaf_number(proof: APRProof) -> int:

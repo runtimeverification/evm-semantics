@@ -11,7 +11,7 @@ jobs:
 
   version-bump:
     name: 'Version Bump'
-    runs-on: [self-hosted, linux, flyweight-ephemeral]
+    runs-on: ubuntu-latest
     steps:
       - name: 'Check out code'
         uses: actions/checkout@v3
@@ -37,13 +37,12 @@ jobs:
 
   kevm-pyk-code-quality-checks:
     name: 'Code Quality Checks'
-    runs-on: [self-hosted, linux, flyweight-ephemeral]
+    runs-on: ubuntu-latest
     steps:
       - name: 'Check out code'
         uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
         with:
-            python-version: "3.10"
+          submodules: recursive
       - name: 'Install Poetry'
         uses: Gr1N/setup-poetry@v8
       - name: 'Run code quality checks'
@@ -54,36 +53,26 @@ jobs:
   kevm-pyk-unit-tests:
     needs: kevm-pyk-code-quality-checks
     name: 'Unit Tests'
-    runs-on: [self-hosted, linux, normal-ephemeral]
-    steps:
-      - name: 'Check out code'
-        uses: actions/checkout@v3
-        with:
-          submodules: true
-          fetch-depth: 0
-      - uses: actions/setup-python@v4
-        with:
-            python-version: "3.10"
-      - name: 'Install Poetry'
-        uses: Gr1N/setup-poetry@v8
-      - name: 'Run unit tests'
-        run: |
-          make -C kevm-pyk cov-unit
-
-  kevm-pyk-profile:
-    needs: kevm-pyk-code-quality-checks
-    name: 'Profiling'
-    runs-on: [self-hosted, linux, normal-ephemeral]
+    runs-on: ubuntu-latest
     steps:
       - name: 'Check out code'
         uses: actions/checkout@v3
         with:
           submodules: recursive
-          fetch-depth: 0
-      - name: Setup Python
-        uses: actions/setup-python@v4
+      - name: 'Install Poetry'
+        uses: Gr1N/setup-poetry@v8
+      - name: 'Run unit tests'
+        run: make -C kevm-pyk cov-unit
+
+  kevm-pyk-profile:
+    needs: kevm-pyk-code-quality-checks
+    name: 'Profiling'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Check out code'
+        uses: actions/checkout@v3
         with:
-          python-version: '3.10'
+          submodules: recursive
       - name: 'Install Poetry'
         uses: Gr1N/setup-poetry@v8
       - name: 'Run profiling'
@@ -100,7 +89,6 @@ jobs:
         uses: actions/checkout@v3
         with:
           submodules: recursive
-          fetch-depth: 0
       - name: 'Set up Docker'
         uses: ./.github/actions/with-docker
         with:

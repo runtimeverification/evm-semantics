@@ -4,14 +4,27 @@ import logging
 from typing import TYPE_CHECKING
 
 from pyk.cterm import CTerm
-from pyk.kast.inner import KApply, KLabel, KSequence, KSort, KVariable, build_assoc, build_cons
-from pyk.kast.manip import abstract_term_safely, bottom_up, flatten_label
+from pyk.kast import KInner
+from pyk.kast.inner import (
+    KApply,
+    KLabel,
+    KSequence,
+    KSort,
+    KToken,
+    KVariable,
+    bottom_up,
+    build_assoc,
+    build_cons,
+    top_down,
+)
+from pyk.kast.manip import abstract_term_safely, flatten_label
 from pyk.kast.pretty import paren
 from pyk.kcfg.semantics import KCFGSemantics
 from pyk.kcfg.show import NodePrinter
 from pyk.ktool.kprove import KProve
 from pyk.ktool.krun import KRun
-from pyk.prelude.kint import intToken, ltInt
+from pyk.prelude.bytes import BYTES, pretty_bytes
+from pyk.prelude.kint import INT, intToken, ltInt
 from pyk.prelude.ml import mlEqualsFalse, mlEqualsTrue
 from pyk.prelude.string import stringToken
 from pyk.proof.reachability import APRProof
@@ -22,7 +35,7 @@ if TYPE_CHECKING:
     from pathlib import Path
     from typing import Final
 
-    from pyk.kast import KInner
+    from pyk.kast.inner import KAst
     from pyk.kast.outer import KFlatModule
     from pyk.kcfg import KCFG
     from pyk.ktool.kprint import SymbolTable
@@ -172,6 +185,8 @@ class KEVMSemantics(KCFGSemantics):
 
 
 class KEVM(KProve, KRun):
+    _use_hex: bool
+
     def __init__(
         self,
         definition_dir: Path,
@@ -181,6 +196,7 @@ class KEVM(KProve, KRun):
         krun_command: str = 'krun',
         extra_unparsing_modules: Iterable[KFlatModule] = (),
         bug_report: BugReport | None = None,
+        use_hex: bool = False,
     ) -> None:
         # I'm going for the simplest version here, we can change later if there is an advantage.
         # https://stackoverflow.com/questions/9575409/calling-parent-class-init-with-multiple-inheritance-whats-the-right-way
@@ -204,6 +220,7 @@ class KEVM(KProve, KRun):
             bug_report=bug_report,
             patch_symbol_table=KEVM._kevm_patch_symbol_table,
         )
+        self._use_hex = use_hex
 
     @classmethod
     def _kevm_patch_symbol_table(cls, symbol_table: SymbolTable) -> None:
@@ -241,7 +258,7 @@ class KEVM(KProve, KRun):
         ]
         for symb in paren_symbols:
             if symb in symbol_table:
-                symbol_table[symb] = paren(symbol_table[symb])
+                symbol_table[symb] = paren(symbol_table[symb])  # noqa: B909
 
     class Sorts:
         KEVM_CELL: Final = KSort('KevmCell')
@@ -315,6 +332,34 @@ class KEVM(KProve, KRun):
         for c in constraints:
             cterm = cterm.add_constraint(c)
         return cterm
+
+    @property
+    def use_hex_encoding(self) -> bool:
+        return self._use_hex
+
+    def pretty_print(
+        self, kast: KAst, *, in_module: str | None = None, unalias: bool = True, sort_collections: bool = False
+    ) -> str:
+        if isinstance(kast, KInner) and self.use_hex_encoding:
+            kast = KEVM.kinner_to_hex(kast)
+        return super().pretty_print(kast, unalias=unalias, sort_collections=sort_collections)
+
+    @staticmethod
+    def kinner_to_hex(kast: KInner) -> KInner:
+        """
+        Converts values within a KInner object of sorts `INT` or `BYTES` to hexadecimal representation.
+        """
+
+        def to_hex(kast: KInner) -> KInner:
+            if type(kast) is KToken and kast.sort == INT:
+                return KToken(hex(int(kast.token)), INT)
+            if type(kast) is KToken and kast.sort == BYTES:
+                return KToken('0x' + pretty_bytes(kast).hex(), BYTES)
+            return kast
+
+        if isinstance(kast, KToken):
+            return to_hex(kast)
+        return top_down(to_hex, kast)
 
     @staticmethod
     def halt() -> KApply:
@@ -515,7 +560,7 @@ class KEVM(KProve, KRun):
         bug_report: bool = False,
         spec_module: str | None = None,
         claim_labels: Iterable[str] | None = None,
-        exclude_claim_labels: Iterable[str] = (),
+        exclude_claim_labels: Iterable[str] | None = None,
         debug: bool = False,
         debugger: bool = False,
         max_depth: int | None = None,

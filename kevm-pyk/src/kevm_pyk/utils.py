@@ -47,7 +47,7 @@ def claim_dependency_dict(claims: Iterable[KClaim], spec_module_name: str | None
     claims_by_label = {claim.label: claim for claim in claims}
     graph: dict[str, list[str]] = {}
     for claim in claims:
-        graph[claim.label] = []
+        graph[claim.label] = []  # noqa: B909
         for dependency in claim.dependencies:
             if dependency not in claims_by_label:
                 if spec_module_name is None:
@@ -69,7 +69,7 @@ def get_apr_proof_for_spec(
     include_dirs: Iterable[Path] = (),
     md_selector: str | None = None,
     claim_labels: Iterable[str] | None = None,
-    exclude_claim_labels: Iterable[str] = (),
+    exclude_claim_labels: Iterable[str] | None = None,
 ) -> APRProof:
     if save_directory is None:
         save_directory = Path('.')
@@ -104,24 +104,23 @@ def run_prover(
     fast_check_subsumption: bool = False,
 ) -> bool:
     prover: APRProver | ImpliesProver
-    if type(proof) is APRProof:
-        prover = APRProver(
-            proof,
-            kcfg_explore,
-            execute_depth=max_depth,
-            terminal_rules=terminal_rules,
-            cut_point_rules=cut_point_rules,
-            counterexample_info=counterexample_info,
-            always_check_subsumption=always_check_subsumption,
-            fast_check_subsumption=fast_check_subsumption,
-        )
-    elif type(proof) is EqualityProof:
-        prover = ImpliesProver(proof=proof, kcfg_explore=kcfg_explore)
-    else:
-        raise ValueError(f'Do not know how to build prover for proof: {proof}')
-
     try:
-        prover.advance_proof(max_iterations=max_iterations, fail_fast=fail_fast)
+        if type(proof) is APRProof:
+            prover = APRProver(
+                kcfg_explore,
+                execute_depth=max_depth,
+                terminal_rules=terminal_rules,
+                cut_point_rules=cut_point_rules,
+                counterexample_info=counterexample_info,
+                always_check_subsumption=always_check_subsumption,
+                fast_check_subsumption=fast_check_subsumption,
+            )
+            prover.advance_proof(proof, max_iterations=max_iterations, fail_fast=fail_fast)
+        elif type(proof) is EqualityProof:
+            prover = ImpliesProver(proof, kcfg_explore=kcfg_explore)
+            prover.advance_proof(proof)
+        else:
+            raise ValueError(f'Do not know how to build prover for proof: {proof}')
 
     except Exception as e:
         if type(proof) is APRProof:
@@ -254,7 +253,7 @@ def abstract_cell_vars(cterm: KInner, keep_vars: Collection[KVariable] = ()) -> 
     config, subst = split_config_from(state)
     for s in subst:
         if type(subst[s]) is KVariable and not is_anon_var(subst[s]) and subst[s] not in keep_vars:
-            subst[s] = abstract_term_safely(KVariable('_'), base_name=s)
+            subst[s] = abstract_term_safely(KVariable('_'), base_name=s)  # noqa: B909
     return Subst(subst)(config)
 
 
