@@ -20,7 +20,7 @@ from pyk.cli.args import (
     SMTOptions,
     SpecOptions,
 )
-from pyk.cli.utils import dir_path, file_path
+from pyk.cli.utils import file_path
 from pyk.kore.rpc import FallbackReason
 from pyk.kore.tools import PrintOutput
 from pyk.ktool.krun import KRunOutput
