@@ -815,7 +815,7 @@ windows-terminal = ["colorama (>=0.4.6)"]
 
 [[package]]
 name = "pyk"
-version = "7.0.17"
+version = "7.0.0"
 description = ""
 optional = false
 python-versions = "^3.10"
@@ -836,8 +836,8 @@ xdg-base-dirs = "^6.0.1"
 [package.source]
 type = "git"
 url = "https://github.com/runtimeverification/k.git"
-reference = "v7.0.17"
-resolved_reference = "1c1c0717c85468290b2c3faa54aae24386c7f03b"
+reference = "petar/revert-constraint-unsortedness"
+resolved_reference = "76395c7ce9a36f991ff4ba3b6c030b95d64e29c9"
 subdirectory = "pyk"
 
 [[package]]
@@ -1118,4 +1118,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "ab8511963158f78586c395c42fc40d85e0de67e9d9d7dc0736cad12d62e0a483"
+content-hash = "de15b9b933979f37f40487b849706a7591ece5f5f616afd829d98576d4401ee8"
