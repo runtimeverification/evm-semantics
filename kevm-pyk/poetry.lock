@@ -837,7 +837,7 @@ xdg-base-dirs = "^6.0.1"
 type = "git"
 url = "https://github.com/runtimeverification/k.git"
 reference = "noah/apr-prove-parallel-2"
-resolved_reference = "090607dad08c711209ff131562d8a0ee646e397a"
+resolved_reference = "d5b919da737f738a244254b2be67c3115004d0d5"
 subdirectory = "pyk"
 
 [[package]]
