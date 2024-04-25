@@ -681,7 +681,6 @@ class KEVMCLIArgs(KCLIArgs):
     @cached_property
     def kprove_args(self) -> ArgumentParser:
         args = ArgumentParser(add_help=False)
-        args.add_argument('--definition', type=dir_path, dest='definition_dir', help='Path to definition to use.')
         args.add_argument(
             '--debug-equations',
             type=list_of(str, delim=','),
@@ -713,7 +712,6 @@ class KEVMCLIArgs(KCLIArgs):
     @cached_property
     def kprove_legacy_args(self) -> ArgumentParser:
         args = ArgumentParser(add_help=False)
-        args.add_argument('--definition', type=dir_path, dest='definition_dir', help='Path to definition to use.')
         args.add_argument(
             '--bug-report',
             default=False,

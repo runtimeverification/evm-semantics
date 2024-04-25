@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "kevm-pyk"
-version = "1.0.526"
+version = "1.0.535"
 description = ""
 authors = [
     "Runtime Verification, Inc. <contact@runtimeverification.com>",
@@ -13,7 +13,7 @@ authors = [
 [tool.poetry.dependencies]
 python = "^3.10"
 pathos = "*"
-pyk = { git = "https://github.com/runtimeverification/pyk.git", tag="v0.1.778" }
+pyk = { git = "https://github.com/runtimeverification/k.git", tag="v7.0.17", subdirectory = "pyk" }
 tomlkit = "^0.11.6"
 
 [tool.poetry.group.dev.dependencies]
@@ -46,6 +46,7 @@ evm-semantics = "kevm_pyk.kdist.plugin"
 [tool.isort]
 profile = "black"
 line_length = 120
+skip = [ "src/kevm_pyk/kproj" ]
 
 [tool.autoflake]
 recursive = true
@@ -63,3 +64,4 @@ exclude = "src/kevm_pyk/kproj"
 
 [tool.mypy]
 disallow_untyped_defs = true
+exclude = "src/kevm_pyk/kproj/*"
