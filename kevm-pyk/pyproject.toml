@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "kevm-pyk"
-version = "1.0.536"
+version = "1.0.535"
 description = ""
 authors = [
     "Runtime Verification, Inc. <contact@runtimeverification.com>",
@@ -64,3 +64,4 @@ exclude = "src/kevm_pyk/kproj"
 
 [tool.mypy]
 disallow_untyped_defs = true
+exclude = "src/kevm_pyk/kproj/*"
