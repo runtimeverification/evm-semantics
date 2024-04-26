@@ -837,7 +837,7 @@ xdg-base-dirs = "^6.0.1"
 type = "git"
 url = "https://github.com/runtimeverification/k.git"
 reference = "petar/revert-constraint-unsortedness"
-resolved_reference = "05e3dae865f7eeee0fa00e25a654779623f66178"
+resolved_reference = "9ffd6ef3b4834cc5b18f833fc29d5b6684c95e36"
 subdirectory = "pyk"
 
 [[package]]
