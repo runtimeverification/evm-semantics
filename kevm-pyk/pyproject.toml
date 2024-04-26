@@ -64,3 +64,4 @@ exclude = "src/kevm_pyk/kproj"
 
 [tool.mypy]
 disallow_untyped_defs = true
+exclude = "src/kevm_pyk/kproj/*"
