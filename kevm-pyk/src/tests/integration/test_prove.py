@@ -5,7 +5,7 @@ import sys
 from typing import TYPE_CHECKING, NamedTuple
 
 import pytest
-from pyk.cterm import CTerm
+from pyk.prelude.ml import is_top
 from pyk.proof.reachability import APRProof
 
 from kevm_pyk import config
@@ -305,4 +305,4 @@ def test_kprove_prove(
 
     # Then
     assert len(actual) == 1
-    assert CTerm._is_top(actual[0].kast)
+    assert is_top(actual[0].kast, weak=True)
