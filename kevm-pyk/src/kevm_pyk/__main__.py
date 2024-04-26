@@ -26,13 +26,14 @@ from pyk.cli.args import (
     SpecOptions,
 )
 from pyk.cli.utils import file_path
+from pyk.cterm import CTerm
 from pyk.kast.outer import KApply, KRewrite, KSort, KToken
 from pyk.kcfg import KCFG
 from pyk.kdist import kdist
 from pyk.kore.tools import PrintOutput, kore_print
 from pyk.ktool.kompile import LLVMKompileType
 from pyk.ktool.krun import KRunOutput
-from pyk.prelude.ml import is_bottom, is_top, mlOr
+from pyk.prelude.ml import is_top, mlOr
 from pyk.proof import APRProof
 from pyk.proof.implies import EqualityProof
 from pyk.proof.show import APRProofShow
@@ -421,9 +422,9 @@ def exec_prove(options: ProveOptions) -> None:
                     _LOGGER.info(f'Simplifying initial and target node: {claim.label}')
                     new_init, _ = kcfg_explore.cterm_symbolic.simplify(new_init)
                     new_target, _ = kcfg_explore.cterm_symbolic.simplify(new_target)
-                    if is_bottom(new_init.kast):
+                    if CTerm._is_bottom(new_init.kast):
                         raise ValueError('Simplifying initial node led to #Bottom, are you sure your LHS is defined?')
-                    if is_top(new_target.kast):
+                    if CTerm._is_top(new_target.kast):
                         raise ValueError('Simplifying target node led to #Bottom, are you sure your RHS is defined?')
 
                     kcfg.let_node(init_node_id, cterm=new_init)
