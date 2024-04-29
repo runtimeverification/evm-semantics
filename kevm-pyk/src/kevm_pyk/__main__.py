@@ -15,13 +15,11 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from pathos.pools import ProcessPool  # type: ignore
-from pyk.cterm import CTerm
 from pyk.kast.outer import KApply, KRewrite, KSort, KToken
 from pyk.kcfg import KCFG
 from pyk.kdist import kdist
 from pyk.kore.tools import kore_print
 from pyk.ktool.kompile import LLVMKompileType
-from pyk.ktool.krun import KRunOutput
 from pyk.prelude.ml import is_bottom, is_top, mlOr
 from pyk.proof import APRProof
 from pyk.proof.implies import EqualityProof
