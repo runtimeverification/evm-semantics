@@ -323,11 +323,13 @@ class ProveOptions(
     KProveOptions,
 ):
     reinit: bool
+    max_frontier_parallel: int
 
     @staticmethod
     def default() -> dict[str, Any]:
         return {
             'reinit': False,
+            'max_frontier_parallel': 1,
         }
 
 
@@ -387,7 +389,6 @@ def exec_prove(options: ProveOptions) -> None:
         else:
             _LOGGER.info(f'Claim reinitialized because it is out of date: {claim.label}')
         claim_job.update_digest(digest_file)
-
         with legacy_explore(
             kevm,
             kcfg_semantics=KEVMSemantics(auto_abstract_gas=options.auto_abstract_gas),
@@ -402,6 +403,7 @@ def exec_prove(options: ProveOptions) -> None:
             interim_simplification=options.interim_simplification,
             no_post_exec_simplify=(not options.post_exec_simplify),
             port=options.port,
+            haskell_threads=options.max_frontier_parallel,
         ) as kcfg_explore:
 
             def create_kcfg_explore() -> KCFGExplore:
@@ -486,6 +488,7 @@ def exec_prove(options: ProveOptions) -> None:
                 fail_fast=options.fail_fast,
                 always_check_subsumption=options.always_check_subsumption,
                 fast_check_subsumption=options.fast_check_subsumption,
+                max_frontier_parallel=options.max_frontier_parallel,
             )
             end_time = time.time()
             _LOGGER.info(f'Proof timing {proof_problem.id}: {end_time - start_time}s')
@@ -867,6 +870,13 @@ def _create_argument_parser() -> ArgumentParser:
         default=None,
         action='store_true',
         help='Reinitialize CFGs even if they already exist.',
+    )
+    prove_args.add_argument(
+        '--max-frontier-parallel',
+        type=int,
+        dest='max_frontier_parallel',
+        default=None,
+        help='Maximum number of branches of a single proof to explore in parallel.',
     )
 
     prune_args = command_parser.add_parser(
