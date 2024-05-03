@@ -94,7 +94,8 @@ def get_apr_proof_for_spec(
 
 def run_prover(
     proof: Proof,
-    create_kcfg_explore: Callable[[], KCFGExplore],
+    kcfg_explore: KCFGExplore | None = None,
+    create_kcfg_explore: Callable[[], KCFGExplore] | None = None,
     max_depth: int = 1000,
     max_iterations: int | None = None,
     cut_point_rules: Iterable[str] = (),
@@ -110,6 +111,7 @@ def run_prover(
         if type(proof) is APRProof:
 
             def create_prover() -> APRProver:
+                assert create_kcfg_explore is not None
                 return APRProver(
                     create_kcfg_explore(),
                     execute_depth=max_depth,
@@ -120,7 +122,7 @@ def run_prover(
                     fast_check_subsumption=fast_check_subsumption,
                 )
 
-            if max_frontier_parallel > 1:
+            if max_frontier_parallel > 1 and create_kcfg_explore is not None:
                 parallel_advance_proof(
                     proof=proof,
                     max_iterations=max_iterations,
@@ -128,11 +130,31 @@ def run_prover(
                     max_workers=max_frontier_parallel,
                     create_prover=create_prover,
                 )
-            else:
+            elif kcfg_explore is not None:
+                prover = APRProver(
+                    kcfg_explore,
+                    execute_depth=max_depth,
+                    terminal_rules=terminal_rules,
+                    cut_point_rules=cut_point_rules,
+                    counterexample_info=counterexample_info,
+                    always_check_subsumption=always_check_subsumption,
+                    fast_check_subsumption=fast_check_subsumption,
+                )
+                prover.advance_proof(proof, max_iterations=max_iterations, fail_fast=fail_fast)
+            elif create_kcfg_explore is not None:
                 create_prover().advance_proof(proof, max_iterations=max_iterations, fail_fast=fail_fast)
+            else:
+                raise ValueError(
+                    'Must provide at least one of kcfg_explore or create_kcfg_explore, or provide create_kcfg_explore if using max_frontier_parallel > 1.'
+                )
 
         elif type(proof) is EqualityProof:
-            prover = ImpliesProver(proof, kcfg_explore=create_kcfg_explore())
+            if kcfg_explore is not None:
+                prover = ImpliesProver(proof, kcfg_explore=kcfg_explore)
+            elif create_kcfg_explore is not None:
+                prover = ImpliesProver(proof, kcfg_explore=create_kcfg_explore())
+            else:
+                raise ValueError('Must provide at least one of kcfg_explore or create_kcfg_explore for EqualityProof.')
             prover.advance_proof(proof)
         else:
             raise ValueError(f'Do not know how to build prover for proof: {proof}')

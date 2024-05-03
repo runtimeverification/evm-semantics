@@ -475,7 +475,7 @@ def exec_prove(options: ProveOptions) -> None:
             start_time = time.time()
             passed = run_prover(
                 proof_problem,
-                create_kcfg_explore,
+                create_kcfg_explore=create_kcfg_explore,
                 max_depth=options.max_depth,
                 max_iterations=options.max_iterations,
                 cut_point_rules=KEVMSemantics.cut_point_rules(
