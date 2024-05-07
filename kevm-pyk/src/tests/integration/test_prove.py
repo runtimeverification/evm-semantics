@@ -141,7 +141,7 @@ def kompiled_target_for(kompiled_targets_dir: Path) -> Callable[[Path], Path]:
         target = _target_for_spec(spec_file)
 
         if target not in cache:
-            output_dir = cache_dir / f'{target.main_file.stem}-{len(cache)}'
+            output_dir = cache_dir / f'{target.main_file.parts[-2]}-{target.main_file.stem}'
             output_dir.mkdir(exist_ok=True)
             cache[target] = target(output_dir)
 
