@@ -61,4 +61,7 @@ def kompiled_targets_dir(request: FixtureRequest, tmp_path_factory: TempPathFact
 
 
 def pytest_configure(config):
-    config.addinivalue_line("markers", "env(name): mark test to run only on named environment")
+    config.addinivalue_line(
+        "markers",
+        "haskell_backend_performance: special tests for use in HB performance scritps. Will not run elsewhere.",
+    )
