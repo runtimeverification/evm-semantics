@@ -119,6 +119,9 @@ class Target(NamedTuple):
     main_file: Path
     main_module_name: str
 
+    def __eq__(self, other):
+        return self.main_module_name == other.main_module_name and self.main_file == other.main_file
+
     def __call__(self, output_dir: Path) -> Path:
         with FileLock(str(output_dir) + '.lock'):
             return kevm_kompile(
