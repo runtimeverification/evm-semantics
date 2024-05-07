@@ -145,9 +145,9 @@ def kompiled_target_cache(kompiled_targets_dir: Path) -> tuple[Path, dict[str, P
     if cache_dir.exists():  # cache dir exists, populate cache
         for file in cache_dir.iterdir():
             if file.is_dir():
-                cache[file.stem] = file
+                cache[file.stem] = file / 'kompiled'
     else:
-        cache_dir.mkdir(exist_ok=True, parents=True)
+        cache_dir.mkdir(parents=True)
     return cache_dir, cache
 
 
