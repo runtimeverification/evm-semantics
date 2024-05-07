@@ -55,14 +55,14 @@ KONTROL_TESTS: Final = spec_files('kontrol', '*-spec.k')
 
 ALL_TESTS: Final = sum(
     [
-        #         BENCHMARK_TESTS,
+        BENCHMARK_TESTS,
         FUNCTIONAL_TESTS,
-        # OPCODES_TESTS,
-        # ERC20_TESTS,
-        # BIHU_TESTS,
-        # EXAMPLES_TESTS,
-        # MCD_TESTS,
-        # OPTIMIZATION_TESTS,
+        OPCODES_TESTS,
+        ERC20_TESTS,
+        BIHU_TESTS,
+        EXAMPLES_TESTS,
+        MCD_TESTS,
+        OPTIMIZATION_TESTS,
         KONTROL_TESTS,
     ],
     (),
