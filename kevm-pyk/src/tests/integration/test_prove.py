@@ -140,6 +140,9 @@ class Target(NamedTuple):
 
 @pytest.fixture(scope='module')
 def kompiled_target_cache(kompiled_targets_dir: Path) -> tuple[Path, dict[str, Path]]:
+    '''
+    Populate the cache of kompiled definitions from an existing file system directory. If the cache is hot, the `kompiled_target_for` fixture will not containt a call to `kompile`, saving an expesive call to the K frontend.
+    '''
     cache_dir = kompiled_targets_dir / 'target'
     cache: dict[str, Path] = {}
     if cache_dir.exists():  # cache dir exists, populate cache
@@ -153,6 +156,9 @@ def kompiled_target_cache(kompiled_targets_dir: Path) -> tuple[Path, dict[str, P
 
 @pytest.fixture(scope='module')
 def kompiled_target_for(kompiled_target_cache: tuple[Path, dict[str, Path]]) -> Callable[[Path], Path]:
+    '''
+    Generate a function that returns a path to the kompiled defintion for a given K spec. Invoke `kompile` only if no kompiled directory is cahced for the spec.
+    '''
     cache_dir, cache = kompiled_target_cache
 
     def kompile(spec_file: Path) -> Path:
@@ -183,10 +189,11 @@ def _target_for_spec(spec_file: Path) -> Target:
     ids=[str(spec_file.relative_to(SPEC_DIR)) for spec_file in ALL_TESTS],
 )
 def test_kompile_targets(spec_file: Path, kompiled_target_for: Callable[[Path], Path]) -> None:
-    """
+    '''
     This test function is intended to be used to pre-kompile all definitions,
-    so that the actual proof tests do not need to do the actual compilation
-    """
+    so that the actual proof tests do not need to do the actual compilation,
+    which is disturbing performance measurment.
+    '''
     if spec_file in FAILING_PYK_TESTS or spec_file in FAILING_BOOSTER_TESTS:
         pytest.skip()
 
