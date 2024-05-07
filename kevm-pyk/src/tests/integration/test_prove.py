@@ -158,16 +158,10 @@ def kompiled_target_for(kompiled_target_cache: tuple[Path, dict[str, Path]]) -> 
     def kompile(spec_file: Path) -> Path:
         target = _target_for_spec(spec_file)
 
-        print(f'Target: {target.name}')
-        print(f'Cached targets: {cache.keys()}')
-
         if target.name not in cache:
-            print(f'kompiling definition for {target.name}')
             output_dir = cache_dir / target.name
             output_dir.mkdir(exist_ok=True)
             cache[target.name] = target(output_dir)
-        else:
-            print(f'using cached definiton for {target.name}')
 
         return cache[target.name]
 
