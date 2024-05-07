@@ -130,8 +130,14 @@ class Target(NamedTuple):
 
 
 @pytest.fixture(scope='module')
-def kompiled_target_for(tmp_path_factory: TempPathFactory) -> Callable[[Path], Path]:
-    cache_dir = tmp_path_factory.mktemp('target')
+def kompiled_targets_cache_dir(tmp_path_factory: TempPathFactory) -> Path:
+    return tmp_path_factory.mktemp('kompiled_targets')
+
+
+@pytest.fixture(scope='module')
+def kompiled_target_for(kompiled_targets_cache_dir: Path) -> Callable[[Path], Path]:
+    cache_dir = kompiled_targets_cache_dir / 'target'
+    cache_dir.mkdir(exist_ok=True)
     cache: dict[Target, Path] = {}
 
     def kompile(spec_file: Path) -> Path:
