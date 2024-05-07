@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+from abc import ABC, abstractmethod
 from contextlib import contextmanager
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -35,11 +36,13 @@ if TYPE_CHECKING:
     from pyk.kore.rpc import FallbackReason
     from pyk.ktool.kprint import KPrint
     from pyk.ktool.kprove import KProve
+    from pyk.proof import Prover
     from pyk.proof.proof import Proof
     from pyk.utils import BugReport
 
     T1 = TypeVar('T1')
     T2 = TypeVar('T2')
+    P = TypeVar('P', bound='Proof')
 
 _LOGGER: Final = logging.getLogger(__name__)
 
@@ -92,6 +95,39 @@ def get_apr_proof_for_spec(
     return apr_proof
 
 
+class APRProofRunStrategy(ABC):
+    @abstractmethod
+    def prove(self, proof: P, max_iterations: int | None = None, fail_fast: bool = False) -> None: ...
+
+
+class MultithreadedProvingStrategy(APRProofRunStrategy):
+    _create_prover: Callable[[], Prover]
+    _max_workers = 1
+
+    def __init__(self, create_prover: Callable[[], Prover], max_workers: int = 1) -> None:
+        self._create_prover = create_prover
+        self._max_workers = max_workers
+
+    def prove(self, proof: P, max_iterations: int | None = None, fail_fast: bool = False) -> None:
+        parallel_advance_proof(
+            proof=proof,
+            create_prover=self._create_prover,
+            max_iterations=max_iterations,
+            fail_fast=fail_fast,
+            max_workers=self._max_workers,
+        )
+
+
+class SequentialProvingStrategy(APRProofRunStrategy):
+    _prover: Prover
+
+    def __init__(self, prover: Prover) -> None:
+        self._prover = prover
+
+    def prove(self, proof: P, max_iterations: int | None = None, fail_fast: bool = False) -> None:
+        self._prover.advance_proof(fail_fast=fail_fast, max_iterations=max_iterations, proof=proof)
+
+
 def run_prover(
     proof: Proof,
     kcfg_explore: KCFGExplore | None = None,
@@ -122,14 +158,12 @@ def run_prover(
                     fast_check_subsumption=fast_check_subsumption,
                 )
 
+            strategy: APRProofRunStrategy
+
             if max_frontier_parallel > 1 and create_kcfg_explore is not None:
-                parallel_advance_proof(
-                    proof=proof,
-                    max_iterations=max_iterations,
-                    fail_fast=fail_fast,
-                    max_workers=max_frontier_parallel,
-                    create_prover=create_prover,
-                )
+
+                strategy = MultithreadedProvingStrategy(create_prover=create_prover, max_workers=max_frontier_parallel)
+
             elif kcfg_explore is not None:
                 prover = APRProver(
                     kcfg_explore,
@@ -140,13 +174,16 @@ def run_prover(
                     always_check_subsumption=always_check_subsumption,
                     fast_check_subsumption=fast_check_subsumption,
                 )
-                prover.advance_proof(proof, max_iterations=max_iterations, fail_fast=fail_fast)
+                strategy = SequentialProvingStrategy(prover=prover)
+
             elif create_kcfg_explore is not None:
-                create_prover().advance_proof(proof, max_iterations=max_iterations, fail_fast=fail_fast)
+                prover = create_prover()
+                strategy = SequentialProvingStrategy(prover=prover)
             else:
                 raise ValueError(
                     'Must provide at least one of kcfg_explore or create_kcfg_explore, or provide create_kcfg_explore if using max_frontier_parallel > 1.'
                 )
+            strategy.prove(fail_fast=fail_fast, max_iterations=max_iterations, proof=proof)
 
         elif type(proof) is EqualityProof:
             if kcfg_explore is not None:
