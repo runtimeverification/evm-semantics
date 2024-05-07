@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, NamedTuple
 import pytest
 from pyk.prelude.ml import is_top
 from pyk.proof.reachability import APRProof
+from filelock import FileLock
 
 from kevm_pyk import config
 from kevm_pyk.__main__ import ProveOptions, exec_prove
@@ -119,14 +120,15 @@ class Target(NamedTuple):
     main_module_name: str
 
     def __call__(self, output_dir: Path) -> Path:
-        return kevm_kompile(
-            output_dir=output_dir / 'kompiled',
-            target=KompileTarget.HASKELL,
-            main_file=self.main_file,
-            main_module=self.main_module_name,
-            syntax_module=self.main_module_name,
-            debug=True,
-        )
+        with FileLock(str(output_dir) + '.lock'):
+            return kevm_kompile(
+                output_dir=output_dir / 'kompiled',
+                target=KompileTarget.HASKELL,
+                main_file=self.main_file,
+                main_module=self.main_module_name,
+                syntax_module=self.main_module_name,
+                debug=True,
+            )
 
 
 @pytest.fixture(scope='module')
