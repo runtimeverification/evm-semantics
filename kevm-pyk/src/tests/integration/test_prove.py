@@ -194,6 +194,9 @@ def test_kompile_targets(spec_file: Path, kompiled_target_for: Callable[[Path], 
     This test function is intended to be used to pre-kompile all definitions,
     so that the actual proof tests do not need to do the actual compilation,
     which is disturbing performance measurment.
+
+    To achieve the desired caching, this test should be run like this:
+    pytest src/tests/integration/test_prove.py::test_kompile_targets --kompiled-targets-dir ./prekompiled
     '''
     if spec_file in FAILING_PYK_TESTS or spec_file in FAILING_BOOSTER_TESTS:
         pytest.skip()
