@@ -119,6 +119,10 @@ class Target(NamedTuple):
     main_file: Path
     main_module_name: str
 
+    @property
+    def name(self):
+        return f'{self.main_file.parts[-2]}-{self.main_file.stem}'
+
     def __eq__(self, other):
         return self.main_module_name == other.main_module_name and self.main_file == other.main_file
 
@@ -135,27 +139,37 @@ class Target(NamedTuple):
 
 
 @pytest.fixture(scope='module')
-def kompiled_target_for(kompiled_targets_dir: Path) -> Callable[[Path], Path]:
+def kompiled_target_cache(kompiled_targets_dir: Path) -> tuple[Path, dict[str, Path]]:
     cache_dir = kompiled_targets_dir / 'target'
-    cache_dir.mkdir(exist_ok=True, parents=True)
     cache: dict[str, Path] = {}
+    if cache_dir.exists():  # cache dir exists, populate cache
+        for file in cache_dir.iterdir():
+            if file.is_dir():
+                cache[file.stem] = file
+    else:
+        cache_dir.mkdir(exist_ok=True, parents=True)
+    return cache_dir, cache
+
+
+@pytest.fixture(scope='module')
+def kompiled_target_for(kompiled_target_cache: tuple[Path, dict[str, Path]]) -> Callable[[Path], Path]:
+    cache_dir, cache = kompiled_target_cache
 
     def kompile(spec_file: Path) -> Path:
         target = _target_for_spec(spec_file)
-        target_name = f'{target.main_file.parts[-2]}-{target.main_file.stem}'
 
-        print(f'Target: {target_name}')
+        print(f'Target: {target.name}')
         print(f'Cached targets: {cache.keys()}')
 
-        if target_name not in cache:
-            print(f'kompiling definition for {target_name}')
-            output_dir = cache_dir / target_name
+        if target.name not in cache:
+            print(f'kompiling definition for {target.name}')
+            output_dir = cache_dir / target.name
             output_dir.mkdir(exist_ok=True)
-            cache[target_name] = target(output_dir)
+            cache[target.name] = target(output_dir)
         else:
-            print(f'using cached definiton for {target_name}')
+            print(f'using cached definiton for {target.name}')
 
-        return cache[target_name]
+        return cache[target.name]
 
     return kompile
 
