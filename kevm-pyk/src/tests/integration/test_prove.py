@@ -198,7 +198,7 @@ def test_kompile_targets(spec_file: Path, kompiled_target_for: Callable[[Path], 
     To achieve the desired caching, this test should be run like this:
     pytest src/tests/integration/test_prove.py::test_kompile_targets --kompiled-targets-dir ./prekompiled
     '''
-    if spec_file in FAILING_PYK_TESTS or spec_file in FAILING_BOOSTER_TESTS:
+    if spec_file in FAILING_BOOSTER_TESTS:
         pytest.skip()
 
     kompiled_target_for(spec_file)
