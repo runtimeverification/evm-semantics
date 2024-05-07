@@ -157,6 +157,19 @@ def _target_for_spec(spec_file: Path) -> Target:
     return Target(main_file, main_module_name)
 
 
+@pytest.mark.parametrize(
+    'spec_file',
+    ALL_TESTS,
+    ids=[str(spec_file.relative_to(SPEC_DIR)) for spec_file in ALL_TESTS],
+)
+def test_kompile_targets(spec_file: Path, kompiled_target_for: Callable[[Path], Path]) -> None:
+    """
+    This test function is intended to be used to pre-kompile all definitions,
+    so that the actual proof tests do not need to do the actual compilation
+    """
+    kompiled_target_for(spec_file)
+
+
 # ---------
 # Pyk tests
 # ---------
