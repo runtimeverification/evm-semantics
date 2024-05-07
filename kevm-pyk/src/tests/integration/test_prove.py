@@ -138,17 +138,24 @@ class Target(NamedTuple):
 def kompiled_target_for(kompiled_targets_dir: Path) -> Callable[[Path], Path]:
     cache_dir = kompiled_targets_dir / 'target'
     cache_dir.mkdir(exist_ok=True, parents=True)
-    cache: dict[Target, Path] = {}
+    cache: dict[str, Path] = {}
 
     def kompile(spec_file: Path) -> Path:
         target = _target_for_spec(spec_file)
+        target_name = f'{target.main_file.parts[-2]}-{target.main_file.stem}'
 
-        if target not in cache:
-            output_dir = cache_dir / f'{target.main_file.parts[-2]}-{target.main_file.stem}'
+        print(f'Target: {target_name}')
+        print(f'Cached targets: {cache.keys()}')
+
+        if target_name not in cache:
+            print(f'kompiling definition for {target_name}')
+            output_dir = cache_dir / target_name
             output_dir.mkdir(exist_ok=True)
-            cache[target] = target(output_dir)
+            cache[target_name] = target(output_dir)
+        else:
+            print(f'using cached definiton for {target_name}')
 
-        return cache[target]
+        return cache[target_name]
 
     return kompile
 
