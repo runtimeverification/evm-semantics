@@ -1653,6 +1653,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          </account>
          <schedule> SCHED </schedule>
       requires #hasValidInitCode(MEMWIDTH, SCHED)
+      [preserves-definedness]
 
     rule [create-invalid]:
          <k> CREATE _ _ _ => #end EVMC_OUT_OF_GAS ... </k> [owise]
