@@ -121,10 +121,10 @@ class Target(NamedTuple):
 
     @property
     def name(self):
-        return f'{self.main_file.parts[-2]}-{self.main_file.stem}'
-
-    def __eq__(self, other):
-        return self.main_module_name == other.main_module_name and self.main_file == other.main_file
+        '''
+        Target's name is the two trailing path segments and the main module name
+        '''
+        return f'{self.main_file.parts[-2]}-{self.main_file.stem}-{self.main_module_name}'
 
     def __call__(self, output_dir: Path) -> Path:
         with FileLock(str(output_dir) + '.lock'):
@@ -148,6 +148,7 @@ def kompiled_target_cache(kompiled_targets_dir: Path) -> tuple[Path, dict[str, P
     if cache_dir.exists():  # cache dir exists, populate cache
         for file in cache_dir.iterdir():
             if file.is_dir():
+                # the cache key is the name of the target, which is the filename by-construction.
                 cache[file.stem] = file / 'kompiled'
     else:
         cache_dir.mkdir(parents=True)
@@ -157,7 +158,7 @@ def kompiled_target_cache(kompiled_targets_dir: Path) -> tuple[Path, dict[str, P
 @pytest.fixture(scope='module')
 def kompiled_target_for(kompiled_target_cache: tuple[Path, dict[str, Path]]) -> Callable[[Path], Path]:
     '''
-    Generate a function that returns a path to the kompiled defintion for a given K spec. Invoke `kompile` only if no kompiled directory is cahced for the spec.
+    Generate a function that returns a path to the kompiled defintion for a given K spec. Invoke `kompile` only if no kompiled directory is cached for the spec.
     '''
     cache_dir, cache = kompiled_target_cache
 
