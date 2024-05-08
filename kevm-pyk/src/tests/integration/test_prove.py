@@ -22,7 +22,7 @@ if TYPE_CHECKING:
     from typing import Any, Final
 
     from pyk.utils import BugReport
-    from pytest import LogCaptureFixture, TempPathFactory
+    from pytest import FixtureRequest, LogCaptureFixture, TempPathFactory
 
 
 sys.setrecursionlimit(10**8)
@@ -184,13 +184,12 @@ def _target_for_spec(spec_file: Path) -> Target:
     return Target(main_file, main_module_name)
 
 
-@pytest.mark.skip
 @pytest.mark.parametrize(
     'spec_file',
     ALL_TESTS,
     ids=[str(spec_file.relative_to(SPEC_DIR)) for spec_file in ALL_TESTS],
 )
-def test_kompile_targets(spec_file: Path, kompiled_target_for: Callable[[Path], Path]) -> None:
+def test_kompile_targets(spec_file: Path, kompiled_target_for: Callable[[Path], Path], request: FixtureRequest) -> None:
     '''
     This test function is intended to be used to pre-kompile all definitions,
     so that the actual proof tests do not need to do the actual compilation,
@@ -198,7 +197,13 @@ def test_kompile_targets(spec_file: Path, kompiled_target_for: Callable[[Path], 
 
     To achieve the desired caching, this test should be run like this:
     pytest src/tests/integration/test_prove.py::test_kompile_targets --kompiled-targets-dir ./prekompiled
+
+    This test will be skipped if no --kompiled-targets-dir option is given
     '''
+    dir = request.config.getoption('--kompiled-targets-dir')
+    if not dir:
+        pytest.skip()
+
     if spec_file in FAILING_BOOSTER_TESTS:
         pytest.skip()
 
