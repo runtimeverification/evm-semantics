@@ -4,10 +4,10 @@ from typing import TYPE_CHECKING
 
 import pytest
 from pyk.cli.utils import dir_path
-import _pytest.skipping
 
 if TYPE_CHECKING:
     from pathlib import Path
+
     from pytest import FixtureRequest, Parser, TempPathFactory
 
 

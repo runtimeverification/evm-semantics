@@ -5,9 +5,9 @@ import sys
 from typing import TYPE_CHECKING, NamedTuple
 
 import pytest
+from filelock import FileLock
 from pyk.prelude.ml import is_top
 from pyk.proof.reachability import APRProof
-from filelock import FileLock
 
 from kevm_pyk import config
 from kevm_pyk.__main__ import ProveOptions, exec_prove
@@ -22,7 +22,7 @@ if TYPE_CHECKING:
     from typing import Any, Final
 
     from pyk.utils import BugReport
-    from pytest import FixtureRequest, LogCaptureFixture, TempPathFactory
+    from pytest import FixtureRequest, LogCaptureFixture
 
 
 sys.setrecursionlimit(10**8)
@@ -120,10 +120,10 @@ class Target(NamedTuple):
     main_module_name: str
 
     @property
-    def name(self):
-        '''
+    def name(self) -> str:
+        """
         Target's name is the two trailing path segments and the main module name
-        '''
+        """
         return f'{self.main_file.parts[-2]}-{self.main_file.stem}-{self.main_module_name}'
 
     def __call__(self, output_dir: Path) -> Path:
@@ -140,9 +140,9 @@ class Target(NamedTuple):
 
 @pytest.fixture(scope='module')
 def kompiled_target_cache(kompiled_targets_dir: Path) -> tuple[Path, dict[str, Path]]:
-    '''
+    """
     Populate the cache of kompiled definitions from an existing file system directory. If the cache is hot, the `kompiled_target_for` fixture will not containt a call to `kompile`, saving an expesive call to the K frontend.
-    '''
+    """
     cache_dir = kompiled_targets_dir / 'target'
     cache: dict[str, Path] = {}
     if cache_dir.exists():  # cache dir exists, populate cache
@@ -157,9 +157,9 @@ def kompiled_target_cache(kompiled_targets_dir: Path) -> tuple[Path, dict[str, P
 
 @pytest.fixture(scope='module')
 def kompiled_target_for(kompiled_target_cache: tuple[Path, dict[str, Path]]) -> Callable[[Path], Path]:
-    '''
+    """
     Generate a function that returns a path to the kompiled defintion for a given K spec. Invoke `kompile` only if no kompiled directory is cached for the spec.
-    '''
+    """
     cache_dir, cache = kompiled_target_cache
 
     def kompile(spec_file: Path) -> Path:
@@ -190,7 +190,7 @@ def _target_for_spec(spec_file: Path) -> Target:
     ids=[str(spec_file.relative_to(SPEC_DIR)) for spec_file in ALL_TESTS],
 )
 def test_kompile_targets(spec_file: Path, kompiled_target_for: Callable[[Path], Path], request: FixtureRequest) -> None:
-    '''
+    """
     This test function is intended to be used to pre-kompile all definitions,
     so that the actual proof tests do not need to do the actual compilation,
     which is disturbing performance measurment.
@@ -199,7 +199,7 @@ def test_kompile_targets(spec_file: Path, kompiled_target_for: Callable[[Path], 
     pytest src/tests/integration/test_prove.py::test_kompile_targets --kompiled-targets-dir ./prekompiled
 
     This test will be skipped if no --kompiled-targets-dir option is given
-    '''
+    """
     dir = request.config.getoption('--kompiled-targets-dir')
     if not dir:
         pytest.skip()
