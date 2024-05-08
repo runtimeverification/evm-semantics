@@ -184,7 +184,7 @@ def _target_for_spec(spec_file: Path) -> Target:
     return Target(main_file, main_module_name)
 
 
-@pytest.mark.haskell_backend_performance
+@pytest.mark.skip
 @pytest.mark.parametrize(
     'spec_file',
     ALL_TESTS,

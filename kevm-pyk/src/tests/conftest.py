@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 from pyk.cli.utils import dir_path
+import _pytest.skipping
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -34,6 +35,7 @@ def pytest_addoption(parser: Parser) -> None:
         type=dir_path,
         help='Use pre-kompiled definitions for proof tests',
     )
+    parser.addoption("--no-skips", action="store_true", default=False, help="disable skip marks")
 
 
 @pytest.fixture
@@ -60,8 +62,16 @@ def kompiled_targets_dir(request: FixtureRequest, tmp_path_factory: TempPathFact
         return tmp_path_factory.mktemp('prekompiled')
 
 
-def pytest_configure(config):
-    config.addinivalue_line(
-        "markers",
-        "haskell_backend_performance: special tests for use in HB performance scritps. Will not run elsewhere.",
-    )
+@pytest.hookimpl(tryfirst=True)
+def pytest_load_initial_conftests(args):
+    '''
+    Allow ignoring the @pytest.mark.skip decorator and executing the 'skipped' test anyway.
+    See https://stackoverflow.com/a/61503247.
+    '''
+    if "--no-skips" not in args:
+        return
+
+    def no_skip(*args, **kwargs):
+        return
+
+    _pytest.skipping.skip = no_skip
