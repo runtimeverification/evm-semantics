@@ -242,16 +242,16 @@
         "rv-utils": "rv-utils_3"
       },
       "locked": {
-        "lastModified": 1715020093,
-        "narHash": "sha256-J1NHYxD5lfL+mVqeKCgjEWJABDKCHgsGUTB9uDQHqy8=",
+        "lastModified": 1715088206,
+        "narHash": "sha256-AB2l/Py8ta8PO5mnrLaLjMR0xgptMm7/ieRBmnCD70k=",
         "owner": "runtimeverification",
         "repo": "k",
-        "rev": "cb1e4a406a873b09463154f5844d45748c4f1fee",
+        "rev": "9eec77b97979709b5da535e98a91e90edbf6247c",
         "type": "github"
       },
       "original": {
         "owner": "runtimeverification",
-        "ref": "v7.0.44",
+        "ref": "v7.0.46",
         "repo": "k",
         "type": "github"
       }
@@ -293,16 +293,16 @@
         ]
       },
       "locked": {
-        "lastModified": 1714989740,
-        "narHash": "sha256-fEBjIMcRHCnv96Qw2UlXNxMsye82uD9aN/6LQFqfCpQ=",
+        "lastModified": 1715080888,
+        "narHash": "sha256-38rUf8sgtgcgUt1K+Wkcx2JLXe6ycJkYn4DJT91qyDk=",
         "owner": "runtimeverification",
         "repo": "llvm-backend",
-        "rev": "8d4130e7d9a091edf4cd8c1a3a48ab55f3f6bdd0",
+        "rev": "65cd1378076e4db10062676784dba23a3df2fada",
         "type": "github"
       },
       "original": {
         "owner": "runtimeverification",
-        "ref": "v0.1.5",
+        "ref": "v0.1.6",
         "repo": "llvm-backend",
         "type": "github"
       }
@@ -447,17 +447,17 @@
       },
       "locked": {
         "dir": "pyk",
-        "lastModified": 1715020093,
-        "narHash": "sha256-J1NHYxD5lfL+mVqeKCgjEWJABDKCHgsGUTB9uDQHqy8=",
+        "lastModified": 1715088206,
+        "narHash": "sha256-AB2l/Py8ta8PO5mnrLaLjMR0xgptMm7/ieRBmnCD70k=",
         "owner": "runtimeverification",
         "repo": "k",
-        "rev": "cb1e4a406a873b09463154f5844d45748c4f1fee",
+        "rev": "9eec77b97979709b5da535e98a91e90edbf6247c",
         "type": "github"
       },
       "original": {
         "dir": "pyk",
         "owner": "runtimeverification",
-        "ref": "v7.0.44",
+        "ref": "v7.0.46",
         "repo": "k",
         "type": "github"
       }
