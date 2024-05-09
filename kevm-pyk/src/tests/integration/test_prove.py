@@ -167,7 +167,7 @@ def kompiled_target_for(kompiled_target_cache: tuple[Path, dict[str, Path]]) -> 
 
         if target.name not in cache:
             output_dir = cache_dir / target.name
-            output_dir.mkdir()
+            output_dir.mkdir(exist_ok=True)
             cache[target.name] = target(output_dir)
 
         return cache[target.name]
