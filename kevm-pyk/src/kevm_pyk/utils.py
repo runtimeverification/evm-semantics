@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
+from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -28,7 +29,7 @@ from pyk.utils import single
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Collection, Iterable, Iterator
-    from typing import Any, Final, TypeVar
+    from typing import Final, TypeVar
 
     from pyk.kast.outer import KClaim, KDefinition
     from pyk.kcfg import KCFG
@@ -93,32 +94,24 @@ def get_apr_proof_for_spec(
     return apr_proof
 
 
+@dataclass
+class RunProverParams:
+    execute_depth: int
+    terminal_rules: Iterable[str]
+    cut_point_rules: Iterable[str]
+    counterexample_info: bool
+    always_check_subsumption: bool
+    fast_check_subsumption: bool
+
+
 class APRProofStrategy(ABC):
-    _execute_depth: int
-    _terminal_rules: Iterable[str]
-    _cut_point_rules: Iterable[str]
-    _counterexample_info: bool
-    _always_check_subsumption: bool
-    _fast_check_subsumption: bool
+    params: RunProverParams
+
+    def __init__(self, params: RunProverParams) -> None:
+        self.params = params
 
     @abstractmethod
     def prove(self, proof: APRProof, max_iterations: int | None = None, fail_fast: bool = False) -> None: ...
-
-    def __init__(
-        self,
-        execute_depth: int,
-        terminal_rules: Iterable[str],
-        cut_point_rules: Iterable[str],
-        counterexample_info: bool,
-        always_check_subsumption: bool,
-        fast_check_subsumption: bool,
-    ) -> None:
-        self._execute_depth = execute_depth
-        self._terminal_rules = terminal_rules
-        self._cut_point_rules = cut_point_rules
-        self._counterexample_info = counterexample_info
-        self._always_check_subsumption = always_check_subsumption
-        self._fast_check_subsumption = fast_check_subsumption
 
 
 class ParallelStrategy(APRProofStrategy):
@@ -126,22 +119,25 @@ class ParallelStrategy(APRProofStrategy):
     _max_workers = 1
 
     def __init__(
-        self, create_kcfg_explore: Callable[[], KCFGExplore], max_workers: int = 1, *args: Any, **kwargs: Any
+        self,
+        create_kcfg_explore: Callable[[], KCFGExplore],
+        params: RunProverParams,
+        max_workers: int = 1,
     ) -> None:
         self._create_kcfg_explore = create_kcfg_explore
         self._max_workers = max_workers
-        super().__init__(*args, **kwargs)
+        super().__init__(params)
 
     def prove(self, proof: APRProof, max_iterations: int | None = None, fail_fast: bool = False) -> None:
         def create_prover() -> APRProver:
             return APRProver(
                 self._create_kcfg_explore(),
-                execute_depth=self._execute_depth,
-                terminal_rules=self._terminal_rules,
-                cut_point_rules=self._cut_point_rules,
-                counterexample_info=self._counterexample_info,
-                always_check_subsumption=self._always_check_subsumption,
-                fast_check_subsumption=self._fast_check_subsumption,
+                execute_depth=self.params.execute_depth,
+                terminal_rules=self.params.terminal_rules,
+                cut_point_rules=self.params.cut_point_rules,
+                counterexample_info=self.params.counterexample_info,
+                always_check_subsumption=self.params.always_check_subsumption,
+                fast_check_subsumption=self.params.fast_check_subsumption,
             )
 
         parallel_advance_proof(
@@ -156,21 +152,52 @@ class ParallelStrategy(APRProofStrategy):
 class SequentialStrategy(APRProofStrategy):
     _kcfg_explore: KCFGExplore
 
-    def __init__(self, kcfg_explore: KCFGExplore, *args: Any, **kwargs: Any) -> None:
+    def __init__(self, kcfg_explore: KCFGExplore, params: RunProverParams) -> None:
         self._kcfg_explore = kcfg_explore
-        super().__init__(*args, **kwargs)
+        super().__init__(params)
 
     def prove(self, proof: APRProof, max_iterations: int | None = None, fail_fast: bool = False) -> None:
         prover = APRProver(
             self._kcfg_explore,
-            execute_depth=self._execute_depth,
-            terminal_rules=self._terminal_rules,
-            cut_point_rules=self._cut_point_rules,
-            counterexample_info=self._counterexample_info,
-            always_check_subsumption=self._always_check_subsumption,
-            fast_check_subsumption=self._fast_check_subsumption,
+            execute_depth=self.params.execute_depth,
+            terminal_rules=self.params.terminal_rules,
+            cut_point_rules=self.params.cut_point_rules,
+            counterexample_info=self.params.counterexample_info,
+            always_check_subsumption=self.params.always_check_subsumption,
+            fast_check_subsumption=self.params.fast_check_subsumption,
         )
         prover.advance_proof(fail_fast=fail_fast, max_iterations=max_iterations, proof=proof)
+
+
+def select_apr_strategy(
+    params: RunProverParams,
+    max_frontier_parallel: int,
+    kcfg_explore: KCFGExplore | None = None,
+    create_kcfg_explore: Callable[[], KCFGExplore] | None = None,
+) -> APRProofStrategy:
+    strategy: APRProofStrategy
+
+    if max_frontier_parallel > 1 and create_kcfg_explore is not None:
+        strategy = ParallelStrategy(
+            max_workers=max_frontier_parallel,
+            create_kcfg_explore=create_kcfg_explore,
+            params=params,
+        )
+    elif kcfg_explore is not None or create_kcfg_explore is not None:
+        if kcfg_explore is not None:
+            _kcfg_explore = kcfg_explore
+        else:
+            assert create_kcfg_explore is not None
+            _kcfg_explore = create_kcfg_explore()
+        strategy = SequentialStrategy(
+            kcfg_explore=_kcfg_explore,
+            params=params,
+        )
+    else:
+        raise ValueError(
+            'Must provide at least one of kcfg_explore or create_kcfg_explore, or provide create_kcfg_explore if using max_frontier_parallel > 1.'
+        )
+    return strategy
 
 
 def run_prover(
@@ -190,39 +217,19 @@ def run_prover(
     prover: APRProver | ImpliesProver
     try:
         if type(proof) is APRProof:
-
-            strategy: APRProofStrategy
-
-            if max_frontier_parallel > 1 and create_kcfg_explore is not None:
-                strategy = ParallelStrategy(
-                    max_workers=max_frontier_parallel,
-                    always_check_subsumption=always_check_subsumption,
-                    counterexample_info=counterexample_info,
-                    create_kcfg_explore=create_kcfg_explore,
-                    cut_point_rules=cut_point_rules,
-                    execute_depth=max_depth,
-                    fast_check_subsumption=fast_check_subsumption,
-                    terminal_rules=terminal_rules,
-                )
-            elif kcfg_explore is not None or create_kcfg_explore is not None:
-                if kcfg_explore is not None:
-                    _kcfg_explore = kcfg_explore
-                else:
-                    assert create_kcfg_explore is not None
-                    _kcfg_explore = create_kcfg_explore()
-                strategy = SequentialStrategy(
-                    kcfg_explore=_kcfg_explore,
+            strategy = select_apr_strategy(
+                create_kcfg_explore=create_kcfg_explore,
+                kcfg_explore=kcfg_explore,
+                max_frontier_parallel=max_frontier_parallel,
+                params=RunProverParams(
                     always_check_subsumption=always_check_subsumption,
                     counterexample_info=counterexample_info,
                     cut_point_rules=cut_point_rules,
                     execute_depth=max_depth,
                     fast_check_subsumption=fast_check_subsumption,
                     terminal_rules=terminal_rules,
-                )
-            else:
-                raise ValueError(
-                    'Must provide at least one of kcfg_explore or create_kcfg_explore, or provide create_kcfg_explore if using max_frontier_parallel > 1.'
-                )
+                ),
+            )
             strategy.prove(fail_fast=fail_fast, max_iterations=max_iterations, proof=proof)
 
         elif type(proof) is EqualityProof:
