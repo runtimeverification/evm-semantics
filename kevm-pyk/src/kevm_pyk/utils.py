@@ -95,12 +95,12 @@ def get_apr_proof_for_spec(
     return apr_proof
 
 
-class APRProofRunStrategy(ABC):
+class APRProofStrategy(ABC):
     @abstractmethod
     def prove(self, proof: P, max_iterations: int | None = None, fail_fast: bool = False) -> None: ...
 
 
-class MultithreadedProvingStrategy(APRProofRunStrategy):
+class ParallelStrategy(APRProofStrategy):
     _create_prover: Callable[[], Prover]
     _max_workers = 1
 
@@ -118,7 +118,7 @@ class MultithreadedProvingStrategy(APRProofRunStrategy):
         )
 
 
-class SequentialProvingStrategy(APRProofRunStrategy):
+class SequentialStrategy(APRProofStrategy):
     _prover: Prover
 
     def __init__(self, prover: Prover) -> None:
@@ -158,11 +158,11 @@ def run_prover(
                     fast_check_subsumption=fast_check_subsumption,
                 )
 
-            strategy: APRProofRunStrategy
+            strategy: APRProofStrategy
 
             if max_frontier_parallel > 1 and create_kcfg_explore is not None:
 
-                strategy = MultithreadedProvingStrategy(create_prover=create_prover, max_workers=max_frontier_parallel)
+                strategy = ParallelStrategy(create_prover=create_prover, max_workers=max_frontier_parallel)
 
             elif kcfg_explore is not None:
                 prover = APRProver(
@@ -174,11 +174,11 @@ def run_prover(
                     always_check_subsumption=always_check_subsumption,
                     fast_check_subsumption=fast_check_subsumption,
                 )
-                strategy = SequentialProvingStrategy(prover=prover)
+                strategy = SequentialStrategy(prover=prover)
 
             elif create_kcfg_explore is not None:
                 prover = create_prover()
-                strategy = SequentialProvingStrategy(prover=prover)
+                strategy = SequentialStrategy(prover=prover)
             else:
                 raise ValueError(
                     'Must provide at least one of kcfg_explore or create_kcfg_explore, or provide create_kcfg_explore if using max_frontier_parallel > 1.'
