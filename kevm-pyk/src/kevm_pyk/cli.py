@@ -6,7 +6,6 @@ from functools import cached_property
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-import tomli
 from pyk.cli.args import BugReportOptions
 from pyk.cli.args import DisplayOptions as PykDisplayOptions
 from pyk.cli.args import (
@@ -29,7 +28,6 @@ from .kompile import KompileTarget
 from .utils import arg_pair_of
 
 if TYPE_CHECKING:
-    from argparse import Namespace
     from collections.abc import Callable
     from typing import Final, TypeVar
 
@@ -278,45 +276,6 @@ def _create_argument_parser() -> ArgumentParser:
     return parser
 
 
-def parse_toml_args(args: Namespace) -> dict[str, Any]:
-    def get_profile(toml_profile: dict[str, Any], profile_list: list[str]) -> dict[str, Any]:
-        if len(profile_list) == 0 or profile_list[0] not in toml_profile:
-            return {k: v for k, v in toml_profile.items() if type(v) is not dict}
-        elif len(profile_list) == 1:
-            return {k: v for k, v in toml_profile[profile_list[0]].items() if type(v) is not dict}
-        return get_profile(toml_profile[profile_list[0]], profile_list[1:])
-
-    toml_args: dict[str, Any] = {}
-    if not hasattr(args, 'config_file') or not args.config_file.is_file():
-        return {}
-
-    with open(args.config_file, 'rb') as config_file:
-        try:
-            toml_args = tomli.load(config_file)
-        except tomli.TOMLDecodeError:
-            _LOGGER.error(
-                'Input config file is not in TOML format, ignoring the file and carrying on with the provided command line agruments'
-            )
-
-    toml_args = (
-        get_profile(toml_args[args.command], args.config_profile.split('.')) if args.command in toml_args else {}
-    )
-
-    toml_adj_args: dict[str, Any] = {}
-    for k, v in toml_args.items():
-        opt_string = get_option_string_destination(args.command, k)
-        if opt_string[:3] == 'no_':
-            toml_adj_args[opt_string[3:]] = not v
-        elif k == 'optimization-level':
-            level = toml_args[k] if toml_args[k] >= 0 else 0
-            level = level if toml_args[k] <= 3 else 3
-            toml_adj_args['o' + str(level)] = True
-        else:
-            toml_adj_args[opt_string] = v
-
-    return toml_adj_args
-
-
 class KOptions(KDefinitionOptions):
     definition_dir: Path | None
     depth: int | None
@@ -560,11 +519,13 @@ class ProveOptions(
     KProveOptions,
 ):
     reinit: bool
+    max_frontier_parallel: int
 
     @staticmethod
     def default() -> dict[str, Any]:
         return {
             'reinit': False,
+            'max_frontier_parallel': 1,
         }
 
 

@@ -2,7 +2,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from kevm_pyk.cli import _create_argument_parser, parse_toml_args
+from pyk.cli.pyk import parse_toml_args
+
+from kevm_pyk.cli import _create_argument_parser
 
 from .utils import TEST_DATA_DIR
 
