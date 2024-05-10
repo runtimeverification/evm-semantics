@@ -17,6 +17,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
     from typing import Final
 
+    from pyk.ktool import TypeInferenceMode
     from pyk.ktool.kompile import Kompile
 
 
@@ -61,6 +62,7 @@ def kevm_kompile(
     debug_build: bool = False,
     debug: bool = False,
     verbose: bool = False,
+    type_inference_mode: str | TypeInferenceMode | None = None,
 ) -> Path:
     if plugin_dir is None:
         plugin_dir = kdist.get('evm-semantics.plugin')
@@ -83,6 +85,7 @@ def kevm_kompile(
         debug_build=debug_build,
         debug=debug,
         verbose=verbose,
+        type_inference_mode=type_inference_mode,
     )
 
 
@@ -104,6 +107,7 @@ def run_kompile(
     debug_build: bool = False,
     debug: bool = False,
     verbose: bool = False,
+    type_inference_mode: str | TypeInferenceMode | None = None,
 ) -> Path:
     if llvm_library is None:
         llvm_library = output_dir / 'llvm-library'
@@ -136,7 +140,9 @@ def run_kompile(
                     llvm_kompile_type=llvm_kompile_type,
                     enable_llvm_debug=enable_llvm_debug,
                 )
-                return kompile(output_dir=output_dir, debug=debug, verbose=verbose)
+                return kompile(
+                    output_dir=output_dir, debug=debug, verbose=verbose, type_inference_mode=type_inference_mode
+                )
 
             case KompileTarget.MAUDE:
                 kompile_maude = MaudeKompile(
@@ -147,10 +153,14 @@ def run_kompile(
                 maude_dir = output_dir / 'kompiled-maude'
 
                 def _kompile_maude() -> None:
-                    kompile_maude(output_dir=maude_dir, debug=debug, verbose=verbose)
+                    kompile_maude(
+                        output_dir=maude_dir, debug=debug, verbose=verbose, type_inference_mode=type_inference_mode
+                    )
 
                 def _kompile_haskell() -> None:
-                    kompile_haskell(output_dir=output_dir, debug=debug, verbose=verbose)
+                    kompile_haskell(
+                        output_dir=output_dir, debug=debug, verbose=verbose, type_inference_mode=type_inference_mode
+                    )
 
                 with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
                     futures = [
@@ -178,10 +188,14 @@ def run_kompile(
                 kompile_haskell = HaskellKompile(base_args=base_args, haskell_binary=haskell_binary)
 
                 def _kompile_llvm() -> None:
-                    kompile_llvm(output_dir=llvm_library, debug=debug, verbose=verbose)
+                    kompile_llvm(
+                        output_dir=llvm_library, debug=debug, verbose=verbose, type_inference_mode=type_inference_mode
+                    )
 
                 def _kompile_haskell() -> None:
-                    kompile_haskell(output_dir=output_dir, debug=debug, verbose=verbose)
+                    kompile_haskell(
+                        output_dir=output_dir, debug=debug, verbose=verbose, type_inference_mode=type_inference_mode
+                    )
 
                 with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
                     futures = [
