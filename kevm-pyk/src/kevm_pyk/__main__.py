@@ -26,9 +26,12 @@ from pyk.cli.args import (
     SpecOptions,
 )
 from pyk.cli.utils import file_path
+from pyk.cterm import CTermSymbolic
 from pyk.kast.outer import KApply, KRewrite, KSort, KToken
 from pyk.kcfg import KCFG
+from pyk.kcfg.explore import KCFGExplore
 from pyk.kdist import kdist
+from pyk.kore.rpc import KoreClient
 from pyk.kore.tools import PrintOutput, kore_print
 from pyk.ktool.kompile import LLVMKompileType
 from pyk.ktool.krun import KRunOutput
@@ -320,11 +323,13 @@ class ProveOptions(
     KProveOptions,
 ):
     reinit: bool
+    max_frontier_parallel: int
 
     @staticmethod
     def default() -> dict[str, Any]:
         return {
             'reinit': False,
+            'max_frontier_parallel': 1,
         }
 
 
@@ -397,7 +402,28 @@ def exec_prove(options: ProveOptions) -> None:
             fallback_on=options.fallback_on,
             interim_simplification=options.interim_simplification,
             no_post_exec_simplify=(not options.post_exec_simplify),
+            port=options.port,
+            haskell_threads=options.max_frontier_parallel,
         ) as kcfg_explore:
+
+            def create_kcfg_explore() -> KCFGExplore:
+                dispatch = None
+                client = KoreClient(
+                    'localhost',
+                    kcfg_explore.cterm_symbolic._kore_client.port,
+                    bug_report=options.bug_report,
+                    bug_report_id=claim.label,
+                    dispatch=dispatch,
+                )
+                cterm_symbolic = CTermSymbolic(
+                    client, kevm.definition, kevm.kompiled_kore, trace_rewrites=options.trace_rewrites
+                )
+                return KCFGExplore(
+                    cterm_symbolic,
+                    kcfg_semantics=KEVMSemantics(auto_abstract_gas=options.auto_abstract_gas),
+                    id=claim.label,
+                )
+
             proof_problem: Proof
             if is_functional(claim):
                 if not options.reinit and up_to_date and EqualityProof.proof_exists(claim.label, save_directory):
@@ -449,7 +475,7 @@ def exec_prove(options: ProveOptions) -> None:
             start_time = time.time()
             passed = run_prover(
                 proof_problem,
-                kcfg_explore,
+                create_kcfg_explore=create_kcfg_explore,
                 max_depth=options.max_depth,
                 max_iterations=options.max_iterations,
                 cut_point_rules=KEVMSemantics.cut_point_rules(
@@ -462,6 +488,7 @@ def exec_prove(options: ProveOptions) -> None:
                 fail_fast=options.fail_fast,
                 always_check_subsumption=options.always_check_subsumption,
                 fast_check_subsumption=options.fast_check_subsumption,
+                max_frontier_parallel=options.max_frontier_parallel,
             )
             end_time = time.time()
             _LOGGER.info(f'Proof timing {proof_problem.id}: {end_time - start_time}s')
@@ -843,6 +870,13 @@ def _create_argument_parser() -> ArgumentParser:
         default=None,
         action='store_true',
         help='Reinitialize CFGs even if they already exist.',
+    )
+    prove_args.add_argument(
+        '--max-frontier-parallel',
+        type=int,
+        dest='max_frontier_parallel',
+        default=None,
+        help='Maximum number of branches of a single proof to explore in parallel.',
     )
 
     prune_args = command_parser.add_parser(
