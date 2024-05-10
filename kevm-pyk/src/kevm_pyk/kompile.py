@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from pyk.kdist import kdist
+from pyk.ktool import TypeInferenceMode
 from pyk.ktool.kompile import HaskellKompile, KompileArgs, LLVMKompile, LLVMKompileType, MaudeKompile
 from pyk.utils import run_process
 
@@ -17,7 +18,6 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
     from typing import Final
 
-    from pyk.ktool import TypeInferenceMode
     from pyk.ktool.kompile import Kompile
 
 
@@ -111,6 +111,9 @@ def run_kompile(
 ) -> Path:
     if llvm_library is None:
         llvm_library = output_dir / 'llvm-library'
+
+    if type_inference_mode is None:
+        type_inference_mode = TypeInferenceMode.CHECKED
 
     include_dirs = [Path(include) for include in includes]
     include_dirs += config.INCLUDE_DIRS
