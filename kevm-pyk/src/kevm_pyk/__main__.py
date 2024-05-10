@@ -32,7 +32,7 @@ from pyk.proof.tui import APRProofViewer
 from pyk.utils import FrozenDict, hash_str, single
 
 from . import VERSION, config
-from .cli import _create_argument_parser, generate_options
+from .cli import _create_argument_parser, generate_options, get_argument_type_setter, get_option_string_destination
 from .gst_to_kore import SORT_ETHEREUM_SIMULATION, gst_to_kore, kore_pgm_to_kore
 from .kevm import KEVM, KEVMSemantics, kevm_node_printer
 from .kompile import KompileTarget, kevm_kompile
@@ -84,7 +84,7 @@ def main() -> None:
     sys.setrecursionlimit(15000000)
     parser = _create_argument_parser()
     args = parser.parse_args()
-    toml_args = parse_toml_args(args)
+    toml_args = parse_toml_args(args, get_option_string_destination, get_argument_type_setter)
     logging.basicConfig(level=_loglevel(args), format=_LOG_FORMAT)
 
     stripped_args = toml_args | {

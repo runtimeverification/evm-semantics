@@ -103,10 +103,37 @@ def get_option_string_destination(command: str, option_string: str) -> str:
         case 'run':
             option_string_destinations = RunOptions.from_option_string()
 
-    if option_string in option_string_destinations:
-        return option_string_destinations[option_string]
-    else:
-        return option_string.replace('-', '_')
+    return option_string_destinations.get(option_string, option_string.replace('-', '_'))
+
+
+def get_argument_type_setter(command: str, option_string: str) -> Callable[[str], Any]:
+    def func(par: str) -> str:
+        return par
+
+    option_types = {}
+    match command:
+        case 'version':
+            option_types = VersionOptions.get_argument_type()
+        case 'kompile-spec':
+            option_types = KompileSpecOptions.get_argument_type()
+        case 'prove-legacy':
+            option_types = ProveLegacyOptions.get_argument_type()
+        case 'prove':
+            option_types = ProveOptions.get_argument_type()
+        case 'prune':
+            option_types = PruneOptions.get_argument_type()
+        case 'section-edge':
+            option_types = SectionEdgeOptions.get_argument_type()
+        case 'show-kcfg':
+            option_types = ShowKCFGOptions.get_argument_type()
+        case 'view-kcfg':
+            option_types = ViewKCFGOptions.get_argument_type()
+        case 'kast':
+            option_types = KastOptions.get_argument_type()
+        case 'run':
+            option_types = RunOptions.get_argument_type()
+
+    return option_types.get(option_string, func)
 
 
 def _create_argument_parser() -> ArgumentParser:
@@ -289,9 +316,13 @@ class KOptions(KDefinitionOptions):
 
     @staticmethod
     def from_option_string() -> dict[str, str]:
-        return {
+        return KDefinitionOptions.from_option_string() | {
             'definition': 'definition_dir',
         }
+
+    @staticmethod
+    def get_argument_type() -> dict[str, Callable]:
+        return KDefinitionOptions.get_argument_type()
 
 
 class KProveLegacyOptions(Options):
@@ -336,6 +367,10 @@ class RPCOptions(Options):
             'port': None,
             'maude_port': None,
         }
+
+    @staticmethod
+    def get_argument_type() -> dict[str, Callable]:
+        return {'fallback-on': list_of(FallbackReason, delim=',')}
 
 
 class ExploreOptions(Options):
@@ -419,6 +454,10 @@ class KCFGShowOptions(Options):
             'node-delta': 'node_deltas',
         }
 
+    @staticmethod
+    def get_argument_type() -> dict[str, Callable]:
+        return {'node': node_id_like, 'node-delta': arg_pair_of(node_id_like, node_id_like)}
+
 
 class TargetOptions(Options):
     target: str | None
@@ -461,6 +500,14 @@ class DisplayOptions(PykDisplayOptions):
             'sort_collections': False,
         }
 
+    @staticmethod
+    def from_option_string() -> dict[str, str]:
+        return PykDisplayOptions.from_option_string()
+
+    @staticmethod
+    def get_argument_type() -> dict[str, Callable]:
+        return PykDisplayOptions.get_argument_type()
+
 
 class KGenOptions(Options):
     requires: list[str]
@@ -481,7 +528,14 @@ class KGenOptions(Options):
         }
 
 
-class VersionOptions(LoggingOptions): ...
+class VersionOptions(LoggingOptions):
+    @staticmethod
+    def from_option_string() -> dict[str, str]:
+        return LoggingOptions.from_option_string()
+
+    @staticmethod
+    def get_argument_type() -> dict[str, Callable]:
+        return LoggingOptions.get_argument_type()
 
 
 class KompileSpecOptions(LoggingOptions, KOptions, KompileOptions):
@@ -496,6 +550,19 @@ class KompileSpecOptions(LoggingOptions, KOptions, KompileOptions):
             'debug_build': False,
         }
 
+    @staticmethod
+    def from_option_string() -> dict[str, str]:
+        return LoggingOptions.from_option_string() | KOptions.from_option_string() | KompileOptions.from_option_string()
+
+    @staticmethod
+    def get_argument_type() -> dict[str, Callable]:
+        return (
+            LoggingOptions.get_argument_type()
+            | KOptions.get_argument_type()
+            | KompileOptions.get_argument_type()
+            | {'target': KompileTarget, 'main_file': file_path}
+        )
+
 
 class ProveLegacyOptions(LoggingOptions, KOptions, SpecOptions, KProveLegacyOptions):
     bug_report_legacy: bool
@@ -505,6 +572,24 @@ class ProveLegacyOptions(LoggingOptions, KOptions, SpecOptions, KProveLegacyOpti
         return {
             'bug_report_legacy': False,
         }
+
+    @staticmethod
+    def from_option_string() -> dict[str, str]:
+        return (
+            LoggingOptions.from_option_string()
+            | KOptions.from_option_string()
+            | SpecOptions.from_option_string()
+            | KProveLegacyOptions.from_option_string()
+        )
+
+    @staticmethod
+    def get_argument_type() -> dict[str, Callable]:
+        return (
+            LoggingOptions.get_argument_type()
+            | KOptions.get_argument_type()
+            | SpecOptions.get_argument_type()
+            | KProveLegacyOptions.get_argument_type()
+        )
 
 
 class ProveOptions(
@@ -528,9 +613,52 @@ class ProveOptions(
             'max_frontier_parallel': 1,
         }
 
+    @staticmethod
+    def from_option_string() -> dict[str, str]:
+        return (
+            LoggingOptions.from_option_string()
+            | ParallelOptions.from_option_string()
+            | KOptions.from_option_string()
+            | RPCOptions.from_option_string()
+            | BugReportOptions.from_option_string()
+            | SMTOptions.from_option_string()
+            | ExploreOptions.from_option_string()
+            | SpecOptions.from_option_string()
+            | KProveOptions.from_option_string()
+        )
+
+    @staticmethod
+    def get_argument_type() -> dict[str, Callable]:
+        return (
+            LoggingOptions.get_argument_type()
+            | ParallelOptions.get_argument_type()
+            | KOptions.get_argument_type()
+            | RPCOptions.get_argument_type()
+            | BugReportOptions.get_argument_type()
+            | SMTOptions.get_argument_type()
+            | ExploreOptions.get_argument_type()
+            | SpecOptions.get_argument_type()
+            | KProveOptions.get_argument_type()
+        )
+
 
 class PruneOptions(LoggingOptions, KOptions, SpecOptions):
     node: NodeIdLike
+
+    @staticmethod
+    def from_option_string() -> dict[str, str]:
+        return LoggingOptions.from_option_string() | KOptions.from_option_string() | SpecOptions.from_option_string()
+
+    @staticmethod
+    def get_argument_type() -> dict[str, Callable]:
+        return (
+            LoggingOptions.get_argument_type()
+            | KOptions.get_argument_type()
+            | SpecOptions.get_argument_type()
+            | {
+                'node': node_id_like,
+            }
+        )
 
 
 class SectionEdgeOptions(
@@ -551,6 +679,31 @@ class SectionEdgeOptions(
             'use_booster': False,
         }
 
+    @staticmethod
+    def from_option_string() -> dict[str, str]:
+        return (
+            LoggingOptions.from_option_string()
+            | KOptions.from_option_string()
+            | RPCOptions.from_option_string()
+            | SMTOptions.from_option_string()
+            | SpecOptions.from_option_string()
+            | BugReportOptions.from_option_string()
+        )
+
+    @staticmethod
+    def get_argument_type() -> dict[str, Callable]:
+        return (
+            LoggingOptions.get_argument_type()
+            | KOptions.get_argument_type()
+            | RPCOptions.get_argument_type()
+            | SMTOptions.get_argument_type()
+            | SpecOptions.get_argument_type()
+            | BugReportOptions.get_argument_type()
+            | {
+                'edge': arg_pair_of(str, str),
+            }
+        )
+
 
 class ShowKCFGOptions(
     LoggingOptions,
@@ -558,14 +711,40 @@ class ShowKCFGOptions(
     KOptions,
     SpecOptions,
     DisplayOptions,
-): ...
+):
+    @staticmethod
+    def from_option_string() -> dict[str, str]:
+        return (
+            LoggingOptions.from_option_string()
+            | KCFGShowOptions.from_option_string()
+            | KOptions.from_option_string()
+            | SpecOptions.from_option_string()
+            | DisplayOptions.from_option_string()
+        )
+
+    @staticmethod
+    def get_argument_type() -> dict[str, Callable]:
+        return (
+            LoggingOptions.get_argument_type()
+            | KCFGShowOptions.get_argument_type()
+            | KOptions.get_argument_type()
+            | SpecOptions.get_argument_type()
+            | DisplayOptions.get_argument_type()
+        )
 
 
 class ViewKCFGOptions(
     LoggingOptions,
     KOptions,
     SpecOptions,
-): ...
+):
+    @staticmethod
+    def from_option_string() -> dict[str, str]:
+        return LoggingOptions.from_option_string() | KOptions.from_option_string() | SpecOptions.from_option_string()
+
+    @staticmethod
+    def get_argument_type() -> dict[str, Callable]:
+        return LoggingOptions.get_argument_type() | KOptions.get_argument_type() | SpecOptions.get_argument_type()
 
 
 class RunOptions(
@@ -588,6 +767,30 @@ class RunOptions(
             'debugger': False,
         }
 
+    @staticmethod
+    def from_option_string() -> dict[str, str]:
+        return (
+            LoggingOptions.from_option_string()
+            | KOptions.from_option_string()
+            | EVMChainOptions.from_option_string()
+            | TargetOptions.from_option_string()
+            | SaveDirOptions.from_option_string()
+        )
+
+    @staticmethod
+    def get_argument_type() -> dict[str, Callable]:
+        return (
+            LoggingOptions.get_argument_type()
+            | KOptions.get_argument_type()
+            | EVMChainOptions.get_argument_type()
+            | TargetOptions.get_argument_type()
+            | SaveDirOptions.get_argument_type()
+            | {
+                'input_file': file_path,
+                'output': KRunOutput,
+            }
+        )
+
 
 class KastOptions(
     LoggingOptions,
@@ -604,6 +807,29 @@ class KastOptions(
         return {
             'output': PrintOutput.KORE,
         }
+
+    @staticmethod
+    def from_option_string() -> dict[str, str]:
+        return (
+            LoggingOptions.from_option_string()
+            | TargetOptions.from_option_string()
+            | EVMChainOptions.from_option_string()
+            | KOptions.from_option_string()
+            | SaveDirOptions.from_option_string()
+        )
+
+    @staticmethod
+    def get_argument_type() -> dict[str, Callable]:
+        return (
+            LoggingOptions.get_argument_type()
+            | KOptions.get_argument_type()
+            | EVMChainOptions.get_argument_type()
+            | TargetOptions.get_argument_type()
+            | SaveDirOptions.get_argument_type()
+            | {
+                'input_file': file_path,
+            }
+        )
 
 
 class ConfigArgs:
