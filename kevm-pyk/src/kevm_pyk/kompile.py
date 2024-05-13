@@ -113,7 +113,7 @@ def run_kompile(
         llvm_library = output_dir / 'llvm-library'
 
     if type_inference_mode is None:
-        type_inference_mode = TypeInferenceMode.CHECKED
+        type_inference_mode = TypeInferenceMode.SIMPLESUB
 
     include_dirs = [Path(include) for include in includes]
     include_dirs += config.INCLUDE_DIRS

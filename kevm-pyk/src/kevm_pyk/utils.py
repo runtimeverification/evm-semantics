@@ -88,7 +88,7 @@ def get_apr_proof_for_spec(
             md_selector=md_selector,
             claim_labels=claim_labels,
             exclude_claim_labels=exclude_claim_labels,
-            type_inference_mode=TypeInferenceMode.CHECKED,
+            type_inference_mode=TypeInferenceMode.SIMPLESUB,
         )
     )
 
