@@ -22,6 +22,7 @@ from pyk.kast.manip import (
 from pyk.kast.outer import KSequence
 from pyk.kcfg import KCFGExplore
 from pyk.kore.rpc import KoreClient, KoreExecLogFormat, TransportType, kore_server
+from pyk.ktool import TypeInferenceMode
 from pyk.proof import APRProof, APRProver
 from pyk.proof.implies import EqualityProof, ImpliesProver
 from pyk.proof.proof import parallel_advance_proof
@@ -87,6 +88,7 @@ def get_apr_proof_for_spec(
             md_selector=md_selector,
             claim_labels=claim_labels,
             exclude_claim_labels=exclude_claim_labels,
+            type_inference_mode=TypeInferenceMode.SIMPLESUB,
         )
     )
 
