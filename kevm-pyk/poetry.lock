@@ -505,13 +505,13 @@ files = [
 
 [[package]]
 name = "mdit-py-plugins"
-version = "0.4.0"
+version = "0.4.1"
 description = "Collection of plugins for markdown-it-py"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "mdit_py_plugins-0.4.0-py3-none-any.whl", hash = "sha256:b51b3bb70691f57f974e257e367107857a93b36f322a9e6d44ca5bf28ec2def9"},
-    {file = "mdit_py_plugins-0.4.0.tar.gz", hash = "sha256:d8ab27e9aed6c38aa716819fedfde15ca275715955f8a185a8e1cf90fb1d2c1b"},
+    {file = "mdit_py_plugins-0.4.1-py3-none-any.whl", hash = "sha256:1020dfe4e6bfc2c79fb49ae4e3f5b297f5ccd20f010187acc52af2921e27dc6a"},
+    {file = "mdit_py_plugins-0.4.1.tar.gz", hash = "sha256:834b8ac23d1cd60cec703646ffd22ae97b7955a6d596eb1d304be1e251ae499c"},
 ]
 
 [package.dependencies]
@@ -814,7 +814,7 @@ windows-terminal = ["colorama (>=0.4.6)"]
 
 [[package]]
 name = "pyk"
-version = "7.0.56"
+version = "7.0.57"
 description = ""
 optional = false
 python-versions = "^3.10"
@@ -835,8 +835,8 @@ xdg-base-dirs = "^6.0.1"
 [package.source]
 type = "git"
 url = "https://github.com/runtimeverification/k.git"
-reference = "v7.0.56"
-resolved_reference = "5e0c6e00d4925d0c0eab3b579fe378dc14ef2878"
+reference = "v7.0.57"
+resolved_reference = "853aa74fff37344197aa5499cb14be6f1f95e432"
 subdirectory = "pyk"
 
 [[package]]
@@ -1117,4 +1117,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "3a07b06914bc75597a3fbf38c267a21becf14f4f7eeb7e448fb51126554dd92d"
+content-hash = "75b7289a895bfd6c6cf1941720b14b81c463c8dd89a26a56e3028fb8b780057b"
