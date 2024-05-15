@@ -57,7 +57,6 @@ def kevm_kompile(
     optimization: int = 0,
     llvm_kompile_type: LLVMKompileType | None = None,
     enable_llvm_debug: bool = False,
-    llvm_library: Path | None = None,
     plugin_dir: Path | None = None,
     debug_build: bool = False,
     debug: bool = False,
@@ -81,7 +80,6 @@ def kevm_kompile(
         optimization=optimization,
         llvm_kompile_type=llvm_kompile_type,
         enable_llvm_debug=enable_llvm_debug,
-        llvm_library=llvm_library,
         debug_build=debug_build,
         debug=debug,
         verbose=verbose,
@@ -103,15 +101,11 @@ def run_kompile(
     optimization: int = 0,
     llvm_kompile_type: LLVMKompileType | None = None,
     enable_llvm_debug: bool = False,
-    llvm_library: Path | None = None,
     debug_build: bool = False,
     debug: bool = False,
     verbose: bool = False,
     type_inference_mode: str | TypeInferenceMode | None = None,
 ) -> Path:
-    if llvm_library is None:
-        llvm_library = output_dir / 'llvm-library'
-
     if type_inference_mode is None:
         type_inference_mode = TypeInferenceMode.SIMPLESUB
 
@@ -191,7 +185,10 @@ def run_kompile(
 
                 def _kompile_llvm() -> None:
                     kompile_llvm(
-                        output_dir=llvm_library, debug=debug, verbose=verbose, type_inference_mode=type_inference_mode
+                        output_dir=output_dir / 'llvm-library',
+                        debug=debug,
+                        verbose=verbose,
+                        type_inference_mode=type_inference_mode,
                     )
 
                 def _kompile_haskell() -> None:
