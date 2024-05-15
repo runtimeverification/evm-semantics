@@ -32,6 +32,11 @@ def test_toml_arg_types() -> None:
     args = parser.parse_args(cmd_args)
     args_dict = parse_toml_args(args, get_option_string_destination, get_argument_type_setter)
     assert 'nodes' in args_dict
+    assert len(args_dict['nodes']) == 1
+    assert 'node_deltas' in args_dict
+    assert len(args_dict['node_deltas']) == 2
+    assert len(args_dict['node_deltas'][0]) == 2
+    assert len(args_dict['node_deltas'][1]) == 2
 
 
 def test_toml_read() -> None:

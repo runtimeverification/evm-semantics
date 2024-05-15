@@ -39,8 +39,9 @@ _LOGGER: Final = logging.getLogger(__name__)
 
 
 def list_of(elem_type: Callable[[str], T], delim: str = ';') -> Callable[[str], list[T]]:
-    def parse(s: str) -> list[T]:
-        return [elem_type(elem) for elem in s.split(delim)]
+    def parse(s: str | list[str]) -> list[T]:
+        s_list = s.split(delim) if not isinstance(s, list) else s
+        return [elem_type(elem) for elem in s_list]
 
     return parse
 
@@ -137,12 +138,6 @@ def get_argument_type_setter(command: str, option_string: str) -> Callable[[str]
 
 
 def _create_argument_parser() -> ArgumentParser:
-    def list_of(elem_type: Callable[[str], T], delim: str = ';') -> Callable[[str], list[T]]:
-        def parse(s: str) -> list[T]:
-            return [elem_type(elem) for elem in s.split(delim)]
-
-        return parse
-
     kevm_cli_args = KEVMCLIArgs()
     config_args = ConfigArgs()
     parser = ArgumentParser(prog='kevm-pyk')
@@ -344,6 +339,16 @@ class KProveLegacyOptions(Options):
             'haskell_backend_args': [],
         }
 
+    @staticmethod
+    def from_option_string() -> dict[str, str]:
+        return KDefinitionOptions.from_option_string() | {
+            'haskell-backend-arg': 'haskell_backend_args',
+        }
+
+    @staticmethod
+    def get_argument_type() -> dict[str, Callable]:
+        return {'haskell-backend-arg': list_of(str)}
+
 
 class RPCOptions(Options):
     trace_rewrites: bool
@@ -456,7 +461,10 @@ class KCFGShowOptions(Options):
 
     @staticmethod
     def get_argument_type() -> dict[str, Callable]:
-        return {'node': node_id_like, 'node-delta': arg_pair_of(node_id_like, node_id_like)}
+        return {
+            'node': list_of(node_id_like, delim=','),
+            'node-delta': list_of(arg_pair_of(node_id_like, node_id_like)),
+        }
 
 
 class TargetOptions(Options):
@@ -525,6 +533,13 @@ class KGenOptions(Options):
         return {
             'require': 'requires',
             'module-import': 'imports',
+        }
+
+    @staticmethod
+    def get_argument_type() -> dict[str, Callable]:
+        return {
+            'require': list_of(str),
+            'module-import': list_of(str),
         }
 
 
