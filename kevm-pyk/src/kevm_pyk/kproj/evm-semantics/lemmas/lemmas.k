@@ -159,10 +159,6 @@ module LEMMAS-HASKELL [symbolic]
        requires D ==Int 256 ^Int log256Int(D) andBool D >=Int 0
         andBool lengthBytes(BUF) >=Int log256Int(D) [simplification, preserves-definedness]
 
-    rule #asWord(#buf(N, BUF)) => BUF
-      requires #range(0 < N <= 32)
-       andBool #range(0 <= BUF < 2 ^Int (N *Int 8)) [simplification]
-
     rule notBool  (X ==Int 0) => X ==Int 1 requires #rangeBool(X) [simplification]
     rule notBool  (X ==Int 1) => X ==Int 0 requires #rangeBool(X) [simplification]
     rule bool2Word(X ==Int 1) => X         requires #rangeBool(X) [simplification]

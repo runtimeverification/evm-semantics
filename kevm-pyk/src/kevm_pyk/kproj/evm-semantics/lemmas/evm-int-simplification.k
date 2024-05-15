@@ -68,20 +68,20 @@ module EVM-INT-SIMPLIFICATION-COMMON
   rule [asWord-lt-concat]:
     #asWord ( BA1 +Bytes BA2 ) <Int X => #asWord ( BA1 ) <Int ( X -Int #asWord ( BA2 ) ) /Int ( 2 ^Int ( 8 *Int lengthBytes ( BA2 ) ) )
     requires ( X -Int #asWord ( BA2 ) ) modInt ( 2 ^Int ( 8 *Int lengthBytes ( BA2 ) ) ) ==Int 0
-    [concrete(BA2, X), simplification]
+    [concrete(BA2, X), simplification, preserves-definedness]
 
   rule [asWord-lt-range]:
     #asWord ( #range ( _:Bytes, S, W ) ) <Int X => true
     requires 0 <=Int S andBool 0 <=Int W
      andBool 2 ^Int ( 8 *Int W ) <=Int X
-    [simplification, concrete(S, W, X)]
+    [simplification, concrete(S, W, X), preserves-definedness]
 
   rule [lt-asWord-range]:
     X <Int #asWord ( #range ( B:Bytes, S, W ) ) => X <Int #asWord ( B )
     requires 0 <=Int S andBool 0 <=Int W
      andBool lengthBytes(B) ==Int S +Int W
      andBool #asWord ( B ) <Int 2 ^Int ( 8 *Int W )
-    [simplification, concrete(X, S, W)]
+    [simplification, concrete(X, S, W), preserves-definedness]
 
   // ###########################################################################
   // chop
