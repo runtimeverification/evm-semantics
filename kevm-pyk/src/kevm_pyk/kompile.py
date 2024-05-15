@@ -141,6 +141,29 @@ def run_kompile(
                     output_dir=output_dir, debug=debug, verbose=verbose, type_inference_mode=type_inference_mode
                 )
 
+            case KompileTarget.HASKELL:
+                return pyk_kompile(
+                    backend=PykBackend.BOOSTER,
+                    output_dir=output_dir,
+                    debug=debug,
+                    verbose=verbose,
+                    type_inference_mode=type_inference_mode,
+                    # ---
+                    main_file=main_file,
+                    main_module=main_module,
+                    syntax_module=syntax_module,
+                    include_dirs=include_dirs,
+                    md_selector=KompileTarget.LLVM.md_selector,
+                    hook_namespaces=HOOK_NAMESPACES,
+                    emit_json=emit_json,
+                    read_only=read_only,
+                    # --- LLVM ---
+                    ccopts=ccopts,
+                    opt_level=optimization,
+                    # --- Haskell ---
+                    haskell_binary=haskell_binary,
+                )
+
             case KompileTarget.MAUDE:
                 kompile_maude = MaudeKompile(
                     base_args=base_args,
@@ -168,28 +191,6 @@ def run_kompile(
 
                 return output_dir
 
-            case KompileTarget.HASKELL:
-                return pyk_kompile(
-                    backend=PykBackend.BOOSTER,
-                    output_dir=output_dir,
-                    debug=debug,
-                    verbose=verbose,
-                    type_inference_mode=type_inference_mode,
-                    # ---
-                    main_file=main_file,
-                    main_module=main_module,
-                    syntax_module=syntax_module,
-                    include_dirs=include_dirs,
-                    md_selector=KompileTarget.LLVM.md_selector,
-                    hook_namespaces=HOOK_NAMESPACES,
-                    emit_json=emit_json,
-                    read_only=read_only,
-                    # --- LLVM ---
-                    ccopts=ccopts,
-                    opt_level=optimization,
-                    # --- Haskell ---
-                    haskell_binary=haskell_binary,
-                )
             case _:
                 raise ValueError(f'Unsupported target: {target.value}')
 
