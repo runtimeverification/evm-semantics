@@ -23,7 +23,7 @@ if TYPE_CHECKING:
     from typing import Any, Final
 
     from pyk.utils import BugReport
-    from pytest import FixtureRequest, LogCaptureFixture
+    from pytest import LogCaptureFixture, TempPathFactory
 
 
 sys.setrecursionlimit(10**8)
@@ -139,15 +139,16 @@ class Target(NamedTuple):
 
 
 @pytest.fixture(scope='module')
-def kompiled_target_for(kompiled_targets_dir: Path) -> Callable[[Path], Path]:
+def kompiled_target_for(tmp_path_factory: TempPathFactory, kompiled_targets_dir: Path | None) -> Callable[[Path], Path]:
     """
     Generate a function that returns a path to the kompiled defintion for a given K spec. Invoke `kompile` only if no kompiled directory is cached for the spec.
     """
+    target_dir = kompiled_targets_dir or tmp_path_factory.mktemp('kompiled')
 
     def kompile(spec_file: Path) -> Path:
         target = _target_for_spec(spec_file)
-        lock_file = kompiled_targets_dir / f'{target.id}.lock'
-        output_dir = kompiled_targets_dir / target.id
+        lock_file = target_dir / f'{target.id}.lock'
+        output_dir = target_dir / target.id
         with SoftFileLock(lock_file):
             if output_dir.exists():
                 return output_dir
@@ -170,7 +171,9 @@ def _target_for_spec(spec_file: Path) -> Target:
     ALL_TESTS,
     ids=[str(spec_file.relative_to(SPEC_DIR)) for spec_file in ALL_TESTS],
 )
-def test_kompile_targets(spec_file: Path, kompiled_target_for: Callable[[Path], Path], request: FixtureRequest) -> None:
+def test_kompile_targets(
+    spec_file: Path, kompiled_target_for: Callable[[Path], Path], kompiled_targets_dir: Path | None
+) -> None:
     """
     This test function is intended to be used to pre-kompile all definitions,
     so that the actual proof tests do not need to do the actual compilation,
@@ -181,11 +184,7 @@ def test_kompile_targets(spec_file: Path, kompiled_target_for: Callable[[Path], 
 
     This test will be skipped if no --kompiled-targets-dir option is given
     """
-    dir = request.config.getoption('--kompiled-targets-dir')
-    if not dir:
-        pytest.skip()
-
-    if spec_file in FAILING_BOOSTER_TESTS:
+    if not kompiled_targets_dir or spec_file in FAILING_BOOSTER_TESTS:
         pytest.skip()
 
     kompiled_target_for(spec_file)
