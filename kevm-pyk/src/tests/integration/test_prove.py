@@ -139,11 +139,19 @@ class Target(NamedTuple):
 
 
 @pytest.fixture(scope='module')
-def kompiled_target_for(tmp_path_factory: TempPathFactory, kompiled_targets_dir: Path | None) -> Callable[[Path], Path]:
+def target_dir(kompiled_targets_dir: Path | None, tmp_path_factory: TempPathFactory) -> Path:
+    if kompiled_targets_dir:
+        kompiled_targets_dir.mkdir(parents=True, exist_ok=True)
+        return kompiled_targets_dir
+
+    return tmp_path_factory.mktemp('kompiled')
+
+
+@pytest.fixture(scope='module')
+def kompiled_target_for(target_dir: Path) -> Callable[[Path], Path]:
     """
     Generate a function that returns a path to the kompiled defintion for a given K spec. Invoke `kompile` only if no kompiled directory is cached for the spec.
     """
-    target_dir = kompiled_targets_dir or tmp_path_factory.mktemp('kompiled')
 
     def kompile(spec_file: Path) -> Path:
         target = _target_for_spec(spec_file)
