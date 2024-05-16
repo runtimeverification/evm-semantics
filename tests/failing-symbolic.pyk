@@ -1,3 +1,4 @@
+tests/specs/benchmarks/ecrecoverloop00-sig0-invalid-spec.k
 tests/specs/benchmarks/ecrecoverloop00-sig1-invalid-spec.k
 tests/specs/benchmarks/ecrecoverloop00-sigs-valid-spec.k
 tests/specs/benchmarks/ecrecoverloop02-sig0-invalid-spec.k
@@ -15,6 +16,7 @@ tests/specs/examples/erc20-spec.md
 tests/specs/examples/erc721-spec.md
 tests/specs/examples/sum-to-n-foundry-spec.k
 tests/specs/examples/sum-to-n-spec.k
+tests/specs/functional/infinite-gas-spec.k
 tests/specs/functional/int-simplifications-spec.k
 tests/specs/functional/lemmas-no-smt-spec.k
 tests/specs/functional/lemmas-spec.k

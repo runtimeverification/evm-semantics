@@ -70,6 +70,7 @@ tests/specs/examples/solidity-code-spec.md
 tests/specs/examples/storage-spec.md
 tests/specs/functional/evm-int-simplifications-spec.k
 tests/specs/functional/infinite-gas-spec.k
+tests/specs/functional/int-simplifications-spec.k
 tests/specs/functional/lemmas-no-smt-spec.k
 tests/specs/functional/lemmas-spec.k
 tests/specs/functional/merkle-spec.k
@@ -142,4 +143,6 @@ tests/specs/mcd/vat-subui-pass-rough-spec.k
 tests/specs/mcd/vat-subui-pass-spec.k
 tests/specs/mcd/vow-cage-deficit-pass-rough-spec.k
 tests/specs/mcd/vow-cage-surplus-pass-rough-spec.k
+tests/specs/mcd/vow-fess-fail-rough-spec.k
+tests/specs/mcd/vow-flog-fail-rough-spec.k
 tests/specs/opcodes/create-spec.k
