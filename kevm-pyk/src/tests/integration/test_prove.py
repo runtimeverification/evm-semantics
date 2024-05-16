@@ -5,7 +5,7 @@ import sys
 from typing import TYPE_CHECKING, NamedTuple
 
 import pytest
-from filelock import FileLock
+from filelock import SoftFileLock
 from pyk.prelude.ml import is_top
 from pyk.proof.reachability import APRProof
 
@@ -121,57 +121,37 @@ class Target(NamedTuple):
     main_module_name: str
 
     @property
-    def name(self) -> str:
+    def id(self) -> str:
         """
-        Target's name is the two trailing path segments and the main module name
+        The target's id is the two trailing path segments and the main module name
         """
         return f'{self.main_file.parts[-2]}-{self.main_file.stem}-{self.main_module_name}'
 
     def __call__(self, output_dir: Path) -> Path:
-        with FileLock(str(output_dir) + '.lock'):
-            return kevm_kompile(
-                output_dir=output_dir,
-                target=KompileTarget.HASKELL,
-                main_file=self.main_file,
-                main_module=self.main_module_name,
-                syntax_module=self.main_module_name,
-                debug=True,
-            )
+        return kevm_kompile(
+            output_dir=output_dir,
+            target=KompileTarget.HASKELL,
+            main_file=self.main_file,
+            main_module=self.main_module_name,
+            syntax_module=self.main_module_name,
+            debug=True,
+        )
 
 
 @pytest.fixture(scope='module')
-def kompiled_target_cache(kompiled_targets_dir: Path) -> tuple[Path, dict[str, Path]]:
-    """
-    Populate the cache of kompiled definitions from an existing file system directory. If the cache is hot, the `kompiled_target_for` fixture will not containt a call to `kompile`, saving an expesive call to the K frontend.
-    """
-    cache_dir = kompiled_targets_dir
-    cache: dict[str, Path] = {}
-    if cache_dir.exists():  # cache dir exists, populate cache
-        for file in cache_dir.iterdir():
-            if file.is_dir():
-                # the cache key is the name of the target, which is the filename by-construction.
-                cache[file.stem] = file
-    else:
-        cache_dir.mkdir(parents=True)
-    return cache_dir, cache
-
-
-@pytest.fixture(scope='module')
-def kompiled_target_for(kompiled_target_cache: tuple[Path, dict[str, Path]]) -> Callable[[Path], Path]:
+def kompiled_target_for(kompiled_targets_dir: Path) -> Callable[[Path], Path]:
     """
     Generate a function that returns a path to the kompiled defintion for a given K spec. Invoke `kompile` only if no kompiled directory is cached for the spec.
     """
-    cache_dir, cache = kompiled_target_cache
 
     def kompile(spec_file: Path) -> Path:
         target = _target_for_spec(spec_file)
-
-        if target.name not in cache:
-            output_dir = cache_dir / target.name
-            output_dir.mkdir(exist_ok=True)
-            cache[target.name] = target(output_dir)
-
-        return cache[target.name]
+        lock_file = kompiled_targets_dir / f'{target.id}.lock'
+        output_dir = kompiled_targets_dir / target.id
+        with SoftFileLock(lock_file):
+            if output_dir.exists():
+                return output_dir
+            return target(output_dir)
 
     return kompile
 
