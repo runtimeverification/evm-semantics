@@ -130,7 +130,7 @@ class Target(NamedTuple):
     def __call__(self, output_dir: Path) -> Path:
         with FileLock(str(output_dir) + '.lock'):
             return kevm_kompile(
-                output_dir=output_dir / 'kompiled',
+                output_dir=output_dir,
                 target=KompileTarget.HASKELL,
                 main_file=self.main_file,
                 main_module=self.main_module_name,
@@ -144,13 +144,13 @@ def kompiled_target_cache(kompiled_targets_dir: Path) -> tuple[Path, dict[str, P
     """
     Populate the cache of kompiled definitions from an existing file system directory. If the cache is hot, the `kompiled_target_for` fixture will not containt a call to `kompile`, saving an expesive call to the K frontend.
     """
-    cache_dir = kompiled_targets_dir / 'target'
+    cache_dir = kompiled_targets_dir
     cache: dict[str, Path] = {}
     if cache_dir.exists():  # cache dir exists, populate cache
         for file in cache_dir.iterdir():
             if file.is_dir():
                 # the cache key is the name of the target, which is the filename by-construction.
-                cache[file.stem] = file / 'kompiled'
+                cache[file.stem] = file
     else:
         cache_dir.mkdir(parents=True)
     return cache_dir, cache
