@@ -4,26 +4,38 @@ import logging
 from typing import TYPE_CHECKING
 
 from pyk.cterm import CTerm
-from pyk.kast.inner import KApply, KLabel, KSequence, KSort, KVariable, build_assoc, build_cons
-from pyk.kast.manip import abstract_term_safely, bottom_up, flatten_label
+from pyk.kast import KInner
+from pyk.kast.inner import (
+    KApply,
+    KLabel,
+    KSequence,
+    KSort,
+    KToken,
+    KVariable,
+    bottom_up,
+    build_assoc,
+    build_cons,
+    top_down,
+)
+from pyk.kast.manip import abstract_term_safely, flatten_label
 from pyk.kast.pretty import paren
 from pyk.kcfg.semantics import KCFGSemantics
 from pyk.kcfg.show import NodePrinter
 from pyk.ktool.kprove import KProve
 from pyk.ktool.krun import KRun
-from pyk.prelude.k import K
-from pyk.prelude.kint import intToken, ltInt
-from pyk.prelude.ml import mlEqualsTrue
+from pyk.prelude.bytes import BYTES, pretty_bytes
+from pyk.prelude.kint import INT, intToken, ltInt
+from pyk.prelude.ml import mlEqualsFalse, mlEqualsTrue
 from pyk.prelude.string import stringToken
-from pyk.proof.reachability import APRBMCProof, APRProof
-from pyk.proof.show import APRBMCProofNodePrinter, APRProofNodePrinter
+from pyk.proof.reachability import APRProof
+from pyk.proof.show import APRProofNodePrinter
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
     from pathlib import Path
     from typing import Final
 
-    from pyk.kast import KInner
+    from pyk.kast.inner import KAst
     from pyk.kast.outer import KFlatModule
     from pyk.kcfg import KCFG
     from pyk.ktool.kprint import SymbolTable
@@ -41,6 +53,10 @@ class KEVMSemantics(KCFGSemantics):
     def __init__(self, auto_abstract_gas: bool = False) -> None:
         self.auto_abstract_gas = auto_abstract_gas
 
+    @staticmethod
+    def is_functional(term: KInner) -> bool:
+        return type(term) == KApply and term.label.name == 'runLemma'
+
     def is_terminal(self, cterm: CTerm) -> bool:
         k_cell = cterm.cell('K_CELL')
         # <k> #halt </k>
@@ -54,10 +70,25 @@ class KEVMSemantics(KCFGSemantics):
             elif k_cell.arity == 1 and k_cell[0] == KEVM.halt():
                 return True
             # <k> #halt ~> X:K </k>
-            elif (
-                k_cell.arity == 2 and k_cell[0] == KEVM.halt() and type(k_cell[1]) is KVariable and k_cell[1].sort == K
-            ):
+            elif k_cell.arity == 2 and k_cell[0] == KEVM.halt() and type(k_cell[1]) is KVariable:
                 return True
+
+        program_cell = cterm.cell('PROGRAM_CELL')
+        # Fully symbolic program is terminal unless we are executing a functional claim
+        if type(program_cell) is KVariable:
+            # <k> runLemma ( ... ) </k>
+            if KEVMSemantics.is_functional(k_cell):
+                return False
+            # <k> runLemma ( ... ) [ ~> X:K ] </k>
+            elif (
+                type(k_cell) is KSequence
+                and (k_cell.arity == 1 or (k_cell.arity == 2 and type(k_cell[1]) is KVariable))
+                and KEVMSemantics.is_functional(k_cell[0])
+            ):
+                return False
+            else:
+                return True
+
         return False
 
     def same_loop(self, cterm1: CTerm, cterm2: CTerm) -> bool:
@@ -116,11 +147,15 @@ class KEVMSemantics(KCFGSemantics):
         return CTerm(config=bottom_up(_replace, cterm.config), constraints=cterm.constraints)
 
     @staticmethod
-    def cut_point_rules(break_on_jumpi: bool, break_on_calls: bool) -> list[str]:
+    def cut_point_rules(
+        break_on_jumpi: bool, break_on_calls: bool, break_on_storage: bool, break_on_basic_blocks: bool
+    ) -> list[str]:
         cut_point_rules = []
         if break_on_jumpi:
             cut_point_rules.extend(['EVM.jumpi.true', 'EVM.jumpi.false'])
-        if break_on_calls:
+        if break_on_basic_blocks:
+            cut_point_rules.append('EVM.end-basic-block')
+        if break_on_calls or break_on_basic_blocks:
             cut_point_rules.extend(
                 [
                     'EVM.call',
@@ -133,8 +168,12 @@ class KEVMSemantics(KCFGSemantics):
                     'EVM.return.exception',
                     'EVM.return.revert',
                     'EVM.return.success',
+                    'EVM.precompile.true',
+                    'EVM.precompile.false',
                 ]
             )
+        if break_on_storage:
+            cut_point_rules.extend(['EVM.sstore', 'EVM.sload'])
         return cut_point_rules
 
     @staticmethod
@@ -146,6 +185,8 @@ class KEVMSemantics(KCFGSemantics):
 
 
 class KEVM(KProve, KRun):
+    _use_hex: bool
+
     def __init__(
         self,
         definition_dir: Path,
@@ -155,6 +196,7 @@ class KEVM(KProve, KRun):
         krun_command: str = 'krun',
         extra_unparsing_modules: Iterable[KFlatModule] = (),
         bug_report: BugReport | None = None,
+        use_hex: bool = False,
     ) -> None:
         # I'm going for the simplest version here, we can change later if there is an advantage.
         # https://stackoverflow.com/questions/9575409/calling-parent-class-init-with-multiple-inheritance-whats-the-right-way
@@ -178,21 +220,21 @@ class KEVM(KProve, KRun):
             bug_report=bug_report,
             patch_symbol_table=KEVM._kevm_patch_symbol_table,
         )
+        self._use_hex = use_hex
 
     @classmethod
     def _kevm_patch_symbol_table(cls, symbol_table: SymbolTable) -> None:
-        # fmt: off
-        symbol_table['#Bottom']                                       = lambda: '#Bottom'
-        symbol_table['_Map_']                                         = paren(lambda m1, m2: m1 + '\n' + m2)
-        symbol_table['_AccountCellMap_']                              = paren(lambda a1, a2: a1 + '\n' + a2)
-        symbol_table['.AccountCellMap']                               = lambda: '.Bag'
-        symbol_table['AccountCellMapItem']                            = lambda k, v: v
-        symbol_table['_<Word__EVM-TYPES_Int_Int_Int']                 = paren(lambda a1, a2: '(' + a1 + ') <Word ('  + a2 + ')')
-        symbol_table['_>Word__EVM-TYPES_Int_Int_Int']                 = paren(lambda a1, a2: '(' + a1 + ') >Word ('  + a2 + ')')
-        symbol_table['_<=Word__EVM-TYPES_Int_Int_Int']                = paren(lambda a1, a2: '(' + a1 + ') <=Word (' + a2 + ')')
-        symbol_table['_>=Word__EVM-TYPES_Int_Int_Int']                = paren(lambda a1, a2: '(' + a1 + ') >=Word (' + a2 + ')')
-        symbol_table['_==Word__EVM-TYPES_Int_Int_Int']                = paren(lambda a1, a2: '(' + a1 + ') ==Word (' + a2 + ')')
-        symbol_table['_s<Word__EVM-TYPES_Int_Int_Int']                = paren(lambda a1, a2: '(' + a1 + ') s<Word (' + a2 + ')')
+        symbol_table['#Bottom'] = lambda: '#Bottom'
+        symbol_table['_Map_'] = paren(lambda m1, m2: m1 + '\n' + m2)
+        symbol_table['_AccountCellMap_'] = paren(lambda a1, a2: a1 + '\n' + a2)
+        symbol_table['.AccountCellMap'] = lambda: '.Bag'
+        symbol_table['AccountCellMapItem'] = lambda k, v: v
+        symbol_table['_<Word__EVM-TYPES_Int_Int_Int'] = paren(lambda a1, a2: '(' + a1 + ') <Word (' + a2 + ')')
+        symbol_table['_>Word__EVM-TYPES_Int_Int_Int'] = paren(lambda a1, a2: '(' + a1 + ') >Word (' + a2 + ')')
+        symbol_table['_<=Word__EVM-TYPES_Int_Int_Int'] = paren(lambda a1, a2: '(' + a1 + ') <=Word (' + a2 + ')')
+        symbol_table['_>=Word__EVM-TYPES_Int_Int_Int'] = paren(lambda a1, a2: '(' + a1 + ') >=Word (' + a2 + ')')
+        symbol_table['_==Word__EVM-TYPES_Int_Int_Int'] = paren(lambda a1, a2: '(' + a1 + ') ==Word (' + a2 + ')')
+        symbol_table['_s<Word__EVM-TYPES_Int_Int_Int'] = paren(lambda a1, a2: '(' + a1 + ') s<Word (' + a2 + ')')
         paren_symbols = [
             '_|->_',
             '#And',
@@ -216,8 +258,7 @@ class KEVM(KProve, KRun):
         ]
         for symb in paren_symbols:
             if symb in symbol_table:
-                symbol_table[symb] = paren(symbol_table[symb])
-        # fmt: on
+                symbol_table[symb] = paren(symbol_table[symb])  # noqa: B909
 
     class Sorts:
         KEVM_CELL: Final = KSort('KevmCell')
@@ -239,6 +280,21 @@ class KEVM(KProve, KRun):
 
     @staticmethod
     def add_invariant(cterm: CTerm) -> CTerm:
+        def _add_account_invariant(account: KApply) -> list[KApply]:
+            _account_constraints = []
+            acct_id, balance, nonce = account.args[0], account.args[1], account.args[5]
+
+            if type(acct_id) is KApply and type(acct_id.args[0]) is KVariable:
+                _account_constraints.append(mlEqualsTrue(KEVM.range_address(acct_id.args[0])))
+                _account_constraints.append(
+                    mlEqualsFalse(KEVM.is_precompiled_account(acct_id.args[0], cterm.cell('SCHEDULE_CELL')))
+                )
+            if type(balance) is KApply and type(balance.args[0]) is KVariable:
+                _account_constraints.append(mlEqualsTrue(KEVM.range_uint(256, balance.args[0])))
+            if type(nonce) is KApply and type(nonce.args[0]) is KVariable:
+                _account_constraints.append(mlEqualsTrue(KEVM.range_nonce(nonce.args[0])))
+            return _account_constraints
+
         constraints = []
         word_stack = cterm.cell('WORDSTACK_CELL')
         if type(word_stack) is not KVariable:
@@ -246,19 +302,64 @@ class KEVM(KProve, KRun):
             for i in word_stack_items[:-1]:
                 constraints.append(mlEqualsTrue(KEVM.range_uint(256, i)))
 
-        gas_cell = cterm.cell('GAS_CELL')
-        if not (type(gas_cell) is KApply and gas_cell.label.name == 'infGas'):
-            constraints.append(mlEqualsTrue(KEVM.range_uint(256, gas_cell)))
+        accounts_cell = cterm.cell('ACCOUNTS_CELL')
+        if type(accounts_cell) is not KApply('.AccountCellMap'):
+            accounts = flatten_label('_AccountCellMap_', cterm.cell('ACCOUNTS_CELL'))
+            for wrapped_account in accounts:
+                if not (type(wrapped_account) is KApply and wrapped_account.label.name == 'AccountCellMapItem'):
+                    continue
+
+                account = wrapped_account.args[1]
+                if type(account) is KApply:
+                    constraints.extend(_add_account_invariant(account))
+
         constraints.append(mlEqualsTrue(KEVM.range_address(cterm.cell('ID_CELL'))))
         constraints.append(mlEqualsTrue(KEVM.range_address(cterm.cell('CALLER_CELL'))))
-        constraints.append(mlEqualsTrue(KEVM.range_address(cterm.cell('ORIGIN_CELL'))))
+        constraints.append(
+            mlEqualsFalse(KEVM.is_precompiled_account(cterm.cell('CALLER_CELL'), cterm.cell('SCHEDULE_CELL')))
+        )
         constraints.append(mlEqualsTrue(ltInt(KEVM.size_bytes(cterm.cell('CALLDATA_CELL')), KEVM.pow128())))
+        constraints.append(mlEqualsTrue(KEVM.range_uint(256, cterm.cell('CALLVALUE_CELL'))))
+
+        constraints.append(mlEqualsTrue(KEVM.range_address(cterm.cell('ORIGIN_CELL'))))
+        constraints.append(
+            mlEqualsFalse(KEVM.is_precompiled_account(cterm.cell('ORIGIN_CELL'), cterm.cell('SCHEDULE_CELL')))
+        )
 
         constraints.append(mlEqualsTrue(KEVM.range_blocknum(cterm.cell('NUMBER_CELL'))))
+        constraints.append(mlEqualsTrue(KEVM.range_uint(256, cterm.cell('TIMESTAMP_CELL'))))
 
         for c in constraints:
             cterm = cterm.add_constraint(c)
         return cterm
+
+    @property
+    def use_hex_encoding(self) -> bool:
+        return self._use_hex
+
+    def pretty_print(
+        self, kast: KAst, *, in_module: str | None = None, unalias: bool = True, sort_collections: bool = False
+    ) -> str:
+        if isinstance(kast, KInner) and self.use_hex_encoding:
+            kast = KEVM.kinner_to_hex(kast)
+        return super().pretty_print(kast, unalias=unalias, sort_collections=sort_collections)
+
+    @staticmethod
+    def kinner_to_hex(kast: KInner) -> KInner:
+        """
+        Converts values within a KInner object of sorts `INT` or `BYTES` to hexadecimal representation.
+        """
+
+        def to_hex(kast: KInner) -> KInner:
+            if type(kast) is KToken and kast.sort == INT:
+                return KToken(hex(int(kast.token)), INT)
+            if type(kast) is KToken and kast.sort == BYTES:
+                return KToken('0x' + pretty_bytes(kast).hex(), BYTES)
+            return kast
+
+        if isinstance(kast, KToken):
+            return to_hex(kast)
+        return top_down(to_hex, kast)
 
     @staticmethod
     def halt() -> KApply:
@@ -313,6 +414,10 @@ class KEVM(KProve, KRun):
         return KApply('#rangeBytes(_,_)_WORD_Bool_Int_Int', [width, ba])
 
     @staticmethod
+    def range_nonce(i: KInner) -> KApply:
+        return KApply('#rangeNonce(_)_WORD_Bool_Int', [i])
+
+    @staticmethod
     def range_blocknum(ba: KInner) -> KApply:
         return KApply('#rangeBlockNum(_)_WORD_Bool_Int', [ba])
 
@@ -339,6 +444,10 @@ class KEVM(KProve, KRun):
     @staticmethod
     def init_bytecode(c: KInner) -> KApply:
         return KApply('initBytecode', [c])
+
+    @staticmethod
+    def is_precompiled_account(i: KInner, s: KInner) -> KApply:
+        return KApply('#isPrecompiledAccount(_,_)_EVM_Bool_Int_Schedule', [i, s])
 
     @staticmethod
     def hashed_location(compiler: str, base: KInner, offset: KInner, member_offset: int = 0) -> KApply:
@@ -387,7 +496,7 @@ class KEVM(KProve, KRun):
 
     @staticmethod
     def empty_typedargs() -> KApply:
-        return KApply('.List{"_,__EVM-ABI_TypedArgs_TypedArg_TypedArgs"}_TypedArgs')
+        return KApply('.List{"typedArgs"}')
 
     @staticmethod
     def bytes_append(b1: KInner, b2: KInner) -> KApply:
@@ -431,7 +540,7 @@ class KEVM(KProve, KRun):
     @staticmethod
     def typed_args(args: list[KInner]) -> KInner:
         res = KEVM.empty_typedargs()
-        return build_cons(res, '_,__EVM-ABI_TypedArgs_TypedArg_TypedArgs', args)
+        return build_cons(res, 'typedArgs', args)
 
     @staticmethod
     def accounts(accts: list[KInner]) -> KInner:
@@ -451,7 +560,7 @@ class KEVM(KProve, KRun):
         bug_report: bool = False,
         spec_module: str | None = None,
         claim_labels: Iterable[str] | None = None,
-        exclude_claim_labels: Iterable[str] = (),
+        exclude_claim_labels: Iterable[str] | None = None,
         debug: bool = False,
         debugger: bool = False,
         max_depth: int | None = None,
@@ -510,15 +619,7 @@ class KEVMAPRNodePrinter(KEVMNodePrinter, APRProofNodePrinter):
         APRProofNodePrinter.__init__(self, proof, kevm)
 
 
-class KEVMAPRBMCNodePrinter(KEVMNodePrinter, APRBMCProofNodePrinter):
-    def __init__(self, kevm: KEVM, proof: APRBMCProof):
-        KEVMNodePrinter.__init__(self, kevm)
-        APRBMCProofNodePrinter.__init__(self, proof, kevm)
-
-
 def kevm_node_printer(kevm: KEVM, proof: APRProof) -> NodePrinter:
-    if type(proof) is APRBMCProof:
-        return KEVMAPRBMCNodePrinter(kevm, proof)
     if type(proof) is APRProof:
         return KEVMAPRNodePrinter(kevm, proof)
     raise ValueError(f'Cannot build NodePrinter for proof type: {type(proof)}')

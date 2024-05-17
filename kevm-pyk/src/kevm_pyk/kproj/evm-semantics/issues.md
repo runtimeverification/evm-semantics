@@ -57,7 +57,7 @@ These can be issues from simple "why did they do it that way?" to "this makes do
 -   Program representation is important in EVM (that is, you must be able to represent a program as a byte-array of opcodes).
     When doing program analysis/abstract verification, you ideally would be allowed to make transformations on the program representation (e.g., convert it to a control-flow graph) without having to maintain a translation back.
     Currently in EVM, the `*CODECOPY` opcodes allow regarding program pieces as data, meaning that a translation back must always be maintained, because using `CREATE` with `DELEGATECALL` allows executing arbitrary code.
-    For this reason, we had to build a parser/unparser and an assembler/dissasembler into our semantics.
+    For this reason, we had to build a parser/unparser and an assembler/disassembler into our semantics.
     Putting a symbolic value through the process of disassembling -> unparsing loses a lot of semantic information about the original value.
     While self-modifying code is nice and powerful in principle, we are not aware of any programming languages for the blockchain that encourage or even allow that.
 

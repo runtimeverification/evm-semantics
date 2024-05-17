@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 import logging
+from abc import ABC, abstractmethod
 from contextlib import contextmanager
+from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from pyk.cterm import CTerm
+from pyk.cterm import CTerm, CTermSymbolic
+from pyk.kast import Atts
 from pyk.kast.inner import KApply, KInner, KRewrite, KVariable, Subst
 from pyk.kast.manip import (
     abstract_term_safely,
@@ -19,8 +22,10 @@ from pyk.kast.manip import (
 from pyk.kast.outer import KSequence
 from pyk.kcfg import KCFGExplore
 from pyk.kore.rpc import KoreClient, KoreExecLogFormat, TransportType, kore_server
-from pyk.proof import APRBMCProof, APRBMCProver, APRProof, APRProver
-from pyk.proof.equality import EqualityProof, EqualityProver
+from pyk.ktool import TypeInferenceMode
+from pyk.proof import APRProof, APRProver
+from pyk.proof.implies import EqualityProof, ImpliesProver
+from pyk.proof.proof import parallel_advance_proof
 from pyk.utils import single
 
 if TYPE_CHECKING:
@@ -30,6 +35,7 @@ if TYPE_CHECKING:
     from pyk.kast.outer import KClaim, KDefinition
     from pyk.kcfg import KCFG
     from pyk.kcfg.semantics import KCFGSemantics
+    from pyk.kore.rpc import FallbackReason
     from pyk.ktool.kprint import KPrint
     from pyk.ktool.kprove import KProve
     from pyk.proof.proof import Proof
@@ -45,7 +51,7 @@ def claim_dependency_dict(claims: Iterable[KClaim], spec_module_name: str | None
     claims_by_label = {claim.label: claim for claim in claims}
     graph: dict[str, list[str]] = {}
     for claim in claims:
-        graph[claim.label] = []
+        graph[claim.label] = []  # noqa: B909
         for dependency in claim.dependencies:
             if dependency not in claims_by_label:
                 if spec_module_name is None:
@@ -67,7 +73,7 @@ def get_apr_proof_for_spec(
     include_dirs: Iterable[Path] = (),
     md_selector: str | None = None,
     claim_labels: Iterable[str] | None = None,
-    exclude_claim_labels: Iterable[str] = (),
+    exclude_claim_labels: Iterable[str] | None = None,
 ) -> APRProof:
     if save_directory is None:
         save_directory = Path('.')
@@ -82,6 +88,7 @@ def get_apr_proof_for_spec(
             md_selector=md_selector,
             claim_labels=claim_labels,
             exclude_claim_labels=exclude_claim_labels,
+            type_inference_mode=TypeInferenceMode.SIMPLESUB,
         )
     )
 
@@ -89,66 +96,167 @@ def get_apr_proof_for_spec(
     return apr_proof
 
 
+@dataclass
+class RunProverParams:
+    execute_depth: int
+    terminal_rules: Iterable[str]
+    cut_point_rules: Iterable[str]
+    counterexample_info: bool
+    always_check_subsumption: bool
+    fast_check_subsumption: bool
+
+
+class APRProofStrategy(ABC):
+    params: RunProverParams
+
+    def __init__(self, params: RunProverParams) -> None:
+        self.params = params
+
+    @abstractmethod
+    def prove(self, proof: APRProof, max_iterations: int | None = None, fail_fast: bool = False) -> None: ...
+
+
+class ParallelStrategy(APRProofStrategy):
+    _create_kcfg_explore: Callable[[], KCFGExplore]
+    _max_workers = 1
+
+    def __init__(
+        self,
+        create_kcfg_explore: Callable[[], KCFGExplore],
+        params: RunProverParams,
+        max_workers: int = 1,
+    ) -> None:
+        self._create_kcfg_explore = create_kcfg_explore
+        self._max_workers = max_workers
+        super().__init__(params)
+
+    def prove(self, proof: APRProof, max_iterations: int | None = None, fail_fast: bool = False) -> None:
+        def create_prover() -> APRProver:
+            return APRProver(
+                self._create_kcfg_explore(),
+                execute_depth=self.params.execute_depth,
+                terminal_rules=self.params.terminal_rules,
+                cut_point_rules=self.params.cut_point_rules,
+                counterexample_info=self.params.counterexample_info,
+                always_check_subsumption=self.params.always_check_subsumption,
+                fast_check_subsumption=self.params.fast_check_subsumption,
+            )
+
+        parallel_advance_proof(
+            proof=proof,
+            create_prover=create_prover,
+            max_iterations=max_iterations,
+            fail_fast=fail_fast,
+            max_workers=self._max_workers,
+        )
+
+
+class SequentialStrategy(APRProofStrategy):
+    _kcfg_explore: KCFGExplore
+
+    def __init__(self, kcfg_explore: KCFGExplore, params: RunProverParams) -> None:
+        self._kcfg_explore = kcfg_explore
+        super().__init__(params)
+
+    def prove(self, proof: APRProof, max_iterations: int | None = None, fail_fast: bool = False) -> None:
+        prover = APRProver(
+            self._kcfg_explore,
+            execute_depth=self.params.execute_depth,
+            terminal_rules=self.params.terminal_rules,
+            cut_point_rules=self.params.cut_point_rules,
+            counterexample_info=self.params.counterexample_info,
+            always_check_subsumption=self.params.always_check_subsumption,
+            fast_check_subsumption=self.params.fast_check_subsumption,
+        )
+        prover.advance_proof(fail_fast=fail_fast, max_iterations=max_iterations, proof=proof)
+
+
+def select_apr_strategy(
+    params: RunProverParams,
+    max_frontier_parallel: int,
+    kcfg_explore: KCFGExplore | None = None,
+    create_kcfg_explore: Callable[[], KCFGExplore] | None = None,
+) -> APRProofStrategy:
+    strategy: APRProofStrategy
+
+    if max_frontier_parallel > 1 and create_kcfg_explore is not None:
+        strategy = ParallelStrategy(
+            max_workers=max_frontier_parallel,
+            create_kcfg_explore=create_kcfg_explore,
+            params=params,
+        )
+    elif kcfg_explore is not None or create_kcfg_explore is not None:
+        if kcfg_explore is not None:
+            _kcfg_explore = kcfg_explore
+        else:
+            assert create_kcfg_explore is not None
+            _kcfg_explore = create_kcfg_explore()
+        strategy = SequentialStrategy(
+            kcfg_explore=_kcfg_explore,
+            params=params,
+        )
+    else:
+        raise ValueError(
+            'Must provide at least one of kcfg_explore or create_kcfg_explore, or provide create_kcfg_explore if using max_frontier_parallel > 1.'
+        )
+    return strategy
+
+
 def run_prover(
-    kprove: KProve,
     proof: Proof,
-    kcfg_explore: KCFGExplore,
+    kcfg_explore: KCFGExplore | None = None,
+    create_kcfg_explore: Callable[[], KCFGExplore] | None = None,
     max_depth: int = 1000,
     max_iterations: int | None = None,
     cut_point_rules: Iterable[str] = (),
     terminal_rules: Iterable[str] = (),
-    extract_branches: Callable[[CTerm], Iterable[KInner]] | None = None,
-    abstract_node: Callable[[CTerm], CTerm] | None = None,
     fail_fast: bool = False,
+    counterexample_info: bool = False,
+    always_check_subsumption: bool = False,
+    fast_check_subsumption: bool = False,
+    max_frontier_parallel: int = 1,
 ) -> bool:
-    proof = proof
-    prover: APRBMCProver | APRProver | EqualityProver
-    if type(proof) is APRBMCProof:
-        prover = APRBMCProver(proof, kcfg_explore)
-    elif type(proof) is APRProof:
-        prover = APRProver(proof, kcfg_explore)
-    elif type(proof) is EqualityProof:
-        prover = EqualityProver(kcfg_explore=kcfg_explore, proof=proof)
-    else:
-        raise ValueError(f'Do not know how to build prover for proof: {proof}')
+    prover: APRProver | ImpliesProver
     try:
-        if type(prover) is APRBMCProver or type(prover) is APRProver:
-            prover.advance_proof(
-                max_iterations=max_iterations,
-                execute_depth=max_depth,
-                terminal_rules=terminal_rules,
-                cut_point_rules=cut_point_rules,
-                fail_fast=fail_fast,
+        if type(proof) is APRProof:
+            strategy = select_apr_strategy(
+                create_kcfg_explore=create_kcfg_explore,
+                kcfg_explore=kcfg_explore,
+                max_frontier_parallel=max_frontier_parallel,
+                params=RunProverParams(
+                    always_check_subsumption=always_check_subsumption,
+                    counterexample_info=counterexample_info,
+                    cut_point_rules=cut_point_rules,
+                    execute_depth=max_depth,
+                    fast_check_subsumption=fast_check_subsumption,
+                    terminal_rules=terminal_rules,
+                ),
             )
-            assert isinstance(proof, APRProof)
-            if proof.passed:
-                _LOGGER.info(f'Proof passed: {proof.id}')
-                return True
+            strategy.prove(fail_fast=fail_fast, max_iterations=max_iterations, proof=proof)
+
+        elif type(proof) is EqualityProof:
+            if kcfg_explore is not None:
+                prover = ImpliesProver(proof, kcfg_explore=kcfg_explore)
+            elif create_kcfg_explore is not None:
+                prover = ImpliesProver(proof, kcfg_explore=create_kcfg_explore())
             else:
-                _LOGGER.error(f'Proof failed: {proof.id}')
-                return False
-        elif type(prover) is EqualityProver:
-            prover.advance_proof()
-            if prover.proof.passed:
-                _LOGGER.info(f'Proof passed: {prover.proof.id}')
-                return True
-            elif prover.proof.failed:
-                _LOGGER.error(f'Proof failed: {prover.proof.id}')
-                if type(proof) is EqualityProof:
-                    _LOGGER.info(proof.pretty(kprove))
-                return False
-            else:
-                _LOGGER.info(f'Proof pending: {prover.proof.id}')
-                return False
-        return False
+                raise ValueError('Must provide at least one of kcfg_explore or create_kcfg_explore for EqualityProof.')
+            prover.advance_proof(proof)
+        else:
+            raise ValueError(f'Do not know how to build prover for proof: {proof}')
 
     except Exception as e:
+        if type(proof) is APRProof:
+            proof.error_info = e
         _LOGGER.error(f'Proof crashed: {proof.id}\n{e}', exc_info=True)
         return False
 
+    _LOGGER.info(f'Proof status: {proof.status}')
+    return proof.passed
+
 
 def print_failure_info(proof: Proof, kcfg_explore: KCFGExplore, counterexample_info: bool = False) -> list[str]:
-    if type(proof) is APRProof or type(proof) is APRBMCProof:
+    if type(proof) is APRProof:
         target = proof.kcfg.node(proof.target)
 
         res_lines: list[str] = []
@@ -171,15 +279,15 @@ def print_failure_info(proof: Proof, kcfg_explore: KCFGExplore, counterexample_i
                 res_lines.append('')
                 res_lines.append(f'  Node id: {str(node.id)}')
 
-                node_cterm, _ = kcfg_explore.cterm_simplify(node.cterm)
-                target_cterm, _ = kcfg_explore.cterm_simplify(target.cterm)
+                node_cterm, _ = kcfg_explore.cterm_symbolic.simplify(node.cterm)
+                target_cterm, _ = kcfg_explore.cterm_symbolic.simplify(target.cterm)
 
                 res_lines.append('  Failure reason:')
                 _, reason = kcfg_explore.implication_failure_reason(node_cterm, target_cterm)
                 res_lines += [f'    {line}' for line in reason.split('\n')]
 
                 res_lines.append('  Path condition:')
-                res_lines += [f'    {kcfg_explore.kprint.pretty_print(proof.path_constraints(node.id))}']
+                res_lines += [f'    {kcfg_explore.pretty_print(proof.path_constraints(node.id))}']
                 if counterexample_info:
                     res_lines.extend(print_model(node, kcfg_explore))
 
@@ -197,12 +305,12 @@ def print_failure_info(proof: Proof, kcfg_explore: KCFGExplore, counterexample_i
 
 def print_model(node: KCFG.Node, kcfg_explore: KCFGExplore) -> list[str]:
     res_lines: list[str] = []
-    result_subst = kcfg_explore.cterm_get_model(node.cterm)
+    result_subst = kcfg_explore.cterm_symbolic.get_model(node.cterm)
     if type(result_subst) is Subst:
         res_lines.append('  Model:')
         for var, term in result_subst.to_dict().items():
             term_kast = KInner.from_dict(term)
-            res_lines.append(f'    {var} = {kcfg_explore.kprint.pretty_print(term_kast)}')
+            res_lines.append(f'    {var} = {kcfg_explore.pretty_print(term_kast)}')
     else:
         res_lines.append('  Failed to generate a model.')
 
@@ -245,8 +353,8 @@ def byte_offset_to_lines(lines: Iterable[str], byte_start: int, byte_width: int)
 def KDefinition__expand_macros(defn: KDefinition, term: KInner) -> KInner:  # noqa: N802
     def _expand_macros(_term: KInner) -> KInner:
         if type(_term) is KApply:
-            prod = defn.production_for_klabel(_term.label)
-            if 'macro' in prod.att or 'alias' in prod.att or 'macro-rec' in prod.att or 'alias-rec' in prod.att:
+            prod = defn.symbols[_term.label.name]
+            if any(key in prod.att for key in [Atts.MACRO, Atts.ALIAS, Atts.MACRO_REC, Atts.ALIAS_REC]):
                 for r in defn.macro_rules:
                     assert type(r.body) is KRewrite
                     _new_term = r.body.apply_top(_term)
@@ -268,7 +376,7 @@ def abstract_cell_vars(cterm: KInner, keep_vars: Collection[KVariable] = ()) -> 
     config, subst = split_config_from(state)
     for s in subst:
         if type(subst[s]) is KVariable and not is_anon_var(subst[s]) and subst[s] not in keep_vars:
-            subst[s] = abstract_term_safely(KVariable('_'), base_name=s)
+            subst[s] = abstract_term_safely(KVariable('_'), base_name=s)  # noqa: B909
     return Subst(subst)(config)
 
 
@@ -308,10 +416,14 @@ def legacy_explore(
     bug_report: BugReport | None = None,
     haskell_log_format: KoreExecLogFormat = KoreExecLogFormat.ONELINE,
     haskell_log_entries: Iterable[str] = (),
+    haskell_threads: int | None = None,
     log_axioms_file: Path | None = None,
     trace_rewrites: bool = False,
     start_server: bool = True,
     maude_port: int | None = None,
+    fallback_on: Iterable[FallbackReason] | None = None,
+    interim_simplification: int | None = None,
+    no_post_exec_simplify: bool = False,
 ) -> Iterator[KCFGExplore]:
     if start_server:
         # Old way of handling KCFGExplore, to be removed
@@ -327,16 +439,17 @@ def legacy_explore(
             smt_tactic=smt_tactic,
             haskell_log_format=haskell_log_format,
             haskell_log_entries=haskell_log_entries,
+            haskell_threads=haskell_threads,
             log_axioms_file=log_axioms_file,
+            fallback_on=fallback_on,
+            interim_simplification=interim_simplification,
+            no_post_exec_simplify=no_post_exec_simplify,
         ) as server:
             with KoreClient('localhost', server.port, bug_report=bug_report, bug_report_id=id) as client:
-                yield KCFGExplore(
-                    kprint=kprint,
-                    kore_client=client,
-                    kcfg_semantics=kcfg_semantics,
-                    id=id,
-                    trace_rewrites=trace_rewrites,
+                cterm_symbolic = CTermSymbolic(
+                    client, kprint.definition, kprint.kompiled_kore, trace_rewrites=trace_rewrites
                 )
+                yield KCFGExplore(cterm_symbolic, kcfg_semantics=kcfg_semantics, id=id)
     else:
         if port is None:
             raise ValueError('Missing port with start_server=False')
@@ -352,10 +465,7 @@ def legacy_explore(
                 ],
             }
         with KoreClient('localhost', port, bug_report=bug_report, bug_report_id=id, dispatch=dispatch) as client:
-            yield KCFGExplore(
-                kprint=kprint,
-                kore_client=client,
-                kcfg_semantics=kcfg_semantics,
-                id=id,
-                trace_rewrites=trace_rewrites,
+            cterm_symbolic = CTermSymbolic(
+                client, kprint.definition, kprint.kompiled_kore, trace_rewrites=trace_rewrites
             )
+            yield KCFGExplore(cterm_symbolic, kcfg_semantics=kcfg_semantics, id=id)

@@ -10,6 +10,7 @@ module APPROVE-SUCCESS-SPEC
     <exit-code> 1 </exit-code>
     <mode> NORMAL </mode>
     <schedule> CONSTANTINOPLE </schedule>
+    <useGas> true </useGas>
 
     <ethereum>
       <evm>

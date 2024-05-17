@@ -14,7 +14,7 @@ Important Powers
 ----------------
 
 Some important numbers that are referred to often during execution.
-These can be used for pattern-matching on the LHS of rules as well (`alias` attribute expands all occurances of these in rules).
+These can be used for pattern-matching on the LHS of rules as well (`alias` attribute expands all occurrences of these in rules).
 
 ```k
     syntax Int ::= "pow5"   [macro] /* 2 ^Int 5   */
@@ -470,17 +470,17 @@ Range of types
 --------------
 
 ```k
-    syntax Bool ::= #rangeBool     ( Int )             [alias]
-                  | #rangeSInt     ( Int , Int )       [alias]
-                  | #rangeUInt     ( Int , Int )       [alias]
-                  | #rangeSFixed   ( Int , Int , Int ) [alias]
-                  | #rangeUFixed   ( Int , Int , Int ) [alias]
-                  | #rangeAddress  ( Int )             [alias]
-                  | #rangeBytes    ( Int , Int )       [alias]
-                  | #rangeNonce    ( Int )             [alias]
-                  | #rangeSmall    ( Int )             [alias]
-                  | #rangeBlockNum ( Int )             [alias]
- // ----------------------------------------------------------
+    syntax Bool ::= #rangeBool     ( Int )             [klabel(#rangeBool), alias]
+                  | #rangeSInt     ( Int , Int )       [klabel(#rangeSInt), alias]
+                  | #rangeUInt     ( Int , Int )       [klabel(#rangeUInt), alias]
+                  | #rangeSFixed   ( Int , Int , Int ) [klabel(#rangeSFixed), alias]
+                  | #rangeUFixed   ( Int , Int , Int ) [klabel(#rangeUFixed), alias]
+                  | #rangeAddress  ( Int )             [klabel(#rangeAddress), alias]
+                  | #rangeBytes    ( Int , Int )       [klabel(#rangeBytes), alias]
+                  | #rangeNonce    ( Int )             [klabel(#rangeNonce), alias]
+                  | #rangeSmall    ( Int )             [klabel(#rangeSmall), alias]
+                  | #rangeBlockNum ( Int )             [klabel(#rangeBlockNum), alias]
+ // ----------------------------------------------------------------------------------
     rule #rangeBool    (            X ) => X ==Int 0 orBool X ==Int 1
 
     rule #rangeSInt    (   8 ,      X ) => #range ( minSInt8        <= X <= maxSInt8        )
@@ -572,8 +572,8 @@ Range of types
 -   `chop` interprets an integer modulo `2^256`.
 
 ```k
-    syntax Int ::= chop ( Int ) [function, total, smtlib(chop)]
- // -----------------------------------------------------------
+    syntax Int ::= chop ( Int ) [klabel(chop), function, total, smtlib(chop)]
+ // -------------------------------------------------------------------------
     rule chop ( I:Int ) => I modInt pow256 [concrete, smt-lemma]
 ```
 -   `_<<Byte_` shifts an integer 8 bits to the left.

@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from pyk.kdist import kdist
+from pyk.ktool import TypeInferenceMode
 from pyk.ktool.kompile import HaskellKompile, KompileArgs, LLVMKompile, LLVMKompileType, MaudeKompile
 from pyk.utils import run_process
 
@@ -61,11 +62,12 @@ def kevm_kompile(
     debug_build: bool = False,
     debug: bool = False,
     verbose: bool = False,
+    type_inference_mode: str | TypeInferenceMode | None = None,
 ) -> Path:
     if plugin_dir is None:
         plugin_dir = kdist.get('evm-semantics.plugin')
 
-    ccopts = list(ccopts) + _lib_ccopts(plugin_dir, debug_build=debug_build)
+    ccopts = list(ccopts) + lib_ccopts(plugin_dir, debug_build=debug_build) + _warning_ccopts()
     return run_kompile(
         target,
         output_dir,
@@ -83,6 +85,7 @@ def kevm_kompile(
         debug_build=debug_build,
         debug=debug,
         verbose=verbose,
+        type_inference_mode=type_inference_mode,
     )
 
 
@@ -104,9 +107,13 @@ def run_kompile(
     debug_build: bool = False,
     debug: bool = False,
     verbose: bool = False,
+    type_inference_mode: str | TypeInferenceMode | None = None,
 ) -> Path:
     if llvm_library is None:
         llvm_library = output_dir / 'llvm-library'
+
+    if type_inference_mode is None:
+        type_inference_mode = TypeInferenceMode.SIMPLESUB
 
     include_dirs = [Path(include) for include in includes]
     include_dirs += config.INCLUDE_DIRS
@@ -136,7 +143,9 @@ def run_kompile(
                     llvm_kompile_type=llvm_kompile_type,
                     enable_llvm_debug=enable_llvm_debug,
                 )
-                return kompile(output_dir=output_dir, debug=debug, verbose=verbose)
+                return kompile(
+                    output_dir=output_dir, debug=debug, verbose=verbose, type_inference_mode=type_inference_mode
+                )
 
             case KompileTarget.MAUDE:
                 kompile_maude = MaudeKompile(
@@ -147,10 +156,14 @@ def run_kompile(
                 maude_dir = output_dir / 'kompiled-maude'
 
                 def _kompile_maude() -> None:
-                    kompile_maude(output_dir=maude_dir, debug=debug, verbose=verbose)
+                    kompile_maude(
+                        output_dir=maude_dir, debug=debug, verbose=verbose, type_inference_mode=type_inference_mode
+                    )
 
                 def _kompile_haskell() -> None:
-                    kompile_haskell(output_dir=output_dir, debug=debug, verbose=verbose)
+                    kompile_haskell(
+                        output_dir=output_dir, debug=debug, verbose=verbose, type_inference_mode=type_inference_mode
+                    )
 
                 with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
                     futures = [
@@ -178,10 +191,14 @@ def run_kompile(
                 kompile_haskell = HaskellKompile(base_args=base_args, haskell_binary=haskell_binary)
 
                 def _kompile_llvm() -> None:
-                    kompile_llvm(output_dir=llvm_library, debug=debug, verbose=verbose)
+                    kompile_llvm(
+                        output_dir=llvm_library, debug=debug, verbose=verbose, type_inference_mode=type_inference_mode
+                    )
 
                 def _kompile_haskell() -> None:
-                    kompile_haskell(output_dir=output_dir, debug=debug, verbose=verbose)
+                    kompile_haskell(
+                        output_dir=output_dir, debug=debug, verbose=verbose, type_inference_mode=type_inference_mode
+                    )
 
                 with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
                     futures = [
@@ -203,7 +220,7 @@ def run_kompile(
         raise
 
 
-def _lib_ccopts(plugin_dir: Path, debug_build: bool = False) -> list[str]:
+def lib_ccopts(plugin_dir: Path, debug_build: bool = False) -> list[str]:
     kernel = sys.platform
 
     ccopts = ['-std=c++17']
@@ -211,7 +228,7 @@ def _lib_ccopts(plugin_dir: Path, debug_build: bool = False) -> list[str]:
     if debug_build:
         ccopts += ['-g']
 
-    ccopts += ['-lssl', '-lcrypto']
+    ccopts += ['-lssl', '-lcrypto', '-lsecp256k1']
 
     libff_dir = plugin_dir / 'libff'
     ccopts += [f'{libff_dir}/lib/libff.a', f'-I{libff_dir}/include']
@@ -219,14 +236,13 @@ def _lib_ccopts(plugin_dir: Path, debug_build: bool = False) -> list[str]:
     libcryptopp_dir = plugin_dir / 'libcryptopp'
     ccopts += [f'{libcryptopp_dir}/lib/libcryptopp.a', f'-I{libcryptopp_dir}/include']
 
-    libsecp256k1_dir = plugin_dir / 'libsecp256k1'
-    ccopts += [f'{libsecp256k1_dir}/lib/libsecp256k1.a', f'-I{libsecp256k1_dir}/include']
+    blake2_dir = plugin_dir / 'blake2'
+    ccopts += [f'{blake2_dir}/lib/blake2.a']
 
     plugin_include = plugin_dir / 'plugin-c'
     ccopts += [
         f'{plugin_include}/plugin_util.cpp',
         f'{plugin_include}/crypto.cpp',
-        f'{plugin_include}/blake2.cpp',
     ]
 
     if kernel == 'darwin':
@@ -252,3 +268,7 @@ def _lib_ccopts(plugin_dir: Path, debug_build: bool = False) -> list[str]:
         raise AssertionError()
 
     return ccopts
+
+
+def _warning_ccopts() -> list[str]:
+    return ['-Wno-deprecated-declarations']

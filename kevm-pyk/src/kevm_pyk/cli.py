@@ -2,14 +2,17 @@ from __future__ import annotations
 
 from argparse import ArgumentParser
 from functools import cached_property
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
-from pyk.cli.args import KCLIArgs
+from pyk.cli.args import DisplayOptions as PykDisplayOptions
+from pyk.cli.args import KCLIArgs, KDefinitionOptions, Options
+from pyk.kore.rpc import FallbackReason
 
 from .utils import arg_pair_of
 
 if TYPE_CHECKING:
     from collections.abc import Callable
+    from pathlib import Path
     from typing import TypeVar
 
     from pyk.kcfg.kcfg import NodeIdLike
@@ -29,6 +32,176 @@ def node_id_like(s: str) -> NodeIdLike:
         return int(s)
     except ValueError:
         return s
+
+
+class KOptions(KDefinitionOptions):
+    definition_dir: Path | None
+    depth: int | None
+
+    @staticmethod
+    def default() -> dict[str, Any]:
+        return {
+            'definition_dir': None,
+            'depth': None,
+        }
+
+
+class KProveLegacyOptions(Options):
+    bug_report: bool
+    debugger: bool
+    max_depth: int | None
+    max_counterexamples: int | None
+    branching_allowed: int | None
+    haskell_backend_args: list[str]
+
+    @staticmethod
+    def default() -> dict[str, Any]:
+        return {
+            'bug_report': False,
+            'debugger': False,
+            'max_depth': None,
+            'max_counterexamples': None,
+            'branching_allowed': None,
+            'haskell_backend_args': [],
+        }
+
+
+class RPCOptions(Options):
+    trace_rewrites: bool
+    kore_rpc_command: str | None
+    use_booster: bool
+    fallback_on: list[FallbackReason]
+    post_exec_simplify: bool
+    interim_simplification: int | None
+    port: int | None
+    maude_port: int | None
+
+    @staticmethod
+    def default() -> dict[str, Any]:
+        return {
+            'trace_rewrites': False,
+            'kore_rpc_command': None,
+            'use_booster': False,
+            'fallback_on': [],
+            'post_exec_simplify': True,
+            'interim_simplification': None,
+            'port': None,
+            'maude_port': None,
+        }
+
+
+class ExploreOptions(Options):
+    break_every_step: bool
+    break_on_jumpi: bool
+    break_on_calls: bool
+    break_on_storage: bool
+    break_on_basic_blocks: bool
+    max_depth: int
+    max_iterations: int | None
+    failure_info: bool
+    auto_abstract_gas: bool
+    counterexample_info: bool
+    fail_fast: bool
+
+    @staticmethod
+    def default() -> dict[str, Any]:
+        return {
+            'break_every_step': False,
+            'break_on_jumpi': False,
+            'break_on_calls': False,
+            'break_on_storage': False,
+            'break_on_basic_blocks': False,
+            'max_depth': 1000,
+            'max_iterations': None,
+            'failure_info': True,
+            'auto_abstract_gas': False,
+            'counterexample_info': True,
+            'fail_fast': True,
+        }
+
+
+class KProveOptions(Options):
+    debug_equations: list[str]
+    always_check_subsumption: bool
+    fast_check_subsumption: bool
+
+    @staticmethod
+    def default() -> dict[str, Any]:
+        return {
+            'debug_equations': [],
+            'always_check_subsumption': True,
+            'fast_check_subsumption': False,
+        }
+
+
+class KCFGShowOptions(Options):
+    nodes: list[NodeIdLike]
+    node_deltas: list[tuple[NodeIdLike, NodeIdLike]]
+    failure_info: bool
+    to_module: bool
+    pending: bool
+    failing: bool
+    counterexample_info: bool
+
+    @staticmethod
+    def default() -> dict[str, Any]:
+        return {
+            'nodes': [],
+            'node_deltas': [],
+            'failure_info': False,
+            'to_module': False,
+            'pending': False,
+            'failing': False,
+            'counterexample_info': False,
+        }
+
+
+class TargetOptions(Options):
+    target: str | None
+
+    @staticmethod
+    def default() -> dict[str, Any]:
+        return {
+            'target': None,
+        }
+
+
+class EVMChainOptions(Options):
+    schedule: str
+    chainid: int
+    mode: str
+    usegas: bool
+
+    @staticmethod
+    def default() -> dict[str, Any]:
+        return {
+            'schedule': 'SHANGHAI',
+            'chainid': 1,
+            'mode': 'NORMAL',
+            'use_gas': True,
+        }
+
+
+class DisplayOptions(PykDisplayOptions):
+    sort_collections: bool
+
+    @staticmethod
+    def default() -> dict[str, Any]:
+        return {
+            'sort_collections': False,
+        }
+
+
+class KGenOptions(Options):
+    requires: list[str]
+    imports: list[str]
+
+    @staticmethod
+    def default() -> dict[str, Any]:
+        return {
+            'requires': [],
+            'imports': [],
+        }
 
 
 class KEVMCLIArgs(KCLIArgs):
@@ -52,6 +225,26 @@ class KEVMCLIArgs(KCLIArgs):
             type=list_of(str, delim=','),
             default=[],
             help='Comma-separate list of equations to debug.',
+        )
+        args.add_argument(
+            '--always-check-subsumption',
+            dest='always_check_subsumption',
+            default=True,
+            action='store_true',
+            help='Check subsumption even on non-terminal nodes (default, experimental).',
+        )
+        args.add_argument(
+            '--no-always-check-subsumption',
+            dest='always_check_subsumption',
+            action='store_false',
+            help='Do not check subsumption on non-terminal nodes (experimental).',
+        )
+        args.add_argument(
+            '--fast-check-subsumption',
+            dest='fast_check_subsumption',
+            default=False,
+            action='store_true',
+            help='Use fast-check on k-cell to determine subsumption (experimental).',
         )
         return args
 
@@ -125,14 +318,17 @@ class KEVMCLIArgs(KCLIArgs):
             '--schedule',
             choices=schedules,
             default='SHANGHAI',
-            help=f"schedule to use for execution [{'|'.join(schedules)}]",
+            help=f"schedule to use for execution [{'|'.join(schedules)}].",
         )
-        args.add_argument('--chainid', type=int, default=1, help='chain ID to use for execution')
+        args.add_argument('--chainid', type=int, default=1, help='chain ID to use for execution.')
         args.add_argument(
             '--mode',
             choices=modes,
             default='NORMAL',
-            help="execution mode to use [{'|'.join(modes)}]",
+            help="execution mode to use [{'|'.join(modes)}].",
+        )
+        args.add_argument(
+            '--no-gas', action='store_false', dest='usegas', default=True, help='omit gas cost computations.'
         )
         return args
 
@@ -163,7 +359,7 @@ class KEVMCLIArgs(KCLIArgs):
             dest='kore_rpc_command',
             type=str,
             default=None,
-            help='Custom command to start RPC server',
+            help='Custom command to start RPC server.',
         )
         args.add_argument(
             '--use-booster',
@@ -173,18 +369,43 @@ class KEVMCLIArgs(KCLIArgs):
             help='Use the booster RPC server instead of kore-rpc.',
         )
         args.add_argument(
+            '--fallback-on',
+            dest='fallback_on',
+            type=list_of(FallbackReason, delim=','),
+            help='Comma-separated reasons to fallback from booster to kore, only usable with --use-booster. Options [Branching,Aborted,Stuck].',
+        )
+        args.add_argument(
+            '--post-exec-simplify',
+            dest='post_exec_simplify',
+            default=True,
+            action='store_true',
+            help='Always simplify states with kore backend after booster execution, only usable with --use-booster.',
+        )
+        args.add_argument(
+            '--no-post-exec-simplify',
+            dest='post_exec_simplify',
+            action='store_false',
+            help='Do not simplify states with kore backend after booster execution, only usable with --use-booster.',
+        )
+        args.add_argument(
+            '--interim-simplification',
+            dest='interim_simplification',
+            type=int,
+            help='Max number of steps to execute before applying simplifier to term in booster backend, only usable with --use-booster.',
+        )
+        args.add_argument(
             '--port',
             dest='port',
             type=int,
             default=None,
-            help='Use existing RPC server on named port',
+            help='Use existing RPC server on named port.',
         )
         args.add_argument(
             '--maude-port',
             dest='maude_port',
             type=int,
             default=None,
-            help='Use existing Maude RPC server on named port',
+            help='Use existing Maude RPC server on named port.',
         )
         return args
 
@@ -208,15 +429,30 @@ class KEVMCLIArgs(KCLIArgs):
         args.add_argument(
             '--break-on-calls',
             dest='break_on_calls',
-            default=True,
+            default=False,
             action='store_true',
             help='Store a node for every EVM call made.',
         )
         args.add_argument(
             '--no-break-on-calls',
             dest='break_on_calls',
+            default=True,
             action='store_false',
-            help='Do not store a node for every EVM call made.',
+            help='Do not store a node for every EVM call made (default).',
+        )
+        args.add_argument(
+            '--break-on-storage',
+            dest='break_on_storage',
+            default=False,
+            action='store_true',
+            help='Store a node for every EVM SSTORE/SLOAD made.',
+        )
+        args.add_argument(
+            '--break-on-basic-blocks',
+            dest='break_on_basic_blocks',
+            default=False,
+            action='store_true',
+            help='Store a node for every EVM basic block (implies --break-on-calls).',
         )
         args.add_argument(
             '--max-depth',
@@ -237,33 +473,45 @@ class KEVMCLIArgs(KCLIArgs):
             dest='failure_info',
             default=True,
             action='store_true',
-            help='Show failure summary for all failing tests',
+            help='Show failure summary for all failing tests (default).',
         )
         args.add_argument(
             '--no-failure-information',
             dest='failure_info',
             action='store_false',
-            help='Do not show failure summary for failing tests',
+            help='Do not show failure summary for failing tests.',
         )
         args.add_argument(
             '--auto-abstract-gas',
             dest='auto_abstract_gas',
             action='store_true',
-            help='Automatically extract gas cell when infinite gas is enabled',
+            help='Automatically extract gas cell when infinite gas is enabled.',
         )
         args.add_argument(
             '--counterexample-information',
             dest='counterexample_info',
-            default=False,
+            default=True,
             action='store_true',
-            help='Show models for failing nodes.',
+            help='Show models for failing nodes (default).',
+        )
+        args.add_argument(
+            '--no-counterexample-information',
+            dest='counterexample_info',
+            action='store_false',
+            help='Do not show models for failing nodes.',
         )
         args.add_argument(
             '--fail-fast',
             dest='fail_fast',
-            default=False,
+            default=True,
             action='store_true',
-            help='Stop execution on other branches if a failing node is detected.',
+            help='Stop execution on other branches if a failing node is detected (default).',
+        )
+        args.add_argument(
+            '--no-fail-fast',
+            dest='fail_fast',
+            action='store_false',
+            help='Continue execution on other branches if a failing node is detected.',
         )
         return args
 
@@ -310,28 +558,28 @@ class KEVMCLIArgs(KCLIArgs):
             dest='failure_info',
             default=False,
             action='store_true',
-            help='Show failure summary for cfg',
+            help='Show failure summary for cfg.',
         )
         args.add_argument(
             '--no-failure-information',
             dest='failure_info',
             action='store_false',
-            help='Do not show failure summary for cfg',
+            help='Do not show failure summary for cfg.',
         )
         args.add_argument(
             '--to-module', dest='to_module', default=False, action='store_true', help='Output edges as a K module.'
         )
         args.add_argument(
-            '--pending', dest='pending', default=False, action='store_true', help='Also display pending nodes'
+            '--pending', dest='pending', default=False, action='store_true', help='Also display pending nodes.'
         )
         args.add_argument(
-            '--failing', dest='failing', default=False, action='store_true', help='Also display failing nodes'
+            '--failing', dest='failing', default=False, action='store_true', help='Also display failing nodes.'
         )
         args.add_argument(
             '--counterexample-information',
             dest='counterexample_info',
             default=False,
             action='store_true',
-            help="Show models for failing nodes. Should be called with the '--failure-information' flag",
+            help="Show models for failing nodes. Should be called with the '--failure-information' flag.",
         )
         return args

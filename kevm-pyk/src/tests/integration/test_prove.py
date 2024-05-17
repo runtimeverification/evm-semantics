@@ -1,16 +1,16 @@
 from __future__ import annotations
 
-import dataclasses
 import logging
 import sys
 from typing import TYPE_CHECKING, NamedTuple
 
 import pytest
-from pyk.cterm import CTerm
+from filelock import FileLock
+from pyk.prelude.ml import is_top
 from pyk.proof.reachability import APRProof
 
 from kevm_pyk import config
-from kevm_pyk.__main__ import exec_prove
+from kevm_pyk.__main__ import ProveOptions, exec_prove
 from kevm_pyk.kevm import KEVM
 from kevm_pyk.kompile import KompileTarget, kevm_kompile
 
@@ -22,7 +22,7 @@ if TYPE_CHECKING:
     from typing import Any, Final
 
     from pyk.utils import BugReport
-    from pytest import LogCaptureFixture, TempPathFactory
+    from pytest import FixtureRequest, LogCaptureFixture
 
 
 sys.setrecursionlimit(10**8)
@@ -51,6 +51,7 @@ BIHU_TESTS: Final = spec_files('bihu', '*-spec.k')
 EXAMPLES_TESTS: Final = spec_files('examples', '*-spec.k') + spec_files('examples', '*-spec.md')
 MCD_TESTS: Final = spec_files('mcd', '*-spec.k')
 OPTIMIZATION_TESTS: Final = (SPEC_DIR / 'opcodes/evm-optimizations-spec.md',)
+KONTROL_TESTS: Final = spec_files('kontrol', '*-spec.k')
 
 ALL_TESTS: Final = sum(
     [
@@ -62,6 +63,7 @@ ALL_TESTS: Final = sum(
         EXAMPLES_TESTS,
         MCD_TESTS,
         OPTIMIZATION_TESTS,
+        KONTROL_TESTS,
     ],
     (),
 )
@@ -97,6 +99,7 @@ KOMPILE_MAIN_FILE: Final = {
     'functional/int-simplifications-spec.k': 'int-simplifications-spec.k',
     'functional/lemmas-no-smt-spec.k': 'lemmas-no-smt-spec.k',
     'functional/lemmas-spec.k': 'lemmas-spec.k',
+    'functional/abi-spec.k': 'abi-spec.k',
     'functional/merkle-spec.k': 'merkle-spec.k',
     'functional/storageRoot-spec.k': 'storageRoot-spec.k',
     'mcd/functional-spec.k': 'functional-spec.k',
@@ -116,31 +119,58 @@ class Target(NamedTuple):
     main_file: Path
     main_module_name: str
 
+    @property
+    def name(self) -> str:
+        """
+        Target's name is the two trailing path segments and the main module name
+        """
+        return f'{self.main_file.parts[-2]}-{self.main_file.stem}-{self.main_module_name}'
+
     def __call__(self, output_dir: Path) -> Path:
-        return kevm_kompile(
-            output_dir=output_dir / 'kompiled',
-            target=KompileTarget.HASKELL,
-            main_file=self.main_file,
-            main_module=self.main_module_name,
-            syntax_module=self.main_module_name,
-            debug=True,
-        )
+        with FileLock(str(output_dir) + '.lock'):
+            return kevm_kompile(
+                output_dir=output_dir / 'kompiled',
+                target=KompileTarget.HASKELL,
+                main_file=self.main_file,
+                main_module=self.main_module_name,
+                syntax_module=self.main_module_name,
+                debug=True,
+            )
 
 
 @pytest.fixture(scope='module')
-def kompiled_target_for(tmp_path_factory: TempPathFactory) -> Callable[[Path], Path]:
-    cache_dir = tmp_path_factory.mktemp('target')
-    cache: dict[Target, Path] = {}
+def kompiled_target_cache(kompiled_targets_dir: Path) -> tuple[Path, dict[str, Path]]:
+    """
+    Populate the cache of kompiled definitions from an existing file system directory. If the cache is hot, the `kompiled_target_for` fixture will not containt a call to `kompile`, saving an expesive call to the K frontend.
+    """
+    cache_dir = kompiled_targets_dir / 'target'
+    cache: dict[str, Path] = {}
+    if cache_dir.exists():  # cache dir exists, populate cache
+        for file in cache_dir.iterdir():
+            if file.is_dir():
+                # the cache key is the name of the target, which is the filename by-construction.
+                cache[file.stem] = file / 'kompiled'
+    else:
+        cache_dir.mkdir(parents=True)
+    return cache_dir, cache
+
+
+@pytest.fixture(scope='module')
+def kompiled_target_for(kompiled_target_cache: tuple[Path, dict[str, Path]]) -> Callable[[Path], Path]:
+    """
+    Generate a function that returns a path to the kompiled defintion for a given K spec. Invoke `kompile` only if no kompiled directory is cached for the spec.
+    """
+    cache_dir, cache = kompiled_target_cache
 
     def kompile(spec_file: Path) -> Path:
         target = _target_for_spec(spec_file)
 
-        if target not in cache:
-            output_dir = cache_dir / f'{target.main_file.stem}-{len(cache)}'
-            output_dir.mkdir()
-            cache[target] = target(output_dir)
+        if target.name not in cache:
+            output_dir = cache_dir / target.name
+            output_dir.mkdir(exist_ok=True)
+            cache[target.name] = target(output_dir)
 
-        return cache[target]
+        return cache[target.name]
 
     return kompile
 
@@ -154,22 +184,60 @@ def _target_for_spec(spec_file: Path) -> Target:
     return Target(main_file, main_module_name)
 
 
+@pytest.mark.parametrize(
+    'spec_file',
+    ALL_TESTS,
+    ids=[str(spec_file.relative_to(SPEC_DIR)) for spec_file in ALL_TESTS],
+)
+def test_kompile_targets(spec_file: Path, kompiled_target_for: Callable[[Path], Path], request: FixtureRequest) -> None:
+    """
+    This test function is intended to be used to pre-kompile all definitions,
+    so that the actual proof tests do not need to do the actual compilation,
+    which is disturbing performance measurment.
+
+    To achieve the desired caching, this test should be run like this:
+    pytest src/tests/integration/test_prove.py::test_kompile_targets --kompiled-targets-dir ./prekompiled
+
+    This test will be skipped if no --kompiled-targets-dir option is given
+    """
+    dir = request.config.getoption('--kompiled-targets-dir')
+    if not dir:
+        pytest.skip()
+
+    if spec_file in FAILING_BOOSTER_TESTS:
+        pytest.skip()
+
+    kompiled_target_for(spec_file)
+
+
 # ---------
 # Pyk tests
 # ---------
 
 
-@dataclasses.dataclass(frozen=True)
 class TParams:
-    main_claim_id: str
+    main_claim_id: str | None
     leaf_number: int | None
+    break_on_calls: bool
+
+    def __init__(
+        self, main_claim_id: str | None = None, leaf_number: int | None = None, break_on_calls: bool = False
+    ) -> None:
+        self.main_claim_id = main_claim_id
+        self.leaf_number = leaf_number
+        self.break_on_calls = break_on_calls
 
 
 TEST_PARAMS: dict[str, TParams] = {
-    r'mcd/vat-slip-pass-rough-spec.k': TParams(
-        main_claim_id='VAT-SLIP-PASS-ROUGH-SPEC.Vat.slip.pass.rough', leaf_number=1
-    )
+    'mcd/vat-slip-pass-rough-spec.k': TParams(
+        main_claim_id='VAT-SLIP-PASS-ROUGH-SPEC.Vat.slip.pass.rough',
+        leaf_number=1,
+    ),
 }
+
+
+for KONTROL_TEST in KONTROL_TESTS:
+    TEST_PARAMS[f'kontrol/{KONTROL_TEST.name}'] = TParams(break_on_calls=True)  # noqa: B909
 
 
 def leaf_number(proof: APRProof) -> int:
@@ -189,10 +257,14 @@ def test_pyk_prove(
     caplog: LogCaptureFixture,
     use_booster: bool,
     bug_report: BugReport | None,
+    spec_name: str | None,
 ) -> None:
     caplog.set_level(logging.INFO)
 
     if (not use_booster and spec_file in FAILING_PYK_TESTS) or (use_booster and spec_file in FAILING_BOOSTER_TESTS):
+        pytest.skip()
+
+    if spec_name is not None and str(spec_file).find(spec_name) < 0:
         pytest.skip()
 
     # Given
@@ -203,27 +275,31 @@ def test_pyk_prove(
     # When
     try:
         definition_dir = kompiled_target_for(spec_file)
-        exec_prove(
-            spec_file=spec_file,
-            definition_dir=definition_dir,
-            includes=[str(include_dir) for include_dir in config.INCLUDE_DIRS],
-            save_directory=use_directory,
-            smt_timeout=300,
-            smt_retry_limit=10,
-            md_selector='foo',  # TODO Ignored flag, this is to avoid KeyError
-            use_booster=use_booster,
-            bug_report=bug_report,
-        )
         name = str(spec_file.relative_to(SPEC_DIR))
+        break_on_calls = name in TEST_PARAMS and TEST_PARAMS[name].break_on_calls
+        options = ProveOptions(
+            {
+                'spec_file': spec_file,
+                'definition_dir': definition_dir,
+                'includes': [str(include_dir) for include_dir in config.INCLUDE_DIRS],
+                'save_directory': use_directory,
+                'md_selector': 'foo',  # TODO Ignored flag, this is to avoid KeyError
+                'use_booster': use_booster,
+                'bug_report': bug_report,
+                'break_on_calls': break_on_calls,
+            }
+        )
+        exec_prove(options=options)
         if name in TEST_PARAMS:
             params = TEST_PARAMS[name]
-            apr_proof = APRProof.read_proof_data(
-                proof_dir=use_directory,
-                id=params.main_claim_id,
-            )
-            expected_leaf_number = params.leaf_number
-            actual_leaf_number = leaf_number(apr_proof)
-            assert expected_leaf_number == actual_leaf_number
+            if params.leaf_number is not None and params.main_claim_id is not None:
+                apr_proof = APRProof.read_proof_data(
+                    proof_dir=use_directory,
+                    id=params.main_claim_id,
+                )
+                expected_leaf_number = params.leaf_number
+                actual_leaf_number = leaf_number(apr_proof)
+                assert expected_leaf_number == actual_leaf_number
     except BaseException:
         raise
     finally:
@@ -283,4 +359,4 @@ def test_kprove_prove(
 
     # Then
     assert len(actual) == 1
-    assert CTerm._is_top(actual[0].kast)
+    assert is_top(actual[0].kast, weak=True)

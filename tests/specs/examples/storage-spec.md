@@ -31,7 +31,7 @@ module VERIFICATION
     imports STORAGE-VERIFICATION
 
     syntax Step ::= Bytes | Int
-    syntax KItem ::= runLemma ( Step ) | doneLemma ( Step )
+    syntax KItem ::= runLemma ( Step ) [symbol(runLemma)] | doneLemma ( Step )
  // -------------------------------------------------------
     rule <k> runLemma(S) => doneLemma(S) ... </k>
 
@@ -73,6 +73,7 @@ module STORAGE-SPEC
     claim [myBool]:
           <mode>     NORMAL   </mode>
           <schedule> ISTANBUL </schedule>
+          <useGas>  true     </useGas>
 
           <callStack> .List                                        </callStack>
           <program>   #binRuntime(S2KStorage)                         </program>
@@ -106,6 +107,7 @@ module STORAGE-SPEC
     claim [setMyBool]:
           <mode>     NORMAL   </mode>
           <schedule> ISTANBUL </schedule>
+          <useGas>  true     </useGas>
 
           <callStack> .List                                        </callStack>
           <program>   #binRuntime(S2KStorage)                         </program>

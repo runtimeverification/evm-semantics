@@ -31,7 +31,7 @@ module VERIFICATION
     imports ERC721-VERIFICATION
 
     syntax Step ::= Bytes | Int | Bool
-    syntax KItem ::= runLemma ( Step ) | doneLemma ( Step )
+    syntax KItem ::= runLemma ( Step ) [symbol(runLemma)] | doneLemma ( Step )
  // -------------------------------------------------------
     rule <k> runLemma(S) => doneLemma(S) ... </k>
 
@@ -79,6 +79,7 @@ claim <k> runLemma(#lookup(ACCT_STORAGE, 0) /Int 2 <Int 32)
     claim [name.short.success]:
           <mode>     NORMAL   </mode>
           <schedule> ISTANBUL </schedule>
+          <useGas>  true     </useGas>
 
           <callStack> .List                                       </callStack>
           <program>   #binRuntime(S2KERC721)                         </program>
@@ -113,6 +114,7 @@ claim <k> runLemma(#lookup(ACCT_STORAGE, 0) /Int 2 <Int 32)
     claim [name.short.revert]:
           <mode>     NORMAL   </mode>
           <schedule> ISTANBUL </schedule>
+          <useGas>  true     </useGas>
 
           <callStack> .List                                       </callStack>
           <program>   #binRuntime(S2KERC721)                         </program>

@@ -10,6 +10,7 @@ module VAT-MOVE-DIFF-ROUGH-SPEC
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
+      <useGas> true </useGas>
       <ethereum>
         <evm>
           <output> .Bytes </output>
@@ -133,6 +134,7 @@ module VAT-MOVE-DIFF-ROUGH-ARITH-SPEC
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
+      <useGas> true </useGas>
       <ethereum>
         <evm>
           <output> VOutput => VOutput </output>
@@ -222,6 +224,7 @@ module VAT-MOVE-DIFF-ROUGH-ARITH-SPEC
      andBool ((#sizeWordStack(WS) <=Int 100)
      andBool (#rangeUInt(256, VMemoryUsed)
      andBool ((#rangeUInt(256, ABI_x +Int ABI_y)))))))
+    [trusted]
 
     // Vat_subuu
     claim [Vat.subuu.pass]:
@@ -229,6 +232,7 @@ module VAT-MOVE-DIFF-ROUGH-ARITH-SPEC
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
+      <useGas> true </useGas>
       <ethereum>
         <evm>
           <output> VOutput => VOutput </output>
@@ -318,6 +322,7 @@ module VAT-MOVE-DIFF-ROUGH-ARITH-SPEC
      andBool ((#sizeWordStack(WS) <=Int 100)
      andBool (#rangeUInt(256, VMemoryUsed)
      andBool ((#rangeUInt(256, ABI_x -Int ABI_y)))))))
+    [trusted]
 
 endmodule
 

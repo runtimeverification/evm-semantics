@@ -10,6 +10,7 @@ module COLLECTTOKEN-SPEC
     <exit-code> 1 </exit-code>
     <mode> NORMAL </mode>
     <schedule> ISTANBUL </schedule>
+    <useGas> true </useGas>
 
     <ethereum>
       <evm>
@@ -124,6 +125,7 @@ ensures ?VALUE ==Int @canExtractThisYear(COLLECTED +Int BAL, NOW, START) +Int BA
     <exit-code> 1 </exit-code>
     <mode> NORMAL </mode>
     <schedule> ISTANBUL </schedule>
+    <useGas> true </useGas>
 
     <ethereum>
       <evm>
@@ -228,6 +230,7 @@ andBool GASCAP >=Int ((293 *Int (YEARCOUNT -Int INDEX)) +Int 26)
     <exit-code> 1 </exit-code>
     <mode> NORMAL </mode>
     <schedule> ISTANBUL </schedule>
+    <useGas> true </useGas>
 
     <ethereum>
       <evm>
