@@ -42,7 +42,7 @@ jobs:
       - name: 'Check out code'
         uses: actions/checkout@v4
       - name: 'Install Poetry'
-        uses: Gr1N/setup-poetry@v8
+        uses: Gr1N/setup-poetry@v9
       - name: 'Run code quality checks'
         run: make -C kevm-pyk check
       - name: 'Run pyupgrade'
@@ -56,7 +56,7 @@ jobs:
       - name: 'Check out code'
         uses: actions/checkout@v4
       - name: 'Install Poetry'
-        uses: Gr1N/setup-poetry@v8
+        uses: Gr1N/setup-poetry@v9
       - name: 'Run unit tests'
         run: make -C kevm-pyk cov-unit
 
@@ -68,7 +68,7 @@ jobs:
       - name: 'Check out code'
         uses: actions/checkout@v4
       - name: 'Install Poetry'
-        uses: Gr1N/setup-poetry@v8
+        uses: Gr1N/setup-poetry@v9
       - name: 'Run profiling'
         run: |
           make -C kevm-pyk profile

@@ -27,7 +27,7 @@ jobs:
           git config user.name devops
           git config user.email devops@runtimeverification.com
       - name: 'Install Poetry'
-        uses: Gr1N/setup-poetry@v8
+        uses: Gr1N/setup-poetry@v9
       - name: 'Update pyk release tag'
         run: |
           K_VERSION=v$(cat deps/k_release)
