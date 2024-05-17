@@ -8,7 +8,6 @@ import os
 import sys
 import tempfile
 import time
-from argparse import ArgumentParser
 from collections.abc import Iterable
 from dataclasses import dataclass
 from functools import cached_property
@@ -16,25 +15,15 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from pathos.pools import ProcessPool  # type: ignore
-from pyk.cli.args import (
-    BugReportOptions,
-    KompileOptions,
-    LoggingOptions,
-    ParallelOptions,
-    SaveDirOptions,
-    SMTOptions,
-    SpecOptions,
-)
-from pyk.cli.utils import file_path
+from pyk.cli.pyk import parse_toml_args
 from pyk.cterm import CTermSymbolic
 from pyk.kast.outer import KApply, KRewrite, KSort, KToken
 from pyk.kcfg import KCFG
 from pyk.kcfg.explore import KCFGExplore
 from pyk.kdist import kdist
 from pyk.kore.rpc import KoreClient
-from pyk.kore.tools import PrintOutput, kore_print
+from pyk.kore.tools import kore_print
 from pyk.ktool.kompile import LLVMKompileType
-from pyk.ktool.krun import KRunOutput
 from pyk.prelude.ml import is_bottom, is_top, mlOr
 from pyk.proof import APRProof
 from pyk.proof.implies import EqualityProof
@@ -43,24 +32,11 @@ from pyk.proof.tui import APRProofViewer
 from pyk.utils import FrozenDict, hash_str, single
 
 from . import VERSION, config
-from .cli import (
-    DisplayOptions,
-    EVMChainOptions,
-    ExploreOptions,
-    KCFGShowOptions,
-    KEVMCLIArgs,
-    KOptions,
-    KProveLegacyOptions,
-    KProveOptions,
-    RPCOptions,
-    TargetOptions,
-    node_id_like,
-)
+from .cli import _create_argument_parser, generate_options, get_argument_type_setter, get_option_string_destination
 from .gst_to_kore import SORT_ETHEREUM_SIMULATION, gst_to_kore, kore_pgm_to_kore
 from .kevm import KEVM, KEVMSemantics, kevm_node_printer
 from .kompile import KompileTarget, kevm_kompile
 from .utils import (
-    arg_pair_of,
     claim_dependency_dict,
     ensure_ksequence_on_k_cell,
     get_apr_proof_for_spec,
@@ -75,9 +51,21 @@ if TYPE_CHECKING:
     from typing import Any, Final, TypeVar
 
     from pyk.kast.outer import KClaim
-    from pyk.kcfg.kcfg import NodeIdLike
     from pyk.kcfg.tui import KCFGElem
     from pyk.proof.proof import Proof
+
+    from .cli import (
+        KastOptions,
+        KompileSpecOptions,
+        ProveLegacyOptions,
+        ProveOptions,
+        PruneOptions,
+        RunOptions,
+        SectionEdgeOptions,
+        ShowKCFGOptions,
+        VersionOptions,
+        ViewKCFGOptions,
+    )
 
     T = TypeVar('T')
 
@@ -96,9 +84,10 @@ def main() -> None:
     sys.setrecursionlimit(15000000)
     parser = _create_argument_parser()
     args = parser.parse_args()
+    toml_args = parse_toml_args(args, get_option_string_destination, get_argument_type_setter)
     logging.basicConfig(level=_loglevel(args), format=_LOG_FORMAT)
 
-    stripped_args = {
+    stripped_args = toml_args | {
         key: val for (key, val) in vars(args).items() if val is not None and not (isinstance(val, Iterable) and not val)
     }
     options = generate_options(stripped_args)
@@ -111,54 +100,8 @@ def main() -> None:
     execute(options)
 
 
-def generate_options(args: dict[str, Any]) -> LoggingOptions:
-    command = args['command']
-    match command:
-        case 'version':
-            return VersionOptions(args)
-        case 'kompile-spec':
-            return KompileSpecOptions(args)
-        case 'prove-legacy':
-            return ProveLegacyOptions(args)
-        case 'prove':
-            return ProveOptions(args)
-        case 'prune':
-            return PruneOptions(args)
-        case 'section-edge':
-            return SectionEdgeOptions(args)
-        case 'show-kcfg':
-            return ShowKCFGOptions(args)
-        case 'view-kcfg':
-            return ViewKCFGOptions(args)
-        case 'kast':
-            return KastOptions(args)
-        case 'run':
-            return RunOptions(args)
-        case _:
-            raise ValueError(f'Unrecognized command: {command}')
-
-
-# Command implementation
-
-
-class VersionOptions(LoggingOptions): ...
-
-
 def exec_version(options: VersionOptions) -> None:
     print(f'KEVM Version: {VERSION}')
-
-
-class KompileSpecOptions(LoggingOptions, KOptions, KompileOptions):
-    main_file: Path
-    target: KompileTarget
-    debug_build: bool
-
-    @staticmethod
-    def default() -> dict[str, Any]:
-        return {
-            'target': KompileTarget.HASKELL,
-            'debug_build': False,
-        }
 
 
 def exec_kompile_spec(options: KompileSpecOptions) -> None:
@@ -194,16 +137,6 @@ def exec_kompile_spec(options: KompileSpecOptions) -> None:
         debug=options.debug,
         verbose=options.verbose,
     )
-
-
-class ProveLegacyOptions(LoggingOptions, KOptions, SpecOptions, KProveLegacyOptions):
-    bug_report_legacy: bool
-
-    @staticmethod
-    def default() -> dict[str, Any]:
-        return {
-            'bug_report_legacy': False,
-        }
 
 
 def exec_prove_legacy(options: ProveLegacyOptions) -> None:
@@ -309,28 +242,6 @@ def init_claim_jobs(spec_module_name: str, claims: list[KClaim]) -> frozenset[KC
         return labels_to_claim_jobs[claim_label]
 
     return frozenset({get_or_load_claim_job(claim.label) for claim in claims})
-
-
-class ProveOptions(
-    LoggingOptions,
-    ParallelOptions,
-    KOptions,
-    RPCOptions,
-    BugReportOptions,
-    SMTOptions,
-    ExploreOptions,
-    SpecOptions,
-    KProveOptions,
-):
-    reinit: bool
-    max_frontier_parallel: int
-
-    @staticmethod
-    def default() -> dict[str, Any]:
-        return {
-            'reinit': False,
-            'max_frontier_parallel': 1,
-        }
 
 
 def exec_prove(options: ProveOptions) -> None:
@@ -529,10 +440,6 @@ def exec_prove(options: ProveOptions) -> None:
         sys.exit(failed)
 
 
-class PruneOptions(LoggingOptions, KOptions, SpecOptions):
-    node: NodeIdLike
-
-
 def exec_prune(options: PruneOptions) -> None:
     md_selector = 'k'
 
@@ -563,25 +470,6 @@ def exec_prune(options: PruneOptions) -> None:
     node_ids = apr_proof.prune(options.node)
     _LOGGER.info(f'Pruned nodes: {node_ids}')
     apr_proof.write_proof_data()
-
-
-class SectionEdgeOptions(
-    LoggingOptions,
-    KOptions,
-    RPCOptions,
-    SMTOptions,
-    SpecOptions,
-    BugReportOptions,
-):
-    edge: tuple[str, str]
-    sections: int
-
-    @staticmethod
-    def default() -> dict[str, Any]:
-        return {
-            'sections': 2,
-            'use_booster': False,
-        }
 
 
 def exec_section_edge(options: SectionEdgeOptions) -> None:
@@ -637,15 +525,6 @@ def exec_section_edge(options: SectionEdgeOptions) -> None:
     proof.write_proof_data()
 
 
-class ShowKCFGOptions(
-    LoggingOptions,
-    KCFGShowOptions,
-    KOptions,
-    SpecOptions,
-    DisplayOptions,
-): ...
-
-
 def exec_show_kcfg(options: ShowKCFGOptions) -> None:
 
     if options.definition_dir is None:
@@ -691,13 +570,6 @@ def exec_show_kcfg(options: ShowKCFGOptions) -> None:
     print('\n'.join(res_lines))
 
 
-class ViewKCFGOptions(
-    LoggingOptions,
-    KOptions,
-    SpecOptions,
-): ...
-
-
 def exec_view_kcfg(options: ViewKCFGOptions) -> None:
 
     if options.definition_dir is None:
@@ -731,27 +603,6 @@ def exec_view_kcfg(options: ViewKCFGOptions) -> None:
     proof_view.run()
 
 
-class RunOptions(
-    LoggingOptions,
-    KOptions,
-    EVMChainOptions,
-    TargetOptions,
-    SaveDirOptions,
-):
-    input_file: Path
-    output: KRunOutput
-    expand_macros: bool
-    debugger: bool
-
-    @staticmethod
-    def default() -> dict[str, Any]:
-        return {
-            'output': KRunOutput.PRETTY,
-            'expand_macros': True,
-            'debugger': False,
-        }
-
-
 def exec_run(options: RunOptions) -> None:
     target = options.target or 'llvm'
 
@@ -781,23 +632,6 @@ def exec_run(options: RunOptions) -> None:
     )
 
 
-class KastOptions(
-    LoggingOptions,
-    TargetOptions,
-    EVMChainOptions,
-    KOptions,
-    SaveDirOptions,
-):
-    input_file: Path
-    output: PrintOutput
-
-    @staticmethod
-    def default() -> dict[str, Any]:
-        return {
-            'output': PrintOutput.KORE,
-        }
-
-
 def exec_kast(options: KastOptions) -> None:
     target = options.target or 'llvm'
 
@@ -821,180 +655,6 @@ def exec_kast(options: KastOptions) -> None:
 
 
 # Helpers
-
-
-def _create_argument_parser() -> ArgumentParser:
-    def list_of(elem_type: Callable[[str], T], delim: str = ';') -> Callable[[str], list[T]]:
-        def parse(s: str) -> list[T]:
-            return [elem_type(elem) for elem in s.split(delim)]
-
-        return parse
-
-    kevm_cli_args = KEVMCLIArgs()
-    parser = ArgumentParser(prog='kevm-pyk')
-
-    command_parser = parser.add_subparsers(dest='command', required=True)
-
-    command_parser.add_parser('version', help='Print KEVM version and exit.', parents=[kevm_cli_args.logging_args])
-
-    kevm_kompile_spec_args = command_parser.add_parser(
-        'kompile-spec',
-        help='Kompile KEVM specification.',
-        parents=[kevm_cli_args.logging_args, kevm_cli_args.k_args, kevm_cli_args.kompile_args],
-    )
-    kevm_kompile_spec_args.add_argument('main_file', type=file_path, help='Path to file with main module.')
-    kevm_kompile_spec_args.add_argument('--target', type=KompileTarget, help='[haskell|maude]')
-
-    kevm_kompile_spec_args.add_argument(
-        '--debug-build', dest='debug_build', default=None, help='Enable debug symbols in LLVM builds.'
-    )
-
-    prove_args = command_parser.add_parser(
-        'prove',
-        help='Run KEVM proof.',
-        parents=[
-            kevm_cli_args.logging_args,
-            kevm_cli_args.parallel_args,
-            kevm_cli_args.k_args,
-            kevm_cli_args.kprove_args,
-            kevm_cli_args.rpc_args,
-            kevm_cli_args.bug_report_args,
-            kevm_cli_args.smt_args,
-            kevm_cli_args.explore_args,
-            kevm_cli_args.spec_args,
-        ],
-    )
-    prove_args.add_argument(
-        '--reinit',
-        dest='reinit',
-        default=None,
-        action='store_true',
-        help='Reinitialize CFGs even if they already exist.',
-    )
-    prove_args.add_argument(
-        '--max-frontier-parallel',
-        type=int,
-        dest='max_frontier_parallel',
-        default=None,
-        help='Maximum number of branches of a single proof to explore in parallel.',
-    )
-
-    prune_args = command_parser.add_parser(
-        'prune',
-        help='Remove a node and its successors from the proof state.',
-        parents=[
-            kevm_cli_args.logging_args,
-            kevm_cli_args.k_args,
-            kevm_cli_args.spec_args,
-        ],
-    )
-    prune_args.add_argument('node', type=node_id_like, help='Node to remove CFG subgraph from.')
-
-    section_edge_args = command_parser.add_parser(
-        'section-edge',
-        help='Break an edge into sections.',
-        parents=[
-            kevm_cli_args.logging_args,
-            kevm_cli_args.k_args,
-            kevm_cli_args.spec_args,
-        ],
-    )
-    section_edge_args.add_argument('edge', type=arg_pair_of(str, str), help='Edge to section in CFG.')
-    section_edge_args.add_argument('--sections', type=int, help='Number of sections to make from edge (>= 2).')
-    section_edge_args.add_argument(
-        '--use-booster',
-        dest='use_booster',
-        default=None,
-        action='store_true',
-        help="Use the booster RPC server instead of kore-rpc. Requires calling kompile with '--target haskell-booster' flag",
-    )
-
-    prove_legacy_args = command_parser.add_parser(
-        'prove-legacy',
-        help='Run KEVM proof using the legacy kprove binary.',
-        parents=[
-            kevm_cli_args.logging_args,
-            kevm_cli_args.k_args,
-            kevm_cli_args.spec_args,
-            kevm_cli_args.kprove_legacy_args,
-        ],
-    )
-    prove_legacy_args.add_argument(
-        '--bug-report-legacy', default=None, action='store_true', help='Generate a legacy bug report.'
-    )
-
-    command_parser.add_parser(
-        'view-kcfg',
-        help='Explore a given proof in the KCFG visualizer.',
-        parents=[kevm_cli_args.logging_args, kevm_cli_args.k_args, kevm_cli_args.spec_args],
-    )
-
-    command_parser.add_parser(
-        'show-kcfg',
-        help='Print the CFG for a given proof.',
-        parents=[
-            kevm_cli_args.logging_args,
-            kevm_cli_args.k_args,
-            kevm_cli_args.kcfg_show_args,
-            kevm_cli_args.spec_args,
-            kevm_cli_args.display_args,
-        ],
-    )
-
-    run_args = command_parser.add_parser(
-        'run',
-        help='Run KEVM test/simulation.',
-        parents=[
-            kevm_cli_args.logging_args,
-            kevm_cli_args.target_args,
-            kevm_cli_args.evm_chain_args,
-            kevm_cli_args.k_args,
-        ],
-    )
-    run_args.add_argument('input_file', type=file_path, help='Path to input file.')
-    run_args.add_argument(
-        '--output',
-        type=KRunOutput,
-        choices=list(KRunOutput),
-    )
-    run_args.add_argument(
-        '--expand-macros',
-        dest='expand_macros',
-        default=None,
-        action='store_true',
-        help='Expand macros on the input term before execution.',
-    )
-    run_args.add_argument(
-        '--no-expand-macros',
-        dest='expand_macros',
-        action='store_false',
-        help='Do not expand macros on the input term before execution.',
-    )
-    run_args.add_argument(
-        '--debugger',
-        dest='debugger',
-        action='store_true',
-        help='Run GDB debugger for execution.',
-    )
-
-    kast_args = command_parser.add_parser(
-        'kast',
-        help='Run KEVM program.',
-        parents=[
-            kevm_cli_args.logging_args,
-            kevm_cli_args.target_args,
-            kevm_cli_args.evm_chain_args,
-            kevm_cli_args.k_args,
-        ],
-    )
-    kast_args.add_argument('input_file', type=file_path, help='Path to input file.')
-    kast_args.add_argument(
-        '--output',
-        type=PrintOutput,
-        choices=list(PrintOutput),
-    )
-
-    return parser
 
 
 def _loglevel(args: Namespace) -> int:

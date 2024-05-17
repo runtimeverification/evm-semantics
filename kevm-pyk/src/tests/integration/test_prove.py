@@ -10,7 +10,8 @@ from pyk.prelude.ml import is_top
 from pyk.proof.reachability import APRProof
 
 from kevm_pyk import config
-from kevm_pyk.__main__ import ProveOptions, exec_prove
+from kevm_pyk.__main__ import exec_prove
+from kevm_pyk.cli import ProveOptions
 from kevm_pyk.kevm import KEVM
 from kevm_pyk.kompile import KompileTarget, kevm_kompile
 
