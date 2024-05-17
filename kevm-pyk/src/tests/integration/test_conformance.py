@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import logging
 import sys
 from typing import TYPE_CHECKING
 
@@ -21,6 +22,10 @@ if TYPE_CHECKING:
     from pyk.kore.syntax import Pattern
 
 
+_LOGGER: Final = logging.getLogger(__name__)
+_LOG_FORMAT: Final = '%(levelname)s %(asctime)s %(name)s - %(message)s'
+
+
 sys.setrecursionlimit(10**8)
 
 TEST_DIR: Final = REPO_ROOT / 'tests/ethereum-tests'
@@ -28,15 +33,13 @@ GOLDEN: Final = (REPO_ROOT / 'tests/templates/output-success-llvm.json').read_te
 
 
 def _test(gst_file: Path, schedule: str, mode: str, chainid: int, usegas: bool) -> None:
-    # Given
     with gst_file.open() as f:
         gst_data = json.load(f)
 
-    # When
-    res = interpret(gst_data, schedule, mode, chainid, usegas, check=False)
-
-    # Then
-    _assert_exit_code_zero(res)
+    for test_name, test in gst_data.items():
+        _LOGGER.info(f'Running test: {gst_file} - {test_name}')
+        res = interpret({test_name: test}, schedule, mode, chainid, usegas, check=False)
+        _assert_exit_code_zero(res)
 
 
 def _assert_exit_code_zero(pattern: Pattern) -> None:
