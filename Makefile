@@ -145,8 +145,7 @@ tests/%.run-interactive: tests/%
 	    || $(CHECK) tests/$*.$(TEST_CONCRETE_BACKEND)-out tests/templates/output-success-$(TEST_CONCRETE_BACKEND).json
 	$(KEEP_OUTPUTS) || rm -rf tests/$*.$(TEST_CONCRETE_BACKEND)-out
 
-interactive_tests = tests/ethereum-tests/BlockchainTests/GeneralStateTests/VMTests/vmArithmeticTest/add0.json      \
-                    tests/ethereum-tests/BlockchainTests/GeneralStateTests/VMTests/vmIOandFlowOperations/pop1.json \
+interactive_tests = tests/interactive/add.json    \
                     tests/interactive/sumTo10.evm
 
 .PHONY: test-interactive
