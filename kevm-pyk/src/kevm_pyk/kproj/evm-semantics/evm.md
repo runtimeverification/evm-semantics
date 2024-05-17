@@ -1392,14 +1392,14 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     rule <k> #accessAccounts ADDRSET:Set => .K ... </k>
          <accessedAccounts> TOUCHED_ACCOUNTS => TOUCHED_ACCOUNTS |Set ADDRSET </accessedAccounts>
 
-    syntax Set ::= #computeValidJumpDests(Bytes)            [function, memo, total]
-                 | #computeValidJumpDests(Bytes, Int, List) [function, klabel(#computeValidJumpDestsAux)]
- // -----------------------------------------------------------------------------------------------------
+    syntax Set ::= #computeValidJumpDests(Bytes)            [klabel(#computeValidJumpDests),    function, memo, total]
+                 | #computeValidJumpDests(Bytes, Int, List) [klabel(#computeValidJumpDestsAux), function             ]
+ // ------------------------------------------------------------------------------------------------------------------
     rule #computeValidJumpDests(_PGM) => .Set
     rule #computeValidJumpDests(_PGM, _I, _RESULT) => .Set
 
 
-    syntax Set ::= #computeValidJumpDestsWithinBound(Bytes, Int, List) [function]
+    syntax Set ::= #computeValidJumpDestsWithinBound(Bytes, Int, List) [klabel(#computeValidJumpDestsWithinBound), function]
  // -----------------------------------------------------------------------------
     rule #computeValidJumpDestsWithinBound(_PGM, _I, _RESULT) => .Set
 
