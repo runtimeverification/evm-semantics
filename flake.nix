@@ -127,9 +127,8 @@
             buildInputs = [ final.kevm prev.which prev.git ];
 
             buildPhase = ''
-              mkdir -p tests/ethereum-tests/LegacyTests
+              mkdir -p tests/ethereum-tests
               cp -r ${ethereum-tests}/* tests/ethereum-tests/
-              cp -r ${ethereum-legacytests}/* tests/ethereum-tests/LegacyTests/
               chmod -R u+w tests
               APPLE_SILICON=${
                 if prev.stdenv.isAarch64 && prev.stdenv.isDarwin then
@@ -245,8 +244,6 @@
             rv-utils.lib.update-from-submodules pkgs ./flake.lock {
               blockchain-k-plugin.submodule = "deps/plugin";
               ethereum-tests.submodule = "tests/ethereum-tests";
-              ethereum-legacytests.submodule =
-                "tests/ethereum-tests/LegacyTests";
             };
         };
       }) // {
