@@ -160,7 +160,10 @@ jobs:
         with:
           # Check out pull request HEAD instead of merge commit.
           ref: ${{ github.event.pull_request.head.sha }}
-          submodules: recursive
+      - name: 'Check out select submodules'
+        run: |
+          set -eux
+          git submodule update --init --recursive -- kevm-pyk/src/kevm_pyk/kproj/plugin
       - name: 'Install Nix'
         if: ${{ matrix.runner == 'macos-13' }}
         uses: cachix/install-nix-action@v25

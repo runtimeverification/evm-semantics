@@ -6,17 +6,13 @@ which kevm
 kevm --help
 kevm version
 
-kevm run tests/ethereum-tests/BlockchainTests/GeneralStateTests/VMTests/vmArithmeticTest/add0.json --target llvm \
-    --mode VMTESTS --schedule DEFAULT --chainid 1                                                                \
-    > tests/ethereum-tests/BlockchainTests/GeneralStateTests/VMTests/vmArithmeticTest/add0.json.llvm-out         \
-    || git --no-pager diff --no-index --ignore-all-space -R tests/ethereum-tests/BlockchainTests/GeneralStateTests/VMTests/vmArithmeticTest/add0.json.llvm-out tests/templates/output-success-llvm.json
-rm -rf tests/ethereum-tests/BlockchainTests/GeneralStateTests/VMTests/vmArithmeticTest/add0.json.llvm-out
+kevm run tests/interactive/add.json --target llvm --mode VMTESTS --schedule DEFAULT --chainid 1 \
+    > tests/interactive/add.json.llvm-out                                                       \
+    || git --no-pager diff --no-index --ignore-all-space -R tests/interactive/add.json.llvm-out tests/templates/output-success-llvm.json
+rm -rf tests/interactive/add.json.llvm-out
 
-kevm run tests/ethereum-tests/BlockchainTests/GeneralStateTests/VMTests/vmSystemOperations/TestNameRegistrator.json \
-    --target llvm --mode VMTESTS --schedule DEFAULT --chainid 1
-
-kevm run tests/ethereum-tests/BlockchainTests/GeneralStateTests/VMTests/vmSystemOperations/TestNameRegistrator.json \
-    --target haskell-standalone --mode VMTESTS --schedule DEFAULT --chainid 1
+kevm run tests/interactive/TestNameRegistrator.json --target llvm               --mode VMTESTS --schedule DEFAULT --chainid 1
+kevm run tests/interactive/TestNameRegistrator.json --target haskell-standalone --mode VMTESTS --schedule DEFAULT --chainid 1
 
 kevm kast tests/interactive/log3_MaxTopic_d0g0v0.json --target llvm > tests/interactive/log3_MaxTopic_d0g0v0.json.parse-out
 git --no-pager diff --no-index --ignore-all-space -R tests/interactive/log3_MaxTopic_d0g0v0.json.parse-out tests/interactive/log3_MaxTopic_d0g0v0.json.parse-expected
