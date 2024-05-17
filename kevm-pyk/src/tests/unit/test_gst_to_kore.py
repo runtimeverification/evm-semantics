@@ -16,8 +16,8 @@ if TYPE_CHECKING:
 
 TEST_DATA: Final = (
     (
-        'tests/ethereum-tests/GeneralStateTests/VMTests/vmLogTest/log3.json',
-        'tests/interactive/vmLogTest/log3.gst-to-kore.expected',
+        'tests/interactive/log3.json',
+        'tests/interactive/log3.gst-to-kore.expected',
     ),
     (
         'tests/interactive/log3_MaxTopic_d0g0v0.json',
