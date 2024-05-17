@@ -84,7 +84,8 @@ jobs:
       - name: 'Check out select submodules'
         run: |
           set -eux
-          git submodule update --init -- tests/ethereum-tests kevm-pyk/src/kevm_pyk/kproj/plugin
+          git submodule update --init -- tests/ethereum-tests
+          git submodule update --init --recursive -- kevm-pyk/src/kevm_pyk/kproj/plugin
       - name: 'Set up Docker'
         uses: ./.github/actions/with-docker
         with:
@@ -128,7 +129,7 @@ jobs:
       - name: 'Check out select submodules'
         run: |
           set -eux
-          git submodule update --init -- kevm-pyk/src/kevm_pyk/kproj/plugin
+          git submodule update --init --recursive -- kevm-pyk/src/kevm_pyk/kproj/plugin
       - name: 'Set up Docker'
         uses: ./.github/actions/with-docker
         with:
@@ -162,6 +163,11 @@ jobs:
         with:
           # Check out pull request HEAD instead of merge commit.
           ref: ${{ github.event.pull_request.head.sha }}
+      - name: 'Check out select submodules'
+        run: |
+          set -eux
+          git submodule update --init -- tests/ethereum-tests
+          git submodule update --init --recursive -- kevm-pyk/src/kevm_pyk/kproj/plugin
       - name: 'Install Nix'
         if: ${{ matrix.runner == 'macos-13' }}
         uses: cachix/install-nix-action@v25
