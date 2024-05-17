@@ -648,8 +648,8 @@ After executing a transaction, it's necessary to have the effect of the substate
 -   `#rewardOmmers(_)` pays out the reward to uncle blocks so that blocks are orphaned less often in Ethereum.
 
 ```k
-    syntax EthereumCommand ::= "#startBlock"
- // ----------------------------------------
+    syntax EthereumCommand ::= "#startBlock" [symbol(evm_startBlock)]
+ // -----------------------------------------------------------------
     rule <k> #startBlock => .K ... </k>
          <gasUsed> _ => 0 </gasUsed>
          <log> _ => .List </log>

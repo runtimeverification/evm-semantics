@@ -49,13 +49,12 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 -   `flush` places `#finalize` on the `<k>` cell.
 
 ```k
-    syntax EthereumCommand ::= "start"
- // ----------------------------------
+    syntax EthereumCommand ::= "start" [symbol(driver_start)]
+                             | "flush" [symbol(driver_flush)]
+ // ---------------------------------------------------------
     rule <mode> NORMAL  </mode> <k> start => #execute ... </k>
     rule <mode> VMTESTS </mode> <k> start => #execute ... </k>
 
-    syntax EthereumCommand ::= "flush"
- // ----------------------------------
     rule <mode> EXECMODE </mode> <statusCode> EVMC_SUCCESS            </statusCode> <k> #halt ~> flush => #finalizeTx(EXECMODE ==K VMTESTS)          ... </k>
     rule <mode> EXECMODE </mode> <statusCode> _:ExceptionalStatusCode </statusCode> <k> #halt ~> flush => #finalizeTx(EXECMODE ==K VMTESTS) ~> #halt ... </k>
 ```
@@ -65,8 +64,8 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 -   `finishTx` is a place-holder for performing necessary cleanup after a transaction.
 
 ```k
-    syntax EthereumCommand ::= "startTx"
- // ------------------------------------
+    syntax EthereumCommand ::= "startTx" [symbol(driver_startTx)]
+ // -------------------------------------------------------------
     rule <k> startTx => #finalizeBlock ... </k>
          <txPending> .List </txPending>
 
@@ -232,8 +231,8 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 
     rule <k> status SC => .K ... </k> <statusCode> SC </statusCode>
 
-    syntax EthereumCommand ::= "failure" String | "success"
- // -------------------------------------------------------
+    syntax EthereumCommand ::= "failure" String | "success" [symbol(driver_success)]
+ // --------------------------------------------------------------------------------
     rule <k> success => .K ... </k>
          <exit-code> _ => 0 </exit-code>
          <mode> _ => SUCCESS </mode>
@@ -367,8 +366,8 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
 -   `check_` checks if an account/transaction appears in the world-state as stated.
 
 ```k
-    syntax EthereumCommand ::= "check" JSON
- // ---------------------------------------
+    syntax EthereumCommand ::= "check" JSON [symbol(driver_check)]
+ // --------------------------------------------------------------
     rule <k> #halt ~> check J:JSON => check J ~> #halt ... </k>
 
     rule <k> check DATA : { .JSONs } => .K ... </k> requires DATA =/=String "transactions"

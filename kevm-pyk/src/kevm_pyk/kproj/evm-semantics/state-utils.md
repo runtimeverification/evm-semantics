@@ -96,8 +96,8 @@ module STATE-UTILS
 -   `load` loads an account or transaction into the world state.
 
 ```k
-    syntax EthereumCommand ::= "load" JSON
- // --------------------------------------
+    syntax EthereumCommand ::= "load" JSON [symbol(state_utils_load)]
+ // -----------------------------------------------------------------
     rule <k> load _DATA : { .JSONs }             => .K                                                   ... </k>
     rule <k> load  DATA : { KEY : VALUE , REST } => load DATA : { KEY : VALUE } ~> load DATA : { REST } ... </k>
       requires REST =/=K .JSONs andBool DATA =/=String "transaction"
@@ -144,8 +144,8 @@ Here we load the environmental information.
     rule <k> load "env" : { "currentTimestamp"  : (TS:Int)     } => .K ... </k> <timestamp>    _ => TS     </timestamp>
     rule <k> load "env" : { "currentBaseFee"    : (BF:Int)     } => .K ... </k> <baseFee>      _ => BF     </baseFee>
 
-    syntax KItem ::= "loadCallState" JSON
- // -------------------------------------
+    syntax KItem ::= "loadCallState" JSON [symbol(loadCallState)]
+ // -------------------------------------------------------------
     rule <k> loadCallState { "data" : ( DATA:String => #parseByteStack( DATA ) ), _REST } ... </k>
 
     rule <k> loadCallState { "code" : CODE:Bytes, REST } => #loadProgram CODE ~> loadCallState { REST } ... </k>
