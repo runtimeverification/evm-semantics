@@ -81,8 +81,10 @@ jobs:
     steps:
       - name: 'Check out code'
         uses: actions/checkout@v3
-        with:
-          submodules: recursive
+      - name: 'Check out select submodules'
+        run: |
+          set -eux
+          git submodule update --init -- tests/ethereum-tests deps/plugin
       - name: 'Set up Docker'
         uses: ./.github/actions/with-docker
         with:
@@ -123,8 +125,10 @@ jobs:
     steps:
       - name: 'Check out code'
         uses: actions/checkout@v3
-        with:
-          submodules: recursive
+      - name: 'Check out select submodules'
+        run: |
+          set -eux
+          git submodule update --init -- deps/plugin
       - name: 'Set up Docker'
         uses: ./.github/actions/with-docker
         with:
