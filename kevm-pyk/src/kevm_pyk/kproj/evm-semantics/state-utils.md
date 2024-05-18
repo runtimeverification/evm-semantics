@@ -98,18 +98,18 @@ module STATE-UTILS
 ```k
     syntax EthereumCommand ::= "load" JSON [symbol(state_utils_load)]
  // -----------------------------------------------------------------
-    rule <k> load _DATA : { .JSONs }             => .K                                                   ... </k>
-    rule <k> load  DATA : { KEY : VALUE , REST } => load DATA : { KEY : VALUE } ~> load DATA : { REST } ... </k>
+    rule <k> load { _DATA : { .JSONs }             , .JSONs } => .K                                                                            ... </k>
+    rule <k> load {  DATA : { KEY : VALUE , REST } , .JSONs } => load { DATA : { KEY : VALUE } , .JSONs } ~> load { DATA : { REST } , .JSONs } ... </k>
       requires REST =/=K .JSONs andBool DATA =/=String "transaction"
 
-    rule <k> load _DATA : [ .JSONs ]          => .K                                            ... </k>
-    rule <k> load  DATA : [ { TEST } , REST ] => load DATA : { TEST } ~> load DATA : [ REST ] ... </k>
+    rule <k> load { _DATA : [ .JSONs ]          , .JSONs } => .K                                                                     ... </k>
+    rule <k> load {  DATA : [ { TEST } , REST ] , .JSONs } => load { DATA : { TEST } , .JSONs } ~> load { DATA : [ REST ] , .JSONs } ... </k>
 ```
 
 Here we perform pre-proccesing on account data which allows "pretty" specification of input.
 
 ```k
-    rule <k> load "pre" : { (ACCTID:String) : ACCT } => mkAcct #parseAddr(ACCTID) ~> loadAccount #parseAddr(ACCTID) ACCT ... </k>
+    rule <k> load { "pre" : { (ACCTID:String) : ACCT } , .JSONs } => mkAcct #parseAddr(ACCTID) ~> loadAccount #parseAddr(ACCTID) ACCT ... </k>
 
     syntax EthereumCommand ::= "loadAccount" Int JSON
  // -------------------------------------------------
@@ -131,18 +131,18 @@ Here we perform pre-proccesing on account data which allows "pretty" specificati
 Here we load the environmental information.
 
 ```k
-    rule <k> load "env" : { KEY : ((VAL:String) => #parseWord(VAL)) } ... </k>
+    rule <k> load { "env" : { KEY : ((VAL:String) => #parseWord(VAL)) } , .JSONs } ... </k>
       requires KEY in (SetItem("currentTimestamp") SetItem("currentGasLimit") SetItem("currentNumber") SetItem("currentDifficulty") SetItem("currentBaseFee"))
-    rule <k> load "env" : { KEY : ((VAL:String) => #parseHexWord(VAL)) } ... </k>
+    rule <k> load { "env" : { KEY : ((VAL:String) => #parseHexWord(VAL)) } , .JSONs } ... </k>
       requires KEY in (SetItem("currentCoinbase") SetItem("previousHash"))
  // ----------------------------------------------------------------------
-    rule <k> load "env" : { "currentCoinbase"   : (CB:Int)     } => .K ... </k> <coinbase>     _ => CB     </coinbase>
-    rule <k> load "env" : { "currentDifficulty" : (DIFF:Int)   } => .K ... </k> <difficulty>   _ => DIFF   </difficulty>
-    rule <k> load "env" : { "currentGasLimit"   : (GLIMIT:Int) } => .K ... </k> <gasLimit>     _ => GLIMIT </gasLimit>
-    rule <k> load "env" : { "currentNumber"     : (NUM:Int)    } => .K ... </k> <number>       _ => NUM    </number>
-    rule <k> load "env" : { "previousHash"      : (HASH:Int)   } => .K ... </k> <previousHash> _ => HASH   </previousHash>
-    rule <k> load "env" : { "currentTimestamp"  : (TS:Int)     } => .K ... </k> <timestamp>    _ => TS     </timestamp>
-    rule <k> load "env" : { "currentBaseFee"    : (BF:Int)     } => .K ... </k> <baseFee>      _ => BF     </baseFee>
+    rule <k> load { "env" : { "currentCoinbase"   : (CB:Int)     } , .JSONs } => .K ... </k> <coinbase>     _ => CB     </coinbase>
+    rule <k> load { "env" : { "currentDifficulty" : (DIFF:Int)   } , .JSONs } => .K ... </k> <difficulty>   _ => DIFF   </difficulty>
+    rule <k> load { "env" : { "currentGasLimit"   : (GLIMIT:Int) } , .JSONs } => .K ... </k> <gasLimit>     _ => GLIMIT </gasLimit>
+    rule <k> load { "env" : { "currentNumber"     : (NUM:Int)    } , .JSONs } => .K ... </k> <number>       _ => NUM    </number>
+    rule <k> load { "env" : { "previousHash"      : (HASH:Int)   } , .JSONs } => .K ... </k> <previousHash> _ => HASH   </previousHash>
+    rule <k> load { "env" : { "currentTimestamp"  : (TS:Int)     } , .JSONs } => .K ... </k> <timestamp>    _ => TS     </timestamp>
+    rule <k> load { "env" : { "currentBaseFee"    : (BF:Int)     } , .JSONs } => .K ... </k> <baseFee>      _ => BF     </baseFee>
 
     syntax KItem ::= "loadCallState" JSON [symbol(loadCallState)]
  // -------------------------------------------------------------
@@ -163,7 +163,7 @@ Here we load the environmental information.
 The `"network"` key allows setting the fee schedule inside the test.
 
 ```k
-    rule <k> load "network" : SCHEDSTRING => .K ... </k>
+    rule <k> load { "network" : SCHEDSTRING , .JSONs } => .K ... </k>
          <schedule> _ => #asScheduleString(SCHEDSTRING) </schedule>
 
     syntax Schedule ::= #asScheduleString ( String ) [klabel(#asScheduleString), function]
@@ -185,11 +185,11 @@ The `"network"` key allows setting the fee schedule inside the test.
 The `"rlp"` key loads the block information.
 
 ```k
-    rule <k> load "rlp"        : (VAL:String => #rlpDecode(#parseByteStack(VAL))) ... </k>
-    rule <k> load "genesisRLP" : (VAL:String => #rlpDecode(#parseByteStack(VAL))) ... </k>
+    rule <k> load { "rlp"        : (VAL:String => #rlpDecode(#parseByteStack(VAL))) , .JSONs } ... </k>
+    rule <k> load { "genesisRLP" : (VAL:String => #rlpDecode(#parseByteStack(VAL))) , .JSONs } ... </k>
  // ---------------------------------------------------------------------------------------------------------
-    rule <k> load "rlp" : [ [ HP , HO , HC , HR , HT , HE , HB , HD , HI , HL , HG , HS , HX , HM , HN , .JSONs ] , BT , BU , .JSONs ]
-          => load "transaction" : BT
+    rule <k> load { "rlp" : [ [ HP , HO , HC , HR , HT , HE , HB , HD , HI , HL , HG , HS , HX , HM , HN , .JSONs ] , BT , BU , .JSONs ] , .JSONs }
+          => load { "transaction" : BT , .JSONs }
          ...
          </k>
          <previousHash>      _ => #asWord(HP) </previousHash>
@@ -209,26 +209,26 @@ The `"rlp"` key loads the block information.
          <blockNonce>        _ => #asWord(HN) </blockNonce>
          <ommerBlockHeaders> _ => BU          </ommerBlockHeaders>
 
-    rule <k> load "rlp" : [ [ HP , HO , HC , HR , HT , HE , HB , HD , HI , HL , HG , HS , HX , HM , HN , HF , .JSONs ] , BT , BU , .JSONs ]
-          => load "rlp" : [ [ HP , HO , HC , HR , HT , HE , HB , HD , HI , HL , HG , HS , HX , HM , HN , .JSONs ] , BT , BU , .JSONs ]
+    rule <k> load { "rlp" : [ [ HP , HO , HC , HR , HT , HE , HB , HD , HI , HL , HG , HS , HX , HM , HN , HF , .JSONs ] , BT , BU , .JSONs ] , .JSONs }
+          => load { "rlp" : [ [ HP , HO , HC , HR , HT , HE , HB , HD , HI , HL , HG , HS , HX , HM , HN , .JSONs ] , BT , BU , .JSONs ] , .JSONs }
          ...
          </k>
          <baseFee> _ => #asWord(HF) </baseFee>
 
-    rule <k> load "rlp" : [ [ HP , HO , HC , HR , HT , HE , HB , HD , HI , HL , HG , HS , HX , HM , HN , HF , WR , .JSONs ] , BT , BU , BW , .JSONs ]
-          => load "rlp" : [ [ HP , HO , HC , HR , HT , HE , HB , HD , HI , HL , HG , HS , HX , HM , HN , HF , .JSONs ] , BT , BU , .JSONs ]
-          ~> load "withdraw" : BW
+    rule <k> load { "rlp" : [ [ HP , HO , HC , HR , HT , HE , HB , HD , HI , HL , HG , HS , HX , HM , HN , HF , WR , .JSONs ] , BT , BU , BW , .JSONs ] , .JSONs }
+          => load { "rlp" : [ [ HP , HO , HC , HR , HT , HE , HB , HD , HI , HL , HG , HS , HX , HM , HN , HF , .JSONs ] , BT , BU , .JSONs ] , .JSONs }
+          ~> load { "withdraw" : BW , .JSONs }
          ...
          </k>
          <withdrawalsRoot> _ => #asWord(WR) </withdrawalsRoot>
 
-    rule <k> load "genesisRLP": [ [ HP, HO, HC, HR, HT, HE:Bytes, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR, .JSONs ], _, _, _, .JSONs ] => .K ... </k>
+    rule <k> load { "genesisRLP": [ [ HP, HO, HC, HR, HT, HE:Bytes, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR, .JSONs ], _, _, _, .JSONs ] , .JSONs } => .K ... </k>
          <blockhashes> .List => ListItem(#blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR)) ListItem(#asWord(HP)) ... </blockhashes>
 
-    rule <k> load "genesisRLP": [ [ HP, HO, HC, HR, HT, HE:Bytes, HB, HD, HI, HL, HG, HS, HX, HM, HN, .JSONs ], _, _, .JSONs ] => .K ... </k>
+    rule <k> load { "genesisRLP": [ [ HP, HO, HC, HR, HT, HE:Bytes, HB, HD, HI, HL, HG, HS, HX, HM, HN, .JSONs ], _, _, .JSONs ] , .JSONs } => .K ... </k>
          <blockhashes> .List => ListItem(#blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN)) ListItem(#asWord(HP)) ... </blockhashes>
 
-    rule <k> load "genesisRLP": [ [ HP, HO, HC, HR, HT, HE:Bytes, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, .JSONs ], _, _, .JSONs ] => .K ... </k>
+    rule <k> load { "genesisRLP": [ [ HP, HO, HC, HR, HT, HE:Bytes, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, .JSONs ], _, _, .JSONs ] , .JSONs } => .K ... </k>
          <blockhashes> .List => ListItem(#blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF)) ListItem(#asWord(HP)) ... </blockhashes>
 
     syntax EthereumCommand ::= "mkTX" Int
@@ -250,9 +250,9 @@ The `"rlp"` key loads the block information.
           ...
           </messages>
 
-    rule <k> load "transaction" : [ (T => [#rlpDecodeTransaction(T)]) , _ ] ... </k>
+    rule <k> load { "transaction" : [ (T => [#rlpDecodeTransaction(T)]) , _ ] , .JSONs } ... </k>
 
-    rule <k> load "transaction" : [ [ TN , TP , TG , TT , TV , TI , TW , TR , TS ] , REST ]
+    rule <k> load { "transaction" : [ [ TN , TP , TG , TT , TV , TI , TW , TR , TS ] , REST ] , .JSONs }
           => mkTX !ID:Int
           ~> loadTransaction !ID { "data"  : TI   ,   "gasLimit" : TG   ,   "gasPrice"             : TP
                                  , "nonce" : TN   ,   "r"        : TR   ,   "s"                    : TS
@@ -260,11 +260,11 @@ The `"rlp"` key loads the block information.
                                  , "type"  : #dasmTxPrefix(Legacy)      ,   "maxPriorityFeePerGas" : TP
                                  , "maxFeePerGas": TP                   , .JSONs
                                  }
-          ~> load "transaction" : [ REST ]
+          ~> load { "transaction" : [ REST ] , .JSONs }
           ...
           </k>
 
-    rule <k> load "transaction" : [ [TYPE , [TC, TN, TP, TG, TT, TV, TI, TA, TY , TR, TS ]] , REST ]
+    rule <k> load { "transaction" : [ [TYPE , [TC, TN, TP, TG, TT, TV, TI, TA, TY , TR, TS ]] , REST ] , .JSONs }
           => mkTX !ID:Int
           ~> loadTransaction !ID { "data"       : TI   ,   "gasLimit" : TG   ,   "gasPrice"  : TP
                                  , "nonce"      : TN   ,   "r"        : TR   ,   "s"         : TS
@@ -273,13 +273,13 @@ The `"rlp"` key loads the block information.
                                  , "maxPriorityFeePerGas" : TP               , "maxFeePerGas": TP
                                  , .JSONs
                                  }
-          ~> load "transaction" : [ REST ]
+          ~> load { "transaction" : [ REST ] , .JSONs }
           ...
          </k>
     requires #asWord(TYPE) ==Int #dasmTxPrefix(AccessList)
 
 
-    rule <k> load "transaction" : [ [TYPE , [TC, TN, TP, TF, TG, TT, TV, TI, TA, TY , TR, TS ]] , REST ]
+    rule <k> load { "transaction" : [ [TYPE , [TC, TN, TP, TF, TG, TT, TV, TI, TA, TY , TR, TS ]] , REST ] , .JSONs }
           => mkTX !ID:Int
           ~> loadTransaction !ID { "data"         : TI   ,   "gasLimit" : TG   ,   "maxPriorityFeePerGas" : TP
                                  , "nonce"        : TN   ,   "r"        : TR   ,   "s"                    : TS
@@ -287,7 +287,7 @@ The `"rlp"` key loads the block information.
                                  , "accessList"   : TA   ,   "type"     : TYPE ,   "chainID"              : TC
                                  , "maxFeePerGas" : TF   , .JSONs
                                  }
-          ~> load "transaction" : [ REST ]
+          ~> load { "transaction" : [ REST ] , .JSONs }
           ...
          </k>
     requires #asWord(TYPE) ==Int #dasmTxPrefix(DynamicFee)

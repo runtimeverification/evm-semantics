@@ -272,7 +272,7 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
  // -------------------------------------
     rule #loadKeys => ( SetItem("env") SetItem("pre") SetItem("rlp") SetItem("network") SetItem("genesisRLP") SetItem("withdrawals") )
 
-    rule <k> run  TESTID : { KEY : (VAL:JSON) , REST } => load KEY : VAL ~> run TESTID : { REST } ... </k>
+    rule <k> run TESTID : { KEY : (VAL:JSON) , REST } => load { KEY : VAL , .JSONs } ~> run TESTID : { REST } ... </k>
       requires KEY in #loadKeys
 
     rule <k> run _TESTID : { "blocks" : [ { KEY : VAL , REST1 => REST1 }, .JSONs ] , ( REST2 => KEY : VAL , REST2 ) } ... </k>
@@ -292,7 +292,7 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
     rule <k> run _TESTID : { "exec" : (EXEC:JSON) } => loadCallState EXEC ~> start ~> flush ... </k>
     rule <k> run _TESTID : { "lastblockhash" : (_:String) } => #startBlock ~> startTx    ... </k>
 
-    rule <k> load "exec" : J => loadCallState J ... </k>
+    rule <k> load { "exec" : J , .JSONs } => loadCallState J ... </k>
 
     rule <k> loadCallState { "caller" : (ACCTFROM:Int), REST => REST } ... </k> <caller> _ => ACCTFROM </caller>
     rule <k> loadCallState { "origin" : (ORIG:Int), REST => REST }     ... </k> <origin> _ => ORIG     </origin>
@@ -340,7 +340,7 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
 -   `driver.md` specific handling of state-utils commands
 
 ```k
-    rule <k> load "account" : { ACCTID : ACCT } => loadAccount ACCTID ACCT ... </k>
+    rule <k> load { "account" : { ACCTID : ACCT } , .JSONs } => loadAccount ACCTID ACCT ... </k>
 
     rule <k> loadAccount _ { "balance" : ((VAL:String)      => #parseWord(VAL)),        _ } ... </k>
     rule <k> loadAccount _ { "nonce"   : ((VAL:String)      => #parseWord(VAL)),        _ } ... </k>
