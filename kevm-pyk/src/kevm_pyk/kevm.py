@@ -24,7 +24,8 @@ from pyk.kcfg.show import NodePrinter
 from pyk.ktool.kprove import KProve
 from pyk.ktool.krun import KRun
 from pyk.prelude.bytes import BYTES, pretty_bytes
-from pyk.prelude.kint import INT, intToken, ltInt
+from pyk.prelude.kbool import notBool
+from pyk.prelude.kint import INT, eqInt, intToken, ltInt
 from pyk.prelude.ml import mlEqualsFalse, mlEqualsTrue
 from pyk.prelude.string import stringToken
 from pyk.proof.reachability import APRProof
@@ -98,7 +99,7 @@ class KEVMSemantics(KCFGSemantics):
                 return False
         # duplicate from KEVM.extract_branches
         jumpi_pattern = KEVM.jumpi_applied(KVariable('###PCOUNT'), KVariable('###COND'))
-        pc_next_pattern = KApply('#pc[_]_EVM_InternalOp_OpCode', [KEVM.jumpi()])
+        pc_next_pattern = KEVM.pc_applied(KEVM.jumpi())
         branch_pattern = KSequence([jumpi_pattern, pc_next_pattern, KEVM.sharp_execute(), KVariable('###CONTINUATION')])
         subst1 = branch_pattern.match(cterm1.cell('K_CELL'))
         subst2 = branch_pattern.match(cterm2.cell('K_CELL'))
@@ -112,15 +113,15 @@ class KEVMSemantics(KCFGSemantics):
     def extract_branches(self, cterm: CTerm) -> list[KInner]:
         k_cell = cterm.cell('K_CELL')
         jumpi_pattern = KEVM.jumpi_applied(KVariable('###PCOUNT'), KVariable('###COND'))
-        pc_next_pattern = KApply('#pc[_]_EVM_InternalOp_OpCode', [KEVM.jumpi()])
+        pc_next_pattern = KEVM.pc_applied(KEVM.jumpi())
         branch_pattern = KSequence([jumpi_pattern, pc_next_pattern, KEVM.sharp_execute(), KVariable('###CONTINUATION')])
         if subst := branch_pattern.match(k_cell):
             cond = subst['###COND']
             if cond_subst := KEVM.bool_2_word(KVariable('###BOOL_2_WORD')).match(cond):
                 cond = cond_subst['###BOOL_2_WORD']
             else:
-                cond = KApply('_==Int_', [cond, intToken(0)])
-            return [mlEqualsTrue(cond), mlEqualsTrue(KApply('notBool_', [cond]))]
+                cond = eqInt(cond, intToken(0))
+            return [mlEqualsTrue(cond), mlEqualsTrue(notBool(cond))]
         return []
 
     def abstract_node(self, cterm: CTerm) -> CTerm:
@@ -386,6 +387,10 @@ class KEVM(KProve, KRun):
         return KApply('___EVM_InternalOp_UnStackOp_Int', [KEVM.jump(), pc])
 
     @staticmethod
+    def pc_applied(op: KInner) -> KApply:
+        return KApply('#pc[_]_EVM_InternalOp_OpCode', [op])
+
+    @staticmethod
     def pow128() -> KApply:
         return KApply('pow128_WORD_Int', [])
 
@@ -519,6 +524,10 @@ class KEVM(KProve, KRun):
         )
 
     @staticmethod
+    def wordstack_empty() -> KApply:
+        return KApply('.WordStack_EVM-TYPES_WordStack')
+
+    @staticmethod
     def wordstack_len(wordstack: KInner) -> int:
         return len(flatten_label('_:__EVM-TYPES_WordStack_Int_WordStack', wordstack))
 
@@ -529,6 +538,10 @@ class KEVM(KProve, KRun):
     @staticmethod
     def bytes_empty() -> KApply:
         return KApply('.Bytes_BYTES-HOOKED_Bytes')
+
+    @staticmethod
+    def buf(width: int, v: KInner) -> KApply:
+        return KApply('#buf(_,_)_BUF-SYNTAX_Bytes_Int_Int', [intToken(width), v])
 
     @staticmethod
     def intlist(ints: list[KInner]) -> KApply:

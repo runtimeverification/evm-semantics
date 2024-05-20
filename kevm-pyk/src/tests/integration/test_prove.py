@@ -5,12 +5,13 @@ import sys
 from typing import TYPE_CHECKING, NamedTuple
 
 import pytest
-from filelock import FileLock
+from filelock import SoftFileLock
 from pyk.prelude.ml import is_top
 from pyk.proof.reachability import APRProof
 
 from kevm_pyk import config
-from kevm_pyk.__main__ import ProveOptions, exec_prove
+from kevm_pyk.__main__ import exec_prove
+from kevm_pyk.cli import ProveOptions
 from kevm_pyk.kevm import KEVM
 from kevm_pyk.kompile import KompileTarget, kevm_kompile
 
@@ -22,7 +23,7 @@ if TYPE_CHECKING:
     from typing import Any, Final
 
     from pyk.utils import BugReport
-    from pytest import FixtureRequest, LogCaptureFixture
+    from pytest import LogCaptureFixture, TempPathFactory
 
 
 sys.setrecursionlimit(10**8)
@@ -120,57 +121,46 @@ class Target(NamedTuple):
     main_module_name: str
 
     @property
-    def name(self) -> str:
+    def id(self) -> str:
         """
-        Target's name is the two trailing path segments and the main module name
+        The target's id is the two trailing path segments and the main module name
         """
         return f'{self.main_file.parts[-2]}-{self.main_file.stem}-{self.main_module_name}'
 
     def __call__(self, output_dir: Path) -> Path:
-        with FileLock(str(output_dir) + '.lock'):
-            return kevm_kompile(
-                output_dir=output_dir / 'kompiled',
-                target=KompileTarget.HASKELL,
-                main_file=self.main_file,
-                main_module=self.main_module_name,
-                syntax_module=self.main_module_name,
-                debug=True,
-            )
+        return kevm_kompile(
+            output_dir=output_dir,
+            target=KompileTarget.HASKELL,
+            main_file=self.main_file,
+            main_module=self.main_module_name,
+            syntax_module=self.main_module_name,
+            debug=True,
+        )
 
 
 @pytest.fixture(scope='module')
-def kompiled_target_cache(kompiled_targets_dir: Path) -> tuple[Path, dict[str, Path]]:
-    """
-    Populate the cache of kompiled definitions from an existing file system directory. If the cache is hot, the `kompiled_target_for` fixture will not containt a call to `kompile`, saving an expesive call to the K frontend.
-    """
-    cache_dir = kompiled_targets_dir / 'target'
-    cache: dict[str, Path] = {}
-    if cache_dir.exists():  # cache dir exists, populate cache
-        for file in cache_dir.iterdir():
-            if file.is_dir():
-                # the cache key is the name of the target, which is the filename by-construction.
-                cache[file.stem] = file / 'kompiled'
-    else:
-        cache_dir.mkdir(parents=True)
-    return cache_dir, cache
+def target_dir(kompiled_targets_dir: Path | None, tmp_path_factory: TempPathFactory) -> Path:
+    if kompiled_targets_dir:
+        kompiled_targets_dir.mkdir(parents=True, exist_ok=True)
+        return kompiled_targets_dir
+
+    return tmp_path_factory.mktemp('kompiled')
 
 
 @pytest.fixture(scope='module')
-def kompiled_target_for(kompiled_target_cache: tuple[Path, dict[str, Path]]) -> Callable[[Path], Path]:
+def kompiled_target_for(target_dir: Path) -> Callable[[Path], Path]:
     """
     Generate a function that returns a path to the kompiled defintion for a given K spec. Invoke `kompile` only if no kompiled directory is cached for the spec.
     """
-    cache_dir, cache = kompiled_target_cache
 
     def kompile(spec_file: Path) -> Path:
         target = _target_for_spec(spec_file)
-
-        if target.name not in cache:
-            output_dir = cache_dir / target.name
-            output_dir.mkdir(exist_ok=True)
-            cache[target.name] = target(output_dir)
-
-        return cache[target.name]
+        lock_file = target_dir / f'{target.id}.lock'
+        output_dir = target_dir / target.id
+        with SoftFileLock(lock_file):
+            if output_dir.exists():
+                return output_dir
+            return target(output_dir)
 
     return kompile
 
@@ -189,7 +179,9 @@ def _target_for_spec(spec_file: Path) -> Target:
     ALL_TESTS,
     ids=[str(spec_file.relative_to(SPEC_DIR)) for spec_file in ALL_TESTS],
 )
-def test_kompile_targets(spec_file: Path, kompiled_target_for: Callable[[Path], Path], request: FixtureRequest) -> None:
+def test_kompile_targets(
+    spec_file: Path, kompiled_target_for: Callable[[Path], Path], kompiled_targets_dir: Path | None
+) -> None:
     """
     This test function is intended to be used to pre-kompile all definitions,
     so that the actual proof tests do not need to do the actual compilation,
@@ -200,11 +192,7 @@ def test_kompile_targets(spec_file: Path, kompiled_target_for: Callable[[Path], 
 
     This test will be skipped if no --kompiled-targets-dir option is given
     """
-    dir = request.config.getoption('--kompiled-targets-dir')
-    if not dir:
-        pytest.skip()
-
-    if spec_file in FAILING_BOOSTER_TESTS:
+    if not kompiled_targets_dir or spec_file in FAILING_BOOSTER_TESTS:
         pytest.skip()
 
     kompiled_target_for(spec_file)
