@@ -1393,18 +1393,25 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     rule <k> #accessAccounts ADDRSET:Set => .K ... </k>
          <accessedAccounts> TOUCHED_ACCOUNTS => TOUCHED_ACCOUNTS |Set ADDRSET </accessedAccounts>
 
-    syntax Set ::= #computeValidJumpDests(Bytes)            [klabel(#computeValidJumpDests),    function, memo, total]
-                 | #computeValidJumpDests(Bytes, Int, List) [klabel(#computeValidJumpDestsAux), function             ]
- // ------------------------------------------------------------------------------------------------------------------
-    rule #computeValidJumpDests(PGM) => #computeValidJumpDests(PGM, 0, .List)
+    syntax Set ::= #computeValidJumpDests(Bytes)                       [function, no-evaluators, total]
+                 | #computeValidJumpDestsIndex(Bytes, Int)             [function, no-evaluators       ]
+                 | #computeValidJumpDestsIndexResult(Bytes, Int, List) [function                      ]
+ // -------------------------------------------------------------------------------------------------------------------
+
+    rule [cvjd-concrete]: #computeValidJumpDests(PGM) => #computeValidJumpDestsIndexResult(PGM, 0, .List) [simplification, concrete(PGM), preserves-definedness]
+    rule [cvjd-symbolic]: #computeValidJumpDests(PGM) => #computeValidJumpDestsIndex(PGM, 0)              [simplification, symbolic(PGM), preserves-definedness]
+
+    rule [cvjdi-concrete]       : #computeValidJumpDestsIndex(PGM,          I) => #computeValidJumpDestsIndexResult(PGM, I, .List)                                                [simplification(40), concrete(PGM), preserves-definedness]
+    rule [cvjdi-symbolic-concat]: #computeValidJumpDestsIndex(B1 +Bytes B2, I) => #computeValidJumpDestsIndex(B1, I) |Set #computeValidJumpDestsIndex(B2, I +Int lengthBytes(B1)) [simplification(50), preserves-definedness]
+    rule [cvjdi-symbolic-other] : #computeValidJumpDestsIndex(_,            _) => .Set                                                                                            [simplification(60), preserves-definedness]
 
     syntax Set ::= #computeValidJumpDestsWithinBound(Bytes, Int, List) [klabel(#computeValidJumpDestsWithinBound), function]
  // ------------------------------------------------------------------------------------------------------------------------
-    rule #computeValidJumpDests(PGM, I, RESULT) => List2Set(RESULT) requires I >=Int lengthBytes(PGM)
-    rule #computeValidJumpDests(PGM, I, RESULT) => #computeValidJumpDestsWithinBound(PGM, I, RESULT) requires I <Int lengthBytes(PGM)
+    rule [cvjdir-done]: #computeValidJumpDestsIndexResult(PGM, I, RESULT) => List2Set(RESULT) requires I >=Int lengthBytes(PGM)
+    rule [cvjdir-next]: #computeValidJumpDestsIndexResult(PGM, I, RESULT) => #computeValidJumpDestsWithinBound(PGM, I, RESULT) requires I <Int lengthBytes(PGM)
 
-    rule #computeValidJumpDestsWithinBound(PGM, I, RESULT) => #computeValidJumpDests(PGM, I +Int 1, RESULT ListItem(I)) requires PGM [ I ] ==Int 91
-    rule #computeValidJumpDestsWithinBound(PGM, I, RESULT) => #computeValidJumpDests(PGM, I +Int #widthOpCode(PGM [ I ]), RESULT) requires notBool PGM [ I ] ==Int 91
+    rule [cvjdirwb-found]    : #computeValidJumpDestsWithinBound(PGM, I, RESULT) => #computeValidJumpDestsIndexResult(PGM, I +Int 1, RESULT ListItem(I))           requires         PGM [ I ] ==Int 91
+    rule [cvjdirwb-not-found]: #computeValidJumpDestsWithinBound(PGM, I, RESULT) => #computeValidJumpDestsIndexResult(PGM, I +Int #widthOpCode(PGM [ I ]), RESULT) requires notBool PGM [ I ] ==Int 91
 ```
 
 ```k
