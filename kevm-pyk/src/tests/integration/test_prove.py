@@ -275,6 +275,7 @@ def test_pyk_prove(
                 'use_booster': use_booster,
                 'bug_report': bug_report,
                 'break_on_calls': break_on_calls,
+                'smt_timeout': 1000,
             }
         )
         exec_prove(options=options)
