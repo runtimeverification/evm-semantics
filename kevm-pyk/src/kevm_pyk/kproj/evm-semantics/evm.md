@@ -1396,7 +1396,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     syntax Set ::= #computeValidJumpDests(Bytes)                            [function, no-evaluators, total]
                  | #computeValidJumpDestsIndex(Bytes, Int)                  [function, no-evaluators       ]
                  | #computeValidJumpDestsIndexResult(Bytes, Int, Int, List) [function                      ]
- // -------------------------------------------------------------------------------------------------------------------
+ // --------------------------------------------------------------------------------------------------------
 
     rule [cvjd-concrete]: #computeValidJumpDests(PGM:Bytes) => #computeValidJumpDestsIndexResult(PGM, 0, 0, .List) [simplification, concrete(PGM), preserves-definedness]
     rule [cvjd-symbolic]: #computeValidJumpDests(PGM:Bytes) => #computeValidJumpDestsIndex(PGM, 0)                 [simplification, symbolic(PGM), preserves-definedness]
@@ -1406,7 +1406,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     rule [cvjdi-symbolic-other] : #computeValidJumpDestsIndex(_,                             _) => .Set                                                                                                      [simplification(60), preserves-definedness]
 
     syntax Set ::= #computeValidJumpDestsWithinBound(Bytes, Int, Int, List) [klabel(#computeValidJumpDestsWithinBound), function]
- // ------------------------------------------------------------------------------------------------------------------------
+ // -----------------------------------------------------------------------------------------------------------------------------
     rule [cvjdir-done]: #computeValidJumpDestsIndexResult(PGM, OFFSET, I, RESULT) => List2Set(RESULT) requires I >=Int lengthBytes(PGM)
     rule [cvjdir-next]: #computeValidJumpDestsIndexResult(PGM, OFFSET, I, RESULT) => #computeValidJumpDestsWithinBound(PGM, OFFSET, I, RESULT) requires I <Int lengthBytes(PGM)
 
