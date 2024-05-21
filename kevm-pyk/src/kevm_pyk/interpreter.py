@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 def interpret(gst_data: Any, schedule: str, mode: str, chainid: int, usegas: bool, *, check: bool = True) -> Pattern:
     proc_res = _interpret(gst_data, schedule, mode, chainid, usegas)
 
-    if check or proc_res.returncode < 0 or proc_res.returncode > 1:
+    if check:
         proc_res.check_returncode()
 
     kore = KoreParser(proc_res.stdout).pattern()
