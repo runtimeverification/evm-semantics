@@ -701,4 +701,19 @@ module LEMMAS-SPEC
        andBool #isPrecompiledAccount(_A40, SHANGHAI) andBool #isPrecompiledAccount(_A41, SHANGHAI) andBool #isPrecompiledAccount(_A42, SHANGHAI) andBool #isPrecompiledAccount(_A43, SHANGHAI) andBool #isPrecompiledAccount(_A44, SHANGHAI)
        andBool #isPrecompiledAccount(_A45, SHANGHAI) andBool #isPrecompiledAccount(_A46, SHANGHAI) andBool #isPrecompiledAccount(_A47, SHANGHAI) andBool #isPrecompiledAccount(_A48, SHANGHAI) andBool #isPrecompiledAccount(_A49, SHANGHAI)
 
+    // Jump destinations
+    // -----------------
+
+    claim [valid-jumpdests-symbolic]:
+      <k> runLemma(
+        #computeValidJumpDests(
+          b"`\x80`@R4\x80\x15`\x0fW`\x00\x80\xfd[P`\x046\x10`(W`\x005`\xe0\x1c\x80c\xa5m\xfeJ\x14`-W[`\x00\x80\xfd[`S\x7f"
+          +Bytes #buf ( 32 , VV0_x_114b9705:Int )
+          +Bytes b"\x81V[`@Q\x90\x81R` \x01`@Q\x80\x91\x03\x90\xf3\xfe\xa2dipfsX\"\x12 \xeb\xb3\x99\x11\xbe\x13L\xdeC\xcc\x01/\x849\xe7\xc5\x9aC\xf1\x0f\xf4\xdfE\x14Z\x80\x90(\xeb\xda\xee\xeadsolcC\x00\x08\r\x003")
+          ==K
+        SetItem (15) SetItem(40) SetItem(45) SetItem(83)
+      ) => doneLemma(
+        true
+      ) ... </k>
+
 endmodule

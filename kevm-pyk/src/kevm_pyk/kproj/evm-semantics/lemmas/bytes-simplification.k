@@ -250,6 +250,12 @@ module BYTES-SIMPLIFICATION [symbolic]
       andBool #asWord ( B ) <Int 2 ^Int ( 8 *Int W )
       [simplification, concrete(BZ, S, W), comm, preserves-definedness]
 
+    // Memory lookup
+
+    rule [memLookup-to-asWord]: BA:Bytes [ X:Int ] => #asWord ( #range (BA, X, 1) )
+      requires X <=Int lengthBytes(BA)
+      [simplification(40)]
+
     // Memory update
 
     rule [memUpdate-is-empty]:
