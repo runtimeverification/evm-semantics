@@ -1392,7 +1392,24 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
 
     rule <k> #accessAccounts ADDRSET:Set => .K ... </k>
          <accessedAccounts> TOUCHED_ACCOUNTS => TOUCHED_ACCOUNTS |Set ADDRSET </accessedAccounts>
+```
 
+```{.k .concrete}
+    syntax Set ::= #computeValidJumpDests(Bytes)            [klabel(#computeValidJumpDests),    function, memo, total]
+                 | #computeValidJumpDests(Bytes, Int, List) [klabel(#computeValidJumpDestsAux), function             ]
+ // ------------------------------------------------------------------------------------------------------------------
+    rule #computeValidJumpDests(PGM) => #computeValidJumpDests(PGM, 0, .List)
+
+    syntax Set ::= #computeValidJumpDestsWithinBound(Bytes, Int, List) [klabel(#computeValidJumpDestsWithinBound), function]
+ // ------------------------------------------------------------------------------------------------------------------------
+    rule #computeValidJumpDests(PGM, I, RESULT) => List2Set(RESULT) requires I >=Int lengthBytes(PGM)
+    rule #computeValidJumpDests(PGM, I, RESULT) => #computeValidJumpDestsWithinBound(PGM, I, RESULT) requires I <Int lengthBytes(PGM)
+
+    rule #computeValidJumpDestsWithinBound(PGM, I, RESULT) => #computeValidJumpDests(PGM, I +Int 1, RESULT ListItem(I)) requires PGM [ I ] ==Int 91
+    rule #computeValidJumpDestsWithinBound(PGM, I, RESULT) => #computeValidJumpDests(PGM, I +Int #widthOpCode(PGM [ I ]), RESULT) requires notBool PGM [ I ] ==Int 91
+```
+
+```{.k .symbolic}
     syntax Set ::= #computeValidJumpDests(Bytes)                            [function, no-evaluators, total]
                  | #computeValidJumpDestsIndex(Bytes, Int)                  [function, no-evaluators       ]
                  | #computeValidJumpDestsIndexResult(Bytes, Int, Int, List) [function                      ]
@@ -1407,7 +1424,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
 
     syntax Set ::= #computeValidJumpDestsWithinBound(Bytes, Int, Int, List) [klabel(#computeValidJumpDestsWithinBound), function]
  // -----------------------------------------------------------------------------------------------------------------------------
-    rule [cvjdir-done]: #computeValidJumpDestsIndexResult(PGM, OFFSET, I, RESULT) => List2Set(RESULT) requires I >=Int lengthBytes(PGM)
+    rule [cvjdir-done]: #computeValidJumpDestsIndexResult(PGM,      _, I, RESULT) => List2Set(RESULT) requires I >=Int lengthBytes(PGM)
     rule [cvjdir-next]: #computeValidJumpDestsIndexResult(PGM, OFFSET, I, RESULT) => #computeValidJumpDestsWithinBound(PGM, OFFSET, I, RESULT) requires I <Int lengthBytes(PGM)
 
     rule [cvjdirwb-found]    : #computeValidJumpDestsWithinBound(PGM, OFFSET, I, RESULT) => #computeValidJumpDestsIndexResult(PGM, OFFSET, I +Int 1, RESULT ListItem(OFFSET +Int I)) requires         PGM [ I ] ==Int 91
