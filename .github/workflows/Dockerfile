@@ -44,5 +44,5 @@ WORKDIR /home/${USER}/workspace
 
 ENV PATH=/home/${USER}/.local/bin:${PATH}
 
-RUN    curl -sSL https://install.python-poetry.org | python3 - --version 1.7.1 \
+RUN    curl -sSL https://install.python-poetry.org | python3 - --version 1.8.3 \
     && poetry --version
