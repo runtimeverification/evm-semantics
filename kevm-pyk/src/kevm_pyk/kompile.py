@@ -4,7 +4,6 @@ import concurrent.futures
 import logging
 import sys
 from enum import Enum
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 from pyk.kdist import kdist
@@ -16,6 +15,7 @@ from . import config
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
+    from pathlib import Path
     from typing import Final
 
     from pyk.ktool.kompile import Kompile
@@ -50,7 +50,7 @@ def kevm_kompile(
     *,
     main_module: str | None,
     syntax_module: str | None,
-    includes: Iterable[str] = (),
+    includes: Iterable[Path] = (),
     emit_json: bool = True,
     read_only: bool = False,
     ccopts: Iterable[str] = (),
@@ -96,7 +96,7 @@ def run_kompile(
     *,
     main_module: str | None,
     syntax_module: str | None,
-    includes: Iterable[str] = (),
+    includes: Iterable[Path] = (),
     emit_json: bool = True,
     read_only: bool = False,
     ccopts: Iterable[str] = (),
@@ -115,8 +115,7 @@ def run_kompile(
     if type_inference_mode is None:
         type_inference_mode = TypeInferenceMode.SIMPLESUB
 
-    include_dirs = [Path(include) for include in includes]
-    include_dirs += config.INCLUDE_DIRS
+    include_dirs = tuple(includes) + config.INCLUDE_DIRS
 
     base_args = KompileArgs(
         main_file=main_file,
