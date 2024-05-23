@@ -523,6 +523,10 @@ class KEVM(KProve, KRun):
         return KApply('abi_type_array', [elem_type, length, KEVM.typed_args(elems)])
 
     @staticmethod
+    def as_word(b: KInner) -> KApply:
+        return KApply('#asWord(_)_EVM-TYPES_Int_Bytes', [b])
+
+    @staticmethod
     def empty_typedargs() -> KApply:
         return KApply('.List{"typedArgs"}')
 
