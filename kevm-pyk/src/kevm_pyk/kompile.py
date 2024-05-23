@@ -8,7 +8,8 @@ from typing import TYPE_CHECKING
 
 from pyk.kdist import kdist
 from pyk.ktool import TypeInferenceMode
-from pyk.ktool.kompile import HaskellKompile, KompileArgs, LLVMKompile, LLVMKompileType, MaudeKompile
+from pyk.ktool.kompile import HaskellKompile, KompileArgs, LLVMKompile, MaudeKompile, PykBackend
+from pyk.ktool.kompile import kompile as pyk_kompile
 from pyk.utils import run_process
 
 from . import config
@@ -18,7 +19,7 @@ if TYPE_CHECKING:
     from pathlib import Path
     from typing import Final
 
-    from pyk.ktool.kompile import Kompile
+    from pyk.ktool.kompile import Kompile, LLVMKompileType
 
 
 _LOGGER: Final = logging.getLogger(__name__)
@@ -57,7 +58,6 @@ def kevm_kompile(
     optimization: int = 0,
     llvm_kompile_type: LLVMKompileType | None = None,
     enable_llvm_debug: bool = False,
-    llvm_library: Path | None = None,
     plugin_dir: Path | None = None,
     debug_build: bool = False,
     debug: bool = False,
@@ -81,7 +81,6 @@ def kevm_kompile(
         optimization=optimization,
         llvm_kompile_type=llvm_kompile_type,
         enable_llvm_debug=enable_llvm_debug,
-        llvm_library=llvm_library,
         debug_build=debug_build,
         debug=debug,
         verbose=verbose,
@@ -103,15 +102,11 @@ def run_kompile(
     optimization: int = 0,
     llvm_kompile_type: LLVMKompileType | None = None,
     enable_llvm_debug: bool = False,
-    llvm_library: Path | None = None,
     debug_build: bool = False,
     debug: bool = False,
     verbose: bool = False,
     type_inference_mode: str | TypeInferenceMode | None = None,
 ) -> Path:
-    if llvm_library is None:
-        llvm_library = output_dir / 'llvm-library'
-
     if type_inference_mode is None:
         type_inference_mode = TypeInferenceMode.SIMPLESUB
 
@@ -146,6 +141,29 @@ def run_kompile(
                     output_dir=output_dir, debug=debug, verbose=verbose, type_inference_mode=type_inference_mode
                 )
 
+            case KompileTarget.HASKELL:
+                return pyk_kompile(
+                    backend=PykBackend.BOOSTER,
+                    output_dir=output_dir,
+                    debug=debug,
+                    verbose=verbose,
+                    type_inference_mode=type_inference_mode,
+                    # ---
+                    main_file=main_file,
+                    main_module=main_module,
+                    syntax_module=syntax_module,
+                    include_dirs=include_dirs,
+                    md_selector=KompileTarget.LLVM.md_selector,
+                    hook_namespaces=HOOK_NAMESPACES,
+                    emit_json=emit_json,
+                    read_only=read_only,
+                    # --- LLVM ---
+                    ccopts=ccopts,
+                    opt_level=optimization,
+                    # --- Haskell ---
+                    haskell_binary=haskell_binary,
+                )
+
             case KompileTarget.MAUDE:
                 kompile_maude = MaudeKompile(
                     base_args=base_args,
@@ -167,41 +185,6 @@ def run_kompile(
                 with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
                     futures = [
                         executor.submit(_kompile_maude),
-                        executor.submit(_kompile_haskell),
-                    ]
-                    [future.result() for future in futures]
-
-                return output_dir
-
-            case KompileTarget.HASKELL:
-                base_args_llvm = KompileArgs(
-                    main_file=main_file,
-                    main_module=main_module,
-                    syntax_module=syntax_module,
-                    include_dirs=include_dirs,
-                    md_selector=KompileTarget.LLVM.md_selector,
-                    hook_namespaces=HOOK_NAMESPACES,
-                    emit_json=emit_json,
-                    read_only=read_only,
-                )
-                kompile_llvm = LLVMKompile(
-                    base_args=base_args_llvm, ccopts=ccopts, opt_level=optimization, llvm_kompile_type=LLVMKompileType.C
-                )
-                kompile_haskell = HaskellKompile(base_args=base_args, haskell_binary=haskell_binary)
-
-                def _kompile_llvm() -> None:
-                    kompile_llvm(
-                        output_dir=llvm_library, debug=debug, verbose=verbose, type_inference_mode=type_inference_mode
-                    )
-
-                def _kompile_haskell() -> None:
-                    kompile_haskell(
-                        output_dir=output_dir, debug=debug, verbose=verbose, type_inference_mode=type_inference_mode
-                    )
-
-                with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
-                    futures = [
-                        executor.submit(_kompile_llvm),
                         executor.submit(_kompile_haskell),
                     ]
                     [future.result() for future in futures]
