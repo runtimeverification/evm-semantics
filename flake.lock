@@ -82,40 +82,6 @@
         "type": "github"
       }
     },
-    "ethereum-legacytests": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1633533576,
-        "narHash": "sha256-43lkAi6Z492pbHV+jySYXzvNtoGEGsndnBkxfYgmqFM=",
-        "owner": "ethereum",
-        "repo": "legacytests",
-        "rev": "d7abc42a7b352a7b44b1f66b58aca54e4af6a9d7",
-        "type": "github"
-      },
-      "original": {
-        "owner": "ethereum",
-        "repo": "legacytests",
-        "rev": "d7abc42a7b352a7b44b1f66b58aca54e4af6a9d7",
-        "type": "github"
-      }
-    },
-    "ethereum-tests": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1637090666,
-        "narHash": "sha256-B3fMpp/dpnwtCQzxI45kptJVwIM/kMo9hptcMP2B5n0=",
-        "owner": "ethereum",
-        "repo": "tests",
-        "rev": "6401889dec4eee58e808fd178fb2c7f628a3e039",
-        "type": "github"
-      },
-      "original": {
-        "owner": "ethereum",
-        "repo": "tests",
-        "rev": "6401889dec4eee58e808fd178fb2c7f628a3e039",
-        "type": "github"
-      }
-    },
     "flake-compat": {
       "flake": false,
       "locked": {
@@ -482,8 +448,6 @@
     "root": {
       "inputs": {
         "blockchain-k-plugin": "blockchain-k-plugin",
-        "ethereum-legacytests": "ethereum-legacytests",
-        "ethereum-tests": "ethereum-tests",
         "flake-utils": [
           "k-framework",
           "flake-utils"
