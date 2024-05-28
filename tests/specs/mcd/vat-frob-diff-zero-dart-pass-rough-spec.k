@@ -1,7 +1,9 @@
 requires "verification.k"
+requires "vat-arithmetic-spec.k"
 
 module VAT-FROB-DIFF-ZERO-DART-PASS-ROUGH-SPEC
     imports VERIFICATION
+    imports VAT-ARITHMETIC-SPEC
 
     // Vat_frob-diff-zero-dart
     claim [Vat.frob-diff-zero-dart.pass.rough]:
@@ -284,106 +286,6 @@ module VAT-FROB-DIFF-ZERO-DART-PASS-ROUGH-SPEC
        andBool #Vat.urns[ABI_i][ABI_u].art =/=Int #Vat.live
        andBool #Vat.ilks[ABI_i].Art =/=Int #Vat.live
 
-    // Vat_muluu
-    claim [Vat.muluu.pass]:
-      <k> #execute ~> CONTINUATION => #execute ~> CONTINUATION </k>
-      <mode> NORMAL </mode>
-      <schedule> ISTANBUL </schedule>
-      <useGas> true </useGas>
-      <ethereum>
-        <evm>
-          <output> VOutput => VOutput </output>
-          <statusCode> _ => ?_ </statusCode>
-          <callStack> _VCallStack </callStack>
-          <interimStates> _ </interimStates>
-          <touchedAccounts> _ => ?_ </touchedAccounts>
-          <callState>
-            <program> Vat_bin_runtime </program>
-            <jumpDests> #computeValidJumpDests(Vat_bin_runtime) </jumpDests>
-            <id> ACCT_ID </id>
-            <caller> CALLER_ID </caller>
-            <callData> _ => ?_ </callData>
-            <callValue> VCallValue </callValue>
-            <wordStack> ABI_y : ABI_x : JMPTO : WS  =>  JMPTO : ABI_x *Int ABI_y : WS </wordStack>
-            <localMem> _ </localMem>
-            <pc> 13234 => 13277 </pc>
-            <gas> #gas(VGas) => #if ABI_y ==Int 0
-              #then   #gas ( ( VGas +Int -54 ) )
-              #else   #gas ( ( VGas +Int -106 ) )
-            #fi </gas>
-            <memoryUsed> VMemoryUsed </memoryUsed>
-            <callGas> _ => ?_ </callGas>
-            <static> _ </static>
-            <callDepth> VCallDepth </callDepth>
-          </callState>
-          <substate>
-            <selfDestruct> _VSelfDestruct </selfDestruct>
-            <log> _ => ?_ </log>
-            <refund> _Vrefund => ?_ </refund>
-            <accessedAccounts> _ => ?_ </accessedAccounts>
-            <accessedStorage> _ => ?_ </accessedStorage>
-          </substate>
-          <gasPrice> _ </gasPrice>
-          <origin> ORIGIN_ID </origin>
-          <blockhashes> _ </blockhashes>
-          <block>
-            <previousHash> _ </previousHash>
-            <ommersHash> _ </ommersHash>
-            <coinbase> _ </coinbase>
-            <stateRoot> _ </stateRoot>
-            <transactionsRoot> _ </transactionsRoot>
-            <receiptsRoot> _ </receiptsRoot>
-            <logsBloom> _ </logsBloom>
-            <difficulty> _ </difficulty>
-            <number> _BLOCK_NUMBER </number>
-            <gasLimit> _ </gasLimit>
-            <gasUsed> _ </gasUsed>
-            <timestamp> TIME </timestamp>
-            <extraData> _ </extraData>
-            <mixHash> _ </mixHash>
-            <blockNonce> _ </blockNonce>
-            <baseFee> _ </baseFee>
-            <ommerBlockHeaders> _ </ommerBlockHeaders>
-            <withdrawalsRoot> _ </withdrawalsRoot>
-          </block>
-        </evm>
-        <network>
-          <chainID> VChainId </chainID>
-          <accounts>
-            <account>
-              <acctID> ACCT_ID </acctID>
-              <balance> ACCT_ID_balance </balance>
-              <code> Vat_bin_runtime </code>
-              <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE  </storage>
-              <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
-              <nonce> _Nonce_Vat => ?_ </nonce>
-            </account>
-           ...
-          </accounts>
-          <txOrder> _ </txOrder>
-          <txPending> _ </txPending>
-          <messages> _ </messages>
-        </network>
-      </ethereum>
-      requires #rangeAddress(ACCT_ID)
-       andBool ACCT_ID =/=Int 0
-       andBool #notPrecompileAddress(ACCT_ID)
-       andBool #rangeAddress(CALLER_ID)
-       andBool #rangeAddress(ORIGIN_ID)
-       andBool #rangeUInt(256, TIME)
-       andBool #rangeUInt(256, ACCT_ID_balance)
-       andBool VCallDepth <=Int 1024
-       andBool #rangeUInt(256, VCallValue)
-       andBool #rangeUInt(256, VChainId)
-
-       andBool (#rangeUInt(256, ABI_x)
-       andBool (#rangeUInt(256, ABI_y)
-       andBool ((#sizeWordStack(WS) <=Int 1000)
-       andBool (#rangeUInt(256, VMemoryUsed)
-       andBool ((#rangeUInt(256, ABI_x *Int ABI_y)))))))
-
-
-    [trusted]
-
+    [depends(VAT-ARITHMETIC-SPEC.Vat.muluu.pass)]
 
 endmodule
