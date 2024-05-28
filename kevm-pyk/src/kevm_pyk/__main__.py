@@ -534,6 +534,7 @@ def exec_show_kcfg(options: ShowKCFGOptions) -> None:
         md_selector=options.md_selector,
         claim_labels=options.claim_labels,
         exclude_claim_labels=options.exclude_claim_labels,
+        include_dependencies=False,
     )
 
     nodes = options.nodes
@@ -579,6 +580,7 @@ def exec_view_kcfg(options: ViewKCFGOptions) -> None:
         md_selector=options.md_selector,
         claim_labels=options.claim_labels,
         exclude_claim_labels=options.exclude_claim_labels,
+        include_dependencies=False,
     )
 
     node_printer = kevm_node_printer(kevm, proof)
