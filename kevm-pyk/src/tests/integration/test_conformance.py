@@ -37,8 +37,9 @@ def _test(gst_file: Path, schedule: str, mode: str, chainid: int, usegas: bool) 
         gst_data = json.load(f)
 
     for test_name, test in gst_data.items():
+        # TODO: check if has post-state block
         _LOGGER.info(f'Running test: {gst_file} - {test_name}')
-        res = interpret({test_name: test}, schedule, mode, chainid, usegas, check=False)
+        res = interpret(test_name, test, schedule, mode, chainid, usegas, check=False)
         _assert_exit_code_zero(res)
 
 
@@ -53,6 +54,7 @@ def _assert_exit_code_zero(pattern: Pattern) -> None:
     if exit_code == int_dv(0):
         return
 
+    _LOGGER.warning(f'pattern: {pattern.text}')
     pretty = kore_print(pattern, definition_dir=kdist.get('evm-semantics.llvm'), output=PrintOutput.PRETTY)
     assert pretty == GOLDEN
 

@@ -15,8 +15,8 @@ if TYPE_CHECKING:
     from pyk.kore.syntax import Pattern
 
 
-def interpret(gst_data: Any, schedule: str, mode: str, chainid: int, usegas: bool, *, check: bool = True) -> Pattern:
-    proc_res = _interpret(gst_data, schedule, mode, chainid, usegas)
+def interpret(test_name: str, gst_data: Any, schedule: str, mode: str, chainid: int, usegas: bool, *, check: bool = True) -> Pattern:
+    proc_res = _interpret(test_name, gst_data, schedule, mode, chainid, usegas)
 
     if check:
         proc_res.check_returncode()
@@ -25,8 +25,8 @@ def interpret(gst_data: Any, schedule: str, mode: str, chainid: int, usegas: boo
     return kore
 
 
-def _interpret(gst_data: Any, schedule: str, mode: str, chainid: int, usegas: bool) -> CompletedProcess:
+def _interpret(test_name: str, gst_data: Any, schedule: str, mode: str, chainid: int, usegas: bool) -> CompletedProcess:
     interpreter = kdist.get('evm-semantics.llvm') / 'interpreter'
-    init_kore = gst_to_kore(gst_data, schedule, mode, chainid, usegas)
+    init_kore = gst_to_kore(test_name, gst_data, schedule, mode, chainid, usegas)
     proc_res = run_process([str(interpreter), '/dev/stdin', '-1', '/dev/stdout'], input=init_kore.text, check=False)
     return proc_res

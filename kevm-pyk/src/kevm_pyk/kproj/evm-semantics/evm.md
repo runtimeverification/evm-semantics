@@ -31,7 +31,7 @@ In the comments next to each cell, we've marked which component of the YellowPap
 ```k
     configuration
       <kevm>
-        <k> $PGM:EthereumSimulation </k>
+        <k> $PGM:EthereumCommand </k>
         <exit-code exit=""> 1 </exit-code>
         <mode> $MODE:Mode </mode>
         <schedule> $SCHEDULE:Schedule </schedule>
@@ -169,9 +169,6 @@ In the comments next to each cell, we've marked which component of the YellowPap
 
         </ethereum>
       </kevm>
-
-    syntax EthereumSimulation
- // -------------------------
 ```
 
 Modal Semantics

@@ -17,24 +17,6 @@ module ETHEREUM-SIMULATION
     imports STATE-UTILS
 ```
 
-An Ethereum simulation is a list of Ethereum commands.
-Some Ethereum commands take an Ethereum specification (eg. for an account or transaction).
-
-```k
-    syntax EthereumSimulation ::= ".EthereumSimulation"
-                                | EthereumCommand EthereumSimulation
- // ----------------------------------------------------------------
-    rule <k> .EthereumSimulation                        => .K         ... </k>
-    rule <k> ETC                 .EthereumSimulation    => ETC        ... </k>
-    rule <k> ETC                 ETS:EthereumSimulation => ETC ~> ETS ... </k> requires ETS =/=K .EthereumSimulation
-
-    rule <k> #halt ~> ETC ETS:EthereumSimulation => #halt ~> ETC ~> ETS ... </k>
-
-    syntax EthereumSimulation ::= JSON
- // ----------------------------------
-    rule <k> JSONINPUT:JSON => run JSONINPUT success .EthereumSimulation </k>
-```
-
 For verification purposes, it's much easier to specify a program in terms of its op-codes and not the hex-encoding that the tests use.
 To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a "pretti-fication" to the nicer input form.
 
@@ -248,6 +230,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`.
 
 ```k
+    // rule <k> (STUFF ~> .K) ~> .K => STUFF ~> .K </k>
     syntax EthereumCommand ::= "run" JSON
  // -------------------------------------
     rule <k> run { .JSONs } => .K ... </k>

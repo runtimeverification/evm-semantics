@@ -33,7 +33,7 @@ from pyk.utils import FrozenDict, hash_str, single
 
 from . import VERSION, config
 from .cli import _create_argument_parser, generate_options, get_argument_type_setter, get_option_string_destination
-from .gst_to_kore import SORT_ETHEREUM_SIMULATION, gst_to_kore, kore_pgm_to_kore
+from .gst_to_kore import SORT_ETHEREUM_COMMAND, gst_to_kore, kore_pgm_to_kore
 from .kevm import KEVM, KEVMSemantics, kevm_node_printer
 from .kompile import KompileTarget, kevm_kompile
 from .utils import (
@@ -614,11 +614,11 @@ def exec_run(options: RunOptions) -> None:
         json_read = json.loads(options.input_file.read_text())
         kore_pattern = gst_to_kore(json_read, options.schedule, options.mode, options.chainid, options.usegas)
     except json.JSONDecodeError:
-        pgm_token = KToken(options.input_file.read_text(), KSort('EthereumSimulation'))
+        pgm_token = KToken(options.input_file.read_text(), KSort('EthereumCommand'))
         kast_pgm = kevm.parse_token(pgm_token)
-        kore_pgm = kevm.kast_to_kore(kast_pgm, sort=KSort('EthereumSimulation'))
+        kore_pgm = kevm.kast_to_kore(kast_pgm, sort=KSort('EthereumCommand'))
         kore_pattern = kore_pgm_to_kore(
-            kore_pgm, SORT_ETHEREUM_SIMULATION, options.schedule, options.mode, options.chainid, options.usegas
+            kore_pgm, SORT_ETHEREUM_COMMAND, options.schedule, options.mode, options.chainid, options.usegas
         )
 
     kevm.run(
@@ -643,11 +643,11 @@ def exec_kast(options: KastOptions) -> None:
         json_read = json.loads(options.input_file.read_text())
         kore_pattern = gst_to_kore(json_read, options.schedule, options.mode, options.chainid, options.usegas)
     except json.JSONDecodeError:
-        pgm_token = KToken(options.input_file.read_text(), KSort('EthereumSimulation'))
+        pgm_token = KToken(options.input_file.read_text(), KSort('EthereumCommand'))
         kast_pgm = kevm.parse_token(pgm_token)
         kore_pgm = kevm.kast_to_kore(kast_pgm)
         kore_pattern = kore_pgm_to_kore(
-            kore_pgm, SORT_ETHEREUM_SIMULATION, options.schedule, options.mode, options.chainid, options.usegas
+            kore_pgm, SORT_ETHEREUM_COMMAND, options.schedule, options.mode, options.chainid, options.usegas
         )
 
     output_text = kore_print(kore_pattern, definition_dir=kevm.definition_dir, output=options.output)
