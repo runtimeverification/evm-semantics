@@ -8,6 +8,7 @@ module VAT-DAI-PASS-SPEC
       <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
+      <useGas> true </useGas>
       <ethereum>
         <evm>
           <output> _ => #buf(32, Rad) </output>
