@@ -39,6 +39,7 @@ if TYPE_CHECKING:
     from pyk.kast.inner import KAst
     from pyk.kast.outer import KFlatModule
     from pyk.kcfg import KCFG
+    from pyk.kcfg.semantics import KCFGExtendResult
     from pyk.ktool.kprint import SymbolTable
     from pyk.utils import BugReport
 
@@ -146,6 +147,9 @@ class KEVMSemantics(KCFGSemantics):
                 return term
 
         return CTerm(config=bottom_up(_replace, cterm.config), constraints=cterm.constraints)
+
+    def custom_step(self, cterm: CTerm) -> KCFGExtendResult | None:
+        return None
 
     @staticmethod
     def cut_point_rules(
