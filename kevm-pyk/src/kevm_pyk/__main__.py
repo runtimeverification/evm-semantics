@@ -513,9 +513,10 @@ def exec_section_edge(options: SectionEdgeOptions) -> None:
         trace_rewrites=options.trace_rewrites,
         llvm_definition_dir=llvm_definition_dir,
     ) as kcfg_explore:
-        kcfg, _ = kcfg_explore.section_edge(
+        node_ids = kcfg_explore.section_edge(
             proof.kcfg, source_id=int(source_id), target_id=int(target_id), logs=proof.logs, sections=options.sections
         )
+        _LOGGER.info(f'Added nodes on edge {(source_id, target_id)}: {node_ids}')
     proof.write_proof_data()
 
 
