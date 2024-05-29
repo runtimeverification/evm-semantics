@@ -130,7 +130,6 @@ module VAT-MOVE-DIFF-ROUGH-ARITH-SPEC
     // Vat_adduu
     claim [Vat.adduu.pass]:
       <k> #execute ~> CONTINUATION => JUMP JMPTO ~> #pc [ JUMP ] ~> #execute ~> CONTINUATION </k>
-      <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
       <useGas> true </useGas>
@@ -228,7 +227,6 @@ module VAT-MOVE-DIFF-ROUGH-ARITH-SPEC
     // Vat_subuu
     claim [Vat.subuu.pass]:
       <k> #execute ~> CONTINUATION => JUMP JMPTO ~> #pc [ JUMP ] ~> #execute ~> CONTINUATION </k>
-      <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
       <useGas> true </useGas>

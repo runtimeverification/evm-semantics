@@ -287,7 +287,6 @@ module VAT-FROB-DIFF-ZERO-DART-PASS-ROUGH-SPEC
     // Vat_muluu
     claim [Vat.muluu.pass]:
       <k> #execute ~> CONTINUATION => #execute ~> CONTINUATION </k>
-      <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
       <useGas> true </useGas>

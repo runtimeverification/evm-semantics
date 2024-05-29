@@ -115,7 +115,6 @@ module VAT-SLIP-PASS-ROUGH-SPEC
     // Vat_addui
     claim [Vat.addui.pass]:
       <k> #execute ~> CONTINUATION => JUMP JMPTO ~> #pc [ JUMP ] ~> #execute ~> CONTINUATION </k>
-      <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
       <useGas> true </useGas>

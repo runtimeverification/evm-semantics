@@ -189,7 +189,6 @@ module VAT-FORK-DIFF-PASS-ROUGH-SPEC
     // Vat_addui
     claim [Vat.addui.pass]:
       <k> #execute ~> CONTINUATION => #execute ~> CONTINUATION </k>
-      <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
       <useGas> true </useGas>
@@ -295,7 +294,6 @@ module VAT-FORK-DIFF-PASS-ROUGH-SPEC
     // Vat_subui
     claim [Vat.subui.pass]:
       <k> #execute ~> CONTINUATION => #execute ~> CONTINUATION </k>
-      <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
       <useGas> true </useGas>
@@ -401,7 +399,6 @@ module VAT-FORK-DIFF-PASS-ROUGH-SPEC
     // Vat_muluu
     claim [Vat.muluu.pass]:
       <k> #execute ~> CONTINUATION => #execute ~> CONTINUATION </k>
-      <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
       <useGas> true </useGas>
