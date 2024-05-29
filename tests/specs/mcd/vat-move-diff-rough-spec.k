@@ -7,7 +7,6 @@ module VAT-MOVE-DIFF-ROUGH-SPEC
     // Vat_move-diff
     claim [Vat.move-diff.pass.rough]:
       <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
-      <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
       <useGas> true </useGas>

@@ -6,7 +6,6 @@ module VAT-SLIP-PASS-ROUGH-SPEC
     // Vat_slip
     claim [Vat.slip.pass.rough]:
       <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
-      <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
       <useGas> true </useGas>

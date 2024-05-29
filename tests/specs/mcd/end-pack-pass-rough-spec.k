@@ -6,7 +6,6 @@ module END-PACK-PASS-ROUGH-SPEC
     // End_pack
     claim [End.pack.pass.rough]:
       <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
-      <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
       <useGas> true </useGas>
@@ -162,7 +161,6 @@ module END-PACK-PASS-ROUGH-SPEC
     // End_muluu
     claim [End.muluu.pass]:
       <k> #execute ~> CONTINUATION => #execute ~> CONTINUATION </k>
-      <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
       <useGas> true </useGas>
@@ -266,7 +264,6 @@ module END-PACK-PASS-ROUGH-SPEC
     // End_adduu
     claim [End.adduu.pass]:
       <k> #execute ~> CONTINUATION => #execute ~> CONTINUATION </k>
-      <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
       <useGas> true </useGas>
@@ -367,7 +364,6 @@ module END-PACK-PASS-ROUGH-SPEC
     // Vat_move-diff
     claim [Vat.move-diff.pass]:
       <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
-      <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
       <useGas> true </useGas>
