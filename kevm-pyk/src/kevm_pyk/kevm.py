@@ -41,7 +41,7 @@ if TYPE_CHECKING:
     from pyk.kast.inner import KAst
     from pyk.kast.outer import KFlatModule
     from pyk.kcfg import KCFG
-    from pyk.kcfg.kcfg import KCFGExtendResult
+    from pyk.kcfg.semantics import KCFGExtendResult
     from pyk.ktool.kprint import SymbolTable
     from pyk.utils import BugReport
 
@@ -112,27 +112,6 @@ class KEVMSemantics(KCFGSemantics):
                 return True
         return False
 
-    def custom_step(self, cterm: CTerm) -> KCFGExtendResult | None:
-        """Given a CTerm, update the JUMPDESTS_CELL and PROGRAM_CELL if the rule 'EVM.program.load' is at the top of the K_CELL.
-
-        :param cterm: CTerm of a proof node.
-        :type cterm: CTerm
-        :return: If the K_CELL matches the load_pattern, a Step with depth 1 is returned togheter with the new state to mention that the `EVM.program.load` rule has been applied. Otherwise, None is returned.
-        :rtype: KCFGExtendResult | None
-        """
-        load_pattern = KSequence(
-            [KApply('#loadProgram__EVM_KItem_Bytes', KVariable('###BYTECODE')), KVariable('###CONTINUATION')]
-        )
-        subst = load_pattern.match(cterm.cell('K_CELL'))
-        if subst is not None:
-            bytecode_sections = flatten_label('_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes', subst['###BYTECODE'])
-            jumpdests_set = compute_jumpdests(bytecode_sections)
-            new_cterm = CTerm.from_kast(set_cell(cterm.kast, 'JUMPDESTS_CELL', jumpdests_set))
-            new_cterm = CTerm.from_kast(set_cell(new_cterm.kast, 'PROGRAM_CELL', subst['###BYTECODE']))
-            new_cterm = CTerm.from_kast(set_cell(new_cterm.kast, 'K_CELL', KSequence(subst['###CONTINUATION'])))
-            return Step(new_cterm, 1, (), ['EVM.program.load'], cut=True)
-        return None
-
     def extract_branches(self, cterm: CTerm) -> list[KInner]:
         k_cell = cterm.cell('K_CELL')
         jumpi_pattern = KEVM.jumpi_applied(KVariable('###PCOUNT'), KVariable('###COND'))
@@ -169,6 +148,27 @@ class KEVMSemantics(KCFGSemantics):
                 return term
 
         return CTerm(config=bottom_up(_replace, cterm.config), constraints=cterm.constraints)
+
+    def custom_step(self, cterm: CTerm) -> KCFGExtendResult | None:
+        """Given a CTerm, update the JUMPDESTS_CELL and PROGRAM_CELL if the rule 'EVM.program.load' is at the top of the K_CELL.
+
+        :param cterm: CTerm of a proof node.
+        :type cterm: CTerm
+        :return: If the K_CELL matches the load_pattern, a Step with depth 1 is returned togheter with the new state to mention that the `EVM.program.load` rule has been applied. Otherwise, None is returned.
+        :rtype: KCFGExtendResult | None
+        """
+        load_pattern = KSequence(
+            [KApply('#loadProgram__EVM_KItem_Bytes', KVariable('###BYTECODE')), KVariable('###CONTINUATION')]
+        )
+        subst = load_pattern.match(cterm.cell('K_CELL'))
+        if subst is not None:
+            bytecode_sections = flatten_label('_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes', subst['###BYTECODE'])
+            jumpdests_set = compute_jumpdests(bytecode_sections)
+            new_cterm = CTerm.from_kast(set_cell(cterm.kast, 'JUMPDESTS_CELL', jumpdests_set))
+            new_cterm = CTerm.from_kast(set_cell(new_cterm.kast, 'PROGRAM_CELL', subst['###BYTECODE']))
+            new_cterm = CTerm.from_kast(set_cell(new_cterm.kast, 'K_CELL', KSequence(subst['###CONTINUATION'])))
+            return Step(new_cterm, 1, (), ['EVM.program.load'], cut=True)
+        return None
 
     @staticmethod
     def cut_point_rules(

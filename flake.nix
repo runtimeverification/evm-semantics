@@ -2,11 +2,11 @@
   description = "A flake for the KEVM Semantics";
 
   inputs = {
-    k-framework.url = "github:runtimeverification/k/v7.0.83";
+    k-framework.url = "github:runtimeverification/k/v7.0.100";
     nixpkgs.follows = "k-framework/nixpkgs";
     flake-utils.follows = "k-framework/flake-utils";
     rv-utils.follows = "k-framework/rv-utils";
-    pyk.url = "github:runtimeverification/k/v7.0.83?dir=pyk";
+    pyk.url = "github:runtimeverification/k/v7.0.100?dir=pyk";
     nixpkgs-pyk.follows = "pyk/nixpkgs";
     poetry2nix.follows = "pyk/poetry2nix";
     blockchain-k-plugin = {
@@ -15,20 +15,10 @@
       inputs.flake-utils.follows = "k-framework/flake-utils";
       inputs.nixpkgs.follows = "k-framework/nixpkgs";
     };
-    ethereum-tests = {
-      url = "github:ethereum/tests/6401889dec4eee58e808fd178fb2c7f628a3e039";
-      flake = false;
-    };
-    ethereum-legacytests = {
-      url =
-        "github:ethereum/legacytests/d7abc42a7b352a7b44b1f66b58aca54e4af6a9d7";
-      flake = false;
-    };
     haskell-backend.follows = "k-framework/haskell-backend";
   };
   outputs = { self, k-framework, haskell-backend, nixpkgs, flake-utils
-    , blockchain-k-plugin, ethereum-tests, ethereum-legacytests, rv-utils, pyk
-    , ... }@inputs:
+    , blockchain-k-plugin, rv-utils, pyk, ... }@inputs:
     let
       nixLibs = pkgs:
         with pkgs;
@@ -127,9 +117,6 @@
             buildInputs = [ final.kevm prev.which prev.git ];
 
             buildPhase = ''
-              mkdir -p tests/ethereum-tests/LegacyTests
-              cp -r ${ethereum-tests}/* tests/ethereum-tests/
-              cp -r ${ethereum-legacytests}/* tests/ethereum-tests/LegacyTests/
               chmod -R u+w tests
               APPLE_SILICON=${
                 if prev.stdenv.isAarch64 && prev.stdenv.isDarwin then
@@ -237,16 +224,12 @@
           };
 
           check-submodules = rv-utils.lib.check-submodules pkgs {
-            inherit k-framework blockchain-k-plugin ethereum-tests
-              ethereum-legacytests;
+            inherit k-framework blockchain-k-plugin;
           };
 
           update-from-submodules =
             rv-utils.lib.update-from-submodules pkgs ./flake.lock {
               blockchain-k-plugin.submodule = "deps/plugin";
-              ethereum-tests.submodule = "tests/ethereum-tests";
-              ethereum-legacytests.submodule =
-                "tests/ethereum-tests/LegacyTests";
             };
         };
       }) // {

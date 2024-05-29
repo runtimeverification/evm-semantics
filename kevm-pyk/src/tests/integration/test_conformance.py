@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import logging
 import sys
 from typing import TYPE_CHECKING
 
@@ -21,6 +22,10 @@ if TYPE_CHECKING:
     from pyk.kore.syntax import Pattern
 
 
+_LOGGER: Final = logging.getLogger(__name__)
+_LOG_FORMAT: Final = '%(levelname)s %(asctime)s %(name)s - %(message)s'
+
+
 sys.setrecursionlimit(10**8)
 
 TEST_DIR: Final = REPO_ROOT / 'tests/ethereum-tests'
@@ -28,15 +33,13 @@ GOLDEN: Final = (REPO_ROOT / 'tests/templates/output-success-llvm.json').read_te
 
 
 def _test(gst_file: Path, schedule: str, mode: str, chainid: int, usegas: bool) -> None:
-    # Given
     with gst_file.open() as f:
         gst_data = json.load(f)
 
-    # When
-    res = interpret(gst_data, schedule, mode, chainid, usegas, check=False)
-
-    # Then
-    _assert_exit_code_zero(res)
+    for test_name, test in gst_data.items():
+        _LOGGER.info(f'Running test: {gst_file} - {test_name}')
+        res = interpret({test_name: test}, schedule, mode, chainid, usegas, check=False)
+        _assert_exit_code_zero(res)
 
 
 def _assert_exit_code_zero(pattern: Pattern) -> None:
@@ -65,7 +68,7 @@ def _skipped_tests() -> set[Path]:
 
 SKIPPED_TESTS: Final = _skipped_tests()
 
-VM_TEST_DIR: Final = TEST_DIR / 'LegacyTests/Constantinople/VMTests'
+VM_TEST_DIR: Final = TEST_DIR / 'BlockchainTests/GeneralStateTests/VMTests'
 ALL_VM_TESTS: Final = tuple(VM_TEST_DIR.glob('*/*.json'))
 VM_TESTS: Final = tuple(test_file for test_file in ALL_VM_TESTS if test_file not in SKIPPED_TESTS)
 REST_VM_TESTS: Final = tuple(test_file for test_file in ALL_VM_TESTS if test_file in SKIPPED_TESTS)
@@ -90,15 +93,14 @@ def test_rest_vm(test_file: Path) -> None:
     _test(test_file, 'DEFAULT', 'VMTESTS', 1, True)
 
 
-BCHAIN_NEW_TEST_DIR: Final = TEST_DIR / 'BlockchainTests/GeneralStateTests'
-BCHAIN_NEW_TESTS: Final = tuple(BCHAIN_NEW_TEST_DIR.glob('**/*.json'))
-
-BCHAIN_LEGACY_TEST_DIR: Final = TEST_DIR / 'LegacyTests/Constantinople/BlockchainTests/GeneralStateTests'
-BCHAIN_LEGACY_TESTS: Final = tuple(BCHAIN_LEGACY_TEST_DIR.glob('*/*.json'))
-
-ALL_BCHAIN_TESTS: Final = BCHAIN_NEW_TESTS + BCHAIN_LEGACY_TESTS
-BCHAIN_TESTS: Final = tuple(test_file for test_file in ALL_BCHAIN_TESTS if test_file not in SKIPPED_TESTS)
-REST_BCHAIN_TESTS: Final = tuple(test_file for test_file in ALL_BCHAIN_TESTS if test_file in SKIPPED_TESTS)
+BCHAIN_TEST_DIR: Final = TEST_DIR / 'BlockchainTests/GeneralStateTests'
+ALL_BCHAIN_TESTS: Final = tuple(BCHAIN_TEST_DIR.glob('**/*.json'))
+BCHAIN_TESTS: Final = tuple(
+    test_file for test_file in ALL_BCHAIN_TESTS if test_file not in (list(SKIPPED_TESTS) + list(ALL_VM_TESTS))
+)
+REST_BCHAIN_TESTS: Final = tuple(
+    test_file for test_file in ALL_BCHAIN_TESTS if test_file in SKIPPED_TESTS and test_file not in ALL_VM_TESTS
+)
 
 
 @pytest.mark.parametrize(
