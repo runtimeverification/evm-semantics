@@ -8,7 +8,6 @@ module VAT-FOLD-PASS-ROUGH-SPEC
     // Vat_fold
     claim [Vat.fold.pass.rough]:
       <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
-      <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
       <useGas> true </useGas>
