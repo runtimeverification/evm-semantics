@@ -455,6 +455,7 @@ def exec_prune(options: PruneOptions) -> None:
             md_selector=md_selector,
             claim_labels=options.claim_labels,
             exclude_claim_labels=options.exclude_claim_labels,
+            include_dependencies=False,
         )
     )
 
@@ -495,6 +496,7 @@ def exec_section_edge(options: SectionEdgeOptions) -> None:
             md_selector=md_selector,
             claim_labels=options.claim_labels,
             exclude_claim_labels=options.exclude_claim_labels,
+            include_dependencies=False,
         )
     )
 
