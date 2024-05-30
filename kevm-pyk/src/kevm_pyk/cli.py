@@ -358,7 +358,7 @@ class RPCOptions(Options):
         return {
             'trace_rewrites': False,
             'kore_rpc_command': None,
-            'use_booster': False,
+            'use_booster': True,
             'fallback_on': [],
             'post_exec_simplify': True,
             'interim_simplification': None,
@@ -1019,9 +1019,16 @@ class KEVMCLIArgs(KCLIArgs):
         args.add_argument(
             '--use-booster',
             dest='use_booster',
-            default=False,
+            default=True,
             action='store_true',
             help='Use the booster RPC server instead of kore-rpc.',
+        )
+        args.add_argument(
+            '--no-use-booster',
+            dest='use_booster',
+            default=True,
+            action='store_false',
+            help='Do not use the booster RPC server instead of kore-rpc.',
         )
         args.add_argument(
             '--fallback-on',
