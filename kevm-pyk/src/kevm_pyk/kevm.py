@@ -154,7 +154,7 @@ class KEVMSemantics(KCFGSemantics):
 
         :param cterm: CTerm of a proof node.
         :type cterm: CTerm
-        :return: If the K_CELL matches the load_pattern, a Step with depth 1 is returned togheter with the new state to mention that the `EVM.program.load` rule has been applied. Otherwise, None is returned.
+        :return: If the K_CELL matches the load_pattern, a Step with depth 1 is returned together with the new configuration, also registering that the `EVM.program.load` rule has been applied. Otherwise, None is returned.
         :rtype: KCFGExtendResult | None
         """
         load_pattern = KSequence(
