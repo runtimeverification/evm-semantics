@@ -567,8 +567,8 @@ class KEVM(KProve, KRun):
         return KApply('.Bytes_BYTES-HOOKED_Bytes')
 
     @staticmethod
-    def buf(width: int, v: KInner) -> KApply:
-        return KApply('#buf(_,_)_BUF-SYNTAX_Bytes_Int_Int', [intToken(width), v])
+    def buf(width: KInner, v: KInner) -> KApply:
+        return KApply('#buf(_,_)_BUF-SYNTAX_Bytes_Int_Int', [width, v])
 
     @staticmethod
     def intlist(ints: list[KInner]) -> KApply:
