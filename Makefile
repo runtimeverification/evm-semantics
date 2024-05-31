@@ -135,8 +135,8 @@ KRUN_OPTS     ?=
 KEEP_OUTPUTS  := false
 CHECK         := git --no-pager diff --no-index --ignore-all-space -R
 
-tests/ethereum-tests/LegacyTests/Constantinople/VMTests/%: KEVM_MODE     = VMTESTS
-tests/ethereum-tests/LegacyTests/Constantinople/VMTests/%: KEVM_SCHEDULE = DEFAULT
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/VMTests/%: KEVM_MODE     = VMTESTS
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/VMTests/%: KEVM_SCHEDULE = DEFAULT
 
 tests/%.run-interactive: tests/%
 	$(POETRY_RUN) kevm-pyk run $< $(KEVM_OPTS) $(KRUN_OPTS) --target $(TEST_CONCRETE_BACKEND)                          \
@@ -145,8 +145,7 @@ tests/%.run-interactive: tests/%
 	    || $(CHECK) tests/$*.$(TEST_CONCRETE_BACKEND)-out tests/templates/output-success-$(TEST_CONCRETE_BACKEND).json
 	$(KEEP_OUTPUTS) || rm -rf tests/$*.$(TEST_CONCRETE_BACKEND)-out
 
-interactive_tests = tests/ethereum-tests/LegacyTests/Constantinople/VMTests/vmArithmeticTest/add0.json      \
-                    tests/ethereum-tests/LegacyTests/Constantinople/VMTests/vmIOandFlowOperations/pop1.json \
+interactive_tests = tests/interactive/add.json    \
                     tests/interactive/sumTo10.evm
 
 .PHONY: test-interactive

@@ -20,7 +20,7 @@ jobs:
     runs-on: ${{ matrix.runner }}
     steps:
       - name: 'Check out code'
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: ${{ github.event.push.head.sha }}
           fetch-depth: 0
@@ -59,7 +59,7 @@ jobs:
     needs: nix-cache
     steps:
       - name: 'Check out code'
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: ${{ github.event.push.head.sha }}
           fetch-depth: 0
@@ -88,7 +88,7 @@ jobs:
     needs: make-release
     steps:
       - name: 'Check out gh-pages'
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           submodules: true
