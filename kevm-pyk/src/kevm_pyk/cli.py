@@ -179,6 +179,7 @@ def _create_argument_parser() -> ArgumentParser:
     prove_args.add_argument(
         '--reinit',
         dest='reinit',
+        default=None,
         action='store_true',
         help='Reinitialize CFGs even if they already exist.',
     )
@@ -200,6 +201,7 @@ def _create_argument_parser() -> ArgumentParser:
     section_edge_args.add_argument(
         '--use-booster',
         dest='use_booster',
+        default=None,
         action='store_true',
         help="Use the booster RPC server instead of kore-rpc. Requires calling kompile with '--target haskell-booster' flag",
     )
@@ -215,7 +217,9 @@ def _create_argument_parser() -> ArgumentParser:
             config_args.config_args,
         ],
     )
-    prove_legacy_args.add_argument('--bug-report-legacy', action='store_true', help='Generate a legacy bug report.')
+    prove_legacy_args.add_argument(
+        '--bug-report-legacy', default=None, action='store_true', help='Generate a legacy bug report.'
+    )
 
     command_parser.add_parser(
         'view-kcfg',
@@ -256,18 +260,21 @@ def _create_argument_parser() -> ArgumentParser:
     run_args.add_argument(
         '--expand-macros',
         dest='expand_macros',
+        default=None,
         action='store_true',
         help='Expand macros on the input term before execution.',
     )
     run_args.add_argument(
         '--no-expand-macros',
         dest='expand_macros',
+        default=None,
         action='store_false',
         help='Do not expand macros on the input term before execution.',
     )
     run_args.add_argument(
         '--debugger',
         dest='debugger',
+        default=None,
         action='store_true',
         help='Run GDB debugger for execution.',
     )
@@ -886,18 +893,21 @@ class KEVMCLIArgs(KCLIArgs):
         args.add_argument(
             '--always-check-subsumption',
             dest='always_check_subsumption',
+            default=None,
             action='store_true',
             help='Check subsumption even on non-terminal nodes (default, experimental).',
         )
         args.add_argument(
             '--no-always-check-subsumption',
             dest='always_check_subsumption',
+            default=None,
             action='store_false',
             help='Do not check subsumption on non-terminal nodes (experimental).',
         )
         args.add_argument(
             '--fast-check-subsumption',
             dest='fast_check_subsumption',
+            default=None,
             action='store_true',
             help='Use fast-check on k-cell to determine subsumption (experimental).',
         )
@@ -908,12 +918,14 @@ class KEVMCLIArgs(KCLIArgs):
         args = ArgumentParser(add_help=False)
         args.add_argument(
             '--bug-report',
+            default=None,
             action='store_true',
             help='Generate a haskell-backend bug report for the execution.',
         )
         args.add_argument(
             '--debugger',
             dest='debugger',
+            default=None,
             action='store_true',
             help='Launch proof in an interactive debugger.',
         )
@@ -974,7 +986,9 @@ class KEVMCLIArgs(KCLIArgs):
             choices=modes,
             help="execution mode to use [{'|'.join(modes)}].",
         )
-        args.add_argument('--no-gas', action='store_false', dest='usegas', help='omit gas cost computations.')
+        args.add_argument(
+            '--no-gas', default=None, action='store_false', dest='usegas', help='omit gas cost computations.'
+        )
         return args
 
     @cached_property
@@ -983,6 +997,7 @@ class KEVMCLIArgs(KCLIArgs):
         args.add_argument(
             '--sort-collections',
             dest='sort_collections',
+            default=None,
             action='store_true',
             help='Sort collections before outputting term.',
         )
@@ -994,6 +1009,7 @@ class KEVMCLIArgs(KCLIArgs):
         args.add_argument(
             '--trace-rewrites',
             dest='trace_rewrites',
+            default=None,
             action='store_true',
             help='Log traces of all simplification and rewrite rule applications.',
         )
@@ -1006,6 +1022,7 @@ class KEVMCLIArgs(KCLIArgs):
         args.add_argument(
             '--use-booster',
             dest='use_booster',
+            default=None,
             action='store_true',
             help='Use the booster RPC server instead of kore-rpc.',
         )
@@ -1018,12 +1035,14 @@ class KEVMCLIArgs(KCLIArgs):
         args.add_argument(
             '--post-exec-simplify',
             dest='post_exec_simplify',
+            default=None,
             action='store_true',
             help='Always simplify states with kore backend after booster execution, only usable with --use-booster.',
         )
         args.add_argument(
             '--no-post-exec-simplify',
             dest='post_exec_simplify',
+            default=None,
             action='store_false',
             help='Do not simplify states with kore backend after booster execution, only usable with --use-booster.',
         )
@@ -1053,36 +1072,42 @@ class KEVMCLIArgs(KCLIArgs):
         args.add_argument(
             '--break-every-step',
             dest='break_every_step',
+            default=None,
             action='store_true',
             help='Store a node for every EVM opcode step (expensive).',
         )
         args.add_argument(
             '--break-on-jumpi',
             dest='break_on_jumpi',
+            default=None,
             action='store_true',
             help='Store a node for every EVM jump opcode.',
         )
         args.add_argument(
             '--break-on-calls',
             dest='break_on_calls',
+            default=None,
             action='store_true',
             help='Store a node for every EVM call made.',
         )
         args.add_argument(
             '--no-break-on-calls',
             dest='break_on_calls',
+            default=None,
             action='store_false',
             help='Do not store a node for every EVM call made (default).',
         )
         args.add_argument(
             '--break-on-storage',
             dest='break_on_storage',
+            default=None,
             action='store_true',
             help='Store a node for every EVM SSTORE/SLOAD made.',
         )
         args.add_argument(
             '--break-on-basic-blocks',
             dest='break_on_basic_blocks',
+            default=None,
             action='store_true',
             help='Store a node for every EVM basic block (implies --break-on-calls).',
         )
@@ -1101,42 +1126,49 @@ class KEVMCLIArgs(KCLIArgs):
         args.add_argument(
             '--failure-information',
             dest='failure_info',
+            default=None,
             action='store_true',
             help='Show failure summary for all failing tests (default).',
         )
         args.add_argument(
             '--no-failure-information',
             dest='failure_info',
+            default=None,
             action='store_false',
             help='Do not show failure summary for failing tests.',
         )
         args.add_argument(
             '--auto-abstract-gas',
             dest='auto_abstract_gas',
+            default=None,
             action='store_true',
             help='Automatically extract gas cell when infinite gas is enabled.',
         )
         args.add_argument(
             '--counterexample-information',
             dest='counterexample_info',
+            default=None,
             action='store_true',
             help='Show models for failing nodes (default).',
         )
         args.add_argument(
             '--no-counterexample-information',
             dest='counterexample_info',
+            default=None,
             action='store_false',
             help='Do not show models for failing nodes.',
         )
         args.add_argument(
             '--fail-fast',
             dest='fail_fast',
+            default=None,
             action='store_true',
             help='Stop execution on other branches if a failing node is detected (default).',
         )
         args.add_argument(
             '--no-fail-fast',
             dest='fail_fast',
+            default=None,
             action='store_false',
             help='Continue execution on other branches if a failing node is detected.',
         )
@@ -1179,21 +1211,30 @@ class KEVMCLIArgs(KCLIArgs):
         args.add_argument(
             '--failure-information',
             dest='failure_info',
+            default=None,
             action='store_true',
             help='Show failure summary for cfg.',
         )
         args.add_argument(
             '--no-failure-information',
             dest='failure_info',
+            default=None,
             action='store_false',
             help='Do not show failure summary for cfg.',
         )
-        args.add_argument('--to-module', dest='to_module', action='store_true', help='Output edges as a K module.')
-        args.add_argument('--pending', dest='pending', action='store_true', help='Also display pending nodes.')
-        args.add_argument('--failing', dest='failing', action='store_true', help='Also display failing nodes.')
+        args.add_argument(
+            '--to-module', dest='to_module', default=None, action='store_true', help='Output edges as a K module.'
+        )
+        args.add_argument(
+            '--pending', dest='pending', default=None, action='store_true', help='Also display pending nodes.'
+        )
+        args.add_argument(
+            '--failing', dest='failing', default=None, action='store_true', help='Also display failing nodes.'
+        )
         args.add_argument(
             '--counterexample-information',
             dest='counterexample_info',
+            default=None,
             action='store_true',
             help="Show models for failing nodes. Should be called with the '--failure-information' flag.",
         )
