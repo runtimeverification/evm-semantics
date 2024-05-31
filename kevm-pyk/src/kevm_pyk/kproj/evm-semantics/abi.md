@@ -321,7 +321,7 @@ For most types, this is a fixed 32 bytes, except for static tuples, for which th
  - for `#bytes(BS)` and `#string(BS)`, the size is 32 bytes for the length prefix plus the size of the actual byte sequence, rounded up to the nearest multiple of 32.
  - for `#tuple(ARGS)`, the size is 32 bytes for the length prefix plus the cumulative size of its elements.
  - for `#array(T, N, _)` that has elements of a static `TypedArg` `T`, the size is `32 * (1 + N)`,which accounts for 32 bytes for the length prefix and 32 bytes for each element.
- - for dynamic type arrays `#array(T, N, ELEMS)`, the size is `32 * (1 + N + #sizeOfDynamicTypeList(ELEMS))`.
+ - for dynamic type arrays `#array(T, N, ELEMS)`, the size is `32 * (1 + N) + #sizeOfDynamicTypeList(ELEMS)`.
 
 ```k
     syntax Int ::= #sizeOfDynamicType ( TypedArg ) [klabel(#sizeOfDynamicType), function]
