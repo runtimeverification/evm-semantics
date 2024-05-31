@@ -332,7 +332,7 @@ For most types, this is a fixed 32 bytes, except for static tuples, for which th
     rule #sizeOfDynamicType(#array(T, N, _)) => 32 *Int (1 +Int N)
       requires #isStaticType(T)
 
-    rule #sizeOfDynamicType(#array(T, N, ELEMS)) => 32 *Int (1 +Int N +Int #sizeOfDynamicTypeList(ELEMS))
+    rule #sizeOfDynamicType(#array(T, N, ELEMS)) => (32 *Int (1 +Int N)) +Int #sizeOfDynamicTypeList(ELEMS)
       requires notBool #isStaticType(T)
 
     syntax Int ::= #sizeOfDynamicTypeList ( TypedArgs ) [klabel(#sizeOfDynamicTypeList), function, total]
