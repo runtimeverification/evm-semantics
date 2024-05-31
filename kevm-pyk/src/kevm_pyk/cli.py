@@ -491,7 +491,7 @@ class EVMChainOptions(Options):
             'schedule': 'SHANGHAI',
             'chainid': 1,
             'mode': 'NORMAL',
-            'use_gas': True,
+            'usegas': True,
         }
 
     @staticmethod
