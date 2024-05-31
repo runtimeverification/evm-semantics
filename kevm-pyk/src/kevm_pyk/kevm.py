@@ -668,8 +668,7 @@ def kevm_node_printer(kevm: KEVM, proof: APRProof) -> NodePrinter:
 def compute_jumpdests(sections: list[KInner]) -> KInner:
     """Analyzes a list of KInner objects representing sections of bytecode to compute jump destinations.
 
-    :param sections: A section is expected to be either a KToken of sort Bytes or a KApply with the label of '#buf(_,_)_BUF-SYNTAX_Bytes_Int_Int'.
-    :type sections: list[KInner]
+    :param sections: A section is expected to be either a concrete sequence of bytes (Bytes) or a symbolic buffer of concrete width (#buf(WIDTH, _)).
     :return: This function iterates over each section, appending the jump destinations (0x5B) from the bytecode in a KAst Set.
     :rtype: KInner
     """

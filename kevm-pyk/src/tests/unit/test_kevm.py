@@ -8,7 +8,7 @@ if TYPE_CHECKING:
     from typing import Final
     from pyk.kast.inner import KInner
 
-from pyk.kast.inner import KApply, KLabel, KToken, KVariable
+from pyk.kast.inner import KApply, KToken, KVariable
 from pyk.prelude.collections import set_of
 from pyk.prelude.kint import intToken
 
@@ -64,13 +64,8 @@ JUMPDESTS_DATA: Final = [
                 'Bytes',
             ),
             KApply(
-                label=KLabel(
-                    '#buf(_,_)_BUF-SYNTAX_Bytes_Int_Int',
-                ),
-                args=(
-                    KToken('32', 'Int'),
-                    KVariable('VV0_x_114b9705', 'Int'),
-                ),
+                '#buf(_,_)_BUF-SYNTAX_Bytes_Int_Int',
+                [intToken(32), KVariable('VV0_x', 'Int')],
             ),
         ],
         set_of(
@@ -86,6 +81,43 @@ JUMPDESTS_DATA: Final = [
                 intToken(187),
             ]
         ),
+    ),
+    (
+        'single_jumpdest',
+        [
+            KToken('b"["', 'Bytes'),
+        ],
+        set_of([intToken(0)]),
+    ),
+    (
+        'multiple_bytes',
+        [
+            KToken('b"\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00["', 'Bytes'),
+            KToken('b"\\x00\\x00[\\x00\\x00"', 'Bytes'),
+            KToken('b"\\x00["', 'Bytes'),
+        ],
+        set_of([intToken(16), intToken(19), intToken(23)]),
+    ),
+    (
+        'multiple_bufs',
+        [
+            KApply(
+                '#buf(_,_)_BUF-SYNTAX_Bytes_Int_Int',
+                [intToken(32), KVariable('VV0_a', 'Int')],
+            ),
+            KToken('b"\\x00\\x00"', 'Bytes'),
+            KApply(
+                '#buf(_,_)_BUF-SYNTAX_Bytes_Int_Int',
+                [intToken(32), KVariable('VV0_x', 'Int')],
+            ),
+            KToken('b"\\x00\\x00[\\x00\\x00"', 'Bytes'),
+            KApply(
+                '#buf(_,_)_BUF-SYNTAX_Bytes_Int_Int',
+                [intToken(32), KVariable('VV0_y', 'Int')],
+            ),
+            KToken('b"\\x00[[[\\x00[\\x00\\x00"', 'Bytes'),
+        ],
+        set_of([intToken(68), intToken(104), intToken(105), intToken(106), intToken(108)]),
     ),
 ]
 
