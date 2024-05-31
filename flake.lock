@@ -164,17 +164,17 @@
         "z3": "z3"
       },
       "locked": {
-        "lastModified": 1716861562,
-        "narHash": "sha256-3w25di8V81Z1lyvTPDVosylytlT1ulpqU4QrcUprjGw=",
+        "lastModified": 1717048155,
+        "narHash": "sha256-HHrXt2UoG1RbKmAGmOroQJjUbyiE+6c1dJxqoIfp3H0=",
         "owner": "runtimeverification",
         "repo": "haskell-backend",
-        "rev": "7f482b016faa848462b437dcb5ea3c33facaad42",
+        "rev": "b6ab7a9054ae900c97c48e61027fd602dbd2acb8",
         "type": "github"
       },
       "original": {
         "owner": "runtimeverification",
         "repo": "haskell-backend",
-        "rev": "7f482b016faa848462b437dcb5ea3c33facaad42",
+        "rev": "b6ab7a9054ae900c97c48e61027fd602dbd2acb8",
         "type": "github"
       }
     },
@@ -208,16 +208,16 @@
         "rv-utils": "rv-utils_3"
       },
       "locked": {
-        "lastModified": 1717056153,
-        "narHash": "sha256-auMD6KgU70eAcmYZ6KrFTO5hvcBieU3uJfKgepfuVEM=",
+        "lastModified": 1717095746,
+        "narHash": "sha256-5RBtEa/zw+6aBKeNhaZQ5/nH/851L8HCbimK8jDVAeE=",
         "owner": "runtimeverification",
         "repo": "k",
-        "rev": "81a63abb142b8ad338d8e0347ce717061c44d591",
+        "rev": "49d9d0a01428fca998cef4cefefc3146aa787f94",
         "type": "github"
       },
       "original": {
         "owner": "runtimeverification",
-        "ref": "v7.0.101",
+        "ref": "v7.0.103",
         "repo": "k",
         "type": "github"
       }
@@ -413,17 +413,17 @@
       },
       "locked": {
         "dir": "pyk",
-        "lastModified": 1717056153,
-        "narHash": "sha256-auMD6KgU70eAcmYZ6KrFTO5hvcBieU3uJfKgepfuVEM=",
+        "lastModified": 1717095746,
+        "narHash": "sha256-5RBtEa/zw+6aBKeNhaZQ5/nH/851L8HCbimK8jDVAeE=",
         "owner": "runtimeverification",
         "repo": "k",
-        "rev": "81a63abb142b8ad338d8e0347ce717061c44d591",
+        "rev": "49d9d0a01428fca998cef4cefefc3146aa787f94",
         "type": "github"
       },
       "original": {
         "dir": "pyk",
         "owner": "runtimeverification",
-        "ref": "v7.0.101",
+        "ref": "v7.0.103",
         "repo": "k",
         "type": "github"
       }
