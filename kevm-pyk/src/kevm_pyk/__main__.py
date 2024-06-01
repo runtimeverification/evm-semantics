@@ -353,22 +353,22 @@ def exec_prove(options: ProveOptions) -> None:
 
             if not is_functional(claim) and (options.reinit or not up_to_date):
                 assert type(proof_problem) is APRProof
-                new_init = ensure_ksequence_on_k_cell(proof_problem.kcfg.node(proof_problem.init).cterm)
-                new_target = ensure_ksequence_on_k_cell(proof_problem.kcfg.node(proof_problem.target).cterm)
+                init_cterm = ensure_ksequence_on_k_cell(proof_problem.kcfg.node(proof_problem.init).cterm)
+                target_cterm = ensure_ksequence_on_k_cell(proof_problem.kcfg.node(proof_problem.target).cterm)
 
                 _LOGGER.info(f'Computing definedness constraint for initial node: {claim.label}')
-                new_init = kcfg_explore.cterm_symbolic.assume_defined(new_init)
+                init_cterm = kcfg_explore.cterm_symbolic.assume_defined(init_cterm)
 
                 _LOGGER.info(f'Simplifying initial and target node: {claim.label}')
-                new_init, _ = kcfg_explore.cterm_symbolic.simplify(new_init)
-                new_target, _ = kcfg_explore.cterm_symbolic.simplify(new_target)
-                if is_bottom(new_init.kast, weak=True):
+                init_cterm, _ = kcfg_explore.cterm_symbolic.simplify(init_cterm)
+                target_cterm, _ = kcfg_explore.cterm_symbolic.simplify(target_cterm)
+                if is_bottom(init_cterm.kast, weak=True):
                     raise ValueError('Simplifying initial node led to #Bottom, are you sure your LHS is defined?')
-                if is_top(new_target.kast, weak=True):
+                if is_top(target_cterm.kast, weak=True):
                     raise ValueError('Simplifying target node led to #Bottom, are you sure your RHS is defined?')
 
-                proof_problem.kcfg.let_node(proof_problem.init, cterm=new_init)
-                proof_problem.kcfg.let_node(proof_problem.target, cterm=new_target)
+                proof_problem.kcfg.let_node(proof_problem.init, cterm=init_cterm)
+                proof_problem.kcfg.let_node(proof_problem.target, cterm=target_cterm)
 
             if proof_problem.admitted:
                 proof_problem.write_proof_data()
