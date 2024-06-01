@@ -17,13 +17,15 @@ from pyk.kast.inner import (
     build_cons,
     top_down,
 )
-from pyk.kast.manip import abstract_term_safely, flatten_label
+from pyk.kast.manip import abstract_term_safely, flatten_label, set_cell
 from pyk.kast.pretty import paren
+from pyk.kcfg.kcfg import Step
 from pyk.kcfg.semantics import KCFGSemantics
 from pyk.kcfg.show import NodePrinter
 from pyk.ktool.kprove import KProve
 from pyk.ktool.krun import KRun
 from pyk.prelude.bytes import BYTES, pretty_bytes
+from pyk.prelude.collections import set_of
 from pyk.prelude.kbool import notBool
 from pyk.prelude.kint import INT, eqInt, intToken, ltInt
 from pyk.prelude.ml import mlEqualsFalse, mlEqualsTrue
@@ -44,7 +46,6 @@ if TYPE_CHECKING:
     from pyk.utils import BugReport
 
 _LOGGER: Final = logging.getLogger(__name__)
-
 
 # KEVM class
 
@@ -149,13 +150,31 @@ class KEVMSemantics(KCFGSemantics):
         return CTerm(config=bottom_up(_replace, cterm.config), constraints=cterm.constraints)
 
     def custom_step(self, cterm: CTerm) -> KCFGExtendResult | None:
+        """Given a CTerm, update the JUMPDESTS_CELL and PROGRAM_CELL if the rule 'EVM.program.load' is at the top of the K_CELL.
+
+        :param cterm: CTerm of a proof node.
+        :type cterm: CTerm
+        :return: If the K_CELL matches the load_pattern, a Step with depth 1 is returned together with the new configuration, also registering that the `EVM.program.load` rule has been applied. Otherwise, None is returned.
+        :rtype: KCFGExtendResult | None
+        """
+        load_pattern = KSequence(
+            [KApply('#loadProgram__EVM_KItem_Bytes', KVariable('###BYTECODE')), KVariable('###CONTINUATION')]
+        )
+        subst = load_pattern.match(cterm.cell('K_CELL'))
+        if subst is not None:
+            bytecode_sections = flatten_label('_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes', subst['###BYTECODE'])
+            jumpdests_set = compute_jumpdests(bytecode_sections)
+            new_cterm = CTerm.from_kast(set_cell(cterm.kast, 'JUMPDESTS_CELL', jumpdests_set))
+            new_cterm = CTerm.from_kast(set_cell(new_cterm.kast, 'PROGRAM_CELL', subst['###BYTECODE']))
+            new_cterm = CTerm.from_kast(set_cell(new_cterm.kast, 'K_CELL', KSequence(subst['###CONTINUATION'])))
+            return Step(new_cterm, 1, (), ['EVM.program.load'], cut=True)
         return None
 
     @staticmethod
     def cut_point_rules(
         break_on_jumpi: bool, break_on_calls: bool, break_on_storage: bool, break_on_basic_blocks: bool
     ) -> list[str]:
-        cut_point_rules = []
+        cut_point_rules = ['EVM.program.load']
         if break_on_jumpi:
             cut_point_rules.extend(['EVM.jumpi.true', 'EVM.jumpi.false'])
         if break_on_basic_blocks:
@@ -548,8 +567,8 @@ class KEVM(KProve, KRun):
         return KApply('.Bytes_BYTES-HOOKED_Bytes')
 
     @staticmethod
-    def buf(width: int, v: KInner) -> KApply:
-        return KApply('#buf(_,_)_BUF-SYNTAX_Bytes_Int_Int', [intToken(width), v])
+    def buf(width: KInner, v: KInner) -> KApply:
+        return KApply('#buf(_,_)_BUF-SYNTAX_Bytes_Int_Int', [width, v])
 
     @staticmethod
     def intlist(ints: list[KInner]) -> KApply:
@@ -644,3 +663,40 @@ def kevm_node_printer(kevm: KEVM, proof: APRProof) -> NodePrinter:
     if type(proof) is APRProof:
         return KEVMAPRNodePrinter(kevm, proof)
     raise ValueError(f'Cannot build NodePrinter for proof type: {type(proof)}')
+
+
+def compute_jumpdests(sections: list[KInner]) -> KInner:
+    """Analyzes a list of KInner objects representing sections of bytecode to compute jump destinations.
+
+    :param sections: A section is expected to be either a concrete sequence of bytes (Bytes) or a symbolic buffer of concrete width (#buf(WIDTH, _)).
+    :return: This function iterates over each section, appending the jump destinations (0x5B) from the bytecode in a KAst Set.
+    :rtype: KInner
+    """
+    offset = 0
+    jumpdests = []
+    for s in sections:
+        if type(s) is KApply and s.label == KLabel('#buf(_,_)_BUF-SYNTAX_Bytes_Int_Int'):
+            width_token = s.args[0]
+            assert type(width_token) is KToken
+            offset += int(width_token.token)
+        elif type(s) is KToken and s.sort == BYTES:
+            bytecode = pretty_bytes(s)
+            jumpdests.extend(_process_jumpdests(bytecode, offset))
+            offset += len(bytecode)
+        else:
+            raise ValueError(f'Cannot compute jumpdests for type: {type(s)}')
+
+    return set_of(jumpdests)
+
+
+def _process_jumpdests(bytecode: bytes, offset: int) -> list[KToken]:
+    """Computes the location of JUMPDEST opcodes from a given bytecode.
+
+    :param bytecode: The bytecode of the contract as bytes.
+    :type bytecode: bytes
+    :param offset: The offset to add to each position index to align it with the broader code structure.
+    :type offset: int
+    :return:  A list of intToken instances representing the positions of all found jump destinations in the bytecode adjusted by the offset.
+    :rtype: list[KToken]
+    """
+    return [intToken(offset + i) for i, byte in enumerate(bytecode) if byte == 0x5B]
