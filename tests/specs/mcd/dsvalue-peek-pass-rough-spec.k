@@ -6,7 +6,6 @@ module DSVALUE-PEEK-PASS-ROUGH-SPEC
     // DSValue_peek
     claim [DSValue.peek.pass.rough]:
       <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
-      <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
       <useGas> true </useGas>

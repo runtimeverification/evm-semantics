@@ -6,7 +6,6 @@ module REQUIRES01-A0LE0-SPEC
   // fn-execute-a0le0
   claim
     <k> (#execute => #halt) ~> _ </k>
-    <exit-code> 1 </exit-code>
     <mode> NORMAL </mode>
     <schedule> ISTANBUL </schedule>
     <useGas> true </useGas>

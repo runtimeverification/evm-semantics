@@ -6,7 +6,6 @@ module VAT-ADDUI-FAIL-ROUGH-SPEC
     // Vat_addui
     claim [Vat.addui.fail.rough]:
       <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
-      <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
       <useGas> true </useGas>

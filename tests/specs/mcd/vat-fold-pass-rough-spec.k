@@ -6,7 +6,6 @@ module VAT-FOLD-PASS-ROUGH-SPEC
     // Vat_fold
     claim [Vat.fold.pass.rough]:
       <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
-      <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
       <useGas> true </useGas>
@@ -148,7 +147,6 @@ module VAT-FOLD-PASS-ROUGH-SPEC
     // Vat_addui
     claim [Vat.addui.pass]:
       <k> #execute ~> CONTINUATION => #execute ~> CONTINUATION </k>
-      <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
       <useGas> true </useGas>
@@ -254,7 +252,6 @@ module VAT-FOLD-PASS-ROUGH-SPEC
     // Vat_mului
     claim [Vat.mului.pass]:
       <k> #execute ~> CONTINUATION => #execute ~> CONTINUATION </k>
-      <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
       <useGas> true </useGas>

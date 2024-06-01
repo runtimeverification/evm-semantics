@@ -6,7 +6,6 @@ module DSTOKEN-BURN-SELF-FAIL-ROUGH-SPEC
     // DSToken_burn-self
     claim [DSToken.burn-self.fail.rough]:
       <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
-      <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
       <useGas> true </useGas>
