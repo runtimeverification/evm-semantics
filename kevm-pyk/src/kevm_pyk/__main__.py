@@ -36,14 +36,7 @@ from .cli import _create_argument_parser, generate_options, get_argument_type_se
 from .gst_to_kore import SORT_ETHEREUM_SIMULATION, gst_to_kore, kore_pgm_to_kore
 from .kevm import KEVM, KEVMSemantics, kevm_node_printer
 from .kompile import KompileTarget, kevm_kompile
-from .utils import (
-    claim_dependency_dict,
-    ensure_ksequence_on_k_cell,
-    get_apr_proof_for_spec,
-    legacy_explore,
-    print_failure_info,
-    run_prover,
-)
+from .utils import claim_dependency_dict, get_apr_proof_for_spec, legacy_explore, print_failure_info, run_prover
 
 if TYPE_CHECKING:
     from argparse import Namespace
@@ -353,8 +346,8 @@ def exec_prove(options: ProveOptions) -> None:
 
             if not is_functional(claim) and (options.reinit or not up_to_date):
                 assert type(proof_problem) is APRProof
-                init_cterm = ensure_ksequence_on_k_cell(proof_problem.kcfg.node(proof_problem.init).cterm)
-                target_cterm = ensure_ksequence_on_k_cell(proof_problem.kcfg.node(proof_problem.target).cterm)
+                init_cterm = proof_problem.kcfg.node(proof_problem.init).cterm
+                target_cterm = proof_problem.kcfg.node(proof_problem.target).cterm
 
                 _LOGGER.info(f'Computing definedness constraint for initial node: {claim.label}')
                 init_cterm = kcfg_explore.cterm_symbolic.assume_defined(init_cterm)

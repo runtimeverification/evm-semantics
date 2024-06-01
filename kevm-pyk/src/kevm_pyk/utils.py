@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from pyk.cterm import CTerm, CTermSymbolic
+from pyk.cterm import CTermSymbolic
 from pyk.kast import Atts
 from pyk.kast.inner import KApply, KInner, KRewrite, KVariable, Subst
 from pyk.kast.manip import (
@@ -15,11 +15,9 @@ from pyk.kast.manip import (
     bottom_up,
     free_vars,
     is_anon_var,
-    set_cell,
     split_config_and_constraints,
     split_config_from,
 )
-from pyk.kast.outer import KSequence
 from pyk.kcfg import KCFGExplore
 from pyk.kore.rpc import KoreClient, KoreExecLogFormat, TransportType, kore_server
 from pyk.ktool import TypeInferenceMode
@@ -380,14 +378,6 @@ def abstract_cell_vars(cterm: KInner, keep_vars: Collection[KVariable] = ()) -> 
         if type(subst[s]) is KVariable and not is_anon_var(subst[s]) and subst[s] not in keep_vars:
             subst[s] = abstract_term_safely(KVariable('_'), base_name=s)  # noqa: B909
     return Subst(subst)(config)
-
-
-def ensure_ksequence_on_k_cell(cterm: CTerm) -> CTerm:
-    k_cell = cterm.cell('K_CELL')
-    if type(k_cell) is not KSequence:
-        _LOGGER.info('Introducing artificial KSequence on <k> cell.')
-        return CTerm.from_kast(set_cell(cterm.kast, 'K_CELL', KSequence([k_cell])))
-    return cterm
 
 
 def constraints_for(vars: list[str], constraints: Iterable[KInner]) -> Iterable[KInner]:
