@@ -699,7 +699,6 @@ def _process_jumpdests(bytecode: bytes, offset: int) -> list[KToken]:
     :return:  A list of intToken instances representing the positions of all found jump destinations in the bytecode adjusted by the offset.
     :rtype: list[KToken]
     """
-    i = 0
     push1 = 0x60
     push32 = 0x7F
     jumpdest = 0x5B
