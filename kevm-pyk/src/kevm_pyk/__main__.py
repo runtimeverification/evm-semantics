@@ -305,7 +305,7 @@ def exec_prove(options: ProveOptions) -> None:
                 proof_problem = APRProof.read_proof_data(save_directory, claim.label)
             else:
                 proof_problem = APRProof.from_claim(kevm.definition, claim, {}, proof_dir=save_directory)
-        if proof_problem.passed:
+        if proof_problem.passed and not proof_problem.admitted:
             _LOGGER.info(f'Proof already passed: {proof_problem.id}')
             return (True, [])
 
