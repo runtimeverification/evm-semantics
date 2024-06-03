@@ -1350,7 +1350,8 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
 
     syntax KItem ::= "#loadProgram" Bytes
  // -------------------------------------
-    rule <k> #loadProgram BYTES => .K ... </k>
+    rule [program.load]:
+         <k> #loadProgram BYTES => .K ... </k>
          <program> _ => BYTES </program>
 
     syntax KItem ::= "#touchAccounts" Account | "#touchAccounts" Account Account
