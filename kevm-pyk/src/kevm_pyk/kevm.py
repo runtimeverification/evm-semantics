@@ -174,7 +174,9 @@ class KEVMSemantics(KCFGSemantics):
     def cut_point_rules(
         break_on_jumpi: bool, break_on_calls: bool, break_on_storage: bool, break_on_basic_blocks: bool
     ) -> list[str]:
-        cut_point_rules = ['EVM.program.load']
+        # Profiling: remove 'EVM.program.load' from cut point rules
+        # cut_point_rules = ['EVM.program.load']
+        cut_point_rules = []
         if break_on_jumpi:
             cut_point_rules.extend(['EVM.jumpi.true', 'EVM.jumpi.false'])
         if break_on_basic_blocks:
