@@ -106,6 +106,7 @@ JUMPDESTS_DATA: Final = [
         ],
         set_of([token(68), token(104), token(105), token(106), token(108)]),
     ),
+    ('jump_to_push', [token(bytes.fromhex('6001600055600A56605B5B'))], set_of([token(10)])),
 ]
 
 
