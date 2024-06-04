@@ -387,11 +387,11 @@ class KEVM(KProve, KRun):
 
     @staticmethod
     def halt() -> KApply:
-        return KApply('#halt_EVM_KItem')
+        return KApply('halt')
 
     @staticmethod
     def sharp_execute() -> KApply:
-        return KApply('#execute_EVM_KItem')
+        return KApply('execute')
 
     @staticmethod
     def jumpi() -> KApply:
@@ -411,7 +411,7 @@ class KEVM(KProve, KRun):
 
     @staticmethod
     def pc_applied(op: KInner) -> KApply:
-        return KApply('#pc[_]_EVM_InternalOp_OpCode', [op])
+        return KApply('pc', [op])
 
     @staticmethod
     def pow128() -> KApply:
@@ -423,35 +423,35 @@ class KEVM(KProve, KRun):
 
     @staticmethod
     def range_uint(width: int, i: KInner) -> KApply:
-        return KApply('#rangeUInt(_,_)_WORD_Bool_Int_Int', [intToken(width), i])
+        return KApply('rangeUInt', [intToken(width), i])
 
     @staticmethod
     def range_sint(width: int, i: KInner) -> KApply:
-        return KApply('#rangeSInt(_,_)_WORD_Bool_Int_Int', [intToken(width), i])
+        return KApply('rangeSInt', [intToken(width), i])
 
     @staticmethod
     def range_address(i: KInner) -> KApply:
-        return KApply('#rangeAddress(_)_WORD_Bool_Int', [i])
+        return KApply('rangeAddress', [i])
 
     @staticmethod
     def range_bool(i: KInner) -> KApply:
-        return KApply('#rangeBool(_)_WORD_Bool_Int', [i])
+        return KApply('rangeBool', [i])
 
     @staticmethod
     def range_bytes(width: KInner, ba: KInner) -> KApply:
-        return KApply('#rangeBytes(_,_)_WORD_Bool_Int_Int', [width, ba])
+        return KApply('rangeBytes', [width, ba])
 
     @staticmethod
     def range_nonce(i: KInner) -> KApply:
-        return KApply('#rangeNonce(_)_WORD_Bool_Int', [i])
+        return KApply('rangeNonce', [i])
 
     @staticmethod
     def range_blocknum(ba: KInner) -> KApply:
-        return KApply('#rangeBlockNum(_)_WORD_Bool_Int', [ba])
+        return KApply('rangeBlockNum', [ba])
 
     @staticmethod
     def bool_2_word(cond: KInner) -> KApply:
-        return KApply('bool2Word(_)_EVM-TYPES_Int_Bool', [cond])
+        return KApply('bool2Word', [cond])
 
     @staticmethod
     def size_bytes(ba: KInner) -> KApply:
@@ -463,7 +463,7 @@ class KEVM(KProve, KRun):
 
     @staticmethod
     def compute_valid_jumpdests(p: KInner) -> KApply:
-        return KApply('#computeValidJumpDests(_)_EVM_Set_Bytes', [p])
+        return KApply('computeValidJumpDests', [p])
 
     @staticmethod
     def bin_runtime(c: KInner) -> KApply:
@@ -475,13 +475,11 @@ class KEVM(KProve, KRun):
 
     @staticmethod
     def is_precompiled_account(i: KInner, s: KInner) -> KApply:
-        return KApply('#isPrecompiledAccount(_,_)_EVM_Bool_Int_Schedule', [i, s])
+        return KApply('isPrecompiledAccount', [i, s])
 
     @staticmethod
     def hashed_location(compiler: str, base: KInner, offset: KInner, member_offset: int = 0) -> KApply:
-        location = KApply(
-            '#hashedLocation(_,_,_)_HASHED-LOCATIONS_Int_String_Int_IntList', [stringToken(compiler), base, offset]
-        )
+        location = KApply('hashLoc', [stringToken(compiler), base, offset])
         if member_offset > 0:
             location = KApply('_+Int_', [location, intToken(member_offset)])
         return location
@@ -492,7 +490,7 @@ class KEVM(KProve, KRun):
 
     @staticmethod
     def lookup(map: KInner, key: KInner) -> KApply:
-        return KApply('#lookup(_,_)_EVM-TYPES_Int_Map_Int', [map, key])
+        return KApply('lookup', [map, key])
 
     @staticmethod
     def abi_calldata(name: str, args: list[KInner]) -> KApply:
@@ -504,11 +502,11 @@ class KEVM(KProve, KRun):
 
     @staticmethod
     def abi_address(a: KInner) -> KApply:
-        return KApply('#address(_)_EVM-ABI_TypedArg_Int', [a])
+        return KApply('abi_type_address', [a])
 
     @staticmethod
     def abi_bool(b: KInner) -> KApply:
-        return KApply('#bool(_)_EVM-ABI_TypedArg_Int', [b])
+        return KApply('abi_type_bool', [b])
 
     @staticmethod
     def abi_type(type: str, value: KInner) -> KApply:
@@ -524,7 +522,7 @@ class KEVM(KProve, KRun):
 
     @staticmethod
     def as_word(b: KInner) -> KApply:
-        return KApply('#asWord(_)_EVM-TYPES_Int_Bytes', [b])
+        return KApply('asWord', [b])
 
     @staticmethod
     def empty_typedargs() -> KApply:
@@ -560,7 +558,7 @@ class KEVM(KProve, KRun):
 
     @staticmethod
     def parse_bytestack(s: KInner) -> KApply:
-        return KApply('#parseByteStack(_)_SERIALIZATION_Bytes_String', [s])
+        return KApply('parseByteStack', [s])
 
     @staticmethod
     def bytes_empty() -> KApply:
@@ -568,7 +566,7 @@ class KEVM(KProve, KRun):
 
     @staticmethod
     def buf(width: KInner, v: KInner) -> KApply:
-        return KApply('#buf(_,_)_BUF-SYNTAX_Bytes_Int_Int', [width, v])
+        return KApply('buf', [width, v])
 
     @staticmethod
     def intlist(ints: list[KInner]) -> KApply:
@@ -675,7 +673,7 @@ def compute_jumpdests(sections: list[KInner]) -> KInner:
     offset = 0
     jumpdests = []
     for s in sections:
-        if type(s) is KApply and s.label == KLabel('#buf(_,_)_BUF-SYNTAX_Bytes_Int_Int'):
+        if type(s) is KApply and s.label == KLabel('buf'):
             width_token = s.args[0]
             assert type(width_token) is KToken
             offset += int(width_token.token)
