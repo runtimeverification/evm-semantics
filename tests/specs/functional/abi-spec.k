@@ -39,4 +39,26 @@ module ABI-SPEC
           ...
       </k>
 
+    claim [sizeOfDynamicType-2455]:
+      <k> runLemma(
+        #sizeOfDynamicType(
+          #array(
+            #bytes(b"\x00"), 
+            3, 
+            #bytes(b"\xaa"), #bytes(b"\xbb\xbb"), #bytes(b"\xcc\xcc\xcc")
+          )
+        )
+        ==Int
+        lengthBytes(#enc(
+          #array(
+            #bytes(b"\x00"), 
+            3, 
+            #bytes(b"\xaa"), #bytes(b"\xbb\xbb"), #bytes(b"\xcc\xcc\xcc")
+          )
+        ))
+      ) 
+      => doneLemma(true) 
+      ... 
+      </k>
+
 endmodule
