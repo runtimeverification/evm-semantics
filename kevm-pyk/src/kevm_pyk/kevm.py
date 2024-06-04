@@ -707,8 +707,8 @@ def _process_jumpdests(bytecode: bytes, offset: int) -> list[KToken]:
     while i < len(bytecode):
         if push1 <= bytecode[i] <= push32:
             i += bytecode[i] - push1 + 2
-            continue
-        if bytecode[i] == jumpdest:
-            jumpdests.append(intToken(offset + i))
-        i += 1
+        else:
+            if bytecode[i] == jumpdest:
+                jumpdests.append(intToken(offset + i))
+            i += 1
     return jumpdests
