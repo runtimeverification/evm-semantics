@@ -286,6 +286,6 @@ module VAT-FROB-DIFF-ZERO-DART-PASS-ROUGH-SPEC
        andBool #Vat.urns[ABI_i][ABI_u].art =/=Int #Vat.live
        andBool #Vat.ilks[ABI_i].Art =/=Int #Vat.live
 
-    [depends(VAT-ARITHMETIC-SPEC.Vat.muluu.pass)]
+    [depends(VAT-ARITHMETIC-SPEC.Vat.addui.pass,VAT-ARITHMETIC-SPEC.Vat.subui.pass,VAT-ARITHMETIC-SPEC.Vat.mului.pass,VAT-ARITHMETIC-SPEC.Vat.muluu.pass)]
 
 endmodule
