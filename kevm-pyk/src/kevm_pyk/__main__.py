@@ -36,14 +36,7 @@ from .cli import _create_argument_parser, generate_options, get_argument_type_se
 from .gst_to_kore import SORT_ETHEREUM_SIMULATION, gst_to_kore, kore_pgm_to_kore
 from .kevm import KEVM, KEVMSemantics, kevm_node_printer
 from .kompile import KompileTarget, kevm_kompile
-from .utils import (
-    claim_dependency_dict,
-    ensure_ksequence_on_k_cell,
-    get_apr_proof_for_spec,
-    legacy_explore,
-    print_failure_info,
-    run_prover,
-)
+from .utils import claim_dependency_dict, get_apr_proof_for_spec, legacy_explore, print_failure_info, run_prover
 
 if TYPE_CHECKING:
     from argparse import Namespace
@@ -312,7 +305,7 @@ def exec_prove(options: ProveOptions) -> None:
                 proof_problem = APRProof.read_proof_data(save_directory, claim.label)
             else:
                 proof_problem = APRProof.from_claim(kevm.definition, claim, {}, proof_dir=save_directory)
-        if proof_problem.passed:
+        if proof_problem.passed and not proof_problem.admitted:
             _LOGGER.info(f'Proof already passed: {proof_problem.id}')
             return (True, [])
 
@@ -353,22 +346,22 @@ def exec_prove(options: ProveOptions) -> None:
 
             if not is_functional(claim) and (options.reinit or not up_to_date):
                 assert type(proof_problem) is APRProof
-                new_init = ensure_ksequence_on_k_cell(proof_problem.kcfg.node(proof_problem.init).cterm)
-                new_target = ensure_ksequence_on_k_cell(proof_problem.kcfg.node(proof_problem.target).cterm)
+                init_cterm = proof_problem.kcfg.node(proof_problem.init).cterm
+                target_cterm = proof_problem.kcfg.node(proof_problem.target).cterm
 
                 _LOGGER.info(f'Computing definedness constraint for initial node: {claim.label}')
-                new_init = kcfg_explore.cterm_symbolic.assume_defined(new_init)
+                init_cterm = kcfg_explore.cterm_symbolic.assume_defined(init_cterm)
 
                 _LOGGER.info(f'Simplifying initial and target node: {claim.label}')
-                new_init, _ = kcfg_explore.cterm_symbolic.simplify(new_init)
-                new_target, _ = kcfg_explore.cterm_symbolic.simplify(new_target)
-                if is_bottom(new_init.kast, weak=True):
+                init_cterm, _ = kcfg_explore.cterm_symbolic.simplify(init_cterm)
+                target_cterm, _ = kcfg_explore.cterm_symbolic.simplify(target_cterm)
+                if is_bottom(init_cterm.kast, weak=True):
                     raise ValueError('Simplifying initial node led to #Bottom, are you sure your LHS is defined?')
-                if is_top(new_target.kast, weak=True):
+                if is_top(target_cterm.kast, weak=True):
                     raise ValueError('Simplifying target node led to #Bottom, are you sure your RHS is defined?')
 
-                proof_problem.kcfg.let_node(proof_problem.init, cterm=new_init)
-                proof_problem.kcfg.let_node(proof_problem.target, cterm=new_target)
+                proof_problem.kcfg.let_node(proof_problem.init, cterm=init_cterm)
+                proof_problem.kcfg.let_node(proof_problem.target, cterm=target_cterm)
 
             if proof_problem.admitted:
                 proof_problem.write_proof_data()

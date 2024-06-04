@@ -1023,7 +1023,7 @@ class KEVMCLIArgs(KCLIArgs):
             dest='use_booster',
             default=None,
             action='store_false',
-            help='Do not use the booster RPC server instead of kore-rpc.',
+            help='Do not the booster RPC server instead of kore-rpc.',
         )
         args.add_argument(
             '--fallback-on',

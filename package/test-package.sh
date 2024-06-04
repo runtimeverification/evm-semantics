@@ -37,11 +37,9 @@ kevm kompile-spec tests/specs/benchmarks/verification.k             \
 kevm prove tests/specs/benchmarks/structarg00-spec.k         \
     --definition tests/specs/benchmarks/verification/haskell \
     --save-directory proofs                                  \
-    --verbose                                                \
-    --use-booster
+    --verbose
 
 kevm prove tests/specs/benchmarks/structarg01-spec.k         \
     --definition tests/specs/benchmarks/verification/haskell \
     --save-directory proofs                                  \
-    --verbose                                                \
-    --use-booster
+    --verbose
