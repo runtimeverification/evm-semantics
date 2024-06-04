@@ -470,17 +470,17 @@ Range of types
 --------------
 
 ```k
-    syntax Bool ::= #rangeBool     ( Int )             [klabel(#rangeBool), alias]
-                  | #rangeSInt     ( Int , Int )       [klabel(#rangeSInt), alias]
-                  | #rangeUInt     ( Int , Int )       [klabel(#rangeUInt), alias]
-                  | #rangeSFixed   ( Int , Int , Int ) [klabel(#rangeSFixed), alias]
-                  | #rangeUFixed   ( Int , Int , Int ) [klabel(#rangeUFixed), alias]
-                  | #rangeAddress  ( Int )             [klabel(#rangeAddress), alias]
-                  | #rangeBytes    ( Int , Int )       [klabel(#rangeBytes), alias]
-                  | #rangeNonce    ( Int )             [klabel(#rangeNonce), alias]
-                  | #rangeSmall    ( Int )             [klabel(#rangeSmall), alias]
-                  | #rangeBlockNum ( Int )             [klabel(#rangeBlockNum), alias]
- // ----------------------------------------------------------------------------------
+    syntax Bool ::= #rangeBool     ( Int )             [symbol(rangeBool)    , alias]
+                  | #rangeSInt     ( Int , Int )       [symbol(rangeSInt)    , alias]
+                  | #rangeUInt     ( Int , Int )       [symbol(rangeUInt)    , alias]
+                  | #rangeSFixed   ( Int , Int , Int ) [symbol(rangeSFixed)  , alias]
+                  | #rangeUFixed   ( Int , Int , Int ) [symbol(rangeUFixed)  , alias]
+                  | #rangeAddress  ( Int )             [symbol(rangeAddress) , alias]
+                  | #rangeBytes    ( Int , Int )       [symbol(rangeBytes)   , alias]
+                  | #rangeNonce    ( Int )             [symbol(rangeNonce)   , alias]
+                  | #rangeSmall    ( Int )             [symbol(rangeSmall)   , alias]
+                  | #rangeBlockNum ( Int )             [symbol(rangeBlockNum), alias]
+ // ---------------------------------------------------------------------------------
     rule #rangeBool    (            X ) => X ==Int 0 orBool X ==Int 1
 
     rule #rangeSInt    (   8 ,      X ) => #range ( minSInt8        <= X <= maxSInt8        )

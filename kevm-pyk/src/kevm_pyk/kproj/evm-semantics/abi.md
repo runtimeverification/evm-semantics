@@ -31,123 +31,123 @@ which denotes (indeed, is translated to) the following byte array:
 where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of `2835717307`, the first four bytes of the hash value of the `transfer` function signature, `keccak256("transfer(address,unit256)")`, and `T1 : ... : T32` and `V1 : ... : V32` are the byte-array representations of `TO` and `VALUE` respectively.
 
 ```k
-    syntax TypedArg ::= #address ( Int )                        [klabel(abi_type_address), symbol]
-                      | #uint256 ( Int )                        [klabel(abi_type_uint256), symbol]
-                      | #uint248 ( Int )                        [klabel(abi_type_uint248), symbol]
-                      | #uint240 ( Int )                        [klabel(abi_type_uint240), symbol]
-                      | #uint232 ( Int )                        [klabel(abi_type_uint232), symbol]
-                      | #uint224 ( Int )                        [klabel(abi_type_uint224), symbol]
-                      | #uint216 ( Int )                        [klabel(abi_type_uint216), symbol]
-                      | #uint208 ( Int )                        [klabel(abi_type_uint208), symbol]
-                      | #uint200 ( Int )                        [klabel(abi_type_uint200), symbol]
-                      | #uint192 ( Int )                        [klabel(abi_type_uint192), symbol]
-                      | #uint184 ( Int )                        [klabel(abi_type_uint184), symbol]
-                      | #uint176 ( Int )                        [klabel(abi_type_uint176), symbol]
-                      | #uint168 ( Int )                        [klabel(abi_type_uint168), symbol]
-                      | #uint160 ( Int )                        [klabel(abi_type_uint160), symbol]
-                      | #uint152 ( Int )                        [klabel(abi_type_uint152), symbol]
-                      | #uint144 ( Int )                        [klabel(abi_type_uint144), symbol]
-                      | #uint136 ( Int )                        [klabel(abi_type_uint136), symbol]
-                      | #uint128 ( Int )                        [klabel(abi_type_uint128), symbol]
-                      | #uint120 ( Int )                        [klabel(abi_type_uint120), symbol]
-                      | #uint112 ( Int )                        [klabel(abi_type_uint112), symbol]
-                      | #uint104 ( Int )                        [klabel(abi_type_uint104), symbol]
-                      | #uint96  ( Int )                        [klabel(abi_type_uint96),  symbol]
-                      | #uint88  ( Int )                        [klabel(abi_type_uint88),  symbol]
-                      | #uint80  ( Int )                        [klabel(abi_type_uint80),  symbol]
-                      | #uint72  ( Int )                        [klabel(abi_type_uint72),  symbol]
-                      | #uint64  ( Int )                        [klabel(abi_type_uint64),  symbol]
-                      | #uint56  ( Int )                        [klabel(abi_type_uint56),  symbol]
-                      | #uint48  ( Int )                        [klabel(abi_type_uint48),  symbol]
-                      | #uint40  ( Int )                        [klabel(abi_type_uint40),  symbol]
-                      | #uint32  ( Int )                        [klabel(abi_type_uint32),  symbol]
-                      | #uint24  ( Int )                        [klabel(abi_type_uint24),  symbol]
-                      | #uint16  ( Int )                        [klabel(abi_type_uint16),  symbol]
-                      | #uint8   ( Int )                        [klabel(abi_type_uint8),   symbol]
-                      | #int256  ( Int )                        [klabel(abi_type_int256),  symbol]
-                      | #int248  ( Int )                        [klabel(abi_type_int248),  symbol]
-                      | #int240  ( Int )                        [klabel(abi_type_int240),  symbol]
-                      | #int232  ( Int )                        [klabel(abi_type_int232),  symbol]
-                      | #int224  ( Int )                        [klabel(abi_type_int224),  symbol]
-                      | #int216  ( Int )                        [klabel(abi_type_int216),  symbol]
-                      | #int208  ( Int )                        [klabel(abi_type_int208),  symbol]
-                      | #int200  ( Int )                        [klabel(abi_type_int200),  symbol]
-                      | #int192  ( Int )                        [klabel(abi_type_int192),  symbol]
-                      | #int184  ( Int )                        [klabel(abi_type_int184),  symbol]
-                      | #int176  ( Int )                        [klabel(abi_type_int176),  symbol]
-                      | #int168  ( Int )                        [klabel(abi_type_int168),  symbol]
-                      | #int160  ( Int )                        [klabel(abi_type_int160),  symbol]
-                      | #int152  ( Int )                        [klabel(abi_type_int152),  symbol]
-                      | #int144  ( Int )                        [klabel(abi_type_int144),  symbol]
-                      | #int136  ( Int )                        [klabel(abi_type_int136),  symbol]
-                      | #int128  ( Int )                        [klabel(abi_type_int128),  symbol]
-                      | #int120  ( Int )                        [klabel(abi_type_int120),  symbol]
-                      | #int112  ( Int )                        [klabel(abi_type_int112),  symbol]
-                      | #int104  ( Int )                        [klabel(abi_type_int104),  symbol]
-                      | #int96   ( Int )                        [klabel(abi_type_int96),   symbol]
-                      | #int88   ( Int )                        [klabel(abi_type_int88),   symbol]
-                      | #int80   ( Int )                        [klabel(abi_type_int80),   symbol]
-                      | #int72   ( Int )                        [klabel(abi_type_int72),   symbol]
-                      | #int64   ( Int )                        [klabel(abi_type_int64),   symbol]
-                      | #int56   ( Int )                        [klabel(abi_type_int56),   symbol]
-                      | #int48   ( Int )                        [klabel(abi_type_int48),   symbol]
-                      | #int40   ( Int )                        [klabel(abi_type_int40),   symbol]
-                      | #int32   ( Int )                        [klabel(abi_type_int32),   symbol]
-                      | #int24   ( Int )                        [klabel(abi_type_int24),   symbol]
-                      | #int16   ( Int )                        [klabel(abi_type_int16),   symbol]
-                      | #int8    ( Int )                        [klabel(abi_type_int8),    symbol]
-                      | #bytes1  ( Int )                        [klabel(abi_type_bytes1),  symbol]
-                      | #bytes2  ( Int )                        [klabel(abi_type_bytes2),  symbol]
-                      | #bytes3  ( Int )                        [klabel(abi_type_bytes3),  symbol]
-                      | #bytes4  ( Int )                        [klabel(abi_type_bytes4),  symbol]
-                      | #bytes5  ( Int )                        [klabel(abi_type_bytes5),  symbol]
-                      | #bytes6  ( Int )                        [klabel(abi_type_bytes6),  symbol]
-                      | #bytes7  ( Int )                        [klabel(abi_type_bytes7),  symbol]
-                      | #bytes8  ( Int )                        [klabel(abi_type_bytes8),  symbol]
-                      | #bytes9  ( Int )                        [klabel(abi_type_bytes9),  symbol]
-                      | #bytes10 ( Int )                        [klabel(abi_type_bytes10), symbol]
-                      | #bytes11 ( Int )                        [klabel(abi_type_bytes11), symbol]
-                      | #bytes12 ( Int )                        [klabel(abi_type_bytes12), symbol]
-                      | #bytes13 ( Int )                        [klabel(abi_type_bytes13), symbol]
-                      | #bytes14 ( Int )                        [klabel(abi_type_bytes14), symbol]
-                      | #bytes15 ( Int )                        [klabel(abi_type_bytes15), symbol]
-                      | #bytes16 ( Int )                        [klabel(abi_type_bytes16), symbol]
-                      | #bytes17 ( Int )                        [klabel(abi_type_bytes17), symbol]
-                      | #bytes18 ( Int )                        [klabel(abi_type_bytes18), symbol]
-                      | #bytes19 ( Int )                        [klabel(abi_type_bytes19), symbol]
-                      | #bytes20 ( Int )                        [klabel(abi_type_bytes20), symbol]
-                      | #bytes21 ( Int )                        [klabel(abi_type_bytes21), symbol]
-                      | #bytes22 ( Int )                        [klabel(abi_type_bytes22), symbol]
-                      | #bytes23 ( Int )                        [klabel(abi_type_bytes23), symbol]
-                      | #bytes24 ( Int )                        [klabel(abi_type_bytes24), symbol]
-                      | #bytes25 ( Int )                        [klabel(abi_type_bytes25), symbol]
-                      | #bytes26 ( Int )                        [klabel(abi_type_bytes26), symbol]
-                      | #bytes27 ( Int )                        [klabel(abi_type_bytes27), symbol]
-                      | #bytes28 ( Int )                        [klabel(abi_type_bytes28), symbol]
-                      | #bytes29 ( Int )                        [klabel(abi_type_bytes29), symbol]
-                      | #bytes30 ( Int )                        [klabel(abi_type_bytes30), symbol]
-                      | #bytes31 ( Int )                        [klabel(abi_type_bytes31), symbol]
-                      | #bytes32 ( Int )                        [klabel(abi_type_bytes32), symbol]
-                      | #bool    ( Int )                        [klabel(abi_type_bool),    symbol]
-                      | #bytes   ( Bytes )                      [klabel(abi_type_bytes),   symbol]
-                      | #string  ( String )                     [klabel(abi_type_string),  symbol]
-                      | #array   ( TypedArg , Int , TypedArgs ) [klabel(abi_type_array),   symbol]
-                      | #tuple   ( TypedArgs )                  [klabel(abi_type_tuple),   symbol]
- // ----------------------------------------------------------------------------------------------
+    syntax TypedArg ::= #address ( Int )                        [symbol(abi_type_address)]
+                      | #uint256 ( Int )                        [symbol(abi_type_uint256)]
+                      | #uint248 ( Int )                        [symbol(abi_type_uint248)]
+                      | #uint240 ( Int )                        [symbol(abi_type_uint240)]
+                      | #uint232 ( Int )                        [symbol(abi_type_uint232)]
+                      | #uint224 ( Int )                        [symbol(abi_type_uint224)]
+                      | #uint216 ( Int )                        [symbol(abi_type_uint216)]
+                      | #uint208 ( Int )                        [symbol(abi_type_uint208)]
+                      | #uint200 ( Int )                        [symbol(abi_type_uint200)]
+                      | #uint192 ( Int )                        [symbol(abi_type_uint192)]
+                      | #uint184 ( Int )                        [symbol(abi_type_uint184)]
+                      | #uint176 ( Int )                        [symbol(abi_type_uint176)]
+                      | #uint168 ( Int )                        [symbol(abi_type_uint168)]
+                      | #uint160 ( Int )                        [symbol(abi_type_uint160)]
+                      | #uint152 ( Int )                        [symbol(abi_type_uint152)]
+                      | #uint144 ( Int )                        [symbol(abi_type_uint144)]
+                      | #uint136 ( Int )                        [symbol(abi_type_uint136)]
+                      | #uint128 ( Int )                        [symbol(abi_type_uint128)]
+                      | #uint120 ( Int )                        [symbol(abi_type_uint120)]
+                      | #uint112 ( Int )                        [symbol(abi_type_uint112)]
+                      | #uint104 ( Int )                        [symbol(abi_type_uint104)]
+                      | #uint96  ( Int )                        [symbol(abi_type_uint96) ]
+                      | #uint88  ( Int )                        [symbol(abi_type_uint88) ]
+                      | #uint80  ( Int )                        [symbol(abi_type_uint80) ]
+                      | #uint72  ( Int )                        [symbol(abi_type_uint72) ]
+                      | #uint64  ( Int )                        [symbol(abi_type_uint64) ]
+                      | #uint56  ( Int )                        [symbol(abi_type_uint56) ]
+                      | #uint48  ( Int )                        [symbol(abi_type_uint48) ]
+                      | #uint40  ( Int )                        [symbol(abi_type_uint40) ]
+                      | #uint32  ( Int )                        [symbol(abi_type_uint32) ]
+                      | #uint24  ( Int )                        [symbol(abi_type_uint24) ]
+                      | #uint16  ( Int )                        [symbol(abi_type_uint16) ]
+                      | #uint8   ( Int )                        [symbol(abi_type_uint8)  ]
+                      | #int256  ( Int )                        [symbol(abi_type_int256) ]
+                      | #int248  ( Int )                        [symbol(abi_type_int248) ]
+                      | #int240  ( Int )                        [symbol(abi_type_int240) ]
+                      | #int232  ( Int )                        [symbol(abi_type_int232) ]
+                      | #int224  ( Int )                        [symbol(abi_type_int224) ]
+                      | #int216  ( Int )                        [symbol(abi_type_int216) ]
+                      | #int208  ( Int )                        [symbol(abi_type_int208) ]
+                      | #int200  ( Int )                        [symbol(abi_type_int200) ]
+                      | #int192  ( Int )                        [symbol(abi_type_int192) ]
+                      | #int184  ( Int )                        [symbol(abi_type_int184) ]
+                      | #int176  ( Int )                        [symbol(abi_type_int176) ]
+                      | #int168  ( Int )                        [symbol(abi_type_int168) ]
+                      | #int160  ( Int )                        [symbol(abi_type_int160) ]
+                      | #int152  ( Int )                        [symbol(abi_type_int152) ]
+                      | #int144  ( Int )                        [symbol(abi_type_int144) ]
+                      | #int136  ( Int )                        [symbol(abi_type_int136) ]
+                      | #int128  ( Int )                        [symbol(abi_type_int128) ]
+                      | #int120  ( Int )                        [symbol(abi_type_int120) ]
+                      | #int112  ( Int )                        [symbol(abi_type_int112) ]
+                      | #int104  ( Int )                        [symbol(abi_type_int104) ]
+                      | #int96   ( Int )                        [symbol(abi_type_int96)  ]
+                      | #int88   ( Int )                        [symbol(abi_type_int88)  ]
+                      | #int80   ( Int )                        [symbol(abi_type_int80)  ]
+                      | #int72   ( Int )                        [symbol(abi_type_int72)  ]
+                      | #int64   ( Int )                        [symbol(abi_type_int64)  ]
+                      | #int56   ( Int )                        [symbol(abi_type_int56)  ]
+                      | #int48   ( Int )                        [symbol(abi_type_int48)  ]
+                      | #int40   ( Int )                        [symbol(abi_type_int40)  ]
+                      | #int32   ( Int )                        [symbol(abi_type_int32)  ]
+                      | #int24   ( Int )                        [symbol(abi_type_int24)  ]
+                      | #int16   ( Int )                        [symbol(abi_type_int16)  ]
+                      | #int8    ( Int )                        [symbol(abi_type_int8)   ]
+                      | #bytes1  ( Int )                        [symbol(abi_type_bytes1) ]
+                      | #bytes2  ( Int )                        [symbol(abi_type_bytes2) ]
+                      | #bytes3  ( Int )                        [symbol(abi_type_bytes3) ]
+                      | #bytes4  ( Int )                        [symbol(abi_type_bytes4) ]
+                      | #bytes5  ( Int )                        [symbol(abi_type_bytes5) ]
+                      | #bytes6  ( Int )                        [symbol(abi_type_bytes6) ]
+                      | #bytes7  ( Int )                        [symbol(abi_type_bytes7) ]
+                      | #bytes8  ( Int )                        [symbol(abi_type_bytes8) ]
+                      | #bytes9  ( Int )                        [symbol(abi_type_bytes9) ]
+                      | #bytes10 ( Int )                        [symbol(abi_type_bytes10)]
+                      | #bytes11 ( Int )                        [symbol(abi_type_bytes11)]
+                      | #bytes12 ( Int )                        [symbol(abi_type_bytes12)]
+                      | #bytes13 ( Int )                        [symbol(abi_type_bytes13)]
+                      | #bytes14 ( Int )                        [symbol(abi_type_bytes14)]
+                      | #bytes15 ( Int )                        [symbol(abi_type_bytes15)]
+                      | #bytes16 ( Int )                        [symbol(abi_type_bytes16)]
+                      | #bytes17 ( Int )                        [symbol(abi_type_bytes17)]
+                      | #bytes18 ( Int )                        [symbol(abi_type_bytes18)]
+                      | #bytes19 ( Int )                        [symbol(abi_type_bytes19)]
+                      | #bytes20 ( Int )                        [symbol(abi_type_bytes20)]
+                      | #bytes21 ( Int )                        [symbol(abi_type_bytes21)]
+                      | #bytes22 ( Int )                        [symbol(abi_type_bytes22)]
+                      | #bytes23 ( Int )                        [symbol(abi_type_bytes23)]
+                      | #bytes24 ( Int )                        [symbol(abi_type_bytes24)]
+                      | #bytes25 ( Int )                        [symbol(abi_type_bytes25)]
+                      | #bytes26 ( Int )                        [symbol(abi_type_bytes26)]
+                      | #bytes27 ( Int )                        [symbol(abi_type_bytes27)]
+                      | #bytes28 ( Int )                        [symbol(abi_type_bytes28)]
+                      | #bytes29 ( Int )                        [symbol(abi_type_bytes29)]
+                      | #bytes30 ( Int )                        [symbol(abi_type_bytes30)]
+                      | #bytes31 ( Int )                        [symbol(abi_type_bytes31)]
+                      | #bytes32 ( Int )                        [symbol(abi_type_bytes32)]
+                      | #bool    ( Int )                        [symbol(abi_type_bool)   ]
+                      | #bytes   ( Bytes )                      [symbol(abi_type_bytes)  ]
+                      | #string  ( String )                     [symbol(abi_type_string) ]
+                      | #array   ( TypedArg , Int , TypedArgs ) [symbol(abi_type_array)  ]
+                      | #tuple   ( TypedArgs )                  [symbol(abi_type_tuple)  ]
+ // --------------------------------------------------------------------------------------
 
     syntax TypedArgs ::= List{TypedArg, ","} [symbol(typedArgs)]
  // ------------------------------------------------------------
 
-    syntax Bytes ::= #abiCallData ( String , TypedArgs ) [klabel(#abiCallData), function]
- // -------------------------------------------------------------------------------------
+    syntax Bytes ::= #abiCallData ( String , TypedArgs ) [symbol(abiCallData), function]
+ // ------------------------------------------------------------------------------------
     rule #abiCallData( FNAME , ARGS ) => #signatureCallData(FNAME, ARGS) +Bytes #encodeArgs(ARGS)
 
-    syntax Bytes ::= #signatureCallData ( String, TypedArgs ) [klabel(#signatureCallData), function]
- // ------------------------------------------------------------------------------------------------
+    syntax Bytes ::= #signatureCallData ( String, TypedArgs ) [symbol(signatureCallData), function]
+ // -----------------------------------------------------------------------------------------------
     rule #signatureCallData( FNAME , ARGS ) => #parseByteStack(substrString(Keccak256(String2Bytes(#generateSignature(FNAME, ARGS))), 0, 8))
 
-    syntax String ::= #generateSignature     ( String, TypedArgs ) [klabel(#generateSignature), function, total]
-                    | #generateSignatureArgs ( TypedArgs )         [klabel(#generateSignatureArgs),function, total]
+    syntax String ::= #generateSignature     ( String, TypedArgs ) [symbol(generateSignature), function, total]
+                    | #generateSignatureArgs ( TypedArgs )         [symbol(generateSignatureArgs),function, total]
  // --------------------------------------------------------------------------------------------------------------
     rule #generateSignature( FNAME , ARGS ) => FNAME +String "(" +String #generateSignatureArgs(ARGS) +String ")"
 
@@ -155,8 +155,8 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
     rule #generateSignatureArgs(TARGA:TypedArg, .TypedArgs)            => #typeName(TARGA)
     rule #generateSignatureArgs(TARGA:TypedArg, TARGB:TypedArg, TARGS) => #typeName(TARGA) +String "," +String #generateSignatureArgs(TARGB, TARGS)
 
-    syntax String ::= #typeName ( TypedArg ) [klabel(#typeName), function, total]
- // -----------------------------------------------------------------------------
+    syntax String ::= #typeName ( TypedArg ) [symbol(typeName), function, total]
+ // ----------------------------------------------------------------------------
     rule #typeName(   #address( _ )) => "address"
 
     rule #typeName(   #uint256( _ )) => "uint256"
@@ -268,9 +268,9 @@ where `F1 : F2 : F3 : F4` is the (two's complement) byte-array representation of
 
     rule #typeName(    #tuple(ARGS)) => "(" +String #generateSignatureArgs(ARGS) +String ")"
 
-    syntax Bytes ::= #encodeArgs    ( TypedArgs )                       [klabel(#encodeArgs), function]
-    syntax Bytes ::= #encodeArgsAux ( TypedArgs , Int , Bytes , Bytes ) [klabel(#encodeArgsAux), function]
- // ------------------------------------------------------------------------------------------------------
+    syntax Bytes ::= #encodeArgs    ( TypedArgs )                       [symbol(encodeArgs), function]
+    syntax Bytes ::= #encodeArgsAux ( TypedArgs , Int , Bytes , Bytes ) [symbol(encodeArgsAux), function]
+ // -----------------------------------------------------------------------------------------------------
     rule #encodeArgs(ARGS) => #encodeArgsAux(ARGS, #lenOfHeads(ARGS), .Bytes, .Bytes)
 
     rule #encodeArgsAux(.TypedArgs, _:Int, HEADS, TAILS) => HEADS +Bytes TAILS
@@ -288,13 +288,13 @@ The `#lenOfHeads` is a recursive function used to calculate the space required f
 For most types, this is a fixed 32 bytes, except for static tuples, for which the length is the cumulative length of their contents.
 
 ```k
-    syntax Int ::= #lenOfHeads ( TypedArgs ) [klabel(#lenOfHeads), function, total]
- // -------------------------------------------------------------------------------
+    syntax Int ::= #lenOfHeads ( TypedArgs ) [symbol(lenOfHeads), function, total]
+ // ------------------------------------------------------------------------------
     rule #lenOfHeads(.TypedArgs) => 0
     rule #lenOfHeads(ARG, ARGS)  => #lenOfHead(ARG) +Int #lenOfHeads(ARGS)
 
-    syntax Int ::= #lenOfHead ( TypedArg ) [klabel(#lenOfHead), function, total]
- // ----------------------------------------------------------------------------
+    syntax Int ::= #lenOfHead ( TypedArg ) [symbol(lenOfHead), function, total]
+ // ---------------------------------------------------------------------------
     rule #lenOfHead( #tuple( ARGS )) => #lenOfHeads(ARGS) requires #isStaticType(#tuple(ARGS))
     rule #lenOfHead(              _) => 32 [owise]
 ```
@@ -302,16 +302,16 @@ For most types, this is a fixed 32 bytes, except for static tuples, for which th
 `#isStaticType` checks if a given `TypedArg` is a static type in order to determine if it has a fixed size.
 
 ```k
-    syntax Bool ::= #isStaticType ( TypedArg ) [klabel(#isStaticType), function, total]
- // -----------------------------------------------------------------------------------
+    syntax Bool ::= #isStaticType ( TypedArg ) [symbol(isStaticType), function, total]
+ // ----------------------------------------------------------------------------------
     rule #isStaticType(    #bytes( _ )) => false
     rule #isStaticType(   #string( _ )) => false
     rule #isStaticType(#array(_, _, _)) => false
     rule #isStaticType( #tuple( ARGS )) => notBool #hasDynamicType(ARGS)
     rule #isStaticType(              _) => true                          [owise]
 
-    syntax Bool ::= #hasDynamicType(TypedArgs) [klabel(#hasDynamicType), function, total]
- // -------------------------------------------------------------------------------------
+    syntax Bool ::= #hasDynamicType(TypedArgs) [symbol(hasDynamicType), function, total]
+ // ------------------------------------------------------------------------------------
     rule #hasDynamicType(.TypedArgs) => false
     rule #hasDynamicType(T, TS) => #hasDynamicType(TS) requires #isStaticType(T)
     rule #hasDynamicType(T,  _) => true requires notBool #isStaticType(T)
@@ -321,22 +321,22 @@ For most types, this is a fixed 32 bytes, except for static tuples, for which th
  - for `#bytes(BS)` and `#string(BS)`, the size is 32 bytes for the length prefix plus the size of the actual byte sequence, rounded up to the nearest multiple of 32.
  - for `#tuple(ARGS)`, the size is 32 bytes for the length prefix plus the cumulative size of its elements.
  - for `#array(T, N, _)` that has elements of a static `TypedArg` `T`, the size is `32 * (1 + N)`,which accounts for 32 bytes for the length prefix and 32 bytes for each element.
- - for dynamic type arrays `#array(T, N, ELEMS)`, the size is `32 * (1 + N + #sizeOfDynamicTypeList(ELEMS))`.
+ - for dynamic type arrays `#array(T, N, ELEMS)`, the size is `32 * (1 + N) + #sizeOfDynamicTypeList(ELEMS)`.
 
 ```k
-    syntax Int ::= #sizeOfDynamicType ( TypedArg ) [klabel(#sizeOfDynamicType), function]
- // -------------------------------------------------------------------------------------
+    syntax Int ::= #sizeOfDynamicType ( TypedArg ) [symbol(sizeOfDynamicType), function]
+ // ------------------------------------------------------------------------------------
     rule #sizeOfDynamicType(     #bytes(BS)) => 32 +Int #ceil32(lengthBytes(BS))
     rule #sizeOfDynamicType(    #string(BS)) => 32 +Int #ceil32(lengthBytes(String2Bytes(BS)))
     rule #sizeOfDynamicType(   #tuple(ARGS)) => 32 +Int #sizeOfDynamicTypeList(ARGS)
     rule #sizeOfDynamicType(#array(T, N, _)) => 32 *Int (1 +Int N)
       requires #isStaticType(T)
 
-    rule #sizeOfDynamicType(#array(T, N, ELEMS)) => 32 *Int (1 +Int N +Int #sizeOfDynamicTypeList(ELEMS))
+    rule #sizeOfDynamicType(#array(T, N, ELEMS)) => (32 *Int (1 +Int N)) +Int #sizeOfDynamicTypeList(ELEMS)
       requires notBool #isStaticType(T)
 
-    syntax Int ::= #sizeOfDynamicTypeList ( TypedArgs ) [klabel(#sizeOfDynamicTypeList), function, total]
- // -----------------------------------------------------------------------------------------------------
+    syntax Int ::= #sizeOfDynamicTypeList ( TypedArgs ) [symbol(sizeOfDynamicTypeList), function, total]
+ // ----------------------------------------------------------------------------------------------------
     rule #sizeOfDynamicTypeList(TARG, TARGS) => #sizeOfDynamicType(TARG) +Int #sizeOfDynamicTypeList(TARGS)
       requires notBool #isStaticType(TARG)
 
@@ -345,8 +345,8 @@ For most types, this is a fixed 32 bytes, except for static tuples, for which th
 
     rule #sizeOfDynamicTypeList(.TypedArgs) => 0
 
-    syntax Bytes ::= #enc ( TypedArg ) [klabel(#enc), function]
- // -----------------------------------------------------------
+    syntax Bytes ::= #enc ( TypedArg ) [symbol(enc), function]
+ // ----------------------------------------------------------
     // static Type
     rule #enc(#address( DATA )) => #bufStrict(32, #getValue(#address( DATA )))
 
@@ -458,14 +458,14 @@ For most types, this is a fixed 32 bytes, except for static tuples, for which th
     rule #enc(#array(_, N, DATA)) => #enc(#uint256(N)) +Bytes #encodeArgs(DATA)
     rule #enc(    #tuple( DATA )) => #encodeArgs(DATA)
 
-    syntax Bytes ::= #encBytes ( Int , Bytes ) [klabel(#encBytes), function]
- // ------------------------------------------------------------------------
+    syntax Bytes ::= #encBytes ( Int , Bytes ) [symbol(encBytes), function]
+ // -----------------------------------------------------------------------
     rule #encBytes(N, BS) => #enc(#uint256(N)) +Bytes BS +Bytes #bufStrict(#ceil32(N) -Int N, 0)
 ```
 
 ```k
-    syntax Int ::= #getValue ( TypedArg ) [klabel(#getValue), function]
- // -------------------------------------------------------------------
+    syntax Int ::= #getValue ( TypedArg ) [symbol(getValue), function]
+ // ------------------------------------------------------------------
     rule #getValue(   #bool( X )) => X       requires #rangeBool(X)
 
     rule #getValue(#address( X )) => X       requires #rangeAddress(X)
@@ -602,37 +602,37 @@ where `1003892871367861763272476045097431689001461395759728643661426852242313133
 
 ```k
     syntax EventArg ::= TypedArg
-                      | #indexed ( TypedArg ) [klabel(#indexed)]
- // ------------------------------------------------------------
+                      | #indexed ( TypedArg ) [symbol(indexed)]
+ // -----------------------------------------------------------
 
     syntax EventArgs ::= List{EventArg, ","} [symbol(eventArgs)]
  // ------------------------------------------------------------
 
-    syntax SubstateLogEntry ::= #abiEventLog ( Int , String , EventArgs ) [klabel(#abiEventLog), function]
- // ------------------------------------------------------------------------------------------------------
+    syntax SubstateLogEntry ::= #abiEventLog ( Int , String , EventArgs ) [symbol(abiEventLog), function]
+ // -----------------------------------------------------------------------------------------------------
     rule #abiEventLog(ACCT_ID, EVENT_NAME, EVENT_ARGS)
       => { ACCT_ID | #getEventTopics(EVENT_NAME, EVENT_ARGS) | #encodeArgs(#getNonIndexedArgs(EVENT_ARGS)) }
 
-    syntax List ::= #getEventTopics ( String , EventArgs ) [klabel(#getEventTopics), function]
- // ------------------------------------------------------------------------------------------
+    syntax List ::= #getEventTopics ( String , EventArgs ) [symbol(getEventTopics), function]
+ // -----------------------------------------------------------------------------------------
     rule #getEventTopics(ENAME, EARGS)
       => ListItem(#parseHexWord(Keccak256(String2Bytes(#generateSignature(ENAME, #getTypedArgs(EARGS))))))
          #getIndexedArgs(EARGS)
 
-    syntax TypedArgs ::= #getTypedArgs ( EventArgs ) [klabel(#getTypedArgs), function]
- // ----------------------------------------------------------------------------------
+    syntax TypedArgs ::= #getTypedArgs ( EventArgs ) [symbol(getTypedArgs), function]
+ // ---------------------------------------------------------------------------------
     rule #getTypedArgs(#indexed(E), ES) => E, #getTypedArgs(ES)
     rule #getTypedArgs(E:TypedArg,  ES) => E, #getTypedArgs(ES)
     rule #getTypedArgs(.EventArgs)      => .TypedArgs
 
-    syntax List ::= #getIndexedArgs ( EventArgs ) [klabel(#getIndexedArgs), function]
- // ---------------------------------------------------------------------------------
+    syntax List ::= #getIndexedArgs ( EventArgs ) [symbol(getIndexedArgs), function]
+ // --------------------------------------------------------------------------------
     rule #getIndexedArgs(#indexed(E), ES) => ListItem(#getValue(E)) #getIndexedArgs(ES)
     rule #getIndexedArgs(_:TypedArg,  ES) =>                        #getIndexedArgs(ES)
     rule #getIndexedArgs(.EventArgs)      => .List
 
-    syntax TypedArgs ::= #getNonIndexedArgs ( EventArgs ) [klabel(#getNonIndexedArgs), function]
- // --------------------------------------------------------------------------------------------
+    syntax TypedArgs ::= #getNonIndexedArgs ( EventArgs ) [symbol(getNonIndexedArgs), function]
+ // -------------------------------------------------------------------------------------------
     rule #getNonIndexedArgs(#indexed(_), ES) =>    #getNonIndexedArgs(ES)
     rule #getNonIndexedArgs(E:TypedArg,  ES) => E, #getNonIndexedArgs(ES)
     rule #getNonIndexedArgs(.EventArgs)      => .TypedArgs
@@ -641,8 +641,8 @@ where `1003892871367861763272476045097431689001461395759728643661426852242313133
 ### Function selectors
 
 ```k
-    syntax Int ::= selector ( String ) [alias, klabel(abi_selector), symbol, function, no-evaluators]
- // -------------------------------------------------------------------------------------------------
+    syntax Int ::= selector ( String ) [alias, symbol(abi_selector), function, no-evaluators]
+ // -----------------------------------------------------------------------------------------
 ```
 
 ```k
