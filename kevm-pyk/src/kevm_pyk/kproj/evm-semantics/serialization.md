@@ -158,10 +158,10 @@ These parsers can interperet hex-encoded strings as `Int`s, `Bytes`s, and `Map`s
     rule #alignHexString(S) => S             requires         lengthString(S) modInt 2 ==Int 0
     rule #alignHexString(S) => "0" +String S requires notBool lengthString(S) modInt 2 ==Int 0
 
-    syntax Bytes ::= #parseHexBytes     ( String ) [klabel(#parseHexBytes), function]
-                   | #parseHexBytesAux  ( String ) [klabel(#parseHexBytesAux), function]
-                   | #parseByteStack    ( String ) [klabel(#parseByteStack), function, memo]
- // ---------------------------------------------------------
+    syntax Bytes ::= #parseHexBytes     ( String ) [symbol(parseHexBytes), function]
+                   | #parseHexBytesAux  ( String ) [symbol(parseHexBytesAux), function]
+                   | #parseByteStack    ( String ) [symbol(parseByteStack), function, memo]
+ // ---------------------------------------------------------------------------------------
     rule #parseByteStack(S) => #parseHexBytes(replaceAll(S, "0x", ""))
 
     rule #parseHexBytes(S)  => #parseHexBytesAux(#alignHexString(S))
