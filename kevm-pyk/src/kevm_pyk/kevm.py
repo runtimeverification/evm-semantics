@@ -496,7 +496,7 @@ class KEVM(KProve, KRun):
 
     @staticmethod
     def abi_calldata(name: str, args: list[KInner]) -> KApply:
-        return KApply('#abiCallData(_,_)_EVM-ABI_Bytes_String_TypedArgs', [stringToken(name), KEVM.typed_args(args)])
+        return KApply('abiCallData', [stringToken(name), KEVM.typed_args(args)])
 
     @staticmethod
     def abi_selector(name: str) -> KApply:
