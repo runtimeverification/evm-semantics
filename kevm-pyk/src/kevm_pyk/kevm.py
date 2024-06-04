@@ -170,6 +170,9 @@ class KEVMSemantics(KCFGSemantics):
             return Step(new_cterm, 1, (), ['EVM.program.load'], cut=True)
         return None
 
+    def merge_nodes(self, c1: CTerm, c2: CTerm) -> bool:
+        return False
+
     @staticmethod
     def cut_point_rules(
         break_on_jumpi: bool, break_on_calls: bool, break_on_storage: bool, break_on_basic_blocks: bool
