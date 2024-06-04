@@ -688,7 +688,7 @@ def compute_jumpdests(sections: list[KInner]) -> KInner:
 
 
 def _process_jumpdests(bytecode: bytes, offset: int) -> list[KToken]:
-    """Computes the location of JUMPDEST opcodes from a given bytecode.
+    """Computes the location of JUMPDEST opcodes from a given bytecode while avoiding bytes from within the PUSH opcodes.
 
     :param bytecode: The bytecode of the contract as bytes.
     :type bytecode: bytes
@@ -697,4 +697,16 @@ def _process_jumpdests(bytecode: bytes, offset: int) -> list[KToken]:
     :return:  A list of intToken instances representing the positions of all found jump destinations in the bytecode adjusted by the offset.
     :rtype: list[KToken]
     """
-    return [intToken(offset + i) for i, byte in enumerate(bytecode) if byte == 0x5B]
+    push1 = 0x60
+    push32 = 0x7F
+    jumpdest = 0x5B
+    i = 0
+    jumpdests: list[KToken] = []
+    while i < len(bytecode):
+        if push1 <= bytecode[i] <= push32:
+            i += bytecode[i] - push1 + 2
+        else:
+            if bytecode[i] == jumpdest:
+                jumpdests.append(intToken(offset + i))
+            i += 1
+    return jumpdests
