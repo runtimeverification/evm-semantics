@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+<meta charset="utf-8" />
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0, maximum-scale=1.0"
+/>
+<meta
+  name="description"
+  content="K Semantics of the Ethereum Virtual Machine (EVM)"
+/>
+<meta
+  name="keywords"
+  content="runtime, verification, rv, k, ethereum virtual machine, evm"
+/>
+<meta name="author" content="EVM Semantics | Runtime Verification Inc" />
+<meta name="robots" content="index, follow" />
+
+<!--favicon icon-->
+<link rel="icon" type="image/png" href="../../../../../../assets/img/favicon.ico" />
+
+<title>KEVM: Semantics of EVM in K | Runtime Verification, Inc. </title>
+
+<link rel="canonical" href="https://jellopaper.org/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/word/" />
+
+<!--web fonts-->
+<link
+  href="https://fonts.googleapis.com/css?family=Nunito:300,400,600,700,800"
+  rel="stylesheet"
+/>
+<link
+  href="https://fonts.googleapis.com/css?family=Lora:400i"
+  rel="stylesheet"
+/>
+
+<link
+  href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.14.0/css/all.min.css"
+  rel="stylesheet"
+/>
+
+<link href="../../../../../../assets/css/index.css" rel="stylesheet" />
+
+<!--[if (gt IE 9) |!(IE)]><!-->
+<!--<link rel="stylesheet" href="/assets/vendor/custom-nav/css/effects/fade-menu.css"/>-->
+<!-- <link rel="stylesheet" href="../../../../../../assets/k/vl-nav/css/effects/slide-menu.css" /> -->
+<!--<![endif]-->
+
+  </head>
+
+  <body>
+<header
+  class="navbar navbar-expand navbar-dark flex-column flex-md-row bd-navbar"
+>
+  <a class="logo-link" href="../../../../../../index.html"> EVM Semantics </a>
+  <ul class="navbar-nav ml-md-auto">
+    <li class="nav-item">
+      <a
+        class="nav-link pl-2 pr-1 mx-1 py-3 my-n2"
+        href="https://github.com/runtimeverification/evm-semantics"
+        target="_blank"
+        rel="noopener"
+        aria-label="GitHub"
+      >
+        <i class="fab fa-github"></i>
+      </a>
+    </li>
+  </ul>
+  <!--
+  <a
+    class="btn btn-rv-blue d-none d-lg-inline-block mb-3 mb-md-0 ml-md-3"
+    href="../../../../../../downloads"
+    >Download</a
+  >
+  -->
+</header>
+
+
+    <div class="container-fluid">
+      <div class="row flex-xl-nowrap">
+<div class="col-12 col-md-3 col-xl-2 bd-sidebar mb-3">
+  <form
+    role="search"
+    class="bd-search d-flex align-items-center justify-content-between"
+  >
+    <input
+      type="search"
+      class="form-control"
+      placeholder="Search..."
+      aria-label="Search for..."
+      autocomplete="false"
+      id="search-box"
+    />
+    <button
+      class="btn bd-search-docs-toggle d-md-none p-0 ml-3 collapsed"
+      type="button"
+      aria-label="Toggle docs navigation"
+      style="font-size: 1.4rem"
+    >
+      <i class="fas fa-bars"></i>
+    </button>
+  </form>
+  <nav class="collapse bd-links" aria-label="Main navigation">
+    <div class="bd-toc-item">
+      <a class="bd-toc-link" href="../../../../../../">Homepage</a>
+      <a class="bd-toc-link" href="../../../../../../INSTALL/">Install</a>
+    </div>
+  </nav>
+</div>
+
+        <main
+          class="col-12 col-md-6 col-xl-8 py-md-3 pl-md-5 bd-content"
+          role="main"
+        >
+          <div class="markdown-preview"><html><head></head><body><h1 id="core-definitions-for-word">Core definitions for <code>Word</code></h1>
+<p>In this file are defined the basic components for EVM words.</p>
+<pre><code class="language-k"><span class="token keyword">module</span> WORD
+    <span class="token keyword">imports</span> INT
+    <span class="token keyword">imports</span> BOOL
+    <span class="token keyword">imports</span> BYTES
+</code></pre>
+<h2 id="important-powers">Important Powers</h2>
+<p>Some important numbers that are referred to often during execution.
+These can be used for pattern-matching on the LHS of rules as well (<code>alias</code> attribute expands all occurrences of these in rules).</p>
+<pre><code class="language-k">    <span class="token keyword">syntax</span> <span class="token keyword">Int</span> <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> <span class="token string">"pow5"</span>   <span class="token punctuation">[</span><span class="token class-name">macro</span><span class="token punctuation">]</span> <span class="token comment">/* 2 ^Int 5   */</span>
+                 <span class="token operator">|</span> <span class="token string">"pow8"</span>   <span class="token punctuation">[</span><span class="token class-name">macro</span><span class="token punctuation">]</span> <span class="token comment">/* 2 ^Int 8   */</span>
+                 <span class="token operator">|</span> <span class="token string">"pow16"</span>  <span class="token punctuation">[</span>alias<span class="token punctuation">]</span> <span class="token comment">/* 2 ^Int 16  */</span>
+                 <span class="token operator">|</span> <span class="token string">"pow24"</span>  <span class="token punctuation">[</span>alias<span class="token punctuation">]</span> <span class="token comment">/* 2 ^Int 24  */</span>
+                 <span class="token operator">|</span> <span class="token string">"pow32"</span>  <span class="token punctuation">[</span>alias<span class="token punctuation">]</span> <span class="token comment">/* 2 ^Int 32  */</span>
+                 <span class="token operator">|</span> <span class="token string">"pow40"</span>  <span class="token punctuation">[</span>alias<span class="token punctuation">]</span> <span class="token comment">/* 2 ^Int 40  */</span>
+                 <span class="token operator">|</span> <span class="token string">"pow48"</span>  <span class="token punctuation">[</span>alias<span class="token punctuation">]</span> <span class="token comment">/* 2 ^Int 48  */</span>
+                 <span class="token operator">|</span> <span class="token string">"pow56"</span>  <span class="token punctuation">[</span>alias<span class="token punctuation">]</span> <span class="token comment">/* 2 ^Int 56  */</span>
+                 <span class="token operator">|</span> <span class="token string">"pow64"</span>  <span class="token punctuation">[</span>alias<span class="token punctuation">]</span> <span class="token comment">/* 2 ^Int 64  */</span>
+                 <span class="token operator">|</span> <span class="token string">"pow72"</span>  <span class="token punctuation">[</span>alias<span class="token punctuation">]</span> <span class="token comment">/* 2 ^Int 72  */</span>
+                 <span class="token operator">|</span> <span class="token string">"pow80"</span>  <span class="token punctuation">[</span>alias<span class="token punctuation">]</span> <span class="token comment">/* 2 ^Int 80  */</span>
+                 <span class="token operator">|</span> <span class="token string">"pow88"</span>  <span class="token punctuation">[</span>alias<span class="token punctuation">]</span> <span class="token comment">/* 2 ^Int 88  */</span>
+                 <span class="token operator">|</span> <span class="token string">"pow96"</span>  <span class="token punctuation">[</span>alias<span class="token punctuation">]</span> <span class="token comment">/* 2 ^Int 96  */</span>
+                 <span class="token operator">|</span> <span class="token string">"pow104"</span> <span class="token punctuation">[</span>alias<span class="token punctuation">]</span> <span class="token comment">/* 2 ^Int 104 */</span>
+                 <span class="token operator">|</span> <span class="token string">"pow112"</span> <span class="token punctuation">[</span>alias<span class="token punctuation">]</span> <span class="token comment">/* 2 ^Int 112 */</span>
+                 <span class="token operator">|</span> <span class="token string">"pow120"</span> <span class="token punctuation">[</span>alias<span class="token punctuation">]</span> <span class="token comment">/* 2 ^Int 120 */</span>
+                 <span class="token operator">|</span> <span class="token string">"pow128"</span> <span class="token punctuation">[</span>alias<span class="token punctuation">]</span> <span class="token comment">/* 2 ^Int 128 */</span>
+                 <span class="token operator">|</span> <span class="token string">"pow136"</span> <span class="token punctuation">[</span>alias<span class="token punctuation">]</span> <span class="token comment">/* 2 ^Int 136 */</span>
+                 <span class="token operator">|</span> <span class="token string">"pow144"</span> <span class="token punctuation">[</span>alias<span class="token punctuation">]</span> <span class="token comment">/* 2 ^Int 144 */</span>
+                 <span class="token operator">|</span> <span class="token string">"pow152"</span> <span class="token punctuation">[</span>alias<span class="token punctuation">]</span> <span class="token comment">/* 2 ^Int 152 */</span>
+                 <span class="token operator">|</span> <span class="token string">"pow160"</span> <span class="token punctuation">[</span>alias<span class="token punctuation">]</span> <span class="token comment">/* 2 ^Int 160 */</span>
+                 <span class="token operator">|</span> <span class="token string">"pow168"</span> <span class="token punctuation">[</span>alias<span class="token punctuation">]</span> <span class="token comment">/* 2 ^Int 168 */</span>
+                 <span class="token operator">|</span> <span class="token string">"pow176"</span> <span class="token punctuation">[</span>alias<span class="token punctuation">]</span> <span class="token comment">/* 2 ^Int 176 */</span>
+                 <span class="token operator">|</span> <span class="token string">"pow184"</span> <span class="token punctuation">[</span>alias<span class="token punctuation">]</span> <span class="token comment">/* 2 ^Int 184 */</span>
+                 <span class="token operator">|</span> <span class="token string">"pow192"</span> <span class="token punctuation">[</span>alias<span class="token punctuation">]</span> <span class="token comment">/* 2 ^Int 192 */</span>
+                 <span class="token operator">|</span> <span class="token string">"pow200"</span> <span class="token punctuation">[</span>alias<span class="token punctuation">]</span> <span class="token comment">/* 2 ^Int 200 */</span>
+                 <span class="token operator">|</span> <span class="token string">"pow208"</span> <span class="token punctuation">[</span>alias<span class="token punctuation">]</span> <span class="token comment">/* 2 ^Int 208 */</span>
+                 <span class="token operator">|</span> <span class="token string">"pow216"</span> <span class="token punctuation">[</span>alias<span class="token punctuation">]</span> <span class="token comment">/* 2 ^Int 216 */</span>
+                 <span class="token operator">|</span> <span class="token string">"pow224"</span> <span class="token punctuation">[</span>alias<span class="token punctuation">]</span> <span class="token comment">/* 2 ^Int 224 */</span>
+                 <span class="token operator">|</span> <span class="token string">"pow232"</span> <span class="token punctuation">[</span>alias<span class="token punctuation">]</span> <span class="token comment">/* 2 ^Int 232 */</span>
+                 <span class="token operator">|</span> <span class="token string">"pow240"</span> <span class="token punctuation">[</span>alias<span class="token punctuation">]</span> <span class="token comment">/* 2 ^Int 240 */</span>
+                 <span class="token operator">|</span> <span class="token string">"pow248"</span> <span class="token punctuation">[</span>alias<span class="token punctuation">]</span> <span class="token comment">/* 2 ^Int 248 */</span>
+                 <span class="token operator">|</span> <span class="token string">"pow255"</span> <span class="token punctuation">[</span>alias<span class="token punctuation">]</span> <span class="token comment">/* 2 ^Int 255 */</span>
+                 <span class="token operator">|</span> <span class="token string">"pow256"</span> <span class="token punctuation">[</span>alias<span class="token punctuation">]</span> <span class="token comment">/* 2 ^Int 256 */</span>
+ <span class="token comment">// ------------------------------------------------</span>
+    <span class="token keyword">rule</span> pow5   <span class="token operator">=&gt;</span> <span class="token number">32</span>
+    <span class="token keyword">rule</span> pow8   <span class="token operator">=&gt;</span> <span class="token number">256</span>
+    <span class="token keyword">rule</span> pow16  <span class="token operator">=&gt;</span> <span class="token number">65536</span>
+    <span class="token keyword">rule</span> pow24  <span class="token operator">=&gt;</span> <span class="token number">16777216</span>
+    <span class="token keyword">rule</span> pow32  <span class="token operator">=&gt;</span> <span class="token number">4294967296</span>
+    <span class="token keyword">rule</span> pow40  <span class="token operator">=&gt;</span> <span class="token number">1099511627776</span>
+    <span class="token keyword">rule</span> pow48  <span class="token operator">=&gt;</span> <span class="token number">281474976710656</span>
+    <span class="token keyword">rule</span> pow56  <span class="token operator">=&gt;</span> <span class="token number">72057594037927936</span>
+    <span class="token keyword">rule</span> pow64  <span class="token operator">=&gt;</span> <span class="token number">18446744073709551616</span>
+    <span class="token keyword">rule</span> pow72  <span class="token operator">=&gt;</span> <span class="token number">4722366482869645213696</span>
+    <span class="token keyword">rule</span> pow80  <span class="token operator">=&gt;</span> <span class="token number">1208925819614629174706176</span>
+    <span class="token keyword">rule</span> pow88  <span class="token operator">=&gt;</span> <span class="token number">309485009821345068724781056</span>
+    <span class="token keyword">rule</span> pow96  <span class="token operator">=&gt;</span> <span class="token number">79228162514264337593543950336</span>
+    <span class="token keyword">rule</span> pow104 <span class="token operator">=&gt;</span> <span class="token number">20282409603651670423947251286016</span>
+    <span class="token keyword">rule</span> pow112 <span class="token operator">=&gt;</span> <span class="token number">5192296858534827628530496329220096</span>
+    <span class="token keyword">rule</span> pow120 <span class="token operator">=&gt;</span> <span class="token number">1329227995784915872903807060280344576</span>
+    <span class="token keyword">rule</span> pow128 <span class="token operator">=&gt;</span> <span class="token number">340282366920938463463374607431768211456</span>
+    <span class="token keyword">rule</span> pow136 <span class="token operator">=&gt;</span> <span class="token number">87112285931760246646623899502532662132736</span>
+    <span class="token keyword">rule</span> pow144 <span class="token operator">=&gt;</span> <span class="token number">22300745198530623141535718272648361505980416</span>
+    <span class="token keyword">rule</span> pow152 <span class="token operator">=&gt;</span> <span class="token number">5708990770823839524233143877797980545530986496</span>
+    <span class="token keyword">rule</span> pow160 <span class="token operator">=&gt;</span> <span class="token number">1461501637330902918203684832716283019655932542976</span>
+    <span class="token keyword">rule</span> pow168 <span class="token operator">=&gt;</span> <span class="token number">374144419156711147060143317175368453031918731001856</span>
+    <span class="token keyword">rule</span> pow176 <span class="token operator">=&gt;</span> <span class="token number">95780971304118053647396689196894323976171195136475136</span>
+    <span class="token keyword">rule</span> pow184 <span class="token operator">=&gt;</span> <span class="token number">24519928653854221733733552434404946937899825954937634816</span>
+    <span class="token keyword">rule</span> pow192 <span class="token operator">=&gt;</span> <span class="token number">6277101735386680763835789423207666416102355444464034512896</span>
+    <span class="token keyword">rule</span> pow200 <span class="token operator">=&gt;</span> <span class="token number">1606938044258990275541962092341162602522202993782792835301376</span>
+    <span class="token keyword">rule</span> pow208 <span class="token operator">=&gt;</span> <span class="token number">411376139330301510538742295639337626245683966408394965837152256</span>
+    <span class="token keyword">rule</span> pow216 <span class="token operator">=&gt;</span> <span class="token number">105312291668557186697918027683670432318895095400549111254310977536</span>
+    <span class="token keyword">rule</span> pow224 <span class="token operator">=&gt;</span> <span class="token number">26959946667150639794667015087019630673637144422540572481103610249216</span>
+    <span class="token keyword">rule</span> pow232 <span class="token operator">=&gt;</span> <span class="token number">6901746346790563787434755862277025452451108972170386555162524223799296</span>
+    <span class="token keyword">rule</span> pow240 <span class="token operator">=&gt;</span> <span class="token number">1766847064778384329583297500742918515827483896875618958121606201292619776</span>
+    <span class="token keyword">rule</span> pow248 <span class="token operator">=&gt;</span> <span class="token number">452312848583266388373324160190187140051835877600158453279131187530910662656</span>
+    <span class="token keyword">rule</span> pow255 <span class="token operator">=&gt;</span> <span class="token number">57896044618658097711785492504343953926634992332820282019728792003956564819968</span>
+    <span class="token keyword">rule</span> pow256 <span class="token operator">=&gt;</span> <span class="token number">115792089237316195423570985008687907853269984665640564039457584007913129639936</span>
+</code></pre>
+<h2 id="maximums-and-minimums">Maximums and minimums</h2>
+<p>The maximum and minimum values of each type are defined below.</p>
+<pre><code class="language-k">    <span class="token keyword">syntax</span> <span class="token keyword">Int</span> <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> <span class="token string">"minSInt8"</span>        <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minSInt8Word"</span>    <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"maxSInt8"</span>        <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minSInt16"</span>       <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minSInt16Word"</span>   <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"maxSInt16"</span>       <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minSInt24"</span>       <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minSInt24Word"</span>   <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"maxSInt24"</span>       <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minSInt32"</span>       <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minSInt32Word"</span>   <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"maxSInt32"</span>       <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minSInt40"</span>       <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minSInt40Word"</span>   <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"maxSInt40"</span>       <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minSInt48"</span>       <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minSInt48Word"</span>   <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"maxSInt48"</span>       <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minSInt56"</span>       <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minSInt56Word"</span>   <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"maxSInt56"</span>       <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minSInt64"</span>       <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minSInt64Word"</span>   <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"maxSInt64"</span>       <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minSInt72"</span>       <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minSInt72Word"</span>   <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"maxSInt72"</span>       <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minSInt80"</span>       <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minSInt80Word"</span>   <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"maxSInt80"</span>       <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minSInt88"</span>       <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minSInt88Word"</span>   <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"maxSInt88"</span>       <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minSInt96"</span>       <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minSInt96Word"</span>   <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"maxSInt96"</span>       <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minSInt104"</span>      <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minSInt104Word"</span>  <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"maxSInt104"</span>      <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minSInt112"</span>      <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minSInt112Word"</span>  <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"maxSInt112"</span>      <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minSInt120"</span>      <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minSInt120Word"</span>  <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"maxSInt120"</span>      <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minSInt128"</span>      <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minSInt128Word"</span>  <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"maxSInt128"</span>      <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minSInt136"</span>      <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minSInt136Word"</span>  <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"maxSInt136"</span>      <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minSInt144"</span>      <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minSInt144Word"</span>  <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"maxSInt144"</span>      <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minSInt152"</span>      <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minSInt152Word"</span>  <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"maxSInt152"</span>      <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minSInt160"</span>      <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minSInt160Word"</span>  <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"maxSInt160"</span>      <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minSInt168"</span>      <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minSInt168Word"</span>  <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"maxSInt168"</span>      <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minSInt176"</span>      <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minSInt176Word"</span>  <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"maxSInt176"</span>      <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minSInt184"</span>      <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minSInt184Word"</span>  <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"maxSInt184"</span>      <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minSInt192"</span>      <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minSInt192Word"</span>  <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"maxSInt192"</span>      <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minSInt200"</span>      <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minSInt200Word"</span>  <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"maxSInt200"</span>      <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minSInt208"</span>      <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minSInt208Word"</span>  <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"maxSInt208"</span>      <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minSInt216"</span>      <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minSInt216Word"</span>  <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"maxSInt216"</span>      <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minSInt224"</span>      <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minSInt224Word"</span>  <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"maxSInt224"</span>      <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minSInt232"</span>      <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minSInt232Word"</span>  <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"maxSInt232"</span>      <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minSInt240"</span>      <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minSInt240Word"</span>  <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"maxSInt240"</span>      <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minSInt248"</span>      <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minSInt248Word"</span>  <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"maxSInt248"</span>      <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minSInt256"</span>      <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minSInt256Word"</span>  <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"maxSInt256"</span>      <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minUInt5"</span>        <span class="token punctuation">[</span><span class="token class-name">macro</span><span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"maxUInt5"</span>        <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minUInt8"</span>        <span class="token punctuation">[</span><span class="token class-name">macro</span><span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"maxUInt8"</span>        <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minUInt16"</span>       <span class="token punctuation">[</span><span class="token class-name">macro</span><span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"maxUInt16"</span>       <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minUInt24"</span>       <span class="token punctuation">[</span><span class="token class-name">macro</span><span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"maxUInt24"</span>       <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minUInt32"</span>       <span class="token punctuation">[</span><span class="token class-name">macro</span><span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"maxUInt32"</span>       <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minUInt40"</span>       <span class="token punctuation">[</span><span class="token class-name">macro</span><span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"maxUInt40"</span>       <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minUInt48"</span>       <span class="token punctuation">[</span><span class="token class-name">macro</span><span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"maxUInt48"</span>       <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minUInt56"</span>       <span class="token punctuation">[</span><span class="token class-name">macro</span><span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"maxUInt56"</span>       <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minUInt64"</span>       <span class="token punctuation">[</span><span class="token class-name">macro</span><span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"maxUInt64"</span>       <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minUInt72"</span>       <span class="token punctuation">[</span><span class="token class-name">macro</span><span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"maxUInt72"</span>       <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minUInt80"</span>       <span class="token punctuation">[</span><span class="token class-name">macro</span><span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"maxUInt80"</span>       <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minUInt88"</span>       <span class="token punctuation">[</span><span class="token class-name">macro</span><span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"maxUInt88"</span>       <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minUInt96"</span>       <span class="token punctuation">[</span><span class="token class-name">macro</span><span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"maxUInt96"</span>       <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minUInt104"</span>      <span class="token punctuation">[</span><span class="token class-name">macro</span><span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"maxUInt104"</span>      <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minUInt112"</span>      <span class="token punctuation">[</span><span class="token class-name">macro</span><span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"maxUInt112"</span>      <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minUInt120"</span>      <span class="token punctuation">[</span><span class="token class-name">macro</span><span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"maxUInt120"</span>      <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minUInt128"</span>      <span class="token punctuation">[</span><span class="token class-name">macro</span><span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"maxUInt128"</span>      <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minUInt136"</span>      <span class="token punctuation">[</span><span class="token class-name">macro</span><span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"maxUInt136"</span>      <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minUInt144"</span>      <span class="token punctuation">[</span><span class="token class-name">macro</span><span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"maxUInt144"</span>      <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minUInt152"</span>      <span class="token punctuation">[</span><span class="token class-name">macro</span><span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"maxUInt152"</span>      <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minUInt160"</span>      <span class="token punctuation">[</span><span class="token class-name">macro</span><span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"maxUInt160"</span>      <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minUInt168"</span>      <span class="token punctuation">[</span><span class="token class-name">macro</span><span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"maxUInt168"</span>      <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minUInt176"</span>      <span class="token punctuation">[</span><span class="token class-name">macro</span><span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"maxUInt176"</span>      <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minUInt184"</span>      <span class="token punctuation">[</span><span class="token class-name">macro</span><span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"maxUInt184"</span>      <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minUInt192"</span>      <span class="token punctuation">[</span><span class="token class-name">macro</span><span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"maxUInt192"</span>      <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minUInt200"</span>      <span class="token punctuation">[</span><span class="token class-name">macro</span><span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"maxUInt200"</span>      <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minUInt208"</span>      <span class="token punctuation">[</span><span class="token class-name">macro</span><span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"maxUInt208"</span>      <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minUInt216"</span>      <span class="token punctuation">[</span><span class="token class-name">macro</span><span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"maxUInt216"</span>      <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minUInt224"</span>      <span class="token punctuation">[</span><span class="token class-name">macro</span><span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"maxUInt224"</span>      <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minUInt232"</span>      <span class="token punctuation">[</span><span class="token class-name">macro</span><span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"maxUInt232"</span>      <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minUInt240"</span>      <span class="token punctuation">[</span><span class="token class-name">macro</span><span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"maxUInt240"</span>      <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minUInt248"</span>      <span class="token punctuation">[</span><span class="token class-name">macro</span><span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"maxUInt248"</span>      <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minUInt256"</span>      <span class="token punctuation">[</span><span class="token class-name">macro</span><span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"maxUInt256"</span>      <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minSFixed128x10"</span> <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"maxSFixed128x10"</span> <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"minUFixed128x10"</span> <span class="token punctuation">[</span><span class="token class-name">macro</span><span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"maxUFixed128x10"</span> <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+ <span class="token comment">// ----------------------------------------</span>
+    <span class="token keyword">rule</span> minSInt8        <span class="token operator">=&gt;</span> <span class="token operator">-</span><span class="token number">128</span>                                                                            <span class="token comment">/*  -2^7                */</span>
+    <span class="token keyword">rule</span> minSInt8Word    <span class="token operator">=&gt;</span>  <span class="token number">115792089237316195423570985008687907853269984665640564039457584007913129639808</span> <span class="token comment">/*  -2^7 as evm word    */</span>
+    <span class="token keyword">rule</span> maxSInt8        <span class="token operator">=&gt;</span>  <span class="token number">127</span>                                                                            <span class="token comment">/*   2^7 - 1            */</span>
+    <span class="token keyword">rule</span> minSInt16       <span class="token operator">=&gt;</span> <span class="token operator">-</span><span class="token number">32768</span>                                                                          <span class="token comment">/*  -2^15               */</span>
+    <span class="token keyword">rule</span> minSInt16Word   <span class="token operator">=&gt;</span>  <span class="token number">115792089237316195423570985008687907853269984665640564039457584007913129607168</span> <span class="token comment">/*  -2^15 as evm word   */</span>
+    <span class="token keyword">rule</span> maxSInt16       <span class="token operator">=&gt;</span>  <span class="token number">32767</span>                                                                          <span class="token comment">/*   2^15 - 1           */</span>
+    <span class="token keyword">rule</span> minSInt24       <span class="token operator">=&gt;</span> <span class="token operator">-</span><span class="token number">8388608</span>                                                                        <span class="token comment">/*  -2^23               */</span>
+    <span class="token keyword">rule</span> minSInt24Word   <span class="token operator">=&gt;</span>  <span class="token number">115792089237316195423570985008687907853269984665640564039457584007913121251328</span> <span class="token comment">/*  -2^23 as evm word   */</span>
+    <span class="token keyword">rule</span> maxSInt24       <span class="token operator">=&gt;</span>  <span class="token number">8388607</span>                                                                        <span class="token comment">/*   2^23 - 1           */</span>
+    <span class="token keyword">rule</span> minSInt32       <span class="token operator">=&gt;</span> <span class="token operator">-</span><span class="token number">2147483648</span>                                                                     <span class="token comment">/*  -2^31               */</span>
+    <span class="token keyword">rule</span> minSInt32Word   <span class="token operator">=&gt;</span>  <span class="token number">115792089237316195423570985008687907853269984665640564039457584007910982156288</span> <span class="token comment">/*  -2^31 as evm word   */</span>
+    <span class="token keyword">rule</span> maxSInt32       <span class="token operator">=&gt;</span>  <span class="token number">2147483647</span>                                                                     <span class="token comment">/*   2^31 - 1           */</span>
+    <span class="token keyword">rule</span> minSInt40       <span class="token operator">=&gt;</span> <span class="token operator">-</span><span class="token number">549755813888</span>                                                                   <span class="token comment">/*  -2^39               */</span>
+    <span class="token keyword">rule</span> minSInt40Word   <span class="token operator">=&gt;</span>  <span class="token number">115792089237316195423570985008687907853269984665640564039457584007363373826048</span> <span class="token comment">/*  -2^39 as evm word   */</span>
+    <span class="token keyword">rule</span> maxSInt40       <span class="token operator">=&gt;</span>  <span class="token number">549755813887</span>                                                                   <span class="token comment">/*   2^39 - 1           */</span>
+    <span class="token keyword">rule</span> minSInt48       <span class="token operator">=&gt;</span> <span class="token operator">-</span><span class="token number">140737488355328</span>                                                                <span class="token comment">/*  -2^47               */</span>
+    <span class="token keyword">rule</span> minSInt48Word   <span class="token operator">=&gt;</span>  <span class="token number">115792089237316195423570985008687907853269984665640564039457583867175641284608</span> <span class="token comment">/*  -2^47 as evm word   */</span>
+    <span class="token keyword">rule</span> maxSInt48       <span class="token operator">=&gt;</span>  <span class="token number">140737488355327</span>                                                                <span class="token comment">/*   2^47 - 1           */</span>
+    <span class="token keyword">rule</span> minSInt56       <span class="token operator">=&gt;</span> <span class="token operator">-</span><span class="token number">36028797018963968</span>                                                              <span class="token comment">/*  -2^55               */</span>
+    <span class="token keyword">rule</span> minSInt56Word   <span class="token operator">=&gt;</span>  <span class="token number">115792089237316195423570985008687907853269984665640564039457547979116110675968</span> <span class="token comment">/*  -2^55 as evm word   */</span>
+    <span class="token keyword">rule</span> maxSInt56       <span class="token operator">=&gt;</span>  <span class="token number">36028797018963967</span>                                                              <span class="token comment">/*   2^55 - 1           */</span>
+    <span class="token keyword">rule</span> minSInt64       <span class="token operator">=&gt;</span> <span class="token operator">-</span><span class="token number">9223372036854775808</span>                                                            <span class="token comment">/*  -2^63               */</span>
+    <span class="token keyword">rule</span> minSInt64Word   <span class="token operator">=&gt;</span>  <span class="token number">115792089237316195423570985008687907853269984665640564039448360635876274864128</span> <span class="token comment">/*  -2^63 as evm word   */</span>
+    <span class="token keyword">rule</span> maxSInt64       <span class="token operator">=&gt;</span>  <span class="token number">9223372036854775807</span>                                                            <span class="token comment">/*   2^63 - 1           */</span>
+    <span class="token keyword">rule</span> minSInt72       <span class="token operator">=&gt;</span> <span class="token operator">-</span><span class="token number">2361183241434822606848</span>                                                         <span class="token comment">/*  -2^71               */</span>
+    <span class="token keyword">rule</span> minSInt72Word   <span class="token operator">=&gt;</span>  <span class="token number">115792089237316195423570985008687907853269984665640564037096400766478307033088</span> <span class="token comment">/*  -2^71 as evm word   */</span>
+    <span class="token keyword">rule</span> maxSInt72       <span class="token operator">=&gt;</span>  <span class="token number">2361183241434822606847</span>                                                         <span class="token comment">/*   2^71 - 1           */</span>
+    <span class="token keyword">rule</span> minSInt80       <span class="token operator">=&gt;</span> <span class="token operator">-</span><span class="token number">604462909807314587353088</span>                                                       <span class="token comment">/*  -2^79               */</span>
+    <span class="token keyword">rule</span> minSInt80Word   <span class="token operator">=&gt;</span>  <span class="token number">115792089237316195423570985008687907853269984665640563434994674200598542286848</span> <span class="token comment">/*  -2^79 as evm word   */</span>
+    <span class="token keyword">rule</span> maxSInt80       <span class="token operator">=&gt;</span>  <span class="token number">604462909807314587353087</span>                                                       <span class="token comment">/*   2^79 - 1           */</span>
+    <span class="token keyword">rule</span> minSInt88       <span class="token operator">=&gt;</span> <span class="token operator">-</span><span class="token number">154742504910672534362390528</span>                                                    <span class="token comment">/*  -2^87               */</span>
+    <span class="token keyword">rule</span> minSInt88Word   <span class="token operator">=&gt;</span>  <span class="token number">115792089237316195423570985008687907853269984665640409296952673335378767249408</span> <span class="token comment">/*  -2^87 as evm word   */</span>
+    <span class="token keyword">rule</span> maxSInt88       <span class="token operator">=&gt;</span>  <span class="token number">154742504910672534362390527</span>                                                    <span class="token comment">/*   2^87 - 1           */</span>
+    <span class="token keyword">rule</span> minSInt96       <span class="token operator">=&gt;</span> <span class="token operator">-</span><span class="token number">39614081257132168796771975168</span>                                                  <span class="token comment">/*  -2^95               */</span>
+    <span class="token keyword">rule</span> minSInt96Word   <span class="token operator">=&gt;</span>  <span class="token number">115792089237316195423570985008687907853269984665600949958200451839116357664768</span> <span class="token comment">/*  -2^95 as evm word   */</span>
+    <span class="token keyword">rule</span> maxSInt96       <span class="token operator">=&gt;</span>  <span class="token number">39614081257132168796771975167</span>                                                  <span class="token comment">/*   2^95 - 1           */</span>
+    <span class="token keyword">rule</span> minSInt104      <span class="token operator">=&gt;</span> <span class="token operator">-</span><span class="token number">10141204801825835211973625643008</span>                                               <span class="token comment">/*  -2^103              */</span>
+    <span class="token keyword">rule</span> minSInt104Word  <span class="token operator">=&gt;</span>  <span class="token number">115792089237316195423570985008687907853269984655499359237631748795939503996928</span> <span class="token comment">/*  -2^103 as evm word  */</span>
+    <span class="token keyword">rule</span> maxSInt104      <span class="token operator">=&gt;</span>  <span class="token number">10141204801825835211973625643007</span>                                               <span class="token comment">/*   2^103 - 1          */</span>
+    <span class="token keyword">rule</span> minSInt112      <span class="token operator">=&gt;</span> <span class="token operator">-</span><span class="token number">2596148429267413814265248164610048</span>                                             <span class="token comment">/*  -2^111              */</span>
+    <span class="token keyword">rule</span> minSInt112Word  <span class="token operator">=&gt;</span>  <span class="token number">115792089237316195423570985008687907853269982069492134772043769742664965029888</span> <span class="token comment">/*  -2^111 as evm word  */</span>
+    <span class="token keyword">rule</span> maxSInt112      <span class="token operator">=&gt;</span>  <span class="token number">2596148429267413814265248164610047</span>                                             <span class="token comment">/*   2^111 - 1          */</span>
+    <span class="token keyword">rule</span> minSInt120      <span class="token operator">=&gt;</span> <span class="token operator">-</span><span class="token number">664613997892457936451903530140172288</span>                                           <span class="token comment">/*  -2^119              */</span>
+    <span class="token keyword">rule</span> minSInt120Word  <span class="token operator">=&gt;</span>  <span class="token number">115792089237316195423570985008687907853269320051642671581521132104382989467648</span> <span class="token comment">/*  -2^119 as evm word  */</span>
+    <span class="token keyword">rule</span> maxSInt120      <span class="token operator">=&gt;</span>  <span class="token number">664613997892457936451903530140172287</span>                                           <span class="token comment">/*   2^119 - 1          */</span>
+    <span class="token keyword">rule</span> minSInt128      <span class="token operator">=&gt;</span> <span class="token operator">-</span><span class="token number">170141183460469231731687303715884105728</span>                                        <span class="token comment">/*  -2^127              */</span>
+    <span class="token keyword">rule</span> minSInt128Word  <span class="token operator">=&gt;</span>  <span class="token number">115792089237316195423570985008687907853099843482180094807725896704197245534208</span> <span class="token comment">/*  -2^127 as evm word  */</span>
+    <span class="token keyword">rule</span> maxSInt128      <span class="token operator">=&gt;</span>  <span class="token number">170141183460469231731687303715884105727</span>                                        <span class="token comment">/*   2^127 as evm word  */</span>
+    <span class="token keyword">rule</span> minSInt136      <span class="token operator">=&gt;</span> <span class="token operator">-</span><span class="token number">43556142965880123323311949751266331066368</span>                                      <span class="token comment">/*  -2^135               */</span>
+    <span class="token keyword">rule</span> minSInt136Word  <span class="token operator">=&gt;</span>  <span class="token number">115792089237316195423570985008687907809713841699760440716145634256646798573568</span> <span class="token comment">/*  -2^135 as evm word   */</span>
+    <span class="token keyword">rule</span> maxSInt136      <span class="token operator">=&gt;</span>  <span class="token number">43556142965880123323311949751266331066367</span>                                      <span class="token comment">/*   2^135 - 1           */</span>
+    <span class="token keyword">rule</span> minSInt144      <span class="token operator">=&gt;</span> <span class="token operator">-</span><span class="token number">11150372599265311570767859136324180752990208</span>                                   <span class="token comment">/*  -2^143               */</span>
+    <span class="token keyword">rule</span> minSInt144Word  <span class="token operator">=&gt;</span>  <span class="token number">115792089237316195423570985008687896702897385400328993271598447683732376649728</span> <span class="token comment">/*  -2^143 as evm word   */</span>
+    <span class="token keyword">rule</span> maxSInt144      <span class="token operator">=&gt;</span>  <span class="token number">11150372599265311570767859136324180752990207</span>                                   <span class="token comment">/*   2^143 - 1           */</span>
+    <span class="token keyword">rule</span> minSInt152      <span class="token operator">=&gt;</span> <span class="token operator">-</span><span class="token number">2854495385411919762116571938898990272765493248</span>                                 <span class="token comment">/*  -2^151               */</span>
+    <span class="token keyword">rule</span> minSInt152Word  <span class="token operator">=&gt;</span>  <span class="token number">115792089237316195423570985008685053357884572745878447467518685017640364146688</span> <span class="token comment">/*  -2^151 as evm word   */</span>
+    <span class="token keyword">rule</span> maxSInt152      <span class="token operator">=&gt;</span>  <span class="token number">2854495385411919762116571938898990272765493247</span>                                 <span class="token comment">/*   2^151 - 1           */</span>
+    <span class="token keyword">rule</span> minSInt160      <span class="token operator">=&gt;</span> <span class="token operator">-</span><span class="token number">730750818665451459101842416358141509827966271488</span>                               <span class="token comment">/*  -2^159               */</span>
+    <span class="token keyword">rule</span> minSInt160Word  <span class="token operator">=&gt;</span>  <span class="token number">115792089237316195423570985007957157034604533206538721623099442498085163368448</span> <span class="token comment">/*  -2^159 as evm word   */</span>
+    <span class="token keyword">rule</span> maxSInt160      <span class="token operator">=&gt;</span>  <span class="token number">730750818665451459101842416358141509827966271487</span>                               <span class="token comment">/*   2^159 - 1           */</span>
+    <span class="token keyword">rule</span> minSInt168      <span class="token operator">=&gt;</span> <span class="token operator">-</span><span class="token number">187072209578355573530071658587684226515959365500928</span>                            <span class="token comment">/*  -2^167               */</span>
+    <span class="token keyword">rule</span> minSInt168Word  <span class="token operator">=&gt;</span>  <span class="token number">115792089237316195423570984821615698274914411135568905451773357491953764139008</span> <span class="token comment">/*  -2^167 as evm word   */</span>
+    <span class="token keyword">rule</span> maxSInt168      <span class="token operator">=&gt;</span>  <span class="token number">187072209578355573530071658587684226515959365500927</span>                            <span class="token comment">/*   2^167 - 1           */</span>
+    <span class="token keyword">rule</span> minSInt176      <span class="token operator">=&gt;</span> <span class="token operator">-</span><span class="token number">47890485652059026823698344598447161988085597568237568</span>                          <span class="token comment">/*  -2^175               */</span>
+    <span class="token keyword">rule</span> minSInt176Word  <span class="token operator">=&gt;</span>  <span class="token number">115792089237316195423570937118202255794243160967295965592295595922315561402368</span> <span class="token comment">/*  -2^175 as evm word   */</span>
+    <span class="token keyword">rule</span> maxSInt176      <span class="token operator">=&gt;</span>  <span class="token number">47890485652059026823698344598447161988085597568237567</span>                          <span class="token comment">/*   2^175 - 1           */</span>
+    <span class="token keyword">rule</span> minSInt184      <span class="token operator">=&gt;</span> <span class="token operator">-</span><span class="token number">12259964326927110866866776217202473468949912977468817408</span>                       <span class="token comment">/*  -2^183               */</span>
+    <span class="token keyword">rule</span> minSInt184Word  <span class="token operator">=&gt;</span>  <span class="token number">115792089237316195423558725044360980742403117889423361565988634094935660822528</span> <span class="token comment">/*  -2^183 as evm word   */</span>
+    <span class="token keyword">rule</span> maxSInt184      <span class="token operator">=&gt;</span>  <span class="token number">12259964326927110866866776217202473468949912977468817407</span>                       <span class="token comment">/*   2^183 - 1           */</span>
+    <span class="token keyword">rule</span> minSInt192      <span class="token operator">=&gt;</span> <span class="token operator">-</span><span class="token number">3138550867693340381917894711603833208051177722232017256448</span>                     <span class="token comment">/*  -2^191               */</span>
+    <span class="token keyword">rule</span> minSInt192Word  <span class="token operator">=&gt;</span>  <span class="token number">115792089237316195420432434140994567471352089954036730831406406285681112383488</span> <span class="token comment">/*  -2^191 as evm word   */</span>
+    <span class="token keyword">rule</span> maxSInt192      <span class="token operator">=&gt;</span>  <span class="token number">3138550867693340381917894711603833208051177722232017256447</span>                     <span class="token comment">/*   2^191 - 1           */</span>
+    <span class="token keyword">rule</span> minSInt200      <span class="token operator">=&gt;</span> <span class="token operator">-</span><span class="token number">803469022129495137770981046170581301261101496891396417650688</span>                   <span class="token comment">/*  -2^199               */</span>
+    <span class="token keyword">rule</span> minSInt200Word  <span class="token operator">=&gt;</span>  <span class="token number">115792089237316194620101962879192770082288938495059262778356087116516711989248</span> <span class="token comment">/*  -2^199 as evm word   */</span>
+    <span class="token keyword">rule</span> maxSInt200      <span class="token operator">=&gt;</span>  <span class="token number">803469022129495137770981046170581301261101496891396417650687</span>                   <span class="token comment">/*   2^199 - 1           */</span>
+    <span class="token keyword">rule</span> minSInt208      <span class="token operator">=&gt;</span> <span class="token operator">-</span><span class="token number">205688069665150755269371147819668813122841983204197482918576128</span>                <span class="token comment">/*  -2^207                */</span>
+    <span class="token keyword">rule</span> minSInt208Word  <span class="token operator">=&gt;</span>  <span class="token number">115792089237315989735501319857932638482122164996827441197474379810430211063808</span> <span class="token comment">/*  -2^207  as evm word   */</span>
+    <span class="token keyword">rule</span> maxSInt208      <span class="token operator">=&gt;</span>  <span class="token number">205688069665150755269371147819668813122841983204197482918576127</span>                <span class="token comment">/*   2^207  - 1           */</span>
+    <span class="token keyword">rule</span> minSInt216      <span class="token operator">=&gt;</span> <span class="token operator">-</span><span class="token number">52656145834278593348959013841835216159447547700274555627155488768</span>              <span class="token comment">/*  -2^215                */</span>
+    <span class="token keyword">rule</span> minSInt216Word  <span class="token operator">=&gt;</span>  <span class="token number">115792089237263539277736706415338948839428149449481116491757309452285974151168</span> <span class="token comment">/*  -2^215  as evm word   */</span>
+    <span class="token keyword">rule</span> maxSInt216      <span class="token operator">=&gt;</span>  <span class="token number">52656145834278593348959013841835216159447547700274555627155488767</span>              <span class="token comment">/*   2^215  - 1           */</span>
+    <span class="token keyword">rule</span> minSInt224      <span class="token operator">=&gt;</span> <span class="token operator">-</span><span class="token number">13479973333575319897333507543509815336818572211270286240551805124608</span>           <span class="token comment">/*  -2^223               */</span>
+    <span class="token keyword">rule</span> minSInt224Word  <span class="token operator">=&gt;</span>  <span class="token number">115792089223836222089995665111354400309760169328821991828187297767361324515328</span> <span class="token comment">/*  -2^223  as evm word  */</span>
+    <span class="token keyword">rule</span> maxSInt224      <span class="token operator">=&gt;</span>  <span class="token number">13479973333575319897333507543509815336818572211270286240551805124607</span>           <span class="token comment">/*   2^223  - 1          */</span>
+    <span class="token keyword">rule</span> minSInt232      <span class="token operator">=&gt;</span> <span class="token operator">-</span><span class="token number">3450873173395281893717377931138512726225554486085193277581262111899648</span>         <span class="token comment">/*  -2^231               */</span>
+    <span class="token keyword">rule</span> minSInt232Word  <span class="token operator">=&gt;</span>  <span class="token number">115792085786443022028289091291309976714757258440086077954264306426651017740288</span> <span class="token comment">/*  -2^231  as evm word  */</span>
+    <span class="token keyword">rule</span> maxSInt232      <span class="token operator">=&gt;</span>  <span class="token number">3450873173395281893717377931138512726225554486085193277581262111899647</span>         <span class="token comment">/*   2^231  - 1          */</span>
+    <span class="token keyword">rule</span> minSInt240      <span class="token operator">=&gt;</span> <span class="token operator">-</span><span class="token number">883423532389192164791648750371459257913741948437809479060803100646309888</span>       <span class="token comment">/*  -2^239               */</span>
+    <span class="token keyword">rule</span> minSInt240Word  <span class="token operator">=&gt;</span>  <span class="token number">115791205813783806231406193359937536394012070923692126229978523204812483330048</span> <span class="token comment">/*  -2^239  as evm word  */</span>
+    <span class="token keyword">rule</span> maxSInt240      <span class="token operator">=&gt;</span>  <span class="token number">883423532389192164791648750371459257913741948437809479060803100646309887</span>       <span class="token comment">/*   2^239  - 1          */</span>
+    <span class="token keyword">rule</span> minSInt248      <span class="token operator">=&gt;</span> <span class="token operator">-</span><span class="token number">226156424291633194186662080095093570025917938800079226639565593765455331328</span>    <span class="token comment">/*  -2^247               */</span>
+    <span class="token keyword">rule</span> minSInt248Word  <span class="token operator">=&gt;</span>  <span class="token number">115565932813024562229384322928592814283244066726840484812818018414147674308608</span> <span class="token comment">/*  -2^247  as evm word  */</span>
+    <span class="token keyword">rule</span> maxSInt248      <span class="token operator">=&gt;</span>  <span class="token number">226156424291633194186662080095093570025917938800079226639565593765455331327</span>    <span class="token comment">/*   2^247  - 1          */</span>
+    <span class="token keyword">rule</span> minSInt256      <span class="token operator">=&gt;</span> <span class="token operator">-</span><span class="token number">57896044618658097711785492504343953926634992332820282019728792003956564819968</span>  <span class="token comment">/*  -2^255               */</span>
+    <span class="token keyword">rule</span> minSInt256Word  <span class="token operator">=&gt;</span>  <span class="token number">57896044618658097711785492504343953926634992332820282019728792003956564819968</span>  <span class="token comment">/*  -2^255  as evm word  */</span>
+    <span class="token keyword">rule</span> maxSInt256      <span class="token operator">=&gt;</span>  <span class="token number">57896044618658097711785492504343953926634992332820282019728792003956564819967</span>  <span class="token comment">/*   2^255  - 1          */</span>
+
+    <span class="token keyword">rule</span> minSFixed128x10 <span class="token operator">=&gt;</span> <span class="token operator">-</span><span class="token number">1701411834604692317316873037158841057280000000000</span>                              <span class="token comment">/* (-2^487    ) * 10^10 */</span>
+    <span class="token keyword">rule</span> maxSFixed128x10 <span class="token operator">=&gt;</span>  <span class="token number">1701411834604692317316873037158841057270000000000</span>                              <span class="token comment">/* ( 2^487 - 1) * 10^10 */</span>
+
+    <span class="token keyword">rule</span> minUInt5        <span class="token operator">=&gt;</span>  <span class="token number">0</span>
+    <span class="token keyword">rule</span> maxUInt5        <span class="token operator">=&gt;</span>  <span class="token number">31</span>                                                                             <span class="token comment">/*   2^5 - 1  */</span>
+    <span class="token keyword">rule</span> minUInt8        <span class="token operator">=&gt;</span>  <span class="token number">0</span>
+    <span class="token keyword">rule</span> maxUInt8        <span class="token operator">=&gt;</span>  <span class="token number">255</span>                                                                            <span class="token comment">/*   2^8 - 1  */</span>
+    <span class="token keyword">rule</span> minUInt16       <span class="token operator">=&gt;</span>  <span class="token number">0</span>
+    <span class="token keyword">rule</span> maxUInt16       <span class="token operator">=&gt;</span>  <span class="token number">65535</span>                                                                          <span class="token comment">/*   2^16 - 1  */</span>
+    <span class="token keyword">rule</span> minUInt24       <span class="token operator">=&gt;</span>  <span class="token number">0</span>
+    <span class="token keyword">rule</span> maxUInt24       <span class="token operator">=&gt;</span>  <span class="token number">16777215</span>                                                                       <span class="token comment">/*   2^24 - 1  */</span>
+    <span class="token keyword">rule</span> minUInt32       <span class="token operator">=&gt;</span>  <span class="token number">0</span>
+    <span class="token keyword">rule</span> maxUInt32       <span class="token operator">=&gt;</span>  <span class="token number">4294967295</span>                                                                     <span class="token comment">/*   2^32 - 1  */</span>
+    <span class="token keyword">rule</span> minUInt40       <span class="token operator">=&gt;</span>  <span class="token number">0</span>
+    <span class="token keyword">rule</span> maxUInt40       <span class="token operator">=&gt;</span>  <span class="token number">1099511627775</span>                                                                  <span class="token comment">/*   2^40 - 1  */</span>
+    <span class="token keyword">rule</span> minUInt48       <span class="token operator">=&gt;</span>  <span class="token number">0</span>
+    <span class="token keyword">rule</span> maxUInt48       <span class="token operator">=&gt;</span>  <span class="token number">281474976710655</span>                                                                <span class="token comment">/*   2^48 - 1  */</span>
+    <span class="token keyword">rule</span> minUInt56       <span class="token operator">=&gt;</span>  <span class="token number">0</span>
+    <span class="token keyword">rule</span> maxUInt56       <span class="token operator">=&gt;</span>  <span class="token number">72057594037927935</span>                                                              <span class="token comment">/*   2^56 - 1  */</span>
+    <span class="token keyword">rule</span> minUInt64       <span class="token operator">=&gt;</span>  <span class="token number">0</span>
+    <span class="token keyword">rule</span> maxUInt64       <span class="token operator">=&gt;</span>  <span class="token number">18446744073709551615</span>                                                           <span class="token comment">/*   2^64 - 1  */</span>
+    <span class="token keyword">rule</span> minUInt72       <span class="token operator">=&gt;</span>  <span class="token number">0</span>
+    <span class="token keyword">rule</span> maxUInt72       <span class="token operator">=&gt;</span>  <span class="token number">4722366482869645213695</span>                                                         <span class="token comment">/*   2^72 - 1  */</span>
+    <span class="token keyword">rule</span> minUInt80       <span class="token operator">=&gt;</span>  <span class="token number">0</span>
+    <span class="token keyword">rule</span> maxUInt80       <span class="token operator">=&gt;</span>  <span class="token number">1208925819614629174706175</span>                                                      <span class="token comment">/*   2^80 - 1  */</span>
+    <span class="token keyword">rule</span> minUInt88       <span class="token operator">=&gt;</span>  <span class="token number">0</span>
+    <span class="token keyword">rule</span> maxUInt88       <span class="token operator">=&gt;</span>  <span class="token number">309485009821345068724781055</span>                                                    <span class="token comment">/*   2^88 - 1  */</span>
+    <span class="token keyword">rule</span> minUInt96       <span class="token operator">=&gt;</span>  <span class="token number">0</span>
+    <span class="token keyword">rule</span> maxUInt96       <span class="token operator">=&gt;</span>  <span class="token number">79228162514264337593543950335</span>                                                  <span class="token comment">/*   2^96 - 1  */</span>
+    <span class="token keyword">rule</span> minUInt104      <span class="token operator">=&gt;</span>  <span class="token number">0</span>
+    <span class="token keyword">rule</span> maxUInt104      <span class="token operator">=&gt;</span>  <span class="token number">20282409603651670423947251286015</span>                                               <span class="token comment">/*   2^104 - 1  */</span>
+    <span class="token keyword">rule</span> minUInt112      <span class="token operator">=&gt;</span>  <span class="token number">0</span>
+    <span class="token keyword">rule</span> maxUInt112      <span class="token operator">=&gt;</span>  <span class="token number">5192296858534827628530496329220095</span>                                             <span class="token comment">/*   2^112 - 1  */</span>
+    <span class="token keyword">rule</span> minUInt120      <span class="token operator">=&gt;</span>  <span class="token number">0</span>
+    <span class="token keyword">rule</span> maxUInt120      <span class="token operator">=&gt;</span>  <span class="token number">1329227995784915872903807060280344575</span>                                          <span class="token comment">/*   2^120 - 1  */</span>
+    <span class="token keyword">rule</span> minUInt128      <span class="token operator">=&gt;</span>  <span class="token number">0</span>
+    <span class="token keyword">rule</span> maxUInt128      <span class="token operator">=&gt;</span>  <span class="token number">340282366920938463463374607431768211455</span>                                        <span class="token comment">/*   2^128 - 1  */</span>
+    <span class="token keyword">rule</span> minUInt136      <span class="token operator">=&gt;</span>  <span class="token number">0</span>
+    <span class="token keyword">rule</span> maxUInt136      <span class="token operator">=&gt;</span>  <span class="token number">87112285931760246646623899502532662132735</span>                                      <span class="token comment">/*   2^136 - 1  */</span>
+    <span class="token keyword">rule</span> minUInt144      <span class="token operator">=&gt;</span>  <span class="token number">0</span>
+    <span class="token keyword">rule</span> maxUInt144      <span class="token operator">=&gt;</span>  <span class="token number">22300745198530623141535718272648361505980415</span>                                   <span class="token comment">/*   2^144 - 1  */</span>
+    <span class="token keyword">rule</span> minUInt152      <span class="token operator">=&gt;</span>  <span class="token number">0</span>
+    <span class="token keyword">rule</span> maxUInt152      <span class="token operator">=&gt;</span>  <span class="token number">5708990770823839524233143877797980545530986495</span>                                 <span class="token comment">/*   2^152 - 1  */</span>
+    <span class="token keyword">rule</span> minUInt160      <span class="token operator">=&gt;</span>  <span class="token number">0</span>
+    <span class="token keyword">rule</span> maxUInt160      <span class="token operator">=&gt;</span>  <span class="token number">1461501637330902918203684832716283019655932542975</span>                              <span class="token comment">/*   2^160 - 1  */</span>
+    <span class="token keyword">rule</span> minUInt168      <span class="token operator">=&gt;</span>  <span class="token number">0</span>
+    <span class="token keyword">rule</span> maxUInt168      <span class="token operator">=&gt;</span>  <span class="token number">374144419156711147060143317175368453031918731001855</span>                            <span class="token comment">/*   2^168 - 1  */</span>
+    <span class="token keyword">rule</span> minUInt176      <span class="token operator">=&gt;</span>  <span class="token number">0</span>
+    <span class="token keyword">rule</span> maxUInt176      <span class="token operator">=&gt;</span>  <span class="token number">95780971304118053647396689196894323976171195136475135</span>                          <span class="token comment">/*   2^176 - 1  */</span>
+    <span class="token keyword">rule</span> minUInt184      <span class="token operator">=&gt;</span>  <span class="token number">0</span>
+    <span class="token keyword">rule</span> maxUInt184      <span class="token operator">=&gt;</span>  <span class="token number">24519928653854221733733552434404946937899825954937634815</span>                       <span class="token comment">/*   2^184 - 1  */</span>
+    <span class="token keyword">rule</span> minUInt192      <span class="token operator">=&gt;</span>  <span class="token number">0</span>
+    <span class="token keyword">rule</span> maxUInt192      <span class="token operator">=&gt;</span>  <span class="token number">6277101735386680763835789423207666416102355444464034512895</span>                     <span class="token comment">/*   2^192 - 1  */</span>
+    <span class="token keyword">rule</span> minUInt200      <span class="token operator">=&gt;</span>  <span class="token number">0</span>
+    <span class="token keyword">rule</span> maxUInt200      <span class="token operator">=&gt;</span>  <span class="token number">1606938044258990275541962092341162602522202993782792835301375</span>                  <span class="token comment">/*   2^200 - 1  */</span>
+    <span class="token keyword">rule</span> minUInt208      <span class="token operator">=&gt;</span>  <span class="token number">0</span>
+    <span class="token keyword">rule</span> maxUInt208      <span class="token operator">=&gt;</span>  <span class="token number">411376139330301510538742295639337626245683966408394965837152255</span>                <span class="token comment">/*   2^208 - 1  */</span>
+    <span class="token keyword">rule</span> minUInt216      <span class="token operator">=&gt;</span>  <span class="token number">0</span>
+    <span class="token keyword">rule</span> maxUInt216      <span class="token operator">=&gt;</span>  <span class="token number">105312291668557186697918027683670432318895095400549111254310977535</span>             <span class="token comment">/*   2^216 - 1  */</span>
+    <span class="token keyword">rule</span> minUInt224      <span class="token operator">=&gt;</span>  <span class="token number">0</span>
+    <span class="token keyword">rule</span> maxUInt224      <span class="token operator">=&gt;</span>  <span class="token number">26959946667150639794667015087019630673637144422540572481103610249215</span>           <span class="token comment">/*   2^224 - 1  */</span>
+    <span class="token keyword">rule</span> minUInt232      <span class="token operator">=&gt;</span>  <span class="token number">0</span>
+    <span class="token keyword">rule</span> maxUInt232      <span class="token operator">=&gt;</span>  <span class="token number">6901746346790563787434755862277025452451108972170386555162524223799295</span>         <span class="token comment">/*   2^232 - 1  */</span>
+    <span class="token keyword">rule</span> minUInt240      <span class="token operator">=&gt;</span>  <span class="token number">0</span>
+    <span class="token keyword">rule</span> maxUInt240      <span class="token operator">=&gt;</span>  <span class="token number">1766847064778384329583297500742918515827483896875618958121606201292619775</span>      <span class="token comment">/*   2^240 - 1  */</span>
+    <span class="token keyword">rule</span> minUInt248      <span class="token operator">=&gt;</span>  <span class="token number">0</span>
+    <span class="token keyword">rule</span> maxUInt248      <span class="token operator">=&gt;</span>  <span class="token number">452312848583266388373324160190187140051835877600158453279131187530910662655</span>    <span class="token comment">/*   2^248 - 1  */</span>
+    <span class="token keyword">rule</span> minUInt256      <span class="token operator">=&gt;</span>  <span class="token number">0</span>
+    <span class="token keyword">rule</span> maxUInt256      <span class="token operator">=&gt;</span>  <span class="token number">115792089237316195423570985008687907853269984665640564039457584007913129639935</span> <span class="token comment">/*   2^256 - 1  */</span>
+
+    <span class="token keyword">rule</span> minUFixed128x10 <span class="token operator">=&gt;</span>  <span class="token number">0</span>
+    <span class="token keyword">rule</span> maxUFixed128x10 <span class="token operator">=&gt;</span>  <span class="token number">3402823669209384634633746074317682114550000000000</span>                              <span class="token comment">/* ( 2^128 - 1) * 10^10 */</span>
+
+    <span class="token keyword">syntax</span> <span class="token keyword">Int</span> <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> <span class="token string">"notMaxUInt5"</span>   <span class="token punctuation">[</span>alias<span class="token punctuation">]</span> <span class="token comment">/* FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFE0 */</span>
+                 <span class="token operator">|</span> <span class="token string">"notMaxUInt8"</span>   <span class="token punctuation">[</span>alias<span class="token punctuation">]</span> <span class="token comment">/* FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00 */</span>
+                 <span class="token operator">|</span> <span class="token string">"notMaxUInt16"</span>  <span class="token punctuation">[</span>alias<span class="token punctuation">]</span> <span class="token comment">/* FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF0000 */</span>
+                 <span class="token operator">|</span> <span class="token string">"notMaxUInt32"</span>  <span class="token punctuation">[</span>alias<span class="token punctuation">]</span> <span class="token comment">/* FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00000000 */</span>
+                 <span class="token operator">|</span> <span class="token string">"notMaxUInt64"</span>  <span class="token punctuation">[</span>alias<span class="token punctuation">]</span> <span class="token comment">/* FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF0000000000000000 */</span>
+                 <span class="token operator">|</span> <span class="token string">"notMaxUInt96"</span>  <span class="token punctuation">[</span>alias<span class="token punctuation">]</span> <span class="token comment">/* FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF000000000000000000000000 */</span>
+                 <span class="token operator">|</span> <span class="token string">"notMaxUInt128"</span> <span class="token punctuation">[</span>alias<span class="token punctuation">]</span> <span class="token comment">/* FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00000000000000000000000000000000 */</span>
+                 <span class="token operator">|</span> <span class="token string">"notMaxUInt160"</span> <span class="token punctuation">[</span>alias<span class="token punctuation">]</span> <span class="token comment">/* FFFFFFFFFFFFFFFFFFFFFFFF0000000000000000000000000000000000000000 */</span>
+                 <span class="token operator">|</span> <span class="token string">"notMaxUInt192"</span> <span class="token punctuation">[</span>alias<span class="token punctuation">]</span> <span class="token comment">/* FFFFFFFFFFFFFFFF000000000000000000000000000000000000000000000000 */</span>
+                 <span class="token operator">|</span> <span class="token string">"notMaxUInt208"</span> <span class="token punctuation">[</span>alias<span class="token punctuation">]</span> <span class="token comment">/* FFFFFFFFFFFF0000000000000000000000000000000000000000000000000000 */</span>
+                 <span class="token operator">|</span> <span class="token string">"notMaxUInt224"</span> <span class="token punctuation">[</span>alias<span class="token punctuation">]</span> <span class="token comment">/* FFFFFFFF00000000000000000000000000000000000000000000000000000000 */</span>
+                 <span class="token operator">|</span> <span class="token string">"notMaxUInt240"</span> <span class="token punctuation">[</span>alias<span class="token punctuation">]</span> <span class="token comment">/* FFFF000000000000000000000000000000000000000000000000000000000000 */</span>
+                 <span class="token operator">|</span> <span class="token string">"notMaxUInt248"</span> <span class="token punctuation">[</span>alias<span class="token punctuation">]</span> <span class="token comment">/* FF00000000000000000000000000000000000000000000000000000000000000 */</span>
+ <span class="token comment">// -------------------------------------------------------------------------------------------------------------</span>
+    <span class="token keyword">rule</span> notMaxUInt5   <span class="token operator">=&gt;</span> <span class="token number">115792089237316195423570985008687907853269984665640564039457584007913129639904</span>
+    <span class="token keyword">rule</span> notMaxUInt8   <span class="token operator">=&gt;</span> <span class="token number">115792089237316195423570985008687907853269984665640564039457584007913129639680</span>
+    <span class="token keyword">rule</span> notMaxUInt16  <span class="token operator">=&gt;</span> <span class="token number">115792089237316195423570985008687907853269984665640564039457584007913129574400</span>
+    <span class="token keyword">rule</span> notMaxUInt32  <span class="token operator">=&gt;</span> <span class="token number">115792089237316195423570985008687907853269984665640564039457584007908834672640</span>
+    <span class="token keyword">rule</span> notMaxUInt64  <span class="token operator">=&gt;</span> <span class="token number">115792089237316195423570985008687907853269984665640564039439137263839420088320</span>
+    <span class="token keyword">rule</span> notMaxUInt96  <span class="token operator">=&gt;</span> <span class="token number">115792089237316195423570985008687907853269984665561335876943319670319585689600</span>
+    <span class="token keyword">rule</span> notMaxUInt128 <span class="token operator">=&gt;</span> <span class="token number">115792089237316195423570985008687907852929702298719625575994209400481361428480</span>
+    <span class="token keyword">rule</span> notMaxUInt160 <span class="token operator">=&gt;</span> <span class="token number">115792089237316195423570985007226406215939081747436879206741300988257197096960</span>
+    <span class="token keyword">rule</span> notMaxUInt192 <span class="token operator">=&gt;</span> <span class="token number">115792089237316195417293883273301227089434195242432897623355228563449095127040</span>
+    <span class="token keyword">rule</span> notMaxUInt208 <span class="token operator">=&gt;</span> <span class="token number">115792089237315784047431654707177369110974345328014318355491175612947292487680</span>
+    <span class="token keyword">rule</span> notMaxUInt224 <span class="token operator">=&gt;</span> <span class="token number">115792089210356248756420345214020892766250353992003419616917011526809519390720</span>
+    <span class="token keyword">rule</span> notMaxUInt240 <span class="token operator">=&gt;</span> <span class="token number">115790322390251417039241401711187164934754157181743688420499462401711837020160</span>
+    <span class="token keyword">rule</span> notMaxUInt248 <span class="token operator">=&gt;</span> <span class="token number">115339776388732929035197660848497720713218148788040405586178452820382218977280</span>
+
+    <span class="token keyword">syntax</span> <span class="token keyword">Int</span> <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> <span class="token string">"eth"</span>         <span class="token punctuation">[</span><span class="token class-name">macro</span><span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"maxBlockNum"</span> <span class="token punctuation">[</span><span class="token class-name">macro</span><span class="token punctuation">]</span> <span class="token comment">/* 7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF == (2 ^ 256) - (2 ^ 255) - 1 */</span>
+ <span class="token comment">// ----------------------------------------------------------------------------------------------------------------------------------------</span>
+    <span class="token keyword">rule</span> eth         <span class="token operator">=&gt;</span> <span class="token number">1000000000000000000</span>
+    <span class="token keyword">rule</span> maxBlockNum <span class="token operator">=&gt;</span> <span class="token number">57896044618658097711785492504343953926634992332820282019728792003956564819967</span>
+</code></pre>
+<h2 id="range-of-types">Range of types</h2>
+<pre><code class="language-k">    <span class="token keyword">syntax</span> <span class="token keyword">Bool</span> <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> #rangeBool     <span class="token punctuation">(</span> <span class="token keyword">Int</span> <span class="token punctuation">)</span>             <span class="token punctuation">[</span><span class="token class-name">symbol</span><span class="token punctuation">(</span>rangeBool<span class="token punctuation">)</span>    <span class="token punctuation">,</span> alias<span class="token punctuation">]</span>
+                  <span class="token operator">|</span> #rangeSInt     <span class="token punctuation">(</span> <span class="token keyword">Int</span> <span class="token punctuation">,</span> <span class="token keyword">Int</span> <span class="token punctuation">)</span>       <span class="token punctuation">[</span><span class="token class-name">symbol</span><span class="token punctuation">(</span>rangeSInt<span class="token punctuation">)</span>    <span class="token punctuation">,</span> alias<span class="token punctuation">]</span>
+                  <span class="token operator">|</span> #rangeUInt     <span class="token punctuation">(</span> <span class="token keyword">Int</span> <span class="token punctuation">,</span> <span class="token keyword">Int</span> <span class="token punctuation">)</span>       <span class="token punctuation">[</span><span class="token class-name">symbol</span><span class="token punctuation">(</span>rangeUInt<span class="token punctuation">)</span>    <span class="token punctuation">,</span> alias<span class="token punctuation">]</span>
+                  <span class="token operator">|</span> #rangeSFixed   <span class="token punctuation">(</span> <span class="token keyword">Int</span> <span class="token punctuation">,</span> <span class="token keyword">Int</span> <span class="token punctuation">,</span> <span class="token keyword">Int</span> <span class="token punctuation">)</span> <span class="token punctuation">[</span><span class="token class-name">symbol</span><span class="token punctuation">(</span>rangeSFixed<span class="token punctuation">)</span>  <span class="token punctuation">,</span> alias<span class="token punctuation">]</span>
+                  <span class="token operator">|</span> #rangeUFixed   <span class="token punctuation">(</span> <span class="token keyword">Int</span> <span class="token punctuation">,</span> <span class="token keyword">Int</span> <span class="token punctuation">,</span> <span class="token keyword">Int</span> <span class="token punctuation">)</span> <span class="token punctuation">[</span><span class="token class-name">symbol</span><span class="token punctuation">(</span>rangeUFixed<span class="token punctuation">)</span>  <span class="token punctuation">,</span> alias<span class="token punctuation">]</span>
+                  <span class="token operator">|</span> #rangeAddress  <span class="token punctuation">(</span> <span class="token keyword">Int</span> <span class="token punctuation">)</span>             <span class="token punctuation">[</span><span class="token class-name">symbol</span><span class="token punctuation">(</span>rangeAddress<span class="token punctuation">)</span> <span class="token punctuation">,</span> alias<span class="token punctuation">]</span>
+                  <span class="token operator">|</span> #rangeBytes    <span class="token punctuation">(</span> <span class="token keyword">Int</span> <span class="token punctuation">,</span> <span class="token keyword">Int</span> <span class="token punctuation">)</span>       <span class="token punctuation">[</span><span class="token class-name">symbol</span><span class="token punctuation">(</span>rangeBytes<span class="token punctuation">)</span>   <span class="token punctuation">,</span> alias<span class="token punctuation">]</span>
+                  <span class="token operator">|</span> #rangeNonce    <span class="token punctuation">(</span> <span class="token keyword">Int</span> <span class="token punctuation">)</span>             <span class="token punctuation">[</span><span class="token class-name">symbol</span><span class="token punctuation">(</span>rangeNonce<span class="token punctuation">)</span>   <span class="token punctuation">,</span> alias<span class="token punctuation">]</span>
+                  <span class="token operator">|</span> #rangeSmall    <span class="token punctuation">(</span> <span class="token keyword">Int</span> <span class="token punctuation">)</span>             <span class="token punctuation">[</span><span class="token class-name">symbol</span><span class="token punctuation">(</span>rangeSmall<span class="token punctuation">)</span>   <span class="token punctuation">,</span> alias<span class="token punctuation">]</span>
+                  <span class="token operator">|</span> #rangeBlockNum <span class="token punctuation">(</span> <span class="token keyword">Int</span> <span class="token punctuation">)</span>             <span class="token punctuation">[</span><span class="token class-name">symbol</span><span class="token punctuation">(</span>rangeBlockNum<span class="token punctuation">)</span><span class="token punctuation">,</span> alias<span class="token punctuation">]</span>
+ <span class="token comment">// ---------------------------------------------------------------------------------</span>
+    <span class="token keyword">rule</span> #rangeBool    <span class="token punctuation">(</span>            X <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> X <span class="token operator">==</span><span class="token keyword">Int</span> <span class="token number">0</span> orBool X <span class="token operator">==</span><span class="token keyword">Int</span> <span class="token number">1</span>
+
+    <span class="token keyword">rule</span> #rangeSInt    <span class="token punctuation">(</span>   <span class="token number">8</span> <span class="token punctuation">,</span>      X <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #range <span class="token punctuation">(</span> minSInt8        <span class="token operator">&lt;=</span> X <span class="token operator">&lt;=</span> maxSInt8        <span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> #rangeSInt    <span class="token punctuation">(</span>  <span class="token number">16</span> <span class="token punctuation">,</span>      X <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #range <span class="token punctuation">(</span> minSInt16       <span class="token operator">&lt;=</span> X <span class="token operator">&lt;=</span> maxSInt16       <span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> #rangeSInt    <span class="token punctuation">(</span>  <span class="token number">24</span> <span class="token punctuation">,</span>      X <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #range <span class="token punctuation">(</span> minSInt24       <span class="token operator">&lt;=</span> X <span class="token operator">&lt;=</span> maxSInt24       <span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> #rangeSInt    <span class="token punctuation">(</span>  <span class="token number">32</span> <span class="token punctuation">,</span>      X <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #range <span class="token punctuation">(</span> minSInt32       <span class="token operator">&lt;=</span> X <span class="token operator">&lt;=</span> maxSInt32       <span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> #rangeSInt    <span class="token punctuation">(</span>  <span class="token number">40</span> <span class="token punctuation">,</span>      X <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #range <span class="token punctuation">(</span> minSInt40       <span class="token operator">&lt;=</span> X <span class="token operator">&lt;=</span> maxSInt40       <span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> #rangeSInt    <span class="token punctuation">(</span>  <span class="token number">48</span> <span class="token punctuation">,</span>      X <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #range <span class="token punctuation">(</span> minSInt48       <span class="token operator">&lt;=</span> X <span class="token operator">&lt;=</span> maxSInt48       <span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> #rangeSInt    <span class="token punctuation">(</span>  <span class="token number">56</span> <span class="token punctuation">,</span>      X <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #range <span class="token punctuation">(</span> minSInt56       <span class="token operator">&lt;=</span> X <span class="token operator">&lt;=</span> maxSInt56       <span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> #rangeSInt    <span class="token punctuation">(</span>  <span class="token number">64</span> <span class="token punctuation">,</span>      X <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #range <span class="token punctuation">(</span> minSInt64       <span class="token operator">&lt;=</span> X <span class="token operator">&lt;=</span> maxSInt64       <span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> #rangeSInt    <span class="token punctuation">(</span>  <span class="token number">72</span> <span class="token punctuation">,</span>      X <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #range <span class="token punctuation">(</span> minSInt72       <span class="token operator">&lt;=</span> X <span class="token operator">&lt;=</span> maxSInt72       <span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> #rangeSInt    <span class="token punctuation">(</span>  <span class="token number">80</span> <span class="token punctuation">,</span>      X <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #range <span class="token punctuation">(</span> minSInt80       <span class="token operator">&lt;=</span> X <span class="token operator">&lt;=</span> maxSInt80       <span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> #rangeSInt    <span class="token punctuation">(</span>  <span class="token number">88</span> <span class="token punctuation">,</span>      X <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #range <span class="token punctuation">(</span> minSInt88       <span class="token operator">&lt;=</span> X <span class="token operator">&lt;=</span> maxSInt88       <span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> #rangeSInt    <span class="token punctuation">(</span>  <span class="token number">96</span> <span class="token punctuation">,</span>      X <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #range <span class="token punctuation">(</span> minSInt96       <span class="token operator">&lt;=</span> X <span class="token operator">&lt;=</span> maxSInt96       <span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> #rangeSInt    <span class="token punctuation">(</span> <span class="token number">104</span> <span class="token punctuation">,</span>      X <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #range <span class="token punctuation">(</span> minSInt104      <span class="token operator">&lt;=</span> X <span class="token operator">&lt;=</span> maxSInt104      <span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> #rangeSInt    <span class="token punctuation">(</span> <span class="token number">112</span> <span class="token punctuation">,</span>      X <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #range <span class="token punctuation">(</span> minSInt112      <span class="token operator">&lt;=</span> X <span class="token operator">&lt;=</span> maxSInt112      <span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> #rangeSInt    <span class="token punctuation">(</span> <span class="token number">120</span> <span class="token punctuation">,</span>      X <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #range <span class="token punctuation">(</span> minSInt120      <span class="token operator">&lt;=</span> X <span class="token operator">&lt;=</span> maxSInt120      <span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> #rangeSInt    <span class="token punctuation">(</span> <span class="token number">128</span> <span class="token punctuation">,</span>      X <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #range <span class="token punctuation">(</span> minSInt128      <span class="token operator">&lt;=</span> X <span class="token operator">&lt;=</span> maxSInt128      <span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> #rangeSInt    <span class="token punctuation">(</span> <span class="token number">136</span> <span class="token punctuation">,</span>      X <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #range <span class="token punctuation">(</span> minSInt136      <span class="token operator">&lt;=</span> X <span class="token operator">&lt;=</span> maxSInt136      <span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> #rangeSInt    <span class="token punctuation">(</span> <span class="token number">144</span> <span class="token punctuation">,</span>      X <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #range <span class="token punctuation">(</span> minSInt144      <span class="token operator">&lt;=</span> X <span class="token operator">&lt;=</span> maxSInt144      <span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> #rangeSInt    <span class="token punctuation">(</span> <span class="token number">152</span> <span class="token punctuation">,</span>      X <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #range <span class="token punctuation">(</span> minSInt152      <span class="token operator">&lt;=</span> X <span class="token operator">&lt;=</span> maxSInt152      <span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> #rangeSInt    <span class="token punctuation">(</span> <span class="token number">160</span> <span class="token punctuation">,</span>      X <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #range <span class="token punctuation">(</span> minSInt160      <span class="token operator">&lt;=</span> X <span class="token operator">&lt;=</span> maxSInt160      <span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> #rangeSInt    <span class="token punctuation">(</span> <span class="token number">168</span> <span class="token punctuation">,</span>      X <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #range <span class="token punctuation">(</span> minSInt168      <span class="token operator">&lt;=</span> X <span class="token operator">&lt;=</span> maxSInt168      <span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> #rangeSInt    <span class="token punctuation">(</span> <span class="token number">176</span> <span class="token punctuation">,</span>      X <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #range <span class="token punctuation">(</span> minSInt176      <span class="token operator">&lt;=</span> X <span class="token operator">&lt;=</span> maxSInt176      <span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> #rangeSInt    <span class="token punctuation">(</span> <span class="token number">184</span> <span class="token punctuation">,</span>      X <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #range <span class="token punctuation">(</span> minSInt184      <span class="token operator">&lt;=</span> X <span class="token operator">&lt;=</span> maxSInt184      <span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> #rangeSInt    <span class="token punctuation">(</span> <span class="token number">192</span> <span class="token punctuation">,</span>      X <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #range <span class="token punctuation">(</span> minSInt192      <span class="token operator">&lt;=</span> X <span class="token operator">&lt;=</span> maxSInt192      <span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> #rangeSInt    <span class="token punctuation">(</span> <span class="token number">200</span> <span class="token punctuation">,</span>      X <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #range <span class="token punctuation">(</span> minSInt200      <span class="token operator">&lt;=</span> X <span class="token operator">&lt;=</span> maxSInt200      <span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> #rangeSInt    <span class="token punctuation">(</span> <span class="token number">208</span> <span class="token punctuation">,</span>      X <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #range <span class="token punctuation">(</span> minSInt208      <span class="token operator">&lt;=</span> X <span class="token operator">&lt;=</span> maxSInt208      <span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> #rangeSInt    <span class="token punctuation">(</span> <span class="token number">216</span> <span class="token punctuation">,</span>      X <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #range <span class="token punctuation">(</span> minSInt216      <span class="token operator">&lt;=</span> X <span class="token operator">&lt;=</span> maxSInt216      <span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> #rangeSInt    <span class="token punctuation">(</span> <span class="token number">224</span> <span class="token punctuation">,</span>      X <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #range <span class="token punctuation">(</span> minSInt224      <span class="token operator">&lt;=</span> X <span class="token operator">&lt;=</span> maxSInt224      <span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> #rangeSInt    <span class="token punctuation">(</span> <span class="token number">232</span> <span class="token punctuation">,</span>      X <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #range <span class="token punctuation">(</span> minSInt232      <span class="token operator">&lt;=</span> X <span class="token operator">&lt;=</span> maxSInt232      <span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> #rangeSInt    <span class="token punctuation">(</span> <span class="token number">240</span> <span class="token punctuation">,</span>      X <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #range <span class="token punctuation">(</span> minSInt240      <span class="token operator">&lt;=</span> X <span class="token operator">&lt;=</span> maxSInt240      <span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> #rangeSInt    <span class="token punctuation">(</span> <span class="token number">248</span> <span class="token punctuation">,</span>      X <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #range <span class="token punctuation">(</span> minSInt248      <span class="token operator">&lt;=</span> X <span class="token operator">&lt;=</span> maxSInt248      <span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> #rangeSInt    <span class="token punctuation">(</span> <span class="token number">256</span> <span class="token punctuation">,</span>      X <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #range <span class="token punctuation">(</span> minSInt256      <span class="token operator">&lt;=</span> X <span class="token operator">&lt;=</span> maxSInt256      <span class="token punctuation">)</span>
+
+    <span class="token keyword">rule</span> #rangeUInt    <span class="token punctuation">(</span>   <span class="token number">5</span> <span class="token punctuation">,</span>      X <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #range <span class="token punctuation">(</span> minUInt5        <span class="token operator">&lt;=</span> X &lt;  pow5            <span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> #rangeUInt    <span class="token punctuation">(</span>   <span class="token number">8</span> <span class="token punctuation">,</span>      X <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #range <span class="token punctuation">(</span> minUInt8        <span class="token operator">&lt;=</span> X &lt;  pow8            <span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> #rangeUInt    <span class="token punctuation">(</span>  <span class="token number">16</span> <span class="token punctuation">,</span>      X <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #range <span class="token punctuation">(</span> minUInt16       <span class="token operator">&lt;=</span> X &lt;  pow16           <span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> #rangeUInt    <span class="token punctuation">(</span>  <span class="token number">24</span> <span class="token punctuation">,</span>      X <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #range <span class="token punctuation">(</span> minUInt24       <span class="token operator">&lt;=</span> X &lt;  pow24           <span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> #rangeUInt    <span class="token punctuation">(</span>  <span class="token number">32</span> <span class="token punctuation">,</span>      X <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #range <span class="token punctuation">(</span> minUInt32       <span class="token operator">&lt;=</span> X &lt;  pow32           <span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> #rangeUInt    <span class="token punctuation">(</span>  <span class="token number">40</span> <span class="token punctuation">,</span>      X <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #range <span class="token punctuation">(</span> minUInt40       <span class="token operator">&lt;=</span> X &lt;  pow40           <span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> #rangeUInt    <span class="token punctuation">(</span>  <span class="token number">48</span> <span class="token punctuation">,</span>      X <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #range <span class="token punctuation">(</span> minUInt48       <span class="token operator">&lt;=</span> X &lt;  pow48           <span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> #rangeUInt    <span class="token punctuation">(</span>  <span class="token number">56</span> <span class="token punctuation">,</span>      X <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #range <span class="token punctuation">(</span> minUInt56       <span class="token operator">&lt;=</span> X &lt;  pow56           <span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> #rangeUInt    <span class="token punctuation">(</span>  <span class="token number">64</span> <span class="token punctuation">,</span>      X <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #range <span class="token punctuation">(</span> minUInt64       <span class="token operator">&lt;=</span> X &lt;  pow64           <span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> #rangeUInt    <span class="token punctuation">(</span>  <span class="token number">72</span> <span class="token punctuation">,</span>      X <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #range <span class="token punctuation">(</span> minUInt72       <span class="token operator">&lt;=</span> X &lt;  pow72           <span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> #rangeUInt    <span class="token punctuation">(</span>  <span class="token number">80</span> <span class="token punctuation">,</span>      X <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #range <span class="token punctuation">(</span> minUInt80       <span class="token operator">&lt;=</span> X &lt;  pow80           <span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> #rangeUInt    <span class="token punctuation">(</span>  <span class="token number">88</span> <span class="token punctuation">,</span>      X <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #range <span class="token punctuation">(</span> minUInt88       <span class="token operator">&lt;=</span> X &lt;  pow88           <span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> #rangeUInt    <span class="token punctuation">(</span>  <span class="token number">96</span> <span class="token punctuation">,</span>      X <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #range <span class="token punctuation">(</span> minUInt96       <span class="token operator">&lt;=</span> X &lt;  pow96           <span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> #rangeUInt    <span class="token punctuation">(</span> <span class="token number">104</span> <span class="token punctuation">,</span>      X <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #range <span class="token punctuation">(</span> minUInt104      <span class="token operator">&lt;=</span> X &lt;  pow104          <span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> #rangeUInt    <span class="token punctuation">(</span> <span class="token number">112</span> <span class="token punctuation">,</span>      X <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #range <span class="token punctuation">(</span> minUInt112      <span class="token operator">&lt;=</span> X &lt;  pow112          <span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> #rangeUInt    <span class="token punctuation">(</span> <span class="token number">120</span> <span class="token punctuation">,</span>      X <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #range <span class="token punctuation">(</span> minUInt120      <span class="token operator">&lt;=</span> X &lt;  pow120          <span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> #rangeUInt    <span class="token punctuation">(</span> <span class="token number">128</span> <span class="token punctuation">,</span>      X <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #range <span class="token punctuation">(</span> minUInt128      <span class="token operator">&lt;=</span> X &lt;  pow128          <span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> #rangeUInt    <span class="token punctuation">(</span> <span class="token number">136</span> <span class="token punctuation">,</span>      X <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #range <span class="token punctuation">(</span> minUInt136      <span class="token operator">&lt;=</span> X &lt;  pow136          <span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> #rangeUInt    <span class="token punctuation">(</span> <span class="token number">144</span> <span class="token punctuation">,</span>      X <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #range <span class="token punctuation">(</span> minUInt144      <span class="token operator">&lt;=</span> X &lt;  pow144          <span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> #rangeUInt    <span class="token punctuation">(</span> <span class="token number">152</span> <span class="token punctuation">,</span>      X <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #range <span class="token punctuation">(</span> minUInt152      <span class="token operator">&lt;=</span> X &lt;  pow152          <span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> #rangeUInt    <span class="token punctuation">(</span> <span class="token number">160</span> <span class="token punctuation">,</span>      X <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #range <span class="token punctuation">(</span> minUInt160      <span class="token operator">&lt;=</span> X &lt;  pow160          <span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> #rangeUInt    <span class="token punctuation">(</span> <span class="token number">168</span> <span class="token punctuation">,</span>      X <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #range <span class="token punctuation">(</span> minUInt168      <span class="token operator">&lt;=</span> X &lt;  pow168          <span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> #rangeUInt    <span class="token punctuation">(</span> <span class="token number">176</span> <span class="token punctuation">,</span>      X <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #range <span class="token punctuation">(</span> minUInt176      <span class="token operator">&lt;=</span> X &lt;  pow176          <span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> #rangeUInt    <span class="token punctuation">(</span> <span class="token number">184</span> <span class="token punctuation">,</span>      X <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #range <span class="token punctuation">(</span> minUInt184      <span class="token operator">&lt;=</span> X &lt;  pow184          <span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> #rangeUInt    <span class="token punctuation">(</span> <span class="token number">192</span> <span class="token punctuation">,</span>      X <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #range <span class="token punctuation">(</span> minUInt192      <span class="token operator">&lt;=</span> X &lt;  pow192          <span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> #rangeUInt    <span class="token punctuation">(</span> <span class="token number">200</span> <span class="token punctuation">,</span>      X <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #range <span class="token punctuation">(</span> minUInt200      <span class="token operator">&lt;=</span> X &lt;  pow200          <span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> #rangeUInt    <span class="token punctuation">(</span> <span class="token number">208</span> <span class="token punctuation">,</span>      X <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #range <span class="token punctuation">(</span> minUInt208      <span class="token operator">&lt;=</span> X &lt;  pow208          <span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> #rangeUInt    <span class="token punctuation">(</span> <span class="token number">216</span> <span class="token punctuation">,</span>      X <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #range <span class="token punctuation">(</span> minUInt216      <span class="token operator">&lt;=</span> X &lt;  pow216          <span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> #rangeUInt    <span class="token punctuation">(</span> <span class="token number">224</span> <span class="token punctuation">,</span>      X <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #range <span class="token punctuation">(</span> minUInt224      <span class="token operator">&lt;=</span> X &lt;  pow224          <span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> #rangeUInt    <span class="token punctuation">(</span> <span class="token number">232</span> <span class="token punctuation">,</span>      X <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #range <span class="token punctuation">(</span> minUInt232      <span class="token operator">&lt;=</span> X &lt;  pow232          <span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> #rangeUInt    <span class="token punctuation">(</span> <span class="token number">240</span> <span class="token punctuation">,</span>      X <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #range <span class="token punctuation">(</span> minUInt240      <span class="token operator">&lt;=</span> X &lt;  pow240          <span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> #rangeUInt    <span class="token punctuation">(</span> <span class="token number">248</span> <span class="token punctuation">,</span>      X <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #range <span class="token punctuation">(</span> minUInt248      <span class="token operator">&lt;=</span> X &lt;  pow248          <span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> #rangeUInt    <span class="token punctuation">(</span> <span class="token number">256</span> <span class="token punctuation">,</span>      X <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #range <span class="token punctuation">(</span> minUInt256      <span class="token operator">&lt;=</span> X &lt;  pow256          <span class="token punctuation">)</span>
+
+    <span class="token keyword">rule</span> #rangeSFixed   <span class="token punctuation">(</span> <span class="token number">128</span> <span class="token punctuation">,</span> <span class="token number">10</span> <span class="token punctuation">,</span> X <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #range <span class="token punctuation">(</span> minSFixed128x10 <span class="token operator">&lt;=</span> X <span class="token operator">&lt;=</span> maxSFixed128x10 <span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> #rangeUFixed   <span class="token punctuation">(</span> <span class="token number">128</span> <span class="token punctuation">,</span> <span class="token number">10</span> <span class="token punctuation">,</span> X <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #range <span class="token punctuation">(</span> minUFixed128x10 <span class="token operator">&lt;=</span> X <span class="token operator">&lt;=</span> maxUFixed128x10 <span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> #rangeAddress  <span class="token punctuation">(</span>            X <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #range <span class="token punctuation">(</span> minUInt160      <span class="token operator">&lt;=</span> X &lt;  pow160          <span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> #rangeBytes    <span class="token punctuation">(</span>   N <span class="token punctuation">,</span>      X <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #range <span class="token punctuation">(</span> <span class="token number">0</span>               <span class="token operator">&lt;=</span> X &lt;  <span class="token number">1</span> &lt;&lt;Byte N      <span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> #rangeNonce    <span class="token punctuation">(</span>   X          <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #range <span class="token punctuation">(</span> <span class="token number">0</span>               <span class="token operator">&lt;=</span> X &lt; maxUInt64        <span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> #rangeSmall    <span class="token punctuation">(</span>   X          <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #range <span class="token punctuation">(</span> <span class="token number">0</span>               <span class="token operator">&lt;=</span> X &lt; <span class="token number">10</span>               <span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> #rangeBlockNum <span class="token punctuation">(</span>   X          <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #range <span class="token punctuation">(</span> <span class="token number">0</span>               <span class="token operator">&lt;=</span> X <span class="token operator">&lt;=</span> maxBlockNum     <span class="token punctuation">)</span>
+
+    <span class="token keyword">syntax</span> <span class="token keyword">Bool</span> <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> <span class="token string">"#range"</span> <span class="token string">"("</span> <span class="token keyword">Int</span> <span class="token string">"&lt;"</span>  <span class="token keyword">Int</span> <span class="token string">"&lt;"</span>  <span class="token keyword">Int</span> <span class="token string">")"</span> <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                  <span class="token operator">|</span> <span class="token string">"#range"</span> <span class="token string">"("</span> <span class="token keyword">Int</span> <span class="token string">"&lt;"</span>  <span class="token keyword">Int</span> <span class="token string">"&lt;="</span> <span class="token keyword">Int</span> <span class="token string">")"</span> <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                  <span class="token operator">|</span> <span class="token string">"#range"</span> <span class="token string">"("</span> <span class="token keyword">Int</span> <span class="token string">"&lt;="</span> <span class="token keyword">Int</span> <span class="token string">"&lt;"</span>  <span class="token keyword">Int</span> <span class="token string">")"</span> <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                  <span class="token operator">|</span> <span class="token string">"#range"</span> <span class="token string">"("</span> <span class="token keyword">Int</span> <span class="token string">"&lt;="</span> <span class="token keyword">Int</span> <span class="token string">"&lt;="</span> <span class="token keyword">Int</span> <span class="token string">")"</span> <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+ <span class="token comment">// --------------------------------------------------------------</span>
+    <span class="token keyword">rule</span> #range <span class="token punctuation">(</span> LB &lt;  X &lt;  UB <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> LB  &lt;<span class="token keyword">Int</span> X andBool X  &lt;<span class="token keyword">Int</span> UB
+    <span class="token keyword">rule</span> #range <span class="token punctuation">(</span> LB &lt;  X <span class="token operator">&lt;=</span> UB <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> LB  &lt;<span class="token keyword">Int</span> X andBool X <span class="token operator">&lt;=</span><span class="token keyword">Int</span> UB
+    <span class="token keyword">rule</span> #range <span class="token punctuation">(</span> LB <span class="token operator">&lt;=</span> X &lt;  UB <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> LB <span class="token operator">&lt;=</span><span class="token keyword">Int</span> X andBool X  &lt;<span class="token keyword">Int</span> UB
+    <span class="token keyword">rule</span> #range <span class="token punctuation">(</span> LB <span class="token operator">&lt;=</span> X <span class="token operator">&lt;=</span> UB <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> LB <span class="token operator">&lt;=</span><span class="token keyword">Int</span> X andBool X <span class="token operator">&lt;=</span><span class="token keyword">Int</span> UB
+</code></pre>
+<ul>
+<li><code>chop</code> interprets an integer modulo <code>2^256</code>.</li>
+</ul>
+<pre><code class="language-k">    <span class="token keyword">syntax</span> <span class="token keyword">Int</span> <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> chop <span class="token punctuation">(</span> <span class="token keyword">Int</span> <span class="token punctuation">)</span> <span class="token punctuation">[</span><span class="token class-name">klabel</span><span class="token punctuation">(</span>chop<span class="token punctuation">)</span><span class="token punctuation">,</span> function<span class="token punctuation">,</span> total<span class="token punctuation">,</span> smtlib<span class="token punctuation">(</span>chop<span class="token punctuation">)</span><span class="token punctuation">]</span>
+ <span class="token comment">// -------------------------------------------------------------------------</span>
+    <span class="token keyword">rule</span> chop <span class="token punctuation">(</span> I<span class="token punctuation">:</span><span class="token keyword">Int</span> <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> I modInt pow256 <span class="token punctuation">[</span>concrete<span class="token punctuation">,</span> smt<span class="token operator">-</span>lemma<span class="token punctuation">]</span>
+</code></pre>
+<ul>
+<li><code>_&lt;&lt;Byte_</code> shifts an integer 8 bits to the left.</li>
+<li><code>_&gt;&gt;Byte_</code> shifts an integer 8 bits to the right.</li>
+</ul>
+<pre><code class="language-k">    <span class="token keyword">syntax</span> <span class="token keyword">Int</span> <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> <span class="token keyword">Int</span> <span class="token string">"&lt;&lt;Byte"</span> <span class="token keyword">Int</span> <span class="token punctuation">[</span>function<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token keyword">Int</span> <span class="token string">"&gt;&gt;Byte"</span> <span class="token keyword">Int</span> <span class="token punctuation">[</span>function<span class="token punctuation">]</span>
+ <span class="token comment">// ------------------------------------------</span>
+    <span class="token keyword">rule</span> N &lt;&lt;Byte M <span class="token operator">=&gt;</span> N &lt;<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>Int</span> <span class="token attr-name">(8</span> <span class="token attr-name">*Int</span> <span class="token attr-name">M)</span>
+    <span class="token attr-name">rule</span> <span class="token attr-name">N</span> <span class="token punctuation">&gt;</span></span>&gt;Byte M <span class="token operator">=&gt;</span> N &gt;&gt;<span class="token keyword">Int</span> <span class="token punctuation">(</span><span class="token number">8</span> <span class="token operator">*</span><span class="token keyword">Int</span> M<span class="token punctuation">)</span>
+
+<span class="token keyword">endmodule</span>
+</code></pre>
+</body></html></div>
+        </main>
+
+        <!-- Page ToC -->
+        <div class="col-12 col-md-3 col-xl-2 py-md-3 bd-sidebar page-toc mb-3">
+          
+<div>
+<details style="padding:0.25rem 0;;padding-left: 0px;">
+            <summary class="bd-toc-link-wrapper">
+              <a href="#core-definitions-for-word" class="bd-toc-link">Core definitions for <code>Word</code></a>
+              </summary>
+            <div>
+              <div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#important-powers"
+                class="bd-toc-link"
+                style="padding-left: 8px;;"
+              >
+                Important Powers
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#maximums-and-minimums"
+                class="bd-toc-link"
+                style="padding-left: 8px;;"
+              >
+                Maximums and minimums
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#range-of-types"
+                class="bd-toc-link"
+                style="padding-left: 8px;;"
+              >
+                Range of types
+              </a></div>
+            </div>
+          </details>
+        
+</div>
+
+        </div>
+        <div class="btn btn-rv-blue page-toc-toggle-btn"></div>
+        <!-- End Page ToC -->
+      </div>
+    </div>
+<!-- The footer is now controlled by the k-web-theme git submodule -->
+<footer id="rvsite-footer" class="app-footer text-md-left text-center">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-md-4 mb-md-0 mb-4">
+        <a href="https://runtimeverification.com/" target="_blank">
+          <picture>
+            <source
+              srcset="
+                https://runtimeverification.com/assets/img/rv-logo-dark.png
+              "
+              media="(prefers-color-scheme: dark)"
+            />
+            <img
+              class="logo-dark"
+              src="https://runtimeverification.com/assets/img/rv-logo.png"
+              alt="Runtime Verification logo"
+              style="height: 32px"
+            /> </picture
+        ></a>
+        <p class="mt-2 text-md-left copyright">
+          <a href="https://goo.gl/maps/5iu2nhbUA48fs7fP6" target="_blank"
+            >333 North Green Street, Chicago, IL</a
+          >
+        </p>
+      </div>
+      <div class="col-md-4 text-md-center mb-md-0 mb-4"></div>
+      <div class="col-md-4 mb-md-0 mb-4 pl-0 text-md-right">
+        <p class="copyright">2024 © all rights reserved</p>
+        <span class="copyright"><a href="https://runtimeverification.com/privacy-policy">privacy policy</a> | <a
+                href="https://runtimeverification.com/terms-of-use">terms of use</a></span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Typist/1.2/typist.min.js"></script>
+    <script src="../../../../../../assets/js/index.js"></script>
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script
+  async
+  src="https://www.googletagmanager.com/gtag/js?id=G-QL0D8HRYFW"
+></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag() {
+    dataLayer.push(arguments);
+  }
+  gtag("js", new Date());
+  gtag("config", "G-QL0D8HRYFW");
+</script>
+
+  </body>
+</html>
