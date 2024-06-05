@@ -244,6 +244,7 @@ def test_pyk_prove(
     tmp_path: Path,
     caplog: LogCaptureFixture,
     use_booster: bool,
+    use_booster_dev: bool,
     bug_report: BugReport | None,
     spec_name: str | None,
 ) -> None:
@@ -273,6 +274,7 @@ def test_pyk_prove(
                 'save_directory': use_directory,
                 'md_selector': 'foo',  # TODO Ignored flag, this is to avoid KeyError
                 'use_booster': use_booster,
+                'use_booster_dev': use_booster_dev,
                 'bug_report': bug_report,
                 'break_on_calls': break_on_calls,
             }

@@ -23,6 +23,12 @@ def pytest_addoption(parser: Parser) -> None:
         help='Use the kore-rpc-booster binary instead of kore-rpc',
     )
     parser.addoption(
+        '--use-booster-dev',
+        action='store_true',
+        default=False,
+        help='Use the booster-dev binary instead of kore-rpc',
+    )
+    parser.addoption(
         '--spec-name',
         default=None,
         type=str,
@@ -43,6 +49,11 @@ def update_expected_output(request: FixtureRequest) -> bool:
 @pytest.fixture(scope='session')
 def use_booster(request: FixtureRequest) -> bool:
     return request.config.getoption('--use-booster')
+
+
+@pytest.fixture(scope='session')
+def use_booster_dev(request: FixtureRequest) -> bool:
+    return request.config.getoption('--use-booster-dev')
 
 
 @pytest.fixture(scope='session')
