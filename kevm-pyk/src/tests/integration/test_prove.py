@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 import sys
+from pathlib import Path
 from typing import TYPE_CHECKING, NamedTuple
 
 import pytest
@@ -24,7 +25,6 @@ from ..utils import REPO_ROOT
 
 if TYPE_CHECKING:
     from collections.abc import Callable
-    from pathlib import Path
     from typing import Any, Final
 
     from pyk.utils import BugReport
@@ -346,6 +346,48 @@ def test_prove_optimizations(
             proof_display = '\n'.join('    ' + line for line in proof_show.show(proof))
             _LOGGER.info(f'Proof {proof.id}:\n{proof_display}')
             assert proof.passed
+
+
+def test_prove_dss(
+    kompiled_target_for: Callable[[Path], Path],
+    tmp_path: Path,
+    caplog: LogCaptureFixture,
+    bug_report: BugReport | None,
+    spec_name: str | None,
+    workers: int = 8,
+) -> None:
+    spec_file = Path('../tests/specs/mcd/vat-spec.k')
+    caplog.set_level(logging.INFO)
+
+    if spec_name is not None and str(spec_file).find(spec_name) < 0:
+        pytest.skip()
+
+    # Given
+    log_file = tmp_path / 'log.txt'
+    use_directory = tmp_path / 'kprove'
+    use_directory.mkdir()
+
+    # When
+    try:
+        definition_dir = kompiled_target_for(spec_file)
+        options = ProveOptions(
+            {
+                'spec_file': spec_file,
+                'definition_dir': definition_dir,
+                'includes': [str(include_dir) for include_dir in config.INCLUDE_DIRS],
+                'save_directory': use_directory,
+                'md_selector': 'foo',  # TODO Ignored flag, this is to avoid KeyError
+                'use_booster': True,
+                'bug_report': bug_report,
+                'break_on_calls': False,
+                'workers': workers,
+            }
+        )
+        exec_prove(options=options)
+    except BaseException:
+        raise
+    finally:
+        log_file.write_text(caplog.text)
 
 
 # ------------

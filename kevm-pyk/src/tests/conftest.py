@@ -39,6 +39,11 @@ def pytest_addoption(parser: Parser) -> None:
         type=Path,
         help='Use pre-kompiled definitions for proof tests',
     )
+    parser.addoption(
+        '--workers',
+        type=Path,
+        help='Number of workers to use for individual test',
+    )
 
 
 @pytest.fixture
@@ -64,3 +69,8 @@ def spec_name(request: FixtureRequest) -> str | None:
 @pytest.fixture(scope='session')
 def kompiled_targets_dir(request: FixtureRequest) -> Path | None:
     return request.config.getoption('--kompiled-targets-dir')
+
+
+@pytest.fixture(scope='session')
+def workers(request: FixtureRequest) -> Path | None:
+    return request.config.getoption('--workers')
