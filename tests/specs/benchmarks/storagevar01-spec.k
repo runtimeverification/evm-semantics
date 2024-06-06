@@ -6,7 +6,6 @@ module STORAGEVAR01-SPEC
   // fn-execute
   claim
     <k> (#execute => #halt) ~> _ </k>
-    <exit-code> 1 </exit-code>
     <mode> NORMAL </mode>
     <schedule> ISTANBUL </schedule>
     <useGas> true </useGas>

@@ -6,7 +6,6 @@ module GEMJOIN-EXIT-PASS-ROUGH-SPEC
     // GemJoin_exit
     claim [GemJoin.exit.pass.rough]:
       <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
-      <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
       <useGas> true </useGas>
@@ -178,10 +177,9 @@ module GEMJOIN-EXIT-PASS-ROUGH-SPEC
     // Vat_slip
     claim [Vat.slip.pass]:
       <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
-      <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
-    <useGas> true </useGas>
+      <useGas> true </useGas>
       <ethereum>
         <evm>
           <output> .Bytes </output>
@@ -295,10 +293,9 @@ module GEMJOIN-EXIT-PASS-ROUGH-SPEC
     // DSToken_transfer
     claim [DSToken.transfer.pass]:
       <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
-      <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
-    <useGas> true </useGas>
+      <useGas> true </useGas>
       <ethereum>
         <evm>
           <output> _ => #buf(32, 1) </output>

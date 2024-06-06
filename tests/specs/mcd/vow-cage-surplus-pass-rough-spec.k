@@ -6,7 +6,6 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
     // Vow_cage-surplus
     claim [Vow.cage-surplus.pass.rough]:
       <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
-      <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
       <useGas> true </useGas>
@@ -274,7 +273,6 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
     // Vow_minuu
     claim [Vow.minuu.pass]:
       <k> #execute ~> CONTINUATION => #execute ~> CONTINUATION </k>
-      <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
       <useGas> true </useGas>
@@ -377,7 +375,6 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
     // Vat_dai
     claim [Vat.dai.pass]:
       <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
-      <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
       <useGas> true </useGas>
@@ -479,7 +476,6 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
     // Vat_sin
     claim [Vat.sin.pass]:
       <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
-      <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
       <useGas> true </useGas>
@@ -581,7 +577,6 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
     // Vat_heal
     claim [Vat.heal.pass]:
       <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
-      <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
       <useGas> true </useGas>
@@ -705,7 +700,6 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
     // Flapper_cage
     claim [Flapper.cage.pass]:
       <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
-      <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
       <useGas> true </useGas>
@@ -851,7 +845,6 @@ module VOW-CAGE-SURPLUS-PASS-ROUGH-SPEC
     // Flopper_cage
     claim [Flopper.cage.pass]:
       <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
-      <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
       <useGas> true </useGas>

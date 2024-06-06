@@ -6,7 +6,6 @@ module ECRECOVERLOOP02-SIG0-INVALID-SPEC
   // fn-execute-sig0-invalid
   claim
     <k> (#execute => #halt) ~> _ </k>
-    <exit-code> 1 </exit-code>
     <mode> NORMAL </mode>
     <schedule> ISTANBUL </schedule>
     <useGas> true </useGas>

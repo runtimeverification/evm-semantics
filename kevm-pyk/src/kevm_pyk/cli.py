@@ -198,13 +198,6 @@ def _create_argument_parser() -> ArgumentParser:
     )
     section_edge_args.add_argument('edge', type=arg_pair_of(str, str), help='Edge to section in CFG.')
     section_edge_args.add_argument('--sections', type=int, help='Number of sections to make from edge (>= 2).')
-    section_edge_args.add_argument(
-        '--use-booster',
-        dest='use_booster',
-        default=None,
-        action='store_true',
-        help="Use the booster RPC server instead of kore-rpc. Requires calling kompile with '--target haskell-booster' flag",
-    )
 
     prove_legacy_args = command_parser.add_parser(
         'prove-legacy',
@@ -367,7 +360,7 @@ class RPCOptions(Options):
         return {
             'trace_rewrites': False,
             'kore_rpc_command': None,
-            'use_booster': False,
+            'use_booster': True,
             'fallback_on': [],
             'post_exec_simplify': True,
             'interim_simplification': None,
@@ -695,7 +688,6 @@ class SectionEdgeOptions(
     def default() -> dict[str, Any]:
         return {
             'sections': 2,
-            'use_booster': False,
         }
 
     @staticmethod
@@ -1027,6 +1019,13 @@ class KEVMCLIArgs(KCLIArgs):
             default=None,
             action='store_true',
             help='Use the booster RPC server instead of kore-rpc.',
+        )
+        args.add_argument(
+            '--no-use-booster',
+            dest='use_booster',
+            default=None,
+            action='store_false',
+            help='Do not the booster RPC server instead of kore-rpc.',
         )
         args.add_argument(
             '--use-booster-dev',

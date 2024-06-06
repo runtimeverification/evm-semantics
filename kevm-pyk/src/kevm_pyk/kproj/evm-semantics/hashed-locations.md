@@ -78,17 +78,17 @@ module SOLIDITY-FIELDS
     syntax Contract
     syntax Field
     syntax ContractAccess ::= Contract
-                            | ContractAccess "." Field   [klabel(contract_access_field), symbol]
-                            | ContractAccess "[" Int "]" [klabel(contract_access_index), symbol]
- // --------------------------------------------------------------------------------------------
+                            | ContractAccess "." Field   [symbol(contract_access_field)]
+                            | ContractAccess "[" Int "]" [symbol(contract_access_index)]
+ // ------------------------------------------------------------------------------------
 
-    syntax Int ::= #loc ( ContractAccess ) [klabel(contract_access_loc), function, symbol]
- // --------------------------------------------------------------------------------------
+    syntax Int ::= #loc ( ContractAccess ) [symbol(contract_access_loc), function]
+ // ------------------------------------------------------------------------------
     rule #loc(_:Contract) => 0
     rule #loc(C [ I ])    => #hash(#loc(C), I)
 
-    syntax Int ::= #hash ( Int , Int ) [klabel(contract_access_hash), function, symbol]
- // -----------------------------------------------------------------------------------
+    syntax Int ::= #hash ( Int , Int ) [symbol(contract_access_hash), function]
+ // ---------------------------------------------------------------------------
     rule #hash(I1, I2) => keccak(#bufStrict(32, I2) +Bytes #bufStrict(32, I1))
 
 endmodule

@@ -95,8 +95,8 @@ module JSON-RPC
         <web3response> .List </web3response>
       </json-rpc>
 
-    syntax JSON ::= "undef" [klabel(JSON-RPCundef), symbol]
- // -------------------------------------------------------
+    syntax JSON ::= "undef" [symbol(JSON-RPCundef)]
+ // -----------------------------------------------
 
     syntax Bool ::= isProperJson     ( JSON  ) [klabel(isProperJson), function]
                   | isProperJsonList ( JSONs ) [klabel(isProperJsonList), function]

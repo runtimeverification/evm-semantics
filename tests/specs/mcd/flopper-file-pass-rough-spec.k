@@ -6,7 +6,6 @@ module FLOPPER-FILE-PASS-ROUGH-SPEC
     // Flopper_file
     claim [Flopper.file.pass.rough]:
       <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
-      <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
       <useGas> true </useGas>

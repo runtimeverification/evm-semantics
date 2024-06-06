@@ -243,14 +243,16 @@ def test_pyk_prove(
     kompiled_target_for: Callable[[Path], Path],
     tmp_path: Path,
     caplog: LogCaptureFixture,
-    use_booster: bool,
+    no_use_booster: bool,
     use_booster_dev: bool,
     bug_report: BugReport | None,
     spec_name: str | None,
 ) -> None:
     caplog.set_level(logging.INFO)
 
-    if (not use_booster and spec_file in FAILING_PYK_TESTS) or (use_booster and spec_file in FAILING_BOOSTER_TESTS):
+    if (no_use_booster and spec_file in FAILING_PYK_TESTS) or (
+        not no_use_booster and spec_file in FAILING_BOOSTER_TESTS
+    ):
         pytest.skip()
 
     if spec_name is not None and str(spec_file).find(spec_name) < 0:
@@ -273,7 +275,7 @@ def test_pyk_prove(
                 'includes': [str(include_dir) for include_dir in config.INCLUDE_DIRS],
                 'save_directory': use_directory,
                 'md_selector': 'foo',  # TODO Ignored flag, this is to avoid KeyError
-                'use_booster': use_booster,
+                'use_booster': not no_use_booster,
                 'use_booster_dev': use_booster_dev,
                 'bug_report': bug_report,
                 'break_on_calls': break_on_calls,

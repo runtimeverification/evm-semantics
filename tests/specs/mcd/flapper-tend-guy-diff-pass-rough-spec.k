@@ -6,7 +6,6 @@ module FLAPPER-TEND-GUY-DIFF-PASS-ROUGH-SPEC
     // Flapper_tend-guy-diff
     claim [Flapper.tend-guy-diff.pass.rough]:
       <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
-      <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
       <useGas> true </useGas>
@@ -221,7 +220,6 @@ module FLAPPER-TEND-GUY-DIFF-PASS-ROUGH-SPEC
     // Flapper_addu48u48
     claim [Flapper.addu48u48.pass]:
       <k> #execute ~> CONTINUATION => #execute ~> CONTINUATION </k>
-      <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
     <useGas> true </useGas>
@@ -322,7 +320,6 @@ module FLAPPER-TEND-GUY-DIFF-PASS-ROUGH-SPEC
     // Flapper_muluu
     claim [Flapper.muluu.pass]:
       <k> #execute ~> CONTINUATION => #execute ~> CONTINUATION </k>
-      <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
     <useGas> true </useGas>
@@ -426,10 +423,9 @@ module FLAPPER-TEND-GUY-DIFF-PASS-ROUGH-SPEC
     // DSToken_move
     claim [DSToken.move.pass]:
       <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
-      <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
-    <useGas> true </useGas>
+      <useGas> true </useGas>
       <ethereum>
         <evm>
           <output> .Bytes </output>
