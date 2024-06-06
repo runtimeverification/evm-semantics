@@ -446,9 +446,7 @@ def legacy_explore(
             no_post_exec_simplify=no_post_exec_simplify,
         ) as server:
             with KoreClient('localhost', server.port, bug_report=bug_report, bug_report_id=id) as client:
-                cterm_symbolic = CTermSymbolic(
-                    client, kprint.definition, kprint.kompiled_kore, trace_rewrites=trace_rewrites
-                )
+                cterm_symbolic = CTermSymbolic(client, kprint.definition, trace_rewrites=trace_rewrites)
                 yield KCFGExplore(cterm_symbolic, kcfg_semantics=kcfg_semantics, id=id)
     else:
         if port is None:
@@ -465,7 +463,5 @@ def legacy_explore(
                 ],
             }
         with KoreClient('localhost', port, bug_report=bug_report, bug_report_id=id, dispatch=dispatch) as client:
-            cterm_symbolic = CTermSymbolic(
-                client, kprint.definition, kprint.kompiled_kore, trace_rewrites=trace_rewrites
-            )
+            cterm_symbolic = CTermSymbolic(client, kprint.definition, trace_rewrites=trace_rewrites)
             yield KCFGExplore(cterm_symbolic, kcfg_semantics=kcfg_semantics, id=id)
