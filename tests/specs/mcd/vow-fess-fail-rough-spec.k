@@ -6,7 +6,6 @@ module VOW-FESS-FAIL-ROUGH-SPEC
     // Vow_fess
     claim [Vow.fess.fail.rough]:
       <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
-      <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
       <useGas> true </useGas>
@@ -124,7 +123,6 @@ module VOW-FESS-FAIL-ROUGH-SPEC
     // Vow_adduu
     claim [Vow.adduu.pass]:
       <k> #execute ~> CONTINUATION => #execute ~> CONTINUATION </k>
-      <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
       <useGas> true </useGas>

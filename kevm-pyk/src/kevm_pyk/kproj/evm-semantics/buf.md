@@ -23,7 +23,7 @@ Claims should always use `#bufStrict` in LHS and `#buf` in RHS.
 
 ```k
     syntax Bytes ::= #bufStrict ( Int , Int ) [klabel(#bufStrict), function]
-    syntax Bytes ::= #buf ( Int , Int ) [klabel(#buf), function, total, smtlib(buf)]
+    syntax Bytes ::= #buf ( Int , Int ) [symbol(buf), function, total, smtlib(buf)]
 
     syntax Int ::= #ceil32 ( Int ) [klabel(#ceil32), macro]
  // -------------------------------------------------------

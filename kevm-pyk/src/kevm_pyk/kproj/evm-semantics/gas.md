@@ -57,7 +57,8 @@ In particular, this means that `#gas(_) <Gas #gas(_) => false`, and `#gas(_) <=G
 module INFINITE-GAS
     imports GAS
 
-    syntax Gas ::= #gas(Int) [klabel(infGas), symbol, smtlib(infGas)]
+    syntax Gas ::= #gas(Int) [symbol(infGas), smtlib(infGas)]
+ // ---------------------------------------------------------
 
     rule #gas(G) +Gas G'       => #gas(G +Int G')
     rule #gas(G) -Gas G'       => #gas(G -Int G')
@@ -207,8 +208,8 @@ module GAS-FEES
     rule [Cinitcode.new]: Cinitcode(SCHED, INITCODELEN) => Ginitcodewordcost < SCHED > *Int ( INITCODELEN up/Int 32 ) requires         Ghasmaxinitcodesize << SCHED >> [concrete]
     rule [Cinitcode.old]: Cinitcode(SCHED, _)           => 0                                                          requires notBool Ghasmaxinitcodesize << SCHED >> [concrete]
 
-    syntax Bool ::= #accountEmpty ( AccountCode , Int , Int ) [function, total, klabel(accountEmpty), symbol]
- // ---------------------------------------------------------------------------------------------------------
+    syntax Bool ::= #accountEmpty ( AccountCode , Int , Int ) [function, total, symbol(accountEmpty)]
+ // -------------------------------------------------------------------------------------------------
     rule #accountEmpty(CODE, NONCE, BAL) => CODE ==K .Bytes andBool NONCE ==Int 0 andBool BAL ==Int 0
 
     syntax Gas ::= #allBut64th ( Gas ) [symbol(#allBut64th_Gas), overload(#allBut64th), function, total, smtlib(gas_allBut64th_Gas)]

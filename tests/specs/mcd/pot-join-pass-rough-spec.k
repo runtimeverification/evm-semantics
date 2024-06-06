@@ -6,7 +6,6 @@ module POT-JOIN-PASS-ROUGH-SPEC
     // Pot_join
     claim [Pot.join.pass.rough]:
       <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
-      <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
       <useGas> true </useGas>
@@ -169,10 +168,9 @@ module POT-JOIN-PASS-ROUGH-SPEC
     // Pot_adduu
     claim [Pot.adduu.pass]:
       <k> #execute ~> CONTINUATION => #execute ~> CONTINUATION </k>
-      <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
-    <useGas> true </useGas>
+      <useGas> true </useGas>
       <ethereum>
         <evm>
           <output> VOutput => VOutput </output>
@@ -270,10 +268,9 @@ module POT-JOIN-PASS-ROUGH-SPEC
     // Pot_muluu
     claim [Pot.muluu.pass]:
       <k> #execute ~> CONTINUATION => #execute ~> CONTINUATION </k>
-      <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
-    <useGas> true </useGas>
+      <useGas> true </useGas>
       <ethereum>
         <evm>
           <output> VOutput => VOutput </output>
@@ -374,10 +371,9 @@ module POT-JOIN-PASS-ROUGH-SPEC
     // Vat_move-diff
     claim [Vat.move-diff.pass]:
       <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
-      <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
-    <useGas> true </useGas>
+      <useGas> true </useGas>
       <ethereum>
         <evm>
           <output> .Bytes </output>

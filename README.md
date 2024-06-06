@@ -281,7 +281,7 @@ Files produced by test runs, e.g. kompiled definition and logs, can be found in 
 For Developers
 --------------
 
-If built from the source, the `kevm-pyk` executable will be installed in a virtual environemtn handled by Poetry.
+If built from the source, the `kevm-pyk` executable will be installed in a virtual environment handled by Poetry.
 You can call `kevm-pyk --help` to get a quick summary of how to use the script.
 
 Run the file `tests/ethereum-tests/BlockchainTests/GeneralStateTests/VMTests/vmArithmeticTest/add0.json`:

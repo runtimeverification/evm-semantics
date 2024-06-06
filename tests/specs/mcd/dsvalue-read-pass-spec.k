@@ -6,7 +6,6 @@ module DSVALUE-READ-PASS-SPEC
     // DSValue_read
     claim [DSValue.read.pass]:
       <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
-      <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
       <useGas> true </useGas>

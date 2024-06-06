@@ -6,7 +6,6 @@ module END-CASH-PASS-ROUGH-SPEC
     // End_cash
     claim [End.cash.pass.rough]:
       <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
-      <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
       <useGas> true </useGas>
@@ -160,7 +159,6 @@ module END-CASH-PASS-ROUGH-SPEC
     // End_adduu
     claim [End.adduu.pass]:
       <k> #execute ~> CONTINUATION => #execute ~> CONTINUATION </k>
-      <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
       <useGas> true </useGas>
@@ -261,7 +259,6 @@ module END-CASH-PASS-ROUGH-SPEC
     // End_rmul
     claim [End.rmul.pass]:
       <k> #execute ~> CONTINUATION => #execute ~> CONTINUATION </k>
-      <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
       <useGas> true </useGas>
@@ -365,7 +362,6 @@ module END-CASH-PASS-ROUGH-SPEC
     // Vat_flux-diff
     claim [Vat.flux-diff.pass]:
       <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
-      <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
       <useGas> true </useGas>

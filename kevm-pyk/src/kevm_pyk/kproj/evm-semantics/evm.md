@@ -183,9 +183,9 @@ Our semantics is modal, with the initial mode being set on the command line via 
 -   `VMTESTS` skips `CALL*` and `CREATE` operations.
 
 ```k
-    syntax Mode ::= "NORMAL"  [klabel(NORMAL), symbol]
-                  | "VMTESTS" [klabel(VMTESTS), symbol]
- // ---------------------------------------------------
+    syntax Mode ::= "NORMAL"  [symbol(NORMAL) ]
+                  | "VMTESTS" [symbol(VMTESTS)]
+ // -------------------------------------------
 ```
 
 State Stacks
@@ -259,8 +259,9 @@ Control Flow
 -   `#end_` sets the `statusCode` and the program counter of the last executed opcode, then halts execution.
 
 ```k
-    syntax KItem ::= "#halt" | "#end" StatusCode
- // --------------------------------------------
+    syntax KItem ::= "#halt"           [symbol(halt)]
+                   | "#end" StatusCode [symbol(end) ]
+ // -------------------------------------------------
     rule [end]:
          <k> #end SC => #halt ... </k>
          <statusCode> _ => SC </statusCode>
@@ -289,8 +290,8 @@ OpCode Execution
 -   `#execute` loads the next opcode.
 
 ```k
-    syntax KItem ::= "#execute"
- // ---------------------------
+    syntax KItem ::= "#execute" [symbol(execute)]
+ // ---------------------------------------------
     rule [halt]:
          <k> #halt ~> (#execute => .K) ... </k>
 
@@ -509,8 +510,8 @@ The arguments to `PUSH` must be skipped over (as they are inline), and the opcod
 -   `#pc` calculates the next program counter of the given operator.
 
 ```k
-    syntax InternalOp ::= "#pc" "[" OpCode "]"
- // ------------------------------------------
+    syntax InternalOp ::= "#pc" "[" OpCode "]" [symbol(pc)]
+ // -------------------------------------------------------
     rule <k> #pc [ OP ] => .K ... </k>
          <pc> PCOUNT => PCOUNT +Int #widthOp(OP) </pc>
 
@@ -1049,7 +1050,7 @@ The `JUMP*` family of operations affect the current program counter.
 
     syntax BinStackOp ::= "JUMPI"
  // -----------------------------
-    rule [jumpi.false]: <k> JUMPI _DEST I => .K         ... </k> requires I  ==Int 0
+    rule [jumpi.false]: <k> JUMPI _DEST I => .K        ... </k> requires I  ==Int 0
     rule [jumpi.true]:  <k> JUMPI  DEST I => JUMP DEST ... </k> requires I =/=Int 0
 
     syntax InternalOp ::= "#endBasicBlock"
@@ -1335,8 +1336,8 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     rule [precompile.true]:  <k> #precompiled?(ACCTCODE, SCHED) => #next [ #precompiled(ACCTCODE) ] ... </k> requires         #isPrecompiledAccount(ACCTCODE, SCHED) [preserves-definedness]
     rule [precompile.false]: <k> #precompiled?(ACCTCODE, SCHED) => .K                               ... </k> requires notBool #isPrecompiledAccount(ACCTCODE, SCHED)
 
-    syntax Bool ::= #isPrecompiledAccount ( Int , Schedule ) [klabel(#isPrecompiledAccount), function, total, smtlib(isPrecompiledAccount)]
- // ---------------------------------------------------------------------------------------------------------------------------------------
+    syntax Bool ::= #isPrecompiledAccount ( Int , Schedule ) [symbol(isPrecompiledAccount), function, total, smtlib(isPrecompiledAccount)]
+ // --------------------------------------------------------------------------------------------------------------------------------------
     rule [isPrecompiledAccount]:  #isPrecompiledAccount(ACCTCODE, SCHED) => 0 <Int ACCTCODE andBool ACCTCODE <=Int #precompiledAccountsUB(SCHED)
 
     syntax KItem ::= "#initVM"
@@ -1393,8 +1394,8 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     rule <k> #accessAccounts ADDRSET:Set => .K ... </k>
          <accessedAccounts> TOUCHED_ACCOUNTS => TOUCHED_ACCOUNTS |Set ADDRSET </accessedAccounts>
 
-    syntax Set ::= #computeValidJumpDests(Bytes)            [klabel(#computeValidJumpDests),    function, memo, total]
-                 | #computeValidJumpDests(Bytes, Int, List) [klabel(#computeValidJumpDestsAux), function             ]
+    syntax Set ::= #computeValidJumpDests(Bytes)            [symbol(computeValidJumpDests),    function, memo, total]
+                 | #computeValidJumpDests(Bytes, Int, List) [symbol(computeValidJumpDestsAux), function             ]
  // ------------------------------------------------------------------------------------------------------------------
     rule #computeValidJumpDests(_PGM) => .Set
     rule #computeValidJumpDests(_PGM, _I, _RESULT) => .Set

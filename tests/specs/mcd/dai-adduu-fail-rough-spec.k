@@ -6,7 +6,6 @@ module DAI-ADDUU-FAIL-ROUGH-SPEC
     // Dai_adduu
     claim [Dai.adduu.fail.rough]:
       <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
-      <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
       <useGas> true </useGas>
