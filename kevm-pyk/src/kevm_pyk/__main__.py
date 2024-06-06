@@ -340,9 +340,7 @@ def exec_prove(options: ProveOptions) -> None:
                     bug_report_id=claim.label,
                     dispatch=dispatch,
                 )
-                cterm_symbolic = CTermSymbolic(
-                    client, kevm.definition, kevm.kompiled_kore, trace_rewrites=options.trace_rewrites
-                )
+                cterm_symbolic = CTermSymbolic(client, kevm.definition, trace_rewrites=options.trace_rewrites)
                 return KCFGExplore(
                     cterm_symbolic,
                     kcfg_semantics=KEVMSemantics(auto_abstract_gas=options.auto_abstract_gas),
