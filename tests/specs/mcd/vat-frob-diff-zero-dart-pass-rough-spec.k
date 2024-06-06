@@ -6,7 +6,6 @@ module VAT-FROB-DIFF-ZERO-DART-PASS-ROUGH-SPEC
     // Vat_frob-diff-zero-dart
     claim [Vat.frob-diff-zero-dart.pass.rough]:
       <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
-      <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
       <useGas> true </useGas>
@@ -288,7 +287,6 @@ module VAT-FROB-DIFF-ZERO-DART-PASS-ROUGH-SPEC
     // Vat_muluu
     claim [Vat.muluu.pass]:
       <k> #execute ~> CONTINUATION => #execute ~> CONTINUATION </k>
-      <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
       <useGas> true </useGas>
