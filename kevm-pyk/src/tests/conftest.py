@@ -17,10 +17,10 @@ def pytest_addoption(parser: Parser) -> None:
         help='Write expected output files for proof tests',
     )
     parser.addoption(
-        '--use-booster',
+        '--no-use-booster',
         action='store_true',
         default=False,
-        help='Use the kore-rpc-booster binary instead of kore-rpc',
+        help='Do not the kore-rpc-booster binary instead of kore-rpc',
     )
     parser.addoption(
         '--spec-name',
@@ -41,8 +41,8 @@ def update_expected_output(request: FixtureRequest) -> bool:
 
 
 @pytest.fixture(scope='session')
-def use_booster(request: FixtureRequest) -> bool:
-    return request.config.getoption('--use-booster')
+def no_use_booster(request: FixtureRequest) -> bool:
+    return request.config.getoption('--no-use-booster')
 
 
 @pytest.fixture(scope='session')

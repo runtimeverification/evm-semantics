@@ -114,10 +114,10 @@ jobs:
             test-args:
             timeout: 45
           - test-suite: 'test-prove-pyk'
-            test-args:
+            test-args: '--no-use-booster'
             timeout: 180
           - test-suite: 'test-prove-pyk'
-            test-args: '--use-booster'
+            test-args:
             timeout: 150
     timeout-minutes: ${{ matrix.timeout }}
     steps:

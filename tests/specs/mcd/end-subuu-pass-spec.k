@@ -6,7 +6,6 @@ module END-SUBUU-PASS-SPEC
     // End_subuu
     claim [End.subuu.pass]:
       <k> #execute ~> CONTINUATION => JUMP JMPTO ~> #pc [ JUMP ] ~> #execute ~> CONTINUATION </k>
-      <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
       <useGas> true </useGas>

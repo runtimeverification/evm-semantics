@@ -6,7 +6,6 @@ module FLOPPER-DENT-GUY-SAME-PASS-ROUGH-SPEC
     // Flopper_dent-guy-same
     claim [Flopper.dent-guy-same.pass.rough]:
       <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
-      <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
       <useGas> true </useGas>
@@ -169,7 +168,6 @@ module FLOPPER-DENT-GUY-SAME-PASS-ROUGH-SPEC
     // Flopper_muluu
     claim [Flopper.muluu.pass]:
       <k> #execute ~> CONTINUATION => #execute ~> CONTINUATION </k>
-      <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
       <useGas> true </useGas>
@@ -272,7 +270,6 @@ module FLOPPER-DENT-GUY-SAME-PASS-ROUGH-SPEC
     // Flopper_addu48u48
     claim [Flopper.addu48u48.pass]:
       <k> #execute ~> CONTINUATION => #execute ~> CONTINUATION </k>
-      <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
       <useGas> true </useGas>
