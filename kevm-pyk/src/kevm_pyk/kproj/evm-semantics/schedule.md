@@ -54,8 +54,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
 ### Default Schedule
 
 ```k
-    syntax Schedule ::= "DEFAULT" [klabel(DEFAULT_EVM), symbol, smtlib(schedule_DEFAULT)]
- // -------------------------------------------------------------------------------------
+    syntax Schedule ::= "DEFAULT" [symbol(DEFAULT_EVM), smtlib(schedule_DEFAULT)]
+ // -----------------------------------------------------------------------------
     rule Gzero    < DEFAULT > => 0
     rule Gbase    < DEFAULT > => 2
     rule Gverylow < DEFAULT > => 3
@@ -150,8 +150,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
 ### Frontier Schedule
 
 ```k
-    syntax Schedule ::= "FRONTIER" [klabel(FRONTIER_EVM), symbol, smtlib(schedule_FRONTIER)]
- // ----------------------------------------------------------------------------------------
+    syntax Schedule ::= "FRONTIER" [symbol(FRONTIER_EVM), smtlib(schedule_FRONTIER)]
+ // --------------------------------------------------------------------------------
     rule Gtxcreate  < FRONTIER > => 21000
     rule SCHEDCONST < FRONTIER > => SCHEDCONST < DEFAULT > requires SCHEDCONST =/=K Gtxcreate
 
@@ -161,8 +161,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
 ### Homestead Schedule
 
 ```k
-    syntax Schedule ::= "HOMESTEAD" [klabel(HOMESTEAD_EVM), symbol, smtlib(schedule_HOMESTEAD)]
- // -------------------------------------------------------------------------------------------
+    syntax Schedule ::= "HOMESTEAD" [symbol(HOMESTEAD_EVM), smtlib(schedule_HOMESTEAD)]
+ // -----------------------------------------------------------------------------------
     rule SCHEDCONST < HOMESTEAD > => SCHEDCONST < DEFAULT >
 
     rule SCHEDFLAG << HOMESTEAD >> => SCHEDFLAG << DEFAULT >>
@@ -171,8 +171,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
 ### Tangerine Whistle Schedule
 
 ```k
-    syntax Schedule ::= "TANGERINE_WHISTLE" [klabel(TANGERINE_WHISTLE_EVM), symbol, smtlib(schedule_TANGERINE_WHISTLE)]
- // -------------------------------------------------------------------------------------------------------------------
+    syntax Schedule ::= "TANGERINE_WHISTLE" [symbol(TANGERINE_WHISTLE_EVM), smtlib(schedule_TANGERINE_WHISTLE)]
+ // -----------------------------------------------------------------------------------------------------------
     rule Gbalance      < TANGERINE_WHISTLE > => 400
     rule Gsload        < TANGERINE_WHISTLE > => 200
     rule Gcall         < TANGERINE_WHISTLE > => 700
@@ -194,8 +194,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
 ### Spurious Dragon Schedule
 
 ```k
-    syntax Schedule ::= "SPURIOUS_DRAGON" [klabel(SPURIOUS_DRAGON_EVM), symbol, smtlib(schedule_SPURIOUS_DRAGON)]
- // -------------------------------------------------------------------------------------------------------------
+    syntax Schedule ::= "SPURIOUS_DRAGON" [symbol(SPURIOUS_DRAGON_EVM), smtlib(schedule_SPURIOUS_DRAGON)]
+ // -----------------------------------------------------------------------------------------------------
     rule Gexpbyte    < SPURIOUS_DRAGON > => 50
     rule maxCodeSize < SPURIOUS_DRAGON > => 24576
 
@@ -210,8 +210,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
 ### Byzantium Schedule
 
 ```k
-    syntax Schedule ::= "BYZANTIUM" [klabel(BYZANTIUM_EVM), symbol, smtlib(schedule_BYZANTIUM)]
- // -------------------------------------------------------------------------------------------
+    syntax Schedule ::= "BYZANTIUM" [symbol(BYZANTIUM_EVM), smtlib(schedule_BYZANTIUM)]
+ // -----------------------------------------------------------------------------------
     rule Rb         < BYZANTIUM > => 3 *Int eth
     rule SCHEDCONST < BYZANTIUM > => SCHEDCONST < SPURIOUS_DRAGON >
       requires notBool ( SCHEDCONST ==K Rb )
@@ -226,8 +226,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
 ### Constantinople Schedule
 
 ```k
-    syntax Schedule ::= "CONSTANTINOPLE" [klabel(CONSTANTINOPLE_EVM), symbol, smtlib(schedule_CONSTANTINOPLE)]
- // ----------------------------------------------------------------------------------------------------------
+    syntax Schedule ::= "CONSTANTINOPLE" [symbol(CONSTANTINOPLE_EVM), smtlib(schedule_CONSTANTINOPLE)]
+ // --------------------------------------------------------------------------------------------------
     rule Rb         < CONSTANTINOPLE > => 2 *Int eth
     rule SCHEDCONST < CONSTANTINOPLE > => SCHEDCONST < BYZANTIUM >
       requires notBool ( SCHEDCONST ==K Rb )
@@ -243,8 +243,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
 ### Petersburg Schedule
 
 ```k
-    syntax Schedule ::= "PETERSBURG" [klabel(PETERSBURG_EVM), symbol, smtlib(schedule_PETERSBURG)]
- // ----------------------------------------------------------------------------------------------
+    syntax Schedule ::= "PETERSBURG" [symbol(PETERSBURG_EVM), smtlib(schedule_PETERSBURG)]
+ // --------------------------------------------------------------------------------------
     rule SCHEDCONST < PETERSBURG > => SCHEDCONST < CONSTANTINOPLE >
 
     rule Ghasdirtysstore << PETERSBURG >> => false
@@ -255,8 +255,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
 ### Istanbul Schedule
 
 ```k
-    syntax Schedule ::= "ISTANBUL" [klabel(ISTANBUL_EVM), symbol, smtlib(schedule_ISTANBUL)]
- // ----------------------------------------------------------------------------------------
+    syntax Schedule ::= "ISTANBUL" [symbol(ISTANBUL_EVM), smtlib(schedule_ISTANBUL)]
+ // --------------------------------------------------------------------------------
     rule Gecadd         < ISTANBUL > => 150
     rule Gecmul         < ISTANBUL > => 6000
     rule Gecpairconst   < ISTANBUL > => 45000
@@ -289,8 +289,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
 ### Berlin Schedule
 
 ```k
-    syntax Schedule ::= "BERLIN" [klabel(BERLIN_EVM), symbol, smtlib(schedule_BERLIN)]
- // ----------------------------------------------------------------------------------
+    syntax Schedule ::= "BERLIN" [symbol(BERLIN_EVM), smtlib(schedule_BERLIN)]
+ // --------------------------------------------------------------------------
     rule Gcoldsload            < BERLIN > => 2100
     rule Gcoldaccountaccess    < BERLIN > => 2600
     rule Gwarmstorageread      < BERLIN > => 100
@@ -319,8 +319,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
 ### London Schedule
 
 ```k
-    syntax Schedule ::= "LONDON" [klabel(LONDON_EVM), symbol, smtlib(schedule_LONDON)]
- // ----------------------------------------------------------------------------------
+    syntax Schedule ::= "LONDON" [symbol(LONDON_EVM), smtlib(schedule_LONDON)]
+ // --------------------------------------------------------------------------
     rule Rselfdestruct < LONDON > => 0
     rule Rsstoreclear  < LONDON > => Gsstorereset < LONDON > +Int Gaccessliststoragekey < LONDON >
     rule Rmaxquotient  < LONDON > => 5
@@ -341,8 +341,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
 ### Merge Schedule
 
 ```k
-    syntax Schedule ::= "MERGE" [klabel(MERGE_EVM), symbol, smtlib(schedule_MERGE)]
- // -------------------------------------------------------------------------------
+    syntax Schedule ::= "MERGE" [symbol(MERGE_EVM), smtlib(schedule_MERGE)]
+ // -----------------------------------------------------------------------
     rule Rb         < MERGE > => 0
     rule SCHEDCONST < MERGE > => SCHEDCONST < LONDON >
       requires notBool SCHEDCONST ==K Rb
@@ -355,8 +355,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
 ### Shanghai Schedule
 
 ```k
-    syntax Schedule ::= "SHANGHAI" [klabel(SHANGHAI_EVM), symbol, smtlib(schedule_SHANGHAI)]
- // ----------------------------------------------------------------------------------------
+    syntax Schedule ::= "SHANGHAI" [symbol(SHANGHAI_EVM), smtlib(schedule_SHANGHAI)]
+ // --------------------------------------------------------------------------------
     rule maxInitCodeSize   < SHANGHAI > => 2 *Int maxCodeSize < SHANGHAI >
     rule Ginitcodewordcost < SHANGHAI > => 2
     rule SCHEDCONST        < SHANGHAI > => SCHEDCONST < MERGE >
