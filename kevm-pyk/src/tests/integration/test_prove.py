@@ -78,6 +78,7 @@ def exclude_list(exclude_file: Path) -> list[Path]:
 
 FAILING_PYK_TESTS: Final = exclude_list(TEST_DIR / 'failing-symbolic.pyk')
 FAILING_BOOSTER_TESTS: Final = exclude_list(TEST_DIR / 'failing-symbolic.haskell-booster')
+FAILING_BOOSTER_DEV_TESTS: Final = exclude_list(TEST_DIR / 'failing-symbolic.haskell-booster-dev')
 FAILING_TESTS: Final = exclude_list(TEST_DIR / 'failing-symbolic.haskell')
 
 
@@ -250,8 +251,10 @@ def test_pyk_prove(
 ) -> None:
     caplog.set_level(logging.INFO)
 
-    if (no_use_booster and spec_file in FAILING_PYK_TESTS) or (
-        not no_use_booster and spec_file in FAILING_BOOSTER_TESTS
+    if (
+        (no_use_booster and spec_file in FAILING_PYK_TESTS)
+        or (use_booster_dev and spec_file in FAILING_BOOSTER_DEV_TESTS)
+        or (not no_use_booster and not use_booster_dev and spec_file in FAILING_BOOSTER_TESTS)
     ):
         pytest.skip()
 
