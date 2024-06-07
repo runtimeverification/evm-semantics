@@ -23,6 +23,7 @@ module EVM-OPTIMIZATIONS
   imports INT-SIMPLIFICATION
 
   rule
+  [optimized.pushzero]:
     <kevm>
       <k>
         ( #next[ PUSHZERO ] => .K ) ...
@@ -58,6 +59,7 @@ module EVM-OPTIMIZATIONS
      [priority(40)]
 
   rule
+  [optimized.push]:
     <kevm>
       <k>
         ( #next[ PUSH(N) ] => .K ) ...
@@ -96,6 +98,7 @@ module EVM-OPTIMIZATIONS
      [priority(40)]
 
   rule
+  [optimized.dup]:
     <kevm>
       <k>
         ( #next[ DUP(N) ] => .K ) ...
@@ -132,6 +135,7 @@ module EVM-OPTIMIZATIONS
      [priority(40)]
 
   rule
+  [optimized.swap]:
     <kevm>
       <k>
         ( #next[ SWAP(N) ] => .K ) ...
@@ -168,6 +172,7 @@ module EVM-OPTIMIZATIONS
      [priority(40)]
 
   rule
+  [optimized.add]:
     <kevm>
       <k>
         ( #next[ ADD ] => .K ) ...
@@ -203,6 +208,7 @@ module EVM-OPTIMIZATIONS
      [priority(40)]
 
   rule
+  [optimized.sub]:
     <kevm>
       <k>
         ( #next[ SUB ] => .K ) ...
@@ -238,6 +244,7 @@ module EVM-OPTIMIZATIONS
      [priority(40)]
 
   rule
+  [optimized.and]:
     <kevm>
       <k>
         ( #next[ AND ] => .K ) ...
@@ -273,6 +280,7 @@ module EVM-OPTIMIZATIONS
      [priority(40)]
 
   rule
+  [optimized.lt]:
     <kevm>
       <k>
         ( #next[ LT ] => .K ) ...
@@ -308,6 +316,7 @@ module EVM-OPTIMIZATIONS
      [priority(40)]
 
   rule
+  [optimized.gt]:
     <kevm>
       <k>
         ( #next[ GT ] => .K ) ...
