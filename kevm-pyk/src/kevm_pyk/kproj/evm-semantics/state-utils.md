@@ -32,7 +32,7 @@ module STATE-UTILS
          <callDepth>        _ => 0          </callDepth>
          <callStack>        _ => .List      </callStack>
          <program>          _ => .Bytes     </program>
-         <jumpDests>        _ => .Set       </jumpDests>
+         <jumpDests>        _ => .Bytes     </jumpDests>
          <id>               _ => .Account   </id>
          <caller>           _ => .Account   </caller>
          <callData>         _ => .Bytes     </callData>

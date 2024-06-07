@@ -25,11 +25,11 @@ from pyk.kcfg.show import NodePrinter
 from pyk.ktool.kprove import KProve
 from pyk.ktool.krun import KRun
 from pyk.prelude.bytes import BYTES, pretty_bytes
-from pyk.prelude.collections import set_of
 from pyk.prelude.kbool import notBool
 from pyk.prelude.kint import INT, eqInt, intToken, ltInt
 from pyk.prelude.ml import mlEqualsFalse, mlEqualsTrue
 from pyk.prelude.string import stringToken
+from pyk.prelude.utils import token
 from pyk.proof.reachability import APRProof
 from pyk.proof.show import APRProofNodePrinter
 
@@ -157,9 +157,7 @@ class KEVMSemantics(KCFGSemantics):
         :return: If the K_CELL matches the load_pattern, a Step with depth 1 is returned together with the new configuration, also registering that the `EVM.program.load` rule has been applied. Otherwise, None is returned.
         :rtype: KCFGExtendResult | None
         """
-        load_pattern = KSequence(
-            [KApply('#loadProgram__EVM_KItem_Bytes', KVariable('###BYTECODE')), KVariable('###CONTINUATION')]
-        )
+        load_pattern = KSequence([KApply('loadProgram', KVariable('###BYTECODE')), KVariable('###CONTINUATION')])
         subst = load_pattern.match(cterm.cell('K_CELL'))
         if subst is not None:
             bytecode_sections = flatten_label('_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes', subst['###BYTECODE'])
@@ -670,43 +668,43 @@ def compute_jumpdests(sections: list[KInner]) -> KInner:
     :return: This function iterates over each section, appending the jump destinations (0x5B) from the bytecode in a KAst Set.
     :rtype: KInner
     """
-    offset = 0
-    jumpdests = []
+    mutable_jumpdests = bytearray(b'')
     for s in sections:
         if type(s) is KApply and s.label == KLabel('buf'):
             width_token = s.args[0]
             assert type(width_token) is KToken
-            offset += int(width_token.token)
+            mutable_jumpdests += bytes(int(width_token.token))
         elif type(s) is KToken and s.sort == BYTES:
             bytecode = pretty_bytes(s)
-            jumpdests.extend(_process_jumpdests(bytecode, offset))
-            offset += len(bytecode)
+            mutable_jumpdests += _process_jumpdests(bytecode)
+            len(bytecode)
         else:
             raise ValueError(f'Cannot compute jumpdests for type: {type(s)}')
 
-    return set_of(jumpdests)
+    return token(bytes(mutable_jumpdests))
 
 
-def _process_jumpdests(bytecode: bytes, offset: int) -> list[KToken]:
+def _process_jumpdests(bytecode: bytes) -> bytes:
     """Computes the location of JUMPDEST opcodes from a given bytecode while avoiding bytes from within the PUSH opcodes.
 
     :param bytecode: The bytecode of the contract as bytes.
     :type bytecode: bytes
     :param offset: The offset to add to each position index to align it with the broader code structure.
     :type offset: int
-    :return:  A list of intToken instances representing the positions of all found jump destinations in the bytecode adjusted by the offset.
-    :rtype: list[KToken]
+    :return: A bytes object with the same length as the input of zeros. Valid jumpdests are represented by the value 1.
+    :rtype: bytes
     """
     push1 = 0x60
     push32 = 0x7F
     jumpdest = 0x5B
+    bytecode_length = len(bytecode)
     i = 0
-    jumpdests: list[KToken] = []
-    while i < len(bytecode):
+    jumpdests = bytearray(bytecode_length)
+    while i < bytecode_length:
         if push1 <= bytecode[i] <= push32:
             i += bytecode[i] - push1 + 2
         else:
             if bytecode[i] == jumpdest:
-                jumpdests.append(intToken(offset + i))
+                jumpdests[i] = 0x1
             i += 1
-    return jumpdests
+    return bytes(jumpdests)
