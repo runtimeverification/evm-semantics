@@ -48,7 +48,6 @@ BENCHMARK_TESTS: Final = spec_files('benchmarks', '*-spec.k')
 FUNCTIONAL_TESTS: Final = spec_files('functional', '*-spec.k')
 OPCODES_TESTS: Final = spec_files('opcodes', '*-spec.k')
 ERC20_TESTS: Final = spec_files('erc20', '*/*-spec.k')
-BIHU_TESTS: Final = spec_files('bihu', '*-spec.k')
 EXAMPLES_TESTS: Final = spec_files('examples', '*-spec.k') + spec_files('examples', '*-spec.md')
 MCD_TESTS: Final = spec_files('mcd', '*-spec.k')
 OPTIMIZATION_TESTS: Final = (SPEC_DIR / 'opcodes/evm-optimizations-spec.md',)
@@ -60,7 +59,6 @@ ALL_TESTS: Final = sum(
         FUNCTIONAL_TESTS,
         OPCODES_TESTS,
         ERC20_TESTS,
-        BIHU_TESTS,
         EXAMPLES_TESTS,
         MCD_TESTS,
         OPTIMIZATION_TESTS,
@@ -89,7 +87,6 @@ FAILING_TESTS: Final = exclude_list(TEST_DIR / 'failing-symbolic.haskell')
 
 KOMPILE_MAIN_FILE: Final = {
     'benchmarks/functional-spec.k': 'functional-spec.k',
-    'bihu/functional-spec.k': 'functional-spec.k',
     'examples/solidity-code-spec.md': 'solidity-code-spec.md',
     'examples/erc20-spec.md': 'erc20-spec.md',
     'examples/erc721-spec.md': 'erc721-spec.md',
@@ -110,7 +107,6 @@ KOMPILE_MAIN_FILE: Final = {
 
 KOMPILE_MAIN_MODULE: Final = {
     'benchmarks/functional-spec.k': 'FUNCTIONAL-SPEC-SYNTAX',
-    'bihu/functional-spec.k': 'FUNCTIONAL-SPEC-SYNTAX',
     'erc20/functional-spec.k': 'FUNCTIONAL-SPEC-SYNTAX',
     'mcd/functional-spec.k': 'FUNCTIONAL-SPEC-SYNTAX',
     'opcodes/evm-optimizations-spec.md': 'EVM-OPTIMIZATIONS-SPEC-LEMMAS',
