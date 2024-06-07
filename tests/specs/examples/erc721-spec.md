@@ -57,12 +57,14 @@ module ERC721-SPEC
 ```
 
 ```k
-claim <k> runLemma(chop(chop(chop(chop(chop(chop((#lookup(ACCT_STORAGE, 0) /Int 2 &Int 127) +Int 31) /Int 32 *Int 32) +Int 32) +Int 128) +Int 32) +Int 32))
+claim [lemma.1]:
+      <k> runLemma(chop(chop(chop(chop(chop(chop((#lookup(ACCT_STORAGE, 0) /Int 2 &Int 127) +Int 31) /Int 32 *Int 32) +Int 32) +Int 128) +Int 32) +Int 32))
        => doneLemma(((#lookup(ACCT_STORAGE, 0) /Int 2 &Int 127) +Int 31) /Int 32 *Int 32 +Int 224) ... </k>
 ```
 
 ```k
-claim <k> runLemma(#lookup(ACCT_STORAGE, 0) /Int 2 <Int 32)
+claim [lemma.2]:
+      <k> runLemma(#lookup(ACCT_STORAGE, 0) /Int 2 <Int 32)
        => doneLemma(false) ... </k>
  requires 32 <=Int #lookup(ACCT_STORAGE, 0) /Int 2 &Int 127
 ```
@@ -93,7 +95,7 @@ claim <k> runLemma(#lookup(ACCT_STORAGE, 0) /Int 2 <Int 32)
           <gas>        #gas(_VGAS) => ?_ </gas>
           <callValue>  0           => ?_ </callValue>
 
-          <callData>   S2KERC721.name()            </callData>
+          <callData>   S2KERC721.S2Kname()      </callData>
           <k>          #execute => #halt ...    </k>
           <output>     .Bytes   => ?_           </output>
           <statusCode> _        => EVMC_SUCCESS </statusCode>
@@ -128,7 +130,7 @@ claim <k> runLemma(#lookup(ACCT_STORAGE, 0) /Int 2 <Int 32)
           <gas>        #gas(_VGAS) => ?_ </gas>
           <callValue>  0           => ?_ </callValue>
 
-          <callData>   S2KERC721.name()           </callData>
+          <callData>   S2KERC721.S2Kname()     </callData>
           <k>          #execute => #halt ...   </k>
           <output>     .Bytes   => ?_          </output>
           <statusCode> _        => EVMC_REVERT </statusCode>
