@@ -615,12 +615,14 @@ class ProveOptions(
 ):
     reinit: bool
     max_frontier_parallel: int
+    use_booster_dev: bool
 
     @staticmethod
     def default() -> dict[str, Any]:
         return {
             'reinit': False,
             'max_frontier_parallel': 1,
+            'use_booster_dev': False,
         }
 
     @staticmethod
@@ -1024,6 +1026,13 @@ class KEVMCLIArgs(KCLIArgs):
             default=None,
             action='store_false',
             help='Do not the booster RPC server instead of kore-rpc.',
+        )
+        args.add_argument(
+            '--use-booster-dev',
+            dest='use_booster_dev',
+            default=None,
+            action='store_true',
+            help='Use the development booster RPC server instead of kore-rpc.',
         )
         args.add_argument(
             '--fallback-on',
