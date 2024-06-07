@@ -366,8 +366,9 @@ def exec_prove(options: ProveOptions) -> None:
                 proof_problem.kcfg.let_node(proof_problem.init, cterm=init_cterm)
                 proof_problem.kcfg.let_node(proof_problem.target, cterm=target_cterm)
 
+            proof_problem.write_proof_data()
+
             if proof_problem.admitted:
-                proof_problem.write_proof_data()
                 _LOGGER.info(f'Skipping execution of proof because it is marked as admitted: {proof_problem.id}')
                 return True, None
 
