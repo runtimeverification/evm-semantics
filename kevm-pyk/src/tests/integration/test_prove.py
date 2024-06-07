@@ -46,7 +46,7 @@ def spec_files(dir_name: str, glob: str) -> tuple[Path, ...]:
 
 BENCHMARK_TESTS: Final = spec_files('benchmarks', '*-spec.k')
 FUNCTIONAL_TESTS: Final = spec_files('functional', '*-spec.k')
-OPCODES_TESTS: Final = spec_files('opcodes', '*-spec.k')
+OPCODES_TESTS: Final = spec_files('opcodes', '*-spec.md')
 ERC20_TESTS: Final = spec_files('erc20', '*/*-spec.k')
 EXAMPLES_TESTS: Final = spec_files('examples', '*-spec.k') + spec_files('examples', '*-spec.md')
 MCD_TESTS: Final = spec_files('mcd', '*-spec.k')
