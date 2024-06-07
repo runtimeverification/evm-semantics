@@ -251,7 +251,7 @@ def run_prover(
         _LOGGER.error(f'Proof crashed: {proof.id}\n{e}', exc_info=True)
         return False
 
-    _LOGGER.info(f'Proof status: {proof.status}')
+    _LOGGER.info(f'Proof status {proof.id}: {proof.status}')
     return proof.passed
 
 
