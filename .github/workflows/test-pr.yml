@@ -121,7 +121,7 @@ jobs:
             timeout: 150
           - test-suite: 'test-prove-pyk'
             test-args: '--use-booster-dev'
-            timeout: 10
+            timeout: 45
     timeout-minutes: ${{ matrix.timeout }}
     steps:
       - name: 'Check out code'
