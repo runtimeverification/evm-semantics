@@ -1,5 +1,3 @@
-tests/specs/benchmarks/ecrecoverloop02-sigs-valid-spec.k
-tests/specs/benchmarks/functional-spec.k
 tests/specs/examples/erc721-spec.md
 tests/specs/examples/sum-to-n-foundry-spec.k
 tests/specs/examples/sum-to-n-spec.k
