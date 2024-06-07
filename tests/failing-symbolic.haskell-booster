@@ -4,7 +4,6 @@ tests/specs/examples/erc721-spec.md
 tests/specs/examples/sum-to-n-foundry-spec.k
 tests/specs/examples/sum-to-n-spec.k
 tests/specs/functional/lemmas-no-smt-spec.k
-tests/specs/functional/lemmas-spec.k
 tests/specs/functional/merkle-spec.k
 tests/specs/functional/storageRoot-spec.k
 tests/specs/kontrol/test-arithmetictest-test_wmul_wdiv_inverse_underflow-uint256-uint256-0-spec.k
