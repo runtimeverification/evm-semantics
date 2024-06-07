@@ -3,13 +3,7 @@ tests/specs/examples/sum-to-n-foundry-spec.k
 tests/specs/examples/sum-to-n-spec.k
 tests/specs/functional/merkle-spec.k
 tests/specs/functional/storageRoot-spec.k
-tests/specs/mcd/dstoken-burn-self-fail-rough-spec.k
-tests/specs/mcd/dstoken-transferfrom-fail-rough-spec.k
-tests/specs/mcd/flapper-tend-guy-diff-pass-rough-spec.k
-tests/specs/mcd/gemjoin-exit-pass-rough-spec.k
 tests/specs/mcd/vat-fold-pass-rough-spec.k
 tests/specs/mcd/vat-fork-diff-pass-rough-spec.k
 tests/specs/mcd/vat-frob-diff-zero-dart-pass-rough-spec.k
-tests/specs/mcd/vow-cage-deficit-pass-rough-spec.k
-tests/specs/mcd/vow-cage-surplus-pass-rough-spec.k
 tests/specs/opcodes/evm-optimizations-spec.md

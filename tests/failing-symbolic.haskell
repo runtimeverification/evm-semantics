@@ -93,15 +93,12 @@ tests/specs/mcd/cat-file-addr-pass-rough-spec.k
 tests/specs/mcd/dai-adduu-fail-rough-spec.k
 tests/specs/mcd/dai-symbol-pass-spec.k
 tests/specs/mcd/dstoken-approve-fail-rough-spec.k
-tests/specs/mcd/dstoken-burn-self-fail-rough-spec.k
-tests/specs/mcd/dstoken-transferfrom-fail-rough-spec.k
 tests/specs/mcd/dsvalue-peek-pass-rough-spec.k
 tests/specs/mcd/dsvalue-read-pass-spec.k
 tests/specs/mcd/dsvalue-read-pass-summarize-spec.k
 tests/specs/mcd/end-cash-pass-rough-spec.k
 tests/specs/mcd/end-pack-pass-rough-spec.k
 tests/specs/mcd/end-subuu-pass-spec.k
-tests/specs/mcd/flapper-tend-guy-diff-pass-rough-spec.k
 tests/specs/mcd/flapper-yank-pass-rough-spec.k
 tests/specs/mcd/flipper-addu48u48-fail-rough-spec.k
 tests/specs/mcd/flipper-bids-pass-rough-spec.k
@@ -114,7 +111,6 @@ tests/specs/mcd/flopper-file-pass-rough-spec.k
 tests/specs/mcd/flopper-kick-pass-rough-spec.k
 tests/specs/mcd/flopper-tick-pass-rough-spec.k
 tests/specs/mcd/functional-spec.k
-tests/specs/mcd/gemjoin-exit-pass-rough-spec.k
 tests/specs/mcd/pot-join-pass-rough-spec.k
 tests/specs/mcd/vat-addui-fail-rough-spec.k
 tests/specs/mcd/vat-addui-pass-spec.k
@@ -130,7 +126,5 @@ tests/specs/mcd/vat-slip-pass-rough-spec.k
 tests/specs/mcd/vat-subui-fail-rough-spec.k
 tests/specs/mcd/vat-subui-pass-rough-spec.k
 tests/specs/mcd/vat-subui-pass-spec.k
-tests/specs/mcd/vow-cage-deficit-pass-rough-spec.k
-tests/specs/mcd/vow-cage-surplus-pass-rough-spec.k
 tests/specs/mcd/vow-fess-fail-rough-spec.k
 tests/specs/mcd/vow-flog-fail-rough-spec.k
