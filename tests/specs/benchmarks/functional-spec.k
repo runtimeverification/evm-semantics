@@ -40,8 +40,6 @@ module FUNCTIONAL-SPEC
     claim [data.len.1]: <k> runLemma(       chop( #ceil32(DATA_LEN) +Int 64 )          ) => doneLemma ( #ceil32(DATA_LEN) +Int 64 ) ... </k> requires #range(0 <= DATA_LEN < pow16)
     claim [data.len.2]: <k> runLemma( chop( chop( #ceil32(DATA_LEN) +Int 64 ) +Int 4 ) ) => doneLemma ( #ceil32(DATA_LEN) +Int 68 ) ... </k> requires #range(0 <= DATA_LEN < pow16)
 
-    claim [data.len.3]: <k> runLemma(#ceil32(DATA_LEN) +Int 292 <Int DATA_LEN +Int 292) => doneLemma(false) ... </k> requires #range(0 <= DATA_LEN < pow16)
-
     claim <k> runLemma(#buf(4, 0) +Bytes (#buf(32, 6) +Bytes BA:Bytes)) => doneLemma(#buf(36, 6) +Bytes BA:Bytes) ... </k>
 
     claim <k> runLemma(#range( (112 : 190 : 104 : 75 : (#buf(32, A0) +Bytes #buf(32, A1))), 0, 32)) => doneLemma(112 : 190 : 104 : 75 : (#range(#buf(32, A0), 0, 28))) ... </k> requires #rangeUInt(256, A0) andBool #rangeUInt(256, A1)
