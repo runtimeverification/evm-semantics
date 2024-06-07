@@ -3,7 +3,6 @@ tests/specs/examples/sum-to-n-foundry-spec.k
 tests/specs/examples/sum-to-n-spec.k
 tests/specs/functional/merkle-spec.k
 tests/specs/functional/storageRoot-spec.k
-tests/specs/kontrol/test-arithmetictest-test_wmul_wdiv_inverse_underflow-uint256-uint256-0-spec.k
 tests/specs/mcd/dstoken-burn-self-fail-rough-spec.k
 tests/specs/mcd/dstoken-transferfrom-fail-rough-spec.k
 tests/specs/mcd/flapper-tend-guy-diff-pass-rough-spec.k

@@ -27,7 +27,6 @@ tests/specs/kontrol/test-allowchangestest-testfailallowcallstoaddress-0-spec.k
 tests/specs/kontrol/test-allowchangestest-testfailallowchangestostorage-0-spec.k
 tests/specs/kontrol/test-arithmetictest-test_max1_broken-uint256-uint256-0-spec.k
 tests/specs/kontrol/test-arithmetictest-test_wdiv_rounding-uint256-uint256-0-spec.k
-tests/specs/kontrol/test-arithmetictest-test_wmul_wdiv_inverse_underflow-uint256-uint256-0-spec.k
 tests/specs/kontrol/test-arithmetictest-test_wmul_weakly_increasing_positive-uint256-uint256-0-spec.k
 tests/specs/kontrol/test-countertest-testincrement-0-spec.k
 tests/specs/kontrol/test-emitcontracttest-testexpectemit-0-spec.k
