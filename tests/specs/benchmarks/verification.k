@@ -151,4 +151,6 @@ module VERIFICATION-HASKELL [symbolic]
 
     rule 0 <Int #asWord ( #ecrec( HASH, SIGV, SIGR, SIGS ) ) => notBool ( #ecrecEmpty ( HASH, SIGV, SIGR, SIGS ) )  [simplification]
 
+    rule pow32 <Int X => false requires X <Int pow16 [simplification]
+
 endmodule
