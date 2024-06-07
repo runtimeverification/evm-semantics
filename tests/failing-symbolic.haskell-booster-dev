@@ -142,5 +142,4 @@ tests/specs/mcd/vow-cage-deficit-pass-rough-spec.k
 tests/specs/mcd/vow-cage-surplus-pass-rough-spec.k
 tests/specs/mcd/vow-fess-fail-rough-spec.k
 tests/specs/mcd/vow-flog-fail-rough-spec.k
-tests/specs/opcodes/create-spec.k
 tests/specs/opcodes/evm-optimizations-spec.md
