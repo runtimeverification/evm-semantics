@@ -1122,11 +1122,11 @@ class KEVMCLIArgs(KCLIArgs):
             help='Store a node for every EVM basic block (implies --break-on-calls).',
         )
         args.add_argument(
-            '--break-on-load-program',
+            '--symbolic-immutables',
             dest='break_on_load_program',
             default=None,
             action='store_true',
-            help='Store a node every time the jumpDests are computed, allowing the custom step to apply.',
+            help='Enable support for symbolic immutables in Solidity constructor code.',
         )
         args.add_argument(
             '--max-depth',
