@@ -170,9 +170,13 @@ class KEVMSemantics(KCFGSemantics):
 
     @staticmethod
     def cut_point_rules(
-        break_on_jumpi: bool, break_on_calls: bool, break_on_storage: bool, break_on_basic_blocks: bool
+        break_on_jumpi: bool,
+        break_on_calls: bool,
+        break_on_storage: bool,
+        break_on_basic_blocks: bool,
+        break_on_load_program: bool,
     ) -> list[str]:
-        cut_point_rules = []  # ['EVM.program.load']
+        cut_point_rules = []
         if break_on_jumpi:
             cut_point_rules.extend(['EVM.jumpi.true', 'EVM.jumpi.false'])
         if break_on_basic_blocks:
@@ -196,6 +200,8 @@ class KEVMSemantics(KCFGSemantics):
             )
         if break_on_storage:
             cut_point_rules.extend(['EVM.sstore', 'EVM.sload'])
+        if break_on_load_program:
+            cut_point_rules.extend(['EVM.program.load'])
         return cut_point_rules
 
     @staticmethod

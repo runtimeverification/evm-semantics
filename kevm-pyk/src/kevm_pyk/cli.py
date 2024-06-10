@@ -379,6 +379,7 @@ class ExploreOptions(Options):
     break_on_calls: bool
     break_on_storage: bool
     break_on_basic_blocks: bool
+    break_on_load_program: bool
     max_depth: int
     max_iterations: int | None
     failure_info: bool
@@ -394,6 +395,7 @@ class ExploreOptions(Options):
             'break_on_calls': False,
             'break_on_storage': False,
             'break_on_basic_blocks': False,
+            'break_on_load_program': False,
             'max_depth': 1000,
             'max_iterations': None,
             'failure_info': True,
@@ -1118,6 +1120,13 @@ class KEVMCLIArgs(KCLIArgs):
             default=None,
             action='store_true',
             help='Store a node for every EVM basic block (implies --break-on-calls).',
+        )
+        args.add_argument(
+            '--break-on-load-program',
+            dest='break_on_load_program',
+            default=None,
+            action='store_true',
+            help='Store a node every time the jumpDests are computed, allowing the custom step to apply.',
         )
         args.add_argument(
             '--max-depth',
