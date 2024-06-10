@@ -1044,9 +1044,7 @@ The `JUMP*` family of operations affect the current program counter.
          <jumpDests> DESTS </jumpDests>
       requires DEST <Int lengthBytes(DESTS) andBool DESTS[DEST] ==Int 1
 
-    rule <k> JUMP DEST => #end EVMC_BAD_JUMP_DESTINATION ... </k>
-         <jumpDests> DESTS </jumpDests>
-      requires DEST <Int lengthBytes(DESTS) andBool DESTS[DEST] ==Int 0
+    rule <k> JUMP _ => #end EVMC_BAD_JUMP_DESTINATION ... </k> [owise]
 
     syntax BinStackOp ::= "JUMPI"
  // -----------------------------
