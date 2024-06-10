@@ -1042,11 +1042,11 @@ The `JUMP*` family of operations affect the current program counter.
     rule <k> JUMP DEST => #endBasicBlock ... </k>
          <pc> _ => DEST </pc>
          <jumpDests> DESTS </jumpDests>
-      requires DESTS[DEST] ==Int 1
+      requires DEST <Int lengthBytes(DESTS) andBool DESTS[DEST] ==Int 1
 
     rule <k> JUMP DEST => #end EVMC_BAD_JUMP_DESTINATION ... </k>
          <jumpDests> DESTS </jumpDests>
-      requires DESTS[DEST] ==Int 0
+      requires DEST <Int lengthBytes(DESTS) andBool DESTS[DEST] ==Int 0
 
     syntax BinStackOp ::= "JUMPI"
  // -----------------------------
