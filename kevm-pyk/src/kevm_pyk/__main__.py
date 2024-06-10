@@ -253,7 +253,12 @@ def exec_prove(options: ProveOptions) -> None:
 
     kore_rpc_command: tuple[str, ...]
     if options.kore_rpc_command is None:
-        kore_rpc_command = ('kore-rpc-booster',) if options.use_booster else ('kore-rpc',)
+        if options.use_booster_dev:
+            kore_rpc_command = ('booster-dev',)
+        elif not options.use_booster:
+            kore_rpc_command = ('kore-rpc',)
+        else:
+            kore_rpc_command = ('kore-rpc-booster',)
     elif isinstance(options.kore_rpc_command, str):
         kore_rpc_command = tuple(options.kore_rpc_command.split())
     else:
