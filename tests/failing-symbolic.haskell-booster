@@ -17,4 +17,3 @@ tests/specs/mcd/vat-fork-diff-pass-rough-spec.k
 tests/specs/mcd/vat-frob-diff-zero-dart-pass-rough-spec.k
 tests/specs/mcd/vow-cage-deficit-pass-rough-spec.k
 tests/specs/mcd/vow-cage-surplus-pass-rough-spec.k
-tests/specs/opcodes/evm-optimizations-spec.md
