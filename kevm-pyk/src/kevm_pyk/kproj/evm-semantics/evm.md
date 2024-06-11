@@ -512,7 +512,8 @@ The arguments to `PUSH` must be skipped over (as they are inline), and the opcod
 ```k
     syntax InternalOp ::= "#pc" "[" OpCode "]" [symbol(pc)]
  // -------------------------------------------------------
-    rule <k> #pc [ OP ] => .K ... </k>
+    rule [pc.inc]:
+         <k> #pc [ OP ] => .K ... </k>
          <pc> PCOUNT => PCOUNT +Int #widthOp(OP) </pc>
 
     syntax Int ::= #widthOp ( OpCode ) [klabel(#widthOp), function, total]

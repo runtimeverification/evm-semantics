@@ -10,7 +10,6 @@ from pyk.kast.att import AttEntry, Atts, KAtt
 from pyk.kast.outer import KClaim
 from pyk.kdist import kdist
 from pyk.prelude.ml import is_top
-from pyk.proof import ProofStatus
 from pyk.proof.reachability import APRProof, APRProver
 from pyk.proof.show import APRProofShow
 
@@ -334,21 +333,21 @@ def test_prove_optimizations(
     ) as kcfg_explore:
         prover = APRProver(
             kcfg_explore,
-            execute_depth=1,
+            execute_depth=20,
             terminal_rules=[],
-            cut_point_rules=[],
+            cut_point_rules=['EVM.pc.inc'],
             counterexample_info=False,
             always_check_subsumption=True,
             fast_check_subsumption=True,
         )
         for proof in _get_optimization_proofs():
             initialize_apr_proof(kcfg_explore.cterm_symbolic, proof)
-            prover.advance_proof(proof, max_iterations=20)
+            prover.advance_proof(proof, max_iterations=6)
             node_printer = kevm_node_printer(kevm, proof)
             proof_show = APRProofShow(kevm, node_printer=node_printer)
             proof_display = '\n'.join('    ' + line for line in proof_show.show(proof))
             _LOGGER.info(f'Proof {proof.id}:\n{proof_display}')
-            assert ProofStatus.PASSED == proof.status
+            assert proof.passed
 
 
 # ------------
