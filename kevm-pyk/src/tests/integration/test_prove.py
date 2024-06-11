@@ -59,7 +59,6 @@ OPCODES_TESTS: Final = spec_files('opcodes', '*-spec.md')
 ERC20_TESTS: Final = spec_files('erc20', '*/*-spec.k')
 EXAMPLES_TESTS: Final = spec_files('examples', '*-spec.k') + spec_files('examples', '*-spec.md')
 MCD_TESTS: Final = spec_files('mcd', '*-spec.k')
-OPTIMIZATION_TESTS: Final = (SPEC_DIR / 'opcodes/evm-optimizations-spec.md',)
 KONTROL_TESTS: Final = spec_files('kontrol', '*-spec.k')
 
 ALL_TESTS: Final = sum(
@@ -70,7 +69,6 @@ ALL_TESTS: Final = sum(
         ERC20_TESTS,
         EXAMPLES_TESTS,
         MCD_TESTS,
-        OPTIMIZATION_TESTS,
         KONTROL_TESTS,
     ],
     (),
@@ -111,14 +109,12 @@ KOMPILE_MAIN_FILE: Final = {
     'functional/merkle-spec.k': 'merkle-spec.k',
     'functional/storageRoot-spec.k': 'storageRoot-spec.k',
     'mcd/functional-spec.k': 'functional-spec.k',
-    'opcodes/evm-optimizations-spec.md': 'evm-optimizations-spec.md',
 }
 
 KOMPILE_MAIN_MODULE: Final = {
     'benchmarks/functional-spec.k': 'FUNCTIONAL-SPEC-SYNTAX',
     'erc20/functional-spec.k': 'FUNCTIONAL-SPEC-SYNTAX',
     'mcd/functional-spec.k': 'FUNCTIONAL-SPEC-SYNTAX',
-    'opcodes/evm-optimizations-spec.md': 'EVM-OPTIMIZATIONS-SPEC-LEMMAS',
 }
 
 
