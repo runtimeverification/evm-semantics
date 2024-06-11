@@ -1,6 +1,5 @@
 tests/specs/benchmarks/ecrecoverloop02-sigs-valid-spec.k
 tests/specs/benchmarks/functional-spec.k
-tests/specs/bihu/collectToken-spec.k
 tests/specs/examples/erc721-spec.md
 tests/specs/examples/sum-to-n-foundry-spec.k
 tests/specs/examples/sum-to-n-spec.k
@@ -18,5 +17,3 @@ tests/specs/mcd/vat-fork-diff-pass-rough-spec.k
 tests/specs/mcd/vat-frob-diff-zero-dart-pass-rough-spec.k
 tests/specs/mcd/vow-cage-deficit-pass-rough-spec.k
 tests/specs/mcd/vow-cage-surplus-pass-rough-spec.k
-tests/specs/opcodes/create-spec.k
-tests/specs/opcodes/evm-optimizations-spec.md

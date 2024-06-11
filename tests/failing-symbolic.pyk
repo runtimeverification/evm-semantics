@@ -5,7 +5,6 @@ tests/specs/benchmarks/ecrecoverloop02-sig0-invalid-spec.k
 tests/specs/benchmarks/ecrecoverloop02-sig1-invalid-spec.k
 tests/specs/benchmarks/ecrecoverloop02-sigs-valid-spec.k
 tests/specs/benchmarks/functional-spec.k
-tests/specs/bihu/collectToken-spec.k
 tests/specs/erc20/ds/transfer-failure-1-b-spec.k
 tests/specs/erc20/ds/transferFrom-failure-1-b-spec.k
 tests/specs/erc20/ds/transferFrom-failure-1-c-spec.k
@@ -71,5 +70,3 @@ tests/specs/mcd/vow-cage-deficit-pass-rough-spec.k
 tests/specs/mcd/vow-cage-surplus-pass-rough-spec.k
 tests/specs/mcd/vow-fess-fail-rough-spec.k
 tests/specs/mcd/vow-flog-fail-rough-spec.k
-tests/specs/opcodes/create-spec.k
-tests/specs/opcodes/evm-optimizations-spec.md

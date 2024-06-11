@@ -24,7 +24,7 @@ from pyk.kdist import kdist
 from pyk.kore.rpc import KoreClient
 from pyk.kore.tools import kore_print
 from pyk.ktool.kompile import LLVMKompileType
-from pyk.prelude.ml import is_bottom, is_top, mlOr
+from pyk.prelude.ml import is_top, mlOr
 from pyk.proof import APRProof
 from pyk.proof.implies import EqualityProof
 from pyk.proof.show import APRProofShow
@@ -36,7 +36,14 @@ from .cli import _create_argument_parser, generate_options, get_argument_type_se
 from .gst_to_kore import SORT_ETHEREUM_SIMULATION, gst_to_kore, kore_pgm_to_kore
 from .kevm import KEVM, KEVMSemantics, kevm_node_printer
 from .kompile import KompileTarget, kevm_kompile
-from .utils import claim_dependency_dict, get_apr_proof_for_spec, legacy_explore, print_failure_info, run_prover
+from .utils import (
+    claim_dependency_dict,
+    get_apr_proof_for_spec,
+    initialize_apr_proof,
+    legacy_explore,
+    print_failure_info,
+    run_prover,
+)
 
 if TYPE_CHECKING:
     from argparse import Namespace
@@ -349,25 +356,11 @@ def exec_prove(options: ProveOptions) -> None:
 
             if not is_functional(claim) and (options.reinit or not up_to_date):
                 assert type(proof_problem) is APRProof
-                init_cterm = proof_problem.kcfg.node(proof_problem.init).cterm
-                target_cterm = proof_problem.kcfg.node(proof_problem.target).cterm
+                initialize_apr_proof(kcfg_explore.cterm_symbolic, proof_problem)
 
-                _LOGGER.info(f'Computing definedness constraint for initial node: {claim.label}')
-                init_cterm = kcfg_explore.cterm_symbolic.assume_defined(init_cterm)
-
-                _LOGGER.info(f'Simplifying initial and target node: {claim.label}')
-                init_cterm, _ = kcfg_explore.cterm_symbolic.simplify(init_cterm)
-                target_cterm, _ = kcfg_explore.cterm_symbolic.simplify(target_cterm)
-                if is_bottom(init_cterm.kast, weak=True):
-                    raise ValueError('Simplifying initial node led to #Bottom, are you sure your LHS is defined?')
-                if is_top(target_cterm.kast, weak=True):
-                    raise ValueError('Simplifying target node led to #Bottom, are you sure your RHS is defined?')
-
-                proof_problem.kcfg.let_node(proof_problem.init, cterm=init_cterm)
-                proof_problem.kcfg.let_node(proof_problem.target, cterm=target_cterm)
+            proof_problem.write_proof_data()
 
             if proof_problem.admitted:
-                proof_problem.write_proof_data()
                 _LOGGER.info(f'Skipping execution of proof because it is marked as admitted: {proof_problem.id}')
                 return True, None
 

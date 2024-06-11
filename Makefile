@@ -50,17 +50,16 @@ test-rest-bchain: poetry
 
 # Proof Tests
 
-test-prove: test-prove-pyk test-prove-kprove
+test-prove: test-prove-pyk test-prove-kprove test-prove-optimizations
 
-test-prove-pyk: tests/specs/opcodes/evm-optimizations-spec.md poetry
+test-prove-pyk: poetry
 	$(MAKE) -C kevm-pyk/ test-integration PYTEST_ARGS+="-k test_pyk_prove"
 
-test-prove-kprove: tests/specs/opcodes/evm-optimizations-spec.md poetry
+test-prove-kprove: poetry
 	$(MAKE) -C kevm-pyk/ test-integration PYTEST_ARGS+="-k test_kprove_prove"
 
-# to generate optimizations.md, run: ./optimizer/optimize.sh &> output
-tests/specs/opcodes/evm-optimizations-spec.md: kevm-pyk/src/kevm_pyk/kproj/evm-semantics/optimizations.md
-	cat kevm-pyk/src/kevm_pyk/kproj/evm-semantics/optimizations.md | sed 's/^  rule/  claim/' | sed 's/EVM-OPTIMIZATIONS/EVM-OPTIMIZATIONS-SPEC/' | grep -v 'priority(40)' > $@
+test-prove-optimizations: poetry
+	$(MAKE) -C kevm-pyk/ test-integration PYTEST_ARGS+="-k test_prove_optimizations"
 
 
 # Integration Tests

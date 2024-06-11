@@ -6,14 +6,19 @@ from typing import TYPE_CHECKING, NamedTuple
 
 import pytest
 from filelock import SoftFileLock
+from pyk.kast.att import AttEntry, Atts, KAtt
+from pyk.kast.outer import KClaim
+from pyk.kdist import kdist
 from pyk.prelude.ml import is_top
-from pyk.proof.reachability import APRProof
+from pyk.proof.reachability import APRProof, APRProver
+from pyk.proof.show import APRProofShow
 
 from kevm_pyk import config
 from kevm_pyk.__main__ import exec_prove
 from kevm_pyk.cli import ProveOptions
-from kevm_pyk.kevm import KEVM
+from kevm_pyk.kevm import KEVM, KEVMSemantics, kevm_node_printer
 from kevm_pyk.kompile import KompileTarget, kevm_kompile
+from kevm_pyk.utils import initialize_apr_proof, legacy_explore
 
 from ..utils import REPO_ROOT
 
@@ -31,6 +36,9 @@ sys.setrecursionlimit(10**8)
 TEST_DIR: Final = REPO_ROOT / 'tests'
 SPEC_DIR: Final = TEST_DIR / 'specs'
 
+_LOGGER: Final = logging.getLogger(__name__)
+_LOG_FORMAT: Final = '%(levelname)s %(asctime)s %(name)s - %(message)s'
+
 
 # -------------------
 # Test specifications
@@ -46,24 +54,18 @@ def spec_files(dir_name: str, glob: str) -> tuple[Path, ...]:
 
 BENCHMARK_TESTS: Final = spec_files('benchmarks', '*-spec.k')
 FUNCTIONAL_TESTS: Final = spec_files('functional', '*-spec.k')
-OPCODES_TESTS: Final = spec_files('opcodes', '*-spec.k')
 ERC20_TESTS: Final = spec_files('erc20', '*/*-spec.k')
-BIHU_TESTS: Final = spec_files('bihu', '*-spec.k')
 EXAMPLES_TESTS: Final = spec_files('examples', '*-spec.k') + spec_files('examples', '*-spec.md')
 MCD_TESTS: Final = spec_files('mcd', '*-spec.k')
-OPTIMIZATION_TESTS: Final = (SPEC_DIR / 'opcodes/evm-optimizations-spec.md',)
 KONTROL_TESTS: Final = spec_files('kontrol', '*-spec.k')
 
 ALL_TESTS: Final = sum(
     [
         BENCHMARK_TESTS,
         FUNCTIONAL_TESTS,
-        OPCODES_TESTS,
         ERC20_TESTS,
-        BIHU_TESTS,
         EXAMPLES_TESTS,
         MCD_TESTS,
-        OPTIMIZATION_TESTS,
         KONTROL_TESTS,
     ],
     (),
@@ -89,7 +91,6 @@ FAILING_TESTS: Final = exclude_list(TEST_DIR / 'failing-symbolic.haskell')
 
 KOMPILE_MAIN_FILE: Final = {
     'benchmarks/functional-spec.k': 'functional-spec.k',
-    'bihu/functional-spec.k': 'functional-spec.k',
     'examples/solidity-code-spec.md': 'solidity-code-spec.md',
     'examples/erc20-spec.md': 'erc20-spec.md',
     'examples/erc721-spec.md': 'erc721-spec.md',
@@ -105,15 +106,12 @@ KOMPILE_MAIN_FILE: Final = {
     'functional/merkle-spec.k': 'merkle-spec.k',
     'functional/storageRoot-spec.k': 'storageRoot-spec.k',
     'mcd/functional-spec.k': 'functional-spec.k',
-    'opcodes/evm-optimizations-spec.md': 'evm-optimizations-spec.md',
 }
 
 KOMPILE_MAIN_MODULE: Final = {
     'benchmarks/functional-spec.k': 'FUNCTIONAL-SPEC-SYNTAX',
-    'bihu/functional-spec.k': 'FUNCTIONAL-SPEC-SYNTAX',
     'erc20/functional-spec.k': 'FUNCTIONAL-SPEC-SYNTAX',
     'mcd/functional-spec.k': 'FUNCTIONAL-SPEC-SYNTAX',
-    'opcodes/evm-optimizations-spec.md': 'EVM-OPTIMIZATIONS-SPEC-LEMMAS',
 }
 
 
@@ -299,6 +297,55 @@ def test_pyk_prove(
         raise
     finally:
         log_file.write_text(caplog.text)
+
+
+def test_prove_optimizations(
+    kompiled_target_for: Callable[[Path], Path],
+    tmp_path: Path,
+    caplog: LogCaptureFixture,
+    use_booster_dev: bool,
+    bug_report: BugReport | None,
+) -> None:
+    caplog.set_level(logging.INFO)
+
+    def _get_optimization_proofs() -> list[APRProof]:
+        _defn_dir = kdist.get('evm-semantics.haskell')
+        _kevm = KEVM(_defn_dir)
+        _optimization_rules = _kevm.definition.module('EVM-OPTIMIZATIONS').rules
+        _claims = [
+            KClaim(
+                rule.body, requires=rule.requires, ensures=rule.ensures, att=KAtt([AttEntry(Atts.LABEL, rule.label)])
+            )
+            for rule in _optimization_rules
+        ]
+        return [APRProof.from_claim(kevm.definition, claim, {}) for claim in _claims]
+
+    spec_file = REPO_ROOT / 'tests/specs/opcodes/evm-optimizations-spec.k'
+    definition_dir = kompiled_target_for(spec_file)
+    kevm = KEVM(definition_dir)
+
+    kore_rpc_command = ('booster-dev',) if use_booster_dev else ('kore-rpc-booster',)
+
+    with legacy_explore(
+        kevm, kcfg_semantics=KEVMSemantics(allow_symbolic_program=True), kore_rpc_command=kore_rpc_command
+    ) as kcfg_explore:
+        prover = APRProver(
+            kcfg_explore,
+            execute_depth=20,
+            terminal_rules=[],
+            cut_point_rules=['EVM.pc.inc'],
+            counterexample_info=False,
+            always_check_subsumption=True,
+            fast_check_subsumption=True,
+        )
+        for proof in _get_optimization_proofs():
+            initialize_apr_proof(kcfg_explore.cterm_symbolic, proof)
+            prover.advance_proof(proof, max_iterations=10)
+            node_printer = kevm_node_printer(kevm, proof)
+            proof_show = APRProofShow(kevm, node_printer=node_printer)
+            proof_display = '\n'.join('    ' + line for line in proof_show.show(proof))
+            _LOGGER.info(f'Proof {proof.id}:\n{proof_display}')
+            assert proof.passed
 
 
 # ------------
