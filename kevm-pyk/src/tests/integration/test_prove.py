@@ -383,6 +383,7 @@ def test_prove_dss(
                 'bug_report': bug_report,
                 'break_on_calls': False,
                 'workers': workers,
+                'direct_subproof_rules': True,
             }
         )
         exec_prove(options=options)

@@ -105,6 +105,7 @@ class RunProverParams:
     counterexample_info: bool
     always_check_subsumption: bool
     fast_check_subsumption: bool
+    direct_subproof_rules: bool
 
 
 class APRProofStrategy(ABC):
@@ -141,6 +142,7 @@ class ParallelStrategy(APRProofStrategy):
                 counterexample_info=self.params.counterexample_info,
                 always_check_subsumption=self.params.always_check_subsumption,
                 fast_check_subsumption=self.params.fast_check_subsumption,
+                direct_subproof_rules=self.params.direct_subproof_rules,
             )
 
         parallel_advance_proof(
@@ -168,6 +170,7 @@ class SequentialStrategy(APRProofStrategy):
             counterexample_info=self.params.counterexample_info,
             always_check_subsumption=self.params.always_check_subsumption,
             fast_check_subsumption=self.params.fast_check_subsumption,
+            direct_subproof_rules=self.params.direct_subproof_rules,
         )
         prover.advance_proof(fail_fast=fail_fast, max_iterations=max_iterations, proof=proof)
 
@@ -215,6 +218,7 @@ def run_prover(
     counterexample_info: bool = False,
     always_check_subsumption: bool = False,
     fast_check_subsumption: bool = False,
+    direct_subproof_rules: bool = False,
     max_frontier_parallel: int = 1,
 ) -> bool:
     prover: APRProver | ImpliesProver
@@ -231,6 +235,7 @@ def run_prover(
                     execute_depth=max_depth,
                     fast_check_subsumption=fast_check_subsumption,
                     terminal_rules=terminal_rules,
+                    direct_subproof_rules=direct_subproof_rules,
                 ),
             )
             strategy.prove(fail_fast=fail_fast, max_iterations=max_iterations, proof=proof)
