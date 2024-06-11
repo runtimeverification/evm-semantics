@@ -39,7 +39,7 @@
           b""
         </program>
         <jumpDests>
-          .Set
+          b""
         </jumpDests>
         <id>
           .Account

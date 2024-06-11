@@ -375,6 +375,7 @@ def exec_prove(options: ProveOptions) -> None:
                     options.break_on_calls,
                     options.break_on_storage,
                     options.break_on_basic_blocks,
+                    options.break_on_load_program,
                 ),
                 terminal_rules=KEVMSemantics.terminal_rules(options.break_every_step),
                 fail_fast=options.fail_fast,
