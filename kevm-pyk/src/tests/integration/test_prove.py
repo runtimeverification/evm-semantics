@@ -315,28 +315,37 @@ def test_prove_optimizations(
 ) -> None:
     caplog.set_level(logging.INFO)
 
-    defn_dir = kdist.get('evm-semantics.haskell')
-    kevm = KEVM(defn_dir)
-    optimization_rules = kevm.definition.module('EVM-OPTIMIZATIONS').rules
-    claims = [
-        KClaim(rule.body, requires=rule.requires, ensures=rule.ensures, att=KAtt([AttEntry(Atts.LABEL, rule.label)]))
-        for rule in optimization_rules
-    ]
-    proofs = [APRProof.from_claim(kevm.definition, claim, {}) for claim in claims]
+    def _get_optimization_proofs() -> list[APRProof]:
+        _defn_dir = kdist.get('evm-semantics.haskell')
+        _kevm = KEVM(_defn_dir)
+        _optimization_rules = _kevm.definition.module('EVM-OPTIMIZATIONS').rules
+        _claims = [
+            KClaim(
+                rule.body, requires=rule.requires, ensures=rule.ensures, att=KAtt([AttEntry(Atts.LABEL, rule.label)])
+            )
+            for rule in _optimization_rules
+        ]
+        return [APRProof.from_claim(kevm.definition, claim, {}) for claim in _claims]
+
+    spec_file = REPO_ROOT / 'tests/specs/opcodes/evm-optimizations-spec.k'
+    definition_dir = kompiled_target_for(spec_file)
+    kevm = KEVM(definition_dir)
 
     kore_rpc_command = ('booster-dev',) if use_booster_dev else ('kore-rpc-booster',)
 
-    with legacy_explore(kevm, kcfg_semantics=KEVMSemantics(), kore_rpc_command=kore_rpc_command) as kcfg_explore:
+    with legacy_explore(
+        kevm, kcfg_semantics=KEVMSemantics(allow_symbolic_program=True), kore_rpc_command=kore_rpc_command
+    ) as kcfg_explore:
         prover = APRProver(
             kcfg_explore,
-            execute_depth=2,
+            execute_depth=1,
             terminal_rules=[],
             cut_point_rules=[],
             counterexample_info=False,
             always_check_subsumption=True,
             fast_check_subsumption=True,
         )
-        for proof in proofs:
+        for proof in _get_optimization_proofs():
             initialize_apr_proof(kcfg_explore.cterm_symbolic, proof)
             prover.advance_proof(proof, max_iterations=20)
             node_printer = kevm_node_printer(kevm, proof)
