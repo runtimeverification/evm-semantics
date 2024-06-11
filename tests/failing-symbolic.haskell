@@ -60,6 +60,7 @@ tests/specs/examples/erc20-spec.md
 tests/specs/examples/erc721-spec.md
 tests/specs/examples/solidity-code-spec.md
 tests/specs/examples/storage-spec.md
+tests/specs/examples/sum-to-n-spec.k
 tests/specs/functional/evm-int-simplifications-spec.k
 tests/specs/functional/infinite-gas-spec.k
 tests/specs/functional/int-simplifications-spec.k
