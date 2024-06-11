@@ -52,9 +52,11 @@ _LOGGER: Final = logging.getLogger(__name__)
 
 class KEVMSemantics(KCFGSemantics):
     auto_abstract_gas: bool
+    allow_symbolic_program: bool
 
-    def __init__(self, auto_abstract_gas: bool = False) -> None:
+    def __init__(self, auto_abstract_gas: bool = False, allow_symbolic_program: bool = False) -> None:
         self.auto_abstract_gas = auto_abstract_gas
+        self.allow_symbolic_program = allow_symbolic_program
 
     @staticmethod
     def is_functional(term: KInner) -> bool:
@@ -78,7 +80,7 @@ class KEVMSemantics(KCFGSemantics):
 
         program_cell = cterm.cell('PROGRAM_CELL')
         # Fully symbolic program is terminal unless we are executing a functional claim
-        if type(program_cell) is KVariable:
+        if not self.allow_symbolic_program and type(program_cell) is KVariable:
             # <k> runLemma ( ... ) </k>
             if KEVMSemantics.is_functional(k_cell):
                 return False
