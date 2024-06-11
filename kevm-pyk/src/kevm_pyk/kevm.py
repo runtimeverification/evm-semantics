@@ -683,7 +683,6 @@ def compute_jumpdests(sections: list[KInner]) -> KInner:
         elif type(s) is KToken and s.sort == BYTES:
             bytecode = pretty_bytes(s)
             mutable_jumpdests += _process_jumpdests(bytecode)
-            len(bytecode)
         else:
             raise ValueError(f'Cannot compute jumpdests for type: {type(s)}')
 
@@ -697,7 +696,8 @@ def _process_jumpdests(bytecode: bytes) -> bytes:
     :type bytecode: bytes
     :param offset: The offset to add to each position index to align it with the broader code structure.
     :type offset: int
-    :return: A bytes object with the same length as the input of zeros. Valid jumpdests are represented by the value 1.
+    :return: A bytes object where each byte corresponds to a position in the input bytecode. Positions containing a valid JUMPDEST opcode are marked
+    with `0x01` while all other positions are marked with `0x00`.
     :rtype: bytes
     """
     push1 = 0x60
