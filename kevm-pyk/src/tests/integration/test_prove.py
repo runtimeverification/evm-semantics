@@ -342,7 +342,7 @@ def test_prove_optimizations(
         )
         for proof in _get_optimization_proofs():
             initialize_apr_proof(kcfg_explore.cterm_symbolic, proof)
-            prover.advance_proof(proof, max_iterations=6)
+            prover.advance_proof(proof, max_iterations=10)
             node_printer = kevm_node_printer(kevm, proof)
             proof_show = APRProofShow(kevm, node_printer=node_printer)
             proof_display = '\n'.join('    ' + line for line in proof_show.show(proof))
