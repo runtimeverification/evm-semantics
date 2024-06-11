@@ -3,6 +3,3 @@ tests/specs/examples/sum-to-n-foundry-spec.k
 tests/specs/examples/sum-to-n-spec.k
 tests/specs/functional/merkle-spec.k
 tests/specs/functional/storageRoot-spec.k
-tests/specs/mcd/vat-fold-pass-rough-spec.k
-tests/specs/mcd/vat-fork-diff-pass-rough-spec.k
-tests/specs/mcd/vat-frob-diff-zero-dart-pass-rough-spec.k

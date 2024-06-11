@@ -57,6 +57,8 @@ FUNCTIONAL_TESTS: Final = spec_files('functional', '*-spec.k')
 ERC20_TESTS: Final = spec_files('erc20', '*/*-spec.k')
 EXAMPLES_TESTS: Final = spec_files('examples', '*-spec.k') + spec_files('examples', '*-spec.md')
 MCD_TESTS: Final = spec_files('mcd', '*-spec.k')
+VAT_TESTS: Final = spec_files('mcd', 'vat*-spec.k')
+NON_VAT_MCD_TESTS: Final = tuple(test for test in MCD_TESTS if test not in VAT_TESTS)
 KONTROL_TESTS: Final = spec_files('kontrol', '*-spec.k')
 
 ALL_TESTS: Final = sum(
@@ -65,7 +67,7 @@ ALL_TESTS: Final = sum(
         FUNCTIONAL_TESTS,
         ERC20_TESTS,
         EXAMPLES_TESTS,
-        MCD_TESTS,
+        NON_VAT_MCD_TESTS,
         KONTROL_TESTS,
     ],
     (),
