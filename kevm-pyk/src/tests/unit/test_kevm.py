@@ -9,7 +9,6 @@ if TYPE_CHECKING:
     from pyk.kast.inner import KInner
 
 from pyk.kast.inner import KApply, KToken, KVariable
-from pyk.prelude.collections import set_of
 from pyk.prelude.utils import token
 
 from kevm_pyk.kevm import KEVM, compute_jumpdests
@@ -55,7 +54,7 @@ def test_kinner_to_hex(test_id: str, input: KInner, result: KInner) -> None:
 
 
 JUMPDESTS_DATA: Final = [
-    ('empty', [], set_of([])),
+    ('empty', [], token(b'')),
     (
         'with_buf',
         [
@@ -64,26 +63,14 @@ JUMPDESTS_DATA: Final = [
             ),
             KEVM.buf(token(32), KVariable('VV0_x', 'Int')),
         ],
-        set_of(
-            [
-                token(16),
-                token(47),
-                token(55),
-                token(73),
-                token(80),
-                token(119),
-                token(144),
-                token(149),
-                token(187),
-            ]
-        ),
+        token(bytes([1 if i in [16, 47, 55, 73, 80, 119, 144, 149, 187] else 0 for i in range(291)])),
     ),
     (
         'single_jumpdest',
         [
             token(b'['),
         ],
-        set_of([token(0)]),
+        token(b'\x01'),
     ),
     (
         'multiple_bytes',
@@ -92,7 +79,7 @@ JUMPDESTS_DATA: Final = [
             token(b'\x00\x00[\x00\x00'),
             token(b'\x00['),
         ],
-        set_of([token(16), token(19), token(23)]),
+        token(bytes([1 if i in [16, 19, 23] else 0 for i in range(24)])),
     ),
     (
         'multiple_bufs',
@@ -104,9 +91,9 @@ JUMPDESTS_DATA: Final = [
             KEVM.buf(token(32), KVariable('VV0_y', 'Int')),
             token(b'\x00[[[\x00[\x00\x00'),
         ],
-        set_of([token(68), token(104), token(105), token(106), token(108)]),
+        token(bytes([1 if i in [68, 104, 105, 106, 108] else 0 for i in range(111)])),
     ),
-    ('jump_to_push', [token(bytes.fromhex('6001600055600A56605B5B'))], set_of([token(10)])),
+    ('jump_to_push', [token(bytes.fromhex('6001600055600A56605B5B'))], token(bytes.fromhex('0000000000000000000001'))),
 ]
 
 

@@ -55,7 +55,7 @@ In the comments next to each cell, we've marked which component of the YellowPap
 
             <callState>
               <program>   .Bytes </program>
-              <jumpDests> .Set   </jumpDests>
+              <jumpDests> .Bytes </jumpDests>
 
               // I_*
               <id>        .Account </id>                    // I_a
@@ -1039,14 +1039,12 @@ The `JUMP*` family of operations affect the current program counter.
 
     syntax UnStackOp ::= "JUMP"
  // ---------------------------
-    rule <k> JUMP DEST => #endBasicBlock... </k>
+    rule <k> JUMP DEST => #endBasicBlock ... </k>
          <pc> _ => DEST </pc>
          <jumpDests> DESTS </jumpDests>
-      requires DEST in DESTS
+      requires DEST <Int lengthBytes(DESTS) andBool DESTS[DEST] ==Int 1
 
-    rule <k> JUMP DEST => #end EVMC_BAD_JUMP_DESTINATION ... </k>
-         <jumpDests> DESTS </jumpDests>
-      requires notBool DEST in DESTS
+    rule <k> JUMP _ => #end EVMC_BAD_JUMP_DESTINATION ... </k> [owise]
 
     syntax BinStackOp ::= "JUMPI"
  // -----------------------------
@@ -1113,7 +1111,7 @@ These operators query about the current return data buffer.
          <output> RD </output>
 
     syntax TernStackOp ::= "RETURNDATACOPY"
- // ----------------------------------------
+ // ---------------------------------------
     rule <k> RETURNDATACOPY MEMSTART DATASTART DATAWIDTH => .K ... </k>
          <localMem> LM => LM [ MEMSTART := #range(RD, DATASTART, DATAWIDTH) ] </localMem>
          <output> RD </output>
@@ -1349,8 +1347,8 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <wordStack>    _ => .WordStack </wordStack>
          <localMem>     _ => .Bytes     </localMem>
 
-    syntax KItem ::= "#loadProgram" Bytes
- // -------------------------------------
+    syntax KItem ::= "#loadProgram" Bytes [symbol(loadProgram)]
+ // -----------------------------------------------------------
     rule [program.load]:
          <k> #loadProgram BYTES => .K ... </k>
          <program> _ => BYTES </program>
@@ -1395,17 +1393,17 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     rule <k> #accessAccounts ADDRSET:Set => .K ... </k>
          <accessedAccounts> TOUCHED_ACCOUNTS => TOUCHED_ACCOUNTS |Set ADDRSET </accessedAccounts>
 
-    syntax Set ::= #computeValidJumpDests(Bytes)            [symbol(computeValidJumpDests),    function, memo, total]
-                 | #computeValidJumpDests(Bytes, Int, List) [symbol(computeValidJumpDestsAux), function             ]
- // -----------------------------------------------------------------------------------------------------------------
-    rule #computeValidJumpDests(PGM) => #computeValidJumpDests(PGM, 0, .List)
+    syntax Bytes ::= #computeValidJumpDests(Bytes)             [symbol(computeValidJumpDests),    function, memo, total]
+                   | #computeValidJumpDests(Bytes, Int, Bytes) [symbol(computeValidJumpDestsAux), function             ]
+ // --------------------------------------------------------------------------------------------------------------------
+    rule #computeValidJumpDests(PGM) => #computeValidJumpDests(PGM, 0, padRightBytes(.Bytes, lengthBytes(PGM), 0))
 
-    syntax Set ::= #computeValidJumpDestsWithinBound(Bytes, Int, List) [klabel(#computeValidJumpDestsWithinBound), function]
- // ------------------------------------------------------------------------------------------------------------------------
-    rule #computeValidJumpDests(PGM, I, RESULT) => List2Set(RESULT) requires I >=Int lengthBytes(PGM)
+    syntax Bytes ::= #computeValidJumpDestsWithinBound(Bytes, Int, Bytes) [symbol(computeValidJumpDestsWithinBound), function]
+ // --------------------------------------------------------------------------------------------------------------------------
+    rule #computeValidJumpDests(PGM, I, RESULT) => RESULT requires I >=Int lengthBytes(PGM)
     rule #computeValidJumpDests(PGM, I, RESULT) => #computeValidJumpDestsWithinBound(PGM, I, RESULT) requires I <Int lengthBytes(PGM)
 
-    rule #computeValidJumpDestsWithinBound(PGM, I, RESULT) => #computeValidJumpDests(PGM, I +Int 1, RESULT ListItem(I)) requires PGM [ I ] ==Int 91
+    rule #computeValidJumpDestsWithinBound(PGM, I, RESULT) => #computeValidJumpDests(PGM, I +Int 1, RESULT[I <- 1]) requires PGM [ I ] ==Int 91
     rule #computeValidJumpDestsWithinBound(PGM, I, RESULT) => #computeValidJumpDests(PGM, I +Int #widthOpCode(PGM [ I ]), RESULT) requires notBool PGM [ I ] ==Int 91
 ```
 
