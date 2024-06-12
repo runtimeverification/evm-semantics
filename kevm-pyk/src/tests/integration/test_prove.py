@@ -365,7 +365,6 @@ def test_prove_dss(
     caplog: LogCaptureFixture,
     bug_report: BugReport | None,
     spec_name: str | None,
-    workers: int = 8,
 ) -> None:
     spec_file = Path('../tests/specs/mcd/vat-spec.k')
     caplog.set_level(logging.INFO)
@@ -391,7 +390,7 @@ def test_prove_dss(
                 'use_booster': True,
                 'bug_report': bug_report,
                 'break_on_calls': False,
-                'workers': workers,
+                'workers': 8,
                 'direct_subproof_rules': True,
             }
         )
