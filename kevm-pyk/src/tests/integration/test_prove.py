@@ -208,13 +208,19 @@ class TParams:
     main_claim_id: str | None
     leaf_number: int | None
     break_on_calls: bool
+    workers: int
 
     def __init__(
-        self, main_claim_id: str | None = None, leaf_number: int | None = None, break_on_calls: bool = False
+        self,
+        main_claim_id: str | None = None,
+        leaf_number: int | None = None,
+        break_on_calls: bool = False,
+        workers: int = 1,
     ) -> None:
         self.main_claim_id = main_claim_id
         self.leaf_number = leaf_number
         self.break_on_calls = break_on_calls
+        self.workers = workers
 
 
 TEST_PARAMS: dict[str, TParams] = {
@@ -222,6 +228,7 @@ TEST_PARAMS: dict[str, TParams] = {
         main_claim_id='VAT-SLIP-PASS-ROUGH-SPEC.Vat.slip.pass.rough',
         leaf_number=1,
     ),
+    'functional/lemmas-spec.k': TParams(workers=8),
 }
 
 
@@ -271,6 +278,7 @@ def test_pyk_prove(
         definition_dir = kompiled_target_for(spec_file)
         name = str(spec_file.relative_to(SPEC_DIR))
         break_on_calls = name in TEST_PARAMS and TEST_PARAMS[name].break_on_calls
+        workers = 1 if name not in TEST_PARAMS else TEST_PARAMS[name].workers
         options = ProveOptions(
             {
                 'spec_file': spec_file,
@@ -282,6 +290,7 @@ def test_pyk_prove(
                 'use_booster_dev': use_booster_dev,
                 'bug_report': bug_report,
                 'break_on_calls': break_on_calls,
+                'workers': workers,
             }
         )
         exec_prove(options=options)
