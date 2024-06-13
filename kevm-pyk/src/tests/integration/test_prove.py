@@ -82,7 +82,6 @@ def exclude_list(exclude_file: Path) -> list[Path]:
 FAILING_PYK_TESTS: Final = exclude_list(TEST_DIR / 'failing-symbolic.pyk')
 FAILING_BOOSTER_TESTS: Final = exclude_list(TEST_DIR / 'failing-symbolic.haskell-booster')
 FAILING_BOOSTER_DEV_TESTS: Final = exclude_list(TEST_DIR / 'failing-symbolic.haskell-booster-dev')
-FAILING_TESTS: Final = exclude_list(TEST_DIR / 'failing-symbolic.haskell')
 
 
 # -----------
