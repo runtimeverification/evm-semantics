@@ -125,6 +125,9 @@ jobs:
           - test-suite: 'test-prove-optimizations'
             test-args:
             timeout: 45
+          - test-suite: 'test-prove-dss'
+            test-args:
+            timeout: 45
     timeout-minutes: ${{ matrix.timeout }}
     steps:
       - name: 'Check out code'

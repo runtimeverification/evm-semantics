@@ -3,7 +3,6 @@ requires "verification.k"
 module FLOPPER-CAGE-PASS-SPEC
     imports VERIFICATION
 
-    // Flopper_cage
     claim [Flopper.cage.pass]:
       <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
       <mode> NORMAL </mode>

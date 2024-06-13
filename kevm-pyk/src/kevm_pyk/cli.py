@@ -416,6 +416,7 @@ class KProveOptions(Options):
     debug_equations: list[str]
     always_check_subsumption: bool
     fast_check_subsumption: bool
+    direct_subproof_rules: bool
 
     @staticmethod
     def default() -> dict[str, Any]:
@@ -423,6 +424,7 @@ class KProveOptions(Options):
             'debug_equations': [],
             'always_check_subsumption': True,
             'fast_check_subsumption': False,
+            'direct_subproof_rules': False,
         }
 
 
@@ -906,6 +908,13 @@ class KEVMCLIArgs(KCLIArgs):
             default=None,
             action='store_true',
             help='Use fast-check on k-cell to determine subsumption (experimental).',
+        )
+        args.add_argument(
+            '--direct-subproof-rules',
+            dest='direct_subproof_rules',
+            default=None,
+            action='store_true',
+            help='For passing subproofs, construct lemmas directly from initial to target state.',
         )
         return args
 

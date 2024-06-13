@@ -1,19 +1,17 @@
-
 requires "verification.k"
 
-module VAT-MULUU-PASS-SPEC
+module VAT-HEAL-PASS-SPEC
     imports VERIFICATION
 
-    // Vat_muluu
-    claim [Vat.muluu.pass]:
-      <k> #execute ~> CONTINUATION => JUMP JMPTO ~> #pc [ JUMP ] ~> #execute ~> CONTINUATION </k>
+    claim [Vat.heal.pass]:
+      <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
       <useGas> true </useGas>
       <ethereum>
         <evm>
-          <output> VOutput => VOutput </output>
-          <statusCode> _ => ?_ </statusCode>
+          <output> .Bytes </output>
+          <statusCode> _ => EVMC_SUCCESS </statusCode>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
           <touchedAccounts> _ => ?_ </touchedAccounts>
@@ -22,18 +20,15 @@ module VAT-MULUU-PASS-SPEC
             <jumpDests> #computeValidJumpDests(Vat_bin_runtime) </jumpDests>
             <id> ACCT_ID </id>
             <caller> CALLER_ID </caller>
-            <callData> _ => ?_ </callData>
+            <callData> #abiCallData("heal", #uint256(ABI_rad)) +Bytes CD => ?_ </callData>
             <callValue> VCallValue </callValue>
-            <wordStack> ABI_y : ABI_x : JMPTO : WS  => ABI_x *Int ABI_y : WS </wordStack>
-            <localMem> _ </localMem>
-            <pc> 13234 => 13277 </pc>
-            <gas> #gas(VGas) => #if ABI_y ==Int 0
-              #then   #gas ( ( VGas +Int -62 ) )
-              #else   #gas ( ( VGas +Int -114 ) )
-            #fi </gas>
-            <memoryUsed> VMemoryUsed </memoryUsed>
+            <wordStack> .WordStack => ?_ </wordStack>
+            <localMem> .Bytes => ?_ </localMem>
+            <pc> 0 => ?_ </pc>
+            <gas> #gas(VGas) => #gas ( ( ( ( ( ( VGas -Int Csstore( ISTANBUL , ( Sin -Int ABI_rad ) , Sin , Junk_0 ) ) -Int Csstore( ISTANBUL , ( Dai -Int ABI_rad ) , Dai , Junk_1 ) ) -Int Csstore( ISTANBUL , ( Vice -Int ABI_rad ) , Vice , Junk_2 ) ) -Int Csstore( ISTANBUL , ( Debt -Int ABI_rad ) , Debt , Junk_3 ) ) +Int -8616 ) ) </gas>
+            <memoryUsed> 0 => ?_ </memoryUsed>
             <callGas> _ => ?_ </callGas>
-            <static> _ </static>
+            <static> false </static>
             <callDepth> VCallDepth </callDepth>
           </callState>
           <substate>
@@ -74,9 +69,9 @@ module VAT-MULUU-PASS-SPEC
               <acctID> ACCT_ID </acctID>
               <balance> ACCT_ID_balance </balance>
               <code> Vat_bin_runtime </code>
-              <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE  </storage>
+              <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE [ #Vat.sin[CALLER_ID] <- Sin -Int ABI_rad ] [ #Vat.dai[CALLER_ID] <- Dai -Int ABI_rad ] [ #Vat.vice <- Vice  -Int ABI_rad ] [ #Vat.debt <- Debt  -Int ABI_rad ] </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
-              <nonce> _Nonce_Vat => ?_ </nonce>
+              <nonce> Nonce_Vat </nonce>
             </account>
            ...
           </accounts>
@@ -95,11 +90,37 @@ module VAT-MULUU-PASS-SPEC
        andBool VCallDepth <=Int 1024
        andBool #rangeUInt(256, VCallValue)
        andBool #rangeUInt(256, VChainId)
+       andBool #rangeNonce(Nonce_Vat)
 
-       andBool (#rangeUInt(256, ABI_x)
-       andBool (#rangeUInt(256, ABI_y)
-       andBool ((#sizeWordStack(WS) <=Int 1000)
-       andBool (#rangeUInt(256, VMemoryUsed)
-       andBool ((#rangeUInt(256, ABI_x *Int ABI_y)))))))
+       andBool (#rangeUInt(256, ABI_rad)
+       andBool (#rangeUInt(256, Dai)
+       andBool (#rangeUInt(256, Sin)
+       andBool (#rangeUInt(256, Debt)
+       andBool (#rangeUInt(256, Vice)
+       andBool (lengthBytes(CD) <=Int 1250000000
+       andBool (#rangeUInt(256, Junk_0)
+       andBool (#rangeUInt(256, Junk_1)
+       andBool (#rangeUInt(256, Junk_2)
+       andBool (#rangeUInt(256, Junk_3)
+       andBool (((VCallValue ==Int 0))
+       andBool ((#rangeUInt(256, Dai -Int ABI_rad))
+       andBool ((#rangeUInt(256, Sin -Int ABI_rad))
+       andBool ((#rangeUInt(256, Debt  -Int ABI_rad))
+       andBool ((#rangeUInt(256, Vice  -Int ABI_rad)))))))))))))))))
+
+       andBool #lookup(ACCT_ID_STORAGE, #Vat.sin[CALLER_ID]) ==Int Sin
+       andBool #lookup(ACCT_ID_STORAGE, #Vat.dai[CALLER_ID]) ==Int Dai
+       andBool #lookup(ACCT_ID_STORAGE, #Vat.vice) ==Int Vice
+       andBool #lookup(ACCT_ID_STORAGE, #Vat.debt) ==Int Debt
+       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Vat.sin[CALLER_ID]) ==Int Junk_0
+       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Vat.dai[CALLER_ID]) ==Int Junk_1
+       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Vat.vice) ==Int Junk_2
+       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Vat.debt) ==Int Junk_3
+       andBool #Vat.sin[CALLER_ID] =/=Int #Vat.dai[CALLER_ID]
+       andBool #Vat.sin[CALLER_ID] =/=Int #Vat.vice
+       andBool #Vat.sin[CALLER_ID] =/=Int #Vat.debt
+       andBool #Vat.dai[CALLER_ID] =/=Int #Vat.vice
+       andBool #Vat.dai[CALLER_ID] =/=Int #Vat.debt
+       andBool #Vat.vice =/=Int #Vat.debt
 
 endmodule
