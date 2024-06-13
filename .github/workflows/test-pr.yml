@@ -110,9 +110,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - test-suite: 'test-prove-kprove'
-            test-args:
-            timeout: 45
           - test-suite: 'test-prove-pyk'
             test-args: '--no-use-booster'
             timeout: 180

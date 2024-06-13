@@ -60,8 +60,6 @@ def generate_options(args: dict[str, Any]) -> LoggingOptions:
             return VersionOptions(args)
         case 'kompile-spec':
             return KompileSpecOptions(args)
-        case 'prove-legacy':
-            return ProveLegacyOptions(args)
         case 'prove':
             return ProveOptions(args)
         case 'prune':
@@ -87,8 +85,6 @@ def get_option_string_destination(command: str, option_string: str) -> str:
             option_string_destinations = VersionOptions.from_option_string()
         case 'kompile-spec':
             option_string_destinations = KompileSpecOptions.from_option_string()
-        case 'prove-legacy':
-            option_string_destinations = ProveLegacyOptions.from_option_string()
         case 'prove':
             option_string_destinations = ProveOptions.from_option_string()
         case 'prune':
@@ -117,8 +113,6 @@ def get_argument_type_setter(command: str, option_string: str) -> Callable[[str]
             option_types = VersionOptions.get_argument_type()
         case 'kompile-spec':
             option_types = KompileSpecOptions.get_argument_type()
-        case 'prove-legacy':
-            option_types = ProveLegacyOptions.get_argument_type()
         case 'prove':
             option_types = ProveOptions.get_argument_type()
         case 'prune':
@@ -313,36 +307,6 @@ class KOptions(KDefinitionOptions):
     @staticmethod
     def get_argument_type() -> dict[str, Callable]:
         return KDefinitionOptions.get_argument_type()
-
-
-class KProveLegacyOptions(Options):
-    bug_report: bool
-    debugger: bool
-    max_depth: int | None
-    max_counterexamples: int | None
-    branching_allowed: int | None
-    haskell_backend_args: list[str]
-
-    @staticmethod
-    def default() -> dict[str, Any]:
-        return {
-            'bug_report': False,
-            'debugger': False,
-            'max_depth': None,
-            'max_counterexamples': None,
-            'branching_allowed': None,
-            'haskell_backend_args': [],
-        }
-
-    @staticmethod
-    def from_option_string() -> dict[str, str]:
-        return KDefinitionOptions.from_option_string() | {
-            'haskell-backend-arg': 'haskell_backend_args',
-        }
-
-    @staticmethod
-    def get_argument_type() -> dict[str, Callable]:
-        return {'haskell-backend-arg': list_of(str)}
 
 
 class RPCOptions(Options):
@@ -575,34 +539,6 @@ class KompileSpecOptions(LoggingOptions, KOptions, KompileOptions):
             | KOptions.get_argument_type()
             | KompileOptions.get_argument_type()
             | {'target': KompileTarget, 'main_file': file_path}
-        )
-
-
-class ProveLegacyOptions(LoggingOptions, KOptions, SpecOptions, KProveLegacyOptions):
-    bug_report_legacy: bool
-
-    @staticmethod
-    def default() -> dict[str, Any]:
-        return {
-            'bug_report_legacy': False,
-        }
-
-    @staticmethod
-    def from_option_string() -> dict[str, str]:
-        return (
-            LoggingOptions.from_option_string()
-            | KOptions.from_option_string()
-            | SpecOptions.from_option_string()
-            | KProveLegacyOptions.from_option_string()
-        )
-
-    @staticmethod
-    def get_argument_type() -> dict[str, Callable]:
-        return (
-            LoggingOptions.get_argument_type()
-            | KOptions.get_argument_type()
-            | SpecOptions.get_argument_type()
-            | KProveLegacyOptions.get_argument_type()
         )
 
 
