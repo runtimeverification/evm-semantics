@@ -164,17 +164,17 @@
         "z3": "z3"
       },
       "locked": {
-        "lastModified": 1717504162,
-        "narHash": "sha256-muZL1MfImaMimk+f/SwPj4xrlRvDnSpovDhAx/WqdCw=",
+        "lastModified": 1718284603,
+        "narHash": "sha256-fLAY8og1RbE9rVcrEbIATUZIpkcajN8CNxDMq5x9I+s=",
         "owner": "runtimeverification",
         "repo": "haskell-backend",
-        "rev": "abceb59fcbc47d1bc537ff797f806c8bb8649626",
+        "rev": "9520aa33a9d770395cdc23cbd4c025876f548a78",
         "type": "github"
       },
       "original": {
         "owner": "runtimeverification",
+        "ref": "v0.1.10",
         "repo": "haskell-backend",
-        "rev": "abceb59fcbc47d1bc537ff797f806c8bb8649626",
         "type": "github"
       }
     },
@@ -208,16 +208,16 @@
         "rv-utils": "rv-utils_3"
       },
       "locked": {
-        "lastModified": 1718204565,
-        "narHash": "sha256-kOeQjucGWCHj0isvj6BKbYjSavIj7WxT5pTidb9Nsn0=",
+        "lastModified": 1718300523,
+        "narHash": "sha256-SxkUm8RVeVyrU0guP5YtNRo9OaHeR7A03zVe8yBmWdg=",
         "owner": "runtimeverification",
         "repo": "k",
-        "rev": "7e036e3f2ec92655c9a4077baac835235f899057",
+        "rev": "f373630f28653b60b4079cce2242e3bab90ef42c",
         "type": "github"
       },
       "original": {
         "owner": "runtimeverification",
-        "ref": "v7.0.130",
+        "ref": "v7.1.3",
         "repo": "k",
         "type": "github"
       }
@@ -419,17 +419,17 @@
       },
       "locked": {
         "dir": "pyk",
-        "lastModified": 1718204565,
-        "narHash": "sha256-kOeQjucGWCHj0isvj6BKbYjSavIj7WxT5pTidb9Nsn0=",
+        "lastModified": 1718300523,
+        "narHash": "sha256-SxkUm8RVeVyrU0guP5YtNRo9OaHeR7A03zVe8yBmWdg=",
         "owner": "runtimeverification",
         "repo": "k",
-        "rev": "7e036e3f2ec92655c9a4077baac835235f899057",
+        "rev": "f373630f28653b60b4079cce2242e3bab90ef42c",
         "type": "github"
       },
       "original": {
         "dir": "pyk",
         "owner": "runtimeverification",
-        "ref": "v7.0.130",
+        "ref": "v7.1.3",
         "repo": "k",
         "type": "github"
       }
