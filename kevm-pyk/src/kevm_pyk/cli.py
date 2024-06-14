@@ -193,21 +193,6 @@ def _create_argument_parser() -> ArgumentParser:
     section_edge_args.add_argument('edge', type=arg_pair_of(str, str), help='Edge to section in CFG.')
     section_edge_args.add_argument('--sections', type=int, help='Number of sections to make from edge (>= 2).')
 
-    prove_legacy_args = command_parser.add_parser(
-        'prove-legacy',
-        help='Run KEVM proof using the legacy kprove binary.',
-        parents=[
-            kevm_cli_args.logging_args,
-            kevm_cli_args.k_args,
-            kevm_cli_args.spec_args,
-            kevm_cli_args.kprove_legacy_args,
-            config_args.config_args,
-        ],
-    )
-    prove_legacy_args.add_argument(
-        '--bug-report-legacy', default=None, action='store_true', help='Generate a legacy bug report.'
-    )
-
     command_parser.add_parser(
         'view-kcfg',
         help='Explore a given proof in the KCFG visualizer.',
