@@ -122,7 +122,9 @@ claim [lemma.3]:
         andBool NAME /Int 2 &Int 127  <Int 32
 ```
 
-```k
+**TODO**: This proof isn't passing.
+
+```
     claim [name.short.revert]:
           <mode>     NORMAL   </mode>
           <schedule> ISTANBUL </schedule>
