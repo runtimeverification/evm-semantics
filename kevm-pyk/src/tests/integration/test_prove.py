@@ -81,7 +81,6 @@ def exclude_list(exclude_file: Path) -> list[Path]:
 
 
 FAILING_PYK_TESTS: Final = exclude_list(TEST_DIR / 'failing-symbolic.pyk')
-FAILING_BOOSTER_TESTS: Final = []
 FAILING_BOOSTER_DEV_TESTS: Final = exclude_list(TEST_DIR / 'failing-symbolic.haskell-booster-dev')
 FAILING_TESTS: Final = exclude_list(TEST_DIR / 'failing-symbolic.haskell')
 
@@ -193,7 +192,7 @@ def test_kompile_targets(
 
     This test will be skipped if no --kompiled-targets-dir option is given
     """
-    if not kompiled_targets_dir or spec_file in FAILING_BOOSTER_TESTS:
+    if not kompiled_targets_dir:
         pytest.skip()
 
     kompiled_target_for(spec_file)
@@ -262,10 +261,8 @@ def test_pyk_prove(
 ) -> None:
     caplog.set_level(logging.INFO)
 
-    if (
-        (no_use_booster and spec_file in FAILING_PYK_TESTS)
-        or (use_booster_dev and spec_file in FAILING_BOOSTER_DEV_TESTS)
-        or (not no_use_booster and not use_booster_dev and spec_file in FAILING_BOOSTER_TESTS)
+    if (no_use_booster and spec_file in FAILING_PYK_TESTS) or (
+        use_booster_dev and spec_file in FAILING_BOOSTER_DEV_TESTS
     ):
         pytest.skip()
 
