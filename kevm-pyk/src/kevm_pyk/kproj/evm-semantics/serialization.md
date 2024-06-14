@@ -648,7 +648,7 @@ Tree Root Helper Functions
 
     rule #intMap2StorageMapAux( SMAP, _, .List ) => SMAP
     rule #intMap2StorageMapAux( SMAP, IMAP, ListItem(K) REST )
-      => #intMap2StorageMapAux( #wordBytes(K) |-> #rlpEncodeInt({IMAP[K]}:>Int) SMAP, IMAP, REST )
+      => #intMap2StorageMapAux( #wordBytes(K) |-> Bytes2String(#rlpEncodeInt({IMAP[K]}:>Int)) SMAP, IMAP, REST )
       requires {IMAP[K]}:>Int =/=Int 0
 
     rule #intMap2StorageMapAux( SMAP, IMAP, ListItem(K) REST )
