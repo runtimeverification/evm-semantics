@@ -208,6 +208,7 @@ class TParams:
     main_claim_id: str | None
     leaf_number: int | None
     break_on_calls: bool
+    break_on_basic_blocks: bool
     workers: int
 
     def __init__(
@@ -215,11 +216,13 @@ class TParams:
         main_claim_id: str | None = None,
         leaf_number: int | None = None,
         break_on_calls: bool = False,
+        break_on_basic_blocks: bool = False,
         workers: int = 1,
     ) -> None:
         self.main_claim_id = main_claim_id
         self.leaf_number = leaf_number
         self.break_on_calls = break_on_calls
+        self.break_on_basic_blocks = break_on_basic_blocks
         self.workers = workers
 
 
@@ -229,6 +232,7 @@ TEST_PARAMS: dict[str, TParams] = {
         leaf_number=1,
     ),
     'functional/lemmas-spec.k': TParams(workers=8),
+    'examples/sum-to-n-foundry-spec.k': TParams(break_on_basic_blocks=True),
 }
 
 
@@ -278,6 +282,7 @@ def test_pyk_prove(
         definition_dir = kompiled_target_for(spec_file)
         name = str(spec_file.relative_to(SPEC_DIR))
         break_on_calls = name in TEST_PARAMS and TEST_PARAMS[name].break_on_calls
+        break_on_basic_blocks = name in TEST_PARAMS and TEST_PARAMS[name].break_on_basic_blocks
         workers = 1 if name not in TEST_PARAMS else TEST_PARAMS[name].workers
         options = ProveOptions(
             {
@@ -290,6 +295,7 @@ def test_pyk_prove(
                 'use_booster_dev': use_booster_dev,
                 'bug_report': bug_report,
                 'break_on_calls': break_on_calls,
+                'break_on_basic_blocks': break_on_basic_blocks,
                 'workers': workers,
             }
         )
