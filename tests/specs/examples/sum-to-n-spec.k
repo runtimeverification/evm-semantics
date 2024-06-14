@@ -43,9 +43,9 @@ module SUM-TO-N-SPEC
           <callGas> _ </callGas>
           <program> sumToN </program>
           <jumpDests> #computeValidJumpDests(sumToN) </jumpDests>
-          <pc>        0  => 21                                </pc>
+          <pc>        0  => 21                                    </pc>
           <wordStack> N : WS => 0 : N *Int (N +Int 1) /Int 2 : WS </wordStack>
-          <gas>       G  => G -Int (52 *Int N +Int 27)        </gas>
+          <gas>       G  => G -Int (52 *Int N +Int 27)            </gas>
       requires N >=Int 0
        andBool N <=Int 340282366920938463463374607431768211455
        andBool #sizeWordStack(WS) <Int 1021
