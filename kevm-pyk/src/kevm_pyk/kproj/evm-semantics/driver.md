@@ -293,6 +293,8 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
     rule <k> run _TESTID : { "exec" : (EXEC:JSON) } => loadCallState EXEC ~> start ~> flush ... </k>
     rule <k> run _TESTID : { "lastblockhash" : (_:String) } => #startBlock ~> startTx    ... </k>
 
+    rule <k> run _TESTID : { "blocknumber" : (VAL:String), REST => REST } ... </k> <number> _ => #parseHexWord(VAL) </number>
+
     rule <k> load "exec" : J => loadCallState J ... </k>
 
     rule <k> loadCallState { "caller" : (ACCTFROM:Int), REST => REST } ... </k> <caller> _ => ACCTFROM </caller>
@@ -386,6 +388,10 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
     rule <k> check TESTID : { "post" : (POST:String) } => check "blockHeader" : {  "stateRoot" : #parseWord(POST) } ~> failure TESTID ... </k>
     rule <k> check TESTID : { "post" : { POST } } => check "account" : { POST } ~> failure TESTID ... </k>
 
+    // Temp rule to skip Beacon Roots contract checks.
+    // To be removed after EIP-4788
+    rule <k> check "account" : { 339909022928299415537769066420252604268194818 : _ } => .K ... </k>
+
     rule <k> check "account" : { ACCTID:Int : { KEY : VALUE , REST } } => check "account" : { ACCTID : { KEY : VALUE } } ~> check "account" : { ACCTID : { REST } } ... </k>
       requires REST =/=K .JSONs
 
@@ -471,25 +477,30 @@ Here we check the other post-conditions associated with an EVM test.
                         SetItem("mixHash") SetItem("nonce") SetItem("number") SetItem("parentHash")
                         SetItem("receiptTrie") SetItem("stateRoot") SetItem("timestamp")
                         SetItem("transactionsTrie") SetItem("uncleHash") SetItem("baseFeePerGas") SetItem("withdrawalsRoot")
+                        SetItem("blobGasUsed") SetItem("excessBlobGas") SetItem("parentBeaconBlockRoot")
                       )
 
-    rule <k> check "blockHeader" : { "bloom"            : VALUE } => .K ... </k> <logsBloom>        VALUE </logsBloom>
-    rule <k> check "blockHeader" : { "coinbase"         : VALUE } => .K ... </k> <coinbase>         VALUE </coinbase>
-    rule <k> check "blockHeader" : { "difficulty"       : VALUE } => .K ... </k> <difficulty>       VALUE </difficulty>
-    rule <k> check "blockHeader" : { "extraData"        : VALUE } => .K ... </k> <extraData>        VALUE </extraData>
-    rule <k> check "blockHeader" : { "gasLimit"         : VALUE } => .K ... </k> <gasLimit>         VALUE </gasLimit>
-    rule <k> check "blockHeader" : { "gasUsed"          : VALUE } => .K ... </k> <gasUsed>          VALUE </gasUsed>
-    rule <k> check "blockHeader" : { "mixHash"          : VALUE } => .K ... </k> <mixHash>          VALUE </mixHash>
-    rule <k> check "blockHeader" : { "nonce"            : VALUE } => .K ... </k> <blockNonce>       VALUE </blockNonce>
-    rule <k> check "blockHeader" : { "number"           : VALUE } => .K ... </k> <number>           VALUE </number>
-    rule <k> check "blockHeader" : { "parentHash"       : VALUE } => .K ... </k> <previousHash>     VALUE </previousHash>
-    rule <k> check "blockHeader" : { "receiptTrie"      : VALUE } => .K ... </k> <receiptsRoot>     VALUE </receiptsRoot>
-    rule <k> check "blockHeader" : { "stateRoot"        : VALUE } => .K ... </k> <stateRoot>        VALUE </stateRoot>
-    rule <k> check "blockHeader" : { "timestamp"        : VALUE } => .K ... </k> <timestamp>        VALUE </timestamp>
-    rule <k> check "blockHeader" : { "transactionsTrie" : VALUE } => .K ... </k> <transactionsRoot> VALUE </transactionsRoot>
-    rule <k> check "blockHeader" : { "uncleHash"        : VALUE } => .K ... </k> <ommersHash>       VALUE </ommersHash>
-    rule <k> check "blockHeader" : { "baseFeePerGas"    : VALUE } => .K ... </k> <baseFee>          VALUE </baseFee>
-    rule <k> check "blockHeader" : { "withdrawalsRoot"  : VALUE } => .K ... </k> <withdrawalsRoot>  VALUE </withdrawalsRoot>
+    rule <k> check "blockHeader" : { "bloom"                : VALUE } => .K ... </k> <logsBloom>        VALUE </logsBloom>
+    rule <k> check "blockHeader" : { "coinbase"             : VALUE } => .K ... </k> <coinbase>         VALUE </coinbase>
+    rule <k> check "blockHeader" : { "difficulty"           : VALUE } => .K ... </k> <difficulty>       VALUE </difficulty>
+    rule <k> check "blockHeader" : { "extraData"            : VALUE } => .K ... </k> <extraData>        VALUE </extraData>
+    rule <k> check "blockHeader" : { "gasLimit"             : VALUE } => .K ... </k> <gasLimit>         VALUE </gasLimit>
+    rule <k> check "blockHeader" : { "gasUsed"              : VALUE } => .K ... </k> <gasUsed>          VALUE </gasUsed>
+    rule <k> check "blockHeader" : { "mixHash"              : VALUE } => .K ... </k> <mixHash>          VALUE </mixHash>
+    rule <k> check "blockHeader" : { "nonce"                : VALUE } => .K ... </k> <blockNonce>       VALUE </blockNonce>
+    rule <k> check "blockHeader" : { "number"               : VALUE } => .K ... </k> <number>           VALUE </number>
+    rule <k> check "blockHeader" : { "parentHash"           : VALUE } => .K ... </k> <previousHash>     VALUE </previousHash>
+    rule <k> check "blockHeader" : { "receiptTrie"          : VALUE } => .K ... </k> <receiptsRoot>     VALUE </receiptsRoot>
+    rule <k> check "blockHeader" : { "stateRoot"            : VALUE } => .K ... </k> <stateRoot>        VALUE </stateRoot>
+    rule <k> check "blockHeader" : { "timestamp"            : VALUE } => .K ... </k> <timestamp>        VALUE </timestamp>
+    rule <k> check "blockHeader" : { "transactionsTrie"     : VALUE } => .K ... </k> <transactionsRoot> VALUE </transactionsRoot>
+    rule <k> check "blockHeader" : { "uncleHash"            : VALUE } => .K ... </k> <ommersHash>       VALUE </ommersHash>
+    rule <k> check "blockHeader" : { "baseFeePerGas"        : VALUE } => .K ... </k> <baseFee>          VALUE </baseFee>
+    rule <k> check "blockHeader" : { "withdrawalsRoot"      : VALUE } => .K ... </k> <withdrawalsRoot>  VALUE </withdrawalsRoot>
+    rule <k> check "blockHeader" : { "blobGasUsed"          : VALUE } => .K ... </k> <blobGasUsed>      VALUE </blobGasUsed>
+    rule <k> check "blockHeader" : { "excessBlobGas"        : VALUE } => .K ... </k> <excessBlobGas>    VALUE </excessBlobGas>
+    rule <k> check "blockHeader" : { "parentBeaconBlockRoot": VALUE } => .K ... </k> <beaconRoot>       VALUE </beaconRoot>
+
 
     rule <k> check "blockHeader" : { "hash": HASH:Bytes } => .K ...</k>
          <previousHash>     HP </previousHash>
@@ -509,9 +520,13 @@ Here we check the other post-conditions associated with an EVM test.
          <blockNonce>       HN </blockNonce>
          <baseFee>          HF </baseFee>
          <withdrawalsRoot>  WR </withdrawalsRoot>
-      requires #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN)         ==Int #asWord(HASH)
-        orBool #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF)     ==Int #asWord(HASH)
-        orBool #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR) ==Int #asWord(HASH)
+         <blobGasUsed>      UB </blobGasUsed>
+         <excessBlobGas>    EB </excessBlobGas>
+         <beaconRoot>       BR </beaconRoot>
+      requires #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN)                     ==Int #asWord(HASH)
+        orBool #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF)                 ==Int #asWord(HASH)
+        orBool #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR)             ==Int #asWord(HASH)
+        orBool #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR, UB, EB, BR) ==Int #asWord(HASH)
 
     rule check TESTID : { "genesisBlockHeader" : BLOCKHEADER } => check "genesisBlockHeader" : BLOCKHEADER ~> failure TESTID
  // ------------------------------------------------------------------------------------------------------------------------
