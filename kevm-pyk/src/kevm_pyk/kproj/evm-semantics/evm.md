@@ -159,9 +159,9 @@ In the comments next to each cell, we've marked which component of the YellowPap
                 <data>          .Bytes     </data>          // T_i/T_e
                 <txAccess>      [ .JSONs ] </txAccess>      // T_a
                 <txChainID>     0          </txChainID>     // T_c
-                <txPriorityFee> 0          </txPriorityFee>
-                <txMaxFee>      0          </txMaxFee>
-                <txType>        .TxType    </txType>
+                <txPriorityFee> 0          </txPriorityFee> // T_f
+                <txMaxFee>      0          </txMaxFee>      // T_m
+                <txType>        .TxType    </txType>        // T_x
               </message>
             </messages>
 
