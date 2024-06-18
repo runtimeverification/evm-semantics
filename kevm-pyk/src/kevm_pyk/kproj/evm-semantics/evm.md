@@ -1746,6 +1746,7 @@ Precompiled Contracts
     rule #precompiledAccountsUB(LONDON)            => #precompiledAccountsUB(BERLIN)
     rule #precompiledAccountsUB(MERGE)             => #precompiledAccountsUB(LONDON)
     rule #precompiledAccountsUB(SHANGHAI)          => #precompiledAccountsUB(MERGE)
+    rule #precompiledAccountsUB(CANCUN)            => #precompiledAccountsUB(SHANGHAI)
 
 
     syntax Set ::= #precompiledAccountsSet    ( Schedule ) [klabel(#precompiledAccountsSet),    function, total]

@@ -166,8 +166,8 @@ The `"network"` key allows setting the fee schedule inside the test.
     rule <k> load "network" : SCHEDSTRING => .K ... </k>
          <schedule> _ => #asScheduleString(SCHEDSTRING) </schedule>
 
-    syntax Schedule ::= #asScheduleString ( String ) [klabel(#asScheduleString), function]
- // --------------------------------------------------------------------------------------
+    syntax Schedule ::= #asScheduleString ( String ) [symbol(asScheduleString), function]
+ // -------------------------------------------------------------------------------------
     rule #asScheduleString("Frontier")          => FRONTIER
     rule #asScheduleString("Homestead")         => HOMESTEAD
     rule #asScheduleString("EIP150")            => TANGERINE_WHISTLE
@@ -180,6 +180,7 @@ The `"network"` key allows setting the fee schedule inside the test.
     rule #asScheduleString("London")            => LONDON
     rule #asScheduleString("Merge")             => MERGE
     rule #asScheduleString("Shanghai")          => SHANGHAI
+    rule #asScheduleString("Cancun")            => CANCUN
 ```
 
 The `"rlp"` key loads the block information.
