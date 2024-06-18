@@ -179,6 +179,7 @@ The `"network"` key allows setting the fee schedule inside the test.
     rule #asScheduleString("Berlin")            => BERLIN
     rule #asScheduleString("London")            => LONDON
     rule #asScheduleString("Merge")             => MERGE
+    rule #asScheduleString("Paris")             => MERGE
     rule #asScheduleString("Shanghai")          => SHANGHAI
     rule #asScheduleString("Cancun")            => CANCUN
 ```
