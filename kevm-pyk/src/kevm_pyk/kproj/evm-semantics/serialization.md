@@ -27,33 +27,38 @@ Address/Hash Helpers
 ```
 
 -   `#newAddr` computes the address of a new account given the address and nonce of the creating account.
--   `#sender` computes the sender of the transaction from its data and signature.
--   `#addrFromPrivateKey` computes the address of an account given its private key
 
 ```k
-    syntax Int ::= #newAddr ( Int , Int )         [klabel(#newAddr), function]
-                 | #newAddr ( Int , Int , Bytes ) [klabel(#newAddrCreate2), function]
- // ---------------------------------------------------------------------------------
+    syntax Int ::= #newAddr ( Int , Int )         [symbol(newAddr), function]
+                 | #newAddr ( Int , Int , Bytes ) [symbol(newAddrCreate2), function]
+ // --------------------------------------------------------------------------------
     rule [#newAddr]:        #newAddr(ACCT, NONCE) => #addr(#parseHexWord(Keccak256(#rlpEncode([#addrBytes(ACCT), NONCE]))))                                                                        [concrete]
     rule [#newAddrCreate2]: #newAddr(ACCT, SALT, INITCODE) => #addr(#parseHexWord(Keccak256(b"\xff" +Bytes #addrBytes(ACCT) +Bytes #wordBytes(SALT) +Bytes #parseByteStack(Keccak256(INITCODE))))) [concrete]
+```
 
-    syntax Account ::= #sender ( TxData , Int , Bytes , Bytes ) [function, klabel(#senderTxData)    ]
-                     | #sender ( Bytes  , Int , Bytes , Bytes ) [function, klabel(#senderAux), total]
-                     | #sender ( Bytes )                        [function, klabel(#senderAux2)      ]
- // -------------------------------------------------------------------------------------------------
-    rule #sender(_:TxData, TW => TW +Int 27, _, _)
-      requires TW ==Int 0 orBool TW ==Int 1
+- `#sender` computes the sender of the transaction from its data and signature.
+- `sender.pre.EIP155`, `sender.EIP155.signed` and `sender.EIP155.unsigned` need to adapt the `TW` value before passing it to the `ECDSARecover`.
+- `sender` is used by the `ecrec` precompile and does not need to adapt the parameters.
 
-    rule #sender(TXDATA, TW, TR, TS)
-      => #sender(#hashTxData(TXDATA), TW, TR, TS)
-      requires TW =/=Int 0 andBool TW =/=Int 1
+```k
+    syntax Account ::= #sender ( TxData , Int , Bytes , Bytes , Int ) [function, symbol(senderTxData)      ]
+                     | #sender ( Bytes  , Int , Bytes , Bytes )       [function, symbol(senderBytes), total]
+                     | #sender ( Bytes )                              [function, symbol(senderReturn)      ]
+ // --------------------------------------------------------------------------------------------------------
+    rule [sender.pre.EIP155]:      #sender(_:TxData, TW             => TW +Int 27           , _, _, _) requires TW ==Int 0                orBool TW ==Int 1
+    rule [sender.EIP155.signed]:   #sender(_:TxData, TW             => (TW -Int 35) modInt 2, _, _, B) requires TW ==Int 2 *Int B +Int 35 orBool TW ==Int 2 *Int B +Int 36
+    rule [sender.EIP155.unsigned]: #sender(T:TxData, TW, TR, TS, _) => #sender(#hashTxData(T), TW, TR, TS) [owise]
 
-    rule #sender(HT, TW, TR, TS) => #sender(ECDSARecover(HT, TW, TR, TS))
+    rule [sender]: #sender(HT, TW, TR, TS) => #sender(ECDSARecover(HT, TW, TR, TS))
 
     rule #sender(b"")   => .Account
     rule #sender(BYTES) => #addr(#parseHexWord(Keccak256(BYTES))) requires BYTES =/=K b""
+```
 
-    syntax Int ::= #addrFromPrivateKey ( String ) [function, klabel(addrFromPrivateKey)]
+-   `#addrFromPrivateKey` computes the address of an account given its private key
+
+```k
+    syntax Int ::= #addrFromPrivateKey ( String ) [function, symbol(addrFromPrivateKey)]
  // ------------------------------------------------------------------------------------
     rule [addrFromPrivateKey]: #addrFromPrivateKey ( KEY ) => #addr( #parseHexWord( Keccak256( #parseByteStack( ECDSAPubKey( #parseByteStack( KEY ) ) ) ) ) ) [concrete]
 ```
@@ -110,15 +115,12 @@ Address/Hash Helpers
                          )
 ```
 
-- `#hashSignedTx` Takes transaction data. Returns the hash of the rlp-encoded transaction with R S and V.
+- `#hashTxData` returns the Keccak-256 message hash `HT` to be signed.
+The encoding schemes are applied in `#rlpEcondeTxData`.
 
 ```k
-    syntax Bytes ::= #hashTxData  ( TxData )                                                        [klabel(#hashTxData), function]
-                   | #hashSignedTx( Int , Int , Int , Account , Int , Bytes , Int , Bytes , Bytes ) [klabel(#hashSignedTx), function]
- // ---------------------------------------------------------------------------------------------------------------------------------
-    rule #hashSignedTx(TN, TP, TG, TT, TV, TD, TW, TR, TS)
-      => Keccak256raw( #rlpEncode([ TN, TP, TG, #addrBytes(TT), TV, TD, TW, TR, TS ]) )
-
+    syntax Bytes ::= #hashTxData ( TxData ) [symbol(hashTxData), function]
+ // ----------------------------------------------------------------------
     rule #hashTxData( TXDATA ) => Keccak256raw(                #rlpEncodeTxData(TXDATA) ) requires isLegacyTx    (TXDATA)
     rule #hashTxData( TXDATA ) => Keccak256raw( b"\x01" +Bytes #rlpEncodeTxData(TXDATA) ) requires isAccessListTx(TXDATA)
     rule #hashTxData( TXDATA ) => Keccak256raw( b"\x02" +Bytes #rlpEncodeTxData(TXDATA) ) requires isDynamicFeeTx(TXDATA)
@@ -317,19 +319,19 @@ Encoding
                          , ( OUT => OUT +String Bytes2String( #rlpEncodeWord(X) ) )
                          )
 
-    syntax Bytes ::= #rlpEncodeTxData ( TxData ) [klabel(#rlpEncodeTxData), function]
- // ---------------------------------------------------------------------------------
+    syntax Bytes ::= #rlpEncodeTxData ( TxData ) [symbol(rlpEncodeTxData), function]
+ // --------------------------------------------------------------------------------
     rule #rlpEncodeTxData( LegacyTxData( TN, TP, TG, TT, TV, TD ) )
       => #rlpEncode( [ TN, TP, TG, #addrBytes(TT), TV, TD ] )
 
-    rule #rlpEncodeTxData( LegacyProtectedTxData( TN, TP, TG, TT, TV, TD, CID ) )
-      => #rlpEncode( [ TN, TP, TG, #addrBytes(TT), TV, TD, CID, "", "" ] )
+    rule #rlpEncodeTxData( LegacySignedTxData( TN, TP, TG, TT, TV, TD, B ) )
+      => #rlpEncode( [ TN, TP, TG, #addrBytes(TT), TV, TD, B, 0, 0 ] )
 
-    rule #rlpEncodeTxData( AccessListTxData( TN, TP, TG, TT, TV, TD, CID, [TA] ) )
-      => #rlpEncode( [ CID, TN, TP, TG, #addrBytes(TT), TV, TD, [TA] ] )
+    rule #rlpEncodeTxData( AccessListTxData( TN, TP, TG, TT, TV, TD, TC, [TA] ) )
+      => #rlpEncode( [ TC, TN, TP, TG, #addrBytes(TT), TV, TD, [TA] ] )
 
-    rule #rlpEncodeTxData( DynamicFeeTxData(TN, TPF, TM, TG, TT, TV, DATA, CID, [TA]) )
-      => #rlpEncode( [ CID, TN, TPF, TM, TG, #addrBytes(TT), TV, DATA, [TA] ] )
+    rule #rlpEncodeTxData( DynamicFeeTxData(TN, TF, TM, TG, TT, TV, DATA, TC, [TA]) )
+      => #rlpEncode( [ TC, TN, TF, TM, TG, #addrBytes(TT), TV, DATA, [TA] ] )
 
     syntax Bytes ::= #rlpEncodeMerkleTree ( MerkleTree ) [klabel(#rlpEncodeMerkleTree), function]
  // ---------------------------------------------------------------------------------------------
