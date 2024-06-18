@@ -141,7 +141,7 @@
             };
             overrides = poetry2nix.overrides.withDefaults
               (finalPython: prevPython: {
-                pyk = nixpkgs-pyk.pyk-python310;
+                kframework = nixpkgs-pyk.pyk-python310;
                 pygments = prevPython.pygments.overridePythonAttrs (old: {
                   buildInputs = (old.buildInputs or [ ])
                     ++ [ prevPython.hatchling ];
