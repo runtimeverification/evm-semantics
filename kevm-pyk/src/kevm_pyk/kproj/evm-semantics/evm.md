@@ -130,12 +130,13 @@ In the comments next to each cell, we've marked which component of the YellowPap
 
             <accounts>
               <account multiplicity="*" type="Map">
-                <acctID>      0                  </acctID>
-                <balance>     0                  </balance>
-                <code>        .Bytes:AccountCode </code>
-                <storage>     .Map               </storage>
-                <origStorage> .Map               </origStorage>
-                <nonce>       0                  </nonce>
+                <acctID>           0                  </acctID>
+                <balance>          0                  </balance>
+                <code>             .Bytes:AccountCode </code>
+                <storage>          .Map               </storage>
+                <origStorage>      .Map               </origStorage>
+                <transientStorage> .Map               </transientStorage>
+                <nonce>            0                  </nonce>
               </account>
             </accounts>
 
@@ -416,6 +417,7 @@ The `#next [_]` operator initiates execution by:
     rule #changesState(CREATE       , _)                 => true
     rule #changesState(CREATE2      , _)                 => true
     rule #changesState(SELFDESTRUCT , _)                 => true
+    rule #changesState(TSTORE       , _)                 => true
     rule #changesState(_            , _)                 => false [owise]
 ```
 
@@ -759,11 +761,12 @@ These are just used by the other operators for shuffling local execution state a
                   =>
                  <account>
                     <acctID> ACCT </acctID>
-                    <balance>     0                  </balance>
-                    <code>        .Bytes:AccountCode </code>
-                    <storage>     .Map               </storage>
-                    <origStorage> .Map               </origStorage>
-                    <nonce>       0                  </nonce>
+                    <balance>          0                  </balance>
+                    <code>             .Bytes:AccountCode </code>
+                    <storage>          .Map               </storage>
+                    <origStorage>      .Map               </origStorage>
+                    <transientStorage> .Map               </transientStorage>
+                    <nonce>            0                  </nonce>
                  </account>
                )
                ...
@@ -1219,6 +1222,30 @@ These rules reach into the network state and load/store from account storage:
          <account>
            <acctID> ACCT </acctID>
            <storage> STORAGE => STORAGE [ INDEX <- NEW ] </storage>
+           ...
+         </account>
+      [preserves-definedness]
+
+    syntax UnStackOp ::= "TLOAD"
+ // ----------------------------
+    rule [tload]:
+         <k> TLOAD INDEX => #lookup(TSTORAGE, INDEX) ~> #push ... </k>
+         <id> ACCT </id>
+         <account>
+           <acctID> ACCT </acctID>
+           <transientStorage> TSTORAGE </transientStorage>
+           ...
+         </account>
+
+
+    syntax BinStackOp ::= "TSTORE"
+ // ------------------------------
+    rule [tstore]:
+         <k> TSTORE INDEX NEW => .K ... </k>
+         <id> ACCT </id>
+         <account>
+           <acctID> ACCT </acctID>
+           <transientStorage> TSTORAGE => TSTORAGE [ INDEX <- NEW ] </transientStorage>
            ...
          </account>
       [preserves-definedness]
@@ -2039,9 +2066,16 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
 
 -   `#gasExec` loads all the relevant surrounding state and uses that to compute the intrinsic execution gas of each opcode.
 
+Gas cost for `TSTORE` is the same as a warm `SSTORE` of a dirty slot (i.e. original value is not new value, original is not current value, currently 100 gas).
+Gas cost of `TLOAD` is the same as a hot `SLOAD` (value has been read before, currently 100 gas).
+Gas cost cannot be on par with memory access due to transient storage’s interactions with reverts.
+
 ```k
     syntax InternalOp ::= #gasExec ( Schedule , OpCode ) [klabel(#gasExec)]
  // -----------------------------------------------------------------------
+    rule <k> #gasExec(SCHED, TLOAD _   ) => Gwarmstorageread < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, TSTORE _ _) => Gwarmstorageread < SCHED > ... </k>
+
     rule <k> #gasExec(SCHED, SSTORE INDEX NEW) => Csstore(SCHED, NEW, #lookup(STORAGE, INDEX), #lookup(ORIGSTORAGE, INDEX)) ... </k>
          <id> ACCT </id>
          <gas> GAVAIL </gas>
@@ -2360,7 +2394,9 @@ After interpreting the strings representing programs as a `WordStack`, it should
     rule #dasmOpCode(  89,     _ ) => MSIZE
     rule #dasmOpCode(  90,     _ ) => GAS
     rule #dasmOpCode(  91,     _ ) => JUMPDEST
-    rule #dasmOpCode(  95, SCHED ) => PUSHZERO requires Ghaspushzero << SCHED >>
+    rule #dasmOpCode(  92, SCHED ) => TLOAD    requires Ghastransient << SCHED >>
+    rule #dasmOpCode(  93, SCHED ) => TSTORE   requires Ghastransient << SCHED >>
+    rule #dasmOpCode(  95, SCHED ) => PUSHZERO requires Ghaspushzero  << SCHED >>
     rule #dasmOpCode(  96,     _ ) => PUSH(1)
     rule #dasmOpCode(  97,     _ ) => PUSH(2)
     rule #dasmOpCode(  98,     _ ) => PUSH(3)
