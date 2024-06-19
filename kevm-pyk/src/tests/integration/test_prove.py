@@ -8,9 +8,12 @@ from typing import TYPE_CHECKING, NamedTuple
 import pytest
 from filelock import SoftFileLock
 from pyk.kast.att import AttEntry, Atts, KAtt
+from pyk.kast.inner import KApply, KLabel, KSort, KToken, KVariable
 from pyk.kast.outer import KClaim
 from pyk.kdist import kdist
-from pyk.prelude.ml import is_top
+from pyk.prelude.k import GENERATED_TOP_CELL
+from pyk.prelude.kint import INT, intToken
+from pyk.prelude.ml import is_top, mlEquals, mlNot
 from pyk.proof.reachability import APRProof, APRProver
 from pyk.proof.show import APRProofShow
 
@@ -27,6 +30,7 @@ if TYPE_CHECKING:
     from collections.abc import Callable
     from typing import Any, Final
 
+    from pyk.kast.inner import KInner
     from pyk.utils import BugReport
     from pytest import LogCaptureFixture, TempPathFactory
 
@@ -455,3 +459,200 @@ def test_kprove_prove(
     # Then
     assert len(actual) == 1
     assert is_top(actual[0].kast, weak=True)
+
+
+def int_var(var: str) -> KInner:
+    return KVariable(var, sort=INT)
+
+
+def eq_int(var: str, val: int) -> KInner:
+    return mlEquals(int_var(var), intToken(val), arg_sort=INT)
+
+
+def ne_int(var: str, val: int) -> KInner:
+    return mlNot(eq_int(var, val))
+
+
+def plus_int(a: KInner, b: KInner) -> KInner:
+    return KApply('_+Int_', a, b)
+
+
+# fmt: off
+
+def p1() -> KInner:
+    return KApply(label=KLabel(name='#Equals', params=(KSort(name='Int'), GENERATED_TOP_CELL)), args=(KToken(token='115792089237316195423570985008687907853269984665640564039457584007913129639935', sort=KSort(name='Int')), KApply(label=KLabel(name='lookup', params=()), args=(KVariable(name='CONTRACT-FAKEETH_STORAGE', sort=KSort(name='Map')), KApply(label=KLabel(name='keccak(_)_SERIALIZATION_Int_Bytes', params=()), args=(KApply(label=KLabel(name='_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes', params=()), args=(KApply(label=KLabel(name='buf', params=()), args=(KToken(token='32', sort=KSort(name='Int')), KVariable(name='CONTRACT_ID', sort=KSort(name='Int')))), KApply(label=KLabel(name='buf', params=()), args=(KToken(token='32', sort=KSort(name='Int')), KApply(label=KLabel(name='keccak(_)_SERIALIZATION_Int_Bytes', params=()), args=(KApply(label=KLabel(name='_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes', params=()), args=(KApply(label=KLabel(name='buf', params=()), args=(KToken(token='32', sort=KSort(name='Int')), KVariable(name='CALLER_ID', sort=KSort(name='Int')))), KToken(token='b"\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x01"', sort=KSort(name='Bytes')))),)))))),))))))
+
+def p2() -> KInner:
+    return KApply(label=KLabel(name='#Equals', params=(KSort(name='Int'), GENERATED_TOP_CELL)), args=(KVariable(name='CALLER_ID', sort=KSort(name='Int')), KToken(token='0', sort=KSort(name='Int'))))
+
+def p3() -> KInner:
+    return KApply(label=KLabel(name='#Equals', params=(KSort(name='Bool'), GENERATED_TOP_CELL)), args=(KToken(token='true', sort=KSort(name='Bool')), KApply(label=KLabel(name='_<=Int_', params=()), args=(KVariable(name='VV0_amount_114b9705', sort=KSort(name='Int')), KApply(label=KLabel(name='lookup', params=()), args=(KVariable(name='CONTRACT-FAKEETH_STORAGE', sort=KSort(name='Map')), KApply(label=KLabel(name='keccak(_)_SERIALIZATION_Int_Bytes', params=()), args=(KApply(label=KLabel(name='_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes', params=()), args=(KApply(label=KLabel(name='buf', params=()), args=(KToken(token='32', sort=KSort(name='Int')), KVariable(name='CONTRACT_ID', sort=KSort(name='Int')))), KApply(label=KLabel(name='buf', params=()), args=(KToken(token='32', sort=KSort(name='Int')), KApply(label=KLabel(name='keccak(_)_SERIALIZATION_Int_Bytes', params=()), args=(KApply(label=KLabel(name='_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes', params=()), args=(KApply(label=KLabel(name='buf', params=()), args=(KToken(token='32', sort=KSort(name='Int')), KVariable(name='CALLER_ID', sort=KSort(name='Int')))), KToken(token='b"\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x01"', sort=KSort(name='Bytes')))),)))))),))))))))
+
+def p4() -> KInner:
+    return KApply(label=KLabel(name='#Equals', params=(KSort(name='Int'), GENERATED_TOP_CELL)), args=(KVariable(name='CONTRACT_ID', sort=KSort(name='Int')), KToken(token='0', sort=KSort(name='Int'))))
+
+def p5() -> KInner:
+    return KApply(label=KLabel(name='#Equals', params=(KSort(name='Bool'), GENERATED_TOP_CELL)), args=(KToken(token='true', sort=KSort(name='Bool')), KApply(label=KLabel(name='_<=Int_', params=()), args=(KVariable(name='VV0_amount_114b9705', sort=KSort(name='Int')), KApply(label=KLabel(name='lookup', params=()), args=(KVariable(name='CONTRACT-FAKEETH_STORAGE', sort=KSort(name='Map')), KApply(label=KLabel(name='keccak(_)_SERIALIZATION_Int_Bytes', params=()), args=(KApply(label=KLabel(name='_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes', params=()), args=(KApply(label=KLabel(name='buf', params=()), args=(KToken(token='32', sort=KSort(name='Int')), KVariable(name='CALLER_ID', sort=KSort(name='Int')))), KToken(token='b"\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00"', sort=KSort(name='Bytes')))),))))))))
+
+def p7() -> KInner:
+    return KApply(label=KLabel(name='#Equals', params=(KSort(name='Bool'), GENERATED_TOP_CELL)), args=(KVariable(name='STATIC_CELL', sort=KSort(name='Bool')), KToken(token='true', sort=KSort(name='Bool'))))
+
+def ml_not_p7() -> KInner:
+    return KApply(label=KLabel(name='#Equals', params=(KSort(name='Bool'), GENERATED_TOP_CELL)), args=(KVariable(name='STATIC_CELL', sort=KSort(name='Bool')), KToken(token='false', sort=KSort(name='Bool'))))
+
+
+NORMALIZE_DNF_TEST_DATA: list[tuple[str, list[list[KInner]], list[KInner], list[list[KInner]]]] = [
+    (
+        'extremely-complicated',
+        [
+            # 06: BASIC-BLOCK-109-TO-28:  P1 /\ !P2        /\ !P4 /\ !P5
+            [
+                p1(),
+                mlNot(p2()),
+                mlNot(p4()),
+                KApply(label=KLabel(name='#Equals', params=(KSort(name='Bool'), GENERATED_TOP_CELL)), args=(KToken(token='true', sort=KSort(name='Bool')), KApply(label=KLabel(name='_<Int_', params=()), args=(KApply(label=KLabel(name='lookup', params=()), args=(KVariable(name='CONTRACT-FAKEETH_STORAGE', sort=KSort(name='Map')), KApply(label=KLabel(name='keccak(_)_SERIALIZATION_Int_Bytes', params=()), args=(KApply(label=KLabel(name='_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes', params=()), args=(KApply(label=KLabel(name='buf', params=()), args=(KToken(token='32', sort=KSort(name='Int')), KVariable(name='CALLER_ID', sort=KSort(name='Int')))), KToken(token='b"\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00"', sort=KSort(name='Bytes')))),)))), KVariable(name='VV0_amount_114b9705', sort=KSort(name='Int')))))),
+            ],
+            # 12: BASIC-BLOCK-131-TO-46: !P1 /\ !P2 /\  P3 /\ !P4 /\ !P5 /\ !P6 /\ !P7
+            [
+                mlNot(p1()),
+                mlNot(p2()),
+                mlNot(p4()),
+                KApply(label=KLabel(name='#Equals', params=(KSort(name='Bool'), GENERATED_TOP_CELL)), args=(KToken(token='true', sort=KSort(name='Bool')), KApply(label=KLabel(name='_<Int_', params=()), args=(KApply(label=KLabel(name='lookup', params=()), args=(KVariable(name='CONTRACT-FAKEETH_STORAGE', sort=KSort(name='Map')), KApply(label=KLabel(name='keccak(_)_SERIALIZATION_Int_Bytes', params=()), args=(KApply(label=KLabel(name='_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes', params=()), args=(KApply(label=KLabel(name='buf', params=()), args=(KToken(token='32', sort=KSort(name='Int')), KVariable(name='CALLER_ID', sort=KSort(name='Int')))), KToken(token='b"\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00"', sort=KSort(name='Bytes')))),)))), KVariable(name='VV0_amount_114b9705', sort=KSort(name='Int')))))),
+                ml_not_p7(),
+            ],
+            # 02: BASIC-BLOCK-73-TO-13:  !P1 /\ ... /\ !P3
+            [
+                mlNot(p1()),
+                KApply(label=KLabel(name='#Equals', params=(KSort(name='Bool'), GENERATED_TOP_CELL)), args=(KToken(token='true', sort=KSort(name='Bool')), KApply(label=KLabel(name='_<Int_', params=()), args=(KApply(label=KLabel(name='lookup', params=()), args=(KVariable(name='CONTRACT-FAKEETH_STORAGE', sort=KSort(name='Map')), KApply(label=KLabel(name='keccak(_)_SERIALIZATION_Int_Bytes', params=()), args=(KApply(label=KLabel(name='_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes', params=()), args=(KApply(label=KLabel(name='buf', params=()), args=(KToken(token='32', sort=KSort(name='Int')), KVariable(name='CONTRACT_ID', sort=KSort(name='Int')))), KApply(label=KLabel(name='buf', params=()), args=(KToken(token='32', sort=KSort(name='Int')), KApply(label=KLabel(name='keccak(_)_SERIALIZATION_Int_Bytes', params=()), args=(KApply(label=KLabel(name='_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes', params=()), args=(KApply(label=KLabel(name='buf', params=()), args=(KToken(token='32', sort=KSort(name='Int')), KVariable(name='CALLER_ID', sort=KSort(name='Int')))), KToken(token='b"\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x01"', sort=KSort(name='Bytes')))),)))))),)))), KVariable(name='VV0_amount_114b9705', sort=KSort(name='Int')))))),
+            ],
+            # 04: BASIC-BLOCK-91-TO-21:  !P1 /\  P2 /\  P3
+            [
+                KApply(label=KLabel(name='#Not', params=(GENERATED_TOP_CELL,)), args=(KApply(label=KLabel(name='#Equals', params=(KSort(name='Int'), GENERATED_TOP_CELL)), args=(KToken(token='115792089237316195423570985008687907853269984665640564039457584007913129639935', sort=KSort(name='Int')), KApply(label=KLabel(name='lookup', params=()), args=(KVariable(name='CONTRACT-FAKEETH_STORAGE', sort=KSort(name='Map')), KApply(label=KLabel(name='keccak(_)_SERIALIZATION_Int_Bytes', params=()), args=(KApply(label=KLabel(name='_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes', params=()), args=(KApply(label=KLabel(name='buf', params=()), args=(KToken(token='32', sort=KSort(name='Int')), KVariable(name='CONTRACT_ID', sort=KSort(name='Int')))), KToken(token='b"\\xa6\\xee\\xf7\\xe3Z\\xbep&r\\x96A\\x14\\x7fy\\x15W<~\\x97\\xb4~\\xfaTo_n20&;\\xcbI"', sort=KSort(name='Bytes')))),)))))),)),
+                p2(),
+                KApply(label=KLabel(name='#Equals', params=(KSort(name='Bool'), GENERATED_TOP_CELL)), args=(KToken(token='true', sort=KSort(name='Bool')), KApply(label=KLabel(name='_<=Int_', params=()), args=(KVariable(name='VV0_amount_114b9705', sort=KSort(name='Int')), KApply(label=KLabel(name='lookup', params=()), args=(KVariable(name='CONTRACT-FAKEETH_STORAGE', sort=KSort(name='Map')), KApply(label=KLabel(name='keccak(_)_SERIALIZATION_Int_Bytes', params=()), args=(KApply(label=KLabel(name='_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes', params=()), args=(KApply(label=KLabel(name='buf', params=()), args=(KToken(token='32', sort=KSort(name='Int')), KVariable(name='CONTRACT_ID', sort=KSort(name='Int')))), KToken(token='b"\\xa6\\xee\\xf7\\xe3Z\\xbep&r\\x96A\\x14\\x7fy\\x15W<~\\x97\\xb4~\\xfaTo_n20&;\\xcbI"', sort=KSort(name='Bytes')))),)))))))),
+            ],
+            # 05: BASIC-BLOCK-107-TO-29: !P1 /\ !P2 /\  P3               /\  P6
+            [
+                KApply(label=KLabel(name='#Not', params=(GENERATED_TOP_CELL,)), args=(KApply(label=KLabel(name='#Equals', params=(KSort(name='Int'), GENERATED_TOP_CELL)), args=(KToken(token='115792089237316195423570985008687907853269984665640564039457584007913129639935', sort=KSort(name='Int')), KApply(label=KLabel(name='lookup', params=()), args=(KVariable(name='CONTRACT-FAKEETH_STORAGE', sort=KSort(name='Map')), KApply(label=KLabel(name='keccak(_)_SERIALIZATION_Int_Bytes', params=()), args=(KApply(label=KLabel(name='_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes', params=()), args=(KToken(token='b"\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00"', sort=KSort(name='Bytes')), KApply(label=KLabel(name='buf', params=()), args=(KToken(token='32', sort=KSort(name='Int')), KApply(label=KLabel(name='keccak(_)_SERIALIZATION_Int_Bytes', params=()), args=(KApply(label=KLabel(name='_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes', params=()), args=(KApply(label=KLabel(name='buf', params=()), args=(KToken(token='32', sort=KSort(name='Int')), KVariable(name='CALLER_ID', sort=KSort(name='Int')))), KToken(token='b"\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x01"', sort=KSort(name='Bytes')))),)))))),)))))),)),
+                mlNot(p2()),
+                KApply(label=KLabel(name='#Equals', params=(KSort(name='Bool'), GENERATED_TOP_CELL)), args=(KToken(token='true', sort=KSort(name='Bool')), KApply(label=KLabel(name='_<=Int_', params=()), args=(KVariable(name='VV0_amount_114b9705', sort=KSort(name='Int')), KApply(label=KLabel(name='lookup', params=()), args=(KVariable(name='CONTRACT-FAKEETH_STORAGE', sort=KSort(name='Map')), KApply(label=KLabel(name='keccak(_)_SERIALIZATION_Int_Bytes', params=()), args=(KApply(label=KLabel(name='_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes', params=()), args=(KToken(token='b"\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00"', sort=KSort(name='Bytes')), KApply(label=KLabel(name='buf', params=()), args=(KToken(token='32', sort=KSort(name='Int')), KApply(label=KLabel(name='keccak(_)_SERIALIZATION_Int_Bytes', params=()), args=(KApply(label=KLabel(name='_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes', params=()), args=(KApply(label=KLabel(name='buf', params=()), args=(KToken(token='32', sort=KSort(name='Int')), KVariable(name='CALLER_ID', sort=KSort(name='Int')))), KToken(token='b"\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x01"', sort=KSort(name='Bytes')))),)))))),)))))))),
+                p4()
+            ],
+            # 08: BASIC-BLOCK-118-TO-38:  P1 /\ !P2        /\ !P4 /\  P5        /\ !P7
+            [
+                p1(),
+                mlNot(p2()),
+                mlNot(p4()),
+                ml_not_p7(),
+            ],
+            # 09: BASIC-BLOCK-119-TO-36:  P1 /\ !P2        /\ !P4 /\  P5        /\  P7
+            [
+                p1(),
+                mlNot(p2()),
+                mlNot(p4()),
+                p7(),
+            ],
+            # 03: BASIC-BLOCK-93-TO-20:   P1 /\ !P2        /\  P4
+            [
+                KApply(label=KLabel(name='#Equals', params=(KSort(name='Int'), GENERATED_TOP_CELL)), args=(KToken(token='115792089237316195423570985008687907853269984665640564039457584007913129639935', sort=KSort(name='Int')), KApply(label=KLabel(name='lookup', params=()), args=(KVariable(name='CONTRACT-FAKEETH_STORAGE', sort=KSort(name='Map')), KApply(label=KLabel(name='keccak(_)_SERIALIZATION_Int_Bytes', params=()), args=(KApply(label=KLabel(name='_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes', params=()), args=(KToken(token='b"\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00"', sort=KSort(name='Bytes')), KApply(label=KLabel(name='buf', params=()), args=(KToken(token='32', sort=KSort(name='Int')), KApply(label=KLabel(name='keccak(_)_SERIALIZATION_Int_Bytes', params=()), args=(KApply(label=KLabel(name='_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes', params=()), args=(KApply(label=KLabel(name='buf', params=()), args=(KToken(token='32', sort=KSort(name='Int')), KVariable(name='CALLER_ID', sort=KSort(name='Int')))), KToken(token='b"\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x01"', sort=KSort(name='Bytes')))),)))))),)))))),
+                mlNot(p2()),
+                p4()
+            ],
+            # 11: BASIC-BLOCK-130-TO-47: !P1 /\ !P2 /\  P3 /\ !P4 /\  P5 /\ !P6 /\ !P7
+            [
+                mlNot(p1()),
+                mlNot(p2()),
+                mlNot(p4()),
+                ml_not_p7(),
+            ],
+            # 07: BASIC-BLOCK-121-TO-37: !P1 /\ !P2 /\  P3               /\ !P6 /\  P7
+            [
+                mlNot(p1()),
+                mlNot(p2()),
+                mlNot(p4()),
+                p7(),
+            ],
+            # 01: BASIC-BLOCK-71-TO-12:   P1 /\  P2
+            [
+                KApply(label=KLabel(name='#Equals', params=(KSort(name='Int'), GENERATED_TOP_CELL)), args=(KToken(token='115792089237316195423570985008687907853269984665640564039457584007913129639935', sort=KSort(name='Int')), KApply(label=KLabel(name='lookup', params=()), args=(KVariable(name='CONTRACT-FAKEETH_STORAGE', sort=KSort(name='Map')), KApply(label=KLabel(name='keccak(_)_SERIALIZATION_Int_Bytes', params=()), args=(KApply(label=KLabel(name='_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes', params=()), args=(KApply(label=KLabel(name='buf', params=()), args=(KToken(token='32', sort=KSort(name='Int')), KVariable(name='CONTRACT_ID', sort=KSort(name='Int')))), KToken(token='b"\\xa6\\xee\\xf7\\xe3Z\\xbep&r\\x96A\\x14\\x7fy\\x15W<~\\x97\\xb4~\\xfaTo_n20&;\\xcbI"', sort=KSort(name='Bytes')))),)))))),
+                p2(),
+            ]
+        ],
+        [
+            p3(),
+            p5()
+        ],
+        [
+            # 04: BASIC-BLOCK-91-TO-21:  !P1 /\  P2 /\  P3
+            [
+                mlNot(p1()),
+                p2(),
+            ],
+            # 05: BASIC-BLOCK-107-TO-29: !P1 /\ !P2 /\  P3               /\  P6
+            [
+                mlNot(p1()),
+                mlNot(p2()),
+                p4()
+            ],
+            # 08: BASIC-BLOCK-118-TO-38:  P1 /\ !P2        /\ !P4 /\  P5        /\ !P7
+            [
+                p1(),
+                mlNot(p2()),
+                mlNot(p4()),
+                ml_not_p7(),
+            ],
+            # 09: BASIC-BLOCK-119-TO-36:  P1 /\ !P2        /\ !P4 /\  P5        /\  P7
+            [
+                p1(),
+                mlNot(p2()),
+                mlNot(p4()),
+                p7(),
+            ],
+            # 03: BASIC-BLOCK-93-TO-20:   P1 /\ !P2        /\  P4
+            [
+                p1(),
+                mlNot(p2()),
+                p4()
+            ],
+            # 11: BASIC-BLOCK-130-TO-47: !P1 /\ !P2 /\  P3 /\ !P4 /\  P5 /\ !P6 /\ !P7
+            [
+                mlNot(p1()),
+                mlNot(p2()),
+                mlNot(p4()),
+                ml_not_p7(),
+            ],
+            # 07: BASIC-BLOCK-121-TO-37: !P1 /\ !P2 /\  P3               /\ !P6 /\  P7
+            [
+                mlNot(p1()),
+                mlNot(p2()),
+                mlNot(p4()),
+                p7(),
+            ],
+            # 01: BASIC-BLOCK-71-TO-12:   P1 /\  P2
+            [
+                p1(),
+                p2(),
+            ]
+        ],
+    )
+]
+
+# fmt: on
+
+
+@pytest.mark.parametrize(
+    'test_id,dnf,path_condition,expected',
+    NORMALIZE_DNF_TEST_DATA,
+    ids=[test_id for test_id, *_ in NORMALIZE_DNF_TEST_DATA],
+)
+def test_normalize_dnf(
+    kompiled_target_for: Callable[[Path], Path],
+    test_id: str,
+    dnf: list[list[KInner]],
+    path_condition: list[KInner],
+    expected: list[list[KInner]],
+) -> None:
+    definition_dir = kompiled_target_for(FUNCTIONAL_TESTS[0])
+    kevm = KEVM(definition_dir)
+    with legacy_explore(kevm, kcfg_semantics=KEVMSemantics(), kore_rpc_command='kore-rpc-booster') as kcfg_explore:
+        assert kcfg_explore.cterm_symbolic.normalize_dnf(dnf, path_condition) == expected
