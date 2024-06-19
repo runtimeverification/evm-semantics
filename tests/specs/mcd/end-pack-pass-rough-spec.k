@@ -61,7 +61,10 @@ module END-PACK-PASS-ROUGH-SPEC
             <baseFee> _ </baseFee>
             <ommerBlockHeaders> _ </ommerBlockHeaders>
             <withdrawalsRoot> _ </withdrawalsRoot>
-          </block>
+            <blobGasUsed> _ </blobGasUsed>
+            <excessBlobGas> _ </excessBlobGas>
+            <beaconRoot> _ </beaconRoot>
+        </block>
         </evm>
         <network>
           <chainID> VChainId </chainID>
@@ -73,6 +76,7 @@ module END-PACK-PASS-ROUGH-SPEC
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE [ #End.bag[CALLER_ID] <- Bag +Int ABI_wad ] </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
               <nonce> Nonce_End </nonce>
+              <transientStorage> _ </transientStorage>
             </account>
             <account>
               <acctID> Vat </acctID>
@@ -81,6 +85,7 @@ module END-PACK-PASS-ROUGH-SPEC
               <storage> Vat_STORAGE => Vat_STORAGE [ #Vat.dai[CALLER_ID] <- Dai -Int ABI_wad *Int #Ray ] [ #Vat.dai[Vow] <- Joy +Int ABI_wad *Int #Ray ] </storage>
               <origStorage> Vat_ORIG_STORAGE </origStorage>
               <nonce> Nonce_Vat </nonce>
+              <transientStorage> _ </transientStorage>
             </account>
            ...
           </accounts>
@@ -219,7 +224,10 @@ module END-PACK-PASS-ROUGH-SPEC
             <baseFee> _ </baseFee>
             <ommerBlockHeaders> _ </ommerBlockHeaders>
             <withdrawalsRoot> _ </withdrawalsRoot>
-          </block>
+            <blobGasUsed> _ </blobGasUsed>
+            <excessBlobGas> _ </excessBlobGas>
+            <beaconRoot> _ </beaconRoot>
+        </block>
         </evm>
         <network>
           <chainID> VChainId </chainID>
@@ -231,6 +239,7 @@ module END-PACK-PASS-ROUGH-SPEC
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE  </storage>
               <origStorage> _ACCT_ID_ORIG_STORAGE </origStorage>
               <nonce> Nonce_End </nonce>
+              <transientStorage> _ </transientStorage>
             </account>
            ...
           </accounts>
@@ -319,7 +328,10 @@ module END-PACK-PASS-ROUGH-SPEC
             <baseFee> _ </baseFee>
             <ommerBlockHeaders> _ </ommerBlockHeaders>
             <withdrawalsRoot> _ </withdrawalsRoot>
-          </block>
+            <blobGasUsed> _ </blobGasUsed>
+            <excessBlobGas> _ </excessBlobGas>
+            <beaconRoot> _ </beaconRoot>
+        </block>
         </evm>
         <network>
           <chainID> VChainId </chainID>
@@ -331,6 +343,7 @@ module END-PACK-PASS-ROUGH-SPEC
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE  </storage>
               <origStorage> _ACCT_ID_ORIG_STORAGE </origStorage>
               <nonce> Nonce_End </nonce>
+              <transientStorage> _ </transientStorage>
             </account>
            ...
           </accounts>
@@ -419,7 +432,10 @@ module END-PACK-PASS-ROUGH-SPEC
             <baseFee> _ </baseFee>
             <ommerBlockHeaders> _ </ommerBlockHeaders>
             <withdrawalsRoot> _ </withdrawalsRoot>
-          </block>
+            <blobGasUsed> _ </blobGasUsed>
+            <excessBlobGas> _ </excessBlobGas>
+            <beaconRoot> _ </beaconRoot>
+        </block>
         </evm>
         <network>
           <chainID> VChainId </chainID>
@@ -431,6 +447,7 @@ module END-PACK-PASS-ROUGH-SPEC
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE [ #Vat.dai[ABI_src] <- Dai_src -Int ABI_rad ] [ #Vat.dai[ABI_dst] <- Dai_dst +Int ABI_rad ] </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
               <nonce> Nonce_Vat </nonce>
+              <transientStorage> _ </transientStorage>
             </account>
            ...
           </accounts>

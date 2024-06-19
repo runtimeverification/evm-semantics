@@ -61,7 +61,10 @@ module VOW-FLOG-FAIL-ROUGH-SPEC
             <baseFee> _ </baseFee>
             <ommerBlockHeaders> _ </ommerBlockHeaders>
             <withdrawalsRoot> _ </withdrawalsRoot>
-          </block>
+            <blobGasUsed> _ </blobGasUsed>
+            <excessBlobGas> _ </excessBlobGas>
+            <beaconRoot> _ </beaconRoot>
+        </block>
         </evm>
         <network>
           <chainID> VChainId </chainID>
@@ -73,6 +76,7 @@ module VOW-FLOG-FAIL-ROUGH-SPEC
               <storage> ACCT_ID_STORAGE => ?_ACCT_ID_STORAGE </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
               <nonce> Nonce_Vow => ?_ </nonce>
+              <transientStorage> _ </transientStorage>
             </account>
            ...
           </accounts>
@@ -178,7 +182,10 @@ module VOW-FLOG-FAIL-ROUGH-SPEC
             <baseFee> _ </baseFee>
             <ommerBlockHeaders> _ </ommerBlockHeaders>
             <withdrawalsRoot> _ </withdrawalsRoot>
-          </block>
+            <blobGasUsed> _ </blobGasUsed>
+            <excessBlobGas> _ </excessBlobGas>
+            <beaconRoot> _ </beaconRoot>
+        </block>
         </evm>
         <network>
           <chainID> VChainId </chainID>
@@ -190,6 +197,7 @@ module VOW-FLOG-FAIL-ROUGH-SPEC
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE  </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
               <nonce> Nonce_Vow => ?_ </nonce>
+              <transientStorage> _ </transientStorage>
             </account>
            ...
           </accounts>
@@ -278,7 +286,10 @@ module VOW-FLOG-FAIL-ROUGH-SPEC
             <baseFee> _ </baseFee>
             <ommerBlockHeaders> _ </ommerBlockHeaders>
             <withdrawalsRoot> _ </withdrawalsRoot>
-          </block>
+            <blobGasUsed> _ </blobGasUsed>
+            <excessBlobGas> _ </excessBlobGas>
+            <beaconRoot> _ </beaconRoot>
+        </block>
         </evm>
         <network>
           <chainID> VChainId </chainID>
@@ -290,6 +301,7 @@ module VOW-FLOG-FAIL-ROUGH-SPEC
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE  </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
               <nonce> Nonce_Vow => ?_ </nonce>
+              <transientStorage> _ </transientStorage>
             </account>
            ...
           </accounts>

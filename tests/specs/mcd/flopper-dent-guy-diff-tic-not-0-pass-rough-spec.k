@@ -61,7 +61,10 @@ module FLOPPER-DENT-GUY-DIFF-TIC-NOT-0-PASS-ROUGH-SPEC
             <baseFee> _ </baseFee>
             <ommerBlockHeaders> _ </ommerBlockHeaders>
             <withdrawalsRoot> _ </withdrawalsRoot>
-          </block>
+            <blobGasUsed> _ </blobGasUsed>
+            <excessBlobGas> _ </excessBlobGas>
+            <beaconRoot> _ </beaconRoot>
+        </block>
         </evm>
         <network>
           <chainID> VChainId </chainID>
@@ -73,6 +76,7 @@ module FLOPPER-DENT-GUY-DIFF-TIC-NOT-0-PASS-ROUGH-SPEC
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE [ #Flopper.bids[ABI_id].lot <- ABI_lot ] [ #Flopper.bids[ABI_id].guy_tic_end <- #WordPackAddrUInt48UInt48(CALLER_ID, TIME +Int Ttl, End) ] </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
               <nonce> Nonce_Flopper </nonce>
+              <transientStorage> _ </transientStorage>
             </account>
             <account>
               <acctID> Vat </acctID>
@@ -81,6 +85,7 @@ module FLOPPER-DENT-GUY-DIFF-TIC-NOT-0-PASS-ROUGH-SPEC
               <storage> Vat_STORAGE => Vat_STORAGE [ #Vat.dai[CALLER_ID] <- Dai_a -Int ABI_bid ] [ #Vat.dai[Guy] <- Dai_g +Int ABI_bid ] </storage>
               <origStorage> Vat_ORIG_STORAGE </origStorage>
               <nonce> Nonce_Vat </nonce>
+              <transientStorage> _ </transientStorage>
             </account>
            ...
           </accounts>
@@ -259,7 +264,10 @@ module FLOPPER-DENT-GUY-DIFF-TIC-NOT-0-PASS-ROUGH-SPEC
             <baseFee> _ </baseFee>
             <ommerBlockHeaders> _ </ommerBlockHeaders>
             <withdrawalsRoot> _ </withdrawalsRoot>
-          </block>
+            <blobGasUsed> _ </blobGasUsed>
+            <excessBlobGas> _ </excessBlobGas>
+            <beaconRoot> _ </beaconRoot>
+        </block>
         </evm>
         <network>
           <chainID> VChainId </chainID>
@@ -271,6 +279,7 @@ module FLOPPER-DENT-GUY-DIFF-TIC-NOT-0-PASS-ROUGH-SPEC
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE  </storage>
               <origStorage> _ACCT_ID_ORIG_STORAGE </origStorage>
               <nonce> Nonce_Flopper </nonce>
+              <transientStorage> _ </transientStorage>
             </account>
            ...
           </accounts>
@@ -359,7 +368,10 @@ module FLOPPER-DENT-GUY-DIFF-TIC-NOT-0-PASS-ROUGH-SPEC
             <baseFee> _ </baseFee>
             <ommerBlockHeaders> _ </ommerBlockHeaders>
             <withdrawalsRoot> _ </withdrawalsRoot>
-          </block>
+            <blobGasUsed> _ </blobGasUsed>
+            <excessBlobGas> _ </excessBlobGas>
+            <beaconRoot> _ </beaconRoot>
+        </block>
         </evm>
         <network>
           <chainID> VChainId </chainID>
@@ -371,6 +383,7 @@ module FLOPPER-DENT-GUY-DIFF-TIC-NOT-0-PASS-ROUGH-SPEC
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE  </storage>
               <origStorage> _ACCT_ID_ORIG_STORAGE </origStorage>
               <nonce> Nonce_Flopper </nonce>
+              <transientStorage> _ </transientStorage>
             </account>
            ...
           </accounts>
@@ -458,7 +471,10 @@ module FLOPPER-DENT-GUY-DIFF-TIC-NOT-0-PASS-ROUGH-SPEC
             <baseFee> _ </baseFee>
             <ommerBlockHeaders> _ </ommerBlockHeaders>
             <withdrawalsRoot> _ </withdrawalsRoot>
-          </block>
+            <blobGasUsed> _ </blobGasUsed>
+            <excessBlobGas> _ </excessBlobGas>
+            <beaconRoot> _ </beaconRoot>
+        </block>
         </evm>
         <network>
           <chainID> VChainId </chainID>
@@ -470,6 +486,7 @@ module FLOPPER-DENT-GUY-DIFF-TIC-NOT-0-PASS-ROUGH-SPEC
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE [ #Vat.dai[ABI_src] <- Dai_src -Int ABI_rad ] [ #Vat.dai[ABI_dst] <- Dai_dst +Int ABI_rad ] </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
               <nonce> Nonce_Vat </nonce>
+              <transientStorage> _ </transientStorage>
             </account>
            ...
           </accounts>

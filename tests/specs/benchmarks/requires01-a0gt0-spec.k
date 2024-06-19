@@ -61,6 +61,9 @@ module REQUIRES01-A0GT0-SPEC
           <baseFee> _ </baseFee>
           <ommerBlockHeaders> _ </ommerBlockHeaders>
           <withdrawalsRoot> _ </withdrawalsRoot>
+          <blobGasUsed> _ </blobGasUsed>
+          <excessBlobGas> _ </excessBlobGas>
+          <beaconRoot> _ </beaconRoot>
         </block>
       </evm>
       <network>
@@ -74,6 +77,9 @@ module REQUIRES01-A0GT0-SPEC
             <storage> _S </storage>
             <origStorage> _OS </origStorage>
             <nonce> CONTRACT_NONCE </nonce>
+            <transientStorage>
+                _
+            </transientStorage>
           </account>
 
           <account>
@@ -87,6 +93,9 @@ module REQUIRES01-A0GT0-SPEC
                 _
             </origStorage>
             <nonce> CALLEE_NONCE </nonce>
+            <transientStorage>
+                _
+            </transientStorage>
           </account>
 
           <account>
@@ -97,6 +106,7 @@ module REQUIRES01-A0GT0-SPEC
             <storage> .Map </storage>
             <origStorage> .Map </origStorage>
             <nonce> 0 </nonce>
+            <transientStorage> .Map </transientStorage>
           </account>
 
 

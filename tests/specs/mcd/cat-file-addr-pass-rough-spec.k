@@ -61,7 +61,10 @@ module CAT-FILE-ADDR-PASS-ROUGH-SPEC
             <baseFee> _ </baseFee>
             <ommerBlockHeaders> _ </ommerBlockHeaders>
             <withdrawalsRoot> _ </withdrawalsRoot>
-          </block>
+            <blobGasUsed> _ </blobGasUsed>
+            <excessBlobGas> _ </excessBlobGas>
+            <beaconRoot> _ </beaconRoot>
+        </block>
         </evm>
         <network>
           <chainID> VChainId </chainID>
@@ -73,6 +76,7 @@ module CAT-FILE-ADDR-PASS-ROUGH-SPEC
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE [ #Cat.vow <- ABI_data ] </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
               <nonce> Nonce_Cat </nonce>
+              <transientStorage> _ </transientStorage>
             </account>
            ...
           </accounts>

@@ -72,6 +72,9 @@ module APPROVE-SPEC
           <baseFee> _ </baseFee>
           <ommerBlockHeaders> _ </ommerBlockHeaders>
           <withdrawalsRoot> _ </withdrawalsRoot>
+          <blobGasUsed> _ </blobGasUsed>
+          <excessBlobGas> _ </excessBlobGas>
+          <beaconRoot> _ </beaconRoot>
         </block>
       </evm>
 
@@ -88,6 +91,7 @@ _:Map </storage>
             <origStorage> #hashedLocation("Solidity", 2, CALLER_ID SPENDER) |-> INIT_VALUE
 _:Map </origStorage>
             <nonce> _ </nonce>
+            <transientStorage> _ </transientStorage>
           </account>
        // ... // TODO: fix
         </accounts>

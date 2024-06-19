@@ -1,3 +1,4 @@
+
 tests/ethereum-tests/BlockchainTests/GeneralStateTests/Cancun/stEIP4844-blobtransactions/blobhashListBounds3.json
 tests/ethereum-tests/BlockchainTests/GeneralStateTests/Cancun/stEIP4844-blobtransactions/blobhashListBounds4.json
 tests/ethereum-tests/BlockchainTests/GeneralStateTests/Cancun/stEIP4844-blobtransactions/blobhashListBounds5.json
@@ -308,4 +309,4 @@ tests/ethereum-tests/BlockchainTests/GeneralStateTests/stZeroCallsTest/ZeroValue
 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stZeroCallsTest/ZeroValue_SUICIDE_ToNonZeroBalance.json
 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stZeroCallsTest/ZeroValue_SUICIDE_ToOneStorageKey_Paris.json
 tests/ethereum-tests/BlockchainTests/GeneralStateTests/stZeroCallsTest/ZeroValue_SUICIDE.json
-tests/ethereum-tests/vmTests/suicide.json
+tests/ethereum-tests/BlockchainTests/GeneralStateTests/VMTests/vmTests/suicide.json

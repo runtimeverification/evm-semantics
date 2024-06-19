@@ -64,7 +64,10 @@ module VAT-MOVE-DIFF-ROUGH-SPEC
             <baseFee> _ </baseFee>
             <ommerBlockHeaders> _ </ommerBlockHeaders>
             <withdrawalsRoot> _ </withdrawalsRoot>
-          </block>
+            <blobGasUsed> _ </blobGasUsed>
+            <excessBlobGas> _ </excessBlobGas>
+            <beaconRoot> _ </beaconRoot>
+        </block>
         </evm>
         <network>
           <chainID> VChainId </chainID>
@@ -76,6 +79,7 @@ module VAT-MOVE-DIFF-ROUGH-SPEC
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE [ #Vat.dai[ABI_src] <- Dai_src -Int ABI_rad ] [ #Vat.dai[ABI_dst] <- Dai_dst +Int ABI_rad ] </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
               <nonce> Nonce_Vat </nonce>
+              <transientStorage> _ </transientStorage>
             </account>
            ...
           </accounts>

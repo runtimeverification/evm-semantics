@@ -63,7 +63,10 @@ module VAT-FORK-DIFF-PASS-ROUGH-SPEC
             <baseFee> _ </baseFee>
             <ommerBlockHeaders> _ </ommerBlockHeaders>
             <withdrawalsRoot> _ </withdrawalsRoot>
-          </block>
+            <blobGasUsed> _ </blobGasUsed>
+            <excessBlobGas> _ </excessBlobGas>
+            <beaconRoot> _ </beaconRoot>
+        </block>
         </evm>
         <network>
           <chainID> VChainId </chainID>
@@ -75,6 +78,7 @@ module VAT-FORK-DIFF-PASS-ROUGH-SPEC
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE [ #Vat.urns[ABI_ilk][ABI_src].ink <- Ink_u -Int ABI_dink ] [ #Vat.urns[ABI_ilk][ABI_src].art <- Art_u -Int ABI_dart ] [ #Vat.urns[ABI_ilk][ABI_dst].ink <- Ink_v +Int ABI_dink ] [ #Vat.urns[ABI_ilk][ABI_dst].art <- Art_v +Int ABI_dart ] </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
               <nonce> _Nonce_Vat => ?_ </nonce>
+              <transientStorage> _ </transientStorage>
             </account>
            ...
           </accounts>

@@ -65,6 +65,9 @@ module ECRECOVERLOOP02-SIGS-VALID-SPEC
           <baseFee> _ </baseFee>
           <ommerBlockHeaders> _ </ommerBlockHeaders>
           <withdrawalsRoot> _ </withdrawalsRoot>
+          <blobGasUsed> _ </blobGasUsed>
+          <excessBlobGas> _ </excessBlobGas>
+          <beaconRoot> _ </beaconRoot>
         </block>
       </evm>
       <network>
@@ -82,6 +85,9 @@ _
 _
             </origStorage>
             <nonce> CONTRACT_NONCE </nonce>
+            <transientStorage>
+                _
+            </transientStorage>
           </account>
 
           <account>
@@ -95,6 +101,9 @@ _
                 _
             </origStorage>
             <nonce> CALLEE_NONCE </nonce>
+            <transientStorage>
+                _
+            </transientStorage>
           </account>
 
           <account>
@@ -105,6 +114,7 @@ _
             <storage> .Map </storage>
             <origStorage> .Map </origStorage>
             <nonce> 0 </nonce>
+            <transientStorage> .Map </transientStorage>
           </account>
 
 

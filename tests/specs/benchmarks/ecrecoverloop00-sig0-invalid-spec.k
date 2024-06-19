@@ -64,6 +64,9 @@ module ECRECOVERLOOP00-SIG0-INVALID-SPEC
           <baseFee> _ </baseFee>
           <ommerBlockHeaders> _ </ommerBlockHeaders>
           <withdrawalsRoot> _ </withdrawalsRoot>
+          <blobGasUsed> _ </blobGasUsed>
+          <excessBlobGas> _ </excessBlobGas>
+          <beaconRoot> _ </beaconRoot>
         </block>
       </evm>
       <network>
@@ -81,6 +84,9 @@ _
 _
             </origStorage>
             <nonce> _ </nonce>
+            <transientStorage>
+                _
+            </transientStorage>
           </account>
 
           <account>
@@ -94,6 +100,9 @@ _
                 _
             </origStorage>
             <nonce> _ </nonce>
+            <transientStorage>
+                _
+            </transientStorage>
           </account>
 
           <account>
@@ -104,6 +113,7 @@ _
             <storage> .Map </storage>
             <origStorage> .Map </origStorage>
             <nonce> 0 </nonce>
+           <transientStorage> .Map </transientStorage>
           </account>
 
 

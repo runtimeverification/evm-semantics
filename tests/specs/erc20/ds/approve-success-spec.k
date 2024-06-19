@@ -72,6 +72,9 @@ module APPROVE-SUCCESS-SPEC
           <baseFee> _ </baseFee>
           <ommerBlockHeaders> _ </ommerBlockHeaders>
           <withdrawalsRoot> _ </withdrawalsRoot>
+          <blobGasUsed> _ </blobGasUsed>
+          <excessBlobGas> _ </excessBlobGas>
+          <beaconRoot> _ </beaconRoot>
         </block>
       </evm>
 
@@ -90,6 +93,7 @@ _:Map </storage>
 #hashedLocation("Solidity", 2, CALLER_ID SPENDER) |-> ORIG_VAL
 _:Map </origStorage>
             <nonce> _ </nonce>
+            <transientStorage> _ </transientStorage>
           </account>
        // ... // TODO: fix
         </accounts>
