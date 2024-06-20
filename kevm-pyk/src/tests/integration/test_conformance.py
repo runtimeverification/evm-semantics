@@ -129,10 +129,11 @@ def test_rest_vm(test_file: Path, test_id: str) -> None:
     _test(TEST_DIR / test_file, test_id, 'DEFAULT', 'VMTESTS', 1, True)
 
 
-ALL_BCHAIN_TESTS: Final = set(read_csv_file(ALL_BCHAIN_TESTS_CSV))
+
+ALL_BCHAIN_TESTS: Final = read_csv_file(ALL_BCHAIN_TESTS_CSV)
 EXCLUDED_TESTS = SKIPPED_TESTS.union(ALL_VM_TESTS)
-BCHAIN_TESTS: Final = sorted(ALL_BCHAIN_TESTS - EXCLUDED_TESTS)
-REST_BCHAIN_TESTS: Final = sorted(ALL_BCHAIN_TESTS & EXCLUDED_TESTS)
+BCHAIN_TESTS: Final = tuple(test for test in ALL_BCHAIN_TESTS if test not in EXCLUDED_TESTS)
+REST_BCHAIN_TESTS: Final = tuple(test for test in ALL_BCHAIN_TESTS if test in EXCLUDED_TESTS)
 assert len(ALL_BCHAIN_TESTS) == len(BCHAIN_TESTS) + len(REST_BCHAIN_TESTS)
 
 
