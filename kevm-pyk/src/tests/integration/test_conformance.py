@@ -107,7 +107,8 @@ SKIPPED_TESTS: Final = _skipped_tests()
 ALL_VM_TESTS: Final = set(read_csv_file(ALL_VM_TESTS_CSV))
 VM_TESTS: Final = sorted(ALL_VM_TESTS - SKIPPED_TESTS)
 REST_VM_TESTS: Final = sorted(ALL_VM_TESTS & SKIPPED_TESTS)
-assert(len(ALL_VM_TESTS) == len(VM_TESTS) + len(REST_VM_TESTS))
+assert len(ALL_VM_TESTS) == len(VM_TESTS) + len(REST_VM_TESTS)
+
 
 @pytest.mark.parametrize(
     'test_file, test_id',
@@ -132,7 +133,7 @@ ALL_BCHAIN_TESTS: Final = set(read_csv_file(ALL_BCHAIN_TESTS_CSV))
 EXCLUDED_TESTS = SKIPPED_TESTS.union(ALL_VM_TESTS)
 BCHAIN_TESTS: Final = sorted(ALL_BCHAIN_TESTS - EXCLUDED_TESTS)
 REST_BCHAIN_TESTS: Final = sorted(ALL_BCHAIN_TESTS & EXCLUDED_TESTS)
-assert(len(ALL_BCHAIN_TESTS) == len(BCHAIN_TESTS) + len(REST_BCHAIN_TESTS))
+assert len(ALL_BCHAIN_TESTS) == len(BCHAIN_TESTS) + len(REST_BCHAIN_TESTS)
 
 
 @pytest.mark.parametrize(
