@@ -18,7 +18,7 @@ from kevm_pyk.interpreter import interpret
 from ..utils import REPO_ROOT
 
 if TYPE_CHECKING:
-    from typing import Final
+    from typing import Any, Final
 
     from pyk.kore.syntax import Pattern
 
@@ -33,9 +33,17 @@ TEST_DIR: Final = REPO_ROOT / 'tests/ethereum-tests'
 GOLDEN: Final = (REPO_ROOT / 'tests/templates/output-success-llvm.json').read_text().rstrip()
 
 
-def _test(gst_file: Path, test_name: str, schedule: str, mode: str, chainid: int, usegas: bool) -> None:
+def _test(
+    gst_data: dict[Path, dict[str, Any]],
+    gst_file: Path,
+    test_name: str,
+    schedule: str,
+    mode: str,
+    chainid: int,
+    usegas: bool,
+) -> None:
     _LOGGER.info(f'Running test: {gst_file} - {test_name}')
-    res = interpret({test_name: GST_DATA[gst_file][test_name]}, schedule, mode, chainid, usegas, check=False)
+    res = interpret({test_name: gst_data[gst_file][test_name]}, schedule, mode, chainid, usegas, check=False)
     _assert_exit_code_zero(res)
 
 
@@ -72,26 +80,6 @@ def read_csv_file(csv_file: Path) -> tuple[tuple[Path, str], ...]:
         return tuple((Path(row[0]), row[1]) for row in reader)
 
 
-def create_csv_files() -> None:
-    def _write_csv(target: Path, content: set[tuple[Path, str]]) -> None:
-        with open(target, 'w', newline='') as csvfile:
-            writer = csv.writer(csvfile)
-            writer.writerows(sorted(content))
-
-    all_bchain_tests = {
-        (file.relative_to(TEST_DIR), test_id)
-        for file in BCHAIN_TEST_DIR.glob('**/*.json')
-        for test_id in GST_DATA[file].keys()
-    }
-    _write_csv(ALL_BCHAIN_TESTS_CSV, all_bchain_tests)
-    all_vm_tests = {
-        (file.relative_to(TEST_DIR), test_id)
-        for file in VM_TEST_DIR.glob('*/*.json')
-        for test_id in GST_DATA[file].keys()
-    }
-    _write_csv(ALL_VM_TESTS_CSV, all_vm_tests)
-
-
 ALL_VM_TESTS: Final = read_csv_file(ALL_VM_TESTS_CSV)
 ALL_BCHAIN_TESTS: Final = read_csv_file(ALL_BCHAIN_TESTS_CSV)
 SKIPPED_TESTS: Final = _skipped_tests()
@@ -106,8 +94,8 @@ assert len(ALL_VM_TESTS) == len(VM_TESTS) + len(REST_VM_TESTS)
     VM_TESTS,
     ids=[f'{test_file}:{test_id}' for test_file, test_id in VM_TESTS],
 )
-def test_vm(test_file: Path, test_id: str) -> None:
-    _test(TEST_DIR / test_file, test_id, 'DEFAULT', 'VMTESTS', 1, True)
+def test_vm(gst_data: dict[Path, dict[str, Any]], test_file: Path, test_id: str) -> None:
+    _test(gst_data, TEST_DIR / test_file, test_id, 'DEFAULT', 'VMTESTS', 1, True)
 
 
 @pytest.mark.skip(reason='failing / slow VM tests')
@@ -116,16 +104,19 @@ def test_vm(test_file: Path, test_id: str) -> None:
     REST_VM_TESTS,
     ids=[f'{test_file}:{test_id}' for test_file, test_id in REST_VM_TESTS],
 )
-def test_rest_vm(test_file: Path, test_id: str) -> None:
-    _test(TEST_DIR / test_file, test_id, 'DEFAULT', 'VMTESTS', 1, True)
+def test_rest_vm(gst_data: dict[Path, dict[str, Any]], test_file: Path, test_id: str) -> None:
+    _test(gst_data, TEST_DIR / test_file, test_id, 'DEFAULT', 'VMTESTS', 1, True)
 
 
 EXCLUDED_TESTS = SKIPPED_TESTS.union(ALL_VM_TESTS)
 BCHAIN_TESTS: Final = tuple(test for test in ALL_BCHAIN_TESTS if test not in EXCLUDED_TESTS)
 REST_BCHAIN_TESTS: Final = tuple(test for test in ALL_BCHAIN_TESTS if test in EXCLUDED_TESTS)
 
-ALL_GST_FILES: Final = {TEST_DIR / file for file, _ in ALL_BCHAIN_TESTS + ALL_VM_TESTS}
-GST_DATA: Final = {file: json.loads(file.read_text()) for file in ALL_GST_FILES}
+
+@pytest.fixture(scope='session')
+def gst_data() -> dict[Path, dict[str, Any]]:
+    all_gst_files: Final = {TEST_DIR / file for file, _ in ALL_BCHAIN_TESTS + ALL_VM_TESTS}
+    return {file: json.loads(file.read_text()) for file in all_gst_files}
 
 
 @pytest.mark.parametrize(
@@ -133,8 +124,8 @@ GST_DATA: Final = {file: json.loads(file.read_text()) for file in ALL_GST_FILES}
     BCHAIN_TESTS,
     ids=[f'{test_file}:{test_id}' for test_file, test_id in BCHAIN_TESTS],
 )
-def test_bchain(test_file: Path, test_id: str) -> None:
-    _test(TEST_DIR / test_file, test_id, 'SHANGHAI', 'NORMAL', 1, True)
+def test_bchain(gst_data: dict[Path, dict[str, Any]], test_file: Path, test_id: str) -> None:
+    _test(gst_data, TEST_DIR / test_file, test_id, 'SHANGHAI', 'NORMAL', 1, True)
 
 
 @pytest.mark.skip(reason='failing / slow blockchain tests')
@@ -143,5 +134,25 @@ def test_bchain(test_file: Path, test_id: str) -> None:
     REST_BCHAIN_TESTS,
     ids=[f'{test_file}:{test_id}' for test_file, test_id in REST_BCHAIN_TESTS],
 )
-def test_rest_bchain(test_file: Path, test_id: str) -> None:
-    _test(TEST_DIR / test_file, test_id, 'SHANGHAI', 'NORMAL', 1, True)
+def test_rest_bchain(gst_data: dict[Path, dict[str, Any]], test_file: Path, test_id: str) -> None:
+    _test(gst_data, TEST_DIR / test_file, test_id, 'SHANGHAI', 'NORMAL', 1, True)
+
+
+def create_csv_files(gst_data: dict[Path, dict[str, Any]]) -> None:
+    def _write_csv(target: Path, content: set[tuple[Path, str]]) -> None:
+        with open(target, 'w', newline='') as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerows(sorted(content))
+
+    all_bchain_tests = {
+        (file.relative_to(TEST_DIR), test_id)
+        for file in BCHAIN_TEST_DIR.glob('**/*.json')
+        for test_id in gst_data[file].keys()
+    }
+    _write_csv(ALL_BCHAIN_TESTS_CSV, all_bchain_tests)
+    all_vm_tests = {
+        (file.relative_to(TEST_DIR), test_id)
+        for file in VM_TEST_DIR.glob('*/*.json')
+        for test_id in gst_data[file].keys()
+    }
+    _write_csv(ALL_VM_TESTS_CSV, all_vm_tests)
