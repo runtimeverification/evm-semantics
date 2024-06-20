@@ -96,10 +96,10 @@ def create_csv_files() -> None:
     _write_csv(ALL_VM_TESTS_CSV, all_vm_tests)
 
 
-def read_csv_file(csv_file: Path) -> list[tuple[Path, str]]:
+def read_csv_file(csv_file: Path) -> tuple[tuple[Path, str], ...]:
     with csv_file.open(newline='') as file:
         reader = csv.reader(file)
-        return sorted([(Path(row[0]), row[1]) for row in reader])
+        return tuple(Path(row[0]), row[1]) for row in reader)
 
 
 SKIPPED_TESTS: Final = _skipped_tests()
