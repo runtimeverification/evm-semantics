@@ -13,7 +13,7 @@ authors = [
 [tool.poetry.dependencies]
 python = "^3.10"
 pathos = "*"
-kframework = { git = "https://github.com/runtimeverification/k.git", tag="v7.1.5", subdirectory = "pyk" }
+kframework = { git = "https://github.com/runtimeverification/k.git", tag="v7.1.14", subdirectory = "pyk" }
 tomlkit = "^0.11.6"
 
 [tool.poetry.group.dev.dependencies]
