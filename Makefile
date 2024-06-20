@@ -31,6 +31,8 @@ test: test-integration test-conformance test-prove test-prove-pyk test-prove-kpr
 
 
 # Conformance Tests
+gen-csv-files: poetry
+	$(MAKE) -C kevm-pyk/ gen-csv-files
 
 test-conformance: poetry
 	$(MAKE) -C kevm-pyk/ test-integration PYTEST_ARGS+="-k test_conformance.py"

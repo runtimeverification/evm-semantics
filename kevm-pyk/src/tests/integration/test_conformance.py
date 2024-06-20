@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import csv
 import json
 import logging
 import sys
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 import pytest
@@ -16,7 +18,6 @@ from kevm_pyk.interpreter import interpret
 from ..utils import REPO_ROOT
 
 if TYPE_CHECKING:
-    from pathlib import Path
     from typing import Final
 
     from pyk.kore.syntax import Pattern
@@ -56,10 +57,6 @@ def _assert_exit_code_zero(pattern: Pattern) -> None:
     assert pretty == GOLDEN
 
 
-def read_test_list(path: Path) -> list[tuple[Path, str]]:
-    return [(REPO_ROOT / line.split(':')[0], line.split(':')[1]) for line in path.read_text().splitlines()]
-
-
 def read_gst_file(gst_file: Path) -> list[str]:
     with gst_file.open() as f:
         gst_data = json.load(f)
@@ -67,64 +64,91 @@ def read_gst_file(gst_file: Path) -> list[str]:
 
 
 def _skipped_tests() -> set[tuple[Path, str]]:
-    slow_tests = read_test_list(REPO_ROOT / 'tests/slow.llvm')
-    failing_tests = read_test_list(REPO_ROOT / 'tests/failing.llvm')
+    slow_tests = read_csv_file(REPO_ROOT / 'tests/slow.llvm')
+    failing_tests = read_csv_file(REPO_ROOT / 'tests/failing.llvm')
     return set(slow_tests + failing_tests)
+
+
+VM_TEST_DIR: Final = TEST_DIR / 'BlockchainTests/GeneralStateTests/VMTests'
+ALL_VM_TESTS_CSV: Final = REPO_ROOT / 'tests/all_vm_tests.csv'
+
+BCHAIN_TEST_DIR: Final = TEST_DIR / 'BlockchainTests/GeneralStateTests'
+ALL_BCHAIN_TESTS_CSV: Final = REPO_ROOT / 'tests/all_bchain_tests.csv'
+
+
+def create_csv_files() -> None:
+    def _write_csv(target: Path, content: set[tuple[Path, str]]) -> None:
+        with open(target, 'w', newline='') as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerows(sorted(content))
+
+    all_bchain_tests = {
+        (file.relative_to(TEST_DIR), test_id)
+        for file in BCHAIN_TEST_DIR.glob('**/*.json')
+        for test_id in read_gst_file(file)
+    }
+    _write_csv(ALL_BCHAIN_TESTS_CSV, all_bchain_tests)
+    all_vm_tests = {
+        (file.relative_to(TEST_DIR), test_id)
+        for file in VM_TEST_DIR.glob('*/*.json')
+        for test_id in read_gst_file(file)
+    }
+    _write_csv(ALL_VM_TESTS_CSV, all_vm_tests)
+
+
+def read_csv_file(csv_file: Path) -> list[tuple[Path, str]]:
+    with csv_file.open(newline='') as file:
+        reader = csv.reader(file)
+        return sorted([(Path(row[0]), row[1]) for row in reader])
 
 
 SKIPPED_TESTS: Final = _skipped_tests()
 
-VM_TEST_DIR: Final = TEST_DIR / 'BlockchainTests/GeneralStateTests/VMTests'
-ALL_VM_TESTS: Final = tuple((file, test_id) for file in VM_TEST_DIR.glob('*/*.json') for test_id in read_gst_file(file))
-VM_TESTS: Final = tuple(test_tuple for test_tuple in ALL_VM_TESTS if test_tuple not in SKIPPED_TESTS)
-REST_VM_TESTS: Final = tuple(test_tuple for test_tuple in ALL_VM_TESTS if test_tuple in SKIPPED_TESTS)
-
+ALL_VM_TESTS: Final = set(read_csv_file(ALL_VM_TESTS_CSV))
+VM_TESTS: Final = sorted(ALL_VM_TESTS - SKIPPED_TESTS)
+REST_VM_TESTS: Final = sorted(ALL_VM_TESTS & SKIPPED_TESTS)
+assert(len(ALL_VM_TESTS) == len(VM_TESTS) + len(REST_VM_TESTS))
 
 @pytest.mark.parametrize(
     'test_file, test_id',
     VM_TESTS,
-    ids=[f'{test_file.relative_to(VM_TEST_DIR)}: {test_id}' for test_file, test_id in VM_TESTS],
+    ids=[f'{test_file}:{test_id}' for test_file, test_id in VM_TESTS],
 )
 def test_vm(test_file: Path, test_id: str) -> None:
-    _test(test_file, test_id, 'DEFAULT', 'VMTESTS', 1, True)
+    _test(TEST_DIR / test_file, test_id, 'DEFAULT', 'VMTESTS', 1, True)
 
 
 @pytest.mark.skip(reason='failing / slow VM tests')
 @pytest.mark.parametrize(
     'test_file, test_id',
     REST_VM_TESTS,
-    ids=[f'{test_file.relative_to(VM_TEST_DIR)}: {test_id}' for test_file, test_id in REST_VM_TESTS],
+    ids=[f'{test_file}:{test_id}' for test_file, test_id in REST_VM_TESTS],
 )
 def test_rest_vm(test_file: Path, test_id: str) -> None:
-    _test(test_file, test_id, 'DEFAULT', 'VMTESTS', 1, True)
+    _test(TEST_DIR / test_file, test_id, 'DEFAULT', 'VMTESTS', 1, True)
 
 
-BCHAIN_TEST_DIR: Final = TEST_DIR / 'BlockchainTests/GeneralStateTests'
-ALL_BCHAIN_TESTS: Final = tuple(
-    (file, test_id) for file in BCHAIN_TEST_DIR.glob('**/*.json') for test_id in read_gst_file(file)
-)
-BCHAIN_TESTS: Final = tuple(
-    test_tuple for test_tuple in ALL_BCHAIN_TESTS if test_tuple not in (list(SKIPPED_TESTS) + list(ALL_VM_TESTS))
-)
-REST_BCHAIN_TESTS: Final = tuple(
-    test_tuple for test_tuple in ALL_BCHAIN_TESTS if test_tuple in SKIPPED_TESTS and test_tuple not in ALL_VM_TESTS
-)
+ALL_BCHAIN_TESTS: Final = set(read_csv_file(ALL_BCHAIN_TESTS_CSV))
+EXCLUDED_TESTS = SKIPPED_TESTS.union(ALL_VM_TESTS)
+BCHAIN_TESTS: Final = sorted(ALL_BCHAIN_TESTS - EXCLUDED_TESTS)
+REST_BCHAIN_TESTS: Final = sorted(ALL_BCHAIN_TESTS & EXCLUDED_TESTS)
+assert(len(ALL_BCHAIN_TESTS) == len(BCHAIN_TESTS) + len(REST_BCHAIN_TESTS))
 
 
 @pytest.mark.parametrize(
     'test_file, test_id',
     BCHAIN_TESTS,
-    ids=[f'{test_file.relative_to(TEST_DIR)}: {test_id}' for test_file, test_id in BCHAIN_TESTS],
+    ids=[f'{test_file}:{test_id}' for test_file, test_id in BCHAIN_TESTS],
 )
 def test_bchain(test_file: Path, test_id: str) -> None:
-    _test(test_file, test_id, 'SHANGHAI', 'NORMAL', 1, True)
+    _test(TEST_DIR / test_file, test_id, 'SHANGHAI', 'NORMAL', 1, True)
 
 
 @pytest.mark.skip(reason='failing / slow blockchain tests')
 @pytest.mark.parametrize(
     'test_file, test_id',
     REST_BCHAIN_TESTS,
-    ids=[f'{test_file.relative_to(TEST_DIR)}: {test_id}' for test_file, test_id in REST_BCHAIN_TESTS],
+    ids=[f'{test_file}:{test_id}' for test_file, test_id in REST_BCHAIN_TESTS],
 )
 def test_rest_bchain(test_file: Path, test_id: str) -> None:
-    _test(test_file, test_id, 'SHANGHAI', 'NORMAL', 1, True)
+    _test(TEST_DIR / test_file, test_id, 'SHANGHAI', 'NORMAL', 1, True)
