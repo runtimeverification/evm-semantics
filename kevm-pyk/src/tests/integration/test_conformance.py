@@ -34,12 +34,9 @@ GOLDEN: Final = (REPO_ROOT / 'tests/templates/output-success-llvm.json').read_te
 
 
 def _test(gst_file: Path, test_name: str, schedule: str, mode: str, chainid: int, usegas: bool) -> None:
-    with gst_file.open() as f:
-        gst_data = json.load(f)
-
-        _LOGGER.info(f'Running test: {gst_file} - {test_name}')
-        res = interpret({test_name: gst_data.get(test_name)}, schedule, mode, chainid, usegas, check=False)
-        _assert_exit_code_zero(res)
+    _LOGGER.info(f'Running test: {gst_file} - {test_name}')
+    res = interpret({test_name: GST_DATA[gst_file][test_name]}, schedule, mode, chainid, usegas, check=False)
+    _assert_exit_code_zero(res)
 
 
 def _assert_exit_code_zero(pattern: Pattern) -> None:
@@ -57,10 +54,10 @@ def _assert_exit_code_zero(pattern: Pattern) -> None:
     assert pretty == GOLDEN
 
 
-def read_gst_file(gst_file: Path) -> list[str]:
-    with gst_file.open() as f:
-        gst_data = json.load(f)
-    return gst_data.keys()
+VM_TEST_DIR: Final = TEST_DIR / 'BlockchainTests/GeneralStateTests/VMTests'
+ALL_VM_TESTS_CSV: Final = REPO_ROOT / 'tests/all_vm_tests.csv'
+BCHAIN_TEST_DIR: Final = TEST_DIR / 'BlockchainTests/GeneralStateTests'
+ALL_BCHAIN_TESTS_CSV: Final = REPO_ROOT / 'tests/all_bchain_tests.csv'
 
 
 def _skipped_tests() -> set[tuple[Path, str]]:
@@ -69,11 +66,10 @@ def _skipped_tests() -> set[tuple[Path, str]]:
     return set(slow_tests + failing_tests)
 
 
-VM_TEST_DIR: Final = TEST_DIR / 'BlockchainTests/GeneralStateTests/VMTests'
-ALL_VM_TESTS_CSV: Final = REPO_ROOT / 'tests/all_vm_tests.csv'
-
-BCHAIN_TEST_DIR: Final = TEST_DIR / 'BlockchainTests/GeneralStateTests'
-ALL_BCHAIN_TESTS_CSV: Final = REPO_ROOT / 'tests/all_bchain_tests.csv'
+def read_csv_file(csv_file: Path) -> tuple[tuple[Path, str], ...]:
+    with csv_file.open(newline='') as file:
+        reader = csv.reader(file)
+        return tuple((Path(row[0]), row[1]) for row in reader)
 
 
 def create_csv_files() -> None:
@@ -85,28 +81,23 @@ def create_csv_files() -> None:
     all_bchain_tests = {
         (file.relative_to(TEST_DIR), test_id)
         for file in BCHAIN_TEST_DIR.glob('**/*.json')
-        for test_id in read_gst_file(file)
+        for test_id in GST_DATA[file].keys()
     }
     _write_csv(ALL_BCHAIN_TESTS_CSV, all_bchain_tests)
     all_vm_tests = {
         (file.relative_to(TEST_DIR), test_id)
         for file in VM_TEST_DIR.glob('*/*.json')
-        for test_id in read_gst_file(file)
+        for test_id in GST_DATA[file].keys()
     }
     _write_csv(ALL_VM_TESTS_CSV, all_vm_tests)
 
 
-def read_csv_file(csv_file: Path) -> tuple[tuple[Path, str], ...]:
-    with csv_file.open(newline='') as file:
-        reader = csv.reader(file)
-        return tuple((Path(row[0]), row[1]) for row in reader)
-
-
+ALL_VM_TESTS: Final = read_csv_file(ALL_VM_TESTS_CSV)
+ALL_BCHAIN_TESTS: Final = read_csv_file(ALL_BCHAIN_TESTS_CSV)
 SKIPPED_TESTS: Final = _skipped_tests()
 
-ALL_VM_TESTS: Final = set(read_csv_file(ALL_VM_TESTS_CSV))
-VM_TESTS: Final = sorted(ALL_VM_TESTS - SKIPPED_TESTS)
-REST_VM_TESTS: Final = sorted(ALL_VM_TESTS & SKIPPED_TESTS)
+VM_TESTS: Final = tuple(test for test in ALL_VM_TESTS if test not in SKIPPED_TESTS)
+REST_VM_TESTS: Final = tuple(test for test in ALL_VM_TESTS if test in SKIPPED_TESTS)
 assert len(ALL_VM_TESTS) == len(VM_TESTS) + len(REST_VM_TESTS)
 
 
@@ -129,11 +120,12 @@ def test_rest_vm(test_file: Path, test_id: str) -> None:
     _test(TEST_DIR / test_file, test_id, 'DEFAULT', 'VMTESTS', 1, True)
 
 
-ALL_BCHAIN_TESTS: Final = read_csv_file(ALL_BCHAIN_TESTS_CSV)
 EXCLUDED_TESTS = SKIPPED_TESTS.union(ALL_VM_TESTS)
 BCHAIN_TESTS: Final = tuple(test for test in ALL_BCHAIN_TESTS if test not in EXCLUDED_TESTS)
 REST_BCHAIN_TESTS: Final = tuple(test for test in ALL_BCHAIN_TESTS if test in EXCLUDED_TESTS)
-assert len(ALL_BCHAIN_TESTS) == len(BCHAIN_TESTS) + len(REST_BCHAIN_TESTS)
+
+ALL_GST_FILES: Final = {TEST_DIR / file for file, _ in ALL_BCHAIN_TESTS + ALL_VM_TESTS}
+GST_DATA: Final = {file: json.loads(file.read_text()) for file in ALL_GST_FILES}
 
 
 @pytest.mark.parametrize(
