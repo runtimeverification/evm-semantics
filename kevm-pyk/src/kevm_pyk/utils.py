@@ -182,27 +182,32 @@ def select_apr_strategy(
     create_kcfg_explore: Callable[[], KCFGExplore] | None = None,
 ) -> APRProofStrategy:
     strategy: APRProofStrategy
+    strategy = ParallelStrategy(
+        max_workers=max_frontier_parallel,
+        create_kcfg_explore=create_kcfg_explore,
+        params=params,
+    )
 
-    if max_frontier_parallel > 1 and create_kcfg_explore is not None:
-        strategy = ParallelStrategy(
-            max_workers=max_frontier_parallel,
-            create_kcfg_explore=create_kcfg_explore,
-            params=params,
-        )
-    elif kcfg_explore is not None or create_kcfg_explore is not None:
-        if kcfg_explore is not None:
-            _kcfg_explore = kcfg_explore
-        else:
-            assert create_kcfg_explore is not None
-            _kcfg_explore = create_kcfg_explore()
-        strategy = SequentialStrategy(
-            kcfg_explore=_kcfg_explore,
-            params=params,
-        )
-    else:
-        raise ValueError(
-            'Must provide at least one of kcfg_explore or create_kcfg_explore, or provide create_kcfg_explore if using max_frontier_parallel > 1.'
-        )
+#      if max_frontier_parallel > 1 and create_kcfg_explore is not None:
+#          strategy = ParallelStrategy(
+#              max_workers=max_frontier_parallel,
+#              create_kcfg_explore=create_kcfg_explore,
+#              params=params,
+#          )
+#      elif kcfg_explore is not None or create_kcfg_explore is not None:
+#          if kcfg_explore is not None:
+#              _kcfg_explore = kcfg_explore
+#          else:
+#              assert create_kcfg_explore is not None
+#              _kcfg_explore = create_kcfg_explore()
+#          strategy = SequentialStrategy(
+#              kcfg_explore=_kcfg_explore,
+#              params=params,
+#          )
+#      else:
+#          raise ValueError(
+#              'Must provide at least one of kcfg_explore or create_kcfg_explore, or provide create_kcfg_explore if using max_frontier_parallel > 1.'
+#          )
     return strategy
 
 
