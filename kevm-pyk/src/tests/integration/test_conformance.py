@@ -99,7 +99,7 @@ def create_csv_files() -> None:
 def read_csv_file(csv_file: Path) -> tuple[tuple[Path, str], ...]:
     with csv_file.open(newline='') as file:
         reader = csv.reader(file)
-        return tuple(Path(row[0]), row[1]) for row in reader)
+        return tuple((Path(row[0]), row[1]) for row in reader)
 
 
 SKIPPED_TESTS: Final = _skipped_tests()
@@ -127,7 +127,6 @@ def test_vm(test_file: Path, test_id: str) -> None:
 )
 def test_rest_vm(test_file: Path, test_id: str) -> None:
     _test(TEST_DIR / test_file, test_id, 'DEFAULT', 'VMTESTS', 1, True)
-
 
 
 ALL_BCHAIN_TESTS: Final = read_csv_file(ALL_BCHAIN_TESTS_CSV)
