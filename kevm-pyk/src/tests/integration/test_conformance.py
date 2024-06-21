@@ -17,7 +17,8 @@ from kevm_pyk.interpreter import interpret
 from ..utils import REPO_ROOT
 
 if TYPE_CHECKING:
-    from typing import Any, Callable, Final
+    from typing import Any, Final
+    from collections.abc import Callable
 
     from pyk.kore.syntax import Pattern
 
