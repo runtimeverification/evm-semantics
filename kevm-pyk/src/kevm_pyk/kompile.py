@@ -181,6 +181,7 @@ def run_kompile(
                     hook_namespaces=HOOK_NAMESPACES,
                     emit_json=emit_json,
                     read_only=read_only,
+                    ignore_warnings=ignore_warnings,
                 )
                 kompile_llvm = LLVMKompile(
                     base_args=base_args_llvm, ccopts=ccopts, opt_level=optimization, llvm_kompile_type=LLVMKompileType.C
