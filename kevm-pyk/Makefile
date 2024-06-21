@@ -102,5 +102,3 @@ SRC_FILES := $(shell find src -type f -name '*.py')
 pyupgrade: poetry-install
 	$(POETRY_RUN) pyupgrade --py310-plus $(SRC_FILES)
 
-gen-csv-files: poetry-install
-	$(POETRY_RUN) python3 -c "from tests.integration.test_conformance import create_csv_files; create_csv_files()"
