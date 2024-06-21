@@ -33,20 +33,6 @@ TEST_DIR: Final = REPO_ROOT / 'tests/ethereum-tests'
 GOLDEN: Final = (REPO_ROOT / 'tests/templates/output-success-llvm.json').read_text().rstrip()
 
 
-def _test(
-    gst_data: dict[Path, dict[str, Any]],
-    gst_file: Path,
-    test_name: str,
-    schedule: str,
-    mode: str,
-    chainid: int,
-    usegas: bool,
-) -> None:
-    _LOGGER.info(f'Running test: {gst_file} - {test_name}')
-    res = interpret({test_name: gst_data[gst_file][test_name]}, schedule, mode, chainid, usegas, check=False)
-    _assert_exit_code_zero(res)
-
-
 def _assert_exit_code_zero(pattern: Pattern) -> None:
     assert type(pattern) is App
     kevm_cell = pattern.args[0]
@@ -95,7 +81,9 @@ assert len(ALL_VM_TESTS) == len(VM_TESTS) + len(REST_VM_TESTS)
     ids=[f'{test_file}:{test_id}' for test_file, test_id in VM_TESTS],
 )
 def test_vm(gst_data: dict[Path, dict[str, Any]], test_file: Path, test_id: str) -> None:
-    _test(gst_data, TEST_DIR / test_file, test_id, 'DEFAULT', 'VMTESTS', 1, True)
+    gst_file = TEST_DIR / test_file
+    res = interpret({test_id: gst_data[gst_file][test_id]}, 'DEFAULT', 'VMTESTS', 1, True, check=False)
+    _assert_exit_code_zero(res)
 
 
 @pytest.mark.skip(reason='failing / slow VM tests')
@@ -105,7 +93,9 @@ def test_vm(gst_data: dict[Path, dict[str, Any]], test_file: Path, test_id: str)
     ids=[f'{test_file}:{test_id}' for test_file, test_id in REST_VM_TESTS],
 )
 def test_rest_vm(gst_data: dict[Path, dict[str, Any]], test_file: Path, test_id: str) -> None:
-    _test(gst_data, TEST_DIR / test_file, test_id, 'DEFAULT', 'VMTESTS', 1, True)
+    gst_file = TEST_DIR / test_file
+    res = interpret({test_id: gst_data[gst_file][test_id]}, 'DEFAULT', 'VMTESTS', 1, True, check=False)
+    _assert_exit_code_zero(res)
 
 
 EXCLUDED_TESTS = SKIPPED_TESTS.union(ALL_VM_TESTS)
@@ -115,7 +105,7 @@ REST_BCHAIN_TESTS: Final = tuple(test for test in ALL_BCHAIN_TESTS if test in EX
 
 @pytest.fixture(scope='session')
 def gst_data() -> dict[Path, dict[str, Any]]:
-    all_gst_files: Final = {TEST_DIR / file for file, _ in ALL_BCHAIN_TESTS + ALL_VM_TESTS}
+    all_gst_files = [TEST_DIR / file for file, _ in ALL_BCHAIN_TESTS + ALL_VM_TESTS]
     return {file: json.loads(file.read_text()) for file in all_gst_files}
 
 
@@ -125,7 +115,9 @@ def gst_data() -> dict[Path, dict[str, Any]]:
     ids=[f'{test_file}:{test_id}' for test_file, test_id in BCHAIN_TESTS],
 )
 def test_bchain(gst_data: dict[Path, dict[str, Any]], test_file: Path, test_id: str) -> None:
-    _test(gst_data, TEST_DIR / test_file, test_id, 'SHANGHAI', 'NORMAL', 1, True)
+    gst_file = TEST_DIR / test_file
+    res = interpret({test_id: gst_data[gst_file][test_id]}, 'SHANGHAI', 'NORMAL', 1, True, check=False)
+    _assert_exit_code_zero(res)
 
 
 @pytest.mark.skip(reason='failing / slow blockchain tests')
@@ -135,7 +127,9 @@ def test_bchain(gst_data: dict[Path, dict[str, Any]], test_file: Path, test_id: 
     ids=[f'{test_file}:{test_id}' for test_file, test_id in REST_BCHAIN_TESTS],
 )
 def test_rest_bchain(gst_data: dict[Path, dict[str, Any]], test_file: Path, test_id: str) -> None:
-    _test(gst_data, TEST_DIR / test_file, test_id, 'SHANGHAI', 'NORMAL', 1, True)
+    gst_file = TEST_DIR / test_file
+    res = interpret({test_id: gst_data[gst_file][test_id]}, 'SHANGHAI', 'NORMAL', 1, True, check=False)
+    _assert_exit_code_zero(res)
 
 
 def create_csv_files(gst_data: dict[Path, dict[str, Any]]) -> None:
