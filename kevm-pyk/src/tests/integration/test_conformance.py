@@ -105,7 +105,7 @@ REST_BCHAIN_TESTS: Final = tuple(test for test in ALL_BCHAIN_TESTS if test in EX
 
 @pytest.fixture(scope='session')
 def gst_data() -> dict[Path, dict[str, Any]]:
-    all_gst_files = [TEST_DIR / file for file, _ in ALL_BCHAIN_TESTS + ALL_VM_TESTS]
+    all_gst_files: Final = {TEST_DIR / file for file, _ in ALL_BCHAIN_TESTS + ALL_VM_TESTS}
     return {file: json.loads(file.read_text()) for file in all_gst_files}
 
 
