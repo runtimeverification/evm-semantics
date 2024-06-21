@@ -2,24 +2,29 @@ from __future__ import annotations
 
 import logging
 import sys
+from pathlib import Path
 from typing import TYPE_CHECKING, NamedTuple
 
 import pytest
 from filelock import SoftFileLock
+from pyk.kast.att import AttEntry, Atts, KAtt
+from pyk.kast.outer import KClaim
+from pyk.kdist import kdist
 from pyk.prelude.ml import is_top
-from pyk.proof.reachability import APRProof
+from pyk.proof.reachability import APRProof, APRProver
+from pyk.proof.show import APRProofShow
 
 from kevm_pyk import config
 from kevm_pyk.__main__ import exec_prove
 from kevm_pyk.cli import ProveOptions
-from kevm_pyk.kevm import KEVM
+from kevm_pyk.kevm import KEVM, KEVMSemantics, kevm_node_printer
 from kevm_pyk.kompile import KompileTarget, kevm_kompile
+from kevm_pyk.utils import initialize_apr_proof, legacy_explore
 
 from ..utils import REPO_ROOT
 
 if TYPE_CHECKING:
     from collections.abc import Callable
-    from pathlib import Path
     from typing import Any, Final
 
     from pyk.utils import BugReport
@@ -30,6 +35,9 @@ sys.setrecursionlimit(10**8)
 
 TEST_DIR: Final = REPO_ROOT / 'tests'
 SPEC_DIR: Final = TEST_DIR / 'specs'
+
+_LOGGER: Final = logging.getLogger(__name__)
+_LOG_FORMAT: Final = '%(levelname)s %(asctime)s %(name)s - %(message)s'
 
 
 # -------------------
@@ -46,24 +54,20 @@ def spec_files(dir_name: str, glob: str) -> tuple[Path, ...]:
 
 BENCHMARK_TESTS: Final = spec_files('benchmarks', '*-spec.k')
 FUNCTIONAL_TESTS: Final = spec_files('functional', '*-spec.k')
-OPCODES_TESTS: Final = spec_files('opcodes', '*-spec.k')
 ERC20_TESTS: Final = spec_files('erc20', '*/*-spec.k')
-BIHU_TESTS: Final = spec_files('bihu', '*-spec.k')
 EXAMPLES_TESTS: Final = spec_files('examples', '*-spec.k') + spec_files('examples', '*-spec.md')
 MCD_TESTS: Final = spec_files('mcd', '*-spec.k')
-OPTIMIZATION_TESTS: Final = (SPEC_DIR / 'opcodes/evm-optimizations-spec.md',)
+VAT_TESTS: Final = spec_files('mcd', 'vat*-spec.k')
+NON_VAT_MCD_TESTS: Final = tuple(test for test in MCD_TESTS if test not in VAT_TESTS)
 KONTROL_TESTS: Final = spec_files('kontrol', '*-spec.k')
 
 ALL_TESTS: Final = sum(
     [
         BENCHMARK_TESTS,
         FUNCTIONAL_TESTS,
-        OPCODES_TESTS,
         ERC20_TESTS,
-        BIHU_TESTS,
         EXAMPLES_TESTS,
-        MCD_TESTS,
-        OPTIMIZATION_TESTS,
+        NON_VAT_MCD_TESTS,
         KONTROL_TESTS,
     ],
     (),
@@ -78,6 +82,7 @@ def exclude_list(exclude_file: Path) -> list[Path]:
 
 FAILING_PYK_TESTS: Final = exclude_list(TEST_DIR / 'failing-symbolic.pyk')
 FAILING_BOOSTER_TESTS: Final = exclude_list(TEST_DIR / 'failing-symbolic.haskell-booster')
+FAILING_BOOSTER_DEV_TESTS: Final = exclude_list(TEST_DIR / 'failing-symbolic.haskell-booster-dev')
 FAILING_TESTS: Final = exclude_list(TEST_DIR / 'failing-symbolic.haskell')
 
 
@@ -88,7 +93,6 @@ FAILING_TESTS: Final = exclude_list(TEST_DIR / 'failing-symbolic.haskell')
 
 KOMPILE_MAIN_FILE: Final = {
     'benchmarks/functional-spec.k': 'functional-spec.k',
-    'bihu/functional-spec.k': 'functional-spec.k',
     'examples/solidity-code-spec.md': 'solidity-code-spec.md',
     'examples/erc20-spec.md': 'erc20-spec.md',
     'examples/erc721-spec.md': 'erc721-spec.md',
@@ -104,15 +108,12 @@ KOMPILE_MAIN_FILE: Final = {
     'functional/merkle-spec.k': 'merkle-spec.k',
     'functional/storageRoot-spec.k': 'storageRoot-spec.k',
     'mcd/functional-spec.k': 'functional-spec.k',
-    'opcodes/evm-optimizations-spec.md': 'evm-optimizations-spec.md',
 }
 
 KOMPILE_MAIN_MODULE: Final = {
     'benchmarks/functional-spec.k': 'FUNCTIONAL-SPEC-SYNTAX',
-    'bihu/functional-spec.k': 'FUNCTIONAL-SPEC-SYNTAX',
     'erc20/functional-spec.k': 'FUNCTIONAL-SPEC-SYNTAX',
     'mcd/functional-spec.k': 'FUNCTIONAL-SPEC-SYNTAX',
-    'opcodes/evm-optimizations-spec.md': 'EVM-OPTIMIZATIONS-SPEC-LEMMAS',
 }
 
 
@@ -207,13 +208,19 @@ class TParams:
     main_claim_id: str | None
     leaf_number: int | None
     break_on_calls: bool
+    workers: int
 
     def __init__(
-        self, main_claim_id: str | None = None, leaf_number: int | None = None, break_on_calls: bool = False
+        self,
+        main_claim_id: str | None = None,
+        leaf_number: int | None = None,
+        break_on_calls: bool = False,
+        workers: int = 1,
     ) -> None:
         self.main_claim_id = main_claim_id
         self.leaf_number = leaf_number
         self.break_on_calls = break_on_calls
+        self.workers = workers
 
 
 TEST_PARAMS: dict[str, TParams] = {
@@ -221,6 +228,7 @@ TEST_PARAMS: dict[str, TParams] = {
         main_claim_id='VAT-SLIP-PASS-ROUGH-SPEC.Vat.slip.pass.rough',
         leaf_number=1,
     ),
+    'functional/lemmas-spec.k': TParams(workers=8),
 }
 
 
@@ -243,13 +251,18 @@ def test_pyk_prove(
     kompiled_target_for: Callable[[Path], Path],
     tmp_path: Path,
     caplog: LogCaptureFixture,
-    use_booster: bool,
+    no_use_booster: bool,
+    use_booster_dev: bool,
     bug_report: BugReport | None,
     spec_name: str | None,
 ) -> None:
     caplog.set_level(logging.INFO)
 
-    if (not use_booster and spec_file in FAILING_PYK_TESTS) or (use_booster and spec_file in FAILING_BOOSTER_TESTS):
+    if (
+        (no_use_booster and spec_file in FAILING_PYK_TESTS)
+        or (use_booster_dev and spec_file in FAILING_BOOSTER_DEV_TESTS)
+        or (not no_use_booster and not use_booster_dev and spec_file in FAILING_BOOSTER_TESTS)
+    ):
         pytest.skip()
 
     if spec_name is not None and str(spec_file).find(spec_name) < 0:
@@ -265,6 +278,7 @@ def test_pyk_prove(
         definition_dir = kompiled_target_for(spec_file)
         name = str(spec_file.relative_to(SPEC_DIR))
         break_on_calls = name in TEST_PARAMS and TEST_PARAMS[name].break_on_calls
+        workers = 1 if name not in TEST_PARAMS else TEST_PARAMS[name].workers
         options = ProveOptions(
             {
                 'spec_file': spec_file,
@@ -272,9 +286,11 @@ def test_pyk_prove(
                 'includes': [str(include_dir) for include_dir in config.INCLUDE_DIRS],
                 'save_directory': use_directory,
                 'md_selector': 'foo',  # TODO Ignored flag, this is to avoid KeyError
-                'use_booster': use_booster,
+                'use_booster': not no_use_booster,
+                'use_booster_dev': use_booster_dev,
                 'bug_report': bug_report,
                 'break_on_calls': break_on_calls,
+                'workers': workers,
             }
         )
         exec_prove(options=options)
@@ -288,6 +304,97 @@ def test_pyk_prove(
                 expected_leaf_number = params.leaf_number
                 actual_leaf_number = leaf_number(apr_proof)
                 assert expected_leaf_number == actual_leaf_number
+    except BaseException:
+        raise
+    finally:
+        log_file.write_text(caplog.text)
+
+
+def test_prove_optimizations(
+    kompiled_target_for: Callable[[Path], Path],
+    tmp_path: Path,
+    caplog: LogCaptureFixture,
+    use_booster_dev: bool,
+    bug_report: BugReport | None,
+) -> None:
+    caplog.set_level(logging.INFO)
+
+    def _get_optimization_proofs() -> list[APRProof]:
+        _defn_dir = kdist.get('evm-semantics.haskell')
+        _kevm = KEVM(_defn_dir)
+        _optimization_rules = _kevm.definition.module('EVM-OPTIMIZATIONS').rules
+        _claims = [
+            KClaim(
+                rule.body, requires=rule.requires, ensures=rule.ensures, att=KAtt([AttEntry(Atts.LABEL, rule.label)])
+            )
+            for rule in _optimization_rules
+        ]
+        return [APRProof.from_claim(kevm.definition, claim, {}) for claim in _claims]
+
+    spec_file = REPO_ROOT / 'tests/specs/opcodes/evm-optimizations-spec.k'
+    definition_dir = kompiled_target_for(spec_file)
+    kevm = KEVM(definition_dir)
+
+    kore_rpc_command = ('booster-dev',) if use_booster_dev else ('kore-rpc-booster',)
+
+    with legacy_explore(
+        kevm, kcfg_semantics=KEVMSemantics(allow_symbolic_program=True), kore_rpc_command=kore_rpc_command
+    ) as kcfg_explore:
+        prover = APRProver(
+            kcfg_explore,
+            execute_depth=20,
+            terminal_rules=[],
+            cut_point_rules=['EVM.pc.inc'],
+            counterexample_info=False,
+            always_check_subsumption=True,
+            fast_check_subsumption=True,
+        )
+        for proof in _get_optimization_proofs():
+            initialize_apr_proof(kcfg_explore.cterm_symbolic, proof)
+            prover.advance_proof(proof, max_iterations=10)
+            node_printer = kevm_node_printer(kevm, proof)
+            proof_show = APRProofShow(kevm, node_printer=node_printer)
+            proof_display = '\n'.join('    ' + line for line in proof_show.show(proof))
+            _LOGGER.info(f'Proof {proof.id}:\n{proof_display}')
+            assert proof.passed
+
+
+def test_prove_dss(
+    kompiled_target_for: Callable[[Path], Path],
+    tmp_path: Path,
+    caplog: LogCaptureFixture,
+    bug_report: BugReport | None,
+    spec_name: str | None,
+) -> None:
+    spec_file = Path('../tests/specs/mcd/vat-spec.k')
+    caplog.set_level(logging.INFO)
+
+    if spec_name is not None and str(spec_file).find(spec_name) < 0:
+        pytest.skip()
+
+    # Given
+    log_file = tmp_path / 'log.txt'
+    use_directory = tmp_path / 'kprove'
+    use_directory.mkdir()
+
+    # When
+    try:
+        definition_dir = kompiled_target_for(spec_file)
+        options = ProveOptions(
+            {
+                'spec_file': spec_file,
+                'definition_dir': definition_dir,
+                'includes': [str(include_dir) for include_dir in config.INCLUDE_DIRS],
+                'save_directory': use_directory,
+                'md_selector': 'foo',  # TODO Ignored flag, this is to avoid KeyError
+                'use_booster': True,
+                'bug_report': bug_report,
+                'break_on_calls': False,
+                'workers': 8,
+                'direct_subproof_rules': True,
+            }
+        )
+        exec_prove(options=options)
     except BaseException:
         raise
     finally:

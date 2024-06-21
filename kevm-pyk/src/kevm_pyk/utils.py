@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from pyk.cterm import CTerm, CTermSymbolic
+from pyk.cterm import CTermSymbolic
 from pyk.kast import Atts
 from pyk.kast.inner import KApply, KInner, KRewrite, KVariable, Subst
 from pyk.kast.manip import (
@@ -15,14 +15,13 @@ from pyk.kast.manip import (
     bottom_up,
     free_vars,
     is_anon_var,
-    set_cell,
     split_config_and_constraints,
     split_config_from,
 )
-from pyk.kast.outer import KSequence
 from pyk.kcfg import KCFGExplore
 from pyk.kore.rpc import KoreClient, KoreExecLogFormat, TransportType, kore_server
 from pyk.ktool import TypeInferenceMode
+from pyk.prelude.ml import is_bottom, is_top
 from pyk.proof import APRProof, APRProver
 from pyk.proof.implies import EqualityProof, ImpliesProver
 from pyk.proof.proof import parallel_advance_proof
@@ -74,6 +73,7 @@ def get_apr_proof_for_spec(
     md_selector: str | None = None,
     claim_labels: Iterable[str] | None = None,
     exclude_claim_labels: Iterable[str] | None = None,
+    include_dependencies: bool = True,
 ) -> APRProof:
     if save_directory is None:
         save_directory = Path('.')
@@ -89,6 +89,7 @@ def get_apr_proof_for_spec(
             claim_labels=claim_labels,
             exclude_claim_labels=exclude_claim_labels,
             type_inference_mode=TypeInferenceMode.SIMPLESUB,
+            include_dependencies=include_dependencies,
         )
     )
 
@@ -104,6 +105,7 @@ class RunProverParams:
     counterexample_info: bool
     always_check_subsumption: bool
     fast_check_subsumption: bool
+    direct_subproof_rules: bool
 
 
 class APRProofStrategy(ABC):
@@ -140,6 +142,7 @@ class ParallelStrategy(APRProofStrategy):
                 counterexample_info=self.params.counterexample_info,
                 always_check_subsumption=self.params.always_check_subsumption,
                 fast_check_subsumption=self.params.fast_check_subsumption,
+                direct_subproof_rules=self.params.direct_subproof_rules,
             )
 
         parallel_advance_proof(
@@ -167,6 +170,7 @@ class SequentialStrategy(APRProofStrategy):
             counterexample_info=self.params.counterexample_info,
             always_check_subsumption=self.params.always_check_subsumption,
             fast_check_subsumption=self.params.fast_check_subsumption,
+            direct_subproof_rules=self.params.direct_subproof_rules,
         )
         prover.advance_proof(fail_fast=fail_fast, max_iterations=max_iterations, proof=proof)
 
@@ -214,6 +218,7 @@ def run_prover(
     counterexample_info: bool = False,
     always_check_subsumption: bool = False,
     fast_check_subsumption: bool = False,
+    direct_subproof_rules: bool = False,
     max_frontier_parallel: int = 1,
 ) -> bool:
     prover: APRProver | ImpliesProver
@@ -230,6 +235,7 @@ def run_prover(
                     execute_depth=max_depth,
                     fast_check_subsumption=fast_check_subsumption,
                     terminal_rules=terminal_rules,
+                    direct_subproof_rules=direct_subproof_rules,
                 ),
             )
             strategy.prove(fail_fast=fail_fast, max_iterations=max_iterations, proof=proof)
@@ -251,7 +257,7 @@ def run_prover(
         _LOGGER.error(f'Proof crashed: {proof.id}\n{e}', exc_info=True)
         return False
 
-    _LOGGER.info(f'Proof status: {proof.status}')
+    _LOGGER.info(f'Proof status {proof.id}: {proof.status}')
     return proof.passed
 
 
@@ -380,14 +386,6 @@ def abstract_cell_vars(cterm: KInner, keep_vars: Collection[KVariable] = ()) -> 
     return Subst(subst)(config)
 
 
-def ensure_ksequence_on_k_cell(cterm: CTerm) -> CTerm:
-    k_cell = cterm.cell('K_CELL')
-    if type(k_cell) is not KSequence:
-        _LOGGER.info('Introducing artificial KSequence on <k> cell.')
-        return CTerm.from_kast(set_cell(cterm.kast, 'K_CELL', KSequence([k_cell])))
-    return cterm
-
-
 def constraints_for(vars: list[str], constraints: Iterable[KInner]) -> Iterable[KInner]:
     accounts_constraints = []
     constraints_changed = True
@@ -399,6 +397,26 @@ def constraints_for(vars: list[str], constraints: Iterable[KInner]) -> Iterable[
                 vars.extend(free_vars(constraint))
                 constraints_changed = True
     return accounts_constraints
+
+
+def initialize_apr_proof(cterm_symbolic: CTermSymbolic, proof: APRProof) -> None:
+    init_cterm = proof.kcfg.node(proof.init).cterm
+    target_cterm = proof.kcfg.node(proof.target).cterm
+
+    _LOGGER.info(f'Computing definedness constraint for initial node: {proof.id}')
+    init_cterm = cterm_symbolic.assume_defined(init_cterm)
+
+    _LOGGER.info(f'Simplifying initial and target node: {proof.id}')
+    init_cterm, _ = cterm_symbolic.simplify(init_cterm)
+    target_cterm, _ = cterm_symbolic.simplify(target_cterm)
+
+    if is_bottom(init_cterm.kast, weak=True):
+        raise ValueError('Simplifying initial node led to #Bottom, are you sure your LHS is defined?')
+    if is_top(target_cterm.kast, weak=True):
+        raise ValueError('Simplifying target node led to #Bottom, are you sure your RHS is defined?')
+
+    proof.kcfg.let_node(proof.init, cterm=init_cterm)
+    proof.kcfg.let_node(proof.target, cterm=target_cterm)
 
 
 @contextmanager
@@ -446,9 +464,7 @@ def legacy_explore(
             no_post_exec_simplify=no_post_exec_simplify,
         ) as server:
             with KoreClient('localhost', server.port, bug_report=bug_report, bug_report_id=id) as client:
-                cterm_symbolic = CTermSymbolic(
-                    client, kprint.definition, kprint.kompiled_kore, trace_rewrites=trace_rewrites
-                )
+                cterm_symbolic = CTermSymbolic(client, kprint.definition, trace_rewrites=trace_rewrites)
                 yield KCFGExplore(cterm_symbolic, kcfg_semantics=kcfg_semantics, id=id)
     else:
         if port is None:
@@ -465,7 +481,5 @@ def legacy_explore(
                 ],
             }
         with KoreClient('localhost', port, bug_report=bug_report, bug_report_id=id, dispatch=dispatch) as client:
-            cterm_symbolic = CTermSymbolic(
-                client, kprint.definition, kprint.kompiled_kore, trace_rewrites=trace_rewrites
-            )
+            cterm_symbolic = CTermSymbolic(client, kprint.definition, trace_rewrites=trace_rewrites)
             yield KCFGExplore(cterm_symbolic, kcfg_semantics=kcfg_semantics, id=id)

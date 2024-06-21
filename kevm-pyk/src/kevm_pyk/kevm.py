@@ -17,8 +17,9 @@ from pyk.kast.inner import (
     build_cons,
     top_down,
 )
-from pyk.kast.manip import abstract_term_safely, flatten_label
+from pyk.kast.manip import abstract_term_safely, flatten_label, set_cell
 from pyk.kast.pretty import paren
+from pyk.kcfg.kcfg import Step
 from pyk.kcfg.semantics import KCFGSemantics
 from pyk.kcfg.show import NodePrinter
 from pyk.ktool.kprove import KProve
@@ -28,6 +29,7 @@ from pyk.prelude.kbool import notBool
 from pyk.prelude.kint import INT, eqInt, intToken, ltInt
 from pyk.prelude.ml import mlEqualsFalse, mlEqualsTrue
 from pyk.prelude.string import stringToken
+from pyk.prelude.utils import token
 from pyk.proof.reachability import APRProof
 from pyk.proof.show import APRProofNodePrinter
 
@@ -45,15 +47,16 @@ if TYPE_CHECKING:
 
 _LOGGER: Final = logging.getLogger(__name__)
 
-
 # KEVM class
 
 
 class KEVMSemantics(KCFGSemantics):
     auto_abstract_gas: bool
+    allow_symbolic_program: bool
 
-    def __init__(self, auto_abstract_gas: bool = False) -> None:
+    def __init__(self, auto_abstract_gas: bool = False, allow_symbolic_program: bool = False) -> None:
         self.auto_abstract_gas = auto_abstract_gas
+        self.allow_symbolic_program = allow_symbolic_program
 
     @staticmethod
     def is_functional(term: KInner) -> bool:
@@ -77,7 +80,7 @@ class KEVMSemantics(KCFGSemantics):
 
         program_cell = cterm.cell('PROGRAM_CELL')
         # Fully symbolic program is terminal unless we are executing a functional claim
-        if type(program_cell) is KVariable:
+        if not self.allow_symbolic_program and type(program_cell) is KVariable:
             # <k> runLemma ( ... ) </k>
             if KEVMSemantics.is_functional(k_cell):
                 return False
@@ -149,11 +152,31 @@ class KEVMSemantics(KCFGSemantics):
         return CTerm(config=bottom_up(_replace, cterm.config), constraints=cterm.constraints)
 
     def custom_step(self, cterm: CTerm) -> KCFGExtendResult | None:
+        """Given a CTerm, update the JUMPDESTS_CELL and PROGRAM_CELL if the rule 'EVM.program.load' is at the top of the K_CELL.
+
+        :param cterm: CTerm of a proof node.
+        :type cterm: CTerm
+        :return: If the K_CELL matches the load_pattern, a Step with depth 1 is returned together with the new configuration, also registering that the `EVM.program.load` rule has been applied. Otherwise, None is returned.
+        :rtype: KCFGExtendResult | None
+        """
+        load_pattern = KSequence([KApply('loadProgram', KVariable('###BYTECODE')), KVariable('###CONTINUATION')])
+        subst = load_pattern.match(cterm.cell('K_CELL'))
+        if subst is not None:
+            bytecode_sections = flatten_label('_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes', subst['###BYTECODE'])
+            jumpdests_set = compute_jumpdests(bytecode_sections)
+            new_cterm = CTerm.from_kast(set_cell(cterm.kast, 'JUMPDESTS_CELL', jumpdests_set))
+            new_cterm = CTerm.from_kast(set_cell(new_cterm.kast, 'PROGRAM_CELL', subst['###BYTECODE']))
+            new_cterm = CTerm.from_kast(set_cell(new_cterm.kast, 'K_CELL', KSequence(subst['###CONTINUATION'])))
+            return Step(new_cterm, 1, (), ['EVM.program.load'], cut=True)
         return None
 
     @staticmethod
     def cut_point_rules(
-        break_on_jumpi: bool, break_on_calls: bool, break_on_storage: bool, break_on_basic_blocks: bool
+        break_on_jumpi: bool,
+        break_on_calls: bool,
+        break_on_storage: bool,
+        break_on_basic_blocks: bool,
+        break_on_load_program: bool,
     ) -> list[str]:
         cut_point_rules = []
         if break_on_jumpi:
@@ -179,6 +202,8 @@ class KEVMSemantics(KCFGSemantics):
             )
         if break_on_storage:
             cut_point_rules.extend(['EVM.sstore', 'EVM.sload'])
+        if break_on_load_program:
+            cut_point_rules.extend(['EVM.program.load'])
         return cut_point_rules
 
     @staticmethod
@@ -368,11 +393,11 @@ class KEVM(KProve, KRun):
 
     @staticmethod
     def halt() -> KApply:
-        return KApply('#halt_EVM_KItem')
+        return KApply('halt')
 
     @staticmethod
     def sharp_execute() -> KApply:
-        return KApply('#execute_EVM_KItem')
+        return KApply('execute')
 
     @staticmethod
     def jumpi() -> KApply:
@@ -392,7 +417,7 @@ class KEVM(KProve, KRun):
 
     @staticmethod
     def pc_applied(op: KInner) -> KApply:
-        return KApply('#pc[_]_EVM_InternalOp_OpCode', [op])
+        return KApply('pc', [op])
 
     @staticmethod
     def pow128() -> KApply:
@@ -404,35 +429,35 @@ class KEVM(KProve, KRun):
 
     @staticmethod
     def range_uint(width: int, i: KInner) -> KApply:
-        return KApply('#rangeUInt(_,_)_WORD_Bool_Int_Int', [intToken(width), i])
+        return KApply('rangeUInt', [intToken(width), i])
 
     @staticmethod
     def range_sint(width: int, i: KInner) -> KApply:
-        return KApply('#rangeSInt(_,_)_WORD_Bool_Int_Int', [intToken(width), i])
+        return KApply('rangeSInt', [intToken(width), i])
 
     @staticmethod
     def range_address(i: KInner) -> KApply:
-        return KApply('#rangeAddress(_)_WORD_Bool_Int', [i])
+        return KApply('rangeAddress', [i])
 
     @staticmethod
     def range_bool(i: KInner) -> KApply:
-        return KApply('#rangeBool(_)_WORD_Bool_Int', [i])
+        return KApply('rangeBool', [i])
 
     @staticmethod
     def range_bytes(width: KInner, ba: KInner) -> KApply:
-        return KApply('#rangeBytes(_,_)_WORD_Bool_Int_Int', [width, ba])
+        return KApply('rangeBytes', [width, ba])
 
     @staticmethod
     def range_nonce(i: KInner) -> KApply:
-        return KApply('#rangeNonce(_)_WORD_Bool_Int', [i])
+        return KApply('rangeNonce', [i])
 
     @staticmethod
     def range_blocknum(ba: KInner) -> KApply:
-        return KApply('#rangeBlockNum(_)_WORD_Bool_Int', [ba])
+        return KApply('rangeBlockNum', [ba])
 
     @staticmethod
     def bool_2_word(cond: KInner) -> KApply:
-        return KApply('bool2Word(_)_EVM-TYPES_Int_Bool', [cond])
+        return KApply('bool2Word', [cond])
 
     @staticmethod
     def size_bytes(ba: KInner) -> KApply:
@@ -444,7 +469,7 @@ class KEVM(KProve, KRun):
 
     @staticmethod
     def compute_valid_jumpdests(p: KInner) -> KApply:
-        return KApply('#computeValidJumpDests(_)_EVM_Set_Bytes', [p])
+        return KApply('computeValidJumpDests', [p])
 
     @staticmethod
     def bin_runtime(c: KInner) -> KApply:
@@ -456,13 +481,11 @@ class KEVM(KProve, KRun):
 
     @staticmethod
     def is_precompiled_account(i: KInner, s: KInner) -> KApply:
-        return KApply('#isPrecompiledAccount(_,_)_EVM_Bool_Int_Schedule', [i, s])
+        return KApply('isPrecompiledAccount', [i, s])
 
     @staticmethod
     def hashed_location(compiler: str, base: KInner, offset: KInner, member_offset: int = 0) -> KApply:
-        location = KApply(
-            '#hashedLocation(_,_,_)_HASHED-LOCATIONS_Int_String_Int_IntList', [stringToken(compiler), base, offset]
-        )
+        location = KApply('hashLoc', [stringToken(compiler), base, offset])
         if member_offset > 0:
             location = KApply('_+Int_', [location, intToken(member_offset)])
         return location
@@ -473,11 +496,11 @@ class KEVM(KProve, KRun):
 
     @staticmethod
     def lookup(map: KInner, key: KInner) -> KApply:
-        return KApply('#lookup(_,_)_EVM-TYPES_Int_Map_Int', [map, key])
+        return KApply('lookup', [map, key])
 
     @staticmethod
     def abi_calldata(name: str, args: list[KInner]) -> KApply:
-        return KApply('#abiCallData(_,_)_EVM-ABI_Bytes_String_TypedArgs', [stringToken(name), KEVM.typed_args(args)])
+        return KApply('abiCallData', [stringToken(name), KEVM.typed_args(args)])
 
     @staticmethod
     def abi_selector(name: str) -> KApply:
@@ -485,11 +508,11 @@ class KEVM(KProve, KRun):
 
     @staticmethod
     def abi_address(a: KInner) -> KApply:
-        return KApply('#address(_)_EVM-ABI_TypedArg_Int', [a])
+        return KApply('abi_type_address', [a])
 
     @staticmethod
     def abi_bool(b: KInner) -> KApply:
-        return KApply('#bool(_)_EVM-ABI_TypedArg_Int', [b])
+        return KApply('abi_type_bool', [b])
 
     @staticmethod
     def abi_type(type: str, value: KInner) -> KApply:
@@ -505,7 +528,7 @@ class KEVM(KProve, KRun):
 
     @staticmethod
     def as_word(b: KInner) -> KApply:
-        return KApply('#asWord(_)_EVM-TYPES_Int_Bytes', [b])
+        return KApply('asWord', [b])
 
     @staticmethod
     def empty_typedargs() -> KApply:
@@ -541,15 +564,15 @@ class KEVM(KProve, KRun):
 
     @staticmethod
     def parse_bytestack(s: KInner) -> KApply:
-        return KApply('#parseByteStack(_)_SERIALIZATION_Bytes_String', [s])
+        return KApply('parseByteStack', [s])
 
     @staticmethod
     def bytes_empty() -> KApply:
         return KApply('.Bytes_BYTES-HOOKED_Bytes')
 
     @staticmethod
-    def buf(width: int, v: KInner) -> KApply:
-        return KApply('#buf(_,_)_BUF-SYNTAX_Bytes_Int_Int', [intToken(width), v])
+    def buf(width: KInner, v: KInner) -> KApply:
+        return KApply('buf', [width, v])
 
     @staticmethod
     def intlist(ints: list[KInner]) -> KApply:
@@ -644,3 +667,52 @@ def kevm_node_printer(kevm: KEVM, proof: APRProof) -> NodePrinter:
     if type(proof) is APRProof:
         return KEVMAPRNodePrinter(kevm, proof)
     raise ValueError(f'Cannot build NodePrinter for proof type: {type(proof)}')
+
+
+def compute_jumpdests(sections: list[KInner]) -> KInner:
+    """Analyzes a list of KInner objects representing sections of bytecode to compute jump destinations.
+
+    :param sections: A section is expected to be either a concrete sequence of bytes (Bytes) or a symbolic buffer of concrete width (#buf(WIDTH, _)).
+    :return: This function iterates over each section, appending the jump destinations (0x5B) from the bytecode in a KAst Set.
+    :rtype: KInner
+    """
+    mutable_jumpdests = bytearray(b'')
+    for s in sections:
+        if type(s) is KApply and s.label == KLabel('buf'):
+            width_token = s.args[0]
+            assert type(width_token) is KToken
+            mutable_jumpdests += bytes(int(width_token.token))
+        elif type(s) is KToken and s.sort == BYTES:
+            bytecode = pretty_bytes(s)
+            mutable_jumpdests += _process_jumpdests(bytecode)
+        else:
+            raise ValueError(f'Cannot compute jumpdests for type: {type(s)}')
+
+    return token(bytes(mutable_jumpdests))
+
+
+def _process_jumpdests(bytecode: bytes) -> bytes:
+    """Computes the location of JUMPDEST opcodes from a given bytecode while avoiding bytes from within the PUSH opcodes.
+
+    :param bytecode: The bytecode of the contract as bytes.
+    :type bytecode: bytes
+    :param offset: The offset to add to each position index to align it with the broader code structure.
+    :type offset: int
+    :return: A bytes object where each byte corresponds to a position in the input bytecode. Positions containing a valid JUMPDEST opcode are marked
+    with `0x01` while all other positions are marked with `0x00`.
+    :rtype: bytes
+    """
+    push1 = 0x60
+    push32 = 0x7F
+    jumpdest = 0x5B
+    bytecode_length = len(bytecode)
+    i = 0
+    jumpdests = bytearray(bytecode_length)
+    while i < bytecode_length:
+        if push1 <= bytecode[i] <= push32:
+            i += bytecode[i] - push1 + 2
+        else:
+            if bytecode[i] == jumpdest:
+                jumpdests[i] = 0x1
+            i += 1
+    return bytes(jumpdests)

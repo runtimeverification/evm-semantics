@@ -1,5 +1,6 @@
 tests/specs/benchmarks/address00-spec.k
 tests/specs/benchmarks/bytes00-spec.k
+tests/specs/benchmarks/dynamicarray00-spec.k
 tests/specs/benchmarks/ecrecover00-siginvalid-spec.k
 tests/specs/benchmarks/ecrecover00-sigvalid-spec.k
 tests/specs/benchmarks/ecrecoverloop00-sig0-invalid-spec.k
@@ -19,15 +20,14 @@ tests/specs/benchmarks/requires01-a0le0-spec.k
 tests/specs/benchmarks/staticarray00-spec.k
 tests/specs/benchmarks/staticloop00-a0lt10-spec.k
 tests/specs/benchmarks/storagevar00-spec.k
-tests/specs/benchmarks/storagevar01-spec.k
 tests/specs/benchmarks/storagevar02-nooverflow-spec.k
 tests/specs/benchmarks/storagevar02-overflow-spec.k
-tests/specs/benchmarks/storagevar03-spec.k
+tests/specs/benchmarks/structarg00-spec.k
+tests/specs/benchmarks/structarg01-spec.k
 tests/specs/erc20/ds/allowance-spec.k
 tests/specs/erc20/ds/approve-failure-spec.k
 tests/specs/erc20/ds/approve-success-spec.k
 tests/specs/erc20/ds/balanceOf-spec.k
-tests/specs/erc20/ds/totalSupply-spec.k
 tests/specs/erc20/ds/transfer-failure-1-a-spec.k
 tests/specs/erc20/ds/transfer-failure-1-b-spec.k
 tests/specs/erc20/ds/transfer-failure-1-c-spec.k
@@ -47,7 +47,6 @@ tests/specs/erc20/ds/transfer-success-2-spec.k
 tests/specs/erc20/hkg/allowance-spec.k
 tests/specs/erc20/hkg/approve-spec.k
 tests/specs/erc20/hkg/balanceOf-spec.k
-tests/specs/erc20/hkg/totalSupply-spec.k
 tests/specs/erc20/hkg/transfer-failure-1-spec.k
 tests/specs/erc20/hkg/transfer-failure-2-spec.k
 tests/specs/erc20/hkg/transferFrom-failure-1-spec.k
@@ -60,6 +59,8 @@ tests/specs/examples/erc20-spec.md
 tests/specs/examples/erc721-spec.md
 tests/specs/examples/solidity-code-spec.md
 tests/specs/examples/storage-spec.md
+tests/specs/examples/sum-to-n-foundry-spec.k
+tests/specs/examples/sum-to-n-spec.k
 tests/specs/functional/evm-int-simplifications-spec.k
 tests/specs/functional/infinite-gas-spec.k
 tests/specs/functional/int-simplifications-spec.k
@@ -71,7 +72,6 @@ tests/specs/kontrol/test-allowchangestest-testallow-0-spec.k
 tests/specs/kontrol/test-allowchangestest-testallow_fail-0-spec.k
 tests/specs/kontrol/test-allowchangestest-testfailallowcallstoaddress-0-spec.k
 tests/specs/kontrol/test-allowchangestest-testfailallowchangestostorage-0-spec.k
-tests/specs/kontrol/test-arithmetictest-test_max1_broken-uint256-uint256-0-spec.k
 tests/specs/kontrol/test-arithmetictest-test_wdiv_rounding-uint256-uint256-0-spec.k
 tests/specs/kontrol/test-arithmetictest-test_wmul_weakly_increasing_positive-uint256-uint256-0-spec.k
 tests/specs/kontrol/test-countertest-testincrement-0-spec.k
@@ -92,8 +92,6 @@ tests/specs/kontrol/test-storetest-testaccesses-0-spec.k
 tests/specs/kontrol/test-storetest-teststoreload-0-spec.k
 tests/specs/mcd/cat-exhaustiveness-spec.k
 tests/specs/mcd/cat-file-addr-pass-rough-spec.k
-tests/specs/mcd/dai-adduu-fail-rough-spec.k
-tests/specs/mcd/dai-symbol-pass-spec.k
 tests/specs/mcd/dstoken-approve-fail-rough-spec.k
 tests/specs/mcd/dsvalue-peek-pass-rough-spec.k
 tests/specs/mcd/dsvalue-read-pass-spec.k

@@ -24,7 +24,7 @@ from pyk.kdist import kdist
 from pyk.kore.rpc import KoreClient
 from pyk.kore.tools import kore_print
 from pyk.ktool.kompile import LLVMKompileType
-from pyk.prelude.ml import is_bottom, is_top, mlOr
+from pyk.prelude.ml import is_top, mlOr
 from pyk.proof import APRProof
 from pyk.proof.implies import EqualityProof
 from pyk.proof.show import APRProofShow
@@ -38,8 +38,8 @@ from .kevm import KEVM, KEVMSemantics, kevm_node_printer
 from .kompile import KompileTarget, kevm_kompile
 from .utils import (
     claim_dependency_dict,
-    ensure_ksequence_on_k_cell,
     get_apr_proof_for_spec,
+    initialize_apr_proof,
     legacy_explore,
     print_failure_info,
     run_prover,
@@ -260,7 +260,12 @@ def exec_prove(options: ProveOptions) -> None:
 
     kore_rpc_command: tuple[str, ...]
     if options.kore_rpc_command is None:
-        kore_rpc_command = ('kore-rpc-booster',) if options.use_booster else ('kore-rpc',)
+        if options.use_booster_dev:
+            kore_rpc_command = ('booster-dev',)
+        elif not options.use_booster:
+            kore_rpc_command = ('kore-rpc',)
+        else:
+            kore_rpc_command = ('kore-rpc-booster',)
     elif isinstance(options.kore_rpc_command, str):
         kore_rpc_command = tuple(options.kore_rpc_command.split())
     else:
@@ -293,6 +298,7 @@ def exec_prove(options: ProveOptions) -> None:
     claims_graph = claim_dependency_dict(all_claims, spec_module_name=spec_module_name)
 
     def _init_and_run_proof(claim_job: KClaimJob) -> tuple[bool, list[str] | None]:
+        proof_problem: Proof
         claim = claim_job.claim
         up_to_date = claim_job.up_to_date(digest_file)
         if up_to_date:
@@ -300,6 +306,21 @@ def exec_prove(options: ProveOptions) -> None:
         else:
             _LOGGER.info(f'Claim reinitialized because it is out of date: {claim.label}')
         claim_job.update_digest(digest_file)
+
+        if is_functional(claim):
+            if not options.reinit and up_to_date and EqualityProof.proof_exists(claim.label, save_directory):
+                proof_problem = EqualityProof.read_proof_data(save_directory, claim.label)
+            else:
+                proof_problem = EqualityProof.from_claim(claim, kevm.definition, proof_dir=save_directory)
+        else:
+            if not options.reinit and up_to_date and APRProof.proof_data_exists(claim.label, save_directory):
+                proof_problem = APRProof.read_proof_data(save_directory, claim.label)
+            else:
+                proof_problem = APRProof.from_claim(kevm.definition, claim, {}, proof_dir=save_directory)
+        if proof_problem.passed and not proof_problem.admitted:
+            _LOGGER.info(f'Proof already passed: {proof_problem.id}')
+            return (True, [])
+
         with legacy_explore(
             kevm,
             kcfg_semantics=KEVMSemantics(auto_abstract_gas=options.auto_abstract_gas),
@@ -326,60 +347,20 @@ def exec_prove(options: ProveOptions) -> None:
                     bug_report_id=claim.label,
                     dispatch=dispatch,
                 )
-                cterm_symbolic = CTermSymbolic(
-                    client, kevm.definition, kevm.kompiled_kore, trace_rewrites=options.trace_rewrites
-                )
+                cterm_symbolic = CTermSymbolic(client, kevm.definition, trace_rewrites=options.trace_rewrites)
                 return KCFGExplore(
                     cterm_symbolic,
                     kcfg_semantics=KEVMSemantics(auto_abstract_gas=options.auto_abstract_gas),
                     id=claim.label,
                 )
 
-            proof_problem: Proof
-            if is_functional(claim):
-                if not options.reinit and up_to_date and EqualityProof.proof_exists(claim.label, save_directory):
-                    proof_problem = EqualityProof.read_proof_data(save_directory, claim.label)
-                else:
-                    proof_problem = EqualityProof.from_claim(claim, kevm.definition, proof_dir=save_directory)
-            else:
-                if not options.reinit and up_to_date and APRProof.proof_data_exists(claim.label, save_directory):
-                    proof_problem = APRProof.read_proof_data(save_directory, claim.label)
+            if not is_functional(claim) and (options.reinit or not up_to_date):
+                assert type(proof_problem) is APRProof
+                initialize_apr_proof(kcfg_explore.cterm_symbolic, proof_problem)
 
-                else:
-                    _LOGGER.info(f'Converting claim to KCFG: {claim.label}')
-                    kcfg, init_node_id, target_node_id = KCFG.from_claim(kevm.definition, claim)
-
-                    new_init = ensure_ksequence_on_k_cell(kcfg.node(init_node_id).cterm)
-                    new_target = ensure_ksequence_on_k_cell(kcfg.node(target_node_id).cterm)
-
-                    _LOGGER.info(f'Computing definedness constraint for initial node: {claim.label}')
-                    new_init = kcfg_explore.cterm_symbolic.assume_defined(new_init)
-
-                    _LOGGER.info(f'Simplifying initial and target node: {claim.label}')
-                    new_init, _ = kcfg_explore.cterm_symbolic.simplify(new_init)
-                    new_target, _ = kcfg_explore.cterm_symbolic.simplify(new_target)
-                    if is_bottom(new_init.kast, weak=True):
-                        raise ValueError('Simplifying initial node led to #Bottom, are you sure your LHS is defined?')
-                    if is_top(new_target.kast, weak=True):
-                        raise ValueError('Simplifying target node led to #Bottom, are you sure your RHS is defined?')
-
-                    kcfg.let_node(init_node_id, cterm=new_init)
-                    kcfg.let_node(target_node_id, cterm=new_target)
-
-                    proof_problem = APRProof(
-                        claim.label,
-                        kcfg,
-                        [],
-                        init_node_id,
-                        target_node_id,
-                        {},
-                        proof_dir=save_directory,
-                        subproof_ids=claims_graph[claim.label],
-                        admitted=claim.is_trusted,
-                    )
+            proof_problem.write_proof_data()
 
             if proof_problem.admitted:
-                proof_problem.write_proof_data()
                 _LOGGER.info(f'Skipping execution of proof because it is marked as admitted: {proof_problem.id}')
                 return True, None
 
@@ -394,11 +375,13 @@ def exec_prove(options: ProveOptions) -> None:
                     options.break_on_calls,
                     options.break_on_storage,
                     options.break_on_basic_blocks,
+                    options.break_on_load_program,
                 ),
                 terminal_rules=KEVMSemantics.terminal_rules(options.break_every_step),
                 fail_fast=options.fail_fast,
                 always_check_subsumption=options.always_check_subsumption,
                 fast_check_subsumption=options.fast_check_subsumption,
+                direct_subproof_rules=options.direct_subproof_rules,
                 max_frontier_parallel=options.max_frontier_parallel,
             )
             end_time = time.time()
@@ -463,6 +446,7 @@ def exec_prune(options: PruneOptions) -> None:
             md_selector=md_selector,
             claim_labels=options.claim_labels,
             exclude_claim_labels=options.exclude_claim_labels,
+            include_dependencies=False,
         )
     )
 
@@ -503,6 +487,7 @@ def exec_section_edge(options: SectionEdgeOptions) -> None:
             md_selector=md_selector,
             claim_labels=options.claim_labels,
             exclude_claim_labels=options.exclude_claim_labels,
+            include_dependencies=False,
         )
     )
 
@@ -519,9 +504,10 @@ def exec_section_edge(options: SectionEdgeOptions) -> None:
         trace_rewrites=options.trace_rewrites,
         llvm_definition_dir=llvm_definition_dir,
     ) as kcfg_explore:
-        kcfg, _ = kcfg_explore.section_edge(
+        node_ids = kcfg_explore.section_edge(
             proof.kcfg, source_id=int(source_id), target_id=int(target_id), logs=proof.logs, sections=options.sections
         )
+        _LOGGER.info(f'Added nodes on edge {(source_id, target_id)}: {node_ids}')
     proof.write_proof_data()
 
 
@@ -542,6 +528,7 @@ def exec_show_kcfg(options: ShowKCFGOptions) -> None:
         md_selector=options.md_selector,
         claim_labels=options.claim_labels,
         exclude_claim_labels=options.exclude_claim_labels,
+        include_dependencies=False,
     )
 
     nodes = options.nodes
@@ -587,6 +574,7 @@ def exec_view_kcfg(options: ViewKCFGOptions) -> None:
         md_selector=options.md_selector,
         claim_labels=options.claim_labels,
         exclude_claim_labels=options.exclude_claim_labels,
+        include_dependencies=False,
     )
 
     node_printer = kevm_node_printer(kevm, proof)

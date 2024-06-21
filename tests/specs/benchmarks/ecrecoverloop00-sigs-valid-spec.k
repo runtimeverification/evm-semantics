@@ -6,7 +6,6 @@ module ECRECOVERLOOP00-SIGS-VALID-SPEC
   // fn-execute-sigs-valid
   claim
     <k> (#execute => #halt) ~> _ </k>
-    <exit-code> 1 </exit-code>
     <mode> NORMAL </mode>
     <schedule> ISTANBUL </schedule>
     <useGas> true </useGas>

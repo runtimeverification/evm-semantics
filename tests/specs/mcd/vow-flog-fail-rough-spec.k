@@ -6,7 +6,6 @@ module VOW-FLOG-FAIL-ROUGH-SPEC
     // Vow_flog
     claim [Vow.flog.fail.rough]:
       <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
-      <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
       <useGas> true </useGas>
@@ -124,7 +123,6 @@ module VOW-FLOG-FAIL-ROUGH-SPEC
     // Vow_adduu
     claim [Vow.adduu.pass]:
       <k> #execute ~> CONTINUATION => #execute ~> CONTINUATION </k>
-      <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
       <useGas> true </useGas>
@@ -225,7 +223,6 @@ module VOW-FLOG-FAIL-ROUGH-SPEC
     // Vow_subuu
     claim [Vow.subuu.pass]:
       <k> #execute ~> CONTINUATION => #execute ~> CONTINUATION </k>
-      <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
       <useGas> true </useGas>

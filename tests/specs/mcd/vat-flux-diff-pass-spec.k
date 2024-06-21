@@ -1,37 +1,35 @@
-requires "verification.k"
+requires "vat-arithmetic-spec.k"
 
-module DSTOKEN-TRANSFERFROM-FAIL-ROUGH-SPEC
-    imports VERIFICATION
+module VAT-FLUX-DIFF-PASS-SPEC
+    imports VAT-ARITHMETIC-SPEC
 
-    // DSToken_transferFrom
-    claim [DSToken.transferFrom.fail.rough]:
+    claim [Vat.flux-diff.pass]:
       <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
-      <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
       <useGas> true </useGas>
       <ethereum>
         <evm>
-          <output> _ => ?_ </output>
-          <statusCode> _ => ?FAILURE:EndStatusCode </statusCode>
+          <output> .Bytes </output>
+          <statusCode> _ => EVMC_SUCCESS </statusCode>
           <callStack> _VCallStack </callStack>
           <interimStates> _ </interimStates>
           <touchedAccounts> _ => ?_ </touchedAccounts>
           <callState>
-            <program> DSToken_bin_runtime </program>
-            <jumpDests> #computeValidJumpDests(DSToken_bin_runtime) </jumpDests>
+            <program> Vat_bin_runtime </program>
+            <jumpDests> #computeValidJumpDests(Vat_bin_runtime) </jumpDests>
             <id> ACCT_ID </id>
             <caller> CALLER_ID </caller>
-            <callData> #abiCallData("transferFrom", #address(ABI_src), #address(ABI_dst), #uint256(ABI_wad)) +Bytes CD => ?_ </callData>
+            <callData> #abiCallData("flux", #bytes32(ABI_ilk), #address(ABI_src), #address(ABI_dst), #uint256(ABI_wad)) +Bytes CD => ?_ </callData>
             <callValue> VCallValue </callValue>
             <wordStack> .WordStack => ?_ </wordStack>
             <localMem> .Bytes => ?_ </localMem>
             <pc> 0 => ?_ </pc>
-            <gas> #gas(VGas) => ?_ </gas>
+            <gas> #gas(VGas) => #gas ( ( ( ( VGas -Int Csstore( ISTANBUL , ( Gem_src -Int ABI_wad ) , Gem_src , Junk_1 ) ) -Int Csstore( ISTANBUL , ( Gem_dst +Int ABI_wad ) , Gem_dst , Junk_2 ) ) +Int -8307 ) ) </gas>
             <memoryUsed> 0 => ?_ </memoryUsed>
             <callGas> _ => ?_ </callGas>
             <static> false </static>
-            <callDepth> VCallDepth => ?_ </callDepth>
+            <callDepth> VCallDepth </callDepth>
           </callState>
           <substate>
             <selfDestruct> _VSelfDestruct </selfDestruct>
@@ -70,10 +68,10 @@ module DSTOKEN-TRANSFERFROM-FAIL-ROUGH-SPEC
             <account>
               <acctID> ACCT_ID </acctID>
               <balance> ACCT_ID_balance </balance>
-              <code> DSToken_bin_runtime </code>
-              <storage> ACCT_ID_STORAGE => ?_ACCT_ID_STORAGE </storage>
+              <code> Vat_bin_runtime </code>
+              <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE [ #Vat.gem[ABI_ilk][ABI_src] <- Gem_src -Int ABI_wad ] [ #Vat.gem[ABI_ilk][ABI_dst] <- Gem_dst +Int ABI_wad ] </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
-              <nonce> _Nonce_DSToken => ?_ </nonce>
+              <nonce> Nonce_Vat </nonce>
             </account>
            ...
           </accounts>
@@ -92,45 +90,35 @@ module DSTOKEN-TRANSFERFROM-FAIL-ROUGH-SPEC
        andBool VCallDepth <=Int 1024
        andBool #rangeUInt(256, VCallValue)
        andBool #rangeUInt(256, VChainId)
+       andBool #rangeNonce(Nonce_Vat)
 
+       andBool (#rangeBytes(32, ABI_ilk)
        andBool (#rangeAddress(ABI_src)
        andBool (#rangeAddress(ABI_dst)
        andBool (#rangeUInt(256, ABI_wad)
-       andBool (#rangeUInt(256, Gem_s)
-       andBool (#rangeUInt(256, Gem_d)
-       andBool (#rangeUInt(256, Allowance)
-       andBool (#rangeAddress(Owner)
-       andBool (#rangeBool(Stopped)
+       andBool (#rangeUInt(256, May)
+       andBool (#rangeUInt(256, Gem_src)
+       andBool (#rangeUInt(256, Gem_dst)
        andBool ((lengthBytes(CD) <=Int 1250000000)
-       andBool ((#notPrecompileAddress(Owner))
        andBool ((ABI_src =/=Int ABI_dst)
        andBool (#rangeUInt(256, Junk_0)
        andBool (#rangeUInt(256, Junk_1)
        andBool (#rangeUInt(256, Junk_2)
-       andBool (#rangeUInt(256, Junk_3))))))))))))))))
+       andBool ((((May ==Int 1 orBool ABI_src ==Int CALLER_ID)))
+       andBool (((VCallValue ==Int 0))
+       andBool ((#rangeUInt(256, Gem_src -Int ABI_wad))
+       andBool ((#rangeUInt(256, Gem_dst +Int ABI_wad))))))))))))))))))
 
-       andBool #lookup(ACCT_ID_STORAGE, #DSToken.allowance[ABI_src][CALLER_ID]) ==Int Allowance
-       andBool #lookup(ACCT_ID_STORAGE, #DSToken.balances[ABI_src]) ==Int Gem_s
-       andBool #lookup(ACCT_ID_STORAGE, #DSToken.balances[ABI_dst]) ==Int Gem_d
-       andBool #lookup(ACCT_ID_STORAGE, #DSToken.owner_stopped) ==Int #WordPackAddrUInt8(Owner, Stopped)
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #DSToken.allowance[ABI_src][CALLER_ID]) ==Int Junk_0
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #DSToken.balances[ABI_src]) ==Int Junk_1
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #DSToken.balances[ABI_dst]) ==Int Junk_2
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #DSToken.owner_stopped) ==Int Junk_3
-       andBool #DSToken.allowance[ABI_src][CALLER_ID] =/=Int #DSToken.balances[ABI_src]
-       andBool #DSToken.allowance[ABI_src][CALLER_ID] =/=Int #DSToken.balances[ABI_dst]
-       andBool #DSToken.allowance[ABI_src][CALLER_ID] =/=Int #DSToken.owner_stopped
-       andBool #DSToken.balances[ABI_src] =/=Int #DSToken.balances[ABI_dst]
-       andBool #DSToken.balances[ABI_src] =/=Int #DSToken.owner_stopped
-       andBool #DSToken.balances[ABI_dst] =/=Int #DSToken.owner_stopped
-       andBool notBool (
-        (((#rangeUInt(256, Gem_s:Int -Int ABI_wad:Int)))
-        andBool (((#rangeUInt(256, Gem_d:Int +Int ABI_wad:Int)))
-        andBool (((Allowance:Int ==Int maxUInt256 orBool ABI_src:Int ==Int CALLER_ID:Int) orBool (ABI_wad:Int <=Int Allowance:Int))
-        andBool ((VCallValue:Int ==Int 0)
-        andBool ((Stopped:Int ==Int 0))))))
-      )
-       ensures
-    ?FAILURE =/=K EVMC_SUCCESS
+       andBool #lookup(ACCT_ID_STORAGE, #Vat.can[ABI_src][CALLER_ID]) ==Int May
+       andBool #lookup(ACCT_ID_STORAGE, #Vat.gem[ABI_ilk][ABI_src]) ==Int Gem_src
+       andBool #lookup(ACCT_ID_STORAGE, #Vat.gem[ABI_ilk][ABI_dst]) ==Int Gem_dst
+       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Vat.can[ABI_src][CALLER_ID]) ==Int Junk_0
+       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Vat.gem[ABI_ilk][ABI_src]) ==Int Junk_1
+       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Vat.gem[ABI_ilk][ABI_dst]) ==Int Junk_2
+       andBool #Vat.can[ABI_src][CALLER_ID] =/=Int #Vat.gem[ABI_ilk][ABI_src]
+       andBool #Vat.can[ABI_src][CALLER_ID] =/=Int #Vat.gem[ABI_ilk][ABI_dst]
+       andBool #Vat.gem[ABI_ilk][ABI_src] =/=Int #Vat.gem[ABI_ilk][ABI_dst]
+
+    [depends(VAT-ARITHMETIC-SPEC.Vat.adduu.pass,VAT-ARITHMETIC-SPEC.Vat.subuu.pass)]
 
 endmodule

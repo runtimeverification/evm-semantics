@@ -5,7 +5,6 @@ tests/specs/benchmarks/ecrecoverloop02-sig0-invalid-spec.k
 tests/specs/benchmarks/ecrecoverloop02-sig1-invalid-spec.k
 tests/specs/benchmarks/ecrecoverloop02-sigs-valid-spec.k
 tests/specs/benchmarks/functional-spec.k
-tests/specs/bihu/collectToken-spec.k
 tests/specs/erc20/ds/transfer-failure-1-b-spec.k
 tests/specs/erc20/ds/transferFrom-failure-1-b-spec.k
 tests/specs/erc20/ds/transferFrom-failure-1-c-spec.k
@@ -28,7 +27,6 @@ tests/specs/kontrol/test-allowchangestest-testfailallowcallstoaddress-0-spec.k
 tests/specs/kontrol/test-allowchangestest-testfailallowchangestostorage-0-spec.k
 tests/specs/kontrol/test-arithmetictest-test_max1_broken-uint256-uint256-0-spec.k
 tests/specs/kontrol/test-arithmetictest-test_wdiv_rounding-uint256-uint256-0-spec.k
-tests/specs/kontrol/test-arithmetictest-test_wmul_wdiv_inverse_underflow-uint256-uint256-0-spec.k
 tests/specs/kontrol/test-arithmetictest-test_wmul_weakly_increasing_positive-uint256-uint256-0-spec.k
 tests/specs/kontrol/test-countertest-testincrement-0-spec.k
 tests/specs/kontrol/test-emitcontracttest-testexpectemit-0-spec.k
@@ -46,11 +44,8 @@ tests/specs/kontrol/test-owneruponlytest-testincrementasowner-0-spec.k
 tests/specs/kontrol/test-safetest-testwithdrawfuzz-uint96-0-spec.k
 tests/specs/kontrol/test-storetest-testaccesses-0-spec.k
 tests/specs/kontrol/test-storetest-teststoreload-0-spec.k
-tests/specs/mcd/dstoken-burn-self-fail-rough-spec.k
-tests/specs/mcd/dstoken-transferfrom-fail-rough-spec.k
 tests/specs/mcd/end-cash-pass-rough-spec.k
 tests/specs/mcd/end-pack-pass-rough-spec.k
-tests/specs/mcd/flapper-tend-guy-diff-pass-rough-spec.k
 tests/specs/mcd/flapper-yank-pass-rough-spec.k
 tests/specs/mcd/flipper-bids-pass-rough-spec.k
 tests/specs/mcd/flopper-dent-guy-diff-tic-not-0-pass-rough-spec.k
@@ -59,17 +54,6 @@ tests/specs/mcd/flopper-file-pass-rough-spec.k
 tests/specs/mcd/flopper-kick-pass-rough-spec.k
 tests/specs/mcd/flopper-tick-pass-rough-spec.k
 tests/specs/mcd/functional-spec.k
-tests/specs/mcd/gemjoin-exit-pass-rough-spec.k
 tests/specs/mcd/pot-join-pass-rough-spec.k
-tests/specs/mcd/vat-flux-diff-pass-rough-spec.k
-tests/specs/mcd/vat-fold-pass-rough-spec.k
-tests/specs/mcd/vat-fork-diff-pass-rough-spec.k
-tests/specs/mcd/vat-frob-diff-zero-dart-pass-rough-spec.k
-tests/specs/mcd/vat-move-diff-rough-spec.k
-tests/specs/mcd/vat-slip-pass-rough-spec.k
-tests/specs/mcd/vow-cage-deficit-pass-rough-spec.k
-tests/specs/mcd/vow-cage-surplus-pass-rough-spec.k
 tests/specs/mcd/vow-fess-fail-rough-spec.k
 tests/specs/mcd/vow-flog-fail-rough-spec.k
-tests/specs/opcodes/create-spec.k
-tests/specs/opcodes/evm-optimizations-spec.md

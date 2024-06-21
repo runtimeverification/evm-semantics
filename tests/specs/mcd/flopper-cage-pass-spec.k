@@ -3,10 +3,8 @@ requires "verification.k"
 module FLOPPER-CAGE-PASS-SPEC
     imports VERIFICATION
 
-    // Flopper_cage
     claim [Flopper.cage.pass]:
       <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
-      <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
       <useGas> true </useGas>

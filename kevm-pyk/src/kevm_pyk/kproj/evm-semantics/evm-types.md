@@ -27,7 +27,7 @@ Primitives provide the basic conversion from K's sorts `Int` and `Bool` to EVM's
 -   `word2Bool` interprets a `Int` as a `Bool`.
 
 ```k
-    syntax Int ::= bool2Word ( Bool ) [klabel(bool2Word), function, total, smtlib(bool2Word)]
+    syntax Int ::= bool2Word ( Bool ) [symbol(bool2Word), function, total, smtlib(bool2Word)]
  // -----------------------------------------------------------------------------------------
     rule bool2Word( true  ) => 1
     rule bool2Word( false ) => 0
@@ -342,8 +342,8 @@ Bytes helper functions
 -   `#padToWidth(N, WS)` and `#padRightToWidth` make sure that a `Bytes` is the correct size.
 
 ```k
-    syntax Int ::= #asWord ( Bytes ) [klabel(#asWord), function, total, smtlib(asWord)]
- // -----------------------------------------------------------------------------------
+    syntax Int ::= #asWord ( Bytes ) [symbol(asWord), function, total, smtlib(asWord)]
+ // ----------------------------------------------------------------------------------
     rule #asWord(WS) => chop(Bytes2Int(WS, BE, Unsigned)) [concrete]
 
     syntax Int ::= #asInteger ( Bytes ) [klabel(#asInteger), function, total]
@@ -407,9 +407,9 @@ Storage/Memory Lookup
 `#lookup*` looks up a key in a map and returns 0 if the key doesn't exist, otherwise returning its value.
 
 ```k
-    syntax Int ::= #lookup        ( Map , Int ) [klabel(#lookup), function, total, smtlib(lookup)]
-                 | #lookupMemory  ( Map , Int ) [klabel(#lookupMemory), function, total, smtlib(lookupMemory)]
- // ----------------------------------------------------------------------------------------------------------
+    syntax Int ::= #lookup        ( Map , Int ) [symbol(lookup), function, total, smtlib(lookup)]
+                 | #lookupMemory  ( Map , Int ) [symbol(lookupMemory), function, total, smtlib(lookupMemory)]
+ // ---------------------------------------------------------------------------------------------------------
     rule [#lookup.some]:         #lookup(       (KEY |-> VAL:Int) _M, KEY ) => VAL modInt pow256
     rule [#lookup.none]:         #lookup(                          M, KEY ) => 0                 requires notBool KEY in_keys(M)
     //Impossible case, for completeness
@@ -459,11 +459,11 @@ Productions related to transactions
     syntax TxData ::= LegacyTx | AccessListTx | DynamicFeeTx
  // --------------------------------------------------------
 
-    syntax LegacyTx     ::= LegacyTxData         ( nonce: Int, gasPrice: Int, gasLimit: Int, to: Account, value: Int, data: Bytes ) [klabel(LegacyTxData)]
-                          | LegacyProtectedTxData( nonce: Int, gasPrice: Int, gasLimit: Int, to: Account, value: Int, data: Bytes, chainId: Int ) [klabel(LegacyProtectedTxData)]
-    syntax AccessListTx ::= AccessListTxData     ( nonce: Int, gasPrice: Int, gasLimit: Int, to: Account, value: Int, data: Bytes, chainId: Int, accessLists: JSONs ) [klabel(AccessListTxData)]
-    syntax DynamicFeeTx ::= DynamicFeeTxData     ( nonce: Int, priorityGasFee: Int, maxGasFee: Int, gasLimit: Int, to: Account, value: Int, data: Bytes, chainId: Int, accessLists: JSONs) [klabel(DynamicFeeTxData)]
- // --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    syntax LegacyTx     ::= LegacyTxData       ( nonce: Int,                       gasPrice: Int, gasLimit: Int, to: Account, value: Int, data: Bytes )                                   [symbol(LegacyTxData)]
+                          | LegacySignedTxData ( nonce: Int,                       gasPrice: Int, gasLimit: Int, to: Account, value: Int, data: Bytes, networkChainId: Int )              [symbol(LegacySignedTxData)]
+    syntax AccessListTx ::= AccessListTxData   ( nonce: Int,                       gasPrice: Int, gasLimit: Int, to: Account, value: Int, data: Bytes, chainId: Int, accessLists: JSONs ) [symbol(AccessListTxData)]
+    syntax DynamicFeeTx ::= DynamicFeeTxData   ( nonce: Int, priorityGasFee: Int, maxGasFee: Int, gasLimit: Int, to: Account, value: Int, data: Bytes, chainId: Int, accessLists: JSONs)  [symbol(DynamicFeeTxData)]
+ // ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 endmodule
 ```

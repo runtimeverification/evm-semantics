@@ -6,7 +6,6 @@ module FLOPPER-KICK-PASS-ROUGH-SPEC
     // Flopper_kick
     claim [Flopper.kick.pass.rough]:
       <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
-      <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
       <useGas> true </useGas>
@@ -161,10 +160,9 @@ module FLOPPER-KICK-PASS-ROUGH-SPEC
     // Flopper_addu48u48
     claim [Flopper.addu48u48.pass]:
       <k> #execute ~> CONTINUATION => #execute ~> CONTINUATION </k>
-      <exit-code> 1 </exit-code>
       <mode> NORMAL </mode>
       <schedule> ISTANBUL </schedule>
-    <useGas> true </useGas>
+      <useGas> true </useGas>
       <ethereum>
         <evm>
           <output> VOutput => VOutput </output>
