@@ -81,8 +81,14 @@ assert len(ALL_VM_TESTS) == len(VM_TESTS) + len(REST_VM_TESTS)
     ids=[f'{test_file}:{test_id}' for test_file, test_id in VM_TESTS],
 )
 def test_vm(gst_data: dict[Path, dict[str, Any]], test_file: Path, test_id: str) -> None:
+    # Given
     gst_file = TEST_DIR / test_file
-    res = interpret({test_id: gst_data[gst_file][test_id]}, 'DEFAULT', 'VMTESTS', 1, True, check=False)
+    gst_input = {test_id: gst_data[gst_file][test_id]}
+
+    # When
+    res = interpret(gst_input, 'DEFAULT', 'VMTESTS', 1, True, check=False)
+
+    # Then
     _assert_exit_code_zero(res)
 
 
@@ -93,8 +99,14 @@ def test_vm(gst_data: dict[Path, dict[str, Any]], test_file: Path, test_id: str)
     ids=[f'{test_file}:{test_id}' for test_file, test_id in REST_VM_TESTS],
 )
 def test_rest_vm(gst_data: dict[Path, dict[str, Any]], test_file: Path, test_id: str) -> None:
+    # Given
     gst_file = TEST_DIR / test_file
-    res = interpret({test_id: gst_data[gst_file][test_id]}, 'DEFAULT', 'VMTESTS', 1, True, check=False)
+    gst_input = {test_id: gst_data[gst_file][test_id]}
+
+    # When
+    res = interpret(gst_input, 'DEFAULT', 'VMTESTS', 1, True, check=False)
+
+    # Then
     _assert_exit_code_zero(res)
 
 
@@ -115,8 +127,14 @@ def gst_data() -> dict[Path, dict[str, Any]]:
     ids=[f'{test_file}:{test_id}' for test_file, test_id in BCHAIN_TESTS],
 )
 def test_bchain(gst_data: dict[Path, dict[str, Any]], test_file: Path, test_id: str) -> None:
+    # Given
     gst_file = TEST_DIR / test_file
-    res = interpret({test_id: gst_data[gst_file][test_id]}, 'SHANGHAI', 'NORMAL', 1, True, check=False)
+    gst_input = {test_id: gst_data[gst_file][test_id]}
+
+    # When
+    res = interpret(gst_input, 'SHANGHAI', 'NORMAL', 1, True, check=False)
+
+    # Then
     _assert_exit_code_zero(res)
 
 
@@ -127,8 +145,14 @@ def test_bchain(gst_data: dict[Path, dict[str, Any]], test_file: Path, test_id: 
     ids=[f'{test_file}:{test_id}' for test_file, test_id in REST_BCHAIN_TESTS],
 )
 def test_rest_bchain(gst_data: dict[Path, dict[str, Any]], test_file: Path, test_id: str) -> None:
+    # Given
     gst_file = TEST_DIR / test_file
-    res = interpret({test_id: gst_data[gst_file][test_id]}, 'SHANGHAI', 'NORMAL', 1, True, check=False)
+    gst_input = {test_id: gst_data[gst_file][test_id]}
+
+    # When
+    res = interpret(gst_input, 'SHANGHAI', 'NORMAL', 1, True, check=False)
+
+    # Then
     _assert_exit_code_zero(res)
 
 
