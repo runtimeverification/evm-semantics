@@ -30,8 +30,8 @@ jobs:
         uses: Gr1N/setup-poetry@v9
       - name: 'Update pyk release tag'
         run: |
-          K_VERSION=v$(cat deps/k_release)
-          sed -i 's!kframework = { git = "https://github.com/runtimeverification/k.git", tag="[v0-9\.]*", subdirectory = "pyk" }!kframework = { git = "https://github.com/runtimeverification/k.git", tag="'${K_VERSION}'", subdirectory = "pyk" }!' kevm-pyk/pyproject.toml
+          K_VERSION=$(cat deps/k_release)
+          sed -i 's!kframework = "[v0-9\.]*"!kframework = "'${K_VERSION}'"!' kevm-pyk/pyproject.toml
           poetry -C kevm-pyk update
           git add kevm-pyk/ && git commit -m "kevm-pyk/: sync poetry files pyk version ${K_VERSION}" || true
       - name: 'Update plugin release file'
