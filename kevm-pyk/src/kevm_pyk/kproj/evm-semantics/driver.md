@@ -70,8 +70,9 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
     rule <k> startTx => #finalizeBlock ... </k>
          <txPending> .List </txPending>
 
-    rule <k> startTx => loadTx( #sender( #getTxData(TXID), TW, TR, TS ) ) ... </k>
+    rule <k> startTx => loadTx( #sender( #getTxData(TXID), TW, TR, TS, B ) ) ... </k>
          <txPending> ListItem(TXID:Int) ... </txPending>
+         <chainID> B </chainID>
          <message>
            <msgID>      TXID </msgID>
            <sigV>       TW   </sigV>
@@ -560,7 +561,7 @@ Here we check the other post-conditions associated with an EVM test.
     rule <k> check "transactions" : ("type"                 : VALUE) => .K ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txType>        VALUE </txType>         ... </message>
     rule <k> check "transactions" : ("maxFeePerGas"         : VALUE) => .K ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txMaxFee>      VALUE </txMaxFee>       ... </message>
     rule <k> check "transactions" : ("maxPriorityFeePerGas" : VALUE) => .K ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txPriorityFee> VALUE </txPriorityFee>  ... </message>
-    rule <k> check "transactions" : ("sender"               : VALUE) => .K ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <sigV> TW </sigV> <sigR> TR </sigR> <sigS> TS </sigS> ... </message> requires #sender( #getTxData(TXID), TW, TR, TS ) ==K VALUE
+    rule <k> check "transactions" : ("sender"               : VALUE) => .K ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <sigV> TW </sigV> <sigR> TR </sigR> <sigS> TS </sigS> ... </message> <chainID> B </chainID> requires #sender( #getTxData(TXID), TW, TR, TS, B ) ==K VALUE
 
     syntax Bool ::= isInAccessListStorage ( Int , JSON )    [klabel(isInAccessListStorage), function]
                   | isInAccessList ( Account , Int , JSON ) [klabel(isInAccessList), function]
