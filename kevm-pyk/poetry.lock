@@ -448,31 +448,26 @@ colors = ["colorama (>=0.4.6)"]
 
 [[package]]
 name = "kframework"
-version = "7.1.14"
+version = "7.1.21"
 description = ""
 optional = false
-python-versions = "^3.10"
-files = []
-develop = false
+python-versions = "<4.0,>=3.10"
+files = [
+    {file = "kframework-7.1.21-py3-none-any.whl", hash = "sha256:f5f0e8c25e23a85b50bbe5eceec236697b031f4d9a21fdd87145c9d223b99db2"},
+    {file = "kframework-7.1.21.tar.gz", hash = "sha256:c78a3434cbd3c4cfdffdae608d3efe8991871b66bd1504b2453aa5595d378d9c"},
+]
 
 [package.dependencies]
-cmd2 = "^2.4.2"
-coloredlogs = "^15.0.1"
-filelock = "^3.9.0"
-graphviz = "^0.20.1"
+cmd2 = ">=2.4.2,<3.0.0"
+coloredlogs = ">=15.0.1,<16.0.0"
+filelock = ">=3.9.0,<4.0.0"
+graphviz = ">=0.20.1,<0.21.0"
 psutil = "5.9.5"
-pybind11 = "^2.10.3"
+pybind11 = ">=2.10.3,<3.0.0"
 pytest = "*"
-textual = "^0.27.0"
-tomli = "^2.0.1"
-xdg-base-dirs = "^6.0.1"
-
-[package.source]
-type = "git"
-url = "https://github.com/runtimeverification/k.git"
-reference = "v7.1.14"
-resolved_reference = "84263cdbedc3d2f30ef931c332b8395d2138bc49"
-subdirectory = "pyk"
+textual = ">=0.27.0,<0.28.0"
+tomli = ">=2.0.1,<3.0.0"
+xdg-base-dirs = ">=6.0.1,<7.0.0"
 
 [[package]]
 name = "linkify-it-py"
@@ -1117,4 +1112,4 @@ test = ["big-O", "importlib-resources", "jaraco.functools", "jaraco.itertools", 
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "7a10b7d43faf151347678b800b88acbe6d3214ef6f23dd8308ce4100bc7f0330"
+content-hash = "a77c9c7af9ab24b1852d5523fbcc058734341b4ffb65189acea3cfae7a5e98fe"
