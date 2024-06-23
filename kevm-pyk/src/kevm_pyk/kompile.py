@@ -123,7 +123,6 @@ def run_kompile(
         hook_namespaces=HOOK_NAMESPACES,
         emit_json=emit_json,
         read_only=read_only,
-        ignore_warnings=ignore_warnings,
     )
 
     kompile: Kompile
@@ -141,7 +140,11 @@ def run_kompile(
                     enable_llvm_debug=enable_llvm_debug,
                 )
                 return kompile(
-                    output_dir=output_dir, debug=debug, verbose=verbose, type_inference_mode=type_inference_mode
+                    output_dir=output_dir,
+                    debug=debug,
+                    verbose=verbose,
+                    type_inference_mode=type_inference_mode,
+                    ignore_warnings=ignore_warnings,
                 )
 
             case KompileTarget.MAUDE:
@@ -159,7 +162,11 @@ def run_kompile(
 
                 def _kompile_haskell() -> None:
                     kompile_haskell(
-                        output_dir=output_dir, debug=debug, verbose=verbose, type_inference_mode=type_inference_mode
+                        output_dir=output_dir,
+                        debug=debug,
+                        verbose=verbose,
+                        type_inference_mode=type_inference_mode,
+                        ignore_warnings=ignore_warnings,
                     )
 
                 with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
@@ -181,7 +188,6 @@ def run_kompile(
                     hook_namespaces=HOOK_NAMESPACES,
                     emit_json=emit_json,
                     read_only=read_only,
-                    ignore_warnings=ignore_warnings,
                 )
                 kompile_llvm = LLVMKompile(
                     base_args=base_args_llvm, ccopts=ccopts, opt_level=optimization, llvm_kompile_type=LLVMKompileType.C
@@ -194,11 +200,16 @@ def run_kompile(
                         debug=debug,
                         verbose=verbose,
                         type_inference_mode=type_inference_mode,
+                        ignore_warnings=ignore_warnings,
                     )
 
                 def _kompile_haskell() -> None:
                     kompile_haskell(
-                        output_dir=output_dir, debug=debug, verbose=verbose, type_inference_mode=type_inference_mode
+                        output_dir=output_dir,
+                        debug=debug,
+                        verbose=verbose,
+                        type_inference_mode=type_inference_mode,
+                        ignore_warnings=ignore_warnings,
                     )
 
                 with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
