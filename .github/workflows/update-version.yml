@@ -30,7 +30,7 @@ jobs:
       - name: 'Update pyk release tag'
         run: |
           K_VERSION=$(cat deps/k_release)
-          sed -i 's!kframework = "[v0-9\.]*"!kframework = "'${K_VERSION}'"!' kevm-pyk/pyproject.toml
+          sed -i 's!kframework = "[0-9\.]*"!kframework = "'${K_VERSION}'"!' kevm-pyk/pyproject.toml
           poetry -C kevm-pyk update
           git add kevm-pyk/ && git commit -m "kevm-pyk/: sync poetry files pyk version ${K_VERSION}" || true
       - name: 'Update plugin release file'
