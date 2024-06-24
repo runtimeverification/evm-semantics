@@ -94,7 +94,10 @@ module TEST-ALLOWCHANGESTEST-TESTFAILALLOWCHANGESTOSTORAGE-0-SPEC
                      <nonce>
                        0
                      </nonce>
-                   </account>
+                   <transientStorage>
+                     .Map
+                   </transientStorage>
+                 </account>
                    <account>
                      <acctID>
                        728815563385977040452943777879061427756277306518
@@ -114,7 +117,10 @@ module TEST-ALLOWCHANGESTEST-TESTFAILALLOWCHANGESTOSTORAGE-0-SPEC
                      <nonce>
                        2
                      </nonce>
-                   </account> )
+                   <transientStorage>
+                     .Map
+                   </transientStorage>
+                 </account> )
                  </accounts> | <substate>
                    <selfDestruct>
                      SELFDESTRUCT_CELL:Set
@@ -231,6 +237,9 @@ module TEST-ALLOWCHANGESTEST-TESTFAILALLOWCHANGESTOSTORAGE-0-SPEC
                    <nonce>
                      ( 0 => 1 )
                    </nonce>
+                   <transientStorage>
+                     .Map
+                   </transientStorage>
                  </account>
                  ( <account>
                    <acctID>
@@ -251,6 +260,9 @@ module TEST-ALLOWCHANGESTEST-TESTFAILALLOWCHANGESTOSTORAGE-0-SPEC
                    <nonce>
                      1
                    </nonce>
+                   <transientStorage>
+                     .Map
+                   </transientStorage>
                  </account> => ( <account>
                    <acctID>
                      645326474426547203313410069153905908525362434349
@@ -270,6 +282,9 @@ module TEST-ALLOWCHANGESTEST-TESTFAILALLOWCHANGESTOSTORAGE-0-SPEC
                    <nonce>
                      0
                    </nonce>
+                   <transientStorage>
+                     .Map
+                   </transientStorage>
                  </account>
                  <account>
                    <acctID>
@@ -290,6 +305,9 @@ module TEST-ALLOWCHANGESTEST-TESTFAILALLOWCHANGESTOSTORAGE-0-SPEC
                    <nonce>
                      2
                    </nonce>
+                   <transientStorage>
+                     .Map
+                   </transientStorage>
                  </account> ) ) )
                </accounts>
                ...
@@ -401,7 +419,10 @@ module TEST-ALLOWCHANGESTEST-TESTFAILALLOWCHANGESTOSTORAGE-0-SPEC
                      <nonce>
                        ( 0 => 1 )
                      </nonce>
-                   </account>
+                   <transientStorage>
+                     .Map
+                   </transientStorage>
+                 </account>
                    ( <account>
                      <acctID>
                        728815563385977040452943777879061427756277306518
@@ -421,7 +442,10 @@ module TEST-ALLOWCHANGESTEST-TESTFAILALLOWCHANGESTOSTORAGE-0-SPEC
                      <nonce>
                        2
                      </nonce>
-                   </account> => ( <account>
+                   <transientStorage>
+                     .Map
+                   </transientStorage>
+                 </account> => ( <account>
                      <acctID>
                        645326474426547203313410069153905908525362434349
                      </acctID>
@@ -440,7 +464,10 @@ module TEST-ALLOWCHANGESTEST-TESTFAILALLOWCHANGESTOSTORAGE-0-SPEC
                      <nonce>
                        0
                      </nonce>
-                   </account>
+                   <transientStorage>
+                     .Map
+                   </transientStorage>
+                 </account>
                    <account>
                      <acctID>
                        728815563385977040452943777879061427756277306518
@@ -460,7 +487,10 @@ module TEST-ALLOWCHANGESTEST-TESTFAILALLOWCHANGESTOSTORAGE-0-SPEC
                      <nonce>
                        3
                      </nonce>
-                   </account> ) ) )
+                   <transientStorage>
+                     .Map
+                   </transientStorage>
+                 </account> ) ) )
                  </accounts> | <substate>
                    <selfDestruct>
                      SELFDESTRUCT_CELL:Set
@@ -575,6 +605,9 @@ module TEST-ALLOWCHANGESTEST-TESTFAILALLOWCHANGESTOSTORAGE-0-SPEC
                    <nonce>
                      1
                    </nonce>
+                   <transientStorage>
+                     .Map
+                   </transientStorage>
                  </account>
                  ( <account>
                    <acctID>
@@ -595,6 +628,9 @@ module TEST-ALLOWCHANGESTEST-TESTFAILALLOWCHANGESTOSTORAGE-0-SPEC
                    <nonce>
                      ( 0 => 1 )
                    </nonce>
+                   <transientStorage>
+                     .Map
+                   </transientStorage>
                  </account>
                  ( <account>
                    <acctID>
@@ -615,6 +651,9 @@ module TEST-ALLOWCHANGESTEST-TESTFAILALLOWCHANGESTOSTORAGE-0-SPEC
                    <nonce>
                      2
                    </nonce>
+                   <transientStorage>
+                     .Map
+                   </transientStorage>
                  </account> => ( <account>
                    <acctID>
                      645326474426547203313410069153905908525362434349
@@ -634,6 +673,9 @@ module TEST-ALLOWCHANGESTEST-TESTFAILALLOWCHANGESTOSTORAGE-0-SPEC
                    <nonce>
                      0
                    </nonce>
+                   <transientStorage>
+                     .Map
+                   </transientStorage>
                  </account>
                  <account>
                    <acctID>
@@ -654,6 +696,9 @@ module TEST-ALLOWCHANGESTEST-TESTFAILALLOWCHANGESTOSTORAGE-0-SPEC
                    <nonce>
                      3
                    </nonce>
+                   <transientStorage>
+                     .Map
+                   </transientStorage>
                  </account> ) ) ) )
                </accounts>
                ...

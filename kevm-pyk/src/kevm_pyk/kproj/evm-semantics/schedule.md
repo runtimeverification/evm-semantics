@@ -28,8 +28,8 @@ module SCHEDULE
                           | "Ghasdirtysstore"         | "Ghascreate2"      | "Ghasextcodehash"     | "Ghasselfbalance"
                           | "Ghassstorestipend"       | "Ghaschainid"      | "Ghasaccesslist"      | "Ghasbasefee"
                           | "Ghasrejectedfirstbyte"   | "Ghasprevrandao"   | "Ghasmaxinitcodesize" | "Ghaspushzero"
-                          | "Ghaswarmcoinbase"
- // ------------------------------------------
+                          | "Ghaswarmcoinbase"        | "Ghastransient"
+ // -------------------------------------------------------------------
 ```
 
 ### Schedule Constants
@@ -145,6 +145,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghasmaxinitcodesize     << DEFAULT >> => false
     rule Ghaspushzero            << DEFAULT >> => false
     rule Ghaswarmcoinbase        << DEFAULT >> => false
+    rule Ghastransient           << DEFAULT >> => false
 ```
 
 ### Frontier Schedule
@@ -372,5 +373,19 @@ A `ScheduleConst` is a constant determined by the fee schedule.
                   orBool SCHEDFLAG ==K Ghaspushzero
                   orBool SCHEDFLAG ==K Ghaswarmcoinbase
                        )
+```
+
+### Cancun Schedule
+
+```k
+    syntax Schedule ::= "CANCUN" [symbol(CANCUN_EVM), smtlib(schedule_CANCUN)]
+ // --------------------------------------------------------------------------
+    rule SCHEDCONST < CANCUN > => SCHEDCONST < SHANGHAI >
+
+    rule Ghastransient << CANCUN >> => true
+    rule SCHEDFLAG     << CANCUN >> => SCHEDFLAG << SHANGHAI >>
+      requires notBool ( SCHEDFLAG ==K Ghastransient )
+```
+```k
 endmodule
 ```

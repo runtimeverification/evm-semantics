@@ -157,6 +157,15 @@
         <withdrawalsRoot>
           0
         </withdrawalsRoot>
+        <blobGasUsed>
+          0
+        </blobGasUsed>
+        <excessBlobGas>
+          0
+        </excessBlobGas>
+        <beaconRoot>
+          0
+        </beaconRoot>
         <ommerBlockHeaders>
           [ .JSONs ]
         </ommerBlockHeaders>
@@ -185,6 +194,9 @@
             0 |-> 0
             1 |-> 85121
           </origStorage>
+          <transientStorage>
+            .Map
+          </transientStorage>
           <nonce>
             0
           </nonce>
@@ -204,6 +216,9 @@
           <origStorage>
             .Map
           </origStorage>
+          <transientStorage>
+            .Map
+          </transientStorage>
           <nonce>
             0
           </nonce>
@@ -223,6 +238,9 @@
           <origStorage>
             .Map
           </origStorage>
+          <transientStorage>
+            .Map
+          </transientStorage>
           <nonce>
             0
           </nonce>
@@ -242,6 +260,9 @@
           <origStorage>
             .Map
           </origStorage>
+          <transientStorage>
+            .Map
+          </transientStorage>
           <nonce>
             0
           </nonce>
@@ -261,6 +282,9 @@
           <origStorage>
             .Map
           </origStorage>
+          <transientStorage>
+            .Map
+          </transientStorage>
           <nonce>
             0
           </nonce>
@@ -280,6 +304,9 @@
           <origStorage>
             .Map
           </origStorage>
+          <transientStorage>
+            .Map
+          </transientStorage>
           <nonce>
             1
           </nonce>

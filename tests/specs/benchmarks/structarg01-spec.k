@@ -61,6 +61,9 @@ module STRUCTARG01-SPEC
           <baseFee> _ </baseFee>
           <ommerBlockHeaders> _ </ommerBlockHeaders>
           <withdrawalsRoot> _ </withdrawalsRoot>
+          <blobGasUsed> _ </blobGasUsed>
+          <excessBlobGas> _ </excessBlobGas>
+          <beaconRoot> _ </beaconRoot>
         </block>
       </evm>
       <network>
@@ -78,8 +81,10 @@ module STRUCTARG01-SPEC
                 _
             </origStorage>
             <nonce> CONTRACT_NONCE </nonce>
+            <transientStorage>
+                _
+            </transientStorage>
           </account>
-
           <account>
             <acctID> CALLEE_ID </acctID>
             <balance> CALLEE_BAL </balance>
@@ -91,6 +96,9 @@ module STRUCTARG01-SPEC
                 _
             </origStorage>
             <nonce> CALLEE_NONCE </nonce>
+            <transientStorage>
+                _
+            </transientStorage>
           </account>
           ...
         </accounts>

@@ -113,6 +113,9 @@ module TEST-ARITHMETICTEST-TEST_WMUL_WEAKLY_INCREASING_POSITIVE-UINT256-UINT256-
                    <nonce>
                      0
                    </nonce>
+                   <transientStorage>
+                     .Map
+                   </transientStorage>
                  </account>
                  <account>
                    <acctID>
@@ -133,6 +136,9 @@ module TEST-ARITHMETICTEST-TEST_WMUL_WEAKLY_INCREASING_POSITIVE-UINT256-UINT256-
                    <nonce>
                      1
                    </nonce>
+                   <transientStorage>
+                     .Map
+                   </transientStorage>
                  </account> )
                </accounts>
                ...
@@ -266,6 +272,9 @@ module TEST-ARITHMETICTEST-TEST_WMUL_WEAKLY_INCREASING_POSITIVE-UINT256-UINT256-
                    <nonce>
                      0
                    </nonce>
+                   <transientStorage>
+                     .Map
+                   </transientStorage>
                  </account>
                  <account>
                    <acctID>
@@ -286,6 +295,9 @@ module TEST-ARITHMETICTEST-TEST_WMUL_WEAKLY_INCREASING_POSITIVE-UINT256-UINT256-
                    <nonce>
                      1
                    </nonce>
+                   <transientStorage>
+                     .Map
+                   </transientStorage>
                  </account> )
                </accounts>
                ...

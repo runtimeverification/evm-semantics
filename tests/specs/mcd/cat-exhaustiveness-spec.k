@@ -61,7 +61,10 @@ module CAT-EXHAUSTIVENESS-SPEC
              <baseFee> _ </baseFee>
              <ommerBlockHeaders> _ </ommerBlockHeaders>
              <withdrawalsRoot> _ </withdrawalsRoot>
-          </block>
+             <blobGasUsed> _ </blobGasUsed>
+             <excessBlobGas> _ </excessBlobGas>
+             <beaconRoot> _ </beaconRoot>
+        </block>
          </evm>
          <network>
            <chainID> VChainId </chainID>
