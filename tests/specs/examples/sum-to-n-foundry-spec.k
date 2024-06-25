@@ -18,8 +18,7 @@ module SUM-TO-N-FOUNDRY-SPEC
 claim [foundry-sum-to-n-loop-invariant]:
   <kevm>
     <k>
-      ((JUMPI 1569 bool2Word ( N:Int ==Int 0 )) => JUMP 1569)
-      ~> #pc [ JUMPI ]
+      (JUMPI 1569 bool2Word(N:Int ==Int 0) ~> #pc [ JUMPI ] => .K)
       ~> #execute
       ...
     </k>
@@ -50,7 +49,7 @@ claim [foundry-sum-to-n-loop-invariant]:
             : .WordStack
           </wordStack>
           <pc>
-            1539
+            1539 => 1569
           </pc>
           <gas>
             GAS_AMT:Int => GAS_AMT -Int (N *Int 178)
@@ -69,6 +68,7 @@ claim [foundry-sum-to-n-loop-invariant]:
    andBool #rangeUInt(256, N)
    andBool #rangeUInt(256, S)
    andBool GAS_AMT >=Int N *Int 178
+  [circularity]
 
 
 endmodule
