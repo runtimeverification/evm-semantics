@@ -32,7 +32,8 @@ endmodule
 module SUM-TO-N-SPEC
     imports VERIFICATION
 
-    claim <k> #execute ... </k>
+    claim [main]:
+          <k> #execute => #halt ... </k>
           <mode> NORMAL </mode>
           <schedule> ISTANBUL </schedule>
           <useGas> true </useGas>
@@ -42,15 +43,17 @@ module SUM-TO-N-SPEC
           <callGas> _ </callGas>
           <program> sumToN </program>
           <jumpDests> #computeValidJumpDests(sumToN) </jumpDests>
-          <pc>        0  => 21                                </pc>
+          <pc>        0  => 21                                    </pc>
           <wordStack> N : WS => 0 : N *Int (N +Int 1) /Int 2 : WS </wordStack>
-          <gas>       G  => G -Int (52 *Int N +Int 27)        </gas>
+          <gas>       G  => G -Int (52 *Int N +Int 27)            </gas>
       requires N >=Int 0
        andBool N <=Int 340282366920938463463374607431768211455
        andBool #sizeWordStack(WS) <Int 1021
        andBool G >=Int 52 *Int N +Int 27
+      [depends(loop)]
 
-    claim <k> #execute ... </k>
+    claim [loop]:
+          <k> #execute => #halt ... </k>
           <mode> NORMAL </mode>
           <schedule> ISTANBUL </schedule>
           <useGas> true </useGas>
@@ -69,5 +72,6 @@ module SUM-TO-N-SPEC
        andBool S +Int I *Int (I +Int 1) /Int 2 <Int pow256
        andBool #sizeWordStack(WS) <Int 1021
        andBool G >=Int 52 *Int I +Int 21
+      [circularity]
 
 endmodule

@@ -597,52 +597,6 @@ class KEVM(KProve, KRun):
                 wrapped_accounts.append(acct)
         return build_assoc(KApply('.AccountCellMap'), KLabel('_AccountCellMap_'), wrapped_accounts)
 
-    def prove_legacy(
-        self,
-        spec_file: Path,
-        includes: Iterable[Path] = (),
-        bug_report: bool = False,
-        spec_module: str | None = None,
-        claim_labels: Iterable[str] | None = None,
-        exclude_claim_labels: Iterable[str] | None = None,
-        debug: bool = False,
-        debugger: bool = False,
-        max_depth: int | None = None,
-        max_counterexamples: int | None = None,
-        branching_allowed: int | None = None,
-        haskell_backend_args: Iterable[str] = (),
-    ) -> list[CTerm]:
-        md_selector = 'k'
-        args: list[str] = []
-        haskell_args: list[str] = []
-        if claim_labels:
-            args += ['--claims', ','.join(claim_labels)]
-        if exclude_claim_labels:
-            args += ['--exclude', ','.join(exclude_claim_labels)]
-        if debug:
-            args.append('--debug')
-        if debugger:
-            args.append('--debugger')
-        if branching_allowed:
-            args += ['--branching-allowed', f'{branching_allowed}']
-        if max_counterexamples:
-            haskell_args += ['--max-counterexamples', f'{max_counterexamples}']
-        if bug_report:
-            haskell_args += ['--bug-report', f'kevm-bug-{spec_file.name.removesuffix("-spec.k")}']
-        if haskell_backend_args:
-            haskell_args += list(haskell_backend_args)
-
-        final_state = self.prove(
-            spec_file=spec_file,
-            spec_module_name=spec_module,
-            args=args,
-            include_dirs=includes,
-            md_selector=md_selector,
-            haskell_args=haskell_args,
-            depth=max_depth,
-        )
-        return final_state
-
 
 class KEVMNodePrinter(NodePrinter):
     kevm: KEVM
