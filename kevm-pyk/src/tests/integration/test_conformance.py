@@ -17,7 +17,7 @@ from kevm_pyk.interpreter import interpret
 from ..utils import REPO_ROOT
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
+    from collections.abc import Callable, Iterable
     from typing import Any, Final
 
     from pyk.kore.syntax import Pattern
@@ -170,7 +170,7 @@ def test_csv_files(gst_data: dict[Path, dict[str, Any]], update_expected_output:
 
 
 def assert_or_update_csv_file(content: list[tuple[Path, str]], expected_file: Path, update: bool) -> None:
-    def _write_csv(target: Path, content: tuple[tuple[Path, str], ...]) -> None:
+    def _write_csv(target: Path, content: Iterable[tuple[Path, str]]) -> None:
         with open(target, 'w', newline='') as csvfile:
             writer = csv.writer(csvfile)
             writer.writerows(content)
