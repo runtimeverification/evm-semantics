@@ -52,13 +52,10 @@ test-rest-bchain: poetry
 
 # Proof Tests
 
-test-prove: test-prove-pyk test-prove-kprove test-prove-optimizations test-prove-dss
+test-prove: test-prove-pyk test-prove-optimizations test-prove-dss
 
 test-prove-pyk: poetry
 	$(MAKE) -C kevm-pyk/ test-integration PYTEST_ARGS+="-k test_pyk_prove"
-
-test-prove-kprove: poetry
-	$(MAKE) -C kevm-pyk/ test-integration PYTEST_ARGS+="-k test_kprove_prove"
 
 test-prove-optimizations: poetry
 	$(MAKE) -C kevm-pyk/ test-integration PYTEST_ARGS+="-k test_prove_optimizations"
