@@ -247,7 +247,7 @@ def exec_prove(options: ProveOptions) -> None:
             claim_lhs = claim_lhs.lhs
         return not (type(claim_lhs) is KApply and claim_lhs.label.name == '<generatedTop>')
 
-    llvm_definition_dir = definition_dir / 'llvm-library' if options.use_booster else None
+    llvm_definition_dir = definition_dir / 'llvm-library' if (options.use_booster or options.use_booster_dev) else None
 
     _LOGGER.info(f'Extracting claims from file: {options.spec_file}')
     all_claims = kevm.get_claims(
@@ -437,14 +437,21 @@ def exec_section_edge(options: SectionEdgeOptions) -> None:
 
     kore_rpc_command: tuple[str, ...]
     if options.kore_rpc_command is None:
-        kore_rpc_command = ('kore-rpc-booster',) if options.use_booster else ('kore-rpc',)
+        if options.use_booster_dev:
+            kore_rpc_command = ('booster-dev',)
+        elif not options.use_booster:
+            kore_rpc_command = ('kore-rpc',)
+        else:
+            kore_rpc_command = ('kore-rpc-booster',)
     elif isinstance(options.kore_rpc_command, str):
         kore_rpc_command = tuple(options.kore_rpc_command.split())
     else:
         kore_rpc_command = options.kore_rpc_command
 
     kevm = KEVM(options.definition_dir, use_directory=options.save_directory)
-    llvm_definition_dir = options.definition_dir / 'llvm-library' if options.use_booster else None
+    llvm_definition_dir = (
+        options.definition_dir / 'llvm-library' if (options.use_booster or options.use_booster_dev) else None
+    )
 
     include_dirs = [Path(include) for include in options.includes]
     include_dirs += config.INCLUDE_DIRS
