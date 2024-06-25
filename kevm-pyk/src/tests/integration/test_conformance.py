@@ -161,27 +161,24 @@ def test_rest_bchain(get_gst_data: Callable[[Path, str], dict[str, Any]], test_f
 
 
 def test_csv_files(gst_data: dict[Path, dict[str, Any]], update_expected_output: bool) -> None:
-    all_bchain_tests = tuple(
-        sorted(
-            {(file.relative_to(TEST_DIR), test_id) for file in BCHAIN_TEST_FILES for test_id in gst_data[file].keys()}
-        )
-    )
+    all_bchain_tests = [
+        (file.relative_to(TEST_DIR), test_id) for file in BCHAIN_TEST_FILES for test_id in gst_data[file].keys()
+    ]
     assert_or_update_csv_file(all_bchain_tests, ALL_BCHAIN_TESTS_CSV, update_expected_output)
-    all_vm_tests = tuple(
-        sorted({(file.relative_to(TEST_DIR), test_id) for file in VM_TEST_FILES for test_id in gst_data[file].keys()})
-    )
+    all_vm_tests = [(file.relative_to(TEST_DIR), test_id) for file in VM_TEST_FILES for test_id in gst_data[file]]
     assert_or_update_csv_file(all_vm_tests, ALL_VM_TESTS_CSV, update_expected_output)
 
 
-def assert_or_update_csv_file(content: tuple[tuple[Path, str], ...], expected_file: Path, update: bool) -> None:
+def assert_or_update_csv_file(content: list[tuple[Path, str]], expected_file: Path, update: bool) -> None:
     def _write_csv(target: Path, content: tuple[tuple[Path, str], ...]) -> None:
         with open(target, 'w', newline='') as csvfile:
             writer = csv.writer(csvfile)
             writer.writerows(content)
 
+    actual = tuple(sorted(content))
     if update:
-        _write_csv(expected_file, content)
+        _write_csv(expected_file, actual)
     else:
         assert expected_file.is_file()
         expected_text = read_csv_file(expected_file)
-        assert content == expected_text
+        assert actual == expected_text
