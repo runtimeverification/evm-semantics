@@ -17,7 +17,7 @@ from kevm_pyk.interpreter import interpret
 from ..utils import REPO_ROOT
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Iterable
+    from collections.abc import Iterable
     from typing import Any, Final
 
     from pyk.kore.syntax import Pattern
@@ -71,10 +71,10 @@ assert len(ALL_VM_TESTS) == len(VM_TESTS) + len(REST_VM_TESTS)
     VM_TESTS,
     ids=[f'{test_file}:{test_id}' for test_file, test_id in VM_TESTS],
 )
-def test_vm(get_gst_data: Callable[[Path, str], dict[str, Any]], test_file: Path, test_id: str) -> None:
+def test_vm(gst_cache: GSTCache, test_file: Path, test_id: str) -> None:
     # Given
     gst_file = TEST_DIR / test_file
-    gst_input = get_gst_data(gst_file, test_id)
+    gst_input = gst_cache.get_data(gst_file, test_id)
 
     # When
     res = interpret(gst_input, 'DEFAULT', 'VMTESTS', 1, True, check=False)
@@ -89,10 +89,10 @@ def test_vm(get_gst_data: Callable[[Path, str], dict[str, Any]], test_file: Path
     REST_VM_TESTS,
     ids=[f'{test_file}:{test_id}' for test_file, test_id in REST_VM_TESTS],
 )
-def test_rest_vm(get_gst_data: Callable[[Path, str], dict[str, Any]], test_file: Path, test_id: str) -> None:
+def test_rest_vm(gst_cache: GSTCache, test_file: Path, test_id: str) -> None:
     # Given
     gst_file = TEST_DIR / test_file
-    gst_input = get_gst_data(gst_file, test_id)
+    gst_input = gst_cache.get_data(gst_file, test_id)
 
     # When
     res = interpret(gst_input, 'DEFAULT', 'VMTESTS', 1, True, check=False)
@@ -112,17 +112,24 @@ REST_BCHAIN_TESTS: Final = tuple(test for test in ALL_BCHAIN_TESTS if test in EX
 assert len(ALL_BCHAIN_TESTS) == len(BCHAIN_TESTS) + len(REST_BCHAIN_TESTS)
 
 
-@pytest.fixture(scope='session')
-def gst_data() -> dict[Path, dict[str, Any]]:
-    return {file: json.loads(file.read_text()) for file in BCHAIN_TEST_FILES + VM_TEST_FILES}
+class GSTCache:
+    data: dict[Path, dict[str, Any]]
+
+    def __init__(self) -> None:
+        self.data = {}
+
+    def get(self, test_file: Path) -> dict[str, Any]:
+        if test_file not in self.data:
+            self.data[test_file] = json.loads(test_file.read_text())
+        return self.data[test_file]
+
+    def get_data(self, test_file: Path, test_id: str) -> dict[str, Any]:
+        return {test_id: self.get(test_file)[test_id]}
 
 
 @pytest.fixture(scope='session')
-def get_gst_data(gst_data: dict[Path, dict[str, Any]]) -> Callable[[Path, str], dict[str, Any]]:
-    def _get_gst_data(test_file: Path, test_id: str) -> dict[str, Any]:
-        return {test_id: gst_data[test_file][test_id]}
-
-    return _get_gst_data
+def gst_cache() -> GSTCache:
+    return GSTCache()
 
 
 @pytest.mark.parametrize(
@@ -130,10 +137,10 @@ def get_gst_data(gst_data: dict[Path, dict[str, Any]]) -> Callable[[Path, str], 
     BCHAIN_TESTS,
     ids=[f'{test_file}:{test_id}' for test_file, test_id in BCHAIN_TESTS],
 )
-def test_bchain(get_gst_data: Callable[[Path, str], dict[str, Any]], test_file: Path, test_id: str) -> None:
+def test_bchain(gst_cache: GSTCache, test_file: Path, test_id: str) -> None:
     # Given
     gst_file = TEST_DIR / test_file
-    gst_input = get_gst_data(gst_file, test_id)
+    gst_input = gst_cache.get_data(gst_file, test_id)
 
     # When
     res = interpret(gst_input, 'SHANGHAI', 'NORMAL', 1, True, check=False)
@@ -148,10 +155,10 @@ def test_bchain(get_gst_data: Callable[[Path, str], dict[str, Any]], test_file: 
     REST_BCHAIN_TESTS,
     ids=[f'{test_file}:{test_id}' for test_file, test_id in REST_BCHAIN_TESTS],
 )
-def test_rest_bchain(get_gst_data: Callable[[Path, str], dict[str, Any]], test_file: Path, test_id: str) -> None:
+def test_rest_bchain(gst_cache: GSTCache, test_file: Path, test_id: str) -> None:
     # Given
     gst_file = TEST_DIR / test_file
-    gst_input = get_gst_data(gst_file, test_id)
+    gst_input = gst_cache.get_data(gst_file, test_id)
 
     # When
     res = interpret(gst_input, 'SHANGHAI', 'NORMAL', 1, True, check=False)
@@ -160,12 +167,12 @@ def test_rest_bchain(get_gst_data: Callable[[Path, str], dict[str, Any]], test_f
     _assert_exit_code_zero(res)
 
 
-def test_csv_files(gst_data: dict[Path, dict[str, Any]], update_expected_output: bool) -> None:
+def test_csv_files(gst_cache: GSTCache, update_expected_output: bool) -> None:
     all_bchain_tests = [
-        (file.relative_to(TEST_DIR), test_id) for file in BCHAIN_TEST_FILES for test_id in gst_data[file].keys()
+        (file.relative_to(TEST_DIR), test_id) for file in BCHAIN_TEST_FILES for test_id in gst_cache.get(file)
     ]
     assert_or_update_csv_file(all_bchain_tests, ALL_BCHAIN_TESTS_CSV, update_expected_output)
-    all_vm_tests = [(file.relative_to(TEST_DIR), test_id) for file in VM_TEST_FILES for test_id in gst_data[file]]
+    all_vm_tests = [(file.relative_to(TEST_DIR), test_id) for file in VM_TEST_FILES for test_id in gst_cache.get(file)]
     assert_or_update_csv_file(all_vm_tests, ALL_VM_TESTS_CSV, update_expected_output)
 
 
