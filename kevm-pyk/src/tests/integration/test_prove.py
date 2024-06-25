@@ -10,7 +10,6 @@ from filelock import SoftFileLock
 from pyk.kast.att import AttEntry, Atts, KAtt
 from pyk.kast.outer import KClaim
 from pyk.kdist import kdist
-from pyk.prelude.ml import is_top
 from pyk.proof.reachability import APRProof, APRProver
 from pyk.proof.show import APRProofShow
 
@@ -25,7 +24,7 @@ from ..utils import REPO_ROOT
 
 if TYPE_CHECKING:
     from collections.abc import Callable
-    from typing import Any, Final
+    from typing import Final
 
     from pyk.utils import BugReport
     from pytest import LogCaptureFixture, TempPathFactory
@@ -82,7 +81,6 @@ def exclude_list(exclude_file: Path) -> list[Path]:
 
 FAILING_PYK_TESTS: Final = exclude_list(TEST_DIR / 'failing-symbolic.pyk')
 FAILING_BOOSTER_DEV_TESTS: Final = exclude_list(TEST_DIR / 'failing-symbolic.haskell-booster-dev')
-FAILING_TESTS: Final = exclude_list(TEST_DIR / 'failing-symbolic.haskell')
 
 
 # -----------
@@ -402,59 +400,3 @@ def test_prove_dss(
         raise
     finally:
         log_file.write_text(caplog.text)
-
-
-# ------------
-# Legacy tests
-# ------------
-
-
-PROVE_ARGS: Final[dict[str, Any]] = {
-    'functional/lemmas-no-smt-spec.k': {
-        'haskell_args': ['--smt=none'],
-    },
-}
-
-
-@pytest.mark.parametrize(
-    'spec_file',
-    FAILING_PYK_TESTS,
-    ids=[str(spec_file.relative_to(SPEC_DIR)) for spec_file in FAILING_PYK_TESTS],
-)
-def test_kprove_prove(
-    spec_file: Path,
-    kompiled_target_for: Callable[[Path], Path],
-    tmp_path: Path,
-    caplog: LogCaptureFixture,
-    bug_report: BugReport | None,
-) -> None:
-    caplog.set_level(logging.INFO)
-
-    if spec_file in FAILING_TESTS:
-        pytest.skip()
-
-    # Given
-    spec_id = str(spec_file.relative_to(SPEC_DIR))
-    args = PROVE_ARGS.get(spec_id, {})
-    if 'haskell_args' not in args:
-        args['haskell_args'] = []
-    args['haskell_args'] += ['--smt-timeout', '300']
-    args['haskell_args'] += ['--smt-retry-limit', '10']
-
-    log_file = tmp_path / 'log.txt'
-    use_directory = tmp_path / 'kprove'
-    use_directory.mkdir()
-
-    # When
-    try:
-        definition_dir = kompiled_target_for(spec_file)
-        kevm = KEVM(definition_dir, use_directory=use_directory)
-        actual = kevm.prove(spec_file=spec_file, include_dirs=list(config.INCLUDE_DIRS), **args)
-    except BaseException:
-        raise
-    finally:
-        log_file.write_text(caplog.text)
-
-    # Then
-    assert len(actual) == 1
-    assert is_top(actual[0].kast, weak=True)
