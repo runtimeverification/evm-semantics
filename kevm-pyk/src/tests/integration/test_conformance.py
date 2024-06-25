@@ -3,9 +3,10 @@ from __future__ import annotations
 import csv
 import json
 import sys
+from collections import defaultdict
 from pathlib import Path
 from typing import TYPE_CHECKING
-from collections import defaultdict
+
 import pytest
 from pyk.kdist import kdist
 from pyk.kore.prelude import int_dv
@@ -33,7 +34,7 @@ def _test(gst_file: Path, schedule: str, mode: str, chainid: int, usegas: bool) 
         gst_data = json.load(f)
 
     for test_name, test in gst_data.items():
-        if test_name in SKIPPED_TESTS[gst_file.relative_to(TEST_DIR)]:
+        if test_name in SKIPPED_TESTS[gst_file]:
             continue
         res = interpret({test_name: test}, schedule, mode, chainid, usegas, check=False)
         _assert_exit_code_zero(res)
@@ -60,8 +61,6 @@ def _skipped_tests() -> dict[Path, list[str]]:
     skipped: dict[Path, list[str]] = defaultdict(list)
     for test_file, test in slow_tests + failing_tests:
         test_file = REPO_ROOT / test_file
-        if test_file not in skipped:
-            skipped[test_file] = []
         skipped[test_file].append(test)
     return skipped
 
