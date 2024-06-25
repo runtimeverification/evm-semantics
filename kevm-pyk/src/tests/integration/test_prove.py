@@ -80,7 +80,6 @@ def exclude_list(exclude_file: Path) -> list[Path]:
 
 
 FAILING_PYK_TESTS: Final = exclude_list(TEST_DIR / 'failing-symbolic.pyk')
-FAILING_BOOSTER_TESTS: Final = exclude_list(TEST_DIR / 'failing-symbolic.haskell-booster')
 FAILING_BOOSTER_DEV_TESTS: Final = exclude_list(TEST_DIR / 'failing-symbolic.haskell-booster-dev')
 
 
@@ -191,7 +190,7 @@ def test_kompile_targets(
 
     This test will be skipped if no --kompiled-targets-dir option is given
     """
-    if not kompiled_targets_dir or spec_file in FAILING_BOOSTER_TESTS:
+    if not kompiled_targets_dir:
         pytest.skip()
 
     kompiled_target_for(spec_file)
@@ -206,6 +205,7 @@ class TParams:
     main_claim_id: str | None
     leaf_number: int | None
     break_on_calls: bool
+    break_on_basic_blocks: bool
     workers: int
 
     def __init__(
@@ -213,11 +213,13 @@ class TParams:
         main_claim_id: str | None = None,
         leaf_number: int | None = None,
         break_on_calls: bool = False,
+        break_on_basic_blocks: bool = False,
         workers: int = 1,
     ) -> None:
         self.main_claim_id = main_claim_id
         self.leaf_number = leaf_number
         self.break_on_calls = break_on_calls
+        self.break_on_basic_blocks = break_on_basic_blocks
         self.workers = workers
 
 
@@ -227,6 +229,7 @@ TEST_PARAMS: dict[str, TParams] = {
         leaf_number=1,
     ),
     'functional/lemmas-spec.k': TParams(workers=8),
+    'examples/sum-to-n-foundry-spec.k': TParams(break_on_basic_blocks=True),
 }
 
 
@@ -256,10 +259,8 @@ def test_pyk_prove(
 ) -> None:
     caplog.set_level(logging.INFO)
 
-    if (
-        (no_use_booster and spec_file in FAILING_PYK_TESTS)
-        or (use_booster_dev and spec_file in FAILING_BOOSTER_DEV_TESTS)
-        or (not no_use_booster and not use_booster_dev and spec_file in FAILING_BOOSTER_TESTS)
+    if (no_use_booster and spec_file in FAILING_PYK_TESTS) or (
+        use_booster_dev and spec_file in FAILING_BOOSTER_DEV_TESTS
     ):
         pytest.skip()
 
@@ -276,6 +277,7 @@ def test_pyk_prove(
         definition_dir = kompiled_target_for(spec_file)
         name = str(spec_file.relative_to(SPEC_DIR))
         break_on_calls = name in TEST_PARAMS and TEST_PARAMS[name].break_on_calls
+        break_on_basic_blocks = name in TEST_PARAMS and TEST_PARAMS[name].break_on_basic_blocks
         workers = 1 if name not in TEST_PARAMS else TEST_PARAMS[name].workers
         options = ProveOptions(
             {
@@ -288,6 +290,7 @@ def test_pyk_prove(
                 'use_booster_dev': use_booster_dev,
                 'bug_report': bug_report,
                 'break_on_calls': break_on_calls,
+                'break_on_basic_blocks': break_on_basic_blocks,
                 'workers': workers,
             }
         )

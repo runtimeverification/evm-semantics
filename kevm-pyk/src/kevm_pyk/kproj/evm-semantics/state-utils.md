@@ -342,11 +342,10 @@ The `"rlp"` key loads the block information.
 
 ### Getting State
 
-- `#getTxData` will pull the parameters of TXID into an appropriate `TxData` symbol
-- `#effectiveGasPrice` will compute the gas price for TXID, as specified by EIP-1559
+- `#getTxData` will pull the parameters of TXID into an appropriate `TxData` sort
 
 ```k
-    syntax TxData ::= #getTxData( Int ) [klabel(#getTxData), function]
+    syntax TxData ::= #getTxData ( Int ) [symbol(getTxData), function]
  // ------------------------------------------------------------------
     rule [[ #getTxData( TXID ) => LegacyTxData(TN, TP, TG, TT, TV, DATA) ]]
          <message>
@@ -363,7 +362,8 @@ The `"rlp"` key loads the block information.
          </message>
       requires TW ==Int 0 orBool TW ==Int 1 orBool TW ==Int 27 orBool TW ==Int 28
 
-    rule [[ #getTxData( TXID ) => LegacyProtectedTxData(TN, TP, TG, TT, TV, DATA, CID) ]]
+    rule [[ #getTxData( TXID ) => LegacySignedTxData(TN, TP, TG, TT, TV, DATA, B) ]]
+         <chainID> B </chainID>
          <message>
            <msgID>      TXID </msgID>
            <txNonce>    TN   </txNonce>
@@ -373,11 +373,10 @@ The `"rlp"` key loads the block information.
            <value>      TV   </value>
            <sigV>       TW   </sigV>
            <data>       DATA </data>
-           <txChainID>  CID  </txChainID>
            <txType> Legacy </txType>
            ...
          </message>
-      requires notBool (TW ==Int 0 orBool TW ==Int 1 orBool TW ==Int 27 orBool TW ==Int 28)
+      requires TW ==Int 2 *Int B +Int 35 orBool TW ==Int 2 *Int B +Int 36
 
     rule [[ #getTxData( TXID ) => AccessListTxData(TN, TP, TG, TT, TV, DATA, CID, TA) ]]
          <message>
@@ -409,7 +408,11 @@ The `"rlp"` key loads the block information.
            <txType> DynamicFee </txType>
            ...
          </message>
+```
 
+- `#effectiveGasPrice` will compute the gas price for TXID, as specified by EIP-1559
+
+```k
     syntax Int ::= #effectiveGasPrice( Int ) [klabel(#effectiveGasPrice), function]
  // -------------------------------------------------------------------------------
     rule [[ #effectiveGasPrice( TXID )

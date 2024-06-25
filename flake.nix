@@ -2,11 +2,11 @@
   description = "A flake for the KEVM Semantics";
 
   inputs = {
-    k-framework.url = "github:runtimeverification/k/v7.0.130";
+    k-framework.url = "github:runtimeverification/k/v7.1.23";
     nixpkgs.follows = "k-framework/nixpkgs";
     flake-utils.follows = "k-framework/flake-utils";
     rv-utils.follows = "k-framework/rv-utils";
-    pyk.url = "github:runtimeverification/k/v7.0.130?dir=pyk";
+    pyk.url = "github:runtimeverification/k/v7.1.23?dir=pyk";
     nixpkgs-pyk.follows = "pyk/nixpkgs";
     poetry2nix.follows = "pyk/poetry2nix";
     blockchain-k-plugin = {
@@ -134,14 +134,13 @@
           kevm-pyk = poetry2nix.mkPoetryApplication {
             python = nixpkgs-pyk.python310;
             projectDir = ./kevm-pyk;
-            src = rv-utils.lib.mkPykAppSrc {
-              pkgs = import nixpkgs { system = prev.system; };
-              src = ./kevm-pyk;
-              cleaner = poetry2nix.cleanPythonSources;
-            };
             overrides = poetry2nix.overrides.withDefaults
               (finalPython: prevPython: {
-                pyk = nixpkgs-pyk.pyk-python310;
+                kframework = nixpkgs-pyk.pyk-python310;
+                pygments = prevPython.pygments.overridePythonAttrs (old: {
+                  buildInputs = (old.buildInputs or [ ])
+                    ++ [ prevPython.hatchling ];
+                });
                 xdg-base-dirs = prevPython.xdg-base-dirs.overridePythonAttrs
                   (old: {
                     propagatedBuildInputs = (old.propagatedBuildInputs or [ ])
@@ -181,8 +180,7 @@
       in {
         packages.default = kevm;
         devShell = pkgs.mkShell {
-          buildInputs = buildInputs pkgs
-            ++ [ pkgs.poetry-nixpkgs ];
+          buildInputs = buildInputs pkgs ++ [ pkgs.poetry-nixpkgs ];
 
           shellHook = ''
             export NIX_LIBS="${nixLibs pkgs}"

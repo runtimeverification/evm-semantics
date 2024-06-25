@@ -459,11 +459,11 @@ Productions related to transactions
     syntax TxData ::= LegacyTx | AccessListTx | DynamicFeeTx
  // --------------------------------------------------------
 
-    syntax LegacyTx     ::= LegacyTxData         ( nonce: Int, gasPrice: Int, gasLimit: Int, to: Account, value: Int, data: Bytes ) [klabel(LegacyTxData)]
-                          | LegacyProtectedTxData( nonce: Int, gasPrice: Int, gasLimit: Int, to: Account, value: Int, data: Bytes, chainId: Int ) [klabel(LegacyProtectedTxData)]
-    syntax AccessListTx ::= AccessListTxData     ( nonce: Int, gasPrice: Int, gasLimit: Int, to: Account, value: Int, data: Bytes, chainId: Int, accessLists: JSONs ) [klabel(AccessListTxData)]
-    syntax DynamicFeeTx ::= DynamicFeeTxData     ( nonce: Int, priorityGasFee: Int, maxGasFee: Int, gasLimit: Int, to: Account, value: Int, data: Bytes, chainId: Int, accessLists: JSONs) [klabel(DynamicFeeTxData)]
- // --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    syntax LegacyTx     ::= LegacyTxData       ( nonce: Int,                       gasPrice: Int, gasLimit: Int, to: Account, value: Int, data: Bytes )                                   [symbol(LegacyTxData)]
+                          | LegacySignedTxData ( nonce: Int,                       gasPrice: Int, gasLimit: Int, to: Account, value: Int, data: Bytes, networkChainId: Int )              [symbol(LegacySignedTxData)]
+    syntax AccessListTx ::= AccessListTxData   ( nonce: Int,                       gasPrice: Int, gasLimit: Int, to: Account, value: Int, data: Bytes, chainId: Int, accessLists: JSONs ) [symbol(AccessListTxData)]
+    syntax DynamicFeeTx ::= DynamicFeeTxData   ( nonce: Int, priorityGasFee: Int, maxGasFee: Int, gasLimit: Int, to: Account, value: Int, data: Bytes, chainId: Int, accessLists: JSONs)  [symbol(DynamicFeeTxData)]
+ // ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 endmodule
 ```

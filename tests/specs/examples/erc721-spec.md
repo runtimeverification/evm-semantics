@@ -43,6 +43,10 @@ module VERIFICATION
  // rule         X &Int 127 <=Int X  => true requires 0 <=Int X                   [simplification, smt-lemma]
     rule         X &Int 127  <Int 32 => true requires 0 <=Int X andBool X <Int 32 [simplification, smt-lemma]
 
+    rule chop(X +Int Y) => X +Int Y requires 0 <=Int X andBool #rangeUInt(256, Y) andBool X <=Int maxUInt256 -Int Y [simplification, concrete(Y)]
+    rule ((X +Int 31) /Int 32) *Int 32 <=Int Y => 0 <=Int X andBool X <=Int Y -Int 31 [simplification, concrete(Y)]
+    rule 127 &Int X <=Int Y => true requires 0 <=Int X andBool 127 <=Int Y [simplification, concrete(Y)]
+
 endmodule
 ```
 
@@ -57,14 +61,22 @@ module ERC721-SPEC
 ```
 
 ```k
-claim <k> runLemma(chop(chop(chop(chop(chop(chop((#lookup(ACCT_STORAGE, 0) /Int 2 &Int 127) +Int 31) /Int 32 *Int 32) +Int 32) +Int 128) +Int 32) +Int 32))
+claim [lemma.1]:
+      <k> runLemma(chop(chop(chop(chop(chop(chop((#lookup(ACCT_STORAGE, 0) /Int 2 &Int 127) +Int 31) /Int 32 *Int 32) +Int 32) +Int 128) +Int 32) +Int 32))
        => doneLemma(((#lookup(ACCT_STORAGE, 0) /Int 2 &Int 127) +Int 31) /Int 32 *Int 32 +Int 224) ... </k>
 ```
 
 ```k
-claim <k> runLemma(#lookup(ACCT_STORAGE, 0) /Int 2 <Int 32)
+claim [lemma.2]:
+      <k> runLemma(#lookup(ACCT_STORAGE, 0) /Int 2 <Int 32)
        => doneLemma(false) ... </k>
  requires 32 <=Int #lookup(ACCT_STORAGE, 0) /Int 2 &Int 127
+```
+
+```k
+claim [lemma.3]:
+      <k> runLemma(chop((((((127 &Int (#lookup(ACCT_STORAGE:Map, 0) /Int 2)) +Int 31) /Int 32) *Int 32) +Int 224)))
+       => doneLemma((((((127 &Int (#lookup(ACCT_STORAGE:Map, 0) /Int 2)) +Int 31) /Int 32) *Int 32) +Int 224)) ... </k>
 ```
 
 ### Calling name() works
@@ -93,7 +105,7 @@ claim <k> runLemma(#lookup(ACCT_STORAGE, 0) /Int 2 <Int 32)
           <gas>        #gas(_VGAS) => ?_ </gas>
           <callValue>  0           => ?_ </callValue>
 
-          <callData>   S2KERC721.name()            </callData>
+          <callData>   S2KERC721.S2Kname()      </callData>
           <k>          #execute => #halt ...    </k>
           <output>     .Bytes   => ?_           </output>
           <statusCode> _        => EVMC_SUCCESS </statusCode>
@@ -110,7 +122,9 @@ claim <k> runLemma(#lookup(ACCT_STORAGE, 0) /Int 2 <Int 32)
         andBool NAME /Int 2 &Int 127  <Int 32
 ```
 
-```k
+**TODO**: This proof isn't passing.
+
+```
     claim [name.short.revert]:
           <mode>     NORMAL   </mode>
           <schedule> ISTANBUL </schedule>
@@ -128,7 +142,7 @@ claim <k> runLemma(#lookup(ACCT_STORAGE, 0) /Int 2 <Int 32)
           <gas>        #gas(_VGAS) => ?_ </gas>
           <callValue>  0           => ?_ </callValue>
 
-          <callData>   S2KERC721.name()           </callData>
+          <callData>   S2KERC721.S2Kname()     </callData>
           <k>          #execute => #halt ...   </k>
           <output>     .Bytes   => ?_          </output>
           <statusCode> _        => EVMC_REVERT </statusCode>
