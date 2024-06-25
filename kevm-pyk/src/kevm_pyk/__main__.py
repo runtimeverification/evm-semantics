@@ -24,7 +24,6 @@ from pyk.kdist import kdist
 from pyk.kore.rpc import KoreClient
 from pyk.kore.tools import kore_print
 from pyk.ktool.kompile import LLVMKompileType
-from pyk.prelude.ml import is_top, mlOr
 from pyk.proof import APRProof
 from pyk.proof.implies import EqualityProof
 from pyk.proof.show import APRProofShow
@@ -57,7 +56,6 @@ if TYPE_CHECKING:
     from .cli import (
         KastOptions,
         KompileSpecOptions,
-        ProveLegacyOptions,
         ProveOptions,
         PruneOptions,
         RunOptions,
@@ -137,34 +135,6 @@ def exec_kompile_spec(options: KompileSpecOptions) -> None:
         debug=options.debug,
         verbose=options.verbose,
     )
-
-
-def exec_prove_legacy(options: ProveLegacyOptions) -> None:
-    definition_dir = options.definition_dir or kdist.get('evm-semantics.haskell')
-
-    kevm = KEVM(definition_dir, use_directory=options.save_directory)
-
-    include_dirs = [Path(include) for include in options.includes]
-    include_dirs += config.INCLUDE_DIRS
-
-    final_state = kevm.prove_legacy(
-        spec_file=options.spec_file,
-        includes=include_dirs,
-        bug_report=options.bug_report_legacy,
-        spec_module=options.spec_module,
-        claim_labels=options.claim_labels,
-        exclude_claim_labels=options.exclude_claim_labels,
-        debug=options.debug,
-        debugger=options.debugger,
-        max_depth=options.max_depth,
-        max_counterexamples=options.max_counterexamples,
-        branching_allowed=options.branching_allowed,
-        haskell_backend_args=options.haskell_backend_args,
-    )
-    final_kast = mlOr([state.kast for state in final_state])
-    print(kevm.pretty_print(final_kast))
-    if not is_top(final_kast):
-        raise SystemExit(1)
 
 
 class ZeroProcessPool:
