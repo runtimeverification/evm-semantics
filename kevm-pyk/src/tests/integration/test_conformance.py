@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+import csv
 import json
-import logging
 import sys
+from pathlib import Path
 from typing import TYPE_CHECKING
-
+from collections import defaultdict
 import pytest
 from pyk.kdist import kdist
 from pyk.kore.prelude import int_dv
@@ -16,14 +17,9 @@ from kevm_pyk.interpreter import interpret
 from ..utils import REPO_ROOT
 
 if TYPE_CHECKING:
-    from pathlib import Path
     from typing import Final
 
     from pyk.kore.syntax import Pattern
-
-
-_LOGGER: Final = logging.getLogger(__name__)
-_LOG_FORMAT: Final = '%(levelname)s %(asctime)s %(name)s - %(message)s'
 
 
 sys.setrecursionlimit(10**8)
@@ -37,7 +33,8 @@ def _test(gst_file: Path, schedule: str, mode: str, chainid: int, usegas: bool) 
         gst_data = json.load(f)
 
     for test_name, test in gst_data.items():
-        _LOGGER.info(f'Running test: {gst_file} - {test_name}')
+        if test_name in SKIPPED_TESTS[gst_file.relative_to(TEST_DIR)]:
+            continue
         res = interpret({test_name: test}, schedule, mode, chainid, usegas, check=False)
         _assert_exit_code_zero(res)
 
@@ -57,13 +54,22 @@ def _assert_exit_code_zero(pattern: Pattern) -> None:
     assert pretty == GOLDEN
 
 
-def _skipped_tests() -> set[Path]:
-    def read_test_list(path: Path) -> list[Path]:
-        return [REPO_ROOT / test_path for test_path in path.read_text().splitlines()]
+def _skipped_tests() -> dict[Path, list[str]]:
+    slow_tests = read_csv_file(REPO_ROOT / 'tests/slow.llvm')
+    failing_tests = read_csv_file(REPO_ROOT / 'tests/failing.llvm')
+    skipped: dict[Path, list[str]] = defaultdict(list)
+    for test_file, test in slow_tests + failing_tests:
+        test_file = REPO_ROOT / test_file
+        if test_file not in skipped:
+            skipped[test_file] = []
+        skipped[test_file].append(test)
+    return skipped
 
-    slow_tests = read_test_list(REPO_ROOT / 'tests/slow.llvm')
-    failing_tests = read_test_list(REPO_ROOT / 'tests/failing.llvm')
-    return set(slow_tests + failing_tests)
+
+def read_csv_file(csv_file: Path) -> tuple[tuple[Path, str], ...]:
+    with csv_file.open(newline='') as file:
+        reader = csv.reader(file)
+        return tuple((Path(row[0]), row[1]) for row in reader)
 
 
 SKIPPED_TESTS: Final = _skipped_tests()
