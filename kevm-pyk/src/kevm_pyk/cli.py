@@ -303,6 +303,7 @@ class RPCOptions(Options):
     interim_simplification: int | None
     port: int | None
     maude_port: int | None
+    use_booster_dev: bool
 
     @staticmethod
     def default() -> dict[str, Any]:
@@ -315,6 +316,7 @@ class RPCOptions(Options):
             'interim_simplification': None,
             'port': None,
             'maude_port': None,
+            'use_booster_dev': False,
         }
 
     @staticmethod
@@ -540,14 +542,12 @@ class ProveOptions(
 ):
     reinit: bool
     max_frontier_parallel: int
-    use_booster_dev: bool
 
     @staticmethod
     def default() -> dict[str, Any]:
         return {
             'reinit': False,
             'max_frontier_parallel': 1,
-            'use_booster_dev': False,
         }
 
     @staticmethod

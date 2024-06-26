@@ -111,9 +111,6 @@ jobs:
       matrix:
         include:
           - test-suite: 'test-prove-pyk'
-            test-args: '--no-use-booster'
-            timeout: 180
-          - test-suite: 'test-prove-pyk'
             test-args:
             timeout: 150
           - test-suite: 'test-prove-pyk'
