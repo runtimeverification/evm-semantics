@@ -111,15 +111,20 @@ jobs:
       matrix:
         include:
           - name: 'Rules (booster)'
-            test-suite: 'test-prove-pyk'
+            test-suite: 'test-prove-rules'
             test-args:
             timeout: 150
             parallel: 6
           - name: 'Rules (booster-dev)'
-            test-suite: 'test-prove-pyk'
+            test-suite: 'test-prove-rules'
             test-args: '--use-booster-dev'
             timeout: 45
             parallel: 8
+          - name: 'Functional'
+            test-suite: 'test-prove-functional'
+            test-args:
+            timeout: 45
+            parallel: 3
           - name: 'Optimizations'
             test-suite: 'test-prove-optimizations'
             test-args:
