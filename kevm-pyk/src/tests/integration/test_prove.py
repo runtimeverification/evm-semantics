@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import logging
 import sys
-from pathlib import Path
 from typing import TYPE_CHECKING, NamedTuple
 
 import pytest
@@ -24,6 +23,7 @@ from ..utils import REPO_ROOT
 
 if TYPE_CHECKING:
     from collections.abc import Callable
+    from pathlib import Path
     from typing import Final
 
     from pyk.utils import BugReport
@@ -368,14 +368,8 @@ def test_prove_dss(
     tmp_path: Path,
     caplog: LogCaptureFixture,
     bug_report: BugReport | None,
-    spec_name: str | None,
 ) -> None:
     spec_file = REPO_ROOT / 'tests/specs/mcd/vat-spec.k'
-    caplog.set_level(logging.INFO)
-
-    if spec_name is not None and str(spec_file).find(spec_name) < 0:
-        pytest.skip()
-
     _test_prove(
         spec_file,
         kompiled_target_for,
@@ -384,7 +378,7 @@ def test_prove_dss(
         False,
         False,
         bug_report=bug_report,
-        spec_name=spec_name,
+        spec_name=None,
         workers=8,
     )
 
