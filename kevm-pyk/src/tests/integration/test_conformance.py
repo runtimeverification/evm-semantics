@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import csv
 import json
+import logging
 import sys
-from collections import defaultdict
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -22,6 +22,9 @@ if TYPE_CHECKING:
 
     from pyk.kore.syntax import Pattern
 
+_LOGGER: Final = logging.getLogger(__name__)
+_LOG_FORMAT: Final = '%(levelname)s %(asctime)s %(name)s - %(message)s'
+
 
 sys.setrecursionlimit(10**8)
 
@@ -34,6 +37,7 @@ def _test(gst_file: Path, schedule: str, mode: str, chainid: int, usegas: bool) 
         gst_data = json.load(f)
 
     for test_name, test in gst_data.items():
+        _LOGGER.info(f'Running test: {gst_file} - {test_name}')
         if test_name in SKIPPED_TESTS[gst_file]:
             continue
         res = interpret({test_name: test}, schedule, mode, chainid, usegas, check=False)
@@ -58,10 +62,10 @@ def _assert_exit_code_zero(pattern: Pattern) -> None:
 def _skipped_tests() -> dict[Path, list[str]]:
     slow_tests = read_csv_file(REPO_ROOT / 'tests/slow.llvm')
     failing_tests = read_csv_file(REPO_ROOT / 'tests/failing.llvm')
-    skipped: dict[Path, list[str]] = defaultdict(list)
+    skipped: dict[Path, list[str]] = {}
     for test_file, test in slow_tests + failing_tests:
         test_file = TEST_DIR / test_file
-        skipped[test_file].append(test)
+        skipped.setdefault(test_file, []).append(test)
     return skipped
 
 
