@@ -60,7 +60,7 @@ def _skipped_tests() -> dict[Path, list[str]]:
     failing_tests = read_csv_file(REPO_ROOT / 'tests/failing.llvm')
     skipped: dict[Path, list[str]] = defaultdict(list)
     for test_file, test in slow_tests + failing_tests:
-        test_file = REPO_ROOT / test_file
+        test_file = TEST_DIR / test_file
         skipped[test_file].append(test)
     return skipped
 
