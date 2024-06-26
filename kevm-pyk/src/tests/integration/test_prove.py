@@ -370,7 +370,7 @@ def test_prove_dss(
     bug_report: BugReport | None,
     spec_name: str | None,
 ) -> None:
-    spec_file = Path('../tests/specs/mcd/vat-spec.k')
+    spec_file = REPO_ROOT / 'tests/specs/mcd/vat-spec.k'
     caplog.set_level(logging.INFO)
 
     if spec_name is not None and str(spec_file).find(spec_name) < 0:
