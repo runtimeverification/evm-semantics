@@ -308,6 +308,7 @@ def _test_prove(
     use_booster_dev: bool,
     bug_report: BugReport | None,
     spec_name: str | None,
+    workers: int | None = None,
 ) -> None:
     caplog.set_level(logging.INFO)
 
@@ -328,7 +329,8 @@ def _test_prove(
         name = str(spec_file.relative_to(SPEC_DIR))
         break_on_calls = name in TEST_PARAMS and TEST_PARAMS[name].break_on_calls
         break_on_basic_blocks = name in TEST_PARAMS and TEST_PARAMS[name].break_on_basic_blocks
-        workers = 1 if name not in TEST_PARAMS else TEST_PARAMS[name].workers
+        if workers is None:
+            workers = 1 if name not in TEST_PARAMS else TEST_PARAMS[name].workers
         options = ProveOptions(
             {
                 'spec_file': spec_file,
@@ -423,30 +425,14 @@ def test_prove_dss(
     if spec_name is not None and str(spec_file).find(spec_name) < 0:
         pytest.skip()
 
-    # Given
-    log_file = tmp_path / 'log.txt'
-    use_directory = tmp_path / 'kprove'
-    use_directory.mkdir()
-
-    # When
-    try:
-        definition_dir = kompiled_target_for(spec_file)
-        options = ProveOptions(
-            {
-                'spec_file': spec_file,
-                'definition_dir': definition_dir,
-                'includes': [str(include_dir) for include_dir in config.INCLUDE_DIRS],
-                'save_directory': use_directory,
-                'md_selector': 'foo',  # TODO Ignored flag, this is to avoid KeyError
-                'use_booster': True,
-                'bug_report': bug_report,
-                'break_on_calls': False,
-                'workers': 8,
-                'direct_subproof_rules': True,
-            }
-        )
-        exec_prove(options=options)
-    except BaseException:
-        raise
-    finally:
-        log_file.write_text(caplog.text)
+    _test_prove(
+        spec_file,
+        kompiled_target_for,
+        tmp_path,
+        caplog,
+        False,
+        False,
+        bug_report=bug_report,
+        spec_name=spec_name,
+        workers=8,
+    )
