@@ -175,6 +175,70 @@ def _target_for_spec(spec_file: Path) -> Target:
     return Target(main_file, main_module_name)
 
 
+def _test_prove(
+    spec_file: Path,
+    kompiled_target_for: Callable[[Path], Path],
+    tmp_path: Path,
+    caplog: LogCaptureFixture,
+    no_use_booster: bool,
+    use_booster_dev: bool,
+    bug_report: BugReport | None,
+    spec_name: str | None,
+    workers: int | None = None,
+) -> None:
+    caplog.set_level(logging.INFO)
+
+    if use_booster_dev and spec_file in FAILING_BOOSTER_DEV_TESTS:
+        pytest.skip()
+
+    if spec_name is not None and str(spec_file).find(spec_name) < 0:
+        pytest.skip()
+
+    # Given
+    log_file = tmp_path / 'log.txt'
+    use_directory = tmp_path / 'kprove'
+    use_directory.mkdir()
+
+    # When
+    try:
+        definition_dir = kompiled_target_for(spec_file)
+        name = str(spec_file.relative_to(SPEC_DIR))
+        break_on_calls = name in TEST_PARAMS and TEST_PARAMS[name].break_on_calls
+        break_on_basic_blocks = name in TEST_PARAMS and TEST_PARAMS[name].break_on_basic_blocks
+        if workers is None:
+            workers = 1 if name not in TEST_PARAMS else TEST_PARAMS[name].workers
+        options = ProveOptions(
+            {
+                'spec_file': spec_file,
+                'definition_dir': definition_dir,
+                'includes': [str(include_dir) for include_dir in config.INCLUDE_DIRS],
+                'save_directory': use_directory,
+                'md_selector': 'foo',  # TODO Ignored flag, this is to avoid KeyError
+                'use_booster': not no_use_booster,
+                'use_booster_dev': use_booster_dev,
+                'bug_report': bug_report,
+                'break_on_calls': break_on_calls,
+                'break_on_basic_blocks': break_on_basic_blocks,
+                'workers': workers,
+            }
+        )
+        exec_prove(options=options)
+        if name in TEST_PARAMS:
+            params = TEST_PARAMS[name]
+            if params.leaf_number is not None and params.main_claim_id is not None:
+                apr_proof = APRProof.read_proof_data(
+                    proof_dir=use_directory,
+                    id=params.main_claim_id,
+                )
+                expected_leaf_number = params.leaf_number
+                actual_leaf_number = leaf_number(apr_proof)
+                assert expected_leaf_number == actual_leaf_number
+    except BaseException:
+        raise
+    finally:
+        log_file.write_text(caplog.text)
+
+
 @pytest.mark.parametrize(
     'spec_file',
     ALL_TESTS,
@@ -299,68 +363,30 @@ def test_prove_functional(
     )
 
 
-def _test_prove(
-    spec_file: Path,
+def test_prove_dss(
     kompiled_target_for: Callable[[Path], Path],
     tmp_path: Path,
     caplog: LogCaptureFixture,
-    no_use_booster: bool,
-    use_booster_dev: bool,
     bug_report: BugReport | None,
     spec_name: str | None,
-    workers: int | None = None,
 ) -> None:
+    spec_file = Path('../tests/specs/mcd/vat-spec.k')
     caplog.set_level(logging.INFO)
-
-    if use_booster_dev and spec_file in FAILING_BOOSTER_DEV_TESTS:
-        pytest.skip()
 
     if spec_name is not None and str(spec_file).find(spec_name) < 0:
         pytest.skip()
 
-    # Given
-    log_file = tmp_path / 'log.txt'
-    use_directory = tmp_path / 'kprove'
-    use_directory.mkdir()
-
-    # When
-    try:
-        definition_dir = kompiled_target_for(spec_file)
-        name = str(spec_file.relative_to(SPEC_DIR))
-        break_on_calls = name in TEST_PARAMS and TEST_PARAMS[name].break_on_calls
-        break_on_basic_blocks = name in TEST_PARAMS and TEST_PARAMS[name].break_on_basic_blocks
-        if workers is None:
-            workers = 1 if name not in TEST_PARAMS else TEST_PARAMS[name].workers
-        options = ProveOptions(
-            {
-                'spec_file': spec_file,
-                'definition_dir': definition_dir,
-                'includes': [str(include_dir) for include_dir in config.INCLUDE_DIRS],
-                'save_directory': use_directory,
-                'md_selector': 'foo',  # TODO Ignored flag, this is to avoid KeyError
-                'use_booster': not no_use_booster,
-                'use_booster_dev': use_booster_dev,
-                'bug_report': bug_report,
-                'break_on_calls': break_on_calls,
-                'break_on_basic_blocks': break_on_basic_blocks,
-                'workers': workers,
-            }
-        )
-        exec_prove(options=options)
-        if name in TEST_PARAMS:
-            params = TEST_PARAMS[name]
-            if params.leaf_number is not None and params.main_claim_id is not None:
-                apr_proof = APRProof.read_proof_data(
-                    proof_dir=use_directory,
-                    id=params.main_claim_id,
-                )
-                expected_leaf_number = params.leaf_number
-                actual_leaf_number = leaf_number(apr_proof)
-                assert expected_leaf_number == actual_leaf_number
-    except BaseException:
-        raise
-    finally:
-        log_file.write_text(caplog.text)
+    _test_prove(
+        spec_file,
+        kompiled_target_for,
+        tmp_path,
+        caplog,
+        False,
+        False,
+        bug_report=bug_report,
+        spec_name=spec_name,
+        workers=8,
+    )
 
 
 def test_prove_optimizations(
@@ -410,29 +436,3 @@ def test_prove_optimizations(
             proof_display = '\n'.join('    ' + line for line in proof_show.show(proof))
             _LOGGER.info(f'Proof {proof.id}:\n{proof_display}')
             assert proof.passed
-
-
-def test_prove_dss(
-    kompiled_target_for: Callable[[Path], Path],
-    tmp_path: Path,
-    caplog: LogCaptureFixture,
-    bug_report: BugReport | None,
-    spec_name: str | None,
-) -> None:
-    spec_file = Path('../tests/specs/mcd/vat-spec.k')
-    caplog.set_level(logging.INFO)
-
-    if spec_name is not None and str(spec_file).find(spec_name) < 0:
-        pytest.skip()
-
-    _test_prove(
-        spec_file,
-        kompiled_target_for,
-        tmp_path,
-        caplog,
-        False,
-        False,
-        bug_report=bug_report,
-        spec_name=spec_name,
-        workers=8,
-    )
