@@ -62,7 +62,7 @@ def kevm_kompile(
     debug: bool = False,
     verbose: bool = False,
     type_inference_mode: str | TypeInferenceMode | None = None,
-    ignore_warnings: Iterable[str] | None = None,
+    ignore_warnings: Iterable[str] = (),
 ) -> Path:
     if plugin_dir is None:
         plugin_dir = kdist.get('evm-semantics.plugin')
@@ -107,7 +107,7 @@ def run_kompile(
     debug: bool = False,
     verbose: bool = False,
     type_inference_mode: str | TypeInferenceMode | None = None,
-    ignore_warnings: Iterable[str] | None = None,
+    ignore_warnings: Iterable[str] = (),
 ) -> Path:
     if type_inference_mode is None:
         type_inference_mode = TypeInferenceMode.SIMPLESUB
