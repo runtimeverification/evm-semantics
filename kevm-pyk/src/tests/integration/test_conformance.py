@@ -22,6 +22,7 @@ if TYPE_CHECKING:
 
     from pyk.kore.syntax import Pattern
 
+
 _LOGGER: Final = logging.getLogger(__name__)
 _LOG_FORMAT: Final = '%(levelname)s %(asctime)s %(name)s - %(message)s'
 
@@ -38,7 +39,7 @@ def _test(gst_file: Path, schedule: str, mode: str, chainid: int, usegas: bool) 
 
     for test_name, test in gst_data.items():
         _LOGGER.info(f'Running test: {gst_file} - {test_name}')
-        if test_name in SKIPPED_TESTS[gst_file]:
+        if test_name in SKIPPED_TESTS.get(gst_file, []):
             continue
         res = interpret({test_name: test}, schedule, mode, chainid, usegas, check=False)
         _assert_exit_code_zero(res)
