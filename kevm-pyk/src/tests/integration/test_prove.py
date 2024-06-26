@@ -52,23 +52,27 @@ def spec_files(dir_name: str, glob: str) -> tuple[Path, ...]:
 
 
 BENCHMARK_TESTS: Final = spec_files('benchmarks', '*-spec.k')
-FUNCTIONAL_TESTS: Final = spec_files('functional', '*-spec.k')
 ERC20_TESTS: Final = spec_files('erc20', '*/*-spec.k')
 EXAMPLES_TESTS: Final = spec_files('examples', '*-spec.k') + spec_files('examples', '*-spec.md')
 MCD_TESTS: Final = spec_files('mcd', '*-spec.k')
 VAT_TESTS: Final = spec_files('mcd', 'vat*-spec.k')
 NON_VAT_MCD_TESTS: Final = tuple(test for test in MCD_TESTS if test not in VAT_TESTS)
 KONTROL_TESTS: Final = spec_files('kontrol', '*-spec.k')
+FUNCTIONAL_TESTS: Final = spec_files('functional', '*-spec.k')
 
-ALL_TESTS: Final = sum(
+RULE_TESTS: Final = sum(
     [
         BENCHMARK_TESTS,
-        FUNCTIONAL_TESTS,
         ERC20_TESTS,
         EXAMPLES_TESTS,
         NON_VAT_MCD_TESTS,
         KONTROL_TESTS,
     ],
+    (),
+)
+
+ALL_TESTS: Final = sum(
+    [RULE_TESTS, FUNCTIONAL_TESTS, VAT_TESTS],
     (),
 )
 
@@ -243,10 +247,59 @@ def leaf_number(proof: APRProof) -> int:
 
 @pytest.mark.parametrize(
     'spec_file',
-    ALL_TESTS,
-    ids=[str(spec_file.relative_to(SPEC_DIR)) for spec_file in ALL_TESTS],
+    RULE_TESTS,
+    ids=[str(spec_file.relative_to(SPEC_DIR)) for spec_file in RULE_TESTS],
 )
-def test_pyk_prove(
+def test_prove_rules(
+    spec_file: Path,
+    kompiled_target_for: Callable[[Path], Path],
+    tmp_path: Path,
+    caplog: LogCaptureFixture,
+    no_use_booster: bool,
+    use_booster_dev: bool,
+    bug_report: BugReport | None,
+    spec_name: str | None,
+) -> None:
+    _test_prove(
+        spec_file,
+        kompiled_target_for,
+        tmp_path,
+        caplog,
+        no_use_booster,
+        use_booster_dev,
+        bug_report=bug_report,
+        spec_name=spec_name,
+    )
+
+
+@pytest.mark.parametrize(
+    'spec_file',
+    FUNCTIONAL_TESTS,
+    ids=[str(spec_file.relative_to(SPEC_DIR)) for spec_file in FUNCTIONAL_TESTS],
+)
+def test_prove_functional(
+    spec_file: Path,
+    kompiled_target_for: Callable[[Path], Path],
+    tmp_path: Path,
+    caplog: LogCaptureFixture,
+    no_use_booster: bool,
+    use_booster_dev: bool,
+    bug_report: BugReport | None,
+    spec_name: str | None,
+) -> None:
+    _test_prove(
+        spec_file,
+        kompiled_target_for,
+        tmp_path,
+        caplog,
+        no_use_booster,
+        use_booster_dev,
+        bug_report=bug_report,
+        spec_name=spec_name,
+    )
+
+
+def _test_prove(
     spec_file: Path,
     kompiled_target_for: Callable[[Path], Path],
     tmp_path: Path,
