@@ -110,6 +110,9 @@ In the comments next to each cell, we've marked which component of the YellowPap
               <blockNonce>       0      </blockNonce>       // I_Hn
               <baseFee>          0      </baseFee>
               <withdrawalsRoot>  0      </withdrawalsRoot>
+              <blobGasUsed>      0      </blobGasUsed>
+              <excessBlobGas>    0      </excessBlobGas>
+              <beaconRoot>       0      </beaconRoot>
 
               <ommerBlockHeaders> [ .JSONs ] </ommerBlockHeaders>
             </block>
