@@ -62,6 +62,7 @@ def kevm_kompile(
     debug: bool = False,
     verbose: bool = False,
     type_inference_mode: str | TypeInferenceMode | None = None,
+    ignore_warnings: Iterable[str] = (),
 ) -> Path:
     if plugin_dir is None:
         plugin_dir = kdist.get('evm-semantics.plugin')
@@ -84,6 +85,7 @@ def kevm_kompile(
         debug=debug,
         verbose=verbose,
         type_inference_mode=type_inference_mode,
+        ignore_warnings=ignore_warnings,
     )
 
 
@@ -105,6 +107,7 @@ def run_kompile(
     debug: bool = False,
     verbose: bool = False,
     type_inference_mode: str | TypeInferenceMode | None = None,
+    ignore_warnings: Iterable[str] = (),
 ) -> Path:
     if type_inference_mode is None:
         type_inference_mode = TypeInferenceMode.SIMPLESUB
@@ -137,7 +140,11 @@ def run_kompile(
                     enable_llvm_debug=enable_llvm_debug,
                 )
                 return kompile(
-                    output_dir=output_dir, debug=debug, verbose=verbose, type_inference_mode=type_inference_mode
+                    output_dir=output_dir,
+                    debug=debug,
+                    verbose=verbose,
+                    type_inference_mode=type_inference_mode,
+                    ignore_warnings=ignore_warnings,
                 )
 
             case KompileTarget.MAUDE:
@@ -155,7 +162,11 @@ def run_kompile(
 
                 def _kompile_haskell() -> None:
                     kompile_haskell(
-                        output_dir=output_dir, debug=debug, verbose=verbose, type_inference_mode=type_inference_mode
+                        output_dir=output_dir,
+                        debug=debug,
+                        verbose=verbose,
+                        type_inference_mode=type_inference_mode,
+                        ignore_warnings=ignore_warnings,
                     )
 
                 with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
@@ -189,11 +200,16 @@ def run_kompile(
                         debug=debug,
                         verbose=verbose,
                         type_inference_mode=type_inference_mode,
+                        ignore_warnings=ignore_warnings,
                     )
 
                 def _kompile_haskell() -> None:
                     kompile_haskell(
-                        output_dir=output_dir, debug=debug, verbose=verbose, type_inference_mode=type_inference_mode
+                        output_dir=output_dir,
+                        debug=debug,
+                        verbose=verbose,
+                        type_inference_mode=type_inference_mode,
+                        ignore_warnings=ignore_warnings,
                     )
 
                 with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
