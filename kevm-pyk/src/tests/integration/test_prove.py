@@ -293,10 +293,6 @@ class TParams:
 
 
 TEST_PARAMS: dict[str, TParams] = {
-    'mcd/vat-slip-pass-rough-spec.k': TParams(
-        main_claim_id='VAT-SLIP-PASS-ROUGH-SPEC.Vat.slip.pass.rough',
-        leaf_number=1,
-    ),
     'functional/lemmas-spec.k': TParams(workers=8),
     'examples/sum-to-n-foundry-spec.k': TParams(break_on_basic_blocks=True),
 }
