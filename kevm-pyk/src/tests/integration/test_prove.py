@@ -185,6 +185,7 @@ def _test_prove(
     bug_report: BugReport | None,
     spec_name: str | None,
     workers: int | None = None,
+    direct_subproof_rules: bool = False,
 ) -> None:
     caplog.set_level(logging.INFO)
 
@@ -220,6 +221,7 @@ def _test_prove(
                 'break_on_calls': break_on_calls,
                 'break_on_basic_blocks': break_on_basic_blocks,
                 'workers': workers,
+                'direct_subproof_rules': direct_subproof_rules,
             }
         )
         exec_prove(options=options)
@@ -380,6 +382,7 @@ def test_prove_dss(
         bug_report=bug_report,
         spec_name=None,
         workers=8,
+        direct_subproof_rules=True,
     )
 
 
