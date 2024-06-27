@@ -115,7 +115,7 @@ SKIPPED_BCHAIN_TESTS: Final = tuple(test_file for test_file in BCHAIN_TESTS if t
 @pytest.mark.parametrize(
     'test_file',
     BCHAIN_TESTS,
-    ids=[str(test_file.relative_to(TEST_DIR)) for test_file in BCHAIN_TESTS],
+    ids=[str(test_file.relative_to(ALL_TEST_DIR)) for test_file in BCHAIN_TESTS],
 )
 def test_bchain(test_file: Path) -> None:
     _test(test_file, 'SHANGHAI', 'NORMAL', 1, True)
@@ -125,7 +125,7 @@ def test_bchain(test_file: Path) -> None:
 @pytest.mark.parametrize(
     'test_file',
     SKIPPED_BCHAIN_TESTS,
-    ids=[str(test_file.relative_to(TEST_DIR)) for test_file in SKIPPED_BCHAIN_TESTS],
+    ids=[str(test_file.relative_to(ALL_TEST_DIR)) for test_file in SKIPPED_BCHAIN_TESTS],
 )
 def test_rest_bchain(test_file: Path) -> None:
     _test(test_file, 'SHANGHAI', 'NORMAL', 1, True)
