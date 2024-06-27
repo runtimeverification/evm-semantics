@@ -74,7 +74,7 @@ jobs:
           make -C kevm-pyk profile
 
   test-concrete-execution:
-    name: 'Build and Test KEVM concrete execution'
+    name: 'Conformance Tests'
     needs: kevm-pyk-code-quality-checks
     runs-on: [self-hosted, linux, normal]
     timeout-minutes: 45
