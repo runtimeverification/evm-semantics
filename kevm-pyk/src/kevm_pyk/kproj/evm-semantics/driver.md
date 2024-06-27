@@ -272,13 +272,16 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
 ```k
     syntax Set ::= "#loadKeys" [function]
  // -------------------------------------
-    rule #loadKeys => ( SetItem("env") SetItem("pre") SetItem("rlp") SetItem("network") SetItem("genesisRLP") SetItem("withdrawals") )
+    rule #loadKeys => ( SetItem("env") SetItem("pre") SetItem("rlp") SetItem("network") SetItem("genesisRLP") )
 
     rule <k> run  TESTID : { KEY : (VAL:JSON) , REST } => load KEY : VAL ~> run TESTID : { REST } ... </k>
       requires KEY in #loadKeys
 
-    rule <k> run _TESTID : { "blocks" : [ { KEY : VAL , REST1 => REST1 }, .JSONs ] , ( REST2 => KEY : VAL , REST2 ) } ... </k>
-    rule <k> run  TESTID : { "blocks" : [ { .JSONs }, .JSONs ] , REST } => run TESTID : { REST }                      ... </k>
+    rule <k> run _TESTID : { "blocks" : [ { KEY : VAL , REST1 => REST1 }, _ ] , ( REST2 => KEY : VAL , REST2 ) } ... </k>
+    rule <k> run  TESTID : { "blocks" : [ { .JSONs }, _ ] , REST } => run TESTID : { REST }                      ... </k>
+
+    rule <k> check _TESTID : { "rlp_decoded" : { KEY : VAL , REST1 => REST1 }, (REST2 => KEY : VAL , REST2 ) } ... </k>
+    rule <k> check  TESTID : { "rlp_decoded" : { .JSONs } , REST } => check TESTID : { REST }                  ... </k>
 ```
 
 -   `#execKeys` are all the JSON nodes which should be considered for execution (between loading and checking).
@@ -324,7 +327,9 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
     rule #postKeys    => ( SetItem("post") SetItem("postState") SetItem("postStateHash") )
     rule #allPostKeys => ( #postKeys SetItem("expect") SetItem("export") SetItem("expet") )
     rule #checkKeys   => ( #allPostKeys SetItem("logs") SetItem("out") SetItem("gas")
-                           SetItem("blockHeader") SetItem("transactions") SetItem("uncleHeaders") SetItem("genesisBlockHeader")
+                           SetItem("blockHeader") SetItem("transactions") SetItem("uncleHeaders")
+                           SetItem("genesisBlockHeader") SetItem("rlp_decoded") SetItem("blocknumber")
+                           SetItem("withdrawals")
                          )
 
     rule <k> run TESTID : { KEY : (VAL:JSON) , REST } => run TESTID : { REST } ~> check TESTID : { "post" : VAL } ... </k> requires KEY in #allPostKeys
@@ -336,7 +341,7 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
 ```k
     syntax Set ::= "#discardKeys" [function]
  // ----------------------------------------
-    rule #discardKeys => ( SetItem("//") SetItem("_info") SetItem("callcreates") SetItem("sealEngine") SetItem("transactionSequence") SetItem("chainname") )
+    rule #discardKeys => ( SetItem("//") SetItem("_info") SetItem("callcreates") SetItem("sealEngine") SetItem("transactionSequence") SetItem("chainname") SetItem("expectException"))
 
     rule <k> run TESTID : { KEY : _ , REST } => run TESTID : { REST } ... </k> requires KEY in #discardKeys
 ```
@@ -600,6 +605,17 @@ TODO: case with nonzero ommers.
     rule <k> check "ommerHeaders" : [ .JSONs ] => .K ... </k> <ommerBlockHeaders> [ .JSONs ] </ommerBlockHeaders>
 ```
 
+```k
+    rule <k> check TESTID : {"withdrawals" : WITHDRAWALS } => check "withdrawals" : WITHDRAWALS ~> failure TESTID ... </k>
+ // ----------------------------------------------------------------------------------------------------------------------
+```
+
+```k
+    rule <k> check TESTID : { "blocknumber": BN } => check "blocknumber" : BN ~> failure TESTID ... </k>
+ // ----------------------------------------------------------------------------------------------------
+    rule <k> check "blocknumber" : (VALUE:String => #parseWord(VALUE)) ... </k>
+    rule <k> check "blocknumber" : BN => .K ... </k> <number> BN </number>
+```
 ```k
 endmodule
 ```
