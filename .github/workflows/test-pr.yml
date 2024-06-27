@@ -113,15 +113,19 @@ jobs:
           - test-suite: 'test-prove-pyk'
             test-args:
             timeout: 150
+            parallel: 6
           - test-suite: 'test-prove-pyk'
             test-args: '--use-booster-dev'
             timeout: 45
+            parallel: 8
           - test-suite: 'test-prove-optimizations'
             test-args:
             timeout: 45
+            parallel: 1
           - test-suite: 'test-prove-dss'
             test-args:
             timeout: 45
+            parallel: 1
     timeout-minutes: ${{ matrix.timeout }}
     steps:
       - name: 'Check out code'
@@ -139,7 +143,7 @@ jobs:
       - name: 'Build distribution'
         run: docker exec -u github-user kevm-ci-haskell-${{ matrix.test-suite }}-${{ github.sha }} /bin/bash -c 'CXX=clang++-14 poetry -C kevm-pyk run kdist --verbose build -j`nproc` evm-semantics.plugin evm-semantics.haskell'
       - name: 'Prove Haskell'
-        run: docker exec -u github-user kevm-ci-haskell-${{ matrix.test-suite }}-${{ github.sha }} /bin/bash -c "make ${{ matrix.test-suite }} PYTEST_ARGS='-vv ${{ matrix.test-args }}' PYTEST_PARALLEL=6"
+        run: docker exec -u github-user kevm-ci-haskell-${{ matrix.test-suite }}-${{ github.sha }} /bin/bash -c "make ${{ matrix.test-suite }} PYTEST_ARGS='-vv ${{ matrix.test-args }}' PYTEST_PARALLEL=${{ matrix.parallel }}"
       - name: 'Tear down Docker'
         if: always()
         run: |
