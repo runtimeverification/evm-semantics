@@ -27,7 +27,7 @@ kevm-pyk: poetry-env
 # Tests
 # -----
 
-test: test-integration test-conformance test-prove test-prove-pyk test-prove-kprove test-prove-dss test-interactive
+test: test-integration test-conformance test-prove test-interactive
 
 
 # Conformance Tests
@@ -50,10 +50,13 @@ test-rest-bchain: poetry
 
 # Proof Tests
 
-test-prove: test-prove-pyk test-prove-optimizations test-prove-dss
+test-prove: test-prove-rules test-prove-functional test-prove-optimizations test-prove-dss
 
-test-prove-pyk: poetry
-	$(MAKE) -C kevm-pyk/ test-integration PYTEST_ARGS+="-k test_pyk_prove"
+test-prove-rules: poetry
+	$(MAKE) -C kevm-pyk/ test-integration PYTEST_ARGS+="-k test_prove_rules"
+
+test-prove-functional: poetry
+	$(MAKE) -C kevm-pyk/ test-integration PYTEST_ARGS+="-k test_prove_functional"
 
 test-prove-optimizations: poetry
 	$(MAKE) -C kevm-pyk/ test-integration PYTEST_ARGS+="-k test_prove_optimizations"
