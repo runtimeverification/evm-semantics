@@ -358,6 +358,7 @@ def test_prove_functional(
         use_booster_dev,
         bug_report=bug_report,
         spec_name=spec_name,
+        workers=8,
     )
 
 
