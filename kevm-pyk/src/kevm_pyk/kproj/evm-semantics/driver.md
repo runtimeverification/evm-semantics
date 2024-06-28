@@ -280,8 +280,8 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
     rule <k> run _TESTID : { "blocks" : [ { KEY : VAL , REST1 => REST1 }, _ ] , ( REST2 => KEY : VAL , REST2 ) } ... </k>
     rule <k> run  TESTID : { "blocks" : [ { .JSONs }, _ ] , REST } => run TESTID : { REST }                      ... </k>
 
-    rule <k> check _TESTID : { "rlp_decoded" : { KEY : VAL , REST1 => REST1 }, (REST2 => KEY : VAL , REST2 ) } ... </k>
-    rule <k> check  TESTID : { "rlp_decoded" : { .JSONs } , REST } => check TESTID : { REST }                  ... </k>
+    rule <k> run _TESTID : { "rlp_decoded" : { KEY : VAL , REST1 => REST1 }, (REST2 => KEY : VAL , REST2 ) } ... </k>
+    rule <k> run  TESTID : { "rlp_decoded" : { .JSONs } , REST } => run TESTID : { REST }                  ... </k>
 ```
 
 -   `#execKeys` are all the JSON nodes which should be considered for execution (between loading and checking).
@@ -296,8 +296,6 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
 
     rule <k> run _TESTID : { "exec" : (EXEC:JSON) } => loadCallState EXEC ~> start ~> flush ... </k>
     rule <k> run _TESTID : { "lastblockhash" : (_:String) } => #startBlock ~> startTx    ... </k>
-
-    rule <k> run _TESTID : { "blocknumber" : (VAL:String), REST => REST } ... </k> <number> _ => #parseHexWord(VAL) </number>
 
     rule <k> load "exec" : J => loadCallState J ... </k>
 
@@ -328,8 +326,7 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
     rule #allPostKeys => ( #postKeys SetItem("expect") SetItem("export") SetItem("expet") )
     rule #checkKeys   => ( #allPostKeys SetItem("logs") SetItem("out") SetItem("gas")
                            SetItem("blockHeader") SetItem("transactions") SetItem("uncleHeaders")
-                           SetItem("genesisBlockHeader") SetItem("rlp_decoded") SetItem("blocknumber")
-                           SetItem("withdrawals")
+                           SetItem("genesisBlockHeader") SetItem("withdrawals") SetItem("blocknumber")
                          )
 
     rule <k> run TESTID : { KEY : (VAL:JSON) , REST } => run TESTID : { REST } ~> check TESTID : { "post" : VAL } ... </k> requires KEY in #allPostKeys
