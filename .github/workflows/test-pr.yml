@@ -113,7 +113,7 @@ jobs:
           - name: 'Rules (booster)'
             test-suite: 'test-prove-rules'
             test-args:
-            timeout: 150
+            timeout: 100
             parallel: 6
           - name: 'Rules (booster-dev)'
             test-suite: 'test-prove-rules'
