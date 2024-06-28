@@ -74,7 +74,7 @@ jobs:
           make -C kevm-pyk profile
 
   test-concrete-execution:
-    name: 'Build and Test KEVM concrete execution'
+    name: 'Conformance Tests'
     needs: kevm-pyk-code-quality-checks
     runs-on: [self-hosted, linux, normal]
     timeout-minutes: 45
@@ -103,25 +103,33 @@ jobs:
           docker stop --time=0 kevm-ci-concrete-${{ github.sha }}
 
   test-prove:
-    name: 'Build and Test KEVM proofs'
+    name: 'Proofs: ${{ matrix.name }}'
     needs: kevm-pyk-code-quality-checks
     runs-on: [self-hosted, linux, fast]
     strategy:
       fail-fast: false
       matrix:
         include:
-          - test-suite: 'test-prove-pyk'
+          - name: 'Rules (booster)'
+            test-suite: 'test-prove-pyk'
             test-args:
             timeout: 150
-          - test-suite: 'test-prove-pyk'
+            parallel: 6
+          - name: 'Rules (booster-dev)'
+            test-suite: 'test-prove-pyk'
             test-args: '--use-booster-dev'
             timeout: 45
-          - test-suite: 'test-prove-optimizations'
+            parallel: 8
+          - name: 'Optimizations'
+            test-suite: 'test-prove-optimizations'
             test-args:
             timeout: 45
-          - test-suite: 'test-prove-dss'
+            parallel: 1
+          - name: 'DSS'
+            test-suite: 'test-prove-dss'
             test-args:
             timeout: 45
+            parallel: 1
     timeout-minutes: ${{ matrix.timeout }}
     steps:
       - name: 'Check out code'
@@ -139,7 +147,7 @@ jobs:
       - name: 'Build distribution'
         run: docker exec -u github-user kevm-ci-haskell-${{ matrix.test-suite }}-${{ github.sha }} /bin/bash -c 'CXX=clang++-14 poetry -C kevm-pyk run kdist --verbose build -j`nproc` evm-semantics.plugin evm-semantics.haskell'
       - name: 'Prove Haskell'
-        run: docker exec -u github-user kevm-ci-haskell-${{ matrix.test-suite }}-${{ github.sha }} /bin/bash -c "make ${{ matrix.test-suite }} PYTEST_ARGS='-vv ${{ matrix.test-args }}' PYTEST_PARALLEL=4"
+        run: docker exec -u github-user kevm-ci-haskell-${{ matrix.test-suite }}-${{ github.sha }} /bin/bash -c "make ${{ matrix.test-suite }} PYTEST_ARGS='-vv ${{ matrix.test-args }}' PYTEST_PARALLEL=${{ matrix.parallel }}"
       - name: 'Tear down Docker'
         if: always()
         run: |
