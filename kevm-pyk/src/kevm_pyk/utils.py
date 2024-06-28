@@ -331,6 +331,7 @@ def legacy_explore(
     interim_simplification: int | None = None,
     no_post_exec_simplify: bool = False,
 ) -> Iterator[KCFGExplore]:
+    bug_report_id = None if bug_report is None else id
     if start_server:
         # Old way of handling KCFGExplore, to be removed
         with kore_server(
@@ -351,7 +352,7 @@ def legacy_explore(
             interim_simplification=interim_simplification,
             no_post_exec_simplify=no_post_exec_simplify,
         ) as server:
-            with KoreClient('localhost', server.port, bug_report=bug_report, bug_report_id=id) as client:
+            with KoreClient('localhost', server.port, bug_report=bug_report, bug_report_id=bug_report_id) as client:
                 cterm_symbolic = CTermSymbolic(client, kprint.definition, trace_rewrites=trace_rewrites)
                 yield KCFGExplore(cterm_symbolic, kcfg_semantics=kcfg_semantics, id=id)
     else:
@@ -368,6 +369,8 @@ def legacy_explore(
                     ('localhost', port, TransportType.SINGLE_SOCKET),
                 ],
             }
-        with KoreClient('localhost', port, bug_report=bug_report, bug_report_id=id, dispatch=dispatch) as client:
+        with KoreClient(
+            'localhost', port, bug_report=bug_report, bug_report_id=bug_report_id, dispatch=dispatch
+        ) as client:
             cterm_symbolic = CTermSymbolic(client, kprint.definition, trace_rewrites=trace_rewrites)
             yield KCFGExplore(cterm_symbolic, kcfg_semantics=kcfg_semantics, id=id)
