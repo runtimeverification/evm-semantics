@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import logging
 import sys
-from pathlib import Path
 from typing import TYPE_CHECKING, NamedTuple
 
 import pytest
@@ -24,6 +23,7 @@ from ..utils import REPO_ROOT
 
 if TYPE_CHECKING:
     from collections.abc import Callable
+    from pathlib import Path
     from typing import Final
 
     from pyk.utils import BugReport
@@ -52,23 +52,27 @@ def spec_files(dir_name: str, glob: str) -> tuple[Path, ...]:
 
 
 BENCHMARK_TESTS: Final = spec_files('benchmarks', '*-spec.k')
-FUNCTIONAL_TESTS: Final = spec_files('functional', '*-spec.k')
 ERC20_TESTS: Final = spec_files('erc20', '*/*-spec.k')
 EXAMPLES_TESTS: Final = spec_files('examples', '*-spec.k') + spec_files('examples', '*-spec.md')
 MCD_TESTS: Final = spec_files('mcd', '*-spec.k')
 VAT_TESTS: Final = spec_files('mcd', 'vat*-spec.k')
 NON_VAT_MCD_TESTS: Final = tuple(test for test in MCD_TESTS if test not in VAT_TESTS)
 KONTROL_TESTS: Final = spec_files('kontrol', '*-spec.k')
+FUNCTIONAL_TESTS: Final = spec_files('functional', '*-spec.k')
 
-ALL_TESTS: Final = sum(
+RULE_TESTS: Final = sum(
     [
         BENCHMARK_TESTS,
-        FUNCTIONAL_TESTS,
         ERC20_TESTS,
         EXAMPLES_TESTS,
         NON_VAT_MCD_TESTS,
         KONTROL_TESTS,
     ],
+    (),
+)
+
+ALL_TESTS: Final = sum(
+    [RULE_TESTS, FUNCTIONAL_TESTS, VAT_TESTS],
     (),
 )
 
@@ -171,6 +175,72 @@ def _target_for_spec(spec_file: Path) -> Target:
     return Target(main_file, main_module_name)
 
 
+def _test_prove(
+    spec_file: Path,
+    kompiled_target_for: Callable[[Path], Path],
+    tmp_path: Path,
+    caplog: LogCaptureFixture,
+    no_use_booster: bool,
+    use_booster_dev: bool,
+    bug_report: BugReport | None,
+    spec_name: str | None,
+    workers: int | None = None,
+    direct_subproof_rules: bool = False,
+) -> None:
+    caplog.set_level(logging.INFO)
+
+    if use_booster_dev and spec_file in FAILING_BOOSTER_DEV_TESTS:
+        pytest.skip()
+
+    if spec_name is not None and str(spec_file).find(spec_name) < 0:
+        pytest.skip()
+
+    # Given
+    log_file = tmp_path / 'log.txt'
+    use_directory = tmp_path / 'kprove'
+    use_directory.mkdir()
+
+    # When
+    try:
+        definition_dir = kompiled_target_for(spec_file)
+        name = str(spec_file.relative_to(SPEC_DIR))
+        break_on_calls = name in TEST_PARAMS and TEST_PARAMS[name].break_on_calls
+        break_on_basic_blocks = name in TEST_PARAMS and TEST_PARAMS[name].break_on_basic_blocks
+        if workers is None:
+            workers = 1 if name not in TEST_PARAMS else TEST_PARAMS[name].workers
+        options = ProveOptions(
+            {
+                'spec_file': spec_file,
+                'definition_dir': definition_dir,
+                'includes': [str(include_dir) for include_dir in config.INCLUDE_DIRS],
+                'save_directory': use_directory,
+                'md_selector': 'foo',  # TODO Ignored flag, this is to avoid KeyError
+                'use_booster': not no_use_booster,
+                'use_booster_dev': use_booster_dev,
+                'bug_report': bug_report,
+                'break_on_calls': break_on_calls,
+                'break_on_basic_blocks': break_on_basic_blocks,
+                'workers': workers,
+                'direct_subproof_rules': direct_subproof_rules,
+            }
+        )
+        exec_prove(options=options)
+        if name in TEST_PARAMS:
+            params = TEST_PARAMS[name]
+            if params.leaf_number is not None and params.main_claim_id is not None:
+                apr_proof = APRProof.read_proof_data(
+                    proof_dir=use_directory,
+                    id=params.main_claim_id,
+                )
+                expected_leaf_number = params.leaf_number
+                actual_leaf_number = leaf_number(apr_proof)
+                assert expected_leaf_number == actual_leaf_number
+    except BaseException:
+        raise
+    finally:
+        log_file.write_text(caplog.text)
+
+
 @pytest.mark.parametrize(
     'spec_file',
     ALL_TESTS,
@@ -223,10 +293,6 @@ class TParams:
 
 
 TEST_PARAMS: dict[str, TParams] = {
-    'mcd/vat-slip-pass-rough-spec.k': TParams(
-        main_claim_id='VAT-SLIP-PASS-ROUGH-SPEC.Vat.slip.pass.rough',
-        leaf_number=1,
-    ),
     'functional/lemmas-spec.k': TParams(workers=8),
     'examples/sum-to-n-foundry-spec.k': TParams(break_on_basic_blocks=True),
 }
@@ -243,10 +309,10 @@ def leaf_number(proof: APRProof) -> int:
 
 @pytest.mark.parametrize(
     'spec_file',
-    ALL_TESTS,
-    ids=[str(spec_file.relative_to(SPEC_DIR)) for spec_file in ALL_TESTS],
+    RULE_TESTS,
+    ids=[str(spec_file.relative_to(SPEC_DIR)) for spec_file in RULE_TESTS],
 )
-def test_pyk_prove(
+def test_prove_rules(
     spec_file: Path,
     kompiled_target_for: Callable[[Path], Path],
     tmp_path: Path,
@@ -256,56 +322,65 @@ def test_pyk_prove(
     bug_report: BugReport | None,
     spec_name: str | None,
 ) -> None:
-    caplog.set_level(logging.INFO)
+    _test_prove(
+        spec_file,
+        kompiled_target_for,
+        tmp_path,
+        caplog,
+        no_use_booster,
+        use_booster_dev,
+        bug_report=bug_report,
+        spec_name=spec_name,
+    )
 
-    if use_booster_dev and spec_file in FAILING_BOOSTER_DEV_TESTS:
-        pytest.skip()
 
-    if spec_name is not None and str(spec_file).find(spec_name) < 0:
-        pytest.skip()
+@pytest.mark.parametrize(
+    'spec_file',
+    FUNCTIONAL_TESTS,
+    ids=[str(spec_file.relative_to(SPEC_DIR)) for spec_file in FUNCTIONAL_TESTS],
+)
+def test_prove_functional(
+    spec_file: Path,
+    kompiled_target_for: Callable[[Path], Path],
+    tmp_path: Path,
+    caplog: LogCaptureFixture,
+    no_use_booster: bool,
+    use_booster_dev: bool,
+    bug_report: BugReport | None,
+    spec_name: str | None,
+) -> None:
+    _test_prove(
+        spec_file,
+        kompiled_target_for,
+        tmp_path,
+        caplog,
+        no_use_booster,
+        use_booster_dev,
+        bug_report=bug_report,
+        spec_name=spec_name,
+        workers=8,
+    )
 
-    # Given
-    log_file = tmp_path / 'log.txt'
-    use_directory = tmp_path / 'kprove'
-    use_directory.mkdir()
 
-    # When
-    try:
-        definition_dir = kompiled_target_for(spec_file)
-        name = str(spec_file.relative_to(SPEC_DIR))
-        break_on_calls = name in TEST_PARAMS and TEST_PARAMS[name].break_on_calls
-        break_on_basic_blocks = name in TEST_PARAMS and TEST_PARAMS[name].break_on_basic_blocks
-        workers = 1 if name not in TEST_PARAMS else TEST_PARAMS[name].workers
-        options = ProveOptions(
-            {
-                'spec_file': spec_file,
-                'definition_dir': definition_dir,
-                'includes': [str(include_dir) for include_dir in config.INCLUDE_DIRS],
-                'save_directory': use_directory,
-                'md_selector': 'foo',  # TODO Ignored flag, this is to avoid KeyError
-                'use_booster': not no_use_booster,
-                'use_booster_dev': use_booster_dev,
-                'bug_report': bug_report,
-                'break_on_calls': break_on_calls,
-                'break_on_basic_blocks': break_on_basic_blocks,
-                'workers': workers,
-            }
-        )
-        exec_prove(options=options)
-        if name in TEST_PARAMS:
-            params = TEST_PARAMS[name]
-            if params.leaf_number is not None and params.main_claim_id is not None:
-                apr_proof = APRProof.read_proof_data(
-                    proof_dir=use_directory,
-                    id=params.main_claim_id,
-                )
-                expected_leaf_number = params.leaf_number
-                actual_leaf_number = leaf_number(apr_proof)
-                assert expected_leaf_number == actual_leaf_number
-    except BaseException:
-        raise
-    finally:
-        log_file.write_text(caplog.text)
+def test_prove_dss(
+    kompiled_target_for: Callable[[Path], Path],
+    tmp_path: Path,
+    caplog: LogCaptureFixture,
+    bug_report: BugReport | None,
+) -> None:
+    spec_file = REPO_ROOT / 'tests/specs/mcd/vat-spec.k'
+    _test_prove(
+        spec_file,
+        kompiled_target_for,
+        tmp_path,
+        caplog,
+        False,
+        False,
+        bug_report=bug_report,
+        spec_name=None,
+        workers=8,
+        direct_subproof_rules=True,
+    )
 
 
 def test_prove_optimizations(
@@ -355,45 +430,3 @@ def test_prove_optimizations(
             proof_display = '\n'.join('    ' + line for line in proof_show.show(proof))
             _LOGGER.info(f'Proof {proof.id}:\n{proof_display}')
             assert proof.passed
-
-
-def test_prove_dss(
-    kompiled_target_for: Callable[[Path], Path],
-    tmp_path: Path,
-    caplog: LogCaptureFixture,
-    bug_report: BugReport | None,
-    spec_name: str | None,
-) -> None:
-    spec_file = Path('../tests/specs/mcd/vat-spec.k')
-    caplog.set_level(logging.INFO)
-
-    if spec_name is not None and str(spec_file).find(spec_name) < 0:
-        pytest.skip()
-
-    # Given
-    log_file = tmp_path / 'log.txt'
-    use_directory = tmp_path / 'kprove'
-    use_directory.mkdir()
-
-    # When
-    try:
-        definition_dir = kompiled_target_for(spec_file)
-        options = ProveOptions(
-            {
-                'spec_file': spec_file,
-                'definition_dir': definition_dir,
-                'includes': [str(include_dir) for include_dir in config.INCLUDE_DIRS],
-                'save_directory': use_directory,
-                'md_selector': 'foo',  # TODO Ignored flag, this is to avoid KeyError
-                'use_booster': True,
-                'bug_report': bug_report,
-                'break_on_calls': False,
-                'workers': 8,
-                'direct_subproof_rules': True,
-            }
-        )
-        exec_prove(options=options)
-    except BaseException:
-        raise
-    finally:
-        log_file.write_text(caplog.text)
