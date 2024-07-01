@@ -372,5 +372,17 @@ A `ScheduleConst` is a constant determined by the fee schedule.
                   orBool SCHEDFLAG ==K Ghaspushzero
                   orBool SCHEDFLAG ==K Ghaswarmcoinbase
                        )
+```
+
+### Cancun Schedule
+
+```k
+    syntax Schedule ::= "CANCUN" [symbol(CANCUN_EVM), smtlib(schedule_CANCUN)]
+ // --------------------------------------------------------------------------
+    rule SCHEDCONST < CANCUN > => SCHEDCONST < SHANGHAI >
+
+    rule SCHEDFLAG << CANCUN >> => SCHEDFLAG << SHANGHAI >>
+```
+```k
 endmodule
 ```
