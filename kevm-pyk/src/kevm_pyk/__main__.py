@@ -310,11 +310,12 @@ def exec_prove(options: ProveOptions) -> None:
 
             def create_kcfg_explore() -> KCFGExplore:
                 dispatch = None
+                bug_report_id = None if options.bug_report is None else claim.label
                 client = KoreClient(
                     'localhost',
                     kcfg_explore.cterm_symbolic._kore_client.port,
                     bug_report=options.bug_report,
-                    bug_report_id=claim.label,
+                    bug_report_id=bug_report_id,
                     dispatch=dispatch,
                 )
                 cterm_symbolic = CTermSymbolic(client, kevm.definition, trace_rewrites=options.trace_rewrites)
