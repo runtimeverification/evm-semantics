@@ -123,8 +123,8 @@ jobs:
           - name: 'Functional'
             test-suite: 'test-prove-functional'
             test-args:
-            timeout: 45
-            parallel: 3
+            timeout: 75
+            parallel: 1
           - name: 'Optimizations'
             test-suite: 'test-prove-optimizations'
             test-args:
