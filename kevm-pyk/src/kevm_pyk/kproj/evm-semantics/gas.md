@@ -106,21 +106,21 @@ module GAS-FEES
     syntax Gas ::= Cgascap        ( Schedule , Gas , Gas , Int ) [symbol(Cgascap_Gas), overload(Cgascap), function, total, smtlib(gas_Cgascap_Gas)]
     syntax Int ::= Cgascap        ( Schedule , Int , Int , Int ) [symbol(Cgascap_Int), overload(Cgascap), function, total, smtlib(gas_Cgascap_Int)]
 
-    syntax Int ::= Csstore        ( Schedule , Int , Int , Int )         [klabel(Csstore),        function, total, smtlib(gas_Csstore)       ]
-                 | Rsstore        ( Schedule , Int , Int , Int )         [klabel(Rsstore),        function, total, smtlib(gas_Rsstore)       ]
-                 | Cextra         ( Schedule , Bool , Int , Bool )       [klabel(Cextra),         function, total, smtlib(gas_Cextra)        ]
-                 | Cnew           ( Schedule , Bool , Int )              [klabel(Cnew),           function, total, smtlib(gas_Cnew)          ]
-                 | Cxfer          ( Schedule , Int )                     [klabel(Cxfer),          function, total, smtlib(gas_Cxfer)         ]
-                 | Cmem           ( Schedule , Int )                     [klabel(Cmem),           function, total, smtlib(gas_Cmem), memo    ]
-                 | Caddraccess    ( Schedule , Bool )                    [klabel(Caddraccess),    function, total, smtlib(gas_Caddraccess)   ]
-                 | Cstorageaccess ( Schedule , Bool )                    [klabel(Cstorageaccess), function, total, smtlib(gas_Cstorageaccess)]
-                 | Csload         ( Schedule , Bool )                    [klabel(Csload),         function, total, smtlib(gas_Csload)        ]
-                 | Cextcodesize   ( Schedule )                           [klabel(Cextcodesize),   function, total, smtlib(gas_Cextcodesize)  ]
-                 | Cextcodecopy   ( Schedule , Int )                     [klabel(Cextcodecopy),   function, total, smtlib(gas_Cextcodecopy)  ]
-                 | Cextcodehash   ( Schedule )                           [klabel(Cextcodehash),   function, total, smtlib(gas_Cextcodehash)  ]
-                 | Cbalance       ( Schedule )                           [klabel(Cbalance),       function, total, smtlib(gas_Cbalance)      ]
-                 | Cmodexp        ( Schedule , Bytes , Int , Int , Int ) [klabel(Cmodexp),        function, total, smtlib(gas_Cmodexp)       ]
-                 | Cinitcode      ( Schedule , Int )                     [klabel(Cinitcode),      function, total, smtlib(gas_Cinitcode)     ]
+    syntax Int ::= Csstore        ( Schedule , Int , Int , Int )         [symbol(Csstore),        function, total, smtlib(gas_Csstore)       ]
+                 | Rsstore        ( Schedule , Int , Int , Int )         [symbol(Rsstore),        function, total, smtlib(gas_Rsstore)       ]
+                 | Cextra         ( Schedule , Bool , Int , Bool )       [symbol(Cextra),         function, total, smtlib(gas_Cextra)        ]
+                 | Cnew           ( Schedule , Bool , Int )              [symbol(Cnew),           function, total, smtlib(gas_Cnew)          ]
+                 | Cxfer          ( Schedule , Int )                     [symbol(Cxfer),          function, total, smtlib(gas_Cxfer)         ]
+                 | Cmem           ( Schedule , Int )                     [symbol(Cmem),           function, total, smtlib(gas_Cmem), memo    ]
+                 | Caddraccess    ( Schedule , Bool )                    [symbol(Caddraccess),    function, total, smtlib(gas_Caddraccess)   ]
+                 | Cstorageaccess ( Schedule , Bool )                    [symbol(Cstorageaccess), function, total, smtlib(gas_Cstorageaccess)]
+                 | Csload         ( Schedule , Bool )                    [symbol(Csload),         function, total, smtlib(gas_Csload)        ]
+                 | Cextcodesize   ( Schedule )                           [symbol(Cextcodesize),   function, total, smtlib(gas_Cextcodesize)  ]
+                 | Cextcodecopy   ( Schedule , Int )                     [symbol(Cextcodecopy),   function, total, smtlib(gas_Cextcodecopy)  ]
+                 | Cextcodehash   ( Schedule )                           [symbol(Cextcodehash),   function, total, smtlib(gas_Cextcodehash)  ]
+                 | Cbalance       ( Schedule )                           [symbol(Cbalance),       function, total, smtlib(gas_Cbalance)      ]
+                 | Cmodexp        ( Schedule , Bytes , Int , Int , Int ) [symbol(Cmodexp),        function, total, smtlib(gas_Cmodexp)       ]
+                 | Cinitcode      ( Schedule , Int )                     [symbol(Cinitcode),      function, total, smtlib(gas_Cinitcode)     ]
  // ------------------------------------------------------------------------------------------------------------------------------------------
     rule [Cgascap]:
          Cgascap(SCHED, GCAP:Int, GAVAIL:Int, GEXTRA)
@@ -218,8 +218,8 @@ module GAS-FEES
     rule [allBut64th.pos]: #allBut64th(N) => N -Int (N /Int 64) requires 0 <=Int N
     rule [allBut64th.neg]: #allBut64th(N) => 0                  requires N  <Int 0
 
-    syntax Int ::= G0 ( Schedule , Bytes , Bool )           [function, klabel(G0base)]
-                 | G0 ( Schedule , Bytes , Int , Int, Int ) [function, klabel(G0data)]
+    syntax Int ::= G0 ( Schedule , Bytes , Bool )           [function, symbol(G0base)]
+                 | G0 ( Schedule , Bytes , Int , Int, Int ) [function, symbol(G0data)]
  // ----------------------------------------------------------------------------------
     rule G0(SCHED, WS, false) => G0(SCHED, WS, 0, lengthBytes(WS), 0) +Int Gtransaction < SCHED >
     rule G0(SCHED, WS, true)  => G0(SCHED, WS, 0, lengthBytes(WS), 0) +Int Gtxcreate < SCHED > +Int Cinitcode(SCHED, lengthBytes(WS))
@@ -231,8 +231,8 @@ module GAS-FEES
  // -----------------------------------------------------------------------
     rule G*(GAVAIL, GLIMIT, REFUND, SCHED) => GAVAIL +Gas minGas((GLIMIT -Gas GAVAIL) /Gas Rmaxquotient < SCHED >, REFUND)
 
-    syntax Int ::= #multComplexity(Int)    [klabel(#multComplexity),    function]
-                 | #newMultComplexity(Int) [klabel(#newMultComplexity), function]
+    syntax Int ::= #multComplexity(Int)    [symbol(#multComplexity),    function]
+                 | #newMultComplexity(Int) [symbol(#newMultComplexity), function]
  // -----------------------------------------------------------------------------
     rule #multComplexity(X) => X *Int X                                     requires X <=Int 64
     rule #multComplexity(X) => X *Int X /Int 4 +Int 96 *Int X -Int 3072     requires X >Int 64 andBool X <=Int 1024
@@ -240,8 +240,8 @@ module GAS-FEES
 
     rule #newMultComplexity(X) => (X up/Int 8) ^Int 2
 
-    syntax Int ::= #adjustedExpLength(Int, Int, Bytes) [klabel(#adjustedExpLength),    function]
-                 | #adjustedExpLength(Int)             [klabel(#adjustedExpLengthAux), function]
+    syntax Int ::= #adjustedExpLength(Int, Int, Bytes) [symbol(#adjustedExpLength),    function]
+                 | #adjustedExpLength(Int)             [symbol(#adjustedExpLengthAux), function]
  // --------------------------------------------------------------------------------------------
     rule #adjustedExpLength(BASELEN, EXPLEN, DATA) => #if EXPLEN <=Int 32 #then 0 #else 8 *Int (EXPLEN -Int 32) #fi +Int #adjustedExpLength(#asInteger(#range(DATA, 96 +Int BASELEN, minInt(EXPLEN, 32))))
 

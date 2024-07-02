@@ -13,7 +13,7 @@ As such, assembly is not considered part of the semantics of EVM, but is provide
 module EVM-ASSEMBLY
     imports EVM
 
-    syntax OpCode ::= PUSH(Int, Int) [klabel(PUSHAsm)]
+    syntax OpCode ::= PUSH(Int, Int) [symbol(PUSHAsm)]
  // --------------------------------------------------
 ```
 
@@ -26,8 +26,8 @@ Operator `#revOps` can be used to reverse a program.
     syntax OpCodes ::= ".OpCodes" | OpCode ";" OpCodes
  // --------------------------------------------------
 
-    syntax OpCodes ::= #revOps    ( OpCodes )           [klabel(#revOps), function]
-                     | #revOpsAux ( OpCodes , OpCodes ) [klabel(#revOpsAux), function]
+    syntax OpCodes ::= #revOps    ( OpCodes )           [symbol(#revOps), function]
+                     | #revOpsAux ( OpCodes , OpCodes ) [symbol(#revOpsAux), function]
  // ----------------------------------------------------------------------------------
     rule #revOps(OPS) => #revOpsAux(OPS, .OpCodes)
 
@@ -36,12 +36,12 @@ Operator `#revOps` can be used to reverse a program.
 ```
 
 ```k
-    syntax Bytes ::= #asmOpCodes ( OpCodes ) [klabel(#asmOpCodes), function]
+    syntax Bytes ::= #asmOpCodes ( OpCodes ) [symbol(#asmOpCodes), function]
  // ------------------------------------------------------------------------
 ```
 
 ```k
-    syntax Bytes ::= #asmOpCodes ( OpCodes, StringBuffer ) [function, klabel(#asmOpCodesAux)]
+    syntax Bytes ::= #asmOpCodes ( OpCodes, StringBuffer ) [function, symbol(#asmOpCodesAux)]
  // -----------------------------------------------------------------------------------------
     rule #asmOpCodes( OPS ) => #asmOpCodes(OPS, .StringBuffer)
 
@@ -51,7 +51,7 @@ Operator `#revOps` can be used to reverse a program.
 ```
 
 ```k
-    syntax Int ::= #asmOpCode ( OpCode ) [klabel(#asmOpCode), function]
+    syntax Int ::= #asmOpCode ( OpCode ) [symbol(#asmOpCode), function]
  // -------------------------------------------------------------------
     rule #asmOpCode( STOP           ) =>   0
     rule #asmOpCode( ADD            ) =>   1

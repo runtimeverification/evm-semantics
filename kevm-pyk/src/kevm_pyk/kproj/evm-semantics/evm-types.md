@@ -32,7 +32,7 @@ Primitives provide the basic conversion from K's sorts `Int` and `Bool` to EVM's
     rule bool2Word( true  ) => 1
     rule bool2Word( false ) => 0
 
-    syntax Bool ::= word2Bool ( Int ) [klabel(word2Bool), function, total]
+    syntax Bool ::= word2Bool ( Int ) [symbol(word2Bool), function, total]
  // ----------------------------------------------------------------------
     rule word2Bool( W ) => false requires W  ==Int 0
     rule word2Bool( W ) => true  requires W =/=Int 0
@@ -42,8 +42,8 @@ Primitives provide the basic conversion from K's sorts `Int` and `Bool` to EVM's
 -   `abs` gives the twos-complement interperetation of the magnitude of a word.
 
 ```k
-    syntax Int ::= sgn ( Int ) [klabel(sgn), function, total]
-                 | abs ( Int ) [klabel(abs), function, total]
+    syntax Int ::= sgn ( Int ) [symbol(sgn), function, total]
+                 | abs ( Int ) [symbol(abs), function, total]
  // ---------------------------------------------------------
     rule sgn(I) => -1 requires pow255 <=Int I andBool I <Int pow256
     rule sgn(I) =>  1 requires 0 <=Int I andBool I <Int pow255
@@ -76,7 +76,7 @@ You could alternatively calculate `I1 modInt I2`, then add one to the normal int
 -   `log256Int` returns the log base 256 (floored) of an integer.
 
 ```k
-    syntax Int ::= log256Int ( Int ) [klabel(log256Int), function]
+    syntax Int ::= log256Int ( Int ) [symbol(log256Int), function]
  // --------------------------------------------------------------
     rule log256Int(N) => log2Int(N) /Int 8
 ```
@@ -106,7 +106,7 @@ The helper `powmod` is a totalization of the operator `_^%Int__` (which comes wi
 
 ```k
     syntax Int ::= Int "^Word" Int       [function, total]
-                 | powmod(Int, Int, Int) [klabel(powmod), function, total]
+                 | powmod(Int, Int, Int) [symbol(powmod), function, total]
  // ----------------------------------------------------------------------
     rule W0 ^Word W1 => powmod(W0, W1, pow256)
 
@@ -184,8 +184,8 @@ Bitwise logical operators are lifted from the integer versions.
 -   `byte` gets byte `N` (0 being the MSB).
 
 ```k
-    syntax Int ::= bit  ( Int , Int ) [klabel(bit), function]
-                 | byte ( Int , Int ) [klabel(byte), function]
+    syntax Int ::= bit  ( Int , Int ) [symbol(bit), function]
+                 | byte ( Int , Int ) [symbol(byte), function]
  // ----------------------------------------------------------
     rule bit (N, _) => 0 requires notBool (N >=Int 0 andBool N <Int 256)
     rule byte(N, _) => 0 requires notBool (N >=Int 0 andBool N <Int  32)
@@ -198,8 +198,8 @@ Bitwise logical operators are lifted from the integer versions.
 -   `#nBytes` shifts in `N` bytes of ones from the right.
 
 ```k
-    syntax Int ::= #nBits  ( Int )  [klabel(#nBits), function]
-                 | #nBytes ( Int )  [klabel(#nBytes), function]
+    syntax Int ::= #nBits  ( Int )  [symbol(#nBits), function]
+                 | #nBytes ( Int )  [symbol(#nBytes), function]
  // -----------------------------------------------------------
     rule #nBits(N)  => (1 <<Int N) -Int 1 requires N >=Int 0
     rule #nBytes(N) => #nBits(N *Int 8)   requires N >=Int 0
@@ -208,7 +208,7 @@ Bitwise logical operators are lifted from the integer versions.
 -   `signextend(N, W)` sign-extends from byte `N` of `W` (0 being MSB).
 
 ```k
-    syntax Int ::= signextend( Int , Int ) [klabel(signextend), function, total]
+    syntax Int ::= signextend( Int , Int ) [symbol(signextend), function, total]
  // ----------------------------------------------------------------------------
     rule [signextend.invalid]:  signextend(N, W) => W requires N >=Int 32 orBool N <Int 0                                                                                                                      [concrete]
     rule [signextend.negative]: signextend(N, W) => chop( (#nBytes(31 -Int N) <<Byte (N +Int 1)) |Int W ) requires N <Int 32 andBool N >=Int 0 andBool         word2Bool(bit(256 -Int (8 *Int (N +Int 1)), W)) [concrete]
@@ -242,13 +242,13 @@ A cons-list is used for the EVM wordstack.
 -   `#drop(N , WS)` removes the first `N` elements of a `WordStack`.
 
 ```k
-    syntax WordStack ::= #take ( Int , WordStack ) [klabel(takeWordStack), function, total]
+    syntax WordStack ::= #take ( Int , WordStack ) [symbol(takeWordStack), function, total]
  // ---------------------------------------------------------------------------------------
     rule [#take.base]:      #take(N, _WS)                => .WordStack                      requires notBool N >Int 0
     rule [#take.zero-pad]:  #take(N, .WordStack)         => 0 : #take(N -Int 1, .WordStack) requires N >Int 0
     rule [#take.recursive]: #take(N, (W : WS):WordStack) => W : #take(N -Int 1, WS)         requires N >Int 0
 
-    syntax WordStack ::= #drop ( Int , WordStack ) [klabel(dropWordStack), function, total]
+    syntax WordStack ::= #drop ( Int , WordStack ) [symbol(dropWordStack), function, total]
  // ---------------------------------------------------------------------------------------
     rule #drop(N, WS:WordStack)       => WS                                  requires notBool N >Int 0
     rule #drop(N, .WordStack)         => .WordStack                          requires         N >Int 0
@@ -280,8 +280,8 @@ A cons-list is used for the EVM wordstack.
 -   `_in_` determines if a `Int` occurs in a `WordStack`.
 
 ```k
-    syntax Int ::= #sizeWordStack ( WordStack )       [klabel(#sizeWordStack), function, total, smtlib(sizeWordStack)]
-                 | #sizeWordStack ( WordStack , Int ) [klabel(sizeWordStackAux), function, total, smtlib(sizeWordStackAux)]
+    syntax Int ::= #sizeWordStack ( WordStack )       [symbol(#sizeWordStack), function, total, smtlib(sizeWordStack)]
+                 | #sizeWordStack ( WordStack , Int ) [symbol(sizeWordStackAux), function, total, smtlib(sizeWordStackAux)]
  // -----------------------------------------------------------------------------------------------------------------------
     rule #sizeWordStack ( WS ) => #sizeWordStack(WS, 0)
     rule #sizeWordStack ( .WordStack, SIZE ) => SIZE
@@ -297,8 +297,8 @@ A cons-list is used for the EVM wordstack.
 -   `#replicate` is a `WordStack` of length `N` with `A` the value of every element.
 
 ```k
-    syntax WordStack ::= #replicate    ( Int, Int )            [klabel(#replicate), function, total]
-                       | #replicateAux ( Int, Int, WordStack ) [klabel(#replicateAux), function, total]
+    syntax WordStack ::= #replicate    ( Int, Int )            [symbol(#replicate), function, total]
+                       | #replicateAux ( Int, Int, WordStack ) [symbol(#replicateAux), function, total]
  // ---------------------------------------------------------------------------------------------------
     rule #replicate   ( N,  A )     => #replicateAux(N, A, .WordStack)
     rule #replicateAux( N,  A, WS ) => #replicateAux(N -Int 1, A, A : WS) requires         N >Int 0
@@ -308,7 +308,7 @@ A cons-list is used for the EVM wordstack.
 -   `WordStack2List` converts a term of sort `WordStack` to a term of sort `List`.
 
 ```k
-    syntax List ::= WordStack2List ( WordStack ) [klabel(WordStack2List), function, total]
+    syntax List ::= WordStack2List ( WordStack ) [symbol(WordStack2List), function, total]
  // --------------------------------------------------------------------------------------
     rule WordStack2List(.WordStack) => .List
     rule WordStack2List(W : WS) => ListItem(W) WordStack2List(WS)
@@ -321,7 +321,7 @@ A cons-list is used for the EVM wordstack.
 
 ```k
     syntax Bytes ::= "#write" "(" Bytes "," Int "," Int ")" [function]
-                   | Bytes "[" Int ":=" Bytes "]" [function, total, klabel(mapWriteRange)]
+                   | Bytes "[" Int ":=" Bytes "]" [function, total, symbol(mapWriteRange)]
  // --------------------------------------------------------------------------------------
     rule #write(WM, IDX, VAL) => padRightBytes(WM, IDX +Int 1, 0) [ IDX <- VAL ] [concrete]
 
@@ -346,27 +346,27 @@ Bytes helper functions
  // ----------------------------------------------------------------------------------
     rule #asWord(WS) => chop(Bytes2Int(WS, BE, Unsigned)) [concrete]
 
-    syntax Int ::= #asInteger ( Bytes ) [klabel(#asInteger), function, total]
+    syntax Int ::= #asInteger ( Bytes ) [symbol(#asInteger), function, total]
  // -------------------------------------------------------------------------
     rule #asInteger(WS) => Bytes2Int(WS, BE, Unsigned) [concrete]
 
-    syntax Account ::= #asAccount ( Bytes ) [klabel(#asAccount), function]
+    syntax Account ::= #asAccount ( Bytes ) [symbol(#asAccount), function]
  // ----------------------------------------------------------------------
     rule #asAccount(BS) => .Account    requires lengthBytes(BS) ==Int 0
     rule #asAccount(BS) => #asWord(BS) [owise]
 
-    syntax Bytes ::= #asByteStack ( Int ) [klabel(#asByteStack), function, total]
+    syntax Bytes ::= #asByteStack ( Int ) [symbol(#asByteStack), function, total]
  // -----------------------------------------------------------------------------
     rule #asByteStack(W) => Int2Bytes(W, BE, Unsigned) [concrete]
 
-    syntax Bytes ::= #range ( Bytes , Int , Int ) [klabel(#range), function, total]
+    syntax Bytes ::= #range ( Bytes , Int , Int ) [symbol(#range), function, total]
  // -------------------------------------------------------------------------------
     rule                #range(_, START, WIDTH)  => .Bytes                                                                       requires notBool (WIDTH >=Int 0 andBool START >=Int 0) [concrete]
     rule [bytesRange] : #range(WS, START, WIDTH) => substrBytes(padRightBytes(WS, START +Int WIDTH, 0), START, START +Int WIDTH) requires WIDTH >=Int 0 andBool START >=Int 0 andBool START <Int lengthBytes(WS) [concrete]
     rule                #range(_, _, WIDTH)      => padRightBytes(.Bytes, WIDTH, 0) [owise, concrete]
 
-    syntax Bytes ::= #padToWidth      ( Int , Bytes ) [klabel(#padToWidth), function, total]
-                   | #padRightToWidth ( Int , Bytes ) [klabel(#padRightToWidth), function, total]
+    syntax Bytes ::= #padToWidth      ( Int , Bytes ) [symbol(#padToWidth), function, total]
+                   | #padRightToWidth ( Int , Bytes ) [symbol(#padRightToWidth), function, total]
  // ---------------------------------------------------------------------------------------------
     rule #padToWidth(N, BS)      =>               BS        requires notBool (0 <=Int N) [concrete]
     rule #padToWidth(N, BS)      =>  padLeftBytes(BS, N, 0) requires          0 <=Int N  [concrete]
@@ -396,7 +396,7 @@ Accounts
 -   `#addr` turns an Ethereum word into the corresponding Ethereum address (160 LSB).
 
 ```k
-    syntax Int ::= #addr ( Int ) [klabel(#addr), function, total]
+    syntax Int ::= #addr ( Int ) [symbol(#addr), function, total]
  // -------------------------------------------------------------
     rule #addr(W) => W %Word pow160
 ```
@@ -428,7 +428,7 @@ During execution of a transaction some things are recorded in the substate log (
 This is a right cons-list of `SubstateLogEntry` (which contains the account ID along with the specified portions of the `wordStack` and `localMem`).
 
 ```k
-    syntax SubstateLogEntry ::= "{" Int "|" List "|" Bytes "}" [klabel(logEntry)]
+    syntax SubstateLogEntry ::= "{" Int "|" List "|" Bytes "}" [symbol(logEntry)]
  // -----------------------------------------------------------------------------
 ```
 
@@ -444,13 +444,13 @@ Productions related to transactions
                     | "DynamicFee"
  // ------------------------------
 
-    syntax Int ::= #dasmTxPrefix ( TxType ) [klabel(#dasmTxPrefix), function]
+    syntax Int ::= #dasmTxPrefix ( TxType ) [symbol(#dasmTxPrefix), function]
  // -------------------------------------------------------------------------
     rule #dasmTxPrefix (Legacy)     => 0
     rule #dasmTxPrefix (AccessList) => 1
     rule #dasmTxPrefix (DynamicFee) => 2
 
-    syntax TxType ::= #asmTxPrefix ( Int ) [klabel(#asmTxPrefix), function]
+    syntax TxType ::= #asmTxPrefix ( Int ) [symbol(#asmTxPrefix), function]
  // -----------------------------------------------------------------------
     rule #asmTxPrefix (0) => Legacy
     rule #asmTxPrefix (1) => AccessList

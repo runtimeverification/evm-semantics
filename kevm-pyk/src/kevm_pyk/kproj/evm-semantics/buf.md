@@ -22,10 +22,10 @@ is just carried on from LHS without changes. Definition rule LHS should only use
 Claims should always use `#bufStrict` in LHS and `#buf` in RHS.
 
 ```k
-    syntax Bytes ::= #bufStrict ( Int , Int ) [klabel(#bufStrict), function]
+    syntax Bytes ::= #bufStrict ( Int , Int ) [symbol(#bufStrict), function]
     syntax Bytes ::= #buf ( Int , Int ) [symbol(buf), function, total, smtlib(buf)]
 
-    syntax Int ::= #ceil32 ( Int ) [klabel(#ceil32), macro]
+    syntax Int ::= #ceil32 ( Int ) [symbol(#ceil32), macro]
  // -------------------------------------------------------
     rule #ceil32(N) => notMaxUInt5 &Int ( N +Int maxUInt5 )
 
@@ -34,7 +34,7 @@ endmodule
 module BUF
     imports BUF-SYNTAX
 
-    syntax Int ::= #powByteLen ( Int ) [klabel(#powByteLen), function, no-evaluators]
+    syntax Int ::= #powByteLen ( Int ) [symbol(#powByteLen), function, no-evaluators]
  // ---------------------------------------------------------------------------------
  // rule #powByteLen(SIZE) => 2 ^Int (SIZE *Int 8)
     rule 2 ^Int (SIZE *Int 8) => #powByteLen(SIZE) [symbolic(SIZE), simplification]
