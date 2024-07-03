@@ -26,8 +26,8 @@ module JSON-EXT
     rule .JSONs   +JSONs JS' => JS'
     rule (J , JS) +JSONs JS' => J , (JS +JSONs JS')
 
-    syntax JSONs ::= reverseJSONs    ( JSONs         ) [klabel(reverseJSONs), function]
-                   | reverseJSONsAux ( JSONs , JSONs ) [klabel(reverseJSONsAux), function]
+    syntax JSONs ::= reverseJSONs    ( JSONs         ) [symbol(reverseJSONs), function]
+                   | reverseJSONsAux ( JSONs , JSONs ) [symbol(reverseJSONsAux), function]
  // --------------------------------------------------------------------------------------
     rule reverseJSONs(JS) => reverseJSONsAux(JS, .JSONs)
 
@@ -39,9 +39,9 @@ module JSON-EXT
 -   `sortedJSONs` is a predicate saying whether a given list of JSONs is sorted or not.
 
 ```k
-    syntax JSONs ::= qsortJSONs ( JSONs )          [klabel(qsortJSONs), function]
-                   | #entriesLT ( String , JSONs ) [klabel(#entriesLT), function]
-                   | #entriesGE ( String , JSONs ) [klabel(#entriesGE), function]
+    syntax JSONs ::= qsortJSONs ( JSONs )          [symbol(qsortJSONs), function]
+                   | #entriesLT ( String , JSONs ) [symbol(#entriesLT), function]
+                   | #entriesGE ( String , JSONs ) [symbol(#entriesGE), function]
  // -----------------------------------------------------------------------------
     rule qsortJSONs(.JSONs)            => .JSONs
     rule qsortJSONs(KEY : VALUE, REST) => qsortJSONs(#entriesLT(KEY, REST)) +JSONs (KEY : VALUE , qsortJSONs(#entriesGE(KEY, REST)))
@@ -54,7 +54,7 @@ module JSON-EXT
     rule #entriesGE( KEY, (KEY': VALUE, REST)) => KEY': VALUE , #entriesGE(KEY, REST) requires         KEY' >=String KEY
     rule #entriesGE( KEY, (KEY':     _, REST)) =>               #entriesGE(KEY, REST) requires notBool KEY' >=String KEY
 
-    syntax Bool ::= sortedJSONs ( JSONs ) [klabel(sortedJSONs), function]
+    syntax Bool ::= sortedJSONs ( JSONs ) [symbol(sortedJSONs), function]
  // ---------------------------------------------------------------------
     rule sortedJSONs( .JSONs   ) => true
     rule sortedJSONs( _KEY : _ ) => true
@@ -98,8 +98,8 @@ module JSON-RPC
     syntax JSON ::= "undef" [symbol(JSON-RPCundef)]
  // -----------------------------------------------
 
-    syntax Bool ::= isProperJson     ( JSON  ) [klabel(isProperJson), function]
-                  | isProperJsonList ( JSONs ) [klabel(isProperJsonList), function]
+    syntax Bool ::= isProperJson     ( JSON  ) [symbol(isProperJson), function]
+                  | isProperJsonList ( JSONs ) [symbol(isProperJsonList), function]
  // -------------------------------------------------------------------------------
     rule isProperJson(_) => false [owise]
 
@@ -117,7 +117,7 @@ module JSON-RPC
     rule isProperJsonList(.JSONs) => true
     rule isProperJsonList(J, JS)  => isProperJson(J) andBool isProperJsonList(JS)
 
-    syntax JSONs ::= flattenJSONs ( JSONs ) [klabel(flattenJSONs), function]
+    syntax JSONs ::= flattenJSONs ( JSONs ) [symbol(flattenJSONs), function]
  // ------------------------------------------------------------------------
     rule flattenJSONs(.JSONs      ) => .JSONs
     rule flattenJSONs([.JSONs], JL) => flattenJSONs(JL)
