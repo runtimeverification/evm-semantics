@@ -355,13 +355,13 @@ The `#next [_]` operator initiates execution by:
 -   `#stackDelta` is the delta the stack will have after the opcode executes.
 
 ```k
-    syntax Bool ::= #stackUnderflow ( WordStack , OpCode ) [klabel(#stackUnderflow), macro]
-                  | #stackOverflow  ( WordStack , OpCode ) [klabel(#stackOverflow), macro]
+    syntax Bool ::= #stackUnderflow ( WordStack , OpCode ) [symbol(#stackUnderflow), macro]
+                  | #stackOverflow  ( WordStack , OpCode ) [symbol(#stackOverflow), macro]
  // ---------------------------------------------------------------------------------------
     rule #stackUnderflow(WS, OP:OpCode) => #sizeWordStack(WS) <Int #stackNeeded(OP)
     rule #stackOverflow (WS, OP) => #sizeWordStack(WS) +Int #stackDelta(OP) >Int 1024
 
-    syntax Int ::= #stackNeeded ( OpCode ) [klabel(#stackNeeded), function]
+    syntax Int ::= #stackNeeded ( OpCode ) [symbol(#stackNeeded), function]
  // -----------------------------------------------------------------------
     rule #stackNeeded(_POP:PushOp)      => 0
     rule #stackNeeded(_IOP:InvalidOp)   => 0
@@ -376,7 +376,7 @@ The `#next [_]` operator initiates execution by:
     rule #stackNeeded(_CSOP:CallSixOp)  => 6
     rule #stackNeeded(COP:CallOp)       => 7 requires notBool isCallSixOp(COP)
 
-    syntax Int ::= #stackAdded ( OpCode ) [klabel(#stackAdded), function]
+    syntax Int ::= #stackAdded ( OpCode ) [symbol(#stackAdded), function]
  // ---------------------------------------------------------------------
     rule #stackAdded(CALLDATACOPY)   => 0
     rule #stackAdded(RETURNDATACOPY) => 0
@@ -400,7 +400,7 @@ The `#next [_]` operator initiates execution by:
     rule #stackAdded(_IOP:InvalidOp) => 0
     rule #stackAdded(_OP)            => 1 [owise]
 
-    syntax Int ::= #stackDelta ( OpCode ) [klabel(#stackDelta), function]
+    syntax Int ::= #stackDelta ( OpCode ) [symbol(#stackDelta), function]
  // ---------------------------------------------------------------------
     rule #stackDelta(OP) => #stackAdded(OP) -Int #stackNeeded(OP)
 ```
@@ -408,7 +408,7 @@ The `#next [_]` operator initiates execution by:
 -   `#changesState` is true if the given opcode will change `<network>` state given the arguments.
 
 ```k
-    syntax Bool ::= #changesState ( OpCode , WordStack ) [klabel(#changesState), function]
+    syntax Bool ::= #changesState ( OpCode , WordStack ) [symbol(#changesState), function]
  // --------------------------------------------------------------------------------------
 ```
 
@@ -490,8 +490,8 @@ We make sure the given arguments (to be interpreted as addresses) are with 160 b
     rule <k> #addr [ OP:OpCode ] => .K ... </k>
       requires notBool ( isAddr1Op(OP) orBool isAddr2Op(OP) )
 
-    syntax Bool ::= isAddr1Op ( OpCode ) [klabel(isAddr1Op), function, total]
-                  | isAddr2Op ( OpCode ) [klabel(isAddr2Op), function, total]
+    syntax Bool ::= isAddr1Op ( OpCode ) [symbol(isAddr1Op), function, total]
+                  | isAddr2Op ( OpCode ) [symbol(isAddr2Op), function, total]
  // -------------------------------------------------------------------------
     rule isAddr1Op(BALANCE)      => true
     rule isAddr1Op(SELFDESTRUCT) => true
@@ -519,7 +519,7 @@ The arguments to `PUSH` must be skipped over (as they are inline), and the opcod
          <k> #pc [ OP ] => .K ... </k>
          <pc> PCOUNT => PCOUNT +Int #widthOp(OP) </pc>
 
-    syntax Int ::= #widthOp ( OpCode ) [klabel(#widthOp), function, total]
+    syntax Int ::= #widthOp ( OpCode ) [symbol(#widthOp), function, total]
  // ----------------------------------------------------------------------
     rule #widthOp(PUSH(N)) => 1 +Int N
     rule #widthOp(_)       => 1        [owise]
@@ -532,7 +532,7 @@ After executing a transaction, it's necessary to have the effect of the substate
 -   `#deleteAccounts` deletes the accounts specified by the self destruct list.
 
 ```k
-    syntax InternalOp ::= #finalizeStorage ( List ) [klabel(#finalizeStorage)]
+    syntax InternalOp ::= #finalizeStorage ( List ) [symbol(#finalizeStorage)]
  // --------------------------------------------------------------------------
     rule <k> #finalizeStorage(ListItem(ACCT) REST => REST) ... </k>
          <account>
@@ -546,8 +546,8 @@ After executing a transaction, it's necessary to have the effect of the substate
 
     rule <k> (.K => #newAccount ACCT) ~> #finalizeStorage(ListItem(ACCT) _ACCTS) ... </k> [owise]
 
-    syntax InternalOp ::= #finalizeTx ( Bool )     [klabel(#finalizeTx)]
-                        | #deleteAccounts ( List ) [klabel(#deleteAccounts)]
+    syntax InternalOp ::= #finalizeTx ( Bool )     [symbol(#finalizeTx)]
+                        | #deleteAccounts ( List ) [symbol(#deleteAccounts)]
  // ------------------------------------------------------------------------
     rule <k> #finalizeTx(true) => #finalizeStorage(Set2List(SetItem(MINER) |Set ACCTS)) ... </k>
          <selfDestruct> .Set </selfDestruct>
@@ -661,7 +661,7 @@ After executing a transaction, it's necessary to have the effect of the substate
          <logsBloom> _ => #padToWidth(256, .Bytes) </logsBloom>
 
     syntax EthereumCommand ::= "#finalizeBlock"
-                             | #rewardOmmers ( JSONs ) [klabel(#rewardOmmers)]
+                             | #rewardOmmers ( JSONs ) [symbol(#rewardOmmers)]
  // --------------------------------------------------------------------------
     rule <k> #finalizeBlock => #rewardOmmers(OMMERS) ... </k>
          <schedule> SCHED </schedule>
@@ -694,15 +694,15 @@ After executing a transaction, it's necessary to have the effect of the substate
           ...
          </account>
 
-    syntax Bytes ::= #bloomFilter(List)      [klabel(#bloomFilter), function]
-                   | #bloomFilter(List, Int) [klabel(#bloomFilterAux), function]
+    syntax Bytes ::= #bloomFilter(List)      [symbol(#bloomFilter), function]
+                   | #bloomFilter(List, Int) [symbol(#bloomFilterAux), function]
  // ----------------------------------------------------------------------------
     rule #bloomFilter(L) => #bloomFilter(L, 0)
 
     rule #bloomFilter(.List, B) => #padToWidth(256, #asByteStack(B))
     rule #bloomFilter(ListItem({ ACCT | TOPICS | _ }) L, B) => #bloomFilter(ListItem(#padToWidth(20, #asByteStack(ACCT))) listAsBytes(TOPICS) L, B)
 
-    syntax List ::= listAsBytes(List) [klabel(listAsBytes), function]
+    syntax List ::= listAsBytes(List) [symbol(listAsBytes), function]
  // -----------------------------------------------------------------
     rule listAsBytes(.List) => .List
     rule listAsBytes(ListItem(TOPIC) L) => ListItem(#padToWidth(32, #asByteStack(TOPIC))) listAsBytes(L)
@@ -717,11 +717,11 @@ After executing a transaction, it's necessary to have the effect of the substate
  // -------------------------------------------------
     rule M3:2048(WS) => setBloomFilterBits(#parseByteStack(Keccak256(WS)))
 
-    syntax Int ::= setBloomFilterBits(Bytes) [klabel(setBloomFilterBits), function]
+    syntax Int ::= setBloomFilterBits(Bytes) [symbol(setBloomFilterBits), function]
  // -------------------------------------------------------------------------------
     rule setBloomFilterBits(HASH) => (1 <<Int getBloomFilterBit(HASH, 0)) |Int (1 <<Int getBloomFilterBit(HASH, 2)) |Int (1 <<Int getBloomFilterBit(HASH, 4))
 
-    syntax Int ::= getBloomFilterBit(Bytes, Int) [klabel(getBloomFilterBit), function]
+    syntax Int ::= getBloomFilterBit(Bytes, Int) [symbol(getBloomFilterBit), function]
  // ----------------------------------------------------------------------------------
     rule getBloomFilterBit(X, I) => #asInteger(#range(X, I, 2)) %Int 2048
 ```
@@ -862,14 +862,14 @@ Some operators don't calculate anything, they just push the stack around a bit.
  // --------------------------
     rule <k> POP _ => .K ... </k>
 
-    syntax StackOp ::= DUP  ( Int ) [klabel(DUP)]
-                     | SWAP ( Int ) [klabel(SWAP)]
+    syntax StackOp ::= DUP  ( Int ) [symbol(DUP)]
+                     | SWAP ( Int ) [symbol(SWAP)]
  // ----------------------------------------------
     rule <k> DUP(N)  WS:WordStack => #setStack ((WS [ N -Int 1 ]) : WS)                      ... </k>
     rule <k> SWAP(N) (W0 : WS)    => #setStack ((WS [ N -Int 1 ]) : (WS [ N -Int 1 := W0 ])) ... </k>
 
     syntax PushOp ::= "PUSHZERO"
-                    | PUSH ( Int ) [klabel(PUSH)]
+                    | PUSH ( Int ) [symbol(PUSH)]
  // ---------------------------------------------
     rule <k> PUSHZERO => 0 ~> #push ... </k>
 
@@ -1020,7 +1020,7 @@ The blockhash is calculated here using the "shortcut" formula used for running t
          <number>      HI     </number>
          <blockhashes> HASHES </blockhashes>
 
-    syntax Int ::= #blockhash ( List , Int , Int , Int ) [klabel(#blockhash), function]
+    syntax Int ::= #blockhash ( List , Int , Int , Int ) [symbol(#blockhash), function]
  // -----------------------------------------------------------------------------------
     rule #blockhash(_, N, HI, _) => 0 requires N >Int HI
     rule #blockhash(_, _, _, 256) => 0
@@ -1130,7 +1130,7 @@ These operators query about the current return data buffer.
 
 ```k
     syntax BinStackOp ::= LogOp
-    syntax LogOp ::= LOG ( Int ) [klabel(LOG)]
+    syntax LogOp ::= LOG ( Int ) [symbol(LOG)]
  // ------------------------------------------
     rule <k> LOG(N) MEMSTART MEMWIDTH => .K ... </k>
          <id> ACCT </id>
@@ -1412,7 +1412,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
 ```
 
 ```k
-    syntax Int ::= #widthOpCode(Int) [klabel(#widthOpCode), function]
+    syntax Int ::= #widthOpCode(Int) [symbol(#widthOpCode), function]
  // -----------------------------------------------------------------
     rule #widthOpCode(W) => W -Int 94 requires W >=Int 96 andBool W <=Int 127
     rule #widthOpCode(_) => 1 [owise]
@@ -1569,11 +1569,11 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
            ...
          </account>
 
-    syntax Bool ::= #hasValidInitCode ( Int , Schedule ) [klabel(#hasValidInitCode), function]
+    syntax Bool ::= #hasValidInitCode ( Int , Schedule ) [symbol(#hasValidInitCode), function]
  // ------------------------------------------------------------------------------------------
     rule #hasValidInitCode(INITCODELEN, SCHED) => notBool Ghasmaxinitcodesize << SCHED >> orBool INITCODELEN <=Int maxInitCodeSize < SCHED >
 
-    syntax Bool ::= #isValidCode ( Bytes , Schedule ) [klabel(#isValidCode), function]
+    syntax Bool ::= #isValidCode ( Bytes , Schedule ) [symbol(#isValidCode), function]
  // ----------------------------------------------------------------------------------
     rule #isValidCode( OUT ,  SCHED) => Ghasrejectedfirstbyte << SCHED >> impliesBool OUT[0] =/=Int 239 requires lengthBytes(OUT) >Int 0
     rule #isValidCode(_OUT , _SCHED) => true                                                            [owise]
@@ -1722,7 +1722,7 @@ Precompiled Contracts
 
 ```k
     syntax NullStackOp   ::= PrecompiledOp
-    syntax PrecompiledOp ::= #precompiled ( Int ) [klabel(#precompiled), function]
+    syntax PrecompiledOp ::= #precompiled ( Int ) [symbol(#precompiled), function]
  // ------------------------------------------------------------------------------
     rule #precompiled(1) => ECREC
     rule #precompiled(2) => SHA256
@@ -1734,7 +1734,7 @@ Precompiled Contracts
     rule #precompiled(8) => ECPAIRING
     rule #precompiled(9) => BLAKE2F
 
-    syntax Int ::= #precompiledAccountsUB ( Schedule ) [klabel(#precompiledAccountsUB), function, total]
+    syntax Int ::= #precompiledAccountsUB ( Schedule ) [symbol(#precompiledAccountsUB), function, total]
  // ----------------------------------------------------------------------------------------------------
     rule #precompiledAccountsUB(DEFAULT)           => 4
     rule #precompiledAccountsUB(FRONTIER)          => #precompiledAccountsUB(DEFAULT)
@@ -1752,8 +1752,8 @@ Precompiled Contracts
     rule #precompiledAccountsUB(CANCUN)            => #precompiledAccountsUB(SHANGHAI)
 
 
-    syntax Set ::= #precompiledAccountsSet    ( Schedule ) [klabel(#precompiledAccountsSet),    function, total]
-    syntax Set ::= #precompiledAccountsSetAux ( Int      ) [klabel(#precompiledAccountsSetAux), function, total]
+    syntax Set ::= #precompiledAccountsSet    ( Schedule ) [symbol(#precompiledAccountsSet),    function, total]
+    syntax Set ::= #precompiledAccountsSetAux ( Int      ) [symbol(#precompiledAccountsSetAux), function, total]
  // ------------------------------------------------------------------------------------------------------------
     rule #precompiledAccountsSet(SCHED) => #precompiledAccountsSetAux(#precompiledAccountsUB(SCHED))
 
@@ -1773,8 +1773,8 @@ Precompiled Contracts
          <callData> DATA </callData>
          <output> _ => #ecrec(#range(DATA, 0, 32), #range(DATA, 32, 32), #range(DATA, 64, 32), #range(DATA, 96, 32)) </output>
 
-    syntax Bytes ::= #ecrec ( Bytes , Bytes , Bytes , Bytes ) [klabel(#ecrec),    function, total, smtlib(ecrec)]
-                   | #ecrec ( Account )                       [klabel(#ecrecAux), function, total               ]
+    syntax Bytes ::= #ecrec ( Bytes , Bytes , Bytes , Bytes ) [symbol(#ecrec),    function, total, smtlib(ecrec)]
+                   | #ecrec ( Account )                       [symbol(#ecrecAux), function, total               ]
  // -------------------------------------------------------------------------------------------------------------
     rule [ecrec]: #ecrec(HASH, SIGV, SIGR, SIGS) => #ecrec(#sender(HASH, #asWord(SIGV), SIGR, SIGS)) [concrete]
 
@@ -1805,10 +1805,10 @@ Precompiled Contracts
          <callData> DATA </callData>
          <output> _ => #modexp1(#asWord(#range(DATA, 0, 32)), #asWord(#range(DATA, 32, 32)), #asWord(#range(DATA, 64, 32)), #range(DATA, 96, maxInt(0, lengthBytes(DATA) -Int 96))) </output>
 
-    syntax Bytes ::= #modexp1 ( Int , Int , Int , Bytes ) [klabel(#modexp1), function]
-                   | #modexp2 ( Int , Int , Int , Bytes ) [klabel(#modexp2), function]
-                   | #modexp3 ( Int , Int , Int , Bytes ) [klabel(#modexp3), function]
-                   | #modexp4 ( Int , Int , Int )         [klabel(#modexp4), function]
+    syntax Bytes ::= #modexp1 ( Int , Int , Int , Bytes ) [symbol(#modexp1), function]
+                   | #modexp2 ( Int , Int , Int , Bytes ) [symbol(#modexp2), function]
+                   | #modexp3 ( Int , Int , Int , Bytes ) [symbol(#modexp3), function]
+                   | #modexp4 ( Int , Int , Int )         [symbol(#modexp4), function]
  // ----------------------------------------------------------------------------------
     rule #modexp1(BASELEN, EXPLEN,   MODLEN, DATA) => #modexp2(#asInteger(#range(DATA, 0, BASELEN)), EXPLEN, MODLEN, #range(DATA, BASELEN, maxInt(0, lengthBytes(DATA) -Int BASELEN))) requires MODLEN =/=Int 0
     rule #modexp1(_,       _,        0,      _)    => .Bytes
@@ -1821,7 +1821,7 @@ Precompiled Contracts
     rule <k> ECADD => #ecadd((#asWord(#range(DATA, 0, 32)), #asWord(#range(DATA, 32, 32))), (#asWord(#range(DATA, 64, 32)), #asWord(#range(DATA, 96, 32)))) ... </k>
          <callData> DATA </callData>
 
-    syntax InternalOp ::= #ecadd(G1Point, G1Point) [klabel(#ecadd)]
+    syntax InternalOp ::= #ecadd(G1Point, G1Point) [symbol(#ecadd)]
  // ---------------------------------------------------------------
     rule <k> #ecadd(P1, P2) => #end EVMC_PRECOMPILE_FAILURE ... </k>
       requires notBool isValidPoint(P1) orBool notBool isValidPoint(P2)
@@ -1833,14 +1833,14 @@ Precompiled Contracts
     rule <k> ECMUL => #ecmul((#asWord(#range(DATA, 0, 32)), #asWord(#range(DATA, 32, 32))), #asWord(#range(DATA, 64, 32))) ... </k>
          <callData> DATA </callData>
 
-    syntax InternalOp ::= #ecmul(G1Point, Int) [klabel(#ecmul)]
+    syntax InternalOp ::= #ecmul(G1Point, Int) [symbol(#ecmul)]
  // -----------------------------------------------------------
     rule <k> #ecmul(P, _S) => #end EVMC_PRECOMPILE_FAILURE ... </k>
       requires notBool isValidPoint(P)
     rule <k> #ecmul(P,  S) => #end EVMC_SUCCESS ... </k> <output> _ => #point(BN128Mul(P, S)) </output>
       requires isValidPoint(P)
 
-    syntax Bytes ::= #point ( G1Point ) [klabel(#point), function]
+    syntax Bytes ::= #point ( G1Point ) [symbol(#point), function]
  // --------------------------------------------------------------
     rule #point((X, Y)) => #padToWidth(32, #asByteStack(X)) +Bytes #padToWidth(32, #asByteStack(Y))
 
@@ -1853,7 +1853,7 @@ Precompiled Contracts
          <callData> DATA </callData>
       requires lengthBytes(DATA) modInt 192 =/=Int 0
 
-    syntax InternalOp ::= #ecpairing(List, List, Int, Bytes, Int) [klabel(#ecpairing)]
+    syntax InternalOp ::= #ecpairing(List, List, Int, Bytes, Int) [symbol(#ecpairing)]
  // ----------------------------------------------------------------------------------
     rule <k> (.K => #checkPoint) ~> #ecpairing((.List => ListItem((#asWord(#range(DATA, I, 32)), #asWord(#range(DATA, I +Int 32, 32))))) _, (.List => ListItem((#asWord(#range(DATA, I +Int 96, 32)) x #asWord(#range(DATA, I +Int 64, 32)) , #asWord(#range(DATA, I +Int 160, 32)) x #asWord(#range(DATA, I +Int 128, 32))))) _, I => I +Int 192, DATA, LEN) ... </k>
       requires I =/=Int LEN
@@ -1929,9 +1929,9 @@ Overall Gas
     rule <k>  G:Gas ~> #deductGas => .K                    ... </k> <gas> GAVAIL:Gas => GAVAIL -Gas G </gas> <useGas> true </useGas> requires G <=Gas GAVAIL
     rule <k>  _:Gas ~> #deductGas => .K                    ... </k> <useGas> false </useGas>
 
-    syntax Bool ::= #inStorage     ( Map   , Account , Int ) [klabel(#inStorage), function, total]
-                  | #inStorageAux1 ( KItem ,           Int ) [klabel(#inStorageAux1), function, total]
-                  | #inStorageAux2 ( Set   ,           Int ) [klabel(#inStorageAux2), function, total]
+    syntax Bool ::= #inStorage     ( Map   , Account , Int ) [symbol(#inStorage), function, total]
+                  | #inStorageAux1 ( KItem ,           Int ) [symbol(#inStorageAux1), function, total]
+                  | #inStorageAux2 ( Set   ,           Int ) [symbol(#inStorageAux2), function, total]
  // --------------------------------------------------------------------------------------------------
     rule #inStorage(TS, ACCT, KEY) => #inStorageAux1(TS[ACCT], KEY) requires ACCT in_keys(TS)
     rule #inStorage(_, _, _)       => false                         [owise]
@@ -1953,7 +1953,7 @@ In the YellowPaper, each opcode is defined to consume zero gas unless specified 
 -   `#memoryUsageUpdate` is the function `M` in appendix H of the YellowPaper which helps track the memory used.
 
 ```k
-    syntax Int ::= #memory ( OpCode , Int ) [klabel(#memory), function, total]
+    syntax Int ::= #memory ( OpCode , Int ) [symbol(#memory), function, total]
  // --------------------------------------------------------------------------
     rule #memory ( MLOAD INDEX     , MU ) => #memoryUsageUpdate(MU, INDEX, 32)
     rule #memory ( MSTORE INDEX _  , MU ) => #memoryUsageUpdate(MU, INDEX, 32)
@@ -1977,7 +1977,7 @@ In the YellowPaper, each opcode is defined to consume zero gas unless specified 
 
     rule #memory ( _ , MU ) => MU [owise]
 
-    syntax Bool ::= #usesMemory ( OpCode ) [klabel(#usesMemory), function, total]
+    syntax Bool ::= #usesMemory ( OpCode ) [symbol(#usesMemory), function, total]
  // -----------------------------------------------------------------------------
     rule #usesMemory(_:LogOp)        => true
     rule #usesMemory(_:CallOp)       => true
@@ -1996,7 +1996,7 @@ In the YellowPaper, each opcode is defined to consume zero gas unless specified 
     rule #usesMemory(REVERT)         => true
     rule #usesMemory(_)              => false [owise]
 
-    syntax Int ::= #memoryUsageUpdate ( Int , Int , Int ) [klabel(#memoryUsageUpdate), function, total]
+    syntax Int ::= #memoryUsageUpdate ( Int , Int , Int ) [symbol(#memoryUsageUpdate), function, total]
  // ---------------------------------------------------------------------------------------------------
     rule #memoryUsageUpdate(MU,     _, WIDTH) => MU                                       requires notBool 0 <Int WIDTH [concrete]
     rule #memoryUsageUpdate(MU, START, WIDTH) => maxInt(MU, (START +Int WIDTH) up/Int 32) requires         0 <Int WIDTH [concrete]
@@ -2006,7 +2006,7 @@ Access List Gas
 ---------------
 
 ```k
-    syntax Bool ::= #usesAccessList ( OpCode ) [klabel(#usesAccessList), function, total]
+    syntax Bool ::= #usesAccessList ( OpCode ) [symbol(#usesAccessList), function, total]
  // -------------------------------------------------------------------------------------
     rule #usesAccessList(OP)     => true  requires isAddr1Op(OP)
     rule #usesAccessList(OP)     => true  requires isAddr2Op(OP)
@@ -2022,7 +2022,7 @@ Access List Gas
 
     rule <k> #access [ _ , _ ] => .K ... </k> <schedule> _ </schedule> [owise]
 
-    syntax InternalOp ::= #gasAccess ( Schedule, OpCode ) [klabel(#gasAccess)]
+    syntax InternalOp ::= #gasAccess ( Schedule, OpCode ) [symbol(#gasAccess)]
  // --------------------------------------------------------------------------
     rule <k> #gasAccess(SCHED, EXTCODESIZE ACCT)       => Caddraccess(SCHED, ACCT in ACCTS)                                                                   ... </k> <accessedAccounts> ACCTS </accessedAccounts>
     rule <k> #gasAccess(SCHED, EXTCODECOPY ACCT _ _ _) => Caddraccess(SCHED, ACCT in ACCTS)                                                                   ... </k> <accessedAccounts> ACCTS </accessedAccounts>
@@ -2043,7 +2043,7 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
 -   `#gasExec` loads all the relevant surrounding state and uses that to compute the intrinsic execution gas of each opcode.
 
 ```k
-    syntax InternalOp ::= #gasExec ( Schedule , OpCode ) [klabel(#gasExec)]
+    syntax InternalOp ::= #gasExec ( Schedule , OpCode ) [symbol(#gasExec)]
  // -----------------------------------------------------------------------
     rule <k> #gasExec(SCHED, SSTORE INDEX NEW) => Csstore(SCHED, NEW, #lookup(STORAGE, INDEX), #lookup(ORIGSTORAGE, INDEX)) ... </k>
          <id> ACCT </id>
@@ -2244,9 +2244,9 @@ There are several helpers for calculating gas (most of them also specified in th
 ```k
     syntax Exp     ::= Int | Gas
     syntax KResult ::= Int
-    syntax Exp ::= Ccall         ( Schedule , BExp , Gas , Gas , Int , Bool ) [klabel(Ccall), strict(2)]
-                 | Ccallgas      ( Schedule , BExp , Gas , Gas , Int , Bool ) [klabel(Ccallgas), strict(2)]
-                 | Cselfdestruct ( Schedule , BExp , Int )                    [klabel(Cselfdestruct), strict(2)]
+    syntax Exp ::= Ccall         ( Schedule , BExp , Gas , Gas , Int , Bool ) [symbol(Ccall), strict(2)]
+                 | Ccallgas      ( Schedule , BExp , Gas , Gas , Int , Bool ) [symbol(Ccallgas), strict(2)]
+                 | Cselfdestruct ( Schedule , BExp , Int )                    [symbol(Cselfdestruct), strict(2)]
  // ------------------------------------------------------------------------------------------------------------
     rule <k> Ccall(SCHED, ISEMPTY:Bool, GCAP, GAVAIL, VALUE, ISWARM)
           => Cextra(SCHED, ISEMPTY, VALUE, ISWARM) +Gas Cgascap(SCHED, GCAP, GAVAIL, Cextra(SCHED, ISEMPTY, VALUE, ISWARM)) ... </k>
@@ -2259,7 +2259,7 @@ There are several helpers for calculating gas (most of them also specified in th
 
     syntax BExp    ::= Bool
     syntax KResult ::= Bool
-    syntax BExp ::= #accountNonexistent ( Int ) [klabel(#accountNonexistent)]
+    syntax BExp ::= #accountNonexistent ( Int ) [symbol(#accountNonexistent)]
  // -------------------------------------------------------------------------
     rule <k> #accountNonexistent(ACCT) => #accountEmpty(CODE, NONCE, BAL) andBool Gemptyisnonexistent << SCHED >> ... </k>
          <schedule> SCHED </schedule>
@@ -2296,7 +2296,7 @@ After interpreting the strings representing programs as a `WordStack`, it should
 -   `#dasmOpCode` interperets a `Int` as an `OpCode`.
 
 ```k
-    syntax OpCode ::= #dasmOpCode ( Int , Schedule ) [klabel(#dasmOpCode), function, memo, total]
+    syntax OpCode ::= #dasmOpCode ( Int , Schedule ) [symbol(#dasmOpCode), function, memo, total]
  // ---------------------------------------------------------------------------------------------
     rule #dasmOpCode(   0,     _ ) => STOP
     rule #dasmOpCode(   1,     _ ) => ADD
