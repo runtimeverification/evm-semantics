@@ -179,7 +179,9 @@ The `"network"` key allows setting the fee schedule inside the test.
     rule #asScheduleString("Berlin")            => BERLIN
     rule #asScheduleString("London")            => LONDON
     rule #asScheduleString("Merge")             => MERGE
+    rule #asScheduleString("Paris")             => MERGE
     rule #asScheduleString("Shanghai")          => SHANGHAI
+    rule #asScheduleString("Cancun")            => CANCUN
 ```
 
 The `"rlp"` key loads the block information.
@@ -187,8 +189,8 @@ The `"rlp"` key loads the block information.
 ```k
     rule <k> load "rlp"        : (VAL:String => #rlpDecode(#parseByteStack(VAL))) ... </k>
     rule <k> load "genesisRLP" : (VAL:String => #rlpDecode(#parseByteStack(VAL))) ... </k>
- // ---------------------------------------------------------------------------------------------------------
-    rule <k> load "rlp" : [ [ HP , HO , HC , HR , HT , HE , HB , HD , HI , HL , HG , HS , HX , HM , HN , .JSONs ] , BT , BU , .JSONs ]
+ // --------------------------------------------------------------------------------------
+    rule <k> load "rlp" : [ [ HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, .JSONs ], BT, BU, .JSONs ]
           => load "transaction" : BT
          ...
          </k>
@@ -209,18 +211,29 @@ The `"rlp"` key loads the block information.
          <blockNonce>        _ => #asWord(HN) </blockNonce>
          <ommerBlockHeaders> _ => BU          </ommerBlockHeaders>
 
-    rule <k> load "rlp" : [ [ HP , HO , HC , HR , HT , HE , HB , HD , HI , HL , HG , HS , HX , HM , HN , HF , .JSONs ] , BT , BU , .JSONs ]
-          => load "rlp" : [ [ HP , HO , HC , HR , HT , HE , HB , HD , HI , HL , HG , HS , HX , HM , HN , .JSONs ] , BT , BU , .JSONs ]
+    rule <k> load "rlp" : [ [ HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, .JSONs ], BT, BU, .JSONs ]
+          => load "rlp" : [ [ HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, .JSONs ], BT, BU, .JSONs ]
          ...
          </k>
          <baseFee> _ => #asWord(HF) </baseFee>
 
-    rule <k> load "rlp" : [ [ HP , HO , HC , HR , HT , HE , HB , HD , HI , HL , HG , HS , HX , HM , HN , HF , WR , .JSONs ] , BT , BU , BW , .JSONs ]
-          => load "rlp" : [ [ HP , HO , HC , HR , HT , HE , HB , HD , HI , HL , HG , HS , HX , HM , HN , HF , .JSONs ] , BT , BU , .JSONs ]
+    rule <k> load "rlp" : [ [ HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR, .JSONs ], BT, BU, BW, .JSONs ]
+          => load "rlp" : [ [ HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, .JSONs ], BT, BU, .JSONs ]
           ~> load "withdraw" : BW
          ...
          </k>
          <withdrawalsRoot> _ => #asWord(WR) </withdrawalsRoot>
+
+    rule <k> load "rlp" : [ [ HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR, UB, EB, BR, .JSONs ], BT, BU, BW, .JSONs ]
+          => load "rlp" : [ [ HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR, .JSONs ], BT, BU, BW, .JSONs ]
+         ...
+         </k>
+         <blobGasUsed>   _ => #asWord(UB)      </blobGasUsed>
+         <excessBlobGas> _ => #asWord(EB)      </excessBlobGas>
+         <beaconRoot>    _ => #asWord(BR)      </beaconRoot>
+
+    rule <k> load "genesisRLP": [ [ HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR, UB, EB, BR, .JSONs ], _, _, _, .JSONs ] => .K ... </k>
+         <blockhashes> .List => ListItem(#blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR, UB, EB, BR)) ListItem(#asWord(HP)) </blockhashes>
 
     rule <k> load "genesisRLP": [ [ HP, HO, HC, HR, HT, HE:Bytes, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR, .JSONs ], _, _, _, .JSONs ] => .K ... </k>
          <blockhashes> .List => ListItem(#blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR)) ListItem(#asWord(HP)) ... </blockhashes>
