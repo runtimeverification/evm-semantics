@@ -187,7 +187,7 @@ def print_failure_info(proof: Proof, kcfg_explore: KCFGExplore, counterexample_i
 
         res_lines.append('')
         res_lines.append(
-            'Join the Runtime Verification Discord server for support: https://discord.com/invite/CurfmXNtbN'
+            'Join the Runtime Verification Discord server (https://discord.com/invite/CurfmXNtbN) or Telegram group (https://t.me/rv_kontrol) for support.'
         )
 
         return res_lines
