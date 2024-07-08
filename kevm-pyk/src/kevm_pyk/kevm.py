@@ -60,7 +60,7 @@ class KEVMSemantics(KCFGSemantics):
 
     @staticmethod
     def is_functional(term: KInner) -> bool:
-        return type(term) == KApply and term.label.name == 'runLemma'
+        return type(term) == KApply and term.label.name.startswith('runLemma')
 
     def is_terminal(self, cterm: CTerm) -> bool:
         k_cell = cterm.cell('K_CELL')
