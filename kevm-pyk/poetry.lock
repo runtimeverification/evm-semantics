@@ -390,13 +390,13 @@ pyreadline3 = {version = "*", markers = "sys_platform == \"win32\" and python_ve
 
 [[package]]
 name = "hypothesis"
-version = "6.105.0"
+version = "6.105.1"
 description = "A library for property-based testing"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "hypothesis-6.105.0-py3-none-any.whl", hash = "sha256:383bb2d8b37d8090e82847d7cb1130b9ef04bf8c71addd099f7ee1f7139f00d8"},
-    {file = "hypothesis-6.105.0.tar.gz", hash = "sha256:45078be3168c06a0426afca6f139829b28dfea9d2ea79fa1bd498b9783b11c16"},
+    {file = "hypothesis-6.105.1-py3-none-any.whl", hash = "sha256:d8993472a7bccfc20172e02ba8636bb0067add92d1fa05e95a40bab02c1e8305"},
+    {file = "hypothesis-6.105.1.tar.gz", hash = "sha256:d4eedb42193da9507623f4fe27fd38f715ec19ad30ad7c30e3b25594c0b491dc"},
 ]
 
 [package.dependencies]
@@ -405,10 +405,10 @@ exceptiongroup = {version = ">=1.0.0", markers = "python_version < \"3.11\""}
 sortedcontainers = ">=2.1.0,<3.0.0"
 
 [package.extras]
-all = ["backports.zoneinfo (>=0.2.1)", "black (>=19.10b0)", "click (>=7.0)", "crosshair-tool (>=0.0.58)", "django (>=3.2)", "dpcontracts (>=0.4)", "hypothesis-crosshair (>=0.0.6)", "lark (>=0.10.1)", "libcst (>=0.3.16)", "numpy (>=1.17.3)", "pandas (>=1.1)", "pytest (>=4.6)", "python-dateutil (>=1.4)", "pytz (>=2014.1)", "redis (>=3.0.0)", "rich (>=9.0.0)", "tzdata (>=2024.1)"]
+all = ["backports.zoneinfo (>=0.2.1)", "black (>=19.10b0)", "click (>=7.0)", "crosshair-tool (>=0.0.59)", "django (>=3.2)", "dpcontracts (>=0.4)", "hypothesis-crosshair (>=0.0.7)", "lark (>=0.10.1)", "libcst (>=0.3.16)", "numpy (>=1.17.3)", "pandas (>=1.1)", "pytest (>=4.6)", "python-dateutil (>=1.4)", "pytz (>=2014.1)", "redis (>=3.0.0)", "rich (>=9.0.0)", "tzdata (>=2024.1)"]
 cli = ["black (>=19.10b0)", "click (>=7.0)", "rich (>=9.0.0)"]
 codemods = ["libcst (>=0.3.16)"]
-crosshair = ["crosshair-tool (>=0.0.58)", "hypothesis-crosshair (>=0.0.6)"]
+crosshair = ["crosshair-tool (>=0.0.59)", "hypothesis-crosshair (>=0.0.7)"]
 dateutil = ["python-dateutil (>=1.4)"]
 django = ["django (>=3.2)"]
 dpcontracts = ["dpcontracts (>=0.4)"]
@@ -481,13 +481,13 @@ colors = ["colorama (>=0.4.6)"]
 
 [[package]]
 name = "kframework"
-version = "7.1.44"
+version = "7.1.45"
 description = ""
 optional = false
 python-versions = "<4.0,>=3.10"
 files = [
-    {file = "kframework-7.1.44-py3-none-any.whl", hash = "sha256:4ded11b61e1b79c23bd75d8e2a2895a49c5a0188692b11a394f1975ce0ee7d06"},
-    {file = "kframework-7.1.44.tar.gz", hash = "sha256:5f932b796a8b8421744b42968daddf4fd815e2b278a9873717377202536094ac"},
+    {file = "kframework-7.1.45-py3-none-any.whl", hash = "sha256:a8dff4bda25a1510b9673d2b1be5bd70bb359b556c1384d8261ad2d8cfdbeff9"},
+    {file = "kframework-7.1.45.tar.gz", hash = "sha256:350b4f7ec2bb67d75eba02e5499e7bd290c58ce4c03852aaa4077dd9be0e1761"},
 ]
 
 [package.dependencies]
@@ -1157,4 +1157,4 @@ test = ["big-O", "importlib-resources", "jaraco.functools", "jaraco.itertools", 
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "e6d6d178d1666ab572602fc577235e7fe922ca40355465f91db063428b9ca0c7"
+content-hash = "69bb8cc346beecd57643d3a3b205b0a7e5287d408c924087936a250d225f3de2"
