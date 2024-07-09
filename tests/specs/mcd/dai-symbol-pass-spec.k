@@ -76,6 +76,7 @@ module DAI-SYMBOL-PASS-SPEC
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE  </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
               <nonce> _Nonce_Dai => ?_ </nonce>
+              <transientStorage> _ </transientStorage>
             </account>
            ...
           </accounts>

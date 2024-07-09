@@ -91,6 +91,7 @@ _:Map </storage>
             <origStorage> #hashedLocation("Solidity", 2, CALLER_ID SPENDER) |-> INIT_VALUE
 _:Map </origStorage>
             <nonce> _ </nonce>
+            <transientStorage> _ </transientStorage>
           </account>
        // ... // TODO: fix
         </accounts>

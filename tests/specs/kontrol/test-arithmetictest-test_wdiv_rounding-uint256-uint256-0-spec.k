@@ -113,6 +113,9 @@ module TEST-ARITHMETICTEST-TEST_WDIV_ROUNDING-UINT256-UINT256-0-SPEC
                    <nonce>
                      0
                    </nonce>
+                   <transientStorage>
+                     .Map
+                   </transientStorage>
                  </account>
                  <account>
                    <acctID>
@@ -133,6 +136,9 @@ module TEST-ARITHMETICTEST-TEST_WDIV_ROUNDING-UINT256-UINT256-0-SPEC
                    <nonce>
                      1
                    </nonce>
+                   <transientStorage>
+                     .Map
+                   </transientStorage>
                  </account> )
                </accounts>
                ...
