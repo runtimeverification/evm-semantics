@@ -354,6 +354,7 @@ def exec_prove(options: ProveOptions) -> None:
                 fast_check_subsumption=options.fast_check_subsumption,
                 direct_subproof_rules=options.direct_subproof_rules,
                 max_frontier_parallel=options.max_frontier_parallel,
+                force_sequential=options.force_sequential,
             )
             end_time = time.time()
             _LOGGER.info(f'Proof timing {proof_problem.id}: {end_time - start_time}s')

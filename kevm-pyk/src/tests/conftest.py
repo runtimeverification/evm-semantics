@@ -39,6 +39,12 @@ def pytest_addoption(parser: Parser) -> None:
         type=Path,
         help='Use pre-kompiled definitions for proof tests',
     )
+    parser.addoption(
+        '--force-sequential',
+        default=False,
+        action='store_true',
+        help='Use sequential, single-threaded proof loop.',
+    )
 
 
 @pytest.fixture
@@ -54,6 +60,11 @@ def no_use_booster(request: FixtureRequest) -> bool:
 @pytest.fixture(scope='session')
 def use_booster_dev(request: FixtureRequest) -> bool:
     return request.config.getoption('--use-booster-dev')
+
+
+@pytest.fixture(scope='session')
+def force_sequential(request: FixtureRequest) -> bool:
+    return request.config.getoption('--force-sequential')
 
 
 @pytest.fixture(scope='session')

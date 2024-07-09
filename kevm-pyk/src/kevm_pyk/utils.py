@@ -108,6 +108,7 @@ def run_prover(
     fast_check_subsumption: bool = False,
     direct_subproof_rules: bool = False,
     max_frontier_parallel: int = 1,
+    force_sequential: bool = False,
 ) -> bool:
     prover: APRProver | ImpliesProver
     try:
@@ -125,13 +126,17 @@ def run_prover(
                     direct_subproof_rules=direct_subproof_rules,
                 )
 
-            parallel_advance_proof(
-                proof=proof,
-                create_prover=create_prover,
-                max_iterations=max_iterations,
-                fail_fast=fail_fast,
-                max_workers=max_frontier_parallel,
-            )
+            if force_sequential:
+                prover = create_prover()
+                prover.advance_proof(proof=proof, max_iterations=max_iterations, fail_fast=fail_fast)
+            else:
+                parallel_advance_proof(
+                    proof=proof,
+                    create_prover=create_prover,
+                    max_iterations=max_iterations,
+                    fail_fast=fail_fast,
+                    max_workers=max_frontier_parallel,
+                )
 
         elif type(proof) is EqualityProof:
             prover = ImpliesProver(proof, kcfg_explore=create_kcfg_explore())

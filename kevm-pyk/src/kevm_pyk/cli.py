@@ -337,6 +337,7 @@ class ExploreOptions(Options):
     auto_abstract_gas: bool
     counterexample_info: bool
     fail_fast: bool
+    force_sequential: bool
 
     @staticmethod
     def default() -> dict[str, Any]:
@@ -353,6 +354,7 @@ class ExploreOptions(Options):
             'auto_abstract_gas': False,
             'counterexample_info': True,
             'fail_fast': True,
+            'force_sequential': False,
         }
 
     @staticmethod
@@ -1112,6 +1114,13 @@ class KEVMCLIArgs(KCLIArgs):
             default=None,
             action='store_true',
             help='Stop execution on other branches if a failing node is detected (default).',
+        )
+        args.add_argument(
+            '--force-sequential',
+            dest='force_sequential',
+            default=None,
+            action='store_true',
+            help='Use sequential, single-threaded proof loop.',
         )
         args.add_argument(
             '--no-fail-fast',
