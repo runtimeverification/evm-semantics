@@ -81,8 +81,10 @@ _
 _
             </origStorage>
             <nonce> CONTRACT_NONCE </nonce>
+            <transientStorage>
+                _
+            </transientStorage>
           </account>
-
           <account>
             <acctID> CALLEE_ID </acctID>
             <balance> CALLEE_BAL </balance>
@@ -94,6 +96,9 @@ _
                 _
             </origStorage>
             <nonce> CALLEE_NONCE </nonce>
+            <transientStorage>
+                _
+            </transientStorage>
           </account>
 
           <account>
@@ -104,6 +109,7 @@ _
             <storage> .Map </storage>
             <origStorage> .Map </origStorage>
             <nonce> 0 </nonce>
+            <transientStorage> .Map </transientStorage>
           </account>
 
 

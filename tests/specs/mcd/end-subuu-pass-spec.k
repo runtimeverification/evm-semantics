@@ -76,6 +76,7 @@ module END-SUBUU-PASS-SPEC
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE  </storage>
               <origStorage> _ACCT_ID_ORIG_STORAGE </origStorage>
               <nonce> _Nonce_End => ?_ </nonce>
+              <transientStorage> _ </transientStorage>
             </account>
            ...
           </accounts>

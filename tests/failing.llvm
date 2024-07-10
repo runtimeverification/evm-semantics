@@ -1,14 +1,6 @@
 BlockchainTests/GeneralStateTests/VMTests/vmTests/suicide.json,suicide_d0g0v0_Cancun
 BlockchainTests/GeneralStateTests/VMTests/vmTests/suicide.json,suicide_d1g0v0_Cancun
 BlockchainTests/GeneralStateTests/VMTests/vmTests/suicide.json,suicide_d2g0v0_Cancun
-BlockchainTests/GeneralStateTests/Pyspecs/cancun/eip1153_tstore/contract_creation.json,*
-BlockchainTests/GeneralStateTests/Pyspecs/cancun/eip1153_tstore/gas_usage.json,*
-BlockchainTests/GeneralStateTests/Pyspecs/cancun/eip1153_tstore/tload_after_tstore_is_zero.json,*
-BlockchainTests/GeneralStateTests/Pyspecs/cancun/eip1153_tstore/tload_after_sstore.json,*
-BlockchainTests/GeneralStateTests/Pyspecs/cancun/eip1153_tstore/subcall.json,*
-BlockchainTests/GeneralStateTests/Pyspecs/cancun/eip1153_tstore/transient_storage_unset_values.json,*
-BlockchainTests/GeneralStateTests/Pyspecs/cancun/eip1153_tstore/reentrant_call.json,*
-BlockchainTests/GeneralStateTests/Pyspecs/cancun/eip1153_tstore/tload_after_tstore.json,*
 BlockchainTests/GeneralStateTests/Pyspecs/cancun/eip1153_tstore/reentrant_selfdestructing_call.json,*
 BlockchainTests/GeneralStateTests/Pyspecs/cancun/eip4788_beacon_root/multi_block_beacon_root_timestamp_calls.json,*
 BlockchainTests/GeneralStateTests/Pyspecs/cancun/eip4788_beacon_root/beacon_root_contract_timestamps.json,*

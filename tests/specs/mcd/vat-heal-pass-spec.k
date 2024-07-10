@@ -75,6 +75,7 @@ module VAT-HEAL-PASS-SPEC
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE [ #Vat.sin[CALLER_ID] <- Sin -Int ABI_rad ] [ #Vat.dai[CALLER_ID] <- Dai -Int ABI_rad ] [ #Vat.vice <- Vice  -Int ABI_rad ] [ #Vat.debt <- Debt  -Int ABI_rad ] </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
               <nonce> Nonce_Vat </nonce>
+              <transientStorage> _ </transientStorage>
             </account>
            ...
           </accounts>

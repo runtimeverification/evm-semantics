@@ -118,7 +118,7 @@ SKIPPED_BCHAIN_TESTS: Final = tuple(test_file for test_file in BCHAIN_TESTS if t
     ids=[str(test_file.relative_to(ALL_TEST_DIR)) for test_file in BCHAIN_TESTS],
 )
 def test_bchain(test_file: Path) -> None:
-    _test(test_file, 'SHANGHAI', 'NORMAL', 1, True)
+    _test(test_file, 'CANCUN', 'NORMAL', 1, True)
 
 
 @pytest.mark.skip(reason='failing / slow blockchain tests')
@@ -128,4 +128,4 @@ def test_bchain(test_file: Path) -> None:
     ids=[str(test_file.relative_to(ALL_TEST_DIR)) for test_file in SKIPPED_BCHAIN_TESTS],
 )
 def test_rest_bchain(test_file: Path) -> None:
-    _test(test_file, 'SHANGHAI', 'NORMAL', 1, True)
+    _test(test_file, 'CANCUN', 'NORMAL', 1, True)

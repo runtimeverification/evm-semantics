@@ -77,6 +77,9 @@ module STORAGEVAR00-SPEC
             <storage>     S </storage>
             <origStorage> S </origStorage>
             <nonce> CONTRACT_NONCE </nonce>
+            <transientStorage>
+                _
+            </transientStorage>
           </account>
 
           <account>
@@ -86,6 +89,9 @@ module STORAGEVAR00-SPEC
             <storage> _S </storage>
             <origStorage> _OS </origStorage>
             <nonce> CALLEE_NONCE </nonce>
+            <transientStorage>
+                _
+            </transientStorage>
           </account>
 
           <account>
@@ -96,6 +102,7 @@ module STORAGEVAR00-SPEC
             <storage> .Map </storage>
             <origStorage> .Map </origStorage>
             <nonce> 0 </nonce>
+            <transientStorage> .Map </transientStorage>
           </account>
 
 

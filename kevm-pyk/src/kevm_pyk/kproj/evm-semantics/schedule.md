@@ -28,8 +28,8 @@ module SCHEDULE
                           | "Ghasdirtysstore"         | "Ghascreate2"      | "Ghasextcodehash"     | "Ghasselfbalance"
                           | "Ghassstorestipend"       | "Ghaschainid"      | "Ghasaccesslist"      | "Ghasbasefee"
                           | "Ghasrejectedfirstbyte"   | "Ghasprevrandao"   | "Ghasmaxinitcodesize" | "Ghaspushzero"
-                          | "Ghaswarmcoinbase"
- // ------------------------------------------
+                          | "Ghaswarmcoinbase"        | "Ghastransient"
+ // -------------------------------------------------------------------
 ```
 
 ### Schedule Constants
@@ -47,8 +47,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
                            | "Gtransaction"  | "Glog"          | "Glogdata"      | "Glogtopic"         | "Gsha3"              | "Gsha3word"        | "Gcopy"
                            | "Gblockhash"    | "Gquadcoeff"    | "maxCodeSize"   | "Rb"                | "Gquaddivisor"       | "Gecadd"           | "Gecmul"
                            | "Gecpairconst"  | "Gecpaircoeff"  | "Gfround"       | "Gcoldsload"        | "Gcoldaccountaccess" | "Gwarmstorageread" | "Gaccesslistaddress"
-                           | "Gaccessliststoragekey"           | "Rmaxquotient"  | "Ginitcodewordcost" | "maxInitCodeSize"
- // ----------------------------------------------------------------------------------------------------------------------
+                           | "Gaccessliststoragekey"           | "Rmaxquotient"  | "Ginitcodewordcost" | "maxInitCodeSize"    | "Gwarmstoragedirtystore"
+ // ----------------------------------------------------------------------------------------------------------------------------------------------------
 ```
 
 ### Default Schedule
@@ -112,9 +112,10 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule maxCodeSize < DEFAULT > => 2 ^Int 32 -Int 1
     rule Rb          < DEFAULT > => 5 *Int (10 ^Int 18)
 
-    rule Gcoldsload         < DEFAULT > => 0
-    rule Gcoldaccountaccess < DEFAULT > => 0
-    rule Gwarmstorageread   < DEFAULT > => 0
+    rule Gcoldsload             < DEFAULT > => 0
+    rule Gcoldaccountaccess     < DEFAULT > => 0
+    rule Gwarmstorageread       < DEFAULT > => 0
+    rule Gwarmstoragedirtystore < DEFAULT > => 0
 
     rule Gaccessliststoragekey < DEFAULT > => 0
     rule Gaccesslistaddress    < DEFAULT > => 0
@@ -145,6 +146,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghasmaxinitcodesize     << DEFAULT >> => false
     rule Ghaspushzero            << DEFAULT >> => false
     rule Ghaswarmcoinbase        << DEFAULT >> => false
+    rule Ghastransient           << DEFAULT >> => false
 ```
 
 ### Frontier Schedule
@@ -379,9 +381,13 @@ A `ScheduleConst` is a constant determined by the fee schedule.
 ```k
     syntax Schedule ::= "CANCUN" [symbol(CANCUN_EVM), smtlib(schedule_CANCUN)]
  // --------------------------------------------------------------------------
-    rule SCHEDCONST < CANCUN > => SCHEDCONST < SHANGHAI >
+    rule Gwarmstoragedirtystore < CANCUN > => Gwarmstorageread < CANCUN >
+    rule SCHEDCONST             < CANCUN > => SCHEDCONST < SHANGHAI >
+      requires notBool (SCHEDCONST ==K Gwarmstoragedirtystore)
 
-    rule SCHEDFLAG << CANCUN >> => SCHEDFLAG << SHANGHAI >>
+    rule Ghastransient << CANCUN >> => true
+    rule SCHEDFLAG     << CANCUN >> => SCHEDFLAG << SHANGHAI >>
+      requires notBool (SCHEDFLAG ==K Ghastransient)
 ```
 ```k
 endmodule

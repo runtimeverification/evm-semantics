@@ -76,6 +76,7 @@ module POT-JOIN-PASS-ROUGH-SPEC
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE [ #Pot.pie[CALLER_ID] <- Pie_u +Int ABI_wad ] [ #Pot.Pie <- Pie_tot +Int ABI_wad ] </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
               <nonce> Nonce_Pot </nonce>
+              <transientStorage> _ </transientStorage>
             </account>
             <account>
               <acctID> Vat </acctID>
@@ -84,6 +85,7 @@ module POT-JOIN-PASS-ROUGH-SPEC
               <storage> Vat_STORAGE => Vat_STORAGE [ #Vat.dai[CALLER_ID] <- Dai_u -Int Chi *Int ABI_wad ] [ #Vat.dai[ACCT_ID] <- Dai_p +Int Chi *Int ABI_wad ] </storage>
               <origStorage> Vat_ORIG_STORAGE </origStorage>
               <nonce> Nonce_Vat </nonce>
+              <transientStorage> _ </transientStorage>
             </account>
            ...
           </accounts>
@@ -241,6 +243,7 @@ module POT-JOIN-PASS-ROUGH-SPEC
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE  </storage>
               <origStorage> _ACCT_ID_ORIG_STORAGE </origStorage>
               <nonce> Nonce_Pot </nonce>
+              <transientStorage> _ </transientStorage>
             </account>
            ...
           </accounts>
@@ -347,6 +350,7 @@ module POT-JOIN-PASS-ROUGH-SPEC
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE  </storage>
               <origStorage> _ACCT_ID_ORIG_STORAGE </origStorage>
               <nonce> Nonce_Pot </nonce>
+              <transientStorage> _ </transientStorage>
             </account>
            ...
           </accounts>
@@ -450,6 +454,7 @@ module POT-JOIN-PASS-ROUGH-SPEC
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE [ #Vat.dai[ABI_src] <- Dai_src -Int ABI_rad ] [ #Vat.dai[ABI_dst] <- Dai_dst +Int ABI_rad ] </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
               <nonce> Nonce_Vat </nonce>
+              <transientStorage> _ </transientStorage>
             </account>
            ...
           </accounts>

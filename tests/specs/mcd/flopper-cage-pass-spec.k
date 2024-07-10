@@ -75,6 +75,7 @@ module FLOPPER-CAGE-PASS-SPEC
               <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE [ #Flopper.live <- 0 ] [ #Flopper.vow <- CALLER_ID ] </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
               <nonce> _Nonce_Flopper => ?_ </nonce>
+              <transientStorage> _ </transientStorage>
             </account>
            ...
           </accounts>

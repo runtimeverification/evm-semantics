@@ -92,6 +92,7 @@ _:Map </storage>
             <origStorage> _
 _:Map </origStorage>
             <nonce> _ </nonce>
+            <transientStorage> _ </transientStorage>
           </account>
        // ... // TODO: fix
         </accounts>
