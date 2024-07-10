@@ -81,8 +81,10 @@ module STRUCTARG01-SPEC
                 _
             </origStorage>
             <nonce> CONTRACT_NONCE </nonce>
+            <transientStorage>
+                _
+            </transientStorage>
           </account>
-
           <account>
             <acctID> CALLEE_ID </acctID>
             <balance> CALLEE_BAL </balance>
@@ -94,6 +96,9 @@ module STRUCTARG01-SPEC
                 _
             </origStorage>
             <nonce> CALLEE_NONCE </nonce>
+            <transientStorage>
+                _
+            </transientStorage>
           </account>
           ...
         </accounts>

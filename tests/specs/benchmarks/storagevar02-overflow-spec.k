@@ -77,6 +77,9 @@ module STORAGEVAR02-OVERFLOW-SPEC
             <storage> S => S [ #hashedLocation("Solidity", 0, .IntList) <- 0 ] </storage>
             <origStorage> _OS => ?_OS </origStorage>
             <nonce> CONTRACT_NONCE </nonce>
+            <transientStorage>
+                _
+            </transientStorage>
           </account>
 
           <account>
@@ -90,6 +93,9 @@ module STORAGEVAR02-OVERFLOW-SPEC
                 _
             </origStorage>
             <nonce> CALLEE_NONCE </nonce>
+            <transientStorage>
+                _
+            </transientStorage>
           </account>
 
           <account>
@@ -100,6 +106,7 @@ module STORAGEVAR02-OVERFLOW-SPEC
             <storage> .Map </storage>
             <origStorage> .Map </origStorage>
             <nonce> 0 </nonce>
+            <transientStorage> .Map </transientStorage>
           </account>
 
 

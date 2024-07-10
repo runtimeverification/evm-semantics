@@ -192,6 +192,9 @@
           <origStorage>
             .Map
           </origStorage>
+          <transientStorage>
+            .Map
+          </transientStorage>
           <nonce>
             0
           </nonce>
@@ -211,6 +214,9 @@
           <origStorage>
             .Map
           </origStorage>
+          <transientStorage>
+            .Map
+          </transientStorage>
           <nonce>
             0
           </nonce>
@@ -230,6 +236,9 @@
           <origStorage>
             .Map
           </origStorage>
+          <transientStorage>
+            .Map
+          </transientStorage>
           <nonce>
             1
           </nonce>
@@ -249,6 +258,9 @@
           <origStorage>
             .Map
           </origStorage>
+          <transientStorage>
+            .Map
+          </transientStorage>
           <nonce>
             0
           </nonce>

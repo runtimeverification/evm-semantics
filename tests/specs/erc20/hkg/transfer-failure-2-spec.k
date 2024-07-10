@@ -90,6 +90,7 @@ module TRANSFER-FAILURE-2-SPEC
 _:Map </storage>
             <origStorage> _ </origStorage>
             <nonce> _ </nonce>
+            <transientStorage> _ </transientStorage>
           </account>
        // ... // TODO: fix
         </accounts>

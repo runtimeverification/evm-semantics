@@ -77,6 +77,9 @@ module REQUIRES01-A0LE0-SPEC
             <storage> _S </storage>
             <origStorage> _OS </origStorage>
             <nonce> CONTRACT_NONCE </nonce>
+            <transientStorage>
+                _
+            </transientStorage>
           </account>
 
           <account>
@@ -90,6 +93,9 @@ module REQUIRES01-A0LE0-SPEC
                 _
             </origStorage>
             <nonce> CALLEE_NONCE </nonce>
+            <transientStorage>
+                _
+            </transientStorage>
           </account>
 
           <account>
@@ -100,6 +106,7 @@ module REQUIRES01-A0LE0-SPEC
             <storage> .Map </storage>
             <origStorage> .Map </origStorage>
             <nonce> 0 </nonce>
+            <transientStorage> .Map </transientStorage>
           </account>
 
 

@@ -94,6 +94,9 @@ module TEST-ALLOWCHANGESTEST-TESTALLOW-0-SPEC
                      <nonce>
                        0
                      </nonce>
+                   <transientStorage>
+                     .Map
+                   </transientStorage>
                    </account>
                    <account>
                      <acctID>
@@ -114,6 +117,9 @@ module TEST-ALLOWCHANGESTEST-TESTALLOW-0-SPEC
                      <nonce>
                        2
                      </nonce>
+                   <transientStorage>
+                     .Map
+                   </transientStorage>
                    </account> )
                  </accounts> | <substate>
                    <selfDestruct>
@@ -231,6 +237,9 @@ module TEST-ALLOWCHANGESTEST-TESTALLOW-0-SPEC
                    <nonce>
                      ( 0 => 1 )
                    </nonce>
+                   <transientStorage>
+                     .Map
+                   </transientStorage>
                  </account>
                  ( <account>
                    <acctID>
@@ -251,6 +260,9 @@ module TEST-ALLOWCHANGESTEST-TESTALLOW-0-SPEC
                    <nonce>
                      1
                    </nonce>
+                   <transientStorage>
+                     .Map
+                   </transientStorage>
                  </account> => ( <account>
                    <acctID>
                      645326474426547203313410069153905908525362434349
@@ -270,6 +282,9 @@ module TEST-ALLOWCHANGESTEST-TESTALLOW-0-SPEC
                    <nonce>
                      0
                    </nonce>
+                   <transientStorage>
+                     .Map
+                   </transientStorage>
                  </account>
                  <account>
                    <acctID>
@@ -290,6 +305,9 @@ module TEST-ALLOWCHANGESTEST-TESTALLOW-0-SPEC
                    <nonce>
                      2
                    </nonce>
+                   <transientStorage>
+                     .Map
+                   </transientStorage>
                  </account> ) ) )
                </accounts>
                ...
