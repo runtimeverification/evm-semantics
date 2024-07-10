@@ -312,7 +312,7 @@ class KEVM(KProve, KRun):
     def add_invariant(cterm: CTerm) -> CTerm:
         def _add_account_invariant(account: KApply) -> list[KApply]:
             _account_constraints = []
-            acct_id, balance, nonce = account.args[0], account.args[1], account.args[5]
+            acct_id, balance, nonce = account.args[0], account.args[1], account.args[6]
 
             if type(acct_id) is KApply and type(acct_id.args[0]) is KVariable:
                 _account_constraints.append(mlEqualsTrue(KEVM.range_address(acct_id.args[0])))
