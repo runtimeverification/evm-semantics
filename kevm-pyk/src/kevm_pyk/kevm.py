@@ -540,7 +540,13 @@ class KEVM(KProve, KRun):
 
     @staticmethod
     def account_cell(
-        id: KInner, balance: KInner, code: KInner, storage: KInner, orig_storage: KInner, transient_storage: KInner, nonce: KInner,
+        id: KInner,
+        balance: KInner,
+        code: KInner,
+        storage: KInner,
+        orig_storage: KInner,
+        transient_storage: KInner,
+        nonce: KInner,
     ) -> KApply:
         return KApply(
             '<account>',
