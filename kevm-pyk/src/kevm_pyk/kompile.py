@@ -129,17 +129,38 @@ def run_kompile(
     kernel = sys.platform
     haskell_binary = kernel != 'darwin'
 
-    try:
-        match target:
-            case KompileTarget.LLVM:
-                kompile = LLVMKompile(
-                    base_args=base_args,
-                    ccopts=ccopts,
-                    opt_level=optimization,
-                    llvm_kompile_type=llvm_kompile_type,
-                    enable_llvm_debug=enable_llvm_debug,
+    match target:
+        case KompileTarget.LLVM:
+            kompile = LLVMKompile(
+                base_args=base_args,
+                ccopts=ccopts,
+                opt_level=optimization,
+                llvm_kompile_type=llvm_kompile_type,
+                enable_llvm_debug=enable_llvm_debug,
+            )
+            return kompile(
+                output_dir=output_dir,
+                debug=debug,
+                verbose=verbose,
+                type_inference_mode=type_inference_mode,
+                ignore_warnings=ignore_warnings,
+            )
+
+        case KompileTarget.MAUDE:
+            kompile_maude = MaudeKompile(
+                base_args=base_args,
+            )
+            kompile_haskell = HaskellKompile(base_args=base_args)
+
+            maude_dir = output_dir / 'kompiled-maude'
+
+            def _kompile_maude() -> None:
+                kompile_maude(
+                    output_dir=maude_dir, debug=debug, verbose=verbose, type_inference_mode=type_inference_mode
                 )
-                return kompile(
+
+            def _kompile_haskell() -> None:
+                kompile_haskell(
                     output_dir=output_dir,
                     debug=debug,
                     verbose=verbose,
@@ -147,89 +168,60 @@ def run_kompile(
                     ignore_warnings=ignore_warnings,
                 )
 
-            case KompileTarget.MAUDE:
-                kompile_maude = MaudeKompile(
-                    base_args=base_args,
+            with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+                futures = [
+                    executor.submit(_kompile_maude),
+                    executor.submit(_kompile_haskell),
+                ]
+                [future.result() for future in futures]
+
+            return output_dir
+
+        case KompileTarget.HASKELL:
+            base_args_llvm = KompileArgs(
+                main_file=main_file,
+                main_module=main_module,
+                syntax_module=syntax_module,
+                include_dirs=include_dirs,
+                md_selector=KompileTarget.LLVM.md_selector,
+                hook_namespaces=HOOK_NAMESPACES,
+                emit_json=emit_json,
+                read_only=read_only,
+            )
+            kompile_llvm = LLVMKompile(
+                base_args=base_args_llvm, ccopts=ccopts, opt_level=optimization, llvm_kompile_type=LLVMKompileType.C
+            )
+            kompile_haskell = HaskellKompile(base_args=base_args, haskell_binary=haskell_binary)
+
+            def _kompile_llvm() -> None:
+                kompile_llvm(
+                    output_dir=output_dir / 'llvm-library',
+                    debug=debug,
+                    verbose=verbose,
+                    type_inference_mode=type_inference_mode,
+                    ignore_warnings=ignore_warnings,
                 )
-                kompile_haskell = HaskellKompile(base_args=base_args)
 
-                maude_dir = output_dir / 'kompiled-maude'
-
-                def _kompile_maude() -> None:
-                    kompile_maude(
-                        output_dir=maude_dir, debug=debug, verbose=verbose, type_inference_mode=type_inference_mode
-                    )
-
-                def _kompile_haskell() -> None:
-                    kompile_haskell(
-                        output_dir=output_dir,
-                        debug=debug,
-                        verbose=verbose,
-                        type_inference_mode=type_inference_mode,
-                        ignore_warnings=ignore_warnings,
-                    )
-
-                with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
-                    futures = [
-                        executor.submit(_kompile_maude),
-                        executor.submit(_kompile_haskell),
-                    ]
-                    [future.result() for future in futures]
-
-                return output_dir
-
-            case KompileTarget.HASKELL:
-                base_args_llvm = KompileArgs(
-                    main_file=main_file,
-                    main_module=main_module,
-                    syntax_module=syntax_module,
-                    include_dirs=include_dirs,
-                    md_selector=KompileTarget.LLVM.md_selector,
-                    hook_namespaces=HOOK_NAMESPACES,
-                    emit_json=emit_json,
-                    read_only=read_only,
+            def _kompile_haskell() -> None:
+                kompile_haskell(
+                    output_dir=output_dir,
+                    debug=debug,
+                    verbose=verbose,
+                    type_inference_mode=type_inference_mode,
+                    ignore_warnings=ignore_warnings,
                 )
-                kompile_llvm = LLVMKompile(
-                    base_args=base_args_llvm, ccopts=ccopts, opt_level=optimization, llvm_kompile_type=LLVMKompileType.C
-                )
-                kompile_haskell = HaskellKompile(base_args=base_args, haskell_binary=haskell_binary)
 
-                def _kompile_llvm() -> None:
-                    kompile_llvm(
-                        output_dir=output_dir / 'llvm-library',
-                        debug=debug,
-                        verbose=verbose,
-                        type_inference_mode=type_inference_mode,
-                        ignore_warnings=ignore_warnings,
-                    )
+            with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+                futures = [
+                    executor.submit(_kompile_llvm),
+                    executor.submit(_kompile_haskell),
+                ]
+                [future.result() for future in futures]
 
-                def _kompile_haskell() -> None:
-                    kompile_haskell(
-                        output_dir=output_dir,
-                        debug=debug,
-                        verbose=verbose,
-                        type_inference_mode=type_inference_mode,
-                        ignore_warnings=ignore_warnings,
-                    )
+            return output_dir
 
-                with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
-                    futures = [
-                        executor.submit(_kompile_llvm),
-                        executor.submit(_kompile_haskell),
-                    ]
-                    [future.result() for future in futures]
-
-                return output_dir
-
-            case _:
-                raise ValueError(f'Unsupported target: {target.value}')
-
-    except RuntimeError as err:
-        sys.stderr.write(f'\nkompile stdout:\n{err.args[1]}\n')
-        sys.stderr.write(f'\nkompile stderr:\n{err.args[2]}\n')
-        sys.stderr.write(f'\nkompile returncode:\n{err.args[3]}\n')
-        sys.stderr.flush()
-        raise
+        case _:
+            raise ValueError(f'Unsupported target: {target.value}')
 
 
 def lib_ccopts(plugin_dir: Path, debug_build: bool = False) -> list[str]:
