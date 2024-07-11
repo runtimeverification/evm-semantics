@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING
 from pyk.kdist import kdist
 from pyk.ktool import TypeInferenceMode
 from pyk.ktool.kompile import HaskellKompile, KompileArgs, LLVMKompile, LLVMKompileType, MaudeKompile
-from pyk.utils import run_process
+from pyk.utils import run_process_2
 
 from . import config
 
@@ -259,13 +259,13 @@ def lib_ccopts(plugin_dir: Path, debug_build: bool = False) -> list[str]:
 
     if kernel == 'darwin':
         if not config.NIX_LIBS:
-            brew_root = run_process(('brew', '--prefix'), pipe_stderr=True, logger=_LOGGER).stdout.strip()
+            brew_root = run_process_2(('brew', '--prefix'), logger=_LOGGER).stdout.strip()
             ccopts += [
                 f'-I{brew_root}/include',
                 f'-L{brew_root}/lib',
             ]
 
-            openssl_root = run_process(('brew', '--prefix', 'openssl'), pipe_stderr=True, logger=_LOGGER).stdout.strip()
+            openssl_root = run_process_2(('brew', '--prefix', 'openssl'), logger=_LOGGER).stdout.strip()
             ccopts += [
                 f'-I{openssl_root}/include',
                 f'-L{openssl_root}/lib',
