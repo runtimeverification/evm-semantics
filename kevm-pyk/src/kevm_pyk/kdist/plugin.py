@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 from pyk.kbuild.utils import k_version, sync_files
 from pyk.kdist.api import Target
 from pyk.kllvm.compiler import compile_kllvm, compile_runtime
-from pyk.utils import run_process
+from pyk.utils import run_process_2
 
 from .. import config
 from ..kompile import KompileTarget, kevm_kompile, lib_ccopts
@@ -63,10 +63,7 @@ class PluginTarget(Target):
         )
 
         copy_tree(str(config.PLUGIN_DIR), '.')
-        run_process(
-            ['make', 'libcryptopp', 'libff', 'blake2', '-j8'],
-            pipe_stdout=not verbose,
-        )
+        run_process_2(['make', 'libcryptopp', 'libff', 'blake2', '-j8'])
 
         copy_tree('./build/libcryptopp', str(output_dir / 'libcryptopp'))
         copy_tree('./build/libff', str(output_dir / 'libff'))
