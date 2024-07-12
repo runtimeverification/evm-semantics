@@ -45,6 +45,13 @@ def pytest_addoption(parser: Parser) -> None:
         action='store_true',
         help='Use sequential, single-threaded proof loop.',
     )
+    parser.addoption(
+        '--kore-rpc-command',
+        dest='kore_rpc_command',
+        type=str,
+        default=None,
+        help='Custom command to start RPC server.',
+    )
 
 
 @pytest.fixture
@@ -60,6 +67,11 @@ def no_use_booster(request: FixtureRequest) -> bool:
 @pytest.fixture(scope='session')
 def use_booster_dev(request: FixtureRequest) -> bool:
     return request.config.getoption('--use-booster-dev')
+
+
+@pytest.fixture(scope='session')
+def kore_rpc_command(request: FixtureRequest) -> str | None:
+    return request.config.getoption('--kore-rpc-command')
 
 
 @pytest.fixture(scope='session')

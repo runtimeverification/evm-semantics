@@ -183,6 +183,7 @@ def _test_prove(
     no_use_booster: bool,
     force_sequential: bool,
     use_booster_dev: bool,
+    kore_rpc_command: str | None,
     bug_report: BugReport | None,
     spec_name: str | None,
     workers: int | None = None,
@@ -224,6 +225,7 @@ def _test_prove(
                 'break_on_basic_blocks': break_on_basic_blocks,
                 'workers': workers,
                 'direct_subproof_rules': direct_subproof_rules,
+                'kore_rpc_command': kore_rpc_command,
             }
         )
         exec_prove(options=options)
@@ -322,6 +324,7 @@ def test_prove_rules(
     no_use_booster: bool,
     force_sequential: bool,
     use_booster_dev: bool,
+    kore_rpc_command: str,
     bug_report: BugReport | None,
     spec_name: str | None,
 ) -> None:
@@ -335,6 +338,7 @@ def test_prove_rules(
         use_booster_dev,
         bug_report=bug_report,
         spec_name=spec_name,
+        kore_rpc_command=kore_rpc_command,
     )
 
 
