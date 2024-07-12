@@ -226,6 +226,7 @@ def _test_prove(
                 'workers': workers,
                 'direct_subproof_rules': direct_subproof_rules,
                 'kore_rpc_command': kore_rpc_command,
+                'trace_rewrites': False,
             }
         )
         exec_prove(options=options)
