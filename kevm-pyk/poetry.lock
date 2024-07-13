@@ -239,13 +239,13 @@ profile = ["gprof2dot (>=2022.7.29)"]
 
 [[package]]
 name = "exceptiongroup"
-version = "1.2.1"
+version = "1.2.2"
 description = "Backport of PEP 654 (exception groups)"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "exceptiongroup-1.2.1-py3-none-any.whl", hash = "sha256:5258b9ed329c5bbdd31a309f53cbfb0b155341807f6ff7606a1e801a891b29ad"},
-    {file = "exceptiongroup-1.2.1.tar.gz", hash = "sha256:a4785e48b045528f5bfe627b6ad554ff32def154f42372786903b7abcfe1aa16"},
+    {file = "exceptiongroup-1.2.2-py3-none-any.whl", hash = "sha256:3111b9d131c238bec2f8f516e123e14ba243563fb135d3fe885990585aa7795b"},
+    {file = "exceptiongroup-1.2.2.tar.gz", hash = "sha256:47c2edf7c6738fafb49fd34290706d1a1a2f4d1c6df275526b62cbb4aa5393cc"},
 ]
 
 [package.extras]
@@ -390,13 +390,13 @@ pyreadline3 = {version = "*", markers = "sys_platform == \"win32\" and python_ve
 
 [[package]]
 name = "hypothesis"
-version = "6.106.1"
+version = "6.108.0"
 description = "A library for property-based testing"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "hypothesis-6.106.1-py3-none-any.whl", hash = "sha256:964f631c28e7af6d15284d3d8bf375ef33f07d3bf2785943f037b1397f0e211e"},
-    {file = "hypothesis-6.106.1.tar.gz", hash = "sha256:bac609694f6ca4d57b4bd66f06310ec6b98e95a01986940aba720e8fd3e836b1"},
+    {file = "hypothesis-6.108.0-py3-none-any.whl", hash = "sha256:1546e08abcfdda4ecd86a77df87c8a694936830236c393e4ad4c31f0bcf8ee3c"},
+    {file = "hypothesis-6.108.0.tar.gz", hash = "sha256:24183b2a4d05c15834f5a80fe51cf933cdc812c4f7dc036209c9902b81d4e8e5"},
 ]
 
 [package.dependencies]
@@ -481,13 +481,13 @@ colors = ["colorama (>=0.4.6)"]
 
 [[package]]
 name = "kframework"
-version = "7.1.57"
+version = "7.1.58"
 description = ""
 optional = false
 python-versions = "<4.0,>=3.10"
 files = [
-    {file = "kframework-7.1.57-py3-none-any.whl", hash = "sha256:b76f4e3a4486330c28dc700ac38b060089af5256e1a43baebe8411594459867e"},
-    {file = "kframework-7.1.57.tar.gz", hash = "sha256:b07635594734e94a7be1b45442fe7a5f3bec694c389ab3e97fe6d8e923d118e6"},
+    {file = "kframework-7.1.58-py3-none-any.whl", hash = "sha256:86b68cbcb3c3c5a08b8a94c9e87fac06f628ca4112b4e37930b2debb2989d233"},
+    {file = "kframework-7.1.58.tar.gz", hash = "sha256:7aaf2113e818cb7b8986aeff50ab99583ec4a0cf2a29b79defca6d01fc440ea9"},
 ]
 
 [package.dependencies]
@@ -1157,4 +1157,4 @@ test = ["big-O", "importlib-resources", "jaraco.functools", "jaraco.itertools", 
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "37b18759c498487a640cbc8e9a3075a6b5d944bca2a9e31820012abe0dbb7c5d"
+content-hash = "6612de4c1dfe3d534b0cf96e02e021e2793c00deab6071c75695ec6988b6c7b9"
