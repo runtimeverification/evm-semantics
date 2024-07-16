@@ -94,8 +94,9 @@ module EVM-INT-SIMPLIFICATION-COMMON
     rule [chop-sum-left]:  chop ( chop ( X:Int ) +Int Y:Int ) => chop ( X +Int Y ) [simplification]
     rule [chop-sum-right]: chop ( X:Int +Int chop ( Y:Int ) ) => chop ( X +Int Y ) [simplification]
 
-    rule [chop-in-bounds]: X:Int <=Int chop ( X +Int Y:Int ) => X +Int Y <Int pow256
-                         requires #rangeUInt(256, X) andBool #rangeUInt(256, Y)
-                         [simplification]
+    rule [chop-no-overflow-add]: 
+      X:Int <=Int chop ( X +Int Y:Int ) => X +Int Y <Int pow256
+      requires #rangeUInt(256, X) andBool #rangeUInt(256, Y)
+      [simplification]
 
 endmodule
