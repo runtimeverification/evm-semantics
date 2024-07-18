@@ -19,6 +19,7 @@ from pyk.kast.manip import (
 from pyk.kcfg import KCFGExplore
 from pyk.kore.rpc import KoreClient, KoreExecLogFormat, TransportType, kore_server
 from pyk.ktool import TypeInferenceMode
+from pyk.ktool.claim_loader import ClaimLoader
 from pyk.prelude.ml import is_bottom, is_top
 from pyk.proof import APRProof, APRProver
 from pyk.proof.implies import EqualityProof, ImpliesProver
@@ -79,7 +80,7 @@ def get_apr_proof_for_spec(
 
     _LOGGER.info(f'Extracting claim from file: {spec_file}')
     claim = single(
-        kprove.get_claims(
+        ClaimLoader(kprove).load_claims(
             spec_file,
             spec_module_name=spec_module_name,
             include_dirs=include_dirs,
