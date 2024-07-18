@@ -403,8 +403,11 @@ module LEMMAS-SPEC
           ) ... </k>
       requires lengthBytes(B) <Int 2 ^Int 64
 
-    claim [chop-additional-knowledge]: <k> runLemma ( X +Int Y <Int pow256 ) => doneLemma ( true ) ... </k>
-      requires #rangeUInt(256, X) andBool #rangeUInt(256, Y) andBool X <=Int chop ( X +Int Y )
+    claim [chop-additional-knowledge]: <k> runLemma (
+                      X <=Int chop ( X +Int C ) andBool Y <=Int chop ( Y +Int C )
+              andBool notBool ( ( X +Int C <Int pow256 ) andBool ( Y +Int C <Int pow256 ) )
+          ) => doneLemma ( false ) ... </k>
+    requires #rangeUInt(256, X) andBool #rangeUInt(256, Y) andBool #rangeUInt(256, C)
 
  // #padToWidth simplification
  // --------------------------
