@@ -36,6 +36,8 @@ module BYTES-SIMPLIFICATION [symbolic]
 
     // #buf
 
+    rule [buf-empty]: #buf(N:Int, _) => b"" requires N ==Int 0 [simplification]
+
     rule [buf-inject-k]:
       #buf(W:Int, X:Int) ==K #buf(W:Int, Y:Int) => X ==Int Y
       requires 0 <=Int W
