@@ -26,6 +26,8 @@ class KEVMTarget(Target):
         self._kompile_args = dict(kompile_args)
 
     def build(self, output_dir: Path, deps: dict[str, Path], args: dict[str, Any], verbose: bool) -> None:
+        llvm_proof_hint_debugging = bool(args.get('llvm-proof-hint-debugging', ''))
+        llvm_proof_hint_instrumentation = bool(args.get('llvm-proof-hint-instrumentation', ''))
         enable_llvm_debug = bool(args.get('enable-llvm-debug', ''))
         debug_build = bool(args.get('debug-build', ''))
         ccopts = [ccopt for ccopt in args.get('ccopts', '').split(' ') if ccopt]
@@ -37,6 +39,8 @@ class KEVMTarget(Target):
             ccopts=ccopts,
             plugin_dir=deps['evm-semantics.plugin'],
             debug_build=debug_build,
+            llvm_proof_hint_debugging=llvm_proof_hint_debugging,
+            llvm_proof_hint_instrumentation=llvm_proof_hint_instrumentation,
             **self._kompile_args,
         )
 
