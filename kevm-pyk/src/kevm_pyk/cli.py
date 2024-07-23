@@ -255,6 +255,13 @@ def _create_argument_parser() -> ArgumentParser:
         action='store_true',
         help='Run GDB debugger for execution.',
     )
+    run_args.add_argument(
+        '--proof-hint',
+        dest='proof_hint',
+        default=None,
+        action='store_true',
+        help='Generate proof hint instead of final configuration.',
+    )
 
     kast_args = command_parser.add_parser(
         'kast',
@@ -706,6 +713,7 @@ class RunOptions(
     output: KRunOutput
     expand_macros: bool
     debugger: bool
+    proof_hint: bool
 
     @staticmethod
     def default() -> dict[str, Any]:
@@ -713,6 +721,7 @@ class RunOptions(
             'output': KRunOutput.PRETTY,
             'expand_macros': True,
             'debugger': False,
+            'proof_hint': False,
         }
 
     @staticmethod
@@ -723,6 +732,9 @@ class RunOptions(
             | EVMChainOptions.from_option_string()
             | TargetOptions.from_option_string()
             | SaveDirOptions.from_option_string()
+            | {
+                'proof-hint': 'proof_hint',
+            }
         )
 
     @staticmethod

@@ -598,6 +598,16 @@ def exec_run(options: RunOptions) -> None:
             kore_pgm, SORT_ETHEREUM_SIMULATION, options.schedule, options.mode, options.chainid, options.usegas
         )
 
+    if options.proof_hint:
+        kore_input = options.input_file.name.split('.')[0] + '.kore'
+        logging.warning('Proof hints are not supported in the pyk krun at the momment.')
+        logging.info('Saving the input file as %s', kore_input)
+        logging.info(
+            'If you want to emit hints take the krun command shown below and run it replacing the temp file by the kore file generated and append the `--proof-hint` flag to your command.'
+        )
+        with open(kore_input, 'w') as f:
+            kore_pattern.write(f)
+
     kevm.run(
         kore_pattern,
         depth=options.depth,
