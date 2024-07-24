@@ -4,7 +4,7 @@ module ECRECOVERLOOP02-SIG0-INVALID-SPEC
   imports VERIFICATION
 
   // fn-execute-sig0-invalid
-  claim
+  claim [fn-execute-sig0-invalid]:
     <k> (#execute => #halt) ~> _ </k>
     <mode> NORMAL </mode>
     <schedule> ISTANBUL </schedule>
