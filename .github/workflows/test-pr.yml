@@ -124,7 +124,7 @@ jobs:
             test-suite: 'test-prove-functional'
             test-args:
             timeout: 45
-            parallel: 3
+            parallel: 2
           - name: 'Optimizations'
             test-suite: 'test-prove-optimizations'
             test-args:
