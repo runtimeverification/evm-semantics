@@ -481,13 +481,13 @@ colors = ["colorama (>=0.4.6)"]
 
 [[package]]
 name = "kframework"
-version = "7.1.86"
+version = "7.1.87"
 description = ""
 optional = false
 python-versions = "<4.0,>=3.10"
 files = [
-    {file = "kframework-7.1.86-py3-none-any.whl", hash = "sha256:542fca0b80483f850b16462f598845688864dc4c5f2d5056b2dfd6e742558751"},
-    {file = "kframework-7.1.86.tar.gz", hash = "sha256:fa9e7e2c2c462b6ea8be3c9f95aed5875f8cf1a456480def2b25b06a981c6f36"},
+    {file = "kframework-7.1.87-py3-none-any.whl", hash = "sha256:c7f547fd5c8a7d69f08c977fdc090a662eb13b396d7a2abe14024e100887e93d"},
+    {file = "kframework-7.1.87.tar.gz", hash = "sha256:097c949b5727f46c5989d13ab0e6e6802d267db1ba17e7f4eeb9367d9e65321f"},
 ]
 
 [package.dependencies]
@@ -1158,4 +1158,4 @@ test = ["big-O", "importlib-resources", "jaraco.functools", "jaraco.itertools", 
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "a40669e5d040541cbf29cae3f51ec649cac292a104e00c203d127dd4e00641a7"
+content-hash = "aefa63238b14d022293e2fc082a68c494d18061832296b6a973b52101762081c"
