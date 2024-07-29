@@ -23,6 +23,7 @@ module STATE-UTILS
     syntax EthereumCommand ::= "clear"
  // ----------------------------------
     rule <k> clear => clearTX ~> clearBLOCK ~> clearNETWORK ... </k>
+         <blockhashes> _ => .List </blockhashes>
 
     syntax EthereumCommand ::= "clearTX"
  // ------------------------------------
@@ -69,9 +70,11 @@ module STATE-UTILS
          <mixHash>           _ => 0          </mixHash>
          <blockNonce>        _ => 0          </blockNonce>
          <ommerBlockHeaders> _ => [ .JSONs ] </ommerBlockHeaders>
-         <blockhashes>       _ => .List      </blockhashes>
          <baseFee>           _ => 0          </baseFee>
          <withdrawalsRoot>   _ => 0          </withdrawalsRoot>
+         <blobGasUsed>       _ => 0      </blobGasUsed>
+         <excessBlobGas>     _ => 0      </excessBlobGas>
+         <beaconRoot>        _ => 0      </beaconRoot>
 
     syntax EthereumCommand ::= "clearNETWORK"
  // -----------------------------------------
@@ -79,6 +82,7 @@ module STATE-UTILS
          <statusCode>     _ => .StatusCode </statusCode>
          <accounts>       _ => .Bag        </accounts>
          <messages>       _ => .Bag        </messages>
+         <withdrawals>    _ => .Bag        </withdrawals>
          <schedule>       _ => DEFAULT     </schedule>
 
 ```
@@ -243,6 +247,28 @@ The `"rlp"` key loads the block information.
 
     rule <k> load "genesisRLP": [ [ HP, HO, HC, HR, HT, HE:Bytes, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, .JSONs ], _, _, .JSONs ] => .K ... </k>
          <blockhashes> .List => ListItem(#blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF)) ListItem(#asWord(HP)) ... </blockhashes>
+
+    rule <k> load "withdraw" : [.JSONs] => .K ... </k>
+    rule <k> load "withdraw" : ([ [ INDEX , _ , _ , _ , .JSONs ] ,  REST ] => [REST]) ... </k>
+         <withdrawal>
+           <withdrawalID> WID </withdrawalID>
+           ...
+         </withdrawal> requires #asWord(INDEX) ==Int WID
+
+    rule <k> load "withdraw" : ([ [ INDEX , VALIDATOR , ACCT , VALUE , .JSONs ] ,  REST ] => [REST]) ... </k>
+         <withdrawalsPending> ... (.List => ListItem(#asWord(INDEX))) </withdrawalsPending>
+             <withdrawals>
+               ( .Bag
+                  =>
+                 <withdrawal>
+                   <withdrawalID> #asWord(INDEX) </withdrawalID>
+                   <validatorIndex> #asWord(VALIDATOR) </validatorIndex>
+                   <address> #asAccount(ACCT) </address>
+                   <amount> #asWord(VALUE) </amount>
+                 </withdrawal>
+               )
+               ...
+             </withdrawals>[owise]
 
     syntax EthereumCommand ::= "mkTX" Int
  // -------------------------------------

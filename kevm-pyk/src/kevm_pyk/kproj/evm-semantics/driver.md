@@ -267,6 +267,7 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
     rule #hasPost? ({ (KEY:String) : _ , REST }) => (KEY in #postKeys) orBool #hasPost? ({ REST })
 ```
 
+
 -   `#loadKeys` are all the JSON nodes which should be considered as loads before execution.
 
 ```k
@@ -276,12 +277,6 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
 
     rule <k> run  TESTID : { KEY : (VAL:JSON) , REST } => load KEY : VAL ~> run TESTID : { REST } ... </k>
       requires KEY in #loadKeys
-
-    rule <k> run _TESTID : { "blocks" : [ { KEY : VAL , REST1 => REST1 }, _ ] , ( REST2 => KEY : VAL , REST2 ) } ... </k>
-    rule <k> run  TESTID : { "blocks" : [ { .JSONs }, _ ] , REST } => run TESTID : { REST }                      ... </k>
-
-    rule <k> run _TESTID : { "rlp_decoded" : { KEY : VAL , REST1 => REST1 }, (REST2 => KEY : VAL , REST2 ) } ... </k>
-    rule <k> run  TESTID : { "rlp_decoded" : { .JSONs } , REST } => run TESTID : { REST }                  ... </k>
 ```
 
 -   `#execKeys` are all the JSON nodes which should be considered for execution (between loading and checking).
@@ -289,14 +284,26 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
 ```k
     syntax Set ::= "#execKeys" [function]
  // -------------------------------------
-    rule #execKeys => ( SetItem("exec") SetItem("lastblockhash") )
+    rule #execKeys => ( SetItem("exec") SetItem("blocks"))
 
     rule <k> run  TESTID : { KEY : (VAL:JSON) , NEXT , REST } => run TESTID : { NEXT , KEY : VAL , REST } ... </k>
       requires KEY in #execKeys
 
-    rule <k> run _TESTID : { "exec" : (EXEC:JSON) } => loadCallState EXEC ~> start ~> flush ... </k>
-    rule <k> run _TESTID : { "lastblockhash" : (_:String) } => #startBlock ~> startTx    ... </k>
+    rule <k> run  TESTID : { "blocks" : [ { BLOCK }, BLOCKS ] } => clearTX ~> clearBLOCK ~> process TESTID : { BLOCK } ~> run TESTID : { "blocks" : [ BLOCKS ] } ... </k>
+    rule <k> run _TESTID : { "blocks" : [ .JSONs ] } => .K  ... </k>
 
+    syntax EthereumCommand ::= "process" JSON
+ // -----------------------------------------
+    rule <k> process _TESTID : { "rlp_decoded" : { KEY : VAL , REST1 => REST1 }, (REST2 => KEY : VAL , REST2 ) } ... </k>
+    rule <k> process _TESTID : { "rlp_decoded" : { .JSONs } , REST => REST}                                      ... </k>
+
+    rule <k> process  TESTID : { KEY : VAL , REST } => load KEY : VAL ~> process TESTID : { REST }             ... </k> requires KEY in #loadKeys
+    rule <k> process  TESTID : { KEY : VAL , REST } => process TESTID : { REST } ~> check TESTID : {KEY : VAL} ... </k> requires KEY in #checkKeys
+    rule <k> process _TESTID : { KEY : _   , REST   => REST }                                                  ... </k> requires KEY in #discardKeys
+    rule <k> process _TESTID : { .JSONs }           => #startBlock ~> startTx ... </k>
+
+    rule <k> run _TESTID : { "exec" : (EXEC:JSON) } => loadCallState EXEC ~> start ~> flush ... </k>
+    
     rule <k> load "exec" : J => loadCallState J ... </k>
 
     rule <k> loadCallState { "caller" : (ACCTFROM:Int), REST => REST } ... </k> <caller> _ => ACCTFROM </caller>
@@ -338,7 +345,7 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
 ```k
     syntax Set ::= "#discardKeys" [function]
  // ----------------------------------------
-    rule #discardKeys => ( SetItem("//") SetItem("_info") SetItem("callcreates") SetItem("sealEngine") SetItem("transactionSequence") SetItem("chainname") SetItem("expectException"))
+    rule #discardKeys => ( SetItem("//") SetItem("_info") SetItem("callcreates") SetItem("sealEngine") SetItem("transactionSequence") SetItem("chainname") SetItem("expectException") SetItem("lastblockhash"))
 
     rule <k> run TESTID : { KEY : _ , REST } => run TESTID : { REST } ... </k> requires KEY in #discardKeys
 ```
@@ -603,8 +610,9 @@ TODO: case with nonzero ommers.
 ```
 
 ```k
-    rule <k> check TESTID : {"withdrawals" : WITHDRAWALS } => check "withdrawals" : WITHDRAWALS ~> failure TESTID ... </k>
+    rule <k> check _TESTID : {"withdrawals" : _ } => .K ... </k> 
  // ----------------------------------------------------------------------------------------------------------------------
+
 ```
 
 ```k
