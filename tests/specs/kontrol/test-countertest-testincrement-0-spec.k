@@ -137,6 +137,7 @@ module TEST-COUNTERTEST-TESTINCREMENT-0-SPEC
                    <accessedStorage>
                      .Map
                    </accessedStorage>
+                   <createdAccounts> _ </createdAccounts>
                  </substate> } ) )
                </interimStates>
                <touchedAccounts>
@@ -204,6 +205,7 @@ module TEST-COUNTERTEST-TESTINCREMENT-0-SPEC
                  <accessedStorage>
                    .Map
                  </accessedStorage>
+                 <createdAccounts> _ => ?_ </createdAccounts>
                </substate>
                <origin>
                  ORIGIN_ID:Int
@@ -488,6 +490,7 @@ module TEST-COUNTERTEST-TESTINCREMENT-0-SPEC
                      ( ( 491460923342184218035706888008750043977755113263 |-> SetItem ( 0 ) )
                      ( 728815563385977040452943777879061427756277306518 |-> SetItem ( 27 ) ) )
                    </accessedStorage>
+                   <createdAccounts> _ </createdAccounts>
                  </substate> } ) => .List )
                </interimStates>
                <touchedAccounts>
@@ -556,6 +559,7 @@ module TEST-COUNTERTEST-TESTINCREMENT-0-SPEC
                    ( ( 491460923342184218035706888008750043977755113263 |-> SetItem ( 0 ) )
                    ( 728815563385977040452943777879061427756277306518 |-> SetItem ( 27 ) ) )
                  </accessedStorage>
+                 <createdAccounts> _ => ?_ </createdAccounts>
                </substate>
                <origin>
                  ORIGIN_ID:Int
@@ -816,6 +820,7 @@ module TEST-COUNTERTEST-TESTINCREMENT-0-SPEC
                      ( ( 491460923342184218035706888008750043977755113263 |-> SetItem ( 0 ) )
                      ( 728815563385977040452943777879061427756277306518 |-> SetItem ( 27 ) ) )
                    </accessedStorage>
+                   <createdAccounts> _ </createdAccounts>
                  </substate> } ) )
                </interimStates>
                <touchedAccounts>
@@ -884,6 +889,7 @@ module TEST-COUNTERTEST-TESTINCREMENT-0-SPEC
                    ( ( 491460923342184218035706888008750043977755113263 |-> SetItem ( 0 ) )
                    ( 728815563385977040452943777879061427756277306518 |-> SetItem ( 27 ) ) )
                  </accessedStorage>
+                 <createdAccounts> _ => ?_ </createdAccounts>
                </substate>
                <origin>
                  ORIGIN_ID:Int

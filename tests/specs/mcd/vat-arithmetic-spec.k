@@ -37,6 +37,7 @@ module VAT-ARITHMETIC-SPEC
             <refund> _Vrefund => ?_ </refund>
             <accessedAccounts> _ => ?_ </accessedAccounts>
             <accessedStorage> _ => ?_ </accessedStorage>
+            <createdAccounts> _ => ?_ </createdAccounts>
           </substate>
           <gasPrice> _ </gasPrice>
           <origin> ORIGIN_ID </origin>
@@ -137,6 +138,7 @@ module VAT-ARITHMETIC-SPEC
             <refund> _Vrefund => ?_ </refund>
             <accessedAccounts> _ => ?_ </accessedAccounts>
             <accessedStorage> _ => ?_ </accessedStorage>
+            <createdAccounts> _ => ?_ </createdAccounts>
           </substate>
           <gasPrice> _ </gasPrice>
           <origin> ORIGIN_ID </origin>
@@ -231,6 +233,7 @@ module VAT-ARITHMETIC-SPEC
             <refund> _Vrefund => ?_ </refund>
             <accessedAccounts> _ => ?_ </accessedAccounts>
             <accessedStorage> _ => ?_ </accessedStorage>
+            <createdAccounts> _ => ?_ </createdAccounts>
           </substate>
           <gasPrice> _ </gasPrice>
           <origin> ORIGIN_ID </origin>
@@ -331,6 +334,7 @@ module VAT-ARITHMETIC-SPEC
             <refund> _Vrefund => ?_ </refund>
             <accessedAccounts> _ => ?_ </accessedAccounts>
             <accessedStorage> _ => ?_ </accessedStorage>
+            <createdAccounts> _ => ?_ </createdAccounts>
           </substate>
           <gasPrice> _ </gasPrice>
           <origin> ORIGIN_ID </origin>
@@ -428,6 +432,7 @@ module VAT-ARITHMETIC-SPEC
             <refund> _Vrefund => ?_ </refund>
             <accessedAccounts> _ => ?_ </accessedAccounts>
             <accessedStorage> _ => ?_ </accessedStorage>
+            <createdAccounts> _ => ?_ </createdAccounts>
           </substate>
           <gasPrice> _ </gasPrice>
           <origin> ORIGIN_ID </origin>
@@ -525,6 +530,7 @@ module VAT-ARITHMETIC-SPEC
             <refund> _Vrefund => ?_ </refund>
             <accessedAccounts> _ => ?_ </accessedAccounts>
             <accessedStorage> _ => ?_ </accessedStorage>
+            <createdAccounts> _ => ?_ </createdAccounts>
           </substate>
           <gasPrice> _ </gasPrice>
           <origin> ORIGIN_ID </origin>

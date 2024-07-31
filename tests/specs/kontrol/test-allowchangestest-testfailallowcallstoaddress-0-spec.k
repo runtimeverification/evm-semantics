@@ -137,6 +137,7 @@ module TEST-ALLOWCHANGESTEST-TESTFAILALLOWCALLSTOADDRESS-0-SPEC
                    <accessedStorage>
                      .Map
                    </accessedStorage>
+                   <createdAccounts> _ </createdAccounts>
                  </substate> } ) )
                </interimStates>
                <touchedAccounts>
@@ -204,6 +205,7 @@ module TEST-ALLOWCHANGESTEST-TESTFAILALLOWCALLSTOADDRESS-0-SPEC
                  <accessedStorage>
                    .Map
                  </accessedStorage>
+                 <createdAccounts> _ => ?_ </createdAccounts>
                </substate>
                <origin>
                  ORIGIN_ID:Int

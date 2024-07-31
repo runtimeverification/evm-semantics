@@ -137,6 +137,7 @@ module TEST-STORETEST-TESTACCESSES-0-SPEC
                    <accessedStorage>
                      .Map
                    </accessedStorage>
+                   <createdAccounts> _ </createdAccounts>
                  </substate> } ) )
                </interimStates>
                <touchedAccounts>
@@ -204,6 +205,7 @@ module TEST-STORETEST-TESTACCESSES-0-SPEC
                  <accessedStorage>
                    ( .Map => ( 491460923342184218035706888008750043977755113263 |-> SetItem ( 0 ) ) )
                  </accessedStorage>
+                 <createdAccounts> _ => ?_ </createdAccounts>
                </substate>
                <origin>
                  ORIGIN_ID:Int

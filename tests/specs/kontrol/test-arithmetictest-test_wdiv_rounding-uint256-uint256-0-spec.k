@@ -80,6 +80,7 @@ module TEST-ARITHMETICTEST-TEST_WDIV_ROUNDING-UINT256-UINT256-0-SPEC
                    .Map
                  </accessedStorage>
                  ...
+                 <createdAccounts> _ => ?_ </createdAccounts>
                </substate>
                <origin>
                  ORIGIN_ID:Int
