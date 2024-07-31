@@ -23,6 +23,7 @@ from pyk.kcfg.explore import KCFGExplore
 from pyk.kdist import kdist
 from pyk.kore.rpc import KoreClient
 from pyk.kore.tools import kore_print
+from pyk.ktool.claim_loader import ClaimLoader
 from pyk.ktool.kompile import LLVMKompileType
 from pyk.proof import APRProof
 from pyk.proof.implies import EqualityProof
@@ -250,7 +251,7 @@ def exec_prove(options: ProveOptions) -> None:
     llvm_definition_dir = definition_dir / 'llvm-library' if (options.use_booster or options.use_booster_dev) else None
 
     _LOGGER.info(f'Extracting claims from file: {options.spec_file}')
-    all_claims = kevm.get_claims(
+    all_claims = ClaimLoader(kevm).load_claims(
         options.spec_file,
         spec_module_name=options.spec_module,
         include_dirs=include_dirs,
@@ -411,7 +412,7 @@ def exec_prune(options: PruneOptions) -> None:
 
     _LOGGER.info(f'Extracting claims from file: {options.spec_file}')
     claim = single(
-        kevm.get_claims(
+        ClaimLoader(kevm).load_claims(
             options.spec_file,
             spec_module_name=options.spec_module,
             include_dirs=include_dirs,
@@ -459,7 +460,7 @@ def exec_section_edge(options: SectionEdgeOptions) -> None:
     include_dirs += config.INCLUDE_DIRS
 
     claim = single(
-        kevm.get_claims(
+        ClaimLoader(kevm).load_claims(
             options.spec_file,
             spec_module_name=options.spec_module,
             include_dirs=include_dirs,
