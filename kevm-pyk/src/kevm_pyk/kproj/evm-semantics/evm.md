@@ -82,6 +82,7 @@ In the comments next to each cell, we've marked which component of the YellowPap
               <refund>           0     </refund>                  // A_r
               <accessedAccounts> .Set  </accessedAccounts>
               <accessedStorage>  .Map  </accessedStorage>
+              <createdAccounts>  .Set  </createdAccounts>
             </substate>
 
             // Immutable during a single transaction
@@ -554,9 +555,10 @@ After executing a transaction, it's necessary to have the effect of the substate
     rule <k> #finalizeTx(true) => #finalizeStorage(Set2List(SetItem(MINER) |Set ACCTS)) ... </k>
          <selfDestruct> .Set </selfDestruct>
          <coinbase> MINER </coinbase>
-         <touchedAccounts> ACCTS </touchedAccounts>
+         <touchedAccounts> ACCTS => .Set </touchedAccounts>
          <accessedAccounts> _ => .Set </accessedAccounts>
          <accessedStorage> _ => .Map </accessedStorage>
+         <createdAccounts> _ => .Set </createdAccounts>
 
     rule <k> #finalizeTx(false) ... </k>
          <useGas> true </useGas>
@@ -1592,6 +1594,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
            <nonce> NONCE => #if Gemptyisnonexistent << SCHED >> #then NONCE +Int 1 #else NONCE #fi </nonce>
            ...
          </account>
+         <createdAccounts> ACCTS => ACCTS |Set SetItem(ACCTTO) </createdAccounts>
 
     rule <k> #incrementNonce ACCT => .K ... </k>
          <account>
@@ -1723,6 +1726,7 @@ Self destructing to yourself, unlike a regular transfer, destroys the balance in
     syntax UnStackOp ::= "SELFDESTRUCT"
  // -----------------------------------
     rule <k> SELFDESTRUCT ACCTTO => #touchAccounts ACCT ACCTTO ~> #accessAccounts ACCTTO ~> #transferFunds ACCT ACCTTO BALFROM ~> #end EVMC_SUCCESS ... </k>
+         <schedule> SCHED </schedule>
          <id> ACCT </id>
          <selfDestruct> SDS => SDS |Set SetItem(ACCT) </selfDestruct>
          <account>
@@ -1731,9 +1735,12 @@ Self destructing to yourself, unlike a regular transfer, destroys the balance in
            ...
          </account>
          <output> _ => .Bytes </output>
-      requires ACCT =/=Int ACCTTO
+         <createdAccounts> CA </createdAccounts>
+      requires ((notBool Ghaseip6780 << SCHED >>) orBool ACCT in CA)
+       andBool ACCT =/=Int ACCTTO
 
     rule <k> SELFDESTRUCT ACCT => #touchAccounts ACCT ~> #accessAccounts ACCT ~> #end EVMC_SUCCESS ... </k>
+         <schedule> SCHED </schedule>
          <id> ACCT </id>
          <selfDestruct> SDS => SDS |Set SetItem(ACCT) </selfDestruct>
          <account>
@@ -1742,6 +1749,28 @@ Self destructing to yourself, unlike a regular transfer, destroys the balance in
            ...
          </account>
          <output> _ => .Bytes </output>
+         <createdAccounts> CA </createdAccounts>
+      requires ((notBool Ghaseip6780 << SCHED >>) orBool ACCT in CA)
+
+    rule <k> SELFDESTRUCT ACCTTO => #touchAccounts ACCT ACCTTO ~> #accessAccounts ACCTTO ~> #transferFunds ACCT ACCTTO BALFROM ~> #end EVMC_SUCCESS ... </k>
+         <schedule> SCHED </schedule>
+         <id> ACCT </id>
+         <account>
+           <acctID> ACCT </acctID>
+           <balance> BALFROM </balance>
+           ...
+         </account>
+         <output> _ => .Bytes </output>
+         <createdAccounts> CA </createdAccounts>
+      requires Ghaseip6780 << SCHED >> andBool (notBool ACCT in CA)
+       andBool ACCT =/=Int ACCTTO
+
+    rule <k> SELFDESTRUCT ACCT => #touchAccounts ACCT ~> #accessAccounts ACCT ~> #end EVMC_SUCCESS ... </k>
+         <schedule> SCHED </schedule>
+         <id> ACCT </id>
+         <output> _ => .Bytes </output>
+         <createdAccounts> CA </createdAccounts>
+      requires Ghaseip6780 << SCHED >> andBool (notBool ACCT in CA)
 ```
 
 Precompiled Contracts
