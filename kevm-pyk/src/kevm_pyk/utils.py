@@ -37,6 +37,7 @@ if TYPE_CHECKING:
     from pyk.ktool.kprove import KProve
     from pyk.proof.proof import Proof
     from pyk.utils import BugReport
+    from rich.progress import Progress, TaskID
 
     T1 = TypeVar('T1')
     T2 = TypeVar('T2')
@@ -109,6 +110,8 @@ def run_prover(
     direct_subproof_rules: bool = False,
     max_frontier_parallel: int = 1,
     force_sequential: bool = False,
+    progress: Progress | None = None,
+    task_id: TaskID | None = None,
 ) -> bool:
     prover: APRProver | ImpliesProver
     try:
@@ -126,9 +129,15 @@ def run_prover(
                     direct_subproof_rules=direct_subproof_rules,
                 )
 
+            def update_status_bar(_proof: Proof) -> None:
+                if progress is not None and task_id is not None:
+                    progress.update(task_id, summary=_proof.one_line_summary)
+
             if force_sequential:
                 prover = create_prover()
-                prover.advance_proof(proof=proof, max_iterations=max_iterations, fail_fast=fail_fast)
+                prover.advance_proof(
+                    proof=proof, max_iterations=max_iterations, fail_fast=fail_fast, callback=update_status_bar
+                )
             else:
                 parallel_advance_proof(
                     proof=proof,
@@ -136,6 +145,7 @@ def run_prover(
                     max_iterations=max_iterations,
                     fail_fast=fail_fast,
                     max_workers=max_frontier_parallel,
+                    callback=update_status_bar,
                 )
 
         elif type(proof) is EqualityProof:
