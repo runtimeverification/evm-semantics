@@ -23,6 +23,7 @@ module STATE-UTILS
     syntax EthereumCommand ::= "clear"
  // ----------------------------------
     rule <k> clear => clearTX ~> clearBLOCK ~> clearNETWORK ... </k>
+         <blockhashes> _ => .List </blockhashes>
 
     syntax EthereumCommand ::= "clearTX"
  // ------------------------------------
@@ -69,9 +70,11 @@ module STATE-UTILS
          <mixHash>           _ => 0          </mixHash>
          <blockNonce>        _ => 0          </blockNonce>
          <ommerBlockHeaders> _ => [ .JSONs ] </ommerBlockHeaders>
-         <blockhashes>       _ => .List      </blockhashes>
          <baseFee>           _ => 0          </baseFee>
          <withdrawalsRoot>   _ => 0          </withdrawalsRoot>
+         <blobGasUsed>       _ => 0          </blobGasUsed>
+         <excessBlobGas>     _ => 0          </excessBlobGas>
+         <beaconRoot>        _ => 0          </beaconRoot>
 
     syntax EthereumCommand ::= "clearNETWORK"
  // -----------------------------------------
