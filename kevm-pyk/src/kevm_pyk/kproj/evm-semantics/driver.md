@@ -397,10 +397,6 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
     rule <k> check TESTID : { "post" : (POST:String) } => check "blockHeader" : {  "stateRoot" : #parseWord(POST) } ~> failure TESTID ... </k>
     rule <k> check TESTID : { "post" : { POST } } => check "account" : { POST } ~> failure TESTID ... </k>
 
-    // Temp rule to skip Beacon Roots contract checks.
-    // To be removed after EIP-4788
-    rule <k> check "account" : { 339909022928299415537769066420252604268194818 : _ } => .K ... </k>
-
     rule <k> check "account" : { ACCTID:Int : { KEY : VALUE , REST } } => check "account" : { ACCTID : { KEY : VALUE } } ~> check "account" : { ACCTID : { REST } } ... </k>
       requires REST =/=K .JSONs
 
