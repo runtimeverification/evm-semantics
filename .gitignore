@@ -18,5 +18,5 @@
 /tests/specs/**/*.prove.out
 /tests/specs/**/*.sol.json
 /tests/vm/*.out
-.DS_Store
 .idea/
+.DS_Store
