@@ -523,9 +523,16 @@ hypothesis = ">=6.103.1,<7.0.0"
 psutil = ">=5.9.5,<6.0.0"
 pybind11 = ">=2.10.3,<3.0.0"
 pytest = "*"
-textual = ">=0.27.0,<0.28.0"
-tomli = ">=2.0.1,<3.0.0"
-xdg-base-dirs = ">=6.0.1,<7.0.0"
+textual = "^0.27.0"
+tomli = "^2.0.1"
+xdg-base-dirs = "^6.0.1"
+
+[package.source]
+type = "git"
+url = "https://github.com/runtimeverification/k.git"
+reference = "merge-node"
+resolved_reference = "98f9d26568b9d75204238d362b0bab8a01a62314"
+subdirectory = "pyk"
 
 [[package]]
 name = "linkify-it-py"
