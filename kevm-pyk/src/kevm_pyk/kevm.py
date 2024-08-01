@@ -225,6 +225,15 @@ class KEVMSemantics(KCFGSemantics):
         self._cached_subst = load_pattern.match(cterm.cell('K_CELL'))
         return self._cached_subst is not None
 
+    def is_mergeable(self, ct1: CTerm, ct2: CTerm) -> bool:
+        status_code_1 = ct1.cell('STATUSCODE_CELL')
+        status_code_2 = ct2.cell('STATUSCODE_CELL')
+        program_1 = ct1.cell('PROGRAM_CELL')
+        program_2 = ct2.cell('PROGRAM_CELL')
+        if type(status_code_1) is KApply and type(status_code_2) is KApply and type(program_1) is KToken and type(program_2) is KToken:
+            return status_code_1 == status_code_2 and program_1 == program_2
+        raise ValueError(f'Attempted to merge nodes with non-concrete <statusCode> or <program>: {(ct1, ct2)}')
+
 
 class KEVM(KProve, KRun):
     _use_hex: bool
