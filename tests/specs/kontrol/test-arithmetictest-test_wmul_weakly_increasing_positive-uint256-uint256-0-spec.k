@@ -80,7 +80,6 @@ module TEST-ARITHMETICTEST-TEST_WMUL_WEAKLY_INCREASING_POSITIVE-UINT256-UINT256-
                    .Map
                  </accessedStorage>
                  ...
-                 <createdAccounts> _ => ?_ </createdAccounts>
                </substate>
                <origin>
                  ORIGIN_ID:Int
@@ -240,7 +239,6 @@ module TEST-ARITHMETICTEST-TEST_WMUL_WEAKLY_INCREASING_POSITIVE-UINT256-UINT256-
                    .Map
                  </accessedStorage>
                  ...
-                 <createdAccounts> _ => ?_ </createdAccounts>
                </substate>
                <origin>
                  ORIGIN_ID:Int

@@ -414,7 +414,6 @@ module TEST-EXPECTREVERTTEST-TESTFAIL_EXPECTREVERT_FALSE-0-SPEC
                    .Map
                  </accessedStorage>
                  ...
-                 <createdAccounts> _ => ?_ </createdAccounts>
                </substate>
                <origin>
                  ORIGIN_ID:Int
