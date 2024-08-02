@@ -1,0 +1,104 @@
+#!/usr/bin/env bash
+#
+#   Install OS packages containing dependencies required to build K.
+#
+set -Eeuo pipefail
+
+die() { local ec="$1"; shift; echo "ERROR: $@"; exit $ec; }
+
+try() {
+    local command="$1"; shift
+    local platform="$1"; shift
+
+    echo "===== Checking for $command for platform $platform"
+    $command --version >/dev/null 2>&1 || return 1
+    echo "----- Found platform $platform"
+    inst_$platform
+}
+
+####################################################################
+
+inst_Debian() {
+    #  On Ubuntu < 18.04, you'll need to skip `libsecp256k1-dev` and
+    #  instead build it from source (via our `Makefile`):
+    #    make libsecp256k1
+
+    echo '===== Debian packages:'
+    sudo apt-get install -q     \
+        bison               \
+        build-essential     \
+        clang-15            \
+        cmake               \
+        curl                \
+        flex                \
+        g++                 \
+        gcc                 \
+        libboost-test-dev   \
+        libfmt-dev          \
+        libgmp-dev          \
+        libjemalloc-dev     \
+        libmpfr-dev         \
+        libsecp256k1-dev    \
+        libstdc++-12-dev    \
+        libtool             \
+        libyaml-dev         \
+        libz3-dev           \
+        lld-15              \
+        llvm-15-tools       \
+        m4                  \
+        maven               \
+        openjdk-17-jdk      \
+        pkg-config          \
+        python3             \
+        python3-dev         \
+        z3                  \
+        zlib1g-dev
+
+    if stack --version >/dev/null 2>&1; then
+        echo 'Using existing Haskell Stack installation.'
+    else
+        echo '===== Haskell Stack:'
+        curl -sSL https://get.haskellstack.org/ | sh
+    fi
+}
+
+inst_MacOS() {
+    echo '===== Brew packages'
+    brew tap runtimeverification/k
+    brew install    \
+        bison       \
+        boost       \
+        cmake       \
+        flex        \
+        fmt         \
+        gcc         \
+        gmp         \
+        openjdk     \
+        jemalloc    \
+        libyaml     \
+        llvm        \
+        make        \
+        maven       \
+        mpfr        \
+        pkg-config  \
+        python      \
+        secp256k1   \
+        stack       \
+        zlib        \
+        z3
+}
+
+inst_Arch() {
+    echo '===== Arch packages'
+    sudo pacman -S                                               \
+        base base-devel boost clang cmake crypto++ curl git gmp  \
+        gflags jdk-openjdk jemalloc libsecp256k1 lld llvm maven  \
+        mpfr poetry python stack yaml-cpp zlib
+}
+
+####################################################################
+
+try apt-get Debian      && exit 0
+try brew MacOS          && exit 0
+try pacman Arch         && exit 0
+die 1 'Cannot find known platform. Your system appears to be unsupported.'
