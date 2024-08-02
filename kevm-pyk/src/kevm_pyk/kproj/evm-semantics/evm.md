@@ -659,7 +659,7 @@ After executing a transaction, it's necessary to have the effect of the substate
 ```k
     syntax EthereumCommand ::= "#startBlock"
  // ----------------------------------------
-    rule <k> #startBlock => .K ... </k>
+    rule <k> #startBlock => #executeBeaconRoots ... </k>
          <gasUsed> _ => 0 </gasUsed>
          <log> _ => .List </log>
          <logsBloom> _ => #padToWidth(256, .Bytes) </logsBloom>
@@ -728,6 +728,31 @@ After executing a transaction, it's necessary to have the effect of the substate
     syntax Int ::= getBloomFilterBit(Bytes, Int) [symbol(getBloomFilterBit), function]
  // ----------------------------------------------------------------------------------
     rule getBloomFilterBit(X, I) => #asInteger(#range(X, I, 2)) %Int 2048
+```
+
+If `block.timestamp >= CANCUN_FORK_TIMESTAMP`:
+Before executing any transaction, the `BEACON_ROOTS_ADDRESS` (`0x000F3df6D732807Ef1319fB7B8bB8522d0Beac02`) storage is modified as following:
+ - Set the storage value at `header.timestamp % HISTORY_BUFFER_LENGTH` to be `header.timestamp`
+ - Set the storage value at `header.timestamp % HISTORY_BUFFER_LENGTH + HISTORY_BUFFER_LENGTH` to be `header.parent_beacon_root_hash`
+where `HISTORY_BUFFER_LENGTH == 8191`.
+
+Read more about EIP-4788 here [https://eips.ethereum.org/EIPS/eip-4788](https://eips.ethereum.org/EIPS/eip-4788).
+
+```k
+    syntax EthereumCommand ::= "#executeBeaconRoots" [symbol(#executeBeaconRoots)]
+ // ------------------------------------------------------------------------------
+    rule <k> #executeBeaconRoots => .K ... </k>
+         <schedule> SCHED </schedule>
+         <timestamp> TS </timestamp>
+         <beaconRoot> BR </beaconRoot>
+         <account>
+           <acctID> 339909022928299415537769066420252604268194818 </acctID>
+           <storage> M:Map => M [(TS modInt 8191) <- TS] [(TS modInt 8191 +Int 8191) <- BR] </storage>
+           ...
+         </account>
+      requires Ghasbeaconroot << SCHED >>
+
+    rule <k> #executeBeaconRoots => .K ... </k> [owise]
 ```
 
 EVM Programs
