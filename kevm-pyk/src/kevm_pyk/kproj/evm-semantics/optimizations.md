@@ -410,6 +410,46 @@ module EVM-OPTIMIZATIONS
      andBool ( #sizeWordStack( WS ) <=Int 1024 )
      [priority(40)]
 
+  rule
+  [optimized.jump]:
+    <kevm>
+      <k>
+        ( #next[ JUMP ] => .K ) ~> #execute ...
+      </k>
+      <schedule>
+        SCHED
+      </schedule>
+      <useGas>
+        USEGAS
+      </useGas>
+      <ethereum>
+        <evm>
+          <callState>
+            <wordStack>
+              ( W0 : WS => WS )
+            </wordStack>
+            <pc>
+              ( _PCOUNT => W0 )
+            </pc>
+            <gas>
+              ( GAVAIL => #if USEGAS #then ( GAVAIL -Gas Gmid < SCHED > ) #else GAVAIL #fi )
+            </gas>
+            <jumpDests>
+              DESTS
+            </jumpDests>
+            ...
+          </callState>
+          ...
+        </evm>
+        ...
+      </ethereum>
+      ...
+    </kevm>
+    requires ( #if USEGAS #then Gmid < SCHED > <=Gas GAVAIL #else true #fi )
+     andBool ( #sizeWordStack( W0 : WS ) <=Int 1024 )
+     andBool W0 <Int lengthBytes(DESTS) andBool DESTS[W0] ==Int 1
+     [priority(40)]
+
 
 // {OPTIMIZATIONS}
 
