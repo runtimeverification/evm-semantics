@@ -451,6 +451,47 @@ module EVM-OPTIMIZATIONS
      [priority(40)]
 
 
+  rule
+  [optimized.jumpi]:
+    <kevm>
+      <k>
+        ( #next[ JUMPI ] => .K ) ~> #execute ...
+      </k>
+      <schedule>
+        SCHED
+      </schedule>
+      <useGas>
+        USEGAS
+      </useGas>
+      <ethereum>
+        <evm>
+          <callState>
+            <wordStack>
+              ( W0 : W1 : WS => WS )
+            </wordStack>
+            <pc>
+              ( PCOUNT => #if W1 ==Int 0 #then PCOUNT +Int 1 #else W0 #fi )
+            </pc>
+            <gas>
+              ( GAVAIL => #if USEGAS #then ( GAVAIL -Gas Ghigh < SCHED > ) #else GAVAIL #fi )
+            </gas>
+            <jumpDests>
+              DESTS
+            </jumpDests>
+            ...
+          </callState>
+          ...
+        </evm>
+        ...
+      </ethereum>
+      ...
+    </kevm>
+    requires ( #if USEGAS #then Ghigh < SCHED > <=Gas GAVAIL #else true #fi )
+     andBool ( #sizeWordStack( W0 : W1 : WS ) <=Int 1024 )
+     andBool W0 <Int lengthBytes(DESTS) andBool DESTS[W0] ==Int 1
+     [priority(40)]
+
+
 // {OPTIMIZATIONS}
 
 
