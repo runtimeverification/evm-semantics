@@ -91,6 +91,7 @@ tests/specs/kontrol/test-storetest-testaccesses-0-spec.k
 tests/specs/kontrol/test-storetest-teststoreload-0-spec.k
 tests/specs/mcd/cat-exhaustiveness-spec.k
 tests/specs/mcd/cat-file-addr-pass-rough-spec.k
+tests/specs/mcd/dai-symbol-pass-spec.k
 tests/specs/mcd/dstoken-approve-fail-rough-spec.k
 tests/specs/mcd/dsvalue-peek-pass-rough-spec.k
 tests/specs/mcd/dsvalue-read-pass-spec.k
