@@ -338,6 +338,42 @@ module EVM-OPTIMIZATIONS
      andBool ( #sizeWordStack( bool2Word( W1 <Int W0 ) : WS ) <=Int 1024 )
      [priority(40)]
 
+  rule
+  [optimized.iszero]:
+    <kevm>
+      <k>
+        ( #next[ ISZERO ] => .K ) ...
+      </k>
+      <schedule>
+        SCHED
+      </schedule>
+      <useGas>
+        USEGAS
+      </useGas>
+      <ethereum>
+        <evm>
+          <callState>
+            <wordStack>
+              ( W0 : WS => bool2Word( W0 ==Int 0 ) : WS )
+            </wordStack>
+            <pc>
+              ( PCOUNT => ( PCOUNT +Int 1 ) )
+            </pc>
+            <gas>
+              ( GAVAIL => #if USEGAS #then ( GAVAIL -Gas Gverylow < SCHED > ) #else GAVAIL #fi )
+            </gas>
+            ...
+          </callState>
+          ...
+        </evm>
+        ...
+      </ethereum>
+      ...
+    </kevm>
+    requires ( #if USEGAS #then Gverylow < SCHED > <=Gas GAVAIL #else true #fi )
+     andBool ( #sizeWordStack( bool2Word( W0 ==Int 0 ) : WS ) <=Int 1024 )
+     [priority(40)]
+
 
 // {OPTIMIZATIONS}
 
