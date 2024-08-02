@@ -61,102 +61,34 @@ This repository generates the build-products for each backend in `$XDG_CACHE_HOM
 
 ### System Dependencies
 
+Run `install-build-deps` to install the required OS-supplied dependencies.
 
-#### Ubuntu
+There are some additional notes for specific systems:
 
-On Ubuntu >= 22.04 (for example):
+Ubuntu:
+- The script works for ≥ 22.04.
+- On Ubuntu < 18.04, you'll need to skip `libsecp256k1-dev` and instead
+  build it from source (via our `Makefile`) using `make libsecp256k1`.
 
-```sh
-sudo apt-get install    \
-    bison               \
-    build-essential     \
-    clang-15            \
-    cmake               \
-    curl                \
-    flex                \
-    g++                 \
-    gcc                 \
-    libboost-test-dev   \
-    libfmt-dev          \
-    libgmp-dev          \
-    libjemalloc-dev     \
-    libmpfr-dev         \
-    libsecp256k1-dev    \
-    libstdc++-12-dev    \
-    libtool             \
-    libyaml-dev         \
-    libz3-dev           \
-    lld-15              \
-    llvm-15-tools       \
-    m4                  \
-    maven               \
-    openjdk-17-jdk      \
-    pkg-config          \
-    python3             \
-    python3-dev         \
-    z3                  \
-    zlib1g-dev
-```
+Arch:
+- No issues known.
 
-On Ubuntu < 18.04, you'll need to skip `libsecp256k1-dev` and instead build it from source (via our `Makefile`):
+MacOS:
+- After installing the Command Line Tools, [Homebrew](https://brew.sh/),
+  and getting the [blockchain plugin](#blockchain-plugin), run:
+- **NOTE**: It is recommended to use the homebrew version of `flex` and
+  XCode.
+- If you are building on an Apple Silicon machine, ensure that your `PATH`
+  is set up correctly before running `make deps` or `make k-deps`. You can
+  do so using [`direnv`](https://direnv.net/) by copying `macos-envrc` to
+  `.envrc`, then running `direnv allow`.
+- If the build on macOS still fails, you can also try adding the following
+  lines to the top of your `Makefile` under `UNAME_S`:
 
-```sh
-make libsecp256k1
-```
-
-#### Arch Linux
-
-On ArchLinux:
-
-```sh
-sudo pacman -S                                               \
-    base base-devel boost clang cmake crypto++ curl git gmp  \
-    gflags jdk-openjdk jemalloc libsecp256k1 lld llvm maven  \
-    mpfr poetry python stack yaml-cpp zlib
-```
-
-#### macOS
-
-After installing the Command Line Tools, [Homebrew](https://brew.sh/), and getting the [blockchain plugin](#blockchain-plugin), run:
-
-```sh
-brew tap runtimeverification/k
-brew install    \
-    bison       \
-    boost       \
-    cmake       \
-    flex        \
-    fmt         \
-    gcc         \
-    gmp         \
-    openjdk     \
-    jemalloc    \
-    libyaml     \
-    llvm        \
-    make        \
-    maven       \
-    mpfr        \
-    pkg-config  \
-    python      \
-    secp256k1   \
-    stack       \
-    zlib        \
-    z3
-```
-
-**NOTE**: It is recommended to use the homebrew version of `flex` and XCode.
-
-If you are building on an Apple Silicon machine, ensure that your `PATH` is set up correctly before running `make deps` or `make k-deps`.
-You can do so using [`direnv`](https://direnv.net/) by copying `macos-envrc` to `.envrc`, then running `direnv allow`.
-
-If the build on macOS still fails, you can also try adding the following lines to the top of your `Makefile` under `UNAME_S`:
-
-```sh
-ifeq ($(UNAME_S), Darwin)
-SHELL := /usr/local/bin/bash
-PATH := $(pwd)/.build/usr/bin:$(PATH)
-endif
-```
+      ifeq ($(UNAME_S), Darwin)
+      SHELL := /usr/local/bin/bash
+      PATH := $(pwd)/.build/usr/bin:$(PATH)
+      endif
 
 #### Haskell Stack (all platforms)
 
