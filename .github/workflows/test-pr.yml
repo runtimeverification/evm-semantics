@@ -8,32 +8,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-
-  version-bump:
-    name: 'Version Bump'
-    runs-on: ubuntu-latest
-    steps:
-      - name: 'Check out code'
-        uses: actions/checkout@v4
-        with:
-          # fetch-depth 0 means deep clone the repo
-          fetch-depth: 0
-          ref: ${{ github.event.pull_request.head.sha }}
-      - name: 'Configure GitHub user'
-        run: |
-          git config user.name devops
-          git config user.email devops@runtimeverification.com
-      - name: 'Update version'
-        run: |
-          og_version=$(git show origin/${GITHUB_BASE_REF}:package/version)
-          ./package/version.sh bump ${og_version}
-          ./package/version.sh sub
-          new_version=$(cat package/version)
-          sed --in-place "s/^VERSION: Final = '.*'$/VERSION: Final = '${new_version}'/" kevm-pyk/src/kevm_pyk/__init__.py
-          git add --update && git commit --message "Set Version: ${new_version}" || true
-      - name: 'Push updates'
-        run: git push origin HEAD:${GITHUB_HEAD_REF}
-
   kevm-pyk-code-quality-checks:
     name: 'Code Quality Checks'
     runs-on: ubuntu-latest
@@ -193,7 +167,6 @@ jobs:
         uses: cachix/cachix-action@v14
         with:
           name: k-framework
-          authToken: ${{ secrets.CACHIX_PUBLIC_TOKEN }}
       - name: 'Build KEVM'
         run: GC_DONT_GC=1 nix build --extra-experimental-features 'nix-command flakes' --print-build-logs
       - name: 'Test KEVM'
