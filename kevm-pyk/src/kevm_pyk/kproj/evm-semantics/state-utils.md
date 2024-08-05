@@ -72,9 +72,9 @@ module STATE-UTILS
          <ommerBlockHeaders> _ => [ .JSONs ] </ommerBlockHeaders>
          <baseFee>           _ => 0          </baseFee>
          <withdrawalsRoot>   _ => 0          </withdrawalsRoot>
-         <blobGasUsed>       _ => 0      </blobGasUsed>
-         <excessBlobGas>     _ => 0      </excessBlobGas>
-         <beaconRoot>        _ => 0      </beaconRoot>
+         <blobGasUsed>       _ => 0          </blobGasUsed>
+         <excessBlobGas>     _ => 0          </excessBlobGas>
+         <beaconRoot>        _ => 0          </beaconRoot>
 
     syntax EthereumCommand ::= "clearNETWORK"
  // -----------------------------------------
@@ -172,20 +172,21 @@ The `"network"` key allows setting the fee schedule inside the test.
 
     syntax Schedule ::= #asScheduleString ( String ) [symbol(#asScheduleString), function]
  // --------------------------------------------------------------------------------------
-    rule #asScheduleString("Frontier")          => FRONTIER
-    rule #asScheduleString("Homestead")         => HOMESTEAD
-    rule #asScheduleString("EIP150")            => TANGERINE_WHISTLE
-    rule #asScheduleString("EIP158")            => SPURIOUS_DRAGON
-    rule #asScheduleString("Byzantium")         => BYZANTIUM
-    rule #asScheduleString("Constantinople")    => CONSTANTINOPLE
-    rule #asScheduleString("ConstantinopleFix") => PETERSBURG
-    rule #asScheduleString("Istanbul")          => ISTANBUL
-    rule #asScheduleString("Berlin")            => BERLIN
-    rule #asScheduleString("London")            => LONDON
-    rule #asScheduleString("Merge")             => MERGE
-    rule #asScheduleString("Paris")             => MERGE
-    rule #asScheduleString("Shanghai")          => SHANGHAI
-    rule #asScheduleString("Cancun")            => CANCUN
+    rule #asScheduleString("Frontier")                  => FRONTIER
+    rule #asScheduleString("Homestead")                 => HOMESTEAD
+    rule #asScheduleString("EIP150")                    => TANGERINE_WHISTLE
+    rule #asScheduleString("EIP158")                    => SPURIOUS_DRAGON
+    rule #asScheduleString("Byzantium")                 => BYZANTIUM
+    rule #asScheduleString("Constantinople")            => CONSTANTINOPLE
+    rule #asScheduleString("ConstantinopleFix")         => PETERSBURG
+    rule #asScheduleString("Istanbul")                  => ISTANBUL
+    rule #asScheduleString("Berlin")                    => BERLIN
+    rule #asScheduleString("London")                    => LONDON
+    rule #asScheduleString("Merge")                     => MERGE
+    rule #asScheduleString("Paris")                     => MERGE
+    rule #asScheduleString("Shanghai")                  => SHANGHAI
+    rule #asScheduleString("Cancun")                    => CANCUN
+    rule #asScheduleString("ShanghaiToCancunAtTime15k") => CANCUN
 ```
 
 The `"rlp"` key loads the block information.

@@ -284,13 +284,25 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
 ```k
     syntax Set ::= "#execKeys" [function]
  // -------------------------------------
-    rule #execKeys => ( SetItem("exec") SetItem("blocks"))
+    rule #execKeys => ( SetItem("exec") SetItem("blocks") )
 
     rule <k> run  TESTID : { KEY : (VAL:JSON) , NEXT , REST } => run TESTID : { NEXT , KEY : VAL , REST } ... </k>
       requires KEY in #execKeys
 
     rule <k> run  TESTID : { "blocks" : [ { BLOCK }, BLOCKS ] } => clearTX ~> clearBLOCK ~> process TESTID : { BLOCK } ~> run TESTID : { "blocks" : [ BLOCKS ] } ... </k>
     rule <k> run _TESTID : { "blocks" : [ .JSONs ] } => .K  ... </k>
+
+    syntax EthereumCommand ::= "process" JSON
+ // -----------------------------------------
+    rule <k> process _TESTID : { "rlp_decoded" : { KEY : VAL , REST1 => REST1 }, (REST2 => KEY : VAL , REST2 ) } ... </k>
+    rule <k> process _TESTID : { "rlp_decoded" : { .JSONs } , REST => REST}                                      ... </k>
+
+    rule <k> process  TESTID : { KEY : VAL , REST } => load KEY : VAL ~> process TESTID : { REST }             ... </k> requires KEY in #loadKeys
+    rule <k> process  TESTID : { KEY : VAL , REST } => process TESTID : { REST } ~> check TESTID : {KEY : VAL} ... </k> requires KEY in #checkKeys
+    rule <k> process _TESTID : { KEY : _   , REST   => REST }                                                  ... </k> requires KEY in #discardKeys
+    rule <k> process _TESTID : { .JSONs }           => #startBlock ~> startTx ... </k>
+
+    rule <k> run _TESTID : { "exec" : (EXEC:JSON) } => loadCallState EXEC ~> start ~> flush ... </k>
 
     syntax EthereumCommand ::= "process" JSON
  // -----------------------------------------
@@ -397,10 +409,6 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
 
     rule <k> check TESTID : { "post" : (POST:String) } => check "blockHeader" : {  "stateRoot" : #parseWord(POST) } ~> failure TESTID ... </k>
     rule <k> check TESTID : { "post" : { POST } } => check "account" : { POST } ~> failure TESTID ... </k>
-
-    // Temp rule to skip Beacon Roots contract checks.
-    // To be removed after EIP-4788
-    rule <k> check "account" : { 339909022928299415537769066420252604268194818 : _ } => .K ... </k>
 
     rule <k> check "account" : { ACCTID:Int : { KEY : VALUE , REST } } => check "account" : { ACCTID : { KEY : VALUE } } ~> check "account" : { ACCTID : { REST } } ... </k>
       requires REST =/=K .JSONs
