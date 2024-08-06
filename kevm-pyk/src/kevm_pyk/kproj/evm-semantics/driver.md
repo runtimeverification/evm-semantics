@@ -267,7 +267,6 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
     rule #hasPost? ({ (KEY:String) : _ , REST }) => (KEY in #postKeys) orBool #hasPost? ({ REST })
 ```
 
-
 -   `#loadKeys` are all the JSON nodes which should be considered as loads before execution.
 
 ```k
@@ -304,18 +303,6 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
 
     rule <k> run _TESTID : { "exec" : (EXEC:JSON) } => loadCallState EXEC ~> start ~> flush ... </k>
 
-    syntax EthereumCommand ::= "process" JSON
- // -----------------------------------------
-    rule <k> process _TESTID : { "rlp_decoded" : { KEY : VAL , REST1 => REST1 }, (REST2 => KEY : VAL , REST2 ) } ... </k>
-    rule <k> process _TESTID : { "rlp_decoded" : { .JSONs } , REST => REST}                                      ... </k>
-
-    rule <k> process  TESTID : { KEY : VAL , REST } => load KEY : VAL ~> process TESTID : { REST }             ... </k> requires KEY in #loadKeys
-    rule <k> process  TESTID : { KEY : VAL , REST } => process TESTID : { REST } ~> check TESTID : {KEY : VAL} ... </k> requires KEY in #checkKeys
-    rule <k> process _TESTID : { KEY : _   , REST   => REST }                                                  ... </k> requires KEY in #discardKeys
-    rule <k> process _TESTID : { .JSONs }           => #startBlock ~> startTx ... </k>
-
-    rule <k> run _TESTID : { "exec" : (EXEC:JSON) } => loadCallState EXEC ~> start ~> flush ... </k>
-    
     rule <k> load "exec" : J => loadCallState J ... </k>
 
     rule <k> loadCallState { "caller" : (ACCTFROM:Int), REST => REST } ... </k> <caller> _ => ACCTFROM </caller>
@@ -395,14 +382,14 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
  // ---------------------------------------
     rule <k> #halt ~> check J:JSON => check J ~> #halt ... </k>
 
-    rule <k> check DATA : { .JSONs } => .K ... </k> requires DATA =/=String "transactions"
-    rule <k> check DATA : [ .JSONs ] => .K ... </k> requires DATA =/=String "ommerHeaders"
+    rule <k> check DATA : { .JSONs } => .K ... </k> requires notBool DATA in (SetItem("transactions") SetItem("withdrawals"))
+    rule <k> check DATA : [ .JSONs ] => .K ... </k> requires notBool DATA in (SetItem("ommerHeaders") SetItem( "transactions") SetItem("withdrawals"))
 
     rule <k> check DATA : { (KEY:String) : VALUE , REST } => check DATA : { KEY : VALUE } ~> check DATA : { REST } ... </k>
-      requires REST =/=K .JSONs andBool notBool DATA in (SetItem("callcreates") SetItem("transactions"))
+      requires REST =/=K .JSONs andBool notBool DATA in (SetItem("callcreates") SetItem("transactions") SetItem("withdrawals"))
 
     rule <k> check DATA : [ { TEST } , REST ] => check DATA : { TEST } ~> check DATA : [ REST ] ... </k>
-      requires DATA =/=String "transactions"
+      requires notBool DATA in (SetItem("transactions") SetItem("withdrawals"))
 
     rule <k> check (KEY:String) : { JS:JSONs => qsortJSONs(JS) } ... </k>
       requires KEY in (SetItem("callcreates")) andBool notBool sortedJSONs(JS)
@@ -618,9 +605,22 @@ TODO: case with nonzero ommers.
 ```
 
 ```k
-    rule <k> check _TESTID : {"withdrawals" : _ } => .K ... </k> 
+    rule <k> check TESTID : {"withdrawals" : WITHDRAWALS } => check "withdrawals" : WITHDRAWALS ~> failure TESTID ... </k>
  // ----------------------------------------------------------------------------------------------------------------------
+    rule <k> check "withdrawals" : [ .JSONs ] => .K ... </k> <withdrawalsOrder> .List                    </withdrawalsOrder>
+    rule <k> check "withdrawals" : { .JSONs } => .K ... </k> <withdrawalsOrder> ListItem(_) => .List ... </withdrawalsOrder>
 
+    rule <k> check "withdrawals" : [ WITHDRAWAL , REST ]  => check "withdrawals" : WITHDRAWAL    ~> check "withdrawals" : [ REST ] ... </k>
+    rule <k> check "withdrawals" : { KEY : VALUE , REST } => check "withdrawals" : (KEY : VALUE) ~> check "withdrawals" : { REST } ... </k>
+
+    rule <k> check "withdrawals" : (_KEY      : (VALUE:String => #parseByteStack(VALUE))) ... </k>
+    rule <k> check "withdrawals" : ("address" : (VALUE:Bytes  => #asAccount(VALUE)))      ... </k>
+    rule <k> check "withdrawals" : ( KEY      : (VALUE:Bytes  => #asWord(VALUE)))         ... </k> requires KEY =/=String "address"
+
+    rule <k> check "withdrawals" : ("address"        : VALUE ) => .K ... </k> <withdrawalsOrder> ListItem(WID) ... </withdrawalsOrder> <withdrawal> <withdrawalID> WID </withdrawalID> <address>        VALUE </address>        ... </withdrawal>
+    rule <k> check "withdrawals" : ("amount"         : VALUE ) => .K ... </k> <withdrawalsOrder> ListItem(WID) ... </withdrawalsOrder> <withdrawal> <withdrawalID> WID </withdrawalID> <amount>         VALUE </amount>         ... </withdrawal>
+    rule <k> check "withdrawals" : ("validatorIndex" : VALUE ) => .K ... </k> <withdrawalsOrder> ListItem(WID) ... </withdrawalsOrder> <withdrawal> <withdrawalID> WID </withdrawalID> <validatorIndex> VALUE </validatorIndex> ... </withdrawal>
+    rule <k> check "withdrawals" : ("index"          : VALUE ) => .K ... </k> <withdrawalsOrder> ListItem(WID) ... </withdrawalsOrder> <withdrawal> <withdrawalID> WID </withdrawalID> <index>          VALUE </index>          ... </withdrawal>
 ```
 
 ```k

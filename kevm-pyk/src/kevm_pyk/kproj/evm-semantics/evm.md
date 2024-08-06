@@ -173,13 +173,15 @@ In the comments next to each cell, we've marked which component of the YellowPap
             // ------------------
 
             <withdrawalsPending> .List </withdrawalsPending>
+            <withdrawalsOrder>   .List </withdrawalsOrder>
 
             <withdrawals>
               <withdrawal multiplicity="*" type="Map">
-                <withdrawalID> 0 </withdrawalID>
-                <validatorIndex> 0 </validatorIndex>
-                <address> .Account </address>
-                <amount> 0 </amount>
+                <withdrawalID>   0        </withdrawalID>
+                <index>          0        </index>
+                <validatorIndex> 0        </validatorIndex>
+                <address>        .Account </address>
+                <amount>         0        </amount>
               </withdrawal>
             </withdrawals>
 
@@ -372,7 +374,7 @@ The `#next [_]` operator initiates execution by:
 ```k
     syntax Bool ::= #stackUnderflow ( WordStack , OpCode ) [symbol(#stackUnderflow), macro]
                   | #stackOverflow  ( WordStack , OpCode ) [symbol(#stackOverflow), macro]
- // ---------------------------------------------------------------------------------------
+ // --------------------------------------------------------------------------------------
     rule #stackUnderflow(WS, OP:OpCode) => #sizeWordStack(WS) <Int #stackNeeded(OP)
     rule #stackOverflow (WS, OP) => #sizeWordStack(WS) +Int #stackDelta(OP) >Int 1024
 
@@ -546,7 +548,7 @@ After executing a transaction, it's necessary to have the effect of the substate
 -   `#finalizeStorage` updates the origStorage cell with the new values of storage.
 -   `#finalizeTx` makes the substate log actually have an effect on the state.
 -   `#deleteAccounts` deletes the accounts specified by the self destruct list.
--   `#finalizeWithdrawals`
+-   `#finalizeWithdrawals` increases the balance of the `address` specified by the `amount` given, for each withdrawal.
 ```k
 
     syntax InternalOp ::= "#finalizeWithdrawals" [symbol(#finalizeWithdrawals)]
@@ -555,9 +557,9 @@ After executing a transaction, it's necessary to have the effect of the substate
          <withdrawalsPending> .List </withdrawalsPending>
 
     rule <k> #finalizeWithdrawals ... </k>
-         <withdrawalsPending> ListItem(INDEX) LS => LS </withdrawalsPending>
+         <withdrawalsPending> ListItem(WDID) LS => LS </withdrawalsPending>
          <withdrawal>
-           <withdrawalID> INDEX </withdrawalID>
+           <withdrawalID> WDID </withdrawalID>
            <address> ACCT </address>
            <amount> VALUE </amount>
            ...
@@ -569,9 +571,9 @@ After executing a transaction, it's necessary to have the effect of the substate
          </account>
 
     rule <k> (.K => #newAccount ACCT) ~> #finalizeWithdrawals ... </k>
-         <withdrawalsPending> ListItem(INDEX) _ </withdrawalsPending>
+         <withdrawalsPending> ListItem(WDID) _ </withdrawalsPending>
          <withdrawal>
-           <withdrawalID> INDEX </withdrawalID>
+           <withdrawalID> WDID </withdrawalID>
            <address> ACCT </address>
            ...
          </withdrawal> [owise]

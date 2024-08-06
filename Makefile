@@ -33,7 +33,7 @@ test: test-integration test-conformance test-prove test-interactive
 # Conformance Tests
 
 test-conformance: poetry
-	$(MAKE) -C kevm-pyk/ test-integration PYTEST_ARGS+="-k 'test_conformance.py' -n0 -vv --log-cli-level INFO "
+	$(MAKE) -C kevm-pyk/ test-integration PYTEST_ARGS+="-k test_conformance.py"
 
 test-vm: poetry
 	$(MAKE) -C kevm-pyk/ test-integration PYTEST_ARGS+="-k test_vm"
