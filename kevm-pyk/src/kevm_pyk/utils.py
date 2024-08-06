@@ -165,7 +165,12 @@ def run_prover(
     return proof.passed
 
 
-def print_failure_info(proof: Proof, kcfg_explore: KCFGExplore, counterexample_info: bool = False) -> list[str]:
+def print_failure_info(
+    proof: Proof,
+    kcfg_explore: KCFGExplore,
+    counterexample_info: bool = False,
+    variable_name_mapping: dict[str, str] | None = None,
+) -> list[str]:
     if type(proof) is APRProof:
         target = proof.kcfg.node(proof.target)
 
@@ -199,7 +204,7 @@ def print_failure_info(proof: Proof, kcfg_explore: KCFGExplore, counterexample_i
                 res_lines.append('  Path condition:')
                 res_lines += [f'    {kcfg_explore.pretty_print(proof.path_constraints(node.id))}']
                 if counterexample_info:
-                    res_lines.extend(print_model(node, kcfg_explore))
+                    res_lines.extend(print_model(node, kcfg_explore, variable_name_mapping))
 
         res_lines.append('')
         res_lines.append(
@@ -213,14 +218,17 @@ def print_failure_info(proof: Proof, kcfg_explore: KCFGExplore, counterexample_i
         raise ValueError('Unknown proof type.')
 
 
-def print_model(node: KCFG.Node, kcfg_explore: KCFGExplore) -> list[str]:
+def print_model(
+    node: KCFG.Node, kcfg_explore: KCFGExplore, variable_name_mapping: dict[str, str] | None = None
+) -> list[str]:
     res_lines: list[str] = []
     result_subst = kcfg_explore.cterm_symbolic.get_model(node.cterm)
     if type(result_subst) is Subst:
         res_lines.append('  Model:')
         for var, term in result_subst.to_dict().items():
             term_kast = KInner.from_dict(term)
-            res_lines.append(f'    {var} = {kcfg_explore.pretty_print(term_kast)}')
+            var_name = variable_name_mapping.get(var, var) if variable_name_mapping is not None else var
+            res_lines.append(f'    {var_name} = {kcfg_explore.pretty_print(term_kast)}')
     else:
         res_lines.append('  Failed to generate a model.')
 
