@@ -1,4 +1,4 @@
-name: 'Master Push'
+name: 'Release'
 on:
   push:
     branches:
@@ -91,7 +91,15 @@ jobs:
             --repo runtimeverification/evm-semantics  \
             --yes                                       \
             --cleanup-tag
-    
+      - name: 'Post failure to channel'
+        if: failure()
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          channel-id: "#kevm-notifications"
+          slack-message: "Failed to create KEVM release: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+        env:
+            SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+
   make-release:
     name: 'Cut Release'
     runs-on: ubuntu-latest
@@ -108,7 +116,9 @@ jobs:
         run: |
           set -x
           VERSION=v$(cat package/version)
-          gh release create ${VERSION} --target ${{ github.sha }}
+          gh release edit ${VERSION}                    \
+            --repo runtimeverification/evm-semantics  \
+            --draft=false
       - name: 'Update dependents'
         run: |
           set -x
@@ -134,7 +144,7 @@ jobs:
           ref: ${{ github.event.push.head.sha }}
       - run: |
          git config --global user.email 'devops@runtimeverification.com'
-         git config --global user.name  'RV DevOps'
+         git config --global user.name  'rv-jenkins'
       - name: 'Publish gh-pages'
         run: |
           git checkout -B gh-pages

@@ -1,4 +1,4 @@
-name: 'Bump Version and Make Release Job'
+name: 'Bump Version and Start Release Job'
 on:
   push:
     branches:
@@ -20,7 +20,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
       - name: 'Configure GitHub user'
         run: |
-          git config user.name devops
+          git config user.name rv-jenkins
           git config user.email devops@runtimeverification.com
       - name: 'Update version'
         run: |
