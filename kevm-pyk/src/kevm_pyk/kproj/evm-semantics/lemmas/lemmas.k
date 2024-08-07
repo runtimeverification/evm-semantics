@@ -160,9 +160,13 @@ module LEMMAS-HASKELL [symbolic]
         andBool lengthBytes(BUF) >=Int log256Int(D) [simplification, preserves-definedness]
 
     rule bool2Word(          X ==Int 0)   => 1 -Int X requires #rangeBool(X) [simplification]
+    rule bool2Word(          0 ==Int X)   => 1 -Int X requires #rangeBool(X) [simplification]
     rule bool2Word(notBool ( X ==Int 0 )) =>        X requires #rangeBool(X) [simplification]
+    rule bool2Word(notBool ( 0 ==Int X )) =>        X requires #rangeBool(X) [simplification]
     rule bool2Word(          X ==Int 1)   => X        requires #rangeBool(X) [simplification]
+    rule bool2Word(          1 ==Int X)   => X        requires #rangeBool(X) [simplification]
     rule bool2Word(notBool ( X ==Int 1 )) => 1 -Int X requires #rangeBool(X) [simplification]
+    rule bool2Word(notBool ( 1 ==Int X )) => 1 -Int X requires #rangeBool(X) [simplification]
 
     //Simplification of bool2Word() ==Int CONCRETE, #buf() ==K CONCRETE
     rule I                   ==Int bool2Word( B:Bool ) => bool2Word(B) ==Int I  [simplification, concrete(I)]

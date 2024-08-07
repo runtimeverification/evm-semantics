@@ -35,6 +35,14 @@ module VERIFICATION
  // -------------------------------------------------------
     rule <k> runLemma(S) => doneLemma(S) ... </k>
 
+ // decimals lemmas
+ // ---------------
+
+    rule         255 &Int X <Int 256 => true requires 0 <=Int X [simplification, smt-lemma]
+    rule 0 <=Int 255 &Int X          => true requires 0 <=Int X [simplification, smt-lemma]
+
+    rule bool2Word ( notBool WORD ==Int 0 ) => WORD           [simplification]
+
 endmodule
 ```
 
