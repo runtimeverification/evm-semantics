@@ -42,7 +42,7 @@ module EVM-OPTIMIZATIONS
       ...
     </kevm>
     requires ( #if USEGAS #then Gbase < SCHED > <=Gas GAVAIL #else true #fi )
-     andBool ( #sizeWordStack ( WS ) <=Int 1023 )
+     andBool ( #sizeWordStack( WS ) <=Int 1023 )
      [priority(40)]
 
   rule
@@ -81,7 +81,7 @@ module EVM-OPTIMIZATIONS
       ...
     </kevm>
     requires ( #if USEGAS #then Gverylow < SCHED > <=Gas GAVAIL #else true #fi )
-     andBool ( #sizeWordStack ( WS ) <=Int 1023 )
+     andBool ( #sizeWordStack( WS ) <=Int 1023 )
      [priority(40)]
 
   rule
@@ -116,9 +116,9 @@ module EVM-OPTIMIZATIONS
       </ethereum>
       ...
     </kevm>
-    requires #stackNeeded(DUP(N)) <=Int #sizeWordStack(WS)
+    requires N <=Int #sizeWordStack(WS)
      andBool ( #if USEGAS #then Gverylow < SCHED > <=Gas GAVAIL #else true #fi )
-     andBool ( #sizeWordStack ( WS ) <=Int 1023 )
+     andBool ( #sizeWordStack( WS ) <=Int 1023 )
      [priority(40)]
 
   rule
@@ -153,9 +153,9 @@ module EVM-OPTIMIZATIONS
       </ethereum>
       ...
     </kevm>
-    requires #stackNeeded(SWAP(N)) <=Int #sizeWordStack(W0 : WS)
+    requires N <=Int #sizeWordStack(WS)
      andBool ( #if USEGAS #then Gverylow < SCHED > <=Gas GAVAIL #else true #fi )
-     andBool ( #sizeWordStack ( WS ) <=Int 1023 )
+     andBool ( #sizeWordStack( WS ) <=Int 1023 )
      [priority(40)]
 
   rule
@@ -191,7 +191,7 @@ module EVM-OPTIMIZATIONS
       ...
     </kevm>
     requires ( #if USEGAS #then Gverylow < SCHED > <=Gas GAVAIL #else true #fi )
-     andBool ( #sizeWordStack ( WS ) <=Int 1022 )
+     andBool ( #sizeWordStack( WS ) <=Int 1023 )
      [priority(40)]
 
   rule
@@ -227,7 +227,7 @@ module EVM-OPTIMIZATIONS
       ...
     </kevm>
     requires ( #if USEGAS #then Gverylow < SCHED > <=Gas GAVAIL #else true #fi )
-     andBool ( #sizeWordStack ( WS ) <=Int 1022 )
+     andBool ( #sizeWordStack( WS ) <=Int 1023 )
      [priority(40)]
 
   rule
@@ -263,7 +263,7 @@ module EVM-OPTIMIZATIONS
       ...
     </kevm>
     requires ( #if USEGAS #then Gverylow < SCHED > <=Gas GAVAIL #else true #fi )
-     andBool ( #sizeWordStack ( WS ) <=Int 1022 )
+     andBool ( #sizeWordStack( WS ) <=Int 1023 )
      [priority(40)]
 
   rule
@@ -299,7 +299,7 @@ module EVM-OPTIMIZATIONS
       ...
     </kevm>
     requires ( #if USEGAS #then Gverylow < SCHED > <=Gas GAVAIL #else true #fi )
-     andBool ( #sizeWordStack ( WS ) <=Int 1022 )
+     andBool ( #sizeWordStack( WS ) <=Int 1023 )
      [priority(40)]
 
   rule
@@ -335,7 +335,7 @@ module EVM-OPTIMIZATIONS
       ...
     </kevm>
     requires ( #if USEGAS #then Gverylow < SCHED > <=Gas GAVAIL #else true #fi )
-     andBool ( #sizeWordStack ( WS ) <=Int 1022 )
+     andBool ( #sizeWordStack( WS ) <=Int 1023 )
      [priority(40)]
 
 
