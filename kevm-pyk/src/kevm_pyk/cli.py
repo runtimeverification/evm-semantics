@@ -177,6 +177,11 @@ def _create_argument_parser() -> ArgumentParser:
         action='store_true',
         help='Reinitialize CFGs even if they already exist.',
     )
+    prove_args.add_argument(
+        '--max-frontier-parallel',
+        type=int,
+        help='Maximum worker threads to use on a single proof to explore separate branches in parallel.',
+    )
 
     prune_args = command_parser.add_parser(
         'prune',
@@ -370,6 +375,7 @@ class KProveOptions(Options):
     always_check_subsumption: bool
     fast_check_subsumption: bool
     direct_subproof_rules: bool
+    maintenance_rate: int
 
     @staticmethod
     def default() -> dict[str, Any]:
@@ -378,6 +384,7 @@ class KProveOptions(Options):
             'always_check_subsumption': True,
             'fast_check_subsumption': False,
             'direct_subproof_rules': False,
+            'maintenance_rate': 1,
         }
 
 
@@ -838,6 +845,11 @@ class KEVMCLIArgs(KCLIArgs):
             default=None,
             action='store_true',
             help='For passing subproofs, construct lemmas directly from initial to target state.',
+        )
+        args.add_argument(
+            '--maintenance-rate',
+            type=int,
+            help='How many steps to take on the proof between writing to disk and updating status bar. Note that setting to >1 may result in work being discarded.',
         )
         return args
 
