@@ -138,7 +138,11 @@ def run_prover(
             if force_sequential:
                 prover = create_prover()
                 prover.advance_proof(
-                    proof=proof, max_iterations=max_iterations, fail_fast=fail_fast, callback=update_status_bar, maintenance_rate=maintenance_rate
+                    proof=proof,
+                    max_iterations=max_iterations,
+                    fail_fast=fail_fast,
+                    callback=update_status_bar,
+                    maintenance_rate=maintenance_rate,
                 )
             else:
                 parallel_advance_proof(
