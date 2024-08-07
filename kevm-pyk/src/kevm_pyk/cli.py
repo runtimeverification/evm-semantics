@@ -816,7 +816,7 @@ class KEVMCLIArgs(KCLIArgs):
         args.add_argument(
             '--debug-equations',
             type=list_of(str, delim=','),
-            help='Comma-separate list of equations to debug.',
+            help='Comma-separated list of equations to debug.',
         )
         args.add_argument(
             '--always-check-subsumption',
@@ -848,8 +848,10 @@ class KEVMCLIArgs(KCLIArgs):
         )
         args.add_argument(
             '--maintenance-rate',
+            dest='maintenance_rate',
+            default=1,
             type=int,
-            help='The number of iterations performed between two writes to disk and status bar updates. Note that setting to >1 may result in work being discarded if proof is interrupted.',
+            help='The number of proof iterations performed between two writes to disk and status bar updates. Note that setting to >1 may result in work being discarded if proof is interrupted.',
         )
         return args
 
