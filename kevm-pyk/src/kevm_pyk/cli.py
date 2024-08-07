@@ -849,7 +849,7 @@ class KEVMCLIArgs(KCLIArgs):
         args.add_argument(
             '--maintenance-rate',
             type=int,
-            help='How many steps to take on the proof between writing to disk and updating status bar. Note that setting to >1 may result in work being discarded.',
+            help='The number of iterations performed between two writes to disk and status bar updates. Note that setting to >1 may result in work being discarded if proof is interrupted.',
         )
         return args
 
