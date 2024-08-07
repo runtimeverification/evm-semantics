@@ -2,13 +2,13 @@
 
 [[package]]
 name = "attrs"
-version = "24.1.0"
+version = "24.2.0"
 description = "Classes Without Boilerplate"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "attrs-24.1.0-py3-none-any.whl", hash = "sha256:377b47448cb61fea38533f671fba0d0f8a96fd58facd4dc518e3dac9dbea0905"},
-    {file = "attrs-24.1.0.tar.gz", hash = "sha256:adbdec84af72d38be7628e353a09b6a6790d15cd71819f6e9d7b0faa8a125745"},
+    {file = "attrs-24.2.0-py3-none-any.whl", hash = "sha256:81921eb96de3191c8258c199618104dd27ac608d9366f5e35d011eae1867ede2"},
+    {file = "attrs-24.2.0.tar.gz", hash = "sha256:5cfb1b9148b5b086569baec03f20d7b6bf3bcacc9a42bebf87ffaaca362f6346"},
 ]
 
 [package.extras]
@@ -501,13 +501,13 @@ colors = ["colorama (>=0.4.6)"]
 
 [[package]]
 name = "kframework"
-version = "7.1.94"
+version = "7.1.95"
 description = ""
 optional = false
 python-versions = "<4.0,>=3.10"
 files = [
-    {file = "kframework-7.1.94-py3-none-any.whl", hash = "sha256:6e5bd949e63ce290429d33a51ead0ec7c35c396f7b9bae4e4403a152fbf05b5d"},
-    {file = "kframework-7.1.94.tar.gz", hash = "sha256:e97f828d5917e02f9819b87bf5e1941b180cd5703968d43d9a64f77df0cebebc"},
+    {file = "kframework-7.1.95-py3-none-any.whl", hash = "sha256:932e226ac6207158a35e435e267411f0f183fea671fca7731462c7f532c25c02"},
+    {file = "kframework-7.1.95.tar.gz", hash = "sha256:b60a3341069a1610189b2350dc432b18e90bc87d964e5b7d4c92b1824bc28c51"},
 ]
 
 [package.dependencies]
@@ -1178,4 +1178,4 @@ test = ["big-O", "importlib-resources", "jaraco.functools", "jaraco.itertools", 
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "348d8326edb76dbd906319cd78dbbbb3ae6014421bc926dcea89bdba9e3003e9"
+content-hash = "ae7a6370ddc94f87ad347383dc8dcb9c89056138fb4f891c0faaba9ffb552739"
