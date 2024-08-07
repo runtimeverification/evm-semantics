@@ -29,10 +29,7 @@
         .List
       </interimStates>
       <touchedAccounts>
-        SetItem ( 91343852333181432387730302044767688728495783936 )
-        SetItem ( 91343852333181432387730302044767688728495783939 )
-        SetItem ( 244687034288125203496486448490407391986876152250 )
-        SetItem ( 966588469268559010541288244128342317224451555083 )
+        .Set
       </touchedAccounts>
       <callState>
         <program>
@@ -94,6 +91,9 @@
         <accessedStorage>
           .Map
         </accessedStorage>
+        <createdAccounts>
+          .Set
+        </createdAccounts>
       </substate>
       <gasPrice>
         1

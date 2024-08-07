@@ -47,6 +47,7 @@ module BALANCEOF-SPEC
           <refund> _ </refund> // TODO: more detail
           <accessedAccounts> _ => ?_ </accessedAccounts>
           <accessedStorage> _ => ?_ </accessedStorage>
+          <createdAccounts> _ => ?_ </createdAccounts>
         </substate>
 
         <gasPrice> _ </gasPrice>

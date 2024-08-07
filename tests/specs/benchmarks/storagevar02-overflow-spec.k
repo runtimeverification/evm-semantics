@@ -38,6 +38,7 @@ module STORAGEVAR02-OVERFLOW-SPEC
           <refund> _ => ?_ </refund>
           <accessedAccounts> _ => ?_ </accessedAccounts>
           <accessedStorage> _ => ?_ </accessedStorage>
+          <createdAccounts> _ => ?_ </createdAccounts>
         </substate>
         <gasPrice> _ </gasPrice>
         <origin> _ </origin> // tx.origin
