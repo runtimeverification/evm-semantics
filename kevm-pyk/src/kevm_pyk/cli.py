@@ -376,6 +376,7 @@ class KProveOptions(Options):
     fast_check_subsumption: bool
     direct_subproof_rules: bool
     maintenance_rate: int
+    assume_defined:bool
 
     @staticmethod
     def default() -> dict[str, Any]:
@@ -385,6 +386,7 @@ class KProveOptions(Options):
             'fast_check_subsumption': False,
             'direct_subproof_rules': False,
             'maintenance_rate': 1,
+            'assume_defined': False,
         }
 
 
@@ -852,6 +854,13 @@ class KEVMCLIArgs(KCLIArgs):
             default=1,
             type=int,
             help='The number of proof iterations performed between two writes to disk and status bar updates. Note that setting to >1 may result in work being discarded if proof is interrupted.',
+        )
+        args.add_argument(
+            '--assume-defined',
+            dest='assume_defined',
+            default=None,
+            type='store_true',
+            help='Use the implication check of the Booster (experimental).',
         )
         return args
 

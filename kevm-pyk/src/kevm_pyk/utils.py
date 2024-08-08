@@ -114,6 +114,7 @@ def run_prover(
     progress: Progress | None = None,
     task_id: TaskID | None = None,
     maintenance_rate: int = 1,
+    assume_defined: bool = False,
 ) -> bool:
     prover: APRProver | ImpliesProver
     try:
@@ -129,6 +130,7 @@ def run_prover(
                     always_check_subsumption=always_check_subsumption,
                     fast_check_subsumption=fast_check_subsumption,
                     direct_subproof_rules=direct_subproof_rules,
+                    assume_defined=assume_defined,
                 )
 
             def update_status_bar(_proof: Proof) -> None:
@@ -156,7 +158,7 @@ def run_prover(
                 )
 
         elif type(proof) is EqualityProof:
-            prover = ImpliesProver(proof, kcfg_explore=create_kcfg_explore())
+            prover = ImpliesProver(proof, kcfg_explore=create_kcfg_explore(), assume_defined=assume_defined)
             prover.advance_proof(proof)
         else:
             raise ValueError(f'Do not know how to build prover for proof: {proof}')
