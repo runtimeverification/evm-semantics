@@ -376,7 +376,7 @@ class KProveOptions(Options):
     fast_check_subsumption: bool
     direct_subproof_rules: bool
     maintenance_rate: int
-    assume_defined:bool
+    assume_defined: bool
 
     @staticmethod
     def default() -> dict[str, Any]:
@@ -859,7 +859,7 @@ class KEVMCLIArgs(KCLIArgs):
             '--assume-defined',
             dest='assume_defined',
             default=None,
-            type='store_true',
+            action='store_true',
             help='Use the implication check of the Booster (experimental).',
         )
         return args
