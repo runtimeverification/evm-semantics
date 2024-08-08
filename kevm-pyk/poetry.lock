@@ -410,13 +410,13 @@ pyreadline3 = {version = "*", markers = "sys_platform == \"win32\" and python_ve
 
 [[package]]
 name = "hypothesis"
-version = "6.109.0"
+version = "6.110.0"
 description = "A library for property-based testing"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "hypothesis-6.109.0-py3-none-any.whl", hash = "sha256:6731bc652806406eff5aa5cc3429517c061642eb4472a02a845361faf431c318"},
-    {file = "hypothesis-6.109.0.tar.gz", hash = "sha256:a97c4ee0c967d92cd450fb70ea68b2cec49fda0f824738767bccec3ecb14a646"},
+    {file = "hypothesis-6.110.0-py3-none-any.whl", hash = "sha256:976200b4c0b3e315c04bf33e1bc176054dd07ff40ef2c7f4129768a50aca9753"},
+    {file = "hypothesis-6.110.0.tar.gz", hash = "sha256:fc1bd11cb913e83451d2cff3876ad771ab909d64b854a068d47cb4e6f53f2b0c"},
 ]
 
 [package.dependencies]
@@ -501,13 +501,13 @@ colors = ["colorama (>=0.4.6)"]
 
 [[package]]
 name = "kframework"
-version = "7.1.96"
+version = "7.1.97"
 description = ""
 optional = false
 python-versions = "<4.0,>=3.10"
 files = [
-    {file = "kframework-7.1.96-py3-none-any.whl", hash = "sha256:6d49e6254c561e00b20494b8b4290bdaff9f692d3891de71ee543ee2a1cb7759"},
-    {file = "kframework-7.1.96.tar.gz", hash = "sha256:f6048ef7297dab06346367463f1e546e98ef86e6c9731a73f1ab48f57334ddf4"},
+    {file = "kframework-7.1.97-py3-none-any.whl", hash = "sha256:e340b86b32279f68522bcf9938616eb394485edee2ab218f1f574122b9da0858"},
+    {file = "kframework-7.1.97.tar.gz", hash = "sha256:d0424cddaa0ca1c16069d345ddb87d1fcd444f00f533b08440b8a50e9c606cf4"},
 ]
 
 [package.dependencies]
@@ -1178,4 +1178,4 @@ test = ["big-O", "importlib-resources", "jaraco.functools", "jaraco.itertools", 
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "250c1baf3172d26c969016a3f77622bdfc2b9f478762b2be935ad570178a927e"
+content-hash = "e74c24b702f82c4b886c6af82c82dd04d0d60e56dc5f2916bfb4e17d63bbf5c5"
