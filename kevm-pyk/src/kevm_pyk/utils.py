@@ -113,6 +113,8 @@ def run_prover(
     force_sequential: bool = False,
     progress: Progress | None = None,
     task_id: TaskID | None = None,
+    maintenance_rate: int = 1,
+    assume_defined: bool = False,
 ) -> bool:
     prover: APRProver | ImpliesProver
     try:
@@ -128,6 +130,7 @@ def run_prover(
                     always_check_subsumption=always_check_subsumption,
                     fast_check_subsumption=fast_check_subsumption,
                     direct_subproof_rules=direct_subproof_rules,
+                    assume_defined=assume_defined,
                 )
 
             def update_status_bar(_proof: Proof) -> None:
@@ -137,7 +140,11 @@ def run_prover(
             if force_sequential:
                 prover = create_prover()
                 prover.advance_proof(
-                    proof=proof, max_iterations=max_iterations, fail_fast=fail_fast, callback=update_status_bar
+                    proof=proof,
+                    max_iterations=max_iterations,
+                    fail_fast=fail_fast,
+                    callback=update_status_bar,
+                    maintenance_rate=maintenance_rate,
                 )
             else:
                 parallel_advance_proof(
@@ -147,10 +154,11 @@ def run_prover(
                     fail_fast=fail_fast,
                     max_workers=max_frontier_parallel,
                     callback=update_status_bar,
+                    maintenance_rate=maintenance_rate,
                 )
 
         elif type(proof) is EqualityProof:
-            prover = ImpliesProver(proof, kcfg_explore=create_kcfg_explore())
+            prover = ImpliesProver(proof, kcfg_explore=create_kcfg_explore(), assume_defined=assume_defined)
             prover.advance_proof(proof)
         else:
             raise ValueError(f'Do not know how to build prover for proof: {proof}')
