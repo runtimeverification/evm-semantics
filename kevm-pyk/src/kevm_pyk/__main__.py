@@ -233,8 +233,10 @@ def exec_prove(options: ProveOptions) -> None:
     if options.kore_rpc_command is None:
         if options.use_booster_dev:
             kore_rpc_command = ('booster-dev',)
+            options.post_exec_simplify = True
         elif not options.use_booster:
             kore_rpc_command = ('kore-rpc',)
+            options.post_exec_simplify = True
         else:
             kore_rpc_command = ('kore-rpc-booster',)
             if options.fallback_on is None:
