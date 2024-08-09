@@ -265,7 +265,6 @@ def lib_ccopts(plugin_dir: Path, debug_build: bool = False) -> list[str]:
         else:
             ccopts += config.NIX_LIBS.split(' ')
     elif kernel == 'linux':
-        ccopts += ['-lprocps']
         if config.NIX_LIBS:
             ccopts += config.NIX_LIBS.split(' ')
     else:
