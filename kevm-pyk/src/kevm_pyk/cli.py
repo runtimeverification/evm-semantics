@@ -316,7 +316,7 @@ class RPCOptions(Options):
             'trace_rewrites': False,
             'kore_rpc_command': None,
             'use_booster': True,
-            'fallback_on': [FallbackReason.ABORTED, FallbackReason.STUCK],
+            'fallback_on': [],
             'post_exec_simplify': False,
             'interim_simplification': None,
             'port': None,
