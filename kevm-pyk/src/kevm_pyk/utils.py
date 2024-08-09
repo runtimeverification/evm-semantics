@@ -353,9 +353,10 @@ def legacy_explore(
     maude_port: int | None = None,
     fallback_on: Iterable[FallbackReason] | None = None,
     interim_simplification: int | None = None,
-    no_post_exec_simplify: bool = False,
+    no_post_exec_simplify: bool = True,
 ) -> Iterator[KCFGExplore]:
     bug_report_id = None if bug_report is None else id
+    fallback_on = [FallbackReason.ABORTED, FallbackReason.STUCK] if fallback_on is None else fallback_on
     if start_server:
         # Old way of handling KCFGExplore, to be removed
         with kore_server(
