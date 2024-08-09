@@ -17,7 +17,7 @@ from pyk.kast.manip import (
     split_config_from,
 )
 from pyk.kcfg import KCFGExplore
-from pyk.kore.rpc import KoreClient, KoreExecLogFormat, TransportType, kore_server
+from pyk.kore.rpc import FallbackReason, KoreClient, KoreExecLogFormat, TransportType, kore_server
 from pyk.ktool import TypeInferenceMode
 from pyk.ktool.claim_loader import ClaimLoader
 from pyk.prelude.ml import is_bottom, is_top
@@ -33,7 +33,6 @@ if TYPE_CHECKING:
     from pyk.kast.outer import KClaim, KDefinition
     from pyk.kcfg import KCFG
     from pyk.kcfg.semantics import KCFGSemantics
-    from pyk.kore.rpc import FallbackReason
     from pyk.ktool.kprint import KPrint
     from pyk.ktool.kprove import KProve
     from pyk.proof.proof import Proof
