@@ -1,0 +1,179 @@
+name: 'Release'
+on:
+  push:
+    branches:
+      - 'release'
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
+jobs:
+  draft-release:
+    name: 'Draft Release'
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.make-release.outputs.version }}
+    steps:
+      - name: 'Check out code'
+        uses: actions/checkout@v4
+      - name: 'Make release'
+        id: 'make-release'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -x
+          VERSION=v$(cat package/version)
+          gh release create ${VERSION}                  \
+            --repo runtimeverification/evm-semantics  \
+            --draft                                     \
+            --title ${VERSION}                          \
+            --target ${{ github.sha }}
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+
+  nix-cache:
+    name: 'Populate Nix Cache'
+    strategy:
+      matrix:
+        include:
+          - runner: normal
+          - runner: macos-13
+          - runner: ARM64
+    runs-on: ${{ matrix.runner }}
+    needs: draft-release
+    steps:
+      - name: 'Check out code'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.push.head.sha }}
+          fetch-depth: 0
+      - name: 'Upgrade bash'
+        if: ${{ contains(matrix.os, 'macos') }}
+        run: brew install bash
+      - name: 'Install Nix'
+        if: ${{ matrix.runner == 'macos-13' }}
+        uses: cachix/install-nix-action@v19
+        with:
+          install_url: https://releases.nixos.org/nix/nix-2.13.3/install
+          extra_nix_config: |
+            access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
+      - name: 'Install Cachix'
+        if: ${{ matrix.runner == 'macos-13' }}
+        uses: cachix/cachix-action@v12
+        with:
+          name: k-framework
+          signingKey: ${{ secrets.CACHIX_SIGNING_KEY }}
+          skipPush: true
+      - name: 'Build KEVM'
+        run: |
+          GC_DONT_GC=1 nix build --extra-experimental-features 'nix-command flakes' --print-build-logs
+      - name: 'Test KEVM'
+        run: |
+          GC_DONT_GC=1 nix build --extra-experimental-features 'nix-command flakes' --print-build-logs .#kevm-test
+      - name: 'Push KEVM'
+        uses: workflow/nix-shell-action@v3.0.3
+        env:
+          GC_DONT_GC: 1
+          CACHIX_AUTH_TOKEN: '${{ secrets.CACHIX_PUBLIC_TOKEN }}'
+        with:
+          packages: jq
+          script: |
+            kevm=$(nix build --extra-experimental-features 'nix-command flakes' .#kevm --json | jq -r '.[].outputs | to_entries[].value')
+            drv=$(nix-store --query --deriver ${kevm})
+            nix-store --query --requisites --include-outputs ${drv} | cachix push k-framework
+      - name: 'On failure, delete drafted release'
+        if: failure()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -x
+          VERSION=v$(cat package/version)
+          gh release delete ${VERSION}                  \
+            --repo runtimeverification/evm-semantics  \
+            --yes                                       \
+            --cleanup-tag
+      - name: 'Post failure to channel'
+        if: failure()
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          channel-id: "#kevm-notifications"
+          slack-message: "Failed to create KEVM release: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+        env:
+            SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+
+  make-release:
+    name: 'Cut Release'
+    runs-on: ubuntu-latest
+    needs: [draft-release, nix-cache]
+    steps:
+      - name: 'Check out code'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.push.head.sha }}
+          fetch-depth: 0
+      - name: 'Make release'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -x
+          VERSION=v$(cat package/version)
+          gh release edit ${VERSION}                    \
+            --repo runtimeverification/evm-semantics  \
+            --draft=false
+      - name: 'Update dependents'
+        run: |
+          set -x
+          VERSION=$(cat package/version)
+          curl --fail                                                          \
+            -X POST                                                            \
+            -H "Accept: application/vnd.github+json"                           \
+            -H "Authorization: Bearer ${{ secrets.JENKINS_GITHUB_PAT }}"       \
+            -H "X-GitHub-Api-Version: 2022-11-28"                              \
+            https://api.github.com/repos/runtimeverification/devops/dispatches \
+            -d '{"event_type":"on-demand-test","client_payload":{"repo":"runtimeverification/evm-semantics","version":"'${VERSION}'"}}'
+
+  gh-pages:
+    name: 'Publish GH Pages'
+    runs-on: ubuntu-latest
+    needs: [make-release]
+    steps:
+      - name: 'Check out gh-pages'
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: true
+          ref: ${{ github.event.push.head.sha }}
+      - run: |
+         git config --global user.email 'devops@runtimeverification.com'
+         git config --global user.name  'rv-jenkins'
+      - name: 'Publish gh-pages'
+        run: |
+          git checkout -B gh-pages
+          cd web
+          npm install
+          npm run build
+          npm run build-sitemap
+          cd -
+          mv web/public_content ./
+          rm -rf $(find . -maxdepth 1 -not -name public_content -a -not -name .git -a -not -name .gitmodules -a -not -path . -a -not -path .. -a -not -name CNAME)
+          mv public_content/* ./
+          rm -rf public_content
+          git add ./
+          git commit -m 'gh-pages: Updated the website'
+          git merge --strategy ours origin/gh-pages --allow-unrelated-histories
+          git push origin gh-pages
+      - name: 'Post failure to channel'
+        if: failure()
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          channel-id: "#kevm-notifications"
+          slack-message: "Failed to create KEVM release: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+        env:
+            SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+      - name: 'Post success to channel'
+        if: success()
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          channel-id: "#kevm-notifications"
+          slack-message: "Created KEVM release: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+        env:
+            SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
