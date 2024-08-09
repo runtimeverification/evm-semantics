@@ -481,7 +481,7 @@ Range of types
                   | #rangeSmall    ( Int )             [symbol(rangeSmall)   , alias]
                   | #rangeBlockNum ( Int )             [symbol(rangeBlockNum), alias]
  // ---------------------------------------------------------------------------------
-    rule #rangeBool    (            X ) => X ==Int 0 orBool X ==Int 1
+    rule #rangeBool    (            X ) => #range ( 0 <= X < 2 )
 
     rule #rangeSInt    (   8 ,      X ) => #range ( minSInt8        <= X <= maxSInt8        )
     rule #rangeSInt    (  16 ,      X ) => #range ( minSInt16       <= X <= maxSInt16       )
