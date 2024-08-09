@@ -9,7 +9,6 @@ from filelock import SoftFileLock
 from pyk.kast.att import AttEntry, Atts, KAtt
 from pyk.kast.outer import KClaim
 from pyk.kdist import kdist
-from pyk.kore.rpc import FallbackReason
 from pyk.proof.reachability import APRProof, APRProver
 from pyk.proof.show import APRProofShow
 
@@ -225,8 +224,6 @@ def _test_prove(
                 'break_on_basic_blocks': break_on_basic_blocks,
                 'workers': workers,
                 'direct_subproof_rules': direct_subproof_rules,
-                'post_exec_simplify': False,
-                'fallback_on': [FallbackReason.ABORTED, FallbackReason.STUCK],
             }
         )
         exec_prove(options=options)
