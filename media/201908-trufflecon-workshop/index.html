@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+<meta charset="utf-8" />
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0, maximum-scale=1.0"
+/>
+<meta
+  name="description"
+  content="K Semantics of the Ethereum Virtual Machine (EVM)"
+/>
+<meta
+  name="keywords"
+  content="runtime, verification, rv, k, ethereum virtual machine, evm"
+/>
+<meta name="author" content="EVM Semantics | Runtime Verification Inc" />
+<meta name="robots" content="index, follow" />
+
+<!--favicon icon-->
+<link rel="icon" type="image/png" href="../../assets/img/favicon.ico" />
+
+<title>KEVM: Semantics of EVM in K | Runtime Verification, Inc. </title>
+
+<link rel="canonical" href="https://jellopaper.org/media/201908-trufflecon-workshop/" />
+
+<!--web fonts-->
+<link
+  href="https://fonts.googleapis.com/css?family=Nunito:300,400,600,700,800"
+  rel="stylesheet"
+/>
+<link
+  href="https://fonts.googleapis.com/css?family=Lora:400i"
+  rel="stylesheet"
+/>
+
+<link
+  href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.14.0/css/all.min.css"
+  rel="stylesheet"
+/>
+
+<link href="../../assets/css/index.css" rel="stylesheet" />
+
+<!--[if (gt IE 9) |!(IE)]><!-->
+<!--<link rel="stylesheet" href="/assets/vendor/custom-nav/css/effects/fade-menu.css"/>-->
+<!-- <link rel="stylesheet" href="../../assets/k/vl-nav/css/effects/slide-menu.css" /> -->
+<!--<![endif]-->
+
+  </head>
+
+  <body>
+<header
+  class="navbar navbar-expand navbar-dark flex-column flex-md-row bd-navbar"
+>
+  <a class="logo-link" href="../../index.html"> EVM Semantics </a>
+  <ul class="navbar-nav ml-md-auto">
+    <li class="nav-item">
+      <a
+        class="nav-link pl-2 pr-1 mx-1 py-3 my-n2"
+        href="https://github.com/runtimeverification/evm-semantics"
+        target="_blank"
+        rel="noopener"
+        aria-label="GitHub"
+      >
+        <i class="fab fa-github"></i>
+      </a>
+    </li>
+  </ul>
+  <!--
+  <a
+    class="btn btn-rv-blue d-none d-lg-inline-block mb-3 mb-md-0 ml-md-3"
+    href="../../downloads"
+    >Download</a
+  >
+  -->
+</header>
+
+
+    <div class="container-fluid">
+      <div class="row flex-xl-nowrap">
+<div class="col-12 col-md-3 col-xl-2 bd-sidebar mb-3">
+  <form
+    role="search"
+    class="bd-search d-flex align-items-center justify-content-between"
+  >
+    <input
+      type="search"
+      class="form-control"
+      placeholder="Search..."
+      aria-label="Search for..."
+      autocomplete="false"
+      id="search-box"
+    />
+    <button
+      class="btn bd-search-docs-toggle d-md-none p-0 ml-3 collapsed"
+      type="button"
+      aria-label="Toggle docs navigation"
+      style="font-size: 1.4rem"
+    >
+      <i class="fas fa-bars"></i>
+    </button>
+  </form>
+  <nav class="collapse bd-links" aria-label="Main navigation">
+    <div class="bd-toc-item">
+      <a class="bd-toc-link" href="../../">Homepage</a>
+      <a class="bd-toc-link" href="../../INSTALL/">Install</a>
+    </div>
+  </nav>
+</div>
+
+        <main
+          class="col-12 col-md-6 col-xl-8 py-md-3 pl-md-5 bd-content"
+          role="main"
+        >
+          <div class="markdown-preview"><html><head></head><body><h2 id="overview">Overview</h2>
+<ul>
+<li>Install KEVM and KLab on your machine</li>
+<li>Simple uses of the <code>./kevm</code> script</li>
+<li>(Brief) introduction to KEVM</li>
+<li>Verification examples: Single opcode (<code>ADD</code>), ERC20 <code>transfer</code> function</li>
+<li>LTL runtime verification example</li>
+</ul>
+<h2 id="install-kevm%3A-docker-way">Install KEVM: Docker Way</h2>
+<h3 id="get-docker-container">Get Docker Container</h3>
+<pre><code class="language-sh"><span class="token function">docker</span> login
+<span class="token comment"># it will ask for username and password</span>
+<span class="token comment"># email will NOT work, they need their dockerhub USERNAME</span>
+<span class="token comment"># Proxy user: ehildenbproxy</span>
+<span class="token comment"># Proxy pass: ehildenb-proxy</span>
+
+<span class="token function">docker</span> run <span class="token parameter variable">-it</span> <span class="token parameter variable">-u</span> user <span class="token parameter variable">-w</span> /home/user/evm-semantics  <span class="token punctuation">\</span>
+    runtimeverificationinc/evm-semantics:trufflecon
+</code></pre>
+<h3 id="setup-environment">Setup Environment</h3>
+<pre><code class="language-sh"><span class="token builtin class-name">cd</span> <span class="token punctuation">..</span>/
+<span class="token builtin class-name">eval</span> <span class="token variable"><span class="token variable">$(</span><span class="token function">cat</span> <span class="token function">env</span><span class="token variable">)</span></span>
+<span class="token builtin class-name">cd</span> evm-semantics
+<span class="token function">which</span> klab
+</code></pre>
+<h2 id="install-kevm%3A-from-source">Install KEVM: From Source</h2>
+<h3 id="kevm">KEVM</h3>
+<ul>
+<li>
+<p>Branch <code>trufflecon</code> of KEVM: <a href="https://github.com/kframework/evm-semantics" target="_blank" rel="noreferrer noopener">https://github.com/kframework/evm-semantics</a></p>
+</li>
+<li>
+<p>Build instructions in README.</p>
+<pre><code class="language-sh"><span class="token function">make</span> llvm-deps
+<span class="token function">make</span> build-java
+</code></pre>
+</li>
+</ul>
+<p>. . .</p>
+<h3 id="klab">KLab</h3>
+<ul>
+<li>
+<p>Branch <code>master</code> of KLab: <a href="https://github.com/dapphub/klab" target="_blank" rel="noreferrer noopener">https://github.com/dapphub/klab</a></p>
+</li>
+<li>
+<p>Build instructions in README.</p>
+<pre><code class="language-sh"><span class="token function">make</span> deps-npm
+</code></pre>
+</li>
+<li>
+<p>Patch KLab (comment lines 90 - 94 of <code>lib/behavior.js</code>).</p>
+</li>
+<li>
+<p>Should be able to run (in KEVM repo with <code>klab/bin</code> on your <code>PATH</code>):</p>
+<pre><code class="language-sh">./kevm klab-prove add-spec.k
+./kevm klab-view  add-spec.k
+</code></pre>
+</li>
+</ul>
+<h2 id=".%2Fkevm-help"><code>./kevm help</code></h2>
+<pre><code class="language-sh">usage: ./kevm run        <span class="token punctuation">[</span>--backend <span class="token punctuation">(</span>ocaml<span class="token operator">|</span><span class="token function">java</span><span class="token operator">|</span>llvm<span class="token operator">|</span>haskell<span class="token punctuation">)</span><span class="token punctuation">]</span> <span class="token operator">&lt;</span>pgm<span class="token operator">&gt;</span>  <span class="token operator">&lt;</span>K arg<span class="token operator">&gt;</span>*
+       ./kevm interpret  <span class="token punctuation">[</span>--backend <span class="token punctuation">(</span>ocaml<span class="token operator">|</span>llvm<span class="token punctuation">)</span><span class="token punctuation">]</span>              <span class="token operator">&lt;</span>pgm<span class="token operator">&gt;</span>  <span class="token operator">&lt;</span>interpreter arg<span class="token operator">&gt;</span>*
+       ./kevm kast       <span class="token punctuation">[</span>--backend <span class="token punctuation">(</span>ocaml<span class="token operator">|</span><span class="token function">java</span><span class="token punctuation">)</span><span class="token punctuation">]</span>              <span class="token operator">&lt;</span>pgm<span class="token operator">&gt;</span>  <span class="token operator">&lt;</span>output format<span class="token operator">&gt;</span> <span class="token operator">&lt;</span>K arg<span class="token operator">&gt;</span>*
+       ./kevm prove      <span class="token punctuation">[</span>--backend <span class="token punctuation">(</span>java<span class="token operator">|</span>haskell<span class="token punctuation">)</span><span class="token punctuation">]</span>            <span class="token operator">&lt;</span>spec<span class="token operator">&gt;</span> <span class="token operator">&lt;</span>K arg<span class="token operator">&gt;</span>* <span class="token parameter variable">-m</span> <span class="token operator">&lt;</span>def_module<span class="token operator">&gt;</span>
+       ./kevm search     <span class="token punctuation">[</span>--backend <span class="token punctuation">(</span>java<span class="token operator">|</span>haskell<span class="token punctuation">)</span><span class="token punctuation">]</span>            <span class="token operator">&lt;</span>pgm<span class="token operator">&gt;</span>  <span class="token operator">&lt;</span>pattern<span class="token operator">&gt;</span> <span class="token operator">&lt;</span>K arg<span class="token operator">&gt;</span>*
+       ./kevm klab-run                                         <span class="token operator">&lt;</span>pgm<span class="token operator">&gt;</span>  <span class="token operator">&lt;</span>K arg<span class="token operator">&gt;</span>*
+       ./kevm klab-prove                                       <span class="token operator">&lt;</span>spec<span class="token operator">&gt;</span> <span class="token operator">&lt;</span>K arg<span class="token operator">&gt;</span>* <span class="token parameter variable">-m</span> <span class="token operator">&lt;</span>def_module<span class="token operator">&gt;</span>
+       ./kevm klab-view                                        <span class="token operator">&lt;</span>spec<span class="token operator">&gt;</span>
+
+   ./kevm run       <span class="token builtin class-name">:</span> Run a single EVM program
+   ./kevm interpret <span class="token builtin class-name">:</span> Run JSON EVM programs without K Frontend <span class="token punctuation">(</span>external parser<span class="token punctuation">)</span>
+   ./kevm kast      <span class="token builtin class-name">:</span> Parse an EVM program and output it <span class="token keyword">in</span> a supported <span class="token function">format</span>
+   ./kevm prove     <span class="token builtin class-name">:</span> Run an EVM K proof
+   ./kevm search    <span class="token builtin class-name">:</span> Search <span class="token keyword">for</span> a K pattern <span class="token keyword">in</span> an EVM program execution
+   ./kevm klab-<span class="token punctuation">(</span>run<span class="token operator">|</span>prove<span class="token punctuation">)</span> <span class="token builtin class-name">:</span> Run program or prove spec and dump StateLogs <span class="token function">which</span> KLab can <span class="token builtin class-name">read</span>
+   ./kevm klab-view <span class="token builtin class-name">:</span> View the statelog associated with a given program or spec
+
+   Note: <span class="token operator">&lt;</span>pgm<span class="token operator">&gt;</span> is a path to a <span class="token function">file</span> containing an EVM program/test.
+         <span class="token operator">&lt;</span>spec<span class="token operator">&gt;</span> is a K specification to be proved.
+         <span class="token operator">&lt;</span>K arg<span class="token operator">&gt;</span> is an argument you want to pass to K.
+         <span class="token operator">&lt;</span>interpreter arg<span class="token operator">&gt;</span> is an argument you want to pass to the derived interpreter.
+         <span class="token operator">&lt;</span>output format<span class="token operator">&gt;</span> is the <span class="token function">format</span> <span class="token keyword">for</span> Kast to output the term in.
+         <span class="token operator">&lt;</span>pattern<span class="token operator">&gt;</span> is the configuration pattern to search for.
+         <span class="token operator">&lt;</span>def_module<span class="token operator">&gt;</span> is the module to take as axioms when doing verification.
+
+   klab-view: Make sure that the <span class="token string">'klab/bin'</span> directory is on your <span class="token environment constant">PATH</span> to use this option.
+</code></pre>
+<h2 id=".%2Fkevm-examples"><code>./kevm</code> examples</h2>
+<ul>
+<li>
+<p>Run a test: <code>./kevm run tests/etheremu-tests/...</code></p>
+</li>
+<li>
+<p>Interpret a test (fast): <code>./kevm interpret tests/etheremu-tests/...</code></p>
+</li>
+<li>
+<p>Run a proof: <code>./kevm prove tests/specs/*-spec.k</code></p>
+</li>
+<li>
+<p>Run a test under KLab: <code>./kevm klab-run tests/ethereum-tests/...</code></p>
+</li>
+<li>
+<p>Run a proof under KLab: <code>./kevm klab-prove tests/ethereum-tests/...</code></p>
+</li>
+<li>
+<p>Environment variables <code>MODE</code> and <code>SCHEDULE</code> control how KEVM executes.</p>
+</li>
+<li>
+<p><code>MODE</code> can be <code>NORMAL</code> or <code>VMTESTS</code>.</p>
+</li>
+<li>
+<p><code>SCHEDULE</code> can be <code>DEFAULT</code>, <code>FRONTIER</code>, <code>HOMESTEAD</code>, <code>TANGERINE_WHISTLE</code>, <code>SPURIOUS_DRAGON</code>, <code>BYZANTIUM</code>, <code>CONSTANTINOPLE</code>, or <code>PETERSBURG</code>.</p>
+</li>
+</ul>
+<h2 id="introduction-to-kevm">Introduction to KEVM</h2>
+<ul>
+<li><a href="../../data/">data.md</a> defines data-structures of EVM.</li>
+<li><a href="../../network/">network.md</a> defines the EVMC status codes.</li>
+<li><a href="../../evm/">evm.md</a> defines the semantics itself.</li>
+<li><a href="../../driver/">driver.md</a> defines the testing harness.</li>
+<li><a href="../../edsl/">edsl.md</a> defines a DSL for aiding specification for proofs.</li>
+<li><a href="../../evm-node/">evm-node.md</a> defines the protobuf interface to use KEVM over RPC.</li>
+</ul>
+<h2 id="understanding-the-k-prover%3A-single-opcode">Understanding the K Prover: Single Opcode</h2>
+<p>File <code>add-spec.k</code>:</p>
+<pre><code class="language-k"><span class="token keyword">requires</span> <span class="token string">"evm.k"</span>
+
+<span class="token keyword">module</span> ADD<span class="token operator">-</span>SPEC
+    <span class="token keyword">imports</span> EVM
+
+    <span class="token keyword">rule</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span> #next <span class="token punctuation">[</span> ADD <span class="token punctuation">]</span> <span class="token operator">=&gt;</span> <span class="token punctuation">.</span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>schedule</span><span class="token punctuation">&gt;</span></span> SCHEDULE <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>schedule</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>wordStack</span><span class="token punctuation">&gt;</span></span> W0 <span class="token punctuation">:</span> W1 <span class="token punctuation">:</span> WS <span class="token operator">=&gt;</span> chop<span class="token punctuation">(</span>W0 <span class="token operator">+</span><span class="token keyword">Int</span> W1<span class="token punctuation">)</span> <span class="token punctuation">:</span> WS <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>wordStack</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>pc</span><span class="token punctuation">&gt;</span></span> PCOUNT <span class="token operator">=&gt;</span> PCOUNT <span class="token operator">+</span><span class="token keyword">Int</span> <span class="token number">1</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>pc</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>gas</span><span class="token punctuation">&gt;</span></span> G <span class="token operator">=&gt;</span> G <span class="token operator">-</span><span class="token keyword">Int</span> Gverylow &lt; SCHEDULE &gt; <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>gas</span><span class="token punctuation">&gt;</span></span>
+      <span class="token keyword">requires</span> G <span class="token operator">&gt;=</span><span class="token keyword">Int</span> Gverylow &lt; SCHEDULE &gt;
+       andBool notBool <span class="token punctuation">(</span> #stackUnderflow <span class="token punctuation">(</span> W0 <span class="token punctuation">:</span> W1 <span class="token punctuation">:</span> WS <span class="token punctuation">,</span> ADD <span class="token punctuation">)</span>
+                  orBool #stackOverflow  <span class="token punctuation">(</span> W0 <span class="token punctuation">:</span> W1 <span class="token punctuation">:</span> WS <span class="token punctuation">,</span> ADD <span class="token punctuation">)</span>
+                       <span class="token punctuation">)</span>
+<span class="token keyword">endmodule</span>
+</code></pre>
+<p>. . .</p>
+<ul>
+<li><code>./kevm prove      add-spec.k --def-module EVM</code></li>
+<li><code>./kevm klab-prove add-spec.k --def-module EVM</code></li>
+<li><code>./kevm klab-view  add-spec.k --def-module EVM</code></li>
+</ul>
+<p>. . .</p>
+<ul>
+<li>Try with side-conditions removed.</li>
+</ul>
+<h2 id="ltl-runtime-verification">LTL Runtime Verification</h2>
+<ul>
+<li>
+<p>Compile semantics with <code>media/201908-trufflecon/kevm-ltl.md</code>, which instruments semantics (<em>without</em> modifying it).</p>
+</li>
+<li>
+<p>Build definition:</p>
+<pre><code class="language-sh"><span class="token function">cp</span> media/201908-trufflecon/kevm-ltl.md kevm-ltl.md
+<span class="token function">make</span> <span class="token assign-left variable">MAIN_MODULE</span><span class="token operator">=</span>KEVM-LTL <span class="token assign-left variable">MAIN_DEFN_FILE</span><span class="token operator">=</span>kevm-ltl build-llvm
+</code></pre>
+</li>
+<li>
+<p>Try verifying a property:</p>
+<pre><code class="language-sh">./kevm run <span class="token parameter variable">--backend</span> llvm media/201908-trufflecon/addition.evm <span class="token parameter variable">-cLTLFORMULA</span><span class="token operator">=</span><span class="token string">'eventually revert'</span>
+./kevm run <span class="token parameter variable">--backend</span> llvm media/201908-trufflecon/addition.evm <span class="token parameter variable">-cLTLFORMULA</span><span class="token operator">=</span><span class="token string">'always ((~ overflow) \/ eventually revert)'</span>
+</code></pre>
+</li>
+</ul>
+<h2 id="thanks!">Thanks!</h2>
+<ul>
+<li>TruffleCon for hosting us!</li>
+<li>You all for attending!</li>
+</ul>
+</body></html></div>
+        </main>
+
+        <!-- Page ToC -->
+        <div class="col-12 col-md-3 col-xl-2 py-md-3 bd-sidebar page-toc mb-3">
+          
+<div>
+<div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#overview"
+                class="bd-toc-link"
+                style="padding-left: 0px;;"
+              >
+                Overview
+              </a></div><details style="padding:0.25rem 0;;padding-left: 0px;">
+            <summary class="bd-toc-link-wrapper">
+              <a href="#install-kevm%3A-docker-way" class="bd-toc-link">Install KEVM: Docker Way</a>
+              </summary>
+            <div>
+              <div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#get-docker-container"
+                class="bd-toc-link"
+                style="padding-left: 8px;;"
+              >
+                Get Docker Container
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#setup-environment"
+                class="bd-toc-link"
+                style="padding-left: 8px;;"
+              >
+                Setup Environment
+              </a></div>
+            </div>
+          </details>
+        <details style="padding:0.25rem 0;;padding-left: 0px;">
+            <summary class="bd-toc-link-wrapper">
+              <a href="#install-kevm%3A-from-source" class="bd-toc-link">Install KEVM: From Source</a>
+              </summary>
+            <div>
+              <div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#kevm"
+                class="bd-toc-link"
+                style="padding-left: 8px;;"
+              >
+                KEVM
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#klab"
+                class="bd-toc-link"
+                style="padding-left: 8px;;"
+              >
+                KLab
+              </a></div>
+            </div>
+          </details>
+        <div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#.%2Fkevm-help"
+                class="bd-toc-link"
+                style="padding-left: 0px;;"
+              >
+                <code>./kevm help</code>
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#.%2Fkevm-examples"
+                class="bd-toc-link"
+                style="padding-left: 0px;;"
+              >
+                <code>./kevm</code> examples
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#introduction-to-kevm"
+                class="bd-toc-link"
+                style="padding-left: 0px;;"
+              >
+                Introduction to KEVM
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#understanding-the-k-prover%3A-single-opcode"
+                class="bd-toc-link"
+                style="padding-left: 0px;;"
+              >
+                Understanding the K Prover: Single Opcode
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#ltl-runtime-verification"
+                class="bd-toc-link"
+                style="padding-left: 0px;;"
+              >
+                LTL Runtime Verification
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#thanks!"
+                class="bd-toc-link"
+                style="padding-left: 0px;;"
+              >
+                Thanks!
+              </a></div>
+</div>
+
+        </div>
+        <div class="btn btn-rv-blue page-toc-toggle-btn"></div>
+        <!-- End Page ToC -->
+      </div>
+    </div>
+<!-- The footer is now controlled by the k-web-theme git submodule -->
+<footer id="rvsite-footer" class="app-footer text-md-left text-center">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-md-4 mb-md-0 mb-4">
+        <a href="https://runtimeverification.com/" target="_blank">
+          <picture>
+            <source
+              srcset="
+                https://runtimeverification.com/assets/img/rv-logo-dark.png
+              "
+              media="(prefers-color-scheme: dark)"
+            />
+            <img
+              class="logo-dark"
+              src="https://runtimeverification.com/assets/img/rv-logo.png"
+              alt="Runtime Verification logo"
+              style="height: 32px"
+            /> </picture
+        ></a>
+        <p class="mt-2 text-md-left copyright">
+          <a href="https://goo.gl/maps/5iu2nhbUA48fs7fP6" target="_blank"
+            >333 North Green Street, Chicago, IL</a
+          >
+        </p>
+      </div>
+      <div class="col-md-4 text-md-center mb-md-0 mb-4"></div>
+      <div class="col-md-4 mb-md-0 mb-4 pl-0 text-md-right">
+        <p class="copyright">2024 © all rights reserved</p>
+        <span class="copyright"><a href="https://runtimeverification.com/privacy-policy">privacy policy</a> | <a
+                href="https://runtimeverification.com/terms-of-use">terms of use</a></span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Typist/1.2/typist.min.js"></script>
+    <script src="../../assets/js/index.js"></script>
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script
+  async
+  src="https://www.googletagmanager.com/gtag/js?id=G-QL0D8HRYFW"
+></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag() {
+    dataLayer.push(arguments);
+  }
+  gtag("js", new Date());
+  gtag("config", "G-QL0D8HRYFW");
+</script>
+
+  </body>
+</html>
