@@ -114,7 +114,7 @@ module DSVALUE-READ-PASS-SUMMARIZE-SPEC
       <schedule> ISTANBUL </schedule>
       <useGas> true </useGas>
       <evm>
-        <output> _ => #buf(32, #lookup(ACCT_STORAGE, 2)) </output>              // from counterexample
+        <output> _ => #buf(32, VALUE) </output>              // from counterexample
         <statusCode> _ => EVMC_SUCCESS </statusCode>
         <callState>
           <id> ACCT_ID </id>
@@ -133,9 +133,13 @@ module DSVALUE-READ-PASS-SUMMARIZE-SPEC
       </evm>
       <account>
         <acctID> ACCT_ID </acctID>
-        <storage> ACCT_STORAGE => ?_ </storage>
+        <storage>
+          (1 |-> #WordPackAddrUInt8(Owner, Ok))
+          (2 |-> VALUE)
+          ACCT_STORAGE => ?_ </storage>
         (_ => ?_)
       </account>
-      requires notBool (255 &Int (#lookup( ACCT_STORAGE , 1 ) /Int 1461501637330902918203684832716283019655932542976)) ==Int 0 // from counterexample
+      requires #rangeUInt(8, Ok) andBool #rangeAddress(Owner) andBool rangeUInt(256, VALUE)
+       andBool notBool (Ok ==Int 0)
 
 endmodule

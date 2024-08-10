@@ -32,10 +32,11 @@ module FUNCTIONAL-SPEC
        andBool #rangeUInt(48, ABI_y)
        andBool notBool #rangeUInt(48, ABI_x +Int ABI_y)
 
-    claim <k> runLemma( (maxUInt48 &Int W1) +Int (maxUInt160 &Int W2) )
-          => doneLemma( X +Int Y ) ... </k>
-          requires (W1 ==Int #WordPackUInt48UInt48(X, _))
-           andBool (W2 ==Int #WordPackAddrUInt48UInt48(Y, _, _))
+    claim <k> runLemma( (maxUInt48 &Int W1) +Int (maxUInt160 &Int W2) ) => doneLemma( A +Int C ) ... </k>
+          requires (W1 ==Int #WordPackUInt48UInt48(A, B))
+           andBool (W2 ==Int #WordPackAddrUInt48UInt48(C, D, E))
+           andBool #rangeUInt(48, A) andBool #rangeUInt(48, B)
+           andBool #rangeAddress(C) andBool #rangeUInt(48, D) andBool #rangeUInt(48, E)
 
     claim <k> runLemma(bool2Word(ABI_src:Int ==Int CALLER_ID:Int) |Int bool2Word(X)) => doneLemma(bool2Word(ABI_src ==Int CALLER_ID orBool X)) ... </k>
       requires #rangeUInt(256, ABI_src)
@@ -56,34 +57,34 @@ module FUNCTIONAL-SPEC
 
     claim <k> runLemma(TIME +Int (TTL_TAU /Int pow48)) => doneLemma(TIME +Int TAU) ... </k>
       requires TTL_TAU ==Int #WordPackUInt48UInt48(TTL, TAU)
-       andBool #rangeUInt(48, TIME +Int TAU)
+       andBool #rangeUInt(48, TTL) andBool #rangeUInt(48, TAU)
 
     claim <k> runLemma(maxUInt48 &Int ((GAL |Int (notMaxUInt160 &Int GUY_TIC_END)) /Int pow160)) => doneLemma(TIC) ... </k>
       requires GUY_TIC_END ==Int #WordPackAddrUInt48UInt48(GUY, TIC, END)
-       andBool #rangeAddress(GAL)
+       andBool #rangeAddress(GAL) andBool #rangeAddress(GUY) andBool #rangeUInt(48, TIC) andBool #rangeUInt(48, END)
 
     claim <k> runLemma(maxUInt160 &Int (GAL |Int (notMaxUInt160 &Int GUY_TIC_END))) => doneLemma(GAL) ... </k>
       requires GUY_TIC_END ==Int #WordPackAddrUInt48UInt48(GUY, TIC, END)
-       andBool #rangeAddress(GAL)
+       andBool #rangeAddress(GAL) andBool #rangeAddress(GUY) andBool #rangeUInt(48, TIC) andBool #rangeUInt(48, END)
 
     claim [wordPackSimplify1]: <k> runLemma((((TIME +Int (maxUInt48 &Int (TTL_TAU /Int pow48))) *Int pow208) |Int (maxUInt208 &Int (GAL |Int (notMaxUInt160 &Int GUY_TIC_END))))) => doneLemma(#WordPackAddrUInt48UInt48(GAL, TIC, TIME +Int TAU)) ... </k>
       requires TTL_TAU     ==Int #WordPackUInt48UInt48(TTL, TAU)
        andBool GUY_TIC_END ==Int #WordPackAddrUInt48UInt48(GUY, TIC, END)
-       andBool #rangeAddress(GAL)
-       andBool #rangeUInt(48, TIME +Int TAU)
+       andBool #rangeAddress(GAL) andBool #rangeUInt(48, TTL) andBool #rangeUInt(48, TAU) andBool #rangeUInt(48, TIME +Int TAU)
+       andBool #rangeAddress(GUY) andBool #rangeUInt(48, TIC) andBool #rangeUInt(48, END)
 
-    claim [wordPackSimplify2]: <k> runLemma((((TIME +Int (maxUInt48 &Int TTL_TAU)) *Int pow160) |Int (maskWordPackAddrUInt48UInt48_2 &Int GUY_TIC_END))) => doneLemma(#WordPackAddrUInt48UInt48(GUY, TIME +Int TTL, END)) ... </k>
+    claim [wordPackSimplify2]: <k> runLemma((((TIME +Int (maxUInt48 &Int TTL_TAU)) *Int pow160) |Int (115792089237315784047431654708638870748305248246218003188207458632603225030655 &Int GUY_TIC_END))) => doneLemma(#WordPackAddrUInt48UInt48(GUY, TIME +Int TTL, END)) ... </k>
       requires TTL_TAU     ==Int #WordPackUInt48UInt48(TTL, TAU)
        andBool GUY_TIC_END ==Int #WordPackAddrUInt48UInt48(GUY, TIC, END)
-       andBool #rangeUInt(48, TIME +Int TTL)
+       andBool #rangeUInt(48, TTL) andBool #rangeUInt(48, TAU) andBool #rangeUInt(48, TIME +Int TTL)
+       andBool #rangeAddress(GUY) andBool #rangeUInt(48, TIC) andBool #rangeUInt(48, END)
 
     claim <k> runLemma(maxUInt48 &Int ((CALLER_ID |Int (notMaxUInt160 &Int #lookup(M, KX))) /Int pow208)) => doneLemma(maxUInt48 &Int (#lookup(M, KX) /Int pow208)) ... </k>
       requires #rangeAddress(CALLER_ID)
 
-    claim <k> runLemma(TIME +Int ( maxUInt48 &Int #lookup ( ACCT_ID_STORAGE [ keccak ( #buf ( 32 , ABI_id ) +Bytes X ) +Int 1 <- #lookup ( ACCT_ID_STORAGE , 5 ) *Int #lookup ( ACCT_ID_STORAGE , keccak ( #buf ( 32 , ABI_id ) +Bytes X ) +Int 1 ) /Int 1000000000000000000 ] , 6 ) /Int pow48 ) <Int pow48)
+    claim <k> runLemma(TIME +Int ( maxUInt48 &Int #lookup ( ((6 |-> #WordPackUInt48UInt48(Junk, Tau)) ACCT_ID_STORAGE) [ keccak ( #buf ( 32 , ABI_id ) +Bytes X ) +Int 1 <- #lookup ( ACCT_ID_STORAGE , 5 ) *Int #lookup ( ACCT_ID_STORAGE , keccak ( #buf ( 32 , ABI_id ) +Bytes X ) +Int 1 ) /Int 1000000000000000000 ] , 6 ) /Int pow48 ) <Int pow48)
            => doneLemma(true) ... </k>
-        requires #lookup(ACCT_ID_STORAGE, 6) ==Int #WordPackUInt48UInt48(_, Tau)
-        andBool #rangeUInt(48, TIME +Int Tau)
+        requires #rangeUInt(48, Junk) andBool #rangeUInt(48, Tau) andBool #rangeUInt(48, TIME +Int Tau)
 
     claim [bytesDisjointSetCommutative1]: <k> runLemma( ACCT_ID_STORAGE [ keccak ( #buf ( 32 , ABI_id ) +Bytes X) +Int 1 <- ABI_lot:Int ] [ keccak ( #buf ( 32 , ABI_id ) +Bytes X) +Int 2 <- #WordPackAddrUInt48UInt48 ( CALLER_ID , TIME +Int ( maxUInt48 &Int #lookup ( ACCT_ID_STORAGE , 6 ) ) , #lookup ( ACCT_ID_STORAGE , keccak ( #buf ( 32 , ABI_id ) +Bytes X) +Int 2 ) /Int pow208 ) ]
                           ==K

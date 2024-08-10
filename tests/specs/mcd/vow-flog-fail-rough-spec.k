@@ -73,7 +73,12 @@ module VOW-FLOG-FAIL-ROUGH-SPEC
               <acctID> ACCT_ID </acctID>
               <balance> ACCT_ID_balance </balance>
               <code> Vow_bin_runtime </code>
-              <storage> ACCT_ID_STORAGE => ?_ACCT_ID_STORAGE </storage>
+              <storage>
+                (#Vow.wait |-> Wait)
+                (#Vow.Sin |-> Sin)
+                (#Vow.sin[ABI_t] |-> Sin_t)
+                ACCT_ID_STORAGE => ?ACCT_ID_STORAGE
+              </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
               <nonce> Nonce_Vow => ?_ </nonce>
               <transientStorage> _ </transientStorage>
@@ -101,20 +106,8 @@ module VOW-FLOG-FAIL-ROUGH-SPEC
        andBool (#rangeUInt(256, Wait)
        andBool (#rangeUInt(256, Sin_t)
        andBool (#rangeUInt(256, Sin)
-       andBool (lengthBytes(CD) <=Int 1250000000
-       andBool (#rangeUInt(256, Junk_0)
-       andBool (#rangeUInt(256, Junk_1)
-       andBool (#rangeUInt(256, Junk_2)))))))))
+       andBool (lengthBytes(CD) <=Int 1250000000)))))
 
-       andBool #lookup(ACCT_ID_STORAGE, #Vow.wait) ==Int Wait
-       andBool #lookup(ACCT_ID_STORAGE, #Vow.Sin) ==Int Sin
-       andBool #lookup(ACCT_ID_STORAGE, #Vow.sin[ABI_t]) ==Int Sin_t
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Vow.wait) ==Int Junk_0
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Vow.Sin) ==Int Junk_1
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Vow.sin[ABI_t]) ==Int Junk_2
-       andBool #Vow.wait =/=Int #Vow.Sin
-       andBool #Vow.wait =/=Int #Vow.sin[ABI_t]
-       andBool #Vow.Sin =/=Int #Vow.sin[ABI_t]
        andBool notBool (
         (((ABI_t:Int +Int Wait:Int <=Int TIME:Int))
         andBool (((VCallValue:Int ==Int 0))
@@ -224,9 +217,7 @@ module VOW-FLOG-FAIL-ROUGH-SPEC
        andBool ((#rangeUInt(256, ABI_x +Int ABI_y)))))))
        andBool #rangeNonce(Nonce_Vow)
 
-
     [trusted]
-
 
     // Vow_subuu
     claim [Vow.subuu.pass]:
@@ -328,8 +319,6 @@ module VOW-FLOG-FAIL-ROUGH-SPEC
        andBool (#rangeUInt(256, VMemoryUsed)
        andBool ((#rangeUInt(256, ABI_x -Int ABI_y)))))))
 
-
     [trusted]
-
 
 endmodule

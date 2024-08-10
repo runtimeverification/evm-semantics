@@ -271,9 +271,7 @@ module FLOPPER-DENT-GUY-SAME-PASS-ROUGH-SPEC
        andBool (#rangeUInt(256, VMemoryUsed)
        andBool ((#rangeUInt(256, ABI_x *Int ABI_y)))))))
 
-
     [trusted]
-
 
     // Flopper_addu48u48
     claim [Flopper.addu48u48.pass]:
@@ -374,8 +372,6 @@ module FLOPPER-DENT-GUY-SAME-PASS-ROUGH-SPEC
        andBool (#rangeUInt(256, VMemoryUsed)
        andBool ((#rangeUInt(48, ABI_x +Int ABI_y)))))))
 
-
     [trusted]
-
 
 endmodule

@@ -73,7 +73,11 @@ module DSTOKEN-APPROVE-FAIL-ROUGH-SPEC
               <acctID> ACCT_ID </acctID>
               <balance> ACCT_ID_balance </balance>
               <code> DSToken_bin_runtime </code>
-              <storage> ACCT_ID_STORAGE => ?_ACCT_ID_STORAGE </storage>
+              <storage>
+                (#DSToken.allowance[CALLER_ID][ABI_usr] |-> Allowed)
+                (#DSToken.owner_stopped |-> #WordPackAddrUInt8(Owner, Stopped))
+                ACCT_ID_STORAGE => ?_ACCT_ID_STORAGE
+              </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
               <nonce> _Nonce_DSToken => ?_ </nonce>
               <transientStorage> _ </transientStorage>
@@ -102,15 +106,7 @@ module DSTOKEN-APPROVE-FAIL-ROUGH-SPEC
        andBool (#rangeBool(Stopped)
        andBool (#rangeAddress(Owner)
        andBool (lengthBytes(CD) <=Int 1250000000
-       andBool (#notPrecompileAddress(Owner)
-       andBool (#rangeUInt(256, Junk_0)
-       andBool (#rangeUInt(256, Junk_1))))))))))
-
-       andBool #lookup(ACCT_ID_STORAGE, #DSToken.allowance[CALLER_ID][ABI_usr]) ==Int Allowed
-       andBool #lookup(ACCT_ID_STORAGE, #DSToken.owner_stopped) ==Int #WordPackAddrUInt8(Owner, Stopped)
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #DSToken.allowance[CALLER_ID][ABI_usr]) ==Int Junk_0
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #DSToken.owner_stopped) ==Int Junk_1
-       andBool #DSToken.allowance[CALLER_ID][ABI_usr] =/=Int #DSToken.owner_stopped
+       andBool (#notPrecompileAddress(Owner))))))))
        andBool notBool (
         ((Stopped:Int ==Int 0)
         andBool ((VCallValue:Int ==Int 0)))

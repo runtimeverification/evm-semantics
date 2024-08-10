@@ -219,16 +219,21 @@ module BYTES-SIMPLIFICATION [symbolic]
       requires 0 <=Int S1 andBool 0 <=Int W2 andBool S1 +Int lengthBytes(B2) <=Int S2 [simplification]
 
     rule [range-buf-zero]:
-      #range (#buf(W1:Int, X:Int), S2:Int, W2:Int) => #buf(W2, 0)
-      requires 0 <=Int X andBool X <Int 2 ^Int (8 *Int (W1 -Int (S2 +Int W2)))
-       andBool 0 <=Int S2 andBool 0 <=Int W2 andBool S2 +Int W2 <=Int W1
-      [simplification, concrete(W1, S2, W2), preserves-definedness]
+      #range (#buf(N:Int, X:Int), S:Int, W:Int) => #buf(W, 0)
+      requires 0 <=Int X andBool X <Int 2 ^Int (8 *Int (N -Int (S +Int W)))
+       andBool 0 <=Int S andBool 0 <=Int W andBool S +Int W <=Int N
+      [simplification, concrete(N, S, W), preserves-definedness]
 
     rule [range-buf-value]:
       #range (#buf(W1:Int, X:Int), S2:Int, W2:Int) => #buf(W2, X)
       requires 0 <=Int X andBool X <Int 2 ^Int (8 *Int W2)
        andBool 0 <=Int S2 andBool 0 <=Int W2 andBool W1 ==Int S2 +Int W2
       [simplification, concrete(W1, S2, W2), preserves-definedness]
+
+    rule [range-buf-from-zero]:
+      #range (#buf(N:Int, X:Int), 0, W:Int) => #buf ( W, X /Int (2 ^Int (8 *Int (N -Int W))) )
+      requires #rangeUInt(256, X) andBool 0 <=Int W andBool W <=Int N
+      [simplification(60), concrete(N, W), preserves-definedness]
 
     rule [range-padRightToWidth]:
       #range(#padRightToWidth(_, BUF), 0, WIDTH) => BUF

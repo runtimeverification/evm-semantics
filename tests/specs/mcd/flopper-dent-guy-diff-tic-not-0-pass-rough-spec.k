@@ -306,9 +306,7 @@ module FLOPPER-DENT-GUY-DIFF-TIC-NOT-0-PASS-ROUGH-SPEC
        andBool (#rangeUInt(256, VMemoryUsed)
        andBool ((#rangeUInt(256, ABI_x *Int ABI_y)))))))
 
-
     [trusted]
-
 
     // Flopper_addu48u48
     claim [Flopper.addu48u48.pass]:
@@ -411,7 +409,6 @@ module FLOPPER-DENT-GUY-DIFF-TIC-NOT-0-PASS-ROUGH-SPEC
        andBool ((#rangeUInt(48, ABI_x +Int ABI_y)))))))
 
     [trusted]
-
 
     // Vat_move-diff
     claim [Vat.move-diff.pass]:
@@ -532,7 +529,7 @@ module FLOPPER-DENT-GUY-DIFF-TIC-NOT-0-PASS-ROUGH-SPEC
        andBool #Vat.can[ABI_src][CALLER_ID] =/=Int #Vat.dai[ABI_src]
        andBool #Vat.can[ABI_src][CALLER_ID] =/=Int #Vat.dai[ABI_dst]
        andBool #Vat.dai[ABI_src] =/=Int #Vat.dai[ABI_dst]
-    [trusted]
 
+    [trusted]
 
 endmodule

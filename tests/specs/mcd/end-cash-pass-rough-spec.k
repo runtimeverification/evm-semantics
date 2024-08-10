@@ -73,7 +73,18 @@ module END-CASH-PASS-ROUGH-SPEC
               <acctID> ACCT_ID </acctID>
               <balance> ACCT_ID_balance </balance>
               <code> End_bin_runtime </code>
-              <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE [ #End.out[ABI_ilk][CALLER_ID] <- Out +Int ABI_wad ] </storage>
+              <storage>
+                (#End.vat |-> Vat)
+                (#End.fix[ABI_ilk] |-> Fix)
+                (#End.bag[CALLER_ID] |-> Bag)
+                (#End.out[ABI_ilk][CALLER_ID] |-> Out)
+                ACCT_ID_STORAGE =>
+                  (#End.vat |-> Vat)
+                  (#End.fix[ABI_ilk] |-> Fix)
+                  (#End.bag[CALLER_ID] |-> Bag)
+                  (#End.out[ABI_ilk][CALLER_ID] |-> Out +Int ABI_wad)
+                  ACCT_ID_STORAGE
+              </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
               <nonce> Nonce_End </nonce>
               <transientStorage> _ </transientStorage>
@@ -82,7 +93,14 @@ module END-CASH-PASS-ROUGH-SPEC
               <acctID> Vat </acctID>
               <balance> Vat_balance </balance>
               <code> Vat_bin_runtime </code>
-              <storage> Vat_STORAGE => Vat_STORAGE [ #Vat.gem[ABI_ilk][ACCT_ID] <- Gem_e -Int #rmul(ABI_wad, Fix) ] [ #Vat.gem[ABI_ilk][CALLER_ID] <- Gem_c +Int #rmul(ABI_wad, Fix) ] </storage>
+              <storage>
+                (#Vat.gem[ABI_ilk][ACCT_ID] |-> Gem_e)
+                (#Vat.gem[ABI_ilk][CALLER_ID] |-> Gem_c)
+                Vat_STORAGE =>
+                  (#Vat.gem[ABI_ilk][ACCT_ID] |-> (Gem_e -Int #rmul(ABI_wad, Fix)))
+                  (#Vat.gem[ABI_ilk][CALLER_ID] |-> (Gem_c +Int #rmul(ABI_wad, Fix)))
+                  Vat_STORAGE
+              </storage>
               <origStorage> Vat_ORIG_STORAGE </origStorage>
               <nonce> Nonce_Vat </nonce>
               <transientStorage> _ </transientStorage>
@@ -121,45 +139,13 @@ module END-CASH-PASS-ROUGH-SPEC
        andBool ((ACCT_ID =/=Int Vat)
        andBool ((ACCT_ID =/=Int CALLER_ID)
        andBool ((Vat =/=Int 0)
-       andBool (#rangeUInt(256, Junk_0)
-       andBool (#rangeUInt(256, Junk_1)
-       andBool (#rangeUInt(256, Junk_2)
-       andBool (#rangeUInt(256, Junk_3)
-       andBool (#rangeUInt(256, Junk_4)
-       andBool (#rangeUInt(256, Junk_5)
-       andBool (#rangeUInt(256, Junk_6)
-       andBool (#rangeUInt(256, Junk_7)
        andBool (((Fix =/=Int 0))
        andBool (((Out +Int ABI_wad <=Int Bag))
        andBool (((VCallValue ==Int 0))
        andBool (((VCallDepth <Int 1024))
        andBool ((#rangeUInt(256, ABI_wad *Int Fix))
        andBool ((#rangeUInt(256, Gem_e -Int ((ABI_wad *Int Fix) /Int #Ray)))
-       andBool ((#rangeUInt(256, Gem_c +Int ((ABI_wad *Int Fix) /Int #Ray))))))))))))))))))))))))))))))))
-
-       andBool #lookup(ACCT_ID_STORAGE, #End.vat) ==Int Vat
-       andBool #lookup(ACCT_ID_STORAGE, #End.fix[ABI_ilk]) ==Int Fix
-       andBool #lookup(ACCT_ID_STORAGE, #End.bag[CALLER_ID]) ==Int Bag
-       andBool #lookup(ACCT_ID_STORAGE, #End.out[ABI_ilk][CALLER_ID]) ==Int Out
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #End.vat) ==Int Junk_0
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #End.fix[ABI_ilk]) ==Int Junk_1
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #End.bag[CALLER_ID]) ==Int Junk_2
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #End.out[ABI_ilk][CALLER_ID]) ==Int Junk_3
-       andBool #End.vat =/=Int #End.fix[ABI_ilk]
-       andBool #End.vat =/=Int #End.bag[CALLER_ID]
-       andBool #End.vat =/=Int #End.out[ABI_ilk][CALLER_ID]
-       andBool #End.fix[ABI_ilk] =/=Int #End.bag[CALLER_ID]
-       andBool #End.fix[ABI_ilk] =/=Int #End.out[ABI_ilk][CALLER_ID]
-       andBool #End.bag[CALLER_ID] =/=Int #End.out[ABI_ilk][CALLER_ID]
-       andBool #lookup(Vat_STORAGE, #Vat.can[ACCT_ID][ACCT_ID]) ==Int Junk_4
-       andBool #lookup(Vat_STORAGE, #Vat.gem[ABI_ilk][ACCT_ID]) ==Int Gem_e
-       andBool #lookup(Vat_STORAGE, #Vat.gem[ABI_ilk][CALLER_ID]) ==Int Gem_c
-       andBool #lookup(Vat_ORIG_STORAGE, #Vat.can[ACCT_ID][ACCT_ID]) ==Int Junk_5
-       andBool #lookup(Vat_ORIG_STORAGE, #Vat.gem[ABI_ilk][ACCT_ID]) ==Int Junk_6
-       andBool #lookup(Vat_ORIG_STORAGE, #Vat.gem[ABI_ilk][CALLER_ID]) ==Int Junk_7
-       andBool #Vat.can[ACCT_ID][ACCT_ID] =/=Int #Vat.gem[ABI_ilk][ACCT_ID]
-       andBool #Vat.can[ACCT_ID][ACCT_ID] =/=Int #Vat.gem[ABI_ilk][CALLER_ID]
-       andBool #Vat.gem[ABI_ilk][ACCT_ID] =/=Int #Vat.gem[ABI_ilk][CALLER_ID]
+       andBool ((#rangeUInt(256, Gem_c +Int ((ABI_wad *Int Fix) /Int #Ray))))))))))))))))))))))))
 
     // End_adduu
     claim [End.adduu.pass]:
@@ -261,9 +247,7 @@ module END-CASH-PASS-ROUGH-SPEC
        andBool (#rangeUInt(256, VMemoryUsed)
        andBool ((#rangeUInt(256, ABI_x +Int ABI_y)))))))
 
-
     [trusted]
-
 
     // End_rmul
     claim [End.rmul.pass]:
@@ -368,9 +352,7 @@ module END-CASH-PASS-ROUGH-SPEC
        andBool (#rangeUInt(256, VMemoryUsed)
        andBool ((#rangeUInt(256, ABI_x *Int ABI_y)))))))
 
-
     [trusted]
-
 
     // Vat_flux-diff
     claim [Vat.flux-diff.pass]:
@@ -442,8 +424,20 @@ module END-CASH-PASS-ROUGH-SPEC
               <acctID> ACCT_ID </acctID>
               <balance> ACCT_ID_balance </balance>
               <code> Vat_bin_runtime </code>
-              <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE [ #Vat.gem[ABI_ilk][ABI_src] <- Gem_src -Int ABI_wad ] [ #Vat.gem[ABI_ilk][ABI_dst] <- Gem_dst +Int ABI_wad ] </storage>
-              <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
+              <storage>
+                (#Vat.can[ABI_src][CALLER_ID] |-> May)
+                (#Vat.gem[ABI_ilk][ABI_src] |-> Gem_src)
+                (#Vat.gem[ABI_ilk][ABI_dst] |-> Gem_dst)
+                ACCT_ID_STORAGE =>
+                  (#Vat.can[ABI_src][CALLER_ID] |-> May)
+                  (#Vat.gem[ABI_ilk][ABI_src] |-> (Gem_src -Int ABI_wad))
+                  (#Vat.gem[ABI_ilk][ABI_dst] |-> (Gem_dst +Int ABI_wad))
+              </storage>
+              <origStorage>
+                (#Vat.gem[ABI_ilk][ABI_src] |-> Junk_1)
+                (#Vat.gem[ABI_ilk][ABI_dst] |-> Junk_2)
+                ACCT_ID_ORIG_STORAGE
+              </origStorage>
               <nonce> Nonce_Vat </nonce>
               <transientStorage> _ </transientStorage>
             </account>
@@ -475,24 +469,11 @@ module END-CASH-PASS-ROUGH-SPEC
        andBool (#rangeUInt(256, Gem_dst)
        andBool ((lengthBytes(CD) <=Int 1250000000)
        andBool ((ABI_src =/=Int ABI_dst)
-       andBool (#rangeUInt(256, Junk_0)
-       andBool (#rangeUInt(256, Junk_1)
-       andBool (#rangeUInt(256, Junk_2)
        andBool ((((May ==Int 1 orBool ABI_src ==Int CALLER_ID)))
        andBool (((VCallValue ==Int 0))
        andBool ((#rangeUInt(256, Gem_src -Int ABI_wad))
-       andBool ((#rangeUInt(256, Gem_dst +Int ABI_wad))))))))))))))))))
+       andBool ((#rangeUInt(256, Gem_dst +Int ABI_wad)))))))))))))))
 
-       andBool #lookup(ACCT_ID_STORAGE, #Vat.can[ABI_src][CALLER_ID]) ==Int May
-       andBool #lookup(ACCT_ID_STORAGE, #Vat.gem[ABI_ilk][ABI_src]) ==Int Gem_src
-       andBool #lookup(ACCT_ID_STORAGE, #Vat.gem[ABI_ilk][ABI_dst]) ==Int Gem_dst
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Vat.can[ABI_src][CALLER_ID]) ==Int Junk_0
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Vat.gem[ABI_ilk][ABI_src]) ==Int Junk_1
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Vat.gem[ABI_ilk][ABI_dst]) ==Int Junk_2
-       andBool #Vat.can[ABI_src][CALLER_ID] =/=Int #Vat.gem[ABI_ilk][ABI_src]
-       andBool #Vat.can[ABI_src][CALLER_ID] =/=Int #Vat.gem[ABI_ilk][ABI_dst]
-       andBool #Vat.gem[ABI_ilk][ABI_src] =/=Int #Vat.gem[ABI_ilk][ABI_dst]
     [trusted]
-
 
 endmodule

@@ -73,7 +73,14 @@ module CAT-FILE-ADDR-PASS-ROUGH-SPEC
               <acctID> ACCT_ID </acctID>
               <balance> ACCT_ID_balance </balance>
               <code> Cat_bin_runtime </code>
-              <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE [ #Cat.vow <- ABI_data ] </storage>
+              <storage>
+                (#Cat.wards[CALLER_ID] |-> May)
+                (#Cat.vow |-> Vow)
+                ACCT_ID_STORAGE =>
+                  (#Cat.wards[CALLER_ID] |-> May)
+                  (#Cat.vow |-> ABI_data)
+                  ACCT_ID_STORAGE
+              </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
               <nonce> Nonce_Cat </nonce>
               <transientStorage> _ </transientStorage>
@@ -103,16 +110,8 @@ module CAT-FILE-ADDR-PASS-ROUGH-SPEC
        andBool (#rangeAddress(Vow)
        andBool (lengthBytes(CD) <=Int 1250000000
        andBool (#notPrecompileAddress(Vow)
-       andBool (#rangeUInt(256, Junk_0)
-       andBool (#rangeUInt(256, Junk_1)
        andBool ((May ==Int 1)
        andBool ((VCallValue ==Int 0)
-       andBool ((ABI_what ==Int #string2Word("vow")))))))))))))
-
-       andBool #lookup(ACCT_ID_STORAGE, #Cat.wards[CALLER_ID]) ==Int May
-       andBool #lookup(ACCT_ID_STORAGE, #Cat.vow) ==Int Vow
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Cat.wards[CALLER_ID]) ==Int Junk_0
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Cat.vow) ==Int Junk_1
-       andBool #Cat.wards[CALLER_ID] =/=Int #Cat.vow
+       andBool ((ABI_what ==Int #string2Word("vow")))))))))))
 
 endmodule

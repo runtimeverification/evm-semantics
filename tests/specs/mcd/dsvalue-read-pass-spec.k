@@ -73,7 +73,11 @@ module DSVALUE-READ-PASS-SPEC
               <acctID> ACCT_ID </acctID>
               <balance> ACCT_ID_balance </balance>
               <code> DSValue_bin_runtime </code>
-              <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE  </storage>
+              <storage>
+                (#DSValue.owner_has |-> #WordPackAddrUInt8(Owner, Ok))
+                (#DSValue.val |-> Value)
+                ACCT_ID_STORAGE
+              </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
               <nonce> Nonce_DSValue </nonce>
               <transientStorage> _ </transientStorage>
@@ -101,16 +105,9 @@ module DSVALUE-READ-PASS-SPEC
        andBool (#rangeBool(Ok)
        andBool (lengthBytes(CD) <=Int 1250000000
        andBool (#notPrecompileAddress(Owner)
-       andBool (#rangeUInt(256, Junk_0)
-       andBool (#rangeUInt(256, Junk_1)
        andBool ((VCallValue ==Int 0)
-       andBool ((Ok ==Int 1))))))))))
+       andBool ((Ok ==Int 1))))))))
 
-       andBool #lookup(ACCT_ID_STORAGE, #DSValue.owner_has) ==Int #WordPackAddrUInt8(Owner, Ok)
-       andBool #lookup(ACCT_ID_STORAGE, #DSValue.val) ==Int Value
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #DSValue.owner_has) ==Int Junk_0
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #DSValue.val) ==Int Junk_1
-       andBool #DSValue.owner_has =/=Int #DSValue.val
        andBool #rangeNonce(Nonce_DSValue)
 
 endmodule

@@ -4,7 +4,7 @@ requires "bitwise-simplification.k"
 requires "bytes-simplification.k"
 requires "evm-int-simplification.k"
 requires "int-simplification.k"
-
+requires "slot-updates.k"
 
 
 module LEMMAS [symbolic]
@@ -12,6 +12,7 @@ module LEMMAS [symbolic]
     imports BYTES-SIMPLIFICATION
     imports INT-SIMPLIFICATION
     imports EVM-INT-SIMPLIFICATION
+    imports SLOT-UPDATES
     imports LEMMAS-HASKELL
 
   // ########################

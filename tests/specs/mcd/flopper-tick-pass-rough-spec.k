@@ -231,8 +231,6 @@ module FLOPPER-TICK-PASS-ROUGH-SPEC
        andBool (#rangeUInt(256, VMemoryUsed)
        andBool ((#rangeUInt(48, ABI_x +Int ABI_y)))))))
 
-
     [trusted]
-
 
 endmodule
