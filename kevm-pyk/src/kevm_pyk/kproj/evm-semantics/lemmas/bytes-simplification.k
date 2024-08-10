@@ -225,10 +225,10 @@ module BYTES-SIMPLIFICATION [symbolic]
       [simplification, concrete(N, S, W), preserves-definedness]
 
     rule [range-buf-value]:
-      #range (#buf(W1:Int, X:Int), S2:Int, W2:Int) => #buf(W2, X)
-      requires 0 <=Int X andBool X <Int 2 ^Int (8 *Int W2)
-       andBool 0 <=Int S2 andBool 0 <=Int W2 andBool W1 ==Int S2 +Int W2
-      [simplification, concrete(W1, S2, W2), preserves-definedness]
+      #range (#buf(N:Int, X:Int), S:Int, W:Int) => #buf(W, X)
+      requires 0 <=Int X andBool X <Int 2 ^Int (8 *Int W)
+       andBool 0 <=Int S andBool 0 <=Int W andBool N ==Int S +Int W
+      [simplification, concrete(N, S, W), preserves-definedness]
 
     rule [range-buf-from-zero]:
       #range (#buf(N:Int, X:Int), 0, W:Int) => #buf ( W, X /Int (2 ^Int (8 *Int (N -Int W))) )
