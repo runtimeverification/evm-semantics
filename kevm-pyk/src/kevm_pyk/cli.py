@@ -300,7 +300,8 @@ class KOptions(KDefinitionOptions):
 
 
 class RPCOptions(Options):
-    trace_rewrites: bool
+    log_succ_rewrites: bool
+    log_fail_rewrites: bool
     kore_rpc_command: str | None
     use_booster: bool
     fallback_on: list[FallbackReason]
@@ -313,7 +314,8 @@ class RPCOptions(Options):
     @staticmethod
     def default() -> dict[str, Any]:
         return {
-            'trace_rewrites': False,
+            'log_succ_rewrites': True,
+            'log_fail_rewrites': False,
             'kore_rpc_command': None,
             'use_booster': True,
             'fallback_on': [],
@@ -959,8 +961,15 @@ class KEVMCLIArgs(KCLIArgs):
     def rpc_args(self) -> ArgumentParser:
         args = ArgumentParser(add_help=False)
         args.add_argument(
-            '--trace-rewrites',
-            dest='trace_rewrites',
+            '--no-log-rewrites',
+            dest='log_succ_rewrites',
+            default=None,
+            action='store_false',
+            help='Do not log traces of any simplification and rewrite rule application.',
+        )
+        args.add_argument(
+            '--log-fail-rewrites',
+            dest='log_fail_rewrites',
             default=None,
             action='store_true',
             help='Log traces of all simplification and rewrite rule applications.',
