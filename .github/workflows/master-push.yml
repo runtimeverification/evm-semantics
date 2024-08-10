@@ -18,6 +18,7 @@ jobs:
           # fetch-depth 0 means deep clone the repo
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha }}
+          token: ${{ secrets.JENKINS_GITHUB_PAT}}
       - name: 'Configure GitHub user'
         run: |
           git config user.name rv-jenkins
