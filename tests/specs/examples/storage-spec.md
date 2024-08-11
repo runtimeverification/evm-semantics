@@ -25,6 +25,7 @@ Helper module for verification tasks.
 requires "storage-bin-runtime.k"
 
 module VERIFICATION
+    imports BUF
     imports EDSL
     imports LEMMAS
     imports EVM-OPTIMIZATIONS
@@ -37,9 +38,6 @@ module VERIFICATION
 
  // decimals lemmas
  // ---------------
-
-    rule         255 &Int X <Int 256 => true requires 0 <=Int X [simplification, smt-lemma]
-    rule 0 <=Int 255 &Int X          => true requires 0 <=Int X [simplification, smt-lemma]
 
     rule bool2Word ( notBool WORD ==Int 0 ) => WORD           [simplification]
 
@@ -59,7 +57,7 @@ module STORAGE-SPEC
 ### Functional Claims
 
 ```k
-    claim <k> runLemma(#bufStrict(32, #loc(S2KStorage . myBool))) => doneLemma(#buf(32,0)) ... </k>
+    claim <k> runLemma(#bufStrict(32, #loc(S2KStorage.myBool))) => doneLemma(#buf(32,0)) ... </k>
 ```
 
 ### Calling myBool() works
@@ -94,14 +92,14 @@ module STORAGE-SPEC
 
           <account>
             <acctID> ACCTID </acctID>
-            <storage> ACCT_STORAGE </storage>
+            <storage>
+              (#loc(S2KStorage.myBool) |-> MYBOOL)
+              ACCT_STORAGE
+            </storage>
             ...
           </account>
-
-       requires MYBOOL_KEY ==Int #loc(S2KStorage . myBool)
-        andBool MYBOOL     ==Int 255 &Int #lookup(ACCT_STORAGE, MYBOOL_KEY)
+          requires #rangeBool(MYBOOL)
 ```
-
 
 ```k
     claim [setMyBool]:
@@ -129,17 +127,16 @@ module STORAGE-SPEC
 
           <account>
             <acctID> ACCTID </acctID>
-            <storage> ACCT_STORAGE => ACCT_STORAGE [ MYBOOL_KEY <- NEW_STORAGE_CONTENT ] </storage>
+            <storage>
+              (#loc(S2KStorage.myBool) |-> OLD_VAL)
+              ACCT_STORAGE =>
+                (#loc(S2KStorage.myBool) |-> NEW_VAL)
+                ACCT_STORAGE
+            </storage>
             ...
           </account>
-
           <refund> _ => ?_ </refund>
-
-       requires #rangeBool(NEW_VAL)
-        andBool MYBOOL_KEY          ==Int #loc(S2KStorage . myBool)
-        andBool OLD_STORAGE_CONTENT ==Int #lookup ( ACCT_STORAGE , MYBOOL_KEY )
-        andBool NEW_STORAGE_CONTENT ==Int NEW_VAL |Int ((~Word 255) &Int OLD_STORAGE_CONTENT)
-
+          requires #rangeBool(OLD_VAL) andBool #rangeBool(NEW_VAL)
 ```
 
 ```k
