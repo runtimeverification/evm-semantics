@@ -230,11 +230,6 @@ module BYTES-SIMPLIFICATION [symbolic]
        andBool 0 <=Int S andBool 0 <=Int W andBool N ==Int S +Int W
       [simplification, concrete(N, S, W), preserves-definedness]
 
-    rule [range-buf-from-zero]:
-      #range (#buf(N:Int, X:Int), 0, W:Int) => #buf ( W, X /Int (2 ^Int (8 *Int (N -Int W))) )
-      requires #rangeUInt(256, X) andBool 0 <=Int W andBool W <=Int N
-      [simplification(60), concrete(N, W), preserves-definedness]
-
     rule [range-padRightToWidth]:
       #range(#padRightToWidth(_, BUF), 0, WIDTH) => BUF
       requires lengthBytes(BUF) ==Int WIDTH [simplification]

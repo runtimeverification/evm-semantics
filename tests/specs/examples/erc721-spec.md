@@ -41,7 +41,7 @@ module VERIFICATION
     rule         127 &Int X <Int 128 => true requires 0 <=Int X                   [simplification, smt-lemma]
     rule 0 <=Int 127 &Int X          => true requires 0 <=Int X                   [simplification, smt-lemma]
  // rule         127 &Int X <=Int X  => true requires 0 <=Int X                   [simplification, smt-lemma]
-    rule         127 &Int    <Int 32 => true requires 0 <=Int X andBool X <Int 32 [simplification, smt-lemma]
+    rule         127 &Int X  <Int 32 => true requires 0 <=Int X andBool X <Int 32 [simplification, smt-lemma]
 
     rule chop(X +Int Y) => X +Int Y requires 0 <=Int X andBool #rangeUInt(256, Y) andBool X <=Int maxUInt256 -Int Y [simplification, concrete(Y)]
     rule 32 *Int ((X +Int 31) /Int 32) <=Int Y => 0 <=Int X andBool X <=Int Y -Int 31 [simplification, concrete(Y)]
@@ -116,10 +116,10 @@ claim [lemma.3]:
             ...
           </account>
 
-       requires NAME_KEY             ==Int #loc(S2KERC721._name)
-        andBool NAME                 ==Int #lookup(ACCT_STORAGE, NAME_KEY)
-        andBool 1 &Int NAME          ==Int 0
-        andBool 127 &Int (NAME /Int)  <Int 32
+       requires NAME_KEY               ==Int #loc(S2KERC721._name)
+        andBool NAME                   ==Int #lookup(ACCT_STORAGE, NAME_KEY)
+        andBool 1 &Int NAME            ==Int 0
+        andBool 127 &Int (NAME /Int 2)  <Int 32
 ```
 
 **TODO**: This proof isn't passing.
