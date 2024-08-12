@@ -134,4 +134,27 @@ module FUNCTIONAL-SPEC
     claim <k> runLemma((maxUInt160 &Int M) /Int (maxUInt160 +Int 1)) => doneLemma(0) ... </k>
       requires M >Int 0
 
+    // keccak
+
+    claim [keccak-neq]:
+      <k> runLemma (
+          keccak ( #buf ( 32 , ABI_u:Int ) +Bytes #buf ( 32 , keccak ( #buf ( 32 , ABI_i:Int ) +Bytes b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x03" ) ) ) +Int 1
+            ==Int
+          keccak ( #buf ( 32 , ABI_i:Int ) +Bytes b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02" ) +Int 1
+        ) => doneLemma(
+          false
+        ) ... </k>
+
+    claim [lookup-keccak-neq]:
+      <k> runLemma (
+        #lookup (
+            ( ( keccak ( #buf ( 32 , ABI_u:Int ) +Bytes #buf ( 32 , keccak ( #buf ( 32 , ABI_i:Int ) +Bytes b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x03" ) ) ) +Int 1 ) |-> Urn_art:Int )
+            ACCT_ID_STORAGE:Map,
+            ( keccak ( #buf ( 32 , ABI_i:Int ) +Bytes b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02" ) +Int 1 ) )
+      ) => doneLemma(
+        #lookup (
+          ACCT_ID_STORAGE:Map,
+          ( keccak ( #buf ( 32 , ABI_i:Int ) +Bytes b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02" ) +Int 1 ) )
+      ) ... </k>
+
 endmodule

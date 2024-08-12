@@ -66,6 +66,12 @@ module LEMMAS-MCD [symbolic]
     rule bool2Word( X:Bool ) |Int bool2Word( Y:Bool ) => bool2Word(X orBool Y) [simplification]
     rule bool2Word( X:Bool ) ==Int 0                  => notBool X             [simplification]
 
+    rule [add-cancel-01]: A +Int B ==Int A        => B ==Int 0 [simplification, comm]
+    rule [add-cancel-02]: A +Int B ==Int C +Int B => A ==Int C [simplification]
+
+    rule [add-cancel-ml-01]: { A +Int B #Equals        A } => { B #Equals 0 } [simplification]
+    rule [add-cancel-ml-02]: { A +Int B #Equals C +Int B } => { A #Equals C } [simplification]
+
     // ### vat-subui-fail-rough
     //
     // Via Z3 4.8.7
@@ -103,9 +109,8 @@ module LEMMAS-MCD [symbolic]
        andBool Y <=Int 0
        andBool notBool #rangeUInt(256, X -Int Y) [simplification]
 
-    rule { chop(X) #Equals chop(Y) } => { X #Equals Y }
-         requires #rangeSInt(256, X) andBool #rangeSInt(256, Y)
-         [simplification]
+    rule   chop(X)  ==Int  chop(Y)   =>   X  ==Int  Y   requires #rangeSInt(256, X) andBool #rangeSInt(256, Y) [simplification]
+    rule { chop(X) #Equals chop(Y) } => { X #Equals Y } requires #rangeSInt(256, X) andBool #rangeSInt(256, Y) [simplification]
 
    // ########################
    // Buffer Reasoning
@@ -142,9 +147,30 @@ module LEMMAS-MCD [symbolic]
   // Keccak
   // ########################
 
-    rule keccak(_) ==Int I => false requires #rangeSmall(I) [simplification]
-    rule keccak(_) +Int I1 ==Int I2 => false
-      requires #rangeSmall(I1) andBool #rangeSmall(I2) [simplification]
+    rule 0 <=Int keccak( _ )             => true [simplification, smt-lemma]
+    rule         keccak( _ ) <Int pow256 => true [simplification, smt-lemma]
+
+    // keccak does not equal a concrete value
+    rule [keccak-eq-conc-false]: keccak(_A)  ==Int _B => false [symbolic(_A), concrete(_B), simplification(30), comm]
+    rule [keccak-neq-conc-true]: keccak(_A) =/=Int _B => true  [symbolic(_A), concrete(_B), simplification(30), comm]
+    rule [keccak-eq-conc-false-ml-lr]: { keccak(A) #Equals B } => { true #Equals keccak(A) ==Int B } [symbolic(A), concrete(B), simplification]
+    rule [keccak-eq-conc-false-ml-rl]: { B #Equals keccak(A) } => { true #Equals keccak(A) ==Int B } [symbolic(A), concrete(B), simplification]
+
+    rule [keccak-mappings-overlap-false]:      keccak(A) +Int B  ==Int  keccak(C)   => false                                             requires notBool (A ==K C) [symbolic(A, C), concrete(B), simplification, comm]
+    rule [keccak-mappings-overlap-false-ml]: { keccak(A) +Int B #Equals keccak(C) } => { true #Equals keccak(A) +Int B ==Int keccak(C) } requires notBool (A ==K C) [symbolic(A, C), concrete(B), simplification, comm]
+
+    // keccak is injective
+    rule [keccak-inj]: keccak(A) ==Int keccak(B) => A ==K B [simplification]
+    rule [keccak-inj-ml]: { keccak(A) #Equals keccak(B) } => { true #Equals A ==K B } [simplification]
+
+    // chop of negative keccak
+    rule chop (0 -Int keccak(BA)) => pow256 -Int keccak(BA)
+       [simplification]
+
+    // keccak cannot equal a number outside of its range
+    rule { X #Equals keccak (_) } => #Bottom
+      requires X <Int 0 orBool X >=Int pow256
+      [concrete(X), simplification]
 
   // ########################
   // Word Reasoning
@@ -384,7 +410,8 @@ module LEMMAS-MCD [symbolic]
     //     (= (sdiv (chop (* x y)) (chop y)) x)
     // ))
     // (check-sat)
-    rule chop(X *Int Y) /sWord chop(Y) => X requires #rangeUInt(256, X) andBool #rangeSInt(256, Y) andBool #rangeSInt(256, X *Int Y) andBool Y =/=Int 0 [simplification]
+    rule chop(X *Int Y) /sWord ( Y +Int pow256 ) => X requires #rangeUInt(256, X) andBool           Y <Int 0 andBool #rangeSInt(256, X *Int Y)                    [simplification]
+    rule chop(X *Int Y) /sWord chop(Y)           => X requires #rangeUInt(256, X) andBool #rangeSInt(256, Y) andBool #rangeSInt(256, X *Int Y) andBool Y =/=Int 0 [simplification]
 
     rule chop(X +Int chop(Y)) => chop(X +Int Y) [simplification]
 
@@ -433,5 +460,32 @@ module LEMMAS-MCD [symbolic]
     rule X:Int ==Int A:Int orBool X ==Int B:Int orBool X ==Int C:Int orBool X ==Int D:Int => X ==Int D
          requires X =/=Int A andBool X =/=Int B andBool X =/=Int C
          [simplification]
+
+  //
+  // TO ADD
+  //
+
+  // ########################
+  // +Bytes
+  // ########################
+
+    rule B +Bytes b"" => B [simplification]
+    rule b"" +Bytes B => B [simplification]
+
+  // ########################
+  // ML Logic
+  // ########################
+
+    rule #if B #then C #else D #fi => C requires         B [simplification]
+    rule #if B #then C #else D #fi => C requires notBool B [simplification]
+
+  // ########################
+  // #asWord
+  // ########################
+
+    rule [asWord-leading-zeros]:
+      #asWord ( BZ +Bytes B ) => #asWord ( B )
+      requires #asInteger ( BZ ) ==Int 0
+      [simplification, concrete(BZ)]
 
 endmodule

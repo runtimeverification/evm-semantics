@@ -72,8 +72,22 @@ module VAT-FLUX-DIFF-PASS-SPEC
               <acctID> ACCT_ID </acctID>
               <balance> ACCT_ID_balance </balance>
               <code> Vat_bin_runtime </code>
-              <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE [ #Vat.gem[ABI_ilk][ABI_src] <- Gem_src -Int ABI_wad ] [ #Vat.gem[ABI_ilk][ABI_dst] <- Gem_dst +Int ABI_wad ] </storage>
-              <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
+              <storage>
+                (#Vat.can[ABI_src][CALLER_ID] |-> May)
+                (#Vat.gem[ABI_ilk][ABI_src] |-> Gem_src)
+                (#Vat.gem[ABI_ilk][ABI_dst] |-> Gem_dst)
+                ACCT_ID_STORAGE =>
+                  (#Vat.can[ABI_src][CALLER_ID] |-> May)
+                  (#Vat.gem[ABI_ilk][ABI_src] |-> Gem_src -Int ABI_wad)
+                  (#Vat.gem[ABI_ilk][ABI_dst] |-> Gem_dst +Int ABI_wad)
+                  ACCT_ID_STORAGE
+              </storage>
+              <origStorage>
+                (#Vat.can[ABI_src][CALLER_ID] |-> Junk_0)
+                (#Vat.gem[ABI_ilk][ABI_src] |-> Junk_1)
+                (#Vat.gem[ABI_ilk][ABI_dst] |-> Junk_2)
+                ACCT_ID_ORIG_STORAGE
+              </origStorage>
               <nonce> Nonce_Vat </nonce>
               <transientStorage> _ </transientStorage>
             </account>
@@ -112,16 +126,6 @@ module VAT-FLUX-DIFF-PASS-SPEC
        andBool (((VCallValue ==Int 0))
        andBool ((#rangeUInt(256, Gem_src -Int ABI_wad))
        andBool ((#rangeUInt(256, Gem_dst +Int ABI_wad))))))))))))))))))
-
-       andBool #lookup(ACCT_ID_STORAGE, #Vat.can[ABI_src][CALLER_ID]) ==Int May
-       andBool #lookup(ACCT_ID_STORAGE, #Vat.gem[ABI_ilk][ABI_src]) ==Int Gem_src
-       andBool #lookup(ACCT_ID_STORAGE, #Vat.gem[ABI_ilk][ABI_dst]) ==Int Gem_dst
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Vat.can[ABI_src][CALLER_ID]) ==Int Junk_0
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Vat.gem[ABI_ilk][ABI_src]) ==Int Junk_1
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Vat.gem[ABI_ilk][ABI_dst]) ==Int Junk_2
-       andBool #Vat.can[ABI_src][CALLER_ID] =/=Int #Vat.gem[ABI_ilk][ABI_src]
-       andBool #Vat.can[ABI_src][CALLER_ID] =/=Int #Vat.gem[ABI_ilk][ABI_dst]
-       andBool #Vat.gem[ABI_ilk][ABI_src] =/=Int #Vat.gem[ABI_ilk][ABI_dst]
 
     [depends(VAT-ARITHMETIC-SPEC.Vat.adduu.pass,VAT-ARITHMETIC-SPEC.Vat.subuu.pass)]
 

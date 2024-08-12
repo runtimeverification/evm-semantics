@@ -75,7 +75,22 @@ module VAT-FOLD-PASS-ROUGH-SPEC
               <acctID> ACCT_ID </acctID>
               <balance> ACCT_ID_balance </balance>
               <code> Vat_bin_runtime </code>
-              <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE [ #Vat.ilks[ABI_i].rate <- Rate_i +Int ABI_rate ] [ #Vat.dai[ABI_u] <- Dai_u +Int Art_i *Int ABI_rate ] [ #Vat.debt <- Debt  +Int Art_i *Int ABI_rate ] </storage>
+              <storage>
+                (#Vat.wards[CALLER_ID] |-> May)
+                (#Vat.ilks[ABI_i].Art |-> Art_i)
+                (#Vat.live |-> Live)
+                (#Vat.ilks[ABI_i].rate |-> Rate_i)
+                (#Vat.dai[ABI_u] |-> Dai_u)
+                (#Vat.debt |-> Debt)
+                ACCT_ID_STORAGE =>
+                  (#Vat.wards[CALLER_ID] |-> May)
+                  (#Vat.ilks[ABI_i].Art |-> Art_i)
+                  (#Vat.live |-> Live)
+                  (#Vat.ilks[ABI_i].rate |-> Rate_i +Int ABI_rate)
+                  (#Vat.dai[ABI_u] |-> Dai_u +Int Art_i *Int ABI_rate)
+                  (#Vat.debt |-> Debt +Int Art_i *Int ABI_rate)
+                  ACCT_ID_STORAGE
+              </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
               <nonce> _Nonce_Vat => ?_ </nonce>
               <transientStorage> _ </transientStorage>
@@ -121,34 +136,6 @@ module VAT-FOLD-PASS-ROUGH-SPEC
        andBool ((#rangeUInt(256, Rate_i +Int ABI_rate))
        andBool ((#rangeUInt(256, Dai_u  +Int (Art_i *Int ABI_rate)))
        andBool ((#rangeUInt(256, Debt   +Int (Art_i *Int ABI_rate))))))))))))))))))))))))))
-
-       andBool #lookup(ACCT_ID_STORAGE, #Vat.wards[CALLER_ID]) ==Int May
-       andBool #lookup(ACCT_ID_STORAGE, #Vat.ilks[ABI_i].Art) ==Int Art_i
-       andBool #lookup(ACCT_ID_STORAGE, #Vat.live) ==Int Live
-       andBool #lookup(ACCT_ID_STORAGE, #Vat.ilks[ABI_i].rate) ==Int Rate_i
-       andBool #lookup(ACCT_ID_STORAGE, #Vat.dai[ABI_u]) ==Int Dai_u
-       andBool #lookup(ACCT_ID_STORAGE, #Vat.debt) ==Int Debt
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Vat.wards[CALLER_ID]) ==Int Junk_0
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Vat.ilks[ABI_i].Art) ==Int Junk_1
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Vat.live) ==Int Junk_2
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Vat.ilks[ABI_i].rate) ==Int Junk_3
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Vat.dai[ABI_u]) ==Int Junk_4
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Vat.debt) ==Int Junk_5
-       andBool #Vat.wards[CALLER_ID] =/=Int #Vat.ilks[ABI_i].Art
-       andBool #Vat.wards[CALLER_ID] =/=Int #Vat.live
-       andBool #Vat.wards[CALLER_ID] =/=Int #Vat.ilks[ABI_i].rate
-       andBool #Vat.wards[CALLER_ID] =/=Int #Vat.dai[ABI_u]
-       andBool #Vat.wards[CALLER_ID] =/=Int #Vat.debt
-       andBool #Vat.ilks[ABI_i].Art =/=Int #Vat.live
-       andBool #Vat.ilks[ABI_i].Art =/=Int #Vat.ilks[ABI_i].rate
-       andBool #Vat.ilks[ABI_i].Art =/=Int #Vat.dai[ABI_u]
-       andBool #Vat.ilks[ABI_i].Art =/=Int #Vat.debt
-       andBool #Vat.live =/=Int #Vat.ilks[ABI_i].rate
-       andBool #Vat.live =/=Int #Vat.dai[ABI_u]
-       andBool #Vat.live =/=Int #Vat.debt
-       andBool #Vat.ilks[ABI_i].rate =/=Int #Vat.dai[ABI_u]
-       andBool #Vat.ilks[ABI_i].rate =/=Int #Vat.debt
-       andBool #Vat.dai[ABI_u] =/=Int #Vat.debt
 
     [depends(VAT-ARITHMETIC-SPEC.Vat.addui.pass,VAT-ARITHMETIC-SPEC.Vat.mului.pass)]
 

@@ -73,7 +73,20 @@ module FLOPPER-FILE-PASS-ROUGH-SPEC
               <acctID> ACCT_ID </acctID>
               <balance> ACCT_ID_balance </balance>
               <code> Flopper_bin_runtime </code>
-              <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE [ #Flopper.beg <- (#if ABI_what ==Int #string2Word("beg") #then ABI_data #else Beg #fi) ] [ #Flopper.pad <- (#if ABI_what ==Int #string2Word("pad") #then ABI_data #else Pad #fi) ] [ #Flopper.ttl_tau <- (#if ABI_what ==Int #string2Word("ttl") #then #WordPackUInt48UInt48(maxUInt48 &Int ABI_data, Tau) #else (#if ABI_what ==Int #string2Word("tau") #then #WordPackUInt48UInt48(Ttl, maxUInt48 &Int ABI_data) #else #WordPackUInt48UInt48(Ttl, Tau) #fi) #fi) ] </storage>
+              <storage>
+                (#Flopper.wards[CALLER_ID] |-> May)
+                (#Flopper.beg |-> Beg)
+                (#Flopper.pad |-> Pad)
+                (#Flopper.ttl_tau |-> #WordPackUInt48UInt48(Ttl, Tau))
+                ACCT_ID_STORAGE =>
+                  (#Flopper.wards[CALLER_ID] |-> May)
+                  (#Flopper.beg |-> #if ABI_what ==Int #string2Word("beg") #then ABI_data #else Beg #fi)
+                  (#Flopper.pad |-> #if ABI_what ==Int #string2Word("pad") #then ABI_data #else Pad #fi)
+                  // TODO: this should replace `?NEW_ACCT_ID_STORAGE` once booster map unification improves
+                  // (#Flopper.ttl_tau |-> #if ABI_what ==Int #string2Word("ttl") #then #WordPackUInt48UInt48(maxUInt48 &Int ABI_data, Tau) #else (#if ABI_what ==Int #string2Word("tau") #then #WordPackUInt48UInt48(Ttl, maxUInt48 &Int ABI_data) #else #WordPackUInt48UInt48(Ttl, Tau) #fi) #fi)
+                  // ACCT_ID_STORAGE
+                  ?NEW_ACCT_ID_STORAGE
+              </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
               <nonce> _Nonce_Flopper => ?_ </nonce>
               <transientStorage> _ </transientStorage>
@@ -104,26 +117,11 @@ module FLOPPER-FILE-PASS-ROUGH-SPEC
        andBool (#rangeUInt(48, Ttl)
        andBool (#rangeUInt(48, Tau)
        andBool ((lengthBytes(CD) <=Int 1250000000)
-       andBool (#rangeUInt(256, Junk_0)
-       andBool (#rangeUInt(256, Junk_1)
-       andBool (#rangeUInt(256, Junk_2)
-       andBool (#rangeUInt(256, Junk_3)
        andBool ((May ==Int 1)
        andBool ((VCallValue ==Int 0)
-       andBool (((ABI_what ==Int #string2Word("beg")) orBool (ABI_what ==Int #string2Word("pad")) orBool (ABI_what ==Int #string2Word("ttl")) orBool (ABI_what ==Int #string2Word("tau"))))))))))))))))))
+       andBool (((ABI_what ==Int #string2Word("beg")) orBool (ABI_what ==Int #string2Word("pad")) orBool (ABI_what ==Int #string2Word("ttl")) orBool (ABI_what ==Int #string2Word("tau"))))))))))))))
 
-       andBool #lookup(ACCT_ID_STORAGE, #Flopper.wards[CALLER_ID]) ==Int May
-       andBool #lookup(ACCT_ID_STORAGE, #Flopper.beg) ==Int Beg
-       andBool #lookup(ACCT_ID_STORAGE, #Flopper.pad) ==Int Pad
-       andBool #lookup(ACCT_ID_STORAGE, #Flopper.ttl_tau) ==Int #WordPackUInt48UInt48(Ttl, Tau)
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Flopper.wards[CALLER_ID]) ==Int Junk_0
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Flopper.beg) ==Int Junk_1
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Flopper.pad) ==Int Junk_2
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Flopper.ttl_tau) ==Int Junk_3
-       andBool #Flopper.wards[CALLER_ID] =/=Int #Flopper.beg
-       andBool #Flopper.wards[CALLER_ID] =/=Int #Flopper.pad
-       andBool #Flopper.wards[CALLER_ID] =/=Int #Flopper.ttl_tau
-       andBool #Flopper.beg =/=Int #Flopper.pad
-       andBool #Flopper.beg =/=Int #Flopper.ttl_tau
-       andBool #Flopper.pad =/=Int #Flopper.ttl_tau
+       // TODO: This should be removed once booster map unification improves
+       ensures #lookup(?NEW_ACCT_ID_STORAGE, #Flopper.ttl_tau) ==Int #if ABI_what ==Int #string2Word("ttl") #then #WordPackUInt48UInt48(maxUInt48 &Int ABI_data, Tau) #else (#if ABI_what ==Int #string2Word("tau") #then #WordPackUInt48UInt48(Ttl, maxUInt48 &Int ABI_data) #else #WordPackUInt48UInt48(Ttl, Tau) #fi) #fi
+
 endmodule

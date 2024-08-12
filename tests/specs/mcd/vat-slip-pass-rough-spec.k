@@ -75,7 +75,14 @@ module VAT-SLIP-PASS-ROUGH-SPEC
               <acctID> ACCT_ID </acctID>
               <balance> ACCT_ID_balance </balance>
               <code> Vat_bin_runtime </code>
-              <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE [ #Vat.gem[ABI_ilk][ABI_usr] <- Gem +Int ABI_wad ] </storage>
+              <storage>
+                (#Vat.wards[CALLER_ID] |-> May)
+                (#Vat.gem[ABI_ilk][ABI_usr] |-> Gem)
+                ACCT_ID_STORAGE =>
+                  (#Vat.wards[CALLER_ID] |-> May)
+                  (#Vat.gem[ABI_ilk][ABI_usr] |-> Gem +Int ABI_wad)
+                  ACCT_ID_STORAGE
+              </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
               <nonce> _Nonce_Vat => ?_ </nonce>
               <transientStorage> _ </transientStorage>
@@ -109,12 +116,6 @@ module VAT-SLIP-PASS-ROUGH-SPEC
        andBool (((May ==Int 1))
        andBool (((VCallValue ==Int 0))
        andBool ((#rangeUInt(256, Gem +Int ABI_wad)))))))))))))
-
-       andBool #lookup(ACCT_ID_STORAGE, #Vat.wards[CALLER_ID]) ==Int May
-       andBool #lookup(ACCT_ID_STORAGE, #Vat.gem[ABI_ilk][ABI_usr]) ==Int Gem
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Vat.wards[CALLER_ID]) ==Int Junk_0
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Vat.gem[ABI_ilk][ABI_usr]) ==Int Junk_1
-       andBool #Vat.wards[CALLER_ID] =/=Int #Vat.gem[ABI_ilk][ABI_usr]
 
     [depends(VAT-ARITHMETIC-SPEC.Vat.addui.pass)]
 

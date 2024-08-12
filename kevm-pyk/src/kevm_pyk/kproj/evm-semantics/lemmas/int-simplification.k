@@ -73,10 +73,16 @@ module INT-SIMPLIFICATION-HASKELL [symbolic]
     rule A   >Int B -Int C => A +Int C  >Int B [concrete(A, C), symbolic(B), simplification(45)]
     rule A  >=Int B -Int C => A +Int C >=Int B [concrete(A, C), symbolic(B), simplification(45)]
 
-    rule A +Int B  ==Int C => A ==Int C -Int B [concrete(B, C), symbolic(A), simplification(45), comm]
-    rule A +Int B  ==Int C => B ==Int C -Int A [concrete(A, C), symbolic(B), simplification(45), comm]
-    rule A -Int B  ==Int C => A ==Int C +Int B [concrete(B, C), symbolic(A), simplification(45), comm]
-    rule A -Int B  ==Int C => A -Int C ==Int B [concrete(A, C), symbolic(B), simplification(45), comm]
+    rule A +Int B ==Int A => B ==Int 0 [simplification(40)]
+    rule A +Int B ==Int B => A ==Int 0 [simplification(40)]
+
+    rule { A +Int B #Equals A } => { B #Equals 0 } [simplification(40)]
+    rule { A +Int B #Equals B } => { A #Equals 0 } [simplification(40)]
+
+    rule A +Int B ==Int C => A ==Int C -Int B [concrete(B, C), symbolic(A), simplification(45), comm]
+    rule A +Int B ==Int C => B ==Int C -Int A [concrete(A, C), symbolic(B), simplification(45), comm]
+    rule A -Int B ==Int C => A ==Int C +Int B [concrete(B, C), symbolic(A), simplification(45), comm]
+    rule A -Int B ==Int C => A -Int C ==Int B [concrete(A, C), symbolic(B), simplification(45), comm]
 
     rule { A +Int B #Equals C } => { A #Equals C -Int B } [concrete(B, C), symbolic(A), simplification(45), comm]
     rule { A +Int B #Equals C } => { B #Equals C -Int A } [concrete(A, C), symbolic(B), simplification(45), comm]
@@ -88,8 +94,10 @@ module INT-SIMPLIFICATION-HASKELL [symbolic]
     rule A +Int B  >Int C +Int D => A -Int C  >Int D -Int B [concrete(B, D), symbolic(A, C), simplification(45)]
     rule A +Int B >=Int C +Int D => A -Int C >=Int D -Int B [concrete(B, D), symbolic(A, C), simplification(45)]
 
+    rule A +Int B ==Int C +Int B => A        ==Int C        [simplification(40)]
     rule A +Int B ==Int C +Int D => A -Int C ==Int D -Int B [concrete(B, D), symbolic(A, C), simplification(45)]
 
+    rule { A +Int B #Equals C +Int B } => { A        #Equals C        } [simplification(40)]
     rule { A +Int B #Equals C +Int D } => { A -Int C #Equals D -Int B } [concrete(B, D), symbolic(A, C), simplification(45)]
 
 endmodule

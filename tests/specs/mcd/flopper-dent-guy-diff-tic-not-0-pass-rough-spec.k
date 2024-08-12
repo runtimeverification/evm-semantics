@@ -73,7 +73,24 @@ module FLOPPER-DENT-GUY-DIFF-TIC-NOT-0-PASS-ROUGH-SPEC
               <acctID> ACCT_ID </acctID>
               <balance> ACCT_ID_balance </balance>
               <code> Flopper_bin_runtime </code>
-              <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE [ #Flopper.bids[ABI_id].lot <- ABI_lot ] [ #Flopper.bids[ABI_id].guy_tic_end <- #WordPackAddrUInt48UInt48(CALLER_ID, TIME +Int Ttl, End) ] </storage>
+              <storage>
+                (#Flopper.live |-> Live)
+                (#Flopper.vat |-> Vat)
+                (#Flopper.beg |-> Beg)
+                (#Flopper.ttl_tau |-> #WordPackUInt48UInt48(Ttl, Tau))
+                (#Flopper.bids[ABI_id].bid |-> Bid)
+                (#Flopper.bids[ABI_id].lot |-> Lot)
+                (#Flopper.bids[ABI_id].guy_tic_end |-> #WordPackAddrUInt48UInt48(Guy, Tic, End))
+                ACCT_ID_STORAGE =>
+                  (#Flopper.live |-> Live)
+                  (#Flopper.vat |-> Vat)
+                  (#Flopper.beg |-> Beg)
+                  (#Flopper.ttl_tau |-> #WordPackUInt48UInt48(Ttl, Tau))
+                  (#Flopper.bids[ABI_id].bid |-> Bid)
+                  (#Flopper.bids[ABI_id].lot |-> ABI_lot)
+                  (#Flopper.bids[ABI_id].guy_tic_end |-> #WordPackAddrUInt48UInt48(CALLER_ID, TIME +Int Ttl, End))
+                  ACCT_ID_STORAGE
+              </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
               <nonce> Nonce_Flopper </nonce>
               <transientStorage> _ </transientStorage>
@@ -82,7 +99,16 @@ module FLOPPER-DENT-GUY-DIFF-TIC-NOT-0-PASS-ROUGH-SPEC
               <acctID> Vat </acctID>
               <balance> Vat_balance </balance>
               <code> Vat_bin_runtime </code>
-              <storage> Vat_STORAGE => Vat_STORAGE [ #Vat.dai[CALLER_ID] <- Dai_a -Int ABI_bid ] [ #Vat.dai[Guy] <- Dai_g +Int ABI_bid ] </storage>
+              <storage>
+                (#Vat.can[CALLER_ID][ACCT_ID] |-> CanMove)
+                (#Vat.dai[CALLER_ID] |-> Dai_a)
+                (#Vat.dai[Guy] |-> Dai_g)
+                Vat_STORAGE =>
+                  (#Vat.can[CALLER_ID][ACCT_ID] |-> CanMove)
+                  (#Vat.dai[CALLER_ID] |-> Dai_a -Int ABI_bid)
+                  (#Vat.dai[Guy] |-> Dai_g +Int ABI_bid)
+                  Vat_STORAGE
+              </storage>
               <origStorage> Vat_ORIG_STORAGE </origStorage>
               <nonce> Nonce_Vat </nonce>
               <transientStorage> _ </transientStorage>
@@ -133,16 +159,6 @@ module FLOPPER-DENT-GUY-DIFF-TIC-NOT-0-PASS-ROUGH-SPEC
        andBool ((#rangeUInt(48, TIME))
        andBool ((Tic =/=Int 0)
        andBool ((Vat =/=Int 0)
-       andBool (#rangeUInt(256, Junk_0)
-       andBool (#rangeUInt(256, Junk_1)
-       andBool (#rangeUInt(256, Junk_2)
-       andBool (#rangeUInt(256, Junk_3)
-       andBool (#rangeUInt(256, Junk_4)
-       andBool (#rangeUInt(256, Junk_5)
-       andBool (#rangeUInt(256, Junk_6)
-       andBool (#rangeUInt(256, Junk_7)
-       andBool (#rangeUInt(256, Junk_8)
-       andBool (#rangeUInt(256, Junk_9)
        andBool ((((Live ==Int 1)))
        andBool ((((Guy =/=Int 0)))
        andBool ((((Tic >Int TIME)))
@@ -156,52 +172,7 @@ module FLOPPER-DENT-GUY-DIFF-TIC-NOT-0-PASS-ROUGH-SPEC
        andBool ((((VCallDepth <Int 1024)))
        andBool (((#rangeUInt(256, Dai_a -Int ABI_bid)))
        andBool (((#rangeUInt(256, Dai_g +Int ABI_bid)))
-       andBool ((#rangeUInt(48, TIME +Int Ttl))))))))))))))))))))))))))))))))))))))))))))))))))))
-
-       andBool #lookup(ACCT_ID_STORAGE, #Flopper.live) ==Int Live
-       andBool #lookup(ACCT_ID_STORAGE, #Flopper.vat) ==Int Vat
-       andBool #lookup(ACCT_ID_STORAGE, #Flopper.beg) ==Int Beg
-       andBool #lookup(ACCT_ID_STORAGE, #Flopper.ttl_tau) ==Int #WordPackUInt48UInt48(Ttl, Tau)
-       andBool #lookup(ACCT_ID_STORAGE, #Flopper.bids[ABI_id].bid) ==Int Bid
-       andBool #lookup(ACCT_ID_STORAGE, #Flopper.bids[ABI_id].lot) ==Int Lot
-       andBool #lookup(ACCT_ID_STORAGE, #Flopper.bids[ABI_id].guy_tic_end) ==Int #WordPackAddrUInt48UInt48(Guy, Tic, End)
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Flopper.live) ==Int Junk_0
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Flopper.vat) ==Int Junk_1
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Flopper.beg) ==Int Junk_2
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Flopper.ttl_tau) ==Int Junk_3
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Flopper.bids[ABI_id].bid) ==Int Junk_4
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Flopper.bids[ABI_id].lot) ==Int Junk_5
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Flopper.bids[ABI_id].guy_tic_end) ==Int Junk_6
-       andBool #Flopper.live =/=Int #Flopper.vat
-       andBool #Flopper.live =/=Int #Flopper.beg
-       andBool #Flopper.live =/=Int #Flopper.ttl_tau
-       andBool #Flopper.live =/=Int #Flopper.bids[ABI_id].bid
-       andBool #Flopper.live =/=Int #Flopper.bids[ABI_id].lot
-       andBool #Flopper.live =/=Int #Flopper.bids[ABI_id].guy_tic_end
-       andBool #Flopper.vat =/=Int #Flopper.beg
-       andBool #Flopper.vat =/=Int #Flopper.ttl_tau
-       andBool #Flopper.vat =/=Int #Flopper.bids[ABI_id].bid
-       andBool #Flopper.vat =/=Int #Flopper.bids[ABI_id].lot
-       andBool #Flopper.vat =/=Int #Flopper.bids[ABI_id].guy_tic_end
-       andBool #Flopper.beg =/=Int #Flopper.ttl_tau
-       andBool #Flopper.beg =/=Int #Flopper.bids[ABI_id].bid
-       andBool #Flopper.beg =/=Int #Flopper.bids[ABI_id].lot
-       andBool #Flopper.beg =/=Int #Flopper.bids[ABI_id].guy_tic_end
-       andBool #Flopper.ttl_tau =/=Int #Flopper.bids[ABI_id].bid
-       andBool #Flopper.ttl_tau =/=Int #Flopper.bids[ABI_id].lot
-       andBool #Flopper.ttl_tau =/=Int #Flopper.bids[ABI_id].guy_tic_end
-       andBool #Flopper.bids[ABI_id].bid =/=Int #Flopper.bids[ABI_id].lot
-       andBool #Flopper.bids[ABI_id].bid =/=Int #Flopper.bids[ABI_id].guy_tic_end
-       andBool #Flopper.bids[ABI_id].lot =/=Int #Flopper.bids[ABI_id].guy_tic_end
-       andBool #lookup(Vat_STORAGE, #Vat.can[CALLER_ID][ACCT_ID]) ==Int CanMove
-       andBool #lookup(Vat_STORAGE, #Vat.dai[CALLER_ID]) ==Int Dai_a
-       andBool #lookup(Vat_STORAGE, #Vat.dai[Guy]) ==Int Dai_g
-       andBool #lookup(Vat_ORIG_STORAGE, #Vat.can[CALLER_ID][ACCT_ID]) ==Int Junk_7
-       andBool #lookup(Vat_ORIG_STORAGE, #Vat.dai[CALLER_ID]) ==Int Junk_8
-       andBool #lookup(Vat_ORIG_STORAGE, #Vat.dai[Guy]) ==Int Junk_9
-       andBool #Vat.can[CALLER_ID][ACCT_ID] =/=Int #Vat.dai[CALLER_ID]
-       andBool #Vat.can[CALLER_ID][ACCT_ID] =/=Int #Vat.dai[Guy]
-       andBool #Vat.dai[CALLER_ID] =/=Int #Vat.dai[Guy]
+       andBool ((#rangeUInt(48, TIME +Int Ttl))))))))))))))))))))))))))))))))))))))))))
 
     // Flopper_muluu
     claim [Flopper.muluu.pass]:
@@ -480,8 +451,21 @@ module FLOPPER-DENT-GUY-DIFF-TIC-NOT-0-PASS-ROUGH-SPEC
               <acctID> ACCT_ID </acctID>
               <balance> ACCT_ID_balance </balance>
               <code> Vat_bin_runtime </code>
-              <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE [ #Vat.dai[ABI_src] <- Dai_src -Int ABI_rad ] [ #Vat.dai[ABI_dst] <- Dai_dst +Int ABI_rad ] </storage>
-              <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
+              <storage>
+                (#Vat.can[ABI_src][CALLER_ID] |-> May)
+                (#Vat.dai[ABI_src] |-> Dai_src)
+                (#Vat.dai[ABI_dst] |-> Dai_dst)
+                ACCT_ID_STORAGE =>
+                  (#Vat.can[ABI_src][CALLER_ID] |-> May)
+                  (#Vat.dai[ABI_src] |-> (Dai_src -Int ABI_rad))
+                  (#Vat.dai[ABI_dst] |-> (Dai_dst +Int ABI_rad))
+                  ACCT_ID_STORAGE
+              </storage>
+              <origStorage>
+                (#Vat.dai[ABI_src] |-> Junk_1)
+                (#Vat.dai[ABI_dst] |-> Junk_2)
+                ACCT_ID_ORIG_STORAGE
+              </origStorage>
               <nonce> Nonce_Vat </nonce>
               <transientStorage> _ </transientStorage>
             </account>
@@ -512,23 +496,12 @@ module FLOPPER-DENT-GUY-DIFF-TIC-NOT-0-PASS-ROUGH-SPEC
        andBool (#rangeUInt(256, May)
        andBool ((lengthBytes(CD) <=Int 1250000000)
        andBool ((ABI_src =/=Int ABI_dst)
-       andBool (#rangeUInt(256, Junk_0)
        andBool (#rangeUInt(256, Junk_1)
        andBool (#rangeUInt(256, Junk_2)
        andBool ((((May ==Int 1 orBool ABI_src ==Int CALLER_ID)))
        andBool (((VCallValue ==Int 0))
        andBool ((#rangeUInt(256, Dai_src -Int ABI_rad))
-       andBool ((#rangeUInt(256, Dai_dst +Int ABI_rad)))))))))))))))))
-
-       andBool #lookup(ACCT_ID_STORAGE, #Vat.can[ABI_src][CALLER_ID]) ==Int May
-       andBool #lookup(ACCT_ID_STORAGE, #Vat.dai[ABI_src]) ==Int Dai_src
-       andBool #lookup(ACCT_ID_STORAGE, #Vat.dai[ABI_dst]) ==Int Dai_dst
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Vat.can[ABI_src][CALLER_ID]) ==Int Junk_0
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Vat.dai[ABI_src]) ==Int Junk_1
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Vat.dai[ABI_dst]) ==Int Junk_2
-       andBool #Vat.can[ABI_src][CALLER_ID] =/=Int #Vat.dai[ABI_src]
-       andBool #Vat.can[ABI_src][CALLER_ID] =/=Int #Vat.dai[ABI_dst]
-       andBool #Vat.dai[ABI_src] =/=Int #Vat.dai[ABI_dst]
+       andBool ((#rangeUInt(256, Dai_dst +Int ABI_rad))))))))))))))))
 
     [trusted]
 

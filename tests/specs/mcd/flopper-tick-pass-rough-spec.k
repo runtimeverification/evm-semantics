@@ -73,7 +73,18 @@ module FLOPPER-TICK-PASS-ROUGH-SPEC
               <acctID> ACCT_ID </acctID>
               <balance> ACCT_ID_balance </balance>
               <code> Flopper_bin_runtime </code>
-              <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE [ #Flopper.bids[ABI_id].lot <- (Pad *Int Lot) /Int #Wad ] [ #Flopper.bids[ABI_id].guy_tic_end <- #WordPackAddrUInt48UInt48(Guy, Tic, TIME +Int Tau) ] </storage>
+              <storage>
+                (#Flopper.pad |-> Pad)
+                (#Flopper.ttl_tau |-> #WordPackUInt48UInt48(Ttl, Tau))
+                (#Flopper.bids[ABI_id].lot |-> Lot)
+                (#Flopper.bids[ABI_id].guy_tic_end |-> #WordPackAddrUInt48UInt48(Guy, Tic, End))
+                ACCT_ID_STORAGE =>
+                  (#Flopper.pad |-> Pad)
+                  (#Flopper.ttl_tau |-> #WordPackUInt48UInt48(Ttl, Tau))
+                  (#Flopper.bids[ABI_id].lot |-> (Pad *Int Lot) /Int #Wad)
+                  (#Flopper.bids[ABI_id].guy_tic_end |-> #WordPackAddrUInt48UInt48(Guy, Tic, TIME +Int Tau))
+                  ACCT_ID_STORAGE
+              </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
               <nonce> _Nonce_Flopper => ?_ </nonce>
               <transientStorage> _ </transientStorage>
@@ -107,30 +118,11 @@ module FLOPPER-TICK-PASS-ROUGH-SPEC
        andBool ((lengthBytes(CD) <=Int 1250000000)
        andBool ((#notPrecompileAddress(Guy))
        andBool ((#rangeUInt(48, TIME))
-       andBool (#rangeUInt(256, Junk_0)
-       andBool (#rangeUInt(256, Junk_1)
-       andBool (#rangeUInt(256, Junk_2)
-       andBool (#rangeUInt(256, Junk_3)
        andBool (((VCallValue ==Int 0))
        andBool (((Tic ==Int 0))
        andBool (((End <Int TIME))
        andBool (((Pad *Int Lot <=Int maxUInt256))
-       andBool ((#rangeUInt(48, TIME +Int Tau))))))))))))))))))))))
-
-       andBool #lookup(ACCT_ID_STORAGE, #Flopper.pad) ==Int Pad
-       andBool #lookup(ACCT_ID_STORAGE, #Flopper.ttl_tau) ==Int #WordPackUInt48UInt48(Ttl, Tau)
-       andBool #lookup(ACCT_ID_STORAGE, #Flopper.bids[ABI_id].lot) ==Int Lot
-       andBool #lookup(ACCT_ID_STORAGE, #Flopper.bids[ABI_id].guy_tic_end) ==Int #WordPackAddrUInt48UInt48(Guy, Tic, End)
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Flopper.pad) ==Int Junk_0
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Flopper.ttl_tau) ==Int Junk_1
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Flopper.bids[ABI_id].lot) ==Int Junk_2
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Flopper.bids[ABI_id].guy_tic_end) ==Int Junk_3
-       andBool #Flopper.pad =/=Int #Flopper.ttl_tau
-       andBool #Flopper.pad =/=Int #Flopper.bids[ABI_id].lot
-       andBool #Flopper.pad =/=Int #Flopper.bids[ABI_id].guy_tic_end
-       andBool #Flopper.ttl_tau =/=Int #Flopper.bids[ABI_id].lot
-       andBool #Flopper.ttl_tau =/=Int #Flopper.bids[ABI_id].guy_tic_end
-       andBool #Flopper.bids[ABI_id].lot =/=Int #Flopper.bids[ABI_id].guy_tic_end
+       andBool ((#rangeUInt(48, TIME +Int Tau))))))))))))))))))
 
     // Flopper_addu48u48
     claim [Flopper.addu48u48.pass]:

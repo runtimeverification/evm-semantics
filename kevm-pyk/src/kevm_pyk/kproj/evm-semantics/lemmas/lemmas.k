@@ -30,8 +30,8 @@ module LEMMAS [symbolic]
   // Set Reasoning
   // ########################
 
-    rule X in (SetItem(Y) _   ) => true      requires X  ==Int Y [simplification]
-    rule X in (SetItem(Y) REST) => X in REST requires X =/=Int Y [simplification]
+    rule X in (SetItem(Y) _   ) => true      requires           X ==Int Y   [simplification]
+    rule X in (SetItem(Y) REST) => X in REST requires notBool ( X ==Int Y ) [simplification]
 
     rule   ( S:Set |Set SetItem ( X )                      ) |Set SetItem( X ) =>   ( S:Set |Set SetItem ( X )                      ) [simplification]
     rule ( ( S:Set |Set SetItem ( X ) ) |Set SetItem ( Y ) ) |Set SetItem( X ) => ( ( S:Set |Set SetItem ( X ) ) |Set SetItem ( Y ) ) [simplification]
@@ -78,11 +78,11 @@ module LEMMAS [symbolic]
     rule         #lookup( _M:Map , _ ) <Int pow256 => true [simplification, smt-lemma]
 
     rule #lookup ( _M:Map [ K1 <- V1 ] , K2 )    => #lookup ( K1 |-> V1 , K1 ) requires K1 ==Int  K2 [simplification]
-    rule #lookup (  M:Map [ K1 <- _  ] , K2 )    => #lookup ( M         , K2 ) requires K1 =/=Int K2 [simplification]
-    rule #lookup ( (K1:Int |-> _) M:Map, K2:Int) => #lookup ( M         , K2 ) requires K1 =/=Int K2 [simplification]
+    rule #lookup (  M:Map [ K1 <- _  ] , K2 )    => #lookup ( M         , K2 ) requires notBool ( K1 ==Int K2 ) [simplification]
+    rule #lookup ( (K1:Int |-> _) M:Map, K2:Int) => #lookup ( M         , K2 ) requires notBool ( K1 ==Int K2 ) [simplification]
 
     rule M:Map [ I1:Int <- V1:Int ] [ I2:Int <- V2:Int ] ==K M:Map [ I2 <- V2 ] [ I1 <- V1 ] => true
-      requires I1 =/=Int I2
+      requires notBool ( I1 ==Int I2 )
       [simplification]
 
  // Hardcoded #addrFromPrivateKey simplifications, see: https://github.com/runtimeverification/haskell-backend/issues/3573
@@ -201,7 +201,7 @@ module LEMMAS-HASKELL [symbolic]
   // ########################
 
     rule { M:Map [ I1:Int <- V1:Int ] [ I2:Int <- V2:Int ] #Equals M:Map [ I2 <- V2 ] [ I1 <- V1 ] } => #Top
-      requires I1 =/=Int I2
+      requires notBool ( I1 ==Int I2 )
       [simplification]
 
   // ########################

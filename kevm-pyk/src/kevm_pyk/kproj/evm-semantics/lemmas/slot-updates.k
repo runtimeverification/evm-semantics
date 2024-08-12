@@ -102,24 +102,19 @@ module SLOT-UPDATES [symbolic]
         [simplification, preserves-definedness]
 
     // 3a. Update with explicit shift and symbolic slot
-    rule [buf-bor-update-with-shift-left]:
-      #buf ( W, ( SHIFT *Int X ) |Int Y ) => #buf( W -Int ( log2Int(SHIFT) /Int 8 ), X ) +Bytes #buf( log2Int(SHIFT) /Int 8, Y )
-      requires 0 <=Int W andBool W <=Int 32 andBool rangeUInt(256, SHIFT)
-       andBool SHIFT ==Int 2 ^Int log2Int(SHIFT)
-       andBool log2Int(SHIFT) modInt 8 ==Int 0
-       andBool 0 <=Int X andBool X <Int 2 ^Int (8 *Int (W -Int ( log2Int(SHIFT) /Int 8)))
+    rule [bor-update-with-shift]:
+      ( SHIFT *Int X ) |Int Y => #asWord ( #buf( 32 -Int ( log2Int(SHIFT) /Int 8 ), X ) +Bytes #buf( log2Int(SHIFT) /Int 8, Y ) )
+      requires rangeUInt(256, SHIFT) andBool SHIFT ==Int 2 ^Int log2Int(SHIFT) andBool log2Int(SHIFT) modInt 8 ==Int 0
+       andBool 0 <=Int X andBool X <Int 2 ^Int (8 *Int (32 -Int ( log2Int(SHIFT) /Int 8 )))
        andBool 0 <=Int Y andBool Y <Int SHIFT
-       [simplification, concrete(W, SHIFT), preserves-definedness]
+       [simplification, concrete(SHIFT), comm, preserves-definedness]
 
-    // 3b. Update with explicit shift and concrete slot
-    rule [buf-bor-update-with-shift-right]:
-      #buf ( W, Y |Int ( SHIFT *Int X ) ) => #buf(W -Int ( log2Int(SHIFT) /Int 8 ), X) +Bytes #buf( log2Int(SHIFT) /Int 8, Y )
-      requires 0 <=Int W andBool W <=Int 32 andBool rangeUInt(256, SHIFT)
-       andBool SHIFT ==Int 2 ^Int log2Int(SHIFT)
-       andBool log2Int(SHIFT) modInt 8 ==Int 0
-       andBool 0 <=Int X andBool X <Int 2 ^Int (8 *Int (W -Int ( log2Int(SHIFT) /Int 8)))
-       andBool 0 <=Int Y andBool Y <Int SHIFT
-       [simplification, concrete(W, SHIFT), preserves-definedness]
+    // 3b. Buffer cropping
+    rule [buf-asWord-crop]:
+      #buf (W1:Int, #asWord(#buf(W2, X:Int) +Bytes B)) => #buf(W1 -Int lengthBytes(B), X) +Bytes B
+      requires 0 <=Int W1 andBool 0 <=Int W2 andBool lengthBytes(B) <=Int W1 andBool W1 <=Int W2 +Int lengthBytes(B)
+       andBool 0 <=Int X andBool X <Int 2 ^Int (8 *Int (W1 -Int lengthBytes(B)))
+      [simplification]
 
     // 3c. Splitting the updated buffer into the updated value and the trailing zeros, explicit shift
     rule [buf-split-l]:

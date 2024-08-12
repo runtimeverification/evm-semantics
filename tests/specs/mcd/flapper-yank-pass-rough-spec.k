@@ -73,7 +73,20 @@ module FLAPPER-YANK-PASS-ROUGH-SPEC
               <acctID> ACCT_ID </acctID>
               <balance> ACCT_ID_balance </balance>
               <code> Flapper_bin_runtime </code>
-              <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE [ #Flapper.bids[ABI_id].bid <- 0 ] [ #Flapper.bids[ABI_id].lot <- 0 ] [ #Flapper.bids[ABI_id].guy_tic_end <- 0 ] </storage>
+              <storage>
+                (#Flapper.live |-> Live)
+                (#Flapper.gem |-> DSToken)
+                (#Flapper.bids[ABI_id].bid |-> Bid)
+                (#Flapper.bids[ABI_id].lot |-> Lot)
+                (#Flapper.bids[ABI_id].guy_tic_end |-> #WordPackAddrUInt48UInt48(Guy, Tic, End))
+                ACCT_ID_STORAGE =>
+                  (#Flapper.live |-> Live)
+                  (#Flapper.gem |-> DSToken)
+                  (#Flapper.bids[ABI_id].bid |-> 0)
+                  (#Flapper.bids[ABI_id].lot |-> 0)
+                  (#Flapper.bids[ABI_id].guy_tic_end |-> 0)
+                  ACCT_ID_STORAGE
+              </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
               <nonce> Nonce_Flapper </nonce>
               <transientStorage> _ </transientStorage>
@@ -82,8 +95,19 @@ module FLAPPER-YANK-PASS-ROUGH-SPEC
               <acctID> DSToken </acctID>
               <balance> DSToken_balance </balance>
               <code> DSToken_bin_runtime </code>
-              <storage> DSToken_STORAGE => DSToken_STORAGE [ #DSToken.balances[ACCT_ID] <- Gem_a -Int Bid ] [ #DSToken.balances[Guy] <- Gem_g +Int Bid ] </storage>
-              <origStorage> DSToken_ORIG_STORAGE </origStorage>
+              <storage>
+                (#DSToken.balances[ACCT_ID] |-> Gem_a)
+                (#DSToken.balances[Guy] |-> Gem_g)
+                (#DSToken.owner_stopped |-> #WordPackAddrUInt8(Owner, Stopped))
+                DSToken_STORAGE =>
+                  (#DSToken.balances[ACCT_ID] |-> Gem_a -Int Bid)
+                  (#DSToken.balances[Guy] |-> Gem_g +Int Bid)
+                  (#DSToken.owner_stopped |-> #WordPackAddrUInt8(Owner, Stopped))
+                  DSToken_STORAGE
+              </storage>
+              <origStorage>
+                DSToken_ORIG_STORAGE
+              </origStorage>
               <nonce> Nonce_DSToken </nonce>
               <transientStorage> _ </transientStorage>
             </account>
@@ -125,54 +149,19 @@ module FLAPPER-YANK-PASS-ROUGH-SPEC
        andBool ((ACCT_ID =/=Int DSToken)
        andBool (((DSToken =/=Int 0))
        andBool ((ACCT_ID =/=Int Guy)
-       andBool (#rangeUInt(256, Junk_0)
-       andBool (#rangeUInt(256, Junk_1)
-       andBool (#rangeUInt(256, Junk_2)
-       andBool (#rangeUInt(256, Junk_3)
-       andBool (#rangeUInt(256, Junk_4)
-       andBool (#rangeUInt(256, Junk_5)
-       andBool (#rangeUInt(256, Junk_6)
-       andBool (#rangeUInt(256, Junk_7)
        andBool (((Live ==Int 0))
        andBool (((Guy =/=Int 0))
        andBool (((Stopped ==Int 0))
        andBool (((VCallDepth <Int 1024))
        andBool (((VCallValue ==Int 0))
        andBool ((#rangeUInt(256, Gem_a -Int Bid))
-       andBool ((#rangeUInt(256, Gem_g +Int Bid)))))))))))))))))))))))))))))))))))))
+       andBool ((#rangeUInt(256, Gem_g +Int Bid)))))))))))))))))))))))))))))
 
-       andBool #lookup(ACCT_ID_STORAGE, #Flapper.live) ==Int Live
-       andBool #lookup(ACCT_ID_STORAGE, #Flapper.gem) ==Int DSToken
-       andBool #lookup(ACCT_ID_STORAGE, #Flapper.bids[ABI_id].bid) ==Int Bid
-       andBool #lookup(ACCT_ID_STORAGE, #Flapper.bids[ABI_id].lot) ==Int Lot
-       andBool #lookup(ACCT_ID_STORAGE, #Flapper.bids[ABI_id].guy_tic_end) ==Int #WordPackAddrUInt48UInt48(Guy, Tic, End)
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Flapper.live) ==Int Junk_0
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Flapper.gem) ==Int Junk_1
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Flapper.bids[ABI_id].bid) ==Int Junk_2
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Flapper.bids[ABI_id].lot) ==Int Junk_3
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Flapper.bids[ABI_id].guy_tic_end) ==Int Junk_4
-       andBool #Flapper.live =/=Int #Flapper.gem
-       andBool #Flapper.live =/=Int #Flapper.bids[ABI_id].bid
-       andBool #Flapper.live =/=Int #Flapper.bids[ABI_id].lot
-       andBool #Flapper.live =/=Int #Flapper.bids[ABI_id].guy_tic_end
-       andBool #Flapper.gem =/=Int #Flapper.bids[ABI_id].bid
-       andBool #Flapper.gem =/=Int #Flapper.bids[ABI_id].lot
-       andBool #Flapper.gem =/=Int #Flapper.bids[ABI_id].guy_tic_end
-       andBool #Flapper.bids[ABI_id].bid =/=Int #Flapper.bids[ABI_id].lot
-       andBool #Flapper.bids[ABI_id].bid =/=Int #Flapper.bids[ABI_id].guy_tic_end
-       andBool #Flapper.bids[ABI_id].lot =/=Int #Flapper.bids[ABI_id].guy_tic_end
-       andBool #lookup(DSToken_STORAGE, #DSToken.balances[ACCT_ID]) ==Int Gem_a
-       andBool #lookup(DSToken_STORAGE, #DSToken.balances[Guy]) ==Int Gem_g
-       andBool #lookup(DSToken_STORAGE, #DSToken.owner_stopped) ==Int #WordPackAddrUInt8(Owner, Stopped)
-       andBool #lookup(DSToken_ORIG_STORAGE, #DSToken.balances[ACCT_ID]) ==Int Junk_5
-       andBool #lookup(DSToken_ORIG_STORAGE, #DSToken.balances[Guy]) ==Int Junk_6
-       andBool #lookup(DSToken_ORIG_STORAGE, #DSToken.owner_stopped) ==Int Junk_7
-       andBool #DSToken.balances[ACCT_ID] =/=Int #DSToken.balances[Guy]
-       andBool #DSToken.balances[ACCT_ID] =/=Int #DSToken.owner_stopped
-       andBool #DSToken.balances[Guy] =/=Int #DSToken.owner_stopped
        andBool #rangeNonce(Nonce_Flapper)
        andBool #rangeNonce(Nonce_DSToken)
 
+    // TO DISCUSS: This specification cannot be useful for the above, because it
+    // changes #DSToken.allowance[ABI_src][CALLER_ID], but the above spec does not.
     // DSToken_move
     claim [DSToken.move.pass]:
       <k> #execute ~> CONTINUATION => #halt ~> CONTINUATION </k>
@@ -196,7 +185,7 @@ module FLAPPER-YANK-PASS-ROUGH-SPEC
             <wordStack> .WordStack => ?_ </wordStack>
             <localMem> .Bytes => ?_ </localMem>
             <pc> 0 => ?_ </pc>
-            <gas> #gas(VGas) => #if ( #lookup( ACCT_ID_STORAGE , #hashedLocation("Solidity", 2, ABI_src CALLER_ID .IntList) ) ==Int maxUInt256 andBool ( Allowance ==Int maxUInt256 andBool ( maxUInt256 ==Int maxUInt256 orBool ABI_wad <=Int maxUInt256 ) ) )
+            <gas> #gas(VGas) => #if ( Allowance ==Int maxUInt256 )
               #then   #gas ( ( ( ( VGas -Int Csstore( ISTANBUL , ( Gem_s -Int ABI_wad ) , Gem_s , Junk_1 ) ) -Int Csstore( ISTANBUL , ( Gem_d +Int ABI_wad ) , Gem_d , Junk_2 ) ) +Int -7281 ) )
               #else   #gas ( ( ( ( ( VGas -Int Csstore( ISTANBUL , ( Allowance -Int ABI_wad ) , Allowance , Junk_0 ) ) -Int Csstore( ISTANBUL , ( Gem_s -Int ABI_wad ) , Gem_s , Junk_1 ) ) -Int Csstore( ISTANBUL , ( Gem_d +Int ABI_wad ) , Gem_d , Junk_2 ) ) +Int -9538 ) )
             #fi </gas>
@@ -246,8 +235,24 @@ module FLAPPER-YANK-PASS-ROUGH-SPEC
               <acctID> ACCT_ID </acctID>
               <balance> ACCT_ID_balance </balance>
               <code> DSToken_bin_runtime </code>
-              <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE [ #DSToken.allowance[ABI_src][CALLER_ID] <- #if (ABI_src ==Int CALLER_ID orBool Allowance ==Int maxUInt256) #then Allowance #else Allowance -Int ABI_wad #fi ] [ #DSToken.balances[ABI_src] <- Gem_s -Int ABI_wad ] [ #DSToken.balances[ABI_dst] <- Gem_d +Int ABI_wad ] </storage>
-              <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
+              <storage>
+                (#DSToken.allowance[ABI_src][CALLER_ID] |-> Allowance)
+                (#DSToken.balances[ABI_src] |-> Gem_s)
+                (#DSToken.balances[ABI_dst] |-> Gem_d)
+                (#DSToken.owner_stopped |-> #WordPackAddrUInt8(Owner, Stopped))
+                ACCT_ID_STORAGE =>
+                  (#DSToken.allowance[ABI_src][CALLER_ID] |-> #if Allowance ==Int maxUInt256 #then Allowance #else Allowance -Int ABI_wad #fi)
+                  (#DSToken.balances[ABI_src] |-> Gem_s -Int ABI_wad)
+                  (#DSToken.balances[ABI_dst] |-> Gem_d +Int ABI_wad)
+                  (#DSToken.owner_stopped |-> #WordPackAddrUInt8(Owner, Stopped))
+                  ACCT_ID_STORAGE
+              </storage>
+              <origStorage>
+                (#DSToken.allowance[ABI_src][CALLER_ID] |-> Junk_0)
+                (#DSToken.balances[ABI_src] |-> Junk_1)
+                (#DSToken.balances[ABI_dst] |-> Junk_2)
+                ACCT_ID_ORIG_STORAGE
+              </origStorage>
               <nonce> Nonce_DSToken </nonce>
               <transientStorage> _ </transientStorage>
             </account>
@@ -284,27 +289,12 @@ module FLAPPER-YANK-PASS-ROUGH-SPEC
        andBool (#rangeUInt(256, Junk_0)
        andBool (#rangeUInt(256, Junk_1)
        andBool (#rangeUInt(256, Junk_2)
-       andBool (#rangeUInt(256, Junk_3)
        andBool (((#rangeUInt(256, Gem_s -Int ABI_wad)))
        andBool (((#rangeUInt(256, Gem_d +Int ABI_wad)))
        andBool (((Allowance ==Int maxUInt256) orBool (ABI_wad <=Int Allowance))
        andBool ((VCallValue ==Int 0)
-       andBool ((Stopped ==Int 0))))))))))))))))))))))
+       andBool ((Stopped ==Int 0)))))))))))))))))))))
 
-       andBool #lookup(ACCT_ID_STORAGE, #DSToken.allowance[ABI_src][CALLER_ID]) ==Int Allowance
-       andBool #lookup(ACCT_ID_STORAGE, #DSToken.balances[ABI_src]) ==Int Gem_s
-       andBool #lookup(ACCT_ID_STORAGE, #DSToken.balances[ABI_dst]) ==Int Gem_d
-       andBool #lookup(ACCT_ID_STORAGE, #DSToken.owner_stopped) ==Int #WordPackAddrUInt8(Owner, Stopped)
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #DSToken.allowance[ABI_src][CALLER_ID]) ==Int Junk_0
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #DSToken.balances[ABI_src]) ==Int Junk_1
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #DSToken.balances[ABI_dst]) ==Int Junk_2
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #DSToken.owner_stopped) ==Int Junk_3
-       andBool #DSToken.allowance[ABI_src][CALLER_ID] =/=Int #DSToken.balances[ABI_src]
-       andBool #DSToken.allowance[ABI_src][CALLER_ID] =/=Int #DSToken.balances[ABI_dst]
-       andBool #DSToken.allowance[ABI_src][CALLER_ID] =/=Int #DSToken.owner_stopped
-       andBool #DSToken.balances[ABI_src] =/=Int #DSToken.balances[ABI_dst]
-       andBool #DSToken.balances[ABI_src] =/=Int #DSToken.owner_stopped
-       andBool #DSToken.balances[ABI_dst] =/=Int #DSToken.owner_stopped
        andBool #rangeNonce(Nonce_DSToken)
 
     [trusted]

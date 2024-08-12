@@ -75,7 +75,28 @@ module VAT-FORK-DIFF-PASS-ROUGH-SPEC
               <acctID> ACCT_ID </acctID>
               <balance> ACCT_ID_balance </balance>
               <code> Vat_bin_runtime </code>
-              <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE [ #Vat.urns[ABI_ilk][ABI_src].ink <- Ink_u -Int ABI_dink ] [ #Vat.urns[ABI_ilk][ABI_src].art <- Art_u -Int ABI_dart ] [ #Vat.urns[ABI_ilk][ABI_dst].ink <- Ink_v +Int ABI_dink ] [ #Vat.urns[ABI_ilk][ABI_dst].art <- Art_v +Int ABI_dart ] </storage>
+              <storage>
+                (#Vat.can[ABI_src][CALLER_ID] |-> Can_src)
+                (#Vat.can[ABI_dst][CALLER_ID] |-> Can_dst)
+                (#Vat.ilks[ABI_ilk].rate |-> Rate)
+                (#Vat.ilks[ABI_ilk].spot |-> Spot)
+                (#Vat.ilks[ABI_ilk].dust |-> Dust)
+                (#Vat.urns[ABI_ilk][ABI_src].ink |-> Ink_u)
+                (#Vat.urns[ABI_ilk][ABI_src].art |-> Art_u)
+                (#Vat.urns[ABI_ilk][ABI_dst].ink |-> Ink_v)
+                (#Vat.urns[ABI_ilk][ABI_dst].art |-> Art_v)
+                ACCT_ID_STORAGE =>
+                  (#Vat.can[ABI_src][CALLER_ID] |-> Can_src)
+                  (#Vat.can[ABI_dst][CALLER_ID] |-> Can_dst)
+                  (#Vat.ilks[ABI_ilk].rate |-> Rate)
+                  (#Vat.ilks[ABI_ilk].spot |-> Spot)
+                  (#Vat.ilks[ABI_ilk].dust |-> Dust)
+                  (#Vat.urns[ABI_ilk][ABI_src].ink |-> Ink_u -Int ABI_dink)
+                  (#Vat.urns[ABI_ilk][ABI_src].art |-> Art_u -Int ABI_dart)
+                  (#Vat.urns[ABI_ilk][ABI_dst].ink |-> Ink_v +Int ABI_dink)
+                  (#Vat.urns[ABI_ilk][ABI_dst].art |-> Art_v +Int ABI_dart)
+                  ACCT_ID_STORAGE
+              </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
               <nonce> _Nonce_Vat => ?_ </nonce>
               <transientStorage> _ </transientStorage>
@@ -114,15 +135,6 @@ module VAT-FORK-DIFF-PASS-ROUGH-SPEC
        andBool (#rangeUInt(256, Art_v)
        andBool ((lengthBytes(CD) <=Int 1250000000)
        andBool ((ABI_src =/=Int ABI_dst)
-       andBool (#rangeUInt(256, Junk_0)
-       andBool (#rangeUInt(256, Junk_1)
-       andBool (#rangeUInt(256, Junk_2)
-       andBool (#rangeUInt(256, Junk_3)
-       andBool (#rangeUInt(256, Junk_4)
-       andBool (#rangeUInt(256, Junk_5)
-       andBool (#rangeUInt(256, Junk_6)
-       andBool (#rangeUInt(256, Junk_7)
-       andBool (#rangeUInt(256, Junk_8)
        andBool (((VCallValue ==Int 0))
        andBool ((((ABI_src ==Int CALLER_ID) orBool (Can_src ==Int 1)))
        andBool ((((ABI_dst ==Int CALLER_ID) orBool (Can_dst ==Int 1)))
@@ -135,62 +147,7 @@ module VAT-FORK-DIFF-PASS-ROUGH-SPEC
        andBool ((#rangeUInt(256, Art_u -Int ABI_dart))
        andBool ((#rangeUInt(256, Art_v +Int ABI_dart))
        andBool ((#rangeUInt(256, (Ink_u -Int ABI_dink) *Int Spot))
-       andBool ((#rangeUInt(256, (Ink_v +Int ABI_dink) *Int Spot))))))))))))))))))))))))))))))))))))))))
-
-       andBool #lookup(ACCT_ID_STORAGE, #Vat.can[ABI_src][CALLER_ID]) ==Int Can_src
-       andBool #lookup(ACCT_ID_STORAGE, #Vat.can[ABI_dst][CALLER_ID]) ==Int Can_dst
-       andBool #lookup(ACCT_ID_STORAGE, #Vat.ilks[ABI_ilk].rate) ==Int Rate
-       andBool #lookup(ACCT_ID_STORAGE, #Vat.ilks[ABI_ilk].spot) ==Int Spot
-       andBool #lookup(ACCT_ID_STORAGE, #Vat.ilks[ABI_ilk].dust) ==Int Dust
-       andBool #lookup(ACCT_ID_STORAGE, #Vat.urns[ABI_ilk][ABI_src].ink) ==Int Ink_u
-       andBool #lookup(ACCT_ID_STORAGE, #Vat.urns[ABI_ilk][ABI_src].art) ==Int Art_u
-       andBool #lookup(ACCT_ID_STORAGE, #Vat.urns[ABI_ilk][ABI_dst].ink) ==Int Ink_v
-       andBool #lookup(ACCT_ID_STORAGE, #Vat.urns[ABI_ilk][ABI_dst].art) ==Int Art_v
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Vat.can[ABI_src][CALLER_ID]) ==Int Junk_0
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Vat.can[ABI_dst][CALLER_ID]) ==Int Junk_1
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Vat.ilks[ABI_ilk].rate) ==Int Junk_2
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Vat.ilks[ABI_ilk].spot) ==Int Junk_3
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Vat.ilks[ABI_ilk].dust) ==Int Junk_4
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Vat.urns[ABI_ilk][ABI_src].ink) ==Int Junk_5
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Vat.urns[ABI_ilk][ABI_src].art) ==Int Junk_6
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Vat.urns[ABI_ilk][ABI_dst].ink) ==Int Junk_7
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Vat.urns[ABI_ilk][ABI_dst].art) ==Int Junk_8
-       andBool #Vat.can[ABI_src][CALLER_ID] =/=Int #Vat.can[ABI_dst][CALLER_ID]
-       andBool #Vat.can[ABI_src][CALLER_ID] =/=Int #Vat.ilks[ABI_ilk].rate
-       andBool #Vat.can[ABI_src][CALLER_ID] =/=Int #Vat.ilks[ABI_ilk].spot
-       andBool #Vat.can[ABI_src][CALLER_ID] =/=Int #Vat.ilks[ABI_ilk].dust
-       andBool #Vat.can[ABI_src][CALLER_ID] =/=Int #Vat.urns[ABI_ilk][ABI_src].ink
-       andBool #Vat.can[ABI_src][CALLER_ID] =/=Int #Vat.urns[ABI_ilk][ABI_src].art
-       andBool #Vat.can[ABI_src][CALLER_ID] =/=Int #Vat.urns[ABI_ilk][ABI_dst].ink
-       andBool #Vat.can[ABI_src][CALLER_ID] =/=Int #Vat.urns[ABI_ilk][ABI_dst].art
-       andBool #Vat.can[ABI_dst][CALLER_ID] =/=Int #Vat.ilks[ABI_ilk].rate
-       andBool #Vat.can[ABI_dst][CALLER_ID] =/=Int #Vat.ilks[ABI_ilk].spot
-       andBool #Vat.can[ABI_dst][CALLER_ID] =/=Int #Vat.ilks[ABI_ilk].dust
-       andBool #Vat.can[ABI_dst][CALLER_ID] =/=Int #Vat.urns[ABI_ilk][ABI_src].ink
-       andBool #Vat.can[ABI_dst][CALLER_ID] =/=Int #Vat.urns[ABI_ilk][ABI_src].art
-       andBool #Vat.can[ABI_dst][CALLER_ID] =/=Int #Vat.urns[ABI_ilk][ABI_dst].ink
-       andBool #Vat.can[ABI_dst][CALLER_ID] =/=Int #Vat.urns[ABI_ilk][ABI_dst].art
-       andBool #Vat.ilks[ABI_ilk].rate =/=Int #Vat.ilks[ABI_ilk].spot
-       andBool #Vat.ilks[ABI_ilk].rate =/=Int #Vat.ilks[ABI_ilk].dust
-       andBool #Vat.ilks[ABI_ilk].rate =/=Int #Vat.urns[ABI_ilk][ABI_src].ink
-       andBool #Vat.ilks[ABI_ilk].rate =/=Int #Vat.urns[ABI_ilk][ABI_src].art
-       andBool #Vat.ilks[ABI_ilk].rate =/=Int #Vat.urns[ABI_ilk][ABI_dst].ink
-       andBool #Vat.ilks[ABI_ilk].rate =/=Int #Vat.urns[ABI_ilk][ABI_dst].art
-       andBool #Vat.ilks[ABI_ilk].spot =/=Int #Vat.ilks[ABI_ilk].dust
-       andBool #Vat.ilks[ABI_ilk].spot =/=Int #Vat.urns[ABI_ilk][ABI_src].ink
-       andBool #Vat.ilks[ABI_ilk].spot =/=Int #Vat.urns[ABI_ilk][ABI_src].art
-       andBool #Vat.ilks[ABI_ilk].spot =/=Int #Vat.urns[ABI_ilk][ABI_dst].ink
-       andBool #Vat.ilks[ABI_ilk].spot =/=Int #Vat.urns[ABI_ilk][ABI_dst].art
-       andBool #Vat.ilks[ABI_ilk].dust =/=Int #Vat.urns[ABI_ilk][ABI_src].ink
-       andBool #Vat.ilks[ABI_ilk].dust =/=Int #Vat.urns[ABI_ilk][ABI_src].art
-       andBool #Vat.ilks[ABI_ilk].dust =/=Int #Vat.urns[ABI_ilk][ABI_dst].ink
-       andBool #Vat.ilks[ABI_ilk].dust =/=Int #Vat.urns[ABI_ilk][ABI_dst].art
-       andBool #Vat.urns[ABI_ilk][ABI_src].ink =/=Int #Vat.urns[ABI_ilk][ABI_src].art
-       andBool #Vat.urns[ABI_ilk][ABI_src].ink =/=Int #Vat.urns[ABI_ilk][ABI_dst].ink
-       andBool #Vat.urns[ABI_ilk][ABI_src].ink =/=Int #Vat.urns[ABI_ilk][ABI_dst].art
-       andBool #Vat.urns[ABI_ilk][ABI_src].art =/=Int #Vat.urns[ABI_ilk][ABI_dst].ink
-       andBool #Vat.urns[ABI_ilk][ABI_src].art =/=Int #Vat.urns[ABI_ilk][ABI_dst].art
-       andBool #Vat.urns[ABI_ilk][ABI_dst].ink =/=Int #Vat.urns[ABI_ilk][ABI_dst].art
+       andBool ((#rangeUInt(256, (Ink_v +Int ABI_dink) *Int Spot)))))))))))))))))))))))))))))))
 
     [depends(VAT-ARITHMETIC-SPEC.Vat.addui.pass,VAT-ARITHMETIC-SPEC.Vat.subui.pass,VAT-ARITHMETIC-SPEC.Vat.muluu.pass)]
 

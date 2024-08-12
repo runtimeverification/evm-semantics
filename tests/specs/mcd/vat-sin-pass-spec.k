@@ -72,7 +72,10 @@ module VAT-SIN-PASS-SPEC
               <acctID> ACCT_ID </acctID>
               <balance> ACCT_ID_balance </balance>
               <code> Vat_bin_runtime </code>
-              <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE  </storage>
+              <storage>
+                (#Vat.sin[ABI_usr] |-> Rad)
+                ACCT_ID_STORAGE
+              </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
               <nonce> Nonce_Vat </nonce>
               <transientStorage> _ </transientStorage>
@@ -99,10 +102,6 @@ module VAT-SIN-PASS-SPEC
        andBool (#rangeAddress(ABI_usr)
        andBool (#rangeUInt(256, Rad)
        andBool (lengthBytes(CD) <=Int 1250000000
-       andBool (#rangeUInt(256, Junk_0)
-       andBool ((VCallValue ==Int 0))))))
-
-       andBool #lookup(ACCT_ID_STORAGE, #Vat.sin[ABI_usr]) ==Int Rad
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Vat.sin[ABI_usr]) ==Int Junk_0
+       andBool ((VCallValue ==Int 0)))))
 
 endmodule

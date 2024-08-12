@@ -76,7 +76,16 @@ module VAT-MOVE-DIFF-ROUGH-SPEC
               <acctID> ACCT_ID </acctID>
               <balance> ACCT_ID_balance </balance>
               <code> Vat_bin_runtime </code>
-              <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE [ #Vat.dai[ABI_src] <- Dai_src -Int ABI_rad ] [ #Vat.dai[ABI_dst] <- Dai_dst +Int ABI_rad ] </storage>
+              <storage>
+                (#Vat.can[ABI_src][CALLER_ID] |-> May)
+                (#Vat.dai[ABI_src] |-> Dai_src)
+                (#Vat.dai[ABI_dst] |-> Dai_dst)
+                ACCT_ID_STORAGE =>
+                  (#Vat.can[ABI_src][CALLER_ID] |-> May)
+                  (#Vat.dai[ABI_src] |-> Dai_src -Int ABI_rad)
+                  (#Vat.dai[ABI_dst] |-> Dai_dst +Int ABI_rad)
+                  ACCT_ID_STORAGE
+              </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
               <nonce> Nonce_Vat </nonce>
               <transientStorage> _ </transientStorage>
@@ -108,23 +117,11 @@ module VAT-MOVE-DIFF-ROUGH-SPEC
      andBool (#rangeUInt(256, May)
      andBool ((lengthBytes(CD) <=Int 1250000000)
      andBool ((ABI_src =/=Int ABI_dst)
-     andBool (#rangeUInt(256, Junk_0)
-     andBool (#rangeUInt(256, Junk_1)
-     andBool (#rangeUInt(256, Junk_2)
      andBool ((((May ==Int 1 orBool ABI_src ==Int CALLER_ID)))
      andBool (((VCallValue ==Int 0))
      andBool ((#rangeUInt(256, Dai_src -Int ABI_rad))
-     andBool ((#rangeUInt(256, Dai_dst +Int ABI_rad)))))))))))))))))
+     andBool ((#rangeUInt(256, Dai_dst +Int ABI_rad))))))))))))))
 
-     andBool #lookup(ACCT_ID_STORAGE, #Vat.can[ABI_src][CALLER_ID]) ==Int May
-     andBool #lookup(ACCT_ID_STORAGE, #Vat.dai[ABI_src]) ==Int Dai_src
-     andBool #lookup(ACCT_ID_STORAGE, #Vat.dai[ABI_dst]) ==Int Dai_dst
-     andBool #lookup(ACCT_ID_ORIG_STORAGE, #Vat.can[ABI_src][CALLER_ID]) ==Int Junk_0
-     andBool #lookup(ACCT_ID_ORIG_STORAGE, #Vat.dai[ABI_src]) ==Int Junk_1
-     andBool #lookup(ACCT_ID_ORIG_STORAGE, #Vat.dai[ABI_dst]) ==Int Junk_2
-     andBool #Vat.can[ABI_src][CALLER_ID] =/=Int #Vat.dai[ABI_src]
-     andBool #Vat.can[ABI_src][CALLER_ID] =/=Int #Vat.dai[ABI_dst]
-     andBool #Vat.dai[ABI_src] =/=Int #Vat.dai[ABI_dst]
     [depends(VAT-ARITHMETIC-SPEC.Vat.adduu.pass,VAT-ARITHMETIC-SPEC.Vat.subuu.pass)]
 
 endmodule

@@ -72,8 +72,21 @@ module FLOPPER-CAGE-PASS-SPEC
               <acctID> ACCT_ID </acctID>
               <balance> ACCT_ID_balance </balance>
               <code> Flopper_bin_runtime </code>
-              <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE [ #Flopper.live <- 0 ] [ #Flopper.vow <- CALLER_ID ] </storage>
-              <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
+              <storage>
+                (#Flopper.wards[CALLER_ID] |-> Ward)
+                (#Flopper.live |-> Live)
+                (#Flopper.vow |-> Vow)
+                ACCT_ID_STORAGE =>
+                  (#Flopper.wards[CALLER_ID] |-> Ward)
+                  (#Flopper.live |-> 0)
+                  (#Flopper.vow |-> CALLER_ID)
+                  ACCT_ID_STORAGE
+              </storage>
+              <origStorage>
+                (#Flopper.live |-> Junk_1)
+                (#Flopper.vow |-> Junk_2)
+                ACCT_ID_ORIG_STORAGE
+              </origStorage>
               <nonce> _Nonce_Flopper => ?_ </nonce>
               <transientStorage> _ </transientStorage>
             </account>
@@ -100,20 +113,9 @@ module FLOPPER-CAGE-PASS-SPEC
        andBool (#rangeAddress(Vow)
        andBool (lengthBytes(CD) <=Int 1250000000
        andBool (#notPrecompileAddress(Vow)
-       andBool (#rangeUInt(256, Junk_0)
        andBool (#rangeUInt(256, Junk_1)
        andBool (#rangeUInt(256, Junk_2)
        andBool ((Ward ==Int 1)
-       andBool ((VCallValue ==Int 0)))))))))))
-
-       andBool #lookup(ACCT_ID_STORAGE, #Flopper.wards[CALLER_ID]) ==Int Ward
-       andBool #lookup(ACCT_ID_STORAGE, #Flopper.live) ==Int Live
-       andBool #lookup(ACCT_ID_STORAGE, #Flopper.vow) ==Int Vow
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Flopper.wards[CALLER_ID]) ==Int Junk_0
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Flopper.live) ==Int Junk_1
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Flopper.vow) ==Int Junk_2
-       andBool #Flopper.wards[CALLER_ID] =/=Int #Flopper.live
-       andBool #Flopper.wards[CALLER_ID] =/=Int #Flopper.vow
-       andBool #Flopper.live =/=Int #Flopper.vow
+       andBool ((VCallValue ==Int 0))))))))))
 
 endmodule

@@ -72,8 +72,25 @@ module VAT-HEAL-PASS-SPEC
               <acctID> ACCT_ID </acctID>
               <balance> ACCT_ID_balance </balance>
               <code> Vat_bin_runtime </code>
-              <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE [ #Vat.sin[CALLER_ID] <- Sin -Int ABI_rad ] [ #Vat.dai[CALLER_ID] <- Dai -Int ABI_rad ] [ #Vat.vice <- Vice  -Int ABI_rad ] [ #Vat.debt <- Debt  -Int ABI_rad ] </storage>
-              <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
+              <storage>
+                (#Vat.sin[CALLER_ID] |-> Sin)
+                (#Vat.dai[CALLER_ID] |-> Dai)
+                (#Vat.vice |-> Vice)
+                (#Vat.debt |-> Debt)
+                ACCT_ID_STORAGE =>
+                  (#Vat.sin[CALLER_ID] |-> Sin -Int ABI_rad)
+                  (#Vat.dai[CALLER_ID] |-> Dai -Int ABI_rad)
+                  (#Vat.vice |-> Vice -Int ABI_rad)
+                  (#Vat.debt |-> Debt -Int ABI_rad)
+                  ACCT_ID_STORAGE
+              </storage>
+              <origStorage>
+                (#Vat.sin[CALLER_ID] |-> Junk_0)
+                (#Vat.dai[CALLER_ID] |-> Junk_1)
+                (#Vat.vice |-> Junk_2)
+                (#Vat.debt |-> Junk_3)
+                ACCT_ID_ORIG_STORAGE
+              </origStorage>
               <nonce> Nonce_Vat </nonce>
               <transientStorage> _ </transientStorage>
             </account>
@@ -111,20 +128,5 @@ module VAT-HEAL-PASS-SPEC
        andBool ((#rangeUInt(256, Sin -Int ABI_rad))
        andBool ((#rangeUInt(256, Debt  -Int ABI_rad))
        andBool ((#rangeUInt(256, Vice  -Int ABI_rad)))))))))))))))))
-
-       andBool #lookup(ACCT_ID_STORAGE, #Vat.sin[CALLER_ID]) ==Int Sin
-       andBool #lookup(ACCT_ID_STORAGE, #Vat.dai[CALLER_ID]) ==Int Dai
-       andBool #lookup(ACCT_ID_STORAGE, #Vat.vice) ==Int Vice
-       andBool #lookup(ACCT_ID_STORAGE, #Vat.debt) ==Int Debt
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Vat.sin[CALLER_ID]) ==Int Junk_0
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Vat.dai[CALLER_ID]) ==Int Junk_1
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Vat.vice) ==Int Junk_2
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Vat.debt) ==Int Junk_3
-       andBool #Vat.sin[CALLER_ID] =/=Int #Vat.dai[CALLER_ID]
-       andBool #Vat.sin[CALLER_ID] =/=Int #Vat.vice
-       andBool #Vat.sin[CALLER_ID] =/=Int #Vat.debt
-       andBool #Vat.dai[CALLER_ID] =/=Int #Vat.vice
-       andBool #Vat.dai[CALLER_ID] =/=Int #Vat.debt
-       andBool #Vat.vice =/=Int #Vat.debt
 
 endmodule

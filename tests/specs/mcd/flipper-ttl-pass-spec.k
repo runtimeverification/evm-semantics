@@ -73,7 +73,10 @@ module FLIPPER-TTL-PASS-SPEC
               <acctID> ACCT_ID </acctID>
               <balance> ACCT_ID_balance </balance>
               <code> Flipper_bin_runtime </code>
-              <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE  </storage>
+              <storage>
+                (#Flipper.ttl_tau |-> #WordPackUInt48UInt48(Ttl, Tau))
+                ACCT_ID_STORAGE
+              </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
               <nonce> _Nonce_Flipper => ?_ </nonce>
               <transientStorage> _ </transientStorage>
@@ -99,10 +102,6 @@ module FLIPPER-TTL-PASS-SPEC
        andBool (#rangeUInt(48, Ttl)
        andBool (#rangeUInt(48, Tau)
        andBool (lengthBytes(CD) <=Int 1250000000
-       andBool (#rangeUInt(256, Junk_0)
-       andBool ((VCallValue ==Int 0))))))
-
-       andBool #lookup(ACCT_ID_STORAGE, #Flipper.ttl_tau) ==Int #WordPackUInt48UInt48(Ttl, Tau)
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Flipper.ttl_tau) ==Int Junk_0
+       andBool ((VCallValue ==Int 0)))))
 
 endmodule

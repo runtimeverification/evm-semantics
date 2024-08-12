@@ -73,7 +73,15 @@ module FLIPPER-BIDS-PASS-ROUGH-SPEC
               <acctID> ACCT_ID </acctID>
               <balance> ACCT_ID_balance </balance>
               <code> Flipper_bin_runtime </code>
-              <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE  </storage>
+              <storage>
+                (#Flipper.bids[ABI_n].bid |-> Bid)
+                (#Flipper.bids[ABI_n].lot |-> Lot)
+                (#Flipper.bids[ABI_n].guy_tic_end |-> #WordPackAddrUInt48UInt48(Guy, Tic, End))
+                (#Flipper.bids[ABI_n].usr |-> Usr)
+                (#Flipper.bids[ABI_n].gal |-> Gal)
+                (#Flipper.bids[ABI_n].tab |-> Tab)
+                ACCT_ID_STORAGE
+              </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
               <nonce> _Nonce_Flipper => ?_ </nonce>
               <transientStorage> _ </transientStorage>
@@ -109,40 +117,6 @@ module FLIPPER-BIDS-PASS-ROUGH-SPEC
        andBool (#notPrecompileAddress(Guy)
        andBool (#notPrecompileAddress(Usr)
        andBool (#notPrecompileAddress(Gal)
-       andBool (#rangeUInt(256, Junk_0)
-       andBool (#rangeUInt(256, Junk_1)
-       andBool (#rangeUInt(256, Junk_2)
-       andBool (#rangeUInt(256, Junk_3)
-       andBool (#rangeUInt(256, Junk_4)
-       andBool (#rangeUInt(256, Junk_5)
-       andBool ((VCallValue ==Int 0)))))))))))))))))))))
-
-       andBool #lookup(ACCT_ID_STORAGE, #Flipper.bids[ABI_n].bid) ==Int Bid
-       andBool #lookup(ACCT_ID_STORAGE, #Flipper.bids[ABI_n].lot) ==Int Lot
-       andBool #lookup(ACCT_ID_STORAGE, #Flipper.bids[ABI_n].guy_tic_end) ==Int #WordPackAddrUInt48UInt48(Guy, Tic, End)
-       andBool #lookup(ACCT_ID_STORAGE, #Flipper.bids[ABI_n].usr) ==Int Usr
-       andBool #lookup(ACCT_ID_STORAGE, #Flipper.bids[ABI_n].gal) ==Int Gal
-       andBool #lookup(ACCT_ID_STORAGE, #Flipper.bids[ABI_n].tab) ==Int Tab
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Flipper.bids[ABI_n].bid) ==Int Junk_0
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Flipper.bids[ABI_n].lot) ==Int Junk_1
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Flipper.bids[ABI_n].guy_tic_end) ==Int Junk_2
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Flipper.bids[ABI_n].usr) ==Int Junk_3
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Flipper.bids[ABI_n].gal) ==Int Junk_4
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Flipper.bids[ABI_n].tab) ==Int Junk_5
-       andBool #Flipper.bids[ABI_n].bid =/=Int #Flipper.bids[ABI_n].lot
-       andBool #Flipper.bids[ABI_n].bid =/=Int #Flipper.bids[ABI_n].guy_tic_end
-       andBool #Flipper.bids[ABI_n].bid =/=Int #Flipper.bids[ABI_n].usr
-       andBool #Flipper.bids[ABI_n].bid =/=Int #Flipper.bids[ABI_n].gal
-       andBool #Flipper.bids[ABI_n].bid =/=Int #Flipper.bids[ABI_n].tab
-       andBool #Flipper.bids[ABI_n].lot =/=Int #Flipper.bids[ABI_n].guy_tic_end
-       andBool #Flipper.bids[ABI_n].lot =/=Int #Flipper.bids[ABI_n].usr
-       andBool #Flipper.bids[ABI_n].lot =/=Int #Flipper.bids[ABI_n].gal
-       andBool #Flipper.bids[ABI_n].lot =/=Int #Flipper.bids[ABI_n].tab
-       andBool #Flipper.bids[ABI_n].guy_tic_end =/=Int #Flipper.bids[ABI_n].usr
-       andBool #Flipper.bids[ABI_n].guy_tic_end =/=Int #Flipper.bids[ABI_n].gal
-       andBool #Flipper.bids[ABI_n].guy_tic_end =/=Int #Flipper.bids[ABI_n].tab
-       andBool #Flipper.bids[ABI_n].usr =/=Int #Flipper.bids[ABI_n].gal
-       andBool #Flipper.bids[ABI_n].usr =/=Int #Flipper.bids[ABI_n].tab
-       andBool #Flipper.bids[ABI_n].gal =/=Int #Flipper.bids[ABI_n].tab
+       andBool ((VCallValue ==Int 0)))))))))))))))
 
 endmodule

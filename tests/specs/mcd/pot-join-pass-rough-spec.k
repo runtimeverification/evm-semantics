@@ -73,7 +73,20 @@ module POT-JOIN-PASS-ROUGH-SPEC
               <acctID> ACCT_ID </acctID>
               <balance> ACCT_ID_balance </balance>
               <code> Pot_bin_runtime </code>
-              <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE [ #Pot.pie[CALLER_ID] <- Pie_u +Int ABI_wad ] [ #Pot.Pie <- Pie_tot +Int ABI_wad ] </storage>
+              <storage>
+                (#Pot.pie[CALLER_ID] |-> Pie_u)
+                (#Pot.Pie |-> Pie_tot)
+                (#Pot.chi |-> Chi)
+                (#Pot.rho |-> Rho)
+                (#Pot.vat |-> Vat)
+                ACCT_ID_STORAGE =>
+                  (#Pot.pie[CALLER_ID] |-> Pie_u +Int ABI_wad)
+                  (#Pot.Pie |-> Pie_tot +Int ABI_wad)
+                  (#Pot.chi |-> Chi)
+                  (#Pot.rho |-> Rho)
+                  (#Pot.vat |-> Vat)
+                  ACCT_ID_STORAGE
+              </storage>
               <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
               <nonce> Nonce_Pot </nonce>
               <transientStorage> _ </transientStorage>
@@ -82,7 +95,16 @@ module POT-JOIN-PASS-ROUGH-SPEC
               <acctID> Vat </acctID>
               <balance> Vat_balance </balance>
               <code> Vat_bin_runtime </code>
-              <storage> Vat_STORAGE => Vat_STORAGE [ #Vat.dai[CALLER_ID] <- Dai_u -Int Chi *Int ABI_wad ] [ #Vat.dai[ACCT_ID] <- Dai_p +Int Chi *Int ABI_wad ] </storage>
+              <storage>
+                (#Vat.can[CALLER_ID][ACCT_ID] |-> Can)
+                (#Vat.dai[CALLER_ID] |-> Dai_u)
+                (#Vat.dai[ACCT_ID] |-> Dai_p)
+                Vat_STORAGE =>
+                  (#Vat.can[CALLER_ID][ACCT_ID] |-> Can)
+                  (#Vat.dai[CALLER_ID] |-> Dai_u -Int Chi *Int ABI_wad)
+                  (#Vat.dai[ACCT_ID] |-> Dai_p +Int Chi *Int ABI_wad)
+                  Vat_STORAGE
+              </storage>
               <origStorage> Vat_ORIG_STORAGE </origStorage>
               <nonce> Nonce_Vat </nonce>
               <transientStorage> _ </transientStorage>
@@ -122,14 +144,6 @@ module POT-JOIN-PASS-ROUGH-SPEC
        andBool ((ACCT_ID =/=Int Vat)
        andBool ((ACCT_ID =/=Int CALLER_ID)
        andBool ((Vat =/=Int 0)
-       andBool (#rangeUInt(256, Junk_0)
-       andBool (#rangeUInt(256, Junk_1)
-       andBool (#rangeUInt(256, Junk_2)
-       andBool (#rangeUInt(256, Junk_3)
-       andBool (#rangeUInt(256, Junk_4)
-       andBool (#rangeUInt(256, Junk_5)
-       andBool (#rangeUInt(256, Junk_6)
-       andBool (#rangeUInt(256, Junk_7)
        andBool (((VCallValue ==Int 0))
        andBool (((VCallDepth <Int 1024))
        andBool (((Can ==Int 1))
@@ -138,37 +152,7 @@ module POT-JOIN-PASS-ROUGH-SPEC
        andBool ((#rangeUInt(256, Pie_tot +Int ABI_wad))
        andBool ((#rangeUInt(256, Chi *Int ABI_wad))
        andBool ((#rangeUInt(256, Dai_u -Int Chi *Int ABI_wad))
-       andBool ((#rangeUInt(256, Dai_p +Int Chi *Int ABI_wad))))))))))))))))))))))))))))))))))
-
-       andBool #lookup(ACCT_ID_STORAGE, #Pot.pie[CALLER_ID]) ==Int Pie_u
-       andBool #lookup(ACCT_ID_STORAGE, #Pot.Pie) ==Int Pie_tot
-       andBool #lookup(ACCT_ID_STORAGE, #Pot.chi) ==Int Chi
-       andBool #lookup(ACCT_ID_STORAGE, #Pot.rho) ==Int Rho
-       andBool #lookup(ACCT_ID_STORAGE, #Pot.vat) ==Int Vat
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Pot.pie[CALLER_ID]) ==Int Junk_0
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Pot.Pie) ==Int Junk_1
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Pot.chi) ==Int Junk_2
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Pot.rho) ==Int Junk_3
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Pot.vat) ==Int Junk_4
-       andBool #Pot.pie[CALLER_ID] =/=Int #Pot.Pie
-       andBool #Pot.pie[CALLER_ID] =/=Int #Pot.chi
-       andBool #Pot.pie[CALLER_ID] =/=Int #Pot.rho
-       andBool #Pot.pie[CALLER_ID] =/=Int #Pot.vat
-       andBool #Pot.Pie =/=Int #Pot.chi
-       andBool #Pot.Pie =/=Int #Pot.rho
-       andBool #Pot.Pie =/=Int #Pot.vat
-       andBool #Pot.chi =/=Int #Pot.rho
-       andBool #Pot.chi =/=Int #Pot.vat
-       andBool #Pot.rho =/=Int #Pot.vat
-       andBool #lookup(Vat_STORAGE, #Vat.can[CALLER_ID][ACCT_ID]) ==Int Can
-       andBool #lookup(Vat_STORAGE, #Vat.dai[CALLER_ID]) ==Int Dai_u
-       andBool #lookup(Vat_STORAGE, #Vat.dai[ACCT_ID]) ==Int Dai_p
-       andBool #lookup(Vat_ORIG_STORAGE, #Vat.can[CALLER_ID][ACCT_ID]) ==Int Junk_5
-       andBool #lookup(Vat_ORIG_STORAGE, #Vat.dai[CALLER_ID]) ==Int Junk_6
-       andBool #lookup(Vat_ORIG_STORAGE, #Vat.dai[ACCT_ID]) ==Int Junk_7
-       andBool #Vat.can[CALLER_ID][ACCT_ID] =/=Int #Vat.dai[CALLER_ID]
-       andBool #Vat.can[CALLER_ID][ACCT_ID] =/=Int #Vat.dai[ACCT_ID]
-       andBool #Vat.dai[CALLER_ID] =/=Int #Vat.dai[ACCT_ID]
+       andBool ((#rangeUInt(256, Dai_p +Int Chi *Int ABI_wad))))))))))))))))))))))))))
 
     // Pot_adduu
     claim [Pot.adduu.pass]:
@@ -270,9 +254,7 @@ module POT-JOIN-PASS-ROUGH-SPEC
        andBool (#rangeUInt(256, VMemoryUsed)
        andBool ((#rangeUInt(256, ABI_x +Int ABI_y)))))))
 
-
     [trusted]
-
 
     // Pot_muluu
     claim [Pot.muluu.pass]:
@@ -377,9 +359,7 @@ module POT-JOIN-PASS-ROUGH-SPEC
        andBool (#rangeUInt(256, VMemoryUsed)
        andBool ((#rangeUInt(256, ABI_x *Int ABI_y)))))))
 
-
     [trusted]
-
 
     // Vat_move-diff
     claim [Vat.move-diff.pass]:
@@ -451,8 +431,21 @@ module POT-JOIN-PASS-ROUGH-SPEC
               <acctID> ACCT_ID </acctID>
               <balance> ACCT_ID_balance </balance>
               <code> Vat_bin_runtime </code>
-              <storage> ACCT_ID_STORAGE => ACCT_ID_STORAGE [ #Vat.dai[ABI_src] <- Dai_src -Int ABI_rad ] [ #Vat.dai[ABI_dst] <- Dai_dst +Int ABI_rad ] </storage>
-              <origStorage> ACCT_ID_ORIG_STORAGE </origStorage>
+              <storage>
+                (#Vat.can[ABI_src][CALLER_ID] |-> May)
+                (#Vat.dai[ABI_src] |-> Dai_src)
+                (#Vat.dai[ABI_dst] |-> Dai_dst)
+                ACCT_ID_STORAGE =>
+                  (#Vat.can[ABI_src][CALLER_ID] |-> May)
+                  (#Vat.dai[ABI_src] |-> (Dai_src -Int ABI_rad))
+                  (#Vat.dai[ABI_dst] |-> (Dai_dst +Int ABI_rad))
+                  ACCT_ID_STORAGE
+              </storage>
+              <origStorage>
+                (#Vat.dai[ABI_src] |-> Junk_1)
+                (#Vat.dai[ABI_dst] |-> Junk_2)
+                ACCT_ID_ORIG_STORAGE
+              </origStorage>
               <nonce> Nonce_Vat </nonce>
               <transientStorage> _ </transientStorage>
             </account>
@@ -483,24 +476,13 @@ module POT-JOIN-PASS-ROUGH-SPEC
        andBool (#rangeUInt(256, May)
        andBool ((lengthBytes(CD) <=Int 1250000000)
        andBool ((ABI_src =/=Int ABI_dst)
-       andBool (#rangeUInt(256, Junk_0)
        andBool (#rangeUInt(256, Junk_1)
        andBool (#rangeUInt(256, Junk_2)
        andBool ((((May ==Int 1 orBool ABI_src ==Int CALLER_ID)))
        andBool (((VCallValue ==Int 0))
        andBool ((#rangeUInt(256, Dai_src -Int ABI_rad))
-       andBool ((#rangeUInt(256, Dai_dst +Int ABI_rad)))))))))))))))))
+       andBool ((#rangeUInt(256, Dai_dst +Int ABI_rad))))))))))))))))
 
-       andBool #lookup(ACCT_ID_STORAGE, #Vat.can[ABI_src][CALLER_ID]) ==Int May
-       andBool #lookup(ACCT_ID_STORAGE, #Vat.dai[ABI_src]) ==Int Dai_src
-       andBool #lookup(ACCT_ID_STORAGE, #Vat.dai[ABI_dst]) ==Int Dai_dst
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Vat.can[ABI_src][CALLER_ID]) ==Int Junk_0
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Vat.dai[ABI_src]) ==Int Junk_1
-       andBool #lookup(ACCT_ID_ORIG_STORAGE, #Vat.dai[ABI_dst]) ==Int Junk_2
-       andBool #Vat.can[ABI_src][CALLER_ID] =/=Int #Vat.dai[ABI_src]
-       andBool #Vat.can[ABI_src][CALLER_ID] =/=Int #Vat.dai[ABI_dst]
-       andBool #Vat.dai[ABI_src] =/=Int #Vat.dai[ABI_dst]
     [trusted]
-
 
 endmodule
