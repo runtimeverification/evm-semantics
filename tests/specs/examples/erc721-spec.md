@@ -38,13 +38,13 @@ module VERIFICATION
  // Lemmas
  // ---------------
 
-    rule         X &Int 127 <Int 128 => true requires 0 <=Int X                   [simplification, smt-lemma]
-    rule 0 <=Int X &Int 127          => true requires 0 <=Int X                   [simplification, smt-lemma]
- // rule         X &Int 127 <=Int X  => true requires 0 <=Int X                   [simplification, smt-lemma]
-    rule         X &Int 127  <Int 32 => true requires 0 <=Int X andBool X <Int 32 [simplification, smt-lemma]
+    rule         127 &Int X <Int 128 => true requires 0 <=Int X                   [simplification, smt-lemma]
+    rule 0 <=Int 127 &Int X          => true requires 0 <=Int X                   [simplification, smt-lemma]
+ // rule         127 &Int X <=Int X  => true requires 0 <=Int X                   [simplification, smt-lemma]
+    rule         127 &Int    <Int 32 => true requires 0 <=Int X andBool X <Int 32 [simplification, smt-lemma]
 
     rule chop(X +Int Y) => X +Int Y requires 0 <=Int X andBool #rangeUInt(256, Y) andBool X <=Int maxUInt256 -Int Y [simplification, concrete(Y)]
-    rule ((X +Int 31) /Int 32) *Int 32 <=Int Y => 0 <=Int X andBool X <=Int Y -Int 31 [simplification, concrete(Y)]
+    rule 32 *Int ((X +Int 31) /Int 32) <=Int Y => 0 <=Int X andBool X <=Int Y -Int 31 [simplification, concrete(Y)]
     rule 127 &Int X <=Int Y => true requires 0 <=Int X andBool 127 <=Int Y [simplification, concrete(Y)]
 
 endmodule
@@ -62,15 +62,15 @@ module ERC721-SPEC
 
 ```k
 claim [lemma.1]:
-      <k> runLemma(chop(chop(chop(chop(chop(chop((#lookup(ACCT_STORAGE, 0) /Int 2 &Int 127) +Int 31) /Int 32 *Int 32) +Int 32) +Int 128) +Int 32) +Int 32))
-       => doneLemma(((#lookup(ACCT_STORAGE, 0) /Int 2 &Int 127) +Int 31) /Int 32 *Int 32 +Int 224) ... </k>
+      <k> runLemma(chop(chop(chop(chop(chop(chop((127 &Int (#lookup(ACCT_STORAGE, 0) /Int 2)) +Int 31) /Int 32 *Int 32) +Int 32) +Int 128) +Int 32) +Int 32))
+       => doneLemma(((127 &Int (#lookup(ACCT_STORAGE, 0) /Int 2)) +Int 31) /Int 32 *Int 32 +Int 224) ... </k>
 ```
 
 ```k
 claim [lemma.2]:
       <k> runLemma(#lookup(ACCT_STORAGE, 0) /Int 2 <Int 32)
        => doneLemma(false) ... </k>
- requires 32 <=Int #lookup(ACCT_STORAGE, 0) /Int 2 &Int 127
+ requires 32 <=Int 127 &Int ( #lookup(ACCT_STORAGE, 0) /Int 2 )
 ```
 
 ```k
@@ -118,8 +118,8 @@ claim [lemma.3]:
 
        requires NAME_KEY             ==Int #loc(S2KERC721._name)
         andBool NAME                 ==Int #lookup(ACCT_STORAGE, NAME_KEY)
-        andBool NAME &Int 1          ==Int 0
-        andBool NAME /Int 2 &Int 127  <Int 32
+        andBool 1 &Int NAME          ==Int 0
+        andBool 127 &Int (NAME /Int)  <Int 32
 ```
 
 **TODO**: This proof isn't passing.
@@ -155,8 +155,8 @@ claim [lemma.3]:
 
        requires NAME_KEY    ==Int #loc(S2KERC721._name)
         andBool NAME        ==Int #lookup(ACCT_STORAGE, NAME_KEY)
-        andBool NAME &Int 1 ==Int 0
-        andBool 32          <=Int NAME /Int 2 &Int 127
+        andBool 1 &Int NAME ==Int 0
+        andBool 32          <=Int 127 &Int (NAME /Int 2)
 ```
 
 ```k

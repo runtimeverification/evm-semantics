@@ -52,7 +52,7 @@ claim [foundry-sum-to-n-loop-invariant]:
             1539 => 1569
           </pc>
           <gas>
-            GAS_AMT:Int => GAS_AMT -Int (N *Int 178)
+            GAS_AMT:Int => GAS_AMT -Int (178 *Int N)
           </gas>
           ...
         </callState>
@@ -67,7 +67,7 @@ claim [foundry-sum-to-n-loop-invariant]:
    andBool #rangeUInt(256, S +Int ((N *Int (N +Int 1)) /Int 2))
    andBool #rangeUInt(256, N)
    andBool #rangeUInt(256, S)
-   andBool GAS_AMT >=Int N *Int 178
+   andBool GAS_AMT >=Int 178 *Int N
   [circularity]
 
 

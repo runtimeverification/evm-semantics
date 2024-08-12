@@ -143,9 +143,7 @@ module INT-SIMPLIFICATION-COMMON
   // ###########################################################################
 
     rule 1 *Int A => A [simplification]
-    rule A *Int 1 => A [simplification]
     rule 0 *Int _ => 0 [simplification]
-    rule _ *Int 0 => 0 [simplification]
 
     rule A *Int B => B *Int A [simplification, symbolic(A), concrete(B)]
 
@@ -165,7 +163,7 @@ module INT-SIMPLIFICATION-COMMON
 
     rule ((A *Int B) /Int C) /Int B => A /Int C requires B =/=Int 0 andBool C =/=Int 0 [simplification, preserves-definedness]
 
-    rule (A /Int 32) *Int 32 => A requires A modInt 32 ==Int 0 [simplification, preserves-definedness]
+    rule 32 *Int (A /Int 32) => A requires A modInt 32 ==Int 0 [simplification, preserves-definedness]
 
     rule (A *Int B) /Int C => (A /Int C) *Int B requires A modInt C ==Int 0 [simplification, concrete(A, C), preserves-definedness]
 

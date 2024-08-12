@@ -190,8 +190,8 @@ Bitwise logical operators are lifted from the integer versions.
     rule bit (N, _) => 0 requires notBool (N >=Int 0 andBool N <Int 256)
     rule byte(N, _) => 0 requires notBool (N >=Int 0 andBool N <Int  32)
 
-    rule bit (N, W) => bitRangeInt(W , (255 -Int N)        , 1) requires N >=Int 0 andBool N <Int 256
-    rule byte(N, W) => bitRangeInt(W , ( 31 -Int N) *Int 8 , 8) requires N >=Int 0 andBool N <Int  32
+    rule bit (N, W) => bitRangeInt(W ,        (255 -Int N) , 1) requires N >=Int 0 andBool N <Int 256
+    rule byte(N, W) => bitRangeInt(W , 8 *Int ( 31 -Int N) , 8) requires N >=Int 0 andBool N <Int  32
 ```
 
 -   `#nBits` shifts in `N` ones from the right.
@@ -202,7 +202,7 @@ Bitwise logical operators are lifted from the integer versions.
                  | #nBytes ( Int )  [symbol(#nBytes), function]
  // -----------------------------------------------------------
     rule #nBits(N)  => (1 <<Int N) -Int 1 requires N >=Int 0
-    rule #nBytes(N) => #nBits(N *Int 8)   requires N >=Int 0
+    rule #nBytes(N) => #nBits(8 *Int N)   requires N >=Int 0
 ```
 
 -   `signextend(N, W)` sign-extends from byte `N` of `W` (0 being MSB).

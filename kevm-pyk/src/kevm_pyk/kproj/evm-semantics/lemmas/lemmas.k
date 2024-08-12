@@ -52,9 +52,6 @@ module LEMMAS [symbolic]
     rule 1 |Int bool2Word(_B) => 1            [simplification]
     rule 1 &Int bool2Word( B) => bool2Word(B) [simplification]
 
-    rule bool2Word(_B) |Int 1 => 1            [simplification]
-    rule bool2Word( B) &Int 1 => bool2Word(B) [simplification]
-
     // #newAddr range
     rule 0 <=Int #newAddr(_,_)             => true   [simplification]
     rule         #newAddr(_,_) <Int pow160 => true   [simplification]

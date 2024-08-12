@@ -10,7 +10,6 @@ module BITWISE-SIMPLIFICATION [symbolic]
   // ###########################################################################
 
     rule 0 |Int A => A [simplification]
-    rule A |Int 0 => A [simplification]
     rule A |Int A => A [simplification]
 
     rule A |Int B => B |Int A [simplification(40), concrete(B), symbolic(A)]
@@ -25,7 +24,6 @@ module BITWISE-SIMPLIFICATION [symbolic]
     rule A &Int B => B &Int A [symbolic(A), concrete(B), simplification]
 
     rule 0 &Int _ => 0 [simplification]
-    rule _ &Int 0 => 0 [simplification]
     rule A &Int A => A [simplification]
 
     rule chop ( ( maxUInt48 &Int X:Int ) *Int Y:Int ) => ( maxUInt48 &Int X:Int ) *Int Y

@@ -103,7 +103,7 @@ module VERIFICATION
 
     rule #range( _M [ N := #buf(WIDTH, DATA) ], N, WIDTH ) => #buf(WIDTH, DATA) [simplification]
 
-    rule #asWord(WS) &Int maxUInt256 => #asWord(WS) [simplification]
+    rule maxUInt256 &Int #asWord(WS) => #asWord(WS) [simplification]
 
     rule maxUInt256 &Int X => X requires #rangeUInt(256, X) [simplification]
 
@@ -112,7 +112,7 @@ module VERIFICATION
       requires #rangeAddress(ADDR)
       [simplification]
 
-    rule chop((ADDR &Int maxUInt160) modInt pow160) => ADDR
+    rule chop((maxUInt160 &Int ADDR) modInt pow160) => ADDR
       requires #rangeAddress(ADDR)
       [simplification]
 
@@ -123,7 +123,7 @@ module VERIFICATION
     rule 2 ^%Int X pow256 => 2 ^Int X  requires 0 <=Int X andBool X <Int 256 [simplification]
 
     // (NOT 31) &Int X
-    rule 115792089237316195423570985008687907853269984665640564039457584007913129639904 &Int X => (X /Int 32) *Int 32 requires 0 <=Int X [simplification]
+    rule 115792089237316195423570985008687907853269984665640564039457584007913129639904 &Int X => 32 *Int (X /Int 32) requires 0 <=Int X [simplification]
 
     rule X +Int Y <Int pow256 => true  requires X <=Int pow16 andBool Y <Int pow16 [simplification]
 

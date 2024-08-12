@@ -146,8 +146,7 @@ _
      andBool #rangeBytes(32, SIGS0)
      andBool #rangeBytes(32, SIGS1)
      andBool #range(0 <= DATA_LEN < 2 ^Int 16)
-     andBool #range(0 <= DATA < (2 ^Int (DATA_LEN *Int 8)))
+     andBool #range(0 <= DATA < (2 ^Int (8 *Int DATA_LEN)))
      andBool #ecrecEmpty( #bufStrict(32, HASH), #bufStrict(32, SIGV0), #bufStrict(32, SIGR0), #bufStrict(32, SIGS0) )
 
 endmodule
-
