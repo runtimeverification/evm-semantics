@@ -348,7 +348,8 @@ def legacy_explore(
     haskell_log_entries: Iterable[str] = (),
     haskell_threads: int | None = None,
     log_axioms_file: Path | None = None,
-    trace_rewrites: bool = False,
+    log_succ_rewrites: bool = True,
+    log_fail_rewrites: bool = True,
     start_server: bool = True,
     maude_port: int | None = None,
     fallback_on: Iterable[FallbackReason] | None = None,
@@ -377,7 +378,9 @@ def legacy_explore(
             no_post_exec_simplify=no_post_exec_simplify,
         ) as server:
             with KoreClient('localhost', server.port, bug_report=bug_report, bug_report_id=bug_report_id) as client:
-                cterm_symbolic = CTermSymbolic(client, kprint.definition, trace_rewrites=trace_rewrites)
+                cterm_symbolic = CTermSymbolic(
+                    client, kprint.definition, log_succ_rewrites=log_succ_rewrites, log_fail_rewrites=log_fail_rewrites
+                )
                 yield KCFGExplore(cterm_symbolic, kcfg_semantics=kcfg_semantics, id=id)
     else:
         if port is None:
@@ -396,5 +399,7 @@ def legacy_explore(
         with KoreClient(
             'localhost', port, bug_report=bug_report, bug_report_id=bug_report_id, dispatch=dispatch
         ) as client:
-            cterm_symbolic = CTermSymbolic(client, kprint.definition, trace_rewrites=trace_rewrites)
+            cterm_symbolic = CTermSymbolic(
+                client, kprint.definition, log_succ_rewrites=log_succ_rewrites, log_fail_rewrites=log_fail_rewrites
+            )
             yield KCFGExplore(cterm_symbolic, kcfg_semantics=kcfg_semantics, id=id)
