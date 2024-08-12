@@ -6,10 +6,6 @@ module VERIFICATION
     imports INFINITE-GAS
     imports EVM
 
-    rule N xorInt maxUInt256 => maxUInt256 -Int N
-    requires #rangeUInt(256, N)
-    [simplification]
-
 endmodule
 
 module SUM-TO-N-FOUNDRY-SPEC

@@ -36,11 +36,6 @@ module VERIFICATION
  // -------------------------------------------------------
     rule <k> runLemma(S) => doneLemma(S) ... </k>
 
- // decimals lemmas
- // ---------------
-
-    rule bool2Word ( notBool WORD ==Int 0 ) => WORD           [simplification]
-
 endmodule
 ```
 

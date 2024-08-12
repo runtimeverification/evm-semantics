@@ -204,25 +204,28 @@ module INT-SIMPLIFICATION-COMMON
     rule [maxInt-factor-right]: maxInt ( A:Int +Int B:Int, C:Int +Int B:Int ) => maxInt ( A, C ) +Int B [simplification]
 
   // ###########################################################################
-  // inequality
+  // Inequalities
   // ###########################################################################
 
-    rule A +Int B <Int A => false requires 0 <=Int B [simplification]
-    rule A +Int B <Int B => false requires 0 <=Int A [simplification]
-
-    rule A <Int A -Int B => false requires 0 <=Int B [simplification]
-
-    rule 0 <Int 1 <<Int A => true requires 0 <=Int A [simplification, preserves-definedness]
-
-    // inequality sign normalization
+    // Normalization to <Int and <=Int
     rule          A  >Int B  => B  <Int A [simplification]
     rule          A >=Int B  => B <=Int A [simplification]
     rule notBool (A  <Int B) => B <=Int A [simplification]
     rule notBool (A <=Int B) => B  <Int A [simplification]
 
-    rule 0 <=Int A +Int B => true requires 0 <=Int A andBool 0 <=Int B [simplification]
-    rule 0 <=Int A *Int B => true requires 0 <=Int A andBool 0 <=Int B [simplification]
+    // Deconstruction
+    rule C <=Int A +Int B => true requires C <=Int 0 andBool 0 <=Int A andBool 0 <=Int B [concrete(C), simplification, preserves-definedness]
+    rule C <=Int A *Int B => true requires C <=Int 0 andBool 0 <=Int A andBool 0 <=Int B [concrete(C), simplification, preserves-definedness]
+    rule C <=Int A /Int B => true requires C <=Int 0 andBool 0 <=Int A andBool 0  <Int B [concrete(C), simplification, preserves-definedness]
 
-    rule A -Int B +Int C <=Int D => false requires D <Int A -Int B andBool 0 <=Int C [simplification]
+    rule C <Int A +Int B => true requires C <=Int 0 andBool 0  <Int A andBool 0 <=Int B [concrete(C), simplification]
+    rule C <Int A +Int B => true requires C <=Int 0 andBool 0 <=Int A andBool 0  <Int B [concrete(C), simplification]
+    rule C <Int A *Int B => true requires C <=Int 0 andBool 0  <Int A andBool 0  <Int B [concrete(C), simplification]
+    rule C <Int A /Int B => true requires C <=Int 0 andBool 0  <Int A andBool 0  <Int B [concrete(C), simplification, preserves-definedness]
+
+    // Cancellativity
+    rule A +Int B <Int A => B <Int 0 [simplification]
+    rule A +Int B <Int B => A <Int 0 [simplification]
+    rule A <Int A -Int B => B <Int 0 [simplification]
 
 endmodule

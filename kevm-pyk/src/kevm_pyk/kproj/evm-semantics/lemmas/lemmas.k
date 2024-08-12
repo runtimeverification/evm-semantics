@@ -89,18 +89,16 @@ module LEMMAS [symbolic]
   // Memory
   // ########################
 
-    rule #memoryUsageUpdate(MU, _, WIDTH) => MU requires WIDTH <=Int 0 [simplification]
+    rule #memoryUsageUpdate(MU, _, WIDTH) => MU requires 0 <=Int MU andBool WIDTH <=Int 0 [simplification]
 
-    rule 0 <=Int #memoryUsageUpdate(MU, START, WIDTH) => true requires 0 <=Int MU andBool 0 <=Int START andBool 0 <=Int WIDTH [simplification]
+    rule 0 <=Int #memoryUsageUpdate(MU, START, WIDTH) => true requires 0 <=Int MU orBool ( 0 <=Int START andBool 0 <=Int WIDTH ) [simplification]
 
     rule #memoryUsageUpdate(#memoryUsageUpdate(MU, START1, WIDTH1), START2, WIDTH2) => #memoryUsageUpdate(MU, START1, WIDTH1)
-      requires #rangeUInt(256, MU) andBool 0 <Int WIDTH1 andBool 0 <Int WIDTH2
-       andBool START2 +Int WIDTH2 <=Int START1 +Int WIDTH1
+      requires 0 <Int WIDTH1 andBool 0 <Int WIDTH2 andBool START2 +Int WIDTH2 <=Int START1 +Int WIDTH1
       [simplification]
 
     rule #memoryUsageUpdate(#memoryUsageUpdate(MU, START1, WIDTH1), START2, WIDTH2) => #memoryUsageUpdate(MU, START2, WIDTH2)
-      requires #rangeUInt(256, MU) andBool 0 <Int WIDTH1 andBool 0 <Int WIDTH2
-       andBool START1 +Int WIDTH1 <Int START2 +Int WIDTH2
+      requires 0 <Int WIDTH1 andBool 0 <Int WIDTH2 andBool START1 +Int WIDTH1 <Int START2 +Int WIDTH2
       [simplification]
 
   // ########################
@@ -168,8 +166,6 @@ module LEMMAS-HASKELL [symbolic]
   // ########################
   // Arithmetic
   // ########################
-
-    rule N modInt pow160   => N  requires #rangeUInt(160, N) [simplification]
 
     // ; Z3 version 4.8.12
     // (set-option :smt.mbqi true)

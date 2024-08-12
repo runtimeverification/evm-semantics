@@ -17,6 +17,10 @@ module BITWISE-SIMPLIFICATION [symbolic]
     rule  X |Int _  ==Int 0          => false requires 0 <Int X [simplification, concrete(X)]
     rule (A |Int B) ==Int (B |Int A) => true  [simplification, smt-lemma]
 
+    rule [bitwise-or-geq-zero]:  0 <=Int (X |Int Y)     => true  requires 0 <=Int X andBool 0 <=Int Y [simplification, smt-lemma]
+    rule [bitwise-or-lt-zero]:   (X |Int Y) <Int Z      => false requires 0 <=Int X andBool 0 <=Int Y andBool Z <=Int 0 [concrete(Z), simplification]
+    rule [bitwise-or-lt-pow256]: (X |Int Y) <Int pow256 => true  requires #rangeUInt(256, X) andBool #rangeUInt(256, Y) [simplification]
+
   // ###########################################################################
   // bit-and
   // ###########################################################################
@@ -26,21 +30,11 @@ module BITWISE-SIMPLIFICATION [symbolic]
     rule 0 &Int _ => 0 [simplification]
     rule A &Int A => A [simplification]
 
-    rule chop ( ( maxUInt48 &Int X:Int ) *Int Y:Int ) => ( maxUInt48 &Int X:Int ) *Int Y
-      requires 0 <=Int X andBool 0 <=Int Y andBool Y <=Int pow208 [simplification]
-
-    rule maxUInt8   &Int X <Int 256    => true requires 0 <=Int X [simplification, smt-lemma]
-    rule maxUInt48  &Int X <Int pow48  => true requires 0 <=Int X [simplification, smt-lemma]
-    rule maxUInt160 &Int X <Int pow160 => true requires 0 <=Int X [simplification, smt-lemma]
-
-    rule [bitwise-or-geq-zero]:  0 <=Int (X |Int Y) => true requires 0 <=Int X andBool 0 <=Int Y [simplification, smt-lemma]
     rule [bitwise-and-geq-zero]: 0 <=Int (X &Int Y) => true requires 0 <=Int X andBool 0 <=Int Y [simplification, smt-lemma]
+    rule [bitwise-and-lt-zero]:  (X &Int Y) <Int Z => false requires 0 <=Int X andBool 0 <=Int Y andBool Z <=Int 0 [concrete(Z), simplification]
 
-    rule [bitwise-or-lt-zero]:  (X |Int Y) <Int Z => false requires 0 <=Int X andBool 0 <=Int Y andBool Z <=Int 0 [concrete(Z), simplification]
-    rule [bitwise-and-lt-zero]: (X &Int Y) <Int Z => false requires 0 <=Int X andBool 0 <=Int Y andBool Z <=Int 0 [concrete(Z), simplification]
-
-    rule [bitwise-and-lt]:       (X &Int Y) <Int Z      => true requires 0 <=Int X andBool 0 <=Int Y andBool (X <Int Z orBool Y <Int Z)          [simplification]
-    rule [bitwise-or-lt-pow256]: (X |Int Y) <Int pow256 => true requires 0 <=Int X andBool 0 <=Int Y andBool X <Int pow256 andBool Y <Int pow256 [simplification]
+    rule [bitwise-and-le]: (X &Int Y) <=Int Z => true requires 0 <=Int X andBool 0 <=Int Y andBool (X <=Int Z orBool Y <=Int Z) [simplification]
+    rule [bitwise-and-lt]: (X &Int Y)  <Int Z => true requires 0 <=Int X andBool 0 <=Int Y andBool (X  <Int Z orBool Y  <Int Z) [simplification]
 
     // Generalization of: maxUIntXXX &Int Y => Y requires #rangeUInt(XXX, Y)
     rule [bitwise-and-maxUInt-identity]:
@@ -104,6 +98,15 @@ module BITWISE-SIMPLIFICATION [symbolic]
     rule [lengthBytes-upInt-32-upper-bound]:
       lengthBytes(X) +Int 32 >Int notMaxUInt5 &Int ( lengthBytes(X) +Int 31 ) => true
       [simplification, smt-lemma]
+
+  // ###########################################################################
+  // xorInt
+  // ###########################################################################
+
+    rule [xorInt-as-sub]:
+      X xorInt maxUInt256 => maxUInt256 -Int X
+      requires #rangeUInt(256, X)
+      [simplification]
 
   // ###########################################################################
   // shift

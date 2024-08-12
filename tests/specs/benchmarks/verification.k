@@ -53,17 +53,6 @@ module VERIFICATION
 
     rule #abiCallData2(FSIG, ARGS) => #parseByteStack(substrString(Keccak256(String2Bytes(FSIG)), 0, 8)) +Bytes #encodeArgs(ARGS)
 
-    rule chop(I) => 0 requires I ==Int pow256 [simplification]
-
-  // ########################
-  // Memory Usage
-  // ########################
-
-    rule #memoryUsageUpdate(#memoryUsageUpdate(MU, START0, WIDTH0), START1, WIDTH1) => #memoryUsageUpdate(MU, START0, WIDTH0) requires START1 +Int WIDTH1 <=Int START0 +Int WIDTH0 andBool 0  <Int WIDTH0 andBool 0 <=Int WIDTH1 [simplification]
-    rule #memoryUsageUpdate(#memoryUsageUpdate(MU, START0, WIDTH0), START1, WIDTH1) => #memoryUsageUpdate(MU, START1, WIDTH1) requires START0 +Int WIDTH0  <Int START1 +Int WIDTH1 andBool 0 <=Int WIDTH0 andBool 0  <Int WIDTH1 [simplification]
-
-    rule 0 <=Int #memoryUsageUpdate(_MU, _START, _WIDTH) => true [simplification]
-
   // ########################
   // Buffer Reasoning
   // ########################
@@ -85,17 +74,8 @@ module VERIFICATION
     rule 0 <=Int 2 ^Int _X             => true                      [simplification]
     rule         2 ^Int  X <Int pow256 => true  requires X <Int 256 [simplification]
 
-    rule 0 <=Int X &Int Y             => true  requires #rangeUInt(256, X) andBool #rangeUInt(256, Y) [simplification]
-    rule         X &Int Y <Int pow256 => true  requires #rangeUInt(256, X) andBool #rangeUInt(256, Y) [simplification]
-
-    rule 0 <=Int X |Int Y             => true  requires #rangeUInt(256, X) andBool #rangeUInt(256, Y) [simplification]
-    rule         X |Int Y <Int pow256 => true  requires #rangeUInt(256, X) andBool #rangeUInt(256, Y) [simplification]
-
     rule 0 <=Int #blockhash(_, _, _, _)             => true [simplification]
     rule         #blockhash(_, _, _, _) <Int pow256 => true [simplification]
-
-    rule 0 <=Int X xorInt maxUInt256             => true  requires #rangeUInt(256, X) [simplification]
-    rule         X xorInt maxUInt256 <Int pow256 => true  requires #rangeUInt(256, X) [simplification]
 
   // ########################
   // Simplification
@@ -104,13 +84,6 @@ module VERIFICATION
     rule #range( _M [ N := #buf(WIDTH, DATA) ], N, WIDTH ) => #buf(WIDTH, DATA) [simplification]
 
     rule maxUInt256 &Int #asWord(WS) => #asWord(WS) [simplification]
-
-    rule maxUInt256 &Int X => X requires #rangeUInt(256, X) [simplification]
-
-    // 2^256 - 2^160 = 0xff..ff00..00 (96 1's followed by 160 0's)
-    rule notMaxUInt160 &Int ADDR => 0
-      requires #rangeAddress(ADDR)
-      [simplification]
 
     rule chop((maxUInt160 &Int ADDR) modInt pow160) => ADDR
       requires #rangeAddress(ADDR)
@@ -140,17 +113,11 @@ module VERIFICATION-HASKELL [symbolic]
   // Buffer Reasoning
   // ########################
 
-    rule BA1 +Bytes (BA2 +Bytes BA3) => (BA1 +Bytes BA2) +Bytes BA3 [concrete(BA1, BA2), simplification]
-
-    rule maxUInt160 &Int Y => Y requires 0 <=Int Y andBool Y <=Int maxUInt160 [simplification]
-
     rule ( lengthBytes(#ecrec( HASH, SIGV, SIGR, SIGS )) ==Int 0  ) =>           #ecrecEmpty ( HASH, SIGV, SIGR, SIGS )  [simplification]
     rule ( lengthBytes(#ecrec( HASH, SIGV, SIGR, SIGS )) ==Int 32 ) => notBool ( #ecrecEmpty ( HASH, SIGV, SIGR, SIGS )) [simplification]
 
     rule ( lengthBytes(#ecrec( _, _, _, _ )) <=Int K ) => true requires 32 <=Int K [simplification]
 
     rule 0 <Int #asWord ( #ecrec( HASH, SIGV, SIGR, SIGS ) ) => notBool ( #ecrecEmpty ( HASH, SIGV, SIGR, SIGS ) )  [simplification]
-
-    rule pow32 <Int X => false requires X <Int pow16 [simplification]
 
 endmodule

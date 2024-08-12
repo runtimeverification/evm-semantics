@@ -99,4 +99,9 @@ module EVM-INT-SIMPLIFICATION-COMMON
       requires #rangeUInt(256, X) andBool #rangeUInt(256, Y)
       [simplification]
 
+    rule [chop-zero-minus]:
+      chop (0 -Int A) ==Int B => A ==Int (pow256 -Int B) modInt pow256
+      requires #rangeUInt(256, A) andBool #rangeUInt(256, B)
+      [concrete(B), simplification, comm, preserves-definedness]
+
 endmodule
