@@ -4,7 +4,7 @@ module STORAGEVAR02-OVERFLOW-SPEC
   imports VERIFICATION
 
   // fn-execute-overflow
-  claim
+  claim [fn.execute.overflow]:
     <k> (#execute => #halt) ~> _ </k>
     <mode> NORMAL </mode>
     <schedule> ISTANBUL </schedule>
@@ -74,7 +74,9 @@ module STORAGEVAR02-OVERFLOW-SPEC
             <acctID> CONTRACT_ID </acctID>
             <balance> CONTRACT_BAL </balance>
             <code> #parseByteStack("0x608060405260043610603f576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff16806361461954146044575b600080fd5b348015604f57600080fd5b506056606c565b6040518082815260200191505060405180910390f35b600060016000540160008190555060005490509056fea165627a7a7230582084ad795d13123f60bc7fd2a18dba66eb8d320ddea8765847f2ae5982179470600029") </code>
-            <storage> S => S [ #hashedLocation("Solidity", 0, .IntList) <- 0 ] </storage>
+            <storage>
+              (0 |-> pow256 -Int 1) S => (0 |-> 0) S
+            </storage>
             <origStorage> _OS => ?_OS </origStorage>
             <nonce> CONTRACT_NONCE </nonce>
             <transientStorage>
@@ -127,7 +129,5 @@ module STORAGEVAR02-OVERFLOW-SPEC
      andBool #rangeNonce(CALLEE_NONCE)
      andBool #range(0 <= CD < 1024)
      andBool #rangeAddress(MSG_SENDER)
-     andBool #lookup(S, #hashedLocation("Solidity", 0, .IntList)) ==Int pow256 -Int 1
 
 endmodule
-

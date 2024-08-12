@@ -115,18 +115,6 @@ module FUNCTIONAL-SPEC
       andBool #rangeUInt(256, B31) andBool #rangeUInt(256, B32)
       andBool #rangeUInt(256, B41)
 
-    claim <k> runLemma(maxUInt48 &Int (maxUInt48 -Int 1) <Int maxUInt48 +Int 1) => doneLemma(true) ... </k>
-    claim <k> runLemma(maxUInt160 &Int (maxUInt160 -Int 1) <Int maxUInt160 +Int 1) => doneLemma(true) ... </k>
-
-    claim <k> runLemma((maxUInt48 &Int maxUInt48) /Int maxUInt48) => doneLemma(1) ... </k>
-    claim <k> runLemma((maxUInt160 &Int maxUInt160) /Int maxUInt160) => doneLemma(1) ... </k>
-
-    claim <k> runLemma((maxUInt48 &Int M) /Int (maxUInt48 +Int 1)) => doneLemma(0) ... </k>
-      requires M >Int 0
-
-    claim <k> runLemma((maxUInt160 &Int M) /Int (maxUInt160 +Int 1)) => doneLemma(0) ... </k>
-      requires M >Int 0
-
     // keccak
 
     claim [keccak-neq]:

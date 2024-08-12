@@ -224,6 +224,8 @@ def _test_prove(
                 'break_on_basic_blocks': break_on_basic_blocks,
                 'workers': workers,
                 'direct_subproof_rules': direct_subproof_rules,
+                'smt-timeout': 60000,
+                'smt-retry-limit': 0
             }
         )
         exec_prove(options=options)
