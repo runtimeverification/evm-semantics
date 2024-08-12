@@ -120,10 +120,12 @@ module VERIFICATION
   // Arithmetic
   // ########################
 
+    rule 0 <Int 2 ^Int X => true requires 0 <=Int X [simplification]
+
     rule 2 ^%Int X pow256 => 2 ^Int X  requires 0 <=Int X andBool X <Int 256 [simplification]
 
-    // X &Int (NOT 31)
-    rule X &Int 115792089237316195423570985008687907853269984665640564039457584007913129639904 => (X /Int 32) *Int 32  requires 0 <=Int X [simplification]
+    // (NOT 31) &Int X
+    rule 115792089237316195423570985008687907853269984665640564039457584007913129639904 &Int X => (X /Int 32) *Int 32 requires 0 <=Int X [simplification]
 
     rule X +Int Y <Int pow256 => true  requires X <=Int pow16 andBool Y <Int pow16 [simplification]
 
