@@ -271,12 +271,12 @@ module BYTES-SIMPLIFICATION [symbolic]
       [simplification(60)]
 
     rule [memUpdate-reorder]:
-      B:Bytes [ S1:Int := B1:Bytes] [ S2:Int := B2:Bytes ] => B [ S2 := B2 ] [ S1 := B1 ]
+      B:Bytes [ S1:Int := B1:Bytes ] [ S2:Int := B2:Bytes ] => B [ S2 := B2 ] [ S1 := B1 ]
       requires 0 <=Int S2 andBool S2 <Int S1 andBool S2 +Int lengthBytes(B2) <=Int S1
       [simplification]
 
     rule [memUpdate-subsume]:
-      B:Bytes [ S1:Int := B1:Bytes] [ S2:Int := B2:Bytes ] => B [ S2 := B2 ]
+      B:Bytes [ S1:Int := B1:Bytes ] [ S2:Int := B2:Bytes ] => B [ S2 := B2 ]
       requires 0 <=Int S2 andBool S2 <=Int S1 andBool S1 +Int lengthBytes(B1) <=Int S2 +Int lengthBytes(B2)
       [simplification]
 

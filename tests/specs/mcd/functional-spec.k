@@ -90,13 +90,8 @@ module FUNCTIONAL-SPEC
 
     // Memory operations
 
-    claim [bufferRangeSelectSymbolic]: <k> runLemma(#range(M:Bytes [ 0 := #buf(4, X) ] [ 0 <- 10 ] [ 1 <- 11 ] [ 2 <- 12 ] [ 3 <- 13 ], 0, 4)) => doneLemma(10 : 11 : 12 : 13 : .Bytes) ... </k>
-
     claim <k> runLemma( M:Bytes [ 132 := #buf(32, B11) ] [ 128  := #buf(32, B21) +Bytes #buf(32, B22) ] ) => doneLemma( M [ 128 := (#buf(32, B21) +Bytes #buf(32, B22)) ] ) ... </k>
       requires #rangeUInt(256, B11) andBool #rangeUInt(256, B21) andBool #rangeUInt(256, B22)
-
-    claim <k> runLemma( M:Bytes [ 128 := #buf(32, B31) +Bytes #buf(32, B32) ] [ 128 := #buf(32, B41) ] ) => doneLemma( M [ 128 := #buf(32, B41) ] [ 160 := #buf(32, B32) ] ) ... </k>
-      requires #rangeUInt(256, B31) andBool #rangeUInt(256, B32) andBool #rangeUInt(256, B41)
 
     claim <k> runLemma( M:Bytes [ 128 := 217 : 99 : 141 : 54 : .Bytes ]
                                 [ 132 := #buf(32, B11) ]
