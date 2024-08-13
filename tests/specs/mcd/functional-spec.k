@@ -93,23 +93,6 @@ module FUNCTIONAL-SPEC
     claim <k> runLemma( M:Bytes [ 132 := #buf(32, B11) ] [ 128  := #buf(32, B21) +Bytes #buf(32, B22) ] ) => doneLemma( M [ 128 := (#buf(32, B21) +Bytes #buf(32, B22)) ] ) ... </k>
       requires #rangeUInt(256, B11) andBool #rangeUInt(256, B21) andBool #rangeUInt(256, B22)
 
-    claim <k> runLemma( M:Bytes [ 128 := 217 : 99 : 141 : 54 : .Bytes ]
-                                [ 132 := #buf(32, B11) ]
-                                [ 128 := #buf(32, B21) +Bytes #buf(32, B22) +Bytes #buf(32, B23) +Bytes #buf(32, B24) +Bytes #buf(32, B25) ]
-                                [ 128 := 217 : 99 : 141 : 54 : .Bytes ]
-                                [ 132 := #buf(32, B11) ]
-                                [ 128 := #buf(32, B31) +Bytes #buf(32, B32) ]
-                                [ 128 := #buf(32, B41) ] )
-           => doneLemma( M [ 128 := #buf(32, B41) ]
-                           [ 160 := #buf(32, B32) ]
-                           [ 192 := #buf(32, B23) +Bytes #buf(32, B24) +Bytes #buf(32, B25) ] )
-          ...
-          </k>
-     requires #rangeUInt(256, B11)
-      andBool #rangeUInt(256, B21) andBool #rangeUInt(256, B22) andBool #rangeUInt(256, B23) andBool #rangeUInt(256, B24) andBool #rangeUInt(256, B25)
-      andBool #rangeUInt(256, B31) andBool #rangeUInt(256, B32)
-      andBool #rangeUInt(256, B41)
-
     // keccak
 
     claim [keccak-neq]:

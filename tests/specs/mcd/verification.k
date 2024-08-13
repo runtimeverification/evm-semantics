@@ -397,31 +397,11 @@ module LEMMAS-MCD [symbolic]
          requires X =/=Int A andBool X =/=Int B andBool X =/=Int C
          [simplification]
 
-  //
-  // TO ADD
-  //
-
-  // ########################
-  // +Bytes
-  // ########################
-
-    rule B +Bytes b"" => B [simplification]
-    rule b"" +Bytes B => B [simplification]
-
   // ########################
   // ML Logic
   // ########################
 
     rule #if B #then C #else D #fi => C requires         B [simplification]
     rule #if B #then C #else D #fi => C requires notBool B [simplification]
-
-  // ########################
-  // #asWord
-  // ########################
-
-    rule [asWord-leading-zeros]:
-      #asWord ( BZ +Bytes B ) => #asWord ( B )
-      requires #asInteger ( BZ ) ==Int 0
-      [simplification, concrete(BZ)]
 
 endmodule

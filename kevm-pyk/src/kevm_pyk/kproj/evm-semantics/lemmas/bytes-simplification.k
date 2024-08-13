@@ -7,6 +7,9 @@ module BYTES-SIMPLIFICATION [symbolic]
   // Buffer Reasoning
   // ########################
 
+    rule [empty-neutral-left]:  B +Bytes b"" => B [simplification]
+    rule [empty-neutral-right]: b"" +Bytes B => B [simplification]
+
     rule [bytes-not-equal-length]:
       BA1:Bytes ==K BA2:Bytes => false
       requires lengthBytes(BA1) =/=Int lengthBytes(BA2)
@@ -85,6 +88,11 @@ module BYTES-SIMPLIFICATION [symbolic]
        andBool S +Int WR ==Int WB
        andBool X <Int 2 ^Int (8 *Int WR)
       [simplification, concrete(WB, S, WR), preserves-definedness]
+
+    rule [asWord-concat-leading-zeros]:
+      #asWord ( BZ +Bytes B ) => #asWord ( B )
+      requires #asInteger ( BZ ) ==Int 0
+      [simplification, concrete(BZ)]
 
     rule [buf-zero-concat-base]:
       #buf(W1:Int, 0) +Bytes #buf(W2:Int, 0) => #buf(W1 +Int W2, 0)
