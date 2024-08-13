@@ -159,8 +159,9 @@ module LEMMAS-HASKELL [symbolic]
     rule notBool  (X ==Int 1) => X ==Int 0 requires #rangeBool(X) [simplification]
     rule bool2Word(X ==Int 1) => X         requires #rangeBool(X) [simplification]
 
-    // Simplification of bool2Word() ==Int CONCRETE, #buf() ==K CONCRETE
-    rule bool2Word( B:Bool ) ==Int I => B ==K word2Bool(I) [simplification, concrete(I), comm]
+    //Simplification of bool2Word() ==Int CONCRETE, #buf() ==K CONCRETE
+    rule I                   ==Int bool2Word( B:Bool ) => bool2Word(B) ==Int I  [simplification, concrete(I)]
+    rule bool2Word( B:Bool ) ==Int I                   => B ==K word2Bool(I)    [simplification, concrete(I)]
 
   // ########################
   // Arithmetic
