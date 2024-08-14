@@ -2,6 +2,7 @@ requires "word.md"
 
 module BITWISE-SIMPLIFICATION [symbolic]
     imports EVM-TYPES
+    imports BUF
     imports INT-SYMBOLIC
     imports WORD
 
