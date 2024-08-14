@@ -177,6 +177,11 @@ def _create_argument_parser() -> ArgumentParser:
         action='store_true',
         help='Reinitialize CFGs even if they already exist.',
     )
+    prove_args.add_argument(
+        '--max-frontier-parallel',
+        type=int,
+        help='Maximum worker threads to use on a single proof to explore separate branches in parallel.',
+    )
 
     prune_args = command_parser.add_parser(
         'prune',
@@ -295,7 +300,8 @@ class KOptions(KDefinitionOptions):
 
 
 class RPCOptions(Options):
-    trace_rewrites: bool
+    log_succ_rewrites: bool
+    log_fail_rewrites: bool
     kore_rpc_command: str | None
     use_booster: bool
     fallback_on: list[FallbackReason]
@@ -308,7 +314,8 @@ class RPCOptions(Options):
     @staticmethod
     def default() -> dict[str, Any]:
         return {
-            'trace_rewrites': False,
+            'log_succ_rewrites': True,
+            'log_fail_rewrites': False,
             'kore_rpc_command': None,
             'use_booster': True,
             'fallback_on': [],
@@ -370,6 +377,8 @@ class KProveOptions(Options):
     always_check_subsumption: bool
     fast_check_subsumption: bool
     direct_subproof_rules: bool
+    maintenance_rate: int
+    assume_defined: bool
 
     @staticmethod
     def default() -> dict[str, Any]:
@@ -378,6 +387,8 @@ class KProveOptions(Options):
             'always_check_subsumption': True,
             'fast_check_subsumption': False,
             'direct_subproof_rules': False,
+            'maintenance_rate': 1,
+            'assume_defined': False,
         }
 
 
@@ -809,7 +820,7 @@ class KEVMCLIArgs(KCLIArgs):
         args.add_argument(
             '--debug-equations',
             type=list_of(str, delim=','),
-            help='Comma-separate list of equations to debug.',
+            help='Comma-separated list of equations to debug.',
         )
         args.add_argument(
             '--always-check-subsumption',
@@ -838,6 +849,20 @@ class KEVMCLIArgs(KCLIArgs):
             default=None,
             action='store_true',
             help='For passing subproofs, construct lemmas directly from initial to target state.',
+        )
+        args.add_argument(
+            '--maintenance-rate',
+            dest='maintenance_rate',
+            default=1,
+            type=int,
+            help='The number of proof iterations performed between two writes to disk and status bar updates. Note that setting to >1 may result in work being discarded if proof is interrupted.',
+        )
+        args.add_argument(
+            '--assume-defined',
+            dest='assume_defined',
+            default=None,
+            action='store_true',
+            help='Use the implication check of the Booster (experimental).',
         )
         return args
 
@@ -936,8 +961,15 @@ class KEVMCLIArgs(KCLIArgs):
     def rpc_args(self) -> ArgumentParser:
         args = ArgumentParser(add_help=False)
         args.add_argument(
-            '--trace-rewrites',
-            dest='trace_rewrites',
+            '--no-log-rewrites',
+            dest='log_succ_rewrites',
+            default=None,
+            action='store_false',
+            help='Do not log traces of any simplification and rewrite rule application.',
+        )
+        args.add_argument(
+            '--log-fail-rewrites',
+            dest='log_fail_rewrites',
             default=None,
             action='store_true',
             help='Log traces of all simplification and rewrite rule applications.',
