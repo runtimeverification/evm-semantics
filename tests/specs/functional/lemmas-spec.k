@@ -369,7 +369,7 @@ module LEMMAS-SPEC
     claim <k> runLemma ( #buf( 32 , I:Int )                ==K #buf( 32 , 1 )     ) => doneLemma( I ==K 1    ) ... </k> requires #rangeUInt(256, I)
     claim <k> runLemma ( #buf( 32 , 1 )                    ==K #buf( 32 , I:Int ) ) => doneLemma( I ==K 1    ) ... </k> requires #rangeUInt(256, I)
 
-    claim <k> runLemma ( #bufStrict( #ceil32(LEN) -Int LEN, 0 ) ) => doneLemma( #buf( #ceil32(LEN) -Int LEN, 0 ) ) ... </k> requires 0 <=Int LEN
+    claim <k> runLemma ( #bufStrict( #ceil32(lengthBytes(X)) -Int lengthBytes(X), 0 ) ) => doneLemma( #buf( #ceil32(lengthBytes(X)) -Int lengthBytes(X), 0 ) ) ... </k>
 
     claim [bufstrict-simplify]:
           <k> runLemma ( #bufStrict(32, #getValue(#int256(X))) ) => doneLemma ( #buf(32, chop(X)) ) ... </k> requires #rangeSInt(256, X)

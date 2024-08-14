@@ -99,12 +99,12 @@ module BITWISE-SIMPLIFICATION [symbolic]
       [simplification, concrete(Y)]
 
     rule [lengthBytes-upInt-32-lower-bound]:
-      lengthBytes(X) <=Int notMaxUInt5 &Int ( lengthBytes(X) +Int 31 ) => true
+      lengthBytes(X) <=Int #ceil32(lengthBytes(X)) => true
       requires lengthBytes(X) +Int 31 <Int pow256
       [simplification, smt-lemma]
 
     rule [lengthBytes-upInt-32-upper-bound]:
-      lengthBytes(X) +Int 32 >Int notMaxUInt5 &Int ( lengthBytes(X) +Int 31 ) => true
+      lengthBytes(X) +Int 32 >Int #ceil32(lengthBytes(X)) => true
       [simplification, smt-lemma]
 
   // ###########################################################################

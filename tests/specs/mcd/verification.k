@@ -56,6 +56,8 @@ module LEMMAS-MCD [symbolic]
   // Arithmetic
   // ########################
 
+    rule chop ( I:Int ) => I modInt pow256 [concrete, smt-lemma]
+
     rule chop(Y) => Y +Int pow256 requires #range( 0 -Int maxUInt256 <= Y < 0 ) [simplification]
 
     rule sgn(chop(X)) ==Int  1 => 0 <=Int X requires #rangeSInt(256, X) [simplification]

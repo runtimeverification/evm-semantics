@@ -127,9 +127,6 @@ module VERIFICATION
 
     rule X +Int Y <Int pow256 => true  requires X <=Int pow16 andBool Y <Int pow16 [simplification]
 
-    rule 0 <=Int #ceil32(I)        => true requires 0 <=Int I [simplification, smt-lemma]
-    rule 0 <=Int #ceil32(I) -Int I => true requires 0 <=Int I [simplification]
-
     rule X <=Int #ceil32(X)     => true   requires 0 <=Int X                       [simplification]
     rule #ceil32(X) <Int X      => false  requires 0 <=Int X                       [simplification]
     rule #ceil32(X) <=Int pow16 => true   requires 0 <=Int X andBool X <=Int pow16 [simplification]
@@ -153,8 +150,6 @@ module VERIFICATION-HASKELL [symbolic]
     rule ( lengthBytes(#ecrec( _, _, _, _ )) <=Int K ) => true requires 32 <=Int K [simplification]
 
     rule 0 <Int #asWord ( #ecrec( HASH, SIGV, SIGR, SIGS ) ) => notBool ( #ecrecEmpty ( HASH, SIGV, SIGR, SIGS ) )  [simplification]
-
-    rule #asWord ( #ecrec ( _ , _ , _ , _ ) ) <Int pow160 => true [simplification, smt-lemma]
 
     rule pow32 <Int X => false requires X <Int pow16 [simplification]
 

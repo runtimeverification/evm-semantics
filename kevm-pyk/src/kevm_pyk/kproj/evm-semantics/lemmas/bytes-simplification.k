@@ -309,4 +309,12 @@ module BYTES-SIMPLIFICATION [symbolic]
       requires lengthBytes(B) <=Int X
       [simplification, concrete(X)]
 
+    // #ecrec
+
+    rule lengthBytes ( #ecrec ( _ , _ , _ , _ ) ) <=Int 32 => true
+        [simplification, smt-lemma]
+
+    rule #asWord ( #ecrec ( _ , _ , _ , _ ) ) <Int pow160 => true
+        [simplification, smt-lemma]
+
 endmodule
