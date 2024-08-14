@@ -99,4 +99,7 @@ module EVM-INT-SIMPLIFICATION-COMMON
       requires #rangeUInt(256, X) andBool #rangeUInt(256, Y)
       [simplification]
 
+    rule [chop-sgn-neg]: sgn(chop(0 -Int X)) => -1 requires #rangeUInt(256, X) andBool           0 <Int X andBool X <=Int pow255   [simplification]
+    rule [chop-sgn-pos]: sgn(chop(0 -Int X)) =>  1 requires #rangeUInt(256, X) andBool notBool ( 0 <Int X andBool X <=Int pow255 ) [simplification]
+
 endmodule
