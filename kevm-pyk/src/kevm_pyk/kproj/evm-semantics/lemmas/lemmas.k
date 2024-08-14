@@ -18,10 +18,6 @@ module LEMMAS [symbolic]
   // Arithmetic
   // ########################
 
-    // For #bufStrict simplification in benchmarks
-    rule 0 <=Int #ceil32(I)        => true requires 0 <=Int I [simplification, smt-lemma]
-    rule 0 <=Int #ceil32(I) -Int I => true requires 0 <=Int I [simplification]
-
     rule X *Int Y <Int pow256 => true requires Y <=Int maxUInt256 /Int X [simplification]
     rule #if B #then C +Int C1 #else C +Int C2 #fi => C +Int #if B #then C1 #else C2 #fi [simplification]
 
