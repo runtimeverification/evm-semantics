@@ -40,6 +40,7 @@
           pkg-config
           python310-pyk
           time
+          secp256k1
         ] ++ lib.optional (!stdenv.isDarwin) elfutils;
 
       overlay = final: prev:
