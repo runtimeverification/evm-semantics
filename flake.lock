@@ -167,16 +167,16 @@
         "z3": "z3"
       },
       "locked": {
-        "lastModified": 1722860063,
-        "narHash": "sha256-5K3BIIbwkMpN4idvAHRrw0JzHRL6Au4ui+7NqkX+c3w=",
+        "lastModified": 1723630441,
+        "narHash": "sha256-BbJwGKi2kwbSIegUZTuZvzOoA9g/NRn7mwsgOhKpFvg=",
         "owner": "runtimeverification",
         "repo": "haskell-backend",
-        "rev": "7047b0964349727e54425c2c81478caf3dad757c",
+        "rev": "8d4aafc4bc2cb6ab9d992030c6482b712309608f",
         "type": "github"
       },
       "original": {
         "owner": "runtimeverification",
-        "ref": "v0.1.58",
+        "ref": "v0.1.67",
         "repo": "haskell-backend",
         "type": "github"
       }
@@ -220,16 +220,16 @@
         ]
       },
       "locked": {
-        "lastModified": 1723622670,
-        "narHash": "sha256-UCwCFO1LpmvoF5qSviNip69LCDS3ROTc3hvEjhfp3D8=",
+        "lastModified": 1723662167,
+        "narHash": "sha256-0v0d0NRVnCGpC0j9v4ysE4X/cPiTiaH5PvC3PsngIno=",
         "owner": "runtimeverification",
         "repo": "k",
-        "rev": "13aad50dab1be810bff4b722281a2f6bc56e6c62",
+        "rev": "af833cab5788c1320f1e106f542447bb05e8a7b1",
         "type": "github"
       },
       "original": {
         "owner": "runtimeverification",
-        "ref": "v7.1.105",
+        "ref": "v7.1.108",
         "repo": "k",
         "type": "github"
       }
@@ -445,17 +445,17 @@
       },
       "locked": {
         "dir": "pyk",
-        "lastModified": 1723622670,
-        "narHash": "sha256-UCwCFO1LpmvoF5qSviNip69LCDS3ROTc3hvEjhfp3D8=",
+        "lastModified": 1723662167,
+        "narHash": "sha256-0v0d0NRVnCGpC0j9v4ysE4X/cPiTiaH5PvC3PsngIno=",
         "owner": "runtimeverification",
         "repo": "k",
-        "rev": "13aad50dab1be810bff4b722281a2f6bc56e6c62",
+        "rev": "af833cab5788c1320f1e106f542447bb05e8a7b1",
         "type": "github"
       },
       "original": {
         "dir": "pyk",
         "owner": "runtimeverification",
-        "ref": "v7.1.105",
+        "ref": "v7.1.108",
         "repo": "k",
         "type": "github"
       }
@@ -714,16 +714,16 @@
     "z3": {
       "flake": false,
       "locked": {
-        "lastModified": 1674011426,
-        "narHash": "sha256-7cuUf29TMpX62PwO1ab3ZuzmzlcrRjTKB1CyXnYgYus=",
+        "lastModified": 1709835916,
+        "narHash": "sha256-MIbP3QgKIGF/qUMTupaO7xD46LbmH69kF/394Sajhkg=",
         "owner": "Z3Prover",
         "repo": "z3",
-        "rev": "3012293c35eadbfd73e5b94adbe50b0cc44ffb83",
+        "rev": "3049f578a8f98a0b0992eca193afe57a73b30ca3",
         "type": "github"
       },
       "original": {
         "owner": "Z3Prover",
-        "ref": "z3-4.12.1",
+        "ref": "z3-4.13.0",
         "repo": "z3",
         "type": "github"
       }
