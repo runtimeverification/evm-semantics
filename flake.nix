@@ -22,7 +22,7 @@
     let
       nixLibs = pkgs:
         with pkgs;
-        "-I${procps}/include -L${procps}/lib -I${openssl.dev}/include -L${openssl.out}/lib -I${secp256k1}/include -L${secp256k1}/lib";
+        "-I${openssl.dev}/include -L${openssl.out}/lib -I${secp256k1}/include -L${secp256k1}/lib";
       buildInputs = pkgs:
         with pkgs;
         [
@@ -38,7 +38,6 @@
           mpfr
           openssl.dev
           pkg-config
-          procps
           python310-pyk
           time
         ] ++ lib.optional (!stdenv.isDarwin) elfutils;

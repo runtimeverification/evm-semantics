@@ -231,9 +231,6 @@ def lib_ccopts(plugin_dir: Path, debug_build: bool = False) -> list[str]:
 
     ccopts += ['-lssl', '-lcrypto', '-lsecp256k1']
 
-    if sys.platform == 'linux':
-        ccopts += ['-lprocps']
-
     ccopts += [str(plugin_dir / 'krypto.a')]
 
     if config.NIX_LIBS:
