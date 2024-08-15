@@ -89,7 +89,7 @@
                 prev.lib.optionalString
                 (prev.stdenv.isAarch64 && prev.stdenv.isDarwin)
                 "APPLE_SILICON=true"
-              } kdist build -j4
+              } kdist -v build -j4
             '';
 
             installPhase = ''
