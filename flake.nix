@@ -2,16 +2,16 @@
   description = "A flake for the KEVM Semantics";
 
   inputs = {
-    k-framework.url = "github:runtimeverification/k/v7.1.105";
+    k-framework.url = "github:runtimeverification/k/v7.1.108";
     nixpkgs.follows = "k-framework/nixpkgs";
     flake-utils.follows = "k-framework/flake-utils";
     rv-utils.follows = "k-framework/rv-utils";
-    pyk.url = "github:runtimeverification/k/v7.1.105?dir=pyk";
+    pyk.url = "github:runtimeverification/k/v7.1.108?dir=pyk";
     nixpkgs-pyk.follows = "pyk/nixpkgs";
     poetry2nix.follows = "pyk/poetry2nix";
     blockchain-k-plugin = {
       url =
-        "github:runtimeverification/blockchain-k-plugin/5aa6993fab90675d971b8b98b3430d11f1ec2a2b";
+        "github:runtimeverification/blockchain-k-plugin/64bb64b6c908c15b3dfe67ace70936b7d3913672";
       inputs.flake-utils.follows = "k-framework/flake-utils";
       inputs.nixpkgs.follows = "k-framework/nixpkgs";
     };
@@ -22,7 +22,7 @@
     let
       nixLibs = pkgs:
         with pkgs;
-        "-I${procps}/include -L${procps}/lib -I${openssl.dev}/include -L${openssl.out}/lib -I${secp256k1}/include -L${secp256k1}/lib";
+        "-I${openssl.dev}/include -L${openssl.out}/lib -I${secp256k1}/include -L${secp256k1}/lib";
       buildInputs = pkgs:
         with pkgs;
         [
@@ -38,9 +38,9 @@
           mpfr
           openssl.dev
           pkg-config
-          procps
           python310-pyk
           time
+          secp256k1
         ] ++ lib.optional (!stdenv.isDarwin) elfutils;
 
       overlay = final: prev:
@@ -90,7 +90,7 @@
                 prev.lib.optionalString
                 (prev.stdenv.isAarch64 && prev.stdenv.isDarwin)
                 "APPLE_SILICON=true"
-              } kdist build -j4
+              } kdist -v build -j4
             '';
 
             installPhase = ''
