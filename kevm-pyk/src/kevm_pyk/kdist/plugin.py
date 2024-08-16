@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+import shutil
 import sys
 from distutils.dir_util import copy_tree
 from typing import TYPE_CHECKING
 
-from pyk.kbuild.utils import k_version, sync_files
+from pyk.kbuild.utils import k_version
 from pyk.kdist.api import Target
 from pyk.kllvm.compiler import compile_kllvm, compile_runtime
 from pyk.utils import run_process_2
@@ -51,23 +52,9 @@ class KEVMTarget(Target):
 
 class PluginTarget(Target):
     def build(self, output_dir: Path, deps: dict[str, Any], args: dict[str, Any], verbose: bool) -> None:
-        sync_files(
-            source_dir=config.PLUGIN_DIR / 'plugin-c',
-            target_dir=output_dir / 'plugin-c',
-            file_names=[
-                'blake2.h',
-                'crypto.cpp',
-                'plugin_util.cpp',
-                'plugin_util.h',
-            ],
-        )
-
         copy_tree(str(config.PLUGIN_DIR), '.')
-        run_process_2(['make', 'libcryptopp', 'libff', 'blake2', '-j8'])
-
-        copy_tree('./build/libcryptopp', str(output_dir / 'libcryptopp'))
-        copy_tree('./build/libff', str(output_dir / 'libff'))
-        copy_tree('./build/blake2', str(output_dir / 'blake2'))
+        run_process_2(['make', '-j8'])
+        shutil.copy('./build/krypto/lib/krypto.a', str(output_dir))
 
     def source(self) -> tuple[Path]:
         return (config.PLUGIN_DIR,)
