@@ -246,7 +246,7 @@ Always have your build up-to-date.
 
 ### Building with Nix
 
-We now support building KEVM using [nix flakes](https://nixos.wiki/wiki/Flakes).
+We now support building KEVM using [nix flakes](https://wiki.nixos.org/wiki/Flakes).
 To set up nix flakes you will need to be on `nix` 2.4 or higher and follow the instructions [here](https://nixos.wiki/wiki/Flakes).
 
 For example, if you are on a standard Linux distribution, such as Ubuntu, first [install nix](https://nixos.org/download.html#download-nix)
