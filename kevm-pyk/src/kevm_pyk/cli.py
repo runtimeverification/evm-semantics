@@ -367,6 +367,7 @@ class ExploreOptions(Options):
     @staticmethod
     def from_option_string() -> dict[str, str]:
         return {
+            'symbolic-immutables': 'break_on_load_program',
             'failure-information': 'failure_info',
             'no-failure-information': 'no_failure_info',
         }
