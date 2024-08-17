@@ -357,6 +357,7 @@ class KEVM(KProve, KRun):
         )
 
         constraints.append(mlEqualsTrue(KEVM.range_blocknum(cterm.cell('NUMBER_CELL'))))
+        # Setting the timestamp range from July 1978 to October 3058
         constraints.append(mlEqualsTrue(gtInt(cterm.cell('TIMESTAMP_CELL'), intToken(2**28))))
         constraints.append(mlEqualsTrue(ltInt(cterm.cell('TIMESTAMP_CELL'), intToken(2**35))))
 
