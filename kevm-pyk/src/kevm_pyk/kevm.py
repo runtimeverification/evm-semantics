@@ -155,13 +155,12 @@ class KEVMSemantics(KCFGSemantics):
         """Given a CTerm, update the JUMPDESTS_CELL and PROGRAM_CELL if the rule 'EVM.program.load' is at the top of the K_CELL.
 
         :param cterm: CTerm of a proof node.
-        :type cterm: CTerm
         :return: If the K_CELL matches the load_pattern, a Step with depth 1 is returned together with the new configuration, also registering that the `EVM.program.load` rule has been applied. Otherwise, None is returned.
-        :rtype: KCFGExtendResult | None
         """
-        load_pattern = KSequence([KApply('loadProgram', KVariable('###BYTECODE')), KVariable('###CONTINUATION')])
-        subst = load_pattern.match(cterm.cell('K_CELL'))
-        if subst is not None:
+        if self.can_make_custom_step(cterm):
+            load_pattern = KSequence([KApply('loadProgram', KVariable('###BYTECODE')), KVariable('###CONTINUATION')])
+            subst = load_pattern.match(cterm.cell('K_CELL'))
+            assert subst is not None
             bytecode_sections = flatten_label('_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes', subst['###BYTECODE'])
             jumpdests_set = compute_jumpdests(bytecode_sections)
             new_cterm = CTerm.from_kast(set_cell(cterm.kast, 'JUMPDESTS_CELL', jumpdests_set))
@@ -212,6 +211,16 @@ class KEVMSemantics(KCFGSemantics):
         if break_every_step:
             terminal_rules.append('EVM.step')
         return terminal_rules
+
+    def can_make_custom_step(self, cterm: CTerm) -> bool:
+        """Given a CTerm, check if the rule 'EVM.program.load' is at the top of the K_CELL.
+
+        :param cterm: CTerm of a proof node.
+        :return:
+        """
+        load_pattern = KSequence([KApply('loadProgram', KVariable('###BYTECODE')), KVariable('###CONTINUATION')])
+        subst = load_pattern.match(cterm.cell('K_CELL'))
+        return subst is not None
 
 
 class KEVM(KProve, KRun):

@@ -357,7 +357,6 @@ def exec_prove(options: ProveOptions) -> None:
                 ),
                 terminal_rules=KEVMSemantics.terminal_rules(options.break_every_step),
                 fail_fast=options.fail_fast,
-                always_check_subsumption=options.always_check_subsumption,
                 fast_check_subsumption=options.fast_check_subsumption,
                 direct_subproof_rules=options.direct_subproof_rules,
                 max_frontier_parallel=options.max_frontier_parallel,
