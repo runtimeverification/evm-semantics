@@ -86,6 +86,11 @@ module BYTES-SIMPLIFICATION [symbolic]
        andBool X <Int 2 ^Int (8 *Int WR)
       [simplification, concrete(WB, S, WR), preserves-definedness]
 
+    rule [asWord-concat-leading-zeros]:
+      #asWord ( BZ +Bytes B ) => #asWord ( B )
+      requires #asInteger ( BZ ) ==Int 0
+      [simplification, concrete(BZ)]
+
     rule [buf-zero-concat-base]:
       #buf(W1:Int, 0) +Bytes #buf(W2:Int, 0) => #buf(W1 +Int W2, 0)
       requires 0 <=Int W1 andBool 0 <=Int W2
