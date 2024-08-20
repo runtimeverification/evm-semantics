@@ -139,6 +139,8 @@ module INT-SIMPLIFICATION-COMMON
     rule 0 *Int _ => 0 [simplification]
     rule _ *Int 0 => 0 [simplification]
 
+    rule A *Int B => B *Int A [simplification, symbolic(A), concrete(B)]
+
     rule (A *Int C) +Int (B *Int C) => (A +Int B) *Int C [simplification]
     rule (A *Int C) -Int (B *Int C) => (A -Int B) *Int C [simplification]
 
