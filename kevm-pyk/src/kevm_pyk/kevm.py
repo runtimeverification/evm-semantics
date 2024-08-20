@@ -359,11 +359,9 @@ class KEVM(KProve, KRun):
         # Setting the timestamp range from January 2004 to October 3058
         constraints.append(mlEqualsTrue(gtInt(cterm.cell('TIMESTAMP_CELL'), intToken(2**30))))
         constraints.append(mlEqualsTrue(ltInt(cterm.cell('TIMESTAMP_CELL'), intToken(2**35))))
-        # Assuming that there are 14 blocks mined per second. We are setting the block.number range to be
-        # ((eth_genesis - 2**30) / 14, (2**35 - eth_genesis) / 14), where eth_genesis is the timestamp for July 2015, 1438269988.
-        # The range is (26037726, 2351533455).
-        constraints.append(mlEqualsTrue(gtInt(cterm.cell('NUMBER_CELL'), intToken(int((1438269988 - 2**30) / 14)))))
-        constraints.append(mlEqualsTrue(ltInt(cterm.cell('NUMBER_CELL'), intToken(int((2**35 - 1438269988) / 14)))))
+        # Setting the block number range conservatively to match the timestamp range
+        constraints.append(mlEqualsTrue(gtInt(cterm.cell('NUMBER_CELL'), intToken(2**24))))
+        constraints.append(mlEqualsTrue(ltInt(cterm.cell('NUMBER_CELL'), intToken(2**32))))
         for c in constraints:
             cterm = cterm.add_constraint(c)
         return cterm
