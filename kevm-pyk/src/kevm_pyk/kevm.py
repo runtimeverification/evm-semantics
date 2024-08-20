@@ -38,7 +38,7 @@ if TYPE_CHECKING:
     from pathlib import Path
     from typing import Final
 
-    from pyk.kast.inner import KAst
+    from pyk.kast.inner import KAst, Subst
     from pyk.kast.outer import KFlatModule
     from pyk.kcfg import KCFG
     from pyk.kcfg.semantics import KCFGExtendResult
@@ -53,10 +53,12 @@ _LOGGER: Final = logging.getLogger(__name__)
 class KEVMSemantics(KCFGSemantics):
     auto_abstract_gas: bool
     allow_symbolic_program: bool
+    _cached_subst: Subst | None
 
     def __init__(self, auto_abstract_gas: bool = False, allow_symbolic_program: bool = False) -> None:
         self.auto_abstract_gas = auto_abstract_gas
         self.allow_symbolic_program = allow_symbolic_program
+        self._cached_subst = None
 
     @staticmethod
     def is_functional(term: KInner) -> bool:
@@ -158,8 +160,7 @@ class KEVMSemantics(KCFGSemantics):
         :return: If the K_CELL matches the load_pattern, a Step with depth 1 is returned together with the new configuration, also registering that the `EVM.program.load` rule has been applied. Otherwise, None is returned.
         """
         if self.can_make_custom_step(cterm):
-            load_pattern = KSequence([KApply('loadProgram', KVariable('###BYTECODE')), KVariable('###CONTINUATION')])
-            subst = load_pattern.match(cterm.cell('K_CELL'))
+            subst = self._cached_subst
             assert subst is not None
             bytecode_sections = flatten_label('_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes', subst['###BYTECODE'])
             jumpdests_set = compute_jumpdests(bytecode_sections)
@@ -215,12 +216,14 @@ class KEVMSemantics(KCFGSemantics):
     def can_make_custom_step(self, cterm: CTerm) -> bool:
         """Given a CTerm, check if the rule 'EVM.program.load' is at the top of the K_CELL.
 
-        :param cterm: CTerm of a proof node.
-        :return:
+        This method checks if the `EVM.program.load` rule is at the top of the `K_CELL` in the given `cterm`.
+        If the rule matches, the resulting substitution is cached in `_cached_subst` for later use in `custom_step`
+        :param cterm: The CTerm representing the current state of the proof node.
+        :return: `True` if the pattern matches and a custom step can be made; `False` otherwise.
         """
         load_pattern = KSequence([KApply('loadProgram', KVariable('###BYTECODE')), KVariable('###CONTINUATION')])
-        subst = load_pattern.match(cterm.cell('K_CELL'))
-        return subst is not None
+        self._cached_subst = load_pattern.match(cterm.cell('K_CELL'))
+        return self._cached_subst is not None
 
 
 class KEVM(KProve, KRun):
