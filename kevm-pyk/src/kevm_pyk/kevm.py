@@ -26,7 +26,7 @@ from pyk.ktool.kprove import KProve
 from pyk.ktool.krun import KRun
 from pyk.prelude.bytes import BYTES, pretty_bytes
 from pyk.prelude.kbool import notBool
-from pyk.prelude.kint import INT, eqInt, intToken, ltInt
+from pyk.prelude.kint import INT, eqInt, gtInt, intToken, ltInt
 from pyk.prelude.ml import mlEqualsFalse, mlEqualsTrue
 from pyk.prelude.string import stringToken
 from pyk.prelude.utils import token
@@ -368,9 +368,12 @@ class KEVM(KProve, KRun):
             mlEqualsFalse(KEVM.is_precompiled_account(cterm.cell('ORIGIN_CELL'), cterm.cell('SCHEDULE_CELL')))
         )
 
-        constraints.append(mlEqualsTrue(KEVM.range_blocknum(cterm.cell('NUMBER_CELL'))))
-        constraints.append(mlEqualsTrue(KEVM.range_uint(256, cterm.cell('TIMESTAMP_CELL'))))
-
+        # Setting the timestamp range from January 2004 to October 3058
+        constraints.append(mlEqualsTrue(gtInt(cterm.cell('TIMESTAMP_CELL'), intToken(2**30))))
+        constraints.append(mlEqualsTrue(ltInt(cterm.cell('TIMESTAMP_CELL'), intToken(2**35))))
+        # Setting the block number range conservatively to match the timestamp range
+        constraints.append(mlEqualsTrue(gtInt(cterm.cell('NUMBER_CELL'), intToken(2**24))))
+        constraints.append(mlEqualsTrue(ltInt(cterm.cell('NUMBER_CELL'), intToken(2**32))))
         for c in constraints:
             cterm = cterm.add_constraint(c)
         return cterm
