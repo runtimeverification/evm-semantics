@@ -4,7 +4,7 @@ requires "bitwise-simplification.k"
 requires "bytes-simplification.k"
 requires "evm-int-simplification.k"
 requires "int-simplification.k"
-
+requires "slot-updates.k"
 
 
 module LEMMAS [symbolic]
@@ -12,6 +12,7 @@ module LEMMAS [symbolic]
     imports BYTES-SIMPLIFICATION
     imports INT-SIMPLIFICATION
     imports EVM-INT-SIMPLIFICATION
+    imports SLOT-UPDATES
     imports LEMMAS-HASKELL
 
   // ########################
@@ -29,8 +30,8 @@ module LEMMAS [symbolic]
   // Set Reasoning
   // ########################
 
-    rule X in (SetItem(Y) _   ) => true      requires X  ==Int Y [simplification]
-    rule X in (SetItem(Y) REST) => X in REST requires X =/=Int Y [simplification]
+    rule X in (SetItem(Y) _   ) => true      requires           X ==Int Y   [simplification]
+    rule X in (SetItem(Y) REST) => X in REST requires notBool ( X ==Int Y ) [simplification]
 
     rule   ( S:Set |Set SetItem ( X )                      ) |Set SetItem( X ) =>   ( S:Set |Set SetItem ( X )                      ) [simplification]
     rule ( ( S:Set |Set SetItem ( X ) ) |Set SetItem ( Y ) ) |Set SetItem( X ) => ( ( S:Set |Set SetItem ( X ) ) |Set SetItem ( Y ) ) [simplification]
@@ -50,9 +51,6 @@ module LEMMAS [symbolic]
 
     rule 1 |Int bool2Word(_B) => 1            [simplification]
     rule 1 &Int bool2Word( B) => bool2Word(B) [simplification]
-
-    rule bool2Word(_B) |Int 1 => 1            [simplification]
-    rule bool2Word( B) &Int 1 => bool2Word(B) [simplification]
 
     // #newAddr range
     rule 0 <=Int #newAddr(_,_)             => true   [simplification]
@@ -77,11 +75,11 @@ module LEMMAS [symbolic]
     rule         #lookup( _M:Map , _ ) <Int pow256 => true [simplification, smt-lemma]
 
     rule #lookup ( _M:Map [ K1 <- V1 ] , K2 )    => #lookup ( K1 |-> V1 , K1 ) requires K1 ==Int  K2 [simplification]
-    rule #lookup (  M:Map [ K1 <- _  ] , K2 )    => #lookup ( M         , K2 ) requires K1 =/=Int K2 [simplification]
-    rule #lookup ( (K1:Int |-> _) M:Map, K2:Int) => #lookup ( M         , K2 ) requires K1 =/=Int K2 [simplification]
+    rule #lookup (  M:Map [ K1 <- _  ] , K2 )    => #lookup ( M         , K2 ) requires notBool ( K1 ==Int K2 ) [simplification]
+    rule #lookup ( (K1:Int |-> _) M:Map, K2:Int) => #lookup ( M         , K2 ) requires notBool ( K1 ==Int K2 ) [simplification]
 
     rule M:Map [ I1:Int <- V1:Int ] [ I2:Int <- V2:Int ] ==K M:Map [ I2 <- V2 ] [ I1 <- V1 ] => true
-      requires I1 =/=Int I2
+      requires notBool ( I1 ==Int I2 )
       [simplification]
 
  // Hardcoded #addrFromPrivateKey simplifications, see: https://github.com/runtimeverification/haskell-backend/issues/3573
@@ -91,18 +89,16 @@ module LEMMAS [symbolic]
   // Memory
   // ########################
 
-    rule #memoryUsageUpdate(MU, _, WIDTH) => MU requires WIDTH <=Int 0 [simplification]
+    rule #memoryUsageUpdate(MU, _, WIDTH) => MU requires 0 <=Int MU andBool WIDTH <=Int 0 [simplification]
 
-    rule 0 <=Int #memoryUsageUpdate(MU, START, WIDTH) => true requires 0 <=Int MU andBool 0 <=Int START andBool 0 <=Int WIDTH [simplification]
+    rule 0 <=Int #memoryUsageUpdate(MU, START, WIDTH) => true requires 0 <=Int MU orBool ( 0 <=Int START andBool 0 <=Int WIDTH ) [simplification]
 
     rule #memoryUsageUpdate(#memoryUsageUpdate(MU, START1, WIDTH1), START2, WIDTH2) => #memoryUsageUpdate(MU, START1, WIDTH1)
-      requires #rangeUInt(256, MU) andBool 0 <Int WIDTH1 andBool 0 <Int WIDTH2
-       andBool START2 +Int WIDTH2 <=Int START1 +Int WIDTH1
+      requires 0 <Int WIDTH1 andBool 0 <Int WIDTH2 andBool START2 +Int WIDTH2 <=Int START1 +Int WIDTH1
       [simplification]
 
     rule #memoryUsageUpdate(#memoryUsageUpdate(MU, START1, WIDTH1), START2, WIDTH2) => #memoryUsageUpdate(MU, START2, WIDTH2)
-      requires #rangeUInt(256, MU) andBool 0 <Int WIDTH1 andBool 0 <Int WIDTH2
-       andBool START1 +Int WIDTH1 <Int START2 +Int WIDTH2
+      requires 0 <Int WIDTH1 andBool 0 <Int WIDTH2 andBool START1 +Int WIDTH1 <Int START2 +Int WIDTH2
       [simplification]
 
   // ########################
@@ -171,8 +167,6 @@ module LEMMAS-HASKELL [symbolic]
   // Arithmetic
   // ########################
 
-    rule N modInt pow160   => N  requires #rangeUInt(160, N) [simplification]
-
     // ; Z3 version 4.8.12
     // (set-option :smt.mbqi true)
     //
@@ -200,7 +194,7 @@ module LEMMAS-HASKELL [symbolic]
   // ########################
 
     rule { M:Map [ I1:Int <- V1:Int ] [ I2:Int <- V2:Int ] #Equals M:Map [ I2 <- V2 ] [ I1 <- V1 ] } => #Top
-      requires I1 =/=Int I2
+      requires notBool ( I1 ==Int I2 )
       [simplification]
 
   // ########################
