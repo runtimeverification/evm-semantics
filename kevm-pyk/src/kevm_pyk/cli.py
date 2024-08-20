@@ -375,7 +375,6 @@ class ExploreOptions(Options):
 
 class KProveOptions(Options):
     debug_equations: list[str]
-    always_check_subsumption: bool
     fast_check_subsumption: bool
     direct_subproof_rules: bool
     maintenance_rate: int
@@ -385,7 +384,6 @@ class KProveOptions(Options):
     def default() -> dict[str, Any]:
         return {
             'debug_equations': [],
-            'always_check_subsumption': True,
             'fast_check_subsumption': False,
             'direct_subproof_rules': False,
             'maintenance_rate': 1,
@@ -822,20 +820,6 @@ class KEVMCLIArgs(KCLIArgs):
             '--debug-equations',
             type=list_of(str, delim=','),
             help='Comma-separated list of equations to debug.',
-        )
-        args.add_argument(
-            '--always-check-subsumption',
-            dest='always_check_subsumption',
-            default=None,
-            action='store_true',
-            help='Check subsumption even on non-terminal nodes (default, experimental).',
-        )
-        args.add_argument(
-            '--no-always-check-subsumption',
-            dest='always_check_subsumption',
-            default=None,
-            action='store_false',
-            help='Do not check subsumption on non-terminal nodes (experimental).',
         )
         args.add_argument(
             '--fast-check-subsumption',
