@@ -433,7 +433,6 @@ def test_prove_optimizations(
             terminal_rules=[],
             cut_point_rules=['EVM.pc.inc', 'EVM.end-basic-block'],
             counterexample_info=False,
-            always_check_subsumption=True,
             fast_check_subsumption=True,
         )
         for proof in _get_optimization_proofs():
