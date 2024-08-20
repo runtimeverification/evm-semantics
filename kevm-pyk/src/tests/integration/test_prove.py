@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import shutil
 import sys
 from typing import TYPE_CHECKING, NamedTuple
 
@@ -205,6 +206,7 @@ def _test_prove(
     # Given
     log_file = tmp_path / 'log.txt'
     use_directory = tmp_path / 'kprove'
+    shutil.rmtree(use_directory, ignore_errors=True)
     use_directory.mkdir()
 
     # When
