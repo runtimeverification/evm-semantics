@@ -134,12 +134,10 @@ module INT-SIMPLIFICATION-COMMON
   // mul
   // ###########################################################################
 
-    rule 1 *Int A => A [simplification]
-    rule A *Int 1 => A [simplification]
-    rule 0 *Int _ => 0 [simplification]
-    rule _ *Int 0 => 0 [simplification]
-
     rule A *Int B => B *Int A [simplification, symbolic(A), concrete(B)]
+
+    rule 1 *Int A => A [simplification]
+    rule 0 *Int _ => 0 [simplification]
 
     rule (A *Int C) +Int (B *Int C) => (A +Int B) *Int C [simplification]
     rule (A *Int C) -Int (B *Int C) => (A -Int B) *Int C [simplification]
@@ -157,10 +155,11 @@ module INT-SIMPLIFICATION-COMMON
     rule (B *Int A) /Int A => B requires notBool A ==Int 0 [simplification, preserves-definedness]
 
     rule ((A *Int B) /Int C) /Int B => A /Int C requires notBool B ==Int 0 andBool notBool C ==Int 0 [simplification, preserves-definedness]
+    rule ((A *Int B) /Int C) /Int A => B /Int C requires notBool A ==Int 0 andBool notBool C ==Int 0 [simplification, preserves-definedness]
 
-    rule (A *Int B) /Int C => A *Int (B /Int C)
-      requires notBool C ==Int 0 andBool B modInt C ==Int 0
-      [simplification, concrete(B, C), preserves-definedness]
+    rule (A *Int B) /Int C => B *Int (A /Int C)
+      requires notBool C ==Int 0 andBool A modInt C ==Int 0
+      [simplification, concrete(A, C), preserves-definedness]
 
     rule (A *Int B) /Int C <=Int D => true
       requires 0 <=Int A andBool 0 <=Int B andBool 0 <Int C andBool A <=Int D andBool B <=Int C

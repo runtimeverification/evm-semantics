@@ -62,7 +62,7 @@ module EVM-INT-SIMPLIFICATION-COMMON
 
   rule [asWord-lt]:
     #asWord ( BA ) <Int X => true
-    requires 2 ^Int ( lengthBytes(BA) *Int 8) <=Int X
+    requires 2 ^Int ( 8 *Int lengthBytes(BA) ) <=Int X
     [concrete(X), simplification]
 
   rule [asWord-lt-concat]:
