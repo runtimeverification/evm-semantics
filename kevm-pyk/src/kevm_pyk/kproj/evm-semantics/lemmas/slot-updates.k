@@ -126,10 +126,10 @@ module SLOT-UPDATES [symbolic]
        [simplification, concrete(W, SHIFT), preserves-definedness]
 
     // 3d. Splitting the updated buffer into the updated value and the trailing zeros, implicit shift
-    rule [buf-bor-split]:
-      #buf ( N, X |Int Y ) => #buf ( N -Int #getFirstOneBit(X) /Int 8, X /Int ( 2 ^Int ( 8 *Int ( #getFirstOneBit(X) /Int 8 ) ) ) ) +Bytes
-                              #buf ( #getFirstOneBit(X) /Int 8, Y )
-      requires 0 <=Int N andBool N <=Int 32 andBool 0 <=Int #getFirstOneBit(X)
+    rule [bor-split]:
+      X |Int Y => #asWord ( #buf ( 32 -Int #getFirstOneBit(X) /Int 8, X /Int ( 2 ^Int ( 8 *Int ( #getFirstOneBit(X) /Int 8 ) ) ) ) +Bytes
+                            #buf ( #getFirstOneBit(X) /Int 8, Y ) )
+      requires #rangeUInt(256, X) andBool 0 <=Int #getFirstOneBit(X)
        andBool 0 <=Int Y andBool Y <Int 2 ^Int ( 8 *Int ( #getFirstOneBit(X) /Int 8 ) )
        [simplification, concrete(X), preserves-definedness]
 

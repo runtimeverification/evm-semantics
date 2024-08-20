@@ -151,11 +151,14 @@ module INT-SIMPLIFICATION-COMMON
     rule A /Int 1 => A  [simplification, preserves-definedness]
 
     // safeMath mul check c / a == b where c == a * b
-    rule (A *Int B) /Int A => B requires A =/=Int 0 [simplification, preserves-definedness]
+    rule (A *Int B) /Int A => B requires notBool A ==Int 0 [simplification, preserves-definedness]
+    rule (B *Int A) /Int A => B requires notBool A ==Int 0 [simplification, preserves-definedness]
 
-    rule ((A *Int B) /Int C) /Int B => A /Int C requires B =/=Int 0 andBool C =/=Int 0 [simplification, preserves-definedness]
+    rule ((A *Int B) /Int C) /Int B => A /Int C requires notBool B ==Int 0 andBool notBool C ==Int 0 [simplification, preserves-definedness]
 
-    rule (A /Int 32) *Int 32 => A requires A modInt 32 ==Int 0 [simplification, preserves-definedness]
+    rule (A *Int B) /Int C => A *Int (B /Int C)
+      requires notBool C ==Int 0 andBool B modInt C ==Int 0
+      [simplification, concrete(B, C), preserves-definedness]
 
     rule (A *Int B) /Int C <=Int D => true
       requires 0 <=Int A andBool 0 <=Int B andBool 0 <Int C andBool A <=Int D andBool B <=Int C
