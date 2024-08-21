@@ -180,7 +180,7 @@
       in {
         packages.default = kevm;
         devShell = pkgs.mkShell {
-          buildInputs = buildInputs pkgs ++ [ pkgs.poetry-nixpkgs ];
+          buildInputs = buildInputs pkgs ++ [ pkgs.poetry-nixpkgs pkgs.which ];
 
           shellHook = ''
             export NIX_LIBS="${nixLibs pkgs}"
