@@ -12,14 +12,14 @@ module SLOT-UPDATES [symbolic]
     // Index of first bit that equals one
     syntax Int ::=  #getFirstOneBit(Int) [function, total]
 
-    rule [gfo-succ]: #getFirstOneBit(X:Int) => log2Int ( X &Int ( ( maxUInt256 xorInt X ) +Int 1 ) ) requires          #rangeUInt(256, X) andBool X =/=Int 0  [concrete(X), simplification]
-    rule [gfo-fail]: #getFirstOneBit(X:Int) => -1                                                    requires notBool (#rangeUInt(256, X) andBool X =/=Int 0) [concrete(X), simplification]
+    rule [gfo-succ]: #getFirstOneBit(X:Int) => log2Int ( X &Int ( ( maxUInt256 xorInt X ) +Int 1 ) ) requires          #rangeUInt(256, X) andBool X =/=Int 0
+    rule [gfo-fail]: #getFirstOneBit(X:Int) => -1                                                    requires notBool (#rangeUInt(256, X) andBool X =/=Int 0)
 
     // Index of first bit that equals zero
     syntax Int ::= #getFirstZeroBit(Int) [function, total]
 
-    rule [gfz-succ]: #getFirstZeroBit(X:Int) => #getFirstOneBit ( maxUInt256 xorInt X ) requires         #rangeUInt(256, X) [concrete(X), simplification]
-    rule [gfz-fail]: #getFirstZeroBit(X:Int) => -1                                      requires notBool #rangeUInt(256, X) [concrete(X), simplification]
+    rule [gfz-succ]: #getFirstZeroBit(X:Int) => #getFirstOneBit ( maxUInt256 xorInt X ) requires         #rangeUInt(256, X)
+    rule [gfz-fail]: #getFirstZeroBit(X:Int) => -1                                      requires notBool #rangeUInt(256, X)
 
     // Slot updates are performed by the compiler with the help of masks,
     // which are 256-bit integers of the form 11111111100000000000111111111111111
