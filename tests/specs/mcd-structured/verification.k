@@ -137,6 +137,9 @@ module LEMMAS-MCD [symbolic]
       requires X <Int 0 orBool X >=Int pow256
       [concrete(X), simplification]
 
+    // keccak cannot land too close to 2 ** 256
+    rule keccak(B:Bytes) <Int BOUND:Int => true requires BOUND >=Int pow256 -Int 32 [simplification, concrete(BOUND)]
+
   // ########################
   // Word Reasoning
   // ########################
