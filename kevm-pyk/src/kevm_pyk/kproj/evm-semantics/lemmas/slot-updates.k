@@ -60,6 +60,13 @@ module SLOT-UPDATES [symbolic]
         requires notBool ( 0 <=Int #getMaskShiftBytes(X) andBool 0 <=Int #getMaskWidthBytes(X) )
         [concrete(X), simplification, preserves-definedness]
 
+    // Shift recogniser
+    syntax Bool ::= #isByteShift(Int) [function, total]
+
+    // A number is a shift if it is non-zero, in the Word range, and a power of two divisible by 8
+    rule #isByteShift(X) => X ==Int 2 ^Int log2Int(X) andBool log2Int(X) modInt 8 ==Int 0 requires 0 <Int X andBool X <Int pow256 [preserves-definedness]
+    rule #isByteShift(X) => false                                                         [owise]
+
     // ###########################################################################
     // Masking lemmas
     // ###########################################################################
@@ -103,7 +110,7 @@ module SLOT-UPDATES [symbolic]
     // 3a. Update with explicit shift and symbolic slot
     rule [bor-update-with-shift]:
       ( SHIFT *Int X ) |Int Y => #asWord ( #buf( 32 -Int ( log2Int(SHIFT) /Int 8 ), X ) +Bytes #buf( log2Int(SHIFT) /Int 8, Y ) )
-      requires rangeUInt(256, SHIFT) andBool SHIFT ==Int 2 ^Int log2Int(SHIFT) andBool log2Int(SHIFT) modInt 8 ==Int 0
+      requires #isByteShift(SHIFT)
        andBool 0 <=Int X andBool X <Int 2 ^Int (8 *Int (32 -Int ( log2Int(SHIFT) /Int 8 )))
        andBool 0 <=Int Y andBool Y <Int SHIFT
        [simplification, concrete(SHIFT), comm, preserves-definedness]
@@ -111,16 +118,15 @@ module SLOT-UPDATES [symbolic]
     // 3b. Buffer cropping
     rule [buf-asWord-crop]:
       #buf (W1:Int, #asWord(#buf(W2, X:Int) +Bytes B)) => #buf(W1 -Int lengthBytes(B), X) +Bytes B
-      requires 0 <=Int W1 andBool 0 <=Int W2 andBool lengthBytes(B) <=Int W1 andBool W1 <=Int W2 +Int lengthBytes(B)
+      requires 0 <=Int W1 andBool W1 <=Int 32 andBool 0 <=Int W2 andBool
+       andBool lengthBytes(B) <=Int W1 andBool W1 <=Int W2 +Int lengthBytes(B)
        andBool 0 <=Int X andBool X <Int 2 ^Int (8 *Int (W1 -Int lengthBytes(B)))
       [simplification]
 
     // 3c. Splitting the updated buffer into the updated value and the trailing zeros, explicit shift
     rule [buf-split-l]:
       #buf ( W, SHIFT *Int X ) => #buf( W -Int ( log2Int(SHIFT) /Int 8 ), X ) +Bytes #buf( log2Int(SHIFT) /Int 8, 0)
-      requires 0 <=Int W andBool W <=Int 32 andBool rangeUInt(256, SHIFT)
-       andBool SHIFT ==Int 2 ^Int log2Int(SHIFT)
-       andBool log2Int(SHIFT) modInt 8 ==Int 0
+      requires 0 <=Int W andBool W <=Int 32 andBool #isByteShift(SHIFT)
        andBool 0 <=Int X andBool X <Int 2 ^Int (8 *Int (W -Int ( log2Int(SHIFT) /Int 8)))
        [simplification, concrete(W, SHIFT), preserves-definedness]
 
