@@ -158,8 +158,8 @@ module INT-SIMPLIFICATION-COMMON
     rule (A *Int B) /Int A => B requires notBool A ==Int 0 [simplification, preserves-definedness]
     rule (B *Int A) /Int A => B requires notBool A ==Int 0 [simplification, preserves-definedness]
 
-    rule ((A *Int B) /Int C) /Int B => A /Int C requires notBool B ==Int 0 andBool notBool C ==Int 0 [simplification, preserves-definedness]
-    rule ((A *Int B) /Int C) /Int A => B /Int C requires notBool A ==Int 0 andBool notBool C ==Int 0 [simplification, preserves-definedness]
+    rule ((A *Int B) /Int C) /Int B => A /Int C requires 0 <Int B andBool 0 <Int C [simplification, preserves-definedness]
+    rule ((A *Int B) /Int C) /Int A => B /Int C requires 0 <Int A andBool 0 <Int C [simplification, preserves-definedness]
 
     rule (A *Int B) /Int C => B *Int (A /Int C)
       requires notBool C ==Int 0 andBool A modInt C ==Int 0

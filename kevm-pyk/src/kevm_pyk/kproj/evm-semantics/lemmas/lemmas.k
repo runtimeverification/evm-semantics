@@ -26,7 +26,8 @@ module LEMMAS-WITHOUT-SLOT-UPDATES [symbolic]
     rule 0 <=Int #ceil32(I)        => true requires 0 <=Int I [simplification, smt-lemma]
     rule 0 <=Int #ceil32(I) -Int I => true requires 0 <=Int I [simplification]
 
-    rule X *Int Y <Int pow256 => true requires Y <=Int maxUInt256 /Int X [simplification]
+    rule X *Int Y <Int pow256 => true requires Y <=Int maxUInt256 /Int X
+      requires 0 <=Int X orBool 0 <=Int Y [simplification]
     rule #if B #then C +Int C1 #else C +Int C2 #fi => C +Int #if B #then C1 #else C2 #fi [simplification]
 
   // ########################
@@ -155,8 +156,8 @@ module LEMMAS-HASKELL [symbolic]
   // ########################
 
     rule #asWord(BUF) /Int D => #asWord(#range(BUF, 0, lengthBytes(BUF) -Int log256Int(D)))
-       requires D ==Int 256 ^Int log256Int(D) andBool D >=Int 0
-        andBool lengthBytes(BUF) >=Int log256Int(D) [simplification, preserves-definedness]
+       requires 0 <Int D andBool D <Int pow256 andBool D ==Int 256 ^Int log256Int(D)
+        andBool log256Int(D) <=Int lengthBytes(BUF) [simplification, preserves-definedness]
 
     rule notBool  (X ==Int 0) => X ==Int 1 requires #rangeBool(X) [simplification]
     rule notBool  (X ==Int 1) => X ==Int 0 requires #rangeBool(X) [simplification]
