@@ -6,13 +6,16 @@ requires "evm-int-simplification.k"
 requires "int-simplification.k"
 requires "slot-updates.k"
 
-
 module LEMMAS [symbolic]
+    imports LEMMAS-WITHOUT-SLOT-UPDATES
+    imports SLOT-UPDATES
+endmodule
+
+module LEMMAS-WITHOUT-SLOT-UPDATES [symbolic]
     imports BITWISE-SIMPLIFICATION
     imports BYTES-SIMPLIFICATION
     imports INT-SIMPLIFICATION
     imports EVM-INT-SIMPLIFICATION
-    imports SLOT-UPDATES
     imports LEMMAS-HASKELL
 
   // ########################

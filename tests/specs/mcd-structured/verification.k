@@ -400,10 +400,6 @@ module LEMMAS-MCD [symbolic]
          requires X =/=Int A andBool X =/=Int B andBool X =/=Int C
          [simplification]
 
-  // ########################
-  // ML Logic
-  // ########################
-
     rule #if B #then C #else D #fi => C requires         B [simplification]
     rule #if B #then C #else D #fi => C requires notBool B [simplification]
 

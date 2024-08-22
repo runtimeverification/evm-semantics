@@ -48,7 +48,7 @@ module LEMMAS-MCD-SYNTAX
 endmodule
 
 module LEMMAS-MCD [symbolic]
-    imports LEMMAS
+    imports LEMMAS-WITHOUT-SLOT-UPDATES
     imports LEMMAS-MCD-SYNTAX
     imports WORD-PACK
 
