@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+<meta charset="utf-8" />
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0, maximum-scale=1.0"
+/>
+<meta
+  name="description"
+  content="K Semantics of the Ethereum Virtual Machine (EVM)"
+/>
+<meta
+  name="keywords"
+  content="runtime, verification, rv, k, ethereum virtual machine, evm"
+/>
+<meta name="author" content="EVM Semantics | Runtime Verification Inc" />
+<meta name="robots" content="index, follow" />
+
+<!--favicon icon-->
+<link rel="icon" type="image/png" href="../../../../../../assets/img/favicon.ico" />
+
+<title>KEVM: Semantics of EVM in K | Runtime Verification, Inc. </title>
+
+<link rel="canonical" href="https://jellopaper.org/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/evm-types/" />
+
+<!--web fonts-->
+<link
+  href="https://fonts.googleapis.com/css?family=Nunito:300,400,600,700,800"
+  rel="stylesheet"
+/>
+<link
+  href="https://fonts.googleapis.com/css?family=Lora:400i"
+  rel="stylesheet"
+/>
+
+<link
+  href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.14.0/css/all.min.css"
+  rel="stylesheet"
+/>
+
+<link href="../../../../../../assets/css/index.css" rel="stylesheet" />
+
+<!--[if (gt IE 9) |!(IE)]><!-->
+<!--<link rel="stylesheet" href="/assets/vendor/custom-nav/css/effects/fade-menu.css"/>-->
+<!-- <link rel="stylesheet" href="../../../../../../assets/k/vl-nav/css/effects/slide-menu.css" /> -->
+<!--<![endif]-->
+
+  </head>
+
+  <body>
+<header
+  class="navbar navbar-expand navbar-dark flex-column flex-md-row bd-navbar"
+>
+  <a class="logo-link" href="../../../../../../index.html"> EVM Semantics </a>
+  <ul class="navbar-nav ml-md-auto">
+    <li class="nav-item">
+      <a
+        class="nav-link pl-2 pr-1 mx-1 py-3 my-n2"
+        href="https://github.com/runtimeverification/evm-semantics"
+        target="_blank"
+        rel="noopener"
+        aria-label="GitHub"
+      >
+        <i class="fab fa-github"></i>
+      </a>
+    </li>
+  </ul>
+  <!--
+  <a
+    class="btn btn-rv-blue d-none d-lg-inline-block mb-3 mb-md-0 ml-md-3"
+    href="../../../../../../downloads"
+    >Download</a
+  >
+  -->
+</header>
+
+
+    <div class="container-fluid">
+      <div class="row flex-xl-nowrap">
+<div class="col-12 col-md-3 col-xl-2 bd-sidebar mb-3">
+  <form
+    role="search"
+    class="bd-search d-flex align-items-center justify-content-between"
+  >
+    <input
+      type="search"
+      class="form-control"
+      placeholder="Search..."
+      aria-label="Search for..."
+      autocomplete="false"
+      id="search-box"
+    />
+    <button
+      class="btn bd-search-docs-toggle d-md-none p-0 ml-3 collapsed"
+      type="button"
+      aria-label="Toggle docs navigation"
+      style="font-size: 1.4rem"
+    >
+      <i class="fas fa-bars"></i>
+    </button>
+  </form>
+  <nav class="collapse bd-links" aria-label="Main navigation">
+    <div class="bd-toc-item">
+      <a class="bd-toc-link" href="../../../../../../">Homepage</a>
+      <a class="bd-toc-link" href="../../../../../../INSTALL/">Install</a>
+    </div>
+  </nav>
+</div>
+
+        <main
+          class="col-12 col-md-6 col-xl-8 py-md-3 pl-md-5 bd-content"
+          role="main"
+        >
+          <div class="markdown-preview"><html><head></head><body><h1 id="data-structures-over-word">Data-Structures over <code>Word</code></h1>
+<p>EVM uses bounded 256 bit integer words, and sometimes also bytes (8 bit words).
+Here we provide the arithmetic of these words, as well as some data-structures over them.
+Both are implemented using K's <code>Int</code>.</p>
+<pre><code class="language-k"><span class="token keyword">requires</span> <span class="token string">"word.md"</span>
+
+<span class="token keyword">module</span> EVM<span class="token operator">-</span>TYPES
+    <span class="token keyword">imports</span> STRING
+    <span class="token keyword">imports</span> COLLECTIONS
+    <span class="token keyword">imports</span> K<span class="token operator">-</span>EQUAL
+    <span class="token keyword">imports</span> JSON
+    <span class="token keyword">imports</span> WORD
+</code></pre>
+<h2 id="utilities">Utilities</h2>
+<h3 id="boolean-conversions">Boolean Conversions</h3>
+<p>Primitives provide the basic conversion from K's sorts <code>Int</code> and <code>Bool</code> to EVM's words.</p>
+<ul>
+<li><code>bool2Word</code> interprets a <code>Bool</code> as a <code>Int</code>.</li>
+<li><code>word2Bool</code> interprets a <code>Int</code> as a <code>Bool</code>.</li>
+</ul>
+<pre><code class="language-k">    <span class="token keyword">syntax</span> <span class="token keyword">Int</span> <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> bool2Word <span class="token punctuation">(</span> <span class="token keyword">Bool</span> <span class="token punctuation">)</span> <span class="token punctuation">[</span><span class="token class-name">symbol</span><span class="token punctuation">(</span>bool2Word<span class="token punctuation">)</span><span class="token punctuation">,</span> function<span class="token punctuation">,</span> total<span class="token punctuation">,</span> smtlib<span class="token punctuation">(</span>bool2Word<span class="token punctuation">)</span><span class="token punctuation">]</span>
+ <span class="token comment">// -----------------------------------------------------------------------------------------</span>
+    <span class="token keyword">rule</span> bool2Word<span class="token punctuation">(</span> <span class="token boolean">true</span>  <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">1</span>
+    <span class="token keyword">rule</span> bool2Word<span class="token punctuation">(</span> <span class="token boolean">false</span> <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">0</span>
+
+    <span class="token keyword">syntax</span> <span class="token keyword">Bool</span> <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> word2Bool <span class="token punctuation">(</span> <span class="token keyword">Int</span> <span class="token punctuation">)</span> <span class="token punctuation">[</span><span class="token class-name">symbol</span><span class="token punctuation">(</span>word2Bool<span class="token punctuation">)</span><span class="token punctuation">,</span> function<span class="token punctuation">,</span> total<span class="token punctuation">]</span>
+ <span class="token comment">// ----------------------------------------------------------------------</span>
+    <span class="token keyword">rule</span> word2Bool<span class="token punctuation">(</span> W <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token boolean">false</span> <span class="token keyword">requires</span> W  <span class="token operator">==</span><span class="token keyword">Int</span> <span class="token number">0</span>
+    <span class="token keyword">rule</span> word2Bool<span class="token punctuation">(</span> W <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token boolean">true</span>  <span class="token keyword">requires</span> W <span class="token operator">=</span><span class="token operator">/</span><span class="token operator">=</span><span class="token keyword">Int</span> <span class="token number">0</span>
+</code></pre>
+<ul>
+<li><code>sgn</code> gives the twos-complement interperetation of the sign of a word.</li>
+<li><code>abs</code> gives the twos-complement interperetation of the magnitude of a word.</li>
+</ul>
+<pre><code class="language-k">    <span class="token keyword">syntax</span> <span class="token keyword">Int</span> <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> sgn <span class="token punctuation">(</span> <span class="token keyword">Int</span> <span class="token punctuation">)</span> <span class="token punctuation">[</span><span class="token class-name">symbol</span><span class="token punctuation">(</span>sgn<span class="token punctuation">)</span><span class="token punctuation">,</span> function<span class="token punctuation">,</span> total<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> abs <span class="token punctuation">(</span> <span class="token keyword">Int</span> <span class="token punctuation">)</span> <span class="token punctuation">[</span><span class="token class-name">symbol</span><span class="token punctuation">(</span>abs<span class="token punctuation">)</span><span class="token punctuation">,</span> function<span class="token punctuation">,</span> total<span class="token punctuation">]</span>
+ <span class="token comment">// ---------------------------------------------------------</span>
+    <span class="token keyword">rule</span> sgn<span class="token punctuation">(</span>I<span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token operator">-</span><span class="token number">1</span> <span class="token keyword">requires</span> pow255 <span class="token operator">&lt;=</span><span class="token keyword">Int</span> I andBool I &lt;<span class="token keyword">Int</span> pow256
+    <span class="token keyword">rule</span> sgn<span class="token punctuation">(</span>I<span class="token punctuation">)</span> <span class="token operator">=&gt;</span>  <span class="token number">1</span> <span class="token keyword">requires</span> <span class="token number">0</span> <span class="token operator">&lt;=</span><span class="token keyword">Int</span> I andBool I &lt;<span class="token keyword">Int</span> pow255
+    <span class="token keyword">rule</span> sgn<span class="token punctuation">(</span>I<span class="token punctuation">)</span> <span class="token operator">=&gt;</span>  <span class="token number">0</span> <span class="token keyword">requires</span> I &lt;<span class="token keyword">Int</span> <span class="token number">0</span> orBool pow256 <span class="token operator">&lt;=</span><span class="token keyword">Int</span> I
+
+    <span class="token keyword">rule</span> abs<span class="token punctuation">(</span>I<span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">0</span> <span class="token operator">-</span>Word I <span class="token keyword">requires</span> sgn<span class="token punctuation">(</span>I<span class="token punctuation">)</span> <span class="token operator">==</span><span class="token keyword">Int</span> <span class="token operator">-</span><span class="token number">1</span>
+    <span class="token keyword">rule</span> abs<span class="token punctuation">(</span>I<span class="token punctuation">)</span> <span class="token operator">=&gt;</span> I         <span class="token keyword">requires</span> sgn<span class="token punctuation">(</span>I<span class="token punctuation">)</span> <span class="token operator">==</span><span class="token keyword">Int</span>  <span class="token number">1</span>
+    <span class="token keyword">rule</span> abs<span class="token punctuation">(</span>I<span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">0</span>         <span class="token keyword">requires</span> sgn<span class="token punctuation">(</span>I<span class="token punctuation">)</span> <span class="token operator">==</span><span class="token keyword">Int</span>  <span class="token number">0</span>
+</code></pre>
+<h2 id="word-operations">Word Operations</h2>
+<h3 id="low-level">Low-Level</h3>
+<ul>
+<li><code>up/Int</code> performs integer division but rounds up instead of down.</li>
+</ul>
+<p>NOTE: Here, we choose to add <code>I2 -Int 1</code> to the numerator before doing the division to mimic the C++ implementation.
+You could alternatively calculate <code>I1 modInt I2</code>, then add one to the normal integer division afterward depending on the result.</p>
+<pre><code class="language-k">    <span class="token keyword">syntax</span> <span class="token keyword">Int</span> <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> <span class="token keyword">Int</span> <span class="token string">"up/Int"</span> <span class="token keyword">Int</span> <span class="token punctuation">[</span>function<span class="token punctuation">,</span> total<span class="token punctuation">,</span> smtlib<span class="token punctuation">(</span>upDivInt<span class="token punctuation">)</span><span class="token punctuation">]</span>
+ <span class="token comment">// -------------------------------------------------------------------</span>
+    <span class="token keyword">rule</span> _I1 up<span class="token operator">/</span><span class="token keyword">Int</span> <span class="token number">0</span>  <span class="token operator">=&gt;</span> <span class="token number">0</span>                                                  <span class="token punctuation">[</span>concrete<span class="token punctuation">]</span>
+    <span class="token keyword">rule</span> _I1 up<span class="token operator">/</span><span class="token keyword">Int</span> I2 <span class="token operator">=&gt;</span> <span class="token number">0</span>                             <span class="token keyword">requires</span> I2 <span class="token operator">&lt;=</span><span class="token keyword">Int</span> <span class="token number">0</span>  <span class="token punctuation">[</span>concrete<span class="token punctuation">]</span>
+    <span class="token keyword">rule</span>  I1 up<span class="token operator">/</span><span class="token keyword">Int</span> <span class="token number">1</span>  <span class="token operator">=&gt;</span> I1                                                 <span class="token punctuation">[</span>concrete<span class="token punctuation">]</span>
+    <span class="token keyword">rule</span>  I1 up<span class="token operator">/</span><span class="token keyword">Int</span> I2 <span class="token operator">=&gt;</span> <span class="token punctuation">(</span>I1 <span class="token operator">+</span><span class="token keyword">Int</span> <span class="token punctuation">(</span>I2 <span class="token operator">-</span><span class="token keyword">Int</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">/</span><span class="token keyword">Int</span> I2 <span class="token keyword">requires</span> <span class="token number">1</span>  &lt;<span class="token keyword">Int</span>  I2 <span class="token punctuation">[</span>concrete<span class="token punctuation">]</span>
+</code></pre>
+<ul>
+<li><code>log256Int</code> returns the log base 256 (floored) of an integer.</li>
+</ul>
+<pre><code class="language-k">    <span class="token keyword">syntax</span> <span class="token keyword">Int</span> <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> log256Int <span class="token punctuation">(</span> <span class="token keyword">Int</span> <span class="token punctuation">)</span> <span class="token punctuation">[</span><span class="token class-name">symbol</span><span class="token punctuation">(</span>log256Int<span class="token punctuation">)</span><span class="token punctuation">,</span> function<span class="token punctuation">]</span>
+ <span class="token comment">// --------------------------------------------------------------</span>
+    <span class="token keyword">rule</span> log256Int<span class="token punctuation">(</span>N<span class="token punctuation">)</span> <span class="token operator">=&gt;</span> log2Int<span class="token punctuation">(</span>N<span class="token punctuation">)</span> <span class="token operator">/</span><span class="token keyword">Int</span> <span class="token number">8</span>
+</code></pre>
+<p>The corresponding <code>&lt;op&gt;Word</code> operations automatically perform the correct modulus for EVM words.
+Warning: operands are assumed to be within the range of a 256 bit EVM word. Unbound integers may not return the correct result.</p>
+<pre><code class="language-k">    <span class="token keyword">syntax</span> <span class="token keyword">Int</span> <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> <span class="token keyword">Int</span> <span class="token string">"+Word"</span> <span class="token keyword">Int</span> <span class="token punctuation">[</span>function<span class="token punctuation">,</span> total<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token keyword">Int</span> <span class="token string">"*Word"</span> <span class="token keyword">Int</span> <span class="token punctuation">[</span>function<span class="token punctuation">,</span> total<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token keyword">Int</span> <span class="token string">"-Word"</span> <span class="token keyword">Int</span> <span class="token punctuation">[</span>function<span class="token punctuation">,</span> total<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token keyword">Int</span> <span class="token string">"/Word"</span> <span class="token keyword">Int</span> <span class="token punctuation">[</span>function<span class="token punctuation">,</span> total<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token keyword">Int</span> <span class="token string">"%Word"</span> <span class="token keyword">Int</span> <span class="token punctuation">[</span>function<span class="token punctuation">,</span> total<span class="token punctuation">]</span>
+ <span class="token comment">// ------------------------------------------------</span>
+    <span class="token keyword">rule</span> W0 <span class="token operator">+</span>Word W1 <span class="token operator">=&gt;</span> chop<span class="token punctuation">(</span> W0 <span class="token operator">+</span><span class="token keyword">Int</span> W1 <span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> W0 <span class="token operator">-</span>Word W1 <span class="token operator">=&gt;</span> chop<span class="token punctuation">(</span> W0 <span class="token operator">-</span><span class="token keyword">Int</span> W1 <span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> W0 <span class="token operator">*</span>Word W1 <span class="token operator">=&gt;</span> chop<span class="token punctuation">(</span> W0 <span class="token operator">*</span><span class="token keyword">Int</span> W1 <span class="token punctuation">)</span>
+    <span class="token keyword">rule</span>  _ <span class="token operator">/</span>Word W1 <span class="token operator">=&gt;</span> <span class="token number">0</span>            <span class="token keyword">requires</span> W1  <span class="token operator">==</span><span class="token keyword">Int</span> <span class="token number">0</span>
+    <span class="token keyword">rule</span> W0 <span class="token operator">/</span>Word W1 <span class="token operator">=&gt;</span> W0 <span class="token operator">/</span><span class="token keyword">Int</span> W1   <span class="token keyword">requires</span> W1 <span class="token operator">=</span><span class="token operator">/</span><span class="token operator">=</span><span class="token keyword">Int</span> <span class="token number">0</span>
+    <span class="token keyword">rule</span>  _ <span class="token operator">%</span>Word W1 <span class="token operator">=&gt;</span> <span class="token number">0</span>            <span class="token keyword">requires</span> W1  <span class="token operator">==</span><span class="token keyword">Int</span> <span class="token number">0</span>
+    <span class="token keyword">rule</span> W0 <span class="token operator">%</span>Word W1 <span class="token operator">=&gt;</span> W0 modInt W1 <span class="token keyword">requires</span> W1 <span class="token operator">=</span><span class="token operator">/</span><span class="token operator">=</span><span class="token keyword">Int</span> <span class="token number">0</span>
+</code></pre>
+<p>Care is needed for <code>^Word</code> to avoid big exponentiation.
+The helper <code>powmod</code> is a totalization of the operator <code>_^%Int__</code> (which comes with K).
+<code>_^%Int__</code> is not defined when the modulus (third argument) is zero, but <code>powmod</code> is.</p>
+<pre><code class="language-k">    <span class="token keyword">syntax</span> <span class="token keyword">Int</span> <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> <span class="token keyword">Int</span> <span class="token string">"^Word"</span> <span class="token keyword">Int</span>       <span class="token punctuation">[</span>function<span class="token punctuation">,</span> total<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> powmod<span class="token punctuation">(</span><span class="token keyword">Int</span><span class="token punctuation">,</span> <span class="token keyword">Int</span><span class="token punctuation">,</span> <span class="token keyword">Int</span><span class="token punctuation">)</span> <span class="token punctuation">[</span><span class="token class-name">symbol</span><span class="token punctuation">(</span>powmod<span class="token punctuation">)</span><span class="token punctuation">,</span> function<span class="token punctuation">,</span> total<span class="token punctuation">]</span>
+ <span class="token comment">// ----------------------------------------------------------------------</span>
+    <span class="token keyword">rule</span> W0 <span class="token operator">^</span>Word W1 <span class="token operator">=&gt;</span> powmod<span class="token punctuation">(</span>W0<span class="token punctuation">,</span> W1<span class="token punctuation">,</span> pow256<span class="token punctuation">)</span>
+
+    <span class="token keyword">rule</span> <span class="token punctuation">[</span>powmod<span class="token punctuation">.</span>nonzero<span class="token punctuation">]</span><span class="token punctuation">:</span> powmod<span class="token punctuation">(</span>W0<span class="token punctuation">,</span> W1<span class="token punctuation">,</span> W2<span class="token punctuation">)</span> <span class="token operator">=&gt;</span> W0 <span class="token operator">^</span><span class="token operator">%</span><span class="token keyword">Int</span> W1 W2  <span class="token keyword">requires</span> W2 <span class="token operator">=</span><span class="token operator">/</span><span class="token operator">=</span><span class="token keyword">Int</span> <span class="token number">0</span> <span class="token punctuation">[</span>concrete<span class="token punctuation">]</span>
+    <span class="token keyword">rule</span> <span class="token punctuation">[</span>powmod<span class="token punctuation">.</span>zero<span class="token punctuation">]</span><span class="token punctuation">:</span>    powmod<span class="token punctuation">(</span> _<span class="token punctuation">,</span>  _<span class="token punctuation">,</span> W2<span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">0</span>               <span class="token keyword">requires</span> W2  <span class="token operator">==</span><span class="token keyword">Int</span> <span class="token number">0</span> <span class="token punctuation">[</span>concrete<span class="token punctuation">]</span>
+</code></pre>
+<p><code>/sWord</code> and <code>%sWord</code> give the signed interperetations of <code>/Word</code> and <code>%Word</code>.</p>
+<pre><code class="language-k">    <span class="token keyword">syntax</span> <span class="token keyword">Int</span> <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> <span class="token keyword">Int</span> <span class="token string">"/sWord"</span> <span class="token keyword">Int</span> <span class="token punctuation">[</span>function<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token keyword">Int</span> <span class="token string">"%sWord"</span> <span class="token keyword">Int</span> <span class="token punctuation">[</span>function<span class="token punctuation">]</span>
+ <span class="token comment">// ------------------------------------------</span>
+    <span class="token keyword">rule</span> <span class="token punctuation">[</span>divSWord<span class="token punctuation">.</span>same<span class="token punctuation">]</span><span class="token punctuation">:</span> W0 <span class="token operator">/</span>sWord W1 <span class="token operator">=&gt;</span>          abs<span class="token punctuation">(</span>W0<span class="token punctuation">)</span> <span class="token operator">/</span>Word abs<span class="token punctuation">(</span>W1<span class="token punctuation">)</span>  <span class="token keyword">requires</span> sgn<span class="token punctuation">(</span>W0<span class="token punctuation">)</span> <span class="token operator">*</span><span class="token keyword">Int</span> sgn<span class="token punctuation">(</span>W1<span class="token punctuation">)</span> <span class="token operator">==</span><span class="token keyword">Int</span>  <span class="token number">1</span>
+    <span class="token keyword">rule</span> <span class="token punctuation">[</span>divSWord<span class="token punctuation">.</span>diff<span class="token punctuation">]</span><span class="token punctuation">:</span> W0 <span class="token operator">/</span>sWord W1 <span class="token operator">=&gt;</span> <span class="token number">0</span> <span class="token operator">-</span>Word <span class="token punctuation">(</span>abs<span class="token punctuation">(</span>W0<span class="token punctuation">)</span> <span class="token operator">/</span>Word abs<span class="token punctuation">(</span>W1<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token keyword">requires</span> sgn<span class="token punctuation">(</span>W0<span class="token punctuation">)</span> <span class="token operator">*</span><span class="token keyword">Int</span> sgn<span class="token punctuation">(</span>W1<span class="token punctuation">)</span> <span class="token operator">==</span><span class="token keyword">Int</span> <span class="token operator">-</span><span class="token number">1</span>
+    <span class="token keyword">rule</span> <span class="token punctuation">[</span>modSWord<span class="token punctuation">.</span>pos<span class="token punctuation">]</span><span class="token punctuation">:</span>  W0 <span class="token operator">%</span>sWord W1 <span class="token operator">=&gt;</span>          abs<span class="token punctuation">(</span>W0<span class="token punctuation">)</span> <span class="token operator">%</span>Word abs<span class="token punctuation">(</span>W1<span class="token punctuation">)</span>  <span class="token keyword">requires</span> sgn<span class="token punctuation">(</span>W0<span class="token punctuation">)</span> <span class="token operator">==</span><span class="token keyword">Int</span>  <span class="token number">1</span>
+    <span class="token keyword">rule</span> <span class="token punctuation">[</span>modSWord<span class="token punctuation">.</span>neg<span class="token punctuation">]</span><span class="token punctuation">:</span>  W0 <span class="token operator">%</span>sWord W1 <span class="token operator">=&gt;</span> <span class="token number">0</span> <span class="token operator">-</span>Word <span class="token punctuation">(</span>abs<span class="token punctuation">(</span>W0<span class="token punctuation">)</span> <span class="token operator">%</span>Word abs<span class="token punctuation">(</span>W1<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token keyword">requires</span> sgn<span class="token punctuation">(</span>W0<span class="token punctuation">)</span> <span class="token operator">==</span><span class="token keyword">Int</span> <span class="token operator">-</span><span class="token number">1</span>
+</code></pre>
+<h3 id="word-comparison">Word Comparison</h3>
+<p>The <code>&lt;op&gt;Word</code> comparisons similarly lift K operators to EVM ones:</p>
+<pre><code class="language-k">    <span class="token keyword">syntax</span> <span class="token keyword">Int</span> <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> <span class="token keyword">Int</span> <span class="token string">"&lt;Word"</span>  <span class="token keyword">Int</span> <span class="token punctuation">[</span>function<span class="token punctuation">,</span> total<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token keyword">Int</span> <span class="token string">"&gt;Word"</span>  <span class="token keyword">Int</span> <span class="token punctuation">[</span>function<span class="token punctuation">,</span> total<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token keyword">Int</span> <span class="token string">"&lt;=Word"</span> <span class="token keyword">Int</span> <span class="token punctuation">[</span>function<span class="token punctuation">,</span> total<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token keyword">Int</span> <span class="token string">"&gt;=Word"</span> <span class="token keyword">Int</span> <span class="token punctuation">[</span>function<span class="token punctuation">,</span> total<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token keyword">Int</span> <span class="token string">"==Word"</span> <span class="token keyword">Int</span> <span class="token punctuation">[</span>function<span class="token punctuation">,</span> total<span class="token punctuation">]</span>
+ <span class="token comment">// -------------------------------------------------</span>
+    <span class="token keyword">rule</span> W0 &lt;Word  W1 <span class="token operator">=&gt;</span> bool2Word<span class="token punctuation">(</span>W0 <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>Int</span>  <span class="token attr-name">W1)</span>
+    <span class="token attr-name">rule</span> <span class="token attr-name">W0</span> <span class="token punctuation">&gt;</span></span>Word  W1 <span class="token operator">=&gt;</span> bool2Word<span class="token punctuation">(</span>W0 &gt;<span class="token keyword">Int</span>  W1<span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> W0 <span class="token operator">&lt;=</span>Word W1 <span class="token operator">=&gt;</span> bool2Word<span class="token punctuation">(</span>W0 <span class="token operator">&lt;=</span><span class="token keyword">Int</span> W1<span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> W0 <span class="token operator">&gt;=</span>Word W1 <span class="token operator">=&gt;</span> bool2Word<span class="token punctuation">(</span>W0 <span class="token operator">&gt;=</span><span class="token keyword">Int</span> W1<span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> W0 <span class="token operator">==</span>Word W1 <span class="token operator">=&gt;</span> bool2Word<span class="token punctuation">(</span>W0 <span class="token operator">==</span><span class="token keyword">Int</span> W1<span class="token punctuation">)</span>
+</code></pre>
+<ul>
+<li><code>s&lt;Word</code> implements a less-than for <code>Word</code> (with signed interperetation).</li>
+</ul>
+<pre><code class="language-k">    <span class="token keyword">syntax</span> <span class="token keyword">Int</span> <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> <span class="token keyword">Int</span> <span class="token string">"s&lt;Word"</span> <span class="token keyword">Int</span> <span class="token punctuation">[</span>function<span class="token punctuation">,</span> total<span class="token punctuation">]</span>
+ <span class="token comment">// -------------------------------------------------</span>
+    <span class="token keyword">rule</span> <span class="token punctuation">[</span>s&lt;Word<span class="token punctuation">.</span>pp<span class="token punctuation">]</span><span class="token punctuation">:</span> W0 s&lt;Word W1 <span class="token operator">=&gt;</span> W0 &lt;Word W1           <span class="token keyword">requires</span> sgn<span class="token punctuation">(</span>W0<span class="token punctuation">)</span> <span class="token operator">==</span>K <span class="token number">1</span>  andBool sgn<span class="token punctuation">(</span>W1<span class="token punctuation">)</span> <span class="token operator">==</span>K <span class="token number">1</span>
+    <span class="token keyword">rule</span> <span class="token punctuation">[</span>s&lt;Word<span class="token punctuation">.</span>pn<span class="token punctuation">]</span><span class="token punctuation">:</span> W0 s&lt;Word W1 <span class="token operator">=&gt;</span> bool2Word<span class="token punctuation">(</span><span class="token boolean">false</span><span class="token punctuation">)</span>      <span class="token keyword">requires</span> sgn<span class="token punctuation">(</span>W0<span class="token punctuation">)</span> <span class="token operator">==</span>K <span class="token number">1</span>  andBool sgn<span class="token punctuation">(</span>W1<span class="token punctuation">)</span> <span class="token operator">==</span>K <span class="token operator">-</span><span class="token number">1</span>
+    <span class="token keyword">rule</span> <span class="token punctuation">[</span>s&lt;Word<span class="token punctuation">.</span>np<span class="token punctuation">]</span><span class="token punctuation">:</span> W0 s&lt;Word W1 <span class="token operator">=&gt;</span> bool2Word<span class="token punctuation">(</span><span class="token boolean">true</span><span class="token punctuation">)</span>       <span class="token keyword">requires</span> sgn<span class="token punctuation">(</span>W0<span class="token punctuation">)</span> <span class="token operator">==</span>K <span class="token operator">-</span><span class="token number">1</span> andBool sgn<span class="token punctuation">(</span>W1<span class="token punctuation">)</span> <span class="token operator">==</span>K <span class="token number">1</span>
+    <span class="token keyword">rule</span> <span class="token punctuation">[</span>s&lt;Word<span class="token punctuation">.</span>nn<span class="token punctuation">]</span><span class="token punctuation">:</span> W0 s&lt;Word W1 <span class="token operator">=&gt;</span> abs<span class="token punctuation">(</span>W1<span class="token punctuation">)</span> &lt;Word abs<span class="token punctuation">(</span>W0<span class="token punctuation">)</span> <span class="token keyword">requires</span> sgn<span class="token punctuation">(</span>W0<span class="token punctuation">)</span> <span class="token operator">==</span>K <span class="token operator">-</span><span class="token number">1</span> andBool sgn<span class="token punctuation">(</span>W1<span class="token punctuation">)</span> <span class="token operator">==</span>K <span class="token operator">-</span><span class="token number">1</span>
+</code></pre>
+<h3 id="bitwise-operators">Bitwise Operators</h3>
+<p>Bitwise logical operators are lifted from the integer versions.</p>
+<pre><code class="language-k">    <span class="token keyword">syntax</span> <span class="token keyword">Int</span> <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> <span class="token string">"~Word"</span> <span class="token keyword">Int</span>       <span class="token punctuation">[</span>function<span class="token punctuation">,</span> total<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token keyword">Int</span> <span class="token string">"|Word"</span>   <span class="token keyword">Int</span> <span class="token punctuation">[</span>function<span class="token punctuation">,</span> total<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token keyword">Int</span> <span class="token string">"&amp;Word"</span>   <span class="token keyword">Int</span> <span class="token punctuation">[</span>function<span class="token punctuation">,</span> total<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token keyword">Int</span> <span class="token string">"xorWord"</span> <span class="token keyword">Int</span> <span class="token punctuation">[</span>function<span class="token punctuation">,</span> total<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token keyword">Int</span> <span class="token string">"&lt;&lt;Word"</span>  <span class="token keyword">Int</span> <span class="token punctuation">[</span>function<span class="token punctuation">,</span> total<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token keyword">Int</span> <span class="token string">"&gt;&gt;Word"</span>  <span class="token keyword">Int</span> <span class="token punctuation">[</span>function<span class="token punctuation">,</span> total<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token keyword">Int</span> <span class="token string">"&gt;&gt;sWord"</span> <span class="token keyword">Int</span> <span class="token punctuation">[</span>function<span class="token punctuation">,</span> total<span class="token punctuation">]</span>
+ <span class="token comment">// --------------------------------------------------</span>
+    <span class="token keyword">rule</span> <span class="token operator">~</span>Word W       <span class="token operator">=&gt;</span> W xorInt maxUInt256
+    <span class="token keyword">rule</span> W0 <span class="token operator">|</span>Word   W1 <span class="token operator">=&gt;</span> W0 <span class="token operator">|</span><span class="token keyword">Int</span> W1
+    <span class="token keyword">rule</span> W0 <span class="token operator">&amp;</span>Word   W1 <span class="token operator">=&gt;</span> W0 <span class="token operator">&amp;</span><span class="token keyword">Int</span> W1
+    <span class="token keyword">rule</span> W0 xorWord W1 <span class="token operator">=&gt;</span> W0 xorInt W1
+    <span class="token keyword">rule</span> W0 &lt;&lt;Word  W1 <span class="token operator">=&gt;</span> chop<span class="token punctuation">(</span> W0 &lt;&lt;<span class="token keyword">Int</span> W1 <span class="token punctuation">)</span> <span class="token keyword">requires</span> <span class="token number">0</span> <span class="token operator">&lt;=</span><span class="token keyword">Int</span> W0 andBool <span class="token number">0</span> <span class="token operator">&lt;=</span><span class="token keyword">Int</span> W1 andBool W1 &lt;<span class="token keyword">Int</span> <span class="token number">256</span>
+    <span class="token keyword">rule</span>  _ &lt;&lt;Word  _  <span class="token operator">=&gt;</span> <span class="token number">0</span> <span class="token punctuation">[</span>owise<span class="token punctuation">]</span>
+    <span class="token keyword">rule</span> W0 &gt;&gt;Word  W1 <span class="token operator">=&gt;</span> W0 &gt;&gt;<span class="token keyword">Int</span> W1 <span class="token keyword">requires</span> <span class="token number">0</span> <span class="token operator">&lt;=</span><span class="token keyword">Int</span> W0 andBool <span class="token number">0</span> <span class="token operator">&lt;=</span><span class="token keyword">Int</span> W1
+    <span class="token keyword">rule</span>  _ &gt;&gt;Word   _ <span class="token operator">=&gt;</span> <span class="token number">0</span> <span class="token punctuation">[</span>owise<span class="token punctuation">]</span>
+    <span class="token keyword">rule</span> W0 &gt;&gt;sWord W1 <span class="token operator">=&gt;</span> chop<span class="token punctuation">(</span> <span class="token punctuation">(</span>abs<span class="token punctuation">(</span>W0<span class="token punctuation">)</span> <span class="token operator">*</span><span class="token keyword">Int</span> sgn<span class="token punctuation">(</span>W0<span class="token punctuation">)</span><span class="token punctuation">)</span> &gt;&gt;<span class="token keyword">Int</span> W1 <span class="token punctuation">)</span> <span class="token keyword">requires</span> <span class="token number">0</span> <span class="token operator">&lt;=</span><span class="token keyword">Int</span> W0 andBool <span class="token number">0</span> <span class="token operator">&lt;=</span><span class="token keyword">Int</span> W1
+    <span class="token keyword">rule</span>  _ &gt;&gt;sWord  _ <span class="token operator">=&gt;</span> <span class="token number">0</span> <span class="token punctuation">[</span>owise<span class="token punctuation">]</span>
+</code></pre>
+<ul>
+<li><code>bit</code> gets bit <code>N</code> (0 being MSB).</li>
+<li><code>byte</code> gets byte <code>N</code> (0 being the MSB).</li>
+</ul>
+<pre><code class="language-k">    <span class="token keyword">syntax</span> <span class="token keyword">Int</span> <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> bit  <span class="token punctuation">(</span> <span class="token keyword">Int</span> <span class="token punctuation">,</span> <span class="token keyword">Int</span> <span class="token punctuation">)</span> <span class="token punctuation">[</span><span class="token class-name">symbol</span><span class="token punctuation">(</span>bit<span class="token punctuation">)</span><span class="token punctuation">,</span> function<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> byte <span class="token punctuation">(</span> <span class="token keyword">Int</span> <span class="token punctuation">,</span> <span class="token keyword">Int</span> <span class="token punctuation">)</span> <span class="token punctuation">[</span><span class="token class-name">symbol</span><span class="token punctuation">(</span>byte<span class="token punctuation">)</span><span class="token punctuation">,</span> function<span class="token punctuation">]</span>
+ <span class="token comment">// ----------------------------------------------------------</span>
+    <span class="token keyword">rule</span> bit <span class="token punctuation">(</span>N<span class="token punctuation">,</span> _<span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">0</span> <span class="token keyword">requires</span> notBool <span class="token punctuation">(</span>N <span class="token operator">&gt;=</span><span class="token keyword">Int</span> <span class="token number">0</span> andBool N &lt;<span class="token keyword">Int</span> <span class="token number">256</span><span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> byte<span class="token punctuation">(</span>N<span class="token punctuation">,</span> _<span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">0</span> <span class="token keyword">requires</span> notBool <span class="token punctuation">(</span>N <span class="token operator">&gt;=</span><span class="token keyword">Int</span> <span class="token number">0</span> andBool N &lt;<span class="token keyword">Int</span>  <span class="token number">32</span><span class="token punctuation">)</span>
+
+    <span class="token keyword">rule</span> bit <span class="token punctuation">(</span>N<span class="token punctuation">,</span> W<span class="token punctuation">)</span> <span class="token operator">=&gt;</span> bitRangeInt<span class="token punctuation">(</span>W <span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token number">255</span> <span class="token operator">-</span><span class="token keyword">Int</span> N<span class="token punctuation">)</span>        <span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span> <span class="token keyword">requires</span> N <span class="token operator">&gt;=</span><span class="token keyword">Int</span> <span class="token number">0</span> andBool N &lt;<span class="token keyword">Int</span> <span class="token number">256</span>
+    <span class="token keyword">rule</span> byte<span class="token punctuation">(</span>N<span class="token punctuation">,</span> W<span class="token punctuation">)</span> <span class="token operator">=&gt;</span> bitRangeInt<span class="token punctuation">(</span>W <span class="token punctuation">,</span> <span class="token punctuation">(</span> <span class="token number">31</span> <span class="token operator">-</span><span class="token keyword">Int</span> N<span class="token punctuation">)</span> <span class="token operator">*</span><span class="token keyword">Int</span> <span class="token number">8</span> <span class="token punctuation">,</span> <span class="token number">8</span><span class="token punctuation">)</span> <span class="token keyword">requires</span> N <span class="token operator">&gt;=</span><span class="token keyword">Int</span> <span class="token number">0</span> andBool N &lt;<span class="token keyword">Int</span>  <span class="token number">32</span>
+</code></pre>
+<ul>
+<li><code>#nBits</code> shifts in <code>N</code> ones from the right.</li>
+<li><code>#nBytes</code> shifts in <code>N</code> bytes of ones from the right.</li>
+</ul>
+<pre><code class="language-k">    <span class="token keyword">syntax</span> <span class="token keyword">Int</span> <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> #nBits  <span class="token punctuation">(</span> <span class="token keyword">Int</span> <span class="token punctuation">)</span>  <span class="token punctuation">[</span><span class="token class-name">symbol</span><span class="token punctuation">(</span>#nBits<span class="token punctuation">)</span><span class="token punctuation">,</span> function<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> #nBytes <span class="token punctuation">(</span> <span class="token keyword">Int</span> <span class="token punctuation">)</span>  <span class="token punctuation">[</span><span class="token class-name">symbol</span><span class="token punctuation">(</span>#nBytes<span class="token punctuation">)</span><span class="token punctuation">,</span> function<span class="token punctuation">]</span>
+ <span class="token comment">// -----------------------------------------------------------</span>
+    <span class="token keyword">rule</span> #nBits<span class="token punctuation">(</span>N<span class="token punctuation">)</span>  <span class="token operator">=&gt;</span> <span class="token punctuation">(</span><span class="token number">1</span> &lt;<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>Int</span> <span class="token attr-name">N)</span> <span class="token attr-name">-Int</span> <span class="token attr-name">1</span> <span class="token attr-name">requires</span> <span class="token attr-name">N</span> <span class="token punctuation">&gt;</span></span><span class="token operator">=</span><span class="token keyword">Int</span> <span class="token number">0</span>
+    <span class="token keyword">rule</span> #nBytes<span class="token punctuation">(</span>N<span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #nBits<span class="token punctuation">(</span>N <span class="token operator">*</span><span class="token keyword">Int</span> <span class="token number">8</span><span class="token punctuation">)</span>   <span class="token keyword">requires</span> N <span class="token operator">&gt;=</span><span class="token keyword">Int</span> <span class="token number">0</span>
+</code></pre>
+<ul>
+<li><code>signextend(N, W)</code> sign-extends from byte <code>N</code> of <code>W</code> (0 being MSB).</li>
+</ul>
+<pre><code class="language-k">    <span class="token keyword">syntax</span> <span class="token keyword">Int</span> <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> signextend<span class="token punctuation">(</span> <span class="token keyword">Int</span> <span class="token punctuation">,</span> <span class="token keyword">Int</span> <span class="token punctuation">)</span> <span class="token punctuation">[</span><span class="token class-name">symbol</span><span class="token punctuation">(</span>signextend<span class="token punctuation">)</span><span class="token punctuation">,</span> function<span class="token punctuation">,</span> total<span class="token punctuation">]</span>
+ <span class="token comment">// ----------------------------------------------------------------------------</span>
+    <span class="token keyword">rule</span> <span class="token punctuation">[</span>signextend<span class="token punctuation">.</span>invalid<span class="token punctuation">]</span><span class="token punctuation">:</span>  signextend<span class="token punctuation">(</span>N<span class="token punctuation">,</span> W<span class="token punctuation">)</span> <span class="token operator">=&gt;</span> W <span class="token keyword">requires</span> N <span class="token operator">&gt;=</span><span class="token keyword">Int</span> <span class="token number">32</span> orBool N &lt;<span class="token keyword">Int</span> <span class="token number">0</span>                                                                                                                      <span class="token punctuation">[</span>concrete<span class="token punctuation">]</span>
+    <span class="token keyword">rule</span> <span class="token punctuation">[</span>signextend<span class="token punctuation">.</span>negative<span class="token punctuation">]</span><span class="token punctuation">:</span> signextend<span class="token punctuation">(</span>N<span class="token punctuation">,</span> W<span class="token punctuation">)</span> <span class="token operator">=&gt;</span> chop<span class="token punctuation">(</span> <span class="token punctuation">(</span>#nBytes<span class="token punctuation">(</span><span class="token number">31</span> <span class="token operator">-</span><span class="token keyword">Int</span> N<span class="token punctuation">)</span> &lt;<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>Byte</span> <span class="token attr-name">(N</span> <span class="token attr-name">+Int</span> <span class="token attr-name">1))</span> <span class="token attr-name">|Int</span> <span class="token attr-name">W</span> <span class="token attr-name">)</span> <span class="token attr-name">requires</span> <span class="token attr-name">N</span> <span class="token attr-name">&lt;Int</span> <span class="token attr-name">32</span> <span class="token attr-name">andBool</span> <span class="token attr-name">N</span> <span class="token punctuation">&gt;</span></span><span class="token operator">=</span><span class="token keyword">Int</span> <span class="token number">0</span> andBool         word2Bool<span class="token punctuation">(</span>bit<span class="token punctuation">(</span><span class="token number">256</span> <span class="token operator">-</span><span class="token keyword">Int</span> <span class="token punctuation">(</span><span class="token number">8</span> <span class="token operator">*</span><span class="token keyword">Int</span> <span class="token punctuation">(</span>N <span class="token operator">+</span><span class="token keyword">Int</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span> W<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">[</span>concrete<span class="token punctuation">]</span>
+    <span class="token keyword">rule</span> <span class="token punctuation">[</span>signextend<span class="token punctuation">.</span>positive<span class="token punctuation">]</span><span class="token punctuation">:</span> signextend<span class="token punctuation">(</span>N<span class="token punctuation">,</span> W<span class="token punctuation">)</span> <span class="token operator">=&gt;</span> chop<span class="token punctuation">(</span> #nBytes<span class="token punctuation">(</span>N <span class="token operator">+</span><span class="token keyword">Int</span> <span class="token number">1</span><span class="token punctuation">)</span>                      <span class="token operator">&amp;</span><span class="token keyword">Int</span> W <span class="token punctuation">)</span> <span class="token keyword">requires</span> N <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>Int</span> <span class="token attr-name">32</span> <span class="token attr-name">andBool</span> <span class="token attr-name">N</span> <span class="token punctuation">&gt;</span></span><span class="token operator">=</span><span class="token keyword">Int</span> <span class="token number">0</span> andBool notBool word2Bool<span class="token punctuation">(</span>bit<span class="token punctuation">(</span><span class="token number">256</span> <span class="token operator">-</span><span class="token keyword">Int</span> <span class="token punctuation">(</span><span class="token number">8</span> <span class="token operator">*</span><span class="token keyword">Int</span> <span class="token punctuation">(</span>N <span class="token operator">+</span><span class="token keyword">Int</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span> W<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">[</span>concrete<span class="token punctuation">]</span>
+</code></pre>
+<h2 id="a-wordstack-for-evm">A WordStack for EVM</h2>
+<h3 id="as-a-cons-list">As a cons-list</h3>
+<p>A cons-list is used for the EVM wordstack.</p>
+<ul>
+<li><code>.WordStack</code> serves as the empty worstack, and</li>
+<li><code>_:_</code> serves as the "cons" operator.</li>
+</ul>
+<pre><code class="language-k">    <span class="token keyword">syntax</span> WordStack <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> <span class="token string">".WordStack"</span>      <span class="token punctuation">[</span>smtlib<span class="token punctuation">(</span>_dotWS<span class="token punctuation">)</span><span class="token punctuation">]</span>
+                       <span class="token operator">|</span> <span class="token keyword">Int</span> <span class="token string">":"</span> WordStack <span class="token punctuation">[</span>smtlib<span class="token punctuation">(</span>_WS_<span class="token punctuation">)</span><span class="token punctuation">]</span>
+ <span class="token comment">// -----------------------------------------------------</span>
+</code></pre>
+<pre><code class="language-k">    <span class="token keyword">syntax</span> Bytes <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> <span class="token keyword">Int</span> <span class="token string">":"</span> Bytes <span class="token punctuation">[</span>function<span class="token punctuation">]</span>
+ <span class="token comment">// -----------------------------------------</span>
+    <span class="token keyword">rule</span> I <span class="token punctuation">:</span> BS <span class="token operator">=&gt;</span> Int2Bytes<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> I<span class="token punctuation">,</span> BE<span class="token punctuation">)</span> <span class="token operator">+</span>Bytes BS <span class="token keyword">requires</span> I &lt;<span class="token keyword">Int</span> <span class="token number">256</span>
+</code></pre>
+<ul>
+<li><code>#take(N , WS)</code> keeps the first <code>N</code> elements of a <code>WordStack</code> (passing with zeros as needed).</li>
+<li><code>#drop(N , WS)</code> removes the first <code>N</code> elements of a <code>WordStack</code>.</li>
+</ul>
+<pre><code class="language-k">    <span class="token keyword">syntax</span> WordStack <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> #take <span class="token punctuation">(</span> <span class="token keyword">Int</span> <span class="token punctuation">,</span> WordStack <span class="token punctuation">)</span> <span class="token punctuation">[</span><span class="token class-name">symbol</span><span class="token punctuation">(</span>takeWordStack<span class="token punctuation">)</span><span class="token punctuation">,</span> function<span class="token punctuation">,</span> total<span class="token punctuation">]</span>
+ <span class="token comment">// ---------------------------------------------------------------------------------------</span>
+    <span class="token keyword">rule</span> <span class="token punctuation">[</span>#take<span class="token punctuation">.</span>base<span class="token punctuation">]</span><span class="token punctuation">:</span>      #take<span class="token punctuation">(</span>N<span class="token punctuation">,</span> _WS<span class="token punctuation">)</span>                <span class="token operator">=&gt;</span> <span class="token punctuation">.</span>WordStack                      <span class="token keyword">requires</span> notBool N &gt;<span class="token keyword">Int</span> <span class="token number">0</span>
+    <span class="token keyword">rule</span> <span class="token punctuation">[</span>#take<span class="token punctuation">.</span>zero<span class="token operator">-</span>pad<span class="token punctuation">]</span><span class="token punctuation">:</span>  #take<span class="token punctuation">(</span>N<span class="token punctuation">,</span> <span class="token punctuation">.</span>WordStack<span class="token punctuation">)</span>         <span class="token operator">=&gt;</span> <span class="token number">0</span> <span class="token punctuation">:</span> #take<span class="token punctuation">(</span>N <span class="token operator">-</span><span class="token keyword">Int</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token punctuation">.</span>WordStack<span class="token punctuation">)</span> <span class="token keyword">requires</span> N &gt;<span class="token keyword">Int</span> <span class="token number">0</span>
+    <span class="token keyword">rule</span> <span class="token punctuation">[</span>#take<span class="token punctuation">.</span>recursive<span class="token punctuation">]</span><span class="token punctuation">:</span> #take<span class="token punctuation">(</span>N<span class="token punctuation">,</span> <span class="token punctuation">(</span>W <span class="token punctuation">:</span> WS<span class="token punctuation">)</span><span class="token punctuation">:</span>WordStack<span class="token punctuation">)</span> <span class="token operator">=&gt;</span> W <span class="token punctuation">:</span> #take<span class="token punctuation">(</span>N <span class="token operator">-</span><span class="token keyword">Int</span> <span class="token number">1</span><span class="token punctuation">,</span> WS<span class="token punctuation">)</span>         <span class="token keyword">requires</span> N &gt;<span class="token keyword">Int</span> <span class="token number">0</span>
+
+    <span class="token keyword">syntax</span> WordStack <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> #drop <span class="token punctuation">(</span> <span class="token keyword">Int</span> <span class="token punctuation">,</span> WordStack <span class="token punctuation">)</span> <span class="token punctuation">[</span><span class="token class-name">symbol</span><span class="token punctuation">(</span>dropWordStack<span class="token punctuation">)</span><span class="token punctuation">,</span> function<span class="token punctuation">,</span> total<span class="token punctuation">]</span>
+ <span class="token comment">// ---------------------------------------------------------------------------------------</span>
+    <span class="token keyword">rule</span> #drop<span class="token punctuation">(</span>N<span class="token punctuation">,</span> WS<span class="token punctuation">:</span>WordStack<span class="token punctuation">)</span>       <span class="token operator">=&gt;</span> WS                                  <span class="token keyword">requires</span> notBool N &gt;<span class="token keyword">Int</span> <span class="token number">0</span>
+    <span class="token keyword">rule</span> #drop<span class="token punctuation">(</span>N<span class="token punctuation">,</span> <span class="token punctuation">.</span>WordStack<span class="token punctuation">)</span>         <span class="token operator">=&gt;</span> <span class="token punctuation">.</span>WordStack                          <span class="token keyword">requires</span>         N &gt;<span class="token keyword">Int</span> <span class="token number">0</span>
+    <span class="token keyword">rule</span> #drop<span class="token punctuation">(</span>N<span class="token punctuation">,</span> <span class="token punctuation">(</span>W <span class="token punctuation">:</span> WS<span class="token punctuation">)</span><span class="token punctuation">:</span>WordStack<span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #drop<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> #drop<span class="token punctuation">(</span>N <span class="token operator">-</span><span class="token keyword">Int</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token punctuation">(</span>W <span class="token punctuation">:</span> WS<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token keyword">requires</span>         N &gt;<span class="token keyword">Int</span> <span class="token number">1</span>
+    <span class="token keyword">rule</span> #drop<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token punctuation">(</span>_ <span class="token punctuation">:</span> WS<span class="token punctuation">)</span><span class="token punctuation">:</span>WordStack<span class="token punctuation">)</span> <span class="token operator">=&gt;</span> WS
+</code></pre>
+<h3 id="element-access">Element Access</h3>
+<ul>
+<li><code>WS [ N ]</code> accesses element <code>N</code> of <code>WS</code>.</li>
+<li><code>WS [ N := W ]</code> sets element <code>N</code> of <code>WS</code> to <code>W</code> (padding with zeros as needed).</li>
+</ul>
+<pre><code class="language-k">    <span class="token keyword">syntax</span> <span class="token keyword">Int</span> <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> WordStack <span class="token string">"["</span> <span class="token keyword">Int</span> <span class="token string">"]"</span> <span class="token punctuation">[</span>function<span class="token punctuation">,</span> total<span class="token punctuation">]</span>
+ <span class="token comment">// ------------------------------------------------------</span>
+    <span class="token keyword">rule</span> <span class="token punctuation">(</span>W <span class="token punctuation">:</span> _<span class="token punctuation">)</span><span class="token punctuation">:</span>WordStack <span class="token punctuation">[</span> N <span class="token punctuation">]</span> <span class="token operator">=&gt;</span> W                  <span class="token keyword">requires</span> N <span class="token operator">==</span><span class="token keyword">Int</span> <span class="token number">0</span>
+    <span class="token keyword">rule</span> WS<span class="token punctuation">:</span>WordStack      <span class="token punctuation">[</span> N <span class="token punctuation">]</span> <span class="token operator">=&gt;</span> #drop<span class="token punctuation">(</span>N<span class="token punctuation">,</span> WS<span class="token punctuation">)</span> <span class="token punctuation">[</span> <span class="token number">0</span> <span class="token punctuation">]</span> <span class="token keyword">requires</span> N  &gt;<span class="token keyword">Int</span> <span class="token number">0</span>
+    <span class="token keyword">rule</span>  _<span class="token punctuation">:</span>WordStack      <span class="token punctuation">[</span> N <span class="token punctuation">]</span> <span class="token operator">=&gt;</span> <span class="token number">0</span>                  <span class="token keyword">requires</span> N  &lt;<span class="token keyword">Int</span> <span class="token number">0</span>
+
+    <span class="token keyword">syntax</span> WordStack <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> WordStack <span class="token string">"["</span> <span class="token keyword">Int</span> <span class="token string">":="</span> <span class="token keyword">Int</span> <span class="token string">"]"</span> <span class="token punctuation">[</span>function<span class="token punctuation">,</span> total<span class="token punctuation">]</span>
+ <span class="token comment">// ---------------------------------------------------------------------</span>
+    <span class="token keyword">rule</span> <span class="token punctuation">(</span>_W0 <span class="token punctuation">:</span> WS<span class="token punctuation">)</span><span class="token punctuation">:</span>WordStack <span class="token punctuation">[</span> N <span class="token punctuation">:</span><span class="token operator">=</span> W <span class="token punctuation">]</span> <span class="token operator">=&gt;</span> W  <span class="token punctuation">:</span> WS                     <span class="token keyword">requires</span> N <span class="token operator">==</span><span class="token keyword">Int</span> <span class="token number">0</span>
+    <span class="token keyword">rule</span> <span class="token punctuation">(</span> W0 <span class="token punctuation">:</span> WS<span class="token punctuation">)</span><span class="token punctuation">:</span>WordStack <span class="token punctuation">[</span> N <span class="token punctuation">:</span><span class="token operator">=</span> W <span class="token punctuation">]</span> <span class="token operator">=&gt;</span> W0 <span class="token punctuation">:</span> <span class="token punctuation">(</span>WS <span class="token punctuation">[</span> N <span class="token operator">-</span><span class="token keyword">Int</span> <span class="token number">1</span> <span class="token punctuation">:</span><span class="token operator">=</span> W <span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token keyword">requires</span> N  &gt;<span class="token keyword">Int</span> <span class="token number">0</span>
+    <span class="token keyword">rule</span>        WS <span class="token punctuation">:</span>WordStack <span class="token punctuation">[</span> N <span class="token punctuation">:</span><span class="token operator">=</span> _ <span class="token punctuation">]</span> <span class="token operator">=&gt;</span> WS                          <span class="token keyword">requires</span> N  &lt;<span class="token keyword">Int</span> <span class="token number">0</span>
+    <span class="token keyword">rule</span> <span class="token punctuation">.</span>WordStack           <span class="token punctuation">[</span> N <span class="token punctuation">:</span><span class="token operator">=</span> W <span class="token punctuation">]</span> <span class="token operator">=&gt;</span> <span class="token punctuation">(</span><span class="token number">0</span> <span class="token punctuation">:</span> <span class="token punctuation">.</span>WordStack<span class="token punctuation">)</span> <span class="token punctuation">[</span> N <span class="token punctuation">:</span><span class="token operator">=</span> W <span class="token punctuation">]</span>
+</code></pre>
+<ul>
+<li><code>#sizeWordStack</code> calculates the size of a <code>WordStack</code>.</li>
+<li><code>_in_</code> determines if a <code>Int</code> occurs in a <code>WordStack</code>.</li>
+</ul>
+<pre><code class="language-k">    <span class="token keyword">syntax</span> <span class="token keyword">Int</span> <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> #sizeWordStack <span class="token punctuation">(</span> WordStack <span class="token punctuation">)</span>       <span class="token punctuation">[</span><span class="token class-name">symbol</span><span class="token punctuation">(</span>#sizeWordStack<span class="token punctuation">)</span><span class="token punctuation">,</span> function<span class="token punctuation">,</span> total<span class="token punctuation">,</span> smtlib<span class="token punctuation">(</span>sizeWordStack<span class="token punctuation">)</span><span class="token punctuation">]</span>
+                 <span class="token operator">|</span> #sizeWordStack <span class="token punctuation">(</span> WordStack <span class="token punctuation">,</span> <span class="token keyword">Int</span> <span class="token punctuation">)</span> <span class="token punctuation">[</span><span class="token class-name">symbol</span><span class="token punctuation">(</span>sizeWordStackAux<span class="token punctuation">)</span><span class="token punctuation">,</span> function<span class="token punctuation">,</span> total<span class="token punctuation">,</span> smtlib<span class="token punctuation">(</span>sizeWordStackAux<span class="token punctuation">)</span><span class="token punctuation">]</span>
+ <span class="token comment">// -----------------------------------------------------------------------------------------------------------------------</span>
+    <span class="token keyword">rule</span> #sizeWordStack <span class="token punctuation">(</span> WS <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #sizeWordStack<span class="token punctuation">(</span>WS<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> #sizeWordStack <span class="token punctuation">(</span> <span class="token punctuation">.</span>WordStack<span class="token punctuation">,</span> SIZE <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> SIZE
+    <span class="token keyword">rule</span> #sizeWordStack <span class="token punctuation">(</span> _ <span class="token punctuation">:</span> WS<span class="token punctuation">,</span> SIZE <span class="token punctuation">)</span>     <span class="token operator">=&gt;</span> #sizeWordStack<span class="token punctuation">(</span>WS<span class="token punctuation">,</span> SIZE <span class="token operator">+</span><span class="token keyword">Int</span> <span class="token number">1</span><span class="token punctuation">)</span>
+
+    <span class="token keyword">syntax</span> <span class="token keyword">Bool</span> <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> <span class="token keyword">Int</span> <span class="token string">"in"</span> WordStack <span class="token punctuation">[</span>function<span class="token punctuation">]</span>
+ <span class="token comment">// ---------------------------------------------</span>
+    <span class="token keyword">rule</span> _ in <span class="token punctuation">.</span>WordStack <span class="token operator">=&gt;</span> <span class="token boolean">false</span>
+    <span class="token keyword">rule</span> W in <span class="token punctuation">(</span>W<span class="token string">' : WS)  =&gt; (W ==K W'</span><span class="token punctuation">)</span> orElseBool <span class="token punctuation">(</span>W in WS<span class="token punctuation">)</span>
+</code></pre>
+<ul>
+<li><code>#replicateAux</code> pushes <code>N</code> copies of <code>A</code> onto a <code>WordStack</code>.</li>
+<li><code>#replicate</code> is a <code>WordStack</code> of length <code>N</code> with <code>A</code> the value of every element.</li>
+</ul>
+<pre><code class="language-k">    <span class="token keyword">syntax</span> WordStack <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> #replicate    <span class="token punctuation">(</span> <span class="token keyword">Int</span><span class="token punctuation">,</span> <span class="token keyword">Int</span> <span class="token punctuation">)</span>            <span class="token punctuation">[</span><span class="token class-name">symbol</span><span class="token punctuation">(</span>#replicate<span class="token punctuation">)</span><span class="token punctuation">,</span> function<span class="token punctuation">,</span> total<span class="token punctuation">]</span>
+                       <span class="token operator">|</span> #replicateAux <span class="token punctuation">(</span> <span class="token keyword">Int</span><span class="token punctuation">,</span> <span class="token keyword">Int</span><span class="token punctuation">,</span> WordStack <span class="token punctuation">)</span> <span class="token punctuation">[</span><span class="token class-name">symbol</span><span class="token punctuation">(</span>#replicateAux<span class="token punctuation">)</span><span class="token punctuation">,</span> function<span class="token punctuation">,</span> total<span class="token punctuation">]</span>
+ <span class="token comment">// ---------------------------------------------------------------------------------------------------</span>
+    <span class="token keyword">rule</span> #replicate   <span class="token punctuation">(</span> N<span class="token punctuation">,</span>  A <span class="token punctuation">)</span>     <span class="token operator">=&gt;</span> #replicateAux<span class="token punctuation">(</span>N<span class="token punctuation">,</span> A<span class="token punctuation">,</span> <span class="token punctuation">.</span>WordStack<span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> #replicateAux<span class="token punctuation">(</span> N<span class="token punctuation">,</span>  A<span class="token punctuation">,</span> WS <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #replicateAux<span class="token punctuation">(</span>N <span class="token operator">-</span><span class="token keyword">Int</span> <span class="token number">1</span><span class="token punctuation">,</span> A<span class="token punctuation">,</span> A <span class="token punctuation">:</span> WS<span class="token punctuation">)</span> <span class="token keyword">requires</span>         N &gt;<span class="token keyword">Int</span> <span class="token number">0</span>
+    <span class="token keyword">rule</span> #replicateAux<span class="token punctuation">(</span> N<span class="token punctuation">,</span> _A<span class="token punctuation">,</span> WS <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> WS                                 <span class="token keyword">requires</span> notBool N &gt;<span class="token keyword">Int</span> <span class="token number">0</span>
+</code></pre>
+<ul>
+<li><code>WordStack2List</code> converts a term of sort <code>WordStack</code> to a term of sort <code>List</code>.</li>
+</ul>
+<pre><code class="language-k">    <span class="token keyword">syntax</span> List <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> WordStack2List <span class="token punctuation">(</span> WordStack <span class="token punctuation">)</span> <span class="token punctuation">[</span><span class="token class-name">symbol</span><span class="token punctuation">(</span>WordStack2List<span class="token punctuation">)</span><span class="token punctuation">,</span> function<span class="token punctuation">,</span> total<span class="token punctuation">]</span>
+ <span class="token comment">// --------------------------------------------------------------------------------------</span>
+    <span class="token keyword">rule</span> WordStack2List<span class="token punctuation">(</span><span class="token punctuation">.</span>WordStack<span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">.</span>List
+    <span class="token keyword">rule</span> WordStack2List<span class="token punctuation">(</span>W <span class="token punctuation">:</span> WS<span class="token punctuation">)</span> <span class="token operator">=&gt;</span> ListItem<span class="token punctuation">(</span>W<span class="token punctuation">)</span> WordStack2List<span class="token punctuation">(</span>WS<span class="token punctuation">)</span>
+</code></pre>
+<ul>
+<li><code>WS [ START := WS' ]</code> assigns a contiguous chunk of <code>WS'</code> to <code>WS</code> starting at position <code>START</code>.</li>
+<li><code>#write(WM, IDX, VAL)</code> assigns a value <code>VAL</code> at position <code>IDX</code> in <code>WM</code>.</li>
+<li>TODO: remove the first rule for <code>:=</code> when <a href="https://github.com/runtimeverification/evm-semantics/issues/1844" target="_blank" rel="noreferrer noopener">#1844</a> is fixed.</li>
+</ul>
+<pre><code class="language-k">    <span class="token keyword">syntax</span> Bytes <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> <span class="token string">"#write"</span> <span class="token string">"("</span> Bytes <span class="token string">","</span> <span class="token keyword">Int</span> <span class="token string">","</span> <span class="token keyword">Int</span> <span class="token string">")"</span> <span class="token punctuation">[</span>function<span class="token punctuation">]</span>
+                   <span class="token operator">|</span> Bytes <span class="token string">"["</span> <span class="token keyword">Int</span> <span class="token string">":="</span> Bytes <span class="token string">"]"</span> <span class="token punctuation">[</span>function<span class="token punctuation">,</span> total<span class="token punctuation">,</span> <span class="token class-name">symbol</span><span class="token punctuation">(</span>mapWriteRange<span class="token punctuation">)</span><span class="token punctuation">]</span>
+ <span class="token comment">// --------------------------------------------------------------------------------------</span>
+    <span class="token keyword">rule</span> #write<span class="token punctuation">(</span>WM<span class="token punctuation">,</span> IDX<span class="token punctuation">,</span> VAL<span class="token punctuation">)</span> <span class="token operator">=&gt;</span> padRightBytes<span class="token punctuation">(</span>WM<span class="token punctuation">,</span> IDX <span class="token operator">+</span><span class="token keyword">Int</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">[</span> IDX &lt;<span class="token operator">-</span> VAL <span class="token punctuation">]</span> <span class="token punctuation">[</span>concrete<span class="token punctuation">]</span>
+
+    <span class="token keyword">rule</span> WS <span class="token punctuation">[</span> START <span class="token punctuation">:</span><span class="token operator">=</span> WS<span class="token string">' ] =&gt; WS                                                                            requires 0     &lt;=Int START andBool lengthBytes(WS'</span><span class="token punctuation">)</span>  <span class="token operator">==</span><span class="token keyword">Int</span> <span class="token number">0</span> <span class="token punctuation">[</span>concrete<span class="token punctuation">]</span>
+    <span class="token keyword">rule</span> WS <span class="token punctuation">[</span> START <span class="token punctuation">:</span><span class="token operator">=</span> WS<span class="token string">' ] =&gt; replaceAtBytes(padRightBytes(WS, START +Int lengthBytes(WS'</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">,</span> START<span class="token punctuation">,</span> WS<span class="token string">') requires 0     &lt;=Int START andBool lengthBytes(WS'</span><span class="token punctuation">)</span> <span class="token operator">=</span><span class="token operator">/</span><span class="token operator">=</span><span class="token keyword">Int</span> <span class="token number">0</span> <span class="token punctuation">[</span>concrete<span class="token punctuation">]</span>
+    <span class="token keyword">rule</span> _  <span class="token punctuation">[</span> START <span class="token punctuation">:</span><span class="token operator">=</span> _ <span class="token punctuation">]</span>   <span class="token operator">=&gt;</span> <span class="token punctuation">.</span>Bytes                                                                        <span class="token keyword">requires</span> START  &lt;<span class="token keyword">Int</span> <span class="token number">0</span>                                       <span class="token punctuation">[</span>concrete<span class="token punctuation">]</span>
+</code></pre>
+<h2 id="bytes-helper-functions">Bytes helper functions</h2>
+<ul>
+<li><code>#asWord</code> will interperet a stack of bytes as a single word (with MSB first).</li>
+<li><code>#asInteger</code> will interperet a stack of bytes as a single arbitrary-precision integer (with MSB first).</li>
+<li><code>#asAccount</code> will interpret a stack of bytes as a single account id (with MSB first).
+Differs from <code>#asWord</code> only in that an empty stack represents the empty account, not account zero.</li>
+<li><code>#asByteStack</code> will split a single word up into a <code>Bytes</code>.</li>
+<li><code>#range(WS, N, W)</code> access the range of <code>WS</code> beginning with <code>N</code> of width <code>W</code>.</li>
+<li><code>#padToWidth(N, WS)</code> and <code>#padRightToWidth</code> make sure that a <code>Bytes</code> is the correct size.</li>
+</ul>
+<pre><code class="language-k">    <span class="token keyword">syntax</span> <span class="token keyword">Int</span> <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> #asWord <span class="token punctuation">(</span> Bytes <span class="token punctuation">)</span> <span class="token punctuation">[</span><span class="token class-name">symbol</span><span class="token punctuation">(</span>asWord<span class="token punctuation">)</span><span class="token punctuation">,</span> function<span class="token punctuation">,</span> total<span class="token punctuation">,</span> smtlib<span class="token punctuation">(</span>asWord<span class="token punctuation">)</span><span class="token punctuation">]</span>
+ <span class="token comment">// ----------------------------------------------------------------------------------</span>
+    <span class="token keyword">rule</span> #asWord<span class="token punctuation">(</span>WS<span class="token punctuation">)</span> <span class="token operator">=&gt;</span> chop<span class="token punctuation">(</span>Bytes2Int<span class="token punctuation">(</span>WS<span class="token punctuation">,</span> BE<span class="token punctuation">,</span> Unsigned<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">[</span>concrete<span class="token punctuation">]</span>
+
+    <span class="token keyword">syntax</span> <span class="token keyword">Int</span> <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> #asInteger <span class="token punctuation">(</span> Bytes <span class="token punctuation">)</span> <span class="token punctuation">[</span><span class="token class-name">symbol</span><span class="token punctuation">(</span>#asInteger<span class="token punctuation">)</span><span class="token punctuation">,</span> function<span class="token punctuation">,</span> total<span class="token punctuation">]</span>
+ <span class="token comment">// -------------------------------------------------------------------------</span>
+    <span class="token keyword">rule</span> #asInteger<span class="token punctuation">(</span>WS<span class="token punctuation">)</span> <span class="token operator">=&gt;</span> Bytes2Int<span class="token punctuation">(</span>WS<span class="token punctuation">,</span> BE<span class="token punctuation">,</span> Unsigned<span class="token punctuation">)</span> <span class="token punctuation">[</span>concrete<span class="token punctuation">]</span>
+
+    <span class="token keyword">syntax</span> Account <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> #asAccount <span class="token punctuation">(</span> Bytes <span class="token punctuation">)</span> <span class="token punctuation">[</span><span class="token class-name">symbol</span><span class="token punctuation">(</span>#asAccount<span class="token punctuation">)</span><span class="token punctuation">,</span> function<span class="token punctuation">]</span>
+ <span class="token comment">// ----------------------------------------------------------------------</span>
+    <span class="token keyword">rule</span> #asAccount<span class="token punctuation">(</span>BS<span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token punctuation">.</span>Account    <span class="token keyword">requires</span> lengthBytes<span class="token punctuation">(</span>BS<span class="token punctuation">)</span> <span class="token operator">==</span><span class="token keyword">Int</span> <span class="token number">0</span>
+    <span class="token keyword">rule</span> #asAccount<span class="token punctuation">(</span>BS<span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #asWord<span class="token punctuation">(</span>BS<span class="token punctuation">)</span> <span class="token punctuation">[</span>owise<span class="token punctuation">]</span>
+
+    <span class="token keyword">syntax</span> Bytes <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> #asByteStack <span class="token punctuation">(</span> <span class="token keyword">Int</span> <span class="token punctuation">)</span> <span class="token punctuation">[</span><span class="token class-name">symbol</span><span class="token punctuation">(</span>#asByteStack<span class="token punctuation">)</span><span class="token punctuation">,</span> function<span class="token punctuation">,</span> total<span class="token punctuation">]</span>
+ <span class="token comment">// -----------------------------------------------------------------------------</span>
+    <span class="token keyword">rule</span> #asByteStack<span class="token punctuation">(</span>W<span class="token punctuation">)</span> <span class="token operator">=&gt;</span> Int2Bytes<span class="token punctuation">(</span>W<span class="token punctuation">,</span> BE<span class="token punctuation">,</span> Unsigned<span class="token punctuation">)</span> <span class="token punctuation">[</span>concrete<span class="token punctuation">]</span>
+
+    <span class="token keyword">syntax</span> Bytes <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> #range <span class="token punctuation">(</span> Bytes <span class="token punctuation">,</span> <span class="token keyword">Int</span> <span class="token punctuation">,</span> <span class="token keyword">Int</span> <span class="token punctuation">)</span> <span class="token punctuation">[</span><span class="token class-name">symbol</span><span class="token punctuation">(</span>#range<span class="token punctuation">)</span><span class="token punctuation">,</span> function<span class="token punctuation">,</span> total<span class="token punctuation">]</span>
+ <span class="token comment">// -------------------------------------------------------------------------------</span>
+    <span class="token keyword">rule</span>                #range<span class="token punctuation">(</span>_<span class="token punctuation">,</span> START<span class="token punctuation">,</span> WIDTH<span class="token punctuation">)</span>  <span class="token operator">=&gt;</span> <span class="token punctuation">.</span>Bytes                                                                       <span class="token keyword">requires</span> notBool <span class="token punctuation">(</span>WIDTH <span class="token operator">&gt;=</span><span class="token keyword">Int</span> <span class="token number">0</span> andBool START <span class="token operator">&gt;=</span><span class="token keyword">Int</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">[</span>concrete<span class="token punctuation">]</span>
+    <span class="token keyword">rule</span> <span class="token punctuation">[</span>bytesRange<span class="token punctuation">]</span> <span class="token punctuation">:</span> #range<span class="token punctuation">(</span>WS<span class="token punctuation">,</span> START<span class="token punctuation">,</span> WIDTH<span class="token punctuation">)</span> <span class="token operator">=&gt;</span> substrBytes<span class="token punctuation">(</span>padRightBytes<span class="token punctuation">(</span>WS<span class="token punctuation">,</span> START <span class="token operator">+</span><span class="token keyword">Int</span> WIDTH<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">,</span> START<span class="token punctuation">,</span> START <span class="token operator">+</span><span class="token keyword">Int</span> WIDTH<span class="token punctuation">)</span> <span class="token keyword">requires</span> WIDTH <span class="token operator">&gt;=</span><span class="token keyword">Int</span> <span class="token number">0</span> andBool START <span class="token operator">&gt;=</span><span class="token keyword">Int</span> <span class="token number">0</span> andBool START &lt;<span class="token keyword">Int</span> lengthBytes<span class="token punctuation">(</span>WS<span class="token punctuation">)</span> <span class="token punctuation">[</span>concrete<span class="token punctuation">]</span>
+    <span class="token keyword">rule</span>                #range<span class="token punctuation">(</span>_<span class="token punctuation">,</span> _<span class="token punctuation">,</span> WIDTH<span class="token punctuation">)</span>      <span class="token operator">=&gt;</span> padRightBytes<span class="token punctuation">(</span><span class="token punctuation">.</span>Bytes<span class="token punctuation">,</span> WIDTH<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">[</span>owise<span class="token punctuation">,</span> concrete<span class="token punctuation">]</span>
+
+    <span class="token keyword">syntax</span> Bytes <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> #padToWidth      <span class="token punctuation">(</span> <span class="token keyword">Int</span> <span class="token punctuation">,</span> Bytes <span class="token punctuation">)</span> <span class="token punctuation">[</span><span class="token class-name">symbol</span><span class="token punctuation">(</span>#padToWidth<span class="token punctuation">)</span><span class="token punctuation">,</span> function<span class="token punctuation">,</span> total<span class="token punctuation">]</span>
+                   <span class="token operator">|</span> #padRightToWidth <span class="token punctuation">(</span> <span class="token keyword">Int</span> <span class="token punctuation">,</span> Bytes <span class="token punctuation">)</span> <span class="token punctuation">[</span><span class="token class-name">symbol</span><span class="token punctuation">(</span>#padRightToWidth<span class="token punctuation">)</span><span class="token punctuation">,</span> function<span class="token punctuation">,</span> total<span class="token punctuation">]</span>
+ <span class="token comment">// ---------------------------------------------------------------------------------------------</span>
+    <span class="token keyword">rule</span> #padToWidth<span class="token punctuation">(</span>N<span class="token punctuation">,</span> BS<span class="token punctuation">)</span>      <span class="token operator">=&gt;</span>               BS        <span class="token keyword">requires</span> notBool <span class="token punctuation">(</span><span class="token number">0</span> <span class="token operator">&lt;=</span><span class="token keyword">Int</span> N<span class="token punctuation">)</span> <span class="token punctuation">[</span>concrete<span class="token punctuation">]</span>
+    <span class="token keyword">rule</span> #padToWidth<span class="token punctuation">(</span>N<span class="token punctuation">,</span> BS<span class="token punctuation">)</span>      <span class="token operator">=&gt;</span>  padLeftBytes<span class="token punctuation">(</span>BS<span class="token punctuation">,</span> N<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token keyword">requires</span>          <span class="token number">0</span> <span class="token operator">&lt;=</span><span class="token keyword">Int</span> N  <span class="token punctuation">[</span>concrete<span class="token punctuation">]</span>
+    <span class="token keyword">rule</span> #padRightToWidth<span class="token punctuation">(</span>N<span class="token punctuation">,</span> BS<span class="token punctuation">)</span> <span class="token operator">=&gt;</span>               BS        <span class="token keyword">requires</span> notBool <span class="token punctuation">(</span><span class="token number">0</span> <span class="token operator">&lt;=</span><span class="token keyword">Int</span> N<span class="token punctuation">)</span> <span class="token punctuation">[</span>concrete<span class="token punctuation">]</span>
+    <span class="token keyword">rule</span> #padRightToWidth<span class="token punctuation">(</span>N<span class="token punctuation">,</span> BS<span class="token punctuation">)</span> <span class="token operator">=&gt;</span> padRightBytes<span class="token punctuation">(</span>BS<span class="token punctuation">,</span> N<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token keyword">requires</span>          <span class="token number">0</span> <span class="token operator">&lt;=</span><span class="token keyword">Int</span> N  <span class="token punctuation">[</span>concrete<span class="token punctuation">]</span>
+</code></pre>
+<h2 id="accounts">Accounts</h2>
+<h3 id="empty-account">Empty Account</h3>
+<ul>
+<li><code>.Account</code> represents the case when an account ID is referenced in the yellowpaper, but
+the actual value of the account ID is the empty set. This is used, for example, when
+referring to the destination of a message which creates a new contract.</li>
+</ul>
+<pre><code class="language-k">    <span class="token keyword">syntax</span> Account <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> <span class="token string">".Account"</span> <span class="token operator">|</span> <span class="token keyword">Int</span>
+ <span class="token comment">// -----------------------------------</span>
+
+    <span class="token keyword">syntax</span> AccountCode <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> Bytes
+ <span class="token comment">// ----------------------------</span>
+</code></pre>
+<h3 id="addresses">Addresses</h3>
+<ul>
+<li><code>#addr</code> turns an Ethereum word into the corresponding Ethereum address (160 LSB).</li>
+</ul>
+<pre><code class="language-k">    <span class="token keyword">syntax</span> <span class="token keyword">Int</span> <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> #addr <span class="token punctuation">(</span> <span class="token keyword">Int</span> <span class="token punctuation">)</span> <span class="token punctuation">[</span><span class="token class-name">symbol</span><span class="token punctuation">(</span>#addr<span class="token punctuation">)</span><span class="token punctuation">,</span> function<span class="token punctuation">,</span> total<span class="token punctuation">]</span>
+ <span class="token comment">// -------------------------------------------------------------</span>
+    <span class="token keyword">rule</span> #addr<span class="token punctuation">(</span>W<span class="token punctuation">)</span> <span class="token operator">=&gt;</span> W <span class="token operator">%</span>Word pow160
+</code></pre>
+<h2 id="storage%2Fmemory-lookup">Storage/Memory Lookup</h2>
+<p><code>#lookup*</code> looks up a key in a map and returns 0 if the key doesn't exist, otherwise returning its value.</p>
+<pre><code class="language-k">    <span class="token keyword">syntax</span> <span class="token keyword">Int</span> <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> #lookup        <span class="token punctuation">(</span> Map <span class="token punctuation">,</span> <span class="token keyword">Int</span> <span class="token punctuation">)</span> <span class="token punctuation">[</span><span class="token class-name">symbol</span><span class="token punctuation">(</span>lookup<span class="token punctuation">)</span><span class="token punctuation">,</span> function<span class="token punctuation">,</span> total<span class="token punctuation">,</span> smtlib<span class="token punctuation">(</span>lookup<span class="token punctuation">)</span><span class="token punctuation">]</span>
+                 <span class="token operator">|</span> #lookupMemory  <span class="token punctuation">(</span> Map <span class="token punctuation">,</span> <span class="token keyword">Int</span> <span class="token punctuation">)</span> <span class="token punctuation">[</span><span class="token class-name">symbol</span><span class="token punctuation">(</span>lookupMemory<span class="token punctuation">)</span><span class="token punctuation">,</span> function<span class="token punctuation">,</span> total<span class="token punctuation">,</span> smtlib<span class="token punctuation">(</span>lookupMemory<span class="token punctuation">)</span><span class="token punctuation">]</span>
+ <span class="token comment">// ---------------------------------------------------------------------------------------------------------</span>
+    <span class="token keyword">rule</span> <span class="token punctuation">[</span>#lookup<span class="token punctuation">.</span>some<span class="token punctuation">]</span><span class="token punctuation">:</span>         #lookup<span class="token punctuation">(</span>       <span class="token punctuation">(</span>KEY <span class="token operator">|</span><span class="token operator">-</span>&gt; VAL<span class="token punctuation">:</span><span class="token keyword">Int</span><span class="token punctuation">)</span> _M<span class="token punctuation">,</span> KEY <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> VAL modInt pow256
+    <span class="token keyword">rule</span> <span class="token punctuation">[</span>#lookup<span class="token punctuation">.</span>none<span class="token punctuation">]</span><span class="token punctuation">:</span>         #lookup<span class="token punctuation">(</span>                          M<span class="token punctuation">,</span> KEY <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">0</span>                 <span class="token keyword">requires</span> notBool KEY in_keys<span class="token punctuation">(</span>M<span class="token punctuation">)</span>
+    <span class="token comment">//Impossible case, for completeness</span>
+    <span class="token keyword">rule</span> <span class="token punctuation">[</span>#lookup<span class="token punctuation">.</span>notInt<span class="token punctuation">]</span><span class="token punctuation">:</span>       #lookup<span class="token punctuation">(</span>       <span class="token punctuation">(</span>KEY <span class="token operator">|</span><span class="token operator">-</span>&gt; VAL    <span class="token punctuation">)</span> _M<span class="token punctuation">,</span> KEY <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">0</span>                 <span class="token keyword">requires</span> notBool isInt<span class="token punctuation">(</span>VAL<span class="token punctuation">)</span>
+
+    <span class="token keyword">rule</span> <span class="token punctuation">[</span>#lookupMemory<span class="token punctuation">.</span>some<span class="token punctuation">]</span><span class="token punctuation">:</span>   #lookupMemory<span class="token punctuation">(</span> <span class="token punctuation">(</span>KEY <span class="token operator">|</span><span class="token operator">-</span>&gt; VAL<span class="token punctuation">:</span><span class="token keyword">Int</span><span class="token punctuation">)</span> _M<span class="token punctuation">,</span> KEY <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> VAL modInt <span class="token number">256</span>
+    <span class="token keyword">rule</span> <span class="token punctuation">[</span>#lookupMemory<span class="token punctuation">.</span>none<span class="token punctuation">]</span><span class="token punctuation">:</span>   #lookupMemory<span class="token punctuation">(</span>                    M<span class="token punctuation">,</span> KEY <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">0</span>                 <span class="token keyword">requires</span> notBool KEY in_keys<span class="token punctuation">(</span>M<span class="token punctuation">)</span>
+    <span class="token comment">//Impossible case, for completeness</span>
+    <span class="token keyword">rule</span> <span class="token punctuation">[</span>#lookupMemory<span class="token punctuation">.</span>notInt<span class="token punctuation">]</span><span class="token punctuation">:</span> #lookupMemory<span class="token punctuation">(</span> <span class="token punctuation">(</span>KEY <span class="token operator">|</span><span class="token operator">-</span>&gt; VAL    <span class="token punctuation">)</span> _M<span class="token punctuation">,</span> KEY <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">0</span>                 <span class="token keyword">requires</span> notBool isInt<span class="token punctuation">(</span>VAL<span class="token punctuation">)</span>
+</code></pre>
+<h2 id="substate-log">Substate Log</h2>
+<p>During execution of a transaction some things are recorded in the substate log (Section 6.1 in YellowPaper).
+This is a right cons-list of <code>SubstateLogEntry</code> (which contains the account ID along with the specified portions of the <code>wordStack</code> and <code>localMem</code>).</p>
+<pre><code class="language-k">    <span class="token keyword">syntax</span> SubstateLogEntry <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> <span class="token string">"{"</span> <span class="token keyword">Int</span> <span class="token string">"|"</span> List <span class="token string">"|"</span> Bytes <span class="token string">"}"</span> <span class="token punctuation">[</span><span class="token class-name">symbol</span><span class="token punctuation">(</span>logEntry<span class="token punctuation">)</span><span class="token punctuation">]</span>
+ <span class="token comment">// -----------------------------------------------------------------------------</span>
+</code></pre>
+<h2 id="transactions">Transactions</h2>
+<p>Productions related to transactions</p>
+<pre><code class="language-k">    <span class="token keyword">syntax</span> TxType <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> <span class="token string">".TxType"</span>
+                    <span class="token operator">|</span> <span class="token string">"Legacy"</span>
+                    <span class="token operator">|</span> <span class="token string">"AccessList"</span>
+                    <span class="token operator">|</span> <span class="token string">"DynamicFee"</span>
+ <span class="token comment">// ------------------------------</span>
+
+    <span class="token keyword">syntax</span> <span class="token keyword">Int</span> <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> #dasmTxPrefix <span class="token punctuation">(</span> TxType <span class="token punctuation">)</span> <span class="token punctuation">[</span><span class="token class-name">symbol</span><span class="token punctuation">(</span>#dasmTxPrefix<span class="token punctuation">)</span><span class="token punctuation">,</span> function<span class="token punctuation">]</span>
+ <span class="token comment">// -------------------------------------------------------------------------</span>
+    <span class="token keyword">rule</span> #dasmTxPrefix <span class="token punctuation">(</span>Legacy<span class="token punctuation">)</span>     <span class="token operator">=&gt;</span> <span class="token number">0</span>
+    <span class="token keyword">rule</span> #dasmTxPrefix <span class="token punctuation">(</span>AccessList<span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">1</span>
+    <span class="token keyword">rule</span> #dasmTxPrefix <span class="token punctuation">(</span>DynamicFee<span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">2</span>
+
+    <span class="token keyword">syntax</span> TxType <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> #asmTxPrefix <span class="token punctuation">(</span> <span class="token keyword">Int</span> <span class="token punctuation">)</span> <span class="token punctuation">[</span><span class="token class-name">symbol</span><span class="token punctuation">(</span>#asmTxPrefix<span class="token punctuation">)</span><span class="token punctuation">,</span> function<span class="token punctuation">]</span>
+ <span class="token comment">// -----------------------------------------------------------------------</span>
+    <span class="token keyword">rule</span> #asmTxPrefix <span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> Legacy
+    <span class="token keyword">rule</span> #asmTxPrefix <span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> AccessList
+    <span class="token keyword">rule</span> #asmTxPrefix <span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">)</span> <span class="token operator">=&gt;</span> DynamicFee
+
+    <span class="token keyword">syntax</span> TxData <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> LegacyTx <span class="token operator">|</span> AccessListTx <span class="token operator">|</span> DynamicFeeTx
+ <span class="token comment">// --------------------------------------------------------</span>
+
+    <span class="token keyword">syntax</span> LegacyTx     <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> LegacyTxData       <span class="token punctuation">(</span> nonce<span class="token punctuation">:</span> <span class="token keyword">Int</span><span class="token punctuation">,</span>                       gasPrice<span class="token punctuation">:</span> <span class="token keyword">Int</span><span class="token punctuation">,</span> gasLimit<span class="token punctuation">:</span> <span class="token keyword">Int</span><span class="token punctuation">,</span> to<span class="token punctuation">:</span> Account<span class="token punctuation">,</span> value<span class="token punctuation">:</span> <span class="token keyword">Int</span><span class="token punctuation">,</span> data<span class="token punctuation">:</span> Bytes <span class="token punctuation">)</span>                                   <span class="token punctuation">[</span><span class="token class-name">symbol</span><span class="token punctuation">(</span>LegacyTxData<span class="token punctuation">)</span><span class="token punctuation">]</span>
+                          <span class="token operator">|</span> LegacySignedTxData <span class="token punctuation">(</span> nonce<span class="token punctuation">:</span> <span class="token keyword">Int</span><span class="token punctuation">,</span>                       gasPrice<span class="token punctuation">:</span> <span class="token keyword">Int</span><span class="token punctuation">,</span> gasLimit<span class="token punctuation">:</span> <span class="token keyword">Int</span><span class="token punctuation">,</span> to<span class="token punctuation">:</span> Account<span class="token punctuation">,</span> value<span class="token punctuation">:</span> <span class="token keyword">Int</span><span class="token punctuation">,</span> data<span class="token punctuation">:</span> Bytes<span class="token punctuation">,</span> networkChainId<span class="token punctuation">:</span> <span class="token keyword">Int</span> <span class="token punctuation">)</span>              <span class="token punctuation">[</span><span class="token class-name">symbol</span><span class="token punctuation">(</span>LegacySignedTxData<span class="token punctuation">)</span><span class="token punctuation">]</span>
+    <span class="token keyword">syntax</span> AccessListTx <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> AccessListTxData   <span class="token punctuation">(</span> nonce<span class="token punctuation">:</span> <span class="token keyword">Int</span><span class="token punctuation">,</span>                       gasPrice<span class="token punctuation">:</span> <span class="token keyword">Int</span><span class="token punctuation">,</span> gasLimit<span class="token punctuation">:</span> <span class="token keyword">Int</span><span class="token punctuation">,</span> to<span class="token punctuation">:</span> Account<span class="token punctuation">,</span> value<span class="token punctuation">:</span> <span class="token keyword">Int</span><span class="token punctuation">,</span> data<span class="token punctuation">:</span> Bytes<span class="token punctuation">,</span> chainId<span class="token punctuation">:</span> <span class="token keyword">Int</span><span class="token punctuation">,</span> accessLists<span class="token punctuation">:</span> JSONs <span class="token punctuation">)</span> <span class="token punctuation">[</span><span class="token class-name">symbol</span><span class="token punctuation">(</span>AccessListTxData<span class="token punctuation">)</span><span class="token punctuation">]</span>
+    <span class="token keyword">syntax</span> DynamicFeeTx <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> DynamicFeeTxData   <span class="token punctuation">(</span> nonce<span class="token punctuation">:</span> <span class="token keyword">Int</span><span class="token punctuation">,</span> priorityGasFee<span class="token punctuation">:</span> <span class="token keyword">Int</span><span class="token punctuation">,</span> maxGasFee<span class="token punctuation">:</span> <span class="token keyword">Int</span><span class="token punctuation">,</span> gasLimit<span class="token punctuation">:</span> <span class="token keyword">Int</span><span class="token punctuation">,</span> to<span class="token punctuation">:</span> Account<span class="token punctuation">,</span> value<span class="token punctuation">:</span> <span class="token keyword">Int</span><span class="token punctuation">,</span> data<span class="token punctuation">:</span> Bytes<span class="token punctuation">,</span> chainId<span class="token punctuation">:</span> <span class="token keyword">Int</span><span class="token punctuation">,</span> accessLists<span class="token punctuation">:</span> JSONs<span class="token punctuation">)</span>  <span class="token punctuation">[</span><span class="token class-name">symbol</span><span class="token punctuation">(</span>DynamicFeeTxData<span class="token punctuation">)</span><span class="token punctuation">]</span>
+ <span class="token comment">// ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------</span>
+
+<span class="token keyword">endmodule</span>
+</code></pre>
+</body></html></div>
+        </main>
+
+        <!-- Page ToC -->
+        <div class="col-12 col-md-3 col-xl-2 py-md-3 bd-sidebar page-toc mb-3">
+          
+<div>
+<details style="padding:0.25rem 0;;padding-left: 0px;">
+            <summary class="bd-toc-link-wrapper">
+              <a href="#data-structures-over-word" class="bd-toc-link">Data-Structures over <code>Word</code></a>
+              </summary>
+            <div>
+              <details style="padding:0.25rem 0;;padding-left: 8px;">
+            <summary class="bd-toc-link-wrapper">
+              <a href="#utilities" class="bd-toc-link">Utilities</a>
+              </summary>
+            <div>
+              <div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#boolean-conversions"
+                class="bd-toc-link"
+                style="padding-left: 16px;;"
+              >
+                Boolean Conversions
+              </a></div>
+            </div>
+          </details>
+        <details style="padding:0.25rem 0;;padding-left: 8px;">
+            <summary class="bd-toc-link-wrapper">
+              <a href="#word-operations" class="bd-toc-link">Word Operations</a>
+              </summary>
+            <div>
+              <div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#low-level"
+                class="bd-toc-link"
+                style="padding-left: 16px;;"
+              >
+                Low-Level
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#word-comparison"
+                class="bd-toc-link"
+                style="padding-left: 16px;;"
+              >
+                Word Comparison
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#bitwise-operators"
+                class="bd-toc-link"
+                style="padding-left: 16px;;"
+              >
+                Bitwise Operators
+              </a></div>
+            </div>
+          </details>
+        <details style="padding:0.25rem 0;;padding-left: 8px;">
+            <summary class="bd-toc-link-wrapper">
+              <a href="#a-wordstack-for-evm" class="bd-toc-link">A WordStack for EVM</a>
+              </summary>
+            <div>
+              <div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#as-a-cons-list"
+                class="bd-toc-link"
+                style="padding-left: 16px;;"
+              >
+                As a cons-list
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#element-access"
+                class="bd-toc-link"
+                style="padding-left: 16px;;"
+              >
+                Element Access
+              </a></div>
+            </div>
+          </details>
+        <div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#bytes-helper-functions"
+                class="bd-toc-link"
+                style="padding-left: 8px;;"
+              >
+                Bytes helper functions
+              </a></div><details style="padding:0.25rem 0;;padding-left: 8px;">
+            <summary class="bd-toc-link-wrapper">
+              <a href="#accounts" class="bd-toc-link">Accounts</a>
+              </summary>
+            <div>
+              <div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#empty-account"
+                class="bd-toc-link"
+                style="padding-left: 16px;;"
+              >
+                Empty Account
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#addresses"
+                class="bd-toc-link"
+                style="padding-left: 16px;;"
+              >
+                Addresses
+              </a></div>
+            </div>
+          </details>
+        <div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#storage%2Fmemory-lookup"
+                class="bd-toc-link"
+                style="padding-left: 8px;;"
+              >
+                Storage/Memory Lookup
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#substate-log"
+                class="bd-toc-link"
+                style="padding-left: 8px;;"
+              >
+                Substate Log
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#transactions"
+                class="bd-toc-link"
+                style="padding-left: 8px;;"
+              >
+                Transactions
+              </a></div>
+            </div>
+          </details>
+        
+</div>
+
+        </div>
+        <div class="btn btn-rv-blue page-toc-toggle-btn"></div>
+        <!-- End Page ToC -->
+      </div>
+    </div>
+<!-- The footer is now controlled by the k-web-theme git submodule -->
+<footer id="rvsite-footer" class="app-footer text-md-left text-center">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-md-4 mb-md-0 mb-4">
+        <a href="https://runtimeverification.com/" target="_blank">
+          <picture>
+            <source
+              srcset="
+                https://runtimeverification.com/assets/img/rv-logo-dark.png
+              "
+              media="(prefers-color-scheme: dark)"
+            />
+            <img
+              class="logo-dark"
+              src="https://runtimeverification.com/assets/img/rv-logo.png"
+              alt="Runtime Verification logo"
+              style="height: 32px"
+            /> </picture
+        ></a>
+        <p class="mt-2 text-md-left copyright">
+          <a href="https://goo.gl/maps/5iu2nhbUA48fs7fP6" target="_blank"
+            >333 North Green Street, Chicago, IL</a
+          >
+        </p>
+      </div>
+      <div class="col-md-4 text-md-center mb-md-0 mb-4"></div>
+      <div class="col-md-4 mb-md-0 mb-4 pl-0 text-md-right">
+        <p class="copyright">2024 © all rights reserved</p>
+        <span class="copyright"><a href="https://runtimeverification.com/privacy-policy">privacy policy</a> | <a
+                href="https://runtimeverification.com/terms-of-use">terms of use</a></span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Typist/1.2/typist.min.js"></script>
+    <script src="../../../../../../assets/js/index.js"></script>
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script
+  async
+  src="https://www.googletagmanager.com/gtag/js?id=G-QL0D8HRYFW"
+></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag() {
+    dataLayer.push(arguments);
+  }
+  gtag("js", new Date());
+  gtag("config", "G-QL0D8HRYFW");
+</script>
+
+  </body>
+</html>
