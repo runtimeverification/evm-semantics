@@ -65,7 +65,7 @@ module SLOT-UPDATES [symbolic]
     // ###########################################################################
 
     // Slot updates are of the general form (SHIFT *Int VALUE) |Int (MASK &Int #asWord( SLOT:Bytes )),
-    // andthe masking clears the part of the slot into which VALUE will be stored,
+    // where the masking clears the part of the slot into which VALUE will be stored,
     // and for VALUE to be stored correctly it first has to be shifted appropriately.
     // Note that SHIFT and MASK are always concrete.
     //
