@@ -106,7 +106,6 @@ def run_prover(
     terminal_rules: Iterable[str] = (),
     fail_fast: bool = False,
     counterexample_info: bool = False,
-    always_check_subsumption: bool = False,
     fast_check_subsumption: bool = False,
     direct_subproof_rules: bool = False,
     max_frontier_parallel: int = 1,
@@ -114,6 +113,7 @@ def run_prover(
     progress: Progress | None = None,
     task_id: TaskID | None = None,
     maintenance_rate: int = 1,
+    assume_defined: bool = False,
 ) -> bool:
     prover: APRProver | ImpliesProver
     try:
@@ -126,9 +126,9 @@ def run_prover(
                     terminal_rules=terminal_rules,
                     cut_point_rules=cut_point_rules,
                     counterexample_info=counterexample_info,
-                    always_check_subsumption=always_check_subsumption,
                     fast_check_subsumption=fast_check_subsumption,
                     direct_subproof_rules=direct_subproof_rules,
+                    assume_defined=assume_defined,
                 )
 
             def update_status_bar(_proof: Proof) -> None:
@@ -156,7 +156,7 @@ def run_prover(
                 )
 
         elif type(proof) is EqualityProof:
-            prover = ImpliesProver(proof, kcfg_explore=create_kcfg_explore())
+            prover = ImpliesProver(proof, kcfg_explore=create_kcfg_explore(), assume_defined=assume_defined)
             prover.advance_proof(proof)
         else:
             raise ValueError(f'Do not know how to build prover for proof: {proof}')
@@ -354,7 +354,8 @@ def legacy_explore(
     haskell_log_entries: Iterable[str] = (),
     haskell_threads: int | None = None,
     log_axioms_file: Path | None = None,
-    trace_rewrites: bool = False,
+    log_succ_rewrites: bool = True,
+    log_fail_rewrites: bool = True,
     start_server: bool = True,
     maude_port: int | None = None,
     fallback_on: Iterable[FallbackReason] | None = None,
@@ -383,7 +384,9 @@ def legacy_explore(
             no_post_exec_simplify=no_post_exec_simplify,
         ) as server:
             with KoreClient('localhost', server.port, bug_report=bug_report, bug_report_id=bug_report_id) as client:
-                cterm_symbolic = CTermSymbolic(client, kprint.definition, trace_rewrites=trace_rewrites)
+                cterm_symbolic = CTermSymbolic(
+                    client, kprint.definition, log_succ_rewrites=log_succ_rewrites, log_fail_rewrites=log_fail_rewrites
+                )
                 yield KCFGExplore(cterm_symbolic, kcfg_semantics=kcfg_semantics, id=id)
     else:
         if port is None:
@@ -402,5 +405,7 @@ def legacy_explore(
         with KoreClient(
             'localhost', port, bug_report=bug_report, bug_report_id=bug_report_id, dispatch=dispatch
         ) as client:
-            cterm_symbolic = CTermSymbolic(client, kprint.definition, trace_rewrites=trace_rewrites)
+            cterm_symbolic = CTermSymbolic(
+                client, kprint.definition, log_succ_rewrites=log_succ_rewrites, log_fail_rewrites=log_fail_rewrites
+            )
             yield KCFGExplore(cterm_symbolic, kcfg_semantics=kcfg_semantics, id=id)

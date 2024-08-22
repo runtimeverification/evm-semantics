@@ -301,7 +301,8 @@ def exec_prove(options: ProveOptions) -> None:
             kore_rpc_command=kore_rpc_command,
             smt_timeout=options.smt_timeout,
             smt_retry_limit=options.smt_retry_limit,
-            trace_rewrites=options.trace_rewrites,
+            log_succ_rewrites=options.log_succ_rewrites,
+            log_fail_rewrites=options.log_fail_rewrites,
             fallback_on=options.fallback_on,
             interim_simplification=options.interim_simplification,
             no_post_exec_simplify=(not options.post_exec_simplify),
@@ -319,7 +320,12 @@ def exec_prove(options: ProveOptions) -> None:
                     bug_report_id=bug_report_id,
                     dispatch=dispatch,
                 )
-                cterm_symbolic = CTermSymbolic(client, kevm.definition, trace_rewrites=options.trace_rewrites)
+                cterm_symbolic = CTermSymbolic(
+                    client,
+                    kevm.definition,
+                    log_succ_rewrites=options.log_succ_rewrites,
+                    log_fail_rewrites=options.log_fail_rewrites,
+                )
                 return KCFGExplore(
                     cterm_symbolic,
                     kcfg_semantics=KEVMSemantics(auto_abstract_gas=options.auto_abstract_gas),
@@ -351,11 +357,11 @@ def exec_prove(options: ProveOptions) -> None:
                 ),
                 terminal_rules=KEVMSemantics.terminal_rules(options.break_every_step),
                 fail_fast=options.fail_fast,
-                always_check_subsumption=options.always_check_subsumption,
                 fast_check_subsumption=options.fast_check_subsumption,
                 direct_subproof_rules=options.direct_subproof_rules,
                 max_frontier_parallel=options.max_frontier_parallel,
                 force_sequential=options.force_sequential,
+                assume_defined=options.assume_defined,
             )
             end_time = time.time()
             _LOGGER.info(f'Proof timing {proof_problem.id}: {end_time - start_time}s')
@@ -481,7 +487,8 @@ def exec_section_edge(options: SectionEdgeOptions) -> None:
         kore_rpc_command=kore_rpc_command,
         smt_timeout=options.smt_timeout,
         smt_retry_limit=options.smt_retry_limit,
-        trace_rewrites=options.trace_rewrites,
+        log_succ_rewrites=options.log_succ_rewrites,
+        log_fail_rewrites=options.log_fail_rewrites,
         llvm_definition_dir=llvm_definition_dir,
     ) as kcfg_explore:
         node_ids = kcfg_explore.section_edge(
