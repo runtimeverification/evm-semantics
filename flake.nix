@@ -2,11 +2,11 @@
   description = "A flake for the KEVM Semantics";
 
   inputs = {
-    k-framework.url = "github:runtimeverification/k/v7.1.112";
+    k-framework.url = "github:runtimeverification/k/v7.1.116";
     nixpkgs.follows = "k-framework/nixpkgs";
     flake-utils.follows = "k-framework/flake-utils";
     rv-utils.follows = "k-framework/rv-utils";
-    pyk.url = "github:runtimeverification/k/v7.1.112?dir=pyk";
+    pyk.url = "github:runtimeverification/k/v7.1.116?dir=pyk";
     nixpkgs-pyk.follows = "pyk/nixpkgs";
     poetry2nix.follows = "pyk/poetry2nix";
     blockchain-k-plugin = {
@@ -180,7 +180,7 @@
       in {
         packages.default = kevm;
         devShell = pkgs.mkShell {
-          buildInputs = buildInputs pkgs ++ [ pkgs.poetry-nixpkgs ];
+          buildInputs = buildInputs pkgs ++ [ pkgs.poetry-nixpkgs pkgs.which ];
 
           shellHook = ''
             export NIX_LIBS="${nixLibs pkgs}"
