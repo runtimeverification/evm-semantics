@@ -38,12 +38,12 @@ module SLOT-UPDATES [symbolic]
     syntax Int ::= #getMaskWidthBits(Int)  [function, total]
     syntax Int ::= #getMaskWidthBytes(Int) [function, total]
 
-    rule [gmw-bits-succ-1]: #getMaskWidthBits(X:Int) => 256 -Int #getMaskShiftBits(X:Int)             requires  0 <=Int #getMaskShiftBits(X) andBool 0 ==Int X >>Int #getMaskShiftBits(X) [concrete(X), simplification]
-    rule [gmw-bits-succ-2]: #getMaskWidthBits(X:Int) => #getFirstOneBit(X >>Int #getMaskShiftBits(X)) requires  0 <=Int #getMaskShiftBits(X) andBool 0  <Int X >>Int #getMaskShiftBits(X) [concrete(X), simplification]
-    rule [gmw-bits-fail]:   #getMaskWidthBits(X:Int) => -1                                            requires -1 ==Int #getMaskShiftBits(X) [concrete(X), simplification]
+    rule [gmw-bits-succ-1]: #getMaskWidthBits(X:Int) => 256 -Int #getMaskShiftBits(X:Int)             requires  0 <=Int #getMaskShiftBits(X) andBool 0 ==Int X >>Int #getMaskShiftBits(X) [preserves-definedness]
+    rule [gmw-bits-succ-2]: #getMaskWidthBits(X:Int) => #getFirstOneBit(X >>Int #getMaskShiftBits(X)) requires  0 <=Int #getMaskShiftBits(X) andBool 0  <Int X >>Int #getMaskShiftBits(X) [preserves-definedness]
+    rule [gmw-bits-fail]:   #getMaskWidthBits(X:Int) => -1                                            [owise]
 
-    rule [gmw-bytes-succ]: #getMaskWidthBytes(X:Int) => #getMaskWidthBits(X) /Int 8 requires           #getMaskWidthBits(X) modInt 8 ==Int 0   [concrete(X), simplification, preserves-definedness]
-    rule [gmw-bytes-fail]: #getMaskWidthBytes(X:Int) => -1                          requires notBool ( #getMaskWidthBits(X) modInt 8 ==Int 0 ) [concrete(X), simplification, preserves-definedness]
+    rule [gmw-bytes-succ]: #getMaskWidthBytes(X:Int) => #getMaskWidthBits(X) /Int 8 requires #getMaskWidthBits(X) modInt 8 ==Int 0 [preserves-definedness]
+    rule [gmw-bytes-fail]: #getMaskWidthBytes(X:Int) => -1                          [owise]
 
     // Mask recogniser
     syntax Bool ::= #isMask(Int) [function, total]
@@ -83,14 +83,13 @@ module SLOT-UPDATES [symbolic]
     rule [mask-b-and]:
       MASK:Int &Int SLOT:Int =>
         #asWord ( #buf ( 32, SLOT ) [ 32 -Int ( #getMaskShiftBytes(MASK) +Int #getMaskWidthBytes(MASK) ) := #buf ( #getMaskWidthBytes(MASK), 0 ) ] )
-        requires #rangeUInt(256, MASK) andBool #rangeUInt(256, SLOT)
-        andBool #isMask(MASK)
+        requires #isMask(MASK) andBool #rangeUInt(256, SLOT)
         [simplification, concrete(MASK), preserves-definedness]
 
     // 2a. |Int and +Bytes, update to be done in left
     rule [bor-update-to-left]:
       A |Int #asWord ( B1 +Bytes B2 ) =>
-        #asWord ( #buf ( 32 -Int lengthBytes(B2), (A /Int (2 ^Int (8 *Int lengthBytes(B2)))) |Int #asWord ( #buf (32 -Int (lengthBytes(B1) +Int lengthBytes(B2)), 0) +Bytes B1 ) ) +Bytes B2 )
+        #asWord ( #buf ( 32 -Int lengthBytes(B2), (A /Int (2 ^Int (8 *Int lengthBytes(B2)))) |Int #asWord ( B1 ) ) +Bytes B2 )
         requires #rangeUInt(256, A) andBool A modInt (2 ^Int (8 *Int lengthBytes(B2))) ==Int 0 andBool lengthBytes(B1 +Bytes B2) <=Int 32
         [simplification, preserves-definedness]
 
@@ -98,7 +97,7 @@ module SLOT-UPDATES [symbolic]
     rule [bor-update-to-right]:
       A |Int #asWord ( B1 +Bytes B2 ) =>
         #asWord ( B1 +Bytes #buf ( lengthBytes(B2), A |Int #asWord ( B2 ) ) )
-        requires 0 <=Int A andBool A <Int 2 ^Int (8 *Int lengthBytes(B2))
+        requires 0 <=Int A andBool A <Int 2 ^Int (8 *Int lengthBytes(B2)) andBool lengthBytes(B2) <=Int 32
         [simplification, preserves-definedness]
 
     // 3a. Update with explicit shift and symbolic slot
