@@ -61,7 +61,7 @@ module LEMMAS-MCD [symbolic]
     rule sgn(chop(X)) ==Int  1 => 0 <=Int X requires #rangeSInt(256, X) [simplification]
     rule sgn(chop(X)) ==Int -1 => X  <Int 0 requires #rangeSInt(256, X) [simplification]
 
-    rule chop(X) ==Int 0 => X ==Int 0 requires #rangeSInt(256, X) [simplification]
+    rule chop(X) ==Int 0 => X ==Int 0 requires #rangeSInt(256, X) [simplification, comm]
 
     rule bool2Word( X:Bool ) |Int bool2Word( Y:Bool ) => bool2Word(X orBool Y) [simplification]
     rule bool2Word( X:Bool ) ==Int 0                  => notBool X             [simplification]
