@@ -93,7 +93,7 @@ module BYTES-SIMPLIFICATION [symbolic]
 
     rule [asWord-trim-overflowing-zeros]:
       #asWord ( B ) => #asWord ( #range(B, lengthBytes(B) -Int 32, 32) )
-      requires 32 <Int lengthBytes(B) andBool #asInteger(#range(B, 0, lengthBytes(B) -Int 32)) ==Int 0
+      requires 32 <Int lengthBytes(B)
       [simplification]
 
     rule [buf-zero-concat-base]:
