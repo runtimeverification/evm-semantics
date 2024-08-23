@@ -75,7 +75,7 @@ module BYTES-SIMPLIFICATION [symbolic]
     rule [buf-asWord-invert-rl]:
       #asWord ( #buf ( WB:Int, X:Int ) ) => X
       requires 0 <=Int WB andBool 0 <=Int X andBool
-               ( ( WB <=Int 32 andBool X <Int 2 ^Int (WB *Int 8) ) orBool
+               ( ( WB <=Int 32 andBool X <Int 2 ^Int (8 *Int WB) ) orBool
                  ( WB  >Int 32 andBool X <Int pow256 ) )
       [simplification, concrete(WB), preserves-definedness]
 
@@ -83,8 +83,18 @@ module BYTES-SIMPLIFICATION [symbolic]
       #asWord ( #range ( #buf ( WB:Int, X:Int ), S:Int, WR:Int ) ) => X
       requires 0 <=Int WB andBool 0 <=Int X andBool 0 <=Int S andBool 0 <=Int WR
        andBool S +Int WR ==Int WB
-       andBool X <Int 2 ^Int (WR *Int 8)
+       andBool X <Int 2 ^Int (8 *Int WR)
       [simplification, concrete(WB, S, WR), preserves-definedness]
+
+    rule [asWord-trim-leading-zeros-concat]:
+      #asWord ( BZ +Bytes B ) => #asWord ( B )
+      requires #asInteger ( BZ ) ==Int 0
+      [simplification, concrete(BZ)]
+
+    rule [asWord-trim-overflowing-zeros]:
+      #asWord ( B ) => #asWord ( #range(B, lengthBytes(B) -Int 32, 32) )
+      requires 32 <Int lengthBytes(B)
+      [simplification]
 
     rule [buf-zero-concat-base]:
       #buf(W1:Int, 0) +Bytes #buf(W2:Int, 0) => #buf(W1 +Int W2, 0)
@@ -189,13 +199,13 @@ module BYTES-SIMPLIFICATION [symbolic]
 
     rule [range-buf-zero-concat]:
       B:Bytes +Bytes #buf(W:Int, X:Int) => #buf(lengthBytes(B) +Int W, X)
-      requires 0 <=Int W andBool 0 <=Int X andBool X <Int 2 ^Int (W *Int 8)
+      requires 0 <=Int W andBool 0 <=Int X andBool X <Int 2 ^Int (8 *Int W)
        andBool #asInteger(B) ==Int 0 andBool lengthBytes(B) +Int W <=Int 32
       [concrete(B, W), simplification, preserves-definedness]
 
     rule [range-buf-zero-concat-extend]:
       B1:Bytes +Bytes #buf(W:Int, X:Int) +Bytes B2 => #buf(lengthBytes(B1) +Int W, X) +Bytes B2
-      requires 0 <=Int W andBool 0 <=Int X andBool X <Int 2 ^Int (W *Int 8)
+      requires 0 <=Int W andBool 0 <=Int X andBool X <Int 2 ^Int (8 *Int W)
        andBool #asInteger(B1) ==Int 0 andBool lengthBytes(B1) +Int W <=Int 32
       [concrete(B1, W), simplification, preserves-definedness]
 

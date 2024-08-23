@@ -560,7 +560,7 @@ Merkle Tree Aux Functions
 
     rule #nibbleize ( B ) => .Bytes requires notBool lengthBytes(B) >Int 0
 
-    rule #byteify ( B ) =>    #range( #asByteStack ( B[0] *Int 16 +Int B[1] ), 0, 1 )
+    rule #byteify ( B ) =>    #range( #asByteStack ( 16 *Int B[0] +Int B[1] ), 0, 1 )
                        +Bytes #byteify ( #range( B, 2, lengthBytes(B) -Int 2 ) )
       requires lengthBytes(B) >Int 0
 
@@ -568,10 +568,10 @@ Merkle Tree Aux Functions
 
     syntax Bytes ::= #HPEncode ( Bytes, Int ) [symbol(#HPEncode), function]
  // -----------------------------------------------------------------------
-    rule #HPEncode ( X, T ) => #asByteStack ( ( HPEncodeAux(T) +Int 1 ) *Int 16 +Int X[0] ) +Bytes #byteify( #range(X, 1, lengthBytes(X) -Int 1) )
+    rule #HPEncode ( X, T ) => #asByteStack ( 16 *Int ( HPEncodeAux(T) +Int 1 ) +Int X[0] ) +Bytes #byteify( #range(X, 1, lengthBytes(X) -Int 1) )
       requires lengthBytes(X) %Int 2 =/=Int 0
 
-    rule #HPEncode ( X, T ) => #range(#asByteStack ( HPEncodeAux(T) *Int 16 ), 0, 1) +Bytes #byteify( X )
+    rule #HPEncode ( X, T ) => #range(#asByteStack ( 16 *Int HPEncodeAux(T) ), 0, 1) +Bytes #byteify( X )
       requires notBool lengthBytes(X) %Int 2 =/=Int 0
 
     syntax Int ::= HPEncodeAux ( Int ) [symbol(HPEncodeAux), function]
