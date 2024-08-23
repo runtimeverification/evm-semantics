@@ -44,7 +44,7 @@ module VERIFICATION
     rule         X &Int 127  <Int 32 => true requires 0 <=Int X andBool X <Int 32 [simplification, smt-lemma]
 
     rule chop(X +Int Y) => X +Int Y requires 0 <=Int X andBool #rangeUInt(256, Y) andBool X <=Int maxUInt256 -Int Y [simplification, concrete(Y)]
-    rule ((X +Int 31) /Int 32) *Int 32 <=Int Y => 0 <=Int X andBool X <=Int Y -Int 31 [simplification, concrete(Y)]
+    rule 32 *Int ((X +Int 31) /Int 32) <=Int Y => 0 <=Int X andBool X <=Int Y -Int 31 [simplification, concrete(Y)]
     rule 127 &Int X <=Int Y => true requires 0 <=Int X andBool 127 <=Int Y [simplification, concrete(Y)]
 
 endmodule
