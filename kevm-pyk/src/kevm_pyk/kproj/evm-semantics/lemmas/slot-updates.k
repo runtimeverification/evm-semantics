@@ -118,7 +118,7 @@ module SLOT-UPDATES [symbolic]
     // 3b. Buffer cropping
     rule [buf-asWord-crop]:
       #buf (W1:Int, #asWord(#buf(W2, X:Int) +Bytes B)) => #buf(W1 -Int lengthBytes(B), X) +Bytes B
-      requires 0 <=Int W1 andBool W1 <=Int 32 andBool 0 <=Int W2 andBool
+      requires 0 <=Int W1 andBool W1 <=Int 32 andBool 0 <=Int W2
        andBool lengthBytes(B) <=Int W1 andBool W1 <=Int W2 +Int lengthBytes(B)
        andBool 0 <=Int X andBool X <Int 2 ^Int (8 *Int (W1 -Int lengthBytes(B)))
       [simplification]
@@ -139,11 +139,11 @@ module SLOT-UPDATES [symbolic]
        [simplification, concrete(X), preserves-definedness]
 
     // 3e. Clearing update leftovers that only have bits higher than the buffer accepts
-    rule [buf-bor-subsume]:
-      #buf ( N, X |Int Y ) => #buf ( N, X )
-      requires 0 <=Int N andBool N <=Int 32
-       andBool 0 <=Int X andBool X <Int 2 ^Int ( 8 *Int N )
-       andBool Y modInt 2 ^Int ( 8 *Int N ) ==Int 0
-       [simplification, concrete(X), preserves-definedness]
+    // rule [buf-bor-subsume]:
+    //   #buf ( N, X |Int Y ) => #buf ( N, X )
+    //   requires 0 <=Int N andBool N <=Int 32
+    //    andBool 0 <=Int X andBool X <Int 2 ^Int ( 8 *Int N )
+    //    andBool Y modInt 2 ^Int ( 8 *Int N ) ==Int 0
+    //    [simplification, concrete(X), preserves-definedness]
 
 endmodule
