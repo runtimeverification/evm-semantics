@@ -86,9 +86,14 @@ module BYTES-SIMPLIFICATION [symbolic]
        andBool X <Int 2 ^Int (8 *Int WR)
       [simplification, concrete(WB, S, WR), preserves-definedness]
 
-    rule [asWord-concat-leading-zeros]:
+    rule [asWord-trim-leading-zeros-concat]:
       #asWord ( BZ +Bytes B ) => #asWord ( B )
       requires #asInteger ( BZ ) ==Int 0
+      [simplification, concrete(BZ)]
+
+    rule [asWord-trim-overflowing-zeros]:
+      #asWord ( B ) => #asWord ( #range(B, lengthBytes(B) -Int 32, 32) )
+      requires 32 <Int lengthBytes(B) andBool #asInteger(#range(B, 0, lengthBytes(B) -Int 32)) ==Int 0
       [simplification, concrete(BZ)]
 
     rule [buf-zero-concat-base]:

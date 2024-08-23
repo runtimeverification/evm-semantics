@@ -111,9 +111,12 @@ KOMPILE_MAIN_FILE: Final = {
     'functional/lemmas-spec.k': 'lemmas-spec.k',
     'functional/abi-spec.k': 'abi-spec.k',
     'functional/merkle-spec.k': 'merkle-spec.k',
+    'functional/slot-updates-spec.k': 'slot-updates-spec.k',
     'functional/storageRoot-spec.k': 'storageRoot-spec.k',
     'mcd/functional-spec.k': 'functional-spec.k',
     'mcd-structured/functional-spec.k': 'functional-spec.k',
+
+
 }
 
 KOMPILE_MAIN_MODULE: Final = {
