@@ -12,14 +12,14 @@ module SLOT-UPDATES [symbolic]
     // Index of first bit that equals one
     syntax Int ::=  #getFirstOneBit(Int) [function, total]
 
-    rule [gfo-succ]: #getFirstOneBit(X:Int) => log2Int ( X &Int ( ( maxUInt256 xorInt X ) +Int 1 ) ) requires          #rangeUInt(256, X) andBool X =/=Int 0
-    rule [gfo-fail]: #getFirstOneBit(X:Int) => -1                                                    requires notBool (#rangeUInt(256, X) andBool X =/=Int 0)
+    rule [gfo-succ]: #getFirstOneBit(X:Int) => log2Int ( X &Int ( ( maxUInt256 xorInt X ) +Int 1 ) ) requires #rangeUInt(256, X) andBool X =/=Int 0 [preserves-definedness]
+    rule [gfo-fail]: #getFirstOneBit(_:Int) => -1                                                    [owise]
 
     // Index of first bit that equals zero
     syntax Int ::= #getFirstZeroBit(Int) [function, total]
 
-    rule [gfz-succ]: #getFirstZeroBit(X:Int) => #getFirstOneBit ( maxUInt256 xorInt X ) requires         #rangeUInt(256, X)
-    rule [gfz-fail]: #getFirstZeroBit(X:Int) => -1                                      requires notBool #rangeUInt(256, X)
+    rule [gfz-succ]: #getFirstZeroBit(X:Int) => #getFirstOneBit ( maxUInt256 xorInt X ) requires #rangeUInt(256, X) [preserves-definedness]
+    rule [gfz-fail]: #getFirstZeroBit(_:Int) => -1                                      [owise]
 
     // Slot updates are performed by the compiler with the help of masks,
     // which are 256-bit integers of the form 11111111100000000000111111111111111
@@ -29,10 +29,10 @@ module SLOT-UPDATES [symbolic]
     syntax Int ::= #getMaskShiftBits(Int)  [function, total]
     syntax Int ::= #getMaskShiftBytes(Int) [function, total]
 
-    rule [gms-bits]: #getMaskShiftBits(X:Int)  => #getFirstZeroBit(X) [concrete(X), simplification]
+    rule [gms-bits]: #getMaskShiftBits(X:Int) => #getFirstZeroBit(X)
 
-    rule [gms-bits-succ]: #getMaskShiftBytes(X:Int) => #getFirstZeroBit(X) /Int 8 requires           #getMaskShiftBits(X) modInt 8 ==Int 0   [concrete(X), simplification, preserves-definedness]
-    rule [gms-bits-fail]: #getMaskShiftBytes(X:Int) => -1                         requires notBool ( #getMaskShiftBits(X) modInt 8 ==Int 0 ) [concrete(X), simplification, preserves-definedness]
+    rule [gms-bits-succ]: #getMaskShiftBytes(X:Int) => #getFirstZeroBit(X) /Int 8 requires #getMaskShiftBits(X) modInt 8 ==Int 0 [preserves-definedness]
+    rule [gms-bits-fail]: #getMaskShiftBytes(_:Int) => -1                         [owise]
 
     // Width of a mask, in bits and in bytes
     syntax Int ::= #getMaskWidthBits(Int)  [function, total]
@@ -40,10 +40,10 @@ module SLOT-UPDATES [symbolic]
 
     rule [gmw-bits-succ-1]: #getMaskWidthBits(X:Int) => 256 -Int #getMaskShiftBits(X:Int)             requires  0 <=Int #getMaskShiftBits(X) andBool 0 ==Int X >>Int #getMaskShiftBits(X) [preserves-definedness]
     rule [gmw-bits-succ-2]: #getMaskWidthBits(X:Int) => #getFirstOneBit(X >>Int #getMaskShiftBits(X)) requires  0 <=Int #getMaskShiftBits(X) andBool 0  <Int X >>Int #getMaskShiftBits(X) [preserves-definedness]
-    rule [gmw-bits-fail]:   #getMaskWidthBits(X:Int) => -1                                            [owise]
+    rule [gmw-bits-fail]:   #getMaskWidthBits(_:Int) => -1                                            [owise]
 
     rule [gmw-bytes-succ]: #getMaskWidthBytes(X:Int) => #getMaskWidthBits(X) /Int 8 requires #getMaskWidthBits(X) modInt 8 ==Int 0 [preserves-definedness]
-    rule [gmw-bytes-fail]: #getMaskWidthBytes(X:Int) => -1                          [owise]
+    rule [gmw-bytes-fail]: #getMaskWidthBytes(_:Int) => -1                          [owise]
 
     // Mask recogniser
     syntax Bool ::= #isMask(Int) [function, total]
@@ -52,20 +52,17 @@ module SLOT-UPDATES [symbolic]
     rule [is-mask-true]:
       #isMask(X:Int) => maxUInt256 ==Int X |Int ( 2 ^Int ( #getMaskShiftBits(X) +Int #getMaskWidthBits(X) ) -Int 1 )
         requires 0 <=Int #getMaskShiftBytes(X) andBool 0 <=Int #getMaskWidthBytes(X)
-        [concrete(X), simplification, preserves-definedness]
+        [preserves-definedness]
 
     // and is not a mask otherwise
-    rule [is-mask-false]:
-      #isMask(X:Int) => false
-        requires notBool ( 0 <=Int #getMaskShiftBytes(X) andBool 0 <=Int #getMaskWidthBytes(X) )
-        [concrete(X), simplification, preserves-definedness]
+    rule [is-mask-false]: #isMask(_:Int) => false [owise]
 
     // Shift recogniser
     syntax Bool ::= #isByteShift(Int) [function, total]
 
     // A number is a shift if it is non-zero, in the Word range, and a power of two divisible by 8
     rule #isByteShift(X) => X ==Int 2 ^Int log2Int(X) andBool log2Int(X) modInt 8 ==Int 0 requires 0 <Int X andBool X <Int pow256 [preserves-definedness]
-    rule #isByteShift(X) => false                                                         [owise]
+    rule #isByteShift(_) => false                                                         [owise]
 
     // ###########################################################################
     // Masking lemmas
