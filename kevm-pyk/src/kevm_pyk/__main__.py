@@ -599,24 +599,29 @@ def exec_run(options: RunOptions) -> None:
         )
 
     if options.proof_hint:
-        kore_input = options.input_file.name.split('.')[0] + '.kore'
-        logging.warning('Proof hints are not supported in the pyk krun at the momment.')
-        logging.info('Saving the input file as %s', kore_input)
-        logging.info(
-            'If you want to emit hints take the krun command shown below and run it replacing the temp file by the kore file generated and append the `--proof-hint` flag to your command.'
+        logging.warning(
+            'Running KEVM with proof hint options enabled, remember to not use this with any `--verbose` mode if you are redirecting its output.'
         )
-        with open(kore_input, 'w') as f:
-            kore_pattern.write(f)
-
-    kevm.run(
-        kore_pattern,
-        depth=options.depth,
-        term=True,
-        expand_macros=options.expand_macros,
-        output=options.output,
-        check=True,
-        debugger=options.debugger,
-    )
+        output_bytes = kevm.run_proof_hint(
+            kore_pattern,
+            depth=options.depth,
+            parser='cat',
+            term=True,
+            expand_macros=options.expand_macros,
+            debugger=options.debugger,
+            proof_hint=True,
+        )
+        sys.stdout.buffer.write(output_bytes)
+    else:
+        kevm.run(
+            kore_pattern,
+            depth=options.depth,
+            term=True,
+            expand_macros=options.expand_macros,
+            output=options.output,
+            check=True,
+            debugger=options.debugger,
+        )
 
 
 def exec_kast(options: KastOptions) -> None:
