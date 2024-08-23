@@ -11,7 +11,7 @@ module BUF-SYNTAX
 Both `#bufStrict(SIZE, DATA)` and `#buf(SIZE, DATA)` represents a symbolic byte array of length `SIZE` bytes, left-padded with zeroes.
 Version `#bufStrict` is partial and only defined when `DATA` is in the range given by `SIZE`.
 It rewrites to `#buf` when data is in range, and is expected to immediately evaluate into `#buf` in all contexts.
-Version `#buf` is total and artificially defined `modulo 2 ^Int (SIZE *Int 8)`.
+Version `#buf` is total and artificially defined `modulo 2 ^Int (8 *Int SIZE)`.
 This division is required to facilitate symbolic reasoning in Haskell backend, because Haskell has limitations
 when dealing with partial functions.
 
@@ -36,17 +36,17 @@ module BUF
 
     syntax Int ::= #powByteLen ( Int ) [symbol(#powByteLen), function, no-evaluators]
  // ---------------------------------------------------------------------------------
- // rule #powByteLen(SIZE) => 2 ^Int (SIZE *Int 8)
-    rule 2 ^Int (SIZE *Int 8) => #powByteLen(SIZE) [symbolic(SIZE), simplification]
+ // rule #powByteLen(SIZE) => 2 ^Int (8 *Int SIZE)
+    rule 2 ^Int (8 *Int SIZE) => #powByteLen(SIZE) [symbolic(SIZE), simplification]
 
     rule 0    <Int #powByteLen(SIZE) => true requires 0 <=Int SIZE [simplification, preserves-definedness]
     rule SIZE <Int #powByteLen(SIZE) => true requires 0 <=Int SIZE [simplification, preserves-definedness]
     rule #write(WM, IDX, VAL) => WM [ IDX := #buf(1, VAL) ] [simplification]
 
     rule #bufStrict(SIZE, DATA) => #buf(SIZE, DATA)
-      requires #range(0 <= DATA < (2 ^Int (SIZE *Int 8)))
+      requires #range(0 <= DATA < (2 ^Int (8 *Int SIZE)))
 
-    rule #buf(SIZE, DATA) => #padToWidth(SIZE, #asByteStack(DATA %Int (2 ^Int (SIZE *Int 8))))
+    rule #buf(SIZE, DATA) => #padToWidth(SIZE, #asByteStack(DATA %Int (2 ^Int (8 *Int SIZE))))
       requires 0 <Int SIZE
       [concrete]
     rule #buf(_SIZE, _) => .Bytes [owise, concrete] // SIZE <= 0

@@ -48,7 +48,7 @@ module LEMMAS-MCD-SYNTAX
 endmodule
 
 module LEMMAS-MCD [symbolic]
-    imports LEMMAS-WITHOUT-SLOT-UPDATES
+    imports LEMMAS
     imports LEMMAS-MCD-SYNTAX
     imports WORD-PACK
 
@@ -61,10 +61,12 @@ module LEMMAS-MCD [symbolic]
     rule sgn(chop(X)) ==Int  1 => 0 <=Int X requires #rangeSInt(256, X) [simplification]
     rule sgn(chop(X)) ==Int -1 => X  <Int 0 requires #rangeSInt(256, X) [simplification]
 
-    rule chop(X) ==Int 0 => X ==Int 0 requires #rangeSInt(256, X) [simplification, comm]
+    rule chop(X) ==Int 0 => X ==Int 0 requires #rangeSInt(256, X) [simplification]
 
     rule bool2Word( X:Bool ) |Int bool2Word( Y:Bool ) => bool2Word(X orBool Y) [simplification]
-    rule bool2Word( X:Bool ) ==Int 0                  => notBool X             [simplification]
+
+    rule [add-cancel-ml-01]: { A +Int B #Equals        A } => { B #Equals 0 } [simplification]
+    rule [add-cancel-ml-02]: { A +Int B #Equals C +Int B } => { A #Equals C } [simplification]
 
     // ### vat-subui-fail-rough
     //
@@ -103,48 +105,40 @@ module LEMMAS-MCD [symbolic]
        andBool Y <=Int 0
        andBool notBool #rangeUInt(256, X -Int Y) [simplification]
 
-    rule { chop(X) #Equals chop(Y) } => { X #Equals Y }
-         requires #rangeSInt(256, X) andBool #rangeSInt(256, Y)
-         [simplification]
-
-   // ########################
-   // Buffer Reasoning
-   // ########################
-
-    rule { #buf(32, BY:Int):Bytes #Equals #buf(32, BZ:Int):Bytes } => { BY #Equals BZ }
-         requires #rangeUInt(256, BY) andBool #rangeUInt(256, BZ) [simplification]
-
-    rule { BA1:Bytes +Bytes (BA2:Bytes +Bytes BA3:Bytes) #Equals BA4:Bytes +Bytes BA3 } => { (BA1 +Bytes BA2) #Equals BA4 } [simplification]
-
-    rule { BA1:Bytes #Equals BA2:Bytes +Bytes BA3:Bytes } =>
-         { true #Equals BA1 ==K BA2 andBool .Bytes ==K BA3 }
-         requires (lengthBytes(BA1) ==Int lengthBytes(BA2))
-         [simplification]
-
-  // ########################
-  // Map
-  // ########################
-
-    rule #range(M:Bytes [ K <- V ]                    , START, WIDTH) => #range(M [ K := V : .Bytes ], START, WIDTH)  requires K +Int 1                 ==Int START +Int WIDTH andBool START <=Int K andBool 0 <Int WIDTH andBool 0 <=Int START [concrete(K    , V     ), simplification]
-    rule #range(M:Bytes [ K <- V ] [ K' := VS':Bytes ], START, WIDTH) => #range(M [ K := V : VS'    ], START, WIDTH)  requires K' +Int lengthBytes(VS') ==Int START +Int WIDTH andBool START <=Int K andBool 0 <Int WIDTH andBool 0 <=Int START
-                                                                                                                       andBool K +Int 1                 ==Int K'                                                                                [concrete(K, K', V, VS'), simplification]
-    rule { (M:Map [K <- V1]) #Equals (M [K <- V2]) } => { V1 #Equals V2 }
-         [simplification]
-
-  // ########################
-  // Buffer Reasoning
-  // ########################
-
-    rule #range( (W0 : WS) , 0     , WIDTH ) => W0 : ( #range(WS, 0, WIDTH -Int 1 ))  requires 0 <Int WIDTH [simplification]
-    rule #range( (_  : WS) , START , WIDTH ) => #range( WS, START -Int 1, WIDTH )     requires 0 <Int START [simplification]
+    rule   chop(X)  ==Int  chop(Y)   =>   X  ==Int  Y   requires #rangeSInt(256, X) andBool #rangeSInt(256, Y) [simplification]
+    rule { chop(X) #Equals chop(Y) } => { X #Equals Y } requires #rangeSInt(256, X) andBool #rangeSInt(256, Y) [simplification]
 
   // ########################
   // Keccak
   // ########################
 
-    rule keccak(_) ==Int I => false requires #rangeSmall(I) [simplification]
-    rule keccak(_) +Int I1 ==Int I2 => false
-      requires #rangeSmall(I1) andBool #rangeSmall(I2) [simplification]
+    rule 0 <=Int keccak( _ )             => true [simplification, smt-lemma]
+    rule         keccak( _ ) <Int pow256 => true [simplification, smt-lemma]
+
+    // keccak does not equal a concrete value
+    rule [keccak-eq-conc-false]: keccak(_A)  ==Int _B => false [symbolic(_A), concrete(_B), simplification(30), comm]
+    rule [keccak-neq-conc-true]: keccak(_A) =/=Int _B => true  [symbolic(_A), concrete(_B), simplification(30), comm]
+    rule [keccak-eq-conc-false-ml-lr]: { keccak(A) #Equals B } => { true #Equals keccak(A) ==Int B } [symbolic(A), concrete(B), simplification]
+    rule [keccak-eq-conc-false-ml-rl]: { B #Equals keccak(A) } => { true #Equals keccak(A) ==Int B } [symbolic(A), concrete(B), simplification]
+
+    rule [keccak-mappings-overlap-false]:      keccak(A) +Int B  ==Int  keccak(C)   => false                                             requires notBool (A ==K C) [symbolic(A, C), concrete(B), simplification, comm]
+    rule [keccak-mappings-overlap-false-ml]: { keccak(A) +Int B #Equals keccak(C) } => { true #Equals keccak(A) +Int B ==Int keccak(C) } requires notBool (A ==K C) [symbolic(A, C), concrete(B), simplification, comm]
+
+    // keccak is injective
+    rule [keccak-inj]: keccak(A) ==Int keccak(B) => A ==K B [simplification]
+    rule [keccak-inj-ml]: { keccak(A) #Equals keccak(B) } => { true #Equals A ==K B } [simplification]
+
+    // chop of negative keccak
+    rule chop (0 -Int keccak(BA)) => pow256 -Int keccak(BA)
+       [simplification]
+
+    // keccak cannot equal a number outside of its range
+    rule { X #Equals keccak (_) } => #Bottom
+      requires X <Int 0 orBool X >=Int pow256
+      [concrete(X), simplification]
+
+    // keccak cannot land too close to 2 ** 256
+    rule keccak(B:Bytes) <Int BOUND:Int => true requires BOUND >=Int pow256 -Int 32 [simplification, concrete(BOUND)]
 
   // ########################
   // Word Reasoning
@@ -197,8 +191,6 @@ module LEMMAS-MCD [symbolic]
     rule X s<Word 0 => bool2Word(sgn(X) ==Int -1)  requires #rangeUInt(256, X) [simplification]
 
     rule X -Word Y <=Int X => #rangeUInt(256, X -Int Y) requires #rangeUInt(256, X) andBool #rangeUInt(256, Y) [simplification]
-
-    rule 0 <=Int X +Int Y => true requires 0 <=Int X andBool 0 <=Int Y [simplification]
 
     // ;(set-option :smt.mbqi true)
     //
@@ -261,32 +253,13 @@ module LEMMAS-MCD [symbolic]
 
     rule ADDR in (SetItem(I) REST) => ADDR in REST requires #notPrecompileAddress(ADDR) andBool notBool #notPrecompileAddress(I) [simplification]
 
-    // This proof ends up with side-conditions which look like this:
-    // Tic ==K 0 andBool 0 ==K maxUInt48 &Int (#lookup(STORAGE, ADDR) /Int pow160) andBool Tic ==K maxUInt48 &Int (#lookup(STORAGE, ADDR) /Int pow160)
-    // So we need this rule to do the structural simplification because the Java backend will not use this string of equalities to do the simplification directly.
-    rule #WordPackAddrUInt48UInt48(ADDR, maxUInt48 &Int (ADDR_UINT48_UINT48 /Int pow160), UINT48_2) => #WordPackAddrUInt48UInt48(ADDR, 0, UINT48_2) requires maxUInt48 &Int (ADDR_UINT48_UINT48 /Int pow160) ==Int 0 [simplification]
-
   // ########################
    // Map
    // ########################
 
-    rule M:Bytes [ K <- V ]            [ K' <- V' ] => M [ K' <- V' ] [ K <- V ]             requires K' <Int K                        [simplification]
-    rule M [ K := BUF:Bytes ] [ K' <- V' ] => M [ K' <- V' ] [ K := BUF ]  requires K' <Int K
-                                                                                               orBool K +Int lengthBytes(BUF) <=Int K' [simplification]
     rule M [ K <- V ] => M requires #lookup(M, K) ==Int V [simplification]
 
-    rule M [ K := BUF:Bytes ] [ K' := BUF':Bytes ] => M [ K := (#range(BUF , 0 , K' -Int K )) ] [ K' := BUF' ]
-       requires K <Int K'
-        andBool K' <Int K +Int lengthBytes(BUF)
-        andBool K +Int lengthBytes(BUF) <Int K' +Int lengthBytes(BUF')
-       [simplification]
-
     rule M:Map [ K1 <- _ ] [ K2 <- V2 ] [ K1 <- V1' ] => M [ K1 <- V1' ] [ K2 <- V2 ] requires K1 =/=Int K2 [simplification]
-
-    rule M [ K1 := (BUF11 +Bytes BUF12) ] [ K2 := BUF2 ] => M [ K1 +Int lengthBytes(BUF11) := BUF12 ] [ K2 := BUF2 ]
-       requires K2 <=Int K1
-        andBool K1 +Int lengthBytes(BUF11) <=Int K2 +Int lengthBytes(BUF2)
-       [simplification]
 
   // ########################
   // Arithmetic
@@ -389,30 +362,18 @@ module LEMMAS-MCD [symbolic]
     //     (= (sdiv (chop (* x y)) (chop y)) x)
     // ))
     // (check-sat)
-    rule chop(X *Int Y) /sWord chop(Y) => X requires #rangeUInt(256, X) andBool #rangeSInt(256, Y) andBool #rangeSInt(256, X *Int Y) andBool Y =/=Int 0 [simplification]
-
-    rule chop(X +Int chop(Y)) => chop(X +Int Y) [simplification]
+    rule chop(X *Int Y) /sWord ( Y +Int pow256 ) => X requires #rangeUInt(256, X) andBool           Y <Int 0 andBool #rangeSInt(256, X *Int Y)                    [simplification]
+    rule chop(X *Int Y) /sWord chop(Y)           => X requires #rangeUInt(256, X) andBool #rangeSInt(256, Y) andBool #rangeSInt(256, X *Int Y) andBool Y =/=Int 0 [simplification]
 
     rule maxUInt48 &Int (X +Int Y) <Int X => true
       requires #rangeUInt(48, X)
        andBool #rangeUInt(48, Y)
        andBool notBool (X +Int Y <Int pow48) [simplification]
 
-    rule 0 <=Int X |Int Y => true requires 0 <=Int X andBool 0 <=Int Y [simplification]
-    rule 0 <=Int X &Int Y => true requires 0 <=Int X andBool 0 <=Int Y [simplification]
-
-    rule X |Int Y <Int pow256 => true requires X <Int pow256 andBool Y <Int pow256 [simplification]
-    rule X &Int Y <Int pow256 => true requires X <Int pow256 andBool Y <Int pow256 [simplification]
-
-    rule (maxUInt160 &Int (X |Int Y)) => (maxUInt160 &Int X) |Int (maxUInt160 &Int Y) [simplification]
-
     rule chop(X *Int Y) => X *Int Y requires 0 <=Int X andBool 0 <=Int Y andBool X *Int Y <Int pow256 [simplification]
 
     rule X <Int X -Int Y => false requires 0 <=Int Y [simplification]
     rule X +Int Y <Int X => false requires 0 <=Int Y [simplification]
-
-    rule <acctID> ACCTID </acctID>  ==K <acctID> ACCTID' </acctID> => ACCTID  ==Int ACCTID' [simplification]
-    rule <acctID> ACCTID </acctID> =/=K <acctID> ACCTID' </acctID> => ACCTID =/=Int ACCTID' [simplification]
 
     rule ((K |-> _) REST) [ K' <- undef ] => REST                             requires K  ==K K' [simplification]
     rule ((K |-> V) REST) [ K' <- undef ] => (K |-> V) (REST [ K' <- undef ]) requires K =/=K K' [simplification]
@@ -438,5 +399,8 @@ module LEMMAS-MCD [symbolic]
     rule X:Int ==Int A:Int orBool X ==Int B:Int orBool X ==Int C:Int orBool X ==Int D:Int => X ==Int D
          requires X =/=Int A andBool X =/=Int B andBool X =/=Int C
          [simplification]
+
+    rule #if B #then C #else D #fi => C requires         B [simplification]
+    rule #if B #then C #else D #fi => C requires notBool B [simplification]
 
 endmodule
