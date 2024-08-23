@@ -115,8 +115,6 @@ KOMPILE_MAIN_FILE: Final = {
     'functional/storageRoot-spec.k': 'storageRoot-spec.k',
     'mcd/functional-spec.k': 'functional-spec.k',
     'mcd-structured/functional-spec.k': 'functional-spec.k',
-
-
 }
 
 KOMPILE_MAIN_MODULE: Final = {
