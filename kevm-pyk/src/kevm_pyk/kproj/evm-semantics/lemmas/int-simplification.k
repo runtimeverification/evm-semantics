@@ -6,10 +6,8 @@ module INT-SIMPLIFICATION-HASKELL [symbolic]
     imports INT-SIMPLIFICATION-COMMON
 
   // ###########################################################################
-  // add, sub
+  // add, sub: associativity normalization
   // ###########################################################################
-
-    // associativity normalization
 
     rule A +Int (B +Int C) => (A +Int B) +Int C [symbolic(A, B), concrete(C), simplification(40)]
     rule A +Int (B -Int C) => (A +Int B) -Int C [symbolic(A, B), concrete(C), simplification(40)]
@@ -30,7 +28,7 @@ module INT-SIMPLIFICATION-HASKELL [symbolic]
     rule (A -Int B) -Int C => A -Int (B +Int C) [concrete(B, C), symbolic(A), simplification(40)]
 
   // ###########################################################################
-  // comparison normalization
+  // add, sub: comparison normalization
   // ###########################################################################
 
     rule A +Int B   <Int C => A  <Int C -Int B [concrete(B, C), symbolic(A), simplification(45)]
@@ -88,9 +86,15 @@ module INT-SIMPLIFICATION-HASKELL [symbolic]
     rule A +Int B  >Int C +Int D => A -Int C  >Int D -Int B [concrete(B, D), symbolic(A, C), simplification(45)]
     rule A +Int B >=Int C +Int D => A -Int C >=Int D -Int B [concrete(B, D), symbolic(A, C), simplification(45)]
 
-    rule A +Int B ==Int C +Int D => A -Int C ==Int D -Int B [concrete(B, D), symbolic(A, C), simplification(45)]
+    rule A +Int B ==Int A        => B        ==Int 0        [simplification(40)]
+    rule A +Int B ==Int B        => A        ==Int 0        [simplification(40)]
+    rule A +Int B ==Int C +Int B => A        ==Int C        [simplification(40)]
+    rule A +Int B ==Int C +Int D => A -Int C ==Int D -Int B [simplification(45), symbolic(A, C), concrete(B, D)]
 
-    rule { A +Int B #Equals C +Int D } => { A -Int C #Equals D -Int B } [concrete(B, D), symbolic(A, C), simplification(45)]
+    rule { A +Int B #Equals A        } => { B        #Equals 0 }        [simplification(40)]
+    rule { A +Int B #Equals B        } => { A        #Equals 0 }        [simplification(40)]
+    rule { A +Int B #Equals C +Int B } => { A        #Equals C        } [simplification(40)]
+    rule { A +Int B #Equals C +Int D } => { A -Int C #Equals D -Int B } [simplification(45), symbolic(A, C), concrete(B, D)]
 
 endmodule
 
@@ -134,10 +138,10 @@ module INT-SIMPLIFICATION-COMMON
   // mul
   // ###########################################################################
 
+    rule A *Int B => B *Int A [simplification, symbolic(A), concrete(B)]
+
     rule 1 *Int A => A [simplification]
-    rule A *Int 1 => A [simplification]
     rule 0 *Int _ => 0 [simplification]
-    rule _ *Int 0 => 0 [simplification]
 
     rule (A *Int C) +Int (B *Int C) => (A +Int B) *Int C [simplification]
     rule (A *Int C) -Int (B *Int C) => (A -Int B) *Int C [simplification]
@@ -151,11 +155,15 @@ module INT-SIMPLIFICATION-COMMON
     rule A /Int 1 => A  [simplification, preserves-definedness]
 
     // safeMath mul check c / a == b where c == a * b
-    rule (A *Int B) /Int A => B requires A =/=Int 0 [simplification, preserves-definedness]
+    rule (A *Int B) /Int A => B requires notBool A ==Int 0 [simplification, preserves-definedness]
+    rule (B *Int A) /Int A => B requires notBool A ==Int 0 [simplification, preserves-definedness]
 
-    rule ((A *Int B) /Int C) /Int B => A /Int C requires B =/=Int 0 andBool C =/=Int 0 [simplification, preserves-definedness]
+    rule ((A *Int B) /Int C) /Int B => A /Int C requires 0 <Int B andBool 0 <Int C [simplification, preserves-definedness]
+    rule ((A *Int B) /Int C) /Int A => B /Int C requires 0 <Int A andBool 0 <Int C [simplification, preserves-definedness]
 
-    rule (A /Int 32) *Int 32 => A requires A modInt 32 ==Int 0 [simplification, preserves-definedness]
+    rule (A *Int B) /Int C => B *Int (A /Int C)
+      requires notBool C ==Int 0 andBool A modInt C ==Int 0
+      [simplification, concrete(A, C), preserves-definedness]
 
     rule (A *Int B) /Int C <=Int D => true
       requires 0 <=Int A andBool 0 <=Int B andBool 0 <Int C andBool A <=Int D andBool B <=Int C
