@@ -501,27 +501,32 @@ colors = ["colorama (>=0.4.6)"]
 
 [[package]]
 name = "kframework"
-version = "7.1.121"
+version = "7.1.0"
 description = ""
 optional = false
-python-versions = "<4.0,>=3.10"
-files = [
-    {file = "kframework-7.1.121-py3-none-any.whl", hash = "sha256:92796088daf5c5083b0daa6e5b22e633f68295c58e97830c2c0538a48ba08d0a"},
-    {file = "kframework-7.1.121.tar.gz", hash = "sha256:9ea14f197abcebf24b47b0cd4c5b95f0d0b824eba63741d1176c0a6c468a6847"},
-]
+python-versions = "^3.10"
+files = []
+develop = false
 
 [package.dependencies]
-cmd2 = ">=2.4.2,<3.0.0"
-coloredlogs = ">=15.0.1,<16.0.0"
-filelock = ">=3.9.0,<4.0.0"
-graphviz = ">=0.20.1,<0.21.0"
-hypothesis = ">=6.103.1,<7.0.0"
+cmd2 = "^2.4.2"
+coloredlogs = "^15.0.1"
+filelock = "^3.9.0"
+graphviz = "^0.20.1"
+hypothesis = "^6.103.1"
 psutil = "5.9.5"
-pybind11 = ">=2.10.3,<3.0.0"
+pybind11 = "^2.10.3"
 pytest = "*"
-textual = ">=0.27.0,<0.28.0"
-tomli = ">=2.0.1,<3.0.0"
-xdg-base-dirs = ">=6.0.1,<7.0.0"
+textual = "^0.27.0"
+tomli = "^2.0.1"
+xdg-base-dirs = "^6.0.1"
+
+[package.source]
+type = "git"
+url = "https://github.com/runtimeverification/k.git"
+reference = "merged-edge-structure"
+resolved_reference = "1ce88d73eedf9801964e6df24c3ee64f893d5a77"
+subdirectory = "pyk"
 
 [[package]]
 name = "linkify-it-py"
@@ -1017,13 +1022,13 @@ tokenize-rt = ">=5.2.0"
 
 [[package]]
 name = "rich"
-version = "13.7.1"
+version = "13.8.0"
 description = "Render rich text, tables, progress bars, syntax highlighting, markdown and more to the terminal"
 optional = false
 python-versions = ">=3.7.0"
 files = [
-    {file = "rich-13.7.1-py3-none-any.whl", hash = "sha256:4edbae314f59eb482f54e9e30bf00d33350aaa94f4bfcd4e9e3110e64d0d7222"},
-    {file = "rich-13.7.1.tar.gz", hash = "sha256:9be308cb1fe2f1f57d67ce99e95af38a1e2bc71ad9813b0e247cf7ffbcc3a432"},
+    {file = "rich-13.8.0-py3-none-any.whl", hash = "sha256:2e85306a063b9492dffc86278197a60cbece75bcb766022f3436f567cae11bdc"},
+    {file = "rich-13.8.0.tar.gz", hash = "sha256:a5ac1f1cd448ade0d59cc3356f7db7a7ccda2c8cbae9c7a90c28ff463d3e91f4"},
 ]
 
 [package.dependencies]
@@ -1162,20 +1167,24 @@ files = [
 
 [[package]]
 name = "zipp"
-version = "3.20.0"
+version = "3.20.1"
 description = "Backport of pathlib-compatible object wrapper for zip files"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "zipp-3.20.0-py3-none-any.whl", hash = "sha256:58da6168be89f0be59beb194da1250516fdaa062ccebd30127ac65d30045e10d"},
-    {file = "zipp-3.20.0.tar.gz", hash = "sha256:0145e43d89664cfe1a2e533adc75adafed82fe2da404b4bbb6b026c0157bdb31"},
+    {file = "zipp-3.20.1-py3-none-any.whl", hash = "sha256:9960cd8967c8f85a56f920d5d507274e74f9ff813a0ab8889a5b5be2daf44064"},
+    {file = "zipp-3.20.1.tar.gz", hash = "sha256:c22b14cc4763c5a5b04134207736c107db42e9d3ef2d9779d465f5f1bcba572b"},
 ]
 
 [package.extras]
+check = ["pytest-checkdocs (>=2.4)", "pytest-ruff (>=0.2.1)"]
+cover = ["pytest-cov"]
 doc = ["furo", "jaraco.packaging (>=9.3)", "jaraco.tidelift (>=1.4)", "rst.linker (>=1.9)", "sphinx (>=3.5)", "sphinx-lint"]
-test = ["big-O", "importlib-resources", "jaraco.functools", "jaraco.itertools", "jaraco.test", "more-itertools", "pytest (>=6,!=8.1.*)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=2.2)", "pytest-ignore-flaky", "pytest-mypy", "pytest-ruff (>=0.2.1)"]
+enabler = ["pytest-enabler (>=2.2)"]
+test = ["big-O", "importlib-resources", "jaraco.functools", "jaraco.itertools", "jaraco.test", "more-itertools", "pytest (>=6,!=8.1.*)", "pytest-ignore-flaky"]
+type = ["pytest-mypy"]
 
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "c105f61818e5ff89a8893297e422e6d33bdad78833c0c4b669f51020e6b7f196"
+content-hash = "0d3dc7f21247864bc0721f895f35b35909c31578d8f6a237c897426cb762e9d7"
