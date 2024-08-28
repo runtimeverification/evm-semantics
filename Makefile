@@ -4,7 +4,7 @@ all: poetry
 # Building
 # --------
 
-PYTHON_BIN   := python3.10
+PYTHON_BIN   := $(shell k-which-python)
 KEVM_PYK_DIR := ./kevm-pyk
 POETRY       := poetry -C $(KEVM_PYK_DIR)
 POETRY_RUN   := $(POETRY) run --
@@ -12,7 +12,7 @@ POETRY_RUN   := $(POETRY) run --
 
 .PHONY: poetry-env
 poetry-env:
-	$(POETRY) env use $(PYTHON_BIN)
+	$(POETRY) env use --no-cache $(PYTHON_BIN)
 
 poetry: poetry-env
 	$(POETRY) install
