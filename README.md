@@ -134,13 +134,13 @@ You also need to get the blockchain plugin submodule and install it.
 
 ```sh
 git submodule update --init --recursive
-CXX=clang++-15 poetry -C kevm-pyk run kdist --verbose build evm-semantics.plugin
+poetry -C kevm-pyk run kdist --verbose build evm-semantics.plugin
 ```
 
 To change the default compiler:
 
 ```sh
-CXX=clang++-14 poetry -C kevm-pyk run kdist --verbose build evm-semantics.plugin
+CXX=clang++-15 poetry -C kevm-pyk run kdist --verbose build evm-semantics.plugin
 ```
 
 On Apple silicon:
