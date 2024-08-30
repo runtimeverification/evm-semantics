@@ -4,7 +4,11 @@ all: poetry
 # Building
 # --------
 
-PYTHON_BIN   := $(shell k-which-python)
+ifeq ($(shell command -v k-which-python),)
+    PYTHON_BIN := python3.10
+else
+    PYTHON_BIN := $(shell k-which-python)
+endif
 KEVM_PYK_DIR := ./kevm-pyk
 POETRY       := poetry -C $(KEVM_PYK_DIR)
 POETRY_RUN   := $(POETRY) run --
