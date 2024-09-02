@@ -50,14 +50,31 @@ module EVM-INT-SIMPLIFICATION
   // #asWord
   // ###########################################################################
 
-  // Unification: equality with `#asWord` to equality with `+Bytes`
-  rule #asWord ( B:Bytes ) ==Int X:Int => #buf ( 32 -Int lengthBytes(B), 0 ) +Bytes B ==K #buf ( 32, X )
-    requires lengthBytes( B ) <=Int 32 andBool #rangeUInt(256, X)
-    [simplification, comm, preserves-definedness]
+  // Unification: two `#asWord`s
+  rule [asWord-eq-asWord]:
+    #asWord ( B1 ) ==Int #asWord ( B2 ) => #buf ( 32 -Int lengthBytes(B1), 0 ) +Bytes B1 ==K #buf ( 32 -Int lengthBytes(B2), 0 ) +Bytes B2
+    requires lengthBytes(B1) <=Int 32 andBool lengthBytes(B2) <=Int 32
+    [simplification, preserves-definedness]
 
-  // Unification: equality with `#asWord` to equality with `+Bytes`
-  rule { #asWord ( B:Bytes ) #Equals X:Int } => { #buf ( 32 -Int lengthBytes(B), 0 ) +Bytes B #Equals #buf ( 32, X ) } [simplification, preserves-definedness]
-  rule { X:Int #Equals #asWord ( B:Bytes ) } => { #buf ( 32 -Int lengthBytes(B), 0 ) +Bytes B #Equals #buf ( 32, X ) } [simplification, preserves-definedness]
+  // Unification: two `#asWord`s
+  rule [asWord-eq-asWord-ml]:
+    { #asWord ( B1 ) #Equals #asWord ( B2 ) } => { true #Equals #asWord ( B1 ) ==Int #asWord ( B2 ) }
+    [simplification, preserves-definedness]
+
+  // Unification: `#asWord` and concrete number
+  rule [asWord-eq-num]:
+    #asWord ( B:Bytes ) ==Int X:Int =>
+      0 <=Int X andBool X <Int 2 ^Int (8 *Int minInt(32, lengthBytes(B)))
+                andBool (
+                  ( lengthBytes(B) <=Int 32 andBool #buf ( 32 -Int lengthBytes(B), 0 ) +Bytes B ==K #buf ( 32, X ) )
+                    orBool
+                  ( lengthBytes(B) >Int 32 andBool #range ( B, lengthBytes(B) -Int 32, 32 ) ==K #buf ( 32, X ) )
+                )
+    [simplification, concrete(X), comm, preserves-definedness]
+
+  // Unification: `#asWord` and concrete number
+  rule [asWord-eq-num-ml-l]: { #asWord ( B:Bytes ) #Equals X:Int } => { true #Equals #asWord ( B:Bytes ) ==K X:Int } [simplification, concrete(X), preserves-definedness]
+  rule [asWord-eq-num-ml-r]: { X:Int #Equals #asWord ( B:Bytes ) } => { true #Equals #asWord ( B:Bytes ) ==K X:Int } [simplification, concrete(X), preserves-definedness]
 
   // Reduction: we can always remove leading zeros
   rule [asWord-trim-leading-zeros]:
@@ -102,11 +119,11 @@ module EVM-INT-SIMPLIFICATION
   rule [asWord-ub]: #asWord( _ ) <Int pow256 => true [simplification, smt-lemma]
 
   // Comparison: `#asWord(B)` is certainly less than something that does not fit into `lengthBytes(B)` bytes
-  rule [asWord-lt]:  #asWord ( B )  <Int X:Int => true  requires X >=Int   2 ^Int (8 *Int minInt(32, lengthBytes(B)))          [simplification, preserves-definedness]
+  rule [asWord-lt]:  #asWord ( B )  <Int X:Int => true  requires X >=Int   2 ^Int (8 *Int minInt(32, lengthBytes(B)))               [simplification, preserves-definedness]
   // Comparison: `#asWord(B)` is certainly less than or equal to something that is not less than the max number fitting into `lengthBytes(B)` bytes
-  rule [asWord-le]:  #asWord ( B ) <=Int X:Int => true  requires X >=Int ( 2 ^Int (8 *Int minInt(32, lengthBytes(B))) -Int 1 ) [simplification, preserves-definedness]
-  // Comparison: `#asWord(B)` is certainly not equal to something that does not fit into `lengthBytes(B)` bytes
-  rule [asWord-neq]: #asWord ( B ) ==Int X:Int => false requires X >=Int   2 ^Int (8 *Int minInt(32, lengthBytes(B)))          [simplification, preserves-definedness]
+  rule [asWord-le]:  #asWord ( B ) <=Int X:Int => true  requires X >=Int ( 2 ^Int (8 *Int minInt(32, lengthBytes(B))) -Int 1 )      [simplification, preserves-definedness]
+  // Comparison: `#asWord(B)` is certainly not equal to either something negative or something not fitting into `lengthBytes(B)` bytes
+  rule [asWord-neq]: #asWord ( B ) ==Int X:Int => false requires X <Int 0 orBool X >=Int 2 ^Int (8 *Int minInt(32, lengthBytes(B))) [simplification, preserves-definedness]
 
   // Comparison: `#asWord` of `+Bytes` when lower bytes match, with `<Int`
   rule [asWord-concat-lt]:
