@@ -129,7 +129,7 @@ module STORAGE-SPEC
 
           <account>
             <acctID> ACCTID </acctID>
-            <storage> ACCT_STORAGE => ACCT_STORAGE [ MYBOOL_KEY <- NEW_VAL |Int ((~Word 255) &Int OLD_STORAGE_CONTENT) ] </storage>
+            <storage> ACCT_STORAGE => ACCT_STORAGE [ MYBOOL_KEY <- NEW_STORAGE_CONTENT ] </storage>
             ...
           </account>
 
