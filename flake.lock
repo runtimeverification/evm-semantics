@@ -370,16 +370,16 @@
         ]
       },
       "locked": {
-        "lastModified": 1724947368,
-        "narHash": "sha256-lJfhlPjI515NJnV8621tVSD1tOeAOKn1G4bDgO4szcs=",
+        "lastModified": 1725242169,
+        "narHash": "sha256-mH6gHcpn5bNlbMFQlOXW+xK8OyC9Won76ueuMqVKx2k=",
         "owner": "runtimeverification",
         "repo": "k",
-        "rev": "fd1ebee32b51b25a5008fe4daee28ec816927856",
+        "rev": "9adf619347c69e81e6153c198b55f5bda8e15f9d",
         "type": "github"
       },
       "original": {
         "owner": "runtimeverification",
-        "ref": "v7.1.125",
+        "ref": "4606-adjust-smt-hooks-for-t-division",
         "repo": "k",
         "type": "github"
       }
@@ -711,17 +711,17 @@
       },
       "locked": {
         "dir": "pyk",
-        "lastModified": 1724947368,
-        "narHash": "sha256-lJfhlPjI515NJnV8621tVSD1tOeAOKn1G4bDgO4szcs=",
+        "lastModified": 1725242169,
+        "narHash": "sha256-mH6gHcpn5bNlbMFQlOXW+xK8OyC9Won76ueuMqVKx2k=",
         "owner": "runtimeverification",
         "repo": "k",
-        "rev": "fd1ebee32b51b25a5008fe4daee28ec816927856",
+        "rev": "9adf619347c69e81e6153c198b55f5bda8e15f9d",
         "type": "github"
       },
       "original": {
         "dir": "pyk",
         "owner": "runtimeverification",
-        "ref": "v7.1.125",
+        "ref": "4606-adjust-smt-hooks-for-t-division",
         "repo": "k",
         "type": "github"
       }
