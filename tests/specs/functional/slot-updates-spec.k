@@ -25,6 +25,9 @@ module SLOT-UPDATES-SPEC
     claim [gfob-min]: <k> runLemma( #getFirstOneBit(0         ) ) => doneLemma( -1 ) ... </k>
     claim [gfob-max]: <k> runLemma( #getFirstOneBit(maxUInt256) ) => doneLemma(  0 ) ... </k>
 
+    claim [gfzb-min]: <k> runLemma( #getFirstZeroBit(0         ) ) => doneLemma(  0 ) ... </k>
+    claim [gfzb-max]: <k> runLemma( #getFirstZeroBit(maxUInt256) ) => doneLemma( -1 ) ... </k>
+
     claim [gmsb-01]: <k> runLemma ( #getMaskShiftBits(0) ) => doneLemma ( 0 ) ... </k>
     claim [gmsb-02]: <k> runLemma ( #getMaskShiftBits(2 ^Int 164 -Int 1) ) => doneLemma ( 164 ) ... </k>
     claim [gmsb-03]: <k> runLemma ( #getMaskShiftBits(pow256) ) => doneLemma ( -1 ) ... </k>
