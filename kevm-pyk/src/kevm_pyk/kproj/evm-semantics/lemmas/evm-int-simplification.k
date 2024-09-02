@@ -56,8 +56,8 @@ module EVM-INT-SIMPLIFICATION
     [simplification, comm, preserves-definedness]
 
   // Unification: equality with `#asWord` to equality with `+Bytes`
-  rule { #asWord ( B:Bytes ) #Equals X:Int } => { true #Equals #asWord ( B:Bytes ) ==Int X:Int } [simplification, preserves-definedness]
-  rule { X:Int #Equals #asWord ( B:Bytes ) } => { true #Equals #asWord ( B:Bytes ) ==Int X:Int } [simplification, preserves-definedness]
+  rule { #asWord ( B:Bytes ) #Equals X:Int } => { #buf ( 32 -Int lengthBytes(B), 0 ) +Bytes B #Equals #buf ( 32, X ) } [simplification, preserves-definedness]
+  rule { X:Int #Equals #asWord ( B:Bytes ) } => { #buf ( 32 -Int lengthBytes(B), 0 ) +Bytes B #Equals #buf ( 32, X ) } [simplification, preserves-definedness]
 
   // Reduction: we can always remove leading zeros
   rule [asWord-trim-leading-zeros]:
