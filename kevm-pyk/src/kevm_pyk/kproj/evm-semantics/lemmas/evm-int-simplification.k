@@ -93,7 +93,7 @@ module EVM-INT-SIMPLIFICATION
 
   // Reduction: division in terms of `#range`
   rule [asWord-div]:
-    #asWord( BA ) /Int N => #asWord ( #range ( BA, 0, lengthBytes( BA ) -Int log2Int( N ) ) )
+    #asWord( BA ) /Int N => #asWord ( #range ( BA, 0, lengthBytes( BA ) -Int ( log2Int( N ) /Int 8 ) ) )
     requires 0 <Int N andBool N ==Int 2 ^Int log2Int ( N ) andBool log2Int( N ) modInt 8 ==Int 0
     [simplification, preserves-definedness]
 
