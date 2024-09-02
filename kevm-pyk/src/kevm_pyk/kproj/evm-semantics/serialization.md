@@ -149,7 +149,7 @@ Here we provide some standard parser/unparser functions for that format.
 Parsing
 -------
 
-These parsers can interperet hex-encoded strings as `Int`s, `Bytes`s, and `Map`s.
+These parsers can interpret hex-encoded strings as `Int`s, `Bytes`s, and `Map`s.
 
 -   `#parseHexWord` interprets a string as a single hex-encoded `Word`.
 -   `#parseHexBytes` interprets a string as a hex-encoded stack of bytes.

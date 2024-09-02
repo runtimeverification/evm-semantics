@@ -463,7 +463,7 @@ Here we load the correct number of arguments from the `wordStack` based on the s
     rule <k> #exec [ SO:StackOp ] => #gas [ SO , SO WS ] ~> SO WS ... </k> <wordStack> WS </wordStack>
 ```
 
-The `CallOp` opcodes all interperet their second argument as an address.
+The `CallOp` opcodes all interpret their second argument as an address.
 
 ```k
     syntax InternalOp ::= CallSixOp Int Int     Int Int Int Int
@@ -2344,7 +2344,7 @@ EVM Program Representations
 
 EVM programs are represented algebraically in K, but programs can load and manipulate program data directly.
 The opcodes `CODECOPY` and `EXTCODECOPY` rely on the assembled form of the programs being present.
-The opcode `CREATE` relies on being able to interperet EVM data as a program.
+The opcode `CREATE` relies on being able to interpret EVM data as a program.
 
 This is a program representation dependence, which we might want to avoid.
 Perhaps the only program representation dependence we should have is the hash of the program; doing so achieves:

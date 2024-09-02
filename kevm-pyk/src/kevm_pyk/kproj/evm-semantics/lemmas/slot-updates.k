@@ -15,12 +15,6 @@ module SLOT-UPDATES [symbolic]
     rule [gfo-succ]: #getFirstOneBit(X:Int) => log2Int ( X &Int ( ( maxUInt256 xorInt X ) +Int 1 ) ) requires #rangeUInt(256, X) andBool X =/=Int 0 [preserves-definedness]
     rule [gfo-fail]: #getFirstOneBit(_:Int) => -1                                                    [owise]
 
-    // Index of first bit that equals zero
-    syntax Int ::= #getFirstZeroBit(Int) [function, total]
-
-    rule [gfz-succ]: #getFirstZeroBit(X:Int) => #getFirstOneBit ( maxUInt256 xorInt X ) requires #rangeUInt(256, X) [preserves-definedness]
-    rule [gfz-fail]: #getFirstZeroBit(_:Int) => -1                                      [owise]
-
     // Slot updates are performed by the compiler with the help of masks,
     // which are 256-bit integers of the form 11111111100000000000111111111111111
     //                                                 |- WIDTH -||-   SHIFT   -|
@@ -29,10 +23,12 @@ module SLOT-UPDATES [symbolic]
     syntax Int ::= #getMaskShiftBits(Int)  [function, total]
     syntax Int ::= #getMaskShiftBytes(Int) [function, total]
 
-    rule [gms-bits]: #getMaskShiftBits(X:Int) => #getFirstZeroBit(X)
+    rule [gms-bits-succ-gen]: #getMaskShiftBits(X:Int)      => #getFirstOneBit ( maxUInt256 xorInt X ) requires 0 <=Int X andBool X <Int maxUInt256
+    rule [gms-bits-succ-max]: #getMaskShiftBits(maxUInt256) => 256
+    rule [gms-bits-fail]    : #getMaskShiftBits(_:Int)      => -1                                      [owise]
 
-    rule [gms-bits-succ]: #getMaskShiftBytes(X:Int) => #getFirstZeroBit(X) /Int 8 requires #getMaskShiftBits(X) modInt 8 ==Int 0 [preserves-definedness]
-    rule [gms-bits-fail]: #getMaskShiftBytes(_:Int) => -1                         [owise]
+    rule [gms-bytes-succ]: #getMaskShiftBytes(X:Int) => #getMaskShiftBits(X) /Int 8 requires #getMaskShiftBits(X) modInt 8 ==Int 0 [preserves-definedness]
+    rule [gms-bytes-fail]: #getMaskShiftBytes(_:Int) => -1                         [owise]
 
     // Width of a mask, in bits and in bytes
     syntax Int ::= #getMaskWidthBits(Int)  [function, total]

@@ -157,10 +157,6 @@ module LEMMAS-HASKELL [symbolic]
   // Word Reasoning
   // ########################
 
-    rule #asWord(BUF) /Int D => #asWord(#range(BUF, 0, lengthBytes(BUF) -Int log256Int(D)))
-       requires 0 <Int D andBool D <Int pow256 andBool D ==Int 256 ^Int log256Int(D)
-        andBool log256Int(D) <=Int lengthBytes(BUF) [simplification, preserves-definedness]
-
     rule notBool  (X ==Int 0) => X ==Int 1 requires #rangeBool(X) [simplification]
     rule notBool  (X ==Int 1) => X ==Int 0 requires #rangeBool(X) [simplification]
     rule bool2Word(X ==Int 1) => X         requires #rangeBool(X) [simplification]
