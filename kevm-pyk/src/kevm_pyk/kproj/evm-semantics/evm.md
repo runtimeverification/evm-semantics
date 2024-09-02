@@ -169,6 +169,22 @@ In the comments next to each cell, we've marked which component of the YellowPap
               </message>
             </messages>
 
+            // Withdrawals Record
+            // ------------------
+
+            <withdrawalsPending> .List </withdrawalsPending>
+            <withdrawalsOrder>   .List </withdrawalsOrder>
+
+            <withdrawals>
+              <withdrawal multiplicity="*" type="Map">
+                <withdrawalID>   0        </withdrawalID>
+                <index>          0        </index>
+                <validatorIndex> 0        </validatorIndex>
+                <address>        .Account </address>
+                <amount>         0        </amount>
+              </withdrawal>
+            </withdrawals>
+
           </network>
 
         </ethereum>
@@ -358,7 +374,7 @@ The `#next [_]` operator initiates execution by:
 ```k
     syntax Bool ::= #stackUnderflow ( WordStack , OpCode ) [symbol(#stackUnderflow), macro]
                   | #stackOverflow  ( WordStack , OpCode ) [symbol(#stackOverflow), macro]
- // ---------------------------------------------------------------------------------------
+ // --------------------------------------------------------------------------------------
     rule #stackUnderflow(WS, OP:OpCode) => #sizeWordStack(WS) <Int #stackNeeded(OP)
     rule #stackOverflow (WS, OP) => #sizeWordStack(WS) +Int #stackDelta(OP) >Int 1024
 
@@ -532,8 +548,36 @@ After executing a transaction, it's necessary to have the effect of the substate
 -   `#finalizeStorage` updates the origStorage cell with the new values of storage.
 -   `#finalizeTx` makes the substate log actually have an effect on the state.
 -   `#deleteAccounts` deletes the accounts specified by the self destruct list.
-
+-   `#finalizeWithdrawals` increases the balance of the `address` specified by the `amount` given, for each withdrawal.
 ```k
+
+    syntax InternalOp ::= "#finalizeWithdrawals" [symbol(#finalizeWithdrawals)]
+ // ---------------------------------------------------------------------------
+    rule <k> #finalizeWithdrawals => .K ... </k>
+         <withdrawalsPending> .List </withdrawalsPending>
+
+    rule <k> #finalizeWithdrawals ... </k>
+         <withdrawalsPending> ListItem(WDID) LS => LS </withdrawalsPending>
+         <withdrawal>
+           <withdrawalID> WDID </withdrawalID>
+           <address> ACCT </address>
+           <amount> VALUE </amount>
+           ...
+         </withdrawal>
+         <account>
+           <acctID> ACCT </acctID>
+           <balance> B => B +Int (VALUE *Int 10 ^Int 9) </balance>
+           ...
+         </account>
+
+    rule <k> (.K => #newAccount ACCT) ~> #finalizeWithdrawals ... </k>
+         <withdrawalsPending> ListItem(WDID) _ </withdrawalsPending>
+         <withdrawal>
+           <withdrawalID> WDID </withdrawalID>
+           <address> ACCT </address>
+           ...
+         </withdrawal> [owise]
+
     syntax InternalOp ::= #finalizeStorage ( List ) [symbol(#finalizeStorage)]
  // --------------------------------------------------------------------------
     rule <k> #finalizeStorage(ListItem(ACCT) REST => REST) ... </k>
@@ -665,7 +709,7 @@ After executing a transaction, it's necessary to have the effect of the substate
     syntax EthereumCommand ::= "#finalizeBlock"
                              | #rewardOmmers ( JSONs ) [symbol(#rewardOmmers)]
  // --------------------------------------------------------------------------
-    rule <k> #finalizeBlock => #rewardOmmers(OMMERS) ... </k>
+    rule <k> #finalizeBlock => #if Ghaswithdrawals << SCHED >> #then #finalizeWithdrawals #else .K #fi ~> #rewardOmmers(OMMERS) ... </k>
          <schedule> SCHED </schedule>
          <ommerBlockHeaders> [ OMMERS ] </ommerBlockHeaders>
          <coinbase> MINER </coinbase>

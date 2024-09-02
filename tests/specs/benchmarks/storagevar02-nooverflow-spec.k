@@ -115,6 +115,7 @@ module STORAGEVAR02-NOOVERFLOW-SPEC
         <txOrder> _ </txOrder>
         <txPending> _ </txPending>
         <messages> _ </messages>
+        ...
       </network>
     </ethereum>
     requires #rangeAddress(CONTRACT_ID)

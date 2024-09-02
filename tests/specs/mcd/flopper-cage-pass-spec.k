@@ -82,6 +82,7 @@ module FLOPPER-CAGE-PASS-SPEC
           <txOrder> _ </txOrder>
           <txPending> _ </txPending>
           <messages> _ </messages>
+        ...
         </network>
       </ethereum>
       requires #rangeAddress(ACCT_ID)
