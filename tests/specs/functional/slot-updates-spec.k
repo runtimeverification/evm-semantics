@@ -27,35 +27,31 @@ module SLOT-UPDATES-SPEC
 
     claim [gmsb-01]: <k> runLemma ( #getMaskShiftBits(0) ) => doneLemma ( 0 ) ... </k>
     claim [gmsb-02]: <k> runLemma ( #getMaskShiftBits(2 ^Int 164 -Int 1) ) => doneLemma ( 164 ) ... </k>
-    claim [gmsb-03]: <k> runLemma ( #getMaskShiftBits(maxUInt256) ) => doneLemma ( 256 ) ... </k>
-    claim [gmsb-04]: <k> runLemma ( #getMaskShiftBits(pow256) ) => doneLemma ( -1 ) ... </k>
-    claim [gmsb-05]: <k> runLemma ( #getMaskShiftBits(115341543235797707419527244145998463631733976271937281205136574426583511597055) ) => doneLemma ( 240 ) ... </k>
-    claim [gmsb-06]: <k> runLemma ( #getMaskShiftBits(115790322390251417039241401711187164934754157181743689629425282016341011726335) ) => doneLemma ( 80  ) ... </k>
-    claim [gmsb-07]: <k> runLemma ( #getMaskShiftBits(115792089237316195423570985008687907853269984665640254554447762944319381569535) ) => doneLemma ( 48  ) ... </k>
+    claim [gmsb-03]: <k> runLemma ( #getMaskShiftBits(pow256) ) => doneLemma ( -1 ) ... </k>
+    claim [gmsb-04]: <k> runLemma ( #getMaskShiftBits(115341543235797707419527244145998463631733976271937281205136574426583511597055) ) => doneLemma ( 240 ) ... </k>
+    claim [gmsb-05]: <k> runLemma ( #getMaskShiftBits(115790322390251417039241401711187164934754157181743689629425282016341011726335) ) => doneLemma ( 80  ) ... </k>
+    claim [gmsb-06]: <k> runLemma ( #getMaskShiftBits(115792089237316195423570985008687907853269984665640254554447762944319381569535) ) => doneLemma ( 48  ) ... </k>
 
     claim [gmsby-01]: <k> runLemma ( #getMaskShiftBytes(0) ) => doneLemma ( 0 ) ... </k>
     claim [gmsby-02]: <k> runLemma ( #getMaskShiftBytes(2 ^Int 164 -Int 1) ) => doneLemma ( -1 ) ... </k>
-    claim [gmsby-03]: <k> runLemma ( #getMaskShiftBytes(maxUInt256) ) => doneLemma ( 32 ) ... </k>
-    claim [gmsby-04]: <k> runLemma ( #getMaskShiftBytes(pow256) ) => doneLemma ( -1 ) ... </k>
-    claim [gmsby-05]: <k> runLemma ( #getMaskShiftBytes(115341543235797707419527244145998463631733976271937281205136574426583511597055) ) => doneLemma ( 30 ) ... </k>
-    claim [gmsby-06]: <k> runLemma ( #getMaskShiftBytes(115790322390251417039241401711187164934754157181743689629425282016341011726335) ) => doneLemma ( 10 ) ... </k>
-    claim [gmsby-07]: <k> runLemma ( #getMaskShiftBytes(115792089237316195423570985008687907853269984665640254554447762944319381569535) ) => doneLemma ( 6  ) ... </k>
+    claim [gmsby-03]: <k> runLemma ( #getMaskShiftBytes(pow256) ) => doneLemma ( -1 ) ... </k>
+    claim [gmsby-04]: <k> runLemma ( #getMaskShiftBytes(115341543235797707419527244145998463631733976271937281205136574426583511597055) ) => doneLemma ( 30 ) ... </k>
+    claim [gmsby-05]: <k> runLemma ( #getMaskShiftBytes(115790322390251417039241401711187164934754157181743689629425282016341011726335) ) => doneLemma ( 10 ) ... </k>
+    claim [gmsby-06]: <k> runLemma ( #getMaskShiftBytes(115792089237316195423570985008687907853269984665640254554447762944319381569535) ) => doneLemma ( 6  ) ... </k>
 
     claim [gmwb-01]: <k> runLemma ( #getMaskWidthBits(0) ) => doneLemma ( 256 ) ... </k>
     claim [gmwb-02]: <k> runLemma ( #getMaskWidthBits(2 ^Int 164 -Int 1) ) => doneLemma ( 92 ) ... </k>
-    claim [gmwb-03]: <k> runLemma ( #getMaskWidthBits(maxUInt256) ) => doneLemma ( 0 ) ... </k>
-    claim [gmwb-04]: <k> runLemma ( #getMaskWidthBits(pow256) ) => doneLemma ( -1 ) ... </k>
-    claim [gmwb-05]: <k> runLemma ( #getMaskWidthBits(115341543235797707419527244145998463631733976271937281205136574426583511597055) ) => doneLemma ( 8   ) ... </k>
-    claim [gmwb-06]: <k> runLemma ( #getMaskWidthBits(115790322390251417039241401711187164934754157181743689629425282016341011726335) ) => doneLemma ( 160 ) ... </k>
-    claim [gmwb-07]: <k> runLemma ( #getMaskWidthBits(115792089237316195423570985008687907853269984665640254554447762944319381569535) ) => doneLemma ( 40  ) ... </k>
+    claim [gmwb-03]: <k> runLemma ( #getMaskWidthBits(pow256) ) => doneLemma ( -1 ) ... </k>
+    claim [gmwb-04]: <k> runLemma ( #getMaskWidthBits(115341543235797707419527244145998463631733976271937281205136574426583511597055) ) => doneLemma ( 8   ) ... </k>
+    claim [gmwb-05]: <k> runLemma ( #getMaskWidthBits(115790322390251417039241401711187164934754157181743689629425282016341011726335) ) => doneLemma ( 160 ) ... </k>
+    claim [gmwb-06]: <k> runLemma ( #getMaskWidthBits(115792089237316195423570985008687907853269984665640254554447762944319381569535) ) => doneLemma ( 40  ) ... </k>
 
     claim [gmwby-01]: <k> runLemma ( #getMaskWidthBytes(0) ) => doneLemma ( 32 ) ... </k>
     claim [gmwby-02]: <k> runLemma ( #getMaskWidthBytes(2 ^Int 164 -Int 1) ) => doneLemma ( -1 ) ... </k>
-    claim [gmwby-03]: <k> runLemma ( #getMaskWidthBytes(maxUInt256) ) => doneLemma ( 0 ) ... </k>
-    claim [gmwby-04]: <k> runLemma ( #getMaskWidthBytes(pow256) ) => doneLemma ( -1 ) ... </k>
-    claim [gmwby-05]: <k> runLemma ( #getMaskWidthBytes(115341543235797707419527244145998463631733976271937281205136574426583511597055) ) => doneLemma ( 1  ) ... </k>
-    claim [gmwby-06]: <k> runLemma ( #getMaskWidthBytes(115790322390251417039241401711187164934754157181743689629425282016341011726335) ) => doneLemma ( 20 ) ... </k>
-    claim [gmwby-07]: <k> runLemma ( #getMaskWidthBytes(115792089237316195423570985008687907853269984665640254554447762944319381569535) ) => doneLemma ( 5  ) ... </k>
+    claim [gmwby-03]: <k> runLemma ( #getMaskWidthBytes(pow256) ) => doneLemma ( -1 ) ... </k>
+    claim [gmwby-04]: <k> runLemma ( #getMaskWidthBytes(115341543235797707419527244145998463631733976271937281205136574426583511597055) ) => doneLemma ( 1  ) ... </k>
+    claim [gmwby-05]: <k> runLemma ( #getMaskWidthBytes(115790322390251417039241401711187164934754157181743689629425282016341011726335) ) => doneLemma ( 20 ) ... </k>
+    claim [gmwby-06]: <k> runLemma ( #getMaskWidthBytes(115792089237316195423570985008687907853269984665640254554447762944319381569535) ) => doneLemma ( 5  ) ... </k>
 
     claim [is-mask-01]: <k> runLemma( #isMask(maxUInt8                                                                      ) ) => doneLemma( true  ) ... </k>
     claim [is-mask-02]: <k> runLemma( #isMask(maxUInt40                                                                     ) ) => doneLemma( true  ) ... </k>
