@@ -122,8 +122,6 @@ module EVM-INT-SIMPLIFICATION
   rule [asWord-lt]:  #asWord ( B )  <Int X:Int => true  requires X >=Int   2 ^Int (8 *Int minInt(32, lengthBytes(B)))               [simplification, preserves-definedness]
   // Comparison: `#asWord(B)` is certainly less than or equal to something that is not less than the max number fitting into `lengthBytes(B)` bytes
   rule [asWord-le]:  #asWord ( B ) <=Int X:Int => true  requires X >=Int ( 2 ^Int (8 *Int minInt(32, lengthBytes(B))) -Int 1 )      [simplification, preserves-definedness]
-  // Comparison: `#asWord(B)` is certainly not equal to either something negative or something not fitting into `lengthBytes(B)` bytes
-  rule [asWord-neq]: #asWord ( B ) ==Int X:Int => false requires X <Int 0 orBool X >=Int 2 ^Int (8 *Int minInt(32, lengthBytes(B))) [simplification, preserves-definedness]
 
   // Comparison: `#asWord` of `+Bytes` when lower bytes match, with `<Int`
   rule [asWord-concat-lt]:
