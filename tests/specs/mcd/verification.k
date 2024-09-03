@@ -63,9 +63,6 @@ module LEMMAS-MCD [symbolic]
 
     rule chop(X) ==Int 0 => X ==Int 0 requires #rangeSInt(256, X) [simplification, comm]
 
-    rule bool2Word( X:Bool ) |Int bool2Word( Y:Bool ) => bool2Word(X orBool Y) [simplification]
-    rule bool2Word( X:Bool ) ==Int 0                  => notBool X             [simplification]
-
     // ### vat-subui-fail-rough
     //
     // Via Z3 4.8.7
