@@ -650,6 +650,56 @@ module LEMMAS-SPEC
           ) ... </k>
         requires lengthBytes ( VV0_data_114b9705:Bytes ) <=Int 1073741824
 
+    claim [asWord-unif-01]: // two `#asWord`s, both under 32 bytes
+      <k> runLemma(
+            #asWord ( B1 +Bytes B2 ) ==Int #asWord ( B3 )
+          ) => doneLemma(
+            #buf(22, 0) +Bytes B1 +Bytes B2 ==K #buf(16, 0) +Bytes B3
+          ) ... </k>
+        requires lengthBytes(B1) ==Int 4 andBool lengthBytes(B2) ==Int 6
+         andBool lengthBytes(B3) ==Int 16
+
+    claim [asWord-unif-02]: // two `#asWord`s, left over 32 bytes
+      <k> runLemma(
+            #asWord ( B1 +Bytes B2 ) ==Int #asWord ( B3 +Bytes B4 )
+          ) => doneLemma(
+            #range ( B1, 7, 5 ) +Bytes B2 ==K #buf(7, 0) +Bytes B3 +Bytes B4
+          ) ... </k>
+        requires lengthBytes(B1) ==Int 12 andBool lengthBytes(B2) ==Int 27
+         andBool lengthBytes(B3) ==Int 10 andBool lengthBytes(B4) ==Int 15
+
+    claim [asWord-unif-03]: // `#asWord` and constant out of range, buffer length <=Int 32
+      <k> runLemma(
+            #asWord ( B ) ==Int -15 orBool 2 ^Int 160 ==Int #asWord ( B )
+          ) => doneLemma(
+            false
+          ) ... </k>
+          requires lengthBytes(B) ==Int 16
+
+    claim [asWord-unif-04]: // `#asWord` and constant out of range, buffer length >Int 32
+      <k> runLemma(
+            #asWord ( B ) ==Int -15 orBool 2 ^Int 324 ==Int #asWord ( B )
+          ) => doneLemma(
+            false
+          ) ... </k>
+          requires lengthBytes(B) ==Int 36
+
+    claim [asWord-unif-05]: // `#asWord` and constant, buffer length <=Int 32
+      <k> runLemma(
+            #asWord ( B1 +Bytes B2 ) ==Int 9518572911576893851958972884578457483927345
+          ) => doneLemma(
+            #buf(5, 0) +Bytes B1 +Bytes B2 ==K #buf(32, 9518572911576893851958972884578457483927345)
+          ) ... </k>
+        requires lengthBytes(B1) ==Int 15 andBool lengthBytes(B2) ==Int 12
+
+    claim [asWord-unif-06]: // `#asWord` and constant, buffer length >Int 32
+      <k> runLemma(
+            #asWord ( B1 +Bytes B2 ) ==Int 294572972648782479679175618975648679836
+          ) => doneLemma(
+            #range(B1, 3, 17) +Bytes B2 ==K #buf(32, 294572972648782479679175618975648679836)
+          ) ... </k>
+        requires lengthBytes(B1) ==Int 20 andBool lengthBytes(B2) ==Int 15
+
  // ecrecover
  // ---------
 

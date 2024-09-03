@@ -92,6 +92,7 @@ module EVM-INT-SIMPLIFICATION
   rule [asWord-range]:
     #asWord ( #range ( B:Bytes, S, W ) ) => #asWord ( B )
     requires 0 <=Int S andBool 0 <=Int W
+     andBool lengthBytes(B) <=Int 32
      andBool lengthBytes(B) ==Int S +Int W
      andBool #asWord ( B ) <Int 2 ^Int ( 8 *Int W )
     [simplification, concrete(S, W), preserves-definedness]
