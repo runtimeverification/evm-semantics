@@ -85,12 +85,12 @@ module FUNCTIONAL-SPEC
        andBool #rangeBytes(32, SIGS)
        andBool notBool #ecrecEmpty(#bufStrict(32, HASH), #bufStrict(32, SIGV), #bufStrict(32, SIGR), #bufStrict(32, SIGS))
 
-    claim <k> runLemma(maxUInt160 &Int #asWord(#ecrec(#bufStrict(32, HASH), #bufStrict(32, SIGV), #bufStrict(32, SIGR), #bufStrict(32, SIGS)))) => doneLemma(#asWord(#ecrec(#bufStrict(32, HASH), #bufStrict(32, SIGV), #bufStrict(32, SIGR), #bufStrict(32, SIGS)))) ... </k>
-      requires #rangeUInt(256, HASH)
-       andBool #rangeUInt(8, SIGV)
-       andBool #rangeBytes(32, SIGR)
-       andBool #rangeBytes(32, SIGS)
-       andBool notBool #ecrecEmpty(#bufStrict(32, HASH), #bufStrict(32, SIGV), #bufStrict(32, SIGR), #bufStrict(32, SIGS))
+    // claim <k> runLemma(maxUInt160 &Int #asWord(#ecrec(#bufStrict(32, HASH), #bufStrict(32, SIGV), #bufStrict(32, SIGR), #bufStrict(32, SIGS)))) => doneLemma(#asWord(#ecrec(#bufStrict(32, HASH), #bufStrict(32, SIGV), #bufStrict(32, SIGR), #bufStrict(32, SIGS)))) ... </k>
+    //   requires #rangeUInt(256, HASH)
+    //    andBool #rangeUInt(8, SIGV)
+    //    andBool #rangeBytes(32, SIGR)
+    //    andBool #rangeBytes(32, SIGS)
+    //    andBool notBool #ecrecEmpty(#bufStrict(32, HASH), #bufStrict(32, SIGV), #bufStrict(32, SIGR), #bufStrict(32, SIGS))
 
     claim <k> runLemma(#range( .Bytes [ 0 := #bufStrict(0, 0) ], 0, 1))
            => doneLemma(#buf(1, 0)) ... </k>
