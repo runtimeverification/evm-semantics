@@ -68,12 +68,6 @@ module LEMMAS-WITHOUT-SLOT-UPDATES [symbolic]
   // bool2Word reasoning
   // ########################
 
-    // Unification: two `bool2Word`s
-    rule [b2w-eq]: bool2Word(B1) ==Int bool2Word(B2) => B1 ==Bool B2 [simplification]
-
-    // Unification: two `bool2Word`s
-    rule [b2w-eq-ml]: { bool2Word(B1) #Equals bool2Word (B2) } => { true #Equals bool2Word(B1) ==Int bool2Word(B2) } [simplification]
-
     // Range
     rule [b2w-lb]: 0 <=Int bool2Word(_)         => true [simplification, smt-lemma]
     rule [b2w-ub]:         bool2Word(_) <=Int 1 => true [simplification, smt-lemma]
