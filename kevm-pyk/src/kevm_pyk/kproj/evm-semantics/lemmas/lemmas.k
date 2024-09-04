@@ -76,6 +76,10 @@ module LEMMAS-WITHOUT-SLOT-UPDATES [symbolic]
     rule [b2w-lt-true]:  bool2Word(_) <Int X:Int => true  requires 1 <Int X [simplification(30), concrete(X)]
     rule [b2w-gt-false]: X:Int <Int bool2Word(_) => false requires 1 <Int X [simplification(30), concrete(X)]
 
+    // Relationship with `#rangeBool`
+    rule bool2Word(X ==Int 0) => 1 -Int X  requires #rangeBool(X) [simplification]
+    rule bool2Word(X ==Int 1) => X         requires #rangeBool(X) [simplification]
+
     // Relationship with `&Int`
     rule [b2w-band-one]:           1  &Int bool2Word(B) => bool2Word(B)           [simplification]
     rule [b2w-band]:     bool2Word(A) &Int bool2Word(B) => bool2Word(A andBool B) [simplification]
