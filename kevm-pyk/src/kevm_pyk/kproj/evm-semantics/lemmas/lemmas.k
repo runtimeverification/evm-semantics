@@ -73,8 +73,8 @@ module LEMMAS-WITHOUT-SLOT-UPDATES [symbolic]
     rule [b2w-ub]:         bool2Word(_) <=Int 1 => true [simplification, smt-lemma]
 
     // Relationship with equality
-    rule [b2w-eq-zero]: bool2Word(X)  ==Int 0 => notBool X [simplification(30), comm]
-    rule [b2w-eq-one]:  bool2Word(X)  ==Int 1 => X         [simplification(30), comm]
+    rule [b2w-eq-zero]: bool2Word(X) ==Int 0 => notBool X [simplification(30), comm]
+    rule [b2w-eq-one]:  bool2Word(X) ==Int 1 => X         [simplification(30), comm]
 
     // Relationship with other comparators
     rule [b2w-lt-one]:  bool2Word(B) <Int 1 => notBool B [simplification(30)]
