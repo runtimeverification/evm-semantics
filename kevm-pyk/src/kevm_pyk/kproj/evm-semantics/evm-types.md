@@ -28,7 +28,7 @@ Primitives provide the basic conversion from K's sorts `Int` and `Bool` to EVM's
 
 ```k
     syntax Int ::= bool2Word ( Bool ) [symbol(bool2Word), function, total, injective, smtlib(bool2Word)]
- // -----------------------------------------------------------------------------------------
+ // ----------------------------------------------------------------------------------------------------
     rule bool2Word( true  ) => 1
     rule bool2Word( false ) => 0
 
