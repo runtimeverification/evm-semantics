@@ -74,9 +74,7 @@ module LEMMAS-WITHOUT-SLOT-UPDATES [symbolic]
 
     // Relationship with equality
     rule [b2w-eq-zero]: bool2Word(X)  ==Int 0 => notBool X [simplification(30), comm]
-    rule [b2w-ne-zero]: bool2Word(X) =/=Int 0 => X         [simplification(30), comm]
     rule [b2w-eq-one]:  bool2Word(X)  ==Int 1 => X         [simplification(30), comm]
-    rule [b2w-neq-one]: bool2Word(X) =/=Int 1 => notBool X [simplification(30), comm]
 
     // Relationship with other comparators
     rule [b2w-lt-one]:  bool2Word(B) <Int 1 => notBool B [simplification(30)]
@@ -102,9 +100,6 @@ module LEMMAS-WITHOUT-SLOT-UPDATES [symbolic]
     rule bool2Word(B) *Int C  <Int A => (B andBool C  <Int A) orBool (notBool B andBool 0  <Int A) [simplification]
     rule bool2Word(B) *Int C <=Int A => (B andBool C <=Int A) orBool (notBool B andBool 0 <=Int A) [simplification]
     rule bool2Word(B) *Int C ==Int A => (B andBool C ==Int A) orBool (notBool B andBool A ==Int 0) [simplification]
-
-    // As part of how the compiler returns a bool from storage
-    rule bool2Word(X ==Int 1) => X requires #rangeBool(X) [simplification]
 
   // ########################
   // Keccak
