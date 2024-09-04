@@ -56,8 +56,23 @@ module LEMMAS-WITHOUT-SLOT-UPDATES [symbolic]
     rule #isPrecompiledAccount(#newAddr(_, _), _) => false [simplification]
 
   // ########################
+  // #rangeBool reasoning
+  // ########################
+
+    rule [rangeBool-not-zero-l]: notBool (X ==Int 0) => X ==Int 1 requires #rangeBool(X) [simplification]
+    rule [rangeBool-not-zero-r]: notBool (0 ==Int X) => X ==Int 1 requires #rangeBool(X) [simplification]
+    rule [rangeBool-not-one-l]:  notBool (X ==Int 1) => X ==Int 0 requires #rangeBool(X) [simplification]
+    rule [rangeBool-not-one-r]:  notBool (1 ==Int X) => X ==Int 0 requires #rangeBool(X) [simplification]
+
+  // ########################
   // bool2Word reasoning
   // ########################
+
+    // Unification: two `bool2Word`s
+    rule [b2w-eq]: bool2Word(B1) ==Int bool2Word(B2) => B1 ==Bool B2 [simplification]
+
+    // Unification: two `bool2Word`s
+    rule [b2w-eq-ml]: { bool2Word(B1) #Equals bool2Word (B2) } => { true #Equals bool2Word(B1) ==Int bool2Word(B2) } [simplification]
 
     // Range
     rule [b2w-lb]: 0 <=Int bool2Word(_)         => true [simplification, smt-lemma]
@@ -75,12 +90,6 @@ module LEMMAS-WITHOUT-SLOT-UPDATES [symbolic]
 
     rule [b2w-lt-true]:  bool2Word(_) <Int X:Int => true  requires 1 <Int X [simplification(30), concrete(X)]
     rule [b2w-gt-false]: X:Int <Int bool2Word(_) => false requires 1 <Int X [simplification(30), concrete(X)]
-
-    // Relationship with `#rangeBool`
-    rule [rb-w2b-zero-l]: bool2Word(X ==Int 0) => 1 -Int X requires #rangeBool(X) [simplification]
-    rule [rb-w2b-zero-r]: bool2Word(0 ==Int X) => 1 -Int X requires #rangeBool(X) [simplification]
-    rule [rb-w2b-one-l]:  bool2Word(X ==Int 1) => X        requires #rangeBool(X) [simplification]
-    rule [rb-w2b-one-r]:  bool2Word(1 ==Int X) => X        requires #rangeBool(X) [simplification]
 
     // Relationship with `&Int`
     rule [b2w-band-one]:           1  &Int bool2Word(B) => bool2Word(B)           [simplification]
