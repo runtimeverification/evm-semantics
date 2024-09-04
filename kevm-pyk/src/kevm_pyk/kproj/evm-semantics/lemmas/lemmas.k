@@ -80,8 +80,8 @@ module LEMMAS-WITHOUT-SLOT-UPDATES [symbolic]
     rule [b2w-lt-one]:  bool2Word(B) <Int 1 => notBool B [simplification(30)]
     rule [b2w-gt-zero]: 0 <Int bool2Word(B) => B         [simplification(30)]
 
-    rule [b2w-lt-true]:  bool2Word(_) <Int X:Int => true  requires 1 <Int X [simplification(30), concrete(X)]
-    rule [b2w-gt-false]: X:Int <Int bool2Word(_) => false requires 1 <Int X [simplification(30), concrete(X)]
+    rule [b2w-lt-true]:  bool2Word(_) <Int X:Int => true  requires 1  <Int X [simplification(30), concrete(X)]
+    rule [b2w-gt-false]: X:Int <Int bool2Word(_) => false requires 1 <=Int X [simplification(30), concrete(X)]
 
     // Relationship with `&Int`
     rule [b2w-band-one]:           1  &Int bool2Word(B) => bool2Word(B)           [simplification]
@@ -93,7 +93,7 @@ module LEMMAS-WITHOUT-SLOT-UPDATES [symbolic]
 
     // Relationship with `xorInt`
     rule [b2w-xor-zero]:           0  xorInt bool2Word(Y) => bool2Word(Y)                                                     [simplification, comm]
-    rule [b2w-xor-one]:            1  xorInt bool2Word(Y) => 1 -Int bool2Word(Y)                                              [simplification, comm]
+    rule [b2w-xor-one]:            1  xorInt bool2Word(Y) => bool2Word(notBool Y)                                             [simplification, comm]
     rule [b2w-xor]:      bool2Word(X) xorInt bool2Word(Y) => bool2Word ( (X andBool notBool Y) orBool (notBool X andBool Y) ) [simplification]
 
     // As part of multiplication
