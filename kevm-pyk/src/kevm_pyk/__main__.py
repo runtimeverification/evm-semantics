@@ -14,6 +14,7 @@ from functools import cached_property
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from filelock import SoftFileLock
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli.pyk import parse_toml_args
 from pyk.cterm import CTermSymbolic
@@ -175,8 +176,7 @@ class KClaimJob:
             return False
         digest_dict = json.loads(digest_file.read_text())
         if 'claims' not in digest_dict:
-            digest_dict['claims'] = {}
-            digest_file.write_text(json.dumps(digest_dict, indent=4))
+            return False
         if self.claim.label not in digest_dict['claims']:
             return False
         return digest_dict['claims'][self.claim.label] == self.digest
@@ -190,7 +190,8 @@ class KClaimJob:
         if 'claims' not in digest_dict:
             digest_dict['claims'] = {}
         digest_dict['claims'][self.claim.label] = self.digest
-        digest_file.write_text(json.dumps(digest_dict, indent=4))
+        with SoftFileLock(f'{digest_file}.lock'):
+            digest_file.write_text(json.dumps(digest_dict, indent=4))
 
         _LOGGER.info(f'Updated claim {self.claim.label} in digest file: {digest_file}')
 
@@ -379,12 +380,7 @@ def exec_prove(options: ProveOptions) -> None:
         while topological_sorter.is_active():
             ready = topological_sorter.get_ready()
             _LOGGER.info(f'Discharging proof obligations: {ready}')
-            curr_claim_list: list[KClaimJob] = []
-            for label in ready:
-                _LOGGER.info(f'Checking claim {label} is up to date.')
-                all_claim_jobs_by_label[label].up_to_date(digest_file)
-                curr_claim_list.append(all_claim_jobs_by_label[label])
-                _LOGGER.info(f'Completed check for claim {label})')
+            curr_claim_list = [all_claim_jobs_by_label[label] for label in ready]
             results: list[tuple[bool, list[str] | None]] = process_pool.map(_init_and_run_proof, curr_claim_list)
             for label in ready:
                 topological_sorter.done(label)
