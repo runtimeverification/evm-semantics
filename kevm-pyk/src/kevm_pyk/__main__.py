@@ -379,9 +379,12 @@ def exec_prove(options: ProveOptions) -> None:
         while topological_sorter.is_active():
             ready = topological_sorter.get_ready()
             _LOGGER.info(f'Discharging proof obligations: {ready}')
-            curr_claim_list = [all_claim_jobs_by_label[label] for label in ready]
-            for claim in curr_claim_list:
-                claim.up_to_date(digest_file)
+            curr_claim_list: list[KClaimJob] = []
+            for label in ready:
+                _LOGGER.info(f'Checking claim {label} is up to date.')
+                all_claim_jobs_by_label[label].up_to_date(digest_file)
+                curr_claim_list.append(all_claim_jobs_by_label[label])
+                _LOGGER.info(f'Completed check for claim {label})')
             results: list[tuple[bool, list[str] | None]] = process_pool.map(_init_and_run_proof, curr_claim_list)
             for label in ready:
                 topological_sorter.done(label)
