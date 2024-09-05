@@ -172,28 +172,29 @@ class KClaimJob:
         return hash_str(f'{claim_hash}{deps_digest}')
 
     def up_to_date(self, digest_file: Path | None) -> bool:
-        if not isinstance(digest_file, Path) or not digest_file.exists():
-            return False
-        digest_dict = json.loads(digest_file.read_text())
-        if 'claims' not in digest_dict:
-            return False
-        if self.claim.label not in digest_dict['claims']:
-            return False
-        return digest_dict['claims'][self.claim.label] == self.digest
+        with SoftFileLock(f'{digest_file}.lock'):
+            if not isinstance(digest_file, Path) or not digest_file.exists():
+                return False
+            digest_dict = json.loads(digest_file.read_text())
+            if 'claims' not in digest_dict:
+                return False
+            if self.claim.label not in digest_dict['claims']:
+                return False
+            return digest_dict['claims'][self.claim.label] == self.digest
 
     def update_digest(self, digest_file: Path | None) -> None:
         if digest_file is None:
             return
         digest_dict = {}
-        if digest_file.exists():
-            digest_dict = json.loads(digest_file.read_text())
-        if 'claims' not in digest_dict:
-            digest_dict['claims'] = {}
-        digest_dict['claims'][self.claim.label] = self.digest
         with SoftFileLock(f'{digest_file}.lock'):
+            if digest_file.exists():
+                digest_dict = json.loads(digest_file.read_text())
+            if 'claims' not in digest_dict:
+                digest_dict['claims'] = {}
+            digest_dict['claims'][self.claim.label] = self.digest
             digest_file.write_text(json.dumps(digest_dict, indent=4))
 
-        _LOGGER.info(f'Updated claim {self.claim.label} in digest file: {digest_file}')
+            _LOGGER.info(f'Updated claim {self.claim.label} in digest file: {digest_file}')
 
 
 def init_claim_jobs(spec_module_name: str, claims: list[KClaim]) -> frozenset[KClaimJob]:
