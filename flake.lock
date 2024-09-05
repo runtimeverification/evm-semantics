@@ -45,17 +45,17 @@
         "xbyak": "xbyak"
       },
       "locked": {
-        "lastModified": 1724870545,
-        "narHash": "sha256-OVT3nyAQI59zQSALEOazE8q7WYRyDc7SbL7ilMAPjHc=",
+        "lastModified": 1725480100,
+        "narHash": "sha256-2gTqoktcvJUAmH4ES0B+r0BNt0PLPEYnCbZQxcIuJUA=",
         "owner": "runtimeverification",
         "repo": "blockchain-k-plugin",
-        "rev": "300c9cf567eba4c8c88675ff67ebd859795ee169",
+        "rev": "a18c1d424957f794a1254d7e560712749c2aeb10",
         "type": "github"
       },
       "original": {
         "owner": "runtimeverification",
         "repo": "blockchain-k-plugin",
-        "rev": "300c9cf567eba4c8c88675ff67ebd859795ee169",
+        "rev": "a18c1d424957f794a1254d7e560712749c2aeb10",
         "type": "github"
       }
     },
@@ -316,16 +316,16 @@
         ]
       },
       "locked": {
-        "lastModified": 1724866053,
-        "narHash": "sha256-NtHMCcG5pRszS7+vSrwGDE8B3QoW7+JxbVYaxxwZ+Zw=",
+        "lastModified": 1725395202,
+        "narHash": "sha256-UCMS6H8zIjFzN4xAXdCNcW7UChAp9knpRnscTg5z+jA=",
         "owner": "runtimeverification",
         "repo": "k",
-        "rev": "85c8bcbea25dcef0945ed3ece01bdd8bb7a946a5",
+        "rev": "42e03545c319847e7df84e6fbc196b2f51c148a0",
         "type": "github"
       },
       "original": {
         "owner": "runtimeverification",
-        "ref": "v7.1.123",
+        "ref": "v7.1.131",
         "repo": "k",
         "type": "github"
       }
@@ -537,17 +537,17 @@
         "treefmt-nix": "treefmt-nix"
       },
       "locked": {
-        "lastModified": 1698640399,
-        "narHash": "sha256-mXzyx79/iFLZ0UDuSkqgFfejYRcSJfsCnJ9WlMusaI0=",
+        "lastModified": 1725253878,
+        "narHash": "sha256-HwXut4WbOUAjmybhui2eNSE6+Wb0nigYgDzBBOZaPG4=",
         "owner": "nix-community",
         "repo": "poetry2nix",
-        "rev": "626111646fe236cb1ddc8191a48c75e072a82b7c",
+        "rev": "0d3fad5740d892487805cd2d60d8e4ed828486e9",
         "type": "github"
       },
       "original": {
         "owner": "nix-community",
+        "ref": "2024.9.219347",
         "repo": "poetry2nix",
-        "rev": "626111646fe236cb1ddc8191a48c75e072a82b7c",
         "type": "github"
       }
     },
