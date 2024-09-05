@@ -85,27 +85,27 @@ jobs:
         include:
           - name: 'Rules (booster)'
             test-suite: 'test-prove-rules'
-            test-args: '--force-sequential'
+            test-args:
             timeout: 100
             parallel: 6
           - name: 'Rules (booster-dev)'
             test-suite: 'test-prove-rules'
-            test-args: '--use-booster-dev --force-sequential'
+            test-args: '--use-booster-dev'
             timeout: 45
             parallel: 8
           - name: 'Functional'
             test-suite: 'test-prove-functional'
-            test-args: '--force-sequential'
-            timeout: 45
-            parallel: 2
+            test-args:
+            timeout: 60
+            parallel: 1
           - name: 'Optimizations'
             test-suite: 'test-prove-optimizations'
-            test-args: '--force-sequential'
+            test-args:
             timeout: 45
             parallel: 1
           - name: 'DSS'
             test-suite: 'test-prove-dss'
-            test-args: '--force-sequential'
+            test-args:
             timeout: 45
             parallel: 1
     timeout-minutes: ${{ matrix.timeout }}
