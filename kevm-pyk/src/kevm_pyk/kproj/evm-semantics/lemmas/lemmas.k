@@ -73,15 +73,18 @@ module LEMMAS-WITHOUT-SLOT-UPDATES [symbolic]
     rule [b2w-ub]:         bool2Word(_) <=Int 1 => true [simplification, smt-lemma]
 
     // Relationship with equality
-    rule [b2w-eq-zero]: bool2Word(X) ==Int 0 => notBool X [simplification(30), comm]
-    rule [b2w-eq-one]:  bool2Word(X) ==Int 1 => X         [simplification(30), comm]
+    rule [b2w-eq-zero]: bool2Word(B) ==Int 0 => notBool B [simplification(30), comm]
+    rule [b2w-eq-one]:  bool2Word(B) ==Int 1 => B         [simplification(30), comm]
 
     // Relationship with other comparators
-    rule [b2w-lt-one]:  bool2Word(B) <Int 1 => notBool B [simplification(30)]
-    rule [b2w-gt-zero]: 0 <Int bool2Word(B) => B         [simplification(30)]
+    rule [b2w-lt-one]:  bool2Word(B) <Int            1 => notBool B           [simplification(30)]
+    rule [b2w-gt-zero]:            0 <Int bool2Word(B) => B                   [simplification(30)]
 
     rule [b2w-lt-true]:  bool2Word(_) <Int X:Int => true  requires 1  <Int X [simplification(30), concrete(X)]
     rule [b2w-gt-false]: X:Int <Int bool2Word(_) => false requires 1 <=Int X [simplification(30), concrete(X)]
+
+    rule [b2w-lt-b2w]:  bool2Word(A)  <Int bool2Word(B) => notBool A andBool         B [simplification(30)]
+    rule [b2w-le-b2w]:  bool2Word(A) <=Int bool2Word(B) =>         A  orBool notBool B [simplification(30)]
 
     // Relationship with `&Int`
     rule [b2w-band-one]:           1  &Int bool2Word(B) => bool2Word(B)           [simplification]
@@ -97,12 +100,16 @@ module LEMMAS-WITHOUT-SLOT-UPDATES [symbolic]
     rule [b2w-xor]:      bool2Word(X) xorInt bool2Word(Y) => bool2Word ( (X andBool notBool Y) orBool (notBool X andBool Y) ) [simplification]
 
     // As part of multiplication
-    rule bool2Word(B) *Int C  <Int A => (B andBool C  <Int A) orBool (notBool B andBool 0  <Int A) [simplification]
-    rule bool2Word(B) *Int C <=Int A => (B andBool C <=Int A) orBool (notBool B andBool 0 <=Int A) [simplification]
-    rule bool2Word(B) *Int C ==Int A => (B andBool C ==Int A) orBool (notBool B andBool A ==Int 0) [simplification]
+    rule [b2w-mul-lt-l]: bool2Word(B) *Int C  <Int A => (B andBool C  <Int A) orBool (notBool B andBool 0  <Int A) [simplification]
+    rule [b2w-mul-le-l]: bool2Word(B) *Int C <=Int A => (B andBool C <=Int A) orBool (notBool B andBool 0 <=Int A) [simplification]
+    rule [b2w-mul-eq-l]: bool2Word(B) *Int C ==Int A => (B andBool C ==Int A) orBool (notBool B andBool A ==Int 0) [simplification, comm]
+
+    rule [b2w-mul-lt-r]: C *Int bool2Word(B)  <Int A => (B andBool C  <Int A) orBool (notBool B andBool 0  <Int A) [simplification]
+    rule [b2w-mul-le-r]: C *Int bool2Word(B) <=Int A => (B andBool C <=Int A) orBool (notBool B andBool 0 <=Int A) [simplification]
+    rule [b2w-mul-eq-r]: C *Int bool2Word(B) ==Int A => (B andBool C ==Int A) orBool (notBool B andBool A ==Int 0) [simplification, comm]
 
     // As part of how the compiler returns a bool from storage
-    rule bool2Word(X ==Int 1) => X requires #rangeBool(X) [simplification]
+    rule [b2w-storage]: bool2Word(X ==Int 1) => X requires #rangeBool(X) [simplification]
 
   // ########################
   // Keccak
