@@ -95,9 +95,9 @@ module LEMMAS-WITHOUT-SLOT-UPDATES [symbolic]
     rule [b2w-bor]:     bool2Word(A) |Int bool2Word(B) => bool2Word(A orBool B) [simplification]
 
     // Relationship with `xorInt`
-    rule [b2w-xor-zero]:           0  xorInt bool2Word(Y) => bool2Word(Y)                                                     [simplification, comm]
-    rule [b2w-xor-one]:            1  xorInt bool2Word(Y) => bool2Word(notBool Y)                                             [simplification, comm]
-    rule [b2w-xor]:      bool2Word(X) xorInt bool2Word(Y) => bool2Word ( (X andBool notBool Y) orBool (notBool X andBool Y) ) [simplification]
+    rule [b2w-bxor-zero]:           0  xorInt bool2Word(Y) => bool2Word(Y)                                                     [simplification, comm]
+    rule [b2w-bxor-one]:            1  xorInt bool2Word(Y) => bool2Word(notBool Y)                                             [simplification, comm]
+    rule [b2w-bxor]:      bool2Word(X) xorInt bool2Word(Y) => bool2Word ( (X andBool notBool Y) orBool (notBool X andBool Y) ) [simplification]
 
     // As part of multiplication
     rule [b2w-mul-lt-l]: bool2Word(B) *Int C  <Int A => (B andBool C  <Int A) orBool (notBool B andBool 0  <Int A) [simplification]
