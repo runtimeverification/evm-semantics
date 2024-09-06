@@ -60,39 +60,6 @@ module BITWISE-SIMPLIFICATION [symbolic]
        andBool 0 <=Int Y andBool Y <Int pow256 -Int X
       [simplification, concrete(X), preserves-definedness]
 
-    // Generalization of: maxUIntXXX &Int #asWord ( BA )
-    rule X &Int #asWord ( BA ) => #asWord ( #range(BA, 32 -Int (log2Int(X +Int 1) /Int 8), log2Int(X +Int 1) /Int 8) )
-    requires #rangeUInt(256, X)
-     andBool X +Int 1 ==Int 2 ^Int log2Int(X +Int 1)
-     andBool log2Int (X +Int 1) modInt 8 ==Int 0
-     andBool lengthBytes(BA) ==Int 32
-     [simplification, concrete(X), preserves-definedness]
-
-    // Generalization of: notMaxUIntXXX &Int #asWord ( BA )
-    rule X &Int #asWord ( BA ) => #asWord ( #range ( BA, 0, 32 -Int log2Int(pow256 -Int X) /Int 8 ) +Bytes padRightBytes(.Bytes, log2Int(pow256 -Int X) /Int 8, 0 ) )
-    requires #rangeUInt(256, X)
-     andBool pow256 -Int X ==Int 2 ^Int ( log2Int ( pow256 -Int X ) )
-     andBool log2Int ( pow256 -Int X ) modInt 8 ==Int 0
-     andBool lengthBytes(BA) ==Int 32
-     [simplification, concrete(X), preserves-definedness]
-
-    // Generalization of: notMaxUIntXXX &Int (Y <<Int XXX) => Y <<Int XXX requires #rangeUInt(256 -Int XXX, Y)
-    rule X &Int (Y <<Int Z) => Y <<Int Z
-      requires #rangeUInt(256, X)
-       andBool 2 ^Int ( log2Int ( pow256 -Int X ) ) ==Int pow256 -Int X
-       andBool Z ==Int log2Int ( pow256 -Int X )
-       andBool 0 <=Int Y andBool Y <Int 2 ^Int ( 256 -Int Z )
-      [simplification, concrete(X, Z), comm, preserves-definedness]
-
-    // Generalization of:    maxUIntXXX &Int (Y |Int (notMaxUIntXXX &Int T)) =>    maxUIntXXX &Int Y
-    //                and notMaxUIntXXX &Int (Y |Int (   maxUIntXXX &Int T)) => notMaxUIntXXX &Int Y
-    rule X &Int (Y |Int (Z &Int T)) => X &Int Y
-      requires 0 <=Int X andBool 0 <=Int Y andBool 0 <=Int Z andBool 0 <=Int T
-       andBool (      X +Int 1 ==Int 2 ^Int log2Int (      X +Int 1 ) orBool // X is a maxUInt
-                 pow256 -Int X ==Int 2 ^Int log2Int ( pow256 -Int X ) )      // X is a notMaxUInt
-       andBool X +Int Z ==Int maxUInt256
-      [simplification, concrete(X, Z), comm]
-
     rule [notMaxUInt5-bit-and-nested]:
       notMaxUInt5 &Int ( ( notMaxUInt5 &Int X ) +Int Y ) => chop ( ( notMaxUInt5 &Int X ) +Int ( notMaxUInt5 &Int Y ) )
       requires 0 <=Int X andBool 0 <=Int Y
