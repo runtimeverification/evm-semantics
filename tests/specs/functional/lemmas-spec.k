@@ -18,11 +18,6 @@ endmodule
 module LEMMAS-SPEC
     imports VERIFICATION
 
- // bool2Word
- // ---------
-
-    claim <k> runLemma ( bool2Word((UINT8 ==K 0) ==K false) ) => doneLemma ( UINT8 ) ... </k> requires #rangeBool(UINT8)
-
  // sizeBytes
  // -------------
 
@@ -699,6 +694,49 @@ module LEMMAS-SPEC
             #range(B1, 3, 17) +Bytes B2 ==K #buf(32, 294572972648782479679175618975648679836)
           ) ... </k>
         requires lengthBytes(B1) ==Int 20 andBool lengthBytes(B2) ==Int 15
+
+ // bool2Word
+ // ---------
+
+    // b2w-gt-zero, b2w-lt-b2w, b2w-band-one, b2w-band, b2w-mul-lt-l
+    claim [b2w-01]:
+      <k> runLemma (
+            ( bool2Word( 0 <=Int X:Int ) &Int 1 ) *Int bool2Word( X <Int -5 ) <Int ( bool2Word( 5 <=Int X ) &Int bool2Word( X <=Int 10 ) )
+          ) => doneLemma (
+            5 <=Int X andBool X <=Int 10
+          ) ... </k>
+
+    // b2w-eq-zero, b2w-xor-zero, b2w-xor-one, b2w-xor, b2w-mul-eq-l
+    claim [b2w-02]:
+      <k> runLemma (
+            ( bool2Word( 0 <=Int X:Int ) *Int ( 0 xorInt bool2Word( X <=Int 0 ) ) ) ==Int 1 xorInt ( bool2Word( X <=Int 0 ) xorInt bool2Word( X >=Int 0 ) )
+          ) => doneLemma (
+            true
+          ) ... </k>
+
+    // b2w-lt-one, b2w-bor-one, b2w-mul-le-l
+    claim [b2w-03]:
+      <k> runLemma (
+            ( bool2Word ( 0 <=Int X:Int ) *Int bool2Word( 0 <Int X ) ) <Int 1 |Int bool2Word( X =/=Int X )
+          ) => doneLemma (
+            X <=Int 0
+          ) ... </k>
+
+    // b2w-gt-false, b2w-mul-lt-r
+    claim [b2w-04]:
+      <k> runLemma (
+            ( bool2Word ( notBool X ) *Int 42 ) <Int bool2Word ( Y )
+          ) => doneLemma (
+            X andBool Y
+          ) ... </k>
+
+    // b2w-lt-true
+    claim [b2w-05]:
+      <k> runLemma (
+            bool2Word ( _X ) *Int bool2Word ( _Y ) <Int 42
+          ) => doneLemma (
+            true
+          ) ... </k>
 
  // ecrecover
  // ---------
