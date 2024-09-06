@@ -48,22 +48,68 @@ module LEMMAS-WITHOUT-SLOT-UPDATES [symbolic]
 
     rule 0 <=Int #sizeWordStack ( _ , N ) => true requires 0 <=Int N [simplification, smt-lemma]
 
-    // bool2Word range & simplification
-    rule 0 <=Int bool2Word(_B)             => true   [simplification]
-    rule         bool2Word(_B) <Int pow256 => true   [simplification]
-
-    rule bool2Word(A) |Int bool2Word(B) => bool2Word(A  orBool B) [simplification]
-    rule bool2Word(A) &Int bool2Word(B) => bool2Word(A andBool B) [simplification]
-
-    rule 1 |Int bool2Word(_B) => 1            [simplification]
-    rule 1 &Int bool2Word( B) => bool2Word(B) [simplification]
-
     // #newAddr range
     rule 0 <=Int #newAddr(_,_)             => true   [simplification]
     rule         #newAddr(_,_) <Int pow160 => true   [simplification]
     rule         #newAddr(_,_) <Int pow256 => true   [simplification]
 
     rule #isPrecompiledAccount(#newAddr(_, _), _) => false [simplification]
+
+  // ########################
+  // #rangeBool reasoning
+  // ########################
+
+    rule [rangeBool-not-zero-l]: notBool (X ==Int 0) => X ==Int 1 requires #rangeBool(X) [simplification]
+    rule [rangeBool-not-zero-r]: notBool (0 ==Int X) => X ==Int 1 requires #rangeBool(X) [simplification]
+    rule [rangeBool-not-one-l]:  notBool (X ==Int 1) => X ==Int 0 requires #rangeBool(X) [simplification]
+    rule [rangeBool-not-one-r]:  notBool (1 ==Int X) => X ==Int 0 requires #rangeBool(X) [simplification]
+
+  // ########################
+  // bool2Word reasoning
+  // ########################
+
+    // Range
+    rule [b2w-lb]: 0 <=Int bool2Word(_)         => true [simplification, smt-lemma]
+    rule [b2w-ub]:         bool2Word(_) <=Int 1 => true [simplification, smt-lemma]
+
+    // Relationship with equality
+    rule [b2w-eq-zero]: bool2Word(B) ==Int 0 => notBool B [simplification(30), comm]
+    rule [b2w-eq-one]:  bool2Word(B) ==Int 1 => B         [simplification(30), comm]
+
+    // Relationship with other comparators
+    rule [b2w-lt-one]:  bool2Word(B) <Int            1 => notBool B           [simplification(30)]
+    rule [b2w-gt-zero]:            0 <Int bool2Word(B) => B                   [simplification(30)]
+
+    rule [b2w-lt-true]:  bool2Word(_) <Int X:Int => true  requires 1  <Int X [simplification(30), concrete(X)]
+    rule [b2w-gt-false]: X:Int <Int bool2Word(_) => false requires 1 <=Int X [simplification(30), concrete(X)]
+
+    rule [b2w-lt-b2w]:  bool2Word(A)  <Int bool2Word(B) => notBool A andBool         B [simplification(30)]
+    rule [b2w-le-b2w]:  bool2Word(A) <=Int bool2Word(B) =>         A  orBool notBool B [simplification(30)]
+
+    // Relationship with `&Int`
+    rule [b2w-band-one]:           1  &Int bool2Word(B) => bool2Word(B)           [simplification]
+    rule [b2w-band]:     bool2Word(A) &Int bool2Word(B) => bool2Word(A andBool B) [simplification]
+
+    // Relationship with `|Int`
+    rule [b2w-bor-one]:           1  |Int bool2Word(_) => 1                     [simplification]
+    rule [b2w-bor]:     bool2Word(A) |Int bool2Word(B) => bool2Word(A orBool B) [simplification]
+
+    // Relationship with `xorInt`
+    rule [b2w-bxor-zero]:           0  xorInt bool2Word(Y) => bool2Word(Y)                                                     [simplification, comm]
+    rule [b2w-bxor-one]:            1  xorInt bool2Word(Y) => bool2Word(notBool Y)                                             [simplification, comm]
+    rule [b2w-bxor]:      bool2Word(X) xorInt bool2Word(Y) => bool2Word ( (X andBool notBool Y) orBool (notBool X andBool Y) ) [simplification]
+
+    // As part of multiplication
+    rule [b2w-mul-lt-l]: bool2Word(B) *Int C  <Int A => (B andBool C  <Int A) orBool (notBool B andBool 0  <Int A) [simplification]
+    rule [b2w-mul-le-l]: bool2Word(B) *Int C <=Int A => (B andBool C <=Int A) orBool (notBool B andBool 0 <=Int A) [simplification]
+    rule [b2w-mul-eq-l]: bool2Word(B) *Int C ==Int A => (B andBool C ==Int A) orBool (notBool B andBool A ==Int 0) [simplification, comm]
+
+    rule [b2w-mul-lt-r]: C *Int bool2Word(B)  <Int A => (B andBool C  <Int A) orBool (notBool B andBool 0  <Int A) [simplification]
+    rule [b2w-mul-le-r]: C *Int bool2Word(B) <=Int A => (B andBool C <=Int A) orBool (notBool B andBool 0 <=Int A) [simplification]
+    rule [b2w-mul-eq-r]: C *Int bool2Word(B) ==Int A => (B andBool C ==Int A) orBool (notBool B andBool A ==Int 0) [simplification, comm]
+
+    // As part of how the compiler returns a bool from storage
+    rule [b2w-storage]: bool2Word(X ==Int 1) => X requires #rangeBool(X) [simplification]
 
   // ########################
   // Keccak
@@ -160,14 +206,6 @@ module LEMMAS-HASKELL [symbolic]
     rule #asWord(BUF) /Int D => #asWord(#range(BUF, 0, lengthBytes(BUF) -Int log256Int(D)))
        requires 0 <Int D andBool D <Int pow256 andBool D ==Int 256 ^Int log256Int(D)
         andBool log256Int(D) <=Int lengthBytes(BUF) [simplification, preserves-definedness]
-
-    rule notBool  (X ==Int 0) => X ==Int 1 requires #rangeBool(X) [simplification]
-    rule notBool  (X ==Int 1) => X ==Int 0 requires #rangeBool(X) [simplification]
-    rule bool2Word(X ==Int 1) => X         requires #rangeBool(X) [simplification]
-
-    //Simplification of bool2Word() ==Int CONCRETE, #buf() ==K CONCRETE
-    rule I                   ==Int bool2Word( B:Bool ) => bool2Word(B) ==Int I  [simplification, concrete(I)]
-    rule bool2Word( B:Bool ) ==Int I                   => B ==K word2Bool(I)    [simplification, concrete(I)]
 
   // ########################
   // Arithmetic
