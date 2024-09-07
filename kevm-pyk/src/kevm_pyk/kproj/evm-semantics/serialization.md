@@ -207,7 +207,7 @@ These parsers can interpret hex-encoded strings as `Int`s, `Bytes`s, and `Map`s.
 
 Unparsing
 ---------
--   `#padByte` ensures that the `String` interperetation of a `Int` is wide enough.
+-   `#padByte` ensures that the `String` interpretation of a `Int` is wide enough.
 
 ```k
     syntax String ::= #padByte ( String ) [symbol(#padByte), function]
@@ -396,7 +396,7 @@ Decoding
 --------
 
 -   `#rlpDecode` RLP decodes a single `Bytes` into a `JSON`.
--   `#rlpDecodeList` RLP decodes a single `Bytes` into a `JSONs`, interpereting the input as the RLP encoding of a list.
+-   `#rlpDecodeList` RLP decodes a single `Bytes` into a `JSONs`, interpreting the input as the RLP encoding of a list.
 
 ```k
     syntax JSON ::= #rlpDecode ( Bytes )               [symbol(#rlpDecode   ), function]

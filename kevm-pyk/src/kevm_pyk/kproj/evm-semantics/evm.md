@@ -2349,8 +2349,8 @@ The opcode `CREATE` relies on being able to interpret EVM data as a program.
 This is a program representation dependence, which we might want to avoid.
 Perhaps the only program representation dependence we should have is the hash of the program; doing so achieves:
 
--   Program representation independence (different analysis tools on the language don't have to ensure they have a common representation of programs, just a common interperetation of the data-files holding programs).
--   Programming language independence (we wouldn't even have to commit to a particular language or interperetation of the data-file).
+-   Program representation independence (different analysis tools on the language don't have to ensure they have a common representation of programs, just a common interpretation of the data-files holding programs).
+-   Programming language independence (we wouldn't even have to commit to a particular language or interpretation of the data-file).
 -   Only depending on the hash allows us to know that we have *exactly* the correct data-file (program), and nothing more.
 
 Disassembler
@@ -2358,7 +2358,7 @@ Disassembler
 
 After interpreting the strings representing programs as a `WordStack`, it should be changed into an `OpCodes` for use by the EVM semantics.
 
--   `#dasmOpCode` interperets a `Int` as an `OpCode`.
+-   `#dasmOpCode` interprets a `Int` as an `OpCode`.
 
 ```k
     syntax OpCode ::= #dasmOpCode ( Int , Schedule ) [symbol(#dasmOpCode), function, memo, total]
