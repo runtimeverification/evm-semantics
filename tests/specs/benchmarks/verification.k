@@ -17,6 +17,8 @@ module VERIFICATION-COMMON
 
     rule         #asWord(#ecrec(HASH, SIGV, SIGR, SIGS))             => 0    requires         #ecrecEmpty(HASH, SIGV, SIGR, SIGS) [simplification]
     rule 0  <Int #asWord(#ecrec(HASH, SIGV, SIGR, SIGS))             => true requires notBool #ecrecEmpty(HASH, SIGV, SIGR, SIGS) [simplification]
+    rule 0 <=Int #asWord(#ecrec(_   , _   , _   , _   ))             => true                                                      [simplification]
+    rule         #asWord(#ecrec(_   , _   , _   , _   )) <Int pow160 => true                                                      [simplification]
 
     rule #Ceil( #ecrec(HASH, SIGV, SIGR, SIGS) ) => #Top
      requires #ecrecEmpty(HASH, SIGV, SIGR, SIGS) [simplification]
