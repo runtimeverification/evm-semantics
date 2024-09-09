@@ -601,6 +601,10 @@ module LEMMAS-SPEC
     claim <k> runLemma ( #buf ( 32 , X <<Int 248 ) ) => doneLemma( #buf ( 1 , X ) +Bytes #buf ( 31 , 0 ) ) ... </k> requires #rangeUInt (  8 , X )
     claim <k> runLemma ( #buf ( 32 , X <<Int 240 ) ) => doneLemma( #buf ( 2 , X ) +Bytes #buf ( 30 , 0 ) ) ... </k> requires #rangeUInt ( 16 , X )
 
+    claim [band-maxUInt-lt-01]: <k> runLemma ( maxUInt8   &Int X <Int    256 ) => doneLemma ( true ) ... </k> requires 0 <=Int X
+    claim [band-maxUInt-lt-02]: <k> runLemma ( maxUInt48  &Int X <Int  pow48 ) => doneLemma ( true ) ... </k> requires 0 <=Int X
+    claim [band-maxUInt-lt-03]: <k> runLemma ( maxUInt160 &Int X <Int pow160 ) => doneLemma ( true ) ... </k> requires 0 <=Int X
+
  // shift
  // -----
 

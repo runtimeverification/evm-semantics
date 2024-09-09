@@ -28,13 +28,6 @@ module BITWISE-SIMPLIFICATION [symbolic]
     rule _ &Int 0 => 0 [simplification]
     rule A &Int A => A [simplification]
 
-    rule chop ( ( maxUInt48 &Int X:Int ) *Int Y:Int ) => ( maxUInt48 &Int X:Int ) *Int Y
-      requires 0 <=Int X andBool 0 <=Int Y andBool Y <=Int pow208 [simplification]
-
-    rule maxUInt8   &Int X <Int 256    => true requires 0 <=Int X [simplification, smt-lemma]
-    rule maxUInt48  &Int X <Int pow48  => true requires 0 <=Int X [simplification, smt-lemma]
-    rule maxUInt160 &Int X <Int pow160 => true requires 0 <=Int X [simplification, smt-lemma]
-
     rule [bitwise-or-geq-zero]:  0 <=Int (X |Int Y) => true requires 0 <=Int X andBool 0 <=Int Y [simplification, smt-lemma]
     rule [bitwise-and-geq-zero]: 0 <=Int (X &Int Y) => true requires 0 <=Int X andBool 0 <=Int Y [simplification, smt-lemma]
 
