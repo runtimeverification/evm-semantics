@@ -408,6 +408,13 @@ module LEMMAS-SPEC
       <k> runLemma ( chop ( ( maxUInt48 &Int X:Int ) *Int Y:Int ) ) => doneLemma ( ( maxUInt48 &Int X:Int ) *Int Y ) ... </k>
     requires 0 <=Int X andBool 0 <=Int Y andBool Y <Int pow208
 
+    claim [chop-sub-01]: <k> runLemma ( chop ( X -Int Y ) ) => doneLemma ( X -Int Y ) ... </k>
+      requires #rangeUInt(256, X) andBool #rangeUInt(256, Y) andBool Y <=Int X
+
+    claim [chop-mul-01]: <k> runLemma ( chop ( X *Int Y ) ) => doneLemma ( X *Int Y ) ... </k>
+      requires 0 <=Int X andBool X <Int 2 ^Int 96
+       andBool 0 <=Int Y andBool Y <Int 2 ^Int ( 256 -Int 96 )
+
  // #padToWidth simplification
  // --------------------------
 
