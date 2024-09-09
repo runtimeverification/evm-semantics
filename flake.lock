@@ -352,16 +352,16 @@
         ]
       },
       "locked": {
-        "lastModified": 1725644575,
-        "narHash": "sha256-X3OfMN53Cdae4XC0XkazqDYxCQ6ikLIhxIvt3ZbBi2E=",
+        "lastModified": 1725849280,
+        "narHash": "sha256-/S6N6u996rxx5xjc8nGPXoDhSlwS/y8xtgcGCLjSCAY=",
         "owner": "runtimeverification",
         "repo": "k",
-        "rev": "62e06f466f3fef150598894798fa340d68bb3fdb",
+        "rev": "80310780c3a65102b86692184ff7761e447efa40",
         "type": "github"
       },
       "original": {
         "owner": "runtimeverification",
-        "ref": "v7.1.136",
+        "ref": "v7.1.137",
         "repo": "k",
         "type": "github"
       }
