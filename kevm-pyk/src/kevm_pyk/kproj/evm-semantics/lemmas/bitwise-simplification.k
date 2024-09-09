@@ -13,7 +13,7 @@ module BITWISE-SIMPLIFICATION [symbolic]
     rule A |Int 0 => A [simplification]
     rule A |Int A => A [simplification]
 
-    rule A |Int B => B |Int A [simplification(40), concrete(B), symbolic(A)]
+    rule A |Int B => B |Int A [simplification(30), symbolic(A), concrete(B)]
 
     rule  X |Int _  ==Int 0          => false requires 0 <Int X [simplification, concrete(X)]
     rule (A |Int B) ==Int (B |Int A) => true  [simplification, smt-lemma]
@@ -22,7 +22,7 @@ module BITWISE-SIMPLIFICATION [symbolic]
   // bit-and
   // ###########################################################################
 
-    rule A &Int B => B &Int A [symbolic(A), concrete(B), simplification]
+    rule A &Int B => B &Int A [simplification(30), symbolic(A), concrete(B)]
 
     rule 0 &Int _ => 0 [simplification]
     rule _ &Int 0 => 0 [simplification]
