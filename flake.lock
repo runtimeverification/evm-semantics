@@ -45,17 +45,17 @@
         "xbyak": "xbyak"
       },
       "locked": {
-        "lastModified": 1725480100,
-        "narHash": "sha256-2gTqoktcvJUAmH4ES0B+r0BNt0PLPEYnCbZQxcIuJUA=",
+        "lastModified": 1725913520,
+        "narHash": "sha256-lryf4YUxCwkvxW63wyVYlWlclflaWcdjczTYXsXmJ28=",
         "owner": "runtimeverification",
         "repo": "blockchain-k-plugin",
-        "rev": "a18c1d424957f794a1254d7e560712749c2aeb10",
+        "rev": "09b4d74ef7db6664276b84865c3d5eb7606d5912",
         "type": "github"
       },
       "original": {
         "owner": "runtimeverification",
         "repo": "blockchain-k-plugin",
-        "rev": "a18c1d424957f794a1254d7e560712749c2aeb10",
+        "rev": "09b4d74ef7db6664276b84865c3d5eb7606d5912",
         "type": "github"
       }
     },
@@ -316,16 +316,16 @@
         ]
       },
       "locked": {
-        "lastModified": 1725395202,
-        "narHash": "sha256-UCMS6H8zIjFzN4xAXdCNcW7UChAp9knpRnscTg5z+jA=",
+        "lastModified": 1725906529,
+        "narHash": "sha256-r1geeMXzuy3NjFM5mRke1R8mSikMqY3QrrC0C1yWTjY=",
         "owner": "runtimeverification",
         "repo": "k",
-        "rev": "42e03545c319847e7df84e6fbc196b2f51c148a0",
+        "rev": "464852c23ecdf15bbe772802e0a4b96e5b95ee47",
         "type": "github"
       },
       "original": {
         "owner": "runtimeverification",
-        "ref": "v7.1.131",
+        "ref": "v7.1.138",
         "repo": "k",
         "type": "github"
       }
