@@ -56,15 +56,6 @@ module LEMMAS-WITHOUT-SLOT-UPDATES [symbolic]
     rule #isPrecompiledAccount(#newAddr(_, _), _) => false [simplification]
 
   // ########################
-  // #rangeBool reasoning
-  // ########################
-
-    rule [rangeBool-not-zero-l]: notBool (X ==Int 0) => X ==Int 1 requires #rangeBool(X) [simplification]
-    rule [rangeBool-not-zero-r]: notBool (0 ==Int X) => X ==Int 1 requires #rangeBool(X) [simplification]
-    rule [rangeBool-not-one-l]:  notBool (X ==Int 1) => X ==Int 0 requires #rangeBool(X) [simplification]
-    rule [rangeBool-not-one-r]:  notBool (1 ==Int X) => X ==Int 0 requires #rangeBool(X) [simplification]
-
-  // ########################
   // bool2Word reasoning
   // ########################
 
