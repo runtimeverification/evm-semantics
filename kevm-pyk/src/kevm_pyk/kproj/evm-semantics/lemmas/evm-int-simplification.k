@@ -113,10 +113,10 @@ module EVM-INT-SIMPLIFICATION-COMMON
 
     rule [chop-no-overflow-add-le-l]: X:Int <=Int chop ( X +Int Y:Int )        => X +Int Y <Int pow256 requires #rangeUInt(256, X) andBool #rangeUInt(256, Y) [simplification]
     rule [chop-no-overflow-add-le-r]: X:Int <=Int chop ( Y:Int +Int X )        => X +Int Y <Int pow256 requires #rangeUInt(256, X) andBool #rangeUInt(256, Y) [simplification]
-    rule [chop-no-overflow-mul-le-l]: X:Int <=Int chop ( X *Int Y:Int ) /Int Y => X *Int Y <Int pow256 requires #rangeUInt(256, X) andBool 0 <Int Y           [simplification]
-    rule [chop-no-overflow-mul-le-r]: X:Int <=Int chop ( Y:Int *Int X ) /Int Y => X *Int Y <Int pow256 requires #rangeUInt(256, X) andBool 0 <Int Y           [simplification]
-    rule [chop-no-overflow-mul-eq-l]: X:Int ==Int chop ( X *Int Y:Int ) /Int Y => X *Int Y <Int pow256 requires #rangeUInt(256, X) andBool 0 <Int Y           [simplification, comm]
-    rule [chop-no-overflow-mul-eq-r]: X:Int ==Int chop ( Y:Int *Int X ) /Int Y => X *Int Y <Int pow256 requires #rangeUInt(256, X) andBool 0 <Int Y           [simplification, comm]
+    rule [chop-no-overflow-mul-le-l]: X:Int <=Int chop ( X *Int Y:Int ) /Int Y => X *Int Y <Int pow256 requires #rangeUInt(256, X) andBool 0 <Int Y           [simplification, preserves-definedness]
+    rule [chop-no-overflow-mul-le-r]: X:Int <=Int chop ( Y:Int *Int X ) /Int Y => X *Int Y <Int pow256 requires #rangeUInt(256, X) andBool 0 <Int Y           [simplification, preserves-definedness]
+    rule [chop-no-overflow-mul-eq-l]: X:Int ==Int chop ( X *Int Y:Int ) /Int Y => X *Int Y <Int pow256 requires #rangeUInt(256, X) andBool 0 <Int Y           [simplification, preserves-definedness, comm]
+    rule [chop-no-overflow-mul-eq-r]: X:Int ==Int chop ( Y:Int *Int X ) /Int Y => X *Int Y <Int pow256 requires #rangeUInt(256, X) andBool 0 <Int Y           [simplification, preserves-definedness, comm]
 
     rule [chop-no-overflow-mul-eq-ml-ll]: { X #Equals chop ( X *Int Y ) /Int Y } => { true #Equals X *Int Y <Int pow256 } requires #rangeUInt(256, X) andBool 0 <Int Y [simplification, preserves-definedness]
     rule [chop-no-overflow-mul-eq-ml-rl]: { X #Equals chop ( Y *Int X ) /Int Y } => { true #Equals X *Int Y <Int pow256 } requires #rangeUInt(256, X) andBool 0 <Int Y [simplification, preserves-definedness]

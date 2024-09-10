@@ -411,6 +411,18 @@ module LEMMAS-SPEC
       requires 0 <=Int X andBool X <Int 2 ^Int 96
        andBool 0 <=Int Y andBool Y <Int 2 ^Int ( 256 -Int 96 )
 
+    claim [chop-add-sub-conc]: <k> runLemma ( chop ( 0 -Int chop ( X +Int (-16)) ) ==Int 0 ) => doneLemma ( false ) ... </k>
+      requires 0 <=Int X andBool X <Int 10
+
+    claim [chop-overflow-01]: <k> runLemma ( X:Int <=Int chop ( X +Int Y:Int ) ) => doneLemma ( true ) ... </k>
+      requires #rangeUInt(128, X) andBool #rangeUInt(128, Y)
+
+    claim [chop-overflow-02]: <k> runLemma ( X:Int <=Int chop ( X *Int Y:Int ) /Int Y ) => doneLemma ( true ) ... </k>
+      requires #rangeUInt(128, X) andBool #rangeUInt(128, Y)
+
+    claim [chop-overflow-03]: <k> runLemma ( X:Int ==Int chop ( X *Int Y:Int ) /Int Y ) => doneLemma ( false ) ... </k>
+      requires pow128 <=Int X andBool X <Int pow256 andBool pow256 <=Int Y
+
  // #padToWidth simplification
  // --------------------------
 
