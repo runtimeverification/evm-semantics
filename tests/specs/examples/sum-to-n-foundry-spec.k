@@ -6,6 +6,8 @@ module VERIFICATION
     imports INFINITE-GAS
     imports EVM
 
+    rule [rangeBool-not-zero-l]: notBool (X ==Int 0) => X ==Int 1 requires #rangeBool(X) [simplification]
+
     rule N xorInt maxUInt256 => maxUInt256 -Int N
     requires #rangeUInt(256, N)
     [simplification]
