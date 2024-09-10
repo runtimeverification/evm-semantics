@@ -501,13 +501,13 @@ colors = ["colorama (>=0.4.6)"]
 
 [[package]]
 name = "kframework"
-version = "7.1.137"
+version = "7.1.139"
 description = ""
 optional = false
 python-versions = "<4.0,>=3.10"
 files = [
-    {file = "kframework-7.1.137-py3-none-any.whl", hash = "sha256:81ed5aca60b2b44127d6b9799e71287a8ac0977498d67afafc39dec95199740e"},
-    {file = "kframework-7.1.137.tar.gz", hash = "sha256:c3d4cea933087672b614a6438f34e8d2fc095534ddaf726eebfeaa1d54a64b4c"},
+    {file = "kframework-7.1.139-py3-none-any.whl", hash = "sha256:bf3f6efa8a23a272dd1afdcaa109822e679d35be1176f219a24bb7ae0a23c8d2"},
+    {file = "kframework-7.1.139.tar.gz", hash = "sha256:ed5efd1ed91cb404fcbac7cd05745af966302f25aba94afe0b2cdedf243088c8"},
 ]
 
 [package.dependencies]
@@ -582,13 +582,13 @@ files = [
 
 [[package]]
 name = "mdit-py-plugins"
-version = "0.4.1"
+version = "0.4.2"
 description = "Collection of plugins for markdown-it-py"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "mdit_py_plugins-0.4.1-py3-none-any.whl", hash = "sha256:1020dfe4e6bfc2c79fb49ae4e3f5b297f5ccd20f010187acc52af2921e27dc6a"},
-    {file = "mdit_py_plugins-0.4.1.tar.gz", hash = "sha256:834b8ac23d1cd60cec703646ffd22ae97b7955a6d596eb1d304be1e251ae499c"},
+    {file = "mdit_py_plugins-0.4.2-py3-none-any.whl", hash = "sha256:0c673c3f889399a33b95e88d2f0d111b4447bdfea7f237dab2d488f459835636"},
+    {file = "mdit_py_plugins-0.4.2.tar.gz", hash = "sha256:5f2cd1fdb606ddf152d37ec30e46101a60512bc0e5fa1a7002c36647b09e26b5"},
 ]
 
 [package.dependencies]
@@ -1188,4 +1188,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "4e70de21fbb6b69cd0edde7d8a2dae3cd35953e980e6bc4f8f5e1851c457f1be"
+content-hash = "0f5489e233b43fd096e4d8ffdf563025b8bd9ad888f8dbbdf99ff98c71885750"
