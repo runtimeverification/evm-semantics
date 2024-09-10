@@ -56,15 +56,6 @@ module LEMMAS-WITHOUT-SLOT-UPDATES [symbolic]
     rule #isPrecompiledAccount(#newAddr(_, _), _) => false [simplification]
 
   // ########################
-  // #rangeBool reasoning
-  // ########################
-
-    rule [rangeBool-not-zero-l]: notBool (X ==Int 0) => X ==Int 1 requires #rangeBool(X) [simplification]
-    rule [rangeBool-not-zero-r]: notBool (0 ==Int X) => X ==Int 1 requires #rangeBool(X) [simplification]
-    rule [rangeBool-not-one-l]:  notBool (X ==Int 1) => X ==Int 0 requires #rangeBool(X) [simplification]
-    rule [rangeBool-not-one-r]:  notBool (1 ==Int X) => X ==Int 0 requires #rangeBool(X) [simplification]
-
-  // ########################
   // bool2Word reasoning
   // ########################
 
@@ -98,6 +89,10 @@ module LEMMAS-WITHOUT-SLOT-UPDATES [symbolic]
     rule [b2w-bxor-zero]:           0  xorInt bool2Word(Y) => bool2Word(Y)                                                     [simplification, comm]
     rule [b2w-bxor-one]:            1  xorInt bool2Word(Y) => bool2Word(notBool Y)                                             [simplification, comm]
     rule [b2w-bxor]:      bool2Word(X) xorInt bool2Word(Y) => bool2Word ( (X andBool notBool Y) orBool (notBool X andBool Y) ) [simplification]
+
+    // Relationship with `#rangeBool`
+    rule [b2w-rangeBool-eq-not-zero-l]: bool2Word (notBool (X ==Int 0)) => X requires #rangeBool(X) [simplification, comm]
+    rule [b2w-rangeBool-eq-not-zero-r]: bool2Word (notBool (0 ==Int X)) => X requires #rangeBool(X) [simplification, comm]
 
     // As part of multiplication
     rule [b2w-mul-lt-l]: bool2Word(B) *Int C  <Int A => (B andBool C  <Int A) orBool (notBool B andBool 0  <Int A) [simplification]
