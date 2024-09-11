@@ -64,7 +64,7 @@ claim [foundry-sum-to-n-loop-invariant]:
   </kevm>
 
   requires 0 <=Int N andBool 0 <=Int S
-   andBool #rangeUInt(256, S +Int ((N *Int (N +Int 1)) divInt 2))
+   andBool S +Int ((N *Int (N +Int 1)) divInt 2) <Int pow256
    andBool GAS_AMT >=Int N *Int 178
   [circularity]
 
