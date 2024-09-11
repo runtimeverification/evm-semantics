@@ -91,8 +91,8 @@ module LEMMAS-WITHOUT-SLOT-UPDATES [symbolic]
     rule [b2w-bxor]:      bool2Word(X) xorInt bool2Word(Y) => bool2Word ( (X andBool notBool Y) orBool (notBool X andBool Y) ) [simplification]
 
     // Relationship with `#rangeBool`
-    rule [b2w-rangeBool-eq-not-zero-l]: bool2Word (notBool (X ==Int 0)) => X requires #rangeBool(X) [simplification, comm]
-    rule [b2w-rangeBool-eq-not-zero-r]: bool2Word (notBool (0 ==Int X)) => X requires #rangeBool(X) [simplification, comm]
+    rule [b2w-rangeBool-eq-not-zero-l]: bool2Word (notBool (X ==Int 0)) => X requires #rangeBool(X) [simplification]
+    rule [b2w-rangeBool-eq-not-zero-r]: bool2Word (notBool (0 ==Int X)) => X requires #rangeBool(X) [simplification]
 
     // As part of multiplication
     rule [b2w-mul-lt-l]: bool2Word(B) *Int C  <Int A => (B andBool C  <Int A) orBool (notBool B andBool 0  <Int A) [simplification]
