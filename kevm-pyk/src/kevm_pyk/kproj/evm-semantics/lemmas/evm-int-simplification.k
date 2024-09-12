@@ -120,9 +120,9 @@ module EVM-INT-SIMPLIFICATION
   rule [asWord-ub]: #asWord( _ ) <Int pow256 => true [simplification, smt-lemma]
 
   // Comparison: `#asWord(B)` is certainly less than something that does not fit into `lengthBytes(B)` bytes
-  rule [asWord-lt]:  #asWord ( B )  <Int X:Int => true  requires X >=Int   2 ^Int (8 *Int minInt(32, lengthBytes(B)))               [simplification, preserves-definedness]
+  rule [asWord-lt]:  #asWord ( B )  <Int X:Int => true  requires   2 ^Int (8 *Int minInt(32, lengthBytes(B)))          <=Int X [simplification, preserves-definedness]
   // Comparison: `#asWord(B)` is certainly less than or equal to something that is not less than the max number fitting into `lengthBytes(B)` bytes
-  rule [asWord-le]:  #asWord ( B ) <=Int X:Int => true  requires X >=Int ( 2 ^Int (8 *Int minInt(32, lengthBytes(B))) -Int 1 )      [simplification, preserves-definedness]
+  rule [asWord-le]:  #asWord ( B ) <=Int X:Int => true  requires ( 2 ^Int (8 *Int minInt(32, lengthBytes(B))) -Int 1 ) <=Int X [simplification, preserves-definedness]
 
   // Comparison: `#asWord` of `+Bytes` when lower bytes match, with `<Int`
   rule [asWord-concat-lt]:
