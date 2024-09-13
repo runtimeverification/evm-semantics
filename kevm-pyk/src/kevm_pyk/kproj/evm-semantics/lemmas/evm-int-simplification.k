@@ -113,6 +113,7 @@ module EVM-INT-SIMPLIFICATION
   rule [asWord-div]:
     #asWord( BA ) /Int N => #asWord ( #range ( BA, 0, lengthBytes( BA ) -Int ( log2Int( N ) /Int 8 ) ) )
     requires 0 <Int N andBool N ==Int 2 ^Int log2Int ( N ) andBool log2Int( N ) modInt 8 ==Int 0
+     andBool lengthBytes ( BA ) <=Int 32
     [simplification, preserves-definedness]
 
   // Comparison: `#asWord` is always in the range `[0, pow256)`
@@ -128,12 +129,14 @@ module EVM-INT-SIMPLIFICATION
   rule [asWord-concat-lt]:
     #asWord ( BA1 +Bytes BA2 ) <Int X:Int => #asWord ( BA1 ) <Int X /Int ( 2 ^Int ( 8 *Int lengthBytes ( BA2 ) ) )
     requires #asWord ( BA2 ) ==Int X modInt ( 2 ^Int ( 8 *Int lengthBytes ( BA2 ) ) )
+     andBool lengthBytes ( BA1 +Bytes BA2 ) <=Int 32
     [simplification, concrete(BA2, X), preserves-definedness]
 
   // Comparison: `#asWord` of `+Bytes` when lower bytes match, with `<=Int`
   rule [asWord-concat-le]:
     #asWord ( BA1 +Bytes BA2 ) <=Int X:Int => #asWord ( BA1 ) <=Int X /Int ( 2 ^Int ( 8 *Int lengthBytes ( BA2 ) ) )
     requires #asWord ( BA2 ) ==Int X modInt ( 2 ^Int ( 8 *Int lengthBytes ( BA2 ) ) )
+     andBool lengthBytes ( BA1 +Bytes BA2 ) <=Int 32
     [simplification, concrete(BA2, X), preserves-definedness]
 
   // ###########################################################################
