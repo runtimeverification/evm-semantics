@@ -718,14 +718,15 @@ module LEMMAS-SPEC
           ) ... </k>
         requires lengthBytes(B1) ==Int 20 andBool lengthBytes(B2) ==Int 15
 
-    // claim [asWord-chop-overflow-div]:
-    //   <k> runLemma(
-    //         #asWord( BA1 +Bytes BA2 ) /Int N
-    //       ) => doneLemma(
-    //         #asWord ( BA2 ) /Int N
-    //       ) ... </k>
-    //     requires 0 <Int N andBool N ==Int 2 ^Int log2Int ( N ) andBool log2Int( N ) modInt 8 ==Int 0
-    //      andBool 0 <Int lengthBytes(B1) andBool lengthBytes(BA2) ==Int 32
+    claim [asWord-chop-overflow-div]:
+      <k> runLemma(
+            #asWord( BA1 +Bytes BA2 ) /Int N
+          ) => doneLemma(
+            // #asWord ( BA2 ) /Int N
+            #asWord ( #range ( BA2, 0, lengthBytes( BA2 ) -Int ( log2Int( N ) /Int 8 ) ) )
+          ) ... </k>
+        requires 0 <Int N andBool N ==Int 2 ^Int log2Int ( N ) andBool log2Int( N ) modInt 8 ==Int 0
+         andBool 0 <Int lengthBytes(BA1) andBool lengthBytes(BA2) ==Int 32
 
     claim [asWord-chop-overflow-lt]:
       <k> runLemma(
