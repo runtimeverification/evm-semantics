@@ -63,8 +63,6 @@ module LEMMAS-MCD [symbolic]
 
     rule chop(X) ==Int 0 => X ==Int 0 requires #rangeSInt(256, X) [simplification]
 
-    rule bool2Word( X:Bool ) |Int bool2Word( Y:Bool ) => bool2Word(X orBool Y) [simplification]
-
     rule [add-cancel-ml-01]: { A +Int B #Equals        A } => { B #Equals 0 } [simplification]
     rule [add-cancel-ml-02]: { A +Int B #Equals C +Int B } => { A #Equals C } [simplification]
 
@@ -265,7 +263,7 @@ module LEMMAS-MCD [symbolic]
   // Arithmetic
   // ########################
 
-    rule X <=Int maxUInt48 &Int (X +Int Y) => false
+    rule X <=Int #asWord ( #range ( #buf ( 32, X +Int Y ), 26, 6 ) ) => false
       requires #rangeUInt(48, X)
        andBool #rangeUInt(48, Y)
        andBool notBool #rangeUInt(48, X +Int Y) [simplification]
@@ -365,7 +363,7 @@ module LEMMAS-MCD [symbolic]
     rule chop(X *Int Y) /sWord ( Y +Int pow256 ) => X requires #rangeUInt(256, X) andBool           Y <Int 0 andBool #rangeSInt(256, X *Int Y)                    [simplification]
     rule chop(X *Int Y) /sWord chop(Y)           => X requires #rangeUInt(256, X) andBool #rangeSInt(256, Y) andBool #rangeSInt(256, X *Int Y) andBool Y =/=Int 0 [simplification]
 
-    rule maxUInt48 &Int (X +Int Y) <Int X => true
+    rule #asWord ( #range ( #buf ( 32, X +Int Y ), 26, 6 ) ) <Int X => true
       requires #rangeUInt(48, X)
        andBool #rangeUInt(48, Y)
        andBool notBool (X +Int Y <Int pow48) [simplification]

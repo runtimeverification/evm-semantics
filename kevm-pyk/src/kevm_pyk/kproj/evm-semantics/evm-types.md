@@ -27,8 +27,8 @@ Primitives provide the basic conversion from K's sorts `Int` and `Bool` to EVM's
 -   `word2Bool` interprets a `Int` as a `Bool`.
 
 ```k
-    syntax Int ::= bool2Word ( Bool ) [symbol(bool2Word), function, total, smtlib(bool2Word)]
- // -----------------------------------------------------------------------------------------
+    syntax Int ::= bool2Word ( Bool ) [symbol(bool2Word), function, total, injective, smtlib(bool2Word)]
+ // ----------------------------------------------------------------------------------------------------
     rule bool2Word( true  ) => 1
     rule bool2Word( false ) => 0
 
@@ -38,8 +38,8 @@ Primitives provide the basic conversion from K's sorts `Int` and `Bool` to EVM's
     rule word2Bool( W ) => true  requires W =/=Int 0
 ```
 
--   `sgn` gives the twos-complement interperetation of the sign of a word.
--   `abs` gives the twos-complement interperetation of the magnitude of a word.
+-   `sgn` gives the twos-complement interpretation of the sign of a word.
+-   `abs` gives the twos-complement interpretation of the magnitude of a word.
 
 ```k
     syntax Int ::= sgn ( Int ) [symbol(sgn), function, total]
@@ -114,7 +114,7 @@ The helper `powmod` is a totalization of the operator `_^%Int__` (which comes wi
     rule [powmod.zero]:    powmod( _,  _, W2) => 0               requires W2  ==Int 0 [concrete]
 ```
 
-`/sWord` and `%sWord` give the signed interperetations of `/Word` and `%Word`.
+`/sWord` and `%sWord` give the signed interpretations of `/Word` and `%Word`.
 
 ```k
     syntax Int ::= Int "/sWord" Int [function]
@@ -144,7 +144,7 @@ The `<op>Word` comparisons similarly lift K operators to EVM ones:
     rule W0 ==Word W1 => bool2Word(W0 ==Int W1)
 ```
 
--   `s<Word` implements a less-than for `Word` (with signed interperetation).
+-   `s<Word` implements a less-than for `Word` (with signed interpretation).
 
 ```k
     syntax Int ::= Int "s<Word" Int [function, total]
@@ -333,8 +333,8 @@ A cons-list is used for the EVM wordstack.
 Bytes helper functions
 ----------------------
 
--   `#asWord` will interperet a stack of bytes as a single word (with MSB first).
--   `#asInteger` will interperet a stack of bytes as a single arbitrary-precision integer (with MSB first).
+-   `#asWord` will interpret a stack of bytes as a single word (with MSB first).
+-   `#asInteger` will interpret a stack of bytes as a single arbitrary-precision integer (with MSB first).
 -   `#asAccount` will interpret a stack of bytes as a single account id (with MSB first).
     Differs from `#asWord` only in that an empty stack represents the empty account, not account zero.
 -   `#asByteStack` will split a single word up into a `Bytes`.
