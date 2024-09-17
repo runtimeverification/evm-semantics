@@ -72,30 +72,6 @@ module BYTES-SIMPLIFICATION [symbolic]
        andBool #asWord(B) <Int 2 ^Int (8 *Int W)
       [simplification, concrete(W), preserves-definedness]
 
-    rule [buf-asWord-invert-rl]:
-      #asWord ( #buf ( WB:Int, X:Int ) ) => X
-      requires 0 <=Int WB andBool 0 <=Int X andBool
-               ( ( WB <=Int 32 andBool X <Int 2 ^Int (8 *Int WB) ) orBool
-                 ( WB  >Int 32 andBool X <Int pow256 ) )
-      [simplification, concrete(WB), preserves-definedness]
-
-    rule [buf-asWord-invert-rl-range]:
-      #asWord ( #range ( #buf ( WB:Int, X:Int ), S:Int, WR:Int ) ) => X
-      requires 0 <=Int WB andBool 0 <=Int X andBool 0 <=Int S andBool 0 <=Int WR
-       andBool S +Int WR ==Int WB
-       andBool X <Int 2 ^Int (8 *Int WR)
-      [simplification, concrete(WB, S, WR), preserves-definedness]
-
-    rule [asWord-trim-leading-zeros-concat]:
-      #asWord ( BZ +Bytes B ) => #asWord ( B )
-      requires #asInteger ( BZ ) ==Int 0
-      [simplification, concrete(BZ)]
-
-    rule [asWord-trim-overflowing-zeros]:
-      #asWord ( B ) => #asWord ( #range(B, lengthBytes(B) -Int 32, 32) )
-      requires 32 <Int lengthBytes(B)
-      [simplification]
-
     rule [buf-zero-concat-base]:
       #buf(W1:Int, 0) +Bytes #buf(W2:Int, 0) => #buf(W1 +Int W2, 0)
       requires 0 <=Int W1 andBool 0 <=Int W2
@@ -244,24 +220,6 @@ module BYTES-SIMPLIFICATION [symbolic]
       #range(#padRightToWidth(_, BUF), 0, WIDTH) => BUF
       requires lengthBytes(BUF) ==Int WIDTH [simplification]
 
-    rule [range-eq-check]:
-      BZ +Bytes #range ( B, S, W ) ==K B => true
-      requires 0 <=Int S andBool 0 <=Int W
-      andBool lengthBytes( B ) ==Int S +Int W
-      andBool #asInteger( BZ ) ==Int 0
-      andBool lengthBytes( BZ ) ==Int S
-      andBool #asWord ( B ) <Int 2 ^Int ( 8 *Int W )
-      [simplification, concrete(BZ, S, W), comm, preserves-definedness]
-
-    rule [range-eq-check-ml]:
-      { BZ +Bytes #range ( B, S, W ) #Equals B } => #Top
-      requires 0 <=Int S andBool 0 <=Int W
-      andBool lengthBytes( B ) ==Int S +Int W
-      andBool #asInteger( BZ ) ==Int 0
-      andBool lengthBytes( BZ ) ==Int S
-      andBool #asWord ( B ) <Int 2 ^Int ( 8 *Int W )
-      [simplification, concrete(BZ, S, W), comm, preserves-definedness]
-
     // Memory update
 
     rule [memUpdate-is-empty]:
@@ -301,15 +259,7 @@ module BYTES-SIMPLIFICATION [symbolic]
 
     rule [lengthBytes-leq-zero]: lengthBytes(B:Bytes) <=Int 0 => B ==K .Bytes [simplification]
 
-    // #asWord
-
-    rule #asWord(WS) >>Int M => #asWord(#range(WS, 0, lengthBytes(WS) -Int (M /Int 8) ))
-      requires 0 <=Int M andBool M modInt 8 ==Int 0
-      [simplification, preserves-definedness]
-
-    // This simplification needs to be generalised properly
-    rule notMaxUInt224 &Int #asWord(#padRightToWidth(32, BUF)) => #asWord(#padRightToWidth(32, BUF))
-      requires lengthBytes(BUF) <=Int 4 [simplification]
+    // #padToWidth
 
     rule #padToWidth(32, #asByteStack(V)) => #buf(32, V)  requires #rangeUInt(256, V) [simplification]
 
