@@ -64,12 +64,9 @@ module EVM-INT-SIMPLIFICATION
   // Unification: `#asWord` and concrete number
   rule [asWord-eq-num]:
     #asWord ( B:Bytes ) ==Int X:Int =>
-      0 <=Int X andBool X <Int 2 ^Int (8 *Int minInt(32, lengthBytes(B)))
-                andBool (
-                  ( lengthBytes(B) <=Int 32 andBool #buf ( 32 -Int lengthBytes(B), 0 ) +Bytes B ==K #buf ( 32, X ) )
-                    orBool
-                  ( lengthBytes(B) >Int 32 andBool #range ( B, lengthBytes(B) -Int 32, 32 ) ==K #buf ( 32, X ) )
-                )
+      0 <=Int X andBool X <Int 2 ^Int (8 *Int lengthBytes(B))
+                andBool B ==K #buf ( lengthBytes(B), X )
+    requires lengthBytes(B) <=Int 32
     [simplification, concrete(X), comm, preserves-definedness]
 
   // Unification: `#asWord` and concrete number

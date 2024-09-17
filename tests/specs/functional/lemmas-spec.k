@@ -706,7 +706,7 @@ module LEMMAS-SPEC
       <k> runLemma(
             #asWord ( B1 +Bytes B2 ) ==Int 9518572911576893851958972884578457483927345
           ) => doneLemma(
-            #buf(5, 0) +Bytes B1 +Bytes B2 ==K #buf(32, 9518572911576893851958972884578457483927345)
+            B1 +Bytes B2 ==K #buf(27, 9518572911576893851958972884578457483927345)
           ) ... </k>
         requires lengthBytes(B1) ==Int 15 andBool lengthBytes(B2) ==Int 12
 
