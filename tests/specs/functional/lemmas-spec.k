@@ -450,6 +450,8 @@ module LEMMAS-SPEC
  // bitwise-and identity
  // --------------------
 
+    claim <k> runLemma ( N &Int maxUInt256 ) => doneLemma ( N ) ... </k> requires #rangeUInt(256, N)
+    claim <k> runLemma ( maxUInt256 &Int N ) => doneLemma ( N ) ... </k> requires #rangeUInt(256, N)
     claim <k> runLemma ( N &Int maxUInt248 ) => doneLemma ( N ) ... </k> requires #rangeUInt(248, N)
     claim <k> runLemma ( maxUInt248 &Int N ) => doneLemma ( N ) ... </k> requires #rangeUInt(248, N)
     claim <k> runLemma ( N &Int maxUInt240 ) => doneLemma ( N ) ... </k> requires #rangeUInt(240, N)
@@ -599,6 +601,7 @@ module LEMMAS-SPEC
     claim [bit-232-m-aW]: <k> runLemma ( maxUInt232 &Int #asWord ( BA ) ) => doneLemma ( #asWord ( #range(BA,  3, 29) ) ) ... </k> requires lengthBytes(BA) ==Int 32
     claim [bit-240-m-aW]: <k> runLemma ( maxUInt240 &Int #asWord ( BA ) ) => doneLemma ( #asWord ( #range(BA,  2, 30) ) ) ... </k> requires lengthBytes(BA) ==Int 32
     claim [bit-248-m-aW]: <k> runLemma ( maxUInt248 &Int #asWord ( BA ) ) => doneLemma ( #asWord ( #range(BA,  1, 31) ) ) ... </k> requires lengthBytes(BA) ==Int 32
+    claim [bit-256-m-aW]: <k> runLemma ( maxUInt256 &Int #asWord ( BA ) ) => doneLemma ( #asWord ( #range(BA,  0, 32) ) ) ... </k> requires lengthBytes(BA) ==Int 32
 
     claim [bit-008-nm-aW]: <k> runLemma ( notMaxUInt8   &Int #asWord ( BA ) ) => doneLemma ( #asWord ( #range(BA, 0, 31) +Bytes #buf (  1, 0 ) ) ) ... </k> requires lengthBytes(BA) ==Int 32
     claim [bit-016-nm-aW]: <k> runLemma ( notMaxUInt16  &Int #asWord ( BA ) ) => doneLemma ( #asWord ( #range(BA, 0, 30) +Bytes #buf (  2, 0 ) ) ) ... </k> requires lengthBytes(BA) ==Int 32

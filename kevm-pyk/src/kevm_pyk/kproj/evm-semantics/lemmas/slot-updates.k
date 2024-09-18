@@ -24,21 +24,8 @@ module SLOT-UPDATES [symbolic]
     // VALUE and SLOT can also be concrete. In the former case, we need to extract the
     // SHIFT appropriate, and in the latter case, the slot will appear on the LHS of the |Int.
 
-    // 1a. A mask has no effect if it starts beyond the value in the slot
-    rule [mask-b-and-idem]:
-      MASK:Int &Int SLOT:Int => SLOT
-      requires #isMask(MASK) andBool 0 <=Int SLOT andBool SLOT <Int 2 ^Int #getMaskShiftBits(MASK)
-      [simplification(40), concrete(MASK), preserves-definedness]
-
-    // 1b. A mask zeros the slot if it covers the value in the slot
-    rule [mask-b-and-zero]:
-      MASK:Int &Int SLOT:Int => 0
-      requires #isMask(MASK) andBool #getMaskShiftBits(MASK) ==Int 0
-       andBool 0 <=Int SLOT andBool SLOT <Int 2 ^Int #getMaskWidthBits(MASK)
-      [simplification(40), concrete(MASK), preserves-definedness]
-
-    // 1c. General masking formula
-    rule [mask-b-and-general]:
+    // 1. Slot masking using &Int
+    rule [mask-b-and]:
       MASK:Int &Int SLOT:Int =>
         #asWord ( #buf ( 32, SLOT ) [ 32 -Int ( #getMaskShiftBytes(MASK) +Int #getMaskWidthBytes(MASK) ) := #buf ( #getMaskWidthBytes(MASK), 0 ) ] )
         requires #isMask(MASK) andBool #rangeUInt(256, SLOT)

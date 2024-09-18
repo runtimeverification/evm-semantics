@@ -41,6 +41,20 @@ module BITWISE-SIMPLIFICATION [symbolic]
       requires 0 <=Int X andBool 0 <=Int Y andBool X <Int Z andBool Y <Int Z
        andBool Z ==Int 2 ^Int ( log2Int( Z ) ) [simplification, concrete(Z)]
 
+    // Generalization of: maxUIntXXX &Int Y => Y requires #rangeUInt(XXX, Y)
+    rule [bitwise-and-maxUInt-identity]:
+      X &Int Y => Y
+      requires 0 <=Int X andBool X +Int 1 ==Int 2 ^Int log2Int(X +Int 1)
+       andBool 0 <=Int Y andBool Y <Int X +Int 1
+       [simplification(40), concrete(X), preserves-definedness]
+
+    // Generalization of: notMaxUIntXXX &Int Y => 0 requires #rangeUInt(256 -Int XXX, Y)
+    rule [bitwise-and-notMaxUInt-zero]:
+      X &Int Y => 0
+      requires #rangeUInt(256, X) andBool pow256 -Int X ==Int 2 ^Int ( log2Int ( pow256 -Int X ) )
+       andBool 0 <=Int Y andBool Y <Int pow256 -Int X
+      [simplification(40), concrete(X), preserves-definedness]
+
     rule [notMaxUInt5-bit-and-nested]:
       notMaxUInt5 &Int ( ( notMaxUInt5 &Int X ) +Int Y ) => chop ( ( notMaxUInt5 &Int X ) +Int ( notMaxUInt5 &Int Y ) )
       requires 0 <=Int X andBool 0 <=Int Y
