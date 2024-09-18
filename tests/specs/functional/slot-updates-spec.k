@@ -137,4 +137,58 @@ module SLOT-UPDATES-SPEC
            andBool 0 <=Int WORD6 andBool WORD6 <Int 2 ^Int 35
            andBool 0 <=Int WORD7 andBool WORD7 <Int 256
 
+    claim [slot-update-08]:
+      <k> runLemma ( X &Int #asWord ( BA ) ==Int Y:Int ) => doneLemma ( true ) ... </k>
+      requires 0 <=Int X andBool X <Int 2 ^Int (8 *Int lengthBytes(BA))
+      andBool X +Int 1 ==Int 2 ^Int log2Int(X +Int 1)
+      andBool log2Int (X +Int 1) modInt 8 ==Int 0
+      andBool log2Int(X +Int 1) /Int 8 <=Int lengthBytes(BA) andBool lengthBytes(BA) <=Int 32
+      andBool #asWord ( #range(BA, lengthBytes(BA) -Int (log2Int(X +Int 1) /Int 8), log2Int(X +Int 1) /Int 8) ) ==Int Y
+      andBool X ==Int 2 ^Int ( 8 *Int 5 ) -Int 1 // 5 can be replaced by any number between 0 and 32
+
+    claim [slot-update-09]:
+      <k> runLemma ( X &Int #asWord ( BA ) ==Int Y:Int ) => doneLemma ( false ) ... </k>
+      requires 0 <=Int X andBool X <Int 2 ^Int (8 *Int lengthBytes(BA))
+      andBool X +Int 1 ==Int 2 ^Int log2Int(X +Int 1)
+      andBool log2Int (X +Int 1) modInt 8 ==Int 0
+      andBool log2Int(X +Int 1) /Int 8 <=Int lengthBytes(BA) andBool lengthBytes(BA) <=Int 32
+      andBool notBool #asWord ( #range(BA, lengthBytes(BA) -Int (log2Int(X +Int 1) /Int 8), log2Int(X +Int 1) /Int 8) ) ==Int Y
+      andBool X ==Int 2 ^Int ( 8 *Int 5 ) -Int 1 // 5 can be replaced by any number between 0 and 32
+
+    claim [slot-update-10]:
+      <k> runLemma ( X &Int #asWord ( BA ) <Int Y:Int ) => doneLemma ( true ) ... </k>
+      requires 0 <=Int X andBool X <Int 2 ^Int (8 *Int lengthBytes(BA))
+      andBool X +Int 1 ==Int 2 ^Int log2Int(X +Int 1)
+      andBool log2Int (X +Int 1) modInt 8 ==Int 0
+      andBool log2Int(X +Int 1) /Int 8 <=Int lengthBytes(BA) andBool lengthBytes(BA) <=Int 32
+      andBool #asWord ( #range(BA, lengthBytes(BA) -Int (log2Int(X +Int 1) /Int 8), log2Int(X +Int 1) /Int 8) ) <Int Y
+      andBool X ==Int 2 ^Int ( 8 *Int 5 ) -Int 1 // 5 can be replaced by any number between 0 and 32
+
+    claim [slot-update-11]:
+      <k> runLemma ( X &Int #asWord ( BA ) <Int Y:Int ) => doneLemma ( false ) ... </k>
+      requires 0 <=Int X andBool X <Int 2 ^Int (8 *Int lengthBytes(BA))
+      andBool X +Int 1 ==Int 2 ^Int log2Int(X +Int 1)
+      andBool log2Int (X +Int 1) modInt 8 ==Int 0
+      andBool log2Int(X +Int 1) /Int 8 <=Int lengthBytes(BA) andBool lengthBytes(BA) <=Int 32
+      andBool notBool #asWord ( #range(BA, lengthBytes(BA) -Int (log2Int(X +Int 1) /Int 8), log2Int(X +Int 1) /Int 8) ) <Int Y
+      andBool X ==Int 2 ^Int ( 8 *Int 5 ) -Int 1 // 5 can be replaced by any number between 0 and 32
+
+    claim [slot-update-12]:
+      <k> runLemma ( X &Int #asWord ( BA ) <=Int Y:Int ) => doneLemma ( true ) ... </k>
+      requires 0 <=Int X andBool X <Int 2 ^Int (8 *Int lengthBytes(BA))
+      andBool X +Int 1 ==Int 2 ^Int log2Int(X +Int 1)
+      andBool log2Int (X +Int 1) modInt 8 ==Int 0
+      andBool log2Int(X +Int 1) /Int 8 <=Int lengthBytes(BA) andBool lengthBytes(BA) <=Int 32
+      andBool #asWord ( #range(BA, lengthBytes(BA) -Int (log2Int(X +Int 1) /Int 8), log2Int(X +Int 1) /Int 8) ) <=Int Y
+      andBool X ==Int 2 ^Int ( 8 *Int 5 ) -Int 1 // 5 can be replaced by any number between 0 and 32
+
+    claim [slot-update-13]:
+      <k> runLemma ( X &Int #asWord ( BA ) <=Int Y:Int ) => doneLemma ( false ) ... </k>
+      requires 0 <=Int X andBool X <Int 2 ^Int (8 *Int lengthBytes(BA))
+      andBool X +Int 1 ==Int 2 ^Int log2Int(X +Int 1)
+      andBool log2Int (X +Int 1) modInt 8 ==Int 0
+      andBool log2Int(X +Int 1) /Int 8 <=Int lengthBytes(BA) andBool lengthBytes(BA) <=Int 32
+      andBool notBool #asWord ( #range(BA, lengthBytes(BA) -Int (log2Int(X +Int 1) /Int 8), log2Int(X +Int 1) /Int 8) ) <=Int Y
+      andBool X ==Int 2 ^Int ( 8 *Int 5 ) -Int 1 // 5 can be replaced by any number between 0 and 32
+
 endmodule
