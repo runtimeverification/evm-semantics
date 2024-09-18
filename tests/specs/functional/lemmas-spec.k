@@ -557,18 +557,18 @@ module LEMMAS-SPEC
     claim [bit-240-m-or-nm]: <k> runLemma ( maxUInt240 &Int ( X |Int ( notMaxUInt240 &Int T ) ) ) => doneLemma( X ) ... </k> requires #rangeUInt ( 240 , X ) andBool #rangeUInt(256, T)
     claim [bit-248-m-or-nm]: <k> runLemma ( maxUInt248 &Int ( X |Int ( notMaxUInt248 &Int T ) ) ) => doneLemma( X ) ... </k> requires #rangeUInt ( 248 , X ) andBool #rangeUInt(256, T)
 
-    // claim [bit-008-nm-or-m]: <k> runLemma ( notMaxUInt8   &Int ( X |Int ( maxUInt8   &Int T ) ) ) => doneLemma( 0 ) ... </k> requires #rangeUInt ( 248 , X ) andBool #rangeUInt(256, T)
-    // claim [bit-016-nm-or-m]: <k> runLemma ( notMaxUInt16  &Int ( X |Int ( maxUInt16  &Int T ) ) ) => doneLemma( 0 ) ... </k> requires #rangeUInt ( 240 , X ) andBool #rangeUInt(256, T)
-    // claim [bit-032-nm-or-m]: <k> runLemma ( notMaxUInt32  &Int ( X |Int ( maxUInt32  &Int T ) ) ) => doneLemma( 0 ) ... </k> requires #rangeUInt ( 224 , X ) andBool #rangeUInt(256, T)
-    // claim [bit-064-nm-or-m]: <k> runLemma ( notMaxUInt64  &Int ( X |Int ( maxUInt64  &Int T ) ) ) => doneLemma( 0 ) ... </k> requires #rangeUInt ( 192 , X ) andBool #rangeUInt(256, T)
-    // claim [bit-096-nm-or-m]: <k> runLemma ( notMaxUInt96  &Int ( X |Int ( maxUInt96  &Int T ) ) ) => doneLemma( 0 ) ... </k> requires #rangeUInt ( 160 , X ) andBool #rangeUInt(256, T)
-    // claim [bit-128-nm-or-m]: <k> runLemma ( notMaxUInt128 &Int ( X |Int ( maxUInt128 &Int T ) ) ) => doneLemma( 0 ) ... </k> requires #rangeUInt ( 128 , X ) andBool #rangeUInt(256, T)
-    // claim [bit-160-nm-or-m]: <k> runLemma ( notMaxUInt160 &Int ( X |Int ( maxUInt160 &Int T ) ) ) => doneLemma( 0 ) ... </k> requires #rangeUInt (  96 , X ) andBool #rangeUInt(256, T)
-    // claim [bit-192-nm-or-m]: <k> runLemma ( notMaxUInt192 &Int ( X |Int ( maxUInt192 &Int T ) ) ) => doneLemma( 0 ) ... </k> requires #rangeUInt (  64 , X ) andBool #rangeUInt(256, T)
-    // claim [bit-208-nm-or-m]: <k> runLemma ( notMaxUInt208 &Int ( X |Int ( maxUInt208 &Int T ) ) ) => doneLemma( 0 ) ... </k> requires #rangeUInt (  48 , X ) andBool #rangeUInt(256, T)
-    // claim [bit-224-nm-or-m]: <k> runLemma ( notMaxUInt224 &Int ( X |Int ( maxUInt224 &Int T ) ) ) => doneLemma( 0 ) ... </k> requires #rangeUInt (  32 , X ) andBool #rangeUInt(256, T)
-    // claim [bit-240-nm-or-m]: <k> runLemma ( notMaxUInt240 &Int ( X |Int ( maxUInt240 &Int T ) ) ) => doneLemma( 0 ) ... </k> requires #rangeUInt (  16 , X ) andBool #rangeUInt(256, T)
-    // claim [bit-248-nm-or-m]: <k> runLemma ( notMaxUInt248 &Int ( X |Int ( maxUInt248 &Int T ) ) ) => doneLemma( 0 ) ... </k> requires #rangeUInt (   8 , X ) andBool #rangeUInt(256, T)
+    claim [bit-008-nm-or-m]: <k> runLemma ( notMaxUInt8   &Int ( X |Int ( maxUInt8   &Int T ) ) ) => doneLemma( 0 ) ... </k> requires #rangeUInt (   8 , X ) andBool #rangeUInt(256, T)
+    claim [bit-016-nm-or-m]: <k> runLemma ( notMaxUInt16  &Int ( X |Int ( maxUInt16  &Int T ) ) ) => doneLemma( 0 ) ... </k> requires #rangeUInt (  16 , X ) andBool #rangeUInt(256, T)
+    claim [bit-032-nm-or-m]: <k> runLemma ( notMaxUInt32  &Int ( X |Int ( maxUInt32  &Int T ) ) ) => doneLemma( 0 ) ... </k> requires #rangeUInt (  32 , X ) andBool #rangeUInt(256, T)
+    claim [bit-064-nm-or-m]: <k> runLemma ( notMaxUInt64  &Int ( X |Int ( maxUInt64  &Int T ) ) ) => doneLemma( 0 ) ... </k> requires #rangeUInt (  64 , X ) andBool #rangeUInt(256, T)
+    claim [bit-096-nm-or-m]: <k> runLemma ( notMaxUInt96  &Int ( X |Int ( maxUInt96  &Int T ) ) ) => doneLemma( 0 ) ... </k> requires #rangeUInt (  96 , X ) andBool #rangeUInt(256, T)
+    claim [bit-128-nm-or-m]: <k> runLemma ( notMaxUInt128 &Int ( X |Int ( maxUInt128 &Int T ) ) ) => doneLemma( 0 ) ... </k> requires #rangeUInt ( 128 , X ) andBool #rangeUInt(256, T)
+    claim [bit-160-nm-or-m]: <k> runLemma ( notMaxUInt160 &Int ( X |Int ( maxUInt160 &Int T ) ) ) => doneLemma( 0 ) ... </k> requires #rangeUInt ( 160 , X ) andBool #rangeUInt(256, T)
+    claim [bit-192-nm-or-m]: <k> runLemma ( notMaxUInt192 &Int ( X |Int ( maxUInt192 &Int T ) ) ) => doneLemma( 0 ) ... </k> requires #rangeUInt ( 192 , X ) andBool #rangeUInt(256, T)
+    claim [bit-208-nm-or-m]: <k> runLemma ( notMaxUInt208 &Int ( X |Int ( maxUInt208 &Int T ) ) ) => doneLemma( 0 ) ... </k> requires #rangeUInt ( 208 , X ) andBool #rangeUInt(256, T)
+    claim [bit-224-nm-or-m]: <k> runLemma ( notMaxUInt224 &Int ( X |Int ( maxUInt224 &Int T ) ) ) => doneLemma( 0 ) ... </k> requires #rangeUInt ( 224 , X ) andBool #rangeUInt(256, T)
+    claim [bit-240-nm-or-m]: <k> runLemma ( notMaxUInt240 &Int ( X |Int ( maxUInt240 &Int T ) ) ) => doneLemma( 0 ) ... </k> requires #rangeUInt ( 240 , X ) andBool #rangeUInt(256, T)
+    claim [bit-248-nm-or-m]: <k> runLemma ( notMaxUInt248 &Int ( X |Int ( maxUInt248 &Int T ) ) ) => doneLemma( 0 ) ... </k> requires #rangeUInt ( 248 , X ) andBool #rangeUInt(256, T)
 
     claim [bit-008-m-aW]: <k> runLemma ( maxUInt8   &Int #asWord ( BA ) ) => doneLemma ( #asWord ( #range(BA, 31,  1) ) ) ... </k> requires lengthBytes(BA) ==Int 32
     claim [bit-016-m-aW]: <k> runLemma ( maxUInt16  &Int #asWord ( BA ) ) => doneLemma ( #asWord ( #range(BA, 30,  2) ) ) ... </k> requires lengthBytes(BA) ==Int 32
@@ -667,6 +667,84 @@ module LEMMAS-SPEC
             true
           ) ... </k>
         requires lengthBytes ( VV0_data_114b9705:Bytes ) <=Int 1073741824
+
+    claim [asWord-unif-01]: // two `#asWord`s, both under 32 bytes
+      <k> runLemma(
+            #asWord ( B1 +Bytes B2 ) ==Int #asWord ( B3 )
+          ) => doneLemma(
+            #buf(22, 0) +Bytes B1 +Bytes B2 ==K #buf(16, 0) +Bytes B3
+          ) ... </k>
+        requires lengthBytes(B1) ==Int 4 andBool lengthBytes(B2) ==Int 6
+         andBool lengthBytes(B3) ==Int 16
+
+    claim [asWord-unif-02]: // two `#asWord`s, left over 32 bytes
+      <k> runLemma(
+            #asWord ( B1 +Bytes B2 ) ==Int #asWord ( B3 +Bytes B4 )
+          ) => doneLemma(
+            #range ( B1, 7, 5 ) +Bytes B2 ==K #buf(7, 0) +Bytes B3 +Bytes B4
+          ) ... </k>
+        requires lengthBytes(B1) ==Int 12 andBool lengthBytes(B2) ==Int 27
+         andBool lengthBytes(B3) ==Int 10 andBool lengthBytes(B4) ==Int 15
+
+    claim [asWord-unif-03]: // `#asWord` and constant out of range, buffer length <=Int 32
+      <k> runLemma(
+            #asWord ( B ) ==Int -15 orBool 2 ^Int 160 ==Int #asWord ( B )
+          ) => doneLemma(
+            false
+          ) ... </k>
+          requires lengthBytes(B) ==Int 16
+
+    claim [asWord-unif-04]: // `#asWord` and constant out of range, buffer length >Int 32
+      <k> runLemma(
+            #asWord ( B ) ==Int -15 orBool 2 ^Int 324 ==Int #asWord ( B )
+          ) => doneLemma(
+            false
+          ) ... </k>
+          requires lengthBytes(B) ==Int 36
+
+    claim [asWord-unif-05]: // `#asWord` and constant, buffer length <=Int 32
+      <k> runLemma(
+            #asWord ( B1 +Bytes B2 ) ==Int 9518572911576893851958972884578457483927345
+          ) => doneLemma(
+            B1 +Bytes B2 ==K #buf(27, 9518572911576893851958972884578457483927345)
+          ) ... </k>
+        requires lengthBytes(B1) ==Int 15 andBool lengthBytes(B2) ==Int 12
+
+    claim [asWord-unif-06]: // `#asWord` and constant, buffer length >Int 32
+      <k> runLemma(
+            #asWord ( B1 +Bytes B2 ) ==Int 294572972648782479679175618975648679836
+          ) => doneLemma(
+            #range(B1, 3, 17) +Bytes B2 ==K #buf(32, 294572972648782479679175618975648679836)
+          ) ... </k>
+        requires lengthBytes(B1) ==Int 20 andBool lengthBytes(B2) ==Int 15
+
+    claim [asWord-chop-overflow-div]:
+      <k> runLemma(
+            #asWord( BA1 +Bytes BA2 ) /Int N
+          ) => doneLemma(
+            // #asWord ( BA2 ) /Int N
+            #asWord ( #range ( BA2, 0, lengthBytes( BA2 ) -Int ( log2Int( N ) /Int 8 ) ) )
+          ) ... </k>
+        requires 0 <Int N andBool N ==Int 2 ^Int log2Int ( N ) andBool log2Int( N ) modInt 8 ==Int 0
+         andBool 0 <Int lengthBytes(BA1) andBool lengthBytes(BA2) ==Int 32
+
+    claim [asWord-chop-overflow-lt]:
+      <k> runLemma(
+            #asWord ( BA1 +Bytes BA2 +Bytes BA3 ) <Int X:Int
+          ) => doneLemma(
+            #asWord ( BA2 +Bytes BA3 ) <Int X
+          ) ... </k>
+        requires #asWord ( BA3 ) ==Int X modInt ( 2 ^Int ( 8 *Int lengthBytes ( BA3 ) ) )
+         andBool 0 <Int lengthBytes(BA1) andBool lengthBytes(BA2 +Bytes BA3) ==Int 32
+
+    claim [asWord-chop-overflow-le]:
+      <k> runLemma(
+            #asWord ( BA1 +Bytes BA2 +Bytes BA3 ) <=Int X:Int
+          ) => doneLemma(
+            #asWord ( BA2 +Bytes BA3 ) <=Int X
+          ) ... </k>
+        requires #asWord ( BA3 ) ==Int X modInt ( 2 ^Int ( 8 *Int lengthBytes ( BA3 ) ) )
+         andBool 0 <Int lengthBytes(BA1) andBool lengthBytes(BA2 +Bytes BA3) ==Int 32
 
  // bool2Word
  // ---------
