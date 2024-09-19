@@ -59,6 +59,7 @@ module EVM-INT-SIMPLIFICATION
   // Unification: two `#asWord`s
   rule [asWord-eq-asWord-ml]:
     { #asWord ( B1 ) #Equals #asWord ( B2 ) } => { true #Equals #asWord ( B1 ) ==Int #asWord ( B2 ) }
+    requires lengthBytes(B1) <=Int 32 andBool lengthBytes(B2) <=Int 32
     [simplification, preserves-definedness]
 
   // Unification: `#asWord` and concrete number
@@ -70,8 +71,8 @@ module EVM-INT-SIMPLIFICATION
     [simplification, concrete(X), comm, preserves-definedness]
 
   // Unification: `#asWord` and concrete number
-  rule [asWord-eq-num-ml-l]: { #asWord ( B:Bytes ) #Equals X:Int } => { true #Equals #asWord ( B:Bytes ) ==K X:Int } [simplification, concrete(X), preserves-definedness]
-  rule [asWord-eq-num-ml-r]: { X:Int #Equals #asWord ( B:Bytes ) } => { true #Equals #asWord ( B:Bytes ) ==K X:Int } [simplification, concrete(X), preserves-definedness]
+  rule [asWord-eq-num-ml-l]: { #asWord ( B:Bytes ) #Equals X:Int } => { true #Equals #asWord ( B:Bytes ) ==K X:Int } requires lengthBytes(B) <=Int 32 [simplification, concrete(X), preserves-definedness]
+  rule [asWord-eq-num-ml-r]: { X:Int #Equals #asWord ( B:Bytes ) } => { true #Equals #asWord ( B:Bytes ) ==K X:Int } requires lengthBytes(B) <=Int 32 [simplification, concrete(X), preserves-definedness]
 
   // Reduction: we can always remove leading zeros
   rule [asWord-trim-leading-zeros]:
