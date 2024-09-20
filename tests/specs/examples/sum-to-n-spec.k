@@ -72,6 +72,7 @@ module SUM-TO-N-SPEC
       requires I >=Int 0
        andBool S >=Int 0
        andBool S +Int I *Int (I +Int 1) /Int 2 <Int pow256
+       andBool 2 <=Int WSSize
        andBool WSSize <Int 1021
        andBool G >=Int 52 *Int I +Int 21
       [circularity]
