@@ -463,7 +463,7 @@ Here we load the correct number of arguments from the `wordStack` based on the s
 ```k
     syntax InternalOp ::= StackOp WordStack Int
  // -------------------------------------------
-    rule <k> #exec [ SO:StackOp ] => #gas [ SO , SO WS ] ~> SO WS WSSize ... </k> <wordStack> WS </wordStack> <wordStackSize> WSSize </wordStackSize>
+    rule <k> #exec [ SO:StackOp ] => #gas [ SO , SO WS WSSize ] ~> SO WS WSSize ... </k> <wordStack> WS </wordStack> <wordStackSize> WSSize </wordStackSize>
 ```
 
 The `CallOp` opcodes all interpret their second argument as an address.
@@ -2255,8 +2255,8 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
     rule <k> #gasExec(SCHED, MSTORE _ _)     => Gverylow < SCHED > ... </k>
     rule <k> #gasExec(SCHED, MSTORE8 _ _)    => Gverylow < SCHED > ... </k>
     rule <k> #gasExec(SCHED, PUSH(_))        => Gverylow < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, DUP(_) _)       => Gverylow < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, SWAP(_) _)      => Gverylow < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, DUP(_) _ _)     => Gverylow < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, SWAP(_) _ _)    => Gverylow < SCHED > ... </k>
 
     // Wlow
     rule <k> #gasExec(SCHED, MUL _ _)        => Glow < SCHED > ... </k>
