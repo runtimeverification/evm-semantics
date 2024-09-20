@@ -25,8 +25,8 @@ module VAT-FROB-DIFF-ZERO-DART-PASS-ROUGH-SPEC
             <caller> CALLER_ID </caller>
             <callData> #abiCallData("frob", #bytes32(ABI_i), #address(ABI_u), #address(ABI_v), #address(ABI_w), #int256(ABI_dink), #int256(ABI_dart)) +Bytes CD => ?_ </callData>
             <callValue> VCallValue </callValue>
-            <wordStack> .WordStack => ?WS </wordStack>
-            <wordStackSize> 0 => #sizeWordStack(?WS) </wordStackSize>
+            <wordStack> .WordStack => ?_ </wordStack>
+            <wordStackSize> 0 => ?_ </wordStackSize>
             <localMem> .Bytes => ?_ </localMem>
             <pc> 0 => ?_ </pc>
             <gas> #gas(VGas) => ?_ </gas>

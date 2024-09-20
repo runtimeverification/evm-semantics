@@ -23,8 +23,8 @@ module CAT-FILE-ADDR-PASS-ROUGH-SPEC
             <caller> CALLER_ID </caller>
             <callData> #abiCallData("file", #bytes32(ABI_what), #address(ABI_data)) +Bytes CD => ?_ </callData>
             <callValue> VCallValue </callValue>
-            <wordStack> .WordStack => ?WS </wordStack>
-            <wordStackSize> 0 => #sizeWordStack(?WS) </wordStackSize>
+            <wordStack> .WordStack => ?_ </wordStack>
+            <wordStackSize> 0 => ?_ </wordStackSize>
             <localMem> .Bytes => ?_ </localMem>
             <pc> 0 => ?_ </pc>
             <gas> #gas(VGas) => ?_ </gas>

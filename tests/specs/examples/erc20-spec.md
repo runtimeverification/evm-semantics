@@ -81,8 +81,8 @@ module ERC20-SPEC
           <id>            ACCTID      => ?_ </id>
           <localMem>      .Bytes      => ?_ </localMem>
           <memoryUsed>    0           => ?_ </memoryUsed>
-          <wordStack>     .WordStack  => ?WS </wordStack>
-          <wordStackSize> 0           => #sizeWordStack(?WS) </wordStackSize>
+          <wordStack>     .WordStack  => ?_ </wordStack>
+          <wordStackSize> 0           => ?_ </wordStackSize>
           <pc>            0           => ?_ </pc>
           <gas>           #gas(_VGAS) => ?_ </gas>
           <callValue>     0           => ?_ </callValue>
@@ -123,8 +123,8 @@ module ERC20-SPEC
           <id>            ACCTID      => ?_ </id>
           <localMem>      .Bytes      => ?_ </localMem>
           <memoryUsed>    0           => ?_ </memoryUsed>
-          <wordStack>     .WordStack  => ?WS </wordStack>
-          <wordStackSize> 0           => #sizeWordStack(?WS) </wordStackSize>
+          <wordStack>     .WordStack  => ?_ </wordStack>
+          <wordStackSize> 0           => ?_ </wordStackSize>
           <pc>            0           => ?_ </pc>
           <gas>           #gas(_VGAS) => ?_ </gas>
           <callValue>     0           => ?_ </callValue>
@@ -157,8 +157,8 @@ module ERC20-SPEC
           <id>            ACCTID      => ?_ </id>
           <localMem>      .Bytes      => ?_ </localMem>
           <memoryUsed>    0           => ?_ </memoryUsed>
-          <wordStack>     .WordStack  => ?WS </wordStack>
-          <wordStackSize> 0           => #sizeWordStack(?WS) </wordStackSize>
+          <wordStack>     .WordStack  => ?_ </wordStack>
+          <wordStackSize> 0           => ?_ </wordStackSize>
           <pc>            0           => ?_ </pc>
           <gas>           _                  </gas>
           <callValue>     0           => ?_ </callValue>
@@ -201,8 +201,8 @@ module ERC20-SPEC
           <caller>        OWNER       => ?_ </caller>
           <localMem>      .Bytes      => ?_ </localMem>
           <memoryUsed>    0           => ?_ </memoryUsed>
-          <wordStack>     .WordStack  => ?WS </wordStack>
-          <wordStackSize> 0           => #sizeWordStack(?WS) </wordStackSize>
+          <wordStack>     .WordStack  => ?_ </wordStack>
+          <wordStackSize> 0           => ?_ </wordStackSize>
           <pc>            0           => ?_ </pc>
           <gas>           #gas(_VGAS) => ?_ </gas>
           <callValue>     0           => ?_ </callValue>
@@ -242,8 +242,8 @@ module ERC20-SPEC
           <caller>        OWNER       => ?_ </caller>
           <localMem>      .Bytes      => ?_ </localMem>
           <memoryUsed>    0           => ?_ </memoryUsed>
-          <wordStack>     .WordStack  => ?WS </wordStack>
-          <wordStackSize> 0           => #sizeWordStack(?WS) </wordStackSize>
+          <wordStack>     .WordStack  => ?_ </wordStack>
+          <wordStackSize> 0           => ?_ </wordStackSize>
           <pc>            0           => ?_ </pc>
           <gas>           #gas(_VGAS) => ?_ </gas>
           <callValue>     0           => ?_ </callValue>

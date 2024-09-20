@@ -103,8 +103,8 @@ module SOLIDITY-CODE-SPEC
 
           <localMem>      .Bytes      => ?_ </localMem>
           <memoryUsed>    0           => ?_ </memoryUsed>
-          <wordStack>     .WordStack  => ?WS </wordStack>
-          <wordStackSize> 0           => #sizeWordStack(?WS) </wordStackSize>
+          <wordStack>     .WordStack  => ?_ </wordStack>
+          <wordStackSize> 0           => ?_ </wordStackSize>
           <pc>            0           => ?_ </pc>
           <gas>           #gas(_VGAS) => ?_ </gas>
           <callValue>     _CALL_VALUE => ?_ </callValue>
@@ -134,8 +134,8 @@ module SOLIDITY-CODE-SPEC
 
           <localMem>      .Bytes      => ?_ </localMem>
           <memoryUsed>    0           => ?_ </memoryUsed>
-          <wordStack>     .WordStack  => ?WS </wordStack>
-          <wordStackSize> 0           => #sizeWordStack(?WS) </wordStackSize>
+          <wordStack>     .WordStack  => ?_ </wordStack>
+          <wordStackSize> 0           => ?_ </wordStackSize>
           <pc>            0           => ?_ </pc>
           <gas>           #gas(_VGAS) => ?_ </gas>
           <callValue>     0           => ?_ </callValue>
@@ -170,8 +170,8 @@ module SOLIDITY-CODE-SPEC
 
           <localMem>      .Bytes      => ?_ </localMem>
           <memoryUsed>    0           => ?_ </memoryUsed>
-          <wordStack>     .WordStack  => ?WS </wordStack>
-          <wordStackSize> 0           => #sizeWordStack(?WS) </wordStackSize>
+          <wordStack>     .WordStack  => ?_ </wordStack>
+          <wordStackSize> 0           => ?_ </wordStackSize>
           <pc>            0           => ?_ </pc>
           <gas>           #gas(_VGAS) => ?_ </gas>
           <callValue>     0           => ?_ </callValue>
@@ -206,8 +206,8 @@ module SOLIDITY-CODE-SPEC
 
           <localMem>      .Bytes      => ?_ </localMem>
           <memoryUsed>    0           => ?_ </memoryUsed>
-          <wordStack>     .WordStack  => ?WS </wordStack>
-          <wordStackSize> 0           => #sizeWordStack(?WS) </wordStackSize>
+          <wordStack>     .WordStack  => ?_ </wordStack>
+          <wordStackSize> 0           => ?_ </wordStackSize>
           <pc>            0           => ?_ </pc>
           <gas>           #gas(_VGAS) => ?_ </gas>
           <callValue>     0           => ?_ </callValue>
@@ -241,8 +241,8 @@ module SOLIDITY-CODE-SPEC
 
           <localMem>      .Bytes      => ?_ </localMem>
           <memoryUsed>    0           => ?_ </memoryUsed>
-          <wordStack>     .WordStack  => ?WS </wordStack>
-          <wordStackSize> 0           => #sizeWordStack(?WS) </wordStackSize>
+          <wordStack>     .WordStack  => ?_ </wordStack>
+          <wordStackSize> 0           => ?_ </wordStackSize>
           <pc>            0           => ?_ </pc>
           <gas>           #gas(_VGAS) => ?_ </gas>
           <callValue>     0           => ?_ </callValue>

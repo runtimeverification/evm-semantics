@@ -23,8 +23,8 @@ module STRUCTARG01-SPEC
           <caller> CALLEE_ID </caller> // msg.sender
           <callData> #abiCallData2("execute((bytes,uint256,uint256))", #tuple(#bytes(A0), #uint256(A1), #uint256(A2), .TypedArgs)) </callData> // msg.data
           <callValue> 0 </callValue> // msg.value
-          <wordStack> .WordStack => ?WS </wordStack>
-          <wordStackSize> 0 => #sizeWordStack(?WS) </wordStackSize>
+          <wordStack> .WordStack => ?_ </wordStack>
+          <wordStackSize> 0 => ?_ </wordStackSize>
           <localMem> .Bytes => ?_ </localMem>
           <pc> 0 => ?_ </pc>
           <gas> #gas(_VGAS) => ?_ </gas>

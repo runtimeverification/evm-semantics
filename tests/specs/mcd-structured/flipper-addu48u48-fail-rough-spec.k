@@ -23,8 +23,8 @@ module FLIPPER-ADDU48U48-FAIL-ROUGH-SPEC
             <caller> CALLER_ID </caller>
             <callData> _ => ?_ </callData>
             <callValue> VCallValue </callValue>
-            <wordStack> ABI_y : ABI_x : JMPTO : WS  => ?WS </wordStack>
-            <wordStackSize> WSSize => #sizeWordStack(?WS) </wordStackSize>
+            <wordStack> ABI_y : ABI_x : JMPTO : WS  => ?_ </wordStack>
+            <wordStackSize> WSSize => ?_ </wordStackSize>
             <localMem> _ </localMem>
             <pc> 11354 => ?_ </pc>
             <gas> #gas(VGas) => ?_ </gas>

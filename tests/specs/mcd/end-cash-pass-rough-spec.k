@@ -23,8 +23,8 @@ module END-CASH-PASS-ROUGH-SPEC
             <caller> CALLER_ID </caller>
             <callData> #abiCallData("cash", #bytes32(ABI_ilk), #uint256(ABI_wad)) +Bytes CD => ?_ </callData>
             <callValue> VCallValue </callValue>
-            <wordStack> .WordStack => ?WS </wordStack>
-            <wordStackSize> 0 => #sizeWordStack(?WS) </wordStackSize>
+            <wordStack> .WordStack => ?_ </wordStack>
+            <wordStackSize> 0 => ?_ </wordStackSize>
             <localMem> .Bytes => ?_ </localMem>
             <pc> 0 => ?_ </pc>
             <gas> #gas(VGas) => ?_ </gas>
@@ -397,8 +397,8 @@ module END-CASH-PASS-ROUGH-SPEC
             <caller> CALLER_ID </caller>
             <callData> #abiCallData("flux", #bytes32(ABI_ilk), #address(ABI_src), #address(ABI_dst), #uint256(ABI_wad)) +Bytes CD => ?_ </callData>
             <callValue> VCallValue </callValue>
-            <wordStack> .WordStack => ?WS </wordStack>
-            <wordStackSize> 0 => #sizeWordStack(?WS) </wordStackSize>
+            <wordStack> .WordStack => ?_ </wordStack>
+            <wordStackSize> 0 => ?_ </wordStackSize>
             <localMem> .Bytes => ?_ </localMem>
             <pc> 0 => ?_ </pc>
             <gas> #gas(VGas) => #gas ( ( ( ( VGas -Int Csstore( ISTANBUL , ( Gem_src -Int ABI_wad ) , Gem_src , Junk_1 ) ) -Int Csstore( ISTANBUL , ( Gem_dst +Int ABI_wad ) , Gem_dst , Junk_2 ) ) +Int -8307 ) ) </gas>

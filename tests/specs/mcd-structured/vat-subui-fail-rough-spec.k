@@ -23,8 +23,8 @@ module VAT-SUBUI-FAIL-ROUGH-SPEC
             <caller> CALLER_ID </caller>
             <callData> _ => ?_ </callData>
             <callValue> VCallValue </callValue>
-            <wordStack> chop(ABI_y) : ABI_x : JMPTO : WS  => ?WS </wordStack>
-            <wordStackSize> WSSize => #sizeWordStack(?WS) </wordStackSize>
+            <wordStack> chop(ABI_y) : ABI_x : JMPTO : WS  => ?_ </wordStack>
+            <wordStackSize> WSSize => ?_ </wordStackSize>
             <localMem> _ </localMem>
             <pc> 13304 => ?_ </pc>
             <gas> #gas(VGas) => ?_ </gas>

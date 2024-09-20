@@ -23,8 +23,8 @@ module VOW-FESS-FAIL-ROUGH-SPEC
             <caller> CALLER_ID </caller>
             <callData> #abiCallData("fess", #uint256(ABI_tab)) +Bytes CD => ?_ </callData>
             <callValue> VCallValue </callValue>
-            <wordStack> .WordStack => ?WS </wordStack>
-            <wordStackSize> 0 => #sizeWordStack(?WS) </wordStackSize>
+            <wordStack> .WordStack => ?_ </wordStack>
+            <wordStackSize> 0 => ?_ </wordStackSize>
             <localMem> .Bytes => ?_ </localMem>
             <pc> 0 => ?_ </pc>
             <gas> #gas(VGas) => ?_ </gas>

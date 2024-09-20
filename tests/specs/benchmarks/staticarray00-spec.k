@@ -23,8 +23,8 @@ module STATICARRAY00-SPEC
           <caller> MSG_SENDER </caller> // msg.sender
           <callData> #abiCallData2("execute(uint256[3])", #uint256(A0), #uint256(A1), #uint256(A2)) </callData> // msg.data
           <callValue> 0 </callValue> // msg.value
-          <wordStack> .WordStack => ?WS </wordStack>
-          <wordStackSize> 0 => #sizeWordStack(?WS) </wordStackSize>
+          <wordStack> .WordStack => ?_ </wordStack>
+          <wordStackSize> 0 => ?_ </wordStackSize>
           <localMem> .Bytes => ?_ </localMem>
           <pc> 0 => ?_ </pc>
           <gas> #gas(_VGAS) => ?_ </gas>

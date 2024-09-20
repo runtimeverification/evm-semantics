@@ -23,8 +23,8 @@ module ECRECOVER00-SIGVALID-SPEC
           <caller> MSG_SENDER </caller> // msg.sender
           <callData> #abiCallData("execute", #bytes32(HASH), #uint8(SIGV), #bytes32(SIGR), #bytes32(SIGS)) </callData> // msg.data
           <callValue> 0 </callValue> // msg.value
-          <wordStack> .WordStack => ?WS </wordStack>
-          <wordStackSize> 0 => #sizeWordStack(?WS) </wordStackSize>
+          <wordStack> .WordStack => ?_ </wordStack>
+          <wordStackSize> 0 => ?_ </wordStackSize>
           <localMem> .Bytes => ?_ </localMem>
           <pc> 0 => ?_ </pc>
           <gas> #gas(_VGAS) => ?_ </gas>

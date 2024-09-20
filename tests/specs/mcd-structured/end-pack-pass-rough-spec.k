@@ -23,8 +23,8 @@ module END-PACK-PASS-ROUGH-SPEC
             <caller> CALLER_ID </caller>
             <callData> #abiCallData("pack", #uint256(ABI_wad)) +Bytes CD => ?_ </callData>
             <callValue> VCallValue </callValue>
-            <wordStack> .WordStack => ?WS </wordStack>
-            <wordStackSize> 0 => #sizeWordStack(?WS) </wordStackSize>
+            <wordStack> .WordStack => ?_ </wordStack>
+            <wordStackSize> 0 => ?_ </wordStackSize>
             <localMem> .Bytes => ?_ </localMem>
             <pc> 0 => ?_ </pc>
             <gas> #gas(VGas) => ?_ </gas>
@@ -384,8 +384,8 @@ module END-PACK-PASS-ROUGH-SPEC
             <caller> CALLER_ID </caller>
             <callData> #abiCallData("move", #address(ABI_src), #address(ABI_dst), #uint256(ABI_rad)) +Bytes CD => ?_ </callData>
             <callValue> VCallValue </callValue>
-            <wordStack> .WordStack => ?WS </wordStack>
-            <wordStackSize> 0 => #sizeWordStack(?WS) </wordStackSize>
+            <wordStack> .WordStack => ?_ </wordStack>
+            <wordStackSize> 0 => ?_ </wordStackSize>
             <localMem> .Bytes => ?_ </localMem>
             <pc> 0 => ?_ </pc>
             <gas> #gas(VGas) => #gas ( ( ( ( VGas -Int Csstore( ISTANBUL , ( Dai_src -Int ABI_rad ) , Dai_src , Junk_1 ) ) -Int Csstore( ISTANBUL , ( Dai_dst +Int ABI_rad ) , Dai_dst , Junk_2 ) ) +Int -7943 ) ) </gas>

@@ -27,8 +27,8 @@ module ECRECOVERLOOP02-SIG0-INVALID-SPEC
 #bytes32(SIGR0), #bytes32(SIGR1),
 #bytes32(SIGS0), #bytes32(SIGS1)) </callData> // msg.data
           <callValue> 0 </callValue> // msg.value
-          <wordStack> .WordStack => ?WS </wordStack>
-          <wordStackSize> 0 => #sizeWordStack(?WS) </wordStackSize>
+          <wordStack> .WordStack => ?_ </wordStack>
+          <wordStackSize> 0 => ?_ </wordStackSize>
           <localMem> .Bytes => ?_ </localMem>
           <pc> 0 => ?_ </pc>
           <gas> #gas(_VGAS) => ?_ </gas>

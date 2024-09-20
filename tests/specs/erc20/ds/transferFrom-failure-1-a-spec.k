@@ -30,8 +30,8 @@ module TRANSFERFROM-FAILURE-1-A-SPEC
           <callData> #abiCallData("transferFrom", #address(FROM_ID), #address(TO_ID), #uint256(VALUE)) </callData>
 
           <callValue> 0 </callValue>
-          <wordStack> .WordStack => ?WS </wordStack>
-          <wordStackSize> 0 => #sizeWordStack(?WS) </wordStackSize>
+          <wordStack> .WordStack => ?_ </wordStack>
+          <wordStackSize> 0 => ?_ </wordStackSize>
           <localMem> .Bytes => ?_ </localMem>
           <pc> 0 => ?_ </pc>
           <gas> #gas(_VGAS) => ?_ </gas>
