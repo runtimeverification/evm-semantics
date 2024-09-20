@@ -168,7 +168,7 @@ module EVM-OPTIMIZATIONS
       </ethereum>
       ...
     </kevm>
-    requires N <=Int WSSize
+    requires N +Int 1 <=Int WSSize
      andBool ( #if USEGAS #then Gverylow < SCHED > <=Gas GAVAIL #else true #fi )
      andBool ( 0 <=Int WSSize )
      andBool ( WSSize <=Int 1024 )
