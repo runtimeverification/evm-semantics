@@ -206,6 +206,7 @@ module EVM-OPTIMIZATIONS
       ...
     </kevm>
     requires ( #if USEGAS #then Gverylow < SCHED > <=Gas GAVAIL #else true #fi )
+     andBool ( 2 <=Int WSSize )
      andBool ( WSSize <=Int 1023 )
      [priority(40)]
 
@@ -245,6 +246,7 @@ module EVM-OPTIMIZATIONS
       ...
     </kevm>
     requires ( #if USEGAS #then Gverylow < SCHED > <=Gas GAVAIL #else true #fi )
+     andBool ( 2 <=Int WSSize )
      andBool ( WSSize <=Int 1023 )
      [priority(40)]
 
@@ -284,6 +286,7 @@ module EVM-OPTIMIZATIONS
       ...
     </kevm>
     requires ( #if USEGAS #then Gverylow < SCHED > <=Gas GAVAIL #else true #fi )
+     andBool ( 2 <=Int WSSize )
      andBool ( WSSize <=Int 1023 )
      [priority(40)]
 
@@ -323,6 +326,7 @@ module EVM-OPTIMIZATIONS
       ...
     </kevm>
     requires ( #if USEGAS #then Gverylow < SCHED > <=Gas GAVAIL #else true #fi )
+     andBool ( 2 <=Int WSSize )
      andBool ( WSSize <=Int 1023 )
      [priority(40)]
 
@@ -362,6 +366,7 @@ module EVM-OPTIMIZATIONS
       ...
     </kevm>
     requires ( #if USEGAS #then Gverylow < SCHED > <=Gas GAVAIL #else true #fi )
+     andBool ( 2 <=Int WSSize )
      andBool ( WSSize <=Int 1023 )
      [priority(40)]
 
