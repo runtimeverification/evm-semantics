@@ -461,9 +461,9 @@ Here we load the correct number of arguments from the `wordStack` based on the s
 `StackOp` is used for opcodes which require a large portion of the stack.
 
 ```k
-    syntax InternalOp ::= StackOp WordStack
- // ---------------------------------------
-    rule <k> #exec [ SO:StackOp ] => #gas [ SO , SO WS ] ~> SO WS ... </k> <wordStack> WS </wordStack>
+    syntax InternalOp ::= StackOp WordStack Int
+ // -------------------------------------------
+    rule <k> #exec [ SO:StackOp ] => #gas [ SO , SO WS ] ~> SO WS WSSize ... </k> <wordStack> WS </wordStack> <wordStackSize> WSSize </wordStackSize>
 ```
 
 The `CallOp` opcodes all interpret their second argument as an address.
@@ -896,8 +896,8 @@ Some operators don't calculate anything, they just push the stack around a bit.
     syntax StackOp ::= DUP  ( Int ) [symbol(DUP)]
                      | SWAP ( Int ) [symbol(SWAP)]
  // ----------------------------------------------
-    rule <k> DUP(N)  WS:WordStack => #setStack ((WS [ N -Int 1 ]) : WS)                     (WSSize +Int 1) ... </k> <wordStackSize> WSSize </wordStackSize>
-    rule <k> SWAP(N) (W0 : WS)    => #setStack ((WS [ N -Int 1 ]) : (WS [ N -Int 1 := W0 ])) WSSize         ... </k> <wordStackSize> WSSize </wordStackSize>
+    rule <k> DUP(N)  WS:WordStack WSSize => #setStack ((WS [ N -Int 1 ]) : WS)                     (WSSize +Int 1) ... </k>
+    rule <k> SWAP(N) (W0 : WS)    WSSize => #setStack ((WS [ N -Int 1 ]) : (WS [ N -Int 1 := W0 ])) WSSize         ... </k>
 
     syntax PushOp ::= "PUSHZERO"
                     | PUSH ( Int ) [symbol(PUSH)]
