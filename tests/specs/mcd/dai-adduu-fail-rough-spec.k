@@ -100,8 +100,9 @@ module DAI-ADDUU-FAIL-ROUGH-SPEC
 
        andBool (#rangeUInt(256, ABI_x)
        andBool (#rangeUInt(256, ABI_y)
+       andBool ((3 <=Int WSSize)
        andBool ((WSSize <=Int 100)
-       andBool (#rangeUInt(256, VMemoryUsed)))))
+       andBool (#rangeUInt(256, VMemoryUsed))))))
 
 
        andBool notBool (
