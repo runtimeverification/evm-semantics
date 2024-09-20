@@ -134,14 +134,13 @@ git commit -m 'optimizations: clear optimizations' || true
 # score: (number with speedup >7%) - (number with slowdown >7%), for both (exec, spec)
 
 # were consistently positive
-doOptimization "PUSH(N)"  0 10 40                                                       #  73    65    (53  , 9 )
-doOptimization "DUP(N)"   0 10 40 '#stackNeeded(DUP(N)) <=Int #sizeWordStack(WS)'       #  14    16    (0   , 8 )
-doOptimization "SWAP(N)"  1 10 40 '#stackNeeded(SWAP(N)) <=Int #sizeWordStack(W0 : WS)' #  14    16    (13  , 2 )
-doOptimization ADD        2 10 40                                                       #  8     5     (39  , 9 )
-doOptimization SUB        2 10 40                                                       #  0     0     (18  , 4 )
-doOptimization AND        2 10 40                                                       #  0     2     (25  , 4 )
-doOptimization LT         2 10 40                                                       #  7     3     (1   , 0 )
-doOptimization GT         2 10 40                                                       #  0     0     (12  , 2 )
+doOptimization "PUSH(N)"  0 10 40                                      #  73    65    (53  , 9 )
+doOptimization "DUP(N)"   0 10 40 '#stackNeeded(DUP(N))  <=Int WSSize' #  14    16    (0   , 8 )
+doOptimization "SWAP(N)"  1 10 40 '#stackNeeded(SWAP(N)) <=Int WSSize' #  14    16    (13  , 2 )
+doOptimization ADD        2 10 40                                      #  0     0     (18  , 4 )
+doOptimization AND        2 10 40                                      #  0     2     (25  , 4 )
+doOptimization LT         2 10 40                                      #  7     3     (1   , 0 )
+doOptimization GT         2 10 40                                      #  0     0     (12  , 2 )
 
 # not sure it's worth it to include these ones
 # doOptimization MSTORE     2 14 40                                                       # -18    11    (-23 , -2)

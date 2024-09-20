@@ -771,10 +771,10 @@ These are just used by the other operators for shuffling local execution state a
 -   `#setStack_` will set the current stack to the given one.
 
 ```k
-    syntax InternalOp ::= "#push" | "#setStack" WordStack
- // -----------------------------------------------------
-    rule <k> W0:Int ~> #push => .K ... </k> <wordStack> WS => W0 : WS </wordStack> <wordStackSize> WSSize => WSSize +Int 1 </wordStackSize>
-    rule <k> #setStack WS    => .K ... </k> <wordStack> _  => WS      </wordStack> <wordStackSize> _ => #sizeWordStack(WS) </wordStackSize>
+    syntax InternalOp ::= "#push" | "#setStack" WordStack Int
+ // ---------------------------------------------------------
+    rule <k> W0:Int ~> #push     => .K ... </k> <wordStack> WS => W0 : WS </wordStack> <wordStackSize> WSSize => WSSize +Int 1 </wordStackSize>
+    rule <k> #setStack WS WSSize => .K ... </k> <wordStack> _  => WS      </wordStack> <wordStackSize>      _ => WSSize        </wordStackSize>
 ```
 
 -   `#newAccount_` allows declaring a new empty account with the given address (and assumes the rounding to 160 bits has already occurred).
@@ -896,8 +896,8 @@ Some operators don't calculate anything, they just push the stack around a bit.
     syntax StackOp ::= DUP  ( Int ) [symbol(DUP)]
                      | SWAP ( Int ) [symbol(SWAP)]
  // ----------------------------------------------
-    rule <k> DUP(N)  WS:WordStack => #setStack ((WS [ N -Int 1 ]) : WS)                      ... </k>
-    rule <k> SWAP(N) (W0 : WS)    => #setStack ((WS [ N -Int 1 ]) : (WS [ N -Int 1 := W0 ])) ... </k>
+    rule <k> DUP(N)  WS:WordStack => #setStack ((WS [ N -Int 1 ]) : WS)                     (WSSize +Int 1) ... </k> <wordStackSize> WSSize </wordStackSize>
+    rule <k> SWAP(N) (W0 : WS)    => #setStack ((WS [ N -Int 1 ]) : (WS [ N -Int 1 := W0 ])) WSSize         ... </k> <wordStackSize> WSSize </wordStackSize>
 
     syntax PushOp ::= "PUSHZERO"
                     | PUSH ( Int ) [symbol(PUSH)]

@@ -5,15 +5,9 @@ module VERIFICATION
     imports EVM-ASSEMBLY
     imports LEMMAS
 
-    rule #sizeWordStack ( WS , N:Int )
-      => N +Int #sizeWordStack ( WS , 0 )
-      requires N =/=K 0 [simplification]
-
     rule bool2Word(A) ==K 0 => notBool(A) [simplification]
 
     rule chop(I) => I requires #rangeUInt(256, I) [simplification]
-
-    rule 0 <=Int #sizeWordStack ( _ , _ ) => true [simplification, smt-lemma]
 
     syntax Bytes ::= "sumToN" [macro]
  // -------------------------------------
@@ -47,9 +41,10 @@ module SUM-TO-N-SPEC
           <wordStack> N : WS => 0 : N *Int (N +Int 1) /Int 2 : WS </wordStack>
           <wordStackSize> WSSize => WSSize +Int 1                 </wordStackSize>
           <gas>       G  => G -Int (52 *Int N +Int 27)            </gas>
-      requires N >=Int 0
-       andBool N <=Int 340282366920938463463374607431768211455
-       andBool WSSize <Int 1021
+      requires 0 <=Int N
+       andBool N *Int (N +Int 1) /Int 2 <Int pow256
+       andBool 1 <=Int WSSize
+       andBool WSSize <Int 1022
        andBool G >=Int 52 *Int N +Int 27
       [depends(loop)]
 
@@ -73,7 +68,7 @@ module SUM-TO-N-SPEC
        andBool S >=Int 0
        andBool S +Int I *Int (I +Int 1) /Int 2 <Int pow256
        andBool 2 <=Int WSSize
-       andBool WSSize <Int 1021
+       andBool WSSize <Int 1023
        andBool G >=Int 52 *Int I +Int 21
       [circularity]
 
