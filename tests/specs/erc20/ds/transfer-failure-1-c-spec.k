@@ -30,7 +30,8 @@ module TRANSFER-FAILURE-1-C-SPEC
           <callData> #abiCallData("transfer", #address(TO_ID), #uint256(VALUE)) </callData>
 
           <callValue> 0 </callValue>
-          <wordStack> .WordStack => ?_ </wordStack>
+          <wordStack> .WordStack => ?WS </wordStack>
+          <wordStackSize> 0 => #sizeWordStack(?WS) </wordStackSize>
           <localMem> .Bytes => ?_ </localMem>
           <pc> 0 => ?_ </pc>
           <gas> #gas(_VGAS) => ?_ </gas>
@@ -123,4 +124,3 @@ andBool STOPPED ==Int 1 <<Int (20 *Int 8)
 
 
 endmodule
-

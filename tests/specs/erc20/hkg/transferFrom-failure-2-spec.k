@@ -30,7 +30,8 @@ module TRANSFERFROM-FAILURE-2-SPEC
           <callData> #abiCallData("transferFrom", #address(FROM_ID), #address(TO_ID), #uint256(VALUE)) </callData>
 
           <callValue> 0 </callValue>
-          <wordStack> .WordStack => ?_ </wordStack>
+          <wordStack> .WordStack => ?WS </wordStack>
+          <wordStackSize> 0 => #sizeWordStack(?WS) </wordStackSize>
           <localMem> .Bytes => ?_ </localMem>
           <pc> 0 => ?_ </pc>
           <gas> #gas(_VGAS) => ?_ </gas>
@@ -119,4 +120,3 @@ andBool #hashedLocation("Solidity", 2, FROM_ID CALLER_ID) =/=Int #hashedLocation
 
 
 endmodule
-

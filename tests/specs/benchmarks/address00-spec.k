@@ -23,7 +23,8 @@ module ADDRESS00-SPEC
           <caller> MSG_SENDER </caller> // msg.sender
           <callData> #abiCallData("execute", #address(A0)) </callData> // msg.data
           <callValue> 0 </callValue> // msg.value
-          <wordStack> .WordStack => ?_ </wordStack>
+          <wordStack> .WordStack => ?WS </wordStack>
+          <wordStackSize> 0 => #sizeWordStack(?WS) </wordStackSize>
           <localMem> .Bytes => ?_ </localMem>
           <pc> 0 => ?_ </pc>
           <gas> #gas(_VGAS) => ?_ </gas>
@@ -134,4 +135,3 @@ _
      andBool #rangeAddress(A0)
 
 endmodule
-

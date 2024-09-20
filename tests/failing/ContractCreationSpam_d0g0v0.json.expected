@@ -56,6 +56,9 @@
         <wordStack>
           .WordStack
         </wordStack>
+        <wordStackSize>
+          0
+        </wordStackSize>
         <localMem>
           b""
         </localMem>

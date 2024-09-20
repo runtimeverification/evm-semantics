@@ -49,6 +49,9 @@ module TEST-ARITHMETICTEST-TEST_WDIV_ROUNDING-UINT256-UINT256-0-SPEC
                  <wordStack>
                    ( 0 : ( ( chop ( ( VV0_a_114b9705:Int *Int 1000000000000000000 ) ) => ( chop ( ( VV0_a_114b9705:Int *Int 1000000000000000000 ) ) +Int ( VV1_b_114b9705:Int /Int 2 ) ) ) : ( ( ( VV1_b_114b9705:Int /Int 2 ) => VV1_b_114b9705:Int ) : ( ( 3149 => 3159 ) : ( ( VV1_b_114b9705:Int => 0 ) : ( ( 0 => VV1_b_114b9705:Int ) : ( ( VV1_b_114b9705:Int => VV0_a_114b9705:Int ) : ( ( VV0_a_114b9705:Int => 748 ) : ( ( 748 => 0 ) : ( ( 0 => VV1_b_114b9705:Int ) : ( ( VV1_b_114b9705:Int => VV0_a_114b9705:Int ) : ( ( VV0_a_114b9705:Int => 357 ) : ( ( 357 => 345004095 ) : ( ( 345004095 : .WordStack ) => .WordStack ) ) ) ) ) ) ) ) ) ) ) ) ) )
                  </wordStack>
+                 <wordStackSize>
+                   14 => 13
+                 </wordStackSize>
                  <localMem>
                    b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80"
                  </localMem>

@@ -73,19 +73,20 @@ module STORAGE-SPEC
     claim [myBool]:
           <mode>     NORMAL   </mode>
           <schedule> ISTANBUL </schedule>
-          <useGas>  true     </useGas>
+          <useGas>   true     </useGas>
 
-          <callStack> .List                                        </callStack>
+          <callStack> .List                                           </callStack>
           <program>   #binRuntime(S2KStorage)                         </program>
           <jumpDests> #computeValidJumpDests(#binRuntime(S2KStorage)) </jumpDests>
 
-          <id>         ACCTID      => ?_ </id>
-          <localMem>   .Bytes     => ?_ </localMem>
-          <memoryUsed> 0           => ?_ </memoryUsed>
-          <wordStack>  .WordStack  => ?_ </wordStack>
-          <pc>         0           => ?_ </pc>
-          <gas>        #gas(_VGAS) => ?_ </gas>
-          <callValue>  0           => ?_ </callValue>
+          <id>            ACCTID      => ?_ </id>
+          <localMem>      .Bytes      => ?_ </localMem>
+          <memoryUsed>    0           => ?_ </memoryUsed>
+          <wordStack>     .WordStack  => ?WS </wordStack>
+          <wordStackSize> 0           => #sizeWordStack(?WS) </wordStackSize>
+          <pc>            0           => ?_ </pc>
+          <gas>           #gas(_VGAS) => ?_ </gas>
+          <callValue>     0           => ?_ </callValue>
 
           <callData>   S2KStorage.S2KmyBool()               </callData>
           <k>          #execute => #halt ...          </k>
@@ -107,20 +108,21 @@ module STORAGE-SPEC
     claim [setMyBool]:
           <mode>     NORMAL   </mode>
           <schedule> ISTANBUL </schedule>
-          <useGas>  true     </useGas>
+          <useGas>   true     </useGas>
 
-          <callStack> .List                                        </callStack>
+          <callStack> .List                                           </callStack>
           <program>   #binRuntime(S2KStorage)                         </program>
           <jumpDests> #computeValidJumpDests(#binRuntime(S2KStorage)) </jumpDests>
-          <static>    false                                        </static>
+          <static>    false                                           </static>
 
-          <id>         ACCTID      => ?_ </id>
-          <localMem>   .Bytes     => ?_ </localMem>
-          <memoryUsed> 0           => ?_ </memoryUsed>
-          <wordStack>  .WordStack  => ?_ </wordStack>
-          <pc>         0           => ?_ </pc>
-          <gas>        #gas(_VGAS) => ?_ </gas>
-          <callValue>  0           => ?_ </callValue>
+          <id>            ACCTID      => ?_ </id>
+          <localMem>      .Bytes      => ?_ </localMem>
+          <memoryUsed>    0           => ?_ </memoryUsed>
+          <wordStack>     .WordStack  => ?WS </wordStack>
+          <wordStackSize> 0           => #sizeWordStack(?WS) </wordStackSize>
+          <pc>            0           => ?_ </pc>
+          <gas>           #gas(_VGAS) => ?_ </gas>
+          <callValue>     0           => ?_ </callValue>
 
           <callData>   S2KStorage.S2KsetMyBool(NEW_VAL : bool) </callData>
           <k>          #execute   => #halt ...           </k>

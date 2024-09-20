@@ -23,7 +23,8 @@ module STRUCTARG00-SPEC
           <caller> MSG_SENDER </caller> // msg.sender
           <callData> #abiCallData2("execute((uint256,uint8))", #tuple(#uint256(A0), #uint8(A1), .TypedArgs)) </callData> // msg.data
           <callValue> 0 </callValue> // msg.value
-          <wordStack> .WordStack => ?_ </wordStack>
+          <wordStack> .WordStack => ?WS </wordStack>
+          <wordStackSize> 0 => #sizeWordStack(?WS) </wordStackSize>
           <localMem> .Bytes => ?_ </localMem>
           <pc> 0 => ?_ </pc>
           <gas> #gas(_VGAS) => ?_ </gas>

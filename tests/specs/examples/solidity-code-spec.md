@@ -95,18 +95,19 @@ module SOLIDITY-CODE-SPEC
     claim [bad-call-data]:
           <mode>     NORMAL   </mode>
           <schedule> ISTANBUL </schedule>
-        <useGas>    true     </useGas>
+          <useGas>   true     </useGas>
 
           <callStack> .List                                 </callStack>
           <program>   #binRuntime()                         </program>
           <jumpDests> #computeValidJumpDests(#binRuntime()) </jumpDests>
 
-          <localMem>   .Bytes     => ?_ </localMem>
-          <memoryUsed> 0           => ?_ </memoryUsed>
-          <wordStack>  .WordStack  => ?_ </wordStack>
-          <pc>         0           => ?_ </pc>
-          <gas>        #gas(_VGAS) => ?_ </gas>
-          <callValue>  _CALL_VALUE => ?_ </callValue>
+          <localMem>      .Bytes      => ?_ </localMem>
+          <memoryUsed>    0           => ?_ </memoryUsed>
+          <wordStack>     .WordStack  => ?WS </wordStack>
+          <wordStackSize> 0           => #sizeWordStack(?WS) </wordStackSize>
+          <pc>            0           => ?_ </pc>
+          <gas>           #gas(_VGAS) => ?_ </gas>
+          <callValue>     _CALL_VALUE => ?_ </callValue>
 
           <callData> #abiCallData("add", .TypedArgs) </callData>
           <k>          #execute => #halt ...   </k>
@@ -125,18 +126,19 @@ module SOLIDITY-CODE-SPEC
     claim [add-positive]:
           <mode>     NORMAL   </mode>
           <schedule> ISTANBUL </schedule>
-          <useGas>  true     </useGas>
+          <useGas>   true     </useGas>
 
           <callStack> .List                                 </callStack>
           <program>   #binRuntime()                         </program>
           <jumpDests> #computeValidJumpDests(#binRuntime()) </jumpDests>
 
-          <localMem>   .Bytes     => ?_ </localMem>
-          <memoryUsed> 0           => ?_ </memoryUsed>
-          <wordStack>  .WordStack  => ?_ </wordStack>
-          <pc>         0           => ?_ </pc>
-          <gas>        #gas(_VGAS) => ?_ </gas>
-          <callValue>  0           => ?_ </callValue>
+          <localMem>      .Bytes      => ?_ </localMem>
+          <memoryUsed>    0           => ?_ </memoryUsed>
+          <wordStack>     .WordStack  => ?WS </wordStack>
+          <wordStackSize> 0           => #sizeWordStack(?WS) </wordStackSize>
+          <pc>            0           => ?_ </pc>
+          <gas>           #gas(_VGAS) => ?_ </gas>
+          <callValue>     0           => ?_ </callValue>
 
           <callData> #abiCallData("add", #uint256(X), #uint256(Y)) </callData>
           <k>          #execute => #halt ...          </k>
@@ -160,18 +162,19 @@ module SOLIDITY-CODE-SPEC
     claim [add-negative]:
           <mode>     NORMAL   </mode>
           <schedule> ISTANBUL </schedule>
-          <useGas>  true     </useGas>
+          <useGas>   true     </useGas>
 
           <callStack> .List                                 </callStack>
           <program>   #binRuntime()                         </program>
           <jumpDests> #computeValidJumpDests(#binRuntime()) </jumpDests>
 
-          <localMem>   .Bytes     => ?_ </localMem>
-          <memoryUsed> 0           => ?_ </memoryUsed>
-          <wordStack>  .WordStack  => ?_ </wordStack>
-          <pc>         0           => ?_ </pc>
-          <gas>        #gas(_VGAS) => ?_ </gas>
-          <callValue>  0           => ?_ </callValue>
+          <localMem>      .Bytes      => ?_ </localMem>
+          <memoryUsed>    0           => ?_ </memoryUsed>
+          <wordStack>     .WordStack  => ?WS </wordStack>
+          <wordStackSize> 0           => #sizeWordStack(?WS) </wordStackSize>
+          <pc>            0           => ?_ </pc>
+          <gas>           #gas(_VGAS) => ?_ </gas>
+          <callValue>     0           => ?_ </callValue>
 
           <callData> #abiCallData("add", #uint256(X), #uint256(Y)) </callData>
           <k>          #execute => #halt ...   </k>
@@ -195,18 +198,19 @@ module SOLIDITY-CODE-SPEC
     claim [badAdd-negative]:
           <mode>     NORMAL   </mode>
           <schedule> ISTANBUL </schedule>
-          <useGas>  true     </useGas>
+          <useGas>   true     </useGas>
 
           <callStack> .List                                 </callStack>
           <program>   #binRuntime()                         </program>
           <jumpDests> #computeValidJumpDests(#binRuntime()) </jumpDests>
 
-          <localMem>   .Bytes     => ?_ </localMem>
-          <memoryUsed> 0           => ?_ </memoryUsed>
-          <wordStack>  .WordStack  => ?_ </wordStack>
-          <pc>         0           => ?_ </pc>
-          <gas>        #gas(_VGAS) => ?_ </gas>
-          <callValue>  0           => ?_ </callValue>
+          <localMem>      .Bytes      => ?_ </localMem>
+          <memoryUsed>    0           => ?_ </memoryUsed>
+          <wordStack>     .WordStack  => ?WS </wordStack>
+          <wordStackSize> 0           => #sizeWordStack(?WS) </wordStackSize>
+          <pc>            0           => ?_ </pc>
+          <gas>           #gas(_VGAS) => ?_ </gas>
+          <callValue>     0           => ?_ </callValue>
 
           <callData> #abiCallData("badAdd", #uint256(X), #uint256(Y)) </callData>
           <k>          #execute => #halt ...          </k>
@@ -229,18 +233,19 @@ module SOLIDITY-CODE-SPEC
     claim [max-positive]:
           <mode>     NORMAL   </mode>
           <schedule> ISTANBUL </schedule>
-          <useGas>  true     </useGas>
+          <useGas>   true     </useGas>
 
           <callStack> .List                                 </callStack>
           <program>   #binRuntime()                         </program>
           <jumpDests> #computeValidJumpDests(#binRuntime()) </jumpDests>
 
-          <localMem>   .Bytes     => ?_ </localMem>
-          <memoryUsed> 0           => ?_ </memoryUsed>
-          <wordStack>  .WordStack  => ?_ </wordStack>
-          <pc>         0           => ?_ </pc>
-          <gas>        #gas(_VGAS) => ?_ </gas>
-          <callValue>  0           => ?_ </callValue>
+          <localMem>      .Bytes      => ?_ </localMem>
+          <memoryUsed>    0           => ?_ </memoryUsed>
+          <wordStack>     .WordStack  => ?WS </wordStack>
+          <wordStackSize> 0           => #sizeWordStack(?WS) </wordStackSize>
+          <pc>            0           => ?_ </pc>
+          <gas>           #gas(_VGAS) => ?_ </gas>
+          <callValue>     0           => ?_ </callValue>
 
           <callData> #abiCallData("max", #uint256(X), #uint256(Y)) </callData>
           <k>          #execute => #halt ...              </k>

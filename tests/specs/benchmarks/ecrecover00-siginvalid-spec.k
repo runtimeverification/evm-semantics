@@ -23,7 +23,8 @@ module ECRECOVER00-SIGINVALID-SPEC
           <caller> MSG_SENDER </caller> // msg.sender
           <callData> #abiCallData("execute", #bytes32(HASH), #uint8(SIGV), #bytes32(SIGR), #bytes32(SIGS)) </callData> // msg.data
           <callValue> 0 </callValue> // msg.value
-          <wordStack> .WordStack => ?_ </wordStack>
+          <wordStack> .WordStack => ?WS </wordStack>
+          <wordStackSize> 0 => #sizeWordStack(?WS) </wordStackSize>
           <localMem> .Bytes => ?_ </localMem>
           <pc> 0 => ?_ </pc>
           <gas> #gas(_VGAS) => ?_ </gas>
@@ -143,4 +144,3 @@ _
      andBool #ecrecEmpty(#bufStrict(32, HASH), #bufStrict(32, SIGV), #bufStrict(32, SIGR), #bufStrict(32, SIGS))
 
 endmodule
-

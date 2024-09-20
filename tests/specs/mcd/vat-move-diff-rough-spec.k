@@ -26,7 +26,8 @@ module VAT-MOVE-DIFF-ROUGH-SPEC
             <caller> CALLER_ID </caller>
             <callData> #abiCallData("move", #address(ABI_src), #address(ABI_dst), #uint256(ABI_rad)) +Bytes CD => ?_ </callData>
             <callValue> VCallValue </callValue>
-            <wordStack> .WordStack => ?_ </wordStack>
+            <wordStack> .WordStack => ?WS </wordStack>
+            <wordStackSize> 0 => #sizeWordStack(?WS) </wordStackSize>
             <localMem> .Bytes => ?_ </localMem>
             <pc> 0 => ?_ </pc>
             <gas> #gas(VGas) => ?_ </gas>

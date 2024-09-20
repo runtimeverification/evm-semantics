@@ -23,7 +23,8 @@ module DSTOKEN-APPROVE-FAIL-ROUGH-SPEC
             <caller> CALLER_ID </caller>
             <callData> #abiCallData("approve", #address(ABI_usr), #uint256(ABI_wad)) +Bytes CD => ?_ </callData>
             <callValue> VCallValue </callValue>
-            <wordStack> .WordStack => ?_ </wordStack>
+            <wordStack> .WordStack => ?WS </wordStack>
+            <wordStackSize> 0 => #sizeWordStack(?WS) </wordStackSize>
             <localMem> .Bytes => ?_ </localMem>
             <pc> 0 => ?_ </pc>
             <gas> #gas(VGas) => ?_ </gas>

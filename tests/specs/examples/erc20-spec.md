@@ -72,19 +72,20 @@ module ERC20-SPEC
     claim [decimals]:
           <mode>     NORMAL   </mode>
           <schedule> ISTANBUL </schedule>
-          <useGas>  true     </useGas>
+          <useGas>   true     </useGas>
 
-          <callStack> .List                                      </callStack>
+          <callStack> .List                                         </callStack>
           <program>   #binRuntime(S2KERC20)                         </program>
           <jumpDests> #computeValidJumpDests(#binRuntime(S2KERC20)) </jumpDests>
 
-          <id>         ACCTID      => ?_ </id>
-          <localMem>   .Bytes     => ?_ </localMem>
-          <memoryUsed> 0           => ?_ </memoryUsed>
-          <wordStack>  .WordStack  => ?_ </wordStack>
-          <pc>         0           => ?_ </pc>
-          <gas>        #gas(_VGAS) => ?_ </gas>
-          <callValue>  0           => ?_ </callValue>
+          <id>            ACCTID      => ?_ </id>
+          <localMem>      .Bytes      => ?_ </localMem>
+          <memoryUsed>    0           => ?_ </memoryUsed>
+          <wordStack>     .WordStack  => ?WS </wordStack>
+          <wordStackSize> 0           => #sizeWordStack(?WS) </wordStackSize>
+          <pc>            0           => ?_ </pc>
+          <gas>           #gas(_VGAS) => ?_ </gas>
+          <callValue>     0           => ?_ </callValue>
 
           <callData>   S2KERC20.S2Kdecimals()               </callData>
           <k>          #execute => #halt ...          </k>
@@ -113,19 +114,20 @@ module ERC20-SPEC
     claim [totalSupply]:
           <mode>     NORMAL   </mode>
           <schedule> ISTANBUL </schedule>
-          <useGas>  true     </useGas>
+          <useGas>   true     </useGas>
 
-          <callStack> .List                                      </callStack>
+          <callStack> .List                                         </callStack>
           <program>   #binRuntime(S2KERC20)                         </program>
           <jumpDests> #computeValidJumpDests(#binRuntime(S2KERC20)) </jumpDests>
 
-          <id>         ACCTID      => ?_ </id>
-          <localMem>   .Bytes     => ?_ </localMem>
-          <memoryUsed> 0           => ?_ </memoryUsed>
-          <wordStack>  .WordStack  => ?_ </wordStack>
-          <pc>         0           => ?_ </pc>
-          <gas>        #gas(_VGAS) => ?_ </gas>
-          <callValue>  0           => ?_ </callValue>
+          <id>            ACCTID      => ?_ </id>
+          <localMem>      .Bytes      => ?_ </localMem>
+          <memoryUsed>    0           => ?_ </memoryUsed>
+          <wordStack>     .WordStack  => ?WS </wordStack>
+          <wordStackSize> 0           => #sizeWordStack(?WS) </wordStackSize>
+          <pc>            0           => ?_ </pc>
+          <gas>           #gas(_VGAS) => ?_ </gas>
+          <callValue>     0           => ?_ </callValue>
 
           <callData>   S2KERC20.S2KtotalSupply()               </callData>
           <k>          #execute => #halt ...             </k>
@@ -146,19 +148,20 @@ module ERC20-SPEC
     claim [totalSupply.noGas]:
           <mode>     NORMAL   </mode>
           <schedule> ISTANBUL </schedule>
-          <useGas>  false     </useGas>
+          <useGas>   false     </useGas>
 
           <callStack> .List                                         </callStack>
           <program>   #binRuntime(S2KERC20)                         </program>
           <jumpDests> #computeValidJumpDests(#binRuntime(S2KERC20)) </jumpDests>
 
-          <id>         ACCTID      => ?_ </id>
-          <localMem>   .Bytes      => ?_ </localMem>
-          <memoryUsed> 0           => ?_ </memoryUsed>
-          <wordStack>  .WordStack  => ?_ </wordStack>
-          <pc>         0           => ?_ </pc>
-          <gas>        _                  </gas>
-          <callValue>  0           => ?_ </callValue>
+          <id>            ACCTID      => ?_ </id>
+          <localMem>      .Bytes      => ?_ </localMem>
+          <memoryUsed>    0           => ?_ </memoryUsed>
+          <wordStack>     .WordStack  => ?WS </wordStack>
+          <wordStackSize> 0           => #sizeWordStack(?WS) </wordStackSize>
+          <pc>            0           => ?_ </pc>
+          <gas>           _                  </gas>
+          <callValue>     0           => ?_ </callValue>
 
           <callData>   S2KERC20.S2KtotalSupply()         </callData>
           <k>          #execute => #halt ...             </k>
@@ -187,22 +190,23 @@ module ERC20-SPEC
     claim [approve.success]:
           <mode>     NORMAL   </mode>
           <schedule> ISTANBUL </schedule>
-          <useGas>  true     </useGas>
+          <useGas>   true     </useGas>
 
-          <callStack> .List                                      </callStack>
+          <callStack> .List                                         </callStack>
           <program>   #binRuntime(S2KERC20)                         </program>
           <jumpDests> #computeValidJumpDests(#binRuntime(S2KERC20)) </jumpDests>
-          <static>    false                                      </static>
+          <static>    false                                         </static>
 
-          <id>         ACCTID      => ?_ </id>
-          <caller>     OWNER       => ?_ </caller>
-          <localMem>   .Bytes     => ?_ </localMem>
-          <memoryUsed> 0           => ?_ </memoryUsed>
-          <wordStack>  .WordStack  => ?_ </wordStack>
-          <pc>         0           => ?_ </pc>
-          <gas>        #gas(_VGAS) => ?_ </gas>
-          <callValue>  0           => ?_ </callValue>
-          <substate> _             => ?_ </substate>
+          <id>            ACCTID      => ?_ </id>
+          <caller>        OWNER       => ?_ </caller>
+          <localMem>      .Bytes      => ?_ </localMem>
+          <memoryUsed>    0           => ?_ </memoryUsed>
+          <wordStack>     .WordStack  => ?WS </wordStack>
+          <wordStackSize> 0           => #sizeWordStack(?WS) </wordStackSize>
+          <pc>            0           => ?_ </pc>
+          <gas>           #gas(_VGAS) => ?_ </gas>
+          <callValue>     0           => ?_ </callValue>
+          <substate>      _           => ?_ </substate>
 
           <callData>   S2KERC20.S2Kapprove(SPENDER : address, AMOUNT : uint256) </callData>
           <k>          #execute => #halt ...        </k>
@@ -227,22 +231,23 @@ module ERC20-SPEC
     claim [approve.revert]:
           <mode>     NORMAL   </mode>
           <schedule> ISTANBUL </schedule>
-          <useGas>  true     </useGas>
+          <useGas>   true     </useGas>
 
-          <callStack> .List                                      </callStack>
+          <callStack> .List                                         </callStack>
           <program>   #binRuntime(S2KERC20)                         </program>
           <jumpDests> #computeValidJumpDests(#binRuntime(S2KERC20)) </jumpDests>
-          <static>    false                                      </static>
+          <static>    false                                         </static>
 
-          <id>         ACCTID      => ?_ </id>
-          <caller>     OWNER       => ?_ </caller>
-          <localMem>   .Bytes     => ?_ </localMem>
-          <memoryUsed> 0           => ?_ </memoryUsed>
-          <wordStack>  .WordStack  => ?_ </wordStack>
-          <pc>         0           => ?_ </pc>
-          <gas>        #gas(_VGAS) => ?_ </gas>
-          <callValue>  0           => ?_ </callValue>
-          <substate> _             => ?_ </substate>
+          <id>            ACCTID      => ?_ </id>
+          <caller>        OWNER       => ?_ </caller>
+          <localMem>      .Bytes      => ?_ </localMem>
+          <memoryUsed>    0           => ?_ </memoryUsed>
+          <wordStack>     .WordStack  => ?WS </wordStack>
+          <wordStackSize> 0           => #sizeWordStack(?WS) </wordStackSize>
+          <pc>            0           => ?_ </pc>
+          <gas>           #gas(_VGAS) => ?_ </gas>
+          <callValue>     0           => ?_ </callValue>
+          <substate>      _           => ?_ </substate>
 
           <callData>   S2KERC20.S2Kapprove(SPENDER : address, AMOUNT : uint256) </callData>
           <k>          #execute   => #halt ...        </k>

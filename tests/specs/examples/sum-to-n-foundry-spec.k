@@ -48,6 +48,7 @@ claim [foundry-sum-to-n-loop-invariant]:
             : 2123244496
             : .WordStack
           </wordStack>
+          <wordStackSize> 5 </wordStackSize>
           <pc>
             1539 => 1569
           </pc>

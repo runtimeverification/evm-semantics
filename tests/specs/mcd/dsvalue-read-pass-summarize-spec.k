@@ -17,7 +17,8 @@ module DSVALUE-READ-PASS-SUMMARIZE-SPEC
 //          <callData> #abiCallData("read", .TypedArgs) +Bytes CD => ?_ </callData>
 //          <gas> #gas(VGas) => ?_ </gas>
 //          <pc> 0 => ?_ </pc>
-//          <wordStack> .WordStack => ?_ </wordStack>
+//          <wordStack> .WordStack => ?WS </wordStack>
+//          <wordStackSize> 0 => #sizeWordStack(?WS) </wordStackSize>
 //          <localMem> .Bytes => ?_ </localMem>
 //          <memoryUsed> 0 => ?_ </memoryUsed>
 //          (_ => ?_)
@@ -66,6 +67,9 @@ module DSVALUE-READ-PASS-SUMMARIZE-SPEC
 //           <wordStack>
 //             1474176676 : .WordStack
 //           </wordStack>
+//           <wordStackSize>
+//             1
+//           </wordStackSize>
 //           <localMem>
 //             b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80" [ 128 := #buf( 32 , #lookup( ACCT_STORAGE , 2 ) ) ]
 //           </localMem>
@@ -124,7 +128,8 @@ module DSVALUE-READ-PASS-SUMMARIZE-SPEC
           <callValue> 0 </callValue>                                            // from counterexample
           <gas> #gas(VGas) => #gas(VGas +Int -2043) </gas>                      // from counterexample
           <pc> 0 => ?_ </pc>
-          <wordStack> .WordStack => ?_ </wordStack>
+          <wordStack> .WordStack => ?WS </wordStack>
+          <wordStackSize> 0 => #sizeWordStack(?WS) </wordStackSize>
           <localMem> .Bytes => ?_ </localMem>
           <memoryUsed> 0 => ?_ </memoryUsed>
           (_ => ?_)

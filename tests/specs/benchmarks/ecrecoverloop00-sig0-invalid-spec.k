@@ -26,7 +26,8 @@ module ECRECOVERLOOP00-SIG0-INVALID-SPEC
 #bytes32(SIGR0), #bytes32(SIGR1),
 #bytes32(SIGS0), #bytes32(SIGS1)) </callData> // msg.data
           <callValue> 0 </callValue> // msg.value
-          <wordStack> .WordStack => ?_ </wordStack>
+          <wordStack> .WordStack => ?WS </wordStack>
+          <wordStackSize> 0 => #sizeWordStack(?WS) </wordStackSize>
           <localMem> .Bytes => ?_ </localMem>
           <pc> 0 => ?_ </pc>
           <gas> #gas(_VGAS) => ?_ </gas>
@@ -147,4 +148,3 @@ _
      andBool #ecrecEmpty( #bufStrict(32, HASH), #bufStrict(32, SIGV0), #bufStrict(32, SIGR0), #bufStrict(32, SIGS0) )
 
 endmodule
-

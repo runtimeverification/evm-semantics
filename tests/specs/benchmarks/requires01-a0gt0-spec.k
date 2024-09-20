@@ -23,7 +23,8 @@ module REQUIRES01-A0GT0-SPEC
           <caller> MSG_SENDER </caller> // msg.sender
           <callData> #abiCallData("execute", #uint256(A0)) </callData> // msg.data
           <callValue> 0 </callValue> // msg.value
-          <wordStack> .WordStack => ?_ </wordStack>
+          <wordStack> .WordStack => ?WS </wordStack>
+          <wordStackSize> 0 => #sizeWordStack(?WS) </wordStackSize>
           <localMem> .Bytes => ?_ </localMem>
           <pc> 0 => ?_ </pc>
           <gas> #gas(_VGAS) => ?_ </gas>
@@ -131,4 +132,3 @@ module REQUIRES01-A0GT0-SPEC
      andBool A0 >Int 0
 
 endmodule
-

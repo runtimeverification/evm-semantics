@@ -22,7 +22,8 @@ module FLOPPER-CAGE-PASS-SPEC
             <caller> CALLER_ID </caller>
             <callData> #abiCallData("cage", .TypedArgs) +Bytes CD => ?_ </callData>
             <callValue> VCallValue </callValue>
-            <wordStack> .WordStack => ?_ </wordStack>
+            <wordStack> .WordStack => ?WS </wordStack>
+            <wordStackSize> 0 => #sizeWordStack(?WS) </wordStackSize>
             <localMem> .Bytes => ?_ </localMem>
             <pc> 0 => ?_ </pc>
             <gas> #gas(VGas) => #gas ( ( ( ( VGas -Int Csstore( ISTANBUL , 0 , Live , Junk_1 ) ) -Int Csstore( ISTANBUL , CALLER_ID , Vow , Junk_2 ) ) +Int -6351 ) ) </gas>

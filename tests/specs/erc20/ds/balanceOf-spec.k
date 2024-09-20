@@ -30,7 +30,8 @@ module BALANCEOF-SPEC
           <callData> #abiCallData("balanceOf", #address(OWNER)) </callData>
 
           <callValue> 0 </callValue>
-          <wordStack> .WordStack => ?_ </wordStack>
+          <wordStack> .WordStack => ?WS </wordStack>
+          <wordStackSize> 0 => #sizeWordStack(?WS) </wordStackSize>
           <localMem> .Bytes => ?_ </localMem>
           <pc> 0 => ?_ </pc>
           <gas> #gas(_VGAS) => ?_ </gas>
@@ -110,4 +111,3 @@ andBool 0 <=Int BAL       andBool BAL       <Int (2 ^Int 256)
 
 
 endmodule
-

@@ -23,7 +23,8 @@ module END-PACK-PASS-ROUGH-SPEC
             <caller> CALLER_ID </caller>
             <callData> #abiCallData("pack", #uint256(ABI_wad)) +Bytes CD => ?_ </callData>
             <callValue> VCallValue </callValue>
-            <wordStack> .WordStack => ?_ </wordStack>
+            <wordStack> .WordStack => ?WS </wordStack>
+            <wordStackSize> 0 => #sizeWordStack(?WS) </wordStackSize>
             <localMem> .Bytes => ?_ </localMem>
             <pc> 0 => ?_ </pc>
             <gas> #gas(VGas) => ?_ </gas>
@@ -173,6 +174,7 @@ module END-PACK-PASS-ROUGH-SPEC
             <callData> _ => ?_ </callData>
             <callValue> VCallValue </callValue>
             <wordStack> ABI_y : ABI_x : JMPTO : WS  =>  JMPTO : ABI_x *Int ABI_y : WS </wordStack>
+            <wordStackSize> WSSize => WSSize -Int 1 </wordStackSize>
             <localMem> _ </localMem>
             <pc> 14690 => 14733 </pc>
             <gas> #gas(VGas) => #if ABI_y ==Int 0
@@ -251,9 +253,10 @@ module END-PACK-PASS-ROUGH-SPEC
 
        andBool (#rangeUInt(256, ABI_x)
        andBool (#rangeUInt(256, ABI_y)
-       andBool ((#sizeWordStack(WS) <=Int 1000)
+       andBool ((3 <=Int WSSize)
+       andBool ((WSSize <=Int 1000)
        andBool (#rangeUInt(256, VMemoryUsed)
-       andBool ((#rangeUInt(256, ABI_x *Int ABI_y)))))))
+       andBool ((#rangeUInt(256, ABI_x *Int ABI_y))))))))
 
     [trusted]
 
@@ -278,6 +281,7 @@ module END-PACK-PASS-ROUGH-SPEC
             <callData> _ => ?_ </callData>
             <callValue> VCallValue </callValue>
             <wordStack> ABI_y : ABI_x : JMPTO : WS  =>  JMPTO : ABI_x +Int ABI_y : WS </wordStack>
+            <wordStackSize> WSSize => WSSize -Int 1 </wordStackSize>
             <localMem> _ </localMem>
             <pc> 14775 => 14800 </pc>
             <gas> #gas(VGas) => #gas ( ( VGas +Int -54 ) ) </gas>
@@ -353,9 +357,10 @@ module END-PACK-PASS-ROUGH-SPEC
 
        andBool (#rangeUInt(256, ABI_x)
        andBool (#rangeUInt(256, ABI_y)
-       andBool ((#sizeWordStack(WS) <=Int 100)
+       andBool ((3 <=Int WSSize)
+       andBool ((WSSize <=Int 100)
        andBool (#rangeUInt(256, VMemoryUsed)
-       andBool ((#rangeUInt(256, ABI_x +Int ABI_y)))))))
+       andBool ((#rangeUInt(256, ABI_x +Int ABI_y))))))))
 
     [trusted]
 
@@ -379,7 +384,8 @@ module END-PACK-PASS-ROUGH-SPEC
             <caller> CALLER_ID </caller>
             <callData> #abiCallData("move", #address(ABI_src), #address(ABI_dst), #uint256(ABI_rad)) +Bytes CD => ?_ </callData>
             <callValue> VCallValue </callValue>
-            <wordStack> .WordStack => ?_ </wordStack>
+            <wordStack> .WordStack => ?WS </wordStack>
+            <wordStackSize> 0 => #sizeWordStack(?WS) </wordStackSize>
             <localMem> .Bytes => ?_ </localMem>
             <pc> 0 => ?_ </pc>
             <gas> #gas(VGas) => #gas ( ( ( ( VGas -Int Csstore( ISTANBUL , ( Dai_src -Int ABI_rad ) , Dai_src , Junk_1 ) ) -Int Csstore( ISTANBUL , ( Dai_dst +Int ABI_rad ) , Dai_dst , Junk_2 ) ) +Int -7943 ) ) </gas>

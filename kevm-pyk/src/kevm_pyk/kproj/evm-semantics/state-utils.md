@@ -39,6 +39,7 @@ module STATE-UTILS
          <callData>         _ => .Bytes     </callData>
          <callValue>        _ => 0          </callValue>
          <wordStack>        _ => .WordStack </wordStack>
+         <wordStackSize>    _ => 0          </wordStackSize>
          <localMem>         _ => .Bytes     </localMem>
          <pc>               _ => 0          </pc>
          <gas>              _ => 0          </gas>

@@ -23,7 +23,8 @@ module DAI-ADDUU-FAIL-ROUGH-SPEC
             <caller> CALLER_ID </caller>
             <callData> _ => ?_ </callData>
             <callValue> VCallValue </callValue>
-            <wordStack> ABI_y : ABI_x : JMPTO : WS  => ?_ </wordStack>
+            <wordStack> ABI_y : ABI_x : JMPTO : WS  => ?WS </wordStack>
+            <wordStackSize> WSSize => #sizeWordStack(?WS) </wordStackSize>
             <localMem> _ </localMem>
             <pc> 7825 => ?_ </pc>
             <gas> #gas(VGas) => ?_ </gas>
@@ -99,8 +100,9 @@ module DAI-ADDUU-FAIL-ROUGH-SPEC
 
        andBool (#rangeUInt(256, ABI_x)
        andBool (#rangeUInt(256, ABI_y)
-       andBool ((#sizeWordStack(WS) <=Int 100)
-       andBool (#rangeUInt(256, VMemoryUsed)))))
+       andBool ((3 <=Int WSSize)
+       andBool ((WSSize <=Int 100)
+       andBool (#rangeUInt(256, VMemoryUsed))))))
 
 
        andBool notBool (

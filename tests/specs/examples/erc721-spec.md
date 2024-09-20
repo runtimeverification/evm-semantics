@@ -91,19 +91,20 @@ claim [lemma.3]:
     claim [name.short.success]:
           <mode>     NORMAL   </mode>
           <schedule> ISTANBUL </schedule>
-          <useGas>  true     </useGas>
+          <useGas>   true     </useGas>
 
-          <callStack> .List                                       </callStack>
+          <callStack> .List                                          </callStack>
           <program>   #binRuntime(S2KERC721)                         </program>
           <jumpDests> #computeValidJumpDests(#binRuntime(S2KERC721)) </jumpDests>
 
-          <id>         ACCTID      => ?_ </id>
-          <localMem>   .Bytes     => ?_ </localMem>
-          <memoryUsed> 0           => ?_ </memoryUsed>
-          <wordStack>  .WordStack  => ?_ </wordStack>
-          <pc>         0           => ?_ </pc>
-          <gas>        #gas(_VGAS) => ?_ </gas>
-          <callValue>  0           => ?_ </callValue>
+          <id>            ACCTID      => ?_ </id>
+          <localMem>      .Bytes      => ?_ </localMem>
+          <memoryUsed>    0           => ?_ </memoryUsed>
+          <wordStack>     .WordStack  => ?WS </wordStack>
+          <wordStackSize> 0           => #sizeWordStack(?WS) </wordStackSize>
+          <pc>            0           => ?_ </pc>
+          <gas>           #gas(_VGAS) => ?_ </gas>
+          <callValue>     0           => ?_ </callValue>
 
           <callData>   S2KERC721.S2Kname()      </callData>
           <k>          #execute => #halt ...    </k>
@@ -128,19 +129,20 @@ claim [lemma.3]:
     claim [name.short.revert]:
           <mode>     NORMAL   </mode>
           <schedule> ISTANBUL </schedule>
-          <useGas>  true     </useGas>
+          <useGas>   true     </useGas>
 
-          <callStack> .List                                       </callStack>
+          <callStack> .List                                          </callStack>
           <program>   #binRuntime(S2KERC721)                         </program>
           <jumpDests> #computeValidJumpDests(#binRuntime(S2KERC721)) </jumpDests>
 
-          <id>         ACCTID      => ?_ </id>
-          <localMem>   .Bytes     => ?_ </localMem>
-          <memoryUsed> 0           => ?_ </memoryUsed>
-          <wordStack>  .WordStack  => ?_ </wordStack>
-          <pc>         0           => ?_ </pc>
-          <gas>        #gas(_VGAS) => ?_ </gas>
-          <callValue>  0           => ?_ </callValue>
+          <id>            ACCTID      => ?_ </id>
+          <localMem>      .Bytes      => ?_ </localMem>
+          <memoryUsed>    0           => ?_ </memoryUsed>
+          <wordStack>     .WordStack  => ?WS </wordStack>
+          <wordStackSize> 0           => #sizeWordStack(?WS) </wordStackSize>
+          <pc>            0           => ?_ </pc>
+          <gas>           #gas(_VGAS) => ?_ </gas>
+          <callValue>     0           => ?_ </callValue>
 
           <callData>   S2KERC721.S2Kname()     </callData>
           <k>          #execute => #halt ...   </k>
