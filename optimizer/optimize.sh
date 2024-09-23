@@ -135,8 +135,8 @@ git commit -m 'optimizations: clear optimizations' || true
 
 # were consistently positive
 doOptimization "PUSH(N)"  0 10 40                                      #  73    65    (53  , 9 )
-doOptimization "DUP(N)"   0 10 40 '#stackNeeded(DUP(N))  <=Int WSSize' #  14    16    (0   , 8 )
-doOptimization "SWAP(N)"  1 10 40 '#stackNeeded(SWAP(N)) <=Int WSSize' #  14    16    (13  , 2 )
+doOptimization "DUP(N)"   0 10 40 '#stackNeeded(DUP(N))  <=Int WSSIZE' #  14    16    (0   , 8 )
+doOptimization "SWAP(N)"  1 10 40 '#stackNeeded(SWAP(N)) <=Int WSSIZE' #  14    16    (13  , 2 )
 doOptimization ADD        2 10 40                                      #  0     0     (18  , 4 )
 doOptimization AND        2 10 40                                      #  0     2     (25  , 4 )
 doOptimization LT         2 10 40                                      #  7     3     (1   , 0 )

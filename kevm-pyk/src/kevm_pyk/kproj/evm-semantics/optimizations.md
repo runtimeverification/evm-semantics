@@ -28,7 +28,7 @@ module EVM-OPTIMIZATIONS
               ( WS => 0 : WS )
             </wordStack>
             <wordStackSize>
-              ( WSSize => WSSize +Int 1 )
+              ( WSSIZE => WSSIZE +Int 1 )
             </wordStackSize>
             <pc>
               ( PCOUNT => ( PCOUNT +Int 1 ) )
@@ -45,8 +45,8 @@ module EVM-OPTIMIZATIONS
       ...
     </kevm>
     requires ( #if USEGAS #then Gbase < SCHED > <=Gas GAVAIL #else true #fi )
-     andBool ( 0 <=Int WSSize )
-     andBool ( WSSize <=Int 1023 )
+     andBool ( 0 <=Int WSSIZE )
+     andBool ( WSSIZE <=Int 1023 )
      [priority(40)]
 
   rule
@@ -71,7 +71,7 @@ module EVM-OPTIMIZATIONS
               ( WS => #asWord( #range(PGM, PCOUNT +Int 1, N) ) : WS )
             </wordStack>
             <wordStackSize>
-              ( WSSize => WSSize +Int 1 )
+              ( WSSIZE => WSSIZE +Int 1 )
             </wordStackSize>
             <pc>
               ( PCOUNT => ( ( PCOUNT +Int N ) +Int 1 ) )
@@ -88,8 +88,8 @@ module EVM-OPTIMIZATIONS
       ...
     </kevm>
     requires ( #if USEGAS #then Gverylow < SCHED > <=Gas GAVAIL #else true #fi )
-     andBool ( 0 <=Int WSSize )
-     andBool ( WSSize <=Int 1023 )
+     andBool ( 0 <=Int WSSIZE )
+     andBool ( WSSIZE <=Int 1023 )
      [priority(40)]
 
   rule
@@ -111,7 +111,7 @@ module EVM-OPTIMIZATIONS
               ( WS => WS [ ( N +Int -1 ) ] : WS )
             </wordStack>
             <wordStackSize>
-              ( WSSize => WSSize +Int 1 )
+              ( WSSIZE => WSSIZE +Int 1 )
             </wordStackSize>
             <pc>
               ( PCOUNT => ( PCOUNT +Int 1 ) )
@@ -127,10 +127,10 @@ module EVM-OPTIMIZATIONS
       </ethereum>
       ...
     </kevm>
-    requires N <=Int WSSize
+    requires N <=Int WSSIZE
      andBool ( #if USEGAS #then Gverylow < SCHED > <=Gas GAVAIL #else true #fi )
-     andBool ( 0 <=Int WSSize )
-     andBool ( WSSize <=Int 1023 )
+     andBool ( 0 <=Int WSSIZE )
+     andBool ( WSSIZE <=Int 1023 )
      [priority(40)]
 
   rule
@@ -152,7 +152,7 @@ module EVM-OPTIMIZATIONS
               ( W0 : WS => WS [ ( N +Int -1 ) ] : ( WS [ ( N +Int -1 ) := W0 ] ) )
             </wordStack>
             <wordStackSize>
-              WSSize
+              WSSIZE
             </wordStackSize>
             <pc>
               ( PCOUNT => ( PCOUNT +Int 1 ) )
@@ -168,10 +168,10 @@ module EVM-OPTIMIZATIONS
       </ethereum>
       ...
     </kevm>
-    requires N +Int 1 <=Int WSSize
+    requires N +Int 1 <=Int WSSIZE
      andBool ( #if USEGAS #then Gverylow < SCHED > <=Gas GAVAIL #else true #fi )
-     andBool ( 0 <=Int WSSize )
-     andBool ( WSSize <=Int 1024 )
+     andBool ( 0 <=Int WSSIZE )
+     andBool ( WSSIZE <=Int 1024 )
      [priority(40)]
 
   rule
@@ -193,7 +193,7 @@ module EVM-OPTIMIZATIONS
               ( W0 : W1 : WS => chop( ( W0 +Int W1 ) ) : WS )
             </wordStack>
             <wordStackSize>
-              WSSize => WSSize -Int 1
+              WSSIZE => WSSIZE -Int 1
             </wordStackSize>
             <pc>
               ( PCOUNT => ( PCOUNT +Int 1 ) )
@@ -210,8 +210,8 @@ module EVM-OPTIMIZATIONS
       ...
     </kevm>
     requires ( #if USEGAS #then Gverylow < SCHED > <=Gas GAVAIL #else true #fi )
-     andBool ( 2 <=Int WSSize )
-     andBool ( WSSize <=Int 1023 )
+     andBool ( 2 <=Int WSSIZE )
+     andBool ( WSSIZE <=Int 1023 )
      [priority(40)]
 
   rule
@@ -233,7 +233,7 @@ module EVM-OPTIMIZATIONS
               ( W0 : W1 : WS => chop( ( W0 -Int W1 ) ) : WS )
             </wordStack>
             <wordStackSize>
-              WSSize => WSSize -Int 1
+              WSSIZE => WSSIZE -Int 1
             </wordStackSize>
             <pc>
               ( PCOUNT => ( PCOUNT +Int 1 ) )
@@ -250,8 +250,8 @@ module EVM-OPTIMIZATIONS
       ...
     </kevm>
     requires ( #if USEGAS #then Gverylow < SCHED > <=Gas GAVAIL #else true #fi )
-     andBool ( 2 <=Int WSSize )
-     andBool ( WSSize <=Int 1023 )
+     andBool ( 2 <=Int WSSIZE )
+     andBool ( WSSIZE <=Int 1023 )
      [priority(40)]
 
   rule
@@ -273,7 +273,7 @@ module EVM-OPTIMIZATIONS
               ( W0 : W1 : WS => W0 &Int W1 : WS )
             </wordStack>
             <wordStackSize>
-              WSSize => WSSize -Int 1
+              WSSIZE => WSSIZE -Int 1
             </wordStackSize>
             <pc>
               ( PCOUNT => ( PCOUNT +Int 1 ) )
@@ -290,8 +290,8 @@ module EVM-OPTIMIZATIONS
       ...
     </kevm>
     requires ( #if USEGAS #then Gverylow < SCHED > <=Gas GAVAIL #else true #fi )
-     andBool ( 2 <=Int WSSize )
-     andBool ( WSSize <=Int 1023 )
+     andBool ( 2 <=Int WSSIZE )
+     andBool ( WSSIZE <=Int 1023 )
      [priority(40)]
 
   rule
@@ -313,7 +313,7 @@ module EVM-OPTIMIZATIONS
               ( W0 : W1 : WS => bool2Word( W0 <Int W1 ) : WS )
             </wordStack>
             <wordStackSize>
-              WSSize => WSSize -Int 1
+              WSSIZE => WSSIZE -Int 1
             </wordStackSize>
             <pc>
               ( PCOUNT => ( PCOUNT +Int 1 ) )
@@ -330,8 +330,8 @@ module EVM-OPTIMIZATIONS
       ...
     </kevm>
     requires ( #if USEGAS #then Gverylow < SCHED > <=Gas GAVAIL #else true #fi )
-     andBool ( 2 <=Int WSSize )
-     andBool ( WSSize <=Int 1023 )
+     andBool ( 2 <=Int WSSIZE )
+     andBool ( WSSIZE <=Int 1023 )
      [priority(40)]
 
   rule
@@ -353,7 +353,7 @@ module EVM-OPTIMIZATIONS
               ( W0 : W1 : WS => bool2Word( W1 <Int W0 ) : WS )
             </wordStack>
             <wordStackSize>
-              WSSize => WSSize -Int 1
+              WSSIZE => WSSIZE -Int 1
             </wordStackSize>
             <pc>
               ( PCOUNT => ( PCOUNT +Int 1 ) )
@@ -370,8 +370,8 @@ module EVM-OPTIMIZATIONS
       ...
     </kevm>
     requires ( #if USEGAS #then Gverylow < SCHED > <=Gas GAVAIL #else true #fi )
-     andBool ( 2 <=Int WSSize )
-     andBool ( WSSize <=Int 1023 )
+     andBool ( 2 <=Int WSSIZE )
+     andBool ( WSSIZE <=Int 1023 )
      [priority(40)]
 
 

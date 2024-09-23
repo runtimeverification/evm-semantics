@@ -331,25 +331,25 @@ The `#next [_]` operator initiates execution by:
          ...
          </k>
          <wordStack> WS </wordStack>
-         <wordStackSize> WSSize </wordStackSize>
+         <wordStackSize> WSSIZE </wordStackSize>
          <static> STATIC:Bool </static>
-      requires notBool ( #stackUnderflow(WSSize, OP) orBool #stackOverflow(WSSize, OP) )
+      requires notBool ( #stackUnderflow(WSSIZE, OP) orBool #stackOverflow(WSSIZE, OP) )
        andBool notBool ( STATIC andBool #changesState(OP, WS) )
 
     rule <k> #next [ OP ] => #end EVMC_STACK_UNDERFLOW ... </k>
-         <wordStackSize> WSSize </wordStackSize>
-      requires #stackUnderflow(WSSize, OP)
+         <wordStackSize> WSSIZE </wordStackSize>
+      requires #stackUnderflow(WSSIZE, OP)
 
     rule <k> #next [ OP ] => #end EVMC_STACK_OVERFLOW ... </k>
-         <wordStackSize> WSSize </wordStackSize>
-      requires #stackOverflow(WSSize, OP)
+         <wordStackSize> WSSIZE </wordStackSize>
+      requires #stackOverflow(WSSIZE, OP)
 
     rule <k> #next [ OP ] => #end EVMC_STATIC_MODE_VIOLATION ... </k>
          <wordStack> WS </wordStack>
-         <wordStackSize> WSSize </wordStackSize>
+         <wordStackSize> WSSIZE </wordStackSize>
          <static> STATIC:Bool </static>
       requires STATIC andBool #changesState(OP, WS)
-       andBool notBool ( #stackUnderflow(WSSize, OP) orBool #stackOverflow(WSSize, OP) )
+       andBool notBool ( #stackUnderflow(WSSIZE, OP) orBool #stackOverflow(WSSIZE, OP) )
 ```
 
 ### Exceptional Checks
@@ -362,8 +362,8 @@ The `#next [_]` operator initiates execution by:
     syntax Bool ::= #stackUnderflow ( Int , OpCode ) [symbol(#stackUnderflow), macro]
                   | #stackOverflow  ( Int , OpCode ) [symbol(#stackOverflow), macro]
  // ---------------------------------------------------------------------------------------
-    rule #stackUnderflow(WSSize, OP:OpCode) => WSSize <Int #stackNeeded(OP)
-    rule #stackOverflow (WSSize, OP) => WSSize +Int #stackDelta(OP) >Int 1024
+    rule #stackUnderflow(WSSIZE, OP:OpCode) => WSSIZE <Int #stackNeeded(OP)
+    rule #stackOverflow (WSSIZE, OP) => WSSIZE +Int #stackDelta(OP) >Int 1024
 
     syntax Int ::= #stackNeeded ( OpCode ) [symbol(#stackNeeded), function]
  // -----------------------------------------------------------------------
@@ -452,10 +452,10 @@ Here we load the correct number of arguments from the `wordStack` based on the s
                         | TernStackOp Int Int Int
                         | QuadStackOp Int Int Int Int
  // -------------------------------------------------
-    rule <k> #exec [ UOP:UnStackOp   ] => #gas [ UOP , UOP W0          ] ~> UOP W0          ... </k> <wordStack> W0 : WS                => WS </wordStack> <wordStackSize> WSSize => WSSize -Int 1 </wordStackSize>
-    rule <k> #exec [ BOP:BinStackOp  ] => #gas [ BOP , BOP W0 W1       ] ~> BOP W0 W1       ... </k> <wordStack> W0 : W1 : WS           => WS </wordStack> <wordStackSize> WSSize => WSSize -Int 2 </wordStackSize>
-    rule <k> #exec [ TOP:TernStackOp ] => #gas [ TOP , TOP W0 W1 W2    ] ~> TOP W0 W1 W2    ... </k> <wordStack> W0 : W1 : W2 : WS      => WS </wordStack> <wordStackSize> WSSize => WSSize -Int 3 </wordStackSize>
-    rule <k> #exec [ QOP:QuadStackOp ] => #gas [ QOP , QOP W0 W1 W2 W3 ] ~> QOP W0 W1 W2 W3 ... </k> <wordStack> W0 : W1 : W2 : W3 : WS => WS </wordStack> <wordStackSize> WSSize => WSSize -Int 4 </wordStackSize>
+    rule <k> #exec [ UOP:UnStackOp   ] => #gas [ UOP , UOP W0          ] ~> UOP W0          ... </k> <wordStack> W0 : WS                => WS </wordStack> <wordStackSize> WSSIZE => WSSIZE -Int 1 </wordStackSize>
+    rule <k> #exec [ BOP:BinStackOp  ] => #gas [ BOP , BOP W0 W1       ] ~> BOP W0 W1       ... </k> <wordStack> W0 : W1 : WS           => WS </wordStack> <wordStackSize> WSSIZE => WSSIZE -Int 2 </wordStackSize>
+    rule <k> #exec [ TOP:TernStackOp ] => #gas [ TOP , TOP W0 W1 W2    ] ~> TOP W0 W1 W2    ... </k> <wordStack> W0 : W1 : W2 : WS      => WS </wordStack> <wordStackSize> WSSIZE => WSSIZE -Int 3 </wordStackSize>
+    rule <k> #exec [ QOP:QuadStackOp ] => #gas [ QOP , QOP W0 W1 W2 W3 ] ~> QOP W0 W1 W2 W3 ... </k> <wordStack> W0 : W1 : W2 : W3 : WS => WS </wordStack> <wordStackSize> WSSIZE => WSSIZE -Int 4 </wordStackSize>
 ```
 
 `StackOp` is used for opcodes which require a large portion of the stack.
@@ -463,7 +463,7 @@ Here we load the correct number of arguments from the `wordStack` based on the s
 ```k
     syntax InternalOp ::= StackOp WordStack Int
  // -------------------------------------------
-    rule <k> #exec [ SO:StackOp ] => #gas [ SO , SO WS WSSize ] ~> SO WS WSSize ... </k> <wordStack> WS </wordStack> <wordStackSize> WSSize </wordStackSize>
+    rule <k> #exec [ SO:StackOp ] => #gas [ SO , SO WS WSSIZE ] ~> SO WS WSSIZE ... </k> <wordStack> WS </wordStack> <wordStackSize> WSSIZE </wordStackSize>
 ```
 
 The `CallOp` opcodes all interpret their second argument as an address.
@@ -472,8 +472,8 @@ The `CallOp` opcodes all interpret their second argument as an address.
     syntax InternalOp ::= CallSixOp Int Int     Int Int Int Int
                         | CallOp    Int Int Int Int Int Int Int
  // -----------------------------------------------------------
-    rule <k> #exec [ CSO:CallSixOp ] => #gas [ CSO , CSO W0 W1    W2 W3 W4 W5 ] ~> CSO W0 W1    W2 W3 W4 W5 ... </k> <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : WS      => WS </wordStack> <wordStackSize> WSSize => WSSize -Int 6 </wordStackSize>
-    rule <k> #exec [ CO:CallOp     ] => #gas [ CO  , CO  W0 W1 W2 W3 W4 W5 W6 ] ~> CO  W0 W1 W2 W3 W4 W5 W6 ... </k> <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : W6 : WS => WS </wordStack> <wordStackSize> WSSize => WSSize -Int 7 </wordStackSize>
+    rule <k> #exec [ CSO:CallSixOp ] => #gas [ CSO , CSO W0 W1    W2 W3 W4 W5 ] ~> CSO W0 W1    W2 W3 W4 W5 ... </k> <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : WS      => WS </wordStack> <wordStackSize> WSSIZE => WSSIZE -Int 6 </wordStackSize>
+    rule <k> #exec [ CO:CallOp     ] => #gas [ CO  , CO  W0 W1 W2 W3 W4 W5 W6 ] ~> CO  W0 W1 W2 W3 W4 W5 W6 ... </k> <wordStack> W0 : W1 : W2 : W3 : W4 : W5 : W6 : WS => WS </wordStack> <wordStackSize> WSSIZE => WSSIZE -Int 7 </wordStackSize>
 ```
 
 ### Address Conversion
@@ -773,8 +773,8 @@ These are just used by the other operators for shuffling local execution state a
 ```k
     syntax InternalOp ::= "#push" | "#setStack" WordStack Int
  // ---------------------------------------------------------
-    rule <k> W0:Int ~> #push     => .K ... </k> <wordStack> WS => W0 : WS </wordStack> <wordStackSize> WSSize => WSSize +Int 1 </wordStackSize>
-    rule <k> #setStack WS WSSize => .K ... </k> <wordStack> _  => WS      </wordStack> <wordStackSize>      _ => WSSize        </wordStackSize>
+    rule <k> W0:Int ~> #push     => .K ... </k> <wordStack> WS => W0 : WS </wordStack> <wordStackSize> WSSIZE => WSSIZE +Int 1 </wordStackSize>
+    rule <k> #setStack WS WSSIZE => .K ... </k> <wordStack> _  => WS      </wordStack> <wordStackSize>      _ => WSSIZE        </wordStackSize>
 ```
 
 -   `#newAccount_` allows declaring a new empty account with the given address (and assumes the rounding to 160 bits has already occurred).
@@ -896,8 +896,8 @@ Some operators don't calculate anything, they just push the stack around a bit.
     syntax StackOp ::= DUP  ( Int ) [symbol(DUP)]
                      | SWAP ( Int ) [symbol(SWAP)]
  // ----------------------------------------------
-    rule <k> DUP(N)  WS:WordStack WSSize => #setStack ((WS [ N -Int 1 ]) : WS)                     (WSSize +Int 1) ... </k>
-    rule <k> SWAP(N) (W0 : WS)    WSSize => #setStack ((WS [ N -Int 1 ]) : (WS [ N -Int 1 := W0 ])) WSSize         ... </k>
+    rule <k> DUP(N)  WS:WordStack WSSIZE => #setStack ((WS [ N -Int 1 ]) : WS)                     (WSSIZE +Int 1) ... </k>
+    rule <k> SWAP(N) (W0 : WS)    WSSIZE => #setStack ((WS [ N -Int 1 ]) : (WS [ N -Int 1 := W0 ])) WSSIZE         ... </k>
 
     syntax PushOp ::= "PUSHZERO"
                     | PUSH ( Int ) [symbol(PUSH)]
@@ -1171,10 +1171,10 @@ These operators query about the current return data buffer.
     rule <k> LOG(N) MEMSTART MEMWIDTH => .K ... </k>
          <id> ACCT </id>
          <wordStack> WS => #drop(N, WS) </wordStack>
-         <wordStackSize> WSSize => WSSize -Int N </wordStackSize>
+         <wordStackSize> WSSIZE => WSSIZE -Int N </wordStackSize>
          <localMem> LM </localMem>
          <log> L => L ListItem({ ACCT | WordStack2List(#take(N, WS)) | #range(LM, MEMSTART, MEMWIDTH) }) </log>
-      requires WSSize >=Int N
+      requires WSSIZE >=Int N
 ```
 
 Ethereum Network OpCodes

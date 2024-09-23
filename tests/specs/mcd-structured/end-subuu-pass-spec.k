@@ -24,7 +24,7 @@ module END-SUBUU-PASS-SPEC
             <callData> _ => ?_ </callData>
             <callValue> VCallValue </callValue>
             <wordStack> ABI_y : ABI_x : JMPTO:Int : WS  => ABI_x -Int ABI_y : WS </wordStack>
-            <wordStackSize> WSSize => WSSize -Int 2 </wordStackSize>
+            <wordStackSize> WSSIZE => WSSIZE -Int 2 </wordStackSize>
             <localMem> _ </localMem>
             <pc> 14664 => 14689 </pc>
             <gas> #gas(VGas) => #gas ( ( VGas +Int -62 ) ) </gas> // -54
@@ -99,8 +99,8 @@ module END-SUBUU-PASS-SPEC
 
        andBool (#rangeUInt(256, ABI_x)
        andBool (#rangeUInt(256, ABI_y)
-       andBool ((3 <=Int WSSize)
-       andBool ((WSSize <=Int 100)
+       andBool ((3 <=Int WSSIZE)
+       andBool ((WSSIZE <=Int 100)
        andBool (#rangeUInt(256, VMemoryUsed)
        andBool ((#rangeUInt(256, ABI_x -Int ABI_y))))))))
 

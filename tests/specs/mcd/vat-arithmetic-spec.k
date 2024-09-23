@@ -23,7 +23,7 @@ module VAT-ARITHMETIC-SPEC
             <callData> _ => ?_ </callData>
             <callValue> VCallValue </callValue>
             <wordStack> ABI_y : ABI_x : JMPTO : WS  =>  ABI_x +Int ABI_y : WS </wordStack>
-            <wordStackSize> WSSize => WSSize -Int 2 </wordStackSize>
+            <wordStackSize> WSSIZE => WSSIZE -Int 2 </wordStackSize>
             <localMem> _ </localMem>
             <pc> 13086 => 13111 </pc>
             <gas> #gas(VGas) => #gas ( ( VGas +Int -62 ) ) </gas>
@@ -94,8 +94,8 @@ module VAT-ARITHMETIC-SPEC
        andBool #rangeUInt(256, VChainId)
        andBool (#rangeUInt(256, ABI_x)
        andBool (#rangeUInt(256, ABI_y)
-       andBool ((3 <=Int WSSize)
-       andBool ((WSSize <=Int 100)
+       andBool ((3 <=Int WSSIZE)
+       andBool ((WSSIZE <=Int 100)
        andBool (#rangeUInt(256, VMemoryUsed)
        andBool ((#rangeUInt(256, ABI_x +Int ABI_y))))))))
 
@@ -119,7 +119,7 @@ module VAT-ARITHMETIC-SPEC
             <callData> _ => ?_ </callData>
             <callValue> VCallValue </callValue>
             <wordStack> chop(ABI_y) : ABI_x : JMPTO : WS  => ABI_x +Int ABI_y : WS </wordStack>
-            <wordStackSize> WSSize => WSSize -Int 2 </wordStackSize>
+            <wordStackSize> WSSIZE => WSSIZE -Int 2 </wordStackSize>
             <localMem> _ </localMem>
             <pc> 13112 => 13174 </pc>
             <gas> #gas(VGas) => #if ( ABI_y <Int 0 andBool ( minSInt256 <=Int ABI_y andBool ( ABI_y <=Int maxSInt256 andBool 0 <=Int ( ABI_x +Int ABI_y ) ) ) )
@@ -196,8 +196,8 @@ module VAT-ARITHMETIC-SPEC
        andBool #rangeUInt(256, VChainId)
        andBool (#rangeUInt(256, ABI_x)
        andBool (#rangeSInt(256, ABI_y)
-       andBool ((3 <=Int WSSize)
-       andBool ((WSSize <=Int 1015)
+       andBool ((3 <=Int WSSIZE)
+       andBool ((WSSIZE <=Int 1015)
        andBool (#rangeUInt(256, VMemoryUsed)
        andBool ((#rangeUInt(256, ABI_x +Int ABI_y))))))))
 
@@ -221,7 +221,7 @@ module VAT-ARITHMETIC-SPEC
             <callData> _ => ?_ </callData>
             <callValue> VCallValue </callValue>
             <wordStack> ABI_y : ABI_x : JMPTO : WS  => ABI_x -Int ABI_y : WS </wordStack>
-            <wordStackSize> WSSize => WSSize -Int 2 </wordStackSize>
+            <wordStackSize> WSSIZE => WSSIZE -Int 2 </wordStackSize>
             <localMem> _ </localMem>
             <pc> 13060 => 13085 </pc>
             <gas> #gas(VGas) => #gas ( ( VGas +Int -62 ) ) </gas>
@@ -292,8 +292,8 @@ module VAT-ARITHMETIC-SPEC
        andBool #rangeUInt(256, VChainId)
        andBool (#rangeUInt(256, ABI_x)
        andBool (#rangeUInt(256, ABI_y)
-       andBool ((3 <=Int WSSize)
-       andBool ((WSSize <=Int 100)
+       andBool ((3 <=Int WSSIZE)
+       andBool ((WSSIZE <=Int 100)
        andBool (#rangeUInt(256, VMemoryUsed)
        andBool ((#rangeUInt(256, ABI_x -Int ABI_y))))))))
 
@@ -317,7 +317,7 @@ module VAT-ARITHMETIC-SPEC
             <callData> _ => ?_ </callData>
             <callValue> VCallValue </callValue>
             <wordStack> chop(ABI_y) : ABI_x : JMPTO : WS  =>  ABI_x -Int ABI_y : WS </wordStack>
-            <wordStackSize> WSSize => WSSize -Int 2 </wordStackSize>
+            <wordStackSize> WSSIZE => WSSIZE -Int 2 </wordStackSize>
             <localMem> _ </localMem>
             <pc> 13304 => 13366 </pc>
             <gas> #gas(VGas) => #if ( ABI_y =/=Int 0 andBool 0 <=Int ABI_y )
@@ -394,8 +394,8 @@ module VAT-ARITHMETIC-SPEC
        andBool #rangeUInt(256, VChainId)
        andBool (#rangeUInt(256, ABI_x)
        andBool (#rangeSInt(256, ABI_y)
-       andBool ((3 <=Int WSSize)
-       andBool ((WSSize <=Int 1015)
+       andBool ((3 <=Int WSSIZE)
+       andBool ((WSSIZE <=Int 1015)
        andBool (#rangeUInt(256, VMemoryUsed)
        andBool ((#rangeUInt(256, ABI_x -Int ABI_y))))))))
 
@@ -419,7 +419,7 @@ module VAT-ARITHMETIC-SPEC
             <callData> _ => ?_ </callData>
             <callValue> VCallValue </callValue>
             <wordStack> ABI_y : ABI_x : JMPTO : WS  =>  ABI_x *Int ABI_y : WS </wordStack>
-            <wordStackSize> WSSize => WSSize -Int 2 </wordStackSize>
+            <wordStackSize> WSSIZE => WSSIZE -Int 2 </wordStackSize>
             <localMem> _ </localMem>
             <pc> 13234 => 13277 </pc>
             <gas> #gas(VGas) => #if ABI_y ==Int 0
@@ -493,8 +493,8 @@ module VAT-ARITHMETIC-SPEC
        andBool #rangeUInt(256, VChainId)
        andBool (#rangeUInt(256, ABI_x)
        andBool (#rangeUInt(256, ABI_y)
-       andBool ((3 <=Int WSSize)
-       andBool ((WSSize <=Int 1000)
+       andBool ((3 <=Int WSSIZE)
+       andBool ((WSSIZE <=Int 1000)
        andBool (#rangeUInt(256, VMemoryUsed)
        andBool ((#rangeUInt(256, ABI_x *Int ABI_y))))))))
 
@@ -518,7 +518,7 @@ module VAT-ARITHMETIC-SPEC
             <callData> _ => ?_ </callData>
             <callValue> VCallValue </callValue>
             <wordStack> chop(ABI_y) : ABI_x : JMPTO : WS  => chop(ABI_x *Int ABI_y) : WS </wordStack>
-            <wordStackSize> WSSize => WSSize -Int 2 </wordStackSize>
+            <wordStackSize> WSSIZE => WSSIZE -Int 2 </wordStackSize>
             <localMem> _ </localMem>
             <pc> 13175 => 13233 </pc>
             <gas> #gas(VGas) => #if ABI_y ==Int 0
@@ -592,8 +592,8 @@ module VAT-ARITHMETIC-SPEC
        andBool #rangeUInt(256, VChainId)
        andBool (#rangeUInt(256, ABI_x)
        andBool (#rangeSInt(256, ABI_y)
-       andBool ((3 <=Int WSSize)
-       andBool ((WSSize <=Int 1000)
+       andBool ((3 <=Int WSSIZE)
+       andBool ((WSSIZE <=Int 1000)
        andBool (#rangeUInt(256, VMemoryUsed)
        andBool ((#rangeSInt(256, ABI_x))
        andBool ((#rangeSInt(256, ABI_x *Int ABI_y)))))))))

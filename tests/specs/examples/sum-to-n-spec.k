@@ -39,12 +39,12 @@ module SUM-TO-N-SPEC
           <jumpDests> #computeValidJumpDests(sumToN) </jumpDests>
           <pc>        0  => 21                                    </pc>
           <wordStack> N : WS => 0 : N *Int (N +Int 1) /Int 2 : WS </wordStack>
-          <wordStackSize> WSSize => WSSize +Int 1                 </wordStackSize>
+          <wordStackSize> WSSIZE => WSSIZE +Int 1                 </wordStackSize>
           <gas>       G  => G -Int (52 *Int N +Int 27)            </gas>
       requires 0 <=Int N
        andBool N *Int (N +Int 1) /Int 2 <Int pow256
-       andBool 1 <=Int WSSize
-       andBool WSSize <Int 1022
+       andBool 1 <=Int WSSIZE
+       andBool WSSIZE <Int 1022
        andBool G >=Int 52 *Int N +Int 27
       [depends(loop)]
 
@@ -63,12 +63,12 @@ module SUM-TO-N-SPEC
           <gas> G => G -Int (52 *Int I +Int 21) </gas>
           <wordStack> I : S                               : WS
                    => 0 : S +Int I *Int (I +Int 1) /Int 2 : WS </wordStack>
-          <wordStackSize> WSSize </wordStackSize>
+          <wordStackSize> WSSIZE </wordStackSize>
       requires I >=Int 0
        andBool S >=Int 0
        andBool S +Int I *Int (I +Int 1) /Int 2 <Int pow256
-       andBool 2 <=Int WSSize
-       andBool WSSize <Int 1023
+       andBool 2 <=Int WSSIZE
+       andBool WSSIZE <Int 1023
        andBool G >=Int 52 *Int I +Int 21
       [circularity]
 

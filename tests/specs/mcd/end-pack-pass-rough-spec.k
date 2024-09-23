@@ -185,7 +185,7 @@ module END-PACK-PASS-ROUGH-SPEC
             <callData> _ => ?_ </callData>
             <callValue> VCallValue </callValue>
             <wordStack> ABI_y : ABI_x : JMPTO : WS  =>  JMPTO : ABI_x *Int ABI_y : WS </wordStack>
-            <wordStackSize> WSSize => WSSize -Int 1 </wordStackSize>
+            <wordStackSize> WSSIZE => WSSIZE -Int 1 </wordStackSize>
             <localMem> _ </localMem>
             <pc> 14690 => 14733 </pc>
             <gas> #gas(VGas) => #if ABI_y ==Int 0
@@ -264,8 +264,8 @@ module END-PACK-PASS-ROUGH-SPEC
 
        andBool (#rangeUInt(256, ABI_x)
        andBool (#rangeUInt(256, ABI_y)
-       andBool ((3 <=Int WSSize)
-       andBool ((WSSize <=Int 1000)
+       andBool ((3 <=Int WSSIZE)
+       andBool ((WSSIZE <=Int 1000)
        andBool (#rangeUInt(256, VMemoryUsed)
        andBool ((#rangeUInt(256, ABI_x *Int ABI_y))))))))
 
@@ -294,7 +294,7 @@ module END-PACK-PASS-ROUGH-SPEC
             <callData> _ => ?_ </callData>
             <callValue> VCallValue </callValue>
             <wordStack> ABI_y : ABI_x : JMPTO : WS  =>  JMPTO : ABI_x +Int ABI_y : WS </wordStack>
-            <wordStackSize> WSSize => WSSize -Int 1 </wordStackSize>
+            <wordStackSize> WSSIZE => WSSIZE -Int 1 </wordStackSize>
             <localMem> _ </localMem>
             <pc> 14775 => 14800 </pc>
             <gas> #gas(VGas) => #gas ( ( VGas +Int -54 ) ) </gas>
@@ -370,8 +370,8 @@ module END-PACK-PASS-ROUGH-SPEC
 
        andBool (#rangeUInt(256, ABI_x)
        andBool (#rangeUInt(256, ABI_y)
-       andBool ((3 <=Int WSSize)
-       andBool ((WSSize <=Int 100)
+       andBool ((3 <=Int WSSIZE)
+       andBool ((WSSIZE <=Int 100)
        andBool (#rangeUInt(256, VMemoryUsed)
        andBool ((#rangeUInt(256, ABI_x +Int ABI_y))))))))
 
