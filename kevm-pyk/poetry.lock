@@ -907,13 +907,13 @@ files = [
 
 [[package]]
 name = "pyreadline3"
-version = "3.5.3"
+version = "3.5.4"
 description = "A python implementation of GNU readline."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "pyreadline3-3.5.3-py3-none-any.whl", hash = "sha256:ddede153a92e5aad9c1fe63d692efd6a3e478f686adcd4938a051ffb63ec4f52"},
-    {file = "pyreadline3-3.5.3.tar.gz", hash = "sha256:9234684ca75a00a702fda42b17cc26ca665bc9d7c2da06af450468253099ff61"},
+    {file = "pyreadline3-3.5.4-py3-none-any.whl", hash = "sha256:eaf8e6cc3c49bcccf145fc6067ba8643d1df34d604a1ec0eccbf7a18e6d3fae6"},
+    {file = "pyreadline3-3.5.4.tar.gz", hash = "sha256:8d57d53039a1c75adba8e50dd3d992b28143480816187ea5efbd5c78e6c885b7"},
 ]
 
 [package.extras]
