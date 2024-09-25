@@ -20,3 +20,4 @@
 /tests/vm/*.out
 .DS_Store
 .idea/
+.vscode/
