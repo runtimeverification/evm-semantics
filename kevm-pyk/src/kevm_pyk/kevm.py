@@ -225,6 +225,29 @@ class KEVMSemantics(KCFGSemantics):
         self._cached_subst = load_pattern.match(cterm.cell('K_CELL'))
         return self._cached_subst is not None
 
+    def is_mergeable(self, ct1: CTerm, ct2: CTerm) -> bool:
+        """Given two CTerms of Edges' targets, check if they are mergeable.
+
+        Two CTerms are mergeable if their `STATUSCODE_CELL` and `PROGRAM_CELL` are the same.
+        If mergeable, the two corresponding Edges are merged into one.
+
+        :param ct1: CTerm of one Edge's target.
+        :param ct2: CTerm of another Edge's target.
+        :return: `True` if the two CTerms are mergeable; `False` otherwise.
+        """
+        status_code_1 = ct1.cell('STATUSCODE_CELL')
+        status_code_2 = ct2.cell('STATUSCODE_CELL')
+        program_1 = ct1.cell('PROGRAM_CELL')
+        program_2 = ct2.cell('PROGRAM_CELL')
+        if (
+            type(status_code_1) is KApply
+            and type(status_code_2) is KApply
+            and type(program_1) is KToken
+            and type(program_2) is KToken
+        ):
+            return status_code_1 == status_code_2 and program_1 == program_2
+        raise ValueError(f'Attempted to merge nodes with non-concrete <statusCode> or <program>: {(ct1, ct2)}')
+
 
 class KEVM(KProve, KRun):
     _use_hex: bool
