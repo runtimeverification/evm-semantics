@@ -8,11 +8,11 @@ if TYPE_CHECKING:
     from typing import Final
     from pyk.kast.inner import KInner
 
-from pyk.kast.inner import KApply, KToken, KVariable
 from pyk.cterm.cterm import CTerm
+from pyk.kast.inner import KApply, KToken, KVariable
 from pyk.prelude.utils import token
 
-from kevm_pyk.kevm import KEVM, compute_jumpdests, KEVMSemantics
+from kevm_pyk.kevm import KEVM, KEVMSemantics, compute_jumpdests
 
 TEST_DATA: Final = [
     ('single-ktoken', token(0), KToken('0x0', 'Int')),
@@ -109,56 +109,95 @@ def test_process_jumpdests(test_id: str, input: list[KInner], expected: KInner) 
 
     # Then
     assert result == expected
-    
+
 
 IS_MERGEABLE_DATA: Final = [
-    ('mergeable_total_same', 
-     [
-         CTerm(KApply('<generatedTop>',
-            KApply('<statusCode>', KApply("EVMC_SUCCESS")),
-            KApply('<program>', token(b'\xcc\xff\xff\xfac\x60\xf5')),
-        )),
-        CTerm(KApply('<generatedTop>',
-            KApply('<statusCode>', KApply("EVMC_SUCCESS")),
-            KApply('<program>', token(b'\xcc\xff\xff\xfac\x60\xf5')),
-        ))
-     ], 
-     True, False),
-    ('mergeable_not_care_others',
-     [  
-         CTerm(KApply('<generatedTop>',
-            KApply('<statusCode>', KApply("EVMC_SUCCESS")),
-            KApply('<program>', token(b'\xcc\xff\xff\xfac\x60\xf5')),
-            KApply('<callStack>', token(b'\x00')),
-        )),
-        CTerm(KApply('<generatedTop>',
-            KApply('<statusCode>', KApply("EVMC_SUCCESS")),
-            KApply('<program>', token(b'\xcc\xff\xff\xfac\x60\xf5')),
-            KApply('<callStack>', token(b'\x01')),))
-     ], 
-     True, False),
-    ('not_mergeable',
-     [
-         CTerm(KApply('<generatedTop>',
-            KApply('<statusCode>', KApply("EVMC_SUCCESS")),
-            KApply('<program>', token(b'\xcc\xff\xff\xfac\x60\xf5')),
-        )),
-        CTerm(KApply('<generatedTop>',
-            KApply('<statusCode>', KApply("EVMC_REVERT")),
-            KApply('<program>', token(b'\xcc\xff\xff\xfac\x60\xf5')),
-        ))
-     ], False, True),
-    ('raise_error',
-     [
-         CTerm(KApply('<generatedTop>',
-            KApply('<statusCode>', KToken("EVMC_SUCCESS", 'StatusCode')),
-            KApply('<program>', token(b'\xcc\xff\xff\xfac\x60\xf5')),
-        )),
-        CTerm(KApply('<generatedTop>',
-            KApply('<statusCode>', KToken("EVMC_SUCCESS", 'StatusCode')),
-            KApply('<program>', token(b'\xcc\xff\xff\xfac\x60\xf5')),
-        ))
-     ], False, True),
+    (
+        'mergeable_total_same',
+        [
+            CTerm(
+                KApply(
+                    '<generatedTop>',
+                    KApply('<statusCode>', KApply('EVMC_SUCCESS')),
+                    KApply('<program>', token(b'\xcc\xff\xff\xfac\x60\xf5')),
+                )
+            ),
+            CTerm(
+                KApply(
+                    '<generatedTop>',
+                    KApply('<statusCode>', KApply('EVMC_SUCCESS')),
+                    KApply('<program>', token(b'\xcc\xff\xff\xfac\x60\xf5')),
+                )
+            ),
+        ],
+        True,
+        False,
+    ),
+    (
+        'mergeable_not_care_others',
+        [
+            CTerm(
+                KApply(
+                    '<generatedTop>',
+                    KApply('<statusCode>', KApply('EVMC_SUCCESS')),
+                    KApply('<program>', token(b'\xcc\xff\xff\xfac\x60\xf5')),
+                    KApply('<callStack>', token(b'\x00')),
+                )
+            ),
+            CTerm(
+                KApply(
+                    '<generatedTop>',
+                    KApply('<statusCode>', KApply('EVMC_SUCCESS')),
+                    KApply('<program>', token(b'\xcc\xff\xff\xfac\x60\xf5')),
+                    KApply('<callStack>', token(b'\x01')),
+                )
+            ),
+        ],
+        True,
+        False,
+    ),
+    (
+        'not_mergeable',
+        [
+            CTerm(
+                KApply(
+                    '<generatedTop>',
+                    KApply('<statusCode>', KApply('EVMC_SUCCESS')),
+                    KApply('<program>', token(b'\xcc\xff\xff\xfac\x60\xf5')),
+                )
+            ),
+            CTerm(
+                KApply(
+                    '<generatedTop>',
+                    KApply('<statusCode>', KApply('EVMC_REVERT')),
+                    KApply('<program>', token(b'\xcc\xff\xff\xfac\x60\xf5')),
+                )
+            ),
+        ],
+        False,
+        True,
+    ),
+    (
+        'raise_error',
+        [
+            CTerm(
+                KApply(
+                    '<generatedTop>',
+                    KApply('<statusCode>', KToken('EVMC_SUCCESS', 'StatusCode')),
+                    KApply('<program>', token(b'\xcc\xff\xff\xfac\x60\xf5')),
+                )
+            ),
+            CTerm(
+                KApply(
+                    '<generatedTop>',
+                    KApply('<statusCode>', KToken('EVMC_SUCCESS', 'StatusCode')),
+                    KApply('<program>', token(b'\xcc\xff\xff\xfac\x60\xf5')),
+                )
+            ),
+        ],
+        False,
+        True,
+    ),
 ]
 
 
@@ -167,7 +206,7 @@ IS_MERGEABLE_DATA: Final = [
     IS_MERGEABLE_DATA,
     ids=[test_id for test_id, *_ in IS_MERGEABLE_DATA],
 )
-def test_is_mergeable(test_id: str, input: list[KInner], expected: KInner, raise_error: bool) -> None:
+def test_is_mergeable(test_id: str, input: list[CTerm], expected: KInner, raise_error: bool) -> None:
     # When
     try:
         result = KEVMSemantics().is_mergeable(input[0], input[1])
