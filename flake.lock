@@ -45,17 +45,17 @@
         "xbyak": "xbyak"
       },
       "locked": {
-        "lastModified": 1726502502,
-        "narHash": "sha256-J9IJiXHyCh42z65mEHYj/gnSLxOxbOF0riX8SLlQ3l8=",
+        "lastModified": 1727193689,
+        "narHash": "sha256-86azbaa/R/Euf9bXqLVW3Wiv5prJuE9jX0/xj4wBblg=",
         "owner": "runtimeverification",
         "repo": "blockchain-k-plugin",
-        "rev": "f1f7edb7cb7286906fe42aa37d2106036cef849f",
+        "rev": "9573fe0783b471d44d2bb93919fb521ada123f40",
         "type": "github"
       },
       "original": {
         "owner": "runtimeverification",
         "repo": "blockchain-k-plugin",
-        "rev": "f1f7edb7cb7286906fe42aa37d2106036cef849f",
+        "rev": "9573fe0783b471d44d2bb93919fb521ada123f40",
         "type": "github"
       }
     },
@@ -316,16 +316,16 @@
         ]
       },
       "locked": {
-        "lastModified": 1726170219,
-        "narHash": "sha256-pQG1D9oDG24h7I/ekTI96IGZ7ikWrip0m4o1uDFIBZc=",
+        "lastModified": 1726963552,
+        "narHash": "sha256-01rb87Oc9cDh1MinneK/c96DbdQMVwnym9uYz1gKec4=",
         "owner": "runtimeverification",
         "repo": "k",
-        "rev": "6e23a83e5380f9eae45a73e3956776f2e666da35",
+        "rev": "7e06a35da4f5f757a8373c6cbf83e86f492bc75a",
         "type": "github"
       },
       "original": {
         "owner": "runtimeverification",
-        "ref": "v7.1.142",
+        "ref": "v7.1.149",
         "repo": "k",
         "type": "github"
       }
@@ -401,16 +401,16 @@
         "utils": "utils"
       },
       "locked": {
-        "lastModified": 1726098480,
-        "narHash": "sha256-BOCKGOKzJLlYHSOCd2QOERS/sE038domlBc1h6nvM5s=",
+        "lastModified": 1726776150,
+        "narHash": "sha256-A4OX0ZV4/AS+tztmLG52v/ayMV43WscbF6lLKOaoPrw=",
         "owner": "runtimeverification",
         "repo": "llvm-backend",
-        "rev": "344d1335c0fb8d146b0fa2954b0194afbe11dae6",
+        "rev": "c023bc5eb734c1718243d66613044e895e8fcf7e",
         "type": "github"
       },
       "original": {
         "owner": "runtimeverification",
-        "ref": "v0.1.88",
+        "ref": "v0.1.94",
         "repo": "llvm-backend",
         "type": "github"
       }
