@@ -6,5 +6,7 @@ module VERIFICATION
     imports INT-SIMPLIFICATION
 
     rule #sizeWordStack(WS [ I := _ ]) => #sizeWordStack(WS) requires I <Int #sizeWordStack(WS) [simplification]
-    rule 0 <=Int #sizeWordStack(_)     => true                                                  [simplification]
+    rule 0 <=Int #sizeWordStack(_)     => true                                                  [simplification, smt-lemma]
+    rule #sizeWordStack(_) <Int N      => false              requires N <=Int 0                 [simplification, smt-lemma]
+
 endmodule

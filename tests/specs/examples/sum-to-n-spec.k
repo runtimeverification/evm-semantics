@@ -9,8 +9,6 @@ module VERIFICATION
 
     rule chop(I) => I requires #rangeUInt(256, I) [simplification]
 
-    rule 0 <=Int #sizeWordStack ( _ ) => true [simplification, smt-lemma]
-
     syntax Bytes ::= "sumToN" [macro]
  // -------------------------------------
     rule sumToN
