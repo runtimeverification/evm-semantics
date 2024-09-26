@@ -416,7 +416,7 @@ A cons-list is used for the EVM wordstack.
     rule [ws-size-15]: #sizeWordStack (_ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : .WordStack) => 15
     rule [ws-size-16]: #sizeWordStack (_ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : .WordStack) => 16
 
-    rule #sizeWordStack ( _ : WS ) => 1 +Int #sizeWordStack(WS) [owise]
+    rule #sizeWordStack ( _ : WS ) => 1 +Int #sizeWordStack(WS)
 ```
 
 -   `WordStack2List` converts a term of sort `WordStack` to a term of sort `List`.
