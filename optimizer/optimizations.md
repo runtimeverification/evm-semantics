@@ -22,8 +22,40 @@ module EVM-OPTIMIZATIONS
     imports INT-SIMPLIFICATION
 
 
-// {OPTIMIZATIONS}
-
+    claim
+    [optimized.add]:
+      <kevm>
+        <k>
+          ( #next[ ADD ] => .K ) ...
+        </k>
+        <schedule>
+          SCHED
+        </schedule>
+        <useGas>
+          USEGAS
+        </useGas>
+        <ethereum>
+          <evm>
+            <callState>
+              <wordStack>
+                ( W0 : W1 : WS => chop( ( W0 +Int W1 ) ) : WS )
+              </wordStack>
+              <pc>
+                ( PCOUNT => ( PCOUNT +Int 1 ) )
+              </pc>
+              <gas>
+                ( GAVAIL => #if USEGAS #then ( GAVAIL -Gas Gverylow < SCHED > ) #else GAVAIL #fi )
+              </gas>
+              ...
+            </callState>
+            ...
+          </evm>
+          ...
+        </ethereum>
+        ...
+      </kevm>
+      requires ( #if USEGAS #then Gverylow < SCHED > <=Gas GAVAIL #else true #fi )
+      andBool ( #sizeWordStack( WS ) <=Int 1023 )
 
 endmodule
 ```
