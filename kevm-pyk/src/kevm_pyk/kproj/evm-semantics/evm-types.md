@@ -238,35 +238,99 @@ A cons-list is used for the EVM wordstack.
     rule I : BS => Int2Bytes(1, I, BE) +Bytes BS requires I <Int 256
 ```
 
--   `#take(N , WS)` keeps the first `N` elements of a `WordStack` (passing with zeros as needed).
--   `#drop(N , WS)` removes the first `N` elements of a `WordStack`.
+-   `#take(N , WS)` takes the first `N` elements of a `WordStack`.
+-   `#drop(N , WS)` drops the first `N` elements of a `WordStack`.
 
 ```k
     syntax WordStack ::= #take ( Int , WordStack ) [symbol(takeWordStack), function, total]
  // ---------------------------------------------------------------------------------------
-    rule [#take.base]:      #take(N, _WS)                => .WordStack                      requires notBool N >Int 0
-    rule [#take.zero-pad]:  #take(N, .WordStack)         => 0 : #take(N -Int 1, .WordStack) requires N >Int 0
-    rule [#take.recursive]: #take(N, (W : WS):WordStack) => W : #take(N -Int 1, WS)         requires N >Int 0
+ // Expected use cases are from 0-4
+    rule [ws-take.0]: #take(0,                      _) => .WordStack
+    rule [ws-take.1]: #take(1, W0 :                 _) => W0 : .WordStack
+    rule [ws-take.2]: #take(2, W0 : W1 :            _) => W0 : W1 : .WordStack
+    rule [ws-take.3]: #take(3, W0 : W1 : W2 :       _) => W0 : W1 : W2 : .WordStack
+    rule [ws-take.4]: #take(4, W0 : W1 : W2 : W3 :  _) => W0 : W1 : W2 : W3 : .WordStack
+ // For unexpected cases
+    rule [ws-take.N]: #take(N,  _ :  _ :  _ :  _ : WS) => #take(N -Int 4, WS) requires 4 <Int N
+ // For totality
+    rule [ws-take.O]: #take(_, _) => .WordStack [owise]
 
     syntax WordStack ::= #drop ( Int , WordStack ) [symbol(dropWordStack), function, total]
  // ---------------------------------------------------------------------------------------
-    rule #drop(N, WS:WordStack)       => WS                                  requires notBool N >Int 0
-    rule #drop(N, .WordStack)         => .WordStack                          requires         N >Int 0
-    rule #drop(N, (W : WS):WordStack) => #drop(1, #drop(N -Int 1, (W : WS))) requires         N >Int 1
-    rule #drop(1, (_ : WS):WordStack) => WS
+ // Expected use cases are from 0-4
+    rule [ws-drop.0]: #drop(0,                     WS) => WS
+    rule [ws-drop.1]: #drop(1, _ :                 WS) => WS
+    rule [ws-drop.2]: #drop(2, _ : _ :             WS) => WS
+    rule [ws-drop.3]: #drop(3, _ : _ : _ :         WS) => WS
+    rule [ws-drop.4]: #drop(4, _ : _ : _ : _ :     WS) => WS
+ // For unexpected cases
+    rule [ws-drop.N]: #drop(N, _ : _ : _ : _ : _ : WS) => #drop(N -Int 4, WS) requires 4 <Int N
+ // For totality
+    rule [ws-drop.O]: #drop(_, _) => .WordStack [owise]
 ```
 
 ### Element Access
 
 -   `WS [ N ]` accesses element `N` of `WS`.
--   `WS [ N := W ]` sets element `N` of `WS` to `W` (padding with zeros as needed).
+-   `WS [ N := W ]` sets element `N` of `WS` to `W`.
 
 ```k
     syntax Int ::= WordStack "[" Int "]" [function, total]
  // ------------------------------------------------------
-    rule (W : _):WordStack [ N ] => W                  requires N ==Int 0
-    rule WS:WordStack      [ N ] => #drop(N, WS) [ 0 ] requires N  >Int 0
-    rule  _:WordStack      [ N ] => 0                  requires N  <Int 0
+ // Expected use cases are from 0-31
+    rule [ws-get-00]: (                                                            W : _):WordStack [  0 ] => W
+    rule [ws-get-01]: (                                                        _ : W : _):WordStack [  1 ] => W
+    rule [ws-get-02]: (                                                    _ : _ : W : _):WordStack [  2 ] => W
+    rule [ws-get-03]: (                                                _ : _ : _ : W : _):WordStack [  3 ] => W
+    rule [ws-get-04]: (                                            _ : _ : _ : _ : W : _):WordStack [  4 ] => W
+    rule [ws-get-05]: (                                        _ : _ : _ : _ : _ : W : _):WordStack [  5 ] => W
+    rule [ws-get-06]: (                                    _ : _ : _ : _ : _ : _ : W : _):WordStack [  6 ] => W
+    rule [ws-get-07]: (                                _ : _ : _ : _ : _ : _ : _ : W : _):WordStack [  7 ] => W
+    rule [ws-get-08]: (                            _ : _ : _ : _ : _ : _ : _ : _ : W : _):WordStack [  8 ] => W
+    rule [ws-get-09]: (                        _ : _ : _ : _ : _ : _ : _ : _ : _ : W : _):WordStack [  9 ] => W
+    rule [ws-get-10]: (                    _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : W : _):WordStack [ 10 ] => W
+    rule [ws-get-11]: (                _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : W : _):WordStack [ 11 ] => W
+    rule [ws-get-12]: (            _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : W : _):WordStack [ 12 ] => W
+    rule [ws-get-13]: (        _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : W : _):WordStack [ 13 ] => W
+    rule [ws-get-14]: (    _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : W : _):WordStack [ 14 ] => W
+    rule [ws-get-15]: (_ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : W : _):WordStack [ 15 ] => W
+    rule [ws-get-16]: (_ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ :
+                                                                                   W : _):WordStack [ 16 ] => W
+    rule [ws-get-17]: (_ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ :
+                                                                               _ : W : _):WordStack [ 17 ] => W
+    rule [ws-get-18]: (_ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ :
+                                                                           _ : _ : W : _):WordStack [ 18 ] => W
+    rule [ws-get-19]: (_ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ :
+                                                                       _ : _ : _ : W : _):WordStack [ 19 ] => W
+    rule [ws-get-20]: (_ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ :
+                                                                   _ : _ : _ : _ : W : _):WordStack [ 20 ] => W
+    rule [ws-get-21]: (_ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ :
+                                                               _ : _ : _ : _ : _ : W : _):WordStack [ 21 ] => W
+    rule [ws-get-22]: (_ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ :
+                                                           _ : _ : _ : _ : _ : _ : W : _):WordStack [ 22 ] => W
+    rule [ws-get-23]: (_ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ :
+                                                       _ : _ : _ : _ : _ : _ : _ : W : _):WordStack [ 23 ] => W
+    rule [ws-get-24]: (_ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ :
+                                                   _ : _ : _ : _ : _ : _ : _ : _ : W : _):WordStack [ 24 ] => W
+    rule [ws-get-25]: (_ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ :
+                                               _ : _ : _ : _ : _ : _ : _ : _ : _ : W : _):WordStack [ 25 ] => W
+    rule [ws-get-26]: (_ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ :
+                                           _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : W : _):WordStack [ 26 ] => W
+    rule [ws-get-27]: (_ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ :
+                                       _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : W : _):WordStack [ 27 ] => W
+    rule [ws-get-28]: (_ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ :
+                                   _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : W : _):WordStack [ 28 ] => W
+    rule [ws-get-29]: (_ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ :
+                               _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : W : _):WordStack [ 29 ] => W
+    rule [ws-get-30]: (_ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ :
+                           _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : W : _):WordStack [ 30 ] => W
+    rule [ws-get-31]: (_ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ :
+                       _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : W : _):WordStack [ 31 ] => W
+ // For unexpected cases
+    rule [ws-get-N]:  (_ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ :
+                       _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : WS):WordStack [ N ] => WS [ N -Int 32 ] requires 31 <Int N
+ // For totality
+    rule [ws-get-O]:  _:WordStack [ _ ] => 0 [owise]
 
     syntax WordStack ::= WordStack "[" Int ":=" Int "]" [function, total]
  // ---------------------------------------------------------------------
@@ -280,29 +344,27 @@ A cons-list is used for the EVM wordstack.
 -   `_in_` determines if a `Int` occurs in a `WordStack`.
 
 ```k
-    syntax Int ::= #sizeWordStack ( WordStack )       [symbol(#sizeWordStack), function, total, smtlib(sizeWordStack)]
-                 | #sizeWordStack ( WordStack , Int ) [symbol(sizeWordStackAux), function, total, smtlib(sizeWordStackAux)]
- // -----------------------------------------------------------------------------------------------------------------------
-    rule #sizeWordStack ( WS ) => #sizeWordStack(WS, 0)
-    rule #sizeWordStack ( .WordStack, SIZE ) => SIZE
-    rule #sizeWordStack ( _ : WS, SIZE )     => #sizeWordStack(WS, SIZE +Int 1)
+    syntax Int ::= #sizeWordStack ( WordStack ) [symbol(#sizeWordStack), function, total, smtlib(sizeWordStack)]
+ // ------------------------------------------------------------------------------------------------------------
+    rule [ws-size-00]: #sizeWordStack (.WordStack) => 0
+    rule [ws-size-01]: #sizeWordStack (_ : .WordStack) => 1
+    rule [ws-size-02]: #sizeWordStack (_ : _ : .WordStack) => 2
+    rule [ws-size-03]: #sizeWordStack (_ : _ : _ : .WordStack) => 3
+    rule [ws-size-04]: #sizeWordStack (_ : _ : _ : _ : .WordStack) => 4
+    rule [ws-size-05]: #sizeWordStack (_ : _ : _ : _ : _ : .WordStack) => 5
+    rule [ws-size-06]: #sizeWordStack (_ : _ : _ : _ : _ : _ : .WordStack) => 6
+    rule [ws-size-07]: #sizeWordStack (_ : _ : _ : _ : _ : _ : _ : .WordStack) => 7
+    rule [ws-size-08]: #sizeWordStack (_ : _ : _ : _ : _ : _ : _ : _ : .WordStack) => 8
+    rule [ws-size-09]: #sizeWordStack (_ : _ : _ : _ : _ : _ : _ : _ : _ : .WordStack) => 9
+    rule [ws-size-10]: #sizeWordStack (_ : _ : _ : _ : _ : _ : _ : _ : _ : _ : .WordStack) => 10
+    rule [ws-size-11]: #sizeWordStack (_ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : .WordStack) => 11
+    rule [ws-size-12]: #sizeWordStack (_ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : .WordStack) => 12
+    rule [ws-size-13]: #sizeWordStack (_ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : .WordStack) => 13
+    rule [ws-size-14]: #sizeWordStack (_ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : .WordStack) => 14
+    rule [ws-size-15]: #sizeWordStack (_ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : .WordStack) => 15
+    rule [ws-size-16]: #sizeWordStack (_ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : .WordStack) => 16
 
-    syntax Bool ::= Int "in" WordStack [function]
- // ---------------------------------------------
-    rule _ in .WordStack => false
-    rule W in (W' : WS)  => (W ==K W') orElseBool (W in WS)
-```
-
--   `#replicateAux` pushes `N` copies of `A` onto a `WordStack`.
--   `#replicate` is a `WordStack` of length `N` with `A` the value of every element.
-
-```k
-    syntax WordStack ::= #replicate    ( Int, Int )            [symbol(#replicate), function, total]
-                       | #replicateAux ( Int, Int, WordStack ) [symbol(#replicateAux), function, total]
- // ---------------------------------------------------------------------------------------------------
-    rule #replicate   ( N,  A )     => #replicateAux(N, A, .WordStack)
-    rule #replicateAux( N,  A, WS ) => #replicateAux(N -Int 1, A, A : WS) requires         N >Int 0
-    rule #replicateAux( N, _A, WS ) => WS                                 requires notBool N >Int 0
+    rule #sizeWordStack ( _ : WS ) => 1 +Int #sizeWordStack(WS)
 ```
 
 -   `WordStack2List` converts a term of sort `WordStack` to a term of sort `List`.

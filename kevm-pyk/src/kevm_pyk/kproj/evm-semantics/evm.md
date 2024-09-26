@@ -1171,6 +1171,7 @@ These operators query about the current return data buffer.
          <localMem> LM </localMem>
          <log> L => L ListItem({ ACCT | WordStack2List(#take(N, WS)) | #range(LM, MEMSTART, MEMWIDTH) }) </log>
       requires #sizeWordStack(WS) >=Int N
+      [preserves-definedness]
 ```
 
 Ethereum Network OpCodes
