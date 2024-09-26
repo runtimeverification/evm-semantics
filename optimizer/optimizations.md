@@ -11,8 +11,8 @@ module EVM-OPTIMIZATIONS-LEMMAS [symbolic]
     imports EVM
 
     rule #sizeWordStack(WS [ I := _ ]) => #sizeWordStack(WS, N) requires I <Int #sizeWordStack(WS) [simplification]
-    rule 0 <=Int #sizeWordStack(_)    => true                                                      [simplification]
-    rule #sizeWordStack(_) <Int N     => false                  requires N <=Int 0                 [simplification]
+    rule 0 <=Int #sizeWordStack(_)     => true                                                     [simplification, smt-lemma]
+    rule #sizeWordStack(_) <Int N      => false                 requires N <=Int 0                 [simplification, smt-lemma]
 
 endmodule
 
