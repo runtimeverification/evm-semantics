@@ -425,7 +425,10 @@ def test_prove_optimizations(
     kore_rpc_command = ('booster-dev',) if use_booster_dev else ('kore-rpc-booster',)
 
     with legacy_explore(
-        kevm, kcfg_semantics=KEVMSemantics(allow_symbolic_program=True), kore_rpc_command=kore_rpc_command, smt_timeout=1000
+        kevm,
+        kcfg_semantics=KEVMSemantics(allow_symbolic_program=True),
+        kore_rpc_command=kore_rpc_command,
+        smt_timeout=1000,
     ) as kcfg_explore:
         prover = APRProver(
             kcfg_explore,
