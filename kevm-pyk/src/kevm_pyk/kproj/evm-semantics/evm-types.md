@@ -251,7 +251,7 @@ A cons-list is used for the EVM wordstack.
     rule [ws-take.3]: #take(3, W0 : W1 : W2 :       _) => W0 : W1 : W2 : .WordStack
     rule [ws-take.4]: #take(4, W0 : W1 : W2 : W3 :  _) => W0 : W1 : W2 : W3 : .WordStack
  // For unexpected cases
-    rule [ws-take.N]: #take(N,  _ :  _ :  _ :  _ : WS) => #take(N -Int 4, WS) requires 4 <Int N
+    rule [ws-take.N]: #take(N, W0 : W1 : W2 : W3 : WS) => W0 :  W1 :  W2 :  W3 : #take(N -Int 4, WS) requires 4 <Int N
  // For totality
     rule [ws-take.O]: #take(_, _) => .WordStack [owise]
 
@@ -264,7 +264,7 @@ A cons-list is used for the EVM wordstack.
     rule [ws-drop.3]: #drop(3, _ : _ : _ :         WS) => WS
     rule [ws-drop.4]: #drop(4, _ : _ : _ : _ :     WS) => WS
  // For unexpected cases
-    rule [ws-drop.N]: #drop(N, _ : _ : _ : _ : _ : WS) => #drop(N -Int 4, WS) requires 4 <Int N
+    rule [ws-drop.N]: #drop(N, _ : _ : _ : _ : WS) => #drop(N -Int 4, WS) requires 4 <Int N
  // For totality
     rule [ws-drop.O]: #drop(_, _) => .WordStack [owise]
 ```
