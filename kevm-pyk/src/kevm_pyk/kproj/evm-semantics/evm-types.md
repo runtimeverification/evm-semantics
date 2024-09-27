@@ -253,7 +253,7 @@ A cons-list is used for the EVM wordstack.
  // For unexpected cases
     rule [ws-take.N]: #take(N, W0 : W1 : W2 : W3 : WS) => W0 :  W1 :  W2 :  W3 : #take(N -Int 4, WS) requires 4 <Int N
  // For totality
-    rule [ws-take.O]: #take(_, _) => .WordStack [owise]
+    rule [ws-take.O]: #take(_, _) => .WordStack
 
     syntax WordStack ::= #drop ( Int , WordStack ) [symbol(dropWordStack), function, total]
  // ---------------------------------------------------------------------------------------
@@ -266,7 +266,7 @@ A cons-list is used for the EVM wordstack.
  // For unexpected cases
     rule [ws-drop.N]: #drop(N, _ : _ : _ : _ : WS) => #drop(N -Int 4, WS) requires 4 <Int N
  // For totality
-    rule [ws-drop.O]: #drop(_, _) => .WordStack [owise]
+    rule [ws-drop.O]: #drop(_, _) => .WordStack
 ```
 
 ### Element Access
@@ -330,7 +330,7 @@ A cons-list is used for the EVM wordstack.
     rule [ws-get-N]:  (_ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ :
                        _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : WS):WordStack [ N ] => WS:WordStack [ N -Int 32 ] requires 31 <Int N
  // For totality
-    rule [ws-get-O]:  _:WordStack [ _:Int ] => 0 [owise]
+    rule [ws-get-O]:  _:WordStack [ _:Int ] => 0
 
     syntax WordStack ::= WordStack "[" Int ":=" Int "]" [function, total]
  // ---------------------------------------------------------------------
@@ -389,7 +389,7 @@ A cons-list is used for the EVM wordstack.
                       ( W0 :  W1 :  W2 :  W3 :  W4 :  W5 :  W6 :  W7 :  W8 :  W9 : W10 : W11 : W12 : W13 : W14 : V15 :
                        W16 : W17 : W18 : W19 : W20 : W21 : W22 : W23 : W24 : W25 : W26 : W27 : W28 : W29 : W30 : V31 : (WS [ N -Int 32 := V ] )):WordStack requires 31 <Int N
  // For totality
-    rule [ws-set-O]: _:WordStack [ _ := _ ] => .WordStack [owise]
+    rule [ws-set-O]: _:WordStack [ _ := _ ] => .WordStack
 ```
 
 -   `#sizeWordStack` calculates the size of a `WordStack`.
