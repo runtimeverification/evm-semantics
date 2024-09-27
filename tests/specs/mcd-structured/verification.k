@@ -142,6 +142,8 @@ module LEMMAS-MCD [symbolic]
   // Word Reasoning
   // ########################
 
+    rule #sizeWordStack(WS, N) => #sizeWordStack(WS, 0) +Int N  requires N =/=Int 0 [simplification]
+
     // ### vat-addui-fail-rough
     //
     // Proof:

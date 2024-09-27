@@ -5,9 +5,15 @@ module VERIFICATION
     imports EVM-ASSEMBLY
     imports LEMMAS
 
+    rule #sizeWordStack ( WS , N:Int )
+      => N +Int #sizeWordStack ( WS , 0 )
+      requires N =/=K 0 [simplification]
+
     rule bool2Word(A) ==K 0 => notBool(A) [simplification]
 
     rule chop(I) => I requires #rangeUInt(256, I) [simplification]
+
+    rule 0 <=Int #sizeWordStack ( _ , _ ) => true [simplification, smt-lemma]
 
     syntax Bytes ::= "sumToN" [macro]
  // -------------------------------------

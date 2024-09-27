@@ -395,10 +395,13 @@ A cons-list is used for the EVM wordstack.
 -   `#sizeWordStack` calculates the size of a `WordStack`.
 
 ```k
-    syntax Int ::= #sizeWordStack ( WordStack ) [symbol(#sizeWordStack), function, total, smtlib(sizeWordStack)]
- // ------------------------------------------------------------------------------------------------------------
-    rule [ws-size-base]: #sizeWordStack (.WordStack) => 0
-    rule [ws-size-ind]:  #sizeWordStack (_ : WS) => 1 +Int #sizeWordStack(WS)
+    syntax Int ::= #sizeWordStack ( WordStack )       [symbol(#sizeWordStack), function, total, smtlib(sizeWordStack)]
+                 | #sizeWordStack ( WordStack , Int ) [symbol(sizeWordStackAux), function, total, smtlib(sizeWordStackAux)]
+ // -----------------------------------------------------------------------------------------------------------------------
+    rule #sizeWordStack ( WS ) => #sizeWordStack(WS, 0)
+
+    rule #sizeWordStack ( .WordStack, SIZE ) => SIZE
+    rule #sizeWordStack ( _ : WS, SIZE )     => #sizeWordStack(WS, SIZE +Int 1)
 ```
 
 -   `WordStack2List` converts a term of sort `WordStack` to a term of sort `List`.
