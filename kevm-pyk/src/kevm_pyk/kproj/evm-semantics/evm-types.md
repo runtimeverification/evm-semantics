@@ -397,25 +397,8 @@ A cons-list is used for the EVM wordstack.
 ```k
     syntax Int ::= #sizeWordStack ( WordStack ) [symbol(#sizeWordStack), function, total, smtlib(sizeWordStack)]
  // ------------------------------------------------------------------------------------------------------------
-    rule [ws-size-00]: #sizeWordStack (.WordStack) => 0
-    rule [ws-size-01]: #sizeWordStack (_ : .WordStack) => 1
-    rule [ws-size-02]: #sizeWordStack (_ : _ : .WordStack) => 2
-    rule [ws-size-03]: #sizeWordStack (_ : _ : _ : .WordStack) => 3
-    rule [ws-size-04]: #sizeWordStack (_ : _ : _ : _ : .WordStack) => 4
-    rule [ws-size-05]: #sizeWordStack (_ : _ : _ : _ : _ : .WordStack) => 5
-    rule [ws-size-06]: #sizeWordStack (_ : _ : _ : _ : _ : _ : .WordStack) => 6
-    rule [ws-size-07]: #sizeWordStack (_ : _ : _ : _ : _ : _ : _ : .WordStack) => 7
-    rule [ws-size-08]: #sizeWordStack (_ : _ : _ : _ : _ : _ : _ : _ : .WordStack) => 8
-    rule [ws-size-09]: #sizeWordStack (_ : _ : _ : _ : _ : _ : _ : _ : _ : .WordStack) => 9
-    rule [ws-size-10]: #sizeWordStack (_ : _ : _ : _ : _ : _ : _ : _ : _ : _ : .WordStack) => 10
-    rule [ws-size-11]: #sizeWordStack (_ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : .WordStack) => 11
-    rule [ws-size-12]: #sizeWordStack (_ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : .WordStack) => 12
-    rule [ws-size-13]: #sizeWordStack (_ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : .WordStack) => 13
-    rule [ws-size-14]: #sizeWordStack (_ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : .WordStack) => 14
-    rule [ws-size-15]: #sizeWordStack (_ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : .WordStack) => 15
-    rule [ws-size-16]: #sizeWordStack (_ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : .WordStack) => 16
-    rule [ws-size-N]:  #sizeWordStack (_ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : WS) => 16 +Int #sizeWordStack(WS)
-    rule [ws-size-O]:  #sizeWordStack (_ : WS) => 1 +Int #sizeWordStack(WS) [priority(75)]
+    rule [ws-size-base]: #sizeWordStack (.WordStack) => 0
+    rule [ws-size-ind]:  #sizeWordStack (_ : WS) => 1 +Int #sizeWordStack(WS)
 ```
 
 -   `WordStack2List` converts a term of sort `WordStack` to a term of sort `List`.
