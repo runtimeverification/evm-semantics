@@ -244,29 +244,19 @@ A cons-list is used for the EVM wordstack.
 ```k
     syntax WordStack ::= #take ( Int , WordStack ) [symbol(takeWordStack), function, total]
  // ---------------------------------------------------------------------------------------
- // Expected use cases are from 0-4
-    rule [ws-take-0]: #take(0,                      _) => .WordStack
-    rule [ws-take-1]: #take(1, W0 :                 _) => W0 : .WordStack
-    rule [ws-take-2]: #take(2, W0 : W1 :            _) => W0 : W1 : .WordStack
-    rule [ws-take-3]: #take(3, W0 : W1 : W2 :       _) => W0 : W1 : W2 : .WordStack
-    rule [ws-take-4]: #take(4, W0 : W1 : W2 : W3 :  _) => W0 : W1 : W2 : W3 : .WordStack
- // For unexpected cases
-    rule [ws-take-N]: #take(N, W0 : W1 : W2 : W3 : WS) => W0 :  W1 :  W2 :  W3 : #take(N -Int 4, WS) requires 4 <Int N
+ // Expected use cases
+    rule [ws-take-b]: #take(0,       _) => .WordStack
+    rule [ws-take-i]: #take(N, W0 : WS) => W0 : #take(N -Int 1, WS) requires 0 <Int N
  // For totality
-    rule [ws-take-O]: #take(_, _) => .WordStack [priority(75)]
+    rule [ws-take-o]: #take(_, _) => .WordStack [owise]
 
     syntax WordStack ::= #drop ( Int , WordStack ) [symbol(dropWordStack), function, total]
  // ---------------------------------------------------------------------------------------
- // Expected use cases are from 0-4
-    rule [ws-drop-0]: #drop(0,                     WS) => WS
-    rule [ws-drop-1]: #drop(1, _ :                 WS) => WS
-    rule [ws-drop-2]: #drop(2, _ : _ :             WS) => WS
-    rule [ws-drop-3]: #drop(3, _ : _ : _ :         WS) => WS
-    rule [ws-drop-4]: #drop(4, _ : _ : _ : _ :     WS) => WS
- // For unexpected cases
-    rule [ws-drop-N]: #drop(N, _ : _ : _ : _ : WS) => #drop(N -Int 4, WS) requires 4 <Int N
+ // Expected use cases
+    rule [ws-drop-b]: #drop(0, WS) => WS
+    rule [ws-drop-i]: #drop(N, W0 : WS) => #drop(N -Int 1, WS) requires 0 <Int N
  // For totality
-    rule [ws-drop-O]: #drop(_, _) => .WordStack [priority(75)]
+    rule [ws-drop-O]: #drop(_, _) => .WordStack [owise]
 ```
 
 ### Element Access
@@ -277,119 +267,19 @@ A cons-list is used for the EVM wordstack.
 ```k
     syntax Int ::= WordStack "[" Int "]" [function, total]
  // ------------------------------------------------------
- // Expected use cases are from 0-31
-    rule [ws-get-00]: (                                                            W : _):WordStack [  0 ] => W
-    rule [ws-get-01]: (                                                        _ : W : _):WordStack [  1 ] => W
-    rule [ws-get-02]: (                                                    _ : _ : W : _):WordStack [  2 ] => W
-    rule [ws-get-03]: (                                                _ : _ : _ : W : _):WordStack [  3 ] => W
-    rule [ws-get-04]: (                                            _ : _ : _ : _ : W : _):WordStack [  4 ] => W
-    rule [ws-get-05]: (                                        _ : _ : _ : _ : _ : W : _):WordStack [  5 ] => W
-    rule [ws-get-06]: (                                    _ : _ : _ : _ : _ : _ : W : _):WordStack [  6 ] => W
-    rule [ws-get-07]: (                                _ : _ : _ : _ : _ : _ : _ : W : _):WordStack [  7 ] => W
-    rule [ws-get-08]: (                            _ : _ : _ : _ : _ : _ : _ : _ : W : _):WordStack [  8 ] => W
-    rule [ws-get-09]: (                        _ : _ : _ : _ : _ : _ : _ : _ : _ : W : _):WordStack [  9 ] => W
-    rule [ws-get-10]: (                    _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : W : _):WordStack [ 10 ] => W
-    rule [ws-get-11]: (                _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : W : _):WordStack [ 11 ] => W
-    rule [ws-get-12]: (            _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : W : _):WordStack [ 12 ] => W
-    rule [ws-get-13]: (        _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : W : _):WordStack [ 13 ] => W
-    rule [ws-get-14]: (    _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : W : _):WordStack [ 14 ] => W
-    rule [ws-get-15]: (_ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : W : _):WordStack [ 15 ] => W
-    rule [ws-get-16]: (_ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ :
-                                                                                   W : _):WordStack [ 16 ] => W
-    rule [ws-get-17]: (_ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ :
-                                                                               _ : W : _):WordStack [ 17 ] => W
-    rule [ws-get-18]: (_ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ :
-                                                                           _ : _ : W : _):WordStack [ 18 ] => W
-    rule [ws-get-19]: (_ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ :
-                                                                       _ : _ : _ : W : _):WordStack [ 19 ] => W
-    rule [ws-get-20]: (_ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ :
-                                                                   _ : _ : _ : _ : W : _):WordStack [ 20 ] => W
-    rule [ws-get-21]: (_ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ :
-                                                               _ : _ : _ : _ : _ : W : _):WordStack [ 21 ] => W
-    rule [ws-get-22]: (_ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ :
-                                                           _ : _ : _ : _ : _ : _ : W : _):WordStack [ 22 ] => W
-    rule [ws-get-23]: (_ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ :
-                                                       _ : _ : _ : _ : _ : _ : _ : W : _):WordStack [ 23 ] => W
-    rule [ws-get-24]: (_ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ :
-                                                   _ : _ : _ : _ : _ : _ : _ : _ : W : _):WordStack [ 24 ] => W
-    rule [ws-get-25]: (_ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ :
-                                               _ : _ : _ : _ : _ : _ : _ : _ : _ : W : _):WordStack [ 25 ] => W
-    rule [ws-get-26]: (_ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ :
-                                           _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : W : _):WordStack [ 26 ] => W
-    rule [ws-get-27]: (_ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ :
-                                       _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : W : _):WordStack [ 27 ] => W
-    rule [ws-get-28]: (_ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ :
-                                   _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : W : _):WordStack [ 28 ] => W
-    rule [ws-get-29]: (_ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ :
-                               _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : W : _):WordStack [ 29 ] => W
-    rule [ws-get-30]: (_ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ :
-                           _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : W : _):WordStack [ 30 ] => W
-    rule [ws-get-31]: (_ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ :
-                       _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : W : _):WordStack [ 31 ] => W
- // For unexpected cases
-    rule [ws-get-N]:  (_ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ :
-                       _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : _ : WS):WordStack [ N ] => WS:WordStack [ N -Int 32 ] requires 31 <Int N
+ // Expected use cases
+    rule [ws-get-b]: (W :  _):WordStack [ 0 ] => W
+    rule [ws-get-i]: (W : WS):WordStack [ N ] => WS:WordStack [ N -Int 1 ] requires 0 <Int N
  // For totality
-    rule [ws-get-O]:  _:WordStack [ _:Int ] => 0 [priority(75)]
+    rule [ws-get-o]:  _:WordStack [ _:Int ] => 0 [owise]
 
     syntax WordStack ::= WordStack "[" Int ":=" Int "]" [function, total]
  // ---------------------------------------------------------------------
- // Expected use cases are from 0-31
-    rule [ws-set-00]: (                                                                                            _ : WS):WordStack [  0 := V ] => ( V : WS ):WordStack
-    rule [ws-set-01]: (                                                                                     W0 :   _ : WS):WordStack [  1 := V ] => ( W0 :  V : WS):WordStack
-    rule [ws-set-02]: (                                                                               W0 :  W1 :   _ : WS):WordStack [  2 := V ] => ( W0 :  W1 :  V : WS):WordStack
-    rule [ws-set-03]: (                                                                         W0 :  W1 :  W2 :   _ : WS):WordStack [  3 := V ] => ( W0 :  W1 :  W2 :  V : WS):WordStack
-    rule [ws-set-04]: (                                                                   W0 :  W1 :  W2 :  W3 :   _ : WS):WordStack [  4 := V ] => ( W0 :  W1 :  W2 :  W3 :  V : WS):WordStack
-    rule [ws-set-05]: (                                                             W0 :  W1 :  W2 :  W3 :  W4 :   _ : WS):WordStack [  5 := V ] => ( W0 :  W1 :  W2 :  W3 :  W4 :  V : WS):WordStack
-    rule [ws-set-06]: (                                                       W0 :  W1 :  W2 :  W3 :  W4 :  W5 :   _ : WS):WordStack [  6 := V ] => ( W0 :  W1 :  W2 :  W3 :  W4 :  W5 :  V : WS):WordStack
-    rule [ws-set-07]: (                                                 W0 :  W1 :  W2 :  W3 :  W4 :  W5 :  W6 :   _ : WS):WordStack [  7 := V ] => ( W0 :  W1 :  W2 :  W3 :  W4 :  W5 :  W6 :  V : WS):WordStack
-    rule [ws-set-08]: (                                           W0 :  W1 :  W2 :  W3 :  W4 :  W5 :  W6 :  W7 :   _ : WS):WordStack [  8 := V ] => ( W0 :  W1 :  W2 :  W3 :  W4 :  W5 :  W6 :  W7 :  V : WS):WordStack
-    rule [ws-set-09]: (                                     W0 :  W1 :  W2 :  W3 :  W4 :  W5 :  W6 :  W7 :  W8 :   _ : WS):WordStack [  9 := V ] => ( W0 :  W1 :  W2 :  W3 :  W4 :  W5 :  W6 :  W7 :  W8 : V : WS):WordStack
-    rule [ws-set-10]: (                               W0 :  W1 :  W2 :  W3 :  W4 :  W5 :  W6 :  W7 :  W8 :  W9 :   _ : WS):WordStack [ 10 := V ] => ( W0 :  W1 :  W2 :  W3 :  W4 :  W5 :  W6 :  W7 :  W8 :  W9 : V : WS):WordStack
-    rule [ws-set-11]: (                         W0 :  W1 :  W2 :  W3 :  W4 :  W5 :  W6 :  W7 :  W8 :  W9 : W10 :   _ : WS):WordStack [ 11 := V ] => ( W0 :  W1 :  W2 :  W3 :  W4 :  W5 :  W6 :  W7 :  W8 :  W9 : W10 : V : WS):WordStack
-    rule [ws-set-12]: (                   W0 :  W1 :  W2 :  W3 :  W4 :  W5 :  W6 :  W7 :  W8 :  W9 : W10 : W11 :   _ : WS):WordStack [ 12 := V ] => ( W0 :  W1 :  W2 :  W3 :  W4 :  W5 :  W6 :  W7 :  W8 :  W9 : W10 : W11 : V : WS):WordStack
-    rule [ws-set-13]: (             W0 :  W1 :  W2 :  W3 :  W4 :  W5 :  W6 :  W7 :  W8 :  W9 : W10 : W11 : W12 :   _ : WS):WordStack [ 13 := V ] => ( W0 :  W1 :  W2 :  W3 :  W4 :  W5 :  W6 :  W7 :  W8 :  W9 : W10 : W11 : W12 : V : WS):WordStack
-    rule [ws-set-14]: (       W0 :  W1 :  W2 :  W3 :  W4 :  W5 :  W6 :  W7 :  W8 :  W9 : W10 : W11 : W12 : W13 :   _ : WS):WordStack [ 14 := V ] => ( W0 :  W1 :  W2 :  W3 :  W4 :  W5 :  W6 :  W7 :  W8 :  W9 : W10 : W11 : W12 : W13 : V : WS):WordStack
-    rule [ws-set-15]: ( W0 :  W1 :  W2 :  W3 :  W4 :  W5 :  W6 :  W7 :  W8 :  W9 : W10 : W11 : W12 : W13 : W14 :   _ : WS):WordStack [ 15 := V ] => ( W0 :  W1 :  W2 :  W3 :  W4 :  W5 :  W6 :  W7 :  W8 :  W9 : W10 : W11 : W12 : W13 : W14 : V : WS):WordStack
-    rule [ws-set-16]: ( W0 :  W1 :  W2 :  W3 :  W4 :  W5 :  W6 :  W7 :  W8 :  W9 : W10 : W11 : W12 : W13 : W14 : W15 :
-                                                                                                                   _ : WS):WordStack [ 16 := V ] => ( W0 :  W1 :  W2 :  W3 :  W4 :  W5 :  W6 :  W7 :  W8 :  W9 : W10 : W11 : W12 : W13 : W14 : W15 : V : WS):WordStack
-    rule [ws-set-17]: ( W0 :  W1 :  W2 :  W3 :  W4 :  W5 :  W6 :  W7 :  W8 :  W9 : W10 : W11 : W12 : W13 : W14 : W15 :
-                                                                                                           W16 :   _ : WS):WordStack [ 17 := V ] => ( W0 :  W1 :  W2 :  W3 :  W4 :  W5 :  W6 :  W7 :  W8 :  W9 : W10 : W11 : W12 : W13 : W14 : W15 : W16 : V : WS):WordStack
-    rule [ws-set-18]: ( W0 :  W1 :  W2 :  W3 :  W4 :  W5 :  W6 :  W7 :  W8 :  W9 : W10 : W11 : W12 : W13 : W14 : W15 :
-                                                                                                     W16 : W17 :   _ : WS):WordStack [ 18 := V ] => ( W0 :  W1 :  W2 :  W3 :  W4 :  W5 :  W6 :  W7 :  W8 :  W9 : W10 : W11 : W12 : W13 : W14 : W15 : W16 : W17 : V : WS):WordStack
-    rule [ws-set-19]: ( W0 :  W1 :  W2 :  W3 :  W4 :  W5 :  W6 :  W7 :  W8 :  W9 : W10 : W11 : W12 : W13 : W14 : W15 :
-                                                                                               W16 : W17 : W18 :   _ : WS):WordStack [ 19 := V ] => ( W0 :  W1 :  W2 :  W3 :  W4 :  W5 :  W6 :  W7 :  W8 :  W9 : W10 : W11 : W12 : W13 : W14 : W15 : W16 : W17 : W18 : V : WS):WordStack
-    rule [ws-set-20]: ( W0 :  W1 :  W2 :  W3 :  W4 :  W5 :  W6 :  W7 :  W8 :  W9 : W10 : W11 : W12 : W13 : W14 : W15 :
-                                                                                         W16 : W17 : W18 : W19 :   _ : WS):WordStack [ 20 := V ] => ( W0 :  W1 :  W2 :  W3 :  W4 :  W5 :  W6 :  W7 :  W8 :  W9 : W10 : W11 : W12 : W13 : W14 : W15 : W16 : W17 : W18 : W19 : V : WS):WordStack
-    rule [ws-set-21]: ( W0 :  W1 :  W2 :  W3 :  W4 :  W5 :  W6 :  W7 :  W8 :  W9 : W10 : W11 : W12 : W13 : W14 : W15 :
-                                                                                   W16 : W17 : W18 : W19 : W20 :   _ : WS):WordStack [ 21 := V ] => ( W0 :  W1 :  W2 :  W3 :  W4 :  W5 :  W6 :  W7 :  W8 :  W9 : W10 : W11 : W12 : W13 : W14 : W15 : W16 : W17 : W18 : W19 : W20 : V : WS):WordStack
-    rule [ws-set-22]: ( W0 :  W1 :  W2 :  W3 :  W4 :  W5 :  W6 :  W7 :  W8 :  W9 : W10 : W11 : W12 : W13 : W14 : W15 :
-                                                                             W16 : W17 : W18 : W19 : W20 : W21 :   _ : WS):WordStack [ 22 := V ] => ( W0 :  W1 :  W2 :  W3 :  W4 :  W5 :  W6 :  W7 :  W8 :  W9 : W10 : W11 : W12 : W13 : W14 : W15 : W16 : W17 : W18 : W19 : W20 : W21 : V : WS):WordStack
-    rule [ws-set-23]: ( W0 :  W1 :  W2 :  W3 :  W4 :  W5 :  W6 :  W7 :  W8 :  W9 : W10 : W11 : W12 : W13 : W14 : W15 :
-                                                                       W16 : W17 : W18 : W19 : W20 : W21 : W22 :   _ : WS):WordStack [ 23 := V ] => ( W0 :  W1 :  W2 :  W3 :  W4 :  W5 :  W6 :  W7 :  W8 :  W9 : W10 : W11 : W12 : W13 : W14 : W15 : W16 : W17 : W18 : W19 : W20 : W21 : W22 : V : WS):WordStack
-    rule [ws-set-24]: ( W0 :  W1 :  W2 :  W3 :  W4 :  W5 :  W6 :  W7 :  W8 :  W9 : W10 : W11 : W12 : W13 : W14 : W15 :
-                                                                 W16 : W17 : W18 : W19 : W20 : W21 : W22 : W23 :   _ : WS):WordStack [ 24 := V ] => ( W0 :  W1 :  W2 :  W3 :  W4 :  W5 :  W6 :  W7 :  W8 :  W9 : W10 : W11 : W12 : W13 : W14 : W15 : W16 : W17 : W18 : W19 : W20 : W21 : W22 : W23 : V : WS):WordStack
-    rule [ws-set-25]: ( W0 :  W1 :  W2 :  W3 :  W4 :  W5 :  W6 :  W7 :  W8 :  W9 : W10 : W11 : W12 : W13 : W14 : W15 :
-                                                           W16 : W17 : W18 : W19 : W20 : W21 : W22 : W23 : W24 :   _ : WS):WordStack [ 25 := V ] => ( W0 :  W1 :  W2 :  W3 :  W4 :  W5 :  W6 :  W7 :  W8 :  W9 : W10 : W11 : W12 : W13 : W14 : W15 : W16 : W17 : W18 : W19 : W20 : W21 : W22 : W23 : W24 : V : WS):WordStack
-    rule [ws-set-26]: ( W0 :  W1 :  W2 :  W3 :  W4 :  W5 :  W6 :  W7 :  W8 :  W9 : W10 : W11 : W12 : W13 : W14 : W15 :
-                                                     W16 : W17 : W18 : W19 : W20 : W21 : W22 : W23 : W24 : W25 :   _ : WS):WordStack [ 26 := V ] => ( W0 :  W1 :  W2 :  W3 :  W4 :  W5 :  W6 :  W7 :  W8 :  W9 : W10 : W11 : W12 : W13 : W14 : W15 : W16 : W17 : W18 : W19 : W20 : W21 : W22 : W23 : W24 : W25 : V : WS):WordStack
-    rule [ws-set-27]: ( W0 :  W1 :  W2 :  W3 :  W4 :  W5 :  W6 :  W7 :  W8 :  W9 : W10 : W11 : W12 : W13 : W14 : W15 :
-                                               W16 : W17 : W18 : W19 : W20 : W21 : W22 : W23 : W24 : W25 : W26 :   _ : WS):WordStack [ 27 := V ] => ( W0 :  W1 :  W2 :  W3 :  W4 :  W5 :  W6 :  W7 :  W8 :  W9 : W10 : W11 : W12 : W13 : W14 : W15 : W16 : W17 : W18 : W19 : W20 : W21 : W22 : W23 : W24 : W25 : W26 : V : WS):WordStack
-    rule [ws-set-28]: ( W0 :  W1 :  W2 :  W3 :  W4 :  W5 :  W6 :  W7 :  W8 :  W9 : W10 : W11 : W12 : W13 : W14 : W15 :
-                                         W16 : W17 : W18 : W19 : W20 : W21 : W22 : W23 : W24 : W25 : W26 : W27 :   _ : WS):WordStack [ 28 := V ] => ( W0 :  W1 :  W2 :  W3 :  W4 :  W5 :  W6 :  W7 :  W8 :  W9 : W10 : W11 : W12 : W13 : W14 : W15 : W16 : W17 : W18 : W19 : W20 : W21 : W22 : W23 : W24 : W25 : W26 : W27 : V : WS):WordStack
-    rule [ws-set-29]: ( W0 :  W1 :  W2 :  W3 :  W4 :  W5 :  W6 :  W7 :  W8 :  W9 : W10 : W11 : W12 : W13 : W14 : W15 :
-                                   W16 : W17 : W18 : W19 : W20 : W21 : W22 : W23 : W24 : W25 : W26 : W27 : W28 :   _ : WS):WordStack [ 29 := V ] => ( W0 :  W1 :  W2 :  W3 :  W4 :  W5 :  W6 :  W7 :  W8 :  W9 : W10 : W11 : W12 : W13 : W14 : W15 : W16 : W17 : W18 : W19 : W20 : W21 : W22 : W23 : W24 : W25 : W26 : W27 : W28 : V : WS):WordStack
-    rule [ws-set-30]: ( W0 :  W1 :  W2 :  W3 :  W4 :  W5 :  W6 :  W7 :  W8 :  W9 : W10 : W11 : W12 : W13 : W14 : W15 :
-                             W16 : W17 : W18 : W19 : W20 : W21 : W22 : W23 : W24 : W25 : W26 : W27 : W28 : W29 :   _ : WS):WordStack [ 30 := V ] => ( W0 :  W1 :  W2 :  W3 :  W4 :  W5 :  W6 :  W7 :  W8 :  W9 : W10 : W11 : W12 : W13 : W14 : W15 : W16 : W17 : W18 : W19 : W20 : W21 : W22 : W23 : W24 : W25 : W26 : W27 : W28 : W29 : V : WS):WordStack
-    rule [ws-set-31]: ( W0 :  W1 :  W2 :  W3 :  W4 :  W5 :  W6 :  W7 :  W8 :  W9 : W10 : W11 : W12 : W13 : W14 : W15 :
-                       W16 : W17 : W18 : W19 : W20 : W21 : W22 : W23 : W24 : W25 : W26 : W27 : W28 : W29 : W30 :   _ : WS):WordStack [ 31 := V ] => ( W0 :  W1 :  W2 :  W3 :  W4 :  W5 :  W6 :  W7 :  W8 :  W9 : W10 : W11 : W12 : W13 : W14 : W15 : W16 : W17 : W18 : W19 : W20 : W21 : W22 : W23 : W24 : W25 : W26 : W27 : W28 : W29 : W30 : V : WS):WordStack
- // For unexpected cases
-    rule [ws-set-N]:  ( W0 :  W1 :  W2 :  W3 :  W4 :  W5 :  W6 :  W7 :  W8 :  W9 : W10 : W11 : W12 : W13 : W14 : V15 :
-                       W16 : W17 : W18 : W19 : W20 : W21 : W22 : W23 : W24 : W25 : W26 : W27 : W28 : W29 : W30 : V31 : WS):WordStack [ N := V ] =>
-                      ( W0 :  W1 :  W2 :  W3 :  W4 :  W5 :  W6 :  W7 :  W8 :  W9 : W10 : W11 : W12 : W13 : W14 : V15 :
-                       W16 : W17 : W18 : W19 : W20 : W21 : W22 : W23 : W24 : W25 : W26 : W27 : W28 : W29 : W30 : V31 : (WS [ N -Int 32 := V ] )):WordStack requires 31 <Int N
+ // Expected use cases
+    rule [ws-set-b]: (_ : WS):WordStack [ 0 := V ] => ( V : WS ):WordStack
+    rule [ws-set-i]: (W : WS):WordStack [ N := V ] => ( W : (WS [ N -Int 1 := V ]) ):WordStack requires 0 <Int N
  // For totality
-    rule [ws-set-O]: _:WordStack [ _ := _ ] => .WordStack [priority(75)]
+    rule [ws-set-O]: _:WordStack [ _ := _ ] => .WordStack [owise]
 ```
 
 -   `#sizeWordStack` calculates the size of a `WordStack`.
