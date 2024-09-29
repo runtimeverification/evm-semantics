@@ -136,7 +136,3 @@ tests/specs/mcd-structured/functional-spec.k
 tests/specs/mcd-structured/pot-join-pass-rough-spec.k
 tests/specs/mcd-structured/vow-fess-fail-rough-spec.k
 tests/specs/mcd-structured/vow-flog-fail-rough-spec.k
-tests/specs/mcd/dai-adduu-fail-rough-spec.k
-tests/specs/mcd/flipper-addu48u48-fail-rough-spec.k
-tests/specs/mcd-structured/dai-adduu-fail-rough-spec.k
-tests/specs/mcd-structured/flipper-addu48u48-fail-rough-spec.k
