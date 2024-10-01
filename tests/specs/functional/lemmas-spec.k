@@ -149,7 +149,7 @@ module LEMMAS-SPEC
       requires X =/=K Y
 
 
- // Buffer write simplifications
+ // Memory update simplifications
  // ----------------------------
 
     // claim <k> runLemma ( M [ L := .Bytes ] [ N := WS:Bytes ]                             ) => doneLemma ( M [ N := WS ]                        ) ... </k> requires L <=Int N
@@ -164,9 +164,14 @@ module LEMMAS-SPEC
     claim <k> runLemma( M:Bytes [ 32 := BA1 ] [ 32 := BA2 ]                                                                  ) => doneLemma(M [ 32 := BA2 ]                                                                ) ... </k> requires lengthBytes(BA1) <=Int lengthBytes(BA2)
     claim <k> runLemma( M:Bytes [ 32 := BA1 ] [ 32 := #padToWidth(32, #asByteStack(#hashedLocation("Solidity", 2, OWNER))) ] ) => doneLemma(M [ 32 := #padToWidth(32, #asByteStack(#hashedLocation("Solidity", 2, OWNER))) ] ) ... </k> requires lengthBytes(BA1) ==Int 32 andBool #rangeUInt(256, OWNER)
 
-    // Memory write past the end of the buffer
-    claim [write-past-end]: <k> runLemma  ( #buf(160, A) [ 160 := #buf(32, B) ] [ 192 := #buf(32, C) ] [ 224 := #buf(32, D) ] [ 256 := #buf(32, E) ] )
-                             => doneLemma ( #buf(160, A) +Bytes #buf(32, B) +Bytes #buf(32, C) +Bytes #buf(32, D) +Bytes #buf(32, E) ) ... </k>
+    claim [memUpdate-past-end]: <k> runLemma  ( #buf(160, A) [ 160 := #buf(32, B) ] [ 192 := #buf(32, C) ] [ 224 := #buf(32, D) ] [ 256 := #buf(32, E) ] )
+                                 => doneLemma ( #buf(160, A) +Bytes #buf(32, B) +Bytes #buf(32, C) +Bytes #buf(32, D) +Bytes #buf(32, E) ) ... </k>
+
+    claim [memUpdate-pinpoint]: <k> runLemma  ( ( B1 +Bytes B2 +Bytes B3 +Bytes B4 ) [ 70 := #buf(16, X:Int) ] )
+                                 => doneLemma ( ( B1 +Bytes B2 +Bytes ( B3 [ 10 := #buf(16, X:Int) ] ) +Bytes B4 ) ) ... </k>
+                                    requires lengthBytes(B1) ==Int 20
+                                     andBool lengthBytes(B2) ==Int 40
+                                     andBool lengthBytes(B3) ==Int 60
 
  // #lookup simplifications
  // -----------------------
