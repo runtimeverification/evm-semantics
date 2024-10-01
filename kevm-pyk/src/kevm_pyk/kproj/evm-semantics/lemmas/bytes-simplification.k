@@ -245,10 +245,15 @@ module BYTES-SIMPLIFICATION [symbolic]
       requires 0 <=Int S2 andBool S2 <=Int S1 andBool S1 +Int lengthBytes(B1) <=Int S2 +Int lengthBytes(B2)
       [simplification]
 
-    rule [memUpdate-as-concat]:
+    rule [memUpdate-as-concat-inside]:
       B1:Bytes [ S:Int := B2:Bytes ] =>
-        #range(B1, 0, S) +Bytes B2 +Bytes #range(B1, S +Int lengthBytes(B2), lengthBytes(B1) -Int (S +Int lengthBytes(B2)))
-      requires 0 <=Int S
+        #range(B1, 0, S) +Bytes B2 +Bytes #range(B1 , S +Int lengthBytes(B2), lengthBytes(B1) -Int (S +Int lengthBytes(B2)))
+      requires 0 <=Int S andBool S +Int lengthBytes(B2) <Int lengthBytes(B1)
+      [simplification(60)]
+
+    rule [memUpdate-as-concat-outside]:
+      B1:Bytes [ S:Int := B2:Bytes ] => #range(B1, 0, S) +Bytes B2
+      requires 0 <=Int S andBool lengthBytes(B1) <=Int S +Int lengthBytes(B2)
       [simplification(60)]
 
     // lengthBytes
