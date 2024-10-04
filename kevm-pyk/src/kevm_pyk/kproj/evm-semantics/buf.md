@@ -43,13 +43,10 @@ module BUF
     rule SIZE <Int #powByteLen(SIZE) => true requires 0 <=Int SIZE [simplification, preserves-definedness]
     rule #write(WM, IDX, VAL) => WM [ IDX := #buf(1, VAL) ] [simplification]
 
-    rule #bufStrict(SIZE, DATA) => #buf(SIZE, DATA)
-      requires #range(0 <= DATA < (2 ^Int (8 *Int SIZE)))
+    rule #bufStrict(SIZE, DATA) => #buf(SIZE, DATA) requires #range(0 <= DATA < (2 ^Int (8 *Int SIZE)))
 
-    rule #buf(SIZE, DATA) => #padToWidth(SIZE, #asByteStack(DATA %Int (2 ^Int (8 *Int SIZE))))
-      requires 0 <Int SIZE
-      [concrete]
-    rule #buf(_SIZE, _) => .Bytes [owise, concrete] // SIZE <= 0
+    rule #buf(SIZE, DATA) => #padToWidth(SIZE, #asByteStack(DATA %Int (2 ^Int (8 *Int SIZE)))) requires    0  <Int SIZE [concrete]
+    rule #buf(SIZE,    _) => .Bytes                                                            requires SIZE <=Int 0    [concrete]
 
 endmodule
 ```

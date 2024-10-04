@@ -46,7 +46,7 @@ Operator `#revOps` can be used to reverse a program.
     rule #asmOpCodes( OPS ) => #asmOpCodes(OPS, .StringBuffer)
 
     rule #asmOpCodes( PUSH(N, W) ; OCS, SB ) => #asmOpCodes(OCS, (SB +String chrChar(#asmOpCode(PUSH(N)))) +String Bytes2String(Int2Bytes(N, W, BE)))
-    rule #asmOpCodes( OP ; OCS, SB ) => #asmOpCodes(OCS, SB +String chrChar(#asmOpCode(OP))) [owise]
+    rule #asmOpCodes( OP ; OCS, SB ) => #asmOpCodes(OCS, SB +String chrChar(#asmOpCode(OP))) [priority(75)]
     rule #asmOpCodes( .OpCodes, SB ) => String2Bytes(StringBuffer2String(SB))
 ```
 

@@ -467,7 +467,7 @@ The `"rlp"` key loads the block information.
     rule #parseBlockIdentifier("pending")    => PENDING
     rule #parseBlockIdentifier("latest")     => LATEST
     rule #parseBlockIdentifier("earliest")   => EARLIEST
-    rule #parseBlockIdentifier(BLOCKNUM)     => #parseWord(BLOCKNUM) [owise]
+    rule #parseBlockIdentifier(BLOCKNUM)     => #parseWord(BLOCKNUM) [priority(75)]
 ```
 ```k
 endmodule

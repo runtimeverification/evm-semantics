@@ -287,8 +287,8 @@ OpCode Execution
 
     syntax MaybeOpCode ::= "#lookupOpCode" "(" Bytes "," Int "," Schedule ")" [function, total]
  // -------------------------------------------------------------------------------------------
-    rule #lookupOpCode(BA, I, SCHED) => #dasmOpCode(BA[I], SCHED) requires 0 <=Int I andBool I <Int lengthBytes(BA)
-    rule #lookupOpCode(_, _, _)  => .NoOpCode [owise]
+    rule #lookupOpCode(BA, I, SCHED) => #dasmOpCode(BA[I], SCHED) requires           0 <=Int I andBool I <Int lengthBytes(BA)
+    rule #lookupOpCode(BA, I,     _) => .NoOpCode                 requires notBool ( 0 <=Int I andBool I <Int lengthBytes(BA) )
 ```
 
 -   `#execute` loads the next opcode.
@@ -334,6 +334,12 @@ The `#next [_]` operator initiates execution by:
       requires notBool ( #stackUnderflow(WS, OP) orBool #stackOverflow(WS, OP) )
        andBool notBool ( STATIC andBool #changesState(OP, WS) )
 
+    rule <k> #next [ OP ] => #end EVMC_STATIC_MODE_VIOLATION ... </k>
+         <wordStack> WS </wordStack>
+         <static> STATIC:Bool </static>
+      requires notBool ( #stackUnderflow(WS, OP) orBool #stackOverflow(WS, OP) )
+       andBool STATIC andBool #changesState(OP, WS)
+
     rule <k> #next [ OP ] => #end EVMC_STACK_UNDERFLOW ... </k>
          <wordStack> WS </wordStack>
       requires #stackUnderflow(WS, OP)
@@ -341,12 +347,6 @@ The `#next [_]` operator initiates execution by:
     rule <k> #next [ OP ] => #end EVMC_STACK_OVERFLOW ... </k>
          <wordStack> WS </wordStack>
       requires #stackOverflow(WS, OP)
-
-    rule <k> #next [ OP ] => #end EVMC_STATIC_MODE_VIOLATION ... </k>
-         <wordStack> WS </wordStack>
-         <static> STATIC:Bool </static>
-      requires STATIC andBool #changesState(OP, WS)
-       andBool notBool ( #stackUnderflow(WS, OP) orBool #stackOverflow(WS, OP) )
 ```
 
 ### Exceptional Checks
@@ -399,7 +399,7 @@ The `#next [_]` operator initiates execution by:
     rule #stackAdded(SWAP(N))        => N +Int 1
     rule #stackAdded(DUP(N))         => N +Int 1
     rule #stackAdded(_IOP:InvalidOp) => 0
-    rule #stackAdded(_OP)            => 1 [owise]
+    rule #stackAdded(_OP)            => 1 [priority(75)]
 
     syntax Int ::= #stackDelta ( OpCode ) [symbol(#stackDelta), function]
  // ---------------------------------------------------------------------
@@ -411,17 +411,14 @@ The `#next [_]` operator initiates execution by:
 ```k
     syntax Bool ::= #changesState ( OpCode , WordStack ) [symbol(#changesState), function]
  // --------------------------------------------------------------------------------------
-```
-
-```k
-    rule #changesState(CALL         , _ : _ : VALUE : _) => true  requires VALUE =/=Int 0
+    rule #changesState(CALL         , _ : _ : VALUE : _) => true  requires notBool VALUE ==Int 0
     rule #changesState(LOG(_)       , _)                 => true
     rule #changesState(SSTORE       , _)                 => true
     rule #changesState(CREATE       , _)                 => true
     rule #changesState(CREATE2      , _)                 => true
     rule #changesState(SELFDESTRUCT , _)                 => true
     rule #changesState(TSTORE       , _)                 => true
-    rule #changesState(_            , _)                 => false [owise]
+    rule #changesState(_            , _)                 => false [priority(75)]
 ```
 
 ### Execution Step
@@ -500,11 +497,11 @@ We make sure the given arguments (to be interpreted as addresses) are with 160 b
     rule isAddr1Op(EXTCODEHASH)  => true
     rule isAddr1Op(EXTCODESIZE)  => true
     rule isAddr1Op(EXTCODECOPY)  => true
-    rule isAddr1Op(_)            => false [owise]
+    rule isAddr1Op(_)            => false [priority(75)]
 
     rule isAddr2Op(_:CallOp)    => true
     rule isAddr2Op(_:CallSixOp) => true
-    rule isAddr2Op(_)           => false [owise]
+    rule isAddr2Op(_)           => false [priority(75)]
 ```
 
 ### Program Counter
@@ -524,7 +521,7 @@ The arguments to `PUSH` must be skipped over (as they are inline), and the opcod
     syntax Int ::= #widthOp ( OpCode ) [symbol(#widthOp), function, total]
  // ----------------------------------------------------------------------
     rule #widthOp(PUSH(N)) => 1 +Int N
-    rule #widthOp(_)       => 1        [owise]
+    rule #widthOp(_)       => 1        [priority(75)]
 ```
 
 After executing a transaction, it's necessary to have the effect of the substate log recorded.
@@ -546,7 +543,7 @@ After executing a transaction, it's necessary to have the effect of the substate
 
     rule <k> #finalizeStorage(.List) => .K ... </k>
 
-    rule <k> (.K => #newAccount ACCT) ~> #finalizeStorage(ListItem(ACCT) _ACCTS) ... </k> [owise]
+    rule <k> (.K => #newAccount ACCT) ~> #finalizeStorage(ListItem(ACCT) _ACCTS) ... </k> [priority(75)]
 
     syntax InternalOp ::= #finalizeTx ( Bool )     [symbol(#finalizeTx)]
                         | #deleteAccounts ( List ) [symbol(#deleteAccounts)]
@@ -569,7 +566,7 @@ After executing a transaction, it's necessary to have the effect of the substate
             <txGasLimit> GLIMIT </txGasLimit>
             ...
          </message>
-      requires REFUND =/=Int 0
+      requires notBool REFUND ==Int 0
 
     rule <k> #finalizeTx(false => true) ... </k>
          <useGas> true </useGas>
@@ -596,7 +593,7 @@ After executing a transaction, it's necessary to have the effect of the substate
            <txGasLimit> GLIMIT </txGasLimit>
            ...
          </message>
-      requires ORG =/=Int MINER
+      requires notBool ORG ==Int MINER
 
     rule <k> #finalizeTx(false => true) ... </k>
          <useGas> true </useGas>
@@ -632,7 +629,7 @@ After executing a transaction, it's necessary to have the effect of the substate
       requires size(ACCTS) >Int 0
 
     rule <k> (.K => #newAccount MINER) ~> #finalizeTx(_) ... </k>
-         <coinbase> MINER </coinbase> [owise]
+         <coinbase> MINER </coinbase> [priority(75)]
 
     rule <k> #deleteAccounts(ListItem(ACCT) ACCTS) => #deleteAccounts(ACCTS) ... </k>
          <accounts>
@@ -678,7 +675,7 @@ After executing a transaction, it's necessary to have the effect of the substate
          <logsBloom> _ => #bloomFilter(LOGS) </logsBloom>
 
     rule <k> (.K => #newAccount MINER) ~> #finalizeBlock ... </k>
-         <coinbase> MINER </coinbase> [owise]
+         <coinbase> MINER </coinbase> [priority(75)]
 
     rule <k> #rewardOmmers(.JSONs) => .K ... </k>
     rule <k> #rewardOmmers([ _ , _ , OMMER , _ , _ , _ , _ , _ , OMMNUM , _ ] , REST) => #rewardOmmers(REST) ... </k>
@@ -750,7 +747,7 @@ Read more about EIP-4788 here [https://eips.ethereum.org/EIPS/eip-4788](https://
          </account>
       requires Ghasbeaconroot << SCHED >>
 
-    rule <k> #executeBeaconRoots => .K ... </k> [owise]
+    rule <k> #executeBeaconRoots => .K ... </k> [priority(75)]
 ```
 
 EVM Programs
@@ -798,7 +795,7 @@ These are just used by the other operators for shuffling local execution state a
                  </account>
                )
                ...
-             </accounts> [owise, preserves-definedness]
+             </accounts> [priority(75), preserves-definedness]
 
     rule <k> #newExistingAccount ACCT => #end EVMC_ACCOUNT_ALREADY_EXISTS ... </k>
          <account>
@@ -807,18 +804,18 @@ These are just used by the other operators for shuffling local execution state a
            <nonce>  NONCE </nonce>
            ...
          </account>
-      requires CODE =/=K .Bytes orBool NONCE =/=Int 0
+      requires notBool ( lengthBytes(CODE) ==Int 0 andBool NONCE ==Int 0 )
 
     rule <k> #newExistingAccount ACCT => .K ... </k>
          <account>
            <acctID>      ACCT      </acctID>
            <code>        CODE      </code>
-           <nonce>       0         </nonce>
+           <nonce>       NONCE     </nonce>
            <storage>     _ => .Map </storage>
            <origStorage> _ => .Map </origStorage>
            ...
          </account>
-      requires lengthBytes(CODE) ==Int 0
+      requires lengthBytes(CODE) ==Int 0 andBool NONCE ==Int 0
 ```
 
 -   `#transferFunds` moves money from one account into another, creating the destination account if it doesn't exist.
@@ -827,13 +824,13 @@ These are just used by the other operators for shuffling local execution state a
     syntax InternalOp ::= "#transferFunds" Int Int Int
                         | "#transferFundsToNonExistent" Int Int Int
  // ---------------------------------------------------------------
-    rule <k> #transferFunds ACCT ACCT VALUE => .K ... </k>
+    rule <k> #transferFunds ACCTFROM ACCTTO VALUE => .K ... </k>
          <account>
-           <acctID> ACCT </acctID>
+           <acctID> ACCTFROM </acctID>
            <balance> ORIGFROM </balance>
            ...
          </account>
-      requires VALUE <=Int ORIGFROM
+      requires ACCTFROM ==Int ACCTTO andBool VALUE <=Int ORIGFROM
 
     rule <k> #transferFunds ACCTFROM ACCTTO VALUE => .K ... </k>
          <account>
@@ -846,10 +843,10 @@ These are just used by the other operators for shuffling local execution state a
            <balance> ORIGTO => ORIGTO +Word VALUE </balance>
            ...
          </account>
-      requires ACCTFROM =/=K ACCTTO andBool VALUE <=Int ORIGFROM
+      requires ( notBool ACCTFROM ==K ACCTTO ) andBool VALUE <=Int ORIGFROM
       [preserves-definedness]
 
-    rule <k> #transferFunds ACCTFROM _ACCTTO VALUE => #end EVMC_BALANCE_UNDERFLOW ... </k>
+    rule <k> #transferFunds ACCTFROM _ VALUE => #end EVMC_BALANCE_UNDERFLOW ... </k>
          <account>
            <acctID> ACCTFROM </acctID>
            <balance> ORIGFROM </balance>
@@ -857,17 +854,17 @@ These are just used by the other operators for shuffling local execution state a
          </account>
       requires VALUE >Int ORIGFROM
 
-    rule <k> #transferFunds ACCTFROM ACCTTO VALUE => #transferFundsToNonExistent ACCTFROM ACCTTO VALUE ... </k> [owise]
+    rule <k> #transferFunds ACCTFROM ACCTTO VALUE => #transferFundsToNonExistent ACCTFROM ACCTTO VALUE ... </k> [priority(75)]
 
     rule <k> #transferFundsToNonExistent ACCTFROM ACCTTO VALUE => #newAccount ACCTTO ~> #transferFunds ACCTFROM ACCTTO VALUE ... </k>
          <schedule> SCHED </schedule>
-      requires ACCTFROM =/=K ACCTTO
+      requires notBool ACCTFROM ==K ACCTTO
        andBool (VALUE >Int 0 orBool notBool Gemptyisnonexistent << SCHED >>)
 
-    rule <k> #transferFundsToNonExistent ACCTFROM ACCTTO 0 => .K ... </k>
+    rule <k> #transferFundsToNonExistent ACCTFROM ACCTTO VALUE => .K ... </k>
          <schedule> SCHED </schedule>
-      requires ACCTFROM =/=K ACCTTO
-       andBool Gemptyisnonexistent << SCHED >>
+      requires notBool ACCTFROM ==K ACCTTO
+       andBool VALUE ==Int 0 andBool Gemptyisnonexistent << SCHED >>
 ```
 
 ### Invalid Operator
@@ -1059,7 +1056,7 @@ The blockhash is calculated here using the "shortcut" formula used for running t
     rule #blockhash(_, _, _, 256) => 0
     rule #blockhash(ListItem(0) _, _, _, _) => 0
     rule #blockhash(ListItem(H) _, N, N, _) => H
-    rule #blockhash(ListItem(_) L, N, HI, A) => #blockhash(L, N, HI -Int 1, A +Int 1) [owise]
+    rule #blockhash(ListItem(_) L, N, HI, A) => #blockhash(L, N, HI -Int 1, A +Int 1) [priority(75)]
 ```
 
 EVM OpCodes
@@ -1081,12 +1078,12 @@ The `JUMP*` family of operations affect the current program counter.
          <jumpDests> DESTS </jumpDests>
       requires DEST <Int lengthBytes(DESTS) andBool DESTS[DEST] ==Int 1
 
-    rule <k> JUMP _ => #end EVMC_BAD_JUMP_DESTINATION ... </k> [owise]
+    rule <k> JUMP _ => #end EVMC_BAD_JUMP_DESTINATION ... </k> [priority(75)]
 
     syntax BinStackOp ::= "JUMPI"
  // -----------------------------
-    rule [jumpi.false]: <k> JUMPI _DEST I => .K        ... </k> requires I  ==Int 0
-    rule [jumpi.true]:  <k> JUMPI  DEST I => JUMP DEST ... </k> requires I =/=Int 0
+    rule [jumpi.false]: <k> JUMPI _DEST I => .K        ... </k> requires         I ==Int 0
+    rule [jumpi.true]:  <k> JUMPI  DEST I => JUMP DEST ... </k> requires notBool I ==Int 0
 
     syntax InternalOp ::= "#endBasicBlock"
  // --------------------------------------
@@ -1190,7 +1187,7 @@ Operators that require access to the rest of the Ethereum network world-state ca
            ...
          </account>
 
-    rule <k> BALANCE ACCT => #accessAccounts ACCT ~> 0 ~> #push ... </k> [owise]
+    rule <k> BALANCE ACCT => #accessAccounts ACCT ~> 0 ~> #push ... </k> [priority(75)]
 
     syntax UnStackOp ::= "EXTCODESIZE"
  // ----------------------------------
@@ -1201,7 +1198,7 @@ Operators that require access to the rest of the Ethereum network world-state ca
            ...
          </account>
 
-    rule <k> EXTCODESIZE ACCT => #accessAccounts ACCT ~> 0 ~> #push ... </k> [owise]
+    rule <k> EXTCODESIZE ACCT => #accessAccounts ACCT ~> 0 ~> #push ... </k> [priority(75)]
 
     syntax UnStackOp ::= "EXTCODEHASH"
  // ----------------------------------
@@ -1215,7 +1212,7 @@ Operators that require access to the rest of the Ethereum network world-state ca
          </account>
       requires notBool #accountEmpty(CODE, NONCE, BAL)
 
-    rule <k> EXTCODEHASH ACCT => #accessAccounts ACCT ~> 0 ~> #push ... </k> [owise]
+    rule <k> EXTCODEHASH ACCT => #accessAccounts ACCT ~> 0 ~> #push ... </k> [priority(75)]
 
     syntax QuadStackOp ::= "EXTCODECOPY"
  // ------------------------------------
@@ -1228,7 +1225,7 @@ Operators that require access to the rest of the Ethereum network world-state ca
          </account>
 
     rule <k> EXTCODECOPY ACCT MEMSTART _ WIDTH => #accessAccounts ACCT ... </k>
-         <localMem> LM => LM [ MEMSTART := #padToWidth(WIDTH, .Bytes) ] </localMem> [owise]
+         <localMem> LM => LM [ MEMSTART := #padToWidth(WIDTH, .Bytes) ] </localMem> [priority(75)]
 ```
 
 ### Account Storage Operations
@@ -1365,7 +1362,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     rule <k> #call ACCTFROM ACCTTO ACCTCODE VALUE APPVALUE ARGS STATIC
           => #callWithCode ACCTFROM ACCTTO ACCTCODE .Bytes VALUE APPVALUE ARGS STATIC
          ...
-         </k> [owise]
+         </k> [priority(75)]
 
     rule <k> #callWithCode ACCTFROM ACCTTO ACCTCODE BYTES VALUE APPVALUE ARGS STATIC
           => #pushCallStack ~> #pushWorldState
@@ -1460,18 +1457,18 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
 
     syntax Bytes ::= #computeValidJumpDestsWithinBound(Bytes, Int, Bytes) [symbol(computeValidJumpDestsWithinBound), function]
  // --------------------------------------------------------------------------------------------------------------------------
-    rule #computeValidJumpDests(PGM, I, RESULT) => RESULT requires I >=Int lengthBytes(PGM)
-    rule #computeValidJumpDests(PGM, I, RESULT) => #computeValidJumpDestsWithinBound(PGM, I, RESULT) requires I <Int lengthBytes(PGM)
+    rule #computeValidJumpDests(PGM, I, RESULT) => RESULT                                            requires I >=Int lengthBytes(PGM)
+    rule #computeValidJumpDests(PGM, I, RESULT) => #computeValidJumpDestsWithinBound(PGM, I, RESULT) requires I  <Int lengthBytes(PGM)
 
-    rule #computeValidJumpDestsWithinBound(PGM, I, RESULT) => #computeValidJumpDests(PGM, I +Int 1, RESULT[I <- 1]) requires PGM [ I ] ==Int 91
-    rule #computeValidJumpDestsWithinBound(PGM, I, RESULT) => #computeValidJumpDests(PGM, I +Int #widthOpCode(PGM [ I ]), RESULT) requires notBool PGM [ I ] ==Int 91
+    rule #computeValidJumpDestsWithinBound(PGM, I, RESULT) => #computeValidJumpDests(PGM, I +Int 1, RESULT[I <- 1])               requires           PGM [ I ] ==Int 91
+    rule #computeValidJumpDestsWithinBound(PGM, I, RESULT) => #computeValidJumpDests(PGM, I +Int #widthOpCode(PGM [ I ]), RESULT) requires notBool ( PGM [ I ] ==Int 91 )
 ```
 
 ```k
     syntax Int ::= #widthOpCode(Int) [symbol(#widthOpCode), function]
  // -----------------------------------------------------------------
     rule #widthOpCode(W) => W -Int 94 requires W >=Int 96 andBool W <=Int 127
-    rule #widthOpCode(_) => 1 [owise]
+    rule #widthOpCode(_) => 1 [priority(75)]
 
     syntax KItem ::= "#return" Int Int
  // ----------------------------------
@@ -1506,9 +1503,8 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     syntax InternalOp ::= "#refund" Gas
                         | "#setLocalMem" Int Int Bytes
  // --------------------------------------------------
-    rule [refund]: <k> #refund G:Gas => .K ... </k> <gas> GAVAIL => GAVAIL +Gas G </gas> <useGas> true </useGas>
-    rule [refund.noGas]: <k> #refund _ => .K ... </k> <useGas> false </useGas>
-
+    rule [refund]:       <useGas> true  </useGas> <k> #refund G:Gas => .K ... </k> <gas> GAVAIL => GAVAIL +Gas G </gas>
+    rule [refund.noGas]: <useGas> false </useGas> <k> #refund _     => .K ... </k>
 
     rule <k> #setLocalMem START WIDTH WS => .K ... </k>
          <localMem> LM => LM [ START := #range(WS, 0, minInt(WIDTH, lengthBytes(WS))) ] </localMem>
@@ -1631,8 +1627,8 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
 
     syntax Bool ::= #isValidCode ( Bytes , Schedule ) [symbol(#isValidCode), function]
  // ----------------------------------------------------------------------------------
-    rule #isValidCode( OUT ,  SCHED) => Ghasrejectedfirstbyte << SCHED >> impliesBool OUT[0] =/=Int 239 requires lengthBytes(OUT) >Int 0
-    rule #isValidCode(_OUT , _SCHED) => true                                                            [owise]
+    rule #isValidCode( OUT,  SCHED) => Ghasrejectedfirstbyte << SCHED >> impliesBool notBool OUT[0] ==Int 239 requires lengthBytes(OUT) >Int 0
+    rule #isValidCode(   _,      _) => true                                                                   [priority(75)]
 
     syntax KItem ::= "#codeDeposit" Int
                    | "#mkCodeDeposit" Int
@@ -1686,7 +1682,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
     rule <statusCode> _:ExceptionalStatusCode </statusCode>
          <k> #halt ~> #finishCodeDeposit _ _ => #popCallStack ~> #popWorldState ~> 0 ~> #push ... </k>
          <schedule> SCHED </schedule>
-      requires SCHED =/=K FRONTIER
+      requires notBool SCHED ==K FRONTIER
 
     rule <k> #checkCreate ACCT VALUE => #checkBalanceUnderflow ACCT VALUE ~> #checkDepthExceeded ~> #checkNonceExceeded ACCT ... </k>
 ```
@@ -1716,7 +1712,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
       [preserves-definedness]
 
     rule [create-invalid]:
-         <k> CREATE _ _ _ => #end EVMC_OUT_OF_GAS ... </k> [owise]
+         <k> CREATE _ _ _ => #end EVMC_OUT_OF_GAS ... </k> [priority(75)]
 ```
 
 `CREATE2` will attempt to `#create` the account, but with the new scheme for choosing the account address.
@@ -1738,7 +1734,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
       requires #hasValidInitCode(MEMWIDTH, SCHED)
 
     rule [create2-invalid]:
-         <k> CREATE2 _ _ _ _ => #end EVMC_OUT_OF_GAS ... </k> [owise]
+         <k> CREATE2 _ _ _ _ => #end EVMC_OUT_OF_GAS ... </k> [priority(75)]
 ```
 
 `SELFDESTRUCT` marks the current account for deletion and transfers funds out of the current account.
@@ -1756,7 +1752,7 @@ Self destructing to yourself, unlike a regular transfer, destroys the balance in
            ...
          </account>
          <output> _ => .Bytes </output>
-      requires ACCT =/=Int ACCTTO
+      requires notBool ACCT ==Int ACCTTO
 
     rule <k> SELFDESTRUCT ACCT => #touchAccounts ACCT ~> #accessAccounts ACCT ~> #end EVMC_SUCCESS ... </k>
          <id> ACCT </id>
@@ -1793,19 +1789,19 @@ Precompiled Contracts
     syntax Int ::= #precompiledAccountsUB ( Schedule ) [symbol(#precompiledAccountsUB), function, total]
  // ----------------------------------------------------------------------------------------------------
     rule #precompiledAccountsUB(DEFAULT)           => 4
-    rule #precompiledAccountsUB(FRONTIER)          => #precompiledAccountsUB(DEFAULT)
-    rule #precompiledAccountsUB(HOMESTEAD)         => #precompiledAccountsUB(FRONTIER)
-    rule #precompiledAccountsUB(TANGERINE_WHISTLE) => #precompiledAccountsUB(HOMESTEAD)
-    rule #precompiledAccountsUB(SPURIOUS_DRAGON)   => #precompiledAccountsUB(TANGERINE_WHISTLE)
+    rule #precompiledAccountsUB(FRONTIER)          => 4
+    rule #precompiledAccountsUB(HOMESTEAD)         => 4
+    rule #precompiledAccountsUB(TANGERINE_WHISTLE) => 4
+    rule #precompiledAccountsUB(SPURIOUS_DRAGON)   => 4
     rule #precompiledAccountsUB(BYZANTIUM)         => 8
-    rule #precompiledAccountsUB(CONSTANTINOPLE)    => #precompiledAccountsUB(BYZANTIUM)
-    rule #precompiledAccountsUB(PETERSBURG)        => #precompiledAccountsUB(CONSTANTINOPLE)
+    rule #precompiledAccountsUB(CONSTANTINOPLE)    => 8
+    rule #precompiledAccountsUB(PETERSBURG)        => 8
     rule #precompiledAccountsUB(ISTANBUL)          => 9
-    rule #precompiledAccountsUB(BERLIN)            => #precompiledAccountsUB(ISTANBUL)
-    rule #precompiledAccountsUB(LONDON)            => #precompiledAccountsUB(BERLIN)
-    rule #precompiledAccountsUB(MERGE)             => #precompiledAccountsUB(LONDON)
-    rule #precompiledAccountsUB(SHANGHAI)          => #precompiledAccountsUB(MERGE)
-    rule #precompiledAccountsUB(CANCUN)            => #precompiledAccountsUB(SHANGHAI)
+    rule #precompiledAccountsUB(BERLIN)            => 9
+    rule #precompiledAccountsUB(LONDON)            => 9
+    rule #precompiledAccountsUB(MERGE)             => 9
+    rule #precompiledAccountsUB(SHANGHAI)          => 9
+    rule #precompiledAccountsUB(CANCUN)            => 9
 
 
     syntax Set ::= #precompiledAccountsSet    ( Schedule ) [symbol(#precompiledAccountsSet),    function, total]
@@ -1814,7 +1810,7 @@ Precompiled Contracts
     rule #precompiledAccountsSet(SCHED) => #precompiledAccountsSetAux(#precompiledAccountsUB(SCHED))
 
     rule #precompiledAccountsSetAux(N)  => .Set requires N <=Int 0
-    rule #precompiledAccountsSetAux(N)  => SetItem(N) #precompiledAccountsSetAux(N -Int 1) [owise, preserves-definedness]
+    rule #precompiledAccountsSetAux(N)  => SetItem(N) #precompiledAccountsSetAux(N -Int 1) [priority(75), preserves-definedness]
 ```
 
 -   `ECREC` performs ECDSA public key recovery.
@@ -1866,7 +1862,7 @@ Precompiled Contracts
                    | #modexp3 ( Int , Int , Int , Bytes ) [symbol(#modexp3), function]
                    | #modexp4 ( Int , Int , Int )         [symbol(#modexp4), function]
  // ----------------------------------------------------------------------------------
-    rule #modexp1(BASELEN, EXPLEN,   MODLEN, DATA) => #modexp2(#asInteger(#range(DATA, 0, BASELEN)), EXPLEN, MODLEN, #range(DATA, BASELEN, maxInt(0, lengthBytes(DATA) -Int BASELEN))) requires MODLEN =/=Int 0
+    rule #modexp1(BASELEN, EXPLEN,   MODLEN, DATA) => #modexp2(#asInteger(#range(DATA, 0, BASELEN)), EXPLEN, MODLEN, #range(DATA, BASELEN, maxInt(0, lengthBytes(DATA) -Int BASELEN))) requires notBool MODLEN ==Int 0
     rule #modexp1(_,       _,        0,      _)    => .Bytes
     rule #modexp2(BASE,    EXPLEN,   MODLEN, DATA) => #modexp3(BASE, #asInteger(#range(DATA, 0, EXPLEN)), MODLEN, #range(DATA, EXPLEN, maxInt(0, lengthBytes(DATA) -Int EXPLEN)))
     rule #modexp3(BASE,    EXPONENT, MODLEN, DATA) => #padToWidth(MODLEN, #modexp4(BASE, EXPONENT, #asInteger(#range(DATA, 0, MODLEN))))
@@ -1907,12 +1903,12 @@ Precompiled Contracts
       requires lengthBytes(DATA) modInt 192 ==Int 0
     rule <k> ECPAIRING => #end EVMC_PRECOMPILE_FAILURE ... </k>
          <callData> DATA </callData>
-      requires lengthBytes(DATA) modInt 192 =/=Int 0
+      requires notBool lengthBytes(DATA) modInt 192 ==Int 0
 
     syntax InternalOp ::= #ecpairing(List, List, Int, Bytes, Int) [symbol(#ecpairing)]
  // ----------------------------------------------------------------------------------
     rule <k> (.K => #checkPoint) ~> #ecpairing((.List => ListItem((#asWord(#range(DATA, I, 32)), #asWord(#range(DATA, I +Int 32, 32))))) _, (.List => ListItem((#asWord(#range(DATA, I +Int 96, 32)) x #asWord(#range(DATA, I +Int 64, 32)) , #asWord(#range(DATA, I +Int 160, 32)) x #asWord(#range(DATA, I +Int 128, 32))))) _, I => I +Int 192, DATA, LEN) ... </k>
-      requires I =/=Int LEN
+      requires notBool I ==Int LEN
     rule <k> #ecpairing(A, B, LEN, _, LEN) => #end EVMC_SUCCESS ... </k>
          <output> _ => #padToWidth(32, #asByteStack(bool2Word(BN128AtePairing(A, B)))) </output>
 
@@ -1938,7 +1934,7 @@ Precompiled Contracts
 
     rule <k> BLAKE2F => #end EVMC_PRECOMPILE_FAILURE ... </k>
          <callData> DATA </callData>
-      requires lengthBytes( DATA ) =/=Int 213
+      requires notBool lengthBytes( DATA ) ==Int 213
 ```
 
 
@@ -1972,7 +1968,7 @@ Overall Gas
          <memoryUsed> MU </memoryUsed>
       requires #usesMemory(OP)
 
-   rule <k> #memory [ _ , _ ] => .K ... </k> [owise]
+   rule <k> #memory [ _ , _ ] => .K ... </k> [priority(75)]
 
     syntax InternalOp ::= "#gas"    "[" OpCode "]" | "#deductGas" | "#deductMemoryGas"
                         | "#memory" "[" OpCode "," OpCode "]" | "#deductMemory"
@@ -1981,22 +1977,22 @@ Overall Gas
          <memoryUsed> MU => MU' </memoryUsed> <schedule> SCHED </schedule>
 
     rule <k> _G:Gas ~> (#deductMemoryGas => #deductGas)   ... </k> //Required for verification
-    rule <k>  G:Gas ~> #deductGas => #end EVMC_OUT_OF_GAS ... </k> <gas> GAVAIL:Gas                  </gas> <useGas> true </useGas> requires GAVAIL <Gas G
-    rule <k>  G:Gas ~> #deductGas => .K                    ... </k> <gas> GAVAIL:Gas => GAVAIL -Gas G </gas> <useGas> true </useGas> requires G <=Gas GAVAIL
-    rule <k>  _:Gas ~> #deductGas => .K                    ... </k> <useGas> false </useGas>
+    rule <k>  G:Gas ~> #deductGas => #end EVMC_OUT_OF_GAS ... </k> <useGas> true  </useGas> <gas> GAVAIL:Gas                  </gas> requires GAVAIL <Gas G
+    rule <k>  G:Gas ~> #deductGas => .K                   ... </k> <useGas> true  </useGas> <gas> GAVAIL:Gas => GAVAIL -Gas G </gas> requires G <=Gas GAVAIL
+    rule <k>  _:Gas ~> #deductGas => .K                   ... </k> <useGas> false </useGas>
 
-    syntax Bool ::= #inStorage     ( Map   , Account , Int ) [symbol(#inStorage), function, total]
+    syntax Bool ::= #inStorage     ( Map   , Account , Int ) [symbol(#inStorage),     function, total]
                   | #inStorageAux1 ( KItem ,           Int ) [symbol(#inStorageAux1), function, total]
                   | #inStorageAux2 ( Set   ,           Int ) [symbol(#inStorageAux2), function, total]
  // --------------------------------------------------------------------------------------------------
     rule #inStorage(TS, ACCT, KEY) => #inStorageAux1(TS[ACCT], KEY) requires ACCT in_keys(TS)
-    rule #inStorage(_, _, _)       => false                         [owise]
+    rule #inStorage(_, _, _)       => false                         [priority(75)]
 
     rule #inStorageAux1(KEYS:Set, KEY) => #inStorageAux2(KEYS, KEY)
-    rule #inStorageAux1(_, _)          => false                     [owise]
+    rule #inStorageAux1(_, _)          => false                     [priority(75)]
 
     rule #inStorageAux2(KEYS, KEY) => true  requires KEY in KEYS
-    rule #inStorageAux2(_, _)      => false [owise]
+    rule #inStorageAux2(_, _)      => false [priority(75)]
 ```
 
 Memory Consumption
@@ -2032,7 +2028,7 @@ In the YellowPaper, each opcode is defined to consume zero gas unless specified 
     rule #memory ( _COP:CallOp     _ _ _ ARGSTART ARGWIDTH RETSTART RETWIDTH , MU ) => #memoryUsageUpdate(#memoryUsageUpdate(MU, ARGSTART, ARGWIDTH), RETSTART, RETWIDTH)
     rule #memory ( _CSOP:CallSixOp _ _   ARGSTART ARGWIDTH RETSTART RETWIDTH , MU ) => #memoryUsageUpdate(#memoryUsageUpdate(MU, ARGSTART, ARGWIDTH), RETSTART, RETWIDTH)
 
-    rule #memory ( _ , MU ) => MU [owise]
+    rule #memory ( _ , MU ) => MU [priority(75)]
 
     syntax Bool ::= #usesMemory ( OpCode ) [symbol(#usesMemory), function, total]
  // -----------------------------------------------------------------------------
@@ -2052,7 +2048,7 @@ In the YellowPaper, each opcode is defined to consume zero gas unless specified 
     rule #usesMemory(RETURN)         => true
     rule #usesMemory(REVERT)         => true
     rule #usesMemory(MCOPY)          => true
-    rule #usesMemory(_)              => false [owise]
+    rule #usesMemory(_)              => false [priority(75)]
 
     syntax Int ::= #memoryUsageUpdate ( Int , Int , Int ) [symbol(#memoryUsageUpdate), function, total]
  // ---------------------------------------------------------------------------------------------------
@@ -2070,7 +2066,7 @@ Access List Gas
     rule #usesAccessList(OP)     => true  requires isAddr2Op(OP)
     rule #usesAccessList(SLOAD)  => true
     rule #usesAccessList(SSTORE) => true
-    rule #usesAccessList(_)      => false [owise]
+    rule #usesAccessList(_)      => false [priority(75)]
 
     syntax InternalOp ::= "#access" "[" OpCode "," OpCode "]"
  // ---------------------------------------------------------
@@ -2078,7 +2074,7 @@ Access List Gas
          <schedule> SCHED </schedule>
       requires Ghasaccesslist << SCHED >> andBool #usesAccessList(OP)
 
-    rule <k> #access [ _ , _ ] => .K ... </k> <schedule> _ </schedule> [owise]
+    rule <k> #access [ _ , _ ] => .K ... </k> <schedule> _ </schedule> [priority(75)]
 
     syntax InternalOp ::= #gasAccess ( Schedule, OpCode ) [symbol(#gasAccess)]
  // --------------------------------------------------------------------------
@@ -2089,7 +2085,7 @@ Access List Gas
     rule <k> #gasAccess(SCHED, SELFDESTRUCT ACCT)      => #if ACCT in ACCTS #then 0 #else Gcoldaccountaccess < SCHED > #fi                                    ... </k> <accessedAccounts> ACCTS </accessedAccounts>
     rule <k> #gasAccess(_    , SLOAD INDEX )           => #accessStorage ACCT INDEX ~> 0                                                                      ... </k> <id> ACCT </id>
     rule <k> #gasAccess(SCHED, SSTORE INDEX _)         => #accessStorage ACCT INDEX ~> #if #inStorage(TS, ACCT, INDEX) #then 0 #else Gcoldsload < SCHED > #fi ... </k> <id> ACCT </id> <accessedStorage> TS </accessedStorage>
-    rule <k> #gasAccess(_    , _ )                     => 0                                                                                                   ... </k> [owise]
+    rule <k> #gasAccess(_    , _ )                     => 0                                                                                                   ... </k> [priority(75)]
 
 ```
 
@@ -2336,7 +2332,7 @@ There are several helpers for calculating gas (most of them also specified in th
            ...
          </account>
 
-   rule <k> #accountNonexistent(_) => true ... </k> [owise]
+   rule <k> #accountNonexistent(_) => true ... </k> [priority(75)]
 ```
 
 EVM Program Representations
@@ -2505,12 +2501,12 @@ After interpreting the strings representing programs as a `WordStack`, it should
     rule #dasmOpCode( 241,     _ ) => CALL
     rule #dasmOpCode( 242,     _ ) => CALLCODE
     rule #dasmOpCode( 243,     _ ) => RETURN
-    rule #dasmOpCode( 244, SCHED ) => DELEGATECALL requires SCHED =/=K FRONTIER
+    rule #dasmOpCode( 244, SCHED ) => DELEGATECALL requires notBool SCHED ==K FRONTIER
     rule #dasmOpCode( 245, SCHED ) => CREATE2      requires Ghascreate2    << SCHED >>
     rule #dasmOpCode( 250, SCHED ) => STATICCALL   requires Ghasstaticcall << SCHED >>
     rule #dasmOpCode( 253, SCHED ) => REVERT       requires Ghasrevert     << SCHED >>
     rule #dasmOpCode( 254,     _ ) => INVALID
     rule #dasmOpCode( 255,     _ ) => SELFDESTRUCT
-    rule #dasmOpCode(   W,     _ ) => UNDEFINED(W) [owise]
+    rule #dasmOpCode(   W,     _ ) => UNDEFINED(W) [priority(75)]
 endmodule
 ```

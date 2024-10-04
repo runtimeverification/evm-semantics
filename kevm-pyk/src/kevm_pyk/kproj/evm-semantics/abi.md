@@ -296,7 +296,7 @@ For most types, this is a fixed 32 bytes, except for static tuples, for which th
     syntax Int ::= #lenOfHead ( TypedArg ) [symbol(lenOfHead), function, total]
  // ---------------------------------------------------------------------------
     rule #lenOfHead( #tuple( ARGS )) => #lenOfHeads(ARGS) requires #isStaticType(#tuple(ARGS))
-    rule #lenOfHead(              _) => 32 [owise]
+    rule #lenOfHead(              _) => 32                [priority(75)]
 ```
 
 `#isStaticType` checks if a given `TypedArg` is a static type in order to determine if it has a fixed size.
@@ -308,7 +308,7 @@ For most types, this is a fixed 32 bytes, except for static tuples, for which th
     rule #isStaticType(   #string( _ )) => false
     rule #isStaticType(#array(_, _, _)) => false
     rule #isStaticType( #tuple( ARGS )) => notBool #hasDynamicType(ARGS)
-    rule #isStaticType(              _) => true                          [owise]
+    rule #isStaticType(              _) => true                          [priority(75)]
 
     syntax Bool ::= #hasDynamicType(TypedArgs) [symbol(hasDynamicType), function, total]
  // ------------------------------------------------------------------------------------

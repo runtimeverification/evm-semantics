@@ -47,7 +47,7 @@ Address/Hash Helpers
  // --------------------------------------------------------------------------------------------------------
     rule [sender.pre.EIP155]:      #sender(_:TxData, TW             => TW +Int 27           , _, _, _) requires TW ==Int 0                orBool TW ==Int 1
     rule [sender.EIP155.signed]:   #sender(_:TxData, TW             => (TW -Int 35) modInt 2, _, _, B) requires TW ==Int 2 *Int B +Int 35 orBool TW ==Int 2 *Int B +Int 36
-    rule [sender.EIP155.unsigned]: #sender(T:TxData, TW, TR, TS, _) => #sender(#hashTxData(T), TW, TR, TS) [owise]
+    rule [sender.EIP155.unsigned]: #sender(T:TxData, TW, TR, TS, _) => #sender(#hashTxData(T), TW, TR, TS) [priority(75)]
 
     rule [sender]: #sender(HT, TW, TR, TS) => #sender(ECDSARecover(HT, TW, TR, TS))
 
@@ -170,7 +170,7 @@ These parsers can interpret hex-encoded strings as `Int`s, `Bytes`s, and `Map`s.
 
     rule #parseWord("") => 0
     rule #parseWord(S)  => #parseHexWord(S) requires lengthString(S) >=Int 2 andBool substrString(S, 0, 2) ==String "0x"
-    rule #parseWord(S)  => String2Int(S) [owise]
+    rule #parseWord(S)  => String2Int(S)    [priority(75)]
 
     syntax String ::= #alignHexString ( String ) [symbol(#alignHexString), function, total]
  // ---------------------------------------------------------------------------------------
@@ -275,9 +275,9 @@ Encoding
 
     rule #rlpEncodeString(STR) => #rlpEncodeBytes(String2Bytes(STR))
 
-    rule #rlpEncodeBytes(BYTES) => b"\x80"                    requires lengthBytes(BYTES)  <Int 1
-    rule #rlpEncodeBytes(BYTES) => BYTES                      requires lengthBytes(BYTES) ==Int 1 andBool #asInteger(substrBytes(BYTES, 0, 1)) <Int 128
-    rule #rlpEncodeBytes(BYTES) => #rlpEncodeLength(BYTES, 128) [owise]
+    rule #rlpEncodeBytes(BYTES) => b"\x80"                      requires lengthBytes(BYTES)  <Int 1
+    rule #rlpEncodeBytes(BYTES) => BYTES                        requires lengthBytes(BYTES) ==Int 1 andBool #asInteger(substrBytes(BYTES, 0, 1)) <Int 128
+    rule #rlpEncodeBytes(BYTES) => #rlpEncodeLength(BYTES, 128) [priority(75)]
 
     syntax JSON ::= Bytes
     rule #rlpEncode( [ J:JSONs ] ) => #rlpEncodeLength( #rlpEncode(J, .StringBuffer) , 192 )
@@ -410,7 +410,7 @@ Decoding
                    | #rlpDecodeList (Bytes , Int , LengthPrefix) [symbol(#rlpDecodeListAux), function]
  // --------------------------------------------------------------------------------------------------
     rule #rlpDecodeList(BYTES, POS) => #rlpDecodeList(BYTES, POS, #decodeLengthPrefix(BYTES, POS)) requires POS <Int lengthBytes(BYTES)
-    rule #rlpDecodeList(    _,   _) => .JSONs [owise]
+    rule #rlpDecodeList(    _,   _) => .JSONs [priority(75)]
     rule #rlpDecodeList(BYTES, POS, _:LengthPrefixType(L, P)) => #rlpDecode(substrBytes(BYTES, POS, L +Int P)) , #rlpDecodeList(BYTES, L +Int P)
 
     syntax LengthPrefixType ::= "#str" | "#list"
@@ -426,7 +426,7 @@ Decoding
     rule #decodeLengthPrefix(    _, START, B0) => #str(B0 -Int 128, START +Int 1)                    requires B0 >=Int 128 andBool B0 <Int (128 +Int 56)
     rule #decodeLengthPrefix(BYTES, START, B0) => #decodeLengthPrefixLength(#str, BYTES, START, B0)  requires B0 >=Int (128 +Int 56) andBool B0 <Int 192
     rule #decodeLengthPrefix(    _, START, B0) => #list(B0 -Int 192, START +Int 1)                   requires B0 >=Int 192 andBool B0 <Int 192 +Int 56
-    rule #decodeLengthPrefix(BYTES, START, B0) => #decodeLengthPrefixLength(#list, BYTES, START, B0) [owise]
+    rule #decodeLengthPrefix(BYTES, START, B0) => #decodeLengthPrefixLength(#list, BYTES, START, B0) [priority(75)]
 
     rule #decodeLengthPrefixLength(#str,  BYTES, START, B0) => #decodeLengthPrefixLength(#str,  START, B0 -Int 128 -Int 56 +Int 1, #asWord(substrBytes(BYTES, START +Int 1, START +Int 1 +Int (B0 -Int 128 -Int 56 +Int 1))))
     rule #decodeLengthPrefixLength(#list, BYTES, START, B0) => #decodeLengthPrefixLength(#list, START, B0 -Int 192 -Int 56 +Int 1, #asWord(substrBytes(BYTES, START +Int 1, START +Int 1 +Int (B0 -Int 192 -Int 56 +Int 1))))
@@ -520,8 +520,6 @@ Merkle Patricia Tree
 
     syntax MerkleTree ::= MerkleCheck( MerkleTree ) [symbol(MerkleCheck), function]
  // -------------------------------------------------------------------------------
-    rule MerkleCheck( TREE ) => TREE [owise]
-
     rule MerkleCheck( MerkleLeaf( _, "" ) => .MerkleTree )
 
     rule MerkleCheck( MerkleBranch( .Map                   , V  ) => MerkleLeaf( .Bytes, V )                             )
@@ -531,6 +529,8 @@ Merkle Patricia Tree
     rule MerkleCheck( MerkleExtension( _, .MerkleTree                                      ) => .MerkleTree               )
     rule MerkleCheck( MerkleExtension( P1, MerkleLeaf( P2, V )                             ) => MerkleLeaf( P1 +Bytes P2, V ) )
     rule MerkleCheck( MerkleExtension( P1 => P1 +Bytes P2, MerkleExtension( P2, TREE ) => TREE )                              )
+
+    rule MerkleCheck( TREE ) => TREE [priority(75)]
 ```
 
 - `MerkleUpdateMap` Takes a mapping of `Bytes |-> String` and generates a trie
@@ -586,7 +586,7 @@ Merkle Tree Aux Functions
 
     rule #cleanBranchMapAux(                   M,                        .List,                      S ) => removeAll( M, S )
     rule #cleanBranchMapAux( X |-> .MerkleTree _, (ListItem(X) => .List) _    , (.Set => SetItem(X)) _ )
-    rule #cleanBranchMapAux(                   _, (ListItem(_) => .List) _    ,                      _ ) [owise]
+    rule #cleanBranchMapAux(                   _, (ListItem(_) => .List) _    ,                      _ ) [priority(75)]
 
     syntax MerkleTree ::= #merkleUpdateBranch ( Map, String, Int, Bytes, String ) [symbol(#merkleUpdateBranch), function]
  // ---------------------------------------------------------------------------------------------------------------------
@@ -594,7 +594,7 @@ Merkle Tree Aux Functions
       => MerkleBranch( M[X <- MerklePut( TREE, PATH, VALUE )], BRANCHVALUE )
 
     rule #merkleUpdateBranch ( M, BRANCHVALUE, X, PATH, VALUE )
-      => MerkleBranch( M[X <- MerkleLeaf( PATH, VALUE )], BRANCHVALUE ) [owise]
+      => MerkleBranch( M[X <- MerkleLeaf( PATH, VALUE )], BRANCHVALUE ) [priority(75)]
 
     syntax MerkleTree ::= #merkleExtensionBuilder(    Bytes , Bytes , String , Bytes , String ) [symbol(#merkleExtensionBuilder), function]
                         | #merkleExtensionBuilderAux( Bytes , Bytes , String , Bytes , String ) [symbol(#merkleExtensionBuilderAux), function]
@@ -606,7 +606,7 @@ Merkle Tree Aux Functions
 
     rule #merkleExtensionBuilder(PATH, P1, V1, P2, V2)
       => MerkleExtension( PATH, MerklePut( MerklePut( MerkleBranch( .Map, "" ), P1, V1 ), P2, V2 ) )
-      [owise]
+      [priority(75)]
 
     rule #merkleExtensionBuilderAux( PATH, P1, V1, P2, V2 )
       => #merkleExtensionBuilder( PATH +Bytes (#range(P1, 0, 1))
@@ -617,7 +617,7 @@ Merkle Tree Aux Functions
 
     rule #merkleExtensionBuilderAux( PATH, P1, V1, P2, V2 )
       => MerkleExtension( PATH, MerklePut( MerklePut( MerkleBranch( .Map, "" ), P1, V1 ), P2, V2 ) )
-      [owise]
+      [priority(75)]
 
     syntax MerkleTree ::= #merkleExtensionBrancher ( MerkleTree, Bytes, MerkleTree ) [symbol(#merkleExtensionBrancher), function]
  // -----------------------------------------------------------------------------------------------------------------------------

@@ -101,8 +101,6 @@ module JSON-RPC
     syntax Bool ::= isProperJson     ( JSON  ) [symbol(isProperJson), function]
                   | isProperJsonList ( JSONs ) [symbol(isProperJsonList), function]
  // -------------------------------------------------------------------------------
-    rule isProperJson(_) => false [owise]
-
     rule isProperJson(null) => true
 
     rule isProperJson(_:Int)    => true
@@ -113,6 +111,8 @@ module JSON-RPC
 
     rule isProperJson([ JS ]) => isProperJsonList(JS)
     rule isProperJson({ JS }) => isProperJsonList(JS)
+
+    rule isProperJson(_) => false [priority(75)]
 
     rule isProperJsonList(.JSONs) => true
     rule isProperJsonList(J, JS)  => isProperJson(J) andBool isProperJsonList(JS)

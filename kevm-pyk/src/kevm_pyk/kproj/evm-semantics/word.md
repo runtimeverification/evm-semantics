@@ -599,7 +599,7 @@ The following auxiliary functions support the associated automated reasoning.
     syntax Int ::=  #getFirstOneBit(Int) [function, total]
 
     rule [gfo-succ]: #getFirstOneBit(X:Int) => log2Int ( X &Int ( ( maxUInt256 xorInt X ) +Int 1 ) ) requires #rangeUInt(256, X) andBool X =/=Int 0 [preserves-definedness]
-    rule [gfo-fail]: #getFirstOneBit(_:Int) => -1                                                    [owise]
+    rule [gfo-fail]: #getFirstOneBit(_:Int) => -1                                                    [priority(75)]
 ```
 
 -   `#getFirstZeroBit` returns the 0-based index of the first zero bit of a word
@@ -608,7 +608,7 @@ The following auxiliary functions support the associated automated reasoning.
     syntax Int ::= #getFirstZeroBit(Int) [function, total]
 
     rule [gfz-succ]: #getFirstZeroBit(X:Int) => #getFirstOneBit ( maxUInt256 xorInt X ) requires #rangeUInt(256, X) [preserves-definedness]
-    rule [gfz-fail]: #getFirstZeroBit(_:Int) => -1                                      [owise]
+    rule [gfz-fail]: #getFirstZeroBit(_:Int) => -1                                      [priority(75)]
 ```
 
 -   `#getMaskShiftBits` and `#getMaskShiftBytes` return the size of the shift in bits and in bytes, respectively
@@ -620,7 +620,7 @@ The following auxiliary functions support the associated automated reasoning.
     rule [gms-bits]: #getMaskShiftBits(X:Int) => #getFirstZeroBit(X)
 
     rule [gms-bits-succ]: #getMaskShiftBytes(X:Int) => #getFirstZeroBit(X) /Int 8 requires #getMaskShiftBits(X) modInt 8 ==Int 0 [preserves-definedness]
-    rule [gms-bits-fail]: #getMaskShiftBytes(_:Int) => -1                         [owise]
+    rule [gms-bits-fail]: #getMaskShiftBytes(_:Int) => -1                         [priority(75)]
 ```
 
 -   `#getMaskWidthBits` and `#getMaskWidthBytes` return the size of the width in bits and in bytes, respectively
@@ -631,10 +631,10 @@ The following auxiliary functions support the associated automated reasoning.
 
     rule [gmw-bits-succ-1]: #getMaskWidthBits(X:Int) => 256 -Int #getMaskShiftBits(X:Int)             requires  0 <=Int #getMaskShiftBits(X) andBool 0 ==Int X >>Int #getMaskShiftBits(X) [preserves-definedness]
     rule [gmw-bits-succ-2]: #getMaskWidthBits(X:Int) => #getFirstOneBit(X >>Int #getMaskShiftBits(X)) requires  0 <=Int #getMaskShiftBits(X) andBool 0  <Int X >>Int #getMaskShiftBits(X) [preserves-definedness]
-    rule [gmw-bits-fail]:   #getMaskWidthBits(_:Int) => -1                                            [owise]
+    rule [gmw-bits-fail]:   #getMaskWidthBits(_:Int) => -1                                            [priority(75)]
 
     rule [gmw-bytes-succ]: #getMaskWidthBytes(X:Int) => #getMaskWidthBits(X) /Int 8 requires #getMaskWidthBits(X) modInt 8 ==Int 0 [preserves-definedness]
-    rule [gmw-bytes-fail]: #getMaskWidthBytes(_:Int) => -1                          [owise]
+    rule [gmw-bytes-fail]: #getMaskWidthBytes(_:Int) => -1                          [priority(75)]
 ```
 
 -   `#isMask(X)` returns `true` if `X` is a mask, and `false` otherwise
@@ -649,7 +649,7 @@ The following auxiliary functions support the associated automated reasoning.
         [preserves-definedness]
 
     // and is not a mask otherwise
-    rule [is-mask-false]: #isMask(_:Int) => false [owise]
+    rule [is-mask-false]: #isMask(_:Int) => false [priority(75)]
 ```
 
 -   `#isByteShift(X)` returns `true` if `X` is a valid shift, and `false` otherwise
@@ -659,7 +659,7 @@ The following auxiliary functions support the associated automated reasoning.
 
     // A word is a shift if it is non-zero and a power of two divisible by 8
     rule #isByteShift(X) => X ==Int 2 ^Int log2Int(X) andBool log2Int(X) modInt 8 ==Int 0 requires 0 <Int X andBool X <Int pow256 [preserves-definedness]
-    rule #isByteShift(_) => false                                                         [owise]
+    rule #isByteShift(_) => false                                                         [priority(75)]
 
 endmodule
 ```

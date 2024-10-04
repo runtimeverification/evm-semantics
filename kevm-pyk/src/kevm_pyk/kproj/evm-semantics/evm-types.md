@@ -173,11 +173,11 @@ Bitwise logical operators are lifted from the integer versions.
     rule W0 &Word   W1 => W0 &Int W1
     rule W0 xorWord W1 => W0 xorInt W1
     rule W0 <<Word  W1 => chop( W0 <<Int W1 ) requires 0 <=Int W0 andBool 0 <=Int W1 andBool W1 <Int 256
-    rule  _ <<Word  _  => 0 [owise]
+    rule  _ <<Word  _  => 0 [priority(75)]
     rule W0 >>Word  W1 => W0 >>Int W1 requires 0 <=Int W0 andBool 0 <=Int W1
-    rule  _ >>Word   _ => 0 [owise]
+    rule  _ >>Word   _ => 0 [priority(75)]
     rule W0 >>sWord W1 => chop( (abs(W0) *Int sgn(W0)) >>Int W1 ) requires 0 <=Int W0 andBool 0 <=Int W1
-    rule  _ >>sWord  _ => 0 [owise]
+    rule  _ >>sWord  _ => 0 [priority(75)]
 ```
 
 -   `bit` gets bit `N` (0 being MSB).
@@ -353,7 +353,7 @@ Bytes helper functions
     syntax Account ::= #asAccount ( Bytes ) [symbol(#asAccount), function]
  // ----------------------------------------------------------------------
     rule #asAccount(BS) => .Account    requires lengthBytes(BS) ==Int 0
-    rule #asAccount(BS) => #asWord(BS) [owise]
+    rule #asAccount(BS) => #asWord(BS) [priority(75)]
 
     syntax Bytes ::= #asByteStack ( Int ) [symbol(#asByteStack), function, total]
  // -----------------------------------------------------------------------------
@@ -361,9 +361,9 @@ Bytes helper functions
 
     syntax Bytes ::= #range ( Bytes , Int , Int ) [symbol(#range), function, total]
  // -------------------------------------------------------------------------------
-    rule                #range(_, START, WIDTH)  => .Bytes                                                                       requires notBool (WIDTH >=Int 0 andBool START >=Int 0) [concrete]
-    rule [bytesRange] : #range(WS, START, WIDTH) => substrBytes(padRightBytes(WS, START +Int WIDTH, 0), START, START +Int WIDTH) requires WIDTH >=Int 0 andBool START >=Int 0 andBool START <Int lengthBytes(WS) [concrete]
-    rule                #range(_, _, WIDTH)      => padRightBytes(.Bytes, WIDTH, 0) [owise, concrete]
+    rule [bytesRange] : #range(WS, START, WIDTH) => substrBytes(padRightBytes(WS, START +Int WIDTH, 0), START, START +Int WIDTH) requires 0 <=Int START andBool 0 <=Int WIDTH andBool START  <Int lengthBytes(WS) [concrete]
+    rule                #range(WS, START, WIDTH) => padRightBytes(.Bytes, WIDTH, 0)                                              requires 0 <=Int START andBool 0 <=Int WIDTH andBool START >=Int lengthBytes(WS) [concrete]
+    rule                #range( _, START, WIDTH) => .Bytes                                                                       requires START <Int 0  orBool  WIDTH <Int 0                                      [concrete]
 
     syntax Bytes ::= #padToWidth      ( Int , Bytes ) [symbol(#padToWidth), function, total]
                    | #padRightToWidth ( Int , Bytes ) [symbol(#padRightToWidth), function, total]
