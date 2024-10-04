@@ -1818,7 +1818,7 @@ Precompiled Contracts
 ```
 
 -   `ECREC` performs ECDSA public key recovery.
--   `SHA256` performs the SHA2-257 hash function.
+-   `SHA256` performs the SHA2-256 hash function.
 -   `RIP160` performs the RIPEMD-160 hash function.
 -   `ID` is the identity function (copies input to output).
 
