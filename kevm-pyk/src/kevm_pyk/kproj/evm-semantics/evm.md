@@ -1818,9 +1818,14 @@ Precompiled Contracts
 ```
 
 -   `ECREC` performs ECDSA public key recovery.
--   `SHA256` performs the SHA2-257 hash function.
+-   `SHA256` performs the SHA2-256 hash function.
 -   `RIP160` performs the RIPEMD-160 hash function.
 -   `ID` is the identity function (copies input to output).
+-   `MODEXP` performs arbitrary-precision modular exponentiation.
+-   `ECADD`  performs point addition on the elliptic curve alt_bn128.
+-   `ECMUL` performs scalar multiplication on the elliptic curve alt_bn128.
+-   `ECPAIRING` performs an optimal ate pairing check on the elliptic curve alt_bn128.
+-   `BLAKE2F` performs the compression function F used in the BLAKE2 hashing algorithm.
 
 ```k
     syntax PrecompiledOp ::= "ECREC"
