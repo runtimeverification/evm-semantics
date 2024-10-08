@@ -227,26 +227,34 @@ module BYTES-SIMPLIFICATION [symbolic]
       requires S <Int 0
       [simplification]
 
-    rule [memUpdate-as-concat-inside]:
-      B1:Bytes [ S:Int := B2:Bytes ] =>
-        #range(B1, 0, S) +Bytes B2 +Bytes #range (B1 , S +Int lengthBytes(B2), lengthBytes(B1) -Int (S +Int lengthBytes(B2)))
-      requires 0 <=Int S andBool S +Int lengthBytes(B2) <Int lengthBytes(B1)
-      [simplification(60)]
+    rule [memUpdate-concat-in-left]: (B1 +Bytes B2) [ S := B ] => (B1 [ S := B ]) +Bytes B2
+      requires 0 <=Int S andBool S +Int lengthBytes(B) <=Int lengthBytes(B1)
+      [simplification(40)]
 
-    rule [memUpdate-as-concat-outside-1]:
-      B1:Bytes [ S:Int := B2:Bytes ] => #range(B1, 0, S) +Bytes B2
-      requires 0 <=Int S andBool lengthBytes(B1) <=Int S +Int lengthBytes(B2)
-      [simplification(60)]
+    rule [memUpdate-concat-in-right]: (B1 +Bytes B2) [ S := B ] => B1 +Bytes (B2 [ S -Int lengthBytes(B1) := B ])
+      requires lengthBytes(B1) <=Int S
+      [simplification(40)]
 
     rule [memUpdate-reorder]:
-      B:Bytes [ S1:Int := B1:Bytes] [ S2:Int := B2:Bytes ] => B [ S2 := B2 ] [ S1 := B1 ]
+      B:Bytes [ S1:Int := B1:Bytes ] [ S2:Int := B2:Bytes ] => B [ S2 := B2 ] [ S1 := B1 ]
       requires 0 <=Int S2 andBool S2 <Int S1 andBool S2 +Int lengthBytes(B2) <=Int S1
       [simplification]
 
     rule [memUpdate-subsume]:
-      B:Bytes [ S1:Int := B1:Bytes] [ S2:Int := B2:Bytes ] => B [ S2 := B2 ]
+      B:Bytes [ S1:Int := B1:Bytes ] [ S2:Int := B2:Bytes ] => B [ S2 := B2 ]
       requires 0 <=Int S2 andBool S2 <=Int S1 andBool S1 +Int lengthBytes(B1) <=Int S2 +Int lengthBytes(B2)
       [simplification]
+
+    rule [memUpdate-as-concat-inside]:
+      B1:Bytes [ S:Int := B2:Bytes ] =>
+        #range(B1, 0, S) +Bytes B2 +Bytes #range(B1 , S +Int lengthBytes(B2), lengthBytes(B1) -Int (S +Int lengthBytes(B2)))
+      requires 0 <=Int S andBool S +Int lengthBytes(B2) <Int lengthBytes(B1)
+      [simplification(60)]
+
+    rule [memUpdate-as-concat-outside]:
+      B1:Bytes [ S:Int := B2:Bytes ] => #range(B1, 0, S) +Bytes B2
+      requires 0 <=Int S andBool lengthBytes(B1) <=Int S +Int lengthBytes(B2)
+      [simplification(60)]
 
     // lengthBytes
 
