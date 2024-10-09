@@ -361,6 +361,11 @@ module LEMMAS-SPEC
       <k> runLemma( #range (#buf(8, X:Int), -3, _:Int) ) => doneLemma( .Bytes ) ... </k>
       requires 0 <=Int X andBool X <Int pow64
 
+    claim [range-39]:
+      <k> runLemma( b"\xaa" ==K #range ( BYTES:Bytes +Bytes b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" , ( lengthBytes ( BYTES:Bytes ) /Int 2 ) , 1 ) [ ( lengthBytes ( BYTES:Bytes ) /Int 2 ) := b"\xaa" ] )
+            => doneLemma(true) ... </k>
+      requires lengthBytes ( BYTES:Bytes ) <Int 32
+
  // #buf simplification
  // -------------------
     claim [bufExtractPadding]: <k> runLemma ( #asWord ( ( #range( #buf ( 32 , X ), 0, 28 ) ):Bytes ) ) => doneLemma ( 0 ) ... </k> requires #rangeUInt(32, X)
