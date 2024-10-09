@@ -362,7 +362,7 @@ module LEMMAS-SPEC
       requires 0 <=Int X andBool X <Int pow64
 
     claim [range-39]:
-      <k> runLemma( b"\xaa" ==K #range ( BYTES:Bytes +Bytes b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" , ( lengthBytes ( BYTES:Bytes ) /Int 2 ) , 1 ) [ ( lengthBytes ( BYTES:Bytes ) /Int 2 ) := b"\xaa" ] )
+      <k> runLemma( b"\xaa" ==K #range ( ( BYTES:Bytes +Bytes b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" ) [ ( lengthBytes ( BYTES:Bytes ) /Int 2 ) := b"\xaa" ] , ( lengthBytes ( BYTES:Bytes ) /Int 2 ) , 1 ) )
             => doneLemma(true) ... </k>
       requires lengthBytes ( BYTES:Bytes ) <Int 32
 
