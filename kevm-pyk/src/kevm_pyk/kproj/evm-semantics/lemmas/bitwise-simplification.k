@@ -13,7 +13,7 @@ module BITWISE-SIMPLIFICATION [symbolic]
     rule A |Int 0 => A [simplification]
     rule A |Int A => A [simplification]
 
-    rule A |Int B => B |Int A [simplification(40), concrete(B), symbolic(A)]
+    rule A |Int B => B |Int A [simplification(30), symbolic(A), concrete(B)]
 
     rule  X |Int _  ==Int 0          => false requires 0 <Int X [simplification, concrete(X)]
     rule (A |Int B) ==Int (B |Int A) => true  [simplification, smt-lemma]
@@ -22,7 +22,7 @@ module BITWISE-SIMPLIFICATION [symbolic]
   // bit-and
   // ###########################################################################
 
-    rule A &Int B => B &Int A [symbolic(A), concrete(B), simplification]
+    rule A &Int B => B &Int A [simplification(30), symbolic(A), concrete(B)]
 
     rule 0 &Int _ => 0 [simplification]
     rule _ &Int 0 => 0 [simplification]
@@ -34,24 +34,26 @@ module BITWISE-SIMPLIFICATION [symbolic]
     rule [bitwise-or-lt-zero]:  (X |Int Y) <Int Z => false requires 0 <=Int X andBool 0 <=Int Y andBool Z <=Int 0 [concrete(Z), simplification]
     rule [bitwise-and-lt-zero]: (X &Int Y) <Int Z => false requires 0 <=Int X andBool 0 <=Int Y andBool Z <=Int 0 [concrete(Z), simplification]
 
-    rule [bitwise-and-lt]:       (X &Int Y) <Int Z      => true requires 0 <=Int X andBool 0 <=Int Y andBool (X <Int Z orBool Y <Int Z)          [simplification]
-    rule [bitwise-or-lt-pow256]: (X |Int Y) <Int pow256 => true requires 0 <=Int X andBool 0 <=Int Y andBool X <Int pow256 andBool Y <Int pow256 [simplification]
+    rule [bitwise-and-lt]: (X &Int Y) <Int Z => true requires 0 <=Int X andBool 0 <=Int Y andBool (X <Int Z orBool Y <Int Z) [simplification]
+
+    rule [bitwise-or-lt]:
+      (X |Int Y) <Int Z => true
+      requires 0 <=Int X andBool 0 <=Int Y andBool X <Int Z andBool Y <Int Z
+       andBool Z ==Int 2 ^Int ( log2Int( Z ) ) [simplification, concrete(Z)]
 
     // Generalization of: maxUIntXXX &Int Y => Y requires #rangeUInt(XXX, Y)
     rule [bitwise-and-maxUInt-identity]:
       X &Int Y => Y
-      requires 0 <=Int X
-       andBool X +Int 1 ==Int 2 ^Int log2Int(X +Int 1)
+      requires 0 <=Int X andBool X +Int 1 ==Int 2 ^Int log2Int(X +Int 1)
        andBool 0 <=Int Y andBool Y <Int X +Int 1
-       [concrete(X), simplification, comm, preserves-definedness]
+       [simplification(40), concrete(X), preserves-definedness]
 
-    // Generalization of: notMaxUIntXXX &Int Y => 0 requires #rangeUInt(XXX, Y)
+    // Generalization of: notMaxUIntXXX &Int Y => 0 requires #rangeUInt(256 -Int XXX, Y)
     rule [bitwise-and-notMaxUInt-zero]:
       X &Int Y => 0
-      requires #rangeUInt(256, X)
-       andBool pow256 -Int X ==Int 2 ^Int ( log2Int ( pow256 -Int X ) )
+      requires #rangeUInt(256, X) andBool pow256 -Int X ==Int 2 ^Int ( log2Int ( pow256 -Int X ) )
        andBool 0 <=Int Y andBool Y <Int pow256 -Int X
-      [simplification, concrete(X), preserves-definedness]
+      [simplification(40), concrete(X), preserves-definedness]
 
     rule [notMaxUInt5-bit-and-nested]:
       notMaxUInt5 &Int ( ( notMaxUInt5 &Int X ) +Int Y ) => chop ( ( notMaxUInt5 &Int X ) +Int ( notMaxUInt5 &Int Y ) )

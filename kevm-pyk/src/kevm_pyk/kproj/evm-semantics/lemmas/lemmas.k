@@ -195,14 +195,6 @@ module LEMMAS-HASKELL [symbolic]
     imports BUF
 
   // ########################
-  // Word Reasoning
-  // ########################
-
-    rule #asWord(BUF) /Int D => #asWord(#range(BUF, 0, lengthBytes(BUF) -Int log256Int(D)))
-       requires 0 <Int D andBool D <Int pow256 andBool D ==Int 256 ^Int log256Int(D)
-        andBool log256Int(D) <=Int lengthBytes(BUF) [simplification, preserves-definedness]
-
-  // ########################
   // Arithmetic
   // ########################
 

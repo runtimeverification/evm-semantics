@@ -20,13 +20,12 @@ from pyk.kast.inner import (
 from pyk.kast.manip import abstract_term_safely, flatten_label, set_cell
 from pyk.kast.pretty import paren
 from pyk.kcfg.kcfg import Step
-from pyk.kcfg.semantics import KCFGSemantics
+from pyk.kcfg.semantics import DefaultSemantics
 from pyk.kcfg.show import NodePrinter
 from pyk.ktool.kprove import KProve
 from pyk.ktool.krun import KRun
 from pyk.prelude.bytes import BYTES, pretty_bytes
-from pyk.prelude.kbool import notBool
-from pyk.prelude.kint import INT, eqInt, gtInt, intToken, ltInt
+from pyk.prelude.kint import INT, gtInt, intToken, ltInt
 from pyk.prelude.ml import mlEqualsFalse, mlEqualsTrue
 from pyk.prelude.string import stringToken
 from pyk.prelude.utils import token
@@ -50,7 +49,7 @@ _LOGGER: Final = logging.getLogger(__name__)
 # KEVM class
 
 
-class KEVMSemantics(KCFGSemantics):
+class KEVMSemantics(DefaultSemantics):
     auto_abstract_gas: bool
     allow_symbolic_program: bool
     _cached_subst: Subst | None
@@ -98,6 +97,12 @@ class KEVMSemantics(KCFGSemantics):
 
         return False
 
+    def is_loop(self, cterm: CTerm) -> bool:
+        jumpi_pattern = KEVM.jumpi_applied(KVariable('###PCOUNT'), KVariable('###COND'))
+        pc_next_pattern = KEVM.pc_applied(KEVM.jumpi())
+        branch_pattern = KSequence([jumpi_pattern, pc_next_pattern, KEVM.sharp_execute(), KVariable('###CONTINUATION')])
+        return branch_pattern.match(cterm.cell('K_CELL')) is not None
+
     def same_loop(self, cterm1: CTerm, cterm2: CTerm) -> bool:
         # In the same program, at the same calldepth, at the same program counter
         for cell in ['PC_CELL', 'CALLDEPTH_CELL', 'PROGRAM_CELL']:
@@ -115,20 +120,6 @@ class KEVMSemantics(KCFGSemantics):
             if KEVM.wordstack_len(cterm1.cell('WORDSTACK_CELL')) == KEVM.wordstack_len(cterm2.cell('WORDSTACK_CELL')):
                 return True
         return False
-
-    def extract_branches(self, cterm: CTerm) -> list[KInner]:
-        k_cell = cterm.cell('K_CELL')
-        jumpi_pattern = KEVM.jumpi_applied(KVariable('###PCOUNT'), KVariable('###COND'))
-        pc_next_pattern = KEVM.pc_applied(KEVM.jumpi())
-        branch_pattern = KSequence([jumpi_pattern, pc_next_pattern, KEVM.sharp_execute(), KVariable('###CONTINUATION')])
-        if subst := branch_pattern.match(k_cell):
-            cond = subst['###COND']
-            if cond_subst := KEVM.bool_2_word(KVariable('###BOOL_2_WORD')).match(cond):
-                cond = cond_subst['###BOOL_2_WORD']
-            else:
-                cond = eqInt(cond, intToken(0))
-            return [mlEqualsTrue(cond), mlEqualsTrue(notBool(cond))]
-        return []
 
     def abstract_node(self, cterm: CTerm) -> CTerm:
         if not self.auto_abstract_gas:
@@ -224,6 +215,29 @@ class KEVMSemantics(KCFGSemantics):
         load_pattern = KSequence([KApply('loadProgram', KVariable('###BYTECODE')), KVariable('###CONTINUATION')])
         self._cached_subst = load_pattern.match(cterm.cell('K_CELL'))
         return self._cached_subst is not None
+
+    def is_mergeable(self, ct1: CTerm, ct2: CTerm) -> bool:
+        """Given two CTerms of Edges' targets, check if they are mergeable.
+
+        Two CTerms are mergeable if their `STATUSCODE_CELL` and `PROGRAM_CELL` are the same.
+        If mergeable, the two corresponding Edges are merged into one.
+
+        :param ct1: CTerm of one Edge's target.
+        :param ct2: CTerm of another Edge's target.
+        :return: `True` if the two CTerms are mergeable; `False` otherwise.
+        """
+        status_code_1 = ct1.cell('STATUSCODE_CELL')
+        status_code_2 = ct2.cell('STATUSCODE_CELL')
+        program_1 = ct1.cell('PROGRAM_CELL')
+        program_2 = ct2.cell('PROGRAM_CELL')
+        if (
+            type(status_code_1) is KApply
+            and type(status_code_2) is KApply
+            and type(program_1) is KToken
+            and type(program_2) is KToken
+        ):
+            return status_code_1 == status_code_2 and program_1 == program_2
+        raise ValueError(f'Attempted to merge nodes with non-concrete <statusCode> or <program>: {(ct1, ct2)}')
 
 
 class KEVM(KProve, KRun):
