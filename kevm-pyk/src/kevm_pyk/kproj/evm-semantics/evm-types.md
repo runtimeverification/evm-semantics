@@ -238,71 +238,60 @@ A cons-list is used for the EVM wordstack.
     rule I : BS => Int2Bytes(1, I, BE) +Bytes BS requires I <Int 256
 ```
 
--   `#take(N , WS)` keeps the first `N` elements of a `WordStack` (passing with zeros as needed).
--   `#drop(N , WS)` removes the first `N` elements of a `WordStack`.
+-   `#take(N , WS)` takes the first `N` elements of a `WordStack`.
+-   `#drop(N , WS)` drops the first `N` elements of a `WordStack`.
 
 ```k
     syntax WordStack ::= #take ( Int , WordStack ) [symbol(takeWordStack), function, total]
  // ---------------------------------------------------------------------------------------
-    rule [#take.base]:      #take(N, _WS)                => .WordStack                      requires notBool N >Int 0
-    rule [#take.zero-pad]:  #take(N, .WordStack)         => 0 : #take(N -Int 1, .WordStack) requires N >Int 0
-    rule [#take.recursive]: #take(N, (W : WS):WordStack) => W : #take(N -Int 1, WS)         requires N >Int 0
+ // Expected use cases
+    rule [ws-take-b]: #take(0,       _) => .WordStack
+    rule [ws-take-i]: #take(N, W0 : WS) => W0 : #take(N -Int 1, WS) requires 0 <Int N
+ // For totality
+    rule [ws-take-o]: #take(_, _) => .WordStack [owise]
 
     syntax WordStack ::= #drop ( Int , WordStack ) [symbol(dropWordStack), function, total]
  // ---------------------------------------------------------------------------------------
-    rule #drop(N, WS:WordStack)       => WS                                  requires notBool N >Int 0
-    rule #drop(N, .WordStack)         => .WordStack                          requires         N >Int 0
-    rule #drop(N, (W : WS):WordStack) => #drop(1, #drop(N -Int 1, (W : WS))) requires         N >Int 1
-    rule #drop(1, (_ : WS):WordStack) => WS
+ // Expected use cases
+    rule [ws-drop-b]: #drop(0, WS) => WS
+    rule [ws-drop-i]: #drop(N, W0 : WS) => #drop(N -Int 1, WS) requires 0 <Int N
+ // For totality
+    rule [ws-drop-O]: #drop(_, _) => .WordStack [owise]
 ```
 
 ### Element Access
 
 -   `WS [ N ]` accesses element `N` of `WS`.
--   `WS [ N := W ]` sets element `N` of `WS` to `W` (padding with zeros as needed).
+-   `WS [ N := W ]` sets element `N` of `WS` to `W`.
 
 ```k
     syntax Int ::= WordStack "[" Int "]" [function, total]
  // ------------------------------------------------------
-    rule (W : _):WordStack [ N ] => W                  requires N ==Int 0
-    rule WS:WordStack      [ N ] => #drop(N, WS) [ 0 ] requires N  >Int 0
-    rule  _:WordStack      [ N ] => 0                  requires N  <Int 0
+ // Expected use cases
+    rule [ws-get-b]: (W :  _):WordStack [ 0 ] => W
+    rule [ws-get-i]: (W : WS):WordStack [ N ] => WS:WordStack [ N -Int 1 ] requires 0 <Int N
+ // For totality
+    rule [ws-get-o]:  _:WordStack [ _:Int ] => 0 [owise]
 
     syntax WordStack ::= WordStack "[" Int ":=" Int "]" [function, total]
  // ---------------------------------------------------------------------
-    rule (_W0 : WS):WordStack [ N := W ] => W  : WS                     requires N ==Int 0
-    rule ( W0 : WS):WordStack [ N := W ] => W0 : (WS [ N -Int 1 := W ]) requires N  >Int 0
-    rule        WS :WordStack [ N := _ ] => WS                          requires N  <Int 0
-    rule .WordStack           [ N := W ] => (0 : .WordStack) [ N := W ]
+ // Expected use cases
+    rule [ws-set-b]: (_ : WS):WordStack [ 0 := V ] => ( V : WS ):WordStack
+    rule [ws-set-i]: (W : WS):WordStack [ N := V ] => ( W : (WS [ N -Int 1 := V ]) ):WordStack requires 0 <Int N
+ // For totality
+    rule [ws-set-O]: _:WordStack [ _ := _ ] => .WordStack [owise]
 ```
 
 -   `#sizeWordStack` calculates the size of a `WordStack`.
--   `_in_` determines if a `Int` occurs in a `WordStack`.
 
 ```k
     syntax Int ::= #sizeWordStack ( WordStack )       [symbol(#sizeWordStack), function, total, smtlib(sizeWordStack)]
                  | #sizeWordStack ( WordStack , Int ) [symbol(sizeWordStackAux), function, total, smtlib(sizeWordStackAux)]
  // -----------------------------------------------------------------------------------------------------------------------
     rule #sizeWordStack ( WS ) => #sizeWordStack(WS, 0)
+
     rule #sizeWordStack ( .WordStack, SIZE ) => SIZE
     rule #sizeWordStack ( _ : WS, SIZE )     => #sizeWordStack(WS, SIZE +Int 1)
-
-    syntax Bool ::= Int "in" WordStack [function]
- // ---------------------------------------------
-    rule _ in .WordStack => false
-    rule W in (W' : WS)  => (W ==K W') orElseBool (W in WS)
-```
-
--   `#replicateAux` pushes `N` copies of `A` onto a `WordStack`.
--   `#replicate` is a `WordStack` of length `N` with `A` the value of every element.
-
-```k
-    syntax WordStack ::= #replicate    ( Int, Int )            [symbol(#replicate), function, total]
-                       | #replicateAux ( Int, Int, WordStack ) [symbol(#replicateAux), function, total]
- // ---------------------------------------------------------------------------------------------------
-    rule #replicate   ( N,  A )     => #replicateAux(N, A, .WordStack)
-    rule #replicateAux( N,  A, WS ) => #replicateAux(N -Int 1, A, A : WS) requires         N >Int 0
-    rule #replicateAux( N, _A, WS ) => WS                                 requires notBool N >Int 0
 ```
 
 -   `WordStack2List` converts a term of sort `WordStack` to a term of sort `List`.
