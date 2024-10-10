@@ -228,7 +228,7 @@ module BYTES-SIMPLIFICATION [symbolic]
       [simplification]
 
     rule [memUpdate-concat-in-left]: (B1 +Bytes B2) [ S := B ] => (B1 [ S := B ]) +Bytes B2
-      requires 0 <=Int S andBool S +Int lengthBytes(B) <=Int lengthBytes(B1)
+      requires 0 <=Int S andBool S +Int lengthBytes(B) <Int lengthBytes(B1)
       [simplification(40)]
 
     rule [memUpdate-concat-in-right]: (B1 +Bytes B2) [ S := B ] => B1 +Bytes (B2 [ S -Int lengthBytes(B1) := B ])
