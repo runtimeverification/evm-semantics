@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+<meta charset="utf-8" />
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0, maximum-scale=1.0"
+/>
+<meta
+  name="description"
+  content="K Semantics of the Ethereum Virtual Machine (EVM)"
+/>
+<meta
+  name="keywords"
+  content="runtime, verification, rv, k, ethereum virtual machine, evm"
+/>
+<meta name="author" content="EVM Semantics | Runtime Verification Inc" />
+<meta name="robots" content="index, follow" />
+
+<!--favicon icon-->
+<link rel="icon" type="image/png" href="../../assets/img/favicon.ico" />
+
+<title>KEVM: Semantics of EVM in K | Runtime Verification, Inc. </title>
+
+<link rel="canonical" href="https://jellopaper.org/media/201801-presentation-csf/" />
+
+<!--web fonts-->
+<link
+  href="https://fonts.googleapis.com/css?family=Nunito:300,400,600,700,800"
+  rel="stylesheet"
+/>
+<link
+  href="https://fonts.googleapis.com/css?family=Lora:400i"
+  rel="stylesheet"
+/>
+
+<link
+  href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.14.0/css/all.min.css"
+  rel="stylesheet"
+/>
+
+<link href="../../assets/css/index.css" rel="stylesheet" />
+
+<!--[if (gt IE 9) |!(IE)]><!-->
+<!--<link rel="stylesheet" href="/assets/vendor/custom-nav/css/effects/fade-menu.css"/>-->
+<!-- <link rel="stylesheet" href="../../assets/k/vl-nav/css/effects/slide-menu.css" /> -->
+<!--<![endif]-->
+
+  </head>
+
+  <body>
+<header
+  class="navbar navbar-expand navbar-dark flex-column flex-md-row bd-navbar"
+>
+  <a class="logo-link" href="../../index.html"> EVM Semantics </a>
+  <ul class="navbar-nav ml-md-auto">
+    <li class="nav-item">
+      <a
+        class="nav-link pl-2 pr-1 mx-1 py-3 my-n2"
+        href="https://github.com/runtimeverification/evm-semantics"
+        target="_blank"
+        rel="noopener"
+        aria-label="GitHub"
+      >
+        <i class="fab fa-github"></i>
+      </a>
+    </li>
+  </ul>
+  <!--
+  <a
+    class="btn btn-rv-blue d-none d-lg-inline-block mb-3 mb-md-0 ml-md-3"
+    href="../../downloads"
+    >Download</a
+  >
+  -->
+</header>
+
+
+    <div class="container-fluid">
+      <div class="row flex-xl-nowrap">
+<div class="col-12 col-md-3 col-xl-2 bd-sidebar mb-3">
+  <form
+    role="search"
+    class="bd-search d-flex align-items-center justify-content-between"
+  >
+    <input
+      type="search"
+      class="form-control"
+      placeholder="Search..."
+      aria-label="Search for..."
+      autocomplete="false"
+      id="search-box"
+    />
+    <button
+      class="btn bd-search-docs-toggle d-md-none p-0 ml-3 collapsed"
+      type="button"
+      aria-label="Toggle docs navigation"
+      style="font-size: 1.4rem"
+    >
+      <i class="fas fa-bars"></i>
+    </button>
+  </form>
+  <nav class="collapse bd-links" aria-label="Main navigation">
+    <div class="bd-toc-item">
+      <a class="bd-toc-link" href="../../">Homepage</a>
+      <a class="bd-toc-link" href="../../INSTALL/">Install</a>
+    </div>
+  </nav>
+</div>
+
+        <main
+          class="col-12 col-md-6 col-xl-8 py-md-3 pl-md-5 bd-content"
+          role="main"
+        >
+          <div class="markdown-preview"><html><head></head><body><h2 id="overview">Overview</h2>
+<ol>
+<li>\K{} Framework</li>
+<li>Ethereum Virtual Machine</li>
+<li>KEVM Uses</li>
+</ol>
+<h3 id="links">Links</h3>
+<ul>
+<li>KEVM Repository: <a href="https://github.com/kframework/evm-semantics" target="_blank" rel="noreferrer noopener">https://github.com/kframework/evm-semantics</a></li>
+<li>K Repository: <a href="https://github.com/kframework/k" target="_blank" rel="noreferrer noopener">https://github.com/kframework/k</a></li>
+<li>Runtime Verification: <a href="https://runtimeverification.com" target="_blank" rel="noreferrer noopener">https://runtimeverification.com</a></li>
+<li>Verified smart contracts: <a href="https://github.com/runtimeverification/verified-smart-contracts" target="_blank" rel="noreferrer noopener">https://github.com/runtimeverification/verified-smart-contracts</a></li>
+</ul>
+<h1 id="%5Ck%7B%7D-framework">\K{} Framework</h1>
+<h2 id="the-vision%3A-language-independence">The Vision: Language Independence</h2>
+<p>Separate development of PL software into two tasks:</p>
+<p>. . .</p>
+<h3 id="the-programming-language">The Programming Language</h3>
+<p>PL expert builds rigorous and formal spec of the language in a high-level human-readable semantic framework.</p>
+<p>. . .</p>
+<h3 id="the-tooling">The Tooling</h3>
+<p>Build each tool <em>once</em>, and apply it to every language, eg.:</p>
+<ul>
+<li>Parser</li>
+<li>Interpreter</li>
+<li>Debugger</li>
+<li>Compiler</li>
+<li>Model Checker</li>
+<li>Program Verifier</li>
+</ul>
+<h2 id="the-vision%3A-language-independence-1">The Vision: Language Independence</h2>
+<p><img src="media/images/k-overview.png" alt="K Tooling Overview"></p>
+<h2 id="current-semantics">Current Semantics</h2>
+<p>Many languages have full or partial \K{} semantics, this lists some notable ones (and their primary usage).</p>
+<ul>
+<li><a href="https://github.com/kframework/c-semantics" target="_blank" rel="noreferrer noopener">C</a>: detecting undefined behavior</li>
+<li><a href="https://github.com/kframework/java-semantics" target="_blank" rel="noreferrer noopener">Java</a>: detecting racy code</li>
+<li><a href="https://github.com/kframework/evm-semantics" target="_blank" rel="noreferrer noopener">EVM</a>: verifying smart contracts</li>
+<li><a href="https://github.com/kframework/llvm-semantics" target="_blank" rel="noreferrer noopener">LLVM</a>: compiler validation (to x86)</li>
+<li><a href="https://github.com/kframework/javascript-semantics" target="_blank" rel="noreferrer noopener">JavaScript</a>: finding disagreements between JS engines</li>
+<li><a href="https://github.com/kframework/p4-semantics" target="_blank" rel="noreferrer noopener">P4</a>: SDN data-layer verification</li>
+<li>many others ...</li>
+</ul>
+<h2 id="%5Ck%7B%7D-specifications%3A-syntax">\K{} Specifications: Syntax</h2>
+<p>Concrete syntax built using EBNF style:</p>
+<pre><code class="language-k">    <span class="token keyword">syntax</span> Exp <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> <span class="token keyword">Int</span> <span class="token operator">|</span> <span class="token keyword">Id</span> <span class="token operator">|</span> <span class="token string">"("</span> Exp <span class="token string">")"</span> <span class="token punctuation">[</span><span class="token class-name">bracket</span><span class="token punctuation">]</span>
+                 <span class="token operator">|</span> Exp <span class="token string">"*"</span> Exp
+                 &gt; Exp <span class="token string">"+"</span> Exp <span class="token comment">// looser binding</span>
+
+    <span class="token keyword">syntax</span> Stmt <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> <span class="token keyword">Id</span> <span class="token string">":="</span> Exp
+                  <span class="token operator">|</span> Stmt <span class="token string">";"</span> Stmt
+                  <span class="token operator">|</span> <span class="token string">"return"</span> Exp
+</code></pre>
+<p>. . .</p>
+<p>This would allow correctly parsing programs like:</p>
+<pre><code class="language-imp">    a := 3 * 2;
+    b := 2 * a + 5;
+    return b
+</code></pre>
+<h2 id="%5Ck%7B%7D-specifications%3A-configuration">\K{} Specifications: Configuration</h2>
+<p>Tell \K{} about the structure of your execution state.
+For example, a simple imperative language might have:</p>
+<pre><code class="language-k">    <span class="token keyword">configuration</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span>     $PGM<span class="token punctuation">:</span>Program <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span>
+                  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>env</span><span class="token punctuation">&gt;</span></span>   <span class="token punctuation">.</span>Map         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>env</span><span class="token punctuation">&gt;</span></span>
+                  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>store</span><span class="token punctuation">&gt;</span></span> <span class="token punctuation">.</span>Map         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>store</span><span class="token punctuation">&gt;</span></span>
+</code></pre>
+<p>. . .</p>
+<ul>
+<li><code>&lt;k&gt;</code> will contain the initial parsed program</li>
+<li><code>&lt;env&gt;</code> contains bindings of variable names to store locations</li>
+<li><code>&lt;store&gt;</code> contains bindings of store locations to integers</li>
+</ul>
+<h2 id="%5Ck%7B%7D-specifications%3A-transition-rules">\K{} Specifications: Transition Rules</h2>
+<p>Using the above grammar and configuration:</p>
+<p>. . .</p>
+<h3 id="variable-lookup">Variable lookup</h3>
+<pre><code class="language-k">    <span class="token keyword">rule</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span> X<span class="token punctuation">:</span><span class="token keyword">Id</span> <span class="token operator">=&gt;</span> V <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>env</span><span class="token punctuation">&gt;</span></span>   <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>  X <span class="token operator">|</span><span class="token operator">-</span>&gt; SX <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>env</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>store</span><span class="token punctuation">&gt;</span></span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> SX <span class="token operator">|</span><span class="token operator">-</span>&gt; V  <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>store</span><span class="token punctuation">&gt;</span></span>
+</code></pre>
+<p>. . .</p>
+<h3 id="variable-assignment">Variable assignment</h3>
+<pre><code class="language-k">    <span class="token keyword">rule</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span> X <span class="token punctuation">:</span><span class="token operator">=</span> I<span class="token punctuation">:</span><span class="token keyword">Int</span> <span class="token operator">=&gt;</span> <span class="token punctuation">.</span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>env</span><span class="token punctuation">&gt;</span></span>   <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>  X <span class="token operator">|</span><span class="token operator">-</span>&gt; SX       <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>env</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>store</span><span class="token punctuation">&gt;</span></span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> SX <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token punctuation">(</span>V <span class="token operator">=&gt;</span> I<span class="token punctuation">)</span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>store</span><span class="token punctuation">&gt;</span></span>
+</code></pre>
+<h2 id="example-execution">Example Execution</h2>
+<h3 id="program">Program</h3>
+<pre><code class="language-imp">    a := 3 * 2;
+    b := 2 * a + 5;
+    return b
+</code></pre>
+<h3 id="initial-configuration">Initial Configuration</h3>
+<pre><code class="language-k">    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span>     a <span class="token punctuation">:</span><span class="token operator">=</span> <span class="token number">3</span> <span class="token operator">*</span> <span class="token number">2</span> <span class="token punctuation">;</span> b <span class="token punctuation">:</span><span class="token operator">=</span> <span class="token number">2</span> <span class="token operator">*</span> a <span class="token operator">+</span> <span class="token number">5</span> <span class="token punctuation">;</span> return b <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>env</span><span class="token punctuation">&gt;</span></span>   a <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token number">0</span>    b <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token number">1</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>env</span><span class="token punctuation">&gt;</span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>store</span><span class="token punctuation">&gt;</span></span> <span class="token number">0</span> <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token number">0</span>    <span class="token number">1</span> <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token number">0</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>store</span><span class="token punctuation">&gt;</span></span>
+</code></pre>
+<h2 id="example-execution-(cont.)">Example Execution (cont.)</h2>
+<h3 id="variable-assignment-1">Variable assignment</h3>
+<pre><code class="language-k">    <span class="token keyword">rule</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span> X <span class="token punctuation">:</span><span class="token operator">=</span> I<span class="token punctuation">:</span><span class="token keyword">Int</span> <span class="token operator">=&gt;</span> <span class="token punctuation">.</span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>env</span><span class="token punctuation">&gt;</span></span>   <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>  X <span class="token operator">|</span><span class="token operator">-</span>&gt; SX       <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>env</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>store</span><span class="token punctuation">&gt;</span></span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> SX <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token punctuation">(</span>V <span class="token operator">=&gt;</span> I<span class="token punctuation">)</span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>store</span><span class="token punctuation">&gt;</span></span>
+</code></pre>
+<h3 id="next-configuration">Next Configuration</h3>
+<pre><code class="language-k">    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span>     a <span class="token punctuation">:</span><span class="token operator">=</span> <span class="token number">6</span> <span class="token operator">~&gt;</span> b <span class="token punctuation">:</span><span class="token operator">=</span> <span class="token number">2</span> <span class="token operator">*</span> a <span class="token operator">+</span> <span class="token number">5</span> <span class="token punctuation">;</span> return b <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>env</span><span class="token punctuation">&gt;</span></span>   a <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token number">0</span>    b <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token number">1</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>env</span><span class="token punctuation">&gt;</span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>store</span><span class="token punctuation">&gt;</span></span> <span class="token number">0</span> <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token number">0</span>    <span class="token number">1</span> <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token number">0</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>store</span><span class="token punctuation">&gt;</span></span>
+</code></pre>
+<h2 id="example-execution-(cont.)-1">Example Execution (cont.)</h2>
+<h3 id="variable-assignment-2">Variable assignment</h3>
+<pre><code class="language-k">    <span class="token keyword">rule</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span> X <span class="token punctuation">:</span><span class="token operator">=</span> I<span class="token punctuation">:</span><span class="token keyword">Int</span> <span class="token operator">=&gt;</span> <span class="token punctuation">.</span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>env</span><span class="token punctuation">&gt;</span></span>   <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>  X <span class="token operator">|</span><span class="token operator">-</span>&gt; SX       <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>env</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>store</span><span class="token punctuation">&gt;</span></span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> SX <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token punctuation">(</span>V <span class="token operator">=&gt;</span> I<span class="token punctuation">)</span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>store</span><span class="token punctuation">&gt;</span></span>
+</code></pre>
+<h3 id="next-configuration-1">Next Configuration</h3>
+<pre><code class="language-k">    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span>               b <span class="token punctuation">:</span><span class="token operator">=</span> <span class="token number">2</span> <span class="token operator">*</span> a <span class="token operator">+</span> <span class="token number">5</span> <span class="token punctuation">;</span> return b <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>env</span><span class="token punctuation">&gt;</span></span>   a <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token number">0</span>    b <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token number">1</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>env</span><span class="token punctuation">&gt;</span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>store</span><span class="token punctuation">&gt;</span></span> <span class="token number">0</span> <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token number">6</span>    <span class="token number">1</span> <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token number">0</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>store</span><span class="token punctuation">&gt;</span></span>
+</code></pre>
+<h2 id="example-execution-(cont.)-2">Example Execution (cont.)</h2>
+<h3 id="variable-lookup-1">Variable lookup</h3>
+<pre><code class="language-k">    <span class="token keyword">rule</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span> X<span class="token punctuation">:</span><span class="token keyword">Id</span> <span class="token operator">=&gt;</span> V <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>env</span><span class="token punctuation">&gt;</span></span>   <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>  X <span class="token operator">|</span><span class="token operator">-</span>&gt; SX <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>env</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>store</span><span class="token punctuation">&gt;</span></span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> SX <span class="token operator">|</span><span class="token operator">-</span>&gt; V  <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>store</span><span class="token punctuation">&gt;</span></span>
+</code></pre>
+<h3 id="next-configuration-2">Next Configuration</h3>
+<pre><code class="language-k">    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span>     a <span class="token operator">~&gt;</span> b <span class="token punctuation">:</span><span class="token operator">=</span> <span class="token number">2</span> <span class="token operator">*</span> <span class="token punctuation">[</span><span class="token punctuation">]</span> <span class="token operator">+</span> <span class="token number">5</span> <span class="token punctuation">;</span> return b <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>env</span><span class="token punctuation">&gt;</span></span>   a <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token number">0</span>    b <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token number">1</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>env</span><span class="token punctuation">&gt;</span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>store</span><span class="token punctuation">&gt;</span></span> <span class="token number">0</span> <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token number">6</span>    <span class="token number">1</span> <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token number">0</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>store</span><span class="token punctuation">&gt;</span></span>
+</code></pre>
+<h2 id="example-execution-(cont.)-3">Example Execution (cont.)</h2>
+<h3 id="variable-lookup-2">Variable lookup</h3>
+<pre><code class="language-k">    <span class="token keyword">rule</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span> X<span class="token punctuation">:</span><span class="token keyword">Id</span> <span class="token operator">=&gt;</span> V <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>env</span><span class="token punctuation">&gt;</span></span>   <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>  X <span class="token operator">|</span><span class="token operator">-</span>&gt; SX <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>env</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>store</span><span class="token punctuation">&gt;</span></span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> SX <span class="token operator">|</span><span class="token operator">-</span>&gt; V  <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>store</span><span class="token punctuation">&gt;</span></span>
+</code></pre>
+<h3 id="next-configuration-3">Next Configuration</h3>
+<pre><code class="language-k">    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span>     <span class="token number">6</span> <span class="token operator">~&gt;</span> b <span class="token punctuation">:</span><span class="token operator">=</span> <span class="token number">2</span> <span class="token operator">*</span> <span class="token punctuation">[</span><span class="token punctuation">]</span> <span class="token operator">+</span> <span class="token number">5</span> <span class="token punctuation">;</span> return b <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>env</span><span class="token punctuation">&gt;</span></span>   a <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token number">0</span>    b <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token number">1</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>env</span><span class="token punctuation">&gt;</span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>store</span><span class="token punctuation">&gt;</span></span> <span class="token number">0</span> <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token number">6</span>    <span class="token number">1</span> <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token number">0</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>store</span><span class="token punctuation">&gt;</span></span>
+</code></pre>
+<h2 id="example-execution-(cont.)-4">Example Execution (cont.)</h2>
+<h3 id="variable-lookup-3">Variable lookup</h3>
+<pre><code class="language-k">    <span class="token keyword">rule</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span> X<span class="token punctuation">:</span><span class="token keyword">Id</span> <span class="token operator">=&gt;</span> V <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>env</span><span class="token punctuation">&gt;</span></span>   <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>  X <span class="token operator">|</span><span class="token operator">-</span>&gt; SX <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>env</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>store</span><span class="token punctuation">&gt;</span></span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> SX <span class="token operator">|</span><span class="token operator">-</span>&gt; V  <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>store</span><span class="token punctuation">&gt;</span></span>
+</code></pre>
+<h3 id="next-configuration-4">Next Configuration</h3>
+<pre><code class="language-k">    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span>          b <span class="token punctuation">:</span><span class="token operator">=</span> <span class="token number">2</span> <span class="token operator">*</span> <span class="token number">6</span> <span class="token operator">+</span> <span class="token number">5</span> <span class="token punctuation">;</span> return b <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>env</span><span class="token punctuation">&gt;</span></span>   a <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token number">0</span>    b <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token number">1</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>env</span><span class="token punctuation">&gt;</span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>store</span><span class="token punctuation">&gt;</span></span> <span class="token number">0</span> <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token number">6</span>    <span class="token number">1</span> <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token number">0</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>store</span><span class="token punctuation">&gt;</span></span>
+</code></pre>
+<h2 id="example-execution-(cont.)-5">Example Execution (cont.)</h2>
+<h3 id="variable-assignment-3">Variable assignment</h3>
+<pre><code class="language-k">    <span class="token keyword">rule</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span> X <span class="token punctuation">:</span><span class="token operator">=</span> I<span class="token punctuation">:</span><span class="token keyword">Int</span> <span class="token operator">=&gt;</span> <span class="token punctuation">.</span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>env</span><span class="token punctuation">&gt;</span></span>   <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>  X <span class="token operator">|</span><span class="token operator">-</span>&gt; SX       <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>env</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>store</span><span class="token punctuation">&gt;</span></span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> SX <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token punctuation">(</span>V <span class="token operator">=&gt;</span> I<span class="token punctuation">)</span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>store</span><span class="token punctuation">&gt;</span></span>
+</code></pre>
+<h3 id="next-configuration-5">Next Configuration</h3>
+<pre><code class="language-k">    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span>     b <span class="token punctuation">:</span><span class="token operator">=</span> <span class="token number">17</span> <span class="token operator">~&gt;</span> return b <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>env</span><span class="token punctuation">&gt;</span></span>   a <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token number">0</span>    b <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token number">1</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>env</span><span class="token punctuation">&gt;</span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>store</span><span class="token punctuation">&gt;</span></span> <span class="token number">0</span> <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token number">6</span>    <span class="token number">1</span> <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token number">0</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>store</span><span class="token punctuation">&gt;</span></span>
+</code></pre>
+<h2 id="example-execution-(cont.)-6">Example Execution (cont.)</h2>
+<h3 id="variable-assignment-4">Variable assignment</h3>
+<pre><code class="language-k">    <span class="token keyword">rule</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span> X <span class="token punctuation">:</span><span class="token operator">=</span> I<span class="token punctuation">:</span><span class="token keyword">Int</span> <span class="token operator">=&gt;</span> <span class="token punctuation">.</span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>env</span><span class="token punctuation">&gt;</span></span>   <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span>  X <span class="token operator">|</span><span class="token operator">-</span>&gt; SX       <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>env</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>store</span><span class="token punctuation">&gt;</span></span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> SX <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token punctuation">(</span>V <span class="token operator">=&gt;</span> I<span class="token punctuation">)</span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>store</span><span class="token punctuation">&gt;</span></span>
+</code></pre>
+<h3 id="next-configuration-6">Next Configuration</h3>
+<pre><code class="language-k">    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span>                return b <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>env</span><span class="token punctuation">&gt;</span></span>   a <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token number">0</span>    b <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token number">1</span>  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>env</span><span class="token punctuation">&gt;</span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>store</span><span class="token punctuation">&gt;</span></span> <span class="token number">0</span> <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token number">6</span>    <span class="token number">1</span> <span class="token operator">|</span><span class="token operator">-</span>&gt; <span class="token number">17</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>store</span><span class="token punctuation">&gt;</span></span>
+</code></pre>
+<h1 id="ethereum-virtual-machine">Ethereum Virtual Machine</h1>
+<h2 id="blockchain">Blockchain</h2>
+<ul>
+<li>Append-only ledger of user-submitted transactions.</li>
+<li>Mostly simple transfers of value.</li>
+<li>Miners select next block of transactions using consensus algorithm.<sup class="footnote-ref"><a href="#fn1" id="fnref1">[1]</a></sup></li>
+<li>Ethereum adds:
+<ul>
+<li>New currency! (Ether)</li>
+<li>Accounts have an associated <em>storage</em> and <em>code</em> which only transactions by that account can read/modify (onchain).</li>
+<li>Transactions can have associated <em>programs</em> written in EVM (Ethereum Virtual Machine).<sup class="footnote-ref"><a href="#fn2" id="fnref2">[2]</a></sup></li>
+<li>Miners execute transaction code to calculate the new world state (new account balances, storage, code, etc...).</li>
+</ul>
+</li>
+</ul>
+<h2 id="evm-(ethereum-virtual-machine)">EVM (Ethereum Virtual Machine)</h2>
+<p>Is a stack-based bytecode over 256-bit words.</p>
+<p>Example program (sum 0 - 10):</p>
+<p>\footnotesize</p>
+<pre><code class="language-evm">  PUSH(1, 0)  ; PUSH(1, 0)  ; MSTORE
+; PUSH(1, 10) ; PUSH(1, 32) ; MSTORE
+; JUMPDEST
+; PUSH(1, 0) ; PUSH(1, 32) ; MLOAD ; GT
+; ISZERO ; PUSH(1, 43) ; JUMPI
+; PUSH(1, 32) ; MLOAD ; PUSH(1, 0)  ; MLOAD ; ADD ; PUSH(1, 0)  ; MSTORE
+; PUSH(1, 1)          ; PUSH(1, 32) ; MLOAD ; SUB ; PUSH(1, 32) ; MSTORE
+; PUSH(1, 10) ; JUMP
+; JUMPDEST
+; PUSH(1, 0) ; MLOAD ; PUSH(1, 0) ; SSTORE
+; .OpCodes
+</code></pre>
+<p>\normalsize</p>
+<h2 id="enforcing-termination-(gas)">Enforcing Termination (Gas)</h2>
+<ul>
+<li>User submitted transactions could have infinite loops (DoS attacks!).</li>
+<li>Solution:
+<ul>
+<li>Each opcode costs some <em>gas</em>, paid for in Ether.</li>
+<li>Spent gas awarded to miner, remaining refunded to account.</li>
+</ul>
+</li>
+</ul>
+<p>Notes:</p>
+<ul>
+<li>It's important to charge according to actual used compute resources.</li>
+<li>Tuning gas costs is an <em>ongoing</em> challenge.
+<ul>
+<li>New hardware available <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>→</mo></mrow><annotation encoding="application/x-tex">\rightarrow</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.3669em;"></span><span class="mrel">→</span></span></span></span> new gas model.</li>
+</ul>
+</li>
+<li>Hardforks update the gas constants/rules.</li>
+</ul>
+<h2 id="intercontract-executions-(and-the-abi)">Intercontract Executions (and the ABI)</h2>
+<ul>
+<li>Contracts can call other contracts (re-entrancy!).</li>
+<li>Payload to other contract is a raw string of bytes called <code>callData</code>.</li>
+<li><em>External</em> to the EVM, the Ethereum ABI has been developed:</li>
+<li>Specifies:
+<ul>
+<li>Calling conventions (how to interpret <code>callData</code> correctly).</li>
+<li>Some high-level types (and their mapping to EVM words).</li>
+</ul>
+</li>
+</ul>
+<h2 id="evm-nuisances">EVM Nuisances</h2>
+<ul>
+<li>Unstructured controlflow: dynamically calculable jump destinations.</li>
+<li>256-bit words: useful for crypto, pain for hardware.</li>
+<li>8-bit word-array local memory: complicates symbolic reasoning.</li>
+<li>No built-in calling conventions: ABI is declared external to EVM.</li>
+<li><code>eval</code> capability: copying bytes as code and running is bad for analysis.</li>
+</ul>
+<h1 id="kevm%3A-status-and-current-uses">KEVM: Status and Current Uses</h1>
+<h2 id="correctness-and-performance">Correctness and Performance</h2>
+<ul>
+<li>Pass the VMTests and GeneralStateTests of the <a href="https://github.com/ethereum/tests" target="_blank" rel="noreferrer noopener">Ethereum Test Suite</a>.</li>
+</ul>
+<p>. . .</p>
+<ul>
+<li>
+<p>Roughly an order of magnitude slower than cpp-ethereum (reference implementation in C++).</p>
+<p><strong>Test Set</strong> (no. tests)   <strong>KEVM</strong>  <strong>cpp-ethereum</strong></p>
+<hr>
+<p>VMAll (40683)                 99:41              4:42
+GSNormal (22705)              35:00              1:30</p>
+</li>
+</ul>
+<p>. . .</p>
+<ul>
+<li>
+<p>(Non-empty) lines of code comparison:</p>
+<p>KEVM: 2644</p>
+<p>cpp-ethereum: 4588</p>
+</li>
+</ul>
+<h2 id="assertion-violation-checker">Assertion Violation Checker</h2>
+<ul>
+<li>EVM has designated <code>INVALID</code> opcode, halts and discards gas.</li>
+<li>Has been used to specify "assertion failure" in HLLs.<sup class="footnote-ref"><a href="#fn3" id="fnref3">[3]</a></sup></li>
+<li>Symbolically execute and look for paths ending in <code>INVALID</code>.</li>
+</ul>
+<p>. . .</p>
+<ul>
+<li>Co-invariant checking - "<code>INVALID</code> never happens".</li>
+<li>Very little tooling effort needed after building semantics.</li>
+<li>Similar techniques used to find undefined behaviour in C programs.</li>
+</ul>
+<h2 id="reachibility-logic-prover-%5B%40stefanescu-ciobaca-mereuta-moore-serbanuta-rosu-2014-rta%5D">Reachibility Logic Prover [@stefanescu-ciobaca-mereuta-moore-serbanuta-rosu-2014-rta]</h2>
+<ul>
+<li>Takes operational semantics as input (no axiomatic semantics).<sup class="footnote-ref"><a href="#fn4" id="fnref4">[4]</a></sup></li>
+<li>Generalization of Hoare Logic:
+<ul>
+<li>Hoare triple: <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false">{</mo><mtext mathvariant="italic">Pre</mtext><mo stretchy="false">}</mo><mtext mathvariant="italic">Code</mtext><mo stretchy="false">{</mo><mtext mathvariant="italic">Post</mtext><mo stretchy="false">}</mo></mrow><annotation encoding="application/x-tex">\{\textit{Pre}\} \textit{Code} \{\textit{Post}\}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">{</span><span class="mord text"><span class="mord textit">Pre</span></span><span class="mclose">}</span><span class="mord text"><span class="mord textit">Code</span></span><span class="mopen">{</span><span class="mord text"><span class="mord textit">Post</span></span><span class="mclose">}</span></span></span></span></li>
+<li>Reachability claim: <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mover accent="true"><mtext mathvariant="italic">Code</mtext><mo stretchy="true">^</mo></mover><mo>∧</mo><mover accent="true"><mtext mathvariant="italic">Pre</mtext><mo stretchy="true">^</mo></mover><mo>⇒</mo><mi>ϵ</mi><mo>∧</mo><mover accent="true"><mtext mathvariant="italic">Post</mtext><mo stretchy="true">^</mo></mover></mrow><annotation encoding="application/x-tex">\widehat{\textit{Code}} \land \widehat{\textit{Pre}} \Rightarrow \epsilon \land \widehat{\textit{Post}}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.9344em;"></span><span class="mord accent"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.9344em;"><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord text"><span class="mord textit">Code</span></span></span><span class="svg-align" style="top:-3.6944em;"><span class="pstrut" style="height:3em;"></span><span style="height:0.24em;"><svg xmlns="http://www.w3.org/2000/svg" width="100%" height="0.24em" viewBox="0 0 1062 239" preserveAspectRatio="none"><path d="M529 0h5l519 115c5 1 9 5 9 10 0 1-1 2-1 3l-4 22
+c-1 5-5 9-11 9h-2L532 67 19 159h-2c-5 0-9-4-11-9l-5-22c-1-6 2-12 8-13z"></path></svg></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">∧</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.9233em;"></span><span class="mord accent"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.9233em;"><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord text"><span class="mord textit">Pre</span></span></span><span class="svg-align" style="top:-3.6833em;"><span class="pstrut" style="height:3em;"></span><span style="height:0.24em;"><svg xmlns="http://www.w3.org/2000/svg" width="100%" height="0.24em" viewBox="0 0 1062 239" preserveAspectRatio="none"><path d="M529 0h5l519 115c5 1 9 5 9 10 0 1-1 2-1 3l-4 22
+c-1 5-5 9-11 9h-2L532 67 19 159h-2c-5 0-9-4-11-9l-5-22c-1-6 2-12 8-13z"></path></svg></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">⇒</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.5556em;"></span><span class="mord mathnormal">ϵ</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">∧</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.9233em;"></span><span class="mord accent"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.9233em;"><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord text"><span class="mord textit">Post</span></span></span><span class="svg-align" style="top:-3.6833em;"><span class="pstrut" style="height:3em;"></span><span style="height:0.24em;"><svg xmlns="http://www.w3.org/2000/svg" width="100%" height="0.24em" viewBox="0 0 1062 239" preserveAspectRatio="none"><path d="M529 0h5l519 115c5 1 9 5 9 10 0 1-1 2-1 3l-4 22
+c-1 5-5 9-11 9h-2L532 67 19 159h-2c-5 0-9-4-11-9l-5-22c-1-6 2-12 8-13z"></path></svg></span></span></span></span></span></span></span></span></span></li>
+<li>"Any instance of <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mover accent="true"><mtext mathvariant="italic">Code</mtext><mo stretchy="true">^</mo></mover></mrow><annotation encoding="application/x-tex">\widehat{\textit{Code}}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.9344em;"></span><span class="mord accent"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.9344em;"><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord text"><span class="mord textit">Code</span></span></span><span class="svg-align" style="top:-3.6944em;"><span class="pstrut" style="height:3em;"></span><span style="height:0.24em;"><svg xmlns="http://www.w3.org/2000/svg" width="100%" height="0.24em" viewBox="0 0 1062 239" preserveAspectRatio="none"><path d="M529 0h5l519 115c5 1 9 5 9 10 0 1-1 2-1 3l-4 22
+c-1 5-5 9-11 9h-2L532 67 19 159h-2c-5 0-9-4-11-9l-5-22c-1-6 2-12 8-13z"></path></svg></span></span></span></span></span></span></span></span></span> which satisfies <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mover accent="true"><mrow><mi>P</mi><mi>r</mi><mi>e</mi></mrow><mo stretchy="true">^</mo></mover></mrow><annotation encoding="application/x-tex">\widehat{Pre}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.9833em;"></span><span class="mord accent"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.9833em;"><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.13889em;">P</span><span class="mord mathnormal">re</span></span></span><span class="svg-align" style="top:-3.6833em;"><span class="pstrut" style="height:3em;"></span><span style="height:0.3em;"><svg xmlns="http://www.w3.org/2000/svg" width="100%" height="0.3em" viewBox="0 0 2364 300" preserveAspectRatio="none"><path d="M1181 0h2l1171 176c6 0 10 5 10 11l-2 23c-1 6-5 10
+-11 10h-1L1182 67 15 220h-1c-6 0-10-4-11-10l-2-23c-1-6 4-11 10-11z"></path></svg></span></span></span></span></span></span></span></span></span> either does not terminate or reaches an instance of <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ϵ</mi></mrow><annotation encoding="application/x-tex">\epsilon</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">ϵ</span></span></span></span> (empty program) which satisfies <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mover accent="true"><mrow><mi>P</mi><mi>o</mi><mi>s</mi><mi>t</mi></mrow><mo stretchy="true">^</mo></mover></mrow><annotation encoding="application/x-tex">\widehat{Post}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.9833em;"></span><span class="mord accent"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.9833em;"><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.13889em;">P</span><span class="mord mathnormal">os</span><span class="mord mathnormal">t</span></span></span><span class="svg-align" style="top:-3.6833em;"><span class="pstrut" style="height:3em;"></span><span style="height:0.3em;"><svg xmlns="http://www.w3.org/2000/svg" width="100%" height="0.3em" viewBox="0 0 2364 360" preserveAspectRatio="none"><path d="M1181 0h2l1171 236c6 0 10 5 10 11l-2 23c-1 6-5 10
+-11 10h-1L1182 67 15 280h-1c-6 0-10-4-11-10l-2-23c-1-6 4-11 10-11z"></path></svg></span></span></span></span></span></span></span></span></span>".
+No need for end state in RL to be <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ϵ</mi></mrow><annotation encoding="application/x-tex">\epsilon</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">ϵ</span></span></span></span> though.</li>
+</ul>
+</li>
+<li>See paper for example claims.</li>
+</ul>
+<p>. . .</p>
+<ul>
+<li>Reachability claims are fed to \K{} prover as normal \K{} rules.</li>
+<li>Functional correctness directly specifiable as set reachability claims.</li>
+<li>Correctness bugs often lead to security bugs.</li>
+</ul>
+<h2 id="reachability-logic-inference-system-%5B%40stefanescu-ciobaca-mereuta-moore-serbanuta-rosu-2014-rta%5D">Reachability Logic Inference System [@stefanescu-ciobaca-mereuta-moore-serbanuta-rosu-2014-rta]</h2>
+<p><img src="media/images/proof-system.png" alt="RL Inference System"></p>
+<h2 id="case-study%3A-erc20">Case Study: ERC20</h2>
+<ul>
+<li>"Hello world" of Ethereum smart contracts.</li>
+<li>First full contract we verified.</li>
+<li>Key-value store of addresses to token balances.</li>
+<li>Simple methods for purchasing/transferring/selling tokens.</li>
+</ul>
+<p>. . .</p>
+<h3 id="erc20-uses">ERC20 Uses</h3>
+<ul>
+<li>Codify ownership distribution of a company (tokenizing equity).</li>
+<li>Tokenize pink-slips/deeds (eg. tokenizing houses, cars).</li>
+<li>Ponzi schemes.</li>
+</ul>
+<h2 id="case-study%3A-erc20---scaling-verification">Case Study: ERC20 - Scaling Verification</h2>
+<ul>
+<li>First ERC20 verification took several person-months.</li>
+</ul>
+<p>. . .</p>
+<ul>
+<li>Define state abstractions directly in \K{} itself.
+<ul>
+<li><code>nthbyteof</code> for storing symbolic word (256-bits) as 32 bytes (when written to <code>localMem</code>).</li>
+<li><code>#abiCallData</code> allows using actual function name/signature in call instead of packed bytes representation.</li>
+</ul>
+</li>
+</ul>
+<p>. . .</p>
+<ul>
+<li>Modular specifications
+<ul>
+<li>Re-use same specs for different implementations, only need delta.</li>
+<li>Have 5 verified implementations of ERC20, all different behaviors.<sup class="footnote-ref"><a href="#fn5" id="fnref5">[5]</a></sup></li>
+</ul>
+</li>
+</ul>
+<p>. . .</p>
+<ul>
+<li>Now, can verify a (reasonable) ERC20 in about a day.</li>
+</ul>
+<h2 id="tool-assisted-security-audits">Tool-Assisted Security Audits</h2>
+<ul>
+<li>
+<p>Runtime Verification, Inc. offers audits as a service, typical process:</p>
+<ol>
+<li>Specify high-level business logic in English, confirm with customer.<sup class="footnote-ref"><a href="#fn6" id="fnref6">[6]</a></sup></li>
+<li>Refine to a mathematical definition, confirm with customer.</li>
+<li>Refine to a set of K Reachability Claims, confirm with customer.</li>
+<li>Fix bugs in contract and specification until the K prover is satisfied.</li>
+<li>Send all documents generated and list of issues found to customer.</li>
+</ol>
+</li>
+<li>
+<p>Independent groups also using KEVM to verify contract stack (eg. <a href="https://github.com/kframework/dapphub" target="_blank" rel="noreferrer noopener">DappHub</a>).</p>
+</li>
+</ul>
+<h1 id="thanks!">Thanks!</h1>
+<h2 id="conclusion">Conclusion</h2>
+<ul>
+<li>\K{} used to specify semantics of Ethereum Virtual Machine (EVM).</li>
+<li>Commercial verification efforts carried out with \K{} prover.</li>
+</ul>
+<h2 id="sponsors">Sponsors</h2>
+<p>The work presented in this paper was supported in part by
+the Boeing grant on "Formal Analysis Tools for Cyber Security" 2016-2017,
+the NSF grants CCF-1318191, CCF-1421575, CNS-1330599, CNS-1514163, and IIP-1660186,
+the NSF Graduate Fellowship under Grant No. DGE-1650441,
+an IOHK gift,
+and a grant from the Ethereum Foundation.</p>
+<hr class="footnotes-sep">
+<section class="footnotes">
+<ol class="footnotes-list">
+<li id="fn1" class="footnote-item"><p>This talk is not about the consensus algorithms. <a href="#fnref1" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn2" class="footnote-item"><p>Cool kids call these programs <em>smart contracts</em>, or <em>contracts</em>. <a href="#fnref2" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn3" class="footnote-item"><p>High-level languages (which compile to EVM). <a href="#fnref3" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn4" class="footnote-item"><p>In this case, we use \K{} to specify the operational semantics. <a href="#fnref4" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn5" class="footnote-item"><p>See our audited ERC20s (and other contracts) at <a href="https://github.com/runtimeverification/verified-smart-contracts" target="_blank" rel="noreferrer noopener">https://github.com/runtimeverification/verified-smart-contracts</a>. <a href="#fnref5" class="footnote-backref">↩︎</a></p>
+</li>
+<li id="fn6" class="footnote-item"><p>Surprisingly, many smart contract developers don't have a high-level specification of their contracts. <a href="#fnref6" class="footnote-backref">↩︎</a></p>
+</li>
+</ol>
+</section>
+</body></html></div>
+        </main>
+
+        <!-- Page ToC -->
+        <div class="col-12 col-md-3 col-xl-2 py-md-3 bd-sidebar page-toc mb-3">
+          
+<div>
+<details style="padding:0.25rem 0;;padding-left: 0px;">
+            <summary class="bd-toc-link-wrapper">
+              <a href="#%5Ck%7B%7D-framework" class="bd-toc-link">\K{} Framework</a>
+              </summary>
+            <div>
+              <details style="padding:0.25rem 0;;padding-left: 8px;">
+            <summary class="bd-toc-link-wrapper">
+              <a href="#the-vision%3A-language-independence" class="bd-toc-link">The Vision: Language Independence</a>
+              </summary>
+            <div>
+              <div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#the-programming-language"
+                class="bd-toc-link"
+                style="padding-left: 16px;;"
+              >
+                The Programming Language
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#the-tooling"
+                class="bd-toc-link"
+                style="padding-left: 16px;;"
+              >
+                The Tooling
+              </a></div>
+            </div>
+          </details>
+        <div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#the-vision%3A-language-independence-1"
+                class="bd-toc-link"
+                style="padding-left: 8px;;"
+              >
+                The Vision: Language Independence
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#current-semantics"
+                class="bd-toc-link"
+                style="padding-left: 8px;;"
+              >
+                Current Semantics
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#%5Ck%7B%7D-specifications%3A-syntax"
+                class="bd-toc-link"
+                style="padding-left: 8px;;"
+              >
+                \K{} Specifications: Syntax
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#%5Ck%7B%7D-specifications%3A-configuration"
+                class="bd-toc-link"
+                style="padding-left: 8px;;"
+              >
+                \K{} Specifications: Configuration
+              </a></div><details style="padding:0.25rem 0;;padding-left: 8px;">
+            <summary class="bd-toc-link-wrapper">
+              <a href="#%5Ck%7B%7D-specifications%3A-transition-rules" class="bd-toc-link">\K{} Specifications: Transition Rules</a>
+              </summary>
+            <div>
+              <div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#variable-lookup"
+                class="bd-toc-link"
+                style="padding-left: 16px;;"
+              >
+                Variable lookup
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#variable-assignment"
+                class="bd-toc-link"
+                style="padding-left: 16px;;"
+              >
+                Variable assignment
+              </a></div>
+            </div>
+          </details>
+        <details style="padding:0.25rem 0;;padding-left: 8px;">
+            <summary class="bd-toc-link-wrapper">
+              <a href="#example-execution" class="bd-toc-link">Example Execution</a>
+              </summary>
+            <div>
+              <div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#program"
+                class="bd-toc-link"
+                style="padding-left: 16px;;"
+              >
+                Program
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#initial-configuration"
+                class="bd-toc-link"
+                style="padding-left: 16px;;"
+              >
+                Initial Configuration
+              </a></div>
+            </div>
+          </details>
+        <details style="padding:0.25rem 0;;padding-left: 8px;">
+            <summary class="bd-toc-link-wrapper">
+              <a href="#example-execution-(cont.)" class="bd-toc-link">Example Execution (cont.)</a>
+              </summary>
+            <div>
+              <div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#variable-assignment-1"
+                class="bd-toc-link"
+                style="padding-left: 16px;;"
+              >
+                Variable assignment
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#next-configuration"
+                class="bd-toc-link"
+                style="padding-left: 16px;;"
+              >
+                Next Configuration
+              </a></div>
+            </div>
+          </details>
+        <details style="padding:0.25rem 0;;padding-left: 8px;">
+            <summary class="bd-toc-link-wrapper">
+              <a href="#example-execution-(cont.)-1" class="bd-toc-link">Example Execution (cont.)</a>
+              </summary>
+            <div>
+              <div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#variable-assignment-2"
+                class="bd-toc-link"
+                style="padding-left: 16px;;"
+              >
+                Variable assignment
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#next-configuration-1"
+                class="bd-toc-link"
+                style="padding-left: 16px;;"
+              >
+                Next Configuration
+              </a></div>
+            </div>
+          </details>
+        <details style="padding:0.25rem 0;;padding-left: 8px;">
+            <summary class="bd-toc-link-wrapper">
+              <a href="#example-execution-(cont.)-2" class="bd-toc-link">Example Execution (cont.)</a>
+              </summary>
+            <div>
+              <div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#variable-lookup-1"
+                class="bd-toc-link"
+                style="padding-left: 16px;;"
+              >
+                Variable lookup
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#next-configuration-2"
+                class="bd-toc-link"
+                style="padding-left: 16px;;"
+              >
+                Next Configuration
+              </a></div>
+            </div>
+          </details>
+        <details style="padding:0.25rem 0;;padding-left: 8px;">
+            <summary class="bd-toc-link-wrapper">
+              <a href="#example-execution-(cont.)-3" class="bd-toc-link">Example Execution (cont.)</a>
+              </summary>
+            <div>
+              <div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#variable-lookup-2"
+                class="bd-toc-link"
+                style="padding-left: 16px;;"
+              >
+                Variable lookup
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#next-configuration-3"
+                class="bd-toc-link"
+                style="padding-left: 16px;;"
+              >
+                Next Configuration
+              </a></div>
+            </div>
+          </details>
+        <details style="padding:0.25rem 0;;padding-left: 8px;">
+            <summary class="bd-toc-link-wrapper">
+              <a href="#example-execution-(cont.)-4" class="bd-toc-link">Example Execution (cont.)</a>
+              </summary>
+            <div>
+              <div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#variable-lookup-3"
+                class="bd-toc-link"
+                style="padding-left: 16px;;"
+              >
+                Variable lookup
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#next-configuration-4"
+                class="bd-toc-link"
+                style="padding-left: 16px;;"
+              >
+                Next Configuration
+              </a></div>
+            </div>
+          </details>
+        <details style="padding:0.25rem 0;;padding-left: 8px;">
+            <summary class="bd-toc-link-wrapper">
+              <a href="#example-execution-(cont.)-5" class="bd-toc-link">Example Execution (cont.)</a>
+              </summary>
+            <div>
+              <div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#variable-assignment-3"
+                class="bd-toc-link"
+                style="padding-left: 16px;;"
+              >
+                Variable assignment
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#next-configuration-5"
+                class="bd-toc-link"
+                style="padding-left: 16px;;"
+              >
+                Next Configuration
+              </a></div>
+            </div>
+          </details>
+        <details style="padding:0.25rem 0;;padding-left: 8px;">
+            <summary class="bd-toc-link-wrapper">
+              <a href="#example-execution-(cont.)-6" class="bd-toc-link">Example Execution (cont.)</a>
+              </summary>
+            <div>
+              <div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#variable-assignment-4"
+                class="bd-toc-link"
+                style="padding-left: 16px;;"
+              >
+                Variable assignment
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#next-configuration-6"
+                class="bd-toc-link"
+                style="padding-left: 16px;;"
+              >
+                Next Configuration
+              </a></div>
+            </div>
+          </details>
+        
+            </div>
+          </details>
+        <details style="padding:0.25rem 0;;padding-left: 0px;">
+            <summary class="bd-toc-link-wrapper">
+              <a href="#ethereum-virtual-machine" class="bd-toc-link">Ethereum Virtual Machine</a>
+              </summary>
+            <div>
+              <div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#blockchain"
+                class="bd-toc-link"
+                style="padding-left: 8px;;"
+              >
+                Blockchain
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#evm-(ethereum-virtual-machine)"
+                class="bd-toc-link"
+                style="padding-left: 8px;;"
+              >
+                EVM (Ethereum Virtual Machine)
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#enforcing-termination-(gas)"
+                class="bd-toc-link"
+                style="padding-left: 8px;;"
+              >
+                Enforcing Termination (Gas)
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#intercontract-executions-(and-the-abi)"
+                class="bd-toc-link"
+                style="padding-left: 8px;;"
+              >
+                Intercontract Executions (and the ABI)
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#evm-nuisances"
+                class="bd-toc-link"
+                style="padding-left: 8px;;"
+              >
+                EVM Nuisances
+              </a></div>
+            </div>
+          </details>
+        <details style="padding:0.25rem 0;;padding-left: 0px;">
+            <summary class="bd-toc-link-wrapper">
+              <a href="#kevm%3A-status-and-current-uses" class="bd-toc-link">KEVM: Status and Current Uses</a>
+              </summary>
+            <div>
+              <div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#correctness-and-performance"
+                class="bd-toc-link"
+                style="padding-left: 8px;;"
+              >
+                Correctness and Performance
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#assertion-violation-checker"
+                class="bd-toc-link"
+                style="padding-left: 8px;;"
+              >
+                Assertion Violation Checker
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#reachibility-logic-prover-%5B%40stefanescu-ciobaca-mereuta-moore-serbanuta-rosu-2014-rta%5D"
+                class="bd-toc-link"
+                style="padding-left: 8px;;"
+              >
+                Reachibility Logic Prover [@stefanescu-ciobaca-mereuta-moore-serbanuta-rosu-2014-rta]
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#reachability-logic-inference-system-%5B%40stefanescu-ciobaca-mereuta-moore-serbanuta-rosu-2014-rta%5D"
+                class="bd-toc-link"
+                style="padding-left: 8px;;"
+              >
+                Reachability Logic Inference System [@stefanescu-ciobaca-mereuta-moore-serbanuta-rosu-2014-rta]
+              </a></div><details style="padding:0.25rem 0;;padding-left: 8px;">
+            <summary class="bd-toc-link-wrapper">
+              <a href="#case-study%3A-erc20" class="bd-toc-link">Case Study: ERC20</a>
+              </summary>
+            <div>
+              <div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#erc20-uses"
+                class="bd-toc-link"
+                style="padding-left: 16px;;"
+              >
+                ERC20 Uses
+              </a></div>
+            </div>
+          </details>
+        <div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#case-study%3A-erc20---scaling-verification"
+                class="bd-toc-link"
+                style="padding-left: 8px;;"
+              >
+                Case Study: ERC20 - Scaling Verification
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#tool-assisted-security-audits"
+                class="bd-toc-link"
+                style="padding-left: 8px;;"
+              >
+                Tool-Assisted Security Audits
+              </a></div>
+            </div>
+          </details>
+        <details style="padding:0.25rem 0;;padding-left: 0px;">
+            <summary class="bd-toc-link-wrapper">
+              <a href="#thanks!" class="bd-toc-link">Thanks!</a>
+              </summary>
+            <div>
+              <div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#conclusion"
+                class="bd-toc-link"
+                style="padding-left: 8px;;"
+              >
+                Conclusion
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#sponsors"
+                class="bd-toc-link"
+                style="padding-left: 8px;;"
+              >
+                Sponsors
+              </a></div>
+            </div>
+          </details>
+        
+</div>
+
+        </div>
+        <div class="btn btn-rv-blue page-toc-toggle-btn"></div>
+        <!-- End Page ToC -->
+      </div>
+    </div>
+<!-- The footer is now controlled by the k-web-theme git submodule -->
+<footer id="rvsite-footer" class="app-footer text-md-left text-center">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-md-4 mb-md-0 mb-4">
+        <a href="https://runtimeverification.com/" target="_blank">
+          <picture>
+            <source
+              srcset="
+                https://runtimeverification.com/assets/img/rv-logo-dark.png
+              "
+              media="(prefers-color-scheme: dark)"
+            />
+            <img
+              class="logo-dark"
+              src="https://runtimeverification.com/assets/img/rv-logo.png"
+              alt="Runtime Verification logo"
+              style="height: 32px"
+            /> </picture
+        ></a>
+        <p class="mt-2 text-md-left copyright">
+          <a href="https://maps.app.goo.gl/8YhKozfmZtgzQBsH7" target="_blank"
+            >202 S Broadway Ave #31, Urbana, IL</a
+          >
+        </p>
+      </div>
+      <div class="col-md-4 text-md-center mb-md-0 mb-4"></div>
+      <div class="col-md-4 mb-md-0 mb-4 pl-0 text-md-right">
+        <p class="copyright">2024 © all rights reserved</p>
+        <span class="copyright"
+          ><a href="https://runtimeverification.com/privacy-policy"
+            >privacy policy</a
+          >
+          |
+          <a href="https://runtimeverification.com/terms-of-use"
+            >terms of use</a
+          ></span
+        >
+      </div>
+    </div>
+  </div>
+</footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Typist/1.2/typist.min.js"></script>
+    <script src="../../assets/js/index.js"></script>
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script
+  async
+  src="https://www.googletagmanager.com/gtag/js?id=G-QL0D8HRYFW"
+></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag() {
+    dataLayer.push(arguments);
+  }
+  gtag("js", new Date());
+  gtag("config", "G-QL0D8HRYFW");
+</script>
+
+  </body>
+</html>
