@@ -243,16 +243,16 @@
         "z3": "z3_2"
       },
       "locked": {
-        "lastModified": 1729168859,
-        "narHash": "sha256-S9Vx0p6kDorS9NwnZb+QOTGpMKXwGlchCiiow881nTs=",
+        "lastModified": 1729679874,
+        "narHash": "sha256-+HNfnDTdH08YEHgTYIB0CF1YWrJMbiH9vyQUKnOyhsA=",
         "owner": "runtimeverification",
         "repo": "haskell-backend",
-        "rev": "712543ed61f5ca4365b84d0f7ef6d71a35349662",
+        "rev": "d933d5ccb4cee63b83b8a990a03d3f4267139e41",
         "type": "github"
       },
       "original": {
         "owner": "runtimeverification",
-        "ref": "v0.1.90",
+        "ref": "v0.1.92",
         "repo": "haskell-backend",
         "type": "github"
       }
@@ -352,16 +352,16 @@
         ]
       },
       "locked": {
-        "lastModified": 1729209879,
-        "narHash": "sha256-6kDVw8CTZWJf8iHeWGO95/PZYJiQ85UtmqsN43oZ/JI=",
+        "lastModified": 1729715336,
+        "narHash": "sha256-e4515vXk5qzIITnYvcUK3kbC37S8S0PMbqv56ld5OAU=",
         "owner": "runtimeverification",
         "repo": "k",
-        "rev": "bf646f946cebf36aa77f2eec4dd695cc1d99823e",
+        "rev": "5d1ccd5a2585cbec970c68f8530ddbf2b27fe574",
         "type": "github"
       },
       "original": {
         "owner": "runtimeverification",
-        "ref": "v7.1.163",
+        "ref": "v7.1.166",
         "repo": "k",
         "type": "github"
       }
@@ -432,16 +432,16 @@
         "utils": "utils_2"
       },
       "locked": {
-        "lastModified": 1729095682,
-        "narHash": "sha256-+mUxQhIwzIfBFIfnCjlbp06uWDYVbxq78FEQAgAB40E=",
+        "lastModified": 1729195362,
+        "narHash": "sha256-/Fw5o0F3AJ+zk9nEOEsxLnSrWiKrDOe5RN6ChilbVfY=",
         "owner": "runtimeverification",
         "repo": "llvm-backend",
-        "rev": "84a419e02b1e378df4f012d8975c0e4f16f71783",
+        "rev": "37b1dd959d47f7b072751b8a3aaef3837de49a79",
         "type": "github"
       },
       "original": {
         "owner": "runtimeverification",
-        "ref": "v0.1.100",
+        "ref": "v0.1.101",
         "repo": "llvm-backend",
         "type": "github"
       }
