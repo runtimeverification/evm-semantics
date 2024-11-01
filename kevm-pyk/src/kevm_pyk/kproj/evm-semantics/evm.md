@@ -34,6 +34,7 @@ In the comments next to each cell, we've marked which component of the YellowPap
         <k> $PGM:EthereumSimulation </k>
         <exit-code exit=""> 1 </exit-code>
         <mode> $MODE:Mode </mode>
+         <contract-summary> $CONTRACT:ContractToSummary </contract-summary>
         <schedule> $SCHEDULE:Schedule </schedule>
 
         <ethereum>
@@ -196,6 +197,38 @@ In the comments next to each cell, we've marked which component of the YellowPap
 
     syntax EthereumSimulation
  // -------------------------
+```
+
+```k
+    syntax ContractToSummary ::= "ERC1155BalanceOf"
+                               | "ERC1155BalanceOfBatch"
+                               | "ERC1155IsApprovedForAll"
+                               | "ERC1155SafeBatchTransferFromInvalid1"
+                               | "ERC1155SafeBatchTransferFromInvalid2"
+                               | "ERC1155SafeBatchTransferFromValid1"
+                               | "ERC1155SafeBatchTransferFromValid2"
+                               | "ERC1155SafeTransferFromInvalid1"
+                               | "ERC1155SafeTransferFromInvalid2"
+                               | "ERC1155SafeTransferFromValid1"
+                               | "ERC1155SafeTransferFromValid2"
+                               | "ERC1155SetApprovalForAllFalse"
+                               | "ERC1155SetApprovalForAllTrue"
+                               | "ERC1155TokenDeployment"
+                               | "ERC20Allowance"
+                               | "ERC20Approve"
+                               | "ERC20BalanceOf"
+                               | "ERC20Decimals"
+                               | "ERC20Name"
+                               | "ERC20Symbol"
+                               | "ERC20TokenDeployment"
+                               | "ERC20TotalSupply"
+                               | "ERC20TransferFromInvalid"
+                               | "ERC20TransferFromInvalid2"
+                               | "ERC20TransferFromValid"
+                               | "ERC20TransferInvalid"
+                               | "ERC20TransferValid"
+                               | ""
+ // -------------------------------------------
 ```
 
 Modal Semantics

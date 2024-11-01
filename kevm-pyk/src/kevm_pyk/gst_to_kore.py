@@ -25,6 +25,7 @@ _LOG_FORMAT: Final = '%(levelname)s %(asctime)s %(name)s - %(message)s'
 
 SORT_SCHEDULE: Final = SortApp('SortSchedule')
 SORT_MODE: Final = SortApp('SortMode')
+SORT_CONTRACT_TO_SUMMARY: Final = SortApp('SortContractToSummary')
 SORT_ETHEREUM_SIMULATION: Final = SortApp('SortEthereumSimulation')
 
 _GST_DISCARD_KEYS: Final = frozenset(
@@ -95,16 +96,19 @@ def filter_gst_keys(gst_data: dict) -> dict:
     return _remove_discard_keys(gst_data)
 
 
-def gst_to_kore(gst_data: Any, schedule: str, mode: str, chainid: int, usegas: bool) -> App:
-    return kore_pgm_to_kore(json_to_kore(gst_data), SORT_JSON, schedule, mode, chainid, usegas)
+def gst_to_kore(gst_data: Any, schedule: str, mode: str, chainid: int, usegas: bool, contract: str = '') -> App:
+    return kore_pgm_to_kore(json_to_kore(gst_data), SORT_JSON, schedule, mode, chainid, usegas, contract)
 
 
-def kore_pgm_to_kore(pgm: Pattern, pattern_sort: SortApp, schedule: str, mode: str, chainid: int, usegas: bool) -> App:
+def kore_pgm_to_kore(
+    pgm: Pattern, pattern_sort: SortApp, schedule: str, mode: str, chainid: int, usegas: bool, contract: str
+) -> App:
     config = {
         '$PGM': inj(pattern_sort, SORT_K_ITEM, pgm),
         '$SCHEDULE': inj(SORT_SCHEDULE, SORT_K_ITEM, _schedule_to_kore(schedule)),
         '$MODE': inj(SORT_MODE, SORT_K_ITEM, _mode_to_kore(mode)),
         '$CHAINID': inj(INT, SORT_K_ITEM, int_dv(chainid)),
+        '$CONTRACT': inj(SORT_CONTRACT_TO_SUMMARY, SORT_K_ITEM, _contract_to_summary_tokore(contract)),
     }
     return top_cell_initializer(config)
 
@@ -115,6 +119,10 @@ def _schedule_to_kore(schedule: str) -> App:
 
 def _mode_to_kore(mode: str) -> App:
     return App(f'Lbl{mode}')
+
+
+def _contract_to_summary_tokore(contract: str) -> App:
+    return App(f"Lbl{contract}\'Unds\'EVM\'Unds\'ContractToSummary")
 
 
 def main() -> None:
