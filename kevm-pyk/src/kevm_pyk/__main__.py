@@ -352,6 +352,7 @@ def exec_prove(options: ProveOptions) -> None:
                 max_iterations=options.max_iterations,
                 cut_point_rules=KEVMSemantics.cut_point_rules(
                     options.break_on_jumpi,
+                    options.break_on_jump,
                     options.break_on_calls,
                     options.break_on_storage,
                     options.break_on_basic_blocks,

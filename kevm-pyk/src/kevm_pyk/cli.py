@@ -334,6 +334,7 @@ class RPCOptions(Options):
 class ExploreOptions(Options):
     break_every_step: bool
     break_on_jumpi: bool
+    break_on_jump: bool
     break_on_calls: bool
     break_on_storage: bool
     break_on_basic_blocks: bool
@@ -350,6 +351,7 @@ class ExploreOptions(Options):
     def default() -> dict[str, Any]:
         return {
             'break_every_step': False,
+            'break_on_jump': False,
             'break_on_jumpi': False,
             'break_on_calls': False,
             'break_on_storage': False,
@@ -1038,6 +1040,13 @@ class KEVMCLIArgs(KCLIArgs):
         args.add_argument(
             '--break-on-jumpi',
             dest='break_on_jumpi',
+            default=None,
+            action='store_true',
+            help='Store a node for every EVM jumpi opcode.',
+        )
+        args.add_argument(
+            '--break-on-jump',
+            dest='break_on_jump',
             default=None,
             action='store_true',
             help='Store a node for every EVM jump opcode.',
