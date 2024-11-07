@@ -164,6 +164,7 @@ class KEVMSemantics(DefaultSemantics):
     @staticmethod
     def cut_point_rules(
         break_on_jumpi: bool,
+        break_on_jump: bool,
         break_on_calls: bool,
         break_on_storage: bool,
         break_on_basic_blocks: bool,
@@ -172,6 +173,8 @@ class KEVMSemantics(DefaultSemantics):
         cut_point_rules = []
         if break_on_jumpi:
             cut_point_rules.extend(['EVM.jumpi.true', 'EVM.jumpi.false'])
+        if break_on_jump:
+            cut_point_rules.extend(['EVM.jump'])
         if break_on_basic_blocks:
             cut_point_rules.append('EVM.end-basic-block')
         if break_on_calls or break_on_basic_blocks:
