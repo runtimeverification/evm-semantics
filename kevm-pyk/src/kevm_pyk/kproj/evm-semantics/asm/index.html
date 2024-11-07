@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+<meta charset="utf-8" />
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0, maximum-scale=1.0"
+/>
+<meta
+  name="description"
+  content="K Semantics of the Ethereum Virtual Machine (EVM)"
+/>
+<meta
+  name="keywords"
+  content="runtime, verification, rv, k, ethereum virtual machine, evm"
+/>
+<meta name="author" content="EVM Semantics | Runtime Verification Inc" />
+<meta name="robots" content="index, follow" />
+
+<!--favicon icon-->
+<link rel="icon" type="image/png" href="../../../../../../assets/img/favicon.ico" />
+
+<title>KEVM: Semantics of EVM in K | Runtime Verification, Inc. </title>
+
+<link rel="canonical" href="https://jellopaper.org/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/asm/" />
+
+<!--web fonts-->
+<link
+  href="https://fonts.googleapis.com/css?family=Nunito:300,400,600,700,800"
+  rel="stylesheet"
+/>
+<link
+  href="https://fonts.googleapis.com/css?family=Lora:400i"
+  rel="stylesheet"
+/>
+
+<link
+  href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.14.0/css/all.min.css"
+  rel="stylesheet"
+/>
+
+<link href="../../../../../../assets/css/index.css" rel="stylesheet" />
+
+<!--[if (gt IE 9) |!(IE)]><!-->
+<!--<link rel="stylesheet" href="/assets/vendor/custom-nav/css/effects/fade-menu.css"/>-->
+<!-- <link rel="stylesheet" href="../../../../../../assets/k/vl-nav/css/effects/slide-menu.css" /> -->
+<!--<![endif]-->
+
+  </head>
+
+  <body>
+<header
+  class="navbar navbar-expand navbar-dark flex-column flex-md-row bd-navbar"
+>
+  <a class="logo-link" href="../../../../../../index.html"> EVM Semantics </a>
+  <ul class="navbar-nav ml-md-auto">
+    <li class="nav-item">
+      <a
+        class="nav-link pl-2 pr-1 mx-1 py-3 my-n2"
+        href="https://github.com/runtimeverification/evm-semantics"
+        target="_blank"
+        rel="noopener"
+        aria-label="GitHub"
+      >
+        <i class="fab fa-github"></i>
+      </a>
+    </li>
+  </ul>
+  <!--
+  <a
+    class="btn btn-rv-blue d-none d-lg-inline-block mb-3 mb-md-0 ml-md-3"
+    href="../../../../../../downloads"
+    >Download</a
+  >
+  -->
+</header>
+
+
+    <div class="container-fluid">
+      <div class="row flex-xl-nowrap">
+<div class="col-12 col-md-3 col-xl-2 bd-sidebar mb-3">
+  <form
+    role="search"
+    class="bd-search d-flex align-items-center justify-content-between"
+  >
+    <input
+      type="search"
+      class="form-control"
+      placeholder="Search..."
+      aria-label="Search for..."
+      autocomplete="false"
+      id="search-box"
+    />
+    <button
+      class="btn bd-search-docs-toggle d-md-none p-0 ml-3 collapsed"
+      type="button"
+      aria-label="Toggle docs navigation"
+      style="font-size: 1.4rem"
+    >
+      <i class="fas fa-bars"></i>
+    </button>
+  </form>
+  <nav class="collapse bd-links" aria-label="Main navigation">
+    <div class="bd-toc-item">
+      <a class="bd-toc-link" href="../../../../../../">Homepage</a>
+      <a class="bd-toc-link" href="../../../../../../INSTALL/">Install</a>
+    </div>
+  </nav>
+</div>
+
+        <main
+          class="col-12 col-md-6 col-xl-8 py-md-3 pl-md-5 bd-content"
+          role="main"
+        >
+          <div class="markdown-preview"><html><head></head><body><h1 id="ethereum-assembler">Ethereum Assembler</h1>
+<p>This file contains an assembler from EVM opcodes to byte strings.</p>
+<p>Note that due to the design of EVM, which depends on the binary representation of a smart contract, it is <strong>not</strong> the case that disassembling and then reassembling the same contract will yield the same sequence of bytes.
+As a simple counterexample, consider the contract <code>0x60</code>.
+Disassembling and then reassembling this contract will yield <code>0x6000</code>.</p>
+<p>As such, assembly is not considered part of the semantics of EVM, but is provided merely as a sample implementation to ease readability and make it easier to write inputs to the KEVM semantics.</p>
+<pre><code class="language-k"><span class="token keyword">module</span> EVM<span class="token operator">-</span>ASSEMBLY
+    <span class="token keyword">imports</span> EVM
+
+    <span class="token keyword">syntax</span> OpCode <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> PUSH<span class="token punctuation">(</span><span class="token keyword">Int</span><span class="token punctuation">,</span> <span class="token keyword">Int</span><span class="token punctuation">)</span> <span class="token punctuation">[</span><span class="token class-name">symbol</span><span class="token punctuation">(</span>PUSHAsm<span class="token punctuation">)</span><span class="token punctuation">]</span>
+ <span class="token comment">// --------------------------------------------------</span>
+</code></pre>
+<h3 id="program-structure">Program Structure</h3>
+<p>Cons-lists of opcodes form programs (using cons operator <code>_;_</code>).
+Operator <code>#revOps</code> can be used to reverse a program.</p>
+<pre><code class="language-k">    <span class="token keyword">syntax</span> OpCodes <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> <span class="token string">".OpCodes"</span> <span class="token operator">|</span> OpCode <span class="token string">";"</span> OpCodes
+ <span class="token comment">// --------------------------------------------------</span>
+
+    <span class="token keyword">syntax</span> OpCodes <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> #revOps    <span class="token punctuation">(</span> OpCodes <span class="token punctuation">)</span>           <span class="token punctuation">[</span><span class="token class-name">symbol</span><span class="token punctuation">(</span>#revOps<span class="token punctuation">)</span><span class="token punctuation">,</span> function<span class="token punctuation">]</span>
+                     <span class="token operator">|</span> #revOpsAux <span class="token punctuation">(</span> OpCodes <span class="token punctuation">,</span> OpCodes <span class="token punctuation">)</span> <span class="token punctuation">[</span><span class="token class-name">symbol</span><span class="token punctuation">(</span>#revOpsAux<span class="token punctuation">)</span><span class="token punctuation">,</span> function<span class="token punctuation">]</span>
+ <span class="token comment">// ----------------------------------------------------------------------------------</span>
+    <span class="token keyword">rule</span> #revOps<span class="token punctuation">(</span>OPS<span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #revOpsAux<span class="token punctuation">(</span>OPS<span class="token punctuation">,</span> <span class="token punctuation">.</span>OpCodes<span class="token punctuation">)</span>
+
+    <span class="token keyword">rule</span> #revOpsAux<span class="token punctuation">(</span> <span class="token punctuation">.</span>OpCodes <span class="token punctuation">,</span> OPS<span class="token string">' ) =&gt; OPS'</span>
+    <span class="token keyword">rule</span> #revOpsAux<span class="token punctuation">(</span> OP <span class="token punctuation">;</span> OPS <span class="token punctuation">,</span> OPS<span class="token string">' ) =&gt; #revOpsAux( OPS , OP ; OPS'</span> <span class="token punctuation">)</span>
+</code></pre>
+<pre><code class="language-k">    <span class="token keyword">syntax</span> Bytes <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> #asmOpCodes <span class="token punctuation">(</span> OpCodes <span class="token punctuation">)</span> <span class="token punctuation">[</span><span class="token class-name">symbol</span><span class="token punctuation">(</span>#asmOpCodes<span class="token punctuation">)</span><span class="token punctuation">,</span> function<span class="token punctuation">]</span>
+ <span class="token comment">// ------------------------------------------------------------------------</span>
+</code></pre>
+<pre><code class="language-k">    <span class="token keyword">syntax</span> Bytes <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> #asmOpCodes <span class="token punctuation">(</span> OpCodes<span class="token punctuation">,</span> StringBuffer <span class="token punctuation">)</span> <span class="token punctuation">[</span>function<span class="token punctuation">,</span> <span class="token class-name">symbol</span><span class="token punctuation">(</span>#asmOpCodesAux<span class="token punctuation">)</span><span class="token punctuation">]</span>
+ <span class="token comment">// -----------------------------------------------------------------------------------------</span>
+    <span class="token keyword">rule</span> #asmOpCodes<span class="token punctuation">(</span> OPS <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #asmOpCodes<span class="token punctuation">(</span>OPS<span class="token punctuation">,</span> <span class="token punctuation">.</span>StringBuffer<span class="token punctuation">)</span>
+
+    <span class="token keyword">rule</span> #asmOpCodes<span class="token punctuation">(</span> PUSH<span class="token punctuation">(</span>N<span class="token punctuation">,</span> W<span class="token punctuation">)</span> <span class="token punctuation">;</span> OCS<span class="token punctuation">,</span> SB <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #asmOpCodes<span class="token punctuation">(</span>OCS<span class="token punctuation">,</span> <span class="token punctuation">(</span>SB <span class="token operator">+</span><span class="token keyword">String</span> chrChar<span class="token punctuation">(</span>#asmOpCode<span class="token punctuation">(</span>PUSH<span class="token punctuation">(</span>N<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token operator">+</span><span class="token keyword">String</span> Bytes2String<span class="token punctuation">(</span>Int2Bytes<span class="token punctuation">(</span>N<span class="token punctuation">,</span> W<span class="token punctuation">,</span> BE<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> #asmOpCodes<span class="token punctuation">(</span> OP <span class="token punctuation">;</span> OCS<span class="token punctuation">,</span> SB <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #asmOpCodes<span class="token punctuation">(</span>OCS<span class="token punctuation">,</span> SB <span class="token operator">+</span><span class="token keyword">String</span> chrChar<span class="token punctuation">(</span>#asmOpCode<span class="token punctuation">(</span>OP<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">[</span>owise<span class="token punctuation">]</span>
+    <span class="token keyword">rule</span> #asmOpCodes<span class="token punctuation">(</span> <span class="token punctuation">.</span>OpCodes<span class="token punctuation">,</span> SB <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> String2Bytes<span class="token punctuation">(</span>StringBuffer2String<span class="token punctuation">(</span>SB<span class="token punctuation">)</span><span class="token punctuation">)</span>
+</code></pre>
+<pre><code class="language-k">    <span class="token keyword">syntax</span> <span class="token keyword">Int</span> <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> #asmOpCode <span class="token punctuation">(</span> OpCode <span class="token punctuation">)</span> <span class="token punctuation">[</span><span class="token class-name">symbol</span><span class="token punctuation">(</span>#asmOpCode<span class="token punctuation">)</span><span class="token punctuation">,</span> function<span class="token punctuation">]</span>
+ <span class="token comment">// -------------------------------------------------------------------</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> STOP           <span class="token punctuation">)</span> <span class="token operator">=&gt;</span>   <span class="token number">0</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> ADD            <span class="token punctuation">)</span> <span class="token operator">=&gt;</span>   <span class="token number">1</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> MUL            <span class="token punctuation">)</span> <span class="token operator">=&gt;</span>   <span class="token number">2</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> SUB            <span class="token punctuation">)</span> <span class="token operator">=&gt;</span>   <span class="token number">3</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> DIV            <span class="token punctuation">)</span> <span class="token operator">=&gt;</span>   <span class="token number">4</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> SDIV           <span class="token punctuation">)</span> <span class="token operator">=&gt;</span>   <span class="token number">5</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> MOD            <span class="token punctuation">)</span> <span class="token operator">=&gt;</span>   <span class="token number">6</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> SMOD           <span class="token punctuation">)</span> <span class="token operator">=&gt;</span>   <span class="token number">7</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> ADDMOD         <span class="token punctuation">)</span> <span class="token operator">=&gt;</span>   <span class="token number">8</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> MULMOD         <span class="token punctuation">)</span> <span class="token operator">=&gt;</span>   <span class="token number">9</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> EXP            <span class="token punctuation">)</span> <span class="token operator">=&gt;</span>  <span class="token number">10</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> SIGNEXTEND     <span class="token punctuation">)</span> <span class="token operator">=&gt;</span>  <span class="token number">11</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> LT             <span class="token punctuation">)</span> <span class="token operator">=&gt;</span>  <span class="token number">16</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> GT             <span class="token punctuation">)</span> <span class="token operator">=&gt;</span>  <span class="token number">17</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> SLT            <span class="token punctuation">)</span> <span class="token operator">=&gt;</span>  <span class="token number">18</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> SGT            <span class="token punctuation">)</span> <span class="token operator">=&gt;</span>  <span class="token number">19</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> EQ             <span class="token punctuation">)</span> <span class="token operator">=&gt;</span>  <span class="token number">20</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> ISZERO         <span class="token punctuation">)</span> <span class="token operator">=&gt;</span>  <span class="token number">21</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> AND            <span class="token punctuation">)</span> <span class="token operator">=&gt;</span>  <span class="token number">22</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> EVMOR          <span class="token punctuation">)</span> <span class="token operator">=&gt;</span>  <span class="token number">23</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> XOR            <span class="token punctuation">)</span> <span class="token operator">=&gt;</span>  <span class="token number">24</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> NOT            <span class="token punctuation">)</span> <span class="token operator">=&gt;</span>  <span class="token number">25</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> BYTE           <span class="token punctuation">)</span> <span class="token operator">=&gt;</span>  <span class="token number">26</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> SHL            <span class="token punctuation">)</span> <span class="token operator">=&gt;</span>  <span class="token number">27</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> SHR            <span class="token punctuation">)</span> <span class="token operator">=&gt;</span>  <span class="token number">28</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> SAR            <span class="token punctuation">)</span> <span class="token operator">=&gt;</span>  <span class="token number">29</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> SHA3           <span class="token punctuation">)</span> <span class="token operator">=&gt;</span>  <span class="token number">32</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> ADDRESS        <span class="token punctuation">)</span> <span class="token operator">=&gt;</span>  <span class="token number">48</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> BALANCE        <span class="token punctuation">)</span> <span class="token operator">=&gt;</span>  <span class="token number">49</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> ORIGIN         <span class="token punctuation">)</span> <span class="token operator">=&gt;</span>  <span class="token number">50</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> CALLER         <span class="token punctuation">)</span> <span class="token operator">=&gt;</span>  <span class="token number">51</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> CALLVALUE      <span class="token punctuation">)</span> <span class="token operator">=&gt;</span>  <span class="token number">52</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> CALLDATALOAD   <span class="token punctuation">)</span> <span class="token operator">=&gt;</span>  <span class="token number">53</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> CALLDATASIZE   <span class="token punctuation">)</span> <span class="token operator">=&gt;</span>  <span class="token number">54</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> CALLDATACOPY   <span class="token punctuation">)</span> <span class="token operator">=&gt;</span>  <span class="token number">55</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> CODESIZE       <span class="token punctuation">)</span> <span class="token operator">=&gt;</span>  <span class="token number">56</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> CODECOPY       <span class="token punctuation">)</span> <span class="token operator">=&gt;</span>  <span class="token number">57</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> GASPRICE       <span class="token punctuation">)</span> <span class="token operator">=&gt;</span>  <span class="token number">58</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> EXTCODESIZE    <span class="token punctuation">)</span> <span class="token operator">=&gt;</span>  <span class="token number">59</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> EXTCODECOPY    <span class="token punctuation">)</span> <span class="token operator">=&gt;</span>  <span class="token number">60</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> RETURNDATASIZE <span class="token punctuation">)</span> <span class="token operator">=&gt;</span>  <span class="token number">61</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> RETURNDATACOPY <span class="token punctuation">)</span> <span class="token operator">=&gt;</span>  <span class="token number">62</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> EXTCODEHASH    <span class="token punctuation">)</span> <span class="token operator">=&gt;</span>  <span class="token number">63</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> BLOCKHASH      <span class="token punctuation">)</span> <span class="token operator">=&gt;</span>  <span class="token number">64</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> COINBASE       <span class="token punctuation">)</span> <span class="token operator">=&gt;</span>  <span class="token number">65</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> TIMESTAMP      <span class="token punctuation">)</span> <span class="token operator">=&gt;</span>  <span class="token number">66</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> NUMBER         <span class="token punctuation">)</span> <span class="token operator">=&gt;</span>  <span class="token number">67</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> DIFFICULTY     <span class="token punctuation">)</span> <span class="token operator">=&gt;</span>  <span class="token number">68</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> PREVRANDAO     <span class="token punctuation">)</span> <span class="token operator">=&gt;</span>  <span class="token number">68</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> GASLIMIT       <span class="token punctuation">)</span> <span class="token operator">=&gt;</span>  <span class="token number">69</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> CHAINID        <span class="token punctuation">)</span> <span class="token operator">=&gt;</span>  <span class="token number">70</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> SELFBALANCE    <span class="token punctuation">)</span> <span class="token operator">=&gt;</span>  <span class="token number">71</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> POP            <span class="token punctuation">)</span> <span class="token operator">=&gt;</span>  <span class="token number">80</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> MLOAD          <span class="token punctuation">)</span> <span class="token operator">=&gt;</span>  <span class="token number">81</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> MSTORE         <span class="token punctuation">)</span> <span class="token operator">=&gt;</span>  <span class="token number">82</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> MSTORE8        <span class="token punctuation">)</span> <span class="token operator">=&gt;</span>  <span class="token number">83</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> SLOAD          <span class="token punctuation">)</span> <span class="token operator">=&gt;</span>  <span class="token number">84</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> SSTORE         <span class="token punctuation">)</span> <span class="token operator">=&gt;</span>  <span class="token number">85</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> JUMP           <span class="token punctuation">)</span> <span class="token operator">=&gt;</span>  <span class="token number">86</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> JUMPI          <span class="token punctuation">)</span> <span class="token operator">=&gt;</span>  <span class="token number">87</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> PC             <span class="token punctuation">)</span> <span class="token operator">=&gt;</span>  <span class="token number">88</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> MSIZE          <span class="token punctuation">)</span> <span class="token operator">=&gt;</span>  <span class="token number">89</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> GAS            <span class="token punctuation">)</span> <span class="token operator">=&gt;</span>  <span class="token number">90</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> JUMPDEST       <span class="token punctuation">)</span> <span class="token operator">=&gt;</span>  <span class="token number">91</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> TLOAD          <span class="token punctuation">)</span> <span class="token operator">=&gt;</span>  <span class="token number">92</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> TSTORE         <span class="token punctuation">)</span> <span class="token operator">=&gt;</span>  <span class="token number">93</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> MCOPY          <span class="token punctuation">)</span> <span class="token operator">=&gt;</span>  <span class="token number">94</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> PUSHZERO       <span class="token punctuation">)</span> <span class="token operator">=&gt;</span>  <span class="token number">95</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> PUSH<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span>        <span class="token punctuation">)</span> <span class="token operator">=&gt;</span>  <span class="token number">96</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> PUSH<span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">)</span>        <span class="token punctuation">)</span> <span class="token operator">=&gt;</span>  <span class="token number">97</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> PUSH<span class="token punctuation">(</span><span class="token number">3</span><span class="token punctuation">)</span>        <span class="token punctuation">)</span> <span class="token operator">=&gt;</span>  <span class="token number">98</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> PUSH<span class="token punctuation">(</span><span class="token number">4</span><span class="token punctuation">)</span>        <span class="token punctuation">)</span> <span class="token operator">=&gt;</span>  <span class="token number">99</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> PUSH<span class="token punctuation">(</span><span class="token number">5</span><span class="token punctuation">)</span>        <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">100</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> PUSH<span class="token punctuation">(</span><span class="token number">6</span><span class="token punctuation">)</span>        <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">101</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> PUSH<span class="token punctuation">(</span><span class="token number">7</span><span class="token punctuation">)</span>        <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">102</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> PUSH<span class="token punctuation">(</span><span class="token number">8</span><span class="token punctuation">)</span>        <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">103</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> PUSH<span class="token punctuation">(</span><span class="token number">9</span><span class="token punctuation">)</span>        <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">104</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> PUSH<span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">)</span>       <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">105</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> PUSH<span class="token punctuation">(</span><span class="token number">11</span><span class="token punctuation">)</span>       <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">106</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> PUSH<span class="token punctuation">(</span><span class="token number">12</span><span class="token punctuation">)</span>       <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">107</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> PUSH<span class="token punctuation">(</span><span class="token number">13</span><span class="token punctuation">)</span>       <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">108</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> PUSH<span class="token punctuation">(</span><span class="token number">14</span><span class="token punctuation">)</span>       <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">109</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> PUSH<span class="token punctuation">(</span><span class="token number">15</span><span class="token punctuation">)</span>       <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">110</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> PUSH<span class="token punctuation">(</span><span class="token number">16</span><span class="token punctuation">)</span>       <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">111</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> PUSH<span class="token punctuation">(</span><span class="token number">17</span><span class="token punctuation">)</span>       <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">112</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> PUSH<span class="token punctuation">(</span><span class="token number">18</span><span class="token punctuation">)</span>       <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">113</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> PUSH<span class="token punctuation">(</span><span class="token number">19</span><span class="token punctuation">)</span>       <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">114</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> PUSH<span class="token punctuation">(</span><span class="token number">20</span><span class="token punctuation">)</span>       <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">115</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> PUSH<span class="token punctuation">(</span><span class="token number">21</span><span class="token punctuation">)</span>       <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">116</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> PUSH<span class="token punctuation">(</span><span class="token number">22</span><span class="token punctuation">)</span>       <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">117</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> PUSH<span class="token punctuation">(</span><span class="token number">23</span><span class="token punctuation">)</span>       <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">118</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> PUSH<span class="token punctuation">(</span><span class="token number">24</span><span class="token punctuation">)</span>       <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">119</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> PUSH<span class="token punctuation">(</span><span class="token number">25</span><span class="token punctuation">)</span>       <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">120</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> PUSH<span class="token punctuation">(</span><span class="token number">26</span><span class="token punctuation">)</span>       <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">121</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> PUSH<span class="token punctuation">(</span><span class="token number">27</span><span class="token punctuation">)</span>       <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">122</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> PUSH<span class="token punctuation">(</span><span class="token number">28</span><span class="token punctuation">)</span>       <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">123</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> PUSH<span class="token punctuation">(</span><span class="token number">29</span><span class="token punctuation">)</span>       <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">124</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> PUSH<span class="token punctuation">(</span><span class="token number">30</span><span class="token punctuation">)</span>       <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">125</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> PUSH<span class="token punctuation">(</span><span class="token number">31</span><span class="token punctuation">)</span>       <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">126</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> PUSH<span class="token punctuation">(</span><span class="token number">32</span><span class="token punctuation">)</span>       <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">127</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> DUP<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span>         <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">128</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> DUP<span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">)</span>         <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">129</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> DUP<span class="token punctuation">(</span><span class="token number">3</span><span class="token punctuation">)</span>         <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">130</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> DUP<span class="token punctuation">(</span><span class="token number">4</span><span class="token punctuation">)</span>         <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">131</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> DUP<span class="token punctuation">(</span><span class="token number">5</span><span class="token punctuation">)</span>         <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">132</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> DUP<span class="token punctuation">(</span><span class="token number">6</span><span class="token punctuation">)</span>         <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">133</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> DUP<span class="token punctuation">(</span><span class="token number">7</span><span class="token punctuation">)</span>         <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">134</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> DUP<span class="token punctuation">(</span><span class="token number">8</span><span class="token punctuation">)</span>         <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">135</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> DUP<span class="token punctuation">(</span><span class="token number">9</span><span class="token punctuation">)</span>         <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">136</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> DUP<span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">)</span>        <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">137</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> DUP<span class="token punctuation">(</span><span class="token number">11</span><span class="token punctuation">)</span>        <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">138</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> DUP<span class="token punctuation">(</span><span class="token number">12</span><span class="token punctuation">)</span>        <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">139</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> DUP<span class="token punctuation">(</span><span class="token number">13</span><span class="token punctuation">)</span>        <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">140</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> DUP<span class="token punctuation">(</span><span class="token number">14</span><span class="token punctuation">)</span>        <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">141</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> DUP<span class="token punctuation">(</span><span class="token number">15</span><span class="token punctuation">)</span>        <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">142</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> DUP<span class="token punctuation">(</span><span class="token number">16</span><span class="token punctuation">)</span>        <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">143</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> SWAP<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span>        <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">144</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> SWAP<span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">)</span>        <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">145</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> SWAP<span class="token punctuation">(</span><span class="token number">3</span><span class="token punctuation">)</span>        <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">146</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> SWAP<span class="token punctuation">(</span><span class="token number">4</span><span class="token punctuation">)</span>        <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">147</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> SWAP<span class="token punctuation">(</span><span class="token number">5</span><span class="token punctuation">)</span>        <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">148</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> SWAP<span class="token punctuation">(</span><span class="token number">6</span><span class="token punctuation">)</span>        <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">149</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> SWAP<span class="token punctuation">(</span><span class="token number">7</span><span class="token punctuation">)</span>        <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">150</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> SWAP<span class="token punctuation">(</span><span class="token number">8</span><span class="token punctuation">)</span>        <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">151</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> SWAP<span class="token punctuation">(</span><span class="token number">9</span><span class="token punctuation">)</span>        <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">152</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> SWAP<span class="token punctuation">(</span><span class="token number">10</span><span class="token punctuation">)</span>       <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">153</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> SWAP<span class="token punctuation">(</span><span class="token number">11</span><span class="token punctuation">)</span>       <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">154</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> SWAP<span class="token punctuation">(</span><span class="token number">12</span><span class="token punctuation">)</span>       <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">155</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> SWAP<span class="token punctuation">(</span><span class="token number">13</span><span class="token punctuation">)</span>       <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">156</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> SWAP<span class="token punctuation">(</span><span class="token number">14</span><span class="token punctuation">)</span>       <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">157</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> SWAP<span class="token punctuation">(</span><span class="token number">15</span><span class="token punctuation">)</span>       <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">158</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> SWAP<span class="token punctuation">(</span><span class="token number">16</span><span class="token punctuation">)</span>       <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">159</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> LOG<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span>         <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">160</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> LOG<span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span>         <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">161</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> LOG<span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">)</span>         <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">162</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> LOG<span class="token punctuation">(</span><span class="token number">3</span><span class="token punctuation">)</span>         <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">163</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> LOG<span class="token punctuation">(</span><span class="token number">4</span><span class="token punctuation">)</span>         <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">164</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> CREATE         <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">240</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> CALL           <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">241</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> CALLCODE       <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">242</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> RETURN         <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">243</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> DELEGATECALL   <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">244</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> CREATE2        <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">245</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> STATICCALL     <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">250</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> REVERT         <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">253</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> INVALID        <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">254</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> SELFDESTRUCT   <span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token number">255</span>
+    <span class="token keyword">rule</span> #asmOpCode<span class="token punctuation">(</span> UNDEFINED<span class="token punctuation">(</span>W<span class="token punctuation">)</span>   <span class="token punctuation">)</span> <span class="token operator">=&gt;</span>   W
+
+<span class="token keyword">endmodule</span>
+</code></pre>
+</body></html></div>
+        </main>
+
+        <!-- Page ToC -->
+        <div class="col-12 col-md-3 col-xl-2 py-md-3 bd-sidebar page-toc mb-3">
+          
+<div>
+<div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#ethereum-assembler"
+                class="bd-toc-link"
+                style="padding-left: 0px;;"
+              >
+                Ethereum Assembler
+              </a></div>
+</div>
+
+        </div>
+        <div class="btn btn-rv-blue page-toc-toggle-btn"></div>
+        <!-- End Page ToC -->
+      </div>
+    </div>
+<!-- The footer is now controlled by the k-web-theme git submodule -->
+<footer id="rvsite-footer" class="app-footer text-md-left text-center">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-md-4 mb-md-0 mb-4">
+        <a href="https://runtimeverification.com/" target="_blank">
+          <picture>
+            <source
+              srcset="
+                https://runtimeverification.com/assets/img/rv-logo-dark.png
+              "
+              media="(prefers-color-scheme: dark)"
+            />
+            <img
+              class="logo-dark"
+              src="https://runtimeverification.com/assets/img/rv-logo.png"
+              alt="Runtime Verification logo"
+              style="height: 32px"
+            /> </picture
+        ></a>
+        <p class="mt-2 text-md-left copyright">
+          <a href="https://maps.app.goo.gl/8YhKozfmZtgzQBsH7" target="_blank"
+            >202 S Broadway Ave #31, Urbana, IL</a
+          >
+        </p>
+      </div>
+      <div class="col-md-4 text-md-center mb-md-0 mb-4"></div>
+      <div class="col-md-4 mb-md-0 mb-4 pl-0 text-md-right">
+        <p class="copyright">2024 © all rights reserved</p>
+        <span class="copyright"
+          ><a href="https://runtimeverification.com/privacy-policy"
+            >privacy policy</a
+          >
+          |
+          <a href="https://runtimeverification.com/terms-of-use"
+            >terms of use</a
+          ></span
+        >
+      </div>
+    </div>
+  </div>
+</footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Typist/1.2/typist.min.js"></script>
+    <script src="../../../../../../assets/js/index.js"></script>
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script
+  async
+  src="https://www.googletagmanager.com/gtag/js?id=G-QL0D8HRYFW"
+></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag() {
+    dataLayer.push(arguments);
+  }
+  gtag("js", new Date());
+  gtag("config", "G-QL0D8HRYFW");
+</script>
+
+  </body>
+</html>
