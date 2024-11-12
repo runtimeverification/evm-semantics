@@ -114,6 +114,7 @@ def run_prover(
     task_id: TaskID | None = None,
     maintenance_rate: int = 1,
     assume_defined: bool = False,
+    extra_module: KFlatModule | None = None,
 ) -> bool:
     prover: APRProver | ImpliesProver
     try:
@@ -129,6 +130,7 @@ def run_prover(
                     fast_check_subsumption=fast_check_subsumption,
                     direct_subproof_rules=direct_subproof_rules,
                     assume_defined=assume_defined,
+                    extra_module=extra_module,
                 )
 
             def update_status_bar(_proof: Proof) -> None:
