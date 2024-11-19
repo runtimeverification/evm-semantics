@@ -202,6 +202,6 @@ module SLOT-UPDATES-SPEC
                                          b"\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00" +Bytes
                                          #range ( #buf ( 32 , #lookup ( STORAGE1:Map , 0 ) ) , 27 , 4 ) +Bytes b"\\x02" ) ) ) ) ,
                         31 , 1 ) ) <=Int 2 )
-          => doneLemma ( true )
+          => doneLemma ( true ) ... </k>
 
 endmodule
