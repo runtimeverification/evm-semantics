@@ -30,7 +30,7 @@ if TYPE_CHECKING:
     from collections.abc import Callable, Collection, Iterable, Iterator
     from typing import Final, TypeVar
 
-    from pyk.kast.outer import KClaim, KDefinition
+    from pyk.kast.outer import KClaim, KDefinition, KFlatModule
     from pyk.kcfg import KCFG
     from pyk.kcfg.semantics import KCFGSemantics
     from pyk.kore.rpc import FallbackReason
