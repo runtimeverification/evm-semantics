@@ -13,7 +13,7 @@ authors = [
 [tool.poetry.dependencies]
 python = "^3.10"
 pathos = "*"
-kframework = "7.1.178"
+kframework = "7.1.179"
 tomlkit = "^0.11.6"
 
 [tool.poetry.group.dev.dependencies]
