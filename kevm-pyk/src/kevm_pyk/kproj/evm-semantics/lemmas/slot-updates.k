@@ -25,10 +25,12 @@ module SLOT-UPDATES [symbolic]
     // SHIFT appropriate, and in the latter case, the slot will appear on the LHS of the |Int.
 
     // 1. Slot masking using &Int
-    rule [mask-b-and]:
+    rule [multimask-b-and]:
       MASK:Int &Int SLOT:Int =>
+        ( MASK |Int ( 2 ^Int ( 8 *Int ( #getMaskShiftBytes(MASK) +Int #getMaskWidthBytes(MASK) ) ) -Int 1 ) )
+          &Int
         #asWord ( #buf ( 32, SLOT ) [ 32 -Int ( #getMaskShiftBytes(MASK) +Int #getMaskWidthBytes(MASK) ) := #buf ( #getMaskWidthBytes(MASK), 0 ) ] )
-        requires #isMask(MASK) andBool #rangeUInt(256, SLOT)
+        requires 0 <=Int #getMaskShiftBytes(MASK) andBool 0 <=Int #getMaskWidthBytes(MASK) andBool #rangeUInt(256, SLOT)
         [simplification, concrete(MASK), preserves-definedness]
 
     // 2a. |Int and +Bytes, update to be done in left
