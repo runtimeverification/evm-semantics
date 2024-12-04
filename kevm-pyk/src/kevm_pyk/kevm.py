@@ -37,6 +37,7 @@ if TYPE_CHECKING:
     from pathlib import Path
     from typing import Final
 
+    from pyk.cterm import CTermSymbolic
     from pyk.kast.inner import KAst, Subst
     from pyk.kast.outer import KFlatModule
     from pyk.kcfg import KCFG
@@ -144,7 +145,7 @@ class KEVMSemantics(DefaultSemantics):
 
         return CTerm(config=bottom_up(_replace, cterm.config), constraints=cterm.constraints)
 
-    def custom_step(self, cterm: CTerm) -> KCFGExtendResult | None:
+    def custom_step(self, cterm: CTerm, _cterm_symbolic: CTermSymbolic) -> KCFGExtendResult | None:
         """Given a CTerm, update the JUMPDESTS_CELL and PROGRAM_CELL if the rule 'EVM.program.load' is at the top of the K_CELL.
 
         :param cterm: CTerm of a proof node.
