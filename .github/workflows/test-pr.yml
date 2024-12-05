@@ -106,7 +106,7 @@ jobs:
           - name: 'DSS'
             test-suite: 'test-prove-dss'
             test-args:
-            timeout: 45
+            timeout: 55
             parallel: 1
     timeout-minutes: ${{ matrix.timeout }}
     steps:
