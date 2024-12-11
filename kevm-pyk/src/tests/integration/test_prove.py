@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import shutil
 import sys
 from typing import TYPE_CHECKING, NamedTuple
 
@@ -56,7 +57,10 @@ ERC20_TESTS: Final = spec_files('erc20', '*/*-spec.k')
 EXAMPLES_TESTS: Final = spec_files('examples', '*-spec.k') + spec_files('examples', '*-spec.md')
 MCD_TESTS: Final = spec_files('mcd', '*-spec.k')
 VAT_TESTS: Final = spec_files('mcd', 'vat*-spec.k')
+MCD_STRUCTURED_TESTS: Final = spec_files('mcd-structured', '*-spec.k')
+VAT_STRUCTURED_TESTS: Final = spec_files('mcd-structured', 'vat*-spec.k')
 NON_VAT_MCD_TESTS: Final = tuple(test for test in MCD_TESTS if test not in VAT_TESTS)
+NON_VAT_MCD_STRUCTURED_TESTS: Final = tuple(test for test in MCD_STRUCTURED_TESTS if test not in VAT_STRUCTURED_TESTS)
 KONTROL_TESTS: Final = spec_files('kontrol', '*-spec.k')
 FUNCTIONAL_TESTS: Final = spec_files('functional', '*-spec.k')
 
@@ -66,13 +70,14 @@ RULE_TESTS: Final = sum(
         ERC20_TESTS,
         EXAMPLES_TESTS,
         NON_VAT_MCD_TESTS,
+        NON_VAT_MCD_STRUCTURED_TESTS,
         KONTROL_TESTS,
     ],
     (),
 )
 
 ALL_TESTS: Final = sum(
-    [RULE_TESTS, FUNCTIONAL_TESTS, VAT_TESTS],
+    [RULE_TESTS, FUNCTIONAL_TESTS, VAT_TESTS, VAT_STRUCTURED_TESTS],
     (),
 )
 
@@ -106,14 +111,17 @@ KOMPILE_MAIN_FILE: Final = {
     'functional/lemmas-spec.k': 'lemmas-spec.k',
     'functional/abi-spec.k': 'abi-spec.k',
     'functional/merkle-spec.k': 'merkle-spec.k',
+    'functional/slot-updates-spec.k': 'slot-updates-spec.k',
     'functional/storageRoot-spec.k': 'storageRoot-spec.k',
     'mcd/functional-spec.k': 'functional-spec.k',
+    'mcd-structured/functional-spec.k': 'functional-spec.k',
 }
 
 KOMPILE_MAIN_MODULE: Final = {
     'benchmarks/functional-spec.k': 'FUNCTIONAL-SPEC-SYNTAX',
     'erc20/functional-spec.k': 'FUNCTIONAL-SPEC-SYNTAX',
     'mcd/functional-spec.k': 'FUNCTIONAL-SPEC-SYNTAX',
+    'mcd-structured/functional-spec.k': 'FUNCTIONAL-SPEC-SYNTAX',
 }
 
 
@@ -199,6 +207,7 @@ def _test_prove(
     # Given
     log_file = tmp_path / 'log.txt'
     use_directory = tmp_path / 'kprove'
+    shutil.rmtree(use_directory, ignore_errors=True)
     use_directory.mkdir()
 
     # When
@@ -320,7 +329,6 @@ def test_prove_rules(
     tmp_path: Path,
     caplog: LogCaptureFixture,
     no_use_booster: bool,
-    force_sequential: bool,
     use_booster_dev: bool,
     bug_report: BugReport | None,
     spec_name: str | None,
@@ -331,8 +339,8 @@ def test_prove_rules(
         tmp_path,
         caplog,
         no_use_booster,
-        force_sequential,
-        use_booster_dev,
+        force_sequential=True,
+        use_booster_dev=use_booster_dev,
         bug_report=bug_report,
         spec_name=spec_name,
     )
@@ -349,7 +357,6 @@ def test_prove_functional(
     tmp_path: Path,
     caplog: LogCaptureFixture,
     no_use_booster: bool,
-    force_sequential: bool,
     use_booster_dev: bool,
     bug_report: BugReport | None,
     spec_name: str | None,
@@ -360,8 +367,8 @@ def test_prove_functional(
         tmp_path,
         caplog,
         no_use_booster,
-        force_sequential,
-        use_booster_dev,
+        force_sequential=True,
+        use_booster_dev=use_booster_dev,
         bug_report=bug_report,
         spec_name=spec_name,
         workers=8,
@@ -372,23 +379,22 @@ def test_prove_dss(
     kompiled_target_for: Callable[[Path], Path],
     tmp_path: Path,
     caplog: LogCaptureFixture,
-    force_sequential: bool,
     bug_report: BugReport | None,
 ) -> None:
-    spec_file = REPO_ROOT / 'tests/specs/mcd/vat-spec.k'
-    _test_prove(
-        spec_file,
-        kompiled_target_for,
-        tmp_path,
-        caplog,
-        False,
-        force_sequential,
-        False,
-        bug_report=bug_report,
-        spec_name=None,
-        workers=8,
-        direct_subproof_rules=True,
-    )
+    for spec_file in [REPO_ROOT / 'tests/specs/mcd/vat-spec.k', REPO_ROOT / 'tests/specs/mcd-structured/vat-spec.k']:
+        _test_prove(
+            spec_file,
+            kompiled_target_for,
+            tmp_path,
+            caplog,
+            no_use_booster=False,
+            force_sequential=True,
+            use_booster_dev=False,
+            bug_report=bug_report,
+            spec_name=None,
+            workers=8,
+            direct_subproof_rules=True,
+        )
 
 
 def test_prove_optimizations(
@@ -425,14 +431,13 @@ def test_prove_optimizations(
             kcfg_explore,
             execute_depth=20,
             terminal_rules=[],
-            cut_point_rules=['EVM.pc.inc'],
+            cut_point_rules=['EVM.pc.inc', 'EVM.end-basic-block'],
             counterexample_info=False,
-            always_check_subsumption=True,
             fast_check_subsumption=True,
         )
         for proof in _get_optimization_proofs():
             initialize_apr_proof(kcfg_explore.cterm_symbolic, proof)
-            prover.advance_proof(proof, max_iterations=10)
+            prover.advance_proof(proof, max_iterations=20)
             node_printer = kevm_node_printer(kevm, proof)
             proof_show = APRProofShow(kevm, node_printer=node_printer)
             proof_display = '\n'.join('    ' + line for line in proof_show.show(proof))

@@ -27,8 +27,8 @@ Primitives provide the basic conversion from K's sorts `Int` and `Bool` to EVM's
 -   `word2Bool` interprets a `Int` as a `Bool`.
 
 ```k
-    syntax Int ::= bool2Word ( Bool ) [symbol(bool2Word), function, total, smtlib(bool2Word)]
- // -----------------------------------------------------------------------------------------
+    syntax Int ::= bool2Word ( Bool ) [symbol(bool2Word), function, total, injective, smtlib(bool2Word)]
+ // ----------------------------------------------------------------------------------------------------
     rule bool2Word( true  ) => 1
     rule bool2Word( false ) => 0
 
@@ -38,8 +38,8 @@ Primitives provide the basic conversion from K's sorts `Int` and `Bool` to EVM's
     rule word2Bool( W ) => true  requires W =/=Int 0
 ```
 
--   `sgn` gives the twos-complement interperetation of the sign of a word.
--   `abs` gives the twos-complement interperetation of the magnitude of a word.
+-   `sgn` gives the twos-complement interpretation of the sign of a word.
+-   `abs` gives the twos-complement interpretation of the magnitude of a word.
 
 ```k
     syntax Int ::= sgn ( Int ) [symbol(sgn), function, total]
@@ -114,7 +114,7 @@ The helper `powmod` is a totalization of the operator `_^%Int__` (which comes wi
     rule [powmod.zero]:    powmod( _,  _, W2) => 0               requires W2  ==Int 0 [concrete]
 ```
 
-`/sWord` and `%sWord` give the signed interperetations of `/Word` and `%Word`.
+`/sWord` and `%sWord` give the signed interpretations of `/Word` and `%Word`.
 
 ```k
     syntax Int ::= Int "/sWord" Int [function]
@@ -144,7 +144,7 @@ The `<op>Word` comparisons similarly lift K operators to EVM ones:
     rule W0 ==Word W1 => bool2Word(W0 ==Int W1)
 ```
 
--   `s<Word` implements a less-than for `Word` (with signed interperetation).
+-   `s<Word` implements a less-than for `Word` (with signed interpretation).
 
 ```k
     syntax Int ::= Int "s<Word" Int [function, total]
@@ -190,8 +190,8 @@ Bitwise logical operators are lifted from the integer versions.
     rule bit (N, _) => 0 requires notBool (N >=Int 0 andBool N <Int 256)
     rule byte(N, _) => 0 requires notBool (N >=Int 0 andBool N <Int  32)
 
-    rule bit (N, W) => bitRangeInt(W , (255 -Int N)        , 1) requires N >=Int 0 andBool N <Int 256
-    rule byte(N, W) => bitRangeInt(W , ( 31 -Int N) *Int 8 , 8) requires N >=Int 0 andBool N <Int  32
+    rule bit (N, W) => bitRangeInt(W , (255 -Int N)       , 1) requires N >=Int 0 andBool N <Int 256
+    rule byte(N, W) => bitRangeInt(W , 8 *Int (31 -Int N) , 8) requires N >=Int 0 andBool N <Int  32
 ```
 
 -   `#nBits` shifts in `N` ones from the right.
@@ -202,7 +202,7 @@ Bitwise logical operators are lifted from the integer versions.
                  | #nBytes ( Int )  [symbol(#nBytes), function]
  // -----------------------------------------------------------
     rule #nBits(N)  => (1 <<Int N) -Int 1 requires N >=Int 0
-    rule #nBytes(N) => #nBits(N *Int 8)   requires N >=Int 0
+    rule #nBytes(N) => #nBits(8 *Int N)   requires N >=Int 0
 ```
 
 -   `signextend(N, W)` sign-extends from byte `N` of `W` (0 being MSB).
@@ -333,8 +333,8 @@ A cons-list is used for the EVM wordstack.
 Bytes helper functions
 ----------------------
 
--   `#asWord` will interperet a stack of bytes as a single word (with MSB first).
--   `#asInteger` will interperet a stack of bytes as a single arbitrary-precision integer (with MSB first).
+-   `#asWord` will interpret a stack of bytes as a single word (with MSB first).
+-   `#asInteger` will interpret a stack of bytes as a single arbitrary-precision integer (with MSB first).
 -   `#asAccount` will interpret a stack of bytes as a single account id (with MSB first).
     Differs from `#asWord` only in that an empty stack represents the empty account, not account zero.
 -   `#asByteStack` will split a single word up into a `Bytes`.

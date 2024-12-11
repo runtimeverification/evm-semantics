@@ -20,13 +20,12 @@ from pyk.kast.inner import (
 from pyk.kast.manip import abstract_term_safely, flatten_label, set_cell
 from pyk.kast.pretty import paren
 from pyk.kcfg.kcfg import Step
-from pyk.kcfg.semantics import KCFGSemantics
+from pyk.kcfg.semantics import DefaultSemantics
 from pyk.kcfg.show import NodePrinter
 from pyk.ktool.kprove import KProve
 from pyk.ktool.krun import KRun
 from pyk.prelude.bytes import BYTES, pretty_bytes
-from pyk.prelude.kbool import notBool
-from pyk.prelude.kint import INT, eqInt, intToken, ltInt
+from pyk.prelude.kint import INT, gtInt, intToken, ltInt
 from pyk.prelude.ml import mlEqualsFalse, mlEqualsTrue
 from pyk.prelude.string import stringToken
 from pyk.prelude.utils import token
@@ -38,7 +37,8 @@ if TYPE_CHECKING:
     from pathlib import Path
     from typing import Final
 
-    from pyk.kast.inner import KAst
+    from pyk.cterm import CTermSymbolic
+    from pyk.kast.inner import KAst, Subst
     from pyk.kast.outer import KFlatModule
     from pyk.kcfg import KCFG
     from pyk.kcfg.semantics import KCFGExtendResult
@@ -50,13 +50,15 @@ _LOGGER: Final = logging.getLogger(__name__)
 # KEVM class
 
 
-class KEVMSemantics(KCFGSemantics):
+class KEVMSemantics(DefaultSemantics):
     auto_abstract_gas: bool
     allow_symbolic_program: bool
+    _cached_subst: Subst | None
 
     def __init__(self, auto_abstract_gas: bool = False, allow_symbolic_program: bool = False) -> None:
         self.auto_abstract_gas = auto_abstract_gas
         self.allow_symbolic_program = allow_symbolic_program
+        self._cached_subst = None
 
     @staticmethod
     def is_functional(term: KInner) -> bool:
@@ -96,6 +98,12 @@ class KEVMSemantics(KCFGSemantics):
 
         return False
 
+    def is_loop(self, cterm: CTerm) -> bool:
+        jumpi_pattern = KEVM.jumpi_applied(KVariable('###PCOUNT'), KVariable('###COND'))
+        pc_next_pattern = KEVM.pc_applied(KEVM.jumpi())
+        branch_pattern = KSequence([jumpi_pattern, pc_next_pattern, KEVM.sharp_execute(), KVariable('###CONTINUATION')])
+        return branch_pattern.match(cterm.cell('K_CELL')) is not None
+
     def same_loop(self, cterm1: CTerm, cterm2: CTerm) -> bool:
         # In the same program, at the same calldepth, at the same program counter
         for cell in ['PC_CELL', 'CALLDEPTH_CELL', 'PROGRAM_CELL']:
@@ -113,20 +121,6 @@ class KEVMSemantics(KCFGSemantics):
             if KEVM.wordstack_len(cterm1.cell('WORDSTACK_CELL')) == KEVM.wordstack_len(cterm2.cell('WORDSTACK_CELL')):
                 return True
         return False
-
-    def extract_branches(self, cterm: CTerm) -> list[KInner]:
-        k_cell = cterm.cell('K_CELL')
-        jumpi_pattern = KEVM.jumpi_applied(KVariable('###PCOUNT'), KVariable('###COND'))
-        pc_next_pattern = KEVM.pc_applied(KEVM.jumpi())
-        branch_pattern = KSequence([jumpi_pattern, pc_next_pattern, KEVM.sharp_execute(), KVariable('###CONTINUATION')])
-        if subst := branch_pattern.match(k_cell):
-            cond = subst['###COND']
-            if cond_subst := KEVM.bool_2_word(KVariable('###BOOL_2_WORD')).match(cond):
-                cond = cond_subst['###BOOL_2_WORD']
-            else:
-                cond = eqInt(cond, intToken(0))
-            return [mlEqualsTrue(cond), mlEqualsTrue(notBool(cond))]
-        return []
 
     def abstract_node(self, cterm: CTerm) -> CTerm:
         if not self.auto_abstract_gas:
@@ -151,28 +145,16 @@ class KEVMSemantics(KCFGSemantics):
 
         return CTerm(config=bottom_up(_replace, cterm.config), constraints=cterm.constraints)
 
-    def custom_step(self, cterm: CTerm) -> KCFGExtendResult | None:
-        """Given a CTerm, update the JUMPDESTS_CELL and PROGRAM_CELL if the rule 'EVM.program.load' is at the top of the K_CELL.
-
-        :param cterm: CTerm of a proof node.
-        :type cterm: CTerm
-        :return: If the K_CELL matches the load_pattern, a Step with depth 1 is returned together with the new configuration, also registering that the `EVM.program.load` rule has been applied. Otherwise, None is returned.
-        :rtype: KCFGExtendResult | None
-        """
-        load_pattern = KSequence([KApply('loadProgram', KVariable('###BYTECODE')), KVariable('###CONTINUATION')])
-        subst = load_pattern.match(cterm.cell('K_CELL'))
-        if subst is not None:
-            bytecode_sections = flatten_label('_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes', subst['###BYTECODE'])
-            jumpdests_set = compute_jumpdests(bytecode_sections)
-            new_cterm = CTerm.from_kast(set_cell(cterm.kast, 'JUMPDESTS_CELL', jumpdests_set))
-            new_cterm = CTerm.from_kast(set_cell(new_cterm.kast, 'PROGRAM_CELL', subst['###BYTECODE']))
-            new_cterm = CTerm.from_kast(set_cell(new_cterm.kast, 'K_CELL', KSequence(subst['###CONTINUATION'])))
-            return Step(new_cterm, 1, (), ['EVM.program.load'], cut=True)
-        return None
+    def custom_step(self, cterm: CTerm, _cterm_symbolic: CTermSymbolic) -> KCFGExtendResult | None:
+        if self._check_load_pattern(cterm):
+            return self._exec_load_custom_step(cterm)
+        else:
+            return None
 
     @staticmethod
     def cut_point_rules(
         break_on_jumpi: bool,
+        break_on_jump: bool,
         break_on_calls: bool,
         break_on_storage: bool,
         break_on_basic_blocks: bool,
@@ -181,6 +163,8 @@ class KEVMSemantics(KCFGSemantics):
         cut_point_rules = []
         if break_on_jumpi:
             cut_point_rules.extend(['EVM.jumpi.true', 'EVM.jumpi.false'])
+        if break_on_jump:
+            cut_point_rules.extend(['EVM.jump'])
         if break_on_basic_blocks:
             cut_point_rules.append('EVM.end-basic-block')
         if break_on_calls or break_on_basic_blocks:
@@ -212,6 +196,59 @@ class KEVMSemantics(KCFGSemantics):
         if break_every_step:
             terminal_rules.append('EVM.step')
         return terminal_rules
+
+    def _check_load_pattern(self, cterm: CTerm) -> bool:
+        """Given a CTerm, check if the rule 'EVM.program.load' is at the top of the K_CELL.
+
+        This method checks if the `EVM.program.load` rule is at the top of the `K_CELL` in the given `cterm`.
+        If the rule matches, the resulting substitution is cached in `_cached_subst` for later use in `custom_step`
+        :param cterm: The CTerm representing the current state of the proof node.
+        :return: `True` if the pattern matches and a custom step can be made; `False` otherwise.
+        """
+        load_pattern = KSequence([KApply('loadProgram', KVariable('###BYTECODE')), KVariable('###CONTINUATION')])
+        self._cached_subst = load_pattern.match(cterm.cell('K_CELL'))
+        return self._cached_subst is not None
+
+    def _exec_load_custom_step(self, cterm: CTerm) -> KCFGExtendResult:
+        """Given a CTerm, update the JUMPDESTS_CELL and PROGRAM_CELL if the rule 'EVM.program.load' is at the top of the K_CELL.
+
+        :param cterm: CTerm of a proof node.
+        :return: If the K_CELL matches the load_pattern, a Step with depth 1 is returned together with the new configuration, also registering that the `EVM.program.load` rule has been applied.
+        """
+        subst = self._cached_subst
+        assert subst is not None
+        bytecode_sections = flatten_label('_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes', subst['###BYTECODE'])
+        jumpdests_set = compute_jumpdests(bytecode_sections)
+        new_cterm = CTerm.from_kast(set_cell(cterm.kast, 'JUMPDESTS_CELL', jumpdests_set))
+        new_cterm = CTerm.from_kast(set_cell(new_cterm.kast, 'PROGRAM_CELL', subst['###BYTECODE']))
+        new_cterm = CTerm.from_kast(set_cell(new_cterm.kast, 'K_CELL', KSequence(subst['###CONTINUATION'])))
+        return Step(new_cterm, 1, (), ['EVM.program.load'], cut=True)
+
+    def can_make_custom_step(self, cterm: CTerm) -> bool:
+        return self._check_load_pattern(cterm)
+
+    def is_mergeable(self, ct1: CTerm, ct2: CTerm) -> bool:
+        """Given two CTerms of Edges' targets, check if they are mergeable.
+
+        Two CTerms are mergeable if their `STATUSCODE_CELL` and `PROGRAM_CELL` are the same.
+        If mergeable, the two corresponding Edges are merged into one.
+
+        :param ct1: CTerm of one Edge's target.
+        :param ct2: CTerm of another Edge's target.
+        :return: `True` if the two CTerms are mergeable; `False` otherwise.
+        """
+        status_code_1 = ct1.cell('STATUSCODE_CELL')
+        status_code_2 = ct2.cell('STATUSCODE_CELL')
+        program_1 = ct1.cell('PROGRAM_CELL')
+        program_2 = ct2.cell('PROGRAM_CELL')
+        if (
+            type(status_code_1) is KApply
+            and type(status_code_2) is KApply
+            and type(program_1) is KToken
+            and type(program_2) is KToken
+        ):
+            return status_code_1 == status_code_2 and program_1 == program_2
+        raise ValueError(f'Attempted to merge nodes with non-concrete <statusCode> or <program>: {(ct1, ct2)}')
 
 
 class KEVM(KProve, KRun):
@@ -356,9 +393,12 @@ class KEVM(KProve, KRun):
             mlEqualsFalse(KEVM.is_precompiled_account(cterm.cell('ORIGIN_CELL'), cterm.cell('SCHEDULE_CELL')))
         )
 
-        constraints.append(mlEqualsTrue(KEVM.range_blocknum(cterm.cell('NUMBER_CELL'))))
-        constraints.append(mlEqualsTrue(KEVM.range_uint(256, cterm.cell('TIMESTAMP_CELL'))))
-
+        # Setting the timestamp range from January 2004 to October 3058
+        constraints.append(mlEqualsTrue(gtInt(cterm.cell('TIMESTAMP_CELL'), intToken(2**30))))
+        constraints.append(mlEqualsTrue(ltInt(cterm.cell('TIMESTAMP_CELL'), intToken(2**35))))
+        # Setting the block number range conservatively to match the timestamp range
+        constraints.append(mlEqualsTrue(gtInt(cterm.cell('NUMBER_CELL'), intToken(2**24))))
+        constraints.append(mlEqualsTrue(ltInt(cterm.cell('NUMBER_CELL'), intToken(2**32))))
         for c in constraints:
             cterm = cterm.add_constraint(c)
         return cterm

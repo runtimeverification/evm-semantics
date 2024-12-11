@@ -26,7 +26,7 @@ requires "storage-bin-runtime.k"
 
 module VERIFICATION
     imports EDSL
-    imports LEMMAS
+    imports LEMMAS-WITHOUT-SLOT-UPDATES
     imports EVM-OPTIMIZATIONS
     imports STORAGE-VERIFICATION
 

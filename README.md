@@ -111,13 +111,13 @@ You need to install the [K Framework] on your system, see the instructions there
 The fastest way is via the [kup package manager], with which you can do to get the correct version of K:
 
 ```sh
-kup install k.openssl.procps --version v$(cat deps/k_release)
+kup install k.openssl --version v$(cat deps/k_release)
 ```
 
 You can also drop into a single development shell with the correct version of K on path by doing:
 
 ```sh
-kup shell k.openssl.procps --version v$(cat deps/k_release)
+kup shell k.openssl --version v$(cat deps/k_release)
 ```
 
 ### Building
@@ -140,7 +140,7 @@ poetry -C kevm-pyk run kdist --verbose build evm-semantics.plugin
 To change the default compiler:
 
 ```sh
-CXX=clang++-14 poetry -C kevm-pyk run kdist --verbose build evm-semantics.plugin
+CXX=clang++-15 poetry -C kevm-pyk run kdist --verbose build evm-semantics.plugin
 ```
 
 On Apple silicon:
@@ -246,7 +246,7 @@ Always have your build up-to-date.
 
 ### Building with Nix
 
-We now support building KEVM using [nix flakes](https://nixos.wiki/wiki/Flakes).
+We now support building KEVM using [nix flakes](https://wiki.nixos.org/wiki/Flakes).
 To set up nix flakes you will need to be on `nix` 2.4 or higher and follow the instructions [here](https://nixos.wiki/wiki/Flakes).
 
 For example, if you are on a standard Linux distribution, such as Ubuntu, first [install nix](https://nixos.org/download.html#download-nix)

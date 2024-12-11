@@ -149,7 +149,7 @@ Here we provide some standard parser/unparser functions for that format.
 Parsing
 -------
 
-These parsers can interperet hex-encoded strings as `Int`s, `Bytes`s, and `Map`s.
+These parsers can interpret hex-encoded strings as `Int`s, `Bytes`s, and `Map`s.
 
 -   `#parseHexWord` interprets a string as a single hex-encoded `Word`.
 -   `#parseHexBytes` interprets a string as a hex-encoded stack of bytes.
@@ -207,7 +207,7 @@ These parsers can interperet hex-encoded strings as `Int`s, `Bytes`s, and `Map`s
 
 Unparsing
 ---------
--   `#padByte` ensures that the `String` interperetation of a `Int` is wide enough.
+-   `#padByte` ensures that the `String` interpretation of a `Int` is wide enough.
 
 ```k
     syntax String ::= #padByte ( String ) [symbol(#padByte), function]
@@ -396,7 +396,7 @@ Decoding
 --------
 
 -   `#rlpDecode` RLP decodes a single `Bytes` into a `JSON`.
--   `#rlpDecodeList` RLP decodes a single `Bytes` into a `JSONs`, interpereting the input as the RLP encoding of a list.
+-   `#rlpDecodeList` RLP decodes a single `Bytes` into a `JSONs`, interpreting the input as the RLP encoding of a list.
 
 ```k
     syntax JSON ::= #rlpDecode ( Bytes )               [symbol(#rlpDecode   ), function]
@@ -560,7 +560,7 @@ Merkle Tree Aux Functions
 
     rule #nibbleize ( B ) => .Bytes requires notBool lengthBytes(B) >Int 0
 
-    rule #byteify ( B ) =>    #range( #asByteStack ( B[0] *Int 16 +Int B[1] ), 0, 1 )
+    rule #byteify ( B ) =>    #range( #asByteStack ( 16 *Int B[0] +Int B[1] ), 0, 1 )
                        +Bytes #byteify ( #range( B, 2, lengthBytes(B) -Int 2 ) )
       requires lengthBytes(B) >Int 0
 
@@ -568,10 +568,10 @@ Merkle Tree Aux Functions
 
     syntax Bytes ::= #HPEncode ( Bytes, Int ) [symbol(#HPEncode), function]
  // -----------------------------------------------------------------------
-    rule #HPEncode ( X, T ) => #asByteStack ( ( HPEncodeAux(T) +Int 1 ) *Int 16 +Int X[0] ) +Bytes #byteify( #range(X, 1, lengthBytes(X) -Int 1) )
+    rule #HPEncode ( X, T ) => #asByteStack ( 16 *Int ( HPEncodeAux(T) +Int 1 ) +Int X[0] ) +Bytes #byteify( #range(X, 1, lengthBytes(X) -Int 1) )
       requires lengthBytes(X) %Int 2 =/=Int 0
 
-    rule #HPEncode ( X, T ) => #range(#asByteStack ( HPEncodeAux(T) *Int 16 ), 0, 1) +Bytes #byteify( X )
+    rule #HPEncode ( X, T ) => #range(#asByteStack ( 16 *Int HPEncodeAux(T) ), 0, 1) +Bytes #byteify( X )
       requires notBool lengthBytes(X) %Int 2 =/=Int 0
 
     syntax Int ::= HPEncodeAux ( Int ) [symbol(HPEncodeAux), function]

@@ -177,6 +177,11 @@ def _create_argument_parser() -> ArgumentParser:
         action='store_true',
         help='Reinitialize CFGs even if they already exist.',
     )
+    prove_args.add_argument(
+        '--max-frontier-parallel',
+        type=int,
+        help='Maximum worker threads to use on a single proof to explore separate branches in parallel.',
+    )
 
     prune_args = command_parser.add_parser(
         'prune',
@@ -295,7 +300,8 @@ class KOptions(KDefinitionOptions):
 
 
 class RPCOptions(Options):
-    trace_rewrites: bool
+    log_succ_rewrites: bool
+    log_fail_rewrites: bool
     kore_rpc_command: str | None
     use_booster: bool
     fallback_on: list[FallbackReason]
@@ -308,7 +314,8 @@ class RPCOptions(Options):
     @staticmethod
     def default() -> dict[str, Any]:
         return {
-            'trace_rewrites': False,
+            'log_succ_rewrites': True,
+            'log_fail_rewrites': False,
             'kore_rpc_command': None,
             'use_booster': True,
             'fallback_on': [],
@@ -327,6 +334,7 @@ class RPCOptions(Options):
 class ExploreOptions(Options):
     break_every_step: bool
     break_on_jumpi: bool
+    break_on_jump: bool
     break_on_calls: bool
     break_on_storage: bool
     break_on_basic_blocks: bool
@@ -343,6 +351,7 @@ class ExploreOptions(Options):
     def default() -> dict[str, Any]:
         return {
             'break_every_step': False,
+            'break_on_jump': False,
             'break_on_jumpi': False,
             'break_on_calls': False,
             'break_on_storage': False,
@@ -360,6 +369,7 @@ class ExploreOptions(Options):
     @staticmethod
     def from_option_string() -> dict[str, str]:
         return {
+            'symbolic-immutables': 'break_on_load_program',
             'failure-information': 'failure_info',
             'no-failure-information': 'no_failure_info',
         }
@@ -367,17 +377,19 @@ class ExploreOptions(Options):
 
 class KProveOptions(Options):
     debug_equations: list[str]
-    always_check_subsumption: bool
     fast_check_subsumption: bool
     direct_subproof_rules: bool
+    maintenance_rate: int
+    assume_defined: bool
 
     @staticmethod
     def default() -> dict[str, Any]:
         return {
             'debug_equations': [],
-            'always_check_subsumption': True,
             'fast_check_subsumption': False,
             'direct_subproof_rules': False,
+            'maintenance_rate': 1,
+            'assume_defined': False,
         }
 
 
@@ -809,21 +821,7 @@ class KEVMCLIArgs(KCLIArgs):
         args.add_argument(
             '--debug-equations',
             type=list_of(str, delim=','),
-            help='Comma-separate list of equations to debug.',
-        )
-        args.add_argument(
-            '--always-check-subsumption',
-            dest='always_check_subsumption',
-            default=None,
-            action='store_true',
-            help='Check subsumption even on non-terminal nodes (default, experimental).',
-        )
-        args.add_argument(
-            '--no-always-check-subsumption',
-            dest='always_check_subsumption',
-            default=None,
-            action='store_false',
-            help='Do not check subsumption on non-terminal nodes (experimental).',
+            help='Comma-separated list of equations to debug.',
         )
         args.add_argument(
             '--fast-check-subsumption',
@@ -838,6 +836,19 @@ class KEVMCLIArgs(KCLIArgs):
             default=None,
             action='store_true',
             help='For passing subproofs, construct lemmas directly from initial to target state.',
+        )
+        args.add_argument(
+            '--maintenance-rate',
+            dest='maintenance_rate',
+            type=int,
+            help='The number of proof iterations performed between two writes to disk and status bar updates. Note that setting to >1 may result in work being discarded if proof is interrupted.',
+        )
+        args.add_argument(
+            '--assume-defined',
+            dest='assume_defined',
+            default=None,
+            action='store_true',
+            help='Use the implication check of the Booster (experimental).',
         )
         return args
 
@@ -936,8 +947,15 @@ class KEVMCLIArgs(KCLIArgs):
     def rpc_args(self) -> ArgumentParser:
         args = ArgumentParser(add_help=False)
         args.add_argument(
-            '--trace-rewrites',
-            dest='trace_rewrites',
+            '--no-log-rewrites',
+            dest='log_succ_rewrites',
+            default=None,
+            action='store_false',
+            help='Do not log traces of any simplification and rewrite rule application.',
+        )
+        args.add_argument(
+            '--log-fail-rewrites',
+            dest='log_fail_rewrites',
             default=None,
             action='store_true',
             help='Log traces of all simplification and rewrite rule applications.',
@@ -1024,6 +1042,13 @@ class KEVMCLIArgs(KCLIArgs):
             dest='break_on_jumpi',
             default=None,
             action='store_true',
+            help='Store a node for every EVM jumpi opcode.',
+        )
+        args.add_argument(
+            '--break-on-jump',
+            dest='break_on_jump',
+            default=None,
+            action='store_true',
             help='Store a node for every EVM jump opcode.',
         )
         args.add_argument(
@@ -1055,11 +1080,11 @@ class KEVMCLIArgs(KCLIArgs):
             help='Store a node for every EVM basic block (implies --break-on-calls).',
         )
         args.add_argument(
-            '--symbolic-constructor',
+            '--symbolic-immutables',
             dest='break_on_load_program',
             default=None,
             action='store_true',
-            help='Enable support for symbolic parameters in Solidity constructor code.',
+            help='Enable support for symbolic immutable variables in Solidity code.',
         )
         args.add_argument(
             '--max-depth',

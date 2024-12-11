@@ -14,6 +14,7 @@ from functools import cached_property
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from filelock import SoftFileLock
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli.pyk import parse_toml_args
 from pyk.cterm import CTermSymbolic
@@ -171,28 +172,29 @@ class KClaimJob:
         return hash_str(f'{claim_hash}{deps_digest}')
 
     def up_to_date(self, digest_file: Path | None) -> bool:
-        if not isinstance(digest_file, Path) or not digest_file.exists():
-            return False
-        digest_dict = json.loads(digest_file.read_text())
-        if 'claims' not in digest_dict:
-            digest_dict['claims'] = {}
-            digest_file.write_text(json.dumps(digest_dict, indent=4))
-        if self.claim.label not in digest_dict['claims']:
-            return False
-        return digest_dict['claims'][self.claim.label] == self.digest
+        with SoftFileLock(f'{digest_file}.lock'):
+            if not isinstance(digest_file, Path) or not digest_file.exists():
+                return False
+            digest_dict = json.loads(digest_file.read_text())
+            if 'claims' not in digest_dict:
+                return False
+            if self.claim.label not in digest_dict['claims']:
+                return False
+            return digest_dict['claims'][self.claim.label] == self.digest
 
     def update_digest(self, digest_file: Path | None) -> None:
         if digest_file is None:
             return
         digest_dict = {}
-        if digest_file.exists():
-            digest_dict = json.loads(digest_file.read_text())
-        if 'claims' not in digest_dict:
-            digest_dict['claims'] = {}
-        digest_dict['claims'][self.claim.label] = self.digest
-        digest_file.write_text(json.dumps(digest_dict, indent=4))
+        with SoftFileLock(f'{digest_file}.lock'):
+            if digest_file.exists():
+                digest_dict = json.loads(digest_file.read_text())
+            if 'claims' not in digest_dict:
+                digest_dict['claims'] = {}
+            digest_dict['claims'][self.claim.label] = self.digest
+            digest_file.write_text(json.dumps(digest_dict, indent=4))
 
-        _LOGGER.info(f'Updated claim {self.claim.label} in digest file: {digest_file}')
+            _LOGGER.info(f'Updated claim {self.claim.label} in digest file: {digest_file}')
 
 
 def init_claim_jobs(spec_module_name: str, claims: list[KClaim]) -> frozenset[KClaimJob]:
@@ -301,7 +303,8 @@ def exec_prove(options: ProveOptions) -> None:
             kore_rpc_command=kore_rpc_command,
             smt_timeout=options.smt_timeout,
             smt_retry_limit=options.smt_retry_limit,
-            trace_rewrites=options.trace_rewrites,
+            log_succ_rewrites=options.log_succ_rewrites,
+            log_fail_rewrites=options.log_fail_rewrites,
             fallback_on=options.fallback_on,
             interim_simplification=options.interim_simplification,
             no_post_exec_simplify=(not options.post_exec_simplify),
@@ -319,7 +322,12 @@ def exec_prove(options: ProveOptions) -> None:
                     bug_report_id=bug_report_id,
                     dispatch=dispatch,
                 )
-                cterm_symbolic = CTermSymbolic(client, kevm.definition, trace_rewrites=options.trace_rewrites)
+                cterm_symbolic = CTermSymbolic(
+                    client,
+                    kevm.definition,
+                    log_succ_rewrites=options.log_succ_rewrites,
+                    log_fail_rewrites=options.log_fail_rewrites,
+                )
                 return KCFGExplore(
                     cterm_symbolic,
                     kcfg_semantics=KEVMSemantics(auto_abstract_gas=options.auto_abstract_gas),
@@ -344,6 +352,7 @@ def exec_prove(options: ProveOptions) -> None:
                 max_iterations=options.max_iterations,
                 cut_point_rules=KEVMSemantics.cut_point_rules(
                     options.break_on_jumpi,
+                    options.break_on_jump,
                     options.break_on_calls,
                     options.break_on_storage,
                     options.break_on_basic_blocks,
@@ -351,11 +360,11 @@ def exec_prove(options: ProveOptions) -> None:
                 ),
                 terminal_rules=KEVMSemantics.terminal_rules(options.break_every_step),
                 fail_fast=options.fail_fast,
-                always_check_subsumption=options.always_check_subsumption,
                 fast_check_subsumption=options.fast_check_subsumption,
                 direct_subproof_rules=options.direct_subproof_rules,
                 max_frontier_parallel=options.max_frontier_parallel,
                 force_sequential=options.force_sequential,
+                assume_defined=options.assume_defined,
             )
             end_time = time.time()
             _LOGGER.info(f'Proof timing {proof_problem.id}: {end_time - start_time}s')
@@ -481,7 +490,8 @@ def exec_section_edge(options: SectionEdgeOptions) -> None:
         kore_rpc_command=kore_rpc_command,
         smt_timeout=options.smt_timeout,
         smt_retry_limit=options.smt_retry_limit,
-        trace_rewrites=options.trace_rewrites,
+        log_succ_rewrites=options.log_succ_rewrites,
+        log_fail_rewrites=options.log_fail_rewrites,
         llvm_definition_dir=llvm_definition_dir,
     ) as kcfg_explore:
         node_ids = kcfg_explore.section_edge(

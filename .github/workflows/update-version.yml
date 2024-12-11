@@ -53,8 +53,7 @@ jobs:
           K_VERSION=v$(cat deps/k_release)
           BKP_VERSION=$(cat deps/blockchain-k-plugin_release)
           sed -i 's!    k-framework.url = "github:runtimeverification/k/[v0-9\.]*"!    k-framework.url = "github:runtimeverification/k/'"${K_VERSION}"'"!' flake.nix
-          sed -i 's!    blockchain-k-plugin.url = "github:runtimeverification/blockchain-k-plugin/[0-9a-f]*"!    blockchain-k-plugin.url = "github:runtimeverification/blockchain-k-plugin/'"${BKP_VERSION}"'"!' flake.nix
-          sed -i 's!    pyk.url = "github:runtimeverification/k/[v0-9\.]*?dir=pyk"!    pyk.url = "github:runtimeverification/k/'"${K_VERSION}"'?dir=pyk"!' flake.nix
+          sed -i 's!        "github:runtimeverification/blockchain-k-plugin/[0-9a-f]*"!        "github:runtimeverification/blockchain-k-plugin/'"${BKP_VERSION}"'"!' flake.nix
           nix run .#update-from-submodules
           nix flake update
           git add flake.nix flake.lock && git commit -m 'flake.{nix,lock}: update Nix derivations' || true
