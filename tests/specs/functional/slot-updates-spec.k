@@ -199,8 +199,8 @@ module SLOT-UPDATES-SPEC
                                ( 664984632478924800 |Int
                                ( 115792089237316195423570985008687885552524791327314281033844573408277819293695 &Int
                                #asWord ( #range ( #buf ( 32 , #lookup ( STORAGE1:Map , 0 ) ) , 0 , 14 ) +Bytes
-                                         b"\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00" +Bytes
-                                         #range ( #buf ( 32 , #lookup ( STORAGE1:Map , 0 ) ) , 27 , 4 ) +Bytes b"\\x02" ) ) ) ) ,
+                                         b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" +Bytes
+                                         #range ( #buf ( 32 , #lookup ( STORAGE1:Map , 0 ) ) , 27 , 4 ) +Bytes b"\x02" ) ) ) ) ,
                         31 , 1 ) ) <=Int 2 )
           => doneLemma ( true ) ... </k>
 
