@@ -365,6 +365,7 @@ def exec_prove(options: ProveOptions) -> None:
                 max_frontier_parallel=options.max_frontier_parallel,
                 force_sequential=options.force_sequential,
                 assume_defined=options.assume_defined,
+                optimize_kcfg=options.optimize_kcfg,
             )
             end_time = time.time()
             _LOGGER.info(f'Proof timing {proof_problem.id}: {end_time - start_time}s')

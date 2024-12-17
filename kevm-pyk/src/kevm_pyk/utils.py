@@ -115,6 +115,7 @@ def run_prover(
     maintenance_rate: int = 1,
     assume_defined: bool = False,
     extra_module: KFlatModule | None = None,
+    optimize_kcfg: bool = False,
 ) -> bool:
     prover: APRProver | ImpliesProver
     try:
@@ -131,6 +132,7 @@ def run_prover(
                     direct_subproof_rules=direct_subproof_rules,
                     assume_defined=assume_defined,
                     extra_module=extra_module,
+                    optimize_kcfg=optimize_kcfg,
                 )
 
             def update_status_bar(_proof: Proof) -> None:
