@@ -1,0 +1,1570 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+<meta charset="utf-8" />
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0, maximum-scale=1.0"
+/>
+<meta
+  name="description"
+  content="K Semantics of the Ethereum Virtual Machine (EVM)"
+/>
+<meta
+  name="keywords"
+  content="runtime, verification, rv, k, ethereum virtual machine, evm"
+/>
+<meta name="author" content="EVM Semantics | Runtime Verification Inc" />
+<meta name="robots" content="index, follow" />
+
+<!--favicon icon-->
+<link rel="icon" type="image/png" href="../../assets/img/favicon.ico" />
+
+<title>KEVM: Semantics of EVM in K | Runtime Verification, Inc. </title>
+
+<link rel="canonical" href="https://jellopaper.org/media/citations/" />
+
+<!--web fonts-->
+<link
+  href="https://fonts.googleapis.com/css?family=Nunito:300,400,600,700,800"
+  rel="stylesheet"
+/>
+<link
+  href="https://fonts.googleapis.com/css?family=Lora:400i"
+  rel="stylesheet"
+/>
+
+<link
+  href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.14.0/css/all.min.css"
+  rel="stylesheet"
+/>
+
+<link href="../../assets/css/index.css" rel="stylesheet" />
+
+<!--[if (gt IE 9) |!(IE)]><!-->
+<!--<link rel="stylesheet" href="/assets/vendor/custom-nav/css/effects/fade-menu.css"/>-->
+<!-- <link rel="stylesheet" href="../../assets/k/vl-nav/css/effects/slide-menu.css" /> -->
+<!--<![endif]-->
+
+  </head>
+
+  <body>
+<header
+  class="navbar navbar-expand navbar-dark flex-column flex-md-row bd-navbar"
+>
+  <a class="logo-link" href="../../index.html"> EVM Semantics </a>
+  <ul class="navbar-nav ml-md-auto">
+    <li class="nav-item">
+      <a
+        class="nav-link pl-2 pr-1 mx-1 py-3 my-n2"
+        href="https://github.com/runtimeverification/evm-semantics"
+        target="_blank"
+        rel="noopener"
+        aria-label="GitHub"
+      >
+        <i class="fab fa-github"></i>
+      </a>
+    </li>
+  </ul>
+  <!--
+  <a
+    class="btn btn-rv-blue d-none d-lg-inline-block mb-3 mb-md-0 ml-md-3"
+    href="../../downloads"
+    >Download</a
+  >
+  -->
+</header>
+
+
+    <div class="container-fluid">
+      <div class="row flex-xl-nowrap">
+<div class="col-12 col-md-3 col-xl-2 bd-sidebar mb-3">
+  <form
+    role="search"
+    class="bd-search d-flex align-items-center justify-content-between"
+  >
+    <input
+      type="search"
+      class="form-control"
+      placeholder="Search..."
+      aria-label="Search for..."
+      autocomplete="false"
+      id="search-box"
+    />
+    <button
+      class="btn bd-search-docs-toggle d-md-none p-0 ml-3 collapsed"
+      type="button"
+      aria-label="Toggle docs navigation"
+      style="font-size: 1.4rem"
+    >
+      <i class="fas fa-bars"></i>
+    </button>
+  </form>
+  <nav class="collapse bd-links" aria-label="Main navigation">
+    <div class="bd-toc-item">
+      <a class="bd-toc-link" href="../../">Homepage</a>
+      <a class="bd-toc-link" href="../../INSTALL/">Install</a>
+    </div>
+  </nav>
+</div>
+
+        <main
+          class="col-12 col-md-6 col-xl-8 py-md-3 pl-md-5 bd-content"
+          role="main"
+        >
+          <div class="markdown-preview"><html><head></head><body><h2 id="references">References</h2>
+<hr>
+<p>references:</p>
+<ul>
+<li>
+<p>id: luumaking
+type: no-type
+author:</p>
+<ul>
+<li>family: Luu
+given: Loi</li>
+<li>family: Chu
+given: Duc-Hiep</li>
+<li>family: Olickel
+given: Hrishi</li>
+<li>family: Saxena
+given: Prateek</li>
+<li>family: Hobor
+given: Aquinas
+issued:</li>
+<li>year: '2016'
+title: Making smart contracts smarter
+publisher: Cryptology ePrint Archive, Report 2016/633
+note: <a href="http://eprint.iacr.org/2016/633" target="_blank" rel="noreferrer noopener">http://eprint.iacr.org/2016/633</a></li>
+</ul>
+</li>
+<li>
+<p>id: hiraidefining
+type: no-type
+author:</p>
+<ul>
+<li>family: Hirai
+given: Yoichi
+issued:</li>
+<li>year: '2017'
+title: Defining the ethereum virtual machine for interactive theorem provers
+publisher: WSTC17, International Conference on Financial Cryptography and Data Security</li>
+</ul>
+</li>
+<li>
+<p>id: guth2013formal
+type: article-journal
+author:</p>
+<ul>
+<li>family: Guth
+given: Dwight
+issued:</li>
+<li>year: '2013'
+title: A formal semantics of Python 3.3
+note: <a href="https://github.com/kframework/python-semantics" target="_blank" rel="noreferrer noopener">https://github.com/kframework/python-semantics</a></li>
+</ul>
+</li>
+<li>
+<p>id: mulligan2014lem
+type: paper-conference
+author:</p>
+<ul>
+<li>family: Mulligan
+given: Dominic P</li>
+<li>family: Owens
+given: Scott</li>
+<li>family: Gray
+given: Kathryn E</li>
+<li>family: Ridge
+given: Tom</li>
+<li>family: Sewell
+given: Peter
+issued:</li>
+<li>year: '2014'
+title: 'Lem: Reusable engineering of real-world semantics'
+title-short: Lem
+container-title: ACM sigplan notices
+collection-number: '9'
+publisher: ACM
+page: '175-188'
+volume: '49'</li>
+</ul>
+</li>
+<li>
+<p>id: chen2003towards
+type: article-journal
+author:</p>
+<ul>
+<li>family: Chen
+given: Feng</li>
+<li>family: Roşu
+given: Grigore
+issued:</li>
+<li>year: '2003'
+title: 'Towards monitoring-oriented programming: A paradigm combining specification
+and implementation'
+title-short: Towards monitoring-oriented programming
+container-title: Electronic Notes in Theoretical Computer Science
+publisher: Elsevier
+page: '108-127'
+volume: '89'
+issue: '2'</li>
+</ul>
+</li>
+<li>
+<p>id: kapproach
+type: no-type
+author:</p>
+<ul>
+<li>family: Rosu
+given: Grigore</li>
+<li>literal: others
+issued:</li>
+<li>year: '2017'
+title: Programming language design and semantics
+publisher: Formal Systems Lab, University of Illinois
+note: <a href="http://fsl.cs.illinois.edu/index.php/Programming_Language_Design_and_Semantics" target="_blank" rel="noreferrer noopener">http://fsl.cs.illinois.edu/index.php/Programming_Language_Design_and_Semantics</a></li>
+</ul>
+</li>
+<li>
+<p>id: szabo1994smart
+type: article-journal
+author:</p>
+<ul>
+<li>family: Szabo
+given: Nick
+issued:</li>
+<li>year: '1994'
+title: Smart contracts
+container-title: Unpublished manuscript
+note: <a href="http://www.fon.hum.uva.nl/rob/Courses/InformationInSpeech/CDROM/Literature/LOTwinterschool2006/szabo.best.vwh.net/smart_contracts_idea.html" target="_blank" rel="noreferrer noopener">http://www.fon.hum.uva.nl/rob/Courses/InformationInSpeech/CDROM/Literature/LOTwinterschool2006/szabo.best.vwh.net/smart_contracts_idea.html</a></li>
+</ul>
+</li>
+<li>
+<p>id: peters2016understanding
+type: chapter
+author:</p>
+<ul>
+<li>family: Peters
+given: Gareth W</li>
+<li>family: Panayi
+given: Efstathios
+issued:</li>
+<li>year: '2016'
+title: 'Understanding modern banking ledgers through blockchain technologies:
+Future of transaction processing and smart contracts on the internet of money'
+title-short: Understanding modern banking ledgers through blockchain technologies
+container-title: Banking beyond banks and money
+publisher: Springer
+page: '239-278'</li>
+</ul>
+</li>
+<li>
+<p>id: atzei2016survey
+type: article-journal
+author:</p>
+<ul>
+<li>family: Atzei
+given: Nicola</li>
+<li>family: Bartoletti
+given: Massimo</li>
+<li>family: Cimoli
+given: Tiziana
+issued:</li>
+<li>year: '2016'
+title: A survey of attacks on Ethereum smart contracts.
+container-title: IACR Cryptology ePrint Archive
+page: '1007'
+volume: '2016'</li>
+</ul>
+</li>
+<li>
+<p>id: narayanan2016bitcoin
+type: book
+author:</p>
+<ul>
+<li>family: Narayanan
+given: Arvind</li>
+<li>family: Bonneau
+given: Joseph</li>
+<li>family: Felten
+given: Edward</li>
+<li>family: Miller
+given: Andrew</li>
+<li>family: Goldfeder
+given: Steven
+issued:</li>
+<li>year: '2016'
+title: 'Bitcoin and cryptocurrency technologies: A comprehensive introduction'
+title-short: Bitcoin and cryptocurrency technologies
+publisher: Princeton University Press</li>
+</ul>
+</li>
+<li>
+<p>id: sasson2014zerocash
+type: paper-conference
+author:</p>
+<ul>
+<li>family: Sasson
+given: Eli Ben</li>
+<li>family: Chiesa
+given: Alessandro</li>
+<li>family: Garman
+given: Christina</li>
+<li>family: Green
+given: Matthew</li>
+<li>family: Miers
+given: Ian</li>
+<li>family: Tromer
+given: Eran</li>
+<li>family: Virza
+given: Madars
+issued:</li>
+<li>year: '2014'
+title: 'Zerocash: Decentralized anonymous payments from bitcoin'
+title-short: Zerocash
+container-title: Security and privacy (sp), 2014 ieee symposium on
+publisher: IEEE
+page: '459-474'</li>
+</ul>
+</li>
+<li>
+<p>id: ethereum
+type: no-type
+author:</p>
+<ul>
+<li>family: Buterin
+given: Vitalik</li>
+<li>literal: Ethereum Foundation
+issued:</li>
+<li>year: '2013'
+title: Ethereum White Paper
+publisher: Ethereum
+note: <a href="https://github.com/ethereum/wiki/wiki/White-Paper" target="_blank" rel="noreferrer noopener">https://github.com/ethereum/wiki/wiki/White-Paper</a></li>
+</ul>
+</li>
+<li>
+<p>id: barras1997coq
+type: thesis
+author:</p>
+<ul>
+<li>family: Barras
+given: Bruno</li>
+<li>family: Boutin
+given: Samuel</li>
+<li>family: Cornes
+given: Cristina</li>
+<li>family: Courant
+given: Judicaël</li>
+<li>family: Filliatre
+given: Jean-Christophe</li>
+<li>family: Gimenez
+given: Eduardo</li>
+<li>family: Herbelin
+given: Hugo</li>
+<li>family: Huet
+given: Gerard</li>
+<li>family: Munoz
+given: Cesar</li>
+<li>family: Murthy
+given: Chetan</li>
+<li>literal: others
+issued:</li>
+<li>year: '1997'
+title: 'The coq proof assistant reference manual: Version 6.1'
+title-short: The coq proof assistant reference manual
+publisher: Inria
+genre: PhD thesis</li>
+</ul>
+</li>
+<li>
+<p>id: ethsplit
+type: article-journal
+author:</p>
+<ul>
+<li>family: Quenston
+given: Andrew
+issued:</li>
+<li>year: '2016'
+title: Ethereum’s blockchain accidentally splits
+publisher: CryptoCoinsNews
+note: <a href="https://www.cryptocoinsnews.com/ethereums-blockchain-accidentally-splits/" target="_blank" rel="noreferrer noopener">https://www.cryptocoinsnews.com/ethereums-blockchain-accidentally-splits/</a></li>
+</ul>
+</li>
+<li>
+<p>id: daofork
+type: article-journal
+author:</p>
+<ul>
+<li>family: Castillo
+given: Michael
+dropping-particle: del
+issued:</li>
+<li>year: '2016'
+title: Ethereum executes blockchain hard fork to return DAO funds
+publisher: Coindesk
+note: <a href="http://goo.gl/MpwrhS" target="_blank" rel="noreferrer noopener">http://goo.gl/MpwrhS</a></li>
+</ul>
+</li>
+<li>
+<p>id: icorush
+type: article-journal
+author:</p>
+<ul>
+<li>family: Melendez
+given: Steven
+issued:</li>
+<li>year: '2017'
+title: 'Inside the ico bubble: Why initial coin offerings have raised more than
+$1 billion since January'
+title-short: Inside the ico bubble
+publisher: Fast Company
+note: <a href="http://goo.gl/7b5nCd" target="_blank" rel="noreferrer noopener">http://goo.gl/7b5nCd</a></li>
+</ul>
+</li>
+<li>
+<p>id: hkg
+type: article-journal
+author:</p>
+<ul>
+<li>family: Manning
+given: Jim
+issued:</li>
+<li>year: '2017'
+title: Ether.Camp’s hkg token has a bug and needs to be reissued
+publisher: ETHNews
+note: <a href="https://www.ethnews.com/ethercamps-hkg-token-has-a-bug-and-needs-to-be-reissued" target="_blank" rel="noreferrer noopener">https://www.ethnews.com/ethercamps-hkg-token-has-a-bug-and-needs-to-be-reissued</a></li>
+</ul>
+</li>
+<li>
+<p>id: paritymultisig
+type: article-journal
+author:</p>
+<ul>
+<li>family: Breidenbach
+given: Lorenz</li>
+<li>family: Daian
+given: Phil</li>
+<li>family: Juels
+given: Ari</li>
+<li>family: Sirer
+given: Emin Gün
+issued:</li>
+<li>year: '2017'
+title: An in-depth look at the parity multisig bug
+publisher: Hacking Distributed
+note: <a href="http://hackingdistributed.com/2017/07/22/deep-dive-parity-bug/" target="_blank" rel="noreferrer noopener">http://hackingdistributed.com/2017/07/22/deep-dive-parity-bug/</a></li>
+</ul>
+</li>
+<li>
+<p>id: paritymultisig2
+type: no-type
+author:</p>
+<ul>
+<li>family: Steiner
+given: Jutta
+issued:</li>
+<li>year: '2017'
+title: 'Security is a process: A postmortem on the parity multi-sig library self-destruct'
+title-short: Security is a process
+publisher: Ethcore
+note: <a href="http://goo.gl/LBh1vR" target="_blank" rel="noreferrer noopener">http://goo.gl/LBh1vR</a></li>
+</ul>
+</li>
+<li>
+<p>id: smartbillions
+type: no-type
+author:</p>
+<ul>
+<li>family: Solana
+given: Jasmine
+issued:</li>
+<li>year: '2017'
+title: $500K hack challenge backfires on blockchain lottery SmartBillions
+publisher: CalvinAyre
+note: <a href="https://calvinayre.com/2017/10/13/bitcoin/500k-hack-challenge-backfires-blockchain-lottery-smartbillions/" target="_blank" rel="noreferrer noopener">https://calvinayre.com/2017/10/13/bitcoin/500k-hack-challenge-backfires-blockchain-lottery-smartbillions/</a></li>
+</ul>
+</li>
+<li>
+<p>id: mkr
+type: article-journal
+author:</p>
+<ul>
+<li>family: jupiter0
+issued:</li>
+<li>year: '2016'
+title: 'From the MAKER DAO slack: “Today we discovered a vulnerability in the
+ETH token wrapper which would let anyone drain it.”'
+title-short: From the MAKER DAO slack
+publisher: Reddit
+note: <a href="https://www.reddit.com/r/ethereum/comments/4nmohu/from_the_maker_dao_slack_today_we_discovered_a/" target="_blank" rel="noreferrer noopener">https://www.reddit.com/r/ethereum/comments/4nmohu/from_the_maker_dao_slack_today_we_discovered_a/</a></li>
+</ul>
+</li>
+<li>
+<p>id: eea
+type: article-journal
+author:</p>
+<ul>
+<li>family: Ainger
+given: Neil
+issued:</li>
+<li>year: '2017'
+title: Bigger than bitcoin? Enterprise Ethereum Alliance grows in size
+publisher: CNBC
+note: <a href="http://www.cnbc.com/2017/05/23/bigger-than-bitcoin-enterprise-ethereum-alliance-grows-in-size.html" target="_blank" rel="noreferrer noopener">http://www.cnbc.com/2017/05/23/bigger-than-bitcoin-enterprise-ethereum-alliance-grows-in-size.html</a></li>
+</ul>
+</li>
+<li>
+<p>id: moser2013inquiry
+type: paper-conference
+author:</p>
+<ul>
+<li>family: Moser
+given: Malte</li>
+<li>family: Bohme
+given: Rainer</li>
+<li>family: Breuker
+given: Dominic
+issued:</li>
+<li>year: '2013'
+title: An inquiry into money laundering tools in the bitcoin ecosystem
+container-title: ECrime researchers summit (eCRS), 2013
+publisher: IEEE
+page: '1-14'</li>
+</ul>
+</li>
+<li>
+<p>id: coindeskformal
+type: article-journal
+author:</p>
+<ul>
+<li>family: Rizzo
+given: Pete
+issued:</li>
+<li>year: '2016'
+title: In formal verification push, Ethereum seeks smart contract certainty
+publisher: Coindesk
+note: <a href="http://www.coindesk.com/ethereum-formal-verification-smart-contracts/" target="_blank" rel="noreferrer noopener">http://www.coindesk.com/ethereum-formal-verification-smart-contracts/</a></li>
+</ul>
+</li>
+<li>
+<p>id: daian2016runtime
+type: paper-conference
+author:</p>
+<ul>
+<li>family: Daian
+given: Philip</li>
+<li>family: Guth
+given: Dwight</li>
+<li>family: Hathhorn
+given: Chris</li>
+<li>family: Li
+given: Yilong</li>
+<li>family: Pek
+given: Edgar</li>
+<li>family: Saxena
+given: Manasvi</li>
+<li>family: Serbanuta
+given: Traian Florin</li>
+<li>family: Rosu
+given: Grigore
+issued:</li>
+<li>year: '2016'
+month: '09'
+title: 'Runtime verification at work: A tutorial'
+title-short: Runtime verification at work
+container-title: Runtime verification - 16th international conference, RV 2016 madrid,
+spain, september 23-30, 2016, proceedings
+collection-title: Lecture notes in computer science
+publisher: Springer
+page: '46-67'
+volume: '10012'
+DOI: http://dx.doi.org/10.1007/978-3-319-46982-9_5</li>
+</ul>
+</li>
+<li>
+<p>id: ellison2012executable
+type: paper-conference
+author:</p>
+<ul>
+<li>family: Ellison
+given: Chucky</li>
+<li>family: Rosu
+given: Grigore
+issued:</li>
+<li>year: '2012'
+month: 01
+title: An executable formal semantics of c with applications
+container-title: Proceedings of the 39th acm sigplan-sigact symposium on principles
+of programming languages (popl’12)
+publisher: ACM
+page: '533-544'
+DOI: http://doi.acm.org/10.1145/2103656.2103719</li>
+</ul>
+</li>
+<li>
+<p>id: thinkingsecurity
+type: article-journal
+author:</p>
+<ul>
+<li>family: Buterin
+given: Vitalik
+issued:</li>
+<li>year: '2016'
+title: Thinking about smart contract security
+publisher: Ethereum Blog
+note: <a href="https://blog.ethereum.org/2016/06/19/thinking-smart-contract-security/" target="_blank" rel="noreferrer noopener">https://blog.ethereum.org/2016/06/19/thinking-smart-contract-security/</a></li>
+</ul>
+</li>
+<li>
+<p>id: ethfoundationformal
+type: article-journal
+author:</p>
+<ul>
+<li>family: Reitwiessner
+given: Christian
+issued:</li>
+<li>year: '2016'
+title: 'Dev update: Formal methods'
+title-short: Dev update
+publisher: Ethereum Blog
+note: <a href="https://blog.ethereum.org/2016/09/01/formal-methods-roadmap/" target="_blank" rel="noreferrer noopener">https://blog.ethereum.org/2016/09/01/formal-methods-roadmap/</a></li>
+</ul>
+</li>
+<li>
+<p>id: ong2015evaluating
+type: article-journal
+author:</p>
+<ul>
+<li>family: Ong
+given: Bobby</li>
+<li>family: Lee
+given: Teik Ming</li>
+<li>family: Li
+given: Guo</li>
+<li>family: Chuen
+given: DLK
+issued:</li>
+<li>year: '2015'
+title: Evaluating the potential of alternative cryptocurrencies
+container-title: 'Handbook of digital currency. Amsterdam: Elsevier'
+page: '81-135'</li>
+</ul>
+</li>
+<li>
+<p>id: wilkinson2014storj
+type: article-journal
+author:</p>
+<ul>
+<li>family: Wilkinson
+given: Shawn</li>
+<li>family: Boshevski
+given: Tome</li>
+<li>family: Brandoff
+given: Josh</li>
+<li>family: Buterin
+given: Vitalik
+issued:</li>
+<li>year: '2014'
+title: Storj a peer-to-peer cloud storage network
+publisher: Citeseer
+note: <a href="https://storj.io/storj.pdf" target="_blank" rel="noreferrer noopener">https://storj.io/storj.pdf</a></li>
+</ul>
+</li>
+<li>
+<p>id: delmolino2016step
+type: paper-conference
+author:</p>
+<ul>
+<li>family: Delmolino
+given: Kevin</li>
+<li>family: Arnett
+given: Mitchell</li>
+<li>family: Kosba
+given: Ahmed</li>
+<li>family: Miller
+given: Andrew</li>
+<li>family: Shi
+given: Elaine
+issued:</li>
+<li>year: '2016'
+title: 'Step by step towards creating a safe smart contract: Lessons and insights
+from a cryptocurrency lab'
+title-short: Step by step towards creating a safe smart contract
+container-title: International conference on financial cryptography and data security
+publisher: Springer
+page: '79-94'</li>
+</ul>
+</li>
+<li>
+<p>id: kogias2016enhancing
+type: paper-conference
+author:</p>
+<ul>
+<li>family: Kogias
+given: Eleftherios Kokoris</li>
+<li>family: Jovanovic
+given: Philipp</li>
+<li>family: Gailly
+given: Nicolas</li>
+<li>family: Khoffi
+given: Ismail</li>
+<li>family: Gasser
+given: Linus</li>
+<li>family: Ford
+given: Bryan
+issued:</li>
+<li>year: '2016'
+title: Enhancing bitcoin security and performance with strong consistency via collective
+signing
+container-title: 25th USENIX security symposium (USENIX security 16)
+publisher: USENIX Association
+publisher-place: Austin, TX
+page: '279-296'
+URL: https://www.usenix.org/conference/usenixsecurity16/technical-sessions/presentation/kogias
+ISBN: '978-1-931971-32-4'</li>
+</ul>
+</li>
+<li>
+<p>id: stefanescu-park-yuwen-li-rosu-2016-oopsla
+type: paper-conference
+author:</p>
+<ul>
+<li>family: Ştefănescu
+given: Andrei</li>
+<li>family: Park
+given: Daejun</li>
+<li>family: Yuwen
+given: Shijiao</li>
+<li>family: Li
+given: Yilong</li>
+<li>family: Roşu
+given: Grigore
+issued:</li>
+<li>year: '2016'
+month: '11'
+title: Semantics-based program verifiers for all languages
+container-title: Proceedings of the 31th conference on object-oriented programming,
+systems, languages, and applications (oopsla’16)
+publisher: ACM</li>
+</ul>
+</li>
+<li>
+<p>id: rosu-serbanuta-2010-jlap
+type: article-journal
+author:</p>
+<ul>
+<li>family: Roşu
+given: Grigore</li>
+<li>family: Şerbănuţă
+given: Traian Florin
+issued:</li>
+<li>year: '2010'
+title: An overview of the K semantic framework
+container-title: Journal of Logic and Algebraic Programming
+page: '397-434'
+volume: '79'
+issue: '6'
+note: <a href="https://kframework.org/" target="_blank" rel="noreferrer noopener">https://kframework.org/</a>
+DOI: 10.1016/j.jlap.2010.03.012</li>
+</ul>
+</li>
+<li>
+<p>id: serbanuta-rosu-2010-wrla
+type: paper-conference
+author:</p>
+<ul>
+<li>family: Şerbanuţă
+given: Traian Florin</li>
+<li>family: Roşu
+given: Grigore
+issued:</li>
+<li>year: '2010'
+month: 03
+title: 'K-Maude: A rewriting based tool for semantics of programming languages'
+title-short: K-Maude
+container-title: Proceedings of the 8th international workshop on rewriting logic
+and its applications (wrla’10)
+publisher: Springer
+page: '104-122'
+DOI: http://dx.doi.org/10.1007/978-3-642-16310-4_8</li>
+</ul>
+</li>
+<li>
+<p>id: nakamoto2008bitcoin
+type: no-type
+author:</p>
+<ul>
+<li>family: Nakamoto
+given: Satoshi
+issued:</li>
+<li>year: '2008'
+title: 'Bitcoin: A peer-to-peer electronic cash system'
+title-short: Bitcoin
+note: <a href="https://bitcoin.org/bitcoin.pdf" target="_blank" rel="noreferrer noopener">https://bitcoin.org/bitcoin.pdf</a></li>
+</ul>
+</li>
+<li>
+<p>id: dao-attack
+type: no-type
+author:</p>
+<ul>
+<li>family: Daian
+given: Phil
+issued:</li>
+<li>year: '2016'
+title: DAO attack
+note: <a href="http://hackingdistributed.com/2016/06/18/analysis-of-the-dao-exploit/" target="_blank" rel="noreferrer noopener">http://hackingdistributed.com/2016/06/18/analysis-of-the-dao-exploit/</a></li>
+</ul>
+</li>
+<li>
+<p>id: hathhorn-ellison-rosu-2015-pldi
+type: paper-conference
+author:</p>
+<ul>
+<li>family: Hathhorn
+given: Chris</li>
+<li>family: Ellison
+given: Chucky</li>
+<li>family: Roşu
+given: Grigore
+issued:</li>
+<li>year: '2015'
+month: 06
+title: Defining the undefinedness of c
+container-title: Proceedings of the 36th acm sigplan conference on programming language
+design and implementation (pldi’15)
+publisher: ACM
+page: '336-345'
+DOI: http://dx.doi.org/10.1145/2813885.2737979</li>
+</ul>
+</li>
+<li>
+<p>id: bogdanas-rosu-2015-popl
+type: paper-conference
+author:</p>
+<ul>
+<li>family: Bogdănaş
+given: Denis</li>
+<li>family: Roşu
+given: Grigore
+issued:</li>
+<li>year: '2015'
+month: 01
+title: '[K-Java: A Complete Semantics of Java]{.nocase}'
+container-title: Proceedings of the 42nd symposium on principles of programming
+languages (popl’15)
+publisher: ACM
+page: '445-456'
+DOI: http://dx.doi.org/10.1145/2676726.2676982</li>
+</ul>
+</li>
+<li>
+<p>id: park-stefanescu-rosu-2015-pldi
+type: paper-conference
+author:</p>
+<ul>
+<li>family: Park
+given: Daejun</li>
+<li>family: Ştefănescu
+given: Andrei</li>
+<li>family: Roşu
+given: Grigore
+issued:</li>
+<li>year: '2015'
+month: 06
+title: 'KJS: A complete formal semantics of JavaScript'
+title-short: KJS
+container-title: Proceedings of the 36th acm sigplan conference on programming language
+design and implementation (pldi’15)
+publisher: ACM
+page: '346-356'
+DOI: http://dx.doi.org/10.1145/2737924.2737991</li>
+</ul>
+</li>
+<li>
+<p>id: ellison-2012-thesis
+type: thesis
+author:</p>
+<ul>
+<li>family: Ellison
+given: Chucky
+issued:</li>
+<li>year: '2012'
+month: 07
+title: A formal semantics of C with applications
+publisher: University of Illinois
+genre: PhD thesis</li>
+</ul>
+</li>
+<li>
+<p>id: stefanescu-ciobaca-mereuta-moore-serbanuta-rosu-2014-rta
+type: paper-conference
+author:</p>
+<ul>
+<li>family: Ştefănescu
+given: Andrei</li>
+<li>family: Ciobâcă
+given: Ştefan</li>
+<li>family: Mereuţă
+given: Radu</li>
+<li>family: Moore
+given: Brandon M.</li>
+<li>family: Şerbănuţă
+given: Traian Florin</li>
+<li>family: Roşu
+given: Grigore
+issued:</li>
+<li>year: '2014'
+month: 07
+title: All-path reachability logic
+container-title: Proceedings of the joint 25th international conference on rewriting
+techniques and applications and 12th international conference on typed lambda
+calculi and applications (rta-tlca’14)
+collection-title: LNCS
+publisher: Springer
+page: '425-440'
+volume: '8560'
+DOI: http://dx.doi.org/10.1007/978-3-319-08918-8_29</li>
+</ul>
+</li>
+<li>
+<p>id: de2008z3
+type: paper-conference
+author:</p>
+<ul>
+<li>family: De Moura
+given: Leonardo</li>
+<li>family: Bjørner
+given: Nikolaj
+issued:</li>
+<li>year: '2008'
+title: 'Z3: An efficient smt solver'
+title-short: Z3
+container-title: International conference on tools and algorithms for the construction
+and analysis of systems
+publisher: Springer Berlin Heidelberg
+page: '337-340'</li>
+</ul>
+</li>
+<li>
+<p>id: guth-hathhorn-saxena-rosu-2016-cav
+type: paper-conference
+author:</p>
+<ul>
+<li>family: Guth
+given: Dwight</li>
+<li>family: Hathhorn
+given: Chris</li>
+<li>family: Saxena
+given: Manasvi</li>
+<li>family: Rosu
+given: Grigore
+issued:</li>
+<li>year: '2016'
+month: 07
+title: 'RV-Match: Practical semantics-based program analysis'
+title-short: RV-Match
+container-title: Computer aided verification - 28th international conference (CAV
+2016), toronto, on, canada, july 17-23, 2016, proceedings, part I
+collection-title: LNCS
+publisher: Springer
+page: '447-453'
+volume: '9779'
+DOI: http://dx.doi.org/10.1007/978-3-319-41528-4_24</li>
+</ul>
+</li>
+<li>
+<p>id: fstar-etaps
+type: paper-conference
+author:</p>
+<ul>
+<li>family: Grishchenko
+given: Ilya</li>
+<li>family: Maffei
+given: Matteo</li>
+<li>family: Schneidewind
+given: Clara
+editor:</li>
+<li>family: Bauer
+given: Lujo</li>
+<li>family: Küsters
+given: Ralf
+issued:</li>
+<li>year: '2018'
+title: A semantic framework for the security analysis of ethereum smart contracts
+container-title: Principles of security and trust
+publisher: Springer International Publishing
+publisher-place: Cham
+page: '243-269'
+abstract: 'Smart contracts are programs running on cryptocurrency (e.g., Ethereum)
+blockchains, whose popularity stem from the possibility to perform financial transactions,
+such as payments and auctions, in a distributed environment without need for any
+trusted third party. Given their financial nature, bugs or vulnerabilities in
+these programs may lead to catastrophic consequences, as witnessed by recent attacks.
+Unfortunately, programming smart contracts is a delicate task that requires strong
+expertise: Ethereum smart contracts are written in Solidity, a dedicated language
+resembling JavaScript, and shipped over the blockchain in the EVM bytecode format.
+In order to rigorously verify the security of smart contracts, it is of paramount
+importance to formalize their semantics as well as the security properties of
+interest, in particular at the level of the bytecode being executed.'
+ISBN: '978-3-319-89722-6'</li>
+</ul>
+</li>
+<li>
+<p>id: fstar-tr
+type: article-journal
+author:</p>
+<ul>
+<li>family: Grishchenko
+given: Ilya</li>
+<li>family: Maffei
+given: Matteo</li>
+<li>family: Schneidewind
+given: Clara
+issued:</li>
+<li>year: '2018'
+title: A semantic framework for the security analysis of ethereum smart contracts.
+technical report.
+note: <a href="https://secpriv.tuwien.ac.at/tools/ethsemantics" target="_blank" rel="noreferrer noopener">https://secpriv.tuwien.ac.at/tools/ethsemantics</a></li>
+</ul>
+</li>
+<li>
+<p>id: wood2014ethereum
+type: article-journal
+author:</p>
+<ul>
+<li>family: Wood
+given: Gavin
+issued:</li>
+<li>year: '2014'
+title: 'Ethereum: A secure decentralised generalised transaction ledger'
+title-short: Ethereum
+note: (Updated for EIP-150 in 2017) <a href="http://yellowpaper.io/" target="_blank" rel="noreferrer noopener">http://yellowpaper.io/</a></li>
+</ul>
+</li>
+<li>
+<p>id: solidity
+type: no-type
+author:</p>
+<ul>
+<li>literal: Ethereum
+issued:</li>
+<li>year: '2017'
+title: Ethereum solidity documentation
+note: <a href="https://solidity.readthedocs.io/en/develop/" target="_blank" rel="noreferrer noopener">https://solidity.readthedocs.io/en/develop/</a></li>
+</ul>
+</li>
+<li>
+<p>id: serpent
+type: no-type
+author:</p>
+<ul>
+<li>literal: Ethereum
+issued:</li>
+<li>year: '2017'
+title: Ethereum serpent documentation
+note: <a href="https://github.com/ethereum/wiki/wiki/Serpent" target="_blank" rel="noreferrer noopener">https://github.com/ethereum/wiki/wiki/Serpent</a></li>
+</ul>
+</li>
+<li>
+<p>id: ktoisabelle
+type: no-type
+author:</p>
+<ul>
+<li>family: Li
+given: Liyi
+issued:</li>
+<li>year: '2015'
+title: K Framework to Isabelle
+note: <a href="https://github.com/liyili2/KtoIsabelle" target="_blank" rel="noreferrer noopener">https://github.com/liyili2/KtoIsabelle</a></li>
+</ul>
+</li>
+<li>
+<p>id: why3
+type: chapter
+author:</p>
+<ul>
+<li>family: Filliâtre
+given: Jean-Christophe</li>
+<li>family: Paskevich
+given: Andrei
+editor:</li>
+<li>family: Felleisen
+given: Matthias</li>
+<li>family: Gardner
+given: Philippa
+issued:</li>
+<li>year: '2013'
+title: Why3 — where programs meet provers
+container-title: 'Programming languages and systems: 22nd european symposium on
+programming, esop 2013, held as part of the european joint conferences on theory
+and practice of software, etaps 2013, rome, italy, march 16-24, 2013. proceedings'
+publisher: Springer Berlin Heidelberg
+publisher-place: Berlin, Heidelberg
+page: '125-128'
+URL: https://doi.org/10.1007/978-3-642-37036-6_8
+DOI: 10.1007/978-3-642-37036-6_8
+ISBN: '978-3-642-37036-6'</li>
+</ul>
+</li>
+<li>
+<p>id: rosu-2015-rta
+type: article-journal
+author:</p>
+<ul>
+<li>family: Roşu
+given: Grigore
+issued:</li>
+<li>year: '2017'
+title: Matching logic
+container-title: Logical Methods in Computer Science
+volume: to appear
+DOI: http://arxiv.org/abs/1705.06312</li>
+</ul>
+</li>
+<li>
+<p>id: meseguer-20-years-rewriting
+type: article-journal
+author:</p>
+<ul>
+<li>family: Meseguer
+given: José
+issued:</li>
+<li>year: '2012'
+title: Twenty years of rewriting logic
+container-title: The Journal of Logic and Algebraic Programming
+page: 721 - 781
+volume: '81'
+issue: '7'
+note: Rewriting Logic and its Applications
+URL: http://www.sciencedirect.com/science/article/pii/S1567832612000707
+DOI: http://dx.doi.org/10.1016/j.jlap.2012.06.003
+ISSN: '1567-8326'</li>
+</ul>
+</li>
+<li>
+<p>id: rosu-stefanescu-2012-fm
+type: paper-conference
+author:</p>
+<ul>
+<li>family: Roşu
+given: Grigore</li>
+<li>family: Ştefănescu
+given: Andrei
+issued:</li>
+<li>year: '2012'
+month: '8'
+title: From Hoare Logic to Matching Logic Reachability
+container-title: Proceedings of the 18th international symposium on formal methods
+(fm’12)
+collection-title: LNCS
+publisher: Springer
+page: '387-402'
+volume: '7436'
+abstract: 'Matching logic reachability has been recently proposed as an alternative
+program verification approach. Unlike Hoare logic, where one defines a language-specific
+proof system that needs to be proved sound for each language separately, matching
+logic reachability provides a *language-independent* and *sound* proof system
+that directly uses the trusted operational semantics of the language as axioms.
+Matching logic reachability thus has a clear practical advantage: it eliminates
+the need for an additional semantics of the same language in order to reason about
+programs, and implicitly eliminates the need for tedious soundness proofs. What
+is not clear, however, is whether matching logic reachability is as powerful as
+Hoare logic. This paper introduces a technique to mechanically translate Hoare
+logic proof derivations into equivalent matching logic reachability proof derivations.
+The presented technique has two consequences: first, it suggests that matching
+logic reachability has no theoretical limitation over Hoare logic; and second,
+it provides a new approach to prove Hoare logics sound.'
+DOI: http://dx.doi.org/10.1007/978-3-642-32759-9_32</li>
+</ul>
+</li>
+<li>
+<p>id: ethereum-abi
+type: no-type
+author:</p>
+<ul>
+<li>literal: Ethereum
+issued:</li>
+<li>year: '2017'
+title: Ethereum application binary support
+note: <a href="https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI" target="_blank" rel="noreferrer noopener">https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI</a></li>
+</ul>
+</li>
+<li>
+<p>id: viper-url
+type: no-type
+author:</p>
+<ul>
+<li>literal: Ethereum
+issued:</li>
+<li>year: '2017'
+title: Viper - new experimental programming language
+note: <a href="https://github.com/ethereum/viper" target="_blank" rel="noreferrer noopener">https://github.com/ethereum/viper</a></li>
+</ul>
+</li>
+<li>
+<p>id: viper-snapshot
+type: no-type
+author:</p>
+<ul>
+<li>literal: Ethereum
+issued:</li>
+<li>year: '2017'
+title: Viper compiler snapshot (commit a886850c1d)
+note: <a href="https://github.com/ethereum/viper/tree/a886850c1dbdeb3d63639b0dc5b970bd578b0523" target="_blank" rel="noreferrer noopener">https://github.com/ethereum/viper/tree/a886850c1dbdeb3d63639b0dc5b970bd578b0523</a></li>
+</ul>
+</li>
+<li>
+<p>id: k-url
+type: no-type
+author:</p>
+<ul>
+<li>literal: Formal Systems Lab, UIUC
+issued:</li>
+<li>year: '2006'
+title: The K framework
+note: <a href="https://kframework.org" target="_blank" rel="noreferrer noopener">https://kframework.org</a></li>
+</ul>
+</li>
+<li>
+<p>id: evm-repo
+type: no-type
+author:</p>
+<ul>
+<li>literal: KEVM Team
+issued:</li>
+<li>year: '2017'
+title: 'KEVM: Semantics of evm in k'
+title-short: KEVM
+publisher: <a href="https://github.com/kframework/evm-semantics" target="_blank" rel="noreferrer noopener">https://github.com/kframework/evm-semantics</a></li>
+</ul>
+</li>
+<li>
+<p>id: verified-smart-contracts
+type: no-type
+author:</p>
+<ul>
+<li>literal: KEVM</li>
+<li>literal: Runtime Verification
+issued:</li>
+<li>year: '2018'
+title: 'Github: Verified Smart Contracts'
+title-short: Github
+publisher: <a href="https://github.com/runtimeverification/verified-smart-contracts" target="_blank" rel="noreferrer noopener">https://github.com/runtimeverification/verified-smart-contracts</a></li>
+</ul>
+</li>
+<li>
+<p>id: yellowpaper-bug-136
+type: no-type
+author:</p>
+<ul>
+<li>literal: KEVM Team
+issued:</li>
+<li>year: '2017'
+title: Yellowpaper Issue 136
+publisher: Link to issues removed for double blind review</li>
+</ul>
+</li>
+<li>
+<p>id: yellowpaper-bug-160
+type: no-type
+author:</p>
+<ul>
+<li>literal: KEVM Team
+issued:</li>
+<li>year: '2017'
+title: Yellowpaper Issue 160
+publisher: Link to issues removed for double blind review</li>
+</ul>
+</li>
+<li>
+<p>id: yellowpaper-bug-216
+type: no-type
+author:</p>
+<ul>
+<li>literal: KEVM Team
+issued:</li>
+<li>year: '2017'
+title: Yellowpaper Issue 216
+publisher: Link to issues removed for double blind review</li>
+</ul>
+</li>
+<li>
+<p>id: ViperBugsReported
+type: no-type
+author:</p>
+<ul>
+<li>literal: KEVM Team
+issued:</li>
+<li>year: '2017'
+title: Viper Issue 410, 411, 448, 449, 450, 451, 453, 469
+publisher: <a href="https://github.com/ethereum/viper/issues/410" target="_blank" rel="noreferrer noopener">https://github.com/ethereum/viper/issues/410</a>, <a href="https://github.com/ethereum/viper/issues/411" target="_blank" rel="noreferrer noopener">https://github.com/ethereum/viper/issues/411</a>,
+<a href="https://github.com/ethereum/viper/issues/448" target="_blank" rel="noreferrer noopener">https://github.com/ethereum/viper/issues/448</a>, <a href="https://github.com/ethereum/viper/issues/449" target="_blank" rel="noreferrer noopener">https://github.com/ethereum/viper/issues/449</a>,
+<a href="https://github.com/ethereum/viper/issues/450" target="_blank" rel="noreferrer noopener">https://github.com/ethereum/viper/issues/450</a>, <a href="https://github.com/ethereum/viper/issues/451" target="_blank" rel="noreferrer noopener">https://github.com/ethereum/viper/issues/451</a>,
+<a href="https://github.com/ethereum/viper/issues/453" target="_blank" rel="noreferrer noopener">https://github.com/ethereum/viper/issues/453</a>, <a href="https://github.com/ethereum/viper/issues/469" target="_blank" rel="noreferrer noopener">https://github.com/ethereum/viper/issues/469</a>
+note: 'Accessed:'</li>
+</ul>
+</li>
+<li>
+<p>id: semantics-based-verifiers
+type: paper-conference
+author:</p>
+<ul>
+<li>family: Ştefănescu
+given: Andrei</li>
+<li>family: Park
+given: Daejun</li>
+<li>family: Yuwen
+given: Shijao</li>
+<li>family: Li
+given: Yilong</li>
+<li>family: Roşu
+given: Grigore
+issued:</li>
+<li>year: '2016'
+title: Semantics-based program verifiers for all languages
+container-title: OOPSLA
+publisher: ACM
+page: '74-91'
+DOI: 10.1145/2983990.2984027</li>
+</ul>
+</li>
+<li>
+<p>id: k-tutorial-url
+type: no-type
+author:</p>
+<ul>
+<li>literal: FSL, UIUC
+issued:</li>
+<li>year: '2012'
+title: K tutorial
+publisher: <a href="http://www.kframework.org/index.php/K_Tutorial" target="_blank" rel="noreferrer noopener">http://www.kframework.org/index.php/K_Tutorial</a></li>
+</ul>
+</li>
+<li>
+<p>id: trailofbits-manticore
+type: no-type
+author:</p>
+<ul>
+<li>family: Bits
+given: Trail
+dropping-particle: of
+issued:</li>
+<li>year: '2017'
+title: 'Manticore: Symbolic execution for humans'
+title-short: Manticore
+publisher: <a href="https://github.com/trailofbits/manticore" target="_blank" rel="noreferrer noopener">https://github.com/trailofbits/manticore</a></li>
+</ul>
+</li>
+<li>
+<p>id: rosu-2017-lmcs
+type: article-journal
+author:</p>
+<ul>
+<li>family: Roşu
+given: Grigore
+issued:</li>
+<li>year: '2017'
+title: Matching logic
+container-title: Logical Methods in Computer Science
+DOI: http://arxiv.org/abs/1705.06312</li>
+</ul>
+</li>
+<li>
+<p>id: erc-20-url
+type: no-type
+author:</p>
+<ul>
+<li>literal: The Ethereum Foundation
+issued:</li>
+<li>year: '2017'
+title: ERC20 token standard
+publisher: <a href="https://github.com/ethereum/EIPs/blob/master/EIPS/eip-20-token-standard.md" target="_blank" rel="noreferrer noopener">https://github.com/ethereum/EIPs/blob/master/EIPS/eip-20-token-standard.md</a></li>
+</ul>
+</li>
+<li>
+<p>id: ethereum-tests-url
+type: no-type
+author:</p>
+<ul>
+<li>literal: The Ethereum Foundation
+issued:</li>
+<li>year: '2015'
+title: Ethereum tests
+publisher: <a href="https://github.com/ethereum/tests" target="_blank" rel="noreferrer noopener">https://github.com/ethereum/tests</a></li>
+</ul>
+</li>
+<li>
+<p>id: viper-docs-url
+type: no-type
+author:</p>
+<ul>
+<li>literal: The Ethereum Foundation
+issued:</li>
+<li>year: '2017'
+title: Viper
+publisher: <a href="https://viper.readthedocs.io/en/latest/index.html" target="_blank" rel="noreferrer noopener">https://viper.readthedocs.io/en/latest/index.html</a></li>
+</ul>
+</li>
+<li>
+<p>id: jellopaper
+type: no-type
+author:</p>
+<ul>
+<li>literal: KEVM Team
+issued:</li>
+<li>year: '2017'
+title: The evm semantic “jello paper"
+publisher: <a href="https://jellopaper.org/" target="_blank" rel="noreferrer noopener">https://jellopaper.org/</a></li>
+</ul>
+</li>
+<li>
+<p>id: securify
+type: no-type
+author:</p>
+<ul>
+<li>literal: Software Reliability Lab, ETH Zurich
+issued:</li>
+<li>year: '2017'
+title: Securify formal verification of ethereum smart contracts
+note: https://securify.ch/</li>
+</ul>
+</li>
+<li>
+<p>id: hildenbrandt-saxena-zhu-rodrigues-daian-guth-moore-zhang-park-rosu-2018-csf
+type: paper-conference
+author:</p>
+<ul>
+<li>family: Hildenbrandt
+given: Everett</li>
+<li>family: Saxena
+given: Manasvi</li>
+<li>family: Zhu
+given: Xiaoran</li>
+<li>family: Rodrigues
+given: Nishant</li>
+<li>family: Daian
+given: Philip</li>
+<li>family: Guth
+given: Dwight</li>
+<li>family: Moore
+given: Brandon</li>
+<li>family: Zhang
+given: Yi</li>
+<li>family: Park
+given: Daejun</li>
+<li>family: Ştefănescu
+given: Andrei</li>
+<li>family: Roşu
+given: Grigore
+issued:</li>
+<li>year: '2018'
+title: 'KEVM: A complete semantics of the ethereum virtual machine'
+title-short: KEVM
+container-title: Computer security foundations symposium
+abstract: 'A developing field of interest for the distributed systems and applied
+cryptography communities is that of smart contracts: self-executing financial
+instruments that synchronize their state, often through a blockchain. One such
+smart contract system that has seen widespread practical adoption is Ethereum,
+which has grown to a market capacity of 100 billion USD and clears an excess of
+500,000 daily transactions.Unfortunately, the rise of these technologies has been
+marred by a series of costly bugs and exploits. Increasingly, the Ethereum community
+has turned to formal methods and rigorous program analysis tools. This trend holds
+great promise due to the relative simplicity of smart contracts and bounded-time
+deterministic execution inherent to the Ethereum Virtual Machine (EVM).Here we
+present KEVM, an executable formal specification of the EVM’s bytecode stack-based
+language built with the Framework, designed to serve as a solid foundation for
+further formal analyses. We empirically evaluate the correctness and performance
+of KEVM using the official Ethereum test suite&nbsp;[@ethereum-tests-url]ethereum-tests-url.
+To demonstrate the usability, several extensions of the semantics are presented
+and two different-language implementations of the ERC20 Standard Token are verified
+against the ERC20 specification. These results are encouraging for the executable
+semantics approach to language prototyping and specification.'</li>
+</ul>
+</li>
+</ul>
+<hr>
+</body></html></div>
+        </main>
+
+        <!-- Page ToC -->
+        <div class="col-12 col-md-3 col-xl-2 py-md-3 bd-sidebar page-toc mb-3">
+          
+<div>
+<div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#references"
+                class="bd-toc-link"
+                style="padding-left: 0px;;"
+              >
+                References
+              </a></div>
+</div>
+
+        </div>
+        <div class="btn btn-rv-blue page-toc-toggle-btn"></div>
+        <!-- End Page ToC -->
+      </div>
+    </div>
+<!-- The footer is now controlled by the k-web-theme git submodule -->
+<footer id="rvsite-footer" class="app-footer text-md-left text-center">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-md-4 mb-md-0 mb-4">
+        <a href="https://runtimeverification.com/" target="_blank">
+          <picture>
+            <source
+              srcset="
+                https://runtimeverification.com/assets/img/rv-logo-dark.png
+              "
+              media="(prefers-color-scheme: dark)"
+            />
+            <img
+              class="logo-dark"
+              src="https://runtimeverification.com/assets/img/rv-logo.png"
+              alt="Runtime Verification logo"
+              style="height: 32px"
+            /> </picture
+        ></a>
+        <p class="mt-2 text-md-left copyright">
+          <a href="https://maps.app.goo.gl/8YhKozfmZtgzQBsH7" target="_blank"
+            >202 S Broadway Ave #31, Urbana, IL</a
+          >
+        </p>
+      </div>
+      <div class="col-md-4 text-md-center mb-md-0 mb-4"></div>
+      <div class="col-md-4 mb-md-0 mb-4 pl-0 text-md-right">
+        <p class="copyright">2024 © all rights reserved</p>
+        <span class="copyright"
+          ><a href="https://runtimeverification.com/privacy-policy"
+            >privacy policy</a
+          >
+          |
+          <a href="https://runtimeverification.com/terms-of-use"
+            >terms of use</a
+          ></span
+        >
+      </div>
+    </div>
+  </div>
+</footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Typist/1.2/typist.min.js"></script>
+    <script src="../../assets/js/index.js"></script>
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script
+  async
+  src="https://www.googletagmanager.com/gtag/js?id=G-QL0D8HRYFW"
+></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag() {
+    dataLayer.push(arguments);
+  }
+  gtag("js", new Date());
+  gtag("config", "G-QL0D8HRYFW");
+</script>
+
+  </body>
+</html>
