@@ -381,6 +381,7 @@ class KProveOptions(Options):
     direct_subproof_rules: bool
     maintenance_rate: int
     assume_defined: bool
+    optimize_kcfg: bool
 
     @staticmethod
     def default() -> dict[str, Any]:
@@ -390,6 +391,7 @@ class KProveOptions(Options):
             'direct_subproof_rules': False,
             'maintenance_rate': 1,
             'assume_defined': False,
+            'optimize_kcfg': False,
         }
 
 
@@ -849,6 +851,13 @@ class KEVMCLIArgs(KCLIArgs):
             default=None,
             action='store_true',
             help='Use the implication check of the Booster (experimental).',
+        )
+        args.add_argument(
+            '--optimize-kcfg',
+            dest='optimize_kcfg',
+            default=None,
+            action='store_true',
+            help='Optimize the constructed KCFG on-the-fly.',
         )
         return args
 
