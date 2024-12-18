@@ -36,6 +36,7 @@ module VAT-ARITHMETIC-SPEC
             <log> _ => ?_ </log>
             <refund> _Vrefund => ?_ </refund>
             <accessedAccounts> _ => ?_ </accessedAccounts>
+            <createdAccounts> _ => ?_ </createdAccounts>
             <accessedStorage> _ => ?_ </accessedStorage>
           </substate>
           <gasPrice> _ </gasPrice>
@@ -136,6 +137,7 @@ module VAT-ARITHMETIC-SPEC
             <log> _ => ?_ </log>
             <refund> _Vrefund => ?_ </refund>
             <accessedAccounts> _ => ?_ </accessedAccounts>
+            <createdAccounts> _ => ?_ </createdAccounts>
             <accessedStorage> _ => ?_ </accessedStorage>
           </substate>
           <gasPrice> _ </gasPrice>
@@ -230,6 +232,7 @@ module VAT-ARITHMETIC-SPEC
             <log> _ => ?_ </log>
             <refund> _Vrefund => ?_ </refund>
             <accessedAccounts> _ => ?_ </accessedAccounts>
+            <createdAccounts> _ => ?_ </createdAccounts>
             <accessedStorage> _ => ?_ </accessedStorage>
           </substate>
           <gasPrice> _ </gasPrice>
@@ -330,6 +333,7 @@ module VAT-ARITHMETIC-SPEC
             <log> _ => ?_ </log>
             <refund> _Vrefund => ?_ </refund>
             <accessedAccounts> _ => ?_ </accessedAccounts>
+            <createdAccounts> _ => ?_ </createdAccounts>
             <accessedStorage> _ => ?_ </accessedStorage>
           </substate>
           <gasPrice> _ </gasPrice>
@@ -427,6 +431,7 @@ module VAT-ARITHMETIC-SPEC
             <log> _ => ?_ </log>
             <refund> _Vrefund => ?_ </refund>
             <accessedAccounts> _ => ?_ </accessedAccounts>
+            <createdAccounts> _ => ?_ </createdAccounts>
             <accessedStorage> _ => ?_ </accessedStorage>
           </substate>
           <gasPrice> _ </gasPrice>
@@ -524,6 +529,7 @@ module VAT-ARITHMETIC-SPEC
             <log> _ => ?_ </log>
             <refund> _Vrefund => ?_ </refund>
             <accessedAccounts> _ => ?_ </accessedAccounts>
+            <createdAccounts> _ => ?_ </createdAccounts>
             <accessedStorage> _ => ?_ </accessedStorage>
           </substate>
           <gasPrice> _ </gasPrice>

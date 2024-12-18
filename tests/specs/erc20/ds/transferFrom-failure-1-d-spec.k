@@ -47,6 +47,7 @@ module TRANSFERFROM-FAILURE-1-D-SPEC
           <refund> _ => ?_ </refund> // TODO: more detail
           <accessedAccounts> _ => ?_ </accessedAccounts>
           <accessedStorage> _ => ?_ </accessedStorage>
+          <createdAccounts> _ => ?_ </createdAccounts>
         </substate>
 
         <gasPrice> _ </gasPrice>
