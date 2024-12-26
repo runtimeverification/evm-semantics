@@ -264,14 +264,12 @@ module LEMMAS-MCD [symbolic]
     rule #WordPackAddrUInt48UInt48(ADDR, maxUInt48 &Int (ADDR_UINT48_UINT48 /Int pow160), UINT48_2) => #WordPackAddrUInt48UInt48(ADDR, 0, UINT48_2) requires maxUInt48 &Int (ADDR_UINT48_UINT48 /Int pow160) ==Int 0 [simplification]
 
   // ########################
-   // Map
-   // ########################
+  // Map and #lookup
+  // ########################
 
     rule M:Bytes [ K <- V ]            [ K' <- V' ] => M [ K' <- V' ] [ K <- V ]             requires K' <Int K                        [simplification]
     rule M [ K := BUF:Bytes ] [ K' <- V' ] => M [ K' <- V' ] [ K := BUF ]  requires K' <Int K
                                                                                                orBool K +Int lengthBytes(BUF) <=Int K' [simplification]
-    rule M [ K <- V ] => M requires #lookup(M, K) ==Int V [simplification]
-
     rule M [ K := BUF:Bytes ] [ K' := BUF':Bytes ] => M [ K := (#range(BUF , 0 , K' -Int K )) ] [ K' := BUF' ]
        requires K <Int K'
         andBool K' <Int K +Int lengthBytes(BUF)
@@ -284,6 +282,11 @@ module LEMMAS-MCD [symbolic]
        requires K2 <=Int K1
         andBool K1 +Int lengthBytes(BUF11) <=Int K2 +Int lengthBytes(BUF2)
        [simplification]
+
+    rule 0 <=Int #lookup( _M:Map , _ )             => true [simplification, smt-lemma]
+    rule         #lookup( _M:Map , _ ) <Int pow256 => true [simplification, smt-lemma]
+
+    rule M [ K <- V ] => M requires #lookup(M, K) ==Int V [simplification]
 
   // ########################
   // Arithmetic

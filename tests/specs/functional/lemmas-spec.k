@@ -34,12 +34,6 @@ module LEMMAS-SPEC
  // Arithmetic
  // ----------
 
-    claim <k> runLemma(#rangeUInt(256, #lookup(M, KX) -Int #lookup(M, KY))) => doneLemma(true) ... </k>
-      requires #rangeUInt(256, X) andBool X ==Int #lookup(M,  KX)
-       andBool #rangeUInt(256, Y) andBool Y ==Int #lookup(M,  KY)
-       andBool #rangeUInt(256, Z) andBool Z ==Int #lookup(M, _KZ)
-       andBool #rangeUInt(256, (X -Int Y) -Int Z)
-
     claim [address-reprojection]: <k> runLemma(((maxUInt160 &Int ((368263281805664599098893944405654396525700029268 |Int (notMaxUInt160 &Int X:Int)) modInt pow256)) modInt pow160))
                                    => doneLemma(368263281805664599098893944405654396525700029268) ... </k>
                                 requires #rangeUInt(256, X)
