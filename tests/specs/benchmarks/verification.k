@@ -9,7 +9,7 @@ module VERIFICATION-COMMON
   // Ecrecover
   // ########################
 
-    //Symbolic predicate representing whether output of #ecrec is empty. No implementation.
+    // Symbolic predicate representing whether output of #ecrec is empty. No implementation.
     syntax Bool ::= #ecrecEmpty( Bytes , Bytes , Bytes , Bytes ) [function, no-evaluators, smtlib(ecrecEmpty)]
  // ----------------------------------------------------------------------------------------------------------
     rule lengthBytes(#ecrec(HASH, SIGV, SIGR, SIGS)) => 32 requires notBool #ecrecEmpty(HASH, SIGV, SIGR, SIGS) [simplification]
@@ -18,11 +18,8 @@ module VERIFICATION-COMMON
     rule         #asWord(#ecrec(HASH, SIGV, SIGR, SIGS))             => 0    requires         #ecrecEmpty(HASH, SIGV, SIGR, SIGS) [simplification]
     rule 0  <Int #asWord(#ecrec(HASH, SIGV, SIGR, SIGS))             => true requires notBool #ecrecEmpty(HASH, SIGV, SIGR, SIGS) [simplification]
 
-    rule #Ceil( #ecrec(HASH, SIGV, SIGR, SIGS) ) => #Top
-     requires #ecrecEmpty(HASH, SIGV, SIGR, SIGS) [simplification]
-
-    rule #Ceil( #ecrec(HASH, SIGV, SIGR, SIGS) ) => #Top
-     requires notBool #ecrecEmpty(HASH, SIGV, SIGR, SIGS) [simplification]
+    rule #Ceil( #ecrec(HASH, SIGV, SIGR, SIGS) ) => #Top requires notBool #ecrecEmpty(HASH, SIGV, SIGR, SIGS) [simplification]
+    rule #Ceil( #ecrec(HASH, SIGV, SIGR, SIGS) ) => #Top requires         #ecrecEmpty(HASH, SIGV, SIGR, SIGS) [simplification]
 
 endmodule
 
@@ -141,6 +138,9 @@ module VERIFICATION-HASKELL [symbolic]
     rule BA1 +Bytes (BA2 +Bytes BA3) => (BA1 +Bytes BA2) +Bytes BA3 [concrete(BA1, BA2), simplification]
 
     rule maxUInt160 &Int Y => Y requires 0 <=Int Y andBool Y <=Int maxUInt160 [simplification]
+
+    rule lengthBytes ( #ecrec ( _ , _ , _ , _ ) ) <=Int     32 => true [simplification, smt-lemma]
+    rule     #asWord ( #ecrec ( _ , _ , _ , _ ) )  <Int pow160 => true [simplification, smt-lemma]
 
     rule ( lengthBytes(#ecrec( HASH, SIGV, SIGR, SIGS )) ==Int 0  ) =>           #ecrecEmpty ( HASH, SIGV, SIGR, SIGS )  [simplification]
     rule ( lengthBytes(#ecrec( HASH, SIGV, SIGR, SIGS )) ==Int 32 ) => notBool ( #ecrecEmpty ( HASH, SIGV, SIGR, SIGS )) [simplification]

@@ -811,8 +811,8 @@ module LEMMAS-SPEC
     claim [ecrec-range]: <k> runLemma  ( #rangeUInt ( 160 , #asWord ( #ecrec ( _ , _ , _ , _ ) ) ) )
                           => doneLemma ( true ) ... </k>
 
-    // claim [ecrec-mask]: <k> runLemma  ( #asWord ( #ecrec ( HASH , SIGV , SIGR , SIGS ) ) &Int maxUInt160 )
-    //                      => doneLemma ( #asWord ( #ecrec ( HASH , SIGV , SIGR , SIGS ) ) ) ... </k>
+    claim [ecrec-mask]: <k> runLemma  ( maxUInt160 &Int #asWord ( #ecrec ( HASH , SIGV , SIGR , SIGS ) ) )
+                         => doneLemma ( #asWord ( #ecrec ( HASH , SIGV , SIGR , SIGS ) ) ) ... </k>
 
  // Address computation
  // -------------------
