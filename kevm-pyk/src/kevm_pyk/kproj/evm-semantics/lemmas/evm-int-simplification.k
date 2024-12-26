@@ -115,8 +115,10 @@ module EVM-INT-SIMPLIFICATION
     [simplification, preserves-definedness]
 
   // Comparison: `#asWord` is always in the range `[0, pow256)`
-  rule [asWord-lb]: 0 <=Int #asWord( _ )     => true [simplification, smt-lemma]
-  rule [asWord-ub]: #asWord( _ ) <Int pow256 => true [simplification, smt-lemma]
+  rule [asWord-lb-lt]:        X:Int  <Int #asWord( _ ) => true requires          X  <Int 0 [simplification]
+  rule [asWord-lb-le]:        X:Int <=Int #asWord( _ ) => true requires          X <=Int 0 [simplification]
+  rule [asWord-ub-lt]: #asWord( _ )  <Int X:Int        => true requires maxUInt256  <Int X [simplification]
+  rule [asWord-ub-lt]: #asWord( _ ) <=Int X:Int        => true requires maxUInt256 <=Int X [simplification]
 
   // Comparison: `#asWord(B)` is certainly less than something that does not fit into `lengthBytes(B)` bytes
   rule [asWord-lt]:  #asWord ( B )  <Int X:Int => true  requires   2 ^Int (8 *Int minInt(32, lengthBytes(B)))          <=Int X [simplification, preserves-definedness]
@@ -141,9 +143,12 @@ module EVM-INT-SIMPLIFICATION
   // chop
   // ###########################################################################
 
-    rule [chop-resolve]:     chop(I) => I requires #rangeUInt( 256 , I ) [simplification]
-    rule [chop-upper-bound]: 0 <=Int chop(_V)             => true        [simplification, smt-lemma]
-    rule [chop-lower-bound]:         chop(_V) <Int pow256 => true        [simplification, smt-lemma]
+    rule [chop-resolve]: chop(I) => I requires #rangeUInt( 256 , I ) [simplification]
+
+    rule [chop-ub-lt]: X:Int  <Int chop(_V)             => true requires          X  <Int 0 [simplification]
+    rule [chop-ub-le]: X:Int <=Int chop(_V)             => true requires          X <=Int 0 [simplification]
+    rule [chop-lb-lt]:             chop(_V)  <Int X:Int => true requires maxUInt256  <Int X [simplification]
+    rule [chop-lb-le]:             chop(_V) <=Int X:Int => true requires maxUInt256 <=Int X [simplification]
 
     rule [chop-add-left]:  chop ( chop ( X:Int ) +Int Y:Int ) => chop ( X +Int Y ) [simplification]
     rule [chop-add-right]: chop ( X:Int +Int chop ( Y:Int ) ) => chop ( X +Int Y ) [simplification]
