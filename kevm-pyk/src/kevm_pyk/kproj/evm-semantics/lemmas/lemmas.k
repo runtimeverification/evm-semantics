@@ -60,8 +60,10 @@ module LEMMAS-WITHOUT-SLOT-UPDATES [symbolic]
   // ########################
 
     // Range
-    rule [b2w-lb]: 0 <=Int bool2Word(_)         => true [simplification, smt-lemma]
-    rule [b2w-ub]:         bool2Word(_) <=Int 1 => true [simplification, smt-lemma]
+    rule [b2w-lb-lt]:        X:Int  <Int bool2Word(_) => true requires X  <Int 0 [simplification]
+    rule [b2w-lb-le]:        X:Int <=Int bool2Word(_) => true requires X <=Int 0 [simplification]
+    rule [b2w-ub-lt]: bool2Word(_)  <Int X:Int        => true requires 1  <Int X [simplification]
+    rule [b2w-ub-le]: bool2Word(_) <=Int X:Int        => true requires 1 <=Int X [simplification]
 
     // Relationship with equality
     rule [b2w-eq-zero]: bool2Word(B) ==Int 0 => notBool B [simplification(30), comm]
@@ -118,8 +120,10 @@ module LEMMAS-WITHOUT-SLOT-UPDATES [symbolic]
   // Map Reasoning
   // ########################
 
-    rule 0 <=Int #lookup( _M:Map , _ )             => true [simplification, smt-lemma]
-    rule         #lookup( _M:Map , _ ) <Int pow256 => true [simplification, smt-lemma]
+    rule [lookup-lb-lt]:                 X:Int  <Int #lookup( _M:Map , _ ) => true requires          X  <Int 0 [simplification]
+    rule [lookup-lb-le]:                 X:Int <=Int #lookup( _M:Map , _ ) => true requires          X <=Int 0 [simplification]
+    rule [lookup-ub-lt]: #lookup( _M:Map , _ )  <Int X:Int                 => true requires maxUInt256  <Int X [simplification]
+    rule [lookup-ub-le]: #lookup( _M:Map , _ ) <=Int X:Int                 => true requires maxUInt256 <=Int X [simplification]
 
     rule #lookup ( _M:Map [ K1 <- V1 ] , K2 )    => #lookup ( K1 |-> V1 , K1 ) requires K1 ==Int  K2 [simplification]
     rule #lookup (  M:Map [ K1 <- _  ] , K2 )    => #lookup ( M         , K2 ) requires notBool ( K1 ==Int K2 ) [simplification]

@@ -145,10 +145,10 @@ module EVM-INT-SIMPLIFICATION
 
     rule [chop-resolve]: chop(I) => I requires #rangeUInt( 256 , I ) [simplification]
 
-    rule [chop-ub-lt]: X:Int  <Int chop(_V)             => true requires          X  <Int 0 [simplification]
-    rule [chop-ub-le]: X:Int <=Int chop(_V)             => true requires          X <=Int 0 [simplification]
-    rule [chop-lb-lt]:             chop(_V)  <Int X:Int => true requires maxUInt256  <Int X [simplification]
-    rule [chop-lb-le]:             chop(_V) <=Int X:Int => true requires maxUInt256 <=Int X [simplification]
+    rule [chop-ub-lt]:    X:Int  <Int chop(_V) => true requires          X  <Int 0 [simplification]
+    rule [chop-ub-le]:    X:Int <=Int chop(_V) => true requires          X <=Int 0 [simplification]
+    rule [chop-lb-lt]: chop(_V)  <Int X:Int    => true requires maxUInt256  <Int X [simplification]
+    rule [chop-lb-le]: chop(_V) <=Int X:Int    => true requires maxUInt256 <=Int X [simplification]
 
     rule [chop-add-left]:  chop ( chop ( X:Int ) +Int Y:Int ) => chop ( X +Int Y ) [simplification]
     rule [chop-add-right]: chop ( X:Int +Int chop ( Y:Int ) ) => chop ( X +Int Y ) [simplification]
