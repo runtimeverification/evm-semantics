@@ -118,7 +118,7 @@ module EVM-INT-SIMPLIFICATION
   rule [asWord-lb-lt]:        X:Int  <Int #asWord( _ ) => true requires          X  <Int 0 [simplification]
   rule [asWord-lb-le]:        X:Int <=Int #asWord( _ ) => true requires          X <=Int 0 [simplification]
   rule [asWord-ub-lt]: #asWord( _ )  <Int X:Int        => true requires maxUInt256  <Int X [simplification]
-  rule [asWord-ub-lt]: #asWord( _ ) <=Int X:Int        => true requires maxUInt256 <=Int X [simplification]
+  rule [asWord-ub-le]: #asWord( _ ) <=Int X:Int        => true requires maxUInt256 <=Int X [simplification]
 
   // Comparison: `#asWord(B)` is certainly less than something that does not fit into `lengthBytes(B)` bytes
   rule [asWord-lt]:  #asWord ( B )  <Int X:Int => true  requires   2 ^Int (8 *Int minInt(32, lengthBytes(B)))          <=Int X [simplification, preserves-definedness]
