@@ -117,17 +117,19 @@ module LEMMAS-WITHOUT-SLOT-UPDATES [symbolic]
     rule         keccak( _ ) <Int pow256 => true [simplification]
 
   // ########################
-  // Map Reasoning
+  // Map and #lookup
   // ########################
 
-    rule [lookup-lb-lt]:                 X:Int  <Int #lookup( _M:Map , _ ) => true requires          X  <Int 0 [simplification]
-    rule [lookup-lb-le]:                 X:Int <=Int #lookup( _M:Map , _ ) => true requires          X <=Int 0 [simplification]
-    rule [lookup-ub-lt]: #lookup( _M:Map , _ )  <Int X:Int                 => true requires maxUInt256  <Int X [simplification]
-    rule [lookup-ub-le]: #lookup( _M:Map , _ ) <=Int X:Int                 => true requires maxUInt256 <=Int X [simplification]
+    rule [lookup-lb]:                    0 <=Int #lookup( _:Map , _ ) => true [simplification, smt-lemma]
+    rule [lookup-up]: #lookup( _:Map , _ )  <Int pow256               => true [simplification, smt-lemma]
 
-    rule #lookup ( _M:Map [ K1 <- V1 ] , K2 )    => #lookup ( K1 |-> V1 , K1 ) requires K1 ==Int  K2 [simplification]
-    rule #lookup (  M:Map [ K1 <- _  ] , K2 )    => #lookup ( M         , K2 ) requires notBool ( K1 ==Int K2 ) [simplification]
-    rule #lookup ( (K1:Int |-> _) M:Map, K2:Int) => #lookup ( M         , K2 ) requires notBool ( K1 ==Int K2 ) [simplification]
+    // Symbolic lookup of map update
+    rule ( _:Map [ K1 <- V ] ):Map [ K2 ] => V            requires         K1 ==K K2 [simplification(45), preserves-definedness]
+    rule ( M:Map [ K1 <- _ ] ):Map [ K2 ] => M:Map [ K2 ] requires notBool K1 ==K K2 [simplification(45), preserves-definedness]
+
+    // Symbolic membership of map update
+    rule K1 in_keys( _:Map [ K2 <- _ ] ) => true          requires         K1 ==K K2 [simplification(45), preserves-definedness]
+    rule K1 in_keys( M:Map [ K2 <- _ ] ) => K1 in_keys(M) requires notBool K1 ==K K2 [simplification(45), preserves-definedness]
 
     rule M:Map [ I1:Int <- V1:Int ] [ I2:Int <- V2:Int ] ==K M:Map [ I2 <- V2 ] [ I1 <- V1 ] => true
       requires notBool ( I1 ==Int I2 )

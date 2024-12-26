@@ -407,18 +407,18 @@ Storage/Memory Lookup
 `#lookup*` looks up a key in a map and returns 0 if the key doesn't exist, otherwise returning its value.
 
 ```k
-    syntax Int ::= #lookup        ( Map , Int ) [symbol(lookup), function, total, smtlib(lookup)]
-                 | #lookupMemory  ( Map , Int ) [symbol(lookupMemory), function, total, smtlib(lookupMemory)]
- // ---------------------------------------------------------------------------------------------------------
-    rule [#lookup.some]:         #lookup(       (KEY |-> VAL:Int) _M, KEY ) => VAL modInt pow256
-    rule [#lookup.none]:         #lookup(                          M, KEY ) => 0                 requires notBool KEY in_keys(M)
-    //Impossible case, for completeness
-    rule [#lookup.notInt]:       #lookup(       (KEY |-> VAL    ) _M, KEY ) => 0                 requires notBool isInt(VAL)
+    syntax Int ::= #lookup ( Map , Int ) [symbol(lookup), function, total, smtlib(lookup)]
+ // --------------------------------------------------------------------------------------
 
-    rule [#lookupMemory.some]:   #lookupMemory( (KEY |-> VAL:Int) _M, KEY ) => VAL modInt 256
-    rule [#lookupMemory.none]:   #lookupMemory(                    M, KEY ) => 0                 requires notBool KEY in_keys(M)
-    //Impossible case, for completeness
-    rule [#lookupMemory.notInt]: #lookupMemory( (KEY |-> VAL    ) _M, KEY ) => 0                 requires notBool isInt(VAL)
+    // #lookup when key is present in map
+    rule #lookup( M:Map, K:Int ) => #if isInt( M:Map [ K ] ) #then { M:Map [ K ] }:>Int modInt pow256 #else 0 #fi
+      requires K in_keys( M:Map )
+      [priority(20), preserves-definedness]
+
+    // #lookup when key is absent in map
+    rule #lookup( M:Map, K:Int ) => 0
+      requires notBool K in_keys( M:Map )
+      [priority(25), preserves-definedness]
 ```
 
 Substate Log
