@@ -128,8 +128,8 @@ module LEMMAS-WITHOUT-SLOT-UPDATES [symbolic]
     rule ( M:Map [ K1 <- _ ] ):Map [ K2 ] => M:Map [ K2 ] requires notBool K1 ==K K2 [simplification(45), preserves-definedness]
 
     // Symbolic membership of map concat
-    rule K1 in_keys( ( K2 -> _ ) _:Map ) => true          requires         K1 ==K K2 [simplification(45), preserves-definedness]
-    rule K1 in_keys( ( K2 -> _ ) M:Map ) => K1 in_keys(M) requires notBool K1 ==K K2 [simplification(45), preserves-definedness]
+    rule K1 in_keys( ( K2 |-> _ ) _:Map ) => true          requires         K1 ==K K2 [simplification(45), preserves-definedness]
+    rule K1 in_keys( ( K2 |-> _ ) M:Map ) => K1 in_keys(M) requires notBool K1 ==K K2 [simplification(45), preserves-definedness]
 
     // Symbolic membership of map update
     rule K1 in_keys( _:Map [ K2 <- _ ] ) => true          requires         K1 ==K K2 [simplification(45), preserves-definedness]
