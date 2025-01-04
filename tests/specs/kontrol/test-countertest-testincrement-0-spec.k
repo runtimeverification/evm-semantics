@@ -5,7 +5,9 @@ module TEST-COUNTERTEST-TESTINCREMENT-0-SPEC
 
     claim [BASIC-BLOCK-1-TO-3]: <kevm>
            <k>
-             ( .K => #halt
+             ( .K => #end EVMC_SUCCESS
+             ~> #pc [ RETURN ]
+             ~> #execute
              ~> #codeDeposit 491460923342184218035706888008750043977755113263
              ~> #pc [ CREATE ] )
              ~> #execute
@@ -332,8 +334,7 @@ module TEST-COUNTERTEST-TESTINCREMENT-0-SPEC
              ~> #push
              ~> #refund #gas ( ( Cgascap ( SHANGHAI , ( ( ( ( VGAS:Int +Int -32352 ) /Int 64 ) +Int #allBut64th ( ( VGAS:Int +Int -32352 ) ) ) +Int -74781 ) , ( ( ( ( VGAS:Int +Int -32352 ) /Int 64 ) +Int #allBut64th ( ( VGAS:Int +Int -32352 ) ) ) +Int -74781 ) , 100 ) +Int -20340 ) )
              ~> #setLocalMem 128 0 b""
-             ~> #pc [ CALL ] => #halt
-             ~> #return 128 32
+             ~> #pc [ CALL ] => STATICCALL ( ( ( ( VGAS:Int +Int -32352 ) /Int 64 ) +Int #allBut64th ( ( VGAS:Int +Int -32352 ) ) ) +Int -95486 ) 491460923342184218035706888008750043977755113263 128 4 128 32
              ~> #pc [ STATICCALL ] )
              ~> #execute
              ~> _CONTINUATION

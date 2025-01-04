@@ -5,7 +5,9 @@ module TEST-STORETEST-TESTSTORELOAD-0-SPEC
 
     claim [BASIC-BLOCK-1-TO-3]: <kevm>
            <k>
-             ( .K => #halt
+             ( .K => #end EVMC_SUCCESS
+             ~> #pc [ RETURN ]
+             ~> #execute
              ~> #codeDeposit 491460923342184218035706888008750043977755113263
              ~> #pc [ CREATE ] )
              ~> #execute
@@ -135,7 +137,7 @@ module TEST-STORETEST-TESTSTORELOAD-0-SPEC
                    <accessedStorage>
                      .Map
                    </accessedStorage>
-                   <createdAccounts> .Set </createdAccounts>
+                   <createdAccounts> ?CREATEDACCOUNTS_CELL:Set </createdAccounts>
                  </substate> } ) )
                </interimStates>
                <touchedAccounts>
@@ -203,7 +205,7 @@ module TEST-STORETEST-TESTSTORELOAD-0-SPEC
                  <accessedStorage>
                    ( .Map => ( 491460923342184218035706888008750043977755113263 |-> SetItem ( 0 ) ) )
                  </accessedStorage>
-                 <createdAccounts> .Set => ( SetItem ( 491460923342184218035706888008750043977755113263 ) ) </createdAccounts>
+                 <createdAccounts> _ => ?_ </createdAccounts>
                </substate>
                <origin>
                  ORIGIN_ID:Int

@@ -5,7 +5,9 @@ module TEST-OWNERUPONLYTEST-TESTINCREMENTASOWNER-0-SPEC
 
     claim [BASIC-BLOCK-1-TO-3]: <kevm>
            <k>
-             ( .K => #halt
+             ( .K => #end EVMC_SUCCESS
+             ~> #pc [ RETURN ]
+             ~> #execute
              ~> #codeDeposit 491460923342184218035706888008750043977755113263
              ~> #pc [ CREATE ] )
              ~> #execute
@@ -135,7 +137,7 @@ module TEST-OWNERUPONLYTEST-TESTINCREMENTASOWNER-0-SPEC
                    <accessedStorage>
                      .Map
                    </accessedStorage>
-                   <createdAccounts> .Set </createdAccounts>
+                   <createdAccounts> ?CREATEDACCOUNTS_CELL:Set </createdAccounts>
                  </substate> } ) )
                </interimStates>
                <touchedAccounts>
@@ -203,7 +205,7 @@ module TEST-OWNERUPONLYTEST-TESTINCREMENTASOWNER-0-SPEC
                  <accessedStorage>
                    .Map
                  </accessedStorage>
-                 <createdAccounts> .Set => ( SetItem ( 491460923342184218035706888008750043977755113263 ) ) </createdAccounts>
+                 <createdAccounts>_ => ?_ </createdAccounts>
                </substate>
                <origin>
                  ORIGIN_ID:Int
@@ -327,8 +329,10 @@ module TEST-OWNERUPONLYTEST-TESTINCREMENTASOWNER-0-SPEC
     claim [BASIC-BLOCK-18-TO-19]: <kevm>
            <k>
              ( #checkCall 728815563385977040452943777879061427756277306518 0
-             ~> #call 728815563385977040452943777879061427756277306518 491460923342184218035706888008750043977755113263 491460923342184218035706888008750043977755113263 0 0 b"\xd0\x9d\xe0\x8a" false => #halt )
-             ~> #return 160 0
+             ~> #call 728815563385977040452943777879061427756277306518 491460923342184218035706888008750043977755113263 491460923342184218035706888008750043977755113263 0 0 b"\xd0\x9d\xe0\x8a" false => #end EVMC_SUCCESS
+             ~> #pc [ STOP ]
+             ~> #execute )
+            ~> #return 160 0
              ~> #pc [ CALL ]
              ~> #execute
              ~> _CONTINUATION
@@ -484,7 +488,7 @@ module TEST-OWNERUPONLYTEST-TESTINCREMENTASOWNER-0-SPEC
                      ( ( 491460923342184218035706888008750043977755113263 |-> SetItem ( 0 ) )
                      ( 728815563385977040452943777879061427756277306518 |-> SetItem ( 27 ) ) )
                    </accessedStorage>
-                   <createdAccounts> .Set </createdAccounts>
+                   <createdAccounts> ?CREATEDACCOUNTS_CELL:Set </createdAccounts>
                  </substate> } ) )
                </interimStates>
                <touchedAccounts>
@@ -553,7 +557,7 @@ module TEST-OWNERUPONLYTEST-TESTINCREMENTASOWNER-0-SPEC
                    ( ( 491460923342184218035706888008750043977755113263 |-> SetItem ( 0 ) )
                    ( 728815563385977040452943777879061427756277306518 |-> SetItem ( 27 ) ) )
                  </accessedStorage>
-                 <createdAccounts> .Set </createdAccounts>
+                 <createdAccounts> _ => ?_ </createdAccounts>
                </substate>
                ...
              </evm>
