@@ -137,7 +137,7 @@ module TEST-ALLOWCHANGESTEST-TESTALLOW-0-SPEC
                    <accessedStorage>
                      .Map
                    </accessedStorage>
-                   <createdAccounts> _ </createdAccounts>
+                   <createdAccounts> ?CREATEDACCOUNTS_CELL:Set </createdAccounts>
                  </substate> } ) )
                </interimStates>
                <touchedAccounts>

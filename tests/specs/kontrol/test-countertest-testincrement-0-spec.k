@@ -135,7 +135,7 @@ module TEST-COUNTERTEST-TESTINCREMENT-0-SPEC
                    <accessedStorage>
                      .Map
                    </accessedStorage>
-                   <createdAccounts> .Set </createdAccounts>
+                   <createdAccounts> ?_:Set </createdAccounts>
                  </substate> } ) )
                </interimStates>
                <touchedAccounts>
@@ -203,7 +203,7 @@ module TEST-COUNTERTEST-TESTINCREMENT-0-SPEC
                  <accessedStorage>
                    .Map
                  </accessedStorage>
-                 <createdAccounts> .Set => ( SetItem ( 491460923342184218035706888008750043977755113263 ) ) </createdAccounts>
+                 <createdAccounts> _ => ?_CREATEDACCOUNTS_CELL:Set </createdAccounts>
                </substate>
                <origin>
                  ORIGIN_ID:Int
@@ -489,7 +489,7 @@ module TEST-COUNTERTEST-TESTINCREMENT-0-SPEC
                      ( ( 491460923342184218035706888008750043977755113263 |-> SetItem ( 0 ) )
                      ( 728815563385977040452943777879061427756277306518 |-> SetItem ( 27 ) ) )
                    </accessedStorage>
-                   ...
+                   <createdAccounts> _:Set </createdAccounts>
                  </substate> } ) => .List )
                </interimStates>
                <touchedAccounts>
@@ -558,7 +558,7 @@ module TEST-COUNTERTEST-TESTINCREMENT-0-SPEC
                    ( ( 491460923342184218035706888008750043977755113263 |-> SetItem ( 0 ) )
                    ( 728815563385977040452943777879061427756277306518 |-> SetItem ( 27 ) ) )
                  </accessedStorage>
-                 ...
+                 <createdAccounts> _:Set </createdAccounts>
                </substate>
                <origin>
                  ORIGIN_ID:Int
@@ -819,7 +819,7 @@ module TEST-COUNTERTEST-TESTINCREMENT-0-SPEC
                      ( ( 491460923342184218035706888008750043977755113263 |-> SetItem ( 0 ) )
                      ( 728815563385977040452943777879061427756277306518 |-> SetItem ( 27 ) ) )
                    </accessedStorage>
-                   ...
+                   <createdAccounts> ?_:Set </createdAccounts>
                  </substate> } ) )
                </interimStates>
                <touchedAccounts>
@@ -888,7 +888,7 @@ module TEST-COUNTERTEST-TESTINCREMENT-0-SPEC
                    ( ( 491460923342184218035706888008750043977755113263 |-> SetItem ( 0 ) )
                    ( 728815563385977040452943777879061427756277306518 |-> SetItem ( 27 ) ) )
                  </accessedStorage>
-                 ...
+                 <createdAccounts> _:Set </createdAccounts>
                </substate>
                <origin>
                  ORIGIN_ID:Int
