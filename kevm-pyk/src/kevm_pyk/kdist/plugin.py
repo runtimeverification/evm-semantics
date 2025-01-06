@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import shutil
 import sys
-from distutils.dir_util import copy_tree
 from typing import TYPE_CHECKING
 
 from pyk.kbuild.utils import k_version
@@ -52,7 +51,7 @@ class KEVMTarget(Target):
 
 class PluginTarget(Target):
     def build(self, output_dir: Path, deps: dict[str, Any], args: dict[str, Any], verbose: bool) -> None:
-        copy_tree(str(config.PLUGIN_DIR), '.')
+        shutil.copytree(str(config.PLUGIN_DIR), '.')
         run_process_2(['make', '-j8'])
         shutil.copy('./build/krypto/lib/krypto.a', str(output_dir))
 
