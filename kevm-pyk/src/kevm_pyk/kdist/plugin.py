@@ -51,7 +51,7 @@ class KEVMTarget(Target):
 
 class PluginTarget(Target):
     def build(self, output_dir: Path, deps: dict[str, Any], args: dict[str, Any], verbose: bool) -> None:
-        shutil.copytree(str(config.PLUGIN_DIR), '.')
+        shutil.copytree(str(config.PLUGIN_DIR), '.', dirs_exist_ok=True)
         run_process_2(['make', '-j8'])
         shutil.copy('./build/krypto/lib/krypto.a', str(output_dir))
 
