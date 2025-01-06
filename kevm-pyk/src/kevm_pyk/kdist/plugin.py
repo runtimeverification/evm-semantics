@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import shutil
+import subprocess
 import sys
 from typing import TYPE_CHECKING
 
@@ -52,6 +53,8 @@ class KEVMTarget(Target):
 class PluginTarget(Target):
     def build(self, output_dir: Path, deps: dict[str, Any], args: dict[str, Any], verbose: bool) -> None:
         shutil.copytree(str(config.PLUGIN_DIR), '.', dirs_exist_ok=True)
+        # Making the plugin directory readable and writable for nix
+        subprocess.run(['chmod', '-R', 'u+rw', '.'], check=True)
         run_process_2(['make', '-j8'])
         shutil.copy('./build/krypto/lib/krypto.a', str(output_dir))
 
