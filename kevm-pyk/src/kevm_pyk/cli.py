@@ -193,7 +193,7 @@ def _create_argument_parser() -> ArgumentParser:
 
     command_parser.add_parser(
         'summarize',
-        help='Summarize an Opcode to execute in a single rewrite step.',
+        help='Summarize an Opcode.',
         parents=[
             kevm_cli_args.logging_args,
             kevm_cli_args.parallel_args,
