@@ -2088,7 +2088,7 @@ Precompiled Contracts
  // ---------------------------------------------------------------
     rule <k> #ecadd(P1, P2) => #end EVMC_PRECOMPILE_FAILURE ... </k>
       requires notBool isValidPointWrapper(P1) orBool notBool isValidPointWrapper(P2)
-    rule <k> #ecadd(P1, P2) => #end EVMC_SUCCESS ... </k> <output> _ => #point(BN128AddWrapper(P1, P2)) </output>
+    rule <k> #ecadd(P1, P2) => #end EVMC_SUCCESS ... </k> <output> _ => #point(BN128Add(P1, P2)) </output>
       requires isValidPointWrapper(P1) andBool isValidPointWrapper(P2)
 
     syntax PrecompiledOp ::= "ECMUL"
@@ -2100,7 +2100,7 @@ Precompiled Contracts
  // -----------------------------------------------------------
     rule <k> #ecmul(P, _S) => #end EVMC_PRECOMPILE_FAILURE ... </k>
       requires notBool isValidPointWrapper(P)
-    rule <k> #ecmul(P,  S) => #end EVMC_SUCCESS ... </k> <output> _ => #point(BN128MulWrapper(P, S)) </output>
+    rule <k> #ecmul(P,  S) => #end EVMC_SUCCESS ... </k> <output> _ => #point(BN128Mul(P, S)) </output>
       requires isValidPointWrapper(P)
 
     syntax Bytes ::= #point ( G1Point ) [symbol(#point), function]
