@@ -12,14 +12,7 @@ requires "hashed-locations.md"
 requires "abi.md"
 requires "gas.md"
 requires "optimizations.md"
-requires "lemmas/lemmas.k"
-requires "lemmas/summarization-simplification.k"
-
-module EDSL-SUM
-    imports EDSL-PURE
-    imports LEMMAS
-    imports SUMMARIZATION-SIMPLIFICATION
-endmodule
+requires "lemmas/summary-simplification.k"
 
 module EDSL
     imports EDSL-PURE
@@ -33,6 +26,7 @@ module EDSL-PURE
     imports EVM-ABI
     imports INFINITE-GAS
     imports BIN-RUNTIME
+    imports SUMMARY-SIMPLIFICATION
 endmodule
 
 module BIN-RUNTIME
