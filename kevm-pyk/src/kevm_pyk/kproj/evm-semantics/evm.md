@@ -11,12 +11,14 @@ This file only defines the local execution operations, the file `driver.md` will
 requires "data.md"
 requires "network.md"
 requires "gas.md"
+requires "serialization.md"
 
 module EVM
     imports STRING
     imports EVM-DATA
     imports NETWORK
     imports GAS
+    imports SERIALIZATION
 ```
 
 Configuration
@@ -2088,7 +2090,7 @@ Precompiled Contracts
  // ---------------------------------------------------------------
     rule <k> #ecadd(P1, P2) => #end EVMC_PRECOMPILE_FAILURE ... </k>
       requires notBool isValidPointWrapper(P1) orBool notBool isValidPointWrapper(P2)
-    rule <k> #ecadd(P1, P2) => #end EVMC_SUCCESS ... </k> <output> _ => #point(BN128Add(P1, P2)) </output>
+    rule <k> #ecadd(P1, P2) => #end EVMC_SUCCESS ... </k> <output> _ => #point(BN128AddWrapper(P1, P2)) </output>
       requires isValidPointWrapper(P1) andBool isValidPointWrapper(P2)
 
     syntax PrecompiledOp ::= "ECMUL"
@@ -2100,7 +2102,7 @@ Precompiled Contracts
  // -----------------------------------------------------------
     rule <k> #ecmul(P, _S) => #end EVMC_PRECOMPILE_FAILURE ... </k>
       requires notBool isValidPointWrapper(P)
-    rule <k> #ecmul(P,  S) => #end EVMC_SUCCESS ... </k> <output> _ => #point(BN128Mul(P, S)) </output>
+    rule <k> #ecmul(P,  S) => #end EVMC_SUCCESS ... </k> <output> _ => #point(BN128MulWrapper(P, S)) </output>
       requires isValidPointWrapper(P)
 
     syntax Bytes ::= #point ( G1Point ) [symbol(#point), function]
