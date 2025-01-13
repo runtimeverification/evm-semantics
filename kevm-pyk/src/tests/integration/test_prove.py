@@ -218,9 +218,6 @@ def _test_prove(
         break_on_basic_blocks = name in TEST_PARAMS and TEST_PARAMS[name].break_on_basic_blocks
         if workers is None:
             workers = 1 if name not in TEST_PARAMS else TEST_PARAMS[name].workers
-        smt_timeout = 300 if name not in TEST_PARAMS else TEST_PARAMS[name].smt_timeout
-        smt_retry_limit = 10 if name not in TEST_PARAMS else TEST_PARAMS[name].smt_retry_limit
-
         options = ProveOptions(
             {
                 'spec_file': spec_file,
@@ -236,8 +233,6 @@ def _test_prove(
                 'break_on_basic_blocks': break_on_basic_blocks,
                 'workers': workers,
                 'direct_subproof_rules': direct_subproof_rules,
-                'smt_timeout': smt_timeout,
-                'smt_retry_limit': smt_retry_limit,
             }
         )
         exec_prove(options=options)
@@ -292,8 +287,6 @@ class TParams:
     break_on_calls: bool
     break_on_basic_blocks: bool
     workers: int
-    smt_timeout: int
-    retry_limit: int
 
     def __init__(
         self,
@@ -302,22 +295,17 @@ class TParams:
         break_on_calls: bool = False,
         break_on_basic_blocks: bool = False,
         workers: int = 1,
-        smt_timeout: int = 300,
-        smt_retry_limit: int = 10,
     ) -> None:
         self.main_claim_id = main_claim_id
         self.leaf_number = leaf_number
         self.break_on_calls = break_on_calls
         self.break_on_basic_blocks = break_on_basic_blocks
         self.workers = workers
-        self.smt_timeout = smt_timeout
-        self.smt_retry_limit = smt_retry_limit
 
 
 TEST_PARAMS: dict[str, TParams] = {
     'functional/lemmas-spec.k': TParams(workers=8),
     'examples/sum-to-n-foundry-spec.k': TParams(break_on_basic_blocks=True),
-    'examples/sum-to-n-spec.k': TParams(smt_timeout=600, smt_retry_limit=20),
 }
 
 
