@@ -5,9 +5,7 @@ module TEST-SAFETEST-TESTWITHDRAWFUZZ-UINT96-0-SPEC
 
     claim [BASIC-BLOCK-1-TO-3]: <kevm>
            <k>
-             ( .K => #end EVMC_SUCCESS
-             ~> #pc [ RETURN ]
-             ~> #execute
+             ( .K => #halt
              ~> #codeDeposit 491460923342184218035706888008750043977755113263
              ~> #pc [ CREATE ] )
              ~> #execute
@@ -137,6 +135,7 @@ module TEST-SAFETEST-TESTWITHDRAWFUZZ-UINT96-0-SPEC
                    <accessedStorage>
                      .Map
                    </accessedStorage>
+                   <createdAccounts> .Set </createdAccounts>
                  </substate> } ) )
                </interimStates>
                <touchedAccounts>
@@ -204,6 +203,7 @@ module TEST-SAFETEST-TESTWITHDRAWFUZZ-UINT96-0-SPEC
                  <accessedStorage>
                    .Map
                  </accessedStorage>
+                 <createdAccounts> .Set => ( SetItem ( 491460923342184218035706888008750043977755113263 ) ) </createdAccounts>
                </substate>
                <origin>
                  ORIGIN_ID:Int
