@@ -392,7 +392,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghastransient  << CANCUN >> => true
     rule Ghasmcopy      << CANCUN >> => true
     rule Ghasbeaconroot << CANCUN >> => true
-    rule Ghaseip6780     << CANCUN >> => true
+    rule Ghaseip6780    << CANCUN >> => true
     rule SCHEDFLAG     << CANCUN >> => SCHEDFLAG << SHANGHAI >>
       requires notBool ( SCHEDFLAG ==K Ghastransient
                   orBool SCHEDFLAG ==K Ghasmcopy
