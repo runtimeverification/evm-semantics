@@ -137,6 +137,7 @@ module TEST-EXPECTREVERTTEST-TEST_EXPECTREVERT_BYTES4-0-SPEC
                    <accessedStorage>
                      .Map
                    </accessedStorage>
+                   <createdAccounts> ?CREATEDACCOUNTS_CELL:Set </createdAccounts>
                  </substate> } ) )
                </interimStates>
                <touchedAccounts>
@@ -204,6 +205,7 @@ module TEST-EXPECTREVERTTEST-TEST_EXPECTREVERT_BYTES4-0-SPEC
                  <accessedStorage>
                    .Map
                  </accessedStorage>
+                 <createdAccounts> _ => ?_ </createdAccounts>
                </substate>
                <origin>
                  ORIGIN_ID:Int
@@ -460,6 +462,7 @@ module TEST-EXPECTREVERTTEST-TEST_EXPECTREVERT_BYTES4-0-SPEC
                    <accessedStorage>
                      .Map
                    </accessedStorage>
+                   <createdAccounts> _ </createdAccounts>
                  </substate> } ) => .List )
                </interimStates>
                <touchedAccounts>
@@ -527,6 +530,7 @@ module TEST-EXPECTREVERTTEST-TEST_EXPECTREVERT_BYTES4-0-SPEC
                  <accessedStorage>
                    .Map
                  </accessedStorage>
+                 <createdAccounts> _ => ?_ </createdAccounts>
                </substate>
                <origin>
                  ORIGIN_ID:Int
