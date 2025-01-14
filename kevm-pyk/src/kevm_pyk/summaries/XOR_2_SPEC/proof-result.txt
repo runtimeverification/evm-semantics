@@ -1,0 +1,268 @@
+Proof XOR_2_SPEC Passed
+
+┌─ 1 (root, init)
+│   k: #next [ XOR ] ~> _K_CELL:K
+│   pc: _PC_CELL:Int
+│   callDepth: _CALLDEPTH_CELL:Int
+│   statusCode: _STATUSCODE_CELL:StatusCode
+│
+│  (3 steps)
+├─ 3 (split)
+│   k: #gas [ XOR , XOR _W0:Int _W1:Int ] ~> XOR _W0:Int _W1:Int ~> #pc [ XOR ] ~> _K_C ...
+│   pc: _PC_CELL:Int
+│   callDepth: _CALLDEPTH_CELL:Int
+│   statusCode: _STATUSCODE_CELL:StatusCode
+┃
+┃ (branch)
+┣━━┓ subst: .Subst
+┃  ┃ constraint:
+┃  ┃     _USEGAS_CELL:Bool
+┃  │
+┃  ├─ 4
+┃  │   k: #gas [ XOR , XOR _W0:Int _W1:Int ] ~> XOR _W0:Int _W1:Int ~> #pc [ XOR ] ~> _K_C ...
+┃  │   pc: _PC_CELL:Int
+┃  │   callDepth: _CALLDEPTH_CELL:Int
+┃  │   statusCode: _STATUSCODE_CELL:StatusCode
+┃  │
+┃  │  (9 steps)
+┃  ├─ 6
+┃  │   k: _K_CELL:K
+┃  │   pc: ( _PC_CELL:Int +Int 1 )
+┃  │   callDepth: _CALLDEPTH_CELL:Int
+┃  │   statusCode: _STATUSCODE_CELL:StatusCode
+┃  │
+┃  ┊  constraint: true
+┃  ┊  subst: ...
+┃  └─ 2 (leaf, target)
+┃      k: _K_CELL:K
+┃      pc: ?_FINAL_PC_CELL:Int
+┃      callDepth: ?_FINAL_CALLDEPTH_CELL:Int
+┃      statusCode: ?_FINAL_STATUSCODE_CELL:StatusCode
+┃
+┗━━┓ subst: .Subst
+   ┃ constraint:
+   ┃     ( notBool _USEGAS_CELL:Bool )
+   │
+   ├─ 5
+   │   k: #gas [ XOR , XOR _W0:Int _W1:Int ] ~> XOR _W0:Int _W1:Int ~> #pc [ XOR ] ~> _K_C ...
+   │   pc: _PC_CELL:Int
+   │   callDepth: _CALLDEPTH_CELL:Int
+   │   statusCode: _STATUSCODE_CELL:StatusCode
+   │
+   │  (4 steps)
+   ├─ 7
+   │   k: _K_CELL:K
+   │   pc: ( _PC_CELL:Int +Int 1 )
+   │   callDepth: _CALLDEPTH_CELL:Int
+   │   statusCode: _STATUSCODE_CELL:StatusCode
+   │
+   ┊  constraint: true
+   ┊  subst: ...
+   └─ 2 (leaf, target)
+       k: _K_CELL:K
+       pc: ?_FINAL_PC_CELL:Int
+       callDepth: ?_FINAL_CALLDEPTH_CELL:Int
+       statusCode: ?_FINAL_STATUSCODE_CELL:StatusCode
+
+
+
+Node 1:
+
+<generatedTop>
+  <kevm>
+    <k>
+      #next [ XOR ]
+      ~> _K_CELL:K
+    </k>
+    <ethereum>
+      <evm>
+        <callState>
+          <wordStack>
+            ( _W0:Int : ( _W1:Int : _WS:WordStack ) )
+          </wordStack>
+          <gas>
+            #gas ( _GAS_CELL:Int )
+          </gas>
+          ...
+        </callState>
+        ...
+      </evm>
+      ...
+    </ethereum>
+    ...
+  </kevm>
+  ...
+</generatedTop>
+
+
+
+Node 2:
+
+...
+
+
+
+Node 3:
+
+<generatedTop>
+  <kevm>
+    <k>
+      #gas [ XOR , XOR _W0:Int _W1:Int ]
+      ~> XOR _W0:Int _W1:Int
+      ~> #pc [ XOR ]
+      ~> _K_CELL:K
+    </k>
+    <ethereum>
+      <evm>
+        <callState>
+          <gas>
+            #gas ( _GAS_CELL:Int )
+          </gas>
+          ...
+        </callState>
+        ...
+      </evm>
+      ...
+    </ethereum>
+    ...
+  </kevm>
+  ...
+</generatedTop>
+
+
+
+Node 4:
+
+( <generatedTop>
+  <kevm>
+    <k>
+      #gas [ XOR , XOR _W0:Int _W1:Int ]
+      ~> XOR _W0:Int _W1:Int
+      ~> #pc [ XOR ]
+      ~> _K_CELL:K
+    </k>
+    <useGas>
+      _USEGAS_CELL:Bool
+    </useGas>
+    <ethereum>
+      <evm>
+        <callState>
+          <gas>
+            #gas ( _GAS_CELL:Int )
+          </gas>
+          ...
+        </callState>
+        ...
+      </evm>
+      ...
+    </ethereum>
+    ...
+  </kevm>
+  ...
+</generatedTop>
+#And { _USEGAS_CELL:Bool #Equals true } )
+
+
+
+Node 5:
+
+( <generatedTop>
+  <kevm>
+    <k>
+      #gas [ XOR , XOR _W0:Int _W1:Int ]
+      ~> XOR _W0:Int _W1:Int
+      ~> #pc [ XOR ]
+      ~> _K_CELL:K
+    </k>
+    <useGas>
+      _USEGAS_CELL:Bool
+    </useGas>
+    <ethereum>
+      <evm>
+        <callState>
+          <gas>
+            #gas ( _GAS_CELL:Int )
+          </gas>
+          ...
+        </callState>
+        ...
+      </evm>
+      ...
+    </ethereum>
+    ...
+  </kevm>
+  ...
+</generatedTop>
+#And { _USEGAS_CELL:Bool #Equals false } )
+
+
+
+Node 6:
+
+( <generatedTop>
+  <kevm>
+    <schedule>
+      _SCHEDULE_CELL:Schedule
+    </schedule>
+    <useGas>
+      true
+    </useGas>
+    <ethereum>
+      <evm>
+        <callState>
+          <wordStack>
+            ( _W0:Int xorInt _W1:Int : _WS:WordStack )
+          </wordStack>
+          <pc>
+            ( _PC_CELL:Int +Int 1 )
+          </pc>
+          <gas>
+            #gas ( ( _GAS_CELL:Int -Int Gverylow < _SCHEDULE_CELL:Schedule > ) )
+          </gas>
+          ...
+        </callState>
+        ...
+      </evm>
+      ...
+    </ethereum>
+    ...
+  </kevm>
+  ...
+</generatedTop>
+#And { true #Equals _USEGAS_CELL:Bool } )
+
+
+
+Node 7:
+
+( <generatedTop>
+  <kevm>
+    <useGas>
+      false
+    </useGas>
+    <ethereum>
+      <evm>
+        <callState>
+          <wordStack>
+            ( _W0:Int xorInt _W1:Int : _WS:WordStack )
+          </wordStack>
+          <pc>
+            ( _PC_CELL:Int +Int 1 )
+          </pc>
+          <gas>
+            #gas ( _GAS_CELL:Int )
+          </gas>
+          ...
+        </callState>
+        ...
+      </evm>
+      ...
+    </ethereum>
+    ...
+  </kevm>
+  ...
+</generatedTop>
+#And { true #Equals ( notBool _USEGAS_CELL:Bool ) } )
+
+
+
