@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING
 from pyk.cli.utils import file_path
 from pyk.kore.prelude import BOOL, INT, SORT_JSON, SORT_K_ITEM, bool_dv, inj, int_dv, json_to_kore, top_cell_initializer
 from pyk.kore.syntax import App, SortApp
+from pyk.utils import single
 
 from .cli import KEVMCLIArgs
 
@@ -28,6 +29,43 @@ SORT_SCHEDULE: Final = SortApp('SortSchedule')
 SORT_MODE: Final = SortApp('SortMode')
 SORT_ETHEREUM_SIMULATION: Final = SortApp('SortEthereumSimulation')
 
+GST_DISCARD_KEYS: Final = [
+    '//',
+    '_info',
+    'callcreates',
+    'sealEngine',
+    'transactionSequence',
+    'chainname',
+    'expectException',
+    'lastblockhash',
+]
+GST_LOAD_KEYS: Final = ['env', 'pre', 'rlp', 'network', 'genesisRLP']
+GST_EXEC_KEYS: Final = ['exec', 'blocks']
+GST_POST_KEYS: Final = ['post', 'postState', 'postStateHash']
+GST_ALL_POST_KEYS: Final = GST_POST_KEYS + ['expect', 'export']
+GST_CHECK_KEYS: Final = GST_ALL_POST_KEYS + [
+    'logs',
+    'out',
+    'gas',
+    'blockHeader',
+    'transactions',
+    'uncleHeaders',
+    'genesisBlockHeader',
+    'withdrawals',
+    'blocknumber',
+]
+
+
+def filter_gst_keys(gst_data: dict) -> dict:
+    """Filters the discarded keys out of a single GeneralStateTest.
+
+    :param gst_data: A single test from a GST file structured as {"test_name": {test_fields}, ... }.
+    :returns: The gst_data object after filtering out GST_DISCARD_KEYS.
+    """
+    return {
+        test_name: {k: v for k, v in test_data.items() if k not in GST_DISCARD_KEYS}
+        for test_name, test_data in gst_data.items()
+    }
 
 def gst_to_kore(gst_data: Any, schedule: str, mode: str, chainid: int, usegas: bool) -> App:
     return kore_pgm_to_kore(json_to_kore(gst_data), SORT_JSON, schedule, mode, chainid, usegas)
