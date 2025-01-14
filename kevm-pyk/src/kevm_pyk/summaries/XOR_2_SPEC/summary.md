@@ -8,16 +8,42 @@
 ┃ (branch)
 ┣━━┓ subst: .Subst
 ┃  ┃ constraint:
-┃  ┃     _USEGAS_CELL:Bool
+┃  ┃     ( notBool _USEGAS_CELL:Bool )
 ┃  │
-┃  ├─ 8
+┃  ├─ 13
+┃  │   k: #next [ XOR ] ~> _K_CELL:K
+┃  │   pc: _PC_CELL:Int
+┃  │   callDepth: _CALLDEPTH_CELL:Int
+┃  │   statusCode: _STATUSCODE_CELL:StatusCode
+┃  │
+┃  │  (7 steps)
+┃  ├─ 10
+┃  │   k: _K_CELL:K
+┃  │   pc: ( _PC_CELL:Int +Int 1 )
+┃  │   callDepth: _CALLDEPTH_CELL:Int
+┃  │   statusCode: _STATUSCODE_CELL:StatusCode
+┃  │
+┃  ┊  constraint: true
+┃  ┊  subst: ...
+┃  └─ 2 (leaf, target)
+┃      k: _K_CELL:K
+┃      pc: ?_FINAL_PC_CELL:Int
+┃      callDepth: ?_FINAL_CALLDEPTH_CELL:Int
+┃      statusCode: ?_FINAL_STATUSCODE_CELL:StatusCode
+┃
+┣━━┓ subst: .Subst
+┃  ┃ constraint:
+┃  ┃     _USEGAS_CELL:Bool
+┃  ┃     Gverylow < _SCHEDULE_CELL:Schedule > <=Gas _GAS_CELL:Gas
+┃  │
+┃  ├─ 16
 ┃  │   k: #next [ XOR ] ~> _K_CELL:K
 ┃  │   pc: _PC_CELL:Int
 ┃  │   callDepth: _CALLDEPTH_CELL:Int
 ┃  │   statusCode: _STATUSCODE_CELL:StatusCode
 ┃  │
 ┃  │  (12 steps)
-┃  ├─ 6
+┃  ├─ 11
 ┃  │   k: _K_CELL:K
 ┃  │   pc: ( _PC_CELL:Int +Int 1 )
 ┃  │   callDepth: _CALLDEPTH_CELL:Int
@@ -33,28 +59,21 @@
 ┃
 ┗━━┓ subst: .Subst
    ┃ constraint:
-   ┃     ( notBool _USEGAS_CELL:Bool )
+   ┃     _USEGAS_CELL:Bool
+   ┃     _GAS_CELL:Gas <Gas Gverylow < _SCHEDULE_CELL:Schedule >
    │
-   ├─ 9
+   ├─ 17
    │   k: #next [ XOR ] ~> _K_CELL:K
    │   pc: _PC_CELL:Int
    │   callDepth: _CALLDEPTH_CELL:Int
    │   statusCode: _STATUSCODE_CELL:StatusCode
    │
-   │  (7 steps)
-   ├─ 7
-   │   k: _K_CELL:K
-   │   pc: ( _PC_CELL:Int +Int 1 )
-   │   callDepth: _CALLDEPTH_CELL:Int
-   │   statusCode: _STATUSCODE_CELL:StatusCode
-   │
-   ┊  constraint: true
-   ┊  subst: ...
-   └─ 2 (leaf, target)
-       k: _K_CELL:K
-       pc: ?_FINAL_PC_CELL:Int
-       callDepth: ?_FINAL_CALLDEPTH_CELL:Int
-       statusCode: ?_FINAL_STATUSCODE_CELL:StatusCode
+   │  (12 steps)
+   └─ 9 (leaf, terminal)
+       k: #halt ~> _K_CELL:K
+       pc: _PC_CELL:Int
+       callDepth: _CALLDEPTH_CELL:Int
+       statusCode: EVMC_OUT_OF_GAS
 
 
 
@@ -62,10 +81,38 @@
 module SUMMARY-XOR-2-SPEC
     
     
-    rule [BASIC-BLOCK-8-TO-6]: <kevm>
+    rule [BASIC-BLOCK-13-TO-10]: <kevm>
            <k>
              ( #next [ XOR ] ~> .K => .K )
-             ~> __K_CELL:K
+             ~> __K_CELL
+           </k>
+           <useGas>
+             ( _USEGAS_CELL:Bool => false )
+           </useGas>
+           <ethereum>
+             <evm>
+               <callState>
+                 <wordStack>
+                   ( ( _W0:Int => _W0:Int xorInt _W1:Int ) : ( ( _W1:Int : _WS:WordStack ) => _WS:WordStack ) )
+                 </wordStack>
+                 <pc>
+                   ( _PC_CELL:Int => ( _PC_CELL:Int +Int 1 ) )
+                 </pc>
+                 ...
+               </callState>
+               ...
+             </evm>
+             ...
+           </ethereum>
+           ...
+         </kevm>
+      requires ( notBool _USEGAS_CELL:Bool )
+      [priority(20), label(BASIC-BLOCK-13-TO-10)]
+    
+    rule [BASIC-BLOCK-16-TO-11]: <kevm>
+           <k>
+             ( #next [ XOR ] ~> .K => .K )
+             ~> __K_CELL
            </k>
            <schedule>
              _SCHEDULE_CELL:Schedule
@@ -83,7 +130,7 @@ module SUMMARY-XOR-2-SPEC
                    ( _PC_CELL:Int => ( _PC_CELL:Int +Int 1 ) )
                  </pc>
                  <gas>
-                   #gas ( ( _GAS_CELL:Int => ( _GAS_CELL:Int -Int Gverylow < _SCHEDULE_CELL:Schedule > ) ) )
+                   ( _GAS_CELL:Gas => _GAS_CELL:Gas -Gas Gverylow < _SCHEDULE_CELL:Schedule > )
                  </gas>
                  ...
                </callState>
@@ -93,28 +140,33 @@ module SUMMARY-XOR-2-SPEC
            </ethereum>
            ...
          </kevm>
-      requires _USEGAS_CELL:Bool
-      [priority(20), label(BASIC-BLOCK-8-TO-6)]
+      requires ( _USEGAS_CELL:Bool
+       andBool ( Gverylow < _SCHEDULE_CELL:Schedule > <=Gas _GAS_CELL:Gas
+               ))
+      [priority(20), label(BASIC-BLOCK-16-TO-11)]
     
-    rule [BASIC-BLOCK-9-TO-7]: <kevm>
+    rule [BASIC-BLOCK-17-TO-9]: <kevm>
            <k>
-             ( #next [ XOR ] ~> .K => .K )
-             ~> __K_CELL:K
+             ( #next [ XOR ] => #halt )
+             ~> __K_CELL
            </k>
+           <schedule>
+             _SCHEDULE_CELL:Schedule
+           </schedule>
            <useGas>
-             ( _USEGAS_CELL:Bool => false )
+             ( _USEGAS_CELL:Bool => true )
            </useGas>
            <ethereum>
              <evm>
+               <statusCode>
+                 ( __STATUSCODE_CELL => EVMC_OUT_OF_GAS )
+               </statusCode>
                <callState>
                  <wordStack>
-                   ( ( _W0:Int => _W0:Int xorInt _W1:Int ) : ( ( _W1:Int : _WS:WordStack ) => _WS:WordStack ) )
+                   ( ( __W0 : ( __W1 : _WS:WordStack ) ) => _WS:WordStack )
                  </wordStack>
-                 <pc>
-                   ( _PC_CELL:Int => ( _PC_CELL:Int +Int 1 ) )
-                 </pc>
                  <gas>
-                   #gas ( __GAS_CELL:Int )
+                   _GAS_CELL:Gas
                  </gas>
                  ...
                </callState>
@@ -124,7 +176,9 @@ module SUMMARY-XOR-2-SPEC
            </ethereum>
            ...
          </kevm>
-      requires ( notBool _USEGAS_CELL:Bool )
-      [priority(20), label(BASIC-BLOCK-9-TO-7)]
+      requires ( _USEGAS_CELL:Bool
+       andBool ( _GAS_CELL:Gas <Gas Gverylow < _SCHEDULE_CELL:Schedule >
+               ))
+      [priority(20), label(BASIC-BLOCK-17-TO-9)]
 
 endmodule

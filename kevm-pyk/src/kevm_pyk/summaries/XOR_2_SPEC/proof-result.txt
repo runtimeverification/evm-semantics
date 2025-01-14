@@ -1,4 +1,4 @@
-Proof XOR_2_SPEC Passed
+Proof XOR_2_SPEC Failed
 
 ┌─ 1 (root, init)
 │   k: #next [ XOR ] ~> _K_CELL:K
@@ -24,20 +24,55 @@ Proof XOR_2_SPEC Passed
 ┃  │   callDepth: _CALLDEPTH_CELL:Int
 ┃  │   statusCode: _STATUSCODE_CELL:StatusCode
 ┃  │
-┃  │  (9 steps)
-┃  ├─ 6
-┃  │   k: _K_CELL:K
-┃  │   pc: ( _PC_CELL:Int +Int 1 )
+┃  │  (4 steps)
+┃  ├─ 6 (split)
+┃  │   k: Gverylow < _SCHEDULE_CELL:Schedule > ~> #deductGas ~> #access [ XOR , XOR _W0:In ...
+┃  │   pc: _PC_CELL:Int
 ┃  │   callDepth: _CALLDEPTH_CELL:Int
 ┃  │   statusCode: _STATUSCODE_CELL:StatusCode
-┃  │
-┃  ┊  constraint: true
-┃  ┊  subst: ...
-┃  └─ 2 (leaf, target)
-┃      k: _K_CELL:K
-┃      pc: ?_FINAL_PC_CELL:Int
-┃      callDepth: ?_FINAL_CALLDEPTH_CELL:Int
-┃      statusCode: ?_FINAL_STATUSCODE_CELL:StatusCode
+┃  ┃
+┃  ┃ (branch)
+┃  ┣━━┓ subst: .Subst
+┃  ┃  ┃ constraint:
+┃  ┃  ┃     Gverylow < _SCHEDULE_CELL:Schedule > <=Gas _GAS_CELL:Gas
+┃  ┃  │
+┃  ┃  ├─ 7
+┃  ┃  │   k: Gverylow < _SCHEDULE_CELL:Schedule > ~> #deductGas ~> #access [ XOR , XOR _W0:In ...
+┃  ┃  │   pc: _PC_CELL:Int
+┃  ┃  │   callDepth: _CALLDEPTH_CELL:Int
+┃  ┃  │   statusCode: _STATUSCODE_CELL:StatusCode
+┃  ┃  │
+┃  ┃  │  (5 steps)
+┃  ┃  ├─ 11
+┃  ┃  │   k: _K_CELL:K
+┃  ┃  │   pc: ( _PC_CELL:Int +Int 1 )
+┃  ┃  │   callDepth: _CALLDEPTH_CELL:Int
+┃  ┃  │   statusCode: _STATUSCODE_CELL:StatusCode
+┃  ┃  │
+┃  ┃  ┊  constraint: true
+┃  ┃  ┊  subst: ...
+┃  ┃  └─ 2 (leaf, target)
+┃  ┃      k: _K_CELL:K
+┃  ┃      pc: ?_FINAL_PC_CELL:Int
+┃  ┃      callDepth: ?_FINAL_CALLDEPTH_CELL:Int
+┃  ┃      statusCode: ?_FINAL_STATUSCODE_CELL:StatusCode
+┃  ┃
+┃  ┗━━┓ subst: .Subst
+┃     ┃ constraint:
+┃     ┃     _GAS_CELL:Gas <Gas Gverylow < _SCHEDULE_CELL:Schedule >
+┃     │
+┃     ├─ 8
+┃     │   k: Gverylow < _SCHEDULE_CELL:Schedule > ~> #deductGas ~> #access [ XOR , XOR _W0:In ...
+┃     │   pc: _PC_CELL:Int
+┃     │   callDepth: _CALLDEPTH_CELL:Int
+┃     │   statusCode: _STATUSCODE_CELL:StatusCode
+┃     │
+┃     │  (5 steps)
+┃     └─ 9 (leaf, terminal)
+┃         k: #halt ~> _K_CELL:K
+┃         pc: _PC_CELL:Int
+┃         callDepth: _CALLDEPTH_CELL:Int
+┃         statusCode: EVMC_OUT_OF_GAS
 ┃
 ┗━━┓ subst: .Subst
    ┃ constraint:
@@ -50,7 +85,7 @@ Proof XOR_2_SPEC Passed
    │   statusCode: _STATUSCODE_CELL:StatusCode
    │
    │  (4 steps)
-   ├─ 7
+   ├─ 10
    │   k: _K_CELL:K
    │   pc: ( _PC_CELL:Int +Int 1 )
    │   callDepth: _CALLDEPTH_CELL:Int
@@ -80,9 +115,6 @@ Node 1:
           <wordStack>
             ( _W0:Int : ( _W1:Int : _WS:WordStack ) )
           </wordStack>
-          <gas>
-            #gas ( _GAS_CELL:Int )
-          </gas>
           ...
         </callState>
         ...
@@ -112,18 +144,6 @@ Node 3:
       ~> #pc [ XOR ]
       ~> _K_CELL:K
     </k>
-    <ethereum>
-      <evm>
-        <callState>
-          <gas>
-            #gas ( _GAS_CELL:Int )
-          </gas>
-          ...
-        </callState>
-        ...
-      </evm>
-      ...
-    </ethereum>
     ...
   </kevm>
   ...
@@ -144,18 +164,6 @@ Node 4:
     <useGas>
       _USEGAS_CELL:Bool
     </useGas>
-    <ethereum>
-      <evm>
-        <callState>
-          <gas>
-            #gas ( _GAS_CELL:Int )
-          </gas>
-          ...
-        </callState>
-        ...
-      </evm>
-      ...
-    </ethereum>
     ...
   </kevm>
   ...
@@ -177,11 +185,63 @@ Node 5:
     <useGas>
       _USEGAS_CELL:Bool
     </useGas>
+    ...
+  </kevm>
+  ...
+</generatedTop>
+#And { _USEGAS_CELL:Bool #Equals false } )
+
+
+
+Node 6:
+
+( <generatedTop>
+  <kevm>
+    <k>
+      Gverylow < _SCHEDULE_CELL:Schedule >
+      ~> #deductGas
+      ~> #access [ XOR , XOR _W0:Int _W1:Int ]
+      ~> XOR _W0:Int _W1:Int
+      ~> #pc [ XOR ]
+      ~> _K_CELL:K
+    </k>
+    <schedule>
+      _SCHEDULE_CELL:Schedule
+    </schedule>
+    <useGas>
+      true
+    </useGas>
+    ...
+  </kevm>
+  ...
+</generatedTop>
+#And { true #Equals _USEGAS_CELL:Bool } )
+
+
+
+Node 7:
+
+( <generatedTop>
+  <kevm>
+    <k>
+      Gverylow < _SCHEDULE_CELL:Schedule >
+      ~> #deductGas
+      ~> #access [ XOR , XOR _W0:Int _W1:Int ]
+      ~> XOR _W0:Int _W1:Int
+      ~> #pc [ XOR ]
+      ~> _K_CELL:K
+    </k>
+    <schedule>
+      _SCHEDULE_CELL:Schedule
+    </schedule>
+    <useGas>
+      true
+    </useGas>
     <ethereum>
       <evm>
         <callState>
           <gas>
-            #gas ( _GAS_CELL:Int )
+            _GAS_CELL:Gas
           </gas>
           ...
         </callState>
@@ -193,11 +253,119 @@ Node 5:
   </kevm>
   ...
 </generatedTop>
-#And { _USEGAS_CELL:Bool #Equals false } )
+#And ( { true #Equals _USEGAS_CELL:Bool }
+#And { true #Equals Gverylow < _SCHEDULE_CELL:Schedule > <=Gas _GAS_CELL:Gas } ) )
 
 
 
-Node 6:
+Node 8:
+
+( <generatedTop>
+  <kevm>
+    <k>
+      Gverylow < _SCHEDULE_CELL:Schedule >
+      ~> #deductGas
+      ~> #access [ XOR , XOR _W0:Int _W1:Int ]
+      ~> XOR _W0:Int _W1:Int
+      ~> #pc [ XOR ]
+      ~> _K_CELL:K
+    </k>
+    <schedule>
+      _SCHEDULE_CELL:Schedule
+    </schedule>
+    <useGas>
+      true
+    </useGas>
+    <ethereum>
+      <evm>
+        <callState>
+          <gas>
+            _GAS_CELL:Gas
+          </gas>
+          ...
+        </callState>
+        ...
+      </evm>
+      ...
+    </ethereum>
+    ...
+  </kevm>
+  ...
+</generatedTop>
+#And ( { true #Equals _USEGAS_CELL:Bool }
+#And { true #Equals _GAS_CELL:Gas <Gas Gverylow < _SCHEDULE_CELL:Schedule > } ) )
+
+
+
+Node 9:
+
+( <generatedTop>
+  <kevm>
+    <k>
+      #halt
+      ~> _K_CELL:K
+    </k>
+    <schedule>
+      _SCHEDULE_CELL:Schedule
+    </schedule>
+    <useGas>
+      true
+    </useGas>
+    <ethereum>
+      <evm>
+        <statusCode>
+          EVMC_OUT_OF_GAS
+        </statusCode>
+        <callState>
+          <gas>
+            _GAS_CELL:Gas
+          </gas>
+          ...
+        </callState>
+        ...
+      </evm>
+      ...
+    </ethereum>
+    ...
+  </kevm>
+  ...
+</generatedTop>
+#And ( { true #Equals _USEGAS_CELL:Bool }
+#And { true #Equals _GAS_CELL:Gas <Gas Gverylow < _SCHEDULE_CELL:Schedule > } ) )
+
+
+
+Node 10:
+
+( <generatedTop>
+  <kevm>
+    <useGas>
+      false
+    </useGas>
+    <ethereum>
+      <evm>
+        <callState>
+          <wordStack>
+            ( _W0:Int xorInt _W1:Int : _WS:WordStack )
+          </wordStack>
+          <pc>
+            ( _PC_CELL:Int +Int 1 )
+          </pc>
+          ...
+        </callState>
+        ...
+      </evm>
+      ...
+    </ethereum>
+    ...
+  </kevm>
+  ...
+</generatedTop>
+#And { true #Equals ( notBool _USEGAS_CELL:Bool ) } )
+
+
+
+Node 11:
 
 ( <generatedTop>
   <kevm>
@@ -217,7 +385,7 @@ Node 6:
             ( _PC_CELL:Int +Int 1 )
           </pc>
           <gas>
-            #gas ( ( _GAS_CELL:Int -Int Gverylow < _SCHEDULE_CELL:Schedule > ) )
+            _GAS_CELL:Gas -Gas Gverylow < _SCHEDULE_CELL:Schedule >
           </gas>
           ...
         </callState>
@@ -229,40 +397,8 @@ Node 6:
   </kevm>
   ...
 </generatedTop>
-#And { true #Equals _USEGAS_CELL:Bool } )
-
-
-
-Node 7:
-
-( <generatedTop>
-  <kevm>
-    <useGas>
-      false
-    </useGas>
-    <ethereum>
-      <evm>
-        <callState>
-          <wordStack>
-            ( _W0:Int xorInt _W1:Int : _WS:WordStack )
-          </wordStack>
-          <pc>
-            ( _PC_CELL:Int +Int 1 )
-          </pc>
-          <gas>
-            #gas ( _GAS_CELL:Int )
-          </gas>
-          ...
-        </callState>
-        ...
-      </evm>
-      ...
-    </ethereum>
-    ...
-  </kevm>
-  ...
-</generatedTop>
-#And { true #Equals ( notBool _USEGAS_CELL:Bool ) } )
+#And ( { true #Equals _USEGAS_CELL:Bool }
+#And { true #Equals Gverylow < _SCHEDULE_CELL:Schedule > <=Gas _GAS_CELL:Gas } ) )
 
 
 
