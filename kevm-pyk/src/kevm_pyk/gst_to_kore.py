@@ -9,7 +9,6 @@ from typing import TYPE_CHECKING
 from pyk.cli.utils import file_path
 from pyk.kore.prelude import BOOL, INT, SORT_JSON, SORT_K_ITEM, bool_dv, inj, int_dv, json_to_kore, top_cell_initializer
 from pyk.kore.syntax import App, SortApp
-from pyk.utils import single
 
 from .cli import KEVMCLIArgs
 
@@ -66,6 +65,7 @@ def filter_gst_keys(gst_data: dict) -> dict:
         test_name: {k: v for k, v in test_data.items() if k not in GST_DISCARD_KEYS}
         for test_name, test_data in gst_data.items()
     }
+
 
 def gst_to_kore(gst_data: Any, schedule: str, mode: str, chainid: int, usegas: bool) -> App:
     return kore_pgm_to_kore(json_to_kore(gst_data), SORT_JSON, schedule, mode, chainid, usegas)
