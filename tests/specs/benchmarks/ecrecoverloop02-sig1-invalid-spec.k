@@ -42,6 +42,7 @@ module ECRECOVERLOOP02-SIG1-INVALID-SPEC
           <refund> _ </refund>
           <accessedAccounts> _ => ?_ </accessedAccounts>
           <accessedStorage> _ => ?_ </accessedStorage>
+          <createdAccounts> _ => ?_ </createdAccounts>
         </substate>
         <gasPrice> _ </gasPrice>
         <origin> _ </origin> // tx.origin

@@ -29,12 +29,15 @@ sys.setrecursionlimit(10**8)
 
 TEST_DIR: Final = REPO_ROOT / 'tests/ethereum-tests'
 GOLDEN: Final = (REPO_ROOT / 'tests/templates/output-success-llvm.json').read_text().rstrip()
+TEST_FILES_WITH_CID_0: Final = (REPO_ROOT / 'tests/bchain.0.chainId').read_text().splitlines()
 
 
-def _test(gst_file: Path, schedule: str, mode: str, chainid: int, usegas: bool) -> None:
+def _test(gst_file: Path, schedule: str, mode: str, usegas: bool) -> None:
     skipped_gst_tests = SKIPPED_TESTS.get(gst_file, [])
     if '*' in skipped_gst_tests:
         pytest.skip()
+
+    chainid = 0 if str(gst_file.relative_to(TEST_DIR)) in TEST_FILES_WITH_CID_0 else 1
 
     with gst_file.open() as f:
         gst_data = json.load(f)
@@ -91,7 +94,7 @@ SKIPPED_VM_TESTS: Final = tuple(test_file for test_file in VM_TESTS if test_file
     ids=[str(test_file.relative_to(VM_TEST_DIR)) for test_file in VM_TESTS],
 )
 def test_vm(test_file: Path) -> None:
-    _test(test_file, 'DEFAULT', 'VMTESTS', 1, True)
+    _test(test_file, 'DEFAULT', 'VMTESTS', True)
 
 
 @pytest.mark.skip(reason='failing / slow VM tests')
@@ -101,7 +104,7 @@ def test_vm(test_file: Path) -> None:
     ids=[str(test_file.relative_to(VM_TEST_DIR)) for test_file in SKIPPED_VM_TESTS],
 )
 def test_rest_vm(test_file: Path) -> None:
-    _test(test_file, 'DEFAULT', 'VMTESTS', 1, True)
+    _test(test_file, 'DEFAULT', 'VMTESTS', True)
 
 
 ALL_TEST_DIR: Final = TEST_DIR / 'BlockchainTests/GeneralStateTests'
@@ -116,7 +119,7 @@ SKIPPED_BCHAIN_TESTS: Final = tuple(test_file for test_file in BCHAIN_TESTS if t
     ids=[str(test_file.relative_to(ALL_TEST_DIR)) for test_file in BCHAIN_TESTS],
 )
 def test_bchain(test_file: Path) -> None:
-    _test(test_file, 'CANCUN', 'NORMAL', 1, True)
+    _test(test_file, 'CANCUN', 'NORMAL', True)
 
 
 @pytest.mark.skip(reason='failing / slow blockchain tests')
@@ -126,4 +129,4 @@ def test_bchain(test_file: Path) -> None:
     ids=[str(test_file.relative_to(ALL_TEST_DIR)) for test_file in SKIPPED_BCHAIN_TESTS],
 )
 def test_rest_bchain(test_file: Path) -> None:
-    _test(test_file, 'CANCUN', 'NORMAL', 1, True)
+    _test(test_file, 'CANCUN', 'NORMAL', True)
