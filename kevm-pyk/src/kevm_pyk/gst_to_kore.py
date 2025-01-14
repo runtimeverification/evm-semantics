@@ -28,6 +28,67 @@ SORT_SCHEDULE: Final = SortApp('SortSchedule')
 SORT_MODE: Final = SortApp('SortMode')
 SORT_ETHEREUM_SIMULATION: Final = SortApp('SortEthereumSimulation')
 
+_GST_DISCARD_KEYS: Final = frozenset(
+    [
+        '//',
+        '_info',
+        'callcreates',
+        'sealEngine',
+        'transactionSequence',
+        'chainname',
+        'expectException',
+        'lastblockhash',
+    ]
+)
+_GST_LOAD_KEYS: Final = frozenset(
+    [
+        'env',
+        'pre',
+        'rlp',
+        'network',
+        'genesisRLP',
+    ]
+)
+_GST_EXEC_KEYS: Final = frozenset(
+    [
+        'exec',
+        'blocks',
+    ]
+)
+_GST_POST_KEYS: Final = frozenset(
+    [
+        'post',
+        'postState',
+        'postStateHash',
+    ]
+)
+_GST_ALL_POST_KEYS: Final = _GST_POST_KEYS.union(['expect', 'export'])
+_GST_CHECK_KEYS: Final = _GST_ALL_POST_KEYS.union(
+    [
+        'logs',
+        'out',
+        'gas',
+        'blockHeader',
+        'transactions',
+        'uncleHeaders',
+        'genesisBlockHeader',
+        'withdrawals',
+        'blocknumber',
+    ]
+)
+
+
+def filter_gst_keys(gst_data: dict) -> dict:
+    """Filters the discarded keys out of a single GeneralStateTest.
+
+    :param gst_data: A single test from a GST file structured as {"test_name": {test_fields}, ... }.
+    :returns: The gst_data object after filtering out _GST_DISCARD_KEYS.
+    """
+    return {
+        test_name: {k: v for k, v in test_data.items() if k not in _GST_DISCARD_KEYS}
+        for test_name, test_data in gst_data.items()
+    }
+
 
 def gst_to_kore(gst_data: Any, schedule: str, mode: str, chainid: int, usegas: bool) -> App:
     return kore_pgm_to_kore(json_to_kore(gst_data), SORT_JSON, schedule, mode, chainid, usegas)

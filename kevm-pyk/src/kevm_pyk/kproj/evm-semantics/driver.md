@@ -254,7 +254,7 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
  // -------------------------------------
     rule <k> run { .JSONs } => .K ... </k>
     rule <k> run { TESTID : { TEST:JSONs } , TESTS }
-          => run ( TESTID : { qsortJSONs(TEST) } )
+          => run ( TESTID : { TEST } )
           ~> #if #hasPost?( { TEST } ) #then .K #else exception #fi
           ~> clear
           ~> run { TESTS }
@@ -298,7 +298,6 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
 
     rule <k> process  TESTID : { KEY : VAL , REST } => load KEY : VAL ~> process TESTID : { REST }             ... </k> requires KEY in #loadKeys
     rule <k> process  TESTID : { KEY : VAL , REST } => process TESTID : { REST } ~> check TESTID : {KEY : VAL} ... </k> requires KEY in #checkKeys
-    rule <k> process _TESTID : { KEY : _   , REST   => REST }                                                  ... </k> requires KEY in #discardKeys
     rule <k> process _TESTID : { .JSONs }           => #startBlock ~> startTx ... </k>
 
     rule <k> run _TESTID : { "exec" : (EXEC:JSON) } => loadCallState EXEC ~> start ~> flush ... </k>
@@ -337,16 +336,6 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
 
     rule <k> run TESTID : { KEY : (VAL:JSON) , REST } => run TESTID : { REST } ~> check TESTID : { "post" : VAL } ... </k> requires KEY in #allPostKeys
     rule <k> run TESTID : { KEY : (VAL:JSON) , REST } => run TESTID : { REST } ~> check TESTID : { KEY    : VAL } ... </k> requires KEY in #checkKeys andBool notBool KEY in #allPostKeys
-```
-
--   `#discardKeys` are all the JSON nodes in the tests which should just be ignored.
-
-```k
-    syntax Set ::= "#discardKeys" [function]
- // ----------------------------------------
-    rule #discardKeys => ( SetItem("//") SetItem("_info") SetItem("callcreates") SetItem("sealEngine") SetItem("transactionSequence") SetItem("chainname") SetItem("expectException") SetItem("lastblockhash"))
-
-    rule <k> run TESTID : { KEY : _ , REST } => run TESTID : { REST } ... </k> requires KEY in #discardKeys
 ```
 
 -   `driver.md` specific handling of state-utils commands
