@@ -29,8 +29,8 @@ module SCHEDULE
                           | "Ghassstorestipend"       | "Ghaschainid"      | "Ghasaccesslist"      | "Ghasbasefee"
                           | "Ghasrejectedfirstbyte"   | "Ghasprevrandao"   | "Ghasmaxinitcodesize" | "Ghaspushzero"
                           | "Ghaswarmcoinbase"        | "Ghaswithdrawals"  | "Ghastransient"       | "Ghasmcopy"
-                          | "Ghasbeaconroot"
- // ----------------------------------------
+                          | "Ghasbeaconroot"          | "Ghaseip6780"
+ // -----------------------------------------------------------------
 ```
 
 ### Schedule Constants
@@ -151,6 +151,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghastransient           << DEFAULT >> => false
     rule Ghasmcopy               << DEFAULT >> => false
     rule Ghasbeaconroot          << DEFAULT >> => false
+    rule Ghaseip6780             << DEFAULT >> => false
 ```
 
 ### Frontier Schedule
@@ -394,10 +395,12 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghastransient  << CANCUN >> => true
     rule Ghasmcopy      << CANCUN >> => true
     rule Ghasbeaconroot << CANCUN >> => true
+    rule Ghaseip6780    << CANCUN >> => true
     rule SCHEDFLAG     << CANCUN >> => SCHEDFLAG << SHANGHAI >>
       requires notBool ( SCHEDFLAG ==K Ghastransient
                   orBool SCHEDFLAG ==K Ghasmcopy
                   orBool SCHEDFLAG ==K Ghasbeaconroot
+                  orBool SCHEDFLAG ==K Ghaseip6780
                        )
 ```
 ```k

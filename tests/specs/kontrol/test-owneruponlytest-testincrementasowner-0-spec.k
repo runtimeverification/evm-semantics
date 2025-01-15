@@ -137,6 +137,7 @@ module TEST-OWNERUPONLYTEST-TESTINCREMENTASOWNER-0-SPEC
                    <accessedStorage>
                      .Map
                    </accessedStorage>
+                   <createdAccounts> ?CREATEDACCOUNTS_CELL:Set </createdAccounts>
                  </substate> } ) )
                </interimStates>
                <touchedAccounts>
@@ -204,6 +205,7 @@ module TEST-OWNERUPONLYTEST-TESTINCREMENTASOWNER-0-SPEC
                  <accessedStorage>
                    .Map
                  </accessedStorage>
+                 <createdAccounts>_ => ?_ </createdAccounts>
                </substate>
                <origin>
                  ORIGIN_ID:Int
@@ -330,7 +332,7 @@ module TEST-OWNERUPONLYTEST-TESTINCREMENTASOWNER-0-SPEC
              ~> #call 728815563385977040452943777879061427756277306518 491460923342184218035706888008750043977755113263 491460923342184218035706888008750043977755113263 0 0 b"\xd0\x9d\xe0\x8a" false => #end EVMC_SUCCESS
              ~> #pc [ STOP ]
              ~> #execute )
-             ~> #return 160 0
+            ~> #return 160 0
              ~> #pc [ CALL ]
              ~> #execute
              ~> _CONTINUATION
@@ -486,6 +488,7 @@ module TEST-OWNERUPONLYTEST-TESTINCREMENTASOWNER-0-SPEC
                      ( ( 491460923342184218035706888008750043977755113263 |-> SetItem ( 0 ) )
                      ( 728815563385977040452943777879061427756277306518 |-> SetItem ( 27 ) ) )
                    </accessedStorage>
+                   <createdAccounts> ?CREATEDACCOUNTS_CELL:Set </createdAccounts>
                  </substate> } ) )
                </interimStates>
                <touchedAccounts>
@@ -554,6 +557,7 @@ module TEST-OWNERUPONLYTEST-TESTINCREMENTASOWNER-0-SPEC
                    ( ( 491460923342184218035706888008750043977755113263 |-> SetItem ( 0 ) )
                    ( 728815563385977040452943777879061427756277306518 |-> SetItem ( 27 ) ) )
                  </accessedStorage>
+                 <createdAccounts> _ => ?_ </createdAccounts>
                </substate>
                ...
              </evm>

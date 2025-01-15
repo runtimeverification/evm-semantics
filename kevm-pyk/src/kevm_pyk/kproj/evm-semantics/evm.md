@@ -82,6 +82,7 @@ In the comments next to each cell, we've marked which component of the YellowPap
               <refund>           0     </refund>                  // A_r
               <accessedAccounts> .Set  </accessedAccounts>
               <accessedStorage>  .Map  </accessedStorage>
+              <createdAccounts>  .Set  </createdAccounts>
             </substate>
 
             // Immutable during a single transaction
@@ -479,7 +480,7 @@ Here we load the correct number of arguments from the `wordStack` based on the s
     rule <k> #exec [ SO:StackOp ] => #gas [ SO , SO WS ] ~> SO WS ... </k> <wordStack> WS </wordStack>
 ```
 
-The `CallOp` opcodes all interperet their second argument as an address.
+The `CallOp` opcodes all interpret their second argument as an address.
 
 ```k
     syntax InternalOp ::= CallSixOp Int Int     Int Int Int Int
@@ -598,9 +599,10 @@ After executing a transaction, it's necessary to have the effect of the substate
     rule <k> #finalizeTx(true) => #finalizeStorage(Set2List(SetItem(MINER) |Set ACCTS)) ... </k>
          <selfDestruct> .Set </selfDestruct>
          <coinbase> MINER </coinbase>
-         <touchedAccounts> ACCTS </touchedAccounts>
+         <touchedAccounts> ACCTS => .Set </touchedAccounts>
          <accessedAccounts> _ => .Set </accessedAccounts>
          <accessedStorage> _ => .Map </accessedStorage>
+         <createdAccounts> _ => .Set </createdAccounts>
 
     rule <k> #finalizeTx(false) ... </k>
          <useGas> true </useGas>
@@ -1120,7 +1122,8 @@ The `JUMP*` family of operations affect the current program counter.
 
     syntax UnStackOp ::= "JUMP"
  // ---------------------------
-    rule <k> JUMP DEST => #endBasicBlock ... </k>
+    rule [jump]:
+         <k> JUMP DEST => #endBasicBlock ... </k>
          <pc> _ => DEST </pc>
          <jumpDests> DESTS </jumpDests>
       requires DEST <Int lengthBytes(DESTS) andBool DESTS[DEST] ==Int 1
@@ -1661,6 +1664,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
            <nonce> NONCE => #if Gemptyisnonexistent << SCHED >> #then NONCE +Int 1 #else NONCE #fi </nonce>
            ...
          </account>
+         <createdAccounts> ACCTS => ACCTS |Set SetItem(ACCTTO) </createdAccounts>
 
     rule <k> #incrementNonce ACCT => .K ... </k>
          <account>
@@ -1792,6 +1796,7 @@ Self destructing to yourself, unlike a regular transfer, destroys the balance in
     syntax UnStackOp ::= "SELFDESTRUCT"
  // -----------------------------------
     rule <k> SELFDESTRUCT ACCTTO => #touchAccounts ACCT ACCTTO ~> #accessAccounts ACCTTO ~> #transferFunds ACCT ACCTTO BALFROM ~> #end EVMC_SUCCESS ... </k>
+         <schedule> SCHED </schedule>
          <id> ACCT </id>
          <selfDestruct> SDS => SDS |Set SetItem(ACCT) </selfDestruct>
          <account>
@@ -1800,9 +1805,12 @@ Self destructing to yourself, unlike a regular transfer, destroys the balance in
            ...
          </account>
          <output> _ => .Bytes </output>
-      requires ACCT =/=Int ACCTTO
+         <createdAccounts> CA </createdAccounts>
+      requires ((notBool Ghaseip6780 << SCHED >>) orBool ACCT in CA)
+       andBool ACCT =/=Int ACCTTO
 
     rule <k> SELFDESTRUCT ACCT => #touchAccounts ACCT ~> #accessAccounts ACCT ~> #end EVMC_SUCCESS ... </k>
+         <schedule> SCHED </schedule>
          <id> ACCT </id>
          <selfDestruct> SDS => SDS |Set SetItem(ACCT) </selfDestruct>
          <account>
@@ -1811,6 +1819,28 @@ Self destructing to yourself, unlike a regular transfer, destroys the balance in
            ...
          </account>
          <output> _ => .Bytes </output>
+         <createdAccounts> CA </createdAccounts>
+      requires ((notBool Ghaseip6780 << SCHED >>) orBool ACCT in CA)
+
+    rule <k> SELFDESTRUCT ACCTTO => #touchAccounts ACCT ACCTTO ~> #accessAccounts ACCTTO ~> #transferFunds ACCT ACCTTO BALFROM ~> #end EVMC_SUCCESS ... </k>
+         <schedule> SCHED </schedule>
+         <id> ACCT </id>
+         <account>
+           <acctID> ACCT </acctID>
+           <balance> BALFROM </balance>
+           ...
+         </account>
+         <output> _ => .Bytes </output>
+         <createdAccounts> CA </createdAccounts>
+      requires Ghaseip6780 << SCHED >> andBool (notBool ACCT in CA)
+       andBool ACCT =/=Int ACCTTO
+
+    rule <k> SELFDESTRUCT ACCT => #touchAccounts ACCT ~> #accessAccounts ACCT ~> #end EVMC_SUCCESS ... </k>
+         <schedule> SCHED </schedule>
+         <id> ACCT </id>
+         <output> _ => .Bytes </output>
+         <createdAccounts> CA </createdAccounts>
+      requires Ghaseip6780 << SCHED >> andBool (notBool ACCT in CA)
 ```
 
 Precompiled Contracts
@@ -1862,9 +1892,14 @@ Precompiled Contracts
 ```
 
 -   `ECREC` performs ECDSA public key recovery.
--   `SHA256` performs the SHA2-257 hash function.
+-   `SHA256` performs the SHA2-256 hash function.
 -   `RIP160` performs the RIPEMD-160 hash function.
 -   `ID` is the identity function (copies input to output).
+-   `MODEXP` performs arbitrary-precision modular exponentiation.
+-   `ECADD`  performs point addition on the elliptic curve alt_bn128.
+-   `ECMUL` performs scalar multiplication on the elliptic curve alt_bn128.
+-   `ECPAIRING` performs an optimal ate pairing check on the elliptic curve alt_bn128.
+-   `BLAKE2F` performs the compression function F used in the BLAKE2 hashing algorithm.
 
 ```k
     syntax PrecompiledOp ::= "ECREC"
@@ -2388,13 +2423,13 @@ EVM Program Representations
 
 EVM programs are represented algebraically in K, but programs can load and manipulate program data directly.
 The opcodes `CODECOPY` and `EXTCODECOPY` rely on the assembled form of the programs being present.
-The opcode `CREATE` relies on being able to interperet EVM data as a program.
+The opcode `CREATE` relies on being able to interpret EVM data as a program.
 
 This is a program representation dependence, which we might want to avoid.
 Perhaps the only program representation dependence we should have is the hash of the program; doing so achieves:
 
--   Program representation independence (different analysis tools on the language don't have to ensure they have a common representation of programs, just a common interperetation of the data-files holding programs).
--   Programming language independence (we wouldn't even have to commit to a particular language or interperetation of the data-file).
+-   Program representation independence (different analysis tools on the language don't have to ensure they have a common representation of programs, just a common interpretation of the data-files holding programs).
+-   Programming language independence (we wouldn't even have to commit to a particular language or interpretation of the data-file).
 -   Only depending on the hash allows us to know that we have *exactly* the correct data-file (program), and nothing more.
 
 Disassembler
@@ -2402,7 +2437,7 @@ Disassembler
 
 After interpreting the strings representing programs as a `WordStack`, it should be changed into an `OpCodes` for use by the EVM semantics.
 
--   `#dasmOpCode` interperets a `Int` as an `OpCode`.
+-   `#dasmOpCode` interprets a `Int` as an `OpCode`.
 
 ```k
     syntax OpCode ::= #dasmOpCode ( Int , Schedule ) [symbol(#dasmOpCode), function, memo, total]

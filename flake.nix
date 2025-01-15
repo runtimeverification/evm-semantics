@@ -2,23 +2,21 @@
   description = "A flake for the KEVM Semantics";
 
   inputs = {
-    k-framework.url = "github:runtimeverification/k/v7.1.120";
+    k-framework.url = "github:runtimeverification/k/v7.1.196";
     nixpkgs.follows = "k-framework/nixpkgs";
     flake-utils.follows = "k-framework/flake-utils";
     rv-utils.follows = "k-framework/rv-utils";
-    pyk.url = "github:runtimeverification/k/v7.1.120?dir=pyk";
-    nixpkgs-pyk.follows = "pyk/nixpkgs";
-    poetry2nix.follows = "pyk/poetry2nix";
+    poetry2nix.follows = "k-framework/poetry2nix";
     blockchain-k-plugin = {
       url =
-        "github:runtimeverification/blockchain-k-plugin/44d875a9a36b14529c0bf40e7f36dc4f23429153";
+        "github:runtimeverification/blockchain-k-plugin/c9264b240c00d1f6cc20e22aac83c94d1a499138";
       inputs.flake-utils.follows = "k-framework/flake-utils";
       inputs.nixpkgs.follows = "k-framework/nixpkgs";
     };
     haskell-backend.follows = "k-framework/haskell-backend";
   };
   outputs = { self, k-framework, haskell-backend, nixpkgs, flake-utils
-    , blockchain-k-plugin, rv-utils, pyk, ... }@inputs:
+    , blockchain-k-plugin, rv-utils, ... }@inputs:
     let
       nixLibs = pkgs:
         with pkgs;
@@ -26,7 +24,7 @@
       buildInputs = pkgs:
         with pkgs;
         [
-          k-framework.packages.${pkgs.system}.k
+          k
           llvm-backend
           autoconf
           automake
@@ -38,21 +36,16 @@
           mpfr
           openssl.dev
           pkg-config
-          python310-pyk
+          python310
           time
           secp256k1
         ] ++ lib.optional (!stdenv.isDarwin) elfutils;
 
       overlay = final: prev:
         let
-          nixpkgs-pyk = import inputs.nixpkgs-pyk {
-            system = prev.system;
-            overlays = [ pyk.overlay ];
-          };
           poetry2nix =
-            inputs.poetry2nix.lib.mkPoetry2Nix { pkgs = nixpkgs-pyk; };
+            inputs.poetry2nix.lib.mkPoetry2Nix { pkgs = prev; };
         in {
-          python310-pyk = nixpkgs-pyk.python310;
           kevm = prev.stdenv.mkDerivation {
             pname = "kevm";
             version = self.rev or "dirty";
@@ -132,27 +125,18 @@
           };
 
           kevm-pyk = poetry2nix.mkPoetryApplication {
-            python = nixpkgs-pyk.python310;
+            python = prev.python310;
             projectDir = ./kevm-pyk;
             overrides = poetry2nix.overrides.withDefaults
               (finalPython: prevPython: {
-                kframework = nixpkgs-pyk.pyk-python310;
-                pygments = prevPython.pygments.overridePythonAttrs (old: {
-                  buildInputs = (old.buildInputs or [ ])
-                    ++ [ prevPython.hatchling ];
-                });
-                xdg-base-dirs = prevPython.xdg-base-dirs.overridePythonAttrs
-                  (old: {
-                    propagatedBuildInputs = (old.propagatedBuildInputs or [ ])
-                      ++ [ finalPython.poetry ];
-                  });
+                kframework = prev.pyk-python310;
               });
             groups = [ ];
             # We remove `"dev"` from `checkGroups`, so that poetry2nix does not try to resolve dev dependencies.
             checkGroups = [ ];
             postInstall = ''
-              mkdir -p $out/${nixpkgs-pyk.python310.sitePackages}/kevm_pyk/kproj/plugin
-              cp -r ${prev.blockchain-k-plugin-src}/* $out/${nixpkgs-pyk.python310.sitePackages}/kevm_pyk/kproj/plugin/
+              mkdir -p $out/${prev.python310.sitePackages}/kevm_pyk/kproj/plugin
+              cp -r ${prev.blockchain-k-plugin-src}/* $out/${prev.python310.sitePackages}/kevm_pyk/kproj/plugin/
             '';
           };
 

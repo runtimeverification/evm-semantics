@@ -38,6 +38,7 @@ module DSVALUE-READ-PASS-SPEC
             <refund> _Vrefund => ?_ </refund>
             <accessedAccounts> _ => ?_ </accessedAccounts>
             <accessedStorage> _ => ?_ </accessedStorage>
+            <createdAccounts> _ => ?_ </createdAccounts>
           </substate>
           <gasPrice> _ </gasPrice>
           <origin> ORIGIN_ID </origin>

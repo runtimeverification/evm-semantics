@@ -30,7 +30,7 @@ if TYPE_CHECKING:
     from collections.abc import Callable, Collection, Iterable, Iterator
     from typing import Final, TypeVar
 
-    from pyk.kast.outer import KClaim, KDefinition
+    from pyk.kast.outer import KClaim, KDefinition, KFlatModule
     from pyk.kcfg import KCFG
     from pyk.kcfg.semantics import KCFGSemantics
     from pyk.kore.rpc import FallbackReason
@@ -114,6 +114,8 @@ def run_prover(
     task_id: TaskID | None = None,
     maintenance_rate: int = 1,
     assume_defined: bool = False,
+    extra_module: KFlatModule | None = None,
+    optimize_kcfg: bool = False,
 ) -> bool:
     prover: APRProver | ImpliesProver
     try:
@@ -129,6 +131,8 @@ def run_prover(
                     fast_check_subsumption=fast_check_subsumption,
                     direct_subproof_rules=direct_subproof_rules,
                     assume_defined=assume_defined,
+                    extra_module=extra_module,
+                    optimize_kcfg=optimize_kcfg,
                 )
 
             def update_status_bar(_proof: Proof) -> None:

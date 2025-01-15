@@ -14,6 +14,7 @@ from functools import cached_property
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from filelock import SoftFileLock
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli.pyk import parse_toml_args
 from pyk.cterm import CTermSymbolic
@@ -33,7 +34,7 @@ from pyk.utils import FrozenDict, hash_str, single
 
 from . import VERSION, config
 from .cli import _create_argument_parser, generate_options, get_argument_type_setter, get_option_string_destination
-from .gst_to_kore import SORT_ETHEREUM_SIMULATION, gst_to_kore, kore_pgm_to_kore
+from .gst_to_kore import SORT_ETHEREUM_SIMULATION, filter_gst_keys, gst_to_kore, kore_pgm_to_kore
 from .kevm import KEVM, KEVMSemantics, kevm_node_printer
 from .kompile import KompileTarget, kevm_kompile
 from .utils import (
@@ -171,28 +172,29 @@ class KClaimJob:
         return hash_str(f'{claim_hash}{deps_digest}')
 
     def up_to_date(self, digest_file: Path | None) -> bool:
-        if not isinstance(digest_file, Path) or not digest_file.exists():
-            return False
-        digest_dict = json.loads(digest_file.read_text())
-        if 'claims' not in digest_dict:
-            digest_dict['claims'] = {}
-            digest_file.write_text(json.dumps(digest_dict, indent=4))
-        if self.claim.label not in digest_dict['claims']:
-            return False
-        return digest_dict['claims'][self.claim.label] == self.digest
+        with SoftFileLock(f'{digest_file}.lock'):
+            if not isinstance(digest_file, Path) or not digest_file.exists():
+                return False
+            digest_dict = json.loads(digest_file.read_text())
+            if 'claims' not in digest_dict:
+                return False
+            if self.claim.label not in digest_dict['claims']:
+                return False
+            return digest_dict['claims'][self.claim.label] == self.digest
 
     def update_digest(self, digest_file: Path | None) -> None:
         if digest_file is None:
             return
         digest_dict = {}
-        if digest_file.exists():
-            digest_dict = json.loads(digest_file.read_text())
-        if 'claims' not in digest_dict:
-            digest_dict['claims'] = {}
-        digest_dict['claims'][self.claim.label] = self.digest
-        digest_file.write_text(json.dumps(digest_dict, indent=4))
+        with SoftFileLock(f'{digest_file}.lock'):
+            if digest_file.exists():
+                digest_dict = json.loads(digest_file.read_text())
+            if 'claims' not in digest_dict:
+                digest_dict['claims'] = {}
+            digest_dict['claims'][self.claim.label] = self.digest
+            digest_file.write_text(json.dumps(digest_dict, indent=4))
 
-        _LOGGER.info(f'Updated claim {self.claim.label} in digest file: {digest_file}')
+            _LOGGER.info(f'Updated claim {self.claim.label} in digest file: {digest_file}')
 
 
 def init_claim_jobs(spec_module_name: str, claims: list[KClaim]) -> frozenset[KClaimJob]:
@@ -350,6 +352,7 @@ def exec_prove(options: ProveOptions) -> None:
                 max_iterations=options.max_iterations,
                 cut_point_rules=KEVMSemantics.cut_point_rules(
                     options.break_on_jumpi,
+                    options.break_on_jump,
                     options.break_on_calls,
                     options.break_on_storage,
                     options.break_on_basic_blocks,
@@ -362,6 +365,7 @@ def exec_prove(options: ProveOptions) -> None:
                 max_frontier_parallel=options.max_frontier_parallel,
                 force_sequential=options.force_sequential,
                 assume_defined=options.assume_defined,
+                optimize_kcfg=options.optimize_kcfg,
             )
             end_time = time.time()
             _LOGGER.info(f'Proof timing {proof_problem.id}: {end_time - start_time}s')
@@ -587,7 +591,8 @@ def exec_run(options: RunOptions) -> None:
 
     try:
         json_read = json.loads(options.input_file.read_text())
-        kore_pattern = gst_to_kore(json_read, options.schedule, options.mode, options.chainid, options.usegas)
+        gst_data = filter_gst_keys(json_read)
+        kore_pattern = gst_to_kore(gst_data, options.schedule, options.mode, options.chainid, options.usegas)
     except json.JSONDecodeError:
         pgm_token = KToken(options.input_file.read_text(), KSort('EthereumSimulation'))
         kast_pgm = kevm.parse_token(pgm_token)
