@@ -34,7 +34,7 @@ FAILING_TESTS_FILE: Final = REPO_ROOT / 'tests/failing.llvm'
 SLOW_TESTS_FILE: Final = REPO_ROOT / 'tests/slow.llvm'
 
 
-def _test(gst_file: Path, schedule: str, mode: str, usegas: bool, save_failing: bool = False) -> None:
+def _test(gst_file: Path, *, schedule: str, mode: str, usegas: bool, save_failing: bool) -> None:
     skipped_gst_tests = SKIPPED_TESTS.get(gst_file, [])
     if '*' in skipped_gst_tests:
         pytest.skip()
@@ -54,20 +54,21 @@ def _test(gst_file: Path, schedule: str, mode: str, usegas: bool, save_failing: 
 
         try:
             _assert_exit_code_zero(res)
-        except AssertionError as _exception:
+        except AssertionError:
             if not save_failing:
-                raise _exception
+                raise
             failing_tests.append(test_name)
 
-    if failing_tests:
-        if save_failing:
-            with FAILING_TESTS_FILE.open('a') as ff:
-                if len(failing_tests) == len(gst_data):
-                    ff.write(f'{gst_file_relative_path},*\n')
-                else:
-                    for test_name in failing_tests:
-                        ff.write(f'{gst_file_relative_path},{test_name}\n')
-        raise AssertionError()
+    if not failing_tests:
+        return
+    if save_failing:
+        with FAILING_TESTS_FILE.open('a') as ff:
+            if len(failing_tests) == len(gst_data):
+                ff.write(f'{gst_file_relative_path},*\n')
+            else:
+                for test_name in sorted(failing_tests):
+                    ff.write(f'{gst_file_relative_path},{test_name}\n')
+    raise AssertionError(f'Found failing tests in GST file {gst_file_relative_path}: {failing_tests}')
 
 
 def _assert_exit_code_zero(pattern: Pattern) -> None:
@@ -114,7 +115,7 @@ SKIPPED_VM_TESTS: Final = tuple(test_file for test_file in VM_TESTS if test_file
     ids=[str(test_file.relative_to(VM_TEST_DIR)) for test_file in VM_TESTS],
 )
 def test_vm(test_file: Path, save_failing: bool) -> None:
-    _test(test_file, 'DEFAULT', 'VMTESTS', True, save_failing)
+    _test(test_file, schedule='DEFAULT', mode='VMTESTS', usegas=True, save_failing=save_failing)
 
 
 @pytest.mark.skip(reason='failing / slow VM tests')
@@ -124,7 +125,7 @@ def test_vm(test_file: Path, save_failing: bool) -> None:
     ids=[str(test_file.relative_to(VM_TEST_DIR)) for test_file in SKIPPED_VM_TESTS],
 )
 def test_rest_vm(test_file: Path, save_failing: bool) -> None:
-    _test(test_file, 'DEFAULT', 'VMTESTS', True, save_failing)
+    _test(test_file, schedule='DEFAULT', mode='VMTESTS', usegas=True, save_failing=save_failing)
 
 
 ALL_TEST_DIR: Final = TEST_DIR / 'BlockchainTests/GeneralStateTests'
@@ -139,7 +140,7 @@ SKIPPED_BCHAIN_TESTS: Final = tuple(test_file for test_file in BCHAIN_TESTS if t
     ids=[str(test_file.relative_to(ALL_TEST_DIR)) for test_file in BCHAIN_TESTS],
 )
 def test_bchain(test_file: Path, save_failing: bool) -> None:
-    _test(test_file, 'CANCUN', 'NORMAL', True, save_failing)
+    _test(test_file, schedule='CANCUN', mode='NORMAL', usegas=True, save_failing=save_failing)
 
 
 @pytest.mark.skip(reason='failing / slow blockchain tests')
@@ -149,4 +150,4 @@ def test_bchain(test_file: Path, save_failing: bool) -> None:
     ids=[str(test_file.relative_to(ALL_TEST_DIR)) for test_file in SKIPPED_BCHAIN_TESTS],
 )
 def test_rest_bchain(test_file: Path, save_failing: bool) -> None:
-    _test(test_file, 'CANCUN', 'NORMAL', True, save_failing)
+    _test(test_file, schedule='CANCUN', mode='NORMAL', usegas=True, save_failing=save_failing)
