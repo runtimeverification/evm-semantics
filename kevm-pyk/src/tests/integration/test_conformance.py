@@ -40,8 +40,8 @@ def _test(gst_file: Path, schedule: str, mode: str, usegas: bool, save_failing: 
         pytest.skip()
 
     failing_tests: list[str] = []
-    gst_file_relative_path: Final[Path] = gst_file.relative_to(TEST_DIR)
-    chainid = 0 if str(gst_file_relative_path) in TEST_FILES_WITH_CID_0 else 1
+    gst_file_relative_path: Final[str] = str(gst_file.relative_to(TEST_DIR))
+    chainid = 0 if gst_file_relative_path in TEST_FILES_WITH_CID_0 else 1
 
     with gst_file.open() as f:
         gst_data = json.load(f)
@@ -61,13 +61,12 @@ def _test(gst_file: Path, schedule: str, mode: str, usegas: bool, save_failing: 
 
     if failing_tests:
         if save_failing:
-            rel_path = gst_file.relative_to(TEST_DIR)
             with FAILING_TESTS_FILE.open('a') as ff:
                 if len(failing_tests) == len(gst_data):
-                    ff.write(f'{rel_path},*\n')
+                    ff.write(f'{gst_file_relative_path},*\n')
                 else:
                     for test_name in failing_tests:
-                        ff.write(f'{rel_path},{test_name}\n')
+                        ff.write(f'{gst_file_relative_path},{test_name}\n')
         raise AssertionError()
 
 
