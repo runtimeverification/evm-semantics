@@ -293,6 +293,8 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
 
     syntax EthereumCommand ::= "process" JSON
  // -----------------------------------------
+    rule <k> process _TESTID : { "expectException" : _ , _REST } => .K ... </k>
+
     rule <k> process _TESTID : { "rlp_decoded" : { KEY : VAL , REST1 => REST1 }, (REST2 => KEY : VAL , REST2 ) } ... </k>
     rule <k> process _TESTID : { "rlp_decoded" : { .JSONs } , REST => REST}                                      ... </k>
 
