@@ -11,6 +11,12 @@ if TYPE_CHECKING:
 
 def pytest_addoption(parser: Parser) -> None:
     parser.addoption(
+        '--save-failing',
+        action='store_true',
+        default=False,
+        help='Save failing tests to the failing.llvm file',
+    )
+    parser.addoption(
         '--update-expected-output',
         action='store_true',
         default=False,
@@ -45,6 +51,11 @@ def pytest_addoption(parser: Parser) -> None:
         action='store_true',
         help='Use sequential, single-threaded proof loop.',
     )
+
+
+@pytest.fixture
+def save_failing(request: FixtureRequest) -> bool:
+    return request.config.getoption('--save-failing')
 
 
 @pytest.fixture

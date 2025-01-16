@@ -30,14 +30,18 @@ sys.setrecursionlimit(10**8)
 TEST_DIR: Final = REPO_ROOT / 'tests/ethereum-tests'
 GOLDEN: Final = (REPO_ROOT / 'tests/templates/output-success-llvm.json').read_text().rstrip()
 TEST_FILES_WITH_CID_0: Final = (REPO_ROOT / 'tests/bchain.0.chainId').read_text().splitlines()
+FAILING_TESTS_FILE: Final = REPO_ROOT / 'tests/failing.llvm'
+SLOW_TESTS_FILE: Final = REPO_ROOT / 'tests/slow.llvm'
 
 
-def _test(gst_file: Path, schedule: str, mode: str, usegas: bool) -> None:
+def _test(gst_file: Path, schedule: str, mode: str, usegas: bool, save_failing: bool = False) -> None:
     skipped_gst_tests = SKIPPED_TESTS.get(gst_file, [])
     if '*' in skipped_gst_tests:
         pytest.skip()
 
-    chainid = 0 if str(gst_file.relative_to(TEST_DIR)) in TEST_FILES_WITH_CID_0 else 1
+    failing_tests: list[str] = []
+    gst_file_relative_path: Final[Path] = gst_file.relative_to(TEST_DIR)
+    chainid = 0 if str(gst_file_relative_path) in TEST_FILES_WITH_CID_0 else 1
 
     with gst_file.open() as f:
         gst_data = json.load(f)
@@ -47,7 +51,22 @@ def _test(gst_file: Path, schedule: str, mode: str, usegas: bool) -> None:
         if test_name in skipped_gst_tests:
             continue
         res = interpret({test_name: test}, schedule, mode, chainid, usegas, check=False)
-        _assert_exit_code_zero(res)
+
+        try:
+            _assert_exit_code_zero(res)
+        except AssertionError:
+            failing_tests.append(test_name)
+
+    if failing_tests:
+        if save_failing:
+            rel_path = gst_file.relative_to(TEST_DIR)
+            with FAILING_TESTS_FILE.open('a') as ff:
+                if len(failing_tests) == len(gst_data):
+                    ff.write(f'{rel_path},*\n')
+                else:
+                    for test_name in failing_tests:
+                        ff.write(f'{rel_path},{test_name}\n')
+        raise AssertionError()
 
 
 def _assert_exit_code_zero(pattern: Pattern) -> None:
@@ -66,8 +85,8 @@ def _assert_exit_code_zero(pattern: Pattern) -> None:
 
 
 def _skipped_tests() -> dict[Path, list[str]]:
-    slow_tests = read_csv_file(REPO_ROOT / 'tests/slow.llvm')
-    failing_tests = read_csv_file(REPO_ROOT / 'tests/failing.llvm')
+    slow_tests = read_csv_file(SLOW_TESTS_FILE)
+    failing_tests = read_csv_file(FAILING_TESTS_FILE)
     skipped: dict[Path, list[str]] = {}
     for test_file, test in slow_tests + failing_tests:
         test_file = TEST_DIR / test_file
@@ -93,8 +112,8 @@ SKIPPED_VM_TESTS: Final = tuple(test_file for test_file in VM_TESTS if test_file
     VM_TESTS,
     ids=[str(test_file.relative_to(VM_TEST_DIR)) for test_file in VM_TESTS],
 )
-def test_vm(test_file: Path) -> None:
-    _test(test_file, 'DEFAULT', 'VMTESTS', True)
+def test_vm(test_file: Path, save_failing: bool) -> None:
+    _test(test_file, 'DEFAULT', 'VMTESTS', True, save_failing)
 
 
 @pytest.mark.skip(reason='failing / slow VM tests')
@@ -103,8 +122,8 @@ def test_vm(test_file: Path) -> None:
     SKIPPED_VM_TESTS,
     ids=[str(test_file.relative_to(VM_TEST_DIR)) for test_file in SKIPPED_VM_TESTS],
 )
-def test_rest_vm(test_file: Path) -> None:
-    _test(test_file, 'DEFAULT', 'VMTESTS', True)
+def test_rest_vm(test_file: Path, save_failing: bool) -> None:
+    _test(test_file, 'DEFAULT', 'VMTESTS', True, save_failing)
 
 
 ALL_TEST_DIR: Final = TEST_DIR / 'BlockchainTests/GeneralStateTests'
@@ -118,8 +137,8 @@ SKIPPED_BCHAIN_TESTS: Final = tuple(test_file for test_file in BCHAIN_TESTS if t
     BCHAIN_TESTS,
     ids=[str(test_file.relative_to(ALL_TEST_DIR)) for test_file in BCHAIN_TESTS],
 )
-def test_bchain(test_file: Path) -> None:
-    _test(test_file, 'CANCUN', 'NORMAL', True)
+def test_bchain(test_file: Path, save_failing: bool) -> None:
+    _test(test_file, 'CANCUN', 'NORMAL', True, save_failing)
 
 
 @pytest.mark.skip(reason='failing / slow blockchain tests')
@@ -128,5 +147,5 @@ def test_bchain(test_file: Path) -> None:
     SKIPPED_BCHAIN_TESTS,
     ids=[str(test_file.relative_to(ALL_TEST_DIR)) for test_file in SKIPPED_BCHAIN_TESTS],
 )
-def test_rest_bchain(test_file: Path) -> None:
-    _test(test_file, 'CANCUN', 'NORMAL', True)
+def test_rest_bchain(test_file: Path, save_failing: bool) -> None:
+    _test(test_file, 'CANCUN', 'NORMAL', True, save_failing)
