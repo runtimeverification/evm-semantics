@@ -54,10 +54,10 @@ def _test(gst_file: Path, schedule: str, mode: str, usegas: bool, save_failing: 
 
         try:
             _assert_exit_code_zero(res)
-        except AssertionError:
-            failing_tests.append(test_name)
+        except AssertionError as _exception:
             if not save_failing:
-                raise AssertionError
+                raise _exception
+            failing_tests.append(test_name)
 
     if failing_tests:
         if save_failing:
