@@ -78,15 +78,21 @@ _GST_CHECK_KEYS: Final = _GST_ALL_POST_KEYS.union(
 
 
 def filter_gst_keys(gst_data: dict) -> dict:
-    """Filters the discarded keys out of a single GeneralStateTest.
-
-    :param gst_data: A single test from a GST file structured as {"test_name": {test_fields}, ... }.
-    :returns: The gst_data object after filtering out _GST_DISCARD_KEYS.
     """
-    return {
-        test_name: {k: v for k, v in test_data.items() if k not in _GST_DISCARD_KEYS}
-        for test_name, test_data in gst_data.items()
-    }
+    Filters the discarded keys out of a single GeneralStateTest,
+    recursively removing them from nested dicts/lists as well.
+    """
+
+    def _remove_discard_keys(obj: Any) -> Any:
+        if type(obj) is dict:
+            return {k: _remove_discard_keys(v) for k, v in obj.items() if k not in _GST_DISCARD_KEYS}
+        elif type(obj) is list:
+            return [_remove_discard_keys(item) for item in obj]
+        else:
+            # If it's neither dict nor list, just return as-is
+            return obj
+
+    return _remove_discard_keys(gst_data)
 
 
 def gst_to_kore(gst_data: Any, schedule: str, mode: str, chainid: int, usegas: bool) -> App:
