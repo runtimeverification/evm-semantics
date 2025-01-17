@@ -376,14 +376,14 @@ setuptools = "*"
 
 [[package]]
 name = "flake8-type-checking"
-version = "2.9.1"
+version = "3.0.0"
 description = "A flake8 plugin for managing type-checking imports & forward references"
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.9"
 groups = ["dev"]
 files = [
-    {file = "flake8_type_checking-2.9.1-py3-none-any.whl", hash = "sha256:9f9be261a2b1f2bbd25e6f14acbcd92d060ec59062af5724ebaa909c8bea0d7b"},
-    {file = "flake8_type_checking-2.9.1.tar.gz", hash = "sha256:1a14f300c8e32183cef95798b86a650dc38463664ea10b0bf0884115b47d4cfe"},
+    {file = "flake8_type_checking-3.0.0-py3-none-any.whl", hash = "sha256:e9dfb370d246414e0a25033b1826be5b1499787370b8e2c3f9696c44530e3f65"},
+    {file = "flake8_type_checking-3.0.0.tar.gz", hash = "sha256:acd5c08cc618e9b3a6257246e5cdf5c0d5b2ba2c5120e20df880823fe84de738"},
 ]
 
 [package.dependencies]
@@ -565,14 +565,14 @@ colors = ["colorama (>=0.4.6)"]
 
 [[package]]
 name = "kframework"
-version = "7.1.199"
+version = "7.1.201"
 description = ""
 optional = false
 python-versions = "<4.0,>=3.10"
 groups = ["main"]
 files = [
-    {file = "kframework-7.1.199-py3-none-any.whl", hash = "sha256:c8e64d3f2b13c9e9353eef8cc41c3945261e7d5398de2324ba2c95504ecbff55"},
-    {file = "kframework-7.1.199.tar.gz", hash = "sha256:d7ab05b154269bf3141a0d90dda7534668a1678721f945333e29a05c6679b1c6"},
+    {file = "kframework-7.1.201-py3-none-any.whl", hash = "sha256:1c1f3821147376c46dbff56001093cd7810d475e28667a91ddddcc9026d1f54f"},
+    {file = "kframework-7.1.201.tar.gz", hash = "sha256:1e06fabbc3df5b6f8d2d9cc04f510e9942a7809e142a5aeba858797ab2274a87"},
 ]
 
 [package.dependencies]
@@ -1347,4 +1347,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10"
-content-hash = "b7b227b65dee1324bccd474c64968abdf5f63cc3fbe7eacaa8ee1f3b002d1dd9"
+content-hash = "9f73da57ce718b188a20971ff3ac6b977ffe9db590c9a04bfb97912333e05776"
