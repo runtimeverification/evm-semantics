@@ -171,10 +171,10 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          <txPending> ListItem(_TXID:Int) REST => REST </txPending>
          <account>
            <acctID> ACCTFROM </acctID>
-           <code> CODE </code>
+           <code> ACCTCODE </code>
            ...
          </account>
-      requires notBool CODE ==K .Bytes
+      requires notBool ACCTCODE ==K .Bytes
 
     syntax EthereumCommand ::= "#finishTx"
  // --------------------------------------
