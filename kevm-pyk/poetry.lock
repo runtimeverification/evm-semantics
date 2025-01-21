@@ -492,14 +492,14 @@ zoneinfo = ["tzdata (>=2024.2)"]
 
 [[package]]
 name = "importlib-metadata"
-version = "8.5.0"
+version = "8.6.1"
 description = "Read metadata from Python packages"
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "importlib_metadata-8.5.0-py3-none-any.whl", hash = "sha256:45e54197d28b7a7f1559e60b95e7c567032b602131fbd588f1497f47880aa68b"},
-    {file = "importlib_metadata-8.5.0.tar.gz", hash = "sha256:71522656f0abace1d072b9e5481a48f07c138e00f079c38c8f883823f9c26bd7"},
+    {file = "importlib_metadata-8.6.1-py3-none-any.whl", hash = "sha256:02a89390c1e15fdfdc0d7c6b25cb3e62650d0494005c97d6f148bf5b9787525e"},
+    {file = "importlib_metadata-8.6.1.tar.gz", hash = "sha256:310b41d755445d74569f993ccfc22838295d9fe005425094fad953d7f15c8580"},
 ]
 
 [package.dependencies]
@@ -511,7 +511,7 @@ cover = ["pytest-cov"]
 doc = ["furo", "jaraco.packaging (>=9.3)", "jaraco.tidelift (>=1.4)", "rst.linker (>=1.9)", "sphinx (>=3.5)", "sphinx-lint"]
 enabler = ["pytest-enabler (>=2.2)"]
 perf = ["ipython"]
-test = ["flufl.flake8", "importlib-resources (>=1.3)", "jaraco.test (>=5.4)", "packaging", "pyfakefs", "pytest (>=6,!=8.1.*)", "pytest-perf (>=0.9.2)"]
+test = ["flufl.flake8", "importlib_resources (>=1.3)", "jaraco.test (>=5.4)", "packaging", "pyfakefs", "pytest (>=6,!=8.1.*)", "pytest-perf (>=0.9.2)"]
 type = ["pytest-mypy"]
 
 [[package]]
@@ -558,28 +558,33 @@ colors = ["colorama (>=0.4.6)"]
 
 [[package]]
 name = "kframework"
-version = "7.1.203"
+version = "7.1.0"
 description = ""
 optional = false
-python-versions = "<4.0,>=3.10"
+python-versions = "^3.10"
 groups = ["main"]
-files = [
-    {file = "kframework-7.1.203-py3-none-any.whl", hash = "sha256:a77708ee242d7924965184c35b1ecb4e7151f99238f5d73cf6f65b75f3cd5d7c"},
-    {file = "kframework-7.1.203.tar.gz", hash = "sha256:e567eb936898acd0ac61a1a1d599925ebe0ee2fdb2832c4f04dac25aefdae7f1"},
-]
+files = []
+develop = false
 
 [package.dependencies]
-cmd2 = ">=2.4.2,<3.0.0"
-coloredlogs = ">=15.0.1,<16.0.0"
-filelock = ">=3.9.0,<4.0.0"
-graphviz = ">=0.20.1,<0.21.0"
-hypothesis = ">=6.103.1,<7.0.0"
-psutil = ">=5.9.5,<6.0.0"
-pybind11 = ">=2.10.3,<3.0.0"
+cmd2 = "^2.4.2"
+coloredlogs = "^15.0.1"
+filelock = "^3.9.0"
+graphviz = "^0.20.1"
+hypothesis = "^6.103.1"
+psutil = "^5.9.5"
+pybind11 = "^2.10.3"
 pytest = "*"
-textual = ">=0.27.0,<0.28.0"
-tomli = ">=2.0.1,<3.0.0"
-xdg-base-dirs = ">=6.0.1,<7.0.0"
+textual = "^0.27.0"
+tomli = "^2.0.1"
+xdg-base-dirs = "^6.0.1"
+
+[package.source]
+type = "git"
+url = "https://github.com/runtimeverification/k.git"
+reference = "c22bf0bb"
+resolved_reference = "c22bf0bb005e18b211fdbd3e71fe66e51c748bb7"
+subdirectory = "pyk"
 
 [[package]]
 name = "linkify-it-py"
@@ -1340,4 +1345,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10"
-content-hash = "b0a69c3c9e80b3b1e5ce5e72fdd2e3bebbd95f61db1f32e86f82e6b39f979df5"
+content-hash = "801f3dacbb5cbf6a8c07cfaf011a07574b248d2a342c945dc1bd8acdbb44d66d"
