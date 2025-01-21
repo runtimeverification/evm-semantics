@@ -426,6 +426,25 @@ The `"rlp"` key loads the block information.
            <txType> DynamicFee </txType>
            ...
          </message>
+
+    rule [[ #getTxData( TXID ) => BlobTxData(TN, TP, TF, TG, TT, TV, DATA, CID, TA, TB, TVH) ]]
+         <message>
+           <msgID>             TXID </msgID>
+           <txNonce>           TN   </txNonce>
+           <txGasPrice>        TP   </txGasPrice>
+           <txGasLimit>        TG   </txGasLimit>
+           <to>                TT   </to>
+           <value>             TV   </value>
+           <data>              DATA </data>
+           <txChainID>         CID  </txChainID>
+           <txAccess>          TA   </txAccess>
+           <txPriorityFee>     TP   </txPriorityFee>
+           <txMaxFee>          TF  </txMaxFee>
+           <txMaxBlobFee>      TB  </txMaxBlobFee>
+           <txVersionedHashes> TVH </txVersionedHashes>
+           <txType> Blob </txType>
+           ...
+         </message>
 ```
 
 - `#effectiveGasPrice` will compute the gas price for TXID, as specified by EIP-1559
