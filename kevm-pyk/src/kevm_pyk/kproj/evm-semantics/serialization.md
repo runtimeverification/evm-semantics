@@ -229,15 +229,18 @@ Unparsing
 ```
 
 - `#addrBytes` Takes an Account and represents it as a 20-byte wide Bytes (or an empty Bytes for a null address)
+- `#addrBytesNotNil` Takes an Account and represents it as a 20-byte wide Bytes. It throws an error if the account is null.
 - `#wordBytes` Takes an Int and represents it as a 32-byte wide Bytes
 
 ```k
-    syntax Bytes ::= #addrBytes ( Account ) [symbol(#addrBytes), function]
-                   | #wordBytes ( Int )     [symbol(#wordBytes), function]
+    syntax Bytes ::= #addrBytes ( Account )             [symbol(#addrBytes),       function]
+                   | #addrBytesNotNil ( AccountNotNil ) [symbol(#addrBytesNotNil), function]
+                   | #wordBytes ( Int )                 [symbol(#wordBytes),       function]
  // ----------------------------------------------------------------------
-    rule #addrBytes(.Account) => .Bytes
-    rule #addrBytes(ACCT)     => #padToWidth(20, #asByteStack(ACCT)) requires #rangeAddress(ACCT)
-    rule #wordBytes(WORD)     => #padToWidth(32, #asByteStack(WORD)) requires #rangeUInt(256, WORD)
+    rule #addrBytes(.Account)     => .Bytes
+    rule #addrBytes(ACCT)         => #padToWidth(20, #asByteStack(ACCT))   requires #rangeAddress(ACCT)
+    rule #addrBytesNotNil(ACCTNN) => #padToWidth(20, #asByteStack(ACCTNN)) requires #rangeAddress(ACCTNN)
+    rule #wordBytes(WORD)         => #padToWidth(32, #asByteStack(WORD))   requires #rangeUInt(256, WORD)
 ```
 
 Recursive Length Prefix (RLP)
@@ -352,7 +355,7 @@ Encoding
       => #rlpEncode( [ TC, TN, TF, TM, TG, #addrBytes(TT), TV, DATA, [TA] ] )
    
     rule #rlpEncodeTxData( BlobTxData(TN, TF, TM, TG, TT, TV, DATA, CID, [TA], TB, TVH) )
-      => #rlpEncode( [ CID, TN, TF, TM, TG, #addrBytes(TT), TV, DATA, [TA], TB, TVH ] )
+      => #rlpEncode( [ CID, TN, TF, TM, TG, #addrBytesNotNil(TT), TV, DATA, [TA], TB, TVH ] )
 
     syntax Bytes ::= #rlpEncodeMerkleTree ( MerkleTree ) [symbol(#rlpEncodeMerkleTree), function]
  // ---------------------------------------------------------------------------------------------
