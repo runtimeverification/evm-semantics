@@ -365,6 +365,12 @@
           <txType>
             Legacy
           </txType>
+          <txMaxBlobFee>
+            0
+          </txMaxBlobFee>
+          <txVersionedHashes>
+            b""
+          </txVersionedHashes>
         </message>
       </messages>
     </network>
