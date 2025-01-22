@@ -176,6 +176,10 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          </account>
       requires notBool ACCTCODE ==K .Bytes
 
+    rule <k> loadTx(_) => startTx ... </k>
+         <statusCode> _ => EVMC_OUT_OF_GAS </statusCode>
+         <txPending> ListItem(_TXID:Int) REST => REST </txPending> [owise]
+
     syntax EthereumCommand ::= "#finishTx"
  // --------------------------------------
     rule <statusCode> _:ExceptionalStatusCode </statusCode> <k> #halt ~> #finishTx => #popCallStack ~> #popWorldState                   ... </k>
