@@ -390,7 +390,7 @@ Accounts
 
 ```k
     syntax Account ::= ".Account" | Int
-    syntax AccountNotNil ::= Int
+    syntax AccountNotNil = Int
  // -----------------------------------
 
     syntax AccountCode ::= Bytes
