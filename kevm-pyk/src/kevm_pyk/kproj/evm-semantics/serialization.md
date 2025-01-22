@@ -236,7 +236,7 @@ Unparsing
     syntax Bytes ::= #addrBytes ( Account )             [symbol(#addrBytes),       function]
                    | #addrBytesNotNil ( AccountNotNil ) [symbol(#addrBytesNotNil), function]
                    | #wordBytes ( Int )                 [symbol(#wordBytes),       function]
- // ----------------------------------------------------------------------
+ // ----------------------------------------------------------------------------------------
     rule #addrBytes(.Account)     => .Bytes
     rule #addrBytes(ACCT)         => #padToWidth(20, #asByteStack(ACCT))   requires #rangeAddress(ACCT)
     rule #addrBytesNotNil(ACCTNN) => #padToWidth(20, #asByteStack(ACCTNN)) requires #rangeAddress(ACCTNN)

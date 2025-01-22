@@ -466,7 +466,7 @@ Productions related to transactions
     rule #asmTxPrefix (3) => Blob
 
     syntax TxData ::= LegacyTx | AccessListTx | DynamicFeeTx | BlobTx
- // --------------------------------------------------------
+ // -----------------------------------------------------------------
 
     syntax LegacyTx     ::= LegacyTxData       ( nonce: Int,                       gasPrice: Int, gasLimit: Int, to: Account, value: Int, data: Bytes )                                                                                   [symbol(LegacyTxData)]
                           | LegacySignedTxData ( nonce: Int,                       gasPrice: Int, gasLimit: Int, to: Account, value: Int, data: Bytes, networkChainId: Int )                                                              [symbol(LegacySignedTxData)]
