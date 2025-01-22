@@ -40,6 +40,17 @@ test: test-integration test-conformance test-prove test-interactive
 test-conformance: poetry
 	$(MAKE) -C kevm-pyk/ test-integration PYTEST_ARGS+="-k test_conformance.py"
 
+conformance-failing-list: poetry
+	cat /dev/null > tests/failing.llvm
+	- $(MAKE) -C kevm-pyk/ test-integration PYTEST_ARGS+="-k test_conformance.py --save-failing --maxfail=10000"
+	LC_ALL=en_US.UTF-8 sort -f -d -o tests/failing.llvm tests/failing.llvm
+	if [ "$(shell uname)" = "Darwin" ]; then \
+		sed -i '' '1{/^[[:space:]]*$$/d;}' tests/failing.llvm ;\
+		echo >> tests/failing.llvm ;\
+	else \
+		sed -i '1{/^[[:space:]]*$$/d;}' tests/failing.llvm ;\
+	fi
+
 test-vm: poetry
 	$(MAKE) -C kevm-pyk/ test-integration PYTEST_ARGS+="-k test_vm"
 
