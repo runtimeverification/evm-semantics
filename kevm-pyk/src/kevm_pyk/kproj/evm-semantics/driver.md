@@ -97,6 +97,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
     rule <k> loadTx(ACCTFROM)
           => #accessAccounts ACCTFROM #newAddr(ACCTFROM, NONCE) #precompiledAccountsSet(SCHED)
           ~> #loadAccessList(TA)
+          ~> #checkCreate ACCTFROM VALUE
           ~> #create ACCTFROM #newAddr(ACCTFROM, NONCE) VALUE CODE
           ~> #finishTx ~> #finalizeTx(false) ~> startTx
          ...
@@ -121,15 +122,18 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
            <acctID> ACCTFROM </acctID>
            <balance> BAL => BAL -Int (GLIMIT *Int #effectiveGasPrice(TXID)) </balance>
            <nonce> NONCE </nonce>
+           <code> ACCTCODE </code>
            ...
          </account>
          <accessedAccounts> _ => #if Ghaswarmcoinbase << SCHED >> #then SetItem(MINER) #else .Set #fi </accessedAccounts>
          <touchedAccounts> _ => SetItem(MINER) </touchedAccounts>
       requires #hasValidInitCode(lengthBytes(CODE), SCHED)
+        andBool ACCTCODE ==K .Bytes
 
     rule <k> loadTx(ACCTFROM)
           => #accessAccounts ACCTFROM ACCTTO #precompiledAccountsSet(SCHED)
           ~> #loadAccessList(TA)
+          ~> #checkCall ACCTFROM VALUE
           ~> #call ACCTFROM ACCTTO ACCTTO VALUE VALUE DATA false
           ~> #finishTx ~> #finalizeTx(false) ~> startTx
          ...
@@ -154,11 +158,23 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
            <acctID> ACCTFROM </acctID>
            <balance> BAL => BAL -Int (GLIMIT *Int #effectiveGasPrice(TXID)) </balance>
            <nonce> NONCE => NONCE +Int 1 </nonce>
+           <code> ACCTCODE </code>
            ...
          </account>
          <accessedAccounts> _ => #if Ghaswarmcoinbase << SCHED >> #then SetItem(MINER) #else .Set #fi </accessedAccounts>
          <touchedAccounts> _ => SetItem(MINER) </touchedAccounts>
       requires ACCTTO =/=K .Account
+        andBool ACCTCODE ==K .Bytes
+
+    rule <k> loadTx(ACCTFROM) => startTx ... </k>
+         <statusCode> _ => EVMC_FAILURE </statusCode>
+         <txPending> ListItem(_TXID:Int) REST => REST </txPending>
+         <account>
+           <acctID> ACCTFROM </acctID>
+           <code> ACCTCODE </code>
+           ...
+         </account>
+      requires notBool ACCTCODE ==K .Bytes
 
     syntax EthereumCommand ::= "#finishTx"
  // --------------------------------------
@@ -231,7 +247,14 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
     rule <statusCode> _:ExceptionalStatusCode </statusCode>
          <k> #halt ~> exception => .K ... </k>
 
-    rule <k> status SC => .K ... </k> <statusCode> SC </statusCode>
+    rule <statusCode> _:ExceptionalStatusCode </statusCode>
+         <k> exception ~> check _ => exception ... </k>
+
+    rule <statusCode> _:ExceptionalStatusCode </statusCode>
+         <k> exception ~> run TEST => run TEST ~> exception ... </k>
+
+    rule <statusCode> _:ExceptionalStatusCode </statusCode>
+         <k> exception ~> clear => clear ... </k>
 
     syntax EthereumCommand ::= "failure" String | "success"
  // -------------------------------------------------------
@@ -293,6 +316,15 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
 
     syntax EthereumCommand ::= "process" JSON
  // -----------------------------------------
+    rule <k> process  TESTID : { "expectException" : _ , REST } => exception ~> process  TESTID : { REST } ... </k>
+
+    rule <k> exception ~> process _TESTID : { "rlp_decoded" : { KEY : VAL , REST1 => REST1 }, (REST2 => KEY : VAL , REST2 ) } ... </k>
+    rule <k> exception ~> process _TESTID : { "rlp_decoded" : { .JSONs } , REST   => REST}                                    ... </k>
+
+    rule <k> exception ~> process  TESTID : { KEY : VAL , REST } => load KEY : VAL ~> exception ~> process TESTID : { REST }             ... </k> requires KEY in #loadKeys
+    rule <k> exception ~> process  TESTID : { KEY : VAL , REST } => exception ~> process TESTID : { REST } ~> check TESTID : {KEY : VAL} ... </k> requires KEY in #checkKeys
+    rule <k> exception ~> process _TESTID : { .JSONs }           => #startBlock ~> startTx ~> exception ... </k>
+
     rule <k> process _TESTID : { "rlp_decoded" : { KEY : VAL , REST1 => REST1 }, (REST2 => KEY : VAL , REST2 ) } ... </k>
     rule <k> process _TESTID : { "rlp_decoded" : { .JSONs } , REST => REST}                                      ... </k>
 
