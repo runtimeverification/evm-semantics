@@ -354,8 +354,8 @@ Encoding
     rule #rlpEncodeTxData( DynamicFeeTxData(TN, TF, TM, TG, TT, TV, DATA, TC, [TA]) )
       => #rlpEncode( [ TC, TN, TF, TM, TG, #addrBytes(TT), TV, DATA, [TA] ] )
    
-    rule #rlpEncodeTxData( BlobTxData(TN, TF, TM, TG, TT, TV, DATA, CID, [TA], TB, TVH) )
-      => #rlpEncode( [ CID, TN, TF, TM, TG, #addrBytesNotNil(TT), TV, DATA, [TA], TB, TVH ] )
+    rule #rlpEncodeTxData( BlobTxData(TN, TF, TM, TG, TT, TV, DATA, CID, [TA], TB, [TVH]) )
+      => #rlpEncode( [ CID, TN, TF, TM, TG, #addrBytesNotNil(TT), TV, DATA, [TA], TB, [TVH] ] )
 
     syntax Bytes ::= #rlpEncodeMerkleTree ( MerkleTree ) [symbol(#rlpEncodeMerkleTree), function]
  // ---------------------------------------------------------------------------------------------

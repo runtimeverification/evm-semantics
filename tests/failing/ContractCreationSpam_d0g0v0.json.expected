@@ -323,7 +323,7 @@
             0
           </txMaxBlobFee>
           <txVersionedHashes>
-            b""
+            [ .JSONs ]
           </txVersionedHashes>
         </message>
       </messages>
