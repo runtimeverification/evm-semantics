@@ -83,9 +83,10 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 
     syntax EthereumCommand ::= loadTx ( Account ) [symbol(loadTx)]
  // --------------------------------------------------------------
-    rule <k> loadTx(_) => #end EVMC_OUT_OF_GAS ... </k>
+    rule <k> loadTx(_) => startTx ... </k>
+         <statusCode> _ => EVMC_OUT_OF_GAS </statusCode>
+         <txPending> ListItem(TXID:Int) REST => REST </txPending>
          <schedule> SCHED </schedule>
-         <txPending> ListItem(TXID:Int) ... </txPending>
          <message>
            <msgID>      TXID     </msgID>
            <to>         .Account </to>

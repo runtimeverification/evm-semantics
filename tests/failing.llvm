@@ -132,8 +132,6 @@ BlockchainTests/GeneralStateTests/Pyspecs/constantinople/eip1014_create2/recreat
 BlockchainTests/GeneralStateTests/Pyspecs/frontier/opcodes/all_opcodes.json,src/GeneralStateTestsFiller/Pyspecs/frontier/opcodes/test_all_opcodes.py::test_all_opcodes[fork_Cancun-blockchain_test]
 BlockchainTests/GeneralStateTests/Pyspecs/frontier/opcodes/double_kill.json,*
 BlockchainTests/GeneralStateTests/Pyspecs/paris/security/tx_selfdestruct_balance_bug.json,*
-BlockchainTests/GeneralStateTests/Pyspecs/shanghai/eip3860_initcode/contract_creating_tx.json,src/GeneralStateTestsFiller/Pyspecs/shanghai/eip3860_initcode/test_initcode.py::test_contract_creating_tx[fork_Cancun-blockchain_test-over_limit_ones]
-BlockchainTests/GeneralStateTests/Pyspecs/shanghai/eip3860_initcode/contract_creating_tx.json,src/GeneralStateTestsFiller/Pyspecs/shanghai/eip3860_initcode/test_initcode.py::test_contract_creating_tx[fork_Cancun-blockchain_test-over_limit_zeros]
 BlockchainTests/GeneralStateTests/Pyspecs/shanghai/eip4895_withdrawals/balance_within_block.json,*
 BlockchainTests/GeneralStateTests/Pyspecs/shanghai/eip4895_withdrawals/large_amount.json,*
 BlockchainTests/GeneralStateTests/Pyspecs/shanghai/eip4895_withdrawals/many_withdrawals.json,*
@@ -145,7 +143,6 @@ BlockchainTests/GeneralStateTests/Pyspecs/shanghai/eip4895_withdrawals/use_value
 BlockchainTests/GeneralStateTests/Pyspecs/shanghai/eip4895_withdrawals/use_value_in_tx.json,*
 BlockchainTests/GeneralStateTests/Pyspecs/shanghai/eip4895_withdrawals/withdrawing_to_precompiles.json,*
 BlockchainTests/GeneralStateTests/Pyspecs/shanghai/eip4895_withdrawals/zero_amount.json,*
-BlockchainTests/GeneralStateTests/Shanghai/stEIP3860-limitmeterinitcode/creationTxInitCodeSizeLimit.json,creationTxInitCodeSizeLimit_d1g0v0_Cancun
 BlockchainTests/GeneralStateTests/stBadOpcode/opc49DiffPlaces.json,*
 BlockchainTests/GeneralStateTests/stBadOpcode/opc4ADiffPlaces.json,*
 BlockchainTests/GeneralStateTests/stBadOpcode/undefinedOpcodeFirstByte.json,*
