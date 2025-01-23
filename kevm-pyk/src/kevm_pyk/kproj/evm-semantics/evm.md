@@ -809,16 +809,17 @@ These are just used by the other operators for shuffling local execution state a
            <acctID> ACCT  </acctID>
            <code>   CODE  </code>
            <nonce>  NONCE </nonce>
+           <storage> STORAGE </storage>
            ...
          </account>
-      requires CODE =/=K .Bytes orBool NONCE =/=Int 0
+      requires CODE =/=K .Bytes orBool NONCE =/=Int 0 orBool STORAGE =/=K .Map
 
     rule <k> #newExistingAccount ACCT => .K ... </k>
          <account>
            <acctID>      ACCT      </acctID>
            <code>        CODE      </code>
            <nonce>       0         </nonce>
-           <storage>     _ => .Map </storage>
+           <storage>     .Map   </storage>
            <origStorage> _ => .Map </origStorage>
            ...
          </account>
