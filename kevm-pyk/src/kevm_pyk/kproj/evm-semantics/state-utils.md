@@ -487,7 +487,7 @@ The `"rlp"` key loads the block information.
          => #if ( notBool Ghasbasefee << SCHED >> )
                 orBool TXTYPE ==K Legacy
                 orBool TXTYPE ==K AccessList
-            //    orBool TXTYPE ==K Blob
+                orBool TXTYPE ==K Blob
               #then GPRICE
               #else BFEE +Int minInt(TPF, TM -Int BFEE)
             #fi
