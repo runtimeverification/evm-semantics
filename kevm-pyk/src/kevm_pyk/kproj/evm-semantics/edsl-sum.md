@@ -11,20 +11,13 @@ requires "buf.md"
 requires "hashed-locations.md"
 requires "abi.md"
 requires "gas.md"
-requires "optimizations.md"
 requires "lemmas/lemmas.k"
 
 module EDSL
-    imports EDSL-PURE
-    imports EVM-OPTIMIZATIONS
-endmodule
-
-module EDSL-PURE
     imports BUF
     imports HASHED-LOCATIONS
     imports SOLIDITY-FIELDS
     imports EVM-ABI
-    imports EVM-OPTIMIZATIONS
     imports INFINITE-GAS
     imports BIN-RUNTIME
     imports LEMMAS
