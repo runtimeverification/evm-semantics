@@ -597,7 +597,7 @@ Here we check the other post-conditions associated with an EVM test.
     
     rule <k> check "transactions" : "blobVersionedHashes" : [ .JSONs ] => .K ... </k>
     rule <k> check "transactions" : "blobVersionedHashes" : [ VHASH, REST ] => check "transactions" : "blobVersionedHashes" : VHASH ~> check "transactions" : "blobVersionedHashes" : [ REST ] ... </k>
-    rule <k> check "transactions" : ("blobVersionedHashes" : VHASH ) => .K ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txVersionedHashes> VH </txVersionedHashes> ... </message> requires isInVersionedHashes(VHASH, VH)
+    rule <k> check "transactions" : ("blobVersionedHashes" : VHASH ) => .K ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txVersionedHashes> VH </txVersionedHashes> ... </message> requires VHASH in VH
 
     rule <k> check "transactions" : ("data"                 : VALUE) => .K ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <data>          VALUE </data>           ... </message>
     rule <k> check "transactions" : ("gasLimit"             : VALUE) => .K ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txGasLimit>    VALUE </txGasLimit>     ... </message>
@@ -627,14 +627,6 @@ Here we check the other post-conditions associated with an EVM test.
     rule isInAccessListStorage(KEY, [SKEY, REST]) => #if   KEY ==Int #asWord(SKEY)
                                                      #then true
                                                      #else isInAccessListStorage(KEY, [REST]) #fi
-
-   // Different from AccessList, Versioned Hashs doesn't contains a list of key-value jsons, but a list of strings finishing in .JSONs like [ "0x01...", "0x02", .JSONs]
-   syntax Bool ::= isInVersionedHashes(Bytes, JSON) [symbol(isInVersionedHashes), function]
- // ---------------------------------------------------------------------------------------
-   rule isInVersionedHashes(_, [.JSONs]) => false
-   rule isInVersionedHashes(KEY, [SKEY, REST]) => #if KEY ==K SKEY
-                                                  #then true
-                                                  #else isInVersionedHashes(KEY, [REST]) #fi
 ```
 
 TODO: case with nonzero ommers.

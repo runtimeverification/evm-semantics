@@ -189,6 +189,14 @@ The `"network"` key allows setting the fee schedule inside the test.
     rule #asScheduleString("ShanghaiToCancunAtTime15k") => CANCUN
 ```
 
+- `#parseJSONs2List` parse a JSON object with string values into a list of value.
+```k
+   syntax List ::= "#parseJSONs2List" "(" JSONs ")" [function]
+ // ----------------------------------------------------------
+    rule #parseJSONs2List ( .JSONs ) => .List
+    rule #parseJSONs2List ( (VAL:Bytes) , REST ) => ListItem(VAL) #parseJSONs2List ( REST )
+```
+
 The `"rlp"` key loads the block information.
 
 ```k
@@ -378,7 +386,7 @@ The `"rlp"` key loads the block information.
          <message> <msgID> TXID </msgID> <txMaxBlobFee> _ => TB </txMaxBlobFee> ... </message>
 
     rule <k> loadTransaction TXID { "blobVersionedHashes" : [TVH:JSONs], REST => REST } ... </k>
-         <message> <msgID> TXID </msgID> <txVersionedHashes> _ =>  [TVH] </txVersionedHashes> ... </message>
+         <message> <msgID> TXID </msgID> <txVersionedHashes> _ =>  #parseJSONs2List(TVH) </txVersionedHashes> ... </message>
 ```
 
 ### Getting State
@@ -479,6 +487,7 @@ The `"rlp"` key loads the block information.
          => #if ( notBool Ghasbasefee << SCHED >> )
                 orBool TXTYPE ==K Legacy
                 orBool TXTYPE ==K AccessList
+            //    orBool TXTYPE ==K Blob
               #then GPRICE
               #else BFEE +Int minInt(TPF, TM -Int BFEE)
             #fi
