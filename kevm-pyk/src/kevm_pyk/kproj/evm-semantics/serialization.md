@@ -235,10 +235,10 @@ Unparsing
 ```k
     syntax Bytes ::= #addrBytes ( Account ) [symbol(#addrBytes), function]
                    | #wordBytes ( Int )     [symbol(#wordBytes), function]
- // ----------------------------------------------------------------------------------------
+ // ----------------------------------------------------------------------
     rule #addrBytes(.Account) => .Bytes
-    rule #addrBytes(ACCT)     => #padToWidth(20, #asByteStack(ACCT))   requires #rangeAddress(ACCT)
-    rule #wordBytes(WORD)     => #padToWidth(32, #asByteStack(WORD))   requires #rangeUInt(256, WORD)
+    rule #addrBytes(ACCT)     => #padToWidth(20, #asByteStack(ACCT)) requires #rangeAddress(ACCT)
+    rule #wordBytes(WORD)     => #padToWidth(32, #asByteStack(WORD)) requires #rangeUInt(256, WORD)
 ```
 
 Recursive Length Prefix (RLP)
