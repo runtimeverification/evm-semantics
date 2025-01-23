@@ -449,7 +449,7 @@ Productions related to transactions
                     | "AccessList"
                     | "DynamicFee"
                     | "Blob"
- // ------------------------------
+ // ------------------------
 
     syntax Int ::= #dasmTxPrefix ( TxType ) [symbol(#dasmTxPrefix), function]
  // -------------------------------------------------------------------------
