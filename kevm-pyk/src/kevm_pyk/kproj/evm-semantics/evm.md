@@ -920,6 +920,14 @@ These operations are getters/setters of the local execution memory.
     rule <k> MLOAD INDEX => #asWord(#range(LM, INDEX, 32)) ~> #push ... </k>
          <localMem> LM </localMem>
 
+   rule <k> BLOBHASH INDEX => PUSHZERO ~> #push ... </k>
+        <txVersionedHashes> HASHES </txVersionedHashes>
+      requires INDEX >=Int size(HASHES)
+
+   rule <k> BLOBHASH INDEX => #asWord( {HASHES[INDEX]}:>Bytes ) ~> #push ... </k>
+        <txVersionedHashes> HASHES </txVersionedHashes>
+      requires INDEX <Int size(HASHES)
+
     syntax BinStackOp ::= "MSTORE" | "MSTORE8"
  // ------------------------------------------
     rule <k> MSTORE INDEX VALUE => .K ... </k>
