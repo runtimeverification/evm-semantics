@@ -817,11 +817,11 @@ These are just used by the other operators for shuffling local execution state a
            <acctID>      ACCT      </acctID>
            <code>        CODE      </code>
            <nonce>       0         </nonce>
-           <storage>     _ => .Map </storage>
+           <storage>     STORAGE   </storage>
            <origStorage> _ => .Map </origStorage>
            ...
          </account>
-      requires lengthBytes(CODE) ==Int 0
+      requires lengthBytes(CODE) ==Int 0 andBool STORAGE ==K .Map
 ```
 
 -   `#transferFunds` moves money from one account into another, creating the destination account if it doesn't exist.
