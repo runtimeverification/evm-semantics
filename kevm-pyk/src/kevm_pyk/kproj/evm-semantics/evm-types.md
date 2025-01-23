@@ -354,7 +354,7 @@ Bytes helper functions
 
     syntax Account ::= #asAccount ( Bytes )             [symbol(#asAccount), function]
     syntax AccountNotNil ::= #asAccountNotNil ( Bytes ) [symbol(#asAccountNotNil), function]
- // ----------------------------------------------------------------------
+ // ----------------------------------------------------------------------------------------
     rule #asAccount(BS) => .Account    requires lengthBytes(BS) ==Int 0
     rule #asAccount(BS) => #asWord(BS) [owise]
 
