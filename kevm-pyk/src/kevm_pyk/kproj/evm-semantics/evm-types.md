@@ -337,6 +337,8 @@ Bytes helper functions
 -   `#asInteger` will interpret a stack of bytes as a single arbitrary-precision integer (with MSB first).
 -   `#asAccount` will interpret a stack of bytes as a single account id (with MSB first).
     Differs from `#asWord` only in that an empty stack represents the empty account, not account zero.
+-   `asAccountNotNil` will interpret a stack of bytes as a single account id (with MSB first), but will fail if the
+    stack is empty.
 -   `#asByteStack` will split a single word up into a `Bytes`.
 -   `#range(WS, N, W)` access the range of `WS` beginning with `N` of width `W`.
 -   `#padToWidth(N, WS)` and `#padRightToWidth` make sure that a `Bytes` is the correct size.
@@ -350,10 +352,13 @@ Bytes helper functions
  // -------------------------------------------------------------------------
     rule #asInteger(WS) => Bytes2Int(WS, BE, Unsigned) [concrete]
 
-    syntax Account ::= #asAccount ( Bytes ) [symbol(#asAccount), function]
- // ----------------------------------------------------------------------
+    syntax Account ::= #asAccount ( Bytes )             [symbol(#asAccount), function]
+    syntax AccountNotNil ::= #asAccountNotNil ( Bytes ) [symbol(#asAccountNotNil), function]
+ // ----------------------------------------------------------------------------------------
     rule #asAccount(BS) => .Account    requires lengthBytes(BS) ==Int 0
     rule #asAccount(BS) => #asWord(BS) [owise]
+
+    rule #asAccountNotNil(BS) => #asWord(BS) requires lengthBytes(BS) >Int 0
 
     syntax Bytes ::= #asByteStack ( Int ) [symbol(#asByteStack), function, total]
  // -----------------------------------------------------------------------------
@@ -385,7 +390,8 @@ Accounts
 
 ```k
     syntax Account ::= ".Account" | Int
- // -----------------------------------
+    syntax AccountNotNil = Int
+ // --------------------------
 
     syntax AccountCode ::= Bytes
  // ----------------------------
@@ -442,28 +448,32 @@ Productions related to transactions
                     | "Legacy"
                     | "AccessList"
                     | "DynamicFee"
- // ------------------------------
+                    | "Blob"
+ // ------------------------
 
     syntax Int ::= #dasmTxPrefix ( TxType ) [symbol(#dasmTxPrefix), function]
  // -------------------------------------------------------------------------
     rule #dasmTxPrefix (Legacy)     => 0
     rule #dasmTxPrefix (AccessList) => 1
     rule #dasmTxPrefix (DynamicFee) => 2
+    rule #dasmTxPrefix (Blob)       => 3
 
     syntax TxType ::= #asmTxPrefix ( Int ) [symbol(#asmTxPrefix), function]
  // -----------------------------------------------------------------------
     rule #asmTxPrefix (0) => Legacy
     rule #asmTxPrefix (1) => AccessList
     rule #asmTxPrefix (2) => DynamicFee
+    rule #asmTxPrefix (3) => Blob
 
-    syntax TxData ::= LegacyTx | AccessListTx | DynamicFeeTx
- // --------------------------------------------------------
+    syntax TxData ::= LegacyTx | AccessListTx | DynamicFeeTx | BlobTx
+ // -----------------------------------------------------------------
 
-    syntax LegacyTx     ::= LegacyTxData       ( nonce: Int,                       gasPrice: Int, gasLimit: Int, to: Account, value: Int, data: Bytes )                                   [symbol(LegacyTxData)]
-                          | LegacySignedTxData ( nonce: Int,                       gasPrice: Int, gasLimit: Int, to: Account, value: Int, data: Bytes, networkChainId: Int )              [symbol(LegacySignedTxData)]
-    syntax AccessListTx ::= AccessListTxData   ( nonce: Int,                       gasPrice: Int, gasLimit: Int, to: Account, value: Int, data: Bytes, chainId: Int, accessLists: JSONs ) [symbol(AccessListTxData)]
-    syntax DynamicFeeTx ::= DynamicFeeTxData   ( nonce: Int, priorityGasFee: Int, maxGasFee: Int, gasLimit: Int, to: Account, value: Int, data: Bytes, chainId: Int, accessLists: JSONs)  [symbol(DynamicFeeTxData)]
- // ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    syntax LegacyTx     ::= LegacyTxData       ( nonce: Int,                       gasPrice: Int, gasLimit: Int, to: Account, value: Int, data: Bytes )                                                                                   [symbol(LegacyTxData)]
+                          | LegacySignedTxData ( nonce: Int,                       gasPrice: Int, gasLimit: Int, to: Account, value: Int, data: Bytes, networkChainId: Int )                                                              [symbol(LegacySignedTxData)]
+    syntax AccessListTx ::= AccessListTxData   ( nonce: Int,                       gasPrice: Int, gasLimit: Int, to: Account, value: Int, data: Bytes, chainId: Int, accessLists: JSONs )                                                 [symbol(AccessListTxData)]
+    syntax DynamicFeeTx ::= DynamicFeeTxData   ( nonce: Int, priorityGasFee: Int, maxGasFee: Int, gasLimit: Int, to: Account, value: Int, data: Bytes, chainId: Int, accessLists: JSONs)                                                  [symbol(DynamicFeeTxData)]
+    syntax BlobTx       ::= BlobTxData         ( nonce: Int, priorityGasFee: Int, maxGasFee: Int, gasLimit: Int, to: AccountNotNil, value: Int, data: Bytes, chainId: Int, accessLists: JSONs, maxBlobGasFee: Int, blobVersionedHashes: JSONs ) [symbol(BlobTxData)]
+ // ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 endmodule
 ```
