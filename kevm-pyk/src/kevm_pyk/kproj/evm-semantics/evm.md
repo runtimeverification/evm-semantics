@@ -921,7 +921,7 @@ These operations are getters/setters of the local execution memory.
     rule <k> MLOAD INDEX => #asWord(#range(LM, INDEX, 32)) ~> #push ... </k>
          <localMem> LM </localMem>
 
-   rule <k> BLOBHASH INDEX => PUSHZERO ~> #push ... </k>
+   rule <k> BLOBHASH INDEX => 0 ~> #push ... </k>
         <txVersionedHashes> HASHES </txVersionedHashes>
       requires INDEX >=Int size(HASHES)
 

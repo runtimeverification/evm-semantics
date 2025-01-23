@@ -321,7 +321,7 @@ The `"rlp"` key loads the block information.
          </k>
     requires #asWord(TYPE) ==Int #dasmTxPrefix(DynamicFee)
 
-     rule <k> load "transaction" : [ [TYPE , [TC, TN, TP, TF, TG, TT, TV, TI, TA, TY, TVH, TB, TR, TS ]] , REST ]
+     rule <k> load "transaction" : [ [TYPE , [TC, TN, TP, TF, TG, TT, TV, TI, TA, TB, TVH, TY, TR, TS ]] , REST ]
           => mkTX !ID:Int
           ~> loadTransaction !ID { "data"         : TI   ,   "gasLimit"         : TG   ,   "maxPriorityFeePerGas" : TP
                                  , "nonce"        : TN   ,   "r"                : TR   ,   "s"                    : TS
