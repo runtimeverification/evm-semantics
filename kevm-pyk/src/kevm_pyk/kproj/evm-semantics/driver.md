@@ -625,6 +625,7 @@ Here we check the other post-conditions associated with an EVM test.
 
    // Different from AccessList, Versioned Hashs doesn't contains a list of key-value jsons, but a list of strings finishing in .JSONs like [ "0x01...", "0x02", .JSONs]
    syntax Bool ::= isInVersionedHashes(Bytes, JSON) [symbol(isInVersionedHashes), function]
+ // ---------------------------------------------------------------------------------------
    rule isInVersionedHashes(_, [.JSONs]) => false
    rule isInVersionedHashes(KEY, [SKEY, REST]) => #if KEY ==K SKEY
                                                   #then true
