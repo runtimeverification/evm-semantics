@@ -915,8 +915,8 @@ Some operators don't calculate anything, they just push the stack around a bit.
 These operations are getters/setters of the local execution memory.
 
 ```k
-    syntax UnStackOp ::= "MLOAD"
- // ----------------------------
+    syntax UnStackOp ::= "MLOAD" | "BLOBHASH"
+ // -----------------------------------------
     rule <k> MLOAD INDEX => #asWord(#range(LM, INDEX, 32)) ~> #push ... </k>
          <localMem> LM </localMem>
 
@@ -2289,6 +2289,7 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
     rule <k> #gasExec(SCHED, PUSH(_))        => Gverylow < SCHED > ... </k>
     rule <k> #gasExec(SCHED, DUP(_) _)       => Gverylow < SCHED > ... </k>
     rule <k> #gasExec(SCHED, SWAP(_) _)      => Gverylow < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, BLOBHASH _)     => Gverylow < SCHED > ... </k>
 
     // Wlow
     rule <k> #gasExec(SCHED, MUL _ _)        => Glow < SCHED > ... </k>
@@ -2453,6 +2454,7 @@ After interpreting the strings representing programs as a `WordStack`, it should
     rule #dasmOpCode(  70, SCHED ) => CHAINID     requires Ghaschainid     << SCHED >>
     rule #dasmOpCode(  71, SCHED ) => SELFBALANCE requires Ghasselfbalance << SCHED >>
     rule #dasmOpCode(  72, SCHED ) => BASEFEE     requires Ghasbasefee     << SCHED >>
+    rule #dasmOpCode(  73, SCHED ) => BLOBHASH    requires Ghasblobhash    << SCHED >>
     rule #dasmOpCode(  80,     _ ) => POP
     rule #dasmOpCode(  81,     _ ) => MLOAD
     rule #dasmOpCode(  82,     _ ) => MSTORE
