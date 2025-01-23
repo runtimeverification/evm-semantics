@@ -180,4 +180,3 @@ BlockchainTests/GeneralStateTests/stPreCompiledContracts/precompsEIP2929Cancun.j
 BlockchainTests/GeneralStateTests/stRevertTest/RevertInCreateInInit_Paris.json,*
 BlockchainTests/GeneralStateTests/stSpecialTest/failed_tx_xcf416c53_Paris.json,*
 BlockchainTests/GeneralStateTests/stSStoreTest/InitCollisionParis.json,*
-BlockchainTests/GeneralStateTests/stTransactionTest/ValueOverflowParis.json,*

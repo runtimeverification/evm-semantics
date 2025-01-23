@@ -37,6 +37,7 @@ _GST_DISCARD_KEYS: Final = frozenset(
         'transactionSequence',
         'chainname',
         'lastblockhash',
+        'hasBigInt',
     ]
 )
 _GST_LOAD_KEYS: Final = frozenset(
