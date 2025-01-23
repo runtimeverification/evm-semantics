@@ -167,6 +167,8 @@ In the comments next to each cell, we've marked which component of the YellowPap
                 <txPriorityFee> 0          </txPriorityFee> // T_f
                 <txMaxFee>      0          </txMaxFee>      // T_m
                 <txType>        .TxType    </txType>        // T_x
+                <txMaxBlobFee>  0          </txMaxBlobFee>
+                <txVersionedHashes> [ .JSONs ] </txVersionedHashes>
               </message>
             </messages>
 
