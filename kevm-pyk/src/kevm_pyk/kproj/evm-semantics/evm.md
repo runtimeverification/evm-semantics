@@ -880,7 +880,10 @@ These are just used by the other operators for shuffling local execution state a
 ```k
     syntax Int ::= #baseFeePerBlobGas( Int ) [symbol(#baseFeePerBlobGas), function]
  // -------------------------------------------------------------------------------
-    rule #baseFeePerBlobGas(BLOBGAS) => #fakeExponential(1, BLOBGAS, 3338477)
+    rule #baseFeePerBlobGas(BLOBGAS) => #fakeExponential(MIN_BASE_FEE_PER_BLOB_GAS, BLOBGAS, BLOB_BASE_FEE_UPDATE_FRACTION)
+    syntax Int ::= "MIN_BASE_FEE_PER_BLOB_GAS" [macro] | "BLOB_BASE_FEE_UPDATE_FRACTION" [macro]
+    rule MIN_BASE_FEE_PER_BLOB_GAS => 1
+    rule BLOB_BASE_FEE_UPDATE_FRACTION => 3338477
 
     syntax Int ::= #fakeExponential(Int, Int, Int) [symbol(#fakeExponential), function]
                  | #fakeExponential(Int, Int, Int, Int, Int) [function]
