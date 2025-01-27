@@ -365,6 +365,12 @@
           <txType>
             Legacy
           </txType>
+          <txMaxBlobFee>
+            0
+          </txMaxBlobFee>
+          <txVersionedHashes>
+            [ .JSONs ]
+          </txVersionedHashes>
         </message>
       </messages>
       <withdrawalsPending>

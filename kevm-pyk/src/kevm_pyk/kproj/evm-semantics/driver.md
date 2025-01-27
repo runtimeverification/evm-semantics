@@ -397,6 +397,7 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
     rule <k> loadTransaction _ { "s"                    : (TS:Bytes => #padToWidth(32, TS)), _ } ... </k> requires lengthBytes(TS) <Int 32
     rule <k> loadTransaction _ { "maxPriorityFeePerGas" : (V:Bytes  => #asWord(V)), _          } ... </k>
     rule <k> loadTransaction _ { "maxFeePerGas"         : (V:Bytes  => #asWord(V)), _          } ... </k>
+    rule <k> loadTransaction _ { "maxFeePerBlobGas"     : (V:Bytes  => #asWord(V)), _          } ... </k>
 ```
 
 ### Checking State
@@ -582,7 +583,7 @@ Here we check the other post-conditions associated with an EVM test.
     rule <k> check "transactions" : (_KEY     : (VALUE:String => #parseByteStack(VALUE))) ... </k>
     rule <k> check "transactions" : ("to"     : (VALUE:Bytes  => #asAccount(VALUE)))      ... </k>
     rule <k> check "transactions" : ( KEY     : (VALUE:Bytes  => #padToWidth(32, VALUE))) ... </k> requires KEY in (SetItem("r") SetItem("s")) andBool lengthBytes(VALUE) <Int 32
-    rule <k> check "transactions" : ( KEY     : (VALUE:Bytes  => #asWord(VALUE)))         ... </k> requires KEY in (SetItem("gasLimit") SetItem("gasPrice") SetItem("nonce") SetItem("v") SetItem("value") SetItem("chainId") SetItem("type") SetItem("maxFeePerGas") SetItem("maxPriorityFeePerGas"))
+    rule <k> check "transactions" : ( KEY     : (VALUE:Bytes  => #asWord(VALUE)))         ... </k> requires KEY in (SetItem("gasLimit") SetItem("gasPrice") SetItem("nonce") SetItem("v") SetItem("value") SetItem("chainId") SetItem("type") SetItem("maxFeePerGas") SetItem("maxPriorityFeePerGas") SetItem("maxFeePerBlobGas"))
     rule <k> check "transactions" : ("type"   : (VALUE:Int    => #asmTxPrefix(VALUE)))    ... </k>
 
     rule <k> check "transactions" : "accessList" : [ ACCESSLIST , REST ] => check "transactions" : "accessList" : ACCESSLIST  ~> check "transactions" : "accessList" : [ REST ] ... </k>
@@ -593,6 +594,11 @@ Here we check the other post-conditions associated with an EVM test.
     rule <k> check "transactions" : "accessList" : [ .JSONs ] => .K ... </k>
 
     rule <k> check "transactions" : "accessList" : "address" : ADDR : "storageKeys" : KEY        => .K ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txAccess> TA </txAccess> ... </message> requires isInAccessList(ADDR, KEY, TA)
+    
+    rule <k> check "transactions" : "blobVersionedHashes" : [ .JSONs ] => .K ... </k>
+    rule <k> check "transactions" : "blobVersionedHashes" : [ VHASH, REST ] => check "transactions" : "blobVersionedHashes" : VHASH ~> check "transactions" : "blobVersionedHashes" : [ REST ] ... </k>
+    rule <k> check "transactions" : ("blobVersionedHashes" : VHASH ) => .K ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txVersionedHashes> VH </txVersionedHashes> ... </message> requires isInVersionedHashes(VHASH, VH)
+
     rule <k> check "transactions" : ("data"                 : VALUE) => .K ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <data>          VALUE </data>           ... </message>
     rule <k> check "transactions" : ("gasLimit"             : VALUE) => .K ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txGasLimit>    VALUE </txGasLimit>     ... </message>
     rule <k> check "transactions" : ("gasPrice"             : VALUE) => .K ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txGasPrice>    VALUE </txGasPrice>     ... </message>
@@ -606,6 +612,7 @@ Here we check the other post-conditions associated with an EVM test.
     rule <k> check "transactions" : ("type"                 : VALUE) => .K ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txType>        VALUE </txType>         ... </message>
     rule <k> check "transactions" : ("maxFeePerGas"         : VALUE) => .K ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txMaxFee>      VALUE </txMaxFee>       ... </message>
     rule <k> check "transactions" : ("maxPriorityFeePerGas" : VALUE) => .K ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txPriorityFee> VALUE </txPriorityFee>  ... </message>
+    rule <k> check "transactions" : ("maxFeePerBlobGas"     : VALUE) => .K ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txMaxBlobFee>  VALUE </txMaxBlobFee>   ... </message>
     rule <k> check "transactions" : ("sender"               : VALUE) => .K ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <sigV> TW </sigV> <sigR> TR </sigR> <sigS> TS </sigS> ... </message> <chainID> B </chainID> requires #sender( #getTxData(TXID), TW, TR, TS, B ) ==K VALUE
 
     syntax Bool ::= isInAccessListStorage ( Int , JSON )    [symbol(isInAccessListStorage), function]
@@ -620,6 +627,14 @@ Here we check the other post-conditions associated with an EVM test.
     rule isInAccessListStorage(KEY, [SKEY, REST]) => #if   KEY ==Int #asWord(SKEY)
                                                      #then true
                                                      #else isInAccessListStorage(KEY, [REST]) #fi
+
+   // Different from AccessList, Versioned Hashs doesn't contains a list of key-value jsons, but a list of strings finishing in .JSONs like [ "0x01...", "0x02", .JSONs]
+   syntax Bool ::= isInVersionedHashes(Bytes, JSON) [symbol(isInVersionedHashes), function]
+ // ---------------------------------------------------------------------------------------
+   rule isInVersionedHashes(_, [.JSONs]) => false
+   rule isInVersionedHashes(KEY, [SKEY, REST]) => #if KEY ==K SKEY
+                                                  #then true
+                                                  #else isInVersionedHashes(KEY, [REST]) #fi
 ```
 
 TODO: case with nonzero ommers.
