@@ -32,6 +32,7 @@ module POT-JOIN-PASS-ROUGH-SPEC
             <static> false </static>
             <callDepth> VCallDepth </callDepth>
           </callState>
+        <versionedHashes> _ </versionedHashes>
           <substate>
             <selfDestruct> _VSelfDestruct </selfDestruct>
             <log> _ => ?_ </log>
@@ -200,6 +201,7 @@ module POT-JOIN-PASS-ROUGH-SPEC
             <static> _ </static>
             <callDepth> VCallDepth </callDepth>
           </callState>
+        <versionedHashes> _ </versionedHashes>
           <substate>
             <selfDestruct> _VSelfDestruct </selfDestruct>
             <log> _ => ?_ </log>
@@ -308,6 +310,7 @@ module POT-JOIN-PASS-ROUGH-SPEC
             <static> _ </static>
             <callDepth> VCallDepth </callDepth>
           </callState>
+        <versionedHashes> _ </versionedHashes>
           <substate>
             <selfDestruct> _VSelfDestruct </selfDestruct>
             <log> _ => ?_ </log>
@@ -413,6 +416,7 @@ module POT-JOIN-PASS-ROUGH-SPEC
             <static> false </static>
             <callDepth> VCallDepth </callDepth>
           </callState>
+        <versionedHashes> _ </versionedHashes>
           <substate>
             <selfDestruct> _VSelfDestruct </selfDestruct>
             <log> _ => ?_ </log>

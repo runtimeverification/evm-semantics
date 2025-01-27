@@ -32,6 +32,7 @@ module VAT-DENY-DIFF-FAIL-ROUGH-SPEC
             <static> false </static>
             <callDepth> VCallDepth => ?_ </callDepth>
           </callState>
+        <versionedHashes> _ </versionedHashes>
           <substate>
             <selfDestruct> _VSelfDestruct </selfDestruct>
             <log> _ => ?_ </log>
