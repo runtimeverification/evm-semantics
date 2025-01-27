@@ -30,7 +30,7 @@ module SCHEDULE
                           | "Ghasrejectedfirstbyte"   | "Ghasprevrandao"   | "Ghasmaxinitcodesize" | "Ghaspushzero"
                           | "Ghaswarmcoinbase"        | "Ghastransient"    | "Ghasmcopy"           | "Ghasbeaconroot"
                           | "Ghaseip6780"             | "Ghasblobbasefee"
- // -------------------------------------
+ // ---------------------------------------------------------------------
 ```
 
 ### Schedule Constants
