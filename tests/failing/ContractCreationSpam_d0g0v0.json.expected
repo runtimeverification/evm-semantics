@@ -74,6 +74,9 @@
         <callDepth>
           -1
         </callDepth>
+        <versionedHashes>
+          .List
+        </versionedHashes>
       </callState>
       <substate>
         <selfDestruct>

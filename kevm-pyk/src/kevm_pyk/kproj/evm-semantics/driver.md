@@ -70,6 +70,37 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
     rule <k> startTx => #finalizeBlock ... </k>
          <txPending> .List </txPending>
 
+    rule <k> startTx => loadTx( #sender( BlobTxData(TN, TPF, TM, TG, TT, TV, DATA, CID, TA, TB, TVH), TW, TR, TS, B ) ) ... </k>
+         <txPending> ListItem(TXID:Int) ... </txPending>
+         <chainID> B </chainID>
+         <message>
+           <msgID>             TXID </msgID>
+           <txNonce>           TN   </txNonce>
+           <txGasPrice>        TP   </txGasPrice>
+           <txGasLimit>        TG   </txGasLimit>
+           <to>                TT   </to>
+           <value>             TV   </value>
+           <sigV>              TW   </sigV>
+           <sigR>              TR   </sigR>
+           <sigS>              TS   </sigS>
+           <data>              DATA </data>
+           <txChainID>         CID  </txChainID>
+           <txAccess>          TA   </txAccess>
+           <txPriorityFee>     TPF  </txPriorityFee>
+           <txMaxFee>          TM   </txMaxFee>
+           <txMaxBlobFee>      TB   </txMaxBlobFee>
+           <txVersionedHashes> TVH  </txVersionedHashes>
+           <txType> Blob </txType>
+           ...
+         </message>
+         <evm>
+            <callState> 
+               <versionedHashes> _ => TVH </versionedHashes>
+               ...
+             </callState>
+             ...
+         </evm>
+
     rule <k> startTx => loadTx( #sender( #getTxData(TXID), TW, TR, TS, B ) ) ... </k>
          <txPending> ListItem(TXID:Int) ... </txPending>
          <chainID> B </chainID>
@@ -79,7 +110,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
            <sigR>       TR   </sigR>
            <sigS>       TS   </sigS>
            ...
-         </message>
+         </message> [owise]
 
     syntax EthereumCommand ::= loadTx ( Account ) [symbol(loadTx)]
  // --------------------------------------------------------------
