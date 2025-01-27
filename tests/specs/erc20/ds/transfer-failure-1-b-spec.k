@@ -40,6 +40,7 @@ module TRANSFER-FAILURE-1-B-SPEC
           <static> false </static> // NOTE: non-static call
           <callDepth> CALL_DEPTH </callDepth>
         </callState>
+        <versionedHashes> _ </versionedHashes>
 
         <substate>
           <selfDestruct> _ </selfDestruct>
