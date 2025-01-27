@@ -73,9 +73,9 @@ In the comments next to each cell, we've marked which component of the YellowPap
 
               <static>    false </static>
               <callDepth> 0     </callDepth>
-
-              <versionedHashes> .List </versionedHashes>
             </callState>
+
+            <versionedHashes> .List </versionedHashes>
 
             // A_* (execution substate)
             <substate>
@@ -1074,17 +1074,11 @@ The blockhash is calculated here using the "shortcut" formula used for running t
  // -------------------------------
 
     rule <k> BLOBHASH INDEX => 0 ~> #push ... </k>
-         <callState>
-            <versionedHashes> HASHES </versionedHashes>
-            ...
-         </callState>
+         <versionedHashes> HASHES </versionedHashes>
        requires INDEX >=Int size(HASHES)
 
     rule <k> BLOBHASH INDEX => #asWord( {HASHES[INDEX]}:>Bytes ) ~> #push ... </k>
-         <callState>
-            <versionedHashes> HASHES </versionedHashes>
-            ...
-         </callState>
+         <versionedHashes> HASHES </versionedHashes>
        requires INDEX <Int size(HASHES)
 ```
 

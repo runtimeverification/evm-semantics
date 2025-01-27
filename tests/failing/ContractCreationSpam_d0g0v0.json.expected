@@ -74,10 +74,10 @@
         <callDepth>
           -1
         </callDepth>
-        <versionedHashes>
-          .List
-        </versionedHashes>
       </callState>
+      <versionedHashes>
+        .List
+      </versionedHashes>
       <substate>
         <selfDestruct>
           .Set
