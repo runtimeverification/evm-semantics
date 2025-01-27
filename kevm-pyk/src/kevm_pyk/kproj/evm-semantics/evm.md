@@ -552,7 +552,12 @@ After executing a transaction, it's necessary to have the effect of the substate
 -   `#finalizeTx` makes the substate log actually have an effect on the state.
 -   `#deleteAccounts` deletes the accounts specified by the self destruct list.
 -   `#finalizeWithdrawals` increases the balance of the `address` specified by the `amount` given, for each withdrawal.
+-   `#gweiToWei` does the conversion from GWEI to WEI.
+
 ```k
+    syntax Int ::= #gweiToWei ( Int ) [symbol(#gweiToWei), function]
+ // ----------------------------------------------------------------
+   rule #gweiToWei(V) => V *Int 10 ^Int 9
 
     syntax InternalOp ::= "#finalizeWithdrawals" [symbol(#finalizeWithdrawals)]
  // ---------------------------------------------------------------------------
@@ -569,7 +574,7 @@ After executing a transaction, it's necessary to have the effect of the substate
          </withdrawal>
          <account>
            <acctID> ACCT </acctID>
-           <balance> B => B +Int (VALUE *Int 10 ^Int 9) </balance>
+           <balance> B => B +Int #gweiToWei(VALUE) </balance>
            ...
          </account>
 
