@@ -875,6 +875,26 @@ These are just used by the other operators for shuffling local execution state a
        andBool Gemptyisnonexistent << SCHED >>
 ```
 
+- `#baseFeePerBlobGas` will compute the blob base fee as specified by EIPs 4844 and 7516
+
+```k
+    syntax Int ::= #baseFeePerBlobGas( Int ) [symbol(#baseFeePerBlobGas), function]
+ // -------------------------------------------------------------------------------
+    rule #baseFeePerBlobGas(BLOBGAS) => #fakeExponential(MIN_BASE_FEE_PER_BLOB_GAS, BLOBGAS, BLOB_BASE_FEE_UPDATE_FRACTION)
+    syntax Int ::= "MIN_BASE_FEE_PER_BLOB_GAS" [macro] | "BLOB_BASE_FEE_UPDATE_FRACTION" [macro]
+    rule MIN_BASE_FEE_PER_BLOB_GAS => 1
+    rule BLOB_BASE_FEE_UPDATE_FRACTION => 3338477
+
+    syntax Int ::= #fakeExponential(Int, Int, Int) [symbol(#fakeExponential), function]
+                 | #fakeExponential(Int, Int, Int, Int, Int) [function]
+ // -------------------------------------------------------------------
+    rule #fakeExponential(FACTOR, NUMER, DENOM) => #fakeExponential(1, 0, FACTOR *Int DENOM, NUMER, DENOM)
+
+    rule #fakeExponential(I, OUTPUT, ACCUM, NUMER, DENOM)
+      => #fakeExponential(I +Int 1, OUTPUT +Int ACCUM, ACCUM *Int NUMER /Int (DENOM *Int I), NUMER, DENOM) requires ACCUM >Int 0
+    rule #fakeExponential(_, OUTPUT, _, _, DENOM) => OUTPUT /Int DENOM [owise]
+```
+
 ### Invalid Operator
 
 We use `INVALID` both for marking the designated invalid operator, and `UNDEFINED(_)` for garbage bytes in the input program.
@@ -1005,13 +1025,14 @@ NOTE: We have to call the opcode `OR` by `EVMOR` instead, because K has trouble 
 These operators make queries about the current execution state.
 
 ```k
-    syntax NullStackOp ::= "PC" | "GAS" | "GASPRICE" | "GASLIMIT" | "BASEFEE"
- // -------------------------------------------------------------------------
-    rule <k> PC       => PCOUNT          ~> #push ... </k> <pc> PCOUNT </pc>
-    rule <k> GAS      => gas2Int(GAVAIL) ~> #push ... </k> <gas> GAVAIL </gas>
-    rule <k> GASPRICE => GPRICE          ~> #push ... </k> <gasPrice> GPRICE </gasPrice>
-    rule <k> GASLIMIT => GLIMIT          ~> #push ... </k> <gasLimit> GLIMIT </gasLimit>
-    rule <k> BASEFEE  => BFEE            ~> #push ... </k> <baseFee> BFEE </baseFee>
+    syntax NullStackOp ::= "PC" | "GAS" | "GASPRICE" | "GASLIMIT" | "BASEFEE" | "BLOBBASEFEE"
+ // -----------------------------------------------------------------------------------------
+    rule <k> PC          => PCOUNT                      ~> #push ... </k> <pc> PCOUNT </pc>
+    rule <k> GAS         => gas2Int(GAVAIL)             ~> #push ... </k> <gas> GAVAIL </gas>
+    rule <k> GASPRICE    => GPRICE                      ~> #push ... </k> <gasPrice> GPRICE </gasPrice>
+    rule <k> GASLIMIT    => GLIMIT                      ~> #push ... </k> <gasLimit> GLIMIT </gasLimit>
+    rule <k> BASEFEE     => BFEE                        ~> #push ... </k> <baseFee> BFEE </baseFee>
+    rule <k> BLOBBASEFEE => #baseFeePerBlobGas(BLOBGAS) ~> #push ... </k> <excessBlobGas> BLOBGAS </excessBlobGas>
 
     syntax NullStackOp ::= "COINBASE" | "TIMESTAMP" | "NUMBER" | "DIFFICULTY" | "PREVRANDAO"
  // ----------------------------------------------------------------------------------------
@@ -2259,6 +2280,7 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
     rule <k> #gasExec(SCHED, PREVRANDAO)     => Gbase < SCHED > ... </k>
     rule <k> #gasExec(SCHED, GASLIMIT)       => Gbase < SCHED > ... </k>
     rule <k> #gasExec(SCHED, BASEFEE)        => Gbase < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, BLOBBASEFEE)    => Gbase < SCHED > ... </k>
     rule <k> #gasExec(SCHED, POP _)          => Gbase < SCHED > ... </k>
     rule <k> #gasExec(SCHED, PC)             => Gbase < SCHED > ... </k>
     rule <k> #gasExec(SCHED, PUSHZERO)       => Gbase < SCHED > ... </k>
@@ -2454,6 +2476,7 @@ After interpreting the strings representing programs as a `WordStack`, it should
     rule #dasmOpCode(  70, SCHED ) => CHAINID     requires Ghaschainid     << SCHED >>
     rule #dasmOpCode(  71, SCHED ) => SELFBALANCE requires Ghasselfbalance << SCHED >>
     rule #dasmOpCode(  72, SCHED ) => BASEFEE     requires Ghasbasefee     << SCHED >>
+    rule #dasmOpCode(  74, SCHED ) => BLOBBASEFEE requires Ghasblobbasefee << SCHED >>
     rule #dasmOpCode(  80,     _ ) => POP
     rule #dasmOpCode(  81,     _ ) => MLOAD
     rule #dasmOpCode(  82,     _ ) => MSTORE
