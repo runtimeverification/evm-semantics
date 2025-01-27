@@ -916,18 +916,10 @@ Some operators don't calculate anything, they just push the stack around a bit.
 These operations are getters/setters of the local execution memory.
 
 ```k
-    syntax UnStackOp ::= "MLOAD" | "BLOBHASH"
+    syntax UnStackOp ::= "MLOAD"
  // -----------------------------------------
     rule <k> MLOAD INDEX => #asWord(#range(LM, INDEX, 32)) ~> #push ... </k>
          <localMem> LM </localMem>
-
-   rule <k> BLOBHASH INDEX => 0 ~> #push ... </k>
-        <txVersionedHashes> HASHES </txVersionedHashes>
-      requires INDEX >=Int size(HASHES)
-
-   rule <k> BLOBHASH INDEX => #asWord( {HASHES[INDEX]}:>Bytes ) ~> #push ... </k>
-        <txVersionedHashes> HASHES </txVersionedHashes>
-      requires INDEX <Int size(HASHES)
 
     syntax BinStackOp ::= "MSTORE" | "MSTORE8"
  // ------------------------------------------
@@ -1073,6 +1065,19 @@ The blockhash is calculated here using the "shortcut" formula used for running t
     rule #blockhash(ListItem(0) _, _, _, _) => 0
     rule #blockhash(ListItem(H) _, N, N, _) => H
     rule #blockhash(ListItem(_) L, N, HI, A) => #blockhash(L, N, HI -Int 1, A +Int 1) [owise]
+```
+
+```k
+    syntax UnStackOp ::= "BLOBHASH"
+ // -------------------------------
+
+    rule <k> BLOBHASH INDEX => 0 ~> #push ... </k>
+         <txVersionedHashes> HASHES </txVersionedHashes>
+       requires INDEX >=Int size(HASHES)
+
+    rule <k> BLOBHASH INDEX => #asWord( {HASHES[INDEX]}:>Bytes ) ~> #push ... </k>
+         <txVersionedHashes> HASHES </txVersionedHashes>
+       requires INDEX <Int size(HASHES)
 ```
 
 EVM OpCodes
