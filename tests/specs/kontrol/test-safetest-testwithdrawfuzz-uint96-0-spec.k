@@ -69,7 +69,8 @@ module TEST-SAFETEST-TESTWITHDRAWFUZZ-UINT96-0-SPEC
                    <callDepth>
                      0
                    </callDepth>
-                 </callState> ) )
+                 </callState>
+        <versionedHashes> _ </versionedHashes> ) )
                </callStack>
                <interimStates>
                  ( .List => ListItem ( { <accounts>
@@ -187,6 +188,7 @@ module TEST-SAFETEST-TESTWITHDRAWFUZZ-UINT96-0-SPEC
                    ( 0 => 1 )
                  </callDepth>
                </callState>
+        <versionedHashes> _ </versionedHashes>
                <substate>
                  <selfDestruct>
                    SELFDESTRUCT_CELL:Set

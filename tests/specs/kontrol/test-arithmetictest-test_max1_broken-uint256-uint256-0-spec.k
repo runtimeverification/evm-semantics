@@ -75,6 +75,7 @@ module TEST-ARITHMETICTEST-TEST_MAX1_BROKEN-UINT256-UINT256-0-SPEC
                    0
                  </callDepth>
                </callState>
+        <versionedHashes> _ </versionedHashes>
                <substate>
                  <log>
                    .List

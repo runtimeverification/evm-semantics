@@ -71,7 +71,8 @@ module TEST-EXPECTREVERTTEST-TEST_EXPECTREVERT_BYTES4-0-SPEC
                    <callDepth>
                      0
                    </callDepth>
-                 </callState> ) )
+                 </callState>
+        <versionedHashes> _ </versionedHashes> ) )
                </callStack>
                <interimStates>
                  ( .List => ListItem ( { <accounts>
@@ -189,6 +190,7 @@ module TEST-EXPECTREVERTTEST-TEST_EXPECTREVERT_BYTES4-0-SPEC
                    ( 0 => 1 )
                  </callDepth>
                </callState>
+        <versionedHashes> _ </versionedHashes>
                <substate>
                  <selfDestruct>
                    SELFDESTRUCT_CELL:Set
@@ -396,7 +398,8 @@ module TEST-EXPECTREVERTTEST-TEST_EXPECTREVERT_BYTES4-0-SPEC
                    <callDepth>
                      0
                    </callDepth>
-                 </callState> ) => .List )
+                 </callState>
+        <versionedHashes> _ </versionedHashes> ) => .List )
                </callStack>
                <interimStates>
                  ( ListItem ( { <accounts>
@@ -514,6 +517,7 @@ module TEST-EXPECTREVERTTEST-TEST_EXPECTREVERT_BYTES4-0-SPEC
                    ( 1 => 0 )
                  </callDepth>
                </callState>
+        <versionedHashes> _ </versionedHashes>
                <substate>
                  <selfDestruct>
                    SELFDESTRUCT_CELL:Set

@@ -69,6 +69,7 @@ module TEST-ARITHMETICTEST-TEST_WDIV_ROUNDING-UINT256-UINT256-0-SPEC
                  </callDepth>
                  ...
                </callState>
+        <versionedHashes> _ </versionedHashes>
                <substate>
                  <log>
                    .List
