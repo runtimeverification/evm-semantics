@@ -35,6 +35,7 @@ module ECRECOVERLOOP00-SIG0-INVALID-SPEC
           <static> false </static> // NOTE: non-static call
           <callDepth> CD </callDepth>
         </callState>
+        <versionedHashes> _ </versionedHashes>
         <substate>
           <selfDestruct> _ </selfDestruct>
           <log> _ </log>
