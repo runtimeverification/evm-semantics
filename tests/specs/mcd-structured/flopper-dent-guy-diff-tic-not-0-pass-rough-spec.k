@@ -32,7 +32,7 @@ module FLOPPER-DENT-GUY-DIFF-TIC-NOT-0-PASS-ROUGH-SPEC
             <static> false </static>
             <callDepth> VCallDepth </callDepth>
           </callState>
-        <versionedHashes> _ </versionedHashes>
+          <versionedHashes> _ </versionedHashes>
           <substate>
             <selfDestruct> _VSelfDestruct </selfDestruct>
             <log> _ => ?_ </log>
@@ -208,7 +208,7 @@ module FLOPPER-DENT-GUY-DIFF-TIC-NOT-0-PASS-ROUGH-SPEC
             <static> _ </static>
             <callDepth> VCallDepth </callDepth>
           </callState>
-        <versionedHashes> _ </versionedHashes>
+          <versionedHashes> _ </versionedHashes>
           <substate>
             <selfDestruct> _VSelfDestruct </selfDestruct>
             <log> _ => ?_ </log>
@@ -312,7 +312,7 @@ module FLOPPER-DENT-GUY-DIFF-TIC-NOT-0-PASS-ROUGH-SPEC
             <static> _ </static>
             <callDepth> VCallDepth </callDepth>
           </callState>
-        <versionedHashes> _ </versionedHashes>
+          <versionedHashes> _ </versionedHashes>
           <substate>
             <selfDestruct> _VSelfDestruct </selfDestruct>
             <log> _ => ?_ </log>
@@ -416,7 +416,7 @@ module FLOPPER-DENT-GUY-DIFF-TIC-NOT-0-PASS-ROUGH-SPEC
             <static> false </static>
             <callDepth> VCallDepth </callDepth>
           </callState>
-        <versionedHashes> _ </versionedHashes>
+          <versionedHashes> _ </versionedHashes>
           <substate>
             <selfDestruct> _VSelfDestruct </selfDestruct>
             <log> _ => ?_ </log>

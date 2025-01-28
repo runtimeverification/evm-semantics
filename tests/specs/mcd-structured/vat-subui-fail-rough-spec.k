@@ -32,7 +32,7 @@ module VAT-SUBUI-FAIL-ROUGH-SPEC
             <static> _ </static>
             <callDepth> VCallDepth => ?_ </callDepth>
           </callState>
-        <versionedHashes> _ </versionedHashes>
+          <versionedHashes> _ </versionedHashes>
           <substate>
             <selfDestruct> _VSelfDestruct </selfDestruct>
             <log> _ => ?_ </log>
