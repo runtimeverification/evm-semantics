@@ -939,7 +939,7 @@ These operations are getters/setters of the local execution memory.
 
 ```k
     syntax UnStackOp ::= "MLOAD"
- // -----------------------------------------
+ // ----------------------------
     rule <k> MLOAD INDEX => #asWord(#range(LM, INDEX, 32)) ~> #push ... </k>
          <localMem> LM </localMem>
 
