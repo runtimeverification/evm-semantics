@@ -62,12 +62,13 @@ def _test(gst_file: Path, *, schedule: str, mode: str, usegas: bool, save_failin
     if not failing_tests:
         return
     if save_failing:
-        with FAILING_TESTS_FILE.open('a') as ff:
+        with FAILING_TESTS_FILE.open('a', newline='') as ff:
+            writer = csv.writer(ff)
             if len(failing_tests) == len(gst_data):
-                ff.write(f'{gst_file_relative_path},*\n')
+                writer.writerow([gst_file_relative_path, '*'])
             else:
                 for test_name in sorted(failing_tests):
-                    ff.write(f'{gst_file_relative_path},{test_name}\n')
+                    writer.writerow([gst_file_relative_path, test_name])
     raise AssertionError(f'Found failing tests in GST file {gst_file_relative_path}: {failing_tests}')
 
 

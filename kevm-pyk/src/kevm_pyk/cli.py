@@ -6,7 +6,9 @@ from functools import cached_property
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-from pyk.cli.args import BugReportOptions
+from pyk.cli.args import (
+    BugReportOptions,
+)
 from pyk.cli.args import DisplayOptions as PykDisplayOptions
 from pyk.cli.args import (
     KCLIArgs,
