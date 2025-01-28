@@ -29,8 +29,8 @@ module SCHEDULE
                           | "Ghassstorestipend"       | "Ghaschainid"      | "Ghasaccesslist"      | "Ghasbasefee"
                           | "Ghasrejectedfirstbyte"   | "Ghasprevrandao"   | "Ghasmaxinitcodesize" | "Ghaspushzero"
                           | "Ghaswarmcoinbase"        | "Ghaswithdrawals"  | "Ghastransient"       | "Ghasmcopy"
-                          | "Ghasbeaconroot"          | "Ghaseip6780"
- // -----------------------------------------------------------------
+                          | "Ghasbeaconroot"          | "Ghaseip6780"      | "Ghasblobbasefee"
+ // ------------------------------------------------------------------------------------------
 ```
 
 ### Schedule Constants
@@ -142,6 +142,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghaschainid             << DEFAULT >> => false
     rule Ghasaccesslist          << DEFAULT >> => false
     rule Ghasbasefee             << DEFAULT >> => false
+    rule Ghasblobbasefee         << DEFAULT >> => false
     rule Ghasrejectedfirstbyte   << DEFAULT >> => false
     rule Ghasprevrandao          << DEFAULT >> => false
     rule Ghasmaxinitcodesize     << DEFAULT >> => false
@@ -392,15 +393,17 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule SCHEDCONST             < CANCUN > => SCHEDCONST < SHANGHAI >
       requires notBool (SCHEDCONST ==K Gwarmstoragedirtystore)
 
-    rule Ghastransient  << CANCUN >> => true
-    rule Ghasmcopy      << CANCUN >> => true
-    rule Ghasbeaconroot << CANCUN >> => true
-    rule Ghaseip6780    << CANCUN >> => true
+    rule Ghastransient   << CANCUN >> => true
+    rule Ghasmcopy       << CANCUN >> => true
+    rule Ghasbeaconroot  << CANCUN >> => true
+    rule Ghaseip6780     << CANCUN >> => true
+    rule Ghasblobbasefee << CANCUN >> => true
     rule SCHEDFLAG     << CANCUN >> => SCHEDFLAG << SHANGHAI >>
       requires notBool ( SCHEDFLAG ==K Ghastransient
                   orBool SCHEDFLAG ==K Ghasmcopy
                   orBool SCHEDFLAG ==K Ghasbeaconroot
                   orBool SCHEDFLAG ==K Ghaseip6780
+                  orBool SCHEDFLAG ==K Ghasblobbasefee
                        )
 ```
 ```k
