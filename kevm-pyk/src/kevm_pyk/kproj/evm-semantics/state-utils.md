@@ -462,7 +462,6 @@ The `"rlp"` key loads the block information.
          <message>
            <msgID>             TXID </msgID>
            <txNonce>           TN   </txNonce>
-           <txGasPrice>        TP   </txGasPrice>
            <txGasLimit>        TG   </txGasLimit>
            <to>                TT   </to>
            <value>             TV   </value>
