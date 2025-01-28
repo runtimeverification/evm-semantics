@@ -71,8 +71,7 @@ module TEST-ALLOWCHANGESTEST-TESTFAILALLOWCHANGESTOSTORAGE-0-SPEC
                    <callDepth>
                      0
                    </callDepth>
-                 </callState>
-        <versionedHashes> _ </versionedHashes> ) )
+                 </callState> ) )
                </callStack>
                <interimStates>
                  ( .List => ListItem ( { <accounts>
@@ -400,8 +399,7 @@ module TEST-ALLOWCHANGESTEST-TESTFAILALLOWCHANGESTOSTORAGE-0-SPEC
                    <callDepth>
                      0
                    </callDepth>
-                 </callState>
-        <versionedHashes> _ </versionedHashes> )
+                 </callState> )
                </callStack>
                <interimStates>
                  ListItem ( { <accounts>
@@ -562,7 +560,7 @@ module TEST-ALLOWCHANGESTEST-TESTFAILALLOWCHANGESTOSTORAGE-0-SPEC
                    1
                  </callDepth>
                </callState>
-        <versionedHashes> _ </versionedHashes>
+               <versionedHashes> _ </versionedHashes>
                <substate>
                  <selfDestruct>
                    SELFDESTRUCT_CELL:Set

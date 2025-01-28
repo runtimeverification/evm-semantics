@@ -22,7 +22,7 @@ module DSVALUE-READ-PASS-SUMMARIZE-SPEC
 //          <memoryUsed> 0 => ?_ </memoryUsed>
 //          (_ => ?_)
 //        </callState>
-        <versionedHashes> _ </versionedHashes>
+//        <versionedHashes> _ </versionedHashes>
 //        (_ => ?_)
 //      </evm>
 //      <account>
@@ -81,7 +81,7 @@ module DSVALUE-READ-PASS-SUMMARIZE-SPEC
 //           </memoryUsed>
 //           ...
 //         </callState>
-        <versionedHashes> _ </versionedHashes>
+//        <versionedHashes> _ </versionedHashes>
 //         ...
 //       </evm>
 //       <network>

@@ -71,8 +71,7 @@ module TEST-OWNERUPONLYTEST-TESTINCREMENTASOWNER-0-SPEC
                    <callDepth>
                      0
                    </callDepth>
-                 </callState>
-        <versionedHashes> _ </versionedHashes> ) )
+                 </callState> ) )
                </callStack>
                <interimStates>
                  ( .List => ListItem ( { <accounts>
@@ -190,7 +189,7 @@ module TEST-OWNERUPONLYTEST-TESTINCREMENTASOWNER-0-SPEC
                    ( 0 => 1 )
                  </callDepth>
                </callState>
-        <versionedHashes> _ </versionedHashes>
+               <versionedHashes> _ </versionedHashes>
                <substate>
                  <selfDestruct>
                    SELFDESTRUCT_CELL:Set
@@ -400,8 +399,7 @@ module TEST-OWNERUPONLYTEST-TESTINCREMENTASOWNER-0-SPEC
                    <callDepth>
                      0
                    </callDepth>
-                 </callState>
-        <versionedHashes> _ </versionedHashes> ) )
+                 </callState> ) )
                </callStack>
                <interimStates>
                  ( .List => ListItem ( { <accounts>
@@ -543,7 +541,7 @@ module TEST-OWNERUPONLYTEST-TESTINCREMENTASOWNER-0-SPEC
                    ( 0 => 1 )
                  </callDepth>
                </callState>
-        <versionedHashes> _ </versionedHashes>
+               <versionedHashes> _ </versionedHashes>
                <substate>
                  <selfDestruct>
                    SELFDESTRUCT_CELL:Set
