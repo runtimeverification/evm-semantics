@@ -31,7 +31,7 @@ module VAT-HEAL-PASS-SPEC
             <static> false </static>
             <callDepth> VCallDepth </callDepth>
           </callState>
-        <versionedHashes> _ </versionedHashes>
+          <versionedHashes> _ </versionedHashes>
           <substate>
             <selfDestruct> _VSelfDestruct </selfDestruct>
             <log> _ => ?_ </log>
