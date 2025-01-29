@@ -80,6 +80,7 @@ module VAT-ARITHMETIC-SPEC
           <txOrder> _ </txOrder>
           <txPending> _ </txPending>
           <messages> _ </messages>
+          ...
         </network>
       </ethereum>
       requires #rangeAddress(ACCT_ID)
@@ -181,6 +182,7 @@ module VAT-ARITHMETIC-SPEC
           <txOrder> _ </txOrder>
           <txPending> _ </txPending>
           <messages> _ </messages>
+          ...
         </network>
       </ethereum>
       requires #rangeAddress(ACCT_ID)
@@ -276,6 +278,7 @@ module VAT-ARITHMETIC-SPEC
           <txOrder> _ </txOrder>
           <txPending> _ </txPending>
           <messages> _ </messages>
+          ...
         </network>
       </ethereum>
       requires #rangeAddress(ACCT_ID)
@@ -377,6 +380,7 @@ module VAT-ARITHMETIC-SPEC
           <txOrder> _ </txOrder>
           <txPending> _ </txPending>
           <messages> _ </messages>
+          ...
         </network>
       </ethereum>
       requires #rangeAddress(ACCT_ID)
@@ -475,6 +479,7 @@ module VAT-ARITHMETIC-SPEC
           <txOrder> _ </txOrder>
           <txPending> _ </txPending>
           <messages> _ </messages>
+          ...
         </network>
       </ethereum>
       requires #rangeAddress(ACCT_ID)
@@ -573,6 +578,7 @@ module VAT-ARITHMETIC-SPEC
           <txOrder> _ </txOrder>
           <txPending> _ </txPending>
           <messages> _ </messages>
+          ...
         </network>
       </ethereum>
       requires #rangeAddress(ACCT_ID)

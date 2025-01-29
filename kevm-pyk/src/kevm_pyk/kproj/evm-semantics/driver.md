@@ -409,14 +409,14 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
  // ---------------------------------------
     rule <k> #halt ~> check J:JSON => check J ~> #halt ... </k>
 
-    rule <k> check DATA : { .JSONs } => .K ... </k> requires DATA =/=String "transactions"
-    rule <k> check DATA : [ .JSONs ] => .K ... </k> requires DATA =/=String "ommerHeaders"
+    rule <k> check DATA : { .JSONs } => .K ... </k> requires notBool DATA in (SetItem("transactions") SetItem("withdrawals"))
+    rule <k> check DATA : [ .JSONs ] => .K ... </k> requires notBool DATA in (SetItem("ommerHeaders") SetItem( "transactions") SetItem("withdrawals"))
 
     rule <k> check DATA : { (KEY:String) : VALUE , REST } => check DATA : { KEY : VALUE } ~> check DATA : { REST } ... </k>
-      requires REST =/=K .JSONs andBool notBool DATA in (SetItem("callcreates") SetItem("transactions"))
+      requires REST =/=K .JSONs andBool notBool DATA in (SetItem("callcreates") SetItem("transactions") SetItem("withdrawals"))
 
     rule <k> check DATA : [ { TEST } , REST ] => check DATA : { TEST } ~> check DATA : [ REST ] ... </k>
-      requires DATA =/=String "transactions"
+      requires notBool DATA in (SetItem("transactions") SetItem("withdrawals"))
 
     rule <k> check (KEY:String) : { JS:JSONs => qsortJSONs(JS) } ... </k>
       requires KEY in (SetItem("callcreates")) andBool notBool sortedJSONs(JS)
@@ -648,6 +648,20 @@ TODO: case with nonzero ommers.
 ```k
     rule <k> check TESTID : {"withdrawals" : WITHDRAWALS } => check "withdrawals" : WITHDRAWALS ~> failure TESTID ... </k>
  // ----------------------------------------------------------------------------------------------------------------------
+    rule <k> check "withdrawals" : [ .JSONs ] => .K ... </k> <withdrawalsOrder> .List                    </withdrawalsOrder>
+    rule <k> check "withdrawals" : { .JSONs } => .K ... </k> <withdrawalsOrder> ListItem(_) => .List ... </withdrawalsOrder>
+
+    rule <k> check "withdrawals" : [ WITHDRAWAL , REST ]  => check "withdrawals" : WITHDRAWAL    ~> check "withdrawals" : [ REST ] ... </k>
+    rule <k> check "withdrawals" : { KEY : VALUE , REST } => check "withdrawals" : (KEY : VALUE) ~> check "withdrawals" : { REST } ... </k>
+
+    rule <k> check "withdrawals" : (_KEY      : (VALUE:String => #parseByteStack(VALUE))) ... </k>
+    rule <k> check "withdrawals" : ("address" : (VALUE:Bytes  => #asAccount(VALUE)))      ... </k>
+    rule <k> check "withdrawals" : ( KEY      : (VALUE:Bytes  => #asWord(VALUE)))         ... </k> requires KEY =/=String "address"
+
+    rule <k> check "withdrawals" : ("address"        : VALUE ) => .K ... </k> <withdrawalsOrder> ListItem(WID) ... </withdrawalsOrder> <withdrawal> <withdrawalID> WID </withdrawalID> <address>        VALUE </address>        ... </withdrawal>
+    rule <k> check "withdrawals" : ("amount"         : VALUE ) => .K ... </k> <withdrawalsOrder> ListItem(WID) ... </withdrawalsOrder> <withdrawal> <withdrawalID> WID </withdrawalID> <amount>         VALUE </amount>         ... </withdrawal>
+    rule <k> check "withdrawals" : ("validatorIndex" : VALUE ) => .K ... </k> <withdrawalsOrder> ListItem(WID) ... </withdrawalsOrder> <withdrawal> <withdrawalID> WID </withdrawalID> <validatorIndex> VALUE </validatorIndex> ... </withdrawal>
+    rule <k> check "withdrawals" : ("index"          : VALUE ) => .K ... </k> <withdrawalsOrder> ListItem(WID) ... </withdrawalsOrder> <withdrawal> <withdrawalID> WID </withdrawalID> <index>          VALUE </index>          ... </withdrawal>
 ```
 
 ```k
