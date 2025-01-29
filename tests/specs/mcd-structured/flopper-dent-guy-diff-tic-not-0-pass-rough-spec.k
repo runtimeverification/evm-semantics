@@ -120,6 +120,7 @@ module FLOPPER-DENT-GUY-DIFF-TIC-NOT-0-PASS-ROUGH-SPEC
           <txOrder> _ </txOrder>
           <txPending> _ </txPending>
           <messages> _ </messages>
+          ...
         </network>
       </ethereum>
       requires #rangeAddress(ACCT_ID)
@@ -261,6 +262,7 @@ module FLOPPER-DENT-GUY-DIFF-TIC-NOT-0-PASS-ROUGH-SPEC
           <txOrder> _ </txOrder>
           <txPending> _ </txPending>
           <messages> _ </messages>
+          ...
         </network>
       </ethereum>
       requires #rangeAddress(ACCT_ID)
@@ -365,6 +367,7 @@ module FLOPPER-DENT-GUY-DIFF-TIC-NOT-0-PASS-ROUGH-SPEC
           <txOrder> _ </txOrder>
           <txPending> _ </txPending>
           <messages> _ </messages>
+          ...
         </network>
       </ethereum>
       requires #rangeAddress(ACCT_ID)
@@ -482,6 +485,7 @@ module FLOPPER-DENT-GUY-DIFF-TIC-NOT-0-PASS-ROUGH-SPEC
           <txOrder> _ </txOrder>
           <txPending> _ </txPending>
           <messages> _ </messages>
+          ...
         </network>
       </ethereum>
       requires #rangeAddress(ACCT_ID)

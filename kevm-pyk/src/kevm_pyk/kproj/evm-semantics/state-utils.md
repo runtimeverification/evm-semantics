@@ -83,6 +83,7 @@ module STATE-UTILS
          <statusCode>     _ => .StatusCode </statusCode>
          <accounts>       _ => .Bag        </accounts>
          <messages>       _ => .Bag        </messages>
+         <withdrawals>    _ => .Bag        </withdrawals>
          <schedule>       _ => DEFAULT     </schedule>
 
 ```
@@ -256,6 +257,45 @@ The `"rlp"` key loads the block information.
 
     rule <k> load "genesisRLP": [ [ HP, HO, HC, HR, HT, HE:Bytes, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, .JSONs ], _, _, .JSONs ] => .K ... </k>
          <blockhashes> .List => ListItem(#blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF)) ListItem(#asWord(HP)) ... </blockhashes>
+
+    syntax Int ::= "#newWithdrawalID" "(" List ")" [function]
+ // ---------------------------------------------------------
+    rule #newWithdrawalID (.List) => 0
+    rule #newWithdrawalID (_ ListItem(I)) => I +Int 1
+
+    syntax EthereumCommand ::= "mkWD" Int
+ // -------------------------------------
+    rule <k> mkWD (WDID => WDID +Int 1) ... </k>
+         <withdrawal> <withdrawalID> WDID </withdrawalID> ... </withdrawal>
+
+    rule <k> mkWD WDID => .K ... </k>
+         <withdrawalsOrder>   ... (.List => ListItem(WDID)) </withdrawalsOrder>
+         <withdrawalsPending> ... (.List => ListItem(WDID)) </withdrawalsPending>
+         <withdrawals>
+            ( .Bag
+           => <withdrawal>
+                <withdrawalID> WDID </withdrawalID>
+                ...
+              </withdrawal>
+            )
+            ...
+          </withdrawals> [owise]
+
+    syntax EthereumCommand ::= "loadWithdraw" JSON
+ // ----------------------------------------------
+    rule <k> loadWithdraw [ INDEX , VALIDATOR , ACCT , VALUE , .JSONs ] => .K ... </k>
+         <withdrawalsOrder> ... ListItem(WID) </withdrawalsOrder>
+         <withdrawal>
+              <withdrawalID>   WID                     </withdrawalID>
+              <index>          _ => #asWord(INDEX)     </index>
+              <validatorIndex> _ => #asWord(VALIDATOR) </validatorIndex>
+              <address>        _ => #asAccount(ACCT)   </address>
+              <amount>         _ => #asWord(VALUE)     </amount>
+         </withdrawal>
+
+    rule <k> load "withdraw" : [ .JSONs ]          => .K ... </k>
+    rule <k> load "withdraw" : [ WITHDRAW , REST ] => mkWD #newWithdrawalID(WIDS) ~> loadWithdraw WITHDRAW ~> load "withdraw" : [ REST ] ... </k>
+         <withdrawalsOrder> WIDS </withdrawalsOrder>
 
     syntax EthereumCommand ::= "mkTX" Int
  // -------------------------------------

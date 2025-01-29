@@ -85,6 +85,7 @@ module FLOPPER-DENT-GUY-SAME-PASS-ROUGH-SPEC
           <txOrder> _ </txOrder>
           <txPending> _ </txPending>
           <messages> _ </messages>
+        ...
         </network>
       </ethereum>
       requires #rangeAddress(ACCT_ID)
@@ -256,6 +257,7 @@ module FLOPPER-DENT-GUY-SAME-PASS-ROUGH-SPEC
           <txOrder> _ </txOrder>
           <txPending> _ </txPending>
           <messages> _ </messages>
+        ...
         </network>
       </ethereum>
       requires #rangeAddress(ACCT_ID)
@@ -361,6 +363,7 @@ module FLOPPER-DENT-GUY-SAME-PASS-ROUGH-SPEC
           <txOrder> _ </txOrder>
           <txPending> _ </txPending>
           <messages> _ </messages>
+        ...
         </network>
       </ethereum>
       requires #rangeAddress(ACCT_ID)

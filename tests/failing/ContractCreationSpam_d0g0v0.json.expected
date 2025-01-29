@@ -330,6 +330,15 @@
           </txVersionedHashes>
         </message>
       </messages>
+      <withdrawalsPending>
+        .List
+      </withdrawalsPending>
+      <withdrawalsOrder>
+        .List
+      </withdrawalsOrder>
+      <withdrawals>
+        .WithdrawalCellMap
+      </withdrawals>
     </network>
   </ethereum>
 </kevm>

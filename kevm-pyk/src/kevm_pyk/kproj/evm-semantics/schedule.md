@@ -28,8 +28,8 @@ module SCHEDULE
                           | "Ghasdirtysstore"         | "Ghascreate2"      | "Ghasextcodehash"     | "Ghasselfbalance"
                           | "Ghassstorestipend"       | "Ghaschainid"      | "Ghasaccesslist"      | "Ghasbasefee"
                           | "Ghasrejectedfirstbyte"   | "Ghasprevrandao"   | "Ghasmaxinitcodesize" | "Ghaspushzero"
-                          | "Ghaswarmcoinbase"        | "Ghastransient"    | "Ghasmcopy"           | "Ghasbeaconroot"
-                          | "Ghaseip6780"             | "Ghasblobbasefee"  | "Ghasblobhash"
+                          | "Ghaswarmcoinbase"        | "Ghaswithdrawals"  | "Ghastransient"       | "Ghasmcopy"
+                          | "Ghasbeaconroot"          | "Ghaseip6780"      | "Ghasblobbasefee"     | "Ghasblobhash"
 ```
 
 ### Schedule Constants
@@ -147,6 +147,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghasmaxinitcodesize     << DEFAULT >> => false
     rule Ghaspushzero            << DEFAULT >> => false
     rule Ghaswarmcoinbase        << DEFAULT >> => false
+    rule Ghaswithdrawals         << DEFAULT >> => false
     rule Ghastransient           << DEFAULT >> => false
     rule Ghasmcopy               << DEFAULT >> => false
     rule Ghasbeaconroot          << DEFAULT >> => false
@@ -374,10 +375,12 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghasmaxinitcodesize << SHANGHAI >> => true
     rule Ghaspushzero        << SHANGHAI >> => true
     rule Ghaswarmcoinbase    << SHANGHAI >> => true
+    rule Ghaswithdrawals     << SHANGHAI >> => true
     rule SCHEDFLAG           << SHANGHAI >> => SCHEDFLAG << MERGE >>
       requires notBool ( SCHEDFLAG ==K Ghasmaxinitcodesize
                   orBool SCHEDFLAG ==K Ghaspushzero
                   orBool SCHEDFLAG ==K Ghaswarmcoinbase
+                  orBool SCHEDFLAG ==K Ghaswithdrawals
                        )
 ```
 

@@ -99,6 +99,7 @@ module TOTALSUPPLY-SPEC
         <txOrder> _ </txOrder>
         <txPending> _ </txPending>
         <messages> _ </messages>
+        ...
       </network>
     </ethereum>
     </kevm>
