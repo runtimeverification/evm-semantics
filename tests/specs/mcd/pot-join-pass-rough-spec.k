@@ -93,6 +93,7 @@ module POT-JOIN-PASS-ROUGH-SPEC
           <txOrder> _ </txOrder>
           <txPending> _ </txPending>
           <messages> _ </messages>
+        ...
         </network>
       </ethereum>
       requires #rangeAddress(ACCT_ID)
@@ -252,6 +253,7 @@ module POT-JOIN-PASS-ROUGH-SPEC
           <txOrder> _ </txOrder>
           <txPending> _ </txPending>
           <messages> _ </messages>
+        ...
         </network>
       </ethereum>
       requires #rangeAddress(ACCT_ID)
@@ -360,6 +362,7 @@ module POT-JOIN-PASS-ROUGH-SPEC
           <txOrder> _ </txOrder>
           <txPending> _ </txPending>
           <messages> _ </messages>
+        ...
         </network>
       </ethereum>
       requires #rangeAddress(ACCT_ID)
@@ -465,6 +468,7 @@ module POT-JOIN-PASS-ROUGH-SPEC
           <txOrder> _ </txOrder>
           <txPending> _ </txPending>
           <messages> _ </messages>
+        ...
         </network>
       </ethereum>
       requires #rangeAddress(ACCT_ID)

@@ -84,6 +84,7 @@ module FLOPPER-KICK-PASS-ROUGH-SPEC
           <txOrder> _ </txOrder>
           <txPending> _ </txPending>
           <messages> _ </messages>
+        ...
         </network>
       </ethereum>
       requires #rangeAddress(ACCT_ID)
@@ -243,6 +244,7 @@ module FLOPPER-KICK-PASS-ROUGH-SPEC
           <txOrder> _ </txOrder>
           <txPending> _ </txPending>
           <messages> _ </messages>
+        ...
         </network>
       </ethereum>
       requires #rangeAddress(ACCT_ID)

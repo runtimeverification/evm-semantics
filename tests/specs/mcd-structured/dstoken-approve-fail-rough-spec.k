@@ -88,6 +88,7 @@ module DSTOKEN-APPROVE-FAIL-ROUGH-SPEC
           <txOrder> _ </txOrder>
           <txPending> _ </txPending>
           <messages> _ </messages>
+          ...
         </network>
       </ethereum>
       requires #rangeAddress(ACCT_ID)

@@ -73,6 +73,7 @@ module CAT-EXHAUSTIVENESS-SPEC
            <txOrder> _ </txOrder>
            <txPending> _ </txPending>
            <messages> _ </messages>
+           ...
          </network>
        </ethereum>
      requires #rangeAddress(ACCT_ID)

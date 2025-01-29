@@ -116,6 +116,7 @@ module STORAGEVAR01-SPEC
         <txOrder> _ </txOrder>
         <txPending> _ </txPending>
         <messages> _ </messages>
+        ...
       </network>
     </ethereum>
     requires #rangeAddress(CONTRACT_ID)

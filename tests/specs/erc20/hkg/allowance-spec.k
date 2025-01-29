@@ -99,6 +99,7 @@ _:Map </storage>
         <txOrder> _ </txOrder>
         <txPending> _ </txPending>
         <messages> _ </messages>
+        ...
       </network>
     </ethereum>
     </kevm>

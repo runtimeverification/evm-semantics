@@ -117,6 +117,7 @@ module FLAPPER-YANK-PASS-ROUGH-SPEC
           <txOrder> _ </txOrder>
           <txPending> _ </txPending>
           <messages> _ </messages>
+          ...
         </network>
       </ethereum>
       requires #rangeAddress(ACCT_ID)
@@ -263,6 +264,7 @@ module FLAPPER-YANK-PASS-ROUGH-SPEC
           <txOrder> _ </txOrder>
           <txPending> _ </txPending>
           <messages> _ </messages>
+          ...
         </network>
       </ethereum>
       requires #rangeAddress(ACCT_ID)
