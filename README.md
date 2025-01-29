@@ -231,7 +231,7 @@ poetry -C kevm-pyk run kdist build evm-semantics.llvm --arg enable-llvm-debug=tr
 To debug a conformance test, add the `--debugger` flag to the command:
 
 ```sh
-poetry -C kevm-pyk run kevm-pyk run tests/ethereum-tests/BlockchainTests/GeneralStateTests/stExample/add11.json --target llvm --mode NORMAL --schedule SHANGHAI --chainid 1 --debugger
+poetry -C kevm-pyk run kevm-pyk run tests/ethereum-tests/BlockchainTests/GeneralStateTests/stExample/add11.json --target llvm --mode NORMAL --schedule CANCUN --chainid 1 --debugger
 ```
 
 ### Keeping in mind while developing
