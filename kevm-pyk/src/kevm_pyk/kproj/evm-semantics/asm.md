@@ -105,6 +105,7 @@ Operator `#revOps` can be used to reverse a program.
     rule #asmOpCode( GASLIMIT       ) =>  69
     rule #asmOpCode( CHAINID        ) =>  70
     rule #asmOpCode( SELFBALANCE    ) =>  71
+    rule #asmOpCode( BASEFEE        ) =>  72
     rule #asmOpCode( BLOBHASH       ) =>  73
     rule #asmOpCode( POP            ) =>  80
     rule #asmOpCode( MLOAD          ) =>  81
