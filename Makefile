@@ -145,7 +145,7 @@ test-prove-smoke: $(prove_smoke_tests:=.prove)
 TEST_CONCRETE_BACKEND := llvm
 
 KEVM_MODE     := NORMAL
-KEVM_SCHEDULE := SHANGHAI
+KEVM_SCHEDULE := CANCUN
 KEVM_CHAINID  := 1
 
 KRUN_OPTS     ?=
