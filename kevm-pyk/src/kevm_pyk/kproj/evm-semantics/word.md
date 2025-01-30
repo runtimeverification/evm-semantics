@@ -470,16 +470,17 @@ Range of types
 --------------
 
 ```k
-    syntax Bool ::= #rangeBool     ( Int )             [symbol(rangeBool)    , alias]
-                  | #rangeSInt     ( Int , Int )       [symbol(rangeSInt)    , alias]
-                  | #rangeUInt     ( Int , Int )       [symbol(rangeUInt)    , alias]
-                  | #rangeSFixed   ( Int , Int , Int ) [symbol(rangeSFixed)  , alias]
-                  | #rangeUFixed   ( Int , Int , Int ) [symbol(rangeUFixed)  , alias]
-                  | #rangeAddress  ( Int )             [symbol(rangeAddress) , alias]
-                  | #rangeBytes    ( Int , Int )       [symbol(rangeBytes)   , alias]
-                  | #rangeNonce    ( Int )             [symbol(rangeNonce)   , alias]
-                  | #rangeSmall    ( Int )             [symbol(rangeSmall)   , alias]
-                  | #rangeBlockNum ( Int )             [symbol(rangeBlockNum), alias]
+    syntax Bool ::= #rangeBool     ( Int )             [symbol(rangeBool)     , alias]
+                  | #rangeSInt     ( Int , Int )       [symbol(rangeSInt)     , alias]
+                  | #rangeUInt     ( Int , Int )       [symbol(rangeUInt)     , alias]
+                  | #rangeSFixed   ( Int , Int , Int ) [symbol(rangeSFixed)   , alias]
+                  | #rangeUFixed   ( Int , Int , Int ) [symbol(rangeUFixed)   , alias]
+                  | #rangeAddress  ( Int )             [symbol(rangeAddress)  , alias]
+                  | #rangeBytes    ( Int , Int )       [symbol(rangeBytes)    , alias]
+                  | #rangeNonce    ( Int )             [symbol(rangeNonce)    , alias]
+                  | #rangeSmall    ( Int )             [symbol(rangeSmall)    , alias]
+                  | #rangeBlockNum ( Int )             [symbol(rangeBlockNum) , alias]
+                  | #rangeNegUInt64( Int )             [symbol(rangeNegUInt64), alias]
  // ---------------------------------------------------------------------------------
     rule #rangeBool    (            X ) => #range ( 0               <= X <  2               )
 
@@ -557,6 +558,7 @@ Range of types
     rule #rangeNonce    (   X          ) => #range ( 0               <= X < maxUInt64        )
     rule #rangeSmall    (   X          ) => #range ( 0               <= X < 10               )
     rule #rangeBlockNum (   X          ) => #range ( 0               <= X <= maxBlockNum     )
+    rule #rangeNegUInt64(   X          ) => #range ( pow56           <= X < pow64            )
 
     syntax Bool ::= "#range" "(" Int "<"  Int "<"  Int ")" [alias]
                   | "#range" "(" Int "<"  Int "<=" Int ")" [alias]
