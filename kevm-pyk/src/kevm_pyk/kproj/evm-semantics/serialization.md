@@ -244,7 +244,7 @@ Unparsing
     syntax JSONs ::= #parseList2JSONs ( List ) [function]
   // ----------------------------------------------------
     rule #parseList2JSONs( .List ) => .JSONs
-    rule #parseList2JSONs( ListItem(X:Bytes) REST ) => [ X +JSONs #parseList2JSONs(REST) ]
+    rule #parseList2JSONs( ListItem(X:Bytes) REST ) => X , #parseList2JSONs(REST)
 ```
 
 Recursive Length Prefix (RLP)
