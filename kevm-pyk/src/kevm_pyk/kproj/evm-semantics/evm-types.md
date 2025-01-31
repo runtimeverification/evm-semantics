@@ -468,12 +468,12 @@ Productions related to transactions
     syntax TxData ::= LegacyTx | AccessListTx | DynamicFeeTx | BlobTx
  // -----------------------------------------------------------------
 
-    syntax LegacyTx     ::= LegacyTxData       ( nonce: Int,                       gasPrice: Int, gasLimit: Int, to: Account, value: Int, data: Bytes )                                                                                   [symbol(LegacyTxData)]
-                          | LegacySignedTxData ( nonce: Int,                       gasPrice: Int, gasLimit: Int, to: Account, value: Int, data: Bytes, networkChainId: Int )                                                              [symbol(LegacySignedTxData)]
-    syntax AccessListTx ::= AccessListTxData   ( nonce: Int,                       gasPrice: Int, gasLimit: Int, to: Account, value: Int, data: Bytes, chainId: Int, accessLists: JSONs )                                                 [symbol(AccessListTxData)]
-    syntax DynamicFeeTx ::= DynamicFeeTxData   ( nonce: Int, priorityGasFee: Int, maxGasFee: Int, gasLimit: Int, to: Account, value: Int, data: Bytes, chainId: Int, accessLists: JSONs)                                                  [symbol(DynamicFeeTxData)]
-    syntax BlobTx       ::= BlobTxData         ( nonce: Int, priorityGasFee: Int, maxGasFee: Int, gasLimit: Int, to: AccountNotNil, value: Int, data: Bytes, chainId: Int, accessLists: JSONs, maxBlobGasFee: Int, blobVersionedHashes: JSONs ) [symbol(BlobTxData)]
- // ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    syntax LegacyTx     ::= LegacyTxData       ( nonce: Int,                       gasPrice: Int, gasLimit: Int, to: Account, value: Int, data: Bytes )                                                                                        [symbol(LegacyTxData)]
+                          | LegacySignedTxData ( nonce: Int,                       gasPrice: Int, gasLimit: Int, to: Account, value: Int, data: Bytes, networkChainId: Int )                                                                   [symbol(LegacySignedTxData)]
+    syntax AccessListTx ::= AccessListTxData   ( nonce: Int,                       gasPrice: Int, gasLimit: Int, to: Account, value: Int, data: Bytes, chainId: Int, accessLists: JSONs )                                                      [symbol(AccessListTxData)]
+    syntax DynamicFeeTx ::= DynamicFeeTxData   ( nonce: Int, priorityGasFee: Int, maxGasFee: Int, gasLimit: Int, to: Account, value: Int, data: Bytes, chainId: Int, accessLists: JSONs)                                                       [symbol(DynamicFeeTxData)]
+    syntax BlobTx       ::= BlobTxData         ( nonce: Int, priorityGasFee: Int, maxGasFee: Int, gasLimit: Int, to: AccountNotNil, value: Int, data: Bytes, chainId: Int, accessLists: JSONs, maxBlobGasFee: Int, blobVersionedHashes: List ) [symbol(BlobTxData)]
+ // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 endmodule
 ```

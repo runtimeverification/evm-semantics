@@ -25,6 +25,7 @@ These can be used for pattern-matching on the LHS of rules as well (`alias` attr
                  | "pow40"  [alias] /* 2 ^Int 40  */
                  | "pow48"  [alias] /* 2 ^Int 48  */
                  | "pow56"  [alias] /* 2 ^Int 56  */
+                 | "pow63"  [alias] /* 2 ^Int 63  */
                  | "pow64"  [alias] /* 2 ^Int 64  */
                  | "pow72"  [alias] /* 2 ^Int 72  */
                  | "pow80"  [alias] /* 2 ^Int 80  */
@@ -60,6 +61,7 @@ These can be used for pattern-matching on the LHS of rules as well (`alias` attr
     rule pow40  => 1099511627776
     rule pow48  => 281474976710656
     rule pow56  => 72057594037927936
+    rule pow63  => 9223372036854775808
     rule pow64  => 18446744073709551616
     rule pow72  => 4722366482869645213696
     rule pow80  => 1208925819614629174706176
@@ -470,16 +472,17 @@ Range of types
 --------------
 
 ```k
-    syntax Bool ::= #rangeBool     ( Int )             [symbol(rangeBool)    , alias]
-                  | #rangeSInt     ( Int , Int )       [symbol(rangeSInt)    , alias]
-                  | #rangeUInt     ( Int , Int )       [symbol(rangeUInt)    , alias]
-                  | #rangeSFixed   ( Int , Int , Int ) [symbol(rangeSFixed)  , alias]
-                  | #rangeUFixed   ( Int , Int , Int ) [symbol(rangeUFixed)  , alias]
-                  | #rangeAddress  ( Int )             [symbol(rangeAddress) , alias]
-                  | #rangeBytes    ( Int , Int )       [symbol(rangeBytes)   , alias]
-                  | #rangeNonce    ( Int )             [symbol(rangeNonce)   , alias]
-                  | #rangeSmall    ( Int )             [symbol(rangeSmall)   , alias]
-                  | #rangeBlockNum ( Int )             [symbol(rangeBlockNum), alias]
+    syntax Bool ::= #rangeBool     ( Int )             [symbol(rangeBool)     , alias]
+                  | #rangeSInt     ( Int , Int )       [symbol(rangeSInt)     , alias]
+                  | #rangeUInt     ( Int , Int )       [symbol(rangeUInt)     , alias]
+                  | #rangeSFixed   ( Int , Int , Int ) [symbol(rangeSFixed)   , alias]
+                  | #rangeUFixed   ( Int , Int , Int ) [symbol(rangeUFixed)   , alias]
+                  | #rangeAddress  ( Int )             [symbol(rangeAddress)  , alias]
+                  | #rangeBytes    ( Int , Int )       [symbol(rangeBytes)    , alias]
+                  | #rangeNonce    ( Int )             [symbol(rangeNonce)    , alias]
+                  | #rangeSmall    ( Int )             [symbol(rangeSmall)    , alias]
+                  | #rangeBlockNum ( Int )             [symbol(rangeBlockNum) , alias]
+                  | #rangeNegUInt64( Int )             [symbol(rangeNegUInt64), alias]
  // ---------------------------------------------------------------------------------
     rule #rangeBool    (            X ) => #range ( 0               <= X <  2               )
 
@@ -557,6 +560,7 @@ Range of types
     rule #rangeNonce    (   X          ) => #range ( 0               <= X < maxUInt64        )
     rule #rangeSmall    (   X          ) => #range ( 0               <= X < 10               )
     rule #rangeBlockNum (   X          ) => #range ( 0               <= X <= maxBlockNum     )
+    rule #rangeNegUInt64(   X          ) => #range ( pow63           <= X < pow64            )
 
     syntax Bool ::= "#range" "(" Int "<"  Int "<"  Int ")" [alias]
                   | "#range" "(" Int "<"  Int "<=" Int ")" [alias]

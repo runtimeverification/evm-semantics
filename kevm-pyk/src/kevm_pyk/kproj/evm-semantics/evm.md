@@ -75,6 +75,8 @@ In the comments next to each cell, we've marked which component of the YellowPap
               <callDepth> 0     </callDepth>
             </callState>
 
+            <versionedHashes> .List </versionedHashes>
+
             // A_* (execution substate)
             <substate>
               <selfDestruct>     .Set  </selfDestruct>            // A_s
@@ -168,7 +170,7 @@ In the comments next to each cell, we've marked which component of the YellowPap
                 <txMaxFee>      0          </txMaxFee>      // T_m
                 <txType>        .TxType    </txType>        // T_x
                 <txMaxBlobFee>  0          </txMaxBlobFee>
-                <txVersionedHashes> [ .JSONs ] </txVersionedHashes>
+                <txVersionedHashes> .List  </txVersionedHashes>
               </message>
             </messages>
 
@@ -1081,7 +1083,7 @@ These operators make queries about the current execution state.
     rule <k> GASPRICE    => GPRICE                      ~> #push ... </k> <gasPrice> GPRICE </gasPrice>
     rule <k> GASLIMIT    => GLIMIT                      ~> #push ... </k> <gasLimit> GLIMIT </gasLimit>
     rule <k> BASEFEE     => BFEE                        ~> #push ... </k> <baseFee> BFEE </baseFee>
-    rule <k> BLOBBASEFEE => #baseFeePerBlobGas(BLOBGAS) ~> #push ... </k> <excessBlobGas> BLOBGAS </excessBlobGas>
+    rule <k> BLOBBASEFEE => #baseFeePerBlobGas(BLOBGAS) ~> #push ... </k> <excessBlobGas> BLOBGAS </excessBlobGas>  requires notBool #rangeNegUInt64(BLOBGAS)
 
     syntax NullStackOp ::= "COINBASE" | "TIMESTAMP" | "NUMBER" | "DIFFICULTY" | "PREVRANDAO"
  // ----------------------------------------------------------------------------------------
@@ -1135,6 +1137,19 @@ The blockhash is calculated here using the "shortcut" formula used for running t
     rule #blockhash(ListItem(0) _, _, _, _) => 0
     rule #blockhash(ListItem(H) _, N, N, _) => H
     rule #blockhash(ListItem(_) L, N, HI, A) => #blockhash(L, N, HI -Int 1, A +Int 1) [owise]
+```
+
+```k
+    syntax UnStackOp ::= "BLOBHASH"
+ // -------------------------------
+
+    rule <k> BLOBHASH INDEX => 0 ~> #push ... </k>
+         <versionedHashes> HASHES </versionedHashes>
+       requires INDEX >=Int size(HASHES)
+
+    rule <k> BLOBHASH INDEX => #asWord( {HASHES[INDEX]}:>Bytes ) ~> #push ... </k>
+         <versionedHashes> HASHES </versionedHashes>
+       requires INDEX <Int size(HASHES)
 ```
 
 EVM OpCodes
@@ -2361,6 +2376,7 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
     rule <k> #gasExec(SCHED, PUSH(_))        => Gverylow < SCHED > ... </k>
     rule <k> #gasExec(SCHED, DUP(_) _)       => Gverylow < SCHED > ... </k>
     rule <k> #gasExec(SCHED, SWAP(_) _)      => Gverylow < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, BLOBHASH _)     => Gverylow < SCHED > ... </k>
 
     // Wlow
     rule <k> #gasExec(SCHED, MUL _ _)        => Glow < SCHED > ... </k>
@@ -2525,6 +2541,7 @@ After interpreting the strings representing programs as a `WordStack`, it should
     rule #dasmOpCode(  70, SCHED ) => CHAINID     requires Ghaschainid     << SCHED >>
     rule #dasmOpCode(  71, SCHED ) => SELFBALANCE requires Ghasselfbalance << SCHED >>
     rule #dasmOpCode(  72, SCHED ) => BASEFEE     requires Ghasbasefee     << SCHED >>
+    rule #dasmOpCode(  73, SCHED ) => BLOBHASH    requires Ghasblobhash    << SCHED >>
     rule #dasmOpCode(  74, SCHED ) => BLOBBASEFEE requires Ghasblobbasefee << SCHED >>
     rule #dasmOpCode(  80,     _ ) => POP
     rule #dasmOpCode(  81,     _ ) => MLOAD
