@@ -69,6 +69,7 @@ module TEST-ARITHMETICTEST-TEST_WMUL_WEAKLY_INCREASING_POSITIVE-UINT256-UINT256-
                  </callDepth>
                  ...
                </callState>
+               <versionedHashes> _ </versionedHashes>
                <substate>
                  <log>
                    .List
@@ -228,6 +229,7 @@ module TEST-ARITHMETICTEST-TEST_WMUL_WEAKLY_INCREASING_POSITIVE-UINT256-UINT256-
                  </callDepth>
                  ...
                </callState>
+               <versionedHashes> _ </versionedHashes>
                <substate>
                  <log>
                    .List

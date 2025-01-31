@@ -190,6 +190,14 @@ The `"network"` key allows setting the fee schedule inside the test.
     rule #asScheduleString("ShanghaiToCancunAtTime15k") => CANCUN
 ```
 
+- `#parseJSONs2List` parse a JSON object with string values into a list of value.
+```k
+   syntax List ::= "#parseJSONs2List" "(" JSONs ")" [function]
+ // ----------------------------------------------------------
+    rule #parseJSONs2List ( .JSONs ) => .List
+    rule #parseJSONs2List ( (VAL:Bytes) , REST ) => ListItem(VAL) #parseJSONs2List ( REST )
+```
+
 The `"rlp"` key loads the block information.
 
 ```k
@@ -353,7 +361,7 @@ The `"rlp"` key loads the block information.
          </k>
     requires #asWord(TYPE) ==Int #dasmTxPrefix(DynamicFee)
 
-     rule <k> load "transaction" : [ [TYPE , [TC, TN, TP, TF, TG, TT, TV, TI, TA, TY, TVH, TB, TR, TS ]] , REST ]
+     rule <k> load "transaction" : [ [TYPE , [TC, TN, TP, TF, TG, TT, TV, TI, TA, TB, TVH, TY, TR, TS ]] , REST ]
           => mkTX !ID:Int
           ~> loadTransaction !ID { "data"         : TI   ,   "gasLimit"         : TG   ,   "maxPriorityFeePerGas" : TP
                                  , "nonce"        : TN   ,   "r"                : TR   ,   "s"                    : TS
@@ -418,7 +426,7 @@ The `"rlp"` key loads the block information.
          <message> <msgID> TXID </msgID> <txMaxBlobFee> _ => TB </txMaxBlobFee> ... </message>
 
     rule <k> loadTransaction TXID { "blobVersionedHashes" : [TVH:JSONs], REST => REST } ... </k>
-         <message> <msgID> TXID </msgID> <txVersionedHashes> _ =>  [TVH] </txVersionedHashes> ... </message>
+         <message> <msgID> TXID </msgID> <txVersionedHashes> _ =>  #parseJSONs2List(TVH) </txVersionedHashes> ... </message>
 ```
 
 ### Getting State

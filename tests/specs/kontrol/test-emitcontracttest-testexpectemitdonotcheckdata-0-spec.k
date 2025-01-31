@@ -189,6 +189,7 @@ module TEST-EMITCONTRACTTEST-TESTEXPECTEMITDONOTCHECKDATA-0-SPEC
                    ( 0 => 1 )
                  </callDepth>
                </callState>
+               <versionedHashes> _ </versionedHashes>
                <substate>
                  <selfDestruct>
                    SELFDESTRUCT_CELL:Set
