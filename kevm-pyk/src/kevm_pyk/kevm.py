@@ -53,7 +53,9 @@ _LOGGER: Final = logging.getLogger(__name__)
 class KEVMSemantics(DefaultSemantics):
     auto_abstract_gas: bool
     allow_symbolic_program: bool
-    _custom_step_definitions: Tuple[Tuple[KSequence, Callable[[Subst, CTerm, CTermSymbolic], KCFGExtendResult | None]],...]
+    _custom_step_definitions: Tuple[
+        Tuple[KSequence, Callable[[Subst, CTerm, CTermSymbolic], KCFGExtendResult | None]], ...
+    ]
 
     def __init__(self, auto_abstract_gas: bool = False, allow_symbolic_program: bool = False) -> None:
         self.auto_abstract_gas = auto_abstract_gas
