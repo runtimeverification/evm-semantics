@@ -33,9 +33,9 @@ from pyk.proof.reachability import APRProof
 from pyk.proof.show import APRProofNodePrinter
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
+    from collections.abc import Callable, Iterable
     from pathlib import Path
-    from typing import Callable, Final, Tuple
+    from typing import Final
 
     from pyk.cterm import CTermSymbolic
     from pyk.kast.inner import KAst, Subst
@@ -53,8 +53,8 @@ _LOGGER: Final = logging.getLogger(__name__)
 class KEVMSemantics(DefaultSemantics):
     auto_abstract_gas: bool
     allow_symbolic_program: bool
-    _custom_step_definitions: Tuple[
-        Tuple[KSequence, Callable[[Subst, CTerm, CTermSymbolic], KCFGExtendResult | None]], ...
+    _custom_step_definitions: tuple[
+        tuple[KSequence, Callable[[Subst, CTerm, CTermSymbolic], KCFGExtendResult | None]], ...
     ]
 
     def __init__(self, auto_abstract_gas: bool = False, allow_symbolic_program: bool = False) -> None:
