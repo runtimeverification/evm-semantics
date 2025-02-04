@@ -2083,7 +2083,7 @@ Precompiled Contracts
        orBool notBool verifyKZGProof(substrBytes(DATA, 96, 144), substrBytes(DATA, 32, 64), substrBytes(DATA, 64, 96), substrBytes(DATA, 144, 192))
 
     syntax Bytes ::= #kzg2vh ( Bytes ) [symbol(#kzg2vh), function, total]
- // -------------------------------------------------------------------------------------------------------------
+ // ---------------------------------------------------------------------
     // VERSIONED_HASH_VERSION_KZG = 0x01
     rule #kzg2vh ( C ) => Sha256raw(C)[0 <- 1]
 ```
