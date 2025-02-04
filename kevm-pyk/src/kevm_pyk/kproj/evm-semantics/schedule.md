@@ -48,6 +48,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
                            | "Gblockhash"    | "Gquadcoeff"    | "maxCodeSize"   | "Rb"                | "Gquaddivisor"       | "Gecadd"           | "Gecmul"
                            | "Gecpairconst"  | "Gecpaircoeff"  | "Gfround"       | "Gcoldsload"        | "Gcoldaccountaccess" | "Gwarmstorageread" | "Gaccesslistaddress"
                            | "Gaccessliststoragekey"           | "Rmaxquotient"  | "Ginitcodewordcost" | "maxInitCodeSize"    | "Gwarmstoragedirtystore"
+                           | "Gpointeval"
  // ----------------------------------------------------------------------------------------------------------------------------------------------------
 ```
 
@@ -116,6 +117,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Gcoldaccountaccess     < DEFAULT > => 0
     rule Gwarmstorageread       < DEFAULT > => 0
     rule Gwarmstoragedirtystore < DEFAULT > => 0
+
+    rule Gpointeval < DEFAULT > => 0
 
     rule Gaccessliststoragekey < DEFAULT > => 0
     rule Gaccesslistaddress    < DEFAULT > => 0
@@ -390,8 +393,11 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     syntax Schedule ::= "CANCUN" [symbol(CANCUN_EVM), smtlib(schedule_CANCUN)]
  // --------------------------------------------------------------------------
     rule Gwarmstoragedirtystore < CANCUN > => Gwarmstorageread < CANCUN >
+    rule Gpointeval             < CANCUN > => 50000
     rule SCHEDCONST             < CANCUN > => SCHEDCONST < SHANGHAI >
-      requires notBool (SCHEDCONST ==K Gwarmstoragedirtystore)
+      requires notBool ( SCHEDCONST ==K Gwarmstoragedirtystore
+                  orBool SCHEDCONST ==K Gpointeval
+                       )
 
     rule Ghastransient   << CANCUN >> => true
     rule Ghasmcopy       << CANCUN >> => true
