@@ -57,10 +57,22 @@ class KEVMSemantics(DefaultSemantics):
         tuple[KSequence, Callable[[Subst, CTerm, CTermSymbolic], KCFGExtendResult | None]], ...
     ]
 
-    def __init__(self, auto_abstract_gas: bool = False, allow_symbolic_program: bool = False) -> None:
+    def __init__(
+        self,
+        auto_abstract_gas: bool = False,
+        allow_symbolic_program: bool = False,
+        custom_step_definitions: (
+            tuple[tuple[KSequence, Callable[[Subst, CTerm, CTermSymbolic], KCFGExtendResult | None]], ...] | None
+        ) = None,
+    ) -> None:
         self.auto_abstract_gas = auto_abstract_gas
         self.allow_symbolic_program = allow_symbolic_program
-        self._custom_step_definitions = ((self._load_pattern, self._exec_load_custom_step),)
+        if custom_step_definitions:
+            self._custom_step_definitions = (
+                (self._load_pattern, self._exec_load_custom_step),
+            ) + custom_step_definitions
+        else:
+            self._custom_step_definitions = ((self._load_pattern, self._exec_load_custom_step),)
 
     @staticmethod
     def is_functional(term: KInner) -> bool:
