@@ -231,6 +231,7 @@ Unparsing
 - `#addrBytes` Takes an Account and represents it as a 20-byte wide Bytes (or an empty Bytes for a null address)
 - `#addrBytesNotNil` Takes an Account and represents it as a 20-byte wide Bytes. It throws an error if the account is null.
 - `#wordBytes` Takes an Int and represents it as a 32-byte wide Bytes
+- `#parseList2JSONs` Takes a List of Bytes and represents it as a JSON array.
 
 ```k
     syntax Bytes ::= #addrBytes ( Account ) [symbol(#addrBytes), function]
@@ -239,6 +240,11 @@ Unparsing
     rule #addrBytes(.Account) => .Bytes
     rule #addrBytes(ACCT)     => #padToWidth(20, #asByteStack(ACCT)) requires #rangeAddress(ACCT)
     rule #wordBytes(WORD)     => #padToWidth(32, #asByteStack(WORD)) requires #rangeUInt(256, WORD)
+
+    syntax JSONs ::= #parseList2JSONs ( List ) [function]
+  // ----------------------------------------------------
+    rule #parseList2JSONs( .List ) => .JSONs
+    rule #parseList2JSONs( ListItem(X:Bytes) REST ) => X , #parseList2JSONs(REST)
 ```
 
 Recursive Length Prefix (RLP)
@@ -352,8 +358,8 @@ Encoding
     rule #rlpEncodeTxData( DynamicFeeTxData(TN, TF, TM, TG, TT, TV, DATA, TC, [TA]) )
       => #rlpEncode( [ TC, TN, TF, TM, TG, #addrBytes(TT), TV, DATA, [TA] ] )
    
-    rule #rlpEncodeTxData( BlobTxData(TN, TF, TM, TG, TT, TV, DATA, CID, [TA], TB, [TVH]) )
-      => #rlpEncode( [ CID, TN, TF, TM, TG, #addrBytes({TT}:>Account), TV, DATA, [TA], TB, [TVH] ] )
+    rule #rlpEncodeTxData( BlobTxData(TN, TF, TM, TG, TT, TV, DATA, CID, [TA], TB, TVH) )
+      => #rlpEncode( [ CID, TN, TF, TM, TG, #addrBytes({TT}:>Account), TV, DATA, [TA], TB, [#parseList2JSONs(TVH)] ] )
 
     syntax Bytes ::= #rlpEncodeMerkleTree ( MerkleTree ) [symbol(#rlpEncodeMerkleTree), function]
  // ---------------------------------------------------------------------------------------------

@@ -454,7 +454,7 @@ class EVMChainOptions(Options):
     @staticmethod
     def default() -> dict[str, Any]:
         return {
-            'schedule': 'SHANGHAI',
+            'schedule': 'CANCUN',
             'chainid': 1,
             'mode': 'NORMAL',
             'usegas': True,

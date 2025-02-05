@@ -75,6 +75,9 @@
           -1
         </callDepth>
       </callState>
+      <versionedHashes>
+        .List
+      </versionedHashes>
       <substate>
         <selfDestruct>
           .Set
@@ -323,7 +326,7 @@
             0
           </txMaxBlobFee>
           <txVersionedHashes>
-            [ .JSONs ]
+            .List
           </txVersionedHashes>
         </message>
       </messages>

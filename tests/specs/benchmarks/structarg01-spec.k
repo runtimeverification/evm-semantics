@@ -32,6 +32,7 @@ module STRUCTARG01-SPEC
           <static> false </static> // NOTE: non-static call
           <callDepth> CD </callDepth>
         </callState>
+        <versionedHashes> _ </versionedHashes>
         <substate>
           <selfDestruct> _ </selfDestruct>
           <log> _ </log>

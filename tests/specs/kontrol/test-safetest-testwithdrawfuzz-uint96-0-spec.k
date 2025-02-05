@@ -187,6 +187,7 @@ module TEST-SAFETEST-TESTWITHDRAWFUZZ-UINT96-0-SPEC
                    ( 0 => 1 )
                  </callDepth>
                </callState>
+               <versionedHashes> _ </versionedHashes>
                <substate>
                  <selfDestruct>
                    SELFDESTRUCT_CELL:Set

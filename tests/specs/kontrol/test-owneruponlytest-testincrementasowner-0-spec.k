@@ -189,6 +189,7 @@ module TEST-OWNERUPONLYTEST-TESTINCREMENTASOWNER-0-SPEC
                    ( 0 => 1 )
                  </callDepth>
                </callState>
+               <versionedHashes> _ </versionedHashes>
                <substate>
                  <selfDestruct>
                    SELFDESTRUCT_CELL:Set
@@ -540,6 +541,7 @@ module TEST-OWNERUPONLYTEST-TESTINCREMENTASOWNER-0-SPEC
                    ( 0 => 1 )
                  </callDepth>
                </callState>
+               <versionedHashes> _ </versionedHashes>
                <substate>
                  <selfDestruct>
                    SELFDESTRUCT_CELL:Set

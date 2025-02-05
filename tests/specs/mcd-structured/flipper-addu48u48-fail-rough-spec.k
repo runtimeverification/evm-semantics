@@ -32,6 +32,7 @@ module FLIPPER-ADDU48U48-FAIL-ROUGH-SPEC
             <static> _ </static>
             <callDepth> VCallDepth => ?_ </callDepth>
           </callState>
+          <versionedHashes> _ </versionedHashes>
           <substate>
             <selfDestruct> _VSelfDestruct </selfDestruct>
             <log> _ => ?_ </log>
