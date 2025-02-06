@@ -76,7 +76,7 @@ class KEVMSemantics(DefaultSemantics):
         self,
         auto_abstract_gas: bool = False,
         allow_symbolic_program: bool = False,
-        custom_step_definitions: tuple[CustomStep] | None = None,
+        custom_step_definitions: tuple[CustomStep, ...] = (),
     ) -> None:
         self.auto_abstract_gas = auto_abstract_gas
         self.allow_symbolic_program = allow_symbolic_program
