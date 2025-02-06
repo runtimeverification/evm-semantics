@@ -47,16 +47,15 @@ if TYPE_CHECKING:
 
 _LOGGER: Final = logging.getLogger(__name__)
 
+
 class CustomStep:
-    """Encapsulates a custom step definition consisting of an abstract pattern and its execution function.
-    """
+    """Encapsulates a custom step definition consisting of an abstract pattern and its execution function."""
+
     pattern: KSequence
     exec_fn: Callable[[Subst, CTerm, CTermSymbolic], KCFGExtendResult | None]
 
     def __init__(
-        self,
-        pattern: KSequence,
-        exec_fn: Callable[[Subst, CTerm, CTermSymbolic], KCFGExtendResult | None]
+        self, pattern: KSequence, exec_fn: Callable[[Subst, CTerm, CTermSymbolic], KCFGExtendResult | None]
     ) -> None:
         self.pattern = pattern
         self.exec_fn = exec_fn
@@ -69,6 +68,7 @@ class CustomStep:
         if subst is not None:
             return self.exec_fn(subst, cterm, cterm_symbolic)
         return None
+
 
 # KEVM class
 
@@ -249,9 +249,7 @@ class KEVMSemantics(DefaultSemantics):
         return Step(new_cterm, 1, (), ['EVM.program.load'], cut=True)
 
     def can_make_custom_step(self, cterm: CTerm) -> bool:
-        return any(
-            c_step.check_pattern_match() for c_step in self._custom_steps
-        )
+        return any(c_step.check_pattern_match() for c_step in self._custom_steps)
 
     def is_mergeable(self, ct1: CTerm, ct2: CTerm) -> bool:
         """Given two CTerms of Edges' targets, check if they are mergeable.
