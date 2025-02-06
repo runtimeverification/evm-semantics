@@ -47,32 +47,51 @@ if TYPE_CHECKING:
 
 _LOGGER: Final = logging.getLogger(__name__)
 
+class CustomStep:
+    """Encapsulates a custom step definition consisting of an abstract pattern and its execution function.
+    """
+    pattern: KSequence
+    exec_fn: Callable[[Subst, CTerm, CTermSymbolic], KCFGExtendResult | None]
+
+    def __init__(
+        self,
+        pattern: KSequence,
+        exec_fn: Callable[[Subst, CTerm, CTermSymbolic], KCFGExtendResult | None]
+    ) -> None:
+        self.pattern = pattern
+        self.exec_fn = exec_fn
+
+    def check_pattern_match(self, cterm: CTerm) -> bool:
+        return self.pattern.match(cterm.cell('K_CELL')) is not None
+
+    def try_execute(self, cterm: CTerm, cterm_symbolic: CTermSymbolic) -> KCFGExtendResult | None:
+        subst = self.pattern.match(cterm.cell('K_CELL'))
+        if subst is not None:
+            return self.exec_fn(subst, cterm, cterm_symbolic)
+        return None
+
 # KEVM class
 
 
 class KEVMSemantics(DefaultSemantics):
     auto_abstract_gas: bool
     allow_symbolic_program: bool
-    _custom_step_definitions: tuple[
-        tuple[KSequence, Callable[[Subst, CTerm, CTermSymbolic], KCFGExtendResult | None]], ...
-    ]
+    _custom_steps: tuple[CustomStep]
 
     def __init__(
         self,
         auto_abstract_gas: bool = False,
         allow_symbolic_program: bool = False,
-        custom_step_definitions: (
-            tuple[tuple[KSequence, Callable[[Subst, CTerm, CTermSymbolic], KCFGExtendResult | None]], ...] | None
-        ) = None,
+        custom_step_definitions: tuple[CustomStep] = None,
     ) -> None:
         self.auto_abstract_gas = auto_abstract_gas
         self.allow_symbolic_program = allow_symbolic_program
         if custom_step_definitions:
-            self._custom_step_definitions = (
-                (self._load_pattern, self._exec_load_custom_step),
+            self._custom_steps = (
+                CustomStep(self._load_pattern, self._exec_load_custom_step),
             ) + custom_step_definitions
         else:
-            self._custom_step_definitions = ((self._load_pattern, self._exec_load_custom_step),)
+            self._custom_steps = (CustomStep(self._load_pattern, self._exec_load_custom_step),)
 
     @staticmethod
     def is_functional(term: KInner) -> bool:
@@ -160,10 +179,10 @@ class KEVMSemantics(DefaultSemantics):
         return CTerm(config=bottom_up(_replace, cterm.config), constraints=cterm.constraints)
 
     def custom_step(self, cterm: CTerm, cterm_symbolic: CTermSymbolic) -> KCFGExtendResult | None:
-        for abstract_pattern, custom_step_fn in self._custom_step_definitions:
-            subst = abstract_pattern.match(cterm.cell('K_CELL'))
-            if subst is not None:
-                return custom_step_fn(subst, cterm, cterm_symbolic)
+        for c_step in self._custom_steps:
+            result = c_step.try_execute(cterm, cterm_symbolic)
+            if result is not None:
+                return result
         return None
 
     @staticmethod
@@ -231,8 +250,7 @@ class KEVMSemantics(DefaultSemantics):
 
     def can_make_custom_step(self, cterm: CTerm) -> bool:
         return any(
-            abstract_pattern.match(cterm.cell('K_CELL')) is not None
-            for abstract_pattern, _ in self._custom_step_definitions
+            c_step.check_pattern_match() for c_step in self._custom_steps
         )
 
     def is_mergeable(self, ct1: CTerm, ct2: CTerm) -> bool:
