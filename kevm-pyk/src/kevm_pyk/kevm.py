@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING
+from collections.abc import Callable
+from typing import TYPE_CHECKING, NamedTuple
 
-from pyk.cterm import CTerm
+from pyk.cterm import CTerm, CTermSymbolic
 from pyk.kast import KInner
 from pyk.kast.inner import (
     KApply,
@@ -12,6 +13,7 @@ from pyk.kast.inner import (
     KSort,
     KToken,
     KVariable,
+    Subst,
     bottom_up,
     build_assoc,
     build_cons,
@@ -19,7 +21,7 @@ from pyk.kast.inner import (
 )
 from pyk.kast.manip import abstract_term_safely, flatten_label, set_cell
 from pyk.kast.pretty import paren
-from pyk.kcfg.kcfg import Step
+from pyk.kcfg.kcfg import KCFGExtendResult, Step
 from pyk.kcfg.semantics import DefaultSemantics
 from pyk.kcfg.show import NodePrinter
 from pyk.ktool.kprove import KProve
@@ -37,15 +39,32 @@ if TYPE_CHECKING:
     from pathlib import Path
     from typing import Final
 
-    from pyk.cterm import CTermSymbolic
-    from pyk.kast.inner import KAst, Subst
+    from pyk.kast.inner import KAst
     from pyk.kast.outer import KFlatModule
     from pyk.kcfg import KCFG
-    from pyk.kcfg.semantics import KCFGExtendResult
     from pyk.ktool.kprint import SymbolTable
     from pyk.utils import BugReport
 
 _LOGGER: Final = logging.getLogger(__name__)
+
+CustomStepImpl = Callable[[Subst, CTerm, CTermSymbolic], KCFGExtendResult | None]
+
+
+class CustomStep(NamedTuple):
+    """Encapsulates a custom step definition consisting of an abstract pattern and its execution function."""
+
+    pattern: KSequence
+    exec_fn: CustomStepImpl
+
+    def check_pattern_match(self, cterm: CTerm) -> bool:
+        return self.pattern.match(cterm.cell('K_CELL')) is not None
+
+    def try_execute(self, cterm: CTerm, cterm_symbolic: CTermSymbolic) -> KCFGExtendResult | None:
+        subst = self.pattern.match(cterm.cell('K_CELL'))
+        if subst is not None:
+            return self.exec_fn(subst, cterm, cterm_symbolic)
+        return None
+
 
 # KEVM class
 
@@ -53,12 +72,22 @@ _LOGGER: Final = logging.getLogger(__name__)
 class KEVMSemantics(DefaultSemantics):
     auto_abstract_gas: bool
     allow_symbolic_program: bool
-    _cached_subst: Subst | None
+    _custom_steps: tuple[CustomStep, ...]
 
-    def __init__(self, auto_abstract_gas: bool = False, allow_symbolic_program: bool = False) -> None:
+    def __init__(
+        self,
+        auto_abstract_gas: bool = False,
+        allow_symbolic_program: bool = False,
+        custom_step_definitions: tuple[CustomStep, ...] = (),
+    ) -> None:
         self.auto_abstract_gas = auto_abstract_gas
         self.allow_symbolic_program = allow_symbolic_program
-        self._cached_subst = None
+        if custom_step_definitions:
+            self._custom_steps = (
+                CustomStep(self._load_pattern, self._exec_load_custom_step),
+            ) + custom_step_definitions
+        else:
+            self._custom_steps = (CustomStep(self._load_pattern, self._exec_load_custom_step),)
 
     @staticmethod
     def is_functional(term: KInner) -> bool:
@@ -145,11 +174,12 @@ class KEVMSemantics(DefaultSemantics):
 
         return CTerm(config=bottom_up(_replace, cterm.config), constraints=cterm.constraints)
 
-    def custom_step(self, cterm: CTerm, _cterm_symbolic: CTermSymbolic) -> KCFGExtendResult | None:
-        if self._check_load_pattern(cterm):
-            return self._exec_load_custom_step(cterm)
-        else:
-            return None
+    def custom_step(self, cterm: CTerm, cterm_symbolic: CTermSymbolic) -> KCFGExtendResult | None:
+        for c_step in self._custom_steps:
+            result = c_step.try_execute(cterm, cterm_symbolic)
+            if result is not None:
+                return result
+        return None
 
     @staticmethod
     def cut_point_rules(
@@ -197,26 +227,16 @@ class KEVMSemantics(DefaultSemantics):
             terminal_rules.append('EVM.step')
         return terminal_rules
 
-    def _check_load_pattern(self, cterm: CTerm) -> bool:
-        """Given a CTerm, check if the rule 'EVM.program.load' is at the top of the K_CELL.
+    @property
+    def _load_pattern(self) -> KSequence:
+        return KSequence([KApply('loadProgram', KVariable('###BYTECODE')), KVariable('###CONTINUATION')])
 
-        This method checks if the `EVM.program.load` rule is at the top of the `K_CELL` in the given `cterm`.
-        If the rule matches, the resulting substitution is cached in `_cached_subst` for later use in `custom_step`
-        :param cterm: The CTerm representing the current state of the proof node.
-        :return: `True` if the pattern matches and a custom step can be made; `False` otherwise.
-        """
-        load_pattern = KSequence([KApply('loadProgram', KVariable('###BYTECODE')), KVariable('###CONTINUATION')])
-        self._cached_subst = load_pattern.match(cterm.cell('K_CELL'))
-        return self._cached_subst is not None
-
-    def _exec_load_custom_step(self, cterm: CTerm) -> KCFGExtendResult:
+    def _exec_load_custom_step(self, subst: Subst, cterm: CTerm, _c: CTermSymbolic) -> KCFGExtendResult:
         """Given a CTerm, update the JUMPDESTS_CELL and PROGRAM_CELL if the rule 'EVM.program.load' is at the top of the K_CELL.
 
         :param cterm: CTerm of a proof node.
         :return: If the K_CELL matches the load_pattern, a Step with depth 1 is returned together with the new configuration, also registering that the `EVM.program.load` rule has been applied.
         """
-        subst = self._cached_subst
-        assert subst is not None
         bytecode_sections = flatten_label('_+Bytes__BYTES-HOOKED_Bytes_Bytes_Bytes', subst['###BYTECODE'])
         jumpdests_set = compute_jumpdests(bytecode_sections)
         new_cterm = CTerm.from_kast(set_cell(cterm.kast, 'JUMPDESTS_CELL', jumpdests_set))
@@ -225,7 +245,7 @@ class KEVMSemantics(DefaultSemantics):
         return Step(new_cterm, 1, (), ['EVM.program.load'], cut=True)
 
     def can_make_custom_step(self, cterm: CTerm) -> bool:
-        return self._check_load_pattern(cterm)
+        return any(c_step.check_pattern_match(cterm) for c_step in self._custom_steps)
 
     def is_mergeable(self, ct1: CTerm, ct2: CTerm) -> bool:
         """Given two CTerms of Edges' targets, check if they are mergeable.
