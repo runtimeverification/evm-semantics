@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import logging
+from collections.abc import Callable
 from typing import TYPE_CHECKING, NamedTuple
 
-from pyk.cterm import CTerm
+from pyk.cterm import CTerm, CTermSymbolic
 from pyk.kast import KInner
 from pyk.kast.inner import (
     KApply,
@@ -12,6 +13,7 @@ from pyk.kast.inner import (
     KSort,
     KToken,
     KVariable,
+    Subst,
     bottom_up,
     build_assoc,
     build_cons,
@@ -19,7 +21,7 @@ from pyk.kast.inner import (
 )
 from pyk.kast.manip import abstract_term_safely, flatten_label, set_cell
 from pyk.kast.pretty import paren
-from pyk.kcfg.kcfg import Step
+from pyk.kcfg.kcfg import KCFGExtendResult, Step
 from pyk.kcfg.semantics import DefaultSemantics
 from pyk.kcfg.show import NodePrinter
 from pyk.ktool.kprove import KProve
@@ -33,26 +35,26 @@ from pyk.proof.reachability import APRProof
 from pyk.proof.show import APRProofNodePrinter
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Iterable
+    from collections.abc import Iterable
     from pathlib import Path
     from typing import Final
 
-    from pyk.cterm import CTermSymbolic
-    from pyk.kast.inner import KAst, Subst
+    from pyk.kast.inner import KAst
     from pyk.kast.outer import KFlatModule
     from pyk.kcfg import KCFG
-    from pyk.kcfg.semantics import KCFGExtendResult
     from pyk.ktool.kprint import SymbolTable
     from pyk.utils import BugReport
 
 _LOGGER: Final = logging.getLogger(__name__)
+
+CustomStepImpl = Callable[[Subst, CTerm, CTermSymbolic], KCFGExtendResult | None]
 
 
 class CustomStep(NamedTuple):
     """Encapsulates a custom step definition consisting of an abstract pattern and its execution function."""
 
     pattern: KSequence
-    exec_fn: Callable[[Subst, CTerm, CTermSymbolic], KCFGExtendResult | None]
+    exec_fn: CustomStepImpl
 
     def check_pattern_match(self, cterm: CTerm) -> bool:
         return self.pattern.match(cterm.cell('K_CELL')) is not None
