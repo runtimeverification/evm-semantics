@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, NamedTuple
 
 from pyk.cterm import CTerm
 from pyk.kast import KInner
@@ -48,17 +48,11 @@ if TYPE_CHECKING:
 _LOGGER: Final = logging.getLogger(__name__)
 
 
-class CustomStep:
+class CustomStep(NamedTuple):
     """Encapsulates a custom step definition consisting of an abstract pattern and its execution function."""
 
     pattern: KSequence
     exec_fn: Callable[[Subst, CTerm, CTermSymbolic], KCFGExtendResult | None]
-
-    def __init__(
-        self, pattern: KSequence, exec_fn: Callable[[Subst, CTerm, CTermSymbolic], KCFGExtendResult | None]
-    ) -> None:
-        self.pattern = pattern
-        self.exec_fn = exec_fn
 
     def check_pattern_match(self, cterm: CTerm) -> bool:
         return self.pattern.match(cterm.cell('K_CELL')) is not None
@@ -76,13 +70,13 @@ class CustomStep:
 class KEVMSemantics(DefaultSemantics):
     auto_abstract_gas: bool
     allow_symbolic_program: bool
-    _custom_steps: tuple[CustomStep]
+    _custom_steps: tuple[CustomStep, ...]
 
     def __init__(
         self,
         auto_abstract_gas: bool = False,
         allow_symbolic_program: bool = False,
-        custom_step_definitions: tuple[CustomStep] = None,
+        custom_step_definitions: tuple[CustomStep] | None = None,
     ) -> None:
         self.auto_abstract_gas = auto_abstract_gas
         self.allow_symbolic_program = allow_symbolic_program
@@ -249,7 +243,7 @@ class KEVMSemantics(DefaultSemantics):
         return Step(new_cterm, 1, (), ['EVM.program.load'], cut=True)
 
     def can_make_custom_step(self, cterm: CTerm) -> bool:
-        return any(c_step.check_pattern_match() for c_step in self._custom_steps)
+        return any(c_step.check_pattern_match(cterm) for c_step in self._custom_steps)
 
     def is_mergeable(self, ct1: CTerm, ct2: CTerm) -> bool:
         """Given two CTerms of Edges' targets, check if they are mergeable.
