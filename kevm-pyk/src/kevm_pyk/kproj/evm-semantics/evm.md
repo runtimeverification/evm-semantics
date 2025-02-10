@@ -1914,6 +1914,7 @@ Precompiled Contracts
     rule #precompiled(7) => ECMUL
     rule #precompiled(8) => ECPAIRING
     rule #precompiled(9) => BLAKE2F
+    rule #precompiled(10) => KZGPOINTEVAL
 
     syntax Int ::= #precompiledAccountsUB ( Schedule ) [symbol(#precompiledAccountsUB), function, total]
  // ----------------------------------------------------------------------------------------------------
@@ -1930,7 +1931,7 @@ Precompiled Contracts
     rule #precompiledAccountsUB(LONDON)            => #precompiledAccountsUB(BERLIN)
     rule #precompiledAccountsUB(MERGE)             => #precompiledAccountsUB(LONDON)
     rule #precompiledAccountsUB(SHANGHAI)          => #precompiledAccountsUB(MERGE)
-    rule #precompiledAccountsUB(CANCUN)            => #precompiledAccountsUB(SHANGHAI)
+    rule #precompiledAccountsUB(CANCUN)            => 10
 
 
     syntax Set ::= #precompiledAccountsSet    ( Schedule ) [symbol(#precompiledAccountsSet),    function, total]
@@ -1951,6 +1952,7 @@ Precompiled Contracts
 -   `ECMUL` performs scalar multiplication on the elliptic curve alt_bn128.
 -   `ECPAIRING` performs an optimal ate pairing check on the elliptic curve alt_bn128.
 -   `BLAKE2F` performs the compression function F used in the BLAKE2 hashing algorithm.
+-   `KZGPOINTEVAL` performs the point evaluation precompile that is part of EIP 4844.
 
 ```k
     syntax PrecompiledOp ::= "ECREC"
@@ -2069,6 +2071,31 @@ Precompiled Contracts
     rule <k> BLAKE2F => #end EVMC_PRECOMPILE_FAILURE ... </k>
          <callData> DATA </callData>
       requires lengthBytes( DATA ) =/=Int 213
+
+    syntax PrecompiledOp ::= "KZGPOINTEVAL"
+ // ---------------------------------------
+    // FIELD_ELEMENTS_PER_BLOB = 4096
+    rule <k> KZGPOINTEVAL => #end EVMC_SUCCESS ... </k>
+         <output> _ => Int2Bytes(32, 4096, BE) +Bytes Int2Bytes(32, blsModulus, BE) </output>
+         <callData> DATA </callData>
+      requires lengthBytes( DATA ) ==Int 192
+       andBool #kzg2vh(substrBytes(DATA, 96, 144)) ==K substrBytes(DATA, 0, 32)
+       andBool Bytes2Int(substrBytes(DATA, 32, 64), BE, Unsigned) <Int blsModulus
+       andBool Bytes2Int(substrBytes(DATA, 64, 96), BE, Unsigned) <Int blsModulus
+       andBool verifyKZGProof(substrBytes(DATA, 96, 144), substrBytes(DATA, 32, 64), substrBytes(DATA, 64, 96), substrBytes(DATA, 144, 192))
+
+    rule <k> KZGPOINTEVAL => #end EVMC_PRECOMPILE_FAILURE ... </k>
+         <callData> DATA </callData>
+      requires lengthBytes( DATA ) =/=Int 192
+       orBool #kzg2vh(substrBytes(DATA, 96, 144)) =/=K substrBytes(DATA, 0, 32)
+       orBool Bytes2Int(substrBytes(DATA, 32, 64), BE, Unsigned) >=Int blsModulus
+       orBool Bytes2Int(substrBytes(DATA, 64, 96), BE, Unsigned) >=Int blsModulus
+       orBool notBool verifyKZGProof(substrBytes(DATA, 96, 144), substrBytes(DATA, 32, 64), substrBytes(DATA, 64, 96), substrBytes(DATA, 144, 192))
+
+    syntax Bytes ::= #kzg2vh ( Bytes ) [symbol(#kzg2vh), function, total]
+ // ---------------------------------------------------------------------
+    // VERSIONED_HASH_VERSION_KZG = 0x01
+    rule #kzg2vh ( C ) => Sha256raw(C)[0 <- 1]
 ```
 
 
@@ -2421,6 +2448,7 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
     rule <k> #gasExec(SCHED, ECMUL)     => Gecmul < SCHED > ... </k>
     rule <k> #gasExec(SCHED, ECPAIRING) => Gecpairconst < SCHED > +Int (lengthBytes(DATA) /Int 192) *Int Gecpaircoeff < SCHED > ... </k> <callData> DATA </callData>
     rule <k> #gasExec(SCHED, BLAKE2F)   => Gfround < SCHED > *Int #asWord(#range(DATA, 0, 4) ) ... </k> <callData> DATA </callData>
+    rule <k> #gasExec(SCHED, KZGPOINTEVAL)  => Gpointeval < SCHED > ... </k>
 
     syntax InternalOp ::= "#allocateCallGas"
  // ----------------------------------------
