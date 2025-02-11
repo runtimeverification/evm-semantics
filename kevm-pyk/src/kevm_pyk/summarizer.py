@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from collections.abc import Iterable
 import logging
 import time
 import traceback
@@ -24,6 +23,8 @@ from kevm_pyk.kevm import KEVM, KEVMSemantics, kevm_node_printer
 from kevm_pyk.utils import initialize_apr_proof, legacy_explore, run_prover
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
     from pyk.kast.inner import KInner
 
 _LOGGER = logging.getLogger(__name__)
@@ -157,11 +158,11 @@ OPCODES_SUMMARY_STATUS = {
     'CODESIZE': 'PASSED, No underflow check in KCFG',
     'CODECOPY': 'PASSED, No underflow check in KCFG',
     'GASPRICE': 'PASSED, No underflow check in KCFG',
-    'EXTCODESIZE': 'PASSED, No underflow check, No gas usage',
-    'EXTCODECOPY': 'PASSED, No underflow check, No gas usage',
+    'EXTCODESIZE': 'FAILED, generate ndbranch, No underflow check, No gas usage',
+    'EXTCODECOPY': 'FAILED, generate ndbranch, No underflow check, No gas usage',
     'RETURNDATASIZE': 'PASSED, No underflow check, No gas usage',
     'RETURNDATACOPY': 'PASSED, No underflow check in KCFG',
-    'EXTCODEHASH': 'PASSED, No underflow check, No gas usage',
+    'EXTCODEHASH': 'FAILED, generate ndbranch, No underflow check, No gas usage',
     'BLOCKHASH': 'PASSED, No underflow check in KCFG',
     'COINBASE': 'PASSED, No underflow check, No gas usage',
     'TIMESTAMP': 'PASSED, No underflow check in KCFG',
@@ -178,8 +179,8 @@ OPCODES_SUMMARY_STATUS = {
     'MSTORE8': 'PASSED, No underflow check, no gas usage',
     'SLOAD': 'PASSED, No underflow check in KCFG',
     'SSTORE': 'PASSED, No underflow check in KCFG',
-    'JUMP': 'PASSED, No underflow check, wierd ndbranch that looks like a split',
-    'JUMPI': 'PASSED, no underflow check, no gas usage, weird ndbranch that looks like a split',
+    'JUMP': 'FAILED, No underflow check, wierd ndbranch that looks like a split',
+    'JUMPI': 'FAILED, No underflow check, no gas usage, weird ndbranch that looks like a split',
     'PC': 'PASSED, No underflow check in KCFG',
     'MSIZE': 'PASSED, No underflow check in KCFG, no gas usage',
     'GAS': 'PASSED, No underflow check in KCFG',
@@ -330,7 +331,7 @@ def accounts_cell(acct_id: str | KInner, exists: bool = True) -> tuple[KInner, K
     )
     dot_account_var = KVariable('DotAccountVar', KSort('AccountCellMap'))
     constraint = mlEqualsFalse(KApply('AccountCellMap:in_keys', [acct_id_cell, dot_account_var]))
-    
+
     if exists:
         return KApply('_AccountCellMap_', [account_cell, dot_account_var]), constraint
     else:
@@ -365,13 +366,22 @@ class KEVMSummarizer:
         self,
         opcode: KApply,
         stack_needed: int,
-        init_map: dict[str, KInner] = {},
-        init_constraints: list[KInner] = [],
-        final_map: dict[str, KInner] = {},
-        final_constraints: list[KInner] = [],
+        init_map: dict[str, KInner] | None = None,
+        init_constraints: list[KInner] | None = None,
+        final_map: dict[str, KInner] | None = None,
+        final_constraints: list[KInner] | None = None,
         id_str: str = '',
     ) -> APRProof:
         """Build the specification to symbolically execute one abitrary instruction."""
+        if init_map is None:
+            init_map = {}
+        if init_constraints is None:
+            init_constraints = []
+        if final_map is None:
+            final_map = {}
+        if final_constraints is None:
+            final_constraints = []
+
         cterm = CTerm(self.kevm.definition.empty_config(KSort('GeneratedTopCell')))
         opcode_symbol = opcode.label.name.split('_')[0]
 
@@ -409,8 +419,8 @@ class KEVMSummarizer:
 
             # (opcode, init_subst, init_constraints, final_subst, final_constraints, id_str)
             specs: list[tuple[KApply, dict[str, KInner], list[KInner], dict[str, KInner], list[KInner], str]] = []
-            init_subst = {}
-            final_subst = {}
+            init_subst: dict[str, KInner] = {}
+            final_subst: dict[str, KInner] = {}
 
             if opcode_symbol in NOT_USEGAS_OPCODES:
                 # TODO: Should allow infGas to calculate gas. Skip for now.
@@ -419,7 +429,7 @@ class KEVMSummarizer:
             if opcode_symbol in ACCOUNT_QUERIES_OPCODES:
                 w0 = KVariable('W0', KSort('Int'))
                 pow160 = KToken(str(pow(2, 160)), KSort('Int'))
-                
+
                 cell, constraint = accounts_cell(euclidModInt(w0, pow160), exists=False)
                 init_subst['ACCOUNTS_CELL'] = cell
                 # TODO: BALANCE doesn't need the above spec. Maybe a bug in the backend.
@@ -564,11 +574,11 @@ class KEVMSummarizer:
             for res_line in proof_show.show(proof, to_module=False):
                 f.write(res_line)
                 f.write('\n')
-    
+
     def print_node(self, proof: APRProof, nodes: Iterable[int]) -> None:
         node_printer = kevm_node_printer(self.kevm, proof)
         proof_show = APRProofShow(self.kevm, node_printer=node_printer)
-        with open(self.proof_dir / proof.id / f'node-print.md', 'w') as f:
+        with open(self.proof_dir / proof.id / 'node-print.md', 'w') as f:
             for res_line in proof_show.show(proof, nodes=nodes, to_module=False, minimize=False):
                 f.write(res_line)
                 f.write('\n')
