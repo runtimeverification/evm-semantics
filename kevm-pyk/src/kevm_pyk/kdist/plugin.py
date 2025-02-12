@@ -119,8 +119,8 @@ __TARGETS__: Final = {
         {
             'target': KompileTarget.HASKELL,
             'main_file': config.EVM_SEMANTICS_DIR / 'edsl-sum.md',
-            'main_module': 'EDSL',
-            'syntax_module': 'EDSL',
+            'main_module': 'EDSL-SUM',
+            'syntax_module': 'EDSL-SUM',
         },
     ),
     'haskell-standalone': KEVMTarget(
