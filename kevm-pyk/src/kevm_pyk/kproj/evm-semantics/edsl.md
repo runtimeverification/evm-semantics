@@ -23,7 +23,6 @@ module EDSL-PURE
     imports HASHED-LOCATIONS
     imports SOLIDITY-FIELDS
     imports EVM-ABI
-    imports EVM-OPTIMIZATIONS
     imports INFINITE-GAS
     imports BIN-RUNTIME
 endmodule
