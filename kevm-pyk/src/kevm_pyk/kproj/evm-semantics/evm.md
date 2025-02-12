@@ -18,7 +18,6 @@ module EVM
     imports EVM-DATA
     imports NETWORK
     imports GAS
-    imports SERIALIZATION
 ```
 
 Configuration
