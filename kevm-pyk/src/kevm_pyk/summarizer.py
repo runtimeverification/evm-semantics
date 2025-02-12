@@ -255,19 +255,6 @@ def get_summary_status(opcode: str) -> str:
     return OPCODES_SUMMARY_STATUS[opcode].split(',')[0]
 
 
-def word_stack(size_over: int) -> KInner:
-    def _word_stack_var(n: int) -> KInner:
-        return KVariable(f'W{n}', KSort('Int'))
-
-    def _word_stack(w0: KInner, w1: KInner) -> KInner:
-        return KApply('_:__EVM-TYPES_WordStack_Int_WordStack', [w0, w1])
-
-    ws: KInner = KVariable('WS', KSort('WordStack'))
-    for i in reversed(range(size_over)):
-        ws = _word_stack(_word_stack_var(i), ws)
-    return ws
-
-
 def get_todo_list() -> list[str]:
     todo_list = []
     _LOGGER.info(f'Number of opcodes: {len(OPCODES)}')
@@ -389,7 +376,7 @@ class KEVMSummarizer:
         _init_subst: dict[str, KInner] = {}
         next_opcode = KApply('#next[_]_EVM_InternalOp_MaybeOpCode', opcode)
         _init_subst['K_CELL'] = KSequence([next_opcode, KVariable('K_CELL')])  # #next [ OPCODE ] ~> K_CELL
-        _init_subst['WORDSTACK_CELL'] = word_stack(stack_needed)  # W0 : W1 : ... : Wn for not underflow
+        _init_subst['WORDSTACK_CELL'] = KEVM.word_stack(stack_needed)  # W0 : W1 : ... : Wn for not underflow
         _init_subst['ID_CELL'] = KVariable('ID_CELL', KSort('Int'))  # ID_CELL should be Int for ADDRESS, LOG.
         # This is because #push doesn't handle `.Account`. And it's okay to be Int for other opcodes.
         _init_subst['CALLER_CELL'] = KVariable('CALLER_CELL', KSort('Int'))  # CALLER_CELL should be Int for CALLER.
