@@ -390,7 +390,20 @@ class KEVMSummarizer:
         final_constraints: list[KInner] | None = None,
         id_str: str = '',
     ) -> APRProof:
-        """Build the specification to symbolically execute one abitrary instruction."""
+        """Build a specification for symbolically executing an Ethereum opcode with configurable initial/final states.
+
+        Args:
+            opcode: The EVM opcode to execute as a KApply term.
+            stack_needed: Number of stack elements required to prevent underflow.
+            init_map: Optional initial state substitutions for symbolic execution.
+            init_constraints: Optional initial state constraints.
+            final_map: Optional final state substitutions to verify against.
+            final_constraints: Optional final state constraints to verify.
+            id_str: Optional identifier suffix for the specification.
+
+        Returns:
+            APRProof: A proof object containing the constructed specification for the opcode execution.
+        """
         if init_map is None:
             init_map = {}
         if init_constraints is None:
