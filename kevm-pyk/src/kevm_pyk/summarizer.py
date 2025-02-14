@@ -404,14 +404,10 @@ class KEVMSummarizer:
         Returns:
             APRProof: A proof object containing the constructed specification for the opcode execution.
         """
-        if init_map is None:
-            init_map = {}
-        if init_constraints is None:
-            init_constraints = []
-        if final_map is None:
-            final_map = {}
-        if final_constraints is None:
-            final_constraints = []
+        init_map = init_map or {}
+        init_constraints = init_constraints or []
+        final_map = final_map or {}
+        final_constraints = final_constraints or []
 
         cterm = CTerm(self.kevm.definition.empty_config(KSort('GeneratedTopCell')))
         opcode_symbol = opcode.label.name.split('_')[0]
