@@ -620,6 +620,10 @@ class KEVM(KProve, KRun):
                 KApply('<nonce>', [nonce]),
             ],
         )
+    
+    @staticmethod
+    def account_cell_in_keys(acct_id: KInner, cell_map: KInner) -> KApply:
+        return KApply('AccountCellMap:in_keys', [KApply('<acctID>', [acct_id]), cell_map])
 
     @staticmethod
     def wordstack_empty() -> KApply:
@@ -676,6 +680,14 @@ class KEVM(KProve, KRun):
             else:
                 wrapped_accounts.append(acct)
         return build_assoc(KApply('.AccountCellMap'), KLabel('_AccountCellMap_'), wrapped_accounts)
+
+    @staticmethod
+    def next_opcode(opcode: KInner) -> KInner:
+        return KApply('#next[_]_EVM_InternalOp_MaybeOpCode', opcode)
+
+    @staticmethod
+    def end_basic_block() -> KInner:
+        return KApply('#endBasicBlock_EVM_InternalOp')
 
 
 class KEVMNodePrinter(NodePrinter):
