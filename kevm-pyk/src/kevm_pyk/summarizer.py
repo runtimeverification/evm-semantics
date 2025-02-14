@@ -376,7 +376,7 @@ class KEVMSummarizer:
         _init_subst: dict[str, KInner] = {}
         next_opcode = KApply('#next[_]_EVM_InternalOp_MaybeOpCode', opcode)
         _init_subst['K_CELL'] = KSequence([next_opcode, KVariable('K_CELL')])  # #next [ OPCODE ] ~> K_CELL
-        _init_subst['WORDSTACK_CELL'] = KEVM.word_stack(stack_needed)  # W0 : W1 : ... : Wn for not underflow
+        _init_subst['WORDSTACK_CELL'] = KEVM.wordstack(stack_needed)  # W0 : W1 : ... : Wn for not underflow
         _init_subst['ID_CELL'] = KVariable('ID_CELL', KSort('Int'))  # ID_CELL should be Int for ADDRESS, LOG.
         # This is because #push doesn't handle `.Account`. And it's okay to be Int for other opcodes.
         _init_subst['CALLER_CELL'] = KVariable('CALLER_CELL', KSort('Int'))  # CALLER_CELL should be Int for CALLER.

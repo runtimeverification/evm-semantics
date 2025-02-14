@@ -634,16 +634,16 @@ class KEVM(KProve, KRun):
         return len(flatten_label('_:__EVM-TYPES_WordStack_Int_WordStack', wordstack))
 
     @staticmethod
-    def word_stack(size_over: int) -> KInner:
-        def _word_stack_var(n: int) -> KInner:
+    def wordstack(size_over: int) -> KInner:
+        def _wordstack_var(n: int) -> KInner:
             return KVariable(f'W{n}', KSort('Int'))
 
-        def _word_stack(w0: KInner, w1: KInner) -> KInner:
+        def _wordstack(w0: KInner, w1: KInner) -> KInner:
             return KApply('_:__EVM-TYPES_WordStack_Int_WordStack', [w0, w1])
 
         ws: KInner = KVariable('WS', KSort('WordStack'))
         for i in reversed(range(size_over)):
-            ws = _word_stack(_word_stack_var(i), ws)
+            ws = _wordstack(_wordstack_var(i), ws)
         return ws
 
     @staticmethod
