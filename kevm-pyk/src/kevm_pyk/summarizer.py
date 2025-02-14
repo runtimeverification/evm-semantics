@@ -378,8 +378,7 @@ class KEVMSummarizer:
 
     def build_stack_underflow_spec(self) -> APRProof | None:
         """Build the specification to symbolically execute abitrary instruction with stack underflow."""
-        # TODO:
-        return None
+        ...
 
     def _build_spec(
         self,
