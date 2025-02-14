@@ -11,7 +11,6 @@ This file only defines the local execution operations, the file `driver.md` will
 requires "data.md"
 requires "network.md"
 requires "gas.md"
-requires "serialization.md"
 
 module EVM
     imports STRING
