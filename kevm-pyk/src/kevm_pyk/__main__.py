@@ -637,8 +637,8 @@ def exec_kast(options: KastOptions) -> None:
 
 
 def exec_summarize(options: ProveOptions) -> None:
-    # analyze_proof('EXTCODESIZE_OWISE_1', 3)
-    # summarize('JUMP')
+    # TODO: provide options to summarize specific opcodes using `summarize(opcode)`
+    # TODO: provide options to analyze a specific proof using `analyze_proof(opcode, node_id)`
     batch_summarize()
 
 
