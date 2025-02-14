@@ -12,6 +12,12 @@ requires "hashed-locations.md"
 requires "abi.md"
 requires "gas.md"
 requires "optimizations.md"
+requires "lemmas/lemmas.k"
+
+module EDSL-SUM
+    imports EDSL-PURE
+    imports LEMMAS
+endmodule
 
 module EDSL
     imports EDSL-PURE
