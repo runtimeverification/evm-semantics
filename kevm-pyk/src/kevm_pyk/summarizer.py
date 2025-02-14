@@ -329,27 +329,19 @@ def accounts_cell(acct_id: str | KInner, exists: bool = True) -> tuple[KInner, K
     """
     if isinstance(acct_id, str):
         acct_id = KVariable(acct_id, KSort('Int'))
-    acct_id_cell = KApply('<acctID>', acct_id)
-    balance_cell = KApply('<balance>', KVariable('BALANCE_CELL', KSort('Int')))
-    code_cell = KApply('<code>', KVariable('CODE_CELL', KSort('AccountCode')))
-    storage_cell = KApply('<storage>', KVariable('STORAGE_CELL', KSort('Map')))
-    orig_storage_cell = KApply('<origStorage>', KVariable('ORIG_STORAGE_CELL', KSort('Map')))
-    transient_storage_cell = KApply('<transientStorage>', KVariable('TRANSIENT_STORAGE_CELL', KSort('Map')))
-    nonce_cell = KApply('<nonce>', KVariable('NONCE_CELL', KSort('Int')))
-    account_cell = KApply(
-        '<account>',
-        [
-            acct_id_cell,
-            balance_cell,
-            code_cell,
-            storage_cell,
-            orig_storage_cell,
-            transient_storage_cell,
-            nonce_cell,
-        ],
+    
+    account_cell = KEVM.account_cell(
+        acct_id,
+        KVariable('BALANCE_CELL', 'Int'),
+        KVariable('CODE_CELL', 'AccountCode'),
+        KVariable('STORAGE_CELL', 'Map'),
+        KVariable('ORIG_STORAGE_CELL', 'Map'),
+        KVariable('TRANSIENT_STORAGE_CELL', 'Map'),
+        KVariable('NONCE_CELL', 'Int'),
     )
-    dot_account_var = KVariable('DotAccountVar', KSort('AccountCellMap'))
-    constraint = mlEqualsFalse(KApply('AccountCellMap:in_keys', [acct_id_cell, dot_account_var]))
+    
+    dot_account_var = KVariable('DotAccountVar', 'AccountCellMap')
+    constraint = mlEqualsFalse(KEVM.account_cell_in_keys(acct_id, dot_account_var))
 
     if exists:
         return KApply('_AccountCellMap_', [account_cell, dot_account_var]), constraint
@@ -414,7 +406,7 @@ class KEVMSummarizer:
 
         # construct the initial substitution
         _init_subst: dict[str, KInner] = {}
-        next_opcode = KApply('#next[_]_EVM_InternalOp_MaybeOpCode', opcode)
+        next_opcode = KEVM.next_opcode(opcode)
         _init_subst['K_CELL'] = KSequence([next_opcode, KVariable('K_CELL')])  # #next [ OPCODE ] ~> K_CELL
         _init_subst['WORDSTACK_CELL'] = KEVM.wordstack(stack_needed)  # W0 : W1 : ... : Wn for not underflow
         _init_subst['ID_CELL'] = KVariable('ID_CELL', KSort('Int'))  # ID_CELL should be Int for ADDRESS, LOG.
@@ -470,14 +462,14 @@ class KEVMSummarizer:
                 init_subst['ACCOUNTS_CELL'] = cell
                 specs.append((opcode, init_subst, [constraint], {}, [], ''))
             elif opcode_symbol == 'JUMP':
-                final_subst['K_CELL'] = KSequence([KApply('#endBasicBlock_EVM_InternalOp'), KVariable('K_CELL')])
+                final_subst['K_CELL'] = KSequence([KEVM.end_basic_block(), KVariable('K_CELL')])
                 specs.append((opcode, init_subst, [], final_subst, [], ''))
             elif opcode_symbol == 'JUMPI':
                 constraint = mlEquals(KVariable('W1', KSort('Int')), KToken('0', KSort('Int')), 'Int')
                 specs.append((opcode, init_subst, [constraint], {}, [], '_FALSE'))
 
                 constraint = mlNot(mlEquals(KVariable('W1', KSort('Int')), KToken('0', KSort('Int')), 'Int'))
-                final_subst['K_CELL'] = KSequence([KApply('#endBasicBlock_EVM_InternalOp'), KVariable('K_CELL')])
+                final_subst['K_CELL'] = KSequence([KEVM.end_basic_block(), KVariable('K_CELL')])
                 specs.append((opcode, init_subst, [], final_subst, [], '_TRUE'))
             elif opcode_symbol == 'LOG':
                 need += 2
