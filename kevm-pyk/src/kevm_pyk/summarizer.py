@@ -329,7 +329,7 @@ def accounts_cell(acct_id: str | KInner, exists: bool = True) -> tuple[KInner, K
     """
     if isinstance(acct_id, str):
         acct_id = KVariable(acct_id, KSort('Int'))
-    
+
     account_cell = KEVM.account_cell(
         acct_id,
         KVariable('BALANCE_CELL', 'Int'),
@@ -339,7 +339,7 @@ def accounts_cell(acct_id: str | KInner, exists: bool = True) -> tuple[KInner, K
         KVariable('TRANSIENT_STORAGE_CELL', 'Map'),
         KVariable('NONCE_CELL', 'Int'),
     )
-    
+
     dot_account_var = KVariable('DotAccountVar', 'AccountCellMap')
     constraint = mlEqualsFalse(KEVM.account_cell_in_keys(acct_id, dot_account_var))
 
