@@ -311,7 +311,22 @@ def stack_needed(opcode_id: str) -> list[int]:
 
 
 def accounts_cell(acct_id: str | KInner, exists: bool = True) -> tuple[KInner, KInner]:
-    """Return the accounts cell with constraints on the accounts."""
+    """Construct an account cell map with constraints.
+
+    Args:
+        acct_id: Account identifier, either as a string variable name or KInner term.
+        exists: Flag indicating if this account should exist in the resulting cell map.
+
+    Returns:
+        tuple[KInner, KInner]:
+        - First element is the account cell map containing either the account or a symbolic `AccountCellMap` without this account
+        - Second element is a constraint ensuring the account ID isn't in the symbolic `AccountCellMap`
+
+    Constructs an account cell with standard Ethereum account components including balance, code, storage, and nonce.
+    Creates a constraint that the account ID must not exist in the
+    base map variable (DotAccountVar).
+    The exists flag determines if the account is included in the final cell map or just the base map variable.
+    """
     if isinstance(acct_id, str):
         acct_id = KVariable(acct_id, KSort('Int'))
     acct_id_cell = KApply('<acctID>', acct_id)
