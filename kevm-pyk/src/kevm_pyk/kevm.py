@@ -620,7 +620,7 @@ class KEVM(KProve, KRun):
                 KApply('<nonce>', [nonce]),
             ],
         )
-    
+
     @staticmethod
     def account_cell_in_keys(acct_id: KInner, cell_map: KInner) -> KApply:
         return KApply('AccountCellMap:in_keys', [KApply('<acctID>', [acct_id]), cell_map])
