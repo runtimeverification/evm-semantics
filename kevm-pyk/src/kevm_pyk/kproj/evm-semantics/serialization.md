@@ -62,6 +62,22 @@ Address/Hash Helpers
     rule [keccak]: keccak(WS) => #parseHexWord(Keccak256(WS)) [concrete]
 ```
 
+- `verifyKZGProofWrapper` serves as a wrapper around the `verifyKZGProof` in `KRYPTO`.
+
+```k
+    syntax Bool ::= verifyKZGProofWrapper ( Bytes , Bytes , Bytes , Bytes ) [symbol(verifyKZGProofWrapper), function, total, smtlib(smt_krypto_verifykzgproof)]
+    
+    rule [verifyKZGProofWrapper]: verifyKZGProofWrapper(COM, Z, Y, PR) => verifyKZGProof(COM, Z, Y, PR) [concrete]
+```
+
+- `Sha256rawWrapper` serves as a wrapper around the `Sha256raw` in `KRYPTO`.
+
+```k
+    syntax Bytes ::= Sha256rawWrapper ( Bytes ) [symbol(Sha256rawWrapper), function, total, smtlib(smt_krypto_sha256raw)]
+    
+    rule [Sha256rawWrapper]: Sha256rawWrapper(BYTES) => Sha256raw(BYTES) [concrete]
+```
+
 -   `#newAddr` computes the address of a new account given the address and nonce of the creating account.
 
 ```k

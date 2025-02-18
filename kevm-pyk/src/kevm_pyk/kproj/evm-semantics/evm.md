@@ -2082,7 +2082,7 @@ Precompiled Contracts
        andBool #kzg2vh(substrBytes(DATA, 96, 144)) ==K substrBytes(DATA, 0, 32)
        andBool Bytes2Int(substrBytes(DATA, 32, 64), BE, Unsigned) <Int blsModulus
        andBool Bytes2Int(substrBytes(DATA, 64, 96), BE, Unsigned) <Int blsModulus
-       andBool verifyKZGProof(substrBytes(DATA, 96, 144), substrBytes(DATA, 32, 64), substrBytes(DATA, 64, 96), substrBytes(DATA, 144, 192))
+       andBool verifyKZGProofWrapper(substrBytes(DATA, 96, 144), substrBytes(DATA, 32, 64), substrBytes(DATA, 64, 96), substrBytes(DATA, 144, 192))
 
     rule <k> KZGPOINTEVAL => #end EVMC_PRECOMPILE_FAILURE ... </k>
          <callData> DATA </callData>
@@ -2090,12 +2090,12 @@ Precompiled Contracts
        orBool #kzg2vh(substrBytes(DATA, 96, 144)) =/=K substrBytes(DATA, 0, 32)
        orBool Bytes2Int(substrBytes(DATA, 32, 64), BE, Unsigned) >=Int blsModulus
        orBool Bytes2Int(substrBytes(DATA, 64, 96), BE, Unsigned) >=Int blsModulus
-       orBool notBool verifyKZGProof(substrBytes(DATA, 96, 144), substrBytes(DATA, 32, 64), substrBytes(DATA, 64, 96), substrBytes(DATA, 144, 192))
+       orBool notBool verifyKZGProofWrapper(substrBytes(DATA, 96, 144), substrBytes(DATA, 32, 64), substrBytes(DATA, 64, 96), substrBytes(DATA, 144, 192))
 
     syntax Bytes ::= #kzg2vh ( Bytes ) [symbol(#kzg2vh), function, total]
  // ---------------------------------------------------------------------
     // VERSIONED_HASH_VERSION_KZG = 0x01
-    rule #kzg2vh ( C ) => Sha256raw(C)[0 <- 1]
+    rule #kzg2vh ( C ) => Sha256rawWrapper(C)[0 <- 1]
 ```
 
 
