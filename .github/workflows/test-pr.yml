@@ -96,7 +96,7 @@ jobs:
             test-suite: 'test-prove-rules'
             test-args: '--use-booster-dev'
             timeout: 45
-            parallel: 8
+            parallel: 6
           - name: 'Functional'
             test-suite: 'test-prove-functional'
             test-args:
