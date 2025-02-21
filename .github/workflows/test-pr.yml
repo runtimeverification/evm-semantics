@@ -142,6 +142,10 @@ jobs:
     steps:
       - name: 'Check out code'
         uses: actions/checkout@v4
+      - name: 'Check out select submodules'
+        run: |
+          set -eux
+          git submodule update --init --recursive -- kevm-pyk/src/kevm_pyk/kproj/plugin
       - name: 'Set up Docker'
         uses: ./.github/actions/with-docker
         with:
