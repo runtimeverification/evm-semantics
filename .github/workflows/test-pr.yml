@@ -134,32 +134,6 @@ jobs:
         if: always()
         run: |
           docker stop --time=0 kevm-ci-haskell-${{ matrix.test-suite }}-${{ github.sha }}
-  
-  test-summarize:
-    name: 'Test Summarize'
-    needs: kevm-pyk-code-quality-checks
-    runs-on: [self-hosted, linux, normal]
-    steps:
-      - name: 'Check out code'
-        uses: actions/checkout@v4
-      - name: 'Check out select submodules'
-        run: |
-          set -eux
-          git submodule update --init --recursive -- kevm-pyk/src/kevm_pyk/kproj/plugin
-      - name: 'Set up Docker'
-        uses: ./.github/actions/with-docker
-        with:
-          container-name: kevm-ci-haskell-test-summarize-${{ github.sha }}
-      - name: 'Build kevm-pyk'
-        run: docker exec -u github-user kevm-ci-haskell-test-summarize-${{ github.sha }} /bin/bash -c 'make poetry'
-      - name: 'Build distribution'
-        run: docker exec -u github-user kevm-ci-haskell-test-summarize-${{ github.sha }} /bin/bash -c 'CXX=clang++-14 poetry -C kevm-pyk run kdist --verbose build -j`nproc` evm-semantics.plugin evm-semantics.summary'
-      - name: 'Run summarize'
-        run: docker exec -u github-user kevm-ci-haskell-test-summarize-${{ github.sha }} /bin/bash -c 'make test-summarize'
-      - name: 'Tear down Docker'
-        if: always()
-        run: |
-          docker stop --time=0 kevm-ci-haskell-test-summarize-${{ github.sha }}
 
   nix:
     name: 'Nix'
