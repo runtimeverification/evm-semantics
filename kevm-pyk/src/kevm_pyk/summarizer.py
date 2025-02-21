@@ -127,7 +127,7 @@ OPCODES_SUMMARY_STATUS: Final = frozendict(
     {
         'STOP': 'PASSED, One rule? Several rules?',
         'ADD': 'PASSED, No underflow check in KCFG',
-        'MUL': 'PASSED, No underflow check in KCFG',
+        'MUL': 'FAILED, No underflow check in KCFG',
         'SUB': 'PASSED, No underflow check in KCFG',
         'DIV': 'PASSED, No underflow check in KCFG',
         'SDIV': 'PASSED, No underflow check in KCFG',
@@ -156,7 +156,7 @@ OPCODES_SUMMARY_STATUS: Final = frozendict(
         'BALANCE': 'PASSED, no underflow check, no gas usage',
         'ORIGIN': 'PASSED, no underflow check, no .Account in origin cell',
         'CALLER': 'PASSED, no underflow check, no gas usage',
-        'CALLVALUE': 'PASSED, No underflow check in KCFG',
+        'CALLVALUE': 'FAILED, No underflow check in KCFG',
         'CALLDATALOAD': 'PASSED, No underflow check in KCFG',
         'CALLDATASIZE': 'PASSED, No underflow check in KCFG',
         'CALLDATACOPY': 'PASSED, No underflow check in KCFG',
@@ -177,7 +177,7 @@ OPCODES_SUMMARY_STATUS: Final = frozendict(
         'GASLIMIT': 'PASSED, No underflow check in KCFG',
         'CHAINID': 'PASSED, No underflow check in KCFG',
         'SELFBALANCE': 'PASSED, No underflow check in KCFG',
-        'BASEFEE': 'PASSED, No underflow check in KCFG',
+        'BASEFEE': 'FAILED, No underflow check in KCFG',
         'POP': 'PASSED, No underflow check, no gas usage',
         'MLOAD': 'PASSED, No underflow check, no gas usage',
         'MSTORE': 'PASSED, No underflow check in KCFG',
@@ -590,7 +590,7 @@ class KEVMSummarizer:
         ensure_dir_path(self.save_directory / proof.id)
         with open(self.save_directory / proof.id / 'summary.md', 'w') as f:
             _LOGGER.info(f'Writing summary to {self.save_directory / proof.id / "summary.md"}')
-            for res_line in proof_show.show(proof, to_module=False):
+            for res_line in proof_show.show(proof, to_module=True):
                 f.write(res_line)
                 f.write('\n')
 
