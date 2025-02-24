@@ -380,7 +380,16 @@ The `#next [_]` operator initiates execution by:
     syntax Bool ::= #stackUnderflow ( WordStack , OpCode ) [symbol(#stackUnderflow), function, total]
                   | #stackOverflow  ( WordStack , OpCode ) [symbol(#stackOverflow), function, total]
  // ------------------------------------------------------------------------------------------------
-    rule #stackUnderflow(WS, OP:OpCode) => #sizeWordStack(WS) <Int #stackNeeded(OP)
+    rule #stackUnderflow(                                                 _WS , _POP:PushOp      ) => false
+    rule #stackUnderflow(                                                 _WS , _IOP:InvalidOp   ) => false
+    rule #stackUnderflow(                                                 _WS , _NOP:NullStackOp ) => false
+    rule #stackUnderflow( _W0 :                                           _WS , _UOP:UnStackOp   ) => false
+    rule #stackUnderflow( _W0 : _W1 :                                     _WS , BOP:BinStackOp   ) => false requires notBool isLogOp(BOP)
+    rule #stackUnderflow( _W0 : _W1 : _W2 :                               _WS , _TOP:TernStackOp ) => false
+    rule #stackUnderflow( _W0 : _W1 : _W2 : _W3 :                         _WS , _QOP:QuadStackOp ) => false
+    rule #stackUnderflow( _W0 : _W1 : _W2 : _W3 : _W4 : _W5 : _W6 :       _WS , _CSOP:CallSixOp  ) => false
+    rule #stackUnderflow( _W0 : _W1 : _W2 : _W3 : _W4 : _W5 : _W6 : _W7 : _WS , COP:CallOp       ) => false requires notBool isCallSixOp(COP)
+    rule #stackUnderflow(WS, OP:OpCode) => #sizeWordStack(WS) <Int #stackNeeded(OP) [owise]
 
     rule #stackOverflow(_WS, OP) => false requires #stackDelta(OP) <=Int 0
     rule #stackOverflow(WS, OP) => 1024 <Int #sizeWordStack(WS) +Int #stackDelta(OP) [owise]
