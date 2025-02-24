@@ -377,9 +377,9 @@ The `#next [_]` operator initiates execution by:
 -   `#stackDelta` is the delta the stack will have after the opcode executes.
 
 ```k
-    syntax Bool ::= #stackUnderflow ( WordStack , OpCode ) [symbol(#stackUnderflow), macro]
-                  | #stackOverflow  ( WordStack , OpCode ) [symbol(#stackOverflow), macro]
- // --------------------------------------------------------------------------------------
+    syntax Bool ::= #stackUnderflow ( WordStack , OpCode ) [symbol(#stackUnderflow), function, total]
+                  | #stackOverflow  ( WordStack , OpCode ) [symbol(#stackOverflow), function, total]
+ // ------------------------------------------------------------------------------------------------
     rule #stackUnderflow(WS, OP:OpCode) => #sizeWordStack(WS) <Int #stackNeeded(OP)
     rule #stackOverflow (WS, OP) => (#stackDelta(OP) >Int 0) andBool (#sizeWordStack(WS) +Int #stackDelta(OP) >Int 1024)
 
