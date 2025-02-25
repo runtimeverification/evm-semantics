@@ -87,7 +87,7 @@ Output Extraction
     rule getStatus(EVMC_FAILURE) => EVMC_FAILURE
     rule getStatus(EVMC_INVALID_INSTRUCTION) => EVMC_INVALID_INSTRUCTION
     rule getStatus(EVMC_UNDEFINED_INSTRUCTION) => EVMC_UNDEFINED_INSTRUCTION
-    rule getStatus(EVMC_OUT_OF_GAS) => EVMC_OUT_OF_GAS 
+    rule getStatus(EVMC_OUT_OF_GAS) => EVMC_OUT_OF_GAS
     rule getStatus(EVMC_BAD_JUMP_DESTINATION) => EVMC_BAD_JUMP_DESTINATION
     rule getStatus(EVMC_STACK_OVERFLOW) => EVMC_STACK_OVERFLOW
     rule getStatus(EVMC_STACK_UNDERFLOW) => EVMC_STACK_UNDERFLOW
@@ -569,13 +569,13 @@ These operators make queries about the current execution state.
 
 ```k
     syntax NullStackOp ::= "PC" | "GAS" | "GASPRICE" | "GASLIMIT" | "BASEFEE" | "BLOBBASEFEE"
- // -------------------------------------------------------------------------
+ // -----------------------------------------------------------------------------------------
     rule <k> PC          => PCOUNT          ~> #push ... </k> <pc> PCOUNT </pc>
     rule <k> GAS         => gas2Int(GAVAIL) ~> #push ... </k> <gas> GAVAIL </gas>
-    rule <k> GASPRICE    => GasPrice()          ~> #push ... </k>
-    rule <k> GASLIMIT    => GasLimit()          ~> #push ... </k>
-    rule <k> BASEFEE     => BaseFee()           ~> #push ... </k>
-    rule <k> BLOBBASEFEE => BlobBaseFee()       ~> #push ... </k>
+    rule <k> GASPRICE    => GasPrice()      ~> #push ... </k>
+    rule <k> GASLIMIT    => GasLimit()      ~> #push ... </k>
+    rule <k> BASEFEE     => BaseFee()       ~> #push ... </k>
+    rule <k> BLOBBASEFEE => BlobBaseFee()   ~> #push ... </k>
 
     syntax NullStackOp ::= "COINBASE" | "TIMESTAMP" | "NUMBER" | "DIFFICULTY" | "PREVRANDAO"
  // ----------------------------------------------------------------------------------------
@@ -620,12 +620,10 @@ The blockhash is calculated here using the "shortcut" formula used for running t
  // -------------------------------
 
     rule <k> BLOBHASH INDEX => 0 ~> #push ... </k>
-         <versionedHashes> HASHES </versionedHashes>
-       requires INDEX >=Int size(HASHES)
+       requires INDEX >=Int BlobHashesSize()
 
-    rule <k> BLOBHASH INDEX => #asWord( {HASHES[INDEX]}:>Bytes ) ~> #push ... </k>
-         <versionedHashes> HASHES </versionedHashes>
-       requires INDEX <Int size(HASHES)
+    rule <k> BLOBHASH INDEX => BlobHash(INDEX) ~> #push ... </k>
+       requires INDEX <Int BlobHashesSize()
 ```
 
 EVM OpCodes
@@ -977,7 +975,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          ...
          </k>
          <localMem> LM </localMem>
-         <callGas> GCALL </callGas> 
+         <callGas> GCALL </callGas>
          <schedule> SCHED </schedule>
       requires #hasValidInitCode(MEMWIDTH, SCHED)
 
