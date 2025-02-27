@@ -198,7 +198,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
 
     rule [GselfdestructnewaccountTangerine]:   Gselfdestructnewaccount << TANGERINE_WHISTLE >> => true
     rule [GstaticcalldepthTangerine]:          Gstaticcalldepth        << TANGERINE_WHISTLE >> => false
-    rule [SCHEDFLAGTangerine]:                SCHEDCONST              << TANGERINE_WHISTLE >> => SCHEDCONST << HOMESTEAD >>
+    rule [SCHEDFLAGTangerine]:                 SCHEDFLAG               << TANGERINE_WHISTLE >> => SCHEDFLAG << HOMESTEAD >>
       requires notBool ( SCHEDCONST ==K Gselfdestructnewaccount orBool SCHEDCONST ==K Gstaticcalldepth )
 ```
 
@@ -215,7 +215,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
 
     rule [GemptyisnonexistentDragon]:     Gemptyisnonexistent     << SPURIOUS_DRAGON >> => true
     rule [GzerovaluenewaccountgasDragon]: Gzerovaluenewaccountgas << SPURIOUS_DRAGON >> => false
-    rule [SCHEDFLAGDragon]:              SCHEDCONST              << SPURIOUS_DRAGON >> => SCHEDCONST << TANGERINE_WHISTLE >>
+    rule [SCHEDFLAGDragon]:               SCHEDFLAG               << SPURIOUS_DRAGON >> => SCHEDFLAG << TANGERINE_WHISTLE >>
       requires notBool ( SCHEDCONST ==K Gemptyisnonexistent orBool SCHEDCONST ==K Gzerovaluenewaccountgas )
 ```
 
@@ -224,7 +224,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
 ```k
     syntax Schedule ::= "BYZANTIUM" [symbol(BYZANTIUM_EVM), smtlib(schedule_BYZANTIUM)]
  // -----------------------------------------------------------------------------------
-    rule [RbByzantium]:      Rb         < BYZANTIUM > => 3 *Int eth
+    rule [RbByzantium]:         Rb         < BYZANTIUM > => 3 *Int eth
     rule [SCHEDCONSTByzantium]: SCHEDCONST < BYZANTIUM > => SCHEDCONST < SPURIOUS_DRAGON >
       requires notBool ( SCHEDCONST ==K Rb )
 
@@ -406,7 +406,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule [Ghaseip6780Cancun]:     Ghaseip6780     << CANCUN >> => true
     rule [GhasblobbasefeeCancun]: Ghasblobbasefee << CANCUN >> => true
     rule [GhasblobhashCancun]:    Ghasblobhash    << CANCUN >> => true
-    rule [SCHEDFLAGCancun]:       SCHEDFLAG      << CANCUN >> => SCHEDFLAG << SHANGHAI >>
+    rule [SCHEDFLAGCancun]:       SCHEDFLAG       << CANCUN >> => SCHEDFLAG << SHANGHAI >>
       requires notBool ( SCHEDFLAG ==K Ghastransient
                   orBool SCHEDFLAG ==K Ghasmcopy
                   orBool SCHEDFLAG ==K Ghasbeaconroot
