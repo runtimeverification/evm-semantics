@@ -14,8 +14,14 @@ requires "gas.md"
 requires "optimizations.md"
 requires "lemmas/lemmas.k"
 requires "lemmas/summarization-simplification.k"
+requires "summaries/summary.k"
 
-module EDSL-SUM
+module EDSL-SUMMARY
+    imports EDSL-PURE
+    imports SUMMARY
+endmodule
+
+module EDSL-SUMMARIZE
     imports EDSL-PURE
     imports LEMMAS
     imports SUMMARIZATION-SIMPLIFICATION
