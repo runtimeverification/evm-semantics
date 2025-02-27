@@ -592,13 +592,13 @@ class KEVMSummarizer:
         spec_name = f'summary-{proof.id.replace("_", "-").lower()}.k'
         with open(self.save_directory / spec_name, 'w') as f:
             _LOGGER.info(f'Writing summary to {self.save_directory / spec_name}')
-            start_module = False
             for res_line in proof_show.show(proof, to_module=True):
                 if res_line.startswith('module'):
-                    start_module = True
-                if start_module:
-                    f.write(res_line)
-                    f.write('\n')
+                    f.write('requires "../evm.md";\n\n')
+                    lines = res_line.split('\n')
+                    lines.insert(1, 'imports EVM')
+                    f.write('\n'.join(lines))
+                    continue
 
     def print_node(self, proof: APRProof, nodes: Iterable[int]) -> None:
         node_printer = kevm_node_printer(self.kevm, proof)
