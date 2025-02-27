@@ -199,7 +199,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule [GselfdestructnewaccountTangerine]:   Gselfdestructnewaccount << TANGERINE_WHISTLE >> => true
     rule [GstaticcalldepthTangerine]:          Gstaticcalldepth        << TANGERINE_WHISTLE >> => false
     rule [SCHEDFLAGTangerine]:                 SCHEDFLAG               << TANGERINE_WHISTLE >> => SCHEDFLAG << HOMESTEAD >>
-      requires notBool ( SCHEDCONST ==K Gselfdestructnewaccount orBool SCHEDCONST ==K Gstaticcalldepth )
+      requires notBool ( SCHEDFLAG ==K Gselfdestructnewaccount orBool SCHEDFLAG ==K Gstaticcalldepth )
 ```
 
 ### Spurious Dragon Schedule
@@ -216,7 +216,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule [GemptyisnonexistentDragon]:     Gemptyisnonexistent     << SPURIOUS_DRAGON >> => true
     rule [GzerovaluenewaccountgasDragon]: Gzerovaluenewaccountgas << SPURIOUS_DRAGON >> => false
     rule [SCHEDFLAGDragon]:               SCHEDFLAG               << SPURIOUS_DRAGON >> => SCHEDFLAG << TANGERINE_WHISTLE >>
-      requires notBool ( SCHEDCONST ==K Gemptyisnonexistent orBool SCHEDCONST ==K Gzerovaluenewaccountgas )
+      requires notBool ( SCHEDFLAG ==K Gemptyisnonexistent orBool SCHEDFLAG ==K Gzerovaluenewaccountgas )
 ```
 
 ### Byzantium Schedule
