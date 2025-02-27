@@ -115,12 +115,29 @@ __TARGETS__: Final = {
             'syntax_module': 'EDSL',
         },
     ),
-    'summary': KEVMTarget(
+    'summarize': KEVMTarget(
         {
             'target': KompileTarget.HASKELL,
             'main_file': config.EVM_SEMANTICS_DIR / 'edsl.md',
-            'main_module': 'EDSL-SUM',
-            'syntax_module': 'EDSL-SUM',
+            'main_module': 'EDSL-SUMMARIZE',
+            'syntax_module': 'EDSL-SUMMARIZE',
+        },
+    ),
+    'llvm-summary': KEVMTarget(
+        {
+            'target': KompileTarget.LLVM,
+            'main_file': config.EVM_SEMANTICS_DIR / 'driver.md',
+            'main_module': 'ETHEREUM-SIMULATION-SUMMARY',
+            'syntax_module': 'ETHEREUM-SIMULATION-SUMMARY',
+            'optimization': 3,
+        },
+    ),
+    'haskell-summary': KEVMTarget(
+        {
+            'target': KompileTarget.HASKELL,
+            'main_file': config.EVM_SEMANTICS_DIR / 'edsl.md',
+            'main_module': 'EDSL-SUMMARY',
+            'syntax_module': 'EDSL-SUMMARY',
         },
     ),
     'haskell-standalone': KEVMTarget(
