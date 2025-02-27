@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import shutil
 import time
 import traceback
 from multiprocessing import Pool
@@ -573,8 +574,8 @@ class KEVMSummarizer:
 
         passed, res_lines = _init_and_run_proof(proof)
 
-        ensure_dir_path(self.save_directory / proof.id)
-        with open(self.save_directory / proof.id / 'proof-result.txt', 'w') as f:
+        ensure_dir_path(self.proof_dir / proof.id)
+        with open(self.proof_dir / proof.id / 'proof-result.txt', 'w') as f:
             f.write(f'Proof {proof.id} Passed' if passed else f'Proof {proof.id} Failed')
             f.write('\n')
             for line in res_lines:
@@ -587,9 +588,10 @@ class KEVMSummarizer:
         proof.minimize_kcfg(KEVMSemantics(allow_symbolic_program=True), merge)
         node_printer = kevm_node_printer(self.kevm, proof)
         proof_show = APRProofShow(self.kevm, node_printer=node_printer)
-        ensure_dir_path(self.save_directory / proof.id)
-        with open(self.save_directory / proof.id / 'summary.md', 'w') as f:
-            _LOGGER.info(f'Writing summary to {self.save_directory / proof.id / "summary.md"}')
+        ensure_dir_path(self.save_directory)
+        spec_name = f'summary-{proof.id.replace("_", "-").lower()}.k'
+        with open(self.save_directory / spec_name, 'w') as f:
+            _LOGGER.info(f'Writing summary to {self.save_directory / spec_name}')
             for res_line in proof_show.show(proof, to_module=True):
                 f.write(res_line)
                 f.write('\n')
@@ -649,19 +651,21 @@ def batch_summarize(num_processes: int = 4) -> None:
 
 def summarize(opcode_symbol: str) -> tuple[KEVMSummarizer, list[APRProof]]:
     proof_dir = Path(__file__).parent / 'proofs'
-    save_directory = Path(__file__).parent / 'summaries'
+    save_directory = Path(__file__).parent / 'kproj' / 'evm-semantics' / 'summaries'
     summarizer = KEVMSummarizer(proof_dir, save_directory)
     proofs = summarizer.build_spec(opcode_symbol)
     for proof in proofs:
-        summarizer.print_node(proof, [1])
-        summarizer.explore(proof)
-        summarizer.summarize(proof)
-        proof.write_proof_data()
+        if (proof_dir / proof.id / 'proof.json').exists():
+            proof = APRProof.read_proof_data(proof_dir, proof.id)
+            summarizer.summarize(proof)
+        else:
+            summarizer.print_node(proof, [1])
+            summarizer.explore(proof)
+            summarizer.summarize(proof)
     return summarizer, proofs
 
 
-def analyze_proof(opcode: str, node_id: int) -> None:
+def clear_proofs() -> None:
     proof_dir = Path(__file__).parent / 'proofs'
-    save_directory = Path(__file__).parent / 'summaries'
-    summarizer = KEVMSummarizer(proof_dir, save_directory)
-    summarizer.analyze_proof(str(proof_dir / f'{opcode}_SPEC'), node_id)
+    if proof_dir.exists():
+        shutil.rmtree(proof_dir)
