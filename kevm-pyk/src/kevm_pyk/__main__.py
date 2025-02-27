@@ -35,7 +35,12 @@ from pyk.utils import FrozenDict, hash_str, single
 from kevm_pyk.summarizer import batch_summarize, clear_proofs, summarize
 
 from . import VERSION, config
-from .cli import SummarizeOptions, _create_argument_parser, generate_options, get_argument_type_setter, get_option_string_destination
+from .cli import (
+    _create_argument_parser,
+    generate_options,
+    get_argument_type_setter,
+    get_option_string_destination,
+)
 from .gst_to_kore import SORT_ETHEREUM_SIMULATION, filter_gst_keys, gst_to_kore, kore_pgm_to_kore
 from .kevm import KEVM, KEVMSemantics, kevm_node_printer
 from .kompile import KompileTarget, kevm_kompile
@@ -65,6 +70,7 @@ if TYPE_CHECKING:
         RunOptions,
         SectionEdgeOptions,
         ShowKCFGOptions,
+        SummarizeOptions,
         VersionOptions,
         ViewKCFGOptions,
     )
