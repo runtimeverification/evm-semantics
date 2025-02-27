@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import re
 import shutil
 import time
 import traceback
@@ -365,7 +366,7 @@ class KEVMSummarizer:
     save_directory: Path
 
     def __init__(self, proof_dir: Path, save_directory: Path) -> None:
-        self.kevm = KEVM(kdist.get('evm-semantics.summary'))
+        self.kevm = KEVM(kdist.get('evm-semantics.summarize'))
         self.proof_dir = proof_dir
         self.save_directory = save_directory
 
@@ -589,16 +590,34 @@ class KEVMSummarizer:
         node_printer = kevm_node_printer(self.kevm, proof)
         proof_show = APRProofShow(self.kevm, node_printer=node_printer)
         ensure_dir_path(self.save_directory)
+
+        def _remove_inf_gas(res_line: str) -> str:
+            return re.sub(r'#gas \(([^)]*)\)', r'\1', res_line)
+
+        def _remove_dash_from_var(res_line: str) -> str:
+            return re.sub(r'(?<!\w)_+([A-Z0-9]\w*)', r'\1', res_line)
+
         spec_name = f'summary-{proof.id.replace("_", "-").lower()}.k'
         with open(self.save_directory / spec_name, 'w') as f:
             _LOGGER.info(f'Writing summary to {self.save_directory / spec_name}')
             for res_line in proof_show.show(proof, to_module=True):
                 if res_line.startswith('module'):
-                    f.write('requires "../evm.md";\n\n')
+                    res_line = _remove_inf_gas(res_line)
+                    res_line = _remove_dash_from_var(res_line)
+                    f.write('requires "../evm.md"\n\n')
                     lines = res_line.split('\n')
                     lines.insert(1, 'imports EVM')
                     f.write('\n'.join(lines))
                     continue
+        k_files = sorted([f for f in self.save_directory.glob('*.k') if f.name != 'summary.k'])
+        module_names = [f.stem.upper() for f in k_files]
+        with open(self.save_directory / 'summary.k', 'w') as f:
+            for k_file in k_files:
+                f.write(f'requires {k_file.name!r}\n'.replace("'", '"'))
+            f.write('\nmodule SUMMARY\n')
+            for module_name in module_names:
+                f.write(f'imports {module_name}\n')
+            f.write('\nendmodule\n')
 
     def print_node(self, proof: APRProof, nodes: Iterable[int]) -> None:
         node_printer = kevm_node_printer(self.kevm, proof)
