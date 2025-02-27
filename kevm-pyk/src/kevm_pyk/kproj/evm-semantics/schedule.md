@@ -164,7 +164,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     syntax Schedule ::= "FRONTIER" [symbol(FRONTIER_EVM), smtlib(schedule_FRONTIER)]
  // --------------------------------------------------------------------------------
     rule [GtxcreateFrontier]:  Gtxcreate  < FRONTIER > => 21000
-    rule [SCHEDCONSTFrontier]: SCHEDCONST < FRONTIER > => SCHEDCONST < DEFAULT > requires SCHEDCONST =/=K  Gtxcreate
+    rule [SCHEDCONSTFrontier]: SCHEDCONST < FRONTIER > => SCHEDCONST < DEFAULT > requires SCHEDCONST =/=K Gtxcreate
 
     rule [SCHEDFLAGFrontier]: SCHEDFLAG << FRONTIER >> => SCHEDFLAG << DEFAULT >>
 ```
