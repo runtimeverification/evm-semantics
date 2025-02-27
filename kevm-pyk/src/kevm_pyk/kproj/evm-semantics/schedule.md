@@ -199,7 +199,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule [GselfdestructnewaccountTangerine]:   Gselfdestructnewaccount << TANGERINE_WHISTLE >> => true
     rule [GstaticcalldepthTangerine]:          Gstaticcalldepth        << TANGERINE_WHISTLE >> => false
     rule [SCHEDFLAGTangerine]:                SCHEDCONST              << TANGERINE_WHISTLE >> => SCHEDCONST << HOMESTEAD >>
-      requires notBool ( SCHEDCONST ==K  Gselfdestructnewaccount orBool SCHEDCONST ==K Gstaticcalldepth )
+      requires notBool ( SCHEDCONST ==K Gselfdestructnewaccount orBool SCHEDCONST ==K Gstaticcalldepth )
 ```
 
 ### Spurious Dragon Schedule
@@ -211,12 +211,12 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule [maxCodeSizeDragon]: maxCodeSize < SPURIOUS_DRAGON > => 24576
 
     rule [SCHEDCONSTDragon]: SCHEDCONST  < SPURIOUS_DRAGON > => SCHEDCONST < TANGERINE_WHISTLE >
-      requires SCHEDCONST =/=K  Gexpbyte andBool SCHEDCONST =/=K maxCodeSize
+      requires SCHEDCONST =/=K Gexpbyte andBool SCHEDCONST =/=K maxCodeSize
 
     rule [GemptyisnonexistentDragon]:     Gemptyisnonexistent     << SPURIOUS_DRAGON >> => true
     rule [GzerovaluenewaccountgasDragon]: Gzerovaluenewaccountgas << SPURIOUS_DRAGON >> => false
     rule [SCHEDFLAGDragon]:              SCHEDCONST              << SPURIOUS_DRAGON >> => SCHEDCONST << TANGERINE_WHISTLE >>
-      requires notBool ( SCHEDCONST ==K  Gemptyisnonexistent orBool SCHEDCONST ==K Gzerovaluenewaccountgas )
+      requires notBool ( SCHEDCONST ==K Gemptyisnonexistent orBool SCHEDCONST ==K Gzerovaluenewaccountgas )
 ```
 
 ### Byzantium Schedule
@@ -232,7 +232,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule [GhasreturndataByzantium]: Ghasreturndata << BYZANTIUM >> => true
     rule [GhasstaticcallByzantium]: Ghasstaticcall << BYZANTIUM >> => true
     rule [SCHEDFLAGByzantium]:      SCHEDFLAG      << BYZANTIUM >> => SCHEDFLAG << SPURIOUS_DRAGON >>
-      requires notBool ( SCHEDFLAG ==K  Ghasrevert orBool SCHEDFLAG ==K Ghasreturndata orBool SCHEDFLAG ==K Ghasstaticcall )
+      requires notBool ( SCHEDFLAG ==K Ghasrevert orBool SCHEDFLAG ==K Ghasreturndata orBool SCHEDFLAG ==K Ghasstaticcall )
 ```
 
 ### Constantinople Schedule
@@ -249,7 +249,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule [Ghascreate2Constantinople]:     Ghascreate2     << CONSTANTINOPLE >> => true
     rule [GhasextcodehashConstantinople]: Ghasextcodehash << CONSTANTINOPLE >> => true
     rule [SCHEDFLAGConstantinople]:       SCHEDFLAG       << CONSTANTINOPLE >> => SCHEDFLAG << BYZANTIUM >>
-      requires notBool ( SCHEDFLAG ==K   Ghasshift orBool SCHEDFLAG ==K Ghasdirtysstore orBool SCHEDFLAG ==K Ghascreate2 orBool SCHEDFLAG ==K Ghasextcodehash )
+      requires notBool ( SCHEDFLAG ==K Ghasshift orBool SCHEDFLAG ==K Ghasdirtysstore orBool SCHEDFLAG ==K Ghascreate2 orBool SCHEDFLAG ==K Ghasextcodehash )
 ```
 
 ### Petersburg Schedule
