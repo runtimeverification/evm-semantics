@@ -657,11 +657,10 @@ def batch_summarize(num_processes: int = 4) -> None:
 
     opcodes_to_process = OPCODES.keys()
     passed_opcodes = get_passed_opcodes()
-    unpassed_opcodes = [opcode for opcode in opcodes_to_process if opcode not in passed_opcodes]
-    has_call_opcodes = [opcode for opcode in unpassed_opcodes if 'Call' in OPCODES[opcode].label.name]
-    no_call_opcodes = [opcode for opcode in unpassed_opcodes if 'Call' not in OPCODES[opcode].label.name]
+    has_call_opcodes = [opcode for opcode in passed_opcodes if 'Call' in OPCODES[opcode].label.name]
+    no_call_opcodes = [opcode for opcode in passed_opcodes if 'Call' not in OPCODES[opcode].label.name]
 
-    _LOGGER.info(f'Starting batch summarization of {len(unpassed_opcodes)} opcodes with {num_processes} processes')
+    _LOGGER.info(f'Starting batch summarization of {len(passed_opcodes)} opcodes with {num_processes} processes')
 
     with Pool(processes=num_processes) as pool:
         _LOGGER.info(f'Summarizing {len(no_call_opcodes)} opcodes without CALL')
