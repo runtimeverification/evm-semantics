@@ -9,10 +9,20 @@ requires "evm.md"
 requires "optimizations.md"
 requires "asm.md"
 requires "state-utils.md"
+requires "summaries/summary.k"
+
+module ETHEREUM-SIMULATION-SUMMARY
+    imports ETHEREUM-SIMULATION-PURE
+    imports SUMMARY
+endmodule
 
 module ETHEREUM-SIMULATION
-    imports EVM
+    imports ETHEREUM-SIMULATION-PURE
     imports EVM-OPTIMIZATIONS
+endmodule
+
+module ETHEREUM-SIMULATION-PURE
+    imports EVM
     imports EVM-ASSEMBLY
     imports STATE-UTILS
 ```
