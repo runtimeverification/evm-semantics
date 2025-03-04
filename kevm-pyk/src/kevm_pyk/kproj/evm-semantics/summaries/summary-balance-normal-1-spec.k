@@ -36,7 +36,7 @@ imports EVM
              </evm>
              <network>
                <accounts>
-                 ( <account>
+                 <account>
                    <acctID>
                      ( W0:Int modInt pow160 )
                    </acctID>
@@ -45,16 +45,14 @@ imports EVM
                    </balance>
                    ...
                  </account>
-                 DotAccountVar:AccountCellMap )
+                 ...
                </accounts>
                ...
              </network>
            </ethereum>
            ...
          </kevm>
-      requires ( notBool <acctID>
-        ( W0:Int modInt pow160 )
-      </acctID> in_keys ( DotAccountVar:AccountCellMap ) )
+       
       [priority(20), label(BASIC-BLOCK-1-TO-3)]
 
 endmodule
