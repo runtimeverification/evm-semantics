@@ -36,13 +36,13 @@ imports EVM
              </evm>
              <network>
                <accounts>
-                 ( <account>
+                 <account>
                    <acctID>
                      ID_CELL:Int
                    </acctID>
                    ...
                  </account>
-                 DotAccountVar:AccountCellMap )
+                 ...
                </accounts>
                ...
              </network>
@@ -50,10 +50,7 @@ imports EVM
            ...
          </kevm>
       requires ( STATIC_CELL:Bool
-       andBool ( ( notBool <acctID>
-          ID_CELL:Int
-        </acctID> in_keys ( DotAccountVar:AccountCellMap ) )
-               ))
+       )
       [priority(20), label(BASIC-BLOCK-4-TO-5)]
     
     rule [BASIC-BLOCK-3-TO-6]: <kevm>
@@ -88,7 +85,7 @@ imports EVM
              </evm>
              <network>
                <accounts>
-                 ( <account>
+                 <account>
                    <acctID>
                      ID_CELL:Int
                    </acctID>
@@ -97,7 +94,7 @@ imports EVM
                    </transientStorage>
                    ...
                  </account>
-                 DotAccountVar:AccountCellMap )
+                 ...
                </accounts>
                ...
              </network>
@@ -105,10 +102,7 @@ imports EVM
            ...
          </kevm>
       requires ( ( notBool STATIC_CELL:Bool )
-       andBool ( ( notBool <acctID>
-          ID_CELL:Int
-        </acctID> in_keys ( DotAccountVar:AccountCellMap ) )
-               ))
+       )
       [priority(20), label(BASIC-BLOCK-3-TO-6)]
 
 endmodule
