@@ -635,9 +635,10 @@ After executing a transaction, it's necessary to have the effect of the substate
          <gasUsed> GUSED => GUSED +Gas GLIMIT -Gas GAVAIL </gasUsed>
          <gasPrice> GPRICE </gasPrice>
          <refund> 0 </refund>
+         <excessBlobGas> EXCESS_BLOB_GAS </excessBlobGas>
          <account>
            <acctID> ORG </acctID>
-           <balance> ORGBAL => ORGBAL +Int GAVAIL *Int GPRICE </balance>
+           <balance> ORGBAL => ORGBAL +Int GAVAIL *Int GPRICE -Int #calcBlobFee(EXCESS_BLOB_GAS, size(TVH)) </balance>
            ...
          </account>
          <account>
@@ -649,6 +650,7 @@ After executing a transaction, it's necessary to have the effect of the substate
          <message>
            <msgID> TXID </msgID>
            <txGasLimit> GLIMIT </txGasLimit>
+           <txVersionedHashes> TVH </txVersionedHashes>
            ...
          </message>
       requires ORG =/=Int MINER
@@ -662,15 +664,17 @@ After executing a transaction, it's necessary to have the effect of the substate
          <gasUsed> GUSED => GUSED +Gas GLIMIT -Gas GAVAIL </gasUsed>
          <gasPrice> GPRICE </gasPrice>
          <refund> 0 </refund>
+         <excessBlobGas> EXCESS_BLOB_GAS </excessBlobGas>
          <account>
            <acctID> ACCT </acctID>
-           <balance> BAL => BAL +Int GLIMIT *Int GPRICE -Int (GLIMIT -Int GAVAIL) *Int BFEE </balance>
+           <balance> BAL => BAL +Int GLIMIT *Int GPRICE -Int (GLIMIT -Int GAVAIL) *Int BFEE -Int #calcBlobFee(EXCESS_BLOB_GAS, size(TVH)) </balance>
            ...
          </account>
          <txPending> ListItem(MsgId:Int) REST => REST </txPending>
          <message>
            <msgID> MsgId </msgID>
            <txGasLimit> GLIMIT </txGasLimit>
+           <txVersionedHashes> TVH </txVersionedHashes>
            ...
          </message>
 
@@ -925,13 +929,29 @@ These are just used by the other operators for shuffling local execution state a
       requires ACCTFROM =/=K ACCTTO
        andBool Gemptyisnonexistent << SCHED >>
 ```
+- `#calcBlobFee` will compute the blob fee as specified by EIPs 4844 and will be deducted from the sender balance before transaction execution
+```k
+    syntax Int ::= #calcBlobFee( Int, Int ) [symbol(#calcBlobFee), function]
+ // ------------------------------------------------------------------------
+    rule #calcBlobFee(EXCESS_BLOBGAS, BLOB_VERSIONED_HASHES_SIZE) => #totalBlobGas(BLOB_VERSIONED_HASHES_SIZE) *Int #baseFeePerBlobGas(EXCESS_BLOBGAS) 
+```
+
+- `#totalBlobGas` will compute the total gas used by the blob as specified by EIPs 4844 
+
+```k
+    syntax Int ::= #totalBlobGas( Int ) [symbol(#totalBlobGas), function]
+ // ---------------------------------------------------------------------
+    syntax Int ::= "GAS_PER_BLOB" [macro]
+    rule GAS_PER_BLOB => 131072
+    rule #totalBlobGas(BLOB_VERSIONED_HASHES_SIZE) => GAS_PER_BLOB *Int BLOB_VERSIONED_HASHES_SIZE
+```
 
 - `#baseFeePerBlobGas` will compute the blob base fee as specified by EIPs 4844 and 7516
 
 ```k
     syntax Int ::= #baseFeePerBlobGas( Int ) [symbol(#baseFeePerBlobGas), function]
  // -------------------------------------------------------------------------------
-    rule #baseFeePerBlobGas(BLOBGAS) => #fakeExponential(MIN_BASE_FEE_PER_BLOB_GAS, BLOBGAS, BLOB_BASE_FEE_UPDATE_FRACTION)
+    rule #baseFeePerBlobGas(EXCESS_BLOBGAS) => #fakeExponential(MIN_BASE_FEE_PER_BLOB_GAS, EXCESS_BLOBGAS, BLOB_BASE_FEE_UPDATE_FRACTION)
     syntax Int ::= "MIN_BASE_FEE_PER_BLOB_GAS" [macro] | "BLOB_BASE_FEE_UPDATE_FRACTION" [macro]
     rule MIN_BASE_FEE_PER_BLOB_GAS => 1
     rule BLOB_BASE_FEE_UPDATE_FRACTION => 3338477
