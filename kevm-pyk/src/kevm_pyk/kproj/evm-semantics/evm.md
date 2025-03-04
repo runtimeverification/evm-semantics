@@ -929,6 +929,7 @@ These are just used by the other operators for shuffling local execution state a
       requires ACCTFROM =/=K ACCTTO
        andBool Gemptyisnonexistent << SCHED >>
 ```
+
 - `#calcBlobFee` will compute the blob fee as specified by EIPs 4844 and will be deducted from the sender balance before transaction execution
 ```k
     syntax Int ::= #calcBlobFee( Int, Int ) [symbol(#calcBlobFee), function]
@@ -1103,7 +1104,7 @@ These operators make queries about the current execution state.
     rule <k> GASPRICE    => GPRICE                      ~> #push ... </k> <gasPrice> GPRICE </gasPrice>
     rule <k> GASLIMIT    => GLIMIT                      ~> #push ... </k> <gasLimit> GLIMIT </gasLimit>
     rule <k> BASEFEE     => BFEE                        ~> #push ... </k> <baseFee> BFEE </baseFee>
-    rule <k> BLOBBASEFEE => #baseFeePerBlobGas(BLOBGAS) ~> #push ... </k> <excessBlobGas> BLOBGAS </excessBlobGas>  requires notBool #rangeNegUInt64(BLOBGAS)
+    rule <k> BLOBBASEFEE => #baseFeePerBlobGas(EXCESS_BLOB_GAS) ~> #push ... </k> <excessBlobGas> EXCESS_BLOB_GAS </excessBlobGas>  requires notBool #rangeNegUInt64(EXCESS_BLOB_GAS)
 
     syntax NullStackOp ::= "COINBASE" | "TIMESTAMP" | "NUMBER" | "DIFFICULTY" | "PREVRANDAO"
  // ----------------------------------------------------------------------------------------
