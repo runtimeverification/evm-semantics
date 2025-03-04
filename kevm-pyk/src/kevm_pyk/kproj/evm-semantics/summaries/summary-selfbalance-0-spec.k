@@ -33,23 +33,20 @@ imports EVM
              </evm>
              <network>
                <accounts>
-                 ( <account>
+                 <account>
                    <acctID>
                      ID_CELL:Int
                    </acctID>
                    ...
                  </account>
-                 DotAccountVar:AccountCellMap )
+                 ...
                </accounts>
                ...
              </network>
            </ethereum>
            ...
          </kevm>
-      requires ( ( notBool <acctID>
-          ID_CELL:Int
-        </acctID> in_keys ( DotAccountVar:AccountCellMap ) )
-       andBool ( 1023 <Int #sizeWordStack ( WS:WordStack , 0 )
+      requires ( 1023 <Int #sizeWordStack ( WS:WordStack , 0
                ))
       [priority(20), label(BASIC-BLOCK-3-TO-5)]
     
@@ -82,7 +79,7 @@ imports EVM
              </evm>
              <network>
                <accounts>
-                 ( <account>
+                 <account>
                    <acctID>
                      ID_CELL:Int
                    </acctID>
@@ -91,17 +88,14 @@ imports EVM
                    </balance>
                    ...
                  </account>
-                 DotAccountVar:AccountCellMap )
+                 ...
                </accounts>
                ...
              </network>
            </ethereum>
            ...
          </kevm>
-      requires ( ( notBool <acctID>
-          ID_CELL:Int
-        </acctID> in_keys ( DotAccountVar:AccountCellMap ) )
-       andBool ( ( notBool #sizeWordStack ( WS:WordStack , 0 ) <Int 0 )
+      requires ( ( notBool #sizeWordStack ( WS:WordStack , 0 <Int 0 )
        andBool ( ( notBool 1023 <Int #sizeWordStack ( WS:WordStack , 0 ) )
                )))
        ensures #sizeWordStack ( WS:WordStack , 0 ) <=Int 1023

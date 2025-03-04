@@ -100,7 +100,7 @@ requires "summary-swap-9-spec.k"
 requires "summary-timestamp-0-spec.k"
 requires "summary-tload-1-spec.k"
 requires "summary-tstore-2-spec.k"
-requires "summary-undefined(-0-spec.k"
+requires "summary-undefined-0-spec.k"
 requires "summary-xor-2-spec.k"
 
 module SUMMARY
@@ -206,7 +206,7 @@ imports SUMMARY-SWAP-9-SPEC
 imports SUMMARY-TIMESTAMP-0-SPEC
 imports SUMMARY-TLOAD-1-SPEC
 imports SUMMARY-TSTORE-2-SPEC
-imports SUMMARY-UNDEFINED(-0-SPEC
+imports SUMMARY-UNDEFINED-0-SPEC
 imports SUMMARY-XOR-2-SPEC
 
 endmodule
