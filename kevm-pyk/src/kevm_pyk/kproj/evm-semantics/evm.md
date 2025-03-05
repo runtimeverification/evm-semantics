@@ -626,6 +626,34 @@ After executing a transaction, it's necessary to have the effect of the substate
          </message>
       requires REFUND =/=Int 0
 
+   
+    rule <k> #finalizeTx(false => true) ... </k>
+         <useGas> true </useGas>
+         <baseFee> BFEE </baseFee>
+         <origin> ORG </origin>
+         <coinbase> MINER </coinbase>
+         <gas> GAVAIL </gas>
+         <gasUsed> GUSED => GUSED +Gas GLIMIT -Gas GAVAIL </gasUsed>
+         <gasPrice> GPRICE </gasPrice>
+         <refund> 0 </refund>
+         <account>
+           <acctID> ORG </acctID>
+           <balance> ORGBAL => ORGBAL +Int GAVAIL *Int GPRICE </balance>
+           ...
+         </account>
+         <account>
+           <acctID> MINER </acctID>
+           <balance> MINBAL => MINBAL +Int (GLIMIT -Int GAVAIL) *Int (GPRICE -Int BFEE) </balance>
+           ...
+         </account>
+         <txPending> ListItem(TXID:Int) REST => REST </txPending>
+         <message>
+           <msgID> TXID </msgID>
+           <txGasLimit> GLIMIT </txGasLimit>
+           ...
+         </message>
+      requires ORG =/=Int MINER andBool notBool Ghasblobbasefee << SCHED >>
+
     rule <k> #finalizeTx(false => true) ... </k>
          <useGas> true </useGas>
          <baseFee> BFEE </baseFee>
@@ -653,7 +681,29 @@ After executing a transaction, it's necessary to have the effect of the substate
            <txVersionedHashes> TVH </txVersionedHashes>
            ...
          </message>
-      requires ORG =/=Int MINER
+      requires ORG =/=Int MINER andBool Ghasblobbasefee << SCHED >>
+
+        rule <k> #finalizeTx(false => true) ... </k>
+         <useGas> true </useGas>
+         <baseFee> BFEE </baseFee>
+         <origin> ACCT </origin>
+         <coinbase> ACCT </coinbase>
+         <gas> GAVAIL </gas>
+         <gasUsed> GUSED => GUSED +Gas GLIMIT -Gas GAVAIL </gasUsed>
+         <gasPrice> GPRICE </gasPrice>
+         <refund> 0 </refund>
+         <account>
+           <acctID> ACCT </acctID>
+           <balance> BAL => BAL +Int GLIMIT *Int GPRICE -Int (GLIMIT -Int GAVAIL) *Int BFEE </balance>
+           ...
+         </account>
+         <txPending> ListItem(MsgId:Int) REST => REST </txPending>
+         <message>
+           <msgID> MsgId </msgID>
+           <txGasLimit> GLIMIT </txGasLimit>
+           ...
+         </message>
+     requires notBool Ghasblobbasefee << SCHED >>
 
     rule <k> #finalizeTx(false => true) ... </k>
          <useGas> true </useGas>
@@ -677,6 +727,7 @@ After executing a transaction, it's necessary to have the effect of the substate
            <txVersionedHashes> TVH </txVersionedHashes>
            ...
          </message>
+      requires Ghasblobbasefee << SCHED >>
 
     rule <k> #finalizeTx(false => true) ... </k>
          <useGas> false </useGas>
