@@ -628,6 +628,7 @@ After executing a transaction, it's necessary to have the effect of the substate
 
     rule <k> #finalizeTx(false => true) ... </k>
          <useGas> true </useGas>
+         <schedule> SCHED </schedule>
          <baseFee> BFEE </baseFee>
          <origin> ORG </origin>
          <coinbase> MINER </coinbase>
@@ -656,6 +657,7 @@ After executing a transaction, it's necessary to have the effect of the substate
     rule <k> #finalizeTx(false => true) ... </k>
          <useGas> true </useGas>
          <baseFee> BFEE </baseFee>
+         <schedule> SCHED </schedule>
          <origin> ORG </origin>
          <coinbase> MINER </coinbase>
          <gas> GAVAIL </gas>
@@ -684,6 +686,7 @@ After executing a transaction, it's necessary to have the effect of the substate
 
         rule <k> #finalizeTx(false => true) ... </k>
          <useGas> true </useGas>
+         <schedule> SCHED </schedule>
          <baseFee> BFEE </baseFee>
          <origin> ACCT </origin>
          <coinbase> ACCT </coinbase>
@@ -706,6 +709,7 @@ After executing a transaction, it's necessary to have the effect of the substate
 
     rule <k> #finalizeTx(false => true) ... </k>
          <useGas> true </useGas>
+         <schedule> SCHED </schedule>
          <baseFee> BFEE </baseFee>
          <origin> ACCT </origin>
          <coinbase> ACCT </coinbase>
