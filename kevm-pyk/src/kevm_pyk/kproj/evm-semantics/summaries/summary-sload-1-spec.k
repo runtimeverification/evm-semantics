@@ -7,7 +7,7 @@ imports EVM
     rule [BASIC-BLOCK-1-TO-3]: <kevm>
            <k>
              ( #next [ SLOAD ] ~> .K => .K )
-             ~> K_CELL:K
+             ~> __K_CELL:K
            </k>
            <useGas>
              false
@@ -19,13 +19,13 @@ imports EVM
                    ID_CELL:Int
                  </id>
                  <wordStack>
-                   ( ( W0:Int => #lookup ( STORAGE_CELL:Map , W0:Int ) ) : WS:WordStack )
+                   ( ( _W0:Int => #lookup ( _STORAGE_CELL:Map , _W0:Int ) ) : __WS:WordStack )
                  </wordStack>
                  <pc>
-                   ( PC_CELL:Int => ( PC_CELL:Int +Int 1 ) )
+                   ( _PC_CELL:Int => ( _PC_CELL:Int +Int 1 ) )
                  </pc>
                  <gas>
-                    GAS_CELL:Int 
+                   ( __GAS_CELL:Int )
                  </gas>
                  ...
                </callState>
@@ -33,23 +33,25 @@ imports EVM
              </evm>
              <network>
                <accounts>
-                 <account>
+                 ( <account>
                    <acctID>
                      ID_CELL:Int
                    </acctID>
                    <storage>
-                     STORAGE_CELL:Map
+                     _STORAGE_CELL:Map
                    </storage>
                    ...
                  </account>
-                 ...
+                 DotAccountVar:AccountCellMap )
                </accounts>
                ...
              </network>
            </ethereum>
            ...
          </kevm>
-       
+      requires ( notBool <acctID>
+        ID_CELL:Int
+      </acctID> in_keys ( DotAccountVar:AccountCellMap ) )
       [priority(20), label(BASIC-BLOCK-1-TO-3)]
 
 endmodule

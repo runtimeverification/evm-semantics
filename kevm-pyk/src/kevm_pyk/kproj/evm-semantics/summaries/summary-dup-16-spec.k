@@ -7,19 +7,19 @@ imports EVM
     rule [BASIC-BLOCK-3-TO-6]: <kevm>
            <k>
              ( #next [ DUP ( 16 ) ] => #halt )
-             ~> K_CELL:K
+             ~> __K_CELL:K
            </k>
            <ethereum>
              <evm>
                <statusCode>
-                 ( STATUSCODE_CELL:StatusCode => EVMC_STACK_OVERFLOW )
+                 ( __STATUSCODE_CELL:StatusCode => EVMC_STACK_OVERFLOW )
                </statusCode>
                <callState>
                  <wordStack>
-                   ( W0:Int : ( W1:Int : ( W2:Int : ( W3:Int : ( W4:Int : ( W5:Int : ( W6:Int : ( W7:Int : ( W8:Int : ( W9:Int : ( W10:Int : ( W11:Int : ( W12:Int : ( W13:Int : ( W14:Int : ( W15:Int : WS:WordStack ) ) ) ) ) ) ) ) ) ) ) ) ) ) ) )
+                   ( __W0:Int : ( __W1:Int : ( __W2:Int : ( __W3:Int : ( __W4:Int : ( __W5:Int : ( __W6:Int : ( __W7:Int : ( __W8:Int : ( __W9:Int : ( __W10:Int : ( __W11:Int : ( __W12:Int : ( __W13:Int : ( __W14:Int : ( __W15:Int : _WS:WordStack ) ) ) ) ) ) ) ) ) ) ) ) ) ) ) )
                  </wordStack>
                  <gas>
-                    GAS_CELL:Int 
+                   ( __GAS_CELL:Int )
                  </gas>
                  ...
                </callState>
@@ -29,31 +29,31 @@ imports EVM
            </ethereum>
            ...
          </kevm>
-      requires 1023 <Int #sizeWordStack ( WS:WordStack , 16 )
+      requires 1023 <Int #sizeWordStack ( _WS:WordStack , 16 )
       [priority(20), label(BASIC-BLOCK-3-TO-6)]
     
     rule [BASIC-BLOCK-11-TO-10]: <kevm>
            <k>
              ( #next [ DUP ( 16 ) ] ~> .K => .K )
-             ~> K_CELL:K
+             ~> __K_CELL:K
            </k>
            <schedule>
-             SCHEDULE_CELL:Schedule
+             _SCHEDULE_CELL:Schedule
            </schedule>
            <useGas>
-             ( USEGAS_CELL:Bool => true )
+             ( _USEGAS_CELL:Bool => true )
            </useGas>
            <ethereum>
              <evm>
                <callState>
                  <wordStack>
-                   ( ( W0:Int => W15:Int ) : ( ( W1:Int => W0:Int ) : ( ( W2:Int => W1:Int ) : ( ( W3:Int => W2:Int ) : ( ( W4:Int => W3:Int ) : ( ( W5:Int => W4:Int ) : ( ( W6:Int => W5:Int ) : ( ( W7:Int => W6:Int ) : ( ( W8:Int => W7:Int ) : ( ( W9:Int => W8:Int ) : ( ( W10:Int => W9:Int ) : ( ( W11:Int => W10:Int ) : ( ( W12:Int => W11:Int ) : ( ( W13:Int => W12:Int ) : ( ( W14:Int => W13:Int ) : ( ( W15:Int => W14:Int ) : ( WS:WordStack => ( W15:Int : WS:WordStack ) ) ) ) ) ) ) ) ) ) ) ) ) ) ) ) ) )
+                   ( ( _W0:Int => _W15:Int ) : ( ( _W1:Int => _W0:Int ) : ( ( _W2:Int => _W1:Int ) : ( ( _W3:Int => _W2:Int ) : ( ( _W4:Int => _W3:Int ) : ( ( _W5:Int => _W4:Int ) : ( ( _W6:Int => _W5:Int ) : ( ( _W7:Int => _W6:Int ) : ( ( _W8:Int => _W7:Int ) : ( ( _W9:Int => _W8:Int ) : ( ( _W10:Int => _W9:Int ) : ( ( _W11:Int => _W10:Int ) : ( ( _W12:Int => _W11:Int ) : ( ( _W13:Int => _W12:Int ) : ( ( _W14:Int => _W13:Int ) : ( ( _W15:Int => _W14:Int ) : ( _WS:WordStack => ( _W15:Int : _WS:WordStack ) ) ) ) ) ) ) ) ) ) ) ) ) ) ) ) ) )
                  </wordStack>
                  <pc>
-                   ( PC_CELL:Int => ( PC_CELL:Int +Int 1 ) )
+                   ( _PC_CELL:Int => ( _PC_CELL:Int +Int 1 ) )
                  </pc>
                  <gas>
-                    ( GAS_CELL:Int => ( GAS_CELL:Int -Int Gverylow < SCHEDULE_CELL:Schedule >  ) )
+                   ( ( _GAS_CELL:Int => ( _GAS_CELL:Int -Int Gverylow < _SCHEDULE_CELL:Schedule > ) ) )
                  </gas>
                  ...
                </callState>
@@ -63,32 +63,32 @@ imports EVM
            </ethereum>
            ...
          </kevm>
-      requires ( USEGAS_CELL:Bool
-       andBool ( ( notBool #sizeWordStack ( WS:WordStack , 16 ) <Int 16 )
-       andBool ( ( notBool 1023 <Int #sizeWordStack ( WS:WordStack , 16 ) )
+      requires ( _USEGAS_CELL:Bool
+       andBool ( ( notBool #sizeWordStack ( _WS:WordStack , 16 ) <Int 16 )
+       andBool ( ( notBool 1023 <Int #sizeWordStack ( _WS:WordStack , 16 ) )
                )))
-       ensures #sizeWordStack ( WS:WordStack , 16 ) <=Int 1023
+       ensures #sizeWordStack ( _WS:WordStack , 16 ) <=Int 1023
       [priority(20), label(BASIC-BLOCK-11-TO-10)]
     
     rule [BASIC-BLOCK-12-TO-9]: <kevm>
            <k>
              ( #next [ DUP ( 16 ) ] ~> .K => .K )
-             ~> K_CELL:K
+             ~> __K_CELL:K
            </k>
            <useGas>
-             ( USEGAS_CELL:Bool => false )
+             ( _USEGAS_CELL:Bool => false )
            </useGas>
            <ethereum>
              <evm>
                <callState>
                  <wordStack>
-                   ( ( W0:Int => W15:Int ) : ( ( W1:Int => W0:Int ) : ( ( W2:Int => W1:Int ) : ( ( W3:Int => W2:Int ) : ( ( W4:Int => W3:Int ) : ( ( W5:Int => W4:Int ) : ( ( W6:Int => W5:Int ) : ( ( W7:Int => W6:Int ) : ( ( W8:Int => W7:Int ) : ( ( W9:Int => W8:Int ) : ( ( W10:Int => W9:Int ) : ( ( W11:Int => W10:Int ) : ( ( W12:Int => W11:Int ) : ( ( W13:Int => W12:Int ) : ( ( W14:Int => W13:Int ) : ( ( W15:Int => W14:Int ) : ( WS:WordStack => ( W15:Int : WS:WordStack ) ) ) ) ) ) ) ) ) ) ) ) ) ) ) ) ) )
+                   ( ( _W0:Int => _W15:Int ) : ( ( _W1:Int => _W0:Int ) : ( ( _W2:Int => _W1:Int ) : ( ( _W3:Int => _W2:Int ) : ( ( _W4:Int => _W3:Int ) : ( ( _W5:Int => _W4:Int ) : ( ( _W6:Int => _W5:Int ) : ( ( _W7:Int => _W6:Int ) : ( ( _W8:Int => _W7:Int ) : ( ( _W9:Int => _W8:Int ) : ( ( _W10:Int => _W9:Int ) : ( ( _W11:Int => _W10:Int ) : ( ( _W12:Int => _W11:Int ) : ( ( _W13:Int => _W12:Int ) : ( ( _W14:Int => _W13:Int ) : ( ( _W15:Int => _W14:Int ) : ( _WS:WordStack => ( _W15:Int : _WS:WordStack ) ) ) ) ) ) ) ) ) ) ) ) ) ) ) ) ) )
                  </wordStack>
                  <pc>
-                   ( PC_CELL:Int => ( PC_CELL:Int +Int 1 ) )
+                   ( _PC_CELL:Int => ( _PC_CELL:Int +Int 1 ) )
                  </pc>
                  <gas>
-                    GAS_CELL:Int 
+                   ( __GAS_CELL:Int )
                  </gas>
                  ...
                </callState>
@@ -98,11 +98,11 @@ imports EVM
            </ethereum>
            ...
          </kevm>
-      requires ( ( notBool USEGAS_CELL:Bool )
-       andBool ( ( notBool #sizeWordStack ( WS:WordStack , 16 ) <Int 16 )
-       andBool ( ( notBool 1023 <Int #sizeWordStack ( WS:WordStack , 16 ) )
+      requires ( ( notBool _USEGAS_CELL:Bool )
+       andBool ( ( notBool #sizeWordStack ( _WS:WordStack , 16 ) <Int 16 )
+       andBool ( ( notBool 1023 <Int #sizeWordStack ( _WS:WordStack , 16 ) )
                )))
-       ensures #sizeWordStack ( WS:WordStack , 16 ) <=Int 1023
+       ensures #sizeWordStack ( _WS:WordStack , 16 ) <=Int 1023
       [priority(20), label(BASIC-BLOCK-12-TO-9)]
 
 endmodule

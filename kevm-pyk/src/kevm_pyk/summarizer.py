@@ -592,7 +592,7 @@ class KEVMSummarizer:
         ensure_dir_path(self.save_directory)
 
         def _remove_inf_gas(res_line: str) -> str:
-            return re.sub(r'#gas \(([^)]*)\)', r'\1', res_line)
+            return re.sub(r'#gas (\([^)]*\))', r'\1', res_line)
 
         def _remove_dash_from_var(res_line: str) -> str:
             return re.sub(r'(?<!\w)_+([A-Z0-9]\w*)', r'\1', res_line)
@@ -609,27 +609,7 @@ class KEVMSummarizer:
             res_line_tmp = re.sub(r'requires(\s*\[[\s\S]*?\])', r'\1', res_line_tmp)
             res_line_tmp = re.sub(r'\(\s*andBool\s*([\s\S]*?)\s*\)', r'\1', res_line_tmp)
             res_line_tmp = re.sub(r'andBool\s*\(\s*\)', r'', res_line_tmp)
-            # res_line_tmp = re.sub(r'requires\s*\(\s*andBool\s*\(\s*((?:.(?!\bandBool\b))*?)\s*\)\)', r'requires (\1)', res_line_tmp)
-            
-            # # remove the andBool part
-            # res_line_tmp = re.sub(
-            #     r'andBool\s*\(\s*\(\s*notBool\s*<acctID>\s*ID_CELL:Int\s*</acctID>\s*in_keys\s*\([^)]*\)\s*\)\s*\)',
-            #     '',
-            #     res_line_tmp
-            # )
-            # # remove the only one requires part
-            # res_line_tmp = re.sub(
-            #     r'requires\s*\(\s*notBool\s*<acctID>\s*ID_CELL:Int\s*</acctID>\s*in_keys\s*\([^)]*\)\s*\)',
-            #     '',
-            #     res_line_tmp
-            # )
             return res_line_tmp
-            # # remove first requires but several andBool parts
-            # return re.sub(
-            #     r'requires\s*\(\s*\(\s*notBool\s*<acctID>\s*ID_CELL:Int\s*</acctID>\s*in_keys\s*\([^)]*\)\s*\)\s*andBool[\s\S]*\)',
-            #     r'requires\2',
-            #     res_line_tmp
-            # )
 
         spec_name = f'summary-{proof.id.replace("_", "-").lower()}.k'
         with open(self.save_directory / spec_name, 'w') as f:
@@ -637,8 +617,8 @@ class KEVMSummarizer:
             for res_line in proof_show.show(proof, to_module=True):
                 if res_line.startswith('module'):
                     res_line = _remove_inf_gas(res_line)
-                    res_line = _remove_dash_from_var(res_line)
-                    res_line = _use_legal_remainder(res_line)
+                    # res_line = _remove_dash_from_var(res_line)
+                    # res_line = _use_legal_remainder(res_line)
                     f.write('requires "../evm.md"\n\n')
                     lines = res_line.split('\n')
                     lines.insert(1, 'imports EVM')

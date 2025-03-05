@@ -7,7 +7,7 @@ imports EVM
     rule [BASIC-BLOCK-1-TO-3]: <kevm>
            <k>
              ( #next [ POP ] ~> .K => .K )
-             ~> K_CELL:K
+             ~> __K_CELL:K
            </k>
            <useGas>
              false
@@ -16,13 +16,13 @@ imports EVM
              <evm>
                <callState>
                  <wordStack>
-                   ( ( W0:Int : WS:WordStack ) => WS:WordStack )
+                   ( ( __W0:Int : _WS:WordStack ) => _WS:WordStack )
                  </wordStack>
                  <pc>
-                   ( PC_CELL:Int => ( PC_CELL:Int +Int 1 ) )
+                   ( _PC_CELL:Int => ( _PC_CELL:Int +Int 1 ) )
                  </pc>
                  <gas>
-                    GAS_CELL:Int 
+                   ( __GAS_CELL:Int )
                  </gas>
                  ...
                </callState>

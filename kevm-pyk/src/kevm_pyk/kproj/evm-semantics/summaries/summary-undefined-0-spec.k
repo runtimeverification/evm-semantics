@@ -6,17 +6,17 @@ imports EVM
     
     rule [BASIC-BLOCK-1-TO-3]: <kevm>
            <k>
-             ( #next [ UNDEFINED ( W:Int ) ] => #halt )
-             ~> K_CELL:K
+             ( #next [ UNDEFINED ( __W:Int ) ] => #halt )
+             ~> __K_CELL:K
            </k>
            <ethereum>
              <evm>
                <statusCode>
-                 ( STATUSCODE_CELL:StatusCode => EVMC_UNDEFINED_INSTRUCTION )
+                 ( __STATUSCODE_CELL:StatusCode => EVMC_UNDEFINED_INSTRUCTION )
                </statusCode>
                <callState>
                  <gas>
-                    GAS_CELL:Int 
+                   ( __GAS_CELL:Int )
                  </gas>
                  ...
                </callState>

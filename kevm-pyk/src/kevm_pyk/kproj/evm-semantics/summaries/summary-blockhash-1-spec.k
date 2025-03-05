@@ -7,34 +7,34 @@ imports EVM
     rule [BASIC-BLOCK-8-TO-7]: <kevm>
            <k>
              ( #next [ BLOCKHASH ] ~> .K => .K )
-             ~> K_CELL:K
+             ~> __K_CELL:K
            </k>
            <schedule>
-             SCHEDULE_CELL:Schedule
+             _SCHEDULE_CELL:Schedule
            </schedule>
            <useGas>
-             ( USEGAS_CELL:Bool => true )
+             ( _USEGAS_CELL:Bool => true )
            </useGas>
            <ethereum>
              <evm>
                <callState>
                  <wordStack>
-                   ( ( W0:Int => #blockhash ( BLOCKHASHES_CELL:List , W0:Int , ( NUMBER_CELL:Int +Int -1 ) , 0 ) ) : WS:WordStack )
+                   ( ( _W0:Int => #blockhash ( _BLOCKHASHES_CELL:List , _W0:Int , ( _NUMBER_CELL:Int +Int -1 ) , 0 ) ) : __WS:WordStack )
                  </wordStack>
                  <pc>
-                   ( PC_CELL:Int => ( PC_CELL:Int +Int 1 ) )
+                   ( _PC_CELL:Int => ( _PC_CELL:Int +Int 1 ) )
                  </pc>
                  <gas>
-                    ( GAS_CELL:Int => ( GAS_CELL:Int -Int Gblockhash < SCHEDULE_CELL:Schedule >  ) )
+                   ( ( _GAS_CELL:Int => ( _GAS_CELL:Int -Int Gblockhash < _SCHEDULE_CELL:Schedule > ) ) )
                  </gas>
                  ...
                </callState>
                <blockhashes>
-                 BLOCKHASHES_CELL:List
+                 _BLOCKHASHES_CELL:List
                </blockhashes>
                <block>
                  <number>
-                   NUMBER_CELL:Int
+                   _NUMBER_CELL:Int
                  </number>
                  ...
                </block>
@@ -44,37 +44,37 @@ imports EVM
            </ethereum>
            ...
          </kevm>
-      requires USEGAS_CELL:Bool
+      requires _USEGAS_CELL:Bool
       [priority(20), label(BASIC-BLOCK-8-TO-7)]
     
     rule [BASIC-BLOCK-9-TO-6]: <kevm>
            <k>
              ( #next [ BLOCKHASH ] ~> .K => .K )
-             ~> K_CELL:K
+             ~> __K_CELL:K
            </k>
            <useGas>
-             ( USEGAS_CELL:Bool => false )
+             ( _USEGAS_CELL:Bool => false )
            </useGas>
            <ethereum>
              <evm>
                <callState>
                  <wordStack>
-                   ( ( W0:Int => #blockhash ( BLOCKHASHES_CELL:List , W0:Int , ( NUMBER_CELL:Int +Int -1 ) , 0 ) ) : WS:WordStack )
+                   ( ( _W0:Int => #blockhash ( _BLOCKHASHES_CELL:List , _W0:Int , ( _NUMBER_CELL:Int +Int -1 ) , 0 ) ) : __WS:WordStack )
                  </wordStack>
                  <pc>
-                   ( PC_CELL:Int => ( PC_CELL:Int +Int 1 ) )
+                   ( _PC_CELL:Int => ( _PC_CELL:Int +Int 1 ) )
                  </pc>
                  <gas>
-                    GAS_CELL:Int 
+                   ( __GAS_CELL:Int )
                  </gas>
                  ...
                </callState>
                <blockhashes>
-                 BLOCKHASHES_CELL:List
+                 _BLOCKHASHES_CELL:List
                </blockhashes>
                <block>
                  <number>
-                   NUMBER_CELL:Int
+                   _NUMBER_CELL:Int
                  </number>
                  ...
                </block>
@@ -84,7 +84,7 @@ imports EVM
            </ethereum>
            ...
          </kevm>
-      requires ( notBool USEGAS_CELL:Bool )
+      requires ( notBool _USEGAS_CELL:Bool )
       [priority(20), label(BASIC-BLOCK-9-TO-6)]
 
 endmodule
