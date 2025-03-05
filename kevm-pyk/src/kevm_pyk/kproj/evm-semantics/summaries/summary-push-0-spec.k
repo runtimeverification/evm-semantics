@@ -6,8 +6,8 @@ imports EVM
     
     rule [BASIC-BLOCK-3-TO-5]: <kevm>
            <k>
-             ( #next [ PUSH ( N:Int ) ] => #halt )
-             ~> K_CELL:K
+             ( #next [ PUSH ( __N:Int ) ] => #halt )
+             ~> __K_CELL:K
            </k>
            <useGas>
              false
@@ -15,14 +15,14 @@ imports EVM
            <ethereum>
              <evm>
                <statusCode>
-                 ( STATUSCODE_CELL:StatusCode => EVMC_STACK_OVERFLOW )
+                 ( __STATUSCODE_CELL:StatusCode => EVMC_STACK_OVERFLOW )
                </statusCode>
                <callState>
                  <wordStack>
-                   WS:WordStack
+                   _WS:WordStack
                  </wordStack>
                  <gas>
-                    GAS_CELL:Int 
+                   ( __GAS_CELL:Int )
                  </gas>
                  ...
                </callState>
@@ -32,13 +32,13 @@ imports EVM
            </ethereum>
            ...
          </kevm>
-      requires 1023 <Int #sizeWordStack ( WS:WordStack , 0 )
+      requires 1023 <Int #sizeWordStack ( _WS:WordStack , 0 )
       [priority(20), label(BASIC-BLOCK-3-TO-5)]
     
     rule [BASIC-BLOCK-4-TO-6]: <kevm>
            <k>
-             ( #next [ PUSH ( N:Int ) ] ~> .K => .K )
-             ~> K_CELL:K
+             ( #next [ PUSH ( _N:Int ) ] ~> .K => .K )
+             ~> __K_CELL:K
            </k>
            <useGas>
              false
@@ -47,16 +47,16 @@ imports EVM
              <evm>
                <callState>
                  <program>
-                   PROGRAM_CELL:Bytes
+                   _PROGRAM_CELL:Bytes
                  </program>
                  <wordStack>
-                   ( WS:WordStack => ( #asWord ( #range ( PROGRAM_CELL:Bytes , ( PC_CELL:Int +Int 1 ) , N:Int ) ) : WS:WordStack ) )
+                   ( _WS:WordStack => ( #asWord ( #range ( _PROGRAM_CELL:Bytes , ( _PC_CELL:Int +Int 1 ) , _N:Int ) ) : _WS:WordStack ) )
                  </wordStack>
                  <pc>
-                   ( PC_CELL:Int => ( ( PC_CELL:Int +Int N:Int ) +Int 1 ) )
+                   ( _PC_CELL:Int => ( ( _PC_CELL:Int +Int _N:Int ) +Int 1 ) )
                  </pc>
                  <gas>
-                    GAS_CELL:Int 
+                   ( __GAS_CELL:Int )
                  </gas>
                  ...
                </callState>
@@ -66,10 +66,10 @@ imports EVM
            </ethereum>
            ...
          </kevm>
-      requires ( ( notBool #sizeWordStack ( WS:WordStack , 0 ) <Int 0 )
-       andBool ( ( notBool 1023 <Int #sizeWordStack ( WS:WordStack , 0 ) )
+      requires ( ( notBool #sizeWordStack ( _WS:WordStack , 0 ) <Int 0 )
+       andBool ( ( notBool 1023 <Int #sizeWordStack ( _WS:WordStack , 0 ) )
                ))
-       ensures #sizeWordStack ( WS:WordStack , 0 ) <=Int 1023
+       ensures #sizeWordStack ( _WS:WordStack , 0 ) <=Int 1023
       [priority(20), label(BASIC-BLOCK-4-TO-6)]
 
 endmodule

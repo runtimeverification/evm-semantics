@@ -7,19 +7,19 @@ imports EVM
     rule [BASIC-BLOCK-3-TO-8]: <kevm>
            <k>
              ( #next [ CHAINID ] => #halt )
-             ~> K_CELL:K
+             ~> __K_CELL:K
            </k>
            <ethereum>
              <evm>
                <statusCode>
-                 ( STATUSCODE_CELL:StatusCode => EVMC_STACK_OVERFLOW )
+                 ( __STATUSCODE_CELL:StatusCode => EVMC_STACK_OVERFLOW )
                </statusCode>
                <callState>
                  <wordStack>
-                   WS:WordStack
+                   _WS:WordStack
                  </wordStack>
                  <gas>
-                    GAS_CELL:Int 
+                   ( __GAS_CELL:Int )
                  </gas>
                  ...
                </callState>
@@ -29,31 +29,31 @@ imports EVM
            </ethereum>
            ...
          </kevm>
-      requires 1023 <Int #sizeWordStack ( WS:WordStack , 0 )
+      requires 1023 <Int #sizeWordStack ( _WS:WordStack , 0 )
       [priority(20), label(BASIC-BLOCK-3-TO-8)]
     
     rule [BASIC-BLOCK-11-TO-9]: <kevm>
            <k>
              ( #next [ CHAINID ] ~> .K => .K )
-             ~> K_CELL:K
+             ~> __K_CELL:K
            </k>
            <schedule>
-             SCHEDULE_CELL:Schedule
+             _SCHEDULE_CELL:Schedule
            </schedule>
            <useGas>
-             ( USEGAS_CELL:Bool => true )
+             ( _USEGAS_CELL:Bool => true )
            </useGas>
            <ethereum>
              <evm>
                <callState>
                  <wordStack>
-                   ( WS:WordStack => ( CHAINID_CELL:Int : WS:WordStack ) )
+                   ( _WS:WordStack => ( _CHAINID_CELL:Int : _WS:WordStack ) )
                  </wordStack>
                  <pc>
-                   ( PC_CELL:Int => ( PC_CELL:Int +Int 1 ) )
+                   ( _PC_CELL:Int => ( _PC_CELL:Int +Int 1 ) )
                  </pc>
                  <gas>
-                    ( GAS_CELL:Int => ( GAS_CELL:Int -Int Gbase < SCHEDULE_CELL:Schedule >  ) )
+                   ( ( _GAS_CELL:Int => ( _GAS_CELL:Int -Int Gbase < _SCHEDULE_CELL:Schedule > ) ) )
                  </gas>
                  ...
                </callState>
@@ -61,39 +61,39 @@ imports EVM
              </evm>
              <network>
                <chainID>
-                 CHAINID_CELL:Int
+                 _CHAINID_CELL:Int
                </chainID>
                ...
              </network>
            </ethereum>
            ...
          </kevm>
-      requires ( USEGAS_CELL:Bool
-       andBool ( ( notBool #sizeWordStack ( WS:WordStack , 0 ) <Int 0 )
-       andBool ( ( notBool 1023 <Int #sizeWordStack ( WS:WordStack , 0 ) )
+      requires ( _USEGAS_CELL:Bool
+       andBool ( ( notBool #sizeWordStack ( _WS:WordStack , 0 ) <Int 0 )
+       andBool ( ( notBool 1023 <Int #sizeWordStack ( _WS:WordStack , 0 ) )
                )))
-       ensures #sizeWordStack ( WS:WordStack , 0 ) <=Int 1023
+       ensures #sizeWordStack ( _WS:WordStack , 0 ) <=Int 1023
       [priority(20), label(BASIC-BLOCK-11-TO-9)]
     
     rule [BASIC-BLOCK-12-TO-10]: <kevm>
            <k>
              ( #next [ CHAINID ] ~> .K => .K )
-             ~> K_CELL:K
+             ~> __K_CELL:K
            </k>
            <useGas>
-             ( USEGAS_CELL:Bool => false )
+             ( _USEGAS_CELL:Bool => false )
            </useGas>
            <ethereum>
              <evm>
                <callState>
                  <wordStack>
-                   ( WS:WordStack => ( CHAINID_CELL:Int : WS:WordStack ) )
+                   ( _WS:WordStack => ( _CHAINID_CELL:Int : _WS:WordStack ) )
                  </wordStack>
                  <pc>
-                   ( PC_CELL:Int => ( PC_CELL:Int +Int 1 ) )
+                   ( _PC_CELL:Int => ( _PC_CELL:Int +Int 1 ) )
                  </pc>
                  <gas>
-                    GAS_CELL:Int 
+                   ( __GAS_CELL:Int )
                  </gas>
                  ...
                </callState>
@@ -101,18 +101,18 @@ imports EVM
              </evm>
              <network>
                <chainID>
-                 CHAINID_CELL:Int
+                 _CHAINID_CELL:Int
                </chainID>
                ...
              </network>
            </ethereum>
            ...
          </kevm>
-      requires ( ( notBool USEGAS_CELL:Bool )
-       andBool ( ( notBool #sizeWordStack ( WS:WordStack , 0 ) <Int 0 )
-       andBool ( ( notBool 1023 <Int #sizeWordStack ( WS:WordStack , 0 ) )
+      requires ( ( notBool _USEGAS_CELL:Bool )
+       andBool ( ( notBool #sizeWordStack ( _WS:WordStack , 0 ) <Int 0 )
+       andBool ( ( notBool 1023 <Int #sizeWordStack ( _WS:WordStack , 0 ) )
                )))
-       ensures #sizeWordStack ( WS:WordStack , 0 ) <=Int 1023
+       ensures #sizeWordStack ( _WS:WordStack , 0 ) <=Int 1023
       [priority(20), label(BASIC-BLOCK-12-TO-10)]
 
 endmodule

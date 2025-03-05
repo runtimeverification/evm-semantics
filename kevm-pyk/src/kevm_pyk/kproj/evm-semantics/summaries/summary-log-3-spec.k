@@ -7,22 +7,22 @@ imports EVM
     rule [BASIC-BLOCK-4-TO-8]: <kevm>
            <k>
              ( #next [ LOG ( 1 ) ] => #halt )
-             ~> K_CELL:K
+             ~> __K_CELL:K
            </k>
            <ethereum>
              <evm>
                <statusCode>
-                 ( STATUSCODE_CELL:StatusCode => EVMC_STATIC_MODE_VIOLATION )
+                 ( __STATUSCODE_CELL:StatusCode => EVMC_STATIC_MODE_VIOLATION )
                </statusCode>
                <callState>
                  <wordStack>
-                   ( W0:Int : ( W1:Int : ( W2:Int : WS:WordStack ) ) )
+                   ( __W0:Int : ( __W1:Int : ( __W2:Int : __WS:WordStack ) ) )
                  </wordStack>
                  <gas>
-                    GAS_CELL:Int 
+                   ( __GAS_CELL:Int )
                  </gas>
                  <static>
-                   ( STATIC_CELL:Bool => true )
+                   ( _STATIC_CELL:Bool => true )
                  </static>
                  ...
                </callState>
@@ -32,49 +32,49 @@ imports EVM
            </ethereum>
            ...
          </kevm>
-      requires STATIC_CELL:Bool
+      requires _STATIC_CELL:Bool
       [priority(20), label(BASIC-BLOCK-4-TO-8)]
     
     rule [BASIC-BLOCK-11-TO-10]: <kevm>
            <k>
              ( #next [ LOG ( 1 ) ] ~> .K => .K )
-             ~> K_CELL:K
+             ~> __K_CELL:K
            </k>
            <schedule>
-             SCHEDULE_CELL:Schedule
+             _SCHEDULE_CELL:Schedule
            </schedule>
            <useGas>
-             ( USEGAS_CELL:Bool => true )
+             ( _USEGAS_CELL:Bool => true )
            </useGas>
            <ethereum>
              <evm>
                <callState>
                  <id>
-                   ID_CELL:Int
+                   _ID_CELL:Int
                  </id>
                  <wordStack>
-                   ( ( W0:Int : ( W1:Int : ( W2:Int : WS:WordStack ) ) ) => WS:WordStack )
+                   ( ( _W0:Int : ( _W1:Int : ( _W2:Int : _WS:WordStack ) ) ) => _WS:WordStack )
                  </wordStack>
                  <localMem>
-                   LOCALMEM_CELL:Bytes
+                   _LOCALMEM_CELL:Bytes
                  </localMem>
                  <pc>
-                   ( PC_CELL:Int => ( PC_CELL:Int +Int 1 ) )
+                   ( _PC_CELL:Int => ( _PC_CELL:Int +Int 1 ) )
                  </pc>
                  <gas>
-                    ( GAS_CELL:Int => ( ( GAS_CELL:Int -Int ( Cmem ( SCHEDULE_CELL:Schedule , #memoryUsageUpdate ( MEMORYUSED_CELL:Int , W0:Int , W1:Int  ) -Int Cmem ( SCHEDULE_CELL:Schedule , MEMORYUSED_CELL:Int ) ) ) -Int ( ( Glog < SCHEDULE_CELL:Schedule > +Int ( Glogdata < SCHEDULE_CELL:Schedule > *Int W1:Int ) ) +Int Glogtopic < SCHEDULE_CELL:Schedule > ) ) ) )
+                   ( ( _GAS_CELL:Int => ( ( _GAS_CELL:Int -Int ( Cmem ( _SCHEDULE_CELL:Schedule , #memoryUsageUpdate ( _MEMORYUSED_CELL:Int , _W0:Int , _W1:Int ) ) -Int Cmem ( _SCHEDULE_CELL:Schedule , _MEMORYUSED_CELL:Int ) ) ) -Int ( ( Glog < _SCHEDULE_CELL:Schedule > +Int ( Glogdata < _SCHEDULE_CELL:Schedule > *Int _W1:Int ) ) +Int Glogtopic < _SCHEDULE_CELL:Schedule > ) ) ) )
                  </gas>
                  <memoryUsed>
-                   ( MEMORYUSED_CELL:Int => #memoryUsageUpdate ( MEMORYUSED_CELL:Int , W0:Int , W1:Int ) )
+                   ( _MEMORYUSED_CELL:Int => #memoryUsageUpdate ( _MEMORYUSED_CELL:Int , _W0:Int , _W1:Int ) )
                  </memoryUsed>
                  <static>
-                   ( STATIC_CELL:Bool => false )
+                   ( _STATIC_CELL:Bool => false )
                  </static>
                  ...
                </callState>
                <substate>
                  <log>
-                   ( LOG_CELL:List => LOG_CELL:List ListItem ( { ID_CELL:Int | ListItem ( W2:Int ) | #range ( LOCALMEM_CELL:Bytes , W0:Int , W1:Int ) } ) )
+                   ( _LOG_CELL:List => _LOG_CELL:List ListItem ( { _ID_CELL:Int | ListItem ( _W2:Int ) | #range ( _LOCALMEM_CELL:Bytes , _W0:Int , _W1:Int ) } ) )
                  </log>
                  ...
                </substate>
@@ -84,45 +84,45 @@ imports EVM
            </ethereum>
            ...
          </kevm>
-      requires ( USEGAS_CELL:Bool
-       andBool ( ( notBool STATIC_CELL:Bool )
+      requires ( _USEGAS_CELL:Bool
+       andBool ( ( notBool _STATIC_CELL:Bool )
                ))
       [priority(20), label(BASIC-BLOCK-11-TO-10)]
     
     rule [BASIC-BLOCK-12-TO-9]: <kevm>
            <k>
              ( #next [ LOG ( 1 ) ] ~> .K => .K )
-             ~> K_CELL:K
+             ~> __K_CELL:K
            </k>
            <useGas>
-             ( USEGAS_CELL:Bool => false )
+             ( _USEGAS_CELL:Bool => false )
            </useGas>
            <ethereum>
              <evm>
                <callState>
                  <id>
-                   ID_CELL:Int
+                   _ID_CELL:Int
                  </id>
                  <wordStack>
-                   ( ( W0:Int : ( W1:Int : ( W2:Int : WS:WordStack ) ) ) => WS:WordStack )
+                   ( ( _W0:Int : ( _W1:Int : ( _W2:Int : _WS:WordStack ) ) ) => _WS:WordStack )
                  </wordStack>
                  <localMem>
-                   LOCALMEM_CELL:Bytes
+                   _LOCALMEM_CELL:Bytes
                  </localMem>
                  <pc>
-                   ( PC_CELL:Int => ( PC_CELL:Int +Int 1 ) )
+                   ( _PC_CELL:Int => ( _PC_CELL:Int +Int 1 ) )
                  </pc>
                  <gas>
-                    GAS_CELL:Int 
+                   ( __GAS_CELL:Int )
                  </gas>
                  <static>
-                   ( STATIC_CELL:Bool => false )
+                   ( _STATIC_CELL:Bool => false )
                  </static>
                  ...
                </callState>
                <substate>
                  <log>
-                   ( LOG_CELL:List => LOG_CELL:List ListItem ( { ID_CELL:Int | ListItem ( W2:Int ) | #range ( LOCALMEM_CELL:Bytes , W0:Int , W1:Int ) } ) )
+                   ( _LOG_CELL:List => _LOG_CELL:List ListItem ( { _ID_CELL:Int | ListItem ( _W2:Int ) | #range ( _LOCALMEM_CELL:Bytes , _W0:Int , _W1:Int ) } ) )
                  </log>
                  ...
                </substate>
@@ -132,8 +132,8 @@ imports EVM
            </ethereum>
            ...
          </kevm>
-      requires ( ( notBool STATIC_CELL:Bool )
-       andBool ( ( notBool USEGAS_CELL:Bool )
+      requires ( ( notBool _STATIC_CELL:Bool )
+       andBool ( ( notBool _USEGAS_CELL:Bool )
                ))
       [priority(20), label(BASIC-BLOCK-12-TO-9)]
 
