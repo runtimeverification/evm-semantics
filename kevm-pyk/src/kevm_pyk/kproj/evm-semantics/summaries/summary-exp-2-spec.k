@@ -1,7 +1,9 @@
 requires "../evm.md"
+requires "../buf.md"
 
 module SUMMARY-EXP-2-SPEC
 imports EVM
+imports BUF
     
     
     rule [BASIC-BLOCK-13-TO-9]: <kevm>
