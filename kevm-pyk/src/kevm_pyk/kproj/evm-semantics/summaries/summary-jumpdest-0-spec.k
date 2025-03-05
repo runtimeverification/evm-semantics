@@ -7,22 +7,22 @@ imports EVM
     rule [BASIC-BLOCK-8-TO-6]: <kevm>
            <k>
              ( #next [ JUMPDEST ] ~> .K => .K )
-             ~> __K_CELL:K
+             ~> K_CELL:K
            </k>
            <schedule>
-             _SCHEDULE_CELL:Schedule
+             SCHEDULE_CELL:Schedule
            </schedule>
            <useGas>
-             ( _USEGAS_CELL:Bool => true )
+             ( USEGAS_CELL:Bool => true )
            </useGas>
            <ethereum>
              <evm>
                <callState>
                  <pc>
-                   ( _PC_CELL:Int => ( _PC_CELL:Int +Int 1 ) )
+                   ( PC_CELL:Int => ( PC_CELL:Int +Int 1 ) )
                  </pc>
                  <gas>
-                   ( ( _GAS_CELL:Int => ( _GAS_CELL:Int -Int Gjumpdest < _SCHEDULE_CELL:Schedule > ) ) )
+                   ( ( GAS_CELL:Int => ( GAS_CELL:Int -Int Gjumpdest < SCHEDULE_CELL:Schedule > ) ) )
                  </gas>
                  ...
                </callState>
@@ -32,25 +32,25 @@ imports EVM
            </ethereum>
            ...
          </kevm>
-      requires _USEGAS_CELL:Bool
+      requires USEGAS_CELL:Bool
       [priority(20), label(BASIC-BLOCK-8-TO-6)]
     
     rule [BASIC-BLOCK-9-TO-7]: <kevm>
            <k>
              ( #next [ JUMPDEST ] ~> .K => .K )
-             ~> __K_CELL:K
+             ~> K_CELL:K
            </k>
            <useGas>
-             ( _USEGAS_CELL:Bool => false )
+             ( USEGAS_CELL:Bool => false )
            </useGas>
            <ethereum>
              <evm>
                <callState>
                  <pc>
-                   ( _PC_CELL:Int => ( _PC_CELL:Int +Int 1 ) )
+                   ( PC_CELL:Int => ( PC_CELL:Int +Int 1 ) )
                  </pc>
                  <gas>
-                   ( __GAS_CELL:Int )
+                   ( GAS_CELL:Int )
                  </gas>
                  ...
                </callState>
@@ -60,7 +60,7 @@ imports EVM
            </ethereum>
            ...
          </kevm>
-      requires ( notBool _USEGAS_CELL:Bool )
+      requires ( notBool USEGAS_CELL:Bool )
       [priority(20), label(BASIC-BLOCK-9-TO-7)]
 
 endmodule

@@ -7,7 +7,7 @@ imports EVM
     rule [BASIC-BLOCK-1-TO-3]: <kevm>
            <k>
              ( #next [ BALANCE ] ~> .K => .K )
-             ~> __K_CELL:K
+             ~> K_CELL:K
            </k>
            <useGas>
              false
@@ -16,19 +16,19 @@ imports EVM
              <evm>
                <callState>
                  <wordStack>
-                   ( ( W0:Int => _BALANCE_CELL:Int ) : __WS:WordStack )
+                   ( ( W0:Int => BALANCE_CELL:Int ) : WS:WordStack )
                  </wordStack>
                  <pc>
-                   ( _PC_CELL:Int => ( _PC_CELL:Int +Int 1 ) )
+                   ( PC_CELL:Int => ( PC_CELL:Int +Int 1 ) )
                  </pc>
                  <gas>
-                   ( __GAS_CELL:Int )
+                   ( GAS_CELL:Int )
                  </gas>
                  ...
                </callState>
                <substate>
                  <accessedAccounts>
-                   ( _ACCESSEDACCOUNTS_CELL:Set => _ACCESSEDACCOUNTS_CELL:Set |Set SetItem ( ( W0:Int modInt pow160 ) ) )
+                   ( ACCESSEDACCOUNTS_CELL:Set => ACCESSEDACCOUNTS_CELL:Set |Set SetItem ( ( W0:Int modInt pow160 ) ) )
                  </accessedAccounts>
                  ...
                </substate>
@@ -41,7 +41,7 @@ imports EVM
                      ( W0:Int modInt pow160 )
                    </acctID>
                    <balance>
-                     _BALANCE_CELL:Int
+                     BALANCE_CELL:Int
                    </balance>
                    ...
                  </account>

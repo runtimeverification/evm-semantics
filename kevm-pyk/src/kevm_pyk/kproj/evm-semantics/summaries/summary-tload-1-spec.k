@@ -7,7 +7,7 @@ imports EVM
     rule [BASIC-BLOCK-1-TO-3]: <kevm>
            <k>
              ( #next [ TLOAD ] ~> .K => .K )
-             ~> __K_CELL:K
+             ~> K_CELL:K
            </k>
            <useGas>
              false
@@ -19,13 +19,13 @@ imports EVM
                    ID_CELL:Int
                  </id>
                  <wordStack>
-                   ( ( _W0:Int => #lookup ( _TRANSIENT_STORAGE_CELL:Map , _W0:Int ) ) : __WS:WordStack )
+                   ( ( W0:Int => #lookup ( TRANSIENT_STORAGE_CELL:Map , W0:Int ) ) : WS:WordStack )
                  </wordStack>
                  <pc>
-                   ( _PC_CELL:Int => ( _PC_CELL:Int +Int 1 ) )
+                   ( PC_CELL:Int => ( PC_CELL:Int +Int 1 ) )
                  </pc>
                  <gas>
-                   ( __GAS_CELL:Int )
+                   ( GAS_CELL:Int )
                  </gas>
                  ...
                </callState>
@@ -38,7 +38,7 @@ imports EVM
                      ID_CELL:Int
                    </acctID>
                    <transientStorage>
-                     _TRANSIENT_STORAGE_CELL:Map
+                     TRANSIENT_STORAGE_CELL:Map
                    </transientStorage>
                    ...
                  </account>
