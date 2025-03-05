@@ -1,7 +1,9 @@
 requires "../evm.md"
+requires "../buf.md"
 
 module SUMMARY-BALANCE-NORMAL-1-SPEC
 imports EVM
+imports BUF
     
     
     rule [BASIC-BLOCK-1-TO-3]: <kevm>
@@ -38,7 +40,7 @@ imports EVM
                <accounts>
                  <account>
                    <acctID>
-                     ( W0:Int modInt pow160 )
+                     ACCTID 
                    </acctID>
                    <balance>
                      BALANCE_CELL:Int
@@ -52,9 +54,8 @@ imports EVM
            </ethereum>
            ...
          </kevm>
-      requires ( notBool <acctID>
-        ( W0:Int modInt pow160 )
-      </acctID> in_keys ( DotAccountVar:AccountCellMap ) )
+      requires ACCTID ==Int  W0:Int modInt pow160
+       
       [priority(20), label(BASIC-BLOCK-1-TO-3)]
 
 endmodule

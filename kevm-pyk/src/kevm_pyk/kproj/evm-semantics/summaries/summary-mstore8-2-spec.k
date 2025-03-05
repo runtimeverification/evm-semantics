@@ -1,7 +1,9 @@
 requires "../evm.md"
+requires "../buf.md"
 
 module SUMMARY-MSTORE8-2-SPEC
 imports EVM
+imports BUF
     
     
     rule [BASIC-BLOCK-1-TO-3]: <kevm>

@@ -1,7 +1,9 @@
 requires "../evm.md"
+requires "../buf.md"
 
 module SUMMARY-TLOAD-1-SPEC
 imports EVM
+imports BUF
     
     
     rule [BASIC-BLOCK-1-TO-3]: <kevm>
@@ -49,9 +51,7 @@ imports EVM
            </ethereum>
            ...
          </kevm>
-      requires ( notBool <acctID>
-        ID_CELL:Int
-      </acctID> in_keys ( DotAccountVar:AccountCellMap ) )
+       
       [priority(20), label(BASIC-BLOCK-1-TO-3)]
 
 endmodule
