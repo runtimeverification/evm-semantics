@@ -599,16 +599,16 @@ class KEVMSummarizer:
 
         def _use_legal_remainder(res_line: str) -> str:
             res_line_tmp = re.sub(r'\(\s*<account>([\s\S]*?)</account>\s*DotAccountVar:AccountCellMap\s*\)', r'<account>\1</account>\n                 ...', res_line)
-            # remove acctID not in_keys
-            res_line_tmp = re.sub(
-                r'\(\s*notBool\s*<acctID>\s*([^<]+)\s*</acctID>\s*in_keys\s*\([^)]*\)\s*\)',
-                r'',
-                res_line_tmp
-            )
-            # remove empty requires
-            res_line_tmp = re.sub(r'requires(\s*\[[\s\S]*?\])', r'\1', res_line_tmp)
-            res_line_tmp = re.sub(r'\(\s*andBool\s*([\s\S]*?)\s*\)', r'\1', res_line_tmp)
-            res_line_tmp = re.sub(r'andBool\s*\(\s*\)', r'', res_line_tmp)
+            # # remove acctID not in_keys
+            # res_line_tmp = re.sub(
+            #     r'\(\s*notBool\s*<acctID>\s*([^<]+)\s*</acctID>\s*in_keys\s*\([^)]*\)\s*\)',
+            #     r'',
+            #     res_line_tmp
+            # )
+            # # remove empty requires
+            # res_line_tmp = re.sub(r'requires(\s*\[[\s\S]*?\])', r'\1', res_line_tmp)
+            # res_line_tmp = re.sub(r'\(\s*andBool\s*([\s\S]*?)\s*\)', r'\1', res_line_tmp)
+            # res_line_tmp = re.sub(r'andBool\s*\(\s*\)', r'', res_line_tmp)
             return res_line_tmp
 
         spec_name = f'summary-{proof.id.replace("_", "-").lower()}.k'
@@ -618,7 +618,7 @@ class KEVMSummarizer:
                 if res_line.startswith('module'):
                     res_line = _remove_inf_gas(res_line)
                     res_line = _remove_dash_from_var(res_line)
-                    # res_line = _use_legal_remainder(res_line)
+                    res_line = _use_legal_remainder(res_line)
                     f.write('requires "../evm.md"\n\n')
                     lines = res_line.split('\n')
                     lines.insert(1, 'imports EVM')
