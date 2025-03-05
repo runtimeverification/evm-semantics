@@ -1,7 +1,9 @@
 requires "../evm.md"
+requires "../buf.md"
 
 module SUMMARY-SSTORE-2-SPEC
 imports EVM
+imports BUF
     
     
     rule [BASIC-BLOCK-4-TO-5]: <kevm>
@@ -50,10 +52,7 @@ imports EVM
            ...
          </kevm>
       requires ( STATIC_CELL:Bool
-       andBool ( ( notBool <acctID>
-          ID_CELL:Int
-        </acctID> in_keys ( DotAccountVar:AccountCellMap ) )
-               ))
+       )
       [priority(20), label(BASIC-BLOCK-4-TO-5)]
     
     rule [BASIC-BLOCK-3-TO-6]: <kevm>
@@ -105,10 +104,7 @@ imports EVM
            ...
          </kevm>
       requires ( ( notBool STATIC_CELL:Bool )
-       andBool ( ( notBool <acctID>
-          ID_CELL:Int
-        </acctID> in_keys ( DotAccountVar:AccountCellMap ) )
-               ))
+       )
       [priority(20), label(BASIC-BLOCK-3-TO-6)]
 
 endmodule

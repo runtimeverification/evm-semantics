@@ -1,7 +1,9 @@
 requires "../evm.md"
+requires "../buf.md"
 
 module SUMMARY-SELFBALANCE-0-SPEC
 imports EVM
+imports BUF
     
     
     rule [BASIC-BLOCK-3-TO-5]: <kevm>
@@ -46,10 +48,7 @@ imports EVM
            </ethereum>
            ...
          </kevm>
-      requires ( ( notBool <acctID>
-          ID_CELL:Int
-        </acctID> in_keys ( DotAccountVar:AccountCellMap ) )
-       andBool ( 1023 <Int #sizeWordStack ( WS:WordStack , 0 )
+      requires (( 1023 <Int #sizeWordStack ( WS:WordStack , 0)
                ))
       [priority(20), label(BASIC-BLOCK-3-TO-5)]
     
@@ -98,10 +97,7 @@ imports EVM
            </ethereum>
            ...
          </kevm>
-      requires ( ( notBool <acctID>
-          ID_CELL:Int
-        </acctID> in_keys ( DotAccountVar:AccountCellMap ) )
-       andBool ( ( notBool #sizeWordStack ( WS:WordStack , 0 ) <Int 0 )
+      requires (( ( notBool #sizeWordStack ( WS:WordStack , 0) <Int 0 )
        andBool ( ( notBool 1023 <Int #sizeWordStack ( WS:WordStack , 0 ) )
                )))
        ensures #sizeWordStack ( WS:WordStack , 0 ) <=Int 1023
