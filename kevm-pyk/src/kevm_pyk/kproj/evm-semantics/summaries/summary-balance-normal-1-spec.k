@@ -39,9 +39,7 @@ imports BUF
              <network>
                <accounts>
                  <account>
-                   <acctID>
-                     ACCTID 
-                   </acctID>
+                   <acctID> ACCTID_CELL_CELL </acctID>
                    <balance>
                      BALANCE_CELL:Int
                    </balance>
@@ -54,8 +52,8 @@ imports BUF
            </ethereum>
            ...
          </kevm>
-      requires ACCTID ==Int  W0:Int modInt pow160
        
-      [priority(20), label(BASIC-BLOCK-1-TO-3)]
+      requires ACCTID_CELL_CELL ==Int W0:Int modInt pow160
+[priority(20), label(BASIC-BLOCK-1-TO-3)]
 
 endmodule
