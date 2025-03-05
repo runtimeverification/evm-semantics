@@ -7,22 +7,22 @@ imports EVM
     rule [BASIC-BLOCK-13-TO-9]: <kevm>
            <k>
              ( #next [ EXP ] ~> .K => .K )
-             ~> K_CELL:K
+             ~> __K_CELL:K
            </k>
            <useGas>
-             ( USEGAS_CELL:Bool => false )
+             ( _USEGAS_CELL:Bool => false )
            </useGas>
            <ethereum>
              <evm>
                <callState>
                  <wordStack>
-                   ( ( W0:Int => powmod ( W0:Int , W1:Int , pow256 ) ) : ( ( W1:Int : WS:WordStack ) => WS:WordStack ) )
+                   ( ( _W0:Int => powmod ( _W0:Int , _W1:Int , pow256 ) ) : ( ( _W1:Int : _WS:WordStack ) => _WS:WordStack ) )
                  </wordStack>
                  <pc>
-                   ( PC_CELL:Int => ( PC_CELL:Int +Int 1 ) )
+                   ( _PC_CELL:Int => ( _PC_CELL:Int +Int 1 ) )
                  </pc>
                  <gas>
-                    GAS_CELL:Int 
+                   ( __GAS_CELL:Int )
                  </gas>
                  ...
                </callState>
@@ -32,31 +32,31 @@ imports EVM
            </ethereum>
            ...
          </kevm>
-      requires ( notBool USEGAS_CELL:Bool )
+      requires ( notBool _USEGAS_CELL:Bool )
       [priority(20), label(BASIC-BLOCK-13-TO-9)]
     
     rule [BASIC-BLOCK-16-TO-11]: <kevm>
            <k>
              ( #next [ EXP ] ~> .K => .K )
-             ~> K_CELL:K
+             ~> __K_CELL:K
            </k>
            <schedule>
-             SCHEDULE_CELL:Schedule
+             _SCHEDULE_CELL:Schedule
            </schedule>
            <useGas>
-             ( USEGAS_CELL:Bool => true )
+             ( _USEGAS_CELL:Bool => true )
            </useGas>
            <ethereum>
              <evm>
                <callState>
                  <wordStack>
-                   ( ( W0:Int => powmod ( W0:Int , W1:Int , pow256 ) ) : ( ( W1:Int : WS:WordStack ) => WS:WordStack ) )
+                   ( ( _W0:Int => powmod ( _W0:Int , _W1:Int , pow256 ) ) : ( ( _W1:Int : _WS:WordStack ) => _WS:WordStack ) )
                  </wordStack>
                  <pc>
-                   ( PC_CELL:Int => ( PC_CELL:Int +Int 1 ) )
+                   ( _PC_CELL:Int => ( _PC_CELL:Int +Int 1 ) )
                  </pc>
                  <gas>
-                    ( GAS_CELL:Int => ( GAS_CELL:Int -Int Gexp < SCHEDULE_CELL:Schedule >  ) )
+                   ( ( _GAS_CELL:Int => ( _GAS_CELL:Int -Int Gexp < _SCHEDULE_CELL:Schedule > ) ) )
                  </gas>
                  ...
                </callState>
@@ -66,33 +66,33 @@ imports EVM
            </ethereum>
            ...
          </kevm>
-      requires ( USEGAS_CELL:Bool
-       andBool ( W1:Int <=Int 0
+      requires ( _USEGAS_CELL:Bool
+       andBool ( _W1:Int <=Int 0
                ))
       [priority(20), label(BASIC-BLOCK-16-TO-11)]
     
     rule [BASIC-BLOCK-17-TO-10]: <kevm>
            <k>
              ( #next [ EXP ] ~> .K => .K )
-             ~> K_CELL:K
+             ~> __K_CELL:K
            </k>
            <schedule>
-             SCHEDULE_CELL:Schedule
+             _SCHEDULE_CELL:Schedule
            </schedule>
            <useGas>
-             ( USEGAS_CELL:Bool => true )
+             ( _USEGAS_CELL:Bool => true )
            </useGas>
            <ethereum>
              <evm>
                <callState>
                  <wordStack>
-                   ( ( W0:Int => powmod ( W0:Int , W1:Int , pow256 ) ) : ( ( W1:Int : WS:WordStack ) => WS:WordStack ) )
+                   ( ( _W0:Int => powmod ( _W0:Int , _W1:Int , pow256 ) ) : ( ( _W1:Int : _WS:WordStack ) => _WS:WordStack ) )
                  </wordStack>
                  <pc>
-                   ( PC_CELL:Int => ( PC_CELL:Int +Int 1 ) )
+                   ( _PC_CELL:Int => ( _PC_CELL:Int +Int 1 ) )
                  </pc>
                  <gas>
-                    ( GAS_CELL:Int => ( GAS_CELL:Int -Int ( Gexp < SCHEDULE_CELL:Schedule > +Int ( Gexpbyte < SCHEDULE_CELL:Schedule > *Int ( ( log2Int ( W1:Int  /Int 8 ) +Int 1 ) ) ) ) ) )
+                   ( ( _GAS_CELL:Int => ( _GAS_CELL:Int -Int ( Gexp < _SCHEDULE_CELL:Schedule > +Int ( Gexpbyte < _SCHEDULE_CELL:Schedule > *Int ( ( log2Int ( _W1:Int ) /Int 8 ) +Int 1 ) ) ) ) ) )
                  </gas>
                  ...
                </callState>
@@ -102,8 +102,8 @@ imports EVM
            </ethereum>
            ...
          </kevm>
-      requires ( USEGAS_CELL:Bool
-       andBool ( 0 <Int W1:Int
+      requires ( _USEGAS_CELL:Bool
+       andBool ( 0 <Int _W1:Int
                ))
       [priority(20), label(BASIC-BLOCK-17-TO-10)]
 

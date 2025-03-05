@@ -7,7 +7,7 @@ imports EVM
     rule [BASIC-BLOCK-3-TO-5]: <kevm>
            <k>
              ( #next [ MSIZE ] => #halt )
-             ~> K_CELL:K
+             ~> __K_CELL:K
            </k>
            <useGas>
              false
@@ -15,14 +15,14 @@ imports EVM
            <ethereum>
              <evm>
                <statusCode>
-                 ( STATUSCODE_CELL:StatusCode => EVMC_STACK_OVERFLOW )
+                 ( __STATUSCODE_CELL:StatusCode => EVMC_STACK_OVERFLOW )
                </statusCode>
                <callState>
                  <wordStack>
-                   WS:WordStack
+                   _WS:WordStack
                  </wordStack>
                  <gas>
-                    GAS_CELL:Int 
+                   ( __GAS_CELL:Int )
                  </gas>
                  ...
                </callState>
@@ -32,13 +32,13 @@ imports EVM
            </ethereum>
            ...
          </kevm>
-      requires 1023 <Int #sizeWordStack ( WS:WordStack , 0 )
+      requires 1023 <Int #sizeWordStack ( _WS:WordStack , 0 )
       [priority(20), label(BASIC-BLOCK-3-TO-5)]
     
     rule [BASIC-BLOCK-4-TO-6]: <kevm>
            <k>
              ( #next [ MSIZE ] ~> .K => .K )
-             ~> K_CELL:K
+             ~> __K_CELL:K
            </k>
            <useGas>
              false
@@ -47,16 +47,16 @@ imports EVM
              <evm>
                <callState>
                  <wordStack>
-                   ( WS:WordStack => ( chop ( ( 32 *Int MEMORYUSED_CELL:Int ) ) : WS:WordStack ) )
+                   ( _WS:WordStack => ( chop ( ( 32 *Int _MEMORYUSED_CELL:Int ) ) : _WS:WordStack ) )
                  </wordStack>
                  <pc>
-                   ( PC_CELL:Int => ( PC_CELL:Int +Int 1 ) )
+                   ( _PC_CELL:Int => ( _PC_CELL:Int +Int 1 ) )
                  </pc>
                  <gas>
-                    GAS_CELL:Int 
+                   ( __GAS_CELL:Int )
                  </gas>
                  <memoryUsed>
-                   MEMORYUSED_CELL:Int
+                   _MEMORYUSED_CELL:Int
                  </memoryUsed>
                  ...
                </callState>
@@ -66,10 +66,10 @@ imports EVM
            </ethereum>
            ...
          </kevm>
-      requires ( ( notBool #sizeWordStack ( WS:WordStack , 0 ) <Int 0 )
-       andBool ( ( notBool 1023 <Int #sizeWordStack ( WS:WordStack , 0 ) )
+      requires ( ( notBool #sizeWordStack ( _WS:WordStack , 0 ) <Int 0 )
+       andBool ( ( notBool 1023 <Int #sizeWordStack ( _WS:WordStack , 0 ) )
                ))
-       ensures #sizeWordStack ( WS:WordStack , 0 ) <=Int 1023
+       ensures #sizeWordStack ( _WS:WordStack , 0 ) <=Int 1023
       [priority(20), label(BASIC-BLOCK-4-TO-6)]
 
 endmodule
