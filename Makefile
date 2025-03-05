@@ -90,6 +90,9 @@ profile: poetry
 	$(MAKE) -C kevm-pyk/ profile
 	find /tmp/pytest-of-$$(whoami)/pytest-current/ -type f -name '*.prof' | sort | xargs tail -n +1
 
+test-summarize: poetry
+	$(MAKE) -C kevm-pyk/ test-integration PYTEST_ARGS+='-k "test_summarize"'
+
 
 # Smoke Tests
 
