@@ -608,6 +608,18 @@ class KEVMSummarizer:
             res_line_tmp = re.sub(r'(\()\s*andBool\s*([\s\S]*?)\s*(\))', r'\1\2\3', res_line_tmp)
             res_line_tmp = re.sub(r'andBool\s*\(\s*\)', r'', res_line_tmp)
             return res_line_tmp
+        
+        def replace_lhs_function_by_assignment(res_line: str) -> str:
+            # just for summary-balance
+            if not 'SUMMARY-BALANCE' in res_line:
+                return res_line
+            pattern = r'<acctID>\s*(\(\s*W0:Int modInt pow160\s*\))\s*</acctID>'
+            if re.search(pattern, res_line):
+                # 找到这个pattern的位置
+                replace_pattern = r'<acctID> ACCTID_CELL_CELL </acctID>'
+                res_line = re.sub(pattern, replace_pattern, res_line)
+                res_line = re.sub(r'(</kevm>\s*)', r'\1requires ACCTID_CELL_CELL ==Int W0:Int modInt pow160\n', res_line)
+            return res_line
 
         spec_name = f'summary-{proof.id.replace("_", "-").lower()}.k'
         with open(self.save_directory / spec_name, 'w') as f:
@@ -617,6 +629,7 @@ class KEVMSummarizer:
                     res_line = _remove_inf_gas(res_line)
                     res_line = _remove_dash_from_var(res_line)
                     res_line = _use_legal_remainder(res_line)
+                    res_line = replace_lhs_function_by_assignment(res_line)
                     f.write('requires "../evm.md"\n')
                     f.write('requires "../buf.md"\n\n')
                     lines = res_line.split('\n')
