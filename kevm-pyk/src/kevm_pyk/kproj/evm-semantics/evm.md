@@ -625,7 +625,6 @@ After executing a transaction, it's necessary to have the effect of the substate
             ...
          </message>
       requires REFUND =/=Int 0
-
    
     rule <k> #finalizeTx(false => true) ... </k>
          <useGas> true </useGas>
