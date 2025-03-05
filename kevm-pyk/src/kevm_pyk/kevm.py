@@ -622,12 +622,29 @@ class KEVM(KProve, KRun):
         )
 
     @staticmethod
+    def account_cell_in_keys(acct_id: KInner, cell_map: KInner) -> KApply:
+        return KApply('AccountCellMap:in_keys', [KApply('<acctID>', [acct_id]), cell_map])
+
+    @staticmethod
     def wordstack_empty() -> KApply:
         return KApply('.WordStack_EVM-TYPES_WordStack')
 
     @staticmethod
     def wordstack_len(wordstack: KInner) -> int:
         return len(flatten_label('_:__EVM-TYPES_WordStack_Int_WordStack', wordstack))
+
+    @staticmethod
+    def wordstack(size_over: int) -> KInner:
+        def _wordstack_var(n: int) -> KInner:
+            return KVariable(f'W{n}', KSort('Int'))
+
+        def _wordstack(w0: KInner, w1: KInner) -> KInner:
+            return KApply('_:__EVM-TYPES_WordStack_Int_WordStack', [w0, w1])
+
+        ws: KInner = KVariable('WS', KSort('WordStack'))
+        for i in reversed(range(size_over)):
+            ws = _wordstack(_wordstack_var(i), ws)
+        return ws
 
     @staticmethod
     def parse_bytestack(s: KInner) -> KApply:
@@ -663,6 +680,14 @@ class KEVM(KProve, KRun):
             else:
                 wrapped_accounts.append(acct)
         return build_assoc(KApply('.AccountCellMap'), KLabel('_AccountCellMap_'), wrapped_accounts)
+
+    @staticmethod
+    def next_opcode(opcode: KInner) -> KInner:
+        return KApply('#next[_]_EVM_InternalOp_MaybeOpCode', opcode)
+
+    @staticmethod
+    def end_basic_block() -> KInner:
+        return KApply('#endBasicBlock_EVM_InternalOp')
 
 
 class KEVMNodePrinter(NodePrinter):
