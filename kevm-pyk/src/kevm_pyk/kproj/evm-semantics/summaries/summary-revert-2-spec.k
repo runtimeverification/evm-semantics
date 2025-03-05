@@ -7,34 +7,34 @@ imports EVM
     rule [BASIC-BLOCK-8-TO-7]: <kevm>
            <k>
              ( #next [ REVERT ] => #halt )
-             ~> __K_CELL:K
+             ~> K_CELL:K
            </k>
            <schedule>
-             _SCHEDULE_CELL:Schedule
+             SCHEDULE_CELL:Schedule
            </schedule>
            <useGas>
-             ( _USEGAS_CELL:Bool => true )
+             ( USEGAS_CELL:Bool => true )
            </useGas>
            <ethereum>
              <evm>
                <output>
-                 ( __OUTPUT_CELL:Bytes => #range ( _LOCALMEM_CELL:Bytes , _W0:Int , _W1:Int ) )
+                 ( OUTPUT_CELL:Bytes => #range ( LOCALMEM_CELL:Bytes , W0:Int , W1:Int ) )
                </output>
                <statusCode>
-                 ( __STATUSCODE_CELL:StatusCode => EVMC_REVERT )
+                 ( STATUSCODE_CELL:StatusCode => EVMC_REVERT )
                </statusCode>
                <callState>
                  <wordStack>
-                   ( ( _W0:Int : ( _W1:Int : _WS:WordStack ) ) => _WS:WordStack )
+                   ( ( W0:Int : ( W1:Int : WS:WordStack ) ) => WS:WordStack )
                  </wordStack>
                  <localMem>
-                   _LOCALMEM_CELL:Bytes
+                   LOCALMEM_CELL:Bytes
                  </localMem>
                  <gas>
-                   ( ( _GAS_CELL:Int => ( ( _GAS_CELL:Int -Int ( Cmem ( _SCHEDULE_CELL:Schedule , #memoryUsageUpdate ( _MEMORYUSED_CELL:Int , _W0:Int , _W1:Int ) ) -Int Cmem ( _SCHEDULE_CELL:Schedule , _MEMORYUSED_CELL:Int ) ) ) -Int Gzero < _SCHEDULE_CELL:Schedule > ) ) )
+                   ( ( GAS_CELL:Int => ( ( GAS_CELL:Int -Int ( Cmem ( SCHEDULE_CELL:Schedule , #memoryUsageUpdate ( MEMORYUSED_CELL:Int , W0:Int , W1:Int ) ) -Int Cmem ( SCHEDULE_CELL:Schedule , MEMORYUSED_CELL:Int ) ) ) -Int Gzero < SCHEDULE_CELL:Schedule > ) ) )
                  </gas>
                  <memoryUsed>
-                   ( _MEMORYUSED_CELL:Int => #memoryUsageUpdate ( _MEMORYUSED_CELL:Int , _W0:Int , _W1:Int ) )
+                   ( MEMORYUSED_CELL:Int => #memoryUsageUpdate ( MEMORYUSED_CELL:Int , W0:Int , W1:Int ) )
                  </memoryUsed>
                  ...
                </callState>
@@ -44,34 +44,34 @@ imports EVM
            </ethereum>
            ...
          </kevm>
-      requires _USEGAS_CELL:Bool
+      requires USEGAS_CELL:Bool
       [priority(20), label(BASIC-BLOCK-8-TO-7)]
     
     rule [BASIC-BLOCK-9-TO-6]: <kevm>
            <k>
              ( #next [ REVERT ] => #halt )
-             ~> __K_CELL:K
+             ~> K_CELL:K
            </k>
            <useGas>
-             ( _USEGAS_CELL:Bool => false )
+             ( USEGAS_CELL:Bool => false )
            </useGas>
            <ethereum>
              <evm>
                <output>
-                 ( __OUTPUT_CELL:Bytes => #range ( _LOCALMEM_CELL:Bytes , _W0:Int , _W1:Int ) )
+                 ( OUTPUT_CELL:Bytes => #range ( LOCALMEM_CELL:Bytes , W0:Int , W1:Int ) )
                </output>
                <statusCode>
-                 ( __STATUSCODE_CELL:StatusCode => EVMC_REVERT )
+                 ( STATUSCODE_CELL:StatusCode => EVMC_REVERT )
                </statusCode>
                <callState>
                  <wordStack>
-                   ( ( _W0:Int : ( _W1:Int : _WS:WordStack ) ) => _WS:WordStack )
+                   ( ( W0:Int : ( W1:Int : WS:WordStack ) ) => WS:WordStack )
                  </wordStack>
                  <localMem>
-                   _LOCALMEM_CELL:Bytes
+                   LOCALMEM_CELL:Bytes
                  </localMem>
                  <gas>
-                   ( __GAS_CELL:Int )
+                   ( GAS_CELL:Int )
                  </gas>
                  ...
                </callState>
@@ -81,7 +81,7 @@ imports EVM
            </ethereum>
            ...
          </kevm>
-      requires ( notBool _USEGAS_CELL:Bool )
+      requires ( notBool USEGAS_CELL:Bool )
       [priority(20), label(BASIC-BLOCK-9-TO-6)]
 
 endmodule
