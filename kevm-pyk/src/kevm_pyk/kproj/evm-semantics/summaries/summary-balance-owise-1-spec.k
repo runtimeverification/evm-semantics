@@ -36,7 +36,7 @@ imports EVM
              </evm>
              <network>
                <accounts>
-                 ( <account>
+                 <account>
                    <acctID>
                      ( W0:Int modInt pow160 )
                    </acctID>
@@ -45,7 +45,7 @@ imports EVM
                    </balance>
                    ...
                  </account>
-                 DotAccountVar:AccountCellMap )
+                 ...
                </accounts>
                ...
              </network>

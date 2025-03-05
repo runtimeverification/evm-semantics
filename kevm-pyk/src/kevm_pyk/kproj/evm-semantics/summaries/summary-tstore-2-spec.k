@@ -36,13 +36,13 @@ imports EVM
              </evm>
              <network>
                <accounts>
-                 ( <account>
+                 <account>
                    <acctID>
                      ID_CELL:Int
                    </acctID>
                    ...
                  </account>
-                 DotAccountVar:AccountCellMap )
+                 ...
                </accounts>
                ...
              </network>
@@ -88,7 +88,7 @@ imports EVM
              </evm>
              <network>
                <accounts>
-                 ( <account>
+                 <account>
                    <acctID>
                      ID_CELL:Int
                    </acctID>
@@ -97,7 +97,7 @@ imports EVM
                    </transientStorage>
                    ...
                  </account>
-                 DotAccountVar:AccountCellMap )
+                 ...
                </accounts>
                ...
              </network>
