@@ -617,7 +617,7 @@ class KEVMSummarizer:
             for res_line in proof_show.show(proof, to_module=True):
                 if res_line.startswith('module'):
                     res_line = _remove_inf_gas(res_line)
-                    # res_line = _remove_dash_from_var(res_line)
+                    res_line = _remove_dash_from_var(res_line)
                     # res_line = _use_legal_remainder(res_line)
                     f.write('requires "../evm.md"\n\n')
                     lines = res_line.split('\n')

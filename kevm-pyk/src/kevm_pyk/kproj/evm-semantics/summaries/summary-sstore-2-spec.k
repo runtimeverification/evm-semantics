@@ -7,7 +7,7 @@ imports EVM
     rule [BASIC-BLOCK-4-TO-5]: <kevm>
            <k>
              ( #next [ SSTORE ] => #halt )
-             ~> __K_CELL:K
+             ~> K_CELL:K
            </k>
            <useGas>
              false
@@ -15,20 +15,20 @@ imports EVM
            <ethereum>
              <evm>
                <statusCode>
-                 ( __STATUSCODE_CELL:StatusCode => EVMC_STATIC_MODE_VIOLATION )
+                 ( STATUSCODE_CELL:StatusCode => EVMC_STATIC_MODE_VIOLATION )
                </statusCode>
                <callState>
                  <id>
                    ID_CELL:Int
                  </id>
                  <wordStack>
-                   ( __W0:Int : ( __W1:Int : __WS:WordStack ) )
+                   ( W0:Int : ( W1:Int : WS:WordStack ) )
                  </wordStack>
                  <gas>
-                   ( __GAS_CELL:Int )
+                   ( GAS_CELL:Int )
                  </gas>
                  <static>
-                   ( _STATIC_CELL:Bool => true )
+                   ( STATIC_CELL:Bool => true )
                  </static>
                  ...
                </callState>
@@ -49,7 +49,7 @@ imports EVM
            </ethereum>
            ...
          </kevm>
-      requires ( _STATIC_CELL:Bool
+      requires ( STATIC_CELL:Bool
        andBool ( ( notBool <acctID>
           ID_CELL:Int
         </acctID> in_keys ( DotAccountVar:AccountCellMap ) )
@@ -59,7 +59,7 @@ imports EVM
     rule [BASIC-BLOCK-3-TO-6]: <kevm>
            <k>
              ( #next [ SSTORE ] ~> .K => .K )
-             ~> __K_CELL:K
+             ~> K_CELL:K
            </k>
            <useGas>
              false
@@ -71,16 +71,16 @@ imports EVM
                    ID_CELL:Int
                  </id>
                  <wordStack>
-                   ( ( _W0:Int : ( _W1:Int : _WS:WordStack ) ) => _WS:WordStack )
+                   ( ( W0:Int : ( W1:Int : WS:WordStack ) ) => WS:WordStack )
                  </wordStack>
                  <pc>
-                   ( _PC_CELL:Int => ( _PC_CELL:Int +Int 1 ) )
+                   ( PC_CELL:Int => ( PC_CELL:Int +Int 1 ) )
                  </pc>
                  <gas>
-                   ( __GAS_CELL:Int )
+                   ( GAS_CELL:Int )
                  </gas>
                  <static>
-                   ( _STATIC_CELL:Bool => false )
+                   ( STATIC_CELL:Bool => false )
                  </static>
                  ...
                </callState>
@@ -93,7 +93,7 @@ imports EVM
                      ID_CELL:Int
                    </acctID>
                    <storage>
-                     ( _STORAGE_CELL:Map => _STORAGE_CELL:Map [ _W0:Int <- _W1:Int ] )
+                     ( STORAGE_CELL:Map => STORAGE_CELL:Map [ W0:Int <- W1:Int ] )
                    </storage>
                    ...
                  </account>
@@ -104,7 +104,7 @@ imports EVM
            </ethereum>
            ...
          </kevm>
-      requires ( ( notBool _STATIC_CELL:Bool )
+      requires ( ( notBool STATIC_CELL:Bool )
        andBool ( ( notBool <acctID>
           ID_CELL:Int
         </acctID> in_keys ( DotAccountVar:AccountCellMap ) )

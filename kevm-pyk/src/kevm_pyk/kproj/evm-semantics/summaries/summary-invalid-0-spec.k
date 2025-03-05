@@ -7,16 +7,16 @@ imports EVM
     rule [BASIC-BLOCK-1-TO-3]: <kevm>
            <k>
              ( #next [ INVALID ] => #halt )
-             ~> __K_CELL:K
+             ~> K_CELL:K
            </k>
            <ethereum>
              <evm>
                <statusCode>
-                 ( __STATUSCODE_CELL:StatusCode => EVMC_INVALID_INSTRUCTION )
+                 ( STATUSCODE_CELL:StatusCode => EVMC_INVALID_INSTRUCTION )
                </statusCode>
                <callState>
                  <gas>
-                   ( __GAS_CELL:Int )
+                   ( GAS_CELL:Int )
                  </gas>
                  ...
                </callState>

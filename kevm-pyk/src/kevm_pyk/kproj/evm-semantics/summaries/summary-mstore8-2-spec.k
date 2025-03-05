@@ -7,7 +7,7 @@ imports EVM
     rule [BASIC-BLOCK-1-TO-3]: <kevm>
            <k>
              ( #next [ MSTORE8 ] ~> .K => .K )
-             ~> __K_CELL:K
+             ~> K_CELL:K
            </k>
            <useGas>
              false
@@ -16,16 +16,16 @@ imports EVM
              <evm>
                <callState>
                  <wordStack>
-                   ( ( _W0:Int : ( _W1:Int : _WS:WordStack ) ) => _WS:WordStack )
+                   ( ( W0:Int : ( W1:Int : WS:WordStack ) ) => WS:WordStack )
                  </wordStack>
                  <localMem>
-                   ( _LOCALMEM_CELL:Bytes => _LOCALMEM_CELL:Bytes [ _W0:Int := #buf ( 1 , ( _W1:Int modInt 256 ) ) ] )
+                   ( LOCALMEM_CELL:Bytes => LOCALMEM_CELL:Bytes [ W0:Int := #buf ( 1 , ( W1:Int modInt 256 ) ) ] )
                  </localMem>
                  <pc>
-                   ( _PC_CELL:Int => ( _PC_CELL:Int +Int 1 ) )
+                   ( PC_CELL:Int => ( PC_CELL:Int +Int 1 ) )
                  </pc>
                  <gas>
-                   ( __GAS_CELL:Int )
+                   ( GAS_CELL:Int )
                  </gas>
                  ...
                </callState>
