@@ -29,6 +29,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterable
 
     from pyk.kast.inner import KInner
+    from pyk.kcfg.kcfg import NodeIdLike
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -374,6 +375,26 @@ class KEVMSummarizer:
         """Build the specification to symbolically execute abitrary instruction with stack underflow."""
         ...
 
+    def show_proof(
+        self,
+        proof: APRProof,
+        nodes: Iterable[NodeIdLike] = (),
+        node_deltas: Iterable[tuple[NodeIdLike, NodeIdLike]] = (),
+        to_module: bool = False,
+        minimize: bool = True,
+        sort_collections: bool = False,
+        omit_cells: Iterable[str] = (),
+    ) -> list[str]:
+        node_printer = kevm_node_printer(self.kevm, proof)
+        proof_show = APRProofShow(self.kevm, node_printer=node_printer)
+        return proof_show.show(
+            proof,
+            nodes=nodes,
+            node_deltas=node_deltas,
+            to_module=to_module,
+            minimize=minimize,
+        )
+
     def _build_spec(
         self,
         opcode: KApply,
@@ -561,12 +582,8 @@ class KEVMSummarizer:
                 )
             end_time = time.time()
             print(f'Proof timing {proof.id}: {end_time - start_time}s')
-            # failure_log = None
 
-            node_printer = kevm_node_printer(self.kevm, proof)
-            proof_show = APRProofShow(self.kevm, node_printer=node_printer)
-
-            res_lines = proof_show.show(
+            res_lines = self.show_proof(
                 proof,
                 nodes=[node.id for node in proof.kcfg.nodes],
             )
@@ -587,8 +604,6 @@ class KEVMSummarizer:
     def summarize(self, proof: APRProof, merge: bool = False) -> None:
         # TODO: may need customized way to generate summary rules, e.g., replacing infinite gas with finite gas.
         proof.minimize_kcfg(KEVMSemantics(allow_symbolic_program=True), merge)
-        node_printer = kevm_node_printer(self.kevm, proof)
-        proof_show = APRProofShow(self.kevm, node_printer=node_printer)
         ensure_dir_path(self.save_directory)
 
         def _remove_inf_gas(res_line: str) -> str:
@@ -628,7 +643,7 @@ class KEVMSummarizer:
         spec_name = f'summary-{proof.id.replace("_", "-").lower()}.k'
         with open(self.save_directory / spec_name, 'w') as f:
             _LOGGER.info(f'Writing summary to {self.save_directory / spec_name}')
-            for res_line in proof_show.show(proof, to_module=True):
+            for res_line in self.show_proof(proof, to_module=True):
                 if res_line.startswith('module'):
                     res_line = _remove_inf_gas(res_line)
                     res_line = _remove_dash_from_var(res_line)
@@ -652,10 +667,8 @@ class KEVMSummarizer:
             f.write('\nendmodule\n')
 
     def print_node(self, proof: APRProof, nodes: Iterable[int]) -> None:
-        node_printer = kevm_node_printer(self.kevm, proof)
-        proof_show = APRProofShow(self.kevm, node_printer=node_printer)
         with open(self.proof_dir / proof.id / 'node-print.md', 'w') as f:
-            for res_line in proof_show.show(proof, nodes=nodes, to_module=False, minimize=False):
+            for res_line in self.show_proof(proof, nodes=nodes, to_module=False, minimize=False):
                 f.write(res_line)
                 f.write('\n')
 
