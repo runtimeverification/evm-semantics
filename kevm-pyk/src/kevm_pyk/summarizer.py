@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import logging
+import re
+import shutil
 import time
 import traceback
 from multiprocessing import Pool
@@ -365,7 +367,7 @@ class KEVMSummarizer:
     save_directory: Path
 
     def __init__(self, proof_dir: Path, save_directory: Path) -> None:
-        self.kevm = KEVM(kdist.get('evm-semantics.summary'))
+        self.kevm = KEVM(kdist.get('evm-semantics.summarize'))
         self.proof_dir = proof_dir
         self.save_directory = save_directory
 
@@ -423,7 +425,7 @@ class KEVMSummarizer:
         final_constraints = final_constraints or []
 
         cterm = CTerm(self.kevm.definition.empty_config(KSort('GeneratedTopCell')))
-        opcode_symbol = opcode.label.name.split('_')[0]
+        opcode_symbol = opcode.label.name.split('_')[0].replace('(', '')
 
         # construct the initial substitution
         _init_subst: dict[str, KInner] = {}
@@ -590,8 +592,8 @@ class KEVMSummarizer:
 
         passed, res_lines = _init_and_run_proof(proof)
 
-        ensure_dir_path(self.save_directory / proof.id)
-        with open(self.save_directory / proof.id / 'proof-result.txt', 'w') as f:
+        ensure_dir_path(self.proof_dir / proof.id)
+        with open(self.proof_dir / proof.id / 'proof-result.txt', 'w') as f:
             f.write(f'Proof {proof.id} Passed' if passed else f'Proof {proof.id} Failed')
             f.write('\n')
             for line in res_lines:
@@ -602,12 +604,65 @@ class KEVMSummarizer:
     def summarize(self, proof: APRProof, merge: bool = False) -> None:
         # TODO: may need customized way to generate summary rules, e.g., replacing infinite gas with finite gas.
         proof.minimize_kcfg(KEVMSemantics(allow_symbolic_program=True), merge)
-        ensure_dir_path(self.save_directory / proof.id)
-        with open(self.save_directory / proof.id / 'summary.md', 'w') as f:
-            _LOGGER.info(f'Writing summary to {self.save_directory / proof.id / "summary.md"}')
+        ensure_dir_path(self.save_directory)
+
+        def _remove_inf_gas(res_line: str) -> str:
+            return re.sub(r'#gas (\([^)]*\))', r'\1', res_line)
+
+        def _remove_dash_from_var(res_line: str) -> str:
+            return re.sub(r'(?<!\w)_+([A-Z0-9]\w*)', r'\1', res_line)
+
+        def _use_legal_remainder(res_line: str) -> str:
+            res_line_tmp = re.sub(
+                r'\(\s*<account>([\s\S]*?)</account>\s*DotAccountVar:AccountCellMap\s*\)',
+                r'<account>\1</account>\n                 ...',
+                res_line,
+            )
+            res_line_tmp = re.sub(
+                r'\(\s*notBool\s*<acctID>\s*([^<]+)\s*</acctID>\s*in_keys\s*\([^)]*\)\s*\)', r'', res_line_tmp
+            )
+            res_line_tmp = re.sub(r'requires(\s*\[[\s\S]*?\])', r'\1', res_line_tmp)
+            res_line_tmp = re.sub(r'(\()\s*andBool\s*([\s\S]*?)\s*(\))', r'\1\2\3', res_line_tmp)
+            res_line_tmp = re.sub(r'andBool\s*\(\s*\)', r'', res_line_tmp)
+            return res_line_tmp
+
+        def replace_lhs_function_by_assignment(res_line: str) -> str:
+            if not 'SUMMARY-BALANCE' in res_line:
+                return res_line
+            pattern = r'<acctID>\s*(\(\s*W0:Int modInt pow160\s*\))\s*</acctID>'
+            if re.search(pattern, res_line):
+                replace_pattern = r'<acctID> ACCTID_CELL_CELL </acctID>'
+                res_line = re.sub(pattern, replace_pattern, res_line)
+                res_line = re.sub(
+                    r'(</kevm>\s*)', r'\1requires ACCTID_CELL_CELL ==Int W0:Int modInt pow160\n', res_line
+                )
+            return res_line
+
+        spec_name = f'summary-{proof.id.replace("_", "-").lower()}.k'
+        with open(self.save_directory / spec_name, 'w') as f:
+            _LOGGER.info(f'Writing summary to {self.save_directory / spec_name}')
             for res_line in self.show_proof(proof, to_module=True):
-                f.write(res_line)
-                f.write('\n')
+                if res_line.startswith('module'):
+                    res_line = _remove_inf_gas(res_line)
+                    res_line = _remove_dash_from_var(res_line)
+                    res_line = _use_legal_remainder(res_line)
+                    res_line = replace_lhs_function_by_assignment(res_line)
+                    f.write('requires "../evm.md"\n')
+                    f.write('requires "../buf.md"\n\n')
+                    lines = res_line.split('\n')
+                    lines.insert(1, 'imports EVM')
+                    lines.insert(2, 'imports BUF')
+                    f.write('\n'.join(lines))
+                    continue
+        k_files = sorted([f for f in self.save_directory.glob('*.k') if f.name != 'summary.k'])
+        module_names = [f.stem.upper() for f in k_files]
+        with open(self.save_directory / 'summary.k', 'w') as f:
+            for k_file in k_files:
+                f.write(f'requires {k_file.name!r}\n'.replace("'", '"'))
+            f.write('\nmodule SUMMARY\n')
+            for module_name in module_names:
+                f.write(f'imports {module_name}\n')
+            f.write('\nendmodule\n')
 
     def print_node(self, proof: APRProof, nodes: Iterable[int]) -> None:
         with open(self.proof_dir / proof.id / 'node-print.md', 'w') as f:
@@ -643,13 +698,12 @@ def batch_summarize(num_processes: int = 4) -> None:
         num_processes: Number of parallel processes to use. Defaults to 4.
     """
 
-    opcodes_to_process = OPCODES.keys()
+    OPCODES.keys()
     passed_opcodes = get_passed_opcodes()
-    unpassed_opcodes = [opcode for opcode in opcodes_to_process if opcode not in passed_opcodes]
-    has_call_opcodes = [opcode for opcode in unpassed_opcodes if 'Call' in OPCODES[opcode].label.name]
-    no_call_opcodes = [opcode for opcode in unpassed_opcodes if 'Call' not in OPCODES[opcode].label.name]
+    has_call_opcodes = [opcode for opcode in passed_opcodes if 'Call' in OPCODES[opcode].label.name]
+    no_call_opcodes = [opcode for opcode in passed_opcodes if 'Call' not in OPCODES[opcode].label.name]
 
-    _LOGGER.info(f'Starting batch summarization of {len(unpassed_opcodes)} opcodes with {num_processes} processes')
+    _LOGGER.info(f'Starting batch summarization of {len(passed_opcodes)} opcodes with {num_processes} processes')
 
     with Pool(processes=num_processes) as pool:
         _LOGGER.info(f'Summarizing {len(no_call_opcodes)} opcodes without CALL')
@@ -662,19 +716,21 @@ def batch_summarize(num_processes: int = 4) -> None:
 
 def summarize(opcode_symbol: str) -> tuple[KEVMSummarizer, list[APRProof]]:
     proof_dir = Path(__file__).parent / 'proofs'
-    save_directory = Path(__file__).parent / 'summaries'
+    save_directory = Path(__file__).parent / 'kproj' / 'evm-semantics' / 'summaries'
     summarizer = KEVMSummarizer(proof_dir, save_directory)
     proofs = summarizer.build_spec(opcode_symbol)
     for proof in proofs:
-        summarizer.print_node(proof, [1])
-        summarizer.explore(proof)
-        summarizer.summarize(proof)
-        proof.write_proof_data()
+        if (proof_dir / proof.id / 'proof.json').exists():
+            proof = APRProof.read_proof_data(proof_dir, proof.id)
+            summarizer.summarize(proof)
+        else:
+            summarizer.print_node(proof, [1])
+            summarizer.explore(proof)
+            summarizer.summarize(proof)
     return summarizer, proofs
 
 
-def analyze_proof(opcode: str, node_id: int) -> None:
+def clear_proofs() -> None:
     proof_dir = Path(__file__).parent / 'proofs'
-    save_directory = Path(__file__).parent / 'summaries'
-    summarizer = KEVMSummarizer(proof_dir, save_directory)
-    summarizer.analyze_proof(str(proof_dir / f'{opcode}_SPEC'), node_id)
+    if proof_dir.exists():
+        shutil.rmtree(proof_dir)
