@@ -627,12 +627,10 @@ class KEVMSummarizer:
             return res_line_tmp
 
         def replace_lhs_function_by_assignment(res_line: str) -> str:
-            # just for summary-balance
             if not 'SUMMARY-BALANCE' in res_line:
                 return res_line
             pattern = r'<acctID>\s*(\(\s*W0:Int modInt pow160\s*\))\s*</acctID>'
             if re.search(pattern, res_line):
-                # 找到这个pattern的位置
                 replace_pattern = r'<acctID> ACCTID_CELL_CELL </acctID>'
                 res_line = re.sub(pattern, replace_pattern, res_line)
                 res_line = re.sub(
