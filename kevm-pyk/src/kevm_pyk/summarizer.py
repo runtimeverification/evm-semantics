@@ -598,17 +598,19 @@ class KEVMSummarizer:
             return re.sub(r'(?<!\w)_+([A-Z0-9]\w*)', r'\1', res_line)
 
         def _use_legal_remainder(res_line: str) -> str:
-            res_line_tmp = re.sub(r'\(\s*<account>([\s\S]*?)</account>\s*DotAccountVar:AccountCellMap\s*\)', r'<account>\1</account>\n                 ...', res_line)
             res_line_tmp = re.sub(
-                r'\(\s*notBool\s*<acctID>\s*([^<]+)\s*</acctID>\s*in_keys\s*\([^)]*\)\s*\)',
-                r'',
-                res_line_tmp
+                r'\(\s*<account>([\s\S]*?)</account>\s*DotAccountVar:AccountCellMap\s*\)',
+                r'<account>\1</account>\n                 ...',
+                res_line,
+            )
+            res_line_tmp = re.sub(
+                r'\(\s*notBool\s*<acctID>\s*([^<]+)\s*</acctID>\s*in_keys\s*\([^)]*\)\s*\)', r'', res_line_tmp
             )
             res_line_tmp = re.sub(r'requires(\s*\[[\s\S]*?\])', r'\1', res_line_tmp)
             res_line_tmp = re.sub(r'(\()\s*andBool\s*([\s\S]*?)\s*(\))', r'\1\2\3', res_line_tmp)
             res_line_tmp = re.sub(r'andBool\s*\(\s*\)', r'', res_line_tmp)
             return res_line_tmp
-        
+
         def replace_lhs_function_by_assignment(res_line: str) -> str:
             # just for summary-balance
             if not 'SUMMARY-BALANCE' in res_line:
@@ -618,7 +620,9 @@ class KEVMSummarizer:
                 # 找到这个pattern的位置
                 replace_pattern = r'<acctID> ACCTID_CELL_CELL </acctID>'
                 res_line = re.sub(pattern, replace_pattern, res_line)
-                res_line = re.sub(r'(</kevm>\s*)', r'\1requires ACCTID_CELL_CELL ==Int W0:Int modInt pow160\n', res_line)
+                res_line = re.sub(
+                    r'(</kevm>\s*)', r'\1requires ACCTID_CELL_CELL ==Int W0:Int modInt pow160\n', res_line
+                )
             return res_line
 
         spec_name = f'summary-{proof.id.replace("_", "-").lower()}.k'
@@ -683,7 +687,7 @@ def batch_summarize(num_processes: int = 4) -> None:
         num_processes: Number of parallel processes to use. Defaults to 4.
     """
 
-    opcodes_to_process = OPCODES.keys()
+    OPCODES.keys()
     passed_opcodes = get_passed_opcodes()
     has_call_opcodes = [opcode for opcode in passed_opcodes if 'Call' in OPCODES[opcode].label.name]
     no_call_opcodes = [opcode for opcode in passed_opcodes if 'Call' not in OPCODES[opcode].label.name]

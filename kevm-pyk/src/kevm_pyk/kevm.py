@@ -626,10 +626,6 @@ class KEVM(KProve, KRun):
         return KApply('AccountCellMap:in_keys', [KApply('<acctID>', [acct_id]), cell_map])
 
     @staticmethod
-    def account_cell_in_keys(acct_id: KInner, cell_map: KInner) -> KApply:
-        return KApply('AccountCellMap:in_keys', [KApply('<acctID>', [acct_id]), cell_map])
-
-    @staticmethod
     def wordstack_empty() -> KApply:
         return KApply('.WordStack_EVM-TYPES_WordStack')
 
