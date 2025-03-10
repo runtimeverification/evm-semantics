@@ -25,6 +25,21 @@ jobs:
       - name: 'Run pyupgrade'
         run: make -C kevm-pyk pyupgrade
 
+  mac-build-test:
+    name: 'Mac Build Test'
+    runs-on: [self-hosted, MacM1]
+    steps:
+      - name: 'Check out code'
+        uses: actions/checkout@v4
+      - name: 'Setup Python 3.10'
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - name: 'Install Poetry'
+        uses: Gr1N/setup-poetry@v9
+      - name: 'Run build'
+        run: make -C kevm-pyk build
+
   kevm-pyk-unit-tests:
     needs: kevm-pyk-code-quality-checks
     name: 'Unit Tests'
