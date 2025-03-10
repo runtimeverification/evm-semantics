@@ -31,8 +31,6 @@ jobs:
     steps:
       - name: 'Check out code'
         uses: actions/checkout@v4
-      - name: 'Install Poetry'
-        uses: Gr1N/setup-poetry@v9
       - name: 'Run build'
         run: make -C kevm-pyk build
 
