@@ -80,6 +80,7 @@ def _assert_exit_code_zero(pattern: Pattern) -> None:
     assert type(exit_code_cell) is App
 
     exit_code = exit_code_cell.args[0]
+    _LOGGER.info(f'Exit code: {exit_code}')
     if exit_code == int_dv(0):
         return
 
@@ -141,6 +142,7 @@ SKIPPED_BCHAIN_TESTS: Final = tuple(test_file for test_file in BCHAIN_TESTS if t
     ids=[str(test_file.relative_to(ALL_TEST_DIR)) for test_file in BCHAIN_TESTS],
 )
 def test_bchain(test_file: Path, save_failing: bool) -> None:
+    _LOGGER.info(f'Running test: {test_file}')
     _test(test_file, schedule='CANCUN', mode='NORMAL', usegas=True, save_failing=save_failing)
 
 

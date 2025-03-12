@@ -1,0 +1,1353 @@
+poetry -C ./kevm-pyk env use --no-cache /nix/store/7hnr99nxrd2aw6lghybqdmkckq60j6l9-python3-3.11.9/bin/python3
+Using virtualenv: /home/zhaoji/.cache/pypoetry/virtualenvs/kevm-pyk-9eA2lNH8-py3.11
+poetry -C ./kevm-pyk install
+Installing dependencies from lock file
+
+No dependencies to install or update
+
+Installing the current project: kevm-pyk (1.0.678)
+make -C kevm-pyk/ test-integration PYTEST_ARGS+="-k test_conformance.py"
+make[1]: Entering directory '/home/zhaoji/evm-semantics/kevm-pyk'
+poetry install
+Installing dependencies from lock file
+
+No dependencies to install or update
+
+Installing the current project: kevm-pyk (1.0.678)
+poetry run pytest src/tests/integration --verbose --durations=0 --dist=worksteal --maxfail=1 --numprocesses=8 --durations=0 --save-failing -k test_conformance.py
+============================= test session starts ==============================
+platform linux -- Python 3.11.9, pytest-7.4.4, pluggy-1.5.0 -- /home/zhaoji/.cache/pypoetry/virtualenvs/kevm-pyk-9eA2lNH8-py3.11/bin/python
+cachedir: .pytest_cache
+hypothesis profile 'default' -> database=DirectoryBasedExampleDatabase(PosixPath('/home/zhaoji/evm-semantics/kevm-pyk/.hypothesis/examples'))
+rootdir: /home/zhaoji/evm-semantics/kevm-pyk
+plugins: mock-3.14.0, cov-6.0.0, kframework-7.1.218, xdist-3.6.1, hypothesis-6.127.9, timeout-2.3.1
+created: 8/8 workers
+8 workers [2829 items]
+
+scheduling tests via WorkStealingScheduling
+
+src/tests/integration/test_conformance.py::test_vm[vmBitwiseLogicOperation/iszero.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest264.json] 
+src/tests/integration/test_conformance.py::test_bchain[stMemoryStressTest/MSTORE_Bounds2.json] 
+src/tests/integration/test_conformance.py::test_bchain[stStaticCall/static_CheckOpcodes4.json] 
+src/tests/integration/test_conformance.py::test_bchain[stCallCodes/callcallcodecall_010.json] 
+src/tests/integration/test_conformance.py::test_bchain[stPreCompiledContracts2/CallEcrecover0_Gas2999.json] 
+src/tests/integration/test_conformance.py::test_bchain[stReturnDataTest/modexp_modsize0_returndatasize.json] 
+src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcC1DiffPlaces.json] 
+[gw2] [  0%] PASSED src/tests/integration/test_conformance.py::test_bchain[stCallCodes/callcallcodecall_010.json] 
+src/tests/integration/test_conformance.py::test_bchain[stCallCodes/callcallcodecallcode_011_OOGMAfter.json] 
+[gw7] [  0%] PASSED src/tests/integration/test_conformance.py::test_bchain[stPreCompiledContracts2/CallEcrecover0_Gas2999.json] 
+src/tests/integration/test_conformance.py::test_bchain[stPreCompiledContracts2/modexp_0_0_0_22000.json] 
+[gw3] [  0%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest264.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest177.json] 
+[gw3] [  0%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest177.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest75.json] 
+[gw0] [  0%] PASSED src/tests/integration/test_conformance.py::test_vm[vmBitwiseLogicOperation/iszero.json] 
+src/tests/integration/test_conformance.py::test_vm[vmBitwiseLogicOperation/eq.json] 
+[gw3] [  0%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest75.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest293.json] 
+[gw4] [  0%] PASSED src/tests/integration/test_conformance.py::test_bchain[stStaticCall/static_CheckOpcodes4.json] 
+src/tests/integration/test_conformance.py::test_bchain[stStaticCall/static_callcall_00_OOGE.json] 
+[gw5] [  0%] PASSED src/tests/integration/test_conformance.py::test_bchain[stReturnDataTest/modexp_modsize0_returndatasize.json] 
+src/tests/integration/test_conformance.py::test_bchain[stReturnDataTest/returndatacopy_after_successful_delegatecall.json] 
+[gw3] [  0%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest293.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest26.json] 
+[gw0] [  0%] PASSED src/tests/integration/test_conformance.py::test_vm[vmBitwiseLogicOperation/eq.json] 
+[gw7] [  0%] PASSED src/tests/integration/test_conformance.py::test_bchain[stPreCompiledContracts2/modexp_0_0_0_22000.json] 
+src/tests/integration/test_conformance.py::test_vm[vmBitwiseLogicOperation/lt.json] 
+src/tests/integration/test_conformance.py::test_bchain[stPreCompiledContracts2/CALLCODEEcrecover0_overlappingInputOutput.json] 
+[gw5] [  0%] PASSED src/tests/integration/test_conformance.py::test_bchain[stReturnDataTest/returndatacopy_after_successful_delegatecall.json] 
+src/tests/integration/test_conformance.py::test_bchain[stReturnDataTest/returndatacopy_following_failing_call.json] 
+[gw3] [  0%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest26.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest195.json] 
+[gw4] [  0%] PASSED src/tests/integration/test_conformance.py::test_bchain[stStaticCall/static_callcall_00_OOGE.json] 
+src/tests/integration/test_conformance.py::test_bchain[stStaticCall/static_callcallcodecall_010_SuicideMiddle2.json] 
+[gw5] [  0%] PASSED src/tests/integration/test_conformance.py::test_bchain[stReturnDataTest/returndatacopy_following_failing_call.json] 
+src/tests/integration/test_conformance.py::test_bchain[stReturnDataTest/returndatacopy_after_successful_callcode.json] 
+[gw3] [  0%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest195.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest370.json] 
+[gw7] [  0%] PASSED src/tests/integration/test_conformance.py::test_bchain[stPreCompiledContracts2/CALLCODEEcrecover0_overlappingInputOutput.json] 
+src/tests/integration/test_conformance.py::test_bchain[stPreCompiledContracts2/CallSha256_3_postfix0.json] 
+[gw4] [  0%] PASSED src/tests/integration/test_conformance.py::test_bchain[stStaticCall/static_callcallcodecall_010_SuicideMiddle2.json] 
+src/tests/integration/test_conformance.py::test_bchain[stStaticCall/static_callToCallCodeOpCodeCheck.json] 
+[gw5] [  0%] PASSED src/tests/integration/test_conformance.py::test_bchain[stReturnDataTest/returndatacopy_after_successful_callcode.json] 
+[gw3] [  0%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest370.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest382.json] 
+src/tests/integration/test_conformance.py::test_bchain[stReturnDataTest/returndatasize_initial.json] 
+[gw7] [  0%] PASSED src/tests/integration/test_conformance.py::test_bchain[stPreCompiledContracts2/CallSha256_3_postfix0.json] 
+src/tests/integration/test_conformance.py::test_bchain[stPreCompiledContracts2/CallRipemd160_5.json] 
+[gw4] [  0%] PASSED src/tests/integration/test_conformance.py::test_bchain[stStaticCall/static_callToCallCodeOpCodeCheck.json] 
+[gw5] [  0%] PASSED src/tests/integration/test_conformance.py::test_bchain[stReturnDataTest/returndatasize_initial.json] 
+src/tests/integration/test_conformance.py::test_bchain[stReturnDataTest/returndatacopy_following_create.json] 
+src/tests/integration/test_conformance.py::test_bchain[stStaticCall/static_callcallcallcode_001_OOGMAfter_2.json] 
+[gw3] [  0%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest382.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest164.json] 
+[gw7] [  0%] PASSED src/tests/integration/test_conformance.py::test_bchain[stPreCompiledContracts2/CallRipemd160_5.json] 
+src/tests/integration/test_conformance.py::test_bchain[stCreate2/CREATE2_HighNonce.json] 
+[gw5] [  0%] PASSED src/tests/integration/test_conformance.py::test_bchain[stReturnDataTest/returndatacopy_following_create.json] 
+src/tests/integration/test_conformance.py::test_bchain[stReturnDataTest/returndatacopy_initial_big_sum.json] 
+[gw0] [  0%] PASSED src/tests/integration/test_conformance.py::test_vm[vmBitwiseLogicOperation/lt.json] 
+src/tests/integration/test_conformance.py::test_vm[vmBitwiseLogicOperation/not.json] 
+[gw3] [  0%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest164.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest254.json] 
+[gw7] [  1%] PASSED src/tests/integration/test_conformance.py::test_bchain[stCreate2/CREATE2_HighNonce.json] 
+src/tests/integration/test_conformance.py::test_bchain[stCreate2/CREATE2_Bounds3.json] 
+[gw5] [  1%] PASSED src/tests/integration/test_conformance.py::test_bchain[stReturnDataTest/returndatacopy_initial_big_sum.json] 
+src/tests/integration/test_conformance.py::test_bchain[stReturnDataTest/returndatasize_following_successful_create.json] 
+[gw3] [  1%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest254.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest295.json] 
+[gw5] [  1%] PASSED src/tests/integration/test_conformance.py::test_bchain[stReturnDataTest/returndatasize_following_successful_create.json] 
+src/tests/integration/test_conformance.py::test_bchain[stReturnDataTest/returndatacopy_afterFailing_create.json] 
+[gw4] [  1%] PASSED src/tests/integration/test_conformance.py::test_bchain[stStaticCall/static_callcallcallcode_001_OOGMAfter_2.json] 
+src/tests/integration/test_conformance.py::test_bchain[stStaticCall/static_callcodecallcallcode_101_OOGMAfter_3.json] 
+[gw3] [  1%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest295.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest151.json] 
+[gw5] [  1%] PASSED src/tests/integration/test_conformance.py::test_bchain[stReturnDataTest/returndatacopy_afterFailing_create.json] 
+src/tests/integration/test_conformance.py::test_bchain[stReturnDataTest/returndatacopy_following_successful_create.json] 
+[gw7] [  1%] PASSED src/tests/integration/test_conformance.py::test_bchain[stCreate2/CREATE2_Bounds3.json] 
+src/tests/integration/test_conformance.py::test_bchain[stCreate2/CreateMessageReverted.json] 
+[gw3] [  1%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest151.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest384.json] 
+[gw5] [  1%] PASSED src/tests/integration/test_conformance.py::test_bchain[stReturnDataTest/returndatacopy_following_successful_create.json] 
+src/tests/integration/test_conformance.py::test_bchain[stReturnDataTest/returndatacopy_following_too_big_transfer.json] 
+[gw3] [  1%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest384.json] 
+[gw5] [  1%] PASSED src/tests/integration/test_conformance.py::test_bchain[stReturnDataTest/returndatacopy_following_too_big_transfer.json] 
+src/tests/integration/test_conformance.py::test_bchain[stReturnDataTest/returndatasize_after_failing_delegatecall.json] 
+[gw7] [  1%] PASSED src/tests/integration/test_conformance.py::test_bchain[stCreate2/CreateMessageReverted.json] 
+src/tests/integration/test_conformance.py::test_bchain[stCreate2/CREATE2_HighNonceMinus1.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest121.json] 
+[gw5] [  1%] PASSED src/tests/integration/test_conformance.py::test_bchain[stReturnDataTest/returndatasize_after_failing_delegatecall.json] 
+src/tests/integration/test_conformance.py::test_bchain[stReturnDataTest/clearReturnBuffer.json] 
+[gw4] [  1%] PASSED src/tests/integration/test_conformance.py::test_bchain[stStaticCall/static_callcodecallcallcode_101_OOGMAfter_3.json] 
+src/tests/integration/test_conformance.py::test_bchain[stStaticCall/static_callOutput1.json] 
+[gw7] [  1%] PASSED src/tests/integration/test_conformance.py::test_bchain[stCreate2/CREATE2_HighNonceMinus1.json] 
+[gw0] [  1%] PASSED src/tests/integration/test_conformance.py::test_vm[vmBitwiseLogicOperation/not.json] 
+src/tests/integration/test_conformance.py::test_vm[vmBitwiseLogicOperation/byte.json] 
+[gw2] [  1%] FAILED src/tests/integration/test_conformance.py::test_bchain[stCallCodes/callcallcodecallcode_011_OOGMAfter.json] 
+[gw3] [  1%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest121.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest120.json] 
+src/tests/integration/test_conformance.py::test_bchain[stCreate2/create2callPrecompiles.json] 
+[gw4] [  1%] PASSED src/tests/integration/test_conformance.py::test_bchain[stStaticCall/static_callOutput1.json] 
+src/tests/integration/test_conformance.py::test_bchain[stStaticCall/static_contractCreationOOGdontLeaveEmptyContractViaTransaction.json] 
+[gw3] [  1%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest120.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest89.json] 
+[gw3] [  1%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest89.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest260.json] 
+[gw4] [  1%] PASSED src/tests/integration/test_conformance.py::test_bchain[stStaticCall/static_contractCreationOOGdontLeaveEmptyContractViaTransaction.json] 
+src/tests/integration/test_conformance.py::test_bchain[stStaticCall/static_callcallcode_01_2.json] 
+[gw3] [  1%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest260.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest54.json] 
+[gw3] [  1%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest54.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest287.json] 
+[gw4] [  1%] PASSED src/tests/integration/test_conformance.py::test_bchain[stStaticCall/static_callcallcode_01_2.json] 
+src/tests/integration/test_conformance.py::test_bchain[stStaticCall/static_callcallcall_000_OOGMAfter2.json] 
+[gw3] [  1%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest287.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest347.json] 
+[gw3] [  1%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest347.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest274.json] 
+[gw3] [  2%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest274.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest63.json] 
+[gw7] [  2%] PASSED src/tests/integration/test_conformance.py::test_bchain[stCreate2/create2callPrecompiles.json] 
+src/tests/integration/test_conformance.py::test_bchain[stCreate2/Create2OOGafterInitCode.json] 
+[gw3] [  2%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest63.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest204.json] 
+[gw3] [  2%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest204.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest130.json] 
+[gw7] [  2%] PASSED src/tests/integration/test_conformance.py::test_bchain[stCreate2/Create2OOGafterInitCode.json] 
+src/tests/integration/test_conformance.py::test_bchain[stCreate2/Create2OOGafterInitCodeRevert.json] 
+[gw3] [  2%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest130.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest291.json] 
+[gw7] [  2%] PASSED src/tests/integration/test_conformance.py::test_bchain[stCreate2/Create2OOGafterInitCodeRevert.json] 
+src/tests/integration/test_conformance.py::test_bchain[stCreate2/RevertDepthCreateAddressCollision.json] 
+[gw3] [  2%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest291.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest329.json] 
+[gw3] [  2%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest329.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest97.json] 
+[gw0] [  2%] PASSED src/tests/integration/test_conformance.py::test_vm[vmBitwiseLogicOperation/byte.json] 
+src/tests/integration/test_conformance.py::test_vm[vmBitwiseLogicOperation/and.json] 
+[gw3] [  2%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest97.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest183.json] 
+[gw3] [  2%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest183.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest339.json] 
+[gw3] [  2%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest339.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest104.json] 
+[gw3] [  2%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest104.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest51.json] 
+[gw3] [  2%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest51.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest27.json] 
+[gw0] [  2%] PASSED src/tests/integration/test_conformance.py::test_vm[vmBitwiseLogicOperation/and.json] 
+src/tests/integration/test_conformance.py::test_vm[vmBitwiseLogicOperation/xor.json] 
+[gw7] [  2%] PASSED src/tests/integration/test_conformance.py::test_bchain[stCreate2/RevertDepthCreateAddressCollision.json] 
+src/tests/integration/test_conformance.py::test_bchain[stCreate2/Create2OOGafterInitCodeReturndataSize.json] 
+[gw3] [  2%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest27.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest28.json] 
+[gw7] [  2%] PASSED src/tests/integration/test_conformance.py::test_bchain[stCreate2/Create2OOGafterInitCodeReturndataSize.json] 
+src/tests/integration/test_conformance.py::test_bchain[stCreate2/Create2OnDepth1023.json] 
+[gw3] [  2%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest28.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest33.json] 
+[gw3] [  2%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest33.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest226.json] 
+[gw3] [  2%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest226.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest209.json] 
+[gw4] [  2%] PASSED src/tests/integration/test_conformance.py::test_bchain[stStaticCall/static_callcallcall_000_OOGMAfter2.json] 
+src/tests/integration/test_conformance.py::test_bchain[stStaticCall/static_callcallcallcode_ABCB_RECURSIVE2.json] 
+[gw3] [  2%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest209.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest372.json] 
+[gw0] [  2%] PASSED src/tests/integration/test_conformance.py::test_vm[vmBitwiseLogicOperation/xor.json] 
+[gw3] [  2%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest372.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest247.json] 
+src/tests/integration/test_conformance.py::test_vm[vmBitwiseLogicOperation/gt.json] 
+[gw3] [  2%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest247.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest108.json] 
+[gw3] [  2%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest108.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest300.json] 
+[gw3] [  3%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest300.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest144.json] 
+[gw7] [  3%] PASSED src/tests/integration/test_conformance.py::test_bchain[stCreate2/Create2OnDepth1023.json] 
+src/tests/integration/test_conformance.py::test_bchain[stCreate2/create2collisionSelfdestructedRevert.json] 
+[gw3] [  3%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest144.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest116.json] 
+[gw3] [  3%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest116.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest58.json] 
+[gw3] [  3%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest58.json] 
+[gw7] [  3%] PASSED src/tests/integration/test_conformance.py::test_bchain[stCreate2/create2collisionSelfdestructedRevert.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest343.json] 
+src/tests/integration/test_conformance.py::test_bchain[stCreate2/create2collisionSelfdestructed2.json] 
+[gw3] [  3%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest343.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest201.json] 
+[gw7] [  3%] PASSED src/tests/integration/test_conformance.py::test_bchain[stCreate2/create2collisionSelfdestructed2.json] 
+src/tests/integration/test_conformance.py::test_bchain[stCreate2/CREATE2_HighNonceDelegatecall.json] 
+[gw3] [  3%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest201.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest233.json] 
+[gw0] [  3%] PASSED src/tests/integration/test_conformance.py::test_vm[vmBitwiseLogicOperation/gt.json] 
+src/tests/integration/test_conformance.py::test_vm[vmBitwiseLogicOperation/sgt.json] 
+[gw3] [  3%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest233.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest270.json] 
+[gw3] [  3%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest270.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest87.json] 
+[gw3] [  3%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest87.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest325.json] 
+[gw3] [  3%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest325.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest342.json] 
+[gw0] [  3%] PASSED src/tests/integration/test_conformance.py::test_vm[vmBitwiseLogicOperation/sgt.json] 
+src/tests/integration/test_conformance.py::test_vm[vmBitwiseLogicOperation/or.json] 
+[gw3] [  3%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest342.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest161.json] 
+[gw4] [  3%] FAILED src/tests/integration/test_conformance.py::test_bchain[stStaticCall/static_callcallcallcode_ABCB_RECURSIVE2.json] 
+[gw3] [  3%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest161.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest250.json] 
+[gw3] [  3%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest250.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest174.json] 
+[gw3] [  3%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest174.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest106.json] 
+[gw6] [  3%] PASSED src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcC1DiffPlaces.json] 
+src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcE4DiffPlaces.json] 
+[gw3] [  3%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest106.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest228.json] 
+[gw3] [  3%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest228.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest158.json] 
+[gw0] [  3%] PASSED src/tests/integration/test_conformance.py::test_vm[vmBitwiseLogicOperation/or.json] 
+src/tests/integration/test_conformance.py::test_vm[vmBitwiseLogicOperation/slt.json] 
+[gw3] [  3%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest158.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest77.json] 
+[gw3] [  3%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest77.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest172.json] 
+[gw3] [  3%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest172.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest292.json] 
+[gw3] [  3%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest292.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest31.json] 
+[gw0] [  3%] PASSED src/tests/integration/test_conformance.py::test_vm[vmBitwiseLogicOperation/slt.json] 
+src/tests/integration/test_conformance.py::test_vm[vmIOandFlowOperations/jump.json] 
+[gw3] [  4%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest31.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest16.json] 
+[gw3] [  4%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest16.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest49.json] 
+[gw3] [  4%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest49.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest251.json] 
+[gw3] [  4%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest251.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest90.json] 
+[gw3] [  4%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest90.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest22.json] 
+[gw3] [  4%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest22.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest175.json] 
+[gw3] [  4%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest175.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest37.json] 
+[gw3] [  4%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest37.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest157.json] 
+[gw3] [  4%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest157.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest42.json] 
+[gw3] [  4%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest42.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest276.json] 
+[gw7] [  4%] PASSED src/tests/integration/test_conformance.py::test_bchain[stCreate2/CREATE2_HighNonceDelegatecall.json] 
+src/tests/integration/test_conformance.py::test_bchain[stCreate2/Create2OOGafterInitCodeReturndata.json] 
+[gw3] [  4%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest276.json] 
+src/tests/integration/test_conformance.py::test_bchain[stStaticFlagEnabled/CallWithNOTZeroValueToPrecompileFromContractInitialization.json] 
+[gw7] [  4%] PASSED src/tests/integration/test_conformance.py::test_bchain[stCreate2/Create2OOGafterInitCodeReturndata.json] 
+src/tests/integration/test_conformance.py::test_bchain[stCreate2/CREATE2_ContractSuicideDuringInit_ThenStoreThenReturn.json] 
+[gw7] [  4%] PASSED src/tests/integration/test_conformance.py::test_bchain[stCreate2/CREATE2_ContractSuicideDuringInit_ThenStoreThenReturn.json] 
+src/tests/integration/test_conformance.py::test_bchain[stCreate2/call_outsize_then_create2_successful_then_returndatasize.json] 
+[gw7] [  4%] PASSED src/tests/integration/test_conformance.py::test_bchain[stCreate2/call_outsize_then_create2_successful_then_returndatasize.json] 
+src/tests/integration/test_conformance.py::test_bchain[stCreate2/Create2OOGFromCallRefunds.json] 
+[gw0] [  4%] PASSED src/tests/integration/test_conformance.py::test_vm[vmIOandFlowOperations/jump.json] 
+src/tests/integration/test_conformance.py::test_vm[vmIOandFlowOperations/mstore.json] 
+[gw3] [  4%] PASSED src/tests/integration/test_conformance.py::test_bchain[stStaticFlagEnabled/CallWithNOTZeroValueToPrecompileFromContractInitialization.json] 
+src/tests/integration/test_conformance.py::test_bchain[stStaticFlagEnabled/DelegatecallToPrecompileFromCalledContract.json] 
+[gw0] [  4%] PASSED src/tests/integration/test_conformance.py::test_vm[vmIOandFlowOperations/mstore.json] 
+src/tests/integration/test_conformance.py::test_vm[vmIOandFlowOperations/loop_stacklimit.json] 
+[gw3] [  4%] PASSED src/tests/integration/test_conformance.py::test_bchain[stStaticFlagEnabled/DelegatecallToPrecompileFromCalledContract.json] 
+src/tests/integration/test_conformance.py::test_bchain[stStaticFlagEnabled/CallWithZeroValueToPrecompileFromContractInitialization.json] 
+[gw0] [  4%] PASSED src/tests/integration/test_conformance.py::test_vm[vmIOandFlowOperations/loop_stacklimit.json] 
+src/tests/integration/test_conformance.py::test_vm[vmIOandFlowOperations/pop.json] 
+[gw0] [  4%] PASSED src/tests/integration/test_conformance.py::test_vm[vmIOandFlowOperations/pop.json] 
+src/tests/integration/test_conformance.py::test_vm[vmIOandFlowOperations/jumpToPush.json] 
+[gw3] [  4%] PASSED src/tests/integration/test_conformance.py::test_bchain[stStaticFlagEnabled/CallWithZeroValueToPrecompileFromContractInitialization.json] 
+src/tests/integration/test_conformance.py::test_bchain[stStaticFlagEnabled/CallWithZeroValueToPrecompileFromCalledContract.json] 
+[gw3] [  4%] PASSED src/tests/integration/test_conformance.py::test_bchain[stStaticFlagEnabled/CallWithZeroValueToPrecompileFromCalledContract.json] 
+src/tests/integration/test_conformance.py::test_bchain[stStaticFlagEnabled/CallcodeToPrecompileFromCalledContract.json] 
+[gw3] [  4%] PASSED src/tests/integration/test_conformance.py::test_bchain[stStaticFlagEnabled/CallcodeToPrecompileFromCalledContract.json] 
+src/tests/integration/test_conformance.py::test_bchain[stStaticFlagEnabled/DelegatecallToPrecompileFromContractInitialization.json] 
+[gw6] [  4%] PASSED src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcE4DiffPlaces.json] 
+src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcC3DiffPlaces.json] 
+[gw3] [  4%] PASSED src/tests/integration/test_conformance.py::test_bchain[stStaticFlagEnabled/DelegatecallToPrecompileFromContractInitialization.json] 
+src/tests/integration/test_conformance.py::test_bchain[stStaticFlagEnabled/DelegatecallToPrecompileFromTransaction.json] 
+[gw3] [  4%] PASSED src/tests/integration/test_conformance.py::test_bchain[stStaticFlagEnabled/DelegatecallToPrecompileFromTransaction.json] 
+src/tests/integration/test_conformance.py::test_bchain[stStaticFlagEnabled/CallcodeToPrecompileFromContractInitialization.json] 
+[gw7] [  4%] PASSED src/tests/integration/test_conformance.py::test_bchain[stCreate2/Create2OOGFromCallRefunds.json] 
+src/tests/integration/test_conformance.py::test_bchain[stCreate2/CREATE2_FirstByte_loop.json] 
+[gw3] [  5%] PASSED src/tests/integration/test_conformance.py::test_bchain[stStaticFlagEnabled/CallcodeToPrecompileFromContractInitialization.json] 
+src/tests/integration/test_conformance.py::test_bchain[stStaticFlagEnabled/CallWithNOTZeroValueToPrecompileFromCalledContract.json] 
+[gw7] [  5%] PASSED src/tests/integration/test_conformance.py::test_bchain[stCreate2/CREATE2_FirstByte_loop.json] 
+src/tests/integration/test_conformance.py::test_bchain[stCreate2/Create2OOGafterInitCodeRevert2.json] 
+[gw7] [  5%] PASSED src/tests/integration/test_conformance.py::test_bchain[stCreate2/Create2OOGafterInitCodeRevert2.json] 
+src/tests/integration/test_conformance.py::test_bchain[stCreate2/create2collisionBalance.json] 
+[gw7] [  5%] PASSED src/tests/integration/test_conformance.py::test_bchain[stCreate2/create2collisionBalance.json] 
+src/tests/integration/test_conformance.py::test_bchain[stCreate2/call_then_create2_successful_then_returndatasize.json] 
+[gw7] [  5%] PASSED src/tests/integration/test_conformance.py::test_bchain[stCreate2/call_then_create2_successful_then_returndatasize.json] 
+src/tests/integration/test_conformance.py::test_bchain[stCreate2/CREATE2_Suicide.json] 
+[gw3] [  5%] PASSED src/tests/integration/test_conformance.py::test_bchain[stStaticFlagEnabled/CallWithNOTZeroValueToPrecompileFromCalledContract.json] 
+src/tests/integration/test_conformance.py::test_bchain[stStaticFlagEnabled/StaticcallForPrecompilesIssue683.json] 
+[gw3] [  5%] PASSED src/tests/integration/test_conformance.py::test_bchain[stStaticFlagEnabled/StaticcallForPrecompilesIssue683.json] 
+src/tests/integration/test_conformance.py::test_bchain[stStaticFlagEnabled/CallWithNOTZeroValueToPrecompileFromTransaction.json] 
+[gw3] [  5%] PASSED src/tests/integration/test_conformance.py::test_bchain[stStaticFlagEnabled/CallWithNOTZeroValueToPrecompileFromTransaction.json] 
+src/tests/integration/test_conformance.py::test_bchain[stStaticFlagEnabled/CallcodeToPrecompileFromTransaction.json] 
+[gw3] [  5%] PASSED src/tests/integration/test_conformance.py::test_bchain[stStaticFlagEnabled/CallcodeToPrecompileFromTransaction.json] 
+src/tests/integration/test_conformance.py::test_bchain[stStaticFlagEnabled/CallWithZeroValueToPrecompileFromTransaction.json] 
+[gw7] [  5%] PASSED src/tests/integration/test_conformance.py::test_bchain[stCreate2/CREATE2_Suicide.json] 
+src/tests/integration/test_conformance.py::test_bchain[stCreate2/RevertOpcodeCreate.json] 
+[gw7] [  5%] PASSED src/tests/integration/test_conformance.py::test_bchain[stCreate2/RevertOpcodeCreate.json] 
+src/tests/integration/test_conformance.py::test_bchain[stCreate2/Create2OOGafterInitCodeReturndata3.json] 
+[gw7] [  5%] PASSED src/tests/integration/test_conformance.py::test_bchain[stCreate2/Create2OOGafterInitCodeReturndata3.json] 
+src/tests/integration/test_conformance.py::test_bchain[stCreate2/returndatacopy_0_0_following_successful_create.json] 
+[gw3] [  5%] PASSED src/tests/integration/test_conformance.py::test_bchain[stStaticFlagEnabled/CallWithZeroValueToPrecompileFromTransaction.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom2/randomStatetest393.json] 
+[gw7] [  5%] PASSED src/tests/integration/test_conformance.py::test_bchain[stCreate2/returndatacopy_0_0_following_successful_create.json] 
+src/tests/integration/test_conformance.py::test_bchain[stCreate2/create2collisionNonce.json] 
+[gw3] [  5%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom2/randomStatetest393.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom2/randomStatetest600.json] 
+[gw3] [  5%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom2/randomStatetest600.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom2/randomStatetest417.json] 
+[gw3] [  5%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom2/randomStatetest417.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom2/randomStatetest494.json] 
+[gw7] [  5%] PASSED src/tests/integration/test_conformance.py::test_bchain[stCreate2/create2collisionNonce.json] 
+src/tests/integration/test_conformance.py::test_bchain[stCreate2/returndatacopy_following_revert_in_create.json] 
+[gw3] [  5%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom2/randomStatetest494.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom2/randomStatetest399.json] 
+[gw7] [  5%] PASSED src/tests/integration/test_conformance.py::test_bchain[stCreate2/returndatacopy_following_revert_in_create.json] 
+src/tests/integration/test_conformance.py::test_bchain[stCreate2/create2collisionCode.json] 
+[gw3] [  5%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom2/randomStatetest399.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom2/randomStatetest455.json] 
+[gw3] [  5%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom2/randomStatetest455.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom2/randomStatetest633.json] 
+[gw7] [  5%] PASSED src/tests/integration/test_conformance.py::test_bchain[stCreate2/create2collisionCode.json] 
+src/tests/integration/test_conformance.py::test_bchain[stCreate2/create2checkFieldsInInitcode.json] 
+[gw3] [  5%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom2/randomStatetest633.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom2/randomStatetest480.json] 
+[gw3] [  5%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom2/randomStatetest480.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom2/randomStatetest582.json] 
+[gw3] [  5%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom2/randomStatetest582.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom2/randomStatetest503.json] 
+[gw3] [  5%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom2/randomStatetest503.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom2/randomStatetest452.json] 
+[gw3] [  5%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom2/randomStatetest452.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom2/randomStatetest421.json] 
+[gw3] [  6%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom2/randomStatetest421.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom2/randomStatetest596.json] 
+[gw3] [  6%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom2/randomStatetest596.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom2/randomStatetest488.json] 
+[gw3] [  6%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom2/randomStatetest488.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom2/randomStatetest472.json] 
+[gw3] [  6%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom2/randomStatetest472.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom2/randomStatetest524.json] 
+[gw7] [  6%] PASSED src/tests/integration/test_conformance.py::test_bchain[stCreate2/create2checkFieldsInInitcode.json] 
+src/tests/integration/test_conformance.py::test_bchain[stCreate2/create2collisionStorageParis.json] 
+[gw3] [  6%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom2/randomStatetest524.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom2/randomStatetest630.json] 
+[gw3] [  6%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom2/randomStatetest630.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom2/randomStatetest587.json] 
+[gw3] [  6%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom2/randomStatetest587.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom2/randomStatetest647.json] 
+[gw7] [  6%] PASSED src/tests/integration/test_conformance.py::test_bchain[stCreate2/create2collisionStorageParis.json] 
+src/tests/integration/test_conformance.py::test_bchain[stCreate2/CreateMessageRevertedOOGInInit2.json] 
+[gw3] [  6%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom2/randomStatetest647.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom2/randomStatetest474.json] 
+[gw7] [  6%] PASSED src/tests/integration/test_conformance.py::test_bchain[stCreate2/CreateMessageRevertedOOGInInit2.json] 
+[gw3] [  6%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom2/randomStatetest474.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom2/randomStatetest640.json] 
+src/tests/integration/test_conformance.py::test_bchain[stCreate2/RevertDepthCreate2OOGBerlin.json] 
+[gw6] [  6%] PASSED src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcC3DiffPlaces.json] 
+src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opc26DiffPlaces.json] 
+[gw3] [  6%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom2/randomStatetest640.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom2/randomStatetest415.json] 
+[gw3] [  6%] PASSED src/tests/integration/test_conformance.py::test_bchain[stRandom2/randomStatetest415.json] 
+src/tests/integration/test_conformance.py::test_bchain[stRandom2/randomStatetest422.json] 
+[gw7] [  6%] PASSED src/tests/integration/test_conformance.py::test_bchain[stCreate2/RevertDepthCreate2OOGBerlin.json] 
+src/tests/integration/test_conformance.py::test_bchain[stCreate2/create2collisionCode2.json] 
+[gw7] [  6%] PASSED src/tests/integration/test_conformance.py::test_bchain[stCreate2/create2collisionCode2.json] 
+src/tests/integration/test_conformance.py::test_bchain[stCreate2/create2collisionSelfdestructedOOG.json] 
+[gw7] [  6%] PASSED src/tests/integration/test_conformance.py::test_bchain[stCreate2/create2collisionSelfdestructedOOG.json] 
+src/tests/integration/test_conformance.py::test_bchain[stCreate2/CREATE2_Bounds2.json] 
+[gw7] [  6%] PASSED src/tests/integration/test_conformance.py::test_bchain[stCreate2/CREATE2_Bounds2.json] 
+src/tests/integration/test_conformance.py::test_bchain[stCreate2/create2InitCodes.json] 
+[gw7] [  6%] PASSED src/tests/integration/test_conformance.py::test_bchain[stCreate2/create2InitCodes.json] 
+src/tests/integration/test_conformance.py::test_bchain[stCreate2/returndatacopy_following_create.json] 
+[gw3] [  6%] FAILED src/tests/integration/test_conformance.py::test_bchain[stRandom2/randomStatetest422.json] 
+[gw7] [  6%] PASSED src/tests/integration/test_conformance.py::test_bchain[stCreate2/returndatacopy_following_create.json] 
+src/tests/integration/test_conformance.py::test_bchain[stCreate2/RevertDepthCreateAddressCollisionBerlin.json] 
+[gw7] [  6%] PASSED src/tests/integration/test_conformance.py::test_bchain[stCreate2/RevertDepthCreateAddressCollisionBerlin.json] 
+src/tests/integration/test_conformance.py::test_bchain[stCreate2/create2collisionSelfdestructed.json] 
+[gw7] [  6%] PASSED src/tests/integration/test_conformance.py::test_bchain[stCreate2/create2collisionSelfdestructed.json] 
+src/tests/integration/test_conformance.py::test_bchain[stCreate2/create2noCash.json] 
+[gw7] [  6%] PASSED src/tests/integration/test_conformance.py::test_bchain[stCreate2/create2noCash.json] 
+src/tests/integration/test_conformance.py::test_bchain[stCreate2/returndatasize_following_successful_create.json] 
+[gw7] [  6%] PASSED src/tests/integration/test_conformance.py::test_bchain[stCreate2/returndatasize_following_successful_create.json] 
+src/tests/integration/test_conformance.py::test_bchain[stCreate2/returndatacopy_afterFailing_create.json] 
+[gw5] [  6%] PASSED src/tests/integration/test_conformance.py::test_bchain[stReturnDataTest/clearReturnBuffer.json] 
+src/tests/integration/test_conformance.py::test_bchain[stReturnDataTest/returndatasize_after_failing_staticcall.json] 
+[gw7] [  6%] PASSED src/tests/integration/test_conformance.py::test_bchain[stCreate2/returndatacopy_afterFailing_create.json] 
+src/tests/integration/test_conformance.py::test_bchain[stCreate2/RevertOpcodeInCreateReturnsCreate2.json] 
+[gw5] [  6%] PASSED src/tests/integration/test_conformance.py::test_bchain[stReturnDataTest/returndatasize_after_failing_staticcall.json] 
+src/tests/integration/test_conformance.py::test_bchain[stLogTests/log0_nonEmptyMem_logMemSize1.json] 
+[gw7] [  7%] PASSED src/tests/integration/test_conformance.py::test_bchain[stCreate2/RevertOpcodeInCreateReturnsCreate2.json] 
+src/tests/integration/test_conformance.py::test_bchain[stCreate2/returndatacopy_following_successful_create.json] 
+[gw5] [  7%] PASSED src/tests/integration/test_conformance.py::test_bchain[stLogTests/log0_nonEmptyMem_logMemSize1.json] 
+src/tests/integration/test_conformance.py::test_bchain[stLogTests/log0_logMemStartTooHigh.json] 
+[gw7] [  7%] PASSED src/tests/integration/test_conformance.py::test_bchain[stCreate2/returndatacopy_following_successful_create.json] 
+src/tests/integration/test_conformance.py::test_bchain[stCreate2/Create2OnDepth1024.json] 
+[gw7] [  7%] PASSED src/tests/integration/test_conformance.py::test_bchain[stCreate2/Create2OnDepth1024.json] 
+src/tests/integration/test_conformance.py::test_bchain[stCreate2/Create2Recursive.json] 
+[gw6] [  7%] PASSED src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opc26DiffPlaces.json] 
+src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcDFDiffPlaces.json] 
+[gw5] [  7%] FAILED src/tests/integration/test_conformance.py::test_bchain[stLogTests/log0_logMemStartTooHigh.json] 
+[gw0] [  7%] PASSED src/tests/integration/test_conformance.py::test_vm[vmIOandFlowOperations/jumpToPush.json] 
+src/tests/integration/test_conformance.py::test_vm[vmIOandFlowOperations/gas.json] 
+[gw0] [  7%] PASSED src/tests/integration/test_conformance.py::test_vm[vmIOandFlowOperations/gas.json] 
+src/tests/integration/test_conformance.py::test_vm[vmIOandFlowOperations/loopsConditionals.json] 
+[gw0] [  7%] PASSED src/tests/integration/test_conformance.py::test_vm[vmIOandFlowOperations/loopsConditionals.json] 
+src/tests/integration/test_conformance.py::test_vm[vmIOandFlowOperations/return.json] 
+[gw7] [  7%] PASSED src/tests/integration/test_conformance.py::test_bchain[stCreate2/Create2Recursive.json] 
+src/tests/integration/test_conformance.py::test_bchain[stCreate2/Create2OOGafterInitCodeReturndata2.json] 
+[gw6] [  7%] PASSED src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcDFDiffPlaces.json] 
+src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcBCDiffPlaces.json] 
+[gw7] [  7%] PASSED src/tests/integration/test_conformance.py::test_bchain[stCreate2/Create2OOGafterInitCodeReturndata2.json] 
+src/tests/integration/test_conformance.py::test_bchain[stCreate2/CREATE2_Bounds.json] 
+[gw7] [  7%] PASSED src/tests/integration/test_conformance.py::test_bchain[stCreate2/CREATE2_Bounds.json] 
+src/tests/integration/test_conformance.py::test_bchain[stCreate2/RevertDepthCreate2OOG.json] 
+[gw7] [  7%] PASSED src/tests/integration/test_conformance.py::test_bchain[stCreate2/RevertDepthCreate2OOG.json] 
+src/tests/integration/test_conformance.py::test_bchain[stCreate2/create2SmartInitCode.json] 
+[gw7] [  7%] PASSED src/tests/integration/test_conformance.py::test_bchain[stCreate2/create2SmartInitCode.json] 
+src/tests/integration/test_conformance.py::test_bchain[stCreate2/RevertInCreateInInitCreate2Paris.json] 
+[gw7] [  7%] PASSED src/tests/integration/test_conformance.py::test_bchain[stCreate2/RevertInCreateInInitCreate2Paris.json] 
+src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/callcodeNonConst.json] 
+[gw7] [  7%] PASSED src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/callcodeNonConst.json] 
+src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/subNonConst.json] 
+[gw7] [  7%] PASSED src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/subNonConst.json] 
+src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/mstore8NonConst.json] 
+[gw7] [  7%] PASSED src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/mstore8NonConst.json] 
+src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/log3NonConst.json] 
+[gw0] [  7%] FAILED src/tests/integration/test_conformance.py::test_vm[vmIOandFlowOperations/return.json] 
+[gw7] [  7%] PASSED src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/log3NonConst.json] 
+src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/byteNonConst.json] 
+[gw7] [  7%] PASSED src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/byteNonConst.json] 
+src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/gtNonConst.json] 
+[gw7] [  7%] PASSED src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/gtNonConst.json] 
+src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/log1NonConst.json] 
+[gw7] [  7%] PASSED src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/log1NonConst.json] 
+src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/divNonConst.json] 
+[gw7] [  7%] PASSED src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/divNonConst.json] 
+src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/calldatacopyNonConst.json] 
+[gw7] [  7%] PASSED src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/calldatacopyNonConst.json] 
+src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/balanceNonConst.json] 
+[gw7] [  7%] PASSED src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/balanceNonConst.json] 
+src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/mulmodNonConst.json] 
+[gw7] [  7%] PASSED src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/mulmodNonConst.json] 
+src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/callNonConst.json] 
+[gw7] [  8%] PASSED src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/callNonConst.json] 
+src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/xorNonConst.json] 
+[gw7] [  8%] PASSED src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/xorNonConst.json] 
+src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/iszeroNonConst.json] 
+[gw7] [  8%] PASSED src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/iszeroNonConst.json] 
+src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/sloadNonConst.json] 
+[gw7] [  8%] PASSED src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/sloadNonConst.json] 
+src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/orNonConst.json] 
+[gw7] [  8%] PASSED src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/orNonConst.json] 
+src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/ltNonConst.json] 
+[gw7] [  8%] PASSED src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/ltNonConst.json] 
+src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/suicideNonConst.json] 
+[gw7] [  8%] PASSED src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/suicideNonConst.json] 
+src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/eqNonConst.json] 
+[gw7] [  8%] PASSED src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/eqNonConst.json] 
+src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/modNonConst.json] 
+[gw7] [  8%] PASSED src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/modNonConst.json] 
+src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/expNonConst.json] 
+[gw7] [  8%] PASSED src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/expNonConst.json] 
+src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/sdivNonConst.json] 
+[gw6] [  8%] PASSED src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcBCDiffPlaces.json] 
+src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcB2DiffPlaces.json] 
+[gw7] [  8%] PASSED src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/sdivNonConst.json] 
+src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/delegatecallNonConst.json] 
+[gw7] [  8%] PASSED src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/delegatecallNonConst.json] 
+src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/sgtNonConst.json] 
+[gw7] [  8%] PASSED src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/sgtNonConst.json] 
+src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/sltNonConst.json] 
+[gw7] [  8%] PASSED src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/sltNonConst.json] 
+src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/signextNonConst.json] 
+[gw7] [  8%] PASSED src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/signextNonConst.json] 
+src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/codecopyNonConst.json] 
+[gw7] [  8%] PASSED src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/codecopyNonConst.json] 
+src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/mstoreNonConst.json] 
+[gw7] [  8%] PASSED src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/mstoreNonConst.json] 
+src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/jumpNonConst.json] 
+[gw7] [  8%] PASSED src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/jumpNonConst.json] 
+src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/addNonConst.json] 
+[gw7] [  8%] PASSED src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/addNonConst.json] 
+src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/returnNonConst.json] 
+[gw7] [  8%] PASSED src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/returnNonConst.json] 
+src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/extcodecopyNonConst.json] 
+[gw7] [  8%] PASSED src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/extcodecopyNonConst.json] 
+src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/mulNonConst.json] 
+[gw7] [  8%] PASSED src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/mulNonConst.json] 
+src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/calldataloadNonConst.json] 
+[gw7] [  8%] PASSED src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/calldataloadNonConst.json] 
+src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/andNonConst.json] 
+[gw7] [  8%] PASSED src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/andNonConst.json] 
+src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/addmodNonConst.json] 
+[gw7] [  8%] PASSED src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/addmodNonConst.json] 
+src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/extcodesizeNonConst.json] 
+[gw7] [  8%] PASSED src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/extcodesizeNonConst.json] 
+src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/mloadNonConst.json] 
+[gw7] [  8%] PASSED src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/mloadNonConst.json] 
+src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/jumpiNonConst.json] 
+[gw7] [  9%] PASSED src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/jumpiNonConst.json] 
+src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/smodNonConst.json] 
+[gw7] [  9%] PASSED src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/smodNonConst.json] 
+src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/log0NonConst.json] 
+[gw7] [  9%] PASSED src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/log0NonConst.json] 
+src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/sstoreNonConst.json] 
+[gw7] [  9%] PASSED src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/sstoreNonConst.json] 
+src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/createNonConst.json] 
+[gw7] [  9%] PASSED src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/createNonConst.json] 
+src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/notNonConst.json] 
+[gw7] [  9%] PASSED src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/notNonConst.json] 
+src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/log2NonConst.json] 
+[gw7] [  9%] PASSED src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/log2NonConst.json] 
+src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/sha3NonConst.json] 
+[gw7] [  9%] PASSED src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/sha3NonConst.json] 
+src/tests/integration/test_conformance.py::test_bchain[Cancun/stEIP4844-blobtransactions/blobhashListBounds3.json] 
+[gw7] [  9%] PASSED src/tests/integration/test_conformance.py::test_bchain[Cancun/stEIP4844-blobtransactions/blobhashListBounds3.json] 
+src/tests/integration/test_conformance.py::test_bchain[Cancun/stEIP4844-blobtransactions/blobhashListBounds5.json] 
+[gw7] [  9%] PASSED src/tests/integration/test_conformance.py::test_bchain[Cancun/stEIP4844-blobtransactions/blobhashListBounds5.json] 
+src/tests/integration/test_conformance.py::test_bchain[Cancun/stEIP4844-blobtransactions/createBlobhashTx.json] 
+[gw7] [  9%] SKIPPED src/tests/integration/test_conformance.py::test_bchain[Cancun/stEIP4844-blobtransactions/createBlobhashTx.json] 
+src/tests/integration/test_conformance.py::test_bchain[Cancun/stEIP4844-blobtransactions/blobhashListBounds7.json] 
+[gw7] [  9%] SKIPPED src/tests/integration/test_conformance.py::test_bchain[Cancun/stEIP4844-blobtransactions/blobhashListBounds7.json] 
+src/tests/integration/test_conformance.py::test_bchain[Cancun/stEIP4844-blobtransactions/opcodeBlobhBounds.json] 
+[gw7] [  9%] PASSED src/tests/integration/test_conformance.py::test_bchain[Cancun/stEIP4844-blobtransactions/opcodeBlobhBounds.json] 
+src/tests/integration/test_conformance.py::test_bchain[Cancun/stEIP4844-blobtransactions/wrongBlobhashVersion.json] 
+[gw7] [  9%] SKIPPED src/tests/integration/test_conformance.py::test_bchain[Cancun/stEIP4844-blobtransactions/wrongBlobhashVersion.json] 
+src/tests/integration/test_conformance.py::test_bchain[Cancun/stEIP4844-blobtransactions/opcodeBlobhashOutOfRange.json] 
+[gw7] [  9%] PASSED src/tests/integration/test_conformance.py::test_bchain[Cancun/stEIP4844-blobtransactions/opcodeBlobhashOutOfRange.json] 
+src/tests/integration/test_conformance.py::test_bchain[Cancun/stEIP4844-blobtransactions/emptyBlobhashList.json] 
+[gw7] [  9%] SKIPPED src/tests/integration/test_conformance.py::test_bchain[Cancun/stEIP4844-blobtransactions/emptyBlobhashList.json] 
+src/tests/integration/test_conformance.py::test_bchain[Cancun/stEIP4844-blobtransactions/blobhashListBounds6.json] 
+[gw7] [  9%] PASSED src/tests/integration/test_conformance.py::test_bchain[Cancun/stEIP4844-blobtransactions/blobhashListBounds6.json] 
+src/tests/integration/test_conformance.py::test_bchain[Cancun/stEIP4844-blobtransactions/blobhashListBounds4.json] 
+[gw6] [  9%] PASSED src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcB2DiffPlaces.json] 
+src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opc4ADiffPlaces.json] 
+[gw7] [  9%] PASSED src/tests/integration/test_conformance.py::test_bchain[Cancun/stEIP4844-blobtransactions/blobhashListBounds4.json] 
+src/tests/integration/test_conformance.py::test_bchain[Cancun/stEIP1153-transientStorage/14_revertAfterNestedStaticcall.json] 
+[gw7] [  9%] PASSED src/tests/integration/test_conformance.py::test_bchain[Cancun/stEIP1153-transientStorage/14_revertAfterNestedStaticcall.json] 
+src/tests/integration/test_conformance.py::test_bchain[Cancun/stEIP1153-transientStorage/19_oogUndoesTransientStore.json] 
+[gw7] [  9%] PASSED src/tests/integration/test_conformance.py::test_bchain[Cancun/stEIP1153-transientStorage/19_oogUndoesTransientStore.json] 
+src/tests/integration/test_conformance.py::test_bchain[Cancun/stEIP1153-transientStorage/17_tstoreGas.json] 
+[gw7] [  9%] PASSED src/tests/integration/test_conformance.py::test_bchain[Cancun/stEIP1153-transientStorage/17_tstoreGas.json] 
+src/tests/integration/test_conformance.py::test_bchain[Cancun/stEIP1153-transientStorage/transStorageOK.json] 
+[gw7] [  9%] PASSED src/tests/integration/test_conformance.py::test_bchain[Cancun/stEIP1153-transientStorage/transStorageOK.json] 
+src/tests/integration/test_conformance.py::test_bchain[Cancun/stEIP1153-transientStorage/10_revertUndoesStoreAfterReturn.json] 
+[gw7] [  9%] PASSED src/tests/integration/test_conformance.py::test_bchain[Cancun/stEIP1153-transientStorage/10_revertUndoesStoreAfterReturn.json] 
+src/tests/integration/test_conformance.py::test_bchain[Cancun/stEIP1153-transientStorage/15_tstoreCannotBeDosd.json] 
+[gw6] [  9%] PASSED src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opc4ADiffPlaces.json] 
+src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opc2EDiffPlaces.json] 
+[gw6] [  9%] PASSED src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opc2EDiffPlaces.json] 
+src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcE9DiffPlaces.json] 
+[gw6] [  9%] PASSED src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcE9DiffPlaces.json] 
+src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opc2CDiffPlaces.json] 
+[gw6] [  9%] PASSED src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opc2CDiffPlaces.json] 
+src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcB3DiffPlaces.json] 
+[gw6] [ 10%] PASSED src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcB3DiffPlaces.json] 
+src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opc4CDiffPlaces.json] 
+[gw6] [ 10%] PASSED src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opc4CDiffPlaces.json] 
+src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opc27DiffPlaces.json] 
+[gw6] [ 10%] PASSED src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opc27DiffPlaces.json] 
+src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcD8DiffPlaces.json] 
+[gw6] [ 10%] PASSED src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcD8DiffPlaces.json] 
+src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcF8DiffPlaces.json] 
+[gw6] [ 10%] PASSED src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcF8DiffPlaces.json] 
+src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcA5DiffPlaces.json] 
+[gw6] [ 10%] PASSED src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcA5DiffPlaces.json] 
+src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcDDDiffPlaces.json] 
+[gw6] [ 10%] PASSED src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcDDDiffPlaces.json] 
+src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcD9DiffPlaces.json] 
+[gw6] [ 10%] PASSED src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcD9DiffPlaces.json] 
+src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcB6DiffPlaces.json] 
+[gw6] [ 10%] PASSED src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcB6DiffPlaces.json] 
+src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcE8DiffPlaces.json] 
+[gw6] [ 10%] PASSED src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcE8DiffPlaces.json] 
+src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcEADiffPlaces.json] 
+[gw6] [ 10%] PASSED src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcEADiffPlaces.json] 
+src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcE6DiffPlaces.json] 
+[gw6] [ 10%] PASSED src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcE6DiffPlaces.json] 
+src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opc2DDiffPlaces.json] 
+[gw6] [ 10%] PASSED src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opc2DDiffPlaces.json] 
+src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opc5FDiffPlaces.json] 
+[gw6] [ 10%] PASSED src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opc5FDiffPlaces.json] 
+src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcF7DiffPlaces.json] 
+[gw6] [ 10%] PASSED src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcF7DiffPlaces.json] 
+src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcC2DiffPlaces.json] 
+[gw6] [ 10%] PASSED src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcC2DiffPlaces.json] 
+src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opc2FDiffPlaces.json] 
+[gw6] [ 10%] PASSED src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opc2FDiffPlaces.json] 
+src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcADDiffPlaces.json] 
+[gw6] [ 10%] PASSED src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcADDiffPlaces.json] 
+src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opc21DiffPlaces.json] 
+[gw6] [ 10%] PASSED src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opc21DiffPlaces.json] 
+src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcD1DiffPlaces.json] 
+[gw6] [ 10%] PASSED src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcD1DiffPlaces.json] 
+src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcE1DiffPlaces.json] 
+[gw6] [ 10%] PASSED src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcE1DiffPlaces.json] 
+src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcC6DiffPlaces.json] 
+[gw6] [ 10%] PASSED src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcC6DiffPlaces.json] 
+src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcD5DiffPlaces.json] 
+[gw1] [ 10%] FAILED src/tests/integration/test_conformance.py::test_bchain[stMemoryStressTest/MSTORE_Bounds2.json] 
+[gw6] [ 10%] PASSED src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcD5DiffPlaces.json] 
+src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcEDDiffPlaces.json] 
+[gw6] [ 10%] PASSED src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcEDDiffPlaces.json] 
+src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/measureGas.json] 
+[gw6] [ 10%] FAILED src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/measureGas.json] 
+[gw7] [ 10%] PASSED src/tests/integration/test_conformance.py::test_bchain[Cancun/stEIP1153-transientStorage/15_tstoreCannotBeDosd.json] 
+src/tests/integration/test_conformance.py::test_bchain[Cancun/stEIP1153-transientStorage/transStorageReset.json] 
+[gw7] [ 10%] PASSED src/tests/integration/test_conformance.py::test_bchain[Cancun/stEIP1153-transientStorage/transStorageReset.json] 
+src/tests/integration/test_conformance.py::test_bchain[Cancun/stEIP1153-transientStorage/21_tstoreCannotBeDosdOOO.json] 
+[gw7] [ 10%] PASSED src/tests/integration/test_conformance.py::test_bchain[Cancun/stEIP1153-transientStorage/21_tstoreCannotBeDosdOOO.json] 
+src/tests/integration/test_conformance.py::test_bchain[Cancun/stEIP5656-MCOPY/MCOPY_memory_expansion_cost.json] 
+[gw7] [ 11%] FAILED src/tests/integration/test_conformance.py::test_bchain[Cancun/stEIP5656-MCOPY/MCOPY_memory_expansion_cost.json] 
+
+=================================== FAILURES ===================================
+_______ test_bchain[stCallCodes/callcallcodecallcode_011_OOGMAfter.json] _______
+[gw2] linux -- Python 3.11.9 /home/zhaoji/.cache/pypoetry/virtualenvs/kevm-pyk-9eA2lNH8-py3.11/bin/python
+
+test_file = PosixPath('/home/zhaoji/evm-semantics/tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCallCodes/callcallcodecallcode_011_OOGMAfter.json')
+save_failing = True
+
+    @pytest.mark.parametrize(
+        'test_file',
+        BCHAIN_TESTS,
+        ids=[str(test_file.relative_to(ALL_TEST_DIR)) for test_file in BCHAIN_TESTS],
+    )
+    def test_bchain(test_file: Path, save_failing: bool) -> None:
+        _LOGGER.info(f'Running test: {test_file}')
+>       _test(test_file, schedule='CANCUN', mode='NORMAL', usegas=True, save_failing=save_failing)
+
+src/tests/integration/test_conformance.py:146: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+gst_file = PosixPath('/home/zhaoji/evm-semantics/tests/ethereum-tests/BlockchainTests/GeneralStateTests/stCallCodes/callcallcodecallcode_011_OOGMAfter.json')
+
+    def _test(gst_file: Path, *, schedule: str, mode: str, usegas: bool, save_failing: bool) -> None:
+        skipped_gst_tests = SKIPPED_TESTS.get(gst_file, [])
+        if '*' in skipped_gst_tests:
+            pytest.skip()
+    
+        failing_tests: list[str] = []
+        gst_file_relative_path: Final[str] = str(gst_file.relative_to(TEST_DIR))
+        chainid = 0 if gst_file_relative_path in TEST_FILES_WITH_CID_0 else 1
+    
+        with gst_file.open() as f:
+            gst_data = json.load(f)
+    
+        for test_name, test in gst_data.items():
+            _LOGGER.info(f'Running test: {gst_file} - {test_name}')
+            if test_name in skipped_gst_tests:
+                continue
+            res = interpret({test_name: test}, schedule, mode, chainid, usegas, check=False)
+    
+            try:
+                _assert_exit_code_zero(res)
+            except AssertionError:
+                if not save_failing:
+                    raise
+                failing_tests.append(test_name)
+    
+        if not failing_tests:
+            return
+        if save_failing:
+            with FAILING_TESTS_FILE.open('a', newline='') as ff:
+                writer = csv.writer(ff)
+                if len(failing_tests) == len(gst_data):
+                    writer.writerow([gst_file_relative_path, '*'])
+                else:
+                    for test_name in sorted(failing_tests):
+                        writer.writerow([gst_file_relative_path, test_name])
+>       raise AssertionError(f'Found failing tests in GST file {gst_file_relative_path}: {failing_tests}')
+E       AssertionError: Found failing tests in GST file BlockchainTests/GeneralStateTests/stCallCodes/callcallcodecallcode_011_OOGMAfter.json: ['callcallcodecallcode_011_OOGMAfter_d0g0v0_Cancun']
+
+src/tests/integration/test_conformance.py:72: AssertionError
+____ test_bchain[stStaticCall/static_callcallcallcode_ABCB_RECURSIVE2.json] ____
+[gw4] linux -- Python 3.11.9 /home/zhaoji/.cache/pypoetry/virtualenvs/kevm-pyk-9eA2lNH8-py3.11/bin/python
+
+test_file = PosixPath('/home/zhaoji/evm-semantics/tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_callcallcallcode_ABCB_RECURSIVE2.json')
+save_failing = True
+
+    @pytest.mark.parametrize(
+        'test_file',
+        BCHAIN_TESTS,
+        ids=[str(test_file.relative_to(ALL_TEST_DIR)) for test_file in BCHAIN_TESTS],
+    )
+    def test_bchain(test_file: Path, save_failing: bool) -> None:
+        _LOGGER.info(f'Running test: {test_file}')
+>       _test(test_file, schedule='CANCUN', mode='NORMAL', usegas=True, save_failing=save_failing)
+
+src/tests/integration/test_conformance.py:146: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+gst_file = PosixPath('/home/zhaoji/evm-semantics/tests/ethereum-tests/BlockchainTests/GeneralStateTests/stStaticCall/static_callcallcallcode_ABCB_RECURSIVE2.json')
+
+    def _test(gst_file: Path, *, schedule: str, mode: str, usegas: bool, save_failing: bool) -> None:
+        skipped_gst_tests = SKIPPED_TESTS.get(gst_file, [])
+        if '*' in skipped_gst_tests:
+            pytest.skip()
+    
+        failing_tests: list[str] = []
+        gst_file_relative_path: Final[str] = str(gst_file.relative_to(TEST_DIR))
+        chainid = 0 if gst_file_relative_path in TEST_FILES_WITH_CID_0 else 1
+    
+        with gst_file.open() as f:
+            gst_data = json.load(f)
+    
+        for test_name, test in gst_data.items():
+            _LOGGER.info(f'Running test: {gst_file} - {test_name}')
+            if test_name in skipped_gst_tests:
+                continue
+            res = interpret({test_name: test}, schedule, mode, chainid, usegas, check=False)
+    
+            try:
+                _assert_exit_code_zero(res)
+            except AssertionError:
+                if not save_failing:
+                    raise
+                failing_tests.append(test_name)
+    
+        if not failing_tests:
+            return
+        if save_failing:
+            with FAILING_TESTS_FILE.open('a', newline='') as ff:
+                writer = csv.writer(ff)
+                if len(failing_tests) == len(gst_data):
+                    writer.writerow([gst_file_relative_path, '*'])
+                else:
+                    for test_name in sorted(failing_tests):
+                        writer.writerow([gst_file_relative_path, test_name])
+>       raise AssertionError(f'Found failing tests in GST file {gst_file_relative_path}: {failing_tests}')
+E       AssertionError: Found failing tests in GST file BlockchainTests/GeneralStateTests/stStaticCall/static_callcallcallcode_ABCB_RECURSIVE2.json: ['static_callcallcallcode_ABCB_RECURSIVE2_d0g0v0_Cancun']
+
+src/tests/integration/test_conformance.py:72: AssertionError
+________________ test_bchain[stRandom2/randomStatetest422.json] ________________
+[gw3] linux -- Python 3.11.9 /home/zhaoji/.cache/pypoetry/virtualenvs/kevm-pyk-9eA2lNH8-py3.11/bin/python
+
+test_file = PosixPath('/home/zhaoji/evm-semantics/tests/ethereum-tests/BlockchainTests/GeneralStateTests/stRandom2/randomStatetest422.json')
+save_failing = True
+
+    @pytest.mark.parametrize(
+        'test_file',
+        BCHAIN_TESTS,
+        ids=[str(test_file.relative_to(ALL_TEST_DIR)) for test_file in BCHAIN_TESTS],
+    )
+    def test_bchain(test_file: Path, save_failing: bool) -> None:
+        _LOGGER.info(f'Running test: {test_file}')
+>       _test(test_file, schedule='CANCUN', mode='NORMAL', usegas=True, save_failing=save_failing)
+
+src/tests/integration/test_conformance.py:146: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/tests/integration/test_conformance.py:53: in _test
+    res = interpret({test_name: test}, schedule, mode, chainid, usegas, check=False)
+src/kevm_pyk/interpreter.py:24: in interpret
+    kore = KoreParser(proc_res.stdout).pattern()
+../../.cache/pypoetry/virtualenvs/kevm-pyk-9eA2lNH8-py3.11/lib/python3.11/site-packages/pyk/kore/parser.py:202: in pattern
+    name = self._match(TokenType.ID)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <pyk.kore.parser.KoreParser object at 0x7ed6df276050>
+token_type = <TokenType.ID: 11>
+
+    def _match(self, token_type: TokenType) -> str:
+        if self._la.type != token_type:
+>           raise ValueError(f'Expected {token_type.name}, found: {self._la.type.name}')
+E           ValueError: Expected ID, found: EOF
+
+../../.cache/pypoetry/virtualenvs/kevm-pyk-9eA2lNH8-py3.11/lib/python3.11/site-packages/pyk/kore/parser.py:133: ValueError
+_____________ test_bchain[stLogTests/log0_logMemStartTooHigh.json] _____________
+[gw5] linux -- Python 3.11.9 /home/zhaoji/.cache/pypoetry/virtualenvs/kevm-pyk-9eA2lNH8-py3.11/bin/python
+
+test_file = PosixPath('/home/zhaoji/evm-semantics/tests/ethereum-tests/BlockchainTests/GeneralStateTests/stLogTests/log0_logMemStartTooHigh.json')
+save_failing = True
+
+    @pytest.mark.parametrize(
+        'test_file',
+        BCHAIN_TESTS,
+        ids=[str(test_file.relative_to(ALL_TEST_DIR)) for test_file in BCHAIN_TESTS],
+    )
+    def test_bchain(test_file: Path, save_failing: bool) -> None:
+        _LOGGER.info(f'Running test: {test_file}')
+>       _test(test_file, schedule='CANCUN', mode='NORMAL', usegas=True, save_failing=save_failing)
+
+src/tests/integration/test_conformance.py:146: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+gst_file = PosixPath('/home/zhaoji/evm-semantics/tests/ethereum-tests/BlockchainTests/GeneralStateTests/stLogTests/log0_logMemStartTooHigh.json')
+
+    def _test(gst_file: Path, *, schedule: str, mode: str, usegas: bool, save_failing: bool) -> None:
+        skipped_gst_tests = SKIPPED_TESTS.get(gst_file, [])
+        if '*' in skipped_gst_tests:
+            pytest.skip()
+    
+        failing_tests: list[str] = []
+        gst_file_relative_path: Final[str] = str(gst_file.relative_to(TEST_DIR))
+        chainid = 0 if gst_file_relative_path in TEST_FILES_WITH_CID_0 else 1
+    
+        with gst_file.open() as f:
+            gst_data = json.load(f)
+    
+        for test_name, test in gst_data.items():
+            _LOGGER.info(f'Running test: {gst_file} - {test_name}')
+            if test_name in skipped_gst_tests:
+                continue
+            res = interpret({test_name: test}, schedule, mode, chainid, usegas, check=False)
+    
+            try:
+                _assert_exit_code_zero(res)
+            except AssertionError:
+                if not save_failing:
+                    raise
+                failing_tests.append(test_name)
+    
+        if not failing_tests:
+            return
+        if save_failing:
+            with FAILING_TESTS_FILE.open('a', newline='') as ff:
+                writer = csv.writer(ff)
+                if len(failing_tests) == len(gst_data):
+                    writer.writerow([gst_file_relative_path, '*'])
+                else:
+                    for test_name in sorted(failing_tests):
+                        writer.writerow([gst_file_relative_path, test_name])
+>       raise AssertionError(f'Found failing tests in GST file {gst_file_relative_path}: {failing_tests}')
+E       AssertionError: Found failing tests in GST file BlockchainTests/GeneralStateTests/stLogTests/log0_logMemStartTooHigh.json: ['log0_logMemStartTooHigh_d0g0v0_Cancun']
+
+src/tests/integration/test_conformance.py:72: AssertionError
+__________________ test_vm[vmIOandFlowOperations/return.json] __________________
+[gw0] linux -- Python 3.11.9 /home/zhaoji/.cache/pypoetry/virtualenvs/kevm-pyk-9eA2lNH8-py3.11/bin/python
+
+test_file = PosixPath('/home/zhaoji/evm-semantics/tests/ethereum-tests/BlockchainTests/GeneralStateTests/VMTests/vmIOandFlowOperations/return.json')
+save_failing = True
+
+    @pytest.mark.parametrize(
+        'test_file',
+        VM_TESTS,
+        ids=[str(test_file.relative_to(VM_TEST_DIR)) for test_file in VM_TESTS],
+    )
+    def test_vm(test_file: Path, save_failing: bool) -> None:
+>       _test(test_file, schedule='DEFAULT', mode='VMTESTS', usegas=True, save_failing=save_failing)
+
+src/tests/integration/test_conformance.py:120: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/tests/integration/test_conformance.py:53: in _test
+    res = interpret({test_name: test}, schedule, mode, chainid, usegas, check=False)
+src/kevm_pyk/interpreter.py:24: in interpret
+    kore = KoreParser(proc_res.stdout).pattern()
+../../.cache/pypoetry/virtualenvs/kevm-pyk-9eA2lNH8-py3.11/lib/python3.11/site-packages/pyk/kore/parser.py:202: in pattern
+    name = self._match(TokenType.ID)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <pyk.kore.parser.KoreParser object at 0x71e16f3ac910>
+token_type = <TokenType.ID: 11>
+
+    def _match(self, token_type: TokenType) -> str:
+        if self._la.type != token_type:
+>           raise ValueError(f'Expected {token_type.name}, found: {self._la.type.name}')
+E           ValueError: Expected ID, found: EOF
+
+../../.cache/pypoetry/virtualenvs/kevm-pyk-9eA2lNH8-py3.11/lib/python3.11/site-packages/pyk/kore/parser.py:133: ValueError
+_____________ test_bchain[stMemoryStressTest/MSTORE_Bounds2.json] ______________
+[gw1] linux -- Python 3.11.9 /home/zhaoji/.cache/pypoetry/virtualenvs/kevm-pyk-9eA2lNH8-py3.11/bin/python
+
+test_file = PosixPath('/home/zhaoji/evm-semantics/tests/ethereum-tests/BlockchainTests/GeneralStateTests/stMemoryStressTest/MSTORE_Bounds2.json')
+save_failing = True
+
+    @pytest.mark.parametrize(
+        'test_file',
+        BCHAIN_TESTS,
+        ids=[str(test_file.relative_to(ALL_TEST_DIR)) for test_file in BCHAIN_TESTS],
+    )
+    def test_bchain(test_file: Path, save_failing: bool) -> None:
+        _LOGGER.info(f'Running test: {test_file}')
+>       _test(test_file, schedule='CANCUN', mode='NORMAL', usegas=True, save_failing=save_failing)
+
+src/tests/integration/test_conformance.py:146: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/tests/integration/test_conformance.py:53: in _test
+    res = interpret({test_name: test}, schedule, mode, chainid, usegas, check=False)
+src/kevm_pyk/interpreter.py:24: in interpret
+    kore = KoreParser(proc_res.stdout).pattern()
+../../.cache/pypoetry/virtualenvs/kevm-pyk-9eA2lNH8-py3.11/lib/python3.11/site-packages/pyk/kore/parser.py:202: in pattern
+    name = self._match(TokenType.ID)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <pyk.kore.parser.KoreParser object at 0x79df69dd91d0>
+token_type = <TokenType.ID: 11>
+
+    def _match(self, token_type: TokenType) -> str:
+        if self._la.type != token_type:
+>           raise ValueError(f'Expected {token_type.name}, found: {self._la.type.name}')
+E           ValueError: Expected ID, found: EOF
+
+../../.cache/pypoetry/virtualenvs/kevm-pyk-9eA2lNH8-py3.11/lib/python3.11/site-packages/pyk/kore/parser.py:133: ValueError
+___________________ test_bchain[stBadOpcode/measureGas.json] ___________________
+[gw6] linux -- Python 3.11.9 /home/zhaoji/.cache/pypoetry/virtualenvs/kevm-pyk-9eA2lNH8-py3.11/bin/python
+
+test_file = PosixPath('/home/zhaoji/evm-semantics/tests/ethereum-tests/BlockchainTests/GeneralStateTests/stBadOpcode/measureGas.json')
+save_failing = True
+
+    @pytest.mark.parametrize(
+        'test_file',
+        BCHAIN_TESTS,
+        ids=[str(test_file.relative_to(ALL_TEST_DIR)) for test_file in BCHAIN_TESTS],
+    )
+    def test_bchain(test_file: Path, save_failing: bool) -> None:
+        _LOGGER.info(f'Running test: {test_file}')
+>       _test(test_file, schedule='CANCUN', mode='NORMAL', usegas=True, save_failing=save_failing)
+
+src/tests/integration/test_conformance.py:146: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+gst_file = PosixPath('/home/zhaoji/evm-semantics/tests/ethereum-tests/BlockchainTests/GeneralStateTests/stBadOpcode/measureGas.json')
+
+    def _test(gst_file: Path, *, schedule: str, mode: str, usegas: bool, save_failing: bool) -> None:
+        skipped_gst_tests = SKIPPED_TESTS.get(gst_file, [])
+        if '*' in skipped_gst_tests:
+            pytest.skip()
+    
+        failing_tests: list[str] = []
+        gst_file_relative_path: Final[str] = str(gst_file.relative_to(TEST_DIR))
+        chainid = 0 if gst_file_relative_path in TEST_FILES_WITH_CID_0 else 1
+    
+        with gst_file.open() as f:
+            gst_data = json.load(f)
+    
+        for test_name, test in gst_data.items():
+            _LOGGER.info(f'Running test: {gst_file} - {test_name}')
+            if test_name in skipped_gst_tests:
+                continue
+            res = interpret({test_name: test}, schedule, mode, chainid, usegas, check=False)
+    
+            try:
+                _assert_exit_code_zero(res)
+            except AssertionError:
+                if not save_failing:
+                    raise
+                failing_tests.append(test_name)
+    
+        if not failing_tests:
+            return
+        if save_failing:
+            with FAILING_TESTS_FILE.open('a', newline='') as ff:
+                writer = csv.writer(ff)
+                if len(failing_tests) == len(gst_data):
+                    writer.writerow([gst_file_relative_path, '*'])
+                else:
+                    for test_name in sorted(failing_tests):
+                        writer.writerow([gst_file_relative_path, test_name])
+>       raise AssertionError(f'Found failing tests in GST file {gst_file_relative_path}: {failing_tests}')
+E       AssertionError: Found failing tests in GST file BlockchainTests/GeneralStateTests/stBadOpcode/measureGas.json: ['measureGas_d7g0v0_Cancun', 'measureGas_d9g0v0_Cancun']
+
+src/tests/integration/test_conformance.py:72: AssertionError
+_____ test_bchain[Cancun/stEIP5656-MCOPY/MCOPY_memory_expansion_cost.json] _____
+[gw7] linux -- Python 3.11.9 /home/zhaoji/.cache/pypoetry/virtualenvs/kevm-pyk-9eA2lNH8-py3.11/bin/python
+
+test_file = PosixPath('/home/zhaoji/evm-semantics/tests/ethereum-tests/BlockchainTests/GeneralStateTests/Cancun/stEIP5656-MCOPY/MCOPY_memory_expansion_cost.json')
+save_failing = True
+
+    @pytest.mark.parametrize(
+        'test_file',
+        BCHAIN_TESTS,
+        ids=[str(test_file.relative_to(ALL_TEST_DIR)) for test_file in BCHAIN_TESTS],
+    )
+    def test_bchain(test_file: Path, save_failing: bool) -> None:
+        _LOGGER.info(f'Running test: {test_file}')
+>       _test(test_file, schedule='CANCUN', mode='NORMAL', usegas=True, save_failing=save_failing)
+
+src/tests/integration/test_conformance.py:146: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/tests/integration/test_conformance.py:53: in _test
+    res = interpret({test_name: test}, schedule, mode, chainid, usegas, check=False)
+src/kevm_pyk/interpreter.py:24: in interpret
+    kore = KoreParser(proc_res.stdout).pattern()
+../../.cache/pypoetry/virtualenvs/kevm-pyk-9eA2lNH8-py3.11/lib/python3.11/site-packages/pyk/kore/parser.py:202: in pattern
+    name = self._match(TokenType.ID)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <pyk.kore.parser.KoreParser object at 0x71db409eb690>
+token_type = <TokenType.ID: 11>
+
+    def _match(self, token_type: TokenType) -> str:
+        if self._la.type != token_type:
+>           raise ValueError(f'Expected {token_type.name}, found: {self._la.type.name}')
+E           ValueError: Expected ID, found: EOF
+
+../../.cache/pypoetry/virtualenvs/kevm-pyk-9eA2lNH8-py3.11/lib/python3.11/site-packages/pyk/kore/parser.py:133: ValueError
+============================== slowest durations ===============================
+22.21s call     src/tests/integration/test_conformance.py::test_bchain[Cancun/stEIP1153-transientStorage/15_tstoreCannotBeDosd.json]
+19.47s call     src/tests/integration/test_conformance.py::test_bchain[Cancun/stEIP1153-transientStorage/21_tstoreCannotBeDosdOOO.json]
+17.60s call     src/tests/integration/test_conformance.py::test_bchain[stMemoryStressTest/MSTORE_Bounds2.json]
+1.90s call     src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opc21DiffPlaces.json]
+1.66s call     src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opc2FDiffPlaces.json]
+1.45s call     src/tests/integration/test_conformance.py::test_bchain[stReturnDataTest/clearReturnBuffer.json]
+1.25s call     src/tests/integration/test_conformance.py::test_vm[vmIOandFlowOperations/jumpToPush.json]
+0.67s call     src/tests/integration/test_conformance.py::test_bchain[Cancun/stEIP1153-transientStorage/transStorageReset.json]
+0.63s call     src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opc5FDiffPlaces.json]
+0.62s call     src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcADDiffPlaces.json]
+0.57s call     src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcC2DiffPlaces.json]
+0.52s call     src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcF7DiffPlaces.json]
+0.51s call     src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opc4CDiffPlaces.json]
+0.51s call     src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcE6DiffPlaces.json]
+0.49s call     src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcB3DiffPlaces.json]
+0.48s call     src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opc2CDiffPlaces.json]
+0.48s call     src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcE1DiffPlaces.json]
+0.45s call     src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcC3DiffPlaces.json]
+0.45s call     src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcE8DiffPlaces.json]
+0.45s call     src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcD9DiffPlaces.json]
+0.44s call     src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcA5DiffPlaces.json]
+0.44s call     src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcD8DiffPlaces.json]
+0.44s call     src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcC1DiffPlaces.json]
+0.44s call     src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opc2EDiffPlaces.json]
+0.43s call     src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/measureGas.json]
+0.43s call     src/tests/integration/test_conformance.py::test_bchain[stCreate2/Create2Recursive.json]
+0.43s call     src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcEADiffPlaces.json]
+0.42s call     src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opc2DDiffPlaces.json]
+0.42s call     src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcBCDiffPlaces.json]
+0.42s call     src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcD1DiffPlaces.json]
+0.41s call     src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcD5DiffPlaces.json]
+0.41s call     src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcDDDiffPlaces.json]
+0.41s call     src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcB6DiffPlaces.json]
+0.41s call     src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opc27DiffPlaces.json]
+0.40s call     src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcF8DiffPlaces.json]
+0.40s call     src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcE9DiffPlaces.json]
+0.40s call     src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcC6DiffPlaces.json]
+0.40s call     src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcDFDiffPlaces.json]
+0.40s call     src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcE4DiffPlaces.json]
+0.40s call     src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opc26DiffPlaces.json]
+0.39s call     src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opc4ADiffPlaces.json]
+0.39s call     src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcEDDiffPlaces.json]
+0.38s call     src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/opcB2DiffPlaces.json]
+0.33s call     src/tests/integration/test_conformance.py::test_bchain[Cancun/stEIP5656-MCOPY/MCOPY_memory_expansion_cost.json]
+0.27s call     src/tests/integration/test_conformance.py::test_bchain[stCreate2/Create2OOGFromCallRefunds.json]
+0.23s call     src/tests/integration/test_conformance.py::test_bchain[stCreate2/CREATE2_HighNonceDelegatecall.json]
+0.22s call     src/tests/integration/test_conformance.py::test_bchain[Cancun/stEIP1153-transientStorage/transStorageOK.json]
+0.17s call     src/tests/integration/test_conformance.py::test_vm[vmIOandFlowOperations/jump.json]
+0.13s call     src/tests/integration/test_conformance.py::test_bchain[stStaticCall/static_callcallcall_000_OOGMAfter2.json]
+0.13s call     src/tests/integration/test_conformance.py::test_bchain[stCreate2/CREATE2_Suicide.json]
+0.12s call     src/tests/integration/test_conformance.py::test_vm[vmIOandFlowOperations/return.json]
+0.12s call     src/tests/integration/test_conformance.py::test_bchain[stRandom2/randomStatetest422.json]
+0.10s call     src/tests/integration/test_conformance.py::test_vm[vmBitwiseLogicOperation/byte.json]
+0.10s call     src/tests/integration/test_conformance.py::test_vm[vmIOandFlowOperations/loopsConditionals.json]
+0.08s call     src/tests/integration/test_conformance.py::test_bchain[stStaticCall/static_callcallcallcode_ABCB_RECURSIVE2.json]
+0.08s call     src/tests/integration/test_conformance.py::test_bchain[stCallCodes/callcallcodecallcode_011_OOGMAfter.json]
+0.07s call     src/tests/integration/test_conformance.py::test_vm[vmBitwiseLogicOperation/gt.json]
+0.07s call     src/tests/integration/test_conformance.py::test_bchain[stLogTests/log0_logMemStartTooHigh.json]
+0.07s call     src/tests/integration/test_conformance.py::test_bchain[stStaticFlagEnabled/CallWithNOTZeroValueToPrecompileFromCalledContract.json]
+0.07s call     src/tests/integration/test_conformance.py::test_bchain[stStaticFlagEnabled/CallWithNOTZeroValueToPrecompileFromContractInitialization.json]
+0.07s call     src/tests/integration/test_conformance.py::test_bchain[stCreate2/create2checkFieldsInInitcode.json]
+0.07s call     src/tests/integration/test_conformance.py::test_bchain[stStaticFlagEnabled/CallWithNOTZeroValueToPrecompileFromTransaction.json]
+0.06s call     src/tests/integration/test_conformance.py::test_bchain[stCreate2/Create2OnDepth1023.json]
+0.06s call     src/tests/integration/test_conformance.py::test_bchain[stCreate2/Create2OnDepth1024.json]
+0.06s call     src/tests/integration/test_conformance.py::test_bchain[stCreate2/create2callPrecompiles.json]
+0.06s call     src/tests/integration/test_conformance.py::test_bchain[stCreate2/create2InitCodes.json]
+0.06s call     src/tests/integration/test_conformance.py::test_bchain[stCreate2/RevertDepthCreate2OOG.json]
+0.06s call     src/tests/integration/test_conformance.py::test_bchain[stCreate2/RevertDepthCreateAddressCollisionBerlin.json]
+0.06s call     src/tests/integration/test_conformance.py::test_bchain[stCreate2/RevertDepthCreate2OOGBerlin.json]
+0.05s call     src/tests/integration/test_conformance.py::test_bchain[stCreate2/RevertDepthCreateAddressCollision.json]
+0.05s call     src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest31.json]
+0.05s call     src/tests/integration/test_conformance.py::test_vm[vmBitwiseLogicOperation/not.json]
+0.05s call     src/tests/integration/test_conformance.py::test_vm[vmBitwiseLogicOperation/xor.json]
+0.04s call     src/tests/integration/test_conformance.py::test_vm[vmBitwiseLogicOperation/or.json]
+0.04s call     src/tests/integration/test_conformance.py::test_bchain[stStaticFlagEnabled/CallcodeToPrecompileFromTransaction.json]
+0.04s call     src/tests/integration/test_conformance.py::test_bchain[stStaticFlagEnabled/CallcodeToPrecompileFromContractInitialization.json]
+0.04s call     src/tests/integration/test_conformance.py::test_bchain[stStaticFlagEnabled/CallcodeToPrecompileFromCalledContract.json]
+0.04s call     src/tests/integration/test_conformance.py::test_bchain[stPreCompiledContracts2/modexp_0_0_0_22000.json]
+0.04s call     src/tests/integration/test_conformance.py::test_vm[vmIOandFlowOperations/mstore.json]
+0.04s call     src/tests/integration/test_conformance.py::test_bchain[stReturnDataTest/modexp_modsize0_returndatasize.json]
+0.04s call     src/tests/integration/test_conformance.py::test_vm[vmBitwiseLogicOperation/and.json]
+0.03s call     src/tests/integration/test_conformance.py::test_vm[vmBitwiseLogicOperation/lt.json]
+0.03s call     src/tests/integration/test_conformance.py::test_bchain[stStaticFlagEnabled/CallWithZeroValueToPrecompileFromCalledContract.json]
+0.03s call     src/tests/integration/test_conformance.py::test_bchain[stStaticFlagEnabled/DelegatecallToPrecompileFromCalledContract.json]
+0.03s call     src/tests/integration/test_conformance.py::test_bchain[stStaticFlagEnabled/CallWithZeroValueToPrecompileFromContractInitialization.json]
+0.03s call     src/tests/integration/test_conformance.py::test_bchain[stStaticFlagEnabled/DelegatecallToPrecompileFromContractInitialization.json]
+0.03s call     src/tests/integration/test_conformance.py::test_bchain[stStaticFlagEnabled/DelegatecallToPrecompileFromTransaction.json]
+0.03s call     src/tests/integration/test_conformance.py::test_bchain[stStaticFlagEnabled/CallWithZeroValueToPrecompileFromTransaction.json]
+0.03s call     src/tests/integration/test_conformance.py::test_bchain[stStaticCall/static_CheckOpcodes4.json]
+0.03s call     src/tests/integration/test_conformance.py::test_vm[vmBitwiseLogicOperation/sgt.json]
+0.03s call     src/tests/integration/test_conformance.py::test_vm[vmBitwiseLogicOperation/slt.json]
+0.03s call     src/tests/integration/test_conformance.py::test_bchain[stStaticCall/static_callcodecallcallcode_101_OOGMAfter_3.json]
+0.03s call     src/tests/integration/test_conformance.py::test_bchain[stCreate2/create2collisionBalance.json]
+0.03s call     src/tests/integration/test_conformance.py::test_bchain[stStaticCall/static_callcallcallcode_001_OOGMAfter_2.json]
+0.03s call     src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/calldataloadNonConst.json]
+0.03s call     src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/calldatacopyNonConst.json]
+0.02s call     src/tests/integration/test_conformance.py::test_bchain[stCreate2/CREATE2_FirstByte_loop.json]
+0.02s call     src/tests/integration/test_conformance.py::test_vm[vmBitwiseLogicOperation/eq.json]
+0.02s call     src/tests/integration/test_conformance.py::test_vm[vmBitwiseLogicOperation/iszero.json]
+0.02s call     src/tests/integration/test_conformance.py::test_bchain[stCreate2/create2collisionSelfdestructedRevert.json]
+0.02s call     src/tests/integration/test_conformance.py::test_bchain[stCreate2/create2collisionSelfdestructed.json]
+0.02s call     src/tests/integration/test_conformance.py::test_bchain[stCreate2/create2collisionCode.json]
+0.02s call     src/tests/integration/test_conformance.py::test_bchain[stCreate2/create2collisionStorageParis.json]
+0.02s call     src/tests/integration/test_conformance.py::test_bchain[stCreate2/CREATE2_Bounds3.json]
+0.02s call     src/tests/integration/test_conformance.py::test_bchain[stStaticCall/static_callcall_00_OOGE.json]
+0.02s call     src/tests/integration/test_conformance.py::test_bchain[stCreate2/create2collisionSelfdestructedOOG.json]
+0.02s call     src/tests/integration/test_conformance.py::test_bchain[stCreate2/create2collisionNonce.json]
+0.02s call     src/tests/integration/test_conformance.py::test_bchain[stCreate2/create2noCash.json]
+0.02s call     src/tests/integration/test_conformance.py::test_vm[vmIOandFlowOperations/loop_stacklimit.json]
+0.02s call     src/tests/integration/test_conformance.py::test_bchain[stStaticCall/static_callcallcode_01_2.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stStaticCall/static_contractCreationOOGdontLeaveEmptyContractViaTransaction.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stCreate2/create2SmartInitCode.json]
+0.01s call     src/tests/integration/test_conformance.py::test_vm[vmIOandFlowOperations/gas.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stCreate2/CREATE2_Bounds.json]
+0.01s call     src/tests/integration/test_conformance.py::test_vm[vmIOandFlowOperations/pop.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stCreate2/RevertOpcodeCreate.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stCreate2/Create2OOGafterInitCodeReturndata2.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stCreate2/returndatacopy_following_create.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stCreate2/create2collisionSelfdestructed2.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stCreate2/CREATE2_Bounds2.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/mstore8NonConst.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/notNonConst.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/callcodeNonConst.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/createNonConst.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stCreate2/Create2OOGafterInitCode.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/subNonConst.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/ltNonConst.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[Cancun/stEIP1153-transientStorage/19_oogUndoesTransientStore.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/suicideNonConst.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stCreate2/CreateMessageRevertedOOGInInit2.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/sloadNonConst.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/byteNonConst.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/delegatecallNonConst.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/balanceNonConst.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/sha3NonConst.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/addNonConst.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/mulmodNonConst.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stCreate2/create2collisionCode2.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stCreate2/CreateMessageReverted.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/log0NonConst.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/log3NonConst.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/gtNonConst.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/mulNonConst.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/mstoreNonConst.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/xorNonConst.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/extcodecopyNonConst.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/signextNonConst.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stCreate2/Create2OOGafterInitCodeReturndata.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/sgtNonConst.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/callNonConst.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/orNonConst.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/jumpiNonConst.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/divNonConst.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/sstoreNonConst.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/log1NonConst.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/eqNonConst.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/codecopyNonConst.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/iszeroNonConst.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/andNonConst.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/log2NonConst.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/returnNonConst.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/jumpNonConst.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/sltNonConst.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/addmodNonConst.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/extcodesizeNonConst.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/smodNonConst.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/expNonConst.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/modNonConst.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/mloadNonConst.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stArgsZeroOneBalance/sdivNonConst.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest264.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest384.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest382.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stPreCompiledContracts2/CALLCODEEcrecover0_overlappingInputOutput.json]
+0.01s teardown src/tests/integration/test_conformance.py::test_bchain[Cancun/stEIP1153-transientStorage/15_tstoreCannotBeDosd.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stPreCompiledContracts2/CallEcrecover0_Gas2999.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest295.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stPreCompiledContracts2/CallRipemd160_5.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stPreCompiledContracts2/CallSha256_3_postfix0.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stStaticCall/static_callToCallCodeOpCodeCheck.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stCreate2/CREATE2_HighNonce.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stCallCodes/callcallcodecall_010.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest75.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stStaticCall/static_callcallcodecall_010_SuicideMiddle2.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stReturnDataTest/returndatacopy_after_successful_callcode.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[Cancun/stEIP1153-transientStorage/10_revertUndoesStoreAfterReturn.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stCreate2/Create2OOGafterInitCodeReturndata3.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest177.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest293.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest144.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest121.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stReturnDataTest/returndatacopy_following_failing_call.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest195.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom2/randomStatetest640.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[Cancun/stEIP4844-blobtransactions/blobhashListBounds6.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest247.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stCreate2/returndatacopy_0_0_following_successful_create.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom2/randomStatetest503.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest116.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stReturnDataTest/returndatacopy_after_successful_delegatecall.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom2/randomStatetest472.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom2/randomStatetest399.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest370.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest226.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest347.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest164.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest26.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest151.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest343.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest270.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest49.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest300.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest27.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stReturnDataTest/returndatasize_after_failing_delegatecall.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stStaticCall/static_callOutput1.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest209.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[Cancun/stEIP4844-blobtransactions/opcodeBlobhBounds.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom2/randomStatetest633.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest63.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest254.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest33.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest58.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[Cancun/stEIP1153-transientStorage/14_revertAfterNestedStaticcall.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[Cancun/stEIP4844-blobtransactions/opcodeBlobhashOutOfRange.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest292.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom2/randomStatetest488.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stReturnDataTest/returndatacopy_initial_big_sum.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom2/randomStatetest455.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom2/randomStatetest630.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest339.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom2/randomStatetest452.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom2/randomStatetest596.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stReturnDataTest/returndatacopy_following_create.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest201.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest158.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom2/randomStatetest421.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest77.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest104.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest120.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest87.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest161.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest372.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest28.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom2/randomStatetest415.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest37.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest325.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom2/randomStatetest480.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest251.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom2/randomStatetest582.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stReturnDataTest/returndatacopy_following_successful_create.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stCreate2/Create2OOGafterInitCodeReturndataSize.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest260.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest54.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest204.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest175.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stReturnDataTest/returndatacopy_afterFailing_create.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom2/randomStatetest524.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest342.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom2/randomStatetest393.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom2/randomStatetest600.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest183.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest172.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stCreate2/CREATE2_HighNonceMinus1.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest89.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest291.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest329.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stCreate2/Create2OOGafterInitCodeRevert2.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest106.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest42.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom2/randomStatetest474.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest276.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stCreate2/RevertInCreateInInitCreate2Paris.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest90.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom2/randomStatetest417.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest16.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom2/randomStatetest587.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stReturnDataTest/returndatasize_after_failing_staticcall.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest157.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest130.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stCreate2/CREATE2_ContractSuicideDuringInit_ThenStoreThenReturn.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[Cancun/stEIP1153-transientStorage/17_tstoreGas.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest287.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest250.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest22.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[Cancun/stEIP4844-blobtransactions/blobhashListBounds4.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom2/randomStatetest494.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest97.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stReturnDataTest/returndatasize_initial.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest51.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest233.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[Cancun/stEIP4844-blobtransactions/blobhashListBounds5.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stReturnDataTest/returndatasize_following_successful_create.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stCreate2/returndatasize_following_successful_create.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest108.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stCreate2/Create2OOGafterInitCodeRevert.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest274.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stCreate2/call_outsize_then_create2_successful_then_returndatasize.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stLogTests/log0_nonEmptyMem_logMemSize1.json]
+0.01s setup    src/tests/integration/test_conformance.py::test_bchain[Cancun/stEIP1153-transientStorage/transStorageReset.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stCreate2/call_then_create2_successful_then_returndatasize.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom2/randomStatetest647.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stReturnDataTest/returndatacopy_following_too_big_transfer.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[Cancun/stEIP4844-blobtransactions/blobhashListBounds3.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stCreate2/returndatacopy_following_revert_in_create.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stStaticFlagEnabled/StaticcallForPrecompilesIssue683.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest228.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stRandom/randomStatetest174.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stCreate2/returndatacopy_afterFailing_create.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stCreate2/returndatacopy_following_successful_create.json]
+0.01s call     src/tests/integration/test_conformance.py::test_bchain[stCreate2/RevertOpcodeInCreateReturnsCreate2.json]
+
+(626 durations < 0.005s hidden.  Use -vv to show these durations.)
+=========================== short test summary info ============================
+FAILED src/tests/integration/test_conformance.py::test_bchain[stCallCodes/callcallcodecallcode_011_OOGMAfter.json]
+FAILED src/tests/integration/test_conformance.py::test_bchain[stStaticCall/static_callcallcallcode_ABCB_RECURSIVE2.json]
+FAILED src/tests/integration/test_conformance.py::test_bchain[stRandom2/randomStatetest422.json]
+FAILED src/tests/integration/test_conformance.py::test_bchain[stLogTests/log0_logMemStartTooHigh.json]
+FAILED src/tests/integration/test_conformance.py::test_vm[vmIOandFlowOperations/return.json]
+FAILED src/tests/integration/test_conformance.py::test_bchain[stMemoryStressTest/MSTORE_Bounds2.json]
+FAILED src/tests/integration/test_conformance.py::test_bchain[stBadOpcode/measureGas.json]
+FAILED src/tests/integration/test_conformance.py::test_bchain[Cancun/stEIP5656-MCOPY/MCOPY_memory_expansion_cost.json]
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 8 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!! xdist.dsession.Interrupted: stopping after 1 failures !!!!!!!!!!!!!
+================== 8 failed, 300 passed, 4 skipped in 47.92s ===================
+make[1]: *** [Makefile:39: test-integration] Error 2
+make[1]: Leaving directory '/home/zhaoji/evm-semantics/kevm-pyk'
+make: *** [Makefile:41: test-conformance] Error 2
