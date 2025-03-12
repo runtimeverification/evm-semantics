@@ -561,7 +561,7 @@ class KEVMSummarizer:
                 passed = run_prover(
                     proof,
                     create_kcfg_explore=create_kcfg_explore,
-                    max_depth=1000,
+                    max_depth=1,
                     max_iterations=None,
                     cut_point_rules=KEVMSemantics.cut_point_rules(
                         break_on_jumpi=False,
@@ -607,48 +607,34 @@ class KEVMSummarizer:
         ensure_dir_path(self.save_directory)
         
         def _remove_inf_gas(original_str: str) -> str:
-            inf_gas_pattern = r'#gas \(([^)]*)\)'
+            result = ''
+            left_str = original_str
+            inf_gas_pattern = r'<gas>([\s\S]*?)</gas>'
             matches: list[str] = re.findall(inf_gas_pattern, original_str)
-            
-            # Find all USEGAS_CELL requirements
-            usegas_pattern1 = r'requires USEGAS_CELL:Bool'
-            usegas_pattern2 = r'requires \( USEGAS_CELL:Bool'
-            
-            usegas_matches1 = list(re.finditer(usegas_pattern1, original_str))
-            usegas_matches2 = list(re.finditer(usegas_pattern2, original_str))
-            
-            # Combine and sort all usegas matches by their position
-            all_usegas_matches = [(m.start(), m.group(), 1) for m in usegas_matches1] + \
-                                [(m.start(), m.group(), 2) for m in usegas_matches2]
-            all_usegas_matches.sort()
-            
-            # Process each gas usage with corresponding USEGAS_CELL requirement
-            result = original_str
-            offset = 0  # Track position offset as we modify the string
-            
-            assert len(matches) == len(all_usegas_matches)
-            for i, match in enumerate(matches):
+            matches = [m.replace('#gas', '').strip() for m in matches if 'GAS_CELL:Int => ' in m]
+            for match in matches:
                 gas_usage = match.replace('GAS_CELL:Int => ', '')
                 gas_usage = gas_usage.replace(' GAS_CELL:Int -Int', '')
-                gas_guard = gas_usage + ' <=Int GAS_CELL'
+                gas_guard = f'( andBool {gas_usage} <=Int GAS_CELL )'
                 
-                pos, usegas_match, pattern_type = all_usegas_matches[i]
-                pos += offset  # Adjust position based on previous modifications
+                # Find first requires USEGAS_CELL pattern
+                usegas_match = re.search(r'requires (\( )?USEGAS_CELL:Bool', left_str)
+                if not usegas_match:
+                    raise ValueError(f'No requires USEGAS_CELL pattern found in {left_str}')
                 
-                # Create replacement with gas guard
-                replacement = usegas_match + ' ( andBool ' + gas_guard + ' )'
+                # Build replacement with gas guard
+                if usegas_match.group(1):  # Case with opening parenthesis
+                    replacement = f'requires ( USEGAS_CELL:Bool {gas_guard} '
+                else:
+                    replacement = f'requires USEGAS_CELL:Bool {gas_guard}'
                 
-                # Replace at the specific position
-                result = result[:pos] + replacement + result[pos + len(usegas_match):]
-                
-                # Update offset for next replacements
-                offset += len(replacement) - len(usegas_match)
+                start_idx, end_idx = usegas_match.span()
+                result += left_str[:start_idx] + replacement
+                left_str = left_str[end_idx:]
             
-            # Finally remove all #gas patterns
-            result = re.sub(inf_gas_pattern, r'\1', result)
-            return result
+            result += left_str
+            return result.replace('#gas', '')
         
-
         def _remove_dash_from_var(original_str: str) -> str:
             return re.sub(r'(?<!\w)_+([A-Z0-9]\w*)', r'\1', original_str)
 
@@ -683,9 +669,9 @@ class KEVMSummarizer:
             _LOGGER.info(f'Writing summary to {self.save_directory / spec_name}')
             for res_line in self.show_proof(proof, to_module=True):
                 if res_line.startswith('module'):
-                    res_line = _remove_inf_gas(res_line)
                     res_line = _remove_dash_from_var(res_line)
                     res_line = _use_legal_remainder(res_line)
+                    res_line = _remove_inf_gas(res_line)
                     res_line = replace_lhs_function_by_assignment(res_line)
                     f.write('requires "../evm.md"\n')
                     f.write('requires "../buf.md"\n\n')
