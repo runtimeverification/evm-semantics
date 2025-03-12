@@ -27,7 +27,7 @@ rule [BASIC-BLOCK-8-TO-6]: <kevm>
                    ( PC_CELL:Int => ( PC_CELL:Int +Int 1 ) )
                  </pc>
                  <gas>
-                   GAS_CELL => ( GAS_CELL -Gas Gverylow < SCHEDULE_CELL:Schedule > )
+                   GAS_CELL:Int => ( GAS_CELL -Gas Gverylow < SCHEDULE_CELL:Schedule > )
                  </gas>
                  ...
                </callState>

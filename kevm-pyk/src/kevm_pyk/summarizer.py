@@ -605,38 +605,78 @@ class KEVMSummarizer:
         # TODO: may need customized way to generate summary rules, e.g., replacing infinite gas with finite gas.
         proof.minimize_kcfg(KEVMSemantics(allow_symbolic_program=True), merge)
         ensure_dir_path(self.save_directory)
+        
+        def _remove_inf_gas(original_str: str) -> str:
+            inf_gas_pattern = r'#gas \(([^)]*)\)'
+            matches: list[str] = re.findall(inf_gas_pattern, original_str)
+            
+            # Find all USEGAS_CELL requirements
+            usegas_pattern1 = r'requires USEGAS_CELL:Bool'
+            usegas_pattern2 = r'requires \( USEGAS_CELL:Bool'
+            
+            usegas_matches1 = list(re.finditer(usegas_pattern1, original_str))
+            usegas_matches2 = list(re.finditer(usegas_pattern2, original_str))
+            
+            # Combine and sort all usegas matches by their position
+            all_usegas_matches = [(m.start(), m.group(), 1) for m in usegas_matches1] + \
+                                [(m.start(), m.group(), 2) for m in usegas_matches2]
+            all_usegas_matches.sort()
+            
+            # Process each gas usage with corresponding USEGAS_CELL requirement
+            result = original_str
+            offset = 0  # Track position offset as we modify the string
+            
+            assert len(matches) == len(all_usegas_matches)
+            for i, match in enumerate(matches):
+                gas_usage = match.replace('GAS_CELL:Int => ', '')
+                gas_usage = gas_usage.replace(' GAS_CELL:Int -Int', '')
+                gas_guard = gas_usage + ' <=Int GAS_CELL'
+                
+                pos, usegas_match, pattern_type = all_usegas_matches[i]
+                pos += offset  # Adjust position based on previous modifications
+                
+                # Create replacement with gas guard
+                replacement = usegas_match + ' ( andBool ' + gas_guard + ' )'
+                
+                # Replace at the specific position
+                result = result[:pos] + replacement + result[pos + len(usegas_match):]
+                
+                # Update offset for next replacements
+                offset += len(replacement) - len(usegas_match)
+            
+            # Finally remove all #gas patterns
+            result = re.sub(inf_gas_pattern, r'\1', result)
+            return result
+        
 
-        def _remove_inf_gas(res_line: str) -> str:
-            return re.sub(r'#gas (\([^)]*\))', r'\1', res_line)
+        def _remove_dash_from_var(original_str: str) -> str:
+            return re.sub(r'(?<!\w)_+([A-Z0-9]\w*)', r'\1', original_str)
 
-        def _remove_dash_from_var(res_line: str) -> str:
-            return re.sub(r'(?<!\w)_+([A-Z0-9]\w*)', r'\1', res_line)
-
-        def _use_legal_remainder(res_line: str) -> str:
-            res_line_tmp = re.sub(
+        def _use_legal_remainder(original_str: str) -> str:
+            result = re.sub(
                 r'\(\s*<account>([\s\S]*?)</account>\s*DotAccountVar:AccountCellMap\s*\)',
                 r'<account>\1</account>\n                 ...',
-                res_line,
+                original_str,
             )
-            res_line_tmp = re.sub(
-                r'\(\s*notBool\s*<acctID>\s*([^<]+)\s*</acctID>\s*in_keys\s*\([^)]*\)\s*\)', r'', res_line_tmp
+            result = re.sub(
+                r'\(\s*notBool\s*<acctID>\s*([^<]+)\s*</acctID>\s*in_keys\s*\([^)]*\)\s*\)', r'', result
             )
-            res_line_tmp = re.sub(r'requires(\s*\[[\s\S]*?\])', r'\1', res_line_tmp)
-            res_line_tmp = re.sub(r'(\()\s*andBool\s*([\s\S]*?)\s*(\))', r'\1\2\3', res_line_tmp)
-            res_line_tmp = re.sub(r'andBool\s*\(\s*\)', r'', res_line_tmp)
-            return res_line_tmp
+            result = re.sub(r'requires(\s*\[[\s\S]*?\])', r'\1', result)
+            result = re.sub(r'(\()\s*andBool\s*([\s\S]*?)\s*(\))', r'\1\2\3', result)
+            result = re.sub(r'andBool\s*\(\s*\)', r'', result)
+            return result
 
-        def replace_lhs_function_by_assignment(res_line: str) -> str:
-            if not 'SUMMARY-BALANCE' in res_line:
-                return res_line
+        def replace_lhs_function_by_assignment(original_str: str) -> str:
+            if not 'SUMMARY-BALANCE' in original_str:
+                return original_str
             pattern = r'<acctID>\s*(\(\s*W0:Int modInt pow160\s*\))\s*</acctID>'
-            if re.search(pattern, res_line):
+            if re.search(pattern, original_str):
                 replace_pattern = r'<acctID> ACCTID_CELL_CELL </acctID>'
-                res_line = re.sub(pattern, replace_pattern, res_line)
-                res_line = re.sub(
-                    r'(</kevm>\s*)', r'\1requires ACCTID_CELL_CELL ==Int W0:Int modInt pow160\n', res_line
+                result = re.sub(pattern, replace_pattern, original_str)
+                result = re.sub(
+                    r'(</kevm>\s*)', r'\1requires ACCTID_CELL_CELL ==Int W0:Int modInt pow160\n', result
                 )
-            return res_line
+            return result
 
         spec_name = f'summary-{proof.id.replace("_", "-").lower()}.k'
         with open(self.save_directory / spec_name, 'w') as f:
