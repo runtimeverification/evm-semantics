@@ -559,7 +559,7 @@ class KEVMSummarizer:
                 passed = run_prover(
                     proof,
                     create_kcfg_explore=create_kcfg_explore,
-                    max_depth=1000,
+                    max_depth=1,
                     max_iterations=None,
                     cut_point_rules=KEVMSemantics.cut_point_rules(
                         break_on_jumpi=False,
