@@ -6,7 +6,7 @@ imports EVM
 imports BUF
     
     
-    rule [BASIC-BLOCK-8-TO-6]: <kevm>
+rule [BASIC-BLOCK-8-TO-6]: <kevm>
            <k>
              ( #next [ ADD ] ~> .K => .K )
              ~> K_CELL:K
@@ -27,7 +27,7 @@ imports BUF
                    ( PC_CELL:Int => ( PC_CELL:Int +Int 1 ) )
                  </pc>
                  <gas>
-                   ( ( GAS_CELL:Int => ( GAS_CELL:Int -Int Gverylow < SCHEDULE_CELL:Schedule > ) ) )
+                   GAS_CELL => ( GAS_CELL -Gas Gverylow < SCHEDULE_CELL:Schedule > )
                  </gas>
                  ...
                </callState>
@@ -38,8 +38,10 @@ imports BUF
            ...
          </kevm>
       requires USEGAS_CELL:Bool
+      andBool Gverylow < SCHEDULE_CELL > <=Gas GAS_CELL
       [priority(20), label(BASIC-BLOCK-8-TO-6)]
-    
+
+
     rule [BASIC-BLOCK-9-TO-7]: <kevm>
            <k>
              ( #next [ ADD ] ~> .K => .K )
