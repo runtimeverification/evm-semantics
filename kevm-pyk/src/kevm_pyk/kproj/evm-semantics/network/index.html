@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+<meta charset="utf-8" />
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0, maximum-scale=1.0"
+/>
+<meta
+  name="description"
+  content="K Semantics of the Ethereum Virtual Machine (EVM)"
+/>
+<meta
+  name="keywords"
+  content="runtime, verification, rv, k, ethereum virtual machine, evm"
+/>
+<meta name="author" content="EVM Semantics | Runtime Verification Inc" />
+<meta name="robots" content="index, follow" />
+
+<!--favicon icon-->
+<link rel="icon" type="image/png" href="../../../../../../assets/img/favicon.ico" />
+
+<title>KEVM: Semantics of EVM in K | Runtime Verification, Inc. </title>
+
+<link rel="canonical" href="https://jellopaper.org/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/network/" />
+
+<!--web fonts-->
+<link
+  href="https://fonts.googleapis.com/css?family=Nunito:300,400,600,700,800"
+  rel="stylesheet"
+/>
+<link
+  href="https://fonts.googleapis.com/css?family=Lora:400i"
+  rel="stylesheet"
+/>
+
+<link
+  href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.14.0/css/all.min.css"
+  rel="stylesheet"
+/>
+
+<link href="../../../../../../assets/css/index.css" rel="stylesheet" />
+
+<!--[if (gt IE 9) |!(IE)]><!-->
+<!--<link rel="stylesheet" href="/assets/vendor/custom-nav/css/effects/fade-menu.css"/>-->
+<!-- <link rel="stylesheet" href="../../../../../../assets/k/vl-nav/css/effects/slide-menu.css" /> -->
+<!--<![endif]-->
+
+  </head>
+
+  <body>
+<header
+  class="navbar navbar-expand navbar-dark flex-column flex-md-row bd-navbar"
+>
+  <a class="logo-link" href="../../../../../../index.html"> EVM Semantics </a>
+  <ul class="navbar-nav ml-md-auto">
+    <li class="nav-item">
+      <a
+        class="nav-link pl-2 pr-1 mx-1 py-3 my-n2"
+        href="https://github.com/runtimeverification/evm-semantics"
+        target="_blank"
+        rel="noopener"
+        aria-label="GitHub"
+      >
+        <i class="fab fa-github"></i>
+      </a>
+    </li>
+  </ul>
+  <!--
+  <a
+    class="btn btn-rv-blue d-none d-lg-inline-block mb-3 mb-md-0 ml-md-3"
+    href="../../../../../../downloads"
+    >Download</a
+  >
+  -->
+</header>
+
+
+    <div class="container-fluid">
+      <div class="row flex-xl-nowrap">
+<div class="col-12 col-md-3 col-xl-2 bd-sidebar mb-3">
+  <form
+    role="search"
+    class="bd-search d-flex align-items-center justify-content-between"
+  >
+    <input
+      type="search"
+      class="form-control"
+      placeholder="Search..."
+      aria-label="Search for..."
+      autocomplete="false"
+      id="search-box"
+    />
+    <button
+      class="btn bd-search-docs-toggle d-md-none p-0 ml-3 collapsed"
+      type="button"
+      aria-label="Toggle docs navigation"
+      style="font-size: 1.4rem"
+    >
+      <i class="fas fa-bars"></i>
+    </button>
+  </form>
+  <nav class="collapse bd-links" aria-label="Main navigation">
+    <div class="bd-toc-item">
+      <a class="bd-toc-link" href="../../../../../../">Homepage</a>
+      <a class="bd-toc-link" href="../../../../../../INSTALL/">Install</a>
+    </div>
+  </nav>
+</div>
+
+        <main
+          class="col-12 col-md-6 col-xl-8 py-md-3 pl-md-5 bd-content"
+          role="main"
+        >
+          <div class="markdown-preview"><html><head></head><body><h1 id="network-state">Network State</h1>
+<p>This file represents all the network state present in the EVM.
+It will incrementally build up to supporting the entire <a href="https://github.com/ethereum/evmjit/blob/9abb8fd50d2a8164a417a153684701fcbdf54599/include/evm.h" target="_blank" rel="noreferrer noopener">EVM-C API</a>.</p>
+<pre><code class="language-k"><span class="token keyword">module</span> NETWORK
+    <span class="token keyword">imports</span> STRING<span class="token operator">-</span>SYNTAX
+
+    <span class="token keyword">syntax</span> <span class="token keyword">String</span> <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> StatusCode2String<span class="token punctuation">(</span>StatusCode<span class="token punctuation">)</span> <span class="token punctuation">[</span><span class="token class-name">symbol</span><span class="token punctuation">(</span>StatusCode2String<span class="token punctuation">)</span><span class="token punctuation">,</span> function<span class="token punctuation">]</span>
+ <span class="token comment">// -------------------------------------------------------------------------------------</span>
+</code></pre>
+<h2 id="evm-status-codes">EVM Status Codes</h2>
+<h3 id="exceptional-codes">Exceptional Codes</h3>
+<p>The following codes all indicate that the VM ended execution with an exception, but give details about how.</p>
+<ul>
+<li><code>EVMC_FAILURE</code> is a catch-all for generic execution failure.</li>
+<li><code>EVMC_INVALID_INSTRUCTION</code> indicates reaching the designated <code>INVALID</code> opcode.</li>
+<li><code>EVMC_UNDEFINED_INSTRUCTION</code> indicates that an undefined opcode has been reached.</li>
+<li><code>EVMC_OUT_OF_GAS</code> indicates that execution exhausted the gas supply.</li>
+<li><code>EVMC_BAD_JUMP_DESTINATION</code> indicates a <code>JUMP*</code> to a non-<code>JUMPDEST</code> location.</li>
+<li><code>EVMC_STACK_OVERFLOW</code> indicates pushing more than 1024 elements onto the wordstack.</li>
+<li><code>EVMC_STACK_UNDERFLOW</code> indicates popping elements off an empty wordstack.</li>
+<li><code>EVMC_CALL_DEPTH_EXCEEDED</code> indicates that we have executed too deeply a nested sequence of <code>CALL*</code> or <code>CREATE</code> opcodes.</li>
+<li><code>EVMC_INVALID_MEMORY_ACCESS</code> indicates that a bad memory access occurred.
+This can happen when accessing local memory with <code>CODECOPY*</code> or <code>CALLDATACOPY</code>, or when accessing return data with <code>RETURNDATACOPY</code>.</li>
+<li><code>EVMC_STATIC_MODE_VIOLATION</code> indicates that a <code>STATICCALL</code> tried to change state.
+<strong>TODO:</strong> Avoid <code>_ERROR</code> suffix that suggests fatal error.</li>
+<li><code>EVMC_PRECOMPILE_FAILURE</code> indicates an errors in the precompiled contracts (eg. invalid points handed to elliptic curve functions).</li>
+</ul>
+<pre><code class="language-k">    <span class="token keyword">syntax</span> ExceptionalStatusCode <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> <span class="token string">"EVMC_FAILURE"</span>
+                                   <span class="token operator">|</span> <span class="token string">"EVMC_INVALID_INSTRUCTION"</span>
+                                   <span class="token operator">|</span> <span class="token string">"EVMC_UNDEFINED_INSTRUCTION"</span>
+                                   <span class="token operator">|</span> <span class="token string">"EVMC_OUT_OF_GAS"</span>
+                                   <span class="token operator">|</span> <span class="token string">"EVMC_BAD_JUMP_DESTINATION"</span>
+                                   <span class="token operator">|</span> <span class="token string">"EVMC_STACK_OVERFLOW"</span>
+                                   <span class="token operator">|</span> <span class="token string">"EVMC_STACK_UNDERFLOW"</span>
+                                   <span class="token operator">|</span> <span class="token string">"EVMC_CALL_DEPTH_EXCEEDED"</span>
+                                   <span class="token operator">|</span> <span class="token string">"EVMC_INVALID_MEMORY_ACCESS"</span>
+                                   <span class="token operator">|</span> <span class="token string">"EVMC_STATIC_MODE_VIOLATION"</span>
+                                   <span class="token operator">|</span> <span class="token string">"EVMC_PRECOMPILE_FAILURE"</span>
+                                   <span class="token operator">|</span> <span class="token string">"EVMC_NONCE_EXCEEDED"</span>
+ <span class="token comment">// -------------------------------------------------------------</span>
+    <span class="token keyword">rule</span> StatusCode2String<span class="token punctuation">(</span>EVMC_FAILURE<span class="token punctuation">)</span>               <span class="token operator">=&gt;</span> <span class="token string">"EVMC_FAILURE"</span>
+    <span class="token keyword">rule</span> StatusCode2String<span class="token punctuation">(</span>EVMC_INVALID_INSTRUCTION<span class="token punctuation">)</span>   <span class="token operator">=&gt;</span> <span class="token string">"EVMC_INVALID_INSTRUCTION"</span>
+    <span class="token keyword">rule</span> StatusCode2String<span class="token punctuation">(</span>EVMC_UNDEFINED_INSTRUCTION<span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token string">"EVMC_UNDEFINED_INSTRUCTION"</span>
+    <span class="token keyword">rule</span> StatusCode2String<span class="token punctuation">(</span>EVMC_OUT_OF_GAS<span class="token punctuation">)</span>            <span class="token operator">=&gt;</span> <span class="token string">"EVMC_OUT_OF_GAS"</span>
+    <span class="token keyword">rule</span> StatusCode2String<span class="token punctuation">(</span>EVMC_BAD_JUMP_DESTINATION<span class="token punctuation">)</span>  <span class="token operator">=&gt;</span> <span class="token string">"EVMC_BAD_JUMP_DESTINATION"</span>
+    <span class="token keyword">rule</span> StatusCode2String<span class="token punctuation">(</span>EVMC_STACK_OVERFLOW<span class="token punctuation">)</span>        <span class="token operator">=&gt;</span> <span class="token string">"EVMC_STACK_OVERFLOW"</span>
+    <span class="token keyword">rule</span> StatusCode2String<span class="token punctuation">(</span>EVMC_STACK_UNDERFLOW<span class="token punctuation">)</span>       <span class="token operator">=&gt;</span> <span class="token string">"EVMC_STACK_UNDERFLOW"</span>
+    <span class="token keyword">rule</span> StatusCode2String<span class="token punctuation">(</span>EVMC_CALL_DEPTH_EXCEEDED<span class="token punctuation">)</span>   <span class="token operator">=&gt;</span> <span class="token string">"EVMC_CALL_DEPTH_EXCEEDED"</span>
+    <span class="token keyword">rule</span> StatusCode2String<span class="token punctuation">(</span>EVMC_INVALID_MEMORY_ACCESS<span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token string">"EVMC_INVALID_MEMORY_ACCESS"</span>
+    <span class="token keyword">rule</span> StatusCode2String<span class="token punctuation">(</span>EVMC_STATIC_MODE_VIOLATION<span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token string">"EVMC_STATIC_MODE_VIOLATION"</span>
+    <span class="token keyword">rule</span> StatusCode2String<span class="token punctuation">(</span>EVMC_PRECOMPILE_FAILURE<span class="token punctuation">)</span>    <span class="token operator">=&gt;</span> <span class="token string">"EVMC_PRECOMPILE_FAILURE"</span>
+    <span class="token keyword">rule</span> StatusCode2String<span class="token punctuation">(</span>EVMC_NONCE_EXCEEDED<span class="token punctuation">)</span>        <span class="token operator">=&gt;</span> <span class="token string">"EVMC_NONCE_EXCEEDED"</span>
+</code></pre>
+<h3 id="ending-codes">Ending Codes</h3>
+<p>These additional status codes indicate that execution has ended in some non-exceptional way.</p>
+<ul>
+<li><code>EVMC_SUCCESS</code> indicates successful end of execution.</li>
+<li><code>EVMC_REVERT</code> indicates that the contract called <code>REVERT</code>.</li>
+</ul>
+<pre><code class="language-k">    <span class="token keyword">syntax</span> EndStatusCode <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> ExceptionalStatusCode
+                           <span class="token operator">|</span> <span class="token string">"EVMC_SUCCESS"</span>
+                           <span class="token operator">|</span> <span class="token string">"EVMC_REVERT"</span>
+ <span class="token comment">// --------------------------------------</span>
+    <span class="token keyword">rule</span> StatusCode2String<span class="token punctuation">(</span>EVMC_SUCCESS<span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token string">"EVMC_SUCCESS"</span>
+    <span class="token keyword">rule</span> StatusCode2String<span class="token punctuation">(</span>EVMC_REVERT<span class="token punctuation">)</span>  <span class="token operator">=&gt;</span> <span class="token string">"EVMC_REVERT"</span>
+</code></pre>
+<h3 id="other-codes">Other Codes</h3>
+<p>The following codes indicate other non-execution errors with the VM.</p>
+<ul>
+<li><code>EVMC_REJECTED</code> indicates malformed or wrong-version EVM bytecode.</li>
+<li><code>EVMC_INTERNAL_ERROR</code> indicates some other error that is unrecoverable but not due to the bytecode.</li>
+<li><code>.StatusCode</code> is an extra code added for "unset or unknown".</li>
+</ul>
+<pre><code class="language-k">    <span class="token keyword">syntax</span> StatusCode <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> EndStatusCode
+                        <span class="token operator">|</span> <span class="token string">"EVMC_REJECTED"</span>
+                        <span class="token operator">|</span> <span class="token string">"EVMC_INTERNAL_ERROR"</span>
+                        <span class="token operator">|</span> <span class="token string">".StatusCode"</span>
+ <span class="token comment">// -----------------------------------</span>
+    <span class="token keyword">rule</span> StatusCode2String<span class="token punctuation">(</span>EVMC_REJECTED<span class="token punctuation">)</span>       <span class="token operator">=&gt;</span> <span class="token string">"EVMC_REJECTED"</span>
+    <span class="token keyword">rule</span> StatusCode2String<span class="token punctuation">(</span>EVMC_INTERNAL_ERROR<span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token string">"EVMC_INTERNAL_ERROR"</span>
+    <span class="token keyword">rule</span> StatusCode2String<span class="token punctuation">(</span><span class="token punctuation">.</span>StatusCode<span class="token punctuation">)</span>         <span class="token operator">=&gt;</span> <span class="token string">""</span>
+</code></pre>
+<h2 id="client%2Fnetwork-codes">Client/Network Codes</h2>
+<p>The following are status codes used to report network state failures to the EVM from the client.
+These are not present in the <a href="https://github.com/ethereum/evmjit/blob/9abb8fd50d2a8164a417a153684701fcbdf54599/include/evm.h" target="_blank" rel="noreferrer noopener">EVM-C API</a>.</p>
+<ul>
+<li><code>EVMC_ACCOUNT_ALREADY_EXISTS</code> indicates that a newly created account already exists.</li>
+<li><code>EVMC_BALANCE_UNDERFLOW</code> indicates an attempt to create an account which already exists.</li>
+</ul>
+<pre><code class="language-k">    <span class="token keyword">syntax</span> ExceptionalStatusCode <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> <span class="token string">"EVMC_ACCOUNT_ALREADY_EXISTS"</span>
+                                   <span class="token operator">|</span> <span class="token string">"EVMC_BALANCE_UNDERFLOW"</span>
+ <span class="token comment">// ---------------------------------------------------------</span>
+    <span class="token keyword">rule</span> StatusCode2String<span class="token punctuation">(</span>EVMC_ACCOUNT_ALREADY_EXISTS<span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token string">"EVMC_ACCOUNT_ALREADY_EXISTS"</span>
+    <span class="token keyword">rule</span> StatusCode2String<span class="token punctuation">(</span>EVMC_BALANCE_UNDERFLOW<span class="token punctuation">)</span>      <span class="token operator">=&gt;</span> <span class="token string">"EVMC_BALANCE_UNDERFLOW"</span>
+</code></pre>
+<pre><code class="language-k"><span class="token keyword">endmodule</span>
+</code></pre>
+<h1 id="resources">Resources</h1>
+</body></html></div>
+        </main>
+
+        <!-- Page ToC -->
+        <div class="col-12 col-md-3 col-xl-2 py-md-3 bd-sidebar page-toc mb-3">
+          
+<div>
+<details style="padding:0.25rem 0;;padding-left: 0px;">
+            <summary class="bd-toc-link-wrapper">
+              <a href="#network-state" class="bd-toc-link">Network State</a>
+              </summary>
+            <div>
+              <details style="padding:0.25rem 0;;padding-left: 8px;">
+            <summary class="bd-toc-link-wrapper">
+              <a href="#evm-status-codes" class="bd-toc-link">EVM Status Codes</a>
+              </summary>
+            <div>
+              <div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#exceptional-codes"
+                class="bd-toc-link"
+                style="padding-left: 16px;;"
+              >
+                Exceptional Codes
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#ending-codes"
+                class="bd-toc-link"
+                style="padding-left: 16px;;"
+              >
+                Ending Codes
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#other-codes"
+                class="bd-toc-link"
+                style="padding-left: 16px;;"
+              >
+                Other Codes
+              </a></div>
+            </div>
+          </details>
+        <div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#client%2Fnetwork-codes"
+                class="bd-toc-link"
+                style="padding-left: 8px;;"
+              >
+                Client/Network Codes
+              </a></div>
+            </div>
+          </details>
+        <div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#resources"
+                class="bd-toc-link"
+                style="padding-left: 0px;;"
+              >
+                Resources
+              </a></div>
+</div>
+
+        </div>
+        <div class="btn btn-rv-blue page-toc-toggle-btn"></div>
+        <!-- End Page ToC -->
+      </div>
+    </div>
+<!-- The footer is now controlled by the k-web-theme git submodule -->
+<footer id="rvsite-footer" class="app-footer text-md-left text-center">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-md-4 mb-md-0 mb-4">
+        <a href="https://runtimeverification.com/" target="_blank">
+          <picture>
+            <source
+              srcset="
+                https://runtimeverification.com/assets/img/rv-logo-dark.png
+              "
+              media="(prefers-color-scheme: dark)"
+            />
+            <img
+              class="logo-dark"
+              src="https://runtimeverification.com/assets/img/rv-logo.png"
+              alt="Runtime Verification logo"
+              style="height: 32px"
+            /> </picture
+        ></a>
+        <p class="mt-2 text-md-left copyright">
+          <a href="https://maps.app.goo.gl/8YhKozfmZtgzQBsH7" target="_blank"
+            >202 S Broadway Ave #31, Urbana, IL</a
+          >
+        </p>
+      </div>
+      <div class="col-md-4 text-md-center mb-md-0 mb-4"></div>
+      <div class="col-md-4 mb-md-0 mb-4 pl-0 text-md-right">
+        <p class="copyright">2025 © all rights reserved</p>
+        <span class="copyright"
+          ><a href="https://runtimeverification.com/privacy-policy"
+            >privacy policy</a
+          >
+          |
+          <a href="https://runtimeverification.com/terms-of-use"
+            >terms of use</a
+          ></span
+        >
+      </div>
+    </div>
+  </div>
+</footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Typist/1.2/typist.min.js"></script>
+    <script src="../../../../../../assets/js/index.js"></script>
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script
+  async
+  src="https://www.googletagmanager.com/gtag/js?id=G-QL0D8HRYFW"
+></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag() {
+    dataLayer.push(arguments);
+  }
+  gtag("js", new Date());
+  gtag("config", "G-QL0D8HRYFW");
+</script>
+
+  </body>
+</html>
