@@ -9,7 +9,8 @@ from kevm_pyk.summarizer import OPCODES, OPCODES_SUMMARY_STATUS, get_summary_sta
 def test_summarize(opcode: str) -> None:
     if get_summary_status(opcode) != 'PASSED':
         pytest.skip(f'{opcode} status: {OPCODES_SUMMARY_STATUS[opcode]}')
-    if opcode in ['DUP', 'SWAP', 'BALANCE', 'SDIV', 'LOG', 'SMOD', 'BYTE']:
+
+    if opcode in ['DUP', 'SWAP', 'LOG']:
         pytest.skip(f'{opcode} summarization is time-consuming')
 
     print(f'[{opcode}] selected')

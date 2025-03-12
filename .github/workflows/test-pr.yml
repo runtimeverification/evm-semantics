@@ -110,7 +110,7 @@ jobs:
           - name: 'Summarization'
             test-suite: 'test-summarize'
             test-args:
-            timeout: 150
+            timeout: 30
             parallel: 6
           - name: 'DSS'
             test-suite: 'test-prove-dss'
