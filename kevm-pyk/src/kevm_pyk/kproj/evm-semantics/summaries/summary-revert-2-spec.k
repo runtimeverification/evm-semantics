@@ -6,7 +6,7 @@ imports EVM
 imports BUF
     
     
-    rule [BASIC-BLOCK-8-TO-7]: <kevm>
+    rule [BASIC-BLOCK-24-TO-23]: <kevm>
            <k>
              ( #next [ REVERT ] => #halt )
              ~> K_CELL:K
@@ -33,7 +33,7 @@ imports BUF
                    LOCALMEM_CELL:Bytes
                  </localMem>
                  <gas>
-                   ( ( GAS_CELL:Int => ( ( GAS_CELL:Int -Int ( Cmem ( SCHEDULE_CELL:Schedule , #memoryUsageUpdate ( MEMORYUSED_CELL:Int , W0:Int , W1:Int ) ) -Int Cmem ( SCHEDULE_CELL:Schedule , MEMORYUSED_CELL:Int ) ) ) -Int Gzero < SCHEDULE_CELL:Schedule > ) ) )
+                    ( ( GAS_CELL:Int => ( ( GAS_CELL:Int -Int ( Cmem ( SCHEDULE_CELL:Schedule , #memoryUsageUpdate ( MEMORYUSED_CELL:Int , W0:Int , W1:Int ) ) -Int Cmem ( SCHEDULE_CELL:Schedule , MEMORYUSED_CELL:Int ) ) ) -Int Gzero < SCHEDULE_CELL:Schedule > ) ) )
                  </gas>
                  <memoryUsed>
                    ( MEMORYUSED_CELL:Int => #memoryUsageUpdate ( MEMORYUSED_CELL:Int , W0:Int , W1:Int ) )
@@ -46,10 +46,10 @@ imports BUF
            </ethereum>
            ...
          </kevm>
-      requires USEGAS_CELL:Bool
-      [priority(20), label(BASIC-BLOCK-8-TO-7)]
+      requires USEGAS_CELL:Bool  andBool ( ( ( ( ( Cmem ( SCHEDULE_CELL:Schedule , #memoryUsageUpdate ( MEMORYUSED_CELL:Int , W0:Int , W1:Int ) ) -Int Cmem ( SCHEDULE_CELL:Schedule , MEMORYUSED_CELL:Int ) ) ) -Int Gzero < SCHEDULE_CELL:Schedule > ) ) ) <=Int GAS_CELL 
+      [priority(20), label(BASIC-BLOCK-24-TO-23)]
     
-    rule [BASIC-BLOCK-9-TO-6]: <kevm>
+    rule [BASIC-BLOCK-25-TO-15]: <kevm>
            <k>
              ( #next [ REVERT ] => #halt )
              ~> K_CELL:K
@@ -73,7 +73,7 @@ imports BUF
                    LOCALMEM_CELL:Bytes
                  </localMem>
                  <gas>
-                   ( GAS_CELL:Int )
+                    ( GAS_CELL:Int )
                  </gas>
                  ...
                </callState>
@@ -84,6 +84,6 @@ imports BUF
            ...
          </kevm>
       requires ( notBool USEGAS_CELL:Bool )
-      [priority(20), label(BASIC-BLOCK-9-TO-6)]
+      [priority(20), label(BASIC-BLOCK-25-TO-15)]
 
 endmodule

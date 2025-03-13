@@ -450,7 +450,21 @@ def test_prove_optimizations(
     _test_prove_of(kevm, kore_rpc_command, _get_proofs_of('evm-semantics.haskell', 'EVM-OPTIMIZATIONS', kevm))
 
 
+# SUMMARY_MODULES = [
+#     path.stem.upper()
+#     for path in (REPO_ROOT / 'kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries').glob('*.k') 
+#     if path.name != 'summary.k'
+# ]
+SUMMARY_MODULES = ['SUMMARY-RETURN-2-SPEC']
+
+
+@pytest.mark.parametrize(
+    'module',
+    SUMMARY_MODULES,
+    ids=SUMMARY_MODULES,
+)
 def test_prove_summaries(
+    module: str,
     kompiled_target_for: Callable[[Path], Path],
     tmp_path: Path,
     caplog: LogCaptureFixture,
@@ -465,4 +479,4 @@ def test_prove_summaries(
 
     kore_rpc_command = ('booster-dev',) if use_booster_dev else ('kore-rpc-booster',)
     
-    _test_prove_of(kevm, kore_rpc_command, _get_proofs_of('evm-semantics.haskell-summary', 'SUMMARY-ADD-2-SPEC', kevm))
+    _test_prove_of(kevm, kore_rpc_command, _get_proofs_of('evm-semantics.haskell-summary', module, kevm))

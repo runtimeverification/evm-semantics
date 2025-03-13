@@ -6,7 +6,7 @@ imports EVM
 imports BUF
     
     
-    rule [BASIC-BLOCK-4-TO-5]: <kevm>
+    rule [BASIC-BLOCK-4-TO-7]: <kevm>
            <k>
              ( #next [ TSTORE ] => #halt )
              ~> K_CELL:K
@@ -27,7 +27,7 @@ imports BUF
                    ( W0:Int : ( W1:Int : WS:WordStack ) )
                  </wordStack>
                  <gas>
-                   ( GAS_CELL:Int )
+                    ( GAS_CELL:Int )
                  </gas>
                  <static>
                    ( STATIC_CELL:Bool => true )
@@ -53,9 +53,9 @@ imports BUF
          </kevm>
       requires ( STATIC_CELL:Bool
        )
-      [priority(20), label(BASIC-BLOCK-4-TO-5)]
+      [priority(20), label(BASIC-BLOCK-4-TO-7)]
     
-    rule [BASIC-BLOCK-3-TO-6]: <kevm>
+    rule [BASIC-BLOCK-3-TO-12]: <kevm>
            <k>
              ( #next [ TSTORE ] ~> .K => .K )
              ~> K_CELL:K
@@ -76,7 +76,7 @@ imports BUF
                    ( PC_CELL:Int => ( PC_CELL:Int +Int 1 ) )
                  </pc>
                  <gas>
-                   ( GAS_CELL:Int )
+                    ( GAS_CELL:Int )
                  </gas>
                  <static>
                    ( STATIC_CELL:Bool => false )
@@ -105,6 +105,6 @@ imports BUF
          </kevm>
       requires ( ( notBool STATIC_CELL:Bool )
        )
-      [priority(20), label(BASIC-BLOCK-3-TO-6)]
+      [priority(20), label(BASIC-BLOCK-3-TO-12)]
 
 endmodule

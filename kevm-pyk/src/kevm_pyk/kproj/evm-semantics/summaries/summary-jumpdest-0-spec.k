@@ -6,7 +6,7 @@ imports EVM
 imports BUF
     
     
-    rule [BASIC-BLOCK-8-TO-6]: <kevm>
+    rule [BASIC-BLOCK-19-TO-18]: <kevm>
            <k>
              ( #next [ JUMPDEST ] ~> .K => .K )
              ~> K_CELL:K
@@ -24,7 +24,7 @@ imports BUF
                    ( PC_CELL:Int => ( PC_CELL:Int +Int 1 ) )
                  </pc>
                  <gas>
-                   ( ( GAS_CELL:Int => ( GAS_CELL:Int -Int Gjumpdest < SCHEDULE_CELL:Schedule > ) ) )
+                    ( ( GAS_CELL:Int => ( GAS_CELL:Int -Int Gjumpdest < SCHEDULE_CELL:Schedule > ) ) )
                  </gas>
                  ...
                </callState>
@@ -34,10 +34,10 @@ imports BUF
            </ethereum>
            ...
          </kevm>
-      requires USEGAS_CELL:Bool
-      [priority(20), label(BASIC-BLOCK-8-TO-6)]
+      requires USEGAS_CELL:Bool  andBool ( ( ( Gjumpdest < SCHEDULE_CELL:Schedule > ) ) ) <=Int GAS_CELL 
+      [priority(20), label(BASIC-BLOCK-19-TO-18)]
     
-    rule [BASIC-BLOCK-9-TO-7]: <kevm>
+    rule [BASIC-BLOCK-20-TO-12]: <kevm>
            <k>
              ( #next [ JUMPDEST ] ~> .K => .K )
              ~> K_CELL:K
@@ -52,7 +52,7 @@ imports BUF
                    ( PC_CELL:Int => ( PC_CELL:Int +Int 1 ) )
                  </pc>
                  <gas>
-                   ( GAS_CELL:Int )
+                    ( GAS_CELL:Int )
                  </gas>
                  ...
                </callState>
@@ -63,6 +63,6 @@ imports BUF
            ...
          </kevm>
       requires ( notBool USEGAS_CELL:Bool )
-      [priority(20), label(BASIC-BLOCK-9-TO-7)]
+      [priority(20), label(BASIC-BLOCK-20-TO-12)]
 
 endmodule

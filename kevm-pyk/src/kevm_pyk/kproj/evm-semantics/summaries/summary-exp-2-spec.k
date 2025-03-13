@@ -6,7 +6,7 @@ imports EVM
 imports BUF
     
     
-    rule [BASIC-BLOCK-13-TO-9]: <kevm>
+    rule [BASIC-BLOCK-30-TO-14]: <kevm>
            <k>
              ( #next [ EXP ] ~> .K => .K )
              ~> K_CELL:K
@@ -24,7 +24,7 @@ imports BUF
                    ( PC_CELL:Int => ( PC_CELL:Int +Int 1 ) )
                  </pc>
                  <gas>
-                   ( GAS_CELL:Int )
+                    ( GAS_CELL:Int )
                  </gas>
                  ...
                </callState>
@@ -35,9 +35,9 @@ imports BUF
            ...
          </kevm>
       requires ( notBool USEGAS_CELL:Bool )
-      [priority(20), label(BASIC-BLOCK-13-TO-9)]
+      [priority(20), label(BASIC-BLOCK-30-TO-14)]
     
-    rule [BASIC-BLOCK-16-TO-11]: <kevm>
+    rule [BASIC-BLOCK-33-TO-27]: <kevm>
            <k>
              ( #next [ EXP ] ~> .K => .K )
              ~> K_CELL:K
@@ -58,7 +58,7 @@ imports BUF
                    ( PC_CELL:Int => ( PC_CELL:Int +Int 1 ) )
                  </pc>
                  <gas>
-                   ( ( GAS_CELL:Int => ( GAS_CELL:Int -Int Gexp < SCHEDULE_CELL:Schedule > ) ) )
+                    ( ( GAS_CELL:Int => ( GAS_CELL:Int -Int Gexp < SCHEDULE_CELL:Schedule > ) ) )
                  </gas>
                  ...
                </callState>
@@ -68,12 +68,12 @@ imports BUF
            </ethereum>
            ...
          </kevm>
-      requires ( USEGAS_CELL:Bool
+      requires ( USEGAS_CELL:Bool  andBool ( ( ( Gexp < SCHEDULE_CELL:Schedule > ) ) ) <=Int GAS_CELL  
        andBool ( W1:Int <=Int 0
                ))
-      [priority(20), label(BASIC-BLOCK-16-TO-11)]
+      [priority(20), label(BASIC-BLOCK-33-TO-27)]
     
-    rule [BASIC-BLOCK-17-TO-10]: <kevm>
+    rule [BASIC-BLOCK-34-TO-28]: <kevm>
            <k>
              ( #next [ EXP ] ~> .K => .K )
              ~> K_CELL:K
@@ -94,7 +94,7 @@ imports BUF
                    ( PC_CELL:Int => ( PC_CELL:Int +Int 1 ) )
                  </pc>
                  <gas>
-                   ( ( GAS_CELL:Int => ( GAS_CELL:Int -Int ( Gexp < SCHEDULE_CELL:Schedule > +Int ( Gexpbyte < SCHEDULE_CELL:Schedule > *Int ( ( log2Int ( W1:Int ) /Int 8 ) +Int 1 ) ) ) ) ) )
+                    ( ( GAS_CELL:Int => ( GAS_CELL:Int -Int ( Gexp < SCHEDULE_CELL:Schedule > +Int ( Gexpbyte < SCHEDULE_CELL:Schedule > *Int ( ( log2Int ( W1:Int ) /Int 8 ) +Int 1 ) ) ) ) ) )
                  </gas>
                  ...
                </callState>
@@ -104,9 +104,9 @@ imports BUF
            </ethereum>
            ...
          </kevm>
-      requires ( USEGAS_CELL:Bool
+      requires ( USEGAS_CELL:Bool  andBool ( ( ( ( Gexp < SCHEDULE_CELL:Schedule > +Int ( Gexpbyte < SCHEDULE_CELL:Schedule > *Int ( ( log2Int ( W1:Int ) /Int 8 ) +Int 1 ) ) ) ) ) ) <=Int GAS_CELL  
        andBool ( 0 <Int W1:Int
                ))
-      [priority(20), label(BASIC-BLOCK-17-TO-10)]
+      [priority(20), label(BASIC-BLOCK-34-TO-28)]
 
 endmodule

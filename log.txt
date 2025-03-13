@@ -1,0 +1,390 @@
+poetry -C ./kevm-pyk env use --no-cache /nix/store/7hnr99nxrd2aw6lghybqdmkckq60j6l9-python3-3.11.9/bin/python3
+Using virtualenv: /home/zhaoji/.cache/pypoetry/virtualenvs/kevm-pyk-9eA2lNH8-py3.11
+poetry -C ./kevm-pyk install
+Installing dependencies from lock file
+
+No dependencies to install or update
+
+Installing the current project: kevm-pyk (1.0.678)
+make -C kevm-pyk/ test-integration PYTEST_ARGS+="-k test_prove_summaries"
+make[1]: Entering directory '/home/zhaoji/evm-semantics/kevm-pyk'
+poetry install
+Installing dependencies from lock file
+
+No dependencies to install or update
+
+Installing the current project: kevm-pyk (1.0.678)
+poetry run pytest src/tests/integration --verbose --durations=0 --dist=worksteal --maxfail=1 --numprocesses=8 -k test_prove_summaries
+============================= test session starts ==============================
+platform linux -- Python 3.11.9, pytest-7.4.4, pluggy-1.5.0 -- /home/zhaoji/.cache/pypoetry/virtualenvs/kevm-pyk-9eA2lNH8-py3.11/bin/python
+cachedir: .pytest_cache
+hypothesis profile 'default' -> database=DirectoryBasedExampleDatabase(PosixPath('/home/zhaoji/evm-semantics/kevm-pyk/.hypothesis/examples'))
+rootdir: /home/zhaoji/evm-semantics/kevm-pyk
+plugins: mock-3.14.0, cov-6.0.0, xdist-3.6.1, kframework-7.1.219, hypothesis-6.127.9, timeout-2.3.1
+created: 8/8 workers
+8 workers [1 item]
+
+scheduling tests via WorkStealingScheduling
+
+src/tests/integration/test_prove.py::test_prove_summaries[SUMMARY-RETURN-2-SPEC] 
+[gw7] [100%] FAILED src/tests/integration/test_prove.py::test_prove_summaries[SUMMARY-RETURN-2-SPEC] 
+
+=================================== FAILURES ===================================
+_________________ test_prove_summaries[SUMMARY-RETURN-2-SPEC] __________________
+[gw7] linux -- Python 3.11.9 /home/zhaoji/.cache/pypoetry/virtualenvs/kevm-pyk-9eA2lNH8-py3.11/bin/python
+
+module = 'SUMMARY-RETURN-2-SPEC'
+kompiled_target_for = <function kompiled_target_for.<locals>.kompile at 0x7518d5f3aac0>
+tmp_path = PosixPath('/tmp/pytest-of-zhaoji/pytest-78/popen-gw7/test_prove_summaries_SUMMARY_R0')
+caplog = <_pytest.logging.LogCaptureFixture object at 0x7518d5e10b90>
+use_booster_dev = False, bug_report = None
+
+    @pytest.mark.parametrize(
+        'module',
+        SUMMARY_MODULES,
+        ids=SUMMARY_MODULES,
+    )
+    def test_prove_summaries(
+        module: str,
+        kompiled_target_for: Callable[[Path], Path],
+        tmp_path: Path,
+        caplog: LogCaptureFixture,
+        use_booster_dev: bool,
+        bug_report: BugReport | None,
+    ) -> None:
+        caplog.set_level(logging.INFO)
+    
+        spec_file = REPO_ROOT / 'tests/specs/opcodes/evm-summary-spec.k'
+        definition_dir = kompiled_target_for(spec_file)
+        kevm = KEVM(definition_dir)
+    
+        kore_rpc_command = ('booster-dev',) if use_booster_dev else ('kore-rpc-booster',)
+    
+>       _test_prove_of(kevm, kore_rpc_command, _get_proofs_of('evm-semantics.haskell-summary', module, kevm))
+
+src/tests/integration/test_prove.py:482: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+kevm = <kevm_pyk.kevm.KEVM object at 0x7518d7108dd0>
+kore_rpc_command = ('kore-rpc-booster',)
+proofs = [<pyk.proof.reachability.APRProof object at 0x7518d5e2b1d0>, <pyk.proof.reachability.APRProof object at 0x7518d5e60990>]
+
+    def _test_prove_of(kevm: KEVM, kore_rpc_command: tuple[str, ...], proofs: list[APRProof]) -> None:
+        _LOGGER.info(f'Proving {len(proofs)} proofs')
+        with legacy_explore(
+            kevm, kcfg_semantics=KEVMSemantics(allow_symbolic_program=True), kore_rpc_command=kore_rpc_command
+        ) as kcfg_explore:
+            prover = APRProver(
+                kcfg_explore,
+                execute_depth=20,
+                terminal_rules=[],
+                cut_point_rules=['EVM.pc.inc', 'EVM.end-basic-block'],
+                counterexample_info=False,
+                fast_check_subsumption=True,
+            )
+            for proof in proofs:
+                initialize_apr_proof(kcfg_explore.cterm_symbolic, proof)
+                prover.advance_proof(proof, max_iterations=20)
+                node_printer = kevm_node_printer(kevm, proof)
+                proof_show = APRProofShow(kevm, node_printer=node_printer)
+                proof_display = '\n'.join('    ' + line for line in proof_show.show(proof))
+                _LOGGER.info(f'Proof {proof.id}:\n{proof_display}')
+>               assert proof.passed
+E               assert False
+E                +  where False = <pyk.proof.reachability.APRProof object at 0x7518d5e60990>.passed
+
+src/tests/integration/test_prove.py:433: AssertionError
+------------------------------ Captured log call -------------------------------
+INFO     pyk.ktool.kompile:utils.py:556 [PID=2460636][exec] kompile /home/zhaoji/evm-semantics/tests/specs/opcodes/verification.k --main-module VERIFICATION --syntax-module VERIFICATION -I /home/zhaoji/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics -I /home/zhaoji/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/plugin --md-selector 'k & ! symbolic' --hook-namespaces 'JSON KRYPTO' --emit-json --backend llvm --llvm-kompile-type c -ccopt -std=c++17 -ccopt -lssl -ccopt -lcrypto -ccopt -lsecp256k1 -ccopt /home/zhaoji/.cache/kdist-9ffc41e/evm-semantics/plugin/krypto.a -ccopt -Wno-deprecated-declarations --output-definition /tmp/pytest-of-zhaoji/pytest-78/popen-gw7/kompiled0/opcodes-verification-VERIFICATION/llvm-library --type-inference-mode simplesub --debug
+INFO     pyk.ktool.kompile:utils.py:556 [PID=2460637][exec] kompile /home/zhaoji/evm-semantics/tests/specs/opcodes/verification.k --main-module VERIFICATION --syntax-module VERIFICATION -I /home/zhaoji/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics -I /home/zhaoji/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/plugin --md-selector 'k & ! concrete' --hook-namespaces 'JSON KRYPTO' --emit-json --backend haskell --output-definition /tmp/pytest-of-zhaoji/pytest-78/popen-gw7/kompiled0/opcodes-verification-VERIFICATION --type-inference-mode simplesub --debug
+INFO     pyk.ktool.kompile:utils.py:576 [PID=2460637][done] status=0 time=26.782s
+INFO     pyk.ktool.kompile:utils.py:576 [PID=2460636][done] status=0 time=27.968s
+INFO     pyk.kast.outer:outer.py:1643 Loading JSON definition: /home/zhaoji/.cache/kdist-9ffc41e/evm-semantics/haskell-summary/compiled.json
+INFO     pyk.kast.outer:outer.py:1645 Converting JSON definition to Kast: /home/zhaoji/.cache/kdist-9ffc41e/evm-semantics/haskell-summary/compiled.json
+INFO     pyk.kast.outer:outer.py:1643 Loading JSON definition: /tmp/pytest-of-zhaoji/pytest-78/popen-gw7/kompiled0/opcodes-verification-VERIFICATION/compiled.json
+INFO     pyk.kast.outer:outer.py:1645 Converting JSON definition to Kast: /tmp/pytest-of-zhaoji/pytest-78/popen-gw7/kompiled0/opcodes-verification-VERIFICATION/compiled.json
+INFO     tests.integration.test_prove:test_prove.py:414 Proving 2 proofs
+INFO     pyk.kore.rpc:rpc.py:1153 Starting KoreServer: kore-rpc-booster /tmp/pytest-of-zhaoji/pytest-78/popen-gw7/kompiled0/opcodes-verification-VERIFICATION/definition.kore --module VERIFICATION --server-port 0
+INFO     pyk.kore.rpc:rpc.py:1168 [PID=2461589][stde] [proxy] Loading definition from /tmp/pytest-of-zhaoji/pytest-78/popen-gw7/kompiled0/opcodes-verification-VERIFICATION/definition.kore, main module "VERIFICATION"
+INFO     pyk.kore.rpc:rpc.py:1168 [PID=2461589][stde] [kore][info] Reading the input file TimeSpec {sec = 0, nsec = 13513419}
+INFO     pyk.kore.rpc:rpc.py:1168 [PID=2461589][stde] [kore][info] Parsing the file TimeSpec {sec = 0, nsec = 130}
+INFO     pyk.kore.rpc:rpc.py:1168 [PID=2461589][stde] [kore][info] Verifying the definition TimeSpec {sec = 0, nsec = 230}
+INFO     pyk.kore.rpc:rpc.py:1168 [PID=2461589][stde] [kore][info] Executing TimeSpec {sec = 0, nsec = 676288320}
+INFO     pyk.kore.rpc:rpc.py:1168 [PID=2461589][stde] [kore][info] Reading the input file TimeSpec {sec = 0, nsec = 14303116}
+INFO     pyk.kore.rpc:rpc.py:1168 [PID=2461589][stde] [kore][info] Parsing the file TimeSpec {sec = 0, nsec = 291}
+INFO     pyk.kore.rpc:rpc.py:1160 KoreServer started: 0.0.0.0:38819, pid=2461589
+INFO     pyk.kore.rpc:rpc.py:115 Connecting to host: localhost:38819
+INFO     pyk.kore.rpc:rpc.py:122 Connected to host: localhost:38819
+INFO     kevm_pyk.utils:utils.py:320 Computing definedness constraint for initial node: SUMMARY-RETURN-2-SPEC.BASIC-BLOCK-25-TO-14
+INFO     pyk.kore.rpc:rpc.py:63 Sending request to localhost:38819: 128749219953296-001 - simplify
+INFO     pyk.kore.rpc:rpc.py:66 Received response from localhost:38819: 128749219953296-001 - simplify
+INFO     pyk.kore.rpc:rpc.py:63 Sending request to localhost:38819: 128749219953296-002 - simplify
+INFO     pyk.kore.rpc:rpc.py:1168 [PID=2461589][stde] [kore][info] Verifying the definition TimeSpec {sec = 0, nsec = 231}
+INFO     pyk.kore.rpc:rpc.py:1168 [PID=2461589][stde] [proxy] Starting RPC server
+INFO     pyk.kore.rpc:rpc.py:1168 [PID=2461589][stde] [proxy] Processing request 128749219953296-001
+INFO     pyk.kore.rpc:rpc.py:1168 [PID=2461589][stde] [proxy] Processing request 128749219953296-002
+INFO     pyk.kore.rpc:rpc.py:66 Received response from localhost:38819: 128749219953296-002 - simplify
+INFO     kevm_pyk.utils:utils.py:323 Simplifying initial and target node: SUMMARY-RETURN-2-SPEC.BASIC-BLOCK-25-TO-14
+INFO     pyk.kore.rpc:rpc.py:63 Sending request to localhost:38819: 128749219953296-003 - simplify
+INFO     pyk.kore.rpc:rpc.py:66 Received response from localhost:38819: 128749219953296-003 - simplify
+INFO     pyk.kore.rpc:rpc.py:63 Sending request to localhost:38819: 128749219953296-004 - simplify
+INFO     pyk.kore.rpc:rpc.py:1168 [PID=2461589][stde] [proxy] Processing request 128749219953296-003
+INFO     pyk.kore.rpc:rpc.py:1168 [PID=2461589][stde] [proxy] Processing request 128749219953296-004
+INFO     pyk.kore.rpc:rpc.py:66 Received response from localhost:38819: 128749219953296-004 - simplify
+INFO     pyk.proof.proof:proof.py:523 Initializing proof: SUMMARY-RETURN-2-SPEC.BASIC-BLOCK-25-TO-14
+INFO     pyk.kore.rpc:rpc.py:63 Sending request to localhost:38819: 128749219953296-005 - add-module
+INFO     pyk.kore.rpc:rpc.py:66 Received response from localhost:38819: 128749219953296-005 - add-module
+INFO     pyk.kore.rpc:rpc.py:63 Sending request to localhost:38819: 128749219953296-006 - add-module
+INFO     pyk.kore.rpc:rpc.py:1168 [PID=2461589][stde] [proxy] Processing request 128749219953296-005
+INFO     pyk.kore.rpc:rpc.py:1168 [PID=2461589][stde] [proxy] Processing request 128749219953296-006
+INFO     pyk.kore.rpc:rpc.py:66 Received response from localhost:38819: 128749219953296-006 - add-module
+INFO     pyk.proof.proof:proof.py:527 Found 1 next steps for proof: SUMMARY-RETURN-2-SPEC.BASIC-BLOCK-25-TO-14
+INFO     pyk.kore.rpc:rpc.py:63 Sending request to localhost:38819: 128749219953296-007 - execute
+INFO     pyk.kore.rpc:rpc.py:1168 [PID=2461589][stde] [proxy] Processing request 128749219953296-007
+INFO     pyk.kore.rpc:rpc.py:66 Received response from localhost:38819: 128749219953296-007 - execute
+INFO     pyk.kcfg.kcfg:kcfg.py:569 Extending current KCFG with the following: basic block at depth 7: 1 --> 3
+INFO     pyk.proof.reachability:reachability.py:614 Skipped saving proof SUMMARY-RETURN-2-SPEC.BASIC-BLOCK-25-TO-14 since no save dir was specified.
+INFO     pyk.proof.proof:proof.py:527 Found 1 next steps for proof: SUMMARY-RETURN-2-SPEC.BASIC-BLOCK-25-TO-14
+INFO     pyk.kore.rpc:rpc.py:63 Sending request to localhost:38819: 128749219953296-008 - implies
+INFO     pyk.kore.rpc:rpc.py:1168 [PID=2461589][stde] [proxy] Processing request 128749219953296-008
+INFO     pyk.kore.rpc:rpc.py:66 Received response from localhost:38819: 128749219953296-008 - implies
+INFO     pyk.proof.reachability:reachability.py:801 Subsumed into target node SUMMARY-RETURN-2-SPEC.BASIC-BLOCK-25-TO-14: (3, 2)
+INFO     pyk.proof.reachability:reachability.py:614 Skipped saving proof SUMMARY-RETURN-2-SPEC.BASIC-BLOCK-25-TO-14 since no save dir was specified.
+INFO     pyk.proof.proof:proof.py:527 Found 0 next steps for proof: SUMMARY-RETURN-2-SPEC.BASIC-BLOCK-25-TO-14
+INFO     tests.integration.test_prove:test_prove.py:432 Proof SUMMARY-RETURN-2-SPEC.BASIC-BLOCK-25-TO-14:
+    
+    ┌─ 1 (root, init)
+    │   k: #next [ RETURN ] ~> K_CELL:K
+    │   pc: PC_CELL:Int
+    │   callDepth: CALLDEPTH_CELL:Int
+    │   statusCode: STATUSCODE_CELL:StatusCode
+    │
+    │  (7 steps)
+    ├─ 3 (terminal)
+    │   k: #halt ~> K_CELL:K
+    │   pc: PC_CELL:Int
+    │   callDepth: CALLDEPTH_CELL:Int
+    │   statusCode: EVMC_SUCCESS
+    │
+    ┊  constraint: true
+    ┊  subst: .Subst
+    └─ 2 (leaf, target, terminal)
+        k: #halt ~> K_CELL:K
+        pc: PC_CELL:Int
+        callDepth: CALLDEPTH_CELL:Int
+        statusCode: EVMC_SUCCESS
+    
+    
+    
+    
+INFO     kevm_pyk.utils:utils.py:320 Computing definedness constraint for initial node: SUMMARY-RETURN-2-SPEC.BASIC-BLOCK-24-TO-23
+INFO     pyk.kore.rpc:rpc.py:63 Sending request to localhost:38819: 128749219953296-009 - simplify
+INFO     pyk.kore.rpc:rpc.py:66 Received response from localhost:38819: 128749219953296-009 - simplify
+INFO     pyk.kore.rpc:rpc.py:63 Sending request to localhost:38819: 128749219953296-010 - simplify
+INFO     pyk.kore.rpc:rpc.py:1168 [PID=2461589][stde] [proxy] Processing request 128749219953296-009
+INFO     pyk.kore.rpc:rpc.py:1168 [PID=2461589][stde] [proxy] Processing request 128749219953296-010
+INFO     pyk.kore.rpc:rpc.py:66 Received response from localhost:38819: 128749219953296-010 - simplify
+INFO     kevm_pyk.utils:utils.py:323 Simplifying initial and target node: SUMMARY-RETURN-2-SPEC.BASIC-BLOCK-24-TO-23
+INFO     pyk.kore.rpc:rpc.py:63 Sending request to localhost:38819: 128749219953296-011 - simplify
+INFO     pyk.kore.rpc:rpc.py:66 Received response from localhost:38819: 128749219953296-011 - simplify
+INFO     pyk.kore.rpc:rpc.py:63 Sending request to localhost:38819: 128749219953296-012 - simplify
+INFO     pyk.kore.rpc:rpc.py:1168 [PID=2461589][stde] [proxy] Processing request 128749219953296-011
+INFO     pyk.kore.rpc:rpc.py:1168 [PID=2461589][stde] [proxy] Processing request 128749219953296-012
+INFO     pyk.kore.rpc:rpc.py:66 Received response from localhost:38819: 128749219953296-012 - simplify
+INFO     pyk.proof.proof:proof.py:523 Initializing proof: SUMMARY-RETURN-2-SPEC.BASIC-BLOCK-24-TO-23
+INFO     pyk.kore.rpc:rpc.py:63 Sending request to localhost:38819: 128749219953296-013 - add-module
+INFO     pyk.kore.rpc:rpc.py:66 Received response from localhost:38819: 128749219953296-013 - add-module
+INFO     pyk.kore.rpc:rpc.py:63 Sending request to localhost:38819: 128749219953296-014 - add-module
+INFO     pyk.kore.rpc:rpc.py:1168 [PID=2461589][stde] [proxy] Processing request 128749219953296-013
+INFO     pyk.kore.rpc:rpc.py:1168 [PID=2461589][stde] [proxy] Processing request 128749219953296-014
+INFO     pyk.kore.rpc:rpc.py:66 Received response from localhost:38819: 128749219953296-014 - add-module
+INFO     pyk.proof.proof:proof.py:527 Found 1 next steps for proof: SUMMARY-RETURN-2-SPEC.BASIC-BLOCK-24-TO-23
+INFO     pyk.kore.rpc:rpc.py:63 Sending request to localhost:38819: 128749219953296-015 - execute
+INFO     pyk.kore.rpc:rpc.py:1168 [PID=2461589][stde] [proxy] Processing request 128749219953296-015
+INFO     pyk.kore.rpc:rpc.py:66 Received response from localhost:38819: 128749219953296-015 - execute
+INFO     pyk.kcfg.kcfg:kcfg.py:569 Extending current KCFG with the following: basic block at depth 7: 1 --> 3
+INFO     pyk.proof.reachability:reachability.py:614 Skipped saving proof SUMMARY-RETURN-2-SPEC.BASIC-BLOCK-24-TO-23 since no save dir was specified.
+INFO     pyk.proof.proof:proof.py:527 Found 1 next steps for proof: SUMMARY-RETURN-2-SPEC.BASIC-BLOCK-24-TO-23
+INFO     pyk.kore.rpc:rpc.py:63 Sending request to localhost:38819: 128749219953296-016 - execute
+INFO     pyk.kore.rpc:rpc.py:1168 [PID=2461589][stde] [proxy] Processing request 128749219953296-016
+INFO     pyk.kore.rpc:rpc.py:66 Received response from localhost:38819: 128749219953296-016 - execute
+INFO     pyk.kcfg.kcfg:kcfg.py:569 Extending current KCFG with the following: 2 branches: 3 --> [4, 5]: ['Cmem ( SCHEDULE_CELL:Schedule , #memoryUsageUpdate ( MEMORYUSED_CELL:Int , W0:Int , W1:Int ) ) -Int Cmem ( SCHEDULE_CELL:Schedule , MEMORYUSED_CELL:Int ) <=Int GAS_CELL:Int', 'GAS_CELL:Int <Int Cmem ( SCHEDULE_CELL:Schedule , #memoryUsageUpdate ( MEMORYUSED_CELL:Int , W0:Int , W1:Int ) ) -Int Cmem ( SCHEDULE_CELL:Schedule , MEMORYUSED_CELL:Int )']
+INFO     pyk.proof.reachability:reachability.py:614 Skipped saving proof SUMMARY-RETURN-2-SPEC.BASIC-BLOCK-24-TO-23 since no save dir was specified.
+INFO     pyk.proof.proof:proof.py:527 Found 2 next steps for proof: SUMMARY-RETURN-2-SPEC.BASIC-BLOCK-24-TO-23
+INFO     pyk.kore.rpc:rpc.py:63 Sending request to localhost:38819: 128749219953296-017 - execute
+INFO     pyk.kore.rpc:rpc.py:1168 [PID=2461589][stde] [proxy] Processing request 128749219953296-017
+INFO     pyk.kore.rpc:rpc.py:66 Received response from localhost:38819: 128749219953296-017 - execute
+INFO     pyk.proof.reachability:reachability.py:894 Caching next step for edge starting from 4
+INFO     pyk.kcfg.kcfg:kcfg.py:569 Extending current KCFG with the following: basic block at depth 3: 4 --> 6
+INFO     pyk.proof.reachability:reachability.py:614 Skipped saving proof SUMMARY-RETURN-2-SPEC.BASIC-BLOCK-24-TO-23 since no save dir was specified.
+INFO     pyk.kore.rpc:rpc.py:63 Sending request to localhost:38819: 128749219953296-018 - execute
+INFO     pyk.kore.rpc:rpc.py:1168 [PID=2461589][stde] [proxy] Processing request 128749219953296-018
+INFO     pyk.kore.rpc:rpc.py:66 Received response from localhost:38819: 128749219953296-018 - execute
+INFO     pyk.proof.reachability:reachability.py:894 Caching next step for edge starting from 5
+INFO     pyk.kcfg.kcfg:kcfg.py:569 Extending current KCFG with the following: basic block at depth 6: 5 --> 7
+INFO     pyk.proof.reachability:reachability.py:614 Skipped saving proof SUMMARY-RETURN-2-SPEC.BASIC-BLOCK-24-TO-23 since no save dir was specified.
+INFO     pyk.proof.proof:proof.py:527 Found 2 next steps for proof: SUMMARY-RETURN-2-SPEC.BASIC-BLOCK-24-TO-23
+INFO     pyk.proof.reachability:reachability.py:868 Using cached step for edge 4 --> 6
+INFO     pyk.kcfg.kcfg:kcfg.py:569 Extending current KCFG with the following: 2 branches: 6 --> [8, 9]: ['Gzero < SCHEDULE_CELL:Schedule > <=Int GAS_CELL:Int -Int Cmem ( SCHEDULE_CELL:Schedule , #memoryUsageUpdate ( MEMORYUSED_CELL:Int , W0:Int , W1:Int ) ) -Int Cmem ( SCHEDULE_CELL:Schedule , MEMORYUSED_CELL:Int )', 'GAS_CELL:Int -Int Cmem ( SCHEDULE_CELL:Schedule , #memoryUsageUpdate ( MEMORYUSED_CELL:Int , W0:Int , W1:Int ) ) -Int Cmem ( SCHEDULE_CELL:Schedule , MEMORYUSED_CELL:Int ) <Int Gzero < SCHEDULE_CELL:Schedule >']
+INFO     pyk.proof.reachability:reachability.py:614 Skipped saving proof SUMMARY-RETURN-2-SPEC.BASIC-BLOCK-24-TO-23 since no save dir was specified.
+INFO     pyk.kore.rpc:rpc.py:63 Sending request to localhost:38819: 128749219953296-019 - implies
+INFO     pyk.kore.rpc:rpc.py:1168 [PID=2461589][stde] [proxy] Processing request 128749219953296-019
+INFO     pyk.kore.rpc:rpc.py:66 Received response from localhost:38819: 128749219953296-019 - implies
+INFO     pyk.proof.reachability:reachability.py:614 Skipped saving proof SUMMARY-RETURN-2-SPEC.BASIC-BLOCK-24-TO-23 since no save dir was specified.
+INFO     pyk.proof.proof:proof.py:527 Found 2 next steps for proof: SUMMARY-RETURN-2-SPEC.BASIC-BLOCK-24-TO-23
+INFO     pyk.kore.rpc:rpc.py:63 Sending request to localhost:38819: 128749219953296-020 - execute
+INFO     pyk.kore.rpc:rpc.py:1168 [PID=2461589][stde] [proxy] Processing request 128749219953296-020
+INFO     pyk.kore.rpc:rpc.py:66 Received response from localhost:38819: 128749219953296-020 - execute
+INFO     pyk.proof.reachability:reachability.py:894 Caching next step for edge starting from 8
+INFO     pyk.kcfg.kcfg:kcfg.py:569 Extending current KCFG with the following: basic block at depth 5: 8 --> 10
+INFO     pyk.proof.reachability:reachability.py:614 Skipped saving proof SUMMARY-RETURN-2-SPEC.BASIC-BLOCK-24-TO-23 since no save dir was specified.
+INFO     pyk.kore.rpc:rpc.py:63 Sending request to localhost:38819: 128749219953296-021 - execute
+INFO     pyk.kore.rpc:rpc.py:1168 [PID=2461589][stde] [proxy] Processing request 128749219953296-021
+INFO     pyk.kore.rpc:rpc.py:66 Received response from localhost:38819: 128749219953296-021 - execute
+INFO     pyk.proof.reachability:reachability.py:894 Caching next step for edge starting from 9
+INFO     pyk.kcfg.kcfg:kcfg.py:569 Extending current KCFG with the following: basic block at depth 5: 9 --> 11
+INFO     pyk.proof.reachability:reachability.py:614 Skipped saving proof SUMMARY-RETURN-2-SPEC.BASIC-BLOCK-24-TO-23 since no save dir was specified.
+INFO     pyk.proof.proof:proof.py:527 Found 2 next steps for proof: SUMMARY-RETURN-2-SPEC.BASIC-BLOCK-24-TO-23
+INFO     pyk.kore.rpc:rpc.py:63 Sending request to localhost:38819: 128749219953296-022 - implies
+INFO     pyk.kore.rpc:rpc.py:1168 [PID=2461589][stde] [proxy] Processing request 128749219953296-022
+INFO     pyk.kore.rpc:rpc.py:66 Received response from localhost:38819: 128749219953296-022 - implies
+INFO     pyk.proof.reachability:reachability.py:801 Subsumed into target node SUMMARY-RETURN-2-SPEC.BASIC-BLOCK-24-TO-23: (10, 2)
+INFO     pyk.proof.reachability:reachability.py:614 Skipped saving proof SUMMARY-RETURN-2-SPEC.BASIC-BLOCK-24-TO-23 since no save dir was specified.
+INFO     pyk.kore.rpc:rpc.py:63 Sending request to localhost:38819: 128749219953296-023 - implies
+INFO     pyk.kore.rpc:rpc.py:66 Received response from localhost:38819: 128749219953296-023 - implies
+INFO     pyk.proof.reachability:reachability.py:614 Skipped saving proof SUMMARY-RETURN-2-SPEC.BASIC-BLOCK-24-TO-23 since no save dir was specified.
+INFO     pyk.proof.proof:proof.py:527 Found 0 next steps for proof: SUMMARY-RETURN-2-SPEC.BASIC-BLOCK-24-TO-23
+INFO     pyk.kore.rpc:rpc.py:63 Sending request to localhost:38819: 128749219953296-024 - simplify
+INFO     pyk.kore.rpc:rpc.py:1168 [PID=2461589][stde] [proxy] Processing request 128749219953296-023
+INFO     pyk.kore.rpc:rpc.py:1168 [PID=2461589][stde] [proxy] Processing request 128749219953296-024
+INFO     pyk.kore.rpc:rpc.py:66 Received response from localhost:38819: 128749219953296-024 - simplify
+INFO     pyk.kore.rpc:rpc.py:63 Sending request to localhost:38819: 128749219953296-025 - simplify
+INFO     pyk.kore.rpc:rpc.py:66 Received response from localhost:38819: 128749219953296-025 - simplify
+INFO     pyk.kore.rpc:rpc.py:63 Sending request to localhost:38819: 128749219953296-026 - implies
+INFO     pyk.kore.rpc:rpc.py:1168 [PID=2461589][stde] [proxy] Processing request 128749219953296-025
+INFO     pyk.kore.rpc:rpc.py:1168 [PID=2461589][stde] [proxy] Processing request 128749219953296-026
+INFO     pyk.kore.rpc:rpc.py:66 Received response from localhost:38819: 128749219953296-026 - implies
+INFO     pyk.kore.rpc:rpc.py:63 Sending request to localhost:38819: 128749219953296-027 - implies
+INFO     pyk.kore.rpc:rpc.py:66 Received response from localhost:38819: 128749219953296-027 - implies
+INFO     pyk.kore.rpc:rpc.py:63 Sending request to localhost:38819: 128749219953296-028 - simplify
+INFO     pyk.kore.rpc:rpc.py:1168 [PID=2461589][stde] [proxy] Processing request 128749219953296-027
+INFO     pyk.kore.rpc:rpc.py:1168 [PID=2461589][stde] [proxy] Processing request 128749219953296-028
+INFO     pyk.kore.rpc:rpc.py:66 Received response from localhost:38819: 128749219953296-028 - simplify
+INFO     pyk.kore.rpc:rpc.py:63 Sending request to localhost:38819: 128749219953296-029 - simplify
+INFO     pyk.kore.rpc:rpc.py:66 Received response from localhost:38819: 128749219953296-029 - simplify
+INFO     pyk.kore.rpc:rpc.py:63 Sending request to localhost:38819: 128749219953296-030 - implies
+INFO     pyk.kore.rpc:rpc.py:1168 [PID=2461589][stde] [proxy] Processing request 128749219953296-029
+INFO     pyk.kore.rpc:rpc.py:1168 [PID=2461589][stde] [proxy] Processing request 128749219953296-030
+INFO     pyk.kore.rpc:rpc.py:66 Received response from localhost:38819: 128749219953296-030 - implies
+INFO     pyk.kore.rpc:rpc.py:63 Sending request to localhost:38819: 128749219953296-031 - implies
+INFO     pyk.kore.rpc:rpc.py:66 Received response from localhost:38819: 128749219953296-031 - implies
+INFO     tests.integration.test_prove:test_prove.py:432 Proof SUMMARY-RETURN-2-SPEC.BASIC-BLOCK-24-TO-23:
+    
+    ┌─ 1 (root, init)
+    │   k: #next [ RETURN ] ~> K_CELL:K
+    │   pc: PC_CELL:Int
+    │   callDepth: CALLDEPTH_CELL:Int
+    │   statusCode: STATUSCODE_CELL:StatusCode
+    │
+    │  (7 steps)
+    ├─ 3 (split)
+    │   k: ( Cmem ( SCHEDULE_CELL:Schedule , #memoryUsageUpdate ( MEMORYUSED_CELL:Int , W0: ...
+    │   pc: PC_CELL:Int
+    │   callDepth: CALLDEPTH_CELL:Int
+    │   statusCode: STATUSCODE_CELL:StatusCode
+    ┃
+    ┃ (branch)
+    ┣━━┓ subst: .Subst
+    ┃  ┃ constraint:
+    ┃  ┃     ( Cmem ( SCHEDULE_CELL:Schedule , #memoryUsageUpdate ( MEMORYUSED_CELL:Int , W0:Int , W1:Int ) ) -Int Cmem ( SCHEDULE_CELL:Schedule , MEMORYUSED_CELL:Int ) ) <=Int GAS_CELL:Int
+    ┃  │
+    ┃  ├─ 4
+    ┃  │   k: ( Cmem ( SCHEDULE_CELL:Schedule , #memoryUsageUpdate ( MEMORYUSED_CELL:Int , W0: ...
+    ┃  │   pc: PC_CELL:Int
+    ┃  │   callDepth: CALLDEPTH_CELL:Int
+    ┃  │   statusCode: STATUSCODE_CELL:StatusCode
+    ┃  │
+    ┃  │  (3 steps)
+    ┃  ├─ 6 (split)
+    ┃  │   k: Gzero < SCHEDULE_CELL:Schedule > ~> #deductGas ~> #access [ RETURN , RETURN W0:I ...
+    ┃  │   pc: PC_CELL:Int
+    ┃  │   callDepth: CALLDEPTH_CELL:Int
+    ┃  │   statusCode: STATUSCODE_CELL:StatusCode
+    ┃  ┃
+    ┃  ┃ (branch)
+    ┃  ┣━━┓ subst: .Subst
+    ┃  ┃  ┃ constraint:
+    ┃  ┃  ┃     Gzero < SCHEDULE_CELL:Schedule > <=Int ( GAS_CELL:Int -Int ( Cmem ( SCHEDULE_CELL:Schedule , #memoryUsageUpdate ( MEMORYUSED_CELL:Int , W0:Int , W1:Int ) ) -Int Cmem ( SCHEDULE_CELL:Schedule , MEMORYUSED_CELL:Int ) ) )
+    ┃  ┃  │
+    ┃  ┃  ├─ 8
+    ┃  ┃  │   k: Gzero < SCHEDULE_CELL:Schedule > ~> #deductGas ~> #access [ RETURN , RETURN W0:I ...
+    ┃  ┃  │   pc: PC_CELL:Int
+    ┃  ┃  │   callDepth: CALLDEPTH_CELL:Int
+    ┃  ┃  │   statusCode: STATUSCODE_CELL:StatusCode
+    ┃  ┃  │
+    ┃  ┃  │  (5 steps)
+    ┃  ┃  ├─ 10 (terminal)
+    ┃  ┃  │   k: #halt ~> K_CELL:K
+    ┃  ┃  │   pc: PC_CELL:Int
+    ┃  ┃  │   callDepth: CALLDEPTH_CELL:Int
+    ┃  ┃  │   statusCode: EVMC_SUCCESS
+    ┃  ┃  │
+    ┃  ┃  ┊  constraint: true
+    ┃  ┃  ┊  subst: .Subst
+    ┃  ┃  └─ 2 (leaf, target, terminal)
+    ┃  ┃      k: #halt ~> K_CELL:K
+    ┃  ┃      pc: PC_CELL:Int
+    ┃  ┃      callDepth: CALLDEPTH_CELL:Int
+    ┃  ┃      statusCode: EVMC_SUCCESS
+    ┃  ┃
+    ┃  ┗━━┓ subst: .Subst
+    ┃     ┃ constraint:
+    ┃     ┃     ( GAS_CELL:Int -Int ( Cmem ( SCHEDULE_CELL:Schedule , #memoryUsageUpdate ( MEMORYUSED_CELL:Int , W0:Int , W1:Int ) ) -Int Cmem ( SCHEDULE_CELL:Schedule , MEMORYUSED_CELL:Int ) ) ) <Int Gzero < SCHEDULE_CELL:Schedule >
+    ┃     │
+    ┃     ├─ 9
+    ┃     │   k: Gzero < SCHEDULE_CELL:Schedule > ~> #deductGas ~> #access [ RETURN , RETURN W0:I ...
+    ┃     │   pc: PC_CELL:Int
+    ┃     │   callDepth: CALLDEPTH_CELL:Int
+    ┃     │   statusCode: STATUSCODE_CELL:StatusCode
+    ┃     │
+    ┃     │  (5 steps)
+    ┃     └─ 11 (leaf, terminal)
+    ┃         k: #halt ~> K_CELL:K
+    ┃         pc: PC_CELL:Int
+    ┃         callDepth: CALLDEPTH_CELL:Int
+    ┃         statusCode: EVMC_OUT_OF_GAS
+    ┃
+    ┗━━┓ subst: .Subst
+       ┃ constraint:
+       ┃     GAS_CELL:Int <Int ( Cmem ( SCHEDULE_CELL:Schedule , #memoryUsageUpdate ( MEMORYUSED_CELL:Int , W0:Int , W1:Int ) ) -Int Cmem ( SCHEDULE_CELL:Schedule , MEMORYUSED_CELL:Int ) )
+       │
+       ├─ 5
+       │   k: ( Cmem ( SCHEDULE_CELL:Schedule , #memoryUsageUpdate ( MEMORYUSED_CELL:Int , W0: ...
+       │   pc: PC_CELL:Int
+       │   callDepth: CALLDEPTH_CELL:Int
+       │   statusCode: STATUSCODE_CELL:StatusCode
+       │
+       │  (6 steps)
+       └─ 7 (leaf, terminal)
+           k: #halt ~> K_CELL:K
+           pc: PC_CELL:Int
+           callDepth: CALLDEPTH_CELL:Int
+           statusCode: EVMC_OUT_OF_GAS
+    
+    
+    
+    
+INFO     pyk.kore.rpc:rpc.py:1181 Stopping KoreServer: 0.0.0.0:38819, pid=2461589
+INFO     pyk.kore.rpc:rpc.py:1189 KoreServer stopped: 0.0.0.0:38819, pid=2461589
+============================== slowest durations ===============================
+71.91s call     src/tests/integration/test_prove.py::test_prove_summaries[SUMMARY-RETURN-2-SPEC]
+
+(2 durations < 0.005s hidden.  Use -vv to show these durations.)
+=========================== short test summary info ============================
+FAILED src/tests/integration/test_prove.py::test_prove_summaries[SUMMARY-RETURN-2-SPEC]
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!! xdist.dsession.Interrupted: stopping after 1 failures !!!!!!!!!!!!!
+========================= 1 failed in 73.15s (0:01:13) =========================
+make[1]: *** [Makefile:39: test-integration] Error 2
+make[1]: Leaving directory '/home/zhaoji/evm-semantics/kevm-pyk'
+make: *** [Makefile:81: test-prove-summaries] Error 2

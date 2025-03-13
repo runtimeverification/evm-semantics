@@ -21,7 +21,7 @@ imports BUF
                    WS:WordStack
                  </wordStack>
                  <gas>
-                   ( GAS_CELL:Int )
+                    ( GAS_CELL:Int )
                  </gas>
                  ...
                </callState>
@@ -34,7 +34,7 @@ imports BUF
       requires 1023 <Int #sizeWordStack ( WS:WordStack , 0 )
       [priority(20), label(BASIC-BLOCK-3-TO-8)]
     
-    rule [BASIC-BLOCK-11-TO-9]: <kevm>
+    rule [BASIC-BLOCK-25-TO-24]: <kevm>
            <k>
              ( #next [ ADDRESS ] ~> .K => .K )
              ~> K_CELL:K
@@ -58,7 +58,7 @@ imports BUF
                    ( PC_CELL:Int => ( PC_CELL:Int +Int 1 ) )
                  </pc>
                  <gas>
-                   ( ( GAS_CELL:Int => ( GAS_CELL:Int -Int Gbase < SCHEDULE_CELL:Schedule > ) ) )
+                    ( ( GAS_CELL:Int => ( GAS_CELL:Int -Int Gbase < SCHEDULE_CELL:Schedule > ) ) )
                  </gas>
                  ...
                </callState>
@@ -68,14 +68,14 @@ imports BUF
            </ethereum>
            ...
          </kevm>
-      requires ( USEGAS_CELL:Bool
+      requires ( USEGAS_CELL:Bool  andBool ( ( ( Gbase < SCHEDULE_CELL:Schedule > ) ) ) <=Int GAS_CELL  
        andBool ( ( notBool #sizeWordStack ( WS:WordStack , 0 ) <Int 0 )
        andBool ( ( notBool 1023 <Int #sizeWordStack ( WS:WordStack , 0 ) )
                )))
        ensures #sizeWordStack ( WS:WordStack , 0 ) <=Int 1023
-      [priority(20), label(BASIC-BLOCK-11-TO-9)]
+      [priority(20), label(BASIC-BLOCK-25-TO-24)]
     
-    rule [BASIC-BLOCK-12-TO-10]: <kevm>
+    rule [BASIC-BLOCK-26-TO-19]: <kevm>
            <k>
              ( #next [ ADDRESS ] ~> .K => .K )
              ~> K_CELL:K
@@ -96,7 +96,7 @@ imports BUF
                    ( PC_CELL:Int => ( PC_CELL:Int +Int 1 ) )
                  </pc>
                  <gas>
-                   ( GAS_CELL:Int )
+                    ( GAS_CELL:Int )
                  </gas>
                  ...
                </callState>
@@ -111,6 +111,6 @@ imports BUF
        andBool ( ( notBool 1023 <Int #sizeWordStack ( WS:WordStack , 0 ) )
                )))
        ensures #sizeWordStack ( WS:WordStack , 0 ) <=Int 1023
-      [priority(20), label(BASIC-BLOCK-12-TO-10)]
+      [priority(20), label(BASIC-BLOCK-26-TO-19)]
 
 endmodule

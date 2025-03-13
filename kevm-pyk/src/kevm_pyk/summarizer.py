@@ -615,7 +615,7 @@ class KEVMSummarizer:
             for match in matches:
                 gas_usage = match.replace('GAS_CELL:Int => ', '')
                 gas_usage = gas_usage.replace(' GAS_CELL:Int -Int', '')
-                gas_guard = f'( andBool {gas_usage} <=Int GAS_CELL )'
+                gas_guard = f' andBool {gas_usage} <=Int GAS_CELL '
                 
                 # Find first requires USEGAS_CELL pattern
                 usegas_match = re.search(r'requires (\( )?USEGAS_CELL:Bool', left_str)

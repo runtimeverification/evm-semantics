@@ -6,7 +6,7 @@ imports EVM
 imports BUF
     
     
-    rule [BASIC-BLOCK-3-TO-5]: <kevm>
+    rule [BASIC-BLOCK-3-TO-8]: <kevm>
            <k>
              ( #next [ MSIZE ] => #halt )
              ~> K_CELL:K
@@ -24,7 +24,7 @@ imports BUF
                    WS:WordStack
                  </wordStack>
                  <gas>
-                   ( GAS_CELL:Int )
+                    ( GAS_CELL:Int )
                  </gas>
                  ...
                </callState>
@@ -35,9 +35,9 @@ imports BUF
            ...
          </kevm>
       requires 1023 <Int #sizeWordStack ( WS:WordStack , 0 )
-      [priority(20), label(BASIC-BLOCK-3-TO-5)]
+      [priority(20), label(BASIC-BLOCK-3-TO-8)]
     
-    rule [BASIC-BLOCK-4-TO-6]: <kevm>
+    rule [BASIC-BLOCK-4-TO-13]: <kevm>
            <k>
              ( #next [ MSIZE ] ~> .K => .K )
              ~> K_CELL:K
@@ -55,7 +55,7 @@ imports BUF
                    ( PC_CELL:Int => ( PC_CELL:Int +Int 1 ) )
                  </pc>
                  <gas>
-                   ( GAS_CELL:Int )
+                    ( GAS_CELL:Int )
                  </gas>
                  <memoryUsed>
                    MEMORYUSED_CELL:Int
@@ -72,6 +72,6 @@ imports BUF
        andBool ( ( notBool 1023 <Int #sizeWordStack ( WS:WordStack , 0 ) )
                ))
        ensures #sizeWordStack ( WS:WordStack , 0 ) <=Int 1023
-      [priority(20), label(BASIC-BLOCK-4-TO-6)]
+      [priority(20), label(BASIC-BLOCK-4-TO-13)]
 
 endmodule

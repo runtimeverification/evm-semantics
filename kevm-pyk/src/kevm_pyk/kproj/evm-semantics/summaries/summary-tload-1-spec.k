@@ -6,7 +6,7 @@ imports EVM
 imports BUF
     
     
-    rule [BASIC-BLOCK-1-TO-3]: <kevm>
+    rule [BASIC-BLOCK-1-TO-9]: <kevm>
            <k>
              ( #next [ TLOAD ] ~> .K => .K )
              ~> K_CELL:K
@@ -27,7 +27,7 @@ imports BUF
                    ( PC_CELL:Int => ( PC_CELL:Int +Int 1 ) )
                  </pc>
                  <gas>
-                   ( GAS_CELL:Int )
+                    ( GAS_CELL:Int )
                  </gas>
                  ...
                </callState>
@@ -52,6 +52,6 @@ imports BUF
            ...
          </kevm>
        
-      [priority(20), label(BASIC-BLOCK-1-TO-3)]
+      [priority(20), label(BASIC-BLOCK-1-TO-9)]
 
 endmodule

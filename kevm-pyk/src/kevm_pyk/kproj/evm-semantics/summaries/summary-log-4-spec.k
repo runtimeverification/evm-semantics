@@ -21,7 +21,7 @@ imports BUF
                    ( W0:Int : ( W1:Int : ( W2:Int : ( W3:Int : WS:WordStack ) ) ) )
                  </wordStack>
                  <gas>
-                   ( GAS_CELL:Int )
+                    ( GAS_CELL:Int )
                  </gas>
                  <static>
                    ( STATIC_CELL:Bool => true )
@@ -37,7 +37,7 @@ imports BUF
       requires STATIC_CELL:Bool
       [priority(20), label(BASIC-BLOCK-4-TO-8)]
     
-    rule [BASIC-BLOCK-11-TO-10]: <kevm>
+    rule [BASIC-BLOCK-26-TO-25]: <kevm>
            <k>
              ( #next [ LOG ( 2 ) ] ~> .K => .K )
              ~> K_CELL:K
@@ -64,7 +64,7 @@ imports BUF
                    ( PC_CELL:Int => ( PC_CELL:Int +Int 1 ) )
                  </pc>
                  <gas>
-                   ( ( GAS_CELL:Int => ( ( GAS_CELL:Int -Int ( Cmem ( SCHEDULE_CELL:Schedule , #memoryUsageUpdate ( MEMORYUSED_CELL:Int , W0:Int , W1:Int ) ) -Int Cmem ( SCHEDULE_CELL:Schedule , MEMORYUSED_CELL:Int ) ) ) -Int ( ( Glog < SCHEDULE_CELL:Schedule > +Int ( Glogdata < SCHEDULE_CELL:Schedule > *Int W1:Int ) ) +Int ( 2 *Int Glogtopic < SCHEDULE_CELL:Schedule > ) ) ) ) )
+                    ( ( GAS_CELL:Int => ( ( GAS_CELL:Int -Int ( Cmem ( SCHEDULE_CELL:Schedule , #memoryUsageUpdate ( MEMORYUSED_CELL:Int , W0:Int , W1:Int ) ) -Int Cmem ( SCHEDULE_CELL:Schedule , MEMORYUSED_CELL:Int ) ) ) -Int ( ( Glog < SCHEDULE_CELL:Schedule > +Int ( Glogdata < SCHEDULE_CELL:Schedule > *Int W1:Int ) ) +Int ( 2 *Int Glogtopic < SCHEDULE_CELL:Schedule > ) ) ) ) )
                  </gas>
                  <memoryUsed>
                    ( MEMORYUSED_CELL:Int => #memoryUsageUpdate ( MEMORYUSED_CELL:Int , W0:Int , W1:Int ) )
@@ -86,12 +86,12 @@ imports BUF
            </ethereum>
            ...
          </kevm>
-      requires ( USEGAS_CELL:Bool
+      requires ( USEGAS_CELL:Bool  andBool ( ( ( ( ( Cmem ( SCHEDULE_CELL:Schedule , #memoryUsageUpdate ( MEMORYUSED_CELL:Int , W0:Int , W1:Int ) ) -Int Cmem ( SCHEDULE_CELL:Schedule , MEMORYUSED_CELL:Int ) ) ) -Int ( ( Glog < SCHEDULE_CELL:Schedule > +Int ( Glogdata < SCHEDULE_CELL:Schedule > *Int W1:Int ) ) +Int ( 2 *Int Glogtopic < SCHEDULE_CELL:Schedule > ) ) ) ) ) <=Int GAS_CELL  
        andBool ( ( notBool STATIC_CELL:Bool )
                ))
-      [priority(20), label(BASIC-BLOCK-11-TO-10)]
+      [priority(20), label(BASIC-BLOCK-26-TO-25)]
     
-    rule [BASIC-BLOCK-12-TO-9]: <kevm>
+    rule [BASIC-BLOCK-27-TO-17]: <kevm>
            <k>
              ( #next [ LOG ( 2 ) ] ~> .K => .K )
              ~> K_CELL:K
@@ -115,7 +115,7 @@ imports BUF
                    ( PC_CELL:Int => ( PC_CELL:Int +Int 1 ) )
                  </pc>
                  <gas>
-                   ( GAS_CELL:Int )
+                    ( GAS_CELL:Int )
                  </gas>
                  <static>
                    ( STATIC_CELL:Bool => false )
@@ -137,6 +137,6 @@ imports BUF
       requires ( ( notBool STATIC_CELL:Bool )
        andBool ( ( notBool USEGAS_CELL:Bool )
                ))
-      [priority(20), label(BASIC-BLOCK-12-TO-9)]
+      [priority(20), label(BASIC-BLOCK-27-TO-17)]
 
 endmodule
