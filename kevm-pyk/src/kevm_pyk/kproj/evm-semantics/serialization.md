@@ -18,12 +18,64 @@ module SERIALIZATION
 Address/Hash Helpers
 --------------------
 
+- `BN128AddWrapper` and `BN128MulWrapper` serve as wrappers around the `BN128Add` and `BN128Mul` in `KRYPTO`.
+
+```k
+    syntax G1Point ::= BN128AddWrapper ( G1Point , G1Point ) [symbol(BN128AddWrapper), function, total, smtlib(smt_krypto_bn128add)]
+                     | BN128MulWrapper ( G1Point , Int )     [symbol(BN128MulWrapper), function, total, smtlib(smt_krypto_bn128mul)]
+ // --------------------------------------------------------------------------------------------------------------------------------
+    rule [BN128AddWrapper]: BN128AddWrapper(G1, G2) => BN128Add(G1, G2) [concrete]
+    rule [BN128MulWrapper]: BN128MulWrapper(G1, I) => BN128Mul(G1, I) [concrete]
+```
+
+- `BN128AtePairing` serves as a wrapper around the `BN128AtePairing` in `KRYPTO`.
+
+```k
+    syntax Bool ::= BN128AtePairingWrapper ( List , List ) [symbol(BN128AtePairingWrapper), function, total, smtlib(smt_krypto_bn128ate)]
+ // -------------------------------------------------------------------------------------------------------------------------------------
+    rule [BN128AtePairingWrapper]: BN128AtePairingWrapper(G1, G2) => BN128AtePairing(G1, G2) [concrete]
+```
+
+- `Blake2CompressWrapper` serves as a wrapper around the `Blake2Compress` in `KRYPTO`.
+
+```k
+    syntax String ::= Blake2CompressWrapper ( Bytes ) [symbol(Blake2CompressWrapper), function, total, smtlib(smt_krypto_blake2compress)]
+ // -------------------------------------------------------------------------------------------------------------------------------------
+    rule [Blake2CompressWrapper]: Blake2CompressWrapper(BYTES) => Blake2Compress(BYTES) [concrete]
+```
+
+- `isValidPointWrapper` serves as a wrapper around the `isValidPoint` in `KRYPTO`.
+
+```k
+    syntax Bool ::= isValidPointWrapper ( G1Point ) [symbol(isValidPointWrapper), function, total, smtlib(smt_krypto_bn128valid)]
+                  | isValidPointWrapper ( G2Point ) [symbol(isValidG2PointWrapper), function, total, smtlib(smt_krypto_bn128g2valid)]
+ // ---------------------------------------------------------------------------------------------------------------------------------
+    rule [isValidPointWrapper]: isValidPointWrapper(P:G1Point) => isValidPoint(P) [concrete]
+    rule [isValidG2PointWrapper]: isValidPointWrapper(P:G2Point) => isValidPoint(P) [concrete]
+```
+
 -   `keccak` serves as a wrapper around the `Keccak256` in `KRYPTO`.
 
 ```k
     syntax Int ::= keccak ( Bytes ) [symbol(keccak), function, total, smtlib(smt_keccak)]
  // -------------------------------------------------------------------------------------
     rule [keccak]: keccak(WS) => #parseHexWord(Keccak256(WS)) [concrete]
+```
+
+- `verifyKZGProofWrapper` serves as a wrapper around the `verifyKZGProof` in `KRYPTO`.
+
+```k
+    syntax Bool ::= verifyKZGProofWrapper ( Bytes , Bytes , Bytes , Bytes ) [symbol(verifyKZGProofWrapper), function, total, smtlib(smt_krypto_verifykzgproof)]
+    
+    rule [verifyKZGProofWrapper]: verifyKZGProofWrapper(COM, Z, Y, PR) => verifyKZGProof(COM, Z, Y, PR) [concrete]
+```
+
+- `Sha256rawWrapper` serves as a wrapper around the `Sha256raw` in `KRYPTO`.
+
+```k
+    syntax Bytes ::= Sha256rawWrapper ( Bytes ) [symbol(Sha256rawWrapper), function, total, smtlib(smt_krypto_sha256raw)]
+    
+    rule [Sha256rawWrapper]: Sha256rawWrapper(BYTES) => Sha256raw(BYTES) [concrete]
 ```
 
 -   `#newAddr` computes the address of a new account given the address and nonce of the creating account.

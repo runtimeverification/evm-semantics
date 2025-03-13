@@ -20,6 +20,8 @@
     "blockchain-k-plugin": {
       "inputs": {
         "ate-pairing": "ate-pairing",
+        "blst": "blst",
+        "ckzg4844": "ckzg4844",
         "cpp-httplib": "cpp-httplib",
         "cryptopp": "cryptopp",
         "flake-utils": [
@@ -45,17 +47,51 @@
         "xbyak": "xbyak"
       },
       "locked": {
-        "lastModified": 1730140080,
-        "narHash": "sha256-veQr5Zx0zbg4ZOA2A3C+qrmcZ0zO0kKwzG+O3VhA318=",
+        "lastModified": 1741336075,
+        "narHash": "sha256-rFwScLxdJ+cS81MPbhub0vgQLkxEQwdHsQ+sSlnwQHE=",
         "owner": "runtimeverification",
         "repo": "blockchain-k-plugin",
-        "rev": "c9264b240c00d1f6cc20e22aac83c94d1a499138",
+        "rev": "651a2db5afc1789c89553f9113c1afa39e391e35",
         "type": "github"
       },
       "original": {
         "owner": "runtimeverification",
         "repo": "blockchain-k-plugin",
-        "rev": "c9264b240c00d1f6cc20e22aac83c94d1a499138",
+        "rev": "651a2db5afc1789c89553f9113c1afa39e391e35",
+        "type": "github"
+      }
+    },
+    "blst": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1717085405,
+        "narHash": "sha256-z/xnttMuAOfoKn/yCBwdYbgcd6cDLD6tZxInAWn8XIk=",
+        "owner": "supranational",
+        "repo": "blst",
+        "rev": "e99f7db0db413e2efefcfd077a4e335766f39c27",
+        "type": "github"
+      },
+      "original": {
+        "owner": "supranational",
+        "repo": "blst",
+        "rev": "e99f7db0db413e2efefcfd077a4e335766f39c27",
+        "type": "github"
+      }
+    },
+    "ckzg4844": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1736965374,
+        "narHash": "sha256-uvdL0eUKK1LR4mYl4Url4sxvCpLQGpoYAiD9ZWYeuzY=",
+        "owner": "ethereum",
+        "repo": "c-kzg-4844",
+        "rev": "d1168fc791b910286c7308f7dd99fa566567e942",
+        "type": "github"
+      },
+      "original": {
+        "owner": "ethereum",
+        "repo": "c-kzg-4844",
+        "rev": "d1168fc791b910286c7308f7dd99fa566567e942",
         "type": "github"
       }
     },
@@ -243,16 +279,16 @@
         "z3": "z3_2"
       },
       "locked": {
-        "lastModified": 1735479118,
-        "narHash": "sha256-bsrqU0J31CZGhSjJOtb6OUSx0HdrKzvNNuqTkrnk6tc=",
+        "lastModified": 1741129735,
+        "narHash": "sha256-sAgpo3/qNVEEDLUlMwsooWpay7pxJaL2bqJKAVzxeWI=",
         "owner": "runtimeverification",
         "repo": "haskell-backend",
-        "rev": "786c7803e614b4c87319821badf0d84d6b7c289a",
+        "rev": "4336b0af912c3ea7617cf6061679ef2fe16afc82",
         "type": "github"
       },
       "original": {
         "owner": "runtimeverification",
-        "ref": "v0.1.108",
+        "ref": "v0.1.115",
         "repo": "haskell-backend",
         "type": "github"
       }
@@ -352,16 +388,16 @@
         ]
       },
       "locked": {
-        "lastModified": 1738729226,
-        "narHash": "sha256-/EwNLLuIn31lRhj/9S7esjpsRgRP/x5vI4fRGBKnN/I=",
+        "lastModified": 1741615379,
+        "narHash": "sha256-4/pG0NDVHyFars++RTvzTB2UVMyQKpylmdZWfvrRm6g=",
         "owner": "runtimeverification",
         "repo": "k",
-        "rev": "51bd676326a0dbfbce7c64e41247b7126b639177",
+        "rev": "cb153f0154ebe6871a1ddb937d54d627586f0c2e",
         "type": "github"
       },
       "original": {
         "owner": "runtimeverification",
-        "ref": "v7.1.212",
+        "ref": "v7.1.219",
         "repo": "k",
         "type": "github"
       }
@@ -432,16 +468,16 @@
         "utils": "utils_2"
       },
       "locked": {
-        "lastModified": 1736524972,
-        "narHash": "sha256-h9tcey+vDixmOjLFtpdPU+bQJPkzyU8FsyrHWZHEWWk=",
+        "lastModified": 1741131517,
+        "narHash": "sha256-+Y6U6FLr+nUzJQwP2c6ggzjX6uym15yT823EMP3RCBQ=",
         "owner": "runtimeverification",
         "repo": "llvm-backend",
-        "rev": "d910a26d2a4c45e1b72eafb35642b76fc0d1faf0",
+        "rev": "2852f4a7c8e03a1542e546b1fb501bd403617ce0",
         "type": "github"
       },
       "original": {
         "owner": "runtimeverification",
-        "ref": "v0.1.122",
+        "ref": "v0.1.127",
         "repo": "llvm-backend",
         "type": "github"
       }
