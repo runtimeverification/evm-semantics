@@ -450,12 +450,12 @@ def test_prove_optimizations(
     _test_prove_of(kevm, kore_rpc_command, _get_proofs_of('evm-semantics.haskell', 'EVM-OPTIMIZATIONS', kevm))
 
 
-# SUMMARY_MODULES = [
-#     path.stem.upper()
-#     for path in (REPO_ROOT / 'kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries').glob('*.k') 
-#     if path.name != 'summary.k'
-# ]
-SUMMARY_MODULES = ['SUMMARY-RETURN-2-SPEC']
+SUMMARY_MODULES = [
+    path.stem.upper()
+    for path in (REPO_ROOT / 'kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries').glob('*.k') 
+    if path.name != 'summary.k'
+]
+# SUMMARY_MODULES = ['SUMMARY-RETURN-2-SPEC']
 
 
 @pytest.mark.parametrize(

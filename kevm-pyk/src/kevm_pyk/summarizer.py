@@ -615,6 +615,18 @@ class KEVMSummarizer:
             for match in matches:
                 gas_usage = match.replace('GAS_CELL:Int => ', '')
                 gas_usage = gas_usage.replace(' GAS_CELL:Int -Int', '')
+                in_brackets = 0
+                i = 0
+                while i < len(gas_usage):
+                    if gas_usage[i] == '(':
+                        in_brackets += 1
+                    elif gas_usage[i] == ')':
+                        in_brackets -= 1
+                    elif gas_usage[i:i+4] == '-Int' and in_brackets == 3:
+                        gas_usage = gas_usage[:i] + '+Int' + gas_usage[i+4:]
+                        i += 4
+                        continue
+                    i += 1
                 gas_guard = f' andBool {gas_usage} <=Int GAS_CELL '
                 
                 # Find first requires USEGAS_CELL pattern

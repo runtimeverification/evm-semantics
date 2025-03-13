@@ -9,4 +9,6 @@ module VERIFICATION
     rule #sizeWordStack(WS [ I := _ ], N) => #sizeWordStack(WS, N)        requires I <Int #sizeWordStack(WS) [simplification]
     rule 0 <=Int #sizeWordStack(_ , 0)    => true                                                            [simplification]
     rule #sizeWordStack(_ , 0) <Int N     => false                        requires N <=Int 0                 [simplification]
+
+    rule 0 <=Int Gzero < _ > => true [simplification]
 endmodule
