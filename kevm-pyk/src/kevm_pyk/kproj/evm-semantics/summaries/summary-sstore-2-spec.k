@@ -1,0 +1,110 @@
+requires "../evm.md"
+requires "../buf.md"
+
+module SUMMARY-SSTORE-2-SPEC
+imports EVM
+imports BUF
+    
+    
+    rule [BASIC-BLOCK-4-TO-8]: <kevm>
+           <k>
+             ( #next [ SSTORE ] => #halt )
+             ~> K_CELL:K
+           </k>
+           <useGas>
+             false
+           </useGas>
+           <ethereum>
+             <evm>
+               <statusCode>
+                 ( STATUSCODE_CELL:StatusCode => EVMC_STATIC_MODE_VIOLATION )
+               </statusCode>
+               <callState>
+                 <id>
+                   ID_CELL:Int
+                 </id>
+                 <wordStack>
+                   ( W0:Int : ( W1:Int : WS:WordStack ) )
+                 </wordStack>
+                 <gas>
+                    ( GAS_CELL:Int )
+                 </gas>
+                 <static>
+                   ( STATIC_CELL:Bool => true )
+                 </static>
+                 ...
+               </callState>
+               ...
+             </evm>
+             <network>
+               <accounts>
+                 <account>
+                   <acctID>
+                     ID_CELL:Int
+                   </acctID>
+                   ...
+                 </account>
+                 ...
+               </accounts>
+               ...
+             </network>
+           </ethereum>
+           ...
+         </kevm>
+      requires ( STATIC_CELL:Bool
+       )
+      [priority(20), label(BASIC-BLOCK-4-TO-8)]
+    
+    rule [BASIC-BLOCK-3-TO-12]: <kevm>
+           <k>
+             ( #next [ SSTORE ] ~> .K => .K )
+             ~> K_CELL:K
+           </k>
+           <useGas>
+             false
+           </useGas>
+           <ethereum>
+             <evm>
+               <callState>
+                 <id>
+                   ID_CELL:Int
+                 </id>
+                 <wordStack>
+                   ( ( W0:Int : ( W1:Int : WS:WordStack ) ) => WS:WordStack )
+                 </wordStack>
+                 <pc>
+                   ( PC_CELL:Int => ( PC_CELL:Int +Int 1 ) )
+                 </pc>
+                 <gas>
+                    ( GAS_CELL:Int )
+                 </gas>
+                 <static>
+                   ( STATIC_CELL:Bool => false )
+                 </static>
+                 ...
+               </callState>
+               ...
+             </evm>
+             <network>
+               <accounts>
+                 <account>
+                   <acctID>
+                     ID_CELL:Int
+                   </acctID>
+                   <storage>
+                     ( STORAGE_CELL:Map => STORAGE_CELL:Map [ W0:Int <- W1:Int ] )
+                   </storage>
+                   ...
+                 </account>
+                 ...
+               </accounts>
+               ...
+             </network>
+           </ethereum>
+           ...
+         </kevm>
+      requires ( ( notBool STATIC_CELL:Bool )
+       )
+      [priority(20), label(BASIC-BLOCK-3-TO-12)]
+
+endmodule

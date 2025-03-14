@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import logging
+import re
+import shutil
 import time
 import traceback
 from multiprocessing import Pool
@@ -365,7 +367,7 @@ class KEVMSummarizer:
     save_directory: Path
 
     def __init__(self, proof_dir: Path, save_directory: Path) -> None:
-        self.kevm = KEVM(kdist.get('evm-semantics.summary'))
+        self.kevm = KEVM(kdist.get('evm-semantics.summarize'))
         self.proof_dir = proof_dir
         self.save_directory = save_directory
 
@@ -423,7 +425,7 @@ class KEVMSummarizer:
         final_constraints = final_constraints or []
 
         cterm = CTerm(self.kevm.definition.empty_config(KSort('GeneratedTopCell')))
-        opcode_symbol = opcode.label.name.split('_')[0]
+        opcode_symbol = opcode.label.name.split('_')[0].replace('(', '')
 
         # construct the initial substitution
         _init_subst: dict[str, KInner] = {}
@@ -590,8 +592,8 @@ class KEVMSummarizer:
 
         passed, res_lines = _init_and_run_proof(proof)
 
-        ensure_dir_path(self.save_directory / proof.id)
-        with open(self.save_directory / proof.id / 'proof-result.txt', 'w') as f:
+        ensure_dir_path(self.proof_dir / proof.id)
+        with open(self.proof_dir / proof.id / 'proof-result.txt', 'w') as f:
             f.write(f'Proof {proof.id} Passed' if passed else f'Proof {proof.id} Failed')
             f.write('\n')
             for line in res_lines:
@@ -602,12 +604,115 @@ class KEVMSummarizer:
     def summarize(self, proof: APRProof, merge: bool = False) -> None:
         # TODO: may need customized way to generate summary rules, e.g., replacing infinite gas with finite gas.
         proof.minimize_kcfg(KEVMSemantics(allow_symbolic_program=True), merge)
-        ensure_dir_path(self.save_directory / proof.id)
-        with open(self.save_directory / proof.id / 'summary.md', 'w') as f:
-            _LOGGER.info(f'Writing summary to {self.save_directory / proof.id / "summary.md"}')
+        ensure_dir_path(self.save_directory)
+        
+        def _remove_inf_gas(original_str: str) -> str:
+            result = ''
+            left_str = original_str
+            inf_gas_pattern = r'<gas>([\s\S]*?)</gas>'
+            matches: list[str] = re.findall(inf_gas_pattern, original_str)
+            matches = [m.replace('#gas', '').strip() for m in matches if 'GAS_CELL:Int => ' in m]
+            for match in matches:
+                gas_usage = match.replace('GAS_CELL:Int => ', '')
+                gas_usage = gas_usage.replace(' GAS_CELL:Int -Int', '')
+                in_brackets = 0
+                i = 0
+                while i < len(gas_usage):
+                    if gas_usage[i] == '(':
+                        in_brackets += 1
+                    elif gas_usage[i] == ')':
+                        in_brackets -= 1
+                    elif gas_usage[i:i+4] == '-Int' and in_brackets == 3:
+                        gas_usage = gas_usage[:i] + '+Int' + gas_usage[i+4:]
+                        i += 4
+                        continue
+                    i += 1
+                gas_guard = f' andBool {gas_usage} <=Int GAS_CELL '
+                if '( Cmem ( SCHEDULE_CELL:Schedule , #memoryUsageUpdate ( MEMORYUSED_CELL:Int , W0:Int , W2:Int ) ) -Int Cmem ( SCHEDULE_CELL:Schedule , MEMORYUSED_CELL:Int ) )' in gas_usage:
+                    gas_guard += ' andBool ( Cmem ( SCHEDULE_CELL:Schedule , #memoryUsageUpdate ( MEMORYUSED_CELL:Int , W0:Int , W2:Int ) ) -Int Cmem ( SCHEDULE_CELL:Schedule , MEMORYUSED_CELL:Int ) ) <=Int GAS_CELL'
+                if '( Cmem ( SCHEDULE_CELL:Schedule , #memoryUsageUpdate ( MEMORYUSED_CELL:Int , W0:Int , W1:Int ) ) -Int Cmem ( SCHEDULE_CELL:Schedule , MEMORYUSED_CELL:Int ) )' in gas_usage:
+                    gas_guard += ' andBool ( Cmem ( SCHEDULE_CELL:Schedule , #memoryUsageUpdate ( MEMORYUSED_CELL:Int , W0:Int , W1:Int ) ) -Int Cmem ( SCHEDULE_CELL:Schedule , MEMORYUSED_CELL:Int ) ) <=Int GAS_CELL'
+                if '( Cmem ( SCHEDULE_CELL:Schedule , #memoryUsageUpdate ( MEMORYUSED_CELL:Int , maxInt ( W0:Int , W1:Int ) , W2:Int ) ) -Int Cmem ( SCHEDULE_CELL:Schedule , MEMORYUSED_CELL:Int ) )' in gas_usage:
+                    gas_guard += ' andBool ( Cmem ( SCHEDULE_CELL:Schedule , #memoryUsageUpdate ( MEMORYUSED_CELL:Int , maxInt ( W0:Int , W1:Int ) , W2:Int ) ) -Int Cmem ( SCHEDULE_CELL:Schedule , MEMORYUSED_CELL:Int ) ) <=Int GAS_CELL'
+                if '( Cmem ( SCHEDULE_CELL:Schedule , #memoryUsageUpdate ( MEMORYUSED_CELL:Int , W0:Int , 32 ) ) -Int Cmem ( SCHEDULE_CELL:Schedule , MEMORYUSED_CELL:Int ) )' in gas_usage:
+                    gas_guard += ' andBool ( Cmem ( SCHEDULE_CELL:Schedule , #memoryUsageUpdate ( MEMORYUSED_CELL:Int , W0:Int , 32 ) ) -Int Cmem ( SCHEDULE_CELL:Schedule , MEMORYUSED_CELL:Int ) ) <=Int GAS_CELL'
+                # Find first requires USEGAS_CELL pattern
+                usegas_match = re.search(r'requires (\( )?USEGAS_CELL:Bool', left_str)
+                if not usegas_match:
+                    raise ValueError(f'No requires USEGAS_CELL pattern found in {left_str}')
+                
+                # Build replacement with gas guard
+                if usegas_match.group(1):  # Case with opening parenthesis
+                    replacement = f'requires ( USEGAS_CELL:Bool {gas_guard} '
+                else:
+                    replacement = f'requires USEGAS_CELL:Bool {gas_guard}'
+                
+                start_idx, end_idx = usegas_match.span()
+                result += left_str[:start_idx] + replacement
+                left_str = left_str[end_idx:]
+            
+            result += left_str
+            return result.replace('#gas', '')
+        
+        def _remove_dash_from_var(original_str: str) -> str:
+            return re.sub(r'(?<!\w)_+([A-Z0-9]\w*)', r'\1', original_str)
+
+        def _use_legal_remainder(original_str: str) -> str:
+            result = re.sub(
+                r'\(\s*<account>([\s\S]*?)</account>\s*DotAccountVar:AccountCellMap\s*\)',
+                r'<account>\1</account>\n                 ...',
+                original_str,
+            )
+            result = re.sub(
+                r'\(\s*notBool\s*<acctID>\s*([^<]+)\s*</acctID>\s*in_keys\s*\([^)]*\)\s*\)', r'', result
+            )
+            result = re.sub(r'requires(\s*\[[\s\S]*?\])', r'\1', result)
+            result = re.sub(r'(\()\s*andBool\s*([\s\S]*?)\s*(\))', r'\1\2\3', result)
+            result = re.sub(r'andBool\s*\(\s*\)', r'', result)
+            return result
+
+        def replace_lhs_function_by_assignment(original_str: str) -> str:
+            if not 'SUMMARY-BALANCE' in original_str:
+                return original_str
+            pattern = r'<acctID>\s*(\(\s*W0:Int modInt pow160\s*\))\s*</acctID>'
+            if re.search(pattern, original_str):
+                replace_pattern = r'<acctID> ACCTID_CELL_CELL </acctID>'
+                result = re.sub(pattern, replace_pattern, original_str)
+                result = re.sub(
+                    r'(</kevm>\s*)', r'\1requires ACCTID_CELL_CELL ==Int W0:Int modInt pow160\n', result
+                )
+            return result
+
+        spec_name = f'summary-{proof.id.replace("_", "-").lower()}.k'
+        with open(self.save_directory / spec_name, 'w') as f:
+            _LOGGER.info(f'Writing summary to {self.save_directory / spec_name}')
             for res_line in self.show_proof(proof, to_module=True):
-                f.write(res_line)
-                f.write('\n')
+                if res_line.startswith('module'):
+                    res_line = _remove_dash_from_var(res_line)
+                    res_line = _use_legal_remainder(res_line)
+                    res_line = _remove_inf_gas(res_line)
+                    res_line = replace_lhs_function_by_assignment(res_line)
+                    f.write('requires "../evm.md"\n')
+                    f.write('requires "../buf.md"\n\n')
+                    lines = res_line.split('\n')
+                    lines.insert(1, 'imports EVM')
+                    lines.insert(2, 'imports BUF')
+                    f.write('\n'.join(lines))
+                    continue
+        k_files = sorted([f for f in self.save_directory.glob('*.k') if f.name != 'summary.k'])
+        module_names = [f.stem.upper() for f in k_files]
+        with open(self.save_directory / 'summary.k', 'w') as f:
+            for k_file in k_files:
+                if 'summary-exp-2-spec.k' in k_file.name:
+                    # TODO: remove EXP because its log2 calculation may cause problem.
+                    continue
+                f.write(f'requires {k_file.name!r}\n'.replace("'", '"'))
+            f.write('\nmodule SUMMARY\n')
+            for module_name in module_names:
+                if 'SUMMARY-EXP-2-SPEC' in module_name:
+                    continue
+                f.write(f'imports {module_name}\n')
+            f.write('\nendmodule\n')
 
     def print_node(self, proof: APRProof, nodes: Iterable[int]) -> None:
         with open(self.proof_dir / proof.id / 'node-print.md', 'w') as f:
@@ -643,13 +748,12 @@ def batch_summarize(num_processes: int = 4) -> None:
         num_processes: Number of parallel processes to use. Defaults to 4.
     """
 
-    opcodes_to_process = OPCODES.keys()
+    OPCODES.keys()
     passed_opcodes = get_passed_opcodes()
-    unpassed_opcodes = [opcode for opcode in opcodes_to_process if opcode not in passed_opcodes]
-    has_call_opcodes = [opcode for opcode in unpassed_opcodes if 'Call' in OPCODES[opcode].label.name]
-    no_call_opcodes = [opcode for opcode in unpassed_opcodes if 'Call' not in OPCODES[opcode].label.name]
+    has_call_opcodes = [opcode for opcode in passed_opcodes if 'Call' in OPCODES[opcode].label.name]
+    no_call_opcodes = [opcode for opcode in passed_opcodes if 'Call' not in OPCODES[opcode].label.name]
 
-    _LOGGER.info(f'Starting batch summarization of {len(unpassed_opcodes)} opcodes with {num_processes} processes')
+    _LOGGER.info(f'Starting batch summarization of {len(passed_opcodes)} opcodes with {num_processes} processes')
 
     with Pool(processes=num_processes) as pool:
         _LOGGER.info(f'Summarizing {len(no_call_opcodes)} opcodes without CALL')
@@ -662,19 +766,21 @@ def batch_summarize(num_processes: int = 4) -> None:
 
 def summarize(opcode_symbol: str) -> tuple[KEVMSummarizer, list[APRProof]]:
     proof_dir = Path(__file__).parent / 'proofs'
-    save_directory = Path(__file__).parent / 'summaries'
+    save_directory = Path(__file__).parent / 'kproj' / 'evm-semantics' / 'summaries'
     summarizer = KEVMSummarizer(proof_dir, save_directory)
     proofs = summarizer.build_spec(opcode_symbol)
     for proof in proofs:
-        summarizer.print_node(proof, [1])
-        summarizer.explore(proof)
-        summarizer.summarize(proof)
-        proof.write_proof_data()
+        if (proof_dir / proof.id / 'proof.json').exists():
+            proof = APRProof.read_proof_data(proof_dir, proof.id)
+            summarizer.summarize(proof)
+        else:
+            summarizer.print_node(proof, [1])
+            summarizer.explore(proof)
+            summarizer.summarize(proof)
     return summarizer, proofs
 
 
-def analyze_proof(opcode: str, node_id: int) -> None:
+def clear_proofs() -> None:
     proof_dir = Path(__file__).parent / 'proofs'
-    save_directory = Path(__file__).parent / 'summaries'
-    summarizer = KEVMSummarizer(proof_dir, save_directory)
-    summarizer.analyze_proof(str(proof_dir / f'{opcode}_SPEC'), node_id)
+    if proof_dir.exists():
+        shutil.rmtree(proof_dir)
