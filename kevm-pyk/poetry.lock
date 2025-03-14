@@ -470,14 +470,14 @@ testing = ["hatch", "pre-commit", "pytest", "tox"]
 
 [[package]]
 name = "filelock"
-version = "3.17.0"
+version = "3.18.0"
 description = "A platform independent file lock."
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "filelock-3.17.0-py3-none-any.whl", hash = "sha256:533dc2f7ba78dc2f0f531fc6c4940addf7b70a481e269a5a3b93be94ffbe8338"},
-    {file = "filelock-3.17.0.tar.gz", hash = "sha256:ee4e77401ef576ebb38cd7f13b9b28893194acc20a8e68e18730ba9c0e54660e"},
+    {file = "filelock-3.18.0-py3-none-any.whl", hash = "sha256:c401f4f8377c4464e6db25fff06205fd89bdd83b65eb0488ed1b160f780e21de"},
+    {file = "filelock-3.18.0.tar.gz", hash = "sha256:adbc88eabb99d2fec8c9c1b229b171f18afa655400173ddc653d5d01501fb9f2"},
 ]
 
 [package.extras]
@@ -826,14 +826,14 @@ i18n = ["Babel (>=2.7)"]
 
 [[package]]
 name = "kframework"
-version = "7.1.222"
+version = "7.1.223"
 description = ""
 optional = false
 python-versions = "<4.0,>=3.10"
 groups = ["main"]
 files = [
-    {file = "kframework-7.1.222-py3-none-any.whl", hash = "sha256:ae137f8d004d7dbed5650cb1d5d56db1aa7be5360ec3109ba504a714db146229"},
-    {file = "kframework-7.1.222.tar.gz", hash = "sha256:987cbeaa889493b922d207a713381d9fd79e201dcfc7a974468123260ddbad4e"},
+    {file = "kframework-7.1.223-py3-none-any.whl", hash = "sha256:1d82749199dfaf27b0e692f504064500fdc48bd522f4b5ea578ee5d7a4f9fcf2"},
+    {file = "kframework-7.1.223.tar.gz", hash = "sha256:1e868bcbf740ff45e19337b28d680325b3bc36089be54c41d78b96967a976129"},
 ]
 
 [package.dependencies]
@@ -843,6 +843,7 @@ cookiecutter = ">=2.6.0,<3.0.0"
 filelock = ">=3.9.0,<4.0.0"
 graphviz = ">=0.20.1,<0.21.0"
 hypothesis = ">=6.103.1,<7.0.0"
+networkx = ">=3.4.2,<4.0.0"
 psutil = ">=5.9.5,<6.0.0"
 pybind11 = ">=2.10.3,<3.0.0"
 pytest = "*"
@@ -1107,6 +1108,26 @@ files = [
     {file = "mypy_extensions-1.0.0-py3-none-any.whl", hash = "sha256:4392f6c0eb8a5668a69e23d168ffa70f0be9ccfd32b5cc2d26a34ae5b844552d"},
     {file = "mypy_extensions-1.0.0.tar.gz", hash = "sha256:75dbf8955dc00442a438fc4d0666508a9a97b6bd41aa2f0ffe9d2f2725af0782"},
 ]
+
+[[package]]
+name = "networkx"
+version = "3.4.2"
+description = "Python package for creating and manipulating graphs and networks"
+optional = false
+python-versions = ">=3.10"
+groups = ["main"]
+files = [
+    {file = "networkx-3.4.2-py3-none-any.whl", hash = "sha256:df5d4365b724cf81b8c6a7312509d0c22386097011ad1abe274afd5e9d3bbc5f"},
+    {file = "networkx-3.4.2.tar.gz", hash = "sha256:307c3669428c5362aab27c8a1260aa8f47c4e91d3891f48be0141738d8d053e1"},
+]
+
+[package.extras]
+default = ["matplotlib (>=3.7)", "numpy (>=1.24)", "pandas (>=2.0)", "scipy (>=1.10,!=1.11.0,!=1.11.1)"]
+developer = ["changelist (==0.5)", "mypy (>=1.1)", "pre-commit (>=3.2)", "rtoml"]
+doc = ["intersphinx-registry", "myst-nb (>=1.1)", "numpydoc (>=1.8.0)", "pillow (>=9.4)", "pydata-sphinx-theme (>=0.15)", "sphinx (>=7.3)", "sphinx-gallery (>=0.16)", "texext (>=0.6.7)"]
+example = ["cairocffi (>=1.7)", "contextily (>=1.6)", "igraph (>=0.11)", "momepy (>=0.7.2)", "osmnx (>=1.9)", "scikit-learn (>=1.5)", "seaborn (>=0.13)"]
+extra = ["lxml (>=4.6)", "pydot (>=3.0.1)", "pygraphviz (>=1.14)", "sympy (>=1.10)"]
+test = ["pytest (>=7.2)", "pytest-cov (>=4.0)"]
 
 [[package]]
 name = "nose"
@@ -1846,4 +1867,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10"
-content-hash = "006469bc9f63aecc5b3a497b4de95c192c0f20c3c395599ad90d743416651514"
+content-hash = "c58977de2eb8c08b3bb5cf73dbd62949b8b09d37bc332a0545e2049aa5e14077"
