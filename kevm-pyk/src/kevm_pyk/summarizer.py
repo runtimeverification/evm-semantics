@@ -703,9 +703,14 @@ class KEVMSummarizer:
         module_names = [f.stem.upper() for f in k_files]
         with open(self.save_directory / 'summary.k', 'w') as f:
             for k_file in k_files:
+                if 'summary-exp-2-spec.k' in k_file.name:
+                    # TODO: remove EXP because its log2 calculation may cause problem.
+                    continue
                 f.write(f'requires {k_file.name!r}\n'.replace("'", '"'))
             f.write('\nmodule SUMMARY\n')
             for module_name in module_names:
+                if 'SUMMARY-EXP-2-SPEC' in module_name:
+                    continue
                 f.write(f'imports {module_name}\n')
             f.write('\nendmodule\n')
 
