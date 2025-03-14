@@ -43,7 +43,7 @@ imports BUF
            </ethereum>
            ...
          </kevm>
-      requires USEGAS_CELL:Bool  andBool ( ( ( ( ( Cmem ( SCHEDULE_CELL:Schedule , #memoryUsageUpdate ( MEMORYUSED_CELL:Int , W0:Int , W1:Int ) ) -Int Cmem ( SCHEDULE_CELL:Schedule , MEMORYUSED_CELL:Int ) ) ) +Int ( Gsha3 < SCHEDULE_CELL:Schedule > +Int ( Gsha3word < SCHEDULE_CELL:Schedule > *Int ( W1:Int up/Int 32 ) ) ) ) ) ) <=Int GAS_CELL 
+      requires USEGAS_CELL:Bool  andBool ( ( ( ( ( Cmem ( SCHEDULE_CELL:Schedule , #memoryUsageUpdate ( MEMORYUSED_CELL:Int , W0:Int , W1:Int ) ) -Int Cmem ( SCHEDULE_CELL:Schedule , MEMORYUSED_CELL:Int ) ) ) +Int ( Gsha3 < SCHEDULE_CELL:Schedule > +Int ( Gsha3word < SCHEDULE_CELL:Schedule > *Int ( W1:Int up/Int 32 ) ) ) ) ) ) <=Int GAS_CELL  andBool ( Cmem ( SCHEDULE_CELL:Schedule , #memoryUsageUpdate ( MEMORYUSED_CELL:Int , W0:Int , W1:Int ) ) -Int Cmem ( SCHEDULE_CELL:Schedule , MEMORYUSED_CELL:Int ) ) <=Int GAS_CELL
       [priority(20), label(BASIC-BLOCK-24-TO-23)]
     
     rule [BASIC-BLOCK-25-TO-14]: <kevm>

@@ -455,7 +455,6 @@ SUMMARY_MODULES = [
     for path in (REPO_ROOT / 'kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries').glob('*.k') 
     if path.name != 'summary.k'
 ]
-# SUMMARY_MODULES = ['SUMMARY-RETURN-2-SPEC']
 
 
 @pytest.mark.parametrize(
