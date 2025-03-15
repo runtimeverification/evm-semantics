@@ -21,6 +21,9 @@ def interpret(gst_data: Any, schedule: str, mode: str, chainid: int, usegas: boo
     if check:
         proc_res.check_returncode()
 
+    if len(proc_res.stderr) > 0:
+        raise Exception(proc_res.stderr)
+
     kore = KoreParser(proc_res.stdout).pattern()
     return kore
 
