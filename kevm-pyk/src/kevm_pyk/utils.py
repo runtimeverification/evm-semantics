@@ -357,6 +357,7 @@ def legacy_explore(
     fallback_on: Iterable[FallbackReason] | None = None,
     interim_simplification: int | None = None,
     no_post_exec_simplify: bool = False,
+    extra_module: KFlatModule | None = None,
 ) -> Iterator[KCFGExplore]:
     bug_report_id = None if bug_report is None else id
     if start_server:
@@ -383,6 +384,8 @@ def legacy_explore(
                 cterm_symbolic = CTermSymbolic(
                     client, kprint.definition, log_succ_rewrites=log_succ_rewrites, log_fail_rewrites=log_fail_rewrites
                 )
+                if extra_module:
+                    cterm_symbolic.add_module(extra_module, name_as_id=True)
                 yield KCFGExplore(cterm_symbolic, kcfg_semantics=kcfg_semantics, id=id)
     else:
         if port is None:
@@ -404,4 +407,6 @@ def legacy_explore(
             cterm_symbolic = CTermSymbolic(
                 client, kprint.definition, log_succ_rewrites=log_succ_rewrites, log_fail_rewrites=log_fail_rewrites
             )
+            if extra_module:
+                cterm_symbolic.add_module(extra_module, name_as_id=True)
             yield KCFGExplore(cterm_symbolic, kcfg_semantics=kcfg_semantics, id=id)
