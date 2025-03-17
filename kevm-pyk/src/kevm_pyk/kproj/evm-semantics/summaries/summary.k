@@ -34,6 +34,7 @@ requires "summary-dup-8-spec.k"
 requires "summary-dup-9-spec.k"
 requires "summary-eq-2-spec.k"
 requires "summary-evmor-2-spec.k"
+requires "summary-exp-2-spec.k"
 requires "summary-gas-0-spec.k"
 requires "summary-gaslimit-0-spec.k"
 requires "summary-gasprice-0-spec.k"
@@ -139,6 +140,7 @@ imports SUMMARY-DUP-8-SPEC
 imports SUMMARY-DUP-9-SPEC
 imports SUMMARY-EQ-2-SPEC
 imports SUMMARY-EVMOR-2-SPEC
+imports SUMMARY-EXP-2-SPEC
 imports SUMMARY-GAS-0-SPEC
 imports SUMMARY-GASLIMIT-0-SPEC
 imports SUMMARY-GASPRICE-0-SPEC
