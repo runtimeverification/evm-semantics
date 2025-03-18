@@ -15,8 +15,8 @@ from pyk.kast.outer import KSort
 from pyk.kcfg import KCFG, KCFGExplore
 from pyk.kdist import kdist
 from pyk.kore.rpc import KoreClient
-from pyk.prelude.kint import euclidModInt
-from pyk.prelude.ml import mlEquals, mlEqualsFalse, mlNot
+from pyk.prelude.kint import addInt, euclidModInt, leInt
+from pyk.prelude.ml import mlEquals, mlEqualsFalse, mlEqualsTrue, mlNot
 from pyk.proof import APRProof
 from pyk.proof.show import APRProofShow
 from pyk.utils import ensure_dir_path
@@ -286,30 +286,28 @@ def get_todo_list() -> list[str]:
     return todo_list
 
 
-def stack_needed(opcode_id: str) -> list[int]:
+def stack_needed(opcode_id: str) -> int:
     """
     Return the stack size needed for the opcode, corresponding `#stackNeeded` in the semantics.
     """
     opcode = OPCODES[opcode_id].label.name
     if 'CallOp' in opcode:
-        return [7]
+        return 7
     elif 'CallSixOp' in opcode:
-        return [6]
+        return 6
     elif 'LOG' in opcode:
-        return list(range(5))
+        return 2
     elif 'SWAP' in opcode:
-        return list(range(1, 17))
-    elif 'DUP' in opcode:
-        return list(range(1, 17))
+        return 1
     elif 'QuadStackOp' in opcode:
-        return [4]
+        return 4
     elif 'TernStackOp' in opcode:
-        return [3]
+        return 3
     elif 'BinStackOp' in opcode:
-        return [2]
+        return 2
     elif 'UnStackOp' in opcode:
-        return [1]
-    return [0]
+        return 1
+    return 0
 
 
 def accounts_cell(acct_id: str | KInner, exists: bool = True) -> tuple[KInner, KInner]:
@@ -451,59 +449,72 @@ class KEVMSummarizer:
         return APRProof.from_claim(self.kevm.definition, kclaim[0], {}, self.proof_dir)
 
     def build_spec(self, opcode_symbol: str) -> list[APRProof]:
-        needs = stack_needed(opcode_symbol)
+
+        def _ws_size(s: int) -> KInner:
+            return KEVM.size_wordstack(KEVM.wordstack(s))
+
+        def _le(a: KInner, b: KInner) -> KInner:
+            return mlEqualsTrue(leInt(a, b))
+
+        need = stack_needed(opcode_symbol)
         opcode = OPCODES[opcode_symbol]
-        proofs = []
-        for need in needs:
-            if len(needs) > 1:
-                opcode = KApply(opcode.label.name, KToken(str(need), KSort('Int')))
 
-            # (opcode, init_subst, init_constraints, final_subst, final_constraints, id_str)
-            specs: list[tuple[KApply, dict[str, KInner], list[KInner], dict[str, KInner], list[KInner], str]] = []
-            init_subst: dict[str, KInner] = {}
-            final_subst: dict[str, KInner] = {}
+        if opcode_symbol in ['DUP', 'SWAP', 'LOG']:
+            opcode = KApply(opcode.label.name, KVariable('N', KSort('Int')))
 
-            if opcode_symbol in NOT_USEGAS_OPCODES:
-                # TODO: Should allow infGas to calculate gas. Skip for now.
-                init_subst['USEGAS_CELL'] = KToken('false', KSort('Bool'))
+        # (opcode, init_subst, init_constraints, final_subst, final_constraints, id_str)
+        specs: list[tuple[KApply, dict[str, KInner], list[KInner], dict[str, KInner], list[KInner], str]] = []
+        init_subst: dict[str, KInner] = {}
+        final_subst: dict[str, KInner] = {}
 
-            if opcode_symbol in ACCOUNT_QUERIES_OPCODES:
-                w0 = KVariable('W0', KSort('Int'))
-                pow160 = KToken(str(pow(2, 160)), KSort('Int'))
+        if opcode_symbol in NOT_USEGAS_OPCODES:
+            # TODO: Should allow infGas to calculate gas. Skip for now.
+            init_subst['USEGAS_CELL'] = KToken('false', KSort('Bool'))
 
-                cell, constraint = accounts_cell(euclidModInt(w0, pow160), exists=False)
-                init_subst['ACCOUNTS_CELL'] = cell
-                # TODO: BALANCE doesn't need the above spec. Maybe a bug in the backend.
-                specs.append((opcode, init_subst, [constraint], {}, [], '_OWISE'))
+        if opcode_symbol in ACCOUNT_QUERIES_OPCODES:
+            w0 = KVariable('W0', KSort('Int'))
+            pow160 = KToken(str(pow(2, 160)), KSort('Int'))
 
-                cell, constraint = accounts_cell(euclidModInt(w0, pow160), exists=True)
-                init_subst['ACCOUNTS_CELL'] = cell
-                specs.append((opcode, init_subst, [constraint], {}, [], '_NORMAL'))
-            elif opcode_symbol in ACCOUNT_STORAGE_OPCODES or opcode_symbol == 'SELFBALANCE':
-                cell, constraint = accounts_cell('ID_CELL')
-                init_subst['ACCOUNTS_CELL'] = cell
-                specs.append((opcode, init_subst, [constraint], {}, [], ''))
-            elif opcode_symbol == 'JUMP':
-                final_subst['K_CELL'] = KSequence([KEVM.end_basic_block(), KVariable('K_CELL')])
-                specs.append((opcode, init_subst, [], final_subst, [], ''))
-            elif opcode_symbol == 'JUMPI':
-                constraint = mlEquals(KVariable('W1', KSort('Int')), KToken('0', KSort('Int')), 'Int')
-                specs.append((opcode, init_subst, [constraint], {}, [], '_FALSE'))
+            cell, constraint = accounts_cell(euclidModInt(w0, pow160), exists=False)
+            init_subst['ACCOUNTS_CELL'] = cell
+            # TODO: BALANCE doesn't need the above spec. Maybe a bug in the backend.
+            specs.append((opcode, init_subst, [constraint], {}, [], '_OWISE'))
 
-                constraint = mlNot(mlEquals(KVariable('W1', KSort('Int')), KToken('0', KSort('Int')), 'Int'))
-                final_subst['K_CELL'] = KSequence([KEVM.end_basic_block(), KVariable('K_CELL')])
-                specs.append((opcode, init_subst, [], final_subst, [], '_TRUE'))
-            elif opcode_symbol == 'LOG':
-                need += 2
-                specs.append((opcode, init_subst, [], final_subst, [], ''))
-            else:
-                specs.append((opcode, init_subst, [], final_subst, [], ''))
+            cell, constraint = accounts_cell(euclidModInt(w0, pow160), exists=True)
+            init_subst['ACCOUNTS_CELL'] = cell
+            specs.append((opcode, init_subst, [constraint], {}, [], '_NORMAL'))
+        elif opcode_symbol in ACCOUNT_STORAGE_OPCODES or opcode_symbol == 'SELFBALANCE':
+            cell, constraint = accounts_cell('ID_CELL')
+            init_subst['ACCOUNTS_CELL'] = cell
+            specs.append((opcode, init_subst, [constraint], {}, [], ''))
+        elif opcode_symbol == 'JUMP':
+            final_subst['K_CELL'] = KSequence([KEVM.end_basic_block(), KVariable('K_CELL')])
+            specs.append((opcode, init_subst, [], final_subst, [], ''))
+        elif opcode_symbol == 'JUMPI':
+            constraint = mlEquals(KVariable('W1', KSort('Int')), KToken('0', KSort('Int')), 'Int')
+            specs.append((opcode, init_subst, [constraint], {}, [], '_FALSE'))
 
-            for spec in specs:
-                proof = self._build_spec(spec[0], need, spec[1], spec[2], spec[3], spec[4], id_str=spec[5])
-                proofs.append(proof)
+            constraint = mlNot(mlEquals(KVariable('W1', KSort('Int')), KToken('0', KSort('Int')), 'Int'))
+            final_subst['K_CELL'] = KSequence([KEVM.end_basic_block(), KVariable('K_CELL')])
+            specs.append((opcode, init_subst, [], final_subst, [], '_TRUE'))
+        elif opcode_symbol == 'DUP':
+            init_constraints: list[KInner] = [_le(KVariable('N', 'Int'), _ws_size(0))]
+            init_constraints.append(_le(_ws_size(0), KToken('1023', 'Int')))
+            specs.append((opcode, init_subst, init_constraints, final_subst, [], ''))
+        elif opcode_symbol == 'SWAP':
+            init_constraints = [_le(addInt(KVariable('N', 'Int'), KToken('1', 'Int')), _ws_size(1))]
+            init_constraints.append(_le(_ws_size(1), KToken('1023', 'Int')))
+            specs.append((opcode, init_subst, init_constraints, final_subst, [], ''))
+        elif opcode_symbol == 'LOG':
+            init_constraints = [_le(addInt(KVariable('N', 'Int'), KToken('2', 'Int')), _ws_size(2))]
+            init_constraints.append(_le(KVariable('N', 'Int'), _ws_size(0)))
+            init_constraints.append(_le(_ws_size(2), addInt(KVariable('N', 'Int'), KToken('1026', 'Int'))))
+            init_subst['STATIC_CELL'] = KToken('false', KSort('Bool'))
+            specs.append((opcode, init_subst, init_constraints, final_subst, [], ''))
+        else:
+            specs.append((opcode, init_subst, [], final_subst, [], ''))
 
-        return proofs
+        return [self._build_spec(spec[0], need, spec[1], spec[2], spec[3], spec[4], spec[5]) for spec in specs]
 
     def explore(self, proof: APRProof) -> bool:
         """

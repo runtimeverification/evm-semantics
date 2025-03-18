@@ -10,13 +10,7 @@ def test_summarize(opcode: str) -> None:
     if get_summary_status(opcode) != 'PASSED':
         pytest.skip(f'{opcode} status: {OPCODES_SUMMARY_STATUS[opcode]}')
 
-    if opcode in ['DUP', 'SWAP', 'LOG']:
-        pytest.skip(f'{opcode} summarization is time-consuming')
-
-    print(f'[{opcode}] selected')
-    summarizer, proofs = summarize(opcode)
-    print(f'[{opcode}] summarize finished')
-    print(f'[{opcode}] {len(proofs)} proofs generated')
+    _, proofs = summarize(opcode)
 
     for proof in proofs:
         claims: list[KRuleLike] = []
