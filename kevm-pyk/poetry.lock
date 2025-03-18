@@ -691,14 +691,14 @@ pyreadline3 = {version = "*", markers = "sys_platform == \"win32\" and python_ve
 
 [[package]]
 name = "hypothesis"
-version = "6.129.3"
+version = "6.129.4"
 description = "A library for property-based testing"
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "hypothesis-6.129.3-py3-none-any.whl", hash = "sha256:95f8f1f0d6cd29b272ae4b42c5c5d9768aa1f2be3ab1834a961a9d0c2fc4d652"},
-    {file = "hypothesis-6.129.3.tar.gz", hash = "sha256:8a0cbc7612861f603af3838d282e2f7c47f362e7093fabf3ce928d2c7e3480e3"},
+    {file = "hypothesis-6.129.4-py3-none-any.whl", hash = "sha256:45a31fe2b936688b2954f375c7f87e9dfefa4f2cddfa31cdeba15d77600e1286"},
+    {file = "hypothesis-6.129.4.tar.gz", hash = "sha256:e9fd66c25b8f0aa6395ce6728360892c3af22529cc16cae7512a4672776d4781"},
 ]
 
 [package.dependencies]
@@ -826,14 +826,14 @@ i18n = ["Babel (>=2.7)"]
 
 [[package]]
 name = "kframework"
-version = "7.1.226"
+version = "7.1.228"
 description = ""
 optional = false
 python-versions = "<4.0,>=3.10"
 groups = ["main"]
 files = [
-    {file = "kframework-7.1.226-py3-none-any.whl", hash = "sha256:fc2863fd670634e4ce14dc35302b049b4399fb651fe7523102b0c65b2455baaa"},
-    {file = "kframework-7.1.226.tar.gz", hash = "sha256:a69d5e2b85cf8116b66b8b48bf27f26e7aa952dda2de01055f44491bc9b5b0f1"},
+    {file = "kframework-7.1.228-py3-none-any.whl", hash = "sha256:f1a2f15bdb7ce3af4206b7e14b5bbdfea41ff09c99893f3edbdbf0b4767a0338"},
+    {file = "kframework-7.1.228.tar.gz", hash = "sha256:2f9925f4509325d8d77997428875876d1476c2a6d2d63bfed86c128741475ef3"},
 ]
 
 [package.dependencies]
@@ -1620,14 +1620,14 @@ jupyter = ["ipywidgets (>=7.5.1,<9)"]
 
 [[package]]
 name = "setuptools"
-version = "76.0.0"
+version = "76.1.0"
 description = "Easily download, build, install, upgrade, and uninstall Python packages"
 optional = false
 python-versions = ">=3.9"
 groups = ["dev"]
 files = [
-    {file = "setuptools-76.0.0-py3-none-any.whl", hash = "sha256:199466a166ff664970d0ee145839f5582cb9bca7a0a3a2e795b6a9cb2308e9c6"},
-    {file = "setuptools-76.0.0.tar.gz", hash = "sha256:43b4ee60e10b0d0ee98ad11918e114c70701bc6051662a9a675a0496c1a158f4"},
+    {file = "setuptools-76.1.0-py3-none-any.whl", hash = "sha256:34750dcb17d046929f545dec9b8349fe42bf4ba13ddffee78428aec422dbfb73"},
+    {file = "setuptools-76.1.0.tar.gz", hash = "sha256:4959b9ad482ada2ba2320c8f1a8d8481d4d8d668908a7a1b84d987375cd7f5bd"},
 ]
 
 [package.extras]
@@ -1867,4 +1867,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10"
-content-hash = "c4ed79ac302221ca99a67db058179128997778bf022bd4efe870c7ba8118cc72"
+content-hash = "ed35816be876a18d47fa6e76a8a711729147a577b7564332c4657777d53a62b6"
