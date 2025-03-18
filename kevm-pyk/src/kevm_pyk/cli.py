@@ -77,7 +77,7 @@ def generate_options(args: dict[str, Any]) -> LoggingOptions:
         case 'run':
             return RunOptions(args)
         case 'summarize':
-            return ProveOptions(args)
+            return SummarizeOptions(args)
         case _:
             raise ValueError(f'Unrecognized command: {command}')
 
@@ -104,7 +104,7 @@ def get_option_string_destination(command: str, option_string: str) -> str:
         case 'run':
             option_string_destinations = RunOptions.from_option_string()
         case 'summarize':
-            option_string_destinations = ProveOptions.from_option_string()
+            option_string_destinations = SummarizeOptions.from_option_string()
 
     return option_string_destinations.get(option_string, option_string.replace('-', '_'))
 
@@ -134,7 +134,7 @@ def get_argument_type_setter(command: str, option_string: str) -> Callable[[str]
         case 'run':
             option_types = RunOptions.get_argument_type()
         case 'summarize':
-            option_types = ProveOptions.get_argument_type()
+            option_types = SummarizeOptions.get_argument_type()
 
     return option_types.get(option_string, func)
 
@@ -191,21 +191,26 @@ def _create_argument_parser() -> ArgumentParser:
         help='Maximum worker threads to use on a single proof to explore separate branches in parallel.',
     )
 
-    command_parser.add_parser(
+    summarize_args = command_parser.add_parser(
         'summarize',
-        help='Summarize an Opcode to execute in a single rewrite step.',
+        help='Summarize a given opcode(s) to execute in a single rewrite step.',
         parents=[
             kevm_cli_args.logging_args,
-            kevm_cli_args.parallel_args,
             kevm_cli_args.k_args,
-            kevm_cli_args.kprove_args,
-            kevm_cli_args.rpc_args,
-            kevm_cli_args.bug_report_args,
-            kevm_cli_args.smt_args,
-            kevm_cli_args.explore_args,
-            # kevm_cli_args.spec_args,
-            config_args.config_args,
         ],
+    )
+    summarize_args.add_argument(
+        'opcode',
+        type=str,
+        nargs='?',
+        help='Opcode to summarize. If not provided, all supported opcodes will be summarized.',
+    )
+    summarize_args.add_argument(
+        '--clear',
+        dest='clear',
+        default=False,
+        action='store_true',
+        help='Clear all existing proofs and re-run the summarization process.',
     )
 
     prune_args = command_parser.add_parser(
@@ -618,6 +623,23 @@ class ProveOptions(
             | SpecOptions.get_argument_type()
             | KProveOptions.get_argument_type()
         )
+
+
+class SummarizeOptions(LoggingOptions, KOptions):
+    clear: bool
+    opcode: str | None
+
+    @staticmethod
+    def default() -> dict[str, Any]:
+        return {'clear': False, 'opcode': None}
+
+    @staticmethod
+    def from_option_string() -> dict[str, str]:
+        return LoggingOptions.from_option_string() | KOptions.from_option_string()
+
+    @staticmethod
+    def get_argument_type() -> dict[str, Callable]:
+        return LoggingOptions.get_argument_type() | KOptions.get_argument_type()
 
 
 class PruneOptions(LoggingOptions, KOptions, SpecOptions):
