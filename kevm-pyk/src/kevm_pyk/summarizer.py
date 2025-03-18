@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import shutil
 import time
 import traceback
 from multiprocessing import Pool
@@ -673,8 +674,7 @@ def summarize(opcode_symbol: str) -> tuple[KEVMSummarizer, list[APRProof]]:
     return summarizer, proofs
 
 
-def analyze_proof(opcode: str, node_id: int) -> None:
+def clear_proofs() -> None:
     proof_dir = Path(__file__).parent / 'proofs'
-    save_directory = Path(__file__).parent / 'summaries'
-    summarizer = KEVMSummarizer(proof_dir, save_directory)
-    summarizer.analyze_proof(str(proof_dir / f'{opcode}_SPEC'), node_id)
+    if proof_dir.exists():
+        shutil.rmtree(proof_dir)
