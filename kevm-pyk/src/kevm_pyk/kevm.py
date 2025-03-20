@@ -524,6 +524,10 @@ class KEVM(KProve, KRun):
         return KApply('lengthBytes(_)_BYTES-HOOKED_Int_Bytes', [ba])
 
     @staticmethod
+    def size_wordstack(ws: KInner) -> KApply:
+        return KApply('#sizeWordStack', [ws])
+
+    @staticmethod
     def inf_gas(g: KInner) -> KApply:
         return KApply('infGas', [g])
 
