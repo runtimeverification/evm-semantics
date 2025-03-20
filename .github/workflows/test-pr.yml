@@ -147,7 +147,6 @@ jobs:
       matrix:
         include:
           - runner: normal
-          - runner: macos-13
           - runner: ARM64
     needs: kevm-pyk-code-quality-checks
     runs-on: ${{ matrix.runner }}
@@ -162,20 +161,6 @@ jobs:
         run: |
           set -eux
           git submodule update --init --recursive -- kevm-pyk/src/kevm_pyk/kproj/plugin
-      - name: 'Install Nix'
-        if: ${{ matrix.runner == 'macos-13' }}
-        uses: cachix/install-nix-action@v25
-        with:
-          install_url: https://releases.nixos.org/nix/nix-2.19.3/install
-          extra_nix_config: |
-            access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
-            substituters = http://cache.nixos.org https://cache.iog.io
-            trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ=
-      - name: 'Install Cachix'
-        if: ${{ matrix.runner == 'macos-13' }}
-        uses: cachix/cachix-action@v14
-        with:
-          name: k-framework
       - name: 'Build KEVM'
         run: GC_DONT_GC=1 nix build --extra-experimental-features 'nix-command flakes' --print-build-logs
       - name: 'Test KEVM'
