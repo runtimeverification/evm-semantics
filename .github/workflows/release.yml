@@ -36,7 +36,6 @@ jobs:
       matrix:
         include:
           - runner: normal
-          - runner: macos-13
           - runner: ARM64
     runs-on: ${{ matrix.runner }}
     needs: draft-release
@@ -46,23 +45,6 @@ jobs:
         with:
           ref: ${{ github.event.push.head.sha }}
           fetch-depth: 0
-      - name: 'Upgrade bash'
-        if: ${{ contains(matrix.os, 'macos') }}
-        run: brew install bash
-      - name: 'Install Nix'
-        if: ${{ matrix.runner == 'macos-13' }}
-        uses: cachix/install-nix-action@v19
-        with:
-          install_url: https://releases.nixos.org/nix/nix-2.13.3/install
-          extra_nix_config: |
-            access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
-      - name: 'Install Cachix'
-        if: ${{ matrix.runner == 'macos-13' }}
-        uses: cachix/cachix-action@v12
-        with:
-          name: k-framework
-          signingKey: ${{ secrets.CACHIX_SIGNING_KEY }}
-          skipPush: true
       - name: 'Build KEVM'
         run: |
           GC_DONT_GC=1 nix build --extra-experimental-features 'nix-command flakes' --print-build-logs
