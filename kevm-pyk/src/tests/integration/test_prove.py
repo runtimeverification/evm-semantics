@@ -397,33 +397,19 @@ def test_prove_dss(
         )
 
 
-def test_prove_optimizations(
-    kompiled_target_for: Callable[[Path], Path],
-    tmp_path: Path,
-    caplog: LogCaptureFixture,
-    use_booster_dev: bool,
-    bug_report: BugReport | None,
-) -> None:
-    caplog.set_level(logging.INFO)
+def _get_proofs_of(target_name: str, module_name: str, kevm: KEVM) -> list[APRProof]:
+    _defn_dir = kdist.get(target_name)
+    _kevm = KEVM(_defn_dir)
+    _rules = _kevm.definition.module(module_name).rules
+    _claims = [
+        KClaim(rule.body, requires=rule.requires, ensures=rule.ensures, att=KAtt([AttEntry(Atts.LABEL, rule.label)]))
+        for rule in _rules
+    ]
+    return [APRProof.from_claim(kevm.definition, claim, {}) for claim in _claims]
 
-    def _get_optimization_proofs() -> list[APRProof]:
-        _defn_dir = kdist.get('evm-semantics.haskell')
-        _kevm = KEVM(_defn_dir)
-        _optimization_rules = _kevm.definition.module('EVM-OPTIMIZATIONS').rules
-        _claims = [
-            KClaim(
-                rule.body, requires=rule.requires, ensures=rule.ensures, att=KAtt([AttEntry(Atts.LABEL, rule.label)])
-            )
-            for rule in _optimization_rules
-        ]
-        return [APRProof.from_claim(kevm.definition, claim, {}) for claim in _claims]
 
-    spec_file = REPO_ROOT / 'tests/specs/opcodes/evm-optimizations-spec.k'
-    definition_dir = kompiled_target_for(spec_file)
-    kevm = KEVM(definition_dir)
-
-    kore_rpc_command = ('booster-dev',) if use_booster_dev else ('kore-rpc-booster',)
-
+def _validate_proofs(kevm: KEVM, kore_rpc_command: tuple[str, ...], proofs: list[APRProof]) -> None:
+    _LOGGER.info(f'Proving {len(proofs)} proofs')
     with legacy_explore(
         kevm, kcfg_semantics=KEVMSemantics(allow_symbolic_program=True), kore_rpc_command=kore_rpc_command
     ) as kcfg_explore:
@@ -435,7 +421,7 @@ def test_prove_optimizations(
             counterexample_info=False,
             fast_check_subsumption=True,
         )
-        for proof in _get_optimization_proofs():
+        for proof in proofs:
             initialize_apr_proof(kcfg_explore.cterm_symbolic, proof)
             prover.advance_proof(proof, max_iterations=20)
             node_printer = kevm_node_printer(kevm, proof)
@@ -443,3 +429,52 @@ def test_prove_optimizations(
             proof_display = '\n'.join('    ' + line for line in proof_show.show(proof))
             _LOGGER.info(f'Proof {proof.id}:\n{proof_display}')
             assert proof.passed
+
+
+def test_prove_optimizations(
+    kompiled_target_for: Callable[[Path], Path],
+    tmp_path: Path,
+    caplog: LogCaptureFixture,
+    use_booster_dev: bool,
+    bug_report: BugReport | None,
+) -> None:
+    caplog.set_level(logging.INFO)
+
+    spec_file = REPO_ROOT / 'tests/specs/opcodes/evm-optimizations-spec.k'
+    definition_dir = kompiled_target_for(spec_file)
+    kevm = KEVM(definition_dir)
+
+    kore_rpc_command = ('booster-dev',) if use_booster_dev else ('kore-rpc-booster',)
+
+    _validate_proofs(kevm, kore_rpc_command, _get_proofs_of('evm-semantics.haskell', 'EVM-OPTIMIZATIONS', kevm))
+
+
+SUMMARY_MODULES = [
+    path.stem.upper()
+    for path in (REPO_ROOT / 'kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries').glob('*.k')
+    if path.name != 'summaries.k'
+]
+
+
+@pytest.mark.parametrize(
+    'module',
+    SUMMARY_MODULES,
+    ids=SUMMARY_MODULES,
+)
+def test_prove_summaries(
+    module: str,
+    kompiled_target_for: Callable[[Path], Path],
+    tmp_path: Path,
+    caplog: LogCaptureFixture,
+    use_booster_dev: bool,
+    bug_report: BugReport | None,
+) -> None:
+    caplog.set_level(logging.INFO)
+
+    spec_file = REPO_ROOT / 'tests/specs/opcodes/evm-summary-spec.k'
+    definition_dir = kompiled_target_for(spec_file)
+    kevm = KEVM(definition_dir)
+
+    kore_rpc_command = ('booster-dev',) if use_booster_dev else ('kore-rpc-booster',)
+
+    _validate_proofs(kevm, kore_rpc_command, _get_proofs_of('evm-semantics.haskell-summary', module, kevm))
