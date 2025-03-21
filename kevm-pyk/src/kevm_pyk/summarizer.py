@@ -465,7 +465,7 @@ class KEVMSummarizer:
         specs: list[tuple[KApply, dict[str, KInner], list[KInner], dict[str, KInner], list[KInner], str]] = []
         init_subst: dict[str, KInner] = {}
         final_subst: dict[str, KInner] = {}
-        
+
         if opcode_symbol == 'SSTORE':
             init_subst['STATIC_CELL'] = KToken('false', KSort('Bool'))
 
