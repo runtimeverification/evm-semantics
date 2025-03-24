@@ -1597,15 +1597,10 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     syntax KItem ::= "#accessStorage" Account Int
  // ---------------------------------------------
     rule <k> #accessStorage ACCT INDEX => .K ... </k>
-         <accessedStorage> ... ACCT |-> (TS:Set => TS |Set SetItem(INDEX)) ... </accessedStorage>
+         <accessedStorage> TS => TS[ACCT <- {TS[ACCT] orDefault .Set}:>Set |Set SetItem(INDEX)] </accessedStorage>
          <schedule> SCHED </schedule>
          requires Ghasaccesslist << SCHED >>
          [preserves-definedness]
-
-    rule <k> #accessStorage ACCT INDEX => .K ... </k>
-         <accessedStorage> TS => TS[ACCT <- SetItem(INDEX)] </accessedStorage>
-         <schedule> SCHED </schedule>
-      requires Ghasaccesslist << SCHED >> andBool notBool ACCT in_keys(TS)
 
     rule <k> #accessStorage _ _ => .K ... </k>
          <schedule> SCHED </schedule>
@@ -2310,7 +2305,8 @@ Access List Gas
          <schedule> SCHED </schedule>
       requires Ghasaccesslist << SCHED >> andBool #usesAccessList(OP)
 
-    rule <k> #access [ _ , _ ] => .K ... </k> <schedule> _ </schedule> [owise]
+    rule <k> #access [ OP , _ ] => .K ... </k> <schedule> SCHED </schedule>
+      requires notBool (Ghasaccesslist << SCHED >> andBool #usesAccessList(OP))
 
     syntax InternalOp ::= #gasAccess ( Schedule, OpCode ) [symbol(#gasAccess)]
  // --------------------------------------------------------------------------
