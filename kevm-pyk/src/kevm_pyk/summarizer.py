@@ -433,8 +433,7 @@ class KEVMSummarizer:
         # This is because #push doesn't handle `.Account`. And it's okay to be Int for other opcodes.
         _init_subst['CALLER_CELL'] = KVariable('CALLER_CELL', KSort('Int'))  # CALLER_CELL should be Int for CALLER.
         _init_subst['ORIGIN_CELL'] = KVariable('ORIGIN_CELL', KSort('Int'))  # ORIGIN_CELL should be Int for ORIGIN.
-        inf_gas_cell = KEVM.inf_gas(KVariable('GAS_CELL', KSort('Gas')))
-        _init_subst['GAS_CELL'] = inf_gas_cell  # inf_gas to reduce the computation cost.
+        _init_subst['GAS_CELL'] = KEVM.inf_gas(KVariable('GAS_CELL', 'Gas'))  # SLOAD & SSTORE must use infinite gas.
         _init_subst.update(init_map)
         init_subst = CSubst(Subst(_init_subst), init_constraints)
 
@@ -466,6 +465,9 @@ class KEVMSummarizer:
         specs: list[tuple[KApply, dict[str, KInner], list[KInner], dict[str, KInner], list[KInner], str]] = []
         init_subst: dict[str, KInner] = {}
         final_subst: dict[str, KInner] = {}
+
+        if opcode_symbol == 'SSTORE':
+            init_subst['STATIC_CELL'] = KToken('false', KSort('Bool'))
 
         if opcode_symbol in NOT_USEGAS_OPCODES:
             # TODO: Should allow infGas to calculate gas. Skip for now.
@@ -572,7 +574,7 @@ class KEVMSummarizer:
                     proof,
                     create_kcfg_explore=create_kcfg_explore,
                     max_depth=1,
-                    max_iterations=None,
+                    max_iterations=300,
                     cut_point_rules=KEVMSemantics.cut_point_rules(
                         break_on_jumpi=False,
                         break_on_jump=False,
