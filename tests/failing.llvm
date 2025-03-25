@@ -2,11 +2,8 @@ BlockchainTests/GeneralStateTests/Cancun/stEIP4844-blobtransactions/blobhashList
 BlockchainTests/GeneralStateTests/Cancun/stEIP4844-blobtransactions/createBlobhashTx.json,*
 BlockchainTests/GeneralStateTests/Cancun/stEIP4844-blobtransactions/emptyBlobhashList.json,*
 BlockchainTests/GeneralStateTests/Cancun/stEIP4844-blobtransactions/wrongBlobhashVersion.json,*
-BlockchainTests/GeneralStateTests/Pyspecs/cancun/eip1153_tstore/tstore_clear_after_deployment_tx.json,*
-BlockchainTests/GeneralStateTests/Pyspecs/cancun/eip1153_tstore/tstore_clear_after_tx.json,*
 BlockchainTests/GeneralStateTests/Pyspecs/cancun/eip4788_beacon_root/beacon_root_transition.json,*
 BlockchainTests/GeneralStateTests/Pyspecs/cancun/eip4844_blobs/blob_gas_subtraction_tx.json,*
-BlockchainTests/GeneralStateTests/Pyspecs/cancun/eip4844_blobs/blobhash_multiple_txs_in_block.json,*
 BlockchainTests/GeneralStateTests/Pyspecs/cancun/eip4844_blobs/blob_type_tx_pre_fork.json,*
 BlockchainTests/GeneralStateTests/Pyspecs/cancun/eip4844_blobs/fork_transition_excess_blob_gas.json,*
 BlockchainTests/GeneralStateTests/Pyspecs/cancun/eip4844_blobs/insufficient_balance_blob_tx_combinations.json,*
@@ -33,8 +30,6 @@ BlockchainTests/GeneralStateTests/Pyspecs/cancun/eip4844_blobs/precompile_before
 BlockchainTests/GeneralStateTests/Pyspecs/cancun/eip4844_blobs/precompile_during_fork.json,*
 BlockchainTests/GeneralStateTests/Pyspecs/cancun/eip4844_blobs/reject_valid_full_blob_in_block_rlp.json,*
 BlockchainTests/GeneralStateTests/Pyspecs/cancun/eip6780_selfdestruct/create_selfdestruct_same_tx.json,*
-BlockchainTests/GeneralStateTests/Pyspecs/cancun/eip6780_selfdestruct/dynamic_create2_selfdestruct_collision_multi_tx.json,*
-BlockchainTests/GeneralStateTests/Pyspecs/cancun/eip6780_selfdestruct/dynamic_create2_selfdestruct_collision_two_different_transactions.json,*
 BlockchainTests/GeneralStateTests/Pyspecs/cancun/eip6780_selfdestruct/recreate_self_destructed_contract_different_txs.json,*
 BlockchainTests/GeneralStateTests/Pyspecs/cancun/eip6780_selfdestruct/selfdestruct_created_same_block_different_tx.json,*
 BlockchainTests/GeneralStateTests/Pyspecs/cancun/eip6780_selfdestruct/self_destructing_initcode_create_tx.json,*
@@ -42,10 +37,6 @@ BlockchainTests/GeneralStateTests/Pyspecs/cancun/eip6780_selfdestruct/self_destr
 BlockchainTests/GeneralStateTests/Pyspecs/cancun/eip6780_selfdestruct/selfdestruct_pre_existing.json,*
 BlockchainTests/GeneralStateTests/Pyspecs/cancun/eip7516_blobgasfee/blobbasefee_before_fork.json,*
 BlockchainTests/GeneralStateTests/Pyspecs/cancun/eip7516_blobgasfee/blobbasefee_during_fork.json,*
-BlockchainTests/GeneralStateTests/Pyspecs/constantinople/eip1014_create2/recreate.json,*
-BlockchainTests/GeneralStateTests/Pyspecs/frontier/opcodes/double_kill.json,*
-BlockchainTests/GeneralStateTests/Pyspecs/paris/security/tx_selfdestruct_balance_bug.json,*
-BlockchainTests/GeneralStateTests/Pyspecs/shanghai/eip4895_withdrawals/no_evm_execution.json,*
 BlockchainTests/GeneralStateTests/stEIP1559/lowFeeCap.json,*
 BlockchainTests/GeneralStateTests/stEIP1559/lowGasLimit.json,lowGasLimit_d0g0v0_Cancun
 BlockchainTests/GeneralStateTests/stEIP1559/lowGasPriceOldTypes.json,*

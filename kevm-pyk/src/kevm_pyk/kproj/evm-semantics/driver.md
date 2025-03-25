@@ -73,6 +73,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
     rule <k> startTx => loadTx( #sender( #getTxData(TXID), TW, TR, TS, B ) ) ... </k>
          <txPending> ListItem(TXID:Int) ... </txPending>
          <chainID> B </chainID>
+         <gas> _ => 0 </gas>
          <message>
            <msgID>      TXID </msgID>
            <sigV>       TW   </sigV>
