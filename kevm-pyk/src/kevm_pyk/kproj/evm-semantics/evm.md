@@ -764,7 +764,7 @@ Operators that require access to the rest of the Ethereum network world-state ca
     rule <k> EXTCODEHASH ACCT => keccak(GetAccountCode(ACCT)) ~> #push ... </k>
       requires notBool IsAccountEmpty(ACCT)
 
-    rule <k> EXTCODEHASH _ => 0 ~> #push ... </k> [owise]
+    rule <k> EXTCODEHASH ACCT => AccessAccount(ACCT) ~> 0 ~> #push ... </k> [owise]
 
     syntax QuadStackOp ::= "EXTCODECOPY"
  // ------------------------------------
@@ -859,7 +859,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <output> _ => OUT </output>
       requires STATUS =/=Int EVMC_SUCCESS
 
-    rule [return.success]:  
+    rule [return.success]:
          <k> #return RETSTART RETWIDTH MessageResult(... gas: GAVAIL, status: STATUS, data: OUT) => 1 ~> #push ~> #refund GAVAIL ~> #setLocalMem RETSTART RETWIDTH OUT ...</k>
          <output> _ => OUT </output>
       requires STATUS ==Int EVMC_SUCCESS
