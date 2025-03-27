@@ -595,6 +595,7 @@ After executing a transaction, it's necessary to have the effect of the substate
            <acctID> ACCT </acctID>
            <storage> STORAGE </storage>
            <origStorage> _ => STORAGE </origStorage>
+           <transientStorage> _ => .Map </transientStorage>
            ...
          </account>
 
