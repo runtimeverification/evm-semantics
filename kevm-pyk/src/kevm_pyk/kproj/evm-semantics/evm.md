@@ -936,7 +936,8 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
     rule #hasValidInitCode(INITCODELEN, SCHED) => notBool Ghasmaxinitcodesize << SCHED >> orBool INITCODELEN <=Int maxInitCodeSize < SCHED >
 
     syntax KItem ::= "#codeDeposit" MessageResult
-    rule <k> #codeDeposit(MessageResult(... gas: GAVAIL, status: STATUS)) => #refund GAVAIL ~> 0 ~> #push ...</k>
+    rule <k> #codeDeposit(MessageResult(... gas: GAVAIL, status: STATUS, data:OUT)) => #refund GAVAIL ~> 0 ~> #push ...</k>
+         <output> _ => OUT </output>
       requires STATUS =/=Int EVMC_SUCCESS
 
     rule <k> #codeDeposit(MessageResult(... gas: GAVAIL, status: STATUS, target: ACCT)) => #refund GAVAIL ~> ACCT ~> #push ...</k>
