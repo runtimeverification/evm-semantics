@@ -1559,6 +1559,7 @@ There are several helpers for calculating gas (most of them also specified in th
  // -------------------------------------------------------------------------
     rule <k> #accountNonexistent(ACCT) => IsAccountEmpty(ACCT) andBool Gemptyisnonexistent << SCHED >> ... </k>
          <schedule> SCHED </schedule>
+      requires AccountExists(ACCT)
 
    rule <k> #accountNonexistent(_) => true ... </k> [owise]
 ```
