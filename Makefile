@@ -77,6 +77,9 @@ test-prove-functional: poetry
 test-prove-optimizations: poetry
 	$(MAKE) -C kevm-pyk/ test-integration PYTEST_ARGS+="-k test_prove_optimizations"
 
+test-prove-summaries: poetry
+	$(MAKE) -C kevm-pyk/ test-integration PYTEST_ARGS+="-k test_prove_summaries"
+
 test-prove-dss: poetry
 	$(MAKE) -C kevm-pyk/ test-integration PYTEST_ARGS+="-k test_prove_dss"
 
