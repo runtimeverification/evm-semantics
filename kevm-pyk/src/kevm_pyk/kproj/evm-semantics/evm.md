@@ -938,7 +938,13 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
     syntax KItem ::= "#codeDeposit" MessageResult
     rule <k> #codeDeposit(MessageResult(... gas: GAVAIL, status: STATUS, data:OUT)) => #refund GAVAIL ~> 0 ~> #push ...</k>
          <output> _ => OUT </output>
-      requires STATUS =/=Int EVMC_SUCCESS
+         <schedule> SCHED </schedule>
+      requires STATUS =/=Int EVMC_SUCCESS andBool SCHED =/=K FRONTIER
+
+       rule <k> #codeDeposit(MessageResult(... gas: GAVAIL, status: STATUS, target: ACCT)) => #refund GAVAIL ~> ACCT ~> #push ...</k>
+          <output> _ => .Bytes </output>
+          <schedule> FRONTIER </schedule>
+      requires STATUS =/=Int EVMC_SUCCESS andBool STATUS =/=Int EVMC_REVERT
 
     rule <k> #codeDeposit(MessageResult(... gas: GAVAIL, status: STATUS, target: ACCT)) => #refund GAVAIL ~> ACCT ~> #push ...</k>
          <output> _ => .Bytes </output>
