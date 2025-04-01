@@ -5,34 +5,6 @@ module PUSHZERO-SUMMARY
     
     rule [PUSHZERO-SUMMARY-0]: <kevm>
            <k>
-             ( #next [ PUSHZERO ] => #halt )
-             ~> K_CELL:K
-           </k>
-           <ethereum>
-             <evm>
-               <statusCode>
-                 ( STATUSCODE_CELL:StatusCode => EVMC_STACK_OVERFLOW )
-               </statusCode>
-               <callState>
-                 <wordStack>
-                   WS:WordStack
-                 </wordStack>
-                 <gas>
-                   GAS_CELL:Int
-                 </gas>
-                 ...
-               </callState>
-               ...
-             </evm>
-             ...
-           </ethereum>
-           ...
-         </kevm>
-      requires 1023 <Int #sizeWordStack ( WS:WordStack , 0 )
-      [priority(20), label(PUSHZERO-SUMMARY-0)]
-    
-    rule [PUSHZERO-SUMMARY-1]: <kevm>
-           <k>
              ( #next [ PUSHZERO ] ~> .K => .K )
              ~> K_CELL:K
            </k>
@@ -63,14 +35,12 @@ module PUSHZERO-SUMMARY
            ...
          </kevm>
       requires ( USEGAS_CELL:Bool
-       andBool ( ( notBool #sizeWordStack ( WS:WordStack , 0 ) <Int 0 )
-       andBool ( ( notBool 1023 <Int #sizeWordStack ( WS:WordStack , 0 ) )
+       andBool ( #sizeWordStack ( WS:WordStack , 0 ) <=Int 1023
        andBool ( Gbase < SCHEDULE_CELL:Schedule > <=Int GAS_CELL:Int
-               ))))
-       ensures #sizeWordStack ( WS:WordStack , 0 ) <=Int 1023
-      [priority(20), label(PUSHZERO-SUMMARY-1)]
+               )))
+      [priority(20), label(PUSHZERO-SUMMARY-0)]
     
-    rule [PUSHZERO-SUMMARY-2]: <kevm>
+    rule [PUSHZERO-SUMMARY-1]: <kevm>
            <k>
              ( #next [ PUSHZERO ] ~> .K => .K )
              ~> K_CELL:K
@@ -99,10 +69,8 @@ module PUSHZERO-SUMMARY
            ...
          </kevm>
       requires ( ( notBool USEGAS_CELL:Bool )
-       andBool ( ( notBool #sizeWordStack ( WS:WordStack , 0 ) <Int 0 )
-       andBool ( ( notBool 1023 <Int #sizeWordStack ( WS:WordStack , 0 ) )
-               )))
-       ensures #sizeWordStack ( WS:WordStack , 0 ) <=Int 1023
-      [priority(20), label(PUSHZERO-SUMMARY-2)]
+       andBool ( #sizeWordStack ( WS:WordStack , 0 ) <=Int 1023
+               ))
+      [priority(20), label(PUSHZERO-SUMMARY-1)]
 
 endmodule

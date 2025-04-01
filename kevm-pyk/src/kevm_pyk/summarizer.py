@@ -289,6 +289,35 @@ def get_todo_list() -> list[str]:
     return todo_list
 
 
+def stack_added(opcode_id: str) -> int:
+    """
+    Return the stack size added for the opcode, corresponding `#stackAdded` in the semantics.
+    """
+    if opcode_id in [
+        'CALLDATACOPY',
+        'RETURNDATACOPY',
+        'CODECOPY',
+        'EXTCODECOPY',
+        'POP',
+        'MSTORE',
+        'MSTORE8',
+        'SSTORE',
+        'JUMP',
+        'JUMPI',
+        'JUMPDEST',
+        'STOP',
+        'RETURN',
+        'REVERT',
+        'SELFDESTRUCT',
+        'LOG',
+        'INVALID',
+        'UNDEFINED',
+    ]:
+        return 0
+    else:
+        return 1
+
+
 def stack_needed(opcode_id: str) -> int:
     """
     Return the stack size needed for the opcode, corresponding `#stackNeeded` in the semantics.
@@ -311,6 +340,19 @@ def stack_needed(opcode_id: str) -> int:
     elif 'UnStackOp' in opcode:
         return 1
     return 0
+
+
+def stack_delta(opcode_id: str) -> int | None:
+    """
+    Return the stack delta for the opcode, corresponding `#stackDelta` in the semantics.
+    """
+    if opcode_id == 'DUP':
+        return 1
+    elif opcode_id in ['LOG', 'SWAP']:
+        return None
+    else:
+        delta = stack_added(opcode_id) - stack_needed(opcode_id)
+        return delta if delta > 0 else None
 
 
 def accounts_cell(acct_id: str | KInner, exists: bool = True) -> tuple[KInner, KInner]:
@@ -571,9 +613,15 @@ class KEVMSummarizer:
         specs: list[tuple[dict[str, KInner], list[KInner], dict[str, KInner], list[KInner], str]] = []
         init_subst: dict[str, KInner] = {}
         final_subst: dict[str, KInner] = {}
+        init_constraints: list[KInner] = []
 
-        if op == 'SSTORE':
+        if op in ['SSTORE', 'TSTORE']:
             init_subst['STATIC_CELL'] = KToken('false', KSort('Bool'))
+
+        delta = stack_delta(op)
+        _LOGGER.info(f'Stack delta for {op}: {delta}')
+        if op not in ['SWAP', 'DUP', 'LOG'] and delta:
+            init_constraints.append(_le(_ws_size(stack_needed(op)), KToken(str(1024 - delta), 'Int')))
 
         if op in ACCOUNT_QUERIES_OPCODES:
             w0 = KVariable('W0', KSort('Int'))
@@ -582,41 +630,40 @@ class KEVMSummarizer:
             cell, constraint = accounts_cell(euclidModInt(w0, pow160), exists=False)
             init_subst['ACCOUNTS_CELL'] = cell
             # TODO: BALANCE doesn't need the above spec. Maybe a bug in the backend.
-            specs.append((init_subst, [constraint], {}, [], '_OWISE'))
+            specs.append((init_subst, init_constraints + [constraint], {}, [], '_OWISE'))
 
             cell, constraint = accounts_cell(euclidModInt(w0, pow160), exists=True)
             init_subst['ACCOUNTS_CELL'] = cell
-            specs.append((init_subst, [constraint], {}, [], '_NORMAL'))
+            specs.append((init_subst, init_constraints + [constraint], {}, [], '_NORMAL'))
         elif op in ACCOUNT_STORAGE_OPCODES or op == 'SELFBALANCE':
             cell, constraint = accounts_cell('ID_CELL')
             init_subst['ACCOUNTS_CELL'] = cell
-            specs.append((init_subst, [constraint], {}, [], ''))
+            specs.append((init_subst, init_constraints + [constraint], {}, [], ''))
         elif op == 'JUMP':
             final_subst['K_CELL'] = KSequence([KEVM.end_basic_block(), KVariable('K_CELL')])
-            specs.append((init_subst, [], final_subst, [], ''))
+            specs.append((init_subst, init_constraints, final_subst, [], ''))
         elif op == 'JUMPI':
             constraint = mlEquals(KVariable('W1', KSort('Int')), KToken('0', KSort('Int')), 'Int')
-            specs.append((init_subst, [constraint], {}, [], '_FALSE'))
+            specs.append((init_subst, init_constraints + [constraint], {}, [], '_FALSE'))
 
             constraint = mlNot(mlEquals(KVariable('W1', KSort('Int')), KToken('0', KSort('Int')), 'Int'))
             final_subst['K_CELL'] = KSequence([KEVM.end_basic_block(), KVariable('K_CELL')])
-            specs.append((init_subst, [], final_subst, [], '_TRUE'))
+            specs.append((init_subst, init_constraints, final_subst, [], '_TRUE'))
         elif op == 'DUP':
-            init_constraints: list[KInner] = [_le(KVariable('N', 'Int'), _ws_size(0))]
+            init_constraints.append(_le(KVariable('N', 'Int'), _ws_size(0)))
             init_constraints.append(_le(_ws_size(0), KToken('1023', 'Int')))
             specs.append((init_subst, init_constraints, final_subst, [], ''))
         elif op == 'SWAP':
-            init_constraints = [_le(addInt(KVariable('N', 'Int'), KToken('1', 'Int')), _ws_size(1))]
-            init_constraints.append(_le(_ws_size(1), KToken('1023', 'Int')))
+            init_constraints.append(_le(addInt(KVariable('N', 'Int'), KToken('1', 'Int')), _ws_size(1)))
             specs.append((init_subst, init_constraints, final_subst, [], ''))
         elif op == 'LOG':
-            init_constraints = [_le(addInt(KVariable('N', 'Int'), KToken('2', 'Int')), _ws_size(2))]
+            init_constraints.append(_le(KToken('0', 'Int'), KVariable('N', 'Int')))
+            init_constraints.append(_le(addInt(KVariable('N', 'Int'), KToken('2', 'Int')), _ws_size(2)))
             init_constraints.append(_le(KVariable('N', 'Int'), _ws_size(0)))
-            init_constraints.append(_le(_ws_size(2), addInt(KVariable('N', 'Int'), KToken('1026', 'Int'))))
             init_subst['STATIC_CELL'] = KToken('false', KSort('Bool'))
             specs.append((init_subst, init_constraints, final_subst, [], ''))
         else:
-            specs.append((init_subst, [], final_subst, [], ''))
+            specs.append((init_subst, init_constraints, final_subst, [], ''))
 
         return [self._build_spec(op, need, spec[0], spec[1], spec[2], spec[3], spec[4]) for spec in specs]
 
