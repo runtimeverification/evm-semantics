@@ -607,6 +607,110 @@ class KEVMSummarizer:
                 f.write('\n')
         return passed
 
+    def _transform_underscores(self, inner: KInner) -> KInner:
+        """Transform _ in variable names into empty string."""
+
+        def _transform_underscore_aux(inner: KInner) -> KInner:
+            if isinstance(inner, KVariable) and inner.name.startswith('__'):
+                return KVariable(inner.name[2:], inner.sort)
+            if isinstance(inner, KVariable) and inner.name.startswith('_'):
+                return KVariable(inner.name[1:], inner.sort)
+            return inner
+
+        return top_down(_transform_underscore_aux, inner)
+
+    def _transform_inf_gas(self, rule_id: str, body: KInner, requires: KInner) -> tuple[KInner, KInner]:
+        """Transform infGas to normal gas."""
+        gas_delta: KInner | None = None
+
+        def _transform_inf_gas_aux(inner: KInner) -> KInner:
+            nonlocal gas_delta
+            if isinstance(inner, KApply) and inner.label.name == 'infGas':
+                gas_delta = inner.args[0]
+                return gas_delta
+            return inner
+
+        body = top_down(_transform_inf_gas_aux, body)
+        if isinstance(gas_delta, KRewrite):
+            deduct = gas_delta.rhs
+            gas_guards: list[KInner] = []
+            while isinstance(deduct, KApply) and deduct.label.name == '_-Int_':
+                gas_guards.append(leInt(deduct.args[1], deduct.args[0]))
+                deduct = deduct.args[0]
+            for guard in reversed(gas_guards):
+                requires = andBool([requires, guard])
+
+        if rule_id in ['SSTORE-SUMMARY-1', 'SSTORE-SUMMARY-2']:
+            requires = andBool(
+                [
+                    requires,
+                    ltInt(
+                        KApply(
+                            '_<_>_SCHEDULE_Int_ScheduleConst_Schedule',
+                            [KApply('Gcallstipend_SCHEDULE_ScheduleConst'), KVariable('SCHEDULE_CELL', 'Schedule')],
+                        ),
+                        KVariable('GAS_CELL', 'Int'),
+                    ),
+                ]
+            )
+
+        if rule_id in ['BALANCE-NORMAL-SUMMARY-1', 'BALANCE-OWISE-SUMMARY-1']:
+            requires = andBool([requires, leInt(KToken('0', 'Int'), KVariable('GAS_CELL', 'Int'))])
+
+        return body, requires
+
+    def _transform_dot_account_var(self, body: KInner, requires: KInner) -> tuple[KInner, KInner]:
+        """Transform DotAccountVar to Dots in <accounts>."""
+
+        def _transform_dot_account_var_aux(inner: KInner) -> KInner:
+            if (
+                isinstance(inner, KApply)
+                and inner.label.name == '<accounts>'
+                and isinstance(inner.args[0], KApply)
+                and inner.args[0].label.name == '_AccountCellMap_'
+                and isinstance(inner.args[0].args[1], KVariable)
+                and inner.args[0].args[1].name == 'DotAccountVar'
+            ):
+                return KApply('<accounts>', [inner.args[0].args[0], DOTS])
+            return inner
+
+        def _is_not_inkeys(_inner: KInner) -> bool:
+            if (
+                isinstance(_inner, KApply)
+                and _inner.label.name == 'notBool_'
+                and isinstance(_inner.args[0], KApply)
+                and _inner.args[0].label.name == 'AccountCellMap:in_keys'
+            ):
+                return True
+            return False
+
+        def _remove_not_inkeys(inner: KInner) -> KInner:
+            if isinstance(inner, KApply) and inner.label.name == '_andBool_':
+                if _is_not_inkeys(inner.args[0]):
+                    return inner.args[1]
+                if _is_not_inkeys(inner.args[1]):
+                    return inner.args[0]
+            return inner
+
+        return top_down(_transform_dot_account_var_aux, body), top_down(_remove_not_inkeys, requires)
+
+    def _transform_lhs_functions(self, rule_id: str, body: KInner, requires: KInner) -> tuple[KInner, KInner]:
+        """Transform functions in LHS to variables."""
+        exp = None
+
+        def remove_illegal_balance_lhs(inner: KInner) -> KInner:
+            nonlocal exp
+            if isinstance(inner, KApply) and inner.label.name == '<acctID>':
+                exp = inner.args[0]
+                return KApply('<acctID>', [KVariable('ACCTID', 'Int')])
+            return inner
+
+        if rule_id.startswith('BALANCE'):
+            body = top_down(remove_illegal_balance_lhs, body)
+            assert exp is not None
+            requires = andBool([requires, eqInt(exp, KVariable('ACCTID', 'Int'))])
+        return body, requires
+
     def _to_rules(self, proof: APRProof) -> list[KRule]:
         krules = []
         module = APRProofShow(self.kevm, kevm_node_printer(self.kevm, proof)).kcfg_show.to_module(proof.kcfg)
@@ -618,105 +722,11 @@ class KEVMSummarizer:
             rule_id = f'{proof.id.replace("_", "-")}-SUMMARY-{i}'
             atts = atts.update([Atts.LABEL(rule_id)])
 
-            # transform _ from variable names
-            def transform_underscores(inner: KInner) -> KInner:
-                if isinstance(inner, KVariable) and inner.name.startswith('__'):
-                    return KVariable(inner.name[2:], inner.sort)
-                if isinstance(inner, KVariable) and inner.name.startswith('_'):
-                    return KVariable(inner.name[1:], inner.sort)
-                return inner
-
-            body = top_down(transform_underscores, body)
-            requires, ensures = top_down(transform_underscores, requires), top_down(transform_underscores, ensures)
-
-            # transform infinite gas to normal gas
-            gas_delta: KInner | None = None
-
-            def remove_inf_gas(inner: KInner) -> KInner:
-                nonlocal gas_delta
-                if isinstance(inner, KApply) and inner.label.name == 'infGas':
-                    gas_delta = inner.args[0]
-                    return gas_delta
-                return inner
-
-            body = top_down(remove_inf_gas, body)
-
-            if isinstance(gas_delta, KRewrite):
-                deduct = gas_delta.rhs
-                gas_guards: list[KInner] = []
-                while isinstance(deduct, KApply) and deduct.label.name == '_-Int_':
-                    gas_guards.append(leInt(deduct.args[1], deduct.args[0]))
-                    deduct = deduct.args[0]
-                for guard in reversed(gas_guards):
-                    requires = andBool([requires, guard])
-
-            if rule_id in ['SSTORE-SUMMARY-1', 'SSTORE-SUMMARY-2']:
-                requires = andBool(
-                    [
-                        requires,
-                        ltInt(
-                            KApply(
-                                '_<_>_SCHEDULE_Int_ScheduleConst_Schedule',
-                                [KApply('Gcallstipend_SCHEDULE_ScheduleConst'), KVariable('SCHEDULE_CELL', 'Schedule')],
-                            ),
-                            KVariable('GAS_CELL', 'Int'),
-                        ),
-                    ]
-                )
-
-            if rule_id in ['BALANCE-NORMAL-SUMMARY-1', 'BALANCE-OWISE-SUMMARY-1']:
-                requires = andBool([requires, leInt(KToken('0', 'Int'), KVariable('GAS_CELL', 'Int'))])
-
-            # remove illegal accounts remainders
-            def remove_dot_account_var(inner: KInner) -> KInner:
-                if (
-                    isinstance(inner, KApply)
-                    and inner.label.name == '<accounts>'
-                    and isinstance(inner.args[0], KApply)
-                    and inner.args[0].label.name == '_AccountCellMap_'
-                    and isinstance(inner.args[0].args[1], KVariable)
-                    and inner.args[0].args[1].name == 'DotAccountVar'
-                ):
-                    return KApply('<accounts>', [inner.args[0].args[0], DOTS])
-                return inner
-
-            body = top_down(remove_dot_account_var, body)
-
-            def _is_not_inkeys(_inner: KInner) -> bool:
-                if (
-                    isinstance(_inner, KApply)
-                    and _inner.label.name == 'notBool_'
-                    and isinstance(_inner.args[0], KApply)
-                    and _inner.args[0].label.name == 'AccountCellMap:in_keys'
-                ):
-                    return True
-                return False
-
-            def remove_not_inkeys(inner: KInner) -> KInner:
-                if isinstance(inner, KApply) and inner.label.name == '_andBool_':
-                    if _is_not_inkeys(inner.args[0]):
-                        return inner.args[1]
-                    if _is_not_inkeys(inner.args[1]):
-                        return inner.args[0]
-                return inner
-
-            requires = top_down(remove_not_inkeys, requires)
-
-            # remove (W0:Int modInt pow160) LHS for BALANCE
-            exp = None
-
-            def remove_illegal_balance_lhs(inner: KInner) -> KInner:
-                nonlocal exp
-                if isinstance(inner, KApply) and inner.label.name == '<acctID>':
-                    exp = inner.args[0]
-                    return KApply('<acctID>', [KVariable('ACCTID', 'Int')])
-                return inner
-
-            if proof.id.startswith('BALANCE'):
-                body = top_down(remove_illegal_balance_lhs, body)
-                assert exp is not None
-                requires = andBool([requires, eqInt(exp, KVariable('ACCTID', 'Int'))])
-
+            body = self._transform_underscores(body)
+            requires, ensures = self._transform_underscores(requires), self._transform_underscores(ensures)
+            body, requires = self._transform_inf_gas(rule_id, body, requires)
+            body, requires = self._transform_dot_account_var(body, requires)
+            body, requires = self._transform_lhs_functions(rule_id, body, requires)
             krules.append(KRule(body, requires, ensures, atts))
         return krules
 
@@ -724,24 +734,26 @@ class KEVMSummarizer:
         proof.minimize_kcfg(KEVMSemantics(allow_symbolic_program=True), merge)
 
         ensure_dir_path(self.save_directory)
-        with open(self.save_directory / f'{proof.id.lower().replace("_", "-")}-summary.k', 'w') as f:
-            requires = [KRequire('../evm.md')]
-            imports = [KImport('EVM')]
-            if proof.id == 'MSTORE8':
-                requires.append(KRequire('../buf.md'))
-                imports.append(KImport('BUF'))
-            sentences = self._to_rules(proof)
-            module_name = f'{proof.id.upper().replace("_", "-")}-SUMMARY'
-            module = KFlatModule(module_name, sentences=sentences, imports=imports)
-            kdef = KDefinition(module_name, [module], requires=requires)
+
+        module_name = f'{proof.id.upper().replace("_", "-")}-SUMMARY'
+        requires = [KRequire('../evm.md')]
+        imports = [KImport('EVM')]
+        if proof.id == 'MSTORE8':
+            requires.append(KRequire('../buf.md'))
+            imports.append(KImport('BUF'))
+        sentences = self._to_rules(proof)
+        module = KFlatModule(module_name, sentences=sentences, imports=imports)
+        kdef = KDefinition(module_name, [module], requires=requires)
+        with open(self.save_directory / f'{module_name.lower()}.k', 'w') as f:
             f.write(self.kevm.pretty_print(kdef))
+
+        k_files = sorted([f for f in self.save_directory.glob('*.k') if f.name != 'summaries.k'])
+        module_names = [f.stem.upper() for f in k_files]
+        requires = [KRequire(k_file.name) for k_file in k_files]
+        imports = [KImport(module_name) for module_name in module_names]
+        module = KFlatModule('KEVM-SUMMARIES', imports=imports)
+        kdef = KDefinition('KEVM-SUMMARIES', [module], requires=requires)
         with open(self.save_directory / 'summaries.k', 'w') as f:
-            k_files = sorted([f for f in self.save_directory.glob('*.k') if f.name != 'summaries.k'])
-            module_names = [f.stem.upper() for f in k_files]
-            requires = [KRequire(k_file.name) for k_file in k_files]
-            imports = [KImport(module_name) for module_name in module_names]
-            module = KFlatModule('KEVM-SUMMARIES', imports=imports)
-            kdef = KDefinition('KEVM-SUMMARIES', [module], requires=requires)
             f.write(self.kevm.pretty_print(kdef))
 
     def print_node(self, proof: APRProof, nodes: Iterable[int]) -> None:
