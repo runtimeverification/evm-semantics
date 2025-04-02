@@ -289,11 +289,11 @@ def get_todo_list() -> list[str]:
     return todo_list
 
 
-def stack_added(opcode_id: str) -> int:
+def stack_added(opcode: str) -> int:
     """
     Return the stack size added for the opcode, corresponding `#stackAdded` in the semantics.
     """
-    if opcode_id in [
+    if opcode in [
         'CALLDATACOPY',
         'RETURNDATACOPY',
         'CODECOPY',
@@ -318,11 +318,11 @@ def stack_added(opcode_id: str) -> int:
         return 1
 
 
-def stack_needed(opcode_id: str) -> int:
+def stack_needed(opcode: str) -> int:
     """
     Return the stack size needed for the opcode, corresponding `#stackNeeded` in the semantics.
     """
-    opcode = OPCODES[opcode_id].label.name
+    opcode = OPCODES[opcode].label.name
     if 'CallOp' in opcode:
         return 7
     elif 'CallSixOp' in opcode:
@@ -342,16 +342,16 @@ def stack_needed(opcode_id: str) -> int:
     return 0
 
 
-def stack_delta(opcode_id: str) -> int | None:
+def stack_delta(opcode: str) -> int | None:
     """
     Return the stack delta for the opcode, corresponding `#stackDelta` in the semantics.
     """
-    if opcode_id == 'DUP':
+    if opcode == 'DUP':
         return 1
-    elif opcode_id in ['LOG', 'SWAP']:
+    elif opcode in ['LOG', 'SWAP']:
         return None
     else:
-        delta = stack_added(opcode_id) - stack_needed(opcode_id)
+        delta = stack_added(opcode) - stack_needed(opcode)
         return delta if delta > 0 else None
 
 
