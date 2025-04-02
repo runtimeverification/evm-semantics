@@ -10,12 +10,15 @@ from typing import TYPE_CHECKING, Final
 
 from frozendict import frozendict
 from pyk.cterm import CSubst, CTerm, CTermSymbolic, cterm_build_claim
-from pyk.kast.inner import KApply, KSequence, KToken, KVariable, Subst
-from pyk.kast.outer import KSort
+from pyk.kast.att import Atts
+from pyk.kast.inner import KApply, KRewrite, KSequence, KToken, KVariable, Subst, top_down
+from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire, KRule, KSort
 from pyk.kcfg import KCFG, KCFGExplore
 from pyk.kdist import kdist
 from pyk.kore.rpc import KoreClient
-from pyk.prelude.kint import addInt, euclidModInt, leInt
+from pyk.prelude.k import DOTS
+from pyk.prelude.kbool import andBool
+from pyk.prelude.kint import addInt, eqInt, euclidModInt, leInt, ltInt
 from pyk.prelude.ml import mlEquals, mlEqualsFalse, mlEqualsTrue, mlNot
 from pyk.proof import APRProof
 from pyk.proof.show import APRProofShow
@@ -349,6 +352,114 @@ def accounts_cell(acct_id: str | KInner, exists: bool = True) -> tuple[KInner, K
         return KApply('_AccountCellMap_', [dot_account_var]), constraint
 
 
+def _transform_dash(inner: KInner) -> KInner:
+    """Transform _ in variable names into empty string."""
+
+    def _transform_dash_aux(inner: KInner) -> KInner:
+        if isinstance(inner, KVariable) and inner.name.startswith('__'):
+            return KVariable(inner.name[2:], inner.sort)
+        if isinstance(inner, KVariable) and inner.name.startswith('_'):
+            return KVariable(inner.name[1:], inner.sort)
+        return inner
+
+    return top_down(_transform_dash_aux, inner)
+
+
+def _transform_inf_gas(rule_id: str, body: KInner, requires: KInner) -> tuple[KInner, KInner]:
+    """Transform infGas to normal gas."""
+    gas_delta: KInner | None = None
+
+    def _transform_inf_gas_aux(inner: KInner) -> KInner:
+        nonlocal gas_delta
+        if isinstance(inner, KApply) and inner.label.name == 'infGas':
+            gas_delta = inner.args[0]
+            return gas_delta
+        return inner
+
+    body = top_down(_transform_inf_gas_aux, body)
+    if isinstance(gas_delta, KRewrite):
+        deduct = gas_delta.rhs
+        gas_guards: list[KInner] = []
+        while isinstance(deduct, KApply) and deduct.label.name == '_-Int_':
+            gas_guards.append(leInt(deduct.args[1], deduct.args[0]))
+            deduct = deduct.args[0]
+        for guard in reversed(gas_guards):
+            requires = andBool([requires, guard])
+
+    if rule_id in ['SSTORE-SUMMARY-1', 'SSTORE-SUMMARY-2']:
+        requires = andBool(
+            [
+                requires,
+                ltInt(
+                    KApply(
+                        '_<_>_SCHEDULE_Int_ScheduleConst_Schedule',
+                        [KApply('Gcallstipend_SCHEDULE_ScheduleConst'), KVariable('SCHEDULE_CELL', 'Schedule')],
+                    ),
+                    KVariable('GAS_CELL', 'Int'),
+                ),
+            ]
+        )
+
+    if rule_id in ['BALANCE-NORMAL-SUMMARY-1', 'BALANCE-OWISE-SUMMARY-1']:
+        requires = andBool([requires, leInt(KToken('0', 'Int'), KVariable('GAS_CELL', 'Int'))])
+
+    return body, requires
+
+
+def _transform_dot_account_var(body: KInner, requires: KInner) -> tuple[KInner, KInner]:
+    """Transform DotAccountVar to Dots in <accounts>."""
+
+    def _transform_dot_account_var_aux(inner: KInner) -> KInner:
+        if (
+            isinstance(inner, KApply)
+            and inner.label.name == '<accounts>'
+            and isinstance(inner.args[0], KApply)
+            and inner.args[0].label.name == '_AccountCellMap_'
+            and isinstance(inner.args[0].args[1], KVariable)
+            and inner.args[0].args[1].name == 'DotAccountVar'
+        ):
+            return KApply('<accounts>', [inner.args[0].args[0], DOTS])
+        return inner
+
+    def _is_not_inkeys(_inner: KInner) -> bool:
+        if (
+            isinstance(_inner, KApply)
+            and _inner.label.name == 'notBool_'
+            and isinstance(_inner.args[0], KApply)
+            and _inner.args[0].label.name == 'AccountCellMap:in_keys'
+        ):
+            return True
+        return False
+
+    def _remove_not_inkeys(inner: KInner) -> KInner:
+        if isinstance(inner, KApply) and inner.label.name == '_andBool_':
+            if _is_not_inkeys(inner.args[0]):
+                return inner.args[1]
+            if _is_not_inkeys(inner.args[1]):
+                return inner.args[0]
+        return inner
+
+    return top_down(_transform_dot_account_var_aux, body), top_down(_remove_not_inkeys, requires)
+
+
+def _transform_lhs_functions(rule_id: str, body: KInner, requires: KInner) -> tuple[KInner, KInner]:
+    """Transform functions in LHS to variables."""
+    exp = None
+
+    def remove_illegal_balance_lhs(inner: KInner) -> KInner:
+        nonlocal exp
+        if isinstance(inner, KApply) and inner.label.name == '<acctID>':
+            exp = inner.args[0]
+            return KApply('<acctID>', [KVariable('ACCTID', 'Int')])
+        return inner
+
+    if rule_id.startswith('BALANCE'):
+        body = top_down(remove_illegal_balance_lhs, body)
+        assert exp is not None
+        requires = andBool([requires, eqInt(exp, KVariable('ACCTID', 'Int'))])
+    return body, requires
+
+
 class KEVMSummarizer:
     """
     A class for summarizing the instructions of the KEVM.
@@ -394,7 +505,7 @@ class KEVMSummarizer:
 
     def _build_spec(
         self,
-        opcode: KApply,
+        op: str,
         stack_needed: int,
         init_map: dict[str, KInner] | None = None,
         init_constraints: list[KInner] | None = None,
@@ -422,11 +533,10 @@ class KEVMSummarizer:
         final_constraints = final_constraints or []
 
         cterm = CTerm(self.kevm.definition.empty_config(KSort('GeneratedTopCell')))
-        opcode_symbol = opcode.label.name.split('_')[0]
 
         # construct the initial substitution
         _init_subst: dict[str, KInner] = {}
-        next_opcode = KEVM.next_opcode(opcode)
+        next_opcode = KEVM.next_opcode(OPCODES[op])
         _init_subst['K_CELL'] = KSequence([next_opcode, KVariable('K_CELL')])  # #next [ OPCODE ] ~> K_CELL
         _init_subst['WORDSTACK_CELL'] = KEVM.wordstack(stack_needed)  # W0 : W1 : ... : Wn for not underflow
         _init_subst['ID_CELL'] = KVariable('ID_CELL', KSort('Int'))  # ID_CELL should be Int for ADDRESS, LOG.
@@ -443,11 +553,11 @@ class KEVMSummarizer:
         _final_subst.update(final_map)
         final_subst = CSubst(Subst(_final_subst), final_constraints)
 
-        spec_id = f'{opcode_symbol}{id_str}_{stack_needed}_SPEC'
+        spec_id = f'{op}{id_str}'
         kclaim = cterm_build_claim(spec_id, init_subst(cterm), final_subst(cterm))
         return APRProof.from_claim(self.kevm.definition, kclaim[0], {}, self.proof_dir)
 
-    def build_spec(self, opcode_symbol: str) -> list[APRProof]:
+    def build_spec(self, op: str) -> list[APRProof]:
 
         def _ws_size(s: int) -> KInner:
             return KEVM.size_wordstack(KEVM.wordstack(s))
@@ -455,68 +565,60 @@ class KEVMSummarizer:
         def _le(a: KInner, b: KInner) -> KInner:
             return mlEqualsTrue(leInt(a, b))
 
-        need = stack_needed(opcode_symbol)
-        opcode = OPCODES[opcode_symbol]
+        need = stack_needed(op)
 
-        if opcode_symbol in ['DUP', 'SWAP', 'LOG']:
-            opcode = KApply(opcode.label.name, KVariable('N', KSort('Int')))
-
-        # (opcode, init_subst, init_constraints, final_subst, final_constraints, id_str)
-        specs: list[tuple[KApply, dict[str, KInner], list[KInner], dict[str, KInner], list[KInner], str]] = []
+        # (init_subst, init_constraints, final_subst, final_constraints, id_str)
+        specs: list[tuple[dict[str, KInner], list[KInner], dict[str, KInner], list[KInner], str]] = []
         init_subst: dict[str, KInner] = {}
         final_subst: dict[str, KInner] = {}
 
-        if opcode_symbol == 'SSTORE':
+        if op == 'SSTORE':
             init_subst['STATIC_CELL'] = KToken('false', KSort('Bool'))
 
-        if opcode_symbol in NOT_USEGAS_OPCODES:
-            # TODO: Should allow infGas to calculate gas. Skip for now.
-            init_subst['USEGAS_CELL'] = KToken('false', KSort('Bool'))
-
-        if opcode_symbol in ACCOUNT_QUERIES_OPCODES:
+        if op in ACCOUNT_QUERIES_OPCODES:
             w0 = KVariable('W0', KSort('Int'))
             pow160 = KToken(str(pow(2, 160)), KSort('Int'))
 
             cell, constraint = accounts_cell(euclidModInt(w0, pow160), exists=False)
             init_subst['ACCOUNTS_CELL'] = cell
             # TODO: BALANCE doesn't need the above spec. Maybe a bug in the backend.
-            specs.append((opcode, init_subst, [constraint], {}, [], '_OWISE'))
+            specs.append((init_subst, [constraint], {}, [], '_OWISE'))
 
             cell, constraint = accounts_cell(euclidModInt(w0, pow160), exists=True)
             init_subst['ACCOUNTS_CELL'] = cell
-            specs.append((opcode, init_subst, [constraint], {}, [], '_NORMAL'))
-        elif opcode_symbol in ACCOUNT_STORAGE_OPCODES or opcode_symbol == 'SELFBALANCE':
+            specs.append((init_subst, [constraint], {}, [], '_NORMAL'))
+        elif op in ACCOUNT_STORAGE_OPCODES or op == 'SELFBALANCE':
             cell, constraint = accounts_cell('ID_CELL')
             init_subst['ACCOUNTS_CELL'] = cell
-            specs.append((opcode, init_subst, [constraint], {}, [], ''))
-        elif opcode_symbol == 'JUMP':
+            specs.append((init_subst, [constraint], {}, [], ''))
+        elif op == 'JUMP':
             final_subst['K_CELL'] = KSequence([KEVM.end_basic_block(), KVariable('K_CELL')])
-            specs.append((opcode, init_subst, [], final_subst, [], ''))
-        elif opcode_symbol == 'JUMPI':
+            specs.append((init_subst, [], final_subst, [], ''))
+        elif op == 'JUMPI':
             constraint = mlEquals(KVariable('W1', KSort('Int')), KToken('0', KSort('Int')), 'Int')
-            specs.append((opcode, init_subst, [constraint], {}, [], '_FALSE'))
+            specs.append((init_subst, [constraint], {}, [], '_FALSE'))
 
             constraint = mlNot(mlEquals(KVariable('W1', KSort('Int')), KToken('0', KSort('Int')), 'Int'))
             final_subst['K_CELL'] = KSequence([KEVM.end_basic_block(), KVariable('K_CELL')])
-            specs.append((opcode, init_subst, [], final_subst, [], '_TRUE'))
-        elif opcode_symbol == 'DUP':
+            specs.append((init_subst, [], final_subst, [], '_TRUE'))
+        elif op == 'DUP':
             init_constraints: list[KInner] = [_le(KVariable('N', 'Int'), _ws_size(0))]
             init_constraints.append(_le(_ws_size(0), KToken('1023', 'Int')))
-            specs.append((opcode, init_subst, init_constraints, final_subst, [], ''))
-        elif opcode_symbol == 'SWAP':
+            specs.append((init_subst, init_constraints, final_subst, [], ''))
+        elif op == 'SWAP':
             init_constraints = [_le(addInt(KVariable('N', 'Int'), KToken('1', 'Int')), _ws_size(1))]
             init_constraints.append(_le(_ws_size(1), KToken('1023', 'Int')))
-            specs.append((opcode, init_subst, init_constraints, final_subst, [], ''))
-        elif opcode_symbol == 'LOG':
+            specs.append((init_subst, init_constraints, final_subst, [], ''))
+        elif op == 'LOG':
             init_constraints = [_le(addInt(KVariable('N', 'Int'), KToken('2', 'Int')), _ws_size(2))]
             init_constraints.append(_le(KVariable('N', 'Int'), _ws_size(0)))
             init_constraints.append(_le(_ws_size(2), addInt(KVariable('N', 'Int'), KToken('1026', 'Int'))))
             init_subst['STATIC_CELL'] = KToken('false', KSort('Bool'))
-            specs.append((opcode, init_subst, init_constraints, final_subst, [], ''))
+            specs.append((init_subst, init_constraints, final_subst, [], ''))
         else:
-            specs.append((opcode, init_subst, [], final_subst, [], ''))
+            specs.append((init_subst, [], final_subst, [], ''))
 
-        return [self._build_spec(spec[0], need, spec[1], spec[2], spec[3], spec[4], spec[5]) for spec in specs]
+        return [self._build_spec(op, need, spec[0], spec[1], spec[2], spec[3], spec[4]) for spec in specs]
 
     def explore(self, proof: APRProof) -> bool:
         """
@@ -604,8 +706,8 @@ class KEVMSummarizer:
 
         passed, res_lines = _init_and_run_proof(proof)
 
-        ensure_dir_path(self.save_directory / proof.id)
-        with open(self.save_directory / proof.id / 'proof-result.txt', 'w') as f:
+        ensure_dir_path(self.proof_dir / proof.id)
+        with open(self.proof_dir / proof.id / 'proof-result.txt', 'w') as f:
             f.write(f'Proof {proof.id} Passed' if passed else f'Proof {proof.id} Failed')
             f.write('\n')
             for line in res_lines:
@@ -613,15 +715,50 @@ class KEVMSummarizer:
                 f.write('\n')
         return passed
 
+    def _to_rules(self, proof: APRProof) -> list[KRule]:
+        krules = []
+        module = APRProofShow(self.kevm, kevm_node_printer(self.kevm, proof)).kcfg_show.to_module(proof.kcfg)
+        for i, krule in enumerate(module.sentences):
+            assert isinstance(krule, KRule), f'Unexpected sentence type: {type(krule)}\n{self.kevm.pretty_print(krule)}'
+            body, requires, ensures, atts = krule.body, krule.requires, krule.ensures, krule.att
+
+            # better rule label for summary
+            rule_id = f'{proof.id.replace("_", "-")}-SUMMARY-{i}'
+            atts = atts.update([Atts.LABEL(rule_id)])
+
+            body, requires, ensures = _transform_dash(body), _transform_dash(requires), _transform_dash(ensures)
+            body, requires = _transform_inf_gas(rule_id, body, requires)
+            body, requires = _transform_dot_account_var(body, requires)
+            body, requires = _transform_lhs_functions(rule_id, body, requires)
+            krules.append(KRule(body, requires, ensures, atts))
+        return krules
+
+    def _opcode_summary_kdef(self, proof: APRProof) -> KDefinition:
+        module_name = f'{proof.id.upper().replace("_", "-")}-SUMMARY'
+        requires = [KRequire('../evm.md')]
+        imports = [KImport('EVM')]
+        if proof.id == 'MSTORE8':
+            requires.append(KRequire('../buf.md'))
+            imports.append(KImport('BUF'))
+        module = KFlatModule(module_name, sentences=self._to_rules(proof), imports=imports)
+        return KDefinition(module_name, [module], requires=requires)
+
+    def _summaries_kdef(self) -> KDefinition:
+        k_files = sorted([f for f in self.save_directory.glob('*.k') if f.name != 'summaries.k'])
+        module_names = [f.stem.upper() for f in k_files]
+        requires = [KRequire(k_file.name) for k_file in k_files]
+        imports = [KImport(module_name) for module_name in module_names]
+        module = KFlatModule('KEVM-SUMMARIES', imports=imports)
+        return KDefinition('KEVM-SUMMARIES', [module], requires=requires)
+
     def summarize(self, proof: APRProof, merge: bool = False) -> None:
-        # TODO: may need customized way to generate summary rules, e.g., replacing infinite gas with finite gas.
         proof.minimize_kcfg(KEVMSemantics(allow_symbolic_program=True), merge)
-        ensure_dir_path(self.save_directory / proof.id)
-        with open(self.save_directory / proof.id / 'summary.md', 'w') as f:
-            _LOGGER.info(f'Writing summary to {self.save_directory / proof.id / "summary.md"}')
-            for res_line in self.show_proof(proof, to_module=True):
-                f.write(res_line)
-                f.write('\n')
+
+        ensure_dir_path(self.save_directory)
+        with open(self.save_directory / f'{proof.id.lower()}-summary.k', 'w') as f:
+            f.write(self.kevm.pretty_print(self._opcode_summary_kdef(proof)))
+        with open(self.save_directory / 'summaries.k', 'w') as f:
+            f.write(self.kevm.pretty_print(self._summaries_kdef()))
 
     def print_node(self, proof: APRProof, nodes: Iterable[int]) -> None:
         with open(self.proof_dir / proof.id / 'node-print.md', 'w') as f:
@@ -656,34 +793,25 @@ def batch_summarize(num_processes: int = 4) -> None:
     Args:
         num_processes: Number of parallel processes to use. Defaults to 4.
     """
-
-    opcodes_to_process = OPCODES.keys()
-    passed_opcodes = get_passed_opcodes()
-    unpassed_opcodes = [opcode for opcode in opcodes_to_process if opcode not in passed_opcodes]
-    has_call_opcodes = [opcode for opcode in unpassed_opcodes if 'Call' in OPCODES[opcode].label.name]
-    no_call_opcodes = [opcode for opcode in unpassed_opcodes if 'Call' not in OPCODES[opcode].label.name]
-
-    _LOGGER.info(f'Starting batch summarization of {len(unpassed_opcodes)} opcodes with {num_processes} processes')
+    _LOGGER.info(f'Starting batch summarization of {len(get_passed_opcodes())} opcodes with {num_processes} processes')
 
     with Pool(processes=num_processes) as pool:
-        _LOGGER.info(f'Summarizing {len(no_call_opcodes)} opcodes without CALL')
-        pool.map(_process_opcode, no_call_opcodes)
-        _LOGGER.info(f'Summarizing {len(has_call_opcodes)} opcodes with CALL')
-        pool.map(_process_opcode, has_call_opcodes)
+        pool.map(_process_opcode, get_passed_opcodes())
 
     _LOGGER.info('Batch summarization completed')
 
 
 def summarize(opcode_symbol: str) -> tuple[KEVMSummarizer, list[APRProof]]:
     proof_dir = Path(__file__).parent / 'proofs'
-    save_directory = Path(__file__).parent / 'summaries'
+    save_directory = Path(__file__).parent / 'kproj' / 'evm-semantics' / 'summaries'
     summarizer = KEVMSummarizer(proof_dir, save_directory)
     proofs = summarizer.build_spec(opcode_symbol)
     for proof in proofs:
-        summarizer.print_node(proof, [1])
-        summarizer.explore(proof)
+        if (proof_dir / proof.id / 'proof.json').exists():
+            proof = APRProof.read_proof_data(proof_dir, proof.id)
+        else:
+            summarizer.explore(proof)
         summarizer.summarize(proof)
-        proof.write_proof_data()
     return summarizer, proofs
 
 
