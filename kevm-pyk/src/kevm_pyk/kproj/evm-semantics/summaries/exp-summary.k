@@ -3,7 +3,7 @@ requires "../evm.md"
 module EXP-SUMMARY
     imports public EVM
     
-    rule [EXP-SUMMARY-0]: <kevm>
+    rule [EXP-SUMMARY-NOGAS]: <kevm>
            <k>
              ( #next [ EXP ] ~> .K => .K )
              ~> K_CELL:K
@@ -32,9 +32,9 @@ module EXP-SUMMARY
            ...
          </kevm>
       requires ( notBool USEGAS_CELL:Bool )
-      [priority(20), label(EXP-SUMMARY-0)]
+      [priority(20), label(EXP-SUMMARY-NOGAS)]
     
-    rule [EXP-SUMMARY-1]: <kevm>
+    rule [EXP-SUMMARY-USEGAS-LE0]: <kevm>
            <k>
              ( #next [ EXP ] ~> .K => .K )
              ~> K_CELL:K
@@ -69,9 +69,9 @@ module EXP-SUMMARY
        andBool ( W1:Int <=Int 0
        andBool ( Gexp < SCHEDULE_CELL:Schedule > <=Int GAS_CELL:Int
                )))
-      [priority(20), label(EXP-SUMMARY-1)]
+      [priority(20), label(EXP-SUMMARY-USEGAS-LE0)]
     
-    rule [EXP-SUMMARY-2]: <kevm>
+    rule [EXP-SUMMARY-USEGAS]: <kevm>
            <k>
              ( #next [ EXP ] ~> .K => .K )
              ~> K_CELL:K
@@ -106,6 +106,6 @@ module EXP-SUMMARY
        andBool ( 0 <Int W1:Int
        andBool ( ( Gexp < SCHEDULE_CELL:Schedule > +Int ( Gexpbyte < SCHEDULE_CELL:Schedule > *Int ( ( log2Int ( W1:Int ) /Int 8 ) +Int 1 ) ) ) <=Int GAS_CELL:Int
                )))
-      [priority(20), label(EXP-SUMMARY-2)]
+      [priority(20), label(EXP-SUMMARY-USEGAS)]
 
 endmodule

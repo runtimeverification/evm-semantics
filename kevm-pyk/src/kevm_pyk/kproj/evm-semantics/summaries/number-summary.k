@@ -3,7 +3,7 @@ requires "../evm.md"
 module NUMBER-SUMMARY
     imports public EVM
     
-    rule [NUMBER-SUMMARY-0]: <kevm>
+    rule [NUMBER-SUMMARY-USEGAS]: <kevm>
            <k>
              ( #next [ NUMBER ] ~> .K => .K )
              ~> K_CELL:K
@@ -44,9 +44,9 @@ module NUMBER-SUMMARY
        andBool ( #sizeWordStack ( WS:WordStack , 0 ) <=Int 1023
        andBool ( Gbase < SCHEDULE_CELL:Schedule > <=Int GAS_CELL:Int
                )))
-      [priority(20), label(NUMBER-SUMMARY-0)]
+      [priority(20), label(NUMBER-SUMMARY-USEGAS)]
     
-    rule [NUMBER-SUMMARY-1]: <kevm>
+    rule [NUMBER-SUMMARY-NOGAS]: <kevm>
            <k>
              ( #next [ NUMBER ] ~> .K => .K )
              ~> K_CELL:K
@@ -83,6 +83,6 @@ module NUMBER-SUMMARY
       requires ( ( notBool USEGAS_CELL:Bool )
        andBool ( #sizeWordStack ( WS:WordStack , 0 ) <=Int 1023
                ))
-      [priority(20), label(NUMBER-SUMMARY-1)]
+      [priority(20), label(NUMBER-SUMMARY-NOGAS)]
 
 endmodule

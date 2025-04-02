@@ -3,7 +3,7 @@ requires "../evm.md"
 module CHAINID-SUMMARY
     imports public EVM
     
-    rule [CHAINID-SUMMARY-0]: <kevm>
+    rule [CHAINID-SUMMARY-USEGAS]: <kevm>
            <k>
              ( #next [ CHAINID ] ~> .K => .K )
              ~> K_CELL:K
@@ -43,9 +43,9 @@ module CHAINID-SUMMARY
        andBool ( #sizeWordStack ( WS:WordStack , 0 ) <=Int 1023
        andBool ( Gbase < SCHEDULE_CELL:Schedule > <=Int GAS_CELL:Int
                )))
-      [priority(20), label(CHAINID-SUMMARY-0)]
+      [priority(20), label(CHAINID-SUMMARY-USEGAS)]
     
-    rule [CHAINID-SUMMARY-1]: <kevm>
+    rule [CHAINID-SUMMARY-NOGAS]: <kevm>
            <k>
              ( #next [ CHAINID ] ~> .K => .K )
              ~> K_CELL:K
@@ -81,6 +81,6 @@ module CHAINID-SUMMARY
       requires ( ( notBool USEGAS_CELL:Bool )
        andBool ( #sizeWordStack ( WS:WordStack , 0 ) <=Int 1023
                ))
-      [priority(20), label(CHAINID-SUMMARY-1)]
+      [priority(20), label(CHAINID-SUMMARY-NOGAS)]
 
 endmodule

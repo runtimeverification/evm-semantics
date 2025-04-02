@@ -1,0 +1,1580 @@
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/add-summary.k)
+	Location(9,17,9,23)
+	9 |	             ~> K_CELL:K
+	  .	                ^~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/add-summary.k)
+	Location(45,17,45,23)
+	45 |	             ~> K_CELL:K
+	   .	                ^~~~~~
+[Warning] Compiler: Variable 'GAS_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/add-summary.k)
+	Location(60,20,60,28)
+	60 |	                   GAS_CELL:Int
+	   .	                   ^~~~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/addmod-summary.k)
+	Location(9,17,9,23)
+	9 |	             ~> K_CELL:K
+	  .	                ^~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/addmod-summary.k)
+	Location(45,17,45,23)
+	45 |	             ~> K_CELL:K
+	   .	                ^~~~~~
+[Warning] Compiler: Variable 'GAS_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/addmod-summary.k)
+	Location(60,20,60,28)
+	60 |	                   GAS_CELL:Int
+	   .	                   ^~~~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/address-summary.k)
+	Location(9,17,9,23)
+	9 |	             ~> K_CELL:K
+	  .	                ^~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/address-summary.k)
+	Location(49,17,49,23)
+	49 |	             ~> K_CELL:K
+	   .	                ^~~~~~
+[Warning] Compiler: Variable 'GAS_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/address-summary.k)
+	Location(67,20,67,28)
+	67 |	                   GAS_CELL:Int
+	   .	                   ^~~~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/and-summary.k)
+	Location(9,17,9,23)
+	9 |	             ~> K_CELL:K
+	  .	                ^~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/and-summary.k)
+	Location(45,17,45,23)
+	45 |	             ~> K_CELL:K
+	   .	                ^~~~~~
+[Warning] Compiler: Variable 'GAS_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/and-summary.k)
+	Location(60,20,60,28)
+	60 |	                   GAS_CELL:Int
+	   .	                   ^~~~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/balance-normal-summary.k)
+	Location(9,17,9,23)
+	9 |	             ~> K_CELL:K
+	  .	                ^~~~~~
+[Warning] Compiler: Variable 'WS' defined but not used. Prefix variable name
+with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/balance-normal-summary.k)
+	Location(18,55,18,57)
+	18 |	                   ( ( W0:Int => BALANCE_CELL:Int ) : WS:WordStack )
+	   .	                                                      ^~
+[Warning] Compiler: Variable 'GAS_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/balance-normal-summary.k)
+	Location(24,20,24,28)
+	24 |	                   GAS_CELL:Int
+	   .	                   ^~~~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/balance-normal-summary.k)
+	Location(62,17,62,23)
+	62 |	             ~> K_CELL:K
+	   .	                ^~~~~~
+[Warning] Compiler: Variable 'WS' defined but not used. Prefix variable name
+with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/balance-normal-summary.k)
+	Location(74,55,74,57)
+	74 |	                   ( ( W0:Int => BALANCE_CELL:Int ) : WS:WordStack )
+	   .	                                                      ^~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/balance-normal-summary.k)
+	Location(120,17,120,23)
+	120 |	             ~> K_CELL:K
+	    .	                ^~~~~~
+[Warning] Compiler: Variable 'WS' defined but not used. Prefix variable name
+with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/balance-normal-summary.k)
+	Location(132,55,132,57)
+	132 |	                   ( ( W0:Int => BALANCE_CELL:Int ) : WS:WordStack )
+	    .	                                                      ^~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/balance-owise-summary.k)
+	Location(9,17,9,23)
+	9 |	             ~> K_CELL:K
+	  .	                ^~~~~~
+[Warning] Compiler: Variable 'WS' defined but not used. Prefix variable name
+with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/balance-owise-summary.k)
+	Location(18,55,18,57)
+	18 |	                   ( ( W0:Int => BALANCE_CELL:Int ) : WS:WordStack )
+	   .	                                                      ^~
+[Warning] Compiler: Variable 'GAS_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/balance-owise-summary.k)
+	Location(24,20,24,28)
+	24 |	                   GAS_CELL:Int
+	   .	                   ^~~~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/balance-owise-summary.k)
+	Location(62,17,62,23)
+	62 |	             ~> K_CELL:K
+	   .	                ^~~~~~
+[Warning] Compiler: Variable 'WS' defined but not used. Prefix variable name
+with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/balance-owise-summary.k)
+	Location(74,55,74,57)
+	74 |	                   ( ( W0:Int => BALANCE_CELL:Int ) : WS:WordStack )
+	   .	                                                      ^~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/balance-owise-summary.k)
+	Location(120,17,120,23)
+	120 |	             ~> K_CELL:K
+	    .	                ^~~~~~
+[Warning] Compiler: Variable 'WS' defined but not used. Prefix variable name
+with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/balance-owise-summary.k)
+	Location(132,55,132,57)
+	132 |	                   ( ( W0:Int => BALANCE_CELL:Int ) : WS:WordStack )
+	    .	                                                      ^~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/blockhash-summary.k)
+	Location(9,17,9,23)
+	9 |	             ~> K_CELL:K
+	  .	                ^~~~~~
+[Warning] Compiler: Variable 'WS' defined but not used. Prefix variable name
+with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/blockhash-summary.k)
+	Location(21,118,21,120)
+	21 |	                   ( ( W0:Int => #blockhash ( BLOCKHASHES_CELL:List ,
+W0:Int , ( NUMBER_CELL:Int +Int -1 ) , 0 ) ) : WS:WordStack )
+	   .	                                                                         
+                                           ^~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/blockhash-summary.k)
+	Location(54,17,54,23)
+	54 |	             ~> K_CELL:K
+	   .	                ^~~~~~
+[Warning] Compiler: Variable 'WS' defined but not used. Prefix variable name
+with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/blockhash-summary.k)
+	Location(63,118,63,120)
+	63 |	                   ( ( W0:Int => #blockhash ( BLOCKHASHES_CELL:List ,
+W0:Int , ( NUMBER_CELL:Int +Int -1 ) , 0 ) ) : WS:WordStack )
+	   .	                                                                         
+                                           ^~
+[Warning] Compiler: Variable 'GAS_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/blockhash-summary.k)
+	Location(69,20,69,28)
+	69 |	                   GAS_CELL:Int
+	   .	                   ^~~~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/byte-summary.k)
+	Location(9,17,9,23)
+	9 |	             ~> K_CELL:K
+	  .	                ^~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/byte-summary.k)
+	Location(45,17,45,23)
+	45 |	             ~> K_CELL:K
+	   .	                ^~~~~~
+[Warning] Compiler: Variable 'GAS_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/byte-summary.k)
+	Location(60,20,60,28)
+	60 |	                   GAS_CELL:Int
+	   .	                   ^~~~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/calldatacopy-summary.k)
+	Location(9,17,9,23)
+	9 |	             ~> K_CELL:K
+	  .	                ^~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/calldatacopy-summary.k)
+	Location(55,17,55,23)
+	55 |	             ~> K_CELL:K
+	   .	                ^~~~~~
+[Warning] Compiler: Variable 'GAS_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/calldatacopy-summary.k)
+	Location(76,20,76,28)
+	76 |	                   GAS_CELL:Int
+	   .	                   ^~~~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/calldataload-summary.k)
+	Location(9,17,9,23)
+	9 |	             ~> K_CELL:K
+	  .	                ^~~~~~
+[Warning] Compiler: Variable 'WS' defined but not used. Prefix variable name
+with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/calldataload-summary.k)
+	Location(24,95,24,97)
+	24 |	                   ( ( W0:Int => #asWord ( #range ( CALLDATA_CELL:Bytes ,
+W0:Int , 32 ) ) ) : WS:WordStack )
+	   .	                                                                         
+                    ^~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/calldataload-summary.k)
+	Location(48,17,48,23)
+	48 |	             ~> K_CELL:K
+	   .	                ^~~~~~
+[Warning] Compiler: Variable 'WS' defined but not used. Prefix variable name
+with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/calldataload-summary.k)
+	Location(60,95,60,97)
+	60 |	                   ( ( W0:Int => #asWord ( #range ( CALLDATA_CELL:Bytes ,
+W0:Int , 32 ) ) ) : WS:WordStack )
+	   .	                                                                         
+                    ^~
+[Warning] Compiler: Variable 'GAS_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/calldataload-summary.k)
+	Location(66,20,66,28)
+	66 |	                   GAS_CELL:Int
+	   .	                   ^~~~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/calldatasize-summary.k)
+	Location(9,17,9,23)
+	9 |	             ~> K_CELL:K
+	  .	                ^~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/calldatasize-summary.k)
+	Location(49,17,49,23)
+	49 |	             ~> K_CELL:K
+	   .	                ^~~~~~
+[Warning] Compiler: Variable 'GAS_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/calldatasize-summary.k)
+	Location(67,20,67,28)
+	67 |	                   GAS_CELL:Int
+	   .	                   ^~~~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/caller-summary.k)
+	Location(9,17,9,23)
+	9 |	             ~> K_CELL:K
+	  .	                ^~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/caller-summary.k)
+	Location(49,17,49,23)
+	49 |	             ~> K_CELL:K
+	   .	                ^~~~~~
+[Warning] Compiler: Variable 'GAS_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/caller-summary.k)
+	Location(67,20,67,28)
+	67 |	                   GAS_CELL:Int
+	   .	                   ^~~~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/chainid-summary.k)
+	Location(9,17,9,23)
+	9 |	             ~> K_CELL:K
+	  .	                ^~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/chainid-summary.k)
+	Location(51,17,51,23)
+	51 |	             ~> K_CELL:K
+	   .	                ^~~~~~
+[Warning] Compiler: Variable 'GAS_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/chainid-summary.k)
+	Location(66,20,66,28)
+	66 |	                   GAS_CELL:Int
+	   .	                   ^~~~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/codecopy-summary.k)
+	Location(9,17,9,23)
+	9 |	             ~> K_CELL:K
+	  .	                ^~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/codecopy-summary.k)
+	Location(55,17,55,23)
+	55 |	             ~> K_CELL:K
+	   .	                ^~~~~~
+[Warning] Compiler: Variable 'GAS_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/codecopy-summary.k)
+	Location(76,20,76,28)
+	76 |	                   GAS_CELL:Int
+	   .	                   ^~~~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/codesize-summary.k)
+	Location(9,17,9,23)
+	9 |	             ~> K_CELL:K
+	  .	                ^~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/codesize-summary.k)
+	Location(49,17,49,23)
+	49 |	             ~> K_CELL:K
+	   .	                ^~~~~~
+[Warning] Compiler: Variable 'GAS_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/codesize-summary.k)
+	Location(67,20,67,28)
+	67 |	                   GAS_CELL:Int
+	   .	                   ^~~~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/coinbase-summary.k)
+	Location(9,17,9,23)
+	9 |	             ~> K_CELL:K
+	  .	                ^~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/coinbase-summary.k)
+	Location(52,17,52,23)
+	52 |	             ~> K_CELL:K
+	   .	                ^~~~~~
+[Warning] Compiler: Variable 'GAS_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/coinbase-summary.k)
+	Location(67,20,67,28)
+	67 |	                   GAS_CELL:Int
+	   .	                   ^~~~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/difficulty-summary.k)
+	Location(9,17,9,23)
+	9 |	             ~> K_CELL:K
+	  .	                ^~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/difficulty-summary.k)
+	Location(52,17,52,23)
+	52 |	             ~> K_CELL:K
+	   .	                ^~~~~~
+[Warning] Compiler: Variable 'GAS_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/difficulty-summary.k)
+	Location(67,20,67,28)
+	67 |	                   GAS_CELL:Int
+	   .	                   ^~~~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/div-summary.k)
+	Location(9,17,9,23)
+	9 |	             ~> K_CELL:K
+	  .	                ^~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/div-summary.k)
+	Location(45,17,45,23)
+	45 |	             ~> K_CELL:K
+	   .	                ^~~~~~
+[Warning] Compiler: Variable 'GAS_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/div-summary.k)
+	Location(60,20,60,28)
+	60 |	                   GAS_CELL:Int
+	   .	                   ^~~~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/dup-summary.k)
+	Location(9,17,9,23)
+	9 |	             ~> K_CELL:K
+	  .	                ^~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/dup-summary.k)
+	Location(47,17,47,23)
+	47 |	             ~> K_CELL:K
+	   .	                ^~~~~~
+[Warning] Compiler: Variable 'GAS_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/dup-summary.k)
+	Location(62,20,62,28)
+	62 |	                   GAS_CELL:Int
+	   .	                   ^~~~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/eq-summary.k)
+	Location(9,17,9,23)
+	9 |	             ~> K_CELL:K
+	  .	                ^~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/eq-summary.k)
+	Location(45,17,45,23)
+	45 |	             ~> K_CELL:K
+	   .	                ^~~~~~
+[Warning] Compiler: Variable 'GAS_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/eq-summary.k)
+	Location(60,20,60,28)
+	60 |	                   GAS_CELL:Int
+	   .	                   ^~~~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/evmor-summary.k)
+	Location(9,17,9,23)
+	9 |	             ~> K_CELL:K
+	  .	                ^~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/evmor-summary.k)
+	Location(45,17,45,23)
+	45 |	             ~> K_CELL:K
+	   .	                ^~~~~~
+[Warning] Compiler: Variable 'GAS_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/evmor-summary.k)
+	Location(60,20,60,28)
+	60 |	                   GAS_CELL:Int
+	   .	                   ^~~~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/exp-summary.k)
+	Location(9,17,9,23)
+	9 |	             ~> K_CELL:K
+	  .	                ^~~~~~
+[Warning] Compiler: Variable 'GAS_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/exp-summary.k)
+	Location(24,20,24,28)
+	24 |	                   GAS_CELL:Int
+	   .	                   ^~~~~~~~
+[Error] Compiler: Found duplicate sentence label EXP-SUMMARY.EXP-SUMMARY-USEGAS
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/exp-summary.k)
+	Location(37,32,71,19)
+	   .	                               v~~~~~
+	37 |	    rule [EXP-SUMMARY-USEGAS]: <kevm>
+	   |		...
+	71 |	               )))
+	   .	               ~~^
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/exp-summary.k)
+	Location(40,17,40,23)
+	40 |	             ~> K_CELL:K
+	   .	                ^~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/exp-summary.k)
+	Location(77,17,77,23)
+	77 |	             ~> K_CELL:K
+	   .	                ^~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/gas-summary.k)
+	Location(9,17,9,23)
+	9 |	             ~> K_CELL:K
+	  .	                ^~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/gas-summary.k)
+	Location(46,17,46,23)
+	46 |	             ~> K_CELL:K
+	   .	                ^~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/gaslimit-summary.k)
+	Location(9,17,9,23)
+	9 |	             ~> K_CELL:K
+	  .	                ^~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/gaslimit-summary.k)
+	Location(52,17,52,23)
+	52 |	             ~> K_CELL:K
+	   .	                ^~~~~~
+[Warning] Compiler: Variable 'GAS_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/gaslimit-summary.k)
+	Location(67,20,67,28)
+	67 |	                   GAS_CELL:Int
+	   .	                   ^~~~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/gasprice-summary.k)
+	Location(9,17,9,23)
+	9 |	             ~> K_CELL:K
+	  .	                ^~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/gasprice-summary.k)
+	Location(49,17,49,23)
+	49 |	             ~> K_CELL:K
+	   .	                ^~~~~~
+[Warning] Compiler: Variable 'GAS_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/gasprice-summary.k)
+	Location(64,20,64,28)
+	64 |	                   GAS_CELL:Int
+	   .	                   ^~~~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/gt-summary.k)
+	Location(9,17,9,23)
+	9 |	             ~> K_CELL:K
+	  .	                ^~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/gt-summary.k)
+	Location(45,17,45,23)
+	45 |	             ~> K_CELL:K
+	   .	                ^~~~~~
+[Warning] Compiler: Variable 'GAS_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/gt-summary.k)
+	Location(60,20,60,28)
+	60 |	                   GAS_CELL:Int
+	   .	                   ^~~~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/invalid-summary.k)
+	Location(9,17,9,23)
+	9 |	             ~> K_CELL:K
+	  .	                ^~~~~~
+[Warning] Compiler: Variable 'STATUSCODE_CELL' defined but not used. Prefix
+variable name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/invalid-summary.k)
+	Location(14,20,14,35)
+	14 |	                 ( STATUSCODE_CELL:StatusCode => EVMC_INVALID_INSTRUCTION
+)
+	   .	                   ^~~~~~~~~~~~~~~
+[Warning] Compiler: Variable 'GAS_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/invalid-summary.k)
+	Location(18,20,18,28)
+	18 |	                   GAS_CELL:Int
+	   .	                   ^~~~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/iszero-summary.k)
+	Location(9,17,9,23)
+	9 |	             ~> K_CELL:K
+	  .	                ^~~~~~
+[Warning] Compiler: Variable 'WS' defined but not used. Prefix variable name
+with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/iszero-summary.k)
+	Location(21,67,21,69)
+	21 |	                   ( ( W0:Int => bool2Word ( W0:Int ==Int 0 ) ) :
+WS:WordStack )
+	   .	                                                                  ^~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/iszero-summary.k)
+	Location(45,17,45,23)
+	45 |	             ~> K_CELL:K
+	   .	                ^~~~~~
+[Warning] Compiler: Variable 'WS' defined but not used. Prefix variable name
+with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/iszero-summary.k)
+	Location(54,67,54,69)
+	54 |	                   ( ( W0:Int => bool2Word ( W0:Int ==Int 0 ) ) :
+WS:WordStack )
+	   .	                                                                  ^~
+[Warning] Compiler: Variable 'GAS_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/iszero-summary.k)
+	Location(60,20,60,28)
+	60 |	                   GAS_CELL:Int
+	   .	                   ^~~~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/jumpdest-summary.k)
+	Location(9,17,9,23)
+	9 |	             ~> K_CELL:K
+	  .	                ^~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/jumpdest-summary.k)
+	Location(42,17,42,23)
+	42 |	             ~> K_CELL:K
+	   .	                ^~~~~~
+[Warning] Compiler: Variable 'GAS_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/jumpdest-summary.k)
+	Location(54,20,54,28)
+	54 |	                   GAS_CELL:Int
+	   .	                   ^~~~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/log-summary.k)
+	Location(9,17,9,23)
+	9 |	             ~> K_CELL:K
+	  .	                ^~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/log-summary.k)
+	Location(68,17,68,23)
+	68 |	             ~> K_CELL:K
+	   .	                ^~~~~~
+[Warning] Compiler: Variable 'GAS_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/log-summary.k)
+	Location(89,20,89,28)
+	89 |	                   GAS_CELL:Int
+	   .	                   ^~~~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/lt-summary.k)
+	Location(9,17,9,23)
+	9 |	             ~> K_CELL:K
+	  .	                ^~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/lt-summary.k)
+	Location(45,17,45,23)
+	45 |	             ~> K_CELL:K
+	   .	                ^~~~~~
+[Warning] Compiler: Variable 'GAS_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/lt-summary.k)
+	Location(60,20,60,28)
+	60 |	                   GAS_CELL:Int
+	   .	                   ^~~~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/mcopy-summary.k)
+	Location(9,17,9,23)
+	9 |	             ~> K_CELL:K
+	  .	                ^~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/mcopy-summary.k)
+	Location(52,17,52,23)
+	52 |	             ~> K_CELL:K
+	   .	                ^~~~~~
+[Warning] Compiler: Variable 'GAS_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/mcopy-summary.k)
+	Location(70,20,70,28)
+	70 |	                   GAS_CELL:Int
+	   .	                   ^~~~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/mload-summary.k)
+	Location(9,17,9,23)
+	9 |	             ~> K_CELL:K
+	  .	                ^~~~~~
+[Warning] Compiler: Variable 'WS' defined but not used. Prefix variable name
+with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/mload-summary.k)
+	Location(21,95,21,97)
+	21 |	                   ( ( W0:Int => #asWord ( #range ( LOCALMEM_CELL:Bytes ,
+W0:Int , 32 ) ) ) : WS:WordStack )
+	   .	                                                                         
+                    ^~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/mload-summary.k)
+	Location(52,17,52,23)
+	52 |	             ~> K_CELL:K
+	   .	                ^~~~~~
+[Warning] Compiler: Variable 'WS' defined but not used. Prefix variable name
+with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/mload-summary.k)
+	Location(61,95,61,97)
+	61 |	                   ( ( W0:Int => #asWord ( #range ( LOCALMEM_CELL:Bytes ,
+W0:Int , 32 ) ) ) : WS:WordStack )
+	   .	                                                                         
+                    ^~
+[Warning] Compiler: Variable 'GAS_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/mload-summary.k)
+	Location(70,20,70,28)
+	70 |	                   GAS_CELL:Int
+	   .	                   ^~~~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/mod-summary.k)
+	Location(9,17,9,23)
+	9 |	             ~> K_CELL:K
+	  .	                ^~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/mod-summary.k)
+	Location(45,17,45,23)
+	45 |	             ~> K_CELL:K
+	   .	                ^~~~~~
+[Warning] Compiler: Variable 'GAS_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/mod-summary.k)
+	Location(60,20,60,28)
+	60 |	                   GAS_CELL:Int
+	   .	                   ^~~~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/msize-summary.k)
+	Location(9,17,9,23)
+	9 |	             ~> K_CELL:K
+	  .	                ^~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/msize-summary.k)
+	Location(49,17,49,23)
+	49 |	             ~> K_CELL:K
+	   .	                ^~~~~~
+[Warning] Compiler: Variable 'GAS_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/msize-summary.k)
+	Location(64,20,64,28)
+	64 |	                   GAS_CELL:Int
+	   .	                   ^~~~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/mstore-summary.k)
+	Location(9,17,9,23)
+	9 |	             ~> K_CELL:K
+	  .	                ^~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/mstore-summary.k)
+	Location(52,17,52,23)
+	52 |	             ~> K_CELL:K
+	   .	                ^~~~~~
+[Warning] Compiler: Variable 'GAS_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/mstore-summary.k)
+	Location(70,20,70,28)
+	70 |	                   GAS_CELL:Int
+	   .	                   ^~~~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/mstore8-summary.k)
+	Location(11,17,11,23)
+	11 |	             ~> K_CELL:K
+	   .	                ^~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/mstore8-summary.k)
+	Location(54,17,54,23)
+	54 |	             ~> K_CELL:K
+	   .	                ^~~~~~
+[Warning] Compiler: Variable 'GAS_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/mstore8-summary.k)
+	Location(72,20,72,28)
+	72 |	                   GAS_CELL:Int
+	   .	                   ^~~~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/mulmod-summary.k)
+	Location(9,17,9,23)
+	9 |	             ~> K_CELL:K
+	  .	                ^~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/mulmod-summary.k)
+	Location(45,17,45,23)
+	45 |	             ~> K_CELL:K
+	   .	                ^~~~~~
+[Warning] Compiler: Variable 'GAS_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/mulmod-summary.k)
+	Location(60,20,60,28)
+	60 |	                   GAS_CELL:Int
+	   .	                   ^~~~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/not-summary.k)
+	Location(9,17,9,23)
+	9 |	             ~> K_CELL:K
+	  .	                ^~~~~~
+[Warning] Compiler: Variable 'WS' defined but not used. Prefix variable name
+with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/not-summary.k)
+	Location(21,63,21,65)
+	21 |	                   ( ( W0:Int => W0:Int xorInt maxUInt256 ) :
+WS:WordStack )
+	   .	                                                              ^~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/not-summary.k)
+	Location(45,17,45,23)
+	45 |	             ~> K_CELL:K
+	   .	                ^~~~~~
+[Warning] Compiler: Variable 'WS' defined but not used. Prefix variable name
+with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/not-summary.k)
+	Location(54,63,54,65)
+	54 |	                   ( ( W0:Int => W0:Int xorInt maxUInt256 ) :
+WS:WordStack )
+	   .	                                                              ^~
+[Warning] Compiler: Variable 'GAS_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/not-summary.k)
+	Location(60,20,60,28)
+	60 |	                   GAS_CELL:Int
+	   .	                   ^~~~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/number-summary.k)
+	Location(9,17,9,23)
+	9 |	             ~> K_CELL:K
+	  .	                ^~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/number-summary.k)
+	Location(52,17,52,23)
+	52 |	             ~> K_CELL:K
+	   .	                ^~~~~~
+[Warning] Compiler: Variable 'GAS_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/number-summary.k)
+	Location(67,20,67,28)
+	67 |	                   GAS_CELL:Int
+	   .	                   ^~~~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/origin-summary.k)
+	Location(9,17,9,23)
+	9 |	             ~> K_CELL:K
+	  .	                ^~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/origin-summary.k)
+	Location(49,17,49,23)
+	49 |	             ~> K_CELL:K
+	   .	                ^~~~~~
+[Warning] Compiler: Variable 'GAS_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/origin-summary.k)
+	Location(64,20,64,28)
+	64 |	                   GAS_CELL:Int
+	   .	                   ^~~~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/pc-summary.k)
+	Location(9,17,9,23)
+	9 |	             ~> K_CELL:K
+	  .	                ^~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/pc-summary.k)
+	Location(46,17,46,23)
+	46 |	             ~> K_CELL:K
+	   .	                ^~~~~~
+[Warning] Compiler: Variable 'GAS_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/pc-summary.k)
+	Location(61,20,61,28)
+	61 |	                   GAS_CELL:Int
+	   .	                   ^~~~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/pop-summary.k)
+	Location(9,17,9,23)
+	9 |	             ~> K_CELL:K
+	  .	                ^~~~~~
+[Warning] Compiler: Variable 'W0' defined but not used. Prefix variable name
+with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/pop-summary.k)
+	Location(21,24,21,26)
+	21 |	                   ( ( W0:Int : WS:WordStack ) => WS:WordStack )
+	   .	                       ^~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/pop-summary.k)
+	Location(45,17,45,23)
+	45 |	             ~> K_CELL:K
+	   .	                ^~~~~~
+[Warning] Compiler: Variable 'W0' defined but not used. Prefix variable name
+with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/pop-summary.k)
+	Location(54,24,54,26)
+	54 |	                   ( ( W0:Int : WS:WordStack ) => WS:WordStack )
+	   .	                       ^~
+[Warning] Compiler: Variable 'GAS_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/pop-summary.k)
+	Location(60,20,60,28)
+	60 |	                   GAS_CELL:Int
+	   .	                   ^~~~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/prevrandao-summary.k)
+	Location(9,17,9,23)
+	9 |	             ~> K_CELL:K
+	  .	                ^~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/prevrandao-summary.k)
+	Location(52,17,52,23)
+	52 |	             ~> K_CELL:K
+	   .	                ^~~~~~
+[Warning] Compiler: Variable 'GAS_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/prevrandao-summary.k)
+	Location(67,20,67,28)
+	67 |	                   GAS_CELL:Int
+	   .	                   ^~~~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/push-summary.k)
+	Location(9,17,9,23)
+	9 |	             ~> K_CELL:K
+	  .	                ^~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/push-summary.k)
+	Location(49,17,49,23)
+	49 |	             ~> K_CELL:K
+	   .	                ^~~~~~
+[Warning] Compiler: Variable 'GAS_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/push-summary.k)
+	Location(67,20,67,28)
+	67 |	                   GAS_CELL:Int
+	   .	                   ^~~~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/pushzero-summary.k)
+	Location(9,17,9,23)
+	9 |	             ~> K_CELL:K
+	  .	                ^~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/pushzero-summary.k)
+	Location(46,17,46,23)
+	46 |	             ~> K_CELL:K
+	   .	                ^~~~~~
+[Warning] Compiler: Variable 'GAS_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/pushzero-summary.k)
+	Location(61,20,61,28)
+	61 |	                   GAS_CELL:Int
+	   .	                   ^~~~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/return-summary.k)
+	Location(9,17,9,23)
+	9 |	             ~> K_CELL:K
+	  .	                ^~~~~~
+[Warning] Compiler: Variable 'OUTPUT_CELL' defined but not used. Prefix
+variable name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/return-summary.k)
+	Location(20,20,20,31)
+	20 |	                 ( OUTPUT_CELL:Bytes => #range ( LOCALMEM_CELL:Bytes ,
+W0:Int , W1:Int ) )
+	   .	                   ^~~~~~~~~~~
+[Warning] Compiler: Variable 'STATUSCODE_CELL' defined but not used. Prefix
+variable name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/return-summary.k)
+	Location(23,20,23,35)
+	23 |	                 ( STATUSCODE_CELL:StatusCode => EVMC_SUCCESS )
+	   .	                   ^~~~~~~~~~~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/return-summary.k)
+	Location(55,17,55,23)
+	55 |	             ~> K_CELL:K
+	   .	                ^~~~~~
+[Warning] Compiler: Variable 'OUTPUT_CELL' defined but not used. Prefix
+variable name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/return-summary.k)
+	Location(63,20,63,31)
+	63 |	                 ( OUTPUT_CELL:Bytes => #range ( LOCALMEM_CELL:Bytes ,
+W0:Int , W1:Int ) )
+	   .	                   ^~~~~~~~~~~
+[Warning] Compiler: Variable 'STATUSCODE_CELL' defined but not used. Prefix
+variable name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/return-summary.k)
+	Location(66,20,66,35)
+	66 |	                 ( STATUSCODE_CELL:StatusCode => EVMC_SUCCESS )
+	   .	                   ^~~~~~~~~~~~~~~
+[Warning] Compiler: Variable 'GAS_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/return-summary.k)
+	Location(76,20,76,28)
+	76 |	                   GAS_CELL:Int
+	   .	                   ^~~~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/returndatacopy-summary.k)
+	Location(9,17,9,23)
+	9 |	             ~> K_CELL:K
+	  .	                ^~~~~~
+[Warning] Compiler: Variable 'GAS_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/returndatacopy-summary.k)
+	Location(30,20,30,28)
+	30 |	                   GAS_CELL:Int
+	   .	                   ^~~~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/returndatacopy-summary.k)
+	Location(48,17,48,23)
+	48 |	             ~> K_CELL:K
+	   .	                ^~~~~~
+[Warning] Compiler: Variable 'STATUSCODE_CELL' defined but not used. Prefix
+variable name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/returndatacopy-summary.k)
+	Location(59,20,59,35)
+	59 |	                 ( STATUSCODE_CELL:StatusCode =>
+EVMC_INVALID_MEMORY_ACCESS )
+	   .	                   ^~~~~~~~~~~~~~~
+[Warning] Compiler: Variable 'W0' defined but not used. Prefix variable name
+with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/returndatacopy-summary.k)
+	Location(63,24,63,26)
+	63 |	                   ( ( W0:Int : ( W1:Int : ( W2:Int : WS:WordStack ) ) )
+=> WS:WordStack )
+	   .	                       ^~
+[Warning] Compiler: Variable 'GAS_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/returndatacopy-summary.k)
+	Location(66,20,66,28)
+	66 |	                   GAS_CELL:Int
+	   .	                   ^~~~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/returndatacopy-summary.k)
+	Location(84,17,84,23)
+	84 |	             ~> K_CELL:K
+	   .	                ^~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/returndatacopy-summary.k)
+	Location(131,17,131,23)
+	131 |	             ~> K_CELL:K
+	    .	                ^~~~~~
+[Warning] Compiler: Variable 'STATUSCODE_CELL' defined but not used. Prefix
+variable name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/returndatacopy-summary.k)
+	Location(145,20,145,35)
+	145 |	                 ( STATUSCODE_CELL:StatusCode =>
+EVMC_INVALID_MEMORY_ACCESS )
+	    .	                   ^~~~~~~~~~~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/returndatasize-summary.k)
+	Location(9,17,9,23)
+	9 |	             ~> K_CELL:K
+	  .	                ^~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/returndatasize-summary.k)
+	Location(49,17,49,23)
+	49 |	             ~> K_CELL:K
+	   .	                ^~~~~~
+[Warning] Compiler: Variable 'GAS_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/returndatasize-summary.k)
+	Location(67,20,67,28)
+	67 |	                   GAS_CELL:Int
+	   .	                   ^~~~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/revert-summary.k)
+	Location(9,17,9,23)
+	9 |	             ~> K_CELL:K
+	  .	                ^~~~~~
+[Warning] Compiler: Variable 'OUTPUT_CELL' defined but not used. Prefix
+variable name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/revert-summary.k)
+	Location(20,20,20,31)
+	20 |	                 ( OUTPUT_CELL:Bytes => #range ( LOCALMEM_CELL:Bytes ,
+W0:Int , W1:Int ) )
+	   .	                   ^~~~~~~~~~~
+[Warning] Compiler: Variable 'STATUSCODE_CELL' defined but not used. Prefix
+variable name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/revert-summary.k)
+	Location(23,20,23,35)
+	23 |	                 ( STATUSCODE_CELL:StatusCode => EVMC_REVERT )
+	   .	                   ^~~~~~~~~~~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/revert-summary.k)
+	Location(55,17,55,23)
+	55 |	             ~> K_CELL:K
+	   .	                ^~~~~~
+[Warning] Compiler: Variable 'OUTPUT_CELL' defined but not used. Prefix
+variable name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/revert-summary.k)
+	Location(63,20,63,31)
+	63 |	                 ( OUTPUT_CELL:Bytes => #range ( LOCALMEM_CELL:Bytes ,
+W0:Int , W1:Int ) )
+	   .	                   ^~~~~~~~~~~
+[Warning] Compiler: Variable 'STATUSCODE_CELL' defined but not used. Prefix
+variable name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/revert-summary.k)
+	Location(66,20,66,35)
+	66 |	                 ( STATUSCODE_CELL:StatusCode => EVMC_REVERT )
+	   .	                   ^~~~~~~~~~~~~~~
+[Warning] Compiler: Variable 'GAS_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/revert-summary.k)
+	Location(76,20,76,28)
+	76 |	                   GAS_CELL:Int
+	   .	                   ^~~~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/sar-summary.k)
+	Location(9,17,9,23)
+	9 |	             ~> K_CELL:K
+	  .	                ^~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/sar-summary.k)
+	Location(45,17,45,23)
+	45 |	             ~> K_CELL:K
+	   .	                ^~~~~~
+[Warning] Compiler: Variable 'GAS_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/sar-summary.k)
+	Location(60,20,60,28)
+	60 |	                   GAS_CELL:Int
+	   .	                   ^~~~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/sdiv-summary.k)
+	Location(9,17,9,23)
+	9 |	             ~> K_CELL:K
+	  .	                ^~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/sdiv-summary.k)
+	Location(45,17,45,23)
+	45 |	             ~> K_CELL:K
+	   .	                ^~~~~~
+[Warning] Compiler: Variable 'GAS_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/sdiv-summary.k)
+	Location(60,20,60,28)
+	60 |	                   GAS_CELL:Int
+	   .	                   ^~~~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/selfbalance-summary.k)
+	Location(9,17,9,23)
+	9 |	             ~> K_CELL:K
+	  .	                ^~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/selfbalance-summary.k)
+	Location(63,17,63,23)
+	63 |	             ~> K_CELL:K
+	   .	                ^~~~~~
+[Warning] Compiler: Variable 'GAS_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/selfbalance-summary.k)
+	Location(81,20,81,28)
+	81 |	                   GAS_CELL:Int
+	   .	                   ^~~~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/sgt-summary.k)
+	Location(9,17,9,23)
+	9 |	             ~> K_CELL:K
+	  .	                ^~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/sgt-summary.k)
+	Location(45,17,45,23)
+	45 |	             ~> K_CELL:K
+	   .	                ^~~~~~
+[Warning] Compiler: Variable 'GAS_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/sgt-summary.k)
+	Location(60,20,60,28)
+	60 |	                   GAS_CELL:Int
+	   .	                   ^~~~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/sha3-summary.k)
+	Location(9,17,9,23)
+	9 |	             ~> K_CELL:K
+	  .	                ^~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/sha3-summary.k)
+	Location(52,17,52,23)
+	52 |	             ~> K_CELL:K
+	   .	                ^~~~~~
+[Warning] Compiler: Variable 'GAS_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/sha3-summary.k)
+	Location(70,20,70,28)
+	70 |	                   GAS_CELL:Int
+	   .	                   ^~~~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/shl-summary.k)
+	Location(9,17,9,23)
+	9 |	             ~> K_CELL:K
+	  .	                ^~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/shl-summary.k)
+	Location(45,17,45,23)
+	45 |	             ~> K_CELL:K
+	   .	                ^~~~~~
+[Warning] Compiler: Variable 'GAS_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/shl-summary.k)
+	Location(60,20,60,28)
+	60 |	                   GAS_CELL:Int
+	   .	                   ^~~~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/shr-summary.k)
+	Location(9,17,9,23)
+	9 |	             ~> K_CELL:K
+	  .	                ^~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/shr-summary.k)
+	Location(45,17,45,23)
+	45 |	             ~> K_CELL:K
+	   .	                ^~~~~~
+[Warning] Compiler: Variable 'GAS_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/shr-summary.k)
+	Location(60,20,60,28)
+	60 |	                   GAS_CELL:Int
+	   .	                   ^~~~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/signextend-summary.k)
+	Location(9,17,9,23)
+	9 |	             ~> K_CELL:K
+	  .	                ^~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/signextend-summary.k)
+	Location(45,17,45,23)
+	45 |	             ~> K_CELL:K
+	   .	                ^~~~~~
+[Warning] Compiler: Variable 'GAS_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/signextend-summary.k)
+	Location(60,20,60,28)
+	60 |	                   GAS_CELL:Int
+	   .	                   ^~~~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/sload-summary.k)
+	Location(9,17,9,23)
+	9 |	             ~> K_CELL:K
+	  .	                ^~~~~~
+[Warning] Compiler: Variable 'WS' defined but not used. Prefix variable name
+with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/sload-summary.k)
+	Location(21,76,21,78)
+	21 |	                   ( ( W0:Int => #lookup ( STORAGE_CELL:Map , W0:Int ) )
+: WS:WordStack )
+	   .	                                                                         
+ ^~
+[Warning] Compiler: Variable 'GAS_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/sload-summary.k)
+	Location(27,20,27,28)
+	27 |	                   GAS_CELL:Int
+	   .	                   ^~~~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/sload-summary.k)
+	Location(57,17,57,23)
+	57 |	             ~> K_CELL:K
+	   .	                ^~~~~~
+[Warning] Compiler: Variable 'WS' defined but not used. Prefix variable name
+with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/sload-summary.k)
+	Location(72,76,72,78)
+	72 |	                   ( ( W0:Int => #lookup ( STORAGE_CELL:Map , W0:Int ) )
+: WS:WordStack )
+	   .	                                                                         
+ ^~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/sload-summary.k)
+	Location(117,17,117,23)
+	117 |	             ~> K_CELL:K
+	    .	                ^~~~~~
+[Warning] Compiler: Variable 'WS' defined but not used. Prefix variable name
+with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/sload-summary.k)
+	Location(132,76,132,78)
+	132 |	                   ( ( W0:Int => #lookup ( STORAGE_CELL:Map , W0:Int ) )
+: WS:WordStack )
+	    .	                                                                        
+  ^~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/slt-summary.k)
+	Location(9,17,9,23)
+	9 |	             ~> K_CELL:K
+	  .	                ^~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/slt-summary.k)
+	Location(45,17,45,23)
+	45 |	             ~> K_CELL:K
+	   .	                ^~~~~~
+[Warning] Compiler: Variable 'GAS_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/slt-summary.k)
+	Location(60,20,60,28)
+	60 |	                   GAS_CELL:Int
+	   .	                   ^~~~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/smod-summary.k)
+	Location(9,17,9,23)
+	9 |	             ~> K_CELL:K
+	  .	                ^~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/smod-summary.k)
+	Location(45,17,45,23)
+	45 |	             ~> K_CELL:K
+	   .	                ^~~~~~
+[Warning] Compiler: Variable 'GAS_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/smod-summary.k)
+	Location(60,20,60,28)
+	60 |	                   GAS_CELL:Int
+	   .	                   ^~~~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/sstore-summary.k)
+	Location(9,17,9,23)
+	9 |	             ~> K_CELL:K
+	  .	                ^~~~~~
+[Warning] Compiler: Variable 'GAS_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/sstore-summary.k)
+	Location(27,20,27,28)
+	27 |	                   GAS_CELL:Int
+	   .	                   ^~~~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/sstore-summary.k)
+	Location(60,17,60,23)
+	60 |	             ~> K_CELL:K
+	   .	                ^~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/sstore-summary.k)
+	Location(131,17,131,23)
+	131 |	             ~> K_CELL:K
+	    .	                ^~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/stop-summary.k)
+	Location(9,17,9,23)
+	9 |	             ~> K_CELL:K
+	  .	                ^~~~~~
+[Warning] Compiler: Variable 'OUTPUT_CELL' defined but not used. Prefix
+variable name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/stop-summary.k)
+	Location(20,20,20,31)
+	20 |	                 ( OUTPUT_CELL:Bytes => b"" )
+	   .	                   ^~~~~~~~~~~
+[Warning] Compiler: Variable 'STATUSCODE_CELL' defined but not used. Prefix
+variable name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/stop-summary.k)
+	Location(23,20,23,35)
+	23 |	                 ( STATUSCODE_CELL:StatusCode => EVMC_SUCCESS )
+	   .	                   ^~~~~~~~~~~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/stop-summary.k)
+	Location(45,17,45,23)
+	45 |	             ~> K_CELL:K
+	   .	                ^~~~~~
+[Warning] Compiler: Variable 'OUTPUT_CELL' defined but not used. Prefix
+variable name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/stop-summary.k)
+	Location(53,20,53,31)
+	53 |	                 ( OUTPUT_CELL:Bytes => b"" )
+	   .	                   ^~~~~~~~~~~
+[Warning] Compiler: Variable 'STATUSCODE_CELL' defined but not used. Prefix
+variable name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/stop-summary.k)
+	Location(56,20,56,35)
+	56 |	                 ( STATUSCODE_CELL:StatusCode => EVMC_SUCCESS )
+	   .	                   ^~~~~~~~~~~~~~~
+[Warning] Compiler: Variable 'GAS_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/stop-summary.k)
+	Location(60,20,60,28)
+	60 |	                   GAS_CELL:Int
+	   .	                   ^~~~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/sub-summary.k)
+	Location(9,17,9,23)
+	9 |	             ~> K_CELL:K
+	  .	                ^~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/sub-summary.k)
+	Location(45,17,45,23)
+	45 |	             ~> K_CELL:K
+	   .	                ^~~~~~
+[Warning] Compiler: Variable 'GAS_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/sub-summary.k)
+	Location(60,20,60,28)
+	60 |	                   GAS_CELL:Int
+	   .	                   ^~~~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/swap-summary.k)
+	Location(9,17,9,23)
+	9 |	             ~> K_CELL:K
+	  .	                ^~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/swap-summary.k)
+	Location(46,17,46,23)
+	46 |	             ~> K_CELL:K
+	   .	                ^~~~~~
+[Warning] Compiler: Variable 'GAS_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/swap-summary.k)
+	Location(61,20,61,28)
+	61 |	                   GAS_CELL:Int
+	   .	                   ^~~~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/timestamp-summary.k)
+	Location(9,17,9,23)
+	9 |	             ~> K_CELL:K
+	  .	                ^~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/timestamp-summary.k)
+	Location(52,17,52,23)
+	52 |	             ~> K_CELL:K
+	   .	                ^~~~~~
+[Warning] Compiler: Variable 'GAS_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/timestamp-summary.k)
+	Location(67,20,67,28)
+	67 |	                   GAS_CELL:Int
+	   .	                   ^~~~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/tload-summary.k)
+	Location(9,17,9,23)
+	9 |	             ~> K_CELL:K
+	  .	                ^~~~~~
+[Warning] Compiler: Variable 'WS' defined but not used. Prefix variable name
+with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/tload-summary.k)
+	Location(24,86,24,88)
+	24 |	                   ( ( W0:Int => #lookup ( TRANSIENT_STORAGE_CELL:Map ,
+W0:Int ) ) : WS:WordStack )
+	   .	                                                                         
+           ^~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/tload-summary.k)
+	Location(62,17,62,23)
+	62 |	             ~> K_CELL:K
+	   .	                ^~~~~~
+[Warning] Compiler: Variable 'WS' defined but not used. Prefix variable name
+with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/tload-summary.k)
+	Location(74,86,74,88)
+	74 |	                   ( ( W0:Int => #lookup ( TRANSIENT_STORAGE_CELL:Map ,
+W0:Int ) ) : WS:WordStack )
+	   .	                                                                         
+           ^~
+[Warning] Compiler: Variable 'GAS_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/tload-summary.k)
+	Location(80,20,80,28)
+	80 |	                   GAS_CELL:Int
+	   .	                   ^~~~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/tstore-summary.k)
+	Location(9,17,9,23)
+	9 |	             ~> K_CELL:K
+	  .	                ^~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/tstore-summary.k)
+	Location(65,17,65,23)
+	65 |	             ~> K_CELL:K
+	   .	                ^~~~~~
+[Warning] Compiler: Variable 'GAS_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/tstore-summary.k)
+	Location(83,20,83,28)
+	83 |	                   GAS_CELL:Int
+	   .	                   ^~~~~~~~
+[Warning] Compiler: Variable 'W' defined but not used. Prefix variable name
+with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/undefined-summary.k)
+	Location(8,36,8,37)
+	8 |	             ( #next [ UNDEFINED ( W:Int ) ] => #halt )
+	  .	                                   ^
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/undefined-summary.k)
+	Location(9,17,9,23)
+	9 |	             ~> K_CELL:K
+	  .	                ^~~~~~
+[Warning] Compiler: Variable 'STATUSCODE_CELL' defined but not used. Prefix
+variable name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/undefined-summary.k)
+	Location(14,20,14,35)
+	14 |	                 ( STATUSCODE_CELL:StatusCode =>
+EVMC_UNDEFINED_INSTRUCTION )
+	   .	                   ^~~~~~~~~~~~~~~
+[Warning] Compiler: Variable 'GAS_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/undefined-summary.k)
+	Location(18,20,18,28)
+	18 |	                   GAS_CELL:Int
+	   .	                   ^~~~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/xor-summary.k)
+	Location(9,17,9,23)
+	9 |	             ~> K_CELL:K
+	  .	                ^~~~~~
+[Warning] Compiler: Variable 'K_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/xor-summary.k)
+	Location(45,17,45,23)
+	45 |	             ~> K_CELL:K
+	   .	                ^~~~~~
+[Warning] Compiler: Variable 'GAS_CELL' defined but not used. Prefix variable
+name with underscore if this is intentional.
+	Source(/Users/steven/Desktop/projs/evm-semantics/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/summaries/xor-summary.k)
+	Location(60,20,60,28)
+	60 |	                   GAS_CELL:Int
+	   .	                   ^~~~~~~~
+[Error] Compiler: Had 1 structural errors.

@@ -3,7 +3,7 @@ requires "../evm.md"
 module CALLDATALOAD-SUMMARY
     imports public EVM
     
-    rule [CALLDATALOAD-SUMMARY-0]: <kevm>
+    rule [CALLDATALOAD-SUMMARY-USEGAS]: <kevm>
            <k>
              ( #next [ CALLDATALOAD ] ~> .K => .K )
              ~> K_CELL:K
@@ -40,9 +40,9 @@ module CALLDATALOAD-SUMMARY
       requires ( USEGAS_CELL:Bool
        andBool ( Gverylow < SCHEDULE_CELL:Schedule > <=Int GAS_CELL:Int
                ))
-      [priority(20), label(CALLDATALOAD-SUMMARY-0)]
+      [priority(20), label(CALLDATALOAD-SUMMARY-USEGAS)]
     
-    rule [CALLDATALOAD-SUMMARY-1]: <kevm>
+    rule [CALLDATALOAD-SUMMARY-NOGAS]: <kevm>
            <k>
              ( #next [ CALLDATALOAD ] ~> .K => .K )
              ~> K_CELL:K
@@ -74,6 +74,6 @@ module CALLDATALOAD-SUMMARY
            ...
          </kevm>
       requires ( notBool USEGAS_CELL:Bool )
-      [priority(20), label(CALLDATALOAD-SUMMARY-1)]
+      [priority(20), label(CALLDATALOAD-SUMMARY-NOGAS)]
 
 endmodule

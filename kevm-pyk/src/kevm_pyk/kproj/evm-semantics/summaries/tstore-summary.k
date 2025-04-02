@@ -3,7 +3,7 @@ requires "../evm.md"
 module TSTORE-SUMMARY
     imports public EVM
     
-    rule [TSTORE-SUMMARY-0]: <kevm>
+    rule [TSTORE-SUMMARY-USEGAS]: <kevm>
            <k>
              ( #next [ TSTORE ] ~> .K => .K )
              ~> K_CELL:K
@@ -57,9 +57,9 @@ module TSTORE-SUMMARY
       requires ( USEGAS_CELL:Bool
        andBool ( Gwarmstoragedirtystore < SCHEDULE_CELL:Schedule > <=Int GAS_CELL:Int
                ))
-      [priority(20), label(TSTORE-SUMMARY-0)]
+      [priority(20), label(TSTORE-SUMMARY-USEGAS)]
     
-    rule [TSTORE-SUMMARY-1]: <kevm>
+    rule [TSTORE-SUMMARY-NOGAS]: <kevm>
            <k>
              ( #next [ TSTORE ] ~> .K => .K )
              ~> K_CELL:K
@@ -108,6 +108,6 @@ module TSTORE-SUMMARY
            ...
          </kevm>
       requires ( notBool USEGAS_CELL:Bool )
-      [priority(20), label(TSTORE-SUMMARY-1)]
+      [priority(20), label(TSTORE-SUMMARY-NOGAS)]
 
 endmodule

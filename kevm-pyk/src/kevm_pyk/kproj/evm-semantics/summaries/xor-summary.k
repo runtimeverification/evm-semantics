@@ -3,7 +3,7 @@ requires "../evm.md"
 module XOR-SUMMARY
     imports public EVM
     
-    rule [XOR-SUMMARY-0]: <kevm>
+    rule [XOR-SUMMARY-USEGAS]: <kevm>
            <k>
              ( #next [ XOR ] ~> .K => .K )
              ~> K_CELL:K
@@ -37,9 +37,9 @@ module XOR-SUMMARY
       requires ( USEGAS_CELL:Bool
        andBool ( Gverylow < SCHEDULE_CELL:Schedule > <=Int GAS_CELL:Int
                ))
-      [priority(20), label(XOR-SUMMARY-0)]
+      [priority(20), label(XOR-SUMMARY-USEGAS)]
     
-    rule [XOR-SUMMARY-1]: <kevm>
+    rule [XOR-SUMMARY-NOGAS]: <kevm>
            <k>
              ( #next [ XOR ] ~> .K => .K )
              ~> K_CELL:K
@@ -68,6 +68,6 @@ module XOR-SUMMARY
            ...
          </kevm>
       requires ( notBool USEGAS_CELL:Bool )
-      [priority(20), label(XOR-SUMMARY-1)]
+      [priority(20), label(XOR-SUMMARY-NOGAS)]
 
 endmodule

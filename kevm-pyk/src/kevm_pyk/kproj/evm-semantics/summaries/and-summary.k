@@ -3,7 +3,7 @@ requires "../evm.md"
 module AND-SUMMARY
     imports public EVM
     
-    rule [AND-SUMMARY-0]: <kevm>
+    rule [AND-SUMMARY-USEGAS]: <kevm>
            <k>
              ( #next [ AND ] ~> .K => .K )
              ~> K_CELL:K
@@ -37,9 +37,9 @@ module AND-SUMMARY
       requires ( USEGAS_CELL:Bool
        andBool ( Gverylow < SCHEDULE_CELL:Schedule > <=Int GAS_CELL:Int
                ))
-      [priority(20), label(AND-SUMMARY-0)]
+      [priority(20), label(AND-SUMMARY-USEGAS)]
     
-    rule [AND-SUMMARY-1]: <kevm>
+    rule [AND-SUMMARY-NOGAS]: <kevm>
            <k>
              ( #next [ AND ] ~> .K => .K )
              ~> K_CELL:K
@@ -68,6 +68,6 @@ module AND-SUMMARY
            ...
          </kevm>
       requires ( notBool USEGAS_CELL:Bool )
-      [priority(20), label(AND-SUMMARY-1)]
+      [priority(20), label(AND-SUMMARY-NOGAS)]
 
 endmodule

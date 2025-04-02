@@ -407,6 +407,63 @@ def _transform_dash(inner: KInner) -> KInner:
     return top_down(_transform_dash_aux, inner)
 
 
+def _transform_rule_id(proof_id: str, requires: KInner) -> str:
+    flag = 'USEGAS'
+    noberlin = False
+    le0 = False
+    le_length_bytes = False
+
+    def _transform_rule_id_nogas(_inner: KInner) -> KInner:
+        nonlocal flag
+        if (
+            isinstance(_inner, KApply)
+            and _inner.label.name == 'notBool_'
+            and _inner.args[0] == KVariable('USEGAS_CELL', 'Bool')
+        ):
+            flag = 'NOGAS'
+        return _inner
+
+    def _transform_rule_id_no_ghasaccesslist(_inner: KInner) -> KInner:
+        nonlocal noberlin
+        if (
+            isinstance(_inner, KApply)
+            and _inner.label.name == 'notBool_'
+            and isinstance(_inner.args[0], KApply)
+            and _inner.args[0].label.name == '_<<_>>_SCHEDULE_Bool_ScheduleFlag_Schedule'
+            and _inner.args[0].args[0] == KApply('Ghasaccesslist_SCHEDULE_ScheduleFlag', [])
+        ):
+            noberlin = True
+        return _inner
+
+    def _transform_rule_id_le0(_inner: KInner) -> KInner:
+        nonlocal le0
+        if _inner == KApply('_<=Int_', [KVariable('W1', 'Int'), KToken('0', 'Int')]):
+            le0 = True
+        return _inner
+
+    def _transform_rule_id_le_length_bytes(_inner: KInner) -> KInner:
+        nonlocal le_length_bytes
+        if (
+            isinstance(_inner, KApply)
+            and _inner.label.name == '_<=Int_'
+            and _inner.args[1] == KApply('lengthBytes(_)_BYTES-HOOKED_Int_Bytes', [KVariable('OUTPUT_CELL', 'Bytes')])
+        ):
+            le_length_bytes = True
+        return _inner
+
+    top_down(_transform_rule_id_nogas, requires)
+    top_down(_transform_rule_id_no_ghasaccesslist, requires)
+    top_down(_transform_rule_id_le0, requires)
+    top_down(_transform_rule_id_le_length_bytes, requires)
+    if proof_id in ['BALANCE_NORMAL', 'BALANCE_OWISE', 'SLOAD', 'SSTORE']:
+        flag += '-BERLIN' if not noberlin else ''
+    if proof_id == 'EXP':
+        flag += '-LE0' if le0 else ''
+    if proof_id == 'RETURNDATACOPY':
+        flag += '-INVALID' if not le_length_bytes else ''
+    return f'{proof_id.replace("_", "-")}-SUMMARY-{flag}'
+
+
 def _transform_inf_gas(rule_id: str, body: KInner, requires: KInner) -> tuple[KInner, KInner]:
     """Transform infGas to normal gas."""
     gas_delta: KInner | None = None
@@ -428,7 +485,7 @@ def _transform_inf_gas(rule_id: str, body: KInner, requires: KInner) -> tuple[KI
         for guard in reversed(gas_guards):
             requires = andBool([requires, guard])
 
-    if rule_id in ['SSTORE-SUMMARY-1', 'SSTORE-SUMMARY-2']:
+    if rule_id.startswith('SSTORE-SUMMARY-USEGAS'):
         requires = andBool(
             [
                 requires,
@@ -442,7 +499,7 @@ def _transform_inf_gas(rule_id: str, body: KInner, requires: KInner) -> tuple[KI
             ]
         )
 
-    if rule_id in ['BALANCE-NORMAL-SUMMARY-1', 'BALANCE-OWISE-SUMMARY-1']:
+    if rule_id in ['BALANCE-NORMAL-SUMMARY-BERLIN', 'BALANCE-OWISE-SUMMARY-BERLIN']:
         requires = andBool([requires, leInt(KToken('0', 'Int'), KVariable('GAS_CELL', 'Int'))])
 
     return body, requires
@@ -765,19 +822,16 @@ class KEVMSummarizer:
     def _to_rules(self, proof: APRProof) -> list[KRule]:
         krules = []
         module = APRProofShow(self.kevm, kevm_node_printer(self.kevm, proof)).kcfg_show.to_module(proof.kcfg)
-        for i, krule in enumerate(module.sentences):
+        for krule in module.sentences:
             assert isinstance(krule, KRule), f'Unexpected sentence type: {type(krule)}\n{self.kevm.pretty_print(krule)}'
             body, requires, ensures, atts = krule.body, krule.requires, krule.ensures, krule.att
 
-            # better rule label for summary
-            rule_id = f'{proof.id.replace("_", "-")}-SUMMARY-{i}'
-            atts = atts.update([Atts.LABEL(rule_id)])
-
             body, requires, ensures = _transform_dash(body), _transform_dash(requires), _transform_dash(ensures)
+            rule_id = _transform_rule_id(proof.id, requires)
             body, requires = _transform_inf_gas(rule_id, body, requires)
             body, requires = _transform_dot_account_var(body, requires)
             body, requires = _transform_lhs_functions(rule_id, body, requires)
-            krules.append(KRule(body, requires, ensures, atts))
+            krules.append(KRule(body, requires, ensures, atts.update([Atts.LABEL(rule_id)])))
         return krules
 
     def _opcode_summary_kdef(self, proof: APRProof) -> KDefinition:

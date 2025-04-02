@@ -3,7 +3,7 @@ requires "../evm.md"
 module MCOPY-SUMMARY
     imports public EVM
     
-    rule [MCOPY-SUMMARY-0]: <kevm>
+    rule [MCOPY-SUMMARY-USEGAS]: <kevm>
            <k>
              ( #next [ MCOPY ] ~> .K => .K )
              ~> K_CELL:K
@@ -44,9 +44,9 @@ module MCOPY-SUMMARY
        andBool ( ( Cmem ( SCHEDULE_CELL:Schedule , #memoryUsageUpdate ( MEMORYUSED_CELL:Int , maxInt ( W0:Int , W1:Int ) , W2:Int ) ) -Int Cmem ( SCHEDULE_CELL:Schedule , MEMORYUSED_CELL:Int ) ) <=Int GAS_CELL:Int
        andBool ( ( Gverylow < SCHEDULE_CELL:Schedule > +Int ( Gcopy < SCHEDULE_CELL:Schedule > *Int ( W2:Int up/Int 32 ) ) ) <=Int ( GAS_CELL:Int -Int ( Cmem ( SCHEDULE_CELL:Schedule , #memoryUsageUpdate ( MEMORYUSED_CELL:Int , maxInt ( W0:Int , W1:Int ) , W2:Int ) ) -Int Cmem ( SCHEDULE_CELL:Schedule , MEMORYUSED_CELL:Int ) ) )
                )))
-      [priority(20), label(MCOPY-SUMMARY-0)]
+      [priority(20), label(MCOPY-SUMMARY-USEGAS)]
     
-    rule [MCOPY-SUMMARY-1]: <kevm>
+    rule [MCOPY-SUMMARY-NOGAS]: <kevm>
            <k>
              ( #next [ MCOPY ] ~> .K => .K )
              ~> K_CELL:K
@@ -78,6 +78,6 @@ module MCOPY-SUMMARY
            ...
          </kevm>
       requires ( notBool USEGAS_CELL:Bool )
-      [priority(20), label(MCOPY-SUMMARY-1)]
+      [priority(20), label(MCOPY-SUMMARY-NOGAS)]
 
 endmodule

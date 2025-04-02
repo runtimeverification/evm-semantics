@@ -3,7 +3,7 @@ requires "../evm.md"
 module ADDMOD-SUMMARY
     imports public EVM
     
-    rule [ADDMOD-SUMMARY-0]: <kevm>
+    rule [ADDMOD-SUMMARY-USEGAS]: <kevm>
            <k>
              ( #next [ ADDMOD ] ~> .K => .K )
              ~> K_CELL:K
@@ -37,9 +37,9 @@ module ADDMOD-SUMMARY
       requires ( USEGAS_CELL:Bool
        andBool ( Gmid < SCHEDULE_CELL:Schedule > <=Int GAS_CELL:Int
                ))
-      [priority(20), label(ADDMOD-SUMMARY-0)]
+      [priority(20), label(ADDMOD-SUMMARY-USEGAS)]
     
-    rule [ADDMOD-SUMMARY-1]: <kevm>
+    rule [ADDMOD-SUMMARY-NOGAS]: <kevm>
            <k>
              ( #next [ ADDMOD ] ~> .K => .K )
              ~> K_CELL:K
@@ -68,6 +68,6 @@ module ADDMOD-SUMMARY
            ...
          </kevm>
       requires ( notBool USEGAS_CELL:Bool )
-      [priority(20), label(ADDMOD-SUMMARY-1)]
+      [priority(20), label(ADDMOD-SUMMARY-NOGAS)]
 
 endmodule

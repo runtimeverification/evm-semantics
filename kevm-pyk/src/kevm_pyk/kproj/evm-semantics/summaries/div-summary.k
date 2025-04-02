@@ -3,7 +3,7 @@ requires "../evm.md"
 module DIV-SUMMARY
     imports public EVM
     
-    rule [DIV-SUMMARY-0]: <kevm>
+    rule [DIV-SUMMARY-USEGAS]: <kevm>
            <k>
              ( #next [ DIV ] ~> .K => .K )
              ~> K_CELL:K
@@ -37,9 +37,9 @@ module DIV-SUMMARY
       requires ( USEGAS_CELL:Bool
        andBool ( Glow < SCHEDULE_CELL:Schedule > <=Int GAS_CELL:Int
                ))
-      [priority(20), label(DIV-SUMMARY-0)]
+      [priority(20), label(DIV-SUMMARY-USEGAS)]
     
-    rule [DIV-SUMMARY-1]: <kevm>
+    rule [DIV-SUMMARY-NOGAS]: <kevm>
            <k>
              ( #next [ DIV ] ~> .K => .K )
              ~> K_CELL:K
@@ -68,6 +68,6 @@ module DIV-SUMMARY
            ...
          </kevm>
       requires ( notBool USEGAS_CELL:Bool )
-      [priority(20), label(DIV-SUMMARY-1)]
+      [priority(20), label(DIV-SUMMARY-NOGAS)]
 
 endmodule

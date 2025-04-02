@@ -3,7 +3,7 @@ requires "../evm.md"
 module PREVRANDAO-SUMMARY
     imports public EVM
     
-    rule [PREVRANDAO-SUMMARY-0]: <kevm>
+    rule [PREVRANDAO-SUMMARY-USEGAS]: <kevm>
            <k>
              ( #next [ PREVRANDAO ] ~> .K => .K )
              ~> K_CELL:K
@@ -44,9 +44,9 @@ module PREVRANDAO-SUMMARY
        andBool ( #sizeWordStack ( WS:WordStack , 0 ) <=Int 1023
        andBool ( Gbase < SCHEDULE_CELL:Schedule > <=Int GAS_CELL:Int
                )))
-      [priority(20), label(PREVRANDAO-SUMMARY-0)]
+      [priority(20), label(PREVRANDAO-SUMMARY-USEGAS)]
     
-    rule [PREVRANDAO-SUMMARY-1]: <kevm>
+    rule [PREVRANDAO-SUMMARY-NOGAS]: <kevm>
            <k>
              ( #next [ PREVRANDAO ] ~> .K => .K )
              ~> K_CELL:K
@@ -83,6 +83,6 @@ module PREVRANDAO-SUMMARY
       requires ( ( notBool USEGAS_CELL:Bool )
        andBool ( #sizeWordStack ( WS:WordStack , 0 ) <=Int 1023
                ))
-      [priority(20), label(PREVRANDAO-SUMMARY-1)]
+      [priority(20), label(PREVRANDAO-SUMMARY-NOGAS)]
 
 endmodule

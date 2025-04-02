@@ -3,7 +3,7 @@ requires "../evm.md"
 module ISZERO-SUMMARY
     imports public EVM
     
-    rule [ISZERO-SUMMARY-0]: <kevm>
+    rule [ISZERO-SUMMARY-USEGAS]: <kevm>
            <k>
              ( #next [ ISZERO ] ~> .K => .K )
              ~> K_CELL:K
@@ -37,9 +37,9 @@ module ISZERO-SUMMARY
       requires ( USEGAS_CELL:Bool
        andBool ( Gverylow < SCHEDULE_CELL:Schedule > <=Int GAS_CELL:Int
                ))
-      [priority(20), label(ISZERO-SUMMARY-0)]
+      [priority(20), label(ISZERO-SUMMARY-USEGAS)]
     
-    rule [ISZERO-SUMMARY-1]: <kevm>
+    rule [ISZERO-SUMMARY-NOGAS]: <kevm>
            <k>
              ( #next [ ISZERO ] ~> .K => .K )
              ~> K_CELL:K
@@ -68,6 +68,6 @@ module ISZERO-SUMMARY
            ...
          </kevm>
       requires ( notBool USEGAS_CELL:Bool )
-      [priority(20), label(ISZERO-SUMMARY-1)]
+      [priority(20), label(ISZERO-SUMMARY-NOGAS)]
 
 endmodule
