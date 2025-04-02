@@ -802,7 +802,7 @@ class KEVMSummarizer:
         proof.minimize_kcfg(KEVMSemantics(allow_symbolic_program=True), merge)
 
         ensure_dir_path(self.save_directory)
-        with open(self.save_directory / f'{proof.id.lower()}-summary.k', 'w') as f:
+        with open(self.save_directory / f'{proof.id.lower().replace("_", "-")}-summary.k', 'w') as f:
             f.write(self.kevm.pretty_print(self._opcode_summary_kdef(proof)))
         with open(self.save_directory / 'summaries.k', 'w') as f:
             f.write(self.kevm.pretty_print(self._summaries_kdef()))
