@@ -353,7 +353,6 @@ def legacy_explore(
     log_succ_rewrites: bool = True,
     log_fail_rewrites: bool = True,
     start_server: bool = True,
-    maude_port: int | None = None,
     fallback_on: Iterable[FallbackReason] | None = None,
     interim_simplification: int | None = None,
     no_post_exec_simplify: bool = False,
