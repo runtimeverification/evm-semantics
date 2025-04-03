@@ -17,7 +17,7 @@ from pyk.kast.manip import (
     split_config_from,
 )
 from pyk.kcfg import KCFGExplore
-from pyk.kore.rpc import KoreClient, KoreExecLogFormat, TransportType, kore_server
+from pyk.kore.rpc import KoreClient, KoreExecLogFormat, kore_server
 from pyk.ktool import TypeInferenceMode
 from pyk.ktool.claim_loader import ClaimLoader
 from pyk.prelude.ml import is_bottom, is_top
@@ -390,20 +390,7 @@ def legacy_explore(
     else:
         if port is None:
             raise ValueError('Missing port with start_server=False')
-        if maude_port is None:
-            dispatch = None
-        else:
-            dispatch = {
-                'execute': [('localhost', maude_port, TransportType.HTTP)],
-                'simplify': [('localhost', maude_port, TransportType.HTTP)],
-                'add-module': [
-                    ('localhost', maude_port, TransportType.HTTP),
-                    ('localhost', port, TransportType.SINGLE_SOCKET),
-                ],
-            }
-        with KoreClient(
-            'localhost', port, bug_report=bug_report, bug_report_id=bug_report_id, dispatch=dispatch
-        ) as client:
+        with KoreClient('localhost', port, bug_report=bug_report, bug_report_id=bug_report_id) as client:
             cterm_symbolic = CTermSymbolic(
                 client, kprint.definition, log_succ_rewrites=log_succ_rewrites, log_fail_rewrites=log_fail_rewrites
             )
