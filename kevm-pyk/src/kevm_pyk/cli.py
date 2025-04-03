@@ -338,7 +338,6 @@ class RPCOptions(Options):
     post_exec_simplify: bool
     interim_simplification: int | None
     port: int | None
-    maude_port: int | None
     use_booster_dev: bool
 
     @staticmethod
@@ -352,7 +351,6 @@ class RPCOptions(Options):
             'post_exec_simplify': True,
             'interim_simplification': None,
             'port': None,
-            'maude_port': None,
             'use_booster_dev': False,
         }
 
@@ -1076,12 +1074,6 @@ class KEVMCLIArgs(KCLIArgs):
             dest='port',
             type=int,
             help='Use existing RPC server on named port.',
-        )
-        args.add_argument(
-            '--maude-port',
-            dest='maude_port',
-            type=int,
-            help='Use existing Maude RPC server on named port.',
         )
         return args
 
