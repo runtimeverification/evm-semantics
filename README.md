@@ -171,6 +171,11 @@ poetry -C kevm-pyk run kdist clean
 
 For more information, refer to `kdist --help` and the [dist.py](kevm-pyk/src/kevm_pyk/dist.py) module.
 
+#### Easy `Makefile` build.
+
+Run `make evm-semantics` for direct build of the target `libkevm/libkevm.so` library. As a dependency, the `lib/krypto.a` will be also build.
+Run `make clean` to clean up the results of `make evm-semantics` command.
+
 Running Tests
 -------------
 
