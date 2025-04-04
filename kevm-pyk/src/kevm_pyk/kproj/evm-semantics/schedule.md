@@ -1176,7 +1176,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Gcoldsload             < MERGE > => 2100
     rule Gcoldaccountaccess     < MERGE > => 2600
     rule Gwarmstorageread       < MERGE > => 100
-    rule Gwarmstoragedirtystore < MERGE > => 0 
+    rule Gwarmstoragedirtystore < MERGE > => 0
 
     rule Gpointeval < MERGE > => 0
 
@@ -1224,13 +1224,13 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     syntax Schedule ::= "SHANGHAI" [symbol(SHANGHAI_EVM), smtlib(schedule_SHANGHAI)]
  // --------------------------------------------------------------------------------
     rule Gzero    < SHANGHAI > => 0
-    
+
     rule Gbase    < SHANGHAI > => 2
     rule Gverylow < SHANGHAI > => 3
     rule Glow     < SHANGHAI > => 5
     rule Gmid     < SHANGHAI > => 8
     rule Ghigh    < SHANGHAI > => 10
-   
+
     rule Gexp      < SHANGHAI > => 10
     rule Gexpbyte  < SHANGHAI > => 50
     rule Gsha3     < SHANGHAI > => 30
@@ -1283,7 +1283,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Gcoldsload             < SHANGHAI > => 2100
     rule Gcoldaccountaccess     < SHANGHAI > => 2600
     rule Gwarmstorageread       < SHANGHAI > => 100
-    rule Gwarmstoragedirtystore < SHANGHAI > => 0 
+    rule Gwarmstoragedirtystore < SHANGHAI > => 0
 
     rule Gpointeval < SHANGHAI > => 0
 
@@ -1331,13 +1331,13 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     syntax Schedule ::= "CANCUN" [symbol(CANCUN_EVM), smtlib(schedule_CANCUN)]
  // --------------------------------------------------------------------------
     rule Gzero    < CANCUN > => 0
-    
+
     rule Gbase    < CANCUN > => 2
     rule Gverylow < CANCUN > => 3
     rule Glow     < CANCUN > => 5
     rule Gmid     < CANCUN > => 8
     rule Ghigh    < CANCUN > => 10
-   
+
     rule Gexp      < CANCUN > => 10
     rule Gexpbyte  < CANCUN > => 50
     rule Gsha3     < CANCUN > => 30
@@ -1430,6 +1430,115 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghaseip6780             << CANCUN >> => true
     rule Ghasblobbasefee         << CANCUN >> => true
     rule Ghasblobhash            << CANCUN >> => true
+
+```
+
+### Prague Schedule
+
+```k
+    syntax Schedule ::= "PRAGUE" [symbol(PRAGUE_EVM), smtlib(schedule_PRAGUE)]
+ // --------------------------------------------------------------------------
+
+    rule Gzero    < PRAGUE > => 0
+
+    rule Gbase    < PRAGUE > => 2
+    rule Gverylow < PRAGUE > => 3
+    rule Glow     < PRAGUE > => 5
+    rule Gmid     < PRAGUE > => 8
+    rule Ghigh    < PRAGUE > => 10
+
+    rule Gexp      < PRAGUE > => 10
+    rule Gexpbyte  < PRAGUE > => 50
+    rule Gsha3     < PRAGUE > => 30
+    rule Gsha3word < PRAGUE > => 6
+
+    rule Gsload       < PRAGUE > => 100
+    rule Gsstoreset   < PRAGUE > => 20000
+    rule Gsstorereset < PRAGUE > => 2900
+    rule Rsstoreclear < PRAGUE > => 4800
+
+    rule Glog      < PRAGUE > => 375
+    rule Glogdata  < PRAGUE > => 8
+    rule Glogtopic < PRAGUE > => 375
+
+    rule Gcall        < PRAGUE > => 700
+    rule Gcallstipend < PRAGUE > => 2300
+    rule Gcallvalue   < PRAGUE > => 9000
+    rule Gnewaccount  < PRAGUE > => 25000
+
+    rule Gcreate       < PRAGUE > => 32000
+    rule Gcodedeposit  < PRAGUE > => 200
+    rule Gselfdestruct < PRAGUE > => 5000
+    rule Rselfdestruct < PRAGUE > => 0
+
+    rule Gmemory      < PRAGUE > => 3
+    rule Gquadcoeff   < PRAGUE > => 512
+    rule Gcopy        < PRAGUE > => 3
+    rule Gquaddivisor < PRAGUE > => 3
+
+    rule Gtransaction   < PRAGUE > => 21000
+    rule Gtxcreate      < PRAGUE > => 53000
+    rule Gtxdatazero    < PRAGUE > => 4
+    rule Gtxdatanonzero < PRAGUE > => 16
+
+    rule Gjumpdest    < PRAGUE > => 1
+    rule Gbalance     < PRAGUE > => 700
+    rule Gblockhash   < PRAGUE > => 20
+    rule Gextcodesize < PRAGUE > => 700
+    rule Gextcodecopy < PRAGUE > => 700
+
+    rule Gecadd       < PRAGUE > => 150
+    rule Gecmul       < PRAGUE > => 6000
+    rule Gecpairconst < PRAGUE > => 45000
+    rule Gecpaircoeff < PRAGUE > => 34000
+    rule Gfround      < PRAGUE > => 1
+
+    rule maxCodeSize < PRAGUE > => 24576
+    rule Rb          < PRAGUE > => 0
+
+    rule Gcoldsload             < PRAGUE > => 2100
+    rule Gcoldaccountaccess     < PRAGUE > => 2600
+    rule Gwarmstorageread       < PRAGUE > => 100
+    rule Gwarmstoragedirtystore < PRAGUE > => 100
+
+    rule Gpointeval < PRAGUE > => 50000
+
+    rule Gaccessliststoragekey < PRAGUE > => 1900
+    rule Gaccesslistaddress    < PRAGUE > => 2400
+
+    rule maxInitCodeSize   < PRAGUE > => 49152
+    rule Ginitcodewordcost < PRAGUE > => 2
+
+    rule Rmaxquotient < PRAGUE > => 5
+
+    rule Gselfdestructnewaccount << PRAGUE >> => true
+    rule Gstaticcalldepth        << PRAGUE >> => false
+    rule Gemptyisnonexistent     << PRAGUE >> => true
+    rule Gzerovaluenewaccountgas << PRAGUE >> => false
+    rule Ghasrevert              << PRAGUE >> => true
+    rule Ghasreturndata          << PRAGUE >> => true
+    rule Ghasstaticcall          << PRAGUE >> => true
+    rule Ghasshift               << PRAGUE >> => true
+    rule Ghasdirtysstore         << PRAGUE >> => true
+    rule Ghassstorestipend       << PRAGUE >> => true
+    rule Ghascreate2             << PRAGUE >> => true
+    rule Ghasextcodehash         << PRAGUE >> => true
+    rule Ghasselfbalance         << PRAGUE >> => true
+    rule Ghaschainid             << PRAGUE >> => true
+    rule Ghasaccesslist          << PRAGUE >> => true
+    rule Ghasbasefee             << PRAGUE >> => true
+    rule Ghasrejectedfirstbyte   << PRAGUE >> => true
+    rule Ghasprevrandao          << PRAGUE >> => true
+    rule Ghasmaxinitcodesize     << PRAGUE >> => true
+    rule Ghaspushzero            << PRAGUE >> => true
+    rule Ghaswarmcoinbase        << PRAGUE >> => true
+    rule Ghaswithdrawals         << PRAGUE >> => true
+    rule Ghastransient           << PRAGUE >> => true
+    rule Ghasmcopy               << PRAGUE >> => true
+    rule Ghasbeaconroot          << PRAGUE >> => true
+    rule Ghaseip6780             << PRAGUE >> => true
+    rule Ghasblobbasefee         << PRAGUE >> => true
+    rule Ghasblobhash            << PRAGUE >> => true
 
 endmodule
 ```
