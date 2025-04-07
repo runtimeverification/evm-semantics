@@ -110,8 +110,9 @@ module BALANCE-OWISE-SUMMARY
       requires ( USEGAS_CELL:Bool
        andBool ( Ghasaccesslist << SCHEDULE_CELL:Schedule >>
        andBool ( #if ( W0:Int modInt pow160 ) in ACCESSEDACCOUNTS_CELL:Set #then Gwarmstorageread < SCHEDULE_CELL:Schedule > #else Gcoldaccountaccess < SCHEDULE_CELL:Schedule > #fi <=Int GAS_CELL:Int
+       andBool ( 0 <=Int GAS_CELL:Int
        andBool ( ( W0:Int modInt pow160 ) ==Int ACCTID:Int
-               ))))
+               )))))
       [priority(20), label(BALANCE-OWISE-SUMMARY-USEGAS-BERLIN)]
     
     rule [BALANCE-OWISE-SUMMARY-USEGAS]: <kevm>

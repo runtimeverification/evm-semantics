@@ -110,8 +110,9 @@ module BALANCE-NORMAL-SUMMARY
       requires ( USEGAS_CELL:Bool
        andBool ( Ghasaccesslist << SCHEDULE_CELL:Schedule >>
        andBool ( #if ( W0:Int modInt pow160 ) in ACCESSEDACCOUNTS_CELL:Set #then Gwarmstorageread < SCHEDULE_CELL:Schedule > #else Gcoldaccountaccess < SCHEDULE_CELL:Schedule > #fi <=Int GAS_CELL:Int
+       andBool ( 0 <=Int GAS_CELL:Int
        andBool ( ( W0:Int modInt pow160 ) ==Int ACCTID:Int
-               ))))
+               )))))
       [priority(20), label(BALANCE-NORMAL-SUMMARY-USEGAS-BERLIN)]
     
     rule [BALANCE-NORMAL-SUMMARY-USEGAS]: <kevm>

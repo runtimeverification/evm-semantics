@@ -499,7 +499,7 @@ def _transform_inf_gas(rule_id: str, body: KInner, requires: KInner) -> tuple[KI
             ]
         )
 
-    if rule_id in ['BALANCE-NORMAL-SUMMARY-BERLIN', 'BALANCE-OWISE-SUMMARY-BERLIN']:
+    if rule_id in ['BALANCE-NORMAL-SUMMARY-USEGAS-BERLIN', 'BALANCE-OWISE-SUMMARY-USEGAS-BERLIN']:
         requires = andBool([requires, leInt(KToken('0', 'Int'), KVariable('GAS_CELL', 'Int'))])
 
     return body, requires
