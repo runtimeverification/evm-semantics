@@ -5,48 +5,6 @@ module SELFBALANCE-SUMMARY
     
     rule [SELFBALANCE-SUMMARY-0]: <kevm>
            <k>
-             ( #next [ SELFBALANCE ] => #halt )
-             ~> K_CELL:K
-           </k>
-           <ethereum>
-             <evm>
-               <statusCode>
-                 ( STATUSCODE_CELL:StatusCode => EVMC_STACK_OVERFLOW )
-               </statusCode>
-               <callState>
-                 <id>
-                   ID_CELL:Int
-                 </id>
-                 <wordStack>
-                   WS:WordStack
-                 </wordStack>
-                 <gas>
-                   GAS_CELL:Int
-                 </gas>
-                 ...
-               </callState>
-               ...
-             </evm>
-             <network>
-               <accounts>
-                 <account>
-                   <acctID>
-                     ID_CELL:Int
-                   </acctID>
-                   ...
-                 </account>
-                 ...
-               </accounts>
-               ...
-             </network>
-           </ethereum>
-           ...
-         </kevm>
-      requires 1023 <Int #sizeWordStack ( WS:WordStack , 0 )
-      [priority(20), label(SELFBALANCE-SUMMARY-0)]
-    
-    rule [SELFBALANCE-SUMMARY-1]: <kevm>
-           <k>
              ( #next [ SELFBALANCE ] ~> .K => .K )
              ~> K_CELL:K
            </k>
@@ -94,14 +52,12 @@ module SELFBALANCE-SUMMARY
            ...
          </kevm>
       requires ( USEGAS_CELL:Bool
-       andBool ( ( notBool #sizeWordStack ( WS:WordStack , 0 ) <Int 0 )
-       andBool ( ( notBool 1023 <Int #sizeWordStack ( WS:WordStack , 0 ) )
+       andBool ( #sizeWordStack ( WS:WordStack , 0 ) <=Int 1023
        andBool ( Glow < SCHEDULE_CELL:Schedule > <=Int GAS_CELL:Int
-               ))))
-       ensures #sizeWordStack ( WS:WordStack , 0 ) <=Int 1023
-      [priority(20), label(SELFBALANCE-SUMMARY-1)]
+               )))
+      [priority(20), label(SELFBALANCE-SUMMARY-0)]
     
-    rule [SELFBALANCE-SUMMARY-2]: <kevm>
+    rule [SELFBALANCE-SUMMARY-1]: <kevm>
            <k>
              ( #next [ SELFBALANCE ] ~> .K => .K )
              ~> K_CELL:K
@@ -147,10 +103,8 @@ module SELFBALANCE-SUMMARY
            ...
          </kevm>
       requires ( ( notBool USEGAS_CELL:Bool )
-       andBool ( ( notBool #sizeWordStack ( WS:WordStack , 0 ) <Int 0 )
-       andBool ( ( notBool 1023 <Int #sizeWordStack ( WS:WordStack , 0 ) )
-               )))
-       ensures #sizeWordStack ( WS:WordStack , 0 ) <=Int 1023
-      [priority(20), label(SELFBALANCE-SUMMARY-2)]
+       andBool ( #sizeWordStack ( WS:WordStack , 0 ) <=Int 1023
+               ))
+      [priority(20), label(SELFBALANCE-SUMMARY-1)]
 
 endmodule
