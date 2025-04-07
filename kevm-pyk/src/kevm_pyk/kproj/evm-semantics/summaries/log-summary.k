@@ -53,9 +53,9 @@ module LOG-SUMMARY
            ...
          </kevm>
       requires ( USEGAS_CELL:Bool
+       andBool ( 0 <=Int N:Int
        andBool ( N:Int <=Int #sizeWordStack ( WS:WordStack , 0 )
        andBool ( ( N:Int +Int 2 ) <=Int #sizeWordStack ( WS:WordStack , 2 )
-       andBool ( #sizeWordStack ( WS:WordStack , 2 ) <=Int ( N:Int +Int 1026 )
        andBool ( ( Cmem ( SCHEDULE_CELL:Schedule , #memoryUsageUpdate ( MEMORYUSED_CELL:Int , W0:Int , W1:Int ) ) -Int Cmem ( SCHEDULE_CELL:Schedule , MEMORYUSED_CELL:Int ) ) <=Int GAS_CELL:Int
        andBool ( ( ( Glog < SCHEDULE_CELL:Schedule > +Int ( Glogdata < SCHEDULE_CELL:Schedule > *Int W1:Int ) ) +Int ( N:Int *Int Glogtopic < SCHEDULE_CELL:Schedule > ) ) <=Int ( GAS_CELL:Int -Int ( Cmem ( SCHEDULE_CELL:Schedule , #memoryUsageUpdate ( MEMORYUSED_CELL:Int , W0:Int , W1:Int ) ) -Int Cmem ( SCHEDULE_CELL:Schedule , MEMORYUSED_CELL:Int ) ) )
                ))))))
@@ -106,9 +106,9 @@ module LOG-SUMMARY
            ...
          </kevm>
       requires ( ( notBool USEGAS_CELL:Bool )
+       andBool ( 0 <=Int N:Int
        andBool ( N:Int <=Int #sizeWordStack ( WS:WordStack , 0 )
        andBool ( ( N:Int +Int 2 ) <=Int #sizeWordStack ( WS:WordStack , 2 )
-       andBool ( #sizeWordStack ( WS:WordStack , 2 ) <=Int ( N:Int +Int 1026 )
                ))))
        ensures ( notBool ( N:Int <Int -2 andBool 1026 <Int ( #sizeWordStack ( WS:WordStack , 2 ) -Int N:Int ) ) )
       [priority(20), label(LOG-SUMMARY-1)]
