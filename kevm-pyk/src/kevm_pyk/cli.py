@@ -855,7 +855,9 @@ class KEVMCLIArgs(KCLIArgs):
     @cached_property
     def target_args(self) -> ArgumentParser:
         args = ArgumentParser(add_help=False)
-        args.add_argument('--target', choices=['llvm', 'haskell', 'haskell-standalone', 'foundry'])
+        args.add_argument(
+            '--target', choices=['llvm', 'haskell', 'llvm-summary', 'haskell-summary', 'haskell-standalone', 'foundry']
+        )
         return args
 
     @cached_property

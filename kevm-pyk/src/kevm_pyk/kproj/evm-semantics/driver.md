@@ -9,10 +9,20 @@ requires "evm.md"
 requires "optimizations.md"
 requires "asm.md"
 requires "state-utils.md"
+requires "summaries/summaries.k"
+
+module ETHEREUM-SIMULATION-SUMMARY
+    imports ETHEREUM-SIMULATION-PURE
+    imports KEVM-SUMMARIES
+endmodule
 
 module ETHEREUM-SIMULATION
-    imports EVM
+    imports ETHEREUM-SIMULATION-PURE
     imports EVM-OPTIMIZATIONS
+endmodule
+
+module ETHEREUM-SIMULATION-PURE
+    imports EVM
     imports EVM-ASSEMBLY
     imports STATE-UTILS
 ```
@@ -73,6 +83,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
     rule <k> startTx => loadTx( #sender( #getTxData(TXID), TW, TR, TS, B ) ) ... </k>
          <txPending> ListItem(TXID:Int) ... </txPending>
          <chainID> B </chainID>
+         <gas> _ => 0 </gas>
          <message>
            <msgID>      TXID </msgID>
            <sigV>       TW   </sigV>
