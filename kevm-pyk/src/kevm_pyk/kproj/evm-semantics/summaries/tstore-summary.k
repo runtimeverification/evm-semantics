@@ -5,51 +5,6 @@ module TSTORE-SUMMARY
     
     rule [TSTORE-SUMMARY-0]: <kevm>
            <k>
-             ( #next [ TSTORE ] => #halt )
-             ~> K_CELL:K
-           </k>
-           <ethereum>
-             <evm>
-               <statusCode>
-                 ( STATUSCODE_CELL:StatusCode => EVMC_STATIC_MODE_VIOLATION )
-               </statusCode>
-               <callState>
-                 <id>
-                   ID_CELL:Int
-                 </id>
-                 <wordStack>
-                   ( W0:Int : ( W1:Int : WS:WordStack ) )
-                 </wordStack>
-                 <gas>
-                   GAS_CELL:Int
-                 </gas>
-                 <static>
-                   ( STATIC_CELL:Bool => true )
-                 </static>
-                 ...
-               </callState>
-               ...
-             </evm>
-             <network>
-               <accounts>
-                 <account>
-                   <acctID>
-                     ID_CELL:Int
-                   </acctID>
-                   ...
-                 </account>
-                 ...
-               </accounts>
-               ...
-             </network>
-           </ethereum>
-           ...
-         </kevm>
-      requires STATIC_CELL:Bool
-      [priority(20), label(TSTORE-SUMMARY-0)]
-    
-    rule [TSTORE-SUMMARY-1]: <kevm>
-           <k>
              ( #next [ TSTORE ] ~> .K => .K )
              ~> K_CELL:K
            </k>
@@ -75,7 +30,7 @@ module TSTORE-SUMMARY
                    ( GAS_CELL:Int => ( GAS_CELL:Int -Int Gwarmstoragedirtystore < SCHEDULE_CELL:Schedule > ) )
                  </gas>
                  <static>
-                   ( STATIC_CELL:Bool => false )
+                   false
                  </static>
                  ...
                </callState>
@@ -100,12 +55,11 @@ module TSTORE-SUMMARY
            ...
          </kevm>
       requires ( USEGAS_CELL:Bool
-       andBool ( ( notBool STATIC_CELL:Bool )
        andBool ( Gwarmstoragedirtystore < SCHEDULE_CELL:Schedule > <=Int GAS_CELL:Int
-               )))
-      [priority(20), label(TSTORE-SUMMARY-1)]
+               ))
+      [priority(20), label(TSTORE-SUMMARY-0)]
     
-    rule [TSTORE-SUMMARY-2]: <kevm>
+    rule [TSTORE-SUMMARY-1]: <kevm>
            <k>
              ( #next [ TSTORE ] ~> .K => .K )
              ~> K_CELL:K
@@ -129,7 +83,7 @@ module TSTORE-SUMMARY
                    GAS_CELL:Int
                  </gas>
                  <static>
-                   ( STATIC_CELL:Bool => false )
+                   false
                  </static>
                  ...
                </callState>
@@ -153,9 +107,7 @@ module TSTORE-SUMMARY
            </ethereum>
            ...
          </kevm>
-      requires ( ( notBool STATIC_CELL:Bool )
-       andBool ( ( notBool USEGAS_CELL:Bool )
-               ))
-      [priority(20), label(TSTORE-SUMMARY-2)]
+      requires ( notBool USEGAS_CELL:Bool )
+      [priority(20), label(TSTORE-SUMMARY-1)]
 
 endmodule

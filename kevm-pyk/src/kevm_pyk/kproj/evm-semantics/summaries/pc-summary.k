@@ -5,34 +5,6 @@ module PC-SUMMARY
     
     rule [PC-SUMMARY-0]: <kevm>
            <k>
-             ( #next [ PC ] => #halt )
-             ~> K_CELL:K
-           </k>
-           <ethereum>
-             <evm>
-               <statusCode>
-                 ( STATUSCODE_CELL:StatusCode => EVMC_STACK_OVERFLOW )
-               </statusCode>
-               <callState>
-                 <wordStack>
-                   WS:WordStack
-                 </wordStack>
-                 <gas>
-                   GAS_CELL:Int
-                 </gas>
-                 ...
-               </callState>
-               ...
-             </evm>
-             ...
-           </ethereum>
-           ...
-         </kevm>
-      requires 1023 <Int #sizeWordStack ( WS:WordStack , 0 )
-      [priority(20), label(PC-SUMMARY-0)]
-    
-    rule [PC-SUMMARY-1]: <kevm>
-           <k>
              ( #next [ PC ] ~> .K => .K )
              ~> K_CELL:K
            </k>
@@ -63,14 +35,12 @@ module PC-SUMMARY
            ...
          </kevm>
       requires ( USEGAS_CELL:Bool
-       andBool ( ( notBool #sizeWordStack ( WS:WordStack , 0 ) <Int 0 )
-       andBool ( ( notBool 1023 <Int #sizeWordStack ( WS:WordStack , 0 ) )
+       andBool ( #sizeWordStack ( WS:WordStack , 0 ) <=Int 1023
        andBool ( Gbase < SCHEDULE_CELL:Schedule > <=Int GAS_CELL:Int
-               ))))
-       ensures #sizeWordStack ( WS:WordStack , 0 ) <=Int 1023
-      [priority(20), label(PC-SUMMARY-1)]
+               )))
+      [priority(20), label(PC-SUMMARY-0)]
     
-    rule [PC-SUMMARY-2]: <kevm>
+    rule [PC-SUMMARY-1]: <kevm>
            <k>
              ( #next [ PC ] ~> .K => .K )
              ~> K_CELL:K
@@ -99,10 +69,8 @@ module PC-SUMMARY
            ...
          </kevm>
       requires ( ( notBool USEGAS_CELL:Bool )
-       andBool ( ( notBool #sizeWordStack ( WS:WordStack , 0 ) <Int 0 )
-       andBool ( ( notBool 1023 <Int #sizeWordStack ( WS:WordStack , 0 ) )
-               )))
-       ensures #sizeWordStack ( WS:WordStack , 0 ) <=Int 1023
-      [priority(20), label(PC-SUMMARY-2)]
+       andBool ( #sizeWordStack ( WS:WordStack , 0 ) <=Int 1023
+               ))
+      [priority(20), label(PC-SUMMARY-1)]
 
 endmodule
