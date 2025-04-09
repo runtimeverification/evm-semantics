@@ -14,6 +14,12 @@ requires "gas.md"
 requires "optimizations.md"
 requires "lemmas/lemmas.k"
 requires "lemmas/summarization-simplification.k"
+requires "summaries/summaries.k"
+
+module EDSL-SUMMARY
+    imports EDSL-PURE
+    imports KEVM-SUMMARIES
+endmodule
 
 module EDSL-SUM
     imports EDSL-PURE
