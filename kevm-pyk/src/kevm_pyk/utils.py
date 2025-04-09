@@ -5,7 +5,7 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from pyk.cterm import CTermSymbolic
+from pyk.cterm import cterm_symbolic
 from pyk.kast import Atts
 from pyk.kast.inner import KApply, KInner, KRewrite, KVariable, Subst
 from pyk.kast.manip import (
@@ -17,7 +17,7 @@ from pyk.kast.manip import (
     split_config_from,
 )
 from pyk.kcfg import KCFGExplore
-from pyk.kore.rpc import KoreClient, KoreExecLogFormat, TransportType, kore_server
+from pyk.kore.rpc import KoreExecLogFormat
 from pyk.ktool import TypeInferenceMode
 from pyk.ktool.claim_loader import ClaimLoader
 from pyk.prelude.ml import is_bottom, is_top
@@ -30,6 +30,7 @@ if TYPE_CHECKING:
     from collections.abc import Callable, Collection, Iterable, Iterator
     from typing import Final, TypeVar
 
+    from pyk.cterm import CTermSymbolic
     from pyk.kast.outer import KClaim, KDefinition, KFlatModule
     from pyk.kcfg import KCFG
     from pyk.kcfg.semantics import KCFGSemantics
@@ -353,60 +354,31 @@ def legacy_explore(
     log_succ_rewrites: bool = True,
     log_fail_rewrites: bool = True,
     start_server: bool = True,
-    maude_port: int | None = None,
     fallback_on: Iterable[FallbackReason] | None = None,
     interim_simplification: int | None = None,
     no_post_exec_simplify: bool = False,
     extra_module: KFlatModule | None = None,
 ) -> Iterator[KCFGExplore]:
-    bug_report_id = None if bug_report is None else id
-    if start_server:
-        # Old way of handling KCFGExplore, to be removed
-        with kore_server(
-            definition_dir=kprint.definition_dir,
-            llvm_definition_dir=llvm_definition_dir,
-            module_name=kprint.main_module,
-            port=port,
-            command=kore_rpc_command,
-            bug_report=bug_report,
-            smt_timeout=smt_timeout,
-            smt_retry_limit=smt_retry_limit,
-            smt_tactic=smt_tactic,
-            haskell_log_format=haskell_log_format,
-            haskell_log_entries=haskell_log_entries,
-            haskell_threads=haskell_threads,
-            log_axioms_file=log_axioms_file,
-            fallback_on=fallback_on,
-            interim_simplification=interim_simplification,
-            no_post_exec_simplify=no_post_exec_simplify,
-        ) as server:
-            with KoreClient('localhost', server.port, bug_report=bug_report, bug_report_id=bug_report_id) as client:
-                cterm_symbolic = CTermSymbolic(
-                    client, kprint.definition, log_succ_rewrites=log_succ_rewrites, log_fail_rewrites=log_fail_rewrites
-                )
-                if extra_module:
-                    cterm_symbolic.add_module(extra_module, name_as_id=True)
-                yield KCFGExplore(cterm_symbolic, kcfg_semantics=kcfg_semantics, id=id)
-    else:
-        if port is None:
-            raise ValueError('Missing port with start_server=False')
-        if maude_port is None:
-            dispatch = None
-        else:
-            dispatch = {
-                'execute': [('localhost', maude_port, TransportType.HTTP)],
-                'simplify': [('localhost', maude_port, TransportType.HTTP)],
-                'add-module': [
-                    ('localhost', maude_port, TransportType.HTTP),
-                    ('localhost', port, TransportType.SINGLE_SOCKET),
-                ],
-            }
-        with KoreClient(
-            'localhost', port, bug_report=bug_report, bug_report_id=bug_report_id, dispatch=dispatch
-        ) as client:
-            cterm_symbolic = CTermSymbolic(
-                client, kprint.definition, log_succ_rewrites=log_succ_rewrites, log_fail_rewrites=log_fail_rewrites
-            )
-            if extra_module:
-                cterm_symbolic.add_module(extra_module, name_as_id=True)
-            yield KCFGExplore(cterm_symbolic, kcfg_semantics=kcfg_semantics, id=id)
+    with cterm_symbolic(
+        definition=kprint.definition,
+        definition_dir=kprint.definition_dir,
+        id=id,
+        port=port,
+        kore_rpc_command=kore_rpc_command,
+        llvm_definition_dir=llvm_definition_dir,
+        smt_timeout=smt_timeout,
+        smt_retry_limit=smt_retry_limit,
+        smt_tactic=smt_tactic,
+        bug_report=bug_report,
+        haskell_log_format=haskell_log_format,
+        log_axioms_file=log_axioms_file,
+        log_succ_rewrites=log_succ_rewrites,
+        log_fail_rewrites=log_fail_rewrites,
+        start_server=start_server,
+        fallback_on=fallback_on,
+        interim_simplification=interim_simplification,
+        no_post_exec_simplify=no_post_exec_simplify,
+    ) as csymbolic:
+        if extra_module:
+            csymbolic.add_module(extra_module, name_as_id=True)
+        yield KCFGExplore(csymbolic, kcfg_semantics=kcfg_semantics, id=id)
