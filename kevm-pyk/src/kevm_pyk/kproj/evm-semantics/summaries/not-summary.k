@@ -3,7 +3,7 @@ requires "../evm.md"
 module NOT-SUMMARY
     imports public EVM
     
-    rule [NOT-SUMMARY-0]: <kevm>
+    rule [NOT-SUMMARY-USEGAS]: <kevm>
            <k>
              ( #next [ NOT ] ~> .K => .K )
              ~> K_CELL:K
@@ -37,9 +37,9 @@ module NOT-SUMMARY
       requires ( USEGAS_CELL:Bool
        andBool ( Gverylow < SCHEDULE_CELL:Schedule > <=Int GAS_CELL:Int
                ))
-      [priority(20), label(NOT-SUMMARY-0)]
+      [priority(20), label(NOT-SUMMARY-USEGAS)]
     
-    rule [NOT-SUMMARY-1]: <kevm>
+    rule [NOT-SUMMARY-NOGAS]: <kevm>
            <k>
              ( #next [ NOT ] ~> .K => .K )
              ~> K_CELL:K
@@ -68,6 +68,6 @@ module NOT-SUMMARY
            ...
          </kevm>
       requires ( notBool USEGAS_CELL:Bool )
-      [priority(20), label(NOT-SUMMARY-1)]
+      [priority(20), label(NOT-SUMMARY-NOGAS)]
 
 endmodule

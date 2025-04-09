@@ -3,7 +3,7 @@ requires "../evm.md"
 module ORIGIN-SUMMARY
     imports public EVM
     
-    rule [ORIGIN-SUMMARY-0]: <kevm>
+    rule [ORIGIN-SUMMARY-USEGAS]: <kevm>
            <k>
              ( #next [ ORIGIN ] ~> .K => .K )
              ~> K_CELL:K
@@ -41,9 +41,9 @@ module ORIGIN-SUMMARY
        andBool ( #sizeWordStack ( WS:WordStack , 0 ) <=Int 1023
        andBool ( Gbase < SCHEDULE_CELL:Schedule > <=Int GAS_CELL:Int
                )))
-      [priority(20), label(ORIGIN-SUMMARY-0)]
+      [priority(20), label(ORIGIN-SUMMARY-USEGAS)]
     
-    rule [ORIGIN-SUMMARY-1]: <kevm>
+    rule [ORIGIN-SUMMARY-NOGAS]: <kevm>
            <k>
              ( #next [ ORIGIN ] ~> .K => .K )
              ~> K_CELL:K
@@ -77,6 +77,6 @@ module ORIGIN-SUMMARY
       requires ( ( notBool USEGAS_CELL:Bool )
        andBool ( #sizeWordStack ( WS:WordStack , 0 ) <=Int 1023
                ))
-      [priority(20), label(ORIGIN-SUMMARY-1)]
+      [priority(20), label(ORIGIN-SUMMARY-NOGAS)]
 
 endmodule

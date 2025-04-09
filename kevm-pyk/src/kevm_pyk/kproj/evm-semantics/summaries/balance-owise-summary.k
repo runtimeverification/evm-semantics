@@ -3,7 +3,7 @@ requires "../evm.md"
 module BALANCE-OWISE-SUMMARY
     imports public EVM
     
-    rule [BALANCE-OWISE-SUMMARY-0]: <kevm>
+    rule [BALANCE-OWISE-SUMMARY-NOGAS-BERLIN]: <kevm>
            <k>
              ( #next [ BALANCE ] ~> .K => .K )
              ~> K_CELL:K
@@ -54,9 +54,9 @@ module BALANCE-OWISE-SUMMARY
       requires ( ( notBool USEGAS_CELL:Bool )
        andBool ( ( W0:Int modInt pow160 ) ==Int ACCTID:Int
                ))
-      [priority(20), label(BALANCE-OWISE-SUMMARY-0)]
+      [priority(20), label(BALANCE-OWISE-SUMMARY-NOGAS-BERLIN)]
     
-    rule [BALANCE-OWISE-SUMMARY-1]: <kevm>
+    rule [BALANCE-OWISE-SUMMARY-USEGAS-BERLIN]: <kevm>
            <k>
              ( #next [ BALANCE ] ~> .K => .K )
              ~> K_CELL:K
@@ -113,9 +113,9 @@ module BALANCE-OWISE-SUMMARY
        andBool ( 0 <=Int GAS_CELL:Int
        andBool ( ( W0:Int modInt pow160 ) ==Int ACCTID:Int
                )))))
-      [priority(20), label(BALANCE-OWISE-SUMMARY-1)]
+      [priority(20), label(BALANCE-OWISE-SUMMARY-USEGAS-BERLIN)]
     
-    rule [BALANCE-OWISE-SUMMARY-2]: <kevm>
+    rule [BALANCE-OWISE-SUMMARY-USEGAS]: <kevm>
            <k>
              ( #next [ BALANCE ] ~> .K => .K )
              ~> K_CELL:K
@@ -171,6 +171,6 @@ module BALANCE-OWISE-SUMMARY
        andBool ( Gbalance < SCHEDULE_CELL:Schedule > <=Int GAS_CELL:Int
        andBool ( ( W0:Int modInt pow160 ) ==Int ACCTID:Int
                ))))
-      [priority(20), label(BALANCE-OWISE-SUMMARY-2)]
+      [priority(20), label(BALANCE-OWISE-SUMMARY-USEGAS)]
 
 endmodule

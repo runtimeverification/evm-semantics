@@ -3,7 +3,7 @@ requires "../evm.md"
 module SIGNEXTEND-SUMMARY
     imports public EVM
     
-    rule [SIGNEXTEND-SUMMARY-0]: <kevm>
+    rule [SIGNEXTEND-SUMMARY-USEGAS]: <kevm>
            <k>
              ( #next [ SIGNEXTEND ] ~> .K => .K )
              ~> K_CELL:K
@@ -37,9 +37,9 @@ module SIGNEXTEND-SUMMARY
       requires ( USEGAS_CELL:Bool
        andBool ( Glow < SCHEDULE_CELL:Schedule > <=Int GAS_CELL:Int
                ))
-      [priority(20), label(SIGNEXTEND-SUMMARY-0)]
+      [priority(20), label(SIGNEXTEND-SUMMARY-USEGAS)]
     
-    rule [SIGNEXTEND-SUMMARY-1]: <kevm>
+    rule [SIGNEXTEND-SUMMARY-NOGAS]: <kevm>
            <k>
              ( #next [ SIGNEXTEND ] ~> .K => .K )
              ~> K_CELL:K
@@ -68,6 +68,6 @@ module SIGNEXTEND-SUMMARY
            ...
          </kevm>
       requires ( notBool USEGAS_CELL:Bool )
-      [priority(20), label(SIGNEXTEND-SUMMARY-1)]
+      [priority(20), label(SIGNEXTEND-SUMMARY-NOGAS)]
 
 endmodule

@@ -3,7 +3,7 @@ requires "../evm.md"
 module PUSH-SUMMARY
     imports public EVM
     
-    rule [PUSH-SUMMARY-0]: <kevm>
+    rule [PUSH-SUMMARY-USEGAS]: <kevm>
            <k>
              ( #next [ PUSH ( N:Int ) ] ~> .K => .K )
              ~> K_CELL:K
@@ -41,9 +41,9 @@ module PUSH-SUMMARY
        andBool ( #sizeWordStack ( WS:WordStack , 0 ) <=Int 1023
        andBool ( Gverylow < SCHEDULE_CELL:Schedule > <=Int GAS_CELL:Int
                )))
-      [priority(20), label(PUSH-SUMMARY-0)]
+      [priority(20), label(PUSH-SUMMARY-USEGAS)]
     
-    rule [PUSH-SUMMARY-1]: <kevm>
+    rule [PUSH-SUMMARY-NOGAS]: <kevm>
            <k>
              ( #next [ PUSH ( N:Int ) ] ~> .K => .K )
              ~> K_CELL:K
@@ -77,6 +77,6 @@ module PUSH-SUMMARY
       requires ( ( notBool USEGAS_CELL:Bool )
        andBool ( #sizeWordStack ( WS:WordStack , 0 ) <=Int 1023
                ))
-      [priority(20), label(PUSH-SUMMARY-1)]
+      [priority(20), label(PUSH-SUMMARY-NOGAS)]
 
 endmodule

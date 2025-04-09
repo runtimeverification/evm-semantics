@@ -3,7 +3,7 @@ requires "../evm.md"
 module CALLER-SUMMARY
     imports public EVM
     
-    rule [CALLER-SUMMARY-0]: <kevm>
+    rule [CALLER-SUMMARY-USEGAS]: <kevm>
            <k>
              ( #next [ CALLER ] ~> .K => .K )
              ~> K_CELL:K
@@ -41,9 +41,9 @@ module CALLER-SUMMARY
        andBool ( #sizeWordStack ( WS:WordStack , 0 ) <=Int 1023
        andBool ( Gbase < SCHEDULE_CELL:Schedule > <=Int GAS_CELL:Int
                )))
-      [priority(20), label(CALLER-SUMMARY-0)]
+      [priority(20), label(CALLER-SUMMARY-USEGAS)]
     
-    rule [CALLER-SUMMARY-1]: <kevm>
+    rule [CALLER-SUMMARY-NOGAS]: <kevm>
            <k>
              ( #next [ CALLER ] ~> .K => .K )
              ~> K_CELL:K
@@ -77,6 +77,6 @@ module CALLER-SUMMARY
       requires ( ( notBool USEGAS_CELL:Bool )
        andBool ( #sizeWordStack ( WS:WordStack , 0 ) <=Int 1023
                ))
-      [priority(20), label(CALLER-SUMMARY-1)]
+      [priority(20), label(CALLER-SUMMARY-NOGAS)]
 
 endmodule

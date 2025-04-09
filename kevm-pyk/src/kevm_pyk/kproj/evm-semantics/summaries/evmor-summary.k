@@ -3,7 +3,7 @@ requires "../evm.md"
 module EVMOR-SUMMARY
     imports public EVM
     
-    rule [EVMOR-SUMMARY-0]: <kevm>
+    rule [EVMOR-SUMMARY-USEGAS]: <kevm>
            <k>
              ( #next [ EVMOR ] ~> .K => .K )
              ~> K_CELL:K
@@ -37,9 +37,9 @@ module EVMOR-SUMMARY
       requires ( USEGAS_CELL:Bool
        andBool ( Gverylow < SCHEDULE_CELL:Schedule > <=Int GAS_CELL:Int
                ))
-      [priority(20), label(EVMOR-SUMMARY-0)]
+      [priority(20), label(EVMOR-SUMMARY-USEGAS)]
     
-    rule [EVMOR-SUMMARY-1]: <kevm>
+    rule [EVMOR-SUMMARY-NOGAS]: <kevm>
            <k>
              ( #next [ EVMOR ] ~> .K => .K )
              ~> K_CELL:K
@@ -68,6 +68,6 @@ module EVMOR-SUMMARY
            ...
          </kevm>
       requires ( notBool USEGAS_CELL:Bool )
-      [priority(20), label(EVMOR-SUMMARY-1)]
+      [priority(20), label(EVMOR-SUMMARY-NOGAS)]
 
 endmodule

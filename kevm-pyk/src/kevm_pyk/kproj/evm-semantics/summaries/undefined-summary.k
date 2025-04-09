@@ -3,7 +3,7 @@ requires "../evm.md"
 module UNDEFINED-SUMMARY
     imports public EVM
     
-    rule [UNDEFINED-SUMMARY-0]: <kevm>
+    rule [UNDEFINED-SUMMARY-USEGAS]: <kevm>
            <k>
              ( #next [ UNDEFINED ( W:Int ) ] => #halt )
              ~> K_CELL:K
@@ -25,6 +25,6 @@ module UNDEFINED-SUMMARY
            </ethereum>
            ...
          </kevm>
-      [priority(20), label(UNDEFINED-SUMMARY-0)]
+      [priority(20), label(UNDEFINED-SUMMARY-USEGAS)]
 
 endmodule

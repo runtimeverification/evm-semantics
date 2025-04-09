@@ -3,7 +3,7 @@ requires "../evm.md"
 module MSTORE-SUMMARY
     imports public EVM
     
-    rule [MSTORE-SUMMARY-0]: <kevm>
+    rule [MSTORE-SUMMARY-USEGAS]: <kevm>
            <k>
              ( #next [ MSTORE ] ~> .K => .K )
              ~> K_CELL:K
@@ -44,9 +44,9 @@ module MSTORE-SUMMARY
        andBool ( ( Cmem ( SCHEDULE_CELL:Schedule , #memoryUsageUpdate ( MEMORYUSED_CELL:Int , W0:Int , 32 ) ) -Int Cmem ( SCHEDULE_CELL:Schedule , MEMORYUSED_CELL:Int ) ) <=Int GAS_CELL:Int
        andBool ( Gverylow < SCHEDULE_CELL:Schedule > <=Int ( GAS_CELL:Int -Int ( Cmem ( SCHEDULE_CELL:Schedule , #memoryUsageUpdate ( MEMORYUSED_CELL:Int , W0:Int , 32 ) ) -Int Cmem ( SCHEDULE_CELL:Schedule , MEMORYUSED_CELL:Int ) ) )
                )))
-      [priority(20), label(MSTORE-SUMMARY-0)]
+      [priority(20), label(MSTORE-SUMMARY-USEGAS)]
     
-    rule [MSTORE-SUMMARY-1]: <kevm>
+    rule [MSTORE-SUMMARY-NOGAS]: <kevm>
            <k>
              ( #next [ MSTORE ] ~> .K => .K )
              ~> K_CELL:K
@@ -78,6 +78,6 @@ module MSTORE-SUMMARY
            ...
          </kevm>
       requires ( notBool USEGAS_CELL:Bool )
-      [priority(20), label(MSTORE-SUMMARY-1)]
+      [priority(20), label(MSTORE-SUMMARY-NOGAS)]
 
 endmodule

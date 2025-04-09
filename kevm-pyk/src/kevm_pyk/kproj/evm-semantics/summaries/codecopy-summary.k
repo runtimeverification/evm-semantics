@@ -3,7 +3,7 @@ requires "../evm.md"
 module CODECOPY-SUMMARY
     imports public EVM
     
-    rule [CODECOPY-SUMMARY-0]: <kevm>
+    rule [CODECOPY-SUMMARY-USEGAS]: <kevm>
            <k>
              ( #next [ CODECOPY ] ~> .K => .K )
              ~> K_CELL:K
@@ -47,9 +47,9 @@ module CODECOPY-SUMMARY
        andBool ( ( Cmem ( SCHEDULE_CELL:Schedule , #memoryUsageUpdate ( MEMORYUSED_CELL:Int , W0:Int , W2:Int ) ) -Int Cmem ( SCHEDULE_CELL:Schedule , MEMORYUSED_CELL:Int ) ) <=Int GAS_CELL:Int
        andBool ( ( Gverylow < SCHEDULE_CELL:Schedule > +Int ( Gcopy < SCHEDULE_CELL:Schedule > *Int ( W2:Int up/Int 32 ) ) ) <=Int ( GAS_CELL:Int -Int ( Cmem ( SCHEDULE_CELL:Schedule , #memoryUsageUpdate ( MEMORYUSED_CELL:Int , W0:Int , W2:Int ) ) -Int Cmem ( SCHEDULE_CELL:Schedule , MEMORYUSED_CELL:Int ) ) )
                )))
-      [priority(20), label(CODECOPY-SUMMARY-0)]
+      [priority(20), label(CODECOPY-SUMMARY-USEGAS)]
     
-    rule [CODECOPY-SUMMARY-1]: <kevm>
+    rule [CODECOPY-SUMMARY-NOGAS]: <kevm>
            <k>
              ( #next [ CODECOPY ] ~> .K => .K )
              ~> K_CELL:K
@@ -84,6 +84,6 @@ module CODECOPY-SUMMARY
            ...
          </kevm>
       requires ( notBool USEGAS_CELL:Bool )
-      [priority(20), label(CODECOPY-SUMMARY-1)]
+      [priority(20), label(CODECOPY-SUMMARY-NOGAS)]
 
 endmodule

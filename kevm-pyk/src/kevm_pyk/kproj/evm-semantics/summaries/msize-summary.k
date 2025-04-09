@@ -3,7 +3,7 @@ requires "../evm.md"
 module MSIZE-SUMMARY
     imports public EVM
     
-    rule [MSIZE-SUMMARY-0]: <kevm>
+    rule [MSIZE-SUMMARY-USEGAS]: <kevm>
            <k>
              ( #next [ MSIZE ] ~> .K => .K )
              ~> K_CELL:K
@@ -41,9 +41,9 @@ module MSIZE-SUMMARY
        andBool ( #sizeWordStack ( WS:WordStack , 0 ) <=Int 1023
        andBool ( Gbase < SCHEDULE_CELL:Schedule > <=Int GAS_CELL:Int
                )))
-      [priority(20), label(MSIZE-SUMMARY-0)]
+      [priority(20), label(MSIZE-SUMMARY-USEGAS)]
     
-    rule [MSIZE-SUMMARY-1]: <kevm>
+    rule [MSIZE-SUMMARY-NOGAS]: <kevm>
            <k>
              ( #next [ MSIZE ] ~> .K => .K )
              ~> K_CELL:K
@@ -77,6 +77,6 @@ module MSIZE-SUMMARY
       requires ( ( notBool USEGAS_CELL:Bool )
        andBool ( #sizeWordStack ( WS:WordStack , 0 ) <=Int 1023
                ))
-      [priority(20), label(MSIZE-SUMMARY-1)]
+      [priority(20), label(MSIZE-SUMMARY-NOGAS)]
 
 endmodule

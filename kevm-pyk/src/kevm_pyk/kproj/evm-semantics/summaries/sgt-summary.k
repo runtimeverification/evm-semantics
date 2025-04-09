@@ -3,7 +3,7 @@ requires "../evm.md"
 module SGT-SUMMARY
     imports public EVM
     
-    rule [SGT-SUMMARY-0]: <kevm>
+    rule [SGT-SUMMARY-USEGAS]: <kevm>
            <k>
              ( #next [ SGT ] ~> .K => .K )
              ~> K_CELL:K
@@ -37,9 +37,9 @@ module SGT-SUMMARY
       requires ( USEGAS_CELL:Bool
        andBool ( Gverylow < SCHEDULE_CELL:Schedule > <=Int GAS_CELL:Int
                ))
-      [priority(20), label(SGT-SUMMARY-0)]
+      [priority(20), label(SGT-SUMMARY-USEGAS)]
     
-    rule [SGT-SUMMARY-1]: <kevm>
+    rule [SGT-SUMMARY-NOGAS]: <kevm>
            <k>
              ( #next [ SGT ] ~> .K => .K )
              ~> K_CELL:K
@@ -68,6 +68,6 @@ module SGT-SUMMARY
            ...
          </kevm>
       requires ( notBool USEGAS_CELL:Bool )
-      [priority(20), label(SGT-SUMMARY-1)]
+      [priority(20), label(SGT-SUMMARY-NOGAS)]
 
 endmodule

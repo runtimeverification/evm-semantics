@@ -3,7 +3,7 @@ requires "../evm.md"
 module LT-SUMMARY
     imports public EVM
     
-    rule [LT-SUMMARY-0]: <kevm>
+    rule [LT-SUMMARY-USEGAS]: <kevm>
            <k>
              ( #next [ LT ] ~> .K => .K )
              ~> K_CELL:K
@@ -37,9 +37,9 @@ module LT-SUMMARY
       requires ( USEGAS_CELL:Bool
        andBool ( Gverylow < SCHEDULE_CELL:Schedule > <=Int GAS_CELL:Int
                ))
-      [priority(20), label(LT-SUMMARY-0)]
+      [priority(20), label(LT-SUMMARY-USEGAS)]
     
-    rule [LT-SUMMARY-1]: <kevm>
+    rule [LT-SUMMARY-NOGAS]: <kevm>
            <k>
              ( #next [ LT ] ~> .K => .K )
              ~> K_CELL:K
@@ -68,6 +68,6 @@ module LT-SUMMARY
            ...
          </kevm>
       requires ( notBool USEGAS_CELL:Bool )
-      [priority(20), label(LT-SUMMARY-1)]
+      [priority(20), label(LT-SUMMARY-NOGAS)]
 
 endmodule

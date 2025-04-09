@@ -3,7 +3,7 @@ requires "../evm.md"
 module SLOAD-SUMMARY
     imports public EVM
     
-    rule [SLOAD-SUMMARY-0]: <kevm>
+    rule [SLOAD-SUMMARY-NOGAS-BERLIN]: <kevm>
            <k>
              ( #next [ SLOAD ] ~> .K => .K )
              ~> K_CELL:K
@@ -49,9 +49,9 @@ module SLOAD-SUMMARY
            ...
          </kevm>
       requires ( notBool USEGAS_CELL:Bool )
-      [priority(20), label(SLOAD-SUMMARY-0)]
+      [priority(20), label(SLOAD-SUMMARY-NOGAS-BERLIN)]
     
-    rule [SLOAD-SUMMARY-1]: <kevm>
+    rule [SLOAD-SUMMARY-USEGAS-BERLIN]: <kevm>
            <k>
              ( #next [ SLOAD ] ~> .K => .K )
              ~> K_CELL:K
@@ -109,9 +109,9 @@ module SLOAD-SUMMARY
        andBool ( Ghasaccesslist << SCHEDULE_CELL:Schedule >>
        andBool ( #if #inStorage ( ACCESSEDSTORAGE_CELL:Map , ID_CELL:Int , W0:Int ) #then Gwarmstorageread < SCHEDULE_CELL:Schedule > #else Gcoldsload < SCHEDULE_CELL:Schedule > #fi <=Int GAS_CELL:Int
                )))
-      [priority(20), label(SLOAD-SUMMARY-1)]
+      [priority(20), label(SLOAD-SUMMARY-USEGAS-BERLIN)]
     
-    rule [SLOAD-SUMMARY-2]: <kevm>
+    rule [SLOAD-SUMMARY-USEGAS]: <kevm>
            <k>
              ( #next [ SLOAD ] ~> .K => .K )
              ~> K_CELL:K
@@ -163,6 +163,6 @@ module SLOAD-SUMMARY
        andBool ( ( notBool Ghasaccesslist << SCHEDULE_CELL:Schedule >> )
        andBool ( Gsload < SCHEDULE_CELL:Schedule > <=Int GAS_CELL:Int
                )))
-      [priority(20), label(SLOAD-SUMMARY-2)]
+      [priority(20), label(SLOAD-SUMMARY-USEGAS)]
 
 endmodule
