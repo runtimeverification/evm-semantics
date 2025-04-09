@@ -382,7 +382,7 @@ module EVM-OPTIMIZATIONS
               ( ListItem(W0) WS => WS )
             </wordStack>
             <pc>
-              ( PCOUNT => W0 )
+              ( _PCOUNT => W0 )
             </pc>
             <gas>
               ( GAVAIL => ( GAVAIL -Gas Gmid < SCHED > ) )
