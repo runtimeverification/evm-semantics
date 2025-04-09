@@ -3,7 +3,7 @@ requires "../evm.md"
 module DUP-SUMMARY
     imports public EVM
     
-    rule [DUP-SUMMARY-0]: <kevm>
+    rule [DUP-SUMMARY-USEGAS]: <kevm>
            <k>
              ( #next [ DUP ( N:Int ) ] ~> .K => .K )
              ~> K_CELL:K
@@ -39,9 +39,9 @@ module DUP-SUMMARY
        andBool ( #sizeWordStack ( WS:WordStack , 0 ) <=Int 1023
        andBool ( Gverylow < SCHEDULE_CELL:Schedule > <=Int GAS_CELL:Int
                ))))
-      [priority(20), label(DUP-SUMMARY-0)]
+      [priority(20), label(DUP-SUMMARY-USEGAS)]
     
-    rule [DUP-SUMMARY-1]: <kevm>
+    rule [DUP-SUMMARY-NOGAS]: <kevm>
            <k>
              ( #next [ DUP ( N:Int ) ] ~> .K => .K )
              ~> K_CELL:K
@@ -73,6 +73,6 @@ module DUP-SUMMARY
        andBool ( N:Int <=Int #sizeWordStack ( WS:WordStack , 0 )
        andBool ( #sizeWordStack ( WS:WordStack , 0 ) <=Int 1023
                )))
-      [priority(20), label(DUP-SUMMARY-1)]
+      [priority(20), label(DUP-SUMMARY-NOGAS)]
 
 endmodule

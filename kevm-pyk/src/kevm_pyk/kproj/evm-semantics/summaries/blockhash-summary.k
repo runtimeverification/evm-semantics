@@ -3,7 +3,7 @@ requires "../evm.md"
 module BLOCKHASH-SUMMARY
     imports public EVM
     
-    rule [BLOCKHASH-SUMMARY-0]: <kevm>
+    rule [BLOCKHASH-SUMMARY-USEGAS]: <kevm>
            <k>
              ( #next [ BLOCKHASH ] ~> .K => .K )
              ~> K_CELL:K
@@ -46,9 +46,9 @@ module BLOCKHASH-SUMMARY
       requires ( USEGAS_CELL:Bool
        andBool ( Gblockhash < SCHEDULE_CELL:Schedule > <=Int GAS_CELL:Int
                ))
-      [priority(20), label(BLOCKHASH-SUMMARY-0)]
+      [priority(20), label(BLOCKHASH-SUMMARY-USEGAS)]
     
-    rule [BLOCKHASH-SUMMARY-1]: <kevm>
+    rule [BLOCKHASH-SUMMARY-NOGAS]: <kevm>
            <k>
              ( #next [ BLOCKHASH ] ~> .K => .K )
              ~> K_CELL:K
@@ -86,6 +86,6 @@ module BLOCKHASH-SUMMARY
            ...
          </kevm>
       requires ( notBool USEGAS_CELL:Bool )
-      [priority(20), label(BLOCKHASH-SUMMARY-1)]
+      [priority(20), label(BLOCKHASH-SUMMARY-NOGAS)]
 
 endmodule

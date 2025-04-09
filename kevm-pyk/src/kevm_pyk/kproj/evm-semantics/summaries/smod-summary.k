@@ -3,7 +3,7 @@ requires "../evm.md"
 module SMOD-SUMMARY
     imports public EVM
     
-    rule [SMOD-SUMMARY-0]: <kevm>
+    rule [SMOD-SUMMARY-USEGAS]: <kevm>
            <k>
              ( #next [ SMOD ] ~> .K => .K )
              ~> K_CELL:K
@@ -37,9 +37,9 @@ module SMOD-SUMMARY
       requires ( USEGAS_CELL:Bool
        andBool ( Glow < SCHEDULE_CELL:Schedule > <=Int GAS_CELL:Int
                ))
-      [priority(20), label(SMOD-SUMMARY-0)]
+      [priority(20), label(SMOD-SUMMARY-USEGAS)]
     
-    rule [SMOD-SUMMARY-1]: <kevm>
+    rule [SMOD-SUMMARY-NOGAS]: <kevm>
            <k>
              ( #next [ SMOD ] ~> .K => .K )
              ~> K_CELL:K
@@ -68,6 +68,6 @@ module SMOD-SUMMARY
            ...
          </kevm>
       requires ( notBool USEGAS_CELL:Bool )
-      [priority(20), label(SMOD-SUMMARY-1)]
+      [priority(20), label(SMOD-SUMMARY-NOGAS)]
 
 endmodule

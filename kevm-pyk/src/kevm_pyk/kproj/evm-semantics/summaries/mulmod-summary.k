@@ -3,7 +3,7 @@ requires "../evm.md"
 module MULMOD-SUMMARY
     imports public EVM
     
-    rule [MULMOD-SUMMARY-0]: <kevm>
+    rule [MULMOD-SUMMARY-USEGAS]: <kevm>
            <k>
              ( #next [ MULMOD ] ~> .K => .K )
              ~> K_CELL:K
@@ -37,9 +37,9 @@ module MULMOD-SUMMARY
       requires ( USEGAS_CELL:Bool
        andBool ( Gmid < SCHEDULE_CELL:Schedule > <=Int GAS_CELL:Int
                ))
-      [priority(20), label(MULMOD-SUMMARY-0)]
+      [priority(20), label(MULMOD-SUMMARY-USEGAS)]
     
-    rule [MULMOD-SUMMARY-1]: <kevm>
+    rule [MULMOD-SUMMARY-NOGAS]: <kevm>
            <k>
              ( #next [ MULMOD ] ~> .K => .K )
              ~> K_CELL:K
@@ -68,6 +68,6 @@ module MULMOD-SUMMARY
            ...
          </kevm>
       requires ( notBool USEGAS_CELL:Bool )
-      [priority(20), label(MULMOD-SUMMARY-1)]
+      [priority(20), label(MULMOD-SUMMARY-NOGAS)]
 
 endmodule

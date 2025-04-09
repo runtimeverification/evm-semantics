@@ -3,7 +3,7 @@ requires "../evm.md"
 module STOP-SUMMARY
     imports public EVM
     
-    rule [STOP-SUMMARY-0]: <kevm>
+    rule [STOP-SUMMARY-USEGAS]: <kevm>
            <k>
              ( #next [ STOP ] => #halt )
              ~> K_CELL:K
@@ -37,9 +37,9 @@ module STOP-SUMMARY
       requires ( USEGAS_CELL:Bool
        andBool ( Gzero < SCHEDULE_CELL:Schedule > <=Int GAS_CELL:Int
                ))
-      [priority(20), label(STOP-SUMMARY-0)]
+      [priority(20), label(STOP-SUMMARY-USEGAS)]
     
-    rule [STOP-SUMMARY-1]: <kevm>
+    rule [STOP-SUMMARY-NOGAS]: <kevm>
            <k>
              ( #next [ STOP ] => #halt )
              ~> K_CELL:K
@@ -68,6 +68,6 @@ module STOP-SUMMARY
            ...
          </kevm>
       requires ( notBool USEGAS_CELL:Bool )
-      [priority(20), label(STOP-SUMMARY-1)]
+      [priority(20), label(STOP-SUMMARY-NOGAS)]
 
 endmodule

@@ -3,7 +3,7 @@ requires "../evm.md"
 module CALLDATACOPY-SUMMARY
     imports public EVM
     
-    rule [CALLDATACOPY-SUMMARY-0]: <kevm>
+    rule [CALLDATACOPY-SUMMARY-USEGAS]: <kevm>
            <k>
              ( #next [ CALLDATACOPY ] ~> .K => .K )
              ~> K_CELL:K
@@ -47,9 +47,9 @@ module CALLDATACOPY-SUMMARY
        andBool ( ( Cmem ( SCHEDULE_CELL:Schedule , #memoryUsageUpdate ( MEMORYUSED_CELL:Int , W0:Int , W2:Int ) ) -Int Cmem ( SCHEDULE_CELL:Schedule , MEMORYUSED_CELL:Int ) ) <=Int GAS_CELL:Int
        andBool ( ( Gverylow < SCHEDULE_CELL:Schedule > +Int ( Gcopy < SCHEDULE_CELL:Schedule > *Int ( W2:Int up/Int 32 ) ) ) <=Int ( GAS_CELL:Int -Int ( Cmem ( SCHEDULE_CELL:Schedule , #memoryUsageUpdate ( MEMORYUSED_CELL:Int , W0:Int , W2:Int ) ) -Int Cmem ( SCHEDULE_CELL:Schedule , MEMORYUSED_CELL:Int ) ) )
                )))
-      [priority(20), label(CALLDATACOPY-SUMMARY-0)]
+      [priority(20), label(CALLDATACOPY-SUMMARY-USEGAS)]
     
-    rule [CALLDATACOPY-SUMMARY-1]: <kevm>
+    rule [CALLDATACOPY-SUMMARY-NOGAS]: <kevm>
            <k>
              ( #next [ CALLDATACOPY ] ~> .K => .K )
              ~> K_CELL:K
@@ -84,6 +84,6 @@ module CALLDATACOPY-SUMMARY
            ...
          </kevm>
       requires ( notBool USEGAS_CELL:Bool )
-      [priority(20), label(CALLDATACOPY-SUMMARY-1)]
+      [priority(20), label(CALLDATACOPY-SUMMARY-NOGAS)]
 
 endmodule

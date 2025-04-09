@@ -3,7 +3,7 @@ requires "../evm.md"
 module LOG-SUMMARY
     imports public EVM
     
-    rule [LOG-SUMMARY-0]: <kevm>
+    rule [LOG-SUMMARY-USEGAS]: <kevm>
            <k>
              ( #next [ LOG ( N:Int ) ] ~> .K => .K )
              ~> K_CELL:K
@@ -60,9 +60,9 @@ module LOG-SUMMARY
        andBool ( ( ( Glog < SCHEDULE_CELL:Schedule > +Int ( Glogdata < SCHEDULE_CELL:Schedule > *Int W1:Int ) ) +Int ( N:Int *Int Glogtopic < SCHEDULE_CELL:Schedule > ) ) <=Int ( GAS_CELL:Int -Int ( Cmem ( SCHEDULE_CELL:Schedule , #memoryUsageUpdate ( MEMORYUSED_CELL:Int , W0:Int , W1:Int ) ) -Int Cmem ( SCHEDULE_CELL:Schedule , MEMORYUSED_CELL:Int ) ) )
                ))))))
        ensures ( notBool ( N:Int <Int -2 andBool 1026 <Int ( #sizeWordStack ( WS:WordStack , 2 ) -Int N:Int ) ) )
-      [priority(20), label(LOG-SUMMARY-0)]
+      [priority(20), label(LOG-SUMMARY-USEGAS)]
     
-    rule [LOG-SUMMARY-1]: <kevm>
+    rule [LOG-SUMMARY-NOGAS]: <kevm>
            <k>
              ( #next [ LOG ( N:Int ) ] ~> .K => .K )
              ~> K_CELL:K
@@ -111,6 +111,6 @@ module LOG-SUMMARY
        andBool ( ( N:Int +Int 2 ) <=Int #sizeWordStack ( WS:WordStack , 2 )
                ))))
        ensures ( notBool ( N:Int <Int -2 andBool 1026 <Int ( #sizeWordStack ( WS:WordStack , 2 ) -Int N:Int ) ) )
-      [priority(20), label(LOG-SUMMARY-1)]
+      [priority(20), label(LOG-SUMMARY-NOGAS)]
 
 endmodule

@@ -3,7 +3,7 @@ requires "../evm.md"
 module COINBASE-SUMMARY
     imports public EVM
     
-    rule [COINBASE-SUMMARY-0]: <kevm>
+    rule [COINBASE-SUMMARY-USEGAS]: <kevm>
            <k>
              ( #next [ COINBASE ] ~> .K => .K )
              ~> K_CELL:K
@@ -44,9 +44,9 @@ module COINBASE-SUMMARY
        andBool ( #sizeWordStack ( WS:WordStack , 0 ) <=Int 1023
        andBool ( Gbase < SCHEDULE_CELL:Schedule > <=Int GAS_CELL:Int
                )))
-      [priority(20), label(COINBASE-SUMMARY-0)]
+      [priority(20), label(COINBASE-SUMMARY-USEGAS)]
     
-    rule [COINBASE-SUMMARY-1]: <kevm>
+    rule [COINBASE-SUMMARY-NOGAS]: <kevm>
            <k>
              ( #next [ COINBASE ] ~> .K => .K )
              ~> K_CELL:K
@@ -83,6 +83,6 @@ module COINBASE-SUMMARY
       requires ( ( notBool USEGAS_CELL:Bool )
        andBool ( #sizeWordStack ( WS:WordStack , 0 ) <=Int 1023
                ))
-      [priority(20), label(COINBASE-SUMMARY-1)]
+      [priority(20), label(COINBASE-SUMMARY-NOGAS)]
 
 endmodule

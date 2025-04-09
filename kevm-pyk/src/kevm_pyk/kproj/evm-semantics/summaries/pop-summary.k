@@ -3,7 +3,7 @@ requires "../evm.md"
 module POP-SUMMARY
     imports public EVM
     
-    rule [POP-SUMMARY-0]: <kevm>
+    rule [POP-SUMMARY-USEGAS]: <kevm>
            <k>
              ( #next [ POP ] ~> .K => .K )
              ~> K_CELL:K
@@ -37,9 +37,9 @@ module POP-SUMMARY
       requires ( USEGAS_CELL:Bool
        andBool ( Gbase < SCHEDULE_CELL:Schedule > <=Int GAS_CELL:Int
                ))
-      [priority(20), label(POP-SUMMARY-0)]
+      [priority(20), label(POP-SUMMARY-USEGAS)]
     
-    rule [POP-SUMMARY-1]: <kevm>
+    rule [POP-SUMMARY-NOGAS]: <kevm>
            <k>
              ( #next [ POP ] ~> .K => .K )
              ~> K_CELL:K
@@ -68,6 +68,6 @@ module POP-SUMMARY
            ...
          </kevm>
       requires ( notBool USEGAS_CELL:Bool )
-      [priority(20), label(POP-SUMMARY-1)]
+      [priority(20), label(POP-SUMMARY-NOGAS)]
 
 endmodule

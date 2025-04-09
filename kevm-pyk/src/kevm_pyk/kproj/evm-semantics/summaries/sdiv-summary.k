@@ -3,7 +3,7 @@ requires "../evm.md"
 module SDIV-SUMMARY
     imports public EVM
     
-    rule [SDIV-SUMMARY-0]: <kevm>
+    rule [SDIV-SUMMARY-USEGAS]: <kevm>
            <k>
              ( #next [ SDIV ] ~> .K => .K )
              ~> K_CELL:K
@@ -37,9 +37,9 @@ module SDIV-SUMMARY
       requires ( USEGAS_CELL:Bool
        andBool ( Glow < SCHEDULE_CELL:Schedule > <=Int GAS_CELL:Int
                ))
-      [priority(20), label(SDIV-SUMMARY-0)]
+      [priority(20), label(SDIV-SUMMARY-USEGAS)]
     
-    rule [SDIV-SUMMARY-1]: <kevm>
+    rule [SDIV-SUMMARY-NOGAS]: <kevm>
            <k>
              ( #next [ SDIV ] ~> .K => .K )
              ~> K_CELL:K
@@ -68,6 +68,6 @@ module SDIV-SUMMARY
            ...
          </kevm>
       requires ( notBool USEGAS_CELL:Bool )
-      [priority(20), label(SDIV-SUMMARY-1)]
+      [priority(20), label(SDIV-SUMMARY-NOGAS)]
 
 endmodule

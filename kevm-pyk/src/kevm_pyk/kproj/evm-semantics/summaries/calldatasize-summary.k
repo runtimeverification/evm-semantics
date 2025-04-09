@@ -3,7 +3,7 @@ requires "../evm.md"
 module CALLDATASIZE-SUMMARY
     imports public EVM
     
-    rule [CALLDATASIZE-SUMMARY-0]: <kevm>
+    rule [CALLDATASIZE-SUMMARY-USEGAS]: <kevm>
            <k>
              ( #next [ CALLDATASIZE ] ~> .K => .K )
              ~> K_CELL:K
@@ -41,9 +41,9 @@ module CALLDATASIZE-SUMMARY
        andBool ( #sizeWordStack ( WS:WordStack , 0 ) <=Int 1023
        andBool ( Gbase < SCHEDULE_CELL:Schedule > <=Int GAS_CELL:Int
                )))
-      [priority(20), label(CALLDATASIZE-SUMMARY-0)]
+      [priority(20), label(CALLDATASIZE-SUMMARY-USEGAS)]
     
-    rule [CALLDATASIZE-SUMMARY-1]: <kevm>
+    rule [CALLDATASIZE-SUMMARY-NOGAS]: <kevm>
            <k>
              ( #next [ CALLDATASIZE ] ~> .K => .K )
              ~> K_CELL:K
@@ -77,6 +77,6 @@ module CALLDATASIZE-SUMMARY
       requires ( ( notBool USEGAS_CELL:Bool )
        andBool ( #sizeWordStack ( WS:WordStack , 0 ) <=Int 1023
                ))
-      [priority(20), label(CALLDATASIZE-SUMMARY-1)]
+      [priority(20), label(CALLDATASIZE-SUMMARY-NOGAS)]
 
 endmodule

@@ -5,7 +5,7 @@ module MSTORE8-SUMMARY
     imports public EVM
     imports public BUF
     
-    rule [MSTORE8-SUMMARY-0]: <kevm>
+    rule [MSTORE8-SUMMARY-USEGAS]: <kevm>
            <k>
              ( #next [ MSTORE8 ] ~> .K => .K )
              ~> K_CELL:K
@@ -46,9 +46,9 @@ module MSTORE8-SUMMARY
        andBool ( ( Cmem ( SCHEDULE_CELL:Schedule , #memoryUsageUpdate ( MEMORYUSED_CELL:Int , W0:Int , 1 ) ) -Int Cmem ( SCHEDULE_CELL:Schedule , MEMORYUSED_CELL:Int ) ) <=Int GAS_CELL:Int
        andBool ( Gverylow < SCHEDULE_CELL:Schedule > <=Int ( GAS_CELL:Int -Int ( Cmem ( SCHEDULE_CELL:Schedule , #memoryUsageUpdate ( MEMORYUSED_CELL:Int , W0:Int , 1 ) ) -Int Cmem ( SCHEDULE_CELL:Schedule , MEMORYUSED_CELL:Int ) ) )
                )))
-      [priority(20), label(MSTORE8-SUMMARY-0)]
+      [priority(20), label(MSTORE8-SUMMARY-USEGAS)]
     
-    rule [MSTORE8-SUMMARY-1]: <kevm>
+    rule [MSTORE8-SUMMARY-NOGAS]: <kevm>
            <k>
              ( #next [ MSTORE8 ] ~> .K => .K )
              ~> K_CELL:K
@@ -80,6 +80,6 @@ module MSTORE8-SUMMARY
            ...
          </kevm>
       requires ( notBool USEGAS_CELL:Bool )
-      [priority(20), label(MSTORE8-SUMMARY-1)]
+      [priority(20), label(MSTORE8-SUMMARY-NOGAS)]
 
 endmodule

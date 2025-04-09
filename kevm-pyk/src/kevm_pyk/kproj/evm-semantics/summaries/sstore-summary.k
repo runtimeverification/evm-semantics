@@ -3,7 +3,7 @@ requires "../evm.md"
 module SSTORE-SUMMARY
     imports public EVM
     
-    rule [SSTORE-SUMMARY-0]: <kevm>
+    rule [SSTORE-SUMMARY-NOGAS-BERLIN]: <kevm>
            <k>
              ( #next [ SSTORE ] ~> .K => .K )
              ~> K_CELL:K
@@ -52,9 +52,9 @@ module SSTORE-SUMMARY
            ...
          </kevm>
       requires ( notBool USEGAS_CELL:Bool )
-      [priority(20), label(SSTORE-SUMMARY-0)]
+      [priority(20), label(SSTORE-SUMMARY-NOGAS-BERLIN)]
     
-    rule [SSTORE-SUMMARY-1]: <kevm>
+    rule [SSTORE-SUMMARY-USEGAS-BERLIN]: <kevm>
            <k>
              ( #next [ SSTORE ] ~> .K => .K )
              ~> K_CELL:K
@@ -123,9 +123,9 @@ module SSTORE-SUMMARY
        andBool ( #if #inStorage ( ACCESSEDSTORAGE_CELL:Map , ID_CELL:Int , W0:Int ) #then 0 #else Gcoldsload < SCHEDULE_CELL:Schedule > #fi <=Int ( GAS_CELL:Int -Int Csstore ( SCHEDULE_CELL:Schedule , W1:Int , #lookup ( STORAGE_CELL:Map , W0:Int ) , #lookup ( ORIG_STORAGE_CELL:Map , W0:Int ) ) )
        andBool ( Gcallstipend < SCHEDULE_CELL:Schedule > <Int GAS_CELL:Int
                )))))
-      [priority(20), label(SSTORE-SUMMARY-1)]
+      [priority(20), label(SSTORE-SUMMARY-USEGAS-BERLIN)]
     
-    rule [SSTORE-SUMMARY-2]: <kevm>
+    rule [SSTORE-SUMMARY-USEGAS]: <kevm>
            <k>
              ( #next [ SSTORE ] ~> .K => .K )
              ~> K_CELL:K
@@ -190,6 +190,6 @@ module SSTORE-SUMMARY
        andBool ( Csstore ( SCHEDULE_CELL:Schedule , W1:Int , #lookup ( STORAGE_CELL:Map , W0:Int ) , #lookup ( ORIG_STORAGE_CELL:Map , W0:Int ) ) <=Int GAS_CELL:Int
        andBool ( Gcallstipend < SCHEDULE_CELL:Schedule > <Int GAS_CELL:Int
                ))))
-      [priority(20), label(SSTORE-SUMMARY-2)]
+      [priority(20), label(SSTORE-SUMMARY-USEGAS)]
 
 endmodule
