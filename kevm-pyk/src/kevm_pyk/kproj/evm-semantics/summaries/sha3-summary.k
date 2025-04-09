@@ -3,7 +3,7 @@ requires "../evm.md"
 module SHA3-SUMMARY
     imports public EVM
     
-    rule [SHA3-SUMMARY-0]: <kevm>
+    rule [SHA3-SUMMARY-USEGAS]: <kevm>
            <k>
              ( #next [ SHA3 ] ~> .K => .K )
              ~> K_CELL:K
@@ -44,9 +44,9 @@ module SHA3-SUMMARY
        andBool ( ( Cmem ( SCHEDULE_CELL:Schedule , #memoryUsageUpdate ( MEMORYUSED_CELL:Int , W0:Int , W1:Int ) ) -Int Cmem ( SCHEDULE_CELL:Schedule , MEMORYUSED_CELL:Int ) ) <=Int GAS_CELL:Int
        andBool ( ( Gsha3 < SCHEDULE_CELL:Schedule > +Int ( Gsha3word < SCHEDULE_CELL:Schedule > *Int ( W1:Int up/Int 32 ) ) ) <=Int ( GAS_CELL:Int -Int ( Cmem ( SCHEDULE_CELL:Schedule , #memoryUsageUpdate ( MEMORYUSED_CELL:Int , W0:Int , W1:Int ) ) -Int Cmem ( SCHEDULE_CELL:Schedule , MEMORYUSED_CELL:Int ) ) )
                )))
-      [priority(20), label(SHA3-SUMMARY-0)]
+      [priority(20), label(SHA3-SUMMARY-USEGAS)]
     
-    rule [SHA3-SUMMARY-1]: <kevm>
+    rule [SHA3-SUMMARY-NOGAS]: <kevm>
            <k>
              ( #next [ SHA3 ] ~> .K => .K )
              ~> K_CELL:K
@@ -78,6 +78,6 @@ module SHA3-SUMMARY
            ...
          </kevm>
       requires ( notBool USEGAS_CELL:Bool )
-      [priority(20), label(SHA3-SUMMARY-1)]
+      [priority(20), label(SHA3-SUMMARY-NOGAS)]
 
 endmodule

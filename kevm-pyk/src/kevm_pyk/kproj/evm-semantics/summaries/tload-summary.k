@@ -3,7 +3,7 @@ requires "../evm.md"
 module TLOAD-SUMMARY
     imports public EVM
     
-    rule [TLOAD-SUMMARY-0]: <kevm>
+    rule [TLOAD-SUMMARY-USEGAS]: <kevm>
            <k>
              ( #next [ TLOAD ] ~> .K => .K )
              ~> K_CELL:K
@@ -54,9 +54,9 @@ module TLOAD-SUMMARY
       requires ( USEGAS_CELL:Bool
        andBool ( Gwarmstorageread < SCHEDULE_CELL:Schedule > <=Int GAS_CELL:Int
                ))
-      [priority(20), label(TLOAD-SUMMARY-0)]
+      [priority(20), label(TLOAD-SUMMARY-USEGAS)]
     
-    rule [TLOAD-SUMMARY-1]: <kevm>
+    rule [TLOAD-SUMMARY-NOGAS]: <kevm>
            <k>
              ( #next [ TLOAD ] ~> .K => .K )
              ~> K_CELL:K
@@ -102,6 +102,6 @@ module TLOAD-SUMMARY
            ...
          </kevm>
       requires ( notBool USEGAS_CELL:Bool )
-      [priority(20), label(TLOAD-SUMMARY-1)]
+      [priority(20), label(TLOAD-SUMMARY-NOGAS)]
 
 endmodule

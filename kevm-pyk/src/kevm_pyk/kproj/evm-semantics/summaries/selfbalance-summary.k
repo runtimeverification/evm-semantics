@@ -3,7 +3,7 @@ requires "../evm.md"
 module SELFBALANCE-SUMMARY
     imports public EVM
     
-    rule [SELFBALANCE-SUMMARY-0]: <kevm>
+    rule [SELFBALANCE-SUMMARY-USEGAS]: <kevm>
            <k>
              ( #next [ SELFBALANCE ] ~> .K => .K )
              ~> K_CELL:K
@@ -55,9 +55,9 @@ module SELFBALANCE-SUMMARY
        andBool ( #sizeWordStack ( WS:WordStack , 0 ) <=Int 1023
        andBool ( Glow < SCHEDULE_CELL:Schedule > <=Int GAS_CELL:Int
                )))
-      [priority(20), label(SELFBALANCE-SUMMARY-0)]
+      [priority(20), label(SELFBALANCE-SUMMARY-USEGAS)]
     
-    rule [SELFBALANCE-SUMMARY-1]: <kevm>
+    rule [SELFBALANCE-SUMMARY-NOGAS]: <kevm>
            <k>
              ( #next [ SELFBALANCE ] ~> .K => .K )
              ~> K_CELL:K
@@ -105,6 +105,6 @@ module SELFBALANCE-SUMMARY
       requires ( ( notBool USEGAS_CELL:Bool )
        andBool ( #sizeWordStack ( WS:WordStack , 0 ) <=Int 1023
                ))
-      [priority(20), label(SELFBALANCE-SUMMARY-1)]
+      [priority(20), label(SELFBALANCE-SUMMARY-NOGAS)]
 
 endmodule

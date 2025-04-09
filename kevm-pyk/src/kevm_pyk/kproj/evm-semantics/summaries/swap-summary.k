@@ -3,7 +3,7 @@ requires "../evm.md"
 module SWAP-SUMMARY
     imports public EVM
     
-    rule [SWAP-SUMMARY-0]: <kevm>
+    rule [SWAP-SUMMARY-USEGAS]: <kevm>
            <k>
              ( #next [ SWAP ( N:Int ) ] ~> .K => .K )
              ~> K_CELL:K
@@ -38,9 +38,9 @@ module SWAP-SUMMARY
        andBool ( ( N:Int +Int 1 ) <=Int #sizeWordStack ( WS:WordStack , 1 )
        andBool ( Gverylow < SCHEDULE_CELL:Schedule > <=Int GAS_CELL:Int
                )))
-      [priority(20), label(SWAP-SUMMARY-0)]
+      [priority(20), label(SWAP-SUMMARY-USEGAS)]
     
-    rule [SWAP-SUMMARY-1]: <kevm>
+    rule [SWAP-SUMMARY-NOGAS]: <kevm>
            <k>
              ( #next [ SWAP ( N:Int ) ] ~> .K => .K )
              ~> K_CELL:K
@@ -71,6 +71,6 @@ module SWAP-SUMMARY
       requires ( ( notBool USEGAS_CELL:Bool )
        andBool ( ( N:Int +Int 1 ) <=Int #sizeWordStack ( WS:WordStack , 1 )
                ))
-      [priority(20), label(SWAP-SUMMARY-1)]
+      [priority(20), label(SWAP-SUMMARY-NOGAS)]
 
 endmodule

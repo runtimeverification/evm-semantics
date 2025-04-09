@@ -3,7 +3,7 @@ requires "../evm.md"
 module MLOAD-SUMMARY
     imports public EVM
     
-    rule [MLOAD-SUMMARY-0]: <kevm>
+    rule [MLOAD-SUMMARY-USEGAS]: <kevm>
            <k>
              ( #next [ MLOAD ] ~> .K => .K )
              ~> K_CELL:K
@@ -44,9 +44,9 @@ module MLOAD-SUMMARY
        andBool ( ( Cmem ( SCHEDULE_CELL:Schedule , #memoryUsageUpdate ( MEMORYUSED_CELL:Int , W0:Int , 32 ) ) -Int Cmem ( SCHEDULE_CELL:Schedule , MEMORYUSED_CELL:Int ) ) <=Int GAS_CELL:Int
        andBool ( Gverylow < SCHEDULE_CELL:Schedule > <=Int ( GAS_CELL:Int -Int ( Cmem ( SCHEDULE_CELL:Schedule , #memoryUsageUpdate ( MEMORYUSED_CELL:Int , W0:Int , 32 ) ) -Int Cmem ( SCHEDULE_CELL:Schedule , MEMORYUSED_CELL:Int ) ) )
                )))
-      [priority(20), label(MLOAD-SUMMARY-0)]
+      [priority(20), label(MLOAD-SUMMARY-USEGAS)]
     
-    rule [MLOAD-SUMMARY-1]: <kevm>
+    rule [MLOAD-SUMMARY-NOGAS]: <kevm>
            <k>
              ( #next [ MLOAD ] ~> .K => .K )
              ~> K_CELL:K
@@ -78,6 +78,6 @@ module MLOAD-SUMMARY
            ...
          </kevm>
       requires ( notBool USEGAS_CELL:Bool )
-      [priority(20), label(MLOAD-SUMMARY-1)]
+      [priority(20), label(MLOAD-SUMMARY-NOGAS)]
 
 endmodule

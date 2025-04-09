@@ -3,7 +3,7 @@ requires "../evm.md"
 module SAR-SUMMARY
     imports public EVM
     
-    rule [SAR-SUMMARY-0]: <kevm>
+    rule [SAR-SUMMARY-USEGAS]: <kevm>
            <k>
              ( #next [ SAR ] ~> .K => .K )
              ~> K_CELL:K
@@ -37,9 +37,9 @@ module SAR-SUMMARY
       requires ( USEGAS_CELL:Bool
        andBool ( Gverylow < SCHEDULE_CELL:Schedule > <=Int GAS_CELL:Int
                ))
-      [priority(20), label(SAR-SUMMARY-0)]
+      [priority(20), label(SAR-SUMMARY-USEGAS)]
     
-    rule [SAR-SUMMARY-1]: <kevm>
+    rule [SAR-SUMMARY-NOGAS]: <kevm>
            <k>
              ( #next [ SAR ] ~> .K => .K )
              ~> K_CELL:K
@@ -68,6 +68,6 @@ module SAR-SUMMARY
            ...
          </kevm>
       requires ( notBool USEGAS_CELL:Bool )
-      [priority(20), label(SAR-SUMMARY-1)]
+      [priority(20), label(SAR-SUMMARY-NOGAS)]
 
 endmodule

@@ -3,7 +3,7 @@ requires "../evm.md"
 module TIMESTAMP-SUMMARY
     imports public EVM
     
-    rule [TIMESTAMP-SUMMARY-0]: <kevm>
+    rule [TIMESTAMP-SUMMARY-USEGAS]: <kevm>
            <k>
              ( #next [ TIMESTAMP ] ~> .K => .K )
              ~> K_CELL:K
@@ -44,9 +44,9 @@ module TIMESTAMP-SUMMARY
        andBool ( #sizeWordStack ( WS:WordStack , 0 ) <=Int 1023
        andBool ( Gbase < SCHEDULE_CELL:Schedule > <=Int GAS_CELL:Int
                )))
-      [priority(20), label(TIMESTAMP-SUMMARY-0)]
+      [priority(20), label(TIMESTAMP-SUMMARY-USEGAS)]
     
-    rule [TIMESTAMP-SUMMARY-1]: <kevm>
+    rule [TIMESTAMP-SUMMARY-NOGAS]: <kevm>
            <k>
              ( #next [ TIMESTAMP ] ~> .K => .K )
              ~> K_CELL:K
@@ -83,6 +83,6 @@ module TIMESTAMP-SUMMARY
       requires ( ( notBool USEGAS_CELL:Bool )
        andBool ( #sizeWordStack ( WS:WordStack , 0 ) <=Int 1023
                ))
-      [priority(20), label(TIMESTAMP-SUMMARY-1)]
+      [priority(20), label(TIMESTAMP-SUMMARY-NOGAS)]
 
 endmodule

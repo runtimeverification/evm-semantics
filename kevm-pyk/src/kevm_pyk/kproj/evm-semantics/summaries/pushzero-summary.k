@@ -3,7 +3,7 @@ requires "../evm.md"
 module PUSHZERO-SUMMARY
     imports public EVM
     
-    rule [PUSHZERO-SUMMARY-0]: <kevm>
+    rule [PUSHZERO-SUMMARY-USEGAS]: <kevm>
            <k>
              ( #next [ PUSHZERO ] ~> .K => .K )
              ~> K_CELL:K
@@ -38,9 +38,9 @@ module PUSHZERO-SUMMARY
        andBool ( #sizeWordStack ( WS:WordStack , 0 ) <=Int 1023
        andBool ( Gbase < SCHEDULE_CELL:Schedule > <=Int GAS_CELL:Int
                )))
-      [priority(20), label(PUSHZERO-SUMMARY-0)]
+      [priority(20), label(PUSHZERO-SUMMARY-USEGAS)]
     
-    rule [PUSHZERO-SUMMARY-1]: <kevm>
+    rule [PUSHZERO-SUMMARY-NOGAS]: <kevm>
            <k>
              ( #next [ PUSHZERO ] ~> .K => .K )
              ~> K_CELL:K
@@ -71,6 +71,6 @@ module PUSHZERO-SUMMARY
       requires ( ( notBool USEGAS_CELL:Bool )
        andBool ( #sizeWordStack ( WS:WordStack , 0 ) <=Int 1023
                ))
-      [priority(20), label(PUSHZERO-SUMMARY-1)]
+      [priority(20), label(PUSHZERO-SUMMARY-NOGAS)]
 
 endmodule

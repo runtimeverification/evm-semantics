@@ -3,7 +3,7 @@ requires "../evm.md"
 module SHL-SUMMARY
     imports public EVM
     
-    rule [SHL-SUMMARY-0]: <kevm>
+    rule [SHL-SUMMARY-USEGAS]: <kevm>
            <k>
              ( #next [ SHL ] ~> .K => .K )
              ~> K_CELL:K
@@ -37,9 +37,9 @@ module SHL-SUMMARY
       requires ( USEGAS_CELL:Bool
        andBool ( Gverylow < SCHEDULE_CELL:Schedule > <=Int GAS_CELL:Int
                ))
-      [priority(20), label(SHL-SUMMARY-0)]
+      [priority(20), label(SHL-SUMMARY-USEGAS)]
     
-    rule [SHL-SUMMARY-1]: <kevm>
+    rule [SHL-SUMMARY-NOGAS]: <kevm>
            <k>
              ( #next [ SHL ] ~> .K => .K )
              ~> K_CELL:K
@@ -68,6 +68,6 @@ module SHL-SUMMARY
            ...
          </kevm>
       requires ( notBool USEGAS_CELL:Bool )
-      [priority(20), label(SHL-SUMMARY-1)]
+      [priority(20), label(SHL-SUMMARY-NOGAS)]
 
 endmodule

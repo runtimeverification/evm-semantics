@@ -3,7 +3,7 @@ requires "../evm.md"
 module INVALID-SUMMARY
     imports public EVM
     
-    rule [INVALID-SUMMARY-0]: <kevm>
+    rule [INVALID-SUMMARY-USEGAS]: <kevm>
            <k>
              ( #next [ INVALID ] => #halt )
              ~> K_CELL:K
@@ -25,6 +25,6 @@ module INVALID-SUMMARY
            </ethereum>
            ...
          </kevm>
-      [priority(20), label(INVALID-SUMMARY-0)]
+      [priority(20), label(INVALID-SUMMARY-USEGAS)]
 
 endmodule

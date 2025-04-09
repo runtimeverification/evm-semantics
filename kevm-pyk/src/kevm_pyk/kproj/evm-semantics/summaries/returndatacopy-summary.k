@@ -3,7 +3,7 @@ requires "../evm.md"
 module RETURNDATACOPY-SUMMARY
     imports public EVM
     
-    rule [RETURNDATACOPY-SUMMARY-0]: <kevm>
+    rule [RETURNDATACOPY-SUMMARY-NOGAS]: <kevm>
            <k>
              ( #next [ RETURNDATACOPY ] ~> .K => .K )
              ~> K_CELL:K
@@ -40,9 +40,9 @@ module RETURNDATACOPY-SUMMARY
       requires ( ( notBool USEGAS_CELL:Bool )
        andBool ( ( W1:Int +Int W2:Int ) <=Int lengthBytes ( OUTPUT_CELL:Bytes )
                ))
-      [priority(20), label(RETURNDATACOPY-SUMMARY-0)]
+      [priority(20), label(RETURNDATACOPY-SUMMARY-NOGAS)]
     
-    rule [RETURNDATACOPY-SUMMARY-1]: <kevm>
+    rule [RETURNDATACOPY-SUMMARY-NOGAS-INVALID]: <kevm>
            <k>
              ( #next [ RETURNDATACOPY ] => #halt )
              ~> K_CELL:K
@@ -76,9 +76,9 @@ module RETURNDATACOPY-SUMMARY
       requires ( ( notBool USEGAS_CELL:Bool )
        andBool ( lengthBytes ( OUTPUT_CELL:Bytes ) <Int ( W1:Int +Int W2:Int )
                ))
-      [priority(20), label(RETURNDATACOPY-SUMMARY-1)]
+      [priority(20), label(RETURNDATACOPY-SUMMARY-NOGAS-INVALID)]
     
-    rule [RETURNDATACOPY-SUMMARY-2]: <kevm>
+    rule [RETURNDATACOPY-SUMMARY-USEGAS]: <kevm>
            <k>
              ( #next [ RETURNDATACOPY ] ~> .K => .K )
              ~> K_CELL:K
@@ -123,9 +123,9 @@ module RETURNDATACOPY-SUMMARY
        andBool ( ( Cmem ( SCHEDULE_CELL:Schedule , #memoryUsageUpdate ( MEMORYUSED_CELL:Int , W0:Int , W2:Int ) ) -Int Cmem ( SCHEDULE_CELL:Schedule , MEMORYUSED_CELL:Int ) ) <=Int GAS_CELL:Int
        andBool ( ( Gverylow < SCHEDULE_CELL:Schedule > +Int ( Gcopy < SCHEDULE_CELL:Schedule > *Int ( W2:Int up/Int 32 ) ) ) <=Int ( GAS_CELL:Int -Int ( Cmem ( SCHEDULE_CELL:Schedule , #memoryUsageUpdate ( MEMORYUSED_CELL:Int , W0:Int , W2:Int ) ) -Int Cmem ( SCHEDULE_CELL:Schedule , MEMORYUSED_CELL:Int ) ) )
                ))))
-      [priority(20), label(RETURNDATACOPY-SUMMARY-2)]
+      [priority(20), label(RETURNDATACOPY-SUMMARY-USEGAS)]
     
-    rule [RETURNDATACOPY-SUMMARY-3]: <kevm>
+    rule [RETURNDATACOPY-SUMMARY-USEGAS-INVALID]: <kevm>
            <k>
              ( #next [ RETURNDATACOPY ] => #halt )
              ~> K_CELL:K
@@ -167,6 +167,6 @@ module RETURNDATACOPY-SUMMARY
        andBool ( ( Cmem ( SCHEDULE_CELL:Schedule , #memoryUsageUpdate ( MEMORYUSED_CELL:Int , W0:Int , W2:Int ) ) -Int Cmem ( SCHEDULE_CELL:Schedule , MEMORYUSED_CELL:Int ) ) <=Int GAS_CELL:Int
        andBool ( ( Gverylow < SCHEDULE_CELL:Schedule > +Int ( Gcopy < SCHEDULE_CELL:Schedule > *Int ( W2:Int up/Int 32 ) ) ) <=Int ( GAS_CELL:Int -Int ( Cmem ( SCHEDULE_CELL:Schedule , #memoryUsageUpdate ( MEMORYUSED_CELL:Int , W0:Int , W2:Int ) ) -Int Cmem ( SCHEDULE_CELL:Schedule , MEMORYUSED_CELL:Int ) ) )
                ))))
-      [priority(20), label(RETURNDATACOPY-SUMMARY-3)]
+      [priority(20), label(RETURNDATACOPY-SUMMARY-USEGAS-INVALID)]
 
 endmodule

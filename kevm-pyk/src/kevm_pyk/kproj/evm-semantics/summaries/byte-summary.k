@@ -3,7 +3,7 @@ requires "../evm.md"
 module BYTE-SUMMARY
     imports public EVM
     
-    rule [BYTE-SUMMARY-0]: <kevm>
+    rule [BYTE-SUMMARY-USEGAS]: <kevm>
            <k>
              ( #next [ BYTE ] ~> .K => .K )
              ~> K_CELL:K
@@ -37,9 +37,9 @@ module BYTE-SUMMARY
       requires ( USEGAS_CELL:Bool
        andBool ( Gverylow < SCHEDULE_CELL:Schedule > <=Int GAS_CELL:Int
                ))
-      [priority(20), label(BYTE-SUMMARY-0)]
+      [priority(20), label(BYTE-SUMMARY-USEGAS)]
     
-    rule [BYTE-SUMMARY-1]: <kevm>
+    rule [BYTE-SUMMARY-NOGAS]: <kevm>
            <k>
              ( #next [ BYTE ] ~> .K => .K )
              ~> K_CELL:K
@@ -68,6 +68,6 @@ module BYTE-SUMMARY
            ...
          </kevm>
       requires ( notBool USEGAS_CELL:Bool )
-      [priority(20), label(BYTE-SUMMARY-1)]
+      [priority(20), label(BYTE-SUMMARY-NOGAS)]
 
 endmodule
