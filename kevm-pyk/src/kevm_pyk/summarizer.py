@@ -407,60 +407,80 @@ def _transform_dash(inner: KInner) -> KInner:
     return top_down(_transform_dash_aux, inner)
 
 
-def _transform_rule_id(proof_id: str, requires: KInner) -> str:
-    flag = 'USEGAS'
-    noberlin = False
+def _is_usegas_rule(inner: KInner) -> bool:
+    usegas = True
+
+    def _is_usegas_aux(_inner: KInner) -> KInner:
+        nonlocal usegas
+        if _inner == KApply('notBool_', [KVariable('USEGAS_CELL', 'Bool')]):
+            usegas = False
+        return _inner
+
+    top_down(_is_usegas_aux, inner)
+    return usegas
+
+
+def _is_berlin_rule(inner: KInner) -> bool:
+    berlin = True
+
+    def _is_berlin_aux(_inner: KInner) -> KInner:
+        nonlocal berlin
+        if _inner == KApply(
+            'notBool_',
+            [
+                KApply(
+                    '_<<_>>_SCHEDULE_Bool_ScheduleFlag_Schedule',
+                    [KApply('Ghasaccesslist_SCHEDULE_ScheduleFlag'), KVariable('SCHEDULE_CELL', 'Schedule')],
+                )
+            ],
+        ):
+            berlin = False
+        return _inner
+
+    top_down(_is_berlin_aux, inner)
+    return berlin
+
+
+def _is_le0(inner: KInner) -> bool:
     le0 = False
-    le_length_bytes = False
 
-    def _transform_rule_id_nogas(_inner: KInner) -> KInner:
-        nonlocal flag
-        if (
-            isinstance(_inner, KApply)
-            and _inner.label.name == 'notBool_'
-            and _inner.args[0] == KVariable('USEGAS_CELL', 'Bool')
-        ):
-            flag = 'NOGAS'
-        return _inner
-
-    def _transform_rule_id_no_ghasaccesslist(_inner: KInner) -> KInner:
-        nonlocal noberlin
-        if (
-            isinstance(_inner, KApply)
-            and _inner.label.name == 'notBool_'
-            and isinstance(_inner.args[0], KApply)
-            and _inner.args[0].label.name == '_<<_>>_SCHEDULE_Bool_ScheduleFlag_Schedule'
-            and _inner.args[0].args[0] == KApply('Ghasaccesslist_SCHEDULE_ScheduleFlag', [])
-        ):
-            noberlin = True
-        return _inner
-
-    def _transform_rule_id_le0(_inner: KInner) -> KInner:
+    def _is_le0_aux(_inner: KInner) -> KInner:
         nonlocal le0
         if _inner == KApply('_<=Int_', [KVariable('W1', 'Int'), KToken('0', 'Int')]):
             le0 = True
         return _inner
 
-    def _transform_rule_id_le_length_bytes(_inner: KInner) -> KInner:
-        nonlocal le_length_bytes
-        if (
-            isinstance(_inner, KApply)
-            and _inner.label.name == '_<=Int_'
-            and _inner.args[1] == KApply('lengthBytes(_)_BYTES-HOOKED_Int_Bytes', [KVariable('OUTPUT_CELL', 'Bytes')])
+    top_down(_is_le0_aux, inner)
+    return le0
+
+
+def _is_invalid(inner: KInner) -> bool:
+    invalid = False
+
+    def _is_invalid_aux(_inner: KInner) -> KInner:
+        nonlocal invalid
+        if _inner == KApply(
+            '_<Int_',
+            [
+                KApply('lengthBytes(_)_BYTES-HOOKED_Int_Bytes', [KVariable('OUTPUT_CELL', 'Bytes')]),
+                KApply('_+Int_', [KVariable('W1', 'Int'), KVariable('W2', 'Int')]),
+            ],
         ):
-            le_length_bytes = True
+            invalid = True
         return _inner
 
-    top_down(_transform_rule_id_nogas, requires)
-    top_down(_transform_rule_id_no_ghasaccesslist, requires)
-    top_down(_transform_rule_id_le0, requires)
-    top_down(_transform_rule_id_le_length_bytes, requires)
-    if proof_id in ['BALANCE_NORMAL', 'BALANCE_OWISE', 'SLOAD', 'SSTORE']:
-        flag += '-BERLIN' if not noberlin else ''
-    if proof_id == 'EXP':
-        flag += '-LE0' if le0 else ''
-    if proof_id == 'RETURNDATACOPY':
-        flag += '-INVALID' if not le_length_bytes else ''
+    top_down(_is_invalid_aux, inner)
+    return invalid
+
+
+def _transform_rule_id(proof_id: str, requires: KInner) -> str:
+    flag = 'USEGAS' if _is_usegas_rule(requires) else 'NOGAS'
+    if proof_id in ['BALANCE_NORMAL', 'BALANCE_OWISE', 'SLOAD', 'SSTORE'] and _is_berlin_rule(requires):
+        flag += '-BERLIN'
+    if proof_id == 'EXP' and _is_le0(requires):
+        flag += '-LE0'
+    if proof_id == 'RETURNDATACOPY' and _is_invalid(requires):
+        flag += '-INVALID'
     return f'{proof_id.replace("_", "-")}-SUMMARY-{flag}'
 
 
