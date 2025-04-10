@@ -3,7 +3,7 @@ requires "../evm.md"
 module RETURN-SUMMARY
     imports public EVM
     
-    rule [RETURN-SUMMARY-0]: <kevm>
+    rule [RETURN-SUMMARY-USEGAS]: <kevm>
            <k>
              ( #next [ RETURN ] => #halt )
              ~> K_CELL:K
@@ -47,9 +47,9 @@ module RETURN-SUMMARY
        andBool ( ( Cmem ( SCHEDULE_CELL:Schedule , #memoryUsageUpdate ( MEMORYUSED_CELL:Int , W0:Int , W1:Int ) ) -Int Cmem ( SCHEDULE_CELL:Schedule , MEMORYUSED_CELL:Int ) ) <=Int GAS_CELL:Int
        andBool ( Gzero < SCHEDULE_CELL:Schedule > <=Int ( GAS_CELL:Int -Int ( Cmem ( SCHEDULE_CELL:Schedule , #memoryUsageUpdate ( MEMORYUSED_CELL:Int , W0:Int , W1:Int ) ) -Int Cmem ( SCHEDULE_CELL:Schedule , MEMORYUSED_CELL:Int ) ) )
                )))
-      [priority(20), label(RETURN-SUMMARY-0)]
+      [priority(20), label(RETURN-SUMMARY-USEGAS)]
     
-    rule [RETURN-SUMMARY-1]: <kevm>
+    rule [RETURN-SUMMARY-NOGAS]: <kevm>
            <k>
              ( #next [ RETURN ] => #halt )
              ~> K_CELL:K
@@ -84,6 +84,6 @@ module RETURN-SUMMARY
            ...
          </kevm>
       requires ( notBool USEGAS_CELL:Bool )
-      [priority(20), label(RETURN-SUMMARY-1)]
+      [priority(20), label(RETURN-SUMMARY-NOGAS)]
 
 endmodule

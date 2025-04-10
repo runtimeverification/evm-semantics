@@ -3,7 +3,7 @@ requires "../evm.md"
 module DIFFICULTY-SUMMARY
     imports public EVM
     
-    rule [DIFFICULTY-SUMMARY-0]: <kevm>
+    rule [DIFFICULTY-SUMMARY-USEGAS]: <kevm>
            <k>
              ( #next [ DIFFICULTY ] ~> .K => .K )
              ~> K_CELL:K
@@ -44,9 +44,9 @@ module DIFFICULTY-SUMMARY
        andBool ( #sizeWordStack ( WS:WordStack , 0 ) <=Int 1023
        andBool ( Gbase < SCHEDULE_CELL:Schedule > <=Int GAS_CELL:Int
                )))
-      [priority(20), label(DIFFICULTY-SUMMARY-0)]
+      [priority(20), label(DIFFICULTY-SUMMARY-USEGAS)]
     
-    rule [DIFFICULTY-SUMMARY-1]: <kevm>
+    rule [DIFFICULTY-SUMMARY-NOGAS]: <kevm>
            <k>
              ( #next [ DIFFICULTY ] ~> .K => .K )
              ~> K_CELL:K
@@ -83,6 +83,6 @@ module DIFFICULTY-SUMMARY
       requires ( ( notBool USEGAS_CELL:Bool )
        andBool ( #sizeWordStack ( WS:WordStack , 0 ) <=Int 1023
                ))
-      [priority(20), label(DIFFICULTY-SUMMARY-1)]
+      [priority(20), label(DIFFICULTY-SUMMARY-NOGAS)]
 
 endmodule

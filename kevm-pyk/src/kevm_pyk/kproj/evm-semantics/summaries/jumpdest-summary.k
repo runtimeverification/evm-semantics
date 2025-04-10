@@ -3,7 +3,7 @@ requires "../evm.md"
 module JUMPDEST-SUMMARY
     imports public EVM
     
-    rule [JUMPDEST-SUMMARY-0]: <kevm>
+    rule [JUMPDEST-SUMMARY-USEGAS]: <kevm>
            <k>
              ( #next [ JUMPDEST ] ~> .K => .K )
              ~> K_CELL:K
@@ -34,9 +34,9 @@ module JUMPDEST-SUMMARY
       requires ( USEGAS_CELL:Bool
        andBool ( Gjumpdest < SCHEDULE_CELL:Schedule > <=Int GAS_CELL:Int
                ))
-      [priority(20), label(JUMPDEST-SUMMARY-0)]
+      [priority(20), label(JUMPDEST-SUMMARY-USEGAS)]
     
-    rule [JUMPDEST-SUMMARY-1]: <kevm>
+    rule [JUMPDEST-SUMMARY-NOGAS]: <kevm>
            <k>
              ( #next [ JUMPDEST ] ~> .K => .K )
              ~> K_CELL:K
@@ -62,6 +62,6 @@ module JUMPDEST-SUMMARY
            ...
          </kevm>
       requires ( notBool USEGAS_CELL:Bool )
-      [priority(20), label(JUMPDEST-SUMMARY-1)]
+      [priority(20), label(JUMPDEST-SUMMARY-NOGAS)]
 
 endmodule
