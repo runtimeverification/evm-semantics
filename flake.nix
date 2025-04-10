@@ -62,6 +62,10 @@
                   "*.nix"
                   "deps/"
                   "kevm-pyk/"
+                  # submodule directories are initilized empty by git, but
+                  # not included by nix flakes/nix CLI
+                  "/tests/ethereum-tests"
+                  "/web/k-web-theme"
                 ] ./.);
               dontBuild = true;
 
