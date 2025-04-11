@@ -112,7 +112,14 @@ These parsers can interpret hex-encoded strings as `Int`s, `Bytes`s, and `Map`s.
     rule #alignHexString(S) => "0" +String S requires notBool lengthString(S) modInt 2 ==Int 0
 
     syntax Bytes ::= #parseHexBytes     ( String ) [symbol(parseHexBytes), function]
+                   | #parseHexBytesAux  ( String ) [symbol(parseHexBytesAux), function]
                    | #parseByteStack    ( String ) [symbol(parseByteStack), function, memo]
+ // ---------------------------------------------------------------------------------------
+    rule #parseByteStack(S) => #parseHexBytes(replaceAll(S, "0x", ""))
+    rule #parseHexBytes(S)  => #parseHexBytesAux(#alignHexString(S))
+
+    rule #parseHexBytesAux("") => .Bytes
+    rule #parseHexBytesAux(S)  => Int2Bytes(lengthString(S) /Int 2, String2Base(S, 16), BE) requires lengthString(S) >=Int 2
  // ---------------------------------------------------------------------------------------
     syntax Map ::= #parseMap ( JSON ) [symbol(#parseMap), function]
  // ---------------------------------------------------------------
