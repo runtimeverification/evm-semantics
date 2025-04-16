@@ -44,7 +44,11 @@ def _assert_exit_code_zero(pattern: Pattern) -> None:
 
 
 def _skipped_tests(test_dir: Path, slow_tests_file: Path, failing_tests_file: Path) -> dict[Path, list[str]]:
-    slow_tests = read_csv_file(slow_tests_file)
+    try:
+        slow_tests = read_csv_file(slow_tests_file)
+    except FileNotFoundError as e:
+        _LOGGER.warning(e)
+        slow_tests = ()
     failing_tests = read_csv_file(failing_tests_file)
     skipped: dict[Path, list[str]] = {}
     for test_file, test in slow_tests + failing_tests:
