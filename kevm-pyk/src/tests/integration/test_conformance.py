@@ -4,23 +4,17 @@ import csv
 import json
 import logging
 import sys
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 import pytest
-from pyk.kdist import kdist
-from pyk.kore.prelude import int_dv
-from pyk.kore.syntax import App
-from pyk.kore.tools import PrintOutput, kore_print
 
 from kevm_pyk.interpreter import interpret
 
-from ..utils import REPO_ROOT
+from ..utils import REPO_ROOT, _assert_exit_code_zero, _skipped_tests
 
 if TYPE_CHECKING:
+    from pathlib import Path
     from typing import Final
-
-    from pyk.kore.syntax import Pattern
 
 
 _LOGGER: Final = logging.getLogger(__name__)
@@ -72,38 +66,7 @@ def _test(gst_file: Path, *, schedule: str, mode: str, usegas: bool, save_failin
     raise AssertionError(f'Found failing tests in GST file {gst_file_relative_path}: {failing_tests}')
 
 
-def _assert_exit_code_zero(pattern: Pattern) -> None:
-    assert type(pattern) is App
-    kevm_cell = pattern.args[0]
-    assert type(kevm_cell) is App
-    exit_code_cell = kevm_cell.args[1]
-    assert type(exit_code_cell) is App
-
-    exit_code = exit_code_cell.args[0]
-    if exit_code == int_dv(0):
-        return
-
-    pretty = kore_print(pattern, definition_dir=kdist.get('evm-semantics.llvm'), output=PrintOutput.PRETTY)
-    assert pretty == GOLDEN
-
-
-def _skipped_tests() -> dict[Path, list[str]]:
-    slow_tests = read_csv_file(SLOW_TESTS_FILE)
-    failing_tests = read_csv_file(FAILING_TESTS_FILE)
-    skipped: dict[Path, list[str]] = {}
-    for test_file, test in slow_tests + failing_tests:
-        test_file = TEST_DIR / test_file
-        skipped.setdefault(test_file, []).append(test)
-    return skipped
-
-
-def read_csv_file(csv_file: Path) -> tuple[tuple[Path, str], ...]:
-    with csv_file.open(newline='') as file:
-        reader = csv.reader(file)
-        return tuple((Path(row[0]), row[1]) for row in reader)
-
-
-SKIPPED_TESTS: Final = _skipped_tests()
+SKIPPED_TESTS: Final = _skipped_tests(TEST_DIR, SLOW_TESTS_FILE, FAILING_TESTS_FILE)
 
 VM_TEST_DIR: Final = TEST_DIR / 'BlockchainTests/GeneralStateTests/VMTests'
 VM_TESTS: Final = tuple(VM_TEST_DIR.glob('*/*.json'))

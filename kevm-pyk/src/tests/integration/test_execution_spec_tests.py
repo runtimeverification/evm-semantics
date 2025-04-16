@@ -4,23 +4,17 @@ import csv
 import json
 import logging
 import sys
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 import pytest
-from pyk.kdist import kdist
-from pyk.kore.prelude import int_dv
-from pyk.kore.syntax import App
-from pyk.kore.tools import PrintOutput, kore_print
 
 from kevm_pyk.interpreter import interpret
 
-from ..utils import REPO_ROOT
+from ..utils import REPO_ROOT, _assert_exit_code_zero, _skipped_tests
 
 if TYPE_CHECKING:
+    from pathlib import Path
     from typing import Final
-
-    from pyk.kore.syntax import Pattern
 
 
 _LOGGER: Final = logging.getLogger(__name__)
@@ -28,12 +22,11 @@ _LOGGER: Final = logging.getLogger(__name__)
 sys.setrecursionlimit(10**8)
 
 WORK_DIR: Final = REPO_ROOT / 'tests/execution-spec-tests'
-TEST_DIR: Final = REPO_ROOT / 'tests/execution-spec-tests/fixtures'
-GOLDEN: Final = (REPO_ROOT / 'tests/templates/output-success-llvm.json').read_text().rstrip()
-TEST_FILES_WITH_CID_0: Final = (REPO_ROOT / 'tests/bchain.0.chainId').read_text().splitlines()
+TEST_DIR: Final = WORK_DIR / 'fixtures'
 FAILING_TESTS_FILE: Final = WORK_DIR / 'failing.llvm'
 SLOW_TESTS_FILE: Final = WORK_DIR / 'slow.llvm'
-DOWNLOAD_FILE: Final = WORK_DIR / 'get_execution_spec_tests.sh'
+
+SKIPPED_TESTS: Final = _skipped_tests(TEST_DIR, SLOW_TESTS_FILE, FAILING_TESTS_FILE)
 
 
 def _test(gst_file: Path, *, schedule: str, mode: str, usegas: bool, save_failing: bool) -> None:
@@ -43,7 +36,6 @@ def _test(gst_file: Path, *, schedule: str, mode: str, usegas: bool, save_failin
 
     failing_tests: list[str] = []
     gst_file_relative_path: Final[str] = str(gst_file.relative_to(TEST_DIR))
-    chainid = 0 if gst_file_relative_path in TEST_FILES_WITH_CID_0 else 1
 
     with gst_file.open() as f:
         gst_data = json.load(f)
@@ -52,7 +44,7 @@ def _test(gst_file: Path, *, schedule: str, mode: str, usegas: bool, save_failin
         _LOGGER.info(f'Running test: {gst_file} - {test_name}')
         if test_name in skipped_gst_tests:
             continue
-        res = interpret({test_name: test}, schedule, mode, chainid, usegas, check=False)
+        res = interpret({test_name: test}, schedule, mode, 1, usegas, check=False)
 
         try:
             _assert_exit_code_zero(res)
@@ -73,39 +65,6 @@ def _test(gst_file: Path, *, schedule: str, mode: str, usegas: bool, save_failin
                     writer.writerow([gst_file_relative_path, test_name])
     raise AssertionError(f'Found failing tests in GST file {gst_file_relative_path}: {failing_tests}')
 
-
-def _assert_exit_code_zero(pattern: Pattern) -> None:
-    assert type(pattern) is App
-    kevm_cell = pattern.args[0]
-    assert type(kevm_cell) is App
-    exit_code_cell = kevm_cell.args[1]
-    assert type(exit_code_cell) is App
-
-    exit_code = exit_code_cell.args[0]
-    if exit_code == int_dv(0):
-        return
-
-    pretty = kore_print(pattern, definition_dir=kdist.get('evm-semantics.llvm'), output=PrintOutput.PRETTY)
-    assert pretty == GOLDEN
-
-
-def _skipped_tests() -> dict[Path, list[str]]:
-    slow_tests = read_csv_file(SLOW_TESTS_FILE)
-    failing_tests = read_csv_file(FAILING_TESTS_FILE)
-    skipped: dict[Path, list[str]] = {}
-    for test_file, test in slow_tests + failing_tests:
-        test_file = TEST_DIR / test_file
-        skipped.setdefault(test_file, []).append(test)
-    return skipped
-
-
-def read_csv_file(csv_file: Path) -> tuple[tuple[Path, str], ...]:
-    with csv_file.open(newline='') as file:
-        reader = csv.reader(file)
-        return tuple((Path(row[0]), row[1]) for row in reader)
-
-
-SKIPPED_TESTS: Final = _skipped_tests()
 
 BCHAIN_TEST_DIR: Final = TEST_DIR / 'blockchain_tests'
 BCHAIN_TESTS: Final = tuple(BCHAIN_TEST_DIR.rglob('**/*.json'))
