@@ -15,7 +15,8 @@ from pyk.kore.tools import PrintOutput, kore_print
 from kevm_pyk.interpreter import interpret
 
 if TYPE_CHECKING:
-    from typing import Callable, Final
+    from typing import Final
+    from collections.abc import Callable
 
     from pyk.kore.syntax import Pattern
 
