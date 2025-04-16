@@ -1,17 +1,21 @@
 from __future__ import annotations
 
 import csv
+import json
 import logging
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+import pytest
 from pyk.kdist import kdist
 from pyk.kore.prelude import int_dv
 from pyk.kore.syntax import App
 from pyk.kore.tools import PrintOutput, kore_print
 
+from kevm_pyk.interpreter import interpret
+
 if TYPE_CHECKING:
-    from typing import Final
+    from typing import Callable, Final
 
     from pyk.kore.syntax import Pattern
 
@@ -52,3 +56,52 @@ def read_csv_file(csv_file: Path) -> tuple[tuple[Path, str], ...]:
     with csv_file.open(newline='') as file:
         reader = csv.reader(file)
         return tuple((Path(row[0]), row[1]) for row in reader)
+
+
+def _test(
+    gst_file: Path,
+    *,
+    schedule: str,
+    mode: str,
+    usegas: bool,
+    save_failing: bool,
+    compute_chain_id: Callable[[str], int],
+    skipped_tests: dict[Path, list[str]],
+    test_dir: Path,
+    failing_tests_file: Path,
+) -> None:
+    skipped_gst_tests = skipped_tests.get(gst_file, [])
+    if '*' in skipped_gst_tests:
+        pytest.skip()
+
+    failing_tests: list[str] = []
+    gst_file_relative_path: Final[str] = str(gst_file.relative_to(test_dir))
+
+    with gst_file.open() as f:
+        gst_data = json.load(f)
+
+    for test_name, test in gst_data.items():
+        _LOGGER.info(f'Running test: {gst_file} - {test_name}')
+        if test_name in skipped_gst_tests:
+            continue
+        chain_id = compute_chain_id(gst_file_relative_path)
+        res = interpret({test_name: test}, schedule, mode, chain_id, usegas, check=False)
+
+        try:
+            _assert_exit_code_zero(res)
+        except AssertionError:
+            if not save_failing:
+                raise
+            failing_tests.append(test_name)
+
+    if not failing_tests:
+        return
+    if save_failing:
+        with failing_tests_file.open('a', newline='') as ff:
+            writer = csv.writer(ff)
+            if len(failing_tests) == len(gst_data):
+                writer.writerow([gst_file_relative_path, '*'])
+            else:
+                for test_name in sorted(failing_tests):
+                    writer.writerow([gst_file_relative_path, test_name])
+    raise AssertionError(f'Found failing tests in GST file {gst_file_relative_path}: {failing_tests}')
