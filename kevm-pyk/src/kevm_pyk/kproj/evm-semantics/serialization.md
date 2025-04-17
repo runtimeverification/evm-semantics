@@ -125,5 +125,7 @@ These parsers can interpret hex-encoded strings as `Int`s, `Bytes`s, and `Map`s.
  // ---------------------------------------------------------------
     syntax Int ::= #parseAddr ( String ) [symbol(#parseAddr), function]
 
+    syntax Bytes ::= #rlpEncodeTxData ( TxData ) [symbol(rlpEncodeTxData), function]
+
 endmodule
 ```
