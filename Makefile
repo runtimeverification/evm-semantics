@@ -52,13 +52,9 @@ conformance-failing-list: poetry
 	fi
 
 download-json-fixtures:
-	@if [ ! -d "tests/execution-spec-tests/fixtures" ]; then \
-		echo "Fixtures directory not found. Downloading..."; \
-		cd tests/execution-spec-tests; \
-		sh get_execution_spec_tests.sh; \
-	else \
-		echo "Fixtures directory found. Skipping download."; \
-	fi
+	rm -rf tests/execution-spec-tests/fixtures
+	cd tests/execution-spec-tests ;\
+	bash get_execution_spec_tests.sh
 
 test-fixtures: poetry download-json-fixtures
 	$(MAKE) -C kevm-pyk/ test-integration PYTEST_ARGS+="-k test_execution_spec_tests.py"
