@@ -826,14 +826,14 @@ i18n = ["Babel (>=2.7)"]
 
 [[package]]
 name = "kframework"
-version = "7.1.237"
+version = "7.1.238"
 description = ""
 optional = false
 python-versions = "<4.0,>=3.10"
 groups = ["main"]
 files = [
-    {file = "kframework-7.1.237-py3-none-any.whl", hash = "sha256:387b88a0b3db5dc6b6e5d64783345296ef5a90a52240240e92d40189e7a6116b"},
-    {file = "kframework-7.1.237.tar.gz", hash = "sha256:2f2bcb2e7a2167a9cfafd82f427f088bf323e395d6350095cb9977a18f4ce699"},
+    {file = "kframework-7.1.238-py3-none-any.whl", hash = "sha256:321766eaaa64c88581bef915bc5b12825070cf1e267298d1de97e96d4160cc24"},
+    {file = "kframework-7.1.238.tar.gz", hash = "sha256:dd791f50ac6716414cfb46019c28431e7a1002b639e909ede4ab5f20d970ef1a"},
 ]
 
 [package.dependencies]
@@ -1246,18 +1246,18 @@ files = [
 
 [[package]]
 name = "ppft"
-version = "1.7.6.9"
+version = "1.7.7"
 description = "distributed and parallel Python"
 optional = false
 python-versions = ">=3.8"
 groups = ["main"]
 files = [
-    {file = "ppft-1.7.6.9-py3-none-any.whl", hash = "sha256:dab36548db5ca3055067fbe6b1a17db5fee29f3c366c579a9a27cebb52ed96f0"},
-    {file = "ppft-1.7.6.9.tar.gz", hash = "sha256:73161c67474ea9d81d04bcdad166d399cff3f084d5d2dc21ebdd46c075bbc265"},
+    {file = "ppft-1.7.7-py3-none-any.whl", hash = "sha256:fb7524db110682de886b4bb5b08f7bf6a38940566074ef2f62521cbbd3864676"},
+    {file = "ppft-1.7.7.tar.gz", hash = "sha256:f3f77448cfe24c2b8d2296b6d8732280b25041a3f3e1f551856c6451d3e01b96"},
 ]
 
 [package.extras]
-dill = ["dill (>=0.3.9)"]
+dill = ["dill (>=0.4.0)"]
 
 [[package]]
 name = "psutil"
@@ -1867,4 +1867,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10"
-content-hash = "bca2b0e66162b42381a9bc8b0341c51b1784bef4157c84c8bce3e446eded6c3c"
+content-hash = "85a3ae91926fc44836bcf8291b009d400553ef1af177345f875e21e103afde57"
