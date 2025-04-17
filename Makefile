@@ -53,8 +53,7 @@ conformance-failing-list: poetry
 
 download-json-fixtures:
 	rm -rf tests/execution-spec-tests/fixtures
-	cd tests/execution-spec-tests ;\
-	bash get_execution_spec_tests.sh
+	cd tests/execution-spec-tests && bash get_execution_spec_tests.sh
 
 test-fixtures: poetry download-json-fixtures
 	$(MAKE) -C kevm-pyk/ test-integration PYTEST_ARGS+="-k test_execution_spec_tests.py"
