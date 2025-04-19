@@ -72,6 +72,8 @@ jobs:
         run: docker exec -u github-user kevm-ci-concrete-${{ github.sha }} /bin/bash -c 'make test-integration'
       - name: 'Test conformance'
         run: docker exec -u github-user kevm-ci-concrete-${{ github.sha }} /bin/bash -c 'make test-conformance'
+      - name: 'Test execution-spec-tests'
+        run: docker exec -u github-user kevm-ci-concrete-${{ github.sha }} /bin/bash -c 'make test-fixtures'
       - name: 'Test llvm krun'
         run: docker exec -u github-user kevm-ci-concrete-${{ github.sha }} /bin/bash -c 'make test-interactive'
       - name: 'Tear down Docker'

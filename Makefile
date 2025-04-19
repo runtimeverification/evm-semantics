@@ -15,7 +15,7 @@ POETRY       := poetry -C $(KEVM_PYK_DIR)
 POETRY_RUN   := $(POETRY) run --
 
 
-.PHONY: poetry-env
+.PHONY: poetry-env download-json-fixtures
 poetry-env:
 	$(POETRY) env use --no-cache $(PYTHON_BIN)
 
@@ -49,6 +49,24 @@ conformance-failing-list: poetry
 		echo >> tests/failing.llvm ;\
 	else \
 		sed -i '1{/^[[:space:]]*$$/d;}' tests/failing.llvm ;\
+	fi
+
+download-json-fixtures:
+	rm -rf tests/execution-spec-tests/fixtures
+	cd tests/execution-spec-tests && bash get_execution_spec_tests.sh
+
+test-fixtures: poetry download-json-fixtures
+	$(MAKE) -C kevm-pyk/ test-integration PYTEST_ARGS+="-k test_execution_spec_tests.py"
+
+fixtures-failing-list: poetry download-json-fixtures
+	cat /dev/null > tests/ethereum-sepc-tests/failing.llvm
+	- $(MAKE) -C kevm-pyk/ test-integration PYTEST_ARGS+="-k test_execution_spec_tests.py --save-failing --maxfail=10000"
+	LC_ALL=en_US.UTF-8 sort -f -d -o tests/execution-spec-tests/failing.llvm tests/execution-spec-tests/failing.llvm
+	if [ "$(shell uname)" = "Darwin" ]; then \
+		sed -i '' '1{/^[[:space:]]*$$/d;}' tests/ethereum-sepc-tests/failing.llvm ;\
+		echo >> tests/ethereum-sepc-tests/failing.llvm ;\
+	else \
+		sed -i '1{/^[[:space:]]*$$/d;}' tests/ethereum-sepc-tests/failing.llvm ;\
 	fi
 
 test-vm: poetry
