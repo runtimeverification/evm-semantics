@@ -6,7 +6,7 @@ module MSTORE-SUMMARY
     rule [MSTORE-SUMMARY-USEGAS]: <kevm>
            <k>
              ( #next [ MSTORE ] ~> .K => .K )
-             ~> K_CELL:K
+             ~> _K_CELL:K
            </k>
            <schedule>
              SCHEDULE_CELL:Schedule
@@ -49,7 +49,7 @@ module MSTORE-SUMMARY
     rule [MSTORE-SUMMARY-NOGAS]: <kevm>
            <k>
              ( #next [ MSTORE ] ~> .K => .K )
-             ~> K_CELL:K
+             ~> _K_CELL:K
            </k>
            <useGas>
              ( USEGAS_CELL:Bool => false )
@@ -67,7 +67,7 @@ module MSTORE-SUMMARY
                    ( PC_CELL:Int => ( PC_CELL:Int +Int 1 ) )
                  </pc>
                  <gas>
-                   GAS_CELL:Int
+                   _GAS_CELL:Int
                  </gas>
                  ...
                </callState>

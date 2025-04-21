@@ -6,7 +6,7 @@ module SIGNEXTEND-SUMMARY
     rule [SIGNEXTEND-SUMMARY-USEGAS]: <kevm>
            <k>
              ( #next [ SIGNEXTEND ] ~> .K => .K )
-             ~> K_CELL:K
+             ~> _K_CELL:K
            </k>
            <schedule>
              SCHEDULE_CELL:Schedule
@@ -42,7 +42,7 @@ module SIGNEXTEND-SUMMARY
     rule [SIGNEXTEND-SUMMARY-NOGAS]: <kevm>
            <k>
              ( #next [ SIGNEXTEND ] ~> .K => .K )
-             ~> K_CELL:K
+             ~> _K_CELL:K
            </k>
            <useGas>
              ( USEGAS_CELL:Bool => false )
@@ -57,7 +57,7 @@ module SIGNEXTEND-SUMMARY
                    ( PC_CELL:Int => ( PC_CELL:Int +Int 1 ) )
                  </pc>
                  <gas>
-                   GAS_CELL:Int
+                   _GAS_CELL:Int
                  </gas>
                  ...
                </callState>
