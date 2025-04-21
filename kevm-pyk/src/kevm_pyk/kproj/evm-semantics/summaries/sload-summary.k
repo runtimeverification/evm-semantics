@@ -6,7 +6,7 @@ module SLOAD-SUMMARY
     rule [SLOAD-SUMMARY-NOGAS-BERLIN]: <kevm>
            <k>
              ( #next [ SLOAD ] ~> .K => .K )
-             ~> K_CELL:K
+             ~> _K_CELL:K
            </k>
            <useGas>
              ( USEGAS_CELL:Bool => false )
@@ -18,13 +18,13 @@ module SLOAD-SUMMARY
                    ID_CELL:Int
                  </id>
                  <wordStack>
-                   ( ( W0:Int => #lookup ( STORAGE_CELL:Map , W0:Int ) ) : WS:WordStack )
+                   ( ( W0:Int => #lookup ( STORAGE_CELL:Map , W0:Int ) ) : _WS:WordStack )
                  </wordStack>
                  <pc>
                    ( PC_CELL:Int => ( PC_CELL:Int +Int 1 ) )
                  </pc>
                  <gas>
-                   GAS_CELL:Int
+                   _GAS_CELL:Int
                  </gas>
                  ...
                </callState>
@@ -54,7 +54,7 @@ module SLOAD-SUMMARY
     rule [SLOAD-SUMMARY-USEGAS-BERLIN]: <kevm>
            <k>
              ( #next [ SLOAD ] ~> .K => .K )
-             ~> K_CELL:K
+             ~> _K_CELL:K
            </k>
            <schedule>
              SCHEDULE_CELL:Schedule
@@ -69,7 +69,7 @@ module SLOAD-SUMMARY
                    ID_CELL:Int
                  </id>
                  <wordStack>
-                   ( ( W0:Int => #lookup ( STORAGE_CELL:Map , W0:Int ) ) : WS:WordStack )
+                   ( ( W0:Int => #lookup ( STORAGE_CELL:Map , W0:Int ) ) : _WS:WordStack )
                  </wordStack>
                  <pc>
                    ( PC_CELL:Int => ( PC_CELL:Int +Int 1 ) )
@@ -114,7 +114,7 @@ module SLOAD-SUMMARY
     rule [SLOAD-SUMMARY-USEGAS]: <kevm>
            <k>
              ( #next [ SLOAD ] ~> .K => .K )
-             ~> K_CELL:K
+             ~> _K_CELL:K
            </k>
            <schedule>
              SCHEDULE_CELL:Schedule
@@ -129,7 +129,7 @@ module SLOAD-SUMMARY
                    ID_CELL:Int
                  </id>
                  <wordStack>
-                   ( ( W0:Int => #lookup ( STORAGE_CELL:Map , W0:Int ) ) : WS:WordStack )
+                   ( ( W0:Int => #lookup ( STORAGE_CELL:Map , W0:Int ) ) : _WS:WordStack )
                  </wordStack>
                  <pc>
                    ( PC_CELL:Int => ( PC_CELL:Int +Int 1 ) )

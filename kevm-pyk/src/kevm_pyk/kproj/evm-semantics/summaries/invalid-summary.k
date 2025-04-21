@@ -6,16 +6,16 @@ module INVALID-SUMMARY
     rule [INVALID-SUMMARY-USEGAS]: <kevm>
            <k>
              ( #next [ INVALID ] => #halt )
-             ~> K_CELL:K
+             ~> _K_CELL:K
            </k>
            <ethereum>
              <evm>
                <statusCode>
-                 ( STATUSCODE_CELL:StatusCode => EVMC_INVALID_INSTRUCTION )
+                 ( _STATUSCODE_CELL:StatusCode => EVMC_INVALID_INSTRUCTION )
                </statusCode>
                <callState>
                  <gas>
-                   GAS_CELL:Int
+                   _GAS_CELL:Int
                  </gas>
                  ...
                </callState>
