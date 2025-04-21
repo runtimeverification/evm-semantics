@@ -399,7 +399,7 @@ def _transform_dash(inner: KInner) -> KInner:
 
     def _transform_dash_aux(inner: KInner) -> KInner:
         if isinstance(inner, KVariable) and inner.name.startswith('__'):
-            return KVariable(inner.name[2:], inner.sort)
+            return KVariable(inner.name[1:], inner.sort)
         if isinstance(inner, KVariable) and inner.name.startswith('_'):
             return KVariable(inner.name[1:], inner.sort)
         return inner

@@ -6,7 +6,7 @@ module DUP-SUMMARY
     rule [DUP-SUMMARY-USEGAS]: <kevm>
            <k>
              ( #next [ DUP ( N:Int ) ] ~> .K => .K )
-             ~> K_CELL:K
+             ~> _K_CELL:K
            </k>
            <schedule>
              SCHEDULE_CELL:Schedule
@@ -44,7 +44,7 @@ module DUP-SUMMARY
     rule [DUP-SUMMARY-NOGAS]: <kevm>
            <k>
              ( #next [ DUP ( N:Int ) ] ~> .K => .K )
-             ~> K_CELL:K
+             ~> _K_CELL:K
            </k>
            <useGas>
              ( USEGAS_CELL:Bool => false )
@@ -59,7 +59,7 @@ module DUP-SUMMARY
                    ( PC_CELL:Int => ( PC_CELL:Int +Int 1 ) )
                  </pc>
                  <gas>
-                   GAS_CELL:Int
+                   _GAS_CELL:Int
                  </gas>
                  ...
                </callState>

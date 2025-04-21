@@ -5,17 +5,17 @@ module UNDEFINED-SUMMARY
     
     rule [UNDEFINED-SUMMARY-USEGAS]: <kevm>
            <k>
-             ( #next [ UNDEFINED ( W:Int ) ] => #halt )
-             ~> K_CELL:K
+             ( #next [ UNDEFINED ( _W:Int ) ] => #halt )
+             ~> _K_CELL:K
            </k>
            <ethereum>
              <evm>
                <statusCode>
-                 ( STATUSCODE_CELL:StatusCode => EVMC_UNDEFINED_INSTRUCTION )
+                 ( _STATUSCODE_CELL:StatusCode => EVMC_UNDEFINED_INSTRUCTION )
                </statusCode>
                <callState>
                  <gas>
-                   GAS_CELL:Int
+                   _GAS_CELL:Int
                  </gas>
                  ...
                </callState>
