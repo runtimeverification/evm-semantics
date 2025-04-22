@@ -6,7 +6,7 @@ module REVERT-SUMMARY
     rule [REVERT-SUMMARY-USEGAS]: <kevm>
            <k>
              ( #next [ REVERT ] => #halt )
-             ~> K_CELL:K
+             ~> _K_CELL:K
            </k>
            <schedule>
              SCHEDULE_CELL:Schedule
@@ -17,10 +17,10 @@ module REVERT-SUMMARY
            <ethereum>
              <evm>
                <output>
-                 ( OUTPUT_CELL:Bytes => #range ( LOCALMEM_CELL:Bytes , W0:Int , W1:Int ) )
+                 ( _OUTPUT_CELL:Bytes => #range ( LOCALMEM_CELL:Bytes , W0:Int , W1:Int ) )
                </output>
                <statusCode>
-                 ( STATUSCODE_CELL:StatusCode => EVMC_REVERT )
+                 ( _STATUSCODE_CELL:StatusCode => EVMC_REVERT )
                </statusCode>
                <callState>
                  <wordStack>
@@ -52,7 +52,7 @@ module REVERT-SUMMARY
     rule [REVERT-SUMMARY-NOGAS]: <kevm>
            <k>
              ( #next [ REVERT ] => #halt )
-             ~> K_CELL:K
+             ~> _K_CELL:K
            </k>
            <useGas>
              ( USEGAS_CELL:Bool => false )
@@ -60,10 +60,10 @@ module REVERT-SUMMARY
            <ethereum>
              <evm>
                <output>
-                 ( OUTPUT_CELL:Bytes => #range ( LOCALMEM_CELL:Bytes , W0:Int , W1:Int ) )
+                 ( _OUTPUT_CELL:Bytes => #range ( LOCALMEM_CELL:Bytes , W0:Int , W1:Int ) )
                </output>
                <statusCode>
-                 ( STATUSCODE_CELL:StatusCode => EVMC_REVERT )
+                 ( _STATUSCODE_CELL:StatusCode => EVMC_REVERT )
                </statusCode>
                <callState>
                  <wordStack>
@@ -73,7 +73,7 @@ module REVERT-SUMMARY
                    LOCALMEM_CELL:Bytes
                  </localMem>
                  <gas>
-                   GAS_CELL:Int
+                   _GAS_CELL:Int
                  </gas>
                  ...
                </callState>

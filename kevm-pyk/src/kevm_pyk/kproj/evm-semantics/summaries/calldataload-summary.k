@@ -6,7 +6,7 @@ module CALLDATALOAD-SUMMARY
     rule [CALLDATALOAD-SUMMARY-USEGAS]: <kevm>
            <k>
              ( #next [ CALLDATALOAD ] ~> .K => .K )
-             ~> K_CELL:K
+             ~> _K_CELL:K
            </k>
            <schedule>
              SCHEDULE_CELL:Schedule
@@ -21,7 +21,7 @@ module CALLDATALOAD-SUMMARY
                    CALLDATA_CELL:Bytes
                  </callData>
                  <wordStack>
-                   ( ( W0:Int => #asWord ( #range ( CALLDATA_CELL:Bytes , W0:Int , 32 ) ) ) : WS:WordStack )
+                   ( ( W0:Int => #asWord ( #range ( CALLDATA_CELL:Bytes , W0:Int , 32 ) ) ) : _WS:WordStack )
                  </wordStack>
                  <pc>
                    ( PC_CELL:Int => ( PC_CELL:Int +Int 1 ) )
@@ -45,7 +45,7 @@ module CALLDATALOAD-SUMMARY
     rule [CALLDATALOAD-SUMMARY-NOGAS]: <kevm>
            <k>
              ( #next [ CALLDATALOAD ] ~> .K => .K )
-             ~> K_CELL:K
+             ~> _K_CELL:K
            </k>
            <useGas>
              ( USEGAS_CELL:Bool => false )
@@ -57,13 +57,13 @@ module CALLDATALOAD-SUMMARY
                    CALLDATA_CELL:Bytes
                  </callData>
                  <wordStack>
-                   ( ( W0:Int => #asWord ( #range ( CALLDATA_CELL:Bytes , W0:Int , 32 ) ) ) : WS:WordStack )
+                   ( ( W0:Int => #asWord ( #range ( CALLDATA_CELL:Bytes , W0:Int , 32 ) ) ) : _WS:WordStack )
                  </wordStack>
                  <pc>
                    ( PC_CELL:Int => ( PC_CELL:Int +Int 1 ) )
                  </pc>
                  <gas>
-                   GAS_CELL:Int
+                   _GAS_CELL:Int
                  </gas>
                  ...
                </callState>

@@ -6,7 +6,7 @@ module STOP-SUMMARY
     rule [STOP-SUMMARY-USEGAS]: <kevm>
            <k>
              ( #next [ STOP ] => #halt )
-             ~> K_CELL:K
+             ~> _K_CELL:K
            </k>
            <schedule>
              SCHEDULE_CELL:Schedule
@@ -17,10 +17,10 @@ module STOP-SUMMARY
            <ethereum>
              <evm>
                <output>
-                 ( OUTPUT_CELL:Bytes => b"" )
+                 ( _OUTPUT_CELL:Bytes => b"" )
                </output>
                <statusCode>
-                 ( STATUSCODE_CELL:StatusCode => EVMC_SUCCESS )
+                 ( _STATUSCODE_CELL:StatusCode => EVMC_SUCCESS )
                </statusCode>
                <callState>
                  <gas>
@@ -42,7 +42,7 @@ module STOP-SUMMARY
     rule [STOP-SUMMARY-NOGAS]: <kevm>
            <k>
              ( #next [ STOP ] => #halt )
-             ~> K_CELL:K
+             ~> _K_CELL:K
            </k>
            <useGas>
              ( USEGAS_CELL:Bool => false )
@@ -50,14 +50,14 @@ module STOP-SUMMARY
            <ethereum>
              <evm>
                <output>
-                 ( OUTPUT_CELL:Bytes => b"" )
+                 ( _OUTPUT_CELL:Bytes => b"" )
                </output>
                <statusCode>
-                 ( STATUSCODE_CELL:StatusCode => EVMC_SUCCESS )
+                 ( _STATUSCODE_CELL:StatusCode => EVMC_SUCCESS )
                </statusCode>
                <callState>
                  <gas>
-                   GAS_CELL:Int
+                   _GAS_CELL:Int
                  </gas>
                  ...
                </callState>
