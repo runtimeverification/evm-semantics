@@ -6,7 +6,7 @@ module POP-SUMMARY
     rule [POP-SUMMARY-USEGAS]: <kevm>
            <k>
              ( #next [ POP ] ~> .K => .K )
-             ~> K_CELL:K
+             ~> _K_CELL:K
            </k>
            <schedule>
              SCHEDULE_CELL:Schedule
@@ -18,7 +18,7 @@ module POP-SUMMARY
              <evm>
                <callState>
                  <wordStack>
-                   ( ( W0:Int : WS:WordStack ) => WS:WordStack )
+                   ( ( _W0:Int : WS:WordStack ) => WS:WordStack )
                  </wordStack>
                  <pc>
                    ( PC_CELL:Int => ( PC_CELL:Int +Int 1 ) )
@@ -42,7 +42,7 @@ module POP-SUMMARY
     rule [POP-SUMMARY-NOGAS]: <kevm>
            <k>
              ( #next [ POP ] ~> .K => .K )
-             ~> K_CELL:K
+             ~> _K_CELL:K
            </k>
            <useGas>
              ( USEGAS_CELL:Bool => false )
@@ -51,13 +51,13 @@ module POP-SUMMARY
              <evm>
                <callState>
                  <wordStack>
-                   ( ( W0:Int : WS:WordStack ) => WS:WordStack )
+                   ( ( _W0:Int : WS:WordStack ) => WS:WordStack )
                  </wordStack>
                  <pc>
                    ( PC_CELL:Int => ( PC_CELL:Int +Int 1 ) )
                  </pc>
                  <gas>
-                   GAS_CELL:Int
+                   _GAS_CELL:Int
                  </gas>
                  ...
                </callState>

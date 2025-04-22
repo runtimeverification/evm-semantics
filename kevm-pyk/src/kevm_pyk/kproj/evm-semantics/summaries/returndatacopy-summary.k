@@ -6,7 +6,7 @@ module RETURNDATACOPY-SUMMARY
     rule [RETURNDATACOPY-SUMMARY-NOGAS]: <kevm>
            <k>
              ( #next [ RETURNDATACOPY ] ~> .K => .K )
-             ~> K_CELL:K
+             ~> _K_CELL:K
            </k>
            <useGas>
              ( USEGAS_CELL:Bool => false )
@@ -27,7 +27,7 @@ module RETURNDATACOPY-SUMMARY
                    ( PC_CELL:Int => ( PC_CELL:Int +Int 1 ) )
                  </pc>
                  <gas>
-                   GAS_CELL:Int
+                   _GAS_CELL:Int
                  </gas>
                  ...
                </callState>
@@ -45,7 +45,7 @@ module RETURNDATACOPY-SUMMARY
     rule [RETURNDATACOPY-SUMMARY-NOGAS-INVALID]: <kevm>
            <k>
              ( #next [ RETURNDATACOPY ] => #halt )
-             ~> K_CELL:K
+             ~> _K_CELL:K
            </k>
            <useGas>
              ( USEGAS_CELL:Bool => false )
@@ -56,14 +56,14 @@ module RETURNDATACOPY-SUMMARY
                  OUTPUT_CELL:Bytes
                </output>
                <statusCode>
-                 ( STATUSCODE_CELL:StatusCode => EVMC_INVALID_MEMORY_ACCESS )
+                 ( _STATUSCODE_CELL:StatusCode => EVMC_INVALID_MEMORY_ACCESS )
                </statusCode>
                <callState>
                  <wordStack>
-                   ( ( W0:Int : ( W1:Int : ( W2:Int : WS:WordStack ) ) ) => WS:WordStack )
+                   ( ( _W0:Int : ( W1:Int : ( W2:Int : WS:WordStack ) ) ) => WS:WordStack )
                  </wordStack>
                  <gas>
-                   GAS_CELL:Int
+                   _GAS_CELL:Int
                  </gas>
                  ...
                </callState>
@@ -81,7 +81,7 @@ module RETURNDATACOPY-SUMMARY
     rule [RETURNDATACOPY-SUMMARY-USEGAS]: <kevm>
            <k>
              ( #next [ RETURNDATACOPY ] ~> .K => .K )
-             ~> K_CELL:K
+             ~> _K_CELL:K
            </k>
            <schedule>
              SCHEDULE_CELL:Schedule
@@ -128,7 +128,7 @@ module RETURNDATACOPY-SUMMARY
     rule [RETURNDATACOPY-SUMMARY-USEGAS-INVALID]: <kevm>
            <k>
              ( #next [ RETURNDATACOPY ] => #halt )
-             ~> K_CELL:K
+             ~> _K_CELL:K
            </k>
            <schedule>
              SCHEDULE_CELL:Schedule
@@ -142,7 +142,7 @@ module RETURNDATACOPY-SUMMARY
                  OUTPUT_CELL:Bytes
                </output>
                <statusCode>
-                 ( STATUSCODE_CELL:StatusCode => EVMC_INVALID_MEMORY_ACCESS )
+                 ( _STATUSCODE_CELL:StatusCode => EVMC_INVALID_MEMORY_ACCESS )
                </statusCode>
                <callState>
                  <wordStack>

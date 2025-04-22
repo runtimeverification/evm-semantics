@@ -6,7 +6,7 @@ module SHA3-SUMMARY
     rule [SHA3-SUMMARY-USEGAS]: <kevm>
            <k>
              ( #next [ SHA3 ] ~> .K => .K )
-             ~> K_CELL:K
+             ~> _K_CELL:K
            </k>
            <schedule>
              SCHEDULE_CELL:Schedule
@@ -49,7 +49,7 @@ module SHA3-SUMMARY
     rule [SHA3-SUMMARY-NOGAS]: <kevm>
            <k>
              ( #next [ SHA3 ] ~> .K => .K )
-             ~> K_CELL:K
+             ~> _K_CELL:K
            </k>
            <useGas>
              ( USEGAS_CELL:Bool => false )
@@ -67,7 +67,7 @@ module SHA3-SUMMARY
                    ( PC_CELL:Int => ( PC_CELL:Int +Int 1 ) )
                  </pc>
                  <gas>
-                   GAS_CELL:Int
+                   _GAS_CELL:Int
                  </gas>
                  ...
                </callState>

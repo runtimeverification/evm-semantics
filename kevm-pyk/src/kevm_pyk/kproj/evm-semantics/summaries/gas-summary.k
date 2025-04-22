@@ -6,7 +6,7 @@ module GAS-SUMMARY
     rule [GAS-SUMMARY-USEGAS]: <kevm>
            <k>
              ( #next [ GAS ] ~> .K => .K )
-             ~> K_CELL:K
+             ~> _K_CELL:K
            </k>
            <schedule>
              SCHEDULE_CELL:Schedule
@@ -43,7 +43,7 @@ module GAS-SUMMARY
     rule [GAS-SUMMARY-NOGAS]: <kevm>
            <k>
              ( #next [ GAS ] ~> .K => .K )
-             ~> K_CELL:K
+             ~> _K_CELL:K
            </k>
            <useGas>
              ( USEGAS_CELL:Bool => false )

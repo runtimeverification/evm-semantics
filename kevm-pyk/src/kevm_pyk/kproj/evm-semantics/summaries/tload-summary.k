@@ -6,7 +6,7 @@ module TLOAD-SUMMARY
     rule [TLOAD-SUMMARY-USEGAS]: <kevm>
            <k>
              ( #next [ TLOAD ] ~> .K => .K )
-             ~> K_CELL:K
+             ~> _K_CELL:K
            </k>
            <schedule>
              SCHEDULE_CELL:Schedule
@@ -21,7 +21,7 @@ module TLOAD-SUMMARY
                    ID_CELL:Int
                  </id>
                  <wordStack>
-                   ( ( W0:Int => #lookup ( TRANSIENT_STORAGE_CELL:Map , W0:Int ) ) : WS:WordStack )
+                   ( ( W0:Int => #lookup ( TRANSIENT_STORAGE_CELL:Map , W0:Int ) ) : _WS:WordStack )
                  </wordStack>
                  <pc>
                    ( PC_CELL:Int => ( PC_CELL:Int +Int 1 ) )
@@ -59,7 +59,7 @@ module TLOAD-SUMMARY
     rule [TLOAD-SUMMARY-NOGAS]: <kevm>
            <k>
              ( #next [ TLOAD ] ~> .K => .K )
-             ~> K_CELL:K
+             ~> _K_CELL:K
            </k>
            <useGas>
              ( USEGAS_CELL:Bool => false )
@@ -71,13 +71,13 @@ module TLOAD-SUMMARY
                    ID_CELL:Int
                  </id>
                  <wordStack>
-                   ( ( W0:Int => #lookup ( TRANSIENT_STORAGE_CELL:Map , W0:Int ) ) : WS:WordStack )
+                   ( ( W0:Int => #lookup ( TRANSIENT_STORAGE_CELL:Map , W0:Int ) ) : _WS:WordStack )
                  </wordStack>
                  <pc>
                    ( PC_CELL:Int => ( PC_CELL:Int +Int 1 ) )
                  </pc>
                  <gas>
-                   GAS_CELL:Int
+                   _GAS_CELL:Int
                  </gas>
                  ...
                </callState>
