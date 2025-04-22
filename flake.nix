@@ -60,10 +60,9 @@
                   ".github/"
                   "result*"
                   "*.nix"
-                  "deps/"
                   "kevm-pyk/"
-                  # submodule directories are initilized empty by git, but
-                  # not included by nix flakes/nix CLI
+                  # do not include submodule directories that might be initilized empty or non-existent
+                  "/deps/"
                   "/tests/ethereum-tests"
                   "/web/k-web-theme"
                 ] ./.);
@@ -130,7 +129,13 @@
 
           kevm-pyk = poetry2nix.mkPoetryApplication {
             python = prev.python310;
-            projectDir = ./kevm-pyk;
+            projectDir = prev.lib.cleanSource (
+              prev.nix-gitignore.gitignoreSourcePure [
+                ./.gitignore
+                # do not include submodule directories that might be initilized empty or non-existent
+                "/src/kevm_pyk/kproj/plugin"
+              ] ./kevm-pyk/.
+            );
             overrides = poetry2nix.overrides.withDefaults
               (finalPython: prevPython: {
                 kframework = prev.pyk-python310;
@@ -204,8 +209,11 @@
               ".github/"
               "result*"
               "*.nix"
-              "deps/"
               "kevm-pyk/"
+              # do not include submodule directories that might be initilized empty or non-existent
+              "/deps/"
+              "/tests/ethereum-tests"
+              "/web/k-web-theme"
             ] ./.);
           };
 
