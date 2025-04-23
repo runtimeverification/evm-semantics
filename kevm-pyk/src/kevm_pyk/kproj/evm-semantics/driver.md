@@ -236,6 +236,14 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
     syntax EthereumCommand ::= #loadAccessList ( JSON )              [symbol(#loadAccessList)]
                              | #loadAccessListAux ( Account , List ) [symbol(#loadAccessListAux)]
  // ---------------------------------------------------------------------------------------------
+    rule <k> #loadAccessList ( [ { "address" : ACCT:String , "storageKeys" : [STRG] }, REST ] )
+          => #loadAccessListAux (#parseAddr(ACCT), #parseAccessListStorageKeys([STRG]))
+          ~> #loadAccessList ([REST])
+         ...
+         </k>
+         <schedule> SCHED </schedule>
+      requires Ghasaccesslist << SCHED >>
+
     rule <k> #loadAccessList ([ .JSONs ]) => .K ... </k>
          <schedule> SCHED </schedule>
       requires Ghasaccesslist << SCHED >>
@@ -461,13 +469,10 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
          <schedule> SCHEDULE </schedule>
       requires #asScheduleString(SCHEDULE_STR) ==K SCHEDULE
 
-    rule <k> check TESTID : { "post" : { (KEY : _VALUE, REST => REST) } } ... </k> requires KEY in (SetItem("hash") SetItem("logs") SetItem("txbytes") SetItem("indexes"))
+    rule <k> check _TESTID : { "post" : { (KEY : _VALUE, REST => REST) } } ... </k> requires KEY in (SetItem("hash") SetItem("logs") SetItem("txbytes") SetItem("indexes"))
     rule <k> check _TESTID : { "post" : { "state" : { STATE } } } => check "account" : { STATE } ... </k>
 
-    // rule <k> check TESTID : { "post" : { "hash" : (HASH:String), REST } }
-    //      => check "blockHeader" : { "hash" : #parseByteStack(HASH) } ~> check TESTID : { "post" : { REST }} ... </k>
-
-   rule <k> check TESTID : { "post" : { POST } } => check "account" : { POST } ~> failure TESTID ... </k> [owise]
+    rule <k> check TESTID : { "post" : { POST } } => check "account" : { POST } ~> failure TESTID ... </k> [owise]
 
     rule <k> check "account" : { ACCTID:Int : { KEY : VALUE , REST } } => check "account" : { ACCTID : { KEY : VALUE } } ~> check "account" : { ACCTID : { REST } } ... </k>
       requires REST =/=K .JSONs

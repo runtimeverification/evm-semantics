@@ -40,6 +40,7 @@ def _assert_exit_code_zero(pattern: Pattern) -> None:
         return
 
     pretty = kore_print(pattern, definition_dir=kdist.get('evm-semantics.llvm'), output=PrintOutput.PRETTY)
+    print('ACTUAL:', pretty)
     assert pretty == GOLDEN
 
 
@@ -89,7 +90,17 @@ def _test(
         _LOGGER.info(f'Running test: {gst_file} - {test_name}')
         if test_name in skipped_gst_tests:
             continue
-        chain_id = compute_chain_id(gst_file_relative_path)
+        # for execution_spec_tests, we look for chainid and schedule in the test file
+        # TODO: using this approach we end up calling _schedule_to_kore of a possibly unimplemented schedule
+        # which would result in `llvm_interpret` throwing a RuntimeError like:
+        # No tag found for symbol LbIPRAGUE 'Unds 'EVM{}. Maybe attempted to evaluate a symbol with no rules
+        gst_schedule, gst_chain_id = read_gst_schedule_and_chainid(test)
+        if gst_schedule is not None:
+            schedule = gst_schedule
+
+        # for the legacy test suite, we need to use the compute_chain_id func
+        chain_id = gst_chain_id if gst_chain_id is not None else compute_chain_id(gst_file_relative_path)
+
         res = interpret({test_name: test}, schedule, mode, chain_id, usegas, check=False)
 
         try:
@@ -110,3 +121,28 @@ def _test(
                 for test_name in sorted(failing_tests):
                     writer.writerow([gst_file_relative_path, test_name])
     raise AssertionError(f'Found failing tests in GST file {gst_file_relative_path}: {failing_tests}')
+
+
+def read_gst_schedule_and_chainid(test: dict) -> tuple[str | None, int | None]:
+    schedule = None
+    chainid = None
+
+    # for blockchain_tests, json fixtures have `"config": { "network": "Cancun", "chainid": "0x01",...`
+    config = test.get('config')
+    if config:
+        network = config.get('network')
+        if network:
+            schedule = network.upper()
+
+        chainid_str = config.get('chainid')
+        if chainid_str:
+            chainid = int(chainid_str, 16)
+
+    # for state_tests, json fixtures have `"post": { "Berlin": [{ "hash": ...`
+    if not schedule and 'post' in test:
+        post = test['post']
+        if post and len(post) == 1:
+            schedule = next(iter(post)).upper()
+
+    return (schedule, chainid)
+

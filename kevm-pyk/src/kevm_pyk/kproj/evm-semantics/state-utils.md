@@ -197,6 +197,7 @@ The `"network"` key allows setting the fee schedule inside the test.
    syntax List ::= "#parseJSONs2List" "(" JSONs ")" [function]
  // ----------------------------------------------------------
     rule #parseJSONs2List ( .JSONs ) => .List
+    rule #parseJSONs2List ( (VAL:String), REST ) => ListItem(#parseByteStack(VAL)) #parseJSONs2List ( REST )
     rule #parseJSONs2List ( (VAL:Bytes) , REST ) => ListItem(VAL) #parseJSONs2List ( REST )
 ```
 
@@ -377,17 +378,13 @@ The `"rlp"` key loads the block information.
          </k>
     requires #asWord(TYPE) ==Int #dasmTxPrefix(Blob)
 
-    rule <k> load "transaction" : { "nonce" : TN , "gasPrice" : TP , "gasLimit" : [ TG , .JSONs ] , "to" : TT , "value" : [ TV , .JSONs ] , "data" : [ TD , .JSONs ] , "sender" : TS , "secretKey" : _TK , .JSONs }
-          => mkTX !ID:Int
-          ~> loadTransaction !ID { "data"  : TD   ,   "gasLimit" : TG   ,   "gasPrice"             : TP
-                                 , "nonce" : TN   ,   "to"       : TT   ,   "value"                : TV
-                                 , "type"  : #dasmTxPrefix(Legacy)      ,   "maxPriorityFeePerGas" : TP
-                                 , "maxFeePerGas": TP                   ,   "maxFeePerBlobGas"     : 0
-                                 , "blobVersionedHashes" : [ .JSONs ]   ,   "sender"               : TS
-                                 , .JSONs
-                                 }
-          ...
-          </k>
+    rule <k> load "transaction" : { TXDATA } => mkTX !ID:Int ~> loadTransaction !ID { "type": #dasmTxPrefix(Blob), TXDATA } ... </k>
+      requires inKeys("blobVersionedHashes", TXDATA)
+    rule <k> load "transaction" : { TXDATA } => mkTX !ID:Int ~> loadTransaction !ID { "type": #dasmTxPrefix(AccessList), TXDATA } ... </k>
+      requires inKeys("accessLists", TXDATA)
+       andBool notBool inKeys("blobVersionedHashes", TXDATA)
+    rule <k> load "transaction" : { TXDATA } => mkTX !ID:Int ~> loadTransaction !ID { "type": #dasmTxPrefix(Legacy), TXDATA } ... </k>
+       [owise]
 
     syntax EthereumCommand ::= "loadTransaction" Int JSON
  // -----------------------------------------------------
@@ -444,6 +441,19 @@ The `"rlp"` key loads the block information.
 
     rule <k> loadTransaction TXID { "sender" : TS:Int , REST => REST } ... </k>
          <message> <msgID> TXID </msgID> <sender> _ =>  TS </sender> ... </message>
+
+    rule <k> loadTransaction _TXID { "accessLists" : [ .JSONs ], REST => REST } ... </k>
+
+    rule <k> loadTransaction TXID { "accessLists" : [ [ TA:JSONs ] , TAS ], REST }
+          => loadTransaction TXID { "accessList"  : [ TA ]}
+          ~> loadTransaction TXID { "accessLists" : [ TAS ], REST } ... </k>
+
+    rule <k> loadTransaction _TXID {( KEY : [VAL, .JSONs] => KEY : VAL), _REST } ... </k>
+      requires KEY in (SetItem("gasLimit") SetItem("value") SetItem("data"))
+
+    rule <k> loadTransaction _TXID {KEY : _VAL, REST => REST } ... </k>
+      requires KEY in (SetItem("secretKey"))
+
 ```
 
 ### Getting State

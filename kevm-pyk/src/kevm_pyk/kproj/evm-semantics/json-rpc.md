@@ -68,6 +68,16 @@ module JSON-EXT
  // ----------------------
 ```
 
+ - in_keys - returns true if a key is present in a JSON object.
+
+```k
+    syntax Bool ::= inKeys ( String , JSONs ) [symbol(in_keys_json), function]
+ // --------------------------------------------------------------------------
+    rule inKeys(_KEY, .JSONs) => false
+    rule inKeys(KEY, (KEY  : _, _REST)) => true
+    rule inKeys(KEY, (KEY' : _,  REST)) => inKeys(KEY, REST) requires KEY =/=String KEY'
+```
+
 ```k
 endmodule
 ```

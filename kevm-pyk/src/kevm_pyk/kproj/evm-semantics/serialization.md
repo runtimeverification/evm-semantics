@@ -253,9 +253,10 @@ These parsers can interpret hex-encoded strings as `Int`s, `Bytes`s, and `Map`s.
    syntax List ::= #parseAccessListStorageKeys ( JSONs )        [symbol(#parseAccessListStorageKeys), function]
                  | #parseAccessListStorageKeys ( JSONs , List ) [symbol(#parseAccessListStorageKeysAux), function]
  // --------------------------------------------------------------------------------------------------------------
-    rule #parseAccessListStorageKeys( J                           ) => #parseAccessListStorageKeys(J, .List)
-    rule #parseAccessListStorageKeys([S:Bytes, REST ], RESULT:List) => #parseAccessListStorageKeys([REST], ListItem(#asWord(S)) RESULT )
-    rule #parseAccessListStorageKeys([ .JSONs       ], RESULT:List) => RESULT
+    rule #parseAccessListStorageKeys( J                            ) => #parseAccessListStorageKeys(J, .List)
+    rule #parseAccessListStorageKeys([S:String, REST ], RESULT:List) => #parseAccessListStorageKeys([REST], ListItem(#parseHexWord(S)) RESULT )
+    rule #parseAccessListStorageKeys([S:Bytes,  REST ], RESULT:List) => #parseAccessListStorageKeys([REST], ListItem(#asWord(S)) RESULT )
+    rule #parseAccessListStorageKeys([ .JSONs        ], RESULT:List) => RESULT
 ```
 
 Unparsing

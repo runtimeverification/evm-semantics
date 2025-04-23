@@ -13,6 +13,7 @@ from pyk.kast.inner import KApply, KToken, KVariable
 from pyk.prelude.utils import token
 
 from kevm_pyk.kevm import KEVM, KEVMSemantics, compute_jumpdests
+from tests.utils import read_gst_schedule_and_chainid
 
 TEST_DATA: Final = [
     ('single-ktoken', token(0), KToken('0x0', 'Int')),
@@ -213,5 +214,26 @@ def test_is_mergeable(test_id: str, input: list[CTerm], expected: KInner, raise_
     except ValueError:
         assert raise_error
         return
+    # Then
+    assert result == expected
+
+
+GST_TEST_DATA = [
+    ('base_0', {'config': {'network': 'Cancun', 'chainid': '0x01'}}, ('CANCUN', 1)),
+    ('base_1', {'post': {'Shanghai': {}}, 'config': {'chainid': '0x02'}}, ('SHANGHAI', 2)),
+    ('missing_network', {'config': {'chainid': '0x00'}}, (None, 0)),
+    ('missing_chainid', {'config': {'network': 'Berlin'}}, ('BERLIN', None)),
+    ('empty', {}, (None, None)),
+]
+
+
+@pytest.mark.parametrize(
+    'test_id,input,expected',
+    GST_TEST_DATA,
+    ids=[test_id for test_id, *_ in GST_TEST_DATA],
+)
+def test_gst_schedule_and_chainid(test_id: str, input: dict, expected: tuple[str | None, int | None]) -> None:
+    # When
+    result = read_gst_schedule_and_chainid(input)
     # Then
     assert result == expected
