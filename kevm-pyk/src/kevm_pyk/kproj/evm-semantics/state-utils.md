@@ -137,17 +137,19 @@ Here we load the environmental information.
 
 ```k
     rule <k> load "env" : { KEY : ((VAL:String) => #parseWord(VAL)) } ... </k>
-      requires KEY in (SetItem("currentTimestamp") SetItem("currentGasLimit") SetItem("currentNumber") SetItem("currentDifficulty") SetItem("currentBaseFee"))
+      requires KEY in (SetItem("currentTimestamp") SetItem("currentGasLimit") SetItem("currentNumber") SetItem("currentDifficulty") SetItem("currentBaseFee") SetItem("currentRandom") SetItem("currentExcessBlobGas"))
     rule <k> load "env" : { KEY : ((VAL:String) => #parseHexWord(VAL)) } ... </k>
       requires KEY in (SetItem("currentCoinbase") SetItem("previousHash"))
  // ----------------------------------------------------------------------
-    rule <k> load "env" : { "currentCoinbase"   : (CB:Int)     } => .K ... </k> <coinbase>     _ => CB     </coinbase>
-    rule <k> load "env" : { "currentDifficulty" : (DIFF:Int)   } => .K ... </k> <difficulty>   _ => DIFF   </difficulty>
-    rule <k> load "env" : { "currentGasLimit"   : (GLIMIT:Int) } => .K ... </k> <gasLimit>     _ => GLIMIT </gasLimit>
-    rule <k> load "env" : { "currentNumber"     : (NUM:Int)    } => .K ... </k> <number>       _ => NUM    </number>
-    rule <k> load "env" : { "previousHash"      : (HASH:Int)   } => .K ... </k> <previousHash> _ => HASH   </previousHash>
-    rule <k> load "env" : { "currentTimestamp"  : (TS:Int)     } => .K ... </k> <timestamp>    _ => TS     </timestamp>
-    rule <k> load "env" : { "currentBaseFee"    : (BF:Int)     } => .K ... </k> <baseFee>      _ => BF     </baseFee>
+    rule <k> load "env" : { "currentCoinbase"      : (CB:Int)     } => .K ... </k> <coinbase>      _ => CB     </coinbase>
+    rule <k> load "env" : { "currentDifficulty"    : (DIFF:Int)   } => .K ... </k> <difficulty>    _ => DIFF   </difficulty>
+    rule <k> load "env" : { "currentGasLimit"      : (GLIMIT:Int) } => .K ... </k> <gasLimit>      _ => GLIMIT </gasLimit>
+    rule <k> load "env" : { "currentNumber"        : (NUM:Int)    } => .K ... </k> <number>        _ => NUM    </number>
+    rule <k> load "env" : { "previousHash"         : (HASH:Int)   } => .K ... </k> <previousHash>  _ => HASH   </previousHash>
+    rule <k> load "env" : { "currentTimestamp"     : (TS:Int)     } => .K ... </k> <timestamp>     _ => TS     </timestamp>
+    rule <k> load "env" : { "currentRandom"        : (RANDAO:Int) } => .K ... </k> <mixHash>       _ => RANDAO </mixHash>
+    rule <k> load "env" : { "currentBaseFee"       : (BF:Int)     } => .K ... </k> <baseFee>       _ => BF     </baseFee>
+    rule <k> load "env" : { "currentExcessBlobGas" : (BGAS:Int)   } => .K ... </k> <excessBlobGas> _ => BGAS   </excessBlobGas>
 
     syntax KItem ::= "loadCallState" JSON
  // -------------------------------------
@@ -195,6 +197,7 @@ The `"network"` key allows setting the fee schedule inside the test.
    syntax List ::= "#parseJSONs2List" "(" JSONs ")" [function]
  // ----------------------------------------------------------
     rule #parseJSONs2List ( .JSONs ) => .List
+    rule #parseJSONs2List ( (VAL:String), REST ) => ListItem(#parseByteStack(VAL)) #parseJSONs2List ( REST )
     rule #parseJSONs2List ( (VAL:Bytes) , REST ) => ListItem(VAL) #parseJSONs2List ( REST )
 ```
 
@@ -375,6 +378,14 @@ The `"rlp"` key loads the block information.
          </k>
     requires #asWord(TYPE) ==Int #dasmTxPrefix(Blob)
 
+    rule <k> load "transaction" : { TXDATA } => mkTX !ID:Int ~> loadTransaction !ID { "type": #dasmTxPrefix(Blob), TXDATA } ... </k>
+      requires inKeys("blobVersionedHashes", TXDATA)
+    rule <k> load "transaction" : { TXDATA } => mkTX !ID:Int ~> loadTransaction !ID { "type": #dasmTxPrefix(AccessList), TXDATA } ... </k>
+      requires inKeys("accessLists", TXDATA)
+       andBool notBool inKeys("blobVersionedHashes", TXDATA)
+    rule <k> load "transaction" : { TXDATA } => mkTX !ID:Int ~> loadTransaction !ID { "type": #dasmTxPrefix(Legacy), TXDATA } ... </k>
+       [owise]
+
     syntax EthereumCommand ::= "loadTransaction" Int JSON
  // -----------------------------------------------------
     rule <k> loadTransaction _ { .JSONs } => .K ... </k>
@@ -427,6 +438,22 @@ The `"rlp"` key loads the block information.
 
     rule <k> loadTransaction TXID { "blobVersionedHashes" : [TVH:JSONs], REST => REST } ... </k>
          <message> <msgID> TXID </msgID> <txVersionedHashes> _ =>  #parseJSONs2List(TVH) </txVersionedHashes> ... </message>
+
+    rule <k> loadTransaction TXID { "sender" : TS:Int , REST => REST } ... </k>
+         <message> <msgID> TXID </msgID> <sender> _ =>  TS </sender> ... </message>
+
+    rule <k> loadTransaction _TXID { "accessLists" : [ .JSONs ], REST => REST } ... </k>
+
+    rule <k> loadTransaction TXID { "accessLists" : [ [ TA:JSONs ] , TAS ], REST }
+          => loadTransaction TXID { "accessList"  : [ TA ]}
+          ~> loadTransaction TXID { "accessLists" : [ TAS ], REST } ... </k>
+
+    rule <k> loadTransaction _TXID {( KEY : [VAL, .JSONs] => KEY : VAL), _REST } ... </k>
+      requires KEY in (SetItem("gasLimit") SetItem("value") SetItem("data"))
+
+    rule <k> loadTransaction _TXID {KEY : _VAL, REST => REST } ... </k>
+      requires KEY in (SetItem("secretKey"))
+
 ```
 
 ### Getting State

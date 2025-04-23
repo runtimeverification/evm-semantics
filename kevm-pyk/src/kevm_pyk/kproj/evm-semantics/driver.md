@@ -85,12 +85,23 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          <chainID> B </chainID>
          <gas> _ => 0 </gas>
          <message>
-           <msgID>      TXID </msgID>
-           <sigV>       TW   </sigV>
-           <sigR>       TR   </sigR>
-           <sigS>       TS   </sigS>
+           <msgID>  TXID     </msgID>
+           <sigV>   TW       </sigV>
+           <sigR>   TR       </sigR>
+           <sigS>   TS       </sigS>
+           <sender> .Account </sender>
            ...
          </message>
+
+    rule <k> startTx => loadTx( ACCTFROM ) ... </k>
+         <txPending> ListItem(TXID:Int) ... </txPending>
+         <gas> _ => 0 </gas>
+         <message>
+           <msgID>  TXID     </msgID>
+           <sender> ACCTFROM </sender>
+           ...
+         </message>
+      requires notBool ACCTFROM ==K .Account
 
     syntax EthereumCommand ::= loadTx ( Account ) [symbol(loadTx)]
  // --------------------------------------------------------------
@@ -225,6 +236,14 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
     syntax EthereumCommand ::= #loadAccessList ( JSON )              [symbol(#loadAccessList)]
                              | #loadAccessListAux ( Account , List ) [symbol(#loadAccessListAux)]
  // ---------------------------------------------------------------------------------------------
+    rule <k> #loadAccessList ( [ { "address" : ACCT:String , "storageKeys" : [STRG] }, REST ] )
+          => #loadAccessListAux (#parseAddr(ACCT), #parseAccessListStorageKeys([STRG]))
+          ~> #loadAccessList ([REST])
+         ...
+         </k>
+         <schedule> SCHED </schedule>
+      requires Ghasaccesslist << SCHED >>
+
     rule <k> #loadAccessList ([ .JSONs ]) => .K ... </k>
          <schedule> SCHED </schedule>
       requires Ghasaccesslist << SCHED >>
@@ -315,7 +334,7 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
 ```k
     syntax Set ::= "#loadKeys" [function]
  // -------------------------------------
-    rule #loadKeys => ( SetItem("env") SetItem("pre") SetItem("rlp") SetItem("network") SetItem("genesisRLP") )
+    rule #loadKeys => ( SetItem("env") SetItem("pre") SetItem("rlp") SetItem("network") SetItem("genesisRLP") SetItem("transaction"))
 
     rule <k> run  TESTID : { KEY : (VAL:JSON) , REST } => load KEY : VAL ~> run TESTID : { REST } ... </k>
       requires KEY in #loadKeys
@@ -352,6 +371,7 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
     rule <k> process  TESTID : { KEY : VAL , REST } => process TESTID : { REST } ~> check TESTID : {KEY : VAL} ... </k> requires KEY in #checkKeys
     rule <k> process _TESTID : { .JSONs }           => #startBlock ~> startTx ... </k>
 
+    rule <k> run _TESTID : { .JSONs }               => #startBlock ~> startTx ... </k>
     rule <k> run _TESTID : { "exec" : (EXEC:JSON) } => loadCallState EXEC ~> start ~> flush ... </k>
 
     rule <k> load "exec" : J => loadCallState J ... </k>
@@ -413,6 +433,13 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
     rule <k> loadTransaction _ { "maxPriorityFeePerGas" : (V:Bytes  => #asWord(V)), _          } ... </k>
     rule <k> loadTransaction _ { "maxFeePerGas"         : (V:Bytes  => #asWord(V)), _          } ... </k>
     rule <k> loadTransaction _ { "maxFeePerBlobGas"     : (V:Bytes  => #asWord(V)), _          } ... </k>
+
+ // for state-tests
+
+    rule <k> loadTransaction _ { KEY : ((VAL:String) => #parseWord(VAL)), _ } ... </k>
+      requires KEY in (SetItem("nonce") SetItem("gasPrice") SetItem("gasLimit") SetItem("to") SetItem("value") SetItem("sender") SetItem("maxPriorityFeePerGas") SetItem("maxFeePerGas") SetItem("maxFeePerBlobGas"))
+    rule <k> loadTransaction _ { KEY : ((VAL:String) => #parseByteStack(VAL)), _ } ... </k>
+      requires KEY in (SetItem("data"))
 ```
 
 ### Checking State
@@ -437,7 +464,15 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
       requires KEY in (SetItem("callcreates")) andBool notBool sortedJSONs(JS)
 
     rule <k> check TESTID : { "post" : (POST:String) } => check "blockHeader" : {  "stateRoot" : #parseWord(POST) } ~> failure TESTID ... </k>
-    rule <k> check TESTID : { "post" : { POST } } => check "account" : { POST } ~> failure TESTID ... </k>
+    rule <k> check TESTID : { "post" : {(SCHEDULE_STR:String) : [ POST ] } }
+          => check TESTID : { "post" : POST } ~> failure TESTID ... </k>
+         <schedule> SCHEDULE </schedule>
+      requires #asScheduleString(SCHEDULE_STR) ==K SCHEDULE
+
+    rule <k> check _TESTID : { "post" : { (KEY : _VALUE, REST => REST) } } ... </k> requires KEY in (SetItem("hash") SetItem("logs") SetItem("txbytes") SetItem("indexes"))
+    rule <k> check _TESTID : { "post" : { "state" : { STATE } } } => check "account" : { STATE } ... </k>
+
+    rule <k> check TESTID : { "post" : { POST } } => check "account" : { POST } ~> failure TESTID ... </k> [owise]
 
     rule <k> check "account" : { ACCTID:Int : { KEY : VALUE , REST } } => check "account" : { ACCTID : { KEY : VALUE } } ~> check "account" : { ACCTID : { REST } } ... </k>
       requires REST =/=K .JSONs
