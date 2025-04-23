@@ -41,7 +41,7 @@ def chain_id_always_one(_file: str) -> int:
 def test_bchain(test_file: Path, save_failing: bool) -> None:
     _test(
         test_file,
-        schedule='CANCUN',
+        schedule='PRAGUE',
         mode='NORMAL',
         usegas=True,
         save_failing=save_failing,
@@ -64,7 +64,7 @@ BCHAIN_ENGINE_TESTS: Final = tuple(BCHAIN_ENGINE_TEST_DIR.rglob('**/*.json'))
 def test_bchain_engine(test_file: Path, save_failing: bool) -> None:
     _test(
         test_file,
-        schedule='CANCUN',
+        schedule='PRAGUE',
         mode='NORMAL',
         usegas=True,
         save_failing=save_failing,
@@ -87,7 +87,7 @@ STATE_TESTS: Final = tuple(STATE_TEST_DIR.rglob('**/*.json'))
 def test_state(test_file: Path, save_failing: bool) -> None:
     _test(
         test_file,
-        schedule='CANCUN',
+        schedule='PRAGUE',
         mode='NORMAL',
         usegas=True,
         save_failing=save_failing,
@@ -110,7 +110,7 @@ TRANSACTION_TESTS: Final = tuple(TRANSACTION_TEST_DIR.rglob('**/*.json'))
 def test_transaction(test_file: Path, save_failing: bool) -> None:
     _test(
         test_file,
-        schedule='CANCUN',
+        schedule='PRAGUE',
         mode='NORMAL',
         usegas=True,
         save_failing=save_failing,

@@ -480,7 +480,7 @@ class EVMChainOptions(Options):
     @staticmethod
     def default() -> dict[str, Any]:
         return {
-            'schedule': 'CANCUN',
+            'schedule': 'PRAGUE',
             'chainid': 1,
             'mode': 'NORMAL',
             'usegas': True,
@@ -967,6 +967,7 @@ class KEVMCLIArgs(KCLIArgs):
             'MERGE',
             'SHANGHAI',
             'CANCUN',
+            'PRAGUE',
         )
         modes = ('NORMAL', 'VMTESTS')
 
