@@ -40,7 +40,6 @@ def _assert_exit_code_zero(pattern: Pattern) -> None:
         return
 
     pretty = kore_print(pattern, definition_dir=kdist.get('evm-semantics.llvm'), output=PrintOutput.PRETTY)
-    print('ACTUAL:', pretty)
     assert pretty == GOLDEN
 
 
