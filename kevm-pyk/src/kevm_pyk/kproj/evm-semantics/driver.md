@@ -524,7 +524,7 @@ Here we check the other post-conditions associated with an EVM test.
                         SetItem("mixHash") SetItem("nonce") SetItem("number") SetItem("parentHash")
                         SetItem("receiptTrie") SetItem("stateRoot") SetItem("timestamp")
                         SetItem("transactionsTrie") SetItem("uncleHash") SetItem("baseFeePerGas") SetItem("withdrawalsRoot")
-                        SetItem("blobGasUsed") SetItem("excessBlobGas") SetItem("parentBeaconBlockRoot")
+                        SetItem("blobGasUsed") SetItem("excessBlobGas") SetItem("parentBeaconBlockRoot") SetItem("requestsHash")
                       )
 
     rule <k> check "blockHeader" : { "bloom"                : VALUE } => .K ... </k> <logsBloom>        VALUE </logsBloom>
@@ -547,6 +547,8 @@ Here we check the other post-conditions associated with an EVM test.
     rule <k> check "blockHeader" : { "blobGasUsed"          : VALUE } => .K ... </k> <blobGasUsed>      VALUE </blobGasUsed>
     rule <k> check "blockHeader" : { "excessBlobGas"        : VALUE } => .K ... </k> <excessBlobGas>    VALUE </excessBlobGas>
     rule <k> check "blockHeader" : { "parentBeaconBlockRoot": VALUE } => .K ... </k> <beaconRoot>       VALUE </beaconRoot>
+    rule <k> check "blockHeader" : { "requestsHash"         : VALUE } => .K ... </k> <requestsRoot>     VALUE </requestsRoot>
+
 
 
     rule <k> check "blockHeader" : { "hash": HASH:Bytes } => .K ...</k>
@@ -570,10 +572,12 @@ Here we check the other post-conditions associated with an EVM test.
          <blobGasUsed>      UB </blobGasUsed>
          <excessBlobGas>    EB </excessBlobGas>
          <beaconRoot>       BR </beaconRoot>
-      requires #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN)                     ==Int #asWord(HASH)
-        orBool #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF)                 ==Int #asWord(HASH)
-        orBool #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR)             ==Int #asWord(HASH)
-        orBool #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR, UB, EB, BR) ==Int #asWord(HASH)
+         <requestsRoot>     RR </requestsRoot>
+      requires #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN)                         ==Int #asWord(HASH)
+        orBool #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF)                     ==Int #asWord(HASH)
+        orBool #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR)                 ==Int #asWord(HASH)
+        orBool #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR, UB, EB, BR)     ==Int #asWord(HASH)
+        orBool #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR, UB, EB, BR, RR) ==Int #asWord(HASH)
 
     rule check TESTID : { "genesisBlockHeader" : BLOCKHEADER } => check "genesisBlockHeader" : BLOCKHEADER ~> failure TESTID
  // ------------------------------------------------------------------------------------------------------------------------

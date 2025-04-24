@@ -46,6 +46,7 @@ The following codes all indicate that the VM ended execution with an exception, 
                                    | "EVMC_STATIC_MODE_VIOLATION"
                                    | "EVMC_PRECOMPILE_FAILURE"
                                    | "EVMC_NONCE_EXCEEDED"
+                                   | "EVMC_INVALID_BLOCK"
  // -------------------------------------------------------------
     rule StatusCode2String(EVMC_FAILURE)               => "EVMC_FAILURE"
     rule StatusCode2String(EVMC_INVALID_INSTRUCTION)   => "EVMC_INVALID_INSTRUCTION"
@@ -59,6 +60,7 @@ The following codes all indicate that the VM ended execution with an exception, 
     rule StatusCode2String(EVMC_STATIC_MODE_VIOLATION) => "EVMC_STATIC_MODE_VIOLATION"
     rule StatusCode2String(EVMC_PRECOMPILE_FAILURE)    => "EVMC_PRECOMPILE_FAILURE"
     rule StatusCode2String(EVMC_NONCE_EXCEEDED)        => "EVMC_NONCE_EXCEEDED"
+    rule StatusCode2String(EVMC_INVALID_BLOCK)         => "EVMC_INVALID_BLOCK"
 ```
 
 ### Ending Codes
