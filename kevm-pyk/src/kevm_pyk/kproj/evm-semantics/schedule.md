@@ -415,6 +415,18 @@ A `ScheduleConst` is a constant determined by the fee schedule.
                   orBool SCHEDFLAG ==K Ghasblobhash
                        )
 ```
+
+###  Prague Schedule
+
+```k
+    syntax Schedule ::= "PRAGUE" [symbol(PRAGUE_EVM), smtlib(schedule_PRAGUE)]
+ // --------------------------------------------------------------------------
+    rule [SCHEDCONSTPrague]: SCHEDCONST < PRAGUE > => SCHEDCONST < CANCUN >
+
+    rule [SCHEDFLAGPrague]: SCHEDFLAG  << PRAGUE >> => SCHEDFLAG << CANCUN >>
+
+```
+
 ```k
 endmodule
 ```
