@@ -89,7 +89,7 @@ SKIPPED_BCHAIN_TESTS: Final = tuple(test_file for test_file in BCHAIN_TESTS if t
 def test_bchain(test_file: Path, save_failing: bool) -> None:
     _test(
         test_file,
-        schedule='CANCUN',
+        schedule='PRAGUE',
         mode='NORMAL',
         usegas=True,
         save_failing=save_failing,
@@ -109,7 +109,7 @@ def test_bchain(test_file: Path, save_failing: bool) -> None:
 def test_rest_bchain(test_file: Path, save_failing: bool) -> None:
     _test(
         test_file,
-        schedule='CANCUN',
+        schedule='PRAGUE',
         mode='NORMAL',
         usegas=True,
         save_failing=save_failing,

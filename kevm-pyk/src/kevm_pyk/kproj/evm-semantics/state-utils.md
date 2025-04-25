@@ -137,17 +137,19 @@ Here we load the environmental information.
 
 ```k
     rule <k> load "env" : { KEY : ((VAL:String) => #parseWord(VAL)) } ... </k>
-      requires KEY in (SetItem("currentTimestamp") SetItem("currentGasLimit") SetItem("currentNumber") SetItem("currentDifficulty") SetItem("currentBaseFee"))
+      requires KEY in (SetItem("currentTimestamp") SetItem("currentGasLimit") SetItem("currentNumber") SetItem("currentDifficulty") SetItem("currentBaseFee") SetItem("currentRandom") SetItem("currentExcessBlobGas"))
     rule <k> load "env" : { KEY : ((VAL:String) => #parseHexWord(VAL)) } ... </k>
       requires KEY in (SetItem("currentCoinbase") SetItem("previousHash"))
  // ----------------------------------------------------------------------
-    rule <k> load "env" : { "currentCoinbase"   : (CB:Int)     } => .K ... </k> <coinbase>     _ => CB     </coinbase>
-    rule <k> load "env" : { "currentDifficulty" : (DIFF:Int)   } => .K ... </k> <difficulty>   _ => DIFF   </difficulty>
-    rule <k> load "env" : { "currentGasLimit"   : (GLIMIT:Int) } => .K ... </k> <gasLimit>     _ => GLIMIT </gasLimit>
-    rule <k> load "env" : { "currentNumber"     : (NUM:Int)    } => .K ... </k> <number>       _ => NUM    </number>
-    rule <k> load "env" : { "previousHash"      : (HASH:Int)   } => .K ... </k> <previousHash> _ => HASH   </previousHash>
-    rule <k> load "env" : { "currentTimestamp"  : (TS:Int)     } => .K ... </k> <timestamp>    _ => TS     </timestamp>
-    rule <k> load "env" : { "currentBaseFee"    : (BF:Int)     } => .K ... </k> <baseFee>      _ => BF     </baseFee>
+    rule <k> load "env" : { "currentCoinbase"      : (CB:Int)     } => .K ... </k> <coinbase>      _ => CB     </coinbase>
+    rule <k> load "env" : { "currentDifficulty"    : (DIFF:Int)   } => .K ... </k> <difficulty>    _ => DIFF   </difficulty>
+    rule <k> load "env" : { "currentGasLimit"      : (GLIMIT:Int) } => .K ... </k> <gasLimit>      _ => GLIMIT </gasLimit>
+    rule <k> load "env" : { "currentNumber"        : (NUM:Int)    } => .K ... </k> <number>        _ => NUM    </number>
+    rule <k> load "env" : { "previousHash"         : (HASH:Int)   } => .K ... </k> <previousHash>  _ => HASH   </previousHash>
+    rule <k> load "env" : { "currentTimestamp"     : (TS:Int)     } => .K ... </k> <timestamp>     _ => TS     </timestamp>
+    rule <k> load "env" : { "currentBaseFee"       : (BF:Int)     } => .K ... </k> <baseFee>       _ => BF     </baseFee>
+    rule <k> load "env" : { "currentRandom"        : (RANDAO:Int) } => .K ... </k> <mixHash>       _ => RANDAO </mixHash>
+    rule <k> load "env" : { "currentExcessBlobGas" : (BGAS:Int)   } => .K ... </k> <excessBlobGas> _ => BGAS   </excessBlobGas>
 
     syntax KItem ::= "loadCallState" JSON
  // -------------------------------------
@@ -188,6 +190,7 @@ The `"network"` key allows setting the fee schedule inside the test.
     rule #asScheduleString("Shanghai")                  => SHANGHAI
     rule #asScheduleString("Cancun")                    => CANCUN
     rule #asScheduleString("ShanghaiToCancunAtTime15k") => CANCUN
+    rule #asScheduleString("Prague")                    => PRAGUE
 ```
 
 - `#parseJSONs2List` parse a JSON object with string values into a list of value.
