@@ -429,7 +429,6 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule [GhasrequestsPrague]: Ghasrequests << PRAGUE >> => true
     rule [SCHEDFLAGPrague]:    SCHEDFLAG    << PRAGUE >> => SCHEDFLAG << CANCUN >>
       requires notBool ( SCHEDFLAG ==K Ghasrequests )
-
 ```
 
 ```k
