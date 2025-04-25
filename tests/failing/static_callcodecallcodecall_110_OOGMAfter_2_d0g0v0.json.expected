@@ -169,6 +169,9 @@
         <beaconRoot>
           0
         </beaconRoot>
+        <requestsRoot>
+          0
+        </requestsRoot>
         <ommerBlockHeaders>
           [ .JSONs ]
         </ommerBlockHeaders>
@@ -385,6 +388,11 @@
       <withdrawals>
         .WithdrawalCellMap
       </withdrawals>
+      <requests>
+        <depositRequests>
+          .List
+        </depositRequests>
+      </requests>
     </network>
   </ethereum>
 </kevm>
