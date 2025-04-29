@@ -826,14 +826,14 @@ i18n = ["Babel (>=2.7)"]
 
 [[package]]
 name = "kframework"
-version = "7.1.244"
+version = "7.1.245"
 description = ""
 optional = false
 python-versions = "<4.0,>=3.10"
 groups = ["main"]
 files = [
-    {file = "kframework-7.1.244-py3-none-any.whl", hash = "sha256:711917d2de805889c0c8e7ae6d40fe1f044be19a3a9536e385c8ed92ccc66e9d"},
-    {file = "kframework-7.1.244.tar.gz", hash = "sha256:1f3b98391ea762aac27c1474101354eb5e50d99bdfd088f9b6b1a34e2a0d95e5"},
+    {file = "kframework-7.1.245-py3-none-any.whl", hash = "sha256:eb2169ab027c454cc64c5c0838129f88d82b86c06697a2d17e5752ed2c720dae"},
+    {file = "kframework-7.1.245.tar.gz", hash = "sha256:08e4ef66d48086a59a9d1e8dd1a83211425969fe1947c13ba15c53e869b4d481"},
 ]
 
 [package.dependencies]
@@ -1189,14 +1189,14 @@ files = [
 
 [[package]]
 name = "pep8-naming"
-version = "0.14.1"
+version = "0.15.0"
 description = "Check PEP-8 naming conventions, plugin for flake8"
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.9"
 groups = ["dev"]
 files = [
-    {file = "pep8-naming-0.14.1.tar.gz", hash = "sha256:1ef228ae80875557eb6c1549deafed4dabbf3261cfcafa12f773fe0db9be8a36"},
-    {file = "pep8_naming-0.14.1-py3-none-any.whl", hash = "sha256:63f514fc777d715f935faf185dedd679ab99526a7f2f503abb61587877f7b1c5"},
+    {file = "pep8_naming-0.15.0-py3-none-any.whl", hash = "sha256:2ce36937ff0421d871a634f4a0c2af06f994fe22c9055ea9813ca72d562754da"},
+    {file = "pep8_naming-0.15.0.tar.gz", hash = "sha256:a637ee5144f7585c800b1fc6eeb996fa35a2ef0f2690880a9e1b29cb9f6e8359"},
 ]
 
 [package.dependencies]
@@ -1870,4 +1870,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10"
-content-hash = "508f1081ec3c4b2ae14b69c9869b39faf27c09725c1b2c45c0ff6302fcf26b1a"
+content-hash = "ac6b4aa449185db00c471bb137cfe7fbd9ad228e02f86a295197fb24e8c3bdbc"
