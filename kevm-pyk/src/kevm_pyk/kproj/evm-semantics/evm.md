@@ -95,6 +95,8 @@ In the comments next to each cell, we've marked which component of the YellowPap
 
             // I_H* (block information)
             <blockhashes> .List </blockhashes>
+            <previousExcessBlobGas> 0 </previousExcessBlobGas>
+            <previousBlobGasUsed>   0 </previousBlobGasUsed>
             <block>
               <previousHash>     0      </previousHash>     // I_Hp
               <ommersHash>       0      </ommersHash>       // I_Ho
@@ -588,6 +590,51 @@ After executing a transaction, it's necessary to have the effect of the substate
            ...
          </withdrawal> [owise]
 
+    syntax InternalOp ::= "#validateBlockBlobs" Int Int [symbol(#validateBlockBlobs)]
+ // ---------------------------------------------------------------------------------
+     rule <k> #validateBlockBlobs COUNT IDX => #validateBlockBlobs (COUNT +Int size(TVH)) (IDX +Int 1) ... </k>
+         <txOrder> ... ListItem(TXID) </txOrder>
+         <schedule> SCHED </schedule>
+         <message>
+           <msgID> IDX </msgID>
+           <txVersionedHashes> TVH </txVersionedHashes>
+           ...
+         </message>
+      requires Ghasblobbasefee << SCHED >> andBool IDX <=Int TXID
+
+    rule <k> #validateBlockBlobs COUNT IDX => .K ... </k>
+         <statusCode> _ => EVMC_INVALID_BLOCK </statusCode>
+         <txOrder> ... ListItem(TXID) </txOrder>
+         <txPending> _ => .List </txPending>
+         <schedule> SCHED </schedule>
+         <excessBlobGas>         EXCESS_BLOB_GAS      </excessBlobGas>
+         <previousExcessBlobGas> PREV_EXCESS_BLOB_GAS </previousExcessBlobGas>
+         <previousBlobGasUsed>   PREV_BLOB_GAS_USED   </previousBlobGasUsed>
+      requires Ghasblobbasefee << SCHED >>
+        andBool ( (IDX >Int TXID andBool Ctotalblob(SCHED, COUNT) >Int Gmaxblobgas < SCHED >)
+            orBool notBool EXCESS_BLOB_GAS ==Int Cexcessblob(SCHED, PREV_EXCESS_BLOB_GAS, PREV_BLOB_GAS_USED))
+
+    rule <k> #validateBlockBlobs _COUNT _IDX => .K ... </k> [owise]
+
+    syntax InternalOp ::= "#finalizeBlockBlobs" [symbol(#finalizeBlockBlobs)]
+ // -------------------------------------------------------------------------
+    rule <k> #finalizeBlockBlobs => .K ... </k>
+         <schedule> SCHED </schedule>
+         <blobGasUsed> BLOB_GAS_USED </blobGasUsed>
+         <excessBlobGas> EXCESS_BLOB_GAS </excessBlobGas>
+         <previousExcessBlobGas> _ => EXCESS_BLOB_GAS </previousExcessBlobGas>
+         <previousBlobGasUsed>   _ => BLOB_GAS_USED   </previousBlobGasUsed>
+      requires ( Ghasblobbasefee << SCHED >> andBool BLOB_GAS_USED <=Int Gmaxblobgas < SCHED > )
+        orBool notBool Ghasblobbasefee << SCHED >>
+
+    rule <k> #finalizeBlockBlobs => #end EVMC_INVALID_BLOCK ... </k> [owise]
+
+    syntax Bool ::= #checkTxVersionedHashes (List) [function, symbol(#checkTxVersionedHashes)]
+ // ------------------------------------------------------------------------------------------
+    rule #checkTxVersionedHashes (.List) => true
+    rule #checkTxVersionedHashes ( ListItem(VH:Bytes) TVH) => #checkTxVersionedHashes(TVH) requires         VH[0] ==Int 1
+    rule #checkTxVersionedHashes ( ListItem(VH:Bytes) _  ) => false                        requires notBool VH[0] ==Int 1
+
     syntax InternalOp ::= #finalizeStorage ( List ) [symbol(#finalizeStorage)]
  // --------------------------------------------------------------------------
     rule <k> #finalizeStorage(ListItem(ACCT) REST => REST) ... </k>
@@ -602,6 +649,27 @@ After executing a transaction, it's necessary to have the effect of the substate
     rule <k> #finalizeStorage(.List) => .K ... </k>
 
     rule <k> (.K => #newAccount ACCT) ~> #finalizeStorage(ListItem(ACCT) _ACCTS) ... </k> [owise]
+
+
+    syntax InternalOp ::= "#finalizeBlob" Int [symbol(#finalizeBlob)]
+ // -----------------------------------------------------------------
+   rule <k> #finalizeBlob MSGID => .K ... </k>
+         <message>
+            <msgID> MSGID </msgID>
+            <txType> TXTYPE </txType>
+            ...
+         </message>
+      requires notBool TXTYPE ==K Blob
+
+    rule <k> #finalizeBlob MSGID => .K ... </k>
+         <schedule> SCHED </schedule>
+         <blobGasUsed> BLOB_GAS_USED => BLOB_GAS_USED +Int Ctotalblob(SCHED, size(TVH)) </blobGasUsed>
+         <message>
+            <msgID> MSGID </msgID>
+            <txType> Blob </txType>
+            <txVersionedHashes> TVH </txVersionedHashes>
+            ...
+         </message>
 
     syntax InternalOp ::= #finalizeTx ( Bool )     [symbol(#finalizeTx)]
                         | #deleteAccounts ( List ) [symbol(#deleteAccounts)]
@@ -627,9 +695,8 @@ After executing a transaction, it's necessary to have the effect of the substate
          </message>
       requires REFUND =/=Int 0
 
-    rule <k> #finalizeTx(false => true) ... </k>
+    rule <k> #finalizeTx(false) => #finalizeBlob TXID ~> #finalizeTx(true) ... </k>
          <useGas> true </useGas>
-         <schedule> SCHED </schedule>
          <baseFee> BFEE </baseFee>
          <origin> ORG </origin>
          <coinbase> MINER </coinbase>
@@ -653,41 +720,10 @@ After executing a transaction, it's necessary to have the effect of the substate
            <txGasLimit> GLIMIT </txGasLimit>
            ...
          </message>
-      requires ORG =/=Int MINER andBool notBool Ghasblobbasefee << SCHED >>
+      requires ORG =/=Int MINER
 
-    rule <k> #finalizeTx(false => true) ... </k>
+    rule <k> #finalizeTx(false) => #finalizeBlob MsgId ~> #finalizeTx(true) ... </k>
          <useGas> true </useGas>
-         <baseFee> BFEE </baseFee>
-         <schedule> SCHED </schedule>
-         <origin> ORG </origin>
-         <coinbase> MINER </coinbase>
-         <gas> GAVAIL </gas>
-         <gasUsed> GUSED => GUSED +Gas GLIMIT -Gas GAVAIL </gasUsed>
-         <gasPrice> GPRICE </gasPrice>
-         <refund> 0 </refund>
-         <excessBlobGas> EXCESS_BLOB_GAS </excessBlobGas>
-         <account>
-           <acctID> ORG </acctID>
-           <balance> ORGBAL => ORGBAL +Int GAVAIL *Int GPRICE -Int #calcBlobFee(EXCESS_BLOB_GAS, size(TVH)) </balance>
-           ...
-         </account>
-         <account>
-           <acctID> MINER </acctID>
-           <balance> MINBAL => MINBAL +Int (GLIMIT -Int GAVAIL) *Int (GPRICE -Int BFEE) </balance>
-           ...
-         </account>
-         <txPending> ListItem(TXID:Int) REST => REST </txPending>
-         <message>
-           <msgID> TXID </msgID>
-           <txGasLimit> GLIMIT </txGasLimit>
-           <txVersionedHashes> TVH </txVersionedHashes>
-           ...
-         </message>
-      requires ORG =/=Int MINER andBool Ghasblobbasefee << SCHED >>
-
-        rule <k> #finalizeTx(false => true) ... </k>
-         <useGas> true </useGas>
-         <schedule> SCHED </schedule>
          <baseFee> BFEE </baseFee>
          <origin> ACCT </origin>
          <coinbase> ACCT </coinbase>
@@ -706,32 +742,6 @@ After executing a transaction, it's necessary to have the effect of the substate
            <txGasLimit> GLIMIT </txGasLimit>
            ...
          </message>
-     requires notBool Ghasblobbasefee << SCHED >>
-
-    rule <k> #finalizeTx(false => true) ... </k>
-         <useGas> true </useGas>
-         <schedule> SCHED </schedule>
-         <baseFee> BFEE </baseFee>
-         <origin> ACCT </origin>
-         <coinbase> ACCT </coinbase>
-         <gas> GAVAIL </gas>
-         <gasUsed> GUSED => GUSED +Gas GLIMIT -Gas GAVAIL </gasUsed>
-         <gasPrice> GPRICE </gasPrice>
-         <refund> 0 </refund>
-         <excessBlobGas> EXCESS_BLOB_GAS </excessBlobGas>
-         <account>
-           <acctID> ACCT </acctID>
-           <balance> BAL => BAL +Int GLIMIT *Int GPRICE -Int (GLIMIT -Int GAVAIL) *Int BFEE -Int #calcBlobFee(EXCESS_BLOB_GAS, size(TVH)) </balance>
-           ...
-         </account>
-         <txPending> ListItem(MsgId:Int) REST => REST </txPending>
-         <message>
-           <msgID> MsgId </msgID>
-           <txGasLimit> GLIMIT </txGasLimit>
-           <txVersionedHashes> TVH </txVersionedHashes>
-           ...
-         </message>
-      requires Ghasblobbasefee << SCHED >>
 
     rule <k> #finalizeTx(false => true) ... </k>
          <useGas> false </useGas>
@@ -771,15 +781,18 @@ After executing a transaction, it's necessary to have the effect of the substate
 ```k
     syntax EthereumCommand ::= "#startBlock"
  // ----------------------------------------
-    rule <k> #startBlock => #executeBeaconRoots ... </k>
+    rule <k> #startBlock => #validateBlockBlobs 0 0 ~> #executeBeaconRoots ... </k>
          <gasUsed> _ => 0 </gasUsed>
+         <blobGasUsed> _ => 0 </blobGasUsed>
          <log> _ => .List </log>
          <logsBloom> _ => #padToWidth(256, .Bytes) </logsBloom>
 
     syntax EthereumCommand ::= "#finalizeBlock"
                              | #rewardOmmers ( JSONs ) [symbol(#rewardOmmers)]
  // --------------------------------------------------------------------------
-    rule <k> #finalizeBlock => #if Ghaswithdrawals << SCHED >> #then #finalizeWithdrawals #else .K #fi ~> #rewardOmmers(OMMERS) ... </k>
+    rule <k> #finalizeBlock => #if Ghaswithdrawals << SCHED >> #then #finalizeWithdrawals #else .K #fi
+          ~> #rewardOmmers(OMMERS)
+          ~> #finalizeBlockBlobs ... </k>
          <schedule> SCHED </schedule>
          <ommerBlockHeaders> [ OMMERS ] </ommerBlockHeaders>
          <coinbase> MINER </coinbase>
@@ -985,43 +998,6 @@ These are just used by the other operators for shuffling local execution state a
        andBool Gemptyisnonexistent << SCHED >>
 ```
 
-- `#calcBlobFee` will compute the blob fee as specified by EIPs 4844 and will be deducted from the sender balance before transaction execution
-```k
-    syntax Int ::= #calcBlobFee( Int, Int ) [symbol(#calcBlobFee), function]
- // ------------------------------------------------------------------------
-    rule #calcBlobFee(EXCESS_BLOBGAS, BLOB_VERSIONED_HASHES_SIZE) => #totalBlobGas(BLOB_VERSIONED_HASHES_SIZE) *Int #baseFeePerBlobGas(EXCESS_BLOBGAS) 
-```
-
-- `#totalBlobGas` will compute the total gas used by the blob as specified by EIPs 4844 
-
-```k
-    syntax Int ::= #totalBlobGas( Int ) [symbol(#totalBlobGas), function]
- // ---------------------------------------------------------------------
-    syntax Int ::= "GAS_PER_BLOB" [macro]
-    rule GAS_PER_BLOB => 131072
-    rule #totalBlobGas(BLOB_VERSIONED_HASHES_SIZE) => GAS_PER_BLOB *Int BLOB_VERSIONED_HASHES_SIZE
-```
-
-- `#baseFeePerBlobGas` will compute the blob base fee as specified by EIPs 4844 and 7516
-
-```k
-    syntax Int ::= #baseFeePerBlobGas( Int ) [symbol(#baseFeePerBlobGas), function]
- // -------------------------------------------------------------------------------
-    rule #baseFeePerBlobGas(EXCESS_BLOBGAS) => #fakeExponential(MIN_BASE_FEE_PER_BLOB_GAS, EXCESS_BLOBGAS, BLOB_BASE_FEE_UPDATE_FRACTION)
-    syntax Int ::= "MIN_BASE_FEE_PER_BLOB_GAS" [macro] | "BLOB_BASE_FEE_UPDATE_FRACTION" [macro]
-    rule MIN_BASE_FEE_PER_BLOB_GAS => 1
-    rule BLOB_BASE_FEE_UPDATE_FRACTION => 3338477
-
-    syntax Int ::= #fakeExponential(Int, Int, Int) [symbol(#fakeExponential), function]
-                 | #fakeExponential(Int, Int, Int, Int, Int) [function]
- // -------------------------------------------------------------------
-    rule #fakeExponential(FACTOR, NUMER, DENOM) => #fakeExponential(1, 0, FACTOR *Int DENOM, NUMER, DENOM)
-
-    rule #fakeExponential(I, OUTPUT, ACCUM, NUMER, DENOM)
-      => #fakeExponential(I +Int 1, OUTPUT +Int ACCUM, ACCUM *Int NUMER /Int (DENOM *Int I), NUMER, DENOM) requires ACCUM >Int 0
-    rule #fakeExponential(_, OUTPUT, _, _, DENOM) => OUTPUT /Int DENOM [owise]
-```
-
 ### Invalid Operator
 
 We use `INVALID` both for marking the designated invalid operator, and `UNDEFINED(_)` for garbage bytes in the input program.
@@ -1159,7 +1135,7 @@ These operators make queries about the current execution state.
     rule <k> GASPRICE    => GPRICE                      ~> #push ... </k> <gasPrice> GPRICE </gasPrice>
     rule <k> GASLIMIT    => GLIMIT                      ~> #push ... </k> <gasLimit> GLIMIT </gasLimit>
     rule <k> BASEFEE     => BFEE                        ~> #push ... </k> <baseFee> BFEE </baseFee>
-    rule <k> BLOBBASEFEE => #baseFeePerBlobGas(EXCESS_BLOB_GAS) ~> #push ... </k> <excessBlobGas> EXCESS_BLOB_GAS </excessBlobGas>  requires notBool #rangeNegUInt64(EXCESS_BLOB_GAS)
+    rule <k> BLOBBASEFEE => Cbasefeeperblob(SCHED, EXCESS_BLOB_GAS) ~> #push ... </k> <excessBlobGas> EXCESS_BLOB_GAS </excessBlobGas> <schedule> SCHED </schedule>  requires notBool #rangeNegUInt64(EXCESS_BLOB_GAS)
 
     syntax NullStackOp ::= "COINBASE" | "TIMESTAMP" | "NUMBER" | "DIFFICULTY" | "PREVRANDAO"
  // ----------------------------------------------------------------------------------------
