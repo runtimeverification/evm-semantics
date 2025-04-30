@@ -67,7 +67,8 @@ module VOW-FESS-FAIL-ROUGH-SPEC
             <excessBlobGas> _ </excessBlobGas>
             <beaconRoot> _ </beaconRoot>
           </block>
-        </evm>
+          ...
+      </evm>
         <network>
           <chainID> VChainId </chainID>
           <accounts>
@@ -191,7 +192,8 @@ module VOW-FESS-FAIL-ROUGH-SPEC
             <excessBlobGas> _ </excessBlobGas>
             <beaconRoot> _ </beaconRoot>
           </block>
-        </evm>
+          ...
+      </evm>
         <network>
           <chainID> VChainId </chainID>
           <accounts>
