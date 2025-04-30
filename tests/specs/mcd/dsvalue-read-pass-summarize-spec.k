@@ -133,7 +133,6 @@ module DSVALUE-READ-PASS-SUMMARIZE-SPEC
         </callState>
         <versionedHashes> _ </versionedHashes>
         (_ => ?_)
-        ...
       </evm>
       <account>
         <acctID> ACCT_ID </acctID>
