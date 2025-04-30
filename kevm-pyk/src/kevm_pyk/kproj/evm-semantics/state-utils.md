@@ -51,6 +51,7 @@ module STATE-UTILS
          <touchedAccounts>  _ => .Set       </touchedAccounts>
          <accessedAccounts> _ => .Set       </accessedAccounts>
          <createdAccounts>  _ => .Set       </createdAccounts>
+         <versionedHashes>  _ => .List      </versionedHashes>
 
     syntax EthereumCommand ::= "clearBLOCK"
  // ---------------------------------------
@@ -547,11 +548,14 @@ The `"rlp"` key loads the block information.
          </message>
 ```
 
-- `isValidTransaction`
+- `#isValidTransaction(TXID, SENDER)` - validate each defined transaction type.
+ 1. Check if the tx nonce matches the nonce of the sender.
+ 2. Check that the gas fees are properly structured and that the fee caps are not higher than the max amount.
+ 3. Check that there is enough balance for gas, value and blob fees (where applicable) and that the gas limit is within the block limits.
 
 ```k
-    syntax Bool ::= #isValidTransaction( Int, Account ) [symbol(#isValidTransaction), function]
- // -------------------------------------------------------------------------------------------
+    syntax Bool ::= #isValidTransaction( Int , Account ) [symbol(#isValidTransaction), function]
+ // --------------------------------------------------------------------------------------------
     rule [[ #isValidTransaction (TXID, ACCTFROM) => true ]]
          <schedule> SCHED </schedule>
          <baseFee> BASE_FEE </baseFee>

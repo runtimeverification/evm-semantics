@@ -590,51 +590,6 @@ After executing a transaction, it's necessary to have the effect of the substate
            ...
          </withdrawal> [owise]
 
-    syntax InternalOp ::= "#validateBlockBlobs" Int Int [symbol(#validateBlockBlobs)]
- // ---------------------------------------------------------------------------------
-     rule <k> #validateBlockBlobs COUNT IDX => #validateBlockBlobs (COUNT +Int size(TVH)) (IDX +Int 1) ... </k>
-         <txOrder> ... ListItem(TXID) </txOrder>
-         <schedule> SCHED </schedule>
-         <message>
-           <msgID> IDX </msgID>
-           <txVersionedHashes> TVH </txVersionedHashes>
-           ...
-         </message>
-      requires Ghasblobbasefee << SCHED >> andBool IDX <=Int TXID
-
-    rule <k> #validateBlockBlobs COUNT IDX => .K ... </k>
-         <statusCode> _ => EVMC_INVALID_BLOCK </statusCode>
-         <txOrder> ... ListItem(TXID) </txOrder>
-         <txPending> _ => .List </txPending>
-         <schedule> SCHED </schedule>
-         <excessBlobGas>         EXCESS_BLOB_GAS      </excessBlobGas>
-         <previousExcessBlobGas> PREV_EXCESS_BLOB_GAS </previousExcessBlobGas>
-         <previousBlobGasUsed>   PREV_BLOB_GAS_USED   </previousBlobGasUsed>
-      requires Ghasblobbasefee << SCHED >>
-        andBool ( (IDX >Int TXID andBool Ctotalblob(SCHED, COUNT) >Int Gmaxblobgas < SCHED >)
-            orBool notBool EXCESS_BLOB_GAS ==Int Cexcessblob(SCHED, PREV_EXCESS_BLOB_GAS, PREV_BLOB_GAS_USED))
-
-    rule <k> #validateBlockBlobs _COUNT _IDX => .K ... </k> [owise]
-
-    syntax InternalOp ::= "#finalizeBlockBlobs" [symbol(#finalizeBlockBlobs)]
- // -------------------------------------------------------------------------
-    rule <k> #finalizeBlockBlobs => .K ... </k>
-         <schedule> SCHED </schedule>
-         <blobGasUsed> BLOB_GAS_USED </blobGasUsed>
-         <excessBlobGas> EXCESS_BLOB_GAS </excessBlobGas>
-         <previousExcessBlobGas> _ => EXCESS_BLOB_GAS </previousExcessBlobGas>
-         <previousBlobGasUsed>   _ => BLOB_GAS_USED   </previousBlobGasUsed>
-      requires ( Ghasblobbasefee << SCHED >> andBool BLOB_GAS_USED <=Int Gmaxblobgas < SCHED > )
-        orBool notBool Ghasblobbasefee << SCHED >>
-
-    rule <k> #finalizeBlockBlobs => #end EVMC_INVALID_BLOCK ... </k> [owise]
-
-    syntax Bool ::= #checkTxVersionedHashes (List) [function, symbol(#checkTxVersionedHashes)]
- // ------------------------------------------------------------------------------------------
-    rule #checkTxVersionedHashes (.List) => true
-    rule #checkTxVersionedHashes ( ListItem(VH:Bytes) TVH) => #checkTxVersionedHashes(TVH) requires         VH[0] ==Int 1
-    rule #checkTxVersionedHashes ( ListItem(VH:Bytes) _  ) => false                        requires notBool VH[0] ==Int 1
-
     syntax InternalOp ::= #finalizeStorage ( List ) [symbol(#finalizeStorage)]
  // --------------------------------------------------------------------------
     rule <k> #finalizeStorage(ListItem(ACCT) REST => REST) ... </k>
@@ -649,27 +604,6 @@ After executing a transaction, it's necessary to have the effect of the substate
     rule <k> #finalizeStorage(.List) => .K ... </k>
 
     rule <k> (.K => #newAccount ACCT) ~> #finalizeStorage(ListItem(ACCT) _ACCTS) ... </k> [owise]
-
-
-    syntax InternalOp ::= "#finalizeBlob" Int [symbol(#finalizeBlob)]
- // -----------------------------------------------------------------
-   rule <k> #finalizeBlob MSGID => .K ... </k>
-         <message>
-            <msgID> MSGID </msgID>
-            <txType> TXTYPE </txType>
-            ...
-         </message>
-      requires notBool TXTYPE ==K Blob
-
-    rule <k> #finalizeBlob MSGID => .K ... </k>
-         <schedule> SCHED </schedule>
-         <blobGasUsed> BLOB_GAS_USED => BLOB_GAS_USED +Int Ctotalblob(SCHED, size(TVH)) </blobGasUsed>
-         <message>
-            <msgID> MSGID </msgID>
-            <txType> Blob </txType>
-            <txVersionedHashes> TVH </txVersionedHashes>
-            ...
-         </message>
 
     syntax InternalOp ::= #finalizeTx ( Bool )     [symbol(#finalizeTx)]
                         | #deleteAccounts ( List ) [symbol(#deleteAccounts)]
@@ -695,13 +629,14 @@ After executing a transaction, it's necessary to have the effect of the substate
          </message>
       requires REFUND =/=Int 0
 
-    rule <k> #finalizeTx(false) => #finalizeBlob TXID ~> #finalizeTx(true) ... </k>
+    rule <k> #finalizeTx(false => true) ... </k>
          <useGas> true </useGas>
          <baseFee> BFEE </baseFee>
          <origin> ORG </origin>
          <coinbase> MINER </coinbase>
          <gas> GAVAIL </gas>
          <gasUsed> GUSED => GUSED +Gas GLIMIT -Gas GAVAIL </gasUsed>
+         <blobGasUsed> BLOB_GAS_USED => #if TXTYPE ==K Blob #then BLOB_GAS_USED +Int Ctotalblob(SCHED, size(TVH)) #else BLOB_GAS_USED #fi </blobGasUsed>
          <gasPrice> GPRICE </gasPrice>
          <refund> 0 </refund>
          <account>
@@ -722,13 +657,14 @@ After executing a transaction, it's necessary to have the effect of the substate
          </message>
       requires ORG =/=Int MINER
 
-    rule <k> #finalizeTx(false) => #finalizeBlob MsgId ~> #finalizeTx(true) ... </k>
+    rule <k> #finalizeTx(false => true) ... </k>
          <useGas> true </useGas>
          <baseFee> BFEE </baseFee>
          <origin> ACCT </origin>
          <coinbase> ACCT </coinbase>
          <gas> GAVAIL </gas>
          <gasUsed> GUSED => GUSED +Gas GLIMIT -Gas GAVAIL </gasUsed>
+         <blobGasUsed> BLOB_GAS_USED => #if TXTYPE ==K Blob #then BLOB_GAS_USED +Int Ctotalblob(SCHED, size(TVH)) #else BLOB_GAS_USED #fi </blobGasUsed>
          <gasPrice> GPRICE </gasPrice>
          <refund> 0 </refund>
          <account>
@@ -772,6 +708,63 @@ After executing a transaction, it's necessary to have the effect of the substate
     rule <k> #deleteAccounts(.List) => .K ... </k>
 ```
 
+### Blobs
+
+-    `#validateBlockBlobs COUNT TXIDS`: Iterates through the transactions of the current block in order, counting up total versioned hashes (blob commitments) in the block.
+Fails block validation by setting EVMC_INVALID_BLOCK if either:
+ 1. Total blob count exceeds maximum allowed (`Gmaxblobgas`)
+ 2. Calculated block excess blob gas doesn't match the expected value.
+Terminates validation successfully when all conditions are met or when blob validation doesn't apply.
+-    `#checkTxVersionedHashes`: Validates versioned hashes recursively by checking if each hash starts with version byte `1`.
+-    `#finalizeBlockBlobs`:Updates state at block finalization by:
+ 1. Storing current excess blob gas and blob gas used for next block.
+ 2. Check if blob gas used is within limits.
+
+```k
+    syntax InternalOp ::= "#validateBlockBlobs" Int List [symbol(#validateBlockBlobs)]
+ // ----------------------------------------------------------------------------------
+     rule <k> #validateBlockBlobs COUNT (ListItem(IDX) TXIDS) => #validateBlockBlobs (COUNT +Int size(TVH)) TXIDS ... </k>
+         <schedule> SCHED </schedule>
+         <message>
+           <msgID> IDX </msgID>
+           <txVersionedHashes> TVH </txVersionedHashes>
+           ...
+         </message>
+      requires Ghasblobbasefee << SCHED >>
+
+    rule <k> #validateBlockBlobs COUNT .List => .K ... </k>
+         <statusCode> _ => EVMC_INVALID_BLOCK </statusCode>
+         <txPending> _ => .List </txPending>
+         <schedule> SCHED </schedule>
+         <excessBlobGas>         EXCESS_BLOB_GAS      </excessBlobGas>
+         <previousExcessBlobGas> PREV_EXCESS_BLOB_GAS </previousExcessBlobGas>
+         <previousBlobGasUsed>   PREV_BLOB_GAS_USED   </previousBlobGasUsed>
+      requires Ghasblobbasefee << SCHED >>
+        andBool ( Ctotalblob(SCHED, COUNT) >Int Gmaxblobgas < SCHED >
+            orBool notBool EXCESS_BLOB_GAS ==Int Cexcessblob(SCHED, PREV_EXCESS_BLOB_GAS, PREV_BLOB_GAS_USED))
+
+    rule <k> #validateBlockBlobs _COUNT _TXIDS => .K ... </k> [owise]
+
+    syntax InternalOp ::= "#finalizeBlockBlobs" [symbol(#finalizeBlockBlobs)]
+ // -------------------------------------------------------------------------
+    rule <k> #finalizeBlockBlobs => .K ... </k>
+         <schedule> SCHED </schedule>
+         <blobGasUsed> BLOB_GAS_USED </blobGasUsed>
+         <excessBlobGas> EXCESS_BLOB_GAS </excessBlobGas>
+         <previousExcessBlobGas> _ => EXCESS_BLOB_GAS </previousExcessBlobGas>
+         <previousBlobGasUsed>   _ => BLOB_GAS_USED   </previousBlobGasUsed>
+      requires ( Ghasblobbasefee << SCHED >> andBool BLOB_GAS_USED <=Int Gmaxblobgas < SCHED > )
+        orBool notBool Ghasblobbasefee << SCHED >>
+
+    rule <k> #finalizeBlockBlobs => #end EVMC_INVALID_BLOCK ... </k> [owise]
+
+    syntax Bool ::= #checkTxVersionedHashes (List) [function, symbol(#checkTxVersionedHashes)]
+ // ------------------------------------------------------------------------------------------
+    rule #checkTxVersionedHashes (.List) => true
+    rule #checkTxVersionedHashes ( ListItem(VH:Bytes) TVH) => #checkTxVersionedHashes(TVH) requires         VH[0] ==Int 1
+    rule #checkTxVersionedHashes ( ListItem(VH:Bytes) _  ) => false                        requires notBool VH[0] ==Int 1
+```
+
 ### Block processing
 
 -   `#startBlock` is used to signal that we are about to start mining a block and block initialization should take place (before transactions are executed).
@@ -781,11 +774,12 @@ After executing a transaction, it's necessary to have the effect of the substate
 ```k
     syntax EthereumCommand ::= "#startBlock"
  // ----------------------------------------
-    rule <k> #startBlock => #validateBlockBlobs 0 0 ~> #executeBeaconRoots ... </k>
+    rule <k> #startBlock => #validateBlockBlobs 0 TXS ~> #executeBeaconRoots ... </k>
          <gasUsed> _ => 0 </gasUsed>
          <blobGasUsed> _ => 0 </blobGasUsed>
          <log> _ => .List </log>
          <logsBloom> _ => #padToWidth(256, .Bytes) </logsBloom>
+         <txOrder> TXS </txOrder>
 
     syntax EthereumCommand ::= "#finalizeBlock"
                              | #rewardOmmers ( JSONs ) [symbol(#rewardOmmers)]
