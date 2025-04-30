@@ -631,6 +631,7 @@ After executing a transaction, it's necessary to have the effect of the substate
 
     rule <k> #finalizeTx(false => true) ... </k>
          <useGas> true </useGas>
+         <schedule> SCHED </schedule>
          <baseFee> BFEE </baseFee>
          <origin> ORG </origin>
          <coinbase> MINER </coinbase>
@@ -649,16 +650,19 @@ After executing a transaction, it's necessary to have the effect of the substate
            <balance> MINBAL => MINBAL +Int (GLIMIT -Int GAVAIL) *Int (GPRICE -Int BFEE) </balance>
            ...
          </account>
-         <txPending> ListItem(TXID:Int) REST => REST </txPending>
+         <txPending> ListItem(MSGID:Int) REST => REST </txPending>
          <message>
-           <msgID> TXID </msgID>
+           <msgID> MSGID </msgID>
            <txGasLimit> GLIMIT </txGasLimit>
+           <txVersionedHashes> TVH </txVersionedHashes>
+           <txType> TXTYPE </txType>
            ...
          </message>
       requires ORG =/=Int MINER
 
     rule <k> #finalizeTx(false => true) ... </k>
          <useGas> true </useGas>
+         <schedule> SCHED </schedule>
          <baseFee> BFEE </baseFee>
          <origin> ACCT </origin>
          <coinbase> ACCT </coinbase>
@@ -672,18 +676,20 @@ After executing a transaction, it's necessary to have the effect of the substate
            <balance> BAL => BAL +Int GLIMIT *Int GPRICE -Int (GLIMIT -Int GAVAIL) *Int BFEE </balance>
            ...
          </account>
-         <txPending> ListItem(MsgId:Int) REST => REST </txPending>
+         <txPending> ListItem(MSGID:Int) REST => REST </txPending>
          <message>
-           <msgID> MsgId </msgID>
+           <msgID> MSGID </msgID>
            <txGasLimit> GLIMIT </txGasLimit>
+           <txVersionedHashes> TVH </txVersionedHashes>
+           <txType> TXTYPE </txType>
            ...
          </message>
 
     rule <k> #finalizeTx(false => true) ... </k>
          <useGas> false </useGas>
-         <txPending> ListItem(MsgId:Int) REST => REST </txPending>
+         <txPending> ListItem(MSGID:Int) REST => REST </txPending>
          <message>
-           <msgID> MsgId </msgID>
+           <msgID> MSGID </msgID>
            ...
          </message>
 
@@ -736,9 +742,9 @@ Terminates validation successfully when all conditions are met or when blob vali
          <statusCode> _ => EVMC_INVALID_BLOCK </statusCode>
          <txPending> _ => .List </txPending>
          <schedule> SCHED </schedule>
-         <excessBlobGas>         EXCESS_BLOB_GAS      </excessBlobGas>
+         <excessBlobGas> EXCESS_BLOB_GAS </excessBlobGas>
          <previousExcessBlobGas> PREV_EXCESS_BLOB_GAS </previousExcessBlobGas>
-         <previousBlobGasUsed>   PREV_BLOB_GAS_USED   </previousBlobGasUsed>
+         <previousBlobGasUsed> PREV_BLOB_GAS_USED </previousBlobGasUsed>
       requires Ghasblobbasefee << SCHED >>
         andBool ( Ctotalblob(SCHED, COUNT) >Int Gmaxblobgas < SCHED >
             orBool notBool EXCESS_BLOB_GAS ==Int Cexcessblob(SCHED, PREV_EXCESS_BLOB_GAS, PREV_BLOB_GAS_USED))
@@ -752,7 +758,7 @@ Terminates validation successfully when all conditions are met or when blob vali
          <blobGasUsed> BLOB_GAS_USED </blobGasUsed>
          <excessBlobGas> EXCESS_BLOB_GAS </excessBlobGas>
          <previousExcessBlobGas> _ => EXCESS_BLOB_GAS </previousExcessBlobGas>
-         <previousBlobGasUsed>   _ => BLOB_GAS_USED   </previousBlobGasUsed>
+         <previousBlobGasUsed> _ => BLOB_GAS_USED </previousBlobGasUsed>
       requires ( Ghasblobbasefee << SCHED >> andBool BLOB_GAS_USED <=Int Gmaxblobgas < SCHED > )
         orBool notBool Ghasblobbasefee << SCHED >>
 
