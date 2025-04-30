@@ -24,8 +24,7 @@ module DSVALUE-READ-PASS-SUMMARIZE-SPEC
 //        </callState>
 //        <versionedHashes> _ </versionedHashes>
 //        (_ => ?_)
-//        ...
-      </evm>
+//      </evm>
 //      <account>
 //        <acctID> ACCT_ID </acctID>
 //        <storage> ACCT_STORAGE => ?_ </storage>
