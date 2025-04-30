@@ -767,14 +767,14 @@ i18n = ["Babel (>=2.7)"]
 
 [[package]]
 name = "kframework"
-version = "7.1.247"
+version = "7.1.248"
 description = ""
 optional = false
 python-versions = "<4.0,>=3.10"
 groups = ["main"]
 files = [
-    {file = "kframework-7.1.247-py3-none-any.whl", hash = "sha256:db59b46081705889233aff834c74f2fe3b7d759b79c66f1235e6daf072206ca2"},
-    {file = "kframework-7.1.247.tar.gz", hash = "sha256:4d21ed84e014ea45a8b9d78e149431d6c7759f08d451af424b2b96b20459482f"},
+    {file = "kframework-7.1.248-py3-none-any.whl", hash = "sha256:844e777f34b39aa98366befb2df26fe39a79e38e7c4f3104772782d9f2da23e8"},
+    {file = "kframework-7.1.248.tar.gz", hash = "sha256:bcaffbfdcd2a7d6e1fa64d9b1bd5bf2a503cdd0a2f875e55a61f93d40be58bd0"},
 ]
 
 [package.dependencies]
@@ -1552,14 +1552,14 @@ jupyter = ["ipywidgets (>=7.5.1,<9)"]
 
 [[package]]
 name = "setuptools"
-version = "80.0.0"
+version = "80.0.1"
 description = "Easily download, build, install, upgrade, and uninstall Python packages"
 optional = false
 python-versions = ">=3.9"
 groups = ["dev"]
 files = [
-    {file = "setuptools-80.0.0-py3-none-any.whl", hash = "sha256:a38f898dcd6e5380f4da4381a87ec90bd0a7eec23d204a5552e80ee3cab6bd27"},
-    {file = "setuptools-80.0.0.tar.gz", hash = "sha256:c40a5b3729d58dd749c0f08f1a07d134fb8a0a3d7f87dc33e7c5e1f762138650"},
+    {file = "setuptools-80.0.1-py3-none-any.whl", hash = "sha256:f4b49d457765b3aae7cbbeb1c71f6633a61b729408c2d1a837dae064cca82ef2"},
+    {file = "setuptools-80.0.1.tar.gz", hash = "sha256:20fe373a22ef9f3925512650d1db90b1b8de01cdb6df91ab1788263139cbf9a2"},
 ]
 
 [package.extras]
@@ -1787,4 +1787,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10"
-content-hash = "9f686453df7bc15b4a1e34f3e13bde21eeb71ce37ae14fe3ed2f6e635f0f8f2b"
+content-hash = "47aadb4400aa49ce5f3719347ec8a36c44d1be438ac77a8466101c638a8c936e"
