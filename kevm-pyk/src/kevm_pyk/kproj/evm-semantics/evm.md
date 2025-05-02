@@ -171,6 +171,7 @@ In the comments next to each cell, we've marked which component of the YellowPap
                 <txType>        .TxType    </txType>        // T_x
                 <txMaxBlobFee>  0          </txMaxBlobFee>
                 <txVersionedHashes> .List  </txVersionedHashes>
+                <txAuthList>    .List      </txAuthList>
               </message>
             </messages>
 

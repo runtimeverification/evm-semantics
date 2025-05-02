@@ -194,7 +194,8 @@ The encoding schemes are applied in `#rlpEcondeTxData`.
     rule #hashTxData( TXDATA ) => Keccak256raw( b"\x01" +Bytes #rlpEncodeTxData(TXDATA) ) requires isAccessListTx(TXDATA)
     rule #hashTxData( TXDATA ) => Keccak256raw( b"\x02" +Bytes #rlpEncodeTxData(TXDATA) ) requires isDynamicFeeTx(TXDATA)
     rule #hashTxData( TXDATA ) => Keccak256raw( b"\x03" +Bytes #rlpEncodeTxData(TXDATA) ) requires isBlobTx      (TXDATA)
-``` 
+    rule #hashTxData( TXDATA ) => Keccak256raw( b"\x04" +Bytes #rlpEncodeTxData(TXDATA) ) requires isSetCodeTx   (TXDATA)
+```
 
 The EVM test-sets are represented in JSON format with hex-encoding of the data and programs.
 Here we provide some standard parser/unparser functions for that format.
@@ -412,6 +413,9 @@ Encoding
    
     rule #rlpEncodeTxData( BlobTxData(TN, TF, TM, TG, TT, TV, DATA, CID, [TA], TB, TVH) )
       => #rlpEncode( [ CID, TN, TF, TM, TG, #addrBytes({TT}:>Account), TV, DATA, [TA], TB, [#parseList2JSONs(TVH)] ] )
+
+    rule #rlpEncodeTxData( SetCodeTxData(TN, TF, TM, TG, TT, TV, DATA, CID, [TA], [TAUTH]) )
+      => #rlpEncode( [ CID, TN, TF, TM, TG, #addrBytes(TT), TV, DATA, [TA], [TAUTH]] )
 
     syntax Bytes ::= #rlpEncodeMerkleTree ( MerkleTree ) [symbol(#rlpEncodeMerkleTree), function]
  // ---------------------------------------------------------------------------------------------
