@@ -298,6 +298,7 @@ Unparsing
   // ----------------------------------------------------
     rule #parseList2JSONs( .List ) => .JSONs
     rule #parseList2JSONs( ListItem(X:Bytes) REST ) => X , #parseList2JSONs(REST)
+    rule #parseList2JSONs( ListItem(X:List) REST) => [ #parseList2JSONs(X) ] , #parseList2JSONs(REST)
 ```
 
 Recursive Length Prefix (RLP)
@@ -414,8 +415,8 @@ Encoding
     rule #rlpEncodeTxData( BlobTxData(TN, TF, TM, TG, TT, TV, DATA, CID, [TA], TB, TVH) )
       => #rlpEncode( [ CID, TN, TF, TM, TG, #addrBytes({TT}:>Account), TV, DATA, [TA], TB, [#parseList2JSONs(TVH)] ] )
 
-    rule #rlpEncodeTxData( SetCodeTxData(TN, TF, TM, TG, TT, TV, DATA, CID, [TA], [TAUTH]) )
-      => #rlpEncode( [ CID, TN, TF, TM, TG, #addrBytes(TT), TV, DATA, [TA], [TAUTH]] )
+    rule #rlpEncodeTxData( SetCodeTxData(TN, TF, TM, TG, TT, TV, DATA, CID, [TA], AUTH) )
+      => #rlpEncode( [ CID, TN, TF, TM, TG, #addrBytes(TT), TV, DATA, [TA], [#parseList2JSONs(AUTH)]] )
 
     syntax Bytes ::= #rlpEncodeMerkleTree ( MerkleTree ) [symbol(#rlpEncodeMerkleTree), function]
  // ---------------------------------------------------------------------------------------------

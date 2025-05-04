@@ -476,7 +476,7 @@ Productions related to transactions
     syntax AccessListTx ::= AccessListTxData   ( nonce: Int,                       gasPrice: Int, gasLimit: Int, to: Account, value: Int, data: Bytes, chainId: Int, accessLists: JSONs )                                                      [symbol(AccessListTxData)]
     syntax DynamicFeeTx ::= DynamicFeeTxData   ( nonce: Int, priorityGasFee: Int, maxGasFee: Int, gasLimit: Int, to: Account, value: Int, data: Bytes, chainId: Int, accessLists: JSONs)                                                       [symbol(DynamicFeeTxData)]
     syntax BlobTx       ::= BlobTxData         ( nonce: Int, priorityGasFee: Int, maxGasFee: Int, gasLimit: Int, to: AccountNotNil, value: Int, data: Bytes, chainId: Int, accessLists: JSONs, maxBlobGasFee: Int, blobVersionedHashes: List ) [symbol(BlobTxData)]
-    syntax SetCodeTx    ::= SetCodeTxData      ( nonce: Int, priorityGasFee: Int, maxGasFee: Int, gasLimit: Int, to: Account, value: Int, data: Bytes, chainId: Int, accessLists: JSONs, authorizationList: JSONs)                             [symbol(SetCodeTxData)]
+    syntax SetCodeTx    ::= SetCodeTxData      ( nonce: Int, priorityGasFee: Int, maxGasFee: Int, gasLimit: Int, to: Account, value: Int, data: Bytes, chainId: Int, accessLists: JSONs, authorizationList: List)                              [symbol(SetCodeTxData)]
  // ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 endmodule
 ```

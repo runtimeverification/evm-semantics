@@ -630,6 +630,21 @@ Here we check the other post-conditions associated with an EVM test.
     rule <k> check "transactions" : ("maxFeePerBlobGas"     : VALUE) => .K ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txMaxBlobFee>  VALUE </txMaxBlobFee>   ... </message>
     rule <k> check "transactions" : ("sender"               : VALUE) => .K ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <sigV> TW </sigV> <sigR> TR </sigR> <sigS> TS </sigS> ... </message> <chainID> B </chainID> requires #sender( #getTxData(TXID), TW, TR, TS, B ) ==K VALUE
 
+    rule <k> check "transactions" : "authorizationList" : [ .JSONs ] => .K ... </k>
+    rule <k> check "transactions" : "authorizationList" : [ { "chainId": CID, "address": ADDR, "nonce": NONCE, "v": _, "r": SIGR, "s": SIGS, "signer": _, "yParity": SIGY } , REST ]
+          => check "transactions" : "authorizationList" : [ #hex2Bytes(CID), #hex2Bytes(ADDR), #hex2Bytes(NONCE), #hex2Bytes(SIGY), #hex2Bytes(SIGR), #hex2Bytes(SIGS) ]
+          ~> check "transactions" : "authorizationList" : [ REST ]
+          ...
+         </k>
+    rule <k> check "transactions" : "authorizationList" : [ AUTH ] => .K ... </k>
+         <txOrder> ListItem(TXID) ... </txOrder>
+         <message> <msgID> TXID </msgID> <txAuthList> AUTHLIST </txAuthList> ... </message> requires #parseJSONs2List(AUTH) in AUTHLIST
+
+    syntax Bytes ::= #hex2Bytes ( String ) [function] //TODO: Is this needed?
+ // -------------------------------------------------
+    rule #hex2Bytes("0x00") => b""
+    rule #hex2Bytes(S) => #parseByteStack(S) [owise]
+
     syntax Bool ::= isInAccessListStorage ( Int , JSON )    [symbol(isInAccessListStorage), function]
                   | isInAccessList ( Account , Int , JSON ) [symbol(isInAccessList), function]
  // -------------------------------------------------------------------------------------------------
