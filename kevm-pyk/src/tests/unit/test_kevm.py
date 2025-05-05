@@ -10,7 +10,7 @@ if TYPE_CHECKING:
 
 from pyk.cterm.cterm import CTerm
 from pyk.kast.inner import KApply, KToken, KVariable
-from pyk.prelude.utils import token
+from pyk.kast.prelude.utils import token
 
 from kevm_pyk.kevm import KEVM, KEVMSemantics, compute_jumpdests
 
