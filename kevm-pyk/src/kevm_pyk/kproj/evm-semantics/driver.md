@@ -550,7 +550,6 @@ Here we check the other post-conditions associated with an EVM test.
     rule <k> check "blockHeader" : { "requestsHash"         : VALUE } => .K ... </k> <requestsRoot>     VALUE </requestsRoot>
 
 
-
     rule <k> check "blockHeader" : { "hash": HASH:Bytes } => .K ...</k>
          <previousHash>     HP </previousHash>
          <ommersHash>       HO </ommersHash>
