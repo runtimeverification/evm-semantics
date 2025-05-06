@@ -13,13 +13,13 @@ from pyk.cterm import CSubst, CTerm, CTermSymbolic, cterm_build_claim
 from pyk.kast.att import Atts
 from pyk.kast.inner import KApply, KRewrite, KSequence, KToken, KVariable, Subst, top_down
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire, KRule, KSort
+from pyk.kast.prelude.k import DOTS
+from pyk.kast.prelude.kbool import andBool
+from pyk.kast.prelude.kint import addInt, eqInt, euclidModInt, leInt, ltInt
+from pyk.kast.prelude.ml import mlEquals, mlEqualsFalse, mlEqualsTrue, mlNot
 from pyk.kcfg import KCFG, KCFGExplore
 from pyk.kdist import kdist
 from pyk.kore.rpc import KoreClient
-from pyk.prelude.k import DOTS
-from pyk.prelude.kbool import andBool
-from pyk.prelude.kint import addInt, eqInt, euclidModInt, leInt, ltInt
-from pyk.prelude.ml import mlEquals, mlEqualsFalse, mlEqualsTrue, mlNot
 from pyk.proof import APRProof
 from pyk.proof.show import APRProofShow
 from pyk.utils import ensure_dir_path
