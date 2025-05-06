@@ -48,7 +48,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
                            | "Gblockhash"    | "Gquadcoeff"    | "maxCodeSize"   | "Rb"                | "Gquaddivisor"       | "Gecadd"           | "Gecmul"
                            | "Gecpairconst"  | "Gecpaircoeff"  | "Gfround"       | "Gcoldsload"        | "Gcoldaccountaccess" | "Gwarmstorageread" | "Gaccesslistaddress"
                            | "Gaccessliststoragekey"           | "Rmaxquotient"  | "Ginitcodewordcost" | "maxInitCodeSize"    | "Gwarmstoragedirtystore"
-                           | "Gpointeval"
+                           | "Gpointeval"    | "Gauthbase"
  // ----------------------------------------------------------------------------------------------------------------------------------------------------
 ```
 
@@ -82,6 +82,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule [GcallstipendDefault]: Gcallstipend < DEFAULT > => 2300
     rule [GcallvalueDefault]:   Gcallvalue   < DEFAULT > => 9000
     rule [GnewaccountDefault]:  Gnewaccount  < DEFAULT > => 25000
+    rule [GauthbaseDefault]:    Gauthbase    < DEFAULT > => 0
 
     rule [GcreateDefault]:       Gcreate       < DEFAULT > => 32000
     rule [GcodedepositDefault]:  Gcodedeposit  < DEFAULT > => 200
@@ -421,7 +422,9 @@ A `ScheduleConst` is a constant determined by the fee schedule.
 ```k
     syntax Schedule ::= "PRAGUE" [symbol(PRAGUE_EVM), smtlib(schedule_PRAGUE)]
  // --------------------------------------------------------------------------
+    rule [GauthbasePrague]:  Gauthbase  < PRAGUE > => 12500
     rule [SCHEDCONSTPrague]: SCHEDCONST < PRAGUE > => SCHEDCONST < CANCUN >
+      requires notBool ( SCHEDCONST ==K Gauthbase )
 
     rule [SCHEDFLAGPrague]: SCHEDFLAG  << PRAGUE >> => SCHEDFLAG << CANCUN >>
 
