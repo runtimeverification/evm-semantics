@@ -771,6 +771,9 @@ Tree Root Helper Functions
 
 Processing authorities in SetCode Transactions
 ==============================================
+- These rules define constants and functions used to process authority accounts in EIP-7702 SetCode transactions.
+- The `SET_CODE_TX_MAGIC` (`0x05`) prefixes the message hash, while `EOA_DELEGATION_MARKER` (`0xEF0100`) marks delegated EOA code.
+- The `#recoverAuthority` function recovers the signer address from parameters.
 
 ```k
     syntax Bytes ::= "SET_CODE_TX_MAGIC" [macro] | "EOA_DELEGATION_MARKER" [macro]
@@ -781,5 +784,6 @@ Processing authorities in SetCode Transactions
     syntax Account ::= #recoverAuthority ( Bytes , Bytes , Bytes , Bytes , Bytes , Bytes ) [symbol(#recoverAuthority), function]
  // ------------------------------------------------------------------------------------------------------------------------
     rule #recoverAuthority(CID, ADDR, NONCE, YPAR, SIGR, SIGS) => #sender( Keccak256raw(SET_CODE_TX_MAGIC +Bytes #rlpEncode([CID, ADDR, NONCE])), #asWord(YPAR) +Int 27, SIGR, SIGS )
+
 endmodule
 ```
