@@ -109,6 +109,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
     rule <k> loadTx(ACCTFROM)
           => #accessAccounts ACCTFROM #newAddr(ACCTFROM, NONCE) #precompiledAccountsSet(SCHED)
           ~> #loadAccessList(TA)
+          ~> #loadAuthorities(AUTH)
           ~> #checkCreate ACCTFROM VALUE
           ~> #create ACCTFROM #newAddr(ACCTFROM, NONCE) VALUE CODE
           ~> #finishTx ~> #finalizeTx(false) ~> startTx
@@ -129,6 +130,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
            <data>              CODE     </data>
            <txAccess>          TA       </txAccess>
            <txVersionedHashes> TVH      </txVersionedHashes>
+           <txAuthList> AUTH </txAuthList>
            ...
          </message>
          <versionedHashes> _ => TVH </versionedHashes>
@@ -147,6 +149,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
     rule <k> loadTx(ACCTFROM)
           => #accessAccounts ACCTFROM ACCTTO #precompiledAccountsSet(SCHED)
           ~> #loadAccessList(TA)
+          ~> #loadAuthorities(AUTH)
           ~> #checkCall ACCTFROM VALUE
           ~> #call ACCTFROM ACCTTO ACCTTO VALUE VALUE DATA false
           ~> #finishTx ~> #finalizeTx(false) ~> startTx
@@ -167,6 +170,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
            <data>              DATA   </data>
            <txAccess>          TA     </txAccess>
            <txVersionedHashes> TVH    </txVersionedHashes>
+           <txAuthList> AUTH </txAuthList>
            ...
          </message>
          <versionedHashes> _ => TVH </versionedHashes>
