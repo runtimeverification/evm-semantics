@@ -248,6 +248,13 @@ module GAS-FEES
     rule #adjustedExpLength(0) => 0
     rule #adjustedExpLength(1) => 0
     rule #adjustedExpLength(N) => 1 +Int #adjustedExpLength(N /Int 2) requires N >Int 1
+
+    syntax Int ::= #tokensInCalldata( Bytes )                   [symbol(#tokensInCalldata),    function]
+                 | #tokensInCalldata( Bytes , Int , Int , Int ) [symbol(#tokensInCalldataAux), function]
+ // ----------------------------------------------------------------------------------------------------
+    rule #tokensInCalldata(WS) => #tokensInCalldata(WS, 0, lengthBytes(WS), 0)
+    rule #tokensInCalldata(_,  I, I, R) => R
+    rule #tokensInCalldata(WS, I, J, R) => #tokensInCalldata(WS, I+Int 1, J, R +Int #if WS[I] ==Int 0 #then 1 #else 4 #fi) [owise]
 endmodule
 ```
 

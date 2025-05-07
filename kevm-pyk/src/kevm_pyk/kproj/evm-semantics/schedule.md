@@ -48,7 +48,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
                            | "Gblockhash"    | "Gquadcoeff"    | "maxCodeSize"   | "Rb"                | "Gquaddivisor"       | "Gecadd"           | "Gecmul"
                            | "Gecpairconst"  | "Gecpaircoeff"  | "Gfround"       | "Gcoldsload"        | "Gcoldaccountaccess" | "Gwarmstorageread" | "Gaccesslistaddress"
                            | "Gaccessliststoragekey"           | "Rmaxquotient"  | "Ginitcodewordcost" | "maxInitCodeSize"    | "Gwarmstoragedirtystore"
-                           | "Gpointeval"
+                           | "Gpointeval"    | "Gtxdatafloor"
  // ----------------------------------------------------------------------------------------------------------------------------------------------------
 ```
 
@@ -97,6 +97,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule [GtxcreateDefault]:      Gtxcreate      < DEFAULT > => 53000
     rule [GtxdatazeroDefault]:    Gtxdatazero    < DEFAULT > => 4
     rule [GtxdatanonzeroDefault]: Gtxdatanonzero < DEFAULT > => 68
+    rule [GtxdatafloorDefault]:   Gtxdatafloor   < DEFAULT > => 0
 
     rule [GjumpdestDefault]:    Gjumpdest    < DEFAULT > => 1
     rule [GbalanceDefault]:     Gbalance     < DEFAULT > => 20
@@ -421,7 +422,9 @@ A `ScheduleConst` is a constant determined by the fee schedule.
 ```k
     syntax Schedule ::= "PRAGUE" [symbol(PRAGUE_EVM), smtlib(schedule_PRAGUE)]
  // --------------------------------------------------------------------------
-    rule [SCHEDCONSTPrague]: SCHEDCONST < PRAGUE > => SCHEDCONST < CANCUN >
+    rule [GtxdatafloorPrague]: Gtxdatafloor < PRAGUE > => 10
+    rule [SCHEDCONSTPrague]:   SCHEDCONST   < PRAGUE > => SCHEDCONST < CANCUN >
+      requires notBool ( SCHEDCONST ==K Gtxdatafloor )
 
     rule [SCHEDFLAGPrague]: SCHEDFLAG  << PRAGUE >> => SCHEDFLAG << CANCUN >>
 
