@@ -65,7 +65,7 @@ module END-PACK-PASS-ROUGH-SPEC
             <withdrawalsRoot> _ </withdrawalsRoot>
             <blobGasUsed> _ </blobGasUsed>
             <excessBlobGas> _ </excessBlobGas>
-            <beaconRoot> _ </beaconRoot>
+            ...
           </block>
           ...
       </evm>
@@ -232,7 +232,7 @@ module END-PACK-PASS-ROUGH-SPEC
             <withdrawalsRoot> _ </withdrawalsRoot>
             <blobGasUsed> _ </blobGasUsed>
             <excessBlobGas> _ </excessBlobGas>
-            <beaconRoot> _ </beaconRoot>
+            ...
           </block>
           ...
       </evm>
@@ -340,7 +340,7 @@ module END-PACK-PASS-ROUGH-SPEC
             <withdrawalsRoot> _ </withdrawalsRoot>
             <blobGasUsed> _ </blobGasUsed>
             <excessBlobGas> _ </excessBlobGas>
-            <beaconRoot> _ </beaconRoot>
+            ...
           </block>
           ...
       </evm>
@@ -448,7 +448,7 @@ module END-PACK-PASS-ROUGH-SPEC
             <withdrawalsRoot> _ </withdrawalsRoot>
             <blobGasUsed> _ </blobGasUsed>
             <excessBlobGas> _ </excessBlobGas>
-            <beaconRoot> _ </beaconRoot>
+            ...
           </block>
           ...
       </evm>

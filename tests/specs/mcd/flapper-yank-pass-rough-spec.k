@@ -65,7 +65,7 @@ module FLAPPER-YANK-PASS-ROUGH-SPEC
             <withdrawalsRoot> _ </withdrawalsRoot>
             <blobGasUsed> _ </blobGasUsed>
             <excessBlobGas> _ </excessBlobGas>
-            <beaconRoot> _ </beaconRoot>
+            ...
           </block>
           ...
       </evm>
@@ -242,7 +242,7 @@ module FLAPPER-YANK-PASS-ROUGH-SPEC
             <withdrawalsRoot> _ </withdrawalsRoot>
             <blobGasUsed> _ </blobGasUsed>
             <excessBlobGas> _ </excessBlobGas>
-            <beaconRoot> _ </beaconRoot>
+            ...
           </block>
           ...
       </evm>

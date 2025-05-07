@@ -65,7 +65,7 @@ module POT-JOIN-PASS-ROUGH-SPEC
             <withdrawalsRoot> _ </withdrawalsRoot>
             <blobGasUsed> _ </blobGasUsed>
             <excessBlobGas> _ </excessBlobGas>
-            <beaconRoot> _ </beaconRoot>
+            ...
           </block>
           ...
       </evm>
@@ -236,7 +236,7 @@ module POT-JOIN-PASS-ROUGH-SPEC
             <withdrawalsRoot> _ </withdrawalsRoot>
             <blobGasUsed> _ </blobGasUsed>
             <excessBlobGas> _ </excessBlobGas>
-            <beaconRoot> _ </beaconRoot>
+            ...
           </block>
           ...
       </evm>
@@ -347,7 +347,7 @@ module POT-JOIN-PASS-ROUGH-SPEC
             <withdrawalsRoot> _ </withdrawalsRoot>
             <blobGasUsed> _ </blobGasUsed>
             <excessBlobGas> _ </excessBlobGas>
-            <beaconRoot> _ </beaconRoot>
+            ...
           </block>
           ...
       </evm>
@@ -455,7 +455,7 @@ module POT-JOIN-PASS-ROUGH-SPEC
             <withdrawalsRoot> _ </withdrawalsRoot>
             <blobGasUsed> _ </blobGasUsed>
             <excessBlobGas> _ </excessBlobGas>
-            <beaconRoot> _ </beaconRoot>
+            ...
           </block>
           ...
       </evm>
