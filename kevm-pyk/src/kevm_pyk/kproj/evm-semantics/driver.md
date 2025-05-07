@@ -75,6 +75,28 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 -   `finishTx` is a place-holder for performing necessary cleanup after a transaction.
 
 ```k
+    syntax InternalOp ::= "#deductBlobGas"
+ // --------------------------------------
+    rule <k> #deductBlobGas => .K ... </k>
+         <schedule> SCHED </schedule>
+         <excessBlobGas> EXCESS_BLOB_GAS </excessBlobGas>
+         <origin> ACCTFROM </origin>
+         <account>
+           <acctID> ACCTFROM </acctID>
+           <balance> BAL => BAL -Int Cblobfee(SCHED, EXCESS_BLOB_GAS, size(TVH)) </balance>
+           ...
+         </account>
+         <txPending> ListItem(TXID:Int) ... </txPending>
+         <message>
+           <msgID>             TXID         </msgID>
+           <txVersionedHashes> TVH          </txVersionedHashes>
+           <txType>            Blob         </txType>
+           ...
+         </message>
+      requires Ghasblobbasefee << SCHED >>
+
+    rule <k> #deductBlobGas => .K ... </k> [owise]
+
     syntax EthereumCommand ::= "startTx"
  // ------------------------------------
     rule <k> startTx => #finalizeBlock ... </k>
@@ -108,6 +130,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 
     rule <k> loadTx(ACCTFROM)
           => #accessAccounts ACCTFROM #newAddr(ACCTFROM, NONCE) #precompiledAccountsSet(SCHED)
+          ~> #deductBlobGas
           ~> #loadAccessList(TA)
           ~> #checkCreate ACCTFROM VALUE
           ~> #create ACCTFROM #newAddr(ACCTFROM, NONCE) VALUE CODE
@@ -128,24 +151,23 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
            <value>             VALUE    </value>
            <data>              CODE     </data>
            <txAccess>          TA       </txAccess>
-           <txVersionedHashes> TVH      </txVersionedHashes>
            ...
          </message>
-         <versionedHashes> _ => TVH </versionedHashes>
          <account>
            <acctID> ACCTFROM </acctID>
            <balance> BAL => BAL -Int (GLIMIT *Int #effectiveGasPrice(TXID)) </balance>
            <nonce> NONCE </nonce>
-           <code> ACCTCODE </code>
            ...
          </account>
          <accessedAccounts> _ => #if Ghaswarmcoinbase << SCHED >> #then SetItem(MINER) #else .Set #fi </accessedAccounts>
          <touchedAccounts> _ => SetItem(MINER) </touchedAccounts>
       requires #hasValidInitCode(lengthBytes(CODE), SCHED)
-        andBool ACCTCODE ==K .Bytes
+       andBool #isValidTransaction(TXID, ACCTFROM)
+
 
     rule <k> loadTx(ACCTFROM)
           => #accessAccounts ACCTFROM ACCTTO #precompiledAccountsSet(SCHED)
+          ~> #deductBlobGas
           ~> #loadAccessList(TA)
           ~> #checkCall ACCTFROM VALUE
           ~> #call ACCTFROM ACCTTO ACCTTO VALUE VALUE DATA false
@@ -174,16 +196,15 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
            <acctID> ACCTFROM </acctID>
            <balance> BAL => BAL -Int (GLIMIT *Int #effectiveGasPrice(TXID)) </balance>
            <nonce> NONCE => NONCE +Int 1 </nonce>
-           <code> ACCTCODE </code>
            ...
          </account>
          <accessedAccounts> _ => #if Ghaswarmcoinbase << SCHED >> #then SetItem(MINER) #else .Set #fi </accessedAccounts>
          <touchedAccounts> _ => SetItem(MINER) </touchedAccounts>
       requires ACCTTO =/=K .Account
-        andBool ACCTCODE ==K .Bytes
+       andBool #isValidTransaction(TXID, ACCTFROM)
 
     rule <k> loadTx(ACCTFROM) => startTx ... </k>
-         <statusCode> _ => EVMC_FAILURE </statusCode>
+         <statusCode> _ => EVMC_INVALID_BLOCK </statusCode>
          <txPending> ListItem(_TXID:Int) REST => REST </txPending>
          <account>
            <acctID> ACCTFROM </acctID>

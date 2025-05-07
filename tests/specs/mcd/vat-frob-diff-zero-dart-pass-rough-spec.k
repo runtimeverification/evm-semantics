@@ -69,7 +69,8 @@ module VAT-FROB-DIFF-ZERO-DART-PASS-ROUGH-SPEC
             <excessBlobGas> _ </excessBlobGas>
             ...
           </block>
-        </evm>
+          ...
+      </evm>
         <network>
           <chainID> VChainId </chainID>
           <accounts>

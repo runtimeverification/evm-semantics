@@ -70,7 +70,8 @@ module VAT-MOVE-DIFF-ROUGH-SPEC
             <excessBlobGas> _ </excessBlobGas>
             ...
           </block>
-        </evm>
+          ...
+      </evm>
         <network>
           <chainID> VChainId </chainID>
           <accounts>

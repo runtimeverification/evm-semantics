@@ -66,7 +66,8 @@ module VAT-HEAL-PASS-SPEC
             <excessBlobGas> _ </excessBlobGas>
             ...
           </block>
-        </evm>
+          ...
+      </evm>
         <network>
           <chainID> VChainId </chainID>
           <accounts>

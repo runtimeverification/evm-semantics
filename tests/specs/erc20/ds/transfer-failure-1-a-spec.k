@@ -78,6 +78,7 @@ module TRANSFER-FAILURE-1-A-SPEC
           <excessBlobGas> _ </excessBlobGas>
           ...
         </block>
+        ...
       </evm>
 
       <network>

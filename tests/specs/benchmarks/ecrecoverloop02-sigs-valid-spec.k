@@ -71,6 +71,7 @@ module ECRECOVERLOOP02-SIGS-VALID-SPEC
           <excessBlobGas> _ </excessBlobGas>
           ...
         </block>
+        ...
       </evm>
       <network>
         <chainID> _ </chainID>

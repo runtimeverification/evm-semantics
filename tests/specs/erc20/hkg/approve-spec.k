@@ -78,6 +78,7 @@ module APPROVE-SPEC
           <excessBlobGas> _ </excessBlobGas>
           ...
         </block>
+        ...
       </evm>
 
       <network>

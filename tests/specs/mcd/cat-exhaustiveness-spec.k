@@ -67,7 +67,8 @@ module CAT-EXHAUSTIVENESS-SPEC
              <excessBlobGas> _ </excessBlobGas>
              ...
           </block>
-         </evm>
+           ...
+      </evm>
          <network>
            <chainID> VChainId </chainID>
            <accounts> _ </accounts>

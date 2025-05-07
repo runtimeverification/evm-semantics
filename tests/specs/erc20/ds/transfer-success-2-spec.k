@@ -78,6 +78,7 @@ module TRANSFER-SUCCESS-2-SPEC
           <excessBlobGas> _ </excessBlobGas>
           ...
         </block>
+        ...
       </evm>
 
       <network>

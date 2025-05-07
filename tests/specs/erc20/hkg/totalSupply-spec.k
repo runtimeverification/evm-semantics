@@ -78,6 +78,7 @@ module TOTALSUPPLY-SPEC
           <excessBlobGas> _ </excessBlobGas>
           ...
         </block>
+        ...
       </evm>
 
       <network>

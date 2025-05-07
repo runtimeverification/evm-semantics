@@ -67,6 +67,7 @@ module STRUCTARG00-SPEC
           <excessBlobGas> _ </excessBlobGas>
           ...
         </block>
+        ...
       </evm>
       <network>
         <chainID> _ </chainID>

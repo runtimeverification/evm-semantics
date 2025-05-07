@@ -78,6 +78,7 @@ module BALANCEOF-SPEC
           <excessBlobGas> _ </excessBlobGas>
           ...
         </block>
+        ...
       </evm>
 
       <network>

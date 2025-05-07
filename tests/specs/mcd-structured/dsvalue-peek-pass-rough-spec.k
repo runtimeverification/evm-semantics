@@ -67,7 +67,8 @@ module DSVALUE-PEEK-PASS-ROUGH-SPEC
             <excessBlobGas> _ </excessBlobGas>
             ...
           </block>
-        </evm>
+          ...
+      </evm>
         <network>
           <chainID> VChainId </chainID>
           <accounts>

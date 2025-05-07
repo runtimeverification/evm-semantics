@@ -66,7 +66,8 @@ module VAT-ARITHMETIC-SPEC
             <excessBlobGas> _ </excessBlobGas>
             ...
           </block>
-        </evm>
+          ...
+      </evm>
         <network>
           <chainID> VChainId </chainID>
           <accounts>
@@ -169,7 +170,8 @@ module VAT-ARITHMETIC-SPEC
             <excessBlobGas> _ </excessBlobGas>
             ...
           </block>
-        </evm>
+          ...
+      </evm>
         <network>
           <chainID> VChainId </chainID>
           <accounts>
@@ -266,7 +268,8 @@ module VAT-ARITHMETIC-SPEC
             <excessBlobGas> _ </excessBlobGas>
             ...
           </block>
-        </evm>
+          ...
+      </evm>
         <network>
           <chainID> VChainId </chainID>
           <accounts>
@@ -369,7 +372,8 @@ module VAT-ARITHMETIC-SPEC
             <excessBlobGas> _ </excessBlobGas>
             ...
           </block>
-        </evm>
+          ...
+      </evm>
         <network>
           <chainID> VChainId </chainID>
           <accounts>
@@ -469,7 +473,8 @@ module VAT-ARITHMETIC-SPEC
             <excessBlobGas> _ </excessBlobGas>
             ...
           </block>
-        </evm>
+          ...
+      </evm>
         <network>
           <chainID> VChainId </chainID>
           <accounts>
@@ -569,7 +574,8 @@ module VAT-ARITHMETIC-SPEC
             <excessBlobGas> _ </excessBlobGas>
             ...
           </block>
-        </evm>
+          ...
+      </evm>
         <network>
           <chainID> VChainId </chainID>
           <accounts>

@@ -78,6 +78,7 @@ module TRANSFERFROM-FAILURE-2-B-SPEC
           <excessBlobGas> _ </excessBlobGas>
           ...
         </block>
+        ...
       </evm>
 
       <network>

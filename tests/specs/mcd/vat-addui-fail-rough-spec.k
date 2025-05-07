@@ -67,7 +67,8 @@ module VAT-ADDUI-FAIL-ROUGH-SPEC
             <excessBlobGas> _ </excessBlobGas>
             ...
           </block>
-        </evm>
+          ...
+      </evm>
         <network>
           <chainID> VChainId </chainID>
           <accounts>

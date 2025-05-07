@@ -428,7 +428,7 @@ Encoding
       => #rlpEncode( [ TC, TN, TF, TM, TG, #addrBytes(TT), TV, DATA, [TA] ] )
    
     rule #rlpEncodeTxData( BlobTxData(TN, TF, TM, TG, TT, TV, DATA, CID, [TA], TB, TVH) )
-      => #rlpEncode( [ CID, TN, TF, TM, TG, #addrBytes({TT}:>Account), TV, DATA, [TA], TB, [#parseList2JSONs(TVH)] ] )
+      => #rlpEncode( [ CID, TN, TF, TM, TG, #addrBytes(TT), TV, DATA, [TA], TB, [#parseList2JSONs(TVH)] ] )
 
     syntax Bytes ::= #rlpEncodeMerkleTree ( MerkleTree ) [symbol(#rlpEncodeMerkleTree), function]
  // ---------------------------------------------------------------------------------------------
