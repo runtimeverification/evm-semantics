@@ -121,6 +121,7 @@ module GAS-FEES
                  | Cbalance       ( Schedule )                           [symbol(Cbalance),       function, total, smtlib(gas_Cbalance)      ]
                  | Cmodexp        ( Schedule , Bytes , Int , Int , Int ) [symbol(Cmodexp),        function, total, smtlib(gas_Cmodexp)       ]
                  | Cinitcode      ( Schedule , Int )                     [symbol(Cinitcode),      function, total, smtlib(gas_Cinitcode)     ]
+                 | Ctxfloor       ( Schedule , Bytes , Int )             [symbol(Ctxfloor),       function, total, smtlib(gas_Ctxfloor)      ]
  // ------------------------------------------------------------------------------------------------------------------------------------------
     rule [Cgascap]:
          Cgascap(SCHED, GCAP:Int, GAVAIL:Int, GEXTRA)
@@ -255,6 +256,9 @@ module GAS-FEES
     rule #tokensInCalldata(WS) => #tokensInCalldata(WS, 0, lengthBytes(WS), 0)
     rule #tokensInCalldata(_,  I, I, R) => R
     rule #tokensInCalldata(WS, I, J, R) => #tokensInCalldata(WS, I+Int 1, J, R +Int #if WS[I] ==Int 0 #then 1 #else 4 #fi) [owise]
+
+    rule Ctxfloor(SCHED, CODE, BASECOST) => BASECOST +Int Gtxdatafloor < SCHED > *Int #tokensInCalldata(CODE) requires Ghasfloorcost << SCHED >>
+    rule Ctxfloor(    _,    _,        _) => 0 [owise]
 endmodule
 ```
 

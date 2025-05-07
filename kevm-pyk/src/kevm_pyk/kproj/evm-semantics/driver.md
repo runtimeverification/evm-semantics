@@ -111,7 +111,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
           ~> #loadAccessList(TA)
           ~> #checkCreate ACCTFROM VALUE
           ~> #create ACCTFROM #newAddr(ACCTFROM, NONCE) VALUE CODE
-          ~> #finishTx ~> #finalizeTx(false, (Gtxcreate < SCHED > +Int Gtxdatafloor < SCHED > *Int #tokensInCalldata(CODE))) ~> startTx
+          ~> #finishTx ~> #finalizeTx(false, Ctxfloor(SCHED, CODE, Gtxcreate < SCHED > )) ~> startTx
          ...
          </k>
          <schedule> SCHED </schedule>
@@ -149,7 +149,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
           ~> #loadAccessList(TA)
           ~> #checkCall ACCTFROM VALUE
           ~> #call ACCTFROM ACCTTO ACCTTO VALUE VALUE DATA false
-          ~> #finishTx ~> #finalizeTx(false, (Gtransaction < SCHED > +Int Gtxdatafloor < SCHED > *Int #tokensInCalldata(DATA))) ~> startTx
+          ~> #finishTx ~> #finalizeTx(false, Ctxfloor(SCHED, DATA, Gtransaction < SCHED >)) ~> startTx
          ...
          </k>
          <schedule> SCHED </schedule>
