@@ -22,7 +22,7 @@ Items with empty `request_data` are excluded, i.e. the intermediate list skips r
 ```k
     syntax Int ::= #computeRequestsHash(List) [function, symbol(#computeRequestsHash)]
  // ----------------------------------------------------------------------------------
-    rule #computeRequestsHash(RS) => keccak(#computeRequestsHashIntermediate(RS))
+    rule #computeRequestsHash(RS) => #parseHexWord(Sha256(#computeRequestsHashIntermediate(RS)))
 
     syntax Bytes ::= #computeRequestsHashIntermediate(List)        [function, symbol(#computeRequestsHashIntermediate)]
                    | #computeRequestsHashIntermediate(List, Bytes) [function, symbol(#computeRequestsHashIntermediateAux)]
@@ -31,7 +31,7 @@ Items with empty `request_data` are excluded, i.e. the intermediate list skips r
     rule #computeRequestsHashIntermediate(.List, ACC) => ACC
     rule #computeRequestsHashIntermediate(ListItem(R) RS, ACC) => #computeRequestsHashIntermediate(RS, ACC)
       requires lengthBytes(R) <=Int 1
-    rule #computeRequestsHashIntermediate(ListItem(R) RS, ACC) => #computeRequestsHashIntermediate(RS, ACC +Bytes Keccak256raw(R))
+    rule #computeRequestsHashIntermediate(ListItem(R) RS, ACC) => #computeRequestsHashIntermediate(RS, ACC +Bytes Sha256raw(R))
       requires lengthBytes(R) >Int 1
 ```
 

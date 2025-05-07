@@ -734,8 +734,8 @@ While processing a block, multiple requests objects with different `request_type
     rule <k> #filterLogs IDX => .K ... </k>
          <schedule> SCHED </schedule>
          <log> LOGS </log>
-         // <depositRequests> DRQSTS </depositRequests>
-         // <requestsRoot> _ => #computeRequestsHash(DRQSTS) </requestsRoot>
+         <depositRequests> DRQSTS </depositRequests>
+         <requestsRoot> _ => #computeRequestsHash(DRQSTS) </requestsRoot>
       requires Ghasrequests << SCHED >> andBool IDX >=Int size(LOGS)
 
     rule <k> #filterLogs IDX
