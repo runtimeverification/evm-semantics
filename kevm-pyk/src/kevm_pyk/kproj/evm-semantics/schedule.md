@@ -436,7 +436,13 @@ A `ScheduleConst` is a constant determined by the fee schedule.
 ```k
     syntax Schedule ::= "PRAGUE" [symbol(PRAGUE_EVM), smtlib(schedule_PRAGUE)]
  // --------------------------------------------------------------------------
-    rule [SCHEDCONSTPrague]: SCHEDCONST < PRAGUE > => SCHEDCONST < CANCUN >
+    rule [GmaxblobgasPrague]:               Gmaxblobgas               < PRAGUE > => 1179648
+    rule [GtargetblobgasPrague]:            Gtargetblobgas            < PRAGUE > => 786432
+    rule [BlobbasefeeupdatefractionPrague]: Blobbasefeeupdatefraction < PRAGUE > => 5007716
+    rule [SCHEDCONSTPrague]:                SCHEDCONST                < PRAGUE > => SCHEDCONST < CANCUN >
+      requires notBool ( SCHEDCONST ==K Gmaxblobgas
+                  orBool SCHEDCONST ==K Gtargetblobgas
+                  orBool SCHEDCONST ==K Blobbasefeeupdatefraction )
 
     rule [SCHEDFLAGPrague]: SCHEDFLAG  << PRAGUE >> => SCHEDFLAG << CANCUN >>
 
