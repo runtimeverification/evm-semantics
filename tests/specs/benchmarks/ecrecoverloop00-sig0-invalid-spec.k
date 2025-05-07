@@ -70,6 +70,7 @@ module ECRECOVERLOOP00-SIG0-INVALID-SPEC
           <excessBlobGas> _ </excessBlobGas>
           <beaconRoot> _ </beaconRoot>
         </block>
+        ...
       </evm>
       <network>
         <chainID> _ </chainID>

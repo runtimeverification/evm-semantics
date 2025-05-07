@@ -67,7 +67,8 @@ module FLAPPER-YANK-PASS-ROUGH-SPEC
             <excessBlobGas> _ </excessBlobGas>
             <beaconRoot> _ </beaconRoot>
           </block>
-        </evm>
+          ...
+      </evm>
         <network>
           <chainID> VChainId </chainID>
           <accounts>
@@ -243,7 +244,8 @@ module FLAPPER-YANK-PASS-ROUGH-SPEC
             <excessBlobGas> _ </excessBlobGas>
             <beaconRoot> _ </beaconRoot>
           </block>
-        </evm>
+          ...
+      </evm>
         <network>
           <chainID> VChainId </chainID>
           <accounts>

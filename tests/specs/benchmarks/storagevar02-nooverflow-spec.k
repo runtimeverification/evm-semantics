@@ -67,6 +67,7 @@ module STORAGEVAR02-NOOVERFLOW-SPEC
           <excessBlobGas> _ </excessBlobGas>
           <beaconRoot> _ </beaconRoot>
         </block>
+        ...
       </evm>
       <network>
         <chainID> _ </chainID>
