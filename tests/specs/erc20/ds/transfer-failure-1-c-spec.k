@@ -78,6 +78,7 @@ module TRANSFER-FAILURE-1-C-SPEC
           <excessBlobGas> _ </excessBlobGas>
           <beaconRoot> _ </beaconRoot>
         </block>
+        ...
       </evm>
 
       <network>

@@ -78,6 +78,7 @@ module TRANSFERFROM-SUCCESS-2-SPEC
           <excessBlobGas> _ </excessBlobGas>
           <beaconRoot> _ </beaconRoot>
         </block>
+        ...
       </evm>
 
       <network>

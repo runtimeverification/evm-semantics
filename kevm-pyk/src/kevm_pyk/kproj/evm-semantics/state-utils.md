@@ -51,6 +51,7 @@ module STATE-UTILS
          <touchedAccounts>  _ => .Set       </touchedAccounts>
          <accessedAccounts> _ => .Set       </accessedAccounts>
          <createdAccounts>  _ => .Set       </createdAccounts>
+         <versionedHashes>  _ => .List      </versionedHashes>
 
     syntax EthereumCommand ::= "clearBLOCK"
  // ---------------------------------------
@@ -251,6 +252,8 @@ The `"rlp"` key loads the block information.
 
     rule <k> load "genesisRLP": [ [ HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR, UB, EB, BR, .JSONs ], _, _, _, .JSONs ] => .K ... </k>
          <blockhashes> .List => ListItem(#blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR, UB, EB, BR)) ListItem(#asWord(HP)) </blockhashes>
+         <previousExcessBlobGas> 0 => #asWord(EB) </previousExcessBlobGas>
+         <previousBlobGasUsed>   0 => #asWord(UB) </previousBlobGasUsed>
 
     rule <k> load "genesisRLP": [ [ HP, HO, HC, HR, HT, HE:Bytes, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR, .JSONs ], _, _, _, .JSONs ] => .K ... </k>
          <blockhashes> .List => ListItem(#blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR)) ListItem(#asWord(HP)) ... </blockhashes>
@@ -543,6 +546,106 @@ The `"rlp"` key loads the block information.
            <txMaxFee>      TM     </txMaxFee>
            ...
          </message>
+```
+
+- `#isValidTransaction(TXID, SENDER)` - validate each defined transaction type.
+ 1. Check if the tx nonce matches the nonce of the sender.
+ 2. Check that the gas fees are properly structured and that the fee caps are not higher than the max amount.
+ 3. Check that there is enough balance for gas, value and blob fees (where applicable) and that the gas limit is within the block limits.
+
+```k
+    syntax Bool ::= #isValidTransaction( Int , Account ) [symbol(#isValidTransaction), function]
+ // --------------------------------------------------------------------------------------------
+    rule [[ #isValidTransaction (TXID, ACCTFROM) => true ]]
+         <schedule> SCHED </schedule>
+         <baseFee> BASE_FEE </baseFee>
+         <excessBlobGas> EXCESS_BLOB_GAS </excessBlobGas>
+         <gasLimit> BLOCK_GAS_LIMIT </gasLimit>
+         <account>
+           <acctID>  ACCTFROM  </acctID>
+           <balance> BAL       </balance>
+           <code>    ACCTCODE  </code>
+           <nonce>   ACCTNONCE </nonce>
+           ...
+         </account>
+         <message>
+           <msgID>             TXID                </msgID>
+           <txNonce>           TX_NONCE            </txNonce>
+           <txGasLimit>        TX_GAS_LIMIT        </txGasLimit>
+           <to>                ACCTTO              </to>
+           <value>             VALUE               </value>
+           <txPriorityFee>     TX_MAX_PRIORITY_FEE </txPriorityFee>
+           <txMaxFee>          TX_MAX_FEE          </txMaxFee>
+           <txMaxBlobFee>      TX_MAX_BLOB_FEE     </txMaxBlobFee>
+           <txVersionedHashes> TVH                 </txVersionedHashes>
+           <txType> Blob </txType>
+           ...
+         </message>
+     requires ACCTCODE ==K .Bytes
+      andBool notBool ACCTTO ==K .Account
+      andBool ACCTNONCE ==Int TX_NONCE
+      andBool BASE_FEE <=Int TX_MAX_FEE
+      andBool TX_MAX_PRIORITY_FEE <=Int TX_MAX_FEE
+      andBool size(TVH) >Int 0 andBool #checkTxVersionedHashes(TVH)
+      andBool TX_MAX_BLOB_FEE >=Int Cbasefeeperblob(SCHED, EXCESS_BLOB_GAS)
+      andBool BAL >=Int TX_GAS_LIMIT *Int TX_MAX_FEE +Int (Ctotalblob(SCHED, size(TVH)) *Int TX_MAX_BLOB_FEE) +Int VALUE
+      andBool TX_GAS_LIMIT <=Int BLOCK_GAS_LIMIT
+      andBool Ctotalblob(SCHED, size(TVH)) <=Int Gmaxblobgas < SCHED>
+
+    rule [[ #isValidTransaction (TXID, ACCTFROM) => true ]]
+         <baseFee> BASE_FEE </baseFee>
+         <gasLimit> BLOCK_GAS_LIMIT </gasLimit>
+         <account>
+           <acctID>  ACCTFROM  </acctID>
+           <balance> BAL       </balance>
+           <code>    ACCTCODE  </code>
+           <nonce>   ACCTNONCE </nonce>
+           ...
+         </account>
+         <message>
+           <msgID>             TXID                </msgID>
+           <txNonce>           TX_NONCE            </txNonce>
+           <txGasLimit>        TX_GAS_LIMIT        </txGasLimit>
+           <value>             VALUE               </value>
+           <txPriorityFee>     TX_MAX_PRIORITY_FEE </txPriorityFee>
+           <txMaxFee>          TX_MAX_FEE          </txMaxFee>
+           <txType> DynamicFee </txType>
+           ...
+         </message>
+     requires ACCTCODE ==K .Bytes
+      andBool ACCTNONCE ==Int TX_NONCE
+      andBool BASE_FEE <=Int TX_MAX_FEE
+      andBool TX_MAX_PRIORITY_FEE <=Int TX_MAX_FEE
+      andBool BAL >=Int TX_GAS_LIMIT *Int TX_MAX_FEE +Int VALUE
+      andBool TX_GAS_LIMIT <=Int BLOCK_GAS_LIMIT
+
+    rule [[ #isValidTransaction (TXID, ACCTFROM) => true ]]
+         <baseFee> BASE_FEE </baseFee>
+         <gasLimit> BLOCK_GAS_LIMIT </gasLimit>
+         <account>
+           <acctID>  ACCTFROM  </acctID>
+           <balance> BAL       </balance>
+           <code>    ACCTCODE   </code>
+           <nonce>   ACCTNONCE </nonce>
+           ...
+         </account>
+         <message>
+           <msgID>             TXID                </msgID>
+           <txNonce>           TX_NONCE            </txNonce>
+           <txGasPrice>        TX_GAS_PRICE        </txGasPrice>
+           <txGasLimit>        TX_GAS_LIMIT        </txGasLimit>
+           <value>             VALUE               </value>
+           <txType> TXTYPE </txType>
+           ...
+         </message>
+     requires #dasmTxPrefix(TXTYPE) <Int 2
+      andBool ACCTCODE ==K .Bytes
+      andBool ACCTNONCE ==Int TX_NONCE
+      andBool BASE_FEE <=Int TX_GAS_PRICE
+      andBool BAL >=Int TX_GAS_LIMIT *Int TX_GAS_PRICE +Int VALUE
+      andBool TX_GAS_LIMIT <=Int BLOCK_GAS_LIMIT
+
+    rule #isValidTransaction (_, _) => false [owise]
 ```
 
 ### Block Identifiers

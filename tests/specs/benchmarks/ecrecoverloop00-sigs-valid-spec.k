@@ -70,6 +70,7 @@ module ECRECOVERLOOP00-SIGS-VALID-SPEC
           <excessBlobGas> _ </excessBlobGas>
           <beaconRoot> _ </beaconRoot>
         </block>
+        ...
       </evm>
       <network>
         <chainID> _ </chainID>

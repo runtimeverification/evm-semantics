@@ -67,6 +67,7 @@ module REQUIRES01-A0LE0-SPEC
           <excessBlobGas> _ </excessBlobGas>
           <beaconRoot> _ </beaconRoot>
         </block>
+        ...
       </evm>
       <network>
         <chainID> _ </chainID>
