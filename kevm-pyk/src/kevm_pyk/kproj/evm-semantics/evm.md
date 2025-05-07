@@ -11,12 +11,14 @@ This file only defines the local execution operations, the file `driver.md` will
 requires "data.md"
 requires "network.md"
 requires "gas.md"
+requires "requests.md"
 
 module EVM
     imports STRING
     imports EVM-DATA
     imports NETWORK
     imports GAS
+    imports EVM-REQUESTS
 ```
 
 Configuration
@@ -118,6 +120,7 @@ In the comments next to each cell, we've marked which component of the YellowPap
               <blobGasUsed>      0      </blobGasUsed>
               <excessBlobGas>    0      </excessBlobGas>
               <beaconRoot>       0      </beaconRoot>
+              <requestsRoot>     0      </requestsRoot>
 
               <ommerBlockHeaders> [ .JSONs ] </ommerBlockHeaders>
             </block>
@@ -191,6 +194,11 @@ In the comments next to each cell, we've marked which component of the YellowPap
                 <amount>         0        </amount>
               </withdrawal>
             </withdrawals>
+
+            <requests>
+              <depositRequests> .List </depositRequests>
+              //other request types come here
+            </requests>
 
           </network>
 
@@ -714,6 +722,53 @@ After executing a transaction, it's necessary to have the effect of the substate
     rule <k> #deleteAccounts(.List) => .K ... </k>
 ```
 
+### Fetching requests from event logs
+
+While processing a block, multiple requests objects with different `request_types` will be produced by the system, and accumulated in the block requests list.
+
+```k
+    syntax KItem ::= "#filterLogs" Int [symbol(#filterLogs)]
+ // --------------------------------------------------------
+    rule <k> #filterLogs _ => .K ... </k> <schedule> SCHED </schedule> requires notBool Ghasrequests << SCHED >>
+
+    rule <k> #filterLogs IDX => .K ... </k>
+         <schedule> SCHED </schedule>
+         <log> LOGS </log>
+         <depositRequests> DRQSTS </depositRequests>
+         <requestsRoot> _ => #computeRequestsHash(DRQSTS) </requestsRoot>
+      requires Ghasrequests << SCHED >> andBool IDX >=Int size(LOGS)
+
+    rule <k> #filterLogs IDX
+          => #parseDepositRequest {LOGS[IDX]}:>SubstateLogEntry
+          // parse other request types
+          ~> #filterLogs IDX +Int 1
+         ...
+         </k>
+         <log> LOGS </log>
+         <schedule> SCHED </schedule>
+      requires IDX <Int size(LOGS) andBool Ghasrequests << SCHED >>
+```
+
+Rules for parsing Deposit Requests according to EIP-6110.
+
+```k
+    syntax KItem ::= "#parseDepositRequest" SubstateLogEntry [symbol(#parseDepositRequest)]
+ // ---------------------------------------------------------------------------------------
+    rule <k> #parseDepositRequest { ADDR | TOPICS | DATA } => .K ... </k>
+         <depositRequests> RS => RS ListItem(Int2Bytes(1, DEPOSIT_REQUEST_TYPE, BE) +Bytes #extractDepositData(DATA)) </depositRequests>
+      requires ADDR ==K DEPOSIT_CONTRACT_ADDRESS
+       andBool size(TOPICS) >Int 0
+       andBool {TOPICS[0]}:>Int ==Int DEPOSIT_EVENT_SIGNATURE_HASH
+       andBool #isValidDepositEventData(DATA)
+
+    rule <k> #parseDepositRequest { ADDR | TOPICS | DATA } => #end EVMC_INVALID_BLOCK ... </k>
+      requires ADDR ==K DEPOSIT_CONTRACT_ADDRESS
+       andBool size(TOPICS) >Int 0
+       andBool {TOPICS[0]}:>Int ==Int DEPOSIT_EVENT_SIGNATURE_HASH
+       andBool notBool #isValidDepositEventData(DATA)
+
+    rule <k> #parseDepositRequest _ => .K ... </k> [owise]
+```
 ### Blobs
 
 -    `#validateBlockBlobs COUNT TXIDS`: Iterates through the transactions of the current block in order, counting up total versioned hashes (blob commitments) in the block.
@@ -790,9 +845,13 @@ Terminates validation successfully when all conditions are met or when blob vali
     syntax EthereumCommand ::= "#finalizeBlock"
                              | #rewardOmmers ( JSONs ) [symbol(#rewardOmmers)]
  // --------------------------------------------------------------------------
-    rule <k> #finalizeBlock => #if Ghaswithdrawals << SCHED >> #then #finalizeWithdrawals #else .K #fi
+    rule <k> #finalizeBlock
+          => #if Ghaswithdrawals << SCHED >> #then #finalizeWithdrawals #else .K #fi
           ~> #rewardOmmers(OMMERS)
-          ~> #finalizeBlockBlobs ... </k>
+          ~> #filterLogs 0
+          ~> #finalizeBlockBlobs
+         ...
+         </k>
          <schedule> SCHED </schedule>
          <ommerBlockHeaders> [ OMMERS ] </ommerBlockHeaders>
          <coinbase> MINER </coinbase>

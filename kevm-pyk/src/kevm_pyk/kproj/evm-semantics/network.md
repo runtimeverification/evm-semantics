@@ -48,7 +48,7 @@ The following codes all indicate that the VM ended execution with an exception, 
                                    | "EVMC_PRECOMPILE_FAILURE"
                                    | "EVMC_NONCE_EXCEEDED"
                                    | "EVMC_INVALID_BLOCK"
- // -------------------------------------------------------------
+ // -----------------------------------------------------
     rule StatusCode2String(EVMC_FAILURE)               => "EVMC_FAILURE"
     rule StatusCode2String(EVMC_INVALID_INSTRUCTION)   => "EVMC_INVALID_INSTRUCTION"
     rule StatusCode2String(EVMC_UNDEFINED_INSTRUCTION) => "EVMC_UNDEFINED_INSTRUCTION"
