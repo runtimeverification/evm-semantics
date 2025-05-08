@@ -30,7 +30,9 @@ module SCHEDULE
                           | "Ghasrejectedfirstbyte"   | "Ghasprevrandao"   | "Ghasmaxinitcodesize" | "Ghaspushzero"
                           | "Ghaswarmcoinbase"        | "Ghaswithdrawals"  | "Ghastransient"       | "Ghasmcopy"
                           | "Ghasbeaconroot"          | "Ghaseip6780"      | "Ghasblobbasefee"     | "Ghasblobhash"
-                          | "Ghasfloorcost"
+                          
+                          | "Ghasrequests"            | "Ghashistory"      | "Ghasfloorcost"
+ // ----------------------------------------------------------------------------------------
 ```
 
 ### Schedule Constants
@@ -49,8 +51,9 @@ A `ScheduleConst` is a constant determined by the fee schedule.
                            | "Gblockhash"    | "Gquadcoeff"    | "maxCodeSize"   | "Rb"                | "Gquaddivisor"       | "Gecadd"           | "Gecmul"
                            | "Gecpairconst"  | "Gecpaircoeff"  | "Gfround"       | "Gcoldsload"        | "Gcoldaccountaccess" | "Gwarmstorageread" | "Gaccesslistaddress"
                            | "Gaccessliststoragekey"           | "Rmaxquotient"  | "Ginitcodewordcost" | "maxInitCodeSize"    | "Gwarmstoragedirtystore"
-                           | "Gpointeval"    | "Gtxdatafloor"
- // ----------------------------------------------------------------------------------------------------------------------------------------------------
+                           | "Gpointeval"    | "Gtxdatafloor"  | "Gpointeval"    | "Gmaxblobgas"       | "Gminbasefee"        | "Gtargetblobgas"   | "Gperblob"
+                           | "Blobbasefeeupdatefraction"
+ // ----------------------------------------------------
 ```
 
 ### Default Schedule
@@ -120,7 +123,12 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule [GwarmstoragereadDefault]:       Gwarmstorageread       < DEFAULT > => 0
     rule [GwarmstoragedirtystoreDefault]: Gwarmstoragedirtystore < DEFAULT > => 0
 
-    rule [GpointevalDefault]: Gpointeval < DEFAULT > => 0
+    rule [GpointevalDefault]:                Gpointeval                < DEFAULT > => 0
+    rule [GmaxblobgasDefault]:               Gmaxblobgas               < DEFAULT > => 0
+    rule [GtargetblobgasDefault]:            Gtargetblobgas            < DEFAULT > => 0
+    rule [GminbasefeeDefault]:               Gminbasefee               < DEFAULT > => 0
+    rule [BlobbasefeeupdatefractionDefault]: Blobbasefeeupdatefraction < DEFAULT > => 0
+    rule [GperblobDefault]:                  Gperblob                  < DEFAULT > => 0
 
     rule [GaccessliststoragekeyDefault]: Gaccessliststoragekey < DEFAULT > => 0
     rule [GaccesslistaddressDefault]:    Gaccesslistaddress    < DEFAULT > => 0
@@ -159,6 +167,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule [Ghaseip6780Default]:             Ghaseip6780             << DEFAULT >> => false
     rule [GhasblobhashDefault]:            Ghasblobhash            << DEFAULT >> => false
     rule [GhasfloorcostDefault]:           Ghasfloorcost           << DEFAULT >> => false
+    rule [GhashistoryDefault]:             Ghashistory             << DEFAULT >> => false
+    rule [GhasrequestsDefault]:            Ghasrequests            << DEFAULT >> => false
 ```
 
 ### Frontier Schedule
@@ -396,11 +406,21 @@ A `ScheduleConst` is a constant determined by the fee schedule.
 ```k
     syntax Schedule ::= "CANCUN" [symbol(CANCUN_EVM), smtlib(schedule_CANCUN)]
  // --------------------------------------------------------------------------
-    rule [GwarmstoragedirtystoreCancun]: Gwarmstoragedirtystore < CANCUN > => Gwarmstorageread < CANCUN >
-    rule [GpointevalCancun]:             Gpointeval             < CANCUN > => 50000
-    rule [SCHEDCONSTCancun]:             SCHEDCONST             < CANCUN > => SCHEDCONST < SHANGHAI >
+    rule [GwarmstoragedirtystoreCancun]:    Gwarmstoragedirtystore    < CANCUN > => Gwarmstorageread < CANCUN >
+    rule [GpointevalCancun]:                Gpointeval                < CANCUN > => 50000
+    rule [GmaxblobgasCancun]:               Gmaxblobgas               < CANCUN > => 786432
+    rule [GtargetblobgasCancun]:            Gtargetblobgas            < CANCUN > => 393216
+    rule [GminbasefeeCancun]:               Gminbasefee               < CANCUN > => 1
+    rule [BlobbasefeeupdatefractionCancun]: Blobbasefeeupdatefraction < CANCUN > => 3338477
+    rule [GperblobCancun]:                  Gperblob                  < CANCUN > => 131072 // 2 ** 17
+    rule [SCHEDCONSTCancun]:                SCHEDCONST                < CANCUN > => SCHEDCONST < SHANGHAI >
       requires notBool ( SCHEDCONST ==K Gwarmstoragedirtystore
                   orBool SCHEDCONST ==K Gpointeval
+                  orBool SCHEDCONST ==K Gmaxblobgas
+                  orBool SCHEDCONST ==K Gtargetblobgas
+                  orBool SCHEDCONST ==K Gminbasefee
+                  orBool SCHEDCONST ==K Blobbasefeeupdatefraction
+                  orBool SCHEDCONST ==K Gperblob
                        )
 
     rule [GhastransientCancun]:   Ghastransient   << CANCUN >> => true
@@ -428,10 +448,13 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule [SCHEDCONSTPrague]:   SCHEDCONST   < PRAGUE > => SCHEDCONST < CANCUN >
       requires notBool ( SCHEDCONST ==K Gtxdatafloor )
 
+    rule [GhasrequestsPrague]:  Ghasrequests  << PRAGUE >> => true
+    rule [GhashistoryPrague]:   Ghashistory   << PRAGUE >> => true
     rule [GhasfloorcostPrague]: Ghasfloorcost << PRAGUE >> => true
     rule [SCHEDFLAGPrague]:     SCHEDFLAG     << PRAGUE >> => SCHEDFLAG << CANCUN >>
-      requires notBool ( SCHEDFLAG ==K Ghasfloorcost )
-
+      requires notBool ( SCHEDFLAG ==K Ghasrequests
+                  orBool SCHEDFLAG ==K Ghashistory
+                  orBool SCHEDFLAG ==K Ghasfloorcost )
 ```
 
 ```k
