@@ -835,7 +835,7 @@ Terminates validation successfully when all conditions are met or when blob vali
 ```k
     syntax EthereumCommand ::= "#startBlock"
  // ----------------------------------------
-    rule <k> #startBlock => #validateBlockBlobs 0 TXS ~> #executeBeaconRoots ... </k>
+    rule <k> #startBlock => #validateBlockBlobs 0 TXS ~> #executeBeaconRoots ~> #executeBlockHashHistory ... </k>
          <gasUsed> _ => 0 </gasUsed>
          <blobGasUsed> _ => 0 </blobGasUsed>
          <log> _ => .List </log>
@@ -937,6 +937,30 @@ Read more about EIP-4788 here [https://eips.ethereum.org/EIPS/eip-4788](https://
       requires Ghasbeaconroot << SCHED >>
 
     rule <k> #executeBeaconRoots => .K ... </k> [owise]
+```
+
+If `block.timestamp >= PRAGUE_FORK_TIMESTAMP`:
+Before executing any transaction, the `HISTORY_STORAGE_ADDRESS` (`0x0000F90827F1C53a10cb7A02335B175320002935`) storage is modified as following:
+ - Set the storage value at `(block.number-1) % HISTORY_SERVE_WINDOW` to be ` block.parent.hash`
+where `HISTORY_SERVE_WINDOW == 8191`.
+
+Read more about EIP-2935 here [https://eips.ethereum.org/EIPS/eip-2935](https://eips.ethereum.org/EIPS/eip-2935).
+
+```k
+    syntax EthereumCommand ::= "#executeBlockHashHistory" [symbol(#executeBlockHashHistory)]
+ // ----------------------------------------------------------------------------------------
+    rule <k> #executeBlockHashHistory => .K ... </k>
+         <schedule> SCHED </schedule>
+         <previousHash> HP </previousHash>
+         <number> BN </number>
+         <account>
+           <acctID> 21693734551179282564423033930679318143314229 </acctID>
+           <storage> M:Map => M [((BN -Int 1) modInt 8191) <- HP] </storage>
+           ...
+         </account>
+      requires Ghashistory << SCHED >>
+
+    rule <k> #executeBlockHashHistory => .K ... </k> [owise]
 ```
 
 EVM Programs
