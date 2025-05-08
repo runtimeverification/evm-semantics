@@ -30,8 +30,8 @@ module SCHEDULE
                           | "Ghasrejectedfirstbyte"   | "Ghasprevrandao"   | "Ghasmaxinitcodesize" | "Ghaspushzero"
                           | "Ghaswarmcoinbase"        | "Ghaswithdrawals"  | "Ghastransient"       | "Ghasmcopy"
                           | "Ghasbeaconroot"          | "Ghaseip6780"      | "Ghasblobbasefee"     | "Ghasblobhash"
-                          | "Ghasrequests"
- // --------------------------------------
+                          | "Ghasrequests"            | "Ghashistory"
+ // -----------------------------------------------------------------
 ```
 
 ### Schedule Constants
@@ -163,6 +163,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule [GhasbeaconrootDefault]:          Ghasbeaconroot          << DEFAULT >> => false
     rule [Ghaseip6780Default]:             Ghaseip6780             << DEFAULT >> => false
     rule [GhasblobhashDefault]:            Ghasblobhash            << DEFAULT >> => false
+    rule [GhashistoryDefault]:             Ghashistory             << DEFAULT >> => false
     rule [GhasrequestsDefault]:            Ghasrequests            << DEFAULT >> => false
 ```
 
@@ -442,8 +443,10 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule [SCHEDCONSTPrague]: SCHEDCONST < PRAGUE > => SCHEDCONST < CANCUN >
 
     rule [GhasrequestsPrague]: Ghasrequests << PRAGUE >> => true
+    rule [GhashistoryPrague]:  Ghashistory  << PRAGUE >> => true
     rule [SCHEDFLAGPrague]:    SCHEDFLAG    << PRAGUE >> => SCHEDFLAG << CANCUN >>
-      requires notBool ( SCHEDFLAG ==K Ghasrequests )
+      requires notBool ( SCHEDFLAG ==K Ghasrequests 
+                  orBool SCHEDFLAG ==K Ghashistory )
 ```
 
 ```k
