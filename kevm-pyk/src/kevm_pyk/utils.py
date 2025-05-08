@@ -16,11 +16,11 @@ from pyk.kast.manip import (
     split_config_and_constraints,
     split_config_from,
 )
+from pyk.kast.prelude.ml import is_bottom, is_top
 from pyk.kcfg import KCFGExplore
 from pyk.kore.rpc import KoreExecLogFormat
 from pyk.ktool import TypeInferenceMode
 from pyk.ktool.claim_loader import ClaimLoader
-from pyk.prelude.ml import is_bottom, is_top
 from pyk.proof import APRProof, APRProver
 from pyk.proof.implies import EqualityProof, ImpliesProver
 from pyk.proof.proof import parallel_advance_proof

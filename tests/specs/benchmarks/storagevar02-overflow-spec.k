@@ -65,8 +65,9 @@ module STORAGEVAR02-OVERFLOW-SPEC
           <withdrawalsRoot> _ </withdrawalsRoot>
           <blobGasUsed> _ </blobGasUsed>
           <excessBlobGas> _ </excessBlobGas>
-          <beaconRoot> _ </beaconRoot>
+          ...
         </block>
+        ...
       </evm>
       <network>
         <chainID> _ </chainID>

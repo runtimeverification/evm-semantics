@@ -121,6 +121,10 @@ module GAS-FEES
                  | Cbalance       ( Schedule )                           [symbol(Cbalance),       function, total, smtlib(gas_Cbalance)      ]
                  | Cmodexp        ( Schedule , Bytes , Int , Int , Int ) [symbol(Cmodexp),        function, total, smtlib(gas_Cmodexp)       ]
                  | Cinitcode      ( Schedule , Int )                     [symbol(Cinitcode),      function, total, smtlib(gas_Cinitcode)     ]
+                 | Ctotalblob     ( Schedule , Int )                     [symbol(Ctotalblob),     function, total, smtlib(gas_Ctotalblob)    ]
+                 | Cbasefeeperblob( Schedule , Int )                     [symbol(Cbasefeeperblob),function, total, smtlib(gas_Cbasefeeperblob)  ]
+                 | Cblobfee       ( Schedule , Int , Int )               [symbol(Cblobfee),       function, total, smtlib(gas_Cblobfee)      ]
+                 | Cexcessblob    ( Schedule , Int , Int )               [symbol(Cexcessblob),    function, total, smtlib(gas_Cexcessblob)   ]
  // ------------------------------------------------------------------------------------------------------------------------------------------
     rule [Cgascap]:
          Cgascap(SCHED, GCAP:Int, GAVAIL:Int, GEXTRA)
@@ -207,6 +211,24 @@ module GAS-FEES
 
     rule [Cinitcode.new]: Cinitcode(SCHED, INITCODELEN) => Ginitcodewordcost < SCHED > *Int ( INITCODELEN up/Int 32 ) requires         Ghasmaxinitcodesize << SCHED >> [concrete]
     rule [Cinitcode.old]: Cinitcode(SCHED, _)           => 0                                                          requires notBool Ghasmaxinitcodesize << SCHED >> [concrete]
+
+    rule [Ctotalblob]: Ctotalblob(SCHED, BLOB_VERSIONED_HASHES_SIZE) => Gperblob < SCHED > *Int BLOB_VERSIONED_HASHES_SIZE
+
+    rule [Cbasefeeperblob]: Cbasefeeperblob(SCHED, EXCESS_BLOB_GAS) => #fakeExponential(Gminbasefee < SCHED >, EXCESS_BLOB_GAS, Blobbasefeeupdatefraction < SCHED >)
+
+    rule [Cblobfee]: Cblobfee(SCHED, EXCESS_BLOB_GAS, BLOB_VERSIONED_HASHES_SIZE) => Ctotalblob(SCHED, BLOB_VERSIONED_HASHES_SIZE) *Int Cbasefeeperblob(SCHED, EXCESS_BLOB_GAS)
+
+    rule [Cexcessblob]:       Cexcessblob(SCHED, EXCESS_BLOB_GAS, BLOB_GAS_USED) => EXCESS_BLOB_GAS +Int BLOB_GAS_USED -Int Gtargetblobgas < SCHED > requires Gtargetblobgas < SCHED > <=Int EXCESS_BLOB_GAS +Int BLOB_GAS_USED 
+    rule [Cexcessblob.owise]: Cexcessblob(_,     _,               _             )=> 0 [owise]
+
+    syntax Int ::= #fakeExponential(Int, Int, Int) [symbol(#fakeExponential), function]
+                 | #fakeExponential(Int, Int, Int, Int, Int) [function]
+ // -------------------------------------------------------------------
+    rule #fakeExponential(FACTOR, NUMER, DENOM) => #fakeExponential(1, 0, FACTOR *Int DENOM, NUMER, DENOM)
+
+    rule #fakeExponential(I, OUTPUT, ACCUM, NUMER, DENOM)
+      => #fakeExponential(I +Int 1, OUTPUT +Int ACCUM, ACCUM *Int NUMER /Int (DENOM *Int I), NUMER, DENOM) requires ACCUM >Int 0
+    rule #fakeExponential(_, OUTPUT, _, _, DENOM) => OUTPUT /Int DENOM [owise]
 
     syntax Bool ::= #accountEmpty ( AccountCode , Int , Int ) [function, total, symbol(accountEmpty)]
  // -------------------------------------------------------------------------------------------------

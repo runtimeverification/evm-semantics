@@ -75,6 +75,28 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 -   `finishTx` is a place-holder for performing necessary cleanup after a transaction.
 
 ```k
+    syntax InternalOp ::= "#deductBlobGas"
+ // --------------------------------------
+    rule <k> #deductBlobGas => .K ... </k>
+         <schedule> SCHED </schedule>
+         <excessBlobGas> EXCESS_BLOB_GAS </excessBlobGas>
+         <origin> ACCTFROM </origin>
+         <account>
+           <acctID> ACCTFROM </acctID>
+           <balance> BAL => BAL -Int Cblobfee(SCHED, EXCESS_BLOB_GAS, size(TVH)) </balance>
+           ...
+         </account>
+         <txPending> ListItem(TXID:Int) ... </txPending>
+         <message>
+           <msgID>             TXID         </msgID>
+           <txVersionedHashes> TVH          </txVersionedHashes>
+           <txType>            Blob         </txType>
+           ...
+         </message>
+      requires Ghasblobbasefee << SCHED >>
+
+    rule <k> #deductBlobGas => .K ... </k> [owise]
+
     syntax EthereumCommand ::= "startTx"
  // ------------------------------------
     rule <k> startTx => #finalizeBlock ... </k>
@@ -108,6 +130,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 
     rule <k> loadTx(ACCTFROM)
           => #accessAccounts ACCTFROM #newAddr(ACCTFROM, NONCE) #precompiledAccountsSet(SCHED)
+          ~> #deductBlobGas
           ~> #loadAccessList(TA)
           ~> #checkCreate ACCTFROM VALUE
           ~> #create ACCTFROM #newAddr(ACCTFROM, NONCE) VALUE CODE
@@ -128,24 +151,23 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
            <value>             VALUE    </value>
            <data>              CODE     </data>
            <txAccess>          TA       </txAccess>
-           <txVersionedHashes> TVH      </txVersionedHashes>
            ...
          </message>
-         <versionedHashes> _ => TVH </versionedHashes>
          <account>
            <acctID> ACCTFROM </acctID>
            <balance> BAL => BAL -Int (GLIMIT *Int #effectiveGasPrice(TXID)) </balance>
            <nonce> NONCE </nonce>
-           <code> ACCTCODE </code>
            ...
          </account>
          <accessedAccounts> _ => #if Ghaswarmcoinbase << SCHED >> #then SetItem(MINER) #else .Set #fi </accessedAccounts>
          <touchedAccounts> _ => SetItem(MINER) </touchedAccounts>
       requires #hasValidInitCode(lengthBytes(CODE), SCHED)
-        andBool ACCTCODE ==K .Bytes
+       andBool #isValidTransaction(TXID, ACCTFROM)
+
 
     rule <k> loadTx(ACCTFROM)
           => #accessAccounts ACCTFROM ACCTTO #precompiledAccountsSet(SCHED)
+          ~> #deductBlobGas
           ~> #loadAccessList(TA)
           ~> #checkCall ACCTFROM VALUE
           ~> #call ACCTFROM ACCTTO ACCTTO VALUE VALUE DATA false
@@ -174,16 +196,15 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
            <acctID> ACCTFROM </acctID>
            <balance> BAL => BAL -Int (GLIMIT *Int #effectiveGasPrice(TXID)) </balance>
            <nonce> NONCE => NONCE +Int 1 </nonce>
-           <code> ACCTCODE </code>
            ...
          </account>
          <accessedAccounts> _ => #if Ghaswarmcoinbase << SCHED >> #then SetItem(MINER) #else .Set #fi </accessedAccounts>
          <touchedAccounts> _ => SetItem(MINER) </touchedAccounts>
       requires ACCTTO =/=K .Account
-        andBool ACCTCODE ==K .Bytes
+       andBool #isValidTransaction(TXID, ACCTFROM)
 
     rule <k> loadTx(ACCTFROM) => startTx ... </k>
-         <statusCode> _ => EVMC_FAILURE </statusCode>
+         <statusCode> _ => EVMC_INVALID_BLOCK </statusCode>
          <txPending> ListItem(_TXID:Int) REST => REST </txPending>
          <account>
            <acctID> ACCTFROM </acctID>
@@ -524,7 +545,7 @@ Here we check the other post-conditions associated with an EVM test.
                         SetItem("mixHash") SetItem("nonce") SetItem("number") SetItem("parentHash")
                         SetItem("receiptTrie") SetItem("stateRoot") SetItem("timestamp")
                         SetItem("transactionsTrie") SetItem("uncleHash") SetItem("baseFeePerGas") SetItem("withdrawalsRoot")
-                        SetItem("blobGasUsed") SetItem("excessBlobGas") SetItem("parentBeaconBlockRoot")
+                        SetItem("blobGasUsed") SetItem("excessBlobGas") SetItem("parentBeaconBlockRoot") SetItem("requestsHash")
                       )
 
     rule <k> check "blockHeader" : { "bloom"                : VALUE } => .K ... </k> <logsBloom>        VALUE </logsBloom>
@@ -547,6 +568,7 @@ Here we check the other post-conditions associated with an EVM test.
     rule <k> check "blockHeader" : { "blobGasUsed"          : VALUE } => .K ... </k> <blobGasUsed>      VALUE </blobGasUsed>
     rule <k> check "blockHeader" : { "excessBlobGas"        : VALUE } => .K ... </k> <excessBlobGas>    VALUE </excessBlobGas>
     rule <k> check "blockHeader" : { "parentBeaconBlockRoot": VALUE } => .K ... </k> <beaconRoot>       VALUE </beaconRoot>
+    rule <k> check "blockHeader" : { "requestsHash"         : VALUE } => .K ... </k> <requestsRoot>     VALUE </requestsRoot>
 
 
     rule <k> check "blockHeader" : { "hash": HASH:Bytes } => .K ...</k>
@@ -570,10 +592,12 @@ Here we check the other post-conditions associated with an EVM test.
          <blobGasUsed>      UB </blobGasUsed>
          <excessBlobGas>    EB </excessBlobGas>
          <beaconRoot>       BR </beaconRoot>
-      requires #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN)                     ==Int #asWord(HASH)
-        orBool #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF)                 ==Int #asWord(HASH)
-        orBool #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR)             ==Int #asWord(HASH)
-        orBool #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR, UB, EB, BR) ==Int #asWord(HASH)
+         <requestsRoot>     RR </requestsRoot>
+      requires #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN)                         ==Int #asWord(HASH)
+        orBool #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF)                     ==Int #asWord(HASH)
+        orBool #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR)                 ==Int #asWord(HASH)
+        orBool #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR, UB, EB, BR)     ==Int #asWord(HASH)
+        orBool #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR, UB, EB, BR, RR) ==Int #asWord(HASH)
 
     rule check TESTID : { "genesisBlockHeader" : BLOCKHEADER } => check "genesisBlockHeader" : BLOCKHEADER ~> failure TESTID
  // ------------------------------------------------------------------------------------------------------------------------
