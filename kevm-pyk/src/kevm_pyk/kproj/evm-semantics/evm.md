@@ -944,7 +944,7 @@ Before executing any transaction, the `HISTORY_STORAGE_ADDRESS` (`0x0000F90827F1
  - Set the storage value at `(block.number-1) % HISTORY_SERVE_WINDOW` to be ` block.parent.hash`
 where `HISTORY_SERVE_WINDOW == 8191`.
 
-Read more about EIP-4788 here [https://eips.ethereum.org/EIPS/eip-2935](https://eips.ethereum.org/EIPS/eip-42935).
+Read more about EIP-2935 here [https://eips.ethereum.org/EIPS/eip-2935](https://eips.ethereum.org/EIPS/eip-2935).
 
 ```k
     syntax EthereumCommand ::= "#executeBlockHashHistory" [symbol(#executeBlockHashHistory)]
