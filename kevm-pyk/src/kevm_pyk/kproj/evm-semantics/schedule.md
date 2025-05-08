@@ -452,24 +452,29 @@ A `ScheduleConst` is a constant determined by the fee schedule.
 ```k
     syntax Schedule ::= "PRAGUE" [symbol(PRAGUE_EVM), smtlib(schedule_PRAGUE)]
  // --------------------------------------------------------------------------
-    rule [Gbls12g1addPrague]:           Gbls12g1add           < PRAGUE > => 375
-    rule [Gbls12g1mulPrague]:           Gbls12g1mul           < PRAGUE > => 12000
-    rule [Gbls12g2addPrague]:           Gbls12g2add           < PRAGUE > => 600
-    rule [Gbls12g2mulPrague]:           Gbls12g2mul           < PRAGUE > => 22500
-    rule [Gbls12PairingCheckMulPrague]: Gbls12PairingCheckMul < PRAGUE > => 32600
-    rule [Gbls12PairingCheckAddPrague]: Gbls12PairingCheckAdd < PRAGUE > => 37700
-    rule [Gbls12mapfptog1Prague]:       Gbls12mapfptog1       < PRAGUE > => 5500
-    rule [Gbls12mapfp2tog2Prague]:      Gbls12mapfp2tog2      < PRAGUE > => 23800
-    rule [SCHEDCONSTPrague]:            SCHEDCONST            < PRAGUE > => SCHEDCONST < CANCUN >
-      requires notBool ( SCHEDCONST ==K Gbls12g1add
+    rule [GmaxblobgasPrague]:               Gmaxblobgas               < PRAGUE > => 1179648
+    rule [GtargetblobgasPrague]:            Gtargetblobgas            < PRAGUE > => 786432
+    rule [BlobbasefeeupdatefractionPrague]: Blobbasefeeupdatefraction < PRAGUE > => 5007716
+    rule [Gbls12g1addPrague]:               Gbls12g1add               < PRAGUE > => 375
+    rule [Gbls12g1mulPrague]:               Gbls12g1mul               < PRAGUE > => 12000
+    rule [Gbls12g2addPrague]:               Gbls12g2add               < PRAGUE > => 600
+    rule [Gbls12g2mulPrague]:               Gbls12g2mul               < PRAGUE > => 22500
+    rule [Gbls12PairingCheckMulPrague]:     Gbls12PairingCheckMul     < PRAGUE > => 32600
+    rule [Gbls12PairingCheckAddPrague]:     Gbls12PairingCheckAdd     < PRAGUE > => 37700
+    rule [Gbls12mapfptog1Prague]:           Gbls12mapfptog1           < PRAGUE > => 5500
+    rule [Gbls12mapfp2tog2Prague]:          Gbls12mapfp2tog2          < PRAGUE > => 23800
+    rule [SCHEDCONSTPrague]:                SCHEDCONST                < PRAGUE > => SCHEDCONST < CANCUN >
+      requires notBool ( SCHEDCONST ==K Gmaxblobgas
+                  orBool SCHEDCONST ==K Gtargetblobgas
+                  orBool SCHEDCONST ==K Blobbasefeeupdatefraction
+                  orBool SCHEDCONST ==K Gbls12g1add
                   orBool SCHEDCONST ==K Gbls12g1mul
                   orBool SCHEDCONST ==K Gbls12g2add
                   orBool SCHEDCONST ==K Gbls12g2mul
                   orBool SCHEDCONST ==K Gbls12PairingCheckMul
                   orBool SCHEDCONST ==K Gbls12PairingCheckAdd
                   orBool SCHEDCONST ==K Gbls12mapfptog1
-                  orBool SCHEDCONST ==K Gbls12mapfp2tog2
-               )
+                  orBool SCHEDCONST ==K Gbls12mapfp2tog2 )
 
     rule [GhasrequestsPrague]:         Ghasrequests         << PRAGUE >> => true
     rule [GhashistoryPrague]:          Ghashistory          << PRAGUE >> => true
