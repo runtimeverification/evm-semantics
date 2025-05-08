@@ -2045,6 +2045,14 @@ Precompiled Contracts
     rule #precompiled(8) => ECPAIRING
     rule #precompiled(9) => BLAKE2F
     rule #precompiled(10) => KZGPOINTEVAL
+    rule #precompiled(11) => BLS12_G1ADD
+    rule #precompiled(12) => BLS12_G1MSM
+    rule #precompiled(13) => BLS12_G2ADD
+    rule #precompiled(14) => BLS12_G2MSM
+    rule #precompiled(15) => BLS12_PAIRING_CHECK
+    rule #precompiled(16) => BLS12_MAP_FP_TO_G1
+    rule #precompiled(17) => BLS12_MAP_FP2_TO_G2
+
 
     syntax Int ::= #precompiledAccountsUB ( Schedule ) [symbol(#precompiledAccountsUB), function, total]
  // ----------------------------------------------------------------------------------------------------
@@ -2062,7 +2070,7 @@ Precompiled Contracts
     rule #precompiledAccountsUB(MERGE)             => #precompiledAccountsUB(LONDON)
     rule #precompiledAccountsUB(SHANGHAI)          => #precompiledAccountsUB(MERGE)
     rule #precompiledAccountsUB(CANCUN)            => 10
-    rule #precompiledAccountsUB(PRAGUE)            => #precompiledAccountsUB(CANCUN)
+    rule #precompiledAccountsUB(PRAGUE)            => 17
 
 
     syntax Set ::= #precompiledAccountsSet    ( Schedule ) [symbol(#precompiledAccountsSet),    function, total]
@@ -2229,6 +2237,327 @@ Precompiled Contracts
     rule #kzg2vh ( C ) => Sha256rawWrapper(C)[0 <- 1]
 ```
 
+-   `BLS12_G1ADD` performs point addition in G1 (curve over base prime field)
+-   `BLS12_G1MSM` performs multi-scalar-multiplication (MSM) in G1 (curve over base prime field)
+-   `BLS12_G2ADD` performs point addition in G2 (curve over quadratic extension of the base prime field)
+-   `BLS12_G2MSM` to perform multi-scalar-multiplication (MSM) in G2 (curve over quadratic extension of the base prime field)
+-   `BLS12_PAIRING_CHECK` performs a pairing operations between a set of pairs of (G1, G2) points
+-   `BLS12_MAP_FP_TO_G1` maps base field element into the G1 point
+-   `BLS12_MAP_FP2_TO_G2` maps extension field element into the G2 point
+
+```k
+    syntax Bytes ::= #bls12point ( G1Point ) [symbol(#bls12point1), function]
+ // -------------------------------------------------------------------------
+    rule #bls12point((X, Y)) => #padToWidth(64, #asByteStack(X)) +Bytes #padToWidth(64, #asByteStack(Y))
+
+    syntax Bytes ::= #bls12point ( G2Point ) [symbol(#bls12point2), function]
+ // -------------------------------------------------------------------------
+    rule #bls12point((X0 x X1, Y0 x Y1))
+        => #padToWidth(64, #asByteStack(X0)) +Bytes #padToWidth(64, #asByteStack(X1))
+            +Bytes #padToWidth(64, #asByteStack(Y0)) +Bytes #padToWidth(64, #asByteStack(Y1))
+
+    syntax Bool ::= isValidBLS12Coordinate ( Int ) [symbol(isValidBLS12Coordinate), function, total]
+  // -----------------------------------------------------------------------------------------------
+    rule isValidBLS12Coordinate(X) => isValidBLS12Fp(X)
+
+    syntax Bool ::= isValidBLS12Fp ( Int ) [symbol(isValidBLS12Fp), function, total]
+  // -------------------------------------------------------------------------------
+    rule isValidBLS12Fp(X) => X >=Int 0 andBool X <Int (1 <<Int 384) andBool X <Int BLS12_FIELD_MODULUS
+
+    syntax Bool ::= isValidBLS12Scalar ( Int ) [symbol(isValidBLS12Scalar), function, total]
+  // ---------------------------------------------------------------------------------------
+    rule isValidBLS12Scalar(X) => X >=Int 0 andBool X <Int (1 <<Int 256)
+```
+
+```k
+    syntax PrecompiledOp ::= "BLS12_G1ADD"
+ // --------------------------------------
+    rule <k> BLS12_G1ADD => #end EVMC_SUCCESS ... </k>
+         <callData> DATA </callData>
+         <output>
+            _ => #bls12point(BLS12G1Add
+                    (   ( #asWord(substrBytes(DATA, 0, 64))
+                        , #asWord(substrBytes(DATA, 64, 128))
+                        )
+                    ,   ( #asWord(substrBytes(DATA, 128, 192))
+                        , #asWord(substrBytes(DATA, 192, 256))
+                        )
+                    ))
+         </output>
+      requires lengthBytes( DATA ) ==Int 256
+        andBool bls12ValidForAdd
+            ( Bytes2Int(substrBytes(DATA, 0, 64), BE, Unsigned)
+            , Bytes2Int(substrBytes(DATA, 64, 128), BE, Unsigned)
+            , Bytes2Int(substrBytes(DATA, 128, 192), BE, Unsigned)
+            , Bytes2Int(substrBytes(DATA, 192, 256), BE, Unsigned)
+            )
+
+    rule <k> BLS12_G1ADD => #end EVMC_PRECOMPILE_FAILURE ... </k>
+         <callData> DATA </callData>
+      requires lengthBytes( DATA ) =/=Int 256
+        orBool notBool bls12ValidForAdd
+            ( Bytes2Int(substrBytes(DATA, 0, 64), BE, Unsigned)
+            , Bytes2Int(substrBytes(DATA, 64, 128), BE, Unsigned)
+            , Bytes2Int(substrBytes(DATA, 128, 192), BE, Unsigned)
+            , Bytes2Int(substrBytes(DATA, 192, 256), BE, Unsigned)
+            )
+
+    syntax Bool ::= bls12ValidForAdd(Int, Int, Int, Int)  [function, total]
+ // -----------------------------------------------------------------------
+    rule bls12ValidForAdd(X0, Y0, X1, Y1)
+        => true
+            andBool isValidBLS12Coordinate(X0)
+            andBool isValidBLS12Coordinate(Y0)
+            andBool isValidBLS12Coordinate(X1)
+            andBool isValidBLS12Coordinate(Y1)
+            andBool BLS12G1OnCurve((X0, Y0))
+            andBool BLS12G1OnCurve((X1, Y1))
+
+    syntax PrecompiledOp ::= "BLS12_G1MSM"
+ // --------------------------------------
+    // Note that the implementation of `g1_lincomb_fast` has the following comment:
+    //
+    //  * @remark While this function is significantly faster than g1_lincomb_naive(), we refrain from
+    //  * using it in security-critical places (like verification) because the blst Pippenger code has not
+    //  * been audited. In those critical places, we prefer using g1_lincomb_naive() which is much simpler.
+    //
+    // https://github.com/ethereum/c-kzg-4844/blob/cc33b779cd3a227f51b35ce519a83cf91d81ccea/src/common/lincomb.c#L54-L56
+
+    rule <k> BLS12_G1MSM => bls12G1Msm(DATA) ... </k> <callData> DATA </callData>
+
+    rule <k> g1MsmResult(P:G1Point) => #end EVMC_SUCCESS ... </k> <output> _ => #bls12point(P) </output>
+
+    rule <k> g1MsmError => #end EVMC_PRECOMPILE_FAILURE ... </k>
+
+    syntax G1MsmResult ::= "g1MsmError" | g1MsmResult(G1Point)
+                         | bls12G1Msm(Bytes) [symbol(bls12G1Msm), function, total]
+                         | #bls12G1Msm(Bytes, List, List) [function, total]
+                         | #bls12G1MsmCheck(Bytes, List, List, Int, Int, Int) [function, total]
+ // -------------------------------------------------------------------------------------------
+    rule bls12G1Msm(B:Bytes) => g1MsmError requires lengthBytes(B) ==Int 0
+    rule bls12G1Msm(B:Bytes) => #bls12G1Msm(B, .List, .List) requires lengthBytes(B) >Int 0
+
+    rule #bls12G1Msm(B:Bytes, Ps:List, Ss:List) => g1MsmResult(BLS12G1Msm(... scalars: Ss, points: Ps))
+        requires lengthBytes(B) ==Int 0
+    rule #bls12G1Msm(B:Bytes, _:List, _:List) => g1MsmError
+        requires 0 <Int lengthBytes(B) andBool lengthBytes(B) <Int 160
+    rule #bls12G1Msm(B:Bytes, Ps:List, Ss:List)
+        => #bls12G1MsmCheck
+                ( substrBytes(B, 160, lengthBytes(B)), Ps, Ss
+                , Bytes2Int(substrBytes(B, 0, 64), BE, Unsigned)
+                , Bytes2Int(substrBytes(B, 64, 128), BE, Unsigned)
+                , Bytes2Int(substrBytes(B, 128, 160), BE, Unsigned)
+                )
+        requires 160 <=Int lengthBytes(B)
+
+    rule #bls12G1MsmCheck(B:Bytes, Ps:List, Ss:List, X:Int, Y:Int, N:Int)
+        => #bls12G1Msm(B, Ps ListItem( ( X , Y ) ), Ss ListItem( N ))
+      requires isValidBLS12Coordinate(X) andBool isValidBLS12Coordinate(Y)
+        andBool isValidBLS12Scalar(N)
+        andBool BLS12G1InSubgroup((X, Y))
+    rule #bls12G1MsmCheck(_, _, _, _, _, _) => g1MsmError [owise]
+
+    syntax PrecompiledOp ::= "BLS12_G2ADD"
+ // --------------------------------------
+    rule <k> BLS12_G2ADD => #end EVMC_SUCCESS ... </k>
+         <callData> DATA </callData>
+         <output>
+            _ => #bls12point(BLS12G2Add
+                    (   ( Bytes2Int(substrBytes(DATA, 0, 64), BE, Unsigned)
+                        x Bytes2Int(substrBytes(DATA, 64, 128), BE, Unsigned)
+                        , Bytes2Int(substrBytes(DATA, 128, 192), BE, Unsigned)
+                        x Bytes2Int(substrBytes(DATA, 192, 256), BE, Unsigned)
+                        )
+                    ,   ( Bytes2Int(substrBytes(DATA, 256, 320), BE, Unsigned)
+                        x Bytes2Int(substrBytes(DATA, 320, 384), BE, Unsigned)
+                        , Bytes2Int(substrBytes(DATA, 384, 448), BE, Unsigned)
+                        x Bytes2Int(substrBytes(DATA, 448, 512), BE, Unsigned)
+                        )
+                    ))
+         </output>
+      requires lengthBytes( DATA ) ==Int 512
+        andBool bls12ValidForAdd2
+            ( Bytes2Int(substrBytes(DATA, 0, 64), BE, Unsigned)
+            , Bytes2Int(substrBytes(DATA, 64, 128), BE, Unsigned)
+            , Bytes2Int(substrBytes(DATA, 128, 192), BE, Unsigned)
+            , Bytes2Int(substrBytes(DATA, 192, 256), BE, Unsigned)
+            , Bytes2Int(substrBytes(DATA, 256, 320), BE, Unsigned)
+            , Bytes2Int(substrBytes(DATA, 320, 384), BE, Unsigned)
+            , Bytes2Int(substrBytes(DATA, 384, 448), BE, Unsigned)
+            , Bytes2Int(substrBytes(DATA, 448, 512), BE, Unsigned)
+            )
+
+    rule <k> BLS12_G2ADD => #end EVMC_PRECOMPILE_FAILURE ... </k>
+         <callData> DATA </callData>
+      requires lengthBytes( DATA ) =/=Int 512
+        orBool notBool bls12ValidForAdd2
+            ( Bytes2Int(substrBytes(DATA, 0, 64), BE, Unsigned)
+            , Bytes2Int(substrBytes(DATA, 64, 128), BE, Unsigned)
+            , Bytes2Int(substrBytes(DATA, 128, 192), BE, Unsigned)
+            , Bytes2Int(substrBytes(DATA, 192, 256), BE, Unsigned)
+            , Bytes2Int(substrBytes(DATA, 256, 320), BE, Unsigned)
+            , Bytes2Int(substrBytes(DATA, 320, 384), BE, Unsigned)
+            , Bytes2Int(substrBytes(DATA, 384, 448), BE, Unsigned)
+            , Bytes2Int(substrBytes(DATA, 448, 512), BE, Unsigned)
+            )
+
+    syntax Bool ::= bls12ValidForAdd2(Int, Int, Int, Int, Int, Int, Int, Int)  [function, total]
+ // --------------------------------------------------------------------------------------------
+    rule bls12ValidForAdd2(PX0, PX1, PY0, PY1, QX0, QX1, QY0, QY1)
+        => true
+            andBool isValidBLS12Coordinate(PX0)
+            andBool isValidBLS12Coordinate(PX1)
+            andBool isValidBLS12Coordinate(PY0)
+            andBool isValidBLS12Coordinate(PY1)
+            andBool isValidBLS12Coordinate(QX0)
+            andBool isValidBLS12Coordinate(QX1)
+            andBool isValidBLS12Coordinate(QY0)
+            andBool isValidBLS12Coordinate(QY1)
+            andBool BLS12G2OnCurve((PX0 x PX1, PY0 x PY1))
+            andBool BLS12G2OnCurve((QX0 x QX1, QY0 x QY1))
+
+    syntax PrecompiledOp ::= "BLS12_G2MSM"
+ // -------------------------------------
+    rule <k> BLS12_G2MSM => bls12G2Msm(DATA) ... </k> <callData> DATA </callData>
+
+    rule <k> g2MsmResult(P:G2Point) => #end EVMC_SUCCESS ... </k>
+         <output> _ => #bls12point(P) </output>
+
+    rule <k> g2MsmError => #end EVMC_PRECOMPILE_FAILURE ... </k>
+
+    syntax G2MsmResult ::= "g2MsmError" | g2MsmResult(G2Point)
+                         | bls12G2Msm(Bytes) [symbol(bls12G2Msm), function, total]
+                         | #bls12G2Msm(Bytes, List, List) [function, total]
+                         | #bls12G2MsmCheck(Bytes, List, List, Int, Int, Int, Int, Int) [function, total]
+ // -----------------------------------------------------------------------------------------------------
+    rule bls12G2Msm(B:Bytes) => g2MsmError requires lengthBytes(B) ==Int 0
+    rule bls12G2Msm(B:Bytes) => #bls12G2Msm(B, .List, .List) requires lengthBytes(B) >Int 0
+
+    rule #bls12G2Msm(B:Bytes, Ps:List, Ss:List) => g2MsmResult(BLS12G2Msm(... scalars: Ss, points: Ps))
+        requires lengthBytes(B) ==Int 0
+    rule #bls12G2Msm(B:Bytes, _:List, _:List) => g2MsmError
+        requires 0 <Int lengthBytes(B) andBool lengthBytes(B) <Int 288
+    rule #bls12G2Msm(B:Bytes, Ps:List, Ss:List)
+        => #bls12G2MsmCheck
+                ( substrBytes(B, 288, lengthBytes(B)), Ps, Ss
+                , Bytes2Int(substrBytes(B, 0, 64), BE, Unsigned)
+                , Bytes2Int(substrBytes(B, 64, 128), BE, Unsigned)
+                , Bytes2Int(substrBytes(B, 128, 192), BE, Unsigned)
+                , Bytes2Int(substrBytes(B, 192, 256), BE, Unsigned)
+                , Bytes2Int(substrBytes(B, 256, 288), BE, Unsigned)
+                )
+        requires 288 <=Int lengthBytes(B)
+
+    rule #bls12G2MsmCheck(B:Bytes, Ps:List, Ss:List, X0:Int, X1:Int, Y0:Int, Y1:Int, N:Int)
+        => #bls12G2Msm(B, Ps ListItem( ( X0 x X1, Y0 x Y1 ) ), Ss ListItem( N ))
+      requires isValidBLS12Coordinate(X0) andBool isValidBLS12Coordinate(X1)
+        andBool isValidBLS12Coordinate(Y0) andBool isValidBLS12Coordinate(Y1)
+        andBool isValidBLS12Scalar(N)
+        andBool BLS12G2InSubgroup(( X0 x X1, Y0 x Y1 ))
+    rule #bls12G2MsmCheck(_, _, _, _, _, _, _, _) => g2MsmError  [owise]
+
+    syntax PrecompiledOp ::= "BLS12_PAIRING_CHECK"
+ // ----------------------------------------------
+    rule <k> BLS12_PAIRING_CHECK => bls12PairingCheck(DATA, .List, .List) ... </k> <callData> DATA </callData>
+
+    rule <k> bls12PairingResult(B:Bool) => #end EVMC_SUCCESS ... </k>
+         <output> _ => #if B #then Int2Bytes(32, 1, BE:Endianness) #else Int2Bytes(32, 0, BE:Endianness) #fi </output>
+
+    rule <k> bls12PairingError => #end EVMC_PRECOMPILE_FAILURE ... </k>
+
+    syntax Bls12PairingResult ::= "bls12PairingError" | bls12PairingResult(Bool)
+                                | bls12PairingCheck(Bytes, List, List) [symbol(bls12PairingCheck), function, total]
+ // ---------------------------------------------------------------------------------------------------------------
+    rule bls12PairingCheck(B:Bytes, L1:List, L2:List) => bls12PairingResult(BLS12PairingCheck(L1, L2))
+        requires lengthBytes(B) ==Int 0
+          andBool validBls12G1PairingPoints(L1)
+          andBool validBls12G2PairingPoints(L2)
+          andBool size(L1) ==Int size(L2)
+          andBool size(L1) >Int 0
+
+    rule bls12PairingCheck(B:Bytes, L1:List, L2:List)
+        => bls12PairingCheck
+            ( substrBytes(B, 384, lengthBytes(B))
+            , L1 ListItem(
+                ( Bytes2Int(substrBytes(B, 0, 64), BE, Unsigned)
+                , Bytes2Int(substrBytes(B, 64, 128), BE, Unsigned)
+                )
+              )
+            , L2 ListItem(
+                ( Bytes2Int(substrBytes(B, 128, 192), BE, Unsigned)
+                x Bytes2Int(substrBytes(B, 192, 256), BE, Unsigned)
+                , Bytes2Int(substrBytes(B, 256, 320), BE, Unsigned)
+                x Bytes2Int(substrBytes(B, 320, 384), BE, Unsigned)
+                )
+              )
+            )
+      requires lengthBytes(B) >=Int 384
+
+    rule bls12PairingCheck(_:Bytes, _:List, _:List) => bls12PairingError [owise]
+
+    syntax Bool ::= validBls12G1PairingPoints(List)   [function, total]
+                  | validBls12G1PairingPoint(G1Point) [function, total]
+// --------------------------------------------------------------------
+    rule validBls12G1PairingPoints(.List) => true
+    rule validBls12G1PairingPoints(ListItem(P:G1Point) L:List) => validBls12G1PairingPoints(L)
+      requires validBls12G1PairingPoint(P)
+    rule validBls12G1PairingPoints(_) => false [owise]
+
+    rule validBls12G1PairingPoint((X, Y) #as P:G1Point)
+        => isValidBLS12Coordinate(X)
+          andBool isValidBLS12Coordinate(Y)
+          andBool BLS12G1InSubgroup(P)
+
+    syntax Bool ::= validBls12G2PairingPoints(List)   [function, total]
+                  | validBls12G2PairingPoint(G2Point) [function, total]
+// --------------------------------------------------------------------
+    rule validBls12G2PairingPoints(.List) => true
+    rule validBls12G2PairingPoints(ListItem(P:G2Point) L:List) => validBls12G2PairingPoints(L)
+      requires validBls12G2PairingPoint(P)
+    rule validBls12G2PairingPoints(_) => false [owise]
+
+    rule validBls12G2PairingPoint((X0 x X1, Y0 x Y1) #as P:G2Point)
+        => isValidBLS12Coordinate(X0)
+          andBool isValidBLS12Coordinate(X1)
+          andBool isValidBLS12Coordinate(Y0)
+          andBool isValidBLS12Coordinate(Y1)
+          andBool BLS12G2InSubgroup(P)
+
+    syntax PrecompiledOp ::= "BLS12_MAP_FP_TO_G1"
+ // ---------------------------------------------
+    rule <k> BLS12_MAP_FP_TO_G1 => #end EVMC_SUCCESS ... </k>
+         <callData> DATA </callData>
+         <output> _ => #bls12point(BLS12MapFpToG1(Bytes2Int(substrBytes(DATA, 0, 64), BE, Unsigned)))
+         </output>
+      requires lengthBytes( DATA ) ==Int 64
+       andBool isValidBLS12Fp(Bytes2Int(substrBytes(DATA, 0, 64), BE, Unsigned))
+
+    rule <k> BLS12_MAP_FP_TO_G1 => #end EVMC_PRECOMPILE_FAILURE ... </k>
+         <callData> DATA </callData>
+      requires lengthBytes( DATA ) =/=Int 64
+        orBool notBool isValidBLS12Fp(Bytes2Int(substrBytes(DATA, 0, 64), BE, Unsigned))
+
+
+    syntax PrecompiledOp ::= "BLS12_MAP_FP2_TO_G2"
+ // ----------------------------------------------
+    rule <k> BLS12_MAP_FP2_TO_G2 => #end EVMC_SUCCESS ... </k>
+         <callData> DATA </callData>
+         <output>
+            _ => #bls12point(BLS12MapFp2ToG2
+                    ( Bytes2Int(substrBytes(DATA, 0, 64), BE, Unsigned)
+                    , Bytes2Int(substrBytes(DATA, 64, 128), BE, Unsigned)
+                    ))
+         </output>
+      requires lengthBytes( DATA ) ==Int 128
+       andBool isValidBLS12Fp(Bytes2Int(substrBytes(DATA, 0, 64), BE, Unsigned))
+       andBool isValidBLS12Fp(Bytes2Int(substrBytes(DATA, 64, 128), BE, Unsigned))
+
+    rule <k> BLS12_MAP_FP2_TO_G2 => #end EVMC_PRECOMPILE_FAILURE ... </k>
+         <callData> DATA </callData>
+      requires lengthBytes( DATA ) =/=Int 128
+        orBool notBool isValidBLS12Fp(Bytes2Int(substrBytes(DATA, 0, 64), BE, Unsigned))
+        orBool notBool isValidBLS12Fp(Bytes2Int(substrBytes(DATA, 64, 128), BE, Unsigned))
+```
 
 Ethereum Gas Calculation
 ========================
@@ -2581,6 +2910,15 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
     rule <k> #gasExec(SCHED, ECPAIRING) => Gecpairconst < SCHED > +Int (lengthBytes(DATA) /Int 192) *Int Gecpaircoeff < SCHED > ... </k> <callData> DATA </callData>
     rule <k> #gasExec(SCHED, BLAKE2F)   => Gfround < SCHED > *Int #asWord(#range(DATA, 0, 4) ) ... </k> <callData> DATA </callData>
     rule <k> #gasExec(SCHED, KZGPOINTEVAL)  => Gpointeval < SCHED > ... </k>
+
+    rule <k> #gasExec(SCHED, BLS12_G1ADD) => Gbls12g1add < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, BLS12_G1MSM) => #let N = lengthBytes(DATA) /Int 160 #in N *Int Gbls12g1mul < SCHED > *Int Cbls12g1MsmDiscount(SCHED, N) /Int 1000 ... </k>  <callData> DATA </callData>
+    rule <k> #gasExec(SCHED, BLS12_G2ADD) => Gbls12g2add < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, BLS12_G2MSM) => #let N = lengthBytes(DATA) /Int 288 #in N *Int Gbls12g2mul < SCHED > *Int Cbls12g2MsmDiscount(SCHED, N) /Int 1000 ... </k> <callData> DATA </callData>
+
+    rule <k> #gasExec(SCHED, BLS12_PAIRING_CHECK) => #let N = lengthBytes(DATA) /Int 384 #in N *Int Gbls12PairingCheckMul < SCHED > +Int Gbls12PairingCheckAdd < SCHED > ... </k>  <callData> DATA </callData>
+    rule <k> #gasExec(SCHED, BLS12_MAP_FP_TO_G1)     => Gbls12mapfptog1 < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, BLS12_MAP_FP2_TO_G2)    => Gbls12mapfp2tog2 < SCHED > ... </k>
 
     syntax InternalOp ::= "#allocateCallGas"
  // ----------------------------------------
