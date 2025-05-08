@@ -196,7 +196,7 @@ In the comments next to each cell, we've marked which component of the YellowPap
             </withdrawals>
 
             <requests>
-              <depositRequests> .List </depositRequests>
+              <depositRequests> .Bytes </depositRequests>
               //other request types come here
             </requests>
 
@@ -735,7 +735,7 @@ While processing a block, multiple requests objects with different `request_type
          <schedule> SCHED </schedule>
          <log> LOGS </log>
          <depositRequests> DRQSTS </depositRequests>
-         <requestsRoot> _ => #computeRequestsHash(DRQSTS) </requestsRoot>
+         <requestsRoot> _ => #computeRequestsHash(ListItem(DEPOSIT_REQUEST_TYPE +Bytes DRQSTS)) </requestsRoot>
       requires Ghasrequests << SCHED >> andBool IDX >=Int size(LOGS)
 
     rule <k> #filterLogs IDX
@@ -755,7 +755,7 @@ Rules for parsing Deposit Requests according to EIP-6110.
     syntax KItem ::= "#parseDepositRequest" SubstateLogEntry [symbol(#parseDepositRequest)]
  // ---------------------------------------------------------------------------------------
     rule <k> #parseDepositRequest { ADDR | TOPICS | DATA } => .K ... </k>
-         <depositRequests> RS => RS ListItem(Int2Bytes(1, DEPOSIT_REQUEST_TYPE, BE) +Bytes #extractDepositData(DATA)) </depositRequests>
+         <depositRequests> DEPOSIT_REQUESTS => DEPOSIT_REQUESTS +Bytes #extractDepositData(DATA) </depositRequests>
       requires ADDR ==K DEPOSIT_CONTRACT_ADDRESS
        andBool size(TOPICS) >Int 0
        andBool {TOPICS[0]}:>Int ==Int DEPOSIT_EVENT_SIGNATURE_HASH

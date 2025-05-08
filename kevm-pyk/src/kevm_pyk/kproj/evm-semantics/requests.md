@@ -16,9 +16,6 @@ requests = request_type ++ request_data
 ```
 Each request type will define its own requests object with its own `request_data` format.
 
-In order to compute the commitment, an intermediate hash list is first built by hashing all non-empty requests elements of the block requests list.
-Items with empty `request_data` are excluded, i.e. the intermediate list skips requests items which contain only the `request_type` (1 byte) and nothing else.
-
 ```k
     syntax Int ::= #computeRequestsHash(List) [function, symbol(#computeRequestsHash)]
  // ----------------------------------------------------------------------------------
@@ -33,6 +30,10 @@ Items with empty `request_data` are excluded, i.e. the intermediate list skips r
       requires lengthBytes(R) <=Int 1
     rule #computeRequestsHashIntermediate(ListItem(R) RS, ACC) => #computeRequestsHashIntermediate(RS, ACC +Bytes Sha256raw(R))
       requires lengthBytes(R) >Int 1
+
+    syntax Bytes ::= "DEPOSIT_REQUEST_TYPE" [macro]
+ // -----------------------------------------------
+    rule DEPOSIT_REQUEST_TYPE => b"\x00"
 ```
 
 Deposit Requests
@@ -46,12 +47,10 @@ The structure denoting the new deposit request consists of the following fields:
 5. `index: uint64`
 
 ```k
-    syntax Int ::= "DEPOSIT_REQUEST_TYPE"         [macro]
-                 | "DEPOSIT_EVENT_LENGTH"         [macro]
+    syntax Int ::= "DEPOSIT_EVENT_LENGTH"         [macro]
                  | "DEPOSIT_CONTRACT_ADDRESS"     [alias]
                  | "DEPOSIT_EVENT_SIGNATURE_HASH" [alias]
  // -----------------------------------------------------
-    rule DEPOSIT_REQUEST_TYPE => 0
     rule DEPOSIT_CONTRACT_ADDRESS => #parseAddr("0x00000000219ab540356cbb839cbe05303d7705fa")
     rule DEPOSIT_EVENT_SIGNATURE_HASH => #parseWord("0x649bbc62d0e31342afea4e5cd82d4049e7e1ee912fc0889aa790803be39038c5")
     rule DEPOSIT_EVENT_LENGTH => 576
