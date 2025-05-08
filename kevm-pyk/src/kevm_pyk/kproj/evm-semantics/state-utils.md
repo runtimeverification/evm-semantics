@@ -77,6 +77,7 @@ module STATE-UTILS
          <blobGasUsed>       _ => 0          </blobGasUsed>
          <excessBlobGas>     _ => 0          </excessBlobGas>
          <beaconRoot>        _ => 0          </beaconRoot>
+         <requestsRoot>      _ => 0          </requestsRoot>
 
     syntax EthereumCommand ::= "clearNETWORK"
  // -----------------------------------------
@@ -249,6 +250,15 @@ The `"rlp"` key loads the block information.
          <blobGasUsed>   _ => #asWord(UB)      </blobGasUsed>
          <excessBlobGas> _ => #asWord(EB)      </excessBlobGas>
          <beaconRoot>    _ => #asWord(BR)      </beaconRoot>
+
+    rule <k> load "rlp" : [ [ HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR, UB, EB, BR, RR, .JSONs ], BT, BU, BW, .JSONs ]
+          => load "rlp" : [ [ HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR, UB, EB, BR, .JSONs ], BT, BU, BW, .JSONs ]
+         ...
+         </k>
+         <requestsRoot> _ => #asWord(RR) </requestsRoot>
+
+    rule <k> load "genesisRLP": [ [ HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR, UB, EB, BR, RR, .JSONs ], _, _, _, .JSONs ] => .K ... </k>
+         <blockhashes> .List => ListItem(#blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR, UB, EB, BR, RR)) ListItem(#asWord(HP)) </blockhashes>
 
     rule <k> load "genesisRLP": [ [ HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR, UB, EB, BR, .JSONs ], _, _, _, .JSONs ] => .K ... </k>
          <blockhashes> .List => ListItem(#blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR, UB, EB, BR)) ListItem(#asWord(HP)) </blockhashes>
