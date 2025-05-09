@@ -350,7 +350,7 @@
       </withdrawals>
       <requests>
         <depositRequests>
-          .List
+          b""
         </depositRequests>
       </requests>
     </network>
