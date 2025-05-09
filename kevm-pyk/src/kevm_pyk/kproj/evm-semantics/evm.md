@@ -637,20 +637,20 @@ After executing a transaction, it's necessary to have the effect of the substate
          </message>
       requires REFUND =/=Int 0
 
-    rule <k> #finalizeTx(false => true, GFLOOR) ... </k>
+    rule <k> #finalizeTx(false, GFLOOR) => #finalizeTx(true, GFLOOR) ... </k>
          <useGas> true </useGas>
          <schedule> SCHED </schedule>
          <baseFee> BFEE </baseFee>
          <origin> ORG </origin>
          <coinbase> MINER </coinbase>
-         <gas> GAVAIL </gas>
+         <gas> GAVAIL => minInt (GAVAIL, GLIMIT -Int GFLOOR) </gas>
          <gasUsed> GUSED => GUSED +Gas maxInt(GLIMIT -Int GAVAIL, GFLOOR) </gasUsed>
          <blobGasUsed> BLOB_GAS_USED => #if TXTYPE ==K Blob #then BLOB_GAS_USED +Int Ctotalblob(SCHED, size(TVH)) #else BLOB_GAS_USED #fi </blobGasUsed>
          <gasPrice> GPRICE </gasPrice>
          <refund> 0 </refund>
          <account>
            <acctID> ORG </acctID>
-           <balance> ORGBAL => ORGBAL +Int GAVAIL *Int GPRICE </balance>
+           <balance> ORGBAL => ORGBAL +Int minInt(GAVAIL, GLIMIT -Int GFLOOR) *Int GPRICE </balance>
            ...
          </account>
          <account>
@@ -668,7 +668,7 @@ After executing a transaction, it's necessary to have the effect of the substate
          </message>
       requires ORG =/=Int MINER
 
-    rule <k> #finalizeTx(false => true, GFLOOR) ... </k>
+    rule <k> #finalizeTx(false, GFLOOR) => #finalizeTx(true, GFLOOR) ... </k>
          <useGas> true </useGas>
          <schedule> SCHED </schedule>
          <baseFee> BFEE </baseFee>
