@@ -116,18 +116,6 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 
     syntax EthereumCommand ::= loadTx ( Account ) [symbol(loadTx)]
  // --------------------------------------------------------------
-    rule <k> loadTx(_) => startTx ... </k>
-         <statusCode> _ => EVMC_OUT_OF_GAS </statusCode>
-         <txPending> ListItem(TXID:Int) REST => REST </txPending>
-         <schedule> SCHED </schedule>
-         <message>
-           <msgID>      TXID     </msgID>
-           <to>         .Account </to>
-           <data>       CODE     </data>
-           ...
-         </message>
-       requires notBool #hasValidInitCode(lengthBytes(CODE), SCHED)
-
     rule <k> loadTx(ACCTFROM)
           => #accessAccounts ACCTFROM #newAddr(ACCTFROM, NONCE) #precompiledAccountsSet(SCHED)
           ~> #deductBlobGas
@@ -163,7 +151,6 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          <touchedAccounts> _ => SetItem(MINER) </touchedAccounts>
       requires #hasValidInitCode(lengthBytes(CODE), SCHED)
        andBool #isValidTransaction(TXID, ACCTFROM)
-
 
     rule <k> loadTx(ACCTFROM)
           => #accessAccounts ACCTFROM ACCTTO #precompiledAccountsSet(SCHED)
@@ -202,16 +189,6 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          <touchedAccounts> _ => SetItem(MINER) </touchedAccounts>
       requires ACCTTO =/=K .Account
        andBool #isValidTransaction(TXID, ACCTFROM)
-
-    rule <k> loadTx(ACCTFROM) => startTx ... </k>
-         <statusCode> _ => EVMC_INVALID_BLOCK </statusCode>
-         <txPending> ListItem(_TXID:Int) REST => REST </txPending>
-         <account>
-           <acctID> ACCTFROM </acctID>
-           <code> ACCTCODE </code>
-           ...
-         </account>
-      requires notBool ACCTCODE ==K .Bytes
 
     rule <k> loadTx(_) => startTx ... </k>
          <statusCode> _ => EVMC_OUT_OF_GAS </statusCode>
