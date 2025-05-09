@@ -51,8 +51,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
                            | "Gblockhash"    | "Gquadcoeff"    | "maxCodeSize"   | "Rb"                | "Gquaddivisor"       | "Gecadd"           | "Gecmul"
                            | "Gecpairconst"  | "Gecpaircoeff"  | "Gfround"       | "Gcoldsload"        | "Gcoldaccountaccess" | "Gwarmstorageread" | "Gaccesslistaddress"
                            | "Gaccessliststoragekey"           | "Rmaxquotient"  | "Ginitcodewordcost" | "maxInitCodeSize"    | "Gwarmstoragedirtystore"
-                           | "Gpointeval"    | "Gtxdatafloor"  | "Gpointeval"    | "Gmaxblobgas"       | "Gminbasefee"        | "Gtargetblobgas"   | "Gperblob"
-                           | "Blobbasefeeupdatefraction"
+                           | "Gpointeval"    | "Gtxdatafloor"  | "Gmaxblobgas"   | "Gminbasefee"       | "Gtargetblobgas"     | "Gperblob"         | "Blobbasefeeupdatefraction"
  // ----------------------------------------------------
 ```
 
