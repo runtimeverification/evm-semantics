@@ -64,7 +64,7 @@ In the comments next to each cell, we've marked which component of the YellowPap
               <wordStack>   .List  </wordStack>           // \mu_s
               <localMem>    .Bytes </localMem>            // \mu_m
               <pc>          0      </pc>                  // \mu_pc
-              <gas>         $GAS:Int </gas>               // \mau_g
+              <gas>         $GAS:Gas </gas>               // \mau_g
               <memoryUsed>  0      </memoryUsed>          // \mu_i
               <callGas>     0:Gas  </callGas>
 
@@ -1824,8 +1824,8 @@ Overall Gas
          <memoryUsed> MU => MU' </memoryUsed> <schedule> SCHED </schedule>
 
     rule <k> _G:Gas ~> (#deductMemoryGas => #deductGas)   ... </k> //Required for verification
-    rule <k>  G:Int ~> #deductGas => #end EVMC_OUT_OF_GAS ... </k> <gas> GAVAIL:Int                  </gas> requires GAVAIL <Int G
-    rule <k>  G:Int ~> #deductGas => .K                    ... </k> <gas> GAVAIL:Int => GAVAIL -Int G </gas> requires G <=Int GAVAIL
+    rule <k>  G:Gas ~> #deductGas => #end EVMC_OUT_OF_GAS ... </k> <gas> GAVAIL                  </gas> requires GAVAIL <Gas G
+    rule <k>  G:Gas ~> #deductGas => .K                   ... </k> <gas> GAVAIL => GAVAIL -Gas G </gas> requires G <=Gas GAVAIL
 
     syntax Bool ::= #inStorage     ( Map   , Account , Int ) [symbol(#inStorage), function, total]
                   | #inStorageAux1 ( KItem ,           Int ) [symbol(#inStorageAux1), function, total]
@@ -2144,7 +2144,7 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
  // ------------------------------------------
     rule <schedule> SCHED </schedule>
          <k> #allocateCreateGas => .K ... </k>
-         <gas>     GAVAIL => #if Gstaticcalldepth << SCHED >> #then 0      #else GAVAIL /Int 64      #fi </gas>
+         <gas>     GAVAIL => #if Gstaticcalldepth << SCHED >> #then 0      #else GAVAIL /Gas 64      #fi </gas>
          <callGas> _      => #if Gstaticcalldepth << SCHED >> #then GAVAIL #else #allBut64th(GAVAIL) #fi </callGas>
       [preserves-definedness]
 ```
