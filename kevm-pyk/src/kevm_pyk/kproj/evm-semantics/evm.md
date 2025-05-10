@@ -2276,11 +2276,11 @@ Precompiled Contracts
          <callData> DATA </callData>
          <output>
             _ => #bls12point(BLS12G1Add
-                    (   ( #asWord(substrBytes(DATA, 0, 64))
-                        , #asWord(substrBytes(DATA, 64, 128))
+                    (   ( Bytes2Int(substrBytes(DATA, 0, 64), BE, Unsigned)
+                        , Bytes2Int(substrBytes(DATA, 64, 128), BE, Unsigned)
                         )
-                    ,   ( #asWord(substrBytes(DATA, 128, 192))
-                        , #asWord(substrBytes(DATA, 192, 256))
+                    ,   ( Bytes2Int(substrBytes(DATA, 128, 192), BE, Unsigned)
+                        , Bytes2Int(substrBytes(DATA, 192, 256), BE, Unsigned)
                         )
                     ))
          </output>
