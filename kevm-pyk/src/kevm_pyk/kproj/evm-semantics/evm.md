@@ -73,7 +73,20 @@ In the comments next to each cell, we've marked which component of the YellowPap
             </callState>
           </evm>
         </ethereum>
+```
 
+For symbolic execution, we create an additional cell, to capture the
+side-effects of impure hooks.
+
+```symbolic
+        <worldState> .WorldState </worldState>
+
+    syntax WorldState ::= ".WorldState" [function, total]
+    rule <k> WS:WorldState => .K ... </k>
+         <worldState> _ => WS </worldState>
+```
+
+```k
     syntax EthereumSimulation
  // -------------------------
 ```
