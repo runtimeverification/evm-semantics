@@ -16,9 +16,6 @@ requests = request_type ++ request_data
 ```
 Each request type will define its own requests object with its own `request_data` format.
 
-In order to compute the commitment, an intermediate hash list is first built by hashing all non-empty requests elements of the block requests list.
-Items with empty `request_data` are excluded, i.e. the intermediate list skips requests items which contain only the `request_type` (1 byte) and nothing else.
-
 ```k
     syntax Int ::= #computeRequestsHash(List) [function, symbol(#computeRequestsHash)]
  // ----------------------------------------------------------------------------------
@@ -33,6 +30,10 @@ Items with empty `request_data` are excluded, i.e. the intermediate list skips r
       requires lengthBytes(R) <=Int 1
     rule #computeRequestsHashIntermediate(ListItem(R) RS, ACC) => #computeRequestsHashIntermediate(RS, ACC +Bytes Sha256raw(R))
       requires lengthBytes(R) >Int 1
+
+    syntax Bytes ::= "DEPOSIT_REQUEST_TYPE" [macro]
+ // -----------------------------------------------
+    rule DEPOSIT_REQUEST_TYPE => b"\x00"
 ```
 
 Deposit Requests
@@ -46,12 +47,10 @@ The structure denoting the new deposit request consists of the following fields:
 5. `index: uint64`
 
 ```k
-    syntax Int ::= "DEPOSIT_REQUEST_TYPE"         [macro]
-                 | "DEPOSIT_EVENT_LENGTH"         [macro]
+    syntax Int ::= "DEPOSIT_EVENT_LENGTH"         [macro]
                  | "DEPOSIT_CONTRACT_ADDRESS"     [alias]
                  | "DEPOSIT_EVENT_SIGNATURE_HASH" [alias]
  // -----------------------------------------------------
-    rule DEPOSIT_REQUEST_TYPE => 0
     rule DEPOSIT_CONTRACT_ADDRESS => #parseAddr("0x00000000219ab540356cbb839cbe05303d7705fa")
     rule DEPOSIT_EVENT_SIGNATURE_HASH => #parseWord("0x649bbc62d0e31342afea4e5cd82d4049e7e1ee912fc0889aa790803be39038c5")
     rule DEPOSIT_EVENT_LENGTH => 576
@@ -94,16 +93,16 @@ The structure denoting the new deposit request consists of the following fields:
  // ------------------------------------------------------------------------------------------------------
     rule #isValidDepositEventData(DATA) => true
       requires lengthBytes(DATA) ==Int DEPOSIT_EVENT_LENGTH
-       andBool Bytes2Int(substrBytes(DATA, 0, 32), BE, Unsigned) ==Int PUBKEY_OFFSET
-       andBool Bytes2Int(substrBytes(DATA, 32, 64), BE, Unsigned) ==Int WITHDRAWAL_CREDENTIALS_OFFSET
-       andBool Bytes2Int(substrBytes(DATA, 64, 96), BE, Unsigned) ==Int AMOUNT_OFFSET
-       andBool Bytes2Int(substrBytes(DATA, 96, 128), BE, Unsigned) ==Int SIGNATURE_OFFSET
-       andBool Bytes2Int(substrBytes(DATA, 128, 160), BE, Unsigned) ==Int INDEX_OFFSET
-       andBool Bytes2Int(substrBytes(DATA, PUBKEY_OFFSET, PUBKEY_OFFSET +Int 32), BE, Unsigned) ==Int PUBKEY_SIZE
-       andBool Bytes2Int(substrBytes(DATA, WITHDRAWAL_CREDENTIALS_OFFSET, WITHDRAWAL_CREDENTIALS_OFFSET +Int 32), BE, Unsigned) ==Int WITHDRAWAL_CREDENTIALS_SIZE
-       andBool Bytes2Int(substrBytes(DATA, AMOUNT_OFFSET, AMOUNT_OFFSET +Int 32), BE, Unsigned) ==Int AMOUNT_SIZE
-       andBool Bytes2Int(substrBytes(DATA, SIGNATURE_OFFSET, SIGNATURE_OFFSET +Int 32), BE, Unsigned) ==Int SIGNATURE_SIZE
-       andBool Bytes2Int(substrBytes(DATA, INDEX_OFFSET, INDEX_OFFSET +Int 32), BE, Unsigned) ==Int INDEX_SIZE
+       andBool #asWord(substrBytes(DATA, 0, 32)) ==Int PUBKEY_OFFSET
+       andBool #asWord(substrBytes(DATA, 32, 64)) ==Int WITHDRAWAL_CREDENTIALS_OFFSET
+       andBool #asWord(substrBytes(DATA, 64, 96)) ==Int AMOUNT_OFFSET
+       andBool #asWord(substrBytes(DATA, 96, 128)) ==Int SIGNATURE_OFFSET
+       andBool #asWord(substrBytes(DATA, 128, 160)) ==Int INDEX_OFFSET
+       andBool #asWord(substrBytes(DATA, PUBKEY_OFFSET, PUBKEY_OFFSET +Int 32)) ==Int PUBKEY_SIZE
+       andBool #asWord(substrBytes(DATA, WITHDRAWAL_CREDENTIALS_OFFSET, WITHDRAWAL_CREDENTIALS_OFFSET +Int 32)) ==Int WITHDRAWAL_CREDENTIALS_SIZE
+       andBool #asWord(substrBytes(DATA, AMOUNT_OFFSET, AMOUNT_OFFSET +Int 32)) ==Int AMOUNT_SIZE
+       andBool #asWord(substrBytes(DATA, SIGNATURE_OFFSET, SIGNATURE_OFFSET +Int 32)) ==Int SIGNATURE_SIZE
+       andBool #asWord(substrBytes(DATA, INDEX_OFFSET, INDEX_OFFSET +Int 32)) ==Int INDEX_SIZE
 
     rule #isValidDepositEventData(_) => false [owise]
 ```
