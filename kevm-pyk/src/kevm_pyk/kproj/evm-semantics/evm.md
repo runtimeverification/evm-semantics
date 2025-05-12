@@ -197,7 +197,8 @@ In the comments next to each cell, we've marked which component of the YellowPap
 
             <requests>
               <depositRequests> .Bytes </depositRequests>
-              //other request types come here
+              <withdrawalRequests> .Bytes </withdrawalRequests>
+              <consolidationRequests> .Bytes </consolidationRequests>
             </requests>
 
           </network>
@@ -724,29 +725,21 @@ After executing a transaction, it's necessary to have the effect of the substate
 
 ### Fetching requests from event logs
 
-While processing a block, multiple requests objects with different `request_types` will be produced by the system, and accumulated in the block requests list.
+While processing a block, multiple deposit requests objects with will be produced by the system.
+`#parseDepositRequest` function parses each log item produced in the block and fetches deposit requests.
 
 ```k
     syntax KItem ::= "#filterLogs" Int [symbol(#filterLogs)]
  // --------------------------------------------------------
-    rule <k> #filterLogs _ => .K ... </k> <schedule> SCHED </schedule> requires notBool Ghasrequests << SCHED >>
-
-    rule <k> #filterLogs IDX => .K ... </k>
-         <schedule> SCHED </schedule>
-         <log> LOGS </log>
-         <depositRequests> DRQSTS </depositRequests>
-         <requestsRoot> _ => #computeRequestsHash(ListItem(DEPOSIT_REQUEST_TYPE +Bytes DRQSTS)) </requestsRoot>
-      requires Ghasrequests << SCHED >> andBool IDX >=Int size(LOGS)
-
-    rule <k> #filterLogs IDX
-          => #parseDepositRequest {LOGS[IDX]}:>SubstateLogEntry
-          // parse other request types
-          ~> #filterLogs IDX +Int 1
-         ...
-         </k>
+    rule <k> #filterLogs IDX => #parseDepositRequest {LOGS[IDX]}:>SubstateLogEntry ~> #filterLogs IDX +Int 1 ... </k>
+         <statusCode> SC </statusCode>
          <log> LOGS </log>
          <schedule> SCHED </schedule>
       requires IDX <Int size(LOGS) andBool Ghasrequests << SCHED >>
+       andBool notBool SC ==K EVMC_INVALID_BLOCK
+
+    rule <k> #filterLogs _ => .K ... </k> [owise]
+    rule <k> #halt ~> #filterLogs _ => .K ... </k>
 ```
 
 Rules for parsing Deposit Requests according to EIP-6110.
@@ -769,6 +762,52 @@ Rules for parsing Deposit Requests according to EIP-6110.
 
     rule <k> #parseDepositRequest _ => .K ... </k> [owise]
 ```
+
+Retrieving requests from the output of a system call.
+`#getRequests WITHDRAWAL_REQUEST_PREDEPLOY_ADDRESS` fetches the output of a system call and stores the output in the `<withdrawalRequests>` cell.
+`#getRequests CONSOLIDATION_REQUEST_PREDEPLOY_ADDRESS` fetches the output of a system call and stores the output in the `<consolidationRequests>` cell.
+
+```k
+    syntax KItem ::= "#getRequests" Int [symbol(#getRequests)]
+ // ----------------------------------------------------------
+    rule <k> #halt ~> #getRequests WITHDRAWAL_REQUEST_PREDEPLOY_ADDRESS => #popCallStack ~> #dropWorldState ~> #finalizeStorage(ListItem(WITHDRAWAL_REQUEST_PREDEPLOY_ADDRESS)) ... </k>
+         <output> WRQSTS </output>
+         <withdrawalRequests> _ => WRQSTS </withdrawalRequests>
+
+    rule <k> #halt ~> #getRequests CONSOLIDATION_REQUEST_PREDEPLOY_ADDRESS => #popCallStack ~> #dropWorldState ~> #finalizeStorage(ListItem(CONSOLIDATION_REQUEST_PREDEPLOY_ADDRESS)) ... </k>
+         <output> CRQSTS </output>
+         <consolidationRequests> _ => CRQSTS </consolidationRequests>
+
+    syntax KItem ::= "#checkRequestsRoot" Int [symbol(#checkRequestsRoot)]
+                   | "#validateRequestsRoot" [symbol(#validateRequestsRoot)]
+ // ------------------------------------------------------------------------
+    rule <k> #validateRequestsRoot => #checkRequestsRoot #computeRequestsHash(ListItem(DEPOSIT_REQUEST_TYPE +Bytes DRQSTS) ListItem(WITHDRAWAL_REQUEST_TYPE +Bytes WRQSTS) ListItem(CONSOLIDATION_REQUEST_TYPE +Bytes CRQSTS)) ... </k>
+         <depositRequests> DRQSTS </depositRequests>
+         <withdrawalRequests> WRQSTS </withdrawalRequests>
+         <consolidationRequests> CRQSTS </consolidationRequests>
+
+    rule <k> #checkRequestsRoot REQUESTS_ROOT => .K ... </k> <requestsRoot> HEADER_REQUESTS_ROOT </requestsRoot> requires REQUESTS_ROOT ==K HEADER_REQUESTS_ROOT
+    rule <k> #checkRequestsRoot REQUESTS_ROOT => .K ... </k> <requestsRoot> HEADER_REQUESTS_ROOT </requestsRoot>
+         <statusCode> _ => EVMC_INVALID_BLOCK </statusCode>
+      requires notBool REQUESTS_ROOT ==K HEADER_REQUESTS_ROOT
+
+    syntax KItem ::= "#processGeneralPurposeRequests" [symbol(#processGeneralPurposeRequests)]
+ // ------------------------------------------------------------------------------------------
+    rule <k> #processGeneralPurposeRequests
+          => #filterLogs 0
+          ~> #systemCall WITHDRAWAL_REQUEST_PREDEPLOY_ADDRESS .Bytes ~> #getRequests WITHDRAWAL_REQUEST_PREDEPLOY_ADDRESS
+          ~> #systemCall CONSOLIDATION_REQUEST_PREDEPLOY_ADDRESS .Bytes ~> #getRequests CONSOLIDATION_REQUEST_PREDEPLOY_ADDRESS
+          ~> #validateRequestsRoot
+          ...
+         </k>
+         <statusCode> SC </statusCode>
+         <schedule> SCHED </schedule>
+      requires Ghasrequests << SCHED >>
+       andBool SC in (SetItem(EVMC_SUCCESS) SetItem(EVMC_REVERT) SetItem(.StatusCode))
+
+    rule <k> #processGeneralPurposeRequests => .K ... </k> [owise]
+```
+
 ### Blobs
 
 -    `#validateBlockBlobs COUNT TXIDS`: Iterates through the transactions of the current block in order, counting up total versioned hashes (blob commitments) in the block.
@@ -848,7 +887,7 @@ Terminates validation successfully when all conditions are met or when blob vali
     rule <k> #finalizeBlock
           => #if Ghaswithdrawals << SCHED >> #then #finalizeWithdrawals #else .K #fi
           ~> #rewardOmmers(OMMERS)
-          ~> #filterLogs 0
+          ~> #processGeneralPurposeRequests
           ~> #finalizeBlockBlobs
          ...
          </k>
@@ -923,14 +962,14 @@ where `HISTORY_BUFFER_LENGTH == 8191`.
 Read more about EIP-4788 here [https://eips.ethereum.org/EIPS/eip-4788](https://eips.ethereum.org/EIPS/eip-4788).
 
 ```k
-    syntax EthereumCommand ::= "#executeBeaconRoots" [symbol(#executeBeaconRoots)]
- // ------------------------------------------------------------------------------
+    syntax InternalOp ::= "#executeBeaconRoots" [symbol(#executeBeaconRoots)]
+ // -------------------------------------------------------------------------
     rule <k> #executeBeaconRoots => .K ... </k>
          <schedule> SCHED </schedule>
          <timestamp> TS </timestamp>
          <beaconRoot> BR </beaconRoot>
          <account>
-           <acctID> 339909022928299415537769066420252604268194818 </acctID>
+           <acctID> BEACON_ROOTS_ADDRESS </acctID>
            <storage> M:Map => M [(TS modInt 8191) <- TS] [(TS modInt 8191 +Int 8191) <- BR] </storage>
            ...
          </account>
@@ -947,14 +986,14 @@ where `HISTORY_SERVE_WINDOW == 8191`.
 Read more about EIP-2935 here [https://eips.ethereum.org/EIPS/eip-2935](https://eips.ethereum.org/EIPS/eip-2935).
 
 ```k
-    syntax EthereumCommand ::= "#executeBlockHashHistory" [symbol(#executeBlockHashHistory)]
- // ----------------------------------------------------------------------------------------
+    syntax InternalOp ::= "#executeBlockHashHistory" [symbol(#executeBlockHashHistory)]
+ // -----------------------------------------------------------------------------------
     rule <k> #executeBlockHashHistory => .K ... </k>
          <schedule> SCHED </schedule>
          <previousHash> HP </previousHash>
          <number> BN </number>
          <account>
-           <acctID> 21693734551179282564423033930679318143314229 </acctID>
+           <acctID> HISTORY_STORAGE_ADDRESS </acctID>
            <storage> M:Map => M [((BN -Int 1) modInt 8191) <- HP] </storage>
            ...
          </account>
@@ -1693,6 +1732,69 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
 
     rule #computeValidJumpDestsWithinBound(PGM, I, RESULT) => #computeValidJumpDests(PGM, I +Int 1, RESULT[I <- 1]) requires PGM [ I ] ==Int 91
     rule #computeValidJumpDestsWithinBound(PGM, I, RESULT) => #computeValidJumpDests(PGM, I +Int #widthOpCode(PGM [ I ]), RESULT) requires notBool PGM [ I ] ==Int 91
+```
+
+System Calls
+------------
+Address Constants
+- `SYSTEM_ADDRESS (0xfffffffffffffffffffffffffffffffffffffffe)`: Special address used for system operations
+- `BEACON_ROOTS_ADDRESS (0x000F3df6D732807Ef1319fB7B8bB8522d0Beac02)`: Address for beacon chain root storage
+- `HISTORY_STORAGE_ADDRESS (0x0000F90827F1C53a10cb7A02335B175320002935)`: Address for historical data storage
+
+System Transaction Configuration
+- `SYSTEMTXGAS (30000000)`: Special gas limit for system transactions
+- Gas not counted against block gas limit
+- No fee burn semantics apply to system transactions
+
+## System Call Operations
+- `#systemCall`: Top-level operation that initiates a system call
+  - Preserves execution context by pushing to call stack
+  - Preserves world state before making the call
+- `#mkSystemCall`: Implementation operation that constructs the actual call
+  - Always sets caller to `SYSTEM_ADDRESS`
+  - Uses the system gas limit instead of standard call gas
+  - Performs call with zero value transfer
+
+```k
+    syntax Int ::= "SYSTEM_ADDRESS" [alias]
+                 | "BEACON_ROOTS_ADDRESS" [alias]
+                 | "HISTORY_STORAGE_ADDRESS" [alias]
+                 | "SYSTEMTXGAS" [macro]
+ // ------------------------------------
+    rule SYSTEM_ADDRESS => 1461501637330902918203684832716283019655932542974
+    rule BEACON_ROOTS_ADDRESS => 339909022928299415537769066420252604268194818
+    rule HISTORY_STORAGE_ADDRESS => 21693734551179282564423033930679318143314229
+    rule SYSTEMTXGAS => 30000000
+
+    syntax InternalOp ::= "#systemCall" Int Bytes   [symbol(#systemCall)]
+                        | "#mkSystemCall" Int Bytes [symbol(#mkSystemCall)]
+ // -----------------------------------------------------------------------
+    rule <k> #systemCall ACCTTO ARGS => #pushCallStack ~> #pushWorldState ~> #mkSystemCall ACCTTO ARGS ... </k>
+
+    rule <k> #mkSystemCall ACCTTO ARGS => #loadProgram CODE ~> #initVM ~> #execute ... </k>
+         <useGas> USEGAS:Bool </useGas>
+         <callDepth> CD => CD +Int 1 </callDepth>
+         <callData> _ => ARGS </callData>
+         <callValue> _ => 0 </callValue>
+         <id> _ => ACCTTO </id>
+         <gas> GAVAIL:Gas => #if USEGAS #then SYSTEMTXGAS:Gas #else GAVAIL:Gas #fi </gas>
+         <callGas> GCALL:Gas => #if USEGAS #then 0:Gas #else GCALL:Gas #fi </callGas>
+         <caller> _ => SYSTEM_ADDRESS </caller>
+         <static> _ => false </static>
+         <account>
+           <acctID> ACCTTO </acctID>
+           <code>   CODE   </code>
+           ...
+         </account>
+
+   //  rule <k> #mkSystemCall ACCTTO ARGS => #mkCall SYSTEM_ADDRESS ACCTTO ACCTTO CODE 0 ARGS false ... </k>
+   //       <useGas> USEGAS </useGas>
+   //       <callGas> GCALL => #if USEGAS #then SYSTEMTXGAS #else GCALL #fi </callGas>
+   //       <account>
+   //         <acctID> ACCTTO </acctID>
+   //         <code>   CODE   </code>
+   //         ...
+   //       </account>
 ```
 
 ```k

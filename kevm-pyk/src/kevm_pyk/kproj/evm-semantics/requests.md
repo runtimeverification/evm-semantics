@@ -16,6 +16,11 @@ requests = request_type ++ request_data
 ```
 Each request type will define its own requests object with its own `request_data` format.
 
+Address constants:
+- `DEPOSIT_CONTRACT_ADDRESS (0x00000000219ab540356cbb839cbe05303d7705fa)` : Predeployed contract for deposits.
+- `WITHDRAWAL_REQUEST_PREDEPLOY_ADDRESS (0x00000961Ef480Eb55e80D19ad83579A64c007002)`: Predeployed contract for validator withdrawal requests (EIP-7002)
+- `CONSOLIDATION_REQUEST_PREDEPLOY_ADDRESS (0x0000BBdDc7CE488642fb579f8B00f3a590007251)`: Predeployed contract for stake consolidation requests
+
 ```k
     syntax Int ::= #computeRequestsHash(List) [function, symbol(#computeRequestsHash)]
  // ----------------------------------------------------------------------------------
@@ -31,9 +36,21 @@ Each request type will define its own requests object with its own `request_data
     rule #computeRequestsHashIntermediate(ListItem(R) RS, ACC) => #computeRequestsHashIntermediate(RS, ACC +Bytes Sha256raw(R))
       requires lengthBytes(R) >Int 1
 
-    syntax Bytes ::= "DEPOSIT_REQUEST_TYPE" [macro]
- // -----------------------------------------------
+    syntax Int ::= "DEPOSIT_EVENT_SIGNATURE_HASH"            [alias]
+                 | "WITHDRAWAL_REQUEST_PREDEPLOY_ADDRESS"    [alias]
+                 | "CONSOLIDATION_REQUEST_PREDEPLOY_ADDRESS" [alias]
+ // ----------------------------------------------------------------
+    rule DEPOSIT_CONTRACT_ADDRESS                => 44667813780391404145283579356374304250
+    rule WITHDRAWAL_REQUEST_PREDEPLOY_ADDRESS    => 817336022611862939366240017674853872070658
+    rule CONSOLIDATION_REQUEST_PREDEPLOY_ADDRESS => 16365465459783978374881923886502306505585233
+
+    syntax Bytes ::= "DEPOSIT_REQUEST_TYPE"       [macro]
+                   | "WITHDRAWAL_REQUEST_TYPE"    [macro]
+                   | "CONSOLIDATION_REQUEST_TYPE" [macro]
+ // -----------------------------------------------------
     rule DEPOSIT_REQUEST_TYPE => b"\x00"
+    rule WITHDRAWAL_REQUEST_TYPE => b"\x01"
+    rule CONSOLIDATION_REQUEST_TYPE => b"\x02"
 ```
 
 Deposit Requests
@@ -47,12 +64,10 @@ The structure denoting the new deposit request consists of the following fields:
 5. `index: uint64`
 
 ```k
-    syntax Int ::= "DEPOSIT_EVENT_LENGTH"         [macro]
-                 | "DEPOSIT_CONTRACT_ADDRESS"     [alias]
-                 | "DEPOSIT_EVENT_SIGNATURE_HASH" [alias]
- // -----------------------------------------------------
-    rule DEPOSIT_CONTRACT_ADDRESS => #parseAddr("0x00000000219ab540356cbb839cbe05303d7705fa")
-    rule DEPOSIT_EVENT_SIGNATURE_HASH => #parseWord("0x649bbc62d0e31342afea4e5cd82d4049e7e1ee912fc0889aa790803be39038c5")
+    syntax Int ::= "DEPOSIT_EVENT_LENGTH"     [macro]
+                 | "DEPOSIT_CONTRACT_ADDRESS" [alias]
+ // -------------------------------------------------
+    rule DEPOSIT_EVENT_SIGNATURE_HASH => 45506446345753628416285423056165511379837572639148407563471291220684748896453
     rule DEPOSIT_EVENT_LENGTH => 576
 
     syntax Int ::= "PUBKEY_OFFSET"                [macro]
