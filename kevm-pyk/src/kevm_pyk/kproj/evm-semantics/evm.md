@@ -1217,7 +1217,9 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
       [preserves-definedness]
 
     rule [create-invalid]:
-         <k> CREATE _ _ _ => #end EVMC_OUT_OF_GAS ... </k> [owise]
+         <k> CREATE _ _ MEMWIDTH => #end EVMC_OUT_OF_GAS ... </k>
+         <schedule> SCHED </schedule>
+      requires notBool #hasValidInitCode(MEMWIDTH, SCHED)
 ```
 
 `CREATE2` will attempt to `#create` the account, but with the new scheme for choosing the account address.
