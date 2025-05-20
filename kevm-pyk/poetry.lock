@@ -635,14 +635,14 @@ pyreadline3 = {version = "*", markers = "sys_platform == \"win32\" and python_ve
 
 [[package]]
 name = "hypothesis"
-version = "6.131.17"
+version = "6.131.20"
 description = "A library for property-based testing"
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "hypothesis-6.131.17-py3-none-any.whl", hash = "sha256:6df86f395b71b6b710dc834a072a5c381b5032be03ce289126dc4b5ba5689bff"},
-    {file = "hypothesis-6.131.17.tar.gz", hash = "sha256:8901926baf6915494ba84353a4cbeaa845c6076d4a159c1d782e6969d4176829"},
+    {file = "hypothesis-6.131.20-py3-none-any.whl", hash = "sha256:4f6d97d5de8a4a09eb5acd4412d7795d7daa17356dd717011fa05cda4a603013"},
+    {file = "hypothesis-6.131.20.tar.gz", hash = "sha256:725b3a9eb08a7655a709b19f1420529e8a75661f97edca28d6ac6ec9579a572a"},
 ]
 
 [package.dependencies]
@@ -770,14 +770,14 @@ i18n = ["Babel (>=2.7)"]
 
 [[package]]
 name = "kframework"
-version = "7.1.255"
+version = "7.1.256"
 description = ""
 optional = false
 python-versions = "<4.0,>=3.10"
 groups = ["main"]
 files = [
-    {file = "kframework-7.1.255-py3-none-any.whl", hash = "sha256:2c414b1529ae813db5c4f9b123c7b2b5feffa90771b0f2ce31945f4241bfbc2a"},
-    {file = "kframework-7.1.255.tar.gz", hash = "sha256:14594e34d03389a10893e05d5e4b5e8e9af3e76205cea8035cb9a3f2ebe1ba93"},
+    {file = "kframework-7.1.256-py3-none-any.whl", hash = "sha256:1a072ae190fd0edd06c629cae9408d4e222c7728d3ca4686b6baf1b364da8202"},
+    {file = "kframework-7.1.256.tar.gz", hash = "sha256:11f75b1f21e7fdb1a045c9657a3602715f5808c098d2f1b9e8a91e7a5f4a25a2"},
 ]
 
 [package.dependencies]
@@ -1555,14 +1555,14 @@ jupyter = ["ipywidgets (>=7.5.1,<9)"]
 
 [[package]]
 name = "setuptools"
-version = "80.7.1"
+version = "80.8.0"
 description = "Easily download, build, install, upgrade, and uninstall Python packages"
 optional = false
 python-versions = ">=3.9"
 groups = ["dev"]
 files = [
-    {file = "setuptools-80.7.1-py3-none-any.whl", hash = "sha256:ca5cc1069b85dc23070a6628e6bcecb3292acac802399c7f8edc0100619f9009"},
-    {file = "setuptools-80.7.1.tar.gz", hash = "sha256:f6ffc5f0142b1bd8d0ca94ee91b30c0ca862ffd50826da1ea85258a06fd94552"},
+    {file = "setuptools-80.8.0-py3-none-any.whl", hash = "sha256:95a60484590d24103af13b686121328cc2736bee85de8936383111e421b9edc0"},
+    {file = "setuptools-80.8.0.tar.gz", hash = "sha256:49f7af965996f26d43c8ae34539c8d99c5042fbff34302ea151eaa9c207cd257"},
 ]
 
 [package.extras]
@@ -1700,14 +1700,14 @@ files = [
 
 [[package]]
 name = "types-python-dateutil"
-version = "2.9.0.20241206"
+version = "2.9.0.20250516"
 description = "Typing stubs for python-dateutil"
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "types_python_dateutil-2.9.0.20241206-py3-none-any.whl", hash = "sha256:e248a4bc70a486d3e3ec84d0dc30eec3a5f979d6e7ee4123ae043eedbb987f53"},
-    {file = "types_python_dateutil-2.9.0.20241206.tar.gz", hash = "sha256:18f493414c26ffba692a72369fea7a154c502646301ebfe3d56a04b3767284cb"},
+    {file = "types_python_dateutil-2.9.0.20250516-py3-none-any.whl", hash = "sha256:2b2b3f57f9c6a61fba26a9c0ffb9ea5681c9b83e69cd897c6b5f668d9c0cab93"},
+    {file = "types_python_dateutil-2.9.0.20250516.tar.gz", hash = "sha256:13e80d6c9c47df23ad773d54b2826bd52dbbb41be87c3f339381c1700ad21ee5"},
 ]
 
 [[package]]
@@ -1790,4 +1790,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10"
-content-hash = "0152b8e50426f77366f2c235b7b63e5a2a048c2a5e28bec63085afdf3baf7e7d"
+content-hash = "5e310a2d86c3437ea170a34d5a3f58af8029d4eb44daab4c0e371a1b6f762b0a"
