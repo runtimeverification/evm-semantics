@@ -66,8 +66,8 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 
     syntax EthereumCommand ::= "flush"
  // ----------------------------------
-    rule <mode> EXECMODE </mode> <statusCode> EVMC_SUCCESS            </statusCode> <k> #halt ~> flush => #finalizeTx(EXECMODE ==K VMTESTS)          ... </k>
-    rule <mode> EXECMODE </mode> <statusCode> _:ExceptionalStatusCode </statusCode> <k> #halt ~> flush => #finalizeTx(EXECMODE ==K VMTESTS) ~> #halt ... </k>
+    rule <mode> EXECMODE </mode> <statusCode> EVMC_SUCCESS            </statusCode> <k> #halt ~> flush => #finalizeTx(EXECMODE ==K VMTESTS, 0)          ... </k>
+    rule <mode> EXECMODE </mode> <statusCode> _:ExceptionalStatusCode </statusCode> <k> #halt ~> flush => #finalizeTx(EXECMODE ==K VMTESTS, 0) ~> #halt ... </k>
 ```
 
 -   `startTx` computes the sender of the transaction, and places loadTx on the `k` cell.
@@ -116,25 +116,13 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 
     syntax EthereumCommand ::= loadTx ( Account ) [symbol(loadTx)]
  // --------------------------------------------------------------
-    rule <k> loadTx(_) => startTx ... </k>
-         <statusCode> _ => EVMC_OUT_OF_GAS </statusCode>
-         <txPending> ListItem(TXID:Int) REST => REST </txPending>
-         <schedule> SCHED </schedule>
-         <message>
-           <msgID>      TXID     </msgID>
-           <to>         .Account </to>
-           <data>       CODE     </data>
-           ...
-         </message>
-       requires notBool #hasValidInitCode(lengthBytes(CODE), SCHED)
-
     rule <k> loadTx(ACCTFROM)
           => #accessAccounts ACCTFROM #newAddr(ACCTFROM, NONCE) #precompiledAccountsSet(SCHED)
           ~> #deductBlobGas
           ~> #loadAccessList(TA)
           ~> #checkCreate ACCTFROM VALUE
           ~> #create ACCTFROM #newAddr(ACCTFROM, NONCE) VALUE CODE
-          ~> #finishTx ~> #finalizeTx(false) ~> startTx
+          ~> #finishTx ~> #finalizeTx(false, Ctxfloor(SCHED, CODE)) ~> startTx
          ...
          </k>
          <schedule> SCHED </schedule>
@@ -163,7 +151,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          <touchedAccounts> _ => SetItem(MINER) </touchedAccounts>
       requires #hasValidInitCode(lengthBytes(CODE), SCHED)
        andBool #isValidTransaction(TXID, ACCTFROM)
-
+       andBool GLIMIT >=Int maxInt(G0(SCHED, CODE, true), Ctxfloor(SCHED, CODE))
 
     rule <k> loadTx(ACCTFROM)
           => #accessAccounts ACCTFROM ACCTTO #precompiledAccountsSet(SCHED)
@@ -171,12 +159,12 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
           ~> #loadAccessList(TA)
           ~> #checkCall ACCTFROM VALUE
           ~> #call ACCTFROM ACCTTO ACCTTO VALUE VALUE DATA false
-          ~> #finishTx ~> #finalizeTx(false) ~> startTx
+          ~> #finishTx ~> #finalizeTx(false, Ctxfloor(SCHED, DATA)) ~> startTx
          ...
          </k>
          <schedule> SCHED </schedule>
          <gasPrice> _ => #effectiveGasPrice(TXID) </gasPrice>
-         <callGas> _ => GLIMIT -Int G0(SCHED, DATA, false) </callGas>
+         <callGas> _ => GLIMIT -Int G0(SCHED, DATA, false)</callGas>
          <origin> _ => ACCTFROM </origin>
          <callDepth> _ => -1 </callDepth>
          <txPending> ListItem(TXID:Int) ... </txPending>
@@ -202,16 +190,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          <touchedAccounts> _ => SetItem(MINER) </touchedAccounts>
       requires ACCTTO =/=K .Account
        andBool #isValidTransaction(TXID, ACCTFROM)
-
-    rule <k> loadTx(ACCTFROM) => startTx ... </k>
-         <statusCode> _ => EVMC_INVALID_BLOCK </statusCode>
-         <txPending> ListItem(_TXID:Int) REST => REST </txPending>
-         <account>
-           <acctID> ACCTFROM </acctID>
-           <code> ACCTCODE </code>
-           ...
-         </account>
-      requires notBool ACCTCODE ==K .Bytes
+       andBool GLIMIT >=Int maxInt(G0(SCHED, DATA, false), Ctxfloor(SCHED, DATA))
 
     rule <k> loadTx(_) => startTx ... </k>
          <statusCode> _ => EVMC_OUT_OF_GAS </statusCode>
