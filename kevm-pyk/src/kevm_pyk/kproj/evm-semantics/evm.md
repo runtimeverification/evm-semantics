@@ -1460,7 +1460,7 @@ Precompiled Contracts
          <output> _ => Int2Bytes(32, 4096, BE) +Bytes Int2Bytes(32, blsModulus, BE) </output>
          <callData> CD </callData>
       requires lengthBytes( CD ) ==Int 192
-       andBool #kzg2vh(substrBytes(CD, 96, 144)) ==K substrBytes(CD, 0, 32)
+       andBool #kzg2vh(substrBytes(CD, 96, 144)) ==Bytes substrBytes(CD, 0, 32)
        andBool Bytes2Int(substrBytes(CD, 32, 64), BE, Unsigned) <Int blsModulus
        andBool Bytes2Int(substrBytes(CD, 64, 96), BE, Unsigned) <Int blsModulus
        andBool verifyKZGProof(substrBytes(CD, 96, 144), substrBytes(CD, 32, 64), substrBytes(CD, 64, 96), substrBytes(CD, 144, 192))
@@ -1468,7 +1468,7 @@ Precompiled Contracts
     rule <k> KZGPOINTEVAL => #end EVMC_PRECOMPILE_FAILURE ... </k>
       requires notBool
              ( lengthBytes( CD ) ==Int 192
-       andBool #kzg2vh(substrBytes(CD, 96, 144)) ==K substrBytes(CD, 0, 32)
+       andBool #kzg2vh(substrBytes(CD, 96, 144)) ==Bytes substrBytes(CD, 0, 32)
        andBool Bytes2Int(substrBytes(CD, 32, 64), BE, Unsigned) <Int blsModulus
        andBool Bytes2Int(substrBytes(CD, 64, 96), BE, Unsigned) <Int blsModulus
        andBool verifyKZGProof(substrBytes(CD, 96, 144), substrBytes(CD, 32, 64), substrBytes(CD, 64, 96), substrBytes(CD, 144, 192)))
