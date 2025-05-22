@@ -770,14 +770,14 @@ i18n = ["Babel (>=2.7)"]
 
 [[package]]
 name = "kframework"
-version = "7.1.258"
+version = "7.1.259"
 description = ""
 optional = false
 python-versions = "<4.0,>=3.10"
 groups = ["main"]
 files = [
-    {file = "kframework-7.1.258-py3-none-any.whl", hash = "sha256:1965eb1be23e3b86cb226006fcccadd149b5d8de49d4ff4042a7ad2cf2c80662"},
-    {file = "kframework-7.1.258.tar.gz", hash = "sha256:3d3214231b15b024bba8bd5376d9559c83a2c42182cd04b5fce352dc45d67c94"},
+    {file = "kframework-7.1.259-py3-none-any.whl", hash = "sha256:52d7a0f2fd57eff7309b0d8d5a1d0303962c899cbe950248692ddbd5aace97e9"},
+    {file = "kframework-7.1.259.tar.gz", hash = "sha256:5ab5362909c4773cf612240e8b60508e43a474f98557ed77b2a4bb1209a912fb"},
 ]
 
 [package.dependencies]
@@ -1790,4 +1790,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10"
-content-hash = "8f3974f26ecb015050032e198a0ba2b7923a0b8912654844b69d827d479cf843"
+content-hash = "ecaba57d45495a1b4f921353e7012a93837f286fce8dad2780236d258d040bd2"
