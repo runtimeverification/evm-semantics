@@ -613,7 +613,7 @@ class KEVMSummarizer:
         omit_cells: Iterable[str] = (),
     ) -> list[str]:
         node_printer = kevm_node_printer(self.kevm, proof)
-        proof_show = APRProofShow(self.kevm, node_printer=node_printer)
+        proof_show = APRProofShow(self.kevm.definition, node_printer=node_printer)
         return proof_show.show(
             proof,
             nodes=nodes,
@@ -841,7 +841,7 @@ class KEVMSummarizer:
 
     def _to_rules(self, proof: APRProof) -> list[KRule]:
         krules = []
-        module = APRProofShow(self.kevm, kevm_node_printer(self.kevm, proof)).kcfg_show.to_module(proof.kcfg)
+        module = APRProofShow(self.kevm.definition, kevm_node_printer(self.kevm, proof)).kcfg_show.to_module(proof.kcfg)
         for krule in module.sentences:
             assert isinstance(krule, KRule), f'Unexpected sentence type: {type(krule)}\n{self.kevm.pretty_print(krule)}'
             body, requires, ensures, atts = krule.body, krule.requires, krule.ensures, krule.att

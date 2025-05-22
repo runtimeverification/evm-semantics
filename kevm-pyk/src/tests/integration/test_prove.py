@@ -425,7 +425,7 @@ def _validate_proofs(kevm: KEVM, kore_rpc_command: tuple[str, ...], proofs: list
             initialize_apr_proof(kcfg_explore.cterm_symbolic, proof)
             prover.advance_proof(proof, max_iterations=20)
             node_printer = kevm_node_printer(kevm, proof)
-            proof_show = APRProofShow(kevm, node_printer=node_printer)
+            proof_show = APRProofShow(kevm.definition, node_printer=node_printer)
             proof_display = '\n'.join('    ' + line for line in proof_show.show(proof))
             _LOGGER.info(f'Proof {proof.id}:\n{proof_display}')
             assert proof.passed
