@@ -538,7 +538,7 @@ def exec_show_kcfg(options: ShowKCFGOptions) -> None:
         nodes = list(nodes) + [node.id for node in proof.failing]
 
     node_printer = kevm_node_printer(kevm, proof)
-    proof_show = APRProofShow(kevm, node_printer=node_printer)
+    proof_show = APRProofShow(kevm.definition, node_printer=node_printer)
 
     res_lines = proof_show.show(
         proof,
@@ -546,7 +546,6 @@ def exec_show_kcfg(options: ShowKCFGOptions) -> None:
         node_deltas=options.node_deltas,
         to_module=options.to_module,
         minimize=options.minimize,
-        sort_collections=options.sort_collections,
     )
 
     if options.failure_info:
