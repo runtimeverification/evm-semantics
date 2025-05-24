@@ -1584,6 +1584,25 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
 
     rule <k> #checkCall ACCT VALUE => #checkBalanceUnderflow ACCT VALUE ~> #checkDepthExceeded ... </k>
 
+    rule [call.delegatedAuthority]:
+         <k> #call ACCTFROM ACCTTO ACCTCODE VALUE APPVALUE ARGS STATIC
+          => #callWithCode ACCTFROM ACCTTO TARGET_ACCT TARGET_CODE VALUE APPVALUE ARGS STATIC
+          ...
+         </k>
+         <schedule> SCHED </schedule>
+         <account>
+           <acctID> ACCTCODE </acctID>
+           <code> CODE </code>
+           ...
+         </account>
+         <account>
+           <acctID> TARGET_ACCT </acctID>
+           <code> TARGET_CODE </code>
+           ...
+         </account>
+      requires Ghasauthority << SCHED >>
+       andBool #isValidDelegation (CODE)
+
     rule [call.true]:
          <k> #call ACCTFROM ACCTTO ACCTCODE VALUE APPVALUE ARGS STATIC
           => #callWithCode ACCTFROM ACCTTO ACCTCODE CODE VALUE APPVALUE ARGS STATIC
@@ -1594,6 +1613,9 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
            <code> CODE </code>
            ...
          </account>
+         <schedule> SCHED </schedule>
+      requires notBool Ghasauthority << SCHED >>
+       orBool (Ghasauthority << SCHED>> andBool notBool #isValidDelegation(CODE))
 
     rule [call.false]:
          <k> #call ACCTFROM ACCTTO ACCTCODE VALUE APPVALUE ARGS STATIC
@@ -2984,8 +3006,11 @@ Processing SetCode Transaction Authority Entries
  - Provides gas refund for non-empty accounts
  - Creates new accounts when needed
 
+- `isValidDelegation` - checks whether the code of an account is a valid delegation designation with the delegation marker prefix (`0xef0100`) and a length of 23 bytes.
+
+
 ```k
-    syntax InternalOp ::= #loadAuthorities ( List ) [symbol(#loadAuthorities)]
+    syntax InternalOp ::= #loadAuthorities ( List ) [symbol(#loadAuthorities)] | "#DBG1" | "#DBG2"
  // --------------------------------------------------------------------------
     rule <k> #loadAuthorities ( AUTH ) => .K ... </k>
          <txPending> ListItem(TXID:Int) ... </txPending>
@@ -3000,7 +3025,7 @@ Processing SetCode Transaction Authority Entries
     rule <k> #loadAuthorities (ListItem(ListItem(CID) ListItem(ADDR) ListItem(NONCE) ListItem(YPAR) ListItem(SIGR) ListItem(SIGS)) REST )
           => #addAuthority (#recoverAuthority (CID, ADDR, NONCE, YPAR, SIGR, SIGS ), CID, NONCE, ADDR, true)
           ~> #loadAuthorities (REST)
-          ... </k>
+          ... </k> [owise]
 
     syntax InternalOp ::= #addAuthority ( Account , Bytes , Bytes , Bytes, Bool ) [symbol(#addAuthority)]
  // -----------------------------------------------------------------------------------------------------
@@ -3008,12 +3033,12 @@ Processing SetCode Transaction Authority Entries
          <chainID> ENV_CID </chainID>
          <account>
            <acctID> AUTHORITY </acctID>
-           <code> ACCTCODE  </code>
+           <code> ACCTCODE </code>
            <nonce> ACCTNONCE </nonce>
          ...
          </account>
       requires notBool ( AUTHORITY =/=K .Account
-       andBool (#range(ACCTCODE,0,4) ==K EOA_DELEGATION_MARKER orBool ACCTCODE ==K .Bytes)
+       andBool (#range(ACCTCODE,0,3) ==K EOA_DELEGATION_MARKER orBool ACCTCODE ==K .Bytes)
        andBool #asWord(NONCE) ==Int ACCTNONCE
        andBool #asWord(CID) in (SetItem(ENV_CID) SetItem(0)) )
 
@@ -3028,11 +3053,28 @@ Processing SetCode Transaction Authority Entries
          ...
          </account>
       requires AUTHORITY =/=K .Account
-       andBool (#range(ACCTCODE,0,4) ==K EOA_DELEGATION_MARKER orBool ACCTCODE ==K .Bytes)
+       andBool (ACCTCODE ==K .Bytes orBool notBool #isValidDelegation(ACCTCODE))
        andBool #asWord(NONCE) ==Int ACCTNONCE
        andBool #asWord(CID) in (SetItem(ENV_CID) SetItem(0))
 
     rule <k> #addAuthority(AUTHORITY, CID, NONCE, ADDR, _EXISTS) => #newAccount AUTHORITY ~> #addAuthority(AUTHORITY, CID, NONCE, ADDR, false) ... </k> [owise]
+
+    syntax Bool ::= #isValidDelegation ( Bytes ) [symbol(#isValidDelegation), function, total]
+ // ------------------------------------------------------------------------------------------
+    rule #isValidDelegation(CODE) => true requires #range(CODE, 0, 3) ==K EOA_DELEGATION_MARKER andBool lengthBytes(CODE) ==Int 23
+    rule #isValidDelegation(_   ) => false [owise]
+
+    syntax Bool ::= #checkAuthorityList ( List ) [symbol(#checkAuthorityList), function, total]
+ // -------------------------------------------------------------------------------------------
+    rule #checkAuthorityList (.List) => true
+    rule #checkAuthorityList (ListItem(ListItem(CID:Bytes) ListItem(ADDR:Bytes) ListItem(NONCE:Bytes) ListItem(YPAR:Bytes) ListItem(SIGR:Bytes) ListItem(SIGS:Bytes)) REST ) => true andBool #checkAuthorityList(REST)
+      requires #rangeUInt(256, Bytes2Int(CID, BE, Unsigned))
+       andBool #rangeUInt(64, Bytes2Int(NONCE, BE, Unsigned))
+       andBool lengthBytes(ADDR) ==Int 20
+       andBool #rangeUInt(8, Bytes2Int(YPAR, BE, Unsigned))
+       andBool #rangeUInt(256, Bytes2Int(SIGR, BE, Unsigned))
+       andBool #rangeUInt(256, Bytes2Int(SIGS, BE, Unsigned))
+   rule #checkAuthorityList(_) => false [owise]
 ```
 
 EVM Program Representations

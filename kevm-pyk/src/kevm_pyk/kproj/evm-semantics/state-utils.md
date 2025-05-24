@@ -600,6 +600,37 @@ The `"rlp"` key loads the block information.
     syntax Bool ::= #isValidTransaction( Int , Account ) [symbol(#isValidTransaction), function]
  // --------------------------------------------------------------------------------------------
     rule [[ #isValidTransaction (TXID, ACCTFROM) => true ]]
+         <baseFee> BASE_FEE </baseFee>
+         <gasLimit> BLOCK_GAS_LIMIT </gasLimit>
+         <account>
+           <acctID>  ACCTFROM  </acctID>
+           <balance> BAL       </balance>
+           <code>    ACCTCODE  </code>
+           <nonce>   ACCTNONCE </nonce>
+           ...
+         </account>
+         <message>
+           <msgID>             TXID                </msgID>
+           <txNonce>           TX_NONCE            </txNonce>
+           <txGasLimit>        TX_GAS_LIMIT        </txGasLimit>
+           <to>                ACCTTO              </to>
+           <value>             VALUE               </value>
+           <txPriorityFee>     TX_MAX_PRIORITY_FEE </txPriorityFee>
+           <txMaxFee>          TX_MAX_FEE          </txMaxFee>
+           <txAuthList>        TX_AUTH_LIST        </txAuthList>
+           <txType> SetCode </txType>
+           ...
+         </message>
+     requires ACCTCODE ==K .Bytes
+      andBool notBool ACCTTO ==K .Account
+      andBool ACCTNONCE ==Int TX_NONCE
+      andBool BASE_FEE <=Int TX_MAX_FEE
+      andBool TX_MAX_PRIORITY_FEE <=Int TX_MAX_FEE
+      andBool BAL >=Int TX_GAS_LIMIT *Int TX_MAX_FEE +Int VALUE
+      andBool TX_GAS_LIMIT <=Int BLOCK_GAS_LIMIT
+      andBool size(TX_AUTH_LIST) >Int 0 andBool #checkAuthorityList(TX_AUTH_LIST)
+
+    rule [[ #isValidTransaction (TXID, ACCTFROM) => true ]]
          <schedule> SCHED </schedule>
          <baseFee> BASE_FEE </baseFee>
          <excessBlobGas> EXCESS_BLOB_GAS </excessBlobGas>

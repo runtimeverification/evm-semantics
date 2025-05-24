@@ -794,12 +794,12 @@ Processing authorities in SetCode Transactions
 
 ```k
     syntax Bytes ::= "SET_CODE_TX_MAGIC" [macro] | "EOA_DELEGATION_MARKER" [macro]
- // ------------------------------------------------------------------------------
+ // ----------------------------------------------------------------------
     rule SET_CODE_TX_MAGIC => b"\x05"
-    rule EOA_DELEGATION_MARKER => b"\xEF\x01\x00"
+    rule EOA_DELEGATION_MARKER => #parseByteStack("0xef0100")
 
     syntax Account ::= #recoverAuthority ( Bytes , Bytes , Bytes , Bytes , Bytes , Bytes ) [symbol(#recoverAuthority), function]
- // ------------------------------------------------------------------------------------------------------------------------
+ // ----------------------------------------------------------------------------------------------------------------------------
     rule #recoverAuthority(CID, ADDR, NONCE, YPAR, SIGR, SIGS) => #sender( Keccak256raw(SET_CODE_TX_MAGIC +Bytes #rlpEncode([CID, ADDR, NONCE])), #asWord(YPAR) +Int 27, SIGR, SIGS )
 
 endmodule

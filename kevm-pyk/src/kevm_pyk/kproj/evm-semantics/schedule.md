@@ -30,7 +30,7 @@ module SCHEDULE
                           | "Ghasrejectedfirstbyte"   | "Ghasprevrandao"   | "Ghasmaxinitcodesize" | "Ghaspushzero"
                           | "Ghaswarmcoinbase"        | "Ghaswithdrawals"  | "Ghastransient"       | "Ghasmcopy"
                           | "Ghasbeaconroot"          | "Ghaseip6780"      | "Ghasblobbasefee"     | "Ghasblobhash"
-                          | "Ghasbls12msmdiscount"    | "Ghashistory"      | "Ghasrequests"
+                          | "Ghasbls12msmdiscount"    | "Ghashistory"      | "Ghasrequests"        | "Ghasauthority"
  // -----------------------------------------------------------------
 ```
 
@@ -178,6 +178,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule [GhashistoryDefault]:             Ghashistory             << DEFAULT >> => false
     rule [GhasrequestsDefault]:            Ghasrequests            << DEFAULT >> => false
     rule [Ghasbls12msmdiscountDefault]:    Ghasbls12msmdiscount    << DEFAULT >> => false
+    rule [GhasauthorityDefault]:           Ghasauthority           << DEFAULT >> => false
 ```
 
 ### Frontier Schedule
@@ -482,10 +483,12 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule [GhasrequestsPrague]:         Ghasrequests         << PRAGUE >> => true
     rule [GhashistoryPrague]:          Ghashistory          << PRAGUE >> => true
     rule [Ghasbls12msmdiscountPrague]: Ghasbls12msmdiscount << PRAGUE >> => true
+    rule [GhasauthorityPrague]:        Ghasauthority        << PRAGUE >> => true
     rule [SCHEDFLAGPrague]:            SCHEDFLAG            << PRAGUE >> => SCHEDFLAG << CANCUN >>
       requires notBool ( SCHEDFLAG ==K Ghasrequests
                   orBool SCHEDFLAG ==K Ghashistory
-                  orBool SCHEDFLAG ==K Ghasbls12msmdiscount )
+                  orBool SCHEDFLAG ==K Ghasbls12msmdiscount
+                  orBool SCHEDFLAG ==K Ghasauthority )
 ```
 
 ```k
