@@ -13,13 +13,13 @@ from pyk.cterm import CSubst, CTerm, CTermSymbolic, cterm_build_claim
 from pyk.kast.att import Atts
 from pyk.kast.inner import KApply, KRewrite, KSequence, KToken, KVariable, Subst, top_down
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire, KRule, KSort
+from pyk.kast.prelude.k import DOTS
+from pyk.kast.prelude.kbool import andBool
+from pyk.kast.prelude.kint import addInt, eqInt, euclidModInt, leInt, ltInt
+from pyk.kast.prelude.ml import mlEquals, mlEqualsFalse, mlEqualsTrue, mlNot
 from pyk.kcfg import KCFG, KCFGExplore
 from pyk.kdist import kdist
 from pyk.kore.rpc import KoreClient
-from pyk.prelude.k import DOTS
-from pyk.prelude.kbool import andBool
-from pyk.prelude.kint import addInt, eqInt, euclidModInt, leInt, ltInt
-from pyk.prelude.ml import mlEquals, mlEqualsFalse, mlEqualsTrue, mlNot
 from pyk.proof import APRProof
 from pyk.proof.show import APRProofShow
 from pyk.utils import ensure_dir_path
@@ -613,7 +613,7 @@ class KEVMSummarizer:
         omit_cells: Iterable[str] = (),
     ) -> list[str]:
         node_printer = kevm_node_printer(self.kevm, proof)
-        proof_show = APRProofShow(self.kevm, node_printer=node_printer)
+        proof_show = APRProofShow(self.kevm.definition, node_printer=node_printer)
         return proof_show.show(
             proof,
             nodes=nodes,
@@ -841,7 +841,7 @@ class KEVMSummarizer:
 
     def _to_rules(self, proof: APRProof) -> list[KRule]:
         krules = []
-        module = APRProofShow(self.kevm, kevm_node_printer(self.kevm, proof)).kcfg_show.to_module(proof.kcfg)
+        module = APRProofShow(self.kevm.definition, kevm_node_printer(self.kevm, proof)).kcfg_show.to_module(proof.kcfg)
         for krule in module.sentences:
             assert isinstance(krule, KRule), f'Unexpected sentence type: {type(krule)}\n{self.kevm.pretty_print(krule)}'
             body, requires, ensures, atts = krule.body, krule.requires, krule.ensures, krule.att

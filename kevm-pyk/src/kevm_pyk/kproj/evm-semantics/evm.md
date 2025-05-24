@@ -11,12 +11,14 @@ This file only defines the local execution operations, the file `driver.md` will
 requires "data.md"
 requires "network.md"
 requires "gas.md"
+requires "requests.md"
 
 module EVM
     imports STRING
     imports EVM-DATA
     imports NETWORK
     imports GAS
+    imports EVM-REQUESTS
 ```
 
 Configuration
@@ -95,6 +97,8 @@ In the comments next to each cell, we've marked which component of the YellowPap
 
             // I_H* (block information)
             <blockhashes> .List </blockhashes>
+            <previousExcessBlobGas> 0 </previousExcessBlobGas>
+            <previousBlobGasUsed>   0 </previousBlobGasUsed>
             <block>
               <previousHash>     0      </previousHash>     // I_Hp
               <ommersHash>       0      </ommersHash>       // I_Ho
@@ -116,6 +120,7 @@ In the comments next to each cell, we've marked which component of the YellowPap
               <blobGasUsed>      0      </blobGasUsed>
               <excessBlobGas>    0      </excessBlobGas>
               <beaconRoot>       0      </beaconRoot>
+              <requestsRoot>     0      </requestsRoot>
 
               <ommerBlockHeaders> [ .JSONs ] </ommerBlockHeaders>
             </block>
@@ -190,6 +195,11 @@ In the comments next to each cell, we've marked which component of the YellowPap
                 <amount>         0        </amount>
               </withdrawal>
             </withdrawals>
+
+            <requests>
+              <depositRequests> .List </depositRequests>
+              //other request types come here
+            </requests>
 
           </network>
 
@@ -636,6 +646,7 @@ After executing a transaction, it's necessary to have the effect of the substate
          <coinbase> MINER </coinbase>
          <gas> GAVAIL </gas>
          <gasUsed> GUSED => GUSED +Gas GLIMIT -Gas GAVAIL </gasUsed>
+         <blobGasUsed> BLOB_GAS_USED => #if TXTYPE ==K Blob #then BLOB_GAS_USED +Int Ctotalblob(SCHED, size(TVH)) #else BLOB_GAS_USED #fi </blobGasUsed>
          <gasPrice> GPRICE </gasPrice>
          <refund> 0 </refund>
          <account>
@@ -648,45 +659,17 @@ After executing a transaction, it's necessary to have the effect of the substate
            <balance> MINBAL => MINBAL +Int (GLIMIT -Int GAVAIL) *Int (GPRICE -Int BFEE) </balance>
            ...
          </account>
-         <txPending> ListItem(TXID:Int) REST => REST </txPending>
+         <txPending> ListItem(MSGID:Int) REST => REST </txPending>
          <message>
-           <msgID> TXID </msgID>
-           <txGasLimit> GLIMIT </txGasLimit>
-           ...
-         </message>
-      requires ORG =/=Int MINER andBool notBool Ghasblobbasefee << SCHED >>
-
-    rule <k> #finalizeTx(false => true) ... </k>
-         <useGas> true </useGas>
-         <baseFee> BFEE </baseFee>
-         <schedule> SCHED </schedule>
-         <origin> ORG </origin>
-         <coinbase> MINER </coinbase>
-         <gas> GAVAIL </gas>
-         <gasUsed> GUSED => GUSED +Gas GLIMIT -Gas GAVAIL </gasUsed>
-         <gasPrice> GPRICE </gasPrice>
-         <refund> 0 </refund>
-         <excessBlobGas> EXCESS_BLOB_GAS </excessBlobGas>
-         <account>
-           <acctID> ORG </acctID>
-           <balance> ORGBAL => ORGBAL +Int GAVAIL *Int GPRICE -Int #calcBlobFee(EXCESS_BLOB_GAS, size(TVH)) </balance>
-           ...
-         </account>
-         <account>
-           <acctID> MINER </acctID>
-           <balance> MINBAL => MINBAL +Int (GLIMIT -Int GAVAIL) *Int (GPRICE -Int BFEE) </balance>
-           ...
-         </account>
-         <txPending> ListItem(TXID:Int) REST => REST </txPending>
-         <message>
-           <msgID> TXID </msgID>
+           <msgID> MSGID </msgID>
            <txGasLimit> GLIMIT </txGasLimit>
            <txVersionedHashes> TVH </txVersionedHashes>
+           <txType> TXTYPE </txType>
            ...
          </message>
-      requires ORG =/=Int MINER andBool Ghasblobbasefee << SCHED >>
+      requires ORG =/=Int MINER
 
-        rule <k> #finalizeTx(false => true) ... </k>
+    rule <k> #finalizeTx(false => true) ... </k>
          <useGas> true </useGas>
          <schedule> SCHED </schedule>
          <baseFee> BFEE </baseFee>
@@ -694,6 +677,7 @@ After executing a transaction, it's necessary to have the effect of the substate
          <coinbase> ACCT </coinbase>
          <gas> GAVAIL </gas>
          <gasUsed> GUSED => GUSED +Gas GLIMIT -Gas GAVAIL </gasUsed>
+         <blobGasUsed> BLOB_GAS_USED => #if TXTYPE ==K Blob #then BLOB_GAS_USED +Int Ctotalblob(SCHED, size(TVH)) #else BLOB_GAS_USED #fi </blobGasUsed>
          <gasPrice> GPRICE </gasPrice>
          <refund> 0 </refund>
          <account>
@@ -701,44 +685,20 @@ After executing a transaction, it's necessary to have the effect of the substate
            <balance> BAL => BAL +Int GLIMIT *Int GPRICE -Int (GLIMIT -Int GAVAIL) *Int BFEE </balance>
            ...
          </account>
-         <txPending> ListItem(MsgId:Int) REST => REST </txPending>
+         <txPending> ListItem(MSGID:Int) REST => REST </txPending>
          <message>
-           <msgID> MsgId </msgID>
-           <txGasLimit> GLIMIT </txGasLimit>
-           ...
-         </message>
-     requires notBool Ghasblobbasefee << SCHED >>
-
-    rule <k> #finalizeTx(false => true) ... </k>
-         <useGas> true </useGas>
-         <schedule> SCHED </schedule>
-         <baseFee> BFEE </baseFee>
-         <origin> ACCT </origin>
-         <coinbase> ACCT </coinbase>
-         <gas> GAVAIL </gas>
-         <gasUsed> GUSED => GUSED +Gas GLIMIT -Gas GAVAIL </gasUsed>
-         <gasPrice> GPRICE </gasPrice>
-         <refund> 0 </refund>
-         <excessBlobGas> EXCESS_BLOB_GAS </excessBlobGas>
-         <account>
-           <acctID> ACCT </acctID>
-           <balance> BAL => BAL +Int GLIMIT *Int GPRICE -Int (GLIMIT -Int GAVAIL) *Int BFEE -Int #calcBlobFee(EXCESS_BLOB_GAS, size(TVH)) </balance>
-           ...
-         </account>
-         <txPending> ListItem(MsgId:Int) REST => REST </txPending>
-         <message>
-           <msgID> MsgId </msgID>
+           <msgID> MSGID </msgID>
            <txGasLimit> GLIMIT </txGasLimit>
            <txVersionedHashes> TVH </txVersionedHashes>
+           <txType> TXTYPE </txType>
            ...
          </message>
-      requires Ghasblobbasefee << SCHED >>
 
     rule <k> #finalizeTx(false => true) ... </k>
          <useGas> false </useGas>
-         <txPending> ListItem(MsgId:Int) REST => REST </txPending>
+         <txPending> ListItem(MSGID:Int) REST => REST </txPending>
          <message>
-           <msgID> MsgId </msgID>
+           <msgID> MSGID </msgID>
            ...
          </message>
 
@@ -763,6 +723,110 @@ After executing a transaction, it's necessary to have the effect of the substate
     rule <k> #deleteAccounts(.List) => .K ... </k>
 ```
 
+### Fetching requests from event logs
+
+While processing a block, multiple requests objects with different `request_types` will be produced by the system, and accumulated in the block requests list.
+
+```k
+    syntax KItem ::= "#filterLogs" Int [symbol(#filterLogs)]
+ // --------------------------------------------------------
+    rule <k> #filterLogs _ => .K ... </k> <schedule> SCHED </schedule> requires notBool Ghasrequests << SCHED >>
+
+    rule <k> #filterLogs IDX => .K ... </k>
+         <schedule> SCHED </schedule>
+         <log> LOGS </log>
+         <depositRequests> DRQSTS </depositRequests>
+         <requestsRoot> _ => #computeRequestsHash(DRQSTS) </requestsRoot>
+      requires Ghasrequests << SCHED >> andBool IDX >=Int size(LOGS)
+
+    rule <k> #filterLogs IDX
+          => #parseDepositRequest {LOGS[IDX]}:>SubstateLogEntry
+          // parse other request types
+          ~> #filterLogs IDX +Int 1
+         ...
+         </k>
+         <log> LOGS </log>
+         <schedule> SCHED </schedule>
+      requires IDX <Int size(LOGS) andBool Ghasrequests << SCHED >>
+```
+
+Rules for parsing Deposit Requests according to EIP-6110.
+
+```k
+    syntax KItem ::= "#parseDepositRequest" SubstateLogEntry [symbol(#parseDepositRequest)]
+ // ---------------------------------------------------------------------------------------
+    rule <k> #parseDepositRequest { ADDR | TOPICS | DATA } => .K ... </k>
+         <depositRequests> RS => RS ListItem(Int2Bytes(1, DEPOSIT_REQUEST_TYPE, BE) +Bytes #extractDepositData(DATA)) </depositRequests>
+      requires ADDR ==K DEPOSIT_CONTRACT_ADDRESS
+       andBool size(TOPICS) >Int 0
+       andBool {TOPICS[0]}:>Int ==Int DEPOSIT_EVENT_SIGNATURE_HASH
+       andBool #isValidDepositEventData(DATA)
+
+    rule <k> #parseDepositRequest { ADDR | TOPICS | DATA } => #end EVMC_INVALID_BLOCK ... </k>
+      requires ADDR ==K DEPOSIT_CONTRACT_ADDRESS
+       andBool size(TOPICS) >Int 0
+       andBool {TOPICS[0]}:>Int ==Int DEPOSIT_EVENT_SIGNATURE_HASH
+       andBool notBool #isValidDepositEventData(DATA)
+
+    rule <k> #parseDepositRequest _ => .K ... </k> [owise]
+```
+### Blobs
+
+-    `#validateBlockBlobs COUNT TXIDS`: Iterates through the transactions of the current block in order, counting up total versioned hashes (blob commitments) in the block.
+Fails block validation by setting EVMC_INVALID_BLOCK if either:
+ 1. Total blob count exceeds maximum allowed (`Gmaxblobgas`)
+ 2. Calculated block excess blob gas doesn't match the expected value.
+Terminates validation successfully when all conditions are met or when blob validation doesn't apply.
+-    `#checkTxVersionedHashes`: Validates versioned hashes recursively by checking if each hash starts with version byte `1`.
+-    `#finalizeBlockBlobs`:Updates state at block finalization by:
+ 1. Storing current excess blob gas and blob gas used for next block.
+ 2. Check if blob gas used is within limits.
+
+```k
+    syntax InternalOp ::= "#validateBlockBlobs" Int List [symbol(#validateBlockBlobs)]
+ // ----------------------------------------------------------------------------------
+     rule <k> #validateBlockBlobs COUNT (ListItem(IDX) TXIDS) => #validateBlockBlobs (COUNT +Int size(TVH)) TXIDS ... </k>
+         <schedule> SCHED </schedule>
+         <message>
+           <msgID> IDX </msgID>
+           <txVersionedHashes> TVH </txVersionedHashes>
+           ...
+         </message>
+      requires Ghasblobbasefee << SCHED >>
+
+    rule <k> #validateBlockBlobs COUNT .List => .K ... </k>
+         <statusCode> _ => EVMC_INVALID_BLOCK </statusCode>
+         <txPending> _ => .List </txPending>
+         <schedule> SCHED </schedule>
+         <excessBlobGas> EXCESS_BLOB_GAS </excessBlobGas>
+         <previousExcessBlobGas> PREV_EXCESS_BLOB_GAS </previousExcessBlobGas>
+         <previousBlobGasUsed> PREV_BLOB_GAS_USED </previousBlobGasUsed>
+      requires Ghasblobbasefee << SCHED >>
+        andBool ( Ctotalblob(SCHED, COUNT) >Int Gmaxblobgas < SCHED >
+            orBool notBool EXCESS_BLOB_GAS ==Int Cexcessblob(SCHED, PREV_EXCESS_BLOB_GAS, PREV_BLOB_GAS_USED))
+
+    rule <k> #validateBlockBlobs _COUNT _TXIDS => .K ... </k> [owise]
+
+    syntax InternalOp ::= "#finalizeBlockBlobs" [symbol(#finalizeBlockBlobs)]
+ // -------------------------------------------------------------------------
+    rule <k> #finalizeBlockBlobs => .K ... </k>
+         <schedule> SCHED </schedule>
+         <blobGasUsed> BLOB_GAS_USED </blobGasUsed>
+         <excessBlobGas> EXCESS_BLOB_GAS </excessBlobGas>
+         <previousExcessBlobGas> _ => EXCESS_BLOB_GAS </previousExcessBlobGas>
+         <previousBlobGasUsed> _ => BLOB_GAS_USED </previousBlobGasUsed>
+      requires ( Ghasblobbasefee << SCHED >> andBool BLOB_GAS_USED <=Int Gmaxblobgas < SCHED > )
+        orBool notBool Ghasblobbasefee << SCHED >>
+
+    rule <k> #finalizeBlockBlobs => #end EVMC_INVALID_BLOCK ... </k> [owise]
+
+    syntax Bool ::= #checkTxVersionedHashes (List) [function, symbol(#checkTxVersionedHashes)]
+ // ------------------------------------------------------------------------------------------
+    rule #checkTxVersionedHashes (.List) => true
+    rule #checkTxVersionedHashes ( ListItem(VH:Bytes) TVH) => #checkTxVersionedHashes(TVH) requires         VH[0] ==Int 1
+    rule #checkTxVersionedHashes ( ListItem(VH:Bytes) _  ) => false                        requires notBool VH[0] ==Int 1
+```
+
 ### Block processing
 
 -   `#startBlock` is used to signal that we are about to start mining a block and block initialization should take place (before transactions are executed).
@@ -772,15 +836,23 @@ After executing a transaction, it's necessary to have the effect of the substate
 ```k
     syntax EthereumCommand ::= "#startBlock"
  // ----------------------------------------
-    rule <k> #startBlock => #executeBeaconRoots ... </k>
+    rule <k> #startBlock => #validateBlockBlobs 0 TXS ~> #executeBeaconRoots ~> #executeBlockHashHistory ... </k>
          <gasUsed> _ => 0 </gasUsed>
+         <blobGasUsed> _ => 0 </blobGasUsed>
          <log> _ => .List </log>
          <logsBloom> _ => #padToWidth(256, .Bytes) </logsBloom>
+         <txOrder> TXS </txOrder>
 
     syntax EthereumCommand ::= "#finalizeBlock"
                              | #rewardOmmers ( JSONs ) [symbol(#rewardOmmers)]
  // --------------------------------------------------------------------------
-    rule <k> #finalizeBlock => #if Ghaswithdrawals << SCHED >> #then #finalizeWithdrawals #else .K #fi ~> #rewardOmmers(OMMERS) ... </k>
+    rule <k> #finalizeBlock
+          => #if Ghaswithdrawals << SCHED >> #then #finalizeWithdrawals #else .K #fi
+          ~> #rewardOmmers(OMMERS)
+          ~> #filterLogs 0
+          ~> #finalizeBlockBlobs
+         ...
+         </k>
          <schedule> SCHED </schedule>
          <ommerBlockHeaders> [ OMMERS ] </ommerBlockHeaders>
          <coinbase> MINER </coinbase>
@@ -866,6 +938,30 @@ Read more about EIP-4788 here [https://eips.ethereum.org/EIPS/eip-4788](https://
       requires Ghasbeaconroot << SCHED >>
 
     rule <k> #executeBeaconRoots => .K ... </k> [owise]
+```
+
+If `block.timestamp >= PRAGUE_FORK_TIMESTAMP`:
+Before executing any transaction, the `HISTORY_STORAGE_ADDRESS` (`0x0000F90827F1C53a10cb7A02335B175320002935`) storage is modified as following:
+ - Set the storage value at `(block.number-1) % HISTORY_SERVE_WINDOW` to be ` block.parent.hash`
+where `HISTORY_SERVE_WINDOW == 8191`.
+
+Read more about EIP-2935 here [https://eips.ethereum.org/EIPS/eip-2935](https://eips.ethereum.org/EIPS/eip-2935).
+
+```k
+    syntax EthereumCommand ::= "#executeBlockHashHistory" [symbol(#executeBlockHashHistory)]
+ // ----------------------------------------------------------------------------------------
+    rule <k> #executeBlockHashHistory => .K ... </k>
+         <schedule> SCHED </schedule>
+         <previousHash> HP </previousHash>
+         <number> BN </number>
+         <account>
+           <acctID> 21693734551179282564423033930679318143314229 </acctID>
+           <storage> M:Map => M [((BN -Int 1) modInt 8191) <- HP] </storage>
+           ...
+         </account>
+      requires Ghashistory << SCHED >>
+
+    rule <k> #executeBlockHashHistory => .K ... </k> [owise]
 ```
 
 EVM Programs
@@ -984,43 +1080,6 @@ These are just used by the other operators for shuffling local execution state a
          <schedule> SCHED </schedule>
       requires ACCTFROM =/=K ACCTTO
        andBool Gemptyisnonexistent << SCHED >>
-```
-
-- `#calcBlobFee` will compute the blob fee as specified by EIPs 4844 and will be deducted from the sender balance before transaction execution
-```k
-    syntax Int ::= #calcBlobFee( Int, Int ) [symbol(#calcBlobFee), function]
- // ------------------------------------------------------------------------
-    rule #calcBlobFee(EXCESS_BLOBGAS, BLOB_VERSIONED_HASHES_SIZE) => #totalBlobGas(BLOB_VERSIONED_HASHES_SIZE) *Int #baseFeePerBlobGas(EXCESS_BLOBGAS) 
-```
-
-- `#totalBlobGas` will compute the total gas used by the blob as specified by EIPs 4844 
-
-```k
-    syntax Int ::= #totalBlobGas( Int ) [symbol(#totalBlobGas), function]
- // ---------------------------------------------------------------------
-    syntax Int ::= "GAS_PER_BLOB" [macro]
-    rule GAS_PER_BLOB => 131072
-    rule #totalBlobGas(BLOB_VERSIONED_HASHES_SIZE) => GAS_PER_BLOB *Int BLOB_VERSIONED_HASHES_SIZE
-```
-
-- `#baseFeePerBlobGas` will compute the blob base fee as specified by EIPs 4844 and 7516
-
-```k
-    syntax Int ::= #baseFeePerBlobGas( Int ) [symbol(#baseFeePerBlobGas), function]
- // -------------------------------------------------------------------------------
-    rule #baseFeePerBlobGas(EXCESS_BLOBGAS) => #fakeExponential(MIN_BASE_FEE_PER_BLOB_GAS, EXCESS_BLOBGAS, BLOB_BASE_FEE_UPDATE_FRACTION)
-    syntax Int ::= "MIN_BASE_FEE_PER_BLOB_GAS" [macro] | "BLOB_BASE_FEE_UPDATE_FRACTION" [macro]
-    rule MIN_BASE_FEE_PER_BLOB_GAS => 1
-    rule BLOB_BASE_FEE_UPDATE_FRACTION => 3338477
-
-    syntax Int ::= #fakeExponential(Int, Int, Int) [symbol(#fakeExponential), function]
-                 | #fakeExponential(Int, Int, Int, Int, Int) [function]
- // -------------------------------------------------------------------
-    rule #fakeExponential(FACTOR, NUMER, DENOM) => #fakeExponential(1, 0, FACTOR *Int DENOM, NUMER, DENOM)
-
-    rule #fakeExponential(I, OUTPUT, ACCUM, NUMER, DENOM)
-      => #fakeExponential(I +Int 1, OUTPUT +Int ACCUM, ACCUM *Int NUMER /Int (DENOM *Int I), NUMER, DENOM) requires ACCUM >Int 0
-    rule #fakeExponential(_, OUTPUT, _, _, DENOM) => OUTPUT /Int DENOM [owise]
 ```
 
 ### Invalid Operator
@@ -1160,7 +1219,7 @@ These operators make queries about the current execution state.
     rule <k> GASPRICE    => GPRICE                      ~> #push ... </k> <gasPrice> GPRICE </gasPrice>
     rule <k> GASLIMIT    => GLIMIT                      ~> #push ... </k> <gasLimit> GLIMIT </gasLimit>
     rule <k> BASEFEE     => BFEE                        ~> #push ... </k> <baseFee> BFEE </baseFee>
-    rule <k> BLOBBASEFEE => #baseFeePerBlobGas(EXCESS_BLOB_GAS) ~> #push ... </k> <excessBlobGas> EXCESS_BLOB_GAS </excessBlobGas>  requires notBool #rangeNegUInt64(EXCESS_BLOB_GAS)
+    rule <k> BLOBBASEFEE => Cbasefeeperblob(SCHED, EXCESS_BLOB_GAS) ~> #push ... </k> <excessBlobGas> EXCESS_BLOB_GAS </excessBlobGas> <schedule> SCHED </schedule>  requires notBool #rangeNegUInt64(EXCESS_BLOB_GAS)
 
     syntax NullStackOp ::= "COINBASE" | "TIMESTAMP" | "NUMBER" | "DIFFICULTY" | "PREVRANDAO"
  // ----------------------------------------------------------------------------------------
@@ -1987,6 +2046,14 @@ Precompiled Contracts
     rule #precompiled(8) => ECPAIRING
     rule #precompiled(9) => BLAKE2F
     rule #precompiled(10) => KZGPOINTEVAL
+    rule #precompiled(11) => BLS12_G1ADD
+    rule #precompiled(12) => BLS12_G1MSM
+    rule #precompiled(13) => BLS12_G2ADD
+    rule #precompiled(14) => BLS12_G2MSM
+    rule #precompiled(15) => BLS12_PAIRING_CHECK
+    rule #precompiled(16) => BLS12_MAP_FP_TO_G1
+    rule #precompiled(17) => BLS12_MAP_FP2_TO_G2
+
 
     syntax Int ::= #precompiledAccountsUB ( Schedule ) [symbol(#precompiledAccountsUB), function, total]
  // ----------------------------------------------------------------------------------------------------
@@ -2004,7 +2071,7 @@ Precompiled Contracts
     rule #precompiledAccountsUB(MERGE)             => #precompiledAccountsUB(LONDON)
     rule #precompiledAccountsUB(SHANGHAI)          => #precompiledAccountsUB(MERGE)
     rule #precompiledAccountsUB(CANCUN)            => 10
-    rule #precompiledAccountsUB(PRAGUE)            => #precompiledAccountsUB(CANCUN)
+    rule #precompiledAccountsUB(PRAGUE)            => 17
 
 
     syntax Set ::= #precompiledAccountsSet    ( Schedule ) [symbol(#precompiledAccountsSet),    function, total]
@@ -2171,6 +2238,327 @@ Precompiled Contracts
     rule #kzg2vh ( C ) => Sha256rawWrapper(C)[0 <- 1]
 ```
 
+-   `BLS12_G1ADD` performs point addition in G1 (curve over base prime field)
+-   `BLS12_G1MSM` performs multi-scalar-multiplication (MSM) in G1 (curve over base prime field)
+-   `BLS12_G2ADD` performs point addition in G2 (curve over quadratic extension of the base prime field)
+-   `BLS12_G2MSM` to perform multi-scalar-multiplication (MSM) in G2 (curve over quadratic extension of the base prime field)
+-   `BLS12_PAIRING_CHECK` performs a pairing operations between a set of pairs of (G1, G2) points
+-   `BLS12_MAP_FP_TO_G1` maps base field element into the G1 point
+-   `BLS12_MAP_FP2_TO_G2` maps extension field element into the G2 point
+
+```k
+    syntax Bytes ::= #bls12point ( G1Point ) [symbol(#bls12point1), function]
+ // -------------------------------------------------------------------------
+    rule #bls12point((X, Y)) => #padToWidth(64, #asByteStack(X)) +Bytes #padToWidth(64, #asByteStack(Y))
+
+    syntax Bytes ::= #bls12point ( G2Point ) [symbol(#bls12point2), function]
+ // -------------------------------------------------------------------------
+    rule #bls12point((X0 x X1, Y0 x Y1))
+        => #padToWidth(64, #asByteStack(X0)) +Bytes #padToWidth(64, #asByteStack(X1))
+            +Bytes #padToWidth(64, #asByteStack(Y0)) +Bytes #padToWidth(64, #asByteStack(Y1))
+
+    syntax Bool ::= isValidBLS12Coordinate ( Int ) [symbol(isValidBLS12Coordinate), function, total]
+  // -----------------------------------------------------------------------------------------------
+    rule isValidBLS12Coordinate(X) => isValidBLS12Fp(X)
+
+    syntax Bool ::= isValidBLS12Fp ( Int ) [symbol(isValidBLS12Fp), function, total]
+  // -------------------------------------------------------------------------------
+    rule isValidBLS12Fp(X) => X >=Int 0 andBool X <Int (1 <<Int 384) andBool X <Int BLS12_FIELD_MODULUS
+
+    syntax Bool ::= isValidBLS12Scalar ( Int ) [symbol(isValidBLS12Scalar), function, total]
+  // ---------------------------------------------------------------------------------------
+    rule isValidBLS12Scalar(X) => X >=Int 0 andBool X <Int (1 <<Int 256)
+```
+
+```k
+    syntax PrecompiledOp ::= "BLS12_G1ADD"
+ // --------------------------------------
+    rule <k> BLS12_G1ADD => #end EVMC_SUCCESS ... </k>
+         <callData> DATA </callData>
+         <output>
+            _ => #bls12point(BLS12G1Add
+                    (   ( Bytes2Int(substrBytes(DATA, 0, 64), BE, Unsigned)
+                        , Bytes2Int(substrBytes(DATA, 64, 128), BE, Unsigned)
+                        )
+                    ,   ( Bytes2Int(substrBytes(DATA, 128, 192), BE, Unsigned)
+                        , Bytes2Int(substrBytes(DATA, 192, 256), BE, Unsigned)
+                        )
+                    ))
+         </output>
+      requires lengthBytes( DATA ) ==Int 256
+        andBool bls12ValidForAdd
+            ( Bytes2Int(substrBytes(DATA, 0, 64), BE, Unsigned)
+            , Bytes2Int(substrBytes(DATA, 64, 128), BE, Unsigned)
+            , Bytes2Int(substrBytes(DATA, 128, 192), BE, Unsigned)
+            , Bytes2Int(substrBytes(DATA, 192, 256), BE, Unsigned)
+            )
+
+    rule <k> BLS12_G1ADD => #end EVMC_PRECOMPILE_FAILURE ... </k>
+         <callData> DATA </callData>
+      requires lengthBytes( DATA ) =/=Int 256
+        orBool notBool bls12ValidForAdd
+            ( Bytes2Int(substrBytes(DATA, 0, 64), BE, Unsigned)
+            , Bytes2Int(substrBytes(DATA, 64, 128), BE, Unsigned)
+            , Bytes2Int(substrBytes(DATA, 128, 192), BE, Unsigned)
+            , Bytes2Int(substrBytes(DATA, 192, 256), BE, Unsigned)
+            )
+
+    syntax Bool ::= bls12ValidForAdd(Int, Int, Int, Int)  [function, total]
+ // -----------------------------------------------------------------------
+    rule bls12ValidForAdd(X0, Y0, X1, Y1)
+        => true
+            andBool isValidBLS12Coordinate(X0)
+            andBool isValidBLS12Coordinate(Y0)
+            andBool isValidBLS12Coordinate(X1)
+            andBool isValidBLS12Coordinate(Y1)
+            andBool BLS12G1OnCurve((X0, Y0))
+            andBool BLS12G1OnCurve((X1, Y1))
+
+    syntax PrecompiledOp ::= "BLS12_G1MSM"
+ // --------------------------------------
+    // Note that the implementation of `g1_lincomb_fast` has the following comment:
+    //
+    //  * @remark While this function is significantly faster than g1_lincomb_naive(), we refrain from
+    //  * using it in security-critical places (like verification) because the blst Pippenger code has not
+    //  * been audited. In those critical places, we prefer using g1_lincomb_naive() which is much simpler.
+    //
+    // https://github.com/ethereum/c-kzg-4844/blob/cc33b779cd3a227f51b35ce519a83cf91d81ccea/src/common/lincomb.c#L54-L56
+
+    rule <k> BLS12_G1MSM => bls12G1Msm(DATA) ... </k> <callData> DATA </callData>
+
+    rule <k> g1MsmResult(P:G1Point) => #end EVMC_SUCCESS ... </k> <output> _ => #bls12point(P) </output>
+
+    rule <k> g1MsmError => #end EVMC_PRECOMPILE_FAILURE ... </k>
+
+    syntax G1MsmResult ::= "g1MsmError" | g1MsmResult(G1Point)
+                         | bls12G1Msm(Bytes) [symbol(bls12G1Msm), function, total]
+                         | #bls12G1Msm(Bytes, List, List) [function, total]
+                         | #bls12G1MsmCheck(Bytes, List, List, Int, Int, Int) [function, total]
+ // -------------------------------------------------------------------------------------------
+    rule bls12G1Msm(B:Bytes) => g1MsmError requires lengthBytes(B) ==Int 0
+    rule bls12G1Msm(B:Bytes) => #bls12G1Msm(B, .List, .List) requires lengthBytes(B) >Int 0
+
+    rule #bls12G1Msm(B:Bytes, Ps:List, Ss:List) => g1MsmResult(BLS12G1Msm(... scalars: Ss, points: Ps))
+        requires lengthBytes(B) ==Int 0
+    rule #bls12G1Msm(B:Bytes, _:List, _:List) => g1MsmError
+        requires 0 <Int lengthBytes(B) andBool lengthBytes(B) <Int 160
+    rule #bls12G1Msm(B:Bytes, Ps:List, Ss:List)
+        => #bls12G1MsmCheck
+                ( substrBytes(B, 160, lengthBytes(B)), Ps, Ss
+                , Bytes2Int(substrBytes(B, 0, 64), BE, Unsigned)
+                , Bytes2Int(substrBytes(B, 64, 128), BE, Unsigned)
+                , Bytes2Int(substrBytes(B, 128, 160), BE, Unsigned)
+                )
+        requires 160 <=Int lengthBytes(B)
+
+    rule #bls12G1MsmCheck(B:Bytes, Ps:List, Ss:List, X:Int, Y:Int, N:Int)
+        => #bls12G1Msm(B, Ps ListItem( ( X , Y ) ), Ss ListItem( N ))
+      requires isValidBLS12Coordinate(X) andBool isValidBLS12Coordinate(Y)
+        andBool isValidBLS12Scalar(N)
+        andBool BLS12G1InSubgroup((X, Y))
+    rule #bls12G1MsmCheck(_, _, _, _, _, _) => g1MsmError [owise]
+
+    syntax PrecompiledOp ::= "BLS12_G2ADD"
+ // --------------------------------------
+    rule <k> BLS12_G2ADD => #end EVMC_SUCCESS ... </k>
+         <callData> DATA </callData>
+         <output>
+            _ => #bls12point(BLS12G2Add
+                    (   ( Bytes2Int(substrBytes(DATA, 0, 64), BE, Unsigned)
+                        x Bytes2Int(substrBytes(DATA, 64, 128), BE, Unsigned)
+                        , Bytes2Int(substrBytes(DATA, 128, 192), BE, Unsigned)
+                        x Bytes2Int(substrBytes(DATA, 192, 256), BE, Unsigned)
+                        )
+                    ,   ( Bytes2Int(substrBytes(DATA, 256, 320), BE, Unsigned)
+                        x Bytes2Int(substrBytes(DATA, 320, 384), BE, Unsigned)
+                        , Bytes2Int(substrBytes(DATA, 384, 448), BE, Unsigned)
+                        x Bytes2Int(substrBytes(DATA, 448, 512), BE, Unsigned)
+                        )
+                    ))
+         </output>
+      requires lengthBytes( DATA ) ==Int 512
+        andBool bls12ValidForAdd2
+            ( Bytes2Int(substrBytes(DATA, 0, 64), BE, Unsigned)
+            , Bytes2Int(substrBytes(DATA, 64, 128), BE, Unsigned)
+            , Bytes2Int(substrBytes(DATA, 128, 192), BE, Unsigned)
+            , Bytes2Int(substrBytes(DATA, 192, 256), BE, Unsigned)
+            , Bytes2Int(substrBytes(DATA, 256, 320), BE, Unsigned)
+            , Bytes2Int(substrBytes(DATA, 320, 384), BE, Unsigned)
+            , Bytes2Int(substrBytes(DATA, 384, 448), BE, Unsigned)
+            , Bytes2Int(substrBytes(DATA, 448, 512), BE, Unsigned)
+            )
+
+    rule <k> BLS12_G2ADD => #end EVMC_PRECOMPILE_FAILURE ... </k>
+         <callData> DATA </callData>
+      requires lengthBytes( DATA ) =/=Int 512
+        orBool notBool bls12ValidForAdd2
+            ( Bytes2Int(substrBytes(DATA, 0, 64), BE, Unsigned)
+            , Bytes2Int(substrBytes(DATA, 64, 128), BE, Unsigned)
+            , Bytes2Int(substrBytes(DATA, 128, 192), BE, Unsigned)
+            , Bytes2Int(substrBytes(DATA, 192, 256), BE, Unsigned)
+            , Bytes2Int(substrBytes(DATA, 256, 320), BE, Unsigned)
+            , Bytes2Int(substrBytes(DATA, 320, 384), BE, Unsigned)
+            , Bytes2Int(substrBytes(DATA, 384, 448), BE, Unsigned)
+            , Bytes2Int(substrBytes(DATA, 448, 512), BE, Unsigned)
+            )
+
+    syntax Bool ::= bls12ValidForAdd2(Int, Int, Int, Int, Int, Int, Int, Int)  [function, total]
+ // --------------------------------------------------------------------------------------------
+    rule bls12ValidForAdd2(PX0, PX1, PY0, PY1, QX0, QX1, QY0, QY1)
+        => true
+            andBool isValidBLS12Coordinate(PX0)
+            andBool isValidBLS12Coordinate(PX1)
+            andBool isValidBLS12Coordinate(PY0)
+            andBool isValidBLS12Coordinate(PY1)
+            andBool isValidBLS12Coordinate(QX0)
+            andBool isValidBLS12Coordinate(QX1)
+            andBool isValidBLS12Coordinate(QY0)
+            andBool isValidBLS12Coordinate(QY1)
+            andBool BLS12G2OnCurve((PX0 x PX1, PY0 x PY1))
+            andBool BLS12G2OnCurve((QX0 x QX1, QY0 x QY1))
+
+    syntax PrecompiledOp ::= "BLS12_G2MSM"
+ // -------------------------------------
+    rule <k> BLS12_G2MSM => bls12G2Msm(DATA) ... </k> <callData> DATA </callData>
+
+    rule <k> g2MsmResult(P:G2Point) => #end EVMC_SUCCESS ... </k>
+         <output> _ => #bls12point(P) </output>
+
+    rule <k> g2MsmError => #end EVMC_PRECOMPILE_FAILURE ... </k>
+
+    syntax G2MsmResult ::= "g2MsmError" | g2MsmResult(G2Point)
+                         | bls12G2Msm(Bytes) [symbol(bls12G2Msm), function, total]
+                         | #bls12G2Msm(Bytes, List, List) [function, total]
+                         | #bls12G2MsmCheck(Bytes, List, List, Int, Int, Int, Int, Int) [function, total]
+ // -----------------------------------------------------------------------------------------------------
+    rule bls12G2Msm(B:Bytes) => g2MsmError requires lengthBytes(B) ==Int 0
+    rule bls12G2Msm(B:Bytes) => #bls12G2Msm(B, .List, .List) requires lengthBytes(B) >Int 0
+
+    rule #bls12G2Msm(B:Bytes, Ps:List, Ss:List) => g2MsmResult(BLS12G2Msm(... scalars: Ss, points: Ps))
+        requires lengthBytes(B) ==Int 0
+    rule #bls12G2Msm(B:Bytes, _:List, _:List) => g2MsmError
+        requires 0 <Int lengthBytes(B) andBool lengthBytes(B) <Int 288
+    rule #bls12G2Msm(B:Bytes, Ps:List, Ss:List)
+        => #bls12G2MsmCheck
+                ( substrBytes(B, 288, lengthBytes(B)), Ps, Ss
+                , Bytes2Int(substrBytes(B, 0, 64), BE, Unsigned)
+                , Bytes2Int(substrBytes(B, 64, 128), BE, Unsigned)
+                , Bytes2Int(substrBytes(B, 128, 192), BE, Unsigned)
+                , Bytes2Int(substrBytes(B, 192, 256), BE, Unsigned)
+                , Bytes2Int(substrBytes(B, 256, 288), BE, Unsigned)
+                )
+        requires 288 <=Int lengthBytes(B)
+
+    rule #bls12G2MsmCheck(B:Bytes, Ps:List, Ss:List, X0:Int, X1:Int, Y0:Int, Y1:Int, N:Int)
+        => #bls12G2Msm(B, Ps ListItem( ( X0 x X1, Y0 x Y1 ) ), Ss ListItem( N ))
+      requires isValidBLS12Coordinate(X0) andBool isValidBLS12Coordinate(X1)
+        andBool isValidBLS12Coordinate(Y0) andBool isValidBLS12Coordinate(Y1)
+        andBool isValidBLS12Scalar(N)
+        andBool BLS12G2InSubgroup(( X0 x X1, Y0 x Y1 ))
+    rule #bls12G2MsmCheck(_, _, _, _, _, _, _, _) => g2MsmError  [owise]
+
+    syntax PrecompiledOp ::= "BLS12_PAIRING_CHECK"
+ // ----------------------------------------------
+    rule <k> BLS12_PAIRING_CHECK => bls12PairingCheck(DATA, .List, .List) ... </k> <callData> DATA </callData>
+
+    rule <k> bls12PairingResult(B:Bool) => #end EVMC_SUCCESS ... </k>
+         <output> _ => #if B #then Int2Bytes(32, 1, BE:Endianness) #else Int2Bytes(32, 0, BE:Endianness) #fi </output>
+
+    rule <k> bls12PairingError => #end EVMC_PRECOMPILE_FAILURE ... </k>
+
+    syntax Bls12PairingResult ::= "bls12PairingError" | bls12PairingResult(Bool)
+                                | bls12PairingCheck(Bytes, List, List) [symbol(bls12PairingCheck), function, total]
+ // ---------------------------------------------------------------------------------------------------------------
+    rule bls12PairingCheck(B:Bytes, L1:List, L2:List) => bls12PairingResult(BLS12PairingCheck(L1, L2))
+        requires lengthBytes(B) ==Int 0
+          andBool validBls12G1PairingPoints(L1)
+          andBool validBls12G2PairingPoints(L2)
+          andBool size(L1) ==Int size(L2)
+          andBool size(L1) >Int 0
+
+    rule bls12PairingCheck(B:Bytes, L1:List, L2:List)
+        => bls12PairingCheck
+            ( substrBytes(B, 384, lengthBytes(B))
+            , L1 ListItem(
+                ( Bytes2Int(substrBytes(B, 0, 64), BE, Unsigned)
+                , Bytes2Int(substrBytes(B, 64, 128), BE, Unsigned)
+                )
+              )
+            , L2 ListItem(
+                ( Bytes2Int(substrBytes(B, 128, 192), BE, Unsigned)
+                x Bytes2Int(substrBytes(B, 192, 256), BE, Unsigned)
+                , Bytes2Int(substrBytes(B, 256, 320), BE, Unsigned)
+                x Bytes2Int(substrBytes(B, 320, 384), BE, Unsigned)
+                )
+              )
+            )
+      requires lengthBytes(B) >=Int 384
+
+    rule bls12PairingCheck(_:Bytes, _:List, _:List) => bls12PairingError [owise]
+
+    syntax Bool ::= validBls12G1PairingPoints(List)   [function, total]
+                  | validBls12G1PairingPoint(G1Point) [function, total]
+// --------------------------------------------------------------------
+    rule validBls12G1PairingPoints(.List) => true
+    rule validBls12G1PairingPoints(ListItem(P:G1Point) L:List) => validBls12G1PairingPoints(L)
+      requires validBls12G1PairingPoint(P)
+    rule validBls12G1PairingPoints(_) => false [owise]
+
+    rule validBls12G1PairingPoint((X, Y) #as P:G1Point)
+        => isValidBLS12Coordinate(X)
+          andBool isValidBLS12Coordinate(Y)
+          andBool BLS12G1InSubgroup(P)
+
+    syntax Bool ::= validBls12G2PairingPoints(List)   [function, total]
+                  | validBls12G2PairingPoint(G2Point) [function, total]
+// --------------------------------------------------------------------
+    rule validBls12G2PairingPoints(.List) => true
+    rule validBls12G2PairingPoints(ListItem(P:G2Point) L:List) => validBls12G2PairingPoints(L)
+      requires validBls12G2PairingPoint(P)
+    rule validBls12G2PairingPoints(_) => false [owise]
+
+    rule validBls12G2PairingPoint((X0 x X1, Y0 x Y1) #as P:G2Point)
+        => isValidBLS12Coordinate(X0)
+          andBool isValidBLS12Coordinate(X1)
+          andBool isValidBLS12Coordinate(Y0)
+          andBool isValidBLS12Coordinate(Y1)
+          andBool BLS12G2InSubgroup(P)
+
+    syntax PrecompiledOp ::= "BLS12_MAP_FP_TO_G1"
+ // ---------------------------------------------
+    rule <k> BLS12_MAP_FP_TO_G1 => #end EVMC_SUCCESS ... </k>
+         <callData> DATA </callData>
+         <output> _ => #bls12point(BLS12MapFpToG1(Bytes2Int(substrBytes(DATA, 0, 64), BE, Unsigned)))
+         </output>
+      requires lengthBytes( DATA ) ==Int 64
+       andBool isValidBLS12Fp(Bytes2Int(substrBytes(DATA, 0, 64), BE, Unsigned))
+
+    rule <k> BLS12_MAP_FP_TO_G1 => #end EVMC_PRECOMPILE_FAILURE ... </k>
+         <callData> DATA </callData>
+      requires lengthBytes( DATA ) =/=Int 64
+        orBool notBool isValidBLS12Fp(Bytes2Int(substrBytes(DATA, 0, 64), BE, Unsigned))
+
+
+    syntax PrecompiledOp ::= "BLS12_MAP_FP2_TO_G2"
+ // ----------------------------------------------
+    rule <k> BLS12_MAP_FP2_TO_G2 => #end EVMC_SUCCESS ... </k>
+         <callData> DATA </callData>
+         <output>
+            _ => #bls12point(BLS12MapFp2ToG2
+                    ( Bytes2Int(substrBytes(DATA, 0, 64), BE, Unsigned)
+                    , Bytes2Int(substrBytes(DATA, 64, 128), BE, Unsigned)
+                    ))
+         </output>
+      requires lengthBytes( DATA ) ==Int 128
+       andBool isValidBLS12Fp(Bytes2Int(substrBytes(DATA, 0, 64), BE, Unsigned))
+       andBool isValidBLS12Fp(Bytes2Int(substrBytes(DATA, 64, 128), BE, Unsigned))
+
+    rule <k> BLS12_MAP_FP2_TO_G2 => #end EVMC_PRECOMPILE_FAILURE ... </k>
+         <callData> DATA </callData>
+      requires lengthBytes( DATA ) =/=Int 128
+        orBool notBool isValidBLS12Fp(Bytes2Int(substrBytes(DATA, 0, 64), BE, Unsigned))
+        orBool notBool isValidBLS12Fp(Bytes2Int(substrBytes(DATA, 64, 128), BE, Unsigned))
+```
 
 Ethereum Gas Calculation
 ========================
@@ -2523,6 +2911,15 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
     rule <k> #gasExec(SCHED, ECPAIRING) => Gecpairconst < SCHED > +Int (lengthBytes(DATA) /Int 192) *Int Gecpaircoeff < SCHED > ... </k> <callData> DATA </callData>
     rule <k> #gasExec(SCHED, BLAKE2F)   => Gfround < SCHED > *Int #asWord(#range(DATA, 0, 4) ) ... </k> <callData> DATA </callData>
     rule <k> #gasExec(SCHED, KZGPOINTEVAL)  => Gpointeval < SCHED > ... </k>
+
+    rule <k> #gasExec(SCHED, BLS12_G1ADD) => Gbls12g1add < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, BLS12_G1MSM) => #let N = lengthBytes(DATA) /Int 160 #in N *Int Gbls12g1mul < SCHED > *Int Cbls12g1MsmDiscount(SCHED, N) /Int 1000 ... </k>  <callData> DATA </callData>
+    rule <k> #gasExec(SCHED, BLS12_G2ADD) => Gbls12g2add < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, BLS12_G2MSM) => #let N = lengthBytes(DATA) /Int 288 #in N *Int Gbls12g2mul < SCHED > *Int Cbls12g2MsmDiscount(SCHED, N) /Int 1000 ... </k> <callData> DATA </callData>
+
+    rule <k> #gasExec(SCHED, BLS12_PAIRING_CHECK) => #let N = lengthBytes(DATA) /Int 384 #in N *Int Gbls12PairingCheckMul < SCHED > +Int Gbls12PairingCheckAdd < SCHED > ... </k>  <callData> DATA </callData>
+    rule <k> #gasExec(SCHED, BLS12_MAP_FP_TO_G1)     => Gbls12mapfptog1 < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, BLS12_MAP_FP2_TO_G2)    => Gbls12mapfp2tog2 < SCHED > ... </k>
 
     syntax InternalOp ::= "#allocateCallGas"
  // ----------------------------------------

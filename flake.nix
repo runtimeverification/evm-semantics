@@ -2,14 +2,14 @@
   description = "A flake for the KEVM Semantics";
 
   inputs = {
-    k-framework.url = "github:runtimeverification/k/v7.1.244";
+    k-framework.url = "github:runtimeverification/k/v7.1.259";
     nixpkgs.follows = "k-framework/nixpkgs";
     flake-utils.follows = "k-framework/flake-utils";
     rv-utils.follows = "k-framework/rv-utils";
     poetry2nix.follows = "k-framework/poetry2nix";
     blockchain-k-plugin = {
       url =
-        "github:runtimeverification/blockchain-k-plugin/5341429abcb23d5b04b3520322ec58ed5ba34471";
+        "github:runtimeverification/blockchain-k-plugin/1fda07d61df64ef9ae2ea87e6f767a02d30d4599";
       inputs.flake-utils.follows = "k-framework/flake-utils";
       inputs.nixpkgs.follows = "k-framework/nixpkgs";
     };

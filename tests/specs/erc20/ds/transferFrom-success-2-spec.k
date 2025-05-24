@@ -76,8 +76,9 @@ module TRANSFERFROM-SUCCESS-2-SPEC
           <withdrawalsRoot> _ </withdrawalsRoot>
           <blobGasUsed> _ </blobGasUsed>
           <excessBlobGas> _ </excessBlobGas>
-          <beaconRoot> _ </beaconRoot>
+          ...
         </block>
+        ...
       </evm>
 
       <network>
