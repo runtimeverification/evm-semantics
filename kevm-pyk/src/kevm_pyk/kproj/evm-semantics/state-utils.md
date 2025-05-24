@@ -201,6 +201,7 @@ The `"network"` key allows setting the fee schedule inside the test.
  // ----------------------------------------------------------
     rule #parseJSONs2List ( .JSONs ) => .List
     rule #parseJSONs2List ( (VAL:Bytes) , REST ) => ListItem(VAL) #parseJSONs2List ( REST )
+    rule #parseJSONs2List ( [VS:JSONs], REST ) => ListItem(#parseJSONs2List(VS)) #parseJSONs2List ( REST )
 ```
 
 The `"rlp"` key loads the block information.
@@ -391,6 +392,18 @@ The `"rlp"` key loads the block information.
          </k>
     requires #asWord(TYPE) ==Int #dasmTxPrefix(Blob)
 
+     rule <k> load "transaction" : [ [TYPE , [TC, TN, TP, TF, TG, TT, TV, TI, TA, AUTH , TY, TR, TS ]] , REST ]
+          => mkTX !ID:Int
+          ~> loadTransaction !ID { "data"         : TI   ,   "gasLimit"         : TG   ,   "maxPriorityFeePerGas" : TP
+                                 , "nonce"        : TN   ,   "r"                : TR   ,   "s"                    : TS
+                                 , "to"           : TT   ,   "v"                : TY   ,   "value"                : TV
+                                 , "accessList"   : TA   ,   "type"             : TYPE ,   "chainID"              : TC
+                                 , "maxFeePerGas" : TF   ,   "authList"         : AUTH , .JSONs }
+          ~> load "transaction" : [ REST ]
+          ...
+         </k>
+    requires #asWord(TYPE) ==Int #dasmTxPrefix(SetCode)
+
     syntax EthereumCommand ::= "loadTransaction" Int JSON
  // -----------------------------------------------------
     rule <k> loadTransaction _ { .JSONs } => .K ... </k>
@@ -442,7 +455,10 @@ The `"rlp"` key loads the block information.
          <message> <msgID> TXID </msgID> <txMaxBlobFee> _ => TB </txMaxBlobFee> ... </message>
 
     rule <k> loadTransaction TXID { "blobVersionedHashes" : [TVH:JSONs], REST => REST } ... </k>
-         <message> <msgID> TXID </msgID> <txVersionedHashes> _ =>  #parseJSONs2List(TVH) </txVersionedHashes> ... </message>
+         <message> <msgID> TXID </msgID> <txVersionedHashes> _ => #parseJSONs2List(TVH) </txVersionedHashes> ... </message>
+
+    rule <k> loadTransaction TXID { "authList" : [AUTH:JSONs], REST => REST } ... </k>
+         <message> <msgID> TXID </msgID> <txAuthList> _ => #parseJSONs2List(AUTH) </txAuthList> ... </message>
 ```
 
 ### Getting State
@@ -531,6 +547,23 @@ The `"rlp"` key loads the block information.
            <txType> Blob </txType>
            ...
          </message>
+
+    rule [[ #getTxData( TXID ) => SetCodeTxData(TN, TPF, TM, TG, TT, TV, DATA, CID, TA, AUTH) ]]
+         <message>
+           <msgID>             TXID </msgID>
+           <txNonce>           TN   </txNonce>
+           <txGasLimit>        TG   </txGasLimit>
+           <to>                TT   </to>
+           <value>             TV   </value>
+           <data>              DATA </data>
+           <txChainID>         CID  </txChainID>
+           <txAccess>          TA   </txAccess>
+           <txPriorityFee>     TPF  </txPriorityFee>
+           <txMaxFee>          TM   </txMaxFee>
+           <txAuthList>        AUTH </txAuthList>
+           <txType> SetCode </txType>
+           ...
+         </message>
 ```
 
 - `#effectiveGasPrice` will compute the gas price for TXID, as specified by EIP-1559
@@ -566,6 +599,37 @@ The `"rlp"` key loads the block information.
 ```k
     syntax Bool ::= #isValidTransaction( Int , Account ) [symbol(#isValidTransaction), function]
  // --------------------------------------------------------------------------------------------
+    rule [[ #isValidTransaction (TXID, ACCTFROM) => true ]]
+         <baseFee> BASE_FEE </baseFee>
+         <gasLimit> BLOCK_GAS_LIMIT </gasLimit>
+         <account>
+           <acctID>  ACCTFROM  </acctID>
+           <balance> BAL       </balance>
+           <code>    ACCTCODE  </code>
+           <nonce>   ACCTNONCE </nonce>
+           ...
+         </account>
+         <message>
+           <msgID>             TXID                </msgID>
+           <txNonce>           TX_NONCE            </txNonce>
+           <txGasLimit>        TX_GAS_LIMIT        </txGasLimit>
+           <to>                ACCTTO              </to>
+           <value>             VALUE               </value>
+           <txPriorityFee>     TX_MAX_PRIORITY_FEE </txPriorityFee>
+           <txMaxFee>          TX_MAX_FEE          </txMaxFee>
+           <txAuthList>        TX_AUTH_LIST        </txAuthList>
+           <txType> SetCode </txType>
+           ...
+         </message>
+     requires ACCTCODE ==K .Bytes
+      andBool notBool ACCTTO ==K .Account
+      andBool ACCTNONCE ==Int TX_NONCE
+      andBool BASE_FEE <=Int TX_MAX_FEE
+      andBool TX_MAX_PRIORITY_FEE <=Int TX_MAX_FEE
+      andBool BAL >=Int TX_GAS_LIMIT *Int TX_MAX_FEE +Int VALUE
+      andBool TX_GAS_LIMIT <=Int BLOCK_GAS_LIMIT
+      andBool size(TX_AUTH_LIST) >Int 0 andBool #checkAuthorityList(TX_AUTH_LIST)
+
     rule [[ #isValidTransaction (TXID, ACCTFROM) => true ]]
          <schedule> SCHED </schedule>
          <baseFee> BASE_FEE </baseFee>

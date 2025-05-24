@@ -132,6 +132,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
           => #accessAccounts ACCTFROM #newAddr(ACCTFROM, NONCE) #precompiledAccountsSet(SCHED)
           ~> #deductBlobGas
           ~> #loadAccessList(TA)
+          ~> #loadAuthorities(AUTH)
           ~> #checkCreate ACCTFROM VALUE
           ~> #create ACCTFROM #newAddr(ACCTFROM, NONCE) VALUE CODE
           ~> #finishTx ~> #finalizeTx(false) ~> startTx
@@ -145,12 +146,13 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          <txPending> ListItem(TXID:Int) ... </txPending>
          <coinbase> MINER </coinbase>
          <message>
-           <msgID>             TXID     </msgID>
-           <txGasLimit>        GLIMIT   </txGasLimit>
-           <to>                .Account </to>
-           <value>             VALUE    </value>
-           <data>              CODE     </data>
-           <txAccess>          TA       </txAccess>
+           <msgID>      TXID     </msgID>
+           <txGasLimit> GLIMIT   </txGasLimit>
+           <to>         .Account </to>
+           <value>      VALUE    </value>
+           <data>       CODE     </data>
+           <txAccess>   TA       </txAccess>
+           <txAuthList> AUTH     </txAuthList>
            ...
          </message>
          <account>
@@ -169,6 +171,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
           => #accessAccounts ACCTFROM ACCTTO #precompiledAccountsSet(SCHED)
           ~> #deductBlobGas
           ~> #loadAccessList(TA)
+          ~> #loadAuthorities(AUTH)
           ~> #checkCall ACCTFROM VALUE
           ~> #call ACCTFROM ACCTTO ACCTTO VALUE VALUE DATA false
           ~> #finishTx ~> #finalizeTx(false) ~> startTx
@@ -189,6 +192,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
            <data>              DATA   </data>
            <txAccess>          TA     </txAccess>
            <txVersionedHashes> TVH    </txVersionedHashes>
+           <txAuthList> AUTH </txAuthList>
            ...
          </message>
          <versionedHashes> _ => TVH </versionedHashes>
@@ -653,6 +657,21 @@ Here we check the other post-conditions associated with an EVM test.
     rule <k> check "transactions" : ("maxPriorityFeePerGas" : VALUE) => .K ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txPriorityFee> VALUE </txPriorityFee>  ... </message>
     rule <k> check "transactions" : ("maxFeePerBlobGas"     : VALUE) => .K ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txMaxBlobFee>  VALUE </txMaxBlobFee>   ... </message>
     rule <k> check "transactions" : ("sender"               : VALUE) => .K ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <sigV> TW </sigV> <sigR> TR </sigR> <sigS> TS </sigS> ... </message> <chainID> B </chainID> requires #sender( #getTxData(TXID), TW, TR, TS, B ) ==K VALUE
+
+    rule <k> check "transactions" : "authorizationList" : [ .JSONs ] => .K ... </k>
+    rule <k> check "transactions" : "authorizationList" : [ { "chainId": CID, "address": ADDR, "nonce": NONCE, "v": _, "r": SIGR, "s": SIGS, "signer": _, "yParity": SIGY } , REST ]
+          => check "transactions" : "authorizationList" : [ #hex2Bytes(CID), #hex2Bytes(ADDR), #hex2Bytes(NONCE), #hex2Bytes(SIGY), #hex2Bytes(SIGR), #hex2Bytes(SIGS) ]
+          ~> check "transactions" : "authorizationList" : [ REST ]
+          ...
+         </k>
+    rule <k> check "transactions" : "authorizationList" : [ AUTH ] => .K ... </k>
+         <txOrder> ListItem(TXID) ... </txOrder>
+         <message> <msgID> TXID </msgID> <txAuthList> AUTHLIST </txAuthList> ... </message> requires #parseJSONs2List(AUTH) in AUTHLIST
+
+    syntax Bytes ::= #hex2Bytes ( String ) [function] //TODO: Is this needed?
+ // -------------------------------------------------
+    rule #hex2Bytes("0x00") => b""
+    rule #hex2Bytes(S) => #parseByteStack(S) [owise]
 
     syntax Bool ::= isInAccessListStorage ( Int , JSON )    [symbol(isInAccessListStorage), function]
                   | isInAccessList ( Account , Int , JSON ) [symbol(isInAccessList), function]
