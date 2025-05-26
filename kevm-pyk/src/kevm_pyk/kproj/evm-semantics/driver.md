@@ -279,6 +279,72 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          <callGas> GLIMIT => GLIMIT -Int Gaccesslistaddress < SCHED > </callGas>
 ```
 
+Processing SetCode Transaction Authority Entries
+================================================
+
+- The `#loadAuthorities` function processes the list of authorization entries in EIP-7702 SetCode transactions.
+- First rule skips processing if transaction is not SetCode type or the auth list is empty.
+- Second rule processes each authorization entry by recovering the signer, adding delegation, and continuing with remaining entries.
+- The `#addAuthority` function implements the EIP's verification steps:
+ - Verifies chain ID matches (or is 0)
+ - Verifies the authority account's nonce matches authorization
+ - Sets delegation code (0xEF0100 + address) or clears it if address is 0
+ - Increments the authority's nonce
+ - Provides gas refund for non-empty accounts
+ - Creates new accounts when needed
+
+```k
+    syntax InternalOp ::= #loadAuthorities ( List ) [symbol(#loadAuthorities)] | "#DBG1" | "#DBG2"
+ // --------------------------------------------------------------------------
+    rule <k> #loadAuthorities ( AUTH ) => .K ... </k>
+         <txPending> ListItem(TXID:Int) ... </txPending>
+         <message>
+           <msgID> TXID </msgID>
+           <txType> TXTYPE </txType>
+           ...
+         </message>
+      requires (notBool TXTYPE ==K SetCode)
+        orBool AUTH ==K .List
+
+    rule <k> #loadAuthorities (ListItem(ListItem(CID) ListItem(ADDR) ListItem(NONCE) ListItem(YPAR) ListItem(SIGR) ListItem(SIGS)) REST )
+          => #addAuthority (#recoverAuthority (CID, ADDR, NONCE, YPAR, SIGR, SIGS ), CID, NONCE, ADDR, true)
+          ~> #loadAuthorities (REST)
+          ... </k>
+         <callGas> GLIMIT => GLIMIT -Int 25000 </callGas> [owise]
+
+    syntax InternalOp ::= #addAuthority ( Account , Bytes , Bytes , Bytes, Bool ) [symbol(#addAuthority)]
+ // -----------------------------------------------------------------------------------------------------
+    rule <k> #addAuthority(AUTHORITY, CID, NONCE, _ADDR, _EXISTS) => .K ... </k>
+         <chainID> ENV_CID </chainID>
+         <account>
+           <acctID> AUTHORITY </acctID>
+           <code> ACCTCODE </code>
+           <nonce> ACCTNONCE </nonce>
+         ...
+         </account>
+      requires notBool ( AUTHORITY =/=K .Account
+       andBool (#range(ACCTCODE,0,3) ==K EOA_DELEGATION_MARKER orBool ACCTCODE ==K .Bytes)
+       andBool #asWord(NONCE) ==Int ACCTNONCE
+       andBool #asWord(CID) in (SetItem(ENV_CID) SetItem(0)) )
+
+    rule <k> #addAuthority(AUTHORITY, CID, NONCE, ADDR, EXISTS) => #touchAccounts AUTHORITY ~> #accessAccounts AUTHORITY ... </k>
+         <chainID> ENV_CID </chainID>
+         <schedule> SCHED </schedule>
+         <refund> REFUND => #if EXISTS #then REFUND +Int Gnewaccount < SCHED > -Int Gauthbase < SCHED > #else REFUND #fi </refund>
+         <account>
+           <acctID> AUTHORITY </acctID>
+           <code> ACCTCODE => #if notBool #asWord(ADDR) ==Int 0 #then EOA_DELEGATION_MARKER +Bytes ADDR #else .Bytes #fi </code>
+           <nonce> ACCTNONCE => ACCTNONCE +Int 1 </nonce>
+         ...
+         </account>
+      requires AUTHORITY =/=K .Account
+       andBool (ACCTCODE ==K .Bytes orBool notBool #isValidDelegation(ACCTCODE))
+       andBool #asWord(NONCE) ==Int ACCTNONCE
+       andBool #asWord(CID) in (SetItem(ENV_CID) SetItem(0))
+
+    rule <k> #addAuthority(AUTHORITY, CID, NONCE, ADDR, _EXISTS) => #newAccount AUTHORITY ~> #addAuthority(AUTHORITY, CID, NONCE, ADDR, false) ... </k> [owise]
+```
+
 -   `exception` only clears from the `<k>` cell if there is an exception preceding it.
 -   `failure_` holds the name of a test that failed if a test does fail.
 -   `success` sets the `<exit-code>` to `0` and the `<mode>` to `SUCCESS`.
