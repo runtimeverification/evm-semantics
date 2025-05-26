@@ -31,7 +31,6 @@
         "k-framework": "k-framework",
         "libff": "libff",
         "nixpkgs": [
-          "k-framework",
           "nixpkgs"
         ],
         "poetry2nix": [
@@ -414,8 +413,6 @@
         "haskell-backend": "haskell-backend_2",
         "llvm-backend": "llvm-backend_2",
         "nixpkgs": [
-          "k-framework",
-          "llvm-backend",
           "nixpkgs"
         ],
         "poetry2nix": "poetry2nix_2",
@@ -597,6 +594,22 @@
         "type": "github"
       }
     },
+    "nixpkgs_3": {
+      "locked": {
+        "lastModified": 1716457947,
+        "narHash": "sha256-Y+exebcqeprnhEpoPJrEUZmNeO60qeOxkVHhqG/OEwQ=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "69493a13eaea0dc4682fd07e8a084f17813dbeeb",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "69493a13eaea0dc4682fd07e8a084f17813dbeeb",
+        "type": "github"
+      }
+    },
     "poetry2nix": {
       "inputs": {
         "flake-utils": "flake-utils_2",
@@ -733,17 +746,33 @@
         ],
         "k-framework": "k-framework_2",
         "nixpkgs": [
-          "k-framework",
+          "rv-nix-tools",
           "nixpkgs"
         ],
         "poetry2nix": [
           "k-framework",
           "poetry2nix"
         ],
-        "rv-utils": [
-          "k-framework",
-          "rv-utils"
-        ]
+        "rv-nix-tools": "rv-nix-tools"
+      }
+    },
+    "rv-nix-tools": {
+      "inputs": {
+        "nixpkgs": "nixpkgs_3"
+      },
+      "locked": {
+        "lastModified": 1726497185,
+        "narHash": "sha256-iN+5eLmDm/rLuIZezS5ZqiW1BtBpwrrM9CPPP7Z5Tog=",
+        "owner": "runtimeverification",
+        "repo": "rv-nix-tools",
+        "rev": "854d4f05ea78547d46e807b414faad64cea10ae4",
+        "type": "github"
+      },
+      "original": {
+        "owner": "runtimeverification",
+        "repo": "rv-nix-tools",
+        "rev": "854d4f05ea78547d46e807b414faad64cea10ae4",
+        "type": "github"
       }
     },
     "rv-utils": {
