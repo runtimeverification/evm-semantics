@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+<meta charset="utf-8" />
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0, maximum-scale=1.0"
+/>
+<meta
+  name="description"
+  content="K Semantics of the Ethereum Virtual Machine (EVM)"
+/>
+<meta
+  name="keywords"
+  content="runtime, verification, rv, k, ethereum virtual machine, evm"
+/>
+<meta name="author" content="EVM Semantics | Runtime Verification Inc" />
+<meta name="robots" content="index, follow" />
+
+<!--favicon icon-->
+<link rel="icon" type="image/png" href="../../../../../../assets/img/favicon.ico" />
+
+<title>KEVM: Semantics of EVM in K | Runtime Verification, Inc. </title>
+
+<link rel="canonical" href="https://jellopaper.org/kevm-pyk/src/kevm_pyk/kproj/evm-semantics/requests/" />
+
+<!--web fonts-->
+<link
+  href="https://fonts.googleapis.com/css?family=Nunito:300,400,600,700,800"
+  rel="stylesheet"
+/>
+<link
+  href="https://fonts.googleapis.com/css?family=Lora:400i"
+  rel="stylesheet"
+/>
+
+<link
+  href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.14.0/css/all.min.css"
+  rel="stylesheet"
+/>
+
+<link href="../../../../../../assets/css/index.css" rel="stylesheet" />
+
+<!--[if (gt IE 9) |!(IE)]><!-->
+<!--<link rel="stylesheet" href="/assets/vendor/custom-nav/css/effects/fade-menu.css"/>-->
+<!-- <link rel="stylesheet" href="../../../../../../assets/k/vl-nav/css/effects/slide-menu.css" /> -->
+<!--<![endif]-->
+
+  </head>
+
+  <body>
+<header
+  class="navbar navbar-expand navbar-dark flex-column flex-md-row bd-navbar"
+>
+  <a class="logo-link" href="../../../../../../index.html"> EVM Semantics </a>
+  <ul class="navbar-nav ml-md-auto">
+    <li class="nav-item">
+      <a
+        class="nav-link pl-2 pr-1 mx-1 py-3 my-n2"
+        href="https://github.com/runtimeverification/evm-semantics"
+        target="_blank"
+        rel="noopener"
+        aria-label="GitHub"
+      >
+        <i class="fab fa-github"></i>
+      </a>
+    </li>
+  </ul>
+  <!--
+  <a
+    class="btn btn-rv-blue d-none d-lg-inline-block mb-3 mb-md-0 ml-md-3"
+    href="../../../../../../downloads"
+    >Download</a
+  >
+  -->
+</header>
+
+
+    <div class="container-fluid">
+      <div class="row flex-xl-nowrap">
+<div class="col-12 col-md-3 col-xl-2 bd-sidebar mb-3">
+  <form
+    role="search"
+    class="bd-search d-flex align-items-center justify-content-between"
+  >
+    <input
+      type="search"
+      class="form-control"
+      placeholder="Search..."
+      aria-label="Search for..."
+      autocomplete="false"
+      id="search-box"
+    />
+    <button
+      class="btn bd-search-docs-toggle d-md-none p-0 ml-3 collapsed"
+      type="button"
+      aria-label="Toggle docs navigation"
+      style="font-size: 1.4rem"
+    >
+      <i class="fas fa-bars"></i>
+    </button>
+  </form>
+  <nav class="collapse bd-links" aria-label="Main navigation">
+    <div class="bd-toc-item">
+      <a class="bd-toc-link" href="../../../../../../">Homepage</a>
+      <a class="bd-toc-link" href="../../../../../../INSTALL/">Install</a>
+    </div>
+  </nav>
+</div>
+
+        <main
+          class="col-12 col-md-6 col-xl-8 py-md-3 pl-md-5 bd-content"
+          role="main"
+        >
+          <div class="markdown-preview"><html><head></head><body><h2 id="implementation-of-execution-layer-requests">Implementation of Execution Layer Requests</h2>
+<pre><code class="language-k"><span class="token keyword">requires</span> <span class="token string">"serialization.md"</span>
+</code></pre>
+<pre><code class="language-k"><span class="token keyword">module</span> EVM<span class="token operator">-</span>REQUESTS
+    <span class="token keyword">imports</span> SERIALIZATION
+</code></pre>
+<p>A <code>requests</code> object consists of a <code>request_type</code> byte prepended to an opaque byte array <code>request_data</code>.
+The <code>request_data</code> contains zero or more encoded request objects.</p>
+<pre><code>requests = request_type ++ request_data
+</code></pre>
+<p>Each request type will define its own requests object with its own <code>request_data</code> format.</p>
+<p>In order to compute the commitment, an intermediate hash list is first built by hashing all non-empty requests elements of the block requests list.
+Items with empty <code>request_data</code> are excluded, i.e. the intermediate list skips requests items which contain only the <code>request_type</code> (1 byte) and nothing else.</p>
+<pre><code class="language-k">    <span class="token keyword">syntax</span> <span class="token keyword">Int</span> <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> #computeRequestsHash<span class="token punctuation">(</span>List<span class="token punctuation">)</span> <span class="token punctuation">[</span>function<span class="token punctuation">,</span> <span class="token class-name">symbol</span><span class="token punctuation">(</span>#computeRequestsHash<span class="token punctuation">)</span><span class="token punctuation">]</span>
+ <span class="token comment">// ----------------------------------------------------------------------------------</span>
+    <span class="token keyword">rule</span> #computeRequestsHash<span class="token punctuation">(</span>RS<span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #parseHexWord<span class="token punctuation">(</span>Sha256<span class="token punctuation">(</span>#computeRequestsHashIntermediate<span class="token punctuation">(</span>RS<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+    <span class="token keyword">syntax</span> Bytes <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> #computeRequestsHashIntermediate<span class="token punctuation">(</span>List<span class="token punctuation">)</span>        <span class="token punctuation">[</span>function<span class="token punctuation">,</span> <span class="token class-name">symbol</span><span class="token punctuation">(</span>#computeRequestsHashIntermediate<span class="token punctuation">)</span><span class="token punctuation">]</span>
+                   <span class="token operator">|</span> #computeRequestsHashIntermediate<span class="token punctuation">(</span>List<span class="token punctuation">,</span> Bytes<span class="token punctuation">)</span> <span class="token punctuation">[</span>function<span class="token punctuation">,</span> <span class="token class-name">symbol</span><span class="token punctuation">(</span>#computeRequestsHashIntermediateAux<span class="token punctuation">)</span><span class="token punctuation">]</span>
+ <span class="token comment">// ----------------------------------------------------------------------------------------------------------------------</span>
+    <span class="token keyword">rule</span> #computeRequestsHashIntermediate<span class="token punctuation">(</span>RS<span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #computeRequestsHashIntermediate<span class="token punctuation">(</span>RS<span class="token punctuation">,</span> <span class="token punctuation">.</span>Bytes<span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> #computeRequestsHashIntermediate<span class="token punctuation">(</span><span class="token punctuation">.</span>List<span class="token punctuation">,</span> ACC<span class="token punctuation">)</span> <span class="token operator">=&gt;</span> ACC
+    <span class="token keyword">rule</span> #computeRequestsHashIntermediate<span class="token punctuation">(</span>ListItem<span class="token punctuation">(</span>R<span class="token punctuation">)</span> RS<span class="token punctuation">,</span> ACC<span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #computeRequestsHashIntermediate<span class="token punctuation">(</span>RS<span class="token punctuation">,</span> ACC<span class="token punctuation">)</span>
+      <span class="token keyword">requires</span> lengthBytes<span class="token punctuation">(</span>R<span class="token punctuation">)</span> <span class="token operator">&lt;=</span><span class="token keyword">Int</span> <span class="token number">1</span>
+    <span class="token keyword">rule</span> #computeRequestsHashIntermediate<span class="token punctuation">(</span>ListItem<span class="token punctuation">(</span>R<span class="token punctuation">)</span> RS<span class="token punctuation">,</span> ACC<span class="token punctuation">)</span> <span class="token operator">=&gt;</span> #computeRequestsHashIntermediate<span class="token punctuation">(</span>RS<span class="token punctuation">,</span> ACC <span class="token operator">+</span>Bytes Sha256raw<span class="token punctuation">(</span>R<span class="token punctuation">)</span><span class="token punctuation">)</span>
+      <span class="token keyword">requires</span> lengthBytes<span class="token punctuation">(</span>R<span class="token punctuation">)</span> &gt;<span class="token keyword">Int</span> <span class="token number">1</span>
+</code></pre>
+<h2 id="deposit-requests">Deposit Requests</h2>
+<p>The structure denoting the new deposit request consists of the following fields:</p>
+<ol>
+<li><code>pubkey: Bytes48</code></li>
+<li><code>withdrawal_credentials: Bytes32</code></li>
+<li><code>amount: uint64</code></li>
+<li><code>signature: Bytes96</code></li>
+<li><code>index: uint64</code></li>
+</ol>
+<pre><code class="language-k">    <span class="token keyword">syntax</span> <span class="token keyword">Int</span> <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> <span class="token string">"DEPOSIT_REQUEST_TYPE"</span>         <span class="token punctuation">[</span><span class="token class-name">macro</span><span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"DEPOSIT_EVENT_LENGTH"</span>         <span class="token punctuation">[</span><span class="token class-name">macro</span><span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"DEPOSIT_CONTRACT_ADDRESS"</span>     <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"DEPOSIT_EVENT_SIGNATURE_HASH"</span> <span class="token punctuation">[</span>alias<span class="token punctuation">]</span>
+ <span class="token comment">// -----------------------------------------------------</span>
+    <span class="token keyword">rule</span> DEPOSIT_REQUEST_TYPE <span class="token operator">=&gt;</span> <span class="token number">0</span>
+    <span class="token keyword">rule</span> DEPOSIT_CONTRACT_ADDRESS <span class="token operator">=&gt;</span> #parseAddr<span class="token punctuation">(</span><span class="token string">"0x00000000219ab540356cbb839cbe05303d7705fa"</span><span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> DEPOSIT_EVENT_SIGNATURE_HASH <span class="token operator">=&gt;</span> #parseWord<span class="token punctuation">(</span><span class="token string">"0x649bbc62d0e31342afea4e5cd82d4049e7e1ee912fc0889aa790803be39038c5"</span><span class="token punctuation">)</span>
+    <span class="token keyword">rule</span> DEPOSIT_EVENT_LENGTH <span class="token operator">=&gt;</span> <span class="token number">576</span>
+
+    <span class="token keyword">syntax</span> <span class="token keyword">Int</span> <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> <span class="token string">"PUBKEY_OFFSET"</span>                <span class="token punctuation">[</span><span class="token class-name">macro</span><span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"WITHDRAWAL_CREDENTIALS_OFFSET"</span><span class="token punctuation">[</span><span class="token class-name">macro</span><span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"AMOUNT_OFFSET"</span>                <span class="token punctuation">[</span><span class="token class-name">macro</span><span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"SIGNATURE_OFFSET"</span>             <span class="token punctuation">[</span><span class="token class-name">macro</span><span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"INDEX_OFFSET"</span>                 <span class="token punctuation">[</span><span class="token class-name">macro</span><span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"PUBKEY_SIZE"</span>                  <span class="token punctuation">[</span><span class="token class-name">macro</span><span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"WITHDRAWAL_CREDENTIALS_SIZE"</span>  <span class="token punctuation">[</span><span class="token class-name">macro</span><span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"AMOUNT_SIZE"</span>                  <span class="token punctuation">[</span><span class="token class-name">macro</span><span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"SIGNATURE_SIZE"</span>               <span class="token punctuation">[</span><span class="token class-name">macro</span><span class="token punctuation">]</span>
+                 <span class="token operator">|</span> <span class="token string">"INDEX_SIZE"</span>                   <span class="token punctuation">[</span><span class="token class-name">macro</span><span class="token punctuation">]</span>
+ <span class="token comment">// -----------------------------------------------------</span>
+    <span class="token keyword">rule</span> PUBKEY_OFFSET                 <span class="token operator">=&gt;</span> <span class="token number">160</span>
+    <span class="token keyword">rule</span> WITHDRAWAL_CREDENTIALS_OFFSET <span class="token operator">=&gt;</span> <span class="token number">256</span>
+    <span class="token keyword">rule</span> AMOUNT_OFFSET                 <span class="token operator">=&gt;</span> <span class="token number">320</span>
+    <span class="token keyword">rule</span> SIGNATURE_OFFSET              <span class="token operator">=&gt;</span> <span class="token number">384</span>
+    <span class="token keyword">rule</span> INDEX_OFFSET                  <span class="token operator">=&gt;</span> <span class="token number">512</span>
+    <span class="token keyword">rule</span> PUBKEY_SIZE                   <span class="token operator">=&gt;</span> <span class="token number">48</span>
+    <span class="token keyword">rule</span> WITHDRAWAL_CREDENTIALS_SIZE   <span class="token operator">=&gt;</span> <span class="token number">32</span>
+    <span class="token keyword">rule</span> AMOUNT_SIZE                   <span class="token operator">=&gt;</span> <span class="token number">8</span>
+    <span class="token keyword">rule</span> SIGNATURE_SIZE                <span class="token operator">=&gt;</span> <span class="token number">96</span>
+    <span class="token keyword">rule</span> INDEX_SIZE                    <span class="token operator">=&gt;</span> <span class="token number">8</span>
+</code></pre>
+<pre><code class="language-k">    <span class="token keyword">syntax</span> Bytes <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> #extractDepositData <span class="token punctuation">(</span> Bytes <span class="token punctuation">)</span> <span class="token punctuation">[</span>function<span class="token punctuation">,</span> <span class="token class-name">symbol</span><span class="token punctuation">(</span>#extractDepositData<span class="token punctuation">)</span><span class="token punctuation">]</span>
+ <span class="token comment">// --------------------------------------------------------------------------------------</span>
+    <span class="token keyword">rule</span> #extractDepositData<span class="token punctuation">(</span>DATA<span class="token punctuation">)</span> <span class="token operator">=&gt;</span> substrBytes<span class="token punctuation">(</span>DATA<span class="token punctuation">,</span> PUBKEY_OFFSET <span class="token operator">+</span><span class="token keyword">Int</span> <span class="token number">32</span><span class="token punctuation">,</span> PUBKEY_OFFSET <span class="token operator">+</span><span class="token keyword">Int</span> <span class="token number">32</span> <span class="token operator">+</span><span class="token keyword">Int</span> PUBKEY_SIZE<span class="token punctuation">)</span>
+                               <span class="token operator">+</span>Bytes substrBytes<span class="token punctuation">(</span>DATA<span class="token punctuation">,</span> WITHDRAWAL_CREDENTIALS_OFFSET <span class="token operator">+</span><span class="token keyword">Int</span> <span class="token number">32</span><span class="token punctuation">,</span> WITHDRAWAL_CREDENTIALS_OFFSET <span class="token operator">+</span><span class="token keyword">Int</span> <span class="token number">32</span> <span class="token operator">+</span><span class="token keyword">Int</span> WITHDRAWAL_CREDENTIALS_SIZE<span class="token punctuation">)</span>
+                               <span class="token operator">+</span>Bytes substrBytes<span class="token punctuation">(</span>DATA<span class="token punctuation">,</span> AMOUNT_OFFSET <span class="token operator">+</span><span class="token keyword">Int</span> <span class="token number">32</span><span class="token punctuation">,</span> AMOUNT_OFFSET <span class="token operator">+</span><span class="token keyword">Int</span> <span class="token number">32</span> <span class="token operator">+</span><span class="token keyword">Int</span> AMOUNT_SIZE<span class="token punctuation">)</span>
+                               <span class="token operator">+</span>Bytes substrBytes<span class="token punctuation">(</span>DATA<span class="token punctuation">,</span> SIGNATURE_OFFSET <span class="token operator">+</span><span class="token keyword">Int</span> <span class="token number">32</span><span class="token punctuation">,</span> SIGNATURE_OFFSET <span class="token operator">+</span><span class="token keyword">Int</span> <span class="token number">32</span> <span class="token operator">+</span><span class="token keyword">Int</span> SIGNATURE_SIZE<span class="token punctuation">)</span>
+                               <span class="token operator">+</span>Bytes substrBytes<span class="token punctuation">(</span>DATA<span class="token punctuation">,</span> INDEX_OFFSET <span class="token operator">+</span><span class="token keyword">Int</span> <span class="token number">32</span><span class="token punctuation">,</span> INDEX_OFFSET <span class="token operator">+</span><span class="token keyword">Int</span> <span class="token number">32</span> <span class="token operator">+</span><span class="token keyword">Int</span> INDEX_SIZE<span class="token punctuation">)</span>
+
+    <span class="token keyword">syntax</span> <span class="token keyword">Bool</span> <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> #isValidDepositEventData <span class="token punctuation">(</span> Bytes <span class="token punctuation">)</span> <span class="token punctuation">[</span>function<span class="token punctuation">,</span> <span class="token class-name">symbol</span><span class="token punctuation">(</span>#isValidDepositEventData<span class="token punctuation">)</span><span class="token punctuation">,</span> total<span class="token punctuation">]</span>
+ <span class="token comment">// ------------------------------------------------------------------------------------------------------</span>
+    <span class="token keyword">rule</span> #isValidDepositEventData<span class="token punctuation">(</span>DATA<span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token boolean">true</span>
+      <span class="token keyword">requires</span> lengthBytes<span class="token punctuation">(</span>DATA<span class="token punctuation">)</span> <span class="token operator">==</span><span class="token keyword">Int</span> DEPOSIT_EVENT_LENGTH
+       andBool Bytes2Int<span class="token punctuation">(</span>substrBytes<span class="token punctuation">(</span>DATA<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">32</span><span class="token punctuation">)</span><span class="token punctuation">,</span> BE<span class="token punctuation">,</span> Unsigned<span class="token punctuation">)</span> <span class="token operator">==</span><span class="token keyword">Int</span> PUBKEY_OFFSET
+       andBool Bytes2Int<span class="token punctuation">(</span>substrBytes<span class="token punctuation">(</span>DATA<span class="token punctuation">,</span> <span class="token number">32</span><span class="token punctuation">,</span> <span class="token number">64</span><span class="token punctuation">)</span><span class="token punctuation">,</span> BE<span class="token punctuation">,</span> Unsigned<span class="token punctuation">)</span> <span class="token operator">==</span><span class="token keyword">Int</span> WITHDRAWAL_CREDENTIALS_OFFSET
+       andBool Bytes2Int<span class="token punctuation">(</span>substrBytes<span class="token punctuation">(</span>DATA<span class="token punctuation">,</span> <span class="token number">64</span><span class="token punctuation">,</span> <span class="token number">96</span><span class="token punctuation">)</span><span class="token punctuation">,</span> BE<span class="token punctuation">,</span> Unsigned<span class="token punctuation">)</span> <span class="token operator">==</span><span class="token keyword">Int</span> AMOUNT_OFFSET
+       andBool Bytes2Int<span class="token punctuation">(</span>substrBytes<span class="token punctuation">(</span>DATA<span class="token punctuation">,</span> <span class="token number">96</span><span class="token punctuation">,</span> <span class="token number">128</span><span class="token punctuation">)</span><span class="token punctuation">,</span> BE<span class="token punctuation">,</span> Unsigned<span class="token punctuation">)</span> <span class="token operator">==</span><span class="token keyword">Int</span> SIGNATURE_OFFSET
+       andBool Bytes2Int<span class="token punctuation">(</span>substrBytes<span class="token punctuation">(</span>DATA<span class="token punctuation">,</span> <span class="token number">128</span><span class="token punctuation">,</span> <span class="token number">160</span><span class="token punctuation">)</span><span class="token punctuation">,</span> BE<span class="token punctuation">,</span> Unsigned<span class="token punctuation">)</span> <span class="token operator">==</span><span class="token keyword">Int</span> INDEX_OFFSET
+       andBool Bytes2Int<span class="token punctuation">(</span>substrBytes<span class="token punctuation">(</span>DATA<span class="token punctuation">,</span> PUBKEY_OFFSET<span class="token punctuation">,</span> PUBKEY_OFFSET <span class="token operator">+</span><span class="token keyword">Int</span> <span class="token number">32</span><span class="token punctuation">)</span><span class="token punctuation">,</span> BE<span class="token punctuation">,</span> Unsigned<span class="token punctuation">)</span> <span class="token operator">==</span><span class="token keyword">Int</span> PUBKEY_SIZE
+       andBool Bytes2Int<span class="token punctuation">(</span>substrBytes<span class="token punctuation">(</span>DATA<span class="token punctuation">,</span> WITHDRAWAL_CREDENTIALS_OFFSET<span class="token punctuation">,</span> WITHDRAWAL_CREDENTIALS_OFFSET <span class="token operator">+</span><span class="token keyword">Int</span> <span class="token number">32</span><span class="token punctuation">)</span><span class="token punctuation">,</span> BE<span class="token punctuation">,</span> Unsigned<span class="token punctuation">)</span> <span class="token operator">==</span><span class="token keyword">Int</span> WITHDRAWAL_CREDENTIALS_SIZE
+       andBool Bytes2Int<span class="token punctuation">(</span>substrBytes<span class="token punctuation">(</span>DATA<span class="token punctuation">,</span> AMOUNT_OFFSET<span class="token punctuation">,</span> AMOUNT_OFFSET <span class="token operator">+</span><span class="token keyword">Int</span> <span class="token number">32</span><span class="token punctuation">)</span><span class="token punctuation">,</span> BE<span class="token punctuation">,</span> Unsigned<span class="token punctuation">)</span> <span class="token operator">==</span><span class="token keyword">Int</span> AMOUNT_SIZE
+       andBool Bytes2Int<span class="token punctuation">(</span>substrBytes<span class="token punctuation">(</span>DATA<span class="token punctuation">,</span> SIGNATURE_OFFSET<span class="token punctuation">,</span> SIGNATURE_OFFSET <span class="token operator">+</span><span class="token keyword">Int</span> <span class="token number">32</span><span class="token punctuation">)</span><span class="token punctuation">,</span> BE<span class="token punctuation">,</span> Unsigned<span class="token punctuation">)</span> <span class="token operator">==</span><span class="token keyword">Int</span> SIGNATURE_SIZE
+       andBool Bytes2Int<span class="token punctuation">(</span>substrBytes<span class="token punctuation">(</span>DATA<span class="token punctuation">,</span> INDEX_OFFSET<span class="token punctuation">,</span> INDEX_OFFSET <span class="token operator">+</span><span class="token keyword">Int</span> <span class="token number">32</span><span class="token punctuation">)</span><span class="token punctuation">,</span> BE<span class="token punctuation">,</span> Unsigned<span class="token punctuation">)</span> <span class="token operator">==</span><span class="token keyword">Int</span> INDEX_SIZE
+
+    <span class="token keyword">rule</span> #isValidDepositEventData<span class="token punctuation">(</span>_<span class="token punctuation">)</span> <span class="token operator">=&gt;</span> <span class="token boolean">false</span> <span class="token punctuation">[</span>owise<span class="token punctuation">]</span>
+</code></pre>
+<pre><code class="language-k"><span class="token keyword">endmodule</span>
+</code></pre>
+</body></html></div>
+        </main>
+
+        <!-- Page ToC -->
+        <div class="col-12 col-md-3 col-xl-2 py-md-3 bd-sidebar page-toc mb-3">
+          
+<div>
+<div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#implementation-of-execution-layer-requests"
+                class="bd-toc-link"
+                style="padding-left: 0px;;"
+              >
+                Implementation of Execution Layer Requests
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#deposit-requests"
+                class="bd-toc-link"
+                style="padding-left: 0px;;"
+              >
+                Deposit Requests
+              </a></div>
+</div>
+
+        </div>
+        <div class="btn btn-rv-blue page-toc-toggle-btn"></div>
+        <!-- End Page ToC -->
+      </div>
+    </div>
+<!-- The footer is now controlled by the k-web-theme git submodule -->
+<footer id="rvsite-footer" class="app-footer text-md-left text-center">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-md-4 mb-md-0 mb-4">
+        <a href="https://runtimeverification.com/" target="_blank">
+          <picture>
+            <source
+              srcset="
+                https://runtimeverification.com/assets/img/rv-logo-dark.png
+              "
+              media="(prefers-color-scheme: dark)"
+            />
+            <img
+              class="logo-dark"
+              src="https://runtimeverification.com/assets/img/rv-logo.png"
+              alt="Runtime Verification logo"
+              style="height: 32px"
+            /> </picture
+        ></a>
+        <p class="mt-2 text-md-left copyright">
+          <a href="https://maps.app.goo.gl/8YhKozfmZtgzQBsH7" target="_blank"
+            >202 S Broadway Ave #31, Urbana, IL</a
+          >
+        </p>
+      </div>
+      <div class="col-md-4 text-md-center mb-md-0 mb-4"></div>
+      <div class="col-md-4 mb-md-0 mb-4 pl-0 text-md-right">
+        <p class="copyright">2025 © all rights reserved</p>
+        <span class="copyright"
+          ><a href="https://runtimeverification.com/privacy-policy"
+            >privacy policy</a
+          >
+          |
+          <a href="https://runtimeverification.com/terms-of-use"
+            >terms of use</a
+          ></span
+        >
+      </div>
+    </div>
+  </div>
+</footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Typist/1.2/typist.min.js"></script>
+    <script src="../../../../../../assets/js/index.js"></script>
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script
+  async
+  src="https://www.googletagmanager.com/gtag/js?id=G-QL0D8HRYFW"
+></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag() {
+    dataLayer.push(arguments);
+  }
+  gtag("js", new Date());
+  gtag("config", "G-QL0D8HRYFW");
+</script>
+
+  </body>
+</html>
