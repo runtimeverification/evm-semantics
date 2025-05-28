@@ -117,7 +117,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
     syntax EthereumCommand ::= loadTx ( Account ) [symbol(loadTx)]
  // --------------------------------------------------------------
     rule <k> loadTx(_) => startTx ... </k>
-         <statusCode> _ => EVMC_OUT_OF_GAS </statusCode>
+         <statusCode> _ => EVMC_INVALID_BLOCK </statusCode>
          <txPending> ListItem(TXID:Int) REST => REST </txPending>
          <schedule> SCHED </schedule>
          <message>
@@ -207,18 +207,8 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
       requires ACCTTO =/=K .Account
        andBool #isValidTransaction(TXID, ACCTFROM)
 
-    rule <k> loadTx(ACCTFROM) => startTx ... </k>
-         <statusCode> _ => EVMC_INVALID_BLOCK </statusCode>
-         <txPending> ListItem(_TXID:Int) REST => REST </txPending>
-         <account>
-           <acctID> ACCTFROM </acctID>
-           <code> ACCTCODE </code>
-           ...
-         </account>
-      requires notBool ACCTCODE ==K .Bytes
-
     rule <k> loadTx(_) => startTx ... </k>
-         <statusCode> _ => EVMC_OUT_OF_GAS </statusCode>
+         <statusCode> _ => EVMC_INVALID_BLOCK </statusCode>
          <txPending> ListItem(_TXID:Int) REST => REST </txPending> [owise]
 
     syntax EthereumCommand ::= "#finishTx"
@@ -294,55 +284,76 @@ Processing SetCode Transaction Authority Entries
  - Creates new accounts when needed
 
 ```k
-    syntax InternalOp ::= #loadAuthorities ( List ) [symbol(#loadAuthorities)] | "#DBG1" | "#DBG2"
+    syntax InternalOp ::= #loadAuthorities ( List ) [symbol(#loadAuthorities)]
  // --------------------------------------------------------------------------
-    rule <k> #loadAuthorities ( AUTH ) => .K ... </k>
+    rule <k> #loadAuthorities(_) => .K ... </k>
          <txPending> ListItem(TXID:Int) ... </txPending>
          <message>
            <msgID> TXID </msgID>
            <txType> TXTYPE </txType>
            ...
          </message>
-      requires (notBool TXTYPE ==K SetCode)
-        orBool AUTH ==K .List
+      requires notBool TXTYPE ==K SetCode
+
+    rule <k> #loadAuthorities( .List ) => .K ... </k>
+         <txPending> ListItem(TXID:Int) ... </txPending>
+         <message>
+           <msgID> TXID </msgID>
+           <txType> SetCode </txType>
+           ...
+         </message>
 
     rule <k> #loadAuthorities (ListItem(ListItem(CID) ListItem(ADDR) ListItem(NONCE) ListItem(YPAR) ListItem(SIGR) ListItem(SIGS)) REST )
-          => #addAuthority (#recoverAuthority (CID, ADDR, NONCE, YPAR, SIGR, SIGS ), CID, NONCE, ADDR, true)
+          => #setDelegation (#recoverAuthority (CID, ADDR, NONCE, YPAR, SIGR, SIGS ), CID, NONCE, ADDR)
           ~> #loadAuthorities (REST)
           ... </k>
+         <txPending> ListItem(TXID:Int) ... </txPending>
+         <message>
+           <msgID> TXID </msgID>
+           <txType> SetCode </txType>
+           ...
+         </message>
          <callGas> GLIMIT => GLIMIT -Int 25000 </callGas> [owise]
 
-    syntax InternalOp ::= #addAuthority ( Account , Bytes , Bytes , Bytes, Bool ) [symbol(#addAuthority)]
+    syntax InternalOp ::= #setDelegation ( Account , Bytes , Bytes , Bytes ) [symbol(#setDelegation)]
+ // -------------------------------------------------------------------------------------------------
+    rule <k> #setDelegation(.Account , _, _, _) => .K ... </k>
+
+    rule <k> #setDelegation(AUTHORITY, CID, _NONCE, _ADDR) => .K ... </k> <chainID> ENV_CID </chainID>
+       requires notBool AUTHORITY ==K .Account
+        andBool notBool #asWord(CID) in (SetItem(ENV_CID) SetItem(0))
+
+    rule <k> #setDelegation(AUTHORITY, CID, NONCE, ADDR)
+          => #let EXISTS = #accountExists(AUTHORITY)
+         #in (#if EXISTS #then .K #else #newAccount AUTHORITY #fi
+           ~> #touchAccounts AUTHORITY ~> #accessAccounts AUTHORITY
+           ~> #addAuthority(AUTHORITY, CID, NONCE, ADDR, EXISTS))
+          ...
+         </k> [owise]
+
+    syntax InternalOp ::= #addAuthority ( Account , Bytes , Bytes , Bytes , Bool) [symbol(#addAuthority)]
  // -----------------------------------------------------------------------------------------------------
-    rule <k> #addAuthority(AUTHORITY, CID, NONCE, _ADDR, _EXISTS) => .K ... </k>
-         <chainID> ENV_CID </chainID>
+    rule <k> #addAuthority(AUTHORITY, _CID, NONCE, _ADDR, _EXISTS) => .K ... </k>
          <account>
            <acctID> AUTHORITY </acctID>
            <code> ACCTCODE </code>
            <nonce> ACCTNONCE </nonce>
          ...
          </account>
-      requires notBool ( AUTHORITY =/=K .Account
-       andBool (#range(ACCTCODE,0,3) ==K EOA_DELEGATION_MARKER orBool ACCTCODE ==K .Bytes)
-       andBool #asWord(NONCE) ==Int ACCTNONCE
-       andBool #asWord(CID) in (SetItem(ENV_CID) SetItem(0)) )
+      requires notBool (ACCTCODE ==K .Bytes orBool #isValidDelegation(ACCTCODE))
+        orBool notBool (#asWord(NONCE) ==K ACCTNONCE)
 
-    rule <k> #addAuthority(AUTHORITY, CID, NONCE, ADDR, EXISTS) => #touchAccounts AUTHORITY ~> #accessAccounts AUTHORITY ... </k>
-         <chainID> ENV_CID </chainID>
+    rule <k> #addAuthority(AUTHORITY, _CID, NONCE, ADDR, EXISTS) => .K ... </k>
          <schedule> SCHED </schedule>
          <refund> REFUND => #if EXISTS #then REFUND +Int Gnewaccount < SCHED > -Int Gauthbase < SCHED > #else REFUND #fi </refund>
          <account>
            <acctID> AUTHORITY </acctID>
-           <code> ACCTCODE => #if notBool #asWord(ADDR) ==Int 0 #then EOA_DELEGATION_MARKER +Bytes ADDR #else .Bytes #fi </code>
+           <code> ACCTCODE => #if #asWord(ADDR) ==Int 0 #then .Bytes #else EOA_DELEGATION_MARKER +Bytes ADDR #fi </code>
            <nonce> ACCTNONCE => ACCTNONCE +Int 1 </nonce>
          ...
          </account>
-      requires AUTHORITY =/=K .Account
-       andBool (ACCTCODE ==K .Bytes orBool notBool #isValidDelegation(ACCTCODE))
-       andBool #asWord(NONCE) ==Int ACCTNONCE
-       andBool #asWord(CID) in (SetItem(ENV_CID) SetItem(0))
-
-    rule <k> #addAuthority(AUTHORITY, CID, NONCE, ADDR, _EXISTS) => #newAccount AUTHORITY ~> #addAuthority(AUTHORITY, CID, NONCE, ADDR, false) ... </k> [owise]
+      requires (ACCTCODE ==K .Bytes orBool #isValidDelegation(ACCTCODE))
+       andBool #asWord(NONCE) ==K ACCTNONCE
 ```
 
 -   `exception` only clears from the `<k>` cell if there is an exception preceding it.

@@ -600,6 +600,7 @@ The `"rlp"` key loads the block information.
     syntax Bool ::= #isValidTransaction( Int , Account ) [symbol(#isValidTransaction), function]
  // --------------------------------------------------------------------------------------------
     rule [[ #isValidTransaction (TXID, ACCTFROM) => true ]]
+         <schedule> SCHED </schedule>
          <baseFee> BASE_FEE </baseFee>
          <gasLimit> BLOCK_GAS_LIMIT </gasLimit>
          <account>
@@ -621,7 +622,7 @@ The `"rlp"` key loads the block information.
            <txType> SetCode </txType>
            ...
          </message>
-     requires ACCTCODE ==K .Bytes
+     requires (ACCTCODE ==K .Bytes orBool Ghasauthority << SCHED >>)
       andBool notBool ACCTTO ==K .Account
       andBool ACCTNONCE ==Int TX_NONCE
       andBool BASE_FEE <=Int TX_MAX_FEE
@@ -655,7 +656,7 @@ The `"rlp"` key loads the block information.
            <txType> Blob </txType>
            ...
          </message>
-     requires ACCTCODE ==K .Bytes
+     requires (ACCTCODE ==K .Bytes orBool Ghasauthority << SCHED >>)
       andBool notBool ACCTTO ==K .Account
       andBool ACCTNONCE ==Int TX_NONCE
       andBool BASE_FEE <=Int TX_MAX_FEE
@@ -667,6 +668,7 @@ The `"rlp"` key loads the block information.
       andBool Ctotalblob(SCHED, size(TVH)) <=Int Gmaxblobgas < SCHED>
 
     rule [[ #isValidTransaction (TXID, ACCTFROM) => true ]]
+         <schedule> SCHED </schedule>
          <baseFee> BASE_FEE </baseFee>
          <gasLimit> BLOCK_GAS_LIMIT </gasLimit>
          <account>
@@ -686,7 +688,7 @@ The `"rlp"` key loads the block information.
            <txType> DynamicFee </txType>
            ...
          </message>
-     requires ACCTCODE ==K .Bytes
+     requires (ACCTCODE ==K .Bytes orBool Ghasauthority << SCHED >>)
       andBool ACCTNONCE ==Int TX_NONCE
       andBool BASE_FEE <=Int TX_MAX_FEE
       andBool TX_MAX_PRIORITY_FEE <=Int TX_MAX_FEE
@@ -694,6 +696,7 @@ The `"rlp"` key loads the block information.
       andBool TX_GAS_LIMIT <=Int BLOCK_GAS_LIMIT
 
     rule [[ #isValidTransaction (TXID, ACCTFROM) => true ]]
+         <schedule> SCHED </schedule>
          <baseFee> BASE_FEE </baseFee>
          <gasLimit> BLOCK_GAS_LIMIT </gasLimit>
          <account>
@@ -713,7 +716,7 @@ The `"rlp"` key loads the block information.
            ...
          </message>
      requires #dasmTxPrefix(TXTYPE) <Int 2
-      andBool ACCTCODE ==K .Bytes
+      andBool (ACCTCODE ==K .Bytes orBool Ghasauthority << SCHED >>)
       andBool ACCTNONCE ==Int TX_NONCE
       andBool BASE_FEE <=Int TX_GAS_PRICE
       andBool BAL >=Int TX_GAS_LIMIT *Int TX_GAS_PRICE +Int VALUE

@@ -3051,11 +3051,11 @@ Account helper functions
 ========================
 
  - `#getAccountCode(Account)` - K function to retrieve the code of an account, returning the empty bytes object if the account is not in the state.
-
+ - `#accountExists(Account)` - Function that checks if an account is present in the state.
 ```k
     syntax Bytes ::= #getAccountCode ( Account ) [symbol(#getAccountCode), function, total]
  // ---------------------------------------------------------------------------------------
-    rule [[ #getAccountCode(ACCT) => CODE]]
+    rule [[ #getAccountCode(ACCT) => CODE ]]
          <account>
            <acctID> ACCT </acctID>
            <code> CODE </code>
@@ -3063,6 +3063,12 @@ Account helper functions
          </account>
 
     rule #getAccountCode(_) => .Bytes [owise]
+
+    syntax Bool ::= #accountExists ( Account ) [symbol(#accountExists), function, total]
+ // ------------------------------------------------------------------------------------
+    rule [[ #accountExists(ACCT) => true ]] <account> <acctID> ACCT </acctID> ... </account>
+    rule #accountExists(_) => false [owise]
+
 ```
 
 EVM Program Representations
