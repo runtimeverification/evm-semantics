@@ -30,7 +30,7 @@ module SCHEDULE
                           | "Ghasrejectedfirstbyte"   | "Ghasprevrandao"   | "Ghasmaxinitcodesize" | "Ghaspushzero"
                           | "Ghaswarmcoinbase"        | "Ghaswithdrawals"  | "Ghastransient"       | "Ghasmcopy"
                           | "Ghasbeaconroot"          | "Ghaseip6780"      | "Ghasblobbasefee"     | "Ghasblobhash"
-                          | "Ghasbls12msmdiscount"    | "Ghashistory"      | "Ghasrequests"
+                          | "Ghasbls12msmdiscount"    | "Ghashistory"      | "Ghasrequests"        | "Ghasauthority"
  // -----------------------------------------------------------------
 ```
 
@@ -52,7 +52,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
                            | "Gaccessliststoragekey"           | "Rmaxquotient"  | "Ginitcodewordcost" | "maxInitCodeSize"    | "Gwarmstoragedirtystore"
                            | "Gpointeval"    | "Gmaxblobgas"   | "Gminbasefee"   | "Gtargetblobgas"    | "Gperblob"           | "Blobbasefeeupdatefraction"
                            | "Gbls12g1add"   | "Gbls12g1mul"   | "Gbls12g2add"   | "Gbls12g2mul"       | "Gbls12mapfptog1"    | "Gbls12PairingCheckMul"
-                           | "Gbls12PairingCheckAdd"           | "Gbls12mapfp2tog2"
+                           | "Gbls12PairingCheckAdd"           | "Gauthbase"     | "Gbls12mapfp2tog2"
  // -------------------------------------------------------------------------------------------------------------------------------------------------------
 ```
 
@@ -86,6 +86,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule [GcallstipendDefault]: Gcallstipend < DEFAULT > => 2300
     rule [GcallvalueDefault]:   Gcallvalue   < DEFAULT > => 9000
     rule [GnewaccountDefault]:  Gnewaccount  < DEFAULT > => 25000
+    rule [GauthbaseDefault]:    Gauthbase    < DEFAULT > => 0
 
     rule [GcreateDefault]:       Gcreate       < DEFAULT > => 32000
     rule [GcodedepositDefault]:  Gcodedeposit  < DEFAULT > => 200
@@ -177,6 +178,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule [GhashistoryDefault]:             Ghashistory             << DEFAULT >> => false
     rule [GhasrequestsDefault]:            Ghasrequests            << DEFAULT >> => false
     rule [Ghasbls12msmdiscountDefault]:    Ghasbls12msmdiscount    << DEFAULT >> => false
+    rule [GhasauthorityDefault]:           Ghasauthority           << DEFAULT >> => false
 ```
 
 ### Frontier Schedule
@@ -463,6 +465,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule [Gbls12PairingCheckAddPrague]:     Gbls12PairingCheckAdd     < PRAGUE > => 37700
     rule [Gbls12mapfptog1Prague]:           Gbls12mapfptog1           < PRAGUE > => 5500
     rule [Gbls12mapfp2tog2Prague]:          Gbls12mapfp2tog2          < PRAGUE > => 23800
+    rule [GauthbasePrague]:                 Gauthbase                 < PRAGUE > => 12500
     rule [SCHEDCONSTPrague]:                SCHEDCONST                < PRAGUE > => SCHEDCONST < CANCUN >
       requires notBool ( SCHEDCONST ==K Gmaxblobgas
                   orBool SCHEDCONST ==K Gtargetblobgas
@@ -474,15 +477,18 @@ A `ScheduleConst` is a constant determined by the fee schedule.
                   orBool SCHEDCONST ==K Gbls12PairingCheckMul
                   orBool SCHEDCONST ==K Gbls12PairingCheckAdd
                   orBool SCHEDCONST ==K Gbls12mapfptog1
-                  orBool SCHEDCONST ==K Gbls12mapfp2tog2 )
+                  orBool SCHEDCONST ==K Gbls12mapfp2tog2 
+                  orBool SCHEDCONST ==K Gauthbase )
 
     rule [GhasrequestsPrague]:         Ghasrequests         << PRAGUE >> => true
     rule [GhashistoryPrague]:          Ghashistory          << PRAGUE >> => true
     rule [Ghasbls12msmdiscountPrague]: Ghasbls12msmdiscount << PRAGUE >> => true
+    rule [GhasauthorityPrague]:        Ghasauthority        << PRAGUE >> => true
     rule [SCHEDFLAGPrague]:            SCHEDFLAG            << PRAGUE >> => SCHEDFLAG << CANCUN >>
       requires notBool ( SCHEDFLAG ==K Ghasrequests
                   orBool SCHEDFLAG ==K Ghashistory
-                  orBool SCHEDFLAG ==K Ghasbls12msmdiscount )
+                  orBool SCHEDFLAG ==K Ghasbls12msmdiscount
+                  orBool SCHEDFLAG ==K Ghasauthority )
 ```
 
 ```k

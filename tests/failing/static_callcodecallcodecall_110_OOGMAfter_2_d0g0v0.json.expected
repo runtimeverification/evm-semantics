@@ -383,6 +383,9 @@
           <txVersionedHashes>
             .List
           </txVersionedHashes>
+          <txAuthList>
+            .List
+          </txAuthList>
         </message>
       </messages>
       <withdrawalsPending>
