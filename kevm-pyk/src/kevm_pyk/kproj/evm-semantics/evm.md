@@ -11,12 +11,14 @@ This file only defines the local execution operations, the file `driver.md` will
 requires "data.md"
 requires "network.md"
 requires "gas.md"
+requires "ulm.k"
 
 module EVM
     imports STRING
     imports EVM-DATA
     imports NETWORK
     imports GAS
+    imports ULM
 ```
 
 Configuration
@@ -30,12 +32,9 @@ In the comments next to each cell, we've marked which component of the YellowPap
 
 ```k
     configuration
-      <kevm>
-        <k> $PGM:EthereumSimulation </k>
+        <k> #loadProgram($PGM:Bytes) ~> #precompiled?($ACCTCODE:Int, getSchedule($SCHEDULE:Int)) ~> #execute </k>
         <exit-code exit=""> 1 </exit-code>
-        <mode> $MODE:Mode </mode>
-         <contract-summary> $CONTRACT:ContractToSummary </contract-summary>
-        <schedule> $SCHEDULE:Schedule </schedule>
+        <schedule> getSchedule($SCHEDULE:Int) </schedule>
 
         <ethereum>
 
@@ -50,203 +49,65 @@ In the comments next to each cell, we've marked which component of the YellowPap
             <output>          .Bytes      </output>           // H_RETURN
             <statusCode>      .StatusCode </statusCode>
             <callStack>       .List       </callStack>
-            <interimStates>   .List       </interimStates>
-            <touchedAccounts> .Set        </touchedAccounts>
 
             <callState>
               <program>   .Bytes </program>
               <jumpDests> .Bytes </jumpDests>
 
               // I_*
-              <id>        .Account </id>                    // I_a
-              <caller>    .Account </caller>                // I_s
-              <callData>  .Bytes   </callData>              // I_d
-              <callValue> 0        </callValue>             // I_v
+              <id>        $ID:Int    </id>                    // I_a
+              <caller>    $CALLER:Account   </caller>         // I_s
+              <callData>  $CALLDATA:Bytes  </callData>        // I_d
+              <callValue> $CALLVALUE:Int </callValue>         // I_v
 
               // \mu_*
               <wordStack>   .List  </wordStack>           // \mu_s
               <localMem>    .Bytes </localMem>            // \mu_m
               <pc>          0      </pc>                  // \mu_pc
-              <gas>         0:Gas  </gas>                 // \mau_g
+              <gas>         $GAS:Int </gas>               // \mau_g
               <memoryUsed>  0      </memoryUsed>          // \mu_i
               <callGas>     0:Gas  </callGas>
 
-              <static>    false </static>
+              <static>    $STATIC:Bool </static>
               <callDepth> 0     </callDepth>
             </callState>
-
-            <versionedHashes> .List </versionedHashes>
-
-            // A_* (execution substate)
-            <substate>
-              <selfDestruct>     .Set  </selfDestruct>            // A_s
-              <log>              .List </log>                     // A_l
-              <refund>           0     </refund>                  // A_r
-              <accessedAccounts> .Set  </accessedAccounts>
-              <accessedStorage>  .Map  </accessedStorage>
-              <createdAccounts>  .Set  </createdAccounts>
-            </substate>
-
-            // Immutable during a single transaction
-            // -------------------------------------
-
-            <gasPrice> 0        </gasPrice>                   // I_p
-            <origin>   .Account </origin>                     // I_o
-
-            // I_H* (block information)
-            <blockhashes> .List </blockhashes>
-            <block>
-              <previousHash>     0      </previousHash>     // I_Hp
-              <ommersHash>       0      </ommersHash>       // I_Ho
-              <coinbase>         0      </coinbase>         // I_Hc
-              <stateRoot>        0      </stateRoot>        // I_Hr
-              <transactionsRoot> 0      </transactionsRoot> // I_Ht
-              <receiptsRoot>     0      </receiptsRoot>     // I_He
-              <logsBloom>        .Bytes </logsBloom>        // I_Hb
-              <difficulty>       0      </difficulty>       // I_Hd
-              <number>           0      </number>           // I_Hi
-              <gasLimit>         0      </gasLimit>         // I_Hl
-              <gasUsed>          0:Gas  </gasUsed>          // I_Hg
-              <timestamp>        0      </timestamp>        // I_Hs
-              <extraData>        .Bytes </extraData>        // I_Hx
-              <mixHash>          0      </mixHash>          // I_Hm
-              <blockNonce>       0      </blockNonce>       // I_Hn
-              <baseFee>          0      </baseFee>
-              <withdrawalsRoot>  0      </withdrawalsRoot>
-              <blobGasUsed>      0      </blobGasUsed>
-              <excessBlobGas>    0      </excessBlobGas>
-              <beaconRoot>       0      </beaconRoot>
-
-              <ommerBlockHeaders> [ .JSONs ] </ommerBlockHeaders>
-            </block>
-
           </evm>
-
-          // Ethereum Network
-          // ================
-
-          <network>
-
-            // Chain identifier
-            // ----------------
-            <chainID> $CHAINID:Int </chainID>
-
-            // Accounts Record
-            // ---------------
-
-            <accounts>
-              <account multiplicity="*" type="Map">
-                <acctID>           0                  </acctID>
-                <balance>          0                  </balance>
-                <code>             .Bytes:AccountCode </code>
-                <storage>          .Map               </storage>
-                <origStorage>      .Map               </origStorage>
-                <transientStorage> .Map               </transientStorage>
-                <nonce>            0                  </nonce>
-              </account>
-            </accounts>
-
-            // Transactions Record
-            // -------------------
-
-            <txOrder>   .List </txOrder>
-            <txPending> .List </txPending>
-
-            <messages>
-              <message multiplicity="*" type="Map">
-                <msgID>         0          </msgID>
-                <txNonce>       0          </txNonce>       // T_n
-                <txGasPrice>    0          </txGasPrice>    // T_p
-                <txGasLimit>    0          </txGasLimit>    // T_g
-                <to>            .Account   </to>            // T_t
-                <value>         0          </value>         // T_v
-                <sigV>          0          </sigV>          // T_w
-                <sigR>          .Bytes     </sigR>          // T_r
-                <sigS>          .Bytes     </sigS>          // T_s
-                <data>          .Bytes     </data>          // T_i/T_e
-                <txAccess>      [ .JSONs ] </txAccess>      // T_a
-                <txChainID>     0          </txChainID>     // T_c
-                <txPriorityFee> 0          </txPriorityFee> // T_f
-                <txMaxFee>      0          </txMaxFee>      // T_m
-                <txType>        .TxType    </txType>        // T_x
-                <txMaxBlobFee>  0          </txMaxBlobFee>
-                <txVersionedHashes> .List  </txVersionedHashes>
-              </message>
-            </messages>
-
-            // Withdrawals Record
-            // ------------------
-
-            <withdrawalsPending> .List </withdrawalsPending>
-            <withdrawalsOrder>   .List </withdrawalsOrder>
-
-            <withdrawals>
-              <withdrawal multiplicity="*" type="Map">
-                <withdrawalID>   0        </withdrawalID>
-                <index>          0        </index>
-                <validatorIndex> 0        </validatorIndex>
-                <address>        .Account </address>
-                <amount>         0        </amount>
-              </withdrawal>
-            </withdrawals>
-
-          </network>
-
         </ethereum>
-      </kevm>
 
     syntax EthereumSimulation
  // -------------------------
 ```
 
-```k
-    syntax ContractToSummary ::= "ERC1155BalanceOf"
-                               | "ERC1155BalanceOfBatch"
-                               | "ERC1155IsApprovedForAll"
-                               | "ERC1155SafeBatchTransferFromInvalid1"
-                               | "ERC1155SafeBatchTransferFromInvalid2"
-                               | "ERC1155SafeBatchTransferFromValid1"
-                               | "ERC1155SafeBatchTransferFromValid2"
-                               | "ERC1155SafeTransferFromInvalid1"
-                               | "ERC1155SafeTransferFromInvalid2"
-                               | "ERC1155SafeTransferFromValid1"
-                               | "ERC1155SafeTransferFromValid2"
-                               | "ERC1155SetApprovalForAllFalse"
-                               | "ERC1155SetApprovalForAllTrue"
-                               | "ERC1155TokenDeployment"
-                               | "ERC20Allowance"
-                               | "ERC20Approve"
-                               | "ERC20BalanceOf"
-                               | "ERC20Decimals"
-                               | "ERC20Name"
-                               | "ERC20Symbol"
-                               | "ERC20TokenDeployment"
-                               | "ERC20TotalSupply"
-                               | "ERC20TransferFromInvalid"
-                               | "ERC20TransferFromInvalid2"
-                               | "ERC20TransferFromValid"
-                               | "ERC20TransferInvalid"
-                               | "ERC20TransferValid"
-                               | ""
- // -------------------------------------------
-```
-
-Modal Semantics
----------------
-
-Our semantics is modal, with the initial mode being set on the command line via `-cMODE=EXECMODE`.
-
--   `NORMAL` executes as a client on the network would.
--   `VMTESTS` skips `CALL*` and `CREATE` operations.
+Output Extraction
+-----------------
 
 ```k
-    syntax Mode ::= "NORMAL"  [symbol(NORMAL) ]
-                  | "VMTESTS" [symbol(VMTESTS)]
- // -------------------------------------------
-```
+    rule getStatus(<generatedTop>... <statusCode> STATUS:StatusCode </statusCode> ...</generatedTop>) => getStatus(STATUS)
 
-State Stacks
-------------
+    syntax Int ::= getStatus(StatusCode) [function]
+    rule getStatus(EVMC_REJECTED) => EVMC_REJECTED
+    rule getStatus(EVMC_INTERNAL_ERROR) => EVMC_INTERNAL_ERROR
+    rule getStatus(EVMC_SUCCESS) => EVMC_SUCCESS
+    rule getStatus(EVMC_REVERT) => EVMC_REVERT
+    rule getStatus(EVMC_FAILURE) => EVMC_FAILURE
+    rule getStatus(EVMC_INVALID_INSTRUCTION) => EVMC_INVALID_INSTRUCTION
+    rule getStatus(EVMC_UNDEFINED_INSTRUCTION) => EVMC_UNDEFINED_INSTRUCTION
+    rule getStatus(EVMC_OUT_OF_GAS) => EVMC_OUT_OF_GAS
+    rule getStatus(EVMC_BAD_JUMP_DESTINATION) => EVMC_BAD_JUMP_DESTINATION
+    rule getStatus(EVMC_STACK_OVERFLOW) => EVMC_STACK_OVERFLOW
+    rule getStatus(EVMC_STACK_UNDERFLOW) => EVMC_STACK_UNDERFLOW
+    rule getStatus(EVMC_CALL_DEPTH_EXCEEDED) => EVMC_CALL_DEPTH_EXCEEDED
+    rule getStatus(EVMC_INVALID_MEMORY_ACCESS) => EVMC_INVALID_MEMORY_ACCESS
+    rule getStatus(EVMC_STATIC_MODE_VIOLATION) => EVMC_STATIC_MODE_VIOLATION
+    rule getStatus(EVMC_PRECOMPILE_FAILURE) => EVMC_PRECOMPILE_FAILURE
+    rule getStatus(EVMC_NONCE_EXCEEDED) => EVMC_NONCE_EXCEEDED
+
+    rule getGasLeft(G) => 0 requires getStatus(G) =/=Int EVMC_SUCCESS andBool getStatus(G) =/=Int EVMC_REVERT
+    rule getGasLeft(<generatedTop>... <gas> G </gas> ...</generatedTop>) => G [priority(51)]
+
+    rule getOutput(G) => .Bytes requires getStatus(G) =/=Int EVMC_SUCCESS andBool getStatus(G) =/=Int EVMC_REVERT
+    rule getOutput(<generatedTop>... <output> O </output> ...</generatedTop>) => O [priority(51)]
+```
 
 ### The CallStack
 
@@ -277,35 +138,25 @@ The `callStack` cell stores a list of previous VM execution states.
 
 ### The StateStack
 
-The `interimStates` cell stores a list of previous world states.
+- In this version that StateStack call hooks to GEth callbacks that save or restore a snapshot of the world state.
 
--   `#pushWorldState` stores a copy of the current accounts and the substate at the top of the `interimStates` cell.
--   `#popWorldState` restores the top element of the `interimStates`.
--   `#dropWorldState` removes the top element of the `interimStates`.
+-   `#pushWorldState` save the current snapshot of the world state.
+-   `#popWorldState` restores Nth snapshot of the world state.
+-   `#dropWorldState` removes the last number of snapshots of the world state. It doesn't affect the state jornal. We follow this convention as GETh never decrease the size of its journal orinally.
 
 ```k
-    syntax Accounts ::= "{" AccountsCell "|" SubstateCell "}"
- // ---------------------------------------------------------
-
     syntax InternalOp ::= "#pushWorldState"
  // ---------------------------------------
-    rule <k> #pushWorldState => .K ... </k>
-         <interimStates> STATES => ListItem({ <accounts> ACCTDATA </accounts> | <substate> SUBSTATE </substate> }) STATES </interimStates>
-         <accounts> ACCTDATA </accounts>
-         <substate> SUBSTATE </substate>
+    rule <k> #pushWorldState => PushState() ... </k>
 
     syntax InternalOp ::= "#popWorldState"
  // --------------------------------------
-    rule <k> #popWorldState => .K ... </k>
-         <interimStates> ListItem({ <accounts> ACCTDATA </accounts> | <substate> SUBSTATE </substate> }) REST => REST </interimStates>
-         <accounts> _ => ACCTDATA </accounts>
-         <substate> _ => SUBSTATE </substate>
+    rule <k> #popWorldState => RollbackState() ... </k>
 
     syntax InternalOp ::= "#dropWorldState"
  // ---------------------------------------
-    rule <k> #dropWorldState => .K ... </k> <interimStates> ListItem(_) REST => REST </interimStates>
+    rule <k> #dropWorldState => CommitState() ... </k>
 ```
-
 Control Flow
 ------------
 
@@ -580,150 +431,6 @@ The arguments to `PUSH` must be skipped over (as they are inline), and the opcod
     rule #widthOp(_)       => 1        [owise]
 ```
 
-After executing a transaction, it's necessary to have the effect of the substate log recorded.
-
--   `#finalizeStorage` updates the origStorage cell with the new values of storage.
--   `#finalizeTx` makes the substate log actually have an effect on the state.
--   `#deleteAccounts` deletes the accounts specified by the self destruct list.
--   `#finalizeWithdrawals` increases the balance of the `address` specified by the `amount` given, for each withdrawal.
--   `#gweiToWei` does the conversion from GWEI to WEI.
-
-```k
-    syntax Int ::= #gweiToWei ( Int ) [symbol(#gweiToWei), function]
- // ----------------------------------------------------------------
-   rule #gweiToWei(V) => V *Int 10 ^Int 9
-
-    syntax InternalOp ::= "#finalizeWithdrawals" [symbol(#finalizeWithdrawals)]
- // ---------------------------------------------------------------------------
-    rule <k> #finalizeWithdrawals => .K ... </k>
-         <withdrawalsPending> .List </withdrawalsPending>
-
-    rule <k> #finalizeWithdrawals ... </k>
-         <withdrawalsPending> ListItem(WDID) LS => LS </withdrawalsPending>
-         <withdrawal>
-           <withdrawalID> WDID </withdrawalID>
-           <address> ACCT </address>
-           <amount> VALUE </amount>
-           ...
-         </withdrawal>
-         <account>
-           <acctID> ACCT </acctID>
-           <balance> B => B +Int #gweiToWei(VALUE) </balance>
-           ...
-         </account>
-
-    rule <k> (.K => #newAccount ACCT) ~> #finalizeWithdrawals ... </k>
-         <withdrawalsPending> ListItem(WDID) _ </withdrawalsPending>
-         <withdrawal>
-           <withdrawalID> WDID </withdrawalID>
-           <address> ACCT </address>
-           ...
-         </withdrawal> [owise]
-
-    syntax InternalOp ::= #finalizeStorage ( List ) [symbol(#finalizeStorage)]
- // --------------------------------------------------------------------------
-    rule <k> #finalizeStorage(ListItem(ACCT) REST => REST) ... </k>
-         <account>
-           <acctID> ACCT </acctID>
-           <storage> STORAGE </storage>
-           <origStorage> _ => STORAGE </origStorage>
-           ...
-         </account>
-
-    rule <k> #finalizeStorage(.List) => .K ... </k>
-
-    rule <k> (.K => #newAccount ACCT) ~> #finalizeStorage(ListItem(ACCT) _ACCTS) ... </k> [owise]
-
-    syntax InternalOp ::= #finalizeTx ( Bool )     [symbol(#finalizeTx)]
-                        | #deleteAccounts ( List ) [symbol(#deleteAccounts)]
- // ------------------------------------------------------------------------
-    rule <k> #finalizeTx(true) => #finalizeStorage(Set2List(SetItem(MINER) |Set ACCTS)) ... </k>
-         <selfDestruct> .Set </selfDestruct>
-         <coinbase> MINER </coinbase>
-         <touchedAccounts> ACCTS => .Set </touchedAccounts>
-         <accessedAccounts> _ => .Set </accessedAccounts>
-         <accessedStorage> _ => .Map </accessedStorage>
-         <createdAccounts> _ => .Set </createdAccounts>
-
-    rule <k> #finalizeTx(false) ... </k>
-         <schedule> SCHED </schedule>
-         <gas> GAVAIL => G*(GAVAIL, GLIMIT, REFUND, SCHED) </gas>
-         <refund> REFUND => 0 </refund>
-         <txPending> ListItem(MSGID:Int) ... </txPending>
-         <message>
-            <msgID> MSGID </msgID>
-            <txGasLimit> GLIMIT </txGasLimit>
-            ...
-         </message>
-      requires REFUND =/=Int 0
-
-    rule <k> #finalizeTx(false => true) ... </k>
-         <baseFee> BFEE </baseFee>
-         <origin> ORG </origin>
-         <coinbase> MINER </coinbase>
-         <gas> GAVAIL </gas>
-         <gasUsed> GUSED => GUSED +Gas GLIMIT -Gas GAVAIL </gasUsed>
-         <gasPrice> GPRICE </gasPrice>
-         <refund> 0 </refund>
-         <account>
-           <acctID> ORG </acctID>
-           <balance> ORGBAL => ORGBAL +Int GAVAIL *Int GPRICE </balance>
-           ...
-         </account>
-         <account>
-           <acctID> MINER </acctID>
-           <balance> MINBAL => MINBAL +Int (GLIMIT -Int GAVAIL) *Int (GPRICE -Int BFEE) </balance>
-           ...
-         </account>
-         <txPending> ListItem(TXID:Int) REST => REST </txPending>
-         <message>
-           <msgID> TXID </msgID>
-           <txGasLimit> GLIMIT </txGasLimit>
-           ...
-         </message>
-      requires ORG =/=Int MINER
-
-    rule <k> #finalizeTx(false => true) ... </k>
-         <baseFee> BFEE </baseFee>
-         <origin> ACCT </origin>
-         <coinbase> ACCT </coinbase>
-         <gas> GAVAIL </gas>
-         <gasUsed> GUSED => GUSED +Gas GLIMIT -Gas GAVAIL </gasUsed>
-         <gasPrice> GPRICE </gasPrice>
-         <refund> 0 </refund>
-         <account>
-           <acctID> ACCT </acctID>
-           <balance> BAL => BAL +Int GLIMIT *Int GPRICE -Int (GLIMIT -Int GAVAIL) *Int BFEE </balance>
-           ...
-         </account>
-         <txPending> ListItem(MsgId:Int) REST => REST </txPending>
-         <message>
-           <msgID> MsgId </msgID>
-           <txGasLimit> GLIMIT </txGasLimit>
-           ...
-         </message>
-
-    rule <k> (.K => #deleteAccounts(Set2List(ACCTS))) ~> #finalizeTx(true) ... </k>
-         <selfDestruct> ACCTS => .Set </selfDestruct>
-      requires size(ACCTS) >Int 0
-
-    rule <k> (.K => #newAccount MINER) ~> #finalizeTx(_) ... </k>
-         <coinbase> MINER </coinbase> [owise]
-
-    rule <k> #deleteAccounts(ListItem(ACCT) ACCTS) => #deleteAccounts(ACCTS) ... </k>
-         <accounts>
-           ( <account>
-               <acctID> ACCT </acctID>
-               ...
-             </account>
-          => .Bag
-           )
-           ...
-         </accounts>
-
-    rule <k> #deleteAccounts(.List) => .K ... </k>
-```
-
 ### Block processing
 
 -   `#startBlock` is used to signal that we are about to start mining a block and block initialization should take place (before transactions are executed).
@@ -731,47 +438,6 @@ After executing a transaction, it's necessary to have the effect of the substate
 -   `#rewardOmmers(_)` pays out the reward to uncle blocks so that blocks are orphaned less often in Ethereum.
 
 ```k
-    syntax EthereumCommand ::= "#startBlock"
- // ----------------------------------------
-    rule <k> #startBlock => #executeBeaconRoots ... </k>
-         <gasUsed> _ => 0 </gasUsed>
-         <log> _ => .List </log>
-         <logsBloom> _ => #padToWidth(256, .Bytes) </logsBloom>
-
-    syntax EthereumCommand ::= "#finalizeBlock"
-                             | #rewardOmmers ( JSONs ) [symbol(#rewardOmmers)]
- // --------------------------------------------------------------------------
-    rule <k> #finalizeBlock => #if Ghaswithdrawals << SCHED >> #then #finalizeWithdrawals #else .K #fi ~> #rewardOmmers(OMMERS) ... </k>
-         <schedule> SCHED </schedule>
-         <ommerBlockHeaders> [ OMMERS ] </ommerBlockHeaders>
-         <coinbase> MINER </coinbase>
-         <account>
-           <acctID> MINER </acctID>
-           <balance> MINBAL => MINBAL +Int Rb < SCHED > </balance>
-           ...
-         </account>
-         <log> LOGS </log>
-         <logsBloom> _ => #bloomFilter(LOGS) </logsBloom>
-
-    rule <k> (.K => #newAccount MINER) ~> #finalizeBlock ... </k>
-         <coinbase> MINER </coinbase> [owise]
-
-    rule <k> #rewardOmmers(.JSONs) => .K ... </k>
-    rule <k> #rewardOmmers([ _ , _ , OMMER , _ , _ , _ , _ , _ , OMMNUM , _ ] , REST) => #rewardOmmers(REST) ... </k>
-         <schedule> SCHED </schedule>
-         <coinbase> MINER </coinbase>
-         <number> CURNUM </number>
-         <account>
-           <acctID> MINER </acctID>
-           <balance> MINBAL => MINBAL +Int Rb < SCHED > /Int 32 </balance>
-          ...
-         </account>
-         <account>
-           <acctID> OMMER </acctID>
-           <balance> OMMBAL => OMMBAL +Int Rb < SCHED > +Int (OMMNUM -Int CURNUM) *Int (Rb < SCHED > /Int 8) </balance>
-          ...
-         </account>
-
     syntax Bytes ::= #bloomFilter(List)      [symbol(#bloomFilter), function]
                    | #bloomFilter(List, Int) [symbol(#bloomFilterAux), function]
  // ----------------------------------------------------------------------------
@@ -804,31 +470,6 @@ After executing a transaction, it's necessary to have the effect of the substate
     rule getBloomFilterBit(X, I) => #asInteger(#range(X, I, 2)) %Int 2048
 ```
 
-If `block.timestamp >= CANCUN_FORK_TIMESTAMP`:
-Before executing any transaction, the `BEACON_ROOTS_ADDRESS` (`0x000F3df6D732807Ef1319fB7B8bB8522d0Beac02`) storage is modified as following:
- - Set the storage value at `header.timestamp % HISTORY_BUFFER_LENGTH` to be `header.timestamp`
- - Set the storage value at `header.timestamp % HISTORY_BUFFER_LENGTH + HISTORY_BUFFER_LENGTH` to be `header.parent_beacon_root_hash`
-where `HISTORY_BUFFER_LENGTH == 8191`.
-
-Read more about EIP-4788 here [https://eips.ethereum.org/EIPS/eip-4788](https://eips.ethereum.org/EIPS/eip-4788).
-
-```k
-    syntax EthereumCommand ::= "#executeBeaconRoots" [symbol(#executeBeaconRoots)]
- // ------------------------------------------------------------------------------
-    rule <k> #executeBeaconRoots => .K ... </k>
-         <schedule> SCHED </schedule>
-         <timestamp> TS </timestamp>
-         <beaconRoot> BR </beaconRoot>
-         <account>
-           <acctID> 339909022928299415537769066420252604268194818 </acctID>
-           <storage> M:Map => M [(TS modInt 8191) <- TS] [(TS modInt 8191 +Int 8191) <- BR] </storage>
-           ...
-         </account>
-      requires Ghasbeaconroot << SCHED >>
-
-    rule <k> #executeBeaconRoots => .K ... </k> [owise]
-```
-
 EVM Programs
 ============
 
@@ -848,123 +489,6 @@ These are just used by the other operators for shuffling local execution state a
  // ------------------------------------------------
     rule <k> W0:Int ~> #push => .K ... </k> <wordStack> WS => pushList(W0, WS) </wordStack>
     rule <k> #setStack WS    => .K ... </k> <wordStack> _  => WS      </wordStack>
-```
-
--   `#newAccount_` allows declaring a new empty account with the given address (and assumes the rounding to 160 bits has already occurred).
-    If the account already exists with non-zero nonce or non-empty code, an exception is thrown.
-    Otherwise, if the account already exists, the storage is cleared.
-
-```k
-    syntax InternalOp ::= "#newAccount" Int
-                        | "#newExistingAccount" Int
- // -----------------------------------------------
-    rule <k> #newAccount ACCT => #newExistingAccount ACCT ... </k> <account> <acctID> ACCT </acctID> ... </account>
-    rule <k> #newAccount ACCT => .K    ... </k>
-             <accounts>
-               ( .Bag
-                  =>
-                 <account>
-                    <acctID> ACCT </acctID>
-                    <balance>           0                  </balance>
-                    <code>              .Bytes:AccountCode </code>
-                    <storage>           .Map               </storage>
-                    <origStorage>       .Map               </origStorage>
-                    <nonce>             0                  </nonce>
-                    <transientStorage> .Map          </transientStorage>
-                 </account>
-               )
-               ...
-             </accounts> [owise, preserves-definedness]
-
-    rule <k> #newExistingAccount ACCT => #end EVMC_ACCOUNT_ALREADY_EXISTS ... </k>
-         <account>
-           <acctID> ACCT  </acctID>
-           <code>   CODE  </code>
-           <nonce>  NONCE </nonce>
-           <storage> STORAGE </storage>
-           ...
-         </account>
-      requires CODE =/=K .Bytes orBool NONCE =/=Int 0 orBool STORAGE =/=K .Map
-
-    rule <k> #newExistingAccount ACCT => .K ... </k>
-         <account>
-           <acctID>      ACCT      </acctID>
-           <code>        CODE      </code>
-           <nonce>       0         </nonce>
-           <storage>     .Map   </storage>
-           <origStorage> _ => .Map </origStorage>
-           ...
-         </account>
-      requires lengthBytes(CODE) ==Int 0
-```
-
--   `#transferFunds` moves money from one account into another, creating the destination account if it doesn't exist.
-
-```k
-    syntax InternalOp ::= "#transferFunds" Int Int Int
-                        | "#transferFundsToNonExistent" Int Int Int
- // ---------------------------------------------------------------
-    rule <k> #transferFunds ACCT ACCT VALUE => .K ... </k>
-         <account>
-           <acctID> ACCT </acctID>
-           <balance> ORIGFROM </balance>
-           ...
-         </account>
-      requires VALUE <=Int ORIGFROM
-
-    rule <k> #transferFunds ACCTFROM ACCTTO VALUE => .K ... </k>
-         <account>
-           <acctID> ACCTFROM </acctID>
-           <balance> ORIGFROM => ORIGFROM -Word VALUE </balance>
-           ...
-         </account>
-         <account>
-           <acctID> ACCTTO </acctID>
-           <balance> ORIGTO => ORIGTO +Word VALUE </balance>
-           ...
-         </account>
-      requires ACCTFROM =/=K ACCTTO andBool VALUE <=Int ORIGFROM
-      [preserves-definedness]
-
-    rule <k> #transferFunds ACCTFROM _ACCTTO VALUE => #end EVMC_BALANCE_UNDERFLOW ... </k>
-         <account>
-           <acctID> ACCTFROM </acctID>
-           <balance> ORIGFROM </balance>
-           ...
-         </account>
-      requires VALUE >Int ORIGFROM
-
-    rule <k> #transferFunds ACCTFROM ACCTTO VALUE => #transferFundsToNonExistent ACCTFROM ACCTTO VALUE ... </k> [owise]
-
-    rule <k> #transferFundsToNonExistent ACCTFROM ACCTTO VALUE => #newAccount ACCTTO ~> #transferFunds ACCTFROM ACCTTO VALUE ... </k>
-         <schedule> SCHED </schedule>
-      requires ACCTFROM =/=K ACCTTO
-       andBool (VALUE >Int 0 orBool notBool Gemptyisnonexistent << SCHED >>)
-
-    rule <k> #transferFundsToNonExistent ACCTFROM ACCTTO 0 => .K ... </k>
-         <schedule> SCHED </schedule>
-      requires ACCTFROM =/=K ACCTTO
-       andBool Gemptyisnonexistent << SCHED >>
-```
-
-- `#baseFeePerBlobGas` will compute the blob base fee as specified by EIPs 4844 and 7516
-
-```k
-    syntax Int ::= #baseFeePerBlobGas( Int ) [symbol(#baseFeePerBlobGas), function]
- // -------------------------------------------------------------------------------
-    rule #baseFeePerBlobGas(BLOBGAS) => #fakeExponential(MIN_BASE_FEE_PER_BLOB_GAS, BLOBGAS, BLOB_BASE_FEE_UPDATE_FRACTION)
-    syntax Int ::= "MIN_BASE_FEE_PER_BLOB_GAS" [macro] | "BLOB_BASE_FEE_UPDATE_FRACTION" [macro]
-    rule MIN_BASE_FEE_PER_BLOB_GAS => 1
-    rule BLOB_BASE_FEE_UPDATE_FRACTION => 3338477
-
-    syntax Int ::= #fakeExponential(Int, Int, Int) [symbol(#fakeExponential), function]
-                 | #fakeExponential(Int, Int, Int, Int, Int) [function]
- // -------------------------------------------------------------------
-    rule #fakeExponential(FACTOR, NUMER, DENOM) => #fakeExponential(1, 0, FACTOR *Int DENOM, NUMER, DENOM)
-
-    rule #fakeExponential(I, OUTPUT, ACCUM, NUMER, DENOM)
-      => #fakeExponential(I +Int 1, OUTPUT +Int ACCUM, ACCUM *Int NUMER /Int (DENOM *Int I), NUMER, DENOM) requires ACCUM >Int 0
-    rule #fakeExponential(_, OUTPUT, _, _, DENOM) => OUTPUT /Int DENOM [owise]
 ```
 
 ### Invalid Operator
@@ -1099,35 +623,29 @@ These operators make queries about the current execution state.
 ```k
     syntax NullStackOp ::= "PC" | "GAS" | "GASPRICE" | "GASLIMIT" | "BASEFEE" | "BLOBBASEFEE"
  // -----------------------------------------------------------------------------------------
-    rule <k> PC          => PCOUNT                      ~> #push ... </k> <pc> PCOUNT </pc>
-    rule <k> GAS         => gas2Int(GAVAIL)             ~> #push ... </k> <gas> GAVAIL </gas>
-    rule <k> GASPRICE    => GPRICE                      ~> #push ... </k> <gasPrice> GPRICE </gasPrice>
-    rule <k> GASLIMIT    => GLIMIT                      ~> #push ... </k> <gasLimit> GLIMIT </gasLimit>
-    rule <k> BASEFEE     => BFEE                        ~> #push ... </k> <baseFee> BFEE </baseFee>
-    rule <k> BLOBBASEFEE => #baseFeePerBlobGas(BLOBGAS) ~> #push ... </k> <excessBlobGas> BLOBGAS </excessBlobGas>  requires notBool #rangeNegUInt64(BLOBGAS)
+    rule <k> PC          => PCOUNT          ~> #push ... </k> <pc> PCOUNT </pc>
+    rule <k> GAS         => gas2Int(GAVAIL) ~> #push ... </k> <gas> GAVAIL </gas>
+    rule <k> GASPRICE    => GasPrice()      ~> #push ... </k>
+    rule <k> GASLIMIT    => GasLimit()      ~> #push ... </k>
+    rule <k> BASEFEE     => BaseFee()       ~> #push ... </k>
+    rule <k> BLOBBASEFEE => BlobBaseFee()   ~> #push ... </k>
 
     syntax NullStackOp ::= "COINBASE" | "TIMESTAMP" | "NUMBER" | "DIFFICULTY" | "PREVRANDAO"
  // ----------------------------------------------------------------------------------------
-    rule <k> COINBASE   => CB   ~> #push ... </k> <coinbase> CB </coinbase>
-    rule <k> TIMESTAMP  => TS   ~> #push ... </k> <timestamp> TS </timestamp>
-    rule <k> NUMBER     => NUMB ~> #push ... </k> <number> NUMB </number>
-    rule <k> DIFFICULTY => DIFF ~> #push ... </k> <difficulty> DIFF </difficulty>
-    rule <k> PREVRANDAO => RDAO ~> #push ... </k> <mixHash> RDAO </mixHash>
+    rule <k> COINBASE   => Coinbase()        ~> #push ... </k>
+    rule <k> TIMESTAMP  => BlockTimestamp()  ~> #push ... </k>
+    rule <k> NUMBER     => BlockNumber()     ~> #push ... </k>
+    rule <k> DIFFICULTY => BlockDifficulty() ~> #push ... </k>
+    rule <k> PREVRANDAO => PrevRandao()      ~> #push ... </k>
 
     syntax NullStackOp ::= "ADDRESS" | "ORIGIN" | "CALLER" | "CALLVALUE" | "CHAINID" | "SELFBALANCE"
  // ------------------------------------------------------------------------------------------------
-    rule <k> ADDRESS     => ACCT ~> #push ... </k> <id> ACCT </id>
-    rule <k> ORIGIN      => ORG  ~> #push ... </k> <origin> ORG </origin>
-    rule <k> CALLER      => CL   ~> #push ... </k> <caller> CL </caller>
-    rule <k> CALLVALUE   => CV   ~> #push ... </k> <callValue> CV </callValue>
-    rule <k> CHAINID     => CID  ~> #push ... </k> <chainID> CID </chainID>
-    rule <k> SELFBALANCE => BAL  ~> #push ... </k>
-         <id> ACCT </id>
-         <account>
-            <acctID> ACCT </acctID>
-            <balance> BAL </balance>
-            ...
-         </account>
+    rule <k> ADDRESS     => ACCT                    ~> #push ... </k> <id> ACCT </id>
+    rule <k> ORIGIN      => Origin()                ~> #push ... </k>
+    rule <k> CALLER      => CL                      ~> #push ... </k> <caller> CL </caller>
+    rule <k> CALLVALUE   => CV                      ~> #push ... </k> <callValue> CV </callValue>
+    rule <k> CHAINID     => ChainId()               ~> #push ... </k>
+    rule <k> SELFBALANCE => GetAccountBalance(ACCT) ~> #push ... </k> <id> ACCT </id>
 
     syntax NullStackOp ::= "MSIZE" | "CODESIZE"
  // -------------------------------------------
@@ -1147,17 +665,7 @@ These operators make queries about the current execution state.
 The blockhash is calculated here using the "shortcut" formula used for running tests.
 
 ```k
-    rule <k> BLOCKHASH N => #blockhash(HASHES, N, HI -Int 1, 0) ~> #push ... </k>
-         <number>      HI     </number>
-         <blockhashes> HASHES </blockhashes>
-
-    syntax Int ::= #blockhash ( List , Int , Int , Int ) [symbol(#blockhash), function]
- // -----------------------------------------------------------------------------------
-    rule #blockhash(_, N, HI, _) => 0 requires N >Int HI
-    rule #blockhash(_, _, _, 256) => 0
-    rule #blockhash(ListItem(0) _, _, _, _) => 0
-    rule #blockhash(ListItem(H) _, N, N, _) => H
-    rule #blockhash(ListItem(_) L, N, HI, A) => #blockhash(L, N, HI -Int 1, A +Int 1) [owise]
+    rule <k> BLOCKHASH N => BlockHash(N) ~> #push ... </k>
 ```
 
 ```k
@@ -1165,12 +673,10 @@ The blockhash is calculated here using the "shortcut" formula used for running t
  // -------------------------------
 
     rule <k> BLOBHASH INDEX => 0 ~> #push ... </k>
-         <versionedHashes> HASHES </versionedHashes>
-       requires INDEX >=Int size(HASHES)
+       requires INDEX >=Int BlobHashesSize()
 
-    rule <k> BLOBHASH INDEX => #asWord( {HASHES[INDEX]}:>Bytes ) ~> #push ... </k>
-         <versionedHashes> HASHES </versionedHashes>
-       requires INDEX <Int size(HASHES)
+    rule <k> BLOBHASH INDEX => BlobHash(INDEX) ~> #push ... </k>
+       requires INDEX <Int BlobHashesSize()
 ```
 
 EVM OpCodes
@@ -1234,17 +740,17 @@ These operators query about the current `CALL*` state.
 ```k
     syntax NullStackOp ::= "CALLDATASIZE"
  // -------------------------------------
-    rule <k> CALLDATASIZE => lengthBytes(CD) ~> #push ... </k>
+   rule <k> CALLDATASIZE => lengthBytes(CD) ~> #push ... </k>
          <callData> CD </callData>
 
     syntax UnStackOp ::= "CALLDATALOAD"
  // -----------------------------------
-    rule <k> CALLDATALOAD DATASTART => #asWord(#range(CD, DATASTART, 32)) ~> #push ... </k>
+   rule <k> CALLDATALOAD DATASTART => #asWord(#range(CD, DATASTART, 32)) ~> #push ... </k>
          <callData> CD </callData>
 
     syntax TernStackOp ::= "CALLDATACOPY"
  // -------------------------------------
-    rule <k> CALLDATACOPY MEMSTART DATASTART DATAWIDTH => .K ... </k>
+   rule <k> CALLDATACOPY MEMSTART DATASTART DATAWIDTH => .K ... </k>
          <localMem> LM => LM [ MEMSTART := #range(CD, DATASTART, DATAWIDTH) ] </localMem>
          <callData> CD </callData>
 ```
@@ -1277,12 +783,25 @@ These operators query about the current return data buffer.
     syntax BinStackOp ::= LogOp
     syntax LogOp ::= LOG ( Int ) [symbol(LOG)]
  // ------------------------------------------
-    rule <k> LOG(N) MEMSTART MEMWIDTH => .K ... </k>
+    rule <k> LOG(0) MEMSTART MEMWIDTH => Log0(ACCT, #range(LM, MEMSTART, MEMWIDTH)) ...</k>
          <id> ACCT </id>
-         <wordStack> WS => range(WS, N, 0) </wordStack>
          <localMem> LM </localMem>
-         <log> L => L ListItem({ ACCT | range(WS, 0, size(WS) -Int N) | #range(LM, MEMSTART, MEMWIDTH) }) </log>
-      requires size(WS) >=Int N
+    rule <k> LOG(1) MEMSTART MEMWIDTH => Log1(ACCT, T1, #range(LM, MEMSTART, MEMWIDTH)) ...</k>
+         <id> ACCT </id>
+         <wordStack> ListItem(T1) WS => WS </wordStack>
+         <localMem> LM </localMem>
+    rule <k> LOG(2) MEMSTART MEMWIDTH => Log2(ACCT, T1, T2, #range(LM, MEMSTART, MEMWIDTH)) ...</k>
+         <id> ACCT </id>
+         <wordStack> ListItem(T1) ListItem(T2) WS => WS </wordStack>
+         <localMem> LM </localMem>
+    rule <k> LOG(3) MEMSTART MEMWIDTH => Log3(ACCT, T1, T2, T3, #range(LM, MEMSTART, MEMWIDTH)) ...</k>
+         <id> ACCT </id>
+         <wordStack> ListItem(T1) ListItem(T2) ListItem(T3) WS => WS </wordStack>
+         <localMem> LM </localMem>
+    rule <k> LOG(4) MEMSTART MEMWIDTH => Log4(ACCT, T1, T2, T3, T4, #range(LM, MEMSTART, MEMWIDTH)) ...</k>
+         <id> ACCT </id>
+         <wordStack> ListItem(T1) ListItem(T2) ListItem(T3) ListItem(T4) WS => WS </wordStack>
+         <localMem> LM </localMem>
 ```
 
 Ethereum Network OpCodes
@@ -1295,57 +814,23 @@ Operators that require access to the rest of the Ethereum network world-state ca
 ```k
     syntax UnStackOp ::= "BALANCE"
  // ------------------------------
-    rule [balance.true]:
-         <k> BALANCE ACCT => #accessAccounts ACCT ~> BAL ~> #push ... </k>
-         <account>
-           <acctID> ACCT </acctID>
-           <balance> BAL </balance>
-           ...
-         </account>
-
-    rule [balance.false]: <k> BALANCE ACCT => #accessAccounts ACCT ~> 0 ~> #push ... </k> [owise]
+    rule <k> BALANCE ACCT => GetAccountBalance(ACCT) ~> #push ... </k>
 
     syntax UnStackOp ::= "EXTCODESIZE"
  // ----------------------------------
-    rule [extcodesize.true]:
-         <k> EXTCODESIZE ACCT => #accessAccounts ACCT ~> lengthBytes(CODE) ~> #push ... </k>
-         <account>
-           <acctID> ACCT </acctID>
-           <code> CODE </code>
-           ...
-         </account>
-
-    rule [extcodesize.false]: <k> EXTCODESIZE ACCT => #accessAccounts ACCT ~> 0 ~> #push ... </k> [owise]
+    rule <k> EXTCODESIZE ACCT => lengthBytes(GetAccountCode(ACCT)) ~> #push ... </k>
 
     syntax UnStackOp ::= "EXTCODEHASH"
  // ----------------------------------
-    rule [extcodehash.true]:
-         <k> EXTCODEHASH ACCT => #accessAccounts ACCT ~> keccak(CODE) ~> #push ... </k>
-         <account>
-           <acctID> ACCT </acctID>
-           <code> CODE:Bytes </code>
-           <nonce> NONCE </nonce>
-           <balance> BAL </balance>
-           ...
-         </account>
-      requires notBool #accountEmpty(CODE, NONCE, BAL)
+    rule <k> EXTCODEHASH ACCT => GetCodeHash(ACCT) ~> #push ... </k>
+      requires notBool IsAccountEmpty(ACCT)
 
-    rule [extcodehash.false]: <k> EXTCODEHASH ACCT => #accessAccounts ACCT ~> 0 ~> #push ... </k> [owise]
+    rule <k> EXTCODEHASH ACCT => AccessAccount(ACCT) ~> 0 ~> #push ... </k> [owise]
 
     syntax QuadStackOp ::= "EXTCODECOPY"
  // ------------------------------------
-    rule [extcodecopy.true]:
-         <k> EXTCODECOPY ACCT MEMSTART PGMSTART WIDTH => #accessAccounts ACCT ... </k>
-         <localMem> LM => LM [ MEMSTART := #range(PGM, PGMSTART, WIDTH) ] </localMem>
-         <account>
-           <acctID> ACCT </acctID>
-           <code> PGM </code>
-           ...
-         </account>
-
-    rule [extcodecopy.false]:
-         <k> EXTCODECOPY ACCT MEMSTART _ WIDTH => #accessAccounts ACCT ... </k>
-         <localMem> LM => LM [ MEMSTART := #padToWidth(WIDTH, .Bytes) ] </localMem> [owise]
+    rule <k> EXTCODECOPY ACCT MEMSTART PGMSTART WIDTH => .K ... </k>
+         <localMem> LM => LM [ MEMSTART := #range(GetAccountCode(ACCT), PGMSTART, WIDTH) ] </localMem>
 ```
 
 ### Account Storage Operations
@@ -1356,48 +841,40 @@ These rules reach into the network state and load/store from account storage:
     syntax UnStackOp ::= "SLOAD"
  // ----------------------------
     rule [sload]:
-         <k> SLOAD INDEX => #lookup(STORAGE, INDEX) ~> #push ... </k>
+         <k> SLOAD INDEX => GetAccountStorage(ACCT, INDEX) ~> #push ... </k>
          <id> ACCT </id>
-         <account>
-           <acctID> ACCT </acctID>
-           <storage> STORAGE </storage>
-           ...
-         </account>
 
     syntax BinStackOp ::= "SSTORE"
  // ------------------------------
     rule [sstore]:
-         <k> SSTORE INDEX NEW => .K ... </k>
+         <k> SSTORE INDEX NEW => SetAccountStorage(ACCT, INDEX, NEW) ... </k>
          <id> ACCT </id>
-         <account>
-           <acctID> ACCT </acctID>
-           <storage> STORAGE => STORAGE [ INDEX <- NEW ] </storage>
-           ...
-         </account>
       [preserves-definedness]
 
     syntax UnStackOp ::= "TLOAD"
  // ----------------------------
     rule [tload]:
-         <k> TLOAD INDEX => #lookup(TSTORAGE, INDEX) ~> #push ... </k>
+         <k> TLOAD INDEX => GetAccountTransientStorage(ACCT, INDEX) ~> #push ... </k>
          <id> ACCT </id>
-         <account>
-           <acctID> ACCT </acctID>
-           <transientStorage> TSTORAGE </transientStorage>
-           ...
-         </account>
 
     syntax BinStackOp ::= "TSTORE"
  // ------------------------------
     rule [tstore]:
-         <k> TSTORE INDEX NEW => .K ... </k>
+         <k> TSTORE INDEX NEW => SetAccountTransientStorage(ACCT, INDEX, NEW) ... </k>
          <id> ACCT </id>
-         <account>
-           <acctID> ACCT </acctID>
-           <transientStorage> TSTORAGE => TSTORAGE [ INDEX <- NEW ] </transientStorage>
-           ...
-         </account>
       [preserves-definedness]
+```
+
+### Transfer Operation
+```k
+    syntax InternalOp ::= "#transferFundsFrom" Int Int Int
+   // -------------------------------------------------------------------------------------------------
+    rule [transferFundsFrom.success]:
+      <k> #transferFundsFrom ACCTFROM ACCTTO VALUE => .K ... </k>
+      requires TransferFrom(ACCTFROM, ACCTTO, VALUE)
+
+    rule [transferFundsFrom.failure]:
+      <k> #transferFundsFrom _ _ _ => #end EVMC_BALANCE_UNDERFLOW ... </k> [owise]
 ```
 
 ### Call Operations
@@ -1424,20 +901,10 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
      rule <k> #checkBalanceUnderflow ACCT VALUE => #refund GCALL ~> #pushCallStack ~> #pushWorldState ~> #end EVMC_BALANCE_UNDERFLOW ... </k>
          <output> _ => .Bytes </output>
          <callGas> GCALL </callGas>
-         <account>
-           <acctID> ACCT </acctID>
-           <balance> BAL </balance>
-           ...
-         </account>
-      requires VALUE >Int BAL
+      requires VALUE >Int GetAccountBalance(ACCT)
 
     rule <k> #checkBalanceUnderflow ACCT VALUE => .K ... </k>
-         <account>
-           <acctID> ACCT </acctID>
-           <balance> BAL </balance>
-           ...
-         </account>
-      requires VALUE <=Int BAL
+      requires VALUE <=Int GetAccountBalance(ACCT)
 
     rule <k> #checkDepthExceeded => #refund GCALL ~> #pushCallStack ~> #pushWorldState ~> #end EVMC_CALL_DEPTH_EXCEEDED ... </k>
          <output> _ => .Bytes </output>
@@ -1452,33 +919,19 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     rule <k> #checkNonceExceeded ACCT => #refund GCALL ~> #pushCallStack ~> #pushWorldState ~> #end EVMC_NONCE_EXCEEDED ... </k>
          <output> _ => .Bytes </output>
          <callGas> GCALL </callGas>
-         <account>
-           <acctID> ACCT </acctID>
-           <nonce> NONCE </nonce>
-           ...
-         </account>
-      requires notBool #rangeNonce(NONCE)
+      requires notBool #rangeNonce(GetAccountNonce(ACCT))
 
     rule <k> #checkNonceExceeded ACCT => .K ... </k>
-         <account>
-           <acctID> ACCT </acctID>
-           <nonce> NONCE </nonce>
-           ...
-         </account>
-      requires #rangeNonce(NONCE)
+      requires #rangeNonce(GetAccountNonce(ACCT))
 
     rule <k> #checkCall ACCT VALUE => #checkBalanceUnderflow ACCT VALUE ~> #checkDepthExceeded ... </k>
 
     rule [call.true]:
          <k> #call ACCTFROM ACCTTO ACCTCODE VALUE APPVALUE ARGS STATIC
-          => #callWithCode ACCTFROM ACCTTO ACCTCODE CODE VALUE APPVALUE ARGS STATIC
+          => #callWithCode ACCTFROM ACCTTO ACCTCODE GetAndResolveCode(ACCTCODE) VALUE APPVALUE ARGS STATIC
          ...
          </k>
-         <account>
-           <acctID> ACCTCODE </acctID>
-           <code> CODE </code>
-           ...
-         </account>
+        requires AccountExists(ACCTCODE)
 
     rule [call.false]:
          <k> #call ACCTFROM ACCTTO ACCTCODE VALUE APPVALUE ARGS STATIC
@@ -1488,21 +941,21 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
 
     rule <k> #callWithCode ACCTFROM ACCTTO ACCTCODE BYTES VALUE APPVALUE ARGS STATIC
           => #pushCallStack ~> #pushWorldState
-          ~> #transferFunds ACCTFROM ACCTTO VALUE
+          ~> #transferFundsFrom ACCTFROM ACCTTO VALUE
           ~> #mkCall ACCTFROM ACCTTO ACCTCODE BYTES APPVALUE ARGS STATIC
          ...
          </k>
 
     rule <k> #mkCall ACCTFROM ACCTTO ACCTCODE BYTES APPVALUE ARGS STATIC:Bool
-          => #touchAccounts ACCTFROM ACCTTO ~> #accessAccounts ACCTFROM ACCTTO ~> #loadProgram BYTES ~> #initVM ~> #precompiled?(ACCTCODE, SCHED) ~> #execute
+          => AccessAccount(ACCTFROM) ~> AccessAccount(ACCTTO) ~> #loadProgram BYTES ~> #initVM ~> #precompiled?(ACCTCODE, SCHED) ~> #execute
          ...
          </k>
          <callDepth> CD => CD +Int 1 </callDepth>
          <callData> _ => ARGS </callData>
          <callValue> _ => APPVALUE </callValue>
          <id> _ => ACCTTO </id>
-         <gas> _GAVAIL:Gas => GCALL:Gas </gas>
-         <callGas> GCALL:Gas => 0:Gas </callGas>
+         <gas> _GAVAIL:Int => GCALL:Int </gas>
+         <callGas> GCALL:Int => 0:Int </callGas>
          <caller> _ => ACCTFROM </caller>
          <static> OLDSTATIC:Bool => OLDSTATIC orBool STATIC </static>
          <schedule> SCHED </schedule>
@@ -1530,59 +983,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     rule [program.load]:
          <k> #loadProgram BYTES => .K ... </k>
          <program> _ => BYTES </program>
-         <jumpDests> _ => #computeValidJumpDests(BYTES) </jumpDests>
-
-    syntax KItem ::= "#touchAccounts" Account | "#touchAccounts" Account Account
- // ----------------------------------------------------------------------------
-    rule <k> #touchAccounts ADDR1 ADDR2 => #touchAccounts ADDR1 ~> #touchAccounts ADDR2 ... </k>
-
-    rule <k> #touchAccounts ADDR => .K ... </k>
-         <touchedAccounts> TOUCHED_ACCOUNTS => TOUCHED_ACCOUNTS |Set SetItem(ADDR) </touchedAccounts>
-
-    syntax KItem ::= "#accessStorage" Account Int
- // ---------------------------------------------
-    rule <k> #accessStorage ACCT INDEX => .K ... </k>
-         <accessedStorage> ... ACCT |-> (TS:Set => TS |Set SetItem(INDEX)) ... </accessedStorage>
-         <schedule> SCHED </schedule>
-         requires Ghasaccesslist << SCHED >>
-         [preserves-definedness]
-
-    rule <k> #accessStorage ACCT INDEX => .K ... </k>
-         <accessedStorage> TS => TS[ACCT <- SetItem(INDEX)] </accessedStorage>
-         <schedule> SCHED </schedule>
-      requires Ghasaccesslist << SCHED >> andBool notBool ACCT in_keys(TS)
-
-    rule <k> #accessStorage _ _ => .K ... </k>
-         <schedule> SCHED </schedule>
-      requires notBool Ghasaccesslist << SCHED >>
-
-    syntax KItem ::= "#accessAccounts" Account
-                   | "#accessAccounts" Set
-                   | "#accessAccounts" Account Account
-                   | "#accessAccounts" Account Account Set
- // ------------------------------------------------------
-    rule <k> #accessAccounts ADDR1:Account ADDR2:Account ADDRSET:Set => #accessAccounts ADDR1 ~> #accessAccounts ADDR2 ~> #accessAccounts ADDRSET ... </k>
-
-    rule <k> #accessAccounts ADDR1:Account ADDR2:Account => #accessAccounts ADDR1 ~> #accessAccounts ADDR2 ... </k>
-
-    rule <k> #accessAccounts ADDR:Account => .K ... </k>
-         <accessedAccounts> TOUCHED_ACCOUNTS => TOUCHED_ACCOUNTS |Set SetItem(ADDR) </accessedAccounts>
-
-    rule <k> #accessAccounts ADDRSET:Set => .K ... </k>
-         <accessedAccounts> TOUCHED_ACCOUNTS => TOUCHED_ACCOUNTS |Set ADDRSET </accessedAccounts>
-
-    syntax Bytes ::= #computeValidJumpDests(Bytes)             [symbol(computeValidJumpDests),    function, memo, total]
-                   | #computeValidJumpDests(Bytes, Int, Bytes) [symbol(computeValidJumpDestsAux), function             ]
- // --------------------------------------------------------------------------------------------------------------------
-    rule #computeValidJumpDests(PGM) => #computeValidJumpDests(PGM, 0, padRightBytes(.Bytes, lengthBytes(PGM), 0))
-
-    syntax Bytes ::= #computeValidJumpDestsWithinBound(Bytes, Int, Bytes) [symbol(computeValidJumpDestsWithinBound), function]
- // --------------------------------------------------------------------------------------------------------------------------
-    rule #computeValidJumpDests(PGM, I, RESULT) => RESULT requires I >=Int lengthBytes(PGM)
-    rule #computeValidJumpDests(PGM, I, RESULT) => #computeValidJumpDestsWithinBound(PGM, I, RESULT) requires I <Int lengthBytes(PGM)
-
-    rule #computeValidJumpDestsWithinBound(PGM, I, RESULT) => #computeValidJumpDests(PGM, I +Int 1, RESULT[I <- 1]) requires PGM [ I ] ==Int 91
-    rule #computeValidJumpDestsWithinBound(PGM, I, RESULT) => #computeValidJumpDests(PGM, I +Int #widthOpCode(PGM [ I ]), RESULT) requires notBool PGM [ I ] ==Int 91
+         <jumpDests> _ => ComputeValidJumpDests(BYTES) </jumpDests>
 ```
 
 ```k
@@ -1597,7 +998,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <statusCode> _:ExceptionalStatusCode </statusCode>
          <k> #halt ~> #return _ _
           => #popCallStack ~> #popWorldState ~> 0 ~> #push
-         ...
+          ...
          </k>
          <output> _ => .Bytes </output>
 
@@ -1621,10 +1022,11 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <output> OUT </output>
          <gas> GAVAIL </gas>
 
+
     syntax InternalOp ::= "#refund" Gas
                         | "#setLocalMem" Int Int Bytes
  // --------------------------------------------------
-    rule [refund]: <k> #refund G:Gas => .K ... </k> <gas> GAVAIL => GAVAIL +Gas G </gas>
+    rule [refund]: <k> #refund G:Int => .K ... </k> <gas> GAVAIL => GAVAIL +Int G </gas>
 
 
     rule <k> #setLocalMem START WIDTH WS => .K ... </k>
@@ -1638,15 +1040,17 @@ Ethereum Network OpCodes
 
 For each `CALL*` operation, we make a corresponding call to `#call` and a state-change to setup the custom parts of the calling environment.
 
+
 ```k
     syntax CallOp ::= "CALL"
  // ------------------------
     rule [call]:
          <k> CALL _GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
-          => #accessAccounts ACCTTO
+          => AccessAccount(ACCTTO)
           ~> #checkCall ACCTFROM VALUE
           ~> #call ACCTFROM ACCTTO ACCTTO VALUE VALUE #range(LM, ARGSTART, ARGWIDTH) false
           ~> #return RETSTART RETWIDTH
+
          ...
          </k>
          <id> ACCTFROM </id>
@@ -1656,7 +1060,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
  // ----------------------------
     rule [callcode]:
          <k> CALLCODE _GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
-          => #accessAccounts ACCTTO
+          => AccessAccount(ACCTTO)
           ~> #checkCall ACCTFROM VALUE
           ~> #call ACCTFROM ACCTFROM ACCTTO VALUE VALUE #range(LM, ARGSTART, ARGWIDTH) false
           ~> #return RETSTART RETWIDTH
@@ -1669,7 +1073,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
  // -----------------------------------
     rule [delegatecall]:
          <k> DELEGATECALL _GCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
-          => #accessAccounts ACCTTO
+          => AccessAccount(ACCTTO)
           ~> #checkCall ACCTFROM 0
           ~> #call ACCTAPPFROM ACCTFROM ACCTTO 0 VALUE #range(LM, ARGSTART, ARGWIDTH) false
           ~> #return RETSTART RETWIDTH
@@ -1684,7 +1088,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
  // ---------------------------------
     rule [staticcall]:
          <k> STATICCALL _GCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
-          => #accessAccounts ACCTTO
+          => AccessAccount(ACCTTO)
           ~> #checkCall ACCTFROM 0
           ~> #call ACCTFROM ACCTTO ACCTTO 0 0 #range(LM, ARGSTART, ARGWIDTH) true
           ~> #return RETSTART RETWIDTH
@@ -1702,25 +1106,26 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
 -   `#hasValidInitCode` checks the length of the transaction data in a create transaction. [EIP-3860]
 
 ```k
-    syntax InternalOp ::= "#create"   Int Int Int Bytes
-                        | "#mkCreate" Int Int Int Bytes
-                        | "#incrementNonce" Int
+    syntax InternalOp ::= "#create"      Int Int Int Bytes
+                        | "#mkCreate"    Int Int Int Bytes
+                        | "#newAccount"  Int Int Int
                         | "#checkCreate" Int Int
- // --------------------------------------------
+    // ------------------------------------------------
     rule <k> #create ACCTFROM ACCTTO VALUE INITCODE
-          => #incrementNonce ACCTFROM
+          => IncrementNonce(ACCTFROM)
           ~> #pushCallStack ~> #pushWorldState
-          ~> #newAccount ACCTTO
-          ~> #transferFunds ACCTFROM ACCTTO VALUE
+          ~> #newAccount ACCTFROM ACCTTO VALUE
           ~> #mkCreate ACCTFROM ACCTTO VALUE INITCODE
          ...
          </k>
 
-    rule <k> #mkCreate ACCTFROM ACCTTO VALUE INITCODE
-          => #touchAccounts ACCTFROM ACCTTO ~> #accessAccounts ACCTFROM ACCTTO ~> #loadProgram INITCODE ~> #initVM ~> #execute
+
+    rule <k> #newAccount ACCTFROM ACCTTO VALUE
+          => #if NewAccount(ACCTFROM, ACCTTO, VALUE) #then .K #else #end EVMC_ACCOUNT_ALREADY_EXISTS #fi
          ...
          </k>
-         <schedule> SCHED </schedule>
+
+    rule <k> #mkCreate ACCTFROM ACCTTO VALUE INITCODE => #loadProgram INITCODE ~> #initVM ~> #execute ... </k>
          <id> _ => ACCTTO </id>
          <gas> _GAVAIL => GCALL </gas>
          <callGas> GCALL => 0 </callGas>
@@ -1728,33 +1133,24 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          <callDepth> CD => CD +Int 1 </callDepth>
          <callData> _ => .Bytes </callData>
          <callValue> _ => VALUE </callValue>
-         <account>
-           <acctID> ACCTTO </acctID>
-           <nonce> NONCE => #if Gemptyisnonexistent << SCHED >> #then NONCE +Int 1 #else NONCE #fi </nonce>
-           ...
-         </account>
-         <createdAccounts> ACCTS => ACCTS |Set SetItem(ACCTTO) </createdAccounts>
+```
 
-    rule <k> #incrementNonce ACCT => .K ... </k>
-         <account>
-           <acctID> ACCT </acctID>
-           <nonce> NONCE => NONCE +Int 1 </nonce>
-           ...
-         </account>
+```k
+    rule <k> #checkCreate ACCT VALUE => #checkBalanceUnderflow ACCT VALUE ~> #checkDepthExceeded ~> #checkNonceExceeded ACCT ... </k>
+
+      syntax Bool ::= #isValidCode ( Bytes , Schedule ) [symbol(#isValidCode), function]
+ // ----------------------------------------------------------------------------------
+    rule #isValidCode( OUT ,  SCHED) => Ghasrejectedfirstbyte << SCHED >> impliesBool OUT[0] =/=Int 239 requires lengthBytes(OUT) >Int 0
+    rule #isValidCode(_OUT , _SCHED) => true                                                            [owise]
 
     syntax Bool ::= #hasValidInitCode ( Int , Schedule ) [symbol(#hasValidInitCode), function]
  // ------------------------------------------------------------------------------------------
     rule #hasValidInitCode(INITCODELEN, SCHED) => notBool Ghasmaxinitcodesize << SCHED >> orBool INITCODELEN <=Int maxInitCodeSize < SCHED >
 
-    syntax Bool ::= #isValidCode ( Bytes , Schedule ) [symbol(#isValidCode), function]
- // ----------------------------------------------------------------------------------
-    rule #isValidCode( OUT ,  SCHED) => Ghasrejectedfirstbyte << SCHED >> impliesBool OUT[0] =/=Int 239 requires lengthBytes(OUT) >Int 0
-    rule #isValidCode(_OUT , _SCHED) => true                                                            [owise]
-
-    syntax KItem ::= "#codeDeposit" Int
+   syntax KItem ::= "#codeDeposit" Int
                    | "#mkCodeDeposit" Int
                    | "#finishCodeDeposit" Int Bytes
- // -----------------------------------------------
+
     rule <statusCode> _:ExceptionalStatusCode </statusCode>
          <k> #halt ~> #codeDeposit _ => #popCallStack ~> #popWorldState ~> 0 ~> #push ... </k> <output> _ => .Bytes </output>
 
@@ -1781,15 +1177,10 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
 
     rule <k> #finishCodeDeposit ACCT OUT
           => #popCallStack ~> #dropWorldState
-          ~> #refund GAVAIL ~> ACCT ~> #push
+          ~> #refund GAVAIL ~> SetAccountCode(ACCT, OUT) ~> ACCT ~> #push
          ...
          </k>
          <gas> GAVAIL </gas>
-         <account>
-           <acctID> ACCT </acctID>
-           <code> _ => OUT </code>
-           ...
-         </account>
 
     rule <statusCode> _:ExceptionalStatusCode </statusCode>
          <k> #halt ~> #finishCodeDeposit ACCT _
@@ -1804,8 +1195,6 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          <k> #halt ~> #finishCodeDeposit _ _ => #popCallStack ~> #popWorldState ~> 0 ~> #push ... </k>
          <schedule> SCHED </schedule>
       requires SCHED =/=K FRONTIER
-
-    rule <k> #checkCreate ACCT VALUE => #checkBalanceUnderflow ACCT VALUE ~> #checkDepthExceeded ~> #checkNonceExceeded ACCT ... </k>
 ```
 
 `CREATE` will attempt to `#create` the account using the initialization code and cleans up the result with `#codeDeposit`.
@@ -1815,19 +1204,14 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
  // -------------------------------
     rule [create-valid]:
          <k> CREATE VALUE MEMSTART MEMWIDTH
-          => #accessAccounts #newAddr(ACCT, NONCE)
+          => AccessAccount(#newAddr(ACCT, GetAccountNonce(ACCT)))
           ~> #checkCreate ACCT VALUE
-          ~> #create ACCT #newAddr(ACCT, NONCE) VALUE #range(LM, MEMSTART, MEMWIDTH)
-          ~> #codeDeposit #newAddr(ACCT, NONCE)
+          ~> #create ACCT #newAddr(ACCT, GetAccountNonce(ACCT)) VALUE #range(LM, MEMSTART, MEMWIDTH)
+          ~> #codeDeposit #newAddr(ACCT, GetAccountNonce(ACCT))
          ...
          </k>
          <id> ACCT </id>
          <localMem> LM </localMem>
-         <account>
-           <acctID> ACCT </acctID>
-           <nonce> NONCE </nonce>
-           ...
-         </account>
          <schedule> SCHED </schedule>
       requires #hasValidInitCode(MEMWIDTH, SCHED)
       [preserves-definedness]
@@ -1843,7 +1227,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
  // --------------------------------
     rule [create2-valid]:
          <k> CREATE2 VALUE MEMSTART MEMWIDTH SALT
-          => #accessAccounts #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH))
+          => AccessAccount(#newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH)))
           ~> #checkCreate ACCT VALUE
           ~> #create ACCT #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH)) VALUE #range(LM, MEMSTART, MEMWIDTH)
           ~> #codeDeposit #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH))
@@ -1864,52 +1248,9 @@ Self destructing to yourself, unlike a regular transfer, destroys the balance in
 ```k
     syntax UnStackOp ::= "SELFDESTRUCT"
  // -----------------------------------
-    rule <k> SELFDESTRUCT ACCTTO => #touchAccounts ACCT ACCTTO ~> #accessAccounts ACCTTO ~> #transferFunds ACCT ACCTTO BALFROM ~> #end EVMC_SUCCESS ... </k>
-         <schedule> SCHED </schedule>
-         <id> ACCT </id>
-         <selfDestruct> SDS => SDS |Set SetItem(ACCT) </selfDestruct>
-         <account>
-           <acctID> ACCT </acctID>
-           <balance> BALFROM </balance>
-           ...
-         </account>
+    rule <k> SELFDESTRUCT ACCTTO => SelfDestruct(IDACCT, ACCTTO) ~> #end EVMC_SUCCESS ... </k>
+         <id> IDACCT </id>
          <output> _ => .Bytes </output>
-         <createdAccounts> CA </createdAccounts>
-      requires ((notBool Ghaseip6780 << SCHED >>) orBool ACCT in CA)
-       andBool ACCT =/=Int ACCTTO
-
-    rule <k> SELFDESTRUCT ACCT => #touchAccounts ACCT ~> #accessAccounts ACCT ~> #end EVMC_SUCCESS ... </k>
-         <schedule> SCHED </schedule>
-         <id> ACCT </id>
-         <selfDestruct> SDS => SDS |Set SetItem(ACCT) </selfDestruct>
-         <account>
-           <acctID> ACCT </acctID>
-           <balance> _ => 0 </balance>
-           ...
-         </account>
-         <output> _ => .Bytes </output>
-         <createdAccounts> CA </createdAccounts>
-      requires ((notBool Ghaseip6780 << SCHED >>) orBool ACCT in CA)
-
-    rule <k> SELFDESTRUCT ACCTTO => #touchAccounts ACCT ACCTTO ~> #accessAccounts ACCTTO ~> #transferFunds ACCT ACCTTO BALFROM ~> #end EVMC_SUCCESS ... </k>
-         <schedule> SCHED </schedule>
-         <id> ACCT </id>
-         <account>
-           <acctID> ACCT </acctID>
-           <balance> BALFROM </balance>
-           ...
-         </account>
-         <output> _ => .Bytes </output>
-         <createdAccounts> CA </createdAccounts>
-      requires Ghaseip6780 << SCHED >> andBool (notBool ACCT in CA)
-       andBool ACCT =/=Int ACCTTO
-
-    rule <k> SELFDESTRUCT ACCT => #touchAccounts ACCT ~> #accessAccounts ACCT ~> #end EVMC_SUCCESS ... </k>
-         <schedule> SCHED </schedule>
-         <id> ACCT </id>
-         <output> _ => .Bytes </output>
-         <createdAccounts> CA </createdAccounts>
-      requires Ghaseip6780 << SCHED >> andBool (notBool ACCT in CA)
 ```
 
 Precompiled Contracts
@@ -1933,6 +1274,13 @@ Precompiled Contracts
     rule #precompiled(8) => ECPAIRING
     rule #precompiled(9) => BLAKE2F
     rule #precompiled(10) => KZGPOINTEVAL
+    rule #precompiled(11) => BLS12G1ADD
+    rule #precompiled(12) => BLS12G1MSM
+    rule #precompiled(13) => BLS12G2ADD
+    rule #precompiled(14) => BLS12G2MSM
+    rule #precompiled(15) => BLS12PAIRING_CHECK
+    rule #precompiled(16) => BLS12MAPFPTOG1
+    rule #precompiled(17) => BLS12MAPFP2TOG2
 
     syntax Int ::= #precompiledAccountsUB ( Schedule ) [symbol(#precompiledAccountsUB), function, total]
  // ----------------------------------------------------------------------------------------------------
@@ -1949,7 +1297,7 @@ Precompiled Contracts
     rule #precompiledAccountsUB(MERGE)             => #precompiledAccountsUB(LONDON)
     rule #precompiledAccountsUB(SHANGHAI)          => #precompiledAccountsUB(MERGE)
     rule #precompiledAccountsUB(CANCUN)            => 10
-    rule #precompiledAccountsUB(PRAGUE)            => #precompiledAccountsUB(CANCUN)
+    rule #precompiledAccountsUB(PRAGUE)            => 17
 
 
     syntax Set ::= #precompiledAccountsSet    ( Schedule ) [symbol(#precompiledAccountsSet),    function, total]
@@ -1976,8 +1324,8 @@ Precompiled Contracts
     syntax PrecompiledOp ::= "ECREC"
  // --------------------------------
     rule <k> ECREC => #end EVMC_SUCCESS ... </k>
-         <callData> DATA </callData>
-         <output> _ => #ecrec(#range(DATA, 0, 32), #range(DATA, 32, 32), #range(DATA, 64, 32), #range(DATA, 96, 32)) </output>
+         <output> _ => #let DATA = CD #in #ecrec(#range(DATA, 0, 32), #range(DATA, 32, 32), #range(DATA, 64, 32), #range(DATA, 96, 32)) </output>
+         <callData> CD </callData>
 
     syntax Bytes ::= #ecrec ( Bytes , Bytes , Bytes , Bytes ) [symbol(#ecrec),    function, total, smtlib(ecrec)]
                    | #ecrec ( Account )                       [symbol(#ecrecAux), function, total               ]
@@ -1990,26 +1338,26 @@ Precompiled Contracts
     syntax PrecompiledOp ::= "SHA256"
  // ---------------------------------
     rule <k> SHA256 => #end EVMC_SUCCESS ... </k>
-         <callData> DATA </callData>
-         <output> _ => #parseHexBytes(Sha256(DATA)) </output>
+         <output> _ => #parseHexBytes(Sha256(CD)) </output>
+         <callData> CD </callData>
 
     syntax PrecompiledOp ::= "RIP160"
  // ---------------------------------
     rule <k> RIP160 => #end EVMC_SUCCESS ... </k>
-         <callData> DATA </callData>
-         <output> _ => #padToWidth(32, #parseHexBytes(RipEmd160(DATA))) </output>
+         <output> _ => #padToWidth(32, #parseHexBytes(RipEmd160(CD))) </output>
+         <callData> CD </callData>
 
     syntax PrecompiledOp ::= "ID"
  // -----------------------------
     rule <k> ID => #end EVMC_SUCCESS ... </k>
-         <callData> DATA </callData>
-         <output> _ => DATA </output>
+         <output> _ => CD </output>
+         <callData> CD </callData>
 
     syntax PrecompiledOp ::= "MODEXP"
  // ---------------------------------
     rule <k> MODEXP => #end EVMC_SUCCESS ... </k>
-         <callData> DATA </callData>
-         <output> _ => #modexp1(#asWord(#range(DATA, 0, 32)), #asWord(#range(DATA, 32, 32)), #asWord(#range(DATA, 64, 32)), #range(DATA, 96, maxInt(0, lengthBytes(DATA) -Int 96))) </output>
+         <output> _ => #let DATA = CD #in #modexp1(#asWord(#range(DATA, 0, 32)), #asWord(#range(DATA, 32, 32)), #asWord(#range(DATA, 64, 32)), #range(DATA, 96, maxInt(0, lengthBytes(DATA) -Int 96))) </output>
+         <callData> CD </callData>
 
     syntax Bytes ::= #modexp1 ( Int , Int , Int , Bytes ) [symbol(#modexp1), function]
                    | #modexp2 ( Int , Int , Int , Bytes ) [symbol(#modexp2), function]
@@ -2024,8 +1372,8 @@ Precompiled Contracts
 
     syntax PrecompiledOp ::= "ECADD"
  // --------------------------------
-    rule <k> ECADD => #ecadd((#asWord(#range(DATA, 0, 32)), #asWord(#range(DATA, 32, 32))), (#asWord(#range(DATA, 64, 32)), #asWord(#range(DATA, 96, 32)))) ... </k>
-         <callData> DATA </callData>
+    rule <k> ECADD => #let DATA = CD #in #ecadd((#asWord(#range(DATA, 0, 32)), #asWord(#range(DATA, 32, 32))), (#asWord(#range(DATA, 64, 32)), #asWord(#range(DATA, 96, 32)))) ... </k>
+         <callData> CD </callData>
 
     syntax InternalOp ::= #ecadd(G1Point, G1Point) [symbol(#ecadd)]
  // ---------------------------------------------------------------
@@ -2036,8 +1384,8 @@ Precompiled Contracts
 
     syntax PrecompiledOp ::= "ECMUL"
  // --------------------------------
-    rule <k> ECMUL => #ecmul((#asWord(#range(DATA, 0, 32)), #asWord(#range(DATA, 32, 32))), #asWord(#range(DATA, 64, 32))) ... </k>
-         <callData> DATA </callData>
+    rule <k> ECMUL => #let DATA = CD #in #ecmul((#asWord(#range(DATA, 0, 32)), #asWord(#range(DATA, 32, 32))), #asWord(#range(DATA, 64, 32))) ... </k>
+         <callData> CD </callData>
 
     syntax InternalOp ::= #ecmul(G1Point, Int) [symbol(#ecmul)]
  // -----------------------------------------------------------
@@ -2052,12 +1400,12 @@ Precompiled Contracts
 
     syntax PrecompiledOp ::= "ECPAIRING"
  // ------------------------------------
-    rule <k> ECPAIRING => #ecpairing(.List, .List, 0, DATA, lengthBytes(DATA)) ... </k>
-         <callData> DATA </callData>
-      requires lengthBytes(DATA) modInt 192 ==Int 0
+    rule <k> ECPAIRING => #ecpairing(.List, .List, 0, CD, lengthBytes(CD)) ... </k>
+         <callData> CD </callData>
+      requires lengthBytes(CD) modInt 192 ==Int 0
     rule <k> ECPAIRING => #end EVMC_PRECOMPILE_FAILURE ... </k>
-         <callData> DATA </callData>
-      requires lengthBytes(DATA) modInt 192 =/=Int 0
+         <callData> CD </callData>
+      requires lengthBytes(CD) modInt 192 =/=Int 0
 
     syntax InternalOp ::= #ecpairing(List, List, Int, Bytes, Int) [symbol(#ecpairing)]
  // ----------------------------------------------------------------------------------
@@ -2076,46 +1424,366 @@ Precompiled Contracts
     syntax PrecompiledOp ::= "BLAKE2F"
  // ----------------------------------
     rule <k> BLAKE2F => #end EVMC_SUCCESS ... </k>
-         <output> _ => #parseByteStack( Blake2Compress( DATA ) ) </output>
-         <callData> DATA </callData>
-      requires lengthBytes( DATA ) ==Int 213
-       andBool DATA[212] <=Int 1
+         <output> _ => #parseByteStack( Blake2Compress( CD ) ) </output>
+         <callData> CD </callData>
+      requires lengthBytes( CD ) ==Int 213
+       andBool CD[212] <=Int 1
 
     rule <k> BLAKE2F => #end EVMC_PRECOMPILE_FAILURE ... </k>
-         <callData> DATA </callData>
-      requires lengthBytes( DATA ) ==Int 213
-       andBool DATA[212] >Int 1
+         <callData> CD </callData>
+      requires lengthBytes( CD ) ==Int 213
+       andBool CD[212] >Int 1
 
     rule <k> BLAKE2F => #end EVMC_PRECOMPILE_FAILURE ... </k>
-         <callData> DATA </callData>
-      requires lengthBytes( DATA ) =/=Int 213
+         <callData> CD </callData>
+      requires lengthBytes( CD ) =/=Int 213
 
     syntax PrecompiledOp ::= "KZGPOINTEVAL"
  // ---------------------------------------
     // FIELD_ELEMENTS_PER_BLOB = 4096
     rule <k> KZGPOINTEVAL => #end EVMC_SUCCESS ... </k>
          <output> _ => Int2Bytes(32, 4096, BE) +Bytes Int2Bytes(32, blsModulus, BE) </output>
-         <callData> DATA </callData>
-      requires lengthBytes( DATA ) ==Int 192
-       andBool #kzg2vh(substrBytes(DATA, 96, 144)) ==K substrBytes(DATA, 0, 32)
-       andBool Bytes2Int(substrBytes(DATA, 32, 64), BE, Unsigned) <Int blsModulus
-       andBool Bytes2Int(substrBytes(DATA, 64, 96), BE, Unsigned) <Int blsModulus
-       andBool verifyKZGProof(substrBytes(DATA, 96, 144), substrBytes(DATA, 32, 64), substrBytes(DATA, 64, 96), substrBytes(DATA, 144, 192))
+         <callData> CD </callData>
+      requires lengthBytes( CD ) ==Int 192
+       andBool #kzg2vh(substrBytes(CD, 96, 144)) ==K substrBytes(CD, 0, 32)
+       andBool Bytes2Int(substrBytes(CD, 32, 64), BE, Unsigned) <Int blsModulus
+       andBool Bytes2Int(substrBytes(CD, 64, 96), BE, Unsigned) <Int blsModulus
+       andBool verifyKZGProof(substrBytes(CD, 96, 144), substrBytes(CD, 32, 64), substrBytes(CD, 64, 96), substrBytes(CD, 144, 192))
 
     rule <k> KZGPOINTEVAL => #end EVMC_PRECOMPILE_FAILURE ... </k>
-         <callData> DATA </callData>
-      requires lengthBytes( DATA ) =/=Int 192
-       orBool #kzg2vh(substrBytes(DATA, 96, 144)) =/=K substrBytes(DATA, 0, 32)
-       orBool Bytes2Int(substrBytes(DATA, 32, 64), BE, Unsigned) >=Int blsModulus
-       orBool Bytes2Int(substrBytes(DATA, 64, 96), BE, Unsigned) >=Int blsModulus
-       orBool notBool verifyKZGProof(substrBytes(DATA, 96, 144), substrBytes(DATA, 32, 64), substrBytes(DATA, 64, 96), substrBytes(DATA, 144, 192))
+         <callData> CD </callData>
+      requires lengthBytes( CD ) =/=Int 192
+       orBool #kzg2vh(substrBytes(CD, 96, 144)) =/=K substrBytes(CD, 0, 32)
+       orBool Bytes2Int(substrBytes(CD, 32, 64), BE, Unsigned) >=Int blsModulus
+       orBool Bytes2Int(substrBytes(CD, 64, 96), BE, Unsigned) >=Int blsModulus
+       orBool notBool verifyKZGProof(substrBytes(CD, 96, 144), substrBytes(CD, 32, 64), substrBytes(CD, 64, 96), substrBytes(CD, 144, 192))
 
     syntax Bytes ::= #kzg2vh ( Bytes ) [symbol(#kzg2vh), function, total]
  // ---------------------------------------------------------------------
     // VERSIONED_HASH_VERSION_KZG = 0x01
     rule #kzg2vh ( C ) => Sha256raw(C)[0 <- 1]
-```
 
+
+    syntax Bytes ::= #bls12point ( G1Point ) [symbol(#bls12point1), function]
+ // -------------------------------------------------------------------------
+    rule #bls12point((X, Y)) => #padToWidth(64, #asByteStack(X)) +Bytes #padToWidth(64, #asByteStack(Y))
+
+    syntax Bytes ::= #bls12point ( G2Point ) [symbol(#bls12point2), function]
+ // -------------------------------------------------------------------------
+    rule #bls12point((X0 x X1, Y0 x Y1))
+        => #padToWidth(64, #asByteStack(X0)) +Bytes #padToWidth(64, #asByteStack(X1))
+            +Bytes #padToWidth(64, #asByteStack(Y0)) +Bytes #padToWidth(64, #asByteStack(Y1))
+
+    syntax Bool ::= isValidBLS12Coordinate ( Int ) [symbol(isValidBLS12Coordinate), function, total]
+  // -----------------------------------------------------------------------------------------------
+    rule isValidBLS12Coordinate(X) => isValidBLS12Fp(X)
+
+    syntax Bool ::= isValidBLS12Fp ( Int ) [symbol(isValidBLS12Fp), function, total]
+  // -------------------------------------------------------------------------------
+    rule isValidBLS12Fp(X) => X >=Int 0 andBool X <Int (1 <<Int 384) andBool X <Int BLS12_FIELD_MODULUS
+
+    syntax Bool ::= isValidBLS12Scalar ( Int ) [symbol(isValidBLS12Scalar), function, total]
+  // ---------------------------------------------------------------------------------------
+    rule isValidBLS12Scalar(X) => X >=Int 0 andBool X <Int (1 <<Int 256)
+
+    syntax PrecompiledOp ::= "BLS12G1ADD"
+ // -------------------------------------
+    rule <k> BLS12G1ADD => #end EVMC_SUCCESS ... </k>
+         <callData> CD </callData>
+         <output>
+            _ => #bls12point(BLS12G1Add
+                    (   ( Bytes2Int(substrBytes(CD, 0, 64), BE, Unsigned)
+                        , Bytes2Int(substrBytes(CD, 64, 128), BE, Unsigned)
+                        )
+                    ,   ( Bytes2Int(substrBytes(CD, 128, 192), BE, Unsigned)
+                        , Bytes2Int(substrBytes(CD, 192, 256), BE, Unsigned)
+                        )
+                    ))
+         </output>
+      requires lengthBytes( CD ) ==Int 256
+        andBool bls12ValidForAdd
+            ( Bytes2Int(substrBytes(CD, 0, 64), BE, Unsigned)
+            , Bytes2Int(substrBytes(CD, 64, 128), BE, Unsigned)
+            , Bytes2Int(substrBytes(CD, 128, 192), BE, Unsigned)
+            , Bytes2Int(substrBytes(CD, 192, 256), BE, Unsigned)
+            )
+
+    rule <k> BLS12G1ADD => #end EVMC_PRECOMPILE_FAILURE ... </k>
+         <callData> CD </callData>
+      requires lengthBytes( CD ) =/=Int 256
+        orBool notBool bls12ValidForAdd
+            ( Bytes2Int(substrBytes(CD, 0, 64), BE, Unsigned)
+            , Bytes2Int(substrBytes(CD, 64, 128), BE, Unsigned)
+            , Bytes2Int(substrBytes(CD, 128, 192), BE, Unsigned)
+            , Bytes2Int(substrBytes(CD, 192, 256), BE, Unsigned)
+            )
+
+    syntax Bool ::= bls12ValidForAdd(Int, Int, Int, Int)  [function, total]
+ // -----------------------------------------------------------------------
+    rule bls12ValidForAdd(X0, Y0, X1, Y1)
+        => true
+            andBool isValidBLS12Coordinate(X0)
+            andBool isValidBLS12Coordinate(Y0)
+            andBool isValidBLS12Coordinate(X1)
+            andBool isValidBLS12Coordinate(Y1)
+            andBool BLS12G1OnCurve((X0, Y0))
+            andBool BLS12G1OnCurve((X1, Y1))
+
+    syntax PrecompiledOp ::= "BLS12G1MSM"
+ // -------------------------------------
+    // Note that the implementation of `g1_lincomb_fast` has the following comment:
+    //
+    //  * @remark While this function is significantly faster than g1_lincomb_naive(), we refrain from
+    //  * using it in security-critical places (like verification) because the blst Pippenger code has not
+    //  * been audited. In those critical places, we prefer using g1_lincomb_naive() which is much simpler.
+    //
+    // https://github.com/ethereum/c-kzg-4844/blob/cc33b779cd3a227f51b35ce519a83cf91d81ccea/src/common/lincomb.c#L54-L56
+
+    rule <k> BLS12G1MSM => bls12G1Msm(CD) ... </k>
+         <callData> CD </callData>
+
+    rule <k> g1MsmResult(P:G1Point) => #end EVMC_SUCCESS ... </k>
+         <output>
+            _ => #bls12point(P)
+         </output>
+    rule <k> g1MsmError => #end EVMC_PRECOMPILE_FAILURE ... </k>
+
+    syntax G1MsmResult ::= "g1MsmError" | g1MsmResult(G1Point)
+ // ----------------------------------------------------------
+    syntax G1MsmResult ::= bls12G1Msm(Bytes) [symbol(bls12G1Msm), function, total]
+    syntax G1MsmResult ::= #bls12G1Msm(Bytes, List, List) [function, total]
+    syntax G1MsmResult ::= #bls12G1MsmCheck(Bytes, List, List, Int, Int, Int) [function, total]
+ // ----------------------------------------------------------------------------
+    rule bls12G1Msm(B:Bytes) => g1MsmError requires lengthBytes(B) ==Int 0
+    rule bls12G1Msm(B:Bytes) => #bls12G1Msm(B, .List, .List) requires lengthBytes(B) >Int 0
+
+    rule #bls12G1Msm(B:Bytes, Ps:List, Ss:List) => g1MsmResult(BLS12G1Msm(... scalars: Ss, points: Ps))
+        requires lengthBytes(B) ==Int 0
+    rule #bls12G1Msm(B:Bytes, _:List, _:List) => g1MsmError
+        requires 0 <Int lengthBytes(B) andBool lengthBytes(B) <Int 160
+    rule #bls12G1Msm(B:Bytes, Ps:List, Ss:List)
+        => #bls12G1MsmCheck
+                ( substrBytes(B, 160, lengthBytes(B)), Ps, Ss
+                , Bytes2Int(substrBytes(B, 0, 64), BE, Unsigned)
+                , Bytes2Int(substrBytes(B, 64, 128), BE, Unsigned)
+                , Bytes2Int(substrBytes(B, 128, 160), BE, Unsigned)
+                )
+        requires 160 <=Int lengthBytes(B)
+
+    rule #bls12G1MsmCheck(B:Bytes, Ps:List, Ss:List, X:Int, Y:Int, N:Int)
+        => #bls12G1Msm(B, Ps ListItem( ( X , Y ) ), Ss ListItem( N ))
+      requires isValidBLS12Coordinate(X) andBool isValidBLS12Coordinate(Y)
+        andBool isValidBLS12Scalar(N)
+        andBool BLS12G1InSubgroup((X, Y))
+    rule #bls12G1MsmCheck(_, _, _, _, _, _) => g1MsmError  [owise]
+
+    syntax PrecompiledOp ::= "BLS12G2ADD"
+ // -------------------------------------
+    rule <k> BLS12G2ADD => #end EVMC_SUCCESS ... </k>
+        <callData> CD </callData>
+        <output>
+            _ => #bls12point(BLS12G2Add
+                    (   ( Bytes2Int(substrBytes(CD, 0, 64), BE, Unsigned)
+                        x Bytes2Int(substrBytes(CD, 64, 128), BE, Unsigned)
+                        , Bytes2Int(substrBytes(CD, 128, 192), BE, Unsigned)
+                        x Bytes2Int(substrBytes(CD, 192, 256), BE, Unsigned)
+                        )
+                    ,   ( Bytes2Int(substrBytes(CD, 256, 320), BE, Unsigned)
+                        x Bytes2Int(substrBytes(CD, 320, 384), BE, Unsigned)
+                        , Bytes2Int(substrBytes(CD, 384, 448), BE, Unsigned)
+                        x Bytes2Int(substrBytes(CD, 448, 512), BE, Unsigned)
+                        )
+                    ))
+         </output>
+      requires lengthBytes( CD ) ==Int 512
+        andBool bls12ValidForAdd2
+            ( Bytes2Int(substrBytes(CD, 0, 64), BE, Unsigned)
+            , Bytes2Int(substrBytes(CD, 64, 128), BE, Unsigned)
+            , Bytes2Int(substrBytes(CD, 128, 192), BE, Unsigned)
+            , Bytes2Int(substrBytes(CD, 192, 256), BE, Unsigned)
+            , Bytes2Int(substrBytes(CD, 256, 320), BE, Unsigned)
+            , Bytes2Int(substrBytes(CD, 320, 384), BE, Unsigned)
+            , Bytes2Int(substrBytes(CD, 384, 448), BE, Unsigned)
+            , Bytes2Int(substrBytes(CD, 448, 512), BE, Unsigned)
+            )
+
+    rule <k> BLS12G2ADD => #end EVMC_PRECOMPILE_FAILURE ... </k>
+         <callData> CD </callData>
+      requires lengthBytes( CD ) =/=Int 512
+        orBool notBool bls12ValidForAdd2
+            ( Bytes2Int(substrBytes(CD, 0, 64), BE, Unsigned)
+            , Bytes2Int(substrBytes(CD, 64, 128), BE, Unsigned)
+            , Bytes2Int(substrBytes(CD, 128, 192), BE, Unsigned)
+            , Bytes2Int(substrBytes(CD, 192, 256), BE, Unsigned)
+            , Bytes2Int(substrBytes(CD, 256, 320), BE, Unsigned)
+            , Bytes2Int(substrBytes(CD, 320, 384), BE, Unsigned)
+            , Bytes2Int(substrBytes(CD, 384, 448), BE, Unsigned)
+            , Bytes2Int(substrBytes(CD, 448, 512), BE, Unsigned)
+            )
+
+    syntax Bool ::= bls12ValidForAdd2(Int, Int, Int, Int, Int, Int, Int, Int)  [function, total]
+ // --------------------------------------------------------------------------------------------
+    rule bls12ValidForAdd2(PX0, PX1, PY0, PY1, QX0, QX1, QY0, QY1)
+        => true
+            andBool isValidBLS12Coordinate(PX0)
+            andBool isValidBLS12Coordinate(PX1)
+            andBool isValidBLS12Coordinate(PY0)
+            andBool isValidBLS12Coordinate(PY1)
+            andBool isValidBLS12Coordinate(QX0)
+            andBool isValidBLS12Coordinate(QX1)
+            andBool isValidBLS12Coordinate(QY0)
+            andBool isValidBLS12Coordinate(QY1)
+            andBool BLS12G2OnCurve((PX0 x PX1, PY0 x PY1))
+            andBool BLS12G2OnCurve((QX0 x QX1, QY0 x QY1))
+
+    syntax PrecompiledOp ::= "BLS12G2MSM"
+ // -------------------------------------
+    rule <k> BLS12G2MSM => bls12G2Msm(CD) ... </k>
+         <callData> CD </callData>
+
+    rule <k> g2MsmResult(P:G2Point) => #end EVMC_SUCCESS ... </k>
+         <output>
+            _ => #bls12point(P)
+         </output>
+    rule <k> g2MsmError => #end EVMC_PRECOMPILE_FAILURE ... </k>
+
+    syntax G2MsmResult ::= "g2MsmError" | g2MsmResult(G2Point)
+ // ----------------------------------------------------------
+    syntax G2MsmResult ::= bls12G2Msm(Bytes) [symbol(bls12G2Msm), function, total]
+    syntax G2MsmResult ::= #bls12G2Msm(Bytes, List, List) [function, total]
+    syntax G2MsmResult ::= #bls12G2MsmCheck(Bytes, List, List, Int, Int, Int, Int, Int) [function, total]
+ // ------------------------------------------------------------------------------------
+    rule bls12G2Msm(B:Bytes) => g2MsmError requires lengthBytes(B) ==Int 0
+    rule bls12G2Msm(B:Bytes) => #bls12G2Msm(B, .List, .List) requires lengthBytes(B) >Int 0
+
+    rule #bls12G2Msm(B:Bytes, Ps:List, Ss:List) => g2MsmResult(BLS12G2Msm(... scalars: Ss, points: Ps))
+        requires lengthBytes(B) ==Int 0
+    rule #bls12G2Msm(B:Bytes, _:List, _:List) => g2MsmError
+        requires 0 <Int lengthBytes(B) andBool lengthBytes(B) <Int 288
+    rule #bls12G2Msm(B:Bytes, Ps:List, Ss:List)
+        => #bls12G2MsmCheck
+                ( substrBytes(B, 288, lengthBytes(B)), Ps, Ss
+                , Bytes2Int(substrBytes(B, 0, 64), BE, Unsigned)
+                , Bytes2Int(substrBytes(B, 64, 128), BE, Unsigned)
+                , Bytes2Int(substrBytes(B, 128, 192), BE, Unsigned)
+                , Bytes2Int(substrBytes(B, 192, 256), BE, Unsigned)
+                , Bytes2Int(substrBytes(B, 256, 288), BE, Unsigned)
+                )
+        requires 288 <=Int lengthBytes(B)
+
+    rule #bls12G2MsmCheck(B:Bytes, Ps:List, Ss:List, X0:Int, X1:Int, Y0:Int, Y1:Int, N:Int)
+        => #bls12G2Msm(B, Ps ListItem( ( X0 x X1, Y0 x Y1 ) ), Ss ListItem( N ))
+      requires isValidBLS12Coordinate(X0) andBool isValidBLS12Coordinate(X1)
+        andBool isValidBLS12Coordinate(Y0) andBool isValidBLS12Coordinate(Y1)
+        andBool isValidBLS12Scalar(N)
+        andBool BLS12G2InSubgroup(( X0 x X1, Y0 x Y1 ))
+    rule #bls12G2MsmCheck(_, _, _, _, _, _, _, _) => g2MsmError  [owise]
+
+    syntax PrecompiledOp ::= "BLS12PAIRING_CHECK"
+ // ---------------------------------------------
+    rule <k> BLS12PAIRING_CHECK => bls12PairingCheck(CD, .List, .List) ... </k>
+         <callData> CD </callData>
+
+    rule <k> bls12PairingResult(B:Bool) => #end EVMC_SUCCESS ... </k>
+         <output>
+            _ => #if B #then Int2Bytes(32, 1, BE:Endianness) #else Int2Bytes(32, 0, BE:Endianness) #fi
+         </output>
+    rule <k> bls12PairingError => #end EVMC_PRECOMPILE_FAILURE ... </k>
+
+    syntax Bls12PairingResult ::= "bls12PairingError" | bls12PairingResult(Bool)
+ // --------------------------------------------------------------------------
+    syntax Bls12PairingResult ::= bls12PairingCheck(Bytes, List, List) [symbol(bls12PairingCheck), function, total]
+ // -------------------------------------------------------------------------------------------------------------
+    rule bls12PairingCheck(B:Bytes, L1:List, L2:List) => bls12PairingResult(BLS12PairingCheck(L1, L2))
+        requires lengthBytes(B) ==Int 0
+          andBool validBls12G1PairingPoints(L1)
+          andBool validBls12G2PairingPoints(L2)
+          andBool size(L1) ==Int size(L2)
+          andBool size(L1) >Int 0
+    rule bls12PairingCheck(B:Bytes, L1:List, L2:List)
+        => bls12PairingCheck
+            ( substrBytes(B, 384, lengthBytes(B))
+            , L1 ListItem(
+                ( Bytes2Int(substrBytes(B, 0, 64), BE, Unsigned)
+                , Bytes2Int(substrBytes(B, 64, 128), BE, Unsigned)
+                )
+              )
+            , L2 ListItem(
+                ( Bytes2Int(substrBytes(B, 128, 192), BE, Unsigned)
+                x Bytes2Int(substrBytes(B, 192, 256), BE, Unsigned)
+                , Bytes2Int(substrBytes(B, 256, 320), BE, Unsigned)
+                x Bytes2Int(substrBytes(B, 320, 384), BE, Unsigned)
+                )
+              )
+            )
+      requires lengthBytes(B) >=Int 384
+    rule bls12PairingCheck(_:Bytes, _:List, _:List) => bls12PairingError  [owise]
+
+    syntax Bool ::= validBls12G1PairingPoints(List)  [function, total]
+    syntax Bool ::= validBls12G1PairingPoint(G1Point)  [function, total]
+// ------------------------------------------------------------------
+    rule validBls12G1PairingPoints(.List) => true
+    rule validBls12G1PairingPoints(ListItem(P:G1Point) L:List) => validBls12G1PairingPoints(L)
+      requires validBls12G1PairingPoint(P)
+    rule validBls12G1PairingPoints(_) => false  [owise]
+
+    rule validBls12G1PairingPoint((X, Y) #as P:G1Point)
+        => isValidBLS12Coordinate(X)
+          andBool isValidBLS12Coordinate(Y)
+          andBool BLS12G1InSubgroup(P)
+
+    syntax Bool ::= validBls12G2PairingPoints(List)  [function, total]
+    syntax Bool ::= validBls12G2PairingPoint(G2Point)  [function, total]
+// ------------------------------------------------------------------
+    rule validBls12G2PairingPoints(.List) => true
+    rule validBls12G2PairingPoints(ListItem(P:G2Point) L:List) => validBls12G2PairingPoints(L)
+      requires validBls12G2PairingPoint(P)
+    rule validBls12G2PairingPoints(_) => false  [owise]
+
+    rule validBls12G2PairingPoint((X0 x X1, Y0 x Y1) #as P:G2Point)
+        => isValidBLS12Coordinate(X0)
+          andBool isValidBLS12Coordinate(X1)
+          andBool isValidBLS12Coordinate(Y0)
+          andBool isValidBLS12Coordinate(Y1)
+          andBool BLS12G2InSubgroup(P)
+
+    syntax PrecompiledOp ::= "BLS12MAPFPTOG1"
+ // -----------------------------------------
+    rule <k> BLS12MAPFPTOG1 => #end EVMC_SUCCESS ... </k>
+         <callData> CD </callData>
+         <output>
+            _ => #bls12point(BLS12MapFpToG1(Bytes2Int(substrBytes(CD, 0, 64), BE, Unsigned)))
+         </output>
+      requires lengthBytes( CD ) ==Int 64
+        andBool isValidBLS12Fp(Bytes2Int(substrBytes(CD, 0, 64), BE, Unsigned))
+
+    rule <k> BLS12MAPFPTOG1 => #end EVMC_PRECOMPILE_FAILURE ... </k>
+         <callData> CD </callData>
+      requires lengthBytes( CD ) =/=Int 64
+        orBool notBool isValidBLS12Fp(Bytes2Int(substrBytes(CD, 0, 64), BE, Unsigned))
+
+
+    syntax PrecompiledOp ::= "BLS12MAPFP2TOG2"
+ // ------------------------------------------
+    rule <k> BLS12MAPFP2TOG2 => #end EVMC_SUCCESS ... </k>
+         <callData> CD </callData>
+         <output>
+            _ => #bls12point(BLS12MapFp2ToG2
+                    ( Bytes2Int(substrBytes(CD, 0, 64), BE, Unsigned)
+                    , Bytes2Int(substrBytes(CD, 64, 128), BE, Unsigned)
+                    ))
+         </output>
+      requires lengthBytes( CD ) ==Int 128
+        andBool isValidBLS12Fp(Bytes2Int(substrBytes(CD, 0, 64), BE, Unsigned))
+        andBool isValidBLS12Fp(Bytes2Int(substrBytes(CD, 64, 128), BE, Unsigned))
+
+    rule <k> BLS12MAPFP2TOG2 => #end EVMC_PRECOMPILE_FAILURE ... </k>
+         <callData> CD </callData>
+      requires lengthBytes( CD ) =/=Int 128
+        orBool notBool isValidBLS12Fp(Bytes2Int(substrBytes(CD, 0, 64), BE, Unsigned))
+        orBool notBool isValidBLS12Fp(Bytes2Int(substrBytes(CD, 64, 128), BE, Unsigned))
+
+```
 
 Ethereum Gas Calculation
 ========================
@@ -2133,9 +1801,10 @@ Overall Gas
     rule <k> #gas [ OP , AOP ]
           => #memory [ OP , AOP ]
           ~> #gas [ AOP ]
-          ~> #access [ OP , AOP ]
+          ~> #access [ OP , AOP, #isAccess(ACCT, AOP) ]
          ...
         </k>
+        <id> ACCT </id>
 
     rule <k> #gas [ OP ] => #gasExec(SCHED, OP) ~> #deductGas ... </k>
          <schedule> SCHED </schedule>
@@ -2153,8 +1822,8 @@ Overall Gas
          <memoryUsed> MU => MU' </memoryUsed> <schedule> SCHED </schedule>
 
     rule <k> _G:Gas ~> (#deductMemoryGas => #deductGas)   ... </k> //Required for verification
-    rule <k>  G:Gas ~> #deductGas => #end EVMC_OUT_OF_GAS ... </k> <gas> GAVAIL:Gas                  </gas> requires GAVAIL <Gas G
-    rule <k>  G:Gas ~> #deductGas => .K                    ... </k> <gas> GAVAIL:Gas => GAVAIL -Gas G </gas> requires G <=Gas GAVAIL
+    rule <k>  G:Int ~> #deductGas => #end EVMC_OUT_OF_GAS ... </k> <gas> GAVAIL:Int                  </gas> requires GAVAIL <Int G
+    rule <k>  G:Int ~> #deductGas => .K                    ... </k> <gas> GAVAIL:Int => GAVAIL -Int G </gas> requires G <=Int GAVAIL
 
     syntax Bool ::= #inStorage     ( Map   , Account , Int ) [symbol(#inStorage), function, total]
                   | #inStorageAux1 ( KItem ,           Int ) [symbol(#inStorageAux1), function, total]
@@ -2243,24 +1912,34 @@ Access List Gas
     rule #usesAccessList(SSTORE) => true
     rule #usesAccessList(_)      => false [owise]
 
-    syntax InternalOp ::= "#access" "[" OpCode "," OpCode "]"
+    syntax InternalOp ::= "#access" "[" OpCode "," OpCode "," Bool "]"
  // ---------------------------------------------------------
-    rule <k> #access [ OP , AOP ] => #gasAccess(SCHED, AOP) ~> #deductGas ... </k>
+    rule <k> #access [ OP , AOP, ACCESS ] => #gasAccess(SCHED, AOP, ACCESS) ~> #deductGas ... </k>
          <schedule> SCHED </schedule>
       requires Ghasaccesslist << SCHED >> andBool #usesAccessList(OP)
 
-    rule <k> #access [ _ , _ ] => .K ... </k> <schedule> _ </schedule> [owise]
+    rule <k> #access [ _ , _ , _ ] => .K ... </k> <schedule> _ </schedule> [owise]
 
-    syntax InternalOp ::= #gasAccess ( Schedule, OpCode ) [symbol(#gasAccess)]
+    syntax Bool ::= #isAccess ( Int , OpCode ) [function, total]
+ // ------------------------------------------------------
+    rule #isAccess(_, EXTCODESIZE ACCT) => AccessedAccount(ACCT)
+    rule #isAccess(_, EXTCODECOPY ACCT _ _ _) => AccessedAccount(ACCT)
+    rule #isAccess(_, EXTCODEHASH ACCT) => AccessedAccount(ACCT)
+    rule #isAccess(_, BALANCE ACCT) => AccessedAccount(ACCT)
+    rule #isAccess(_, SELFDESTRUCT ACCT) => AccessedAccount(ACCT)
+    rule #isAccess(ACCT, SSTORE INDEX _) => AccessedStorage(ACCT, INDEX)
+    rule #isAccess(_, _) => false [owise]
+
+    syntax InternalOp ::= #gasAccess ( Schedule, OpCode, Bool ) [symbol(#gasAccess)]
  // --------------------------------------------------------------------------
-    rule <k> #gasAccess(SCHED, EXTCODESIZE ACCT)       => Caddraccess(SCHED, ACCT in ACCTS)                                                                   ... </k> <accessedAccounts> ACCTS </accessedAccounts>
-    rule <k> #gasAccess(SCHED, EXTCODECOPY ACCT _ _ _) => Caddraccess(SCHED, ACCT in ACCTS)                                                                   ... </k> <accessedAccounts> ACCTS </accessedAccounts>
-    rule <k> #gasAccess(SCHED, EXTCODEHASH ACCT)       => Caddraccess(SCHED, ACCT in ACCTS)                                                                   ... </k> <accessedAccounts> ACCTS </accessedAccounts>
-    rule <k> #gasAccess(SCHED, BALANCE ACCT)           => Caddraccess(SCHED, ACCT in ACCTS)                                                                   ... </k> <accessedAccounts> ACCTS </accessedAccounts>
-    rule <k> #gasAccess(SCHED, SELFDESTRUCT ACCT)      => #if ACCT in ACCTS #then 0 #else Gcoldaccountaccess < SCHED > #fi                                    ... </k> <accessedAccounts> ACCTS </accessedAccounts>
-    rule <k> #gasAccess(_    , SLOAD INDEX )           => #accessStorage ACCT INDEX ~> 0                                                                      ... </k> <id> ACCT </id>
-    rule <k> #gasAccess(SCHED, SSTORE INDEX _)         => #accessStorage ACCT INDEX ~> #if #inStorage(TS, ACCT, INDEX) #then 0 #else Gcoldsload < SCHED > #fi ... </k> <id> ACCT </id> <accessedStorage> TS </accessedStorage>
-    rule <k> #gasAccess(_    , _ )                     => 0                                                                                                   ... </k> [owise]
+    rule <k> #gasAccess(SCHED, EXTCODESIZE _ACCT, ACCESS)       => Caddraccess(SCHED, ACCESS)                                ... </k>
+    rule <k> #gasAccess(SCHED, EXTCODECOPY _ACCT _ _ _, ACCESS) => Caddraccess(SCHED, ACCESS)                                ... </k>
+    rule <k> #gasAccess(SCHED, EXTCODEHASH _ACCT, ACCESS)       => Caddraccess(SCHED, ACCESS)                                ... </k>
+    rule <k> #gasAccess(SCHED, BALANCE _ACCT, ACCESS)           => Caddraccess(SCHED, ACCESS)                                ... </k>
+    rule <k> #gasAccess(SCHED, SELFDESTRUCT _ACCT, ACCESS)      => #if ACCESS #then 0 #else Gcoldaccountaccess < SCHED > #fi ... </k>
+    rule <k> #gasAccess(_    , SLOAD _, _ACCESS)                => 0                                                         ... </k>
+    rule <k> #gasAccess(SCHED, SSTORE _INDEX _, ACCESS)         => #if ACCESS #then 0 #else Gcoldsload < SCHED > #fi         ... </k>
+    rule <k> #gasAccess(_    , _, _ACCESS)                      => 0                                                         ... </k> [owise]
 
 ```
 
@@ -2280,16 +1959,9 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
     rule <k> #gasExec(SCHED, TLOAD _   ) => Gwarmstorageread < SCHED > ... </k>
     rule <k> #gasExec(SCHED, TSTORE _ _) => Gwarmstoragedirtystore < SCHED > ... </k>
 
-    rule <k> #gasExec(SCHED, SSTORE INDEX NEW) => Csstore(SCHED, NEW, #lookup(STORAGE, INDEX), #lookup(ORIGSTORAGE, INDEX)) ... </k>
+    rule <k> #gasExec(SCHED, SSTORE INDEX NEW) => Csstore(SCHED, NEW, GetAccountStorage(ACCT, INDEX), GetAccountOrigStorage(ACCT, INDEX)) ... </k>
          <id> ACCT </id>
          <gas> GAVAIL </gas>
-         <account>
-           <acctID> ACCT </acctID>
-           <storage> STORAGE </storage>
-           <origStorage> ORIGSTORAGE </origStorage>
-           ...
-         </account>
-         <refund> R => R +Int Rsstore(SCHED, NEW, #lookup(STORAGE, INDEX), #lookup(ORIGSTORAGE, INDEX)) </refund>
       requires notBool Ghassstorestipend << SCHED >>
         orBool notBool GAVAIL <=Gas Gcallstipend < SCHED >
 
@@ -2308,49 +1980,40 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
 
     rule <k> #gasExec(SCHED, LOG(N) _ WIDTH) => (Glog < SCHED > +Int (Glogdata < SCHED > *Int WIDTH) +Int (N *Int Glogtopic < SCHED >)) ... </k>
 
+    syntax Exp ::= #handleCallGas(Schedule, acctNonExistent: BExp, cap: Gas, avail: Gas, value: Int, acct:Int, AccountInfo)  [strict(2)]
+ // ------------------------------------------------------------------------------------------------------------------------------------
+    rule #handleCallGas(SCHED, ISEMPTY:Bool, GCAP, GAVAIL, VALUE, ACCTTO, AccountInfo(ISWARM, TGT_ACCT))
+          => Ccallgas(SCHED, ISEMPTY, GCAP, GAVAIL, VALUE, ISWARM, TGT_ACCT, ACCTTO ==Int TGT_ACCT) ~> #allocateCallGas
+          ~> Ccall(SCHED, ISEMPTY, GCAP, GAVAIL, VALUE, ISWARM, TGT_ACCT, ACCTTO ==Int TGT_ACCT)
+
     rule <k> #gasExec(SCHED, CALL GCAP ACCTTO VALUE _ _ _ _)
-          => Ccallgas(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, VALUE, ACCTTO in ACCTS) ~> #allocateCallGas
-          ~> Ccall(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, VALUE, ACCTTO in ACCTS)
+          => #handleCallGas(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, VALUE, ACCTTO, GetAccountInfoAndWarmIt(ACCTTO))
          ...
          </k>
          <gas> GAVAIL </gas>
-         <accessedAccounts> ACCTS </accessedAccounts>
 
     rule <k> #gasExec(SCHED, CALLCODE GCAP ACCTTO VALUE _ _ _ _)
-          => Ccallgas(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, VALUE, ACCTTO in ACCTS) ~> #allocateCallGas
-          ~> Ccall(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, VALUE, ACCTTO in ACCTS)
+          => #handleCallGas(SCHED, #accountNonexistent(ACCTID), GCAP, GAVAIL, VALUE, ACCTTO, GetAccountInfoAndWarmIt(ACCTTO))
          ...
          </k>
-         <id> ACCTFROM </id>
+         <id> ACCTID </id>
          <gas> GAVAIL </gas>
-         <accessedAccounts> ACCTS </accessedAccounts>
 
     rule <k> #gasExec(SCHED, DELEGATECALL GCAP ACCTTO _ _ _ _)
-          => Ccallgas(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, 0, ACCTTO in ACCTS) ~> #allocateCallGas
-          ~> Ccall(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, 0, ACCTTO in ACCTS)
+          => #handleCallGas(SCHED, #accountNonexistent(ACCTID), GCAP, GAVAIL, 0, ACCTTO, GetAccountInfoAndWarmIt(ACCTTO))
          ...
          </k>
-         <id> ACCTFROM </id>
+         <id> ACCTID </id>
          <gas> GAVAIL </gas>
-         <accessedAccounts> ACCTS </accessedAccounts>
 
     rule <k> #gasExec(SCHED, STATICCALL GCAP ACCTTO _ _ _ _)
-          => Ccallgas(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, 0, ACCTTO in ACCTS) ~> #allocateCallGas
-          ~> Ccall(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, 0, ACCTTO in ACCTS)
+          => #handleCallGas(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, 0, ACCTTO, GetAccountInfoAndWarmIt(ACCTTO))
          ...
          </k>
          <gas> GAVAIL </gas>
-         <accessedAccounts> ACCTS </accessedAccounts>
 
-    rule <k> #gasExec(SCHED, SELFDESTRUCT ACCTTO) => Cselfdestruct(SCHED, #accountNonexistent(ACCTTO), BAL) ... </k>
-         <id> ACCTFROM </id>
-         <selfDestruct> SDS </selfDestruct>
-         <refund> RF => #if ACCTFROM in SDS #then RF #else RF +Word Rselfdestruct < SCHED > #fi </refund>
-         <account>
-           <acctID> ACCTFROM </acctID>
-           <balance> BAL </balance>
-           ...
-         </account>
+    rule <k> #gasExec(SCHED, SELFDESTRUCT ACCTTO) => Cselfdestruct(SCHED, #accountNonexistent(ACCTTO), GetAccountBalance(ACCT)) ... </k>
+         <id> ACCT </id>
 
     rule <k> #gasExec(SCHED, CREATE _ _ WIDTH)
           => Gcreate < SCHED > +Int Cinitcode(SCHED, WIDTH) ~> #deductGas
@@ -2367,9 +2030,7 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
     rule <k> #gasExec(SCHED, SHA3 _ WIDTH) => Gsha3 < SCHED > +Int (Gsha3word < SCHED > *Int (WIDTH up/Int 32)) ... </k>
 
     rule <k> #gasExec(SCHED, JUMPDEST)    => Gjumpdest < SCHED >                        ... </k>
-    rule <k> #gasExec(SCHED, SLOAD INDEX) => Csload(SCHED, #inStorage(TS, ACCT, INDEX)) ... </k>
-         <id> ACCT </id>
-         <accessedStorage> TS </accessedStorage>
+    rule <k> #gasExec(SCHED, SLOAD INDEX) => Csload(SCHED, AccessedStorage(ACCT, INDEX)) ... </k> <id> ACCT </id>
 
     // Wzero
     rule <k> #gasExec(SCHED, STOP)       => Gzero < SCHED > ... </k>
@@ -2451,19 +2112,27 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
 
     // Precompiled
     rule <k> #gasExec(_, ECREC)  => 3000 ... </k>
-    rule <k> #gasExec(_, SHA256) =>  60 +Int  12 *Int (lengthBytes(DATA) up/Int 32) ... </k> <callData> DATA </callData>
-    rule <k> #gasExec(_, RIP160) => 600 +Int 120 *Int (lengthBytes(DATA) up/Int 32) ... </k> <callData> DATA </callData>
-    rule <k> #gasExec(_, ID)     =>  15 +Int   3 *Int (lengthBytes(DATA) up/Int 32) ... </k> <callData> DATA </callData>
+    rule <k> #gasExec(_, SHA256) =>  60 +Int  12 *Int (lengthBytes(CD) up/Int 32) ... </k> <callData> CD </callData>
 
-    rule <k> #gasExec(SCHED, MODEXP) => Cmodexp(SCHED, DATA, #asWord(#range(DATA, 0, 32) ), #asWord(#range(DATA, 32, 32)), #asWord(#range(DATA, 64, 32))) ... </k>
-         <callData> DATA </callData>
+    rule <k> #gasExec(_, RIP160) => 600 +Int 120 *Int (lengthBytes(CD) up/Int 32) ... </k> <callData> CD </callData>
+    rule <k> #gasExec(_, ID)     =>  15 +Int   3 *Int (lengthBytes(CD) up/Int 32) ... </k> <callData> CD </callData>
+
+    rule <k> #gasExec(SCHED, MODEXP) => Cmodexp(SCHED, CD, #asWord(#range(CD, 0, 32) ), #asWord(#range(CD, 32, 32)), #asWord(#range(CD, 64, 32))) ... </k>
+         <callData> CD </callData>
 
     rule <k> #gasExec(SCHED, ECADD)     => Gecadd < SCHED>  ... </k>
     rule <k> #gasExec(SCHED, ECMUL)     => Gecmul < SCHED > ... </k>
-    rule <k> #gasExec(SCHED, ECPAIRING) => Gecpairconst < SCHED > +Int (lengthBytes(DATA) /Int 192) *Int Gecpaircoeff < SCHED > ... </k> <callData> DATA </callData>
-    rule <k> #gasExec(SCHED, BLAKE2F)   => Gfround < SCHED > *Int #asWord(#range(DATA, 0, 4) ) ... </k> <callData> DATA </callData>
-    rule <k> #gasExec(SCHED, KZGPOINTEVAL)  => Gpointeval < SCHED > ... </k>
+   rule <k> #gasExec(SCHED, ECPAIRING) => Gecpairconst < SCHED > +Int (lengthBytes(CD) /Int 192) *Int Gecpaircoeff < SCHED > ... </k> <callData> CD </callData>
 
+    rule <k> #gasExec(SCHED, BLAKE2F)   => Gfround < SCHED > *Int #asWord(#range(CD, 0, 4) ) ... </k> <callData> CD </callData>
+    rule <k> #gasExec(SCHED, KZGPOINTEVAL)  => Gpointeval < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, BLS12G1ADD)    => Gbls12g1add < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, BLS12G1MSM)    => #let N = lengthBytes(CD) /Int 160 #in N *Int Gbls12g1mul < SCHED > *Int Cbls12g1MsmDiscount(SCHED, N) /Int 1000 ... </k> <callData> CD </callData>
+    rule <k> #gasExec(SCHED, BLS12G2ADD)    => Gbls12g2add < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, BLS12G2MSM)    => #let N = lengthBytes(CD) /Int 288 #in N *Int Gbls12g2mul < SCHED > *Int Cbls12g2MsmDiscount(SCHED, N) /Int 1000 ... </k> <callData> CD </callData>
+    rule <k> #gasExec(SCHED, BLS12PAIRING_CHECK)    => #let N = lengthBytes(CD) /Int 384 #in N *Int Gbls12PairingCheckMul < SCHED > +Int Gbls12PairingCheckAdd < SCHED > ... </k> <callData> CD </callData>
+    rule <k> #gasExec(SCHED, BLS12MAPFPTOG1) => Gbls12mapfptog1 < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, BLS12MAPFP2TOG2) => Gbls12mapfp2tog2 < SCHED > ... </k>
     syntax InternalOp ::= "#allocateCallGas"
  // ----------------------------------------
     rule <k> GCALL:Gas ~> #allocateCallGas => .K ... </k>
@@ -2473,7 +2142,7 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
  // ------------------------------------------
     rule <schedule> SCHED </schedule>
          <k> #allocateCreateGas => .K ... </k>
-         <gas>     GAVAIL => #if Gstaticcalldepth << SCHED >> #then 0      #else GAVAIL /Gas 64      #fi </gas>
+         <gas>     GAVAIL => #if Gstaticcalldepth << SCHED >> #then 0      #else GAVAIL /Int 64      #fi </gas>
          <callGas> _      => #if Gstaticcalldepth << SCHED >> #then GAVAIL #else #allBut64th(GAVAIL) #fi </callGas>
       [preserves-definedness]
 ```
@@ -2483,32 +2152,36 @@ There are several helpers for calculating gas (most of them also specified in th
 ```k
     syntax Exp     ::= Int | Gas
     syntax KResult ::= Int
-    syntax Exp ::= Ccall         ( Schedule , BExp , Gas , Gas , Int , Bool ) [symbol(Ccall), strict(2)]
-                 | Ccallgas      ( Schedule , BExp , Gas , Gas , Int , Bool ) [symbol(Ccallgas), strict(2)]
+    syntax Exp ::= Ccall         ( Schedule , BExp , Gas , Gas , Int , Bool, Int, Bool) [symbol(Ccall), strict(2)]
+                 | Ccallgas      ( Schedule , BExp , Gas , Gas , Int , Bool, Int, Bool) [symbol(Ccallgas), strict(2)]
                  | Cselfdestruct ( Schedule , BExp , Int )                    [symbol(Cselfdestruct), strict(2)]
  // ------------------------------------------------------------------------------------------------------------
-    rule <k> Ccall(SCHED, ISEMPTY:Bool, GCAP, GAVAIL, VALUE, ISWARM)
-          => Cextra(SCHED, ISEMPTY, VALUE, ISWARM) +Gas Cgascap(SCHED, GCAP, GAVAIL, Cextra(SCHED, ISEMPTY, VALUE, ISWARM)) ... </k>
+    rule <k> Ccall(SCHED, ISEMPTY:Bool, GCAP, GAVAIL, VALUE, ISWARM, TGT_ACCT, SELF_DLGT)
+          =>      Cextra(SCHED, ISEMPTY, VALUE, ISWARM, #isDelegated(TGT_ACCT), #isWarmDelegatee(TGT_ACCT, SELF_DLGT))
+             +Gas Cgascap(SCHED, GCAP, GAVAIL, Cextra(SCHED, ISEMPTY, VALUE, ISWARM, #isDelegated(TGT_ACCT), #isWarmDelegatee(TGT_ACCT, SELF_DLGT))) ... </k>
 
-    rule <k> Ccallgas(SCHED, ISEMPTY:Bool, GCAP, GAVAIL, VALUE, ISWARM)
-          => Cgascap(SCHED, GCAP, GAVAIL, Cextra(SCHED, ISEMPTY, VALUE, ISWARM)) +Gas #if VALUE ==Int 0 #then 0 #else Gcallstipend < SCHED > #fi ... </k>
+    rule <k> Ccallgas(SCHED, ISEMPTY:Bool, GCAP, GAVAIL, VALUE, ISWARM, TGT_ACCT, SELF_DLGT)
+          => Cgascap(SCHED, GCAP, GAVAIL, Cextra(SCHED, ISEMPTY, VALUE, ISWARM, #isDelegated(TGT_ACCT), #isWarmDelegatee(TGT_ACCT, SELF_DLGT))) +Gas #if VALUE ==Int 0 #then 0 #else Gcallstipend < SCHED > #fi ... </k>
 
     rule <k> Cselfdestruct(SCHED, ISEMPTY:Bool, BAL)
           => Gselfdestruct < SCHED > +Int Cnew(SCHED, ISEMPTY andBool Gselfdestructnewaccount << SCHED >>, BAL) ... </k>
+
+    syntax Bool ::= #isWarmDelegatee(Int, Bool) [macro]
+ // ---------------------------------------------------
+    rule #isWarmDelegatee(TGT_ACCT, SELF_DLGT)
+      => #isDelegated(TGT_ACCT) andThenBool (SELF_DLGT orElseBool AccessedAccount(TGT_ACCT))
+
+    syntax Bool ::= #isDelegated(Int) [macro]
+ // -----------------------------------------
+    rule #isDelegated(TGT_ACCT) => TGT_ACCT >Int 0
 
     syntax BExp    ::= Bool
     syntax KResult ::= Bool
     syntax BExp ::= #accountNonexistent ( Int ) [symbol(#accountNonexistent)]
  // -------------------------------------------------------------------------
-    rule <k> #accountNonexistent(ACCT) => #accountEmpty(CODE, NONCE, BAL) andBool Gemptyisnonexistent << SCHED >> ... </k>
+    rule <k> #accountNonexistent(ACCT) => IsAccountEmpty(ACCT) andBool Gemptyisnonexistent << SCHED >> ... </k>
          <schedule> SCHED </schedule>
-         <account>
-           <acctID>  ACCT  </acctID>
-           <balance> BAL   </balance>
-           <nonce>   NONCE </nonce>
-           <code>    CODE  </code>
-           ...
-         </account>
+      requires AccountExists(ACCT)
 
    rule <k> #accountNonexistent(_) => true ... </k> [owise]
 ```
@@ -2688,5 +2361,6 @@ After interpreting the strings representing programs as a `WordStack`, it should
     rule #dasmOpCode( 254,     _ ) => INVALID
     rule #dasmOpCode( 255,     _ ) => SELFDESTRUCT
     rule #dasmOpCode(   W,     _ ) => UNDEFINED(W) [owise]
+
 endmodule
 ```

@@ -1,4 +1,5 @@
 /.build/*
+libkevm/
 .envrc
 .kompile*
 .kprove*

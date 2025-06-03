@@ -449,6 +449,7 @@ Productions related to transactions
                     | "AccessList"
                     | "DynamicFee"
                     | "Blob"
+                    | "SetCodeTx"
  // ------------------------
 
     syntax Int ::= #dasmTxPrefix ( TxType ) [symbol(#dasmTxPrefix), function]
@@ -457,6 +458,7 @@ Productions related to transactions
     rule #dasmTxPrefix (AccessList) => 1
     rule #dasmTxPrefix (DynamicFee) => 2
     rule #dasmTxPrefix (Blob)       => 3
+    rule #dasmTxPrefix (SetCodeTx)  => 4
 
     syntax TxType ::= #asmTxPrefix ( Int ) [symbol(#asmTxPrefix), function]
  // -----------------------------------------------------------------------
@@ -464,15 +466,17 @@ Productions related to transactions
     rule #asmTxPrefix (1) => AccessList
     rule #asmTxPrefix (2) => DynamicFee
     rule #asmTxPrefix (3) => Blob
+    rule #asmTxPrefix (4) => SetCodeTx
 
-    syntax TxData ::= LegacyTx | AccessListTx | DynamicFeeTx | BlobTx
+    syntax TxData ::= LegacyTx | AccessListTx | DynamicFeeTx | BlobTx | SetCodeTx
  // -----------------------------------------------------------------
 
-    syntax LegacyTx     ::= LegacyTxData       ( nonce: Int,                       gasPrice: Int, gasLimit: Int, to: Account, value: Int, data: Bytes )                                                                                        [symbol(LegacyTxData)]
-                          | LegacySignedTxData ( nonce: Int,                       gasPrice: Int, gasLimit: Int, to: Account, value: Int, data: Bytes, networkChainId: Int )                                                                   [symbol(LegacySignedTxData)]
-    syntax AccessListTx ::= AccessListTxData   ( nonce: Int,                       gasPrice: Int, gasLimit: Int, to: Account, value: Int, data: Bytes, chainId: Int, accessLists: JSONs )                                                      [symbol(AccessListTxData)]
-    syntax DynamicFeeTx ::= DynamicFeeTxData   ( nonce: Int, priorityGasFee: Int, maxGasFee: Int, gasLimit: Int, to: Account, value: Int, data: Bytes, chainId: Int, accessLists: JSONs)                                                       [symbol(DynamicFeeTxData)]
-    syntax BlobTx       ::= BlobTxData         ( nonce: Int, priorityGasFee: Int, maxGasFee: Int, gasLimit: Int, to: AccountNotNil, value: Int, data: Bytes, chainId: Int, accessLists: JSONs, maxBlobGasFee: Int, blobVersionedHashes: List ) [symbol(BlobTxData)]
+    syntax LegacyTx     ::= LegacyTxData       ( nonce: Int,                       gasPrice: Int, gasLimit: Int, to: Account, value: Int, data: Bytes )                                                                                                                   [symbol(LegacyTxData)]
+                          | LegacySignedTxData ( nonce: Int,                       gasPrice: Int, gasLimit: Int, to: Account, value: Int, data: Bytes, networkChainId: Int )                                                                                              [symbol(LegacySignedTxData)]
+    syntax AccessListTx ::= AccessListTxData   ( nonce: Int,                       gasPrice: Int, gasLimit: Int, to: Account, value: Int, data: Bytes, chainId: Int, accessLists: JSONs )                                                                                 [symbol(AccessListTxData)]
+    syntax DynamicFeeTx ::= DynamicFeeTxData   ( nonce: Int, priorityGasFee: Int, maxGasFee: Int, gasLimit: Int, to: Account, value: Int, data: Bytes, chainId: Int, accessLists: JSONs)                                                                                  [symbol(DynamicFeeTxData)]
+    syntax BlobTx       ::= BlobTxData         ( nonce: Int, priorityGasFee: Int, maxGasFee: Int, gasLimit: Int, to: AccountNotNil, value: Int, data: Bytes, chainId: Int, accessLists: JSONs, maxBlobGasFee: Int, blobVersionedHashes: List )                            [symbol(BlobTxData)]
+    syntax SetCodeTx    ::= SetCodeTxData      ( nonce: Int, priorityGasFee: Int, maxGasFee: Int, gasLimit: Int, to: AccountNotNil, value: Int, data: Bytes, chainId: Int, accessLists: JSONs, maxBlobGasFee: Int, blobVersionedHashes: List, authorizationLists:JSONs ) [symbol(SetCodeTxData)]
  // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 endmodule

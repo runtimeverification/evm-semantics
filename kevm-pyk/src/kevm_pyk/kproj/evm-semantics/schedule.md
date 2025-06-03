@@ -20,6 +20,22 @@ requires "data.md"
 module SCHEDULE
     imports EVM-DATA
 
+    syntax Schedule ::= getSchedule(Int) [function]
+    rule getSchedule(0) => FRONTIER
+    rule getSchedule(1) => HOMESTEAD
+    rule getSchedule(2) => TANGERINE_WHISTLE
+    rule getSchedule(3) => SPURIOUS_DRAGON
+    rule getSchedule(4) => BYZANTIUM
+    rule getSchedule(5) => CONSTANTINOPLE
+    rule getSchedule(6) => PETERSBURG
+    rule getSchedule(7) => ISTANBUL
+    rule getSchedule(8) => BERLIN
+    rule getSchedule(9) => LONDON
+    rule getSchedule(10) => MERGE
+    rule getSchedule(11) => SHANGHAI
+    rule getSchedule(12) => CANCUN
+    rule getSchedule(13) => PRAGUE
+
     syntax Bool ::= ScheduleFlag "<<" Schedule ">>" [function, total]
  // -----------------------------------------------------------------
 
@@ -30,6 +46,7 @@ module SCHEDULE
                           | "Ghasrejectedfirstbyte"   | "Ghasprevrandao"   | "Ghasmaxinitcodesize" | "Ghaspushzero"
                           | "Ghaswarmcoinbase"        | "Ghaswithdrawals"  | "Ghastransient"       | "Ghasmcopy"
                           | "Ghasbeaconroot"          | "Ghaseip6780"      | "Ghasblobbasefee"     | "Ghasblobhash"
+                          | "Ghasbls12msmdiscount"    | "Ghasdelegation"
 ```
 
 ### Schedule Constants
@@ -48,7 +65,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
                            | "Gblockhash"    | "Gquadcoeff"    | "maxCodeSize"   | "Rb"                | "Gquaddivisor"       | "Gecadd"           | "Gecmul"
                            | "Gecpairconst"  | "Gecpaircoeff"  | "Gfround"       | "Gcoldsload"        | "Gcoldaccountaccess" | "Gwarmstorageread" | "Gaccesslistaddress"
                            | "Gaccessliststoragekey"           | "Rmaxquotient"  | "Ginitcodewordcost" | "maxInitCodeSize"    | "Gwarmstoragedirtystore"
-                           | "Gpointeval"
+                           | "Gpointeval"    | "Gbls12g1add"   | "Gbls12g1mul"   | "Gbls12g2add"       | "Gbls12g2mul"        | "Gbls12PairingCheckMul"
+                           | "Gbls12PairingCheckAdd"           | "Gbls12mapfptog1"                     | "Gbls12mapfp2tog2"
  // ----------------------------------------------------------------------------------------------------------------------------------------------------
 ```
 
@@ -120,6 +138,15 @@ A `ScheduleConst` is a constant determined by the fee schedule.
 
     rule Gpointeval < FRONTIER > => 0
 
+    rule Gbls12g1add < FRONTIER > => 0
+    rule Gbls12g1mul < FRONTIER > => 0
+    rule Gbls12g2add < FRONTIER > => 0
+    rule Gbls12g2mul < FRONTIER > => 0
+    rule Gbls12PairingCheckMul < FRONTIER > => 0
+    rule Gbls12PairingCheckAdd < FRONTIER > => 0
+    rule Gbls12mapfptog1 < FRONTIER > => 0
+    rule Gbls12mapfp2tog2 < FRONTIER > => 0
+
     rule Gaccessliststoragekey < FRONTIER > => 0
     rule Gaccesslistaddress    < FRONTIER > => 0
 
@@ -156,6 +183,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghaseip6780             << FRONTIER >> => false
     rule Ghasblobbasefee         << FRONTIER >> => false
     rule Ghasblobhash            << FRONTIER >> => false
+    rule Ghasbls12msmdiscount    << FRONTIER >> => false
+    rule Ghasdelegation          << FRONTIER >> => false
 ```
 
 ### Homestead Schedule
@@ -226,6 +255,15 @@ A `ScheduleConst` is a constant determined by the fee schedule.
 
     rule Gpointeval < HOMESTEAD > => 0
 
+    rule Gbls12g1add < HOMESTEAD > => 0
+    rule Gbls12g1mul < HOMESTEAD > => 0
+    rule Gbls12g2add < HOMESTEAD > => 0
+    rule Gbls12g2mul < HOMESTEAD > => 0
+    rule Gbls12PairingCheckMul < HOMESTEAD > => 0
+    rule Gbls12PairingCheckAdd < HOMESTEAD > => 0
+    rule Gbls12mapfptog1 < HOMESTEAD > => 0
+    rule Gbls12mapfp2tog2 < HOMESTEAD > => 0
+
     rule Gaccessliststoragekey < HOMESTEAD > => 0
     rule Gaccesslistaddress    < HOMESTEAD > => 0
 
@@ -262,6 +300,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghaseip6780             << HOMESTEAD >> => false
     rule Ghasblobbasefee         << HOMESTEAD >> => false
     rule Ghasblobhash            << HOMESTEAD >> => false
+    rule Ghasbls12msmdiscount    << HOMESTEAD >> => false
+    rule Ghasdelegation          << HOMESTEAD >> => false
 ```
 
 ### Tangerine Whistle Schedule
@@ -332,6 +372,15 @@ A `ScheduleConst` is a constant determined by the fee schedule.
 
     rule Gpointeval < TANGERINE_WHISTLE > => 0
 
+    rule Gbls12g1add < TANGERINE_WHISTLE > => 0
+    rule Gbls12g1mul < TANGERINE_WHISTLE > => 0
+    rule Gbls12g2add < TANGERINE_WHISTLE > => 0
+    rule Gbls12g2mul < TANGERINE_WHISTLE > => 0
+    rule Gbls12PairingCheckMul < TANGERINE_WHISTLE > => 0
+    rule Gbls12PairingCheckAdd < TANGERINE_WHISTLE > => 0
+    rule Gbls12mapfptog1 < TANGERINE_WHISTLE > => 0
+    rule Gbls12mapfp2tog2 < TANGERINE_WHISTLE > => 0
+
     rule Gaccessliststoragekey < TANGERINE_WHISTLE > => 0
     rule Gaccesslistaddress    < TANGERINE_WHISTLE > => 0
 
@@ -368,6 +417,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghaseip6780             << TANGERINE_WHISTLE >> => false
     rule Ghasblobbasefee         << TANGERINE_WHISTLE >> => false
     rule Ghasblobhash            << TANGERINE_WHISTLE >> => false
+    rule Ghasbls12msmdiscount    << TANGERINE_WHISTLE >> => false
+    rule Ghasdelegation          << TANGERINE_WHISTLE >> => false
 ```
 
 ### Spurious Dragon Schedule
@@ -438,6 +489,15 @@ A `ScheduleConst` is a constant determined by the fee schedule.
 
     rule Gpointeval < SPURIOUS_DRAGON > => 0
 
+    rule Gbls12g1add < SPURIOUS_DRAGON > => 0
+    rule Gbls12g1mul < SPURIOUS_DRAGON > => 0
+    rule Gbls12g2add < SPURIOUS_DRAGON > => 0
+    rule Gbls12g2mul < SPURIOUS_DRAGON > => 0
+    rule Gbls12PairingCheckMul < SPURIOUS_DRAGON > => 0
+    rule Gbls12PairingCheckAdd < SPURIOUS_DRAGON > => 0
+    rule Gbls12mapfptog1 < SPURIOUS_DRAGON > => 0
+    rule Gbls12mapfp2tog2 < SPURIOUS_DRAGON > => 0
+
     rule Gaccessliststoragekey < SPURIOUS_DRAGON > => 0
     rule Gaccesslistaddress    < SPURIOUS_DRAGON > => 0
 
@@ -474,6 +534,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghaseip6780             << SPURIOUS_DRAGON >> => false
     rule Ghasblobbasefee         << SPURIOUS_DRAGON >> => false
     rule Ghasblobhash            << SPURIOUS_DRAGON >> => false
+    rule Ghasbls12msmdiscount    << SPURIOUS_DRAGON >> => false
+    rule Ghasdelegation          << SPURIOUS_DRAGON >> => false
 ```
 
 ### Byzantium Schedule
@@ -544,6 +606,15 @@ A `ScheduleConst` is a constant determined by the fee schedule.
 
     rule Gpointeval < BYZANTIUM > => 0
 
+    rule Gbls12g1add < BYZANTIUM > => 0
+    rule Gbls12g1mul < BYZANTIUM > => 0
+    rule Gbls12g2add < BYZANTIUM > => 0
+    rule Gbls12g2mul < BYZANTIUM > => 0
+    rule Gbls12PairingCheckMul < BYZANTIUM > => 0
+    rule Gbls12PairingCheckAdd < BYZANTIUM > => 0
+    rule Gbls12mapfptog1 < BYZANTIUM > => 0
+    rule Gbls12mapfp2tog2 < BYZANTIUM > => 0
+
     rule Gaccessliststoragekey < BYZANTIUM > => 0
     rule Gaccesslistaddress    < BYZANTIUM > => 0
 
@@ -580,6 +651,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghaseip6780             << BYZANTIUM >> => false
     rule Ghasblobbasefee         << BYZANTIUM >> => false
     rule Ghasblobhash            << BYZANTIUM >> => false
+    rule Ghasbls12msmdiscount    << BYZANTIUM >> => false
+    rule Ghasdelegation          << BYZANTIUM >> => false
 ```
 
 ### Constantinople Schedule
@@ -650,6 +723,15 @@ A `ScheduleConst` is a constant determined by the fee schedule.
 
     rule Gpointeval < CONSTANTINOPLE > => 0
 
+    rule Gbls12g1add < CONSTANTINOPLE > => 0
+    rule Gbls12g1mul < CONSTANTINOPLE > => 0
+    rule Gbls12g2add < CONSTANTINOPLE > => 0
+    rule Gbls12g2mul < CONSTANTINOPLE > => 0
+    rule Gbls12PairingCheckMul < CONSTANTINOPLE > => 0
+    rule Gbls12PairingCheckAdd < CONSTANTINOPLE > => 0
+    rule Gbls12mapfptog1 < CONSTANTINOPLE > => 0
+    rule Gbls12mapfp2tog2 < CONSTANTINOPLE > => 0
+
     rule Gaccessliststoragekey < CONSTANTINOPLE > => 0
     rule Gaccesslistaddress    < CONSTANTINOPLE > => 0
 
@@ -686,6 +768,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghaseip6780             << CONSTANTINOPLE >> => false
     rule Ghasblobbasefee         << CONSTANTINOPLE >> => false
     rule Ghasblobhash            << CONSTANTINOPLE >> => false
+    rule Ghasbls12msmdiscount    << CONSTANTINOPLE >> => false
+    rule Ghasdelegation          << CONSTANTINOPLE >> => false
 ```
 
 ### Petersburg Schedule
@@ -756,6 +840,15 @@ A `ScheduleConst` is a constant determined by the fee schedule.
 
     rule Gpointeval < PETERSBURG > => 0
 
+    rule Gbls12g1add < PETERSBURG > => 0
+    rule Gbls12g1mul < PETERSBURG > => 0
+    rule Gbls12g2add < PETERSBURG > => 0
+    rule Gbls12g2mul < PETERSBURG > => 0
+    rule Gbls12PairingCheckMul < PETERSBURG > => 0
+    rule Gbls12PairingCheckAdd < PETERSBURG > => 0
+    rule Gbls12mapfptog1 < PETERSBURG > => 0
+    rule Gbls12mapfp2tog2 < PETERSBURG > => 0
+
     rule Gaccessliststoragekey < PETERSBURG > => 0
     rule Gaccesslistaddress    < PETERSBURG > => 0
 
@@ -792,6 +885,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghaseip6780             << PETERSBURG >> => false
     rule Ghasblobbasefee         << PETERSBURG >> => false
     rule Ghasblobhash            << PETERSBURG >> => false
+    rule Ghasbls12msmdiscount    << PETERSBURG >> => false
+    rule Ghasdelegation          << PETERSBURG >> => false
 ```
 
 ### Istanbul Schedule
@@ -862,6 +957,15 @@ A `ScheduleConst` is a constant determined by the fee schedule.
 
     rule Gpointeval < ISTANBUL > => 0
 
+    rule Gbls12g1add < ISTANBUL > => 0
+    rule Gbls12g1mul < ISTANBUL > => 0
+    rule Gbls12g2add < ISTANBUL > => 0
+    rule Gbls12g2mul < ISTANBUL > => 0
+    rule Gbls12PairingCheckMul < ISTANBUL > => 0
+    rule Gbls12PairingCheckAdd < ISTANBUL > => 0
+    rule Gbls12mapfptog1 < ISTANBUL > => 0
+    rule Gbls12mapfp2tog2 < ISTANBUL > => 0
+
     rule Gaccessliststoragekey < ISTANBUL > => 0
     rule Gaccesslistaddress    < ISTANBUL > => 0
 
@@ -898,6 +1002,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghaseip6780             << ISTANBUL >> => false
     rule Ghasblobbasefee         << ISTANBUL >> => false
     rule Ghasblobhash            << ISTANBUL >> => false
+    rule Ghasbls12msmdiscount    << ISTANBUL >> => false
+    rule Ghasdelegation          << ISTANBUL >> => false
 ```
 
 ### Berlin Schedule
@@ -968,6 +1074,15 @@ A `ScheduleConst` is a constant determined by the fee schedule.
 
     rule Gpointeval < BERLIN > => 0
 
+    rule Gbls12g1add < BERLIN > => 0
+    rule Gbls12g1mul < BERLIN > => 0
+    rule Gbls12g2add < BERLIN > => 0
+    rule Gbls12g2mul < BERLIN > => 0
+    rule Gbls12PairingCheckMul < BERLIN > => 0
+    rule Gbls12PairingCheckAdd < BERLIN > => 0
+    rule Gbls12mapfptog1 < BERLIN > => 0
+    rule Gbls12mapfp2tog2 < BERLIN > => 0
+
     rule Gaccessliststoragekey < BERLIN > => 1900
     rule Gaccesslistaddress    < BERLIN > => 2400
 
@@ -1004,6 +1119,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghaseip6780             << BERLIN >> => false
     rule Ghasblobbasefee         << BERLIN >> => false
     rule Ghasblobhash            << BERLIN >> => false
+    rule Ghasbls12msmdiscount    << BERLIN >> => false
+    rule Ghasdelegation          << BERLIN >> => false
 ```
 
 ### London Schedule
@@ -1074,6 +1191,15 @@ A `ScheduleConst` is a constant determined by the fee schedule.
 
     rule Gpointeval < LONDON > => 0
 
+    rule Gbls12g1add < LONDON > => 0
+    rule Gbls12g1mul < LONDON > => 0
+    rule Gbls12g2add < LONDON > => 0
+    rule Gbls12g2mul < LONDON > => 0
+    rule Gbls12PairingCheckMul < LONDON > => 0
+    rule Gbls12PairingCheckAdd < LONDON > => 0
+    rule Gbls12mapfptog1 < LONDON > => 0
+    rule Gbls12mapfp2tog2 < LONDON > => 0
+
     rule Gaccessliststoragekey < LONDON > => 1900
     rule Gaccesslistaddress    < LONDON > => 2400
 
@@ -1110,6 +1236,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghaseip6780             << LONDON >> => false
     rule Ghasblobbasefee         << LONDON >> => false
     rule Ghasblobhash            << LONDON >> => false
+    rule Ghasbls12msmdiscount    << LONDON >> => false
+    rule Ghasdelegation          << LONDON >> => false
 ```
 
 ### Merge Schedule
@@ -1180,6 +1308,15 @@ A `ScheduleConst` is a constant determined by the fee schedule.
 
     rule Gpointeval < MERGE > => 0
 
+    rule Gbls12g1add < MERGE > => 0
+    rule Gbls12g1mul < MERGE > => 0
+    rule Gbls12g2add < MERGE > => 0
+    rule Gbls12g2mul < MERGE > => 0
+    rule Gbls12PairingCheckMul < MERGE > => 0
+    rule Gbls12PairingCheckAdd < MERGE > => 0
+    rule Gbls12mapfptog1 < MERGE > => 0
+    rule Gbls12mapfp2tog2 < MERGE > => 0
+
     rule Gaccessliststoragekey < MERGE > => 1900
     rule Gaccesslistaddress    < MERGE > => 2400
 
@@ -1216,6 +1353,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghaseip6780             << MERGE >> => false
     rule Ghasblobbasefee         << MERGE >> => false
     rule Ghasblobhash            << MERGE >> => false
+    rule Ghasbls12msmdiscount    << MERGE >> => false
+    rule Ghasdelegation          << MERGE >> => false
 ```
 
 ### Shanghai Schedule
@@ -1287,6 +1426,15 @@ A `ScheduleConst` is a constant determined by the fee schedule.
 
     rule Gpointeval < SHANGHAI > => 0
 
+    rule Gbls12g1add < SHANGHAI > => 0
+    rule Gbls12g1mul < SHANGHAI > => 0
+    rule Gbls12g2add < SHANGHAI > => 0
+    rule Gbls12g2mul < SHANGHAI > => 0
+    rule Gbls12PairingCheckMul < SHANGHAI > => 0
+    rule Gbls12PairingCheckAdd < SHANGHAI > => 0
+    rule Gbls12mapfptog1 < SHANGHAI > => 0
+    rule Gbls12mapfp2tog2 < SHANGHAI > => 0
+
     rule Gaccessliststoragekey < SHANGHAI > => 1900
     rule Gaccesslistaddress    < SHANGHAI > => 2400
 
@@ -1323,6 +1471,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghaseip6780             << SHANGHAI >> => false
     rule Ghasblobbasefee         << SHANGHAI >> => false
     rule Ghasblobhash            << SHANGHAI >> => false
+    rule Ghasbls12msmdiscount    << SHANGHAI >> => false
+    rule Ghasdelegation          << SHANGHAI >> => false
 ```
 
 ### Cancun Schedule
@@ -1394,6 +1544,15 @@ A `ScheduleConst` is a constant determined by the fee schedule.
 
     rule Gpointeval < CANCUN > => 50000
 
+    rule Gbls12g1add < CANCUN > => 0
+    rule Gbls12g1mul < CANCUN > => 0
+    rule Gbls12g2add < CANCUN > => 0
+    rule Gbls12g2mul < CANCUN > => 0
+    rule Gbls12PairingCheckMul < CANCUN > => 0
+    rule Gbls12PairingCheckAdd < CANCUN > => 0
+    rule Gbls12mapfptog1 < CANCUN > => 0
+    rule Gbls12mapfp2tog2 < CANCUN > => 0
+
     rule Gaccessliststoragekey < CANCUN > => 1900
     rule Gaccesslistaddress    < CANCUN > => 2400
 
@@ -1430,6 +1589,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghaseip6780             << CANCUN >> => true
     rule Ghasblobbasefee         << CANCUN >> => true
     rule Ghasblobhash            << CANCUN >> => true
+    rule Ghasbls12msmdiscount    << CANCUN >> => false
+    rule Ghasdelegation          << CANCUN >> => false
 
 ```
 
@@ -1503,6 +1664,15 @@ A `ScheduleConst` is a constant determined by the fee schedule.
 
     rule Gpointeval < PRAGUE > => 50000
 
+    rule Gbls12g1add < PRAGUE > => 375
+    rule Gbls12g1mul < PRAGUE > => 12000
+    rule Gbls12g2add < PRAGUE > => 600
+    rule Gbls12g2mul < PRAGUE > => 22500
+    rule Gbls12PairingCheckMul < PRAGUE > => 32600
+    rule Gbls12PairingCheckAdd < PRAGUE > => 37700
+    rule Gbls12mapfptog1 < PRAGUE > => 5500
+    rule Gbls12mapfp2tog2 < PRAGUE > => 23800
+
     rule Gaccessliststoragekey < PRAGUE > => 1900
     rule Gaccesslistaddress    < PRAGUE > => 2400
 
@@ -1539,6 +1709,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghaseip6780             << PRAGUE >> => true
     rule Ghasblobbasefee         << PRAGUE >> => true
     rule Ghasblobhash            << PRAGUE >> => true
+    rule Ghasbls12msmdiscount    << PRAGUE >> => true
+    rule Ghasdelegation          << PRAGUE >> => true
 
 endmodule
 ```
