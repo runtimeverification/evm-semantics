@@ -1479,11 +1479,11 @@ Precompiled Contracts
     rule #kzg2vh ( C ) => Sha256raw(C)[0 <- 1]
 
 
-    syntax Bytes ::= #bls12point ( G1Point ) [symbol(#bls12point1), function]
+    syntax Bytes ::= #bls12point ( G1Point ) [symbol(#bls12point1), function, total]
  // -------------------------------------------------------------------------
     rule #bls12point((X, Y)) => #padToWidth(64, #asByteStack(X)) +Bytes #padToWidth(64, #asByteStack(Y))
 
-    syntax Bytes ::= #bls12point ( G2Point ) [symbol(#bls12point2), function]
+    syntax Bytes ::= #bls12point ( G2Point ) [symbol(#bls12point2), function, total]
  // -------------------------------------------------------------------------
     rule #bls12point((X0 x X1, Y0 x Y1))
         => #padToWidth(64, #asByteStack(X0)) +Bytes #padToWidth(64, #asByteStack(X1))
