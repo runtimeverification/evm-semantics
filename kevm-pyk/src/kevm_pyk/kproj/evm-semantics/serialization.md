@@ -24,6 +24,10 @@ Address/Hash Helpers
     syntax Int ::= keccak ( Bytes ) [symbol(keccak), function, total, smtlib(smt_keccak)]
  // -------------------------------------------------------------------------------------
     rule [keccak]: keccak(WS) => #parseHexWord(Keccak256(WS)) [concrete]
+
+    syntax MInt{256} ::= keccakMInt256 ( Bytes ) [function]
+ // -------------------------------------------------------
+    rule keccakMInt256(WS) => Bytes2MInt(padLeftBytes(Keccak256raw(WS), 32, 0))::MInt{256}
 ```
 
 -   `#newAddr` computes the address of a new account given the address and nonce of the creating account.
@@ -34,6 +38,12 @@ Address/Hash Helpers
  // --------------------------------------------------------------------------------
     rule [#newAddr]:        #newAddr(ACCT, NONCE) => #addr(#parseHexWord(Keccak256(#rlpEncode([#addrBytes(ACCT), NONCE]))))                                                                        [concrete]
     rule [#newAddrCreate2]: #newAddr(ACCT, SALT, INITCODE) => #addr(#parseHexWord(Keccak256(b"\xff" +Bytes #addrBytes(ACCT) +Bytes #wordBytes(SALT) +Bytes #parseByteStack(Keccak256(INITCODE))))) [concrete]
+
+    syntax MInt{256} ::= #newAddrMInt256 ( MInt{256} , MInt{256} )         [function]
+                       | #newAddrMInt256 ( MInt{256} , MInt{256} , Bytes ) [function]
+ // ---------------------------------------------------------------------------------
+    rule #newAddrMInt256(ACCT, NONCE) => Int2MInt(#newAddr(MInt2Unsigned(ACCT), MInt2Unsigned(NONCE)))::MInt{256}
+    rule #newAddrMInt256(ACCT, SALT, INITCODE) => Int2MInt(#newAddr(MInt2Unsigned(ACCT), MInt2Unsigned(SALT), INITCODE))::MInt{256}
 ```
 
 - `#sender` computes the sender of the transaction from its data and signature.
