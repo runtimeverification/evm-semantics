@@ -1,0 +1,69 @@
+# NOTE: this CI workflow depends on the Pi-Squared-Inc/revm workflow!
+# This workflow only checks whether the pinned evm-semantics commit in revm matches the current master commit.
+# For this to make sense, the revm CI workflow should check out the pinned evm-semantics commit and run tests to demonstrate its correctness.
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+  push:
+    branches: ["master"]
+
+concurrency:
+  group: run-tests
+
+jobs:
+  blockchain-tests:
+    runs-on: [self-hosted, aws, us-east-2, m6a.4xlarge]
+
+    permissions:
+      contents: read
+      packages: read
+
+    steps:
+      - uses: actions/create-github-app-token@v1
+        id: temp-token
+        name: Generate temporary GitHub Token
+        with:
+          app-id: ${{ vars.CICD_GITHUB_WEBAPP_ID }}
+          private-key: ${{ secrets.CICD_GITHUB_WEBAPP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+
+      - name: Check out revm repository
+        uses: actions/checkout@v4
+        with:
+          path: revm
+          repository: Pi-Squared-Inc/revm
+          ref: pi2-release
+          token: ${{ steps.temp-token.outputs.token }}
+
+        # github context: https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/accessing-contextual-information-about-workflow-runs#github-context
+        # event data: https://docs.github.com/en/webhooks/webhook-events-and-payloads#push
+      - name: Check newly pushed master commit matches pointer
+        if: ${{ github.event_name == 'push' }}
+        run: |
+          set -euo pipefail
+          echo "Get new evm-semantics master commit"
+          local_commit=${{ github.event.after }}
+          echo "Grab pinned evm-semantics commit from revm repo"
+          [ ! -f revm/deps/evm-semantics ] && exit 1
+          remote_commit=$(cat revm/deps/evm-semantics)
+          echo "Comparing local commit $local_commit with revm pinned commit $remote_commit"
+          if [ "$local_commit" != "$remote_commit" ]; then
+            exit 2
+          fi
+
+        # github context: https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/accessing-contextual-information-about-workflow-runs#github-context
+        # event data: https://docs.github.com/en/webhooks/webhook-events-and-payloads#pull_request
+      - name: Check PR commit matches matches pointer
+        if: ${{ github.event_name == 'pull_request' }}
+        run: |
+          set -euo pipefail
+          echo "Get new evm-semantics PR commit"
+          local_commit=${{ github.event.pull_request.head.sha }}
+          echo "Grab pinned evm-semantics commit from revm repo"
+          [ ! -f revm/deps/evm-semantics ] && exit 1
+          remote_commit=$(cat revm/deps/evm-semantics)
+          echo "Comparing local commit $local_commit with revm pinned commit $remote_commit"
+          if [ "$local_commit" != "$remote_commit" ]; then
+            exit 2
+          fi
