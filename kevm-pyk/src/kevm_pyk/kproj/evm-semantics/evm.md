@@ -1557,10 +1557,11 @@ Precompiled Contracts
     rule <k> BLS12G1MSM => bls12G1Msm(CD) ... </k>
          <callData> CD </callData>
 
-    rule <k> g1MsmResult(P:G1Point) => #end EVMC_SUCCESS ... </k>
+    rule <k> R:G1MsmResult => #end EVMC_SUCCESS ... </k>
          <output>
-            _ => #bls12point(P)
+            _ => #bls12point(g1MsmResult.getPoint(R))
          </output>
+      requires R =/=K g1MsmError
     rule <k> g1MsmError => #end EVMC_PRECOMPILE_FAILURE ... </k>
 
     syntax G1MsmResult ::= "g1MsmError" | g1MsmResult(G1Point)
@@ -1591,6 +1592,10 @@ Precompiled Contracts
         andBool isValidBLS12Scalar(N)
         andBool BLS12G1InSubgroup((X, Y))
     rule #bls12G1MsmCheck(_, _, _, _, _, _) => g1MsmError  [owise]
+
+    syntax G1Point ::= "g1MsmResult.getPoint" "(" G1MsmResult ")" [function]
+    rule g1MsmResult.getPoint(g1MsmResult(P)) => P
+
 
     syntax PrecompiledOp ::= "BLS12G2ADD"
  // -------------------------------------
@@ -1656,10 +1661,11 @@ Precompiled Contracts
     rule <k> BLS12G2MSM => bls12G2Msm(CD) ... </k>
          <callData> CD </callData>
 
-    rule <k> g2MsmResult(P:G2Point) => #end EVMC_SUCCESS ... </k>
+    rule <k> R:G2MsmResult => #end EVMC_SUCCESS ... </k>
          <output>
-            _ => #bls12point(P)
+            _ => #bls12point(g2MsmResult.getPoint(R))
          </output>
+      requires R =/=K g2MsmError
     rule <k> g2MsmError => #end EVMC_PRECOMPILE_FAILURE ... </k>
 
     syntax G2MsmResult ::= "g2MsmError" | g2MsmResult(G2Point)
@@ -1694,15 +1700,20 @@ Precompiled Contracts
         andBool BLS12G2InSubgroup(( X0 x X1, Y0 x Y1 ))
     rule #bls12G2MsmCheck(_, _, _, _, _, _, _, _) => g2MsmError  [owise]
 
+    syntax G2Point ::= "g2MsmResult.getPoint" "(" G2MsmResult ")" [function]
+    rule g2MsmResult.getPoint(g2MsmResult(P)) => P
+
+
     syntax PrecompiledOp ::= "BLS12PAIRING_CHECK"
  // ---------------------------------------------
     rule <k> BLS12PAIRING_CHECK => bls12PairingCheck(CD, .List, .List) ... </k>
          <callData> CD </callData>
 
-    rule <k> bls12PairingResult(B:Bool) => #end EVMC_SUCCESS ... </k>
+    rule <k> R:Bls12PairingResult => #end EVMC_SUCCESS ... </k>
          <output>
-            _ => #if B #then Int2Bytes(32, 1, BE:Endianness) #else Int2Bytes(32, 0, BE:Endianness) #fi
+            _ => #if bls12PairingResult.get(R) #then Int2Bytes(32, 1, BE:Endianness) #else Int2Bytes(32, 0, BE:Endianness) #fi
          </output>
+       requires notBool R ==K bls12PairingError
     rule <k> bls12PairingError => #end EVMC_PRECOMPILE_FAILURE ... </k>
 
     syntax Bls12PairingResult ::= "bls12PairingError" | bls12PairingResult(Bool)
@@ -1761,6 +1772,10 @@ Precompiled Contracts
           andBool isValidBLS12Coordinate(Y0)
           andBool isValidBLS12Coordinate(Y1)
           andBool BLS12G2InSubgroup(P)
+
+    syntax Bool ::= "bls12PairingResult.get" "(" Bls12PairingResult ")" [function]
+    rule bls12PairingResult.get(bls12PairingResult(P)) => P
+
 
     syntax PrecompiledOp ::= "BLS12MAPFPTOG1"
  // -----------------------------------------
