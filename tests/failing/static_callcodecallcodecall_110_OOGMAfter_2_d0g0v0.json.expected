@@ -396,8 +396,14 @@
       </withdrawals>
       <requests>
         <depositRequests>
-          .List
+          b""
         </depositRequests>
+        <withdrawalRequests>
+          b""
+        </withdrawalRequests>
+        <consolidationRequests>
+          b""
+        </consolidationRequests>
       </requests>
     </network>
   </ethereum>
