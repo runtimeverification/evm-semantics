@@ -583,7 +583,7 @@ class KEVMSummarizer:
     """
     A class for summarizing the instructions of the KEVM.
 
-    1. `build_spec` builds the proof to symbolically execute one abitrary opcode.
+    1. `build_spec` builds the proof to symbolically execute one arbitrary opcode.
     2. `explore` runs the proof to get the KCFG.
     3. `summarize` minimizes the KCFG to get the summarized rules for opcodes.
     """
@@ -599,7 +599,7 @@ class KEVMSummarizer:
         self.save_directory = save_directory
 
     def build_stack_underflow_spec(self) -> APRProof | None:
-        """Build the specification to symbolically execute abitrary instruction with stack underflow."""
+        """Build the specification to symbolically execute arbitrary instruction with stack underflow."""
         ...
 
     def show_proof(
