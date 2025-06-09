@@ -1124,7 +1124,8 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
                         | "#newAccount"  Int Int Int
                         | "#checkCreate" Int Int
     // ------------------------------------------------
-    rule <k> #create ACCTFROM ACCTTO VALUE INITCODE
+    rule [create]:
+         <k> #create ACCTFROM ACCTTO VALUE INITCODE
           => IncrementNonce(ACCTFROM)
           ~> #pushCallStack ~> #pushWorldState
           ~> #newAccount ACCTFROM ACCTTO VALUE
