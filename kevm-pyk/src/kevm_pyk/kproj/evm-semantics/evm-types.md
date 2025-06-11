@@ -377,6 +377,9 @@ Bytes helper functions
     rule #padToWidth(N, BS)      =>  padLeftBytes(BS, N, 0) requires          0 <=Int N  [concrete]
     rule #padRightToWidth(N, BS) =>               BS        requires notBool (0 <=Int N) [concrete]
     rule #padRightToWidth(N, BS) => padRightBytes(BS, N, 0) requires          0 <=Int N  [concrete]
+
+    syntax Bool ::= Bytes "==Bytes" Bytes   [symbol(_==Bytes_), function, total]
+    rule B1 ==Bytes B2 => B1 ==K B2
 ```
 
 Accounts

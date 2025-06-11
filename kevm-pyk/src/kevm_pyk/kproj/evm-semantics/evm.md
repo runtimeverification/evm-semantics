@@ -64,7 +64,7 @@ In the comments next to each cell, we've marked which component of the YellowPap
               <wordStack>   .List  </wordStack>           // \mu_s
               <localMem>    .Bytes </localMem>            // \mu_m
               <pc>          0      </pc>                  // \mu_pc
-              <gas>         $GAS:Int </gas>               // \mau_g
+              <gas>         $GAS:Gas </gas>               // \mau_g
               <memoryUsed>  0      </memoryUsed>          // \mu_i
               <callGas>     0:Gas  </callGas>
 
@@ -73,7 +73,20 @@ In the comments next to each cell, we've marked which component of the YellowPap
             </callState>
           </evm>
         </ethereum>
+```
 
+For symbolic execution, we create an additional cell, to capture the
+side-effects of impure hooks.
+
+```symbolic
+        <symbolicWorldState> .SymbolicWorldState </symbolicWorldState>
+
+    syntax SymbolicWorldState ::= ".SymbolicWorldState" [function, total]
+    rule <k> WS:WorldState => .K ... </k>
+         <symbolicWorldState> _ => WS </symbolicWorldState>
+```
+
+```k
     syntax EthereumSimulation
  // -------------------------
 ```
@@ -1111,7 +1124,8 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
                         | "#newAccount"  Int Int Int
                         | "#checkCreate" Int Int
     // ------------------------------------------------
-    rule <k> #create ACCTFROM ACCTTO VALUE INITCODE
+    rule [create]:
+         <k> #create ACCTFROM ACCTTO VALUE INITCODE
           => IncrementNonce(ACCTFROM)
           ~> #pushCallStack ~> #pushWorldState
           ~> #newAccount ACCTFROM ACCTTO VALUE
@@ -1217,7 +1231,9 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
       [preserves-definedness]
 
     rule [create-invalid]:
-         <k> CREATE _ _ _ => #end EVMC_OUT_OF_GAS ... </k> [owise]
+         <k> CREATE _ _ MEMWIDTH => #end EVMC_OUT_OF_GAS ... </k>
+         <schedule> SCHED </schedule>
+      requires notBool #hasValidInitCode(MEMWIDTH, SCHED)
 ```
 
 `CREATE2` will attempt to `#create` the account, but with the new scheme for choosing the account address.
@@ -1445,18 +1461,19 @@ Precompiled Contracts
          <output> _ => Int2Bytes(32, 4096, BE) +Bytes Int2Bytes(32, blsModulus, BE) </output>
          <callData> CD </callData>
       requires lengthBytes( CD ) ==Int 192
-       andBool #kzg2vh(substrBytes(CD, 96, 144)) ==K substrBytes(CD, 0, 32)
+       andBool #kzg2vh(substrBytes(CD, 96, 144)) ==Bytes substrBytes(CD, 0, 32)
        andBool Bytes2Int(substrBytes(CD, 32, 64), BE, Unsigned) <Int blsModulus
        andBool Bytes2Int(substrBytes(CD, 64, 96), BE, Unsigned) <Int blsModulus
        andBool verifyKZGProof(substrBytes(CD, 96, 144), substrBytes(CD, 32, 64), substrBytes(CD, 64, 96), substrBytes(CD, 144, 192))
 
     rule <k> KZGPOINTEVAL => #end EVMC_PRECOMPILE_FAILURE ... </k>
          <callData> CD </callData>
-      requires lengthBytes( CD ) =/=Int 192
-       orBool #kzg2vh(substrBytes(CD, 96, 144)) =/=K substrBytes(CD, 0, 32)
-       orBool Bytes2Int(substrBytes(CD, 32, 64), BE, Unsigned) >=Int blsModulus
-       orBool Bytes2Int(substrBytes(CD, 64, 96), BE, Unsigned) >=Int blsModulus
-       orBool notBool verifyKZGProof(substrBytes(CD, 96, 144), substrBytes(CD, 32, 64), substrBytes(CD, 64, 96), substrBytes(CD, 144, 192))
+      requires notBool
+             ( lengthBytes( CD ) ==Int 192
+       andBool #kzg2vh(substrBytes(CD, 96, 144)) ==Bytes substrBytes(CD, 0, 32)
+       andBool Bytes2Int(substrBytes(CD, 32, 64), BE, Unsigned) <Int blsModulus
+       andBool Bytes2Int(substrBytes(CD, 64, 96), BE, Unsigned) <Int blsModulus
+       andBool verifyKZGProof(substrBytes(CD, 96, 144), substrBytes(CD, 32, 64), substrBytes(CD, 64, 96), substrBytes(CD, 144, 192)))
 
     syntax Bytes ::= #kzg2vh ( Bytes ) [symbol(#kzg2vh), function, total]
  // ---------------------------------------------------------------------
@@ -1464,11 +1481,11 @@ Precompiled Contracts
     rule #kzg2vh ( C ) => Sha256raw(C)[0 <- 1]
 
 
-    syntax Bytes ::= #bls12point ( G1Point ) [symbol(#bls12point1), function]
+    syntax Bytes ::= #bls12point ( G1Point ) [symbol(#bls12point1), function, total]
  // -------------------------------------------------------------------------
     rule #bls12point((X, Y)) => #padToWidth(64, #asByteStack(X)) +Bytes #padToWidth(64, #asByteStack(Y))
 
-    syntax Bytes ::= #bls12point ( G2Point ) [symbol(#bls12point2), function]
+    syntax Bytes ::= #bls12point ( G2Point ) [symbol(#bls12point2), function, total]
  // -------------------------------------------------------------------------
     rule #bls12point((X0 x X1, Y0 x Y1))
         => #padToWidth(64, #asByteStack(X0)) +Bytes #padToWidth(64, #asByteStack(X1))
@@ -1542,10 +1559,11 @@ Precompiled Contracts
     rule <k> BLS12G1MSM => bls12G1Msm(CD) ... </k>
          <callData> CD </callData>
 
-    rule <k> g1MsmResult(P:G1Point) => #end EVMC_SUCCESS ... </k>
+    rule <k> R:G1MsmResult => #end EVMC_SUCCESS ... </k>
          <output>
-            _ => #bls12point(P)
+            _ => #bls12point(g1MsmResult.getPoint(R))
          </output>
+      requires R =/=K g1MsmError
     rule <k> g1MsmError => #end EVMC_PRECOMPILE_FAILURE ... </k>
 
     syntax G1MsmResult ::= "g1MsmError" | g1MsmResult(G1Point)
@@ -1576,6 +1594,10 @@ Precompiled Contracts
         andBool isValidBLS12Scalar(N)
         andBool BLS12G1InSubgroup((X, Y))
     rule #bls12G1MsmCheck(_, _, _, _, _, _) => g1MsmError  [owise]
+
+    syntax G1Point ::= "g1MsmResult.getPoint" "(" G1MsmResult ")" [function]
+    rule g1MsmResult.getPoint(g1MsmResult(P)) => P
+
 
     syntax PrecompiledOp ::= "BLS12G2ADD"
  // -------------------------------------
@@ -1641,10 +1663,11 @@ Precompiled Contracts
     rule <k> BLS12G2MSM => bls12G2Msm(CD) ... </k>
          <callData> CD </callData>
 
-    rule <k> g2MsmResult(P:G2Point) => #end EVMC_SUCCESS ... </k>
+    rule <k> R:G2MsmResult => #end EVMC_SUCCESS ... </k>
          <output>
-            _ => #bls12point(P)
+            _ => #bls12point(g2MsmResult.getPoint(R))
          </output>
+      requires R =/=K g2MsmError
     rule <k> g2MsmError => #end EVMC_PRECOMPILE_FAILURE ... </k>
 
     syntax G2MsmResult ::= "g2MsmError" | g2MsmResult(G2Point)
@@ -1679,15 +1702,20 @@ Precompiled Contracts
         andBool BLS12G2InSubgroup(( X0 x X1, Y0 x Y1 ))
     rule #bls12G2MsmCheck(_, _, _, _, _, _, _, _) => g2MsmError  [owise]
 
+    syntax G2Point ::= "g2MsmResult.getPoint" "(" G2MsmResult ")" [function]
+    rule g2MsmResult.getPoint(g2MsmResult(P)) => P
+
+
     syntax PrecompiledOp ::= "BLS12PAIRING_CHECK"
  // ---------------------------------------------
     rule <k> BLS12PAIRING_CHECK => bls12PairingCheck(CD, .List, .List) ... </k>
          <callData> CD </callData>
 
-    rule <k> bls12PairingResult(B:Bool) => #end EVMC_SUCCESS ... </k>
+    rule <k> R:Bls12PairingResult => #end EVMC_SUCCESS ... </k>
          <output>
-            _ => #if B #then Int2Bytes(32, 1, BE:Endianness) #else Int2Bytes(32, 0, BE:Endianness) #fi
+            _ => #if bls12PairingResult.get(R) #then Int2Bytes(32, 1, BE:Endianness) #else Int2Bytes(32, 0, BE:Endianness) #fi
          </output>
+       requires notBool R ==K bls12PairingError
     rule <k> bls12PairingError => #end EVMC_PRECOMPILE_FAILURE ... </k>
 
     syntax Bls12PairingResult ::= "bls12PairingError" | bls12PairingResult(Bool)
@@ -1746,6 +1774,10 @@ Precompiled Contracts
           andBool isValidBLS12Coordinate(Y0)
           andBool isValidBLS12Coordinate(Y1)
           andBool BLS12G2InSubgroup(P)
+
+    syntax Bool ::= "bls12PairingResult.get" "(" Bls12PairingResult ")" [function]
+    rule bls12PairingResult.get(bls12PairingResult(P)) => P
+
 
     syntax PrecompiledOp ::= "BLS12MAPFPTOG1"
  // -----------------------------------------
@@ -1822,8 +1854,8 @@ Overall Gas
          <memoryUsed> MU => MU' </memoryUsed> <schedule> SCHED </schedule>
 
     rule <k> _G:Gas ~> (#deductMemoryGas => #deductGas)   ... </k> //Required for verification
-    rule <k>  G:Int ~> #deductGas => #end EVMC_OUT_OF_GAS ... </k> <gas> GAVAIL:Int                  </gas> requires GAVAIL <Int G
-    rule <k>  G:Int ~> #deductGas => .K                    ... </k> <gas> GAVAIL:Int => GAVAIL -Int G </gas> requires G <=Int GAVAIL
+    rule <k>  G:Gas ~> #deductGas => #end EVMC_OUT_OF_GAS ... </k> <gas> GAVAIL                  </gas> requires GAVAIL <Gas G
+    rule <k>  G:Gas ~> #deductGas => .K                   ... </k> <gas> GAVAIL => GAVAIL -Gas G </gas> requires G <=Gas GAVAIL
 
     syntax Bool ::= #inStorage     ( Map   , Account , Int ) [symbol(#inStorage), function, total]
                   | #inStorageAux1 ( KItem ,           Int ) [symbol(#inStorageAux1), function, total]
@@ -2142,7 +2174,7 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
  // ------------------------------------------
     rule <schedule> SCHED </schedule>
          <k> #allocateCreateGas => .K ... </k>
-         <gas>     GAVAIL => #if Gstaticcalldepth << SCHED >> #then 0      #else GAVAIL /Int 64      #fi </gas>
+         <gas>     GAVAIL => #if Gstaticcalldepth << SCHED >> #then 0      #else GAVAIL /Gas 64      #fi </gas>
          <callGas> _      => #if Gstaticcalldepth << SCHED >> #then GAVAIL #else #allBut64th(GAVAIL) #fi </callGas>
       [preserves-definedness]
 ```

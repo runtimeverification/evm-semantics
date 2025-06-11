@@ -29,8 +29,8 @@ Address/Hash Helpers
 -   `#newAddr` computes the address of a new account given the address and nonce of the creating account.
 
 ```k
-    syntax Int ::= #newAddr ( Int , Int )         [symbol(newAddr), function]
-                 | #newAddr ( Int , Int , Bytes ) [symbol(newAddrCreate2), function]
+    syntax Int ::= #newAddr ( Int , Int )         [symbol(newAddr), total, function]
+                 | #newAddr ( Int , Int , Bytes ) [symbol(newAddrCreate2), total, function]
  // --------------------------------------------------------------------------------
     rule [#newAddr]:        #newAddr(ACCT, NONCE) => #addr(#parseHexWord(Keccak256(#rlpEncode([#addrBytes(ACCT), NONCE]))))                                                                        [concrete]
     rule [#newAddrCreate2]: #newAddr(ACCT, SALT, INITCODE) => #addr(#parseHexWord(Keccak256(b"\xff" +Bytes #addrBytes(ACCT) +Bytes #wordBytes(SALT) +Bytes #parseByteStack(Keccak256(INITCODE))))) [concrete]
