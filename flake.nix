@@ -2,21 +2,24 @@
   description = "A flake for the KEVM Semantics";
 
   inputs = {
-    k-framework.url = "github:runtimeverification/k/v7.1.265";
-    nixpkgs.follows = "k-framework/nixpkgs";
+    rv-nix-tools.url = "github:runtimeverification/rv-nix-tools/854d4f05ea78547d46e807b414faad64cea10ae4";
+    nixpkgs.follows = "rv-nix-tools/nixpkgs";
+
+    k-framework.url = "github:runtimeverification/k/v7.1.262";
+    k-framework.inputs.nixpkgs.follows = "nixpkgs";
     flake-utils.follows = "k-framework/flake-utils";
-    rv-utils.follows = "k-framework/rv-utils";
     poetry2nix.follows = "k-framework/poetry2nix";
+    poetry2nix.inputs.nixpkgs.follows = "nixpkgs";
     blockchain-k-plugin = {
       url =
         "github:runtimeverification/blockchain-k-plugin/1fda07d61df64ef9ae2ea87e6f767a02d30d4599";
       inputs.flake-utils.follows = "k-framework/flake-utils";
-      inputs.nixpkgs.follows = "k-framework/nixpkgs";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
     haskell-backend.follows = "k-framework/haskell-backend";
   };
   outputs = { self, k-framework, haskell-backend, nixpkgs, flake-utils
-    , blockchain-k-plugin, rv-utils, ... }@inputs:
+    , blockchain-k-plugin, rv-nix-tools, ... }@inputs:
     let
       nixLibs = pkgs:
         with pkgs;
@@ -217,12 +220,12 @@
             ] ./.);
           };
 
-          check-submodules = rv-utils.lib.check-submodules pkgs {
+          check-submodules = rv-nix-tools.lib.check-submodules pkgs {
             inherit k-framework blockchain-k-plugin;
           };
 
           update-from-submodules =
-            rv-utils.lib.update-from-submodules pkgs ./flake.lock {
+            rv-nix-tools.lib.update-from-submodules pkgs ./flake.lock {
               blockchain-k-plugin.submodule = "deps/plugin";
             };
         };
