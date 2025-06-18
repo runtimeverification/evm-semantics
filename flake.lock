@@ -38,25 +38,21 @@
           "k-framework",
           "poetry2nix"
         ],
-        "rv-utils": [
-          "blockchain-k-plugin",
-          "k-framework",
-          "rv-utils"
-        ],
+        "rv-nix-tools": "rv-nix-tools",
         "xbyak": "xbyak"
       },
       "locked": {
-        "lastModified": 1747789501,
-        "narHash": "sha256-aVjrINY+sOPVa4sQJXTs11bqfgNHXlFWvuZFGMDdOgI=",
+        "lastModified": 1749639687,
+        "narHash": "sha256-EwmGoQFA/JkAyTCERvF5k8PvC+5L1NRNP+SvE2oHy5M=",
         "owner": "runtimeverification",
         "repo": "blockchain-k-plugin",
-        "rev": "1fda07d61df64ef9ae2ea87e6f767a02d30d4599",
+        "rev": "f159396d0f16b88c86c557c47f7ae36ffc59dc53",
         "type": "github"
       },
       "original": {
         "owner": "runtimeverification",
         "repo": "blockchain-k-plugin",
-        "rev": "1fda07d61df64ef9ae2ea87e6f767a02d30d4599",
+        "rev": "f159396d0f16b88c86c557c47f7ae36ffc59dc53",
         "type": "github"
       }
     },
@@ -374,8 +370,6 @@
         "llvm-backend": "llvm-backend",
         "nixpkgs": [
           "blockchain-k-plugin",
-          "k-framework",
-          "llvm-backend",
           "nixpkgs"
         ],
         "poetry2nix": "poetry2nix",
@@ -414,7 +408,7 @@
           "nixpkgs"
         ],
         "poetry2nix": "poetry2nix_2",
-        "rv-nix-tools": "rv-nix-tools"
+        "rv-nix-tools": "rv-nix-tools_2"
       },
       "locked": {
         "lastModified": 1750075382,
@@ -618,6 +612,22 @@
         "type": "github"
       }
     },
+    "nixpkgs_5": {
+      "locked": {
+        "lastModified": 1716457947,
+        "narHash": "sha256-Y+exebcqeprnhEpoPJrEUZmNeO60qeOxkVHhqG/OEwQ=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "69493a13eaea0dc4682fd07e8a084f17813dbeeb",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "69493a13eaea0dc4682fd07e8a084f17813dbeeb",
+        "type": "github"
+      }
+    },
     "poetry2nix": {
       "inputs": {
         "flake-utils": "flake-utils_2",
@@ -760,12 +770,12 @@
           "k-framework",
           "poetry2nix"
         ],
-        "rv-nix-tools": "rv-nix-tools_2"
+        "rv-nix-tools": "rv-nix-tools_3"
       }
     },
     "rv-nix-tools": {
       "inputs": {
-        "nixpkgs": "nixpkgs_3"
+        "nixpkgs": "nixpkgs_2"
       },
       "locked": {
         "lastModified": 1726497185,
@@ -785,6 +795,25 @@
     "rv-nix-tools_2": {
       "inputs": {
         "nixpkgs": "nixpkgs_4"
+      },
+      "locked": {
+        "lastModified": 1726497185,
+        "narHash": "sha256-iN+5eLmDm/rLuIZezS5ZqiW1BtBpwrrM9CPPP7Z5Tog=",
+        "owner": "runtimeverification",
+        "repo": "rv-nix-tools",
+        "rev": "854d4f05ea78547d46e807b414faad64cea10ae4",
+        "type": "github"
+      },
+      "original": {
+        "owner": "runtimeverification",
+        "repo": "rv-nix-tools",
+        "rev": "854d4f05ea78547d46e807b414faad64cea10ae4",
+        "type": "github"
+      }
+    },
+    "rv-nix-tools_3": {
+      "inputs": {
+        "nixpkgs": "nixpkgs_5"
       },
       "locked": {
         "lastModified": 1726497185,
@@ -821,7 +850,7 @@
     },
     "rv-utils_2": {
       "inputs": {
-        "nixpkgs": "nixpkgs_2"
+        "nixpkgs": "nixpkgs_3"
       },
       "locked": {
         "lastModified": 1716459074,
