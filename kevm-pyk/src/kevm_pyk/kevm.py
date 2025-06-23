@@ -5,6 +5,7 @@ from collections.abc import Callable
 from typing import TYPE_CHECKING, NamedTuple
 
 from pyk.cterm import CTerm, CTermSymbolic
+from pyk.cterm.show import CTermShow
 from pyk.kast import KInner
 from pyk.kast.inner import (
     KApply,
@@ -25,7 +26,7 @@ from pyk.kast.prelude.kint import INT, gtInt, intToken, ltInt
 from pyk.kast.prelude.ml import mlEqualsFalse, mlEqualsTrue
 from pyk.kast.prelude.string import stringToken
 from pyk.kast.prelude.utils import token
-from pyk.kast.pretty import paren
+from pyk.kast.pretty import PrettyPrinter, paren
 from pyk.kcfg.kcfg import KCFGExtendResult, Step
 from pyk.kcfg.semantics import DefaultSemantics
 from pyk.kcfg.show import NodePrinter
@@ -697,8 +698,8 @@ class KEVM(KProve, KRun):
 class KEVMNodePrinter(NodePrinter):
     kevm: KEVM
 
-    def __init__(self, kevm: KEVM):
-        NodePrinter.__init__(self, kevm)
+    def __init__(self, kevm: KEVM, cterm_show: CTermShow, full_printer: bool = True):
+        NodePrinter.__init__(self, cterm_show, full_printer=full_printer)
         self.kevm = kevm
 
     def print_node(self, kcfg: KCFG, node: KCFG.Node) -> list[str]:
@@ -708,14 +709,15 @@ class KEVMNodePrinter(NodePrinter):
 
 
 class KEVMAPRNodePrinter(KEVMNodePrinter, APRProofNodePrinter):
-    def __init__(self, kevm: KEVM, proof: APRProof):
-        KEVMNodePrinter.__init__(self, kevm)
-        APRProofNodePrinter.__init__(self, proof, kevm)
+    def __init__(self, kevm: KEVM, cterm_show: CTermShow, proof: APRProof, full_printer: bool = True):
+        KEVMNodePrinter.__init__(self, kevm, cterm_show, full_printer=full_printer)
+        APRProofNodePrinter.__init__(self, proof, cterm_show, full_printer=full_printer)
 
 
-def kevm_node_printer(kevm: KEVM, proof: APRProof) -> NodePrinter:
+def kevm_node_printer(kevm: KEVM, proof: APRProof, full_printer: bool = True) -> NodePrinter:
+    cterm_show = CTermShow(PrettyPrinter(kevm.definition, patch_symbol_table=KEVM._kevm_patch_symbol_table).print)
     if type(proof) is APRProof:
-        return KEVMAPRNodePrinter(kevm, proof)
+        return KEVMAPRNodePrinter(kevm, cterm_show, proof, full_printer=full_printer)
     raise ValueError(f'Cannot build NodePrinter for proof type: {type(proof)}')
 
 
