@@ -5,7 +5,7 @@
 	ignore = untracked
 [submodule "deps/plugin"]
 	path = kevm-pyk/src/kevm_pyk/kproj/plugin
-	url = https://github.com/runtimeverification/blockchain-k-plugin
+	url = https://github.com/Pi-Squared-Inc/blockchain-k-plugin
 	ignore = untracked
 [submodule "deps/metropolis"]
 	path = deps/metropolis
