@@ -4,6 +4,7 @@ on:
     branches:
       - '_update-deps/runtimeverification/blockchain-k-plugin'
       - '_update-deps/runtimeverification/k'
+      - '_update-deps/runtimeverification/rv-nix-tools'
   workflow_dispatch:
 # Stop in progress workflows on the same branch and same workflow to use latest committed code
 concurrency:
@@ -52,8 +53,10 @@ jobs:
         run: |
           K_VERSION=v$(cat deps/k_release)
           BKP_VERSION=$(cat deps/blockchain-k-plugin_release)
+          RV_NIX_TOOLS_VERSION=$(cat deps/rv-nix-tools)
           sed -i 's!    k-framework.url = "github:runtimeverification/k/[v0-9\.]*"!    k-framework.url = "github:runtimeverification/k/'"${K_VERSION}"'"!' flake.nix
           sed -i 's!        "github:runtimeverification/blockchain-k-plugin/[0-9a-f]*"!        "github:runtimeverification/blockchain-k-plugin/'"${BKP_VERSION}"'"!' flake.nix
+          sed -i 's!    rv-nix-tools.url = "github:runtimeverification/rv-nix-tools/[a-z0-9\.]*"!    rv-nix-tools.url = "github:runtimeverification/rv-nix-tools/'"${RV_NIX_TOOLS_VERSION}"'"!' flake.nix
           nix run .#update-from-submodules
           nix flake update
           git add flake.nix flake.lock && git commit -m 'flake.{nix,lock}: update Nix derivations' || true
