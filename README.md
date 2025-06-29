@@ -26,7 +26,7 @@ These may be useful for learning KEVM and K (newest to oldest):
 
 To get support for KEVM, please join our [Discord Channel](https://discord.com/invite/CurfmXNtbN).
 
-If you want to start proving with KEVM, refer to [VERIFICATION.md].
+If you want to start proving with KEVM, refer to [tests/specs/examples/README.md].
 
 Repository Structure
 --------------------
@@ -355,4 +355,4 @@ For more information about the [K Framework], refer to these sources:
 [eDSL]: <https://github.com/runtimeverification/verified-smart-contracts/blob/master/resources/edsl.md>
 [kup package manager]: <https://github.com/runtimeverification/kup>
 [Makefile]: <./Makefile>
-[VERIFICATION.md]: <./VERIFICATION.md>
+[tests/specs/examples/README.md]: <./tests/specs/examples/README.md>
