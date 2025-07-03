@@ -8,8 +8,10 @@
     k-framework.url = "github:runtimeverification/k/v7.1.272";
     k-framework.inputs.nixpkgs.follows = "nixpkgs";
     flake-utils.follows = "k-framework/flake-utils";
-#   TEMPORARY: use default poetry2nix from given nixpkgs
-    poetry2nix.inputs.nixpkgs.follows = "nixpkgs";
+    poetry2nix = {
+      url = "github:nix-community/poetry2nix/2024.9.219347";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     blockchain-k-plugin = {
       url =
         "github:runtimeverification/blockchain-k-plugin/f159396d0f16b88c86c557c47f7ae36ffc59dc53";
@@ -139,10 +141,7 @@
                 "/src/kevm_pyk/kproj/plugin"
               ] ./kevm-pyk/.
             );
-            overrides = poetry2nix.overrides.withDefaults
-              (finalPython: prevPython: {
-                kframework = prev.pyk-python310;
-              });
+            overrides = poetry2nix.overrides.withDefaults (finalPython: prevPython: { });
             groups = [ ];
             # We remove `"dev"` from `checkGroups`, so that poetry2nix does not try to resolve dev dependencies.
             checkGroups = [ ];

@@ -627,8 +627,8 @@
         "type": "github"
       },
       "original": {
-        "owner": "nixos",
-        "ref": "nixos-unstable",
+        "owner": "runtimeverification",
+        "ref": "libmatch",
         "repo": "nixpkgs",
         "type": "github"
       }
@@ -688,16 +688,18 @@
         "treefmt-nix": "treefmt-nix_2"
       },
       "locked": {
-        "lastModified": 1743690424,
-        "narHash": "sha256-cX98bUuKuihOaRp8dNV1Mq7u6/CQZWTPth2IJPATBXc=",
+        "lastModified": 1725253878,
+        "narHash": "sha256-HwXut4WbOUAjmybhui2eNSE6+Wb0nigYgDzBBOZaPG4=",
         "owner": "nix-community",
         "repo": "poetry2nix",
-        "rev": "ce2369db77f45688172384bbeb962bc6c2ea6f94",
+        "rev": "0d3fad5740d892487805cd2d60d8e4ed828486e9",
         "type": "github"
       },
       "original": {
-        "id": "poetry2nix",
-        "type": "indirect"
+        "owner": "nix-community",
+        "ref": "2024.9.219347",
+        "repo": "poetry2nix",
+        "type": "github"
       }
     },
     "pybind11-src": {
@@ -1080,9 +1082,8 @@
         "type": "github"
       },
       "original": {
-        "owner": "nix-systems",
-        "repo": "default",
-        "type": "github"
+        "id": "systems",
+        "type": "indirect"
       }
     },
     "treefmt-nix": {
