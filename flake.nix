@@ -141,7 +141,71 @@
                 "/src/kevm_pyk/kproj/plugin"
               ] ./kevm-pyk/.
             );
-            overrides = poetry2nix.overrides.withDefaults (finalPython: prevPython: { });
+            overrides = poetry2nix.overrides.withDefaults (finalPython: prevPython: {
+              click = prevPython.click.overridePythonAttrs (
+                old: {
+                  buildInputs = (old.buildInputs or [ ]) ++ [ finalPython.flit-core ];
+                  patches = (old.patches or [ ]) ++ [
+                    ./nix/resources/click-pyproject.toml.patch
+                  ];
+                }
+              );
+              typing-extensions = prevPython.typing-extensions.overridePythonAttrs (
+                old: {
+                  patches = (old.patches or [ ]) ++ [
+                    ./nix/resources/typing-extensions-pyproject.toml.patch
+                  ];
+                }
+              );
+              types-python-dateutil = prevPython.types-python-dateutil.overridePythonAttrs (
+                old: {
+                  patches = (old.patches or [ ]) ++ [
+                    ./nix/resources/types-python-dateutil-pyproject.toml.patch
+                  ];
+                }
+              );
+              zipp = prevPython.zipp.overridePythonAttrs (
+                old: {
+                  patches = (old.patches or [ ]) ++ [
+                    ./nix/resources/zipp-pyproject.toml.patch
+                  ];
+                }
+              );
+              urllib3 = prevPython.urllib3.overridePythonAttrs (
+                old: {
+                  buildInputs = (old.buildInputs or [ ]) ++ [ finalPython.hatch-vcs ];
+                  patches = (old.patches or [ ]) ++ [
+                    ./nix/resources/urllib3-pyproject.toml.patch
+                  ];
+                }
+              );
+              attrs = prevPython.attrs.overridePythonAttrs (
+                old: {
+                  patches = (old.patches or [ ]) ++ [
+                    ./nix/resources/attrs-pyproject.toml.patch
+                  ];
+                }
+              );
+              hypothesis = prevPython.hypothesis.overridePythonAttrs (
+                old: {
+                  patches = (old.patches or [ ]) ++ [
+                    ./nix/resources/hypothesis-pyproject.toml.patch
+                  ];
+                }
+              );
+              graphviz = prevPython.graphviz.overridePythonAttrs (
+                old: {
+                  patches = (old.patches or [ ]) ++ [
+                    ./nix/resources/graphviz-pyproject.toml.patch
+                  ];
+                }
+              );
+              kframework = prevPython.kframework.overridePythonAttrs (
+                old: {
+                  buildInputs = (old.buildInputs or [ ]) ++ [ finalPython.hatchling ];
+                }
+              );
+            });
             groups = [ ];
             # We remove `"dev"` from `checkGroups`, so that poetry2nix does not try to resolve dev dependencies.
             checkGroups = [ ];
