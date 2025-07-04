@@ -125,6 +125,7 @@ module GAS-FEES
                  | Cbasefeeperblob( Schedule , Int )                     [symbol(Cbasefeeperblob),function, total, smtlib(gas_Cbasefeeperblob)  ]
                  | Cblobfee       ( Schedule , Int , Int )               [symbol(Cblobfee),       function, total, smtlib(gas_Cblobfee)      ]
                  | Cexcessblob    ( Schedule , Int , Int )               [symbol(Cexcessblob),    function, total, smtlib(gas_Cexcessblob)   ]
+                 | Ctxfloor       ( Schedule , Bytes )                   [symbol(Ctxfloor),       function, total, smtlib(gas_Ctxfloor)      ]
  // ------------------------------------------------------------------------------------------------------------------------------------------
     rule [Cgascap]:
          Cgascap(SCHED, GCAP:Int, GAVAIL:Int, GEXTRA)
@@ -270,6 +271,16 @@ module GAS-FEES
     rule #adjustedExpLength(0) => 0
     rule #adjustedExpLength(1) => 0
     rule #adjustedExpLength(N) => 1 +Int #adjustedExpLength(N /Int 2) requires N >Int 1
+
+    syntax Int ::= #tokensInCalldata( Bytes )                   [symbol(#tokensInCalldata),    function]
+                 | #tokensInCalldata( Bytes , Int , Int , Int ) [symbol(#tokensInCalldataAux), function]
+ // ----------------------------------------------------------------------------------------------------
+    rule #tokensInCalldata(WS) => #tokensInCalldata(WS, 0, lengthBytes(WS), 0)
+    rule #tokensInCalldata(_,  I, I, R) => R
+    rule #tokensInCalldata(WS, I, J, R) => #tokensInCalldata(WS, I+Int 1, J, R +Int #if WS[I] ==Int 0 #then 1 #else 4 #fi) [owise]
+
+    rule Ctxfloor(SCHED, CODE) => Gtransaction < SCHED > +Int (Gtxdatafloor < SCHED > *Int #tokensInCalldata(CODE)) requires Ghasfloorcost << SCHED >>
+    rule Ctxfloor(    _,    _) => 0 [owise]
 
     syntax Int ::= Cbls12g1MsmDiscount( Schedule , Int ) [symbol(Cbls12g1MsmDiscount), function, total, smtlib(gas_Cbls12g1MsmDiscount)]
                  | Cbls12g2MsmDiscount( Schedule , Int ) [symbol(Cbls12g2MsmDiscount), function, total, smtlib(gas_Cbls12g2MsmDiscount)]
