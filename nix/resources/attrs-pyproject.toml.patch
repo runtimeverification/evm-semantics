@@ -1,0 +1,11 @@
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -9,7 +9,7 @@
+ name = "attrs"
+ authors = [{ name = "Hynek Schlawack", email = "hs@ox.cx" }]
+ license = "MIT"
+-license-files = ["LICENSE"]
++license-files.globs = ["LICENSE"]
+ requires-python = ">=3.8"
+ description = "Classes Without Boilerplate"
+ keywords = ["class", "attribute", "boilerplate"]

@@ -1,0 +1,11 @@
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -21,7 +21,7 @@
+ 	"Programming Language :: Python :: 3 :: Only",
+ ]
+ requires-python = ">=3.9"
+-license = "MIT"
++license = {text = "MIT"}
+ dependencies = [
+ ]
+ dynamic = ["version"]
