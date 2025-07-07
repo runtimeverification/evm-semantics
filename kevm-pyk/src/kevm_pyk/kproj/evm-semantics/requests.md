@@ -19,7 +19,7 @@ Each request type will define its own requests object with its own `request_data
 Address constants:
 - `DEPOSIT_CONTRACT_ADDRESS (0x00000000219ab540356cbb839cbe05303d7705fa)` : Predeployed contract for deposits.
 - `WITHDRAWAL_REQUEST_PREDEPLOY_ADDRESS (0x00000961Ef480Eb55e80D19ad83579A64c007002)`: Predeployed contract for validator withdrawal requests (EIP-7002)
-- `CONSOLIDATION_REQUEST_PREDEPLOY_ADDRESS (0x0000BBdDc7CE488642fb579f8B00f3a590007251)`: Predeployed contract for stake consolidation requests
+- `CONSOLIDATION_REQUEST_PREDEPLOY_ADDRESS (0x0000BBdDc7CE488642fb579f8B00f3a590007251)`: Predeployed contract for stake consolidation requests (EIP-7251)
 
 ```k
     syntax Int ::= #computeRequestsHash(List) [function, symbol(#computeRequestsHash)]
