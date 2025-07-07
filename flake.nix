@@ -66,7 +66,7 @@
                   "result*"
                   "*.nix"
                   "kevm-pyk/"
-                  # do not include submodule directories that might be initilized empty or non-existent
+                  # do not include submodule directories that might be initialized empty or non-existent
                   "/deps/"
                   "/tests/ethereum-tests"
                   "/web/k-web-theme"
@@ -137,7 +137,7 @@
             projectDir = prev.lib.cleanSource (
               prev.nix-gitignore.gitignoreSourcePure [
                 ./.gitignore
-                # do not include submodule directories that might be initilized empty or non-existent
+                # do not include submodule directories that might be initialized empty or non-existent
                 "/src/kevm_pyk/kproj/plugin"
               ] ./kevm-pyk/.
             );
@@ -276,7 +276,7 @@
               "result*"
               "*.nix"
               "kevm-pyk/"
-              # do not include submodule directories that might be initilized empty or non-existent
+              # do not include submodule directories that might be initialized empty or non-existent
               "/deps/"
               "/tests/ethereum-tests"
               "/web/k-web-theme"
