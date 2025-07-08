@@ -1786,15 +1786,6 @@ System Transaction Configuration
            <code>   CODE   </code>
            ...
          </account>
-
-   //  rule <k> #mkSystemCall ACCTTO ARGS => #mkCall SYSTEM_ADDRESS ACCTTO ACCTTO CODE 0 ARGS false ... </k>
-   //       <useGas> USEGAS </useGas>
-   //       <callGas> GCALL => #if USEGAS #then SYSTEMTXGAS #else GCALL #fi </callGas>
-   //       <account>
-   //         <acctID> ACCTTO </acctID>
-   //         <code>   CODE   </code>
-   //         ...
-   //       </account>
 ```
 
 ```k
