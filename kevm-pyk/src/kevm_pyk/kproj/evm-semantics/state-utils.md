@@ -78,6 +78,9 @@ module STATE-UTILS
          <excessBlobGas>     _ => 0          </excessBlobGas>
          <beaconRoot>        _ => 0          </beaconRoot>
          <requestsRoot>      _ => 0          </requestsRoot>
+         <depositRequests>       _ => .Bytes </depositRequests>
+         <withdrawalRequests>    _ => .Bytes </withdrawalRequests>
+         <consolidationRequests> _ => .Bytes </consolidationRequests>
 
     syntax EthereumCommand ::= "clearNETWORK"
  // -----------------------------------------
@@ -193,6 +196,7 @@ The `"network"` key allows setting the fee schedule inside the test.
     rule #asScheduleString("Cancun")                    => CANCUN
     rule #asScheduleString("ShanghaiToCancunAtTime15k") => CANCUN
     rule #asScheduleString("Prague")                    => PRAGUE
+    rule #asScheduleString("CancunToPragueAtTime15k")   => PRAGUE
 ```
 
 - `#parseJSONs2List` parse a JSON object with string values into a list of value.

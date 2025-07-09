@@ -31,7 +31,8 @@ module SCHEDULE
                           | "Ghaswarmcoinbase"        | "Ghaswithdrawals"  | "Ghastransient"       | "Ghasmcopy"
                           | "Ghasbeaconroot"          | "Ghaseip6780"      | "Ghasblobbasefee"     | "Ghasblobhash"
                           | "Ghasbls12msmdiscount"    | "Ghashistory"      | "Ghasrequests"        | "Ghasauthority"
- // -----------------------------------------------------------------
+                          | "Ghasfloorcost"
+ // ---------------------------------------
 ```
 
 ### Schedule Constants
@@ -52,7 +53,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
                            | "Gaccessliststoragekey"           | "Rmaxquotient"  | "Ginitcodewordcost" | "maxInitCodeSize"    | "Gwarmstoragedirtystore"
                            | "Gpointeval"    | "Gmaxblobgas"   | "Gminbasefee"   | "Gtargetblobgas"    | "Gperblob"           | "Blobbasefeeupdatefraction"
                            | "Gbls12g1add"   | "Gbls12g1mul"   | "Gbls12g2add"   | "Gbls12g2mul"       | "Gbls12mapfptog1"    | "Gbls12PairingCheckMul"
-                           | "Gbls12PairingCheckAdd"           | "Gauthbase"     | "Gbls12mapfp2tog2"
+                           | "Gbls12PairingCheckAdd"           | "Gauthbase"     | "Gbls12mapfp2tog2"  | "Gtxdatafloor"
  // -------------------------------------------------------------------------------------------------------------------------------------------------------
 ```
 
@@ -102,6 +103,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule [GtxcreateDefault]:      Gtxcreate      < DEFAULT > => 53000
     rule [GtxdatazeroDefault]:    Gtxdatazero    < DEFAULT > => 4
     rule [GtxdatanonzeroDefault]: Gtxdatanonzero < DEFAULT > => 68
+    rule [GtxdatafloorDefault]:   Gtxdatafloor   < DEFAULT > => 0
 
     rule [GjumpdestDefault]:    Gjumpdest    < DEFAULT > => 1
     rule [GbalanceDefault]:     Gbalance     < DEFAULT > => 20
@@ -179,6 +181,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule [GhasrequestsDefault]:            Ghasrequests            << DEFAULT >> => false
     rule [Ghasbls12msmdiscountDefault]:    Ghasbls12msmdiscount    << DEFAULT >> => false
     rule [GhasauthorityDefault]:           Ghasauthority           << DEFAULT >> => false
+    rule [GhasfloorcostDefault]:           Ghasfloorcost           << DEFAULT >> => false
 ```
 
 ### Frontier Schedule
@@ -466,6 +469,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule [Gbls12mapfptog1Prague]:           Gbls12mapfptog1           < PRAGUE > => 5500
     rule [Gbls12mapfp2tog2Prague]:          Gbls12mapfp2tog2          < PRAGUE > => 23800
     rule [GauthbasePrague]:                 Gauthbase                 < PRAGUE > => 12500
+    rule [GtxdatafloorPrague]:              Gtxdatafloor              < PRAGUE > => 10
     rule [SCHEDCONSTPrague]:                SCHEDCONST                < PRAGUE > => SCHEDCONST < CANCUN >
       requires notBool ( SCHEDCONST ==K Gmaxblobgas
                   orBool SCHEDCONST ==K Gtargetblobgas
@@ -477,18 +481,21 @@ A `ScheduleConst` is a constant determined by the fee schedule.
                   orBool SCHEDCONST ==K Gbls12PairingCheckMul
                   orBool SCHEDCONST ==K Gbls12PairingCheckAdd
                   orBool SCHEDCONST ==K Gbls12mapfptog1
-                  orBool SCHEDCONST ==K Gbls12mapfp2tog2 
-                  orBool SCHEDCONST ==K Gauthbase )
+                  orBool SCHEDCONST ==K Gbls12mapfp2tog2
+                  orBool SCHEDCONST ==K Gauthbase
+                  orBool SCHEDCONST ==K Gtxdatafloor )
 
     rule [GhasrequestsPrague]:         Ghasrequests         << PRAGUE >> => true
     rule [GhashistoryPrague]:          Ghashistory          << PRAGUE >> => true
     rule [Ghasbls12msmdiscountPrague]: Ghasbls12msmdiscount << PRAGUE >> => true
     rule [GhasauthorityPrague]:        Ghasauthority        << PRAGUE >> => true
+    rule [GhasfloorcostPrague]:        Ghasfloorcost        << PRAGUE >> => true
     rule [SCHEDFLAGPrague]:            SCHEDFLAG            << PRAGUE >> => SCHEDFLAG << CANCUN >>
       requires notBool ( SCHEDFLAG ==K Ghasrequests
                   orBool SCHEDFLAG ==K Ghashistory
                   orBool SCHEDFLAG ==K Ghasbls12msmdiscount
-                  orBool SCHEDFLAG ==K Ghasauthority )
+                  orBool SCHEDFLAG ==K Ghasauthority
+                  orBool SCHEDFLAG ==K Ghasfloorcost )
 ```
 
 ```k
