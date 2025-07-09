@@ -308,9 +308,11 @@ Processing SetCode Transaction Authority Entries
  // -------------------------------------------------------------------------------------------------
     rule <k> #setDelegation(.Account , _, _, _) => .K ... </k>
 
-    rule <k> #setDelegation(AUTHORITY, CID, _NONCE, _ADDR) => .K ... </k> <chainID> ENV_CID </chainID>
+    rule <k> #setDelegation(AUTHORITY, CID, NONCE, _ADDR) => .K ... </k> <chainID> ENV_CID </chainID>
        requires notBool AUTHORITY ==K .Account
-        andBool notBool #asWord(CID) in (SetItem(ENV_CID) SetItem(0))
+        andBool ((notBool #asWord(CID) in (SetItem(ENV_CID) SetItem(0)))
+          orBool #asWord(NONCE) >=Int (2 ^Int 64) -Int 1)
+
 
     rule <k> #setDelegation(AUTHORITY, CID, NONCE, ADDR)
           => #let EXISTS = #accountExists(AUTHORITY)
