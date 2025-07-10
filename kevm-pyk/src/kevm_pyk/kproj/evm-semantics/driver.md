@@ -261,16 +261,15 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 Processing SetCode Transaction Authority Entries
 ================================================
 
-- The `#loadAuthorities` function processes the list of authorization entries in EIP-7702 SetCode transactions.
-- First rule skips processing if transaction is not SetCode type or the auth list is empty.
-- Second rule processes each authorization entry by recovering the signer, adding delegation, and continuing with remaining entries.
-- The `#addAuthority` function implements the EIP's verification steps:
- - Verifies chain ID matches (or is 0)
- - Verifies the authority account's nonce matches authorization
- - Sets delegation code (0xEF0100 + address) or clears it if address is 0
- - Increments the authority's nonce
- - Provides gas refund for non-empty accounts
- - Creates new accounts when needed
+- The `#loadAuthorities` function processes authorization entries in EIP-7702 SetCode transactions, charging 25000 gas per tuple regardless of validity.
+- Skips processing if transaction is not SetCode type; processes each authorization tuple by recovering the signer and attempting delegation.
+- The `#addAuthority` function implements EIP-7702 verification and delegation:
+ - Validates that the chain ID matches current chain (or is 0) and nonce is within bounds
+ - Checks if authority account code is empty or already delegated
+ - Verifies that the authority nonce equals authorization nonce
+ - Sets delegation code (0xEF0100 + address) and increments nonce on success
+ - Provides refund (25000 - 12500 = 12500 gas) only for accounts that existed before processing
+ - A new account will be created for Authorities that are not in the `<accounts>` state, without increasing the refund amount
 
 ```k
     syntax InternalOp ::= #loadAuthorities ( List ) [symbol(#loadAuthorities)]
@@ -312,16 +311,14 @@ Processing SetCode Transaction Authority Entries
          orBool (#asWord(NONCE) >=Int maxUInt64)
 
     rule <k> #setDelegation(AUTHORITY, CID, NONCE, ADDR)
-          => #let EXISTS = #accountExists(AUTHORITY)
-         #in (#if EXISTS #then .K #else #newAccount AUTHORITY #fi
-           ~> #touchAccounts AUTHORITY ~> #accessAccounts AUTHORITY
-           ~> #addAuthority(AUTHORITY, CID, NONCE, ADDR, EXISTS))
+          => #touchAccounts AUTHORITY ~> #accessAccounts AUTHORITY
+           ~> #addAuthority(AUTHORITY, CID, NONCE, ADDR)
           ...
          </k> [owise]
 
-    syntax InternalOp ::= #addAuthority ( Account , Bytes , Bytes , Bytes , Bool) [symbol(#addAuthority)]
- // -----------------------------------------------------------------------------------------------------
-    rule <k> #addAuthority(AUTHORITY, _CID, NONCE, _ADDR, _EXISTS) => .K ... </k>
+    syntax InternalOp ::= #addAuthority ( Account , Bytes , Bytes , Bytes ) [symbol(#addAuthority)]
+ // -----------------------------------------------------------------------------------------------
+    rule <k> #addAuthority(AUTHORITY, _CID, NONCE, _ADDR) => .K ... </k>
          <account>
            <acctID> AUTHORITY </acctID>
            <code> ACCTCODE </code>
@@ -331,9 +328,9 @@ Processing SetCode Transaction Authority Entries
       requires notBool (ACCTCODE ==K .Bytes orBool #isValidDelegation(ACCTCODE))
         orBool (notBool #asWord(NONCE) ==K ACCTNONCE)
 
-    rule <k> #addAuthority(AUTHORITY, _CID, NONCE, ADDR, EXISTS) => .K ... </k>
+    rule <k> #addAuthority(AUTHORITY, _CID, NONCE, ADDR) => .K ... </k>
          <schedule> SCHED </schedule>
-         <refund> REFUND => #if EXISTS #then REFUND +Int Gnewaccount < SCHED > -Int Gauthbase < SCHED > #else REFUND #fi </refund>
+         <refund> REFUND => REFUND +Int Gnewaccount < SCHED > -Int Gauthbase < SCHED > </refund>
          <account>
            <acctID> AUTHORITY </acctID>
            <code> ACCTCODE => #if #asWord(ADDR) ==Int 0 #then .Bytes #else EOA_DELEGATION_MARKER +Bytes ADDR #fi </code>
@@ -342,6 +339,23 @@ Processing SetCode Transaction Authority Entries
          </account>
       requires (ACCTCODE ==K .Bytes orBool #isValidDelegation(ACCTCODE))
        andBool #asWord(NONCE) ==K ACCTNONCE
+
+    rule <k> #addAuthority(AUTHORITY, _CID, NONCE, ADDR) => .K ... </k>
+         <accounts>
+               ( .Bag
+                  =>
+                 <account>
+                    <acctID> AUTHORITY </acctID>
+                    <code> #if #asWord(ADDR) ==Int 0 #then .Bytes #else EOA_DELEGATION_MARKER +Bytes ADDR #fi </code>
+                    <nonce> 1 </nonce>
+                    ...
+                 </account>
+               )
+               ...
+         </accounts>
+      requires #asWord(NONCE) ==Int 0 andBool notBool #accountExists(AUTHORITY)
+
+    rule <k> #addAuthority(AUTHORITY, _CID, NONCE, _ADDR) => .K ... </k> requires notBool (#accountExists(AUTHORITY) orBool #asWord(NONCE) ==Int 0)
 ```
 
 -   `exception` only clears from the `<k>` cell if there is an exception preceding it.
