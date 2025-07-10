@@ -106,27 +106,28 @@ module GAS-FEES
     syntax Gas ::= Cgascap        ( Schedule , Gas , Gas , Int ) [symbol(Cgascap_Gas), overload(Cgascap), function, total, smtlib(gas_Cgascap_Gas)]
     syntax Int ::= Cgascap        ( Schedule , Int , Int , Int ) [symbol(Cgascap_Int), overload(Cgascap), function, total, smtlib(gas_Cgascap_Int)]
 
-    syntax Int ::= Csstore        ( Schedule , Int , Int , Int )         [symbol(Csstore),        function, total, smtlib(gas_Csstore)       ]
-                 | Rsstore        ( Schedule , Int , Int , Int )         [symbol(Rsstore),        function, total, smtlib(gas_Rsstore)       ]
-                 | Cextra         ( Schedule , Bool , Int , Bool )       [symbol(Cextra),         function, total, smtlib(gas_Cextra)        ]
-                 | Cnew           ( Schedule , Bool , Int )              [symbol(Cnew),           function, total, smtlib(gas_Cnew)          ]
-                 | Cxfer          ( Schedule , Int )                     [symbol(Cxfer),          function, total, smtlib(gas_Cxfer)         ]
-                 | Cmem           ( Schedule , Int )                     [symbol(Cmem),           function, total, smtlib(gas_Cmem), memo    ]
-                 | Caddraccess    ( Schedule , Bool )                    [symbol(Caddraccess),    function, total, smtlib(gas_Caddraccess)   ]
-                 | Cstorageaccess ( Schedule , Bool )                    [symbol(Cstorageaccess), function, total, smtlib(gas_Cstorageaccess)]
-                 | Csload         ( Schedule , Bool )                    [symbol(Csload),         function, total, smtlib(gas_Csload)        ]
-                 | Cextcodesize   ( Schedule )                           [symbol(Cextcodesize),   function, total, smtlib(gas_Cextcodesize)  ]
-                 | Cextcodecopy   ( Schedule , Int )                     [symbol(Cextcodecopy),   function, total, smtlib(gas_Cextcodecopy)  ]
-                 | Cextcodehash   ( Schedule )                           [symbol(Cextcodehash),   function, total, smtlib(gas_Cextcodehash)  ]
-                 | Cbalance       ( Schedule )                           [symbol(Cbalance),       function, total, smtlib(gas_Cbalance)      ]
-                 | Cmodexp        ( Schedule , Bytes , Int , Int , Int ) [symbol(Cmodexp),        function, total, smtlib(gas_Cmodexp)       ]
-                 | Cinitcode      ( Schedule , Int )                     [symbol(Cinitcode),      function, total, smtlib(gas_Cinitcode)     ]
-                 | Ctotalblob     ( Schedule , Int )                     [symbol(Ctotalblob),     function, total, smtlib(gas_Ctotalblob)    ]
-                 | Cbasefeeperblob( Schedule , Int )                     [symbol(Cbasefeeperblob),function, total, smtlib(gas_Cbasefeeperblob)  ]
-                 | Cblobfee       ( Schedule , Int , Int )               [symbol(Cblobfee),       function, total, smtlib(gas_Cblobfee)      ]
-                 | Cexcessblob    ( Schedule , Int , Int )               [symbol(Cexcessblob),    function, total, smtlib(gas_Cexcessblob)   ]
-                 | Ctxfloor       ( Schedule , Bytes )                   [symbol(Ctxfloor),       function, total, smtlib(gas_Ctxfloor)      ]
- // ------------------------------------------------------------------------------------------------------------------------------------------
+    syntax Int ::= Csstore          ( Schedule , Int , Int , Int )                [symbol(Csstore),           function, total, smtlib(gas_Csstore)          ]
+                 | Rsstore          ( Schedule , Int , Int , Int )                [symbol(Rsstore),           function, total, smtlib(gas_Rsstore)          ]
+                 | Cextra           ( Schedule , Bool , Int , Bool , Bool , Bool )[symbol(Cextra),            function, total, smtlib(gas_Cextra)           ]
+                 | Cnew             ( Schedule , Bool , Int )                     [symbol(Cnew),              function, total, smtlib(gas_Cnew)             ]
+                 | Cxfer            ( Schedule , Int )                            [symbol(Cxfer),             function, total, smtlib(gas_Cxfer)            ]
+                 | Cmem             ( Schedule , Int )                            [symbol(Cmem),              function, total, smtlib(gas_Cmem), memo       ]
+                 | Caddraccess      ( Schedule , Bool )                           [symbol(Caddraccess),       function, total, smtlib(gas_Caddraccess)      ]
+                 | Cstorageaccess   ( Schedule , Bool )                           [symbol(Cstorageaccess),    function, total, smtlib(gas_Cstorageaccess)   ]
+                 | Csload           ( Schedule , Bool )                           [symbol(Csload),            function, total, smtlib(gas_Csload)           ]
+                 | Cextcodesize     ( Schedule )                                  [symbol(Cextcodesize),      function, total, smtlib(gas_Cextcodesize)     ]
+                 | Cextcodecopy     ( Schedule , Int )                            [symbol(Cextcodecopy),      function, total, smtlib(gas_Cextcodecopy)     ]
+                 | Cextcodehash     ( Schedule )                                  [symbol(Cextcodehash),      function, total, smtlib(gas_Cextcodehash)     ]
+                 | Cbalance         ( Schedule )                                  [symbol(Cbalance),          function, total, smtlib(gas_Cbalance)         ]
+                 | Cmodexp          ( Schedule , Bytes , Int , Int , Int )        [symbol(Cmodexp),           function, total, smtlib(gas_Cmodexp)          ]
+                 | Cinitcode        ( Schedule , Int )                            [symbol(Cinitcode),         function, total, smtlib(gas_Cinitcode)        ]
+                 | Ctotalblob       ( Schedule , Int )                            [symbol(Ctotalblob),        function, total, smtlib(gas_Ctotalblob)       ]
+                 | Cbasefeeperblob  ( Schedule , Int )                            [symbol(Cbasefeeperblob),   function, total, smtlib(gas_Cbasefeeperblob)  ]
+                 | Cblobfee         ( Schedule , Int , Int )                      [symbol(Cblobfee),          function, total, smtlib(gas_Cblobfee)         ]
+                 | Cexcessblob      ( Schedule , Int , Int )                      [symbol(Cexcessblob),       function, total, smtlib(gas_Cexcessblob)      ]
+                 | Cdelegationaccess( Schedule, Bool, Bool )                      [symbol(Cdelegationaccess), function, total, smtlib(gas_Cdelegationaccess)]
+                 | Ctxfloor         ( Schedule , Bytes )                          [symbol(Ctxfloor),          function, total, smtlib(gas_Ctxfloor)         ]
+ // ---------------------------------------------------------------------------------------------------------------------------------------------------------
     rule [Cgascap]:
          Cgascap(SCHED, GCAP:Int, GAVAIL:Int, GEXTRA)
       => #if GAVAIL <Int GEXTRA orBool Gstaticcalldepth << SCHED >> #then GCAP #else minInt(#allBut64th(GAVAIL -Int GEXTRA), GCAP) #fi
@@ -172,8 +173,9 @@ module GAS-FEES
       requires notBool Ghasdirtysstore << SCHED >>
       [concrete]
 
-    rule [Cextra.new]: Cextra(SCHED, ISEMPTY, VALUE, ISWARM)  => Caddraccess(SCHED, ISWARM) +Int Cnew(SCHED, ISEMPTY, VALUE) +Int Cxfer(SCHED, VALUE) requires         Ghasaccesslist << SCHED >>
-    rule [Cextra.old]: Cextra(SCHED, ISEMPTY, VALUE, _ISWARM) => Gcall < SCHED > +Int Cnew(SCHED, ISEMPTY, VALUE) +Int Cxfer(SCHED, VALUE)            requires notBool Ghasaccesslist << SCHED >>
+    rule [Cextra.delegation]: Cextra(SCHED, ISEMPTY, VALUE,  ISWARM,  ISDELEGATION,  ISWARMDELEGATION) => Cdelegationaccess(SCHED, ISDELEGATION, ISWARMDELEGATION) +Int Caddraccess(SCHED, ISWARM) +Int Cnew(SCHED, ISEMPTY, VALUE) +Int Cxfer(SCHED, VALUE) requires         Ghasaccesslist << SCHED >> andBool         Ghasauthority << SCHED >>
+    rule [Cextra.new]:        Cextra(SCHED, ISEMPTY, VALUE,  ISWARM, _ISDELEGATION, _ISWARMDELEGATION) => Caddraccess(SCHED, ISWARM) +Int Cnew(SCHED, ISEMPTY, VALUE) +Int Cxfer(SCHED, VALUE)                                                               requires         Ghasaccesslist << SCHED >> andBool notBool Ghasauthority << SCHED >>
+    rule [Cextra.old]:        Cextra(SCHED, ISEMPTY, VALUE, _ISWARM, _ISDELEGATION, _ISWARMDELEGATION) => Gcall < SCHED > +Int Cnew(SCHED, ISEMPTY, VALUE) +Int Cxfer(SCHED, VALUE)                                                                          requires notBool Ghasaccesslist << SCHED >>
 
     rule [Cnew]:
          Cnew(SCHED, ISEMPTY:Bool, VALUE)
@@ -220,7 +222,10 @@ module GAS-FEES
     rule [Cblobfee]: Cblobfee(SCHED, EXCESS_BLOB_GAS, BLOB_VERSIONED_HASHES_SIZE) => Ctotalblob(SCHED, BLOB_VERSIONED_HASHES_SIZE) *Int Cbasefeeperblob(SCHED, EXCESS_BLOB_GAS)
 
     rule [Cexcessblob]:       Cexcessblob(SCHED, EXCESS_BLOB_GAS, BLOB_GAS_USED) => EXCESS_BLOB_GAS +Int BLOB_GAS_USED -Int Gtargetblobgas < SCHED > requires Gtargetblobgas < SCHED > <=Int EXCESS_BLOB_GAS +Int BLOB_GAS_USED 
-    rule [Cexcessblob.owise]: Cexcessblob(_,     _,               _             )=> 0 [owise]
+    rule [Cexcessblob.owise]: Cexcessblob(_,     _,               _)             => 0 [owise]
+
+    rule [Cdelegationaccess]:       Cdelegationaccess(SCHED, true, ISWARM) => Caddraccess(SCHED, ISWARM)
+    rule [Cdelegationaccess.owise]: Cdelegationaccess(_,     _,    _)      => 0 [owise]
 
     syntax Int ::= #fakeExponential(Int, Int, Int) [symbol(#fakeExponential), function]
                  | #fakeExponential(Int, Int, Int, Int, Int) [function]

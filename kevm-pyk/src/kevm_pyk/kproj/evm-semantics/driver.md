@@ -120,6 +120,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
           => #accessAccounts ACCTFROM #newAddr(ACCTFROM, NONCE) #precompiledAccountsSet(SCHED)
           ~> #deductBlobGas
           ~> #loadAccessList(TA)
+          ~> #loadAuthorities(AUTH)
           ~> #checkCreate ACCTFROM VALUE
           ~> #create ACCTFROM #newAddr(ACCTFROM, NONCE) VALUE CODE
           ~> #finishTx ~> #finalizeTx(false, Ctxfloor(SCHED, CODE)) ~> startTx
@@ -133,12 +134,13 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          <txPending> ListItem(TXID:Int) ... </txPending>
          <coinbase> MINER </coinbase>
          <message>
-           <msgID>             TXID     </msgID>
-           <txGasLimit>        GLIMIT   </txGasLimit>
-           <to>                .Account </to>
-           <value>             VALUE    </value>
-           <data>              CODE     </data>
-           <txAccess>          TA       </txAccess>
+           <msgID>      TXID     </msgID>
+           <txGasLimit> GLIMIT   </txGasLimit>
+           <to>         .Account </to>
+           <value>      VALUE    </value>
+           <data>       CODE     </data>
+           <txAccess>   TA       </txAccess>
+           <txAuthList> AUTH     </txAuthList>
            ...
          </message>
          <account>
@@ -157,6 +159,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
           => #accessAccounts ACCTFROM ACCTTO #precompiledAccountsSet(SCHED)
           ~> #deductBlobGas
           ~> #loadAccessList(TA)
+          ~> #loadAuthorities(AUTH)
           ~> #checkCall ACCTFROM VALUE
           ~> #call ACCTFROM ACCTTO ACCTTO VALUE VALUE DATA false
           ~> #finishTx ~> #finalizeTx(false, Ctxfloor(SCHED, DATA)) ~> startTx
@@ -177,6 +180,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
            <data>              DATA   </data>
            <txAccess>          TA     </txAccess>
            <txVersionedHashes> TVH    </txVersionedHashes>
+           <txAuthList> AUTH </txAuthList>
            ...
          </message>
          <versionedHashes> _ => TVH </versionedHashes>
@@ -193,7 +197,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
        andBool GLIMIT >=Int maxInt(G0(SCHED, DATA, false), Ctxfloor(SCHED, DATA))
 
     rule <k> loadTx(_) => startTx ... </k>
-         <statusCode> _ => EVMC_OUT_OF_GAS </statusCode>
+         <statusCode> _ => EVMC_INVALID_BLOCK </statusCode>
          <txPending> ListItem(_TXID:Int) REST => REST </txPending> [owise]
 
     syntax EthereumCommand ::= "#finishTx"
@@ -252,6 +256,106 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
     rule <k> #loadAccessListAux (ACCT, .List) => #accessAccounts ACCT ... </k>
          <schedule> SCHED </schedule>
          <callGas> GLIMIT => GLIMIT -Int Gaccesslistaddress < SCHED > </callGas>
+```
+
+Processing SetCode Transaction Authority Entries
+================================================
+
+- The `#loadAuthorities` function processes authorization entries in EIP-7702 SetCode transactions, charging 25000 gas per tuple regardless of validity.
+- Skips processing if transaction is not SetCode type; processes each authorization tuple by recovering the signer and attempting delegation.
+- The `#addAuthority` function implements EIP-7702 verification and delegation:
+ - Validates that the chain ID matches current chain (or is 0) and nonce is within bounds
+ - Checks if authority account code is empty or already delegated
+ - Verifies that the authority nonce equals authorization nonce
+ - Sets delegation code (0xEF0100 + address) and increments nonce on success
+ - Provides refund (25000 - 12500 = 12500 gas) only for accounts that existed before processing
+ - A new account will be created for Authorities that are not in the `<accounts>` state, without increasing the refund amount
+
+```k
+    syntax InternalOp ::= #loadAuthorities ( List ) [symbol(#loadAuthorities)]
+ // --------------------------------------------------------------------------
+    rule <k> #loadAuthorities(_) => .K ... </k>
+         <txPending> ListItem(TXID:Int) ... </txPending>
+         <message>
+           <msgID> TXID </msgID>
+           <txType> TXTYPE </txType>
+           ...
+         </message>
+      requires notBool TXTYPE ==K SetCode
+
+    rule <k> #loadAuthorities( .List ) => .K ... </k>
+         <txPending> ListItem(TXID:Int) ... </txPending>
+         <message>
+           <msgID> TXID </msgID>
+           <txType> SetCode </txType>
+           ...
+         </message>
+
+    rule <k> #loadAuthorities (ListItem(ListItem(CID) ListItem(ADDR) ListItem(NONCE) ListItem(YPAR) ListItem(SIGR) ListItem(SIGS)) REST )
+          => #setDelegation (#recoverAuthority (CID, ADDR, NONCE, YPAR, SIGR, SIGS ), CID, NONCE, ADDR)
+          ~> #loadAuthorities (REST)
+          ... </k>
+         <txPending> ListItem(TXID:Int) ... </txPending>
+         <message>
+           <msgID> TXID </msgID>
+           <txType> SetCode </txType>
+           ...
+         </message>
+         <callGas> GLIMIT => GLIMIT -Int 25000 </callGas> [owise]
+
+    syntax InternalOp ::= #setDelegation ( Account , Bytes , Bytes , Bytes ) [symbol(#setDelegation)]
+ // -------------------------------------------------------------------------------------------------
+    rule <k> #setDelegation(AUTHORITY, CID, NONCE, _ADDR) => .K ... </k> <chainID> ENV_CID </chainID>
+       requires AUTHORITY ==K .Account
+         orBool (notBool #asWord(CID) in (SetItem(ENV_CID) SetItem(0)))
+         orBool (#asWord(NONCE) >=Int maxUInt64)
+
+    rule <k> #setDelegation(AUTHORITY, CID, NONCE, ADDR)
+          => #touchAccounts AUTHORITY ~> #accessAccounts AUTHORITY
+           ~> #addAuthority(AUTHORITY, CID, NONCE, ADDR)
+          ...
+         </k> [owise]
+
+    syntax InternalOp ::= #addAuthority ( Account , Bytes , Bytes , Bytes ) [symbol(#addAuthority)]
+ // -----------------------------------------------------------------------------------------------
+    rule <k> #addAuthority(AUTHORITY, _CID, NONCE, _ADDR) => .K ... </k>
+         <account>
+           <acctID> AUTHORITY </acctID>
+           <code> ACCTCODE </code>
+           <nonce> ACCTNONCE </nonce>
+         ...
+         </account>
+      requires notBool (ACCTCODE ==K .Bytes orBool #isValidDelegation(ACCTCODE))
+        orBool (notBool #asWord(NONCE) ==K ACCTNONCE)
+
+    rule <k> #addAuthority(AUTHORITY, _CID, NONCE, ADDR) => .K ... </k>
+         <schedule> SCHED </schedule>
+         <refund> REFUND => REFUND +Int Gnewaccount < SCHED > -Int Gauthbase < SCHED > </refund>
+         <account>
+           <acctID> AUTHORITY </acctID>
+           <code> ACCTCODE => #if #asWord(ADDR) ==Int 0 #then .Bytes #else EOA_DELEGATION_MARKER +Bytes ADDR #fi </code>
+           <nonce> ACCTNONCE => ACCTNONCE +Int 1 </nonce>
+         ...
+         </account>
+      requires (ACCTCODE ==K .Bytes orBool #isValidDelegation(ACCTCODE))
+       andBool #asWord(NONCE) ==K ACCTNONCE
+
+    rule <k> #addAuthority(AUTHORITY, _CID, NONCE, ADDR) => .K ... </k>
+         <accounts>
+               ( .Bag
+                  =>
+                 <account>
+                    <acctID> AUTHORITY </acctID>
+                    <code> #if #asWord(ADDR) ==Int 0 #then .Bytes #else EOA_DELEGATION_MARKER +Bytes ADDR #fi </code>
+                    <nonce> 1 </nonce>
+                    ...
+                 </account>
+               )
+               ...
+         </accounts>
+      requires #asWord(NONCE) ==Int 0 andBool notBool #accountExists(AUTHORITY)
+
+    rule <k> #addAuthority(AUTHORITY, _CID, NONCE, _ADDR) => .K ... </k> requires notBool (#accountExists(AUTHORITY) orBool #asWord(NONCE) ==Int 0)
 ```
 
 -   `exception` only clears from the `<k>` cell if there is an exception preceding it.
@@ -632,6 +736,21 @@ Here we check the other post-conditions associated with an EVM test.
     rule <k> check "transactions" : ("maxPriorityFeePerGas" : VALUE) => .K ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txPriorityFee> VALUE </txPriorityFee>  ... </message>
     rule <k> check "transactions" : ("maxFeePerBlobGas"     : VALUE) => .K ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txMaxBlobFee>  VALUE </txMaxBlobFee>   ... </message>
     rule <k> check "transactions" : ("sender"               : VALUE) => .K ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <sigV> TW </sigV> <sigR> TR </sigR> <sigS> TS </sigS> ... </message> <chainID> B </chainID> requires #sender( #getTxData(TXID), TW, TR, TS, B ) ==K VALUE
+
+    rule <k> check "transactions" : "authorizationList" : [ .JSONs ] => .K ... </k>
+    rule <k> check "transactions" : "authorizationList" : [ { "chainId": CID, "address": ADDR, "nonce": NONCE, "v": _, "r": SIGR, "s": SIGS, "signer": _, "yParity": SIGY } , REST ]
+          => check "transactions" : "authorizationList" : [ #hex2Bytes(CID), #hex2Bytes(ADDR), #hex2Bytes(NONCE), #hex2Bytes(SIGY), #hex2Bytes(SIGR), #hex2Bytes(SIGS) ]
+          ~> check "transactions" : "authorizationList" : [ REST ]
+          ...
+         </k>
+    rule <k> check "transactions" : "authorizationList" : [ AUTH ] => .K ... </k>
+         <txOrder> ListItem(TXID) ... </txOrder>
+         <message> <msgID> TXID </msgID> <txAuthList> AUTHLIST </txAuthList> ... </message> requires #parseJSONs2List(AUTH) in AUTHLIST
+
+    syntax Bytes ::= #hex2Bytes ( String ) [function] //TODO: Is this needed?
+ // -------------------------------------------------
+    rule #hex2Bytes("0x00") => b""
+    rule #hex2Bytes(S) => #parseByteStack(S) [owise]
 
     syntax Bool ::= isInAccessListStorage ( Int , JSON )    [symbol(isInAccessListStorage), function]
                   | isInAccessList ( Account , Int , JSON ) [symbol(isInAccessList), function]

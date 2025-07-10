@@ -176,6 +176,7 @@ In the comments next to each cell, we've marked which component of the YellowPap
                 <txType>        .TxType    </txType>        // T_x
                 <txMaxBlobFee>  0          </txMaxBlobFee>
                 <txVersionedHashes> .List  </txVersionedHashes>
+                <txAuthList>    .List      </txAuthList>
               </message>
             </messages>
 
@@ -1622,6 +1623,22 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
 
     rule <k> #checkCall ACCT VALUE => #checkBalanceUnderflow ACCT VALUE ~> #checkDepthExceeded ... </k>
 
+    rule [call.delegatedAuthority]:
+         <k> #call ACCTFROM ACCTTO ACCTCODE VALUE APPVALUE ARGS STATIC
+          => #let DELEGATED_ACCOUNT = #asAccount(#range(CODE,3,20)) #in
+           (#accessAccounts DELEGATED_ACCOUNT
+          ~> #callWithCode ACCTFROM ACCTTO ACCTCODE #getAccountCode(DELEGATED_ACCOUNT) VALUE APPVALUE ARGS STATIC )
+          ...
+         </k>
+         <schedule> SCHED </schedule>
+         <account>
+           <acctID> ACCTCODE </acctID>
+           <code> CODE </code>
+           ...
+         </account>
+      requires Ghasauthority << SCHED >>
+       andBool #isValidDelegation (CODE)
+
     rule [call.true]:
          <k> #call ACCTFROM ACCTTO ACCTCODE VALUE APPVALUE ARGS STATIC
           => #callWithCode ACCTFROM ACCTTO ACCTCODE CODE VALUE APPVALUE ARGS STATIC
@@ -1632,6 +1649,9 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
            <code> CODE </code>
            ...
          </account>
+         <schedule> SCHED </schedule>
+      requires notBool Ghasauthority << SCHED >>
+       orBool (Ghasauthority << SCHED>> andBool notBool #isValidDelegation(CODE))
 
     rule [call.false]:
          <k> #call ACCTFROM ACCTTO ACCTCODE VALUE APPVALUE ARGS STATIC
@@ -2849,16 +2869,16 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
     rule <k> #gasExec(SCHED, LOG(N) _ WIDTH) => (Glog < SCHED > +Int (Glogdata < SCHED > *Int WIDTH) +Int (N *Int Glogtopic < SCHED >)) ... </k>
 
     rule <k> #gasExec(SCHED, CALL GCAP ACCTTO VALUE _ _ _ _)
-          => Ccallgas(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, VALUE, ACCTTO in ACCTS) ~> #allocateCallGas
-          ~> Ccall(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, VALUE, ACCTTO in ACCTS)
+          => Ccallgas(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, VALUE, ACCTTO in ACCTS, #accountHasAuthority(ACCTTO), #accountAuthorityIsWarm(ACCTTO)) ~> #allocateCallGas
+          ~> Ccall(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, VALUE, ACCTTO in ACCTS, #accountHasAuthority(ACCTTO), #accountAuthorityIsWarm(ACCTTO))
          ...
          </k>
          <gas> GAVAIL </gas>
          <accessedAccounts> ACCTS </accessedAccounts>
 
     rule <k> #gasExec(SCHED, CALLCODE GCAP ACCTTO VALUE _ _ _ _)
-          => Ccallgas(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, VALUE, ACCTTO in ACCTS) ~> #allocateCallGas
-          ~> Ccall(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, VALUE, ACCTTO in ACCTS)
+          => Ccallgas(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, VALUE, ACCTTO in ACCTS, #accountHasAuthority(ACCTTO), #accountAuthorityIsWarm(ACCTTO)) ~> #allocateCallGas
+          ~> Ccall(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, VALUE, ACCTTO in ACCTS, #accountHasAuthority(ACCTTO), #accountAuthorityIsWarm(ACCTTO))
          ...
          </k>
          <id> ACCTFROM </id>
@@ -2866,8 +2886,8 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
          <accessedAccounts> ACCTS </accessedAccounts>
 
     rule <k> #gasExec(SCHED, DELEGATECALL GCAP ACCTTO _ _ _ _)
-          => Ccallgas(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, 0, ACCTTO in ACCTS) ~> #allocateCallGas
-          ~> Ccall(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, 0, ACCTTO in ACCTS)
+          => Ccallgas(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, 0, ACCTTO in ACCTS, #accountHasAuthority(ACCTTO), #accountAuthorityIsWarm(ACCTTO)) ~> #allocateCallGas
+          ~> Ccall(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, 0, ACCTTO in ACCTS, #accountHasAuthority(ACCTTO), #accountAuthorityIsWarm(ACCTTO))
          ...
          </k>
          <id> ACCTFROM </id>
@@ -2875,8 +2895,8 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
          <accessedAccounts> ACCTS </accessedAccounts>
 
     rule <k> #gasExec(SCHED, STATICCALL GCAP ACCTTO _ _ _ _)
-          => Ccallgas(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, 0, ACCTTO in ACCTS) ~> #allocateCallGas
-          ~> Ccall(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, 0, ACCTTO in ACCTS)
+          => Ccallgas(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, 0, ACCTTO in ACCTS, #accountHasAuthority(ACCTTO), #accountAuthorityIsWarm(ACCTTO)) ~> #allocateCallGas
+          ~> Ccall(SCHED, #accountNonexistent(ACCTTO), GCAP, GAVAIL, 0, ACCTTO in ACCTS, #accountHasAuthority(ACCTTO), #accountAuthorityIsWarm(ACCTTO))
          ...
          </k>
          <gas> GAVAIL </gas>
@@ -3032,15 +3052,15 @@ There are several helpers for calculating gas (most of them also specified in th
 ```k
     syntax Exp     ::= Int | Gas
     syntax KResult ::= Int
-    syntax Exp ::= Ccall         ( Schedule , BExp , Gas , Gas , Int , Bool ) [symbol(Ccall), strict(2)]
-                 | Ccallgas      ( Schedule , BExp , Gas , Gas , Int , Bool ) [symbol(Ccallgas), strict(2)]
-                 | Cselfdestruct ( Schedule , BExp , Int )                    [symbol(Cselfdestruct), strict(2)]
- // ------------------------------------------------------------------------------------------------------------
-    rule <k> Ccall(SCHED, ISEMPTY:Bool, GCAP, GAVAIL, VALUE, ISWARM)
-          => Cextra(SCHED, ISEMPTY, VALUE, ISWARM) +Gas Cgascap(SCHED, GCAP, GAVAIL, Cextra(SCHED, ISEMPTY, VALUE, ISWARM)) ... </k>
+    syntax Exp ::= Ccall         ( Schedule , BExp , Gas , Gas , Int , Bool , Bool , Bool ) [symbol(Ccall), strict(2)]
+                 | Ccallgas      ( Schedule , BExp , Gas , Gas , Int , Bool , Bool , Bool ) [symbol(Ccallgas), strict(2)]
+                 | Cselfdestruct ( Schedule , BExp , Int )                                  [symbol(Cselfdestruct), strict(2)]
+ // --------------------------------------------------------------------------------------------------------------------------
+    rule <k> Ccall(SCHED, ISEMPTY:Bool, GCAP, GAVAIL, VALUE, ISWARM, ISDELEGATION, ISWARMDELEGATION)
+          => Cextra(SCHED, ISEMPTY, VALUE, ISWARM, ISDELEGATION, ISWARMDELEGATION) +Gas Cgascap(SCHED, GCAP, GAVAIL, Cextra(SCHED, ISEMPTY, VALUE, ISWARM, ISDELEGATION, ISWARMDELEGATION)) ... </k>
 
-    rule <k> Ccallgas(SCHED, ISEMPTY:Bool, GCAP, GAVAIL, VALUE, ISWARM)
-          => Cgascap(SCHED, GCAP, GAVAIL, Cextra(SCHED, ISEMPTY, VALUE, ISWARM)) +Gas #if VALUE ==Int 0 #then 0 #else Gcallstipend < SCHED > #fi ... </k>
+    rule <k> Ccallgas(SCHED, ISEMPTY:Bool, GCAP, GAVAIL, VALUE, ISWARM, ISDELEGATION, ISWARMDELEGATION)
+          => Cgascap(SCHED, GCAP, GAVAIL, Cextra(SCHED, ISEMPTY, VALUE, ISWARM, ISDELEGATION, ISWARMDELEGATION)) +Gas #if VALUE ==Int 0 #then 0 #else Gcallstipend < SCHED > #fi ... </k>
 
     rule <k> Cselfdestruct(SCHED, ISEMPTY:Bool, BAL)
           => Gselfdestruct < SCHED > +Int Cnew(SCHED, ISEMPTY andBool Gselfdestructnewaccount << SCHED >>, BAL) ... </k>
@@ -3060,6 +3080,85 @@ There are several helpers for calculating gas (most of them also specified in th
          </account>
 
    rule <k> #accountNonexistent(_) => true ... </k> [owise]
+```
+
+Processing SetCode Transaction Authority Entries
+================================================
+ - `#isValidDelegation` - checks whether the code of an account is a valid delegation designation with the delegation marker prefix (`0xef0100`) and a length of 23 bytes.
+ - `#accountHasAuthority` - returns wether the code of a given account is a valid delegation according to EIP-7702.
+ - `#accountAuthorityIsWarm` - for a given account, check if the delegated address inside the account code is present in `accessed_accounts`, returning `false` if the code is a non valid delegation.
+ - `#checkAuthorityList` - check if the authority list of a SetCode type transaction is valid.
+
+```k
+    syntax Bool ::= #isValidDelegation ( Bytes ) [symbol(#isValidDelegation), function, total]
+ // ------------------------------------------------------------------------------------------
+    rule #isValidDelegation(CODE) => true requires #range(CODE, 0, 3) ==K EOA_DELEGATION_MARKER andBool lengthBytes(CODE) ==Int 23
+    rule #isValidDelegation(_   ) => false [owise]
+
+    syntax Bool ::= #accountHasAuthority ( Account ) [symbol(#accountHasAuthority), function, total]
+ // ------------------------------------------------------------------------------------------------
+    rule [[#accountHasAuthority(ACCTTO) => true]]
+         <account>
+           <acctID> ACCTTO </acctID>
+           <code> CODE </code>
+           ...
+         </account>
+      requires #isValidDelegation(CODE)
+
+    rule #accountHasAuthority(_) => false [owise]
+
+    syntax Bool ::= #accountAuthorityIsWarm ( Account ) [symbol(#accountAuthorityIsWarm), function, total]
+ // ------------------------------------------------------------------------------------------------------
+     rule [[#accountAuthorityIsWarm(ACCTTO) => true]]
+         <account>
+           <acctID> ACCTTO </acctID>
+           <code> CODE </code>
+           ...
+         </account>
+         <accessedAccounts> ACCTS </accessedAccounts>
+      requires #isValidDelegation(CODE)
+       andBool (#asAccount(#range(CODE,3,20)) in ACCTS orBool #asAccount(#range(CODE,3,20)) ==K ACCTTO)
+
+    rule #accountAuthorityIsWarm(_) => false [owise]
+
+    syntax Bool ::= #checkAuthorityList ( List ) [symbol(#checkAuthorityList), function, total]
+ // -------------------------------------------------------------------------------------------
+    rule #checkAuthorityList (.List) => true
+    rule #checkAuthorityList (ListItem(ListItem(CID:Bytes) ListItem(ADDR:Bytes) ListItem(NONCE:Bytes) ListItem(YPAR:Bytes) ListItem(SIGR:Bytes) ListItem(SIGS:Bytes)) REST ) => true andBool #checkAuthorityList(REST)
+      requires #rangeUInt(256, Bytes2Int(CID, BE, Unsigned))
+       andBool #rangeUInt(64, Bytes2Int(NONCE, BE, Unsigned))
+       andBool lengthBytes(ADDR) ==Int 20
+       andBool #rangeUInt(8, Bytes2Int(YPAR, BE, Unsigned))
+       andBool #rangeUInt(256, Bytes2Int(SIGR, BE, Unsigned))
+       andBool #rangeUInt(256, Bytes2Int(SIGS, BE, Unsigned))
+
+   rule #checkAuthorityList(_) => false [owise]
+```
+
+Account helper functions
+========================
+
+ - `#getAccountCode(Account)` - K function to retrieve the code of an account, returning the empty bytes object if the account is not in the state.
+ - `#accountExists(Account)` - Function that checks if an account is present in the state.
+```k
+    syntax Bytes ::= #getAccountCode ( Account ) [symbol(#getAccountCode), function, total]
+ // ---------------------------------------------------------------------------------------
+    rule [[ #getAccountCode(ACCT) => CODE ]]
+         <schedule> SCHED </schedule>
+         <account>
+           <acctID> ACCT </acctID>
+           <code> CODE </code>
+           ...
+         </account>
+      requires notBool #isPrecompiledAccount(ACCT, SCHED)
+
+    rule #getAccountCode(_) => .Bytes [owise]
+
+    syntax Bool ::= #accountExists ( Account ) [symbol(#accountExists), function, total]
+ // ------------------------------------------------------------------------------------
+    rule [[ #accountExists(ACCT) => true ]] <account> <acctID> ACCT </acctID> ... </account>
+    rule #accountExists(_) => false [owise]
+
 ```
 
 EVM Program Representations
