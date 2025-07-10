@@ -1625,7 +1625,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
 
     rule [call.delegatedAuthority]:
          <k> #call ACCTFROM ACCTTO ACCTCODE VALUE APPVALUE ARGS STATIC
-          => #let DELEGATED_ACCOUNT = #getDelegatedAccount(CODE) #in
+          => #let DELEGATED_ACCOUNT = #asAccount(#range(CODE,3,20)) #in
            (#accessAccounts DELEGATED_ACCOUNT
           ~> #callWithCode ACCTFROM ACCTTO ACCTCODE #getAccountCode(DELEGATED_ACCOUNT) VALUE APPVALUE ARGS STATIC )
           ...
@@ -3087,7 +3087,6 @@ Processing SetCode Transaction Authority Entries
  - `#isValidDelegation` - checks whether the code of an account is a valid delegation designation with the delegation marker prefix (`0xef0100`) and a length of 23 bytes.
  - `#accountHasAuthority` - returns wether the code of a given account is a valid delegation according to EIP-7702.
  - `#accountAuthorityIsWarm` - for a given account, check if the delegated address inside the account code is present in `accessed_accounts`, returning `false` if the code is a non valid delegation.
- - `#getDelegatedAccount` - extract the delegated address from a Bytes object, returning `.Account` if the Bytes argument is not a valid delegation.
  - `#checkAuthorityList` - check if the authority list of a SetCode type transaction is valid.
 
 ```k
@@ -3106,7 +3105,7 @@ Processing SetCode Transaction Authority Entries
          </account>
       requires #isValidDelegation(CODE)
 
-    rule #accountHasAuthority(_) => false[owise]
+    rule #accountHasAuthority(_) => false [owise]
 
     syntax Bool ::= #accountAuthorityIsWarm ( Account ) [symbol(#accountAuthorityIsWarm), function, total]
  // ------------------------------------------------------------------------------------------------------
@@ -3122,11 +3121,6 @@ Processing SetCode Transaction Authority Entries
 
     rule #accountAuthorityIsWarm(_) => false [owise]
 
-    syntax Account ::= #getDelegatedAccount ( Bytes ) [symbol(#getDelegatedAccount), function, total]
- // -------------------------------------------------------------------------------------------------
-    rule #getDelegatedAccount(CODE) => #asAccount(#range(CODE,3,20)) requires #isValidDelegation(CODE)
-    rule #getDelegatedAccount(_)    => .Account [owise]
-
     syntax Bool ::= #checkAuthorityList ( List ) [symbol(#checkAuthorityList), function, total]
  // -------------------------------------------------------------------------------------------
     rule #checkAuthorityList (.List) => true
@@ -3137,6 +3131,7 @@ Processing SetCode Transaction Authority Entries
        andBool #rangeUInt(8, Bytes2Int(YPAR, BE, Unsigned))
        andBool #rangeUInt(256, Bytes2Int(SIGR, BE, Unsigned))
        andBool #rangeUInt(256, Bytes2Int(SIGS, BE, Unsigned))
+
    rule #checkAuthorityList(_) => false [owise]
 ```
 
@@ -3149,11 +3144,13 @@ Account helper functions
     syntax Bytes ::= #getAccountCode ( Account ) [symbol(#getAccountCode), function, total]
  // ---------------------------------------------------------------------------------------
     rule [[ #getAccountCode(ACCT) => CODE ]]
+         <schedule> SCHED </schedule>
          <account>
            <acctID> ACCT </acctID>
            <code> CODE </code>
            ...
          </account>
+      requires notBool #isPrecompiledAccount(ACCT, SCHED)
 
     rule #getAccountCode(_) => .Bytes [owise]
 
