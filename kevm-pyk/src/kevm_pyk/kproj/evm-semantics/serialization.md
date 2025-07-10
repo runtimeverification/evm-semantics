@@ -211,7 +211,8 @@ The encoding schemes are applied in `#rlpEcondeTxData`.
     rule #hashTxData( TXDATA ) => Keccak256raw( b"\x01" +Bytes #rlpEncodeTxData(TXDATA) ) requires isAccessListTx(TXDATA)
     rule #hashTxData( TXDATA ) => Keccak256raw( b"\x02" +Bytes #rlpEncodeTxData(TXDATA) ) requires isDynamicFeeTx(TXDATA)
     rule #hashTxData( TXDATA ) => Keccak256raw( b"\x03" +Bytes #rlpEncodeTxData(TXDATA) ) requires isBlobTx      (TXDATA)
-``` 
+    rule #hashTxData( TXDATA ) => Keccak256raw( b"\x04" +Bytes #rlpEncodeTxData(TXDATA) ) requires isSetCodeTx   (TXDATA)
+```
 
 The EVM test-sets are represented in JSON format with hex-encoding of the data and programs.
 Here we provide some standard parser/unparser functions for that format.
@@ -314,6 +315,7 @@ Unparsing
   // ----------------------------------------------------
     rule #parseList2JSONs( .List ) => .JSONs
     rule #parseList2JSONs( ListItem(X:Bytes) REST ) => X , #parseList2JSONs(REST)
+    rule #parseList2JSONs( ListItem(X:List) REST) => [ #parseList2JSONs(X) ] , #parseList2JSONs(REST)
 ```
 
 Recursive Length Prefix (RLP)
@@ -429,6 +431,9 @@ Encoding
    
     rule #rlpEncodeTxData( BlobTxData(TN, TF, TM, TG, TT, TV, DATA, CID, [TA], TB, TVH) )
       => #rlpEncode( [ CID, TN, TF, TM, TG, #addrBytes(TT), TV, DATA, [TA], TB, [#parseList2JSONs(TVH)] ] )
+
+    rule #rlpEncodeTxData( SetCodeTxData(TN, TF, TM, TG, TT, TV, DATA, CID, [TA], AUTH) )
+      => #rlpEncode( [ CID, TN, TF, TM, TG, #addrBytes(TT), TV, DATA, [TA], [#parseList2JSONs(AUTH)]] )
 
     syntax Bytes ::= #rlpEncodeMerkleTree ( MerkleTree ) [symbol(#rlpEncodeMerkleTree), function]
  // ---------------------------------------------------------------------------------------------
@@ -779,5 +784,23 @@ Tree Root Helper Functions
                                                 +Bytes #rlpEncodeBytes( #parseByteStack( Keccak256(b"") ) )
                                               , 192
                                               )
+```
+
+Processing authorities in SetCode Transactions
+==============================================
+- These rules define constants and functions used to process authority accounts in EIP-7702 SetCode transactions.
+- The `SET_CODE_TX_MAGIC` (`0x05`) prefixes the message hash, while `EOA_DELEGATION_MARKER` (`0xEF0100`) marks delegated EOA code.
+- The `#recoverAuthority` function recovers the signer address from parameters.
+
+```k
+    syntax Bytes ::= "SET_CODE_TX_MAGIC" [macro] | "EOA_DELEGATION_MARKER" [macro]
+ // ------------------------------------------------------------------------------
+    rule SET_CODE_TX_MAGIC => b"\x05"
+    rule EOA_DELEGATION_MARKER => #parseByteStack("0xef0100")
+
+    syntax Account ::= #recoverAuthority ( Bytes , Bytes , Bytes , Bytes , Bytes , Bytes ) [symbol(#recoverAuthority), function]
+ // ----------------------------------------------------------------------------------------------------------------------------
+    rule #recoverAuthority(CID, ADDR, NONCE, YPAR, SIGR, SIGS) => #sender( Keccak256raw(SET_CODE_TX_MAGIC +Bytes #rlpEncode([CID, ADDR, NONCE])), #asWord(YPAR) +Int 27, #padToWidth(32, SIGR), #padToWidth(32,SIGS) )
+
 endmodule
 ```
