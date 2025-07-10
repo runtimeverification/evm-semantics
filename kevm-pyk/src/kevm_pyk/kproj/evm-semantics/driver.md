@@ -306,13 +306,10 @@ Processing SetCode Transaction Authority Entries
 
     syntax InternalOp ::= #setDelegation ( Account , Bytes , Bytes , Bytes ) [symbol(#setDelegation)]
  // -------------------------------------------------------------------------------------------------
-    rule <k> #setDelegation(.Account , _, _, _) => .K ... </k>
-
     rule <k> #setDelegation(AUTHORITY, CID, NONCE, _ADDR) => .K ... </k> <chainID> ENV_CID </chainID>
-       requires notBool AUTHORITY ==K .Account
-        andBool ((notBool #asWord(CID) in (SetItem(ENV_CID) SetItem(0)))
-          orBool #asWord(NONCE) >=Int (2 ^Int 64) -Int 1)
-
+       requires AUTHORITY ==K .Account
+         orBool (notBool #asWord(CID) in (SetItem(ENV_CID) SetItem(0)))
+         orBool (#asWord(NONCE) >=Int maxUInt64)
 
     rule <k> #setDelegation(AUTHORITY, CID, NONCE, ADDR)
           => #let EXISTS = #accountExists(AUTHORITY)
@@ -332,7 +329,7 @@ Processing SetCode Transaction Authority Entries
          ...
          </account>
       requires notBool (ACCTCODE ==K .Bytes orBool #isValidDelegation(ACCTCODE))
-        orBool notBool (#asWord(NONCE) ==K ACCTNONCE)
+        orBool (notBool #asWord(NONCE) ==K ACCTNONCE)
 
     rule <k> #addAuthority(AUTHORITY, _CID, NONCE, ADDR, EXISTS) => .K ... </k>
          <schedule> SCHED </schedule>
