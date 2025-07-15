@@ -12,7 +12,6 @@ module EVM-TYPES
     imports STRING
     imports COLLECTIONS
     imports K-EQUAL
-    imports JSON
     imports WORD
     imports MINT
 ```
@@ -534,59 +533,6 @@ Storage/Memory Lookup
     rule [#lookupMemory.none]:   #lookupMemory(                    M, KEY ) => 0                 requires notBool KEY in_keys(M)
     //Impossible case, for completeness
     rule [#lookupMemory.notInt]: #lookupMemory( (KEY |-> VAL    ) _M, KEY ) => 0                 requires notBool isInt(VAL)
-```
-
-Substate Log
-------------
-
-During execution of a transaction some things are recorded in the substate log (Section 6.1 in YellowPaper).
-This is a right cons-list of `SubstateLogEntry` (which contains the account ID along with the specified portions of the `wordStack` and `localMem`).
-
-```k
-    syntax SubstateLogEntry ::= "{" Int "|" List "|" Bytes "}" [symbol(logEntry)]
- // -----------------------------------------------------------------------------
-```
-
-Transactions
-------------
-
-Productions related to transactions
-
-```k
-    syntax TxType ::= ".TxType"
-                    | "Legacy"
-                    | "AccessList"
-                    | "DynamicFee"
-                    | "Blob"
-                    | "SetCodeTx"
- // ------------------------
-
-    syntax Int ::= #dasmTxPrefix ( TxType ) [symbol(#dasmTxPrefix), function]
- // -------------------------------------------------------------------------
-    rule #dasmTxPrefix (Legacy)     => 0
-    rule #dasmTxPrefix (AccessList) => 1
-    rule #dasmTxPrefix (DynamicFee) => 2
-    rule #dasmTxPrefix (Blob)       => 3
-    rule #dasmTxPrefix (SetCodeTx)  => 4
-
-    syntax TxType ::= #asmTxPrefix ( Int ) [symbol(#asmTxPrefix), function]
- // -----------------------------------------------------------------------
-    rule #asmTxPrefix (0) => Legacy
-    rule #asmTxPrefix (1) => AccessList
-    rule #asmTxPrefix (2) => DynamicFee
-    rule #asmTxPrefix (3) => Blob
-    rule #asmTxPrefix (4) => SetCodeTx
-
-    syntax TxData ::= LegacyTx | AccessListTx | DynamicFeeTx | BlobTx | SetCodeTx
- // -----------------------------------------------------------------
-
-    syntax LegacyTx     ::= LegacyTxData       ( nonce: Int,                       gasPrice: Int, gasLimit: Int, to: Account, value: Int, data: Bytes )                                                                                                                   [symbol(LegacyTxData)]
-                          | LegacySignedTxData ( nonce: Int,                       gasPrice: Int, gasLimit: Int, to: Account, value: Int, data: Bytes, networkChainId: Int )                                                                                              [symbol(LegacySignedTxData)]
-    syntax AccessListTx ::= AccessListTxData   ( nonce: Int,                       gasPrice: Int, gasLimit: Int, to: Account, value: Int, data: Bytes, chainId: Int, accessLists: JSONs )                                                                                 [symbol(AccessListTxData)]
-    syntax DynamicFeeTx ::= DynamicFeeTxData   ( nonce: Int, priorityGasFee: Int, maxGasFee: Int, gasLimit: Int, to: Account, value: Int, data: Bytes, chainId: Int, accessLists: JSONs)                                                                                  [symbol(DynamicFeeTxData)]
-    syntax BlobTx       ::= BlobTxData         ( nonce: Int, priorityGasFee: Int, maxGasFee: Int, gasLimit: Int, to: AccountNotNil, value: Int, data: Bytes, chainId: Int, accessLists: JSONs, maxBlobGasFee: Int, blobVersionedHashes: List )                            [symbol(BlobTxData)]
-    syntax SetCodeTx    ::= SetCodeTxData      ( nonce: Int, priorityGasFee: Int, maxGasFee: Int, gasLimit: Int, to: AccountNotNil, value: Int, data: Bytes, chainId: Int, accessLists: JSONs, maxBlobGasFee: Int, blobVersionedHashes: List, authorizationLists:JSONs ) [symbol(SetCodeTxData)]
- // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 endmodule
 ```

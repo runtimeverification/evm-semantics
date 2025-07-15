@@ -3,7 +3,6 @@ EVM Words
 
 ```k
 requires "evm-types.md"
-requires "json-rpc.md"
 requires "serialization.md"
 ```
 
@@ -15,7 +14,6 @@ module EVM-DATA
     imports MAP-SYMBOLIC
     imports SET-SYMBOLIC
     imports COLLECTIONS
-    imports JSON-EXT
 ```
 
 ```k

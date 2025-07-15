@@ -4,7 +4,7 @@ Parsing/Unparsing
 ```k
 requires "plugin/krypto.md"
 requires "evm-types.md"
-requires "json-rpc.md"
+requires "json.md"
 ```
 
 ```k
@@ -12,7 +12,7 @@ module SERIALIZATION
     imports KRYPTO
     imports EVM-TYPES
     imports STRING-BUFFER
-    imports JSON-EXT
+    imports JSON
 ```
 
 Address/Hash Helpers
@@ -43,37 +43,17 @@ Address/Hash Helpers
 ```
 
 - `#sender` computes the sender of the transaction from its data and signature.
-- `sender.pre.EIP155`, `sender.EIP155.signed` and `sender.EIP155.unsigned` need to adapt the `TW` value before passing it to the `ECDSARecover`.
 - `sender` is used by the `ecrec` precompile and does not need to adapt the parameters.
 
 ```k
-    syntax Account ::= #sender ( TxData , Int , Bytes , Bytes , Int ) [function, symbol(senderTxData)      ]
-                     | #sender ( Bytes  , Int , Bytes , Bytes )       [function, symbol(senderBytes), total]
+    syntax Account ::= #sender ( Bytes  , Int , Bytes , Bytes )       [function, symbol(senderBytes), total]
                      | #sender ( Bytes )                              [function, symbol(senderReturn)      ]
  // --------------------------------------------------------------------------------------------------------
-    rule [sender.pre.EIP155]:      #sender(_:TxData, TW             => TW +Int 27           , _, _, _) requires TW ==Int 0                orBool TW ==Int 1
-    rule [sender.EIP155.signed]:   #sender(_:TxData, TW             => (TW -Int 35) modInt 2, _, _, B) requires TW ==Int 2 *Int B +Int 35 orBool TW ==Int 2 *Int B +Int 36
-    rule [sender.EIP155.unsigned]: #sender(T:TxData, TW, TR, TS, _) => #sender(#hashTxData(T), TW, TR, TS) [owise]
-
     rule [sender]: #sender(HT, TW, TR, TS) => #sender(ECDSARecover(HT, TW, TR, TS))
 
     rule #sender(b"")   => .Account
     rule #sender(BYTES) => #addr(#parseHexWord(Keccak256(BYTES))) requires BYTES =/=K b""
 ```
-
-
-- `#hashTxData` returns the Keccak-256 message hash `HT` to be signed.
-The encoding schemes are applied in `#rlpEcondeTxData`.
-
-```k
-    syntax Bytes ::= #hashTxData ( TxData ) [symbol(hashTxData), function]
- // ----------------------------------------------------------------------
-    rule #hashTxData( TXDATA ) => Keccak256raw(                #rlpEncodeTxData(TXDATA) ) requires isLegacyTx    (TXDATA)
-    rule #hashTxData( TXDATA ) => Keccak256raw( b"\x01" +Bytes #rlpEncodeTxData(TXDATA) ) requires isAccessListTx(TXDATA)
-    rule #hashTxData( TXDATA ) => Keccak256raw( b"\x02" +Bytes #rlpEncodeTxData(TXDATA) ) requires isDynamicFeeTx(TXDATA)
-    rule #hashTxData( TXDATA ) => Keccak256raw( b"\x03" +Bytes #rlpEncodeTxData(TXDATA) ) requires isBlobTx      (TXDATA)
-    rule #hashTxData( TXDATA ) => Keccak256raw( b"\x04" +Bytes #rlpEncodeTxData(TXDATA) ) requires isSetCodeTx   (TXDATA)
-``` 
 
 The EVM test-sets are represented in JSON format with hex-encoding of the data and programs.
 Here we provide some standard parser/unparser functions for that format.
@@ -121,7 +101,6 @@ Unparsing
 
 - `#addrBytes` Takes an Account and represents it as a 20-byte wide Bytes (or an empty Bytes for a null address)
 - `#wordBytes` Takes an Int and represents it as a 32-byte wide Bytes
-- `#parseList2JSONs` Takes a List of Bytes and represents it as a JSON array.
 
 ```k
     syntax Bytes ::= #addrBytes ( Account ) [symbol(#addrBytes), function]
@@ -130,11 +109,6 @@ Unparsing
     rule #addrBytes(.Account) => .Bytes
     rule #addrBytes(ACCT)     => #padToWidth(20, #asByteStack(ACCT)) requires #rangeAddress(ACCT)
     rule #wordBytes(WORD)     => #padToWidth(32, #asByteStack(WORD)) requires #rangeUInt(256, WORD)
-
-    syntax JSONs ::= #parseList2JSONs ( List ) [function]
-  // ----------------------------------------------------
-    rule #parseList2JSONs( .List ) => .JSONs
-    rule #parseList2JSONs( ListItem(X:Bytes) REST ) => X , #parseList2JSONs(REST)
 ```
 
 Recursive Length Prefix (RLP)
@@ -192,23 +166,6 @@ Encoding
     rule #rlpEncodeLength(BYTES, OFFSET) => #asByteStack(lengthBytes(BYTES) +Int OFFSET) +Bytes BYTES         requires           lengthBytes(BYTES) <Int 56
     rule #rlpEncodeLength(BYTES, OFFSET) => #rlpEncodeLength(BYTES, OFFSET, #asByteStack(lengthBytes(BYTES))) requires notBool ( lengthBytes(BYTES) <Int 56 )
     rule #rlpEncodeLength(BYTES, OFFSET, BL) => #asByteStack(lengthBytes(BL) +Int OFFSET +Int 55) +Bytes BL +Bytes BYTES
-
-     syntax Bytes ::= #rlpEncodeTxData ( TxData ) [symbol(rlpEncodeTxData), function]
- // ---------------------------------------------------------------------------------
-    rule #rlpEncodeTxData( LegacyTxData( TN, TP, TG, TT, TV, TD ) )
-      => #rlpEncode( [ TN, TP, TG, #addrBytes(TT), TV, TD ] )
-
-    rule #rlpEncodeTxData( LegacySignedTxData( TN, TP, TG, TT, TV, TD, B ) )
-      => #rlpEncode( [ TN, TP, TG, #addrBytes(TT), TV, TD, B, 0, 0 ] )
-
-    rule #rlpEncodeTxData( AccessListTxData( TN, TP, TG, TT, TV, TD, TC, [TA] ) )
-      => #rlpEncode( [ TC, TN, TP, TG, #addrBytes(TT), TV, TD, [TA] ] )
-
-    rule #rlpEncodeTxData( DynamicFeeTxData(TN, TF, TM, TG, TT, TV, DATA, TC, [TA]) )
-      => #rlpEncode( [ TC, TN, TF, TM, TG, #addrBytes(TT), TV, DATA, [TA] ] )
-
-    rule #rlpEncodeTxData( BlobTxData(TN, TF, TM, TG, TT, TV, DATA, CID, [TA], TB, TVH) )
-      => #rlpEncode( [ CID, TN, TF, TM, TG, #addrBytes({TT}:>Account), TV, DATA, [TA], TB, [#parseList2JSONs(TVH)] ] )
 
 endmodule
 ```

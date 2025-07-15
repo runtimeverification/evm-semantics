@@ -444,45 +444,6 @@ The arguments to `PUSH` must be skipped over (as they are inline), and the opcod
     rule #widthOp(_)       => 1p256                              [owise]
 ```
 
-### Block processing
-
--   `#startBlock` is used to signal that we are about to start mining a block and block initialization should take place (before transactions are executed).
--   `#finalizeBlock` is used to signal that block finalization procedures should take place (after transactions have executed).
--   `#rewardOmmers(_)` pays out the reward to uncle blocks so that blocks are orphaned less often in Ethereum.
-
-```k
-    syntax Bytes ::= #bloomFilter(List)      [symbol(#bloomFilter), function]
-                   | #bloomFilter(List, Int) [symbol(#bloomFilterAux), function]
- // ----------------------------------------------------------------------------
-    rule #bloomFilter(L) => #bloomFilter(L, 0)
-
-    rule #bloomFilter(.List, B) => #padToWidth(256, #asByteStack(B))
-    rule #bloomFilter(ListItem({ ACCT | TOPICS | _ }) L, B) => #bloomFilter(ListItem(#padToWidth(20, #asByteStack(ACCT))) listAsBytes(TOPICS) L, B)
-
-    syntax List ::= listAsBytes(List) [symbol(listAsBytes), function]
- // -----------------------------------------------------------------
-    rule listAsBytes(.List) => .List
-    rule listAsBytes(ListItem(TOPIC) L) => ListItem(#padToWidth(32, #asByteStack(TOPIC))) listAsBytes(L)
-
-    rule #bloomFilter(ListItem(WS:Bytes) L, B) => #bloomFilter(L, B |Int M3:2048(WS))
-```
-
-- `M3:2048` computes the 2048-bit hash of a log entry in which exactly 3 bits are set. This is used to compute the Bloom filter of a log entry.
-
-```k
-    syntax Int ::= "M3:2048" "(" Bytes ")" [function]
- // -------------------------------------------------
-    rule M3:2048(WS) => setBloomFilterBits(#parseByteStack(Keccak256(WS)))
-
-    syntax Int ::= setBloomFilterBits(Bytes) [symbol(setBloomFilterBits), function]
- // -------------------------------------------------------------------------------
-    rule setBloomFilterBits(HASH) => (1 <<Int getBloomFilterBit(HASH, 0)) |Int (1 <<Int getBloomFilterBit(HASH, 2)) |Int (1 <<Int getBloomFilterBit(HASH, 4))
-
-    syntax Int ::= getBloomFilterBit(Bytes, Int) [symbol(getBloomFilterBit), function]
- // ----------------------------------------------------------------------------------
-    rule getBloomFilterBit(X, I) => #asInteger(#range(X, I, 2)) %Int 2048
-```
-
 EVM Programs
 ============
 
