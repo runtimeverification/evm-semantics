@@ -14,6 +14,112 @@ module EVM-TYPES
     imports K-EQUAL
     imports JSON
     imports WORD
+    imports MINT
+```
+
+Machine Integers
+----------------
+
+We use 256-bit machine integers as our word data type.
+
+```k
+    syntax MInt{256}
+
+    syntax MInt{256} ::= "pow160p256" [macro] /* 2^160 */
+ // -----------------------------------------------------
+    rule pow160p256 => 1461501637330902918203684832716283019655932542976p256
+
+    syntax MInt{256} ::= "maxUInt64p256" [macro] /* 2^64 - 1 */
+ // -----------------------------------------------------------
+    rule maxUInt64p256 => 18446744073709551615p256
+
+    syntax MInt{256} ::= "maxSInt256p256" [macro] /* 2^255 - 1 */
+ // -------------------------------------------------------------
+    rule maxSInt256p256 => 57896044618658097711785492504343953926634992332820282019728792003956564819967p256
+
+    syntax MInt{256} ::= "maxUInt256p256" [macro] /* 2^256 - 1 */
+ // -------------------------------------------------------------
+    rule maxUInt256p256 => 115792089237316195423570985008687907853269984665640564039457584007913129639935p256
+
+    syntax Bool ::= #rangeNonceMInt256( MInt{256} ) [alias]
+ // -------------------------------------------------------
+    rule #rangeNonceMInt256(X) => 0p256 <=uMInt X andBool X <uMInt maxUInt64p256
+
+    syntax MInt{256} ::= #addrAsMInt256 ( MInt{256} ) [function]
+ // ------------------------------------------------------------
+    rule #addrAsMInt256(W)   => W %uMInt pow160p256
+
+    syntax Bytes ::= "#writeMInt256" "(" Bytes "," MInt{256} "," MInt{256} ")" [function]
+                   | Bytes "[" MInt{256} ":=MInt256" Bytes "]"                 [function]
+ // -------------------------------------------------------------------------------------
+    rule #writeMInt256(WM, IDX, VAL) => #let BYTES = padRightBytes(WM, IDX +MInt 1p256, 0p256) #in BYTES[ IDX <- VAL ]
+
+    rule WS [ _     :=MInt256 WS' ] => WS                                                                                 requires lengthBytes(WS')  ==MInt 0p256
+    rule WS [ START :=MInt256 WS' ] => replaceAtBytes(padRightBytes(WS, START +MInt lengthBytes(WS'), 0p256), START, WS') requires lengthBytes(WS') =/=MInt 0p256
+
+    syntax Bytes ::= #rangeMInt256 ( Bytes , MInt{256} , MInt{256} ) [function]
+ // ---------------------------------------------------------------------------
+    rule #rangeMInt256(WS, START, WIDTH) => substrBytes(padRightBytes(WS, START +MInt WIDTH, 0p256), START, START +MInt WIDTH) requires START <uMInt lengthBytes(WS)
+    rule #rangeMInt256( _,     _, WIDTH) => padRightBytes(.Bytes, WIDTH, 0p256) [owise]
+
+    syntax MInt{256} ::= bool2MInt256 ( Bool ) [function]
+ // -----------------------------------------------------
+    rule bool2MInt256( true  ) => 1p256
+    rule bool2MInt256( false ) => 0p256
+
+    syntax Bool ::= mint2562Bool ( MInt{256} ) [function]
+ // -----------------------------------------------------
+    rule mint2562Bool( W ) => false requires W  ==MInt 0p256
+    rule mint2562Bool( W ) => true  requires W =/=MInt 0p256
+
+    syntax MInt{256} ::= #nBitsMInt256  ( MInt{256} )  [function]
+                       | #nBytesMInt256 ( MInt{256} )  [function]
+ // -------------------------------------------------------------
+    rule #nBitsMInt256 (N) => (1p256 <<MInt N) -MInt 1p256
+    rule #nBytesMInt256(N) => #nBitsMInt256(8p256 *MInt N)
+
+    // returns the bit/byte at the given index, index 0 is the LSB
+    syntax MInt{256} ::= bitOfMInt256 (MInt{256}, index: MInt{256}) [function]
+    syntax MInt{256} ::= byteOfMInt256(MInt{256}, index: MInt{256}) [function]
+ // --------------------------------------------------------------------------
+    rule bitOfMInt256 (W, N) => ((#nBitsMInt256(1p256) <<MInt N) &MInt W) >>lMInt N
+    rule byteOfMInt256(W, N) => ((#nBytesMInt256(1p256) <<MInt (8p256 *MInt N)) &MInt W) >>lMInt (8p256 *MInt N)
+
+    syntax MInt{256} ::= bitMInt256  ( MInt{256} , MInt{256} ) [function]
+                       | byteMInt256 ( MInt{256} , MInt{256} ) [function]
+ // ---------------------------------------------------------------------
+    rule bitMInt256 (N, _) => 0p256 requires N >=uMInt 256p256
+    rule byteMInt256(N, _) => 0p256 requires N >=uMInt  32p256
+
+    rule bitMInt256 (N, W) => bitOfMInt256 (W , (255p256 -MInt N)) requires N <uMInt 256p256
+    rule byteMInt256(N, W) => byteOfMInt256(W , ( 31p256 -MInt N)) requires N <uMInt  32p256
+
+    syntax MInt{256} ::= signextendMInt256( MInt{256} , MInt{256} ) [function]
+ // --------------------------------------------------------------------------
+    rule signextendMInt256(N, W) => W requires N >=uMInt 32p256
+    rule signextendMInt256(N, W) => (#nBytesMInt256(31p256 -MInt N) <<MInt (8p256 *MInt (N +MInt 1p256))) |MInt W requires N <uMInt 32p256 andBool         mint2562Bool(bitMInt256(256p256 -MInt (8p256 *MInt (N +MInt 1p256)), W))
+    rule signextendMInt256(N, W) => #nBytesMInt256(N +MInt 1p256)                                         &MInt W requires N <uMInt 32p256 andBool notBool mint2562Bool(bitMInt256(256p256 -MInt (8p256 *MInt (N +MInt 1p256)), W))
+
+    syntax MInt{256} ::= addmodMInt256   ( MInt{256} , MInt{256}, MInt{256} ) [function]
+    syntax MInt{256} ::= mulmodMInt256   ( MInt{256} , MInt{256}, MInt{256} ) [function]
+    syntax MInt{256} ::= addmodMInt256Aux( MInt{256} , MInt{256}, MInt{256} ) [function]
+    syntax MInt{256} ::= mulmodMInt256Aux( MInt{256} , MInt{256}, MInt{256} ) [function]
+ // ------------------------------------------------------------------------------------
+    rule addmodMInt256   ( _,  _, W2) => 0p256                                                                                                             requires W2 ==MInt 0p256
+    rule addmodMInt256   (W0, W1, W2) => #let ADDRES = W0 +MInt W1 #in #if ADDRES <uMInt W0 #then addmodMInt256Aux(W0, W1, W2)  #else ADDRES %uMInt W2 #fi requires W2 =/=MInt 0p256
+
+    rule mulmodMInt256   ( _,  _, W2) => 0p256                        requires W2 ==MInt 0p256
+    rule mulmodMInt256   (W0, W1, W2) => mulmodMInt256Aux(W0, W1, W2) requires W2 =/=MInt 0p256
+
+    rule addmodMInt256Aux(W0, W1, W2) => Int2MInt((MInt2Unsigned(W0) +Int MInt2Unsigned(W1)) modInt MInt2Unsigned(W2))::MInt{256}
+
+    rule mulmodMInt256Aux(W0, W1, W2) => Int2MInt((MInt2Unsigned(W0) *Int MInt2Unsigned(W1)) modInt MInt2Unsigned(W2))::MInt{256}
+
+    syntax Bool ::= inBoundsMInt256( MInt{256} , MInt{256}, MInt{256} ) [function]
+ // ------------------------------------------------------------------------------
+    rule inBoundsMInt256(S, W, L) =>
+      #let R::MInt{256} = S +MInt W #in
+      #if R <uMInt S #then false #else R <=uMInt L #fi
 ```
 
 Utilities
