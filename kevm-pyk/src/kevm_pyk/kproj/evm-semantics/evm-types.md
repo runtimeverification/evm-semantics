@@ -342,14 +342,6 @@ Bytes helper functions
  // -------------------------------------------------------------------------
     rule #asInteger(WS) => Bytes2Int(WS, BE, Unsigned) [concrete]
 
-    syntax Account ::= #asAccount ( Bytes )             [symbol(#asAccount), function]
-    syntax AccountNotNil ::= #asAccountNotNil ( Bytes ) [symbol(#asAccountNotNil), function]
- // ----------------------------------------------------------------------------------------
-    rule #asAccount(BS) => .Account    requires lengthBytes(BS) ==Int 0
-    rule #asAccount(BS) => #asWord(BS) [owise]
-
-    rule #asAccountNotNil(BS) => #asWord(BS) requires lengthBytes(BS) >Int 0
-
     syntax Bytes ::= #asByteStack ( Int ) [symbol(#asByteStack), function, total]
  // -----------------------------------------------------------------------------
     rule #asByteStack(W) => Int2Bytes(W, BE, Unsigned) [concrete]
@@ -361,12 +353,9 @@ Bytes helper functions
     rule                #range(_, _, WIDTH)      => padRightBytes(.Bytes, WIDTH, 0) [owise, concrete]
 
     syntax Bytes ::= #padToWidth      ( Int , Bytes ) [symbol(#padToWidth), function, total]
-                   | #padRightToWidth ( Int , Bytes ) [symbol(#padRightToWidth), function, total]
- // ---------------------------------------------------------------------------------------------
+ // ----------------------------------------------------------------------------------------
     rule #padToWidth(N, BS)      =>               BS        requires notBool (0 <=Int N) [concrete]
     rule #padToWidth(N, BS)      =>  padLeftBytes(BS, N, 0) requires          0 <=Int N  [concrete]
-    rule #padRightToWidth(N, BS) =>               BS        requires notBool (0 <=Int N) [concrete]
-    rule #padRightToWidth(N, BS) => padRightBytes(BS, N, 0) requires          0 <=Int N  [concrete]
 
     syntax Bool ::= Bytes "==Bytes" Bytes   [symbol(_==Bytes_), function, total]
     rule B1 ==Bytes B2 => B1 ==K B2
@@ -383,11 +372,7 @@ Accounts
 
 ```k
     syntax Account ::= ".Account" | Int
-    syntax AccountNotNil = Int
- // --------------------------
-
-    syntax AccountCode ::= Bytes
- // ----------------------------
+ // -----------------------------------
 ```
 
 ### Addresses

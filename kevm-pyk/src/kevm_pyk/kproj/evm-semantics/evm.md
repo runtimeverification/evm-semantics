@@ -967,13 +967,6 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <k> #loadProgram BYTES => .K ... </k>
          <program> _ => BYTES </program>
          <jumpDests> _ => ComputeValidJumpDests(BYTES) </jumpDests>
-```
-
-```k
-    syntax Int ::= #widthOpCode(Int) [symbol(#widthOpCode), function]
- // -----------------------------------------------------------------
-    rule #widthOpCode(W) => W -Int 94 requires W >=Int 96 andBool W <=Int 127
-    rule #widthOpCode(_) => 1 [owise]
 
     syntax KItem ::= "#return" MInt{256} MInt{256}
  // ----------------------------------------------
