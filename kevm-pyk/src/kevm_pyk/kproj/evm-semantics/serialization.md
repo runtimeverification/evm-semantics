@@ -21,10 +21,6 @@ Address/Hash Helpers
 -   `keccak` serves as a wrapper around the `Keccak256` in `KRYPTO`.
 
 ```k
-    syntax Int ::= keccak ( Bytes ) [symbol(keccak), function, total, smtlib(smt_keccak)]
- // -------------------------------------------------------------------------------------
-    rule [keccak]: keccak(WS) => #parseHexWord(Keccak256(WS)) [concrete]
-
     syntax MInt{256} ::= keccakMInt256 ( Bytes ) [function]
  // -------------------------------------------------------
     rule keccakMInt256(WS) => Bytes2MInt(padLeftBytes(Keccak256raw(WS), 32, 0))::MInt{256}
@@ -91,8 +87,6 @@ These parsers can interpret hex-encoded strings as `Int`s, `Bytes`s, and `Map`s.
 -   `#parseHexBytes` interprets a string as a hex-encoded stack of bytes.
 -   `#alignHexString` makes sure that the length of a (hex)string is even.
 -   `#parseByteStack` interprets a string as a hex-encoded stack of bytes, but makes sure to remove the leading "0x".
--   `#parseMap` interprets a JSON key/value object as a map from `Word` to `Word`.
--   `#parseAddr` interprets a string as a 160 bit hex-endcoded address.
 
 ```k
     syntax Int ::= #parseWord    ( String ) [symbol(#parseWord), function]
@@ -120,12 +114,101 @@ These parsers can interpret hex-encoded strings as `Int`s, `Bytes`s, and `Map`s.
 
     rule #parseHexBytesAux("") => .Bytes
     rule #parseHexBytesAux(S)  => Int2Bytes(lengthString(S) /Int 2, String2Base(S, 16), BE) requires lengthString(S) >=Int 2
- // ---------------------------------------------------------------------------------------
-    syntax Map ::= #parseMap ( JSON ) [symbol(#parseMap), function]
- // ---------------------------------------------------------------
-    syntax Int ::= #parseAddr ( String ) [symbol(#parseAddr), function]
+```
 
-    syntax Bytes ::= #rlpEncodeTxData ( TxData ) [symbol(rlpEncodeTxData), function]
+Unparsing
+---------
+
+- `#addrBytes` Takes an Account and represents it as a 20-byte wide Bytes (or an empty Bytes for a null address)
+- `#wordBytes` Takes an Int and represents it as a 32-byte wide Bytes
+- `#parseList2JSONs` Takes a List of Bytes and represents it as a JSON array.
+
+```k
+    syntax Bytes ::= #addrBytes ( Account ) [symbol(#addrBytes), function]
+                   | #wordBytes ( Int )     [symbol(#wordBytes), function]
+ // ----------------------------------------------------------------------
+    rule #addrBytes(.Account) => .Bytes
+    rule #addrBytes(ACCT)     => #padToWidth(20, #asByteStack(ACCT)) requires #rangeAddress(ACCT)
+    rule #wordBytes(WORD)     => #padToWidth(32, #asByteStack(WORD)) requires #rangeUInt(256, WORD)
+
+    syntax JSONs ::= #parseList2JSONs ( List ) [function]
+  // ----------------------------------------------------
+    rule #parseList2JSONs( .List ) => .JSONs
+    rule #parseList2JSONs( ListItem(X:Bytes) REST ) => X , #parseList2JSONs(REST)
+```
+
+Recursive Length Prefix (RLP)
+=============================
+
+RLP encoding is used extensively for executing the blocks of a transaction.
+For details about RLP encoding, see the [YellowPaper Appendix B](http://gavwood.com/paper.pdf).
+
+Encoding
+--------
+
+-   `#rlpEncodeInt` RLP encodes an arbitrary precision integer.
+-   `#rlpEncodeWord` RLP encodes a 256-bit wide EVM word.
+-   `#rlpEncodeAddress` RLP encodes a 160-bit wide Ethereum address (or the null address: .Account).
+-   `#rlpEncodeBytes` RLP encodes a Bytes.
+-   `#rlpEncodeString` RLP encodes a String. All code points must be less than `U+00FF`, and `U+00HH` is treated as the byte `0xHH`.
+-   `#rlpEncode( JSON )` can take a JSON array and make an rlp encoding. It must be a JSON array! JSON objects aren't supported.
+    example: `#rlpEncode( [ 0, 1, 1, "", #parseByteStack("0xef880") ] )`
+
+```k
+    syntax Bytes ::= #rlpEncodeInt ( Int )              [symbol(#rlpEncodeInt    ), function]
+                   | #rlpEncodeWord ( Int )             [symbol(#rlpEncodeWord   ), function]
+                   | #rlpEncodeAddress ( Account )      [symbol(#rlpEncodeAddress), function]
+                   | #rlpEncodeString ( String )        [symbol(#rlpEncodeString ), function]
+                   | #rlpEncodeBytes ( Bytes )          [symbol(#rlpEncodeBytes  ), function]
+                   | #rlpEncode ( JSON )                [symbol(#rlpEncode       ), function]
+                   | #rlpEncode ( JSONs, StringBuffer ) [symbol(#rlpEncodeJsonAux), function]
+ // -----------------------------------------------------------------------------------------
+    rule #rlpEncodeInt(0) => b"\x80"
+    rule #rlpEncodeInt(WORD) => #asByteStack(WORD) requires WORD >Int 0 andBool WORD <Int 128
+    rule #rlpEncodeInt(WORD) => #rlpEncodeBytes(#asByteStack(WORD)) requires WORD >=Int 128
+
+    rule #rlpEncodeWord(WORD) => #rlpEncodeBytes(#wordBytes(WORD))
+
+    rule #rlpEncodeAddress(ACCT) => #rlpEncodeBytes(#addrBytes(ACCT))
+
+    rule #rlpEncodeString(STR) => #rlpEncodeBytes(String2Bytes(STR))
+
+    rule #rlpEncodeBytes(BYTES) => b"\x80"                    requires lengthBytes(BYTES)  <Int 1
+    rule #rlpEncodeBytes(BYTES) => BYTES                      requires lengthBytes(BYTES) ==Int 1 andBool #asInteger(substrBytes(BYTES, 0, 1)) <Int 128
+    rule #rlpEncodeBytes(BYTES) => #rlpEncodeLength(BYTES, 128) [owise]
+
+    syntax JSON ::= Bytes
+    rule #rlpEncode( [ J:JSONs ] ) => #rlpEncodeLength( #rlpEncode(J, .StringBuffer) , 192 )
+
+    rule #rlpEncode( .JSONs                   , BUF ) => String2Bytes(StringBuffer2String(BUF))
+    rule #rlpEncode( (J:Int,       REST:JSONs), BUF ) => #rlpEncode(REST, BUF +String Bytes2String(#rlpEncodeInt(J)   ))
+    rule #rlpEncode( (J:String,    REST:JSONs), BUF ) => #rlpEncode(REST, BUF +String Bytes2String(#rlpEncodeString(J)))
+    rule #rlpEncode( (J:Bytes,     REST:JSONs), BUF ) => #rlpEncode(REST, BUF +String Bytes2String(#rlpEncodeBytes(J) ))
+    rule #rlpEncode( ([ J ],       REST:JSONs), BUF ) => #rlpEncode(REST, BUF +String Bytes2String(#rlpEncode([ J ])  ))
+
+    syntax Bytes ::= #rlpEncodeLength ( Bytes , Int )         [symbol(#rlpEncodeLength), function]
+                   | #rlpEncodeLength ( Bytes , Int , Bytes ) [symbol(#rlpEncodeLengthAux), function]
+ // -------------------------------------------------------------------------------------------------
+    rule #rlpEncodeLength(BYTES, OFFSET) => #asByteStack(lengthBytes(BYTES) +Int OFFSET) +Bytes BYTES         requires           lengthBytes(BYTES) <Int 56
+    rule #rlpEncodeLength(BYTES, OFFSET) => #rlpEncodeLength(BYTES, OFFSET, #asByteStack(lengthBytes(BYTES))) requires notBool ( lengthBytes(BYTES) <Int 56 )
+    rule #rlpEncodeLength(BYTES, OFFSET, BL) => #asByteStack(lengthBytes(BL) +Int OFFSET +Int 55) +Bytes BL +Bytes BYTES
+
+     syntax Bytes ::= #rlpEncodeTxData ( TxData ) [symbol(rlpEncodeTxData), function]
+ // ---------------------------------------------------------------------------------
+    rule #rlpEncodeTxData( LegacyTxData( TN, TP, TG, TT, TV, TD ) )
+      => #rlpEncode( [ TN, TP, TG, #addrBytes(TT), TV, TD ] )
+
+    rule #rlpEncodeTxData( LegacySignedTxData( TN, TP, TG, TT, TV, TD, B ) )
+      => #rlpEncode( [ TN, TP, TG, #addrBytes(TT), TV, TD, B, 0, 0 ] )
+
+    rule #rlpEncodeTxData( AccessListTxData( TN, TP, TG, TT, TV, TD, TC, [TA] ) )
+      => #rlpEncode( [ TC, TN, TP, TG, #addrBytes(TT), TV, TD, [TA] ] )
+
+    rule #rlpEncodeTxData( DynamicFeeTxData(TN, TF, TM, TG, TT, TV, DATA, TC, [TA]) )
+      => #rlpEncode( [ TC, TN, TF, TM, TG, #addrBytes(TT), TV, DATA, [TA] ] )
+
+    rule #rlpEncodeTxData( BlobTxData(TN, TF, TM, TG, TT, TV, DATA, CID, [TA], TB, TVH) )
+      => #rlpEncode( [ CID, TN, TF, TM, TG, #addrBytes({TT}:>Account), TV, DATA, [TA], TB, [#parseList2JSONs(TVH)] ] )
 
 endmodule
 ```
