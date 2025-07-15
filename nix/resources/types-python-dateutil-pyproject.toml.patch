@@ -3,7 +3,7 @@
 @@ -5,8 +5,7 @@
  [project]
  name = "types-python-dateutil"
- version = "2.9.0.20250516"
+ version = "2.9.0.20250708"
 -license = "Apache-2.0"
 -license-files = ["LICENSE"]
 +license = {text = "Apache-2.0"}
