@@ -513,26 +513,6 @@ Accounts
     syntax Int ::= #addr ( Int ) [symbol(#addr), function, total]
  // -------------------------------------------------------------
     rule #addr(W) => W %Word pow160
-```
-
-Storage/Memory Lookup
----------------------
-
-`#lookup*` looks up a key in a map and returns 0 if the key doesn't exist, otherwise returning its value.
-
-```k
-    syntax Int ::= #lookup        ( Map , Int ) [symbol(lookup), function, total, smtlib(lookup)]
-                 | #lookupMemory  ( Map , Int ) [symbol(lookupMemory), function, total, smtlib(lookupMemory)]
- // ---------------------------------------------------------------------------------------------------------
-    rule [#lookup.some]:         #lookup(       (KEY |-> VAL:Int) _M, KEY ) => VAL modInt pow256
-    rule [#lookup.none]:         #lookup(                          M, KEY ) => 0                 requires notBool KEY in_keys(M)
-    //Impossible case, for completeness
-    rule [#lookup.notInt]:       #lookup(       (KEY |-> VAL    ) _M, KEY ) => 0                 requires notBool isInt(VAL)
-
-    rule [#lookupMemory.some]:   #lookupMemory( (KEY |-> VAL:Int) _M, KEY ) => VAL modInt 256
-    rule [#lookupMemory.none]:   #lookupMemory(                    M, KEY ) => 0                 requires notBool KEY in_keys(M)
-    //Impossible case, for completeness
-    rule [#lookupMemory.notInt]: #lookupMemory( (KEY |-> VAL    ) _M, KEY ) => 0                 requires notBool isInt(VAL)
 
 endmodule
 ```
