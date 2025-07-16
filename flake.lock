@@ -417,16 +417,16 @@
         "uv2nix": "uv2nix"
       },
       "locked": {
-        "lastModified": 1752665263,
-        "narHash": "sha256-qyUUQ8gl1vYX0JJZp2cpuv/Xqs5uvZrOiPyapj+AZ7I=",
+        "lastModified": 1752676174,
+        "narHash": "sha256-2qVSTzkX9jhO4XJfMdS2c0rVCTavyUj45tMMC7hwjn8=",
         "owner": "runtimeverification",
         "repo": "k",
-        "rev": "27d0d2d2bc94d63696b6f3237156a333496284b6",
+        "rev": "76f4c3fe252cde6b615cba39a65c48cf2f2bb9c5",
         "type": "github"
       },
       "original": {
         "owner": "runtimeverification",
-        "ref": "v7.1.275",
+        "ref": "v7.1.276",
         "repo": "k",
         "type": "github"
       }
