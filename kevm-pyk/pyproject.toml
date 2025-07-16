@@ -13,7 +13,8 @@ authors = [
 [tool.poetry.dependencies]
 python = "^3.10"
 pathos = "*"
-kframework = "7.1.274"
+# kframework = "7.1.273"
+kframework = { git = "https://github.com/runtimeverification/k", rev = "9f30f877022a3ff6be7318fd802d305d2ba51deb", subdirectory = "pyk" }
 tomlkit = "^0.11.6"
 frozendict = "^2.4.6"
 
