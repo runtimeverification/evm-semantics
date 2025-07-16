@@ -5,7 +5,7 @@
     rv-nix-tools.url = "github:runtimeverification/rv-nix-tools/854d4f05ea78547d46e807b414faad64cea10ae4";
     nixpkgs.follows = "rv-nix-tools/nixpkgs";
 
-    k-framework.url = "github:runtimeverification/k/v7.1.274";
+    k-framework.url = "github:runtimeverification/k/v7.1.275";
     k-framework.inputs.nixpkgs.follows = "nixpkgs";
     flake-utils.follows = "k-framework/flake-utils";
     poetry2nix = {
