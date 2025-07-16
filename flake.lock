@@ -417,16 +417,16 @@
         "uv2nix": "uv2nix"
       },
       "locked": {
-        "lastModified": 1752530554,
-        "narHash": "sha256-RiGevITeXpAng9LGW3/Y67crVsvB56ukoqRmJdVGVco=",
+        "lastModified": 1752676174,
+        "narHash": "sha256-2qVSTzkX9jhO4XJfMdS2c0rVCTavyUj45tMMC7hwjn8=",
         "owner": "runtimeverification",
         "repo": "k",
-        "rev": "a6d4df27f0c2b7712180cd1fbc45b513b4567165",
+        "rev": "76f4c3fe252cde6b615cba39a65c48cf2f2bb9c5",
         "type": "github"
       },
       "original": {
         "owner": "runtimeverification",
-        "ref": "v7.1.274",
+        "ref": "v7.1.276",
         "repo": "k",
         "type": "github"
       }
@@ -627,8 +627,8 @@
         "type": "github"
       },
       "original": {
-        "owner": "nixos",
-        "ref": "nixos-unstable",
+        "owner": "runtimeverification",
+        "ref": "libmatch",
         "repo": "nixpkgs",
         "type": "github"
       }
