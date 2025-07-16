@@ -413,21 +413,21 @@
           "uv2nix",
           "pyproject-nix"
         ],
-        "rv-nix-tools": "rv-nix-tools_2",
+        "rv-nix-tools": "rv-nix-tools_3",
         "uv2nix": "uv2nix"
       },
       "locked": {
-        "lastModified": 1752162549,
-        "narHash": "sha256-8QC5hUvCXiituSRzOlWGOcSADIGVFZFikI0PgNZyRrE=",
+        "lastModified": 1752595570,
+        "narHash": "sha256-OtCKWQAQL+IzO3Wfwr8bNiQtM6GQijuO+66Esmmayb8=",
         "owner": "runtimeverification",
         "repo": "k",
-        "rev": "65596e6666919183d241ec8001b3b0fa899b5e77",
+        "rev": "9f30f877022a3ff6be7318fd802d305d2ba51deb",
         "type": "github"
       },
       "original": {
         "owner": "runtimeverification",
         "repo": "k",
-        "rev": "65596e6666919183d241ec8001b3b0fa899b5e77",
+        "rev": "9f30f877022a3ff6be7318fd802d305d2ba51deb",
         "type": "github"
       }
     },
@@ -491,20 +491,20 @@
         ],
         "pybind11-src": "pybind11-src_2",
         "rapidjson-src": "rapidjson-src_2",
-        "rv-utils": "rv-utils_2",
+        "rv-nix-tools": "rv-nix-tools_2",
         "utils": "utils_2"
       },
       "locked": {
-        "lastModified": 1749248627,
-        "narHash": "sha256-1Y9yIqnH6yCOuB2gP75P/3OhcbItTihtaaCdui2cvFo=",
+        "lastModified": 1752521186,
+        "narHash": "sha256-lAON13tJkIWgQrPZ9jtmU73OIpisiiIkchUNXM1VhRs=",
         "owner": "runtimeverification",
         "repo": "llvm-backend",
-        "rev": "74bf6385cea9835c7f59628e028b45d635b59c74",
+        "rev": "f1e8363e98264a449877672d5c21f674aeeb84cd",
         "type": "github"
       },
       "original": {
         "owner": "runtimeverification",
-        "ref": "v0.1.133",
+        "ref": "v0.1.136",
         "repo": "llvm-backend",
         "type": "github"
       }
@@ -840,7 +840,7 @@
           "nixpkgs"
         ],
         "poetry2nix": "poetry2nix_2",
-        "rv-nix-tools": "rv-nix-tools_3"
+        "rv-nix-tools": "rv-nix-tools_4"
       }
     },
     "rv-nix-tools": {
@@ -864,7 +864,7 @@
     },
     "rv-nix-tools_2": {
       "inputs": {
-        "nixpkgs": "nixpkgs_4"
+        "nixpkgs": "nixpkgs_3"
       },
       "locked": {
         "lastModified": 1726497185,
@@ -882,6 +882,25 @@
       }
     },
     "rv-nix-tools_3": {
+      "inputs": {
+        "nixpkgs": "nixpkgs_4"
+      },
+      "locked": {
+        "lastModified": 1726497185,
+        "narHash": "sha256-iN+5eLmDm/rLuIZezS5ZqiW1BtBpwrrM9CPPP7Z5Tog=",
+        "owner": "runtimeverification",
+        "repo": "rv-nix-tools",
+        "rev": "854d4f05ea78547d46e807b414faad64cea10ae4",
+        "type": "github"
+      },
+      "original": {
+        "owner": "runtimeverification",
+        "repo": "rv-nix-tools",
+        "rev": "854d4f05ea78547d46e807b414faad64cea10ae4",
+        "type": "github"
+      }
+    },
+    "rv-nix-tools_4": {
       "inputs": {
         "nixpkgs": "nixpkgs_6"
       },
@@ -903,24 +922,6 @@
     "rv-utils": {
       "inputs": {
         "nixpkgs": "nixpkgs"
-      },
-      "locked": {
-        "lastModified": 1716459074,
-        "narHash": "sha256-IpahO+EkWdGl9QP7B2YXfJWpSfghjxgpz4ab47nRJY4=",
-        "owner": "runtimeverification",
-        "repo": "rv-nix-tools",
-        "rev": "a65058865cda201de504f5546271b8e997a0be9c",
-        "type": "github"
-      },
-      "original": {
-        "owner": "runtimeverification",
-        "repo": "rv-nix-tools",
-        "type": "github"
-      }
-    },
-    "rv-utils_2": {
-      "inputs": {
-        "nixpkgs": "nixpkgs_3"
       },
       "locked": {
         "lastModified": 1716459074,
