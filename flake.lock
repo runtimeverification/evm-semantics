@@ -627,8 +627,8 @@
         "type": "github"
       },
       "original": {
-        "owner": "runtimeverification",
-        "ref": "libmatch",
+        "owner": "nixos",
+        "ref": "nixos-unstable",
         "repo": "nixpkgs",
         "type": "github"
       }
