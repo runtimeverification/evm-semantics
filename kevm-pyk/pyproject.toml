@@ -1,48 +1,53 @@
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
-[tool.poetry]
+[project]
 name = "kevm-pyk"
 version = "1.0.678"
 description = ""
-authors = [
-    "Runtime Verification, Inc. <contact@runtimeverification.com>",
+readme = "README.md"
+requires-python = "~=3.10"
+dependencies = [
+    "frozendict>=2.4.6,<3",
+    "kframework==7.1.280",
+    "pathos",
+    "tomlkit>=0.11.6",
 ]
 
-[tool.poetry.dependencies]
-python = "^3.10"
-pathos = "*"
-kframework = "7.1.280"
-tomlkit = "^0.11.6"
-frozendict = "^2.4.6"
+[[project.authors]]
+name = "Runtime Verification, Inc."
+email = "contact@runtimeverification.com"
 
-[tool.poetry.group.dev.dependencies]
-autoflake = "*"
-black = "*"
-flake8 = "*"
-flake8-bugbear = "*"
-flake8-comprehensions = "*"
-flake8-quotes = "*"
-flake8-type-checking = "*"
-inotify = "*"
-isort = "*"
-mypy = "*"
-pep8-naming = "*"
-pytest = "^7"
-pytest-timeout = "*"
-pytest-cov = "*"
-pytest-mock = "*"
-pytest-xdist = "*"
-pyupgrade = "*"
-
-[tool.poetry.scripts]
+[project.scripts]
 kevm = "kevm_pyk.__main__:main"
 kevm-pyk = "kevm_pyk.__main__:main"
 gst-to-kore = "kevm_pyk.gst_to_kore:main"
 
-[tool.poetry.plugins.kdist]
+[project.entry-points.kdist]
 evm-semantics = "kevm_pyk.kdist.plugin"
+
+[dependency-groups]
+dev = [
+    "autoflake",
+    "black",
+    "flake8",
+    "flake8-bugbear",
+    "flake8-comprehensions",
+    "flake8-quotes",
+    "flake8-type-checking",
+    "isort",
+    "mypy",
+    "pep8-naming",
+    "pytest",
+    "pytest-cov",
+    "pytest-mock",
+    "pytest-xdist",
+    "pyupgrade",
+]
+
+[tool.hatch.metadata]
+allow-direct-references = true
 
 [tool.isort]
 profile = "black"
