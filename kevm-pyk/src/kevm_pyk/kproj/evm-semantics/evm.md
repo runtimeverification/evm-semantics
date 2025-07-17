@@ -11,14 +11,14 @@ This file only defines the local execution operations, the file `driver.md` will
 requires "data.md"
 requires "network.md"
 requires "gas.md"
-requires "ulm.k"
+requires "kllvm.k"
 
 module EVM
     imports STRING
     imports EVM-DATA
     imports NETWORK
     imports GAS
-    imports ULM
+    imports KLLVM
 ```
 
 Configuration

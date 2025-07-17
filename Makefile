@@ -206,7 +206,7 @@ CRYPTO_PLUGIN_LIB := $(CRYPTO_PLUGIN_DIR)/build/krypto/lib/krypto.a
 EVM_K_SOURCES     := $(shell find $(EVM_SEMANTICS_DIR) \( -name \*.md -o -name \*.k \) -print)
 VLM_DIR           := ../vlm
 VLM_KLLVM_DIR     := $(VLM_DIR)/kllvm
-VLM_KLLVM_LIB     := $(VLM_KLLVM_DIR)/libulmkllvm.so
+VLM_KLLVM_LIB     := $(VLM_KLLVM_DIR)/libkllvm.so
 KEVM_LIB_DIR      := ./libkevm
 KEVM_LIB          := libkevm.so
 KEVM_TARGET_LIB   := $(KEVM_LIB_DIR)/$(KEVM_LIB)
@@ -214,7 +214,7 @@ CXX               := clang++-16
 CC                := clang-16
 
 $(VLM_KLLVM_LIB):
-	CC=$(CC) CXX=$(CXX) $(MAKE) -C $(VLM_KLLVM_DIR) CPPFLAGS=-DEVM_ONLY
+	CC=$(CC) CXX=$(CXX) $(MAKE) -C $(VLM_KLLVM_DIR)
 
 $(CRYPTO_PLUGIN_LIB):
 	CC=$(CC) CXX=$(CXX) $(MAKE) -C $(CRYPTO_PLUGIN_DIR)
@@ -230,7 +230,7 @@ $(KEVM_TARGET_LIB): $(VLM_KLLVM_LIB) $(EVM_K_SOURCES) $(CRYPTO_PLUGIN_LIB)
 		-I $(VLM_KLLVM_DIR) \
 		\
 		--md-selector 'k & ! symbolic' \
-		--hook-namespaces 'JSON KRYPTO ULM' \
+		--hook-namespaces 'JSON KRYPTO KLLVM' \
 		--output-definition $(KEVM_LIB_DIR) \
 		--type-inference-mode simplesub \
 		--backend llvm \
@@ -248,11 +248,11 @@ $(KEVM_TARGET_LIB): $(VLM_KLLVM_LIB) $(EVM_K_SOURCES) $(CRYPTO_PLUGIN_LIB)
 		-ccopt $(CRYPTO_PLUGIN_LIB) \
 		-ccopt -Wno-deprecated-declarations \
 		-ccopt -L$(VLM_KLLVM_DIR) \
-		-ccopt -lulmkllvm \
+		-ccopt -lkllvm \
 		-ccopt -g \
-		-ccopt $(VLM_KLLVM_DIR)/lang/ulm_language_entry.cpp \
+		-ccopt $(VLM_KLLVM_DIR)/lang/kllm_language_entry.cpp \
 		-ccopt -I$(VLM_KLLVM_DIR) \
-		-ccopt -DULM_LANG_ID=kevm \
+		-ccopt -DKLLVM_LANG_ID=kevm \
 		-ccopt -fPIC \
 		-ccopt -shared
 
