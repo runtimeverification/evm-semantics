@@ -26,14 +26,20 @@ jobs:
         run: |
           git config user.name devops
           git config user.email devops@runtimeverification.com
-      - name: 'Install Poetry'
-        uses: Gr1N/setup-poetry@v9
+      - name: 'Get uv release'
+        id: uv_release
+        run: |
+          echo uv_version=$(cat deps/uv_release) >> "${GITHUB_OUTPUT}"
+      - name: 'Install uv'
+        uses: astral-sh/setup-uv@v6
+        with:
+          version: ${{ steps.uv_release.outputs.uv_version }}
       - name: 'Update pyk release tag'
         run: |
           K_VERSION=$(cat deps/k_release)
-          sed -i 's!kframework = "[0-9\.]*"!kframework = "'${K_VERSION}'"!' kevm-pyk/pyproject.toml
-          poetry -C kevm-pyk update
-          git add kevm-pyk/ && git commit -m "kevm-pyk/: sync poetry files pyk version ${K_VERSION}" || true
+          sed -i 's!    "kframework==[0-9\.]*,"!    "kframework=='${K_VERSION}'",!' kevm-pyk/pyproject.toml
+          uv --project kevm-pyk lock --upgrade
+          git add kevm-pyk/ && git commit -m "kevm-pyk/: sync uv files pyk version ${K_VERSION}" || true
       - name: 'Update plugin release file'
         run: |
           BKP_VERSION=$(git -C kevm-pyk/src/kevm_pyk/kproj/plugin rev-parse HEAD)
