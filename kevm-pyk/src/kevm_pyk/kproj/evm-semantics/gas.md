@@ -486,10 +486,6 @@ module GAS-FEES
     rule #Cbls12g2MsmDiscount(128) => 524
     rule #Cbls12g2MsmDiscount(N) => 524 requires N >Int 128
 
-    syntax Bool ::= #accountEmpty ( AccountCode , Int , Int ) [function, total, symbol(accountEmpty)]
- // -------------------------------------------------------------------------------------------------
-    rule #accountEmpty(CODE, NONCE, BAL) => CODE ==K .Bytes andBool NONCE ==Int 0 andBool BAL ==Int 0
-
     syntax Gas ::= #allBut64th ( Gas ) [symbol(#allBut64th_Gas), overload(#allBut64th), function, total, smtlib(gas_allBut64th_Gas)]
     syntax Int ::= #allBut64th ( Int ) [symbol(#allBut64th_Int), overload(#allBut64th), function, total, smtlib(gas_allBut64th_Int)]
  // --------------------------------------------------------------------------------------------------------------------------------

@@ -12,7 +12,6 @@ module EVM-TYPES
     imports STRING
     imports COLLECTIONS
     imports K-EQUAL
-    imports JSON
     imports WORD
     imports MINT
 ```
@@ -321,121 +320,6 @@ Bitwise logical operators are lifted from the integer versions.
     rule [signextend.positive]: signextend(N, W) => chop( #nBytes(N +Int 1)                      &Int W ) requires N <Int 32 andBool N >=Int 0 andBool notBool word2Bool(bit(256 -Int (8 *Int (N +Int 1)), W)) [concrete]
 ```
 
-
-A WordStack for EVM
--------------------
-
-### As a cons-list
-
-A cons-list is used for the EVM wordstack.
-
--   `.WordStack` serves as the empty worstack, and
--   `_:_` serves as the "cons" operator.
-
-```k
-    syntax WordStack ::= ".WordStack"      [smtlib(_dotWS)]
-                       | Int ":" WordStack [smtlib(_WS_)]
- // -----------------------------------------------------
-```
-
-```k
-    syntax Bytes ::= Int ":" Bytes [function]
- // -----------------------------------------
-    rule I : BS => Int2Bytes(1, I, BE) +Bytes BS requires I <Int 256
-```
-
--   `#take(N , WS)` keeps the first `N` elements of a `WordStack` (passing with zeros as needed).
--   `#drop(N , WS)` removes the first `N` elements of a `WordStack`.
-
-```k
-    syntax WordStack ::= #take ( Int , WordStack ) [symbol(takeWordStack), function, total]
- // ---------------------------------------------------------------------------------------
-    rule [#take.base]:      #take(N, _WS)                => .WordStack                      requires notBool N >Int 0
-    rule [#take.zero-pad]:  #take(N, .WordStack)         => 0 : #take(N -Int 1, .WordStack) requires N >Int 0
-    rule [#take.recursive]: #take(N, (W : WS):WordStack) => W : #take(N -Int 1, WS)         requires N >Int 0
-
-    syntax WordStack ::= #drop ( Int , WordStack ) [symbol(dropWordStack), function, total]
- // ---------------------------------------------------------------------------------------
-    rule #drop(N, WS:WordStack)       => WS                                  requires notBool N >Int 0
-    rule #drop(N, .WordStack)         => .WordStack                          requires         N >Int 0
-    rule #drop(N, (W : WS):WordStack) => #drop(1, #drop(N -Int 1, (W : WS))) requires         N >Int 1
-    rule #drop(1, (_ : WS):WordStack) => WS
-```
-
-### Element Access
-
--   `WS [ N ]` accesses element `N` of `WS`.
--   `WS [ N := W ]` sets element `N` of `WS` to `W` (padding with zeros as needed).
-
-```k
-    syntax Int ::= WordStack "[" Int "]" [function, total]
- // ------------------------------------------------------
-    rule (W : _):WordStack [ N ] => W                  requires N ==Int 0
-    rule WS:WordStack      [ N ] => #drop(N, WS) [ 0 ] requires N  >Int 0
-    rule  _:WordStack      [ N ] => 0                  requires N  <Int 0
-
-    syntax WordStack ::= WordStack "[" Int ":=" Int "]" [function, total]
- // ---------------------------------------------------------------------
-    rule (_W0 : WS):WordStack [ N := W ] => W  : WS                     requires N ==Int 0
-    rule ( W0 : WS):WordStack [ N := W ] => W0 : (WS [ N -Int 1 := W ]) requires N  >Int 0
-    rule        WS :WordStack [ N := _ ] => WS                          requires N  <Int 0
-    rule .WordStack           [ N := W ] => (0 : .WordStack) [ N := W ]
-```
-
--   `#sizeWordStack` calculates the size of a `WordStack`.
--   `_in_` determines if a `Int` occurs in a `WordStack`.
-
-```k
-    syntax Int ::= #sizeWordStack ( WordStack )       [symbol(#sizeWordStack), function, total, smtlib(sizeWordStack)]
-                 | #sizeWordStack ( WordStack , Int ) [symbol(sizeWordStackAux), function, total, smtlib(sizeWordStackAux)]
- // -----------------------------------------------------------------------------------------------------------------------
-    rule #sizeWordStack ( WS ) => #sizeWordStack(WS, 0)
-    rule #sizeWordStack ( .WordStack, SIZE ) => SIZE
-    rule #sizeWordStack ( _ : WS, SIZE )     => #sizeWordStack(WS, SIZE +Int 1)
-
-    syntax Bool ::= Int "in" WordStack [function]
- // ---------------------------------------------
-    rule _ in .WordStack => false
-    rule W in (W' : WS)  => (W ==K W') orElseBool (W in WS)
-```
-
--   `#replicateAux` pushes `N` copies of `A` onto a `WordStack`.
--   `#replicate` is a `WordStack` of length `N` with `A` the value of every element.
-
-```k
-    syntax WordStack ::= #replicate    ( Int, Int )            [symbol(#replicate), function, total]
-                       | #replicateAux ( Int, Int, WordStack ) [symbol(#replicateAux), function, total]
- // ---------------------------------------------------------------------------------------------------
-    rule #replicate   ( N,  A )     => #replicateAux(N, A, .WordStack)
-    rule #replicateAux( N,  A, WS ) => #replicateAux(N -Int 1, A, A : WS) requires         N >Int 0
-    rule #replicateAux( N, _A, WS ) => WS                                 requires notBool N >Int 0
-```
-
--   `WordStack2List` converts a term of sort `WordStack` to a term of sort `List`.
-
-```k
-    syntax List ::= WordStack2List ( WordStack ) [symbol(WordStack2List), function, total]
- // --------------------------------------------------------------------------------------
-    rule WordStack2List(.WordStack) => .List
-    rule WordStack2List(W : WS) => ListItem(W) WordStack2List(WS)
-```
-
-
--   `WS [ START := WS' ]` assigns a contiguous chunk of `WS'` to `WS` starting at position `START`.
--   `#write(WM, IDX, VAL)` assigns a value `VAL` at position `IDX` in `WM`.
--   TODO: remove the first rule for `:=` when [#1844](https://github.com/runtimeverification/evm-semantics/issues/1844) is fixed.
-
-```k
-    syntax Bytes ::= "#write" "(" Bytes "," Int "," Int ")" [function]
-                   | Bytes "[" Int ":=" Bytes "]" [function, total, symbol(mapWriteRange)]
- // --------------------------------------------------------------------------------------
-    rule #write(WM, IDX, VAL) => padRightBytes(WM, IDX +Int 1, 0) [ IDX <- VAL ] [concrete]
-
-    rule WS [ START := WS' ] => WS                                                                            requires 0     <=Int START andBool lengthBytes(WS')  ==Int 0 [concrete]
-    rule WS [ START := WS' ] => replaceAtBytes(padRightBytes(WS, START +Int lengthBytes(WS'), 0), START, WS') requires 0     <=Int START andBool lengthBytes(WS') =/=Int 0 [concrete]
-    rule _  [ START := _ ]   => .Bytes                                                                        requires START  <Int 0                                       [concrete]
-```
-
 Bytes helper functions
 ----------------------
 
@@ -458,14 +342,6 @@ Bytes helper functions
  // -------------------------------------------------------------------------
     rule #asInteger(WS) => Bytes2Int(WS, BE, Unsigned) [concrete]
 
-    syntax Account ::= #asAccount ( Bytes )             [symbol(#asAccount), function]
-    syntax AccountNotNil ::= #asAccountNotNil ( Bytes ) [symbol(#asAccountNotNil), function]
- // ----------------------------------------------------------------------------------------
-    rule #asAccount(BS) => .Account    requires lengthBytes(BS) ==Int 0
-    rule #asAccount(BS) => #asWord(BS) [owise]
-
-    rule #asAccountNotNil(BS) => #asWord(BS) requires lengthBytes(BS) >Int 0
-
     syntax Bytes ::= #asByteStack ( Int ) [symbol(#asByteStack), function, total]
  // -----------------------------------------------------------------------------
     rule #asByteStack(W) => Int2Bytes(W, BE, Unsigned) [concrete]
@@ -477,12 +353,9 @@ Bytes helper functions
     rule                #range(_, _, WIDTH)      => padRightBytes(.Bytes, WIDTH, 0) [owise, concrete]
 
     syntax Bytes ::= #padToWidth      ( Int , Bytes ) [symbol(#padToWidth), function, total]
-                   | #padRightToWidth ( Int , Bytes ) [symbol(#padRightToWidth), function, total]
- // ---------------------------------------------------------------------------------------------
+ // ----------------------------------------------------------------------------------------
     rule #padToWidth(N, BS)      =>               BS        requires notBool (0 <=Int N) [concrete]
     rule #padToWidth(N, BS)      =>  padLeftBytes(BS, N, 0) requires          0 <=Int N  [concrete]
-    rule #padRightToWidth(N, BS) =>               BS        requires notBool (0 <=Int N) [concrete]
-    rule #padRightToWidth(N, BS) => padRightBytes(BS, N, 0) requires          0 <=Int N  [concrete]
 
     syntax Bool ::= Bytes "==Bytes" Bytes   [symbol(_==Bytes_), function, total]
     rule B1 ==Bytes B2 => B1 ==K B2
@@ -499,11 +372,7 @@ Accounts
 
 ```k
     syntax Account ::= ".Account" | Int
-    syntax AccountNotNil = Int
- // --------------------------
-
-    syntax AccountCode ::= Bytes
- // ----------------------------
+ // -----------------------------------
 ```
 
 ### Addresses
@@ -514,79 +383,6 @@ Accounts
     syntax Int ::= #addr ( Int ) [symbol(#addr), function, total]
  // -------------------------------------------------------------
     rule #addr(W) => W %Word pow160
-```
-
-Storage/Memory Lookup
----------------------
-
-`#lookup*` looks up a key in a map and returns 0 if the key doesn't exist, otherwise returning its value.
-
-```k
-    syntax Int ::= #lookup        ( Map , Int ) [symbol(lookup), function, total, smtlib(lookup)]
-                 | #lookupMemory  ( Map , Int ) [symbol(lookupMemory), function, total, smtlib(lookupMemory)]
- // ---------------------------------------------------------------------------------------------------------
-    rule [#lookup.some]:         #lookup(       (KEY |-> VAL:Int) _M, KEY ) => VAL modInt pow256
-    rule [#lookup.none]:         #lookup(                          M, KEY ) => 0                 requires notBool KEY in_keys(M)
-    //Impossible case, for completeness
-    rule [#lookup.notInt]:       #lookup(       (KEY |-> VAL    ) _M, KEY ) => 0                 requires notBool isInt(VAL)
-
-    rule [#lookupMemory.some]:   #lookupMemory( (KEY |-> VAL:Int) _M, KEY ) => VAL modInt 256
-    rule [#lookupMemory.none]:   #lookupMemory(                    M, KEY ) => 0                 requires notBool KEY in_keys(M)
-    //Impossible case, for completeness
-    rule [#lookupMemory.notInt]: #lookupMemory( (KEY |-> VAL    ) _M, KEY ) => 0                 requires notBool isInt(VAL)
-```
-
-Substate Log
-------------
-
-During execution of a transaction some things are recorded in the substate log (Section 6.1 in YellowPaper).
-This is a right cons-list of `SubstateLogEntry` (which contains the account ID along with the specified portions of the `wordStack` and `localMem`).
-
-```k
-    syntax SubstateLogEntry ::= "{" Int "|" List "|" Bytes "}" [symbol(logEntry)]
- // -----------------------------------------------------------------------------
-```
-
-Transactions
-------------
-
-Productions related to transactions
-
-```k
-    syntax TxType ::= ".TxType"
-                    | "Legacy"
-                    | "AccessList"
-                    | "DynamicFee"
-                    | "Blob"
-                    | "SetCodeTx"
- // ------------------------
-
-    syntax Int ::= #dasmTxPrefix ( TxType ) [symbol(#dasmTxPrefix), function]
- // -------------------------------------------------------------------------
-    rule #dasmTxPrefix (Legacy)     => 0
-    rule #dasmTxPrefix (AccessList) => 1
-    rule #dasmTxPrefix (DynamicFee) => 2
-    rule #dasmTxPrefix (Blob)       => 3
-    rule #dasmTxPrefix (SetCodeTx)  => 4
-
-    syntax TxType ::= #asmTxPrefix ( Int ) [symbol(#asmTxPrefix), function]
- // -----------------------------------------------------------------------
-    rule #asmTxPrefix (0) => Legacy
-    rule #asmTxPrefix (1) => AccessList
-    rule #asmTxPrefix (2) => DynamicFee
-    rule #asmTxPrefix (3) => Blob
-    rule #asmTxPrefix (4) => SetCodeTx
-
-    syntax TxData ::= LegacyTx | AccessListTx | DynamicFeeTx | BlobTx | SetCodeTx
- // -----------------------------------------------------------------
-
-    syntax LegacyTx     ::= LegacyTxData       ( nonce: Int,                       gasPrice: Int, gasLimit: Int, to: Account, value: Int, data: Bytes )                                                                                                                   [symbol(LegacyTxData)]
-                          | LegacySignedTxData ( nonce: Int,                       gasPrice: Int, gasLimit: Int, to: Account, value: Int, data: Bytes, networkChainId: Int )                                                                                              [symbol(LegacySignedTxData)]
-    syntax AccessListTx ::= AccessListTxData   ( nonce: Int,                       gasPrice: Int, gasLimit: Int, to: Account, value: Int, data: Bytes, chainId: Int, accessLists: JSONs )                                                                                 [symbol(AccessListTxData)]
-    syntax DynamicFeeTx ::= DynamicFeeTxData   ( nonce: Int, priorityGasFee: Int, maxGasFee: Int, gasLimit: Int, to: Account, value: Int, data: Bytes, chainId: Int, accessLists: JSONs)                                                                                  [symbol(DynamicFeeTxData)]
-    syntax BlobTx       ::= BlobTxData         ( nonce: Int, priorityGasFee: Int, maxGasFee: Int, gasLimit: Int, to: AccountNotNil, value: Int, data: Bytes, chainId: Int, accessLists: JSONs, maxBlobGasFee: Int, blobVersionedHashes: List )                            [symbol(BlobTxData)]
-    syntax SetCodeTx    ::= SetCodeTxData      ( nonce: Int, priorityGasFee: Int, maxGasFee: Int, gasLimit: Int, to: AccountNotNil, value: Int, data: Bytes, chainId: Int, accessLists: JSONs, maxBlobGasFee: Int, blobVersionedHashes: List, authorizationLists:JSONs ) [symbol(SetCodeTxData)]
- // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 endmodule
 ```
