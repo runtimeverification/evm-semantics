@@ -5,6 +5,8 @@ on:
       - '_update-deps/runtimeverification/blockchain-k-plugin'
       - '_update-deps/runtimeverification/k'
       - '_update-deps/runtimeverification/rv-nix-tools'
+      - '_update-deps-cron/uv2nix'
+      - '_update-deps-cron/pyproject-build-systems'
   workflow_dispatch:
 # Stop in progress workflows on the same branch and same workflow to use latest committed code
 concurrency:
@@ -29,7 +31,12 @@ jobs:
       - name: 'Get uv release'
         id: uv_release
         run: |
-          echo uv_version=$(cat deps/uv_release) >> "${GITHUB_OUTPUT}"
+          UV2NIX_VERSION=$(cat deps/uv2nix)
+          UV_VERSION=$(curl -s https://raw.githubusercontent.com/pyproject-nix/uv2nix/$(cat deps/uv2nix)/pkgs/uv-bin/srcs.json | jq -r .version)
+          [[ "${UV_VERSION}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          echo ${UV_VERSION} > deps/uv_release
+          git add deps/uv_release && git commit -m "Sync uv version: uv ${UV_VERSION}" || true
+          echo uv_version=${UV_VERSION} >> "${GITHUB_OUTPUT}"
       - name: 'Install uv'
         uses: astral-sh/setup-uv@v6
         with:
@@ -59,9 +66,13 @@ jobs:
         run: |
           K_VERSION=v$(cat deps/k_release)
           BKP_VERSION=$(cat deps/blockchain-k-plugin_release)
+          UV2NIX_VERSION=$(cat deps/uv2nix)
+          PYPROJECT_BUILD_SYSTEMS_VERSION=$(cat deps/pyproject-build-systems)
           RV_NIX_TOOLS_VERSION=$(cat deps/rv-nix-tools)
           sed -i 's!    k-framework.url = "github:runtimeverification/k/[v0-9\.]*"!    k-framework.url = "github:runtimeverification/k/'"${K_VERSION}"'"!' flake.nix
           sed -i 's!        "github:runtimeverification/blockchain-k-plugin/[0-9a-f]*"!        "github:runtimeverification/blockchain-k-plugin/'"${BKP_VERSION}"'"!' flake.nix
+          sed -i 's!    uv2nix.url = "github:pyproject-nix/uv2nix/[a-z0-9\.]*"!    uv2nix.url = "github:pyproject-nix/uv2nix/'"${UV2NIX_VERSION}"'"!' flake.nix
+          sed -i 's!    pyproject-build-systems.url = "github:pyproject-nix/build-system-pkgs/[a-z0-9\.]*"!    pyproject-build-systems.url = "github:pyproject-nix/build-system-pkgs/'"${PYPROJECT_BUILD_SYSTEMS_VERSION}"'"!' flake.nix
           sed -i 's!    rv-nix-tools.url = "github:runtimeverification/rv-nix-tools/[a-z0-9\.]*"!    rv-nix-tools.url = "github:runtimeverification/rv-nix-tools/'"${RV_NIX_TOOLS_VERSION}"'"!' flake.nix
           nix run .#update-from-submodules
           nix flake update
