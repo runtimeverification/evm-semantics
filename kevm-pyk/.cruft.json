@@ -1,6 +1,6 @@
 {
   "template": "https://github.com/runtimeverification/python-project-template.git",
-  "commit": "601d5e2a0e8a98c87dcb1ae694d22d76d0114e01",
+  "commit": "7a095b4dd0a51916da0a728b8fdd9adf7e469a68",
   "checkout": null,
   "context": {
     "cookiecutter": {
@@ -11,7 +11,8 @@
       "description": "",
       "author_name": "Runtime Verification, Inc.",
       "author_email": "contact@runtimeverification.com",
-      "_template": "https://github.com/runtimeverification/python-project-template.git"
+      "_template": "https://github.com/runtimeverification/python-project-template.git",
+      "_commit": "7a095b4dd0a51916da0a728b8fdd9adf7e469a68"
     }
   },
   "directory": null
