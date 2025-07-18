@@ -53,9 +53,9 @@ jobs:
           echo ${BKP_VERSION} > deps/blockchain-k-plugin_release
           git add deps/blockchain-k-plugin_release && git commit -m "deps/blockchain-k-plugin_release: sync release file version ${BKP_VERSION}" || true
       - name: 'Install Nix/Cachix'
-        uses: cachix/install-nix-action@v19
+        uses: cachix/install-nix-action@v31.5.1
         with:
-          install_url: https://releases.nixos.org/nix/nix-2.13.3/install
+          install_url: https://releases.nixos.org/nix/nix-2.30.1/install
           extra_nix_config: |
             access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
       - uses: cachix/cachix-action@v12
