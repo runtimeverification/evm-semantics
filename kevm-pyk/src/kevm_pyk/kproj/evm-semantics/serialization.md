@@ -59,7 +59,7 @@ Address/Hash Helpers
 ```k
     syntax Int ::= keccak ( Bytes ) [symbol(keccak), function, total, smtlib(smt_keccak)]
  // -------------------------------------------------------------------------------------
-    rule [keccak]: keccak(WS) => #parseHexWord(Keccak256(WS)) [concrete]
+    //rule [keccak]: keccak(WS) => #parseHexWord(Keccak256(WS)) [concrete]
 ```
 
 - `verifyKZGProofWrapper` serves as a wrapper around the `verifyKZGProof` in `KRYPTO`.
