@@ -1,4 +1,4 @@
-{ stdenv, writeScriptBin, src, kevm, time, which, kore-exec }:
+{ stdenv, writeScriptBin, callPackage, kevm, time, which, kore-exec }:
 
 let
   profile = writeScriptBin "profile" ''
@@ -13,7 +13,7 @@ let
   '';
 in stdenv.mkDerivation {
   name = "kevm-profile";
-  inherit src;
+  src = final.callPackage ../../nix/kevm-source { };
   preferLocalBuild = true;
   buildInputs = [ kevm ];
   postPatch = ''

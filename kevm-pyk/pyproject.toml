@@ -22,6 +22,7 @@ email = "contact@runtimeverification.com"
 [project.scripts]
 kevm = "kevm_pyk.__main__:main"
 kevm-pyk = "kevm_pyk.__main__:main"
+kevm-kdist = "pyk.kdist.__main__:main"
 gst-to-kore = "kevm_pyk.gst_to_kore:main"
 
 [project.entry-points.kdist]
