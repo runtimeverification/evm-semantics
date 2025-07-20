@@ -665,14 +665,14 @@ pyreadline3 = {version = "*", markers = "sys_platform == \"win32\" and python_ve
 
 [[package]]
 name = "hypothesis"
-version = "6.135.32"
+version = "6.136.0"
 description = "A library for property-based testing"
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "hypothesis-6.135.32-py3-none-any.whl", hash = "sha256:d0f2bf93863f19a7af2510685dde2b89efb94eaebd3ca0b86c548cd8daa33ab0"},
-    {file = "hypothesis-6.135.32.tar.gz", hash = "sha256:b74019dc58065d806abea6292008a392bc9326b88d6a46c8cce51c9cd485af42"},
+    {file = "hypothesis-6.136.0-py3-none-any.whl", hash = "sha256:a288672440d94f9cd307e3889c4087d1f8c8b114285fcf07ae415b3c7d4a26ab"},
+    {file = "hypothesis-6.136.0.tar.gz", hash = "sha256:1d7f0b61195369c043b90484cb2948a369ff83b3584970586d5c9a6f60641625"},
 ]
 
 [package.dependencies]
@@ -801,14 +801,14 @@ i18n = ["Babel (>=2.7)"]
 
 [[package]]
 name = "kframework"
-version = "7.1.278"
+version = "7.1.280"
 description = ""
 optional = false
 python-versions = "~=3.10"
 groups = ["main"]
 files = [
-    {file = "kframework-7.1.278-py3-none-any.whl", hash = "sha256:5166508338ec0d94ee604f65f945f0dd99990b35686643bd99ac3e6497e66ca8"},
-    {file = "kframework-7.1.278.tar.gz", hash = "sha256:53ff71a92ba25f631f78225df77707019f97abcd6787366ed113572e56448b80"},
+    {file = "kframework-7.1.280-py3-none-any.whl", hash = "sha256:f7ff167f8acd0931ead9d6d53968e901c0f69f322d3f90089cf413f3e4993b1f"},
+    {file = "kframework-7.1.280.tar.gz", hash = "sha256:e63098c7eb24c936ba2ed57c9184866e0316767f898148f91a0691e341f1ab3a"},
 ]
 
 [package.dependencies]
@@ -1823,4 +1823,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10"
-content-hash = "6bfa4171f85f900e1395fde7fa5863ea494448e14769d8fd1adaa2e96e6407b2"
+content-hash = "48bdf4fe8d02913c4b0180901e2eca348ffedfd6bf5aba239886087c3fedf9a4"
