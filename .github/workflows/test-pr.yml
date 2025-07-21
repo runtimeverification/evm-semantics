@@ -12,14 +12,20 @@ jobs:
     name: 'Code Quality Checks'
     runs-on: ubuntu-latest
     steps:
+      - name: 'Check out code'
+        uses: actions/checkout@v4
       - name: 'Setup Python 3.10'
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
-      - name: 'Check out code'
-        uses: actions/checkout@v4
-      - name: 'Install Poetry'
-        uses: Gr1N/setup-poetry@v9
+      - name: 'Get uv release'
+        id: uv_release
+        run: |
+          echo uv_version=$(cat deps/uv_release) >> "${GITHUB_OUTPUT}"
+      - name: 'Install uv'
+        uses: astral-sh/setup-uv@v6
+        with:
+          version: ${{ steps.uv_release.outputs.uv_version }}
       - name: 'Run code quality checks'
         run: make -C kevm-pyk check
       - name: 'Run pyupgrade'
@@ -32,8 +38,14 @@ jobs:
     steps:
       - name: 'Check out code'
         uses: actions/checkout@v4
-      - name: 'Install Poetry'
-        uses: Gr1N/setup-poetry@v9
+      - name: 'Get uv release'
+        id: uv_release
+        run: |
+          echo uv_version=$(cat deps/uv_release) >> "${GITHUB_OUTPUT}"
+      - name: 'Install uv'
+        uses: astral-sh/setup-uv@v6
+        with:
+          version: ${{ steps.uv_release.outputs.uv_version }}
       - name: 'Run unit tests'
         run: make -C kevm-pyk cov-unit
 
@@ -44,8 +56,14 @@ jobs:
     steps:
       - name: 'Check out code'
         uses: actions/checkout@v4
-      - name: 'Install Poetry'
-        uses: Gr1N/setup-poetry@v9
+      - name: 'Get uv release'
+        id: uv_release
+        run: |
+          echo uv_version=$(cat deps/uv_release) >> "${GITHUB_OUTPUT}"
+      - name: 'Install uv'
+        uses: astral-sh/setup-uv@v6
+        with:
+          version: ${{ steps.uv_release.outputs.uv_version }}
       - name: 'Run profiling'
         run: |
           make -C kevm-pyk profile
@@ -64,10 +82,8 @@ jobs:
         uses: ./.github/actions/with-docker
         with:
           container-name: kevm-ci-concrete-${{ github.sha }}
-      - name: 'Build kevm-pyk'
-        run: docker exec -u github-user kevm-ci-concrete-${{ github.sha }} /bin/bash -c 'make poetry'
       - name: 'Build targets'
-        run: docker exec -u github-user kevm-ci-concrete-${{ github.sha }} /bin/bash -c 'CXX=clang++-14 poetry -C kevm-pyk run kdist --verbose build -j`nproc` evm-semantics.haskell evm-semantics.kllvm evm-semantics.kllvm-runtime'
+        run: docker exec -u github-user kevm-ci-concrete-${{ github.sha }} /bin/bash -c 'CXX=clang++-14 uv --project kevm-pyk run -- kdist --verbose build -j`nproc` evm-semantics.haskell evm-semantics.kllvm evm-semantics.kllvm-runtime'
       - name: 'Test integration'
         run: docker exec -u github-user kevm-ci-concrete-${{ github.sha }} /bin/bash -c 'make test-integration'
       - name: 'Test conformance'
@@ -131,10 +147,8 @@ jobs:
         uses: ./.github/actions/with-docker
         with:
           container-name: kevm-ci-haskell-${{ matrix.test-suite }}-${{ github.sha }}
-      - name: 'Build kevm-pyk'
-        run: docker exec -u github-user kevm-ci-haskell-${{ matrix.test-suite }}-${{ github.sha }} /bin/bash -c 'make poetry'
       - name: 'Build distribution'
-        run: docker exec -u github-user kevm-ci-haskell-${{ matrix.test-suite }}-${{ github.sha }} /bin/bash -c 'CXX=clang++-14 poetry -C kevm-pyk run kdist --verbose build -j`nproc` evm-semantics.plugin evm-semantics.haskell evm-semantics.haskell-summary'
+        run: docker exec -u github-user kevm-ci-haskell-${{ matrix.test-suite }}-${{ github.sha }} /bin/bash -c 'CXX=clang++-14 uv --project kevm-pyk run -- kdist --verbose build -j`nproc` evm-semantics.plugin evm-semantics.haskell evm-semantics.haskell-summary'
       - name: 'Run proofs'
         run: docker exec -u github-user kevm-ci-haskell-${{ matrix.test-suite }}-${{ github.sha }} /bin/bash -c "make ${{ matrix.test-suite }} PYTEST_ARGS='-vv ${{ matrix.test-args }}' PYTEST_PARALLEL=${{ matrix.parallel }}"
       - name: 'Tear down Docker'
