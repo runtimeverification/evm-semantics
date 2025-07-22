@@ -57,7 +57,7 @@ Address/Hash Helpers
 -   `keccak` serves as a wrapper around the `Keccak256` in `KRYPTO`.
 
 ```k
-    syntax Int ::= keccak ( Bytes ) [symbol(keccak), function, total, smtlib(smt_keccak)]
+    syntax Int ::= keccak ( Bytes ) [symbol(keccak), function, total, smtlib(smt_keccak), no-evaluators]
  // -------------------------------------------------------------------------------------
     //rule [keccak]: keccak(WS) => #parseHexWord(Keccak256(WS)) [concrete]
 ```
