@@ -35,6 +35,15 @@ module SCHEDULE
     rule getSchedule(11) => SHANGHAI
     rule getSchedule(12) => CANCUN
     rule getSchedule(13) => PRAGUE
+    rule getSchedule(100) => BEDROCK
+    rule getSchedule(101) => REGOLITH
+    rule getSchedule(102) => CANYON
+    rule getSchedule(103) => DELTA
+    rule getSchedule(104) => ECOTONE
+    rule getSchedule(105) => FJORD
+    rule getSchedule(106) => GRANITE
+    rule getSchedule(107) => HOLOCENE
+    rule getSchedule(108) => ISTHMUS
 
     syntax Bool ::= ScheduleFlag "<<" Schedule ">>" [function, total]
  // -----------------------------------------------------------------
@@ -1591,7 +1600,6 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghasblobhash            << CANCUN >> => true
     rule Ghasbls12msmdiscount    << CANCUN >> => false
     rule Ghasdelegation          << CANCUN >> => false
-
 ```
 
 ### Prague Schedule
@@ -1711,6 +1719,1067 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghasblobhash            << PRAGUE >> => true
     rule Ghasbls12msmdiscount    << PRAGUE >> => true
     rule Ghasdelegation          << PRAGUE >> => true
+```
+
+### Bedrock Schedule
+
+```k
+    syntax Schedule ::= "BEDROCK" [symbol(BEDROCK_EVM), smtlib(schedule_BEDROCK)]
+ // -----------------------------------------------------------------------------
+    rule Gzero    < BEDROCK > => 0
+    rule Gbase    < BEDROCK > => 2
+    rule Gverylow < BEDROCK > => 3
+    rule Glow     < BEDROCK > => 5
+    rule Gmid     < BEDROCK > => 8
+    rule Ghigh    < BEDROCK > => 10
+
+    rule Gexp      < BEDROCK > => 10
+    rule Gexpbyte  < BEDROCK > => 50
+    rule Gsha3     < BEDROCK > => 30
+    rule Gsha3word < BEDROCK > => 6
+
+    rule Gsload       < BEDROCK > => 100
+    rule Gsstoreset   < BEDROCK > => 20000
+    rule Gsstorereset < BEDROCK > => 2900
+    rule Rsstoreclear < BEDROCK > => 4800
+
+    rule Glog      < BEDROCK > => 375
+    rule Glogdata  < BEDROCK > => 8
+    rule Glogtopic < BEDROCK > => 375
+
+    rule Gcall        < BEDROCK > => 700
+    rule Gcallstipend < BEDROCK > => 2300
+    rule Gcallvalue   < BEDROCK > => 9000
+    rule Gnewaccount  < BEDROCK > => 25000
+
+    rule Gcreate       < BEDROCK > => 32000
+    rule Gcodedeposit  < BEDROCK > => 200
+    rule Gselfdestruct < BEDROCK > => 5000
+    rule Rselfdestruct < BEDROCK > => 0
+
+    rule Gmemory      < BEDROCK > => 3
+    rule Gquadcoeff   < BEDROCK > => 512
+    rule Gcopy        < BEDROCK > => 3
+    rule Gquaddivisor < BEDROCK > => 3
+
+    rule Gtransaction   < BEDROCK > => 21000
+    rule Gtxcreate      < BEDROCK > => 53000
+    rule Gtxdatazero    < BEDROCK > => 4
+    rule Gtxdatanonzero < BEDROCK > => 16
+
+    rule Gjumpdest    < BEDROCK > => 1
+    rule Gbalance     < BEDROCK > => 700
+    rule Gblockhash   < BEDROCK > => 20
+    rule Gextcodesize < BEDROCK > => 700
+    rule Gextcodecopy < BEDROCK > => 700
+
+    rule Gecadd       < BEDROCK > => 150
+    rule Gecmul       < BEDROCK > => 6000
+    rule Gecpairconst < BEDROCK > => 45000
+    rule Gecpaircoeff < BEDROCK > => 34000
+    rule Gfround      < BEDROCK > => 1
+
+    rule maxCodeSize < BEDROCK > => 24576
+    rule Rb          < BEDROCK > => 0
+
+    rule Gcoldsload             < BEDROCK > => 2100
+    rule Gcoldaccountaccess     < BEDROCK > => 2600
+    rule Gwarmstorageread       < BEDROCK > => 100
+    rule Gwarmstoragedirtystore < BEDROCK > => 0
+
+    rule Gpointeval < BEDROCK > => 0
+
+    rule Gbls12g1add < BEDROCK > => 0
+    rule Gbls12g1mul < BEDROCK > => 0
+    rule Gbls12g2add < BEDROCK > => 0
+    rule Gbls12g2mul < BEDROCK > => 0
+    rule Gbls12PairingCheckMul < BEDROCK > => 0
+    rule Gbls12PairingCheckAdd < BEDROCK > => 0
+    rule Gbls12mapfptog1 < BEDROCK > => 0
+    rule Gbls12mapfp2tog2 < BEDROCK > => 0
+
+    rule Gaccessliststoragekey < BEDROCK > => 1900
+    rule Gaccesslistaddress    < BEDROCK > => 2400
+
+    rule maxInitCodeSize   < BEDROCK > => 0
+    rule Ginitcodewordcost < BEDROCK > => 0
+
+    rule Rmaxquotient < BEDROCK > => 5
+
+    rule Gselfdestructnewaccount << BEDROCK >> => true
+    rule Gstaticcalldepth        << BEDROCK >> => false
+    rule Gemptyisnonexistent     << BEDROCK >> => true
+    rule Gzerovaluenewaccountgas << BEDROCK >> => false
+    rule Ghasrevert              << BEDROCK >> => true
+    rule Ghasreturndata          << BEDROCK >> => true
+    rule Ghasstaticcall          << BEDROCK >> => true
+    rule Ghasshift               << BEDROCK >> => true
+    rule Ghasdirtysstore         << BEDROCK >> => true
+    rule Ghassstorestipend       << BEDROCK >> => true
+    rule Ghascreate2             << BEDROCK >> => true
+    rule Ghasextcodehash         << BEDROCK >> => true
+    rule Ghasselfbalance         << BEDROCK >> => true
+    rule Ghaschainid             << BEDROCK >> => true
+    rule Ghasaccesslist          << BEDROCK >> => true
+    rule Ghasbasefee             << BEDROCK >> => true
+    rule Ghasrejectedfirstbyte   << BEDROCK >> => true
+    rule Ghasprevrandao          << BEDROCK >> => true
+    rule Ghasmaxinitcodesize     << BEDROCK >> => false
+    rule Ghaspushzero            << BEDROCK >> => false
+    rule Ghaswarmcoinbase        << BEDROCK >> => false
+    rule Ghaswithdrawals         << BEDROCK >> => false
+    rule Ghastransient           << BEDROCK >> => false
+    rule Ghasmcopy               << BEDROCK >> => false
+    rule Ghasbeaconroot          << BEDROCK >> => false
+    rule Ghaseip6780             << BEDROCK >> => false
+    rule Ghasblobbasefee         << BEDROCK >> => false
+    rule Ghasblobhash            << BEDROCK >> => false
+    rule Ghasbls12msmdiscount    << BEDROCK >> => false
+    rule Ghasdelegation          << BEDROCK >> => false
+```
+
+### Regolith Schedule
+
+```k
+    syntax Schedule ::= "REGOLITH" [symbol(REGOLITH_EVM), smtlib(schedule_REGOLITH)]
+ // --------------------------------------------------------------------------------
+    rule Gzero    < REGOLITH > => 0
+    rule Gbase    < REGOLITH > => 2
+    rule Gverylow < REGOLITH > => 3
+    rule Glow     < REGOLITH > => 5
+    rule Gmid     < REGOLITH > => 8
+    rule Ghigh    < REGOLITH > => 10
+
+    rule Gexp      < REGOLITH > => 10
+    rule Gexpbyte  < REGOLITH > => 50
+    rule Gsha3     < REGOLITH > => 30
+    rule Gsha3word < REGOLITH > => 6
+
+    rule Gsload       < REGOLITH > => 100
+    rule Gsstoreset   < REGOLITH > => 20000
+    rule Gsstorereset < REGOLITH > => 2900
+    rule Rsstoreclear < REGOLITH > => 4800
+
+    rule Glog      < REGOLITH > => 375
+    rule Glogdata  < REGOLITH > => 8
+    rule Glogtopic < REGOLITH > => 375
+
+    rule Gcall        < REGOLITH > => 700
+    rule Gcallstipend < REGOLITH > => 2300
+    rule Gcallvalue   < REGOLITH > => 9000
+    rule Gnewaccount  < REGOLITH > => 25000
+
+    rule Gcreate       < REGOLITH > => 32000
+    rule Gcodedeposit  < REGOLITH > => 200
+    rule Gselfdestruct < REGOLITH > => 5000
+    rule Rselfdestruct < REGOLITH > => 0
+
+    rule Gmemory      < REGOLITH > => 3
+    rule Gquadcoeff   < REGOLITH > => 512
+    rule Gcopy        < REGOLITH > => 3
+    rule Gquaddivisor < REGOLITH > => 3
+
+    rule Gtransaction   < REGOLITH > => 21000
+    rule Gtxcreate      < REGOLITH > => 53000
+    rule Gtxdatazero    < REGOLITH > => 4
+    rule Gtxdatanonzero < REGOLITH > => 16
+
+    rule Gjumpdest    < REGOLITH > => 1
+    rule Gbalance     < REGOLITH > => 700
+    rule Gblockhash   < REGOLITH > => 20
+    rule Gextcodesize < REGOLITH > => 700
+    rule Gextcodecopy < REGOLITH > => 700
+
+    rule Gecadd       < REGOLITH > => 150
+    rule Gecmul       < REGOLITH > => 6000
+    rule Gecpairconst < REGOLITH > => 45000
+    rule Gecpaircoeff < REGOLITH > => 34000
+    rule Gfround      < REGOLITH > => 1
+
+    rule maxCodeSize < REGOLITH > => 24576
+    rule Rb          < REGOLITH > => 0
+
+    rule Gcoldsload             < REGOLITH > => 2100
+    rule Gcoldaccountaccess     < REGOLITH > => 2600
+    rule Gwarmstorageread       < REGOLITH > => 100
+    rule Gwarmstoragedirtystore < REGOLITH > => 0
+
+    rule Gpointeval < REGOLITH > => 0
+
+    rule Gbls12g1add < REGOLITH > => 0
+    rule Gbls12g1mul < REGOLITH > => 0
+    rule Gbls12g2add < REGOLITH > => 0
+    rule Gbls12g2mul < REGOLITH > => 0
+    rule Gbls12PairingCheckMul < REGOLITH > => 0
+    rule Gbls12PairingCheckAdd < REGOLITH > => 0
+    rule Gbls12mapfptog1 < REGOLITH > => 0
+    rule Gbls12mapfp2tog2 < REGOLITH > => 0
+
+    rule Gaccessliststoragekey < REGOLITH > => 1900
+    rule Gaccesslistaddress    < REGOLITH > => 2400
+
+    rule maxInitCodeSize   < REGOLITH > => 0
+    rule Ginitcodewordcost < REGOLITH > => 0
+
+    rule Rmaxquotient < REGOLITH > => 5
+
+    rule Gselfdestructnewaccount << REGOLITH >> => true
+    rule Gstaticcalldepth        << REGOLITH >> => false
+    rule Gemptyisnonexistent     << REGOLITH >> => true
+    rule Gzerovaluenewaccountgas << REGOLITH >> => false
+    rule Ghasrevert              << REGOLITH >> => true
+    rule Ghasreturndata          << REGOLITH >> => true
+    rule Ghasstaticcall          << REGOLITH >> => true
+    rule Ghasshift               << REGOLITH >> => true
+    rule Ghasdirtysstore         << REGOLITH >> => true
+    rule Ghassstorestipend       << REGOLITH >> => true
+    rule Ghascreate2             << REGOLITH >> => true
+    rule Ghasextcodehash         << REGOLITH >> => true
+    rule Ghasselfbalance         << REGOLITH >> => true
+    rule Ghaschainid             << REGOLITH >> => true
+    rule Ghasaccesslist          << REGOLITH >> => true
+    rule Ghasbasefee             << REGOLITH >> => true
+    rule Ghasrejectedfirstbyte   << REGOLITH >> => true
+    rule Ghasprevrandao          << REGOLITH >> => true
+    rule Ghasmaxinitcodesize     << REGOLITH >> => false
+    rule Ghaspushzero            << REGOLITH >> => false
+    rule Ghaswarmcoinbase        << REGOLITH >> => false
+    rule Ghaswithdrawals         << REGOLITH >> => false
+    rule Ghastransient           << REGOLITH >> => false
+    rule Ghasmcopy               << REGOLITH >> => false
+    rule Ghasbeaconroot          << REGOLITH >> => false
+    rule Ghaseip6780             << REGOLITH >> => false
+    rule Ghasblobbasefee         << REGOLITH >> => false
+    rule Ghasblobhash            << REGOLITH >> => false
+    rule Ghasbls12msmdiscount    << REGOLITH >> => false
+    rule Ghasdelegation          << REGOLITH >> => false
+```
+
+### Canyon Schedule
+
+```k
+    syntax Schedule ::= "CANYON" [symbol(CANYON_EVM), smtlib(schedule_CANYON)]
+ // --------------------------------------------------------------------------
+    rule Gzero    < CANYON > => 0
+
+    rule Gbase    < CANYON > => 2
+    rule Gverylow < CANYON > => 3
+    rule Glow     < CANYON > => 5
+    rule Gmid     < CANYON > => 8
+    rule Ghigh    < CANYON > => 10
+
+    rule Gexp      < CANYON > => 10
+    rule Gexpbyte  < CANYON > => 50
+    rule Gsha3     < CANYON > => 30
+    rule Gsha3word < CANYON > => 6
+
+    rule Gsload       < CANYON > => 100
+    rule Gsstoreset   < CANYON > => 20000
+    rule Gsstorereset < CANYON > => 2900
+    rule Rsstoreclear < CANYON > => 4800
+
+    rule Glog      < CANYON > => 375
+    rule Glogdata  < CANYON > => 8
+    rule Glogtopic < CANYON > => 375
+
+    rule Gcall        < CANYON > => 700
+    rule Gcallstipend < CANYON > => 2300
+    rule Gcallvalue   < CANYON > => 9000
+    rule Gnewaccount  < CANYON > => 25000
+
+    rule Gcreate       < CANYON > => 32000
+    rule Gcodedeposit  < CANYON > => 200
+    rule Gselfdestruct < CANYON > => 5000
+    rule Rselfdestruct < CANYON > => 0
+
+    rule Gmemory      < CANYON > => 3
+    rule Gquadcoeff   < CANYON > => 512
+    rule Gcopy        < CANYON > => 3
+    rule Gquaddivisor < CANYON > => 3
+
+    rule Gtransaction   < CANYON > => 21000
+    rule Gtxcreate      < CANYON > => 53000
+    rule Gtxdatazero    < CANYON > => 4
+    rule Gtxdatanonzero < CANYON > => 16
+
+    rule Gjumpdest    < CANYON > => 1
+    rule Gbalance     < CANYON > => 700
+    rule Gblockhash   < CANYON > => 20
+    rule Gextcodesize < CANYON > => 700
+    rule Gextcodecopy < CANYON > => 700
+
+    rule Gecadd       < CANYON > => 150
+    rule Gecmul       < CANYON > => 6000
+    rule Gecpairconst < CANYON > => 45000
+    rule Gecpaircoeff < CANYON > => 34000
+    rule Gfround      < CANYON > => 1
+
+    rule maxCodeSize < CANYON > => 24576
+    rule Rb          < CANYON > => 0
+
+    rule Gcoldsload             < CANYON > => 2100
+    rule Gcoldaccountaccess     < CANYON > => 2600
+    rule Gwarmstorageread       < CANYON > => 100
+    rule Gwarmstoragedirtystore < CANYON > => 0
+
+    rule Gpointeval < CANYON > => 0
+
+    rule Gbls12g1add < CANYON > => 0
+    rule Gbls12g1mul < CANYON > => 0
+    rule Gbls12g2add < CANYON > => 0
+    rule Gbls12g2mul < CANYON > => 0
+    rule Gbls12PairingCheckMul < CANYON > => 0
+    rule Gbls12PairingCheckAdd < CANYON > => 0
+    rule Gbls12mapfptog1 < CANYON > => 0
+    rule Gbls12mapfp2tog2 < CANYON > => 0
+
+    rule Gaccessliststoragekey < CANYON > => 1900
+    rule Gaccesslistaddress    < CANYON > => 2400
+
+    rule maxInitCodeSize   < CANYON > => 49152
+    rule Ginitcodewordcost < CANYON > => 2
+
+    rule Rmaxquotient < CANYON > => 5
+
+    rule Gselfdestructnewaccount << CANYON >> => true
+    rule Gstaticcalldepth        << CANYON >> => false
+    rule Gemptyisnonexistent     << CANYON >> => true
+    rule Gzerovaluenewaccountgas << CANYON >> => false
+    rule Ghasrevert              << CANYON >> => true
+    rule Ghasreturndata          << CANYON >> => true
+    rule Ghasstaticcall          << CANYON >> => true
+    rule Ghasshift               << CANYON >> => true
+    rule Ghasdirtysstore         << CANYON >> => true
+    rule Ghassstorestipend       << CANYON >> => true
+    rule Ghascreate2             << CANYON >> => true
+    rule Ghasextcodehash         << CANYON >> => true
+    rule Ghasselfbalance         << CANYON >> => true
+    rule Ghaschainid             << CANYON >> => true
+    rule Ghasaccesslist          << CANYON >> => true
+    rule Ghasbasefee             << CANYON >> => true
+    rule Ghasrejectedfirstbyte   << CANYON >> => true
+    rule Ghasprevrandao          << CANYON >> => true
+    rule Ghasmaxinitcodesize     << CANYON >> => true
+    rule Ghaspushzero            << CANYON >> => true
+    rule Ghaswarmcoinbase        << CANYON >> => true
+    rule Ghaswithdrawals         << CANYON >> => true
+    rule Ghastransient           << CANYON >> => false
+    rule Ghasmcopy               << CANYON >> => false
+    rule Ghasbeaconroot          << CANYON >> => false
+    rule Ghaseip6780             << CANYON >> => false
+    rule Ghasblobbasefee         << CANYON >> => false
+    rule Ghasblobhash            << CANYON >> => false
+    rule Ghasbls12msmdiscount    << CANYON >> => false
+    rule Ghasdelegation          << CANYON >> => false
+```
+
+### Delta Schedule
+
+```k
+    syntax Schedule ::= "DELTA" [symbol(DELTA_EVM), smtlib(schedule_DELTA)]
+ // -----------------------------------------------------------------------
+    rule Gzero    < DELTA > => 0
+
+    rule Gbase    < DELTA > => 2
+    rule Gverylow < DELTA > => 3
+    rule Glow     < DELTA > => 5
+    rule Gmid     < DELTA > => 8
+    rule Ghigh    < DELTA > => 10
+
+    rule Gexp      < DELTA > => 10
+    rule Gexpbyte  < DELTA > => 50
+    rule Gsha3     < DELTA > => 30
+    rule Gsha3word < DELTA > => 6
+
+    rule Gsload       < DELTA > => 100
+    rule Gsstoreset   < DELTA > => 20000
+    rule Gsstorereset < DELTA > => 2900
+    rule Rsstoreclear < DELTA > => 4800
+
+    rule Glog      < DELTA > => 375
+    rule Glogdata  < DELTA > => 8
+    rule Glogtopic < DELTA > => 375
+
+    rule Gcall        < DELTA > => 700
+    rule Gcallstipend < DELTA > => 2300
+    rule Gcallvalue   < DELTA > => 9000
+    rule Gnewaccount  < DELTA > => 25000
+
+    rule Gcreate       < DELTA > => 32000
+    rule Gcodedeposit  < DELTA > => 200
+    rule Gselfdestruct < DELTA > => 5000
+    rule Rselfdestruct < DELTA > => 0
+
+    rule Gmemory      < DELTA > => 3
+    rule Gquadcoeff   < DELTA > => 512
+    rule Gcopy        < DELTA > => 3
+    rule Gquaddivisor < DELTA > => 3
+
+    rule Gtransaction   < DELTA > => 21000
+    rule Gtxcreate      < DELTA > => 53000
+    rule Gtxdatazero    < DELTA > => 4
+    rule Gtxdatanonzero < DELTA > => 16
+
+    rule Gjumpdest    < DELTA > => 1
+    rule Gbalance     < DELTA > => 700
+    rule Gblockhash   < DELTA > => 20
+    rule Gextcodesize < DELTA > => 700
+    rule Gextcodecopy < DELTA > => 700
+
+    rule Gecadd       < DELTA > => 150
+    rule Gecmul       < DELTA > => 6000
+    rule Gecpairconst < DELTA > => 45000
+    rule Gecpaircoeff < DELTA > => 34000
+    rule Gfround      < DELTA > => 1
+
+    rule maxCodeSize < DELTA > => 24576
+    rule Rb          < DELTA > => 0
+
+    rule Gcoldsload             < DELTA > => 2100
+    rule Gcoldaccountaccess     < DELTA > => 2600
+    rule Gwarmstorageread       < DELTA > => 100
+    rule Gwarmstoragedirtystore < DELTA > => 0
+
+    rule Gpointeval < DELTA > => 0
+
+    rule Gbls12g1add < DELTA > => 0
+    rule Gbls12g1mul < DELTA > => 0
+    rule Gbls12g2add < DELTA > => 0
+    rule Gbls12g2mul < DELTA > => 0
+    rule Gbls12PairingCheckMul < DELTA > => 0
+    rule Gbls12PairingCheckAdd < DELTA > => 0
+    rule Gbls12mapfptog1 < DELTA > => 0
+    rule Gbls12mapfp2tog2 < DELTA > => 0
+
+    rule Gaccessliststoragekey < DELTA > => 1900
+    rule Gaccesslistaddress    < DELTA > => 2400
+
+    rule maxInitCodeSize   < DELTA > => 49152
+    rule Ginitcodewordcost < DELTA > => 2
+
+    rule Rmaxquotient < DELTA > => 5
+
+    rule Gselfdestructnewaccount << DELTA >> => true
+    rule Gstaticcalldepth        << DELTA >> => false
+    rule Gemptyisnonexistent     << DELTA >> => true
+    rule Gzerovaluenewaccountgas << DELTA >> => false
+    rule Ghasrevert              << DELTA >> => true
+    rule Ghasreturndata          << DELTA >> => true
+    rule Ghasstaticcall          << DELTA >> => true
+    rule Ghasshift               << DELTA >> => true
+    rule Ghasdirtysstore         << DELTA >> => true
+    rule Ghassstorestipend       << DELTA >> => true
+    rule Ghascreate2             << DELTA >> => true
+    rule Ghasextcodehash         << DELTA >> => true
+    rule Ghasselfbalance         << DELTA >> => true
+    rule Ghaschainid             << DELTA >> => true
+    rule Ghasaccesslist          << DELTA >> => true
+    rule Ghasbasefee             << DELTA >> => true
+    rule Ghasrejectedfirstbyte   << DELTA >> => true
+    rule Ghasprevrandao          << DELTA >> => true
+    rule Ghasmaxinitcodesize     << DELTA >> => true
+    rule Ghaspushzero            << DELTA >> => true
+    rule Ghaswarmcoinbase        << DELTA >> => true
+    rule Ghaswithdrawals         << DELTA >> => true
+    rule Ghastransient           << DELTA >> => false
+    rule Ghasmcopy               << DELTA >> => false
+    rule Ghasbeaconroot          << DELTA >> => false
+    rule Ghaseip6780             << DELTA >> => false
+    rule Ghasblobbasefee         << DELTA >> => false
+    rule Ghasblobhash            << DELTA >> => false
+    rule Ghasbls12msmdiscount    << DELTA >> => false
+    rule Ghasdelegation          << DELTA >> => false
+```
+
+### Ecotone Schedule
+
+```k
+    syntax Schedule ::= "ECOTONE" [symbol(ECOTONE_EVM), smtlib(schedule_ECOTONE)]
+ // -----------------------------------------------------------------------------
+    rule Gzero    < ECOTONE > => 0
+
+    rule Gbase    < ECOTONE > => 2
+    rule Gverylow < ECOTONE > => 3
+    rule Glow     < ECOTONE > => 5
+    rule Gmid     < ECOTONE > => 8
+    rule Ghigh    < ECOTONE > => 10
+
+    rule Gexp      < ECOTONE > => 10
+    rule Gexpbyte  < ECOTONE > => 50
+    rule Gsha3     < ECOTONE > => 30
+    rule Gsha3word < ECOTONE > => 6
+
+    rule Gsload       < ECOTONE > => 100
+    rule Gsstoreset   < ECOTONE > => 20000
+    rule Gsstorereset < ECOTONE > => 2900
+    rule Rsstoreclear < ECOTONE > => 4800
+
+    rule Glog      < ECOTONE > => 375
+    rule Glogdata  < ECOTONE > => 8
+    rule Glogtopic < ECOTONE > => 375
+
+    rule Gcall        < ECOTONE > => 700
+    rule Gcallstipend < ECOTONE > => 2300
+    rule Gcallvalue   < ECOTONE > => 9000
+    rule Gnewaccount  < ECOTONE > => 25000
+
+    rule Gcreate       < ECOTONE > => 32000
+    rule Gcodedeposit  < ECOTONE > => 200
+    rule Gselfdestruct < ECOTONE > => 5000
+    rule Rselfdestruct < ECOTONE > => 0
+
+    rule Gmemory      < ECOTONE > => 3
+    rule Gquadcoeff   < ECOTONE > => 512
+    rule Gcopy        < ECOTONE > => 3
+    rule Gquaddivisor < ECOTONE > => 3
+
+    rule Gtransaction   < ECOTONE > => 21000
+    rule Gtxcreate      < ECOTONE > => 53000
+    rule Gtxdatazero    < ECOTONE > => 4
+    rule Gtxdatanonzero < ECOTONE > => 16
+
+    rule Gjumpdest    < ECOTONE > => 1
+    rule Gbalance     < ECOTONE > => 700
+    rule Gblockhash   < ECOTONE > => 20
+    rule Gextcodesize < ECOTONE > => 700
+    rule Gextcodecopy < ECOTONE > => 700
+
+    rule Gecadd       < ECOTONE > => 150
+    rule Gecmul       < ECOTONE > => 6000
+    rule Gecpairconst < ECOTONE > => 45000
+    rule Gecpaircoeff < ECOTONE > => 34000
+    rule Gfround      < ECOTONE > => 1
+
+    rule maxCodeSize < ECOTONE > => 24576
+    rule Rb          < ECOTONE > => 0
+
+    rule Gcoldsload             < ECOTONE > => 2100
+    rule Gcoldaccountaccess     < ECOTONE > => 2600
+    rule Gwarmstorageread       < ECOTONE > => 100
+    rule Gwarmstoragedirtystore < ECOTONE > => 100
+
+    rule Gpointeval < ECOTONE > => 50000
+
+    rule Gbls12g1add < ECOTONE > => 0
+    rule Gbls12g1mul < ECOTONE > => 0
+    rule Gbls12g2add < ECOTONE > => 0
+    rule Gbls12g2mul < ECOTONE > => 0
+    rule Gbls12PairingCheckMul < ECOTONE > => 0
+    rule Gbls12PairingCheckAdd < ECOTONE > => 0
+    rule Gbls12mapfptog1 < ECOTONE > => 0
+    rule Gbls12mapfp2tog2 < ECOTONE > => 0
+
+    rule Gaccessliststoragekey < ECOTONE > => 1900
+    rule Gaccesslistaddress    < ECOTONE > => 2400
+
+    rule maxInitCodeSize   < ECOTONE > => 49152
+    rule Ginitcodewordcost < ECOTONE > => 2
+
+    rule Rmaxquotient < ECOTONE > => 5
+
+    rule Gselfdestructnewaccount << ECOTONE >> => true
+    rule Gstaticcalldepth        << ECOTONE >> => false
+    rule Gemptyisnonexistent     << ECOTONE >> => true
+    rule Gzerovaluenewaccountgas << ECOTONE >> => false
+    rule Ghasrevert              << ECOTONE >> => true
+    rule Ghasreturndata          << ECOTONE >> => true
+    rule Ghasstaticcall          << ECOTONE >> => true
+    rule Ghasshift               << ECOTONE >> => true
+    rule Ghasdirtysstore         << ECOTONE >> => true
+    rule Ghassstorestipend       << ECOTONE >> => true
+    rule Ghascreate2             << ECOTONE >> => true
+    rule Ghasextcodehash         << ECOTONE >> => true
+    rule Ghasselfbalance         << ECOTONE >> => true
+    rule Ghaschainid             << ECOTONE >> => true
+    rule Ghasaccesslist          << ECOTONE >> => true
+    rule Ghasbasefee             << ECOTONE >> => true
+    rule Ghasrejectedfirstbyte   << ECOTONE >> => true
+    rule Ghasprevrandao          << ECOTONE >> => true
+    rule Ghasmaxinitcodesize     << ECOTONE >> => true
+    rule Ghaspushzero            << ECOTONE >> => true
+    rule Ghaswarmcoinbase        << ECOTONE >> => true
+    rule Ghaswithdrawals         << ECOTONE >> => true
+    rule Ghastransient           << ECOTONE >> => true
+    rule Ghasmcopy               << ECOTONE >> => true
+    rule Ghasbeaconroot          << ECOTONE >> => true
+    rule Ghaseip6780             << ECOTONE >> => true
+    rule Ghasblobbasefee         << ECOTONE >> => true
+    rule Ghasblobhash            << ECOTONE >> => true
+    rule Ghasbls12msmdiscount    << ECOTONE >> => false
+    rule Ghasdelegation          << ECOTONE >> => false
+```
+
+### Fjord Schedule
+
+```k
+    syntax Schedule ::= "FJORD" [symbol(FJORD_EVM), smtlib(schedule_FJORD)]
+ // -----------------------------------------------------------------------
+    rule Gzero    < FJORD > => 0
+
+    rule Gbase    < FJORD > => 2
+    rule Gverylow < FJORD > => 3
+    rule Glow     < FJORD > => 5
+    rule Gmid     < FJORD > => 8
+    rule Ghigh    < FJORD > => 10
+
+    rule Gexp      < FJORD > => 10
+    rule Gexpbyte  < FJORD > => 50
+    rule Gsha3     < FJORD > => 30
+    rule Gsha3word < FJORD > => 6
+
+    rule Gsload       < FJORD > => 100
+    rule Gsstoreset   < FJORD > => 20000
+    rule Gsstorereset < FJORD > => 2900
+    rule Rsstoreclear < FJORD > => 4800
+
+    rule Glog      < FJORD > => 375
+    rule Glogdata  < FJORD > => 8
+    rule Glogtopic < FJORD > => 375
+
+    rule Gcall        < FJORD > => 700
+    rule Gcallstipend < FJORD > => 2300
+    rule Gcallvalue   < FJORD > => 9000
+    rule Gnewaccount  < FJORD > => 25000
+
+    rule Gcreate       < FJORD > => 32000
+    rule Gcodedeposit  < FJORD > => 200
+    rule Gselfdestruct < FJORD > => 5000
+    rule Rselfdestruct < FJORD > => 0
+
+    rule Gmemory      < FJORD > => 3
+    rule Gquadcoeff   < FJORD > => 512
+    rule Gcopy        < FJORD > => 3
+    rule Gquaddivisor < FJORD > => 3
+
+    rule Gtransaction   < FJORD > => 21000
+    rule Gtxcreate      < FJORD > => 53000
+    rule Gtxdatazero    < FJORD > => 4
+    rule Gtxdatanonzero < FJORD > => 16
+
+    rule Gjumpdest    < FJORD > => 1
+    rule Gbalance     < FJORD > => 700
+    rule Gblockhash   < FJORD > => 20
+    rule Gextcodesize < FJORD > => 700
+    rule Gextcodecopy < FJORD > => 700
+
+    rule Gecadd       < FJORD > => 150
+    rule Gecmul       < FJORD > => 6000
+    rule Gecpairconst < FJORD > => 45000
+    rule Gecpaircoeff < FJORD > => 34000
+    rule Gfround      < FJORD > => 1
+
+    rule maxCodeSize < FJORD > => 24576
+    rule Rb          < FJORD > => 0
+
+    rule Gcoldsload             < FJORD > => 2100
+    rule Gcoldaccountaccess     < FJORD > => 2600
+    rule Gwarmstorageread       < FJORD > => 100
+    rule Gwarmstoragedirtystore < FJORD > => 100
+
+    rule Gpointeval < FJORD > => 50000
+
+    rule Gbls12g1add < FJORD > => 0
+    rule Gbls12g1mul < FJORD > => 0
+    rule Gbls12g2add < FJORD > => 0
+    rule Gbls12g2mul < FJORD > => 0
+    rule Gbls12PairingCheckMul < FJORD > => 0
+    rule Gbls12PairingCheckAdd < FJORD > => 0
+    rule Gbls12mapfptog1 < FJORD > => 0
+    rule Gbls12mapfp2tog2 < FJORD > => 0
+
+    rule Gaccessliststoragekey < FJORD > => 1900
+    rule Gaccesslistaddress    < FJORD > => 2400
+
+    rule maxInitCodeSize   < FJORD > => 49152
+    rule Ginitcodewordcost < FJORD > => 2
+
+    rule Rmaxquotient < FJORD > => 5
+
+    rule Gselfdestructnewaccount << FJORD >> => true
+    rule Gstaticcalldepth        << FJORD >> => false
+    rule Gemptyisnonexistent     << FJORD >> => true
+    rule Gzerovaluenewaccountgas << FJORD >> => false
+    rule Ghasrevert              << FJORD >> => true
+    rule Ghasreturndata          << FJORD >> => true
+    rule Ghasstaticcall          << FJORD >> => true
+    rule Ghasshift               << FJORD >> => true
+    rule Ghasdirtysstore         << FJORD >> => true
+    rule Ghassstorestipend       << FJORD >> => true
+    rule Ghascreate2             << FJORD >> => true
+    rule Ghasextcodehash         << FJORD >> => true
+    rule Ghasselfbalance         << FJORD >> => true
+    rule Ghaschainid             << FJORD >> => true
+    rule Ghasaccesslist          << FJORD >> => true
+    rule Ghasbasefee             << FJORD >> => true
+    rule Ghasrejectedfirstbyte   << FJORD >> => true
+    rule Ghasprevrandao          << FJORD >> => true
+    rule Ghasmaxinitcodesize     << FJORD >> => true
+    rule Ghaspushzero            << FJORD >> => true
+    rule Ghaswarmcoinbase        << FJORD >> => true
+    rule Ghaswithdrawals         << FJORD >> => true
+    rule Ghastransient           << FJORD >> => true
+    rule Ghasmcopy               << FJORD >> => true
+    rule Ghasbeaconroot          << FJORD >> => true
+    rule Ghaseip6780             << FJORD >> => true
+    rule Ghasblobbasefee         << FJORD >> => true
+    rule Ghasblobhash            << FJORD >> => true
+    rule Ghasbls12msmdiscount    << FJORD >> => false
+    rule Ghasdelegation          << FJORD >> => false
+```
+
+### Granite Schedule
+
+```k
+    syntax Schedule ::= "GRANITE" [symbol(GRANITE_EVM), smtlib(schedule_GRANITE)]
+ // -----------------------------------------------------------------------------
+    rule Gzero    < GRANITE > => 0
+
+    rule Gbase    < GRANITE > => 2
+    rule Gverylow < GRANITE > => 3
+    rule Glow     < GRANITE > => 5
+    rule Gmid     < GRANITE > => 8
+    rule Ghigh    < GRANITE > => 10
+
+    rule Gexp      < GRANITE > => 10
+    rule Gexpbyte  < GRANITE > => 50
+    rule Gsha3     < GRANITE > => 30
+    rule Gsha3word < GRANITE > => 6
+
+    rule Gsload       < GRANITE > => 100
+    rule Gsstoreset   < GRANITE > => 20000
+    rule Gsstorereset < GRANITE > => 2900
+    rule Rsstoreclear < GRANITE > => 4800
+
+    rule Glog      < GRANITE > => 375
+    rule Glogdata  < GRANITE > => 8
+    rule Glogtopic < GRANITE > => 375
+
+    rule Gcall        < GRANITE > => 700
+    rule Gcallstipend < GRANITE > => 2300
+    rule Gcallvalue   < GRANITE > => 9000
+    rule Gnewaccount  < GRANITE > => 25000
+
+    rule Gcreate       < GRANITE > => 32000
+    rule Gcodedeposit  < GRANITE > => 200
+    rule Gselfdestruct < GRANITE > => 5000
+    rule Rselfdestruct < GRANITE > => 0
+
+    rule Gmemory      < GRANITE > => 3
+    rule Gquadcoeff   < GRANITE > => 512
+    rule Gcopy        < GRANITE > => 3
+    rule Gquaddivisor < GRANITE > => 3
+
+    rule Gtransaction   < GRANITE > => 21000
+    rule Gtxcreate      < GRANITE > => 53000
+    rule Gtxdatazero    < GRANITE > => 4
+    rule Gtxdatanonzero < GRANITE > => 16
+
+    rule Gjumpdest    < GRANITE > => 1
+    rule Gbalance     < GRANITE > => 700
+    rule Gblockhash   < GRANITE > => 20
+    rule Gextcodesize < GRANITE > => 700
+    rule Gextcodecopy < GRANITE > => 700
+
+    rule Gecadd       < GRANITE > => 150
+    rule Gecmul       < GRANITE > => 6000
+    rule Gecpairconst < GRANITE > => 45000
+    rule Gecpaircoeff < GRANITE > => 34000
+    rule Gfround      < GRANITE > => 1
+
+    rule maxCodeSize < GRANITE > => 24576
+    rule Rb          < GRANITE > => 0
+
+    rule Gcoldsload             < GRANITE > => 2100
+    rule Gcoldaccountaccess     < GRANITE > => 2600
+    rule Gwarmstorageread       < GRANITE > => 100
+    rule Gwarmstoragedirtystore < GRANITE > => 100
+
+    rule Gpointeval < GRANITE > => 50000
+
+    rule Gbls12g1add < GRANITE > => 0
+    rule Gbls12g1mul < GRANITE > => 0
+    rule Gbls12g2add < GRANITE > => 0
+    rule Gbls12g2mul < GRANITE > => 0
+    rule Gbls12PairingCheckMul < GRANITE > => 0
+    rule Gbls12PairingCheckAdd < GRANITE > => 0
+    rule Gbls12mapfptog1 < GRANITE > => 0
+    rule Gbls12mapfp2tog2 < GRANITE > => 0
+
+    rule Gaccessliststoragekey < GRANITE > => 1900
+    rule Gaccesslistaddress    < GRANITE > => 2400
+
+    rule maxInitCodeSize   < GRANITE > => 49152
+    rule Ginitcodewordcost < GRANITE > => 2
+
+    rule Rmaxquotient < GRANITE > => 5
+
+    rule Gselfdestructnewaccount << GRANITE >> => true
+    rule Gstaticcalldepth        << GRANITE >> => false
+    rule Gemptyisnonexistent     << GRANITE >> => true
+    rule Gzerovaluenewaccountgas << GRANITE >> => false
+    rule Ghasrevert              << GRANITE >> => true
+    rule Ghasreturndata          << GRANITE >> => true
+    rule Ghasstaticcall          << GRANITE >> => true
+    rule Ghasshift               << GRANITE >> => true
+    rule Ghasdirtysstore         << GRANITE >> => true
+    rule Ghassstorestipend       << GRANITE >> => true
+    rule Ghascreate2             << GRANITE >> => true
+    rule Ghasextcodehash         << GRANITE >> => true
+    rule Ghasselfbalance         << GRANITE >> => true
+    rule Ghaschainid             << GRANITE >> => true
+    rule Ghasaccesslist          << GRANITE >> => true
+    rule Ghasbasefee             << GRANITE >> => true
+    rule Ghasrejectedfirstbyte   << GRANITE >> => true
+    rule Ghasprevrandao          << GRANITE >> => true
+    rule Ghasmaxinitcodesize     << GRANITE >> => true
+    rule Ghaspushzero            << GRANITE >> => true
+    rule Ghaswarmcoinbase        << GRANITE >> => true
+    rule Ghaswithdrawals         << GRANITE >> => true
+    rule Ghastransient           << GRANITE >> => true
+    rule Ghasmcopy               << GRANITE >> => true
+    rule Ghasbeaconroot          << GRANITE >> => true
+    rule Ghaseip6780             << GRANITE >> => true
+    rule Ghasblobbasefee         << GRANITE >> => true
+    rule Ghasblobhash            << GRANITE >> => true
+    rule Ghasbls12msmdiscount    << GRANITE >> => false
+    rule Ghasdelegation          << GRANITE >> => false
+```
+
+### Holocene Schedule
+
+```k
+    syntax Schedule ::= "HOLOCENE" [symbol(HOLOCENE_EVM), smtlib(schedule_HOLOCENE)]
+ // --------------------------------------------------------------------------------
+    rule Gzero    < HOLOCENE > => 0
+
+    rule Gbase    < HOLOCENE > => 2
+    rule Gverylow < HOLOCENE > => 3
+    rule Glow     < HOLOCENE > => 5
+    rule Gmid     < HOLOCENE > => 8
+    rule Ghigh    < HOLOCENE > => 10
+
+    rule Gexp      < HOLOCENE > => 10
+    rule Gexpbyte  < HOLOCENE > => 50
+    rule Gsha3     < HOLOCENE > => 30
+    rule Gsha3word < HOLOCENE > => 6
+
+    rule Gsload       < HOLOCENE > => 100
+    rule Gsstoreset   < HOLOCENE > => 20000
+    rule Gsstorereset < HOLOCENE > => 2900
+    rule Rsstoreclear < HOLOCENE > => 4800
+
+    rule Glog      < HOLOCENE > => 375
+    rule Glogdata  < HOLOCENE > => 8
+    rule Glogtopic < HOLOCENE > => 375
+
+    rule Gcall        < HOLOCENE > => 700
+    rule Gcallstipend < HOLOCENE > => 2300
+    rule Gcallvalue   < HOLOCENE > => 9000
+    rule Gnewaccount  < HOLOCENE > => 25000
+
+    rule Gcreate       < HOLOCENE > => 32000
+    rule Gcodedeposit  < HOLOCENE > => 200
+    rule Gselfdestruct < HOLOCENE > => 5000
+    rule Rselfdestruct < HOLOCENE > => 0
+
+    rule Gmemory      < HOLOCENE > => 3
+    rule Gquadcoeff   < HOLOCENE > => 512
+    rule Gcopy        < HOLOCENE > => 3
+    rule Gquaddivisor < HOLOCENE > => 3
+
+    rule Gtransaction   < HOLOCENE > => 21000
+    rule Gtxcreate      < HOLOCENE > => 53000
+    rule Gtxdatazero    < HOLOCENE > => 4
+    rule Gtxdatanonzero < HOLOCENE > => 16
+
+    rule Gjumpdest    < HOLOCENE > => 1
+    rule Gbalance     < HOLOCENE > => 700
+    rule Gblockhash   < HOLOCENE > => 20
+    rule Gextcodesize < HOLOCENE > => 700
+    rule Gextcodecopy < HOLOCENE > => 700
+
+    rule Gecadd       < HOLOCENE > => 150
+    rule Gecmul       < HOLOCENE > => 6000
+    rule Gecpairconst < HOLOCENE > => 45000
+    rule Gecpaircoeff < HOLOCENE > => 34000
+    rule Gfround      < HOLOCENE > => 1
+
+    rule maxCodeSize < HOLOCENE > => 24576
+    rule Rb          < HOLOCENE > => 0
+
+    rule Gcoldsload             < HOLOCENE > => 2100
+    rule Gcoldaccountaccess     < HOLOCENE > => 2600
+    rule Gwarmstorageread       < HOLOCENE > => 100
+    rule Gwarmstoragedirtystore < HOLOCENE > => 100
+
+    rule Gpointeval < HOLOCENE > => 50000
+
+    rule Gbls12g1add < HOLOCENE > => 0
+    rule Gbls12g1mul < HOLOCENE > => 0
+    rule Gbls12g2add < HOLOCENE > => 0
+    rule Gbls12g2mul < HOLOCENE > => 0
+    rule Gbls12PairingCheckMul < HOLOCENE > => 0
+    rule Gbls12PairingCheckAdd < HOLOCENE > => 0
+    rule Gbls12mapfptog1 < HOLOCENE > => 0
+    rule Gbls12mapfp2tog2 < HOLOCENE > => 0
+
+    rule Gaccessliststoragekey < HOLOCENE > => 1900
+    rule Gaccesslistaddress    < HOLOCENE > => 2400
+
+    rule maxInitCodeSize   < HOLOCENE > => 49152
+    rule Ginitcodewordcost < HOLOCENE > => 2
+
+    rule Rmaxquotient < HOLOCENE > => 5
+
+    rule Gselfdestructnewaccount << HOLOCENE >> => true
+    rule Gstaticcalldepth        << HOLOCENE >> => false
+    rule Gemptyisnonexistent     << HOLOCENE >> => true
+    rule Gzerovaluenewaccountgas << HOLOCENE >> => false
+    rule Ghasrevert              << HOLOCENE >> => true
+    rule Ghasreturndata          << HOLOCENE >> => true
+    rule Ghasstaticcall          << HOLOCENE >> => true
+    rule Ghasshift               << HOLOCENE >> => true
+    rule Ghasdirtysstore         << HOLOCENE >> => true
+    rule Ghassstorestipend       << HOLOCENE >> => true
+    rule Ghascreate2             << HOLOCENE >> => true
+    rule Ghasextcodehash         << HOLOCENE >> => true
+    rule Ghasselfbalance         << HOLOCENE >> => true
+    rule Ghaschainid             << HOLOCENE >> => true
+    rule Ghasaccesslist          << HOLOCENE >> => true
+    rule Ghasbasefee             << HOLOCENE >> => true
+    rule Ghasrejectedfirstbyte   << HOLOCENE >> => true
+    rule Ghasprevrandao          << HOLOCENE >> => true
+    rule Ghasmaxinitcodesize     << HOLOCENE >> => true
+    rule Ghaspushzero            << HOLOCENE >> => true
+    rule Ghaswarmcoinbase        << HOLOCENE >> => true
+    rule Ghaswithdrawals         << HOLOCENE >> => true
+    rule Ghastransient           << HOLOCENE >> => true
+    rule Ghasmcopy               << HOLOCENE >> => true
+    rule Ghasbeaconroot          << HOLOCENE >> => true
+    rule Ghaseip6780             << HOLOCENE >> => true
+    rule Ghasblobbasefee         << HOLOCENE >> => true
+    rule Ghasblobhash            << HOLOCENE >> => true
+    rule Ghasbls12msmdiscount    << HOLOCENE >> => false
+    rule Ghasdelegation          << HOLOCENE >> => false
+```
+
+### Isthmus Schedule
+
+```k
+    syntax Schedule ::= "ISTHMUS" [symbol(ISTHMUS_EVM), smtlib(schedule_ISTHMUS)]
+ // -----------------------------------------------------------------------------
+
+    rule Gzero    < ISTHMUS > => 0
+
+    rule Gbase    < ISTHMUS > => 2
+    rule Gverylow < ISTHMUS > => 3
+    rule Glow     < ISTHMUS > => 5
+    rule Gmid     < ISTHMUS > => 8
+    rule Ghigh    < ISTHMUS > => 10
+
+    rule Gexp      < ISTHMUS > => 10
+    rule Gexpbyte  < ISTHMUS > => 50
+    rule Gsha3     < ISTHMUS > => 30
+    rule Gsha3word < ISTHMUS > => 6
+
+    rule Gsload       < ISTHMUS > => 100
+    rule Gsstoreset   < ISTHMUS > => 20000
+    rule Gsstorereset < ISTHMUS > => 2900
+    rule Rsstoreclear < ISTHMUS > => 4800
+
+    rule Glog      < ISTHMUS > => 375
+    rule Glogdata  < ISTHMUS > => 8
+    rule Glogtopic < ISTHMUS > => 375
+
+    rule Gcall        < ISTHMUS > => 700
+    rule Gcallstipend < ISTHMUS > => 2300
+    rule Gcallvalue   < ISTHMUS > => 9000
+    rule Gnewaccount  < ISTHMUS > => 25000
+
+    rule Gcreate       < ISTHMUS > => 32000
+    rule Gcodedeposit  < ISTHMUS > => 200
+    rule Gselfdestruct < ISTHMUS > => 5000
+    rule Rselfdestruct < ISTHMUS > => 0
+
+    rule Gmemory      < ISTHMUS > => 3
+    rule Gquadcoeff   < ISTHMUS > => 512
+    rule Gcopy        < ISTHMUS > => 3
+    rule Gquaddivisor < ISTHMUS > => 3
+
+    rule Gtransaction   < ISTHMUS > => 21000
+    rule Gtxcreate      < ISTHMUS > => 53000
+    rule Gtxdatazero    < ISTHMUS > => 4
+    rule Gtxdatanonzero < ISTHMUS > => 16
+
+    rule Gjumpdest    < ISTHMUS > => 1
+    rule Gbalance     < ISTHMUS > => 700
+    rule Gblockhash   < ISTHMUS > => 20
+    rule Gextcodesize < ISTHMUS > => 700
+    rule Gextcodecopy < ISTHMUS > => 700
+
+    rule Gecadd       < ISTHMUS > => 150
+    rule Gecmul       < ISTHMUS > => 6000
+    rule Gecpairconst < ISTHMUS > => 45000
+    rule Gecpaircoeff < ISTHMUS > => 34000
+    rule Gfround      < ISTHMUS > => 1
+
+    rule maxCodeSize < ISTHMUS > => 24576
+    rule Rb          < ISTHMUS > => 0
+
+    rule Gcoldsload             < ISTHMUS > => 2100
+    rule Gcoldaccountaccess     < ISTHMUS > => 2600
+    rule Gwarmstorageread       < ISTHMUS > => 100
+    rule Gwarmstoragedirtystore < ISTHMUS > => 100
+
+    rule Gpointeval < ISTHMUS > => 50000
+
+    rule Gbls12g1add < ISTHMUS > => 375
+    rule Gbls12g1mul < ISTHMUS > => 12000
+    rule Gbls12g2add < ISTHMUS > => 600
+    rule Gbls12g2mul < ISTHMUS > => 22500
+    rule Gbls12PairingCheckMul < ISTHMUS > => 32600
+    rule Gbls12PairingCheckAdd < ISTHMUS > => 37700
+    rule Gbls12mapfptog1 < ISTHMUS > => 5500
+    rule Gbls12mapfp2tog2 < ISTHMUS > => 23800
+
+    rule Gaccessliststoragekey < ISTHMUS > => 1900
+    rule Gaccesslistaddress    < ISTHMUS > => 2400
+
+    rule maxInitCodeSize   < ISTHMUS > => 49152
+    rule Ginitcodewordcost < ISTHMUS > => 2
+
+    rule Rmaxquotient < ISTHMUS > => 5
+
+    rule Gselfdestructnewaccount << ISTHMUS >> => true
+    rule Gstaticcalldepth        << ISTHMUS >> => false
+    rule Gemptyisnonexistent     << ISTHMUS >> => true
+    rule Gzerovaluenewaccountgas << ISTHMUS >> => false
+    rule Ghasrevert              << ISTHMUS >> => true
+    rule Ghasreturndata          << ISTHMUS >> => true
+    rule Ghasstaticcall          << ISTHMUS >> => true
+    rule Ghasshift               << ISTHMUS >> => true
+    rule Ghasdirtysstore         << ISTHMUS >> => true
+    rule Ghassstorestipend       << ISTHMUS >> => true
+    rule Ghascreate2             << ISTHMUS >> => true
+    rule Ghasextcodehash         << ISTHMUS >> => true
+    rule Ghasselfbalance         << ISTHMUS >> => true
+    rule Ghaschainid             << ISTHMUS >> => true
+    rule Ghasaccesslist          << ISTHMUS >> => true
+    rule Ghasbasefee             << ISTHMUS >> => true
+    rule Ghasrejectedfirstbyte   << ISTHMUS >> => true
+    rule Ghasprevrandao          << ISTHMUS >> => true
+    rule Ghasmaxinitcodesize     << ISTHMUS >> => true
+    rule Ghaspushzero            << ISTHMUS >> => true
+    rule Ghaswarmcoinbase        << ISTHMUS >> => true
+    rule Ghaswithdrawals         << ISTHMUS >> => true
+    rule Ghastransient           << ISTHMUS >> => true
+    rule Ghasmcopy               << ISTHMUS >> => true
+    rule Ghasbeaconroot          << ISTHMUS >> => true
+    rule Ghaseip6780             << ISTHMUS >> => true
+    rule Ghasblobbasefee         << ISTHMUS >> => true
+    rule Ghasblobhash            << ISTHMUS >> => true
+    rule Ghasbls12msmdiscount    << ISTHMUS >> => true
+    rule Ghasdelegation          << ISTHMUS >> => true
 
 endmodule
 ```
