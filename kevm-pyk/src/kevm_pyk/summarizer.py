@@ -821,10 +821,7 @@ class KEVMSummarizer:
             end_time = time.time()
             print(f'Proof timing {proof.id}: {end_time - start_time}s')
 
-            res_lines = self.show_proof(
-                proof,
-                nodes=[node.id for node in proof.kcfg.nodes],
-            )
+            res_lines = []
 
             return passed, res_lines
 
