@@ -107,6 +107,14 @@ __TARGETS__: Final = {
             'optimization': 3,
         },
     ),
+    'haskell-pure': KEVMTarget(
+        {
+            'target': KompileTarget.HASKELL,
+            'main_file': config.EVM_SEMANTICS_DIR / 'edsl.md',
+            'main_module': 'EDSL-PURE',
+            'syntax_module': 'EDSL-PURE',
+        },
+    ),
     'llvm': KEVMTarget(
         {
             'target': KompileTarget.LLVM,
