@@ -98,6 +98,15 @@ class KLLVMRuntimeTarget(Target):
 
 
 __TARGETS__: Final = {
+    'llvm-pure': KEVMTarget(
+        {
+            'target': KompileTarget.LLVM,
+            'main_file': config.EVM_SEMANTICS_DIR / 'driver.md',
+            'main_module': 'ETHEREUM-SIMULATION-PURE',
+            'syntax_module': 'ETHEREUM-SIMULATION-PURE',
+            'optimization': 3,
+        },
+    ),
     'llvm': KEVMTarget(
         {
             'target': KompileTarget.LLVM,
