@@ -96,6 +96,11 @@ module INT-SIMPLIFICATION-HASKELL [symbolic]
     rule { A +Int B #Equals C +Int B } => { A        #Equals C        } [simplification(40)]
     rule { A +Int B #Equals C +Int D } => { A -Int C #Equals D -Int B } [simplification(45), symbolic(A, C), concrete(B, D)]
 
+    rule 0  <Int A -Int B => B  <Int A [simplification, symbolic(A, B)]
+    rule 0 <=Int A -Int B => B <=Int A [simplification, symbolic(A, B)]
+    rule 0  >Int A -Int B => B  >Int A [simplification, symbolic(A, B)]
+    rule 0 >=Int A -Int B => B >=Int A [simplification, symbolic(A, B)]
+
 endmodule
 
 module INT-SIMPLIFICATION-COMMON
@@ -148,6 +153,24 @@ module INT-SIMPLIFICATION-COMMON
 
     rule (E *Int A) +Int B +Int C +Int D +Int (F *Int A) => ((E +Int F) *Int A) +Int B +Int C +Int D [simplification]
 
+    // Simplification of concrete multiplication
+
+    rule A *Int B <Int C => B <Int C /Int A
+      requires 0 <Int A andBool 0 <=Int C andBool C modInt A ==Int 0
+      [simplification(40), concrete(A, C), preserves-definedness]
+
+    rule A *Int B <=Int C => B <=Int C /Int A
+      requires 0 <Int A andBool 0 <=Int C andBool C modInt A ==Int 0
+      [simplification(40), concrete(A, C), preserves-definedness]
+
+    rule C <=Int A *Int B => C /Int A <=Int B
+      requires 0 <Int A andBool 0 <=Int C andBool C modInt A ==Int 0
+      [simplification(40), concrete(A, C), preserves-definedness]
+
+    rule C <Int A *Int B => C /Int A <Int B
+      requires 0 <Int A andBool 0 <=Int C andBool C modInt A ==Int 0
+      [simplification(40), concrete(A, C), preserves-definedness]
+
   // ###########################################################################
   // div
   // ###########################################################################
@@ -168,6 +191,13 @@ module INT-SIMPLIFICATION-COMMON
     rule (A *Int B) /Int C <=Int D => true
       requires 0 <=Int A andBool 0 <=Int B andBool 0 <Int C andBool A <=Int D andBool B <=Int C
       [simplification, preserves-definedness]
+
+    rule ( A /Int B ) /Int C => 0
+        requires 0 <=Int A
+         andBool 0 <Int B
+         andBool 0 <Int C
+         andBool A <Int ( C *Int B )
+        [simplification, symbolic(A, B), concrete(C), preserves-definedness]
 
   // ###########################################################################
   // mod
@@ -222,5 +252,11 @@ module INT-SIMPLIFICATION-COMMON
     rule 0 <=Int A *Int B => true requires 0 <=Int A andBool 0 <=Int B [simplification]
 
     rule A -Int B +Int C <=Int D => false requires D <Int A -Int B andBool 0 <=Int C [simplification]
+
+    rule A ==Int B => false requires 0 <=Int A andBool B <Int 0 [simplification, concrete(B)]
+
+    rule 0 <Int X => true requires 0 <=Int X andBool notBool (X ==Int 0) [simplification(60)]
+
+    rule X <=Int maxUInt256 => X <Int pow256 [simplification]
 
 endmodule
