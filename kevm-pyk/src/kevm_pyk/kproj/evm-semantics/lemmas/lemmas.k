@@ -133,6 +133,19 @@ module LEMMAS-WITHOUT-SLOT-UPDATES [symbolic]
     rule #addrFromPrivateKey("0x0000000000000000000000000000000000000000000000000000000000000001") => 721457446580647751014191829380889690493307935711 [priority(40), concrete]
 
   // ########################
+  // List Reasoning
+  // ########################
+
+    // List membership check simplification for lists with a single element
+    rule KI:KItem in ListItem(KI:KItem) => true [simplification]
+    rule KI:KItem in ListItem(KJ:KItem) => KI ==K KJ [simplification]
+
+    // Recursive list membership check for lists with multiple elements
+    rule KI:KItem in (ListItem(KI) _REST) => true [simplification]
+    rule KI:KItem in (ListItem(KJ) REST) => KI in REST requires KI =/=K KJ [simplification]
+    rule _KI:KItem in .List => false [simplification]
+
+  // ########################
   // Memory
   // ########################
 
