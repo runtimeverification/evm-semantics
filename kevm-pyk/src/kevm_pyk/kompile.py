@@ -224,7 +224,7 @@ def run_kompile(
 
 
 def lib_ccopts(plugin_dir: Path, debug_build: bool = False) -> list[str]:
-    ccopts = ['-std=c++17']
+    ccopts = ['-std=c++20']
 
     if debug_build:
         ccopts += ['-g']

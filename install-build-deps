@@ -93,7 +93,7 @@ inst_Arch() {
     sudo pacman -S                                               \
         base base-devel boost clang cmake crypto++ curl git gmp  \
         gflags jdk-openjdk jemalloc libsecp256k1 lld llvm maven  \
-        mpfr poetry python stack yaml-cpp zlib
+        mpfr uv python stack yaml-cpp zlib
 }
 
 ####################################################################

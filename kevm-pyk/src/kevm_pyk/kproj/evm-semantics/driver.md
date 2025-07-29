@@ -9,10 +9,20 @@ requires "evm.md"
 requires "optimizations.md"
 requires "asm.md"
 requires "state-utils.md"
+requires "summaries/summaries.k"
+
+module ETHEREUM-SIMULATION-SUMMARY
+    imports ETHEREUM-SIMULATION-PURE
+    imports KEVM-SUMMARIES
+endmodule
 
 module ETHEREUM-SIMULATION
-    imports EVM
+    imports ETHEREUM-SIMULATION-PURE
     imports EVM-OPTIMIZATIONS
+endmodule
+
+module ETHEREUM-SIMULATION-PURE
+    imports EVM
     imports EVM-ASSEMBLY
     imports STATE-UTILS
 ```
@@ -56,8 +66,8 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 
     syntax EthereumCommand ::= "flush"
  // ----------------------------------
-    rule <mode> EXECMODE </mode> <statusCode> EVMC_SUCCESS            </statusCode> <k> #halt ~> flush => #finalizeTx(EXECMODE ==K VMTESTS)          ... </k>
-    rule <mode> EXECMODE </mode> <statusCode> _:ExceptionalStatusCode </statusCode> <k> #halt ~> flush => #finalizeTx(EXECMODE ==K VMTESTS) ~> #halt ... </k>
+    rule <mode> EXECMODE </mode> <statusCode> EVMC_SUCCESS            </statusCode> <k> #halt ~> flush => #finalizeTx(EXECMODE ==K VMTESTS, 0)          ... </k>
+    rule <mode> EXECMODE </mode> <statusCode> _:ExceptionalStatusCode </statusCode> <k> #halt ~> flush => #finalizeTx(EXECMODE ==K VMTESTS, 0) ~> #halt ... </k>
 ```
 
 -   `startTx` computes the sender of the transaction, and places loadTx on the `k` cell.
@@ -65,6 +75,28 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 -   `finishTx` is a place-holder for performing necessary cleanup after a transaction.
 
 ```k
+    syntax InternalOp ::= "#deductBlobGas"
+ // --------------------------------------
+    rule <k> #deductBlobGas => .K ... </k>
+         <schedule> SCHED </schedule>
+         <excessBlobGas> EXCESS_BLOB_GAS </excessBlobGas>
+         <origin> ACCTFROM </origin>
+         <account>
+           <acctID> ACCTFROM </acctID>
+           <balance> BAL => BAL -Int Cblobfee(SCHED, EXCESS_BLOB_GAS, size(TVH)) </balance>
+           ...
+         </account>
+         <txPending> ListItem(TXID:Int) ... </txPending>
+         <message>
+           <msgID>             TXID         </msgID>
+           <txVersionedHashes> TVH          </txVersionedHashes>
+           <txType>            Blob         </txType>
+           ...
+         </message>
+      requires Ghasblobbasefee << SCHED >>
+
+    rule <k> #deductBlobGas => .K ... </k> [owise]
+
     syntax EthereumCommand ::= "startTx"
  // ------------------------------------
     rule <k> startTx => #finalizeBlock ... </k>
@@ -73,6 +105,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
     rule <k> startTx => loadTx( #sender( #getTxData(TXID), TW, TR, TS, B ) ) ... </k>
          <txPending> ListItem(TXID:Int) ... </txPending>
          <chainID> B </chainID>
+         <gas> _ => 0 </gas>
          <message>
            <msgID>      TXID </msgID>
            <sigV>       TW   </sigV>
@@ -83,24 +116,14 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 
     syntax EthereumCommand ::= loadTx ( Account ) [symbol(loadTx)]
  // --------------------------------------------------------------
-    rule <k> loadTx(_) => startTx ... </k>
-         <statusCode> _ => EVMC_OUT_OF_GAS </statusCode>
-         <txPending> ListItem(TXID:Int) REST => REST </txPending>
-         <schedule> SCHED </schedule>
-         <message>
-           <msgID>      TXID     </msgID>
-           <to>         .Account </to>
-           <data>       CODE     </data>
-           ...
-         </message>
-       requires notBool #hasValidInitCode(lengthBytes(CODE), SCHED)
-
     rule <k> loadTx(ACCTFROM)
           => #accessAccounts ACCTFROM #newAddr(ACCTFROM, NONCE) #precompiledAccountsSet(SCHED)
+          ~> #deductBlobGas
           ~> #loadAccessList(TA)
+          ~> #loadAuthorities(AUTH)
           ~> #checkCreate ACCTFROM VALUE
           ~> #create ACCTFROM #newAddr(ACCTFROM, NONCE) VALUE CODE
-          ~> #finishTx ~> #finalizeTx(false) ~> startTx
+          ~> #finishTx ~> #finalizeTx(false, Ctxfloor(SCHED, CODE)) ~> startTx
          ...
          </k>
          <schedule> SCHED </schedule>
@@ -111,34 +134,35 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          <txPending> ListItem(TXID:Int) ... </txPending>
          <coinbase> MINER </coinbase>
          <message>
-           <msgID>             TXID     </msgID>
-           <txGasLimit>        GLIMIT   </txGasLimit>
-           <to>                .Account </to>
-           <value>             VALUE    </value>
-           <data>              CODE     </data>
-           <txAccess>          TA       </txAccess>
-           <txVersionedHashes> TVH      </txVersionedHashes>
+           <msgID>      TXID     </msgID>
+           <txGasLimit> GLIMIT   </txGasLimit>
+           <to>         .Account </to>
+           <value>      VALUE    </value>
+           <data>       CODE     </data>
+           <txAccess>   TA       </txAccess>
+           <txAuthList> AUTH     </txAuthList>
            ...
          </message>
-         <versionedHashes> _ => TVH </versionedHashes>
          <account>
            <acctID> ACCTFROM </acctID>
            <balance> BAL => BAL -Int (GLIMIT *Int #effectiveGasPrice(TXID)) </balance>
            <nonce> NONCE </nonce>
-           <code> ACCTCODE </code>
            ...
          </account>
          <accessedAccounts> _ => #if Ghaswarmcoinbase << SCHED >> #then SetItem(MINER) #else .Set #fi </accessedAccounts>
          <touchedAccounts> _ => SetItem(MINER) </touchedAccounts>
       requires #hasValidInitCode(lengthBytes(CODE), SCHED)
-        andBool ACCTCODE ==K .Bytes
+       andBool #isValidTransaction(TXID, ACCTFROM)
+       andBool GLIMIT >=Int maxInt(G0(SCHED, CODE, true), Ctxfloor(SCHED, CODE))
 
     rule <k> loadTx(ACCTFROM)
           => #accessAccounts ACCTFROM ACCTTO #precompiledAccountsSet(SCHED)
+          ~> #deductBlobGas
           ~> #loadAccessList(TA)
+          ~> #loadAuthorities(AUTH)
           ~> #checkCall ACCTFROM VALUE
           ~> #call ACCTFROM ACCTTO ACCTTO VALUE VALUE DATA false
-          ~> #finishTx ~> #finalizeTx(false) ~> startTx
+          ~> #finishTx ~> #finalizeTx(false, Ctxfloor(SCHED, DATA)) ~> startTx
          ...
          </k>
          <schedule> SCHED </schedule>
@@ -156,6 +180,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
            <data>              DATA   </data>
            <txAccess>          TA     </txAccess>
            <txVersionedHashes> TVH    </txVersionedHashes>
+           <txAuthList> AUTH </txAuthList>
            ...
          </message>
          <versionedHashes> _ => TVH </versionedHashes>
@@ -163,26 +188,16 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
            <acctID> ACCTFROM </acctID>
            <balance> BAL => BAL -Int (GLIMIT *Int #effectiveGasPrice(TXID)) </balance>
            <nonce> NONCE => NONCE +Int 1 </nonce>
-           <code> ACCTCODE </code>
            ...
          </account>
          <accessedAccounts> _ => #if Ghaswarmcoinbase << SCHED >> #then SetItem(MINER) #else .Set #fi </accessedAccounts>
          <touchedAccounts> _ => SetItem(MINER) </touchedAccounts>
       requires ACCTTO =/=K .Account
-        andBool ACCTCODE ==K .Bytes
-
-    rule <k> loadTx(ACCTFROM) => startTx ... </k>
-         <statusCode> _ => EVMC_FAILURE </statusCode>
-         <txPending> ListItem(_TXID:Int) REST => REST </txPending>
-         <account>
-           <acctID> ACCTFROM </acctID>
-           <code> ACCTCODE </code>
-           ...
-         </account>
-      requires notBool ACCTCODE ==K .Bytes
+       andBool #isValidTransaction(TXID, ACCTFROM)
+       andBool GLIMIT >=Int maxInt(G0(SCHED, DATA, false), Ctxfloor(SCHED, DATA))
 
     rule <k> loadTx(_) => startTx ... </k>
-         <statusCode> _ => EVMC_OUT_OF_GAS </statusCode>
+         <statusCode> _ => EVMC_INVALID_BLOCK </statusCode>
          <txPending> ListItem(_TXID:Int) REST => REST </txPending> [owise]
 
     syntax EthereumCommand ::= "#finishTx"
@@ -241,6 +256,106 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
     rule <k> #loadAccessListAux (ACCT, .List) => #accessAccounts ACCT ... </k>
          <schedule> SCHED </schedule>
          <callGas> GLIMIT => GLIMIT -Int Gaccesslistaddress < SCHED > </callGas>
+```
+
+Processing SetCode Transaction Authority Entries
+================================================
+
+- The `#loadAuthorities` function processes authorization entries in EIP-7702 SetCode transactions, charging 25000 gas per tuple regardless of validity.
+- Skips processing if transaction is not SetCode type; processes each authorization tuple by recovering the signer and attempting delegation.
+- The `#addAuthority` function implements EIP-7702 verification and delegation:
+ - Validates that the chain ID matches current chain (or is 0) and nonce is within bounds
+ - Checks if authority account code is empty or already delegated
+ - Verifies that the authority nonce equals authorization nonce
+ - Sets delegation code (0xEF0100 + address) and increments nonce on success
+ - Provides refund (25000 - 12500 = 12500 gas) only for accounts that existed before processing
+ - A new account will be created for Authorities that are not in the `<accounts>` state, without increasing the refund amount
+
+```k
+    syntax InternalOp ::= #loadAuthorities ( List ) [symbol(#loadAuthorities)]
+ // --------------------------------------------------------------------------
+    rule <k> #loadAuthorities(_) => .K ... </k>
+         <txPending> ListItem(TXID:Int) ... </txPending>
+         <message>
+           <msgID> TXID </msgID>
+           <txType> TXTYPE </txType>
+           ...
+         </message>
+      requires notBool TXTYPE ==K SetCode
+
+    rule <k> #loadAuthorities( .List ) => .K ... </k>
+         <txPending> ListItem(TXID:Int) ... </txPending>
+         <message>
+           <msgID> TXID </msgID>
+           <txType> SetCode </txType>
+           ...
+         </message>
+
+    rule <k> #loadAuthorities (ListItem(ListItem(CID) ListItem(ADDR) ListItem(NONCE) ListItem(YPAR) ListItem(SIGR) ListItem(SIGS)) REST )
+          => #setDelegation (#recoverAuthority (CID, ADDR, NONCE, YPAR, SIGR, SIGS ), CID, NONCE, ADDR)
+          ~> #loadAuthorities (REST)
+          ... </k>
+         <txPending> ListItem(TXID:Int) ... </txPending>
+         <message>
+           <msgID> TXID </msgID>
+           <txType> SetCode </txType>
+           ...
+         </message>
+         <callGas> GLIMIT => GLIMIT -Int 25000 </callGas> [owise]
+
+    syntax InternalOp ::= #setDelegation ( Account , Bytes , Bytes , Bytes ) [symbol(#setDelegation)]
+ // -------------------------------------------------------------------------------------------------
+    rule <k> #setDelegation(AUTHORITY, CID, NONCE, _ADDR) => .K ... </k> <chainID> ENV_CID </chainID>
+       requires AUTHORITY ==K .Account
+         orBool (notBool #asWord(CID) in (SetItem(ENV_CID) SetItem(0)))
+         orBool (#asWord(NONCE) >=Int maxUInt64)
+
+    rule <k> #setDelegation(AUTHORITY, CID, NONCE, ADDR)
+          => #touchAccounts AUTHORITY ~> #accessAccounts AUTHORITY
+           ~> #addAuthority(AUTHORITY, CID, NONCE, ADDR)
+          ...
+         </k> [owise]
+
+    syntax InternalOp ::= #addAuthority ( Account , Bytes , Bytes , Bytes ) [symbol(#addAuthority)]
+ // -----------------------------------------------------------------------------------------------
+    rule <k> #addAuthority(AUTHORITY, _CID, NONCE, _ADDR) => .K ... </k>
+         <account>
+           <acctID> AUTHORITY </acctID>
+           <code> ACCTCODE </code>
+           <nonce> ACCTNONCE </nonce>
+         ...
+         </account>
+      requires notBool (ACCTCODE ==K .Bytes orBool #isValidDelegation(ACCTCODE))
+        orBool (notBool #asWord(NONCE) ==K ACCTNONCE)
+
+    rule <k> #addAuthority(AUTHORITY, _CID, NONCE, ADDR) => .K ... </k>
+         <schedule> SCHED </schedule>
+         <refund> REFUND => REFUND +Int Gnewaccount < SCHED > -Int Gauthbase < SCHED > </refund>
+         <account>
+           <acctID> AUTHORITY </acctID>
+           <code> ACCTCODE => #if #asWord(ADDR) ==Int 0 #then .Bytes #else EOA_DELEGATION_MARKER +Bytes ADDR #fi </code>
+           <nonce> ACCTNONCE => ACCTNONCE +Int 1 </nonce>
+         ...
+         </account>
+      requires (ACCTCODE ==K .Bytes orBool #isValidDelegation(ACCTCODE))
+       andBool #asWord(NONCE) ==K ACCTNONCE
+
+    rule <k> #addAuthority(AUTHORITY, _CID, NONCE, ADDR) => .K ... </k>
+         <accounts>
+               ( .Bag
+                  =>
+                 <account>
+                    <acctID> AUTHORITY </acctID>
+                    <code> #if #asWord(ADDR) ==Int 0 #then .Bytes #else EOA_DELEGATION_MARKER +Bytes ADDR #fi </code>
+                    <nonce> 1 </nonce>
+                    ...
+                 </account>
+               )
+               ...
+         </accounts>
+      requires #asWord(NONCE) ==Int 0 andBool notBool #accountExists(AUTHORITY)
+
+    rule <k> #addAuthority(AUTHORITY, _CID, NONCE, _ADDR) => .K ... </k> requires notBool (#accountExists(AUTHORITY) orBool #asWord(NONCE) ==Int 0)
 ```
 
 -   `exception` only clears from the `<k>` cell if there is an exception preceding it.
@@ -513,7 +628,7 @@ Here we check the other post-conditions associated with an EVM test.
                         SetItem("mixHash") SetItem("nonce") SetItem("number") SetItem("parentHash")
                         SetItem("receiptTrie") SetItem("stateRoot") SetItem("timestamp")
                         SetItem("transactionsTrie") SetItem("uncleHash") SetItem("baseFeePerGas") SetItem("withdrawalsRoot")
-                        SetItem("blobGasUsed") SetItem("excessBlobGas") SetItem("parentBeaconBlockRoot")
+                        SetItem("blobGasUsed") SetItem("excessBlobGas") SetItem("parentBeaconBlockRoot") SetItem("requestsHash")
                       )
 
     rule <k> check "blockHeader" : { "bloom"                : VALUE } => .K ... </k> <logsBloom>        VALUE </logsBloom>
@@ -536,6 +651,7 @@ Here we check the other post-conditions associated with an EVM test.
     rule <k> check "blockHeader" : { "blobGasUsed"          : VALUE } => .K ... </k> <blobGasUsed>      VALUE </blobGasUsed>
     rule <k> check "blockHeader" : { "excessBlobGas"        : VALUE } => .K ... </k> <excessBlobGas>    VALUE </excessBlobGas>
     rule <k> check "blockHeader" : { "parentBeaconBlockRoot": VALUE } => .K ... </k> <beaconRoot>       VALUE </beaconRoot>
+    rule <k> check "blockHeader" : { "requestsHash"         : VALUE } => .K ... </k> <requestsRoot>     VALUE </requestsRoot>
 
 
     rule <k> check "blockHeader" : { "hash": HASH:Bytes } => .K ...</k>
@@ -559,10 +675,12 @@ Here we check the other post-conditions associated with an EVM test.
          <blobGasUsed>      UB </blobGasUsed>
          <excessBlobGas>    EB </excessBlobGas>
          <beaconRoot>       BR </beaconRoot>
-      requires #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN)                     ==Int #asWord(HASH)
-        orBool #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF)                 ==Int #asWord(HASH)
-        orBool #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR)             ==Int #asWord(HASH)
-        orBool #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR, UB, EB, BR) ==Int #asWord(HASH)
+         <requestsRoot>     RR </requestsRoot>
+      requires #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN)                         ==Int #asWord(HASH)
+        orBool #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF)                     ==Int #asWord(HASH)
+        orBool #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR)                 ==Int #asWord(HASH)
+        orBool #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR, UB, EB, BR)     ==Int #asWord(HASH)
+        orBool #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR, UB, EB, BR, RR) ==Int #asWord(HASH)
 
     rule check TESTID : { "genesisBlockHeader" : BLOCKHEADER } => check "genesisBlockHeader" : BLOCKHEADER ~> failure TESTID
  // ------------------------------------------------------------------------------------------------------------------------
@@ -618,6 +736,21 @@ Here we check the other post-conditions associated with an EVM test.
     rule <k> check "transactions" : ("maxPriorityFeePerGas" : VALUE) => .K ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txPriorityFee> VALUE </txPriorityFee>  ... </message>
     rule <k> check "transactions" : ("maxFeePerBlobGas"     : VALUE) => .K ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <txMaxBlobFee>  VALUE </txMaxBlobFee>   ... </message>
     rule <k> check "transactions" : ("sender"               : VALUE) => .K ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <sigV> TW </sigV> <sigR> TR </sigR> <sigS> TS </sigS> ... </message> <chainID> B </chainID> requires #sender( #getTxData(TXID), TW, TR, TS, B ) ==K VALUE
+
+    rule <k> check "transactions" : "authorizationList" : [ .JSONs ] => .K ... </k>
+    rule <k> check "transactions" : "authorizationList" : [ { "chainId": CID, "address": ADDR, "nonce": NONCE, "v": _, "r": SIGR, "s": SIGS, "signer": _, "yParity": SIGY } , REST ]
+          => check "transactions" : "authorizationList" : [ #hex2Bytes(CID), #hex2Bytes(ADDR), #hex2Bytes(NONCE), #hex2Bytes(SIGY), #hex2Bytes(SIGR), #hex2Bytes(SIGS) ]
+          ~> check "transactions" : "authorizationList" : [ REST ]
+          ...
+         </k>
+    rule <k> check "transactions" : "authorizationList" : [ AUTH ] => .K ... </k>
+         <txOrder> ListItem(TXID) ... </txOrder>
+         <message> <msgID> TXID </msgID> <txAuthList> AUTHLIST </txAuthList> ... </message> requires #parseJSONs2List(AUTH) in AUTHLIST
+
+    syntax Bytes ::= #hex2Bytes ( String ) [function] //TODO: Is this needed?
+ // -------------------------------------------------
+    rule #hex2Bytes("0x00") => b""
+    rule #hex2Bytes(S) => #parseByteStack(S) [owise]
 
     syntax Bool ::= isInAccessListStorage ( Int , JSON )    [symbol(isInAccessListStorage), function]
                   | isInAccessList ( Account , Int , JSON ) [symbol(isInAccessList), function]

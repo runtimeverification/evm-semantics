@@ -51,6 +51,7 @@ module STATE-UTILS
          <touchedAccounts>  _ => .Set       </touchedAccounts>
          <accessedAccounts> _ => .Set       </accessedAccounts>
          <createdAccounts>  _ => .Set       </createdAccounts>
+         <versionedHashes>  _ => .List      </versionedHashes>
 
     syntax EthereumCommand ::= "clearBLOCK"
  // ---------------------------------------
@@ -76,6 +77,10 @@ module STATE-UTILS
          <blobGasUsed>       _ => 0          </blobGasUsed>
          <excessBlobGas>     _ => 0          </excessBlobGas>
          <beaconRoot>        _ => 0          </beaconRoot>
+         <requestsRoot>      _ => 0          </requestsRoot>
+         <depositRequests>       _ => .Bytes </depositRequests>
+         <withdrawalRequests>    _ => .Bytes </withdrawalRequests>
+         <consolidationRequests> _ => .Bytes </consolidationRequests>
 
     syntax EthereumCommand ::= "clearNETWORK"
  // -----------------------------------------
@@ -137,17 +142,19 @@ Here we load the environmental information.
 
 ```k
     rule <k> load "env" : { KEY : ((VAL:String) => #parseWord(VAL)) } ... </k>
-      requires KEY in (SetItem("currentTimestamp") SetItem("currentGasLimit") SetItem("currentNumber") SetItem("currentDifficulty") SetItem("currentBaseFee"))
+      requires KEY in (SetItem("currentTimestamp") SetItem("currentGasLimit") SetItem("currentNumber") SetItem("currentDifficulty") SetItem("currentBaseFee") SetItem("currentRandom") SetItem("currentExcessBlobGas"))
     rule <k> load "env" : { KEY : ((VAL:String) => #parseHexWord(VAL)) } ... </k>
       requires KEY in (SetItem("currentCoinbase") SetItem("previousHash"))
  // ----------------------------------------------------------------------
-    rule <k> load "env" : { "currentCoinbase"   : (CB:Int)     } => .K ... </k> <coinbase>     _ => CB     </coinbase>
-    rule <k> load "env" : { "currentDifficulty" : (DIFF:Int)   } => .K ... </k> <difficulty>   _ => DIFF   </difficulty>
-    rule <k> load "env" : { "currentGasLimit"   : (GLIMIT:Int) } => .K ... </k> <gasLimit>     _ => GLIMIT </gasLimit>
-    rule <k> load "env" : { "currentNumber"     : (NUM:Int)    } => .K ... </k> <number>       _ => NUM    </number>
-    rule <k> load "env" : { "previousHash"      : (HASH:Int)   } => .K ... </k> <previousHash> _ => HASH   </previousHash>
-    rule <k> load "env" : { "currentTimestamp"  : (TS:Int)     } => .K ... </k> <timestamp>    _ => TS     </timestamp>
-    rule <k> load "env" : { "currentBaseFee"    : (BF:Int)     } => .K ... </k> <baseFee>      _ => BF     </baseFee>
+    rule <k> load "env" : { "currentCoinbase"      : (CB:Int)     } => .K ... </k> <coinbase>      _ => CB     </coinbase>
+    rule <k> load "env" : { "currentDifficulty"    : (DIFF:Int)   } => .K ... </k> <difficulty>    _ => DIFF   </difficulty>
+    rule <k> load "env" : { "currentGasLimit"      : (GLIMIT:Int) } => .K ... </k> <gasLimit>      _ => GLIMIT </gasLimit>
+    rule <k> load "env" : { "currentNumber"        : (NUM:Int)    } => .K ... </k> <number>        _ => NUM    </number>
+    rule <k> load "env" : { "previousHash"         : (HASH:Int)   } => .K ... </k> <previousHash>  _ => HASH   </previousHash>
+    rule <k> load "env" : { "currentTimestamp"     : (TS:Int)     } => .K ... </k> <timestamp>     _ => TS     </timestamp>
+    rule <k> load "env" : { "currentBaseFee"       : (BF:Int)     } => .K ... </k> <baseFee>       _ => BF     </baseFee>
+    rule <k> load "env" : { "currentRandom"        : (RANDAO:Int) } => .K ... </k> <mixHash>       _ => RANDAO </mixHash>
+    rule <k> load "env" : { "currentExcessBlobGas" : (BGAS:Int)   } => .K ... </k> <excessBlobGas> _ => BGAS   </excessBlobGas>
 
     syntax KItem ::= "loadCallState" JSON
  // -------------------------------------
@@ -188,6 +195,8 @@ The `"network"` key allows setting the fee schedule inside the test.
     rule #asScheduleString("Shanghai")                  => SHANGHAI
     rule #asScheduleString("Cancun")                    => CANCUN
     rule #asScheduleString("ShanghaiToCancunAtTime15k") => CANCUN
+    rule #asScheduleString("Prague")                    => PRAGUE
+    rule #asScheduleString("CancunToPragueAtTime15k")   => PRAGUE
 ```
 
 - `#parseJSONs2List` parse a JSON object with string values into a list of value.
@@ -196,6 +205,7 @@ The `"network"` key allows setting the fee schedule inside the test.
  // ----------------------------------------------------------
     rule #parseJSONs2List ( .JSONs ) => .List
     rule #parseJSONs2List ( (VAL:Bytes) , REST ) => ListItem(VAL) #parseJSONs2List ( REST )
+    rule #parseJSONs2List ( [VS:JSONs], REST ) => ListItem(#parseJSONs2List(VS)) #parseJSONs2List ( REST )
 ```
 
 The `"rlp"` key loads the block information.
@@ -246,8 +256,21 @@ The `"rlp"` key loads the block information.
          <excessBlobGas> _ => #asWord(EB)      </excessBlobGas>
          <beaconRoot>    _ => #asWord(BR)      </beaconRoot>
 
+    rule <k> load "rlp" : [ [ HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR, UB, EB, BR, RR, .JSONs ], BT, BU, BW, .JSONs ]
+          => load "rlp" : [ [ HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR, UB, EB, BR, .JSONs ], BT, BU, BW, .JSONs ]
+         ...
+         </k>
+         <requestsRoot> _ => #asWord(RR) </requestsRoot>
+
+    rule <k> load "genesisRLP": [ [ HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR, UB, EB, BR, RR, .JSONs ], _, _, _, .JSONs ] => .K ... </k>
+         <blockhashes> .List => ListItem(#blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR, UB, EB, BR, RR)) ListItem(#asWord(HP)) </blockhashes>
+         <previousExcessBlobGas> 0 => #asWord(EB) </previousExcessBlobGas>
+         <previousBlobGasUsed>   0 => #asWord(UB) </previousBlobGasUsed>
+
     rule <k> load "genesisRLP": [ [ HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR, UB, EB, BR, .JSONs ], _, _, _, .JSONs ] => .K ... </k>
          <blockhashes> .List => ListItem(#blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR, UB, EB, BR)) ListItem(#asWord(HP)) </blockhashes>
+         <previousExcessBlobGas> 0 => #asWord(EB) </previousExcessBlobGas>
+         <previousBlobGasUsed>   0 => #asWord(UB) </previousBlobGasUsed>
 
     rule <k> load "genesisRLP": [ [ HP, HO, HC, HR, HT, HE:Bytes, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR, .JSONs ], _, _, _, .JSONs ] => .K ... </k>
          <blockhashes> .List => ListItem(#blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR)) ListItem(#asWord(HP)) ... </blockhashes>
@@ -375,6 +398,18 @@ The `"rlp"` key loads the block information.
          </k>
     requires #asWord(TYPE) ==Int #dasmTxPrefix(Blob)
 
+     rule <k> load "transaction" : [ [TYPE , [TC, TN, TP, TF, TG, TT, TV, TI, TA, AUTH , TY, TR, TS ]] , REST ]
+          => mkTX !ID:Int
+          ~> loadTransaction !ID { "data"         : TI   ,   "gasLimit"         : TG   ,   "maxPriorityFeePerGas" : TP
+                                 , "nonce"        : TN   ,   "r"                : TR   ,   "s"                    : TS
+                                 , "to"           : TT   ,   "v"                : TY   ,   "value"                : TV
+                                 , "accessList"   : TA   ,   "type"             : TYPE ,   "chainID"              : TC
+                                 , "maxFeePerGas" : TF   ,   "authList"         : AUTH , .JSONs }
+          ~> load "transaction" : [ REST ]
+          ...
+         </k>
+    requires #asWord(TYPE) ==Int #dasmTxPrefix(SetCode)
+
     syntax EthereumCommand ::= "loadTransaction" Int JSON
  // -----------------------------------------------------
     rule <k> loadTransaction _ { .JSONs } => .K ... </k>
@@ -426,7 +461,10 @@ The `"rlp"` key loads the block information.
          <message> <msgID> TXID </msgID> <txMaxBlobFee> _ => TB </txMaxBlobFee> ... </message>
 
     rule <k> loadTransaction TXID { "blobVersionedHashes" : [TVH:JSONs], REST => REST } ... </k>
-         <message> <msgID> TXID </msgID> <txVersionedHashes> _ =>  #parseJSONs2List(TVH) </txVersionedHashes> ... </message>
+         <message> <msgID> TXID </msgID> <txVersionedHashes> _ => #parseJSONs2List(TVH) </txVersionedHashes> ... </message>
+
+    rule <k> loadTransaction TXID { "authList" : [AUTH:JSONs], REST => REST } ... </k>
+         <message> <msgID> TXID </msgID> <txAuthList> _ => #parseJSONs2List(AUTH) </txAuthList> ... </message>
 ```
 
 ### Getting State
@@ -515,6 +553,23 @@ The `"rlp"` key loads the block information.
            <txType> Blob </txType>
            ...
          </message>
+
+    rule [[ #getTxData( TXID ) => SetCodeTxData(TN, TPF, TM, TG, TT, TV, DATA, CID, TA, AUTH) ]]
+         <message>
+           <msgID>             TXID </msgID>
+           <txNonce>           TN   </txNonce>
+           <txGasLimit>        TG   </txGasLimit>
+           <to>                TT   </to>
+           <value>             TV   </value>
+           <data>              DATA </data>
+           <txChainID>         CID  </txChainID>
+           <txAccess>          TA   </txAccess>
+           <txPriorityFee>     TPF  </txPriorityFee>
+           <txMaxFee>          TM   </txMaxFee>
+           <txAuthList>        AUTH </txAuthList>
+           <txType> SetCode </txType>
+           ...
+         </message>
 ```
 
 - `#effectiveGasPrice` will compute the gas price for TXID, as specified by EIP-1559
@@ -540,6 +595,140 @@ The `"rlp"` key loads the block information.
            <txMaxFee>      TM     </txMaxFee>
            ...
          </message>
+```
+
+- `#isValidTransaction(TXID, SENDER)` - validate each defined transaction type.
+ 1. Check if the tx nonce matches the nonce of the sender.
+ 2. Check that the gas fees are properly structured and that the fee caps are not higher than the max amount.
+ 3. Check that there is enough balance for gas, value and blob fees (where applicable) and that the gas limit is within the block limits.
+
+```k
+    syntax Bool ::= #isValidTransaction( Int , Account ) [symbol(#isValidTransaction), function]
+ // --------------------------------------------------------------------------------------------
+    rule [[ #isValidTransaction (TXID, ACCTFROM) => true ]]
+         <schedule> SCHED </schedule>
+         <baseFee> BASE_FEE </baseFee>
+         <gasLimit> BLOCK_GAS_LIMIT </gasLimit>
+         <account>
+           <acctID>  ACCTFROM  </acctID>
+           <balance> BAL       </balance>
+           <code>    ACCTCODE  </code>
+           <nonce>   ACCTNONCE </nonce>
+           ...
+         </account>
+         <message>
+           <msgID>             TXID                </msgID>
+           <txNonce>           TX_NONCE            </txNonce>
+           <txGasLimit>        TX_GAS_LIMIT        </txGasLimit>
+           <to>                ACCTTO              </to>
+           <value>             VALUE               </value>
+           <txPriorityFee>     TX_MAX_PRIORITY_FEE </txPriorityFee>
+           <txMaxFee>          TX_MAX_FEE          </txMaxFee>
+           <txAuthList>        TX_AUTH_LIST        </txAuthList>
+           <txType> SetCode </txType>
+           ...
+         </message>
+     requires (ACCTCODE ==K .Bytes orBool Ghasauthority << SCHED >>)
+      andBool notBool ACCTTO ==K .Account
+      andBool ACCTNONCE ==Int TX_NONCE
+      andBool BASE_FEE <=Int TX_MAX_FEE
+      andBool TX_MAX_PRIORITY_FEE <=Int TX_MAX_FEE
+      andBool BAL >=Int TX_GAS_LIMIT *Int TX_MAX_FEE +Int VALUE
+      andBool TX_GAS_LIMIT <=Int BLOCK_GAS_LIMIT
+      andBool size(TX_AUTH_LIST) >Int 0 andBool #checkAuthorityList(TX_AUTH_LIST)
+
+    rule [[ #isValidTransaction (TXID, ACCTFROM) => true ]]
+         <schedule> SCHED </schedule>
+         <baseFee> BASE_FEE </baseFee>
+         <excessBlobGas> EXCESS_BLOB_GAS </excessBlobGas>
+         <gasLimit> BLOCK_GAS_LIMIT </gasLimit>
+         <account>
+           <acctID>  ACCTFROM  </acctID>
+           <balance> BAL       </balance>
+           <code>    ACCTCODE  </code>
+           <nonce>   ACCTNONCE </nonce>
+           ...
+         </account>
+         <message>
+           <msgID>             TXID                </msgID>
+           <txNonce>           TX_NONCE            </txNonce>
+           <txGasLimit>        TX_GAS_LIMIT        </txGasLimit>
+           <to>                ACCTTO              </to>
+           <value>             VALUE               </value>
+           <txPriorityFee>     TX_MAX_PRIORITY_FEE </txPriorityFee>
+           <txMaxFee>          TX_MAX_FEE          </txMaxFee>
+           <txMaxBlobFee>      TX_MAX_BLOB_FEE     </txMaxBlobFee>
+           <txVersionedHashes> TVH                 </txVersionedHashes>
+           <txType> Blob </txType>
+           ...
+         </message>
+     requires (ACCTCODE ==K .Bytes orBool Ghasauthority << SCHED >>)
+      andBool notBool ACCTTO ==K .Account
+      andBool ACCTNONCE ==Int TX_NONCE
+      andBool BASE_FEE <=Int TX_MAX_FEE
+      andBool TX_MAX_PRIORITY_FEE <=Int TX_MAX_FEE
+      andBool size(TVH) >Int 0 andBool #checkTxVersionedHashes(TVH)
+      andBool TX_MAX_BLOB_FEE >=Int Cbasefeeperblob(SCHED, EXCESS_BLOB_GAS)
+      andBool BAL >=Int TX_GAS_LIMIT *Int TX_MAX_FEE +Int (Ctotalblob(SCHED, size(TVH)) *Int TX_MAX_BLOB_FEE) +Int VALUE
+      andBool TX_GAS_LIMIT <=Int BLOCK_GAS_LIMIT
+      andBool Ctotalblob(SCHED, size(TVH)) <=Int Gmaxblobgas < SCHED>
+
+    rule [[ #isValidTransaction (TXID, ACCTFROM) => true ]]
+         <schedule> SCHED </schedule>
+         <baseFee> BASE_FEE </baseFee>
+         <gasLimit> BLOCK_GAS_LIMIT </gasLimit>
+         <account>
+           <acctID>  ACCTFROM  </acctID>
+           <balance> BAL       </balance>
+           <code>    ACCTCODE  </code>
+           <nonce>   ACCTNONCE </nonce>
+           ...
+         </account>
+         <message>
+           <msgID>             TXID                </msgID>
+           <txNonce>           TX_NONCE            </txNonce>
+           <txGasLimit>        TX_GAS_LIMIT        </txGasLimit>
+           <value>             VALUE               </value>
+           <txPriorityFee>     TX_MAX_PRIORITY_FEE </txPriorityFee>
+           <txMaxFee>          TX_MAX_FEE          </txMaxFee>
+           <txType> DynamicFee </txType>
+           ...
+         </message>
+     requires (ACCTCODE ==K .Bytes orBool Ghasauthority << SCHED >>)
+      andBool ACCTNONCE ==Int TX_NONCE
+      andBool BASE_FEE <=Int TX_MAX_FEE
+      andBool TX_MAX_PRIORITY_FEE <=Int TX_MAX_FEE
+      andBool BAL >=Int TX_GAS_LIMIT *Int TX_MAX_FEE +Int VALUE
+      andBool TX_GAS_LIMIT <=Int BLOCK_GAS_LIMIT
+
+    rule [[ #isValidTransaction (TXID, ACCTFROM) => true ]]
+         <schedule> SCHED </schedule>
+         <baseFee> BASE_FEE </baseFee>
+         <gasLimit> BLOCK_GAS_LIMIT </gasLimit>
+         <account>
+           <acctID>  ACCTFROM  </acctID>
+           <balance> BAL       </balance>
+           <code>    ACCTCODE   </code>
+           <nonce>   ACCTNONCE </nonce>
+           ...
+         </account>
+         <message>
+           <msgID>             TXID                </msgID>
+           <txNonce>           TX_NONCE            </txNonce>
+           <txGasPrice>        TX_GAS_PRICE        </txGasPrice>
+           <txGasLimit>        TX_GAS_LIMIT        </txGasLimit>
+           <value>             VALUE               </value>
+           <txType> TXTYPE </txType>
+           ...
+         </message>
+     requires #dasmTxPrefix(TXTYPE) <Int 2
+      andBool (ACCTCODE ==K .Bytes orBool Ghasauthority << SCHED >>)
+      andBool ACCTNONCE ==Int TX_NONCE
+      andBool BASE_FEE <=Int TX_GAS_PRICE
+      andBool BAL >=Int TX_GAS_LIMIT *Int TX_GAS_PRICE +Int VALUE
+      andBool TX_GAS_LIMIT <=Int BLOCK_GAS_LIMIT
+
+    rule #isValidTransaction (_, _) => false [owise]
 ```
 
 ### Block Identifiers

@@ -26,7 +26,7 @@ These may be useful for learning KEVM and K (newest to oldest):
 
 To get support for KEVM, please join our [Discord Channel](https://discord.com/invite/CurfmXNtbN).
 
-If you want to start proving with KEVM, refer to [VERIFICATION.md].
+If you want to start proving with KEVM, refer to [tests/specs/examples/README.md].
 
 Repository Structure
 --------------------
@@ -122,11 +122,8 @@ kup shell k.openssl --version v$(cat deps/k_release)
 
 ### Building
 
-First you need to set up a virtual environment using Poetry with the prerequisites `python 3.8.*`, `pip >= 20.0.2`, `poetry >= 1.3.2`:
-
-```sh
-make poetry
-```
+Make sure Python (`>=3.10`) and [`uv`](https://docs.astral.sh/uv/) are installed on your system.
+You can check your setup by running `make`.
 
 #### Blockchain Plugin
 
@@ -134,19 +131,19 @@ You also need to get the blockchain plugin submodule and install it.
 
 ```sh
 git submodule update --init --recursive
-poetry -C kevm-pyk run kdist --verbose build evm-semantics.plugin
+uv --project kevm-pyk run -- kdist --verbose build evm-semantics.plugin
 ```
 
 To change the default compiler:
 
 ```sh
-CXX=clang++-15 poetry -C kevm-pyk run kdist --verbose build evm-semantics.plugin
+CXX=clang++-15 uv --project kevm-pyk run -- kdist --verbose build evm-semantics.plugin
 ```
 
 On Apple silicon:
 
 ```sh
-APPLE_SILICON=true poetry -C kevm-pyk run kdist --verbose build evm-semantics.plugin
+APPLE_SILICON=true uv --project kevm-pyk run -- kdist --verbose build evm-semantics.plugin
 ```
 
 #### K Definitions
@@ -154,19 +151,19 @@ APPLE_SILICON=true poetry -C kevm-pyk run kdist --verbose build evm-semantics.pl
 Finally, you can build the semantics.
 
 ```sh
-poetry -C kevm-pyk run kdist --verbose build -j6
+uv --project kevm-pyk run -- kdist --verbose build -j6
 ```
 
 You can build specific targets using options `evm-semantics.{llvm,kllvm,kllvm-runtime,haskell,haskell-standalone,plugin}`, e.g.:
 
 ```sh
-poetry -C kevm-pyk run kdist build -j2 evm-semantics.llvm evm-semantics.haskell
+uv --project kevm-pyk run -- kdist build -j2 evm-semantics.llvm evm-semantics.haskell
 ```
 
 Targets can be cleaned with
 
 ```sh
-poetry -C kevm-pyk run kdist clean
+uv --project kevm-pyk run -- kdist clean
 ```
 
 For more information, refer to `kdist --help` and the [dist.py](kevm-pyk/src/kevm_pyk/dist.py) module.
@@ -213,25 +210,25 @@ Files produced by test runs, e.g. kompiled definition and logs, can be found in 
 For Developers
 --------------
 
-If built from the source, the `kevm-pyk` executable will be installed in a virtual environment handled by Poetry.
+If built from the source, the `kevm-pyk` executable will be installed in a virtual environment handled by `uv`.
 You can call `kevm-pyk --help` to get a quick summary of how to use the script.
 
 Run the file `tests/ethereum-tests/BlockchainTests/GeneralStateTests/VMTests/vmArithmeticTest/add0.json`:
 
 ```sh
-poetry -C kevm-pyk run kevm-pyk run tests/ethereum-tests/BlockchainTests/GeneralStateTests/VMTests/vmArithmeticTest/add0.json --schedule DEFAULT --mode VMTESTS
+uv --project kevm-pyk run -- kevm-pyk run tests/ethereum-tests/BlockchainTests/GeneralStateTests/VMTests/vmArithmeticTest/add0.json --schedule DEFAULT --mode VMTESTS
 ```
 
 To enable the debug symbols for the llvm backend, build using this command:
 
 ```sh
-poetry -C kevm-pyk run kdist build evm-semantics.llvm --arg enable-llvm-debug=true
+uv --project kevm-pyk run -- kdist build evm-semantics.llvm --arg enable-llvm-debug=true
 ```
 
 To debug a conformance test, add the `--debugger` flag to the command:
 
 ```sh
-poetry -C kevm-pyk run kevm-pyk run tests/ethereum-tests/BlockchainTests/GeneralStateTests/stExample/add11.json --target llvm --mode NORMAL --schedule CANCUN --chainid 1 --debugger
+uv --project kevm-pyk run -- kevm-pyk run tests/ethereum-tests/BlockchainTests/GeneralStateTests/stExample/add11.json --target llvm --mode NORMAL --schedule CANCUN --chainid 1 --debugger
 ```
 
 ### Keeping in mind while developing
@@ -240,9 +237,9 @@ Always have your build up-to-date.
 
 - If using the kup package manager, run `kup install kevm --version .` to install the local version.
 - If building from source:
-    -   `make poetry` needs to be re-run if you touch any of the `kevm-pyk` code.
-    -   `poetry -C kevm-pyk run kdist build <target> --force` needs to be re-run if you touch any of this repos files.
-    -   `poetry -C kevm-pyk run kdist clean` is a safe way to remove the target directory
+    -   `make` needs to be re-run if you touch any of the `kevm-pyk` code.
+    -   `uv --project kevm-pyk run -- kdist build <target> --force` needs to be re-run if you touch any of this repos files.
+    -   `uv --project kevm-pyk run -- kdist clean` is a safe way to remove the target directory.
 
 ### Building with Nix
 
@@ -355,4 +352,4 @@ For more information about the [K Framework], refer to these sources:
 [eDSL]: <https://github.com/runtimeverification/verified-smart-contracts/blob/master/resources/edsl.md>
 [kup package manager]: <https://github.com/runtimeverification/kup>
 [Makefile]: <./Makefile>
-[VERIFICATION.md]: <./VERIFICATION.md>
+[tests/specs/examples/README.md]: <./tests/specs/examples/README.md>

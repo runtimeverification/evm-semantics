@@ -108,6 +108,12 @@
         ListItem ( 4746051719422293590722610549793911264493366370041112137154393734119990786967 )
         ListItem ( 0 )
       </blockhashes>
+      <previousExcessBlobGas>
+        0
+      </previousExcessBlobGas>
+      <previousBlobGasUsed>
+        0
+      </previousBlobGasUsed>
       <block>
         <previousHash>
           4746051719422293590722610549793911264493366370041112137154393734119990786967
@@ -169,6 +175,9 @@
         <beaconRoot>
           0
         </beaconRoot>
+        <requestsRoot>
+          0
+        </requestsRoot>
         <ommerBlockHeaders>
           [ .JSONs ]
         </ommerBlockHeaders>
@@ -374,6 +383,9 @@
           <txVersionedHashes>
             .List
           </txVersionedHashes>
+          <txAuthList>
+            .List
+          </txAuthList>
         </message>
       </messages>
       <withdrawalsPending>
@@ -385,6 +397,17 @@
       <withdrawals>
         .WithdrawalCellMap
       </withdrawals>
+      <requests>
+        <depositRequests>
+          b""
+        </depositRequests>
+        <withdrawalRequests>
+          b""
+        </withdrawalRequests>
+        <consolidationRequests>
+          b""
+        </consolidationRequests>
+      </requests>
     </network>
   </ethereum>
 </kevm>

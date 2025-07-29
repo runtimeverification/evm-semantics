@@ -17,6 +17,7 @@
 /tests/specs/opcodes/evm-optimizations-spec.md
 /tests/specs/**/*.prove.out
 /tests/specs/**/*.sol.json
+/tests/execution-spec-tests/fixtures
 /tests/vm/*.out
 .DS_Store
 .idea/

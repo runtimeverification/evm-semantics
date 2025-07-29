@@ -1,4 +1,4 @@
-all: poetry
+default: kevm-pyk
 
 
 # Building
@@ -11,21 +11,11 @@ else
 endif
 
 KEVM_PYK_DIR := ./kevm-pyk
-POETRY       := poetry -C $(KEVM_PYK_DIR)
-POETRY_RUN   := $(POETRY) run --
+UV           := uv --project $(KEVM_PYK_DIR)
+UV_RUN       := $(UV) run --
 
-
-.PHONY: poetry-env
-poetry-env:
-	$(POETRY) env use --no-cache $(PYTHON_BIN)
-
-poetry: poetry-env
-	$(POETRY) install
-
-shell: poetry
-	$(POETRY) shell
-
-kevm-pyk: poetry-env
+.PHONY: kevm-pyk
+kevm-pyk:
 	$(MAKE) -C $(KEVM_PYK_DIR)
 
 
@@ -37,10 +27,12 @@ test: test-integration test-conformance test-prove test-interactive
 
 # Conformance Tests
 
-test-conformance: poetry
+.PHONY: test-conformance
+test-conformance:
 	$(MAKE) -C kevm-pyk/ test-integration PYTEST_ARGS+="-k test_conformance.py"
 
-conformance-failing-list: poetry
+.PHONY: conformance-failing-list
+conformance-failing-list:
 	cat /dev/null > tests/failing.llvm
 	- $(MAKE) -C kevm-pyk/ test-integration PYTEST_ARGS+="-k test_conformance.py --save-failing --maxfail=10000"
 	LC_ALL=en_US.UTF-8 sort -f -d -o tests/failing.llvm tests/failing.llvm
@@ -51,16 +43,39 @@ conformance-failing-list: poetry
 		sed -i '1{/^[[:space:]]*$$/d;}' tests/failing.llvm ;\
 	fi
 
-test-vm: poetry
+.PHONY: download-json-fixtures
+download-json-fixtures:
+	rm -rf tests/execution-spec-tests/fixtures
+	cd tests/execution-spec-tests && bash get_execution_spec_tests.sh
+
+test-fixtures: download-json-fixtures
+	$(MAKE) -C kevm-pyk/ test-integration PYTEST_ARGS+="-k test_execution_spec_tests.py"
+
+fixtures-failing-list: download-json-fixtures
+	cat /dev/null > tests/execution-spec-tests/failing.llvm
+	- $(MAKE) -C kevm-pyk/ test-integration PYTEST_ARGS+="-k test_execution_spec_tests.py --save-failing --maxfail=10000"
+	LC_ALL=en_US.UTF-8 sort -f -d -o tests/execution-spec-tests/failing.llvm tests/execution-spec-tests/failing.llvm
+	if [ "$(shell uname)" = "Darwin" ]; then \
+		sed -i '' '1{/^[[:space:]]*$$/d;}' tests/execution-spec-tests/failing.llvm ;\
+		echo >> tests/execution-spec-tests/failing.llvm ;\
+	else \
+		sed -i '1{/^[[:space:]]*$$/d;}' tests/execution-spec-tests/failing.llvm ;\
+	fi
+
+.PHONY: test-vm
+test-vm:
 	$(MAKE) -C kevm-pyk/ test-integration PYTEST_ARGS+="-k test_vm"
 
-test-rest-vm: poetry
+.PHONY: test-rest-vm
+test-rest-vm:
 	$(MAKE) -C kevm-pyk/ test-integration PYTEST_ARGS+="-k test_rest_vm"
 
-test-bchain: poetry
+.PHONY: test-bchain
+test-bchain:
 	$(MAKE) -C kevm-pyk/ test-integration PYTEST_ARGS+="-k test_bchain"
 
-test-rest-bchain: poetry
+.PHONY: test-rest-bchain
+test-rest-bchain:
 	$(MAKE) -C kevm-pyk/ test-integration PYTEST_ARGS+="-k test_rest_bchain"
 
 
@@ -68,29 +83,40 @@ test-rest-bchain: poetry
 
 test-prove: test-prove-rules test-prove-functional test-prove-optimizations test-prove-dss
 
-test-prove-rules: poetry
+.PHONY: test-prove-rules
+test-prove-rules:
 	$(MAKE) -C kevm-pyk/ test-integration PYTEST_ARGS+="-k test_prove_rules"
 
-test-prove-functional: poetry
+.PHONY: test-prove-functional
+test-prove-functional:
 	$(MAKE) -C kevm-pyk/ test-integration PYTEST_ARGS+="-k test_prove_functional"
 
-test-prove-optimizations: poetry
+.PHONY: test-prove-optimizations
+test-prove-optimizations:
 	$(MAKE) -C kevm-pyk/ test-integration PYTEST_ARGS+="-k test_prove_optimizations"
 
-test-prove-dss: poetry
+.PHONY: test-prove-summaries
+test-prove-summaries:
+	$(MAKE) -C kevm-pyk/ test-integration PYTEST_ARGS+="-k test_prove_summaries"
+
+.PHONY: test-prove-dss
+test-prove-dss:
 	$(MAKE) -C kevm-pyk/ test-integration PYTEST_ARGS+="-k test_prove_dss"
 
 
 # Integration Tests
 
-test-integration: poetry
-	$(MAKE) -C kevm-pyk/ test-integration PYTEST_ARGS+='-k "(test_kast.py or test_run.py or test_solc_to_k.py)"'
+.PHONY: test-integration
+test-integration:
+	$(MAKE) -C kevm-pyk/ test-integration PYTEST_ARGS+='-k "(test_kast.py or test_run.py)"'
 
-profile: poetry
+.PHONY: profile
+profile:
 	$(MAKE) -C kevm-pyk/ profile
 	find /tmp/pytest-of-$$(whoami)/pytest-current/ -type f -name '*.prof' | sort | xargs tail -n +1
 
-test-summarize: poetry
+.PHONY: test-summarize
+test-summarize:
 	$(MAKE) -C kevm-pyk/ test-integration PYTEST_ARGS+='-k "test_summarize"'
 
 
@@ -105,31 +131,13 @@ KPROVE_EXT    = k
 KEVM_OPTS    ?=
 KPROVE_OPTS  ?=
 
-
-tests/specs/examples/%-bin-runtime.k: KEVM_OPTS += --verbose
-
-tests/specs/examples/erc20-spec/haskell/timestamp: tests/specs/examples/erc20-bin-runtime.k
-tests/specs/examples/erc20-bin-runtime.k: tests/specs/examples/ERC20.sol $(KEVM_LIB)/$(haskell_kompiled) poetry
-	$(KEVM) solc-to-k $< ERC20 $(KEVM_OPTS) --verbose --definition $(KEVM_LIB)/$(haskell_dir) --main-module ERC20-VERIFICATION > $@
-
-tests/specs/examples/erc721-spec/haskell/timestamp: tests/specs/examples/erc721-bin-runtime.k
-tests/specs/examples/erc721-bin-runtime.k: tests/specs/examples/ERC721.sol $(KEVM_LIB)/$(haskell_kompiled) poetry
-	$(KEVM) solc-to-k $< ERC721 $(KEVM_OPTS) --verbose --definition $(KEVM_LIB)/$(haskell_dir) --main-module ERC721-VERIFICATION > $@
-
-tests/specs/examples/storage-spec/haskell/timestamp: tests/specs/examples/storage-bin-runtime.k
-tests/specs/examples/storage-bin-runtime.k: tests/specs/examples/Storage.sol $(KEVM_LIB)/$(haskell_kompiled) poetry
-	$(KEVM) solc-to-k $< Storage $(KEVM_OPTS) --verbose --definition $(KEVM_LIB)/$(haskell_dir) --main-module STORAGE-VERIFICATION > $@
-
-tests/specs/examples/empty-bin-runtime.k: tests/specs/examples/Empty.sol $(KEVM_LIB)/$(haskell_kompiled) poetry
-	$(KEVM) solc-to-k $< Empty $(KEVM_OPTS) --verbose --definition $(KEVM_LIB)/$(haskell_dir) --main-module EMPTY-VERIFICATION > $@
-
 .SECONDEXPANSION:
 tests/specs/%.prove: tests/specs/% tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)/timestamp
-	$(POETRY_RUN) kevm-pyk prove $< $(KEVM_OPTS) $(KPROVE_OPTS) \
+	$(UV_RUN) kevm-pyk prove $< $(KEVM_OPTS) $(KPROVE_OPTS) \
 		--definition tests/specs/$(firstword $(subst /, ,$*))/$(KPROVE_FILE)/$(TEST_SYMBOLIC_BACKEND)
 
 tests/specs/%/timestamp: tests/specs/$$(firstword $$(subst /, ,$$*))/$$(KPROVE_FILE).$$(KPROVE_EXT)
-	$(POETRY_RUN) kevm-pyk kompile-spec                                                                         \
+	$(UV_RUN) kevm-pyk kompile-spec                                                                             \
 		$<                                                                                                      \
 		--target $(word 3, $(subst /, , $*))                                                                    \
 		--output-definition tests/specs/$(firstword $(subst /, ,$*))/$(KPROVE_FILE)/$(word 3, $(subst /, , $*)) \
@@ -160,9 +168,9 @@ tests/ethereum-tests/BlockchainTests/GeneralStateTests/VMTests/%: KEVM_MODE     
 tests/ethereum-tests/BlockchainTests/GeneralStateTests/VMTests/%: KEVM_SCHEDULE = DEFAULT
 
 tests/%.run-interactive: tests/%
-	$(POETRY_RUN) kevm-pyk run $< $(KEVM_OPTS) $(KRUN_OPTS) --target $(TEST_CONCRETE_BACKEND)                          \
-	    --mode $(KEVM_MODE) --schedule $(KEVM_SCHEDULE) --chainid $(KEVM_CHAINID)                                      \
-	    > tests/$*.$(TEST_CONCRETE_BACKEND)-out                                                                        \
+	$(UV_RUN) kevm-pyk run $< $(KEVM_OPTS) $(KRUN_OPTS) --target $(TEST_CONCRETE_BACKEND) \
+	    --mode $(KEVM_MODE) --schedule $(KEVM_SCHEDULE) --chainid $(KEVM_CHAINID)         \
+	    > tests/$*.$(TEST_CONCRETE_BACKEND)-out                                           \
 	    || $(CHECK) tests/$*.$(TEST_CONCRETE_BACKEND)-out tests/templates/output-success-$(TEST_CONCRETE_BACKEND).json
 	$(KEEP_OUTPUTS) || rm -rf tests/$*.$(TEST_CONCRETE_BACKEND)-out
 
