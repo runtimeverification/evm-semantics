@@ -258,20 +258,25 @@ module BYTES-SIMPLIFICATION [symbolic]
 
     // Memory lookup
 
-    rule [bytes-concat-lookup-left]:
-      ( B1:Bytes +Bytes B2:Bytes ) [ I:Int ] => B1 [ I ]
-      requires 0 <=Int I andBool I <Int lengthBytes(B1)
-      [simplification(40), preserves-definedness]
+    // rule [bytes-concat-lookup-left]:
+    //   ( B1:Bytes +Bytes B2:Bytes ) [ I:Int ] => B1 [ I ]
+    //   requires 0 <=Int I andBool I <Int lengthBytes(B1)
+    //   [simplification(40), preserves-definedness]
 
-    rule [bytes-concat-lookup-right]:
-      ( B1:Bytes +Bytes B2:Bytes ) [ I:Int ] => B2 [ I -Int lengthBytes(B1) ]
-      requires lengthBytes(B1) <=Int I
-      [simplification(40), preserves-definedness]
+    // rule [bytes-concat-lookup-right]:
+    //   ( B1:Bytes +Bytes B2:Bytes ) [ I:Int ] => B2 [ I -Int lengthBytes(B1) ]
+    //   requires lengthBytes(B1) <=Int I
+    //   [simplification(40), preserves-definedness]
 
-    rule [lookup-as-asWord]:
-      B:Bytes [ I:Int ] => #asWord ( #range ( B, I, 1 ) )
-      requires 0 <=Int I andBool I <=Int lengthBytes(B)
-      [simplification(60)]
+    // rule [lookup-as-asWord]:
+    //   B:Bytes [ I:Int ] => #asWord ( #range ( B, I, 1 ) )
+    //   requires 0 <=Int I andBool I <=Int lengthBytes(B)
+    //   [simplification(60)]
+
+      rule [symb-program-index]:
+        M:Bytes [ N:Int ] => #asWord ( #range(M, N, 1) )
+        requires 0 <=Int N andBool N <Int lengthBytes(M)
+        [simplification(60), symbolic(M), concrete(N), preserves-definedness]
 
     // lengthBytes
 

@@ -366,6 +366,11 @@ module LEMMAS-SPEC
             => doneLemma(true) ... </k>
       requires lengthBytes ( BYTES:Bytes ) <Int 32
 
+// Symbolic bytes lookup simplification
+// -------------------
+    claim [lookup-symbolic-bytes-upd]: <k> runLemma ( b"`\xa0`@R4\x80\x15a\x00\x10W`\x00" +Bytes #buf ( 32 , WORD:Int ) [ 0 ] ) => doneLemma ( b"\xa0`" ) ... </k>
+        requires WORD:Int <Int pow256
+
  // #buf simplification
  // -------------------
     claim [bufExtractPadding]: <k> runLemma ( #asWord ( ( #range( #buf ( 32 , X ), 0, 28 ) ):Bytes ) ) => doneLemma ( 0 ) ... </k> requires #rangeUInt(32, X)
