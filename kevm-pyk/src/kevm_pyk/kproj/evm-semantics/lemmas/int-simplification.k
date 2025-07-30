@@ -106,6 +106,7 @@ endmodule
 module INT-SIMPLIFICATION-COMMON
     imports INT
     imports BOOL
+    imports WORD
 
   // ###########################################################################
   // add, sub
