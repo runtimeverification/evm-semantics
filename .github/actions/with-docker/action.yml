@@ -15,7 +15,7 @@ inputs:
     required: false
     type: string
     default: './'
-  os: 
+  os:
     description: 'OS to setup Docker for.'
     required: false
     type: string
@@ -55,6 +55,7 @@ runs:
       GROUP=${USER}
       Z3_VERSION=$(cat deps/z3)
       K_VERSION=$(cat deps/k_release)
+      UV_VERSION=$(cat deps/uv_release)
       USER_ID=1000
       GROUP_ID=${USER_ID}
 
@@ -67,7 +68,8 @@ runs:
         --build-arg BASE_DISTRO=${BASE_DISTRO}   \
         --build-arg K_VERSION=${K_VERSION}       \
         --build-arg Z3_VERSION=${Z3_VERSION}     \
-        --build-arg LLVM_VERSION=${LLVM_VERSION}
+        --build-arg LLVM_VERSION=${LLVM_VERSION} \
+        --build-arg UV_VERSION=${UV_VERSION}
 
       docker run                          \
         --name ${CONTAINER_NAME}          \

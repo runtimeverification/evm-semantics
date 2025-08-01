@@ -148,6 +148,12 @@ module LEMMAS-SPEC
       </k>
       requires X =/=K Y
 
+// List simplifications
+// --------------------
+
+  claim [list-in-simplification]:
+    <k> runLemma ( b"\xd3V\x97\x17" in ListItem ( b"Y\xecK\x01" +Bytes #buf ( 32 , W:Int ) ) ) => doneLemma ( false ) ... </k>
+      requires #rangeUInt(256, W)
 
  // Memory update simplifications
  // ----------------------------
@@ -365,6 +371,13 @@ module LEMMAS-SPEC
       <k> runLemma( b"\xaa" ==K #range ( ( BYTES:Bytes +Bytes b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" ) [ ( lengthBytes ( BYTES:Bytes ) /Int 2 ) := b"\xaa" ] , ( lengthBytes ( BYTES:Bytes ) /Int 2 ) , 1 ) )
             => doneLemma(true) ... </k>
       requires lengthBytes ( BYTES:Bytes ) <Int 32
+
+// Symbolic bytes lookup simplification
+// -------------------
+    claim [lookup-symbolic-bytes]: 
+      <k> runLemma ( b"`\xa0`@R4\x80\x15a\x00\x10W`\x00" +Bytes #buf ( 32 , W:Int )  [ 0 ] )
+        => doneLemma ( 96 ) ... </k>
+        requires #rangeUInt(256, W)
 
  // #buf simplification
  // -------------------

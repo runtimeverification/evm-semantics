@@ -43,5 +43,6 @@ WORKDIR /home/${USER}/workspace
 
 ENV PATH=/home/${USER}/.local/bin:${PATH}
 
-RUN    curl -sSL https://install.python-poetry.org | python3 - --version 1.8.3 \
-    && poetry --version
+ARG UV_VERSION
+RUN    curl -LsSf https://astral.sh/uv/${UV_VERSION}/install.sh | sh \
+    && uv --version
