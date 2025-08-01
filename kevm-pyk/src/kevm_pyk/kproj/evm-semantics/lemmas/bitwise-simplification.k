@@ -79,4 +79,29 @@ module BITWISE-SIMPLIFICATION [symbolic]
 
     rule 0 <=Int (X <<Int Y) => true requires 0 <=Int X andBool 0 <=Int Y [simplification]
 
+  // ###########################################################################
+  // bit-xor
+  // ###########################################################################
+
+    // Simplifications for the OpenZeppelin ternary operator function
+
+    rule [xorInt-ge-zero]:
+      0 <=Int X xorInt Y => true
+      requires 0 <=Int X andBool 0 <=Int Y
+      [simplification]
+
+    rule [xorInt-lt]:
+      X xorInt Y <Int Z => true
+      requires X <Int ( 2 ^Int log2Int ( Z ) ) andBool Y <Int ( 2 ^Int log2Int ( Z ) )
+      [simplification, concrete(Z)]
+
+    rule [b2w-lt]:
+      bool2Word ( B:Bool ) *Int X <Int Y =>
+        ( ( notBool B ) andBool 0 <Int Y ) orBool ( B andBool X <Int Y )
+      [simplification, concrete(Y)]
+
+    rule [xorInt-to-if]:
+      X xorInt ( bool2Word ( B ) *Int ( X xorInt Y ) ) => #if B #then Y #else X #fi
+      [simplification]
+
 endmodule
