@@ -38,12 +38,11 @@ module SCHEDULE
     rule getSchedule(100) => BEDROCK
     rule getSchedule(101) => REGOLITH
     rule getSchedule(102) => CANYON
-    rule getSchedule(103) => DELTA
-    rule getSchedule(104) => ECOTONE
-    rule getSchedule(105) => FJORD
-    rule getSchedule(106) => GRANITE
-    rule getSchedule(107) => HOLOCENE
-    rule getSchedule(108) => ISTHMUS
+    rule getSchedule(103) => ECOTONE
+    rule getSchedule(104) => FJORD
+    rule getSchedule(105) => GRANITE
+    rule getSchedule(106) => HOLOCENE
+    rule getSchedule(107) => ISTHMUS
 
     syntax Bool ::= ScheduleFlag "<<" Schedule ">>" [function, total]
  // -----------------------------------------------------------------
@@ -2071,124 +2070,6 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghasblobhash            << CANYON >> => false
     rule Ghasbls12msmdiscount    << CANYON >> => false
     rule Ghasdelegation          << CANYON >> => false
-```
-
-### Delta Schedule
-
-```k
-    syntax Schedule ::= "DELTA" [symbol(DELTA_EVM), smtlib(schedule_DELTA)]
- // -----------------------------------------------------------------------
-    rule Gzero    < DELTA > => 0
-
-    rule Gbase    < DELTA > => 2
-    rule Gverylow < DELTA > => 3
-    rule Glow     < DELTA > => 5
-    rule Gmid     < DELTA > => 8
-    rule Ghigh    < DELTA > => 10
-
-    rule Gexp      < DELTA > => 10
-    rule Gexpbyte  < DELTA > => 50
-    rule Gsha3     < DELTA > => 30
-    rule Gsha3word < DELTA > => 6
-
-    rule Gsload       < DELTA > => 100
-    rule Gsstoreset   < DELTA > => 20000
-    rule Gsstorereset < DELTA > => 2900
-    rule Rsstoreclear < DELTA > => 4800
-
-    rule Glog      < DELTA > => 375
-    rule Glogdata  < DELTA > => 8
-    rule Glogtopic < DELTA > => 375
-
-    rule Gcall        < DELTA > => 700
-    rule Gcallstipend < DELTA > => 2300
-    rule Gcallvalue   < DELTA > => 9000
-    rule Gnewaccount  < DELTA > => 25000
-
-    rule Gcreate       < DELTA > => 32000
-    rule Gcodedeposit  < DELTA > => 200
-    rule Gselfdestruct < DELTA > => 5000
-    rule Rselfdestruct < DELTA > => 0
-
-    rule Gmemory      < DELTA > => 3
-    rule Gquadcoeff   < DELTA > => 512
-    rule Gcopy        < DELTA > => 3
-    rule Gquaddivisor < DELTA > => 3
-
-    rule Gtransaction   < DELTA > => 21000
-    rule Gtxcreate      < DELTA > => 53000
-    rule Gtxdatazero    < DELTA > => 4
-    rule Gtxdatanonzero < DELTA > => 16
-
-    rule Gjumpdest    < DELTA > => 1
-    rule Gbalance     < DELTA > => 700
-    rule Gblockhash   < DELTA > => 20
-    rule Gextcodesize < DELTA > => 700
-    rule Gextcodecopy < DELTA > => 700
-
-    rule Gecadd       < DELTA > => 150
-    rule Gecmul       < DELTA > => 6000
-    rule Gecpairconst < DELTA > => 45000
-    rule Gecpaircoeff < DELTA > => 34000
-    rule Gfround      < DELTA > => 1
-
-    rule maxCodeSize < DELTA > => 24576
-    rule Rb          < DELTA > => 0
-
-    rule Gcoldsload             < DELTA > => 2100
-    rule Gcoldaccountaccess     < DELTA > => 2600
-    rule Gwarmstorageread       < DELTA > => 100
-    rule Gwarmstoragedirtystore < DELTA > => 0
-
-    rule Gpointeval < DELTA > => 0
-
-    rule Gbls12g1add < DELTA > => 0
-    rule Gbls12g1mul < DELTA > => 0
-    rule Gbls12g2add < DELTA > => 0
-    rule Gbls12g2mul < DELTA > => 0
-    rule Gbls12PairingCheckMul < DELTA > => 0
-    rule Gbls12PairingCheckAdd < DELTA > => 0
-    rule Gbls12mapfptog1 < DELTA > => 0
-    rule Gbls12mapfp2tog2 < DELTA > => 0
-
-    rule Gaccessliststoragekey < DELTA > => 1900
-    rule Gaccesslistaddress    < DELTA > => 2400
-
-    rule maxInitCodeSize   < DELTA > => 49152
-    rule Ginitcodewordcost < DELTA > => 2
-
-    rule Rmaxquotient < DELTA > => 5
-
-    rule Gselfdestructnewaccount << DELTA >> => true
-    rule Gstaticcalldepth        << DELTA >> => false
-    rule Gemptyisnonexistent     << DELTA >> => true
-    rule Gzerovaluenewaccountgas << DELTA >> => false
-    rule Ghasrevert              << DELTA >> => true
-    rule Ghasreturndata          << DELTA >> => true
-    rule Ghasstaticcall          << DELTA >> => true
-    rule Ghasshift               << DELTA >> => true
-    rule Ghasdirtysstore         << DELTA >> => true
-    rule Ghassstorestipend       << DELTA >> => true
-    rule Ghascreate2             << DELTA >> => true
-    rule Ghasextcodehash         << DELTA >> => true
-    rule Ghasselfbalance         << DELTA >> => true
-    rule Ghaschainid             << DELTA >> => true
-    rule Ghasaccesslist          << DELTA >> => true
-    rule Ghasbasefee             << DELTA >> => true
-    rule Ghasrejectedfirstbyte   << DELTA >> => true
-    rule Ghasprevrandao          << DELTA >> => true
-    rule Ghasmaxinitcodesize     << DELTA >> => true
-    rule Ghaspushzero            << DELTA >> => true
-    rule Ghaswarmcoinbase        << DELTA >> => true
-    rule Ghaswithdrawals         << DELTA >> => true
-    rule Ghastransient           << DELTA >> => false
-    rule Ghasmcopy               << DELTA >> => false
-    rule Ghasbeaconroot          << DELTA >> => false
-    rule Ghaseip6780             << DELTA >> => false
-    rule Ghasblobbasefee         << DELTA >> => false
-    rule Ghasblobhash            << DELTA >> => false
-    rule Ghasbls12msmdiscount    << DELTA >> => false
-    rule Ghasdelegation          << DELTA >> => false
 ```
 
 ### Ecotone Schedule

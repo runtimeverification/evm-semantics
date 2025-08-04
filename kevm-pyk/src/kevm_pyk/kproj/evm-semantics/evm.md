@@ -1278,6 +1278,14 @@ Precompiled Contracts
     rule #precompiledAccountsUB(SHANGHAI)          => #precompiledAccountsUB(MERGE)
     rule #precompiledAccountsUB(CANCUN)            => 10p256
     rule #precompiledAccountsUB(PRAGUE)            => 17p256
+    rule #precompiledAccountsUB(BEDROCK)           => #precompiledAccountsUB(MERGE)
+    rule #precompiledAccountsUB(REGOLITH)          => #precompiledAccountsUB(BEDROCK)
+    rule #precompiledAccountsUB(CANYON)            => #precompiledAccountsUB(SHANGHAI)
+    rule #precompiledAccountsUB(ECOTONE)           => #precompiledAccountsUB(CANCUN)
+    rule #precompiledAccountsUB(FJORD)             => #precompiledAccountsUB(ECOTONE)
+    rule #precompiledAccountsUB(GRANITE)           => #precompiledAccountsUB(FJORD)
+    rule #precompiledAccountsUB(HOLOCENE)          => #precompiledAccountsUB(GRANITE)
+    rule #precompiledAccountsUB(ISTHMUS)           => #precompiledAccountsUB(PRAGUE)
 
 
     syntax Set ::= #precompiledAccountsSet    ( Schedule ) [symbol(#precompiledAccountsSet),    function, total]
