@@ -96,11 +96,6 @@ module BITWISE-SIMPLIFICATION [symbolic]
        andBool X <Int ( 2 ^Int log2Int ( Z ) ) andBool Y <Int ( 2 ^Int log2Int ( Z ) )
       [simplification, concrete(Z)]
 
-    rule [b2w-lt]:
-      bool2Word ( B:Bool ) *Int X <Int Y =>
-        ( ( notBool B ) andBool 0 <Int Y ) orBool ( B andBool X <Int Y )
-      [simplification, concrete(Y)]
-
     rule [xorInt-to-if]:
       X xorInt ( bool2Word ( B ) *Int ( X xorInt Y ) ) => #if B #then Y #else X #fi
       [simplification]
