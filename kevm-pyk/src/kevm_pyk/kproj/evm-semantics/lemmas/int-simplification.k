@@ -98,8 +98,8 @@ module INT-SIMPLIFICATION-HASKELL [symbolic]
 
     rule 0  <Int A -Int B => B  <Int A [simplification, symbolic(A, B)]
     rule 0 <=Int A -Int B => B <=Int A [simplification, symbolic(A, B)]
-    rule 0  >Int A -Int B => B  >Int A [simplification, symbolic(A, B)]
-    rule 0 >=Int A -Int B => B >=Int A [simplification, symbolic(A, B)]
+    rule A -Int B  <Int 0 => A  <Int B [simplification, symbolic(A, B)]
+    rule A -Int B <=Int 0 => A <=Int B [simplification, symbolic(A, B)]
 
 endmodule
 
