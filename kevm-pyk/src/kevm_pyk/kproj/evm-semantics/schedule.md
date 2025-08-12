@@ -44,6 +44,31 @@ module SCHEDULE
     rule getSchedule(106) => HOLOCENE
     rule getSchedule(107) => ISTHMUS
 
+    syntax Bool ::= isOptimismSchedule(Schedule) [function]
+ // -------------------------------------------------------
+    rule isOptimismSchedule(BEDROCK) => true
+    rule isOptimismSchedule(REGOLITH) => true
+    rule isOptimismSchedule(CANYON) => true
+    rule isOptimismSchedule(ECOTONE) => true
+    rule isOptimismSchedule(FJORD) => true
+    rule isOptimismSchedule(GRANITE) => true
+    rule isOptimismSchedule(HOLOCENE) => true
+    rule isOptimismSchedule(ISTHMUS) => true
+    rule isOptimismSchedule(FRONTIER) => false
+    rule isOptimismSchedule(HOMESTEAD) => false
+    rule isOptimismSchedule(TANGERINE_WHISTLE) => false
+    rule isOptimismSchedule(SPURIOUS_DRAGON) => false
+    rule isOptimismSchedule(BYZANTIUM) => false
+    rule isOptimismSchedule(CONSTANTINOPLE) => false
+    rule isOptimismSchedule(PETERSBURG) => false
+    rule isOptimismSchedule(ISTANBUL) => false
+    rule isOptimismSchedule(BERLIN) => false
+    rule isOptimismSchedule(LONDON) => false
+    rule isOptimismSchedule(MERGE) => false
+    rule isOptimismSchedule(SHANGHAI) => false
+    rule isOptimismSchedule(CANCUN) => false
+    rule isOptimismSchedule(PRAGUE) => false
+
     syntax Bool ::= ScheduleFlag "<<" Schedule ">>" [function, total]
  // -----------------------------------------------------------------
 

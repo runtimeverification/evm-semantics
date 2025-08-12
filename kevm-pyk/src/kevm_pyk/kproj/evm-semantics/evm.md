@@ -61,6 +61,8 @@ In the comments next to each cell, we've marked which component of the YellowPap
               <callData>  $CALLDATA:Bytes                     </callData>  // I_d
               <callValue> Int2MInt($CALLVALUE:Int)::MInt{256} </callValue> // I_v
 
+              <isPrecompile> false                            </isPrecompile>
+
               // \mu_*
               <wordStack>   .List  </wordStack>           // \mu_s
               <localMem>    .Bytes </localMem>            // \mu_m
@@ -115,6 +117,7 @@ Output Extraction
     rule getStatus(EVMC_STATIC_MODE_VIOLATION) => EVMC_STATIC_MODE_VIOLATION
     rule getStatus(EVMC_PRECOMPILE_FAILURE) => EVMC_PRECOMPILE_FAILURE
     rule getStatus(EVMC_NONCE_EXCEEDED) => EVMC_NONCE_EXCEEDED
+    rule getStatus(EVMC_PRECOMPILE_OOG) => EVMC_PRECOMPILE_OOG
 
     rule getGasLeft(G) => 0 requires getStatus(G) =/=Int EVMC_SUCCESS andBool getStatus(G) =/=Int EVMC_REVERT
     rule getGasLeft(<generatedTop>... <gas> G </gas> ...</generatedTop>) => G [priority(51)]
@@ -946,7 +949,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
 
     syntax InternalOp ::= "#precompiled?" "(" MInt{256} "," Schedule ")"
  // --------------------------------------------------------------
-    rule [precompile.true]:  <k> #precompiled?(ACCTCODE, SCHED) => #next [ #precompiled(ACCTCODE) ] ... </k> requires         #isPrecompiledAccount(ACCTCODE, SCHED) [preserves-definedness]
+    rule [precompile.true]:  <k> #precompiled?(ACCTCODE, SCHED) => #next [ #precompiled(ACCTCODE) ] ... </k> <isPrecompile> _ => true </isPrecompile> requires         #isPrecompiledAccount(ACCTCODE, SCHED) [preserves-definedness]
     rule [precompile.false]: <k> #precompiled?(ACCTCODE, SCHED) => .K                               ... </k> requires notBool #isPrecompiledAccount(ACCTCODE, SCHED)
 
     syntax Bool ::= #isPrecompiledAccount ( MInt{256} , Schedule ) [symbol(isPrecompiledAccount), function, total, smtlib(isPrecompiledAccount)]
@@ -1826,7 +1829,7 @@ Overall Gas
          <memoryUsed> MU => MU' </memoryUsed> <schedule> SCHED </schedule>
 
     rule <k> _G:Gas ~> (#deductMemoryGas => #deductGas)   ... </k> //Required for verification
-    rule <k>  G:Gas ~> #deductGas => #end EVMC_OUT_OF_GAS ... </k> <gas> GAVAIL                  </gas> requires GAVAIL <Gas G
+    rule <k>  G:Gas ~> #deductGas => #end #if ISPREC andBool isOptimismSchedule(SCHED) #then EVMC_PRECOMPILE_OOG #else EVMC_OUT_OF_GAS #fi ... </k> <gas> GAVAIL                  </gas> <isPrecompile> ISPREC </isPrecompile> <schedule> SCHED </schedule> requires GAVAIL <Gas G
     rule <k>  G:Gas ~> #deductGas => .K                   ... </k> <gas> GAVAIL => GAVAIL -Gas G </gas> requires G <=Gas GAVAIL
 
     syntax Bool ::= #inStorage     ( Map   , Account , Int ) [symbol(#inStorage), function, total]

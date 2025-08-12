@@ -32,6 +32,7 @@ The following codes all indicate that the VM ended execution with an exception, 
 -   `EVMC_STATIC_MODE_VIOLATION` indicates that a `STATICCALL` tried to change state.
     **TODO:** Avoid `_ERROR` suffix that suggests fatal error.
 -   `EVMC_PRECOMPILE_FAILURE` indicates an errors in the precompiled contracts (eg. invalid points handed to elliptic curve functions).
+-   `EVMC_PRECOMPILE_OOG` indicates that the gas supply was exhausted during the execution of a precompiled contract.
 
 ```k
     syntax ExceptionalStatusCode ::= "EVMC_FAILURE"
@@ -46,6 +47,7 @@ The following codes all indicate that the VM ended execution with an exception, 
                                    | "EVMC_STATIC_MODE_VIOLATION"
                                    | "EVMC_PRECOMPILE_FAILURE"
                                    | "EVMC_NONCE_EXCEEDED"
+                                   | "EVMC_PRECOMPILE_OOG"
  // -------------------------------------------------------------
     rule StatusCode2String(EVMC_FAILURE)               => "EVMC_FAILURE"
     rule StatusCode2String(EVMC_INVALID_INSTRUCTION)   => "EVMC_INVALID_INSTRUCTION"
@@ -59,6 +61,7 @@ The following codes all indicate that the VM ended execution with an exception, 
     rule StatusCode2String(EVMC_STATIC_MODE_VIOLATION) => "EVMC_STATIC_MODE_VIOLATION"
     rule StatusCode2String(EVMC_PRECOMPILE_FAILURE)    => "EVMC_PRECOMPILE_FAILURE"
     rule StatusCode2String(EVMC_NONCE_EXCEEDED)        => "EVMC_NONCE_EXCEEDED"
+    rule StatusCode2String(EVMC_PRECOMPILE_OOG)        => "EVMC_PRECOMPILE_OOG"
 ```
 
 ### Ending Codes
