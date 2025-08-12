@@ -252,4 +252,7 @@ module LEMMAS-HASKELL [symbolic]
 
     rule (notBool (A andBool B)) andBool A => (notBool B) andBool A [simplification]
 
+    rule [notBool-or]:  notBool ( A  orBool B ) => ( notBool A ) andBool ( notBool B ) [simplification(60)]
+    rule [notBool-and]: notBool ( A andBool B ) => ( notBool A )  orBool ( notBool B ) [simplification(60)]
+
 endmodule

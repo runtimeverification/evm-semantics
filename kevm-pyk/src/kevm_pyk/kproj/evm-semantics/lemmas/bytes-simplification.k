@@ -34,6 +34,12 @@ module BYTES-SIMPLIFICATION [symbolic]
     rule [bytes-concat-right-assoc-symb-r]: (B1:Bytes +Bytes B2:Bytes) +Bytes B3:Bytes => B1 +Bytes (B2 +Bytes B3) [symbolic(B2), simplification(40)]
     rule [bytes-concat-left-assoc-conc]:    B1:Bytes +Bytes (B2:Bytes +Bytes B3:Bytes) => (B1 +Bytes B2) +Bytes B3 [concrete(B1, B2), symbolic(B3), simplification(40)]
 
+    // Can ignore lower bytes for <Int if the corresponding bytes in X are 0 (note this does not apply to <=Int)
+    rule [asWord-lt-concat-left]:
+      #asWord ( B1 +Bytes B2 ) <Int X => #asWord ( B1 ) <Int X /Int ( 2 ^Int ( 8 *Int lengthBytes ( B2 ) ) )
+      requires X modInt ( 2 ^Int ( 8 *Int lengthBytes ( B2 ) ) ) ==Int 0
+      [simplification, preserves-definedness]
+
     // #buf
 
     rule [buf-empty]: #buf(N:Int, _) => b"" requires N ==Int 0 [simplification]
