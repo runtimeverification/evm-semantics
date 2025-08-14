@@ -20,6 +20,7 @@ module VAT-DENY-DIFF-FAIL-ROUGH-SPEC
             <program> Vat_bin_runtime </program>
             <jumpDests> #computeValidJumpDests(Vat_bin_runtime) </jumpDests>
             <id> ACCT_ID </id>
+            <codeAddr> ACCT_ID </codeAddr>
             <caller> CALLER_ID </caller>
             <callData> #abiCallData("deny", #address(ABI_usr)) +Bytes CD => ?_ </callData>
             <callValue> VCallValue </callValue>
