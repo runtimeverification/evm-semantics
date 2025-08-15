@@ -615,7 +615,9 @@ These operators make queries about the current execution state.
     rule <k> GASPRICE    => GasPrice()                           ~> #push ... </k>
     rule <k> GASLIMIT    => GasLimit()                           ~> #push ... </k>
     rule <k> BASEFEE     => BaseFee()                            ~> #push ... </k>
-    rule <k> BLOBBASEFEE => BlobBaseFee()                        ~> #push ... </k>
+    rule <k> BLOBBASEFEE => BlobBaseFee()                        ~> #push ... </k> <schedule> SCHED </schedule>
+       requires SCHED =/=K ECOTONE
+    rule <k> BLOBBASEFEE => EvmWord(1p256)                       ~> #push ... </k> <schedule> ECOTONE </schedule>
 
     syntax NullStackOp ::= "COINBASE" | "TIMESTAMP" | "NUMBER" | "DIFFICULTY" | "PREVRANDAO"
  // ----------------------------------------------------------------------------------------
