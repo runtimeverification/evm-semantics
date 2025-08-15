@@ -22,6 +22,7 @@ module VAT-FOLD-PASS-ROUGH-SPEC
             <program> Vat_bin_runtime </program>
             <jumpDests> #computeValidJumpDests(Vat_bin_runtime) </jumpDests>
             <id> ACCT_ID </id>
+            <codeAddr> ACCT_ID </codeAddr>
             <caller> CALLER_ID </caller>
             <callData> #abiCallData("fold", #bytes32(ABI_i), #address(ABI_u), #int256(ABI_rate)) +Bytes CD => ?_ </callData>
             <callValue> VCallValue </callValue>

@@ -20,6 +20,7 @@ module FLOPPER-TICK-PASS-ROUGH-SPEC
             <program> Flopper_bin_runtime </program>
             <jumpDests> #computeValidJumpDests(Flopper_bin_runtime) </jumpDests>
             <id> ACCT_ID </id>
+            <codeAddr> ACCT_ID </codeAddr>
             <caller> CALLER_ID </caller>
             <callData> #abiCallData("tick", #uint256(ABI_id)) +Bytes CD => ?_ </callData>
             <callValue> VCallValue </callValue>
@@ -145,6 +146,7 @@ module FLOPPER-TICK-PASS-ROUGH-SPEC
             <program> Flopper_bin_runtime </program>
             <jumpDests> #computeValidJumpDests(Flopper_bin_runtime) </jumpDests>
             <id> ACCT_ID </id>
+            <codeAddr> ACCT_ID </codeAddr>
             <caller> CALLER_ID </caller>
             <callData> _ => ?_ </callData>
             <callValue> VCallValue </callValue>

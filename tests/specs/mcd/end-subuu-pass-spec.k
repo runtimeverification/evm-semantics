@@ -20,6 +20,7 @@ module END-SUBUU-PASS-SPEC
             <program> End_bin_runtime </program>
             <jumpDests> #computeValidJumpDests(End_bin_runtime) </jumpDests>
             <id> ACCT_ID </id>
+            <codeAddr> ACCT_ID </codeAddr>
             <caller> CALLER_ID </caller>
             <callData> _ => ?_ </callData>
             <callValue> VCallValue </callValue>

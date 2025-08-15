@@ -74,6 +74,9 @@
         <callDepth>
           -1
         </callDepth>
+        <codeAddr>
+          .Account
+        </codeAddr>
       </callState>
       <versionedHashes>
         .List

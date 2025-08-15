@@ -20,6 +20,7 @@ module FLIPPER-ADDU48U48-FAIL-ROUGH-SPEC
             <program> Flipper_bin_runtime </program>
             <jumpDests> #computeValidJumpDests(Flipper_bin_runtime) </jumpDests>
             <id> ACCT_ID </id>
+            <codeAddr> ACCT_ID </codeAddr>
             <caller> CALLER_ID </caller>
             <callData> _ => ?_ </callData>
             <callValue> VCallValue </callValue>

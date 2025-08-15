@@ -98,6 +98,7 @@ claim [lemma.3]:
           <jumpDests> #computeValidJumpDests(#binRuntime(S2KERC721)) </jumpDests>
 
           <id>         ACCTID      => ?_ </id>
+          <codeAddr>         ACCTID      => ?_ </codeAddr>
           <localMem>   .Bytes     => ?_ </localMem>
           <memoryUsed> 0           => ?_ </memoryUsed>
           <wordStack>  .WordStack  => ?_ </wordStack>
@@ -135,6 +136,7 @@ claim [lemma.3]:
           <jumpDests> #computeValidJumpDests(#binRuntime(S2KERC721)) </jumpDests>
 
           <id>         ACCTID      => ?_ </id>
+          <codeAddr>         ACCTID      => ?_ </codeAddr>
           <localMem>   .Bytes     => ?_ </localMem>
           <memoryUsed> 0           => ?_ </memoryUsed>
           <wordStack>  .WordStack  => ?_ </wordStack>

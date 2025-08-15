@@ -41,6 +41,9 @@ module TEST-ARITHMETICTEST-TEST_MAX1_BROKEN-UINT256-UINT256-0-SPEC
                  <id>
                    728815563385977040452943777879061427756277306518
                  </id>
+                 <codeAddr>
+                   728815563385977040452943777879061427756277306518
+                 </codeAddr>
                  <caller>
                    CALLER_ID:Int
                  </caller>

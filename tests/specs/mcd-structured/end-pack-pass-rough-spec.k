@@ -20,6 +20,7 @@ module END-PACK-PASS-ROUGH-SPEC
             <program> End_bin_runtime </program>
             <jumpDests> #computeValidJumpDests(End_bin_runtime) </jumpDests>
             <id> ACCT_ID </id>
+            <codeAddr> ACCT_ID </codeAddr>
             <caller> CALLER_ID </caller>
             <callData> #abiCallData("pack", #uint256(ABI_wad)) +Bytes CD => ?_ </callData>
             <callValue> VCallValue </callValue>
@@ -173,6 +174,7 @@ module END-PACK-PASS-ROUGH-SPEC
             <program> End_bin_runtime </program>
             <jumpDests> #computeValidJumpDests(End_bin_runtime) </jumpDests>
             <id> ACCT_ID </id>
+            <codeAddr> ACCT_ID </codeAddr>
             <caller> CALLER_ID </caller>
             <callData> _ => ?_ </callData>
             <callValue> VCallValue </callValue>
@@ -282,6 +284,7 @@ module END-PACK-PASS-ROUGH-SPEC
             <program> End_bin_runtime </program>
             <jumpDests> #computeValidJumpDests(End_bin_runtime) </jumpDests>
             <id> ACCT_ID </id>
+            <codeAddr> ACCT_ID </codeAddr>
             <caller> CALLER_ID </caller>
             <callData> _ => ?_ </callData>
             <callValue> VCallValue </callValue>
@@ -388,6 +391,7 @@ module END-PACK-PASS-ROUGH-SPEC
             <program> Vat_bin_runtime </program>
             <jumpDests> #computeValidJumpDests(Vat_bin_runtime) </jumpDests>
             <id> ACCT_ID </id>
+            <codeAddr> ACCT_ID </codeAddr>
             <caller> CALLER_ID </caller>
             <callData> #abiCallData("move", #address(ABI_src), #address(ABI_dst), #uint256(ABI_rad)) +Bytes CD => ?_ </callData>
             <callValue> VCallValue </callValue>

@@ -20,6 +20,7 @@ module FLOPPER-DENT-GUY-DIFF-TIC-NOT-0-PASS-ROUGH-SPEC
             <program> Flopper_bin_runtime </program>
             <jumpDests> #computeValidJumpDests(Flopper_bin_runtime) </jumpDests>
             <id> ACCT_ID </id>
+            <codeAddr> ACCT_ID </codeAddr>
             <caller> CALLER_ID </caller>
             <callData> #abiCallData("dent", #uint256(ABI_id), #uint256(ABI_lot), #uint256(ABI_bid)) +Bytes CD => ?_ </callData>
             <callValue> VCallValue </callValue>
@@ -224,6 +225,7 @@ module FLOPPER-DENT-GUY-DIFF-TIC-NOT-0-PASS-ROUGH-SPEC
             <program> Flopper_bin_runtime </program>
             <jumpDests> #computeValidJumpDests(Flopper_bin_runtime) </jumpDests>
             <id> ACCT_ID </id>
+            <codeAddr> ACCT_ID </codeAddr>
             <caller> CALLER_ID </caller>
             <callData> _ => ?_ </callData>
             <callValue> VCallValue </callValue>
@@ -335,6 +337,7 @@ module FLOPPER-DENT-GUY-DIFF-TIC-NOT-0-PASS-ROUGH-SPEC
             <program> Flopper_bin_runtime </program>
             <jumpDests> #computeValidJumpDests(Flopper_bin_runtime) </jumpDests>
             <id> ACCT_ID </id>
+            <codeAddr> ACCT_ID </codeAddr>
             <caller> CALLER_ID </caller>
             <callData> _ => ?_ </callData>
             <callValue> VCallValue </callValue>
@@ -442,6 +445,7 @@ module FLOPPER-DENT-GUY-DIFF-TIC-NOT-0-PASS-ROUGH-SPEC
             <program> Vat_bin_runtime </program>
             <jumpDests> #computeValidJumpDests(Vat_bin_runtime) </jumpDests>
             <id> ACCT_ID </id>
+            <codeAddr> ACCT_ID </codeAddr>
             <caller> CALLER_ID </caller>
             <callData> #abiCallData("move", #address(ABI_src), #address(ABI_dst), #uint256(ABI_rad)) +Bytes CD => ?_ </callData>
             <callValue> VCallValue </callValue>

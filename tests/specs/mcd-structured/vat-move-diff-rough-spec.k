@@ -23,6 +23,7 @@ module VAT-MOVE-DIFF-ROUGH-SPEC
             <program> Vat_bin_runtime </program>
             <jumpDests> #computeValidJumpDests(Vat_bin_runtime) </jumpDests>
             <id> ACCT_ID </id>
+            <codeAddr> ACCT_ID </codeAddr>
             <caller> CALLER_ID </caller>
             <callData> #abiCallData("move", #address(ABI_src), #address(ABI_dst), #uint256(ABI_rad)) +Bytes CD => ?_ </callData>
             <callValue> VCallValue </callValue>

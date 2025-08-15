@@ -20,6 +20,7 @@ module VOW-FESS-FAIL-ROUGH-SPEC
             <program> Vow_bin_runtime </program>
             <jumpDests> #computeValidJumpDests(Vow_bin_runtime) </jumpDests>
             <id> ACCT_ID </id>
+            <codeAddr> ACCT_ID </codeAddr>
             <caller> CALLER_ID </caller>
             <callData> #abiCallData("fess", #uint256(ABI_tab)) +Bytes CD => ?_ </callData>
             <callValue> VCallValue </callValue>
@@ -145,6 +146,7 @@ module VOW-FESS-FAIL-ROUGH-SPEC
             <program> Vow_bin_runtime </program>
             <jumpDests> #computeValidJumpDests(Vow_bin_runtime) </jumpDests>
             <id> ACCT_ID </id>
+            <codeAddr> ACCT_ID </codeAddr>
             <caller> CALLER_ID </caller>
             <callData> _ => ?_ </callData>
             <callValue> VCallValue </callValue>
