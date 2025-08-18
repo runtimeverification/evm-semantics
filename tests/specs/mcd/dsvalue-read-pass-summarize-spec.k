@@ -12,7 +12,7 @@ module DSVALUE-READ-PASS-SUMMARIZE-SPEC
 //        <statusCode> _ => ?FAILURE:EndStatusCode </statusCode>
 //        <callState>
 //          <id> ACCT_ID </id>
-          <codeAddr> ACCT_ID </codeAddr>
+//          <codeAddr> ACCT_ID </codeAddr>
 //          <program> DSValue_bin_runtime </program>
 //          <jumpDests> #computeValidJumpDests(DSValue_bin_runtime) </jumpDests>
 //          <callData> #abiCallData("read", .TypedArgs) +Bytes CD => ?_ </callData>
