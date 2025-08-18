@@ -38,6 +38,9 @@ module TEST-EXPECTREVERTTEST-TEST_EXPECTREVERT_RETURNVALUE-0-SPEC
                    <id>
                      728815563385977040452943777879061427756277306518
                    </id>
+                   <codeAddr>
+                     728815563385977040452943777879061427756277306518
+                   </codeAddr>
                    <caller>
                      CALLER_ID:Int
                    </caller>
@@ -155,6 +158,9 @@ module TEST-EXPECTREVERTTEST-TEST_EXPECTREVERT_RETURNVALUE-0-SPEC
                  <id>
                    ( 728815563385977040452943777879061427756277306518 => 491460923342184218035706888008750043977755113263 )
                  </id>
+                 <codeAddr>
+                   ( 728815563385977040452943777879061427756277306518 => 491460923342184218035706888008750043977755113263 )
+                 </codeAddr>
                  <caller>
                    ( CALLER_ID:Int => 728815563385977040452943777879061427756277306518 )
                  </caller>
