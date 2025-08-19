@@ -79,7 +79,7 @@ module SCHEDULE
                           | "Ghasrejectedfirstbyte"   | "Ghasprevrandao"   | "Ghasmaxinitcodesize" | "Ghaspushzero"
                           | "Ghaswarmcoinbase"        | "Ghaswithdrawals"  | "Ghastransient"       | "Ghasmcopy"
                           | "Ghasbeaconroot"          | "Ghaseip6780"      | "Ghasblobbasefee"     | "Ghasblobhash"
-                          | "Ghasbls12msmdiscount"    | "Ghasdelegation"
+                          | "Ghasbls12msmdiscount"    | "Ghasdelegation"   | "Gecpairinputcheck"
 ```
 
 ### Schedule Constants
@@ -218,6 +218,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghasblobhash            << FRONTIER >> => false
     rule Ghasbls12msmdiscount    << FRONTIER >> => false
     rule Ghasdelegation          << FRONTIER >> => false
+    rule Gecpairinputcheck       << FRONTIER >> => false
 ```
 
 ### Homestead Schedule
@@ -335,6 +336,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghasblobhash            << HOMESTEAD >> => false
     rule Ghasbls12msmdiscount    << HOMESTEAD >> => false
     rule Ghasdelegation          << HOMESTEAD >> => false
+    rule Gecpairinputcheck       << HOMESTEAD >> => false
 ```
 
 ### Tangerine Whistle Schedule
@@ -452,6 +454,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghasblobhash            << TANGERINE_WHISTLE >> => false
     rule Ghasbls12msmdiscount    << TANGERINE_WHISTLE >> => false
     rule Ghasdelegation          << TANGERINE_WHISTLE >> => false
+    rule Gecpairinputcheck       << TANGERINE_WHISTLE >> => false
 ```
 
 ### Spurious Dragon Schedule
@@ -569,6 +572,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghasblobhash            << SPURIOUS_DRAGON >> => false
     rule Ghasbls12msmdiscount    << SPURIOUS_DRAGON >> => false
     rule Ghasdelegation          << SPURIOUS_DRAGON >> => false
+    rule Gecpairinputcheck       << SPURIOUS_DRAGON >> => false
 ```
 
 ### Byzantium Schedule
@@ -686,6 +690,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghasblobhash            << BYZANTIUM >> => false
     rule Ghasbls12msmdiscount    << BYZANTIUM >> => false
     rule Ghasdelegation          << BYZANTIUM >> => false
+    rule Gecpairinputcheck       << BYZANTIUM >> => false
 ```
 
 ### Constantinople Schedule
@@ -803,6 +808,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghasblobhash            << CONSTANTINOPLE >> => false
     rule Ghasbls12msmdiscount    << CONSTANTINOPLE >> => false
     rule Ghasdelegation          << CONSTANTINOPLE >> => false
+    rule Gecpairinputcheck       << CONSTANTINOPLE >> => false
 ```
 
 ### Petersburg Schedule
@@ -920,6 +926,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghasblobhash            << PETERSBURG >> => false
     rule Ghasbls12msmdiscount    << PETERSBURG >> => false
     rule Ghasdelegation          << PETERSBURG >> => false
+    rule Gecpairinputcheck       << PETERSBURG >> => false
 ```
 
 ### Istanbul Schedule
@@ -1037,6 +1044,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghasblobhash            << ISTANBUL >> => false
     rule Ghasbls12msmdiscount    << ISTANBUL >> => false
     rule Ghasdelegation          << ISTANBUL >> => false
+    rule Gecpairinputcheck       << ISTANBUL >> => false
 ```
 
 ### Berlin Schedule
@@ -1154,6 +1162,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghasblobhash            << BERLIN >> => false
     rule Ghasbls12msmdiscount    << BERLIN >> => false
     rule Ghasdelegation          << BERLIN >> => false
+    rule Gecpairinputcheck       << BERLIN >> => false
 ```
 
 ### London Schedule
@@ -1271,6 +1280,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghasblobhash            << LONDON >> => false
     rule Ghasbls12msmdiscount    << LONDON >> => false
     rule Ghasdelegation          << LONDON >> => false
+    rule Gecpairinputcheck       << LONDON >> => false
 ```
 
 ### Merge Schedule
@@ -1388,6 +1398,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghasblobhash            << MERGE >> => false
     rule Ghasbls12msmdiscount    << MERGE >> => false
     rule Ghasdelegation          << MERGE >> => false
+    rule Gecpairinputcheck       << MERGE >> => false
 ```
 
 ### Shanghai Schedule
@@ -1506,6 +1517,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghasblobhash            << SHANGHAI >> => false
     rule Ghasbls12msmdiscount    << SHANGHAI >> => false
     rule Ghasdelegation          << SHANGHAI >> => false
+    rule Gecpairinputcheck       << SHANGHAI >> => false
 ```
 
 ### Cancun Schedule
@@ -1624,6 +1636,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghasblobhash            << CANCUN >> => true
     rule Ghasbls12msmdiscount    << CANCUN >> => false
     rule Ghasdelegation          << CANCUN >> => false
+    rule Gecpairinputcheck       << CANCUN >> => false
 ```
 
 ### Prague Schedule
@@ -1743,6 +1756,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghasblobhash            << PRAGUE >> => true
     rule Ghasbls12msmdiscount    << PRAGUE >> => true
     rule Ghasdelegation          << PRAGUE >> => true
+    rule Gecpairinputcheck       << PRAGUE >> => false
 ```
 
 ### Bedrock Schedule
@@ -1860,6 +1874,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghasblobhash            << BEDROCK >> => false
     rule Ghasbls12msmdiscount    << BEDROCK >> => false
     rule Ghasdelegation          << BEDROCK >> => false
+    rule Gecpairinputcheck       << BEDROCK >> => false
 ```
 
 ### Regolith Schedule
@@ -1977,6 +1992,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghasblobhash            << REGOLITH >> => false
     rule Ghasbls12msmdiscount    << REGOLITH >> => false
     rule Ghasdelegation          << REGOLITH >> => false
+    rule Gecpairinputcheck       << REGOLITH >> => false
 ```
 
 ### Canyon Schedule
@@ -2095,6 +2111,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghasblobhash            << CANYON >> => false
     rule Ghasbls12msmdiscount    << CANYON >> => false
     rule Ghasdelegation          << CANYON >> => false
+    rule Gecpairinputcheck       << CANYON >> => false
 ```
 
 ### Ecotone Schedule
@@ -2213,6 +2230,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghasblobhash            << ECOTONE >> => true
     rule Ghasbls12msmdiscount    << ECOTONE >> => false
     rule Ghasdelegation          << ECOTONE >> => false
+    rule Gecpairinputcheck       << ECOTONE >> => false
 ```
 
 ### Fjord Schedule
@@ -2331,6 +2349,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghasblobhash            << FJORD >> => true
     rule Ghasbls12msmdiscount    << FJORD >> => false
     rule Ghasdelegation          << FJORD >> => false
+    rule Gecpairinputcheck       << FJORD >> => false
 ```
 
 ### Granite Schedule
@@ -2449,6 +2468,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghasblobhash            << GRANITE >> => true
     rule Ghasbls12msmdiscount    << GRANITE >> => false
     rule Ghasdelegation          << GRANITE >> => false
+    rule Gecpairinputcheck       << GRANITE >> => true
 ```
 
 ### Holocene Schedule
@@ -2567,6 +2587,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghasblobhash            << HOLOCENE >> => true
     rule Ghasbls12msmdiscount    << HOLOCENE >> => false
     rule Ghasdelegation          << HOLOCENE >> => false
+    rule Gecpairinputcheck       << HOLOCENE >> => true
 ```
 
 ### Isthmus Schedule
@@ -2686,6 +2707,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Ghasblobhash            << ISTHMUS >> => true
     rule Ghasbls12msmdiscount    << ISTHMUS >> => true
     rule Ghasdelegation          << ISTHMUS >> => true
+    rule Gecpairinputcheck       << ISTHMUS >> => true
 
 endmodule
 ```

@@ -2132,7 +2132,7 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
 
     rule <k> #gasExec(SCHED, ECADD)     => Gecadd < SCHED>  ... </k>
     rule <k> #gasExec(SCHED, ECMUL)     => Gecmul < SCHED > ... </k>
-   rule <k> #gasExec(SCHED, ECPAIRING) => Gecpairconst < SCHED > +Int (lengthBytes(CD) /Int 192) *Int Gecpaircoeff < SCHED > ... </k> <callData> CD </callData>
+   rule <k> #gasExec(SCHED, ECPAIRING) => #if Gecpairinputcheck << SCHED >> andBool lengthBytes(CD) >Int graniteMaxInputSize #then #end EVMC_PRECOMPILE_FAILURE #else Gecpairconst < SCHED > +Int (lengthBytes(CD) /Int 192) *Int Gecpaircoeff < SCHED > #fi ... </k> <callData> CD </callData>
 
     rule <k> #gasExec(SCHED, BLAKE2F)   => Gfround < SCHED > *Int #asWord(#range(CD, 0, 4) ) ... </k> <callData> CD </callData>
     rule <k> #gasExec(SCHED, KZGPOINTEVAL)  => Gpointeval < SCHED > ... </k>
