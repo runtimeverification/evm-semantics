@@ -37,6 +37,9 @@ module TEST-ARITHMETICTEST-TEST_WMUL_WEAKLY_INCREASING_POSITIVE-UINT256-UINT256-
                  <id>
                    728815563385977040452943777879061427756277306518
                  </id>
+                 <codeAddr>
+                   728815563385977040452943777879061427756277306518
+                 </codeAddr>
                  <caller>
                    CALLER_ID:Int
                  </caller>
@@ -197,6 +200,9 @@ module TEST-ARITHMETICTEST-TEST_WMUL_WEAKLY_INCREASING_POSITIVE-UINT256-UINT256-
                  <id>
                    728815563385977040452943777879061427756277306518
                  </id>
+                 <codeAddr>
+                   728815563385977040452943777879061427756277306518
+                 </codeAddr>
                  <caller>
                    CALLER_ID:Int
                  </caller>

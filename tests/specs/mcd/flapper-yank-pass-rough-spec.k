@@ -20,6 +20,7 @@ module FLAPPER-YANK-PASS-ROUGH-SPEC
             <program> Flapper_bin_runtime </program>
             <jumpDests> #computeValidJumpDests(Flapper_bin_runtime) </jumpDests>
             <id> ACCT_ID </id>
+            <codeAddr> ACCT_ID </codeAddr>
             <caller> CALLER_ID </caller>
             <callData> #abiCallData("yank", #uint256(ABI_id)) +Bytes CD => ?_ </callData>
             <callValue> VCallValue </callValue>
@@ -194,6 +195,7 @@ module FLAPPER-YANK-PASS-ROUGH-SPEC
             <program> DSToken_bin_runtime </program>
             <jumpDests> #computeValidJumpDests(DSToken_bin_runtime) </jumpDests>
             <id> ACCT_ID </id>
+            <codeAddr> ACCT_ID </codeAddr>
             <caller> CALLER_ID </caller>
             <callData> #abiCallData("move", #address(ABI_src), #address(ABI_dst), #uint256(ABI_wad)) +Bytes CD => ?_ </callData>
             <callValue> VCallValue </callValue>

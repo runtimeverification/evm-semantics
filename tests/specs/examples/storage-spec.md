@@ -80,6 +80,7 @@ module STORAGE-SPEC
           <jumpDests> #computeValidJumpDests(#binRuntime(S2KStorage)) </jumpDests>
 
           <id>         ACCTID      => ?_ </id>
+          <codeAddr>         ACCTID      => ?_ </codeAddr>
           <localMem>   .Bytes     => ?_ </localMem>
           <memoryUsed> 0           => ?_ </memoryUsed>
           <wordStack>  .WordStack  => ?_ </wordStack>
@@ -115,6 +116,7 @@ module STORAGE-SPEC
           <static>    false                                        </static>
 
           <id>         ACCTID      => ?_ </id>
+          <codeAddr>         ACCTID      => ?_ </codeAddr>
           <localMem>   .Bytes     => ?_ </localMem>
           <memoryUsed> 0           => ?_ </memoryUsed>
           <wordStack>  .WordStack  => ?_ </wordStack>

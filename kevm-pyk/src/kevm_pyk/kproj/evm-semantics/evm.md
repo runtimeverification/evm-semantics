@@ -75,6 +75,8 @@ In the comments next to each cell, we've marked which component of the YellowPap
 
               <static>    false </static>
               <callDepth> 0     </callDepth>
+
+              <codeAddr> .Account </codeAddr>
             </callState>
 
             <versionedHashes> .List </versionedHashes>
@@ -1675,6 +1677,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <callData> _ => ARGS </callData>
          <callValue> _ => APPVALUE </callValue>
          <id> _ => ACCTTO </id>
+         <codeAddr> _ => ACCTCODE </codeAddr>
          <gas> GAVAIL:Gas => #if USEGAS #then GCALL:Gas #else GAVAIL:Gas #fi </gas>
          <callGas> GCALL:Gas => #if USEGAS #then 0:Gas #else GCALL:Gas #fi </callGas>
          <caller> _ => ACCTFROM </caller>
@@ -1797,6 +1800,7 @@ System Transaction Configuration
          <callData> _ => ARGS </callData>
          <callValue> _ => 0 </callValue>
          <id> _ => ACCTTO </id>
+         <codeAddr> _ => ACCTTO </codeAddr>
          <gas> GAVAIL:Gas => #if USEGAS #then SYSTEMTXGAS:Gas #else GAVAIL:Gas #fi </gas>
          <callGas> GCALL:Gas => #if USEGAS #then 0:Gas #else GCALL:Gas #fi </callGas>
          <caller> _ => SYSTEM_ADDRESS </caller>
@@ -1947,6 +1951,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          <useGas> USEGAS </useGas>
          <schedule> SCHED </schedule>
          <id> _ => ACCTTO </id>
+         <codeAddr> _ => ACCTTO </codeAddr>
          <gas> GAVAIL => #if USEGAS #then GCALL #else GAVAIL #fi </gas>
          <callGas> GCALL => #if USEGAS #then 0 #else GCALL #fi </callGas>
          <caller> _ => ACCTFROM </caller>

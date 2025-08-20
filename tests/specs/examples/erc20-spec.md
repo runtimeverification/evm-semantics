@@ -79,6 +79,7 @@ module ERC20-SPEC
           <jumpDests> #computeValidJumpDests(#binRuntime(S2KERC20)) </jumpDests>
 
           <id>         ACCTID      => ?_ </id>
+          <codeAddr>         ACCTID      => ?_ </codeAddr>
           <localMem>   .Bytes     => ?_ </localMem>
           <memoryUsed> 0           => ?_ </memoryUsed>
           <wordStack>  .WordStack  => ?_ </wordStack>
@@ -120,6 +121,7 @@ module ERC20-SPEC
           <jumpDests> #computeValidJumpDests(#binRuntime(S2KERC20)) </jumpDests>
 
           <id>         ACCTID      => ?_ </id>
+          <codeAddr>         ACCTID      => ?_ </codeAddr>
           <localMem>   .Bytes     => ?_ </localMem>
           <memoryUsed> 0           => ?_ </memoryUsed>
           <wordStack>  .WordStack  => ?_ </wordStack>
@@ -153,6 +155,7 @@ module ERC20-SPEC
           <jumpDests> #computeValidJumpDests(#binRuntime(S2KERC20)) </jumpDests>
 
           <id>         ACCTID      => ?_ </id>
+          <codeAddr>         ACCTID      => ?_ </codeAddr>
           <localMem>   .Bytes      => ?_ </localMem>
           <memoryUsed> 0           => ?_ </memoryUsed>
           <wordStack>  .WordStack  => ?_ </wordStack>
@@ -195,6 +198,7 @@ module ERC20-SPEC
           <static>    false                                      </static>
 
           <id>         ACCTID      => ?_ </id>
+          <codeAddr>         ACCTID      => ?_ </codeAddr>
           <caller>     OWNER       => ?_ </caller>
           <localMem>   .Bytes     => ?_ </localMem>
           <memoryUsed> 0           => ?_ </memoryUsed>
@@ -235,6 +239,7 @@ module ERC20-SPEC
           <static>    false                                      </static>
 
           <id>         ACCTID      => ?_ </id>
+          <codeAddr>         ACCTID      => ?_ </codeAddr>
           <caller>     OWNER       => ?_ </caller>
           <localMem>   .Bytes     => ?_ </localMem>
           <memoryUsed> 0           => ?_ </memoryUsed>
