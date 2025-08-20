@@ -38,6 +38,9 @@ module TEST-ALLOWCHANGESTEST-TESTFAILALLOWCHANGESTOSTORAGE-0-SPEC
                    <id>
                      728815563385977040452943777879061427756277306518
                    </id>
+                   <codeAddr>
+                     728815563385977040452943777879061427756277306518
+                   </codeAddr>
                    <caller>
                      CALLER_ID:Int
                    </caller>
@@ -155,6 +158,9 @@ module TEST-ALLOWCHANGESTEST-TESTFAILALLOWCHANGESTOSTORAGE-0-SPEC
                  <id>
                    ( 728815563385977040452943777879061427756277306518 => 491460923342184218035706888008750043977755113263 )
                  </id>
+                 <codeAddr>
+                   ( 728815563385977040452943777879061427756277306518 => 491460923342184218035706888008750043977755113263 )
+                 </codeAddr>
                  <caller>
                    ( CALLER_ID:Int => 728815563385977040452943777879061427756277306518 )
                  </caller>
@@ -366,6 +372,9 @@ module TEST-ALLOWCHANGESTEST-TESTFAILALLOWCHANGESTOSTORAGE-0-SPEC
                    <id>
                      728815563385977040452943777879061427756277306518
                    </id>
+                   <codeAddr>
+                     728815563385977040452943777879061427756277306518
+                   </codeAddr>
                    <caller>
                      CALLER_ID:Int
                    </caller>
@@ -526,6 +535,9 @@ module TEST-ALLOWCHANGESTEST-TESTFAILALLOWCHANGESTOSTORAGE-0-SPEC
                  <id>
                    ( 491460923342184218035706888008750043977755113263 => 263400868551549723330807389252719309078400616203 )
                  </id>
+                 <codeAddr>
+                   ( 491460923342184218035706888008750043977755113263 => 263400868551549723330807389252719309078400616203 )
+                 </codeAddr>
                  <caller>
                    728815563385977040452943777879061427756277306518
                  </caller>

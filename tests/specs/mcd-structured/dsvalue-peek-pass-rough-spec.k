@@ -20,6 +20,7 @@ module DSVALUE-PEEK-PASS-ROUGH-SPEC
             <program> DSValue_bin_runtime </program>
             <jumpDests> #computeValidJumpDests(DSValue_bin_runtime) </jumpDests>
             <id> ACCT_ID </id>
+            <codeAddr> ACCT_ID </codeAddr>
             <caller> CALLER_ID </caller>
             <callData> #abiCallData("peek", .TypedArgs) +Bytes CD => ?_ </callData>
             <callValue> VCallValue </callValue>
