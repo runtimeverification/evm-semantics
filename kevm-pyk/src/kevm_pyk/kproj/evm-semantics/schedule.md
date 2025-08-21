@@ -103,7 +103,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
                            | "Gecpairconst"  | "Gecpaircoeff"  | "Gfround"       | "Gcoldsload"        | "Gcoldaccountaccess" | "Gwarmstorageread" | "Gaccesslistaddress"
                            | "Gaccessliststoragekey"           | "Rmaxquotient"  | "Ginitcodewordcost" | "maxInitCodeSize"    | "Gwarmstoragedirtystore"
                            | "Gpointeval"    | "Gbls12g1add"   | "Gbls12g1mul"   | "Gbls12g2add"       | "Gbls12g2mul"        | "Gbls12PairingCheckMul"
-                           | "Gbls12PairingCheckAdd"           | "Gbls12mapfptog1"                     | "Gbls12mapfp2tog2"
+                           | "Gbls12PairingCheckAdd"           | "Gbls12mapfptog1"                     | "Gbls12mapfp2tog2"   | "Gp256verify"
  // ----------------------------------------------------------------------------------------------------------------------------------------------------
 ```
 
@@ -183,6 +183,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Gbls12PairingCheckAdd < FRONTIER > => 0
     rule Gbls12mapfptog1 < FRONTIER > => 0
     rule Gbls12mapfp2tog2 < FRONTIER > => 0
+
+    rule Gp256verify < FRONTIER > => 0
 
     rule Gaccessliststoragekey < FRONTIER > => 0
     rule Gaccesslistaddress    < FRONTIER > => 0
@@ -307,6 +309,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Gbls12mapfptog1 < HOMESTEAD > => 0
     rule Gbls12mapfp2tog2 < HOMESTEAD > => 0
 
+    rule Gp256verify < HOMESTEAD > => 0
+
     rule Gaccessliststoragekey < HOMESTEAD > => 0
     rule Gaccesslistaddress    < HOMESTEAD > => 0
 
@@ -429,6 +433,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Gbls12PairingCheckAdd < TANGERINE_WHISTLE > => 0
     rule Gbls12mapfptog1 < TANGERINE_WHISTLE > => 0
     rule Gbls12mapfp2tog2 < TANGERINE_WHISTLE > => 0
+
+    rule Gp256verify < TANGERINE_WHISTLE > => 0
 
     rule Gaccessliststoragekey < TANGERINE_WHISTLE > => 0
     rule Gaccesslistaddress    < TANGERINE_WHISTLE > => 0
@@ -553,6 +559,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Gbls12mapfptog1 < SPURIOUS_DRAGON > => 0
     rule Gbls12mapfp2tog2 < SPURIOUS_DRAGON > => 0
 
+    rule Gp256verify < SPURIOUS_DRAGON > => 0
+
     rule Gaccessliststoragekey < SPURIOUS_DRAGON > => 0
     rule Gaccesslistaddress    < SPURIOUS_DRAGON > => 0
 
@@ -675,6 +683,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Gbls12PairingCheckAdd < BYZANTIUM > => 0
     rule Gbls12mapfptog1 < BYZANTIUM > => 0
     rule Gbls12mapfp2tog2 < BYZANTIUM > => 0
+
+    rule Gp256verify < BYZANTIUM > => 0
 
     rule Gaccessliststoragekey < BYZANTIUM > => 0
     rule Gaccesslistaddress    < BYZANTIUM > => 0
@@ -803,6 +813,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Gbls12mapfptog1 < CONSTANTINOPLE > => 0
     rule Gbls12mapfp2tog2 < CONSTANTINOPLE > => 0
 
+    rule Gp256verify < CONSTANTINOPLE > => 0
+
     rule Gaccessliststoragekey < CONSTANTINOPLE > => 0
     rule Gaccesslistaddress    < CONSTANTINOPLE > => 0
 
@@ -930,6 +942,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Gbls12mapfptog1 < PETERSBURG > => 0
     rule Gbls12mapfp2tog2 < PETERSBURG > => 0
 
+    rule Gp256verify < PETERSBURG > => 0
+
     rule Gaccessliststoragekey < PETERSBURG > => 0
     rule Gaccesslistaddress    < PETERSBURG > => 0
 
@@ -1056,6 +1070,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Gbls12PairingCheckAdd < ISTANBUL > => 0
     rule Gbls12mapfptog1 < ISTANBUL > => 0
     rule Gbls12mapfp2tog2 < ISTANBUL > => 0
+
+    rule Gp256verify < ISTANBUL > => 0
 
     rule Gaccessliststoragekey < ISTANBUL > => 0
     rule Gaccesslistaddress    < ISTANBUL > => 0
@@ -1185,6 +1201,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Gbls12mapfptog1 < BERLIN > => 0
     rule Gbls12mapfp2tog2 < BERLIN > => 0
 
+    rule Gp256verify < BERLIN > => 0
+
     rule Gaccessliststoragekey < BERLIN > => 1900
     rule Gaccesslistaddress    < BERLIN > => 2400
 
@@ -1313,6 +1331,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Gbls12mapfptog1 < LONDON > => 0
     rule Gbls12mapfp2tog2 < LONDON > => 0
 
+    rule Gp256verify < LONDON > => 0
+
     rule Gaccessliststoragekey < LONDON > => 1900
     rule Gaccesslistaddress    < LONDON > => 2400
 
@@ -1440,6 +1460,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Gbls12PairingCheckAdd < MERGE > => 0
     rule Gbls12mapfptog1 < MERGE > => 0
     rule Gbls12mapfp2tog2 < MERGE > => 0
+
+    rule Gp256verify < MERGE > => 0
 
     rule Gaccessliststoragekey < MERGE > => 1900
     rule Gaccesslistaddress    < MERGE > => 2400
@@ -1570,6 +1592,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Gbls12mapfptog1 < SHANGHAI > => 0
     rule Gbls12mapfp2tog2 < SHANGHAI > => 0
 
+    rule Gp256verify < SHANGHAI > => 0
+
     rule Gaccessliststoragekey < SHANGHAI > => 1900
     rule Gaccesslistaddress    < SHANGHAI > => 2400
 
@@ -1698,6 +1722,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Gbls12PairingCheckAdd < CANCUN > => 0
     rule Gbls12mapfptog1 < CANCUN > => 0
     rule Gbls12mapfp2tog2 < CANCUN > => 0
+
+    rule Gp256verify < CANCUN > => 0
 
     rule Gaccessliststoragekey < CANCUN > => 1900
     rule Gaccesslistaddress    < CANCUN > => 2400
@@ -1829,6 +1855,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Gbls12PairingCheckAdd < PRAGUE > => 37700
     rule Gbls12mapfptog1 < PRAGUE > => 5500
     rule Gbls12mapfp2tog2 < PRAGUE > => 23800
+
+    rule Gp256verify < PRAGUE > => 0
 
     rule Gaccessliststoragekey < PRAGUE > => 1900
     rule Gaccesslistaddress    < PRAGUE > => 2400
@@ -1966,6 +1994,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Gbls12mapfptog1 < BEDROCK > => 0
     rule Gbls12mapfp2tog2 < BEDROCK > => 0
 
+    rule Gp256verify < BEDROCK > => 0
+
     rule Gaccessliststoragekey < BEDROCK > => 1900
     rule Gaccesslistaddress    < BEDROCK > => 2400
 
@@ -2093,6 +2123,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Gbls12PairingCheckAdd < REGOLITH > => 0
     rule Gbls12mapfptog1 < REGOLITH > => 0
     rule Gbls12mapfp2tog2 < REGOLITH > => 0
+
+    rule Gp256verify < REGOLITH > => 0
 
     rule Gaccessliststoragekey < REGOLITH > => 1900
     rule Gaccesslistaddress    < REGOLITH > => 2400
@@ -2223,6 +2255,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Gbls12mapfptog1 < CANYON > => 0
     rule Gbls12mapfp2tog2 < CANYON > => 0
 
+    rule Gp256verify < CANYON > => 0
+
     rule Gaccessliststoragekey < CANYON > => 1900
     rule Gaccesslistaddress    < CANYON > => 2400
 
@@ -2351,6 +2385,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Gbls12PairingCheckAdd < ECOTONE > => 0
     rule Gbls12mapfptog1 < ECOTONE > => 0
     rule Gbls12mapfp2tog2 < ECOTONE > => 0
+
+    rule Gp256verify < ECOTONE > => 0
 
     rule Gaccessliststoragekey < ECOTONE > => 1900
     rule Gaccesslistaddress    < ECOTONE > => 2400
@@ -2482,6 +2518,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Gbls12mapfptog1 < FJORD > => 0
     rule Gbls12mapfp2tog2 < FJORD > => 0
 
+    rule Gp256verify < FJORD > => 3450
+
     rule Gaccessliststoragekey < FJORD > => 1900
     rule Gaccesslistaddress    < FJORD > => 2400
 
@@ -2532,6 +2570,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule #isPrecompiledAccount(8p256, FJORD) => true
     rule #isPrecompiledAccount(9p256, FJORD) => true
     rule #isPrecompiledAccount(10p256, FJORD) => true
+    rule #isPrecompiledAccount(256p256, FJORD) => true
 ```
 
 ### Granite Schedule
@@ -2612,6 +2651,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Gbls12mapfptog1 < GRANITE > => 0
     rule Gbls12mapfp2tog2 < GRANITE > => 0
 
+    rule Gp256verify < GRANITE > => 3450
+
     rule Gaccessliststoragekey < GRANITE > => 1900
     rule Gaccesslistaddress    < GRANITE > => 2400
 
@@ -2662,6 +2703,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule #isPrecompiledAccount(8p256, GRANITE) => true
     rule #isPrecompiledAccount(9p256, GRANITE) => true
     rule #isPrecompiledAccount(10p256, GRANITE) => true
+    rule #isPrecompiledAccount(256p256, GRANITE) => true
 ```
 
 ### Holocene Schedule
@@ -2742,6 +2784,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Gbls12mapfptog1 < HOLOCENE > => 0
     rule Gbls12mapfp2tog2 < HOLOCENE > => 0
 
+    rule Gp256verify < HOLOCENE > => 3450
+
     rule Gaccessliststoragekey < HOLOCENE > => 1900
     rule Gaccesslistaddress    < HOLOCENE > => 2400
 
@@ -2792,6 +2836,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule #isPrecompiledAccount(8p256, HOLOCENE) => true
     rule #isPrecompiledAccount(9p256, HOLOCENE) => true
     rule #isPrecompiledAccount(10p256, HOLOCENE) => true
+    rule #isPrecompiledAccount(256p256, HOLOCENE) => true
 ```
 
 ### Isthmus Schedule
@@ -2873,6 +2918,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule Gbls12mapfptog1 < ISTHMUS > => 5500
     rule Gbls12mapfp2tog2 < ISTHMUS > => 23800
 
+    rule Gp256verify < ISTHMUS > => 3450
+
     rule Gaccessliststoragekey < ISTHMUS > => 1900
     rule Gaccesslistaddress    < ISTHMUS > => 2400
 
@@ -2930,6 +2977,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule #isPrecompiledAccount(15p256, ISTHMUS) => true
     rule #isPrecompiledAccount(16p256, ISTHMUS) => true
     rule #isPrecompiledAccount(17p256, ISTHMUS) => true
+    rule #isPrecompiledAccount(256p256, ISTHMUS) => true
 
 endmodule
 ```

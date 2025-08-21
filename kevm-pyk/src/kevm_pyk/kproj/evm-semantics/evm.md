@@ -1260,6 +1260,7 @@ Precompiled Contracts
     rule #precompiled(15p256) => BLS12PAIRING_CHECK
     rule #precompiled(16p256) => BLS12MAPFPTOG1
     rule #precompiled(17p256) => BLS12MAPFP2TOG2
+    rule #precompiled(256p256) => P256VERIFY
 ```
 
 -   `ECREC` performs ECDSA public key recovery.
@@ -1752,6 +1753,25 @@ Precompiled Contracts
         orBool notBool isValidBLS12Fp(Bytes2Int(substrBytes(CD, 0, 64), BE, Unsigned))
         orBool notBool isValidBLS12Fp(Bytes2Int(substrBytes(CD, 64, 128), BE, Unsigned))
 
+
+    syntax PrecompiledOp ::= "P256VERIFY"
+ // -------------------------------------
+    rule <k> P256VERIFY => #end EVMC_SUCCESS ... </k>
+         <output> _ => Int2Bytes(32, 1, BE) </output>
+         <callData> CD </callData>
+      requires lengthBytes( CD ) ==Int 160
+       andBool P256Verify( CD )
+
+    rule <k> P256VERIFY => #end EVMC_SUCCESS ... </k>
+         <callData> CD </callData>
+      requires lengthBytes( CD ) =/=Int 160
+
+    rule <k> P256VERIFY => #end EVMC_SUCCESS ... </k>
+         <callData> CD </callData>
+      requires lengthBytes( CD ) ==Int 160
+       andBool notBool P256Verify( CD )
+
+
 ```
 
 Ethereum Gas Calculation
@@ -2103,6 +2123,7 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
     rule <k> #gasExec(SCHED, BLS12PAIRING_CHECK)    => #let N = lengthBytes(CD) /Int 384 #in N *Int Gbls12PairingCheckMul < SCHED > +Int Gbls12PairingCheckAdd < SCHED > ... </k> <callData> CD </callData>
     rule <k> #gasExec(SCHED, BLS12MAPFPTOG1) => Gbls12mapfptog1 < SCHED > ... </k>
     rule <k> #gasExec(SCHED, BLS12MAPFP2TOG2) => Gbls12mapfp2tog2 < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, P256VERIFY)  => Gp256verify < SCHED > ... </k>
     syntax InternalOp ::= "#allocateCallGas"
  // ----------------------------------------
     rule <k> GCALL:Gas ~> #allocateCallGas => .K ... </k>
