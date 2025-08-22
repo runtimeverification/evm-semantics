@@ -954,10 +954,6 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     rule [precompile.true]:  <k> #precompiled?(ACCTCODE, SCHED) => #next [ #precompiled(ACCTCODE) ] ... </k> <isPrecompile> _ => true </isPrecompile> requires         #isPrecompiledAccount(ACCTCODE, SCHED) [preserves-definedness]
     rule [precompile.false]: <k> #precompiled?(ACCTCODE, SCHED) => .K                               ... </k> requires notBool #isPrecompiledAccount(ACCTCODE, SCHED)
 
-    syntax Bool ::= #isPrecompiledAccount ( MInt{256} , Schedule ) [symbol(isPrecompiledAccount), function, total, smtlib(isPrecompiledAccount)]
- // --------------------------------------------------------------------------------------------------------------------------------------
-    rule [isPrecompiledAccount]:  #isPrecompiledAccount(ACCTCODE, SCHED) => 0p256 <uMInt ACCTCODE andBool ACCTCODE <=uMInt #precompiledAccountsUB(SCHED)
-
     syntax KItem ::= "#initVM"
  // --------------------------
     rule <k> #initVM      => .K ... </k>
@@ -1242,8 +1238,6 @@ Precompiled Contracts
 ---------------------
 
 -   `#precompiled` is a placeholder for the pre-compiled contracts of a given schedule. These contracts are located at contiguous addresses starting from 1.
--   `#precompiledAccountsUB`  returns the highest address (upper bound) of the precompiled contract accounts
--   `#precompiledAccountsSet` returns the set of addresses of the precompiled contract accounts
 
 ```k
     syntax NullStackOp   ::= PrecompiledOp
@@ -1266,40 +1260,6 @@ Precompiled Contracts
     rule #precompiled(15p256) => BLS12PAIRING_CHECK
     rule #precompiled(16p256) => BLS12MAPFPTOG1
     rule #precompiled(17p256) => BLS12MAPFP2TOG2
-
-    syntax MInt{256} ::= #precompiledAccountsUB ( Schedule ) [symbol(#precompiledAccountsUB), function, total]
- // ----------------------------------------------------------------------------------------------------
-    rule #precompiledAccountsUB(FRONTIER)          => 4p256
-    rule #precompiledAccountsUB(HOMESTEAD)         => #precompiledAccountsUB(FRONTIER)
-    rule #precompiledAccountsUB(TANGERINE_WHISTLE) => #precompiledAccountsUB(HOMESTEAD)
-    rule #precompiledAccountsUB(SPURIOUS_DRAGON)   => #precompiledAccountsUB(TANGERINE_WHISTLE)
-    rule #precompiledAccountsUB(BYZANTIUM)         => 8p256
-    rule #precompiledAccountsUB(CONSTANTINOPLE)    => #precompiledAccountsUB(BYZANTIUM)
-    rule #precompiledAccountsUB(PETERSBURG)        => #precompiledAccountsUB(CONSTANTINOPLE)
-    rule #precompiledAccountsUB(ISTANBUL)          => 9p256
-    rule #precompiledAccountsUB(BERLIN)            => #precompiledAccountsUB(ISTANBUL)
-    rule #precompiledAccountsUB(LONDON)            => #precompiledAccountsUB(BERLIN)
-    rule #precompiledAccountsUB(MERGE)             => #precompiledAccountsUB(LONDON)
-    rule #precompiledAccountsUB(SHANGHAI)          => #precompiledAccountsUB(MERGE)
-    rule #precompiledAccountsUB(CANCUN)            => 10p256
-    rule #precompiledAccountsUB(PRAGUE)            => 17p256
-    rule #precompiledAccountsUB(BEDROCK)           => #precompiledAccountsUB(MERGE)
-    rule #precompiledAccountsUB(REGOLITH)          => #precompiledAccountsUB(BEDROCK)
-    rule #precompiledAccountsUB(CANYON)            => #precompiledAccountsUB(SHANGHAI)
-    rule #precompiledAccountsUB(ECOTONE)           => #precompiledAccountsUB(CANCUN)
-    rule #precompiledAccountsUB(FJORD)             => #precompiledAccountsUB(ECOTONE)
-    rule #precompiledAccountsUB(GRANITE)           => #precompiledAccountsUB(FJORD)
-    rule #precompiledAccountsUB(HOLOCENE)          => #precompiledAccountsUB(GRANITE)
-    rule #precompiledAccountsUB(ISTHMUS)           => #precompiledAccountsUB(PRAGUE)
-
-
-    syntax Set ::= #precompiledAccountsSet    ( Schedule ) [symbol(#precompiledAccountsSet),    function, total]
-    syntax Set ::= #precompiledAccountsSetAux ( MInt{256}) [symbol(#precompiledAccountsSetAux), function, total]
- // ------------------------------------------------------------------------------------------------------------
-    rule #precompiledAccountsSet(SCHED) => #precompiledAccountsSetAux(#precompiledAccountsUB(SCHED))
-
-    rule #precompiledAccountsSetAux(N)  => .Set requires N ==MInt 0p256
-    rule #precompiledAccountsSetAux(N)  => SetItem(N) #precompiledAccountsSetAux(N -MInt 1p256) [owise, preserves-definedness]
 ```
 
 -   `ECREC` performs ECDSA public key recovery.
