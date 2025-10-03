@@ -70,8 +70,14 @@
       kevmOverlay = final: prev:
       let
         python = final."python${pythonVer}";
+        kevm-pyk-pyproject = final.callPackage ./nix/kevm-pyk-pyproject {
+          inherit uv2nix;
+        };
         kevm-pyk = final.callPackage ./nix/kevm-pyk {
-          inherit pyproject-nix pyproject-build-systems uv2nix python;
+          inherit pyproject-nix pyproject-build-systems kevm-pyk-pyproject python;
+          pyproject-overlays = [
+            (k-framework.overlays.pyk-pyproject system)
+          ];
         };
         kevm = final.callPackage ./nix/kevm {
           inherit kevm-pyk python;
@@ -80,7 +86,7 @@
         kevm-test = final.callPackage ./nix/kevm/test.nix { };
         kevm-profile = final.callPackage ./package/nix/profile.nix { };
       in {
-        inherit kevm kevm-test kevm-profile;
+        inherit kevm kevm-test kevm-profile kevm-pyk-pyproject;
       };
       pkgs = import nixpkgs {
         inherit system;
@@ -146,7 +152,7 @@
       };
 
       packages = rec {
-        inherit (pkgs) kevm-pyk kevm kevm-test;
+        inherit (pkgs) kevm-pyk kevm kevm-test kevm-pyk-pyproject;
         default = kevm;
         profile = pkgs.kevm-profile;
 
@@ -160,8 +166,15 @@
           };
       };
     }) // {
-      overlays.default = final: prev: {
-        inherit (self.packages.${final.system}) kevm;
+      overlays = {
+        default = final: prev: {
+          inherit (self.packages.${final.system}) kevm;
+        };
+        # this pyproject-nix overlay allows for overriding the python packages that are otherwise locked in `uv.lock`
+        # by using this overlay in dependant nix flakes, you ensure that nix overrides also override the python package     
+        pyk-pyproject = system: final: prev: {
+          inherit (self.packages.${system}.kevm-pyk-pyproject.lockFileOverlay final prev) kevm-pyk;
+        };
       };
     };
 }
