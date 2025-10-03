@@ -15,7 +15,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     haskell-backend.follows = "k-framework/haskell-backend";
-    uv2nix.url = "github:pyproject-nix/uv2nix/680e2f8e637bc79b84268949d2f2b2f5e5f1d81c";
+    uv2nix.url = "github:pyproject-nix/uv2nix/be511633027f67beee87ab499f7b16d0a2f7eceb";
     # stale nixpkgs is missing the alias `lib.match` -> `builtins.match`
     # therefore point uv2nix to a patched nixpkgs, which introduces this alias
     # this is a temporary solution until nixpkgs us up-to-date again
