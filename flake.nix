@@ -15,12 +15,15 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     haskell-backend.follows = "k-framework/haskell-backend";
-    uv2nix.url = "github:pyproject-nix/uv2nix/680e2f8e637bc79b84268949d2f2b2f5e5f1d81c";
-    # stale nixpkgs is missing the alias `lib.match` -> `builtins.match`
-    # therefore point uv2nix to a patched nixpkgs, which introduces this alias
-    # this is a temporary solution until nixpkgs us up-to-date again
-    uv2nix.inputs.nixpkgs.url = "github:runtimeverification/nixpkgs/libmatch";
-    # inputs.nixpkgs.follows = "nixpkgs";
+    uv2nix.url = "github:pyproject-nix/uv2nix/be511633027f67beee87ab499f7b16d0a2f7eceb";
+    # uv2nix requires a newer version of nixpkgs
+    # therefore, we pin uv2nix specifically to a newer version of nixpkgs
+    # until we replaced our stale version of nixpkgs with an upstream one as well
+    # but also uv2nix requires us to call it with `callPackage`, so we add stuff
+    # from the newer nixpkgs to our stale nixpkgs via an overlay
+    nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
+    uv2nix.inputs.nixpkgs.follows = "nixpkgs-unstable";
+    # uv2nix.inputs.nixpkgs.follows = "nixpkgs";
     pyproject-build-systems.url = "github:pyproject-nix/build-system-pkgs/7dba6dbc73120e15b558754c26024f6c93015dd7";
     pyproject-build-systems = {
       inputs.nixpkgs.follows = "uv2nix/nixpkgs";
@@ -40,12 +43,20 @@
       uv2nix,
       pyproject-build-systems,
       pyproject-nix,
+      nixpkgs-unstable,
       ... }:
   let
     pythonVer = "310";
     nixLibs = pkgs: with pkgs; "-I${openssl.dev}/include -L${openssl.out}/lib -I${secp256k1}/include -L${secp256k1}/lib";
   in flake-utils.lib.eachDefaultSystem (system:
     let
+      pkgs-unstable = import nixpkgs-unstable {
+        inherit system;
+      };
+      # for uv2nix, remove this once we updated to a newer version of nixpkgs
+      staleNixpkgsOverlay = final: prev: {
+        inherit (pkgs-unstable) replaceVars;
+      };
       uvOverlay = final: prev: {
         uv = uv2nix.packages.${final.system}.uv-bin;
       };
@@ -74,6 +85,7 @@
       pkgs = import nixpkgs {
         inherit system;
         overlays = [
+          staleNixpkgsOverlay
           uvOverlay
           kOverlay
           haskellBackendOverlay
