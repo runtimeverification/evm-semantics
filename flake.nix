@@ -15,7 +15,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     haskell-backend.follows = "k-framework/haskell-backend";
-    uv2nix.url = "github:pyproject-nix/uv2nix/be511633027f67beee87ab499f7b16d0a2f7eceb";
+    uv2nix.url = "github:pyproject-nix/uv2nix/b6ed0901aec29583532abe65117b18d86a49b617";
     # uv2nix requires a newer version of nixpkgs
     # therefore, we pin uv2nix specifically to a newer version of nixpkgs
     # until we replaced our stale version of nixpkgs with an upstream one as well
