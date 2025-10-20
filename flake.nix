@@ -10,7 +10,7 @@
     flake-utils.follows = "k-framework/flake-utils";
     blockchain-k-plugin = {
       url =
-        "github:runtimeverification/blockchain-k-plugin/f159396d0f16b88c86c557c47f7ae36ffc59dc53";
+        "github:runtimeverification/blockchain-k-plugin/ff0cca91802d7957db5ea787db9be70db6a9075a";
       inputs.flake-utils.follows = "k-framework/flake-utils";
       inputs.nixpkgs.follows = "nixpkgs";
     };
