@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
     "frozendict>=2.4.6,<3",
-    "kframework==7.1.297",
+    "kframework==7.1.299",
     "pathos",
     "tomlkit>=0.11.6",
 ]
