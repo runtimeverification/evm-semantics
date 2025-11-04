@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+<meta charset="utf-8" />
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0, maximum-scale=1.0"
+/>
+<meta
+  name="description"
+  content="K Semantics of the Ethereum Virtual Machine (EVM)"
+/>
+<meta
+  name="keywords"
+  content="runtime, verification, rv, k, ethereum virtual machine, evm"
+/>
+<meta name="author" content="EVM Semantics | Runtime Verification Inc" />
+<meta name="robots" content="index, follow" />
+
+<!--favicon icon-->
+<link rel="icon" type="image/png" href="../../assets/img/favicon.ico" />
+
+<title>KEVM: Semantics of EVM in K | Runtime Verification, Inc. </title>
+
+<link rel="canonical" href="https://jellopaper.org/media/201908-trufflecon-firefly/" />
+
+<!--web fonts-->
+<link
+  href="https://fonts.googleapis.com/css?family=Nunito:300,400,600,700,800"
+  rel="stylesheet"
+/>
+<link
+  href="https://fonts.googleapis.com/css?family=Lora:400i"
+  rel="stylesheet"
+/>
+
+<link
+  href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.14.0/css/all.min.css"
+  rel="stylesheet"
+/>
+
+<link href="../../assets/css/index.css" rel="stylesheet" />
+
+<!--[if (gt IE 9) |!(IE)]><!-->
+<!--<link rel="stylesheet" href="/assets/vendor/custom-nav/css/effects/fade-menu.css"/>-->
+<!-- <link rel="stylesheet" href="../../assets/k/vl-nav/css/effects/slide-menu.css" /> -->
+<!--<![endif]-->
+
+  </head>
+
+  <body>
+<header
+  class="navbar navbar-expand navbar-dark flex-column flex-md-row bd-navbar"
+>
+  <a class="logo-link" href="../../index.html"> EVM Semantics </a>
+  <ul class="navbar-nav ml-md-auto">
+    <li class="nav-item">
+      <a
+        class="nav-link pl-2 pr-1 mx-1 py-3 my-n2"
+        href="https://github.com/runtimeverification/evm-semantics"
+        target="_blank"
+        rel="noopener"
+        aria-label="GitHub"
+      >
+        <i class="fab fa-github"></i>
+      </a>
+    </li>
+  </ul>
+  <!--
+  <a
+    class="btn btn-rv-blue d-none d-lg-inline-block mb-3 mb-md-0 ml-md-3"
+    href="../../downloads"
+    >Download</a
+  >
+  -->
+</header>
+
+
+    <div class="container-fluid">
+      <div class="row flex-xl-nowrap">
+<div class="col-12 col-md-3 col-xl-2 bd-sidebar mb-3">
+  <form
+    role="search"
+    class="bd-search d-flex align-items-center justify-content-between"
+  >
+    <input
+      type="search"
+      class="form-control"
+      placeholder="Search..."
+      aria-label="Search for..."
+      autocomplete="false"
+      id="search-box"
+    />
+    <button
+      class="btn bd-search-docs-toggle d-md-none p-0 ml-3 collapsed"
+      type="button"
+      aria-label="Toggle docs navigation"
+      style="font-size: 1.4rem"
+    >
+      <i class="fas fa-bars"></i>
+    </button>
+  </form>
+  <nav class="collapse bd-links" aria-label="Main navigation">
+    <div class="bd-toc-item">
+      <a class="bd-toc-link" href="../../">Homepage</a>
+      <a class="bd-toc-link" href="../../INSTALL/">Install</a>
+    </div>
+  </nav>
+</div>
+
+        <main
+          class="col-12 col-md-6 col-xl-8 py-md-3 pl-md-5 bd-content"
+          role="main"
+        >
+          <div class="markdown-preview"><html><head></head><body><h2 id="overview">Overview</h2>
+<ul>
+<li>(Brief) Introduction to KEVM</li>
+<li>Introduction to Firefly</li>
+<li>Firefly Demo</li>
+<li>Future Directions</li>
+</ul>
+<h2 id="(brief)-introduction-to-kevm">(Brief) Introduction to KEVM</h2>
+<ul>
+<li>Repository: <a href="https://github.com/kframework/evm-semantics" target="_blank" rel="noreferrer noopener">https://github.com/kframework/evm-semantics</a></li>
+<li>Considered the canonical spec of EVM: <a href="https://ethereum-magicians.org/t/jello-paper-as-canonical-evm-spec/2389" target="_blank" rel="noreferrer noopener">https://ethereum-magicians.org/t/jello-paper-as-canonical-evm-spec/2389</a></li>
+<li>All K tooling is derived automatically:
+<ul>
+<li>Reference EVM interpreter</li>
+<li>Symbolic execution engine</li>
+<li>EVM bytecode formal verification engine</li>
+<li>Several EVM bytecode debugger options</li>
+</ul>
+</li>
+</ul>
+<h2 id="introduction-to-firefly">Introduction to Firefly</h2>
+<ul>
+<li>
+<p><code>npm</code> package here: <a href="https://www.npmjs.com/package/kevm-ganache-cli" target="_blank" rel="noreferrer noopener">https://www.npmjs.com/package/kevm-ganache-cli</a>.</p>
+</li>
+<li>
+<p>Drop-in replacement for <code>ganache-cli</code>, can be used directly by Truffle.</p>
+<p>Instead of:</p>
+<pre><code class="language-sh">npx ganache-cli
+</code></pre>
+<p>run:</p>
+<pre><code class="language-sh">npx kevm-ganache-cli
+</code></pre>
+</li>
+</ul>
+<p>. . .</p>
+<h3 id="why%3F%3F">Why??</h3>
+<ul>
+<li>Higher confidence in results (run tests with both!).</li>
+<li>More features to come:
+<ul>
+<li>Test coverage metrics.</li>
+<li>Automated property verification.</li>
+<li>Test generation.</li>
+<li>Contract symbolic execution.</li>
+<li>... your ideas??</li>
+</ul>
+</li>
+</ul>
+<h2 id="firefly-demo---setup">Firefly Demo - Setup</h2>
+<p>Instructions from <a href="https://www.npmjs.com/package/kevm-ganache-cli" target="_blank" rel="noreferrer noopener">https://www.npmjs.com/package/kevm-ganache-cli</a>:</p>
+<p>. . .</p>
+<h3 id="install-kevm-(once)">Install KEVM (once)</h3>
+<p><strong>TODO</strong>: Update release URL.</p>
+<pre><code class="language-sh"><span class="token function">sudo</span> <span class="token function">apt</span> <span class="token function">install</span> nodejs <span class="token function">npm</span> <span class="token function">curl</span> <span class="token function">git</span>
+<span class="token function">curl</span> <span class="token parameter variable">--location</span> <span class="token string">'https://github.com/kframework/evm-semantics/releases/download/v1.0.0-a47e4b2/kevm_1.0.0_amd64.deb'</span> <span class="token punctuation">\</span>
+     <span class="token parameter variable">--output</span> kevm_1.0.0_amd64.deb
+<span class="token function">sudo</span> <span class="token function">apt</span> <span class="token function">install</span> ./kevm_1.0.0_amd64.deb
+</code></pre>
+<p>. . .</p>
+<h3 id="install-npx-(once)">Install <code>npx</code> (once)</h3>
+<pre><code class="language-sh"><span class="token function">sudo</span> <span class="token function">npm</span> <span class="token function">install</span> <span class="token parameter variable">-g</span> npx
+</code></pre>
+<h2 id="firefly-demo---run-openzeppelin-tests">Firefly Demo - Run OpenZeppelin Tests</h2>
+<h3 id="start-kevm-ganache-cli">Start <code>kevm-ganache-cli</code></h3>
+<pre><code class="language-sh">npx kevm-ganache-cli                                                                                         <span class="token punctuation">\</span>
+    <span class="token parameter variable">--gasLimit</span> 0xfffffffffff                                                                                 <span class="token punctuation">\</span>
+    <span class="token parameter variable">--account</span><span class="token operator">=</span><span class="token string">"0x2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501200,1000000000000000000000000"</span> <span class="token punctuation">\</span>
+    <span class="token parameter variable">--account</span><span class="token operator">=</span><span class="token string">"0x2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501201,1000000000000000000000000"</span> <span class="token punctuation">\</span>
+    <span class="token parameter variable">--account</span><span class="token operator">=</span><span class="token string">"0x2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501202,1000000000000000000000000"</span> <span class="token punctuation">\</span>
+    <span class="token parameter variable">--account</span><span class="token operator">=</span><span class="token string">"0x2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501203,1000000000000000000000000"</span> <span class="token punctuation">\</span>
+    <span class="token parameter variable">--account</span><span class="token operator">=</span><span class="token string">"0x2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501204,1000000000000000000000000"</span> <span class="token punctuation">\</span>
+    <span class="token parameter variable">--account</span><span class="token operator">=</span><span class="token string">"0x2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501205,1000000000000000000000000"</span> <span class="token punctuation">\</span>
+    <span class="token parameter variable">--account</span><span class="token operator">=</span><span class="token string">"0x2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501206,1000000000000000000000000"</span> <span class="token punctuation">\</span>
+    <span class="token parameter variable">--account</span><span class="token operator">=</span><span class="token string">"0x2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501207,1000000000000000000000000"</span> <span class="token punctuation">\</span>
+    <span class="token parameter variable">--account</span><span class="token operator">=</span><span class="token string">"0x2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501208,1000000000000000000000000"</span> <span class="token punctuation">\</span>
+    <span class="token parameter variable">--account</span><span class="token operator">=</span><span class="token string">"0x2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501209,1000000000000000000000000"</span>
+</code></pre>
+<p>. . .</p>
+<h3 id="run-openzeppelin-tests">Run OpenZeppelin tests</h3>
+<pre><code class="language-sh"><span class="token function">git</span> clone <span class="token string">'https://github.com/OpenZeppelin/openzeppelin-contracts.git'</span>
+<span class="token builtin class-name">cd</span> openzeppelin-contracts
+<span class="token function">git</span> checkout b8c8308
+<span class="token function">npm</span> <span class="token function">install</span>
+npx truffle <span class="token builtin class-name">test</span> test/token/ERC20/ERC20.test.js
+</code></pre>
+<h2 id="kevm-extensions---event-monitoring">KEVM Extensions - Event Monitoring</h2>
+<p>Compile semantics with additional file <code>media/201908-trufflecon/kevm-ltl.md</code>.</p>
+<pre><code class="language-k">    <span class="token keyword">syntax</span> LTLEvent <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> <span class="token string">"overflow"</span>
+ <span class="token comment">// ------------------------------</span>
+    <span class="token keyword">rule</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span> ADD W0 W1 <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>events</span><span class="token punctuation">&gt;</span></span> EVENTS <span class="token punctuation">(</span><span class="token punctuation">.</span>Set <span class="token operator">=&gt;</span> SetItem<span class="token punctuation">(</span>overflow<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>events</span><span class="token punctuation">&gt;</span></span>
+      <span class="token keyword">requires</span> notBool overflow in EVENTS
+       andBool W0 <span class="token operator">+</span>Word W1 <span class="token operator">=</span><span class="token operator">/</span><span class="token operator">=</span><span class="token keyword">Int</span> W0 <span class="token operator">+</span><span class="token keyword">Int</span> W1
+      <span class="token punctuation">[</span>priority<span class="token punctuation">(</span><span class="token number">24</span><span class="token punctuation">)</span><span class="token punctuation">]</span>
+
+    <span class="token keyword">syntax</span> LTLEvent <span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token operator">=</span> <span class="token string">"revert"</span>
+ <span class="token comment">// ----------------------------</span>
+    <span class="token keyword">rule</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>k</span><span class="token punctuation">&gt;</span></span> REVERT _ _ <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>k</span><span class="token punctuation">&gt;</span></span>
+         <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>events</span><span class="token punctuation">&gt;</span></span> EVENTS <span class="token punctuation">(</span><span class="token punctuation">.</span>Set <span class="token operator">=&gt;</span> SetItem<span class="token punctuation">(</span>revert<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>events</span><span class="token punctuation">&gt;</span></span>
+      <span class="token keyword">requires</span> notBool revert in EVENTS
+      <span class="token punctuation">[</span>priority<span class="token punctuation">(</span><span class="token number">24</span><span class="token punctuation">)</span><span class="token punctuation">]</span>
+</code></pre>
+<ul>
+<li>Monitors built-in to the KEVM semantics as an extension.</li>
+<li>Can build arbitrary LTL formula over the monitors.</li>
+</ul>
+<h2 id="kevm-extensions---ltl-model-checking">KEVM Extensions - LTL Model Checking</h2>
+<h3 id="input-file-addition.evm">Input file <code>addition.evm</code></h3>
+<pre><code class="language-evm">load { "gas"  : 10000000
+  // Query: always ((~ overflow) \/ eventually revert)
+  // , "code" : UNSAFEADD(100        , 100) // True
+  // , "code" : UNSAFEADD(maxUInt256 , 100) // False
+  // , "code" :   SAFEADD(100        , 100) // True
+     , "code" :   SAFEADD(maxUInt256 , 100) // True
+     }
+
+start
+</code></pre>
+<p>. . .</p>
+<h3 id="query">Query</h3>
+<pre><code class="language-sh">./kevm run <span class="token parameter variable">--backend</span> llvm media/201908-trufflecon/addition.evm <span class="token parameter variable">-cLTLFORMULA</span><span class="token operator">=</span><span class="token string">'always (overflow -&gt; eventually revert)'</span>
+</code></pre>
+<h2 id="truffle-firefly-plugin">Truffle Firefly Plugin</h2>
+<ul>
+<li>Developed with help from Truffle devs today as plugin!</li>
+<li>Modified OpenZeppelin test-suite which links to <code>truffle-plugin-firefly</code>.</li>
+</ul>
+<pre><code class="language-sh">npx truffle run firefly SafeMath <span class="token string">'always (overflow -&gt; eventually revert)'</span>
+</code></pre>
+</body></html></div>
+        </main>
+
+        <!-- Page ToC -->
+        <div class="col-12 col-md-3 col-xl-2 py-md-3 bd-sidebar page-toc mb-3">
+          
+<div>
+<div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#overview"
+                class="bd-toc-link"
+                style="padding-left: 0px;;"
+              >
+                Overview
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#(brief)-introduction-to-kevm"
+                class="bd-toc-link"
+                style="padding-left: 0px;;"
+              >
+                (Brief) Introduction to KEVM
+              </a></div><details style="padding:0.25rem 0;;padding-left: 0px;">
+            <summary class="bd-toc-link-wrapper">
+              <a href="#introduction-to-firefly" class="bd-toc-link">Introduction to Firefly</a>
+              </summary>
+            <div>
+              <div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#why%3F%3F"
+                class="bd-toc-link"
+                style="padding-left: 8px;;"
+              >
+                Why??
+              </a></div>
+            </div>
+          </details>
+        <details style="padding:0.25rem 0;;padding-left: 0px;">
+            <summary class="bd-toc-link-wrapper">
+              <a href="#firefly-demo---setup" class="bd-toc-link">Firefly Demo - Setup</a>
+              </summary>
+            <div>
+              <div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#install-kevm-(once)"
+                class="bd-toc-link"
+                style="padding-left: 8px;;"
+              >
+                Install KEVM (once)
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#install-npx-(once)"
+                class="bd-toc-link"
+                style="padding-left: 8px;;"
+              >
+                Install <code>npx</code> (once)
+              </a></div>
+            </div>
+          </details>
+        <details style="padding:0.25rem 0;;padding-left: 0px;">
+            <summary class="bd-toc-link-wrapper">
+              <a href="#firefly-demo---run-openzeppelin-tests" class="bd-toc-link">Firefly Demo - Run OpenZeppelin Tests</a>
+              </summary>
+            <div>
+              <div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#start-kevm-ganache-cli"
+                class="bd-toc-link"
+                style="padding-left: 8px;;"
+              >
+                Start <code>kevm-ganache-cli</code>
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#run-openzeppelin-tests"
+                class="bd-toc-link"
+                style="padding-left: 8px;;"
+              >
+                Run OpenZeppelin tests
+              </a></div>
+            </div>
+          </details>
+        <div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#kevm-extensions---event-monitoring"
+                class="bd-toc-link"
+                style="padding-left: 0px;;"
+              >
+                KEVM Extensions - Event Monitoring
+              </a></div><details style="padding:0.25rem 0;;padding-left: 0px;">
+            <summary class="bd-toc-link-wrapper">
+              <a href="#kevm-extensions---ltl-model-checking" class="bd-toc-link">KEVM Extensions - LTL Model Checking</a>
+              </summary>
+            <div>
+              <div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#input-file-addition.evm"
+                class="bd-toc-link"
+                style="padding-left: 8px;;"
+              >
+                Input file <code>addition.evm</code>
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#query"
+                class="bd-toc-link"
+                style="padding-left: 8px;;"
+              >
+                Query
+              </a></div>
+            </div>
+          </details>
+        <div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#truffle-firefly-plugin"
+                class="bd-toc-link"
+                style="padding-left: 0px;;"
+              >
+                Truffle Firefly Plugin
+              </a></div>
+</div>
+
+        </div>
+        <div class="btn btn-rv-blue page-toc-toggle-btn"></div>
+        <!-- End Page ToC -->
+      </div>
+    </div>
+<!-- The footer is now controlled by the k-web-theme git submodule -->
+<footer id="rvsite-footer" class="app-footer text-md-left text-center">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-md-4 mb-md-0 mb-4">
+        <a href="https://runtimeverification.com/" target="_blank">
+          <picture>
+            <source
+              srcset="
+                https://runtimeverification.com/assets/img/rv-logo-dark.png
+              "
+              media="(prefers-color-scheme: dark)"
+            />
+            <img
+              class="logo-dark"
+              src="https://runtimeverification.com/assets/img/rv-logo.png"
+              alt="Runtime Verification logo"
+              style="height: 32px"
+            /> </picture
+        ></a>
+        <p class="mt-2 text-md-left copyright">
+          <a href="https://maps.app.goo.gl/8YhKozfmZtgzQBsH7" target="_blank"
+            >202 S Broadway Ave #31, Urbana, IL</a
+          >
+        </p>
+      </div>
+      <div class="col-md-4 text-md-center mb-md-0 mb-4"></div>
+      <div class="col-md-4 mb-md-0 mb-4 pl-0 text-md-right">
+        <p class="copyright">2025 © all rights reserved</p>
+        <span class="copyright"
+          ><a href="https://runtimeverification.com/privacy-policy"
+            >privacy policy</a
+          >
+          |
+          <a href="https://runtimeverification.com/terms-of-use"
+            >terms of use</a
+          ></span
+        >
+      </div>
+    </div>
+  </div>
+</footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Typist/1.2/typist.min.js"></script>
+    <script src="../../assets/js/index.js"></script>
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script
+  async
+  src="https://www.googletagmanager.com/gtag/js?id=G-QL0D8HRYFW"
+></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag() {
+    dataLayer.push(arguments);
+  }
+  gtag("js", new Date());
+  gtag("config", "G-QL0D8HRYFW");
+</script>
+
+  </body>
+</html>
