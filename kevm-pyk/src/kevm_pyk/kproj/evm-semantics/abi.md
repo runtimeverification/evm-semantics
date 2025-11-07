@@ -641,8 +641,10 @@ where `1003892871367861763272476045097431689001461395759728643661426852242313133
 ### Function selectors
 
 ```k
-    syntax Int ::= selector ( String ) [alias, symbol(abi_selector), function, no-evaluators]
+    syntax Bytes ::= selector ( String ) [alias, symbol(abi_selector), function, no-evaluators]
  // -----------------------------------------------------------------------------------------
+
+   rule ( selector ( SIGNATURE ) ) => #parseByteStack(substrString(Keccak256(String2Bytes(SIGNATURE)), 0, 8))
 ```
 
 ```k
