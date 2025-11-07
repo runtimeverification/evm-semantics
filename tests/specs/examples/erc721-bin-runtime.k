@@ -134,46 +134,7 @@ module ERC721-CONTRACT
        andBool ( #rangeAddress ( V1_to )
        andBool ( #rangeUInt ( 256 , V2_tokenId )
                )))
-      
-    
-    rule  ( selector ( "approve(address,uint256)" ) => 157198259 )
-      
-    
-    rule  ( selector ( "balanceOf(address)" ) => 1889567281 )
-      
-    
-    rule  ( selector ( "getApproved(uint256)" ) => 135795452 )
-      
-    
-    rule  ( selector ( "isApprovedForAll(address,address)" ) => 3917867461 )
-      
-    
-    rule  ( selector ( "name()" ) => 117300739 )
-      
-    
-    rule  ( selector ( "ownerOf(uint256)" ) => 1666326814 )
-      
-    
-    rule  ( selector ( "safeTransferFrom(address,address,uint256)" ) => 1115958798 )
-      
-    
-    rule  ( selector ( "safeTransferFrom(address,address,uint256,bytes)" ) => 3096268766 )
-      
-    
-    rule  ( selector ( "setApprovalForAll(address,bool)" ) => 2720838757 )
-      
-    
-    rule  ( selector ( "supportsInterface(bytes4)" ) => 33540519 )
-      
-    
-    rule  ( selector ( "symbol()" ) => 2514000705 )
-      
-    
-    rule  ( selector ( "tokenURI(uint256)" ) => 3363526365 )
-      
-    
-    rule  ( selector ( "transferFrom(address,address,uint256)" ) => 599290589 )
-      
+
 
 endmodule
 

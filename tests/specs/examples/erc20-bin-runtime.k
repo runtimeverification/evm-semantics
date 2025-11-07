@@ -102,33 +102,6 @@ module ERC20-CONTRACT
        andBool ( #rangeUInt ( 256 , V2_amount )
                )))
       
-    
-    rule  ( selector ( "allowance(address,address)" ) => 3714247998 )
-      
-    
-    rule  ( selector ( "approve(address,uint256)" ) => 157198259 )
-      
-    
-    rule  ( selector ( "balanceOf(address)" ) => 1889567281 )
-      
-    
-    rule  ( selector ( "decimals()" ) => 826074471 )
-      
-    
-    rule  ( selector ( "name()" ) => 117300739 )
-      
-    
-    rule  ( selector ( "symbol()" ) => 2514000705 )
-      
-    
-    rule  ( selector ( "totalSupply()" ) => 404098525 )
-      
-    
-    rule  ( selector ( "transfer(address,uint256)" ) => 2835717307 )
-      
-    
-    rule  ( selector ( "transferFrom(address,address,uint256)" ) => 599290589 )
-      
 
 endmodule
 
