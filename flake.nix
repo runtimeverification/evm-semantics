@@ -5,7 +5,7 @@
     rv-nix-tools.url = "github:runtimeverification/rv-nix-tools/854d4f05ea78547d46e807b414faad64cea10ae4";
     nixpkgs.follows = "rv-nix-tools/nixpkgs";
 
-    k-framework.url = "github:runtimeverification/k/v7.1.301";
+    k-framework.url = "github:runtimeverification/k/v7.1.302";
     k-framework.inputs.nixpkgs.follows = "nixpkgs";
     flake-utils.follows = "k-framework/flake-utils";
     blockchain-k-plugin = {
@@ -24,7 +24,7 @@
     nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
     uv2nix.inputs.nixpkgs.follows = "nixpkgs-unstable";
     # uv2nix.inputs.nixpkgs.follows = "nixpkgs";
-    pyproject-build-systems.url = "github:pyproject-nix/build-system-pkgs/dbfc0483b5952c6b86e36f8b3afeb9dde30ea4b5";
+    pyproject-build-systems.url = "github:pyproject-nix/build-system-pkgs/795a980d25301e5133eca37adae37283ec3c8e66";
     pyproject-build-systems = {
       inputs.nixpkgs.follows = "uv2nix/nixpkgs";
       inputs.uv2nix.follows = "uv2nix";
