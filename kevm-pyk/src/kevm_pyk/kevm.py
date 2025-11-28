@@ -410,6 +410,7 @@ class KEVM(KProve, KRun):
         )
         constraints.append(mlEqualsTrue(ltInt(KEVM.size_bytes(cterm.cell('CALLDATA_CELL')), KEVM.pow128())))
         constraints.append(mlEqualsTrue(KEVM.range_uint(256, cterm.cell('CALLVALUE_CELL'))))
+        constraints.append(mlEqualsTrue(KEVM.range_uint(256, cterm.cell('MIXHASH_CELL'))))
 
         constraints.append(mlEqualsTrue(KEVM.range_address(cterm.cell('ORIGIN_CELL'))))
         constraints.append(
