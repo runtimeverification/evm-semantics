@@ -109,7 +109,6 @@
           cmake
           pkg-config
           python
-          python.pkgs.pybind11
           makeWrapper
           clang
           uv
