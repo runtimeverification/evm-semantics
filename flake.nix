@@ -111,7 +111,6 @@
           python
           makeWrapper
           clang
-          python
           uv
           which
         ] ++ lib.optionals (!stdenv.isDarwin) [
