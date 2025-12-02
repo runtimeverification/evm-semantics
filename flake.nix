@@ -109,9 +109,9 @@
           cmake
           pkg-config
           python
+          python.pkgs.pybind11
           makeWrapper
           clang
-          python
           uv
           which
         ] ++ lib.optionals (!stdenv.isDarwin) [
