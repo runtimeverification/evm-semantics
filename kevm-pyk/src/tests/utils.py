@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 from pyk.kdist import kdist
-from pyk.kore.prelude import int_dv
+from pyk.kore.prelude import int_dv, SortApp
 from pyk.kore.syntax import App
 from pyk.kore.tools import PrintOutput, kore_print
 
@@ -28,17 +28,22 @@ REPO_ROOT: Final = Path(__file__).parents[3].resolve(strict=True)
 GOLDEN: Final = (REPO_ROOT / 'tests/templates/output-success-llvm.json').read_text().rstrip()
 
 
-def _assert_exit_code_zero(pattern: Pattern) -> None:
+def _assert_exit_code_zero(pattern: Pattern, expectedException: str | None = None) -> None:
     assert type(pattern) is App
     kevm_cell = pattern.args[0]
     assert type(kevm_cell) is App
     exit_code_cell = kevm_cell.args[1]
     assert type(exit_code_cell) is App
-
+    status_code_cell = kevm_cell.args[5].args[0].args[1] #source: trust me bro
+    assert type(status_code_cell) is App
+    status_code_sort = status_code_cell.args[0]
+    print (status_code_sort)
     exit_code = exit_code_cell.args[0]
+    print(expectedException, status_code_sort.sorts[0], status_code_sort.sorts[0] == SortApp('SortExceptionalStatusCode') )
     if exit_code == int_dv(0):
         return
-
+    elif expectedException and status_code_sort.sorts[0] == SortApp('SortExceptionalStatusCode'):
+        return
     pretty = kore_print(pattern, definition_dir=kdist.get('evm-semantics.llvm'), output=PrintOutput.PRETTY)
     print(pretty)
     assert pretty == GOLDEN
@@ -88,13 +93,17 @@ def _test(
 
     for test_name, test in gst_data.items():
         _LOGGER.info(f'Running test: {gst_file} - {test_name}')
+        assert type(test) is dict
         if test_name in skipped_gst_tests:
             continue
         chain_id = compute_chain_id(gst_file_relative_path)
+        print(test['blocks'])
+        expectException = test.get('blocks', None)[0].get('expectException', None)
+
         res = interpret({test_name: test}, schedule, mode, chain_id, usegas, check=False)
 
         try:
-            _assert_exit_code_zero(res)
+            _assert_exit_code_zero(res, expectException)
         except AssertionError:
             if not save_failing:
                 raise

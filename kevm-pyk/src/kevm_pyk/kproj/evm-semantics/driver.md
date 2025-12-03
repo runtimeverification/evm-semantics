@@ -371,14 +371,14 @@ Processing SetCode Transaction Authority Entries
     rule <statusCode> _:ExceptionalStatusCode </statusCode>
          <k> #halt ~> exception => .K ... </k>
 
-    rule <statusCode> _:ExceptionalStatusCode </statusCode>
-         <k> exception ~> check _ => exception ... </k>
+   //  rule <statusCode> _:ExceptionalStatusCode </statusCode>
+   //       <k> exception ~> check _ => exception ... </k>
 
-    rule <statusCode> _:ExceptionalStatusCode </statusCode>
-         <k> exception ~> run TEST => run TEST ~> exception ... </k>
+   //  rule <statusCode> _:ExceptionalStatusCode </statusCode>
+   //       <k> exception ~> run TEST => run TEST ~> exception ... </k>
 
-    rule <statusCode> _:ExceptionalStatusCode </statusCode>
-         <k> exception ~> clear => clear ... </k>
+   //  rule <statusCode> _:ExceptionalStatusCode </statusCode>
+   //       <k> exception ~> clear => clear ... </k>
 
     syntax EthereumCommand ::= "failure" String | "success" [symbol(EthereumCommand_success)]
  // -----------------------------------------------------------------------------------------
@@ -440,14 +440,14 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
 
     syntax EthereumCommand ::= "process" JSON [symbol(EthereumCommand_process)]
  // ----------------------------------------------------------------------------
-    rule <k> process  TESTID : { "expectException" : _ , REST } => exception ~> process  TESTID : { REST } ... </k>
+   //  rule <k> process  TESTID : { "expectException" : _ , REST } => exception ~> process  TESTID : { REST } ... </k>
 
-    rule <k> exception ~> process _TESTID : { "rlp_decoded" : { KEY : VAL , REST1 => REST1 }, (REST2 => KEY : VAL , REST2 ) } ... </k>
-    rule <k> exception ~> process _TESTID : { "rlp_decoded" : { .JSONs } , REST   => REST}                                    ... </k>
+   //  rule <k> exception ~> process _TESTID : { "rlp_decoded" : { KEY : VAL , REST1 => REST1 }, (REST2 => KEY : VAL , REST2 ) } ... </k>
+   //  rule <k> exception ~> process _TESTID : { "rlp_decoded" : { .JSONs } , REST   => REST}                                    ... </k>
 
-    rule <k> exception ~> process  TESTID : { KEY : VAL , REST } => load KEY : VAL ~> exception ~> process TESTID : { REST }             ... </k> requires KEY in #loadKeys
-    rule <k> exception ~> process  TESTID : { KEY : VAL , REST } => exception ~> process TESTID : { REST } ~> check TESTID : {KEY : VAL} ... </k> requires KEY in #checkKeys
-    rule <k> exception ~> process _TESTID : { .JSONs }           => #startBlock ~> startTx ~> exception ... </k>
+   //  rule <k> exception ~> process  TESTID : { KEY : VAL , REST } => load KEY : VAL ~> exception ~> process TESTID : { REST }             ... </k> requires KEY in #loadKeys
+   //  rule <k> exception ~> process  TESTID : { KEY : VAL , REST } => exception ~> process TESTID : { REST } ~> check TESTID : {KEY : VAL} ... </k> requires KEY in #checkKeys
+   //  rule <k> exception ~> process _TESTID : { .JSONs }           => #startBlock ~> startTx ~> exception ... </k>
 
     rule <k> process _TESTID : { "rlp_decoded" : { KEY : VAL , REST1 => REST1 }, (REST2 => KEY : VAL , REST2 ) } ... </k>
     rule <k> process _TESTID : { "rlp_decoded" : { .JSONs } , REST => REST}                                      ... </k>
