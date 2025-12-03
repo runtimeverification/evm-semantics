@@ -31,9 +31,9 @@ An Ethereum simulation is a list of Ethereum commands.
 Some Ethereum commands take an Ethereum specification (eg. for an account or transaction).
 
 ```k
-    syntax EthereumSimulation ::= ".EthereumSimulation"
-                                | EthereumCommand EthereumSimulation
- // ----------------------------------------------------------------
+    syntax EthereumSimulation ::= ".EthereumSimulation"              [symbol(EthereumSimulation_dot)]
+                                | EthereumCommand EthereumSimulation [symbol(EthereumSimulation)]
+ // ---------------------------------------------------------------------------------------------
     rule <k> .EthereumSimulation                        => .K         ... </k>
     rule <k> ETC                 .EthereumSimulation    => ETC        ... </k>
     rule <k> ETC                 ETS:EthereumSimulation => ETC ~> ETS ... </k> requires ETS =/=K .EthereumSimulation
@@ -380,8 +380,8 @@ Processing SetCode Transaction Authority Entries
     rule <statusCode> _:ExceptionalStatusCode </statusCode>
          <k> exception ~> clear => clear ... </k>
 
-    syntax EthereumCommand ::= "failure" String | "success"
- // -------------------------------------------------------
+    syntax EthereumCommand ::= "failure" String | "success" [symbol(EthereumCommand_success)]
+ // -----------------------------------------------------------------------------------------
     rule <k> success => .K ... </k>
          <exit-code> _ => 0 </exit-code>
          <mode> _ => SUCCESS </mode>
@@ -397,8 +397,8 @@ Processing SetCode Transaction Authority Entries
 Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`.
 
 ```k
-    syntax EthereumCommand ::= "run" JSON
- // -------------------------------------
+    syntax EthereumCommand ::= "run" JSON [symbol(EthereumCommand_run)]
+ // -------------------------------------------------------------------
     rule <k> run { .JSONs } => .K ... </k>
     rule <k> run { TESTID : { TEST:JSONs } , TESTS }
           => run ( TESTID : { TEST } )
@@ -438,8 +438,8 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
     rule <k> run  TESTID : { "blocks" : [ { BLOCK }, BLOCKS ] } => clearTX ~> clearBLOCK ~> process TESTID : { BLOCK } ~> run TESTID : { "blocks" : [ BLOCKS ] } ... </k>
     rule <k> run _TESTID : { "blocks" : [ .JSONs ] } => .K  ... </k>
 
-    syntax EthereumCommand ::= "process" JSON
- // -----------------------------------------
+    syntax EthereumCommand ::= "process" JSON [symbol(EthereumCommand_process)]
+ // ----------------------------------------------------------------------------
     rule <k> process  TESTID : { "expectException" : _ , REST } => exception ~> process  TESTID : { REST } ... </k>
 
     rule <k> exception ~> process _TESTID : { "rlp_decoded" : { KEY : VAL , REST1 => REST1 }, (REST2 => KEY : VAL , REST2 ) } ... </k>
@@ -524,8 +524,8 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
 -   `check_` checks if an account/transaction appears in the world-state as stated.
 
 ```k
-    syntax EthereumCommand ::= "check" JSON
- // ---------------------------------------
+    syntax EthereumCommand ::= "check" JSON [symbol(EthereumCommand_check)]
+ // -----------------------------------------------------------------------
     rule <k> #halt ~> check J:JSON => check J ~> #halt ... </k>
 
     rule <k> check DATA : { .JSONs } => .K ... </k> requires notBool DATA in (SetItem("transactions") SetItem("withdrawals"))

@@ -106,13 +106,13 @@ module STATE-UTILS
 -   `load` loads an account or transaction into the world state.
 
 ```k
-    syntax EthereumCommand ::= "load" JSON
- // --------------------------------------
-    rule <k> load _DATA : { .JSONs }             => .K                                                   ... </k>
+    syntax EthereumCommand ::= "load" JSON [symbol(EthereumCommand_load)]
+ // ---------------------------------------------------------------------
+    rule <k> load _DATA : { .JSONs }             => .K                                                  ... </k>
     rule <k> load  DATA : { KEY : VALUE , REST } => load DATA : { KEY : VALUE } ~> load DATA : { REST } ... </k>
       requires REST =/=K .JSONs andBool DATA =/=String "transaction"
 
-    rule <k> load _DATA : [ .JSONs ]          => .K                                            ... </k>
+    rule <k> load _DATA : [ .JSONs ]          => .K                                           ... </k>
     rule <k> load  DATA : [ { TEST } , REST ] => load DATA : { TEST } ~> load DATA : [ REST ] ... </k>
 ```
 
