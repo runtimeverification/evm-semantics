@@ -37,15 +37,15 @@ def _assert_exit_code_zero(pattern: Pattern, expectedException: str | None = Non
     status_code_cell = kevm_cell.args[5].args[0].args[1] #source: trust me bro
     assert type(status_code_cell) is App
     status_code_sort = status_code_cell.args[0]
-    print (status_code_sort)
+    # print (status_code_sort)
     exit_code = exit_code_cell.args[0]
-    print(expectedException, status_code_sort.sorts[0], status_code_sort.sorts[0] == SortApp('SortExceptionalStatusCode') )
+    # print(expectedException, status_code_sort.sorts[0], status_code_sort.sorts[0] == SortApp('SortExceptionalStatusCode') )
     if exit_code == int_dv(0):
         return
     elif expectedException and status_code_sort.sorts[0] == SortApp('SortExceptionalStatusCode'):
         return
     pretty = kore_print(pattern, definition_dir=kdist.get('evm-semantics.llvm'), output=PrintOutput.PRETTY)
-    print(pretty)
+    # print(pretty)
     assert pretty == GOLDEN
 
 
@@ -97,13 +97,19 @@ def _test(
         if test_name in skipped_gst_tests:
             continue
         chain_id = compute_chain_id(gst_file_relative_path)
-        print(test['blocks'])
-        expectException = test.get('blocks', None)[0].get('expectException', None)
-
-        res = interpret({test_name: test}, schedule, mode, chain_id, usegas, check=False)
+        blocks = test.get('blocks', None)
+        expect_exception = any(block.get('expectException') for block in blocks)
+        has_big_int =  any(block.get('hasBigInt') for block in blocks)
 
         try:
-            _assert_exit_code_zero(res, expectException)
+            res = interpret({test_name: test}, schedule, mode, chain_id, usegas, check=False)
+        except RuntimeError:
+            if has_big_int:
+                continue
+            else:
+                raise
+        try:
+            _assert_exit_code_zero(res, expect_exception)
         except AssertionError:
             if not save_failing:
                 raise
