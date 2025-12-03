@@ -617,10 +617,10 @@ After executing a transaction, it's necessary to have the effect of the substate
 
     rule <k> (.K => #newAccount ACCT) ~> #finalizeStorage(ListItem(ACCT) _ACCTS) ... </k> [owise]
 
-    syntax InternalOp ::= #finalizeTx ( Bool , Int )   [symbol(#finalizeTx)]
+    syntax InternalOp ::= #finalizeTx ( Bool )     [symbol(#finalizeTx)]
                         | #deleteAccounts ( List ) [symbol(#deleteAccounts)]
  // ------------------------------------------------------------------------
-    rule <k> #finalizeTx(true, _) => #finalizeStorage(Set2List(SetItem(MINER) |Set ACCTS)) ... </k>
+    rule <k> #finalizeTx(true) => #finalizeStorage(Set2List(SetItem(MINER) |Set ACCTS)) ... </k>
          <selfDestruct> .Set </selfDestruct>
          <coinbase> MINER </coinbase>
          <touchedAccounts> ACCTS => .Set </touchedAccounts>
@@ -628,7 +628,7 @@ After executing a transaction, it's necessary to have the effect of the substate
          <accessedStorage> _ => .Map </accessedStorage>
          <createdAccounts> _ => .Set </createdAccounts>
 
-    rule <k> #finalizeTx(false, _) ... </k>
+    rule <k> #finalizeTx(false) ... </k>
          <useGas> true </useGas>
          <schedule> SCHED </schedule>
          <gas> GAVAIL => G*(GAVAIL, GLIMIT, REFUND, SCHED) </gas>
@@ -641,25 +641,25 @@ After executing a transaction, it's necessary to have the effect of the substate
          </message>
       requires REFUND =/=Int 0
 
-    rule <k> #finalizeTx(false => true, GFLOOR) ... </k>
+    rule <k> #finalizeTx(false => true) ... </k>
          <useGas> true </useGas>
          <schedule> SCHED </schedule>
          <baseFee> BFEE </baseFee>
          <origin> ORG </origin>
          <coinbase> MINER </coinbase>
          <gas> GAVAIL </gas>
-         <gasUsed> GUSED => GUSED +Gas maxInt(GLIMIT -Int GAVAIL, GFLOOR) </gasUsed>
+         <gasUsed> GUSED => GUSED +Gas maxInt(GLIMIT -Int GAVAIL, Ctxfloor(SCHED, DATA)) </gasUsed>
          <blobGasUsed> BLOB_GAS_USED => #if TXTYPE ==K Blob #then BLOB_GAS_USED +Int Ctotalblob(SCHED, size(TVH)) #else BLOB_GAS_USED #fi </blobGasUsed>
          <gasPrice> GPRICE </gasPrice>
          <refund> 0 </refund>
          <account>
            <acctID> ORG </acctID>
-           <balance> ORGBAL => ORGBAL +Int minInt(GAVAIL, GLIMIT -Int GFLOOR) *Int GPRICE </balance>
+           <balance> ORGBAL => ORGBAL +Int minInt(GAVAIL, GLIMIT -Int Ctxfloor(SCHED, DATA)) *Int GPRICE </balance>
            ...
          </account>
          <account>
            <acctID> MINER </acctID>
-           <balance> MINBAL => MINBAL +Int maxInt(GLIMIT -Int GAVAIL, GFLOOR) *Int (GPRICE -Int BFEE) </balance>
+           <balance> MINBAL => MINBAL +Int maxInt(GLIMIT -Int GAVAIL, Ctxfloor(SCHED, DATA)) *Int (GPRICE -Int BFEE) </balance>
            ...
          </account>
          <txPending> ListItem(MSGID:Int) REST => REST </txPending>
@@ -668,24 +668,25 @@ After executing a transaction, it's necessary to have the effect of the substate
            <txGasLimit> GLIMIT </txGasLimit>
            <txVersionedHashes> TVH </txVersionedHashes>
            <txType> TXTYPE </txType>
+           <data> DATA </data>
            ...
          </message>
       requires ORG =/=Int MINER
 
-    rule <k> #finalizeTx(false => true, GFLOOR) ... </k>
+    rule <k> #finalizeTx(false => true) ... </k>
          <useGas> true </useGas>
          <schedule> SCHED </schedule>
          <baseFee> BFEE </baseFee>
          <origin> ACCT </origin>
          <coinbase> ACCT </coinbase>
          <gas> GAVAIL </gas>
-         <gasUsed> GUSED => GUSED +Gas maxInt(GLIMIT -Int GAVAIL, GFLOOR)  </gasUsed>
+         <gasUsed> GUSED => GUSED +Gas maxInt(GLIMIT -Int GAVAIL, Ctxfloor(SCHED, DATA))  </gasUsed>
          <blobGasUsed> BLOB_GAS_USED => #if TXTYPE ==K Blob #then BLOB_GAS_USED +Int Ctotalblob(SCHED, size(TVH)) #else BLOB_GAS_USED #fi </blobGasUsed>
          <gasPrice> GPRICE </gasPrice>
          <refund> 0 </refund>
          <account>
            <acctID> ACCT </acctID>
-           <balance> BAL => BAL +Int GLIMIT *Int GPRICE -Int maxInt(GLIMIT -Int GAVAIL, GFLOOR) *Int BFEE </balance>
+           <balance> BAL => BAL +Int GLIMIT *Int GPRICE -Int maxInt(GLIMIT -Int GAVAIL, Ctxfloor(SCHED, DATA)) *Int BFEE </balance>
            ...
          </account>
          <txPending> ListItem(MSGID:Int) REST => REST </txPending>
@@ -694,10 +695,11 @@ After executing a transaction, it's necessary to have the effect of the substate
            <txGasLimit> GLIMIT </txGasLimit>
            <txVersionedHashes> TVH </txVersionedHashes>
            <txType> TXTYPE </txType>
+           <data> DATA </data>
            ...
          </message>
 
-    rule <k> #finalizeTx(false => true, _) ... </k>
+    rule <k> #finalizeTx(false => true) ... </k>
          <useGas> false </useGas>
          <txPending> ListItem(MSGID:Int) REST => REST </txPending>
          <message>
@@ -705,11 +707,11 @@ After executing a transaction, it's necessary to have the effect of the substate
            ...
          </message>
 
-    rule <k> (.K => #deleteAccounts(Set2List(ACCTS))) ~> #finalizeTx(true,_) ... </k>
+    rule <k> (.K => #deleteAccounts(Set2List(ACCTS))) ~> #finalizeTx(true) ... </k>
          <selfDestruct> ACCTS => .Set </selfDestruct>
       requires size(ACCTS) >Int 0
 
-    rule <k> (.K => #newAccount MINER) ~> #finalizeTx(_,_) ... </k>
+    rule <k> (.K => #newAccount MINER) ~> #finalizeTx(_) ... </k>
          <coinbase> MINER </coinbase> [owise]
 
     rule <k> #deleteAccounts(ListItem(ACCT) ACCTS) => #deleteAccounts(ACCTS) ... </k>

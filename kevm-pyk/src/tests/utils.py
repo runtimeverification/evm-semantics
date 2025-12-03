@@ -92,14 +92,19 @@ def _test(
         gst_data = json.load(f)
 
     for test_name, test in gst_data.items():
-        _LOGGER.info(f'Running test: {gst_file} - {test_name}')
-        assert type(test) is dict
         if test_name in skipped_gst_tests:
             continue
+        _LOGGER.info(f'Running test: {gst_file} - {test_name}')
+        assert type(test) is dict
         chain_id = compute_chain_id(gst_file_relative_path)
-        blocks = test.get('blocks', None)
-        expect_exception = any(block.get('expectException') for block in blocks)
-        has_big_int =  any(block.get('hasBigInt') for block in blocks)
+        blocks = test.get('blocks', [])
+        expect_exception = False
+        has_big_int = False
+        for block in blocks:
+            expect_exception = expect_exception or block.get('expectException')
+            has_big_int = has_big_int or block.get('hasBigInt')
+            if expect_exception and has_big_int:
+                break
 
         try:
             res = interpret({test_name: test}, schedule, mode, chain_id, usegas, check=False)
