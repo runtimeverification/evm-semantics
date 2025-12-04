@@ -49,6 +49,7 @@ def _assert_exit_code_zero(pattern: Pattern, exception_expected: bool = False) -
 
 
 def _assert_exit_code_exception(kevm_cell: App) -> None:
+    """Assert that the status code in a kevm_cell has the ExceptionalStatusCode sort."""
     status_code = _fetch_status_code(kevm_cell)
     # Some tests that are expected to fail might get stuck somewhere not related to the exception.
     # This assert should catch any false negatives
@@ -58,6 +59,7 @@ def _assert_exit_code_exception(kevm_cell: App) -> None:
 
 
 def _fetch_status_code(kevm_cell: App) -> App:
+    """Return the value of the "<statusCode>" cell in a kevm_cell:App."""
     # <statusCode> is nested under <kevm><ethereum><evm>
     ethereum_cell = kevm_cell.args[5]  # type: ignore[attr-defined]
     evm_cell = ethereum_cell.args[0]  # type: ignore[attr-defined]
@@ -87,10 +89,12 @@ def read_csv_file(csv_file: Path) -> tuple[tuple[Path, str], ...]:
         return tuple((Path(row[0]), row[1]) for row in reader)
 
 
-def has_exception(test_data: dict) -> tuple[bool, bool]:
+def has_exception(gst_data: dict) -> tuple[bool, bool]:
+    """Parse the "blocks" field of a General State Test and check if the "expectException"
+    and "hasBigInt" fields are inside."""
     exception_expected = False
     has_big_int = False
-    for block in test_data.get('blocks', []):
+    for block in gst_data.get('blocks', []):
         exception_expected = exception_expected or 'expectException' in block
         has_big_int = has_big_int or 'hasBigInt' in block
         if exception_expected and has_big_int:
