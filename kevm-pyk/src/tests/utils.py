@@ -5,7 +5,7 @@ import json
 import logging
 from pathlib import Path
 from typing import TYPE_CHECKING
-import sys
+
 import pytest
 from pyk.kdist._kdist import kdist
 from pyk.kore.prelude import int_dv
@@ -26,7 +26,6 @@ _LOGGER: Final = logging.getLogger(__name__)
 
 REPO_ROOT: Final = Path(__file__).parents[3].resolve(strict=True)
 GOLDEN: Final = (REPO_ROOT / 'tests/templates/output-success-llvm.json').read_text().rstrip()
-sys.setrecursionlimit(15000000)
 
 
 def _assert_exit_code_zero(pattern: Pattern, exception_expected: bool = False) -> None:
@@ -35,7 +34,6 @@ def _assert_exit_code_zero(pattern: Pattern, exception_expected: bool = False) -
     assert type(kevm_cell) is App
     exit_code_cell = kevm_cell.args[1]
     assert type(exit_code_cell) is App
-    print(exception_expected)
 
     exit_code = exit_code_cell.args[0]
     if exit_code == int_dv(0):
