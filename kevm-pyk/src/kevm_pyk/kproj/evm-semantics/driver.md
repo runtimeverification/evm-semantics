@@ -292,7 +292,7 @@ Processing SetCode Transaction Authority Entries
          </message>
 
     rule <k> #loadAuthorities (ListItem(ListItem(CID) ListItem(ADDR) ListItem(NONCE) ListItem(YPAR) ListItem(SIGR) ListItem(SIGS)) REST )
-          => #setDelegation (#recoverAuthority (CID, ADDR, NONCE, YPAR, SIGR, SIGS ), CID, NONCE, ADDR)
+          => #setDelegation (#recoverAuthority(CID, ADDR, NONCE, YPAR, SIGR, SIGS), CID, NONCE, ADDR)
           ~> #loadAuthorities (REST)
           ... </k>
          <txPending> ListItem(TXID:Int) ... </txPending>
@@ -738,14 +738,19 @@ Here we check the other post-conditions associated with an EVM test.
     rule <k> check "transactions" : ("sender"               : VALUE) => .K ... </k> <txOrder> ListItem(TXID) ... </txOrder> <message> <msgID> TXID </msgID> <sigV> TW </sigV> <sigR> TR </sigR> <sigS> TS </sigS> ... </message> <chainID> B </chainID> requires #sender( #getTxData(TXID), TW, TR, TS, B ) ==K VALUE
 
     rule <k> check "transactions" : "authorizationList" : [ .JSONs ] => .K ... </k>
-    rule <k> check "transactions" : "authorizationList" : [ { "chainId": CID, "address": ADDR, "nonce": NONCE, "v": _, "r": SIGR, "s": SIGS, "signer": _, "yParity": SIGY } , REST ]
-          => check "transactions" : "authorizationList" : [ #hex2Bytes(CID), #hex2Bytes(ADDR), #hex2Bytes(NONCE), #hex2Bytes(SIGY), #hex2Bytes(SIGR), #hex2Bytes(SIGS) ]
-          ~> check "transactions" : "authorizationList" : [ REST ]
+    rule <k> check "transactions" : "authorizationList" : [ { "chainId": CID, "address": ADDR, "nonce": NONCE, "v": SIGV, "r": SIGR, "s": SIGS, "signer": _ , "yParity": SIGY }, REST ]
+          => check "transactions" : "authorizationList" : [ { "chainId": CID, "address": ADDR, "nonce": NONCE, "v": SIGV, "r": SIGR, "s": SIGS, "yParity": SIGY }, REST ]
           ...
          </k>
-    rule <k> check "transactions" : "authorizationList" : [ AUTH ] => .K ... </k>
-         <txOrder> ListItem(TXID) ... </txOrder>
-         <message> <msgID> TXID </msgID> <txAuthList> AUTHLIST </txAuthList> ... </message> requires #parseJSONs2List(AUTH) in AUTHLIST
+
+    rule <k> check "transactions" : "authorizationList" : [ { "chainId": CID, "address": ADDR, "nonce": NONCE, "v": _, "r": SIGR, "s": SIGS, "yParity": SIGY }, REST ]
+          => (ListItem(#hex2Bytes(CID)) ListItem(#hex2Bytes(ADDR)) ListItem(#hex2Bytes(NONCE)) ListItem(#hex2Bytes(SIGY)) ListItem(#hex2Bytes(SIGR)) ListItem(#hex2Bytes(SIGS)) .List) ~> check "transactions" : "authorizationList" : [ REST ]
+          ...
+         </k>
+
+   rule <k> (AUTH:List => .K) ~> check "transactions" : "authorizationList" : _ ... </k>
+        <txOrder> ListItem(TXID) ... </txOrder>
+        <message> <msgID> TXID </msgID> <txAuthList> AUTHLIST </txAuthList> ... </message> requires AUTH in AUTHLIST
 
     syntax Bytes ::= #hex2Bytes ( String ) [function] //TODO: Is this needed?
  // -------------------------------------------------
