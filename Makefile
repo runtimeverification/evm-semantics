@@ -49,11 +49,11 @@ download-json-fixtures:
 	cd tests/execution-spec-tests && bash get_execution_spec_tests.sh
 
 test-fixtures: download-json-fixtures
-	$(MAKE) -C kevm-pyk/ test-integration PYTEST_ARGS+="-k test_execution_spec_tests.py"
+	$(MAKE) -C kevm-pyk/ test-integration PYTEST_ARGS+="-k test_execution_spec_tests.py -k test_bchain"
 
 fixtures-failing-list: download-json-fixtures
 	cat /dev/null > tests/execution-spec-tests/failing.llvm
-	- $(MAKE) -C kevm-pyk/ test-integration PYTEST_ARGS+="-k test_execution_spec_tests.py --save-failing --maxfail=10000"
+	- $(MAKE) -C kevm-pyk/ test-integration PYTEST_ARGS+="-k test_execution_spec_tests.py -k test_bchain --save-failing --maxfail=10000"
 	LC_ALL=en_US.UTF-8 sort -f -d -o tests/execution-spec-tests/failing.llvm tests/execution-spec-tests/failing.llvm
 	if [ "$(shell uname)" = "Darwin" ]; then \
 		sed -i '' '1{/^[[:space:]]*$$/d;}' tests/execution-spec-tests/failing.llvm ;\
