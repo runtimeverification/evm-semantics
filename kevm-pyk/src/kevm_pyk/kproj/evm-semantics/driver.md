@@ -366,8 +366,8 @@ Processing SetCode Transaction Authority Entries
     syntax Mode ::= "SUCCESS"
  // -------------------------
 
-    syntax EthereumCommand ::= "exception" | "status" StatusCode
- // ------------------------------------------------------------
+    syntax EthereumCommand ::= "exception"
+ // --------------------------------------
     rule <statusCode> _:ExceptionalStatusCode </statusCode>
          <k> #halt ~> exception => .K ... </k>
 
