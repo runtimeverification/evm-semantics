@@ -61,7 +61,7 @@ BCHAIN_ENGINE_TESTS: Final = tuple(BCHAIN_ENGINE_TEST_DIR.rglob('**/*.json'))
     BCHAIN_ENGINE_TESTS,
     ids=[str(test_file.relative_to(BCHAIN_ENGINE_TEST_DIR)) for test_file in BCHAIN_ENGINE_TESTS],
 )
-def test_bchain_engine(test_file: Path, save_failing: bool) -> None:
+def test_engine_bchain(test_file: Path, save_failing: bool) -> None:
     _test(
         test_file,
         schedule='PRAGUE',
