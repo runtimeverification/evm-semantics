@@ -84,7 +84,6 @@ def _test(
     with gst_file.open() as f:
         gst_data = json.load(f)
 
-    # Filter upfront instead of checking each iteration
     tests_to_run = {k: v for k, v in gst_data.items() if k not in skipped_gst_tests}
     failing_tests: list[str] = []
 
