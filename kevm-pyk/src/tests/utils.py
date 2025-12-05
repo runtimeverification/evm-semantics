@@ -79,17 +79,20 @@ def _test(
     if '*' in skipped_gst_tests:
         pytest.skip()
 
-    failing_tests: list[str] = []
     gst_file_relative_path: Final[str] = str(gst_file.relative_to(test_dir))
 
     with gst_file.open() as f:
         gst_data = json.load(f)
 
-    for test_name, test in gst_data.items():
+    # Filter upfront instead of checking each iteration
+    tests_to_run = {k: v for k, v in gst_data.items() if k not in skipped_gst_tests}
+    failing_tests: list[str] = []
+
+    chain_id = compute_chain_id(str(gst_file.relative_to(test_dir)))
+
+    for test_name, test in tests_to_run.items():
         _LOGGER.info(f'Running test: {gst_file} - {test_name}')
-        if test_name in skipped_gst_tests:
-            continue
-        chain_id = compute_chain_id(gst_file_relative_path)
+
         res = interpret({test_name: test}, schedule, mode, chain_id, usegas, check=False)
 
         try:
@@ -99,14 +102,14 @@ def _test(
                 raise
             failing_tests.append(test_name)
 
-    if not failing_tests:
+    if len(failing_tests) == 0:
         return
-    if save_failing:
-        with failing_tests_file.open('a', newline='') as ff:
-            writer = csv.writer(ff)
-            if len(failing_tests) == len(gst_data):
-                writer.writerow([gst_file_relative_path, '*'])
-            else:
-                for test_name in sorted(failing_tests):
-                    writer.writerow([gst_file_relative_path, test_name])
+
+    with failing_tests_file.open('a', newline='') as ff:
+        writer = csv.writer(ff)
+        if len(failing_tests) == len(gst_data):
+            writer.writerow([gst_file_relative_path, '*'])
+        else:
+            for test_name in sorted(failing_tests):
+                writer.writerow([gst_file_relative_path, test_name])
     raise AssertionError(f'Found failing tests in GST file {gst_file_relative_path}: {failing_tests}')
