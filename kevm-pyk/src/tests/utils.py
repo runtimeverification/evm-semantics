@@ -43,18 +43,18 @@ def _assert_exit_code_zero(pattern: Pattern) -> None:
     assert pretty == GOLDEN
 
 
-def _skipped_tests(test_dir: Path, slow_tests_file: Path, failing_tests_file: Path) -> dict[Path, list[str]]:
+def _skipped_tests(test_dir: Path, slow_tests_file: Path, failing_tests_file: Path) -> dict[Path, frozenset[str]]:
     try:
         slow_tests = read_csv_file(slow_tests_file)
     except FileNotFoundError as e:
         _LOGGER.warning(e)
         slow_tests = ()
     failing_tests = read_csv_file(failing_tests_file)
-    skipped: dict[Path, list[str]] = {}
+    skipped: dict[Path, set[str]] = {}
     for test_file, test in slow_tests + failing_tests:
         test_file = test_dir / test_file
-        skipped.setdefault(test_file, []).append(test)
-    return skipped
+        skipped.setdefault(test_file, set()).add(test)
+    return {k: frozenset(v) for k, v in skipped.items()}
 
 
 def read_csv_file(csv_file: Path) -> tuple[tuple[Path, str], ...]:
@@ -71,11 +71,11 @@ def _test(
     usegas: bool,
     save_failing: bool,
     compute_chain_id: Callable[[str], int],
-    skipped_tests: dict[Path, list[str]],
+    skipped_tests: dict[Path, frozenset[str]],
     test_dir: Path,
     failing_tests_file: Path,
 ) -> None:
-    skipped_gst_tests = skipped_tests.get(gst_file, [])
+    skipped_gst_tests = skipped_tests.get(gst_file, frozenset())
     if '*' in skipped_gst_tests:
         pytest.skip()
 
