@@ -31,6 +31,15 @@ jobs:
       - name: 'Run pyupgrade'
         run: make -C kevm-pyk pyupgrade
 
+  mac-build-test:
+    name: 'Mac Build Test'
+    runs-on: [self-hosted, MacM1]
+    steps:
+      - name: 'Check out code'
+        uses: actions/checkout@v4
+      - name: 'Run build'
+        run: make -C kevm-pyk build
+
   kevm-pyk-unit-tests:
     needs: kevm-pyk-code-quality-checks
     name: 'Unit Tests'
