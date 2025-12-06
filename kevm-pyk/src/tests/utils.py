@@ -84,14 +84,14 @@ def _test(
     with gst_file.open() as f:
         gst_data = json.load(f)
 
-    tests_to_run = {k: v for k, v in gst_data.items() if k not in skipped_gst_tests}
     failing_tests: list[str] = []
 
     chain_id = compute_chain_id(str(gst_file.relative_to(test_dir)))
 
-    for test_name, test in tests_to_run.items():
+    for test_name, test in gst_data.items():
         _LOGGER.info(f'Running test: {gst_file} - {test_name}')
-
+        if test_name in skipped_gst_tests:
+            continue
         res = interpret({test_name: test}, schedule, mode, chain_id, usegas, check=False)
 
         try:
