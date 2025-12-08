@@ -622,7 +622,7 @@ def exec_run(options: RunOptions) -> None:
 
     for name, kore_pattern in kore_pattern_list:
         if name:
-            print(f'Processing test - {name}')
+            _LOGGER.info(f'Processing test - {name}')
         kevm.run(
             kore_pattern,
             depth=options.depth,
@@ -666,7 +666,7 @@ def exec_kast(options: KastOptions) -> None:
 
     for name, kore_pattern in kore_pattern_list:
         if name:
-            print(f'Processing test - {name}')
+            _LOGGER.info(f'Processing test - {name}')
         output_text = kore_print(kore_pattern, definition_dir=kevm.definition_dir, output=options.output)
         print(output_text)
 

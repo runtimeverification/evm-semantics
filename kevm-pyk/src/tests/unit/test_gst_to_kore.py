@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 import pytest
 from pyk.kore.parser import KoreParser
 
-from kevm_pyk.gst_to_kore import gst_to_kore
+from kevm_pyk.gst_to_kore import filter_gst_keys, gst_to_kore
 
 from ..utils import REPO_ROOT
 
@@ -34,7 +34,7 @@ TEST_DATA: Final = (
 def test_gst_to_kore(gst_path: str, expected_path: str, update_expected_output: bool) -> None:
     # Given
     gst_file = REPO_ROOT / gst_path
-    gst_data = json.loads(gst_file.read_text())
+    gst_data = filter_gst_keys(json.loads(gst_file.read_text()))
 
     expected_file = REPO_ROOT / expected_path
     expected = KoreParser(expected_file.read_text()).pattern()
