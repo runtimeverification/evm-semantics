@@ -8,9 +8,17 @@ from pyk.ktool.krun import llvm_interpret
 from .gst_to_kore import filter_gst_keys, gst_to_kore
 
 if TYPE_CHECKING:
+    from collections.abc import Iterator
     from typing import Any
 
     from pyk.kore.syntax import Pattern
+
+
+def iterate_gst(gst_data: Any, skipped_keys: frozenset[str] = frozenset()) -> Iterator[tuple[str, dict]]:
+    for test_name, test in gst_data.items():
+        if test_name in skipped_keys:
+            continue
+        yield test_name, filter_gst_keys(test)
 
 
 def interpret(gst_data: Any, schedule: str, mode: str, chainid: int, usegas: bool, *, check: bool = True) -> Pattern:
