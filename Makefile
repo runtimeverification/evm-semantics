@@ -108,7 +108,7 @@ test-prove-dss:
 
 .PHONY: test-integration
 test-integration:
-	$(MAKE) -C kevm-pyk/ test-integration PYTEST_ARGS+='-k "(test_kast.py or test_run.py)" -vv'
+	$(MAKE) -C kevm-pyk/ test-integration PYTEST_ARGS+='-k "(test_kast.py or test_run.py)"'
 
 .PHONY: profile
 profile:
