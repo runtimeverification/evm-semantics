@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from pyk.kore.syntax import Pattern
 
 
-def iterate_gst(gst_data: Any, skipped_keys: frozenset[str] = frozenset()) -> Iterator[tuple[str, dict]]:
+def iterate_gst(gst_data: dict, skipped_keys: frozenset[str] = frozenset()) -> Iterator[tuple[str, dict]]:
     for test_name, test in gst_data.items():
         if test_name in skipped_keys:
             continue
