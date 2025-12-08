@@ -86,7 +86,7 @@ def _test(
 
     failing_tests: list[str] = []
 
-    chain_id = compute_chain_id(str(gst_file.relative_to(test_dir)))
+    chain_id = compute_chain_id(gst_file_relative_path)
 
     for test_name, test in gst_data.items():
         _LOGGER.info(f'Running test: {gst_file} - {test_name}')
