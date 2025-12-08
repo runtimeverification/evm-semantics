@@ -42,7 +42,7 @@ from .cli import (
     get_argument_type_setter,
     get_option_string_destination,
 )
-from .gst_to_kore import SORT_ETHEREUM_SIMULATION, gst_to_kore, kore_pgm_to_kore
+from .gst_to_kore import SORT_ETHEREUM_SIMULATION, kore_pgm_to_kore
 from .kevm import KEVM, KEVMSemantics, kevm_node_printer
 from .kompile import KompileTarget, kevm_kompile
 from .utils import (
@@ -603,22 +603,26 @@ def exec_run(options: RunOptions) -> None:
             if options.gst_name not in json_read:
                 raise ValueError(f'Test {options.gst_name} not found in GST file')
             json_read = {options.gst_name: json_read[options.gst_name]}
-        gst_data_list = [{k: v} for (k, v) in iterate_gst(json_read)]
         kore_pattern_list = [
-            gst_to_kore(gst_data, options.schedule, options.mode, options.chainid, options.usegas)
-            for gst_data in gst_data_list
+            (name, kore)
+            for (name, kore) in iterate_gst(json_read, options.schedule, options.mode, options.chainid, options.usegas)
         ]
     except json.JSONDecodeError:
         pgm_token = KToken(options.input_file.read_text(), KSort('EthereumSimulation'))
         kast_pgm = kevm.parse_token(pgm_token)
         kore_pgm = kevm.kast_to_kore(kast_pgm, sort=KSort('EthereumSimulation'))
         kore_pattern_list = [
-            kore_pgm_to_kore(
-                kore_pgm, SORT_ETHEREUM_SIMULATION, options.schedule, options.mode, options.chainid, options.usegas
-            )
+            (
+                '',
+                kore_pgm_to_kore(
+                    kore_pgm, SORT_ETHEREUM_SIMULATION, options.schedule, options.mode, options.chainid, options.usegas
+                ),
+            ),
         ]
 
-    for kore_pattern in kore_pattern_list:
+    for name, kore_pattern in kore_pattern_list:
+        if name:
+            print(f'Processing test - {name}')
         kevm.run(
             kore_pattern,
             depth=options.depth,
@@ -643,24 +647,28 @@ def exec_kast(options: KastOptions) -> None:
             if options.gst_name not in json_read:
                 raise ValueError(f'Test {options.gst_name} not found in GST file')
             json_read = {options.gst_name: json_read[options.gst_name]}
-        gst_data_list = [{k: v} for (k, v) in iterate_gst(json_read)]
         kore_pattern_list = [
-            gst_to_kore(gst_data, options.schedule, options.mode, options.chainid, options.usegas)
-            for gst_data in gst_data_list
+            (name, kore)
+            for (name, kore) in iterate_gst(json_read, options.schedule, options.mode, options.chainid, options.usegas)
         ]
     except json.JSONDecodeError:
         pgm_token = KToken(options.input_file.read_text(), KSort('EthereumSimulation'))
         kast_pgm = kevm.parse_token(pgm_token)
         kore_pgm = kevm.kast_to_kore(kast_pgm)
         kore_pattern_list = [
-            kore_pgm_to_kore(
-                kore_pgm, SORT_ETHEREUM_SIMULATION, options.schedule, options.mode, options.chainid, options.usegas
-            )
+            (
+                '',
+                kore_pgm_to_kore(
+                    kore_pgm, SORT_ETHEREUM_SIMULATION, options.schedule, options.mode, options.chainid, options.usegas
+                ),
+            ),
         ]
 
-    for kore_pattern in kore_pattern_list:
+    for name, kore_pattern in kore_pattern_list:
+        if name:
+            print(f'Processing test - {name}')
         output_text = kore_print(kore_pattern, definition_dir=kevm.definition_dir, output=options.output)
-    print(output_text)
+        print(output_text)
 
 
 def exec_summarize(options: SummarizeOptions) -> None:
