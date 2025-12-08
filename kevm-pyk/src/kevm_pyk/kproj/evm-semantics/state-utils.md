@@ -262,6 +262,10 @@ The `"rlp"` key loads the block information.
          </k>
          <requestsRoot> _ => #asWord(RR) </requestsRoot>
 
+    // fallback rule to catch invalid rlp encodings
+    rule <k> load "rlp" : _ => .K ... </k>
+         <statusCode> _ => EVMC_INVALID_BLOCK </statusCode>  [owise]
+
     rule <k> load "genesisRLP": [ [ HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR, UB, EB, BR, RR, .JSONs ], _, _, _, .JSONs ] => .K ... </k>
          <blockhashes> .List => ListItem(#blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR, UB, EB, BR, RR)) ListItem(#asWord(HP)) </blockhashes>
          <previousExcessBlobGas> 0 => #asWord(EB) </previousExcessBlobGas>
