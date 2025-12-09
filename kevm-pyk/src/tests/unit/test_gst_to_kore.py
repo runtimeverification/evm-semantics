@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 import pytest
 from pyk.kore.parser import KoreParser
 
-from kevm_pyk.gst_to_kore import gst_to_kore
+from kevm_pyk.interpreter import iterate_gst
 
 from ..utils import REPO_ROOT
 
@@ -35,17 +35,22 @@ def test_gst_to_kore(gst_path: str, expected_path: str, update_expected_output: 
     # Given
     gst_file = REPO_ROOT / gst_path
     gst_data = json.loads(gst_file.read_text())
-
     expected_file = REPO_ROOT / expected_path
-    expected = KoreParser(expected_file.read_text()).pattern()
 
     # When
-    actual = gst_to_kore(gst_data, 'CANCUN', 'NORMAL', 1, True)
+    actuals = [kore for _, kore in iterate_gst(gst_data, 'CANCUN', 'NORMAL', 1, True)]
 
     # Then
     if update_expected_output:
         with expected_file.open('w') as f:
-            actual.write(f)
+            for kore in actuals:
+                kore.write(f)
+                f.write('\n')
         return
 
-    assert actual == expected
+    expected_lines = expected_file.read_text().strip().split('\n')
+    assert len(actuals) == len(expected_lines)
+
+    for actual, expected_line in zip(actuals, expected_lines, strict=True):
+        expected = KoreParser(expected_line).pattern()
+        assert actual == expected

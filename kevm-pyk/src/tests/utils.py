@@ -12,7 +12,7 @@ from pyk.kore.prelude import int_dv
 from pyk.kore.syntax import App
 from pyk.kore.tools import PrintOutput, kore_print
 
-from kevm_pyk.interpreter import interpret
+from kevm_pyk.interpreter import interpret, iterate_gst
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -88,11 +88,9 @@ def _test(
 
     chain_id = compute_chain_id(gst_file_relative_path)
 
-    for test_name, test in gst_data.items():
+    for test_name, init_kore in iterate_gst(gst_data, schedule, mode, chain_id, usegas, skipped_gst_tests):
         _LOGGER.info(f'Running test: {gst_file} - {test_name}')
-        if test_name in skipped_gst_tests:
-            continue
-        res = interpret({test_name: test}, schedule, mode, chain_id, usegas, check=False)
+        res = interpret(init_kore, check=False)
 
         try:
             _assert_exit_code_zero(res)
