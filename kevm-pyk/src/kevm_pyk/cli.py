@@ -260,6 +260,13 @@ def _create_argument_parser() -> ArgumentParser:
     )
     run_args.add_argument('input_file', type=file_path, help='Path to input file.')
     run_args.add_argument(
+        '--test',
+        type=str,
+        dest='gst_name',
+        default=None,
+        help='Name of the test inside the gst file. By default all tests are processed.',
+    )
+    run_args.add_argument(
         '--output',
         type=KRunOutput,
         choices=list(KRunOutput),
@@ -298,6 +305,13 @@ def _create_argument_parser() -> ArgumentParser:
         ],
     )
     kast_args.add_argument('input_file', type=file_path, help='Path to input file.')
+    kast_args.add_argument(
+        '--test',
+        type=str,
+        dest='gst_name',
+        default=None,
+        help='Name of the test inside the gst file. By default all tests are processed.',
+    )
     kast_args.add_argument(
         '--output',
         type=PrintOutput,
@@ -755,14 +769,11 @@ class RunOptions(
     output: KRunOutput
     expand_macros: bool
     debugger: bool
+    gst_name: str | None
 
     @staticmethod
     def default() -> dict[str, Any]:
-        return {
-            'output': KRunOutput.PRETTY,
-            'expand_macros': True,
-            'debugger': False,
-        }
+        return {'output': KRunOutput.PRETTY, 'expand_macros': True, 'debugger': False, 'gst_name': None}
 
     @staticmethod
     def from_option_string() -> dict[str, str]:
@@ -798,11 +809,13 @@ class KastOptions(
 ):
     input_file: Path
     output: PrintOutput
+    gst_name: str | None
 
     @staticmethod
     def default() -> dict[str, Any]:
         return {
             'output': PrintOutput.KORE,
+            'gst_name': None,
         }
 
     @staticmethod
