@@ -600,8 +600,6 @@ def exec_run(options: RunOptions) -> None:
     try:
         json_read = json.loads(options.input_file.read_text())
         if options.gst_name:
-            if options.gst_name not in json_read:
-                raise ValueError(f'Test {options.gst_name} not found in GST file')
             json_read = {options.gst_name: json_read[options.gst_name]}
         kore_pattern_list = [
             (name, kore)
@@ -644,8 +642,6 @@ def exec_kast(options: KastOptions) -> None:
     try:
         json_read = json.loads(options.input_file.read_text())
         if options.gst_name:
-            if options.gst_name not in json_read:
-                raise ValueError(f'Test {options.gst_name} not found in GST file')
             json_read = {options.gst_name: json_read[options.gst_name]}
         kore_pattern_list = [
             (name, kore)

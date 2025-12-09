@@ -22,7 +22,7 @@ def iterate_gst(
         if test_name in skipped_keys:
             continue
         gst_filtered = {test_name: filter_gst_keys(test)}
-    yield test_name, gst_to_kore(gst_filtered, schedule, mode, chainid, usegas)
+        yield test_name, gst_to_kore(gst_filtered, schedule, mode, chainid, usegas)
 
 
 def interpret(init_kore: Any, *, check: bool = True) -> Pattern:
