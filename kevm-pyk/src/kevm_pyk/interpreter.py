@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Final
+from typing import TYPE_CHECKING
 
 from pyk.kdist import kdist
 from pyk.ktool.krun import llvm_interpret
 
+from .config import DEFAULT_SCHEDULE
 from .gst_to_kore import SCHEDULE_MAPPING, filter_gst_keys, gst_to_kore
 
 if TYPE_CHECKING:
@@ -12,9 +13,6 @@ if TYPE_CHECKING:
     from typing import Any
 
     from pyk.kore.syntax import App, Pattern
-
-
-DEFAULT_SCHEDULE: Final[str] = 'PRAGUE'
 
 
 def iterate_gst(
