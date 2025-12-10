@@ -7,6 +7,7 @@ from argparse import ArgumentParser
 from typing import TYPE_CHECKING
 
 from pyk.cli.utils import file_path
+from pyk.konvert import munge
 from pyk.kore.prelude import BOOL, INT, SORT_JSON, SORT_K_ITEM, bool_dv, inj, int_dv, json_to_kore, top_cell_initializer
 from pyk.kore.syntax import App, SortApp
 
@@ -134,8 +135,7 @@ def kore_pgm_to_kore(pgm: Pattern, pattern_sort: SortApp, schedule: str, mode: s
 
 
 def _schedule_to_kore(schedule: str) -> App:
-    escaped_schedule = schedule.replace('_', "'Unds'")
-    return App(f"Lbl{escaped_schedule}'Unds'EVM")
+    return App(f"Lbl{munge(schedule)}'Unds'EVM")
 
 
 def _mode_to_kore(mode: str) -> App:
