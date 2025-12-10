@@ -602,10 +602,7 @@ def exec_run(options: RunOptions) -> None:
         if options.gst_name:
             json_read = {options.gst_name: json_read[options.gst_name]}
         kore_pattern_list = [
-            (name, kore)
-            for (name, kore) in iterate_gst(
-                json_read, options.mode, options.chainid, options.usegas, schedule=options.schedule
-            )
+            (name, kore) for (name, kore) in iterate_gst(json_read, options.mode, options.chainid, options.usegas)
         ]
     except json.JSONDecodeError:
         pgm_token = KToken(options.input_file.read_text(), KSort('EthereumSimulation'))
@@ -646,10 +643,7 @@ def exec_kast(options: KastOptions) -> None:
         if options.gst_name:
             json_read = {options.gst_name: json_read[options.gst_name]}
         kore_pattern_list = [
-            (name, kore)
-            for (name, kore) in iterate_gst(
-                json_read, options.mode, options.chainid, options.usegas, schedule=options.schedule
-            )
+            (name, kore) for (name, kore) in iterate_gst(json_read, options.mode, options.chainid, options.usegas)
         ]
     except json.JSONDecodeError:
         pgm_token = KToken(options.input_file.read_text(), KSort('EthereumSimulation'))
