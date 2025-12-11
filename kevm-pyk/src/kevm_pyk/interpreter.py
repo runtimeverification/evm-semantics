@@ -27,17 +27,17 @@ def iterate_gst(
     for test_name, test in gst_data.items():
         if test_name in skipped_keys:
             continue
-        test_schedule = _resolve_schedule(test, test_name, schedule)
+        test_schedule = _resolve_schedule(test, schedule)
         gst_filtered = {test_name: filter_gst_keys(test)}
         yield test_name, gst_to_kore(gst_filtered, test_schedule, mode, chainid, usegas)
 
 
-def _resolve_schedule(test: dict, test_name: str, fallback: str | None) -> str:
+def _resolve_schedule(test: dict, fallback: str | None) -> str:
     """Return schedule from test's network field, falling back to provided schedule or DEFAULT_SCHEDULE."""
     network = test.get('network')
     if network is not None:
         if network not in SCHEDULE_MAPPING:
-            raise ValueError(f'Unknown network {network!r} in test {test_name!r}')
+            raise ValueError(f'Unknown network {network}.')
         return SCHEDULE_MAPPING[network]
     return fallback or DEFAULT_SCHEDULE
 
