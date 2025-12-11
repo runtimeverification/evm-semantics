@@ -611,8 +611,8 @@ Here we check the other post-conditions associated with an EVM test.
     rule <k> check "gas" : ((GLEFT:String) => #parseWord(GLEFT)) ... </k>
     rule <k> check "gas" : GLEFT => .K ... </k> <gas> GLEFT </gas>
 
-    rule check { "blockHeader" : BLOCKHEADER } => check "blockHeader" : BLOCKHEADER
- // -------------------------------------------------------------------------------
+    rule <k> check { "blockHeader" : BLOCKHEADER } => check "blockHeader" : BLOCKHEADER ... </k>
+ // -------------------------------------------------------------------------------------------
     rule <k> check "blockHeader" : { KEY : VALUE , REST } => check "blockHeader" : { KEY : VALUE } ~> check "blockHeader" : { REST } ... </k>
       requires REST =/=K .JSONs
 
@@ -677,8 +677,8 @@ Here we check the other post-conditions associated with an EVM test.
         orBool #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR, UB, EB, BR)     ==Int #asWord(HASH)
         orBool #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR, UB, EB, BR, RR) ==Int #asWord(HASH)
 
-    rule check { "genesisBlockHeader" : BLOCKHEADER } => check "genesisBlockHeader" : BLOCKHEADER
- // ---------------------------------------------------------------------------------------------
+    rule <k> check { "genesisBlockHeader" : BLOCKHEADER } => check "genesisBlockHeader" : BLOCKHEADER ... </k>
+ // ---------------------------------------------------------------------------------------------------------
     rule <k> check "genesisBlockHeader" : { KEY : VALUE , REST } => check "genesisBlockHeader" : { KEY : VALUE } ~> check "genesisBlockHeader" : { REST } ... </k>
       requires REST =/=K .JSONs
 
