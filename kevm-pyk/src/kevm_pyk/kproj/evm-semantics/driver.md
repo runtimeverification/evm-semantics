@@ -414,7 +414,7 @@ Processing SetCode Transaction Authority Entries
 ```k
     syntax Set ::= "#loadKeys" [function]
  // -------------------------------------
-    rule #loadKeys => ( SetItem("env") SetItem("pre") SetItem("rlp") SetItem("network") SetItem("genesisRLP") )
+    rule #loadKeys => ( SetItem("env") SetItem("pre") SetItem("rlp") SetItem("genesisRLP") )
 
     rule <k> run { KEY : (VAL:JSON) , REST } => load KEY : VAL ~> run { REST } ... </k>
       requires KEY in #loadKeys

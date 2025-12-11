@@ -7,6 +7,7 @@ from argparse import ArgumentParser
 from typing import TYPE_CHECKING
 
 from pyk.cli.utils import file_path
+from pyk.konvert import munge
 from pyk.kore.prelude import BOOL, INT, SORT_JSON, SORT_K_ITEM, bool_dv, inj, int_dv, json_to_kore, top_cell_initializer
 from pyk.kore.syntax import App, SortApp
 
@@ -28,6 +29,27 @@ SORT_SCHEDULE: Final = SortApp('SortSchedule')
 SORT_MODE: Final = SortApp('SortMode')
 SORT_ETHEREUM_SIMULATION: Final = SortApp('SortEthereumSimulation')
 
+
+SCHEDULE_MAPPING: Final[dict[str, str]] = {
+    'Frontier': 'FRONTIER',
+    'Homestead': 'HOMESTEAD',
+    'EIP150': 'TANGERINE_WHISTLE',
+    'EIP158': 'SPURIOUS_DRAGON',
+    'Byzantium': 'BYZANTIUM',
+    'Constantinople': 'CONSTANTINOPLE',
+    'ConstantinopleFix': 'PETERSBURG',
+    'Istanbul': 'ISTANBUL',
+    'Berlin': 'BERLIN',
+    'London': 'LONDON',
+    'Merge': 'MERGE',
+    'Paris': 'MERGE',
+    'Shanghai': 'SHANGHAI',
+    'Cancun': 'CANCUN',
+    'ShanghaiToCancunAtTime15k': 'CANCUN',
+    'Prague': 'PRAGUE',
+    'CancunToPragueAtTime15k': 'PRAGUE',
+}
+
 _GST_DISCARD_KEYS: Final = frozenset(
     [
         '//',
@@ -39,6 +61,7 @@ _GST_DISCARD_KEYS: Final = frozenset(
         'lastblockhash',
         'hasBigInt',
         'config',
+        'network',
     ]
 )
 _GST_LOAD_KEYS: Final = frozenset(
@@ -46,7 +69,6 @@ _GST_LOAD_KEYS: Final = frozenset(
         'env',
         'pre',
         'rlp',
-        'network',
         'genesisRLP',
     ]
 )
@@ -113,7 +135,7 @@ def kore_pgm_to_kore(pgm: Pattern, pattern_sort: SortApp, schedule: str, mode: s
 
 
 def _schedule_to_kore(schedule: str) -> App:
-    return App(f"Lbl{schedule}'Unds'EVM")
+    return App(f"Lbl{munge(schedule)}'Unds'EVM")
 
 
 def _mode_to_kore(mode: str) -> App:
