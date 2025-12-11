@@ -385,6 +385,7 @@ Processing SetCode Transaction Authority Entries
     rule <k> success => .K ... </k>
          <exit-code> _ => 0 </exit-code>
          <mode> _ => SUCCESS </mode>
+    rule <k> (#halt => .K) ~> success ... </k>
 ```
 
 ### Running Tests
