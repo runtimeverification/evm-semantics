@@ -20,3 +20,5 @@ INCLUDE_DIRS: Final = (EVM_SEMANTICS_DIR, PLUGIN_DIR)
 
 
 NIX_LIBS: Final = os.getenv('NIX_LIBS')
+
+DEFAULT_SCHEDULE: Final[str] = 'PRAGUE'

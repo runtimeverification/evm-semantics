@@ -44,7 +44,6 @@ SKIPPED_VM_TESTS: Final = tuple(test_file for test_file in VM_TESTS if test_file
 def test_vm(test_file: Path, save_failing: bool) -> None:
     _test(
         test_file,
-        schedule='DEFAULT',
         mode='VMTESTS',
         usegas=True,
         save_failing=save_failing,
@@ -64,7 +63,6 @@ def test_vm(test_file: Path, save_failing: bool) -> None:
 def test_rest_vm(test_file: Path, save_failing: bool) -> None:
     _test(
         test_file,
-        schedule='DEFAULT',
         mode='VMTESTS',
         usegas=True,
         save_failing=save_failing,
@@ -89,7 +87,6 @@ SKIPPED_BCHAIN_TESTS: Final = tuple(test_file for test_file in BCHAIN_TESTS if t
 def test_bchain(test_file: Path, save_failing: bool) -> None:
     _test(
         test_file,
-        schedule='PRAGUE',
         mode='NORMAL',
         usegas=True,
         save_failing=save_failing,
@@ -109,7 +106,6 @@ def test_bchain(test_file: Path, save_failing: bool) -> None:
 def test_rest_bchain(test_file: Path, save_failing: bool) -> None:
     _test(
         test_file,
-        schedule='PRAGUE',
         mode='NORMAL',
         usegas=True,
         save_failing=save_failing,
