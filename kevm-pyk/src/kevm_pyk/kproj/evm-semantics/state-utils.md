@@ -193,10 +193,13 @@ The `"network"` key allows setting the fee schedule inside the test.
     rule #asScheduleString("Merge")                     => MERGE
     rule #asScheduleString("Paris")                     => MERGE
     rule #asScheduleString("Shanghai")                  => SHANGHAI
+    rule #asScheduleString("ParisToShanghaiAtTime15k")  => SHANGHAI
     rule #asScheduleString("Cancun")                    => CANCUN
     rule #asScheduleString("ShanghaiToCancunAtTime15k") => CANCUN
     rule #asScheduleString("Prague")                    => PRAGUE
     rule #asScheduleString("CancunToPragueAtTime15k")   => PRAGUE
+    rule #asScheduleString("Osaka")                     => OSAKA
+    rule #asScheduleString("PragueToOsakaAtTime15k")    => OSAKA
 ```
 
 - `#parseJSONs2List` parse a JSON object with string values into a list of value.
