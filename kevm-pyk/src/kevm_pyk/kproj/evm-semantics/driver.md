@@ -396,11 +396,12 @@ Processing SetCode Transaction Authority Entries
     syntax EthereumCommand ::= "run" JSON
 // --------------------------------------
    rule <k> run { .JSONs } => .K ... </k>
-   rule <k> run { _TESTID : { TEST:JSONs } } => run { TEST }
+   rule <k> run { TESTID : { TEST:JSONs } } => run { TEST }
          ~> #if #hasPost?( { TEST } ) #then .K #else exception #fi
          ~> clear
         ...
         </k>
+     requires notBool TESTID in (#loadKeys #execKeys #checkKeys)
 
     syntax Bool ::= "#hasPost?" "(" JSON ")" [function]
  // ---------------------------------------------------
