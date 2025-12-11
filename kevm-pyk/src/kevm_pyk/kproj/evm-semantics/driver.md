@@ -31,18 +31,9 @@ An Ethereum simulation is a list of Ethereum commands.
 Some Ethereum commands take an Ethereum specification (eg. for an account or transaction).
 
 ```k
-    syntax EthereumSimulation ::= ".EthereumSimulation"
-                                | EthereumCommand EthereumSimulation
- // ----------------------------------------------------------------
-    rule <k> .EthereumSimulation                        => .K         ... </k>
-    rule <k> ETC                 .EthereumSimulation    => ETC        ... </k>
-    rule <k> ETC                 ETS:EthereumSimulation => ETC ~> ETS ... </k> requires ETS =/=K .EthereumSimulation
-
-    rule <k> #halt ~> ETC ETS:EthereumSimulation => #halt ~> ETC ~> ETS ... </k>
-
     syntax EthereumSimulation ::= JSON
  // ----------------------------------
-    rule <k> JSONINPUT:JSON => run JSONINPUT success .EthereumSimulation </k>
+    rule <k> JSONINPUT:JSON => run JSONINPUT ~> success </k>
 ```
 
 For verification purposes, it's much easier to specify a program in terms of its op-codes and not the hex-encoding that the tests use.
@@ -380,33 +371,26 @@ Processing SetCode Transaction Authority Entries
     rule <statusCode> _:ExceptionalStatusCode </statusCode>
          <k> exception ~> clear => clear ... </k>
 
-    syntax EthereumCommand ::= "failure" String | "success"
- // -------------------------------------------------------
+    syntax EthereumCommand ::= "success"
+ // ------------------------------------
     rule <k> success => .K ... </k>
          <exit-code> _ => 0 </exit-code>
          <mode> _ => SUCCESS </mode>
-
-    rule <k>          failure _ => .K ... </k>
-    rule <k> #halt ~> failure _ => .K ... </k>
 ```
 
 ### Running Tests
 
 -   `run` runs a given set of Ethereum tests (from the test-set).
 
-Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`.
-
 ```k
     syntax EthereumCommand ::= "run" JSON
- // -------------------------------------
-    rule <k> run { .JSONs } => .K ... </k>
-    rule <k> run { TESTID : { TEST:JSONs } , TESTS }
-          => run ( TESTID : { TEST } )
-          ~> #if #hasPost?( { TEST } ) #then .K #else exception #fi
-          ~> clear
-          ~> run { TESTS }
-         ...
-         </k>
+// --------------------------------------
+   rule <k> run { .JSONs } => .K ... </k>
+   rule <k> run { _TESTID : { TEST:JSONs } } => run { TEST }
+         ~> #if #hasPost?( { TEST } ) #then .K #else exception #fi
+         ~> clear
+        ...
+        </k>
 
     syntax Bool ::= "#hasPost?" "(" JSON ")" [function]
  // ---------------------------------------------------
@@ -421,7 +405,7 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
  // -------------------------------------
     rule #loadKeys => ( SetItem("env") SetItem("pre") SetItem("rlp") SetItem("network") SetItem("genesisRLP") )
 
-    rule <k> run  TESTID : { KEY : (VAL:JSON) , REST } => load KEY : VAL ~> run TESTID : { REST } ... </k>
+    rule <k> run { KEY : (VAL:JSON) , REST } => load KEY : VAL ~> run { REST } ... </k>
       requires KEY in #loadKeys
 ```
 
@@ -432,31 +416,31 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
  // -------------------------------------
     rule #execKeys => ( SetItem("exec") SetItem("blocks") )
 
-    rule <k> run  TESTID : { KEY : (VAL:JSON) , NEXT , REST } => run TESTID : { NEXT , KEY : VAL , REST } ... </k>
+    rule <k> run { KEY : (VAL:JSON) , NEXT , REST } => run { NEXT , KEY : VAL , REST } ... </k>
       requires KEY in #execKeys
 
-    rule <k> run  TESTID : { "blocks" : [ { BLOCK }, BLOCKS ] } => clearTX ~> clearBLOCK ~> process TESTID : { BLOCK } ~> run TESTID : { "blocks" : [ BLOCKS ] } ... </k>
-    rule <k> run _TESTID : { "blocks" : [ .JSONs ] } => .K  ... </k>
+    rule <k> run { "blocks" : [ { BLOCK }, BLOCKS ] } => clearTX ~> clearBLOCK ~> process { BLOCK } ~> run { "blocks" : [ BLOCKS ] } ... </k>
+    rule <k> run { "blocks" : [ .JSONs ] } => .K  ... </k>
 
     syntax EthereumCommand ::= "process" JSON
  // -----------------------------------------
-    rule <k> process  TESTID : { "expectException" : _ , REST } => exception ~> process  TESTID : { REST } ... </k>
+    rule <k> process { "expectException" : _ , REST } => exception ~> process { REST } ... </k>
 
-    rule <k> exception ~> process _TESTID : { "rlp_decoded" : { KEY : VAL , REST1 => REST1 }, (REST2 => KEY : VAL , REST2 ) } ... </k>
-    rule <k> exception ~> process _TESTID : { "rlp_decoded" : { .JSONs } , REST   => REST}                                    ... </k>
+    rule <k> exception ~> process { "rlp_decoded" : { KEY : VAL , REST1 => REST1 }, (REST2 => KEY : VAL , REST2 ) } ... </k>
+    rule <k> exception ~> process { "rlp_decoded" : { .JSONs } , REST   => REST}                                    ... </k>
 
-    rule <k> exception ~> process  TESTID : { KEY : VAL , REST } => load KEY : VAL ~> exception ~> process TESTID : { REST }             ... </k> requires KEY in #loadKeys
-    rule <k> exception ~> process  TESTID : { KEY : VAL , REST } => exception ~> process TESTID : { REST } ~> check TESTID : {KEY : VAL} ... </k> requires KEY in #checkKeys
-    rule <k> exception ~> process _TESTID : { .JSONs }           => #startBlock ~> startTx ~> exception ... </k>
+    rule <k> exception ~> process { KEY : VAL , REST } => load KEY : VAL ~> exception ~> process { REST }             ... </k> requires KEY in #loadKeys
+    rule <k> exception ~> process { KEY : VAL , REST } => exception ~> process { REST } ~> check {KEY : VAL} ... </k> requires KEY in #checkKeys
+    rule <k> exception ~> process { .JSONs }           => #startBlock ~> startTx ~> exception ... </k>
 
-    rule <k> process _TESTID : { "rlp_decoded" : { KEY : VAL , REST1 => REST1 }, (REST2 => KEY : VAL , REST2 ) } ... </k>
-    rule <k> process _TESTID : { "rlp_decoded" : { .JSONs } , REST => REST}                                      ... </k>
+    rule <k> process { "rlp_decoded" : { KEY : VAL , REST1 => REST1 }, (REST2 => KEY : VAL , REST2 ) } ... </k>
+    rule <k> process { "rlp_decoded" : { .JSONs } , REST => REST}                                      ... </k>
 
-    rule <k> process  TESTID : { KEY : VAL , REST } => load KEY : VAL ~> process TESTID : { REST }             ... </k> requires KEY in #loadKeys
-    rule <k> process  TESTID : { KEY : VAL , REST } => process TESTID : { REST } ~> check TESTID : {KEY : VAL} ... </k> requires KEY in #checkKeys
-    rule <k> process _TESTID : { .JSONs }           => #startBlock ~> startTx ... </k>
+    rule <k> process { KEY : VAL , REST } => load KEY : VAL ~> process { REST }             ... </k> requires KEY in #loadKeys
+    rule <k> process { KEY : VAL , REST } => process { REST } ~> check {KEY : VAL} ... </k> requires KEY in #checkKeys
+    rule <k> process { .JSONs }           => #startBlock ~> startTx ... </k>
 
-    rule <k> run _TESTID : { "exec" : (EXEC:JSON) } => loadCallState EXEC ~> start ~> flush ... </k>
+    rule <k> run { "exec" : (EXEC:JSON) } => loadCallState EXEC ~> start ~> flush ... </k>
 
     rule <k> load "exec" : J => loadCallState J ... </k>
 
@@ -490,8 +474,8 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
                            SetItem("genesisBlockHeader") SetItem("withdrawals") SetItem("blocknumber")
                          )
 
-    rule <k> run TESTID : { KEY : (VAL:JSON) , REST } => run TESTID : { REST } ~> check TESTID : { "post" : VAL } ... </k> requires KEY in #allPostKeys
-    rule <k> run TESTID : { KEY : (VAL:JSON) , REST } => run TESTID : { REST } ~> check TESTID : { KEY    : VAL } ... </k> requires KEY in #checkKeys andBool notBool KEY in #allPostKeys
+    rule <k> run { KEY : (VAL:JSON) , REST } => run { REST } ~> check { "post" : VAL } ... </k> requires KEY in #allPostKeys
+    rule <k> run { KEY : (VAL:JSON) , REST } => run { REST } ~> check { KEY    : VAL } ... </k> requires KEY in #checkKeys andBool notBool KEY in #allPostKeys
 ```
 
 -   `driver.md` specific handling of state-utils commands
@@ -540,8 +524,8 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
     rule <k> check (KEY:String) : { JS:JSONs => qsortJSONs(JS) } ... </k>
       requires KEY in (SetItem("callcreates")) andBool notBool sortedJSONs(JS)
 
-    rule <k> check TESTID : { "post" : (POST:String) } => check "blockHeader" : {  "stateRoot" : #parseWord(POST) } ~> failure TESTID ... </k>
-    rule <k> check TESTID : { "post" : { POST } } => check "account" : { POST } ~> failure TESTID ... </k>
+    rule <k> check { "post" : (POST:String) } => check "blockHeader" : {  "stateRoot" : #parseWord(POST) } ... </k>
+    rule <k> check { "post" : { POST } } => check "account" : { POST } ... </k>
 
     rule <k> check "account" : { ACCTID:Int : { KEY : VALUE , REST } } => check "account" : { ACCTID : { KEY : VALUE } } ~> check "account" : { ACCTID : { REST } } ... </k>
       requires REST =/=K .JSONs
@@ -602,22 +586,22 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
 Here we check the other post-conditions associated with an EVM test.
 
 ```k
-    rule <k> check TESTID : { "out" : OUT } => check "out" : OUT ~> failure TESTID ... </k>
- // ---------------------------------------------------------------------------------------
+    rule <k> check { "out" : OUT } => check "out" : OUT ... </k>
+ // ------------------------------------------------------------
     rule <k> check "out" : ((OUT:String) => #parseByteStack(OUT)) ... </k>
     rule <k> check "out" : OUT => .K ... </k> <output> OUT </output>
 
-    rule <k> check TESTID : { "logs" : LOGS } => check "logs" : LOGS ~> failure TESTID ... </k>
- // -------------------------------------------------------------------------------------------
+    rule <k> check { "logs" : LOGS } => check "logs" : LOGS ... </k>
+ // ----------------------------------------------------------------
     rule <k> check "logs" : HASH:String => .K ... </k> <log> SL </log> requires #parseHexBytes(Keccak256(#rlpEncodeLogs(SL))) ==K #parseByteStack(HASH)
 
-    rule <k> check TESTID : { "gas" : GLEFT } => check "gas" : GLEFT ~> failure TESTID ... </k>
- // -------------------------------------------------------------------------------------------
+    rule <k> check { "gas" : GLEFT } => check "gas" : GLEFT ... </k>
+ // ----------------------------------------------------------------
     rule <k> check "gas" : ((GLEFT:String) => #parseWord(GLEFT)) ... </k>
     rule <k> check "gas" : GLEFT => .K ... </k> <gas> GLEFT </gas>
 
-    rule check TESTID : { "blockHeader" : BLOCKHEADER } => check "blockHeader" : BLOCKHEADER ~> failure TESTID
- // ----------------------------------------------------------------------------------------------------------
+    rule check { "blockHeader" : BLOCKHEADER } => check "blockHeader" : BLOCKHEADER
+ // -------------------------------------------------------------------------------
     rule <k> check "blockHeader" : { KEY : VALUE , REST } => check "blockHeader" : { KEY : VALUE } ~> check "blockHeader" : { REST } ... </k>
       requires REST =/=K .JSONs
 
@@ -682,8 +666,8 @@ Here we check the other post-conditions associated with an EVM test.
         orBool #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR, UB, EB, BR)     ==Int #asWord(HASH)
         orBool #blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR, UB, EB, BR, RR) ==Int #asWord(HASH)
 
-    rule check TESTID : { "genesisBlockHeader" : BLOCKHEADER } => check "genesisBlockHeader" : BLOCKHEADER ~> failure TESTID
- // ------------------------------------------------------------------------------------------------------------------------
+    rule check { "genesisBlockHeader" : BLOCKHEADER } => check "genesisBlockHeader" : BLOCKHEADER
+ // ---------------------------------------------------------------------------------------------
     rule <k> check "genesisBlockHeader" : { KEY : VALUE , REST } => check "genesisBlockHeader" : { KEY : VALUE } ~> check "genesisBlockHeader" : { REST } ... </k>
       requires REST =/=K .JSONs
 
@@ -693,8 +677,8 @@ Here we check the other post-conditions associated with an EVM test.
     rule <k> check "genesisBlockHeader" : { "hash": HASH } => .K ... </k>
          <blockhashes> ... ListItem(HASH) ListItem(_) </blockhashes>
 
-    rule <k> check TESTID : { "transactions" : TRANSACTIONS } => check "transactions" : TRANSACTIONS ~> failure TESTID ... </k>
- // ---------------------------------------------------------------------------------------------------------------------------
+    rule <k> check { "transactions" : TRANSACTIONS } => check "transactions" : TRANSACTIONS ... </k>
+ // ------------------------------------------------------------------------------------------------
     rule <k> check "transactions" : [ .JSONs ] => .K ... </k> <txOrder> .List                    </txOrder>
     rule <k> check "transactions" : { .JSONs } => .K ... </k> <txOrder> ListItem(_) => .List ... </txOrder>
 
@@ -759,7 +743,7 @@ Here we check the other post-conditions associated with an EVM test.
 
     syntax Bool ::= isInAccessListStorage ( Int , JSON )    [symbol(isInAccessListStorage), function]
                   | isInAccessList ( Account , Int , JSON ) [symbol(isInAccessList), function]
- // -------------------------------------------------------------------------------------------------
+ // ------------------------------------------------------------------------------------------
     rule isInAccessList(_   , _  , [.JSONs                     ]) => false
     rule isInAccessList(ADDR, KEY, [[ACCT, [STRG:JSONs]],  REST]) => #if   ADDR ==K #asAccount(ACCT)
                                                                      #then isInAccessListStorage (KEY, [STRG]) orBool isInAccessList(ADDR, KEY, [REST])
@@ -774,14 +758,14 @@ Here we check the other post-conditions associated with an EVM test.
 TODO: case with nonzero ommers.
 
 ```k
-    rule <k> check TESTID : { "uncleHeaders" : OMMERS } => check "ommerHeaders" : OMMERS ~> failure TESTID ... </k>
- // ---------------------------------------------------------------------------------------------------------------
+    rule <k> check { "uncleHeaders" : OMMERS } => check "ommerHeaders" : OMMERS ... </k>
+ // ------------------------------------------------------------------------------------
     rule <k> check "ommerHeaders" : [ .JSONs ] => .K ... </k> <ommerBlockHeaders> [ .JSONs ] </ommerBlockHeaders>
 ```
 
 ```k
-    rule <k> check TESTID : {"withdrawals" : WITHDRAWALS } => check "withdrawals" : WITHDRAWALS ~> failure TESTID ... </k>
- // ----------------------------------------------------------------------------------------------------------------------
+    rule <k> check { "withdrawals" : WITHDRAWALS } => check "withdrawals" : WITHDRAWALS ... </k>
+ // --------------------------------------------------------------------------------------------
     rule <k> check "withdrawals" : [ .JSONs ] => .K ... </k> <withdrawalsOrder> .List                    </withdrawalsOrder>
     rule <k> check "withdrawals" : { .JSONs } => .K ... </k> <withdrawalsOrder> ListItem(_) => .List ... </withdrawalsOrder>
 
@@ -799,8 +783,8 @@ TODO: case with nonzero ommers.
 ```
 
 ```k
-    rule <k> check TESTID : { "blocknumber": BN } => check "blocknumber" : BN ~> failure TESTID ... </k>
- // ----------------------------------------------------------------------------------------------------
+    rule <k> check { "blocknumber": BN } => check "blocknumber" : BN ... </k>
+ // -------------------------------------------------------------------------
     rule <k> check "blocknumber" : (VALUE:String => #parseWord(VALUE)) ... </k>
     rule <k> check "blocknumber" : BN => .K ... </k> <number> BN </number>
 ```
