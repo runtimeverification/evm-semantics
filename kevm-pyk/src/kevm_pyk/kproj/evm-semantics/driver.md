@@ -358,18 +358,12 @@ Processing SetCode Transaction Authority Entries
     rule <k> #addAuthority(AUTHORITY, _CID, NONCE, _ADDR) => .K ... </k> requires notBool (#accountExists(AUTHORITY) orBool #asWord(NONCE) ==Int 0)
 ```
 
--   `exception` only clears from the `<k>` cell if there is an exception preceding it.
 -   `failure_` holds the name of a test that failed if a test does fail.
 -   `success` sets the `<exit-code>` to `0` and the `<mode>` to `SUCCESS`.
 
 ```k
     syntax Mode ::= "SUCCESS"
  // -------------------------
-
-    syntax EthereumCommand ::= "exception"
- // --------------------------------------
-    rule <statusCode> _:ExceptionalStatusCode </statusCode>
-         <k> #halt ~> exception => .K ... </k>
 
     syntax EthereumCommand ::= "failure" String | "success"
  // -------------------------------------------------------
@@ -393,7 +387,6 @@ Note that `TEST` is sorted here so that key `"network"` comes before key `"pre"`
     rule <k> run { .JSONs } => .K ... </k>
     rule <k> run { TESTID : { TEST:JSONs } , TESTS }
           => run ( TESTID : { TEST } )
-          ~> #if #hasPost?( { TEST } ) #then .K #else exception #fi
           ~> clear
           ~> run { TESTS }
          ...
