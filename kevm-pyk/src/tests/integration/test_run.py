@@ -7,7 +7,7 @@ import pytest
 from pyk.kdist import kdist
 from pyk.kore.tools import PrintOutput, kore_print
 
-from kevm_pyk.interpreter import interpret
+from kevm_pyk.interpreter import interpret, iterate_gst
 
 from ..utils import REPO_ROOT
 
@@ -30,9 +30,11 @@ def test_run(gst_file: Path, update_expected_output: bool) -> None:
     with gst_file.open() as f:
         gst_data = json.load(f)
 
+    actual = ''
     # When
-    pattern = interpret(gst_data, 'PRAGUE', 'NORMAL', 1, True, check=False)
-    actual = kore_print(pattern, definition_dir=kdist.get('evm-semantics.llvm'), output=PrintOutput.PRETTY)
+    for _, init_kore, _ in iterate_gst(gst_data, 'NORMAL', 1, True):
+        pattern = interpret(init_kore, check=False)
+        actual += kore_print(pattern, definition_dir=kdist.get('evm-semantics.llvm'), output=PrintOutput.PRETTY)
 
     # Then
 

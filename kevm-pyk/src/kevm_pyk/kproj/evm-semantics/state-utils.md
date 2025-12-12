@@ -172,33 +172,6 @@ Here we load the environmental information.
     rule <k> loadCallState { .JSONs } => .K ... </k>
 ```
 
-The `"network"` key allows setting the fee schedule inside the test.
-
-```k
-    rule <k> load "network" : SCHEDSTRING => .K ... </k>
-         <schedule> _ => #asScheduleString(SCHEDSTRING) </schedule>
-
-    syntax Schedule ::= #asScheduleString ( String ) [symbol(#asScheduleString), function]
- // --------------------------------------------------------------------------------------
-    rule #asScheduleString("Frontier")                  => FRONTIER
-    rule #asScheduleString("Homestead")                 => HOMESTEAD
-    rule #asScheduleString("EIP150")                    => TANGERINE_WHISTLE
-    rule #asScheduleString("EIP158")                    => SPURIOUS_DRAGON
-    rule #asScheduleString("Byzantium")                 => BYZANTIUM
-    rule #asScheduleString("Constantinople")            => CONSTANTINOPLE
-    rule #asScheduleString("ConstantinopleFix")         => PETERSBURG
-    rule #asScheduleString("Istanbul")                  => ISTANBUL
-    rule #asScheduleString("Berlin")                    => BERLIN
-    rule #asScheduleString("London")                    => LONDON
-    rule #asScheduleString("Merge")                     => MERGE
-    rule #asScheduleString("Paris")                     => MERGE
-    rule #asScheduleString("Shanghai")                  => SHANGHAI
-    rule #asScheduleString("Cancun")                    => CANCUN
-    rule #asScheduleString("ShanghaiToCancunAtTime15k") => CANCUN
-    rule #asScheduleString("Prague")                    => PRAGUE
-    rule #asScheduleString("CancunToPragueAtTime15k")   => PRAGUE
-```
-
 - `#parseJSONs2List` parse a JSON object with string values into a list of value.
 ```k
    syntax List ::= "#parseJSONs2List" "(" JSONs ")" [function]
@@ -261,6 +234,10 @@ The `"rlp"` key loads the block information.
          ...
          </k>
          <requestsRoot> _ => #asWord(RR) </requestsRoot>
+
+    // fallback rule to catch invalid rlp encodings
+    rule <k> load "rlp" : _ => .K ... </k>
+         <statusCode> _ => EVMC_INVALID_BLOCK </statusCode>  [owise]
 
     rule <k> load "genesisRLP": [ [ HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR, UB, EB, BR, RR, .JSONs ], _, _, _, .JSONs ] => .K ... </k>
          <blockhashes> .List => ListItem(#blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR, UB, EB, BR, RR)) ListItem(#asWord(HP)) </blockhashes>
@@ -361,7 +338,7 @@ The `"rlp"` key loads the block information.
                                  , "to"         : TT   ,   "v"        : TY   ,   "value"             : TV
                                  , "accessList" : TA   ,   "type"     : TYPE ,   "chainID"           : TC
                                  , "maxPriorityFeePerGas" : TP               , "maxFeePerGas"        : TP
-                                 , "maxFeePerBlobGas"     : 0                , "blobVersionedHashes" : [ .JSONs ] 
+                                 , "maxFeePerBlobGas"     : 0                , "blobVersionedHashes" : [ .JSONs ]
                                  , .JSONs
                                  }
           ~> load "transaction" : [ REST ]
@@ -386,11 +363,11 @@ The `"rlp"` key loads the block information.
 
      rule <k> load "transaction" : [ [TYPE , [TC, TN, TP, TF, TG, TT, TV, TI, TA, TB, TVH, TY, TR, TS ]] , REST ]
           => mkTX !ID:Int
-          ~> loadTransaction !ID { "data"         : TI   ,   "gasLimit"         : TG   ,   "maxPriorityFeePerGas" : TP
-                                 , "nonce"        : TN   ,   "r"                : TR   ,   "s"                    : TS
-                                 , "to"           : TT   ,   "v"                : TY   ,   "value"                : TV
-                                 , "accessList"   : TA   ,   "type"             : TYPE ,   "chainID"              : TC
-                                 , "maxFeePerGas" : TF   ,   "maxFeePerBlobGas" : TB   ,   "blobVersionedHashes"  : TVH
+          ~> loadTransaction !ID { "data"         : TI , "gasLimit"         : TG   , "maxPriorityFeePerGas" : TP
+                                 , "nonce"        : TN , "r"                : TR   , "s"                    : TS
+                                 , "to"           : TT , "v"                : TY   , "value"                : TV
+                                 , "accessList"   : TA , "type"             : TYPE , "chainID"              : TC
+                                 , "maxFeePerGas" : TF , "maxFeePerBlobGas" : TB   , "blobVersionedHashes"  : TVH
                                  , .JSONs
                                  }
           ~> load "transaction" : [ REST ]
@@ -398,13 +375,13 @@ The `"rlp"` key loads the block information.
          </k>
     requires #asWord(TYPE) ==Int #dasmTxPrefix(Blob)
 
-     rule <k> load "transaction" : [ [TYPE , [TC, TN, TP, TF, TG, TT, TV, TI, TA, AUTH , TY, TR, TS ]] , REST ]
+     rule <k> load "transaction" : [ [TYPE , [TC, TN, TP, TF, TG, TT, TV, TI, TA, AUTH, TY, TR, TS ]] , REST ]
           => mkTX !ID:Int
-          ~> loadTransaction !ID { "data"         : TI   ,   "gasLimit"         : TG   ,   "maxPriorityFeePerGas" : TP
-                                 , "nonce"        : TN   ,   "r"                : TR   ,   "s"                    : TS
-                                 , "to"           : TT   ,   "v"                : TY   ,   "value"                : TV
-                                 , "accessList"   : TA   ,   "type"             : TYPE ,   "chainID"              : TC
-                                 , "maxFeePerGas" : TF   ,   "authList"         : AUTH , .JSONs }
+          ~> loadTransaction !ID { "data"         : TI , "gasLimit"          : TG   , "maxPriorityFeePerGas" : TP
+                                 , "nonce"        : TN , "r"                 : TR   , "s"                    : TS
+                                 , "to"           : TT , "v"                 : TY   , "value"                : TV
+                                 , "accessList"   : TA , "type"              : TYPE , "chainID"              : TC
+                                 , "maxFeePerGas" : TF , "authorizationList" : AUTH , .JSONs }
           ~> load "transaction" : [ REST ]
           ...
          </k>
@@ -463,7 +440,7 @@ The `"rlp"` key loads the block information.
     rule <k> loadTransaction TXID { "blobVersionedHashes" : [TVH:JSONs], REST => REST } ... </k>
          <message> <msgID> TXID </msgID> <txVersionedHashes> _ => #parseJSONs2List(TVH) </txVersionedHashes> ... </message>
 
-    rule <k> loadTransaction TXID { "authList" : [AUTH:JSONs], REST => REST } ... </k>
+    rule <k> loadTransaction TXID { "authorizationList" : [AUTH:JSONs], REST => REST } ... </k>
          <message> <msgID> TXID </msgID> <txAuthList> _ => #parseJSONs2List(AUTH) </txAuthList> ... </message>
 ```
 
@@ -628,7 +605,7 @@ The `"rlp"` key loads the block information.
            <txType> SetCode </txType>
            ...
          </message>
-     requires (ACCTCODE ==K .Bytes orBool Ghasauthority << SCHED >>)
+     requires (ACCTCODE ==K .Bytes orBool (Ghasauthority << SCHED >> andBool #isValidDelegation(ACCTCODE)))
       andBool notBool ACCTTO ==K .Account
       andBool ACCTNONCE ==Int TX_NONCE
       andBool BASE_FEE <=Int TX_MAX_FEE
@@ -662,7 +639,7 @@ The `"rlp"` key loads the block information.
            <txType> Blob </txType>
            ...
          </message>
-     requires (ACCTCODE ==K .Bytes orBool Ghasauthority << SCHED >>)
+     requires (ACCTCODE ==K .Bytes orBool (Ghasauthority << SCHED >> andBool #isValidDelegation(ACCTCODE)))
       andBool notBool ACCTTO ==K .Account
       andBool ACCTNONCE ==Int TX_NONCE
       andBool BASE_FEE <=Int TX_MAX_FEE
@@ -694,7 +671,7 @@ The `"rlp"` key loads the block information.
            <txType> DynamicFee </txType>
            ...
          </message>
-     requires (ACCTCODE ==K .Bytes orBool Ghasauthority << SCHED >>)
+     requires (ACCTCODE ==K .Bytes orBool (Ghasauthority << SCHED >> andBool #isValidDelegation(ACCTCODE)))
       andBool ACCTNONCE ==Int TX_NONCE
       andBool BASE_FEE <=Int TX_MAX_FEE
       andBool TX_MAX_PRIORITY_FEE <=Int TX_MAX_FEE
@@ -722,7 +699,7 @@ The `"rlp"` key loads the block information.
            ...
          </message>
      requires #dasmTxPrefix(TXTYPE) <Int 2
-      andBool (ACCTCODE ==K .Bytes orBool Ghasauthority << SCHED >>)
+      andBool (ACCTCODE ==K .Bytes orBool (Ghasauthority << SCHED >> andBool #isValidDelegation(ACCTCODE)))
       andBool ACCTNONCE ==Int TX_NONCE
       andBool BASE_FEE <=Int TX_GAS_PRICE
       andBool BAL >=Int TX_GAS_LIMIT *Int TX_GAS_PRICE +Int VALUE

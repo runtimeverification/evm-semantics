@@ -12,6 +12,7 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from functools import cached_property
 from pathlib import Path
+from subprocess import CalledProcessError
 from typing import TYPE_CHECKING
 
 from filelock import SoftFileLock
@@ -32,6 +33,7 @@ from pyk.proof.show import APRProofShow
 from pyk.proof.tui import APRProofViewer
 from pyk.utils import FrozenDict, hash_str, single
 
+from kevm_pyk.interpreter import iterate_gst
 from kevm_pyk.summarizer import batch_summarize, clear_proofs, summarize
 
 from . import VERSION, config
@@ -41,7 +43,7 @@ from .cli import (
     get_argument_type_setter,
     get_option_string_destination,
 )
-from .gst_to_kore import SORT_ETHEREUM_SIMULATION, filter_gst_keys, gst_to_kore, kore_pgm_to_kore
+from .gst_to_kore import SORT_ETHEREUM_SIMULATION, kore_pgm_to_kore
 from .kevm import KEVM, KEVMSemantics, kevm_node_printer
 from .kompile import KompileTarget, kevm_kompile
 from .utils import (
@@ -598,25 +600,49 @@ def exec_run(options: RunOptions) -> None:
 
     try:
         json_read = json.loads(options.input_file.read_text())
-        gst_data = filter_gst_keys(json_read)
-        kore_pattern = gst_to_kore(gst_data, options.schedule, options.mode, options.chainid, options.usegas)
+        if options.gst_name:
+            json_read = {options.gst_name: json_read[options.gst_name]}
+        kore_pattern_list = [
+            (name, kore, exception_metadata)
+            for (name, kore, exception_metadata) in iterate_gst(
+                json_read, options.mode, options.chainid, options.usegas, schedule=options.schedule
+            )
+        ]
     except json.JSONDecodeError:
         pgm_token = KToken(options.input_file.read_text(), KSort('EthereumSimulation'))
         kast_pgm = kevm.parse_token(pgm_token)
         kore_pgm = kevm.kast_to_kore(kast_pgm, sort=KSort('EthereumSimulation'))
-        kore_pattern = kore_pgm_to_kore(
-            kore_pgm, SORT_ETHEREUM_SIMULATION, options.schedule, options.mode, options.chainid, options.usegas
-        )
+        kore_pattern_list = [
+            (
+                '',
+                kore_pgm_to_kore(
+                    kore_pgm, SORT_ETHEREUM_SIMULATION, options.schedule, options.mode, options.chainid, options.usegas
+                ),
+                (False, False),
+            ),
+        ]
 
-    kevm.run(
-        kore_pattern,
-        depth=options.depth,
-        term=True,
-        expand_macros=options.expand_macros,
-        output=options.output,
-        check=True,
-        debugger=options.debugger,
-    )
+    for name, kore_pattern, (exception_expected, _) in kore_pattern_list:
+        if name:
+            _LOGGER.info(f'Processing test - {name}')
+        if exception_expected:
+            _LOGGER.info(f'Test {name} is expected to fail.')
+        try:
+            kevm.run(
+                kore_pattern,
+                depth=options.depth,
+                term=True,
+                expand_macros=options.expand_macros,
+                output=options.output,
+                check=True,
+                debugger=options.debugger,
+            )
+        except CalledProcessError:
+            if exception_expected:
+                _LOGGER.info(f'Test {name} failed as expected')
+                continue
+            else:
+                raise
 
 
 def exec_kast(options: KastOptions) -> None:
@@ -628,17 +654,33 @@ def exec_kast(options: KastOptions) -> None:
 
     try:
         json_read = json.loads(options.input_file.read_text())
-        kore_pattern = gst_to_kore(json_read, options.schedule, options.mode, options.chainid, options.usegas)
+        if options.gst_name:
+            json_read = {options.gst_name: json_read[options.gst_name]}
+        kore_pattern_list = [
+            (name, kore, exception_metadata)
+            for (name, kore, exception_metadata) in iterate_gst(
+                json_read, options.mode, options.chainid, options.usegas, schedule=options.schedule
+            )
+        ]
     except json.JSONDecodeError:
         pgm_token = KToken(options.input_file.read_text(), KSort('EthereumSimulation'))
         kast_pgm = kevm.parse_token(pgm_token)
         kore_pgm = kevm.kast_to_kore(kast_pgm)
-        kore_pattern = kore_pgm_to_kore(
-            kore_pgm, SORT_ETHEREUM_SIMULATION, options.schedule, options.mode, options.chainid, options.usegas
-        )
+        kore_pattern_list = [
+            (
+                '',
+                kore_pgm_to_kore(
+                    kore_pgm, SORT_ETHEREUM_SIMULATION, options.schedule, options.mode, options.chainid, options.usegas
+                ),
+                (False, False),
+            ),
+        ]
 
-    output_text = kore_print(kore_pattern, definition_dir=kevm.definition_dir, output=options.output)
-    print(output_text)
+    for name, kore_pattern, _ in kore_pattern_list:
+        if name:
+            _LOGGER.info(f'Processing test - {name}')
+        output_text = kore_print(kore_pattern, definition_dir=kevm.definition_dir, output=options.output)
+        print(output_text)
 
 
 def exec_summarize(options: SummarizeOptions) -> None:

@@ -12,7 +12,7 @@ from pyk.kore.prelude import int_dv
 from pyk.kore.syntax import App, SortApp, SymbolId
 from pyk.kore.tools import PrintOutput, kore_print
 
-from kevm_pyk.interpreter import interpret
+from kevm_pyk.interpreter import interpret, iterate_gst
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -89,23 +89,9 @@ def read_csv_file(csv_file: Path) -> tuple[tuple[Path, str], ...]:
         return tuple((Path(row[0]), row[1]) for row in reader)
 
 
-def has_exception(gst_data: dict) -> tuple[bool, bool]:
-    """Parse the "blocks" field of a General State Test and check if the "expectException"
-    and "hasBigInt" fields are inside."""
-    exception_expected = False
-    has_big_int = False
-    for block in gst_data.get('blocks', []):
-        exception_expected = exception_expected or 'expectException' in block
-        has_big_int = has_big_int or 'hasBigInt' in block
-        if exception_expected and has_big_int:
-            break
-    return (exception_expected, has_big_int)
-
-
 def _test(
     gst_file: Path,
     *,
-    schedule: str,
     mode: str,
     usegas: bool,
     save_failing: bool,
@@ -125,15 +111,15 @@ def _test(
     with gst_file.open() as f:
         gst_data = json.load(f)
 
-    tests_to_run = {k: v for k, v in gst_data.items() if k not in skipped_gst_tests}
     failing_tests: list[str] = []
 
-    for test_name, test in tests_to_run.items():
+    for test_name, init_kore, (exception_expected, has_big_int) in iterate_gst(
+        gst_data, mode, chain_id, usegas, frozenset(skipped_gst_tests)
+    ):
         _LOGGER.info(f'Running test: {gst_file} - {test_name}')
 
-        (exception_expected, has_big_int) = has_exception(test)
         try:
-            res = interpret({test_name: test}, schedule, mode, chain_id, usegas, check=False)
+            res = interpret(init_kore, check=False)
         except RuntimeError:
             if not has_big_int:
                 if not save_failing:
@@ -158,5 +144,4 @@ def _test(
         else:
             for test_name in sorted(failing_tests):
                 writer.writerow([gst_file_relative_path, test_name])
-
     raise AssertionError(f'Found failing tests in GST file {gst_file_relative_path}: {failing_tests}')
