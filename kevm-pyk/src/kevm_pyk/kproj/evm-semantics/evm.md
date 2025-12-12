@@ -1246,6 +1246,11 @@ NOTE: We have to call the opcode `OR` by `EVMOR` instead, because K has trouble 
  // ----------------------------
     rule <k> SHA3 MEMSTART MEMWIDTH => keccak(#range(LM, MEMSTART, MEMWIDTH)) ~> #push ... </k>
          <localMem> LM </localMem>
+
+    syntax UnStackOp ::= "CLZ"
+ // --------------------------
+    rule <k> CLZ  0 => 256 ~> #push ... </k>
+    rule <k> CLZ  X => 255 -Int log2Int(X) ~> #push ... </k> requires X >Int 0 andBool X <Int pow256
 ```
 
 ### Local State
@@ -3000,6 +3005,7 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
     rule <k> #gasExec(SCHED, SMOD _ _)       => Glow < SCHED > ... </k>
     rule <k> #gasExec(SCHED, SIGNEXTEND _ _) => Glow < SCHED > ... </k>
     rule <k> #gasExec(SCHED, SELFBALANCE)    => Glow < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, CLZ _)          => Glow < SCHED > ... </k>
 
     // Wmid
     rule <k> #gasExec(SCHED, ADDMOD _ _ _) => Gmid < SCHED > ... </k>
@@ -3217,6 +3223,7 @@ After interpreting the strings representing programs as a `WordStack`, it should
     rule #dasmOpCode(  27, SCHED ) => SHL requires Ghasshift << SCHED >>
     rule #dasmOpCode(  28, SCHED ) => SHR requires Ghasshift << SCHED >>
     rule #dasmOpCode(  29, SCHED ) => SAR requires Ghasshift << SCHED >>
+    rule #dasmOpCode(  30, SCHED ) => CLZ requires Ghasclz << SCHED >>
     rule #dasmOpCode(  32,     _ ) => SHA3
     rule #dasmOpCode(  48,     _ ) => ADDRESS
     rule #dasmOpCode(  49,     _ ) => BALANCE
