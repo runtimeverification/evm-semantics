@@ -1,1 +1,2 @@
 blockchain_tests/cancun/eip4844_blobs/test_external_vectors.json,*
+blockchain_tests/cancun/eip1153_tstore/test_run_until_out_of_gas.json,*
