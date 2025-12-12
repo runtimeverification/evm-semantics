@@ -26,8 +26,6 @@ start
 
 check "account" : { 7 : { "storage" : { "0x00" : "0x37" } } }
 
-failure "Interactive sumTo10 test"
-
 success
 
 clear
