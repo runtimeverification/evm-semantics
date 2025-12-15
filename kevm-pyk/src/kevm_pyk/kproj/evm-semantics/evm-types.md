@@ -54,6 +54,14 @@ Primitives provide the basic conversion from K's sorts `Int` and `Bool` to EVM's
     rule abs(I) => 0         requires sgn(I) ==Int  0
 ```
 
+-   `clz` returns the number of leading zeros of a word, as specified in [EIP-7939](https://github.com/ethereum/EIPs/blob/31f1d01e474633119f9014765635346c06f5cc7d/EIPS/eip-7939.md).
+```k
+    syntax Int ::= clz ( Int ) [symbol(clz), function, total]
+ // ---------------------------------------------------------
+    rule clz(0) => 256
+    rule clz(I) => 255 -Int log2Int(I) requires 0 <Int I andBool I <Int pow256
+    rule clz(I) => -1                  requires I <Int 0 orBool pow256 <=Int I
+```
 Word Operations
 ---------------
 
