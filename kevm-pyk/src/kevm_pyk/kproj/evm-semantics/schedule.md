@@ -31,8 +31,8 @@ module SCHEDULE
                           | "Ghaswarmcoinbase"        | "Ghaswithdrawals"  | "Ghastransient"       | "Ghasmcopy"
                           | "Ghasbeaconroot"          | "Ghaseip6780"      | "Ghasblobbasefee"     | "Ghasblobhash"
                           | "Ghasbls12msmdiscount"    | "Ghashistory"      | "Ghasrequests"        | "Ghasauthority"
-                          | "Ghasfloorcost"
- // ---------------------------------------
+                          | "Ghasfloorcost"           | "Ghasclz"
+ // -------------------------------------------------------------
 ```
 
 ### Schedule Constants
@@ -182,6 +182,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule [Ghasbls12msmdiscountDefault]:    Ghasbls12msmdiscount    << DEFAULT >> => false
     rule [GhasauthorityDefault]:           Ghasauthority           << DEFAULT >> => false
     rule [GhasfloorcostDefault]:           Ghasfloorcost           << DEFAULT >> => false
+    rule [GhasclzDefault]:                 Ghasclz                 << DEFAULT >> => false
 ```
 
 ### Frontier Schedule
@@ -504,7 +505,11 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     syntax Schedule ::= "OSAKA" [symbol(OSAKA_EVM), smtlib(schedule_OSAKA)]
  // -----------------------------------------------------------------------
     rule [SCHEDCONSTOsaka]: SCHEDCONST < OSAKA > => SCHEDCONST < PRAGUE >
+
+    rule [GhasclzOsaka]:    Ghasclz    << OSAKA >> => true
     rule [SCHEDFLAGOsaka]:  SCHEDFLAG  << OSAKA >> => SCHEDFLAG << PRAGUE >>
+      requires notBool ( SCHEDFLAG ==K Ghasclz )
+    
 ```
 
 ```k
