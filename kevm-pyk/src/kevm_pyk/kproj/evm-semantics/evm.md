@@ -1250,7 +1250,7 @@ NOTE: We have to call the opcode `OR` by `EVMOR` instead, because K has trouble 
     syntax UnStackOp ::= "CLZ"
  // --------------------------
     rule <k> CLZ  0 => 256 ~> #push ... </k>
-    rule <k> CLZ  X => 255 -Int log2Int(X) ~> #push ... </k> requires X >Int 0 andBool X <Int pow256
+    rule <k> CLZ  X => 255 -Int log2Int(X) ~> #push ... </k> requires 0 <Int X andBool X <Int pow256
 ```
 
 ### Local State
