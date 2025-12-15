@@ -401,4 +401,11 @@ module LEMMAS-MCD [symbolic]
     rule #if B #then C #else D #fi => C requires         B [simplification]
     rule #if B #then C #else D #fi => C requires notBool B [simplification]
 
+  // #buf simplification comparing to null-bytes: compare as Int
+  rule #buf(N, X:Int) ==K NULLBYTES => X ==Int 0
+    requires 0 <=Int X
+     andBool X <=Int 2 ^Int ( 8 *Int N)
+     andBool #asInteger(NULLBYTES) ==Int 0
+    [simplification, concrete(NULLBYTES)]
+
 endmodule
