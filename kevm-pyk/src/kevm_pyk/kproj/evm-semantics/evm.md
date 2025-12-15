@@ -1691,7 +1691,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
 
     syntax Bool ::= #isPrecompiledAccount ( Int , Schedule ) [symbol(isPrecompiledAccount), function, total, smtlib(isPrecompiledAccount)]
  // --------------------------------------------------------------------------------------------------------------------------------------
-    rule [isPrecompiledAccount]:  #isPrecompiledAccount(ACCTCODE, SCHED) => 0 <Int ACCTCODE andBool ACCTCODE <=Int #precompiledAccountsUB(SCHED)
+    rule [isPrecompiledAccount]: #isPrecompiledAccount(ACCTCODE, SCHEDULE) => ACCTCODE in #precompiledAccountsSet(SCHEDULE)
 
     syntax KItem ::= "#initVM"
  // --------------------------
@@ -2145,9 +2145,8 @@ Self destructing to yourself, unlike a regular transfer, destroys the balance in
 Precompiled Contracts
 ---------------------
 
--   `#precompiled` is a placeholder for the pre-compiled contracts of a given schedule. These contracts are located at contiguous addresses starting from 1.
--   `#precompiledAccountsUB`  returns the highest address (upper bound) of the precompiled contract accounts
--   `#precompiledAccountsSet` returns the set of addresses of the precompiled contract accounts
+-   `#precompiled` is a placeholder for the pre-compiled contracts of a given schedule.
+-   `#precompiledAccountsSet` returns the set of addresses of the precompiled contract accounts for each schedule.
 
 ```k
     syntax NullStackOp   ::= PrecompiledOp
@@ -2171,34 +2170,27 @@ Precompiled Contracts
     rule #precompiled(16) => BLS12_MAP_FP_TO_G1
     rule #precompiled(17) => BLS12_MAP_FP2_TO_G2
 
-
-    syntax Int ::= #precompiledAccountsUB ( Schedule ) [symbol(#precompiledAccountsUB), function, total]
- // ----------------------------------------------------------------------------------------------------
-    rule #precompiledAccountsUB(DEFAULT)           => 4
-    rule #precompiledAccountsUB(FRONTIER)          => #precompiledAccountsUB(DEFAULT)
-    rule #precompiledAccountsUB(HOMESTEAD)         => #precompiledAccountsUB(FRONTIER)
-    rule #precompiledAccountsUB(TANGERINE_WHISTLE) => #precompiledAccountsUB(HOMESTEAD)
-    rule #precompiledAccountsUB(SPURIOUS_DRAGON)   => #precompiledAccountsUB(TANGERINE_WHISTLE)
-    rule #precompiledAccountsUB(BYZANTIUM)         => 8
-    rule #precompiledAccountsUB(CONSTANTINOPLE)    => #precompiledAccountsUB(BYZANTIUM)
-    rule #precompiledAccountsUB(PETERSBURG)        => #precompiledAccountsUB(CONSTANTINOPLE)
-    rule #precompiledAccountsUB(ISTANBUL)          => 9
-    rule #precompiledAccountsUB(BERLIN)            => #precompiledAccountsUB(ISTANBUL)
-    rule #precompiledAccountsUB(LONDON)            => #precompiledAccountsUB(BERLIN)
-    rule #precompiledAccountsUB(MERGE)             => #precompiledAccountsUB(LONDON)
-    rule #precompiledAccountsUB(SHANGHAI)          => #precompiledAccountsUB(MERGE)
-    rule #precompiledAccountsUB(CANCUN)            => 10
-    rule #precompiledAccountsUB(PRAGUE)            => 17
-    rule #precompiledAccountsUB(OSAKA)             => #precompiledAccountsUB(PRAGUE)
-
-
-    syntax Set ::= #precompiledAccountsSet    ( Schedule ) [symbol(#precompiledAccountsSet),    function, total]
-    syntax Set ::= #precompiledAccountsSetAux ( Int      ) [symbol(#precompiledAccountsSetAux), function, total]
- // ------------------------------------------------------------------------------------------------------------
-    rule #precompiledAccountsSet(SCHED) => #precompiledAccountsSetAux(#precompiledAccountsUB(SCHED))
-
-    rule #precompiledAccountsSetAux(N)  => .Set requires N <=Int 0
-    rule #precompiledAccountsSetAux(N)  => SetItem(N) #precompiledAccountsSetAux(N -Int 1) [owise, preserves-definedness]
+    syntax Set ::= #precompiledAccountsSet ( Schedule ) [symbol(#precompiledAccountsSet), function, total]
+ // ------------------------------------------------------------------------------------------------------
+    rule #precompiledAccountsSet(DEFAULT)           => SetItem(1) SetItem(2) SetItem(3) SetItem(4)
+    rule #precompiledAccountsSet(FRONTIER)          => #precompiledAccountsSet(DEFAULT)
+    rule #precompiledAccountsSet(HOMESTEAD)         => #precompiledAccountsSet(FRONTIER)
+    rule #precompiledAccountsSet(TANGERINE_WHISTLE) => #precompiledAccountsSet(HOMESTEAD)
+    rule #precompiledAccountsSet(SPURIOUS_DRAGON)   => #precompiledAccountsSet(TANGERINE_WHISTLE)
+    rule #precompiledAccountsSet(BYZANTIUM)         => #precompiledAccountsSet(SPURIOUS_DRAGON)
+                                                       SetItem(5) SetItem(6) SetItem(7) SetItem(8)
+    rule #precompiledAccountsSet(CONSTANTINOPLE)    => #precompiledAccountsSet(BYZANTIUM)
+    rule #precompiledAccountsSet(PETERSBURG)        => #precompiledAccountsSet(CONSTANTINOPLE)
+    rule #precompiledAccountsSet(ISTANBUL)          => #precompiledAccountsSet(PETERSBURG) SetItem(9)
+    rule #precompiledAccountsSet(BERLIN)            => #precompiledAccountsSet(ISTANBUL)
+    rule #precompiledAccountsSet(LONDON)            => #precompiledAccountsSet(BERLIN)
+    rule #precompiledAccountsSet(MERGE)             => #precompiledAccountsSet(LONDON)
+    rule #precompiledAccountsSet(SHANGHAI)          => #precompiledAccountsSet(MERGE)
+    rule #precompiledAccountsSet(CANCUN)            => #precompiledAccountsSet(SHANGHAI) SetItem(10)
+    rule #precompiledAccountsSet(PRAGUE)            => #precompiledAccountsSet(CANCUN)
+                                                        SetItem(11) SetItem(12) SetItem(13) SetItem(14)
+                                                        SetItem(15) SetItem(16) SetItem(17)
+    rule #precompiledAccountsSet(OSAKA)             => #precompiledAccountsSet(PRAGUE)
 ```
 
 -   `ECREC` performs ECDSA public key recovery.
