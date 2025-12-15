@@ -2189,6 +2189,7 @@ Precompiled Contracts
     rule #precompiledAccountsUB(SHANGHAI)          => #precompiledAccountsUB(MERGE)
     rule #precompiledAccountsUB(CANCUN)            => 10
     rule #precompiledAccountsUB(PRAGUE)            => 17
+    rule #precompiledAccountsUB(OSAKA)             => #precompiledAccountsUB(PRAGUE)
 
 
     syntax Set ::= #precompiledAccountsSet    ( Schedule ) [symbol(#precompiledAccountsSet),    function, total]

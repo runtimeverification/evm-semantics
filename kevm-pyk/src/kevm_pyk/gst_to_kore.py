@@ -44,10 +44,13 @@ SCHEDULE_MAPPING: Final[dict[str, str]] = {
     'Merge': 'MERGE',
     'Paris': 'MERGE',
     'Shanghai': 'SHANGHAI',
+    'ParisToShanghaiAtTime15k': 'SHANGHAI',
     'Cancun': 'CANCUN',
     'ShanghaiToCancunAtTime15k': 'CANCUN',
     'Prague': 'PRAGUE',
     'CancunToPragueAtTime15k': 'PRAGUE',
+    'Osaka': 'OSAKA',
+    'PragueToOsakaAtTime15k': 'OSAKA',
 }
 
 _GST_DISCARD_KEYS: Final = frozenset(
