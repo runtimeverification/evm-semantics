@@ -9,7 +9,7 @@ set -euxo pipefail
 # - fixtures_develop.tar.gz: Generated up to and including the latest dev fork.
 # As of Dec 2025, deployed is Osaka.
 
-ARTIFACT="fixtures_stable.tar.gz"
+ARTIFACT="fixtures_develop.tar.gz"
 TARGET_DIR="fixtures"
 
 OWNER="ethereum"
