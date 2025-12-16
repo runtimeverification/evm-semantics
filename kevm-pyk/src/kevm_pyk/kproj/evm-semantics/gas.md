@@ -205,15 +205,15 @@ module GAS-FEES
     rule [Cextcodecopy.old]: Cextcodecopy(SCHED, WIDTH) => Gextcodecopy < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32)) requires notBool Ghasaccesslist << SCHED >> [concrete]
 
     rule [Cmodexp.old]: Cmodexp(SCHED, DATA, BASELEN, EXPLEN, MODLEN) => #multComplexity(maxInt(BASELEN, MODLEN)) *Int maxInt(#adjustedExpLength(BASELEN, EXPLEN, DATA, Gmodexpmultiplier < SCHED >), 1) /Int Gquaddivisor < SCHED >
-      requires notBool ( Ghasaccesslist << SCHED >> orBool Ghaseip7883 << SCHED >>)
+      requires notBool ( Ghasaccesslist << SCHED >> orBool Ghaseip7823 << SCHED >>)
       [concrete]
 
     rule [Cmodexp.new]: Cmodexp(SCHED, DATA, BASELEN, EXPLEN, MODLEN) => maxInt(Gmodexpmin < SCHED >, (#newMultComplexity(maxInt(BASELEN, MODLEN)) *Int maxInt(#adjustedExpLength(BASELEN, EXPLEN, DATA, Gmodexpmultiplier < SCHED >), 1)) /Int Gquaddivisor < SCHED > )
-      requires Ghasaccesslist << SCHED >> andBool notBool Ghaseip7883 << SCHED >>
+      requires Ghasaccesslist << SCHED >> andBool notBool Ghaseip7823 << SCHED >>
       [concrete]
 
-    rule [Cmodexp.7883]: Cmodexp(SCHED, DATA, BASELEN, EXPLEN, MODLEN) => maxInt(Gmodexpmin < SCHED >, #multComplexityEIP7883(maxInt(BASELEN, MODLEN)) *Int maxInt(#adjustedExpLength(BASELEN, EXPLEN, DATA, Gmodexpmultiplier < SCHED >), 1))
-      requires Ghaseip7883 << SCHED >>
+    rule [Cmodexp.osaka]: Cmodexp(SCHED, DATA, BASELEN, EXPLEN, MODLEN) => maxInt(Gmodexpmin < SCHED >, (#multComplexityEIP7883(maxInt(BASELEN, MODLEN)) *Int maxInt(#adjustedExpLength(BASELEN, EXPLEN, DATA, Gmodexpmultiplier < SCHED >), 1)))
+      requires Ghaseip7823 << SCHED >>
       [concrete]
 
     rule [Cinitcode.new]: Cinitcode(SCHED, INITCODELEN) => Ginitcodewordcost < SCHED > *Int ( INITCODELEN up/Int 32 ) requires         Ghasmaxinitcodesize << SCHED >> [concrete]

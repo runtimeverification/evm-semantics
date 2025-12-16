@@ -31,7 +31,7 @@ module SCHEDULE
                           | "Ghaswarmcoinbase"        | "Ghaswithdrawals"  | "Ghastransient"       | "Ghasmcopy"
                           | "Ghasbeaconroot"          | "Ghaseip6780"      | "Ghasblobbasefee"     | "Ghasblobhash"
                           | "Ghasbls12msmdiscount"    | "Ghashistory"      | "Ghasrequests"        | "Ghasauthority"
-                          | "Ghasfloorcost"           | "Ghasclz"          | "Ghaseip7883"
+                          | "Ghasfloorcost"           | "Ghasclz"          | "Ghaseip7823"
  // --------------------------------------------------------------------------------------
 ```
 
@@ -186,7 +186,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule [GhasauthorityDefault]:           Ghasauthority           << DEFAULT >> => false
     rule [GhasfloorcostDefault]:           Ghasfloorcost           << DEFAULT >> => false
     rule [GhasclzDefault]:                 Ghasclz                 << DEFAULT >> => false
-    rule [Ghaseip7883Default]:             Ghaseip7883             << DEFAULT >> => false
+    rule [Ghaseip7823Default]:             Ghaseip7823             << DEFAULT >> => false
 ```
 
 ### Frontier Schedule
@@ -510,15 +510,17 @@ A `ScheduleConst` is a constant determined by the fee schedule.
  // -----------------------------------------------------------------------
     rule [GmodexpmultiplierOsaka]: Gmodexpmultiplier < OSAKA > => 16
     rule [GmodexpminOsaka]:        Gmodexpmin        < OSAKA > => 500
+    rule [GquaddivisorOsaka]:      Gquaddivisor      < OSAKA > => 1
     rule [SCHEDCONSTOsaka]:        SCHEDCONST        < OSAKA > => SCHEDCONST < PRAGUE >
       requires notBool ( SCHEDCONST ==K Gmodexpmultiplier
-                  orBool SCHEDCONST ==K Gmodexpmin )
+                  orBool SCHEDCONST ==K Gmodexpmin
+                  orBool SCHEDCONST ==K Gquaddivisor )
 
-    rule [GhasclzOsaka]:    Ghasclz      << OSAKA >> => true
-    rule [Ghaseip7883Osaka]: Ghaseip7883 << OSAKA >> => true
-    rule [SCHEDFLAGOsaka]:  SCHEDFLAG    << OSAKA >> => SCHEDFLAG << PRAGUE >>
+    rule [GhasclzOsaka]:     Ghasclz     << OSAKA >> => true
+    rule [Ghaseip7823Osaka]: Ghaseip7823 << OSAKA >> => true
+    rule [SCHEDFLAGOsaka]:   SCHEDFLAG   << OSAKA >> => SCHEDFLAG << PRAGUE >>
       requires notBool ( SCHEDFLAG ==K Ghasclz
-                  orBool SCHEDFLAG ==K Ghaseip7883 )
+                  orBool SCHEDFLAG ==K Ghaseip7823 )
     
 ```
 
