@@ -404,8 +404,9 @@ module LEMMAS-MCD [symbolic]
   // #buf simplification comparing to null-bytes: compare as Int
   rule #buf(N, X:Int) ==K NULLBYTES => X ==Int 0
     requires 0 <=Int X
-     andBool X <=Int 2 ^Int ( 8 *Int N)
+     andBool X <Int 2 ^Int ( 8 *Int N)
      andBool #asInteger(NULLBYTES) ==Int 0
-    [simplification, concrete(NULLBYTES)]
+     andBool lengthBytes(NULLBYTES) ==Int N
+    [simplification, concrete(NULLBYTES), preserves-definedness]
 
 endmodule
