@@ -12,6 +12,7 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from functools import cached_property
 from pathlib import Path
+from subprocess import CalledProcessError
 from typing import TYPE_CHECKING
 
 from filelock import SoftFileLock
@@ -602,8 +603,8 @@ def exec_run(options: RunOptions) -> None:
         if options.gst_name:
             json_read = {options.gst_name: json_read[options.gst_name]}
         kore_pattern_list = [
-            (name, kore)
-            for (name, kore) in iterate_gst(
+            (name, kore, exception_metadata)
+            for (name, kore, exception_metadata) in iterate_gst(
                 json_read, options.mode, options.chainid, options.usegas, schedule=options.schedule
             )
         ]
@@ -617,21 +618,31 @@ def exec_run(options: RunOptions) -> None:
                 kore_pgm_to_kore(
                     kore_pgm, SORT_ETHEREUM_SIMULATION, options.schedule, options.mode, options.chainid, options.usegas
                 ),
+                (False, False),
             ),
         ]
 
-    for name, kore_pattern in kore_pattern_list:
+    for name, kore_pattern, (exception_expected, _) in kore_pattern_list:
         if name:
             _LOGGER.info(f'Processing test - {name}')
-        kevm.run(
-            kore_pattern,
-            depth=options.depth,
-            term=True,
-            expand_macros=options.expand_macros,
-            output=options.output,
-            check=True,
-            debugger=options.debugger,
-        )
+        if exception_expected:
+            _LOGGER.info(f'Test {name} is expected to fail.')
+        try:
+            kevm.run(
+                kore_pattern,
+                depth=options.depth,
+                term=True,
+                expand_macros=options.expand_macros,
+                output=options.output,
+                check=True,
+                debugger=options.debugger,
+            )
+        except CalledProcessError:
+            if exception_expected:
+                _LOGGER.info(f'Test {name} failed as expected')
+                continue
+            else:
+                raise
 
 
 def exec_kast(options: KastOptions) -> None:
@@ -646,8 +657,8 @@ def exec_kast(options: KastOptions) -> None:
         if options.gst_name:
             json_read = {options.gst_name: json_read[options.gst_name]}
         kore_pattern_list = [
-            (name, kore)
-            for (name, kore) in iterate_gst(
+            (name, kore, exception_metadata)
+            for (name, kore, exception_metadata) in iterate_gst(
                 json_read, options.mode, options.chainid, options.usegas, schedule=options.schedule
             )
         ]
@@ -661,10 +672,11 @@ def exec_kast(options: KastOptions) -> None:
                 kore_pgm_to_kore(
                     kore_pgm, SORT_ETHEREUM_SIMULATION, options.schedule, options.mode, options.chainid, options.usegas
                 ),
+                (False, False),
             ),
         ]
 
-    for name, kore_pattern in kore_pattern_list:
+    for name, kore_pattern, _ in kore_pattern_list:
         if name:
             _LOGGER.info(f'Processing test - {name}')
         output_text = kore_print(kore_pattern, definition_dir=kevm.definition_dir, output=options.output)

@@ -38,7 +38,7 @@ def test_gst_to_kore(gst_path: str, expected_path: str, update_expected_output: 
     expected_file = REPO_ROOT / expected_path
 
     # When
-    actuals = [kore for _, kore in iterate_gst(gst_data, 'NORMAL', 1, True)]
+    actuals = [kore for _, kore, _ in iterate_gst(gst_data, 'NORMAL', 1, True)]
 
     # Then
     if update_expected_output:
