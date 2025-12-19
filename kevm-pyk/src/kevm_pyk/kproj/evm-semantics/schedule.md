@@ -54,7 +54,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
                            | "Gpointeval"    | "Gmaxblobgas"   | "Gminbasefee"   | "Gtargetblobgas"    | "Gperblob"           | "Blobbasefeeupdatefraction"
                            | "Gbls12g1add"   | "Gbls12g1mul"   | "Gbls12g2add"   | "Gbls12g2mul"       | "Gbls12mapfptog1"    | "Gbls12PairingCheckMul"
                            | "Gbls12PairingCheckAdd"           | "Gauthbase"     | "Gbls12mapfp2tog2"  | "Gtxdatafloor"       | "Gblobbasecost"
-  // -------------------------------------------------------------------------------------------------------------------------------------------------------
+ // -------------------------------------------------------------------------------------------------------------------------------------------------------
 ```
 
 ### Default Schedule
