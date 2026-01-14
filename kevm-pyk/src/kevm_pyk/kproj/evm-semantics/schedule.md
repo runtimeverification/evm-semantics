@@ -506,7 +506,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
 ```k
     syntax Schedule ::= "OSAKA" [symbol(OSAKA_EVM), smtlib(schedule_OSAKA)]
  // -----------------------------------------------------------------------
-    rule [Gp256verifyOsaka]: Gp256verify < OSAKA > => 3450
+    rule [Gp256verifyOsaka]: Gp256verify < OSAKA > => 6900
     rule [SCHEDCONSTOsaka]:  SCHEDCONST  < OSAKA > => SCHEDCONST < PRAGUE >
      requires notBool ( SCHEDCONST ==K Gp256verify )
 
