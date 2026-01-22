@@ -108,13 +108,13 @@ jobs:
           - name: 'Rules (booster)'
             test-suite: 'test-prove-rules'
             test-args:
-            timeout: 120
-            parallel: 4
+            timeout: 100
+            parallel: 6
           - name: 'Rules (booster-dev)'
             test-suite: 'test-prove-rules'
             test-args: '--use-booster-dev'
-            timeout: 60
-            parallel: 4
+            timeout: 45
+            parallel: 6
           - name: 'Functional'
             test-suite: 'test-prove-functional'
             test-args:
