@@ -42,17 +42,17 @@
         "xbyak": "xbyak"
       },
       "locked": {
-        "lastModified": 1760390717,
-        "narHash": "sha256-pKdwkr4PW+JAqYCfMnKGABoPtcxHnOksJCHtfmdDvKQ=",
+        "lastModified": 1773401345,
+        "narHash": "sha256-3scKdtuLfdvAWLrsmJR1Y5dl6Q98XyL1n7ZuCnBjO3I=",
         "owner": "runtimeverification",
         "repo": "blockchain-k-plugin",
-        "rev": "ff0cca91802d7957db5ea787db9be70db6a9075a",
+        "rev": "207ae5121e5178a09742ed746f2d15e34b1750cc",
         "type": "github"
       },
       "original": {
         "owner": "runtimeverification",
         "repo": "blockchain-k-plugin",
-        "rev": "ff0cca91802d7957db5ea787db9be70db6a9075a",
+        "rev": "207ae5121e5178a09742ed746f2d15e34b1750cc",
         "type": "github"
       }
     },
@@ -549,11 +549,11 @@
     },
     "nixpkgs-unstable_2": {
       "locked": {
-        "lastModified": 1770562336,
-        "narHash": "sha256-ub1gpAONMFsT/GU2hV6ZWJjur8rJ6kKxdm9IlCT0j84=",
+        "lastModified": 1773282481,
+        "narHash": "sha256-b/GV2ysM8mKHhinse2wz+uP37epUrSE+sAKXy/xvBY4=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "d6c71932130818840fc8fe9509cf50be8c64634f",
+        "rev": "fe416aaedd397cacb33a610b33d60ff2b431b127",
         "type": "github"
       },
       "original": {
