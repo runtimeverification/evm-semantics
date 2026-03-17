@@ -5,12 +5,12 @@
     rv-nix-tools.url = "github:runtimeverification/rv-nix-tools/854d4f05ea78547d46e807b414faad64cea10ae4";
     nixpkgs.follows = "rv-nix-tools/nixpkgs";
 
-    k-framework.url = "github:runtimeverification/k/v7.1.304";
+    k-framework.url = "github:runtimeverification/k/v7.1.313";
     k-framework.inputs.nixpkgs.follows = "nixpkgs";
     flake-utils.follows = "k-framework/flake-utils";
     blockchain-k-plugin = {
       url =
-        "github:runtimeverification/blockchain-k-plugin/ff0cca91802d7957db5ea787db9be70db6a9075a";
+        "github:runtimeverification/blockchain-k-plugin/207ae5121e5178a09742ed746f2d15e34b1750cc";
       inputs.flake-utils.follows = "k-framework/flake-utils";
       inputs.nixpkgs.follows = "nixpkgs";
     };
