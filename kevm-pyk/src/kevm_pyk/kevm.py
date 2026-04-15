@@ -175,7 +175,7 @@ class KEVMSemantics(DefaultSemantics):
 
         return CTerm(config=bottom_up(_replace, cterm.config), constraints=cterm.constraints)
 
-    def custom_step(self, cterm: CTerm, cterm_symbolic: CTermSymbolic) -> KCFGExtendResult | None:
+    def custom_step(self, cterm: CTerm, cterm_symbolic: CTermSymbolic, node_id: int) -> KCFGExtendResult | None:
         for c_step in self._custom_steps:
             result = c_step.try_execute(cterm, cterm_symbolic)
             if result is not None:
