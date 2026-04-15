@@ -1,7 +1,0 @@
-load "exec" : { "gas" : 10000
-              ,"code" : PUSH(32, 3) ; PUSH(32, 4) ; ADD ; .OpCodes
-              }
-
-start
-
-.EthereumSimulation
