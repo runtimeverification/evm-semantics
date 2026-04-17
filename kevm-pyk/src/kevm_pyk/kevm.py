@@ -48,7 +48,7 @@ if TYPE_CHECKING:
 
 _LOGGER: Final = logging.getLogger(__name__)
 
-CustomStepImpl = Callable[[Subst, CTerm, CTermSymbolic], KCFGExtendResult | None]
+CustomStepImpl = Callable[[Subst, CTerm, CTermSymbolic, int], KCFGExtendResult | None]
 
 
 class CustomStep(NamedTuple):
@@ -60,10 +60,10 @@ class CustomStep(NamedTuple):
     def check_pattern_match(self, cterm: CTerm) -> bool:
         return self.pattern.match(cterm.cell('K_CELL')) is not None
 
-    def try_execute(self, cterm: CTerm, cterm_symbolic: CTermSymbolic) -> KCFGExtendResult | None:
+    def try_execute(self, cterm: CTerm, cterm_symbolic: CTermSymbolic, node_id: int) -> KCFGExtendResult | None:
         subst = self.pattern.match(cterm.cell('K_CELL'))
         if subst is not None:
-            return self.exec_fn(subst, cterm, cterm_symbolic)
+            return self.exec_fn(subst, cterm, cterm_symbolic, node_id)
         return None
 
 
@@ -177,7 +177,7 @@ class KEVMSemantics(DefaultSemantics):
 
     def custom_step(self, cterm: CTerm, cterm_symbolic: CTermSymbolic, node_id: int) -> KCFGExtendResult | None:
         for c_step in self._custom_steps:
-            result = c_step.try_execute(cterm, cterm_symbolic)
+            result = c_step.try_execute(cterm, cterm_symbolic, node_id)
             if result is not None:
                 return result
         return None
@@ -234,7 +234,7 @@ class KEVMSemantics(DefaultSemantics):
     def _load_pattern(self) -> KSequence:
         return KSequence([KApply('loadProgram', KVariable('###BYTECODE')), KVariable('###CONTINUATION')])
 
-    def _exec_load_custom_step(self, subst: Subst, cterm: CTerm, _c: CTermSymbolic) -> KCFGExtendResult:
+    def _exec_load_custom_step(self, subst: Subst, cterm: CTerm, _c: CTermSymbolic, _node_id: int) -> KCFGExtendResult:
         """Given a CTerm, update the JUMPDESTS_CELL and PROGRAM_CELL if the rule 'EVM.program.load' is at the top of the K_CELL.
 
         :param cterm: CTerm of a proof node.
