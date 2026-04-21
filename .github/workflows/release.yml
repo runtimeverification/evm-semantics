@@ -58,7 +58,7 @@ jobs:
           script: |
             kevm=$(nix build --extra-experimental-features 'nix-command flakes' .#kevm --json | jq -r '.[].outputs | to_entries[].value')
             drv=$(nix-store --query --deriver ${kevm})
-            nix-store --query --requisites --include-outputs ${drv} | cachix push k-framework
+            nix-store --query --requisites --include-outputs ${drv} | cachix push k-framework || true
       - name: 'On failure, delete drafted release'
         if: failure()
         env:
