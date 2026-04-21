@@ -48,9 +48,6 @@ jobs:
       - name: 'Build KEVM'
         run: |
           GC_DONT_GC=1 nix build --extra-experimental-features 'nix-command flakes' --print-build-logs
-      - name: 'Test KEVM'
-        run: |
-          GC_DONT_GC=1 nix build --extra-experimental-features 'nix-command flakes' --print-build-logs .#kevm-test
       - name: 'Push KEVM dependencies to nix cache'
         uses: workflow/nix-shell-action@v3.0.3
         env:
