@@ -48,10 +48,7 @@ jobs:
       - name: 'Build KEVM'
         run: |
           GC_DONT_GC=1 nix build --extra-experimental-features 'nix-command flakes' --print-build-logs
-      - name: 'Test KEVM'
-        run: |
-          GC_DONT_GC=1 nix build --extra-experimental-features 'nix-command flakes' --print-build-logs .#kevm-test
-      - name: 'Push KEVM'
+      - name: 'Push KEVM dependencies to nix cache'
         uses: workflow/nix-shell-action@v3.0.3
         env:
           GC_DONT_GC: 1
@@ -61,7 +58,56 @@ jobs:
           script: |
             kevm=$(nix build --extra-experimental-features 'nix-command flakes' .#kevm --json | jq -r '.[].outputs | to_entries[].value')
             drv=$(nix-store --query --deriver ${kevm})
-            nix-store --query --requisites --include-outputs ${drv} | cachix push k-framework
+            nix-store --query --requisites --include-outputs ${drv} | cachix push k-framework || true
+      - name: 'On failure, delete drafted release'
+        if: failure()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -x
+          VERSION=v$(cat package/version)
+          gh release delete ${VERSION}                  \
+            --repo runtimeverification/evm-semantics  \
+            --yes                                       \
+            --cleanup-tag
+      - name: 'Post failure to channel'
+        if: failure()
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          channel-id: "#kevm-notifications"
+          slack-message: "Failed to create KEVM release: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+        env:
+            SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+
+  nix-binary-cache:
+    name: 'Populate Nix Binary Cache'
+    strategy:
+      matrix:
+        include:
+          - runner: normal
+          - runner: ARM64
+    runs-on: ${{ matrix.runner }}
+    needs: draft-release
+    steps:
+      - name: 'Check out code'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.push.head.sha }}
+          fetch-depth: 0
+      - name: 'Publish KEVM to k-framework-binary cache'
+        uses: workflow/nix-shell-action@v3.0.3
+        env:
+          GC_DONT_GC: '1'
+          CACHIX_AUTH_TOKEN: '${{ secrets.CACHIX_PRIVATE_KFB_TOKEN }}'
+          OWNER_REPO: '${{ github.repository }}'
+          REV: '${{ github.sha }}'
+        with:
+          packages: jq
+          script: |
+            export PATH="$(nix build github:runtimeverification/kup --no-link --json | jq -r '.[].outputs | to_entries[].value')/bin:$PATH"
+            kup publish k-framework-binary .#kevm --keep-days 180 || true
+            # Cachix has not been responding to 'cachix pin' requests made under the hood by kup. Verify the push and pin manually.
+            .github/scripts/check-cachix-pin.sh
       - name: 'On failure, delete drafted release'
         if: failure()
         env:
@@ -85,7 +131,7 @@ jobs:
   make-release:
     name: 'Cut Release'
     runs-on: ubuntu-latest
-    needs: [draft-release, nix-cache]
+    needs: [draft-release, nix-cache, nix-binary-cache]
     steps:
       - name: 'Check out code'
         uses: actions/checkout@v4
