@@ -243,20 +243,24 @@ The `"rlp"` key loads the block information.
          <blockhashes> .List => ListItem(#blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR, UB, EB, BR, RR)) ListItem(#asWord(HP)) </blockhashes>
          <previousExcessBlobGas> 0 => #asWord(EB) </previousExcessBlobGas>
          <previousBlobGasUsed>   0 => #asWord(UB) </previousBlobGasUsed>
+         <previousBaseFee>       0 => #asWord(HF) </previousBaseFee>
 
     rule <k> load "genesisRLP": [ [ HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR, UB, EB, BR, .JSONs ], _, _, _, .JSONs ] => .K ... </k>
          <blockhashes> .List => ListItem(#blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR, UB, EB, BR)) ListItem(#asWord(HP)) </blockhashes>
          <previousExcessBlobGas> 0 => #asWord(EB) </previousExcessBlobGas>
          <previousBlobGasUsed>   0 => #asWord(UB) </previousBlobGasUsed>
+         <previousBaseFee>       0 => #asWord(HF) </previousBaseFee>
 
     rule <k> load "genesisRLP": [ [ HP, HO, HC, HR, HT, HE:Bytes, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR, .JSONs ], _, _, _, .JSONs ] => .K ... </k>
          <blockhashes> .List => ListItem(#blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR)) ListItem(#asWord(HP)) ... </blockhashes>
+         <previousBaseFee>       0 => #asWord(HF) </previousBaseFee>
 
     rule <k> load "genesisRLP": [ [ HP, HO, HC, HR, HT, HE:Bytes, HB, HD, HI, HL, HG, HS, HX, HM, HN, .JSONs ], _, _, .JSONs ] => .K ... </k>
          <blockhashes> .List => ListItem(#blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN)) ListItem(#asWord(HP)) ... </blockhashes>
 
     rule <k> load "genesisRLP": [ [ HP, HO, HC, HR, HT, HE:Bytes, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, .JSONs ], _, _, .JSONs ] => .K ... </k>
          <blockhashes> .List => ListItem(#blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF)) ListItem(#asWord(HP)) ... </blockhashes>
+         <previousBaseFee>       0 => #asWord(HF) </previousBaseFee>
 
     syntax Int ::= "#newWithdrawalID" "(" List ")" [function]
  // ---------------------------------------------------------

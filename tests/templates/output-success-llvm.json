@@ -116,6 +116,9 @@
       <previousBlobGasUsed>
         0
       </previousBlobGasUsed>
+      <previousBaseFee>
+        0
+      </previousBaseFee>
       <block>
         <previousHash>
           0

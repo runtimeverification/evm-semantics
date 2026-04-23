@@ -117,6 +117,9 @@
       <previousBlobGasUsed>
         0
       </previousBlobGasUsed>
+      <previousBaseFee>
+        0
+      </previousBaseFee>
       <block>
         <previousHash>
           4746051719422293590722610549793911264493366370041112137154393734119990786967

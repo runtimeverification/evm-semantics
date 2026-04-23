@@ -124,7 +124,7 @@ module GAS-FEES
                  | Ctotalblob       ( Schedule , Int )                            [symbol(Ctotalblob),        function, total, smtlib(gas_Ctotalblob)       ]
                  | Cbasefeeperblob  ( Schedule , Int )                            [symbol(Cbasefeeperblob),   function, total, smtlib(gas_Cbasefeeperblob)  ]
                  | Cblobfee         ( Schedule , Int , Int )                      [symbol(Cblobfee),          function, total, smtlib(gas_Cblobfee)         ]
-                 | Cexcessblob      ( Schedule , Int , Int )                      [symbol(Cexcessblob),       function, total, smtlib(gas_Cexcessblob)      ]
+                 | Cexcessblob      ( Schedule , Int , Int , Int )                [symbol(Cexcessblob),       function, total, smtlib(gas_Cexcessblob)      ]
                  | Cdelegationaccess( Schedule, Bool, Bool )                      [symbol(Cdelegationaccess), function, total, smtlib(gas_Cdelegationaccess)]
                  | Ctxfloor         ( Schedule , Bytes )                          [symbol(Ctxfloor),          function, total, smtlib(gas_Ctxfloor)         ]
  // ---------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -221,8 +221,19 @@ module GAS-FEES
 
     rule [Cblobfee]: Cblobfee(SCHED, EXCESS_BLOB_GAS, BLOB_VERSIONED_HASHES_SIZE) => Ctotalblob(SCHED, BLOB_VERSIONED_HASHES_SIZE) *Int Cbasefeeperblob(SCHED, EXCESS_BLOB_GAS)
 
-    rule [Cexcessblob]:       Cexcessblob(SCHED, EXCESS_BLOB_GAS, BLOB_GAS_USED) => EXCESS_BLOB_GAS +Int BLOB_GAS_USED -Int Gtargetblobgas < SCHED > requires Gtargetblobgas < SCHED > <=Int EXCESS_BLOB_GAS +Int BLOB_GAS_USED 
-    rule [Cexcessblob.owise]: Cexcessblob(_,     _,               _)             => 0 [owise]
+    rule [Cexcessblob.zero]: Cexcessblob(SCHED, EXCESS_BLOB_GAS, BLOB_GAS_USED, _BASE_FEE) => 0
+      requires EXCESS_BLOB_GAS +Int BLOB_GAS_USED <Int Gtargetblobgas < SCHED >
+
+    rule [Cexcessblob.reserve]: Cexcessblob(SCHED, EXCESS_BLOB_GAS, BLOB_GAS_USED, BASE_FEE)
+      => EXCESS_BLOB_GAS +Int ((BLOB_GAS_USED *Int (Gmaxblobgas < SCHED > -Int Gtargetblobgas < SCHED >)) /Int Gmaxblobgas < SCHED >)
+      requires Ghasreserve << SCHED >>
+       andBool Gtargetblobgas < SCHED > <=Int EXCESS_BLOB_GAS +Int BLOB_GAS_USED
+       andBool Gperblob < SCHED > *Int Cbasefeeperblob(SCHED, EXCESS_BLOB_GAS) <Int Gblobbasecost < SCHED > *Int BASE_FEE
+
+    rule [Cexcessblob.normal]: Cexcessblob(SCHED, EXCESS_BLOB_GAS, BLOB_GAS_USED, BASE_FEE)
+      => EXCESS_BLOB_GAS +Int BLOB_GAS_USED -Int Gtargetblobgas < SCHED >
+      requires Gtargetblobgas < SCHED > <=Int EXCESS_BLOB_GAS +Int BLOB_GAS_USED 
+       andBool notBool (Gblobbasecost < SCHED > *Int BASE_FEE >Int Gperblob < SCHED > *Int Cbasefeeperblob(SCHED, EXCESS_BLOB_GAS))
 
     rule [Cdelegationaccess]:       Cdelegationaccess(SCHED, true, ISWARM) => Caddraccess(SCHED, ISWARM)
     rule [Cdelegationaccess.owise]: Cdelegationaccess(_,     _,    _)      => 0 [owise]
@@ -580,4 +591,3 @@ module GAS-SIMPLIFICATION [symbolic]
     rule notBool (A <Gas B) => B <=Gas A [simplification]
 endmodule
 ```
-
