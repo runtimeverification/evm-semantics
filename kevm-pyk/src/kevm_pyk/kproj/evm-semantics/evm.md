@@ -2254,6 +2254,19 @@ Precompiled Contracts
     rule <k> MODEXP => #end EVMC_SUCCESS ... </k>
          <callData> DATA </callData>
          <output> _ => #modexp1(#asWord(#range(DATA, 0, 32)), #asWord(#range(DATA, 32, 32)), #asWord(#range(DATA, 64, 32)), #range(DATA, 96, maxInt(0, lengthBytes(DATA) -Int 96))) </output>
+         <schedule> SCHED </schedule>
+      requires notBool Ghaseip7823 << SCHED >>
+        orBool modexpUBCheck(#asWord(#range(DATA, 0, 32)), #asWord(#range(DATA, 32, 32)), #asWord(#range(DATA, 64, 32)))
+
+    rule <k> MODEXP => #end EVMC_PRECOMPILE_FAILURE ... </k>
+         <callData> DATA </callData>
+         <schedule> SCHED </schedule>
+      requires Ghaseip7823 << SCHED >>
+       andBool notBool modexpUBCheck(#asWord(#range(DATA, 0, 32)), #asWord(#range(DATA, 32, 32)), #asWord(#range(DATA, 64, 32)))
+
+    syntax Bool ::= modexpUBCheck (Int , Int , Int) [symbol(modexpUBCheck), function, total]
+ // ----------------------------------------------------------------------------------------
+    rule modexpUBCheck(BASELEN, EXPLEN, MODLEN) => BASELEN <=Int 1024 andBool EXPLEN <=Int 1024 andBool MODLEN <=Int 1024
 
     syntax Bytes ::= #modexp1 ( Int , Int , Int , Bytes ) [symbol(#modexp1), function]
                    | #modexp2 ( Int , Int , Int , Bytes ) [symbol(#modexp2), function]
