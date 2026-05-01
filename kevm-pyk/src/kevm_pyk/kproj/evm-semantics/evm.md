@@ -1695,7 +1695,8 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
 
     syntax Bool ::= #isPrecompiledAccount ( Int , Schedule ) [symbol(isPrecompiledAccount), function, total, smtlib(isPrecompiledAccount)]
  // --------------------------------------------------------------------------------------------------------------------------------------
-    rule [isPrecompiledAccount]:  #isPrecompiledAccount(ACCTCODE, SCHED) => 0 <Int ACCTCODE andBool ACCTCODE <=Int #precompiledAccountsUB(SCHED)
+    rule [isPrecompiledAccountOsaka]: #isPrecompiledAccount(256,      OSAKA) => true
+    rule [isPrecompiledAccount]:      #isPrecompiledAccount(ACCTCODE, SCHED) => 0 <Int ACCTCODE andBool ACCTCODE <=Int #precompiledAccountsUB(SCHED)
 
     syntax KItem ::= "#initVM"
  // --------------------------
@@ -2174,6 +2175,7 @@ Precompiled Contracts
     rule #precompiled(15) => BLS12_PAIRING_CHECK
     rule #precompiled(16) => BLS12_MAP_FP_TO_G1
     rule #precompiled(17) => BLS12_MAP_FP2_TO_G2
+    rule #precompiled(256) => P256VERIFY
 
 
     syntax Int ::= #precompiledAccountsUB ( Schedule ) [symbol(#precompiledAccountsUB), function, total]
@@ -2199,7 +2201,8 @@ Precompiled Contracts
     syntax Set ::= #precompiledAccountsSet    ( Schedule ) [symbol(#precompiledAccountsSet),    function, total]
     syntax Set ::= #precompiledAccountsSetAux ( Int      ) [symbol(#precompiledAccountsSetAux), function, total]
  // ------------------------------------------------------------------------------------------------------------
-    rule #precompiledAccountsSet(SCHED) => #precompiledAccountsSetAux(#precompiledAccountsUB(SCHED))
+    rule #precompiledAccountsSet(OSAKA) => #precompiledAccountsSetAux(#precompiledAccountsUB(OSAKA)) SetItem(256)
+    rule #precompiledAccountsSet(SCHED) => #precompiledAccountsSetAux(#precompiledAccountsUB(SCHED)) [owise]
 
     rule #precompiledAccountsSetAux(N)  => .Set requires N <=Int 0
     rule #precompiledAccountsSetAux(N)  => SetItem(N) #precompiledAccountsSetAux(N -Int 1) [owise, preserves-definedness]
@@ -2682,6 +2685,14 @@ Precompiled Contracts
         orBool notBool isValidBLS12Fp(Bytes2Int(substrBytes(DATA, 64, 128), BE, Unsigned))
 ```
 
+```k
+    syntax PrecompiledOp ::= "P256VERIFY"
+ // -------------------------------------
+    rule <k> P256VERIFY => #end EVMC_SUCCESS ... </k>
+         <callData> DATA </callData>
+         <output> _ => P256Verify(DATA) </output>
+```
+
 Ethereum Gas Calculation
 ========================
 
@@ -3043,6 +3054,8 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
     rule <k> #gasExec(SCHED, BLS12_PAIRING_CHECK) => #let N = lengthBytes(DATA) /Int 384 #in N *Int Gbls12PairingCheckMul < SCHED > +Int Gbls12PairingCheckAdd < SCHED > ... </k>  <callData> DATA </callData>
     rule <k> #gasExec(SCHED, BLS12_MAP_FP_TO_G1)     => Gbls12mapfptog1 < SCHED > ... </k>
     rule <k> #gasExec(SCHED, BLS12_MAP_FP2_TO_G2)    => Gbls12mapfp2tog2 < SCHED > ... </k>
+
+    rule <k> #gasExec(SCHED, P256VERIFY) => Gp256verify < SCHED > ... </k>
 
     syntax InternalOp ::= "#allocateCallGas"
  // ----------------------------------------
