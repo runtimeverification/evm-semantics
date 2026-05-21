@@ -13,35 +13,44 @@ tests/specs/                                  K proof specs, organised by suite
 
 ## Build toolchain
 
-All Python commands run through `uv` from inside `kevm-pyk/`:
+All Python commands run through `uv` from the repo root or inside `kevm-pyk/`:
 
 ```bash
+# from repo root:
 uv --project kevm-pyk/ run <command>
-# or, from inside kevm-pyk/:
+
+# equivalent, from inside kevm-pyk/:
 uv run <command>
 ```
 
-Before running proofs the K definitions must be compiled (kdist targets):
+Build the Python package (creates wheel/sdist, installs into the local venv):
 
 ```bash
-uv --project kevm-pyk/ run python3 -m pyk.kdist build evm-semantics.plugin
-uv --project kevm-pyk/ run python3 -m pyk.kdist build evm-semantics.haskell
+make -C kevm-pyk/ build
+# equivalent:
+uv --project kevm-pyk/ build
 ```
 
-These are cached under `~/.cache/kdist-<hash>/`.
-The hash changes when the K source files change, so rebuilding is required after editing `evm.md` or any other `.k`/`.md` file in `kproj/`.
+Before running any proof, the K definitions must be compiled into kdist targets.
+These are cached under `~/.cache/kdist-<hash>/`; the hash changes whenever any `.k`/`.md`
+file in `kproj/` changes, so a rebuild is required after every semantics edit.
+
+```bash
+# via the kevm-kdist CLI (recommended):
+uv --project kevm-pyk/ run kevm-kdist build evm-semantics.plugin
+uv --project kevm-pyk/ run kevm-kdist build evm-semantics.haskell
+
+# parallel build of all targets:
+uv --project kevm-pyk/ run kevm-kdist build --jobs 8
+```
 
 ## Linting and static analysis (Python)
 
-All checks live in `kevm-pyk/`:
-
 ```bash
-make -C kevm-pyk/ check          # run all checks (flake8, mypy, autoflake, isort, black)
-make -C kevm-pyk/ format         # auto-format (autoflake, isort, black)
-```
+make -C kevm-pyk/ check          # all checks: flake8, mypy, autoflake, isort, black
+make -C kevm-pyk/ format         # auto-fix:   autoflake, isort, black
 
-Individual tools:
-```bash
+# individual tools via uv:
 uv --project kevm-pyk/ run flake8 src
 uv --project kevm-pyk/ run mypy   src
 uv --project kevm-pyk/ run black  --check src
@@ -54,34 +63,59 @@ uv --project kevm-pyk/ run isort  --check src
 
 ```bash
 make -C kevm-pyk/ test-unit
-# or directly:
-uv --project kevm-pyk/ run pytest src/tests/unit
+# equivalent:
+uv --project kevm-pyk/ run pytest src/tests/unit --numprocesses=8 --dist=worksteal
 ```
 
 These test pure Python logic (AST helpers, KEVM class methods, etc.) and finish in seconds.
 
 ## Integration / proof tests
 
-All proof tests use `pytest` via `make -C kevm-pyk/ test-integration PYTEST_ARGS+="-k <filter>"` or directly with `uv --project kevm-pyk/ run pytest src/tests/integration`.
-
-| Make target | pytest `-k` filter | What it covers |
-|---|---|---|
-| `make test-prove-functional` | `test_prove_functional` | Pure-function lemmas & simplification benchmarks (`tests/specs/functional/`) |
-| `make test-prove-rules` | `test_prove_rules` | Full EVM opcode / contract specs (`tests/specs/{benchmarks,erc20,examples,mcd,mcd-structured,kontrol}/`) |
-| `make test-prove-optimizations` | `test_prove_optimizations` | EVM opcode optimisation proofs (`tests/specs/opcodes/`) |
-| `make test-prove-dss` | `test_prove_dss` | DSS/MakerDAO VAT proofs (very slow, run in CI only) |
-| `make test-conformance` | `test_conformance` | Ethereum execution-spec conformance tests |
-
-To run a single spec file by name:
+### Make targets (recommended)
 
 ```bash
-make -C kevm-pyk/ test-integration PYTEST_ARGS+="-k test_prove_functional and compute-valid-jump-dests"
+make -C kevm-pyk/ test-integration PYTEST_ARGS+="-k <filter>"
 ```
 
-To run the prover directly (useful for timing/debugging a single spec):
+The Makefile defaults to `--numprocesses=8 --dist=worksteal --maxfail=1`.
+Override parallelism or failure tolerance:
 
 ```bash
-# 1. Kompile the spec once (≈40 s):
+make -C kevm-pyk/ test-integration PYTEST_PARALLEL=4 PYTEST_ARGS+="-k test_prove_functional"
+make -C kevm-pyk/ test-integration PYTEST_MAXFAIL=10 PYTEST_ARGS+="-k test_prove_functional"
+```
+
+### Direct pytest (same options, more control)
+
+```bash
+uv --project kevm-pyk/ run pytest src/tests/integration \
+    --numprocesses=8 --dist=worksteal \
+    -k "test_prove_functional"
+
+# run a single named spec:
+uv --project kevm-pyk/ run pytest src/tests/integration \
+    --numprocesses=1 \
+    -k "test_prove_functional and compute-valid-jump-dests"
+```
+
+### Proof test suites
+
+| Make target (from repo root) | pytest `-k` filter | Spec directory | Notes |
+|---|---|---|---|
+| `make test-prove-functional` | `test_prove_functional` | `tests/specs/functional/` | Pure-function/lemma proofs; fast per spec |
+| `make test-prove-rules` | `test_prove_rules` | `tests/specs/{benchmarks,erc20,examples,mcd,mcd-structured,kontrol}/` | Full EVM contract proofs |
+| `make test-prove-optimizations` | `test_prove_optimizations` | `tests/specs/opcodes/` | EVM opcode optimisation proofs |
+| `make test-prove-dss` | `test_prove_dss` | `tests/specs/mcd/vat*.k` | DSS/MakerDAO VAT proofs (very slow, CI only) |
+| `make test-conformance` | `test_conformance` | — | Ethereum execution-spec conformance |
+
+Top-level convenience targets delegate to `make -C kevm-pyk/ test-integration PYTEST_ARGS+=...`.
+
+### Running the prover directly (for timing / debugging a single spec)
+
+Useful when you want wall-time measurements or verbose RPC logs without pytest overhead.
+The definition must be kompiled first (≈40 s), then reused across runs:
+
+```bash
 uv --project kevm-pyk/ run kevm kompile-spec \
     tests/specs/functional/my-spec.k \
     --main-module VERIFICATION --syntax-module VERIFICATION \
@@ -90,7 +124,6 @@ uv --project kevm-pyk/ run kevm kompile-spec \
     -I kevm-pyk/src/kevm_pyk/kproj/evm-semantics \
     -I kevm-pyk/src/kevm_pyk/kproj/plugin
 
-# 2. Run the proof (reuses the compiled definition):
 time uv --project kevm-pyk/ run kevm prove \
     tests/specs/functional/my-spec.k \
     --definition /tmp/my-spec-kompiled \
@@ -98,118 +131,56 @@ time uv --project kevm-pyk/ run kevm prove \
     --use-booster \
     --save-directory /tmp/my-spec-save \
     -I kevm-pyk/src/kevm_pyk/kproj/evm-semantics \
-    -I kevm-pyk/src/kevm_pyk/kproj/plugin
+    -I kevm-pyk/src/kevm_pyk/kproj/plugin \
+    --verbose
 ```
 
-Add `--verbose` to see per-RPC-call timing (simplify / execute / implies phases).
-The `--save-directory` path persists the proof KCFG; rerun without `--reinit` to resume.
-
-Running `kevm prove` directly generates a `<spec-name>.json` file next to the spec.
-That file is a claim-parse cache; **do not commit it** (add to `.gitignore` if it keeps appearing).
+`--verbose` shows per-RPC-call timing (simplify / execute / implies).
+`--save-directory` persists the proof KCFG; omit `--reinit` on reruns to resume.
+Running `kevm prove` this way drops a `<spec-name>.json` claim-parse cache next to the spec — do not commit it.
 
 ## Proof timing anatomy
 
-When `--verbose` is used, the key phases visible in the log are:
+With `--verbose`, the key RPC phases are:
 
-| Log message | Phase | Notes |
+| Phase | What it does | Where time is spent |
 |---|---|---|
-| `claim_loader - Generating claim modules` + `kprove --dry-run` | Spec parsing | ≈22 s cold, ≈0.3 s cached (JSON hit) |
-| `Starting KoreServer` … `KoreServer started` | Booster startup | ≈7 s, loads `definition.kore` |
-| `simplify` request #1 | Definedness constraint | Evaluates `#Ceil(initial_config)` |
-| `simplify` requests #3/4 | Node simplification | Evaluates function terms in the initial/target config — **this is where K function definitions (e.g. `#computeValidJumpDests`) are symbolically reduced** |
-| `execute` request | Proof step | Actual reachability search |
-| `implies` request | Subsumption check | Checks final state ⊆ target |
+| `kprove --dry-run` | Parse spec to kore | ≈22 s cold, ≈0.3 s if JSON cache is fresh |
+| `KoreServer` startup | Load `definition.kore` + LLVM lib | ≈7 s |
+| `simplify` #1 | Definedness constraint `#Ceil(initial_config)` | **Evaluates K functions symbolically — often the bottleneck** |
+| `simplify` #3 | Simplify initial/target nodes | **Same; also evaluates K function terms in the config** |
+| `execute` | Reachability proof step | Runs the symbolic execution |
+| `implies` | Subsumption check | Checks final state ⊆ target spec |
 
-kevm reports `Proof timing: Xs` which covers only from `add-module` onward (not server startup or claim parsing).
+`kevm` reports `Proof timing: Xs` which starts from `add-module` (excludes server startup and claim parsing).
+For benchmarking a definition change, compare individual `simplify` and `execute` durations, not just total wall time — the simplify calls are often where K function definitions dominate.
 
-## How to add a functional simplification test
+## Functional simplification tests
 
-Functional tests live in `tests/specs/functional/`.
-They test pure K functions — lemmas, simplification rules, helper functions — using the Haskell prover but without setting up the full EVM execution context.
+`tests/specs/functional/` contains `runLemma`/`doneLemma` style specs that test pure K functions and simplification lemmas in isolation, using the Haskell prover but without the overhead of full EVM execution.
 
-### Step 1 — Write the spec file
+**When to add one:** Any time a simplification you expect to fire is not going through in a larger proof, add a functional spec that targets exactly that simplification.
+A small focused claim will tell you immediately whether the rule fires under the right conditions, whether the preconditions are too strong, and whether the definition is efficient enough.
+Functional specs are also the right place for performance regression tests — a claim with a partially symbolic input (e.g. `#buf(32, INT_VAR)`) forces Haskell symbolic evaluation and exposes O(N) overhead in recursive definitions that concrete execution would hide.
 
-Each spec is a self-contained K file.
-Model it on `tests/specs/functional/lemmas-no-smt-spec.k` (imports `evm.md`) or on `lemmas-spec.k` (imports `edsl.md` + lemmas).
+Existing specs to use as models:
+- `lemmas-no-smt-spec.k` — imports `evm.md`; tests arithmetic and bytes lemmas; no SMT needed
+- `lemmas-spec.k` — imports `edsl.md` + lemmas; tests `#hashedLocation`, ranges, etc.
+- `compute-valid-jump-dests-spec.k` — performance benchmark with symbolic input tail
 
-```k
-requires "evm.md"
-requires "lemmas/lemmas.k"
-
-module VERIFICATION
-    imports EVM
-    imports LEMMAS
-
-    syntax StepSort ::= Bytes | Int | Bool
- // --------------------------------------
-
-    syntax KItem ::= runLemma ( StepSort ) [symbol(runLemma)]
-                   | doneLemma( StepSort )
- // --------------------------------------
-    rule <k> runLemma( T ) => doneLemma( T ) ... </k>
-
-endmodule
-
-module MY-SIMPLIFICATION-SPEC
-    imports VERIFICATION
-
-    // Concrete claim: prove a specific simplification holds.
-    claim [my-lemma]:
-        <k> runLemma( myFunction(concreteArg1, concreteArg2) )
-         => doneLemma( expectedResult )
-        ... </k>
-
-    // Symbolic claim: prove it holds for all values satisfying a constraint.
-    claim [my-lemma-symbolic]:
-        <k> runLemma( myFunction(X, #buf(32, INT_VAR)) )
-         => doneLemma( ?_:Bytes )      // ?_ = existential wildcard
-        ... </k>
-      requires #rangeUInt(256, INT_VAR)
-
-endmodule
-```
-
-Key points:
-- The `VERIFICATION` module must be named exactly `VERIFICATION` (it is the default `KOMPILE_MAIN_MODULE`).
-- `runLemma`/`doneLemma` wrap the term under test; the single rule `runLemma(T) => doneLemma(T)` fires once to expose the term and the prover then simplifies it.
-- `?_:Sort` in the RHS is an existential — proves the function returns *some* value of that sort. Use it when the result is too complex to describe concretely (e.g. symbolic input).
-- The `<k> ... ... </k>` pattern matches within the full EVM configuration; the `...` elides all other cells.
-- For inputs with symbolic tails (e.g. `+Bytes #buf(32, X)`), the Haskell backend must evaluate the function symbolically. This is the regime where definition efficiency matters most.
-
-### Step 2 — Register the spec in the test runner
-
-Open `kevm-pyk/src/tests/integration/test_prove.py` and add one line to `KOMPILE_MAIN_FILE`:
+To register a new spec, add one line to `KOMPILE_MAIN_FILE` in
+`kevm-pyk/src/tests/integration/test_prove.py`:
 
 ```python
-KOMPILE_MAIN_FILE: Final = {
-    ...
-    'functional/my-simplification-spec.k': 'my-simplification-spec.k',
-    ...
-}
+'functional/my-spec.k': 'my-spec.k',
 ```
 
-The spec is then automatically picked up by `FUNCTIONAL_TESTS = spec_files('functional', '*-spec.k')` and run by `test_prove_functional`.
-No other changes are needed; `KOMPILE_MAIN_MODULE` defaults to `'VERIFICATION'`.
-
-To override workers for a parallel-friendly spec:
-
-```python
-TEST_PARAMS: dict[str, TParams] = {
-    ...
-    'functional/my-simplification-spec.k': TParams(workers=8),
-}
-```
-
-### Step 3 — Test locally
-
-```bash
-make -C kevm-pyk/ test-integration PYTEST_ARGS+="-k test_prove_functional and my-simplification"
-```
+The glob `spec_files('functional', '*-spec.k')` picks it up automatically.
+`KOMPILE_MAIN_MODULE` defaults to `'VERIFICATION'`; only override it if your spec uses a different top module name.
 
 ## Commit discipline
 
-- Every commit must be **atomic and self-contained** — the project must build and all fast tests must pass at each commit.
-- `make -C kevm-pyk/ check` and `make -C kevm-pyk/ test-unit` are the fast gate; run before every commit.
-- After any change to `.k`/`.md` source files, the kdist targets become stale.
-  Rebuild before running proofs: `uv --project kevm-pyk/ run python3 -m pyk.kdist build evm-semantics.plugin` (and `.haskell` if needed).
-- Proof tests (`test_prove_*`) are slow (minutes per spec); run them before marking a PR ready, not on every commit.
+- Every commit must be **atomic and self-contained** — the project must build and fast tests must pass at each commit.
+- Fast gate before every commit: `make -C kevm-pyk/ check` and `make -C kevm-pyk/ test-unit`.
+- After editing any `.k`/`.md` file, kdist targets are stale; rebuild with `kevm-kdist build` before running proofs.
+- Proof tests (`test_prove_*`) take minutes per spec; run the relevant suite before marking a PR ready, not on every commit.
