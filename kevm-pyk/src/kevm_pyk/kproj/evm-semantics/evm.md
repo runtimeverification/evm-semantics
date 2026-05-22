@@ -1750,10 +1750,10 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     syntax Bytes ::= #computeValidJumpDests(Bytes)                  [symbol(computeValidJumpDests),    function, memo, total]
                    | #computeValidJumpDests(Bytes, Int, Bytes, Int) [symbol(computeValidJumpDestsAux), function             ]
  // -------------------------------------------------------------------------------------------------------------------------
-    rule #computeValidJumpDests(PGM)                 => #computeValidJumpDests(PGM, 0, padRightBytes(.Bytes, lengthBytes(PGM), 0), lengthBytes(PGM))
-    rule #computeValidJumpDests(  _, I, RESULT, LEN) => RESULT                                                                           requires I >=Int LEN
-    rule #computeValidJumpDests(PGM, I, RESULT, LEN) => #computeValidJumpDests(PGM, I +Int 1,                        RESULT[I <- 1], LEN) requires I <Int LEN andBool PGM [ I ] ==Int 91
-    rule #computeValidJumpDests(PGM, I, RESULT, LEN) => #computeValidJumpDests(PGM, I +Int #widthOpCode(PGM [ I ]), RESULT,          LEN) requires I <Int LEN andBool notBool PGM [ I ] ==Int 91
+    rule #computeValidJumpDests(PGM)                 => #computeValidJumpDests(PGM, 0, padRightBytes(.Bytes, lengthBytes(PGM), 0), lengthBytes(PGM))                                                                             [preserves-definedness]
+    rule #computeValidJumpDests(  _, I, RESULT, LEN) => RESULT                                                                           requires I >=Int LEN                                                                   [preserves-definedness]
+    rule #computeValidJumpDests(PGM, I, RESULT, LEN) => #computeValidJumpDests(PGM, I +Int 1,                        RESULT[I <- 1], LEN) requires I <Int LEN andBool PGM [ I ] ==Int 91                                      [preserves-definedness]
+    rule #computeValidJumpDests(PGM, I, RESULT, LEN) => #computeValidJumpDests(PGM, I +Int #widthOpCode(PGM [ I ]), RESULT,          LEN) requires I <Int LEN andBool notBool PGM [ I ] ==Int 91                              [preserves-definedness]
 ```
 
 System Calls
@@ -1812,7 +1812,7 @@ System Transaction Configuration
 ```
 
 ```k
-    syntax Int ::= #widthOpCode(Int) [symbol(#widthOpCode), function]
+    syntax Int ::= #widthOpCode(Int) [symbol(#widthOpCode), function, total]
  // -----------------------------------------------------------------
     rule #widthOpCode(W) => W -Int 94 requires W >=Int 96 andBool W <=Int 127
     rule #widthOpCode(_) => 1 [owise]
