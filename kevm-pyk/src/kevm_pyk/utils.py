@@ -371,6 +371,7 @@ def legacy_explore(
         smt_tactic=smt_tactic,
         bug_report=bug_report,
         haskell_log_format=haskell_log_format,
+        haskell_log_entries=haskell_log_entries,
         log_axioms_file=log_axioms_file,
         log_succ_rewrites=log_succ_rewrites,
         log_fail_rewrites=log_fail_rewrites,
