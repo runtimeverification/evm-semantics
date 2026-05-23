@@ -178,6 +178,101 @@ To register a new spec, add one line to `KOMPILE_MAIN_FILE` in
 The glob `spec_files('functional', '*-spec.k')` picks it up automatically.
 `KOMPILE_MAIN_MODULE` defaults to `'VERIFICATION'`; only override it if your spec uses a different top module name.
 
+## Diagnosing slow Haskell backend (`simplify` / `execute`)
+
+The booster server (`kore-rpc-booster`) reads the `KORE_RPC_OPTS` environment variable at startup and prepends its words to the CLI args.
+Set it before any `kevm prove` invocation to inject diagnostic flags without changing Python code:
+
+```bash
+KORE_RPC_OPTS="<flags>" uv --project kevm-pyk/ run kevm prove ...
+```
+
+Use `--log-file /tmp/booster.log` to write to a file; `--log-timestamps` adds wall-clock timestamps per line.
+
+For a full reference — log levels, source locations, and `contextLoggingEnabled` behaviour — see [`docs/kore-rpc-booster-logging.md`](docs/kore-rpc-booster-logging.md).
+To test a local haskell-backend build, see [`docs/kup-override.md`](docs/kup-override.md).
+To file a bug or performance report with the haskell-backend team, see [`docs/submitting-test-cases-to-haskell-backend.md`](docs/submitting-test-cases-to-haskell-backend.md).
+
+Key facts to keep in mind:
+
+- The **`simplify` endpoint always calls kore** after booster — unconditionally, not a fallback.
+  `-l Aborts` will not show this call; only a diff appears if kore actually changes something.
+- **Kore has no LLVM**; it evaluates K functions via axiom rewriting only.
+  When booster has already fully evaluated a term via LLVM, kore's simplify pass is pure overhead.
+- **`-l SimplifyKore` must be paired with a booster-side level** (e.g. `-l Timing`) to ensure `contextLoggingEnabled = True`; otherwise kore entries may not be emitted.
+  See `docs/kore-rpc-booster-logging.md` for the `contextLoggingEnabled` mechanism.
+- **`-l Timing` is NOT a low-overhead flag for large terms.**
+  Any level with a `levelToContext` entry (including `Timing`) sets `contextLoggingEnabled = True`,
+  which enables ALL kore log entry types — including `DebugTerm`, which pretty-prints the full term at every step.
+  For terms with large concrete byte literals, this can add orders-of-magnitude overhead.
+  Use pyk's INFO timestamps (default in `bench-prove.py`) for true baseline measurements.
+- **`booster-dev`** (`kevm prove --use-booster-dev`) runs pure booster with no kore proxy.
+  When the kore step is pure overhead for your proof, this is the right backend to use.
+  `bench-prove.py --booster-dev` benchmarks this mode and derives timing from pyk's INFO output
+  (since `booster-dev` does not read `KORE_RPC_OPTS`).
+
+### Quick log-level cheat sheet
+
+| Goal | Flags | Overhead |
+|---|---|---|
+| True per-request timing (pyk timestamps) | no `-l` flags | None |
+| Booster/kore split per request | `-l Timing` | **Moderate — enables all kore log types; kore time 10× higher at large N** |
+| Does kore change anything? | `-l Aborts` + grep `"Kore simplification: Diff"` | Moderate |
+| Which booster rules fire / break? | `-l Simplify` (small N only) | 10–14× |
+| What equations is kore attempting? | `-l SimplifyKore -l Timing` (small N) | High |
+| Is SMT a bottleneck? | `-l SMT` | Low |
+| Is LLVM being used? | grep `llvm` in log | None |
+
+### Interpreting `[failure][break]` vs `[failure][continue]`
+
+- `[failure][continue]` — rule did not match (pattern mismatch); booster moves to the next candidate.
+  Normal and fast.
+- `[failure][break]` — rule matched but booster cannot confirm RHS is defined (non-total sub-symbols).
+  Booster stops trying to evaluate this term entirely.
+  This is the key signal that `[preserves-definedness]` or `total` annotations are needed.
+
+## Testing a local Haskell backend build
+
+Use `kup` to install K with a local haskell-backend checkout substituted for the upstream one.
+This lets you test backend changes against full kevm proofs without modifying the project's Nix flake.
+
+```bash
+# Check the current input tree (shows which haskell-backend hash is pinned):
+kup list k.openssl.procps --inputs
+
+# Install the same K version with a local haskell-backend override:
+kup install k.openssl.procps \
+    --version v7.1.323 \
+    --override haskell-backend ~/src/haskell-backend
+
+# Revert to the upstream backend:
+kup install k.openssl.procps --version v7.1.323
+```
+
+After installing, the kdist cache is stale — rebuild before running proofs:
+
+```bash
+uv --project kevm-pyk/ run kevm-kdist build evm-semantics.haskell
+```
+
+For full details on how `--override` works and what kup does internally, see [`docs/kup-override.md`](docs/kup-override.md).
+
+## Running long commands
+
+**Always save output to a file first, then analyse the file.**
+Never re-run a slow command with a different pipe to see a different slice of its output — that wastes minutes and loses the rest of the output.
+
+```bash
+# correct pattern for any slow command:
+python scripts/bench-prove.py tests/specs/functional/my-spec.k --analyse-fallbacks \
+    > /tmp/bench-out.log 2>&1
+# then inspect:
+grep "changed\|Total" /tmp/bench-out.log
+tail -n 40 /tmp/bench-out.log
+```
+
+This applies to: `bench-prove.py`, `kevm prove`, `kevm-kdist build`, pytest runs, any Haskell backend invocation.
+
 ## Commit discipline
 
 - Every commit must be **atomic and self-contained** — the project must build and fast tests must pass at each commit.

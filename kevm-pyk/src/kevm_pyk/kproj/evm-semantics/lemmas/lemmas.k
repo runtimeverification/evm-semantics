@@ -245,9 +245,12 @@ module LEMMAS-HASKELL [symbolic]
   // #widthOpCode range
   // ########################
 
-    // #widthOpCode always returns ≥ 1 (PUSH ops 2..33, everything else 1).
-    // Note: smt-lemma cannot be applied here because #widthOpCode has no smt-hook.
-    rule [widthOpCode-lb]: 0 <=Int #widthOpCode(_:Int) => true [simplification]
+    // #widthOpCode always returns 1..33 (PUSH ops 2..33, everything else 1).
+    // smtlib(widthOpCode) on the declaration lets smt-lemma encode these as
+    // universally-quantified bounds so the solver can discharge side conditions
+    // containing #widthOpCode without needing to evaluate it concretely.
+    rule [widthOpCode-lb]: 0 <=Int #widthOpCode(_:Int) => true [simplification, smt-lemma]
+    rule [widthOpCode-ub]: #widthOpCode(_:Int) <=Int 33 => true [simplification, smt-lemma]
 
     // Booster's equation engine does not descend inside #widthOpCode(...) to
     // apply bytes-concat-lookup-{left,right}.  These rules compose the two

@@ -1812,7 +1812,7 @@ System Transaction Configuration
 ```
 
 ```k
-    syntax Int ::= #widthOpCode(Int) [symbol(#widthOpCode), function, total]
+    syntax Int ::= #widthOpCode(Int) [symbol(#widthOpCode), function, total, smtlib(widthOpCode)]
  // -----------------------------------------------------------------
     rule #widthOpCode(W) => W -Int 94 requires W >=Int 96 andBool W <=Int 127
     rule #widthOpCode(_) => 1 [owise]
