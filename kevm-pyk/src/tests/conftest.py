@@ -41,6 +41,12 @@ def pytest_addoption(parser: Parser) -> None:
         help='Run only this specific specification (skip others)',
     )
     parser.addoption(
+        '--claim-labels',
+        default=None,
+        type=str,
+        help='Comma-separated claim labels to prove within a spec (e.g. foo-claim,bar-claim); proves all claims if omitted',
+    )
+    parser.addoption(
         '--kompiled-targets-dir',
         type=Path,
         help='Use pre-kompiled definitions for proof tests',
@@ -93,6 +99,14 @@ def force_sequential(request: FixtureRequest) -> bool:
 @pytest.fixture(scope='session')
 def spec_name(request: FixtureRequest) -> str | None:
     return request.config.getoption('--spec-name')
+
+
+@pytest.fixture(scope='session')
+def claim_labels(request: FixtureRequest) -> list[str] | None:
+    raw: str | None = request.config.getoption('--claim-labels')
+    if raw is None:
+        return None
+    return [label.strip() for label in raw.split(',') if label.strip()]
 
 
 @pytest.fixture(scope='session')

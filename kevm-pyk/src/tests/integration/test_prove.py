@@ -192,6 +192,7 @@ def _test_prove(
     spec_name: str | None,
     booster_log_dir: Path | None = None,
     haskell_logging: bool = False,
+    claim_labels: list[str] | None = None,
     workers: int | None = None,
     direct_subproof_rules: bool = False,
 ) -> None:
@@ -239,6 +240,8 @@ def _test_prove(
             'workers': workers,
             'direct_subproof_rules': direct_subproof_rules,
         }
+        if claim_labels is not None:
+            options_dict['claim_labels'] = claim_labels
         if haskell_logging:
             options_dict['haskell_log_format'] = 'json'
             options_dict['haskell_log_entries'] = ['KoreCalls', 'Simplify', 'SimplifyKore']
@@ -344,6 +347,7 @@ def test_prove_rules(
     spec_name: str | None,
     booster_log_dir: Path | None,
     haskell_logging: bool,
+    claim_labels: list[str] | None,
 ) -> None:
     _test_prove(
         spec_file,
@@ -357,6 +361,7 @@ def test_prove_rules(
         spec_name=spec_name,
         booster_log_dir=booster_log_dir,
         haskell_logging=haskell_logging,
+        claim_labels=claim_labels,
     )
 
 
@@ -376,6 +381,7 @@ def test_prove_functional(
     spec_name: str | None,
     booster_log_dir: Path | None,
     haskell_logging: bool,
+    claim_labels: list[str] | None,
 ) -> None:
     _test_prove(
         spec_file,
@@ -389,6 +395,7 @@ def test_prove_functional(
         spec_name=spec_name,
         booster_log_dir=booster_log_dir,
         haskell_logging=haskell_logging,
+        claim_labels=claim_labels,
         workers=8,
     )
 
