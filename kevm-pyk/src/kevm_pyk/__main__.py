@@ -22,7 +22,7 @@ from pyk.kast.outer import KApply, KRewrite, KSort, KToken
 from pyk.kcfg import KCFG
 from pyk.kcfg.explore import KCFGExplore
 from pyk.kdist import kdist
-from pyk.kore.rpc import KoreClient
+from pyk.kore.rpc import KoreClient, KoreExecLogFormat
 from pyk.kore.tools import kore_print
 from pyk.ktool.claim_loader import ClaimLoader
 from pyk.ktool.kompile import LLVMKompileType
@@ -319,6 +319,9 @@ def exec_prove(options: ProveOptions) -> None:
             no_post_exec_simplify=(not options.post_exec_simplify),
             port=options.port,
             haskell_threads=options.max_frontier_parallel,
+            haskell_log_format=KoreExecLogFormat(options.haskell_log_format),
+            haskell_log_entries=options.haskell_log_entries,
+            log_axioms_file=options.haskell_log_file,
         ) as kcfg_explore:
 
             def create_kcfg_explore() -> KCFGExplore:
