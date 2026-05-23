@@ -51,6 +51,18 @@ def pytest_addoption(parser: Parser) -> None:
         action='store_true',
         help='Use sequential, single-threaded proof loop.',
     )
+    parser.addoption(
+        '--booster-log-dir',
+        type=Path,
+        default=None,
+        help='Write per-spec Haskell backend JSON logs to this directory. Implies --haskell-logging.',
+    )
+    parser.addoption(
+        '--haskell-logging',
+        action='store_true',
+        default=False,
+        help='Enable KoreCalls+Simplify+SimplifyKore JSON logging for all proof tests. Use with --booster-log-dir to persist logs.',
+    )
 
 
 @pytest.fixture
@@ -86,3 +98,16 @@ def spec_name(request: FixtureRequest) -> str | None:
 @pytest.fixture(scope='session')
 def kompiled_targets_dir(request: FixtureRequest) -> Path | None:
     return request.config.getoption('--kompiled-targets-dir')
+
+
+@pytest.fixture(scope='session')
+def booster_log_dir(request: FixtureRequest) -> Path | None:
+    d: Path | None = request.config.getoption('--booster-log-dir')
+    if d is not None:
+        d.mkdir(parents=True, exist_ok=True)
+    return d
+
+
+@pytest.fixture(scope='session')
+def haskell_logging(request: FixtureRequest, booster_log_dir: Path | None) -> bool:
+    return bool(request.config.getoption('--haskell-logging')) or booster_log_dir is not None
