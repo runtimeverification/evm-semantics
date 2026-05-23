@@ -306,5 +306,5 @@ module BYTES-SIMPLIFICATION [symbolic]
     rule [lookup-as-asWord]:
       B:Bytes [ I:Int ] => #asWord ( #range ( B, I, 1 ) )
       requires 0 <=Int I andBool I <Int lengthBytes(B)
-      [simplification(60)]
+      [simplification(60), preserves-definedness]
 endmodule
