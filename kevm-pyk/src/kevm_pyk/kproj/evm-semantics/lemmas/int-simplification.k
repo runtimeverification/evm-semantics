@@ -86,6 +86,10 @@ module INT-SIMPLIFICATION-HASKELL [symbolic]
     rule A +Int B  >Int C +Int D => A -Int C  >Int D -Int B [concrete(B, D), symbolic(A, C), simplification(45)]
     rule A +Int B >=Int C +Int D => A -Int C >=Int D -Int B [concrete(B, D), symbolic(A, C), simplification(45)]
 
+    rule [int-eq-comm-concrete]:
+        N:Int ==Int X:Int => X ==Int N
+        [simplification(30), concrete(N), symbolic(X)]
+
     rule A +Int B ==Int A        => B        ==Int 0        [simplification(40)]
     rule A +Int B ==Int B        => A        ==Int 0        [simplification(40)]
     rule A +Int B ==Int C +Int B => A        ==Int C        [simplification(40)]
