@@ -241,6 +241,12 @@ module LEMMAS-HASKELL [symbolic]
       requires notBool ( I1 ==Int I2 )
       [simplification]
 
+ // Normalize map-update order: swap when outer key < inner key, so outermost key is always larger (stable canonical form).
+    rule [map-update-comm]:
+        M:Map [ I1:Int <- V1:Int ] [ I2:Int <- V2:Int ] => M [ I2 <- V2 ] [ I1 <- V1 ]
+        requires I2 <Int I1
+        [simplification]
+
   // ########################
   // #widthOpCode range
   // ########################
