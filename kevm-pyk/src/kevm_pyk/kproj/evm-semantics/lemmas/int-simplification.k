@@ -232,6 +232,35 @@ module INT-SIMPLIFICATION-COMMON
     rule [maxInt-factor-left]:  maxInt ( A:Int +Int B:Int, A:Int +Int C:Int ) => A +Int maxInt ( B, C ) [simplification]
     rule [maxInt-factor-right]: maxInt ( A:Int +Int B:Int, C:Int +Int B:Int ) => maxInt ( A, C ) +Int B [simplification]
 
+    // minInt <Int maxInt / minInt <=Int maxInt: priority 40 fires before the default-priority (50) expansion rules,
+    // so Booster sees `true` directly rather than a disjunction requiring path-condition reasoning.
+    rule [minint-lt-maxint-a]:
+        minInt(A:Int, _B:Int) <Int maxInt(C:Int, _D:Int) => true
+        requires A <Int C
+        [simplification(40), preserves-definedness]
+    rule [minint-lt-maxint-shift-a]:
+        minInt(E:Int +Int A:Int, E:Int +Int _B:Int) <Int maxInt(F:Int +Int C:Int, F:Int +Int _D:Int) => true
+        requires A <Int C andBool E <=Int F
+        [simplification(40), preserves-definedness]
+    rule [minint-leq-maxint-b]:
+        minInt(_A:Int, B:Int) <=Int maxInt(_C:Int, D:Int) => true
+        requires B <=Int D
+        [simplification(40), preserves-definedness]
+    rule [minint-leq-maxint-shift-b]:
+        minInt(_A:Int +Int E:Int, B:Int +Int E:Int) <=Int maxInt(_C:Int +Int F:Int, D:Int +Int F:Int) => true
+        requires B <=Int D andBool E <=Int F
+        [simplification(40), preserves-definedness]
+    // Factored forms: after minInt-factor-{left,right} + maxInt-factor-{left,right} (priority 50) have fired,
+    // the non-linear shift rules above no longer match; these linear rules catch the result.
+    rule [minint-lt-maxint-shift-a-factored]:
+        E:Int +Int minInt(A:Int, _B:Int) <Int F:Int +Int maxInt(C:Int, _D:Int) => true
+        requires A <Int C andBool E <=Int F
+        [simplification(40), preserves-definedness]
+    rule [minint-leq-maxint-shift-b-factored]:
+        minInt(_A:Int, B:Int) +Int E:Int <=Int maxInt(_C:Int, D:Int) +Int F:Int => true
+        requires B <=Int D andBool E <=Int F
+        [simplification(40), preserves-definedness]
+
   // ###########################################################################
   // inequality
   // ###########################################################################
