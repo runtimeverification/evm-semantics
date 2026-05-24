@@ -105,6 +105,11 @@ module INT-SIMPLIFICATION-HASKELL [symbolic]
     rule A -Int B  <Int 0 => A  <Int B [simplification, symbolic(A, B)]
     rule A -Int B <=Int 0 => A <=Int B [simplification, symbolic(A, B)]
 
+    // Mixed range contradictions: A < B /\ C <= A where B <= C (all concrete B, C)
+    // Requires is purely concrete (both B and C are concrete), so no circular self-application.
+    rule A:Int  <Int B:Int andBool C:Int <=Int A:Int => false requires B <=Int C [simplification, concrete(B, C)]
+    rule C:Int <=Int A:Int andBool A:Int  <Int B:Int => false requires B <=Int C [simplification, concrete(B, C)]
+
 endmodule
 
 module INT-SIMPLIFICATION-COMMON
@@ -137,6 +142,7 @@ module INT-SIMPLIFICATION-COMMON
     rule  (A +Int B) +Int (C  -Int B) => A +Int C [simplification]
     rule  (A -Int B) -Int (C  -Int B) => A -Int C [simplification]
     rule ((A -Int B) -Int  C) +Int B  => A -Int C [simplification]
+    rule  A +Int ((B  -Int A) +Int C) => B +Int C [simplification]
 
   // 5 terms
     // NOTE: required for `tests/specs/functional/infinite-gas-spec.k.prove` (haskell)
@@ -273,6 +279,12 @@ module INT-SIMPLIFICATION-COMMON
     rule A +Int B <Int B => false requires 0 <=Int A [simplification]
 
     rule A <Int A -Int B => false requires 0 <=Int B [simplification]
+
+    rule A:Int <=Int A:Int => true [simplification]
+
+    rule A:Int <=Int A:Int +Int B:Int => 0 <=Int B [simplification]
+
+    rule A:Int <Int B:Int andBool B:Int <Int A:Int => false [simplification]
 
     rule 0 <Int 1 <<Int A => true requires 0 <=Int A [simplification, preserves-definedness]
 
