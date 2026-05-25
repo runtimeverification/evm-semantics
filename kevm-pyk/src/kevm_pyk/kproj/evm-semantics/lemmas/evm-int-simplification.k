@@ -156,6 +156,30 @@ module EVM-INT-SIMPLIFICATION
      andBool lengthBytes ( BA1 +Bytes BA2 ) <=Int 32
     [simplification, concrete(BA2, X), preserves-definedness]
 
+  // Masking `#asWord(BA)` with a byte-aligned maxUIntN mask (= 2^N-1) gives
+  // the lower N/8 bytes as a new `#asWord`. Fires before `multimask-b-and`
+  // (priority 50) to avoid an intermediate form that Booster cannot close.
+  rule [bit-mask-asWord-m]:
+    MASK:Int &Int #asWord(BA:Bytes) =>
+      #asWord(#range(BA, 32 -Int (log2Int(MASK +Int 1) /Int 8), log2Int(MASK +Int 1) /Int 8))
+    requires 0 <Int MASK
+     andBool MASK +Int 1 ==Int 2 ^Int log2Int(MASK +Int 1)
+     andBool log2Int(MASK +Int 1) modInt 8 ==Int 0
+     andBool lengthBytes(BA) ==Int 32
+    [simplification(40), concrete(MASK), preserves-definedness]
+
+  // Masking `#asWord(BA)` with a byte-aligned notMaxUIntN mask (complement of
+  // 2^N-1 within 256 bits) zeroes the lower N/8 bytes and keeps the rest.
+  rule [bit-notmask-asWord-nm]:
+    MASK:Int &Int #asWord(BA:Bytes) =>
+      #asWord(#range(BA, 0, 32 -Int (log2Int(pow256 -Int MASK) /Int 8)) +Bytes #buf(log2Int(pow256 -Int MASK) /Int 8, 0))
+    requires 0 <=Int MASK
+     andBool MASK <Int pow256
+     andBool pow256 -Int MASK ==Int 2 ^Int log2Int(pow256 -Int MASK)
+     andBool log2Int(pow256 -Int MASK) modInt 8 ==Int 0
+     andBool lengthBytes(BA) ==Int 32
+    [simplification(40), concrete(MASK), preserves-definedness]
+
   // ###########################################################################
   // chop
   // ###########################################################################
