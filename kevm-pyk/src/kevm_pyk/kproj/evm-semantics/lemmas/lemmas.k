@@ -242,6 +242,15 @@ module LEMMAS-HASKELL [symbolic]
       [simplification]
 
   // ########################
+  // #widthOpCode range
+  // ########################
+
+    // #widthOpCode always returns ≥ 1 (PUSH ops 2..33, everything else 1).
+    // Without this, Booster cannot discharge 0 <=Int S when S = #widthOpCode(x)
+    // or 101 <=Int 101 +Int #widthOpCode(x) (after INT normalization).
+    rule [widthOpCode-lb]: 0 <=Int #widthOpCode(_:Int) => true [simplification]
+
+  // ########################
   // Boolean Logic
   // ########################
 
