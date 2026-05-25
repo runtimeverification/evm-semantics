@@ -246,9 +246,21 @@ module LEMMAS-HASKELL [symbolic]
   // ########################
 
     // #widthOpCode always returns ≥ 1 (PUSH ops 2..33, everything else 1).
-    // Without this, Booster cannot discharge 0 <=Int S when S = #widthOpCode(x)
-    // or 101 <=Int 101 +Int #widthOpCode(x) (after INT normalization).
+    // Note: smt-lemma cannot be applied here because #widthOpCode has no smt-hook.
     rule [widthOpCode-lb]: 0 <=Int #widthOpCode(_:Int) => true [simplification]
+
+    // Booster's equation engine does not descend inside #widthOpCode(...) to
+    // apply bytes-concat-lookup-{left,right}.  These rules compose the two
+    // steps so the full concrete-prefix lookup can be reduced in one go.
+    rule [widthOpCode-concat-left]:
+      #widthOpCode ( ( B1:Bytes +Bytes _B2:Bytes ) [ I:Int ] ) => #widthOpCode ( B1 [ I ] )
+      requires 0 <=Int I andBool I <Int lengthBytes ( B1 )
+      [simplification, preserves-definedness]
+
+    rule [widthOpCode-concat-right]:
+      #widthOpCode ( ( B1:Bytes +Bytes B2:Bytes ) [ I:Int ] ) => #widthOpCode ( B2 [ I -Int lengthBytes ( B1 ) ] )
+      requires lengthBytes ( B1 ) <=Int I
+      [simplification, preserves-definedness]
 
   // ########################
   // Boolean Logic

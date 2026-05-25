@@ -109,6 +109,17 @@ module EVM-INT-SIMPLIFICATION
     requires #rangeUInt ( 256, X )
     [simplification, preserves-definedness]
 
+  // General reduction: #asWord of a range extracted from a buf.
+  // #buf(N, X) is the big-endian N-byte encoding of X.  Taking W bytes
+  // starting at byte S gives (X >> (8*(N-S-W))) & (2^(8*W)-1).
+  // Activated with concrete N, S, W so Booster can evaluate the arithmetic.
+  rule [asWord-range-buf]:
+    #asWord ( #range ( #buf ( N:Int, X:Int ), S:Int, W:Int ) ) =>
+      X /Int ( 2 ^Int ( 8 *Int ( N -Int S -Int W ) ) ) modInt ( 2 ^Int ( 8 *Int W ) )
+    requires 0 <=Int S andBool 0 <Int W andBool S +Int W <=Int N
+     andBool 0 <=Int X andBool X <Int 2 ^Int ( 8 *Int N )
+    [simplification, concrete(N, S, W), preserves-definedness]
+
   // Reduction: bitwise right shift in terms of `#range`
   rule [asWord-shr]:
     #asWord( BA ) >>Int N => #asWord ( #range ( BA, 0, lengthBytes( BA ) -Int ( N /Int 8 ) ) )
