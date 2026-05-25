@@ -36,11 +36,28 @@ module LEMMAS-WITHOUT-SLOT-UPDATES [symbolic]
   // Set Reasoning
   // ########################
 
+    // Membership in the concat (_Set_) form — fires in both kore and booster.
     rule X in (SetItem(Y) _   ) => true      requires           X ==Int Y   [simplification]
     rule X in (SetItem(Y) REST) => X in REST requires notBool ( X ==Int Y ) [simplification]
 
+    // NOTE: the two non-linear rules below fire in kore but are INDETERMINATE in booster.
+    // Booster internalises SetItem(X) as KSet{def,[X],None}; matchSets() returns addIndeterminate
+    // for any non-empty KSet (Match.hs:673-676). Backend change required to fix.
     rule   ( S:Set |Set SetItem ( X )                      ) |Set SetItem( X ) =>   ( S:Set |Set SetItem ( X )                      ) [simplification]
     rule ( ( S:Set |Set SetItem ( X ) ) |Set SetItem ( Y ) ) |Set SetItem( X ) => ( ( S:Set |Set SetItem ( X ) ) |Set SetItem ( Y ) ) [simplification]
+
+    // Membership in the |Set (union) form — fires in kore only (same matchSets limitation).
+    // Kore uses these to discharge the requires-clause of the dedup rule below.
+    rule X:Int in (REST:Set |Set SetItem(Y:Int)) => true      requires           X ==Int Y   [simplification]
+    rule X:Int in (REST:Set |Set SetItem(Y:Int)) => X in REST requires notBool ( X ==Int Y ) [simplification]
+
+    // Deduplication of repeated concrete Int elements in a symbolic |Set expression.
+    // Required in normal mode (where kore's simplify step fires it) but INDETERMINATE in booster.
+    // Booster cannot match SetItem(X) in the pattern: matchSets() is unimplemented for non-empty
+    // KSets (booster/Match.hs:673-676). Cannot be fixed from K source; requires backend change.
+    // Context: #touchAccounts in evm.md adds addresses via |Set; when the same address is added
+    // twice to a symbolic touchedAccounts, this rule is needed to normalize back to a 2-element form.
+    rule S:Set |Set SetItem(X:Int) => S requires X in S [simplification]
 
   // ########################
   // Word Reasoning
