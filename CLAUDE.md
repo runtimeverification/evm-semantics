@@ -205,11 +205,9 @@ Key facts to keep in mind:
   Any level with a `levelToContext` entry (including `Timing`) sets `contextLoggingEnabled = True`,
   which enables ALL kore log entry types — including `DebugTerm`, which pretty-prints the full term at every step.
   For terms with large concrete byte literals, this can add orders-of-magnitude overhead.
-  Use pyk's INFO timestamps (default in `bench-prove.py`) for true baseline measurements.
+  Use pyk's INFO timestamps (no `-l` flags) for true baseline measurements.
 - **`booster-dev`** (`kevm prove --use-booster-dev`) runs pure booster with no kore proxy.
   When the kore step is pure overhead for your proof, this is the right backend to use.
-  `bench-prove.py --booster-dev` benchmarks this mode and derives timing from pyk's INFO output
-  (since `booster-dev` does not read `KORE_RPC_OPTS`).
 
 ### Quick log-level cheat sheet
 
@@ -256,22 +254,6 @@ uv --project kevm-pyk/ run kevm-kdist build evm-semantics.haskell
 ```
 
 For full details on how `--override` works and what kup does internally, see [`docs/kup-override.md`](docs/kup-override.md).
-
-## Running long commands
-
-**Always save output to a file first, then analyse the file.**
-Never re-run a slow command with a different pipe to see a different slice of its output — that wastes minutes and loses the rest of the output.
-
-```bash
-# correct pattern for any slow command:
-python scripts/bench-prove.py tests/specs/functional/my-spec.k --analyse-fallbacks \
-    > /tmp/bench-out.log 2>&1
-# then inspect:
-grep "changed\|Total" /tmp/bench-out.log
-tail -n 40 /tmp/bench-out.log
-```
-
-This applies to: `bench-prove.py`, `kevm prove`, `kevm-kdist build`, pytest runs, any Haskell backend invocation.
 
 ## Commit discipline
 
