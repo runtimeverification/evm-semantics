@@ -113,6 +113,7 @@ KOMPILE_MAIN_FILE: Final = {
     'functional/merkle-spec.k': 'merkle-spec.k',
     'functional/slot-updates-spec.k': 'slot-updates-spec.k',
     'functional/storageRoot-spec.k': 'storageRoot-spec.k',
+    'functional/compute-valid-jump-dests-spec.k': 'compute-valid-jump-dests-spec.k',
     'mcd/functional-spec.k': 'functional-spec.k',
     'mcd-structured/functional-spec.k': 'functional-spec.k',
 }
