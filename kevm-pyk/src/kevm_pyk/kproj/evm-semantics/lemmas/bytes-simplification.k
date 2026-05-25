@@ -29,6 +29,10 @@ module BYTES-SIMPLIFICATION [symbolic]
 
     rule [bytes-concat-empty-right]: B:Bytes +Bytes .Bytes  => B [simplification]
     rule [bytes-concat-empty-left]:   .Bytes +Bytes B:Bytes => B [simplification]
+    // b"" is a Kore domain value (\dv{Bytes}("")) distinct from the .Bytes constructor;
+    // LLVM hooks (e.g. #encodeArgs base case) return b"", not .Bytes, so we need both forms.
+    rule [bytes-concat-empty-right-concrete]: B:Bytes +Bytes b"" => B [simplification, preserves-definedness]
+    rule [bytes-concat-empty-left-concrete]:  b"" +Bytes B:Bytes => B [simplification, preserves-definedness]
 
     rule [bytes-concat-right-assoc-symb-l]: (B1:Bytes +Bytes B2:Bytes) +Bytes B3:Bytes => B1 +Bytes (B2 +Bytes B3) [symbolic(B1), simplification(40)]
     rule [bytes-concat-right-assoc-symb-r]: (B1:Bytes +Bytes B2:Bytes) +Bytes B3:Bytes => B1 +Bytes (B2 +Bytes B3) [symbolic(B2), simplification(40)]
