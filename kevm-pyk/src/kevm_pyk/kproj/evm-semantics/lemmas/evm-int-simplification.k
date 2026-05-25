@@ -101,6 +101,14 @@ module EVM-INT-SIMPLIFICATION
     requires 0 <=Int WB andBool 0 <=Int X andBool X <Int minInt ( 2 ^Int (8 *Int WB), pow256 )
     [simplification, concrete(WB), preserves-definedness]
 
+  // Specialisation for 32-byte buf with rangeUInt(256) side-condition: avoids
+  // the minInt(2^256, pow256) evaluation that Booster cannot match against the
+  // path condition's 2^Int 256 tree form.
+  rule [asWord-buf-inversion-rangeUInt256]:
+    #asWord ( #buf ( 32, X:Int ) ) => X
+    requires #rangeUInt ( 256, X )
+    [simplification, preserves-definedness]
+
   // Reduction: bitwise right shift in terms of `#range`
   rule [asWord-shr]:
     #asWord( BA ) >>Int N => #asWord ( #range ( BA, 0, lengthBytes( BA ) -Int ( N /Int 8 ) ) )
