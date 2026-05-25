@@ -253,7 +253,28 @@ After installing, the kdist cache is stale — rebuild before running proofs:
 uv --project kevm-pyk/ run kevm-kdist build evm-semantics.haskell
 ```
 
+When installing K from a local source checkout, also update `pyproject.toml` to point at the matching local pyk:
+
+```toml
+# kevm-pyk/pyproject.toml
+"kframework @ file:///home/dev/src/k-testing/pyk",
+```
+
+Then run `uv --project kevm-pyk/ sync` to install the local pyk.
+Revert by restoring `"kframework==<version>"` and re-syncing.
+
 For full details on how `--override` works and what kup does internally, see [`docs/kup-override.md`](docs/kup-override.md).
+
+## Updating local pyk vs local K
+
+When `kevm-pyk/pyproject.toml` points at `kframework @ file:///home/dev/src/k-testing/pyk`:
+
+- **pyk-only change** (Python code in `~/src/k-testing/pyk`): resync pyk only — no rebuild needed.
+  ```bash
+  uv --project kevm-pyk/ sync --reinstall-package kframework
+  ```
+- **K/Haskell backend change** (C++/Haskell in `~/src/k-testing` or `~/src/haskell-backend`):
+  run the full `kup install` + `kevm-kdist build` flow (see "Testing a local Haskell backend build").
 
 ## Commit discipline
 
