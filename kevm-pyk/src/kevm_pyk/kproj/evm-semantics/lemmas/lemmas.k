@@ -76,6 +76,10 @@ module LEMMAS-WITHOUT-SLOT-UPDATES [symbolic]
   // bool2Word reasoning
   // ########################
 
+    // Reduce when the path condition only implies the argument.
+    rule [b2w-true]:  bool2Word(B) => 1 requires         B [simplification]
+    rule [b2w-false]: bool2Word(B) => 0 requires notBool B [simplification]
+
     // Range
     rule [b2w-lb]: 0 <=Int bool2Word(_)         => true [simplification, smt-lemma]
     rule [b2w-ub]:         bool2Word(_) <=Int 1 => true [simplification, smt-lemma]

@@ -110,6 +110,7 @@ KOMPILE_MAIN_FILE: Final = {
     'functional/lemmas-no-smt-spec.k': 'lemmas-no-smt-spec.k',
     'functional/lemmas-spec.k': 'lemmas-spec.k',
     'functional/abi-spec.k': 'abi-spec.k',
+    'functional/bool2Word-symbolic-spec.k': 'bool2Word-symbolic-spec.k',
     'functional/merkle-spec.k': 'merkle-spec.k',
     'functional/slot-updates-spec.k': 'slot-updates-spec.k',
     'functional/storageRoot-spec.k': 'storageRoot-spec.k',
