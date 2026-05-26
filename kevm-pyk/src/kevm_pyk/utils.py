@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import time
 from contextlib import contextmanager
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -45,6 +46,10 @@ if TYPE_CHECKING:
     T2 = TypeVar('T2')
 
 _LOGGER: Final = logging.getLogger(__name__)
+
+
+class _ProgressiveTimeout(Exception):
+    pass
 
 
 def claim_dependency_dict(claims: Iterable[KClaim], spec_module_name: str | None = None) -> dict[str, list[str]]:
@@ -117,6 +122,7 @@ def run_prover(
     assume_defined: bool = False,
     extra_module: KFlatModule | None = None,
     optimize_kcfg: bool = False,
+    per_depth_timeout: int = 0,
 ) -> bool:
     prover: APRProver | ImpliesProver
     try:
@@ -140,25 +146,45 @@ def run_prover(
                 if progress is not None and task_id is not None:
                     progress.update(task_id, summary=_proof.one_line_summary)
 
-            if force_sequential:
-                prover = create_prover()
-                prover.advance_proof(
-                    proof=proof,
-                    max_iterations=max_iterations,
-                    fail_fast=fail_fast,
-                    callback=update_status_bar,
-                    maintenance_rate=maintenance_rate,
-                )
-            else:
-                parallel_advance_proof(
-                    proof=proof,
-                    create_prover=create_prover,
-                    max_iterations=max_iterations,
-                    fail_fast=fail_fast,
-                    max_workers=max_frontier_parallel,
-                    callback=update_status_bar,
-                    maintenance_rate=maintenance_rate,
-                )
+            attempt_start = time.time()
+            budget_s: int | None = max_depth * per_depth_timeout if per_depth_timeout > 0 else None
+
+            def maintenance_callback(_proof: Proof) -> None:
+                update_status_bar(_proof)
+                if budget_s is not None and time.time() - attempt_start > budget_s:
+                    raise _ProgressiveTimeout()
+
+            while True:
+                try:
+                    if force_sequential:
+                        prover = create_prover()
+                        prover.advance_proof(
+                            proof=proof,
+                            max_iterations=max_iterations,
+                            fail_fast=fail_fast,
+                            callback=maintenance_callback,
+                            maintenance_rate=maintenance_rate,
+                        )
+                    else:
+                        parallel_advance_proof(
+                            proof=proof,
+                            create_prover=create_prover,
+                            max_iterations=max_iterations,
+                            fail_fast=fail_fast,
+                            max_workers=max_frontier_parallel,
+                            callback=maintenance_callback,
+                            maintenance_rate=maintenance_rate,
+                        )
+                    break
+                except _ProgressiveTimeout:
+                    _LOGGER.warning(
+                        f'Proof {proof.id}: depth={max_depth} attempt exhausted {budget_s}s budget; halving.'
+                    )
+                    if max_depth <= 1:
+                        break
+                    max_depth = max(1, max_depth // 2)
+                    attempt_start = time.time()
+                    budget_s = max_depth * per_depth_timeout
 
         elif type(proof) is EqualityProof:
             prover = ImpliesProver(proof, kcfg_explore=create_kcfg_explore(), assume_defined=assume_defined)
