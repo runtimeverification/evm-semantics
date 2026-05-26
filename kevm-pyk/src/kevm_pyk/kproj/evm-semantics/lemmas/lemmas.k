@@ -59,11 +59,7 @@ module LEMMAS-WITHOUT-SLOT-UPDATES [symbolic]
   // bool2Word reasoning
   // ########################
 
-    // Direct reduction via the path condition. The function rules in
-    // evm-types.md pattern-match on `true`/`false` and so do not fire when
-    // the argument is a symbolic Bool expression that the path condition
-    // only implies. These lemmas move the decision to a side condition,
-    // which Kore discharges against the full path condition (with SMT).
+    // Reduce when the path condition only implies the argument.
     rule [b2w-true]:  bool2Word(B) => 1 requires         B [simplification]
     rule [b2w-false]: bool2Word(B) => 0 requires notBool B [simplification]
 
