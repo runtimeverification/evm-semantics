@@ -15,9 +15,10 @@ module VERIFICATION
 
 endmodule
 
-// Claims 5-6 fail under the legacy `bool2Word(true) => 1` rules: the path
-// condition implies but does not equate the argument, so the argument-position
-// matcher cannot discharge it without SMT. Side-conditioned rules pass them.
+// Without the `b2w-true` / `b2w-false` simplification lemmas in lemmas.k,
+// claims 5-6 fail: the path condition implies but does not equate the
+// argument, so the function-rule matcher cannot discharge it without SMT.
+// With the simplification lemmas, all six claims pass.
 module BOOL2WORD-SYMBOLIC-SPEC
     imports VERIFICATION
 
