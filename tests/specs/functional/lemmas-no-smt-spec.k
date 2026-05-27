@@ -53,4 +53,40 @@ module LEMMAS-NO-SMT-SPEC
     claim [range-empty-zero-width]:
       <k> runLemma ( #range(B:Bytes, 3, 0) ==K .Bytes ) => doneLemma ( true ) ... </k>
 
+ // #asWord comparison — false cases
+ // ---------------------------------
+
+    // asWord-lt-false: #asWord(B) < X => false when X <=Int #asWord(B)
+    // Here X=0, and 0 <=Int #asWord(B) is always true (asWord-lb), so no extra requires needed.
+    claim [asword-lt-false]:
+      <k> runLemma ( #asWord(B:Bytes) <Int 0 ) => doneLemma ( false ) ... </k>
+
+    // asWord-le-false: #asWord(B) <=Int X => false when X <Int #asWord(B)
+    claim [asword-le-false]:
+      <k> runLemma ( #asWord(B:Bytes) <=Int 0 ) => doneLemma ( false ) ... </k>
+      requires 0 <Int #asWord(B)
+
+    // asword-eq-false: #asWord(B) ==Int X => false when X =/=Int #asWord(B)
+    // X must be symbolic so asword-eq-num (requires concrete(X)) does not fire first.
+    claim [asword-eq-false]:
+      <k> runLemma ( #asWord(B:Bytes) ==Int X:Int ) => doneLemma ( false ) ... </k>
+      requires X =/=Int #asWord(B)
+
+ // eq-false-lt
+ // -----------
+
+    // eq-false-lt: A ==Int B => false when A < B is in path conditions (B concrete).
+    claim [eq-false-lt]:
+      <k> runLemma ( X:Int ==Int 42 ) => doneLemma ( false ) ... </k>
+      requires X <Int 42
+
+ // #powByteLen concrete comparison
+ // --------------------------------
+
+    // powByteLen-lt-concrete: CONST <Int #powByteLen(N) => true when both concrete.
+    // Needed because 2^Int(8*N) is rewritten to #powByteLen(N) even for concrete N,
+    // but #powByteLen has no-evaluators, so the comparison cannot self-evaluate.
+    claim [powByteLen-lt-concrete]:
+      <k> runLemma ( 31 <Int #powByteLen(32) ) => doneLemma ( true ) ... </k>
+
 endmodule
