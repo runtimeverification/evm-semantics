@@ -127,4 +127,19 @@ module INT-SIMPLIFICATIONS-SPEC
 
     claim [le-maxuint256]: <k> runLemma ( X <=Int maxUInt256 ) => doneLemma ( X <Int pow256 ) ... </k>
 
+ // Comparison normalization coverage (int-simplification.k [preserves-definedness])
+ // ---------------------------------------------------------------------------------
+
+    claim [int-comp-norm-add-lt]:
+      <k> runLemma ( X:Int +Int 3 <Int 10 ) => doneLemma ( X:Int <Int 7 ) ... </k>
+
+    claim [int-comp-norm-add-le]:
+      <k> runLemma ( X:Int +Int 3 <=Int 10 ) => doneLemma ( X:Int <=Int 7 ) ... </k>
+
+    claim [int-comp-norm-sub-lt]:
+      <k> runLemma ( X:Int -Int 3 <Int 10 ) => doneLemma ( X:Int <Int 13 ) ... </k>
+
+    claim [int-comp-norm-rhs-add-lt]:
+      <k> runLemma ( 7 <Int X:Int +Int 3 ) => doneLemma ( 4 <Int X:Int ) ... </k>
+
 endmodule
