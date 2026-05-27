@@ -3,8 +3,8 @@ requires "abi.md"
 module VERIFICATION
     imports EVM-ABI
 
-    syntax Step ::= Bool | Bytes
- // ------------------------------
+    syntax Step ::= Bool | Bytes | Int
+ // -----------------------------------
 
     syntax KItem ::= runLemma ( Step ) [symbol(runLemma)]
                    | doneLemma( Step )
@@ -43,22 +43,26 @@ module ABI-SPEC
       <k> runLemma(
         #sizeOfDynamicType(
           #array(
-            #bytes(b"\x00"), 
-            3, 
+            #bytes(b"\x00"),
+            3,
             #bytes(b"\xaa"), #bytes(b"\xbb\xbb"), #bytes(b"\xcc\xcc\xcc")
           )
         )
         ==Int
         lengthBytes(#enc(
           #array(
-            #bytes(b"\x00"), 
-            3, 
+            #bytes(b"\x00"),
+            3,
             #bytes(b"\xaa"), #bytes(b"\xbb\xbb"), #bytes(b"\xcc\xcc\xcc")
           )
         ))
-      ) 
-      => doneLemma(true) 
-      ... 
+      )
+      => doneLemma(true)
+      ...
       </k>
+
+    claim [pow-byte-len-simplify]:
+      <k> runLemma ( 2 ^Int (8 *Int N:Int) ) => doneLemma ( #powByteLen(N:Int) ) ... </k>
+      requires 0 <=Int N
 
 endmodule

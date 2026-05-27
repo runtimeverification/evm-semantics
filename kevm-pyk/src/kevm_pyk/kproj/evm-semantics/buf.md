@@ -37,7 +37,7 @@ module BUF
     syntax Int ::= #powByteLen ( Int ) [symbol(#powByteLen), function, no-evaluators]
  // ---------------------------------------------------------------------------------
  // rule #powByteLen(SIZE) => 2 ^Int (8 *Int SIZE)
-    rule 2 ^Int (8 *Int SIZE) => #powByteLen(SIZE) [symbolic(SIZE), simplification]
+    rule 2 ^Int (8 *Int SIZE) => #powByteLen(SIZE) [symbolic(SIZE), simplification, preserves-definedness]
 
     rule 0    <Int #powByteLen(SIZE) => true requires 0 <=Int SIZE [simplification, preserves-definedness]
     rule SIZE <Int #powByteLen(SIZE) => true requires 0 <=Int SIZE [simplification, preserves-definedness]
