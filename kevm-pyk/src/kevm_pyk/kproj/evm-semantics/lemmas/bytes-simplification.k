@@ -103,7 +103,7 @@ module BYTES-SIMPLIFICATION [symbolic]
     rule [range-empty]:
       #range(_:Bytes, S:Int, W:Int) => .Bytes
       requires S <Int 0 orBool W <=Int 0
-      [simplification(30)]
+      [simplification(30), preserves-definedness]
 
     rule [range-full]:
       #range(B:Bytes, 0, W:Int) => B +Bytes #buf(W -Int lengthBytes(B), 0)

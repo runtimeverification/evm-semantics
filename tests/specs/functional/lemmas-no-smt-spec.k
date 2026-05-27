@@ -47,4 +47,10 @@ module LEMMAS-NO-SMT-SPEC
       <k> runLemma ( B:Bool ) => doneLemma ( false ) ... </k>
       requires notBool B
 
+    claim [range-empty-neg-start]:
+      <k> runLemma ( #range(B:Bytes, 0 -Int 1, 5) ==K .Bytes ) => doneLemma ( true ) ... </k>
+
+    claim [range-empty-zero-width]:
+      <k> runLemma ( #range(B:Bytes, 3, 0) ==K .Bytes ) => doneLemma ( true ) ... </k>
+
 endmodule
