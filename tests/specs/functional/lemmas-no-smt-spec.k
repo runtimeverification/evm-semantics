@@ -43,4 +43,8 @@ module LEMMAS-NO-SMT-SPEC
     claim [bool-simpl-02]: <k> runLemma ( bool2Word( B:Bool ) ==Int 1 )   => doneLemma ( B ==K true ) ... </k>
     claim [bool-simpl-03]: <k> runLemma ( 1 ==Int bool2Word( B:Bool ) )   => doneLemma ( B ==K true ) ... </k>
 
+    claim [bool-eq-not-false]:
+      <k> runLemma ( B:Bool ) => doneLemma ( false ) ... </k>
+      requires notBool B
+
 endmodule
