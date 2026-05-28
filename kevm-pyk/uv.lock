@@ -581,24 +581,24 @@ wheels = [
 
 [[package]]
 name = "hypothesis"
-version = "6.153.6"
+version = "6.155.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "exceptiongroup", marker = "python_full_version < '3.11'" },
     { name = "sortedcontainers" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/e8/c3/8c661bb893725eedeb003e85f3050274da2d77abf0847c4d61b4af53969c/hypothesis-6.153.6.tar.gz", hash = "sha256:8f7663251c57c9ee1fb6c0e919a6027cbda98d52b210dea441957d11d644c271", size = 475551, upload-time = "2026-05-27T17:43:32.524Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/86/7d/9569717766867495510712eba388f7ca0633549f9ff4d3c34398b919e5b4/hypothesis-6.155.0.tar.gz", hash = "sha256:cf09ac913b60b49750585a53152704468de666f35c9c29f8e61d82a01f64bbb5", size = 476704, upload-time = "2026-05-28T15:43:24.193Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/bf/33/f3ec54e6fb89c2279f0dd911ba512321e70038e447d1984c35fad61840f8/hypothesis-6.153.6-py3-none-any.whl", hash = "sha256:a892e3460e4dd8cfb8525682d8901be8f5e2d2c7b352359b71a44e5def2b89c8", size = 541876, upload-time = "2026-05-27T17:43:30.807Z" },
+    { url = "https://files.pythonhosted.org/packages/53/f8/31a6a6646c5b76b9746454318989340cea0290ba34e0f3ccd0668ce67868/hypothesis-6.155.0-py3-none-any.whl", hash = "sha256:d6ffa3062afabaf908491be707c60843f6671f7c3e9f2ed249d5827207ebbf33", size = 543120, upload-time = "2026-05-28T15:43:21.855Z" },
 ]
 
 [[package]]
 name = "idna"
-version = "3.16"
+version = "3.17"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/1a/88/bcf9709822fe69d02c2a6a77956c98ce6ea8ca8767a9aadcedc7eb6a2390/idna-3.16.tar.gz", hash = "sha256:d7a6da03db833450fca25d2358ac9ff06cd624577a4aea3a596d5c0f77b8e03d", size = 203770, upload-time = "2026-05-22T00:16:18.781Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/b9/28/99c51f664567218d824af024c0251650fb27e4ca066df188dab0769c5b91/idna-3.17.tar.gz", hash = "sha256:5eb0cb53bc467c12eadcf6de83163ad8527cec9416f44b9b61b19caedad2b87f", size = 196048, upload-time = "2026-05-28T14:32:38.55Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/94/16/70255075a9859a0e3adb789b68ceb0e210dec03934245fd98d248226572f/idna-3.16-py3-none-any.whl", hash = "sha256:cc246e3a3f89580c3a951b5ad298ca4638078b2cdd4f115654332b5c26daded5", size = 74165, upload-time = "2026-05-22T00:16:16.698Z" },
+    { url = "https://files.pythonhosted.org/packages/de/a7/f76514cc40ad6234098ecdebda08732d75964776c51a42845b7da10649e2/idna-3.17-py3-none-any.whl", hash = "sha256:466e48829084efe2548012b855df21540b96f2e20e51bd124c851536556a592c", size = 65316, upload-time = "2026-05-28T14:32:37.035Z" },
 ]
 
 [[package]]
@@ -664,7 +664,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "frozendict", specifier = ">=2.4.6,<3" },
-    { name = "kframework", specifier = "==7.1.325" },
+    { name = "kframework", specifier = "==7.1.326" },
     { name = "pathos" },
     { name = "tomlkit", specifier = ">=0.11.6" },
 ]
@@ -690,7 +690,7 @@ dev = [
 
 [[package]]
 name = "kframework"
-version = "7.1.325"
+version = "7.1.326"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "coloredlogs" },
@@ -709,9 +709,9 @@ dependencies = [
     { name = "tomli-w" },
     { name = "xdg-base-dirs" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/6f/4b/721cf2dba9681621a9c3e54cde3cf4ff3a40c8f4901fda51e49ec427f34b/kframework-7.1.325.tar.gz", hash = "sha256:184455c396b5ae6494db7ddca3da90929f090f06c3d094f8596f70a180754a1e", size = 245899, upload-time = "2026-05-27T20:58:03.615Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/9b/47/0f97c8a56f2038923a6e952b33238eebe43845f62070e8a81f70cc9529a3/kframework-7.1.326.tar.gz", hash = "sha256:10b1b4b05557147dc3b9f89846001796edb5e5d19180188808527cfee05f9505", size = 246337, upload-time = "2026-05-28T19:07:33.647Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/0d/a3/2433f8676c5d1304029888b8e3a7523f1d1fab686e0c2c6ca6eda66ab161/kframework-7.1.325-py3-none-any.whl", hash = "sha256:d7ff6ba1c2c757223c023d3ae28ba2b57744ba4ddcfc051a79f97dd6748e7bb9", size = 297457, upload-time = "2026-05-27T20:58:02.091Z" },
+    { url = "https://files.pythonhosted.org/packages/90/6b/9a20ca501cb810a9634ec00e0e5f1a110679a2faa48dbf564d25037b9d3a/kframework-7.1.326-py3-none-any.whl", hash = "sha256:9cc25c665e191b804a59937dfd53647c8a8605c98521f6f13b6f177e8f09c7a9", size = 297971, upload-time = "2026-05-28T19:07:32.078Z" },
 ]
 
 [[package]]
@@ -1106,11 +1106,11 @@ wheels = [
 
 [[package]]
 name = "platformdirs"
-version = "4.9.6"
+version = "4.10.0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/9f/4a/0883b8e3802965322523f0b200ecf33d31f10991d0401162f4b23c698b42/platformdirs-4.9.6.tar.gz", hash = "sha256:3bfa75b0ad0db84096ae777218481852c0ebc6c727b3168c1b9e0118e458cf0a", size = 29400, upload-time = "2026-04-09T00:04:10.812Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/d7/47/e4501f49c178ae1d9f4a75073fda4204f52647993f075a9db4d14930e0c5/platformdirs-4.10.0.tar.gz", hash = "sha256:31e761a6a0ca04faf7353ea759bdba55652be214725111e5aac52dfa29d4bef7", size = 31224, upload-time = "2026-05-28T03:32:53.587Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/75/a6/a0a304dc33b49145b21f4808d763822111e67d1c3a32b524a1baf947b6e1/platformdirs-4.9.6-py3-none-any.whl", hash = "sha256:e61adb1d5e5cb3441b4b7710bea7e4c12250ca49439228cc1021c00dcfac0917", size = 21348, upload-time = "2026-04-09T00:04:09.463Z" },
+    { url = "https://files.pythonhosted.org/packages/81/e6/cd9575ac904136b3cbf7aa7ee819ef86eedb7274e46f230e94ea4342e729/platformdirs-4.10.0-py3-none-any.whl", hash = "sha256:fb516cdb12eb0d857d0cd85a7c57cea4d060bee4578d6cf5a14dfdf8cbf8784a", size = 22743, upload-time = "2026-05-28T03:32:52.175Z" },
 ]
 
 [[package]]
