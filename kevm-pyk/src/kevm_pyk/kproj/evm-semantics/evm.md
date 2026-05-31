@@ -1080,13 +1080,14 @@ These are just used by the other operators for shuffling local execution state a
     syntax InternalOp ::= "#transferFunds" Int Int Int
                         | "#transferFundsToNonExistent" Int Int Int
  // ---------------------------------------------------------------
-    rule <k> #transferFunds ACCT ACCT VALUE => .K ... </k>
+    rule <k> #transferFunds ACCTFROM ACCTTO VALUE => .K ... </k>
          <account>
-           <acctID> ACCT </acctID>
+           <acctID> ACCTFROM </acctID>
            <balance> ORIGFROM </balance>
            ...
          </account>
-      requires VALUE <=Int ORIGFROM
+      requires ACCTFROM ==K ACCTTO
+       andBool VALUE <=Int ORIGFROM
 
     rule <k> #transferFunds ACCTFROM ACCTTO VALUE => .K ... </k>
          <account>
