@@ -53,6 +53,23 @@ first time (subsequent builds with the same source hash are cached).
 The installed K will have `-dirty` appended to its version string if the local
 checkout has uncommitted changes.
 
+### Overriding with a remote branch/commit
+
+To test a backend revision without a local checkout, pass a **bare git ref**
+(branch, tag, or commit) — kup constructs the `github:<org>/<repo>/<ref>` URL
+for that input itself:
+
+```bash
+kup install k.openssl.procps \
+    --version v7.1.329 \
+    --override haskell-backend 35a6746c5
+```
+
+Do **not** pass a full `github:` URL as the override value — kup prepends the
+input's own `github:runtimeverification/haskell-backend/` prefix, so a full URL
+is doubled and rejected (`'…/35a6746c5' is not a branch/tag name`).
+A remote ref override also yields a `-dirty` K version string.
+
 ---
 
 ## Reverting to the stock version
