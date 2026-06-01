@@ -199,7 +199,7 @@ The stock build is `kup install k.openssl.procps --version v<deps/k_release>`; a
    start=$SECONDS
    uv --project kevm-pyk/ run pytest kevm-pyk/src/tests/integration \
        -k "test_prove_functional or test_prove_rules or test_prove_optimizations or test_prove_dss" \
-       --kompiled-targets-dir /tmp/hb-exp/<tag>-kompiled --numprocesses 8 -p no:randomly \
+       --kompiled-targets-dir /tmp/hb-exp/<tag>-kompiled --numprocesses 8 \
        --junitxml=perf-runs/<tag>/normal.junit.xml > perf-runs/<tag>/normal.log 2>&1
    echo $((SECONDS-start)) > perf-runs/<tag>/normal.wallclock
    ```
@@ -209,15 +209,15 @@ The stock build is `kup install k.openssl.procps --version v<deps/k_release>`; a
    T=$(uv --project kevm-pyk/ run python scripts/compare-junit-runs.py max-time perf-runs/<tag>/normal.junit.xml)
    ```
    `T` = ceil of the longest normal-mode per-test time for that backend.
-5. **booster-dev run** with `--use-booster-dev --timeout "$T"`. To *discover* newly-passing specs, the 136-entry `tests/failing-symbolic.haskell-booster-dev` exclude list (which the harness `pytest.skip()`s under `--use-booster-dev`) must be temporarily emptied and git-restored afterward:
+5. **booster-dev run** with `--use-booster-dev --timeout "$T"`. To *discover* newly-passing specs, the `tests/failing-symbolic.haskell-booster-dev` skip-list (which the harness `pytest.skip()`s under `--use-booster-dev`) must be neutralised. Do **not** empty the file — `exclude_list()` asserts it is non-empty, so an empty file crashes collection; instead write a single sentinel path that matches no real spec, then git-restore afterward:
    ```bash
    cp tests/failing-symbolic.haskell-booster-dev /tmp/hb-exp/failing-list.bak
-   : > tests/failing-symbolic.haskell-booster-dev
+   echo '__none__' > tests/failing-symbolic.haskell-booster-dev
    start=$SECONDS
    uv --project kevm-pyk/ run pytest kevm-pyk/src/tests/integration \
        -k "test_prove_functional or test_prove_rules or test_prove_optimizations or test_prove_dss" \
-       --use-booster-dev --timeout "$T" \
-       --kompiled-targets-dir /tmp/hb-exp/<tag>-kompiled --numprocesses 8 -p no:randomly \
+       --use-booster-dev --timeout "$T" --timeout-method=thread \
+       --kompiled-targets-dir /tmp/hb-exp/<tag>-kompiled --numprocesses 8 \
        --junitxml=perf-runs/<tag>/boosterdev.junit.xml > perf-runs/<tag>/boosterdev.log 2>&1
    echo $((SECONDS-start)) > perf-runs/<tag>/boosterdev.wallclock
    git checkout -- tests/failing-symbolic.haskell-booster-dev
