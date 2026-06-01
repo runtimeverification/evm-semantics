@@ -17,6 +17,8 @@
 /tests/specs/opcodes/evm-optimizations-spec.md
 /tests/specs/**/*.prove.out
 /tests/specs/**/*.sol.json
+# Claim-parse caches dropped next to each spec by `kevm prove` — regenerated, never committed.
+/tests/specs/**/*-spec.json
 /tests/execution-spec-tests/fixtures
 /tests/vm/*.out
 .DS_Store
