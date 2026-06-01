@@ -44,6 +44,9 @@ uv --project kevm-pyk/ run kevm-kdist build evm-semantics.haskell
 uv --project kevm-pyk/ run kevm-kdist build --jobs 8
 ```
 
+The kdist targets compile against the installed K (and its haskell-backend), managed by `kup`.
+To install a specific K release, or to override just the haskell-backend with a local checkout or a remote branch/commit (e.g. to test a backend change under review), see [`docs/kup-override.md`](docs/kup-override.md); rebuild the kdist targets afterward.
+
 ## Linting and static analysis (Python)
 
 ```bash
