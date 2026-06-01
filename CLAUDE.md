@@ -178,6 +178,62 @@ To register a new spec, add one line to `KOMPILE_MAIN_FILE` in
 The glob `spec_files('functional', '*-spec.k')` picks it up automatically.
 `KOMPILE_MAIN_MODULE` defaults to `'VERIFICATION'`; only override it if your spec uses a different top module name.
 
+## Comparing haskell-backend builds (perf + booster-dev pass rate)
+
+Use this to measure how a haskell-backend change (a branch/commit) affects both proof **performance** and the **booster-dev pass rate** — how many specs prove under the pure `booster-dev` binary (no kore-rpc fallback) — while holding the K version fixed at `deps/k_release`.
+The driving question is usually "does this backend make more specs pass purely in booster-dev, and at what speed cost?".
+
+Install a backend with `kup` (see [`docs/kup-override.md`](docs/kup-override.md) for the override mechanics).
+The stock build is `kup install k.openssl.procps --version v<deps/k_release>`; an override build replaces just the backend, e.g. `--override haskell-backend github:runtimeverification/haskell-backend/<commit>` (or a local checkout / isolated `git worktree` if a github ref is rejected).
+
+**The procedure, per backend:**
+
+1. **Install** the backend, then `uv --project kevm-pyk/ sync` (only needed when the K version changes; an override leaves pyk untouched).
+2. **Kompile separately and do not time it** — kompile time is never part of the comparison. Pre-kompile the suite into a per-backend dir so the two builds' definitions stay isolated:
+   ```bash
+   uv --project kevm-pyk/ run pytest kevm-pyk/src/tests/integration -k "test_kompile_targets" \
+       --kompiled-targets-dir /tmp/hb-exp/<tag>-kompiled --numprocesses 4
+   ```
+3. **Normal-mode run** (kore-rpc-booster, fallback on) — the real proof-timing baseline. Wrap with `$SECONDS` to capture total wall-clock; `--junitxml` captures per-test time and outcome:
+   ```bash
+   start=$SECONDS
+   uv --project kevm-pyk/ run pytest kevm-pyk/src/tests/integration \
+       -k "test_prove_functional or test_prove_rules or test_prove_optimizations or test_prove_dss" \
+       --kompiled-targets-dir /tmp/hb-exp/<tag>-kompiled --numprocesses 8 -p no:randomly \
+       --junitxml=perf-runs/<tag>/normal.junit.xml > perf-runs/<tag>/normal.log 2>&1
+   echo $((SECONDS-start)) > perf-runs/<tag>/normal.wallclock
+   ```
+   `--numprocesses 8` is safe — multiple K servers do not contend here. Use no `--maxfail` (you want the complete map).
+4. **Derive the booster-dev timeout** from the normal run, so a booster-dev spec is only ever counted as failing on a real abort, never for being slow:
+   ```bash
+   T=$(uv --project kevm-pyk/ run python scripts/compare-junit-runs.py max-time perf-runs/<tag>/normal.junit.xml)
+   ```
+   `T` = ceil of the longest normal-mode per-test time for that backend.
+5. **booster-dev run** with `--use-booster-dev --timeout "$T"`. To *discover* newly-passing specs, the 136-entry `tests/failing-symbolic.haskell-booster-dev` exclude list (which the harness `pytest.skip()`s under `--use-booster-dev`) must be temporarily emptied and git-restored afterward:
+   ```bash
+   cp tests/failing-symbolic.haskell-booster-dev /tmp/hb-exp/failing-list.bak
+   : > tests/failing-symbolic.haskell-booster-dev
+   start=$SECONDS
+   uv --project kevm-pyk/ run pytest kevm-pyk/src/tests/integration \
+       -k "test_prove_functional or test_prove_rules or test_prove_optimizations or test_prove_dss" \
+       --use-booster-dev --timeout "$T" \
+       --kompiled-targets-dir /tmp/hb-exp/<tag>-kompiled --numprocesses 8 -p no:randomly \
+       --junitxml=perf-runs/<tag>/boosterdev.junit.xml > perf-runs/<tag>/boosterdev.log 2>&1
+   echo $((SECONDS-start)) > perf-runs/<tag>/boosterdev.wallclock
+   git checkout -- tests/failing-symbolic.haskell-booster-dev
+   ```
+
+**Compare** the two backends' run directories (`perf-runs/baseline`, `perf-runs/escalate`):
+
+```bash
+uv --project kevm-pyk/ run python scripts/compare-junit-runs.py compare \
+    --baseline-dir perf-runs/baseline --escalate-dir perf-runs/escalate \
+    -o docs/experiment-logs/<timestamp>-<name>.md
+```
+
+`scripts/compare-junit-runs.py` (committed tooling) emits an aligned-markdown report plus a `.json` sidecar: a totals table (sum-of-per-test **and** wall-clock per mode/backend), the booster-dev pass-rate diff (newly-passing fail→pass and any pass→fail regressions), and per-test timing deltas for specs passing in both runs.
+Raw JUnit/logs live under `perf-runs/` (gitignored); commit only the generated report under `docs/experiment-logs/`.
+
 ## Commit discipline
 
 - Every commit must be **atomic and self-contained** — the project must build and fast tests must pass at each commit.

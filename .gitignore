@@ -22,3 +22,8 @@
 .DS_Store
 .idea/
 .vscode/
+
+# Raw artifacts from backend performance / booster-dev comparison runs.
+# Kept in-repo for discoverability; the summarised report is committed under
+# docs/experiment-logs/ instead.  See CLAUDE.md "Comparing haskell-backend builds".
+/perf-runs/
