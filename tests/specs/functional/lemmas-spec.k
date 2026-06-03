@@ -53,20 +53,6 @@ module LEMMAS-SPEC
                                   => doneLemma(368263281805664599098893944405654396525700029268) ... </k>
                                requires #lookup(ACCT_STORAGE, 8) <Int pow160
 
-    claim [cancellation-01]:
-      <k> runLemma (
-            ( ( ( ( ( X +Int X ) -Int Y ) -Int ( X -Int Y ) ) -Int Y ) -Int ( X -Int Y ) )
-          ) => doneLemma (
-            0
-          ) ... </k>
-
-    claim [cancellation-02]:
-      <k> runLemma (
-            ( ( A +Int ( ( B -Int A ) +Int B ) ) -Int ( B +Int B ) )
-          ) => doneLemma (
-            0
-          ) ... </k>
-
     claim [buf-shift]:
       <k> runLemma (
             #buf ( 20, X <<Int 16 )
@@ -74,96 +60,6 @@ module LEMMAS-SPEC
             #buf ( 18 , X:Int ) +Bytes b"\x00\x00"
           ) ... </k>
           requires 0 <=Int X andBool X <Int 2 ^Int 144
-
-    claim [div-div]: <k> runLemma ( ( A /Int B ) /Int 1024 ) => doneLemma ( 0 ) ... </k>
-        requires 0 <=Int A andBool 0 <Int B andBool A <Int ( 1024 *Int B )
-
- // Booleans
- // ---------
-
-    claim [notBool-or]:
-      <k> runLemma (
-            notBool ( ( X <Int LOWER ) orBool ( UPPER <=Int X ) )
-          ) => doneLemma (
-            ( notBool ( X <Int LOWER ) ) andBool ( notBool ( UPPER <=Int X ) )
-          ) ...
-      </k>
-
-    claim [notBool-and]:
-      <k> runLemma (
-            notBool ( ( LOWER <=Int X ) andBool ( X <Int UPPER ) )
-          ) => doneLemma (
-            ( notBool ( LOWER <=Int X ) ) orBool ( notBool ( X <Int UPPER ) )
-          ) ...
-      </k>
-
- // Comparisons
- // -----------
-
-    claim [comp-norm-01]:
-      <k> runLemma (
-            ( ( 20 -Int ( 10 +Int X:Int ) ) -Int 5 ) +Int 3 <=Int 7
-          ) =>
-          doneLemma (
-            1 <=Int X
-          ) ...
-      </k>
-
-    claim [comp-norm-02]:
-      <k> runLemma (
-            ( ( 20 -Int ( 10 +Int X:Int ) ) -Int 5 ) +Int 3 <Int 7
-          ) =>
-          doneLemma (
-            1 <Int X
-          ) ...
-      </k>
-
-    claim [comp-norm-03]:
-      <k> runLemma (
-            ( ( 20 -Int ( 10 +Int X:Int ) ) -Int 5 ) +Int 3 >Int 7
-          ) =>
-          doneLemma (
-            1 >Int X
-          ) ...
-      </k>
-
-    claim [comp-norm-04]:
-      <k> runLemma (
-            ( ( 20 -Int ( 10 +Int X:Int ) ) -Int 5 ) +Int 3 >=Int 7
-          ) =>
-          doneLemma (
-            1 >=Int X
-          ) ...
-      </k>
-
-    claim [zero-lt-sub]: <k> runLemma ( 0  <Int A -Int B ) => doneLemma ( B  <Int A ) ... </k>
-    claim [zero-le-sub]: <k> runLemma ( 0 <=Int A -Int B ) => doneLemma ( B <=Int A ) ... </k>
-    claim [zero-gt-sub]: <k> runLemma ( 0  >Int A -Int B ) => doneLemma ( B  >Int A ) ... </k>
-    claim [zero-ge-sub]: <k> runLemma ( 0 >=Int A -Int B ) => doneLemma ( B >=Int A ) ... </k>
-
-    claim [sub-gt-zero]: <k> runLemma ( A -Int B  >Int 0 ) => doneLemma ( A  >Int B ) ... </k>
-    claim [sub-ge-zero]: <k> runLemma ( A -Int B >=Int 0 ) => doneLemma ( A >=Int B ) ... </k>
-    claim [sub-lt-zero]: <k> runLemma ( A -Int B  <Int 0 ) => doneLemma ( A  <Int B ) ... </k>
-    claim [sub-le-zero]: <k> runLemma ( A -Int B <=Int 0 ) => doneLemma ( A <=Int B ) ... </k>
-
-    claim [mul-lt-const]: <k> runLemma ( 36 *Int B  <Int 1728 ) => doneLemma ( B  <Int 48 ) ... </k>
-    claim [mul-le-const]: <k> runLemma ( 36 *Int B <=Int 1728 ) => doneLemma ( B <=Int 48 ) ... </k>
-    claim [mul-gt-const]: <k> runLemma ( 36 *Int B  >Int 1728 ) => doneLemma ( B  >Int 48 ) ... </k>
-    claim [mul-ge-const]: <k> runLemma ( 36 *Int B >=Int 1728 ) => doneLemma ( B >=Int 48 ) ... </k>
-
-    claim [const-gt-mul]: <k> runLemma ( 1728  >Int 36 *Int B ) => doneLemma ( 48  >Int B ) ... </k>
-    claim [const-ge-mul]: <k> runLemma ( 1728 >=Int 36 *Int B ) => doneLemma ( 48 >=Int B ) ... </k>
-    claim [const-lt-mul]: <k> runLemma ( 1728  <Int 36 *Int B ) => doneLemma ( 48  <Int B ) ... </k>
-    claim [const-le-mul]: <k> runLemma ( 1728 <=Int 36 *Int B ) => doneLemma ( 48 <=Int B ) ... </k>
-
-    claim [eq-neg]: <k> runLemma ( A ==Int -1 ) => doneLemma ( false ) ... </k>
-        requires 0 <=Int A
-
-    claim [nonneg-and-nonzero]: <k> runLemma ( 0 <Int X ) => doneLemma ( true ) ... </k>
-        requires 0 <=Int X andBool notBool ( X ==Int 0 )
-
-    claim [le-maxuint256]: <k> runLemma ( X <=Int maxUInt256 ) => doneLemma ( X <Int pow256 ) ... </k>
-
 
  // Sets
  // ----
@@ -435,50 +331,6 @@ module LEMMAS-SPEC
        andBool X <Int 256 andBool Y <Int 256 andBool Z <Int 256
        andBool X +Int (2 *Int Y) -Int Z ==Int 0
 
-
- // chop simplification
- // -------------------
-
-    claim <k> runLemma ( chop( #lookup(M, KEY)   ) ) => doneLemma( #lookup(M, KEY) ) ... </k>
-    claim <k> runLemma ( chop( bool2Word(B:Bool) ) ) => doneLemma( bool2Word(B)    ) ... </k>
-
-    claim [chop-chop]: <k> runLemma ( chop( chop ( X ) ) ) => doneLemma( chop ( X ) ) ... </k>
-
-    claim [chop-range-inferred]: <k> runLemma(X <Int chop(X *Int Y) /Int 1000000000000000000) => doneLemma(X <Int (X *Int Y) /Int 1000000000000000000) ... </k>
-      requires #rangeUInt(256, X) andBool #rangeUInt(256, Y) andBool Y <=Int maxUInt256 /Int X
-
-    claim [chop-notMaxUInt5]:
-      <k> runLemma (
-            ( notBool ( notBool ( chop ( ( chop ( ( ( notMaxUInt5 &Int ( ( notMaxUInt5 &Int ( lengthBytes ( B:Bytes ) +Int maxUInt5 ) ) +Int 95 ) ) +Int 128 ) ) +Int ( notMaxUInt5 &Int ( ( notMaxUInt5 &Int ( lengthBytes ( B:Bytes ) +Int maxUInt5 ) ) +Int 63 ) ) ) ) <Int chop ( ( ( notMaxUInt5 &Int ( ( notMaxUInt5 &Int ( lengthBytes ( B:Bytes ) +Int maxUInt5 ) ) +Int 95 ) ) +Int 128 ) ) ) ) )
-          ) => doneLemma (
-            false
-          ) ... </k>
-      requires lengthBytes(B) <Int 2 ^Int 64
-
-    claim [chop-additional-knowledge]: <k> runLemma (
-                      X <=Int chop ( X +Int C ) andBool Y <=Int chop ( Y +Int C )
-              andBool notBool ( ( X +Int C <Int pow256 ) andBool ( Y +Int C <Int pow256 ) )
-          ) => doneLemma ( false ) ... </k>
-    requires #rangeUInt(256, X) andBool #rangeUInt(256, Y) andBool #rangeUInt(256, C)
-
-    claim [chop-sub-01]: <k> runLemma ( chop ( X -Int Y ) ) => doneLemma ( X -Int Y ) ... </k>
-      requires #rangeUInt(256, X) andBool #rangeUInt(256, Y) andBool Y <=Int X
-
-    claim [chop-mul-01]: <k> runLemma ( chop ( X *Int Y ) ) => doneLemma ( X *Int Y ) ... </k>
-      requires 0 <=Int X andBool X <Int 2 ^Int 96
-       andBool 0 <=Int Y andBool Y <Int 2 ^Int ( 256 -Int 96 )
-
-    claim [chop-add-sub-conc]: <k> runLemma ( chop ( 0 -Int chop ( X +Int (-16)) ) ==Int 0 ) => doneLemma ( false ) ... </k>
-      requires 0 <=Int X andBool X <Int 10
-
-    claim [chop-overflow-01]: <k> runLemma ( X:Int <=Int chop ( X +Int Y:Int ) ) => doneLemma ( true ) ... </k>
-      requires #rangeUInt(128, X) andBool #rangeUInt(128, Y)
-
-    claim [chop-overflow-02]: <k> runLemma ( X:Int <=Int chop ( X *Int Y:Int ) /Int Y ) => doneLemma ( true ) ... </k>
-      requires #rangeUInt(128, X) andBool #rangeUInt(128, Y)
-
-    claim [chop-overflow-03]: <k> runLemma ( X:Int ==Int chop ( X *Int Y:Int ) /Int Y ) => doneLemma ( false ) ... </k>
-      requires pow128 <=Int X andBool X <Int pow256 andBool pow256 <=Int Y
 
  // #padToWidth simplification
  // --------------------------
@@ -814,49 +666,6 @@ module LEMMAS-SPEC
             #asWord ( B1 +Bytes b"\xde\xad\xbe\xef" ) <Int #asWord ( b"\xfa\xca\xde\x00\x00\x00\x00" )
           ) => doneLemma (
             #asWord ( B1 ) <Int #asWord ( b"\xfa\xca\xde")
-          ) ... </k>
-
- // bool2Word
- // ---------
-
-    // b2w-gt-zero, b2w-lt-b2w, b2w-band-one, b2w-band, b2w-mul-lt-l
-    claim [b2w-01]:
-      <k> runLemma (
-            ( bool2Word( 0 <=Int X:Int ) &Int 1 ) *Int bool2Word( X <Int -5 ) <Int ( bool2Word( 5 <=Int X ) &Int bool2Word( X <=Int 10 ) )
-          ) => doneLemma (
-            5 <=Int X andBool X <=Int 10
-          ) ... </k>
-
-    // b2w-eq-zero, b2w-xor-zero, b2w-xor-one, b2w-xor, b2w-mul-eq-l
-    claim [b2w-02]:
-      <k> runLemma (
-            ( bool2Word( 0 <=Int X:Int ) *Int ( 0 xorInt bool2Word( X <=Int 0 ) ) ) ==Int 1 xorInt ( bool2Word( X <=Int 0 ) xorInt bool2Word( X >=Int 0 ) )
-          ) => doneLemma (
-            true
-          ) ... </k>
-
-    // b2w-lt-one, b2w-bor-one, b2w-mul-le-l
-    claim [b2w-03]:
-      <k> runLemma (
-            ( bool2Word ( 0 <=Int X:Int ) *Int bool2Word( 0 <Int X ) ) <Int 1 |Int bool2Word( X =/=Int X )
-          ) => doneLemma (
-            X <=Int 0
-          ) ... </k>
-
-    // b2w-gt-false, b2w-mul-lt-r
-    claim [b2w-04]:
-      <k> runLemma (
-            ( bool2Word ( notBool X ) *Int 42 ) <Int bool2Word ( Y )
-          ) => doneLemma (
-            X andBool Y
-          ) ... </k>
-
-    // b2w-lt-true
-    claim [b2w-05]:
-      <k> runLemma (
-            bool2Word ( _X ) *Int bool2Word ( _Y ) <Int 42
-          ) => doneLemma (
-            true
           ) ... </k>
 
  // ecrecover
