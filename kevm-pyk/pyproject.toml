@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "kevm-pyk"
-version = "1.0.908"
+version = "1.0.909"
 description = ""
 readme = "README.md"
 requires-python = ">=3.10"
