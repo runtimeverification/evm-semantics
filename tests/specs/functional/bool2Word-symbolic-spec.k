@@ -1,19 +1,4 @@
-requires "edsl.md"
-requires "lemmas/lemmas.k"
-
-module VERIFICATION
-    imports EDSL
-    imports LEMMAS
-
-    syntax StepSort ::= Int | Bool
- // ------------------------------
-
-    syntax KItem ::= runLemma ( StepSort ) [symbol(runLemma)]
-                   | doneLemma( StepSort )
- // --------------------------------------
-    rule runLemma( T ) => doneLemma( T )
-
-endmodule
+requires "verification.k"
 
 // Without the `b2w-true` / `b2w-false` simplification lemmas in lemmas.k,
 // claims 5-6 fail: the path condition implies but does not equate the
