@@ -62,6 +62,7 @@ tests/specs/examples/sum-to-n-spec.k
 tests/specs/functional/bitwise-asword-spec.k
 tests/specs/functional/bitwise-mask-shift-spec.k
 tests/specs/functional/bitwise-simplifications-spec.k
+tests/specs/functional/bytes-range-spec.k
 tests/specs/functional/evm-int-simplifications-spec.k
 tests/specs/functional/infinite-gas-spec.k
 tests/specs/functional/int-simplifications-spec.k
