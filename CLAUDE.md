@@ -168,15 +168,21 @@ Existing specs to use as models:
 - `lemmas-spec.k` — imports `edsl.md` + lemmas; tests `#hashedLocation`, ranges, etc.
 - `compute-valid-jump-dests-spec.k` — performance benchmark with symbolic input tail
 
-To register a new spec, add one line to `KOMPILE_MAIN_FILE` in
-`kevm-pyk/src/tests/integration/test_prove.py`:
+To add a new spec, start it with `requires "verification.k"` and put claims in a module that `imports VERIFICATION`.
+The shared `tests/specs/functional/verification.k` provides `EDSL + LEMMAS` plus the `runLemma`/`doneLemma` harness (`StepSort ::= Map | Bytes | Int | Bool`), and all such specs reuse one cached kompiled definition — no registration needed.
+The glob `spec_files('functional', '*-spec.k')` picks the file up as a pytest case automatically.
+
+Only if your spec needs a *different* main module (other imports, extra syntax such as macros or extra `StepSort` arms) does it need its own kompile target: define the module in the spec file itself and register it in `KOMPILE_MAIN_FILE` in `kevm-pyk/src/tests/integration/test_prove.py`:
 
 ```python
 'functional/my-spec.k': 'my-spec.k',
 ```
 
-The glob `spec_files('functional', '*-spec.k')` picks it up automatically.
 `KOMPILE_MAIN_MODULE` defaults to `'VERIFICATION'`; only override it if your spec uses a different top module name.
+Each distinct main module costs an extra ~40 s kompile per definition change, so prefer the shared `verification.k` unless the different imports are the point of the test (see `abi-spec.k`, `lemmas-no-smt-spec.k`, `infinite-gas-spec.k`).
+
+Keep functional spec files small: each file is one pytest case (the unit of pytest-xdist scheduling *and* of re-running after a failure), and claims within a file are proven 8-way parallel.
+Aim for roughly ≤300 s standalone per file; split by claim category when a file grows past that (see the `bitwise-*-spec.k` / `bytes-range-spec.k` split of the old monolithic `lemmas-spec.k`).
 
 ## Commit discipline
 
