@@ -5,8 +5,17 @@ from typing import TYPE_CHECKING
 
 import pytest
 
+from .utils import DEFAULT_HASKELL_LOG_ENTRIES
+
 if TYPE_CHECKING:
     from pytest import FixtureRequest, Parser
+
+
+def _csv_option(raw: str | None) -> list[str] | None:
+    """Parse a comma-separated option value into a trimmed list, or None if unset."""
+    if raw is None:
+        return None
+    return [item.strip() for item in raw.split(',') if item.strip()]
 
 
 def pytest_addoption(parser: Parser) -> None:
@@ -67,17 +76,20 @@ def pytest_addoption(parser: Parser) -> None:
         '--haskell-logging',
         action='store_true',
         default=False,
-        help='Enable KoreCalls+Simplify+SimplifyKore JSON logging for all proof tests. Use with --booster-log-dir to persist logs.',
+        help=(
+            'Enable JSON logging of the default Haskell-backend entries '
+            f'({",".join(DEFAULT_HASKELL_LOG_ENTRIES)}) for all proof tests. '
+            'Use with --booster-log-dir to persist logs.'
+        ),
     )
     parser.addoption(
         '--booster-log-levels',
         default=None,
         type=str,
         help=(
-            'Comma-separated Booster log levels to enable (e.g. KoreCalls,Simplify,SimplifyKore,Aborts,Rewrite,SMT). '
-            'Overrides the default set used by --haskell-logging. '
-            'Available levels: Aborts, EquationWarnings, KoreCalls, Rewrite, RewriteKore, RewriteSuccess, '
-            'Simplify, SimplifyKore, SimplifySuccess, SMT, TimeProfile, Timing.'
+            'Comma-separated Haskell-backend log entries to enable, overriding the default set '
+            f'used by --haskell-logging ({",".join(DEFAULT_HASKELL_LOG_ENTRIES)}). '
+            'Valid entries are defined by the backend; see its --log-level help.'
         ),
     )
     parser.addoption(
@@ -120,10 +132,7 @@ def spec_name(request: FixtureRequest) -> str | None:
 
 @pytest.fixture(scope='session')
 def claim_labels(request: FixtureRequest) -> list[str] | None:
-    raw: str | None = request.config.getoption('--claim-labels')
-    if raw is None:
-        return None
-    return [label.strip() for label in raw.split(',') if label.strip()]
+    return _csv_option(request.config.getoption('--claim-labels'))
 
 
 @pytest.fixture(scope='session')
@@ -145,20 +154,15 @@ def haskell_logging(request: FixtureRequest, booster_log_dir: Path | None) -> bo
 
 
 @pytest.fixture(scope='session')
-def booster_log_levels(request: FixtureRequest, haskell_logging: bool) -> list[str] | None:
+def booster_log_levels(request: FixtureRequest) -> list[str] | None:
     """
-    Return explicit log levels for the Booster backend, or None to use the default.
+    Return explicit log entries for the Haskell backend, or None to use the default.
 
-    When None is returned and haskell_logging is True, the test harness uses the default
-    set (KoreCalls, Simplify, SimplifyKore) needed for kore-fallback analysis.
-
-    Set via --booster-log-levels on the command line:
-        pytest ... --booster-log-levels Aborts,Rewrite,SMT
+    When None is returned and haskell_logging is True, the harness falls back to
+    DEFAULT_HASKELL_LOG_ENTRIES. Set via --booster-log-levels on the command line:
+        pytest ... --booster-log-levels Abort,Rewrite,SMT
     """
-    raw: str | None = request.config.getoption('--booster-log-levels')
-    if raw is None:
-        return None
-    return [level.strip() for level in raw.split(',') if level.strip()]
+    return _csv_option(request.config.getoption('--booster-log-levels'))
 
 
 @pytest.fixture(scope='session')

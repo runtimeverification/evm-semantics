@@ -21,7 +21,7 @@ from kevm_pyk.kevm import KEVM, KEVMSemantics, kevm_node_printer
 from kevm_pyk.kompile import KompileTarget, kevm_kompile
 from kevm_pyk.utils import initialize_apr_proof, legacy_explore
 
-from ..utils import REPO_ROOT
+from ..utils import DEFAULT_HASKELL_LOG_ENTRIES, REPO_ROOT
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -251,12 +251,11 @@ def _test_prove(
             'workers': workers,
             'direct_subproof_rules': direct_subproof_rules,
             'booster_only_simplify': booster_only_simplify,
+            'claim_labels': claim_labels,
         }
-        if claim_labels is not None:
-            options_dict['claim_labels'] = claim_labels
         if haskell_logging:
             options_dict['haskell_log_format'] = 'json'
-            options_dict['haskell_log_entries'] = booster_log_levels or ['KoreCalls', 'Simplify', 'SimplifyKore']
+            options_dict['haskell_log_entries'] = booster_log_levels or list(DEFAULT_HASKELL_LOG_ENTRIES)
             if haskell_log_file is not None:
                 options_dict['haskell_log_file'] = haskell_log_file
         options = ProveOptions(options_dict)
@@ -361,6 +360,7 @@ def test_prove_rules(
     haskell_logging: bool,
     booster_log_levels: list[str] | None,
     claim_labels: list[str] | None,
+    booster_only_simplify: bool,
 ) -> None:
     _test_prove(
         spec_file,
@@ -376,6 +376,7 @@ def test_prove_rules(
         haskell_logging=haskell_logging,
         booster_log_levels=booster_log_levels,
         claim_labels=claim_labels,
+        booster_only_simplify=booster_only_simplify,
     )
 
 
@@ -426,6 +427,8 @@ def test_prove_dss(
     booster_log_dir: Path | None,
     haskell_logging: bool,
     booster_log_levels: list[str] | None,
+    claim_labels: list[str] | None,
+    booster_only_simplify: bool,
 ) -> None:
     for spec_file in [REPO_ROOT / 'tests/specs/mcd/vat-spec.k', REPO_ROOT / 'tests/specs/mcd-structured/vat-spec.k']:
         _test_prove(
@@ -441,8 +444,10 @@ def test_prove_dss(
             booster_log_dir=booster_log_dir,
             haskell_logging=haskell_logging,
             booster_log_levels=booster_log_levels,
+            claim_labels=claim_labels,
             workers=8,
             direct_subproof_rules=True,
+            booster_only_simplify=booster_only_simplify,
         )
 
 
