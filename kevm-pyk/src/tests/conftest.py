@@ -69,6 +69,23 @@ def pytest_addoption(parser: Parser) -> None:
         default=False,
         help='Enable KoreCalls+Simplify+SimplifyKore JSON logging for all proof tests. Use with --booster-log-dir to persist logs.',
     )
+    parser.addoption(
+        '--booster-log-levels',
+        default=None,
+        type=str,
+        help=(
+            'Comma-separated Booster log levels to enable (e.g. KoreCalls,Simplify,SimplifyKore,Aborts,Rewrite,SMT). '
+            'Overrides the default set used by --haskell-logging. '
+            'Available levels: Aborts, EquationWarnings, KoreCalls, Rewrite, RewriteKore, RewriteSuccess, '
+            'Simplify, SimplifyKore, SimplifySuccess, SMT, TimeProfile, Timing.'
+        ),
+    )
+    parser.addoption(
+        '--booster-only-simplify',
+        action='store_true',
+        default=False,
+        help='Skip the Kore simplification pass after Booster for all simplify/execute/implies calls.',
+    )
 
 
 @pytest.fixture
@@ -125,3 +142,25 @@ def booster_log_dir(request: FixtureRequest) -> Path | None:
 @pytest.fixture(scope='session')
 def haskell_logging(request: FixtureRequest, booster_log_dir: Path | None) -> bool:
     return bool(request.config.getoption('--haskell-logging')) or booster_log_dir is not None
+
+
+@pytest.fixture(scope='session')
+def booster_log_levels(request: FixtureRequest, haskell_logging: bool) -> list[str] | None:
+    """
+    Return explicit log levels for the Booster backend, or None to use the default.
+
+    When None is returned and haskell_logging is True, the test harness uses the default
+    set (KoreCalls, Simplify, SimplifyKore) needed for kore-fallback analysis.
+
+    Set via --booster-log-levels on the command line:
+        pytest ... --booster-log-levels Aborts,Rewrite,SMT
+    """
+    raw: str | None = request.config.getoption('--booster-log-levels')
+    if raw is None:
+        return None
+    return [level.strip() for level in raw.split(',') if level.strip()]
+
+
+@pytest.fixture(scope='session')
+def booster_only_simplify(request: FixtureRequest) -> bool:
+    return request.config.getoption('--booster-only-simplify')

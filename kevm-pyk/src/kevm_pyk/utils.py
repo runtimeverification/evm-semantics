@@ -314,12 +314,15 @@ def constraints_for(vars: list[str], constraints: Iterable[KInner]) -> Iterable[
     return accounts_constraints
 
 
-def initialize_apr_proof(cterm_symbolic: CTermSymbolic, proof: APRProof) -> None:
+def initialize_apr_proof(
+    cterm_symbolic: CTermSymbolic,
+    proof: APRProof,
+) -> None:
     init_cterm = proof.kcfg.node(proof.init).cterm
     target_cterm = proof.kcfg.node(proof.target).cterm
 
     _LOGGER.info(f'Computing definedness constraint for initial node: {proof.id}')
-    init_cterm = cterm_symbolic.assume_defined(init_cterm)
+    init_cterm = cterm_symbolic.assume_defined(init_cterm, booster_only_simplify=False)
 
     _LOGGER.info(f'Simplifying initial and target node: {proof.id}')
     init_cterm, _ = cterm_symbolic.simplify(init_cterm)
@@ -349,7 +352,6 @@ def legacy_explore(
     bug_report: BugReport | None = None,
     haskell_log_format: KoreExecLogFormat = KoreExecLogFormat.ONELINE,
     haskell_log_entries: Iterable[str] = (),
-    haskell_threads: int | None = None,
     log_axioms_file: Path | None = None,
     log_succ_rewrites: bool = True,
     log_fail_rewrites: bool = True,
@@ -358,6 +360,7 @@ def legacy_explore(
     interim_simplification: int | None = None,
     no_post_exec_simplify: bool = False,
     extra_module: KFlatModule | None = None,
+    booster_only_simplify: bool = False,
 ) -> Iterator[KCFGExplore]:
     with cterm_symbolic(
         definition=kprint.definition,
@@ -379,6 +382,7 @@ def legacy_explore(
         fallback_on=fallback_on,
         interim_simplification=interim_simplification,
         no_post_exec_simplify=no_post_exec_simplify,
+        booster_only_simplify=booster_only_simplify,
     ) as csymbolic:
         if extra_module:
             csymbolic.add_module(extra_module, name_as_id=True)

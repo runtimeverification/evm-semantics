@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 import shutil
 import sys
+from pathlib import Path
 from typing import TYPE_CHECKING, NamedTuple
 
 import pytest
@@ -24,7 +25,6 @@ from ..utils import REPO_ROOT
 
 if TYPE_CHECKING:
     from collections.abc import Callable
-    from pathlib import Path
     from typing import Final
 
     from pyk.utils import BugReport
@@ -192,9 +192,11 @@ def _test_prove(
     spec_name: str | None,
     booster_log_dir: Path | None = None,
     haskell_logging: bool = False,
+    booster_log_levels: list[str] | None = None,
     claim_labels: list[str] | None = None,
     workers: int | None = None,
     direct_subproof_rules: bool = False,
+    booster_only_simplify: bool = False,
 ) -> None:
     caplog.set_level(logging.INFO)
 
@@ -210,12 +212,21 @@ def _test_prove(
     shutil.rmtree(use_directory, ignore_errors=True)
     use_directory.mkdir()
 
-    # Per-spec backend log file: <dir>/<suite>-<spec-stem>.jsonl
+    # Per-spec backend log file.
+    # Explicit --booster-log-dir: <dir>/<suite>-<spec-stem>.jsonl (CI / ad-hoc use).
+    # Default (--haskell-logging without --booster-log-dir): write to
+    #   <spec-file>.analysis/<claim-label-or-all-claims>.jsonl alongside the spec.
     haskell_log_file: Path | None = None
-    if haskell_logging and booster_log_dir is not None:
-        rel = spec_file.relative_to(SPEC_DIR)
-        log_name = '-'.join(rel.with_suffix('').parts) + '.jsonl'
-        haskell_log_file = booster_log_dir / log_name
+    if haskell_logging:
+        if booster_log_dir is not None:
+            rel = spec_file.relative_to(SPEC_DIR)
+            log_name = '-'.join(rel.with_suffix('').parts) + '.jsonl'
+            haskell_log_file = booster_log_dir / log_name
+        else:
+            analysis_dir = Path(str(spec_file) + '.analysis')
+            analysis_dir.mkdir(parents=True, exist_ok=True)
+            claim_stem = '+'.join(claim_labels) if claim_labels else 'all-claims'
+            haskell_log_file = analysis_dir / (claim_stem + '.jsonl')
 
     # When
     try:
@@ -239,12 +250,13 @@ def _test_prove(
             'break_on_basic_blocks': break_on_basic_blocks,
             'workers': workers,
             'direct_subproof_rules': direct_subproof_rules,
+            'booster_only_simplify': booster_only_simplify,
         }
         if claim_labels is not None:
             options_dict['claim_labels'] = claim_labels
         if haskell_logging:
             options_dict['haskell_log_format'] = 'json'
-            options_dict['haskell_log_entries'] = ['KoreCalls', 'Simplify', 'SimplifyKore']
+            options_dict['haskell_log_entries'] = booster_log_levels or ['KoreCalls', 'Simplify', 'SimplifyKore']
             if haskell_log_file is not None:
                 options_dict['haskell_log_file'] = haskell_log_file
         options = ProveOptions(options_dict)
@@ -347,6 +359,7 @@ def test_prove_rules(
     spec_name: str | None,
     booster_log_dir: Path | None,
     haskell_logging: bool,
+    booster_log_levels: list[str] | None,
     claim_labels: list[str] | None,
 ) -> None:
     _test_prove(
@@ -361,6 +374,7 @@ def test_prove_rules(
         spec_name=spec_name,
         booster_log_dir=booster_log_dir,
         haskell_logging=haskell_logging,
+        booster_log_levels=booster_log_levels,
         claim_labels=claim_labels,
     )
 
@@ -381,7 +395,9 @@ def test_prove_functional(
     spec_name: str | None,
     booster_log_dir: Path | None,
     haskell_logging: bool,
+    booster_log_levels: list[str] | None,
     claim_labels: list[str] | None,
+    booster_only_simplify: bool,
 ) -> None:
     _test_prove(
         spec_file,
@@ -395,8 +411,10 @@ def test_prove_functional(
         spec_name=spec_name,
         booster_log_dir=booster_log_dir,
         haskell_logging=haskell_logging,
+        booster_log_levels=booster_log_levels,
         claim_labels=claim_labels,
         workers=8,
+        booster_only_simplify=booster_only_simplify,
     )
 
 
@@ -407,6 +425,7 @@ def test_prove_dss(
     bug_report: BugReport | None,
     booster_log_dir: Path | None,
     haskell_logging: bool,
+    booster_log_levels: list[str] | None,
 ) -> None:
     for spec_file in [REPO_ROOT / 'tests/specs/mcd/vat-spec.k', REPO_ROOT / 'tests/specs/mcd-structured/vat-spec.k']:
         _test_prove(
@@ -421,6 +440,7 @@ def test_prove_dss(
             spec_name=None,
             booster_log_dir=booster_log_dir,
             haskell_logging=haskell_logging,
+            booster_log_levels=booster_log_levels,
             workers=8,
             direct_subproof_rules=True,
         )

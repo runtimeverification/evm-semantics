@@ -186,6 +186,13 @@ def _create_argument_parser() -> ArgumentParser:
         help='Reinitialize CFGs even if they already exist.',
     )
     prove_args.add_argument(
+        '--booster-only-simplify',
+        dest='booster_only_simplify',
+        default=None,
+        action='store_true',
+        help='Skip the Kore simplification pass after Booster; assume_defined still uses Kore for #Ceil evaluation.',
+    )
+    prove_args.add_argument(
         '--max-frontier-parallel',
         type=int,
         help='Maximum worker threads to use on a single proof to explore separate branches in parallel.',
@@ -605,12 +612,14 @@ class ProveOptions(
     KProveOptions,
 ):
     reinit: bool
+    booster_only_simplify: bool
     max_frontier_parallel: int
 
     @staticmethod
     def default() -> dict[str, Any]:
         return {
             'reinit': False,
+            'booster_only_simplify': False,
             'max_frontier_parallel': 1,
         }
 

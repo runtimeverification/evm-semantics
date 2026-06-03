@@ -318,10 +318,10 @@ def exec_prove(options: ProveOptions) -> None:
             interim_simplification=options.interim_simplification,
             no_post_exec_simplify=(not options.post_exec_simplify),
             port=options.port,
-            haskell_threads=options.max_frontier_parallel,
             haskell_log_format=KoreExecLogFormat(options.haskell_log_format),
             haskell_log_entries=options.haskell_log_entries,
             log_axioms_file=options.haskell_log_file,
+            booster_only_simplify=options.booster_only_simplify,
         ) as kcfg_explore:
 
             def create_kcfg_explore() -> KCFGExplore:
@@ -339,6 +339,7 @@ def exec_prove(options: ProveOptions) -> None:
                     kevm.definition,
                     log_succ_rewrites=options.log_succ_rewrites,
                     log_fail_rewrites=options.log_fail_rewrites,
+                    booster_only_simplify=options.booster_only_simplify,
                 )
                 return KCFGExplore(
                     cterm_symbolic,
@@ -348,7 +349,10 @@ def exec_prove(options: ProveOptions) -> None:
 
             if not is_functional(claim) and (options.reinit or not up_to_date):
                 assert type(proof_problem) is APRProof
-                initialize_apr_proof(kcfg_explore.cterm_symbolic, proof_problem)
+                initialize_apr_proof(
+                    kcfg_explore.cterm_symbolic,
+                    proof_problem,
+                )
 
             proof_problem.write_proof_data()
 
