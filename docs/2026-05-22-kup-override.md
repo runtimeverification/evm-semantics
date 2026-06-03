@@ -1,17 +1,14 @@
 # Testing a Local Haskell Backend with kup
 
-`kup` can install K (or any managed package) with one of its Nix flake inputs
-replaced by a local checkout.
-This is the right way to test a local haskell-backend change against a full
-kevm proof without modifying the project's flake.
+`kup` can install K (or any managed package) with one of its Nix flake inputs replaced by a local checkout.
+This is the right way to test a local haskell-backend change against a full kevm proof without modifying the project's flake.
 
 ---
 
 ## How overrides work
 
 Every package managed by `kup` is a Nix flake with declared inputs.
-`kup install <pkg> --override <input-path> <local-dir>` tells Nix to use the
-local directory's `flake.nix` in place of the upstream input when building.
+`kup install <pkg> --override <input-path> <local-dir>` tells Nix to use the local directory's `flake.nix` in place of the upstream input when building.
 
 The input path follows the flake input tree shown by `kup list <pkg> --inputs`.
 For `k.openssl.procps`:
@@ -24,8 +21,7 @@ k.openssl.procps
 ```
 
 Top-level inputs (like `haskell-backend` here) are specified by name alone.
-Nested inputs use slash-separated paths (e.g. `k-framework/llvm-backend` in the
-kevm tree where llvm-backend is under k-framework).
+Nested inputs use slash-separated paths (e.g. `k-framework/llvm-backend` in the kevm tree where llvm-backend is under k-framework).
 
 `kup list <pkg> --inputs` shows the current input tree and their pinned hashes.
 Any input labelled `follows <path>` is an alias; override the `<path>` instead.
@@ -44,20 +40,15 @@ kup install k.openssl.procps \
     --override haskell-backend ~/src/haskell-backend
 ```
 
-`--version v7.1.323` pins K itself to the same tag/commit already installed,
-so only the haskell-backend changes.
+`--version v7.1.323` pins K itself to the same tag/commit already installed, so only the haskell-backend changes.
 Omit `--version` to also upgrade K to the latest available.
 
-Nix builds the haskell-backend from source, which takes several minutes the
-first time (subsequent builds with the same source hash are cached).
-The installed K will have `-dirty` appended to its version string if the local
-checkout has uncommitted changes.
+Nix builds the haskell-backend from source, which takes several minutes the first time (subsequent builds with the same source hash are cached).
+The installed K will have `-dirty` appended to its version string if the local checkout has uncommitted changes.
 
 ### Overriding with a remote branch/commit
 
-To test a backend revision without a local checkout, pass a **bare git ref**
-(branch, tag, or commit) — kup constructs the `github:<org>/<repo>/<ref>` URL
-for that input itself:
+To test a backend revision without a local checkout, pass a **bare git ref** (branch, tag, or commit) — kup constructs the `github:<org>/<repo>/<ref>` URL for that input itself:
 
 ```bash
 kup install k.openssl.procps \
@@ -65,9 +56,7 @@ kup install k.openssl.procps \
     --override haskell-backend 35a6746c5
 ```
 
-Do **not** pass a full `github:` URL as the override value — kup prepends the
-input's own `github:runtimeverification/haskell-backend/` prefix, so a full URL
-is doubled and rejected (`'…/35a6746c5' is not a branch/tag name`).
+Do **not** pass a full `github:` URL as the override value — kup prepends the input's own `github:runtimeverification/haskell-backend/` prefix, so a full URL is doubled and rejected (`'…/35a6746c5' is not a branch/tag name`).
 A remote ref override also yields a `-dirty` K version string.
 
 ---
@@ -84,16 +73,14 @@ kup install k.openssl.procps --version v7.1.323
 ## After installation: rebuild kdist
 
 The kdist targets are compiled against the K installation.
-After changing K (including its haskell-backend), the compiled definitions are
-stale and must be rebuilt:
+After changing K (including its haskell-backend), the compiled definitions are stale and must be rebuilt:
 
 ```bash
 # In evm-semantics:
 uv --project kevm-pyk/ run kevm-kdist build evm-semantics.haskell
 ```
 
-The new `definition.kore` and LLVM library are placed under
-`~/.cache/kdist-<new-hash>/` automatically.
+The new `definition.kore` and LLVM library are placed under `~/.cache/kdist-<new-hash>/` automatically.
 
 ---
 
@@ -110,9 +97,7 @@ warning: not writing modified lock file of flake '...'
 These are internal to kup's Nix invocation and are harmless.
 The install proceeds normally.
 
-The progress output shows each derivation being built:
-individual binaries (`kore-exec`, `kore-rpc`, `kore-rpc-booster`,
-`booster-dev`, etc.) each get their own `.drv` build step.
+The progress output shows each derivation being built: individual binaries (`kore-exec`, `kore-rpc`, `kore-rpc-booster`, `booster-dev`, etc.) each get their own `.drv` build step.
 Building the haskell-backend from source takes several minutes.
 
 A successful install ends with:
@@ -121,8 +106,7 @@ A successful install ends with:
 ✅ Successfully updated 'k' version <pkg-url> (v7.1.323).
 ```
 
-The installed K version string will have `-dirty` appended if the local
-checkout has uncommitted changes.
+The installed K version string will have `-dirty` appended if the local checkout has uncommitted changes.
 
 ## What kup actually does
 
@@ -134,8 +118,7 @@ nix build github:runtimeverification/k/<commit> \
     --impure
 ```
 
-The `--impure` flag is required for local path overrides (because local paths
-are not reproducible from the lock file alone).
+The `--impure` flag is required for local path overrides (because local paths are not reproducible from the lock file alone).
 kup handles all of this transparently; you never need to call `nix` directly.
 
 ---

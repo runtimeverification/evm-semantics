@@ -45,7 +45,7 @@ uv --project kevm-pyk/ run kevm-kdist build --jobs 8
 ```
 
 The kdist targets compile against the installed K (and its haskell-backend), managed by `kup`.
-To install a specific K release, or to override just the haskell-backend with a local checkout or a remote branch/commit (e.g. to test a backend change under review), see [`docs/kup-override.md`](docs/kup-override.md); rebuild the kdist targets afterward.
+To install a specific K release, or to override just the haskell-backend with a local checkout or a remote branch/commit (e.g. to test a backend change under review), see [`docs/2026-05-22-kup-override.md`](docs/2026-05-22-kup-override.md); rebuild the kdist targets afterward.
 
 ## Linting and static analysis (Python)
 
@@ -192,7 +192,7 @@ Aim for roughly ≤300 s standalone per file; split by claim category when a fil
 Use this to measure how a haskell-backend change (a branch/commit) affects both proof **performance** and the **booster-dev pass rate** — how many specs prove under the pure `booster-dev` binary (no kore-rpc fallback) — while holding the K version fixed at `deps/k_release`.
 The driving question is usually "does this backend make more specs pass purely in booster-dev, and at what speed cost?".
 
-Install a backend with `kup` (see [`docs/kup-override.md`](docs/kup-override.md) for the override mechanics).
+Install a backend with `kup` (see [`docs/2026-05-22-kup-override.md`](docs/2026-05-22-kup-override.md) for the override mechanics).
 The stock build is `kup install k.openssl.procps --version v<deps/k_release>`; an override build replaces just the backend, e.g. `--override haskell-backend github:runtimeverification/haskell-backend/<commit>` (or a local checkout / isolated `git worktree` if a github ref is rejected).
 
 **The procedure, per backend:**
