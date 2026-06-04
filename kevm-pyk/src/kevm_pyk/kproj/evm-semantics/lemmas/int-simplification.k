@@ -286,6 +286,9 @@ module INT-SIMPLIFICATION-COMMON
 
     rule A ==Int B => false requires 0 <=Int A andBool B <Int 0 [simplification, concrete(B)]
 
+    // A ==Int B is false when A < B is a known path-condition fact (B concrete).
+    rule [eq-false-lt]: A:Int ==Int B:Int => false requires A <Int B [simplification, concrete(B), preserves-definedness]
+
     rule 0 <Int X => true requires 0 <=Int X andBool notBool (X ==Int 0) [simplification(60)]
 
     rule X <=Int maxUInt256 => X <Int pow256 [simplification]
