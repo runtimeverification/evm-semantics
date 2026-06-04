@@ -242,6 +242,18 @@ module INT-SIMPLIFICATION-COMMON
     rule [maxInt-factor-left]:  maxInt ( A:Int +Int B:Int, A:Int +Int C:Int ) => A +Int maxInt ( B, C ) [simplification]
     rule [maxInt-factor-right]: maxInt ( A:Int +Int B:Int, C:Int +Int B:Int ) => maxInt ( A, C ) +Int B [simplification]
 
+    // minInt <Int maxInt / minInt <=Int maxInt: priority 40 fires before the default-priority (50) expansion rules,
+    // so Booster sees `true` directly rather than a disjunction requiring path-condition reasoning.
+    // Sound: minInt(A,_) <=Int A and C <=Int maxInt(C,_), so A <Int C implies minInt(A,_) <Int maxInt(C,_).
+    rule [minint-lt-maxint-a]:
+        minInt(A:Int, _B:Int) <Int maxInt(C:Int, _D:Int) => true
+        requires A <Int C
+        [simplification(40), preserves-definedness]
+    rule [minint-leq-maxint-b]:
+        minInt(_A:Int, B:Int) <=Int maxInt(_C:Int, D:Int) => true
+        requires B <=Int D
+        [simplification(40), preserves-definedness]
+
   // ###########################################################################
   // inequality
   // ###########################################################################
