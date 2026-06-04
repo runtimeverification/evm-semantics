@@ -41,13 +41,14 @@ module BUF
 
     rule 0    <Int #powByteLen(SIZE) => true requires 0 <=Int SIZE [simplification, preserves-definedness]
     rule SIZE <Int #powByteLen(SIZE) => true requires 0 <=Int SIZE [simplification, preserves-definedness]
-    // Concrete comparison: CONST < #powByteLen(N) evaluates when both arguments are concrete.
-    // Needed because 2^Int(8*N) is rewritten to #powByteLen(N) even for concrete N (via the
-    // symbolic(N) rule firing before path-condition lookup makes N concrete), but #powByteLen
-    // has no-evaluators so the result can't be computed directly.
+    // Concrete comparison: CONST < #powByteLen(N) when CONST < 2^(8*N).
+    // 2^Int(8*N) is rewritten to #powByteLen(N) even for concrete N (the symbolic(N)
+    // rule fires before the path condition makes N concrete), but #powByteLen has
+    // no-evaluators so the comparison can't self-evaluate. Only CONST need be
+    // concrete: once N is concrete the requires reduces to a linear inequality.
     rule [powByteLen-lt-concrete]: CONST <Int #powByteLen(N) => true
         requires 0 <=Int N andBool CONST <Int 2 ^Int (8 *Int N)
-        [simplification, concrete(CONST, N), preserves-definedness]
+        [simplification, concrete(CONST), preserves-definedness]
     rule #write(WM, IDX, VAL) => WM [ IDX := #buf(1, VAL) ] [simplification]
 
     rule #bufStrict(SIZE, DATA) => #buf(SIZE, DATA)
