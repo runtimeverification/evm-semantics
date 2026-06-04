@@ -131,6 +131,18 @@ module EVM-INT-SIMPLIFICATION
   // Comparison: `#asWord(B)` is certainly less than or equal to something that is not less than the max number fitting into `lengthBytes(B)` bytes
   rule [asWord-le]:  #asWord ( B ) <=Int X:Int => true  requires ( 2 ^Int (8 *Int minInt(32, lengthBytes(B))) -Int 1 ) <=Int X [simplification, preserves-definedness]
 
+  // Comparison: `#asWord(B) < X` is false when the path condition says X <= #asWord(B).
+  // Loop-safe with asWord-le-false: requires clauses have #asWord on the RIGHT, so
+  // neither rule fires on the other's requires.
+  rule [asWord-lt-false]: #asWord ( B:Bytes )  <Int X:Int => false requires X <=Int #asWord ( B ) [simplification, preserves-definedness]
+  rule [asWord-le-false]: #asWord ( B:Bytes ) <=Int X:Int => false requires X  <Int #asWord ( B ) [simplification, preserves-definedness]
+  // Comparison: `#asWord(B) == X` is false when the path condition says X =/= #asWord(B).
+  // The requires X =/=Int #asWord(B) expands to notBool(X ==Int #asWord(B)) via the K builtin;
+  // since ==Int is comm, this matches the path condition fact notBool(#asWord(B) ==Int X).
+  // No loop: our rule matches #asWord on the LEFT; after builtin expansion the recursive
+  // term X ==Int #asWord(B) has X on the LEFT, so this rule does not fire on it.
+  rule [asWord-eq-false]: #asWord ( B:Bytes ) ==Int X:Int => false requires X =/=Int #asWord ( B ) [simplification, preserves-definedness]
+
   // Comparison: `#asWord` of `+Bytes` when lower bytes match, with `<Int`
   rule [asWord-concat-lt]:
     #asWord ( BA1 +Bytes BA2 ) <Int X:Int => #asWord ( BA1 ) <Int X /Int ( 2 ^Int ( 8 *Int lengthBytes ( BA2 ) ) )
