@@ -31,8 +31,8 @@ module BYTES-SIMPLIFICATION [symbolic]
     rule [bytes-concat-empty-left]:   .Bytes +Bytes B:Bytes => B [simplification]
     // b"" is a Kore domain value (\dv{Bytes}("")) distinct from the .Bytes constructor;
     // LLVM hooks (e.g. #encodeArgs base case) return b"", not .Bytes, so we need both forms.
-    rule [bytes-concat-empty-right-concrete]: B:Bytes +Bytes b"" => B [simplification, preserves-definedness]
-    rule [bytes-concat-empty-left-concrete]:  b"" +Bytes B:Bytes => B [simplification, preserves-definedness]
+    rule [bytes-concat-empty-right-concrete]: B:Bytes +Bytes b"" => B [simplification]
+    rule [bytes-concat-empty-left-concrete]:  b"" +Bytes B:Bytes => B [simplification]
 
     rule [bytes-concat-right-assoc-symb-l]: (B1:Bytes +Bytes B2:Bytes) +Bytes B3:Bytes => B1 +Bytes (B2 +Bytes B3) [symbolic(B1), simplification(40)]
     rule [bytes-concat-right-assoc-symb-r]: (B1:Bytes +Bytes B2:Bytes) +Bytes B3:Bytes => B1 +Bytes (B2 +Bytes B3) [symbolic(B2), simplification(40)]
@@ -103,7 +103,7 @@ module BYTES-SIMPLIFICATION [symbolic]
     rule [range-empty]:
       #range(_:Bytes, S:Int, W:Int) => .Bytes
       requires S <Int 0 orBool W <=Int 0
-      [simplification(30), preserves-definedness]
+      [simplification(30)]
 
     rule [range-full]:
       #range(B:Bytes, 0, W:Int) => B +Bytes #buf(W -Int lengthBytes(B), 0)
@@ -271,8 +271,8 @@ module BYTES-SIMPLIFICATION [symbolic]
     rule [lengthBytes-geq-zero]:   0 <=Int lengthBytes ( _ )                     => true                                     [simplification, smt-lemma]
     rule [lengthBytes-geq-nonPos]: X <=Int lengthBytes ( _ )                     => true requires X <=Int 0                  [simplification, concrete(X)]
     rule [lengthBytes-concat]:     lengthBytes(BUF1 +Bytes BUF2)                 => lengthBytes(BUF1) +Int lengthBytes(BUF2) [simplification]
-    rule [lengthBytes-buf]:        lengthBytes(#buf(S, _))                       => S requires 0 <=Int S                     [simplification, preserves-definedness]
-    rule [lengthBytes-range]:      lengthBytes(#range(_, S:Int, W:Int))          => maxInt(0, W) requires 0 <=Int S          [simplification, preserves-definedness]
+    rule [lengthBytes-buf]:        lengthBytes(#buf(S, _))                       => S requires 0 <=Int S                     [simplification]
+    rule [lengthBytes-range]:      lengthBytes(#range(_, S:Int, W:Int))          => maxInt(0, W) requires 0 <=Int S          [simplification]
     rule [lengthBytes-prtw]:       lengthBytes(#padRightToWidth(W:Int, B:Bytes)) => maxInt(lengthBytes(B), W)                [simplification]
 
     rule [lengthBytes-leq-zero]: lengthBytes(B:Bytes) <=Int 0 => B ==K .Bytes [simplification]

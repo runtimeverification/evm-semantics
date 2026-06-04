@@ -31,60 +31,60 @@ module INT-SIMPLIFICATION-HASKELL [symbolic]
   // add, sub: comparison normalization
   // ###########################################################################
 
-    rule A +Int B   <Int C => A  <Int C -Int B [concrete(B, C), symbolic(A), simplification(45), preserves-definedness]
-    rule A +Int B  <=Int C => A <=Int C -Int B [concrete(B, C), symbolic(A), simplification(45), preserves-definedness]
-    rule A +Int B   >Int C => A  >Int C -Int B [concrete(B, C), symbolic(A), simplification(45), preserves-definedness]
-    rule A +Int B  >=Int C => A >=Int C -Int B [concrete(B, C), symbolic(A), simplification(45), preserves-definedness]
+    rule A +Int B   <Int C => A  <Int C -Int B [concrete(B, C), symbolic(A), simplification(45)]
+    rule A +Int B  <=Int C => A <=Int C -Int B [concrete(B, C), symbolic(A), simplification(45)]
+    rule A +Int B   >Int C => A  >Int C -Int B [concrete(B, C), symbolic(A), simplification(45)]
+    rule A +Int B  >=Int C => A >=Int C -Int B [concrete(B, C), symbolic(A), simplification(45)]
 
-    rule A +Int B   <Int C => B  <Int C -Int A [concrete(A, C), symbolic(B), simplification(45), preserves-definedness]
-    rule A +Int B  <=Int C => B <=Int C -Int A [concrete(A, C), symbolic(B), simplification(45), preserves-definedness]
-    rule A +Int B   >Int C => B  >Int C -Int A [concrete(A, C), symbolic(B), simplification(45), preserves-definedness]
-    rule A +Int B  >=Int C => B >=Int C -Int A [concrete(A, C), symbolic(B), simplification(45), preserves-definedness]
+    rule A +Int B   <Int C => B  <Int C -Int A [concrete(A, C), symbolic(B), simplification(45)]
+    rule A +Int B  <=Int C => B <=Int C -Int A [concrete(A, C), symbolic(B), simplification(45)]
+    rule A +Int B   >Int C => B  >Int C -Int A [concrete(A, C), symbolic(B), simplification(45)]
+    rule A +Int B  >=Int C => B >=Int C -Int A [concrete(A, C), symbolic(B), simplification(45)]
 
-    rule A -Int B   <Int C => A  <Int C +Int B [concrete(B, C), symbolic(A), simplification(45), preserves-definedness]
-    rule A -Int B  <=Int C => A <=Int C +Int B [concrete(B, C), symbolic(A), simplification(45), preserves-definedness]
-    rule A -Int B   >Int C => A  >Int C +Int B [concrete(B, C), symbolic(A), simplification(45), preserves-definedness]
-    rule A -Int B  >=Int C => A >=Int C +Int B [concrete(B, C), symbolic(A), simplification(45), preserves-definedness]
+    rule A -Int B   <Int C => A  <Int C +Int B [concrete(B, C), symbolic(A), simplification(45)]
+    rule A -Int B  <=Int C => A <=Int C +Int B [concrete(B, C), symbolic(A), simplification(45)]
+    rule A -Int B   >Int C => A  >Int C +Int B [concrete(B, C), symbolic(A), simplification(45)]
+    rule A -Int B  >=Int C => A >=Int C +Int B [concrete(B, C), symbolic(A), simplification(45)]
 
-    rule A -Int B   <Int C => A -Int C  <Int B [concrete(A, C), symbolic(B), simplification(45), preserves-definedness]
-    rule A -Int B  <=Int C => A -Int C <=Int B [concrete(A, C), symbolic(B), simplification(45), preserves-definedness]
-    rule A -Int B   >Int C => A -Int C  >Int B [concrete(A, C), symbolic(B), simplification(45), preserves-definedness]
-    rule A -Int B  >=Int C => A -Int C >=Int B [concrete(A, C), symbolic(B), simplification(45), preserves-definedness]
+    rule A -Int B   <Int C => A -Int C  <Int B [concrete(A, C), symbolic(B), simplification(45)]
+    rule A -Int B  <=Int C => A -Int C <=Int B [concrete(A, C), symbolic(B), simplification(45)]
+    rule A -Int B   >Int C => A -Int C  >Int B [concrete(A, C), symbolic(B), simplification(45)]
+    rule A -Int B  >=Int C => A -Int C >=Int B [concrete(A, C), symbolic(B), simplification(45)]
 
-    rule A   <Int B +Int C => A -Int B  <Int C [concrete(A, B), symbolic(C), simplification(45), preserves-definedness]
-    rule A  <=Int B +Int C => A -Int B <=Int C [concrete(A, B), symbolic(C), simplification(45), preserves-definedness]
-    rule A   >Int B +Int C => A -Int B  >Int C [concrete(A, B), symbolic(C), simplification(45), preserves-definedness]
-    rule A  >=Int B +Int C => A -Int B >=Int C [concrete(A, B), symbolic(C), simplification(45), preserves-definedness]
+    rule A   <Int B +Int C => A -Int B  <Int C [concrete(A, B), symbolic(C), simplification(45)]
+    rule A  <=Int B +Int C => A -Int B <=Int C [concrete(A, B), symbolic(C), simplification(45)]
+    rule A   >Int B +Int C => A -Int B  >Int C [concrete(A, B), symbolic(C), simplification(45)]
+    rule A  >=Int B +Int C => A -Int B >=Int C [concrete(A, B), symbolic(C), simplification(45)]
 
-    rule A   <Int B +Int C => A -Int C  <Int B [concrete(A, C), symbolic(B), simplification(45), preserves-definedness]
-    rule A  <=Int B +Int C => A -Int C <=Int B [concrete(A, C), symbolic(B), simplification(45), preserves-definedness]
-    rule A   >Int B +Int C => A -Int C  >Int B [concrete(A, C), symbolic(B), simplification(45), preserves-definedness]
-    rule A  >=Int B +Int C => A -Int C >=Int B [concrete(A, C), symbolic(B), simplification(45), preserves-definedness]
+    rule A   <Int B +Int C => A -Int C  <Int B [concrete(A, C), symbolic(B), simplification(45)]
+    rule A  <=Int B +Int C => A -Int C <=Int B [concrete(A, C), symbolic(B), simplification(45)]
+    rule A   >Int B +Int C => A -Int C  >Int B [concrete(A, C), symbolic(B), simplification(45)]
+    rule A  >=Int B +Int C => A -Int C >=Int B [concrete(A, C), symbolic(B), simplification(45)]
 
-    rule A   <Int B -Int C => C  <Int B -Int A [concrete(A, B), symbolic(C), simplification(45), preserves-definedness]
-    rule A  <=Int B -Int C => C <=Int B -Int A [concrete(A, B), symbolic(C), simplification(45), preserves-definedness]
-    rule A   >Int B -Int C => C  >Int B -Int A [concrete(A, B), symbolic(C), simplification(45), preserves-definedness]
-    rule A  >=Int B -Int C => C >=Int B -Int A [concrete(A, B), symbolic(C), simplification(45), preserves-definedness]
+    rule A   <Int B -Int C => C  <Int B -Int A [concrete(A, B), symbolic(C), simplification(45)]
+    rule A  <=Int B -Int C => C <=Int B -Int A [concrete(A, B), symbolic(C), simplification(45)]
+    rule A   >Int B -Int C => C  >Int B -Int A [concrete(A, B), symbolic(C), simplification(45)]
+    rule A  >=Int B -Int C => C >=Int B -Int A [concrete(A, B), symbolic(C), simplification(45)]
 
-    rule A   <Int B -Int C => A +Int C  <Int B [concrete(A, C), symbolic(B), simplification(45), preserves-definedness]
-    rule A  <=Int B -Int C => A +Int C <=Int B [concrete(A, C), symbolic(B), simplification(45), preserves-definedness]
-    rule A   >Int B -Int C => A +Int C  >Int B [concrete(A, C), symbolic(B), simplification(45), preserves-definedness]
-    rule A  >=Int B -Int C => A +Int C >=Int B [concrete(A, C), symbolic(B), simplification(45), preserves-definedness]
+    rule A   <Int B -Int C => A +Int C  <Int B [concrete(A, C), symbolic(B), simplification(45)]
+    rule A  <=Int B -Int C => A +Int C <=Int B [concrete(A, C), symbolic(B), simplification(45)]
+    rule A   >Int B -Int C => A +Int C  >Int B [concrete(A, C), symbolic(B), simplification(45)]
+    rule A  >=Int B -Int C => A +Int C >=Int B [concrete(A, C), symbolic(B), simplification(45)]
 
-    rule A +Int B  ==Int C => A ==Int C -Int B [concrete(B, C), symbolic(A), simplification(45), comm, preserves-definedness]
-    rule A +Int B  ==Int C => B ==Int C -Int A [concrete(A, C), symbolic(B), simplification(45), comm, preserves-definedness]
-    rule A -Int B  ==Int C => A ==Int C +Int B [concrete(B, C), symbolic(A), simplification(45), comm, preserves-definedness]
-    rule A -Int B  ==Int C => A -Int C ==Int B [concrete(A, C), symbolic(B), simplification(45), comm, preserves-definedness]
+    rule A +Int B  ==Int C => A ==Int C -Int B [concrete(B, C), symbolic(A), simplification(45), comm]
+    rule A +Int B  ==Int C => B ==Int C -Int A [concrete(A, C), symbolic(B), simplification(45), comm]
+    rule A -Int B  ==Int C => A ==Int C +Int B [concrete(B, C), symbolic(A), simplification(45), comm]
+    rule A -Int B  ==Int C => A -Int C ==Int B [concrete(A, C), symbolic(B), simplification(45), comm]
 
-    rule { A +Int B #Equals C } => { A #Equals C -Int B } [concrete(B, C), symbolic(A), simplification(45), comm, preserves-definedness]
-    rule { A +Int B #Equals C } => { B #Equals C -Int A } [concrete(A, C), symbolic(B), simplification(45), comm, preserves-definedness]
-    rule { A -Int B #Equals C } => { A #Equals C +Int B } [concrete(B, C), symbolic(A), simplification(45), comm, preserves-definedness]
-    rule { A -Int B #Equals C } => { A -Int C #Equals B } [concrete(A, C), symbolic(B), simplification(45), comm, preserves-definedness]
+    rule { A +Int B #Equals C } => { A #Equals C -Int B } [concrete(B, C), symbolic(A), simplification(45), comm]
+    rule { A +Int B #Equals C } => { B #Equals C -Int A } [concrete(A, C), symbolic(B), simplification(45), comm]
+    rule { A -Int B #Equals C } => { A #Equals C +Int B } [concrete(B, C), symbolic(A), simplification(45), comm]
+    rule { A -Int B #Equals C } => { A -Int C #Equals B } [concrete(A, C), symbolic(B), simplification(45), comm]
 
-    rule A +Int B  <Int C +Int D => A -Int C  <Int D -Int B [concrete(B, D), symbolic(A, C), simplification(45), preserves-definedness]
-    rule A +Int B <=Int C +Int D => A -Int C <=Int D -Int B [concrete(B, D), symbolic(A, C), simplification(45), preserves-definedness]
-    rule A +Int B  >Int C +Int D => A -Int C  >Int D -Int B [concrete(B, D), symbolic(A, C), simplification(45), preserves-definedness]
-    rule A +Int B >=Int C +Int D => A -Int C >=Int D -Int B [concrete(B, D), symbolic(A, C), simplification(45), preserves-definedness]
+    rule A +Int B  <Int C +Int D => A -Int C  <Int D -Int B [concrete(B, D), symbolic(A, C), simplification(45)]
+    rule A +Int B <=Int C +Int D => A -Int C <=Int D -Int B [concrete(B, D), symbolic(A, C), simplification(45)]
+    rule A +Int B  >Int C +Int D => A -Int C  >Int D -Int B [concrete(B, D), symbolic(A, C), simplification(45)]
+    rule A +Int B >=Int C +Int D => A -Int C >=Int D -Int B [concrete(B, D), symbolic(A, C), simplification(45)]
 
     rule [int-eq-comm-concrete]:
         N:Int ==Int X:Int => X ==Int N
@@ -93,12 +93,12 @@ module INT-SIMPLIFICATION-HASKELL [symbolic]
     rule A +Int B ==Int A        => B        ==Int 0        [simplification(40)]
     rule A +Int B ==Int B        => A        ==Int 0        [simplification(40)]
     rule A +Int B ==Int C +Int B => A        ==Int C        [simplification(40)]
-    rule A +Int B ==Int C +Int D => A -Int C ==Int D -Int B [simplification(45), symbolic(A, C), concrete(B, D), preserves-definedness]
+    rule A +Int B ==Int C +Int D => A -Int C ==Int D -Int B [simplification(45), symbolic(A, C), concrete(B, D)]
 
     rule { A +Int B #Equals A        } => { B        #Equals 0 }        [simplification(40)]
     rule { A +Int B #Equals B        } => { A        #Equals 0 }        [simplification(40)]
     rule { A +Int B #Equals C +Int B } => { A        #Equals C        } [simplification(40)]
-    rule { A +Int B #Equals C +Int D } => { A -Int C #Equals D -Int B } [simplification(45), symbolic(A, C), concrete(B, D), preserves-definedness]
+    rule { A +Int B #Equals C +Int D } => { A -Int C #Equals D -Int B } [simplification(45), symbolic(A, C), concrete(B, D)]
 
     rule 0  <Int A -Int B => B  <Int A [simplification, symbolic(A, B)]
     rule 0 <=Int A -Int B => B <=Int A [simplification, symbolic(A, B)]
@@ -248,11 +248,11 @@ module INT-SIMPLIFICATION-COMMON
     rule [minint-lt-maxint-a]:
         minInt(A:Int, _B:Int) <Int maxInt(C:Int, _D:Int) => true
         requires A <Int C
-        [simplification(40), preserves-definedness]
+        [simplification(40)]
     rule [minint-leq-maxint-b]:
         minInt(_A:Int, B:Int) <=Int maxInt(_C:Int, D:Int) => true
         requires B <=Int D
-        [simplification(40), preserves-definedness]
+        [simplification(40)]
 
   // ###########################################################################
   // inequality
@@ -287,7 +287,7 @@ module INT-SIMPLIFICATION-COMMON
     rule A ==Int B => false requires 0 <=Int A andBool B <Int 0 [simplification, concrete(B)]
 
     // A ==Int B is false when A < B is a known path-condition fact (B concrete).
-    rule [eq-false-lt]: A:Int ==Int B:Int => false requires A <Int B [simplification, concrete(B), preserves-definedness]
+    rule [eq-false-lt]: A:Int ==Int B:Int => false requires A <Int B [simplification, concrete(B)]
 
     rule 0 <Int X => true requires 0 <=Int X andBool notBool (X ==Int 0) [simplification(60)]
 

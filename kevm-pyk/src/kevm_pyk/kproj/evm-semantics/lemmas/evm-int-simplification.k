@@ -107,7 +107,7 @@ module EVM-INT-SIMPLIFICATION
   rule [asWord-buf-inversion-rangeUInt256]:
     #asWord ( #buf ( 32, X:Int ) ) => X
     requires #rangeUInt ( 256, X )
-    [simplification, preserves-definedness]
+    [simplification]
 
   // Reduction: bitwise right shift in terms of `#range`
   rule [asWord-shr]:
@@ -134,14 +134,14 @@ module EVM-INT-SIMPLIFICATION
   // Comparison: `#asWord(B) < X` is false when the path condition says X <= #asWord(B).
   // Loop-safe with asWord-le-false: requires clauses have #asWord on the RIGHT, so
   // neither rule fires on the other's requires.
-  rule [asWord-lt-false]: #asWord ( B:Bytes )  <Int X:Int => false requires X <=Int #asWord ( B ) [simplification, preserves-definedness]
-  rule [asWord-le-false]: #asWord ( B:Bytes ) <=Int X:Int => false requires X  <Int #asWord ( B ) [simplification, preserves-definedness]
+  rule [asWord-lt-false]: #asWord ( B:Bytes )  <Int X:Int => false requires X <=Int #asWord ( B ) [simplification]
+  rule [asWord-le-false]: #asWord ( B:Bytes ) <=Int X:Int => false requires X  <Int #asWord ( B ) [simplification]
   // Comparison: `#asWord(B) == X` is false when the path condition says X =/= #asWord(B).
   // The requires X =/=Int #asWord(B) expands to notBool(X ==Int #asWord(B)) via the K builtin;
   // since ==Int is comm, this matches the path condition fact notBool(#asWord(B) ==Int X).
   // No loop: our rule matches #asWord on the LEFT; after builtin expansion the recursive
   // term X ==Int #asWord(B) has X on the LEFT, so this rule does not fire on it.
-  rule [asWord-eq-false]: #asWord ( B:Bytes ) ==Int X:Int => false requires X =/=Int #asWord ( B ) [simplification, preserves-definedness]
+  rule [asWord-eq-false]: #asWord ( B:Bytes ) ==Int X:Int => false requires X =/=Int #asWord ( B ) [simplification]
 
   // Comparison: `#asWord` of `+Bytes` when lower bytes match, with `<Int`
   rule [asWord-concat-lt]:
