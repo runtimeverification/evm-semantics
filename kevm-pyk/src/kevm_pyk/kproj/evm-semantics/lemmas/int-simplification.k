@@ -253,6 +253,8 @@ module INT-SIMPLIFICATION-COMMON
 
     rule A:Int <=Int A:Int => true [simplification]
 
+ // Higher-priority: short-circuit to true directly when path condition already has 0 <=Int B.
+    rule A:Int <=Int A:Int +Int B:Int => true requires 0 <=Int B [simplification(40)]
     rule A:Int <=Int A:Int +Int B:Int => 0 <=Int B [simplification]
 
     rule A:Int <Int B:Int andBool B:Int <Int A:Int => false [simplification]
