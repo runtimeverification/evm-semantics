@@ -349,10 +349,7 @@ def exec_prove(options: ProveOptions) -> None:
 
             if not is_functional(claim) and (options.reinit or not up_to_date):
                 assert type(proof_problem) is APRProof
-                initialize_apr_proof(
-                    kcfg_explore.cterm_symbolic,
-                    proof_problem,
-                )
+                initialize_apr_proof(kcfg_explore.cterm_symbolic, proof_problem)
 
             proof_problem.write_proof_data()
 

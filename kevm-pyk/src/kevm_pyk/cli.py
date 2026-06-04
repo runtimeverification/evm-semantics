@@ -1108,6 +1108,8 @@ class KEVMCLIArgs(KCLIArgs):
             '--haskell-log-format',
             dest='haskell_log_format',
             default=None,
+            # Intentional subset of KoreExecLogFormat: only the machine-readable formats are
+            # useful for log analysis; 'standard' (human multi-line) is deliberately excluded.
             choices=['oneline', 'json'],
             help='Log format for the Haskell backend (oneline or json).',
         )
