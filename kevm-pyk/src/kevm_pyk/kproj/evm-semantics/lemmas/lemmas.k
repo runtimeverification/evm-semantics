@@ -256,19 +256,6 @@ module LEMMAS-HASKELL [symbolic]
     rule [widthOpCode-lb]: 0 <=Int #widthOpCode(_:Int) => true [simplification, smt-lemma]
     rule [widthOpCode-ub]: #widthOpCode(_:Int) <=Int 33 => true [simplification, smt-lemma]
 
-    // Booster's equation engine does not descend inside #widthOpCode(...) to
-    // apply bytes-concat-lookup-{left,right}.  These rules compose the two
-    // steps so the full concrete-prefix lookup can be reduced in one go.
-    rule [widthOpCode-concat-left]:
-      #widthOpCode ( ( B1:Bytes +Bytes _B2:Bytes ) [ I:Int ] ) => #widthOpCode ( B1 [ I ] )
-      requires 0 <=Int I andBool I <Int lengthBytes ( B1 )
-      [simplification, preserves-definedness]
-
-    rule [widthOpCode-concat-right]:
-      #widthOpCode ( ( B1:Bytes +Bytes B2:Bytes ) [ I:Int ] ) => #widthOpCode ( B2 [ I -Int lengthBytes ( B1 ) ] )
-      requires lengthBytes ( B1 ) <=Int I
-      [simplification, preserves-definedness]
-
   // ########################
   // Boolean Logic
   // ########################
