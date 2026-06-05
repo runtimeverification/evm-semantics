@@ -275,14 +275,4 @@ module LEMMAS-HASKELL [symbolic]
     rule [bool-and-not-self]:         B:Bool andBool notBool B:Bool => false [simplification]
     rule [bool-not-and-self]: notBool B:Bool andBool         B:Bool => false [simplification]
 
-    rule [bool-eq-not-true-l]:  { true           #Equals notBool B:Bool } => { false #Equals B     } [simplification]
-    rule [bool-eq-not-true-r]:  { notBool B:Bool #Equals true           } => { B     #Equals false } [simplification]
-    rule [bool-eq-not-false-l]: { false          #Equals notBool B:Bool } => { true  #Equals B     } [simplification]
-    rule [bool-eq-not-false-r]: { notBool B:Bool #Equals false          } => { B     #Equals true  } [simplification]
-
-    rule [bool-eq-and-true-l]: { true                    #Equals B1:Bool andBool B2:Bool } => { true  #Equals B1    } #And { true  #Equals B2   } [simplification]
-    rule [bool-eq-and-true-r]: { B1:Bool andBool B2:Bool #Equals true                    } => { B1    #Equals true  } #And { B2    #Equals true } [simplification]
-    rule [bool-eq-or-false-l]: { false                   #Equals B1:Bool  orBool B2:Bool } => { false #Equals B1    } #And { false #Equals B2   } [simplification]
-    rule [bool-eq-or-false-r]: { B1:Bool  orBool B2:Bool #Equals false                   } => { B1    #Equals false } #And { B2    #Equals false} [simplification]
-
 endmodule
