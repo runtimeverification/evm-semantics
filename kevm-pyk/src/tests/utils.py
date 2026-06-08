@@ -7,7 +7,6 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import pytest
-from pyk.cterm.symbolic import HASKELL_LOGGING_ENTRIES
 from pyk.kdist import kdist
 from pyk.kore.prelude import int_dv
 from pyk.kore.syntax import App
@@ -27,11 +26,6 @@ _LOGGER: Final = logging.getLogger(__name__)
 
 REPO_ROOT: Final = Path(__file__).parents[3].resolve(strict=True)
 GOLDEN: Final = (REPO_ROOT / 'tests/templates/output-success-llvm.json').read_text().rstrip()
-
-# Default Haskell-backend log entries enabled by --haskell-logging: the curated set pyk
-# uses, covering the richer kore-invocation events (haskell-backend #4149). These names are
-# only valid on that newer backend, which this PR is gated on.
-DEFAULT_HASKELL_LOG_ENTRIES: Final = HASKELL_LOGGING_ENTRIES
 
 
 def _assert_exit_code_zero(pattern: Pattern) -> None:

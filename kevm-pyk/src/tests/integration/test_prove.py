@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, NamedTuple
 
 import pytest
 from filelock import SoftFileLock
+from pyk.cterm.symbolic import HASKELL_LOGGING_ENTRIES
 from pyk.kast.att import AttEntry, Atts, KAtt
 from pyk.kast.outer import KClaim
 from pyk.kdist import kdist
@@ -21,7 +22,7 @@ from kevm_pyk.kevm import KEVM, KEVMSemantics, kevm_node_printer
 from kevm_pyk.kompile import KompileTarget, kevm_kompile
 from kevm_pyk.utils import initialize_apr_proof, legacy_explore
 
-from ..utils import DEFAULT_HASKELL_LOG_ENTRIES, REPO_ROOT
+from ..utils import REPO_ROOT
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -255,7 +256,7 @@ def _test_prove(
             'claim_labels': claim_labels,
         }
         if haskell_logging:
-            options_dict['haskell_log_entries'] = booster_log_levels or list(DEFAULT_HASKELL_LOG_ENTRIES)
+            options_dict['haskell_log_entries'] = booster_log_levels or list(HASKELL_LOGGING_ENTRIES)
             if haskell_log_dir is not None:
                 options_dict['haskell_log_dir'] = haskell_log_dir
         options = ProveOptions(options_dict)

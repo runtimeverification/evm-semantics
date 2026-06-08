@@ -4,18 +4,11 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import pytest
-
-from .utils import DEFAULT_HASKELL_LOG_ENTRIES
+from pyk.cli.utils import list_of
+from pyk.cterm.symbolic import HASKELL_LOGGING_ENTRIES
 
 if TYPE_CHECKING:
     from pytest import FixtureRequest, Parser
-
-
-def _csv_option(raw: str | None) -> list[str] | None:
-    """Parse a comma-separated option value into a trimmed list, or None if unset."""
-    if raw is None:
-        return None
-    return [item.strip() for item in raw.split(',') if item.strip()]
 
 
 def pytest_addoption(parser: Parser) -> None:
@@ -52,7 +45,7 @@ def pytest_addoption(parser: Parser) -> None:
     parser.addoption(
         '--claim-labels',
         default=None,
-        type=str,
+        type=list_of(str, delim=','),
         help='Comma-separated claim labels to prove within a spec (e.g. foo-claim,bar-claim); proves all claims if omitted',
     )
     parser.addoption(
@@ -78,17 +71,17 @@ def pytest_addoption(parser: Parser) -> None:
         default=False,
         help=(
             'Enable JSON logging of the default Haskell-backend entries '
-            f'({",".join(DEFAULT_HASKELL_LOG_ENTRIES)}) for all proof tests. '
+            f'({",".join(HASKELL_LOGGING_ENTRIES)}) for all proof tests. '
             'Use with --booster-log-dir to persist logs.'
         ),
     )
     parser.addoption(
         '--booster-log-levels',
         default=None,
-        type=str,
+        type=list_of(str, delim=','),
         help=(
             'Comma-separated Haskell-backend log entries to enable, overriding the default set '
-            f'used by --haskell-logging ({",".join(DEFAULT_HASKELL_LOG_ENTRIES)}). '
+            f'used by --haskell-logging ({",".join(HASKELL_LOGGING_ENTRIES)}). '
             'Valid entries are defined by the backend; see its --log-level help.'
         ),
     )
@@ -132,7 +125,7 @@ def spec_name(request: FixtureRequest) -> str | None:
 
 @pytest.fixture(scope='session')
 def claim_labels(request: FixtureRequest) -> list[str] | None:
-    return _csv_option(request.config.getoption('--claim-labels'))
+    return request.config.getoption('--claim-labels')
 
 
 @pytest.fixture(scope='session')
@@ -159,10 +152,10 @@ def booster_log_levels(request: FixtureRequest) -> list[str] | None:
     Return explicit log entries for the Haskell backend, or None to use the default.
 
     When None is returned and haskell_logging is True, the harness falls back to
-    DEFAULT_HASKELL_LOG_ENTRIES. Set via --booster-log-levels on the command line:
+    HASKELL_LOGGING_ENTRIES. Set via --booster-log-levels on the command line:
         pytest ... --booster-log-levels Abort,Rewrite,SMT
     """
-    return _csv_option(request.config.getoption('--booster-log-levels'))
+    return request.config.getoption('--booster-log-levels')
 
 
 @pytest.fixture(scope='session')
