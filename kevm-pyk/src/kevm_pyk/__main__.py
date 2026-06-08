@@ -18,11 +18,12 @@ from filelock import SoftFileLock
 from pathos.pools import ProcessPool  # type: ignore
 from pyk.cli.pyk import parse_toml_args
 from pyk.cterm import CTermSymbolic
+from pyk.cterm.symbolic import HASKELL_LOGGING_ENTRIES
 from pyk.kast.outer import KApply, KRewrite, KSort, KToken
 from pyk.kcfg import KCFG
 from pyk.kcfg.explore import KCFGExplore
 from pyk.kdist import kdist
-from pyk.kore.rpc import KoreClient, KoreExecLogFormat
+from pyk.kore.rpc import KoreClient
 from pyk.kore.tools import kore_print
 from pyk.ktool.claim_loader import ClaimLoader
 from pyk.ktool.kompile import LLVMKompileType
@@ -318,9 +319,8 @@ def exec_prove(options: ProveOptions) -> None:
             interim_simplification=options.interim_simplification,
             no_post_exec_simplify=(not options.post_exec_simplify),
             port=options.port,
-            haskell_log_format=KoreExecLogFormat(options.haskell_log_format),
             haskell_log_entries=options.haskell_log_entries,
-            log_axioms_file=options.haskell_log_file,
+            haskell_log_dir=options.haskell_log_dir,
             booster_only_simplify=options.booster_only_simplify,
         ) as kcfg_explore:
 
@@ -340,6 +340,8 @@ def exec_prove(options: ProveOptions) -> None:
                     log_succ_rewrites=options.log_succ_rewrites,
                     log_fail_rewrites=options.log_fail_rewrites,
                     booster_only_simplify=options.booster_only_simplify,
+                    haskell_log_entries=options.haskell_log_entries or HASKELL_LOGGING_ENTRIES,
+                    haskell_log_dir=options.haskell_log_dir,
                 )
                 return KCFGExplore(
                     cterm_symbolic,

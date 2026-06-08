@@ -212,21 +212,22 @@ def _test_prove(
     shutil.rmtree(use_directory, ignore_errors=True)
     use_directory.mkdir()
 
-    # Per-spec backend log file.
-    # Explicit --booster-log-dir: <dir>/<suite>-<spec-stem>.jsonl (CI / ad-hoc use).
+    # Per-spec backend log directory: the backend writes one <request-id>.jsonl bundle per RPC
+    # into it, so each spec needs its own directory to avoid request-id collisions across specs.
+    # Explicit --booster-log-dir: <dir>/<suite>-<spec-stem>/ (CI / ad-hoc use).
     # Default (--haskell-logging without --booster-log-dir): write to
-    #   <spec-file>.analysis/<claim-label-or-all-claims>.jsonl alongside the spec.
-    haskell_log_file: Path | None = None
+    #   <spec-file>.analysis/<claim-label-or-all-claims>/ alongside the spec.
+    haskell_log_dir: Path | None = None
     if haskell_logging:
         if booster_log_dir is not None:
             rel = spec_file.relative_to(SPEC_DIR)
-            log_name = '-'.join(rel.with_suffix('').parts) + '.jsonl'
-            haskell_log_file = booster_log_dir / log_name
+            log_name = '-'.join(rel.with_suffix('').parts)
+            haskell_log_dir = booster_log_dir / log_name
         else:
             analysis_dir = Path(str(spec_file) + '.analysis')
-            analysis_dir.mkdir(parents=True, exist_ok=True)
             claim_stem = '+'.join(claim_labels) if claim_labels else 'all-claims'
-            haskell_log_file = analysis_dir / (claim_stem + '.jsonl')
+            haskell_log_dir = analysis_dir / claim_stem
+        haskell_log_dir.mkdir(parents=True, exist_ok=True)
 
     # When
     try:
@@ -254,10 +255,9 @@ def _test_prove(
             'claim_labels': claim_labels,
         }
         if haskell_logging:
-            options_dict['haskell_log_format'] = 'json'
             options_dict['haskell_log_entries'] = booster_log_levels or list(DEFAULT_HASKELL_LOG_ENTRIES)
-            if haskell_log_file is not None:
-                options_dict['haskell_log_file'] = haskell_log_file
+            if haskell_log_dir is not None:
+                options_dict['haskell_log_dir'] = haskell_log_dir
         options = ProveOptions(options_dict)
         exec_prove(options=options)
         if name in TEST_PARAMS:

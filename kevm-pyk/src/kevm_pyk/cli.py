@@ -360,9 +360,8 @@ class RPCOptions(Options):
     interim_simplification: int | None
     port: int | None
     use_booster_dev: bool
-    haskell_log_format: str
     haskell_log_entries: list[str]
-    haskell_log_file: Path | None
+    haskell_log_dir: Path | None
 
     @staticmethod
     def default() -> dict[str, Any]:
@@ -376,9 +375,8 @@ class RPCOptions(Options):
             'interim_simplification': None,
             'port': None,
             'use_booster_dev': False,
-            'haskell_log_format': 'oneline',
             'haskell_log_entries': [],
-            'haskell_log_file': None,
+            'haskell_log_dir': None,
         }
 
     @staticmethod
@@ -1105,25 +1103,16 @@ class KEVMCLIArgs(KCLIArgs):
             help='Use existing RPC server on named port.',
         )
         args.add_argument(
-            '--haskell-log-format',
-            dest='haskell_log_format',
-            default=None,
-            # Intentional subset of KoreExecLogFormat: only the machine-readable formats are
-            # useful for log analysis; 'standard' (human multi-line) is deliberately excluded.
-            choices=['oneline', 'json'],
-            help='Log format for the Haskell backend (oneline or json).',
-        )
-        args.add_argument(
             '--haskell-log-entries',
             dest='haskell_log_entries',
             type=list_of(str, delim=','),
-            help='Comma-separated list of log entry types for the Haskell backend (e.g. KoreCalls,Simplify,SimplifyKore).',
+            help='Comma-separated Haskell-backend log entries to capture per request (e.g. Abort,Simplify,Rewrite); defaults to the curated pyk set when omitted.',
         )
         args.add_argument(
-            '--haskell-log-file',
-            dest='haskell_log_file',
+            '--haskell-log-dir',
+            dest='haskell_log_dir',
             type=Path,
-            help='Write Haskell backend log to this file.',
+            help='Capture per-request Haskell-backend log bundles, one <request-id>.jsonl file per RPC, under this directory.',
         )
         return args
 

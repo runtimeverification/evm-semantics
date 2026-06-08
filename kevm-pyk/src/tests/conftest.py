@@ -70,7 +70,7 @@ def pytest_addoption(parser: Parser) -> None:
         '--booster-log-dir',
         type=Path,
         default=None,
-        help='Write per-spec Haskell backend JSON logs to this directory. Implies --haskell-logging.',
+        help='Capture per-request Haskell backend log bundles under this directory, one per-spec subdirectory of <request-id>.jsonl files. Implies --haskell-logging.',
     )
     parser.addoption(
         '--haskell-logging',
