@@ -29,3 +29,6 @@
 # Kept in-repo for discoverability; the summarised report is committed under
 # docs/experiment-logs/ instead.  See CLAUDE.md "Comparing haskell-backend builds".
 /perf-runs/
+
+# Per-spec backend log bundles written by the test harness --haskell-logging default.
+*.analysis/
