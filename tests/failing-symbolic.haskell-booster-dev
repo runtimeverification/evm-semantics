@@ -94,6 +94,7 @@ tests/specs/mcd/dai-adduu-fail-rough-spec.k
 tests/specs/mcd/dstoken-approve-fail-rough-spec.k
 tests/specs/mcd/dsvalue-peek-pass-rough-spec.k
 tests/specs/mcd/dsvalue-read-pass-spec.k
+tests/specs/mcd/dsvalue-read-pass-summarize-spec.k
 tests/specs/mcd/end-cash-pass-rough-spec.k
 tests/specs/mcd/end-pack-pass-rough-spec.k
 tests/specs/mcd/end-subuu-pass-spec.k
@@ -113,6 +114,7 @@ tests/specs/mcd-structured/cat-exhaustiveness-spec.k
 tests/specs/mcd-structured/cat-file-addr-pass-rough-spec.k
 tests/specs/mcd-structured/dai-adduu-fail-rough-spec.k
 tests/specs/mcd-structured/dstoken-approve-fail-rough-spec.k
+tests/specs/mcd-structured/dsvalue-read-pass-summarize-spec.k
 tests/specs/mcd-structured/end-cash-pass-rough-spec.k
 tests/specs/mcd-structured/end-pack-pass-rough-spec.k
 tests/specs/mcd-structured/end-subuu-pass-spec.k
