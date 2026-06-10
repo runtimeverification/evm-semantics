@@ -1633,7 +1633,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          <k> #call ACCTFROM ACCTTO ACCTCODE VALUE APPVALUE ARGS STATIC
           => #let DELEGATED_ACCOUNT = #asAccount(#range(CODE,3,20)) #in
            (#accessAccounts DELEGATED_ACCOUNT
-          ~> #callWithCode ACCTFROM ACCTTO ACCTCODE #getAccountCode(DELEGATED_ACCOUNT) VALUE APPVALUE ARGS STATIC )
+          ~> #callWithCode ACCTFROM ACCTTO DELEGATED_ACCOUNT #getAccountCode(DELEGATED_ACCOUNT) VALUE APPVALUE ARGS STATIC )
           ...
          </k>
          <schedule> SCHED </schedule>
