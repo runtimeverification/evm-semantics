@@ -91,6 +91,16 @@ def pytest_addoption(parser: Parser) -> None:
         default=False,
         help='Skip the Kore simplification pass after Booster for all simplify/execute/implies calls.',
     )
+    parser.addoption(
+        '--equation-max-local-steps',
+        type=int,
+        default=None,
+        help=(
+            'Booster equation budget for in-place evaluation at rewritten subterms '
+            '(backend default 0 = restart-only). Threaded to kore-rpc-booster / booster-dev '
+            'for all proof tests.'
+        ),
+    )
 
 
 @pytest.fixture
@@ -161,3 +171,8 @@ def booster_log_levels(request: FixtureRequest) -> list[str] | None:
 @pytest.fixture(scope='session')
 def booster_only_simplify(request: FixtureRequest) -> bool:
     return request.config.getoption('--booster-only-simplify')
+
+
+@pytest.fixture(scope='session')
+def equation_max_local_steps(request: FixtureRequest) -> int | None:
+    return request.config.getoption('--equation-max-local-steps')
