@@ -193,6 +193,17 @@ def _create_argument_parser() -> ArgumentParser:
         help='Skip the Kore simplification pass after Booster; assume_defined still uses Kore for #Ceil evaluation.',
     )
     prove_args.add_argument(
+        '--equation-max-local-steps',
+        dest='equation_max_local_steps',
+        type=int,
+        default=None,
+        help=(
+            'Booster equation budget for in-place evaluation at rewritten subterms before restarting '
+            'traversal from the top (backend default 0 = restart-only). Passed through to '
+            'kore-rpc-booster / booster-dev; requires a haskell-backend that supports the flag.'
+        ),
+    )
+    prove_args.add_argument(
         '--max-frontier-parallel',
         type=int,
         help='Maximum worker threads to use on a single proof to explore separate branches in parallel.',
@@ -611,6 +622,7 @@ class ProveOptions(
 ):
     reinit: bool
     booster_only_simplify: bool
+    equation_max_local_steps: int | None
     max_frontier_parallel: int
 
     @staticmethod
@@ -618,6 +630,7 @@ class ProveOptions(
         return {
             'reinit': False,
             'booster_only_simplify': False,
+            'equation_max_local_steps': None,
             'max_frontier_parallel': 1,
         }
 
