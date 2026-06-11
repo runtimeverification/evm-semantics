@@ -101,6 +101,14 @@ module EVM-INT-SIMPLIFICATION
     requires 0 <=Int WB andBool 0 <=Int X andBool X <Int minInt ( 2 ^Int (8 *Int WB), pow256 )
     [simplification, concrete(WB), preserves-definedness]
 
+  // Specialisation for 32-byte buf with rangeUInt(256) side-condition: avoids
+  // the minInt(2^256, pow256) evaluation that Booster cannot match against the
+  // path condition's 2^Int 256 tree form.
+  rule [asWord-buf-inversion-rangeUInt256]:
+    #asWord ( #buf ( 32, X:Int ) ) => X
+    requires #rangeUInt ( 256, X )
+    [simplification]
+
   // Reduction: bitwise right shift in terms of `#range`
   rule [asWord-shr]:
     #asWord( BA ) >>Int N => #asWord ( #range ( BA, 0, lengthBytes( BA ) -Int ( N /Int 8 ) ) )
@@ -122,6 +130,18 @@ module EVM-INT-SIMPLIFICATION
   rule [asWord-lt]:  #asWord ( B )  <Int X:Int => true  requires   2 ^Int (8 *Int minInt(32, lengthBytes(B)))          <=Int X [simplification, preserves-definedness]
   // Comparison: `#asWord(B)` is certainly less than or equal to something that is not less than the max number fitting into `lengthBytes(B)` bytes
   rule [asWord-le]:  #asWord ( B ) <=Int X:Int => true  requires ( 2 ^Int (8 *Int minInt(32, lengthBytes(B))) -Int 1 ) <=Int X [simplification, preserves-definedness]
+
+  // Comparison: `#asWord(B) < X` is false when the path condition says X <= #asWord(B).
+  // Loop-safe with asWord-le-false: requires clauses have #asWord on the RIGHT, so
+  // neither rule fires on the other's requires.
+  rule [asWord-lt-false]: #asWord ( B:Bytes )  <Int X:Int => false requires X <=Int #asWord ( B ) [simplification]
+  rule [asWord-le-false]: #asWord ( B:Bytes ) <=Int X:Int => false requires X  <Int #asWord ( B ) [simplification]
+  // Comparison: `#asWord(B) == X` is false when the path condition says X =/= #asWord(B).
+  // The requires X =/=Int #asWord(B) expands to notBool(X ==Int #asWord(B)) via the K builtin;
+  // since ==Int is comm, this matches the path condition fact notBool(#asWord(B) ==Int X).
+  // No loop: our rule matches #asWord on the LEFT; after builtin expansion the recursive
+  // term X ==Int #asWord(B) has X on the LEFT, so this rule does not fire on it.
+  rule [asWord-eq-false]: #asWord ( B:Bytes ) ==Int X:Int => false requires X =/=Int #asWord ( B ) [simplification]
 
   // Comparison: `#asWord` of `+Bytes` when lower bytes match, with `<Int`
   rule [asWord-concat-lt]:

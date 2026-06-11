@@ -246,6 +246,17 @@ module LEMMAS-HASKELL [symbolic]
       [simplification]
 
   // ########################
+  // #widthOpCode range
+  // ########################
+
+    // #widthOpCode always returns 1..33 (PUSH ops 2..33, everything else 1).
+    // smtlib(widthOpCode) on the declaration lets smt-lemma encode these as
+    // universally-quantified bounds so the solver can discharge side conditions
+    // containing #widthOpCode without needing to evaluate it concretely.
+    rule [widthOpCode-lb]: 0 <=Int #widthOpCode(_:Int) => true [simplification, smt-lemma]
+    rule [widthOpCode-ub]: #widthOpCode(_:Int) <=Int 33 => true [simplification, smt-lemma]
+
+  // ########################
   // Boolean Logic
   // ########################
 
@@ -258,5 +269,10 @@ module LEMMAS-HASKELL [symbolic]
 
     rule [notBool-or]:  notBool ( A  orBool B ) => ( notBool A ) andBool ( notBool B ) [simplification(60)]
     rule [notBool-and]: notBool ( A andBool B ) => ( notBool A )  orBool ( notBool B ) [simplification(60)]
+
+    rule [bool-or-not-self]:         B:Bool orBool notBool B:Bool => true [simplification]
+    rule [bool-not-or-self]: notBool B:Bool orBool         B:Bool => true [simplification]
+    rule [bool-and-not-self]:         B:Bool andBool notBool B:Bool => false [simplification]
+    rule [bool-not-and-self]: notBool B:Bool andBool         B:Bool => false [simplification]
 
 endmodule
