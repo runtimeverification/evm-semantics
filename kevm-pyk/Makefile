@@ -70,37 +70,44 @@ profile:
 format: autoflake isort black
 check: check-flake8 check-mypy check-autoflake check-isort check-black
 
+# Repo-root scripts/ are linted with the same config as src.  black and isort
+# discover config relative to each target path, so they need an explicit config
+# path to apply this pyproject's style to files outside the package tree.
+SCRIPTS := ../scripts
+
 .PHONY: check-flake8
 check-flake8:
-	$(UV_RUN) flake8 src
+	$(UV_RUN) flake8 src $(SCRIPTS)
 
 .PHONY: check-mypy
 check-mypy:
-	$(UV_RUN) mypy src
+	$(UV_RUN) mypy src $(SCRIPTS)
 
 .PHONY: autoflake
 autoflake:
 	$(UV_RUN) autoflake --quiet --in-place src
+	$(UV_RUN) autoflake --quiet --recursive --in-place $(SCRIPTS)
 
 .PHONY: check-autoflake
 check-autoflake:
 	$(UV_RUN) autoflake --quiet --check src
+	$(UV_RUN) autoflake --quiet --recursive --check $(SCRIPTS)
 
 .PHONY: isort
 isort:
-	$(UV_RUN) isort src
+	$(UV_RUN) isort --settings-path pyproject.toml src $(SCRIPTS)
 
 .PHONY: check-isort
 check-isort:
-	$(UV_RUN) isort --check src
+	$(UV_RUN) isort --check --settings-path pyproject.toml src $(SCRIPTS)
 
 .PHONY: black
 black:
-	$(UV_RUN) black src
+	$(UV_RUN) black --config pyproject.toml src $(SCRIPTS)
 
 .PHONY: check-black
 check-black:
-	$(UV_RUN) black --check src
+	$(UV_RUN) black --check --config pyproject.toml src $(SCRIPTS)
 
 
 # Optional tools
