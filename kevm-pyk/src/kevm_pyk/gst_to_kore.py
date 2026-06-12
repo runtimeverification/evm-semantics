@@ -62,6 +62,7 @@ _GST_DISCARD_KEYS: Final = frozenset(
         'transactionSequence',
         'chainname',
         'lastblockhash',
+        'expectException',
         'hasBigInt',
         'config',
         'network',

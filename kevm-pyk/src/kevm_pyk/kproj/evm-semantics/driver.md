@@ -358,28 +358,11 @@ Processing SetCode Transaction Authority Entries
     rule <k> #addAuthority(AUTHORITY, _CID, NONCE, _ADDR) => .K ... </k> requires notBool (#accountExists(AUTHORITY) orBool #asWord(NONCE) ==Int 0)
 ```
 
--   `exception` only clears from the `<k>` cell if there is an exception preceding it.
--   `failure_` holds the name of a test that failed if a test does fail.
 -   `success` sets the `<exit-code>` to `0` and the `<mode>` to `SUCCESS`.
 
 ```k
     syntax Mode ::= "SUCCESS"
  // -------------------------
-
-    syntax EthereumCommand ::= "exception" | "status" StatusCode
- // ------------------------------------------------------------
-    rule <statusCode> _:ExceptionalStatusCode </statusCode>
-         <k> #halt ~> exception => .K ... </k>
-
-    rule <statusCode> _:ExceptionalStatusCode </statusCode>
-         <k> exception ~> check _ => exception ... </k>
-
-    rule <statusCode> _:ExceptionalStatusCode </statusCode>
-         <k> exception ~> run TEST => run TEST ~> exception ... </k>
-
-    rule <statusCode> _:ExceptionalStatusCode </statusCode>
-         <k> exception ~> clear => clear ... </k>
-
     syntax EthereumCommand ::= "success"
  // ------------------------------------
     rule <k> success => .K ... </k>
@@ -396,17 +379,7 @@ Processing SetCode Transaction Authority Entries
     syntax EthereumCommand ::= "run" JSON
 // --------------------------------------
    rule <k> run { .JSONs } => .K ... </k>
-   rule <k> run { TESTID : { TEST:JSONs } } => run { TEST }
-         ~> #if #hasPost?( { TEST } ) #then .K #else exception #fi
-         ~> clear
-        ...
-        </k>
-     requires notBool TESTID in (#loadKeys #execKeys #checkKeys)
-
-    syntax Bool ::= "#hasPost?" "(" JSON ")" [function]
- // ---------------------------------------------------
-    rule #hasPost? ({ .JSONs }) => false
-    rule #hasPost? ({ (KEY:String) : _ , REST }) => (KEY in #postKeys) orBool #hasPost? ({ REST })
+   rule <k> run { TESTID : { TEST:JSONs } } => run { TEST } ~> clear ... </k> requires notBool TESTID in (#loadKeys #execKeys #checkKeys)
 ```
 
 -   `#loadKeys` are all the JSON nodes which should be considered as loads before execution.
@@ -435,15 +408,6 @@ Processing SetCode Transaction Authority Entries
 
     syntax EthereumCommand ::= "process" JSON
  // -----------------------------------------
-    rule <k> process { "expectException" : _ , REST } => exception ~> process { REST } ... </k>
-
-    rule <k> exception ~> process { "rlp_decoded" : { KEY : VAL , REST1 => REST1 }, (REST2 => KEY : VAL , REST2 ) } ... </k>
-    rule <k> exception ~> process { "rlp_decoded" : { .JSONs } , REST   => REST}                                    ... </k>
-
-    rule <k> exception ~> process { KEY : VAL , REST } => load KEY : VAL ~> exception ~> process { REST }             ... </k> requires KEY in #loadKeys
-    rule <k> exception ~> process { KEY : VAL , REST } => exception ~> process { REST } ~> check {KEY : VAL} ... </k> requires KEY in #checkKeys
-    rule <k> exception ~> process { .JSONs }           => #startBlock ~> startTx ~> exception ... </k>
-
     rule <k> process { "rlp_decoded" : { KEY : VAL , REST1 => REST1 }, (REST2 => KEY : VAL , REST2 ) } ... </k>
     rule <k> process { "rlp_decoded" : { .JSONs } , REST => REST}                                      ... </k>
 
@@ -479,7 +443,7 @@ Processing SetCode Transaction Authority Entries
     syntax Set ::= "#postKeys" [function] | "#allPostKeys" [function] | "#checkKeys" [function]
  // -------------------------------------------------------------------------------------------
     rule #postKeys    => ( SetItem("post") SetItem("postState") SetItem("postStateHash") )
-    rule #allPostKeys => ( #postKeys SetItem("expect") SetItem("export") SetItem("expet") )
+    rule #allPostKeys => ( #postKeys SetItem("expect") SetItem("export") )
     rule #checkKeys   => ( #allPostKeys SetItem("logs") SetItem("out") SetItem("gas")
                            SetItem("blockHeader") SetItem("transactions") SetItem("uncleHeaders")
                            SetItem("genesisBlockHeader") SetItem("withdrawals") SetItem("blocknumber")

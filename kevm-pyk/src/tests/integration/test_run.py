@@ -32,7 +32,7 @@ def test_run(gst_file: Path, update_expected_output: bool) -> None:
 
     actual = ''
     # When
-    for _, init_kore in iterate_gst(gst_data, 'NORMAL', 1, True):
+    for _, init_kore, _ in iterate_gst(gst_data, 'NORMAL', 1, True):
         pattern = interpret(init_kore, check=False)
         actual += kore_print(pattern, definition_dir=kdist.get('evm-semantics.llvm'), output=PrintOutput.PRETTY)
 
