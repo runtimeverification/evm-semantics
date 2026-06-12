@@ -94,10 +94,10 @@ def pytest_addoption(parser: Parser) -> None:
     parser.addoption(
         '--equation-max-local-steps',
         type=int,
-        default=None,
+        default=20,
         help=(
             'Booster equation budget for in-place evaluation at rewritten subterms '
-            '(backend default 0 = restart-only). Threaded to kore-rpc-booster / booster-dev '
+            '(default: 20; 0 = restart-only). Threaded to kore-rpc-booster / booster-dev '
             'for all proof tests.'
         ),
     )
@@ -174,5 +174,5 @@ def booster_only_simplify(request: FixtureRequest) -> bool:
 
 
 @pytest.fixture(scope='session')
-def equation_max_local_steps(request: FixtureRequest) -> int | None:
+def equation_max_local_steps(request: FixtureRequest) -> int:
     return request.config.getoption('--equation-max-local-steps')

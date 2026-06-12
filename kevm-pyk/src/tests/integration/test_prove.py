@@ -198,7 +198,7 @@ def _test_prove(
     workers: int | None = None,
     direct_subproof_rules: bool = False,
     booster_only_simplify: bool = False,
-    equation_max_local_steps: int | None = None,
+    equation_max_local_steps: int = 20,
 ) -> None:
     caplog.set_level(logging.INFO)
 
@@ -364,7 +364,7 @@ def test_prove_rules(
     booster_log_levels: list[str] | None,
     claim_labels: list[str] | None,
     booster_only_simplify: bool,
-    equation_max_local_steps: int | None,
+    equation_max_local_steps: int,
 ) -> None:
     _test_prove(
         spec_file,
@@ -404,7 +404,7 @@ def test_prove_functional(
     booster_log_levels: list[str] | None,
     claim_labels: list[str] | None,
     booster_only_simplify: bool,
-    equation_max_local_steps: int | None,
+    equation_max_local_steps: int,
 ) -> None:
     _test_prove(
         spec_file,
@@ -436,7 +436,7 @@ def test_prove_dss(
     booster_log_levels: list[str] | None,
     claim_labels: list[str] | None,
     booster_only_simplify: bool,
-    equation_max_local_steps: int | None,
+    equation_max_local_steps: int,
 ) -> None:
     for spec_file in [REPO_ROOT / 'tests/specs/mcd/vat-spec.k', REPO_ROOT / 'tests/specs/mcd-structured/vat-spec.k']:
         _test_prove(
