@@ -1080,13 +1080,14 @@ These are just used by the other operators for shuffling local execution state a
     syntax InternalOp ::= "#transferFunds" Int Int Int
                         | "#transferFundsToNonExistent" Int Int Int
  // ---------------------------------------------------------------
-    rule <k> #transferFunds ACCT ACCT VALUE => .K ... </k>
+    rule <k> #transferFunds ACCTFROM ACCTTO VALUE => .K ... </k>
          <account>
-           <acctID> ACCT </acctID>
+           <acctID> ACCTFROM </acctID>
            <balance> ORIGFROM </balance>
            ...
          </account>
-      requires VALUE <=Int ORIGFROM
+      requires ACCTFROM ==K ACCTTO
+       andBool VALUE <=Int ORIGFROM
 
     rule <k> #transferFunds ACCTFROM ACCTTO VALUE => .K ... </k>
          <account>
@@ -1748,18 +1749,13 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     rule <k> #accessAccounts ADDRSET:Set => .K ... </k>
          <accessedAccounts> TOUCHED_ACCOUNTS => TOUCHED_ACCOUNTS |Set ADDRSET </accessedAccounts>
 
-    syntax Bytes ::= #computeValidJumpDests(Bytes)             [symbol(computeValidJumpDests),    function, memo, total]
-                   | #computeValidJumpDests(Bytes, Int, Bytes) [symbol(computeValidJumpDestsAux), function             ]
- // --------------------------------------------------------------------------------------------------------------------
-    rule #computeValidJumpDests(PGM) => #computeValidJumpDests(PGM, 0, padRightBytes(.Bytes, lengthBytes(PGM), 0))
-
-    syntax Bytes ::= #computeValidJumpDestsWithinBound(Bytes, Int, Bytes) [symbol(computeValidJumpDestsWithinBound), function]
- // --------------------------------------------------------------------------------------------------------------------------
-    rule #computeValidJumpDests(PGM, I, RESULT) => RESULT requires I >=Int lengthBytes(PGM)
-    rule #computeValidJumpDests(PGM, I, RESULT) => #computeValidJumpDestsWithinBound(PGM, I, RESULT) requires I <Int lengthBytes(PGM)
-
-    rule #computeValidJumpDestsWithinBound(PGM, I, RESULT) => #computeValidJumpDests(PGM, I +Int 1, RESULT[I <- 1]) requires PGM [ I ] ==Int 91
-    rule #computeValidJumpDestsWithinBound(PGM, I, RESULT) => #computeValidJumpDests(PGM, I +Int #widthOpCode(PGM [ I ]), RESULT) requires notBool PGM [ I ] ==Int 91
+    syntax Bytes ::= #computeValidJumpDests(Bytes)                  [symbol(computeValidJumpDests),    function, memo, total]
+                   | #computeValidJumpDests(Bytes, Int, Bytes, Int) [symbol(computeValidJumpDestsAux), function             ]
+ // -------------------------------------------------------------------------------------------------------------------------
+    rule #computeValidJumpDests(PGM)                 => #computeValidJumpDests(PGM, 0, padRightBytes(.Bytes, lengthBytes(PGM), 0), lengthBytes(PGM))
+    rule #computeValidJumpDests(  _, I, RESULT, LEN) => RESULT                                                                           requires I >=Int LEN
+    rule #computeValidJumpDests(PGM, I, RESULT, LEN) => #computeValidJumpDests(PGM, I +Int 1,                        RESULT[I <- 1], LEN) requires I <Int LEN andBool PGM [ I ] ==Int 91
+    rule #computeValidJumpDests(PGM, I, RESULT, LEN) => #computeValidJumpDests(PGM, I +Int #widthOpCode(PGM [ I ]), RESULT,          LEN) requires I <Int LEN andBool notBool PGM [ I ] ==Int 91
 ```
 
 System Calls
@@ -1818,8 +1814,8 @@ System Transaction Configuration
 ```
 
 ```k
-    syntax Int ::= #widthOpCode(Int) [symbol(#widthOpCode), function]
- // -----------------------------------------------------------------
+    syntax Int ::= #widthOpCode(Int) [symbol(#widthOpCode), function, total, smtlib(widthOpCode)]
+ // ---------------------------------------------------------------------------------------------
     rule #widthOpCode(W) => W -Int 94 requires W >=Int 96 andBool W <=Int 127
     rule #widthOpCode(_) => 1 [owise]
 

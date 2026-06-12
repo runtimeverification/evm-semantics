@@ -358,8 +358,8 @@ Bytes helper functions
  // -------------------------------------------------------------------------
     rule #asInteger(WS) => Bytes2Int(WS, BE, Unsigned) [concrete]
 
-    syntax Account ::= #asAccount ( Bytes )             [symbol(#asAccount), function]
- // ----------------------------------------------------------------------------------
+    syntax Account ::= #asAccount ( Bytes ) [symbol(#asAccount), function, total]
+ // -----------------------------------------------------------------------------
     rule #asAccount(BS) => .Account    requires lengthBytes(BS) ==Int 0
     rule #asAccount(BS) => #asWord(BS) [owise]
 

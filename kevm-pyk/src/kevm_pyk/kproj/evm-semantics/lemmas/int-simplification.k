@@ -86,6 +86,10 @@ module INT-SIMPLIFICATION-HASKELL [symbolic]
     rule A +Int B  >Int C +Int D => A -Int C  >Int D -Int B [concrete(B, D), symbolic(A, C), simplification(45)]
     rule A +Int B >=Int C +Int D => A -Int C >=Int D -Int B [concrete(B, D), symbolic(A, C), simplification(45)]
 
+    rule [int-eq-comm-concrete]:
+        N:Int ==Int X:Int => X ==Int N
+        [simplification(30), concrete(N), symbolic(X)]
+
     rule A +Int B ==Int A        => B        ==Int 0        [simplification(40)]
     rule A +Int B ==Int B        => A        ==Int 0        [simplification(40)]
     rule A +Int B ==Int C +Int B => A        ==Int C        [simplification(40)]
@@ -100,6 +104,11 @@ module INT-SIMPLIFICATION-HASKELL [symbolic]
     rule 0 <=Int A -Int B => B <=Int A [simplification, symbolic(A, B)]
     rule A -Int B  <Int 0 => A  <Int B [simplification, symbolic(A, B)]
     rule A -Int B <=Int 0 => A <=Int B [simplification, symbolic(A, B)]
+
+    // Mixed range contradictions: A < B /\ C <= A where B <= C (all concrete B, C)
+    // Requires is purely concrete (both B and C are concrete), so no circular self-application.
+    rule A:Int  <Int B:Int andBool C:Int <=Int A:Int => false requires B <=Int C [simplification, concrete(B, C)]
+    rule C:Int <=Int A:Int andBool A:Int  <Int B:Int => false requires B <=Int C [simplification, concrete(B, C)]
 
 endmodule
 
@@ -133,6 +142,7 @@ module INT-SIMPLIFICATION-COMMON
     rule  (A +Int B) +Int (C  -Int B) => A +Int C [simplification]
     rule  (A -Int B) -Int (C  -Int B) => A -Int C [simplification]
     rule ((A -Int B) -Int  C) +Int B  => A -Int C [simplification]
+    rule  A +Int ((B  -Int A) +Int C) => B +Int C [simplification]
 
   // 5 terms
     // NOTE: required for `tests/specs/functional/infinite-gas-spec.k.prove` (haskell)
@@ -232,6 +242,18 @@ module INT-SIMPLIFICATION-COMMON
     rule [maxInt-factor-left]:  maxInt ( A:Int +Int B:Int, A:Int +Int C:Int ) => A +Int maxInt ( B, C ) [simplification]
     rule [maxInt-factor-right]: maxInt ( A:Int +Int B:Int, C:Int +Int B:Int ) => maxInt ( A, C ) +Int B [simplification]
 
+    // minInt <Int maxInt / minInt <=Int maxInt: priority 40 fires before the default-priority (50) expansion rules,
+    // so Booster sees `true` directly rather than a disjunction requiring path-condition reasoning.
+    // Sound: minInt(A,_) <=Int A and C <=Int maxInt(C,_), so A <Int C implies minInt(A,_) <Int maxInt(C,_).
+    rule [minint-lt-maxint-a]:
+        minInt(A:Int, _B:Int) <Int maxInt(C:Int, _D:Int) => true
+        requires A <Int C
+        [simplification(40)]
+    rule [minint-leq-maxint-b]:
+        minInt(_A:Int, B:Int) <=Int maxInt(_C:Int, D:Int) => true
+        requires B <=Int D
+        [simplification(40)]
+
   // ###########################################################################
   // inequality
   // ###########################################################################
@@ -240,6 +262,14 @@ module INT-SIMPLIFICATION-COMMON
     rule A +Int B <Int B => false requires 0 <=Int A [simplification]
 
     rule A <Int A -Int B => false requires 0 <=Int B [simplification]
+
+    rule A:Int <=Int A:Int => true [simplification]
+
+ // Higher-priority: short-circuit to true directly when path condition already has 0 <=Int B.
+    rule A:Int <=Int A:Int +Int B:Int => true requires 0 <=Int B [simplification(40)]
+    rule A:Int <=Int A:Int +Int B:Int => 0 <=Int B [simplification]
+
+    rule A:Int <Int B:Int andBool B:Int <Int A:Int => false [simplification]
 
     rule 0 <Int 1 <<Int A => true requires 0 <=Int A [simplification, preserves-definedness]
 
@@ -255,6 +285,9 @@ module INT-SIMPLIFICATION-COMMON
     rule A -Int B +Int C <=Int D => false requires D <Int A -Int B andBool 0 <=Int C [simplification]
 
     rule A ==Int B => false requires 0 <=Int A andBool B <Int 0 [simplification, concrete(B)]
+
+    // A ==Int B is false when A < B is a known path-condition fact (B concrete).
+    rule [eq-false-lt]: A:Int ==Int B:Int => false requires A <Int B [simplification, concrete(B)]
 
     rule 0 <Int X => true requires 0 <=Int X andBool notBool (X ==Int 0) [simplification(60)]
 

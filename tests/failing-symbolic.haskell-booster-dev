@@ -59,10 +59,11 @@ tests/specs/examples/solidity-code-spec.md
 tests/specs/examples/storage-spec.md
 tests/specs/examples/sum-to-n-foundry-spec.k
 tests/specs/examples/sum-to-n-spec.k
+tests/specs/functional/bitwise-mask-shift-spec.k
+tests/specs/functional/bytes-range-spec.k
 tests/specs/functional/evm-int-simplifications-spec.k
 tests/specs/functional/infinite-gas-spec.k
 tests/specs/functional/int-simplifications-spec.k
-tests/specs/functional/lemmas-no-smt-spec.k
 tests/specs/functional/lemmas-spec.k
 tests/specs/functional/merkle-spec.k
 tests/specs/functional/slot-updates.k
@@ -71,8 +72,6 @@ tests/specs/kontrol/test-allowchangestest-testallow-0-spec.k
 tests/specs/kontrol/test-allowchangestest-testallow_fail-0-spec.k
 tests/specs/kontrol/test-allowchangestest-testfailallowcallstoaddress-0-spec.k
 tests/specs/kontrol/test-allowchangestest-testfailallowchangestostorage-0-spec.k
-tests/specs/kontrol/test-arithmetictest-test_wdiv_rounding-uint256-uint256-0-spec.k
-tests/specs/kontrol/test-arithmetictest-test_wmul_weakly_increasing_positive-uint256-uint256-0-spec.k
 tests/specs/kontrol/test-countertest-testincrement-0-spec.k
 tests/specs/kontrol/test-emitcontracttest-testexpectemit-0-spec.k
 tests/specs/kontrol/test-emitcontracttest-testexpectemitcheckemitter-0-spec.k
@@ -115,7 +114,6 @@ tests/specs/mcd-structured/cat-exhaustiveness-spec.k
 tests/specs/mcd-structured/cat-file-addr-pass-rough-spec.k
 tests/specs/mcd-structured/dai-adduu-fail-rough-spec.k
 tests/specs/mcd-structured/dstoken-approve-fail-rough-spec.k
-tests/specs/mcd-structured/dsvalue-peek-pass-rough-spec.k
 tests/specs/mcd-structured/dsvalue-read-pass-summarize-spec.k
 tests/specs/mcd-structured/end-cash-pass-rough-spec.k
 tests/specs/mcd-structured/end-pack-pass-rough-spec.k
