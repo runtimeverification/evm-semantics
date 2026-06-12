@@ -3,10 +3,12 @@ from __future__ import annotations
 import logging
 import shutil
 import sys
+from pathlib import Path
 from typing import TYPE_CHECKING, NamedTuple
 
 import pytest
 from filelock import SoftFileLock
+from pyk.cterm.symbolic import HASKELL_LOGGING_ENTRIES
 from pyk.kast.att import AttEntry, Atts, KAtt
 from pyk.kast.outer import KClaim
 from pyk.kdist import kdist
@@ -24,7 +26,6 @@ from ..utils import REPO_ROOT
 
 if TYPE_CHECKING:
     from collections.abc import Callable
-    from pathlib import Path
     from typing import Final
 
     from pyk.utils import BugReport
@@ -105,14 +106,11 @@ KOMPILE_MAIN_FILE: Final = {
     'examples/sum-to-n-spec.k': 'sum-to-n-spec.k',
     'examples/sum-to-n-foundry-spec.k': 'sum-to-n-foundry-spec.k',
     'functional/infinite-gas-spec.k': 'infinite-gas-spec.k',
-    'functional/evm-int-simplifications-spec.k': 'evm-int-simplifications-spec.k',
-    'functional/int-simplifications-spec.k': 'int-simplifications-spec.k',
     'functional/lemmas-no-smt-spec.k': 'lemmas-no-smt-spec.k',
-    'functional/lemmas-spec.k': 'lemmas-spec.k',
     'functional/abi-spec.k': 'abi-spec.k',
     'functional/merkle-spec.k': 'merkle-spec.k',
-    'functional/slot-updates-spec.k': 'slot-updates-spec.k',
     'functional/storageRoot-spec.k': 'storageRoot-spec.k',
+    'functional/compute-valid-jump-dests-spec.k': 'compute-valid-jump-dests-spec.k',
     'mcd/functional-spec.k': 'functional-spec.k',
     'mcd-structured/functional-spec.k': 'functional-spec.k',
 }
@@ -193,8 +191,13 @@ def _test_prove(
     use_booster_dev: bool,
     bug_report: BugReport | None,
     spec_name: str | None,
+    booster_log_dir: Path | None = None,
+    haskell_logging: bool = False,
+    booster_log_levels: list[str] | None = None,
+    claim_labels: list[str] | None = None,
     workers: int | None = None,
     direct_subproof_rules: bool = False,
+    booster_only_simplify: bool = False,
 ) -> None:
     caplog.set_level(logging.INFO)
 
@@ -210,6 +213,23 @@ def _test_prove(
     shutil.rmtree(use_directory, ignore_errors=True)
     use_directory.mkdir()
 
+    # Per-spec backend log directory: the backend writes one <request-id>.jsonl bundle per RPC
+    # into it, so each spec needs its own directory to avoid request-id collisions across specs.
+    # Explicit --booster-log-dir: <dir>/<suite>-<spec-stem>/ (CI / ad-hoc use).
+    # Default (--haskell-logging without --booster-log-dir): write to
+    #   <spec-file>.analysis/<claim-label-or-all-claims>/ alongside the spec.
+    haskell_log_dir: Path | None = None
+    if haskell_logging:
+        if booster_log_dir is not None:
+            rel = spec_file.relative_to(SPEC_DIR)
+            log_name = '-'.join(rel.with_suffix('').parts)
+            haskell_log_dir = booster_log_dir / log_name
+        else:
+            analysis_dir = Path(str(spec_file) + '.analysis')
+            claim_stem = '+'.join(claim_labels) if claim_labels else 'all-claims'
+            haskell_log_dir = analysis_dir / claim_stem
+        haskell_log_dir.mkdir(parents=True, exist_ok=True)
+
     # When
     try:
         definition_dir = kompiled_target_for(spec_file)
@@ -218,23 +238,28 @@ def _test_prove(
         break_on_basic_blocks = name in TEST_PARAMS and TEST_PARAMS[name].break_on_basic_blocks
         if workers is None:
             workers = 1 if name not in TEST_PARAMS else TEST_PARAMS[name].workers
-        options = ProveOptions(
-            {
-                'spec_file': spec_file,
-                'definition_dir': definition_dir,
-                'includes': [str(include_dir) for include_dir in config.INCLUDE_DIRS],
-                'save_directory': use_directory,
-                'md_selector': 'foo',  # TODO Ignored flag, this is to avoid KeyError
-                'use_booster': not no_use_booster,
-                'force_sequential': force_sequential,
-                'use_booster_dev': use_booster_dev,
-                'bug_report': bug_report,
-                'break_on_calls': break_on_calls,
-                'break_on_basic_blocks': break_on_basic_blocks,
-                'workers': workers,
-                'direct_subproof_rules': direct_subproof_rules,
-            }
-        )
+        options_dict: dict = {
+            'spec_file': spec_file,
+            'definition_dir': definition_dir,
+            'includes': [str(include_dir) for include_dir in config.INCLUDE_DIRS],
+            'save_directory': use_directory,
+            'md_selector': 'foo',  # TODO Ignored flag, this is to avoid KeyError
+            'use_booster': not no_use_booster,
+            'force_sequential': force_sequential,
+            'use_booster_dev': use_booster_dev,
+            'bug_report': bug_report,
+            'break_on_calls': break_on_calls,
+            'break_on_basic_blocks': break_on_basic_blocks,
+            'workers': workers,
+            'direct_subproof_rules': direct_subproof_rules,
+            'booster_only_simplify': booster_only_simplify,
+            'claim_labels': claim_labels,
+        }
+        if haskell_logging:
+            options_dict['haskell_log_entries'] = booster_log_levels or list(HASKELL_LOGGING_ENTRIES)
+            if haskell_log_dir is not None:
+                options_dict['haskell_log_dir'] = haskell_log_dir
+        options = ProveOptions(options_dict)
         exec_prove(options=options)
         if name in TEST_PARAMS:
             params = TEST_PARAMS[name]
@@ -332,6 +357,11 @@ def test_prove_rules(
     use_booster_dev: bool,
     bug_report: BugReport | None,
     spec_name: str | None,
+    booster_log_dir: Path | None,
+    haskell_logging: bool,
+    booster_log_levels: list[str] | None,
+    claim_labels: list[str] | None,
+    booster_only_simplify: bool,
 ) -> None:
     _test_prove(
         spec_file,
@@ -343,6 +373,11 @@ def test_prove_rules(
         use_booster_dev=use_booster_dev,
         bug_report=bug_report,
         spec_name=spec_name,
+        booster_log_dir=booster_log_dir,
+        haskell_logging=haskell_logging,
+        booster_log_levels=booster_log_levels,
+        claim_labels=claim_labels,
+        booster_only_simplify=booster_only_simplify,
     )
 
 
@@ -360,6 +395,11 @@ def test_prove_functional(
     use_booster_dev: bool,
     bug_report: BugReport | None,
     spec_name: str | None,
+    booster_log_dir: Path | None,
+    haskell_logging: bool,
+    booster_log_levels: list[str] | None,
+    claim_labels: list[str] | None,
+    booster_only_simplify: bool,
 ) -> None:
     _test_prove(
         spec_file,
@@ -371,7 +411,12 @@ def test_prove_functional(
         use_booster_dev=use_booster_dev,
         bug_report=bug_report,
         spec_name=spec_name,
+        booster_log_dir=booster_log_dir,
+        haskell_logging=haskell_logging,
+        booster_log_levels=booster_log_levels,
+        claim_labels=claim_labels,
         workers=8,
+        booster_only_simplify=booster_only_simplify,
     )
 
 
@@ -380,6 +425,11 @@ def test_prove_dss(
     tmp_path: Path,
     caplog: LogCaptureFixture,
     bug_report: BugReport | None,
+    booster_log_dir: Path | None,
+    haskell_logging: bool,
+    booster_log_levels: list[str] | None,
+    claim_labels: list[str] | None,
+    booster_only_simplify: bool,
 ) -> None:
     for spec_file in [REPO_ROOT / 'tests/specs/mcd/vat-spec.k', REPO_ROOT / 'tests/specs/mcd-structured/vat-spec.k']:
         _test_prove(
@@ -392,8 +442,13 @@ def test_prove_dss(
             use_booster_dev=False,
             bug_report=bug_report,
             spec_name=None,
+            booster_log_dir=booster_log_dir,
+            haskell_logging=haskell_logging,
+            booster_log_levels=booster_log_levels,
+            claim_labels=claim_labels,
             workers=8,
             direct_subproof_rules=True,
+            booster_only_simplify=booster_only_simplify,
         )
 
 
