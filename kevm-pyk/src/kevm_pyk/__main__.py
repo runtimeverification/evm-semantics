@@ -254,11 +254,12 @@ def exec_prove(options: ProveOptions) -> None:
     else:
         kore_rpc_command = options.kore_rpc_command
 
-    if options.equation_max_local_steps is not None:
-        # Both booster servers parse the flag (shared Booster.CLOptions); plain kore-rpc does not.
-        if Path(kore_rpc_command[0]).name not in ('kore-rpc-booster', 'booster-dev'):
-            raise ValueError(f'--equation-max-local-steps requires a booster server, got: {kore_rpc_command[0]}')
+    # Both booster servers parse the flag (shared Booster.CLOptions); plain kore-rpc does not,
+    # so the budget is skipped (with a warning) rather than rejected now that it defaults on.
+    if Path(kore_rpc_command[0]).name in ('kore-rpc-booster', 'booster-dev'):
         kore_rpc_command += ('--equation-max-local-steps', str(options.equation_max_local_steps))
+    else:
+        _LOGGER.warning(f'Ignoring --equation-max-local-steps for non-booster server: {kore_rpc_command[0]}')
 
     def is_functional(claim: KClaim) -> bool:
         claim_lhs = claim.body
