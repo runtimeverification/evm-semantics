@@ -48,6 +48,13 @@ module BUF
     rule [powByteLen-lt-concrete]: CONST <Int #powByteLen(N) => true
         requires 0 <=Int N andBool CONST <Int 2 ^Int (8 *Int N)
         [simplification, concrete(CONST, N), preserves-definedness]
+    // Companion false-direction: a concrete CONST that does not fit into N bytes is not
+    // less than #powByteLen(N). Together with the rule above this makes the concrete
+    // comparison total. The two requires are mutually exclusive and neither RHS re-exposes
+    // `_ <Int #powByteLen(_)`, so the pair is loop-safe.
+    rule [powByteLen-lt-concrete-false]: CONST <Int #powByteLen(N) => false
+        requires 0 <=Int N andBool 2 ^Int (8 *Int N) <=Int CONST
+        [simplification, concrete(CONST, N), preserves-definedness]
     rule #write(WM, IDX, VAL) => WM [ IDX := #buf(1, VAL) ] [simplification]
 
     rule #bufStrict(SIZE, DATA) => #buf(SIZE, DATA)
