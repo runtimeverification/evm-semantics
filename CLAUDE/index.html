@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+<meta charset="utf-8" />
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0, maximum-scale=1.0"
+/>
+<meta
+  name="description"
+  content="K Semantics of the Ethereum Virtual Machine (EVM)"
+/>
+<meta
+  name="keywords"
+  content="runtime, verification, rv, k, ethereum virtual machine, evm"
+/>
+<meta name="author" content="EVM Semantics | Runtime Verification Inc" />
+<meta name="robots" content="index, follow" />
+
+<!--favicon icon-->
+<link rel="icon" type="image/png" href="../assets/img/favicon.ico" />
+
+<title>KEVM: Semantics of EVM in K | Runtime Verification, Inc. </title>
+
+<link rel="canonical" href="https://jellopaper.org/CLAUDE/" />
+
+<!--web fonts-->
+<link
+  href="https://fonts.googleapis.com/css?family=Nunito:300,400,600,700,800"
+  rel="stylesheet"
+/>
+<link
+  href="https://fonts.googleapis.com/css?family=Lora:400i"
+  rel="stylesheet"
+/>
+
+<link
+  href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.14.0/css/all.min.css"
+  rel="stylesheet"
+/>
+
+<link href="../assets/css/index.css" rel="stylesheet" />
+
+<!--[if (gt IE 9) |!(IE)]><!-->
+<!--<link rel="stylesheet" href="/assets/vendor/custom-nav/css/effects/fade-menu.css"/>-->
+<!-- <link rel="stylesheet" href="../assets/k/vl-nav/css/effects/slide-menu.css" /> -->
+<!--<![endif]-->
+
+  </head>
+
+  <body>
+<header
+  class="navbar navbar-expand navbar-dark flex-column flex-md-row bd-navbar"
+>
+  <a class="logo-link" href="../index.html"> EVM Semantics </a>
+  <ul class="navbar-nav ml-md-auto">
+    <li class="nav-item">
+      <a
+        class="nav-link pl-2 pr-1 mx-1 py-3 my-n2"
+        href="https://github.com/runtimeverification/evm-semantics"
+        target="_blank"
+        rel="noopener"
+        aria-label="GitHub"
+      >
+        <i class="fab fa-github"></i>
+      </a>
+    </li>
+  </ul>
+  <!--
+  <a
+    class="btn btn-rv-blue d-none d-lg-inline-block mb-3 mb-md-0 ml-md-3"
+    href="../downloads"
+    >Download</a
+  >
+  -->
+</header>
+
+
+    <div class="container-fluid">
+      <div class="row flex-xl-nowrap">
+<div class="col-12 col-md-3 col-xl-2 bd-sidebar mb-3">
+  <form
+    role="search"
+    class="bd-search d-flex align-items-center justify-content-between"
+  >
+    <input
+      type="search"
+      class="form-control"
+      placeholder="Search..."
+      aria-label="Search for..."
+      autocomplete="false"
+      id="search-box"
+    />
+    <button
+      class="btn bd-search-docs-toggle d-md-none p-0 ml-3 collapsed"
+      type="button"
+      aria-label="Toggle docs navigation"
+      style="font-size: 1.4rem"
+    >
+      <i class="fas fa-bars"></i>
+    </button>
+  </form>
+  <nav class="collapse bd-links" aria-label="Main navigation">
+    <div class="bd-toc-item">
+      <a class="bd-toc-link" href="../">Homepage</a>
+      <a class="bd-toc-link" href="../INSTALL/">Install</a>
+    </div>
+  </nav>
+</div>
+
+        <main
+          class="col-12 col-md-6 col-xl-8 py-md-3 pl-md-5 bd-content"
+          role="main"
+        >
+          <div class="markdown-preview"><html><head></head><body><h1 id="evm-semantics">evm-semantics</h1>
+<p>K-based formal semantics of the EVM, plus the <code>kevm-pyk</code> Python toolchain that drives compilation, execution, and proof.</p>
+<h2 id="repository-layout">Repository layout</h2>
+<pre><code>kevm-pyk/src/kevm_pyk/kproj/evm-semantics/   K source (*.md, *.k) — the semantics
+kevm-pyk/src/kevm_pyk/                        Python toolchain (kevm_pyk package)
+kevm-pyk/src/tests/                           Python test suite
+tests/specs/                                  K proof specs, organised by suite
+</code></pre>
+<h2 id="build-toolchain">Build toolchain</h2>
+<p>All Python commands run through <code>uv</code> from the repo root or inside <code>kevm-pyk/</code>:</p>
+<pre><code class="language-bash"><span class="token comment"># from repo root:</span>
+uv <span class="token parameter variable">--project</span> kevm-pyk/ run <span class="token operator">&lt;</span>command<span class="token operator">&gt;</span>
+
+<span class="token comment"># equivalent, from inside kevm-pyk/:</span>
+uv run <span class="token operator">&lt;</span>command<span class="token operator">&gt;</span>
+</code></pre>
+<p>Build the Python package (creates wheel/sdist, installs into the local venv):</p>
+<pre><code class="language-bash"><span class="token function">make</span> <span class="token parameter variable">-C</span> kevm-pyk/ build
+<span class="token comment"># equivalent:</span>
+uv <span class="token parameter variable">--project</span> kevm-pyk/ build
+</code></pre>
+<p>Before running any proof, the K definitions must be compiled into kdist targets.
+These are cached under <code>~/.cache/kdist-&lt;hash&gt;/</code>; the hash changes whenever any <code>.k</code>/<code>.md</code>
+file in <code>kproj/</code> changes, so a rebuild is required after every semantics edit.</p>
+<pre><code class="language-bash"><span class="token comment"># via the kevm-kdist CLI (recommended):</span>
+uv <span class="token parameter variable">--project</span> kevm-pyk/ run kevm-kdist build evm-semantics.plugin
+uv <span class="token parameter variable">--project</span> kevm-pyk/ run kevm-kdist build evm-semantics.haskell
+
+<span class="token comment"># parallel build of all targets:</span>
+uv <span class="token parameter variable">--project</span> kevm-pyk/ run kevm-kdist build <span class="token parameter variable">--jobs</span> <span class="token number">8</span>
+</code></pre>
+<p>The kdist targets compile against the installed K (and its haskell-backend), managed by <code>kup</code>.
+To install a specific K release, or to override just the haskell-backend with a local checkout or a remote branch/commit (e.g. to test a backend change under review), see <a href="../docs/2026-05-22-kup-override/"><code>docs/2026-05-22-kup-override.md</code></a>; rebuild the kdist targets afterward.</p>
+<h2 id="linting-and-static-analysis-(python)">Linting and static analysis (Python)</h2>
+<pre><code class="language-bash"><span class="token function">make</span> <span class="token parameter variable">-C</span> kevm-pyk/ check          <span class="token comment"># all checks: flake8, mypy, autoflake, isort, black</span>
+<span class="token function">make</span> <span class="token parameter variable">-C</span> kevm-pyk/ <span class="token function">format</span>         <span class="token comment"># auto-fix:   autoflake, isort, black</span>
+
+<span class="token comment"># individual tools via uv:</span>
+uv <span class="token parameter variable">--project</span> kevm-pyk/ run flake8 src
+uv <span class="token parameter variable">--project</span> kevm-pyk/ run mypy   src
+uv <span class="token parameter variable">--project</span> kevm-pyk/ run black  <span class="token parameter variable">--check</span> src
+uv <span class="token parameter variable">--project</span> kevm-pyk/ run isort  <span class="token parameter variable">--check</span> src
+</code></pre>
+<p><strong>Every commit must pass <code>make -C kevm-pyk/ check</code> and <code>make -C kevm-pyk/ test-unit</code>.</strong></p>
+<h2 id="unit-tests-(fast%2C-no-k-runtime-required)">Unit tests (fast, no K runtime required)</h2>
+<pre><code class="language-bash"><span class="token function">make</span> <span class="token parameter variable">-C</span> kevm-pyk/ test-unit
+<span class="token comment"># equivalent:</span>
+uv <span class="token parameter variable">--project</span> kevm-pyk/ run pytest src/tests/unit <span class="token parameter variable">--numprocesses</span><span class="token operator">=</span><span class="token number">8</span> <span class="token parameter variable">--dist</span><span class="token operator">=</span>worksteal
+</code></pre>
+<p>These test pure Python logic (AST helpers, KEVM class methods, etc.) and finish in seconds.</p>
+<h2 id="integration-%2F-proof-tests">Integration / proof tests</h2>
+<h3 id="make-targets-(recommended)">Make targets (recommended)</h3>
+<pre><code class="language-bash"><span class="token function">make</span> <span class="token parameter variable">-C</span> kevm-pyk/ test-integration <span class="token assign-left variable">PYTEST_ARGS</span><span class="token operator">+=</span><span class="token string">"-k &lt;filter&gt;"</span>
+</code></pre>
+<p>The Makefile defaults to <code>--numprocesses=8 --dist=worksteal --maxfail=1</code>.
+Override parallelism or failure tolerance:</p>
+<pre><code class="language-bash"><span class="token function">make</span> <span class="token parameter variable">-C</span> kevm-pyk/ test-integration <span class="token assign-left variable">PYTEST_PARALLEL</span><span class="token operator">=</span><span class="token number">4</span> <span class="token assign-left variable">PYTEST_ARGS</span><span class="token operator">+=</span><span class="token string">"-k test_prove_functional"</span>
+<span class="token function">make</span> <span class="token parameter variable">-C</span> kevm-pyk/ test-integration <span class="token assign-left variable">PYTEST_MAXFAIL</span><span class="token operator">=</span><span class="token number">10</span> <span class="token assign-left variable">PYTEST_ARGS</span><span class="token operator">+=</span><span class="token string">"-k test_prove_functional"</span>
+</code></pre>
+<h3 id="direct-pytest-(same-options%2C-more-control)">Direct pytest (same options, more control)</h3>
+<pre><code class="language-bash">uv <span class="token parameter variable">--project</span> kevm-pyk/ run pytest src/tests/integration <span class="token punctuation">\</span>
+    <span class="token parameter variable">--numprocesses</span><span class="token operator">=</span><span class="token number">8</span> <span class="token parameter variable">--dist</span><span class="token operator">=</span>worksteal <span class="token punctuation">\</span>
+    <span class="token parameter variable">-k</span> <span class="token string">"test_prove_functional"</span>
+
+<span class="token comment"># run a single named spec:</span>
+uv <span class="token parameter variable">--project</span> kevm-pyk/ run pytest src/tests/integration <span class="token punctuation">\</span>
+    <span class="token parameter variable">--numprocesses</span><span class="token operator">=</span><span class="token number">1</span> <span class="token punctuation">\</span>
+    <span class="token parameter variable">-k</span> <span class="token string">"test_prove_functional and compute-valid-jump-dests"</span>
+</code></pre>
+<h3 id="proof-test-suites">Proof test suites</h3>
+<table class="table">
+<thead>
+<tr>
+<th>Make target (from repo root)</th>
+<th>pytest <code>-k</code> filter</th>
+<th>Spec directory</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>make test-prove-functional</code></td>
+<td><code>test_prove_functional</code></td>
+<td><code>tests/specs/functional/</code></td>
+<td>Pure-function/lemma proofs; fast per spec</td>
+</tr>
+<tr>
+<td><code>make test-prove-rules</code></td>
+<td><code>test_prove_rules</code></td>
+<td><code>tests/specs/{benchmarks,erc20,examples,mcd,mcd-structured,kontrol}/</code></td>
+<td>Full EVM contract proofs</td>
+</tr>
+<tr>
+<td><code>make test-prove-optimizations</code></td>
+<td><code>test_prove_optimizations</code></td>
+<td><code>tests/specs/opcodes/</code></td>
+<td>EVM opcode optimisation proofs</td>
+</tr>
+<tr>
+<td><code>make test-prove-dss</code></td>
+<td><code>test_prove_dss</code></td>
+<td><code>tests/specs/mcd/vat*.k</code></td>
+<td>DSS/MakerDAO VAT proofs (very slow, CI only)</td>
+</tr>
+<tr>
+<td><code>make test-conformance</code></td>
+<td><code>test_conformance</code></td>
+<td>—</td>
+<td>Ethereum execution-spec conformance</td>
+</tr>
+</tbody>
+</table>
+<p>Top-level convenience targets delegate to <code>make -C kevm-pyk/ test-integration PYTEST_ARGS+=...</code>.</p>
+<h3 id="running-the-prover-directly-(for-timing-%2F-debugging-a-single-spec)">Running the prover directly (for timing / debugging a single spec)</h3>
+<p>Useful when you want wall-time measurements or verbose RPC logs without pytest overhead.
+The definition must be kompiled first (≈40 s), then reused across runs:</p>
+<pre><code class="language-bash">uv <span class="token parameter variable">--project</span> kevm-pyk/ run kevm kompile-spec <span class="token punctuation">\</span>
+    tests/specs/functional/my-spec.k <span class="token punctuation">\</span>
+    --main-module VERIFICATION --syntax-module VERIFICATION <span class="token punctuation">\</span>
+    --output-definition /tmp/my-spec-kompiled <span class="token punctuation">\</span>
+    <span class="token parameter variable">--backend</span> haskell <span class="token punctuation">\</span>
+    <span class="token parameter variable">-I</span> kevm-pyk/src/kevm_pyk/kproj/evm-semantics <span class="token punctuation">\</span>
+    <span class="token parameter variable">-I</span> kevm-pyk/src/kevm_pyk/kproj/plugin
+
+<span class="token function">time</span> uv <span class="token parameter variable">--project</span> kevm-pyk/ run kevm prove <span class="token punctuation">\</span>
+    tests/specs/functional/my-spec.k <span class="token punctuation">\</span>
+    <span class="token parameter variable">--definition</span> /tmp/my-spec-kompiled <span class="token punctuation">\</span>
+    --spec-module MY-SPEC <span class="token punctuation">\</span>
+    --use-booster <span class="token punctuation">\</span>
+    --save-directory /tmp/my-spec-save <span class="token punctuation">\</span>
+    <span class="token parameter variable">-I</span> kevm-pyk/src/kevm_pyk/kproj/evm-semantics <span class="token punctuation">\</span>
+    <span class="token parameter variable">-I</span> kevm-pyk/src/kevm_pyk/kproj/plugin <span class="token punctuation">\</span>
+    <span class="token parameter variable">--verbose</span>
+</code></pre>
+<p><code>--verbose</code> shows per-RPC-call timing (simplify / execute / implies).
+<code>--save-directory</code> persists the proof KCFG; omit <code>--reinit</code> on reruns to resume.
+Running <code>kevm prove</code> this way drops a <code>&lt;spec-name&gt;.json</code> claim-parse cache next to the spec — do not commit it.</p>
+<h2 id="proof-timing-anatomy">Proof timing anatomy</h2>
+<p>With <code>--verbose</code>, the key RPC phases are:</p>
+<table class="table">
+<thead>
+<tr>
+<th>Phase</th>
+<th>What it does</th>
+<th>Where time is spent</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>kprove --dry-run</code></td>
+<td>Parse spec to kore</td>
+<td>≈22 s cold, ≈0.3 s if JSON cache is fresh</td>
+</tr>
+<tr>
+<td><code>KoreServer</code> startup</td>
+<td>Load <code>definition.kore</code> + LLVM lib</td>
+<td>≈7 s</td>
+</tr>
+<tr>
+<td><code>simplify</code> #1</td>
+<td>Definedness constraint <code>#Ceil(initial_config)</code></td>
+<td><strong>Evaluates K functions symbolically — often the bottleneck</strong></td>
+</tr>
+<tr>
+<td><code>simplify</code> #3</td>
+<td>Simplify initial/target nodes</td>
+<td><strong>Same; also evaluates K function terms in the config</strong></td>
+</tr>
+<tr>
+<td><code>execute</code></td>
+<td>Reachability proof step</td>
+<td>Runs the symbolic execution</td>
+</tr>
+<tr>
+<td><code>implies</code></td>
+<td>Subsumption check</td>
+<td>Checks final state ⊆ target spec</td>
+</tr>
+</tbody>
+</table>
+<p><code>kevm</code> reports <code>Proof timing: Xs</code> which starts from <code>add-module</code> (excludes server startup and claim parsing).
+For benchmarking a definition change, compare individual <code>simplify</code> and <code>execute</code> durations, not just total wall time — the simplify calls are often where K function definitions dominate.</p>
+<h2 id="debugging-why-a-proof-is-slow-or-failing-(haskell-backend-logging)">Debugging <em>why</em> a proof is slow or failing (Haskell-backend logging)</h2>
+<p>When a proof stalls, fails to close, or a simplification you expect does not fire, the Haskell backend can emit a per-request log explaining <em>why</em>: which lemmas Kore applied, which rules Booster tried and rejected (and the reason), and where Booster aborted and fell back to Kore.
+This is the tool for the question the timing table above cannot answer — not "where is the time" but "why is Booster not making progress here".
+The fallback to Kore is both the correctness story (Booster could not finish) and the performance story (Kore fallback is the slow path), so the same log explains slow <em>and</em> failing steps.</p>
+<h3 id="turning-it-on">Turning it on</h3>
+<p><code>kevm prove</code> takes two flags:</p>
+<ul>
+<li><code>--haskell-log-dir DIR</code> — the on switch; captures one <code>&lt;request-id&gt;.jsonl</code> bundle per RPC call (each <code>execute</code> / <code>simplify</code> / <code>implies</code>) under <code>DIR</code>.</li>
+<li><code>--haskell-log-entries E1,E2,...</code> — which backend entry families to request; defaults to pyk's curated <code>HASKELL_LOGGING_ENTRIES</code> (<code>DebugAttemptEquation,DebugApplyEquation,DebugTerm,Proxy,Detail,Abort,Simplify,Rewrite</code>) when omitted.</li>
+</ul>
+<p>Each bundle is JSON-lines: one <code>{"context": [&lt;tag&gt;, ...], "message": &lt;...&gt;}</code> object per line, one file per RPC request.
+Note the distinction: <code>--haskell-log-entries</code> names the <em>entry selectors</em> you ask the backend to emit, but the entries that land in the bundle are tagged with lowercase semantic <code>context</code> tags (<code>kore</code>, <code>booster</code>, <code>abort</code>, <code>simplification</code>, <code>failure</code>, …) — so you grep/<code>jq</code> the bundles by those tags, not by the selector names.</p>
+<p>The same capability is wired into the test harness: <code>pytest ... --haskell-logging</code> writes per-spec bundles to <code>&lt;spec&gt;.analysis/&lt;claim&gt;/</code>, and <code>--booster-log-dir DIR</code> / <code>--booster-log-levels E1,E2</code> redirect the location and override the entry set (<code>*.analysis/</code> is gitignored).</p>
+<h3 id="isolating-the-step-to-log">Isolating the step to log</h3>
+<p>Logging a whole proof produces thousands of bundles; the point is to log <em>one</em> problematic step.
+Build the KCFG up to the frontier of interest, then take a single step with logging on, resuming from the saved KCFG (see <a href="#running-the-prover-directly-for-timing--debugging-a-single-spec">Running the prover directly</a> for the kompile + <code>--save-directory</code> setup):</p>
+<pre><code class="language-bash"><span class="token comment"># advance the KCFG toward the slow/failing frontier, one extension at a time</span>
+<span class="token comment"># (rerun, omitting --reinit, to resume and step forward)</span>
+uv <span class="token parameter variable">--project</span> kevm-pyk/ run kevm prove <span class="token operator">&lt;</span>spec<span class="token operator">&gt;</span> <span class="token parameter variable">--definition</span> <span class="token operator">&lt;</span>kompiled<span class="token operator">&gt;</span> --save-directory <span class="token operator">&lt;</span>dir<span class="token operator">&gt;</span> <span class="token punctuation">\</span>
+    --max-iterations <span class="token number">1</span>
+
+<span class="token comment"># then log just the next step / simplify / implies:</span>
+uv <span class="token parameter variable">--project</span> kevm-pyk/ run kevm prove <span class="token operator">&lt;</span>spec<span class="token operator">&gt;</span> <span class="token parameter variable">--definition</span> <span class="token operator">&lt;</span>kompiled<span class="token operator">&gt;</span> --save-directory <span class="token operator">&lt;</span>dir<span class="token operator">&gt;</span> <span class="token punctuation">\</span>
+    --max-iterations <span class="token number">1</span> --max-depth <span class="token number">1</span> --haskell-log-dir <span class="token operator">&lt;</span>dir<span class="token operator">&gt;</span>/hlog <span class="token parameter variable">--verbose</span>
+</code></pre>
+<p><code>--max-depth</code> bounds execution steps per <code>execute</code>; <code>--max-iterations</code> bounds KCFG extensions per run.
+Use <code>kevm view-kcfg</code> / <code>kevm show-kcfg</code> to inspect the frontier and pick the node, and <code>kevm section-edge EDGE --sections N</code> to split a long edge into smaller pieces so you can log a narrower slice.</p>
+<h3 id="reading-the-bundles">Reading the bundles</h3>
+<p>The bundles are JSON-lines, so <code>jq</code> over <code>&lt;dir&gt;/hlog/*.jsonl</code> is the fastest way in. Three recipes cover most debugging:</p>
+<pre><code class="language-bash"><span class="token comment"># (1) which lemmas Kore actually applied — rule label + source location, by frequency</span>
+jq <span class="token parameter variable">-rc</span> <span class="token string">'select(.message.label?) | "\(.message.label)\t\(.message.location)"'</span> hlog/*.jsonl <span class="token punctuation">\</span>
+    <span class="token operator">|</span> <span class="token function">sort</span> <span class="token operator">|</span> <span class="token function">uniq</span> <span class="token parameter variable">-c</span> <span class="token operator">|</span> <span class="token function">sort</span> <span class="token parameter variable">-rn</span>
+
+<span class="token comment"># (2) where Booster aborted and fell back to Kore (the message shows what it choked on)</span>
+jq <span class="token parameter variable">-c</span> <span class="token string">'select(.context|index("abort")) | .message'</span> hlog/*.jsonl
+
+<span class="token comment"># (3) why Booster rejected a rule — the reason strings, by frequency</span>
+jq <span class="token parameter variable">-rc</span> <span class="token string">'select((.context|index("booster")) and (.context|index("failure"))) | .message'</span> hlog/*.jsonl <span class="token punctuation">\</span>
+    <span class="token operator">|</span> <span class="token function">grep</span> <span class="token parameter variable">-v</span> <span class="token string">'^{'</span> <span class="token operator">|</span> <span class="token function">sort</span> <span class="token operator">|</span> <span class="token function">uniq</span> <span class="token parameter variable">-c</span> <span class="token operator">|</span> <span class="token function">sort</span> <span class="token parameter variable">-rn</span>
+</code></pre>
+<p>Recipe (3) is usually the payoff; the reason strings map directly to fixes:</p>
+<table class="table">
+<thead>
+<tr>
+<th>Booster failure reason</th>
+<th>What it means</th>
+<th>Likely fix</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Uncertain about definedness of rule due to: non-total symbol Lbl&lt;f&gt;</code></td>
+<td>Booster won't apply the rule because it can't establish the RHS is defined</td>
+<td>Add <code>[total]</code> to <code>&lt;f&gt;</code>, or <code>[preserves-definedness]</code> to the rule (the core lever — see the lemma work in this repo)</td>
+</tr>
+<tr>
+<td><code>Concreteness constraint violated: term has variables</code></td>
+<td>A <code>concrete(...)</code>-guarded rule met a symbolic argument</td>
+<td>Add a <code>symbolic(...)</code> variant, or a lemma that handles the symbolic shape</td>
+</tr>
+<tr>
+<td><code>Symbols differ: &lt;term&gt; =/= "N"</code> / <code>Values differ: "a" "b"</code></td>
+<td>The rule's LHS pattern did not match the actual term</td>
+<td>The simplification you want needs a differently-shaped lemma, or an earlier rewrite to normalise the term</td>
+</tr>
+<tr>
+<td><code>Condition simplified to #Bottom.</code></td>
+<td>A <code>requires</code> side condition could not be discharged</td>
+<td>Provide the missing fact, often via an <code>[smt-lemma]</code> (see existing examples in <code>kevm-pyk/src/kevm_pyk/kproj/evm-semantics/lemmas/lemmas.k</code>)</td>
+</tr>
+</tbody>
+</table>
+<p>The two questions this answers:</p>
+<ol>
+<li><strong>Why a rule doesn't fire in Booster, especially when it fires in Kore.</strong>
+Cross-reference recipe (1) against recipe (3): a lemma that shows up under "Kore applied" but whose Booster attempt appears in the failure list is the classic "fires in Kore, not in Booster" case, and the failure reason tells you which Booster-friendly form it needs (a definedness attribute, an SMT lemma, a reshaped pattern).</li>
+<li><strong>Which steps Booster is failing on.</strong>
+Recipe (2) names the rewrites/simplifications Booster gave up on for this step; those are exactly where a new lemma, a KEVM change, or added backend reasoning will move the proof forward.</li>
+</ol>
+<p>Once you have identified the specific simplification, reproduce it in isolation as a <a href="#functional-simplification-tests">functional simplification test</a> — a focused <code>runLemma</code>/<code>doneLemma</code> claim confirms immediately whether your fix makes the rule fire under the right conditions.</p>
+<h2 id="functional-simplification-tests">Functional simplification tests</h2>
+<p><code>tests/specs/functional/</code> contains <code>runLemma</code>/<code>doneLemma</code> style specs that test pure K functions and simplification lemmas in isolation, using the Haskell prover but without the overhead of full EVM execution.</p>
+<p><strong>When to add one:</strong> Any time a simplification you expect to fire is not going through in a larger proof, add a functional spec that targets exactly that simplification.
+A small focused claim will tell you immediately whether the rule fires under the right conditions, whether the preconditions are too strong, and whether the definition is efficient enough.
+Functional specs are also the right place for performance regression tests — a claim with a partially symbolic input (e.g. <code>#buf(32, INT_VAR)</code>) forces Haskell symbolic evaluation and exposes O(N) overhead in recursive definitions that concrete execution would hide.</p>
+<p>Existing specs to use as models:</p>
+<ul>
+<li><code>lemmas-no-smt-spec.k</code> — imports <code>evm.md</code>; tests arithmetic and bytes lemmas; no SMT needed</li>
+<li><code>lemmas-spec.k</code> — imports <code>edsl.md</code> + lemmas; tests <code>#hashedLocation</code>, ranges, etc.</li>
+<li><code>compute-valid-jump-dests-spec.k</code> — performance benchmark with symbolic input tail</li>
+</ul>
+<p>To add a new spec, start it with <code>requires "verification.k"</code> and put claims in a module that <code>imports VERIFICATION</code>.
+The shared <code>tests/specs/functional/verification.k</code> provides <code>EDSL + LEMMAS</code> plus the <code>runLemma</code>/<code>doneLemma</code> harness (<code>StepSort ::= Map | Bytes | Int | Bool</code>), and all such specs reuse one cached kompiled definition — no registration needed.
+The glob <code>spec_files('functional', '*-spec.k')</code> picks the file up as a pytest case automatically.</p>
+<p>Only if your spec needs a <em>different</em> main module (other imports, extra syntax such as macros or extra <code>StepSort</code> arms) does it need its own kompile target: define the module in the spec file itself and register it in <code>KOMPILE_MAIN_FILE</code> in <code>kevm-pyk/src/tests/integration/test_prove.py</code>:</p>
+<pre><code class="language-python"><span class="token string">'functional/my-spec.k'</span><span class="token punctuation">:</span> <span class="token string">'my-spec.k'</span><span class="token punctuation">,</span>
+</code></pre>
+<p><code>KOMPILE_MAIN_MODULE</code> defaults to <code>'VERIFICATION'</code>; only override it if your spec uses a different top module name.
+Each distinct main module costs an extra ~40 s kompile per definition change, so prefer the shared <code>verification.k</code> unless the different imports are the point of the test (see <code>abi-spec.k</code>, <code>lemmas-no-smt-spec.k</code>, <code>infinite-gas-spec.k</code>).</p>
+<p>Keep functional spec files small: each file is one pytest case (the unit of pytest-xdist scheduling <em>and</em> of re-running after a failure), and claims within a file are proven 8-way parallel.
+Aim for roughly ≤300 s standalone per file; split by claim category when a file grows past that (see the <code>bitwise-*-spec.k</code> / <code>bytes-range-spec.k</code> split of the old monolithic <code>lemmas-spec.k</code>).</p>
+<h2 id="comparing-haskell-backend-builds-(perf-%2B-booster-dev-pass-rate)">Comparing haskell-backend builds (perf + booster-dev pass rate)</h2>
+<p>Use this to measure how a haskell-backend change (a branch/commit) affects both proof <strong>performance</strong> and the <strong>booster-dev pass rate</strong> — how many specs prove under the pure <code>booster-dev</code> binary (no kore-rpc fallback) — while holding the K version fixed at <code>deps/k_release</code>.
+The driving question is usually "does this backend make more specs pass purely in booster-dev, and at what speed cost?".</p>
+<p>Install a backend with <code>kup</code> (see <a href="../docs/2026-05-22-kup-override/"><code>docs/2026-05-22-kup-override.md</code></a> for the override mechanics).
+The stock build is <code>kup install k.openssl.procps --version v&lt;deps/k_release&gt;</code>; an override build replaces just the backend, e.g. <code>--override haskell-backend github:runtimeverification/haskell-backend/&lt;commit&gt;</code> (or a local checkout / isolated <code>git worktree</code> if a github ref is rejected).</p>
+<p><strong>The procedure, per backend:</strong></p>
+<ol>
+<li><strong>Install</strong> the backend, then <code>uv --project kevm-pyk/ sync</code> (only needed when the K version changes; an override leaves pyk untouched).</li>
+<li><strong>Kompile separately and do not time it</strong> — kompile time is never part of the comparison. Pre-kompile the suite into a per-backend dir so the two builds' definitions stay isolated:<pre><code class="language-bash">uv <span class="token parameter variable">--project</span> kevm-pyk/ run pytest kevm-pyk/src/tests/integration <span class="token parameter variable">-k</span> <span class="token string">"test_kompile_targets"</span> <span class="token punctuation">\</span>
+    --kompiled-targets-dir /tmp/hb-exp/<span class="token operator">&lt;</span>tag<span class="token operator">&gt;</span>-kompiled <span class="token parameter variable">--numprocesses</span> <span class="token number">4</span>
+</code></pre>
+</li>
+<li><strong>Normal-mode run</strong> (kore-rpc-booster, fallback on) — the real proof-timing baseline. Wrap with <code>$SECONDS</code> to capture total wall-clock; <code>--junitxml</code> captures per-test time and outcome:<pre><code class="language-bash"><span class="token assign-left variable">start</span><span class="token operator">=</span><span class="token environment constant">$SECONDS</span>
+uv <span class="token parameter variable">--project</span> kevm-pyk/ run pytest kevm-pyk/src/tests/integration <span class="token punctuation">\</span>
+    <span class="token parameter variable">-k</span> <span class="token string">"test_prove_functional or test_prove_rules or test_prove_optimizations or test_prove_dss"</span> <span class="token punctuation">\</span>
+    --kompiled-targets-dir /tmp/hb-exp/<span class="token operator">&lt;</span>tag<span class="token operator">&gt;</span>-kompiled <span class="token parameter variable">--numprocesses</span> <span class="token number">8</span> <span class="token punctuation">\</span>
+    <span class="token parameter variable">--junitxml</span><span class="token operator">=</span>perf-runs/<span class="token operator">&lt;</span>tag<span class="token operator">&gt;</span>/normal.junit.xml <span class="token operator">&gt;</span> perf-runs/<span class="token operator">&lt;</span>tag<span class="token operator">&gt;</span>/normal.log <span class="token operator"><span class="token file-descriptor important">2</span>&gt;</span><span class="token file-descriptor important">&amp;1</span>
+<span class="token builtin class-name">echo</span> <span class="token variable"><span class="token variable">$((</span>SECONDS<span class="token operator">-</span>start<span class="token variable">))</span></span> <span class="token operator">&gt;</span> perf-runs/<span class="token operator">&lt;</span>tag<span class="token operator">&gt;</span>/normal.wallclock
+</code></pre>
+<code>--numprocesses 8</code> is safe — multiple K servers do not contend here. Use no <code>--maxfail</code> (you want the complete map).</li>
+<li><strong>Derive the booster-dev timeout</strong> from the normal run, so a booster-dev spec is only ever counted as failing on a real abort, never for being slow:<pre><code class="language-bash"><span class="token assign-left variable">T</span><span class="token operator">=</span><span class="token variable"><span class="token variable">$(</span>uv <span class="token parameter variable">--project</span> kevm-pyk/ run python scripts/compare-junit-runs.py max-time perf-runs/<span class="token operator">&lt;</span>tag<span class="token operator">&gt;</span>/normal.junit.xml<span class="token variable">)</span></span>
+</code></pre>
+<code>T</code> = ceil of the longest normal-mode per-test time for that backend.</li>
+<li><strong>booster-dev run</strong> with <code>--use-booster-dev --timeout "$T"</code>. To <em>discover</em> newly-passing specs, the <code>tests/failing-symbolic.haskell-booster-dev</code> skip-list (which the harness <code>pytest.skip()</code>s under <code>--use-booster-dev</code>) must be neutralised. Do <strong>not</strong> empty the file — <code>exclude_list()</code> asserts it is non-empty, so an empty file crashes collection; instead write a single sentinel path that matches no real spec, then git-restore afterward:<pre><code class="language-bash"><span class="token function">cp</span> tests/failing-symbolic.haskell-booster-dev /tmp/hb-exp/failing-list.bak
+<span class="token builtin class-name">echo</span> <span class="token string">'__none__'</span> <span class="token operator">&gt;</span> tests/failing-symbolic.haskell-booster-dev
+<span class="token assign-left variable">start</span><span class="token operator">=</span><span class="token environment constant">$SECONDS</span>
+uv <span class="token parameter variable">--project</span> kevm-pyk/ run pytest kevm-pyk/src/tests/integration <span class="token punctuation">\</span>
+    <span class="token parameter variable">-k</span> <span class="token string">"test_prove_functional or test_prove_rules or test_prove_optimizations or test_prove_dss"</span> <span class="token punctuation">\</span>
+    --use-booster-dev <span class="token parameter variable">--timeout</span> <span class="token string">"<span class="token variable">$T</span>"</span> --timeout-method<span class="token operator">=</span>thread <span class="token punctuation">\</span>
+    --kompiled-targets-dir /tmp/hb-exp/<span class="token operator">&lt;</span>tag<span class="token operator">&gt;</span>-kompiled <span class="token parameter variable">--numprocesses</span> <span class="token number">8</span> <span class="token punctuation">\</span>
+    <span class="token parameter variable">--junitxml</span><span class="token operator">=</span>perf-runs/<span class="token operator">&lt;</span>tag<span class="token operator">&gt;</span>/boosterdev.junit.xml <span class="token operator">&gt;</span> perf-runs/<span class="token operator">&lt;</span>tag<span class="token operator">&gt;</span>/boosterdev.log <span class="token operator"><span class="token file-descriptor important">2</span>&gt;</span><span class="token file-descriptor important">&amp;1</span>
+<span class="token builtin class-name">echo</span> <span class="token variable"><span class="token variable">$((</span>SECONDS<span class="token operator">-</span>start<span class="token variable">))</span></span> <span class="token operator">&gt;</span> perf-runs/<span class="token operator">&lt;</span>tag<span class="token operator">&gt;</span>/boosterdev.wallclock
+<span class="token function">git</span> checkout -- tests/failing-symbolic.haskell-booster-dev
+</code></pre>
+</li>
+</ol>
+<p><strong>Compare</strong> the two backends' run directories (<code>perf-runs/baseline</code>, <code>perf-runs/escalate</code>):</p>
+<pre><code class="language-bash">uv <span class="token parameter variable">--project</span> kevm-pyk/ run python scripts/compare-junit-runs.py compare <span class="token punctuation">\</span>
+    --baseline-dir perf-runs/baseline --escalate-dir perf-runs/escalate <span class="token punctuation">\</span>
+    <span class="token parameter variable">-o</span> docs/experiment-logs/<span class="token operator">&lt;</span>timestamp<span class="token operator">&gt;</span>-<span class="token operator">&lt;</span>name<span class="token operator">&gt;</span>.md
+</code></pre>
+<p><code>scripts/compare-junit-runs.py</code> (committed tooling) emits an aligned-markdown report plus a <code>.json</code> sidecar: a totals table (sum-of-per-test <strong>and</strong> wall-clock per mode/backend), the booster-dev pass-rate diff (newly-passing fail→pass and any pass→fail regressions), and per-test timing deltas for specs passing in both runs.
+Raw JUnit/logs live under <code>perf-runs/</code> (gitignored); commit only the generated report under <code>docs/experiment-logs/</code>.</p>
+<h2 id="commit-discipline">Commit discipline</h2>
+<ul>
+<li>Every commit must be <strong>atomic and self-contained</strong> — the project must build and fast tests must pass at each commit.</li>
+<li>Fast gate before every commit: <code>make -C kevm-pyk/ check</code> and <code>make -C kevm-pyk/ test-unit</code>.</li>
+<li>After editing any <code>.k</code>/<code>.md</code> file, kdist targets are stale; rebuild with <code>kevm-kdist build</code> before running proofs.</li>
+<li>Proof tests (<code>test_prove_*</code>) take minutes per spec; run the relevant suite before marking a PR ready, not on every commit.</li>
+</ul>
+</body></html></div>
+        </main>
+
+        <!-- Page ToC -->
+        <div class="col-12 col-md-3 col-xl-2 py-md-3 bd-sidebar page-toc mb-3">
+          
+<div>
+<details style="padding:0.25rem 0;;padding-left: 0px;">
+            <summary class="bd-toc-link-wrapper">
+              <a href="#evm-semantics" class="bd-toc-link">evm-semantics</a>
+              </summary>
+            <div>
+              <div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#repository-layout"
+                class="bd-toc-link"
+                style="padding-left: 8px;;"
+              >
+                Repository layout
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#build-toolchain"
+                class="bd-toc-link"
+                style="padding-left: 8px;;"
+              >
+                Build toolchain
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#linting-and-static-analysis-(python)"
+                class="bd-toc-link"
+                style="padding-left: 8px;;"
+              >
+                Linting and static analysis (Python)
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#unit-tests-(fast%2C-no-k-runtime-required)"
+                class="bd-toc-link"
+                style="padding-left: 8px;;"
+              >
+                Unit tests (fast, no K runtime required)
+              </a></div><details style="padding:0.25rem 0;;padding-left: 8px;">
+            <summary class="bd-toc-link-wrapper">
+              <a href="#integration-%2F-proof-tests" class="bd-toc-link">Integration / proof tests</a>
+              </summary>
+            <div>
+              <div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#make-targets-(recommended)"
+                class="bd-toc-link"
+                style="padding-left: 16px;;"
+              >
+                Make targets (recommended)
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#direct-pytest-(same-options%2C-more-control)"
+                class="bd-toc-link"
+                style="padding-left: 16px;;"
+              >
+                Direct pytest (same options, more control)
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#proof-test-suites"
+                class="bd-toc-link"
+                style="padding-left: 16px;;"
+              >
+                Proof test suites
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#running-the-prover-directly-(for-timing-%2F-debugging-a-single-spec)"
+                class="bd-toc-link"
+                style="padding-left: 16px;;"
+              >
+                Running the prover directly (for timing / debugging a single spec)
+              </a></div>
+            </div>
+          </details>
+        <div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#proof-timing-anatomy"
+                class="bd-toc-link"
+                style="padding-left: 8px;;"
+              >
+                Proof timing anatomy
+              </a></div><details style="padding:0.25rem 0;;padding-left: 8px;">
+            <summary class="bd-toc-link-wrapper">
+              <a href="#debugging-why-a-proof-is-slow-or-failing-(haskell-backend-logging)" class="bd-toc-link">Debugging <em>why</em> a proof is slow or failing (Haskell-backend logging)</a>
+              </summary>
+            <div>
+              <div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#turning-it-on"
+                class="bd-toc-link"
+                style="padding-left: 16px;;"
+              >
+                Turning it on
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#isolating-the-step-to-log"
+                class="bd-toc-link"
+                style="padding-left: 16px;;"
+              >
+                Isolating the step to log
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#reading-the-bundles"
+                class="bd-toc-link"
+                style="padding-left: 16px;;"
+              >
+                Reading the bundles
+              </a></div>
+            </div>
+          </details>
+        <div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#functional-simplification-tests"
+                class="bd-toc-link"
+                style="padding-left: 8px;;"
+              >
+                Functional simplification tests
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#comparing-haskell-backend-builds-(perf-%2B-booster-dev-pass-rate)"
+                class="bd-toc-link"
+                style="padding-left: 8px;;"
+              >
+                Comparing haskell-backend builds (perf + booster-dev pass rate)
+              </a></div><div class="bd-toc-link-wrapper" style="padding:0.25rem 0;">
+              <a
+                href="#commit-discipline"
+                class="bd-toc-link"
+                style="padding-left: 8px;;"
+              >
+                Commit discipline
+              </a></div>
+            </div>
+          </details>
+        
+</div>
+
+        </div>
+        <div class="btn btn-rv-blue page-toc-toggle-btn"></div>
+        <!-- End Page ToC -->
+      </div>
+    </div>
+<!-- The footer is now controlled by the k-web-theme git submodule -->
+<footer id="rvsite-footer" class="app-footer text-md-left text-center">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-md-4 mb-md-0 mb-4">
+        <a href="https://runtimeverification.com/" target="_blank">
+          <picture>
+            <source
+              srcset="
+                https://runtimeverification.com/assets/img/rv-logo-dark.png
+              "
+              media="(prefers-color-scheme: dark)"
+            />
+            <img
+              class="logo-dark"
+              src="https://runtimeverification.com/assets/img/rv-logo.png"
+              alt="Runtime Verification logo"
+              style="height: 32px"
+            /> </picture
+        ></a>
+        <p class="mt-2 text-md-left copyright">
+          <a href="https://maps.app.goo.gl/8YhKozfmZtgzQBsH7" target="_blank"
+            >202 S Broadway Ave #31, Urbana, IL</a
+          >
+        </p>
+      </div>
+      <div class="col-md-4 text-md-center mb-md-0 mb-4"></div>
+      <div class="col-md-4 mb-md-0 mb-4 pl-0 text-md-right">
+        <p class="copyright">2026 © all rights reserved</p>
+        <span class="copyright"
+          ><a href="https://runtimeverification.com/privacy-policy"
+            >privacy policy</a
+          >
+          |
+          <a href="https://runtimeverification.com/terms-of-use"
+            >terms of use</a
+          ></span
+        >
+      </div>
+    </div>
+  </div>
+</footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Typist/1.2/typist.min.js"></script>
+    <script src="../assets/js/index.js"></script>
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script
+  async
+  src="https://www.googletagmanager.com/gtag/js?id=G-QL0D8HRYFW"
+></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag() {
+    dataLayer.push(arguments);
+  }
+  gtag("js", new Date());
+  gtag("config", "G-QL0D8HRYFW");
+</script>
+
+  </body>
+</html>
