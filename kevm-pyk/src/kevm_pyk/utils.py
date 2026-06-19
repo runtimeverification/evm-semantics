@@ -117,6 +117,7 @@ def run_prover(
     assume_defined: bool = False,
     extra_module: KFlatModule | None = None,
     optimize_kcfg: bool = False,
+    step_timeout: int | None = None,
 ) -> bool:
     prover: APRProver | ImpliesProver
     try:
@@ -134,11 +135,22 @@ def run_prover(
                     assume_defined=assume_defined,
                     extra_module=extra_module,
                     optimize_kcfg=optimize_kcfg,
+                    step_timeout=step_timeout,
                 )
 
             def update_status_bar(_proof: Proof) -> None:
                 if progress is not None and task_id is not None:
                     progress.update(task_id, summary=_proof.one_line_summary)
+
+            # step_timeout is only enforced on the sequential `advance_proof` path;
+            # `parallel_advance_proof` does not wrap steps with the timeout budget.
+            if step_timeout is not None and not force_sequential:
+                if max_frontier_parallel > 1:
+                    _LOGGER.warning(
+                        f'Proof {proof.id}: step_timeout is only enforced when running sequentially; '
+                        f'ignoring max_frontier_parallel={max_frontier_parallel} and running sequentially.'
+                    )
+                force_sequential = True
 
             if force_sequential:
                 prover = create_prover()
