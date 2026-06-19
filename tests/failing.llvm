@@ -1,9 +1,0 @@
-BlockchainTests/GeneralStateTests/Pyspecs/cancun/eip4788_beacon_root/beacon_root_transition.json,*
-BlockchainTests/GeneralStateTests/Pyspecs/cancun/eip4844_blobs/blob_type_tx_pre_fork.json,src/GeneralStateTestsFiller/Pyspecs/cancun/eip4844_blobs/test_blob_txs.py::test_blob_type_tx_pre_fork[fork_ShanghaiToCancunAtTime15k-blockchain_test-one_blob_tx]
-BlockchainTests/GeneralStateTests/Pyspecs/cancun/eip4844_blobs/fork_transition_excess_blob_gas.json,*
-BlockchainTests/GeneralStateTests/Pyspecs/cancun/eip4844_blobs/invalid_blob_gas_used_in_header.json,*
-BlockchainTests/GeneralStateTests/Pyspecs/cancun/eip4844_blobs/precompile_before_fork.json,*
-BlockchainTests/GeneralStateTests/Pyspecs/cancun/eip4844_blobs/precompile_during_fork.json,*
-BlockchainTests/GeneralStateTests/Pyspecs/cancun/eip4844_blobs/reject_valid_full_blob_in_block_rlp.json,*
-BlockchainTests/GeneralStateTests/Pyspecs/cancun/eip7516_blobgasfee/blobbasefee_before_fork.json,*
-BlockchainTests/GeneralStateTests/Pyspecs/cancun/eip7516_blobgasfee/blobbasefee_during_fork.json,*
