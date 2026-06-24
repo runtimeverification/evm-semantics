@@ -614,6 +614,7 @@ blockchain_tests/osaka/eip7951_p256verify_precompiles/test_valid.json,*
 blockchain_tests/osaka/eip7951_p256verify_precompiles/test_wycheproof_extra.json,*
 blockchain_tests/osaka/eip7951_p256verify_precompiles/test_wycheproof_invalid.json,*
 blockchain_tests/osaka/eip7951_p256verify_precompiles/test_wycheproof_valid.json,*
+blockchain_tests/osaka/eip7825_transaction_gas_limit_cap/test_transaction_gas_limit_cap_at_transition.json,*
 blockchain_tests/prague/eip2537_bls_12_381_precompiles/test_invalid_multi_inf.json,*
 blockchain_tests/prague/eip2537_bls_12_381_precompiles/test_precompile_before_fork.json,*
 blockchain_tests/prague/eip2537_bls_12_381_precompiles/test_valid_multi_inf.json,*
