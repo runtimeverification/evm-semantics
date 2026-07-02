@@ -59,14 +59,12 @@ tests/specs/examples/solidity-code-spec.md
 tests/specs/examples/storage-spec.md
 tests/specs/examples/sum-to-n-foundry-spec.k
 tests/specs/examples/sum-to-n-spec.k
-tests/specs/functional/bitwise-mask-shift-spec.k
 tests/specs/functional/bytes-range-spec.k
 tests/specs/functional/evm-int-simplifications-spec.k
 tests/specs/functional/infinite-gas-spec.k
 tests/specs/functional/int-simplifications-spec.k
 tests/specs/functional/lemmas-spec.k
 tests/specs/functional/merkle-spec.k
-tests/specs/functional/slot-updates.k
 tests/specs/functional/storageRoot-spec.k
 tests/specs/kontrol/test-allowchangestest-testallow-0-spec.k
 tests/specs/kontrol/test-allowchangestest-testallow_fail-0-spec.k
@@ -88,7 +86,6 @@ tests/specs/kontrol/test-owneruponlytest-testincrementasowner-0-spec.k
 tests/specs/kontrol/test-safetest-testwithdrawfuzz-uint96-0-spec.k
 tests/specs/kontrol/test-storetest-testaccesses-0-spec.k
 tests/specs/kontrol/test-storetest-teststoreload-0-spec.k
-tests/specs/mcd/cat-exhaustiveness-spec.k
 tests/specs/mcd/cat-file-addr-pass-rough-spec.k
 tests/specs/mcd/dai-adduu-fail-rough-spec.k
 tests/specs/mcd/dstoken-approve-fail-rough-spec.k
@@ -110,7 +107,6 @@ tests/specs/mcd/flopper-kick-pass-rough-spec.k
 tests/specs/mcd/flopper-tick-pass-rough-spec.k
 tests/specs/mcd/functional-spec.k
 tests/specs/mcd/pot-join-pass-rough-spec.k
-tests/specs/mcd-structured/cat-exhaustiveness-spec.k
 tests/specs/mcd-structured/cat-file-addr-pass-rough-spec.k
 tests/specs/mcd-structured/dai-adduu-fail-rough-spec.k
 tests/specs/mcd-structured/dstoken-approve-fail-rough-spec.k
