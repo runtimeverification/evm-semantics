@@ -512,6 +512,18 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     
 ```
 
+### Amsterdam Schedule
+
+Amsterdam is the execution-layer fork of the Glamsterdam network upgrade ([EIP-7773](https://eips.ethereum.org/EIPS/eip-7773)).
+
+```k
+    syntax Schedule ::= "AMSTERDAM" [symbol(AMSTERDAM_EVM), smtlib(schedule_AMSTERDAM)]
+ // ------------------------------------------------------------------------------------
+    rule [SCHEDCONSTAmsterdam]: SCHEDCONST < AMSTERDAM > => SCHEDCONST < OSAKA >
+
+    rule [SCHEDFLAGAmsterdam]:  SCHEDFLAG << AMSTERDAM >> => SCHEDFLAG << OSAKA >>
+```
+
 ```k
 endmodule
 ```

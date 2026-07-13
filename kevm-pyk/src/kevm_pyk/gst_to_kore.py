@@ -34,7 +34,9 @@ SCHEDULE_MAPPING: Final[dict[str, str]] = {
     'Frontier': 'FRONTIER',
     'Homestead': 'HOMESTEAD',
     'EIP150': 'TANGERINE_WHISTLE',
+    'TangerineWhistle': 'TANGERINE_WHISTLE',
     'EIP158': 'SPURIOUS_DRAGON',
+    'SpuriousDragon': 'SPURIOUS_DRAGON',
     'Byzantium': 'BYZANTIUM',
     'Constantinople': 'CONSTANTINOPLE',
     'ConstantinopleFix': 'PETERSBURG',
@@ -51,6 +53,16 @@ SCHEDULE_MAPPING: Final[dict[str, str]] = {
     'CancunToPragueAtTime15k': 'PRAGUE',
     'Osaka': 'OSAKA',
     'PragueToOsakaAtTime15k': 'OSAKA',
+    'Amsterdam': 'AMSTERDAM',
+    'BPO2ToAmsterdamAtTime15k': 'AMSTERDAM',
+    # BPO forks are blob-parameter-only (EIP-7892) and have no dedicated KEVM
+    # schedule; their fixtures are all *AtTime15k transition tests, which run
+    # under a single schedule and are expected to fail regardless, so map them
+    # to the nearest defined schedule to keep collection from crashing.
+    'OsakaToBPO1AtTime15k': 'OSAKA',
+    'BPO1ToBPO2AtTime15k': 'OSAKA',
+    'BPO2ToBPO3AtTime15k': 'AMSTERDAM',
+    'BPO3ToBPO4AtTime15k': 'AMSTERDAM',
 }
 
 _GST_DISCARD_KEYS: Final = frozenset(

@@ -1007,6 +1007,8 @@ class KEVMCLIArgs(KCLIArgs):
             'SHANGHAI',
             'CANCUN',
             'PRAGUE',
+            'OSAKA',
+            'AMSTERDAM',
         )
         modes = ('NORMAL', 'VMTESTS')
 
