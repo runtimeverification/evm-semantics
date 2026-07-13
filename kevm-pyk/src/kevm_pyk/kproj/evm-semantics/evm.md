@@ -123,6 +123,8 @@ In the comments next to each cell, we've marked which component of the YellowPap
               <excessBlobGas>    0      </excessBlobGas>
               <beaconRoot>       0      </beaconRoot>
               <requestsRoot>     0      </requestsRoot>
+              <balHash>          0      </balHash>          // EIP-7928 blockAccessListHash
+              <slotNumber>       0      </slotNumber>       // EIP-7843
 
               <ommerBlockHeaders> [ .JSONs ] </ommerBlockHeaders>
             </block>

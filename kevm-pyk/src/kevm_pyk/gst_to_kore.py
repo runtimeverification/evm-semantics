@@ -77,6 +77,8 @@ _GST_DISCARD_KEYS: Final = frozenset(
         'hasBigInt',
         'config',
         'network',
+        'receipts',
+        'blockAccessList',
     ]
 )
 _GST_LOAD_KEYS: Final = frozenset(
