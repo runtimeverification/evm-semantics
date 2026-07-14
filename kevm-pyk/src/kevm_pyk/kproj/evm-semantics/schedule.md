@@ -31,8 +31,8 @@ module SCHEDULE
                           | "Ghaswarmcoinbase"        | "Ghaswithdrawals"  | "Ghastransient"       | "Ghasmcopy"
                           | "Ghasbeaconroot"          | "Ghaseip6780"      | "Ghasblobbasefee"     | "Ghasblobhash"
                           | "Ghasbls12msmdiscount"    | "Ghashistory"      | "Ghasrequests"        | "Ghasauthority"
-                          | "Ghasfloorcost"           | "Ghasclz"
- // -------------------------------------------------------------
+                          | "Ghasfloorcost"           | "Ghasclz"          | "Ghasauthbaserefund"
+ // ---------------------------------------------------------------------------------------
 ```
 
 ### Schedule Constants
@@ -491,12 +491,14 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule [Ghasbls12msmdiscountPrague]: Ghasbls12msmdiscount << PRAGUE >> => true
     rule [GhasauthorityPrague]:        Ghasauthority        << PRAGUE >> => true
     rule [GhasfloorcostPrague]:        Ghasfloorcost        << PRAGUE >> => true
+    rule [GhasauthbaserefundPrague]:   Ghasauthbaserefund   << PRAGUE >> => true
     rule [SCHEDFLAGPrague]:            SCHEDFLAG            << PRAGUE >> => SCHEDFLAG << CANCUN >>
       requires notBool ( SCHEDFLAG ==K Ghasrequests
                   orBool SCHEDFLAG ==K Ghashistory
                   orBool SCHEDFLAG ==K Ghasbls12msmdiscount
                   orBool SCHEDFLAG ==K Ghasauthority
-                  orBool SCHEDFLAG ==K Ghasfloorcost )
+                  orBool SCHEDFLAG ==K Ghasfloorcost
+                  orBool SCHEDFLAG ==K Ghasauthbaserefund )
 ```
 
 ### Osaka Schedule
@@ -520,13 +522,25 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule [GmaxblobgasAmsterdam]:               Gmaxblobgas               < AMSTERDAM > => 2752512
     rule [GtargetblobgasAmsterdam]:            Gtargetblobgas            < AMSTERDAM > => 1835008
     rule [BlobbasefeeupdatefractionAmsterdam]: Blobbasefeeupdatefraction < AMSTERDAM > => 11684671
+    rule [GsstoresetAmsterdam]:                Gsstoreset                < AMSTERDAM > => 10000
+    rule [GnewaccountAmsterdam]:               Gnewaccount               < AMSTERDAM > => 183600
+    rule [GcreateAmsterdam]:                   Gcreate                   < AMSTERDAM > => 11000
+    rule [GtxcreateAmsterdam]:                 Gtxcreate                 < AMSTERDAM > => 23000
+    rule [GcallvalueAmsterdam]:                Gcallvalue                < AMSTERDAM > => 10300
     rule [SCHEDCONSTAmsterdam]:                SCHEDCONST                < AMSTERDAM > => SCHEDCONST < OSAKA >
       requires notBool ( SCHEDCONST ==K Gmaxblobgas
                   orBool SCHEDCONST ==K Gtargetblobgas
                   orBool SCHEDCONST ==K Blobbasefeeupdatefraction
+                  orBool SCHEDCONST ==K Gsstoreset
+                  orBool SCHEDCONST ==K Gnewaccount
+                  orBool SCHEDCONST ==K Gcreate
+                  orBool SCHEDCONST ==K Gtxcreate
+                  orBool SCHEDCONST ==K Gcallvalue
                        )
 
-    rule [SCHEDFLAGAmsterdam]: SCHEDFLAG << AMSTERDAM >> => SCHEDFLAG << OSAKA >>
+    rule [GhasauthbaserefundAmsterdam]: Ghasauthbaserefund << AMSTERDAM >> => false
+    rule [SCHEDFLAGAmsterdam]:          SCHEDFLAG          << AMSTERDAM >> => SCHEDFLAG << OSAKA >>
+      requires notBool ( SCHEDFLAG ==K Ghasauthbaserefund )
 ```
 
 ```k

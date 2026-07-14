@@ -337,7 +337,20 @@ Processing SetCode Transaction Authority Entries
            <nonce> ACCTNONCE => ACCTNONCE +Int 1 </nonce>
          ...
          </account>
-      requires (ACCTCODE ==K .Bytes orBool #isValidDelegation(ACCTCODE))
+      requires Ghasauthbaserefund << SCHED >>
+       andBool (ACCTCODE ==K .Bytes orBool #isValidDelegation(ACCTCODE))
+       andBool #asWord(NONCE) ==K ACCTNONCE
+
+    rule <k> #addAuthority(AUTHORITY, _CID, NONCE, ADDR) => .K ... </k>
+         <schedule> SCHED </schedule>
+         <account>
+           <acctID> AUTHORITY </acctID>
+           <code> ACCTCODE => #if #asWord(ADDR) ==Int 0 #then .Bytes #else EOA_DELEGATION_MARKER +Bytes ADDR #fi </code>
+           <nonce> ACCTNONCE => ACCTNONCE +Int 1 </nonce>
+         ...
+         </account>
+      requires notBool Ghasauthbaserefund << SCHED >>
+       andBool (ACCTCODE ==K .Bytes orBool #isValidDelegation(ACCTCODE))
        andBool #asWord(NONCE) ==K ACCTNONCE
 
     rule <k> #addAuthority(AUTHORITY, _CID, NONCE, ADDR) => .K ... </k>
