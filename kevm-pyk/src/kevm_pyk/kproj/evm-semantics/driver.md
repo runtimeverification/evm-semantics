@@ -128,7 +128,9 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          </k>
          <schedule> SCHED </schedule>
          <gasPrice> _ => #effectiveGasPrice(TXID) </gasPrice>
-         <callGas> _ => GLIMIT -Int G0(SCHED, CODE, true) </callGas>
+         <callGas> _ => GLIMIT -Int G0(SCHED, CODE, true) -Int #txStateGasReservoir(SCHED, GLIMIT) </callGas>
+         <stateGasReservoir> _ => #txStateGasReservoir(SCHED, GLIMIT) </stateGasReservoir>
+         <stateGasSpilled> _ => 0 </stateGasSpilled>
          <origin> _ => ACCTFROM </origin>
          <callDepth> _ => -1 </callDepth>
          <txPending> ListItem(TXID:Int) ... </txPending>
@@ -167,7 +169,9 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          </k>
          <schedule> SCHED </schedule>
          <gasPrice> _ => #effectiveGasPrice(TXID) </gasPrice>
-         <callGas> _ => GLIMIT -Int G0(SCHED, DATA, false) </callGas>
+         <callGas> _ => GLIMIT -Int G0(SCHED, DATA, false) -Int #txStateGasReservoir(SCHED, GLIMIT) </callGas>
+         <stateGasReservoir> _ => #txStateGasReservoir(SCHED, GLIMIT) </stateGasReservoir>
+         <stateGasSpilled> _ => 0 </stateGasSpilled>
          <origin> _ => ACCTFROM </origin>
          <callDepth> _ => -1 </callDepth>
          <txPending> ListItem(TXID:Int) ... </txPending>
@@ -202,8 +206,10 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 
     syntax EthereumCommand ::= "#finishTx"
  // --------------------------------------
-    rule <statusCode> _:ExceptionalStatusCode </statusCode> <k> #halt ~> #finishTx => #popCallStack ~> #popWorldState                   ... </k>
-    rule <statusCode> EVMC_REVERT             </statusCode> <k> #halt ~> #finishTx => #popCallStack ~> #popWorldState ~> #refund GAVAIL ... </k> <gas> GAVAIL </gas>
+    rule <statusCode> _:ExceptionalStatusCode </statusCode> <k> #halt ~> #finishTx => #popCallStack ~> #popWorldState                            ... </k>
+    rule <statusCode> EVMC_REVERT             </statusCode> <k> #halt ~> #finishTx => #popCallStack ~> #popWorldState ~> #refund (GAVAIL +Gas SGS) ... </k>
+         <gas> GAVAIL </gas>
+         <stateGasSpilled> SGS </stateGasSpilled>
 
     rule <statusCode> EVMC_SUCCESS </statusCode>
          <k> #halt ~> #finishTx => #mkCodeDeposit ACCT ... </k>
@@ -216,8 +222,10 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          </message>
 
     rule <statusCode> EVMC_SUCCESS </statusCode>
-         <k> #halt ~> #finishTx => #popCallStack ~> #dropWorldState ~> #refund GAVAIL ... </k>
+         <k> #halt ~> #finishTx => #popCallStack ~> #dropWorldState ~> #restoreStateGas SGR SGS ~> #refund GAVAIL ... </k>
          <gas> GAVAIL </gas>
+         <stateGasReservoir> SGR </stateGasReservoir>
+         <stateGasSpilled>   SGS </stateGasSpilled>
          <txPending> ListItem(TXID:Int) ... </txPending>
          <message>
            <msgID> TXID </msgID>
@@ -301,7 +309,25 @@ Processing SetCode Transaction Authority Entries
            <txType> SetCode </txType>
            ...
          </message>
-         <callGas> GLIMIT => GLIMIT -Int 25000 </callGas> [owise]
+         <schedule> SCHED </schedule>
+         <callGas> GLIMIT => GLIMIT -Int 25000 </callGas>
+      requires notBool Ghasstategas << SCHED >>
+       [owise]
+
+    rule <k> #loadAuthorities (ListItem(ListItem(CID) ListItem(ADDR) ListItem(NONCE) ListItem(YPAR) ListItem(SIGR) ListItem(SIGS)) REST )
+          => Gauthbase < SCHED > ~> #chargeStateGasIntoCallGas
+          ~> #setDelegation (#recoverAuthority(CID, ADDR, NONCE, YPAR, SIGR, SIGS), CID, NONCE, ADDR)
+          ~> #loadAuthorities (REST)
+          ... </k>
+         <txPending> ListItem(TXID:Int) ... </txPending>
+         <message>
+           <msgID> TXID </msgID>
+           <txType> SetCode </txType>
+           ...
+         </message>
+         <schedule> SCHED </schedule>
+      requires Ghasstategas << SCHED >>
+       [owise]
 
     syntax InternalOp ::= #setDelegation ( Account , Bytes , Bytes , Bytes ) [symbol(#setDelegation)]
  // -------------------------------------------------------------------------------------------------
@@ -354,6 +380,7 @@ Processing SetCode Transaction Authority Entries
        andBool #asWord(NONCE) ==K ACCTNONCE
 
     rule <k> #addAuthority(AUTHORITY, _CID, NONCE, ADDR) => .K ... </k>
+         <schedule> SCHED </schedule>
          <accounts>
                ( .Bag
                   =>

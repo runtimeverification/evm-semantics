@@ -127,6 +127,8 @@ module GAS-FEES
                  | Cexcessblob      ( Schedule , Int , Int )                      [symbol(Cexcessblob),       function, total, smtlib(gas_Cexcessblob)      ]
                  | Cdelegationaccess( Schedule, Bool, Bool )                      [symbol(Cdelegationaccess), function, total, smtlib(gas_Cdelegationaccess)]
                  | Ctxfloor         ( Schedule , Bytes )                          [symbol(Ctxfloor),          function, total, smtlib(gas_Ctxfloor)         ]
+                 | SstoreStateGas   ( Schedule , Int , Int , Int )                [symbol(SstoreStateGas),    function, total, smtlib(gas_SstoreStateGas)   ]
+                 | SstoreStateCredit( Schedule , Int , Int , Int )                [symbol(SstoreStateCredit), function, total, smtlib(gas_SstoreStateCredit)]
  // ---------------------------------------------------------------------------------------------------------------------------------------------------------
     rule [Cgascap]:
          Cgascap(SCHED, GCAP:Int, GAVAIL:Int, GEXTRA)
@@ -173,13 +175,26 @@ module GAS-FEES
       requires notBool Ghasdirtysstore << SCHED >>
       [concrete]
 
+    rule [SstoreStateGas]:
+         SstoreStateGas(SCHED, NEW, CURR, ORIG)
+      => #if ORIG ==Int CURR andBool CURR =/=Int NEW andBool ORIG ==Int 0 #then Gstorageset < SCHED > #else 0 #fi
+      [concrete]
+
+    rule [SstoreStateCredit]:
+         SstoreStateCredit(SCHED, NEW, CURR, ORIG)
+      => #if CURR =/=Int NEW andBool ORIG ==Int NEW andBool ORIG ==Int 0 #then Gstorageset < SCHED > #else 0 #fi
+      [concrete]
+
     rule [Cextra.delegation]: Cextra(SCHED, ISEMPTY, VALUE,  ISWARM,  ISDELEGATION,  ISWARMDELEGATION) => Cdelegationaccess(SCHED, ISDELEGATION, ISWARMDELEGATION) +Int Caddraccess(SCHED, ISWARM) +Int Cnew(SCHED, ISEMPTY, VALUE) +Int Cxfer(SCHED, VALUE) requires         Ghasaccesslist << SCHED >> andBool         Ghasauthority << SCHED >>
     rule [Cextra.new]:        Cextra(SCHED, ISEMPTY, VALUE,  ISWARM, _ISDELEGATION, _ISWARMDELEGATION) => Caddraccess(SCHED, ISWARM) +Int Cnew(SCHED, ISEMPTY, VALUE) +Int Cxfer(SCHED, VALUE)                                                               requires         Ghasaccesslist << SCHED >> andBool notBool Ghasauthority << SCHED >>
     rule [Cextra.old]:        Cextra(SCHED, ISEMPTY, VALUE, _ISWARM, _ISDELEGATION, _ISWARMDELEGATION) => Gcall < SCHED > +Int Cnew(SCHED, ISEMPTY, VALUE) +Int Cxfer(SCHED, VALUE)                                                                          requires notBool Ghasaccesslist << SCHED >>
 
+    rule [Cnew.stategas]: Cnew(SCHED, _, _) => 0 requires Ghasstategas << SCHED >>
+
     rule [Cnew]:
          Cnew(SCHED, ISEMPTY:Bool, VALUE)
       => #if ISEMPTY andBool (VALUE =/=Int 0 orBool Gzerovaluenewaccountgas << SCHED >>) #then Gnewaccount < SCHED > #else 0 #fi
+      requires notBool Ghasstategas << SCHED >>
 
     rule [Cxfer.none]: Cxfer(_SCHED, 0) => 0
     rule [Cxfer.some]: Cxfer( SCHED, N) => Gcallvalue < SCHED > requires N =/=Int 0
@@ -254,6 +269,23 @@ module GAS-FEES
 
     rule G0(    _,  _, I, I, R) => R
     rule G0(SCHED, WS, I, J, R) => G0(SCHED, WS, I +Int 1, J, R +Int #if WS[I] ==Int 0 #then Gtxdatazero < SCHED > #else Gtxdatanonzero < SCHED > #fi) [owise]
+
+    syntax Int ::= #txStateGasReservoir ( Schedule , Int ) [symbol(#txStateGasReservoir), function, total]
+ // -------------------------------------------------------------------------------------------------------
+    rule #txStateGasReservoir(SCHED, GLIMIT) => #if Ghasstategas << SCHED >> #then maxInt(0, GLIMIT -Int Gmaxtxgaslimit < SCHED >) #else 0 #fi
+
+    syntax Int ::= #txStateGasUsed ( Schedule , Int , Int , Int ) [symbol(#txStateGasUsed), function, total]
+ // SCHED,                                     GLIMIT, RES (final reservoir), SPL (final spilled)
+    rule #txStateGasUsed(SCHED, GLIMIT, RES, SPL) => maxInt(0, #txStateGasReservoir(SCHED, GLIMIT) -Int RES +Int SPL)
+
+    syntax Bool ::= #isValidTxGasLimit ( Schedule , Int , Int , Int , Int ) [symbol(#isValidTxGasLimit), function, total]
+ // SCHED,                                            TX_GAS_LIMIT, BLOCK_GAS_LIMIT, GASUSEDREG, GASUSEDSTATE
+    rule #isValidTxGasLimit(SCHED, TX_GAS_LIMIT, BLOCK_GAS_LIMIT, GASUSEDREG, GASUSEDSTATE)
+      => #if Ghasstategas << SCHED >>
+         #then minInt(Gmaxtxgaslimit < SCHED >, TX_GAS_LIMIT) <=Int (BLOCK_GAS_LIMIT -Int GASUSEDREG)
+          andBool TX_GAS_LIMIT <=Int (BLOCK_GAS_LIMIT -Int GASUSEDSTATE)
+         #else notBool Ghastxgaslimit << SCHED >> orBool TX_GAS_LIMIT <=Int Gmaxtxgaslimit < SCHED >
+         #fi
 
     syntax Gas ::= "G*" "(" Gas "," Int "," Int "," Schedule ")" [function]
  // -----------------------------------------------------------------------
