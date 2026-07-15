@@ -181,6 +181,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule [GhasrequestsDefault]:            Ghasrequests            << DEFAULT >> => false
     rule [Ghasbls12msmdiscountDefault]:    Ghasbls12msmdiscount    << DEFAULT >> => false
     rule [GhasauthorityDefault]:           Ghasauthority           << DEFAULT >> => false
+    rule [GhasauthbaserefundDefault]:      Ghasauthbaserefund      << DEFAULT >> => false
     rule [GhasfloorcostDefault]:           Ghasfloorcost           << DEFAULT >> => false
     rule [GhasclzDefault]:                 Ghasclz                 << DEFAULT >> => false
 ```
