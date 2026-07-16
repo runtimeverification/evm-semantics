@@ -410,6 +410,9 @@ The `#next [_]` operator initiates execution by:
     rule #stackNeeded(_QOP:QuadStackOp) => 4
     rule #stackNeeded(DUP(N))           => N
     rule #stackNeeded(SWAP(N))          => N +Int 1
+    rule #stackNeeded(DUPN)             => 0
+    rule #stackNeeded(SWAPN)            => 0
+    rule #stackNeeded(EXCHANGE)         => 0
     rule #stackNeeded(LOG(N))           => N +Int 2
     rule #stackNeeded(_CSOP:CallSixOp)  => 6
     rule #stackNeeded(COP:CallOp)       => 7 requires notBool isCallSixOp(COP)
@@ -435,6 +438,9 @@ The `#next [_]` operator initiates execution by:
     rule #stackAdded(LOG(_))         => 0
     rule #stackAdded(SWAP(N))        => N +Int 1
     rule #stackAdded(DUP(N))         => N +Int 1
+    rule #stackAdded(DUPN)           => 1
+    rule #stackAdded(SWAPN)          => 0
+    rule #stackAdded(EXCHANGE)       => 0
     rule #stackAdded(_IOP:InvalidOp) => 0
     rule #stackAdded(_OP)            => 1 [owise]
 
@@ -560,8 +566,11 @@ The arguments to `PUSH` must be skipped over (as they are inline), and the opcod
 
     syntax Int ::= #widthOp ( OpCode ) [symbol(#widthOp), function, total]
  // ----------------------------------------------------------------------
-    rule #widthOp(PUSH(N)) => 1 +Int N
-    rule #widthOp(_)       => 1        [owise]
+    rule #widthOp(PUSH(N))  => 1 +Int N
+    rule #widthOp(DUPN)     => 2
+    rule #widthOp(SWAPN)    => 2
+    rule #widthOp(EXCHANGE) => 2
+    rule #widthOp(_)        => 1 [owise]
 ```
 
 After executing a transaction, it's necessary to have the effect of the substate log recorded.
@@ -1151,6 +1160,64 @@ Some operators don't calculate anything, they just push the stack around a bit.
  // ----------------------------------------------
     rule <k> DUP(N)  WS:WordStack => #setStack ((WS [ N -Int 1 ]) : WS)                      ... </k>
     rule <k> SWAP(N) (W0 : WS)    => #setStack ((WS [ N -Int 1 ]) : (WS [ N -Int 1 := W0 ])) ... </k>
+
+    syntax StackOp ::= "DUPN" | "SWAPN" | "EXCHANGE"
+ // ------------------------------------------------
+    rule <k> DUPN WS:WordStack => #setStack ((WS [ #decodeSingle(#immByte(PGM, PCOUNT)) -Int 1 ]) : WS) ... </k>
+         <program> PGM </program> <pc> PCOUNT </pc>
+      requires #validSingle(#immByte(PGM, PCOUNT)) andBool #decodeSingle(#immByte(PGM, PCOUNT)) <=Int #sizeWordStack(WS)
+    rule <k> DUPN WS:WordStack => #end EVMC_STACK_UNDERFLOW ... </k>
+         <program> PGM </program> <pc> PCOUNT </pc>
+      requires #validSingle(#immByte(PGM, PCOUNT)) andBool #decodeSingle(#immByte(PGM, PCOUNT)) >Int #sizeWordStack(WS)
+    rule <k> DUPN _:WordStack => #end EVMC_INVALID_INSTRUCTION ... </k>
+         <program> PGM </program> <pc> PCOUNT </pc>
+      requires notBool #validSingle(#immByte(PGM, PCOUNT))
+
+    rule <k> SWAPN (W0 : WS) => #setStack ((WS [ #decodeSingle(#immByte(PGM, PCOUNT)) -Int 1 ]) : (WS [ #decodeSingle(#immByte(PGM, PCOUNT)) -Int 1 := W0 ])) ... </k>
+         <program> PGM </program> <pc> PCOUNT </pc>
+      requires #validSingle(#immByte(PGM, PCOUNT)) andBool #decodeSingle(#immByte(PGM, PCOUNT)) +Int 1 <=Int #sizeWordStack(W0 : WS)
+    rule <k> SWAPN WS:WordStack => #end EVMC_STACK_UNDERFLOW ... </k>
+         <program> PGM </program> <pc> PCOUNT </pc>
+      requires #validSingle(#immByte(PGM, PCOUNT)) andBool #decodeSingle(#immByte(PGM, PCOUNT)) +Int 1 >Int #sizeWordStack(WS)
+    rule <k> SWAPN _:WordStack => #end EVMC_INVALID_INSTRUCTION ... </k>
+         <program> PGM </program> <pc> PCOUNT </pc>
+      requires notBool #validSingle(#immByte(PGM, PCOUNT))
+
+    rule <k> EXCHANGE WS:WordStack => #setStack (WS [ #decodePairA(#immByte(PGM, PCOUNT)) := WS [ #decodePairB(#immByte(PGM, PCOUNT)) ] ] [ #decodePairB(#immByte(PGM, PCOUNT)) := WS [ #decodePairA(#immByte(PGM, PCOUNT)) ] ]) ... </k>
+         <program> PGM </program> <pc> PCOUNT </pc>
+      requires #validPair(#immByte(PGM, PCOUNT)) andBool maxInt(#decodePairA(#immByte(PGM, PCOUNT)), #decodePairB(#immByte(PGM, PCOUNT))) <Int #sizeWordStack(WS)
+    rule <k> EXCHANGE WS:WordStack => #end EVMC_STACK_UNDERFLOW ... </k>
+         <program> PGM </program> <pc> PCOUNT </pc>
+      requires #validPair(#immByte(PGM, PCOUNT)) andBool maxInt(#decodePairA(#immByte(PGM, PCOUNT)), #decodePairB(#immByte(PGM, PCOUNT))) >=Int #sizeWordStack(WS)
+    rule <k> EXCHANGE _:WordStack => #end EVMC_INVALID_INSTRUCTION ... </k>
+         <program> PGM </program> <pc> PCOUNT </pc>
+      requires notBool #validPair(#immByte(PGM, PCOUNT))
+
+    syntax Int ::= "#immByte" "(" Bytes "," Int ")" [function, total]
+ // ------------------------------------------------------------------
+    rule #immByte(PGM, PCOUNT) => #asWord(#range(PGM, PCOUNT +Int 1, 1))
+
+    syntax Int ::= "#decodeSingle" "(" Int ")"        [function, total]
+                 | "#decodePairA" "(" Int ")"         [function, total]
+                 | "#decodePairB" "(" Int ")"         [function, total]
+                 | "#decodePairA" "(" Int "," Int ")" [function, total]
+                 | "#decodePairB" "(" Int "," Int ")" [function, total]
+ // --------------------------------------------------------------------
+    rule #decodeSingle(X) => (X +Int 145) modInt 256
+
+    rule #decodePairA(X) => #decodePairA((X xorInt 143) /Int 16, (X xorInt 143) modInt 16)
+    rule #decodePairA(HI, LO) => HI +Int 1  requires HI  <Int LO
+    rule #decodePairA(HI, LO) => LO +Int 1  requires HI >=Int LO
+
+    rule #decodePairB(X) => #decodePairB((X xorInt 143) /Int 16, (X xorInt 143) modInt 16)
+    rule #decodePairB(HI, LO) => LO +Int 1  requires HI  <Int LO
+    rule #decodePairB(HI, LO) => 29 -Int HI requires HI >=Int LO
+
+    syntax Bool ::= "#validSingle" "(" Int ")" [function, total]
+                  | "#validPair"   "(" Int ")" [function, total]
+ // -------------------------------------------------------------
+    rule #validSingle(X) => X <=Int 90 orBool X >=Int 128
+    rule #validPair(X)   => X <=Int 81 orBool X >=Int 128
 
     syntax PushOp ::= "PUSHZERO"
                     | PUSH ( Int ) [symbol(PUSH)]
@@ -2993,6 +3060,9 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
     rule <k> #gasExec(SCHED, PUSH(_))        => Gverylow < SCHED > ... </k>
     rule <k> #gasExec(SCHED, DUP(_) _)       => Gverylow < SCHED > ... </k>
     rule <k> #gasExec(SCHED, SWAP(_) _)      => Gverylow < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, DUPN _)         => Gverylow < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, SWAPN _)        => Gverylow < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, EXCHANGE _)     => Gverylow < SCHED > ... </k>
     rule <k> #gasExec(SCHED, BLOBHASH _)     => Gverylow < SCHED > ... </k>
 
     // Wlow
@@ -3336,6 +3406,9 @@ After interpreting the strings representing programs as a `WordStack`, it should
     rule #dasmOpCode( 162,     _ ) => LOG(2)
     rule #dasmOpCode( 163,     _ ) => LOG(3)
     rule #dasmOpCode( 164,     _ ) => LOG(4)
+    rule #dasmOpCode( 230, SCHED ) => DUPN     requires Ghaseip8024 << SCHED >>
+    rule #dasmOpCode( 231, SCHED ) => SWAPN    requires Ghaseip8024 << SCHED >>
+    rule #dasmOpCode( 232, SCHED ) => EXCHANGE requires Ghaseip8024 << SCHED >>
     rule #dasmOpCode( 240,     _ ) => CREATE
     rule #dasmOpCode( 241,     _ ) => CALL
     rule #dasmOpCode( 242,     _ ) => CALLCODE
