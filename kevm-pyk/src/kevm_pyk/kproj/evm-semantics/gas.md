@@ -138,16 +138,30 @@ module GAS-FEES
 
     rule Cgascap(_, GCAP, _, _) => 0 requires GCAP <Gas 0 [concrete]
 
+    rule [Csstore.amsterdam]:
+         Csstore(SCHED, NEW, CURR, ORIG)
+      => #if ORIG ==Int CURR andBool CURR =/=Int NEW #then Gsstoreset < SCHED > #else 0 #fi
+      requires Ghasstategas << SCHED >>
+      [concrete]
+
     rule [Csstore.new]:
          Csstore(SCHED, NEW, CURR, ORIG)
       => #if CURR ==Int NEW orBool ORIG =/=Int CURR #then Gsload < SCHED > #else #if ORIG ==Int 0 #then Gsstoreset < SCHED > #else Gsstorereset < SCHED > #fi #fi
-      requires Ghasdirtysstore << SCHED >>
+      requires Ghasdirtysstore << SCHED >> andBool notBool Ghasstategas << SCHED >>
       [concrete]
 
     rule [Csstore.old]:
          Csstore(SCHED, NEW, CURR, _ORIG)
       => #if CURR ==Int 0 andBool NEW =/=Int 0 #then Gsstoreset < SCHED > #else Gsstorereset < SCHED > #fi
       requires notBool Ghasdirtysstore << SCHED >>
+      [concrete]
+
+    rule [Rsstore.amsterdam]:
+         Rsstore(SCHED, NEW, CURR, ORIG)
+      => #if CURR =/=Int NEW andBool ORIG =/=Int 0 andBool CURR =/=Int 0 andBool NEW ==Int 0 #then Rsstoreclear < SCHED > #else 0 #fi
+        +Int #if CURR =/=Int NEW andBool ORIG =/=Int 0 andBool CURR ==Int 0 #then 0 -Int Rsstoreclear < SCHED > #else 0 #fi
+        +Int #if CURR =/=Int NEW andBool ORIG ==Int NEW #then Gsstoreset < SCHED > #else 0 #fi
+      requires Ghasstategas << SCHED >>
       [concrete]
 
     rule [Rsstore.new]:
@@ -166,7 +180,7 @@ module GAS-FEES
                  0
              #fi
          #fi
-      requires Ghasdirtysstore << SCHED >>
+      requires Ghasdirtysstore << SCHED >> andBool notBool Ghasstategas << SCHED >>
       [concrete]
 
     rule [Rsstore.old]:
