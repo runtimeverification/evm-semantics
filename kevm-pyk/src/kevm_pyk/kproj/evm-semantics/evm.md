@@ -1269,13 +1269,14 @@ These operators make queries about the current execution state.
     rule <k> BASEFEE     => BFEE                        ~> #push ... </k> <baseFee> BFEE </baseFee>
     rule <k> BLOBBASEFEE => Cbasefeeperblob(SCHED, EXCESS_BLOB_GAS) ~> #push ... </k> <excessBlobGas> EXCESS_BLOB_GAS </excessBlobGas> <schedule> SCHED </schedule>  requires notBool #rangeNegUInt64(EXCESS_BLOB_GAS)
 
-    syntax NullStackOp ::= "COINBASE" | "TIMESTAMP" | "NUMBER" | "DIFFICULTY" | "PREVRANDAO"
- // ----------------------------------------------------------------------------------------
+    syntax NullStackOp ::= "COINBASE" | "TIMESTAMP" | "NUMBER" | "DIFFICULTY" | "PREVRANDAO" | "SLOTNUM"
+ // ---------------------------------------------------------------------------------------------------
     rule <k> COINBASE   => CB   ~> #push ... </k> <coinbase> CB </coinbase>
     rule <k> TIMESTAMP  => TS   ~> #push ... </k> <timestamp> TS </timestamp>
     rule <k> NUMBER     => NUMB ~> #push ... </k> <number> NUMB </number>
     rule <k> DIFFICULTY => DIFF ~> #push ... </k> <difficulty> DIFF </difficulty>
     rule <k> PREVRANDAO => RDAO ~> #push ... </k> <mixHash> RDAO </mixHash>
+    rule <k> SLOTNUM    => SN   ~> #push ... </k> <slotNumber> SN </slotNumber>
 
     syntax NullStackOp ::= "ADDRESS" | "ORIGIN" | "CALLER" | "CALLVALUE" | "CHAINID" | "SELFBALANCE"
  // ------------------------------------------------------------------------------------------------
@@ -2957,6 +2958,7 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
     rule <k> #gasExec(SCHED, COINBASE)       => Gbase < SCHED > ... </k>
     rule <k> #gasExec(SCHED, TIMESTAMP)      => Gbase < SCHED > ... </k>
     rule <k> #gasExec(SCHED, NUMBER)         => Gbase < SCHED > ... </k>
+    rule <k> #gasExec(SCHED, SLOTNUM)        => Gbase < SCHED > ... </k>
     rule <k> #gasExec(SCHED, DIFFICULTY)     => Gbase < SCHED > ... </k>
     rule <k> #gasExec(SCHED, PREVRANDAO)     => Gbase < SCHED > ... </k>
     rule <k> #gasExec(SCHED, GASLIMIT)       => Gbase < SCHED > ... </k>
@@ -3251,6 +3253,7 @@ After interpreting the strings representing programs as a `WordStack`, it should
     rule #dasmOpCode(  72, SCHED ) => BASEFEE     requires Ghasbasefee     << SCHED >>
     rule #dasmOpCode(  73, SCHED ) => BLOBHASH    requires Ghasblobhash    << SCHED >>
     rule #dasmOpCode(  74, SCHED ) => BLOBBASEFEE requires Ghasblobbasefee << SCHED >>
+    rule #dasmOpCode(  75, SCHED ) => SLOTNUM     requires Ghasslotnum     << SCHED >>
     rule #dasmOpCode(  80,     _ ) => POP
     rule #dasmOpCode(  81,     _ ) => MLOAD
     rule #dasmOpCode(  82,     _ ) => MSTORE

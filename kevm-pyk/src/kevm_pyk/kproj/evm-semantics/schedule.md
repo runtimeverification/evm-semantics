@@ -31,8 +31,8 @@ module SCHEDULE
                           | "Ghaswarmcoinbase"        | "Ghaswithdrawals"  | "Ghastransient"       | "Ghasmcopy"
                           | "Ghasbeaconroot"          | "Ghaseip6780"      | "Ghasblobbasefee"     | "Ghasblobhash"
                           | "Ghasbls12msmdiscount"    | "Ghashistory"      | "Ghasrequests"        | "Ghasauthority"
-                          | "Ghasfloorcost"           | "Ghasclz"
- // -------------------------------------------------------------
+                          | "Ghasfloorcost"           | "Ghasclz"          | "Ghasslotnum"
+ // ---------------------------------------------------------------------------------------
 ```
 
 ### Schedule Constants
@@ -183,6 +183,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule [GhasauthorityDefault]:           Ghasauthority           << DEFAULT >> => false
     rule [GhasfloorcostDefault]:           Ghasfloorcost           << DEFAULT >> => false
     rule [GhasclzDefault]:                 Ghasclz                 << DEFAULT >> => false
+    rule [GhasslotnumDefault]:             Ghasslotnum             << DEFAULT >> => false
 ```
 
 ### Frontier Schedule
@@ -526,7 +527,9 @@ A `ScheduleConst` is a constant determined by the fee schedule.
                   orBool SCHEDCONST ==K Blobbasefeeupdatefraction
                        )
 
-    rule [SCHEDFLAGAmsterdam]: SCHEDFLAG << AMSTERDAM >> => SCHEDFLAG << OSAKA >>
+    rule [GhasslotnumAmsterdam]:               Ghasslotnum               << AMSTERDAM >> => true
+    rule [SCHEDFLAGAmsterdam]:                 SCHEDFLAG                 << AMSTERDAM >> => SCHEDFLAG << OSAKA >>
+      requires notBool ( SCHEDFLAG ==K Ghasslotnum )
 ```
 
 ```k
