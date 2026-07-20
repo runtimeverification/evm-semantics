@@ -292,13 +292,14 @@ module GAS-FEES
  // SCHED,                                     GLIMIT, RES (final reservoir), SPL (final spilled)
     rule #txStateGasUsed(SCHED, GLIMIT, RES, SPL) => maxInt(0, #txStateGasReservoir(SCHED, GLIMIT) -Int RES +Int SPL)
 
-    syntax Bool ::= #isValidTxGasLimit ( Schedule , Int , Int , Int , Int ) [symbol(#isValidTxGasLimit), function, total]
- // SCHED,                                            TX_GAS_LIMIT, BLOCK_GAS_LIMIT, GASUSEDREG, GASUSEDSTATE
-    rule #isValidTxGasLimit(SCHED, TX_GAS_LIMIT, BLOCK_GAS_LIMIT, GASUSEDREG, GASUSEDSTATE)
+    syntax Bool ::= #isValidTxGasLimit ( Schedule , Int , Int , Int , Int , Int ) [symbol(#isValidTxGasLimit), function, total]
+ // SCHED,                                            TX_GAS_LIMIT, BLOCK_GAS_LIMIT, GASUSED, GASUSEDREG, GASUSEDSTATE
+    rule #isValidTxGasLimit(SCHED, TX_GAS_LIMIT, BLOCK_GAS_LIMIT, GASUSED, GASUSEDREG, GASUSEDSTATE)
       => #if Ghasstategas << SCHED >>
          #then minInt(Gmaxtxgaslimit < SCHED >, TX_GAS_LIMIT) <=Int (BLOCK_GAS_LIMIT -Int GASUSEDREG)
           andBool TX_GAS_LIMIT <=Int (BLOCK_GAS_LIMIT -Int GASUSEDSTATE)
-         #else notBool Ghastxgaslimit << SCHED >> orBool TX_GAS_LIMIT <=Int Gmaxtxgaslimit < SCHED >
+         #else (notBool Ghastxgaslimit << SCHED >> orBool TX_GAS_LIMIT <=Int Gmaxtxgaslimit < SCHED >)
+          andBool TX_GAS_LIMIT <=Int (BLOCK_GAS_LIMIT -Int GASUSED)
          #fi
 
     syntax Gas ::= "G*" "(" Gas "," Int "," Int "," Schedule ")" [function]
