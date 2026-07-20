@@ -1952,6 +1952,23 @@ System Transaction Configuration
          <useGas> true </useGas>
     rule <k> #restoreStateGas _ _ => .K ... </k> <useGas> false </useGas>
 
+    syntax InternalOp ::= "#refillTopFrameStateGas"
+ // -----------------------------------------------
+    rule <k> #refillTopFrameStateGas => .K ... </k>
+         <useGas> true </useGas>
+         <callDepth> -1 </callDepth>
+         <schedule> SCHED </schedule>
+         <stateGasReservoir> _ => #txStateGasReservoir(SCHED, GLIMIT) </stateGasReservoir>
+         <stateGasSpilled>   _ => 0 </stateGasSpilled>
+         <txPending> ListItem(TXID:Int) ... </txPending>
+         <message>
+           <msgID>      TXID     </msgID>
+           <txGasLimit> GLIMIT   </txGasLimit>
+           <to>         .Account </to>
+           ...
+         </message>
+    rule <k> #refillTopFrameStateGas => .K ... </k> [owise]
+
 
     rule <k> #setLocalMem START WIDTH WS => .K ... </k>
          <localMem> LM => LM [ START := #range(WS, 0, minInt(WIDTH, lengthBytes(WS))) ] </localMem>
@@ -2029,20 +2046,24 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
 
 ```k
     syntax InternalOp ::= "#create"   Int Int Int Bytes
+                        | "#chargeCreateNewAccount" Int Int
                         | "#mkCreate" Int Int Int Bytes
                         | "#incrementNonce" Int
                         | "#checkCreate" Int Int
  // --------------------------------------------
     rule <k> #create ACCTFROM ACCTTO VALUE INITCODE
-          => #accountNonexistent(ACCTTO) ~> #chargeCreateNewAccountStateGas(CD)
-          ~> #incrementNonce ACCTFROM
+          => #incrementNonce ACCTFROM
           ~> #pushCallStack ~> #pushWorldState
           ~> #newAccount ACCTTO
           ~> #transferFunds ACCTFROM ACCTTO VALUE
           ~> #mkCreate ACCTFROM ACCTTO VALUE INITCODE
          ...
          </k>
-         <callDepth> CD </callDepth>
+
+    rule <k> #chargeCreateNewAccount ACCTTO CD
+          => #accountNonexistent(ACCTTO) ~> #chargeCreateNewAccountStateGas(CD)
+         ...
+         </k>
 
     rule <k> #mkCreate ACCTFROM ACCTTO VALUE INITCODE
           => #touchAccounts ACCTFROM ACCTTO ~> #accessAccounts ACCTFROM ACCTTO ~> #loadProgram INITCODE ~> #initVM ~> #execute
@@ -2106,7 +2127,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          <output> OUT => .Bytes </output>
       requires lengthBytes(OUT) <=Int maxCodeSize < SCHED > andBool #isValidCode(OUT, SCHED)
 
-    rule <k> #mkCodeDeposit _ACCT => #popCallStack ~> #popWorldState ~> 0 ~> #push ... </k>
+    rule <k> #mkCodeDeposit _ACCT => #popCallStack ~> #popWorldState ~> #refillTopFrameStateGas ~> 0 ~> #push ... </k>
          <schedule> SCHED </schedule>
          <output> OUT => .Bytes </output>
       requires notBool ( lengthBytes(OUT) <=Int maxCodeSize < SCHED > andBool #isValidCode(OUT, SCHED) )
@@ -2136,7 +2157,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          <schedule> FRONTIER </schedule>
 
     rule <statusCode> _:ExceptionalStatusCode </statusCode>
-         <k> #halt ~> #finishCodeDeposit _ _ => #popCallStack ~> #popWorldState ~> 0 ~> #push ... </k>
+         <k> #halt ~> #finishCodeDeposit _ _ => #popCallStack ~> #popWorldState ~> #refillTopFrameStateGas ~> 0 ~> #push ... </k>
          <schedule> SCHED </schedule>
       requires SCHED =/=K FRONTIER
 
@@ -2152,6 +2173,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          <k> CREATE VALUE MEMSTART MEMWIDTH
           => #accessAccounts #newAddr(ACCT, NONCE)
           ~> #checkCreate ACCT VALUE
+          ~> #chargeCreateNewAccount #newAddr(ACCT, NONCE) CD
           ~> #create ACCT #newAddr(ACCT, NONCE) VALUE #range(LM, MEMSTART, MEMWIDTH)
           ~> #codeDeposit #newAddr(ACCT, NONCE)
          ...
@@ -2164,6 +2186,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
            ...
          </account>
          <schedule> SCHED </schedule>
+         <callDepth> CD </callDepth>
       requires #hasValidInitCode(MEMWIDTH, SCHED)
       [preserves-definedness]
 
@@ -2180,6 +2203,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          <k> CREATE2 VALUE MEMSTART MEMWIDTH SALT
           => #accessAccounts #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH))
           ~> #checkCreate ACCT VALUE
+          ~> #chargeCreateNewAccount #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH)) CD
           ~> #create ACCT #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH)) VALUE #range(LM, MEMSTART, MEMWIDTH)
           ~> #codeDeposit #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH))
          ...
@@ -2187,6 +2211,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          <id> ACCT </id>
          <localMem> LM </localMem>
          <schedule> SCHED </schedule>
+         <callDepth> CD </callDepth>
       requires #hasValidInitCode(MEMWIDTH, SCHED)
 
     rule [create2-invalid]:
@@ -2849,6 +2874,28 @@ Overall Gas
 
     rule <k> _:Gas ~> #chargeStateGas => .K ... </k> <useGas> false </useGas>
 
+    syntax InternalOp ::= "#chargeStateGasForCreate"
+ // ------------------------------------------------
+    rule <k> A:Gas ~> #chargeStateGasForCreate => .K ... </k>
+         <useGas> true </useGas>
+         <stateGasReservoir> R => R -Gas A </stateGasReservoir>
+      requires A <=Gas R
+
+    rule <k> A:Gas ~> #chargeStateGasForCreate => .K ... </k>
+         <useGas> true </useGas>
+         <stateGasReservoir> R => 0:Gas </stateGasReservoir>
+         <stateGasSpilled>   S => S +Gas (A -Gas R) </stateGasSpilled>
+         <gas>                G => G -Gas (A -Gas R) </gas>
+      requires R <Gas A andBool (A -Gas R) <=Gas G
+
+    rule <k> A:Gas ~> #chargeStateGasForCreate ~> #create _ _ _ _ ~> #codeDeposit _ => #end EVMC_OUT_OF_GAS ... </k>
+         <useGas> true </useGas>
+         <stateGasReservoir> R </stateGasReservoir>
+         <gas>                G </gas>
+      requires R <Gas A andBool G <Gas (A -Gas R)
+
+    rule <k> _:Gas ~> #chargeStateGasForCreate => .K ... </k> <useGas> false </useGas>
+
     rule <k> A:Gas ~> #creditStateGas => .K ... </k>
          <useGas> true </useGas>
          <stateGasSpilled>   S => S -Gas minGas(A, S) </stateGasSpilled>
@@ -2905,7 +2952,7 @@ Overall Gas
          </k>
          <schedule> SCHED </schedule>
     rule <k> true ~> #chargeCreateNewAccountStateGas(CD)
-          => #if Ghasstategas << SCHED >> #then Gnewaccount < SCHED > #else 0 #fi ~> #chargeStateGas
+          => #if Ghasstategas << SCHED >> #then Gnewaccount < SCHED > #else 0 #fi ~> #chargeStateGasForCreate
          ...
          </k>
          <schedule> SCHED </schedule>

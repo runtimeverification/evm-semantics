@@ -122,6 +122,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
           ~> #loadAccessList(TA)
           ~> #loadAuthorities(AUTH)
           ~> #checkCreate ACCTFROM VALUE
+          ~> #chargeCreateNewAccount #newAddr(ACCTFROM, NONCE) -1
           ~> #create ACCTFROM #newAddr(ACCTFROM, NONCE) VALUE CODE
           ~> #finishTx ~> #finalizeTx(false, Ctxfloor(SCHED, CODE)) ~> startTx
          ...
@@ -206,7 +207,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 
     syntax EthereumCommand ::= "#finishTx"
  // --------------------------------------
-    rule <statusCode> _:ExceptionalStatusCode </statusCode> <k> #halt ~> #finishTx => #popCallStack ~> #popWorldState                            ... </k>
+    rule <statusCode> _:ExceptionalStatusCode </statusCode> <k> #halt ~> #finishTx => #popCallStack ~> #popWorldState ~> #refillTopFrameStateGas ... </k>
     rule <statusCode> EVMC_REVERT             </statusCode> <k> #halt ~> #finishTx => #popCallStack ~> #popWorldState ~> #refund (GAVAIL +Gas SGS) ... </k>
          <gas> GAVAIL </gas>
          <stateGasSpilled> SGS </stateGasSpilled>
