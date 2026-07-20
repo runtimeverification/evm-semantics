@@ -2173,7 +2173,9 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          <k> CREATE VALUE MEMSTART MEMWIDTH
           => #accessAccounts #newAddr(ACCT, NONCE)
           ~> #checkCreate ACCT VALUE
+          ~> #unallocateCreateGas
           ~> #chargeCreateNewAccount #newAddr(ACCT, NONCE) CD
+          ~> #allocateCreateGas
           ~> #create ACCT #newAddr(ACCT, NONCE) VALUE #range(LM, MEMSTART, MEMWIDTH)
           ~> #codeDeposit #newAddr(ACCT, NONCE)
          ...
@@ -2203,7 +2205,9 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          <k> CREATE2 VALUE MEMSTART MEMWIDTH SALT
           => #accessAccounts #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH))
           ~> #checkCreate ACCT VALUE
+          ~> #unallocateCreateGas
           ~> #chargeCreateNewAccount #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH)) CD
+          ~> #allocateCreateGas
           ~> #create ACCT #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH)) VALUE #range(LM, MEMSTART, MEMWIDTH)
           ~> #codeDeposit #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH))
          ...
@@ -2888,7 +2892,7 @@ Overall Gas
          <gas>                G => G -Gas (A -Gas R) </gas>
       requires R <Gas A andBool (A -Gas R) <=Gas G
 
-    rule <k> A:Gas ~> #chargeStateGasForCreate ~> #create _ _ _ _ ~> #codeDeposit _ => #end EVMC_OUT_OF_GAS ... </k>
+    rule <k> A:Gas ~> #chargeStateGasForCreate ~> #allocateCreateGas ~> #create _ _ _ _ ~> #codeDeposit _ => #end EVMC_OUT_OF_GAS ... </k>
          <useGas> true </useGas>
          <stateGasReservoir> R </stateGasReservoir>
          <gas>                G </gas>
@@ -3282,6 +3286,15 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
  // ----------------------------------------
     rule <k> GCALL:Gas ~> #allocateCallGas => .K ... </k>
          <callGas> _ => GCALL </callGas>
+
+    syntax InternalOp ::= "#unallocateCreateGas"
+ // --------------------------------------------
+    rule <k> #unallocateCreateGas => .K ... </k>
+         <gas>     GAVAIL => GAVAIL +Gas GCALL </gas>
+         <callGas> GCALL  => 0 </callGas>
+         <useGas> true </useGas>
+
+    rule <k> #unallocateCreateGas => .K ... </k> <useGas> false </useGas>
 
     syntax InternalOp ::= "#allocateCreateGas"
  // ------------------------------------------
