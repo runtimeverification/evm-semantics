@@ -78,6 +78,7 @@ In the comments next to each cell, we've marked which component of the YellowPap
 
               <stateGasReservoir> 0:Gas </stateGasReservoir>
               <stateGasSpilled>   0:Gas </stateGasSpilled>
+              <newAccountCharged> false </newAccountCharged>
 
               <codeAddr> .Account </codeAddr>
             </callState>
@@ -314,6 +315,7 @@ Control Flow
 
     rule <k> #halt ~> (_:Int    => .K) ... </k>
     rule <k> #halt ~> (_:OpCode => .K) ... </k>
+    rule <k> #halt ~> (_:BExp   => .K) ... </k>
 ```
 
 OpCode Execution
@@ -1717,7 +1719,8 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     rule [call.delegatedAuthority]:
          <k> #call ACCTFROM ACCTTO ACCTCODE VALUE APPVALUE ARGS STATIC
           => #let DELEGATED_ACCOUNT = #asAccount(#range(CODE,3,20)) #in
-           (#accessAccounts DELEGATED_ACCOUNT
+           (#chargeDispatchDelegationAccess DELEGATED_ACCOUNT
+          ~> #accessAccounts DELEGATED_ACCOUNT
           ~> #callWithCode ACCTFROM ACCTTO ACCTCODE #getAccountCode(DELEGATED_ACCOUNT) VALUE APPVALUE ARGS STATIC )
           ...
          </k>
@@ -1729,6 +1732,18 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          </account>
       requires Ghasauthority << SCHED >>
        andBool #isValidDelegation (CODE)
+
+    syntax InternalOp ::= "#chargeDispatchDelegationAccess" Account
+ // ---------------------------------------------------------------
+    rule <k> #chargeDispatchDelegationAccess ACCT
+          => (#if ACCT in ACCTS #then Gwarmstorageread < SCHED > #else Gcoldaccountaccess < SCHED > #fi) ~> #deductCallGas
+         ...
+         </k>
+         <callDepth> -1 </callDepth>
+         <accessedAccounts> ACCTS </accessedAccounts>
+         <schedule> SCHED </schedule>
+      requires Ghasstategas << SCHED >>
+    rule <k> #chargeDispatchDelegationAccess _ => .K ... </k> [owise]
 
     rule [call.true]:
          <k> #call ACCTFROM ACCTTO ACCTCODE VALUE APPVALUE ARGS STATIC
@@ -1751,13 +1766,24 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          </k> [owise]
 
     rule <k> #callWithCode ACCTFROM ACCTTO ACCTCODE BYTES VALUE APPVALUE ARGS STATIC
-          => #accountNonexistent(ACCTTO) ~> #chargeNewAccountStateGas(VALUE, CD)
-          ~> #pushCallStack ~> #pushWorldState
+          => #pushCallStack ~> #pushWorldState
+          ~> #startFrameStateGas
           ~> #transferFunds ACCTFROM ACCTTO VALUE
           ~> #mkCall ACCTFROM ACCTTO ACCTCODE BYTES APPVALUE ARGS STATIC
          ...
          </k>
          <callDepth> CD </callDepth>
+      requires CD =/=Int -1
+
+    rule <k> #callWithCode ACCTFROM ACCTTO ACCTCODE BYTES VALUE APPVALUE ARGS STATIC
+          => #pushCallStack ~> #pushWorldState
+          ~> #startFrameStateGas
+          ~> #accountNonexistent(ACCTTO) ~> #chargeNewAccountStateGas(VALUE, -1)
+          ~> #transferFunds ACCTFROM ACCTTO VALUE
+          ~> #mkCall ACCTFROM ACCTTO ACCTCODE BYTES APPVALUE ARGS STATIC
+         ...
+         </k>
+         <callDepth> -1 </callDepth>
 
     rule <k> #mkCall ACCTFROM ACCTTO ACCTCODE BYTES APPVALUE ARGS STATIC:Bool
           => #touchAccounts ACCTFROM ACCTTO ~> #accessAccounts ACCTFROM ACCTTO ~> #loadProgram BYTES ~> #initVM ~> #precompiled?(ACCTCODE, SCHED) ~> #execute
@@ -1909,7 +1935,7 @@ System Transaction Configuration
     rule [return.exception]:
          <statusCode> _:ExceptionalStatusCode </statusCode>
          <k> #halt ~> #return _ _
-          => #popCallStack ~> #popWorldState ~> 0 ~> #push
+          => #popCallStack ~> #popWorldState ~> #creditChargedNewAccount ~> 0 ~> #push
          ...
          </k>
          <output> _ => .Bytes </output>
@@ -1917,7 +1943,7 @@ System Transaction Configuration
     rule [return.revert]:
          <statusCode> EVMC_REVERT </statusCode>
          <k> #halt ~> #return RETSTART RETWIDTH
-          => #popCallStack ~> #popWorldState
+          => #popCallStack ~> #popWorldState ~> #creditChargedNewAccount
           ~> 0 ~> #push ~> #refund (GAVAIL +Gas SGS) ~> #setLocalMem RETSTART RETWIDTH OUT
          ...
          </k>
@@ -1948,26 +1974,24 @@ System Transaction Configuration
  // --------------------------------------------------
     rule <k> #restoreStateGas R S => .K ... </k>
          <stateGasReservoir> _ => R </stateGasReservoir>
-         <stateGasSpilled>   _ => S </stateGasSpilled>
+         <stateGasSpilled>   PS => PS +Gas S </stateGasSpilled>
+         <newAccountCharged> _ => false </newAccountCharged>
          <useGas> true </useGas>
     rule <k> #restoreStateGas _ _ => .K ... </k> <useGas> false </useGas>
 
-    syntax InternalOp ::= "#refillTopFrameStateGas"
- // -----------------------------------------------
-    rule <k> #refillTopFrameStateGas => .K ... </k>
-         <useGas> true </useGas>
-         <callDepth> -1 </callDepth>
+    syntax InternalOp ::= "#startFrameStateGas"
+ // -------------------------------------------
+    rule <k> #startFrameStateGas => .K ... </k>
+         <stateGasSpilled> _ => 0 </stateGasSpilled>
+         <newAccountCharged> _ => false </newAccountCharged>
+
+    syntax InternalOp ::= "#creditChargedNewAccount"
+ // ------------------------------------------------
+    rule <k> #creditChargedNewAccount => Gnewaccount < SCHED > ~> #creditStateGas ... </k>
          <schedule> SCHED </schedule>
-         <stateGasReservoir> _ => #txStateGasReservoir(SCHED, GLIMIT) </stateGasReservoir>
-         <stateGasSpilled>   _ => 0 </stateGasSpilled>
-         <txPending> ListItem(TXID:Int) ... </txPending>
-         <message>
-           <msgID>      TXID     </msgID>
-           <txGasLimit> GLIMIT   </txGasLimit>
-           <to>         .Account </to>
-           ...
-         </message>
-    rule <k> #refillTopFrameStateGas => .K ... </k> [owise]
+         <newAccountCharged> true => false </newAccountCharged>
+    rule <k> #creditChargedNewAccount => .K ... </k>
+         <newAccountCharged> false </newAccountCharged>
 
 
     rule <k> #setLocalMem START WIDTH WS => .K ... </k>
@@ -2047,6 +2071,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
 ```k
     syntax InternalOp ::= "#create"   Int Int Int Bytes
                         | "#chargeCreateNewAccount" Int Int
+                        | "#chargeCreateTxNewAccount" Int Int
                         | "#mkCreate" Int Int Int Bytes
                         | "#incrementNonce" Int
                         | "#checkCreate" Int Int
@@ -2054,16 +2079,25 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
     rule <k> #create ACCTFROM ACCTTO VALUE INITCODE
           => #incrementNonce ACCTFROM
           ~> #pushCallStack ~> #pushWorldState
+          ~> #startFrameStateGas
+          ~> #chargeCreateTxNewAccount ACCTTO CD
           ~> #newAccount ACCTTO
           ~> #transferFunds ACCTFROM ACCTTO VALUE
           ~> #mkCreate ACCTFROM ACCTTO VALUE INITCODE
          ...
          </k>
+         <callDepth> CD </callDepth>
 
     rule <k> #chargeCreateNewAccount ACCTTO CD
           => #accountNonexistent(ACCTTO) ~> #chargeCreateNewAccountStateGas(CD)
          ...
          </k>
+
+    rule <k> #chargeCreateTxNewAccount ACCTTO -1
+          => #accountNonexistent(ACCTTO) ~> #chargeCreateNewAccountStateGas(-1)
+         ...
+         </k>
+    rule <k> #chargeCreateTxNewAccount _ CD => .K ... </k> requires CD =/=Int -1
 
     rule <k> #mkCreate ACCTFROM ACCTTO VALUE INITCODE
           => #touchAccounts ACCTFROM ACCTTO ~> #accessAccounts ACCTFROM ACCTTO ~> #loadProgram INITCODE ~> #initVM ~> #execute
@@ -2107,10 +2141,10 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
                    | "#finishCodeDeposit" Int Bytes
  // -----------------------------------------------
     rule <statusCode> _:ExceptionalStatusCode </statusCode>
-         <k> #halt ~> #codeDeposit _ => #popCallStack ~> #popWorldState ~> 0 ~> #push ... </k> <output> _ => .Bytes </output>
+         <k> #halt ~> #codeDeposit _ => #popCallStack ~> #popWorldState ~> #creditChargedNewAccount ~> 0 ~> #push ... </k> <output> _ => .Bytes </output>
 
     rule <statusCode> EVMC_REVERT </statusCode>
-         <k> #halt ~> #codeDeposit _ => #popCallStack ~> #popWorldState ~> #refund (GAVAIL +Gas SGS) ~> 0 ~> #push ... </k>
+         <k> #halt ~> #codeDeposit _ => #popCallStack ~> #popWorldState ~> #creditChargedNewAccount ~> #refund (GAVAIL +Gas SGS) ~> 0 ~> #push ... </k>
          <gas> GAVAIL </gas>
          <stateGasSpilled> SGS </stateGasSpilled>
 
@@ -2127,7 +2161,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          <output> OUT => .Bytes </output>
       requires lengthBytes(OUT) <=Int maxCodeSize < SCHED > andBool #isValidCode(OUT, SCHED)
 
-    rule <k> #mkCodeDeposit _ACCT => #popCallStack ~> #popWorldState ~> #refillTopFrameStateGas ~> 0 ~> #push ... </k>
+    rule <k> #mkCodeDeposit _ACCT => #popCallStack ~> #popWorldState ~> #creditChargedNewAccount ~> 0 ~> #push ... </k>
          <schedule> SCHED </schedule>
          <output> OUT => .Bytes </output>
       requires notBool ( lengthBytes(OUT) <=Int maxCodeSize < SCHED > andBool #isValidCode(OUT, SCHED) )
@@ -2157,7 +2191,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          <schedule> FRONTIER </schedule>
 
     rule <statusCode> _:ExceptionalStatusCode </statusCode>
-         <k> #halt ~> #finishCodeDeposit _ _ => #popCallStack ~> #popWorldState ~> #refillTopFrameStateGas ~> 0 ~> #push ... </k>
+         <k> #halt ~> #finishCodeDeposit _ _ => #popCallStack ~> #popWorldState ~> #creditChargedNewAccount ~> 0 ~> #push ... </k>
          <schedule> SCHED </schedule>
       requires SCHED =/=K FRONTIER
 
@@ -2228,7 +2262,7 @@ Self destructing to yourself, unlike a regular transfer, destroys the balance in
 ```k
     syntax UnStackOp ::= "SELFDESTRUCT"
  // -----------------------------------
-    rule <k> SELFDESTRUCT ACCTTO => #touchAccounts ACCT ACCTTO ~> #accessAccounts ACCTTO ~> #accountNonexistent(ACCTTO) ~> #chargeSelfdestructNewAccountStateGas BALFROM ~> #transferFunds ACCT ACCTTO BALFROM ~> #end EVMC_SUCCESS ... </k>
+    rule <k> SELFDESTRUCT ACCTTO => #touchAccounts ACCT ACCTTO ~> #accessAccounts ACCTTO ~> #transferFunds ACCT ACCTTO BALFROM ~> #end EVMC_SUCCESS ... </k>
          <schedule> SCHED </schedule>
          <id> ACCT </id>
          <selfDestruct> SDS => SDS |Set SetItem(ACCT) </selfDestruct>
@@ -2255,7 +2289,7 @@ Self destructing to yourself, unlike a regular transfer, destroys the balance in
          <createdAccounts> CA </createdAccounts>
       requires ((notBool Ghaseip6780 << SCHED >>) orBool ACCT in CA)
 
-    rule <k> SELFDESTRUCT ACCTTO => #touchAccounts ACCT ACCTTO ~> #accessAccounts ACCTTO ~> #accountNonexistent(ACCTTO) ~> #chargeSelfdestructNewAccountStateGas BALFROM ~> #transferFunds ACCT ACCTTO BALFROM ~> #end EVMC_SUCCESS ... </k>
+    rule <k> SELFDESTRUCT ACCTTO => #touchAccounts ACCT ACCTTO ~> #accessAccounts ACCTTO ~> #transferFunds ACCT ACCTTO BALFROM ~> #end EVMC_SUCCESS ... </k>
          <schedule> SCHED </schedule>
          <id> ACCT </id>
          <account>
@@ -2920,9 +2954,21 @@ Overall Gas
          <stateGasReservoir> R => 0:Gas </stateGasReservoir>
          <stateGasSpilled>   S => S +Gas (A -Gas R) </stateGasSpilled>
          <callGas>            G => G -Gas (A -Gas R) </callGas>
-      requires R <Gas A
+      requires R <Gas A andBool (A -Gas R) <=Gas G
+
+    rule <k> A:Gas ~> #chargeStateGasIntoCallGas => #end EVMC_OUT_OF_GAS ... </k>
+         <useGas> true </useGas>
+         <stateGasReservoir> R </stateGasReservoir>
+         <callGas>            G </callGas>
+      requires R <Gas A andBool G <Gas (A -Gas R)
 
     rule <k> _:Gas ~> #chargeStateGasIntoCallGas => .K ... </k> <useGas> false </useGas>
+
+    syntax InternalOp ::= "#deductCallGas"
+ // --------------------------------------
+    rule <k> A:Gas ~> #deductCallGas => .K                    ... </k> <useGas> true </useGas> <callGas> G => G -Gas A </callGas> requires A <=Gas G
+    rule <k> A:Gas ~> #deductCallGas => #end EVMC_OUT_OF_GAS ... </k> <useGas> true </useGas> <callGas> G            </callGas> requires G <Gas A
+    rule <k> _:Gas ~> #deductCallGas => .K                    ... </k> <useGas> false </useGas>
 
     syntax InternalOp ::= "#chargeNewAccountStateGas" "(" Int "," Int ")"
  // -------------------------------------------------------------
@@ -2936,8 +2982,12 @@ Overall Gas
          ...
          </k>
          <schedule> SCHED </schedule>
+         <newAccountCharged> _ => Ghasstategas << SCHED >> andBool VALUE =/=Int 0 </newAccountCharged>
       requires CD =/=Int -1
-    rule <k> false ~> #chargeNewAccountStateGas(_, _) => .K ... </k>
+    rule <k> false ~> #chargeNewAccountStateGas(_, CD) => .K ... </k>
+         <newAccountCharged> _ => false </newAccountCharged>
+      requires CD =/=Int -1
+    rule <k> false ~> #chargeNewAccountStateGas(_, -1) => .K ... </k>
 
     syntax InternalOp ::= "#chargeSelfdestructNewAccountStateGas" Int
  // --------------------------------------------------------------------
@@ -2960,8 +3010,12 @@ Overall Gas
          ...
          </k>
          <schedule> SCHED </schedule>
+         <newAccountCharged> _ => Ghasstategas << SCHED >> </newAccountCharged>
       requires CD =/=Int -1
-    rule <k> false ~> #chargeCreateNewAccountStateGas(_) => .K ... </k>
+    rule <k> false ~> #chargeCreateNewAccountStateGas(CD) => .K ... </k>
+         <newAccountCharged> _ => false </newAccountCharged>
+      requires CD =/=Int -1
+    rule <k> false ~> #chargeCreateNewAccountStateGas(-1) => .K ... </k>
 
     syntax Bool ::= #inStorage     ( Map   , Account , Int ) [symbol(#inStorage), function, total]
                   | #inStorageAux1 ( KItem ,           Int ) [symbol(#inStorageAux1), function, total]
@@ -3123,6 +3177,17 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
          </k>
          <gas> GAVAIL </gas>
          <accessedAccounts> ACCTS </accessedAccounts>
+      requires notBool Ghasstategas << SCHED >>
+
+    rule <k> #gasExec(SCHED, CALL GCAP ACCTTO VALUE _ _ _ _)
+          => CcallExtra(SCHED, #accountNonexistent(ACCTTO), VALUE, ACCTTO in ACCTS, #accountHasAuthority(ACCTTO), #accountAuthorityIsWarm(ACCTTO)) ~> #deductGas
+          ~> #accountNonexistent(ACCTTO) ~> #chargeNewAccountStateGas(VALUE, CD)
+          ~> #allocateCallGasStateGas GCAP VALUE
+         ...
+         </k>
+         <accessedAccounts> ACCTS </accessedAccounts>
+         <callDepth> CD </callDepth>
+      requires Ghasstategas << SCHED >>
 
     rule <k> #gasExec(SCHED, CALLCODE GCAP ACCTTO VALUE _ _ _ _)
           => Ccallgas(SCHED, #accountNonexistent(ACCTFROM), GCAP, GAVAIL, VALUE, ACCTTO in ACCTS, #accountHasAuthority(ACCTTO), #accountAuthorityIsWarm(ACCTTO)) ~> #allocateCallGas
@@ -3150,7 +3215,12 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
          <gas> GAVAIL </gas>
          <accessedAccounts> ACCTS </accessedAccounts>
 
-    rule <k> #gasExec(SCHED, SELFDESTRUCT ACCTTO) => Cselfdestruct(SCHED, #accountNonexistent(ACCTTO), BAL) ... </k>
+    rule <k> #gasExec(SCHED, SELFDESTRUCT ACCTTO)
+          => Cselfdestruct(SCHED, #accountNonexistent(ACCTTO), BAL) ~> #deductGas
+          ~> #accountNonexistent(ACCTTO) ~> #chargeSelfdestructNewAccountStateGas BAL
+          ~> 0
+         ...
+         </k>
          <id> ACCTFROM </id>
          <selfDestruct> SDS </selfDestruct>
          <refund> RF => #if ACCTFROM in SDS #then RF #else RF +Word Rselfdestruct < SCHED > #fi </refund>
@@ -3312,8 +3382,22 @@ There are several helpers for calculating gas (most of them also specified in th
     syntax KResult ::= Int
     syntax Exp ::= Ccall         ( Schedule , BExp , Gas , Gas , Int , Bool , Bool , Bool ) [symbol(Ccall), strict(2)]
                  | Ccallgas      ( Schedule , BExp , Gas , Gas , Int , Bool , Bool , Bool ) [symbol(Ccallgas), strict(2)]
+                 | CcallExtra    ( Schedule , BExp , Int , Bool , Bool , Bool )             [symbol(CcallExtra), strict(2)]
                  | Cselfdestruct ( Schedule , BExp , Int )                                  [symbol(Cselfdestruct), strict(2)]
  // --------------------------------------------------------------------------------------------------------------------------
+    rule <k> CcallExtra(SCHED, ISEMPTY:Bool, VALUE, ISWARM, ISDELEGATION, ISWARMDELEGATION)
+          => Cextra(SCHED, ISEMPTY, VALUE, ISWARM, ISDELEGATION, ISWARMDELEGATION) ... </k>
+
+    syntax InternalOp ::= "#allocateCallGasStateGas" Int Int
+ // --------------------------------------------------------
+    rule <k> #allocateCallGasStateGas GCAP VALUE
+          => Cgascap(SCHED, GCAP, GAVAIL, 0) +Gas (#if VALUE ==Int 0 #then 0:Gas #else Gcallstipend < SCHED > #fi) ~> #allocateCallGas
+          ~> Cgascap(SCHED, GCAP, GAVAIL, 0)
+         ...
+         </k>
+         <gas> GAVAIL </gas>
+         <schedule> SCHED </schedule>
+
     rule <k> Ccall(SCHED, ISEMPTY:Bool, GCAP, GAVAIL, VALUE, ISWARM, ISDELEGATION, ISWARMDELEGATION)
           => Cextra(SCHED, ISEMPTY, VALUE, ISWARM, ISDELEGATION, ISWARMDELEGATION) +Gas Cgascap(SCHED, GCAP, GAVAIL, Cextra(SCHED, ISEMPTY, VALUE, ISWARM, ISDELEGATION, ISWARMDELEGATION)) ... </k>
 
