@@ -694,6 +694,7 @@ The `"rlp"` key loads the block information.
       andBool BASE_FEE <=Int TX_MAX_FEE
       andBool TX_MAX_PRIORITY_FEE <=Int TX_MAX_FEE
       andBool size(TVH) >Int 0 andBool #checkTxVersionedHashes(TVH)
+      andBool size(TVH) <=Int Gmaxblobspertx < SCHED >
       andBool TX_MAX_BLOB_FEE >=Int Cbasefeeperblob(SCHED, EXCESS_BLOB_GAS)
       andBool BAL >=Int TX_GAS_LIMIT *Int TX_MAX_FEE +Int (Ctotalblob(SCHED, size(TVH)) *Int TX_MAX_BLOB_FEE) +Int VALUE
       andBool TX_GAS_LIMIT <=Int BLOCK_GAS_LIMIT

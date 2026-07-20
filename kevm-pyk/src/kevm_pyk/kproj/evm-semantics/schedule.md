@@ -58,7 +58,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
                            | "Gbls12g1add"   | "Gbls12g1mul"   | "Gbls12g2add"   | "Gbls12g2mul"       | "Gbls12mapfptog1"    | "Gbls12PairingCheckMul"
                            | "Gbls12PairingCheckAdd"           | "Gauthbase"     | "Gbls12mapfp2tog2"  | "Gtxdatafloor"       | "Gstorageset"       | "Gaccountwrite"
                            | "Gcostperstatebyte"               | "Gblobbasecost" | "Gmaxtxgaslimit"    | "Gp256verify"        | "Gmodexpmultiplier" | "Gmodexpmin"
-                           | "Gbalitemcost"                    | "Gtxbase"       | "Gtxvalue"          | "Gauthbaseregular"
+                           | "Gbalitemcost"                    | "Gtxbase"       | "Gtxvalue"          | "Gauthbaseregular"   | "Gmaxblobspertx"
  // -------------------------------------------------------------------------------------------------------------------------------------------------------
 ```
 
@@ -158,6 +158,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule [GaccountwriteDefault]:         Gaccountwrite         < DEFAULT > => 0
     rule [GcostperstatebyteDefault]:     Gcostperstatebyte     < DEFAULT > => 0
     rule [GmaxtxgaslimitDefault]:        Gmaxtxgaslimit        < DEFAULT > => 0
+    rule [GmaxblobspertxDefault]:        Gmaxblobspertx        < DEFAULT > => 0
     rule [Gp256verifyDefault]:           Gp256verify           < DEFAULT > => 0
     rule [GbalitemcostDefault]:          Gbalitemcost          < DEFAULT > => 0
     rule [GtxbaseDefault]:               Gtxbase               < DEFAULT > => 0
@@ -541,6 +542,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule [GmodexpmultiplierOsaka]: Gmodexpmultiplier < OSAKA > => 16
     rule [GmodexpminOsaka]:        Gmodexpmin        < OSAKA > => 500
     rule [GquaddivisorOsaka]:      Gquaddivisor      < OSAKA > => 1
+    rule [GmaxblobspertxOsaka]:    Gmaxblobspertx    < OSAKA > => 6
     rule [SCHEDCONSTOsaka]:        SCHEDCONST        < OSAKA > => SCHEDCONST < PRAGUE >
       requires notBool ( SCHEDCONST ==K Gblobbasecost
                   orBool SCHEDCONST ==K Gmaxtxgaslimit
@@ -548,6 +550,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
                   orBool SCHEDCONST ==K Gmodexpmultiplier
                   orBool SCHEDCONST ==K Gmodexpmin
                   orBool SCHEDCONST ==K Gquaddivisor
+                  orBool SCHEDCONST ==K Gmaxblobspertx
                        )
 
     rule [GhasclzOsaka]:        Ghasclz        << OSAKA >> => true
