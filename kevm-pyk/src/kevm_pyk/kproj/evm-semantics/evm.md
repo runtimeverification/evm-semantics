@@ -1117,7 +1117,9 @@ While processing a block, multiple deposit requests objects with will be produce
        andBool notBool SC ==K EVMC_INVALID_BLOCK
 
     rule <k> #filterLogs _ => .K ... </k> [owise]
-    rule <k> #halt ~> #filterLogs _ => .K ... </k>
+    rule <k> #halt ~> #filterLogs _ => #abortSystemRequests ... </k>
+         <statusCode> EVMC_INVALID_BLOCK </statusCode>
+    rule <k> #halt ~> #filterLogs _ => .K ... </k> [owise]
 ```
 
 Rules for parsing Deposit Requests according to EIP-6110.
