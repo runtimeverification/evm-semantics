@@ -91,6 +91,20 @@ In the comments next to each cell, we've marked which component of the YellowPap
               <createdAccounts>  .Set  </createdAccounts>
             </substate>
 
+            <blockAccessLists>
+              <balIndex>          0    </balIndex>
+              <balTouched>        .Set </balTouched>
+              <balReads>          .Map </balReads>
+              <balBalCaptures>    .Map </balBalCaptures>
+              <balNonceCaptures>  .Map </balNonceCaptures>
+              <balCodeCaptures>   .Map </balCodeCaptures>
+              <balStorCaptures>   .Map </balStorCaptures>
+              <balBalanceChanges> .Map </balBalanceChanges>
+              <balNonceChanges>   .Map </balNonceChanges>
+              <balCodeChanges>    .Map </balCodeChanges>
+              <balStorageChanges> .Map </balStorageChanges>
+            </blockAccessLists>
+
             // Immutable during a single transaction
             // -------------------------------------
 
@@ -288,6 +302,174 @@ The `interimStates` cell stores a list of previous world states.
     syntax InternalOp ::= "#dropWorldState"
  // ---------------------------------------
     rule <k> #dropWorldState => .K ... </k> <interimStates> ListItem(_) REST => REST </interimStates>
+```
+
+### EIP-7928 Block-Level Access Lists
+
+```k
+    syntax BalEntry     ::= balE  ( Int , Int )   [symbol(balE)]
+    syntax BalCodeEntry ::= balCE ( Int , Bytes ) [symbol(balCE)]
+
+    syntax InternalOp ::= "#balTouch" Account
+ // -----------------------------------------
+    rule <k> #balTouch ACCT:Int => .K ... </k>
+         <schedule> SCHED </schedule>
+         <balTouched> TOUCHED => TOUCHED |Set SetItem(ACCT) </balTouched>
+         requires Ghaseip7928 << SCHED >>
+    rule <k> #balTouch _ => .K ... </k> [owise]
+
+    syntax InternalOp ::= "#balRead" Int Int
+ // ----------------------------------------
+    rule <k> #balRead ACCT SLOT => .K ... </k>
+         <schedule> SCHED </schedule>
+         <balReads> R => R [ ACCT <- ({R[ACCT] orDefault .Set}:>Set |Set SetItem(SLOT)) ] </balReads>
+         requires Ghaseip7928 << SCHED >>
+         [preserves-definedness]
+    rule <k> #balRead _ _ => .K ... </k> [owise]
+
+    syntax InternalOp ::= "#balCaptureBalance" Int Int
+                        | "#balCaptureNonce"   Int Int
+                        | "#balCaptureCode"    Int Bytes
+                        | "#balCaptureStorage" Int Int Int
+ // ------------------------------------------------------
+    rule <k> #balCaptureBalance ACCT PRE => .K ... </k>
+         <schedule> SCHED </schedule>
+         <balBalCaptures> CAP => CAP [ ACCT <- PRE ] </balBalCaptures>
+         requires Ghaseip7928 << SCHED >> andBool notBool ACCT in_keys(CAP)
+    rule <k> #balCaptureBalance _ _ => .K ... </k> [owise]
+
+    rule <k> #balCaptureNonce ACCT PRE => .K ... </k>
+         <schedule> SCHED </schedule>
+         <balNonceCaptures> CAP => CAP [ ACCT <- PRE ] </balNonceCaptures>
+         requires Ghaseip7928 << SCHED >> andBool notBool ACCT in_keys(CAP)
+    rule <k> #balCaptureNonce _ _ => .K ... </k> [owise]
+
+    rule <k> #balCaptureCode ACCT PRE => .K ... </k>
+         <schedule> SCHED </schedule>
+         <balCodeCaptures> CAP => CAP [ ACCT <- PRE ] </balCodeCaptures>
+         requires Ghaseip7928 << SCHED >> andBool notBool ACCT in_keys(CAP)
+    rule <k> #balCaptureCode _ _ => .K ... </k> [owise]
+
+    rule <k> #balCaptureStorage ACCT SLOT PRE => .K ... </k>
+         <schedule> SCHED </schedule>
+         <balStorCaptures> CAP => CAP [ ACCT <- ({CAP[ACCT] orDefault .Map}:>Map [ SLOT <- PRE ]) ] </balStorCaptures>
+         requires Ghaseip7928 << SCHED >> andBool notBool ( ACCT in_keys(CAP) andBool SLOT in_keys({CAP[ACCT] orDefault .Map}:>Map) )
+         [preserves-definedness]
+    rule <k> #balCaptureStorage _ _ _ => .K ... </k> [owise]
+
+    syntax InternalOp ::= "#balIncorporate"
+ // ---------------------------------------
+    rule <k> #balIncorporate => #balIncBal ~> #balIncNonce ~> #balIncCode ~> #balIncStor ~> #balClearCaptures ... </k>
+         <schedule> SCHED </schedule>
+         requires Ghaseip7928 << SCHED >>
+    rule <k> #balIncorporate => .K ... </k> [owise]
+
+    syntax InternalOp ::= "#balClearCaptures"
+ // -----------------------------------------
+    rule <k> #balClearCaptures => .K ... </k>
+         <balBalCaptures>   _ => .Map </balBalCaptures>
+         <balNonceCaptures> _ => .Map </balNonceCaptures>
+         <balCodeCaptures>  _ => .Map </balCodeCaptures>
+         <balStorCaptures>  _ => .Map </balStorCaptures>
+
+    syntax InternalOp ::= "#balIncBal" | "#balIncBalEntry" Int Int
+ // -------------------------------------------------------------
+    rule <k> #balIncBal => .K ... </k> <balBalCaptures> .Map </balBalCaptures>
+    rule <k> #balIncBal => #balIncBalEntry ACCT PRE ~> #balIncBal ... </k>
+         <balBalCaptures> ACCT:Int |-> PRE REST => REST </balBalCaptures>
+
+    rule <k> #balIncBalEntry ACCT PRE => .K ... </k>
+         <balIndex> IDX </balIndex>
+         <account> <acctID> ACCT </acctID> <balance> POST </balance> ... </account>
+         <balTouched> T => T |Set SetItem(ACCT) </balTouched>
+         <balBalanceChanges> BC => #balAppendE(BC, ACCT, IDX, POST, PRE) </balBalanceChanges>
+    rule <k> #balIncBalEntry ACCT PRE => .K ... </k>
+         <balIndex> IDX </balIndex>
+         <balTouched> T => T |Set SetItem(ACCT) </balTouched>
+         <balBalanceChanges> BC => #balAppendE(BC, ACCT, IDX, 0, PRE) </balBalanceChanges>
+         [owise]
+
+    syntax InternalOp ::= "#balIncNonce" | "#balIncNonceEntry" Int Int
+ // -----------------------------------------------------------------
+    rule <k> #balIncNonce => .K ... </k> <balNonceCaptures> .Map </balNonceCaptures>
+    rule <k> #balIncNonce => #balIncNonceEntry ACCT PRE ~> #balIncNonce ... </k>
+         <balNonceCaptures> ACCT:Int |-> PRE REST => REST </balNonceCaptures>
+
+    rule <k> #balIncNonceEntry ACCT PRE => .K ... </k>
+         <balIndex> IDX </balIndex>
+         <account> <acctID> ACCT </acctID> <nonce> POST </nonce> ... </account>
+         <balTouched> T => T |Set SetItem(ACCT) </balTouched>
+         <balNonceChanges> NC => #balAppendE(NC, ACCT, IDX, POST, PRE) </balNonceChanges>
+    rule <k> #balIncNonceEntry ACCT PRE => .K ... </k>
+         <balIndex> IDX </balIndex>
+         <balTouched> T => T |Set SetItem(ACCT) </balTouched>
+         <balNonceChanges> NC => #balAppendE(NC, ACCT, IDX, 0, PRE) </balNonceChanges>
+         [owise]
+
+    syntax InternalOp ::= "#balIncCode" | "#balIncCodeEntry" Int Bytes
+ // -----------------------------------------------------------------
+    rule <k> #balIncCode => .K ... </k> <balCodeCaptures> .Map </balCodeCaptures>
+    rule <k> #balIncCode => #balIncCodeEntry ACCT PRE ~> #balIncCode ... </k>
+         <balCodeCaptures> ACCT:Int |-> PRE REST => REST </balCodeCaptures>
+
+    rule <k> #balIncCodeEntry ACCT PRE => .K ... </k>
+         <balIndex> IDX </balIndex>
+         <account> <acctID> ACCT </acctID> <code> POST:Bytes </code> ... </account>
+         <balTouched> T => T |Set SetItem(ACCT) </balTouched>
+         <balCodeChanges> CC => #balAppendCE(CC, ACCT, IDX, POST, PRE) </balCodeChanges>
+    rule <k> #balIncCodeEntry ACCT PRE => .K ... </k>
+         <balIndex> IDX </balIndex>
+         <balTouched> T => T |Set SetItem(ACCT) </balTouched>
+         <balCodeChanges> CC => #balAppendCE(CC, ACCT, IDX, .Bytes, PRE) </balCodeChanges>
+         [owise]
+
+    syntax InternalOp ::= "#balIncStor" | "#balIncStorAcct" Int Map | "#balIncStorSlots" Int Map Map
+ // -----------------------------------------------------------------------------------------------
+    rule <k> #balIncStor => .K ... </k> <balStorCaptures> .Map </balStorCaptures>
+    rule <k> #balIncStor => #balIncStorAcct ACCT SLOTS ~> #balIncStor ... </k>
+         <balStorCaptures> ACCT:Int |-> SLOTS REST => REST </balStorCaptures>
+
+    rule <k> #balIncStorAcct ACCT SLOTS => #balIncStorSlots ACCT STOR SLOTS ... </k>
+         <account> <acctID> ACCT </acctID> <storage> STOR </storage> ... </account>
+         <balTouched> T => T |Set SetItem(ACCT) </balTouched>
+    rule <k> #balIncStorAcct ACCT SLOTS => #balIncStorSlots ACCT .Map SLOTS ... </k>
+         <balTouched> T => T |Set SetItem(ACCT) </balTouched>
+         [owise]
+
+    rule <k> #balIncStorSlots _ _ .Map => .K ... </k>
+    rule <k> #balIncStorSlots ACCT STOR (SLOT:Int |-> PRE REST) => #balIncStorSlots ACCT STOR REST ... </k>
+         <balIndex> IDX </balIndex>
+         <balStorageChanges> SC => #balAppendStor(SC, ACCT, SLOT, IDX, #lookup(STOR, SLOT), PRE) </balStorageChanges>
+         [preserves-definedness]
+
+    syntax Map ::= #balAppendE    ( Map , Int , Int , Int , Int )       [function]
+                 | #balAppendCE   ( Map , Int , Int , Bytes , Bytes )   [function]
+                 | #balAppendStor ( Map , Int , Int , Int , Int , Int ) [function]
+ // ----------------------------------------------------------------------------
+    rule #balAppendE(M, ACCT, IDX, POST, PRE) => M [ ACCT <- ({M[ACCT] orDefault .List}:>List ListItem(balE(IDX, POST))) ] requires POST =/=Int PRE  [preserves-definedness]
+    rule #balAppendE(M, _, _, POST, PRE) => M requires POST ==Int PRE
+
+    rule #balAppendCE(M, ACCT, IDX, POST, PRE) => M [ ACCT <- ({M[ACCT] orDefault .List}:>List ListItem(balCE(IDX, POST))) ] requires POST =/=K PRE  [preserves-definedness]
+    rule #balAppendCE(M, _, _, POST, PRE) => M requires POST ==K PRE
+
+    rule #balAppendStor(SC, ACCT, SLOT, IDX, POST, PRE)
+      => SC [ ACCT <- ({SC[ACCT] orDefault .Map}:>Map [ SLOT <- ({({SC[ACCT] orDefault .Map}:>Map)[SLOT] orDefault .List}:>List ListItem(balE(IDX, POST))) ]) ]
+         requires POST =/=Int PRE  [preserves-definedness]
+    rule #balAppendStor(SC, _, _, _, POST, PRE) => SC requires POST ==Int PRE
+
+    syntax List ::= #balSortInts   ( List )       [function]
+                  | #balInsertInt  ( List , Int ) [function]
+ // --------------------------------------------------------
+    rule #balSortInts(.List) => .List
+    rule #balSortInts(ListItem(X:Int) REST) => #balInsertInt(#balSortInts(REST), X)
+
+    rule #balInsertInt(.List, X) => ListItem(X)
+    rule #balInsertInt(ListItem(Y:Int) REST, X) => ListItem(X) ListItem(Y) REST         requires X <=Int Y
+    rule #balInsertInt(ListItem(Y:Int) REST, X) => ListItem(Y) #balInsertInt(REST, X)   requires X  >Int Y
+
+    syntax InternalOp ::= "#validateBlockAccessList"
+ // ------------------------------------------------
+    rule <k> #validateBlockAccessList => .K ... </k>
 ```
 
 Control Flow
@@ -885,6 +1067,17 @@ Terminates validation successfully when all conditions are met or when blob vali
          <log> _ => .List </log>
          <logsBloom> _ => #padToWidth(256, .Bytes) </logsBloom>
          <txOrder> TXS </txOrder>
+         <balIndex>          _ => 0    </balIndex>
+         <balTouched>        _ => .Set </balTouched>
+         <balReads>          _ => .Map </balReads>
+         <balBalCaptures>    _ => .Map </balBalCaptures>
+         <balNonceCaptures>  _ => .Map </balNonceCaptures>
+         <balCodeCaptures>   _ => .Map </balCodeCaptures>
+         <balStorCaptures>   _ => .Map </balStorCaptures>
+         <balBalanceChanges> _ => .Map </balBalanceChanges>
+         <balNonceChanges>   _ => .Map </balNonceChanges>
+         <balCodeChanges>    _ => .Map </balCodeChanges>
+         <balStorageChanges> _ => .Map </balStorageChanges>
 
     syntax EthereumCommand ::= "#finalizeBlock"
                              | #rewardOmmers ( JSONs ) [symbol(#rewardOmmers)]
