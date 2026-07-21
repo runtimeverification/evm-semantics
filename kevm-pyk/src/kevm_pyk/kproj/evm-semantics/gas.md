@@ -125,6 +125,7 @@ module GAS-FEES
                  | Cbasefeeperblob  ( Schedule , Int )                            [symbol(Cbasefeeperblob),   function, total, smtlib(gas_Cbasefeeperblob)  ]
                  | Cblobfee         ( Schedule , Int , Int )                      [symbol(Cblobfee),          function, total, smtlib(gas_Cblobfee)         ]
                  | Cexcessblob      ( Schedule , Int , Int , Int )                [symbol(Cexcessblob),       function, total, smtlib(gas_Cexcessblob)      ]
+                 | Cbasefee         ( Int , Int , Int )                          [symbol(Cbasefee),          function, total, smtlib(gas_Cbasefee)         ]
                  | Cdelegationaccess( Schedule, Bool, Bool )                      [symbol(Cdelegationaccess), function, total, smtlib(gas_Cdelegationaccess)]
                  | Ctxfloor         ( Schedule , Bytes , Bool , Bool , Int , Int )[symbol(Ctxfloor),          function, total, smtlib(gas_Ctxfloor)         ]
                  | SstoreStateGas   ( Schedule , Int , Int , Int )                [symbol(SstoreStateGas),    function, total, smtlib(gas_SstoreStateGas)   ]
@@ -277,6 +278,13 @@ module GAS-FEES
       => EXCESS_BLOB_GAS +Int BLOB_GAS_USED -Int Gtargetblobgas < SCHED >
       requires Gtargetblobgas < SCHED > <=Int EXCESS_BLOB_GAS +Int BLOB_GAS_USED 
        andBool notBool (Gblobbasecost < SCHED > *Int BASE_FEE >Int Gperblob < SCHED > *Int Cbasefeeperblob(SCHED, EXCESS_BLOB_GAS))
+
+    rule [Cbasefee.eq]:   Cbasefee(PGL, PGU, PBF) => PBF
+      requires PGU ==Int PGL /Int 2
+    rule [Cbasefee.up]:   Cbasefee(PGL, PGU, PBF) => PBF +Int maxInt(((PBF *Int (PGU -Int (PGL /Int 2))) /Int (PGL /Int 2)) /Int 8, 1)
+      requires PGU >Int PGL /Int 2
+    rule [Cbasefee.down]: Cbasefee(PGL, PGU, PBF) => PBF -Int (((PBF *Int ((PGL /Int 2) -Int PGU)) /Int (PGL /Int 2)) /Int 8)
+      requires PGU <Int PGL /Int 2
 
     rule [Cdelegationaccess]:       Cdelegationaccess(SCHED, true, ISWARM) => Caddraccess(SCHED, ISWARM)
     rule [Cdelegationaccess.owise]: Cdelegationaccess(_,     _,    _)      => 0 [owise]

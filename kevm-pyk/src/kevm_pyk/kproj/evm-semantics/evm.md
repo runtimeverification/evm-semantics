@@ -120,6 +120,8 @@ In the comments next to each cell, we've marked which component of the YellowPap
             <previousExcessBlobGas> 0 </previousExcessBlobGas>
             <previousBlobGasUsed>   0 </previousBlobGasUsed>
             <previousBaseFee>       0 </previousBaseFee>
+            <previousGasLimit>      0 </previousGasLimit>
+            <previousGasUsed>       0 </previousGasUsed>
             <block>
               <previousHash>     0      </previousHash>     // I_Hp
               <ommersHash>       0      </ommersHash>       // I_Ho
@@ -1247,6 +1249,21 @@ Terminates validation successfully when all conditions are met or when blob vali
 
     rule <k> #validateBlockBlobs _COUNT _TXIDS => .K ... </k> [owise]
 
+    syntax InternalOp ::= "#validateBaseFee" [symbol(#validateBaseFee)]
+ // -------------------------------------------------------------------
+    rule <k> #validateBaseFee => .K ... </k>
+         <schedule> SCHED </schedule>
+         <baseFee> BASE_FEE </baseFee>
+         <previousGasLimit> PREV_GAS_LIMIT </previousGasLimit>
+         <previousGasUsed> PREV_GAS_USED </previousGasUsed>
+         <previousBaseFee> PREV_BASE_FEE </previousBaseFee>
+      requires notBool Ghasbasefee << SCHED >>
+        orBool BASE_FEE ==Int Cbasefee(PREV_GAS_LIMIT, PREV_GAS_USED, PREV_BASE_FEE)
+
+    rule <k> #validateBaseFee => .K ... </k>
+         <statusCode> _ => EVMC_INVALID_BLOCK </statusCode>
+         <txPending> _ => .List </txPending> [owise]
+
     syntax InternalOp ::= "#finalizeBlockBlobs" [symbol(#finalizeBlockBlobs)]
  // -------------------------------------------------------------------------
     rule <k> #finalizeBlockBlobs => .K ... </k>
@@ -1255,9 +1272,13 @@ Terminates validation successfully when all conditions are met or when blob vali
          <headerBlobGasUsed> HEADER_BLOB_GAS_USED </headerBlobGasUsed>
          <excessBlobGas> EXCESS_BLOB_GAS </excessBlobGas>
          <baseFee> BASE_FEE </baseFee>
+         <gasLimit> GAS_LIMIT </gasLimit>
+         <gasUsed> GAS_USED </gasUsed>
          <previousExcessBlobGas> _ => EXCESS_BLOB_GAS </previousExcessBlobGas>
          <previousBlobGasUsed> _ => BLOB_GAS_USED </previousBlobGasUsed>
          <previousBaseFee> _ => BASE_FEE </previousBaseFee>
+         <previousGasLimit> _ => GAS_LIMIT </previousGasLimit>
+         <previousGasUsed> _ => gas2Int(GAS_USED) </previousGasUsed>
       requires ( Ghasblobbasefee << SCHED >> andBool BLOB_GAS_USED <=Int Gmaxblobgas < SCHED > andBool BLOB_GAS_USED ==Int HEADER_BLOB_GAS_USED )
         orBool notBool Ghasblobbasefee << SCHED >>
 
@@ -1280,7 +1301,7 @@ Terminates validation successfully when all conditions are met or when blob vali
 ```k
     syntax EthereumCommand ::= "#startBlock"
  // ----------------------------------------
-    rule <k> #startBlock => #validateBlockBlobs 0 TXS ~> #executeBeaconRoots ~> #executeBlockHashHistory ~> #balIncorporate ... </k>
+    rule <k> #startBlock => #validateBaseFee ~> #validateBlockBlobs 0 TXS ~> #executeBeaconRoots ~> #executeBlockHashHistory ~> #balIncorporate ... </k>
          <number> BN </number>
          <previousHash> HP </previousHash>
          <blockhashes> HASHES => #if BN >Int 1 #then ListItem(HP) HASHES #else HASHES #fi </blockhashes>
