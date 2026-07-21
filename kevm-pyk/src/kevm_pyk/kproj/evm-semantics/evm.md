@@ -2348,6 +2348,11 @@ System Transaction Configuration
                         | "#mkSystemCall" Int Bytes [symbol(#mkSystemCall)]
  // -----------------------------------------------------------------------
     rule <k> #systemCall ACCTTO ARGS => #balTouch ACCTTO ~> #pushCallStack ~> #pushWorldState ~> #mkSystemCall ACCTTO ARGS ... </k>
+      requires lengthBytes(#getAccountCode(ACCTTO)) >Int 0
+
+    rule <k> #systemCall ACCTTO _ => #abortSystemRequests ... </k>
+         <statusCode> _ => EVMC_INVALID_BLOCK </statusCode>
+      requires lengthBytes(#getAccountCode(ACCTTO)) ==Int 0
 
     rule <k> #mkSystemCall ACCTTO ARGS => #loadProgram CODE ~> #initVM ~> #execute ... </k>
          <useGas> USEGAS:Bool </useGas>
