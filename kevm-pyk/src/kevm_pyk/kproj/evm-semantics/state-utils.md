@@ -509,7 +509,7 @@ The `"rlp"` key loads the block information.
            <txType> Legacy </txType>
            ...
          </message>
-      requires TW ==Int 2 *Int B +Int 35 orBool TW ==Int 2 *Int B +Int 36
+      requires notBool (TW ==Int 0 orBool TW ==Int 1 orBool TW ==Int 27 orBool TW ==Int 28)
 
     rule [[ #getTxData( TXID ) => AccessListTxData(TN, TP, TG, TT, TV, DATA, CID, TA) ]]
          <message>
@@ -613,6 +613,7 @@ The `"rlp"` key loads the block information.
  // --------------------------------------------------------------------------------------------
     rule [[ #isValidTransaction (TXID, ACCTFROM) => true ]]
          <schedule> SCHED </schedule>
+         <chainID> NET_CHAIN_ID </chainID>
          <baseFee> BASE_FEE </baseFee>
          <gasLimit> BLOCK_GAS_LIMIT </gasLimit>
          <gasUsed> GASUSED </gasUsed>
@@ -634,10 +635,13 @@ The `"rlp"` key loads the block information.
            <txPriorityFee>     TX_MAX_PRIORITY_FEE </txPriorityFee>
            <txMaxFee>          TX_MAX_FEE          </txMaxFee>
            <txAuthList>        TX_AUTH_LIST        </txAuthList>
+           <txChainID>         TX_CHAIN_ID         </txChainID>
            <txType> SetCode </txType>
            ...
          </message>
-     requires (ACCTCODE ==K .Bytes orBool (Ghasauthority << SCHED >> andBool #isValidDelegation(ACCTCODE)))
+     requires Ghasauthority << SCHED >>
+      andBool TX_CHAIN_ID ==Int NET_CHAIN_ID
+      andBool (ACCTCODE ==K .Bytes orBool #isValidDelegation(ACCTCODE))
       andBool notBool ACCTTO ==K .Account
       andBool ACCTNONCE ==Int TX_NONCE
       andBool BASE_FEE <=Int TX_MAX_FEE
@@ -649,6 +653,7 @@ The `"rlp"` key loads the block information.
 
     rule [[ #isValidTransaction (TXID, ACCTFROM) => true ]]
          <schedule> SCHED </schedule>
+         <chainID> NET_CHAIN_ID </chainID>
          <baseFee> BASE_FEE </baseFee>
          <excessBlobGas> EXCESS_BLOB_GAS </excessBlobGas>
          <gasLimit> BLOCK_GAS_LIMIT </gasLimit>
@@ -672,10 +677,13 @@ The `"rlp"` key loads the block information.
            <txMaxFee>          TX_MAX_FEE          </txMaxFee>
            <txMaxBlobFee>      TX_MAX_BLOB_FEE     </txMaxBlobFee>
            <txVersionedHashes> TVH                 </txVersionedHashes>
+           <txChainID>         TX_CHAIN_ID         </txChainID>
            <txType> Blob </txType>
            ...
          </message>
-     requires (ACCTCODE ==K .Bytes orBool (Ghasauthority << SCHED >> andBool #isValidDelegation(ACCTCODE)))
+     requires Ghasblobbasefee << SCHED >>
+      andBool TX_CHAIN_ID ==Int NET_CHAIN_ID
+      andBool (ACCTCODE ==K .Bytes orBool (Ghasauthority << SCHED >> andBool #isValidDelegation(ACCTCODE)))
       andBool notBool ACCTTO ==K .Account
       andBool ACCTNONCE ==Int TX_NONCE
       andBool BASE_FEE <=Int TX_MAX_FEE
@@ -689,6 +697,7 @@ The `"rlp"` key loads the block information.
 
     rule [[ #isValidTransaction (TXID, ACCTFROM) => true ]]
          <schedule> SCHED </schedule>
+         <chainID> NET_CHAIN_ID </chainID>
          <baseFee> BASE_FEE </baseFee>
          <gasLimit> BLOCK_GAS_LIMIT </gasLimit>
          <gasUsed> GASUSED </gasUsed>
@@ -708,10 +717,13 @@ The `"rlp"` key loads the block information.
            <value>             VALUE               </value>
            <txPriorityFee>     TX_MAX_PRIORITY_FEE </txPriorityFee>
            <txMaxFee>          TX_MAX_FEE          </txMaxFee>
+           <txChainID>         TX_CHAIN_ID         </txChainID>
            <txType> DynamicFee </txType>
            ...
          </message>
-     requires (ACCTCODE ==K .Bytes orBool (Ghasauthority << SCHED >> andBool #isValidDelegation(ACCTCODE)))
+     requires Ghasbasefee << SCHED >>
+      andBool TX_CHAIN_ID ==Int NET_CHAIN_ID
+      andBool (ACCTCODE ==K .Bytes orBool (Ghasauthority << SCHED >> andBool #isValidDelegation(ACCTCODE)))
       andBool ACCTNONCE ==Int TX_NONCE
       andBool BASE_FEE <=Int TX_MAX_FEE
       andBool TX_MAX_PRIORITY_FEE <=Int TX_MAX_FEE
@@ -721,6 +733,7 @@ The `"rlp"` key loads the block information.
 
     rule [[ #isValidTransaction (TXID, ACCTFROM) => true ]]
          <schedule> SCHED </schedule>
+         <chainID> NET_CHAIN_ID </chainID>
          <baseFee> BASE_FEE </baseFee>
          <gasLimit> BLOCK_GAS_LIMIT </gasLimit>
          <gasUsed> GASUSED </gasUsed>
@@ -739,10 +752,17 @@ The `"rlp"` key loads the block information.
            <txGasPrice>        TX_GAS_PRICE        </txGasPrice>
            <txGasLimit>        TX_GAS_LIMIT        </txGasLimit>
            <value>             VALUE               </value>
+           <txChainID>         TX_CHAIN_ID         </txChainID>
+           <sigV>              TX_SIG_V            </sigV>
            <txType> TXTYPE </txType>
            ...
          </message>
      requires #dasmTxPrefix(TXTYPE) <Int 2
+      andBool (#dasmTxPrefix(TXTYPE) ==Int 0 orBool Ghasaccesslist << SCHED >>)
+      andBool (#dasmTxPrefix(TXTYPE) ==Int 0 orBool TX_CHAIN_ID ==Int NET_CHAIN_ID)
+      andBool ( #dasmTxPrefix(TXTYPE) =/=Int 0
+         orBool TX_SIG_V ==Int 0 orBool TX_SIG_V ==Int 1 orBool TX_SIG_V ==Int 27 orBool TX_SIG_V ==Int 28
+         orBool TX_SIG_V ==Int (2 *Int NET_CHAIN_ID +Int 35) orBool TX_SIG_V ==Int (2 *Int NET_CHAIN_ID +Int 36) )
       andBool (ACCTCODE ==K .Bytes orBool (Ghasauthority << SCHED >> andBool #isValidDelegation(ACCTCODE)))
       andBool ACCTNONCE ==Int TX_NONCE
       andBool BASE_FEE <=Int TX_GAS_PRICE
