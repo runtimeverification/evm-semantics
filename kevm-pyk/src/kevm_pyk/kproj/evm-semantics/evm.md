@@ -1149,12 +1149,24 @@ Retrieving requests from the output of a system call.
     syntax KItem ::= "#getRequests" Int [symbol(#getRequests)]
  // ----------------------------------------------------------
     rule <k> #halt ~> #getRequests WITHDRAWAL_REQUEST_PREDEPLOY_ADDRESS => #popCallStack ~> #dropWorldState ~> #finalizeStorage(ListItem(WITHDRAWAL_REQUEST_PREDEPLOY_ADDRESS)) ... </k>
+         <statusCode> EVMC_SUCCESS </statusCode>
          <output> WRQSTS </output>
          <withdrawalRequests> _ => WRQSTS </withdrawalRequests>
 
     rule <k> #halt ~> #getRequests CONSOLIDATION_REQUEST_PREDEPLOY_ADDRESS => #popCallStack ~> #dropWorldState ~> #finalizeStorage(ListItem(CONSOLIDATION_REQUEST_PREDEPLOY_ADDRESS)) ... </k>
+         <statusCode> EVMC_SUCCESS </statusCode>
          <output> CRQSTS </output>
          <consolidationRequests> _ => CRQSTS </consolidationRequests>
+
+    rule <k> #halt ~> #getRequests _ => #popCallStack ~> #popWorldState ~> #abortSystemRequests ... </k>
+         <statusCode> SC => EVMC_INVALID_BLOCK </statusCode>
+      requires notBool SC ==K EVMC_SUCCESS
+
+    syntax KItem ::= "#abortSystemRequests" [symbol(#abortSystemRequests)]
+ // ---------------------------------------------------------------------
+    rule <k> #abortSystemRequests ~> #systemCall _ _        => #abortSystemRequests ... </k>
+    rule <k> #abortSystemRequests ~> #getRequests _         => #abortSystemRequests ... </k>
+    rule <k> #abortSystemRequests ~> #validateRequestsRoot   => .K ... </k>
 
     syntax KItem ::= "#checkRequestsRoot" Int [symbol(#checkRequestsRoot)]
                    | "#validateRequestsRoot" [symbol(#validateRequestsRoot)]
