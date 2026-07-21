@@ -2306,6 +2306,8 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     rule <k> #accessAccounts ADDR:Account => .K ... </k>
          <accessedAccounts> TOUCHED_ACCOUNTS => TOUCHED_ACCOUNTS |Set SetItem(ADDR) </accessedAccounts>
 
+    rule <k> #halt ~> (#accessAccounts _:Account => .K) ... </k>
+
     rule <k> #accessAccounts ADDRSET:Set => .K ... </k>
          <accessedAccounts> TOUCHED_ACCOUNTS => TOUCHED_ACCOUNTS |Set ADDRSET </accessedAccounts>
 
@@ -2674,9 +2676,9 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
  // -------------------------------
     rule [create-valid]:
          <k> CREATE VALUE MEMSTART MEMWIDTH
-          => #balTouch #newAddr(ACCT, NONCE)
+          => #checkCreate ACCT VALUE
+          ~> #balTouch #newAddr(ACCT, NONCE)
           ~> #accessAccounts #newAddr(ACCT, NONCE)
-          ~> #checkCreate ACCT VALUE
           ~> #chargeCreateStateGas #newAddr(ACCT, NONCE) CD
           ~> #create ACCT #newAddr(ACCT, NONCE) VALUE #range(LM, MEMSTART, MEMWIDTH)
           ~> #codeDeposit #newAddr(ACCT, NONCE)
@@ -2705,9 +2707,9 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
  // --------------------------------
     rule [create2-valid]:
          <k> CREATE2 VALUE MEMSTART MEMWIDTH SALT
-          => #balTouch #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH))
+          => #checkCreate ACCT VALUE
+          ~> #balTouch #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH))
           ~> #accessAccounts #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH))
-          ~> #checkCreate ACCT VALUE
           ~> #chargeCreateStateGas #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH)) CD
           ~> #create ACCT #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH)) VALUE #range(LM, MEMSTART, MEMWIDTH)
           ~> #codeDeposit #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH))
