@@ -467,9 +467,114 @@ The `interimStates` cell stores a list of previous world states.
     rule #balInsertInt(ListItem(Y:Int) REST, X) => ListItem(X) ListItem(Y) REST         requires X <=Int Y
     rule #balInsertInt(ListItem(Y:Int) REST, X) => ListItem(Y) #balInsertInt(REST, X)   requires X  >Int Y
 
-    syntax InternalOp ::= "#validateBlockAccessList"
- // ------------------------------------------------
-    rule <k> #validateBlockAccessList => .K ... </k>
+    syntax InternalOp ::= "#validateBlockAccessList" | "#balCheck" | "#balCheck2" List
+ // ---------------------------------------------------------------------------------
+    rule <k> #validateBlockAccessList => #balIncorporate ~> #balCheck ... </k>
+         <schedule> SCHED </schedule>
+         <balHash> BALHASH </balHash>
+         <statusCode> SC </statusCode>
+      requires Ghaseip7928 << SCHED >>
+       andBool BALHASH =/=Int 0
+       andBool SC in (SetItem(EVMC_SUCCESS) SetItem(EVMC_REVERT) SetItem(.StatusCode))
+    rule <k> #validateBlockAccessList => .K ... </k> [owise]
+
+    rule <k> #balCheck => #balCheck2(#balAddrUniverse(TOUCHED, RD, BC, NC, CC, SC)) ... </k>
+         <balTouched> TOUCHED </balTouched>
+         <balReads> RD </balReads>
+         <balBalanceChanges> BC </balBalanceChanges>
+         <balNonceChanges> NC </balNonceChanges>
+         <balCodeChanges> CC </balCodeChanges>
+         <balStorageChanges> SC </balStorageChanges>
+
+    rule <k> #balCheck2(ADDRS)
+          => #balCheckItems #balItemsWithinBudget(#balItemCount(ADDRS, RD, SC), GLIM, SCHED)
+          ~> #checkBalHash keccak(#rlpEncode(#balBuildJSON(ADDRS, RD, BC, NC, CC, SC)))
+         ...
+         </k>
+         <schedule> SCHED </schedule>
+         <gasLimit> GLIM </gasLimit>
+         <balReads> RD </balReads>
+         <balBalanceChanges> BC </balBalanceChanges>
+         <balNonceChanges> NC </balNonceChanges>
+         <balCodeChanges> CC </balCodeChanges>
+         <balStorageChanges> SC </balStorageChanges>
+
+    syntax InternalOp ::= "#balCheckItems" Bool
+                        | "#checkBalHash" Int
+ // ------------------------------------------
+    rule <k> #balCheckItems true => .K ... </k>
+    rule <k> #balCheckItems false => .K ... </k>
+         <statusCode> _ => EVMC_INVALID_BLOCK </statusCode>
+
+    rule <k> #checkBalHash H => .K ... </k> <balHash> HH </balHash> requires H ==Int HH
+    rule <k> #checkBalHash H => .K ... </k> <balHash> HH </balHash>
+         <statusCode> _ => EVMC_INVALID_BLOCK </statusCode>
+      requires notBool H ==Int HH
+
+    syntax Bool ::= #balItemsWithinBudget ( Int , Int , Schedule ) [function]
+ // ------------------------------------------------------------------------
+    rule #balItemsWithinBudget(ITEMS, GLIM, SCHED) => ITEMS <=Int (GLIM /Int Gbalitemcost < SCHED >)
+
+    syntax List ::= #balAddrUniverse ( Set , Map , Map , Map , Map , Map ) [function]
+ // --------------------------------------------------------------------------------
+    rule #balAddrUniverse(T, RD, BC, NC, CC, SC)
+      => #balSortInts(Set2List(T |Set keys(RD) |Set keys(BC) |Set keys(NC) |Set keys(CC) |Set keys(SC)))
+
+    syntax Int ::= #balItemCount ( List , Map , Map ) [function]
+ // -----------------------------------------------------------
+    rule #balItemCount(.List, _, _) => 0
+    rule #balItemCount(ListItem(A:Int) REST, RD, SC)
+      => 1 +Int size(keys({SC[A] orDefault .Map}:>Map) |Set {RD[A] orDefault .Set}:>Set) +Int #balItemCount(REST, RD, SC)
+      [preserves-definedness]
+
+    syntax JSON ::= #balBuildJSON ( List , Map , Map , Map , Map , Map ) [function]
+ // ------------------------------------------------------------------------------
+    rule #balBuildJSON(ADDRS, RD, BC, NC, CC, SC) => [ #balAccountsJSONs(ADDRS, RD, BC, NC, CC, SC) ]
+
+    syntax JSONs ::= #balAccountsJSONs ( List , Map , Map , Map , Map , Map ) [function]
+ // -----------------------------------------------------------------------------------
+    rule #balAccountsJSONs(.List, _, _, _, _, _) => .JSONs
+    rule #balAccountsJSONs(ListItem(A:Int) REST, RD, BC, NC, CC, SC)
+      => #balAccountJSON(A, RD, BC, NC, CC, SC) , #balAccountsJSONs(REST, RD, BC, NC, CC, SC)
+
+    syntax JSON ::= #balAccountJSON ( Int , Map , Map , Map , Map , Map ) [function]
+ // -------------------------------------------------------------------------------
+    rule #balAccountJSON(A, RD, BC, NC, CC, SC)
+      => [ #addrBytes(A) ,
+           [ #balStorChangesJSONs(#balSortInts(Set2List(keys({SC[A] orDefault .Map}:>Map))), {SC[A] orDefault .Map}:>Map) ] ,
+           [ #balReadsJSONs(#balFilterList(#balSortInts(Set2List({RD[A] orDefault .Set}:>Set)), {SC[A] orDefault .Map}:>Map)) ] ,
+           [ #balEntriesJSONs({BC[A] orDefault .List}:>List) ] ,
+           [ #balEntriesJSONs({NC[A] orDefault .List}:>List) ] ,
+           [ #balCodeEntriesJSONs({CC[A] orDefault .List}:>List) ] ]
+      [preserves-definedness]
+
+    syntax List ::= #balFilterList ( List , Map ) [function]
+ // -------------------------------------------------------
+    rule #balFilterList(.List, _) => .List
+    rule #balFilterList(ListItem(S:Int) REST, STOR) => ListItem(S) #balFilterList(REST, STOR) requires notBool S in_keys(STOR)
+    rule #balFilterList(ListItem(S:Int) REST, STOR) => #balFilterList(REST, STOR)             requires         S in_keys(STOR)
+
+    syntax JSONs ::= #balReadsJSONs ( List ) [function]
+ // --------------------------------------------------
+    rule #balReadsJSONs(.List) => .JSONs
+    rule #balReadsJSONs(ListItem(S:Int) REST) => S , #balReadsJSONs(REST)
+
+    syntax JSONs ::= #balStorChangesJSONs ( List , Map ) [function]
+ // --------------------------------------------------------------
+    rule #balStorChangesJSONs(.List, _) => .JSONs
+    rule #balStorChangesJSONs(ListItem(S:Int) REST, STOR)
+      => [ S , [ #balEntriesJSONs({STOR[S] orDefault .List}:>List) ] ] , #balStorChangesJSONs(REST, STOR)
+      [preserves-definedness]
+
+    syntax JSONs ::= #balEntriesJSONs ( List ) [function]
+ // ----------------------------------------------------
+    rule #balEntriesJSONs(.List) => .JSONs
+    rule #balEntriesJSONs(ListItem(balE(IDX, VAL)) REST) => [ IDX , VAL ] , #balEntriesJSONs(REST)
+
+    syntax JSONs ::= #balCodeEntriesJSONs ( List ) [function]
+ // --------------------------------------------------------
+    rule #balCodeEntriesJSONs(.List) => .JSONs
+    rule #balCodeEntriesJSONs(ListItem(balCE(IDX, CODE)) REST) => [ IDX , CODE ] , #balCodeEntriesJSONs(REST)
 ```
 
 Control Flow
@@ -1086,6 +1191,7 @@ Terminates validation successfully when all conditions are met or when blob vali
           => #if Ghaswithdrawals << SCHED >> #then #finalizeWithdrawals #else .K #fi
           ~> #rewardOmmers(OMMERS)
           ~> #processGeneralPurposeRequests
+          ~> #validateBlockAccessList
           ~> #finalizeBlockBlobs
          ...
          </k>
