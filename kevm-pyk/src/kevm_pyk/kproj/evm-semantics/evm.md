@@ -139,6 +139,7 @@ In the comments next to each cell, we've marked which component of the YellowPap
               <baseFee>          0      </baseFee>
               <withdrawalsRoot>  0      </withdrawalsRoot>
               <blobGasUsed>      0      </blobGasUsed>
+              <headerBlobGasUsed> 0     </headerBlobGasUsed>
               <excessBlobGas>    0      </excessBlobGas>
               <beaconRoot>       0      </beaconRoot>
               <requestsRoot>     0      </requestsRoot>
@@ -1251,15 +1252,17 @@ Terminates validation successfully when all conditions are met or when blob vali
     rule <k> #finalizeBlockBlobs => .K ... </k>
          <schedule> SCHED </schedule>
          <blobGasUsed> BLOB_GAS_USED </blobGasUsed>
+         <headerBlobGasUsed> HEADER_BLOB_GAS_USED </headerBlobGasUsed>
          <excessBlobGas> EXCESS_BLOB_GAS </excessBlobGas>
          <baseFee> BASE_FEE </baseFee>
          <previousExcessBlobGas> _ => EXCESS_BLOB_GAS </previousExcessBlobGas>
          <previousBlobGasUsed> _ => BLOB_GAS_USED </previousBlobGasUsed>
          <previousBaseFee> _ => BASE_FEE </previousBaseFee>
-      requires ( Ghasblobbasefee << SCHED >> andBool BLOB_GAS_USED <=Int Gmaxblobgas < SCHED > )
+      requires ( Ghasblobbasefee << SCHED >> andBool BLOB_GAS_USED <=Int Gmaxblobgas < SCHED > andBool BLOB_GAS_USED ==Int HEADER_BLOB_GAS_USED )
         orBool notBool Ghasblobbasefee << SCHED >>
 
-    rule <k> #finalizeBlockBlobs => #end EVMC_INVALID_BLOCK ... </k> [owise]
+    rule <k> #finalizeBlockBlobs => .K ... </k>
+         <statusCode> _ => EVMC_INVALID_BLOCK </statusCode> [owise]
 
     syntax Bool ::= #checkTxVersionedHashes (List) [function, symbol(#checkTxVersionedHashes)]
  // ------------------------------------------------------------------------------------------
@@ -1282,7 +1285,8 @@ Terminates validation successfully when all conditions are met or when blob vali
          <previousHash> HP </previousHash>
          <blockhashes> HASHES => #if BN >Int 1 #then ListItem(HP) HASHES #else HASHES #fi </blockhashes>
          <gasUsed> _ => 0 </gasUsed>
-         <blobGasUsed> _ => 0 </blobGasUsed>
+         <blobGasUsed> HDRUB => 0 </blobGasUsed>
+         <headerBlobGasUsed> _ => HDRUB </headerBlobGasUsed>
          <gasUsedRegular> _ => 0 </gasUsedRegular>
          <gasUsedState>   _ => 0 </gasUsedState>
          <log> _ => .List </log>
