@@ -764,7 +764,7 @@ After executing a transaction, it's necessary to have the effect of the substate
     rule <k> #finalizeWithdrawals => .K ... </k>
          <withdrawalsPending> .List </withdrawalsPending>
 
-    rule <k> #finalizeWithdrawals ... </k>
+    rule <k> (.K => #balCaptureBalance ACCT B) ~> #finalizeWithdrawals ... </k>
          <withdrawalsPending> ListItem(WDID) LS => LS </withdrawalsPending>
          <withdrawal>
            <withdrawalID> WDID </withdrawalID>
@@ -804,7 +804,7 @@ After executing a transaction, it's necessary to have the effect of the substate
     syntax InternalOp ::= #finalizeTx ( Bool , Int )   [symbol(#finalizeTx)]
                         | #deleteAccounts ( List ) [symbol(#deleteAccounts)]
  // ------------------------------------------------------------------------
-    rule <k> #finalizeTx(true, _) => #finalizeStorage(Set2List(SetItem(MINER) |Set ACCTS)) ... </k>
+    rule <k> #finalizeTx(true, _) => #balIncorporate ~> #finalizeStorage(Set2List(SetItem(MINER) |Set ACCTS)) ... </k>
          <selfDestruct> .Set </selfDestruct>
          <coinbase> MINER </coinbase>
          <touchedAccounts> ACCTS => .Set </touchedAccounts>
@@ -825,7 +825,7 @@ After executing a transaction, it's necessary to have the effect of the substate
          </message>
       requires REFUND =/=Int 0
 
-    rule <k> #finalizeTx(false => true, GFLOOR) ... </k>
+    rule <k> (.K => #balCaptureBalance ORG ORGBAL ~> #balCaptureBalance MINER MINBAL) ~> #finalizeTx(false => true, GFLOOR) ... </k>
          <useGas> true </useGas>
          <schedule> SCHED </schedule>
          <baseFee> BFEE </baseFee>
@@ -856,7 +856,7 @@ After executing a transaction, it's necessary to have the effect of the substate
          </message>
       requires ORG =/=Int MINER
 
-    rule <k> #finalizeTx(false => true, GFLOOR) ... </k>
+    rule <k> (.K => #balCaptureBalance ACCT BAL) ~> #finalizeTx(false => true, GFLOOR) ... </k>
          <useGas> true </useGas>
          <schedule> SCHED </schedule>
          <baseFee> BFEE </baseFee>
@@ -1061,7 +1061,7 @@ Terminates validation successfully when all conditions are met or when blob vali
 ```k
     syntax EthereumCommand ::= "#startBlock"
  // ----------------------------------------
-    rule <k> #startBlock => #validateBlockBlobs 0 TXS ~> #executeBeaconRoots ~> #executeBlockHashHistory ... </k>
+    rule <k> #startBlock => #validateBlockBlobs 0 TXS ~> #executeBeaconRoots ~> #executeBlockHashHistory ~> #balIncorporate ... </k>
          <gasUsed> _ => 0 </gasUsed>
          <blobGasUsed> _ => 0 </blobGasUsed>
          <log> _ => .List </log>
@@ -1092,6 +1092,7 @@ Terminates validation successfully when all conditions are met or when blob vali
          <schedule> SCHED </schedule>
          <ommerBlockHeaders> [ OMMERS ] </ommerBlockHeaders>
          <coinbase> MINER </coinbase>
+         <balIndex> I => I +Int 1 </balIndex>
          <account>
            <acctID> MINER </acctID>
            <balance> MINBAL => MINBAL +Int Rb < SCHED > </balance>
@@ -1162,7 +1163,12 @@ Read more about EIP-4788 here [https://eips.ethereum.org/EIPS/eip-4788](https://
 ```k
     syntax InternalOp ::= "#executeBeaconRoots" [symbol(#executeBeaconRoots)]
  // -------------------------------------------------------------------------
-    rule <k> #executeBeaconRoots => .K ... </k>
+    rule <k> #executeBeaconRoots
+          => #balTouch BEACON_ROOTS_ADDRESS
+          ~> #balCaptureStorage BEACON_ROOTS_ADDRESS (TS modInt 8191) #lookup(M, TS modInt 8191) ~> #balRead BEACON_ROOTS_ADDRESS (TS modInt 8191)
+          ~> #balCaptureStorage BEACON_ROOTS_ADDRESS (TS modInt 8191 +Int 8191) #lookup(M, TS modInt 8191 +Int 8191) ~> #balRead BEACON_ROOTS_ADDRESS (TS modInt 8191 +Int 8191)
+         ...
+         </k>
          <schedule> SCHED </schedule>
          <timestamp> TS </timestamp>
          <beaconRoot> BR </beaconRoot>
@@ -1186,7 +1192,11 @@ Read more about EIP-2935 here [https://eips.ethereum.org/EIPS/eip-2935](https://
 ```k
     syntax InternalOp ::= "#executeBlockHashHistory" [symbol(#executeBlockHashHistory)]
  // -----------------------------------------------------------------------------------
-    rule <k> #executeBlockHashHistory => .K ... </k>
+    rule <k> #executeBlockHashHistory
+          => #balTouch HISTORY_STORAGE_ADDRESS
+          ~> #balCaptureStorage HISTORY_STORAGE_ADDRESS ((BN -Int 1) modInt 8191) #lookup(M, (BN -Int 1) modInt 8191) ~> #balRead HISTORY_STORAGE_ADDRESS ((BN -Int 1) modInt 8191)
+         ...
+         </k>
          <schedule> SCHED </schedule>
          <previousHash> HP </previousHash>
          <number> BN </number>
@@ -1284,7 +1294,7 @@ These are just used by the other operators for shuffling local execution state a
       requires ACCTFROM ==K ACCTTO
        andBool VALUE <=Int ORIGFROM
 
-    rule <k> #transferFunds ACCTFROM ACCTTO VALUE => .K ... </k>
+    rule <k> #transferFunds ACCTFROM ACCTTO VALUE => #balCaptureBalance ACCTFROM ORIGFROM ~> #balCaptureBalance ACCTTO ORIGTO ... </k>
          <account>
            <acctID> ACCTFROM </acctID>
            <balance> ORIGFROM => ORIGFROM -Word VALUE </balance>
@@ -1652,31 +1662,31 @@ Operators that require access to the rest of the Ethereum network world-state ca
     syntax UnStackOp ::= "BALANCE"
  // ------------------------------
     rule [balance.true]:
-         <k> BALANCE ACCT => #accessAccounts ACCT ~> BAL ~> #push ... </k>
+         <k> BALANCE ACCT => #balTouch ACCT ~> #accessAccounts ACCT ~> BAL ~> #push ... </k>
          <account>
            <acctID> ACCT </acctID>
            <balance> BAL </balance>
            ...
          </account>
 
-    rule [balance.false]: <k> BALANCE ACCT => #accessAccounts ACCT ~> 0 ~> #push ... </k> [owise]
+    rule [balance.false]: <k> BALANCE ACCT => #balTouch ACCT ~> #accessAccounts ACCT ~> 0 ~> #push ... </k> [owise]
 
     syntax UnStackOp ::= "EXTCODESIZE"
  // ----------------------------------
     rule [extcodesize.true]:
-         <k> EXTCODESIZE ACCT => #accessAccounts ACCT ~> lengthBytes(CODE) ~> #push ... </k>
+         <k> EXTCODESIZE ACCT => #balTouch ACCT ~> #accessAccounts ACCT ~> lengthBytes(CODE) ~> #push ... </k>
          <account>
            <acctID> ACCT </acctID>
            <code> CODE </code>
            ...
          </account>
 
-    rule [extcodesize.false]: <k> EXTCODESIZE ACCT => #accessAccounts ACCT ~> 0 ~> #push ... </k> [owise]
+    rule [extcodesize.false]: <k> EXTCODESIZE ACCT => #balTouch ACCT ~> #accessAccounts ACCT ~> 0 ~> #push ... </k> [owise]
 
     syntax UnStackOp ::= "EXTCODEHASH"
  // ----------------------------------
     rule [extcodehash.true]:
-         <k> EXTCODEHASH ACCT => #accessAccounts ACCT ~> keccak(CODE) ~> #push ... </k>
+         <k> EXTCODEHASH ACCT => #balTouch ACCT ~> #accessAccounts ACCT ~> keccak(CODE) ~> #push ... </k>
          <account>
            <acctID> ACCT </acctID>
            <code> CODE:Bytes </code>
@@ -1686,12 +1696,12 @@ Operators that require access to the rest of the Ethereum network world-state ca
          </account>
       requires notBool #accountEmpty(CODE, NONCE, BAL)
 
-    rule [extcodehash.false]: <k> EXTCODEHASH ACCT => #accessAccounts ACCT ~> 0 ~> #push ... </k> [owise]
+    rule [extcodehash.false]: <k> EXTCODEHASH ACCT => #balTouch ACCT ~> #accessAccounts ACCT ~> 0 ~> #push ... </k> [owise]
 
     syntax QuadStackOp ::= "EXTCODECOPY"
  // ------------------------------------
     rule [extcodecopy.true]:
-         <k> EXTCODECOPY ACCT MEMSTART PGMSTART WIDTH => #accessAccounts ACCT ... </k>
+         <k> EXTCODECOPY ACCT MEMSTART PGMSTART WIDTH => #balTouch ACCT ~> #accessAccounts ACCT ... </k>
          <localMem> LM => LM [ MEMSTART := #range(PGM, PGMSTART, WIDTH) ] </localMem>
          <account>
            <acctID> ACCT </acctID>
@@ -1700,7 +1710,7 @@ Operators that require access to the rest of the Ethereum network world-state ca
          </account>
 
     rule [extcodecopy.false]:
-         <k> EXTCODECOPY ACCT MEMSTART _ WIDTH => #accessAccounts ACCT ... </k>
+         <k> EXTCODECOPY ACCT MEMSTART _ WIDTH => #balTouch ACCT ~> #accessAccounts ACCT ... </k>
          <localMem> LM => LM [ MEMSTART := #padToWidth(WIDTH, .Bytes) ] </localMem> [owise]
 ```
 
@@ -1712,7 +1722,7 @@ These rules reach into the network state and load/store from account storage:
     syntax UnStackOp ::= "SLOAD"
  // ----------------------------
     rule [sload]:
-         <k> SLOAD INDEX => #lookup(STORAGE, INDEX) ~> #push ... </k>
+         <k> SLOAD INDEX => #balRead ACCT INDEX ~> #lookup(STORAGE, INDEX) ~> #push ... </k>
          <id> ACCT </id>
          <account>
            <acctID> ACCT </acctID>
@@ -1723,7 +1733,10 @@ These rules reach into the network state and load/store from account storage:
     syntax BinStackOp ::= "SSTORE"
  // ------------------------------
     rule [sstore]:
-         <k> SSTORE INDEX NEW => .K ... </k>
+         <k> SSTORE INDEX NEW
+          => #balCaptureStorage ACCT INDEX #lookup(STORAGE, INDEX) ~> #balRead ACCT INDEX
+         ...
+         </k>
          <id> ACCT </id>
          <account>
            <acctID> ACCT </acctID>
@@ -1828,7 +1841,8 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     rule [call.delegatedAuthority]:
          <k> #call ACCTFROM ACCTTO ACCTCODE VALUE APPVALUE ARGS STATIC
           => #let DELEGATED_ACCOUNT = #asAccount(#range(CODE,3,20)) #in
-           (#accessAccounts DELEGATED_ACCOUNT
+           (#balTouch DELEGATED_ACCOUNT
+          ~> #accessAccounts DELEGATED_ACCOUNT
           ~> #callWithCode ACCTFROM ACCTTO ACCTCODE #getAccountCode(DELEGATED_ACCOUNT) VALUE APPVALUE ARGS STATIC )
           ...
          </k>
@@ -1987,7 +2001,7 @@ System Transaction Configuration
     syntax InternalOp ::= "#systemCall" Int Bytes   [symbol(#systemCall)]
                         | "#mkSystemCall" Int Bytes [symbol(#mkSystemCall)]
  // -----------------------------------------------------------------------
-    rule <k> #systemCall ACCTTO ARGS => #pushCallStack ~> #pushWorldState ~> #mkSystemCall ACCTTO ARGS ... </k>
+    rule <k> #systemCall ACCTTO ARGS => #balTouch ACCTTO ~> #pushCallStack ~> #pushWorldState ~> #mkSystemCall ACCTTO ARGS ... </k>
 
     rule <k> #mkSystemCall ACCTTO ARGS => #loadProgram CODE ~> #initVM ~> #execute ... </k>
          <useGas> USEGAS:Bool </useGas>
@@ -2066,7 +2080,8 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
  // ------------------------
     rule [call]:
          <k> CALL _GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
-          => #accessAccounts ACCTTO
+          => #balTouch ACCTTO
+          ~> #accessAccounts ACCTTO
           ~> #checkCall ACCTFROM VALUE
           ~> #call ACCTFROM ACCTTO ACCTTO VALUE VALUE #range(LM, ARGSTART, ARGWIDTH) false
           ~> #return RETSTART RETWIDTH
@@ -2079,7 +2094,8 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
  // ----------------------------
     rule [callcode]:
          <k> CALLCODE _GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
-          => #accessAccounts ACCTTO
+          => #balTouch ACCTTO
+          ~> #accessAccounts ACCTTO
           ~> #checkCall ACCTFROM VALUE
           ~> #call ACCTFROM ACCTFROM ACCTTO VALUE VALUE #range(LM, ARGSTART, ARGWIDTH) false
           ~> #return RETSTART RETWIDTH
@@ -2092,7 +2108,8 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
  // -----------------------------------
     rule [delegatecall]:
          <k> DELEGATECALL _GCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
-          => #accessAccounts ACCTTO
+          => #balTouch ACCTTO
+          ~> #accessAccounts ACCTTO
           ~> #checkCall ACCTFROM 0
           ~> #call ACCTAPPFROM ACCTFROM ACCTTO 0 VALUE #range(LM, ARGSTART, ARGWIDTH) false
           ~> #return RETSTART RETWIDTH
@@ -2107,7 +2124,8 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
  // ---------------------------------
     rule [staticcall]:
          <k> STATICCALL _GCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
-          => #accessAccounts ACCTTO
+          => #balTouch ACCTTO
+          ~> #accessAccounts ACCTTO
           ~> #checkCall ACCTFROM 0
           ~> #call ACCTFROM ACCTTO ACCTTO 0 0 #range(LM, ARGSTART, ARGWIDTH) true
           ~> #return RETSTART RETWIDTH
@@ -2140,7 +2158,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          </k>
 
     rule <k> #mkCreate ACCTFROM ACCTTO VALUE INITCODE
-          => #touchAccounts ACCTFROM ACCTTO ~> #accessAccounts ACCTFROM ACCTTO ~> #loadProgram INITCODE ~> #initVM ~> #execute
+          => #balCaptureNonce ACCTTO NONCE ~> #touchAccounts ACCTFROM ACCTTO ~> #accessAccounts ACCTFROM ACCTTO ~> #loadProgram INITCODE ~> #initVM ~> #execute
          ...
          </k>
          <useGas> USEGAS </useGas>
@@ -2160,7 +2178,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          </account>
          <createdAccounts> ACCTS => ACCTS |Set SetItem(ACCTTO) </createdAccounts>
 
-    rule <k> #incrementNonce ACCT => .K ... </k>
+    rule <k> #incrementNonce ACCT => #balCaptureNonce ACCT NONCE ... </k>
          <account>
            <acctID> ACCT </acctID>
            <nonce> NONCE => NONCE +Int 1 </nonce>
@@ -2205,14 +2223,15 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
       requires notBool ( lengthBytes(OUT) <=Int maxCodeSize < SCHED > andBool #isValidCode(OUT, SCHED) )
 
     rule <k> #finishCodeDeposit ACCT OUT
-          => #popCallStack ~> #dropWorldState
+          => #balCaptureCode ACCT OLDCODE
+          ~> #popCallStack ~> #dropWorldState
           ~> #refund GAVAIL ~> ACCT ~> #push
          ...
          </k>
          <gas> GAVAIL </gas>
          <account>
            <acctID> ACCT </acctID>
-           <code> _ => OUT </code>
+           <code> OLDCODE => OUT </code>
            ...
          </account>
 
@@ -2240,7 +2259,8 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
  // -------------------------------
     rule [create-valid]:
          <k> CREATE VALUE MEMSTART MEMWIDTH
-          => #accessAccounts #newAddr(ACCT, NONCE)
+          => #balTouch #newAddr(ACCT, NONCE)
+          ~> #accessAccounts #newAddr(ACCT, NONCE)
           ~> #checkCreate ACCT VALUE
           ~> #create ACCT #newAddr(ACCT, NONCE) VALUE #range(LM, MEMSTART, MEMWIDTH)
           ~> #codeDeposit #newAddr(ACCT, NONCE)
@@ -2268,7 +2288,8 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
  // --------------------------------
     rule [create2-valid]:
          <k> CREATE2 VALUE MEMSTART MEMWIDTH SALT
-          => #accessAccounts #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH))
+          => #balTouch #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH))
+          ~> #accessAccounts #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH))
           ~> #checkCreate ACCT VALUE
           ~> #create ACCT #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH)) VALUE #range(LM, MEMSTART, MEMWIDTH)
           ~> #codeDeposit #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH))
@@ -2289,7 +2310,7 @@ Self destructing to yourself, unlike a regular transfer, destroys the balance in
 ```k
     syntax UnStackOp ::= "SELFDESTRUCT"
  // -----------------------------------
-    rule <k> SELFDESTRUCT ACCTTO => #touchAccounts ACCT ACCTTO ~> #accessAccounts ACCTTO ~> #transferFunds ACCT ACCTTO BALFROM ~> #end EVMC_SUCCESS ... </k>
+    rule <k> SELFDESTRUCT ACCTTO => #balTouch ACCTTO ~> #touchAccounts ACCT ACCTTO ~> #accessAccounts ACCTTO ~> #transferFunds ACCT ACCTTO BALFROM ~> #end EVMC_SUCCESS ... </k>
          <schedule> SCHED </schedule>
          <id> ACCT </id>
          <selfDestruct> SDS => SDS |Set SetItem(ACCT) </selfDestruct>
@@ -2316,7 +2337,7 @@ Self destructing to yourself, unlike a regular transfer, destroys the balance in
          <createdAccounts> CA </createdAccounts>
       requires ((notBool Ghaseip6780 << SCHED >>) orBool ACCT in CA)
 
-    rule <k> SELFDESTRUCT ACCTTO => #touchAccounts ACCT ACCTTO ~> #accessAccounts ACCTTO ~> #transferFunds ACCT ACCTTO BALFROM ~> #end EVMC_SUCCESS ... </k>
+    rule <k> SELFDESTRUCT ACCTTO => #balTouch ACCTTO ~> #touchAccounts ACCT ACCTTO ~> #accessAccounts ACCTTO ~> #transferFunds ACCT ACCTTO BALFROM ~> #end EVMC_SUCCESS ... </k>
          <schedule> SCHED </schedule>
          <id> ACCT </id>
          <account>
