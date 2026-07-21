@@ -1697,7 +1697,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     syntax Bool ::= #isPrecompiledAccount ( Int , Schedule ) [symbol(isPrecompiledAccount), function, total, smtlib(isPrecompiledAccount)]
  // --------------------------------------------------------------------------------------------------------------------------------------
     rule [isPrecompiledAccountOsaka]: #isPrecompiledAccount(256,      OSAKA) => true
-    rule [isPrecompiledAccount]:      #isPrecompiledAccount(ACCTCODE, SCHED) => 0 <Int ACCTCODE andBool ACCTCODE <=Int #precompiledAccountsUB(SCHED)
+    rule [isPrecompiledAccount]:      #isPrecompiledAccount(ACCTCODE, SCHED) => 0 <Int ACCTCODE andBool ACCTCODE <=Int #precompiledAccountsUB(SCHED) [owise]
 
     syntax KItem ::= "#initVM"
  // --------------------------
