@@ -911,6 +911,29 @@ After executing a transaction, it's necessary to have the effect of the substate
            ...
          </withdrawal> [owise]
 
+    syntax KItem ::= "#checkWithdrawalsRoot" [symbol(#checkWithdrawalsRoot)]
+                   | #buildWithdrawalsTrie ( List , Int , Map ) [symbol(#buildWithdrawalsTrie)]
+ // -------------------------------------------------------------------------------------------
+    rule <k> #checkWithdrawalsRoot => #buildWithdrawalsTrie(WDS, 0, .Map) ... </k>
+         <withdrawalsPending> WDS </withdrawalsPending>
+
+    rule <k> #buildWithdrawalsTrie(ListItem(WDID) REST, I, ACC)
+          => #buildWithdrawalsTrie(REST, I +Int 1, ACC[#rlpEncodeInt(I) <- Bytes2String(#rlpEncodeWithdrawal(IDX, VIDX, ADDR, AMOUNT))]) ... </k>
+         <withdrawal>
+           <withdrawalID>   WDID   </withdrawalID>
+           <index>          IDX    </index>
+           <validatorIndex> VIDX   </validatorIndex>
+           <address>        ADDR   </address>
+           <amount>         AMOUNT </amount>
+         </withdrawal>
+
+    rule <k> #buildWithdrawalsTrie(.List, _, ACC) => .K ... </k>
+         <withdrawalsRoot> HEADER_WR </withdrawalsRoot>
+      requires #asWord(Keccak256raw(#rlpEncodeMerkleTree(MerkleUpdateMap(.MerkleTree, ACC)))) ==Int HEADER_WR
+
+    rule <k> #buildWithdrawalsTrie(.List, _, _ACC) => .K ... </k>
+         <statusCode> _ => EVMC_INVALID_BLOCK </statusCode> [owise]
+
     syntax InternalOp ::= #finalizeStorage ( List ) [symbol(#finalizeStorage)]
  // --------------------------------------------------------------------------
     rule <k> #finalizeStorage(ListItem(ACCT) REST => REST) ... </k>
@@ -1329,7 +1352,7 @@ Terminates validation successfully when all conditions are met or when blob vali
                              | #rewardOmmers ( JSONs ) [symbol(#rewardOmmers)]
  // --------------------------------------------------------------------------
     rule <k> #finalizeBlock
-          => #if Ghaswithdrawals << SCHED >> #then #finalizeWithdrawals #else .K #fi
+          => #if Ghaswithdrawals << SCHED >> #then (#checkWithdrawalsRoot ~> #finalizeWithdrawals) #else .K #fi
           ~> #rewardOmmers(OMMERS)
           ~> #processGeneralPurposeRequests
           ~> #validateBlockAccessList

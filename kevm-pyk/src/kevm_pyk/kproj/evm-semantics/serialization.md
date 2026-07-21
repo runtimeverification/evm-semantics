@@ -405,7 +405,16 @@ Encoding
                    | #rlpEncodeReceipt ( Int , Int , Bytes , List ) [symbol(#rlpEncodeReceipt), function]
                    | #rlpEncodeLogs    ( List )                     [symbol(#rlpEncodeLogs   ), function]
                    | #rlpEncodeLogsAux ( List , StringBuffer )      [symbol(#rlpEncodeLogsAux), function]
+                   | #rlpEncodeWithdrawal ( Int , Int , Account , Int ) [symbol(#rlpEncodeWithdrawal), function]
  // -----------------------------------------------------------------------------------------------------
+    rule [rlpWithdrawal]: #rlpEncodeWithdrawal(IDX, VIDX, ADDR, AMOUNT)
+                       => #rlpEncodeLength(        #rlpEncodeInt(IDX)
+                                            +Bytes #rlpEncodeInt(VIDX)
+                                            +Bytes #rlpEncodeAddress(ADDR)
+                                            +Bytes #rlpEncodeInt(AMOUNT)
+                                          , 192
+                                          )
+
     rule [rlpReceipt]: #rlpEncodeReceipt(RS, RG, RB, RL)
                     => #rlpEncodeLength(        #rlpEncodeInt(RS)
                                          +Bytes #rlpEncodeInt(RG)
