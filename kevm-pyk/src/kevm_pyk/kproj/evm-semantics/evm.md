@@ -2340,6 +2340,8 @@ System Transaction Configuration
          <callDepth> CD => CD +Int 1 </callDepth>
          <callData> _ => ARGS </callData>
          <callValue> _ => 0 </callValue>
+         <accessedAccounts> _ => .Set </accessedAccounts>
+         <accessedStorage> _ => .Map </accessedStorage>
          <id> _ => ACCTTO </id>
          <codeAddr> _ => ACCTTO </codeAddr>
          <gas> GAVAIL:Gas => #if USEGAS #then SYSTEMTXGAS:Gas #else GAVAIL:Gas #fi </gas>
