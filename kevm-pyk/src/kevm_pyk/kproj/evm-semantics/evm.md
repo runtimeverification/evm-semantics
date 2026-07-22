@@ -1256,6 +1256,9 @@ Terminates validation successfully when all conditions are met or when blob vali
     syntax EthereumCommand ::= "#startBlock"
  // ----------------------------------------
     rule <k> #startBlock => #validateBlockBlobs 0 TXS ~> #executeBeaconRoots ~> #executeBlockHashHistory ~> #balIncorporate ... </k>
+         <number> BN </number>
+         <previousHash> HP </previousHash>
+         <blockhashes> HASHES => #if BN >Int 1 #then ListItem(HP) HASHES #else HASHES #fi </blockhashes>
          <gasUsed> _ => 0 </gasUsed>
          <blobGasUsed> _ => 0 </blobGasUsed>
          <gasUsedRegular> _ => 0 </gasUsedRegular>
@@ -1791,7 +1794,7 @@ The blockhash is calculated here using the "shortcut" formula used for running t
     rule #blockhash(_, N, HI, _) => 0 requires N >Int HI
     rule #blockhash(_, _, _, 256) => 0
     rule #blockhash(ListItem(0) _, _, _, _) => 0
-    rule #blockhash(ListItem(H) _, N, N, _) => H
+    rule #blockhash(ListItem(H) _, N, N, A) => H requires A <Int 256
     rule #blockhash(ListItem(_) L, N, HI, A) => #blockhash(L, N, HI -Int 1, A +Int 1) [owise]
 ```
 
