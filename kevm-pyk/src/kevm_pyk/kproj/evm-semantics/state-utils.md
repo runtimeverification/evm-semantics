@@ -404,6 +404,11 @@ The `"rlp"` key loads the block information.
          </k>
     requires #asWord(TYPE) ==Int #dasmTxPrefix(Blob)
 
+     rule <k> load "transaction" : [ [TYPE , [ [ _:JSONs ] , _:JSONs ]] , _ ] => .K ... </k>
+         <statusCode> _ => EVMC_INVALID_BLOCK </statusCode>
+         <txPending> _ => .List </txPending>
+    requires #asWord(TYPE) ==Int #dasmTxPrefix(Blob)
+
      rule <k> load "transaction" : [ [TYPE , [TC, TN, TP, TF, TG, TT, TV, TI, TA, AUTH, TY, TR, TS ]] , REST ]
           => mkTX !ID:Int
           ~> loadTransaction !ID { "data"         : TI , "gasLimit"          : TG   , "maxPriorityFeePerGas" : TP
