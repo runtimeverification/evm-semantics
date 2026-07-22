@@ -1190,12 +1190,20 @@ Retrieving requests from the output of a system call.
           ~> #systemCall WITHDRAWAL_REQUEST_PREDEPLOY_ADDRESS .Bytes ~> #getRequests WITHDRAWAL_REQUEST_PREDEPLOY_ADDRESS
           ~> #systemCall CONSOLIDATION_REQUEST_PREDEPLOY_ADDRESS .Bytes ~> #getRequests CONSOLIDATION_REQUEST_PREDEPLOY_ADDRESS
           ~> #validateRequestsRoot
+          ~> #restoreTxStatus SC
           ...
          </k>
          <statusCode> SC </statusCode>
          <schedule> SCHED </schedule>
       requires Ghasrequests << SCHED >>
-       andBool SC in (SetItem(EVMC_SUCCESS) SetItem(EVMC_REVERT) SetItem(.StatusCode))
+       andBool notBool SC ==K EVMC_INVALID_BLOCK
+
+    syntax KItem ::= "#restoreTxStatus" StatusCode [symbol(#restoreTxStatus)]
+ // -------------------------------------------------------------------------
+    rule <k> #restoreTxStatus _ => .K ... </k>
+         <statusCode> EVMC_INVALID_BLOCK </statusCode>
+    rule <k> #restoreTxStatus SC => .K ... </k>
+         <statusCode> _ => SC </statusCode> [owise]
 
     rule <k> #processGeneralPurposeRequests => .K ... </k> [owise]
 ```
