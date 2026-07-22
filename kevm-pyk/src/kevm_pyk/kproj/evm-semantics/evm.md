@@ -1272,6 +1272,19 @@ Terminates validation successfully when all conditions are met or when blob vali
 
     rule <k> #validateBlockBlobs _COUNT _TXIDS => .K ... </k> [owise]
 
+    syntax InternalOp ::= "#validateGasLimit" [symbol(#validateGasLimit)]
+ // ---------------------------------------------------------------------
+    rule <k> #validateGasLimit => .K ... </k>
+         <gasLimit> GLIMIT </gasLimit>
+         <previousGasLimit> PREV_GAS_LIMIT </previousGasLimit>
+      requires GLIMIT <Int PREV_GAS_LIMIT +Int (PREV_GAS_LIMIT /Int 1024)
+       andBool GLIMIT >Int PREV_GAS_LIMIT -Int (PREV_GAS_LIMIT /Int 1024)
+       andBool GLIMIT >=Int 5000
+
+    rule <k> #validateGasLimit => .K ... </k>
+         <statusCode> _ => EVMC_INVALID_BLOCK </statusCode>
+         <txPending> _ => .List </txPending> [owise]
+
     syntax InternalOp ::= "#validateBaseFee" [symbol(#validateBaseFee)]
  // -------------------------------------------------------------------
     rule <k> #validateBaseFee => .K ... </k>
@@ -1324,7 +1337,7 @@ Terminates validation successfully when all conditions are met or when blob vali
 ```k
     syntax EthereumCommand ::= "#startBlock"
  // ----------------------------------------
-    rule <k> #startBlock => #validateBaseFee ~> #validateBlockBlobs 0 TXS ~> #executeBeaconRoots ~> #executeBlockHashHistory ~> #balIncorporate ... </k>
+    rule <k> #startBlock => #validateGasLimit ~> #validateBaseFee ~> #validateBlockBlobs 0 TXS ~> #executeBeaconRoots ~> #executeBlockHashHistory ~> #balIncorporate ... </k>
          <number> BN </number>
          <previousHash> HP </previousHash>
          <blockhashes> HASHES => #if BN >Int 1 #then ListItem(HP) HASHES #else HASHES #fi </blockhashes>
