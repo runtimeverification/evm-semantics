@@ -815,9 +815,18 @@ Processing authorities in SetCode Transactions
     rule SET_CODE_TX_MAGIC => b"\x05"
     rule EOA_DELEGATION_MARKER => #parseByteStack("0xef0100")
 
+    syntax Int ::= "secp256k1Order" [macro]
+ // ---------------------------------------
+    rule secp256k1Order => 115792089237316195423570985008687907852837564279074904382605163141518161494337
+
     syntax Account ::= #recoverAuthority ( Bytes , Bytes , Bytes , Bytes , Bytes , Bytes ) [symbol(#recoverAuthority), function]
  // ----------------------------------------------------------------------------------------------------------------------------
     rule #recoverAuthority(CID, ADDR, NONCE, YPAR, SIGR, SIGS) => #sender( Keccak256raw(SET_CODE_TX_MAGIC +Bytes #rlpEncode([CID, ADDR, NONCE])), #asWord(YPAR) +Int 27, #padToWidth(32, SIGR), #padToWidth(32,SIGS) )
+      requires #asWord(YPAR) <=Int 1
+       andBool 0 <Int #asWord(SIGR) andBool #asWord(SIGR) <Int secp256k1Order
+       andBool 0 <Int #asWord(SIGS) andBool #asWord(SIGS) <=Int secp256k1Order /Int 2
+
+    rule #recoverAuthority(_, _, _, _, _, _) => .Account [owise]
 
 endmodule
 ```
