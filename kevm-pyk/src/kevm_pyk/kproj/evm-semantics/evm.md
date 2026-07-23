@@ -1261,6 +1261,7 @@ Terminates validation successfully when all conditions are met or when blob vali
     rule <k> #validateBlockBlobs COUNT .List => .K ... </k>
          <statusCode> _ => EVMC_INVALID_BLOCK </statusCode>
          <txPending> _ => .List </txPending>
+         <txOrder> _ => .List </txOrder>
          <schedule> SCHED </schedule>
          <excessBlobGas> EXCESS_BLOB_GAS </excessBlobGas>
          <previousExcessBlobGas> PREV_EXCESS_BLOB_GAS </previousExcessBlobGas>
@@ -1283,7 +1284,8 @@ Terminates validation successfully when all conditions are met or when blob vali
 
     rule <k> #validateGasLimit => .K ... </k>
          <statusCode> _ => EVMC_INVALID_BLOCK </statusCode>
-         <txPending> _ => .List </txPending> [owise]
+         <txPending> _ => .List </txPending>
+         <txOrder> _ => .List </txOrder> [owise]
 
     syntax InternalOp ::= "#validateBaseFee" [symbol(#validateBaseFee)]
  // -------------------------------------------------------------------
@@ -1298,7 +1300,8 @@ Terminates validation successfully when all conditions are met or when blob vali
 
     rule <k> #validateBaseFee => .K ... </k>
          <statusCode> _ => EVMC_INVALID_BLOCK </statusCode>
-         <txPending> _ => .List </txPending> [owise]
+         <txPending> _ => .List </txPending>
+         <txOrder> _ => .List </txOrder> [owise]
 
     syntax InternalOp ::= "#finalizeBlockBlobs" [symbol(#finalizeBlockBlobs)]
  // -------------------------------------------------------------------------
@@ -2891,6 +2894,10 @@ Precompiled Contracts
     rule #precompiledAccountsUB(CANCUN)            => 10
     rule #precompiledAccountsUB(PRAGUE)            => 17
     rule #precompiledAccountsUB(OSAKA)             => #precompiledAccountsUB(PRAGUE)
+    rule #precompiledAccountsUB(BPO1)              => #precompiledAccountsUB(OSAKA)
+    rule #precompiledAccountsUB(BPO2)              => #precompiledAccountsUB(BPO1)
+    rule #precompiledAccountsUB(BPO3)              => #precompiledAccountsUB(BPO2)
+    rule #precompiledAccountsUB(BPO4)              => #precompiledAccountsUB(BPO3)
     rule #precompiledAccountsUB(AMSTERDAM)         => #precompiledAccountsUB(OSAKA)
 
 
@@ -2898,6 +2905,10 @@ Precompiled Contracts
     syntax Set ::= #precompiledAccountsSetAux ( Int      ) [symbol(#precompiledAccountsSetAux), function, total]
  // ------------------------------------------------------------------------------------------------------------
     rule #precompiledAccountsSet(OSAKA)     => #precompiledAccountsSetAux(#precompiledAccountsUB(OSAKA))     SetItem(256)
+    rule #precompiledAccountsSet(BPO1)      => #precompiledAccountsSetAux(#precompiledAccountsUB(BPO1))      SetItem(256)
+    rule #precompiledAccountsSet(BPO2)      => #precompiledAccountsSetAux(#precompiledAccountsUB(BPO2))      SetItem(256)
+    rule #precompiledAccountsSet(BPO3)      => #precompiledAccountsSetAux(#precompiledAccountsUB(BPO3))      SetItem(256)
+    rule #precompiledAccountsSet(BPO4)      => #precompiledAccountsSetAux(#precompiledAccountsUB(BPO4))      SetItem(256)
     rule #precompiledAccountsSet(AMSTERDAM) => #precompiledAccountsSetAux(#precompiledAccountsUB(AMSTERDAM)) SetItem(256)
     rule #precompiledAccountsSet(SCHED)     => #precompiledAccountsSetAux(#precompiledAccountsUB(SCHED)) [owise]
 

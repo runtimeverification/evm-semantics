@@ -222,7 +222,8 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 
     rule <k> loadTx(_) => startTx ... </k>
          <statusCode> _ => EVMC_INVALID_BLOCK </statusCode>
-         <txPending> ListItem(_TXID:Int) REST => REST </txPending> [owise]
+         <txPending> ListItem(_TXID:Int) REST => REST </txPending>
+         <txOrder> _ => .List </txOrder> [owise]
 ```
 
 `#endTxPrep` closes the top-frame preparation phase that `loadTx` opens with `#pushWorldState ~> #pushCallStack`.

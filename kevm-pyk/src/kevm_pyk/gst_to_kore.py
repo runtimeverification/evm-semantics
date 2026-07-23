@@ -51,14 +51,10 @@ SCHEDULE_MAPPING: Final[dict[str, str]] = {
     'Prague': 'PRAGUE',
     'Osaka': 'OSAKA',
     'Amsterdam': 'AMSTERDAM',
-    # BPO forks are blob-parameter-only (EIP-7892) and have no dedicated KEVM
-    # schedule; until one exists, map their transition networks to the nearest
-    # defined schedule so their fixtures keep running under a single schedule.
-    'BPO2ToAmsterdamAtTime15k': 'AMSTERDAM',
-    'OsakaToBPO1AtTime15k': 'OSAKA',
-    'BPO1ToBPO2AtTime15k': 'OSAKA',
-    'BPO2ToBPO3AtTime15k': 'AMSTERDAM',
-    'BPO3ToBPO4AtTime15k': 'AMSTERDAM',
+    'BPO1': 'BPO1',
+    'BPO2': 'BPO2',
+    'BPO3': 'BPO3',
+    'BPO4': 'BPO4',
 }
 
 

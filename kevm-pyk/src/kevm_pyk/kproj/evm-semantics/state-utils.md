@@ -417,6 +417,7 @@ The `"rlp"` key loads the block information.
      rule <k> load "transaction" : [ [TYPE , [ [ _:JSONs ] , _:JSONs ]] , _ ] => .K ... </k>
          <statusCode> _ => EVMC_INVALID_BLOCK </statusCode>
          <txPending> _ => .List </txPending>
+         <txOrder> _ => .List </txOrder>
     requires #asWord(TYPE) ==Int #dasmTxPrefix(Blob)
 
      rule <k> load "transaction" : [ [TYPE , [TC, TN, TP, TF, TG, TT, TV, TI, TA, AUTH, TY, TR, TS ]] , REST ]
