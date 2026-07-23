@@ -325,7 +325,7 @@ It is an `EthereumCommand` rather than an `InternalOp` because `InternalOp` is a
 Processing SetCode Transaction Authority Entries
 ================================================
 
-- The `#loadAuthorities` function processes authorization entries in EIP-7702 SetCode transactions, charging 25000 gas per tuple regardless of validity on pre-Amsterdam schedules.
+- The `#loadAuthorities` function processes authorization entries in EIP-7702 SetCode transactions; on pre-Amsterdam schedules the 25000-gas-per-tuple charge is part of the intrinsic cost (`#G0Full`), paid at admission regardless of tuple validity.
 - Skips processing if transaction is not SetCode type; processes each authorization tuple by recovering the signer and attempting delegation.
 - The Amsterdam (`Ghasstategas`) charge model threads three sets through the tuple loop, mirroring EELS `set_delegation`: accounts already written by the transaction (seeded with the sender, plus the recipient of a value-bearing call), authorities that must never be charged `Gauthbase` again (delegated before the transaction, or already charged), and authorities touched by an earlier tuple.
 - The `#addAuthority` function implements EIP-7702 verification and delegation:
@@ -367,15 +367,6 @@ Processing SetCode Transaction Authority Entries
     rule <k> #loadAuthorities (ListItem(ListItem(CID) ListItem(ADDR) ListItem(NONCE) ListItem(YPAR) ListItem(SIGR) ListItem(SIGS)) REST, W, NB, T)
           => #setDelegation (#recoverAuthority(CID, ADDR, NONCE, YPAR, SIGR, SIGS), CID, NONCE, ADDR, REST, W, NB, T)
           ... </k>
-         <schedule> SCHED </schedule>
-         <callGas> GLIMIT => GLIMIT -Int 25000 </callGas>
-      requires notBool Ghasstategas << SCHED >>
-
-    rule <k> #loadAuthorities (ListItem(ListItem(CID) ListItem(ADDR) ListItem(NONCE) ListItem(YPAR) ListItem(SIGR) ListItem(SIGS)) REST, W, NB, T)
-          => #setDelegation (#recoverAuthority(CID, ADDR, NONCE, YPAR, SIGR, SIGS), CID, NONCE, ADDR, REST, W, NB, T)
-          ... </k>
-         <schedule> SCHED </schedule>
-      requires Ghasstategas << SCHED >>
 
     syntax InternalOp ::= #setDelegation ( Account , Bytes , Bytes , Bytes , List , Set , Set , Set ) [symbol(#setDelegation)]
  // --------------------------------------------------------------------------------------------------------------------------

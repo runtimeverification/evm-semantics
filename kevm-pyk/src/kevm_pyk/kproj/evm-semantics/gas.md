@@ -344,7 +344,7 @@ module GAS-FEES
        +Int (Gauthbaseregular < SCHED > *Int AUTHLEN)
       requires Ghasintrinsicdecomp << SCHED >>
 
-    rule #G0Full(SCHED, WS, ISCREATE, _, _, _) => G0(SCHED, WS, ISCREATE)
+    rule #G0Full(SCHED, WS, ISCREATE, _, _, AUTHLEN) => G0(SCHED, WS, ISCREATE) +Int (Gnewaccount < SCHED > *Int AUTHLEN)
       requires notBool Ghasintrinsicdecomp << SCHED >>
 
     syntax Int ::= #txBaseRegularGas ( Schedule , Bool , Bool , Int ) [symbol(#txBaseRegularGas), function, total]
