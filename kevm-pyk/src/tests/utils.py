@@ -31,7 +31,9 @@ GOLDEN: Final = (REPO_ROOT / 'tests/templates/output-success-llvm.json').read_te
 
 def _assert_exit_code_zero(pattern: Pattern) -> None:
     assert type(pattern) is App
-    kevm_cell = pattern.args[0]
+    sim_cell = pattern.args[0]
+    assert type(sim_cell) is App
+    kevm_cell = sim_cell.args[0]
     assert type(kevm_cell) is App
     exit_code_cell = kevm_cell.args[1]
     assert type(exit_code_cell) is App

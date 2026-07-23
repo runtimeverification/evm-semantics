@@ -31,6 +31,13 @@ An Ethereum simulation is a list of Ethereum commands.
 Some Ethereum commands take an Ethereum specification (eg. for an account or transaction).
 
 ```k
+    configuration
+      <ethereum-simulation>
+        <kevm/>
+        <nextSchedule>  $NEXTSCHEDULE:Schedule </nextSchedule>
+        <forkTimestamp> $FORKTIME:Int          </forkTimestamp>
+      </ethereum-simulation>
+
     syntax EthereumSimulation ::= ".EthereumSimulation"
                                 | EthereumCommand EthereumSimulation
  // ----------------------------------------------------------------
@@ -489,6 +496,9 @@ Processing SetCode Transaction Authority Entries
          <k> #halt ~> exception => .K ... </k>
 
     rule <statusCode> _:ExceptionalStatusCode </statusCode>
+         <k> exception ~> exception => exception ... </k>
+
+    rule <statusCode> _:ExceptionalStatusCode </statusCode>
          <k> exception ~> check _ => exception ... </k>
 
     rule <statusCode> _:ExceptionalStatusCode </statusCode>
@@ -515,10 +525,16 @@ Processing SetCode Transaction Authority Entries
    rule <k> run { .JSONs } => .K ... </k>
    rule <k> run { TESTID : { TEST:JSONs } } => run { TEST }
          ~> #if #hasPost?( { TEST } ) #then .K #else exception #fi
-         ~> clear
+         ~> clear ~> #clearFork
         ...
         </k>
      requires notBool TESTID in (#loadKeys #execKeys #checkKeys)
+
+    syntax EthereumCommand ::= "#clearFork"
+ // ---------------------------------------
+    rule <k> #clearFork => .K ... </k>
+         <nextSchedule>  _ => DEFAULT </nextSchedule>
+         <forkTimestamp> _ => 0       </forkTimestamp>
 
     syntax Bool ::= "#hasPost?" "(" JSON ")" [function]
  // ---------------------------------------------------
@@ -559,14 +575,22 @@ Processing SetCode Transaction Authority Entries
 
     rule <k> exception ~> process { KEY : VAL , REST } => load KEY : VAL ~> exception ~> process { REST }             ... </k> requires KEY in #loadKeys
     rule <k> exception ~> process { KEY : VAL , REST } => exception ~> process { REST } ~> check {KEY : VAL} ... </k> requires KEY in #checkKeys
-    rule <k> exception ~> process { .JSONs }           => #startBlock ~> startTx ~> exception ... </k>
+    rule <k> exception ~> process { .JSONs }           => #updateSchedule ~> #startBlock ~> startTx ~> exception ... </k>
 
     rule <k> process { "rlp_decoded" : { KEY : VAL , REST1 => REST1 }, (REST2 => KEY : VAL , REST2 ) } ... </k>
     rule <k> process { "rlp_decoded" : { .JSONs } , REST => REST}                                      ... </k>
 
     rule <k> process { KEY : VAL , REST } => load KEY : VAL ~> process { REST }             ... </k> requires KEY in #loadKeys
     rule <k> process { KEY : VAL , REST } => process { REST } ~> check {KEY : VAL} ... </k> requires KEY in #checkKeys
-    rule <k> process { .JSONs }           => #startBlock ~> startTx ... </k>
+    rule <k> process { .JSONs }           => #updateSchedule ~> #startBlock ~> startTx ... </k>
+
+    syntax EthereumCommand ::= "#updateSchedule"
+ // --------------------------------------------
+    rule <k> #updateSchedule => .K ... </k>
+         <timestamp> TS </timestamp>
+         <schedule> S => #if TS >=Int FORK_TS #then NEXT #else S #fi </schedule>
+         <nextSchedule> NEXT </nextSchedule>
+         <forkTimestamp> FORK_TS </forkTimestamp>
 
     rule <k> run { "exec" : (EXEC:JSON) } => loadCallState EXEC ~> start ~> flush ... </k>
 

@@ -1485,10 +1485,12 @@ Read more about EIP-2935 here [https://eips.ethereum.org/EIPS/eip-2935](https://
          <number> BN </number>
          <account>
            <acctID> HISTORY_STORAGE_ADDRESS </acctID>
+           <code> CODE </code>
            <storage> M:Map => M [((BN -Int 1) modInt 8191) <- HP] </storage>
            ...
          </account>
       requires Ghashistory << SCHED >>
+       andBool lengthBytes(CODE) >Int 0
 
     rule <k> #executeBlockHashHistory => .K ... </k> [owise]
 ```

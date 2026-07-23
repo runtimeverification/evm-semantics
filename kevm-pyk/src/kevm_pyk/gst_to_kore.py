@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 import sys
 from argparse import ArgumentParser
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, NamedTuple
 
 from pyk.cli.utils import file_path
 from pyk.konvert import munge
@@ -46,20 +47,49 @@ SCHEDULE_MAPPING: Final[dict[str, str]] = {
     'Merge': 'MERGE',
     'Paris': 'MERGE',
     'Shanghai': 'SHANGHAI',
-    'ParisToShanghaiAtTime15k': 'SHANGHAI',
     'Cancun': 'CANCUN',
-    'ShanghaiToCancunAtTime15k': 'CANCUN',
     'Prague': 'PRAGUE',
-    'CancunToPragueAtTime15k': 'PRAGUE',
     'Osaka': 'OSAKA',
-    'PragueToOsakaAtTime15k': 'OSAKA',
     'Amsterdam': 'AMSTERDAM',
+    # BPO forks are blob-parameter-only (EIP-7892) and have no dedicated KEVM
+    # schedule; until one exists, map their transition networks to the nearest
+    # defined schedule so their fixtures keep running under a single schedule.
     'BPO2ToAmsterdamAtTime15k': 'AMSTERDAM',
     'OsakaToBPO1AtTime15k': 'OSAKA',
     'BPO1ToBPO2AtTime15k': 'OSAKA',
     'BPO2ToBPO3AtTime15k': 'AMSTERDAM',
     'BPO3ToBPO4AtTime15k': 'AMSTERDAM',
 }
+
+
+class ScheduleTriple(NamedTuple):
+    schedule: str
+    next_schedule: str
+    fork_time: int
+
+
+_TRANSITION_NETWORK: Final = re.compile(r'^(?P<pre>.+)To(?P<post>.+)AtTime(?P<kilo>\d+)k$')
+
+
+def resolve_network(network: str) -> ScheduleTriple:
+    """Map a fixture network name to (schedule, next_schedule, fork_time).
+
+    Plain networks (and transition networks pinned in SCHEDULE_MAPPING) run under a single
+    schedule; other `<Pre>To<Post>AtTime<N>k` networks start under the pre-fork schedule and
+    switch to the post-fork one for blocks whose timestamp reaches N*1000.
+    """
+    if network in SCHEDULE_MAPPING:
+        schedule = SCHEDULE_MAPPING[network]
+        return ScheduleTriple(schedule, schedule, 0)
+    match = _TRANSITION_NETWORK.match(network)
+    if match and match['pre'] in SCHEDULE_MAPPING and match['post'] in SCHEDULE_MAPPING:
+        return ScheduleTriple(
+            SCHEDULE_MAPPING[match['pre']],
+            SCHEDULE_MAPPING[match['post']],
+            int(match['kilo']) * 1000,
+        )
+    raise ValueError(f'Unknown network: {network}')
+
 
 _GST_DISCARD_KEYS: Final = frozenset(
     [
@@ -132,14 +162,35 @@ def filter_gst_keys(gst_data: dict) -> dict:
     return _remove_discard_keys(gst_data)
 
 
-def gst_to_kore(gst_data: Any, schedule: str, mode: str, chainid: int, usegas: bool) -> App:
-    return kore_pgm_to_kore(json_to_kore(gst_data), SORT_JSON, schedule, mode, chainid, usegas)
+def gst_to_kore(
+    gst_data: Any,
+    schedule: str,
+    mode: str,
+    chainid: int,
+    usegas: bool,
+    next_schedule: str | None = None,
+    fork_time: int = 0,
+) -> App:
+    return kore_pgm_to_kore(
+        json_to_kore(gst_data), SORT_JSON, schedule, mode, chainid, usegas, next_schedule, fork_time
+    )
 
 
-def kore_pgm_to_kore(pgm: Pattern, pattern_sort: SortApp, schedule: str, mode: str, chainid: int, usegas: bool) -> App:
+def kore_pgm_to_kore(
+    pgm: Pattern,
+    pattern_sort: SortApp,
+    schedule: str,
+    mode: str,
+    chainid: int,
+    usegas: bool,
+    next_schedule: str | None = None,
+    fork_time: int = 0,
+) -> App:
     config = {
         '$PGM': inj(pattern_sort, SORT_K_ITEM, pgm),
         '$SCHEDULE': inj(SORT_SCHEDULE, SORT_K_ITEM, _schedule_to_kore(schedule)),
+        '$NEXTSCHEDULE': inj(SORT_SCHEDULE, SORT_K_ITEM, _schedule_to_kore(next_schedule or schedule)),
+        '$FORKTIME': inj(INT, SORT_K_ITEM, int_dv(fork_time)),
         '$MODE': inj(SORT_MODE, SORT_K_ITEM, _mode_to_kore(mode)),
         '$CHAINID': inj(INT, SORT_K_ITEM, int_dv(chainid)),
         '$USEGAS': inj(BOOL, SORT_K_ITEM, bool_dv(usegas)),
