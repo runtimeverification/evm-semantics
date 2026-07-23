@@ -117,6 +117,9 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 
     syntax EthereumCommand ::= loadTx ( Account ) [symbol(loadTx)]
  // --------------------------------------------------------------
+    rule <k> (.K => #newAccount ACCTFROM) ~> loadTx(ACCTFROM:Int) ... </k>
+      requires notBool #accountExists(ACCTFROM)
+
     rule <k> loadTx(ACCTFROM)
           => #balTouch ACCTFROM ~> #balTouch #newAddr(ACCTFROM, NONCE) ~> #balCaptureBalance ACCTFROM BAL
           ~> #accessAccounts ACCTFROM #newAddr(ACCTFROM, NONCE) #precompiledAccountsSet(SCHED)
