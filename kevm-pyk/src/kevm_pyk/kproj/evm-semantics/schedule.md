@@ -509,7 +509,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule [GhasclzOsaka]:    Ghasclz    << OSAKA >> => true
     rule [SCHEDFLAGOsaka]:  SCHEDFLAG  << OSAKA >> => SCHEDFLAG << PRAGUE >>
       requires notBool ( SCHEDFLAG ==K Ghasclz )
-    
+
 ```
 
 ### Amsterdam Schedule
@@ -518,17 +518,17 @@ Amsterdam is the execution-layer fork of the Glamsterdam network upgrade ([EIP-7
 
 ```k
     syntax Schedule ::= "AMSTERDAM" [symbol(AMSTERDAM_EVM), smtlib(schedule_AMSTERDAM)]
- // ------------------------------------------------------------------------------------
-    rule [GmaxblobgasAmsterdam]:        Gmaxblobgas        < AMSTERDAM > => 2752512
-    rule [GtargetblobgasAmsterdam]:     Gtargetblobgas     < AMSTERDAM > => 1835008
+ // -----------------------------------------------------------------------------------
+    rule [GmaxblobgasAmsterdam]:               Gmaxblobgas               < AMSTERDAM > => 2752512
+    rule [GtargetblobgasAmsterdam]:            Gtargetblobgas            < AMSTERDAM > => 1835008
     rule [BlobbasefeeupdatefractionAmsterdam]: Blobbasefeeupdatefraction < AMSTERDAM > => 11684671
-    rule [SCHEDCONSTAmsterdam]:         SCHEDCONST         < AMSTERDAM > => SCHEDCONST < OSAKA >
+    rule [SCHEDCONSTAmsterdam]:                SCHEDCONST                < AMSTERDAM > => SCHEDCONST < OSAKA >
       requires notBool ( SCHEDCONST ==K Gmaxblobgas
                   orBool SCHEDCONST ==K Gtargetblobgas
                   orBool SCHEDCONST ==K Blobbasefeeupdatefraction
                        )
 
-    rule [SCHEDFLAGAmsterdam]:  SCHEDFLAG << AMSTERDAM >> => SCHEDFLAG << OSAKA >>
+    rule [SCHEDFLAGAmsterdam]: SCHEDFLAG << AMSTERDAM >> => SCHEDFLAG << OSAKA >>
 ```
 
 ```k
