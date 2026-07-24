@@ -36,6 +36,7 @@ Some Ethereum commands take an Ethereum specification (eg. for an account or tra
         <kevm/>
         <nextSchedule>  $NEXTSCHEDULE:Schedule </nextSchedule>
         <forkTimestamp> $FORKTIME:Int          </forkTimestamp>
+        <blockRlpSize>  0                      </blockRlpSize>
       </ethereum-simulation>
 
     syntax EthereumSimulation ::= ".EthereumSimulation"
@@ -536,6 +537,7 @@ Processing SetCode Transaction Authority Entries
     rule <k> #clearFork => .K ... </k>
          <nextSchedule>  _ => DEFAULT </nextSchedule>
          <forkTimestamp> _ => 0       </forkTimestamp>
+         <blockRlpSize>  _ => 0       </blockRlpSize>
 
     syntax Bool ::= "#hasPost?" "(" JSON ")" [function]
  // ---------------------------------------------------
@@ -576,14 +578,14 @@ Processing SetCode Transaction Authority Entries
 
     rule <k> exception ~> process { KEY : VAL , REST } => load KEY : VAL ~> exception ~> process { REST }             ... </k> requires KEY in #loadKeys
     rule <k> exception ~> process { KEY : VAL , REST } => exception ~> process { REST } ~> check {KEY : VAL} ... </k> requires KEY in #checkKeys
-    rule <k> exception ~> process { .JSONs }           => #updateSchedule ~> #startBlock ~> startTx ~> exception ... </k>
+    rule <k> exception ~> process { .JSONs }           => #updateSchedule ~> #validateBlockRlpSize ~> #startBlock ~> startTx ~> exception ... </k>
 
     rule <k> process { "rlp_decoded" : { KEY : VAL , REST1 => REST1 }, (REST2 => KEY : VAL , REST2 ) } ... </k>
     rule <k> process { "rlp_decoded" : { .JSONs } , REST => REST}                                      ... </k>
 
     rule <k> process { KEY : VAL , REST } => load KEY : VAL ~> process { REST }             ... </k> requires KEY in #loadKeys
     rule <k> process { KEY : VAL , REST } => process { REST } ~> check {KEY : VAL} ... </k> requires KEY in #checkKeys
-    rule <k> process { .JSONs }           => #updateSchedule ~> #startBlock ~> startTx ... </k>
+    rule <k> process { .JSONs }           => #updateSchedule ~> #validateBlockRlpSize ~> #startBlock ~> startTx ... </k>
 
     syntax EthereumCommand ::= "#updateSchedule"
  // --------------------------------------------
@@ -592,6 +594,23 @@ Processing SetCode Transaction Authority Entries
          <schedule> S => #if TS >=Int FORK_TS #then NEXT #else S #fi </schedule>
          <nextSchedule> NEXT </nextSchedule>
          <forkTimestamp> FORK_TS </forkTimestamp>
+
+    rule <k> load "rlp" : (VAL:String) => load "rlp" : #rlpDecode(#parseByteStack(VAL)) ... </k>
+         <blockRlpSize> _ => lengthBytes(#parseByteStack(VAL)) </blockRlpSize>
+      [priority(40)]
+
+    syntax EthereumCommand ::= "#validateBlockRlpSize"
+ // --------------------------------------------------
+    rule <k> #validateBlockRlpSize => .K ... </k>
+         <schedule> SCHED </schedule>
+         <blockRlpSize> SIZE </blockRlpSize>
+      requires Gmaxblockrlpsize < SCHED > ==Int 0
+        orBool SIZE <=Int Gmaxblockrlpsize < SCHED >
+
+    rule <k> #validateBlockRlpSize => .K ... </k>
+         <statusCode> _ => EVMC_INVALID_BLOCK </statusCode>
+         <txPending> _ => .List </txPending>
+         <txOrder> _ => .List </txOrder> [owise]
 
     rule <k> run { "exec" : (EXEC:JSON) } => loadCallState EXEC ~> start ~> flush ... </k>
 

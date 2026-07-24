@@ -262,7 +262,7 @@
           .AccountCellMap
         </accounts>
         <txOrder>
-          ListItem ( 0 )
+          .List
         </txOrder>
         <txPending>
           .List
@@ -305,4 +305,7 @@
   <forkTimestamp>
     0
   </forkTimestamp>
+  <blockRlpSize>
+    0
+  </blockRlpSize>
 </ethereum-simulation>

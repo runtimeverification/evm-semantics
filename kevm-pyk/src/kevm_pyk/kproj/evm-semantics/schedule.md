@@ -59,6 +59,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
                            | "Gbls12PairingCheckAdd"           | "Gauthbase"     | "Gbls12mapfp2tog2"  | "Gtxdatafloor"       | "Gstorageset"       | "Gaccountwrite"
                            | "Gcostperstatebyte"               | "Gblobbasecost" | "Gmaxtxgaslimit"    | "Gp256verify"        | "Gmodexpmultiplier" | "Gmodexpmin"
                            | "Gbalitemcost"                    | "Gtxbase"       | "Gtxvalue"          | "Gauthbaseregular"   | "Gmaxblobspertx"
+                           | "Gmaxblockrlpsize"
  // -------------------------------------------------------------------------------------------------------------------------------------------------------
 ```
 
@@ -131,6 +132,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule [GwarmstoragedirtystoreDefault]: Gwarmstoragedirtystore < DEFAULT > => 0
 
     rule [GpointevalDefault]:                Gpointeval                < DEFAULT > => 0
+    rule [GmaxblockrlpsizeDefault]:          Gmaxblockrlpsize          < DEFAULT > => 0
     rule [GmaxblobgasDefault]:               Gmaxblobgas               < DEFAULT > => 0
     rule [GtargetblobgasDefault]:            Gtargetblobgas            < DEFAULT > => 0
     rule [GminbasefeeDefault]:               Gminbasefee               < DEFAULT > => 0
@@ -543,6 +545,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule [GmodexpminOsaka]:        Gmodexpmin        < OSAKA > => 500
     rule [GquaddivisorOsaka]:      Gquaddivisor      < OSAKA > => 1
     rule [GmaxblobspertxOsaka]:    Gmaxblobspertx    < OSAKA > => 6
+    rule [GmaxblockrlpsizeOsaka]:  Gmaxblockrlpsize  < OSAKA > => 8388608
     rule [SCHEDCONSTOsaka]:        SCHEDCONST        < OSAKA > => SCHEDCONST < PRAGUE >
       requires notBool ( SCHEDCONST ==K Gblobbasecost
                   orBool SCHEDCONST ==K Gmaxtxgaslimit
@@ -551,6 +554,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
                   orBool SCHEDCONST ==K Gmodexpmin
                   orBool SCHEDCONST ==K Gquaddivisor
                   orBool SCHEDCONST ==K Gmaxblobspertx
+                  orBool SCHEDCONST ==K Gmaxblockrlpsize
                        )
 
     rule [GhasclzOsaka]:        Ghasclz        << OSAKA >> => true
