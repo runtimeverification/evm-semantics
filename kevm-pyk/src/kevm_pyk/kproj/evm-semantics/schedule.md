@@ -527,8 +527,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
                   orBool SCHEDCONST ==K Blobbasefeeupdatefraction
                        )
 
-    rule [GhasslotnumAmsterdam]:               Ghasslotnum               << AMSTERDAM >> => true
-    rule [SCHEDFLAGAmsterdam]:                 SCHEDFLAG                 << AMSTERDAM >> => SCHEDFLAG << OSAKA >>
+    rule [GhasslotnumAmsterdam]: Ghasslotnum << AMSTERDAM >> => true
+    rule [SCHEDFLAGAmsterdam]:   SCHEDFLAG   << AMSTERDAM >> => SCHEDFLAG << OSAKA >>
       requires notBool ( SCHEDFLAG ==K Ghasslotnum )
 ```
 
