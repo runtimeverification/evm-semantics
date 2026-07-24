@@ -2892,6 +2892,9 @@ Overall Gas
 
     syntax InternalOp ::= "#chargeStateGas" | "#creditStateGas"
  // ------------------------------------------------------------
+    rule <k> 0 ~> #chargeStateGas => .K ... </k> [priority(40)]
+    rule <k> 0 ~> #creditStateGas => .K ... </k> [priority(40)]
+
     rule <k> A:Gas ~> #chargeStateGas => .K ... </k>
          <useGas> true </useGas>
          <stateGasReservoir> R => R -Gas A </stateGasReservoir>
@@ -2914,6 +2917,8 @@ Overall Gas
 
     syntax InternalOp ::= "#chargeStateGasForCreate"
  // ------------------------------------------------
+    rule <k> 0 ~> #chargeStateGasForCreate => .K ... </k> [priority(40)]
+
     rule <k> A:Gas ~> #chargeStateGasForCreate => .K ... </k>
          <useGas> true </useGas>
          <stateGasReservoir> R => R -Gas A </stateGasReservoir>
@@ -2944,6 +2949,8 @@ Overall Gas
 
     syntax InternalOp ::= "#chargeStateGasIntoCallGas"
  // ----------------------------------------------------
+    rule <k> 0 ~> #chargeStateGasIntoCallGas => .K ... </k> [priority(40)]
+
     rule <k> A:Gas ~> #chargeStateGasIntoCallGas => .K ... </k>
          <useGas> true </useGas>
          <stateGasReservoir> R => R -Gas A </stateGasReservoir>
