@@ -4,9 +4,7 @@ set -euxo pipefail
 # requires jq
 # sudo apt install jq
 
-# Fixture releases live on ethereum/execution-specs (EELS); the old
-# ethereum/execution-spec-tests repository was archived in July 2026:
-#   https://github.com/ethereum/execution-specs/releases
+# Fixture releases live on ethereum/execution-specs (EELS);
 # Standard releases (tests@vX.Y.Z) ship fixtures_stable.tar.gz /
 # fixtures_develop.tar.gz; devnet prereleases (e.g.
 # tests-glamsterdam-devnet@vX.Y.Z) ship a single feature tarball such as
