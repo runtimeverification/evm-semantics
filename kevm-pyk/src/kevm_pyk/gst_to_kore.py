@@ -55,10 +55,6 @@ SCHEDULE_MAPPING: Final[dict[str, str]] = {
     'PragueToOsakaAtTime15k': 'OSAKA',
     'Amsterdam': 'AMSTERDAM',
     'BPO2ToAmsterdamAtTime15k': 'AMSTERDAM',
-    # BPO forks are blob-parameter-only (EIP-7892) and have no dedicated KEVM
-    # schedule; their fixtures are all *AtTime15k transition tests, which run
-    # under a single schedule and are expected to fail regardless, so map them
-    # to the nearest defined schedule to keep collection from crashing.
     'OsakaToBPO1AtTime15k': 'OSAKA',
     'BPO1ToBPO2AtTime15k': 'OSAKA',
     'BPO2ToBPO3AtTime15k': 'AMSTERDAM',
