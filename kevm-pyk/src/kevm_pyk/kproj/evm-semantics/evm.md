@@ -1194,7 +1194,7 @@ Some operators don't calculate anything, they just push the stack around a bit.
       requires notBool #validPair(#immByte(PGM, PCOUNT))
 
     syntax Int ::= "#immByte" "(" Bytes "," Int ")" [function, total]
- // ------------------------------------------------------------------
+ // -----------------------------------------------------------------
     rule #immByte(PGM, PCOUNT) => #asWord(#range(PGM, PCOUNT +Int 1, 1))
 
     syntax Int ::= "#decodeSingle" "(" Int ")"        [function, total]
@@ -1202,20 +1202,20 @@ Some operators don't calculate anything, they just push the stack around a bit.
                  | "#decodePairB" "(" Int ")"         [function, total]
                  | "#decodePairA" "(" Int "," Int ")" [function, total]
                  | "#decodePairB" "(" Int "," Int ")" [function, total]
- // --------------------------------------------------------------------
+ // -------------------------------------------------------------------
     rule #decodeSingle(X) => (X +Int 145) modInt 256
 
     rule #decodePairA(X) => #decodePairA((X xorInt 143) /Int 16, (X xorInt 143) modInt 16)
-    rule #decodePairA(HI, LO) => HI +Int 1  requires HI  <Int LO
-    rule #decodePairA(HI, LO) => LO +Int 1  requires HI >=Int LO
+    rule #decodePairA(Q, R) => Q +Int 1  requires Q  <Int R
+    rule #decodePairA(Q, R) => R +Int 1  requires Q >=Int R
 
     rule #decodePairB(X) => #decodePairB((X xorInt 143) /Int 16, (X xorInt 143) modInt 16)
-    rule #decodePairB(HI, LO) => LO +Int 1  requires HI  <Int LO
-    rule #decodePairB(HI, LO) => 29 -Int HI requires HI >=Int LO
+    rule #decodePairB(Q, R) => R +Int 1  requires Q  <Int R
+    rule #decodePairB(Q, R) => 29 -Int Q requires Q >=Int R
 
     syntax Bool ::= "#validSingle" "(" Int ")" [function, total]
                   | "#validPair"   "(" Int ")" [function, total]
- // -------------------------------------------------------------
+ // ------------------------------------------------------------
     rule #validSingle(X) => X <=Int 90 orBool X >=Int 128
     rule #validPair(X)   => X <=Int 81 orBool X >=Int 128
 
