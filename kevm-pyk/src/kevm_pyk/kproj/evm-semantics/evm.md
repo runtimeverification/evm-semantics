@@ -1102,21 +1102,21 @@ These are just used by the other operators for shuffling local execution state a
            <balance> ORIGTO => ORIGTO +Word VALUE </balance>
            ...
          </account>
-         <log> L => L #eip7708TransferLog(SCHED, ACCTFROM, ACCTTO, VALUE) </log>
+         <log> L => L #transferLogItem(SCHED, ACCTFROM, ACCTTO, VALUE) </log>
          <schedule> SCHED </schedule>
       requires ACCTFROM =/=K ACCTTO andBool VALUE <=Int ORIGFROM
       [preserves-definedness]
 
     syntax Int ::= "#transferEventTopic" [alias]
- // ---------------------------------------------
+ // --------------------------------------------
     rule #transferEventTopic => 100389287136786176327247604509743168900146139575972864366142685224231313322991
 
-    syntax List ::= "#eip7708TransferLog" "(" Schedule "," Int "," Int "," Int ")" [function, total]
- // -----------------------------------------------------------------------------------------------
-    rule #eip7708TransferLog(SCHED, ACCTFROM, ACCTTO, VALUE)
+    syntax List ::= "#transferLogItem" "(" Schedule "," Int "," Int "," Int ")" [function, total]
+ // ---------------------------------------------------------------------------------------------
+    rule #transferLogItem(SCHED, ACCTFROM, ACCTTO, VALUE)
       => ListItem({ SYSTEM_ADDRESS | ListItem(#transferEventTopic) ListItem(ACCTFROM) ListItem(ACCTTO) | #padToWidth(32, #asByteStack(VALUE)) })
       requires Ghaseip7708 << SCHED >> andBool VALUE =/=Int 0
-    rule #eip7708TransferLog(_, _, _, _) => .List [owise]
+    rule #transferLogItem(_, _, _, _) => .List [owise]
 
     rule <k> #transferFunds ACCTFROM _ACCTTO VALUE => #end EVMC_BALANCE_UNDERFLOW ... </k>
          <account>
