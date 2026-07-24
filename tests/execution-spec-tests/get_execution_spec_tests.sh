@@ -4,16 +4,21 @@ set -euxo pipefail
 # requires jq
 # sudo apt install jq
 
-# The following two artifacts are intended for consumption by clients:
-# - fixtures_stable.tar.gz: Generated up to the last deployed fork.
-# - fixtures_develop.tar.gz: Generated up to and including the latest dev fork.
-# As of Dec 2025, deployed is Osaka.
+# Fixture releases live on ethereum/execution-specs (EELS); the old
+# ethereum/execution-spec-tests repository was archived in July 2026:
+#   https://github.com/ethereum/execution-specs/releases
+# Standard releases (tests@vX.Y.Z) ship fixtures_stable.tar.gz /
+# fixtures_develop.tar.gz; devnet prereleases (e.g.
+# tests-glamsterdam-devnet@vX.Y.Z) ship a single feature tarball such as
+# fixtures_glamsterdam-devnet.tar.gz.
+# As of Jul 2026, deployed is Osaka (+BPO forks); Glamsterdam (EL fork
+# name: Amsterdam) is under development on glamsterdam-devnet releases.
 
-ARTIFACT="fixtures_develop.tar.gz"
+ARTIFACT="fixtures_glamsterdam-devnet.tar.gz"
 TARGET_DIR="fixtures"
 
 OWNER="ethereum"
-REPO="execution-spec-tests"
+REPO="execution-specs"
 
 # Compute the path of the VERSION file
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -37,9 +42,9 @@ DOWNLOAD_URL="https://github.com/$OWNER/$REPO/releases/download/$VERSION/$ARTIFA
 mkdir -p "$TARGET_DIR"
 
 # Download and extract
-curl -LO $DOWNLOAD_URL
+curl -LO "$DOWNLOAD_URL"
 
 tar -xzf "$ARTIFACT" --strip-components=1 -C "$TARGET_DIR"
 
 # Cleanup
-rm $ARTIFACT
+rm "$ARTIFACT"
