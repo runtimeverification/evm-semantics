@@ -132,6 +132,9 @@ module DSVALUE-READ-PASS-SUMMARIZE-SPEC
           <localMem> .Bytes => ?_ </localMem>
           <memoryUsed> 0 => ?_ </memoryUsed>
           (_ => ?_)
+          <stateGasReservoir> 0:Gas => ?_ </stateGasReservoir>
+          <stateGasSpilled> 0:Gas => ?_ </stateGasSpilled>
+          <newAccountCharged> false => ?_ </newAccountCharged>
         </callState>
         <versionedHashes> _ </versionedHashes>
         (_ => ?_)

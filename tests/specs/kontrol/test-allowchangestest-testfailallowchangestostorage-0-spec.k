@@ -194,6 +194,9 @@ module TEST-ALLOWCHANGESTEST-TESTFAILALLOWCHANGESTOSTORAGE-0-SPEC
                  <callDepth>
                    ( 0 => 1 )
                  </callDepth>
+                 <stateGasReservoir> 0:Gas => ?_ </stateGasReservoir>
+                 <stateGasSpilled> 0:Gas => ?_ </stateGasSpilled>
+                 <newAccountCharged> false => ?_ </newAccountCharged>
                </callState>
         <versionedHashes> _ </versionedHashes>
                <substate>
@@ -571,6 +574,9 @@ module TEST-ALLOWCHANGESTEST-TESTFAILALLOWCHANGESTOSTORAGE-0-SPEC
                  <callDepth>
                    1
                  </callDepth>
+                 <stateGasReservoir> 0:Gas => ?_ </stateGasReservoir>
+                 <stateGasSpilled> 0:Gas => ?_ </stateGasSpilled>
+                 <newAccountCharged> false => ?_ </newAccountCharged>
                </callState>
                <versionedHashes> _ </versionedHashes>
                <substate>
