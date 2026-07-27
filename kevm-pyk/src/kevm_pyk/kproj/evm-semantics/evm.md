@@ -475,7 +475,7 @@ The `interimStates` cell stores a list of previous world states.
          <statusCode> SC </statusCode>
       requires Ghaseip7928 << SCHED >>
        andBool BALHASH =/=Int 0
-       andBool SC in (SetItem(EVMC_SUCCESS) SetItem(EVMC_REVERT) SetItem(.StatusCode))
+       andBool notBool SC ==K EVMC_INVALID_BLOCK
     rule <k> #validateBlockAccessList => .K ... </k> [owise]
 
     rule <k> #balCheck => #balCheck2(#balAddrUniverse(TOUCHED, RD, BC, NC, CC, SC)) ... </k>
