@@ -250,7 +250,7 @@ module GAS-FEES
 
     rule [Cblobfee]: Cblobfee(SCHED, EXCESS_BLOB_GAS, BLOB_VERSIONED_HASHES_SIZE) => Ctotalblob(SCHED, BLOB_VERSIONED_HASHES_SIZE) *Int Cbasefeeperblob(SCHED, EXCESS_BLOB_GAS)
 
-    rule [Cexcessblob]:       Cexcessblob(SCHED, EXCESS_BLOB_GAS, BLOB_GAS_USED) => EXCESS_BLOB_GAS +Int BLOB_GAS_USED -Int Gtargetblobgas < SCHED > requires Gtargetblobgas < SCHED > <=Int EXCESS_BLOB_GAS +Int BLOB_GAS_USED 
+    rule [Cexcessblob]:       Cexcessblob(SCHED, EXCESS_BLOB_GAS, BLOB_GAS_USED) => EXCESS_BLOB_GAS +Int BLOB_GAS_USED -Int Gtargetblobgas < SCHED > requires Gtargetblobgas < SCHED > <=Int EXCESS_BLOB_GAS +Int BLOB_GAS_USED
     rule [Cexcessblob.owise]: Cexcessblob(_,     _,               _)             => 0 [owise]
 
     rule [Cdelegationaccess]:       Cdelegationaccess(SCHED, true, ISWARM) => Caddraccess(SCHED, ISWARM)
@@ -285,7 +285,7 @@ module GAS-FEES
     rule G0(SCHED, WS, I, J, R) => G0(SCHED, WS, I +Int 1, J, R +Int #if WS[I] ==Int 0 #then Gtxdatazero < SCHED > #else Gtxdatanonzero < SCHED > #fi) [owise]
 
     syntax Int ::= #txStateGasReservoir ( Schedule , Int ) [symbol(#txStateGasReservoir), function, total]
- // -------------------------------------------------------------------------------------------------------
+ // ------------------------------------------------------------------------------------------------------
     rule #txStateGasReservoir(SCHED, GLIMIT) => #if Ghasstategas << SCHED >> #then maxInt(0, GLIMIT -Int Gmaxtxgaslimit < SCHED >) #else 0 #fi
 
     syntax Int ::= #txStateGasUsed ( Schedule , Int , Int , Int ) [symbol(#txStateGasUsed), function, total]

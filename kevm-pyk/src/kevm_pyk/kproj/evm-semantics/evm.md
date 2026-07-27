@@ -1971,7 +1971,7 @@ System Transaction Configuration
     rule [refund.noGas]: <k> #refund _ => .K ... </k> <useGas> false </useGas>
 
     syntax InternalOp ::= "#restoreStateGas" Gas Gas
- // --------------------------------------------------
+ // ------------------------------------------------
     rule <k> #restoreStateGas R S => .K ... </k>
          <stateGasReservoir> _ => R </stateGasReservoir>
          <stateGasSpilled>   PS => PS +Gas S </stateGasSpilled>
@@ -2891,7 +2891,7 @@ Overall Gas
     rule <k>  _:Gas ~> #deductGas => .K                    ... </k> <useGas> false </useGas>
 
     syntax InternalOp ::= "#chargeStateGas" | "#creditStateGas"
- // ------------------------------------------------------------
+ // -----------------------------------------------------------
     rule <k> 0 ~> #chargeStateGas => .K ... </k> [priority(40)]
     rule <k> 0 ~> #creditStateGas => .K ... </k> [priority(40)]
 
@@ -2948,7 +2948,7 @@ Overall Gas
     rule <k> _:Gas ~> #creditStateGas => .K ... </k> <useGas> false </useGas>
 
     syntax InternalOp ::= "#chargeStateGasIntoCallGas"
- // ----------------------------------------------------
+ // --------------------------------------------------
     rule <k> 0 ~> #chargeStateGasIntoCallGas => .K ... </k> [priority(40)]
 
     rule <k> A:Gas ~> #chargeStateGasIntoCallGas => .K ... </k>
@@ -2978,7 +2978,7 @@ Overall Gas
     rule <k> _:Gas ~> #deductCallGas => .K                    ... </k> <useGas> false </useGas>
 
     syntax InternalOp ::= "#chargeNewAccountStateGas" "(" Int "," Int ")"
- // -------------------------------------------------------------
+ // ---------------------------------------------------------------------
     rule <k> true ~> #chargeNewAccountStateGas(VALUE, -1)
           => #if Ghasstategas << SCHED >> andBool VALUE =/=Int 0 #then Gnewaccount < SCHED > #else 0 #fi ~> #chargeStateGasIntoCallGas
          ...
@@ -2997,7 +2997,7 @@ Overall Gas
     rule <k> false ~> #chargeNewAccountStateGas(_, -1) => .K ... </k>
 
     syntax InternalOp ::= "#chargeSelfdestructNewAccountStateGas" Int
- // --------------------------------------------------------------------
+ // -----------------------------------------------------------------
     rule <k> true ~> #chargeSelfdestructNewAccountStateGas(BAL)
           => #if Ghasstategas << SCHED >> andBool BAL =/=Int 0 #then Gnewaccount < SCHED > #else 0 #fi ~> #chargeStateGas
          ...
@@ -3006,7 +3006,7 @@ Overall Gas
     rule <k> false ~> #chargeSelfdestructNewAccountStateGas(_) => .K ... </k>
 
     syntax InternalOp ::= "#chargeCreateNewAccountStateGas" Int
- // --------------------------------------------------------------
+ // -----------------------------------------------------------
     rule <k> true ~> #chargeCreateNewAccountStateGas(-1)
           => #if Ghasstategas << SCHED >> #then Gnewaccount < SCHED > #else 0 #fi ~> #chargeStateGasIntoCallGas
          ...
