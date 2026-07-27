@@ -1895,11 +1895,13 @@ System Transaction Configuration
                  | "BEACON_ROOTS_ADDRESS" [alias]
                  | "HISTORY_STORAGE_ADDRESS" [alias]
                  | "SYSTEMTXGAS" [macro]
+                 | "SYSTEMMAXSSTORES" [macro]
  // ------------------------------------
     rule SYSTEM_ADDRESS => 1461501637330902918203684832716283019655932542974
     rule BEACON_ROOTS_ADDRESS => 339909022928299415537769066420252604268194818
     rule HISTORY_STORAGE_ADDRESS => 21693734551179282564423033930679318143314229
     rule SYSTEMTXGAS => 30000000
+    rule SYSTEMMAXSSTORES => 16
 
     syntax InternalOp ::= "#systemCall" Int Bytes   [symbol(#systemCall)]
                         | "#mkSystemCall" Int Bytes [symbol(#mkSystemCall)]
@@ -1908,6 +1910,7 @@ System Transaction Configuration
 
     rule <k> #mkSystemCall ACCTTO ARGS => #loadProgram CODE ~> #initVM ~> #execute ... </k>
          <useGas> USEGAS:Bool </useGas>
+         <schedule> SCHED </schedule>
          <callDepth> CD => CD +Int 1 </callDepth>
          <callData> _ => ARGS </callData>
          <callValue> _ => 0 </callValue>
@@ -1915,6 +1918,9 @@ System Transaction Configuration
          <codeAddr> _ => ACCTTO </codeAddr>
          <gas> GAVAIL:Gas => #if USEGAS #then SYSTEMTXGAS:Gas #else GAVAIL:Gas #fi </gas>
          <callGas> GCALL:Gas => #if USEGAS #then 0:Gas #else GCALL:Gas #fi </callGas>
+         <stateGasReservoir> SGR => #if USEGAS #then Gstorageset < SCHED > *Int SYSTEMMAXSSTORES #else SGR #fi </stateGasReservoir>
+         <stateGasSpilled> _ => 0 </stateGasSpilled>
+         <newAccountCharged> _ => false </newAccountCharged>
          <caller> _ => SYSTEM_ADDRESS </caller>
          <static> _ => false </static>
          <account>
