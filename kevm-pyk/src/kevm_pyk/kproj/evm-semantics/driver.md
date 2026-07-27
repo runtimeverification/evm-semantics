@@ -77,7 +77,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
 ```k
     syntax InternalOp ::= "#deductBlobGas"
  // --------------------------------------
-    rule <k> #deductBlobGas => #balCaptureBalance ACCTFROM BAL ... </k>
+    rule <k> #deductBlobGas => .K ... </k>
          <schedule> SCHED </schedule>
          <excessBlobGas> EXCESS_BLOB_GAS </excessBlobGas>
          <origin> ACCTFROM </origin>
