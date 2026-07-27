@@ -373,7 +373,7 @@ The `interimStates` cell stores a list of previous world states.
          <balStorCaptures>  _ => .Map </balStorCaptures>
 
     syntax InternalOp ::= "#balIncBal" | "#balIncBalEntry" Int Int
- // -------------------------------------------------------------
+ // --------------------------------------------------------------
     rule <k> #balIncBal => .K ... </k> <balBalCaptures> .Map </balBalCaptures>
     rule <k> #balIncBal => #balIncBalEntry ACCT PRE ~> #balIncBal ... </k>
          <balBalCaptures> ACCT:Int |-> PRE REST => REST </balBalCaptures>
@@ -390,7 +390,7 @@ The `interimStates` cell stores a list of previous world states.
          [owise]
 
     syntax InternalOp ::= "#balIncNonce" | "#balIncNonceEntry" Int Int
- // -----------------------------------------------------------------
+ // ------------------------------------------------------------------
     rule <k> #balIncNonce => .K ... </k> <balNonceCaptures> .Map </balNonceCaptures>
     rule <k> #balIncNonce => #balIncNonceEntry ACCT PRE ~> #balIncNonce ... </k>
          <balNonceCaptures> ACCT:Int |-> PRE REST => REST </balNonceCaptures>
@@ -407,7 +407,7 @@ The `interimStates` cell stores a list of previous world states.
          [owise]
 
     syntax InternalOp ::= "#balIncCode" | "#balIncCodeEntry" Int Bytes
- // -----------------------------------------------------------------
+ // ------------------------------------------------------------------
     rule <k> #balIncCode => .K ... </k> <balCodeCaptures> .Map </balCodeCaptures>
     rule <k> #balIncCode => #balIncCodeEntry ACCT PRE ~> #balIncCode ... </k>
          <balCodeCaptures> ACCT:Int |-> PRE REST => REST </balCodeCaptures>
@@ -424,7 +424,7 @@ The `interimStates` cell stores a list of previous world states.
          [owise]
 
     syntax InternalOp ::= "#balIncStor" | "#balIncStorAcct" Int Map | "#balIncStorSlots" Int Map Map
- // -----------------------------------------------------------------------------------------------
+ // ------------------------------------------------------------------------------------------------
     rule <k> #balIncStor => .K ... </k> <balStorCaptures> .Map </balStorCaptures>
     rule <k> #balIncStor => #balIncStorAcct ACCT SLOTS ~> #balIncStor ... </k>
          <balStorCaptures> ACCT:Int |-> SLOTS REST => REST </balStorCaptures>
@@ -439,23 +439,23 @@ The `interimStates` cell stores a list of previous world states.
     rule <k> #balIncStorSlots _ _ .Map => .K ... </k>
     rule <k> #balIncStorSlots ACCT STOR (SLOT:Int |-> PRE REST) => #balIncStorSlots ACCT STOR REST ... </k>
          <balIndex> IDX </balIndex>
-         <balStorageChanges> SC => #balAppendStor(SC, ACCT, SLOT, IDX, #lookup(STOR, SLOT), PRE) </balStorageChanges>
+         <balStorageChanges> SC => #balAppendStorage(SC, ACCT, SLOT, IDX, #lookup(STOR, SLOT), PRE) </balStorageChanges>
          [preserves-definedness]
 
-    syntax Map ::= #balAppendE    ( Map , Int , Int , Int , Int )       [function]
-                 | #balAppendCE   ( Map , Int , Int , Bytes , Bytes )   [function]
-                 | #balAppendStor ( Map , Int , Int , Int , Int , Int ) [function]
- // ----------------------------------------------------------------------------
+    syntax Map ::= #balAppendE       ( Map , Int , Int , Int , Int )       [function]
+                 | #balAppendCE      ( Map , Int , Int , Bytes , Bytes )   [function]
+                 | #balAppendStorage ( Map , Int , Int , Int , Int , Int ) [function]
+ // ---------------------------------------------------------------------------------
     rule #balAppendE(M, ACCT, IDX, POST, PRE) => M [ ACCT <- ({M[ACCT] orDefault .List}:>List ListItem(balE(IDX, POST))) ] requires POST =/=Int PRE  [preserves-definedness]
     rule #balAppendE(M, _, _, POST, PRE) => M requires POST ==Int PRE
 
     rule #balAppendCE(M, ACCT, IDX, POST, PRE) => M [ ACCT <- ({M[ACCT] orDefault .List}:>List ListItem(balCE(IDX, POST))) ] requires POST =/=K PRE  [preserves-definedness]
     rule #balAppendCE(M, _, _, POST, PRE) => M requires POST ==K PRE
 
-    rule #balAppendStor(SC, ACCT, SLOT, IDX, POST, PRE)
+    rule #balAppendStorage(SC, ACCT, SLOT, IDX, POST, PRE)
       => SC [ ACCT <- ({SC[ACCT] orDefault .Map}:>Map [ SLOT <- ({({SC[ACCT] orDefault .Map}:>Map)[SLOT] orDefault .List}:>List ListItem(balE(IDX, POST))) ]) ]
          requires POST =/=Int PRE  [preserves-definedness]
-    rule #balAppendStor(SC, _, _, _, POST, PRE) => SC requires POST ==Int PRE
+    rule #balAppendStorage(SC, _, _, _, POST, PRE) => SC requires POST ==Int PRE
 
     syntax List ::= #balSortInts   ( List )       [function]
                   | #balInsertInt  ( List , Int ) [function]
@@ -468,7 +468,7 @@ The `interimStates` cell stores a list of previous world states.
     rule #balInsertInt(ListItem(Y:Int) REST, X) => ListItem(Y) #balInsertInt(REST, X)   requires X  >Int Y
 
     syntax InternalOp ::= "#validateBlockAccessList" | "#balCheck" | "#balCheck2" List
- // ---------------------------------------------------------------------------------
+ // ----------------------------------------------------------------------------------
     rule <k> #validateBlockAccessList => #balIncorporate ~> #balCheck ... </k>
          <schedule> SCHED </schedule>
          <balHash> BALHASH </balHash>
@@ -501,7 +501,7 @@ The `interimStates` cell stores a list of previous world states.
 
     syntax InternalOp ::= "#balCheckItems" Bool
                         | "#checkBalHash" Int
- // ------------------------------------------
+ // -----------------------------------------
     rule <k> #balCheckItems true => .K ... </k>
     rule <k> #balCheckItems false => .K ... </k>
          <statusCode> _ => EVMC_INVALID_BLOCK </statusCode>
@@ -512,33 +512,33 @@ The `interimStates` cell stores a list of previous world states.
       requires notBool H ==Int HH
 
     syntax Bool ::= #balItemsWithinBudget ( Int , Int , Schedule ) [function]
- // ------------------------------------------------------------------------
+ // -------------------------------------------------------------------------
     rule #balItemsWithinBudget(ITEMS, GLIM, SCHED) => ITEMS <=Int (GLIM /Int Gbalitemcost < SCHED >)
 
     syntax List ::= #balAddrUniverse ( Set , Map , Map , Map , Map , Map ) [function]
- // --------------------------------------------------------------------------------
+ // ---------------------------------------------------------------------------------
     rule #balAddrUniverse(T, RD, BC, NC, CC, SC)
       => #balSortInts(Set2List(T |Set keys(RD) |Set keys(BC) |Set keys(NC) |Set keys(CC) |Set keys(SC)))
 
     syntax Int ::= #balItemCount ( List , Map , Map ) [function]
- // -----------------------------------------------------------
+ // ------------------------------------------------------------
     rule #balItemCount(.List, _, _) => 0
     rule #balItemCount(ListItem(A:Int) REST, RD, SC)
       => 1 +Int size(keys({SC[A] orDefault .Map}:>Map) |Set {RD[A] orDefault .Set}:>Set) +Int #balItemCount(REST, RD, SC)
       [preserves-definedness]
 
     syntax JSON ::= #balBuildJSON ( List , Map , Map , Map , Map , Map ) [function]
- // ------------------------------------------------------------------------------
+ // -------------------------------------------------------------------------------
     rule #balBuildJSON(ADDRS, RD, BC, NC, CC, SC) => [ #balAccountsJSONs(ADDRS, RD, BC, NC, CC, SC) ]
 
     syntax JSONs ::= #balAccountsJSONs ( List , Map , Map , Map , Map , Map ) [function]
- // -----------------------------------------------------------------------------------
+ // ------------------------------------------------------------------------------------
     rule #balAccountsJSONs(.List, _, _, _, _, _) => .JSONs
     rule #balAccountsJSONs(ListItem(A:Int) REST, RD, BC, NC, CC, SC)
       => #balAccountJSON(A, RD, BC, NC, CC, SC) , #balAccountsJSONs(REST, RD, BC, NC, CC, SC)
 
     syntax JSON ::= #balAccountJSON ( Int , Map , Map , Map , Map , Map ) [function]
- // -------------------------------------------------------------------------------
+ // --------------------------------------------------------------------------------
     rule #balAccountJSON(A, RD, BC, NC, CC, SC)
       => [ #addrBytes(A) ,
            [ #balStorChangesJSONs(#balSortInts(Set2List(keys({SC[A] orDefault .Map}:>Map))), {SC[A] orDefault .Map}:>Map) ] ,
@@ -549,30 +549,30 @@ The `interimStates` cell stores a list of previous world states.
       [preserves-definedness]
 
     syntax List ::= #balFilterList ( List , Map ) [function]
- // -------------------------------------------------------
+ // --------------------------------------------------------
     rule #balFilterList(.List, _) => .List
     rule #balFilterList(ListItem(S:Int) REST, STOR) => ListItem(S) #balFilterList(REST, STOR) requires notBool S in_keys(STOR)
     rule #balFilterList(ListItem(S:Int) REST, STOR) => #balFilterList(REST, STOR)             requires         S in_keys(STOR)
 
     syntax JSONs ::= #balReadsJSONs ( List ) [function]
- // --------------------------------------------------
+ // ---------------------------------------------------
     rule #balReadsJSONs(.List) => .JSONs
     rule #balReadsJSONs(ListItem(S:Int) REST) => S , #balReadsJSONs(REST)
 
     syntax JSONs ::= #balStorChangesJSONs ( List , Map ) [function]
- // --------------------------------------------------------------
+ // ---------------------------------------------------------------
     rule #balStorChangesJSONs(.List, _) => .JSONs
     rule #balStorChangesJSONs(ListItem(S:Int) REST, STOR)
       => [ S , [ #balEntriesJSONs({STOR[S] orDefault .List}:>List) ] ] , #balStorChangesJSONs(REST, STOR)
       [preserves-definedness]
 
     syntax JSONs ::= #balEntriesJSONs ( List ) [function]
- // ----------------------------------------------------
+ // -----------------------------------------------------
     rule #balEntriesJSONs(.List) => .JSONs
     rule #balEntriesJSONs(ListItem(balE(IDX, VAL)) REST) => [ IDX , VAL ] , #balEntriesJSONs(REST)
 
     syntax JSONs ::= #balCodeEntriesJSONs ( List ) [function]
- // --------------------------------------------------------
+ // ---------------------------------------------------------
     rule #balCodeEntriesJSONs(.List) => .JSONs
     rule #balCodeEntriesJSONs(ListItem(balCE(IDX, CODE)) REST) => [ IDX , CODE ] , #balCodeEntriesJSONs(REST)
 ```
