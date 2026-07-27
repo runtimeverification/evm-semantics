@@ -186,6 +186,24 @@ def _create_argument_parser() -> ArgumentParser:
         help='Reinitialize CFGs even if they already exist.',
     )
     prove_args.add_argument(
+        '--booster-only-simplify',
+        dest='booster_only_simplify',
+        default=None,
+        action='store_true',
+        help='Skip the Kore simplification pass after Booster; assume_defined still uses Kore for #Ceil evaluation.',
+    )
+    prove_args.add_argument(
+        '--equation-max-local-steps',
+        dest='equation_max_local_steps',
+        type=int,
+        default=None,
+        help=(
+            'Booster equation budget for in-place evaluation at rewritten subterms before restarting '
+            'traversal from the top (default: 20; 0 = restart-only). Passed through to '
+            'kore-rpc-booster / booster-dev; requires a haskell-backend that supports the flag.'
+        ),
+    )
+    prove_args.add_argument(
         '--max-frontier-parallel',
         type=int,
         help='Maximum worker threads to use on a single proof to explore separate branches in parallel.',
@@ -353,6 +371,8 @@ class RPCOptions(Options):
     interim_simplification: int | None
     port: int | None
     use_booster_dev: bool
+    haskell_log_entries: list[str]
+    haskell_log_dir: Path | None
 
     @staticmethod
     def default() -> dict[str, Any]:
@@ -366,6 +386,8 @@ class RPCOptions(Options):
             'interim_simplification': None,
             'port': None,
             'use_booster_dev': False,
+            'haskell_log_entries': [],
+            'haskell_log_dir': None,
         }
 
     @staticmethod
@@ -599,12 +621,16 @@ class ProveOptions(
     KProveOptions,
 ):
     reinit: bool
+    booster_only_simplify: bool
+    equation_max_local_steps: int
     max_frontier_parallel: int
 
     @staticmethod
     def default() -> dict[str, Any]:
         return {
             'reinit': False,
+            'booster_only_simplify': False,
+            'equation_max_local_steps': 20,
             'max_frontier_parallel': 1,
         }
 
@@ -1088,6 +1114,18 @@ class KEVMCLIArgs(KCLIArgs):
             dest='port',
             type=int,
             help='Use existing RPC server on named port.',
+        )
+        args.add_argument(
+            '--haskell-log-entries',
+            dest='haskell_log_entries',
+            type=list_of(str, delim=','),
+            help='Comma-separated Haskell-backend log entries to capture per request (e.g. Abort,Simplify,Rewrite); defaults to the curated pyk set when omitted.',
+        )
+        args.add_argument(
+            '--haskell-log-dir',
+            dest='haskell_log_dir',
+            type=Path,
+            help='Capture per-request Haskell-backend log bundles, one <request-id>.jsonl file per RPC, under this directory.',
         )
         return args
 

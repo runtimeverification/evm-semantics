@@ -37,10 +37,24 @@ module BUF
     syntax Int ::= #powByteLen ( Int ) [symbol(#powByteLen), function, no-evaluators]
  // ---------------------------------------------------------------------------------
  // rule #powByteLen(SIZE) => 2 ^Int (8 *Int SIZE)
-    rule 2 ^Int (8 *Int SIZE) => #powByteLen(SIZE) [symbolic(SIZE), simplification]
+    rule 2 ^Int (8 *Int SIZE) => #powByteLen(SIZE) [symbolic(SIZE), simplification, preserves-definedness]
 
     rule 0    <Int #powByteLen(SIZE) => true requires 0 <=Int SIZE [simplification, preserves-definedness]
     rule SIZE <Int #powByteLen(SIZE) => true requires 0 <=Int SIZE [simplification, preserves-definedness]
+    // Concrete comparison: CONST < #powByteLen(N) evaluates when both arguments are concrete.
+    // Needed because 2^Int(8*N) is rewritten to #powByteLen(N) even for concrete N (via the
+    // symbolic(N) rule firing before path-condition lookup makes N concrete), but #powByteLen
+    // has no-evaluators so the result can't be computed directly.
+    rule [powByteLen-lt-concrete]: CONST <Int #powByteLen(N) => true
+        requires 0 <=Int N andBool CONST <Int 2 ^Int (8 *Int N)
+        [simplification, concrete(CONST, N), preserves-definedness]
+    // Companion false-direction: a concrete CONST that does not fit into N bytes is not
+    // less than #powByteLen(N). Together with the rule above this makes the concrete
+    // comparison total. The two requires are mutually exclusive and neither RHS re-exposes
+    // `_ <Int #powByteLen(_)`, so the pair is loop-safe.
+    rule [powByteLen-lt-concrete-false]: CONST <Int #powByteLen(N) => false
+        requires 0 <=Int N andBool 2 ^Int (8 *Int N) <=Int CONST
+        [simplification, concrete(CONST, N), preserves-definedness]
     rule #write(WM, IDX, VAL) => WM [ IDX := #buf(1, VAL) ] [simplification]
 
     rule #bufStrict(SIZE, DATA) => #buf(SIZE, DATA)

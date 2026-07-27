@@ -117,6 +117,7 @@ def run_prover(
     assume_defined: bool = False,
     extra_module: KFlatModule | None = None,
     optimize_kcfg: bool = False,
+    step_timeout: int | None = None,
 ) -> bool:
     prover: APRProver | ImpliesProver
     try:
@@ -134,11 +135,22 @@ def run_prover(
                     assume_defined=assume_defined,
                     extra_module=extra_module,
                     optimize_kcfg=optimize_kcfg,
+                    step_timeout=step_timeout,
                 )
 
             def update_status_bar(_proof: Proof) -> None:
                 if progress is not None and task_id is not None:
                     progress.update(task_id, summary=_proof.one_line_summary)
+
+            # step_timeout is only enforced on the sequential `advance_proof` path;
+            # `parallel_advance_proof` does not wrap steps with the timeout budget.
+            if step_timeout is not None and not force_sequential:
+                if max_frontier_parallel > 1:
+                    _LOGGER.warning(
+                        f'Proof {proof.id}: step_timeout is only enforced when running sequentially; '
+                        f'ignoring max_frontier_parallel={max_frontier_parallel} and running sequentially.'
+                    )
+                force_sequential = True
 
             if force_sequential:
                 prover = create_prover()
@@ -319,7 +331,9 @@ def initialize_apr_proof(cterm_symbolic: CTermSymbolic, proof: APRProof) -> None
     target_cterm = proof.kcfg.node(proof.target).cterm
 
     _LOGGER.info(f'Computing definedness constraint for initial node: {proof.id}')
-    init_cterm = cterm_symbolic.assume_defined(init_cterm)
+    # Pin booster_only_simplify=False regardless of the run-wide setting: the #Ceil
+    # definedness constraint must be discharged by Kore, which Booster-only mode skips.
+    init_cterm = cterm_symbolic.assume_defined(init_cterm, booster_only_simplify=False)
 
     _LOGGER.info(f'Simplifying initial and target node: {proof.id}')
     init_cterm, _ = cterm_symbolic.simplify(init_cterm)
@@ -349,8 +363,8 @@ def legacy_explore(
     bug_report: BugReport | None = None,
     haskell_log_format: KoreExecLogFormat = KoreExecLogFormat.ONELINE,
     haskell_log_entries: Iterable[str] = (),
-    haskell_threads: int | None = None,
     log_axioms_file: Path | None = None,
+    haskell_log_dir: Path | None = None,
     log_succ_rewrites: bool = True,
     log_fail_rewrites: bool = True,
     start_server: bool = True,
@@ -358,6 +372,7 @@ def legacy_explore(
     interim_simplification: int | None = None,
     no_post_exec_simplify: bool = False,
     extra_module: KFlatModule | None = None,
+    booster_only_simplify: bool = False,
 ) -> Iterator[KCFGExplore]:
     with cterm_symbolic(
         definition=kprint.definition,
@@ -371,13 +386,16 @@ def legacy_explore(
         smt_tactic=smt_tactic,
         bug_report=bug_report,
         haskell_log_format=haskell_log_format,
+        haskell_log_entries=haskell_log_entries,
         log_axioms_file=log_axioms_file,
+        haskell_log_dir=haskell_log_dir,
         log_succ_rewrites=log_succ_rewrites,
         log_fail_rewrites=log_fail_rewrites,
         start_server=start_server,
         fallback_on=fallback_on,
         interim_simplification=interim_simplification,
         no_post_exec_simplify=no_post_exec_simplify,
+        booster_only_simplify=booster_only_simplify,
     ) as csymbolic:
         if extra_module:
             csymbolic.add_module(extra_module, name_as_id=True)

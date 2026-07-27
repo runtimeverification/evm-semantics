@@ -769,7 +769,6 @@ class KEVMSummarizer:
                 interim_simplification=25,
                 no_post_exec_simplify=False,
                 port=None,
-                haskell_threads=8,
             ) as kcfg_explore:
 
                 def create_kcfg_explore() -> KCFGExplore:

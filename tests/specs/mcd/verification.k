@@ -139,7 +139,7 @@ module LEMMAS-MCD [symbolic]
   // Keccak
   // ########################
 
-    rule keccak(_) ==Int I => false requires #rangeSmall(I) [simplification]
+    rule keccak(_) ==Int I => false requires #rangeSmall(I) [simplification, smt-lemma]
     rule keccak(_) +Int I1 ==Int I2 => false
       requires #rangeSmall(I1) andBool #rangeSmall(I2) [simplification]
 
