@@ -287,7 +287,15 @@ module INT-SIMPLIFICATION-COMMON
     rule A ==Int B => false requires 0 <=Int A andBool B <Int 0 [simplification, concrete(B)]
 
     // A ==Int B is false when A < B is a known path-condition fact (B concrete).
-    rule [eq-false-lt]: A:Int ==Int B:Int => false requires A <Int B [simplification, concrete(B)]
+    // TEMPORARILY DISABLED (evm-semantics #2859 / kontrol #1153): this rule drives the CSE Kore-simplifier
+    // non-termination. During the Kore definedness check of `#Ceil(<accounts> AccountCellMap)`, the account
+    // distinctness predicates `ACCT_ID ==Int <concrete address> => false` invite this rule, whose side
+    // condition `A <Int B` is undetermined for a range-bounded symbolic account id and a large concrete
+    // address — so it cannot fire but spawns a ~500ms SMT round-trip per attempt, repeated as the constraint
+    // simplifier re-presents the predicate without reaching a fixpoint. Confirmed the sole rule driving those
+    // undetermined SMT calls (removing it took the rule-driven SMT count from 45 to 0 on the exemplar).
+    // Re-introduce once Booster performs definedness without falling back to the Kore simplifier.
+    // rule [eq-false-lt]: A:Int ==Int B:Int => false requires A <Int B [simplification, concrete(B)]
 
     rule 0 <Int X => true requires 0 <=Int X andBool notBool (X ==Int 0) [simplification(60)]
 

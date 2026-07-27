@@ -198,6 +198,7 @@ def _test_prove(
     workers: int | None = None,
     direct_subproof_rules: bool = False,
     booster_only_simplify: bool = False,
+    equation_max_local_steps: int = 20,
 ) -> None:
     caplog.set_level(logging.INFO)
 
@@ -254,6 +255,7 @@ def _test_prove(
             'direct_subproof_rules': direct_subproof_rules,
             'booster_only_simplify': booster_only_simplify,
             'claim_labels': claim_labels,
+            'equation_max_local_steps': equation_max_local_steps,
         }
         if haskell_logging:
             options_dict['haskell_log_entries'] = booster_log_levels or list(HASKELL_LOGGING_ENTRIES)
@@ -362,6 +364,7 @@ def test_prove_rules(
     booster_log_levels: list[str] | None,
     claim_labels: list[str] | None,
     booster_only_simplify: bool,
+    equation_max_local_steps: int,
 ) -> None:
     _test_prove(
         spec_file,
@@ -378,6 +381,7 @@ def test_prove_rules(
         booster_log_levels=booster_log_levels,
         claim_labels=claim_labels,
         booster_only_simplify=booster_only_simplify,
+        equation_max_local_steps=equation_max_local_steps,
     )
 
 
@@ -400,6 +404,7 @@ def test_prove_functional(
     booster_log_levels: list[str] | None,
     claim_labels: list[str] | None,
     booster_only_simplify: bool,
+    equation_max_local_steps: int,
 ) -> None:
     _test_prove(
         spec_file,
@@ -417,6 +422,7 @@ def test_prove_functional(
         claim_labels=claim_labels,
         workers=8,
         booster_only_simplify=booster_only_simplify,
+        equation_max_local_steps=equation_max_local_steps,
     )
 
 
@@ -430,6 +436,7 @@ def test_prove_dss(
     booster_log_levels: list[str] | None,
     claim_labels: list[str] | None,
     booster_only_simplify: bool,
+    equation_max_local_steps: int,
 ) -> None:
     for spec_file in [REPO_ROOT / 'tests/specs/mcd/vat-spec.k', REPO_ROOT / 'tests/specs/mcd-structured/vat-spec.k']:
         _test_prove(
@@ -449,6 +456,7 @@ def test_prove_dss(
             workers=8,
             direct_subproof_rules=True,
             booster_only_simplify=booster_only_simplify,
+            equation_max_local_steps=equation_max_local_steps,
         )
 
 

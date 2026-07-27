@@ -136,12 +136,12 @@ module EVM-INT-SIMPLIFICATION
   // neither rule fires on the other's requires.
   rule [asWord-lt-false]: #asWord ( B:Bytes )  <Int X:Int => false requires X <=Int #asWord ( B ) [simplification]
   rule [asWord-le-false]: #asWord ( B:Bytes ) <=Int X:Int => false requires X  <Int #asWord ( B ) [simplification]
-  // Comparison: `#asWord(B) == X` is false when the path condition says X =/= #asWord(B).
-  // The requires X =/=Int #asWord(B) expands to notBool(X ==Int #asWord(B)) via the K builtin;
-  // since ==Int is comm, this matches the path condition fact notBool(#asWord(B) ==Int X).
-  // No loop: our rule matches #asWord on the LEFT; after builtin expansion the recursive
-  // term X ==Int #asWord(B) has X on the LEFT, so this rule does not fire on it.
-  rule [asWord-eq-false]: #asWord ( B:Bytes ) ==Int X:Int => false requires X =/=Int #asWord ( B ) [simplification]
+  // Note: there is intentionally no `asWord-eq-false` analogue of the `<Int`/`<=Int` rules above.
+  // Such a rule (`#asWord(B) ==Int X => false requires X =/=Int #asWord(B)`) is not loop-safe: when
+  // both operands are `#asWord`, applying it rewrites the equality into its own `requires` with the
+  // two operands swapped — still `#asWord`-on-the-left — so it re-matches and recurses without bound
+  // in the Kore simplifier. `<Int`/`<=Int` are antisymmetric, so their swapped requires is a
+  // different relation and does not re-match. See `docs/asword-eq-false-loop.md`.
 
   // Comparison: `#asWord` of `+Bytes` when lower bytes match, with `<Int`
   rule [asWord-concat-lt]:

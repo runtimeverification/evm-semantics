@@ -85,4 +85,12 @@ module LEMMAS-NO-SMT-SPEC
     claim [powByteLen-lt-concrete]:
       <k> runLemma ( 31 <Int #powByteLen(32) ) => doneLemma ( true ) ... </k>
 
+    // powByteLen-lt-concrete-false: CONST <Int #powByteLen(N) => false when CONST does
+    // not fit into N bytes. The companion false-direction of the rule above; together they
+    // make the concrete comparison total. Regression for the `asWord-unif-03/04` lemmas-spec
+    // claims, which decompose an out-of-range `#asWord(B) ==Int CONST` into exactly this
+    // comparison and previously relied on the (removed, looping) `asWord-eq-false` to close.
+    claim [powByteLen-lt-concrete-false]:
+      <k> runLemma ( 2 ^Int 160 <Int #powByteLen(16) ) => doneLemma ( false ) ... </k>
+
 endmodule
