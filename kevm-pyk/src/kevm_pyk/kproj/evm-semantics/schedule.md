@@ -31,8 +31,8 @@ module SCHEDULE
                           | "Ghaswarmcoinbase"        | "Ghaswithdrawals"  | "Ghastransient"       | "Ghasmcopy"
                           | "Ghasbeaconroot"          | "Ghaseip6780"      | "Ghasblobbasefee"     | "Ghasblobhash"
                           | "Ghasbls12msmdiscount"    | "Ghashistory"      | "Ghasrequests"        | "Ghasauthority"
-                          | "Ghasfloorcost"           | "Ghasclz"
- // -------------------------------------------------------------
+                          | "Ghasfloorcost"           | "Ghasclz"          | "Ghaseip7976"         | "Ghaseip7981"
+ // ---------------------------------------------------------------------------------------------------------
 ```
 
 ### Schedule Constants
@@ -183,6 +183,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule [GhasauthorityDefault]:           Ghasauthority           << DEFAULT >> => false
     rule [GhasfloorcostDefault]:           Ghasfloorcost           << DEFAULT >> => false
     rule [GhasclzDefault]:                 Ghasclz                 << DEFAULT >> => false
+    rule [Ghaseip7976Default]:             Ghaseip7976             << DEFAULT >> => false
+    rule [Ghaseip7981Default]:             Ghaseip7981             << DEFAULT >> => false
 ```
 
 ### Frontier Schedule
@@ -520,13 +522,20 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule [GmaxblobgasAmsterdam]:               Gmaxblobgas               < AMSTERDAM > => 2752512
     rule [GtargetblobgasAmsterdam]:            Gtargetblobgas            < AMSTERDAM > => 1835008
     rule [BlobbasefeeupdatefractionAmsterdam]: Blobbasefeeupdatefraction < AMSTERDAM > => 11684671
+    rule [GtxdatafloorAmsterdam]:              Gtxdatafloor              < AMSTERDAM > => 16
     rule [SCHEDCONSTAmsterdam]:                SCHEDCONST                < AMSTERDAM > => SCHEDCONST < OSAKA >
       requires notBool ( SCHEDCONST ==K Gmaxblobgas
                   orBool SCHEDCONST ==K Gtargetblobgas
                   orBool SCHEDCONST ==K Blobbasefeeupdatefraction
+                  orBool SCHEDCONST ==K Gtxdatafloor
                        )
 
-    rule [SCHEDFLAGAmsterdam]: SCHEDFLAG << AMSTERDAM >> => SCHEDFLAG << OSAKA >>
+    rule [Ghaseip7976Amsterdam]: Ghaseip7976 << AMSTERDAM >> => true
+    rule [Ghaseip7981Amsterdam]: Ghaseip7981 << AMSTERDAM >> => true
+    rule [SCHEDFLAGAmsterdam]:   SCHEDFLAG   << AMSTERDAM >> => SCHEDFLAG << OSAKA >>
+      requires notBool ( SCHEDFLAG ==K Ghaseip7976
+                  orBool SCHEDFLAG ==K Ghaseip7981
+                       )
 ```
 
 ```k

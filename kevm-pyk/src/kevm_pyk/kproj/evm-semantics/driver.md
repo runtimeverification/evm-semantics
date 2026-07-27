@@ -123,7 +123,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
           ~> #loadAuthorities(AUTH)
           ~> #checkCreate ACCTFROM VALUE
           ~> #create ACCTFROM #newAddr(ACCTFROM, NONCE) VALUE CODE
-          ~> #finishTx ~> #finalizeTx(false, Ctxfloor(SCHED, CODE)) ~> startTx
+          ~> #finishTx ~> #finalizeTx(false, Ctxfloor(SCHED, CODE, #accessListFloorTokens(TA))) ~> startTx
          ...
          </k>
          <schedule> SCHED </schedule>
@@ -153,7 +153,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          <touchedAccounts> _ => SetItem(MINER) </touchedAccounts>
       requires #hasValidInitCode(lengthBytes(CODE), SCHED)
        andBool #isValidTransaction(TXID, ACCTFROM)
-       andBool GLIMIT >=Int maxInt(G0(SCHED, CODE, true), Ctxfloor(SCHED, CODE))
+       andBool GLIMIT >=Int maxInt(G0(SCHED, CODE, true) +Int #accessListDataCost(SCHED, TA), Ctxfloor(SCHED, CODE, #accessListFloorTokens(TA)))
 
     rule <k> loadTx(ACCTFROM)
           => #accessAccounts ACCTFROM ACCTTO #precompiledAccountsSet(SCHED)
@@ -162,7 +162,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
           ~> #loadAuthorities(AUTH)
           ~> #checkCall ACCTFROM VALUE
           ~> #call ACCTFROM ACCTTO ACCTTO VALUE VALUE DATA false
-          ~> #finishTx ~> #finalizeTx(false, Ctxfloor(SCHED, DATA)) ~> startTx
+          ~> #finishTx ~> #finalizeTx(false, Ctxfloor(SCHED, DATA, #accessListFloorTokens(TA))) ~> startTx
          ...
          </k>
          <schedule> SCHED </schedule>
@@ -194,7 +194,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          <touchedAccounts> _ => SetItem(MINER) </touchedAccounts>
       requires ACCTTO =/=K .Account
        andBool #isValidTransaction(TXID, ACCTFROM)
-       andBool GLIMIT >=Int maxInt(G0(SCHED, DATA, false), Ctxfloor(SCHED, DATA))
+       andBool GLIMIT >=Int maxInt(G0(SCHED, DATA, false) +Int #accessListDataCost(SCHED, TA), Ctxfloor(SCHED, DATA, #accessListFloorTokens(TA)))
 
     rule <k> loadTx(_) => startTx ... </k>
          <statusCode> _ => EVMC_INVALID_BLOCK </statusCode>
@@ -251,11 +251,24 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          ...
          </k>
          <schedule> SCHED </schedule>
-         <callGas> GLIMIT => GLIMIT -Int Gaccessliststoragekey < SCHED > </callGas>
+         <callGas> GLIMIT => GLIMIT -Int Gaccessliststoragekey < SCHED >
+                             -Int #if Ghaseip7981 << SCHED >> #then 128 *Int Gtxdatafloor < SCHED > #else 0 #fi </callGas>
 
     rule <k> #loadAccessListAux (ACCT, .List) => #accessAccounts ACCT ... </k>
          <schedule> SCHED </schedule>
-         <callGas> GLIMIT => GLIMIT -Int Gaccesslistaddress < SCHED > </callGas>
+         <callGas> GLIMIT => GLIMIT -Int Gaccesslistaddress < SCHED >
+                             -Int #if Ghaseip7981 << SCHED >> #then 80 *Int Gtxdatafloor < SCHED > #else 0 #fi </callGas>
+
+    syntax Int ::= #accessListFloorTokens ( JSON )            [symbol(#accessListFloorTokens), function, total]
+                 | #accessListDataCost    ( Schedule , JSON ) [symbol(#accessListDataCost),    function, total]
+ // -----------------------------------------------------------------------------------------------------------
+    rule #accessListFloorTokens([[_, [STRG:JSONs]], REST])
+      => 80 +Int (128 *Int size(#parseAccessListStorageKeys([STRG]))) +Int #accessListFloorTokens([REST])
+    rule #accessListFloorTokens(_) => 0 [owise]
+
+    rule #accessListDataCost(SCHED, TA) => Gtxdatafloor < SCHED > *Int #accessListFloorTokens(TA)
+      requires Ghaseip7981 << SCHED >>
+    rule #accessListDataCost(_, _) => 0 [owise]
 ```
 
 Processing SetCode Transaction Authority Entries
