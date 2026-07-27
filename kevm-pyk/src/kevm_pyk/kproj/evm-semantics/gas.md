@@ -126,7 +126,7 @@ module GAS-FEES
                  | Cblobfee         ( Schedule , Int , Int )                      [symbol(Cblobfee),          function, total, smtlib(gas_Cblobfee)         ]
                  | Cexcessblob      ( Schedule , Int , Int )                      [symbol(Cexcessblob),       function, total, smtlib(gas_Cexcessblob)      ]
                  | Cdelegationaccess( Schedule, Bool, Bool )                      [symbol(Cdelegationaccess), function, total, smtlib(gas_Cdelegationaccess)]
-                 | Ctxfloor         ( Schedule , Bytes )                          [symbol(Ctxfloor),          function, total, smtlib(gas_Ctxfloor)         ]
+                 | Ctxfloor         ( Schedule , Bytes , Int )                    [symbol(Ctxfloor),          function, total, smtlib(gas_Ctxfloor)         ]
  // ---------------------------------------------------------------------------------------------------------------------------------------------------------
     rule [Cgascap]:
          Cgascap(SCHED, GCAP:Int, GAVAIL:Int, GEXTRA)
@@ -284,8 +284,14 @@ module GAS-FEES
     rule #tokensInCalldata(_,  I, I, R) => R
     rule #tokensInCalldata(WS, I, J, R) => #tokensInCalldata(WS, I+Int 1, J, R +Int #if WS[I] ==Int 0 #then 1 #else 4 #fi) [owise]
 
-    rule Ctxfloor(SCHED, CODE) => Gtransaction < SCHED > +Int (Gtxdatafloor < SCHED > *Int #tokensInCalldata(CODE)) requires Ghasfloorcost << SCHED >>
-    rule Ctxfloor(    _,    _) => 0 [owise]
+    rule Ctxfloor(SCHED, CODE, ACCESSLISTTOKENS)
+      => Gtransaction < SCHED > +Int (Gtxdatafloor < SCHED > *Int ((lengthBytes(CODE) *Int 4) +Int ACCESSLISTTOKENS))
+      requires Ghasfloorcost << SCHED >> andBool Ghaseip7976 << SCHED >>
+
+    rule Ctxfloor(SCHED, CODE, _) => Gtransaction < SCHED > +Int (Gtxdatafloor < SCHED > *Int #tokensInCalldata(CODE))
+      requires Ghasfloorcost << SCHED >> andBool notBool Ghaseip7976 << SCHED >>
+
+    rule Ctxfloor(    _,    _, _) => 0 [owise]
 
     syntax Int ::= Cbls12g1MsmDiscount( Schedule , Int ) [symbol(Cbls12g1MsmDiscount), function, total, smtlib(gas_Cbls12g1MsmDiscount)]
                  | Cbls12g2MsmDiscount( Schedule , Int ) [symbol(Cbls12g2MsmDiscount), function, total, smtlib(gas_Cbls12g2MsmDiscount)]
