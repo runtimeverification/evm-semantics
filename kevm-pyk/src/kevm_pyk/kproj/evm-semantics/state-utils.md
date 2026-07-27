@@ -600,6 +600,9 @@ The `"rlp"` key loads the block information.
          <schedule> SCHED </schedule>
          <baseFee> BASE_FEE </baseFee>
          <gasLimit> BLOCK_GAS_LIMIT </gasLimit>
+         <gasUsed> GASUSED </gasUsed>
+         <gasUsedRegular> GASUSEDREG </gasUsedRegular>
+         <gasUsedState> GASUSEDSTATE </gasUsedState>
          <account>
            <acctID>  ACCTFROM  </acctID>
            <balance> BAL       </balance>
@@ -626,6 +629,7 @@ The `"rlp"` key loads the block information.
       andBool TX_MAX_PRIORITY_FEE <=Int TX_MAX_FEE
       andBool BAL >=Int TX_GAS_LIMIT *Int TX_MAX_FEE +Int VALUE
       andBool TX_GAS_LIMIT <=Int BLOCK_GAS_LIMIT
+      andBool #isValidTxGasLimit(SCHED, TX_GAS_LIMIT, BLOCK_GAS_LIMIT, gas2Int(GASUSED), GASUSEDREG, GASUSEDSTATE)
       andBool size(TX_AUTH_LIST) >Int 0 andBool #checkAuthorityList(TX_AUTH_LIST)
 
     rule [[ #isValidTransaction (TXID, ACCTFROM) => true ]]
@@ -633,6 +637,9 @@ The `"rlp"` key loads the block information.
          <baseFee> BASE_FEE </baseFee>
          <excessBlobGas> EXCESS_BLOB_GAS </excessBlobGas>
          <gasLimit> BLOCK_GAS_LIMIT </gasLimit>
+         <gasUsed> GASUSED </gasUsed>
+         <gasUsedRegular> GASUSEDREG </gasUsedRegular>
+         <gasUsedState> GASUSEDSTATE </gasUsedState>
          <account>
            <acctID>  ACCTFROM  </acctID>
            <balance> BAL       </balance>
@@ -662,12 +669,16 @@ The `"rlp"` key loads the block information.
       andBool TX_MAX_BLOB_FEE >=Int Cbasefeeperblob(SCHED, EXCESS_BLOB_GAS)
       andBool BAL >=Int TX_GAS_LIMIT *Int TX_MAX_FEE +Int (Ctotalblob(SCHED, size(TVH)) *Int TX_MAX_BLOB_FEE) +Int VALUE
       andBool TX_GAS_LIMIT <=Int BLOCK_GAS_LIMIT
+      andBool #isValidTxGasLimit(SCHED, TX_GAS_LIMIT, BLOCK_GAS_LIMIT, gas2Int(GASUSED), GASUSEDREG, GASUSEDSTATE)
       andBool Ctotalblob(SCHED, size(TVH)) <=Int Gmaxblobgas < SCHED>
 
     rule [[ #isValidTransaction (TXID, ACCTFROM) => true ]]
          <schedule> SCHED </schedule>
          <baseFee> BASE_FEE </baseFee>
          <gasLimit> BLOCK_GAS_LIMIT </gasLimit>
+         <gasUsed> GASUSED </gasUsed>
+         <gasUsedRegular> GASUSEDREG </gasUsedRegular>
+         <gasUsedState> GASUSEDSTATE </gasUsedState>
          <account>
            <acctID>  ACCTFROM  </acctID>
            <balance> BAL       </balance>
@@ -691,11 +702,15 @@ The `"rlp"` key loads the block information.
       andBool TX_MAX_PRIORITY_FEE <=Int TX_MAX_FEE
       andBool BAL >=Int TX_GAS_LIMIT *Int TX_MAX_FEE +Int VALUE
       andBool TX_GAS_LIMIT <=Int BLOCK_GAS_LIMIT
+      andBool #isValidTxGasLimit(SCHED, TX_GAS_LIMIT, BLOCK_GAS_LIMIT, gas2Int(GASUSED), GASUSEDREG, GASUSEDSTATE)
 
     rule [[ #isValidTransaction (TXID, ACCTFROM) => true ]]
          <schedule> SCHED </schedule>
          <baseFee> BASE_FEE </baseFee>
          <gasLimit> BLOCK_GAS_LIMIT </gasLimit>
+         <gasUsed> GASUSED </gasUsed>
+         <gasUsedRegular> GASUSEDREG </gasUsedRegular>
+         <gasUsedState> GASUSEDSTATE </gasUsedState>
          <account>
            <acctID>  ACCTFROM  </acctID>
            <balance> BAL       </balance>
@@ -718,6 +733,7 @@ The `"rlp"` key loads the block information.
       andBool BASE_FEE <=Int TX_GAS_PRICE
       andBool BAL >=Int TX_GAS_LIMIT *Int TX_GAS_PRICE +Int VALUE
       andBool TX_GAS_LIMIT <=Int BLOCK_GAS_LIMIT
+      andBool #isValidTxGasLimit(SCHED, TX_GAS_LIMIT, BLOCK_GAS_LIMIT, gas2Int(GASUSED), GASUSEDREG, GASUSEDSTATE)
 
     rule #isValidTransaction (_, _) => false [owise]
 ```
