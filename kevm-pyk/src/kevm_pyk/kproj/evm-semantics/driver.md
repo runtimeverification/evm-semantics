@@ -106,6 +106,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          <txPending> ListItem(TXID:Int) ... </txPending>
          <chainID> B </chainID>
          <gas> _ => 0 </gas>
+         <balIndex> I => I +Int 1 </balIndex>
          <message>
            <msgID>      TXID </msgID>
            <sigV>       TW   </sigV>
@@ -117,7 +118,8 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
     syntax EthereumCommand ::= loadTx ( Account ) [symbol(loadTx)]
  // --------------------------------------------------------------
     rule <k> loadTx(ACCTFROM)
-          => #accessAccounts ACCTFROM #newAddr(ACCTFROM, NONCE) #precompiledAccountsSet(SCHED)
+          => #balTouch ACCTFROM ~> #balTouch #newAddr(ACCTFROM, NONCE) ~> #balCaptureBalance ACCTFROM BAL
+          ~> #accessAccounts ACCTFROM #newAddr(ACCTFROM, NONCE) #precompiledAccountsSet(SCHED)
           ~> #deductBlobGas
           ~> #loadAccessList(TA)
           ~> #loadAuthorities(AUTH)
@@ -156,7 +158,8 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
        andBool GLIMIT >=Int maxInt(G0(SCHED, CODE, true), Ctxfloor(SCHED, CODE))
 
     rule <k> loadTx(ACCTFROM)
-          => #accessAccounts ACCTFROM ACCTTO #precompiledAccountsSet(SCHED)
+          => #balTouch ACCTFROM ~> #balTouch ACCTTO ~> #balCaptureBalance ACCTFROM BAL ~> #balCaptureNonce ACCTFROM NONCE
+          ~> #accessAccounts ACCTFROM ACCTTO #precompiledAccountsSet(SCHED)
           ~> #deductBlobGas
           ~> #loadAccessList(TA)
           ~> #loadAuthorities(AUTH)
@@ -311,7 +314,7 @@ Processing SetCode Transaction Authority Entries
          orBool (#asWord(NONCE) >=Int maxUInt64)
 
     rule <k> #setDelegation(AUTHORITY, CID, NONCE, ADDR)
-          => #touchAccounts AUTHORITY ~> #accessAccounts AUTHORITY
+          => #balTouch AUTHORITY ~> #touchAccounts AUTHORITY ~> #accessAccounts AUTHORITY
            ~> #addAuthority(AUTHORITY, CID, NONCE, ADDR)
           ...
          </k> [owise]
@@ -328,7 +331,10 @@ Processing SetCode Transaction Authority Entries
       requires notBool (ACCTCODE ==K .Bytes orBool #isValidDelegation(ACCTCODE))
         orBool (notBool #asWord(NONCE) ==K ACCTNONCE)
 
-    rule <k> #addAuthority(AUTHORITY, _CID, NONCE, ADDR) => .K ... </k>
+    rule <k> #addAuthority(AUTHORITY, _CID, NONCE, ADDR)
+          => #balCaptureCode AUTHORITY ACCTCODE ~> #balCaptureNonce AUTHORITY ACCTNONCE
+          ...
+         </k>
          <schedule> SCHED </schedule>
          <refund> REFUND => REFUND +Int Gnewaccount < SCHED > -Int Gauthbase < SCHED > </refund>
          <account>
@@ -340,7 +346,10 @@ Processing SetCode Transaction Authority Entries
       requires (ACCTCODE ==K .Bytes orBool #isValidDelegation(ACCTCODE))
        andBool #asWord(NONCE) ==K ACCTNONCE
 
-    rule <k> #addAuthority(AUTHORITY, _CID, NONCE, ADDR) => .K ... </k>
+    rule <k> #addAuthority(AUTHORITY, _CID, NONCE, ADDR)
+          => #balCaptureCode AUTHORITY .Bytes ~> #balCaptureNonce AUTHORITY 0
+          ...
+         </k>
          <accounts>
                ( .Bag
                   =>

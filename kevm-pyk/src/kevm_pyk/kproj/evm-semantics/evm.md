@@ -91,6 +91,20 @@ In the comments next to each cell, we've marked which component of the YellowPap
               <createdAccounts>  .Set  </createdAccounts>
             </substate>
 
+            <blockAccessLists>
+              <balIndex>          0    </balIndex>
+              <balTouched>        .Set </balTouched>
+              <balReads>          .Map </balReads>
+              <balBalCaptures>    .Map </balBalCaptures>
+              <balNonceCaptures>  .Map </balNonceCaptures>
+              <balCodeCaptures>   .Map </balCodeCaptures>
+              <balStorCaptures>   .Map </balStorCaptures>
+              <balBalanceChanges> .Map </balBalanceChanges>
+              <balNonceChanges>   .Map </balNonceChanges>
+              <balCodeChanges>    .Map </balCodeChanges>
+              <balStorageChanges> .Map </balStorageChanges>
+            </blockAccessLists>
+
             // Immutable during a single transaction
             // -------------------------------------
 
@@ -288,6 +302,279 @@ The `interimStates` cell stores a list of previous world states.
     syntax InternalOp ::= "#dropWorldState"
  // ---------------------------------------
     rule <k> #dropWorldState => .K ... </k> <interimStates> ListItem(_) REST => REST </interimStates>
+```
+
+### EIP-7928 Block-Level Access Lists
+
+```k
+    syntax BalEntry     ::= balE  ( Int , Int )   [symbol(balE)]
+    syntax BalCodeEntry ::= balCE ( Int , Bytes ) [symbol(balCE)]
+
+    syntax InternalOp ::= "#balTouch" Account
+ // -----------------------------------------
+    rule <k> #balTouch ACCT:Int => .K ... </k>
+         <schedule> SCHED </schedule>
+         <balTouched> TOUCHED => TOUCHED |Set SetItem(ACCT) </balTouched>
+         requires Ghaseip7928 << SCHED >>
+    rule <k> #balTouch _ => .K ... </k> [owise]
+
+    syntax InternalOp ::= "#balRead" Int Int
+ // ----------------------------------------
+    rule <k> #balRead ACCT SLOT => .K ... </k>
+         <schedule> SCHED </schedule>
+         <balReads> R => R [ ACCT <- ({R[ACCT] orDefault .Set}:>Set |Set SetItem(SLOT)) ] </balReads>
+         requires Ghaseip7928 << SCHED >>
+         [preserves-definedness]
+    rule <k> #balRead _ _ => .K ... </k> [owise]
+
+    syntax InternalOp ::= "#balCaptureBalance" Int Int
+                        | "#balCaptureNonce"   Int Int
+                        | "#balCaptureCode"    Int Bytes
+                        | "#balCaptureStorage" Int Int Int
+ // ------------------------------------------------------
+    rule <k> #balCaptureBalance ACCT PRE => .K ... </k>
+         <schedule> SCHED </schedule>
+         <balBalCaptures> CAP => CAP [ ACCT <- PRE ] </balBalCaptures>
+         requires Ghaseip7928 << SCHED >> andBool notBool ACCT in_keys(CAP)
+    rule <k> #balCaptureBalance _ _ => .K ... </k> [owise]
+
+    rule <k> #balCaptureNonce ACCT PRE => .K ... </k>
+         <schedule> SCHED </schedule>
+         <balNonceCaptures> CAP => CAP [ ACCT <- PRE ] </balNonceCaptures>
+         requires Ghaseip7928 << SCHED >> andBool notBool ACCT in_keys(CAP)
+    rule <k> #balCaptureNonce _ _ => .K ... </k> [owise]
+
+    rule <k> #balCaptureCode ACCT PRE => .K ... </k>
+         <schedule> SCHED </schedule>
+         <balCodeCaptures> CAP => CAP [ ACCT <- PRE ] </balCodeCaptures>
+         requires Ghaseip7928 << SCHED >> andBool notBool ACCT in_keys(CAP)
+    rule <k> #balCaptureCode _ _ => .K ... </k> [owise]
+
+    rule <k> #balCaptureStorage ACCT SLOT PRE => .K ... </k>
+         <schedule> SCHED </schedule>
+         <balStorCaptures> CAP => CAP [ ACCT <- ({CAP[ACCT] orDefault .Map}:>Map [ SLOT <- PRE ]) ] </balStorCaptures>
+         requires Ghaseip7928 << SCHED >> andBool notBool ( ACCT in_keys(CAP) andBool SLOT in_keys({CAP[ACCT] orDefault .Map}:>Map) )
+         [preserves-definedness]
+    rule <k> #balCaptureStorage _ _ _ => .K ... </k> [owise]
+
+    syntax InternalOp ::= "#balIncorporate"
+ // ---------------------------------------
+    rule <k> #balIncorporate => #balIncBal ~> #balIncNonce ~> #balIncCode ~> #balIncStor ~> #balClearCaptures ... </k>
+         <schedule> SCHED </schedule>
+         requires Ghaseip7928 << SCHED >>
+    rule <k> #balIncorporate => .K ... </k> [owise]
+
+    syntax InternalOp ::= "#balClearCaptures"
+ // -----------------------------------------
+    rule <k> #balClearCaptures => .K ... </k>
+         <balBalCaptures>   _ => .Map </balBalCaptures>
+         <balNonceCaptures> _ => .Map </balNonceCaptures>
+         <balCodeCaptures>  _ => .Map </balCodeCaptures>
+         <balStorCaptures>  _ => .Map </balStorCaptures>
+
+    syntax InternalOp ::= "#balIncBal" | "#balIncBalEntry" Int Int
+ // --------------------------------------------------------------
+    rule <k> #balIncBal => .K ... </k> <balBalCaptures> .Map </balBalCaptures>
+    rule <k> #balIncBal => #balIncBalEntry ACCT PRE ~> #balIncBal ... </k>
+         <balBalCaptures> ACCT:Int |-> PRE REST => REST </balBalCaptures>
+
+    rule <k> #balIncBalEntry ACCT PRE => .K ... </k>
+         <balIndex> IDX </balIndex>
+         <account> <acctID> ACCT </acctID> <balance> POST </balance> ... </account>
+         <balTouched> T => T |Set SetItem(ACCT) </balTouched>
+         <balBalanceChanges> BC => #balAppendE(BC, ACCT, IDX, POST, PRE) </balBalanceChanges>
+    rule <k> #balIncBalEntry ACCT PRE => .K ... </k>
+         <balIndex> IDX </balIndex>
+         <balTouched> T => T |Set SetItem(ACCT) </balTouched>
+         <balBalanceChanges> BC => #balAppendE(BC, ACCT, IDX, 0, PRE) </balBalanceChanges>
+         [owise]
+
+    syntax InternalOp ::= "#balIncNonce" | "#balIncNonceEntry" Int Int
+ // ------------------------------------------------------------------
+    rule <k> #balIncNonce => .K ... </k> <balNonceCaptures> .Map </balNonceCaptures>
+    rule <k> #balIncNonce => #balIncNonceEntry ACCT PRE ~> #balIncNonce ... </k>
+         <balNonceCaptures> ACCT:Int |-> PRE REST => REST </balNonceCaptures>
+
+    rule <k> #balIncNonceEntry ACCT PRE => .K ... </k>
+         <balIndex> IDX </balIndex>
+         <account> <acctID> ACCT </acctID> <nonce> POST </nonce> ... </account>
+         <balTouched> T => T |Set SetItem(ACCT) </balTouched>
+         <balNonceChanges> NC => #balAppendE(NC, ACCT, IDX, POST, PRE) </balNonceChanges>
+    rule <k> #balIncNonceEntry ACCT PRE => .K ... </k>
+         <balIndex> IDX </balIndex>
+         <balTouched> T => T |Set SetItem(ACCT) </balTouched>
+         <balNonceChanges> NC => #balAppendE(NC, ACCT, IDX, 0, PRE) </balNonceChanges>
+         [owise]
+
+    syntax InternalOp ::= "#balIncCode" | "#balIncCodeEntry" Int Bytes
+ // ------------------------------------------------------------------
+    rule <k> #balIncCode => .K ... </k> <balCodeCaptures> .Map </balCodeCaptures>
+    rule <k> #balIncCode => #balIncCodeEntry ACCT PRE ~> #balIncCode ... </k>
+         <balCodeCaptures> ACCT:Int |-> PRE REST => REST </balCodeCaptures>
+
+    rule <k> #balIncCodeEntry ACCT PRE => .K ... </k>
+         <balIndex> IDX </balIndex>
+         <account> <acctID> ACCT </acctID> <code> POST:Bytes </code> ... </account>
+         <balTouched> T => T |Set SetItem(ACCT) </balTouched>
+         <balCodeChanges> CC => #balAppendCE(CC, ACCT, IDX, POST, PRE) </balCodeChanges>
+    rule <k> #balIncCodeEntry ACCT PRE => .K ... </k>
+         <balIndex> IDX </balIndex>
+         <balTouched> T => T |Set SetItem(ACCT) </balTouched>
+         <balCodeChanges> CC => #balAppendCE(CC, ACCT, IDX, .Bytes, PRE) </balCodeChanges>
+         [owise]
+
+    syntax InternalOp ::= "#balIncStor" | "#balIncStorAcct" Int Map | "#balIncStorSlots" Int Map Map
+ // ------------------------------------------------------------------------------------------------
+    rule <k> #balIncStor => .K ... </k> <balStorCaptures> .Map </balStorCaptures>
+    rule <k> #balIncStor => #balIncStorAcct ACCT SLOTS ~> #balIncStor ... </k>
+         <balStorCaptures> ACCT:Int |-> SLOTS REST => REST </balStorCaptures>
+
+    rule <k> #balIncStorAcct ACCT SLOTS => #balIncStorSlots ACCT STOR SLOTS ... </k>
+         <account> <acctID> ACCT </acctID> <storage> STOR </storage> ... </account>
+         <balTouched> T => T |Set SetItem(ACCT) </balTouched>
+    rule <k> #balIncStorAcct ACCT SLOTS => #balIncStorSlots ACCT .Map SLOTS ... </k>
+         <balTouched> T => T |Set SetItem(ACCT) </balTouched>
+         [owise]
+
+    rule <k> #balIncStorSlots _ _ .Map => .K ... </k>
+    rule <k> #balIncStorSlots ACCT STOR (SLOT:Int |-> PRE REST) => #balIncStorSlots ACCT STOR REST ... </k>
+         <balIndex> IDX </balIndex>
+         <balStorageChanges> SC => #balAppendStorage(SC, ACCT, SLOT, IDX, #lookup(STOR, SLOT), PRE) </balStorageChanges>
+         [preserves-definedness]
+
+    syntax Map ::= #balAppendE       ( Map , Int , Int , Int , Int )       [function]
+                 | #balAppendCE      ( Map , Int , Int , Bytes , Bytes )   [function]
+                 | #balAppendStorage ( Map , Int , Int , Int , Int , Int ) [function]
+ // ---------------------------------------------------------------------------------
+    rule #balAppendE(M, ACCT, IDX, POST, PRE) => M [ ACCT <- ({M[ACCT] orDefault .List}:>List ListItem(balE(IDX, POST))) ] requires POST =/=Int PRE  [preserves-definedness]
+    rule #balAppendE(M, _, _, POST, PRE) => M requires POST ==Int PRE
+
+    rule #balAppendCE(M, ACCT, IDX, POST, PRE) => M [ ACCT <- ({M[ACCT] orDefault .List}:>List ListItem(balCE(IDX, POST))) ] requires POST =/=K PRE  [preserves-definedness]
+    rule #balAppendCE(M, _, _, POST, PRE) => M requires POST ==K PRE
+
+    rule #balAppendStorage(SC, ACCT, SLOT, IDX, POST, PRE)
+      => SC [ ACCT <- ({SC[ACCT] orDefault .Map}:>Map [ SLOT <- ({({SC[ACCT] orDefault .Map}:>Map)[SLOT] orDefault .List}:>List ListItem(balE(IDX, POST))) ]) ]
+         requires POST =/=Int PRE  [preserves-definedness]
+    rule #balAppendStorage(SC, _, _, _, POST, PRE) => SC requires POST ==Int PRE
+
+    syntax List ::= #balSortInts   ( List )       [function]
+                  | #balInsertInt  ( List , Int ) [function]
+ // --------------------------------------------------------
+    rule #balSortInts(.List) => .List
+    rule #balSortInts(ListItem(X:Int) REST) => #balInsertInt(#balSortInts(REST), X)
+
+    rule #balInsertInt(.List, X) => ListItem(X)
+    rule #balInsertInt(ListItem(Y:Int) REST, X) => ListItem(X) ListItem(Y) REST         requires X <=Int Y
+    rule #balInsertInt(ListItem(Y:Int) REST, X) => ListItem(Y) #balInsertInt(REST, X)   requires X  >Int Y
+
+    syntax InternalOp ::= "#validateBlockAccessList" | "#balCheck" | "#balCheck2" List
+ // ----------------------------------------------------------------------------------
+    rule <k> #validateBlockAccessList => #balIncorporate ~> #balCheck ... </k>
+         <schedule> SCHED </schedule>
+         <balHash> BALHASH </balHash>
+         <statusCode> SC </statusCode>
+      requires Ghaseip7928 << SCHED >>
+       andBool BALHASH =/=Int 0
+       andBool notBool SC ==K EVMC_INVALID_BLOCK
+    rule <k> #validateBlockAccessList => .K ... </k> [owise]
+
+    rule <k> #balCheck => #balCheck2(#balAddrUniverse(TOUCHED, RD, BC, NC, CC, SC)) ... </k>
+         <balTouched> TOUCHED </balTouched>
+         <balReads> RD </balReads>
+         <balBalanceChanges> BC </balBalanceChanges>
+         <balNonceChanges> NC </balNonceChanges>
+         <balCodeChanges> CC </balCodeChanges>
+         <balStorageChanges> SC </balStorageChanges>
+
+    rule <k> #balCheck2(ADDRS)
+          => #balCheckItems #balItemsWithinBudget(#balItemCount(ADDRS, RD, SC), GLIM, SCHED)
+          ~> #checkBalHash keccak(#rlpEncode(#balBuildJSON(ADDRS, RD, BC, NC, CC, SC)))
+         ...
+         </k>
+         <schedule> SCHED </schedule>
+         <gasLimit> GLIM </gasLimit>
+         <balReads> RD </balReads>
+         <balBalanceChanges> BC </balBalanceChanges>
+         <balNonceChanges> NC </balNonceChanges>
+         <balCodeChanges> CC </balCodeChanges>
+         <balStorageChanges> SC </balStorageChanges>
+
+    syntax InternalOp ::= "#balCheckItems" Bool
+                        | "#checkBalHash" Int
+ // -----------------------------------------
+    rule <k> #balCheckItems true => .K ... </k>
+    rule <k> #balCheckItems false => .K ... </k>
+         <statusCode> _ => EVMC_INVALID_BLOCK </statusCode>
+
+    rule <k> #checkBalHash H => .K ... </k> <balHash> HH </balHash> requires H ==Int HH
+    rule <k> #checkBalHash H => .K ... </k> <balHash> HH </balHash>
+         <statusCode> _ => EVMC_INVALID_BLOCK </statusCode>
+      requires notBool H ==Int HH
+
+    syntax Bool ::= #balItemsWithinBudget ( Int , Int , Schedule ) [function]
+ // -------------------------------------------------------------------------
+    rule #balItemsWithinBudget(ITEMS, GLIM, SCHED) => ITEMS <=Int (GLIM /Int Gbalitemcost < SCHED >)
+
+    syntax List ::= #balAddrUniverse ( Set , Map , Map , Map , Map , Map ) [function]
+ // ---------------------------------------------------------------------------------
+    rule #balAddrUniverse(T, RD, BC, NC, CC, SC)
+      => #balSortInts(Set2List(T |Set keys(RD) |Set keys(BC) |Set keys(NC) |Set keys(CC) |Set keys(SC)))
+
+    syntax Int ::= #balItemCount ( List , Map , Map ) [function]
+ // ------------------------------------------------------------
+    rule #balItemCount(.List, _, _) => 0
+    rule #balItemCount(ListItem(A:Int) REST, RD, SC)
+      => 1 +Int size(keys({SC[A] orDefault .Map}:>Map) |Set {RD[A] orDefault .Set}:>Set) +Int #balItemCount(REST, RD, SC)
+      [preserves-definedness]
+
+    syntax JSON ::= #balBuildJSON ( List , Map , Map , Map , Map , Map ) [function]
+ // -------------------------------------------------------------------------------
+    rule #balBuildJSON(ADDRS, RD, BC, NC, CC, SC) => [ #balAccountsJSONs(ADDRS, RD, BC, NC, CC, SC) ]
+
+    syntax JSONs ::= #balAccountsJSONs ( List , Map , Map , Map , Map , Map ) [function]
+ // ------------------------------------------------------------------------------------
+    rule #balAccountsJSONs(.List, _, _, _, _, _) => .JSONs
+    rule #balAccountsJSONs(ListItem(A:Int) REST, RD, BC, NC, CC, SC)
+      => #balAccountJSON(A, RD, BC, NC, CC, SC) , #balAccountsJSONs(REST, RD, BC, NC, CC, SC)
+
+    syntax JSON ::= #balAccountJSON ( Int , Map , Map , Map , Map , Map ) [function]
+ // --------------------------------------------------------------------------------
+    rule #balAccountJSON(A, RD, BC, NC, CC, SC)
+      => [ #addrBytes(A) ,
+           [ #balStorChangesJSONs(#balSortInts(Set2List(keys({SC[A] orDefault .Map}:>Map))), {SC[A] orDefault .Map}:>Map) ] ,
+           [ #balReadsJSONs(#balFilterList(#balSortInts(Set2List({RD[A] orDefault .Set}:>Set)), {SC[A] orDefault .Map}:>Map)) ] ,
+           [ #balEntriesJSONs({BC[A] orDefault .List}:>List) ] ,
+           [ #balEntriesJSONs({NC[A] orDefault .List}:>List) ] ,
+           [ #balCodeEntriesJSONs({CC[A] orDefault .List}:>List) ] ]
+      [preserves-definedness]
+
+    syntax List ::= #balFilterList ( List , Map ) [function]
+ // --------------------------------------------------------
+    rule #balFilterList(.List, _) => .List
+    rule #balFilterList(ListItem(S:Int) REST, STOR) => ListItem(S) #balFilterList(REST, STOR) requires notBool S in_keys(STOR)
+    rule #balFilterList(ListItem(S:Int) REST, STOR) => #balFilterList(REST, STOR)             requires         S in_keys(STOR)
+
+    syntax JSONs ::= #balReadsJSONs ( List ) [function]
+ // ---------------------------------------------------
+    rule #balReadsJSONs(.List) => .JSONs
+    rule #balReadsJSONs(ListItem(S:Int) REST) => S , #balReadsJSONs(REST)
+
+    syntax JSONs ::= #balStorChangesJSONs ( List , Map ) [function]
+ // ---------------------------------------------------------------
+    rule #balStorChangesJSONs(.List, _) => .JSONs
+    rule #balStorChangesJSONs(ListItem(S:Int) REST, STOR)
+      => [ S , [ #balEntriesJSONs({STOR[S] orDefault .List}:>List) ] ] , #balStorChangesJSONs(REST, STOR)
+      [preserves-definedness]
+
+    syntax JSONs ::= #balEntriesJSONs ( List ) [function]
+ // -----------------------------------------------------
+    rule #balEntriesJSONs(.List) => .JSONs
+    rule #balEntriesJSONs(ListItem(balE(IDX, VAL)) REST) => [ IDX , VAL ] , #balEntriesJSONs(REST)
+
+    syntax JSONs ::= #balCodeEntriesJSONs ( List ) [function]
+ // ---------------------------------------------------------
+    rule #balCodeEntriesJSONs(.List) => .JSONs
+    rule #balCodeEntriesJSONs(ListItem(balCE(IDX, CODE)) REST) => [ IDX , CODE ] , #balCodeEntriesJSONs(REST)
 ```
 
 Control Flow
@@ -582,7 +869,7 @@ After executing a transaction, it's necessary to have the effect of the substate
     rule <k> #finalizeWithdrawals => .K ... </k>
          <withdrawalsPending> .List </withdrawalsPending>
 
-    rule <k> #finalizeWithdrawals ... </k>
+    rule <k> (.K => #balCaptureBalance ACCT B) ~> #finalizeWithdrawals ... </k>
          <withdrawalsPending> ListItem(WDID) LS => LS </withdrawalsPending>
          <withdrawal>
            <withdrawalID> WDID </withdrawalID>
@@ -622,7 +909,7 @@ After executing a transaction, it's necessary to have the effect of the substate
     syntax InternalOp ::= #finalizeTx ( Bool , Int )   [symbol(#finalizeTx)]
                         | #deleteAccounts ( List ) [symbol(#deleteAccounts)]
  // ------------------------------------------------------------------------
-    rule <k> #finalizeTx(true, _) => #finalizeStorage(Set2List(SetItem(MINER) |Set ACCTS)) ... </k>
+    rule <k> #finalizeTx(true, _) => #balIncorporate ~> #finalizeStorage(Set2List(SetItem(MINER) |Set ACCTS)) ... </k>
          <selfDestruct> .Set </selfDestruct>
          <coinbase> MINER </coinbase>
          <touchedAccounts> ACCTS => .Set </touchedAccounts>
@@ -643,7 +930,7 @@ After executing a transaction, it's necessary to have the effect of the substate
          </message>
       requires REFUND =/=Int 0
 
-    rule <k> #finalizeTx(false => true, GFLOOR) ... </k>
+    rule <k> (.K => #balCaptureBalance ORG ORGBAL ~> #balCaptureBalance MINER MINBAL) ~> #finalizeTx(false => true, GFLOOR) ... </k>
          <useGas> true </useGas>
          <schedule> SCHED </schedule>
          <baseFee> BFEE </baseFee>
@@ -674,7 +961,7 @@ After executing a transaction, it's necessary to have the effect of the substate
          </message>
       requires ORG =/=Int MINER
 
-    rule <k> #finalizeTx(false => true, GFLOOR) ... </k>
+    rule <k> (.K => #balCaptureBalance ACCT BAL) ~> #finalizeTx(false => true, GFLOOR) ... </k>
          <useGas> true </useGas>
          <schedule> SCHED </schedule>
          <baseFee> BFEE </baseFee>
@@ -879,12 +1166,23 @@ Terminates validation successfully when all conditions are met or when blob vali
 ```k
     syntax EthereumCommand ::= "#startBlock"
  // ----------------------------------------
-    rule <k> #startBlock => #validateBlockBlobs 0 TXS ~> #executeBeaconRoots ~> #executeBlockHashHistory ... </k>
+    rule <k> #startBlock => #validateBlockBlobs 0 TXS ~> #executeBeaconRoots ~> #executeBlockHashHistory ~> #balIncorporate ... </k>
          <gasUsed> _ => 0 </gasUsed>
          <blobGasUsed> _ => 0 </blobGasUsed>
          <log> _ => .List </log>
          <logsBloom> _ => #padToWidth(256, .Bytes) </logsBloom>
          <txOrder> TXS </txOrder>
+         <balIndex>          _ => 0    </balIndex>
+         <balTouched>        _ => .Set </balTouched>
+         <balReads>          _ => .Map </balReads>
+         <balBalCaptures>    _ => .Map </balBalCaptures>
+         <balNonceCaptures>  _ => .Map </balNonceCaptures>
+         <balCodeCaptures>   _ => .Map </balCodeCaptures>
+         <balStorCaptures>   _ => .Map </balStorCaptures>
+         <balBalanceChanges> _ => .Map </balBalanceChanges>
+         <balNonceChanges>   _ => .Map </balNonceChanges>
+         <balCodeChanges>    _ => .Map </balCodeChanges>
+         <balStorageChanges> _ => .Map </balStorageChanges>
 
     syntax EthereumCommand ::= "#finalizeBlock"
                              | #rewardOmmers ( JSONs ) [symbol(#rewardOmmers)]
@@ -893,12 +1191,14 @@ Terminates validation successfully when all conditions are met or when blob vali
           => #if Ghaswithdrawals << SCHED >> #then #finalizeWithdrawals #else .K #fi
           ~> #rewardOmmers(OMMERS)
           ~> #processGeneralPurposeRequests
+          ~> #validateBlockAccessList
           ~> #finalizeBlockBlobs
          ...
          </k>
          <schedule> SCHED </schedule>
          <ommerBlockHeaders> [ OMMERS ] </ommerBlockHeaders>
          <coinbase> MINER </coinbase>
+         <balIndex> I => I +Int 1 </balIndex>
          <account>
            <acctID> MINER </acctID>
            <balance> MINBAL => MINBAL +Int Rb < SCHED > </balance>
@@ -969,7 +1269,12 @@ Read more about EIP-4788 here [https://eips.ethereum.org/EIPS/eip-4788](https://
 ```k
     syntax InternalOp ::= "#executeBeaconRoots" [symbol(#executeBeaconRoots)]
  // -------------------------------------------------------------------------
-    rule <k> #executeBeaconRoots => .K ... </k>
+    rule <k> #executeBeaconRoots
+          => #balTouch BEACON_ROOTS_ADDRESS
+          ~> #balCaptureStorage BEACON_ROOTS_ADDRESS (TS modInt 8191) #lookup(M, TS modInt 8191) ~> #balRead BEACON_ROOTS_ADDRESS (TS modInt 8191)
+          ~> #balCaptureStorage BEACON_ROOTS_ADDRESS (TS modInt 8191 +Int 8191) #lookup(M, TS modInt 8191 +Int 8191) ~> #balRead BEACON_ROOTS_ADDRESS (TS modInt 8191 +Int 8191)
+         ...
+         </k>
          <schedule> SCHED </schedule>
          <timestamp> TS </timestamp>
          <beaconRoot> BR </beaconRoot>
@@ -993,7 +1298,11 @@ Read more about EIP-2935 here [https://eips.ethereum.org/EIPS/eip-2935](https://
 ```k
     syntax InternalOp ::= "#executeBlockHashHistory" [symbol(#executeBlockHashHistory)]
  // -----------------------------------------------------------------------------------
-    rule <k> #executeBlockHashHistory => .K ... </k>
+    rule <k> #executeBlockHashHistory
+          => #balTouch HISTORY_STORAGE_ADDRESS
+          ~> #balCaptureStorage HISTORY_STORAGE_ADDRESS ((BN -Int 1) modInt 8191) #lookup(M, (BN -Int 1) modInt 8191) ~> #balRead HISTORY_STORAGE_ADDRESS ((BN -Int 1) modInt 8191)
+         ...
+         </k>
          <schedule> SCHED </schedule>
          <previousHash> HP </previousHash>
          <number> BN </number>
@@ -1091,7 +1400,7 @@ These are just used by the other operators for shuffling local execution state a
       requires ACCTFROM ==K ACCTTO
        andBool VALUE <=Int ORIGFROM
 
-    rule <k> #transferFunds ACCTFROM ACCTTO VALUE => .K ... </k>
+    rule <k> #transferFunds ACCTFROM ACCTTO VALUE => #balCaptureBalance ACCTFROM ORIGFROM ~> #balCaptureBalance ACCTTO ORIGTO ... </k>
          <account>
            <acctID> ACCTFROM </acctID>
            <balance> ORIGFROM => ORIGFROM -Word VALUE </balance>
@@ -1459,31 +1768,31 @@ Operators that require access to the rest of the Ethereum network world-state ca
     syntax UnStackOp ::= "BALANCE"
  // ------------------------------
     rule [balance.true]:
-         <k> BALANCE ACCT => #accessAccounts ACCT ~> BAL ~> #push ... </k>
+         <k> BALANCE ACCT => #balTouch ACCT ~> #accessAccounts ACCT ~> BAL ~> #push ... </k>
          <account>
            <acctID> ACCT </acctID>
            <balance> BAL </balance>
            ...
          </account>
 
-    rule [balance.false]: <k> BALANCE ACCT => #accessAccounts ACCT ~> 0 ~> #push ... </k> [owise]
+    rule [balance.false]: <k> BALANCE ACCT => #balTouch ACCT ~> #accessAccounts ACCT ~> 0 ~> #push ... </k> [owise]
 
     syntax UnStackOp ::= "EXTCODESIZE"
  // ----------------------------------
     rule [extcodesize.true]:
-         <k> EXTCODESIZE ACCT => #accessAccounts ACCT ~> lengthBytes(CODE) ~> #push ... </k>
+         <k> EXTCODESIZE ACCT => #balTouch ACCT ~> #accessAccounts ACCT ~> lengthBytes(CODE) ~> #push ... </k>
          <account>
            <acctID> ACCT </acctID>
            <code> CODE </code>
            ...
          </account>
 
-    rule [extcodesize.false]: <k> EXTCODESIZE ACCT => #accessAccounts ACCT ~> 0 ~> #push ... </k> [owise]
+    rule [extcodesize.false]: <k> EXTCODESIZE ACCT => #balTouch ACCT ~> #accessAccounts ACCT ~> 0 ~> #push ... </k> [owise]
 
     syntax UnStackOp ::= "EXTCODEHASH"
  // ----------------------------------
     rule [extcodehash.true]:
-         <k> EXTCODEHASH ACCT => #accessAccounts ACCT ~> keccak(CODE) ~> #push ... </k>
+         <k> EXTCODEHASH ACCT => #balTouch ACCT ~> #accessAccounts ACCT ~> keccak(CODE) ~> #push ... </k>
          <account>
            <acctID> ACCT </acctID>
            <code> CODE:Bytes </code>
@@ -1493,12 +1802,12 @@ Operators that require access to the rest of the Ethereum network world-state ca
          </account>
       requires notBool #accountEmpty(CODE, NONCE, BAL)
 
-    rule [extcodehash.false]: <k> EXTCODEHASH ACCT => #accessAccounts ACCT ~> 0 ~> #push ... </k> [owise]
+    rule [extcodehash.false]: <k> EXTCODEHASH ACCT => #balTouch ACCT ~> #accessAccounts ACCT ~> 0 ~> #push ... </k> [owise]
 
     syntax QuadStackOp ::= "EXTCODECOPY"
  // ------------------------------------
     rule [extcodecopy.true]:
-         <k> EXTCODECOPY ACCT MEMSTART PGMSTART WIDTH => #accessAccounts ACCT ... </k>
+         <k> EXTCODECOPY ACCT MEMSTART PGMSTART WIDTH => #balTouch ACCT ~> #accessAccounts ACCT ... </k>
          <localMem> LM => LM [ MEMSTART := #range(PGM, PGMSTART, WIDTH) ] </localMem>
          <account>
            <acctID> ACCT </acctID>
@@ -1507,7 +1816,7 @@ Operators that require access to the rest of the Ethereum network world-state ca
          </account>
 
     rule [extcodecopy.false]:
-         <k> EXTCODECOPY ACCT MEMSTART _ WIDTH => #accessAccounts ACCT ... </k>
+         <k> EXTCODECOPY ACCT MEMSTART _ WIDTH => #balTouch ACCT ~> #accessAccounts ACCT ... </k>
          <localMem> LM => LM [ MEMSTART := #padToWidth(WIDTH, .Bytes) ] </localMem> [owise]
 ```
 
@@ -1519,7 +1828,7 @@ These rules reach into the network state and load/store from account storage:
     syntax UnStackOp ::= "SLOAD"
  // ----------------------------
     rule [sload]:
-         <k> SLOAD INDEX => #lookup(STORAGE, INDEX) ~> #push ... </k>
+         <k> SLOAD INDEX => #balRead ACCT INDEX ~> #lookup(STORAGE, INDEX) ~> #push ... </k>
          <id> ACCT </id>
          <account>
            <acctID> ACCT </acctID>
@@ -1530,7 +1839,10 @@ These rules reach into the network state and load/store from account storage:
     syntax BinStackOp ::= "SSTORE"
  // ------------------------------
     rule [sstore]:
-         <k> SSTORE INDEX NEW => .K ... </k>
+         <k> SSTORE INDEX NEW
+          => #balCaptureStorage ACCT INDEX #lookup(STORAGE, INDEX) ~> #balRead ACCT INDEX
+         ...
+         </k>
          <id> ACCT </id>
          <account>
            <acctID> ACCT </acctID>
@@ -1635,7 +1947,8 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     rule [call.delegatedAuthority]:
          <k> #call ACCTFROM ACCTTO ACCTCODE VALUE APPVALUE ARGS STATIC
           => #let DELEGATED_ACCOUNT = #asAccount(#range(CODE,3,20)) #in
-           (#accessAccounts DELEGATED_ACCOUNT
+           (#balTouch DELEGATED_ACCOUNT
+          ~> #accessAccounts DELEGATED_ACCOUNT
           ~> #callWithCode ACCTFROM ACCTTO ACCTCODE #getAccountCode(DELEGATED_ACCOUNT) VALUE APPVALUE ARGS STATIC )
           ...
          </k>
@@ -1794,7 +2107,7 @@ System Transaction Configuration
     syntax InternalOp ::= "#systemCall" Int Bytes   [symbol(#systemCall)]
                         | "#mkSystemCall" Int Bytes [symbol(#mkSystemCall)]
  // -----------------------------------------------------------------------
-    rule <k> #systemCall ACCTTO ARGS => #pushCallStack ~> #pushWorldState ~> #mkSystemCall ACCTTO ARGS ... </k>
+    rule <k> #systemCall ACCTTO ARGS => #balTouch ACCTTO ~> #pushCallStack ~> #pushWorldState ~> #mkSystemCall ACCTTO ARGS ... </k>
 
     rule <k> #mkSystemCall ACCTTO ARGS => #loadProgram CODE ~> #initVM ~> #execute ... </k>
          <useGas> USEGAS:Bool </useGas>
@@ -1873,7 +2186,8 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
  // ------------------------
     rule [call]:
          <k> CALL _GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
-          => #accessAccounts ACCTTO
+          => #balTouch ACCTTO
+          ~> #accessAccounts ACCTTO
           ~> #checkCall ACCTFROM VALUE
           ~> #call ACCTFROM ACCTTO ACCTTO VALUE VALUE #range(LM, ARGSTART, ARGWIDTH) false
           ~> #return RETSTART RETWIDTH
@@ -1886,7 +2200,8 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
  // ----------------------------
     rule [callcode]:
          <k> CALLCODE _GCAP ACCTTO VALUE ARGSTART ARGWIDTH RETSTART RETWIDTH
-          => #accessAccounts ACCTTO
+          => #balTouch ACCTTO
+          ~> #accessAccounts ACCTTO
           ~> #checkCall ACCTFROM VALUE
           ~> #call ACCTFROM ACCTFROM ACCTTO VALUE VALUE #range(LM, ARGSTART, ARGWIDTH) false
           ~> #return RETSTART RETWIDTH
@@ -1899,7 +2214,8 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
  // -----------------------------------
     rule [delegatecall]:
          <k> DELEGATECALL _GCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
-          => #accessAccounts ACCTTO
+          => #balTouch ACCTTO
+          ~> #accessAccounts ACCTTO
           ~> #checkCall ACCTFROM 0
           ~> #call ACCTAPPFROM ACCTFROM ACCTTO 0 VALUE #range(LM, ARGSTART, ARGWIDTH) false
           ~> #return RETSTART RETWIDTH
@@ -1914,7 +2230,8 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
  // ---------------------------------
     rule [staticcall]:
          <k> STATICCALL _GCAP ACCTTO ARGSTART ARGWIDTH RETSTART RETWIDTH
-          => #accessAccounts ACCTTO
+          => #balTouch ACCTTO
+          ~> #accessAccounts ACCTTO
           ~> #checkCall ACCTFROM 0
           ~> #call ACCTFROM ACCTTO ACCTTO 0 0 #range(LM, ARGSTART, ARGWIDTH) true
           ~> #return RETSTART RETWIDTH
@@ -1947,7 +2264,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          </k>
 
     rule <k> #mkCreate ACCTFROM ACCTTO VALUE INITCODE
-          => #touchAccounts ACCTFROM ACCTTO ~> #accessAccounts ACCTFROM ACCTTO ~> #loadProgram INITCODE ~> #initVM ~> #execute
+          => #balCaptureNonce ACCTTO NONCE ~> #touchAccounts ACCTFROM ACCTTO ~> #accessAccounts ACCTFROM ACCTTO ~> #loadProgram INITCODE ~> #initVM ~> #execute
          ...
          </k>
          <useGas> USEGAS </useGas>
@@ -1967,7 +2284,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          </account>
          <createdAccounts> ACCTS => ACCTS |Set SetItem(ACCTTO) </createdAccounts>
 
-    rule <k> #incrementNonce ACCT => .K ... </k>
+    rule <k> #incrementNonce ACCT => #balCaptureNonce ACCT NONCE ... </k>
          <account>
            <acctID> ACCT </acctID>
            <nonce> NONCE => NONCE +Int 1 </nonce>
@@ -2012,14 +2329,15 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
       requires notBool ( lengthBytes(OUT) <=Int maxCodeSize < SCHED > andBool #isValidCode(OUT, SCHED) )
 
     rule <k> #finishCodeDeposit ACCT OUT
-          => #popCallStack ~> #dropWorldState
+          => #balCaptureCode ACCT OLDCODE
+          ~> #popCallStack ~> #dropWorldState
           ~> #refund GAVAIL ~> ACCT ~> #push
          ...
          </k>
          <gas> GAVAIL </gas>
          <account>
            <acctID> ACCT </acctID>
-           <code> _ => OUT </code>
+           <code> OLDCODE => OUT </code>
            ...
          </account>
 
@@ -2047,7 +2365,8 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
  // -------------------------------
     rule [create-valid]:
          <k> CREATE VALUE MEMSTART MEMWIDTH
-          => #accessAccounts #newAddr(ACCT, NONCE)
+          => #balTouch #newAddr(ACCT, NONCE)
+          ~> #accessAccounts #newAddr(ACCT, NONCE)
           ~> #checkCreate ACCT VALUE
           ~> #create ACCT #newAddr(ACCT, NONCE) VALUE #range(LM, MEMSTART, MEMWIDTH)
           ~> #codeDeposit #newAddr(ACCT, NONCE)
@@ -2075,7 +2394,8 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
  // --------------------------------
     rule [create2-valid]:
          <k> CREATE2 VALUE MEMSTART MEMWIDTH SALT
-          => #accessAccounts #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH))
+          => #balTouch #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH))
+          ~> #accessAccounts #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH))
           ~> #checkCreate ACCT VALUE
           ~> #create ACCT #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH)) VALUE #range(LM, MEMSTART, MEMWIDTH)
           ~> #codeDeposit #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH))
@@ -2096,7 +2416,7 @@ Self destructing to yourself, unlike a regular transfer, destroys the balance in
 ```k
     syntax UnStackOp ::= "SELFDESTRUCT"
  // -----------------------------------
-    rule <k> SELFDESTRUCT ACCTTO => #touchAccounts ACCT ACCTTO ~> #accessAccounts ACCTTO ~> #transferFunds ACCT ACCTTO BALFROM ~> #end EVMC_SUCCESS ... </k>
+    rule <k> SELFDESTRUCT ACCTTO => #balTouch ACCTTO ~> #touchAccounts ACCT ACCTTO ~> #accessAccounts ACCTTO ~> #transferFunds ACCT ACCTTO BALFROM ~> #end EVMC_SUCCESS ... </k>
          <schedule> SCHED </schedule>
          <id> ACCT </id>
          <selfDestruct> SDS => SDS |Set SetItem(ACCT) </selfDestruct>
@@ -2123,7 +2443,7 @@ Self destructing to yourself, unlike a regular transfer, destroys the balance in
          <createdAccounts> CA </createdAccounts>
       requires ((notBool Ghaseip6780 << SCHED >>) orBool ACCT in CA)
 
-    rule <k> SELFDESTRUCT ACCTTO => #touchAccounts ACCT ACCTTO ~> #accessAccounts ACCTTO ~> #transferFunds ACCT ACCTTO BALFROM ~> #end EVMC_SUCCESS ... </k>
+    rule <k> SELFDESTRUCT ACCTTO => #balTouch ACCTTO ~> #touchAccounts ACCT ACCTTO ~> #accessAccounts ACCTTO ~> #transferFunds ACCT ACCTTO BALFROM ~> #end EVMC_SUCCESS ... </k>
          <schedule> SCHED </schedule>
          <id> ACCT </id>
          <account>

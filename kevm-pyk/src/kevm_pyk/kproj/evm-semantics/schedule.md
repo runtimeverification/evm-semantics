@@ -31,8 +31,8 @@ module SCHEDULE
                           | "Ghaswarmcoinbase"        | "Ghaswithdrawals"  | "Ghastransient"       | "Ghasmcopy"
                           | "Ghasbeaconroot"          | "Ghaseip6780"      | "Ghasblobbasefee"     | "Ghasblobhash"
                           | "Ghasbls12msmdiscount"    | "Ghashistory"      | "Ghasrequests"        | "Ghasauthority"
-                          | "Ghasfloorcost"           | "Ghasclz"
- // -------------------------------------------------------------
+                          | "Ghasfloorcost"           | "Ghasclz"          | "Ghaseip7928"
+ // ---------------------------------------------------------------------------------------
 ```
 
 ### Schedule Constants
@@ -53,8 +53,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
                            | "Gaccessliststoragekey"           | "Rmaxquotient"  | "Ginitcodewordcost" | "maxInitCodeSize"    | "Gwarmstoragedirtystore"
                            | "Gpointeval"    | "Gmaxblobgas"   | "Gminbasefee"   | "Gtargetblobgas"    | "Gperblob"           | "Blobbasefeeupdatefraction"
                            | "Gbls12g1add"   | "Gbls12g1mul"   | "Gbls12g2add"   | "Gbls12g2mul"       | "Gbls12mapfptog1"    | "Gbls12PairingCheckMul"
-                           | "Gbls12PairingCheckAdd"           | "Gauthbase"     | "Gbls12mapfp2tog2"  | "Gtxdatafloor"
- // -------------------------------------------------------------------------------------------------------------------------------------------------------
+                           | "Gbls12PairingCheckAdd"           | "Gauthbase"     | "Gbls12mapfp2tog2"  | "Gtxdatafloor"       | "Gbalitemcost"
+ // --------------------------------------------------------------------------------------------------------------------------------------------
 ```
 
 ### Default Schedule
@@ -148,6 +148,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule [Gbls12PairingCheckAddDefault]: Gbls12PairingCheckAdd < DEFAULT > => 0
     rule [Gbls12mapfptog1Default]:       Gbls12mapfptog1       < DEFAULT > => 0
     rule [Gbls12mapfp2tog2Default]:      Gbls12mapfp2tog2      < DEFAULT > => 0
+    rule [GbalitemcostDefault]:          Gbalitemcost          < DEFAULT > => 0
 
     rule [GselfdestructnewaccountDefault]: Gselfdestructnewaccount << DEFAULT >> => false
     rule [GstaticcalldepthDefault]:        Gstaticcalldepth        << DEFAULT >> => true
@@ -183,6 +184,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule [GhasauthorityDefault]:           Ghasauthority           << DEFAULT >> => false
     rule [GhasfloorcostDefault]:           Ghasfloorcost           << DEFAULT >> => false
     rule [GhasclzDefault]:                 Ghasclz                 << DEFAULT >> => false
+    rule [Ghaseip7928Default]:             Ghaseip7928             << DEFAULT >> => false
 ```
 
 ### Frontier Schedule
@@ -517,16 +519,20 @@ A `ScheduleConst` is a constant determined by the fee schedule.
 ```k
     syntax Schedule ::= "AMSTERDAM" [symbol(AMSTERDAM_EVM), smtlib(schedule_AMSTERDAM)]
  // -----------------------------------------------------------------------------------
+    rule [GbalitemcostAmsterdam]:              Gbalitemcost              < AMSTERDAM > => 2000
     rule [GmaxblobgasAmsterdam]:               Gmaxblobgas               < AMSTERDAM > => 2752512
     rule [GtargetblobgasAmsterdam]:            Gtargetblobgas            < AMSTERDAM > => 1835008
     rule [BlobbasefeeupdatefractionAmsterdam]: Blobbasefeeupdatefraction < AMSTERDAM > => 11684671
     rule [SCHEDCONSTAmsterdam]:                SCHEDCONST                < AMSTERDAM > => SCHEDCONST < OSAKA >
-      requires notBool ( SCHEDCONST ==K Gmaxblobgas
+      requires notBool ( SCHEDCONST ==K Gbalitemcost
+                  orBool SCHEDCONST ==K Gmaxblobgas
                   orBool SCHEDCONST ==K Gtargetblobgas
                   orBool SCHEDCONST ==K Blobbasefeeupdatefraction
                        )
 
-    rule [SCHEDFLAGAmsterdam]: SCHEDFLAG << AMSTERDAM >> => SCHEDFLAG << OSAKA >>
+    rule [Ghaseip7928Amsterdam]: Ghaseip7928 << AMSTERDAM >> => true
+    rule [SCHEDFLAGAmsterdam]:   SCHEDFLAG   << AMSTERDAM >> => SCHEDFLAG << OSAKA >>
+      requires notBool ( SCHEDFLAG ==K Ghaseip7928 )
 ```
 
 ```k
