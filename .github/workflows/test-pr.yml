@@ -13,9 +13,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 'Check out code'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: 'Setup Python 3.10'
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: '3.10'
       - name: 'Get uv release'
@@ -37,7 +37,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 'Check out code'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: 'Get uv release'
         id: uv_release
         run: |
@@ -55,7 +55,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 'Check out code'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: 'Get uv release'
         id: uv_release
         run: |
@@ -75,7 +75,7 @@ jobs:
     timeout-minutes: 45
     steps:
       - name: 'Check out code'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           submodules: recursive
       - name: 'Set up Docker'
@@ -138,7 +138,7 @@ jobs:
     timeout-minutes: ${{ matrix.timeout }}
     steps:
       - name: 'Check out code'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: 'Check out select submodules'
         run: |
           set -eux
@@ -169,7 +169,7 @@ jobs:
     timeout-minutes: 60
     steps:
       - name: 'Check out code'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           # Check out pull request HEAD instead of merge commit.
           ref: ${{ github.event.pull_request.head.sha }}
