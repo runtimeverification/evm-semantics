@@ -7,14 +7,8 @@ concurrency:
   group: ${{ github.workflow }}
   cancel-in-progress: true
 
-# Uses only the auto-issued, per-run GITHUB_TOKEN (no stored secrets); every
-# other permission scope is implicitly dropped to none. Runs only on push to
-# the trusted `release` branch and executes only in-repo scripts (version.sh,
-# gh) -- never untrusted PR code -- so the write-scoped token is never exposed
-# to third-party code. The Nix/Cachix binary caches and docs are published
-# outside GitHub Actions. A release is cut by pushing the `release` branch
-# manually (e.g. merging master into it); this workflow then bumps the version,
-# commits it back to `release`, and creates the `v<version>` tag + release.
+# Uses only the built-in GITHUB_TOKEN to cut a release on a push to the
+# `release` branch: this bumps the version, then creates the v<version> release.
 permissions:
   contents: write
 
