@@ -23,7 +23,7 @@ jobs:
         run: |
           echo uv_version=$(cat deps/uv_release) >> "${GITHUB_OUTPUT}"
       - name: 'Install uv'
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@v9.0.0
         with:
           version: ${{ steps.uv_release.outputs.uv_version }}
       - name: 'Run code quality checks'
@@ -43,7 +43,7 @@ jobs:
         run: |
           echo uv_version=$(cat deps/uv_release) >> "${GITHUB_OUTPUT}"
       - name: 'Install uv'
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@v9.0.0
         with:
           version: ${{ steps.uv_release.outputs.uv_version }}
       - name: 'Run unit tests'
@@ -61,7 +61,7 @@ jobs:
         run: |
           echo uv_version=$(cat deps/uv_release) >> "${GITHUB_OUTPUT}"
       - name: 'Install uv'
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@v9.0.0
         with:
           version: ${{ steps.uv_release.outputs.uv_version }}
       - name: 'Run profiling'
