@@ -19,9 +19,6 @@ jobs:
     steps:
       - name: 'Check out release branch'
         uses: actions/checkout@v7
-        with:
-          ref: release
-          fetch-depth: 0
       - name: 'Configure git identity'
         run: |
           git config user.name 'github-actions[bot]'
