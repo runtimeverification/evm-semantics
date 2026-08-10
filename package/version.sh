@@ -29,6 +29,8 @@ version_sub() {
     local version
     version="$(cat $version_file)"
     sed --in-place 's/^version = ".*"$/version = "'${version}'"/' kevm-pyk/pyproject.toml
+    # uv.lock records the workspace package version too; re-lock so it cannot drift from the manifest.
+    uv --project kevm-pyk lock
 }
 
 version_command="$1" ; shift
