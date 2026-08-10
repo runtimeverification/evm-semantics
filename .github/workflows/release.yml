@@ -8,7 +8,10 @@ concurrency:
   cancel-in-progress: false
 
 # Uses only the built-in GITHUB_TOKEN to cut a release on a push to the
-# `release` branch: this bumps the version, then creates the v<version> release.
+# `release` branch: this bumps the version, then drafts the v<version> release.
+# The draft is published by hand. `release` only ever receives merges from `master`,
+# which test-pr.yml has already tested, so the one thing no CI covers is the merge
+# resolution itself — that is what the human check before publishing is for.
 permissions:
   contents: write
 
@@ -34,7 +37,7 @@ jobs:
           # The lock step runs once per release; a restored cache would only add a
           # writable input to a workflow that publishes.
           enable-cache: false
-      - name: 'Bump version, commit, push, and create release'
+      - name: 'Bump version, commit, push, and draft release'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -44,7 +47,8 @@ jobs:
           VERSION="v$(cat package/version)"
           git commit --all --message "Set Version: ${VERSION}"
           git push origin HEAD:release
-          gh release create "${VERSION}"              \
-            --repo runtimeverification/evm-semantics  \
-            --title "${VERSION}"                       \
-            --target "$(git rev-parse HEAD)"
+          gh release create "${VERSION}"     \
+            --draft                          \
+            --title "${VERSION}"             \
+            --target "$(git rev-parse HEAD)" \
+            --generate-notes
