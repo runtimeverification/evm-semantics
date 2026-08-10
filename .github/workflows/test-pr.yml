@@ -7,6 +7,11 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+# No job here writes to the repository, so the token stays read-only regardless of
+# the repository default. release.yml is the only workflow that needs contents: write.
+permissions:
+  contents: read
+
 jobs:
   kevm-pyk-code-quality-checks:
     name: 'Code Quality Checks'
