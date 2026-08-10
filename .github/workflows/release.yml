@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 'Check out release branch'
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
       - name: 'Configure git identity'
         run: |
           git config user.name 'github-actions[bot]'
@@ -28,7 +28,7 @@ jobs:
         run: |
           echo uv_version=$(cat deps/uv_release) >> "${GITHUB_OUTPUT}"
       - name: 'Install uv'
-        uses: astral-sh/setup-uv@v9.0.0
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9  # v9.0.0
         with:
           version: ${{ steps.uv_release.outputs.uv_version }}
           # The lock step runs once per release; a restored cache would only add a
