@@ -5,7 +5,7 @@ on:
       - 'release'
 concurrency:
   group: ${{ github.workflow }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 # Uses only the built-in GITHUB_TOKEN to cut a release on a push to the
 # `release` branch: this bumps the version, then creates the v<version> release.
