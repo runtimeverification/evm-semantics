@@ -39,17 +39,15 @@ runs:
   using: 'composite'
   steps:
   - name: 'Set up Docker'
+    env:
+      CONTAINER_NAME: ${{ inputs.container-name }}
+      BASE_DISTRO: ${{ inputs.distro }}
+      DOCKERFILE: ${{ inputs.dockerfile }}
+      LLVM_VERSION: ${{ inputs.llvm }}
+      TAG_NAME: ${{ inputs.tag-name }}
     shell: bash {0}
     run: |
       set -euxo pipefail
-
-      CONTAINER_NAME=${INPUTS_CONTAINER_NAME}
-      SUBDIR=${INPUTS_SUBDIR}
-      BASE_OS=${INPUTS_OS}
-      BASE_DISTRO=${INPUTS_DISTRO}
-      DOCKERFILE=${INPUTS_DOCKERFILE}
-      LLVM_VERSION=${INPUTS_LLVM}
-      TAG_NAME=${INPUTS_TAG_NAME}
 
       USER=github-user
       GROUP=${USER}
@@ -83,11 +81,3 @@ runs:
 
       docker cp . ${CONTAINER_NAME}:/home/${USER}/workspace
       docker exec ${CONTAINER_NAME} chown -R ${USER}:${GROUP} /home/${USER}
-    env:
-      INPUTS_CONTAINER_NAME: ${{ inputs.container-name }}
-      INPUTS_SUBDIR: ${{ inputs.subdir }}
-      INPUTS_OS: ${{ inputs.os }}
-      INPUTS_DISTRO: ${{ inputs.distro }}
-      INPUTS_DOCKERFILE: ${{ inputs.dockerfile }}
-      INPUTS_LLVM: ${{ inputs.llvm }}
-      INPUTS_TAG_NAME: ${{ inputs.tag-name }}
