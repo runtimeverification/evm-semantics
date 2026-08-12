@@ -7,23 +7,30 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+# No job here writes to the repository, so the token stays read-only regardless of
+# the repository default.
+permissions:
+  contents: read
+
 jobs:
   kevm-pyk-code-quality-checks:
     name: 'Code Quality Checks'
     runs-on: ubuntu-latest
     steps:
       - name: 'Check out code'
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
       - name: 'Setup Python 3.10'
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
         with:
           python-version: '3.10'
       - name: 'Get uv release'
         id: uv_release
         run: |
-          echo uv_version=$(cat deps/uv_release) >> "${GITHUB_OUTPUT}"
+          echo "uv_version=$(cat deps/uv_release)" >> "${GITHUB_OUTPUT}"
       - name: 'Install uv'
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9  # v9.0.0
         with:
           version: ${{ steps.uv_release.outputs.uv_version }}
       - name: 'Run code quality checks'
@@ -37,13 +44,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 'Check out code'
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
       - name: 'Get uv release'
         id: uv_release
         run: |
-          echo uv_version=$(cat deps/uv_release) >> "${GITHUB_OUTPUT}"
+          echo "uv_version=$(cat deps/uv_release)" >> "${GITHUB_OUTPUT}"
       - name: 'Install uv'
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9  # v9.0.0
         with:
           version: ${{ steps.uv_release.outputs.uv_version }}
       - name: 'Run unit tests'
@@ -55,13 +64,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 'Check out code'
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
       - name: 'Get uv release'
         id: uv_release
         run: |
-          echo uv_version=$(cat deps/uv_release) >> "${GITHUB_OUTPUT}"
+          echo "uv_version=$(cat deps/uv_release)" >> "${GITHUB_OUTPUT}"
       - name: 'Install uv'
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9  # v9.0.0
         with:
           version: ${{ steps.uv_release.outputs.uv_version }}
       - name: 'Run profiling'
@@ -75,9 +86,10 @@ jobs:
     timeout-minutes: 45
     steps:
       - name: 'Check out code'
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
           submodules: recursive
+          persist-credentials: false
       - name: 'Set up Docker'
         uses: ./.github/actions/with-docker
         with:
@@ -95,7 +107,9 @@ jobs:
       - name: 'Tear down Docker'
         if: always()
         run: |
-          docker stop --time=0 kevm-ci-concrete-${{ github.sha }}
+          # Best effort: the container does not exist if 'Set up Docker' failed, and a
+          # non-zero exit here would mask the step that actually failed.
+          docker stop --timeout=0 kevm-ci-concrete-${{ github.sha }} || true
 
   test-prove:
     name: 'Proofs: ${{ matrix.name }}'
@@ -138,7 +152,9 @@ jobs:
     timeout-minutes: ${{ matrix.timeout }}
     steps:
       - name: 'Check out code'
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
       - name: 'Check out select submodules'
         run: |
           set -eux
@@ -154,7 +170,9 @@ jobs:
       - name: 'Tear down Docker'
         if: always()
         run: |
-          docker stop --time=0 kevm-ci-haskell-${{ matrix.test-suite }}-${{ github.sha }}
+          # Best effort: the container does not exist if 'Set up Docker' failed, and a
+          # non-zero exit here would mask the step that actually failed.
+          docker stop --timeout=0 kevm-ci-haskell-${{ matrix.test-suite }}-${{ github.sha }} || true
 
   nix:
     name: 'Nix'
@@ -169,10 +187,11 @@ jobs:
     timeout-minutes: 60
     steps:
       - name: 'Check out code'
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
           # Check out pull request HEAD instead of merge commit.
           ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
       - name: 'Check out select submodules'
         run: |
           set -eux
