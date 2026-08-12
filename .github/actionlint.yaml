@@ -1,0 +1,6 @@
+# Custom labels for the self-hosted runners; actionlint cannot discover them.
+self-hosted-runner:
+  labels:
+    - normal
+    - fast
+    - ARM64
