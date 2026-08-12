@@ -101,6 +101,7 @@ In the comments next to each cell, we've marked which component of the YellowPap
             <blockhashes> .List </blockhashes>
             <previousExcessBlobGas> 0 </previousExcessBlobGas>
             <previousBlobGasUsed>   0 </previousBlobGasUsed>
+            <previousBaseFee>       0 </previousBaseFee>
             <block>
               <previousHash>     0      </previousHash>     // I_Hp
               <ommersHash>       0      </ommersHash>       // I_Ho
@@ -842,9 +843,10 @@ Terminates validation successfully when all conditions are met or when blob vali
          <excessBlobGas> EXCESS_BLOB_GAS </excessBlobGas>
          <previousExcessBlobGas> PREV_EXCESS_BLOB_GAS </previousExcessBlobGas>
          <previousBlobGasUsed> PREV_BLOB_GAS_USED </previousBlobGasUsed>
+         <previousBaseFee> PREV_BASE_FEE </previousBaseFee>
       requires Ghasblobbasefee << SCHED >>
         andBool ( Ctotalblob(SCHED, COUNT) >Int Gmaxblobgas < SCHED >
-            orBool notBool EXCESS_BLOB_GAS ==Int Cexcessblob(SCHED, PREV_EXCESS_BLOB_GAS, PREV_BLOB_GAS_USED))
+            orBool notBool EXCESS_BLOB_GAS ==Int Cexcessblob(SCHED, PREV_EXCESS_BLOB_GAS, PREV_BLOB_GAS_USED, PREV_BASE_FEE))
 
     rule <k> #validateBlockBlobs _COUNT _TXIDS => .K ... </k> [owise]
 
@@ -854,8 +856,10 @@ Terminates validation successfully when all conditions are met or when blob vali
          <schedule> SCHED </schedule>
          <blobGasUsed> BLOB_GAS_USED </blobGasUsed>
          <excessBlobGas> EXCESS_BLOB_GAS </excessBlobGas>
+         <baseFee> BASE_FEE </baseFee>
          <previousExcessBlobGas> _ => EXCESS_BLOB_GAS </previousExcessBlobGas>
          <previousBlobGasUsed> _ => BLOB_GAS_USED </previousBlobGasUsed>
+         <previousBaseFee> _ => BASE_FEE </previousBaseFee>
       requires ( Ghasblobbasefee << SCHED >> andBool BLOB_GAS_USED <=Int Gmaxblobgas < SCHED > )
         orBool notBool Ghasblobbasefee << SCHED >>
 
