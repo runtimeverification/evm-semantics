@@ -49,5 +49,4 @@ jobs:
         with:
           version: '1.29.0'
           online-audits: false
-          inputs: .github/
           advanced-security: true
