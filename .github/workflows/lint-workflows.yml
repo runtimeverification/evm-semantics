@@ -36,21 +36,18 @@ jobs:
   zizmor:
     name: 'zizmor'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write  # upload SARIF, so findings annotate the diff
     steps:
       - name: 'Check out code'
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
           persist-credentials: false
-      - name: 'Get uv release'
-        id: uv_release
-        run: |
-          echo "uv_version=$(cat deps/uv_release)" >> "${GITHUB_OUTPUT}"
-      - name: 'Install uv'
-        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9  # v9.0.0
-        with:
-          version: ${{ steps.uv_release.outputs.uv_version }}
-          enable-cache: false
       - name: 'Run zizmor'
-        env:
-          ZIZMOR_VERSION: '1.29.0'
-        run: uvx "zizmor@${ZIZMOR_VERSION}" --offline .github/
+        uses: zizmorcore/zizmor-action@3dc1ecc9bcb9e94e9b2c709687979e1298497054  # v0.6.2
+        with:
+          version: '1.29.0'
+          online-audits: false
+          inputs: .github/
+          advanced-security: true
