@@ -22,14 +22,27 @@ def iterate_gst(
     usegas: bool,
     skipped_keys: frozenset[str] = frozenset(),
     schedule: str | None = None,
-) -> Iterator[tuple[str, App]]:
-    """Yield (test_name, kore_pattern) for each test in GST data after filtering discarded keys."""
+) -> Iterator[tuple[str, App, tuple[bool, bool]]]:
+    """Yield (test_name, kore_pattern, metadata) for each test in GST data."""
     for test_name, test in gst_data.items():
         if test_name in skipped_keys:
             continue
+        exception_metadata = _resolve_exception(test)
         test_schedule = _resolve_schedule(test, schedule)
         gst_filtered = {test_name: filter_gst_keys(test)}
-        yield test_name, gst_to_kore(gst_filtered, test_schedule, mode, chainid, usegas)
+        yield test_name, gst_to_kore(gst_filtered, test_schedule, mode, chainid, usegas), exception_metadata
+
+
+def _resolve_exception(test: dict) -> tuple[bool, bool]:
+    """Parse the 'blocks' field of a GST test and check if 'expectException' and 'hasBigInt' fields are present."""
+    exception_expected = False
+    has_big_int = False
+    for block in test.get('blocks', []):
+        exception_expected = exception_expected or 'expectException' in block
+        has_big_int = has_big_int or 'hasBigInt' in block
+        if exception_expected and has_big_int:
+            break
+    return (exception_expected, has_big_int)
 
 
 def _resolve_schedule(test: dict, fallback: str | None) -> str:
