@@ -60,7 +60,7 @@ def _skipped_tests(test_dir: Path, slow_tests_file: Path, failing_tests_file: Pa
 def read_csv_file(csv_file: Path) -> tuple[tuple[Path, str], ...]:
     with csv_file.open(newline='') as file:
         reader = csv.reader(file)
-        return tuple((Path(row[0]), row[1]) for row in reader)
+        return tuple((Path(row[0]), row[1]) for row in reader if row)
 
 
 def _test(

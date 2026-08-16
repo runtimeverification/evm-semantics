@@ -123,6 +123,8 @@ In the comments next to each cell, we've marked which component of the YellowPap
               <excessBlobGas>    0      </excessBlobGas>
               <beaconRoot>       0      </beaconRoot>
               <requestsRoot>     0      </requestsRoot>
+              <balHash>          0      </balHash>
+              <slotNumber>       0      </slotNumber>
 
               <ommerBlockHeaders> [ .JSONs ] </ommerBlockHeaders>
             </block>
@@ -2190,6 +2192,7 @@ Precompiled Contracts
     rule #precompiledAccountsUB(CANCUN)            => 10
     rule #precompiledAccountsUB(PRAGUE)            => 17
     rule #precompiledAccountsUB(OSAKA)             => #precompiledAccountsUB(PRAGUE)
+    rule #precompiledAccountsUB(AMSTERDAM)         => #precompiledAccountsUB(OSAKA)
 
 
     syntax Set ::= #precompiledAccountsSet    ( Schedule ) [symbol(#precompiledAccountsSet),    function, total]
