@@ -578,8 +578,15 @@ The `"rlp"` key loads the block information.
  1. Check if the tx nonce matches the nonce of the sender.
  2. Check that the gas fees are properly structured and that the fee caps are not higher than the max amount.
  3. Check that there is enough balance for gas, value and blob fees (where applicable) and that the gas limit is within the block limits.
+ 4. Check that the transaction gas limit does not exceed the per-transaction cap, on schedules that define one.
+
+`#hasValidTxGasLimit(TX_GAS_LIMIT, SCHED)` holds vacuously on schedules without a per-transaction gas limit cap, and otherwise bounds the transaction gas limit by `Gmaxtxgaslimit`.
 
 ```k
+    syntax Bool ::= #hasValidTxGasLimit ( Int , Schedule ) [symbol(#hasValidTxGasLimit), function]
+ // ------------------------------------------------------------------------------------------------
+    rule #hasValidTxGasLimit(TX_GAS_LIMIT, SCHED) => notBool Ghastxgaslimit << SCHED >> orBool TX_GAS_LIMIT <=Int Gmaxtxgaslimit < SCHED >
+
     syntax Bool ::= #isValidTransaction( Int , Account ) [symbol(#isValidTransaction), function]
  // --------------------------------------------------------------------------------------------
     rule [[ #isValidTransaction (TXID, ACCTFROM) => true ]]
@@ -612,7 +619,7 @@ The `"rlp"` key loads the block information.
       andBool TX_MAX_PRIORITY_FEE <=Int TX_MAX_FEE
       andBool BAL >=Int TX_GAS_LIMIT *Int TX_MAX_FEE +Int VALUE
       andBool TX_GAS_LIMIT <=Int BLOCK_GAS_LIMIT
-      andBool (notBool Ghastxgaslimit << SCHED >> orBool TX_GAS_LIMIT <=Int Gmaxtxgaslimit < SCHED >)
+      andBool #hasValidTxGasLimit(TX_GAS_LIMIT, SCHED)
       andBool size(TX_AUTH_LIST) >Int 0 andBool #checkAuthorityList(TX_AUTH_LIST)
 
     rule [[ #isValidTransaction (TXID, ACCTFROM) => true ]]
@@ -649,7 +656,7 @@ The `"rlp"` key loads the block information.
       andBool TX_MAX_BLOB_FEE >=Int Cbasefeeperblob(SCHED, EXCESS_BLOB_GAS)
       andBool BAL >=Int TX_GAS_LIMIT *Int TX_MAX_FEE +Int (Ctotalblob(SCHED, size(TVH)) *Int TX_MAX_BLOB_FEE) +Int VALUE
       andBool TX_GAS_LIMIT <=Int BLOCK_GAS_LIMIT
-      andBool (notBool Ghastxgaslimit << SCHED >> orBool TX_GAS_LIMIT <=Int Gmaxtxgaslimit < SCHED >)
+      andBool #hasValidTxGasLimit(TX_GAS_LIMIT, SCHED)
       andBool Ctotalblob(SCHED, size(TVH)) <=Int Gmaxblobgas < SCHED>
 
     rule [[ #isValidTransaction (TXID, ACCTFROM) => true ]]
@@ -679,7 +686,7 @@ The `"rlp"` key loads the block information.
       andBool TX_MAX_PRIORITY_FEE <=Int TX_MAX_FEE
       andBool BAL >=Int TX_GAS_LIMIT *Int TX_MAX_FEE +Int VALUE
       andBool TX_GAS_LIMIT <=Int BLOCK_GAS_LIMIT
-      andBool (notBool Ghastxgaslimit << SCHED >> orBool TX_GAS_LIMIT <=Int Gmaxtxgaslimit < SCHED >)
+      andBool #hasValidTxGasLimit(TX_GAS_LIMIT, SCHED)
 
     rule [[ #isValidTransaction (TXID, ACCTFROM) => true ]]
          <schedule> SCHED </schedule>
@@ -707,7 +714,7 @@ The `"rlp"` key loads the block information.
       andBool BASE_FEE <=Int TX_GAS_PRICE
       andBool BAL >=Int TX_GAS_LIMIT *Int TX_GAS_PRICE +Int VALUE
       andBool TX_GAS_LIMIT <=Int BLOCK_GAS_LIMIT
-      andBool (notBool Ghastxgaslimit << SCHED >> orBool TX_GAS_LIMIT <=Int Gmaxtxgaslimit < SCHED >)
+      andBool #hasValidTxGasLimit(TX_GAS_LIMIT, SCHED)
 
     rule #isValidTransaction (_, _) => false [owise]
 ```
