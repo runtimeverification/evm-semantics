@@ -34,6 +34,8 @@ module SCHEDULE
                           | "Ghasfloorcost"           | "Ghasclz"          | "Ghasstategas"        | "Ghasauthbaserefund"
                           | "Ghaseip8038"
  // ---------------------------------------------------------------------------------------------------------------
+                          | "Ghasfloorcost"           | "Ghasclz"          | "Ghastxgaslimit"
+ // -----------------------------------------------------------------------------------------
 ```
 
 ### Schedule Constants
@@ -56,6 +58,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
                            | "Gbls12g1add"   | "Gbls12g1mul"   | "Gbls12g2add"   | "Gbls12g2mul"       | "Gbls12mapfptog1"    | "Gbls12PairingCheckMul"
                            | "Gbls12PairingCheckAdd"           | "Gauthbase"     | "Gbls12mapfp2tog2"  | "Gtxdatafloor"       | "Gstorageset"       | "Gaccountwrite"
                            | "Gcostperstatebyte"
+                           | "Gbls12PairingCheckAdd"           | "Gauthbase"     | "Gbls12mapfp2tog2"  | "Gtxdatafloor"       | "Gmaxtxgaslimit"
  // -------------------------------------------------------------------------------------------------------------------------------------------------------
 ```
 
@@ -153,6 +156,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule [GstoragesetDefault]:           Gstorageset           < DEFAULT > => 0
     rule [GaccountwriteDefault]:         Gaccountwrite         < DEFAULT > => 0
     rule [GcostperstatebyteDefault]:     Gcostperstatebyte     < DEFAULT > => 0
+    rule [GmaxtxgaslimitDefault]:        Gmaxtxgaslimit        < DEFAULT > => 0
 
     rule [GselfdestructnewaccountDefault]: Gselfdestructnewaccount << DEFAULT >> => false
     rule [GstaticcalldepthDefault]:        Gstaticcalldepth        << DEFAULT >> => true
@@ -191,6 +195,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule [GhasclzDefault]:                 Ghasclz                 << DEFAULT >> => false
     rule [GhasstategasDefault]:            Ghasstategas            << DEFAULT >> => false
     rule [Ghaseip8038Default]:             Ghaseip8038             << DEFAULT >> => false
+    rule [GhastxgaslimitDefault]:          Ghastxgaslimit          << DEFAULT >> => false
 ```
 
 ### Frontier Schedule
@@ -514,12 +519,16 @@ A `ScheduleConst` is a constant determined by the fee schedule.
 ```k
     syntax Schedule ::= "OSAKA" [symbol(OSAKA_EVM), smtlib(schedule_OSAKA)]
  // -----------------------------------------------------------------------
-    rule [SCHEDCONSTOsaka]: SCHEDCONST < OSAKA > => SCHEDCONST < PRAGUE >
+    rule [GmaxtxgaslimitOsaka]: Gmaxtxgaslimit < OSAKA > => 16777216
+    rule [SCHEDCONSTOsaka]:     SCHEDCONST     < OSAKA > => SCHEDCONST < PRAGUE >
+      requires notBool ( SCHEDCONST ==K Gmaxtxgaslimit )
 
-    rule [GhasclzOsaka]:    Ghasclz    << OSAKA >> => true
-    rule [SCHEDFLAGOsaka]:  SCHEDFLAG  << OSAKA >> => SCHEDFLAG << PRAGUE >>
-      requires notBool ( SCHEDFLAG ==K Ghasclz )
-
+    rule [GhasclzOsaka]:        Ghasclz        << OSAKA >> => true
+    rule [GhastxgaslimitOsaka]: Ghastxgaslimit << OSAKA >> => true
+    rule [SCHEDFLAGOsaka]:      SCHEDFLAG      << OSAKA >> => SCHEDFLAG << PRAGUE >>
+      requires notBool ( SCHEDFLAG ==K Ghasclz
+                  orBool SCHEDFLAG ==K Ghastxgaslimit
+                       )
 ```
 
 ### Amsterdam Schedule
