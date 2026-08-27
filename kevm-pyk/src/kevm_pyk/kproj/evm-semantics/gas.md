@@ -221,8 +221,9 @@ module GAS-FEES
     rule [Csload.new]: Csload(SCHED, ISWARM)  => Cstorageaccess(SCHED, ISWARM) requires         Ghasaccesslist << SCHED >>
     rule [Csload.old]: Csload(SCHED, _ISWARM) => Gsload < SCHED >              requires notBool Ghasaccesslist << SCHED >>
 
-    rule [Cextcodesize.new]: Cextcodesize(SCHED) => 0                      requires         Ghasaccesslist << SCHED >>
-    rule [Cextcodesize.old]: Cextcodesize(SCHED) => Gextcodesize < SCHED > requires notBool Ghasaccesslist << SCHED >>
+    rule [Cextcodesize.eip8038]: Cextcodesize(SCHED) => Gwarmstorageread < SCHED > requires         Ghasaccesslist << SCHED >> andBool         Ghaseip8038 << SCHED >>
+    rule [Cextcodesize.new]:     Cextcodesize(SCHED) => 0                          requires         Ghasaccesslist << SCHED >> andBool notBool Ghaseip8038 << SCHED >>
+    rule [Cextcodesize.old]:     Cextcodesize(SCHED) => Gextcodesize < SCHED >     requires notBool Ghasaccesslist << SCHED >>
 
     rule [Cextcodehash.new]: Cextcodehash(SCHED) => 0                  requires         Ghasaccesslist << SCHED >>
     rule [Cextcodehash.old]: Cextcodehash(SCHED) => Gbalance < SCHED > requires notBool Ghasaccesslist << SCHED >>
@@ -230,8 +231,9 @@ module GAS-FEES
     rule [Cbalance.new]: Cbalance(SCHED) => 0                  requires         Ghasaccesslist << SCHED >>
     rule [Cbalance.old]: Cbalance(SCHED) => Gbalance < SCHED > requires notBool Ghasaccesslist << SCHED >>
 
-    rule [Cextcodecopy.new]: Cextcodecopy(SCHED, WIDTH) => Gcopy < SCHED > *Int (WIDTH up/Int 32)                               requires         Ghasaccesslist << SCHED >> [concrete]
-    rule [Cextcodecopy.old]: Cextcodecopy(SCHED, WIDTH) => Gextcodecopy < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32)) requires notBool Ghasaccesslist << SCHED >> [concrete]
+    rule [Cextcodecopy.eip8038]: Cextcodecopy(SCHED, WIDTH) => Gwarmstorageread < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32)) requires         Ghasaccesslist << SCHED >> andBool         Ghaseip8038 << SCHED >> [concrete]
+    rule [Cextcodecopy.new]:     Cextcodecopy(SCHED, WIDTH) => Gcopy < SCHED > *Int (WIDTH up/Int 32)                                   requires         Ghasaccesslist << SCHED >> andBool notBool Ghaseip8038 << SCHED >> [concrete]
+    rule [Cextcodecopy.old]:     Cextcodecopy(SCHED, WIDTH) => Gextcodecopy < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32))     requires notBool Ghasaccesslist << SCHED >> [concrete]
 
     rule [Cmodexp.old]: Cmodexp(SCHED, DATA, BASELEN, EXPLEN, MODLEN) => #multComplexity(maxInt(BASELEN, MODLEN)) *Int maxInt(#adjustedExpLength(BASELEN, EXPLEN, DATA), 1) /Int Gquaddivisor < SCHED >
       requires notBool Ghasaccesslist << SCHED >>

@@ -32,6 +32,7 @@ module SCHEDULE
                           | "Ghasbeaconroot"          | "Ghaseip6780"      | "Ghasblobbasefee"     | "Ghasblobhash"
                           | "Ghasbls12msmdiscount"    | "Ghashistory"      | "Ghasrequests"        | "Ghasauthority"
                           | "Ghasfloorcost"           | "Ghasclz"          | "Ghasstategas"        | "Ghasauthbaserefund"
+                          | "Ghaseip8038"
  // ---------------------------------------------------------------------------------------------------------------
 ```
 
@@ -189,6 +190,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule [GhasfloorcostDefault]:           Ghasfloorcost           << DEFAULT >> => false
     rule [GhasclzDefault]:                 Ghasclz                 << DEFAULT >> => false
     rule [GhasstategasDefault]:            Ghasstategas            << DEFAULT >> => false
+    rule [Ghaseip8038Default]:             Ghaseip8038             << DEFAULT >> => false
 ```
 
 ### Frontier Schedule
@@ -528,20 +530,28 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule [GmaxblobgasAmsterdam]:               Gmaxblobgas               < AMSTERDAM > => 2752512
     rule [GtargetblobgasAmsterdam]:            Gtargetblobgas            < AMSTERDAM > => 1835008
     rule [BlobbasefeeupdatefractionAmsterdam]: Blobbasefeeupdatefraction < AMSTERDAM > => 11684671
+    rule [GcoldaccountaccessAmsterdam]:        Gcoldaccountaccess        < AMSTERDAM > => 3000
     rule [GsstoresetAmsterdam]:                Gsstoreset                < AMSTERDAM > => 10000
+    rule [RsstoreclearAmsterdam]:              Rsstoreclear              < AMSTERDAM > => 11616
+    rule [GaccesslistaddressAmsterdam]:        Gaccesslistaddress        < AMSTERDAM > => 2900
+    rule [GaccessliststoragekeyAmsterdam]:     Gaccessliststoragekey     < AMSTERDAM > => 2000
     rule [GnewaccountAmsterdam]:               Gnewaccount               < AMSTERDAM > => 183600
-    rule [GcreateAmsterdam]:                   Gcreate                   < AMSTERDAM > => 11000
+    rule [GcreateAmsterdam]:                   Gcreate                   < AMSTERDAM > => 12000
     rule [GtxcreateAmsterdam]:                 Gtxcreate                 < AMSTERDAM > => 23000
-    rule [GcallvalueAmsterdam]:                Gcallvalue                < AMSTERDAM > => 10300
+    rule [GcallvalueAmsterdam]:                Gcallvalue                < AMSTERDAM > => 11300
     rule [GstoragesetAmsterdam]:               Gstorageset               < AMSTERDAM > => 97920
-    rule [GaccountwriteAmsterdam]:             Gaccountwrite             < AMSTERDAM > => 8000
+    rule [GaccountwriteAmsterdam]:             Gaccountwrite             < AMSTERDAM > => 9000
     rule [GcostperstatebyteAmsterdam]:         Gcostperstatebyte         < AMSTERDAM > => 1530
     rule [GauthbaseAmsterdam]:                 Gauthbase                 < AMSTERDAM > => 35190
     rule [SCHEDCONSTAmsterdam]:                SCHEDCONST                < AMSTERDAM > => SCHEDCONST < OSAKA >
       requires notBool ( SCHEDCONST ==K Gmaxblobgas
                   orBool SCHEDCONST ==K Gtargetblobgas
                   orBool SCHEDCONST ==K Blobbasefeeupdatefraction
+                  orBool SCHEDCONST ==K Gcoldaccountaccess
                   orBool SCHEDCONST ==K Gsstoreset
+                  orBool SCHEDCONST ==K Rsstoreclear
+                  orBool SCHEDCONST ==K Gaccesslistaddress
+                  orBool SCHEDCONST ==K Gaccessliststoragekey
                   orBool SCHEDCONST ==K Gnewaccount
                   orBool SCHEDCONST ==K Gcreate
                   orBool SCHEDCONST ==K Gtxcreate
@@ -552,10 +562,12 @@ A `ScheduleConst` is a constant determined by the fee schedule.
                   orBool SCHEDCONST ==K Gauthbase
                        )
 
+    rule [Ghaseip8038Amsterdam]:        Ghaseip8038        << AMSTERDAM >> => true
     rule [GhasauthbaserefundAmsterdam]: Ghasauthbaserefund << AMSTERDAM >> => false
     rule [GhasstategasAmsterdam]:       Ghasstategas       << AMSTERDAM >> => true
     rule [SCHEDFLAGAmsterdam]:          SCHEDFLAG          << AMSTERDAM >> => SCHEDFLAG << OSAKA >>
-      requires notBool ( SCHEDFLAG ==K Ghasauthbaserefund
+      requires notBool ( SCHEDFLAG ==K Ghaseip8038
+                  orBool SCHEDFLAG ==K Ghasauthbaserefund
                   orBool SCHEDFLAG ==K Ghasstategas
                        )
 ```
