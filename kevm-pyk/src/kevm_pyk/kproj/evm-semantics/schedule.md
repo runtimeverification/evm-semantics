@@ -526,10 +526,14 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule [GmaxblobgasAmsterdam]:               Gmaxblobgas               < AMSTERDAM > => 2752512
     rule [GtargetblobgasAmsterdam]:            Gtargetblobgas            < AMSTERDAM > => 1835008
     rule [BlobbasefeeupdatefractionAmsterdam]: Blobbasefeeupdatefraction < AMSTERDAM > => 11684671
+    rule [maxCodeSizeAmsterdam]:               maxCodeSize               < AMSTERDAM > => 65536
+    rule [maxInitCodeSizeAmsterdam]:           maxInitCodeSize           < AMSTERDAM > => 2 *Int maxCodeSize < AMSTERDAM >
     rule [SCHEDCONSTAmsterdam]:                SCHEDCONST                < AMSTERDAM > => SCHEDCONST < OSAKA >
       requires notBool ( SCHEDCONST ==K Gmaxblobgas
                   orBool SCHEDCONST ==K Gtargetblobgas
                   orBool SCHEDCONST ==K Blobbasefeeupdatefraction
+                  orBool SCHEDCONST ==K maxCodeSize
+                  orBool SCHEDCONST ==K maxInitCodeSize
                        )
 
     rule [SCHEDFLAGAmsterdam]: SCHEDFLAG << AMSTERDAM >> => SCHEDFLAG << OSAKA >>
