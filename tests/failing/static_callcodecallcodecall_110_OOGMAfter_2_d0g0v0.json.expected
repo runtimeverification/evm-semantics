@@ -181,6 +181,12 @@
         <requestsRoot>
           0
         </requestsRoot>
+        <balHash>
+          0
+        </balHash>
+        <slotNumber>
+          0
+        </slotNumber>
         <ommerBlockHeaders>
           [ .JSONs ]
         </ommerBlockHeaders>

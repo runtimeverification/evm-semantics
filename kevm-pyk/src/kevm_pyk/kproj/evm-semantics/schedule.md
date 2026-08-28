@@ -518,6 +518,23 @@ A `ScheduleConst` is a constant determined by the fee schedule.
                        )
 ```
 
+### Amsterdam Schedule
+
+```k
+    syntax Schedule ::= "AMSTERDAM" [symbol(AMSTERDAM_EVM), smtlib(schedule_AMSTERDAM)]
+ // -----------------------------------------------------------------------------------
+    rule [GmaxblobgasAmsterdam]:               Gmaxblobgas               < AMSTERDAM > => 2752512
+    rule [GtargetblobgasAmsterdam]:            Gtargetblobgas            < AMSTERDAM > => 1835008
+    rule [BlobbasefeeupdatefractionAmsterdam]: Blobbasefeeupdatefraction < AMSTERDAM > => 11684671
+    rule [SCHEDCONSTAmsterdam]:                SCHEDCONST                < AMSTERDAM > => SCHEDCONST < OSAKA >
+      requires notBool ( SCHEDCONST ==K Gmaxblobgas
+                  orBool SCHEDCONST ==K Gtargetblobgas
+                  orBool SCHEDCONST ==K Blobbasefeeupdatefraction
+                       )
+
+    rule [SCHEDFLAGAmsterdam]: SCHEDFLAG << AMSTERDAM >> => SCHEDFLAG << OSAKA >>
+```
+
 ```k
 endmodule
 ```
