@@ -2213,9 +2213,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          <k> CREATE VALUE MEMSTART MEMWIDTH
           => #accessAccounts #newAddr(ACCT, NONCE)
           ~> #checkCreate ACCT VALUE
-          ~> #unallocateCreateGas
-          ~> #chargeCreateNewAccount #newAddr(ACCT, NONCE) CD
-          ~> #allocateCreateGas
+          ~> #chargeCreateStateGas #newAddr(ACCT, NONCE) CD
           ~> #create ACCT #newAddr(ACCT, NONCE) VALUE #range(LM, MEMSTART, MEMWIDTH)
           ~> #codeDeposit #newAddr(ACCT, NONCE)
          ...
@@ -2245,9 +2243,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
          <k> CREATE2 VALUE MEMSTART MEMWIDTH SALT
           => #accessAccounts #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH))
           ~> #checkCreate ACCT VALUE
-          ~> #unallocateCreateGas
-          ~> #chargeCreateNewAccount #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH)) CD
-          ~> #allocateCreateGas
+          ~> #chargeCreateStateGas #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH)) CD
           ~> #create ACCT #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH)) VALUE #range(LM, MEMSTART, MEMWIDTH)
           ~> #codeDeposit #newAddr(ACCT, SALT, #range(LM, MEMSTART, MEMWIDTH))
          ...
@@ -3378,6 +3374,21 @@ The intrinsic gas calculation mirrors the style of the YellowPaper (appendix H).
          <useGas> true </useGas>
 
     rule <k> #unallocateCreateGas => .K ... </k> <useGas> false </useGas>
+
+    syntax InternalOp ::= "#chargeCreateStateGas" Int Int
+ // -----------------------------------------------------
+    rule <k> #chargeCreateStateGas ACCTTO CD
+          => #unallocateCreateGas
+          ~> #chargeCreateNewAccount ACCTTO CD
+          ~> #allocateCreateGas
+         ...
+         </k>
+         <schedule> SCHED </schedule>
+      requires Ghasstategas << SCHED >>
+
+    rule <k> #chargeCreateStateGas _ _ => .K ... </k>
+         <schedule> SCHED </schedule>
+      requires notBool Ghasstategas << SCHED >>
 
     syntax InternalOp ::= "#allocateCreateGas"
  // ------------------------------------------
