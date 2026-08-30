@@ -74,6 +74,9 @@ module TEST-EXPECTREVERTTEST-TEST_EXPECTREVERT_RETURNVALUE-0-SPEC
                    <callDepth>
                      0
                    </callDepth>
+                   <stateGasReservoir> ?_ </stateGasReservoir>
+                   <stateGasSpilled> ?_ </stateGasSpilled>
+                   <newAccountCharged> ?_ </newAccountCharged>
                  </callState> ) )
                </callStack>
                <interimStates>
