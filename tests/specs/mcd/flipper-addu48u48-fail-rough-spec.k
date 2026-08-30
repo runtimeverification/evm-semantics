@@ -32,6 +32,9 @@ module FLIPPER-ADDU48U48-FAIL-ROUGH-SPEC
             <callGas> _ => ?_ </callGas>
             <static> _ </static>
             <callDepth> VCallDepth => ?_ </callDepth>
+            <stateGasReservoir> 0:Gas => ?_ </stateGasReservoir>
+            <stateGasSpilled> 0:Gas => ?_ </stateGasSpilled>
+            <newAccountCharged> false => ?_ </newAccountCharged>
           </callState>
           <versionedHashes> _ </versionedHashes>
           <substate>

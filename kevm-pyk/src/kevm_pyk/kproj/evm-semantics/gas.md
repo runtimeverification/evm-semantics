@@ -127,6 +127,8 @@ module GAS-FEES
                  | Cexcessblob      ( Schedule , Int , Int )                      [symbol(Cexcessblob),       function, total, smtlib(gas_Cexcessblob)      ]
                  | Cdelegationaccess( Schedule, Bool, Bool )                      [symbol(Cdelegationaccess), function, total, smtlib(gas_Cdelegationaccess)]
                  | Ctxfloor         ( Schedule , Bytes )                          [symbol(Ctxfloor),          function, total, smtlib(gas_Ctxfloor)         ]
+                 | SstoreStateGas   ( Schedule , Int , Int , Int )                [symbol(SstoreStateGas),    function, total, smtlib(gas_SstoreStateGas)   ]
+                 | SstoreStateCredit( Schedule , Int , Int , Int )                [symbol(SstoreStateCredit), function, total, smtlib(gas_SstoreStateCredit)]
  // ---------------------------------------------------------------------------------------------------------------------------------------------------------
     rule [Cgascap]:
          Cgascap(SCHED, GCAP:Int, GAVAIL:Int, GEXTRA)
@@ -136,16 +138,30 @@ module GAS-FEES
 
     rule Cgascap(_, GCAP, _, _) => 0 requires GCAP <Gas 0 [concrete]
 
+    rule [Csstore.amsterdam]:
+         Csstore(SCHED, NEW, CURR, ORIG)
+      => #if ORIG ==Int CURR andBool CURR =/=Int NEW #then Gsstoreset < SCHED > #else 0 #fi
+      requires Ghasstategas << SCHED >>
+      [concrete]
+
     rule [Csstore.new]:
          Csstore(SCHED, NEW, CURR, ORIG)
       => #if CURR ==Int NEW orBool ORIG =/=Int CURR #then Gsload < SCHED > #else #if ORIG ==Int 0 #then Gsstoreset < SCHED > #else Gsstorereset < SCHED > #fi #fi
-      requires Ghasdirtysstore << SCHED >>
+      requires Ghasdirtysstore << SCHED >> andBool notBool Ghasstategas << SCHED >>
       [concrete]
 
     rule [Csstore.old]:
          Csstore(SCHED, NEW, CURR, _ORIG)
       => #if CURR ==Int 0 andBool NEW =/=Int 0 #then Gsstoreset < SCHED > #else Gsstorereset < SCHED > #fi
       requires notBool Ghasdirtysstore << SCHED >>
+      [concrete]
+
+    rule [Rsstore.amsterdam]:
+         Rsstore(SCHED, NEW, CURR, ORIG)
+      => #if CURR =/=Int NEW andBool ORIG =/=Int 0 andBool CURR =/=Int 0 andBool NEW ==Int 0 #then Rsstoreclear < SCHED > #else 0 #fi
+        +Int #if CURR =/=Int NEW andBool ORIG =/=Int 0 andBool CURR ==Int 0 #then 0 -Int Rsstoreclear < SCHED > #else 0 #fi
+        +Int #if CURR =/=Int NEW andBool ORIG ==Int NEW #then Gsstoreset < SCHED > #else 0 #fi
+      requires Ghasstategas << SCHED >>
       [concrete]
 
     rule [Rsstore.new]:
@@ -164,7 +180,7 @@ module GAS-FEES
                  0
              #fi
          #fi
-      requires Ghasdirtysstore << SCHED >>
+      requires Ghasdirtysstore << SCHED >> andBool notBool Ghasstategas << SCHED >>
       [concrete]
 
     rule [Rsstore.old]:
@@ -173,13 +189,26 @@ module GAS-FEES
       requires notBool Ghasdirtysstore << SCHED >>
       [concrete]
 
+    rule [SstoreStateGas]:
+         SstoreStateGas(SCHED, NEW, CURR, ORIG)
+      => #if ORIG ==Int CURR andBool CURR =/=Int NEW andBool ORIG ==Int 0 #then Gstorageset < SCHED > #else 0 #fi
+      [concrete]
+
+    rule [SstoreStateCredit]:
+         SstoreStateCredit(SCHED, NEW, CURR, ORIG)
+      => #if CURR =/=Int NEW andBool ORIG ==Int NEW andBool ORIG ==Int 0 #then Gstorageset < SCHED > #else 0 #fi
+      [concrete]
+
     rule [Cextra.delegation]: Cextra(SCHED, ISEMPTY, VALUE,  ISWARM,  ISDELEGATION,  ISWARMDELEGATION) => Cdelegationaccess(SCHED, ISDELEGATION, ISWARMDELEGATION) +Int Caddraccess(SCHED, ISWARM) +Int Cnew(SCHED, ISEMPTY, VALUE) +Int Cxfer(SCHED, VALUE) requires         Ghasaccesslist << SCHED >> andBool         Ghasauthority << SCHED >>
     rule [Cextra.new]:        Cextra(SCHED, ISEMPTY, VALUE,  ISWARM, _ISDELEGATION, _ISWARMDELEGATION) => Caddraccess(SCHED, ISWARM) +Int Cnew(SCHED, ISEMPTY, VALUE) +Int Cxfer(SCHED, VALUE)                                                               requires         Ghasaccesslist << SCHED >> andBool notBool Ghasauthority << SCHED >>
     rule [Cextra.old]:        Cextra(SCHED, ISEMPTY, VALUE, _ISWARM, _ISDELEGATION, _ISWARMDELEGATION) => Gcall < SCHED > +Int Cnew(SCHED, ISEMPTY, VALUE) +Int Cxfer(SCHED, VALUE)                                                                          requires notBool Ghasaccesslist << SCHED >>
 
+    rule [Cnew.stategas]: Cnew(SCHED, _, _) => 0 requires Ghasstategas << SCHED >>
+
     rule [Cnew]:
          Cnew(SCHED, ISEMPTY:Bool, VALUE)
       => #if ISEMPTY andBool (VALUE =/=Int 0 orBool Gzerovaluenewaccountgas << SCHED >>) #then Gnewaccount < SCHED > #else 0 #fi
+      requires notBool Ghasstategas << SCHED >>
 
     rule [Cxfer.none]: Cxfer(_SCHED, 0) => 0
     rule [Cxfer.some]: Cxfer( SCHED, N) => Gcallvalue < SCHED > requires N =/=Int 0
@@ -192,8 +221,9 @@ module GAS-FEES
     rule [Csload.new]: Csload(SCHED, ISWARM)  => Cstorageaccess(SCHED, ISWARM) requires         Ghasaccesslist << SCHED >>
     rule [Csload.old]: Csload(SCHED, _ISWARM) => Gsload < SCHED >              requires notBool Ghasaccesslist << SCHED >>
 
-    rule [Cextcodesize.new]: Cextcodesize(SCHED) => 0                      requires         Ghasaccesslist << SCHED >>
-    rule [Cextcodesize.old]: Cextcodesize(SCHED) => Gextcodesize < SCHED > requires notBool Ghasaccesslist << SCHED >>
+    rule [Cextcodesize.eip8038]: Cextcodesize(SCHED) => Gwarmstorageread < SCHED > requires         Ghasaccesslist << SCHED >> andBool         Ghaseip8038 << SCHED >>
+    rule [Cextcodesize.new]:     Cextcodesize(SCHED) => 0                          requires         Ghasaccesslist << SCHED >> andBool notBool Ghaseip8038 << SCHED >>
+    rule [Cextcodesize.old]:     Cextcodesize(SCHED) => Gextcodesize < SCHED >     requires notBool Ghasaccesslist << SCHED >>
 
     rule [Cextcodehash.new]: Cextcodehash(SCHED) => 0                  requires         Ghasaccesslist << SCHED >>
     rule [Cextcodehash.old]: Cextcodehash(SCHED) => Gbalance < SCHED > requires notBool Ghasaccesslist << SCHED >>
@@ -201,8 +231,9 @@ module GAS-FEES
     rule [Cbalance.new]: Cbalance(SCHED) => 0                  requires         Ghasaccesslist << SCHED >>
     rule [Cbalance.old]: Cbalance(SCHED) => Gbalance < SCHED > requires notBool Ghasaccesslist << SCHED >>
 
-    rule [Cextcodecopy.new]: Cextcodecopy(SCHED, WIDTH) => Gcopy < SCHED > *Int (WIDTH up/Int 32)                               requires         Ghasaccesslist << SCHED >> [concrete]
-    rule [Cextcodecopy.old]: Cextcodecopy(SCHED, WIDTH) => Gextcodecopy < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32)) requires notBool Ghasaccesslist << SCHED >> [concrete]
+    rule [Cextcodecopy.eip8038]: Cextcodecopy(SCHED, WIDTH) => Gwarmstorageread < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32)) requires         Ghasaccesslist << SCHED >> andBool         Ghaseip8038 << SCHED >> [concrete]
+    rule [Cextcodecopy.new]:     Cextcodecopy(SCHED, WIDTH) => Gcopy < SCHED > *Int (WIDTH up/Int 32)                                   requires         Ghasaccesslist << SCHED >> andBool notBool Ghaseip8038 << SCHED >> [concrete]
+    rule [Cextcodecopy.old]:     Cextcodecopy(SCHED, WIDTH) => Gextcodecopy < SCHED > +Int (Gcopy < SCHED > *Int (WIDTH up/Int 32))     requires notBool Ghasaccesslist << SCHED >> [concrete]
 
     rule [Cmodexp.old]: Cmodexp(SCHED, DATA, BASELEN, EXPLEN, MODLEN) => #multComplexity(maxInt(BASELEN, MODLEN)) *Int maxInt(#adjustedExpLength(BASELEN, EXPLEN, DATA), 1) /Int Gquaddivisor < SCHED >
       requires notBool Ghasaccesslist << SCHED >>
@@ -221,7 +252,7 @@ module GAS-FEES
 
     rule [Cblobfee]: Cblobfee(SCHED, EXCESS_BLOB_GAS, BLOB_VERSIONED_HASHES_SIZE) => Ctotalblob(SCHED, BLOB_VERSIONED_HASHES_SIZE) *Int Cbasefeeperblob(SCHED, EXCESS_BLOB_GAS)
 
-    rule [Cexcessblob]:       Cexcessblob(SCHED, EXCESS_BLOB_GAS, BLOB_GAS_USED) => EXCESS_BLOB_GAS +Int BLOB_GAS_USED -Int Gtargetblobgas < SCHED > requires Gtargetblobgas < SCHED > <=Int EXCESS_BLOB_GAS +Int BLOB_GAS_USED 
+    rule [Cexcessblob]:       Cexcessblob(SCHED, EXCESS_BLOB_GAS, BLOB_GAS_USED) => EXCESS_BLOB_GAS +Int BLOB_GAS_USED -Int Gtargetblobgas < SCHED > requires Gtargetblobgas < SCHED > <=Int EXCESS_BLOB_GAS +Int BLOB_GAS_USED
     rule [Cexcessblob.owise]: Cexcessblob(_,     _,               _)             => 0 [owise]
 
     rule [Cdelegationaccess]:       Cdelegationaccess(SCHED, true, ISWARM) => Caddraccess(SCHED, ISWARM)
@@ -254,6 +285,24 @@ module GAS-FEES
 
     rule G0(    _,  _, I, I, R) => R
     rule G0(SCHED, WS, I, J, R) => G0(SCHED, WS, I +Int 1, J, R +Int #if WS[I] ==Int 0 #then Gtxdatazero < SCHED > #else Gtxdatanonzero < SCHED > #fi) [owise]
+
+    syntax Int ::= #txStateGasReservoir ( Schedule , Int ) [symbol(#txStateGasReservoir), function, total]
+ // ------------------------------------------------------------------------------------------------------
+    rule #txStateGasReservoir(SCHED, GLIMIT) => #if Ghasstategas << SCHED >> #then maxInt(0, GLIMIT -Int Gmaxtxgaslimit < SCHED >) #else 0 #fi
+
+    syntax Int ::= #txStateGasUsed ( Schedule , Int , Int , Int ) [symbol(#txStateGasUsed), function, total]
+ // SCHED,                                     GLIMIT, RES (final reservoir), SPL (final spilled)
+    rule #txStateGasUsed(SCHED, GLIMIT, RES, SPL) => maxInt(0, #txStateGasReservoir(SCHED, GLIMIT) -Int RES +Int SPL)
+
+    syntax Bool ::= #isValidTxGasLimit ( Schedule , Int , Int , Int , Int , Int ) [symbol(#isValidTxGasLimit), function, total]
+ // SCHED,                                            TX_GAS_LIMIT, BLOCK_GAS_LIMIT, GASUSED, GASUSEDREG, GASUSEDSTATE
+    rule #isValidTxGasLimit(SCHED, TX_GAS_LIMIT, BLOCK_GAS_LIMIT, GASUSED, GASUSEDREG, GASUSEDSTATE)
+      => #if Ghasstategas << SCHED >>
+         #then minInt(Gmaxtxgaslimit < SCHED >, TX_GAS_LIMIT) <=Int (BLOCK_GAS_LIMIT -Int GASUSEDREG)
+          andBool TX_GAS_LIMIT <=Int (BLOCK_GAS_LIMIT -Int GASUSEDSTATE)
+         #else (notBool Ghastxgaslimit << SCHED >> orBool TX_GAS_LIMIT <=Int Gmaxtxgaslimit < SCHED >)
+          andBool TX_GAS_LIMIT <=Int (BLOCK_GAS_LIMIT -Int GASUSED)
+         #fi
 
     syntax Gas ::= "G*" "(" Gas "," Int "," Int "," Schedule ")" [function]
  // -----------------------------------------------------------------------

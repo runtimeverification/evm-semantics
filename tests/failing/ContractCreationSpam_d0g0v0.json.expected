@@ -74,6 +74,15 @@
         <callDepth>
           -1
         </callDepth>
+        <stateGasReservoir>
+          0
+        </stateGasReservoir>
+        <stateGasSpilled>
+          0
+        </stateGasSpilled>
+        <newAccountCharged>
+          false
+        </newAccountCharged>
         <codeAddr>
           .Account
         </codeAddr>
@@ -187,6 +196,12 @@
         <slotNumber>
           0
         </slotNumber>
+        <gasUsedRegular>
+          0
+        </gasUsedRegular>
+        <gasUsedState>
+          0
+        </gasUsedState>
         <ommerBlockHeaders>
           [ .JSONs ]
         </ommerBlockHeaders>

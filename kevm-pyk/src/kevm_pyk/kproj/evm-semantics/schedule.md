@@ -31,6 +31,9 @@ module SCHEDULE
                           | "Ghaswarmcoinbase"        | "Ghaswithdrawals"  | "Ghastransient"       | "Ghasmcopy"
                           | "Ghasbeaconroot"          | "Ghaseip6780"      | "Ghasblobbasefee"     | "Ghasblobhash"
                           | "Ghasbls12msmdiscount"    | "Ghashistory"      | "Ghasrequests"        | "Ghasauthority"
+                          | "Ghasfloorcost"           | "Ghasclz"          | "Ghasstategas"        | "Ghasauthbaserefund"
+                          | "Ghaseip8038"
+ // ---------------------------------------------------------------------------------------------------------------
                           | "Ghasfloorcost"           | "Ghasclz"          | "Ghastxgaslimit"
  // -----------------------------------------------------------------------------------------
 ```
@@ -53,6 +56,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
                            | "Gaccessliststoragekey"           | "Rmaxquotient"  | "Ginitcodewordcost" | "maxInitCodeSize"    | "Gwarmstoragedirtystore"
                            | "Gpointeval"    | "Gmaxblobgas"   | "Gminbasefee"   | "Gtargetblobgas"    | "Gperblob"           | "Blobbasefeeupdatefraction"
                            | "Gbls12g1add"   | "Gbls12g1mul"   | "Gbls12g2add"   | "Gbls12g2mul"       | "Gbls12mapfptog1"    | "Gbls12PairingCheckMul"
+                           | "Gbls12PairingCheckAdd"           | "Gauthbase"     | "Gbls12mapfp2tog2"  | "Gtxdatafloor"       | "Gstorageset"       | "Gaccountwrite"
+                           | "Gcostperstatebyte"
                            | "Gbls12PairingCheckAdd"           | "Gauthbase"     | "Gbls12mapfp2tog2"  | "Gtxdatafloor"       | "Gmaxtxgaslimit"
  // -------------------------------------------------------------------------------------------------------------------------------------------------------
 ```
@@ -148,6 +153,9 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule [Gbls12PairingCheckAddDefault]: Gbls12PairingCheckAdd < DEFAULT > => 0
     rule [Gbls12mapfptog1Default]:       Gbls12mapfptog1       < DEFAULT > => 0
     rule [Gbls12mapfp2tog2Default]:      Gbls12mapfp2tog2      < DEFAULT > => 0
+    rule [GstoragesetDefault]:           Gstorageset           < DEFAULT > => 0
+    rule [GaccountwriteDefault]:         Gaccountwrite         < DEFAULT > => 0
+    rule [GcostperstatebyteDefault]:     Gcostperstatebyte     < DEFAULT > => 0
     rule [GmaxtxgaslimitDefault]:        Gmaxtxgaslimit        < DEFAULT > => 0
 
     rule [GselfdestructnewaccountDefault]: Gselfdestructnewaccount << DEFAULT >> => false
@@ -182,8 +190,11 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule [GhasrequestsDefault]:            Ghasrequests            << DEFAULT >> => false
     rule [Ghasbls12msmdiscountDefault]:    Ghasbls12msmdiscount    << DEFAULT >> => false
     rule [GhasauthorityDefault]:           Ghasauthority           << DEFAULT >> => false
+    rule [GhasauthbaserefundDefault]:      Ghasauthbaserefund      << DEFAULT >> => false
     rule [GhasfloorcostDefault]:           Ghasfloorcost           << DEFAULT >> => false
     rule [GhasclzDefault]:                 Ghasclz                 << DEFAULT >> => false
+    rule [GhasstategasDefault]:            Ghasstategas            << DEFAULT >> => false
+    rule [Ghaseip8038Default]:             Ghaseip8038             << DEFAULT >> => false
     rule [GhastxgaslimitDefault]:          Ghastxgaslimit          << DEFAULT >> => false
 ```
 
@@ -493,12 +504,14 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule [Ghasbls12msmdiscountPrague]: Ghasbls12msmdiscount << PRAGUE >> => true
     rule [GhasauthorityPrague]:        Ghasauthority        << PRAGUE >> => true
     rule [GhasfloorcostPrague]:        Ghasfloorcost        << PRAGUE >> => true
+    rule [GhasauthbaserefundPrague]:   Ghasauthbaserefund   << PRAGUE >> => true
     rule [SCHEDFLAGPrague]:            SCHEDFLAG            << PRAGUE >> => SCHEDFLAG << CANCUN >>
       requires notBool ( SCHEDFLAG ==K Ghasrequests
                   orBool SCHEDFLAG ==K Ghashistory
                   orBool SCHEDFLAG ==K Ghasbls12msmdiscount
                   orBool SCHEDFLAG ==K Ghasauthority
-                  orBool SCHEDFLAG ==K Ghasfloorcost )
+                  orBool SCHEDFLAG ==K Ghasfloorcost
+                  orBool SCHEDFLAG ==K Ghasauthbaserefund )
 ```
 
 ### Osaka Schedule
@@ -526,13 +539,46 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule [GmaxblobgasAmsterdam]:               Gmaxblobgas               < AMSTERDAM > => 2752512
     rule [GtargetblobgasAmsterdam]:            Gtargetblobgas            < AMSTERDAM > => 1835008
     rule [BlobbasefeeupdatefractionAmsterdam]: Blobbasefeeupdatefraction < AMSTERDAM > => 11684671
+    rule [GcoldaccountaccessAmsterdam]:        Gcoldaccountaccess        < AMSTERDAM > => 3000
+    rule [GsstoresetAmsterdam]:                Gsstoreset                < AMSTERDAM > => 10000
+    rule [RsstoreclearAmsterdam]:              Rsstoreclear              < AMSTERDAM > => 11616
+    rule [GaccesslistaddressAmsterdam]:        Gaccesslistaddress        < AMSTERDAM > => 2900
+    rule [GaccessliststoragekeyAmsterdam]:     Gaccessliststoragekey     < AMSTERDAM > => 2000
+    rule [GnewaccountAmsterdam]:               Gnewaccount               < AMSTERDAM > => 183600
+    rule [GcreateAmsterdam]:                   Gcreate                   < AMSTERDAM > => 12000
+    rule [GtxcreateAmsterdam]:                 Gtxcreate                 < AMSTERDAM > => 23000
+    rule [GcallvalueAmsterdam]:                Gcallvalue                < AMSTERDAM > => 11300
+    rule [GstoragesetAmsterdam]:               Gstorageset               < AMSTERDAM > => 97920
+    rule [GaccountwriteAmsterdam]:             Gaccountwrite             < AMSTERDAM > => 9000
+    rule [GcostperstatebyteAmsterdam]:         Gcostperstatebyte         < AMSTERDAM > => 1530
+    rule [GauthbaseAmsterdam]:                 Gauthbase                 < AMSTERDAM > => 35190
     rule [SCHEDCONSTAmsterdam]:                SCHEDCONST                < AMSTERDAM > => SCHEDCONST < OSAKA >
       requires notBool ( SCHEDCONST ==K Gmaxblobgas
                   orBool SCHEDCONST ==K Gtargetblobgas
                   orBool SCHEDCONST ==K Blobbasefeeupdatefraction
+                  orBool SCHEDCONST ==K Gcoldaccountaccess
+                  orBool SCHEDCONST ==K Gsstoreset
+                  orBool SCHEDCONST ==K Rsstoreclear
+                  orBool SCHEDCONST ==K Gaccesslistaddress
+                  orBool SCHEDCONST ==K Gaccessliststoragekey
+                  orBool SCHEDCONST ==K Gnewaccount
+                  orBool SCHEDCONST ==K Gcreate
+                  orBool SCHEDCONST ==K Gtxcreate
+                  orBool SCHEDCONST ==K Gcallvalue
+                  orBool SCHEDCONST ==K Gstorageset
+                  orBool SCHEDCONST ==K Gaccountwrite
+                  orBool SCHEDCONST ==K Gcostperstatebyte
+                  orBool SCHEDCONST ==K Gauthbase
                        )
 
-    rule [SCHEDFLAGAmsterdam]: SCHEDFLAG << AMSTERDAM >> => SCHEDFLAG << OSAKA >>
+    rule [Ghaseip8038Amsterdam]:        Ghaseip8038        << AMSTERDAM >> => true
+    rule [GhasauthbaserefundAmsterdam]: Ghasauthbaserefund << AMSTERDAM >> => false
+    rule [GhasstategasAmsterdam]:       Ghasstategas       << AMSTERDAM >> => true
+    rule [SCHEDFLAGAmsterdam]:          SCHEDFLAG          << AMSTERDAM >> => SCHEDFLAG << OSAKA >>
+      requires notBool ( SCHEDFLAG ==K Ghaseip8038
+                  orBool SCHEDFLAG ==K Ghasauthbaserefund
+                  orBool SCHEDFLAG ==K Ghasstategas
+                       )
 ```
 
 ```k
