@@ -32,10 +32,8 @@ module SCHEDULE
                           | "Ghasbeaconroot"          | "Ghaseip6780"      | "Ghasblobbasefee"     | "Ghasblobhash"
                           | "Ghasbls12msmdiscount"    | "Ghashistory"      | "Ghasrequests"        | "Ghasauthority"
                           | "Ghasfloorcost"           | "Ghasclz"          | "Ghasstategas"        | "Ghasauthbaserefund"
-                          | "Ghaseip8038"
- // ---------------------------------------------------------------------------------------------------------------
-                          | "Ghasfloorcost"           | "Ghasclz"          | "Ghastxgaslimit"
- // -----------------------------------------------------------------------------------------
+                          | "Ghaseip8038"             | "Ghasreserve"      | "Ghastxgaslimit"
+ // -----------------------------------------------------------------------------------------------------------------
 ```
 
 ### Schedule Constants
@@ -57,8 +55,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
                            | "Gpointeval"    | "Gmaxblobgas"   | "Gminbasefee"   | "Gtargetblobgas"    | "Gperblob"           | "Blobbasefeeupdatefraction"
                            | "Gbls12g1add"   | "Gbls12g1mul"   | "Gbls12g2add"   | "Gbls12g2mul"       | "Gbls12mapfptog1"    | "Gbls12PairingCheckMul"
                            | "Gbls12PairingCheckAdd"           | "Gauthbase"     | "Gbls12mapfp2tog2"  | "Gtxdatafloor"       | "Gstorageset"       | "Gaccountwrite"
-                           | "Gcostperstatebyte"
-                           | "Gbls12PairingCheckAdd"           | "Gauthbase"     | "Gbls12mapfp2tog2"  | "Gtxdatafloor"       | "Gmaxtxgaslimit"
+                           | "Gcostperstatebyte"               | "Gblobbasecost" | "Gmaxtxgaslimit"
  // -------------------------------------------------------------------------------------------------------------------------------------------------------
 ```
 
@@ -136,6 +133,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule [GminbasefeeDefault]:               Gminbasefee               < DEFAULT > => 0
     rule [BlobbasefeeupdatefractionDefault]: Blobbasefeeupdatefraction < DEFAULT > => 0
     rule [GperblobDefault]:                  Gperblob                  < DEFAULT > => 0
+    rule [GblobbasecostDefault]:             Gblobbasecost             < DEFAULT > => 0
 
     rule [GaccessliststoragekeyDefault]: Gaccessliststoragekey < DEFAULT > => 0
     rule [GaccesslistaddressDefault]:    Gaccesslistaddress    < DEFAULT > => 0
@@ -195,6 +193,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule [GhasclzDefault]:                 Ghasclz                 << DEFAULT >> => false
     rule [GhasstategasDefault]:            Ghasstategas            << DEFAULT >> => false
     rule [Ghaseip8038Default]:             Ghaseip8038             << DEFAULT >> => false
+    rule [GhasreserveDefault]:             Ghasreserve             << DEFAULT >> => false
     rule [GhastxgaslimitDefault]:          Ghastxgaslimit          << DEFAULT >> => false
 ```
 
@@ -519,14 +518,19 @@ A `ScheduleConst` is a constant determined by the fee schedule.
 ```k
     syntax Schedule ::= "OSAKA" [symbol(OSAKA_EVM), smtlib(schedule_OSAKA)]
  // -----------------------------------------------------------------------
+    rule [GblobbasecostOsaka]:  Gblobbasecost  < OSAKA > => 8192 // 2 ** 13
     rule [GmaxtxgaslimitOsaka]: Gmaxtxgaslimit < OSAKA > => 16777216
     rule [SCHEDCONSTOsaka]:     SCHEDCONST     < OSAKA > => SCHEDCONST < PRAGUE >
-      requires notBool ( SCHEDCONST ==K Gmaxtxgaslimit )
+      requires notBool ( SCHEDCONST ==K Gblobbasecost
+                  orBool SCHEDCONST ==K Gmaxtxgaslimit
+                       )
 
     rule [GhasclzOsaka]:        Ghasclz        << OSAKA >> => true
+    rule [GhasreserveOsaka]:    Ghasreserve    << OSAKA >> => true
     rule [GhastxgaslimitOsaka]: Ghastxgaslimit << OSAKA >> => true
     rule [SCHEDFLAGOsaka]:      SCHEDFLAG      << OSAKA >> => SCHEDFLAG << PRAGUE >>
       requires notBool ( SCHEDFLAG ==K Ghasclz
+                  orBool SCHEDFLAG ==K Ghasreserve
                   orBool SCHEDFLAG ==K Ghastxgaslimit
                        )
 ```
