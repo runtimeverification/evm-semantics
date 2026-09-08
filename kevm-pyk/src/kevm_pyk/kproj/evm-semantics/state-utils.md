@@ -78,6 +78,8 @@ module STATE-UTILS
          <excessBlobGas>     _ => 0          </excessBlobGas>
          <beaconRoot>        _ => 0          </beaconRoot>
          <requestsRoot>      _ => 0          </requestsRoot>
+         <balHash>           _ => 0          </balHash>
+         <slotNumber>        _ => 0          </slotNumber>
          <depositRequests>       _ => .Bytes </depositRequests>
          <withdrawalRequests>    _ => .Bytes </withdrawalRequests>
          <consolidationRequests> _ => .Bytes </consolidationRequests>
@@ -235,9 +237,21 @@ The `"rlp"` key loads the block information.
          </k>
          <requestsRoot> _ => #asWord(RR) </requestsRoot>
 
+    rule <k> load "rlp" : [ [ HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR, UB, EB, BR, RR, HA, SN, .JSONs ], BT, BU, BW, .JSONs ]
+          => load "rlp" : [ [ HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR, UB, EB, BR, RR, .JSONs ], BT, BU, BW, .JSONs ]
+         ...
+         </k>
+         <balHash>    _ => #asWord(HA) </balHash>
+         <slotNumber> _ => #asWord(SN) </slotNumber>
+
     // fallback rule to catch invalid rlp encodings
     rule <k> load "rlp" : _ => .K ... </k>
          <statusCode> _ => EVMC_INVALID_BLOCK </statusCode>  [owise]
+
+    rule <k> load "genesisRLP": [ [ HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR, UB, EB, BR, RR, HA, SN, .JSONs ], _, _, _, .JSONs ] => .K ... </k>
+         <blockhashes> .List => ListItem(#blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR, UB, EB, BR, RR, HA, SN)) ListItem(#asWord(HP)) </blockhashes>
+         <previousExcessBlobGas> 0 => #asWord(EB) </previousExcessBlobGas>
+         <previousBlobGasUsed>   0 => #asWord(UB) </previousBlobGasUsed>
 
     rule <k> load "genesisRLP": [ [ HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR, UB, EB, BR, RR, .JSONs ], _, _, _, .JSONs ] => .K ... </k>
          <blockhashes> .List => ListItem(#blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR, UB, EB, BR, RR)) ListItem(#asWord(HP)) </blockhashes>

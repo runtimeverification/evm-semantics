@@ -128,6 +128,8 @@ Address/Hash Helpers
                  | #blockHeaderHash(Bytes, Bytes, Bytes, Bytes, Bytes, Bytes, Bytes, Bytes, Bytes, Bytes, Bytes, Bytes, Bytes, Bytes, Bytes, Bytes, Bytes, Bytes, Bytes, Bytes       ) [function, symbol(blockHashHeaderBlobBeacon)      ]
                  | #blockHeaderHash(Int  , Int  , Int  , Int  , Int  , Int  , Bytes, Int  , Int  , Int  , Int  , Int  , Bytes, Int  , Int  , Int  , Int  , Int  , Int  , Int  , Int  ) [function, symbol(blockHeaderHashRequestsRoot)    ]
                  | #blockHeaderHash(Bytes, Bytes, Bytes, Bytes, Bytes, Bytes, Bytes, Bytes, Bytes, Bytes, Bytes, Bytes, Bytes, Bytes, Bytes, Bytes, Bytes, Bytes, Bytes, Bytes, Bytes) [function, symbol(blockHashHeaderRequestsRoot)    ]
+                 | #blockHeaderHash(Int  , Int  , Int  , Int  , Int  , Int  , Bytes, Int  , Int  , Int  , Int  , Int  , Bytes, Int  , Int  , Int  , Int  , Int  , Int  , Int  , Int  , Int  , Int  ) [function, symbol(blockHeaderHashBALSlot)]
+                 | #blockHeaderHash(Bytes, Bytes, Bytes, Bytes, Bytes, Bytes, Bytes, Bytes, Bytes, Bytes, Bytes, Bytes, Bytes, Bytes, Bytes, Bytes, Bytes, Bytes, Bytes, Bytes, Bytes, Bytes, Bytes) [function, symbol(blockHashHeaderBALSlot)]
  // --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     rule #blockHeaderHash(HP:Bytes, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN)
@@ -195,6 +197,21 @@ Address/Hash Helpers
                                                   , #wordBytes(HM), #padToWidth(8, #asByteStack(HN))
                                                   , HF , #wordBytes(WF) , UB , EB , #wordBytes(BR)
                                                   , #wordBytes(RR)
+                                                  ]
+                                                )
+                                    )
+                         )
+
+    rule #blockHeaderHash(HP:Bytes, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WF, UB, EB, BR, RR, HA, SN)
+         => #parseHexWord( Keccak256( #rlpEncode( [ HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WF, UB, EB, BR, RR, HA, SN] ) ) )
+
+    rule #blockHeaderHash(HP:Int, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WF, UB, EB, BR, RR, HA, SN)
+         => #parseHexWord( Keccak256( #rlpEncode( [ #wordBytes(HP), #wordBytes(HO), #addrBytes(HC)
+                                                  , #wordBytes(HR), #wordBytes(HT), #wordBytes(HE)
+                                                  , HB, HD, HI, HL, HG, HS, HX
+                                                  , #wordBytes(HM), #padToWidth(8, #asByteStack(HN))
+                                                  , HF , #wordBytes(WF) , UB , EB , #wordBytes(BR)
+                                                  , #wordBytes(RR) , #wordBytes(HA) , SN
                                                   ]
                                                 )
                                     )

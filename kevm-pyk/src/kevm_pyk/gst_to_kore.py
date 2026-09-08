@@ -34,7 +34,9 @@ SCHEDULE_MAPPING: Final[dict[str, str]] = {
     'Frontier': 'FRONTIER',
     'Homestead': 'HOMESTEAD',
     'EIP150': 'TANGERINE_WHISTLE',
+    'TangerineWhistle': 'TANGERINE_WHISTLE',
     'EIP158': 'SPURIOUS_DRAGON',
+    'SpuriousDragon': 'SPURIOUS_DRAGON',
     'Byzantium': 'BYZANTIUM',
     'Constantinople': 'CONSTANTINOPLE',
     'ConstantinopleFix': 'PETERSBURG',
@@ -51,6 +53,12 @@ SCHEDULE_MAPPING: Final[dict[str, str]] = {
     'CancunToPragueAtTime15k': 'PRAGUE',
     'Osaka': 'OSAKA',
     'PragueToOsakaAtTime15k': 'OSAKA',
+    'Amsterdam': 'AMSTERDAM',
+    'BPO2ToAmsterdamAtTime15k': 'AMSTERDAM',
+    'OsakaToBPO1AtTime15k': 'OSAKA',
+    'BPO1ToBPO2AtTime15k': 'OSAKA',
+    'BPO2ToBPO3AtTime15k': 'AMSTERDAM',
+    'BPO3ToBPO4AtTime15k': 'AMSTERDAM',
 }
 
 _GST_DISCARD_KEYS: Final = frozenset(
@@ -65,6 +73,8 @@ _GST_DISCARD_KEYS: Final = frozenset(
         'hasBigInt',
         'config',
         'network',
+        'receipts',
+        'blockAccessList',
     ]
 )
 _GST_LOAD_KEYS: Final = frozenset(
