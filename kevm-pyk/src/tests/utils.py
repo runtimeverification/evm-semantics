@@ -4,6 +4,7 @@ import csv
 import json
 import logging
 from pathlib import Path
+from subprocess import CalledProcessError
 from typing import TYPE_CHECKING
 
 import pytest
@@ -89,13 +90,12 @@ def _test(
 
     for test_name, init_kore in iterate_gst(gst_data, mode, chain_id, usegas, skipped_gst_tests):
         _LOGGER.info(f'Running test: {gst_file} - {test_name}')
-        res = interpret(init_kore, check=False)
-
         try:
-            _assert_exit_code_zero(res)
-        except AssertionError:
+            _assert_exit_code_zero(interpret(init_kore, check=False))
+        except (AssertionError, RuntimeError, CalledProcessError) as err:
             if not save_failing:
                 raise
+            _LOGGER.info(f'Failing test: {gst_file} - {test_name}: {type(err).__name__}: {err}')
             failing_tests.append(test_name)
 
     if len(failing_tests) == 0:
