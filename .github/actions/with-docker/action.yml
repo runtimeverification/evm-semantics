@@ -29,8 +29,8 @@ runs:
     run: |
       set -euxo pipefail
 
-      USER=github-user
-      GROUP=${USER}
+      IMAGE_USER=github-user
+      IMAGE_GROUP=${IMAGE_USER}
       Z3_VERSION=$(cat deps/z3)
       K_VERSION=$(cat deps/k_release)
       UV_VERSION=$(cat deps/uv_release)
@@ -41,8 +41,8 @@ runs:
         --tag "${TAG_NAME}"                         \
         --build-arg USER_ID="${USER_ID}"            \
         --build-arg GROUP_ID="${GROUP_ID}"          \
-        --build-arg USER="${USER}"                  \
-        --build-arg GROUP="${GROUP}"                \
+        --build-arg IMAGE_USER="${IMAGE_USER}"                  \
+        --build-arg IMAGE_GROUP="${IMAGE_GROUP}"                \
         --build-arg K_VERSION="${K_VERSION}"        \
         --build-arg Z3_VERSION="${Z3_VERSION}"      \
         --build-arg LLVM_VERSION="${LLVM_VERSION}"  \
@@ -55,8 +55,8 @@ runs:
         --tty                               \
         --detach                            \
         --user root                         \
-        --workdir "/home/${USER}/workspace" \
+        --workdir "/home/${IMAGE_USER}/workspace" \
         "${TAG_NAME}"
 
-      docker cp ./. "${CONTAINER_NAME}":"/home/${USER}/workspace"
-      docker exec "${CONTAINER_NAME}" chown -R "${USER}:${GROUP}" "/home/${USER}"
+      docker cp ./. "${CONTAINER_NAME}":"/home/${IMAGE_USER}/workspace"
+      docker exec "${CONTAINER_NAME}" chown -R "${IMAGE_USER}:${IMAGE_GROUP}" "/home/${IMAGE_USER}"
