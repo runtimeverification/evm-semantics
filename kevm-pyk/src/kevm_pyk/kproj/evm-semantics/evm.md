@@ -1900,7 +1900,7 @@ System Transaction Configuration
                  | "HISTORY_STORAGE_ADDRESS" [alias]
                  | "SYSTEMTXGAS" [macro]
                  | "SYSTEMMAXSSTORES" [macro]
- // ------------------------------------
+ // -----------------------------------------
     rule SYSTEM_ADDRESS => 1461501637330902918203684832716283019655932542974
     rule BEACON_ROOTS_ADDRESS => 339909022928299415537769066420252604268194818
     rule HISTORY_STORAGE_ADDRESS => 21693734551179282564423033930679318143314229
