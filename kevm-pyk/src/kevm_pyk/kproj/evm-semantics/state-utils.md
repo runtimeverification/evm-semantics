@@ -257,20 +257,24 @@ The `"rlp"` key loads the block information.
          <blockhashes> .List => ListItem(#blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR, UB, EB, BR, RR)) ListItem(#asWord(HP)) </blockhashes>
          <previousExcessBlobGas> 0 => #asWord(EB) </previousExcessBlobGas>
          <previousBlobGasUsed>   0 => #asWord(UB) </previousBlobGasUsed>
+         <previousBaseFee>       0 => #asWord(HF) </previousBaseFee>
 
     rule <k> load "genesisRLP": [ [ HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR, UB, EB, BR, .JSONs ], _, _, _, .JSONs ] => .K ... </k>
          <blockhashes> .List => ListItem(#blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR, UB, EB, BR)) ListItem(#asWord(HP)) </blockhashes>
          <previousExcessBlobGas> 0 => #asWord(EB) </previousExcessBlobGas>
          <previousBlobGasUsed>   0 => #asWord(UB) </previousBlobGasUsed>
+         <previousBaseFee>       0 => #asWord(HF) </previousBaseFee>
 
     rule <k> load "genesisRLP": [ [ HP, HO, HC, HR, HT, HE:Bytes, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR, .JSONs ], _, _, _, .JSONs ] => .K ... </k>
          <blockhashes> .List => ListItem(#blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, WR)) ListItem(#asWord(HP)) ... </blockhashes>
+         <previousBaseFee>       0 => #asWord(HF) </previousBaseFee>
 
     rule <k> load "genesisRLP": [ [ HP, HO, HC, HR, HT, HE:Bytes, HB, HD, HI, HL, HG, HS, HX, HM, HN, .JSONs ], _, _, .JSONs ] => .K ... </k>
          <blockhashes> .List => ListItem(#blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN)) ListItem(#asWord(HP)) ... </blockhashes>
 
     rule <k> load "genesisRLP": [ [ HP, HO, HC, HR, HT, HE:Bytes, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF, .JSONs ], _, _, .JSONs ] => .K ... </k>
          <blockhashes> .List => ListItem(#blockHeaderHash(HP, HO, HC, HR, HT, HE, HB, HD, HI, HL, HG, HS, HX, HM, HN, HF)) ListItem(#asWord(HP)) ... </blockhashes>
+         <previousBaseFee>       0 => #asWord(HF) </previousBaseFee>
 
     syntax Int ::= "#newWithdrawalID" "(" List ")" [function]
  // ---------------------------------------------------------
@@ -626,6 +630,7 @@ The `"rlp"` key loads the block information.
       andBool TX_MAX_PRIORITY_FEE <=Int TX_MAX_FEE
       andBool BAL >=Int TX_GAS_LIMIT *Int TX_MAX_FEE +Int VALUE
       andBool TX_GAS_LIMIT <=Int BLOCK_GAS_LIMIT
+      andBool (notBool Ghastxgaslimit << SCHED >> orBool TX_GAS_LIMIT <=Int Gmaxtxgaslimit < SCHED >)
       andBool size(TX_AUTH_LIST) >Int 0 andBool #checkAuthorityList(TX_AUTH_LIST)
 
     rule [[ #isValidTransaction (TXID, ACCTFROM) => true ]]
@@ -662,6 +667,7 @@ The `"rlp"` key loads the block information.
       andBool TX_MAX_BLOB_FEE >=Int Cbasefeeperblob(SCHED, EXCESS_BLOB_GAS)
       andBool BAL >=Int TX_GAS_LIMIT *Int TX_MAX_FEE +Int (Ctotalblob(SCHED, size(TVH)) *Int TX_MAX_BLOB_FEE) +Int VALUE
       andBool TX_GAS_LIMIT <=Int BLOCK_GAS_LIMIT
+      andBool (notBool Ghastxgaslimit << SCHED >> orBool TX_GAS_LIMIT <=Int Gmaxtxgaslimit < SCHED >)
       andBool Ctotalblob(SCHED, size(TVH)) <=Int Gmaxblobgas < SCHED>
 
     rule [[ #isValidTransaction (TXID, ACCTFROM) => true ]]
@@ -691,6 +697,7 @@ The `"rlp"` key loads the block information.
       andBool TX_MAX_PRIORITY_FEE <=Int TX_MAX_FEE
       andBool BAL >=Int TX_GAS_LIMIT *Int TX_MAX_FEE +Int VALUE
       andBool TX_GAS_LIMIT <=Int BLOCK_GAS_LIMIT
+      andBool (notBool Ghastxgaslimit << SCHED >> orBool TX_GAS_LIMIT <=Int Gmaxtxgaslimit < SCHED >)
 
     rule [[ #isValidTransaction (TXID, ACCTFROM) => true ]]
          <schedule> SCHED </schedule>
@@ -718,6 +725,7 @@ The `"rlp"` key loads the block information.
       andBool BASE_FEE <=Int TX_GAS_PRICE
       andBool BAL >=Int TX_GAS_LIMIT *Int TX_GAS_PRICE +Int VALUE
       andBool TX_GAS_LIMIT <=Int BLOCK_GAS_LIMIT
+      andBool (notBool Ghastxgaslimit << SCHED >> orBool TX_GAS_LIMIT <=Int Gmaxtxgaslimit < SCHED >)
 
     rule #isValidTransaction (_, _) => false [owise]
 ```
