@@ -1611,7 +1611,7 @@ These rules reach into the network state and load/store from account storage:
 
     syntax BinStackOp ::= "SSTORE"
  // ------------------------------
-    rule [sstore]:
+    rule [sstore.stategas]:
          <k> SSTORE INDEX NEW
           => SstoreStateCredit(SCHED, NEW, #lookup(STORAGE, INDEX), #lookup(ORIGSTORAGE, INDEX)) ~> #creditStateGas
           ~> SstoreStateGas(SCHED, NEW, #lookup(STORAGE, INDEX), #lookup(ORIGSTORAGE, INDEX)) ~> #chargeStateGas
@@ -1625,6 +1625,19 @@ These rules reach into the network state and load/store from account storage:
            <origStorage> ORIGSTORAGE </origStorage>
            ...
          </account>
+      requires Ghasstategas << SCHED >>
+      [preserves-definedness]
+
+    rule [sstore]:
+         <k> SSTORE INDEX NEW => .K ... </k>
+         <schedule> SCHED </schedule>
+         <id> ACCT </id>
+         <account>
+           <acctID> ACCT </acctID>
+           <storage> STORAGE => STORAGE [ INDEX <- NEW ] </storage>
+           ...
+         </account>
+      requires notBool Ghasstategas << SCHED >>
       [preserves-definedness]
 
     syntax UnStackOp ::= "TLOAD"
@@ -3134,7 +3147,10 @@ Access List Gas
     rule <k> #gasAccess(SCHED, BALANCE ACCT)           => Caddraccess(SCHED, ACCT in ACCTS)                                                                   ... </k> <accessedAccounts> ACCTS </accessedAccounts>
     rule <k> #gasAccess(SCHED, SELFDESTRUCT ACCT)      => #if ACCT in ACCTS #then 0 #else Gcoldaccountaccess < SCHED > #fi                                    ... </k> <accessedAccounts> ACCTS </accessedAccounts>
     rule <k> #gasAccess(_    , SLOAD INDEX )           => #accessStorage ACCT INDEX ~> 0                                                                      ... </k> <id> ACCT </id>
-    rule <k> #gasAccess(SCHED, SSTORE INDEX _)         => #accessStorage ACCT INDEX ~> #if #inStorage(TS, ACCT, INDEX) #then #if Ghasstategas << SCHED >> #then Gwarmstorageread < SCHED > #else 0 #fi #else Gcoldsload < SCHED > #fi ... </k> <id> ACCT </id> <accessedStorage> TS </accessedStorage>
+    rule <k> #gasAccess(SCHED, SSTORE INDEX _)         => #accessStorage ACCT INDEX ~> #if #inStorage(TS, ACCT, INDEX) #then Gwarmstorageread < SCHED > #else Gcoldsload < SCHED > #fi ... </k> <id> ACCT </id> <accessedStorage> TS </accessedStorage>
+      requires Ghasstategas << SCHED >>
+    rule <k> #gasAccess(SCHED, SSTORE INDEX _)         => #accessStorage ACCT INDEX ~> #if #inStorage(TS, ACCT, INDEX) #then 0 #else Gcoldsload < SCHED > #fi ... </k> <id> ACCT </id> <accessedStorage> TS </accessedStorage>
+      requires notBool Ghasstategas << SCHED >>
     rule <k> #gasAccess(_    , _ )                     => 0                                                                                                   ... </k> [owise]
 
 ```
