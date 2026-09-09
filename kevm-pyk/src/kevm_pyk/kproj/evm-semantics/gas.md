@@ -189,15 +189,25 @@ module GAS-FEES
       requires notBool Ghasdirtysstore << SCHED >>
       [concrete]
 
-    rule [SstoreStateGas]:
+    rule [SstoreStateGas.stategas]:
          SstoreStateGas(SCHED, NEW, CURR, ORIG)
       => #if ORIG ==Int CURR andBool CURR =/=Int NEW andBool ORIG ==Int 0 #then Gstorageset < SCHED > #else 0 #fi
+      requires Ghasstategas << SCHED >>
       [concrete]
 
-    rule [SstoreStateCredit]:
+    rule [SstoreStateGas.none]:
+         SstoreStateGas(SCHED, _, _, _) => 0
+      requires notBool Ghasstategas << SCHED >>
+
+    rule [SstoreStateCredit.stategas]:
          SstoreStateCredit(SCHED, NEW, CURR, ORIG)
       => #if CURR =/=Int NEW andBool ORIG ==Int NEW andBool ORIG ==Int 0 #then Gstorageset < SCHED > #else 0 #fi
+      requires Ghasstategas << SCHED >>
       [concrete]
+
+    rule [SstoreStateCredit.none]:
+         SstoreStateCredit(SCHED, _, _, _) => 0
+      requires notBool Ghasstategas << SCHED >>
 
     rule [Cextra.delegation]: Cextra(SCHED, ISEMPTY, VALUE,  ISWARM,  ISDELEGATION,  ISWARMDELEGATION) => Cdelegationaccess(SCHED, ISDELEGATION, ISWARMDELEGATION) +Int Caddraccess(SCHED, ISWARM) +Int Cnew(SCHED, ISEMPTY, VALUE) +Int Cxfer(SCHED, VALUE) requires         Ghasaccesslist << SCHED >> andBool         Ghasauthority << SCHED >>
     rule [Cextra.new]:        Cextra(SCHED, ISEMPTY, VALUE,  ISWARM, _ISDELEGATION, _ISWARMDELEGATION) => Caddraccess(SCHED, ISWARM) +Int Cnew(SCHED, ISEMPTY, VALUE) +Int Cxfer(SCHED, VALUE)                                                               requires         Ghasaccesslist << SCHED >> andBool notBool Ghasauthority << SCHED >>
