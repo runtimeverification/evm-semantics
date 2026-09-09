@@ -1762,6 +1762,13 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
       requires Ghasstategas << SCHED >>
     rule <k> #chargeDispatchDelegationAccess _ => .K ... </k> [owise]
 
+    rule <k> #halt ~> #accessAccounts _:Account ~> #callWithCode _ _ _ _ _ _ _ _
+          => #pushCallStack ~> #pushWorldState ~> #halt
+         ...
+         </k>
+         <callDepth> -1 </callDepth>
+      [priority(40)]
+
     rule [call.true]:
          <k> #call ACCTFROM ACCTTO ACCTCODE VALUE APPVALUE ARGS STATIC
           => #callWithCode ACCTFROM ACCTTO ACCTCODE CODE VALUE APPVALUE ARGS STATIC
@@ -1876,6 +1883,8 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
 
     rule <k> #accessAccounts ADDRSET:Set => .K ... </k>
          <accessedAccounts> TOUCHED_ACCOUNTS => TOUCHED_ACCOUNTS |Set ADDRSET </accessedAccounts>
+
+    rule <k> #halt ~> (#accessAccounts _:Account => .K) ... </k>
 
     syntax Bytes ::= #computeValidJumpDests(Bytes)                  [symbol(computeValidJumpDests),    function, memo, total]
                    | #computeValidJumpDests(Bytes, Int, Bytes, Int) [symbol(computeValidJumpDestsAux), function             ]
