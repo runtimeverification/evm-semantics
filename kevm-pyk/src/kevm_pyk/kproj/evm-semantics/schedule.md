@@ -550,7 +550,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule [GaccessliststoragekeyAmsterdam]:     Gaccessliststoragekey     < AMSTERDAM > => 2000
     rule [GnewaccountAmsterdam]:               Gnewaccount               < AMSTERDAM > => 183600
     rule [GcreateAmsterdam]:                   Gcreate                   < AMSTERDAM > => 12000
-    rule [GtxcreateAmsterdam]:                 Gtxcreate                 < AMSTERDAM > => 23000
+    rule [GtxcreateAmsterdam]:                 Gtxcreate                 < AMSTERDAM > => 24000
     rule [GcallvalueAmsterdam]:                Gcallvalue                < AMSTERDAM > => 11300
     rule [GstoragesetAmsterdam]:               Gstorageset               < AMSTERDAM > => 97920
     rule [GaccountwriteAmsterdam]:             Gaccountwrite             < AMSTERDAM > => 9000
