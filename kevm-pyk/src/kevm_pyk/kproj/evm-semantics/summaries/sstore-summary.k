@@ -7,7 +7,11 @@ module SSTORE-SUMMARY
            <k>
              ( #next [ SSTORE ] ~> .K => .K )
              ~> _K_CELL:K
+             ~> .K
            </k>
+           <schedule>
+             SCHEDULE_CELL:Schedule
+           </schedule>
            <useGas>
              ( USEGAS_CELL:Bool => false )
            </useGas>
@@ -51,13 +55,16 @@ module SSTORE-SUMMARY
            </ethereum>
            ...
          </kevm>
-      requires ( notBool USEGAS_CELL:Bool )
+      requires ( ( notBool USEGAS_CELL:Bool )
+       andBool ( ( notBool Ghasstategas << SCHEDULE_CELL:Schedule >> )
+               ))
       [priority(20), label(SSTORE-SUMMARY-NOGAS-BERLIN)]
     
     rule [SSTORE-SUMMARY-USEGAS-BERLIN]: <kevm>
            <k>
              ( #next [ SSTORE ] ~> .K => .K )
              ~> _K_CELL:K
+             ~> .K
            </k>
            <schedule>
              SCHEDULE_CELL:Schedule
@@ -118,17 +125,19 @@ module SSTORE-SUMMARY
            ...
          </kevm>
       requires ( USEGAS_CELL:Bool
+       andBool ( ( notBool Ghasstategas << SCHEDULE_CELL:Schedule >> )
        andBool ( Ghasaccesslist << SCHEDULE_CELL:Schedule >>
        andBool ( Csstore ( SCHEDULE_CELL:Schedule , W1:Int , #lookup ( STORAGE_CELL:Map , W0:Int ) , #lookup ( ORIG_STORAGE_CELL:Map , W0:Int ) ) <=Int GAS_CELL:Int
        andBool ( #if #inStorage ( ACCESSEDSTORAGE_CELL:Map , ID_CELL:Int , W0:Int ) #then 0 #else Gcoldsload < SCHEDULE_CELL:Schedule > #fi <=Int ( GAS_CELL:Int -Int Csstore ( SCHEDULE_CELL:Schedule , W1:Int , #lookup ( STORAGE_CELL:Map , W0:Int ) , #lookup ( ORIG_STORAGE_CELL:Map , W0:Int ) ) )
        andBool ( Gcallstipend < SCHEDULE_CELL:Schedule > <Int GAS_CELL:Int
-               )))))
+               ))))))
       [priority(20), label(SSTORE-SUMMARY-USEGAS-BERLIN)]
     
     rule [SSTORE-SUMMARY-USEGAS]: <kevm>
            <k>
              ( #next [ SSTORE ] ~> .K => .K )
              ~> _K_CELL:K
+             ~> .K
            </k>
            <schedule>
              SCHEDULE_CELL:Schedule
@@ -186,10 +195,11 @@ module SSTORE-SUMMARY
            ...
          </kevm>
       requires ( USEGAS_CELL:Bool
+       andBool ( ( notBool Ghasstategas << SCHEDULE_CELL:Schedule >> )
        andBool ( ( notBool Ghasaccesslist << SCHEDULE_CELL:Schedule >> )
        andBool ( Csstore ( SCHEDULE_CELL:Schedule , W1:Int , #lookup ( STORAGE_CELL:Map , W0:Int ) , #lookup ( ORIG_STORAGE_CELL:Map , W0:Int ) ) <=Int GAS_CELL:Int
        andBool ( Gcallstipend < SCHEDULE_CELL:Schedule > <Int GAS_CELL:Int
-               ))))
+               )))))
       [priority(20), label(SSTORE-SUMMARY-USEGAS)]
 
 endmodule
