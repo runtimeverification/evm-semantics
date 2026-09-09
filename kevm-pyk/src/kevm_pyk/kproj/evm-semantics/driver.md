@@ -273,19 +273,19 @@ Processing SetCode Transaction Authority Entries
 
 - The `#loadAuthorities` function processes authorization entries in EIP-7702 SetCode transactions, charging 25000 gas per tuple regardless of validity on pre-Amsterdam schedules.
 - Skips processing if transaction is not SetCode type; processes each authorization tuple by recovering the signer and attempting delegation.
-- The Amsterdam (`Ghasstategas`) charge model threads three sets through the tuple loop, mirroring EELS `set_delegation`: accounts already written by the transaction (seeded with the sender, plus the recipient of a value-bearing call), authorities that must never be charged `Gauthbase` again (delegated before the transaction, or already charged), and authorities touched by an earlier tuple.
+- The Amsterdam (`Ghasstategas`) charge model threads two sets through the tuple loop, mirroring EELS `set_delegation`: authorities that must never be charged `Gauthbase` again (delegated before the transaction, or already charged), and authorities touched by an earlier tuple.
 - The `#addAuthority` function implements EIP-7702 verification and delegation:
  - Validates that the chain ID matches current chain (or is 0) and nonce is within bounds
  - Checks if authority account code is empty or already delegated
  - Verifies that the authority nonce equals authorization nonce
  - Sets delegation code (0xEF0100 + address) and increments nonce on success
  - Pre-Amsterdam: provides refund (25000 - 12500 = 12500 gas) only for accounts that existed before processing; a new account will be created for Authorities that are not in the `<accounts>` state, without increasing the refund amount
- - Amsterdam: charges `Gnewaccount` state gas for authorities with no account leaf, `Gaccountwrite` regular gas on the transaction's first write to the authority, and `Gauthbase` state gas at most once per authority for a net-new delegation indicator
+ - Amsterdam: charges `Gnewaccount` state gas plus `Gaccountwrite` regular gas for authorities with no account leaf, and `Gauthbase` state gas at most once per authority for a net-new delegation indicator
 
 ```k
     syntax InternalOp ::= #loadAuthorities ( List ) [symbol(#loadAuthorities)]
-                        | #loadAuthorities ( List , Set , Set , Set ) [symbol(#loadAuthoritiesAux)]
- // -----------------------------------------------------------------------------------------------
+                        | #loadAuthorities ( List , Set , Set ) [symbol(#loadAuthoritiesAux)]
+ // -----------------------------------------------------------------------------------------
     rule <k> #loadAuthorities(_) => .K ... </k>
          <txPending> ListItem(TXID:Int) ... </txPending>
          <message>
@@ -295,44 +295,39 @@ Processing SetCode Transaction Authority Entries
          </message>
       requires notBool TXTYPE ==K SetCode
 
-    rule <k> #loadAuthorities(AUTHS)
-          => #loadAuthorities(AUTHS, SetItem(ORG) |Set (#if VALUE >Int 0 #then SetItem(TT) #else .Set #fi), .Set, .Set)
-          ... </k>
-         <origin> ORG </origin>
+    rule <k> #loadAuthorities(AUTHS) => #loadAuthorities(AUTHS, .Set, .Set) ... </k>
          <txPending> ListItem(TXID:Int) ... </txPending>
          <message>
            <msgID> TXID </msgID>
            <txType> SetCode </txType>
-           <to> TT </to>
-           <value> VALUE </value>
            ...
          </message>
 
-    rule <k> #loadAuthorities( .List, _, _, _ ) => .K ... </k>
+    rule <k> #loadAuthorities( .List, _, _ ) => .K ... </k>
 
-    rule <k> #loadAuthorities (ListItem(ListItem(CID) ListItem(ADDR) ListItem(NONCE) ListItem(YPAR) ListItem(SIGR) ListItem(SIGS)) REST, W, NB, T)
-          => #setDelegation (#recoverAuthority(CID, ADDR, NONCE, YPAR, SIGR, SIGS), CID, NONCE, ADDR, REST, W, NB, T)
+    rule <k> #loadAuthorities (ListItem(ListItem(CID) ListItem(ADDR) ListItem(NONCE) ListItem(YPAR) ListItem(SIGR) ListItem(SIGS)) REST, NB, T)
+          => #setDelegation (#recoverAuthority(CID, ADDR, NONCE, YPAR, SIGR, SIGS), CID, NONCE, ADDR, REST, NB, T)
           ... </k>
          <schedule> SCHED </schedule>
          <callGas> GLIMIT => GLIMIT -Int 25000 </callGas>
       requires notBool Ghasstategas << SCHED >>
 
-    rule <k> #loadAuthorities (ListItem(ListItem(CID) ListItem(ADDR) ListItem(NONCE) ListItem(YPAR) ListItem(SIGR) ListItem(SIGS)) REST, W, NB, T)
-          => #setDelegation (#recoverAuthority(CID, ADDR, NONCE, YPAR, SIGR, SIGS), CID, NONCE, ADDR, REST, W, NB, T)
+    rule <k> #loadAuthorities (ListItem(ListItem(CID) ListItem(ADDR) ListItem(NONCE) ListItem(YPAR) ListItem(SIGR) ListItem(SIGS)) REST, NB, T)
+          => #setDelegation (#recoverAuthority(CID, ADDR, NONCE, YPAR, SIGR, SIGS), CID, NONCE, ADDR, REST, NB, T)
           ... </k>
          <schedule> SCHED </schedule>
       requires Ghasstategas << SCHED >>
 
-    syntax InternalOp ::= #setDelegation ( Account , Bytes , Bytes , Bytes , List , Set , Set , Set ) [symbol(#setDelegation)]
- // --------------------------------------------------------------------------------------------------------------------------
-    rule <k> #setDelegation(AUTHORITY, CID, NONCE, _ADDR, REST, W, NB, T) => #loadAuthorities(REST, W, NB, T) ... </k> <chainID> ENV_CID </chainID>
+    syntax InternalOp ::= #setDelegation ( Account , Bytes , Bytes , Bytes , List , Set , Set ) [symbol(#setDelegation)]
+ // --------------------------------------------------------------------------------------------------------------------
+    rule <k> #setDelegation(AUTHORITY, CID, NONCE, _ADDR, REST, NB, T) => #loadAuthorities(REST, NB, T) ... </k> <chainID> ENV_CID </chainID>
        requires AUTHORITY ==K .Account
          orBool (notBool #asWord(CID) in (SetItem(ENV_CID) SetItem(0)))
          orBool (#asWord(NONCE) >=Int maxUInt64)
 
-    rule <k> #setDelegation(AUTHORITY, CID, NONCE, ADDR, REST, W, NB, T)
+    rule <k> #setDelegation(AUTHORITY, CID, NONCE, ADDR, REST, NB, T)
           => #touchAccounts AUTHORITY ~> #accessAccounts AUTHORITY
-           ~> #addAuthority(AUTHORITY, CID, NONCE, ADDR, REST, W, NB, T)
+           ~> #addAuthority(AUTHORITY, CID, NONCE, ADDR, REST, NB, T)
           ...
          </k> [owise]
 
@@ -342,9 +337,9 @@ Processing SetCode Transaction Authority Entries
       requires notBool AUTHORITY in T andBool #isValidDelegation(ACCTCODE)
     rule #authNoBase(NB, _, _, _) => NB [owise]
 
-    syntax InternalOp ::= #addAuthority ( Account , Bytes , Bytes , Bytes , List , Set , Set , Set ) [symbol(#addAuthority)]
- // ------------------------------------------------------------------------------------------------------------------------
-    rule <k> #addAuthority(AUTHORITY, _CID, NONCE, _ADDR, REST, W, NB, T) => #loadAuthorities(REST, W, NB, T) ... </k>
+    syntax InternalOp ::= #addAuthority ( Account , Bytes , Bytes , Bytes , List , Set , Set ) [symbol(#addAuthority)]
+ // ------------------------------------------------------------------------------------------------------------------
+    rule <k> #addAuthority(AUTHORITY, _CID, NONCE, _ADDR, REST, NB, T) => #loadAuthorities(REST, NB, T) ... </k>
          <account>
            <acctID> AUTHORITY </acctID>
            <code> ACCTCODE </code>
@@ -354,7 +349,7 @@ Processing SetCode Transaction Authority Entries
       requires notBool (ACCTCODE ==K .Bytes orBool #isValidDelegation(ACCTCODE))
         orBool (notBool #asWord(NONCE) ==K ACCTNONCE)
 
-    rule <k> #addAuthority(AUTHORITY, _CID, NONCE, ADDR, REST, W, NB, T) => #loadAuthorities(REST, W, NB, T) ... </k>
+    rule <k> #addAuthority(AUTHORITY, _CID, NONCE, ADDR, REST, NB, T) => #loadAuthorities(REST, NB, T) ... </k>
          <schedule> SCHED </schedule>
          <refund> REFUND => REFUND +Int Gnewaccount < SCHED > -Int Gauthbase < SCHED > </refund>
          <account>
@@ -367,10 +362,9 @@ Processing SetCode Transaction Authority Entries
        andBool (ACCTCODE ==K .Bytes orBool #isValidDelegation(ACCTCODE))
        andBool #asWord(NONCE) ==K ACCTNONCE
 
-    rule <k> #addAuthority(AUTHORITY, _CID, NONCE, ADDR, REST, W, NB, T)
-          => #if Ghasstategas << SCHED >> andBool notBool AUTHORITY in W #then Gaccountwrite < SCHED > #else 0 #fi ~> #deductCallGas
-          ~> #if Ghasstategas << SCHED >> andBool #asWord(ADDR) =/=Int 0 andBool notBool AUTHORITY in #authNoBase(NB, T, AUTHORITY, ACCTCODE) #then Gauthbase < SCHED > #else 0 #fi ~> #chargeStateGasIntoCallGas
-          ~> #loadAuthorities(REST, W |Set SetItem(AUTHORITY), #authNoBase(NB, T, AUTHORITY, ACCTCODE) |Set (#if #asWord(ADDR) =/=Int 0 #then SetItem(AUTHORITY) #else .Set #fi), T |Set SetItem(AUTHORITY))
+    rule <k> #addAuthority(AUTHORITY, _CID, NONCE, ADDR, REST, NB, T)
+          => #if Ghasstategas << SCHED >> andBool #asWord(ADDR) =/=Int 0 andBool notBool AUTHORITY in #authNoBase(NB, T, AUTHORITY, ACCTCODE) #then Gauthbase < SCHED > #else 0 #fi ~> #chargeStateGasIntoCallGas
+          ~> #loadAuthorities(REST, #authNoBase(NB, T, AUTHORITY, ACCTCODE) |Set (#if #asWord(ADDR) =/=Int 0 #then SetItem(AUTHORITY) #else .Set #fi), T |Set SetItem(AUTHORITY))
           ...
          </k>
          <schedule> SCHED </schedule>
@@ -384,7 +378,7 @@ Processing SetCode Transaction Authority Entries
        andBool (ACCTCODE ==K .Bytes orBool #isValidDelegation(ACCTCODE))
        andBool #asWord(NONCE) ==K ACCTNONCE
 
-    rule <k> #addAuthority(AUTHORITY, _CID, NONCE, ADDR, REST, W, NB, T) => #loadAuthorities(REST, W, NB, T) ... </k>
+    rule <k> #addAuthority(AUTHORITY, _CID, NONCE, ADDR, REST, NB, T) => #loadAuthorities(REST, NB, T) ... </k>
          <schedule> SCHED </schedule>
          <accounts>
                ( .Bag
@@ -401,11 +395,11 @@ Processing SetCode Transaction Authority Entries
       requires #asWord(NONCE) ==Int 0 andBool notBool #accountExists(AUTHORITY)
        andBool notBool Ghasstategas << SCHED >>
 
-    rule <k> #addAuthority(AUTHORITY, _CID, NONCE, ADDR, REST, W, NB, T)
+    rule <k> #addAuthority(AUTHORITY, _CID, NONCE, ADDR, REST, NB, T)
           => Gnewaccount < SCHED > ~> #chargeStateGasIntoCallGas
-          ~> #if notBool AUTHORITY in W #then Gaccountwrite < SCHED > #else 0 #fi ~> #deductCallGas
+          ~> Gaccountwrite < SCHED > ~> #deductCallGas
           ~> #if #asWord(ADDR) =/=Int 0 #then Gauthbase < SCHED > #else 0 #fi ~> #chargeStateGasIntoCallGas
-          ~> #loadAuthorities(REST, W |Set SetItem(AUTHORITY), NB |Set (#if #asWord(ADDR) =/=Int 0 #then SetItem(AUTHORITY) #else .Set #fi), T |Set SetItem(AUTHORITY))
+          ~> #loadAuthorities(REST, NB |Set (#if #asWord(ADDR) =/=Int 0 #then SetItem(AUTHORITY) #else .Set #fi), T |Set SetItem(AUTHORITY))
           ...
          </k>
          <schedule> SCHED </schedule>
@@ -424,7 +418,7 @@ Processing SetCode Transaction Authority Entries
       requires #asWord(NONCE) ==Int 0 andBool notBool #accountExists(AUTHORITY)
        andBool Ghasstategas << SCHED >>
 
-    rule <k> #addAuthority(AUTHORITY, _CID, NONCE, _ADDR, REST, W, NB, T) => #loadAuthorities(REST, W, NB, T) ... </k>
+    rule <k> #addAuthority(AUTHORITY, _CID, NONCE, _ADDR, REST, NB, T) => #loadAuthorities(REST, NB, T) ... </k>
       requires notBool (#accountExists(AUTHORITY) orBool #asWord(NONCE) ==Int 0)
 ```
 

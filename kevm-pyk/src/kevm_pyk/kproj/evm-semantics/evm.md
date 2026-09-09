@@ -1736,8 +1736,7 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     rule [call.delegatedAuthority]:
          <k> #call ACCTFROM ACCTTO ACCTCODE VALUE APPVALUE ARGS STATIC
           => #let DELEGATED_ACCOUNT = #asAccount(#range(CODE,3,20)) #in
-           (#chargeDispatchDelegationAccess DELEGATED_ACCOUNT
-          ~> #accessAccounts DELEGATED_ACCOUNT
+           (#accessAccounts DELEGATED_ACCOUNT
           ~> #callWithCode ACCTFROM ACCTTO ACCTCODE #getAccountCode(DELEGATED_ACCOUNT) VALUE APPVALUE ARGS STATIC )
           ...
          </k>
@@ -1749,25 +1748,6 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
          </account>
       requires Ghasauthority << SCHED >>
        andBool #isValidDelegation (CODE)
-
-    syntax InternalOp ::= "#chargeDispatchDelegationAccess" Account
- // ---------------------------------------------------------------
-    rule <k> #chargeDispatchDelegationAccess ACCT
-          => (#if ACCT in ACCTS #then Gwarmstorageread < SCHED > #else Gcoldaccountaccess < SCHED > #fi) ~> #deductCallGas
-         ...
-         </k>
-         <callDepth> -1 </callDepth>
-         <accessedAccounts> ACCTS </accessedAccounts>
-         <schedule> SCHED </schedule>
-      requires Ghasstategas << SCHED >>
-    rule <k> #chargeDispatchDelegationAccess _ => .K ... </k> [owise]
-
-    rule <k> #halt ~> #accessAccounts _:Account ~> #callWithCode _ _ _ _ _ _ _ _
-          => #pushCallStack ~> #pushWorldState ~> #halt
-         ...
-         </k>
-         <callDepth> -1 </callDepth>
-      [priority(40)]
 
     rule [call.true]:
          <k> #call ACCTFROM ACCTTO ACCTCODE VALUE APPVALUE ARGS STATIC
@@ -1883,8 +1863,6 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
 
     rule <k> #accessAccounts ADDRSET:Set => .K ... </k>
          <accessedAccounts> TOUCHED_ACCOUNTS => TOUCHED_ACCOUNTS |Set ADDRSET </accessedAccounts>
-
-    rule <k> #halt ~> (#accessAccounts _:Account => .K) ... </k>
 
     syntax Bytes ::= #computeValidJumpDests(Bytes)                  [symbol(computeValidJumpDests),    function, memo, total]
                    | #computeValidJumpDests(Bytes, Int, Bytes, Int) [symbol(computeValidJumpDestsAux), function             ]
