@@ -3,12 +3,12 @@ ARG K_VERSION
 ARG LLVM_VERSION
 
 ARG Z3_VERSION
-FROM runtimeverificationinc/z3:ubuntu-jammy-${Z3_VERSION} as Z3
+FROM runtimeverificationinc/z3:ubuntu-jammy-${Z3_VERSION} AS z3
 
 ARG K_VERSION
 FROM runtimeverificationinc/kframework-k:ubuntu-jammy-${K_VERSION}
 
-COPY --from=Z3 /usr/bin/z3 /usr/bin/z3
+COPY --from=z3 /usr/bin/z3 /usr/bin/z3
 
 ARG LLVM_VERSION
 
