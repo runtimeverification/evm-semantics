@@ -543,6 +543,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule [GmaxblobgasAmsterdam]:               Gmaxblobgas               < AMSTERDAM > => 2752512
     rule [GtargetblobgasAmsterdam]:            Gtargetblobgas            < AMSTERDAM > => 1835008
     rule [BlobbasefeeupdatefractionAmsterdam]: Blobbasefeeupdatefraction < AMSTERDAM > => 11684671
+    rule [maxCodeSizeAmsterdam]:               maxCodeSize               < AMSTERDAM > => 65536
+    rule [maxInitCodeSizeAmsterdam]:           maxInitCodeSize           < AMSTERDAM > => 2 *Int maxCodeSize < AMSTERDAM >
     rule [GcoldaccountaccessAmsterdam]:        Gcoldaccountaccess        < AMSTERDAM > => 3000
     rule [GsstoresetAmsterdam]:                Gsstoreset                < AMSTERDAM > => 10000
     rule [RsstoreclearAmsterdam]:              Rsstoreclear              < AMSTERDAM > => 11616
@@ -560,6 +562,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
       requires notBool ( SCHEDCONST ==K Gmaxblobgas
                   orBool SCHEDCONST ==K Gtargetblobgas
                   orBool SCHEDCONST ==K Blobbasefeeupdatefraction
+                  orBool SCHEDCONST ==K maxCodeSize
+                  orBool SCHEDCONST ==K maxInitCodeSize
                   orBool SCHEDCONST ==K Gcoldaccountaccess
                   orBool SCHEDCONST ==K Gsstoreset
                   orBool SCHEDCONST ==K Rsstoreclear
