@@ -58,5 +58,5 @@ runs:
         --workdir "/home/${USER}/workspace" \
         "${TAG_NAME}"
 
-      docker cp . "${CONTAINER_NAME}":"/home/${USER}/workspace"
+      docker cp ./. "${CONTAINER_NAME}":"/home/${USER}/workspace"
       docker exec "${CONTAINER_NAME}" chown -R "${USER}:${GROUP}" "/home/${USER}"
