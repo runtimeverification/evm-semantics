@@ -193,7 +193,6 @@ module GAS-FEES
          SstoreStateGas(SCHED, NEW, CURR, ORIG)
       => #if ORIG ==Int CURR andBool CURR =/=Int NEW andBool ORIG ==Int 0 #then Gstorageset < SCHED > #else 0 #fi
       requires Ghasstategas << SCHED >>
-      [concrete]
 
     rule [SstoreStateGas.none]:
          SstoreStateGas(SCHED, _, _, _) => 0
@@ -203,7 +202,6 @@ module GAS-FEES
          SstoreStateCredit(SCHED, NEW, CURR, ORIG)
       => #if CURR =/=Int NEW andBool ORIG ==Int NEW andBool ORIG ==Int 0 #then Gstorageset < SCHED > #else 0 #fi
       requires Ghasstategas << SCHED >>
-      [concrete]
 
     rule [SstoreStateCredit.none]:
          SstoreStateCredit(SCHED, _, _, _) => 0
