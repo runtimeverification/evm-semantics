@@ -32,9 +32,7 @@ module STORAGEVAR03-SPEC
           <callGas> _ => ?_ </callGas>
           <static> false </static> // NOTE: non-static call
           <callDepth> CD </callDepth>
-          <stateGasReservoir> 0:Gas => ?_ </stateGasReservoir>
-          <stateGasSpilled> 0:Gas => ?_ </stateGasSpilled>
-          <newAccountCharged> false => ?_ </newAccountCharged>
+          ...
         </callState>
         <versionedHashes> _ </versionedHashes>
         <substate>
