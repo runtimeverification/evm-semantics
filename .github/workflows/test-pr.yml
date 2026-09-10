@@ -107,9 +107,7 @@ jobs:
       - name: 'Tear down Docker'
         if: always()
         run: |
-          # Best effort: the container does not exist if 'Set up Docker' failed, and a
-          # non-zero exit here would mask the step that actually failed.
-          docker stop --timeout=0 kevm-ci-concrete-${{ github.sha }} || true
+          docker rm -f kevm-ci-concrete-${{ github.sha }} || true
 
   test-prove:
     name: 'Proofs: ${{ matrix.name }}'
@@ -170,9 +168,7 @@ jobs:
       - name: 'Tear down Docker'
         if: always()
         run: |
-          # Best effort: the container does not exist if 'Set up Docker' failed, and a
-          # non-zero exit here would mask the step that actually failed.
-          docker stop --timeout=0 kevm-ci-haskell-${{ matrix.test-suite }}-${{ github.sha }} || true
+          docker rm -f kevm-ci-haskell-${{ matrix.test-suite }}-${{ github.sha }} || true
 
   nix:
     name: 'Nix'
