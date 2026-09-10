@@ -31,8 +31,9 @@ module SCHEDULE
                           | "Ghaswarmcoinbase"        | "Ghaswithdrawals"  | "Ghastransient"       | "Ghasmcopy"
                           | "Ghasbeaconroot"          | "Ghaseip6780"      | "Ghasblobbasefee"     | "Ghasblobhash"
                           | "Ghasbls12msmdiscount"    | "Ghashistory"      | "Ghasrequests"        | "Ghasauthority"
-                          | "Ghasfloorcost"           | "Ghasclz"          | "Ghasslotnum"
- // ---------------------------------------------------------------------------------------
+                          | "Ghasfloorcost"           | "Ghasclz"          | "Ghasreserve"         | "Ghastxgaslimit"
+                          | "Ghasslotnum"
+ // -----------------------------------------------------------------------------------------------------------------
 ```
 
 ### Schedule Constants
@@ -53,7 +54,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
                            | "Gaccessliststoragekey"           | "Rmaxquotient"  | "Ginitcodewordcost" | "maxInitCodeSize"    | "Gwarmstoragedirtystore"
                            | "Gpointeval"    | "Gmaxblobgas"   | "Gminbasefee"   | "Gtargetblobgas"    | "Gperblob"           | "Blobbasefeeupdatefraction"
                            | "Gbls12g1add"   | "Gbls12g1mul"   | "Gbls12g2add"   | "Gbls12g2mul"       | "Gbls12mapfptog1"    | "Gbls12PairingCheckMul"
-                           | "Gbls12PairingCheckAdd"           | "Gauthbase"     | "Gbls12mapfp2tog2"  | "Gtxdatafloor"
+                           | "Gbls12PairingCheckAdd"           | "Gauthbase"     | "Gbls12mapfp2tog2"  | "Gtxdatafloor"       | "Gblobbasecost"    | "Gmaxtxgaslimit"
  // -------------------------------------------------------------------------------------------------------------------------------------------------------
 ```
 
@@ -131,6 +132,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule [GminbasefeeDefault]:               Gminbasefee               < DEFAULT > => 0
     rule [BlobbasefeeupdatefractionDefault]: Blobbasefeeupdatefraction < DEFAULT > => 0
     rule [GperblobDefault]:                  Gperblob                  < DEFAULT > => 0
+    rule [GblobbasecostDefault]:             Gblobbasecost             < DEFAULT > => 0
 
     rule [GaccessliststoragekeyDefault]: Gaccessliststoragekey < DEFAULT > => 0
     rule [GaccesslistaddressDefault]:    Gaccesslistaddress    < DEFAULT > => 0
@@ -148,6 +150,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule [Gbls12PairingCheckAddDefault]: Gbls12PairingCheckAdd < DEFAULT > => 0
     rule [Gbls12mapfptog1Default]:       Gbls12mapfptog1       < DEFAULT > => 0
     rule [Gbls12mapfp2tog2Default]:      Gbls12mapfp2tog2      < DEFAULT > => 0
+    rule [GmaxtxgaslimitDefault]:        Gmaxtxgaslimit        < DEFAULT > => 0
 
     rule [GselfdestructnewaccountDefault]: Gselfdestructnewaccount << DEFAULT >> => false
     rule [GstaticcalldepthDefault]:        Gstaticcalldepth        << DEFAULT >> => true
@@ -183,6 +186,8 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule [GhasauthorityDefault]:           Ghasauthority           << DEFAULT >> => false
     rule [GhasfloorcostDefault]:           Ghasfloorcost           << DEFAULT >> => false
     rule [GhasclzDefault]:                 Ghasclz                 << DEFAULT >> => false
+    rule [GhasreserveDefault]:             Ghasreserve             << DEFAULT >> => false
+    rule [GhastxgaslimitDefault]:          Ghastxgaslimit          << DEFAULT >> => false
     rule [GhasslotnumDefault]:             Ghasslotnum             << DEFAULT >> => false
 ```
 
@@ -505,12 +510,21 @@ A `ScheduleConst` is a constant determined by the fee schedule.
 ```k
     syntax Schedule ::= "OSAKA" [symbol(OSAKA_EVM), smtlib(schedule_OSAKA)]
  // -----------------------------------------------------------------------
-    rule [SCHEDCONSTOsaka]: SCHEDCONST < OSAKA > => SCHEDCONST < PRAGUE >
+    rule [GblobbasecostOsaka]:  Gblobbasecost  < OSAKA > => 8192 // 2 ** 13
+    rule [GmaxtxgaslimitOsaka]: Gmaxtxgaslimit < OSAKA > => 16777216
+    rule [SCHEDCONSTOsaka]:     SCHEDCONST     < OSAKA > => SCHEDCONST < PRAGUE >
+      requires notBool ( SCHEDCONST ==K Gblobbasecost
+                  orBool SCHEDCONST ==K Gmaxtxgaslimit
+                       )
 
-    rule [GhasclzOsaka]:    Ghasclz    << OSAKA >> => true
-    rule [SCHEDFLAGOsaka]:  SCHEDFLAG  << OSAKA >> => SCHEDFLAG << PRAGUE >>
-      requires notBool ( SCHEDFLAG ==K Ghasclz )
-
+    rule [GhasclzOsaka]:        Ghasclz        << OSAKA >> => true
+    rule [GhasreserveOsaka]:    Ghasreserve    << OSAKA >> => true
+    rule [GhastxgaslimitOsaka]: Ghastxgaslimit << OSAKA >> => true
+    rule [SCHEDFLAGOsaka]:      SCHEDFLAG      << OSAKA >> => SCHEDFLAG << PRAGUE >>
+      requires notBool ( SCHEDFLAG ==K Ghasclz
+                  orBool SCHEDFLAG ==K Ghasreserve
+                  orBool SCHEDFLAG ==K Ghastxgaslimit
+                       )
 ```
 
 ### Amsterdam Schedule
@@ -521,10 +535,14 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule [GmaxblobgasAmsterdam]:               Gmaxblobgas               < AMSTERDAM > => 2752512
     rule [GtargetblobgasAmsterdam]:            Gtargetblobgas            < AMSTERDAM > => 1835008
     rule [BlobbasefeeupdatefractionAmsterdam]: Blobbasefeeupdatefraction < AMSTERDAM > => 11684671
+    rule [maxCodeSizeAmsterdam]:               maxCodeSize               < AMSTERDAM > => 65536
+    rule [maxInitCodeSizeAmsterdam]:           maxInitCodeSize           < AMSTERDAM > => 2 *Int maxCodeSize < AMSTERDAM >
     rule [SCHEDCONSTAmsterdam]:                SCHEDCONST                < AMSTERDAM > => SCHEDCONST < OSAKA >
       requires notBool ( SCHEDCONST ==K Gmaxblobgas
                   orBool SCHEDCONST ==K Gtargetblobgas
                   orBool SCHEDCONST ==K Blobbasefeeupdatefraction
+                  orBool SCHEDCONST ==K maxCodeSize
+                  orBool SCHEDCONST ==K maxInitCodeSize
                        )
 
     rule [GhasslotnumAmsterdam]: Ghasslotnum << AMSTERDAM >> => true
