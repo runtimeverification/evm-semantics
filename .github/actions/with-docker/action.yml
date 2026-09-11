@@ -48,6 +48,8 @@ runs:
         --build-arg LLVM_VERSION="${LLVM_VERSION}"  \
         --build-arg UV_VERSION="${UV_VERSION}"
 
+      docker rm -f "${CONTAINER_NAME}" || true
+
       docker run                            \
         --name "${CONTAINER_NAME}"          \
         --rm                                \
