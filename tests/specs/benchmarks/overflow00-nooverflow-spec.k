@@ -32,6 +32,7 @@ module OVERFLOW00-NOOVERFLOW-SPEC
           <callGas> _ => ?_ </callGas>
           <static> false </static> // NOTE: non-static call
           <callDepth> CD </callDepth>
+          ...
         </callState>
         <versionedHashes> _ </versionedHashes>
         <substate>

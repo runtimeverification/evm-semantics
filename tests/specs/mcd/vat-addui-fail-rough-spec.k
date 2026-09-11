@@ -32,6 +32,7 @@ module VAT-ADDUI-FAIL-ROUGH-SPEC
             <callGas> _ => ?_ </callGas>
             <static> _ </static>
             <callDepth> VCallDepth => ?_ </callDepth>
+            ...
           </callState>
           <versionedHashes> _ </versionedHashes>
           <substate>

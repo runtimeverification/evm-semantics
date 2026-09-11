@@ -32,6 +32,9 @@ module POT-JOIN-PASS-ROUGH-SPEC
             <callGas> _ => ?_ </callGas>
             <static> false </static>
             <callDepth> VCallDepth </callDepth>
+            <stateGasReservoir> 0:Gas => ?_ </stateGasReservoir>
+            <stateGasSpilled> 0:Gas => ?_ </stateGasSpilled>
+            <newAccountCharged> false => ?_ </newAccountCharged>
           </callState>
           <versionedHashes> _ </versionedHashes>
           <substate>
@@ -204,6 +207,9 @@ module POT-JOIN-PASS-ROUGH-SPEC
             <callGas> _ => ?_ </callGas>
             <static> _ </static>
             <callDepth> VCallDepth </callDepth>
+            <stateGasReservoir> 0:Gas => ?_ </stateGasReservoir>
+            <stateGasSpilled> 0:Gas => ?_ </stateGasSpilled>
+            <newAccountCharged> false => ?_ </newAccountCharged>
           </callState>
           <versionedHashes> _ </versionedHashes>
           <substate>
@@ -316,6 +322,9 @@ module POT-JOIN-PASS-ROUGH-SPEC
             <callGas> _ => ?_ </callGas>
             <static> _ </static>
             <callDepth> VCallDepth </callDepth>
+            <stateGasReservoir> 0:Gas => ?_ </stateGasReservoir>
+            <stateGasSpilled> 0:Gas => ?_ </stateGasSpilled>
+            <newAccountCharged> false => ?_ </newAccountCharged>
           </callState>
           <versionedHashes> _ </versionedHashes>
           <substate>
@@ -425,6 +434,9 @@ module POT-JOIN-PASS-ROUGH-SPEC
             <callGas> _ => ?_ </callGas>
             <static> false </static>
             <callDepth> VCallDepth </callDepth>
+            <stateGasReservoir> 0:Gas => ?_ </stateGasReservoir>
+            <stateGasSpilled> 0:Gas => ?_ </stateGasSpilled>
+            <newAccountCharged> false => ?_ </newAccountCharged>
           </callState>
           <versionedHashes> _ </versionedHashes>
           <substate>

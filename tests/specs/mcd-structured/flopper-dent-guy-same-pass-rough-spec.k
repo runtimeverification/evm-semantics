@@ -32,6 +32,7 @@ module FLOPPER-DENT-GUY-SAME-PASS-ROUGH-SPEC
             <callGas> _ => ?_ </callGas>
             <static> false </static>
             <callDepth> VCallDepth </callDepth>
+            ...
           </callState>
           <versionedHashes> _ </versionedHashes>
           <substate>
@@ -180,6 +181,7 @@ module FLOPPER-DENT-GUY-SAME-PASS-ROUGH-SPEC
             <callGas> _ => ?_ </callGas>
             <static> _ </static>
             <callDepth> VCallDepth </callDepth>
+            ...
           </callState>
           <versionedHashes> _ </versionedHashes>
           <substate>
@@ -286,6 +288,7 @@ module FLOPPER-DENT-GUY-SAME-PASS-ROUGH-SPEC
             <callGas> _ => ?_ </callGas>
             <static> _ </static>
             <callDepth> VCallDepth </callDepth>
+            ...
           </callState>
           <versionedHashes> _ </versionedHashes>
           <substate>

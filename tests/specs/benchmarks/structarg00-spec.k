@@ -32,6 +32,7 @@ module STRUCTARG00-SPEC
           <callGas> _ => ?_ </callGas>
           <static> false </static> // NOTE: non-static call
           <callDepth> CD </callDepth>
+          ...
         </callState>
         <versionedHashes> _ </versionedHashes>
         <substate>

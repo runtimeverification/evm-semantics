@@ -31,6 +31,7 @@ module FLOPPER-CAGE-PASS-SPEC
             <callGas> _ => ?_ </callGas>
             <static> false </static>
             <callDepth> VCallDepth </callDepth>
+            ...
           </callState>
           <versionedHashes> _ </versionedHashes>
           <substate>

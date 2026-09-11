@@ -32,6 +32,7 @@ module VOW-FLOG-FAIL-ROUGH-SPEC
             <callGas> _ => ?_ </callGas>
             <static> false </static>
             <callDepth> VCallDepth => ?_ </callDepth>
+            ...
           </callState>
           <versionedHashes> _ </versionedHashes>
           <substate>
@@ -158,6 +159,7 @@ module VOW-FLOG-FAIL-ROUGH-SPEC
             <callGas> _ => ?_ </callGas>
             <static> _ </static>
             <callDepth> VCallDepth </callDepth>
+            ...
           </callState>
           <versionedHashes> _ </versionedHashes>
           <substate>
@@ -267,6 +269,7 @@ module VOW-FLOG-FAIL-ROUGH-SPEC
             <callGas> _ => ?_ </callGas>
             <static> _ </static>
             <callDepth> VCallDepth </callDepth>
+            ...
           </callState>
           <versionedHashes> _ </versionedHashes>
           <substate>
