@@ -110,7 +110,6 @@ blockchain_tests/for_amsterdam/amsterdam/eip7843_slotnum/slotnum/slotnum_distinc
 blockchain_tests/for_amsterdam/amsterdam/eip7843_slotnum/slotnum/slotnum_gas_cost.json,*
 blockchain_tests/for_amsterdam/amsterdam/eip7843_slotnum/slotnum/slotnum_genesis.json,*
 blockchain_tests/for_amsterdam/amsterdam/eip7843_slotnum/slotnum/slotnum_initcode_create.json,*
-blockchain_tests/for_amsterdam/amsterdam/eip7843_slotnum/slotnum/slotnum_initcode_tx.json,*
 blockchain_tests/for_amsterdam/amsterdam/eip7843_slotnum/slotnum/slotnum_set_code.json,*
 blockchain_tests/for_amsterdam/amsterdam/eip7843_slotnum/slotnum/slotnum_stack_overflow.json,*
 blockchain_tests/for_amsterdam/amsterdam/eip7843_slotnum/slotnum/slotnum_value.json,*
