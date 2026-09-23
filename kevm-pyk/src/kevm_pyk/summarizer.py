@@ -14,7 +14,7 @@ from pyk.kast.att import Atts
 from pyk.kast.inner import KApply, KRewrite, KSequence, KToken, KVariable, Subst, top_down
 from pyk.kast.outer import KDefinition, KFlatModule, KImport, KRequire, KRule, KSort
 from pyk.kast.prelude.k import DOTS
-from pyk.kast.prelude.kbool import andBool
+from pyk.kast.prelude.kbool import andBool, notBool
 from pyk.kast.prelude.kint import addInt, eqInt, euclidModInt, leInt, ltInt
 from pyk.kast.prelude.ml import mlEquals, mlEqualsFalse, mlEqualsTrue, mlNot
 from pyk.kcfg import KCFG, KCFGExplore
@@ -695,6 +695,22 @@ class KEVMSummarizer:
         if op in ['SSTORE', 'TSTORE']:
             init_subst['STATIC_CELL'] = KToken('false', KSort('Bool'))
 
+        if op == 'SSTORE':
+            # Under EIP-8037 (`Ghasstategas`) SSTORE charges and credits state gas through
+            # `[concrete]` functions and branches on the reservoir, so its basic block does not
+            # collapse to a single summary rule. Summarise only schedules without state gas; the
+            # constraint is emitted as the rules' guard, so Amsterdam falls through to the semantics.
+            init_constraints.append(
+                mlEqualsTrue(
+                    notBool(
+                        KApply(
+                            '_<<_>>_SCHEDULE_Bool_ScheduleFlag_Schedule',
+                            [KApply('Ghasstategas_SCHEDULE_ScheduleFlag'), KVariable('SCHEDULE_CELL', 'Schedule')],
+                        )
+                    )
+                )
+            )
+
         delta = stack_delta(op)
         _LOGGER.info(f'Stack delta for {op}: {delta}')
         if op not in ['SWAP', 'DUP', 'LOG'] and delta:
@@ -820,10 +836,16 @@ class KEVMSummarizer:
             end_time = time.time()
             print(f'Proof timing {proof.id}: {end_time - start_time}s')
 
-            res_lines = self.show_proof(
-                proof,
-                nodes=[node.id for node in proof.kcfg.nodes],
-            )
+            # Diagnostic dump only. pyk's node printer raises on the fully abstract target node
+            # whenever the proof has pending leaves, which would mask the actual proof result.
+            try:
+                res_lines = self.show_proof(
+                    proof,
+                    nodes=[node.id for node in proof.kcfg.nodes],
+                )
+            except ValueError as err:
+                _LOGGER.warning(f'Could not pretty-print proof {proof.id}: {err}')
+                res_lines = []
 
             return passed, res_lines
 
@@ -925,13 +947,20 @@ def summarize(opcode_symbol: str) -> tuple[KEVMSummarizer, list[APRProof]]:
     proof_dir = Path(__file__).parent / 'proofs'
     save_directory = Path(__file__).parent / 'kproj' / 'evm-semantics' / 'summaries'
     summarizer = KEVMSummarizer(proof_dir, save_directory)
-    proofs = summarizer.build_spec(opcode_symbol)
-    for proof in proofs:
+    proofs: list[APRProof] = []
+    for proof in summarizer.build_spec(opcode_symbol):
         if (proof_dir / proof.id / 'proof.json').exists():
+            # Reuse the saved exploration. A saved proof that did not pass yields a summary derived
+            # from an incomplete KCFG, so make that visible; `--clear` forces re-exploration.
             proof = APRProof.read_proof_data(proof_dir, proof.id)
+            if not proof.passed:
+                _LOGGER.warning(
+                    f'Reusing saved proof {proof.id} with status {proof.status}; pass --clear to re-explore'
+                )
         else:
             summarizer.explore(proof)
         summarizer.summarize(proof)
+        proofs.append(proof)
     return summarizer, proofs
 
 

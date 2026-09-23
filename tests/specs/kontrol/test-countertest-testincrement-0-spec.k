@@ -74,6 +74,9 @@ module TEST-COUNTERTEST-TESTINCREMENT-0-SPEC
                    <callDepth>
                      0
                    </callDepth>
+                   <stateGasReservoir> ?_ </stateGasReservoir>
+                   <stateGasSpilled> ?_ </stateGasSpilled>
+                   <newAccountCharged> ?_ </newAccountCharged>
                  </callState> ) )
                </callStack>
                <interimStates>
@@ -194,6 +197,9 @@ module TEST-COUNTERTEST-TESTINCREMENT-0-SPEC
                  <callDepth>
                    ( 0 => 1 )
                  </callDepth>
+                 <stateGasReservoir> 0:Gas => ?_ </stateGasReservoir>
+                 <stateGasSpilled> 0:Gas => ?_ </stateGasSpilled>
+                 <newAccountCharged> false => ?_ </newAccountCharged>
                </callState>
                <versionedHashes> _ </versionedHashes>
                <substate>
@@ -410,6 +416,9 @@ module TEST-COUNTERTEST-TESTINCREMENT-0-SPEC
                    <callDepth>
                      0
                    </callDepth>
+                   <stateGasReservoir> 0:Gas </stateGasReservoir>
+                   <stateGasSpilled> 0:Gas </stateGasSpilled>
+                   <newAccountCharged> false </newAccountCharged>
                  </callState>) => .List )
                </callStack>
                <interimStates>
@@ -554,6 +563,9 @@ module TEST-COUNTERTEST-TESTINCREMENT-0-SPEC
                  <callDepth>
                    ( 1 => 0 )
                  </callDepth>
+                 <stateGasReservoir> 0:Gas => ?_ </stateGasReservoir>
+                 <stateGasSpilled> 0:Gas => ?_ </stateGasSpilled>
+                 <newAccountCharged> false => ?_ </newAccountCharged>
                </callState>
                <versionedHashes> _ </versionedHashes>
                <substate>
@@ -747,6 +759,9 @@ module TEST-COUNTERTEST-TESTINCREMENT-0-SPEC
                    <callDepth>
                      0
                    </callDepth>
+                   <stateGasReservoir> ?_ </stateGasReservoir>
+                   <stateGasSpilled> ?_ </stateGasSpilled>
+                   <newAccountCharged> ?_ </newAccountCharged>
                  </callState>) )
                </callStack>
                <interimStates>
@@ -891,6 +906,9 @@ module TEST-COUNTERTEST-TESTINCREMENT-0-SPEC
                  <callDepth>
                    ( 0 => 1 )
                  </callDepth>
+                 <stateGasReservoir> 0:Gas => ?_ </stateGasReservoir>
+                 <stateGasSpilled> 0:Gas => ?_ </stateGasSpilled>
+                 <newAccountCharged> false => ?_ </newAccountCharged>
                </callState>
                <versionedHashes> _ </versionedHashes>
                <substate>

@@ -32,6 +32,7 @@ module CAT-FILE-ADDR-PASS-ROUGH-SPEC
             <callGas> _ => ?_ </callGas>
             <static> false </static>
             <callDepth> VCallDepth </callDepth>
+            ...
           </callState>
           <versionedHashes> _ </versionedHashes>
           <substate>

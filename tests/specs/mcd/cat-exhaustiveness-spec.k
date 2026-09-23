@@ -32,6 +32,7 @@ module CAT-EXHAUSTIVENESS-SPEC
              <callGas> _ => ?_ </callGas>
              <static> _VStatic </static>
              <callDepth> VCallDepth </callDepth>
+             ...
            </callState>
            <versionedHashes> _ </versionedHashes>
            <substate>
