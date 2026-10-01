@@ -17,7 +17,7 @@ Documentation/Support
 These may be useful for learning KEVM and K (newest to oldest):
 
 -   [Jello Paper], a nice presentation of this repository.
--   [20 minute tour of the semantics](https://www.youtube.com/watch?v=tIq_xECoicQNov) at [2017 Devcon3].
+-   [20 minute tour of the semantics](https://www.youtube.com/watch?v=tIq_xECoicQ) at [2017 Devcon3].
 -   [KEVM 1.0 technical report](http://hdl.handle.net/2142/97207), especially sections 3 and 5.
 -   [KEVM Paper at CSF'18/FLoC](https://fsl.cs.illinois.edu/publications/hildenbrandt-saxena-zhu-rodrigues-daian-guth-moore-zhang-park-rosu-2018-csf).
 
