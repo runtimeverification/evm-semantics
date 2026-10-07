@@ -460,8 +460,10 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule [GminbasefeeCancun]:               Gminbasefee               < CANCUN > => 1
     rule [BlobbasefeeupdatefractionCancun]: Blobbasefeeupdatefraction < CANCUN > => 3338477
     rule [GperblobCancun]:                  Gperblob                  < CANCUN > => 131072 // 2 ** 17
+    rule [GmaxblobspertxCancun]:            Gmaxblobspertx            < CANCUN > => 6
     rule [SCHEDCONSTCancun]:                SCHEDCONST                < CANCUN > => SCHEDCONST < SHANGHAI >
-      requires notBool ( SCHEDCONST ==K Gwarmstoragedirtystore
+      requires notBool ( SCHEDCONST ==K Gmaxblobspertx
+                  orBool SCHEDCONST ==K Gwarmstoragedirtystore
                   orBool SCHEDCONST ==K Gpointeval
                   orBool SCHEDCONST ==K Gmaxblobgas
                   orBool SCHEDCONST ==K Gtargetblobgas
@@ -504,8 +506,10 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule [Gbls12mapfp2tog2Prague]:          Gbls12mapfp2tog2          < PRAGUE > => 23800
     rule [GauthbasePrague]:                 Gauthbase                 < PRAGUE > => 12500
     rule [GtxdatafloorPrague]:              Gtxdatafloor              < PRAGUE > => 10
+    rule [GmaxblobspertxPrague]:            Gmaxblobspertx            < PRAGUE > => 9
     rule [SCHEDCONSTPrague]:                SCHEDCONST                < PRAGUE > => SCHEDCONST < CANCUN >
-      requires notBool ( SCHEDCONST ==K Gmaxblobgas
+      requires notBool ( SCHEDCONST ==K Gmaxblobspertx
+                  orBool SCHEDCONST ==K Gmaxblobgas
                   orBool SCHEDCONST ==K Gtargetblobgas
                   orBool SCHEDCONST ==K Blobbasefeeupdatefraction
                   orBool SCHEDCONST ==K Gbls12g1add
