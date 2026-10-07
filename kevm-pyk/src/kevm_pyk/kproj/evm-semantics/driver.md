@@ -106,6 +106,7 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
          <txPending> ListItem(TXID:Int) ... </txPending>
          <chainID> B </chainID>
          <gas> _ => 0 </gas>
+         <balIndex> I => I +Int 1 </balIndex>
          <message>
            <msgID>      TXID </msgID>
            <sigV>       TW   </sigV>
@@ -117,7 +118,8 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
     syntax EthereumCommand ::= loadTx ( Account ) [symbol(loadTx)]
  // --------------------------------------------------------------
     rule <k> loadTx(ACCTFROM)
-          => #accessAccounts ACCTFROM #newAddr(ACCTFROM, NONCE) #precompiledAccountsSet(SCHED)
+          => #balTouch ACCTFROM ~> #balTouch #newAddr(ACCTFROM, NONCE) ~> #balCaptureBalance ACCTFROM BAL
+          ~> #accessAccounts ACCTFROM #newAddr(ACCTFROM, NONCE) #precompiledAccountsSet(SCHED)
           ~> #deductBlobGas
           ~> #loadAccessList(TA)
           ~> #loadAuthorities(AUTH)
@@ -158,7 +160,8 @@ To do so, we'll extend sort `JSON` with some EVM specific syntax, and provide a 
        andBool GLIMIT >=Int maxInt(G0(SCHED, CODE, true), Ctxfloor(SCHED, CODE))
 
     rule <k> loadTx(ACCTFROM)
-          => #accessAccounts ACCTFROM ACCTTO #precompiledAccountsSet(SCHED)
+          => #balTouch ACCTFROM ~> #balTouch ACCTTO ~> #balCaptureBalance ACCTFROM BAL ~> #balCaptureNonce ACCTFROM NONCE
+          ~> #accessAccounts ACCTFROM ACCTTO #precompiledAccountsSet(SCHED)
           ~> #deductBlobGas
           ~> #loadAccessList(TA)
           ~> #pushWorldState ~> #pushCallStack
@@ -326,7 +329,7 @@ Processing SetCode Transaction Authority Entries
          orBool (#asWord(NONCE) >=Int maxUInt64)
 
     rule <k> #setDelegation(AUTHORITY, CID, NONCE, ADDR, REST, NB, T)
-          => #touchAccounts AUTHORITY ~> #accessAccounts AUTHORITY
+          => #balTouch AUTHORITY ~> #touchAccounts AUTHORITY ~> #accessAccounts AUTHORITY
            ~> #addAuthority(AUTHORITY, CID, NONCE, ADDR, REST, NB, T)
           ...
          </k> [owise]
@@ -363,7 +366,8 @@ Processing SetCode Transaction Authority Entries
        andBool #asWord(NONCE) ==K ACCTNONCE
 
     rule <k> #addAuthority(AUTHORITY, _CID, NONCE, ADDR, REST, NB, T)
-          => #if Ghasstategas << SCHED >> andBool #asWord(ADDR) =/=Int 0 andBool notBool AUTHORITY in #authNoBase(NB, T, AUTHORITY, ACCTCODE) #then Gauthbase < SCHED > #else 0 #fi ~> #chargeStateGasIntoCallGas
+          => #balCaptureCode AUTHORITY ACCTCODE ~> #balCaptureNonce AUTHORITY ACCTNONCE
+          ~> #if Ghasstategas << SCHED >> andBool #asWord(ADDR) =/=Int 0 andBool notBool AUTHORITY in #authNoBase(NB, T, AUTHORITY, ACCTCODE) #then Gauthbase < SCHED > #else 0 #fi ~> #chargeStateGasIntoCallGas
           ~> #loadAuthorities(REST, #authNoBase(NB, T, AUTHORITY, ACCTCODE) |Set (#if #asWord(ADDR) =/=Int 0 #then SetItem(AUTHORITY) #else .Set #fi), T |Set SetItem(AUTHORITY))
           ...
          </k>
@@ -396,7 +400,8 @@ Processing SetCode Transaction Authority Entries
        andBool notBool Ghasstategas << SCHED >>
 
     rule <k> #addAuthority(AUTHORITY, _CID, NONCE, ADDR, REST, NB, T)
-          => Gnewaccount < SCHED > ~> #chargeStateGasIntoCallGas
+          => #balCaptureCode AUTHORITY .Bytes ~> #balCaptureNonce AUTHORITY 0
+          ~> Gnewaccount < SCHED > ~> #chargeStateGasIntoCallGas
           ~> Gaccountwrite < SCHED > ~> #deductCallGas
           ~> #if #asWord(ADDR) =/=Int 0 #then Gauthbase < SCHED > #else 0 #fi ~> #chargeStateGasIntoCallGas
           ~> #loadAuthorities(REST, NB |Set (#if #asWord(ADDR) =/=Int 0 #then SetItem(AUTHORITY) #else .Set #fi), T |Set SetItem(AUTHORITY))

@@ -80,6 +80,17 @@ module STATE-UTILS
          <requestsRoot>      _ => 0          </requestsRoot>
          <balHash>           _ => 0          </balHash>
          <slotNumber>        _ => 0          </slotNumber>
+         <balIndex>          _ => 0          </balIndex>
+         <balTouched>        _ => .Set       </balTouched>
+         <balReads>          _ => .Map       </balReads>
+         <balBalCaptures>    _ => .Map       </balBalCaptures>
+         <balNonceCaptures>  _ => .Map       </balNonceCaptures>
+         <balCodeCaptures>   _ => .Map       </balCodeCaptures>
+         <balStorCaptures>   _ => .Map       </balStorCaptures>
+         <balBalanceChanges> _ => .Map       </balBalanceChanges>
+         <balNonceChanges>   _ => .Map       </balNonceChanges>
+         <balCodeChanges>    _ => .Map       </balCodeChanges>
+         <balStorageChanges> _ => .Map       </balStorageChanges>
          <depositRequests>       _ => .Bytes </depositRequests>
          <withdrawalRequests>    _ => .Bytes </withdrawalRequests>
          <consolidationRequests> _ => .Bytes </consolidationRequests>
