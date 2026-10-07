@@ -55,7 +55,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
                            | "Gpointeval"    | "Gmaxblobgas"   | "Gminbasefee"   | "Gtargetblobgas"    | "Gperblob"           | "Blobbasefeeupdatefraction"
                            | "Gbls12g1add"   | "Gbls12g1mul"   | "Gbls12g2add"   | "Gbls12g2mul"       | "Gbls12mapfptog1"    | "Gbls12PairingCheckMul"
                            | "Gbls12PairingCheckAdd"           | "Gauthbase"     | "Gbls12mapfp2tog2"  | "Gtxdatafloor"       | "Gstorageset"       | "Gaccountwrite"
-                           | "Gcostperstatebyte"               | "Gblobbasecost" | "Gmaxtxgaslimit"
+                           | "Gcostperstatebyte"               | "Gblobbasecost" | "Gmaxtxgaslimit"    | "Gp256verify"
  // -------------------------------------------------------------------------------------------------------------------------------------------------------
 ```
 
@@ -155,6 +155,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule [GaccountwriteDefault]:         Gaccountwrite         < DEFAULT > => 0
     rule [GcostperstatebyteDefault]:     Gcostperstatebyte     < DEFAULT > => 0
     rule [GmaxtxgaslimitDefault]:        Gmaxtxgaslimit        < DEFAULT > => 0
+    rule [Gp256verifyDefault]:           Gp256verify           < DEFAULT > => 0
 
     rule [GselfdestructnewaccountDefault]: Gselfdestructnewaccount << DEFAULT >> => false
     rule [GstaticcalldepthDefault]:        Gstaticcalldepth        << DEFAULT >> => true
@@ -521,9 +522,11 @@ A `ScheduleConst` is a constant determined by the fee schedule.
  // -----------------------------------------------------------------------
     rule [GblobbasecostOsaka]:  Gblobbasecost  < OSAKA > => 8192 // 2 ** 13
     rule [GmaxtxgaslimitOsaka]: Gmaxtxgaslimit < OSAKA > => 16777216
+    rule [Gp256verifyOsaka]:    Gp256verify    < OSAKA > => 6900
     rule [SCHEDCONSTOsaka]:     SCHEDCONST     < OSAKA > => SCHEDCONST < PRAGUE >
       requires notBool ( SCHEDCONST ==K Gblobbasecost
                   orBool SCHEDCONST ==K Gmaxtxgaslimit
+                  orBool SCHEDCONST ==K Gp256verify
                        )
 
     rule [GhasclzOsaka]:        Ghasclz        << OSAKA >> => true
