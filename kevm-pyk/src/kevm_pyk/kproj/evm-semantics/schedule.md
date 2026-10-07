@@ -33,6 +33,7 @@ module SCHEDULE
                           | "Ghasbls12msmdiscount"    | "Ghashistory"      | "Ghasrequests"        | "Ghasauthority"
                           | "Ghasfloorcost"           | "Ghasclz"          | "Ghasstategas"        | "Ghasauthbaserefund"
                           | "Ghaseip8038"             | "Ghasreserve"      | "Ghastxgaslimit"      | "Ghasslotnum"
+                          | "Ghaseip7823"
  // -----------------------------------------------------------------------------------------------------------------
 ```
 
@@ -55,7 +56,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
                            | "Gpointeval"    | "Gmaxblobgas"   | "Gminbasefee"   | "Gtargetblobgas"    | "Gperblob"           | "Blobbasefeeupdatefraction"
                            | "Gbls12g1add"   | "Gbls12g1mul"   | "Gbls12g2add"   | "Gbls12g2mul"       | "Gbls12mapfptog1"    | "Gbls12PairingCheckMul"
                            | "Gbls12PairingCheckAdd"           | "Gauthbase"     | "Gbls12mapfp2tog2"  | "Gtxdatafloor"       | "Gstorageset"       | "Gaccountwrite"
-                           | "Gcostperstatebyte"               | "Gblobbasecost" | "Gmaxtxgaslimit"    | "Gp256verify"
+                           | "Gcostperstatebyte"               | "Gblobbasecost" | "Gmaxtxgaslimit"    | "Gp256verify"        | "Gmodexpmultiplier" | "Gmodexpmin"
  // -------------------------------------------------------------------------------------------------------------------------------------------------------
 ```
 
@@ -157,6 +158,9 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule [GmaxtxgaslimitDefault]:        Gmaxtxgaslimit        < DEFAULT > => 0
     rule [Gp256verifyDefault]:           Gp256verify           < DEFAULT > => 0
 
+    rule [GmodexpmultiplierDefault]:     Gmodexpmultiplier     < DEFAULT > => 8
+    rule [GmodexpminDefault]:            Gmodexpmin            < DEFAULT > => 200
+
     rule [GselfdestructnewaccountDefault]: Gselfdestructnewaccount << DEFAULT >> => false
     rule [GstaticcalldepthDefault]:        Gstaticcalldepth        << DEFAULT >> => true
     rule [GemptyisnonexistentDefault]:     Gemptyisnonexistent     << DEFAULT >> => false
@@ -195,6 +199,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule [GhasstategasDefault]:            Ghasstategas            << DEFAULT >> => false
     rule [Ghaseip8038Default]:             Ghaseip8038             << DEFAULT >> => false
     rule [GhasreserveDefault]:             Ghasreserve             << DEFAULT >> => false
+    rule [Ghaseip7823Default]:             Ghaseip7823             << DEFAULT >> => false
     rule [GhastxgaslimitDefault]:          Ghastxgaslimit          << DEFAULT >> => false
     rule [GhasslotnumDefault]:             Ghasslotnum             << DEFAULT >> => false
 ```
@@ -520,22 +525,30 @@ A `ScheduleConst` is a constant determined by the fee schedule.
 ```k
     syntax Schedule ::= "OSAKA" [symbol(OSAKA_EVM), smtlib(schedule_OSAKA)]
  // -----------------------------------------------------------------------
-    rule [GblobbasecostOsaka]:  Gblobbasecost  < OSAKA > => 8192 // 2 ** 13
-    rule [GmaxtxgaslimitOsaka]: Gmaxtxgaslimit < OSAKA > => 16777216
-    rule [Gp256verifyOsaka]:    Gp256verify    < OSAKA > => 6900
-    rule [SCHEDCONSTOsaka]:     SCHEDCONST     < OSAKA > => SCHEDCONST < PRAGUE >
+    rule [GblobbasecostOsaka]:     Gblobbasecost     < OSAKA > => 8192 // 2 ** 13
+    rule [GmaxtxgaslimitOsaka]:    Gmaxtxgaslimit    < OSAKA > => 16777216
+    rule [Gp256verifyOsaka]:       Gp256verify       < OSAKA > => 6900
+    rule [GmodexpmultiplierOsaka]: Gmodexpmultiplier < OSAKA > => 16
+    rule [GmodexpminOsaka]:        Gmodexpmin        < OSAKA > => 500
+    rule [GquaddivisorOsaka]:      Gquaddivisor      < OSAKA > => 1
+    rule [SCHEDCONSTOsaka]:        SCHEDCONST        < OSAKA > => SCHEDCONST < PRAGUE >
       requires notBool ( SCHEDCONST ==K Gblobbasecost
                   orBool SCHEDCONST ==K Gmaxtxgaslimit
                   orBool SCHEDCONST ==K Gp256verify
+                  orBool SCHEDCONST ==K Gmodexpmultiplier
+                  orBool SCHEDCONST ==K Gmodexpmin
+                  orBool SCHEDCONST ==K Gquaddivisor
                        )
 
     rule [GhasclzOsaka]:        Ghasclz        << OSAKA >> => true
     rule [GhasreserveOsaka]:    Ghasreserve    << OSAKA >> => true
     rule [GhastxgaslimitOsaka]: Ghastxgaslimit << OSAKA >> => true
+    rule [Ghaseip7823Osaka]:    Ghaseip7823    << OSAKA >> => true
     rule [SCHEDFLAGOsaka]:      SCHEDFLAG      << OSAKA >> => SCHEDFLAG << PRAGUE >>
       requires notBool ( SCHEDFLAG ==K Ghasclz
                   orBool SCHEDFLAG ==K Ghasreserve
                   orBool SCHEDFLAG ==K Ghastxgaslimit
+                  orBool SCHEDFLAG ==K Ghaseip7823
                        )
 ```
 
