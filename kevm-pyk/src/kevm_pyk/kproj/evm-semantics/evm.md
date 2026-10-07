@@ -2322,6 +2322,10 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
     syntax Bool ::= #isPrecompiledAccount ( Int , Schedule ) [symbol(isPrecompiledAccount), function, total, smtlib(isPrecompiledAccount)]
  // --------------------------------------------------------------------------------------------------------------------------------------
     rule [isPrecompiledAccountOsaka]:     #isPrecompiledAccount(256,      OSAKA)     => true
+    rule [isPrecompiledAccountBPO1]:      #isPrecompiledAccount(256,      BPO1)      => true
+    rule [isPrecompiledAccountBPO2]:      #isPrecompiledAccount(256,      BPO2)      => true
+    rule [isPrecompiledAccountBPO3]:      #isPrecompiledAccount(256,      BPO3)      => true
+    rule [isPrecompiledAccountBPO4]:      #isPrecompiledAccount(256,      BPO4)      => true
     rule [isPrecompiledAccountAmsterdam]: #isPrecompiledAccount(256,      AMSTERDAM) => true
     rule [isPrecompiledAccount]:          #isPrecompiledAccount(ACCTCODE, SCHED)     => 0 <Int ACCTCODE andBool ACCTCODE <=Int #precompiledAccountsUB(SCHED) [owise]
 
