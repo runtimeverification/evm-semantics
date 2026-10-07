@@ -1140,16 +1140,16 @@ After executing a transaction, it's necessary to have the effect of the substate
          </accounts>
       requires Ghasnoselfdestructburn << SCHED >>
 
-    rule <k> #deleteAccounts(ListItem(ACCT) ACCTS) => #deleteAccounts(ACCTS) ... </k>
+    rule <k> #deleteAccounts(ListItem(ACCT) ACCTS) => #balCaptureCode ACCT OLDCODE ~> #balCaptureNonce ACCT OLDNONCE ~> #deleteAccounts(ACCTS) ... </k>
          <schedule> SCHED </schedule>
          <account>
            <acctID> ACCT </acctID>
            <balance> BAL </balance>
-           <code> _ => .Bytes </code>
+           <code> OLDCODE => .Bytes </code>
            <storage> _ => .Map </storage>
            <origStorage> _ => .Map </origStorage>
            <transientStorage> _ => .Map </transientStorage>
-           <nonce> _ => 0 </nonce>
+           <nonce> OLDNONCE => 0 </nonce>
            ...
          </account>
       requires Ghasnoselfdestructburn << SCHED >> andBool BAL =/=Int 0
