@@ -875,7 +875,7 @@ After executing a transaction, it's necessary to have the effect of the substate
 
 -   `#finalizeStorage` updates the origStorage cell with the new values of storage.
 -   `#finalizeTx` makes the substate log actually have an effect on the state.
--   `#deleteAccounts` deletes the accounts specified by the self destruct list.
+-   `#deleteAccounts` deletes the accounts specified by the self destruct list; under `Ghasnoselfdestructburn` (EIP-8246), an account with nonzero balance is instead reset to a balance-only account (nonce 0, empty code/storage) rather than deleted.
 -   `#finalizeWithdrawals` increases the balance of the `address` specified by the `amount` given, for each withdrawal.
 -   `#gweiToWei` does the conversion from GWEI to WEI.
 
@@ -1114,6 +1114,7 @@ After executing a transaction, it's necessary to have the effect of the substate
          <coinbase> MINER </coinbase> [owise]
 
     rule <k> #deleteAccounts(ListItem(ACCT) ACCTS) => #deleteAccounts(ACCTS) ... </k>
+         <schedule> SCHED </schedule>
          <accounts>
            ( <account>
                <acctID> ACCT </acctID>
@@ -1123,6 +1124,35 @@ After executing a transaction, it's necessary to have the effect of the substate
            )
            ...
          </accounts>
+      requires notBool Ghasnoselfdestructburn << SCHED >>
+
+    rule <k> #deleteAccounts(ListItem(ACCT) ACCTS) => #deleteAccounts(ACCTS) ... </k>
+         <schedule> SCHED </schedule>
+         <accounts>
+           ( <account>
+               <acctID> ACCT </acctID>
+               <balance> 0 </balance>
+               ...
+             </account>
+          => .Bag
+           )
+           ...
+         </accounts>
+      requires Ghasnoselfdestructburn << SCHED >>
+
+    rule <k> #deleteAccounts(ListItem(ACCT) ACCTS) => #deleteAccounts(ACCTS) ... </k>
+         <schedule> SCHED </schedule>
+         <account>
+           <acctID> ACCT </acctID>
+           <balance> BAL </balance>
+           <code> _ => .Bytes </code>
+           <storage> _ => .Map </storage>
+           <origStorage> _ => .Map </origStorage>
+           <transientStorage> _ => .Map </transientStorage>
+           <nonce> _ => 0 </nonce>
+           ...
+         </account>
+      requires Ghasnoselfdestructburn << SCHED >> andBool BAL =/=Int 0
 
     rule <k> #deleteAccounts(.List) => .K ... </k>
 ```
@@ -2796,7 +2826,7 @@ For each `CALL*` operation, we make a corresponding call to `#call` and a state-
 ```
 
 `SELFDESTRUCT` marks the current account for deletion and transfers funds out of the current account.
-Self destructing to yourself, unlike a regular transfer, destroys the balance in the account, irreparably losing it.
+Pre-Amsterdam, self destructing to yourself, unlike a regular transfer, destroys the balance in the account, irreparably losing it; `Ghasnoselfdestructburn` (EIP-8246) removes this, so the balance survives to `#deleteAccounts` unchanged.
 
 ```k
     syntax UnStackOp ::= "SELFDESTRUCT"
@@ -2827,6 +2857,16 @@ Self destructing to yourself, unlike a regular transfer, destroys the balance in
          <output> _ => .Bytes </output>
          <createdAccounts> CA </createdAccounts>
       requires ((notBool Ghaseip6780 << SCHED >>) orBool ACCT in CA)
+       andBool notBool Ghasnoselfdestructburn << SCHED >>
+
+    rule <k> SELFDESTRUCT ACCT => #touchAccounts ACCT ~> #accessAccounts ACCT ~> #end EVMC_SUCCESS ... </k>
+         <schedule> SCHED </schedule>
+         <id> ACCT </id>
+         <selfDestruct> SDS => SDS |Set SetItem(ACCT) </selfDestruct>
+         <output> _ => .Bytes </output>
+         <createdAccounts> CA </createdAccounts>
+      requires ((notBool Ghaseip6780 << SCHED >>) orBool ACCT in CA)
+       andBool Ghasnoselfdestructburn << SCHED >>
 
     rule <k> SELFDESTRUCT ACCTTO => #balTouch ACCTTO ~> #touchAccounts ACCT ACCTTO ~> #accessAccounts ACCTTO ~> #transferFunds ACCT ACCTTO BALFROM ~> #end EVMC_SUCCESS ... </k>
          <schedule> SCHED </schedule>
