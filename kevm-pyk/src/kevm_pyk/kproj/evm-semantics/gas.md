@@ -126,7 +126,7 @@ module GAS-FEES
                  | Cblobfee         ( Schedule , Int , Int )                      [symbol(Cblobfee),          function, total, smtlib(gas_Cblobfee)         ]
                  | Cexcessblob      ( Schedule , Int , Int , Int )                [symbol(Cexcessblob),       function, total, smtlib(gas_Cexcessblob)      ]
                  | Cdelegationaccess( Schedule, Bool, Bool )                      [symbol(Cdelegationaccess), function, total, smtlib(gas_Cdelegationaccess)]
-                 | Ctxfloor         ( Schedule , Bytes )                          [symbol(Ctxfloor),          function, total, smtlib(gas_Ctxfloor)         ]
+                 | Ctxfloor         ( Schedule , Bytes , Bool , Bool , Int , Int )[symbol(Ctxfloor),          function, total, smtlib(gas_Ctxfloor)         ]
                  | SstoreStateGas   ( Schedule , Int , Int , Int )                [symbol(SstoreStateGas),    function, total, smtlib(gas_SstoreStateGas)   ]
                  | SstoreStateCredit( Schedule , Int , Int , Int )                [symbol(SstoreStateCredit), function, total, smtlib(gas_SstoreStateCredit)]
  // ---------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -317,6 +317,14 @@ module GAS-FEES
  // SCHED,                                     GLIMIT, RES (final reservoir), SPL (final spilled)
     rule #txStateGasUsed(SCHED, GLIMIT, RES, SPL) => maxInt(0, #txStateGasReservoir(SCHED, GLIMIT) -Int RES +Int SPL)
 
+    syntax Bool ::= #isValidIntrinsicGasCap ( Schedule , Int , Int ) [symbol(#isValidIntrinsicGasCap), function, total]
+ // SCHED,                                                 G0VAL, FLOORVAL
+    rule #isValidIntrinsicGasCap(SCHED, G0VAL, FLOORVAL)
+      => #if Ghasintrinsicdecomp << SCHED >>
+         #then G0VAL <=Int Gmaxtxgaslimit < SCHED > andBool FLOORVAL <=Int Gmaxtxgaslimit < SCHED >
+         #else true
+         #fi
+
     syntax Bool ::= #isValidTxGasLimit ( Schedule , Int , Int , Int , Int , Int ) [symbol(#isValidTxGasLimit), function, total]
  // SCHED,                                            TX_GAS_LIMIT, BLOCK_GAS_LIMIT, GASUSED, GASUSEDREG, GASUSEDSTATE
     rule #isValidTxGasLimit(SCHED, TX_GAS_LIMIT, BLOCK_GAS_LIMIT, GASUSED, GASUSEDREG, GASUSEDSTATE)
@@ -326,6 +334,30 @@ module GAS-FEES
          #else (notBool Ghastxgaslimit << SCHED >> orBool TX_GAS_LIMIT <=Int Gmaxtxgaslimit < SCHED >)
           andBool TX_GAS_LIMIT <=Int (BLOCK_GAS_LIMIT -Int GASUSED)
          #fi
+
+    syntax Int ::= #G0Full ( Schedule , Bytes , Bool , Bool , Int , Int ) [symbol(G0full), function, total]
+ // SCHED,                              WS,      ISCREATE, ISSELFTRANSFER, VALUE, AUTHLISTLENGTH
+    rule #G0Full(SCHED, WS, ISCREATE, ISSELFTRANSFER, VALUE, AUTHLEN)
+      => #txBaseRegularGas(SCHED, ISCREATE, ISSELFTRANSFER, VALUE)
+       +Int G0(SCHED, WS, 0, lengthBytes(WS), 0)
+       +Int (#if ISCREATE #then Cinitcode(SCHED, lengthBytes(WS)) #else 0 #fi)
+       +Int (Gauthbaseregular < SCHED > *Int AUTHLEN)
+      requires Ghasintrinsicdecomp << SCHED >>
+
+    rule #G0Full(SCHED, WS, ISCREATE, _, _, _) => G0(SCHED, WS, ISCREATE)
+      requires notBool Ghasintrinsicdecomp << SCHED >>
+
+    syntax Int ::= #txBaseRegularGas ( Schedule , Bool , Bool , Int ) [symbol(#txBaseRegularGas), function, total]
+ // SCHED, ISCREATE, ISSELFTRANSFER, VALUE
+    rule #txBaseRegularGas(SCHED, true, _, _)
+      => Gtxbase < SCHED > +Int Gcreate < SCHED >
+
+    rule #txBaseRegularGas(SCHED, false, true, _)
+      => Gtxbase < SCHED >
+
+    rule #txBaseRegularGas(SCHED, false, false, VALUE)
+      => Gtxbase < SCHED > +Int Gcoldaccountaccess < SCHED >
+       +Int (#if VALUE =/=Int 0 #then Gtxvalue < SCHED > #else 0 #fi)
 
     syntax Gas ::= "G*" "(" Gas "," Int "," Int "," Schedule ")" [function]
  // -----------------------------------------------------------------------
@@ -360,8 +392,14 @@ module GAS-FEES
     rule #tokensInCalldata(_,  I, I, R) => R
     rule #tokensInCalldata(WS, I, J, R) => #tokensInCalldata(WS, I+Int 1, J, R +Int #if WS[I] ==Int 0 #then 1 #else 4 #fi) [owise]
 
-    rule Ctxfloor(SCHED, CODE) => Gtransaction < SCHED > +Int (Gtxdatafloor < SCHED > *Int #tokensInCalldata(CODE)) requires Ghasfloorcost << SCHED >>
-    rule Ctxfloor(    _,    _) => 0 [owise]
+    rule Ctxfloor(SCHED, CODE, _, _, _, _) => Gtransaction < SCHED > +Int (Gtxdatafloor < SCHED > *Int #tokensInCalldata(CODE))
+      requires Ghasfloorcost << SCHED >> andBool notBool Ghasintrinsicdecomp << SCHED >>
+
+    rule Ctxfloor(SCHED, CODE, ISCREATE, ISSELFTRANSFER, VALUE, ACCESSLISTFLOORTOKENS)
+      => #txBaseRegularGas(SCHED, ISCREATE, ISSELFTRANSFER, VALUE) +Int (Gtxdatafloor < SCHED > *Int ((lengthBytes(CODE) *Int 4) +Int ACCESSLISTFLOORTOKENS))
+      requires Ghasfloorcost << SCHED >> andBool Ghasintrinsicdecomp << SCHED >>
+
+    rule Ctxfloor(    _,    _,  _,  _,  _,  _) => 0 [owise]
 
     syntax Int ::= Cbls12g1MsmDiscount( Schedule , Int ) [symbol(Cbls12g1MsmDiscount), function, total, smtlib(gas_Cbls12g1MsmDiscount)]
                  | Cbls12g2MsmDiscount( Schedule , Int ) [symbol(Cbls12g2MsmDiscount), function, total, smtlib(gas_Cbls12g2MsmDiscount)]

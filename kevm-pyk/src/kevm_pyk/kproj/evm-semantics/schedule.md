@@ -34,6 +34,7 @@ module SCHEDULE
                           | "Ghasfloorcost"           | "Ghasclz"          | "Ghasstategas"        | "Ghasauthbaserefund"
                           | "Ghaseip8038"             | "Ghasreserve"      | "Ghastxgaslimit"      | "Ghasslotnum"
                           | "Ghaseip7823"             | "Ghaseip7708"      | "Ghaseip8024"        | "Ghaseip7928"
+                          | "Ghasintrinsicdecomp"
  // -----------------------------------------------------------------------------------------------------------------
 ```
 
@@ -57,7 +58,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
                            | "Gbls12g1add"   | "Gbls12g1mul"   | "Gbls12g2add"   | "Gbls12g2mul"       | "Gbls12mapfptog1"    | "Gbls12PairingCheckMul"
                            | "Gbls12PairingCheckAdd"           | "Gauthbase"     | "Gbls12mapfp2tog2"  | "Gtxdatafloor"       | "Gstorageset"       | "Gaccountwrite"
                            | "Gcostperstatebyte"               | "Gblobbasecost" | "Gmaxtxgaslimit"    | "Gp256verify"        | "Gmodexpmultiplier" | "Gmodexpmin"
-                           | "Gbalitemcost"
+                           | "Gbalitemcost"                    | "Gtxbase"       | "Gtxvalue"          | "Gauthbaseregular"
  // -------------------------------------------------------------------------------------------------------------------------------------------------------
 ```
 
@@ -159,6 +160,9 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule [GmaxtxgaslimitDefault]:        Gmaxtxgaslimit        < DEFAULT > => 0
     rule [Gp256verifyDefault]:           Gp256verify           < DEFAULT > => 0
     rule [GbalitemcostDefault]:          Gbalitemcost          < DEFAULT > => 0
+    rule [GtxbaseDefault]:               Gtxbase               < DEFAULT > => 0
+    rule [GtxvalueDefault]:              Gtxvalue              < DEFAULT > => 0
+    rule [GauthbaseregularDefault]:      Gauthbaseregular      < DEFAULT > => 0
 
     rule [GmodexpmultiplierDefault]:     Gmodexpmultiplier     < DEFAULT > => 8
     rule [GmodexpminDefault]:            Gmodexpmin            < DEFAULT > => 200
@@ -207,6 +211,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule [Ghaseip7708Default]:             Ghaseip7708             << DEFAULT >> => false
     rule [Ghaseip8024Default]:             Ghaseip8024             << DEFAULT >> => false
     rule [Ghaseip7928Default]:             Ghaseip7928             << DEFAULT >> => false
+    rule [GhasintrinsicdecompDefault]:     Ghasintrinsicdecomp     << DEFAULT >> => false
 ```
 
 ### Frontier Schedule
@@ -581,6 +586,10 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule [GcostperstatebyteAmsterdam]:         Gcostperstatebyte         < AMSTERDAM > => 1530
     rule [GauthbaseAmsterdam]:                 Gauthbase                 < AMSTERDAM > => 35190
     rule [GbalitemcostAmsterdam]:              Gbalitemcost              < AMSTERDAM > => 2000
+    rule [GtxbaseAmsterdam]:                   Gtxbase                   < AMSTERDAM > => 12000
+    rule [GtxvalueAmsterdam]:                  Gtxvalue                  < AMSTERDAM > => 6000
+    rule [GauthbaseregularAmsterdam]:          Gauthbaseregular          < AMSTERDAM > => 7816
+    rule [GtxdatafloorAmsterdam]:              Gtxdatafloor              < AMSTERDAM > => 16
     rule [SCHEDCONSTAmsterdam]:                SCHEDCONST                < AMSTERDAM > => SCHEDCONST < OSAKA >
       requires notBool ( SCHEDCONST ==K Gmaxblobgas
                   orBool SCHEDCONST ==K Gtargetblobgas
@@ -601,6 +610,10 @@ A `ScheduleConst` is a constant determined by the fee schedule.
                   orBool SCHEDCONST ==K Gcostperstatebyte
                   orBool SCHEDCONST ==K Gauthbase
                   orBool SCHEDCONST ==K Gbalitemcost
+                  orBool SCHEDCONST ==K Gtxbase
+                  orBool SCHEDCONST ==K Gtxvalue
+                  orBool SCHEDCONST ==K Gauthbaseregular
+                  orBool SCHEDCONST ==K Gtxdatafloor
                        )
 
     rule [Ghaseip8038Amsterdam]:        Ghaseip8038        << AMSTERDAM >> => true
@@ -610,6 +623,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule [Ghaseip7708Amsterdam]:        Ghaseip7708        << AMSTERDAM >> => true
     rule [Ghaseip8024Amsterdam]:        Ghaseip8024        << AMSTERDAM >> => true
     rule [Ghaseip7928Amsterdam]:        Ghaseip7928        << AMSTERDAM >> => true
+    rule [GhasintrinsicdecompAmsterdam]: Ghasintrinsicdecomp << AMSTERDAM >> => true
     rule [SCHEDFLAGAmsterdam]:          SCHEDFLAG          << AMSTERDAM >> => SCHEDFLAG << OSAKA >>
       requires notBool ( SCHEDFLAG ==K Ghaseip8038
                   orBool SCHEDFLAG ==K Ghasauthbaserefund
@@ -618,6 +632,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
                   orBool SCHEDFLAG ==K Ghaseip7708
                   orBool SCHEDFLAG ==K Ghaseip8024
                   orBool SCHEDFLAG ==K Ghaseip7928
+                  orBool SCHEDFLAG ==K Ghasintrinsicdecomp
                        )
 ```
 

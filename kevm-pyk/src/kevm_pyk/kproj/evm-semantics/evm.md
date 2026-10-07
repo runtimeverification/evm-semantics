@@ -2141,6 +2141,32 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
       requires Ghasauthority << SCHED >>
        andBool #isValidDelegation (CODE)
 
+    syntax InternalOp ::= "#prepareDispatch" Account
+ // ------------------------------------------------
+    rule <k> #prepareDispatch ACCTTO => #chargeDispatchDelegationAccess #asAccount(#range(CODE,3,20)) ... </k>
+         <schedule> SCHED </schedule>
+         <account>
+           <acctID> ACCTTO </acctID>
+           <code> CODE </code>
+           ...
+         </account>
+      requires Ghasauthority << SCHED >>
+       andBool #isValidDelegation (CODE)
+
+    rule <k> #prepareDispatch _ => .K ... </k> [owise]
+
+    syntax InternalOp ::= "#chargeDispatchDelegationAccess" Account
+ // ---------------------------------------------------------------
+    rule <k> #chargeDispatchDelegationAccess ACCT
+          => (#if ACCT in ACCTS #then Gwarmstorageread < SCHED > #else Gcoldaccountaccess < SCHED > #fi) ~> #deductCallGas
+         ...
+         </k>
+         <callDepth> -1 </callDepth>
+         <accessedAccounts> ACCTS </accessedAccounts>
+         <schedule> SCHED </schedule>
+      requires Ghasstategas << SCHED >>
+    rule <k> #chargeDispatchDelegationAccess _ => .K ... </k> [owise]
+
     rule [call.true]:
          <k> #call ACCTFROM ACCTTO ACCTCODE VALUE APPVALUE ARGS STATIC
           => #callWithCode ACCTFROM ACCTTO ACCTCODE CODE VALUE APPVALUE ARGS STATIC
@@ -2257,6 +2283,8 @@ The various `CALL*` (and other inter-contract control flow) operations will be d
 
     rule <k> #accessAccounts ADDRSET:Set => .K ... </k>
          <accessedAccounts> TOUCHED_ACCOUNTS => TOUCHED_ACCOUNTS |Set ADDRSET </accessedAccounts>
+
+    rule <k> #halt ~> (#accessAccounts _:Account => .K) ... </k>
 
     syntax Bytes ::= #computeValidJumpDests(Bytes)                  [symbol(computeValidJumpDests),    function, memo, total]
                    | #computeValidJumpDests(Bytes, Int, Bytes, Int) [symbol(computeValidJumpDestsAux), function             ]
