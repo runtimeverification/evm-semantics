@@ -4,15 +4,13 @@ set -euxo pipefail
 # requires jq
 # sudo apt install jq
 
-# Fixture releases live on ethereum/execution-specs (EELS);
-# Standard releases (tests@vX.Y.Z) ship fixtures_stable.tar.gz /
-# fixtures_develop.tar.gz; devnet prereleases (e.g.
-# tests-glamsterdam-devnet@vX.Y.Z) ship a single feature tarball such as
-# fixtures_glamsterdam-devnet.tar.gz.
-# As of Jul 2026, deployed is Osaka (+BPO forks); Glamsterdam (EL fork
-# name: Amsterdam) is under development on glamsterdam-devnet releases.
+# Fixture releases live on ethereum/execution-specs (EELS).
+# Since tests@v21.0.0, standard releases (tests@vX.Y.Z) ship a single
+# fixtures.tar.gz covering every fork, Amsterdam included.
+# Devnet prereleases (e.g. tests-glamsterdam-devnet@vX.Y.Z) ship a
+# differently named feature tarball (fixtures_glamsterdam-devnet.tar.gz).
 
-ARTIFACT="fixtures_glamsterdam-devnet.tar.gz"
+ARTIFACT="fixtures.tar.gz"
 TARGET_DIR="fixtures"
 
 OWNER="ethereum"
