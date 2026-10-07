@@ -33,7 +33,7 @@ module SCHEDULE
                           | "Ghasbls12msmdiscount"    | "Ghashistory"      | "Ghasrequests"        | "Ghasauthority"
                           | "Ghasfloorcost"           | "Ghasclz"          | "Ghasstategas"        | "Ghasauthbaserefund"
                           | "Ghaseip8038"             | "Ghasreserve"      | "Ghastxgaslimit"      | "Ghasslotnum"
-                          | "Ghaseip7823"             | "Ghaseip7708"
+                          | "Ghaseip7823"             | "Ghaseip7708"      | "Ghaseip8024"
  // -----------------------------------------------------------------------------------------------------------------
 ```
 
@@ -203,6 +203,7 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule [GhastxgaslimitDefault]:          Ghastxgaslimit          << DEFAULT >> => false
     rule [GhasslotnumDefault]:             Ghasslotnum             << DEFAULT >> => false
     rule [Ghaseip7708Default]:             Ghaseip7708             << DEFAULT >> => false
+    rule [Ghaseip8024Default]:             Ghaseip8024             << DEFAULT >> => false
 ```
 
 ### Frontier Schedule
@@ -602,12 +603,14 @@ A `ScheduleConst` is a constant determined by the fee schedule.
     rule [GhasstategasAmsterdam]:       Ghasstategas       << AMSTERDAM >> => true
     rule [GhasslotnumAmsterdam]:        Ghasslotnum        << AMSTERDAM >> => true
     rule [Ghaseip7708Amsterdam]:        Ghaseip7708        << AMSTERDAM >> => true
+    rule [Ghaseip8024Amsterdam]:        Ghaseip8024        << AMSTERDAM >> => true
     rule [SCHEDFLAGAmsterdam]:          SCHEDFLAG          << AMSTERDAM >> => SCHEDFLAG << OSAKA >>
       requires notBool ( SCHEDFLAG ==K Ghaseip8038
                   orBool SCHEDFLAG ==K Ghasauthbaserefund
                   orBool SCHEDFLAG ==K Ghasstategas
                   orBool SCHEDFLAG ==K Ghasslotnum
                   orBool SCHEDFLAG ==K Ghaseip7708
+                  orBool SCHEDFLAG ==K Ghaseip8024
                        )
 ```
 
